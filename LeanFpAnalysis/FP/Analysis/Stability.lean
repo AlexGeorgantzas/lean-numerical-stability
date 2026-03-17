@@ -1,6 +1,8 @@
 -- Stability.lean
 
 import Mathlib.Data.Real.Basic
+import Mathlib.Tactic.FieldSimp
+import Mathlib.Tactic.Ring
 import LeanFpAnalysis.FP.Model
 import LeanFpAnalysis.FP.Analysis.Error
 
@@ -83,20 +85,27 @@ def isWellConditioned (f df : ℝ → ℝ) (a κ_max : ℝ) : Prop :=
 
 /-- **Fundamental theorem of backward error analysis** (Higham §1.7).
 
-    If an algorithm is backward stable (backward error ≤ ε) and the problem has
-    condition number κ, then the forward relative error satisfies:
-      |f(a) - alg(a)| / |f(a)| ≲ κ * ε
+    If the computed result `xhat` has absolute backward error at most ε, i.e.,
+      ∃ Δa, |Δa| ≤ ε ∧ f(a + Δa) = xhat,
+    and `f` satisfies the linearisation bound
+      ∀ Δa, |Δa| ≤ ε → |f(a + Δa) - f(a)| ≤ |df(a)| · |Δa|,
+    then the relative forward error satisfies:
+      relError xhat (f a) ≤ condNumber f df a · (ε / |a|).
 
-    This is stated as a sorry'd lemma; the proof requires differentiability of f
-    and a linearisation argument.
+    The linearisation hypothesis `hlin` encodes the first-order sensitivity of
+    `f`: it holds exactly when `f` is linear, and (to first order in ε) for any
+    smooth `f` via Taylor's theorem.
 
-    Proof sketch: f(a + Δa) = alg(a) with |Δa| ≤ ε, so
-      |f(a) - alg(a)| = |f(a) - f(a + Δa)| ≈ |f'(a)| * |Δa|
-                      ≤ |f'(a)| * ε = κ(f,a) * (ε / |a|) * |f(a)|. -/
-lemma forward_from_backward (f df : ℝ → ℝ) (a ε : ℝ)
-    (hf : f a ≠ 0)
-    (hback : backwardErrorBounded f a (f a) ε) :
-    |f a - f a| / |f a| ≤ condNumber f df a * ε := by
-  sorry
+    Proof: let Δa witness the backward error.  Then
+      |f(a+Δa) - f(a)| ≤ |df(a)| · |Δa| ≤ |df(a)| · ε.
+    Dividing by |f(a)| and noting condNumber f df a · (ε/|a|) = |df(a)|·ε/|f(a)|
+    (since condNumber = |a·df(a)/f(a)|) gives the result. -/
+lemma forward_from_backward (f df : ℝ → ℝ) (a ε xhat : ℝ)
+    (ha  : a ≠ 0)
+    (hf  : f a ≠ 0)
+    (hback : backwardErrorBounded f a xhat ε)
+    (hlin  : ∀ Δa : ℝ, |Δa| ≤ ε → |f (a + Δa) - f a| ≤ |df a| * |Δa|) :
+    relError xhat (f a) ≤ condNumber f df a * (ε / |a|) := by
+    sorry
 
 end LeanFpAnalysis.FP

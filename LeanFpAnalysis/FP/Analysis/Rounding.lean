@@ -127,4 +127,52 @@ lemma prod_error_bound (fp : FPModel) (n : ℕ) (δ : Fin n → ℝ)
     · -- ∏ᵢ<n+1 (1+δᵢ) = (∏ᵢ<n (1+δᵢ.castSucc)) * (1+δₙ) = (1+θ') * (1+δₙ)
       rw [Fin.prod_univ_castSucc, hprod]; ring
 
+-- ============================================================
+-- §3.4  Lemma 3.3 — γ arithmetic rules
+-- ============================================================
+
+/-- **γ multiplication rule** (Higham §3.4, Lemma 3.3 part 1).
+
+    If |θⱼ| ≤ γ(j) and |θₖ| ≤ γ(k), then (1+θⱼ)(1+θₖ) = 1+θ
+    for some θ with |θ| ≤ γ(j+k).
+
+    Proof sketch: expand (1+θⱼ)(1+θₖ) = 1 + (θⱼ + θₖ + θⱼθₖ) and bound
+      |θⱼ + θₖ + θⱼθₖ| ≤ γ(j) + γ(k) + γ(j)·γ(k) = γ(j+k)
+    using the algebraic identity γ(j) + γ(k) + γ(j)·γ(k) = γ(j+k). -/
+lemma gamma_mul (fp : FPModel) (j k : ℕ) (θj θk : ℝ)
+    (hj  : |θj| ≤ gamma fp j)
+    (hk  : |θk| ≤ gamma fp k)
+    (hval : gammaValid fp (j + k)) :
+    ∃ θ : ℝ, |θ| ≤ gamma fp (j + k) ∧ (1 + θj) * (1 + θk) = 1 + θ := by
+  sorry
+
+/-- **γ reciprocal rule** (Higham §3.4, Lemma 3.3 part 2).
+
+    If |θₖ| ≤ γ(k) and 1 + θₖ > 0, then 1/(1+θₖ) = 1+θ
+    for some θ with |θ| ≤ γ(2k).
+
+    Proof sketch:
+      |1/(1+θₖ) - 1| = |θₖ/(1+θₖ)| ≤ γ(k)/(1-γ(k)) = ku/(1-2ku) ≤ γ(2k). -/
+lemma gamma_inv (fp : FPModel) (k : ℕ) (θk : ℝ)
+    (hk   : |θk| ≤ gamma fp k)
+    (hpos : (0 : ℝ) < 1 + θk)
+    (hval : gammaValid fp (2 * k)) :
+    ∃ θ : ℝ, |θ| ≤ gamma fp (2 * k) ∧ 1 / (1 + θk) = 1 + θ := by
+  sorry
+
+/-- **γ division rule** (Higham §3.4, Lemma 3.3 part 3).
+
+    If |θⱼ| ≤ γ(j) and |θₖ| ≤ γ(k) and 1+θₖ > 0, then (1+θⱼ)/(1+θₖ) = 1+θ
+    for some θ with |θ| ≤ γ(j + 2k).
+
+    Proof sketch: apply `gamma_inv` to denominator (cost: 2k), then
+      `gamma_mul` with the numerator (cost: j), total j+2k. -/
+lemma gamma_div (fp : FPModel) (j k : ℕ) (θj θk : ℝ)
+    (hj   : |θj| ≤ gamma fp j)
+    (hk   : |θk| ≤ gamma fp k)
+    (hpos : (0 : ℝ) < 1 + θk)
+    (hval : gammaValid fp (j + 2 * k)) :
+    ∃ θ : ℝ, |θ| ≤ gamma fp (j + 2 * k) ∧ (1 + θj) / (1 + θk) = 1 + θ := by
+  sorry
+
 end LeanFpAnalysis.FP
