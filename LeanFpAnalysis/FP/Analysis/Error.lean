@@ -41,19 +41,4 @@ noncomputable def relError (computed exact : ℝ) : ℝ :=
 def compRelErrorBounded (n : ℕ) (computed exact : Fin n → ℝ) (ε : ℝ) : Prop :=
   ∀ i : Fin n, relError (computed i) (exact i) ≤ ε
 
--- ============================================================
--- §1.7  Backward error
--- ============================================================
-
-/-- Backward error bound for a computed result `xhat` for problem `f` with input `a`.
-
-    Asserts that there exists a perturbation Δa with |Δa| ≤ ε such that `xhat` is
-    the *exact* solution to the perturbed problem `f(a + Δa)`:
-      ∃ Δa, |Δa| ≤ ε ∧ f(a + Δa) = xhat
-
-    This is the form most directly usable in stability proofs.
-    The scalar case; vector problems are handled in Stability.lean. -/
-def backwardErrorBounded (f : ℝ → ℝ) (a xhat ε : ℝ) : Prop :=
-  ∃ Δa : ℝ, |Δa| ≤ ε ∧ f (a + Δa) = xhat
-
 end LeanFpAnalysis.FP

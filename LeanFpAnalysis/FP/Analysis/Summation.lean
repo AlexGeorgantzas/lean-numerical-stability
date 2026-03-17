@@ -24,6 +24,7 @@ open scoped BigOperators
     The worst case over all terms is γ(n), giving a uniform bound.
 
     Precondition: gammaValid fp n ensures the denominator of γ is positive. -/
+
 lemma fl_sum_error (fp : FPModel) (n : ℕ) (v : Fin n → ℝ)
     (hn : gammaValid fp n) :
     ∃ θ : Fin n → ℝ,

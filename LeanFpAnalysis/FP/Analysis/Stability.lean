@@ -19,18 +19,41 @@ backward stability and the condition number of a problem.
 -/
 
 -- ============================================================
+-- §1.7  Backward error predicates
+-- ============================================================
+
+/-- Backward error bound for a computed result `xhat` for scalar problem `f` at input `a`.
+
+    Asserts that there exists a perturbation Δa with |Δa| ≤ ε such that `xhat` is
+    the *exact* solution to the perturbed problem `f(a + Δa)`:
+      ∃ Δa, |Δa| ≤ ε ∧ f(a + Δa) = xhat
+
+    The vector analog is `backwardErrorBoundedVec`. -/
+def backwardErrorBounded (f : ℝ → ℝ) (a xhat ε : ℝ) : Prop :=
+  ∃ Δa : ℝ, |Δa| ≤ ε ∧ f (a + Δa) = xhat
+
+/-- Backward error bound for a computed vector result `xhat` for problem
+    `f : (Fin n → ℝ) → (Fin m → ℝ)` at input `a`.
+
+    Asserts that there exists a componentwise perturbation Δa with |Δa i| ≤ ε for all i,
+    such that `xhat` is the *exact* solution to the perturbed problem `f(a + Δa)`:
+      ∃ Δa, (∀ i, |Δa i| ≤ ε) ∧ f(fun i => a i + Δa i) = xhat
+
+    The scalar analog is `backwardErrorBounded`. -/
+def backwardErrorBoundedVec (n m : ℕ) (f : (Fin n → ℝ) → (Fin m → ℝ))
+    (a : Fin n → ℝ) (xhat : Fin m → ℝ) (ε : ℝ) : Prop :=
+  ∃ Δa : Fin n → ℝ, (∀ i, |Δa i| ≤ ε) ∧ f (fun i => a i + Δa i) = xhat
+
+-- ============================================================
 -- §1.7  Backward stability (scalar problems)
 -- ============================================================
 
 /-- An algorithm computing `f : ℝ → ℝ` at input `a` is **backward stable**
     if the computed result `xhat` is the exact answer for a slightly perturbed
-    input.  The perturbation is required to be no larger than `ε`:
-      ∃ Δa, |Δa| ≤ ε ∧ f(a + Δa) = xhat
+    input.  The perturbation is required to be no larger than `c * u`:
+      ∃ Δa, |Δa| ≤ c * u ∧ f(a + Δa) = xhat
 
-    Typically ε is taken proportional to the unit roundoff u, e.g., ε = c * u
-    for a small constant c depending on the algorithm.
-
-    See `backwardErrorBounded` in Error.lean for the underlying predicate. -/
+    Typically the constant c depends on the algorithm; u is the unit roundoff. -/
 def isBackwardStable (fp : FPModel) (f : ℝ → ℝ) (alg : ℝ → ℝ)
     (c : ℝ) : Prop :=
   ∀ a : ℝ, backwardErrorBounded f a (alg a) (c * fp.u)
@@ -42,18 +65,12 @@ def isBackwardStable (fp : FPModel) (f : ℝ → ℝ) (alg : ℝ → ℝ)
 /-- Backward stability for a vector-to-vector problem `f : (Fin n → ℝ) → (Fin m → ℝ)`.
 
     The computed output `alg a` is the exact answer for a componentwise-perturbed
-    input: each input component `a_i` is perturbed by at most `ε`:
-      ∀ i, ∃ Δaᵢ, |Δaᵢ| ≤ ε ∧ f(a + Δa) = alg a
-
-    Here we require a *single* Δa vector whose max componentwise perturbation is ε. -/
+    input, with each component perturbed by at most `c * u`. -/
 def isVectorBackwardStable (fp : FPModel) (n m : ℕ)
     (f : (Fin n → ℝ) → (Fin m → ℝ))
     (alg : (Fin n → ℝ) → (Fin m → ℝ))
     (c : ℝ) : Prop :=
-  ∀ a : Fin n → ℝ,
-    ∃ Δa : Fin n → ℝ,
-      (∀ i, |Δa i| ≤ c * fp.u) ∧
-      f (fun i => a i + Δa i) = alg a
+  ∀ a : Fin n → ℝ, backwardErrorBoundedVec n m f a (alg a) (c * fp.u)
 
 -- ============================================================
 -- §1.9  Condition number of a scalar problem
