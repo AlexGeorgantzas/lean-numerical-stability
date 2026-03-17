@@ -192,14 +192,46 @@ lemma gamma_mul (fp : FPModel) (j k : ℕ) (θj θk : ℝ)
     If |θₖ| ≤ γ(k) and 1 + θₖ > 0, then 1/(1+θₖ) = 1+θ
     for some θ with |θ| ≤ γ(2k).
 
-    Proof sketch:
-      |1/(1+θₖ) - 1| = |θₖ/(1+θₖ)| ≤ γ(k)/(1-γ(k)) = ku/(1-2ku) ≤ γ(2k). -/
+    Proof sketch: witness θ = −θₖ/(1+θₖ). Bound via
+      |θ| = |θₖ|/(1+θₖ) ≤ γ(k)/(1+θₖ) ≤ γ(2k),
+    using the identity γ(2k)·(1−γ(k)) = 2·γ(k) and 1−γ(k) ≤ 1+θₖ. -/
 lemma gamma_inv (fp : FPModel) (k : ℕ) (θk : ℝ)
     (hk   : |θk| ≤ gamma fp k)
     (hpos : (0 : ℝ) < 1 + θk)
     (hval : gammaValid fp (2 * k)) :
     ∃ θ : ℝ, |θ| ≤ gamma fp (2 * k) ∧ 1 / (1 + θk) = 1 + θ := by
-  sorry
+  refine ⟨-θk / (1 + θk), ?_, by field_simp [hpos.ne']; ring⟩
+  -- Setup facts from hval
+  have h2ku : 2 * (↑k : ℝ) * fp.u < 1 := by
+    have h := hval; unfold gammaValid at h; push_cast at h; linarith
+  have hku  : (↑k : ℝ) * fp.u < 1 := by linarith
+  have hdk  : (0 : ℝ) < 1 - ↑k * fp.u     := by linarith
+  have hd2k : (0 : ℝ) < 1 - 2 * ↑k * fp.u := by linarith
+  have hγk  : 0 ≤ gamma fp k :=
+    div_nonneg (mul_nonneg (by exact_mod_cast k.zero_le) fp.u_nonneg) (by linarith)
+  have hγk_lt1 : gamma fp k < 1 := by
+    unfold gamma; rw [div_lt_one hdk]; linarith
+  have hγ2k : 0 ≤ gamma fp (2 * k) := by
+    unfold gamma
+    apply div_nonneg
+    · exact mul_nonneg (by exact_mod_cast (2 * k).zero_le) fp.u_nonneg
+    · have h := hval; unfold gammaValid at h; linarith
+  have htk_lb : -gamma fp k ≤ θk := by linarith [neg_abs_le θk]
+  -- Rewrite to multiplicative form
+  have h_abs : |-θk / (1 + θk)| = |θk| / (1 + θk) := by
+    rw [abs_div, abs_neg, abs_of_pos hpos]
+  rw [h_abs, div_le_iff hpos]
+  -- Goal: |θk| ≤ gamma fp (2 * k) * (1 + θk)
+  -- Key algebraic identity: γ(2k) · (1 − γ(k)) = 2 · γ(k)
+  have h_id : gamma fp (2 * k) * (1 - gamma fp k) = 2 * gamma fp k := by
+    unfold gamma; push_cast
+    field_simp [hdk.ne', hd2k.ne']; ring
+  calc |θk|
+      ≤ gamma fp k                           := hk
+    _ ≤ 2 * gamma fp k                      := by linarith
+    _ = gamma fp (2 * k) * (1 - gamma fp k) := h_id.symm
+    _ ≤ gamma fp (2 * k) * (1 + θk)        :=
+          mul_le_mul_of_nonneg_left (by linarith) hγ2k
 
 /-- **γ division rule** (Higham §3.4, Lemma 3.3 part 3).
 
