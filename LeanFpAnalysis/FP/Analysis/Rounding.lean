@@ -220,18 +220,25 @@ lemma gamma_inv (fp : FPModel) (k : ℕ) (θk : ℝ)
   -- Rewrite to multiplicative form
   have h_abs : |-θk / (1 + θk)| = |θk| / (1 + θk) := by
     rw [abs_div, abs_neg, abs_of_pos hpos]
-  rw [h_abs, div_le_iff hpos]
-  -- Goal: |θk| ≤ gamma fp (2 * k) * (1 + θk)
+  rw [h_abs]
   -- Key algebraic identity: γ(2k) · (1 − γ(k)) = 2 · γ(k)
   have h_id : gamma fp (2 * k) * (1 - gamma fp k) = 2 * gamma fp k := by
     unfold gamma; push_cast
     field_simp [hdk.ne', hd2k.ne']; ring
-  calc |θk|
-      ≤ gamma fp k                           := hk
-    _ ≤ 2 * gamma fp k                      := by linarith
-    _ = gamma fp (2 * k) * (1 - gamma fp k) := h_id.symm
-    _ ≤ gamma fp (2 * k) * (1 + θk)        :=
-          mul_le_mul_of_nonneg_left (by linarith) hγ2k
+  have h_bound : |θk| ≤ gamma fp (2 * k) * (1 + θk) := by
+    calc |θk|
+        ≤ gamma fp k                           := hk
+      _ ≤ 2 * gamma fp k                      := by linarith
+      _ = gamma fp (2 * k) * (1 - gamma fp k) := h_id.symm
+      _ ≤ gamma fp (2 * k) * (1 + θk)        :=
+            mul_le_mul_of_nonneg_left (by linarith) hγ2k
+  -- |θk| / (1 + θk) ≤ γ(2k): by contradiction, multiplying out
+  have hcancel : |θk| / (1 + θk) * (1 + θk) = |θk| := by field_simp [hpos.ne']
+  by_contra h
+  push_neg at h
+  have hmul := mul_lt_mul_of_pos_right h hpos
+  rw [hcancel] at hmul
+  linarith
 
 /-- **γ division rule** (Higham §3.4, Lemma 3.3 part 3).
 
@@ -246,6 +253,16 @@ lemma gamma_div (fp : FPModel) (j k : ℕ) (θj θk : ℝ)
     (hpos : (0 : ℝ) < 1 + θk)
     (hval : gammaValid fp (j + 2 * k)) :
     ∃ θ : ℝ, |θ| ≤ gamma fp (j + 2 * k) ∧ (1 + θj) / (1 + θk) = 1 + θ := by
-  sorry
+  -- Step 1: extract gammaValid fp (2 * k) from hval
+  have hval2k : gammaValid fp (2 * k) := by
+    unfold gammaValid at hval ⊢; push_cast at hval ⊢
+    linarith [mul_nonneg (by exact_mod_cast j.zero_le : (0:ℝ) ≤ ↑j) fp.u_nonneg]
+  -- Step 2: apply gamma_inv — cost 2k on denominator
+  obtain ⟨θ', hθ', hinv⟩ := gamma_inv fp k θk hk hpos hval2k
+  -- Step 3: apply gamma_mul — cost j + 2k on numerator × inv
+  obtain ⟨θ'', hθ'', hmul⟩ := gamma_mul fp j (2 * k) θj θ' hj hθ' hval
+  refine ⟨θ'', hθ'', ?_⟩
+  have : (1 + θj) / (1 + θk) = (1 + θj) * (1 / (1 + θk)) := by ring
+  rw [this, hinv, hmul]
 
 end LeanFpAnalysis.FP
