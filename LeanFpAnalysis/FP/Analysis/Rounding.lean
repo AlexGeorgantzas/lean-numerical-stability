@@ -49,6 +49,80 @@ def gammaValid (fp : FPModel) (n : ℕ) : Prop :=
   (n : ℝ) * fp.u < 1
 
 -- ============================================================
+-- §3.1  Basic properties of gamma and gammaValid
+-- ============================================================
+
+/-- `gammaValid` is monotone: if n operations are valid, so are k ≤ n. -/
+lemma gammaValid_mono (fp : FPModel) {k n : ℕ} (h : k ≤ n) (hn : gammaValid fp n) :
+    gammaValid fp k := by
+  unfold gammaValid at hn ⊢
+  have hkn : (k : ℝ) ≤ n := by exact_mod_cast h
+  linarith [mul_le_mul_of_nonneg_right hkn fp.u_nonneg]
+
+/-- `gamma` is nonneg whenever `gammaValid` holds. -/
+lemma gamma_nonneg (fp : FPModel) {n : ℕ} (hn : gammaValid fp n) : 0 ≤ gamma fp n :=
+  div_nonneg (mul_nonneg (by exact_mod_cast n.zero_le) fp.u_nonneg)
+             (by unfold gammaValid at hn; linarith)
+
+/-- `gamma` is monotone in n.
+
+    Proof: write n = k + m, then γ(k) ≤ γ(k) + γ(m) + γ(k)·γ(m) ≤ γ(k+m) = γ(n). -/
+lemma gamma_mono (fp : FPModel) {k n : ℕ} (h : k ≤ n) (hn : gammaValid fp n) :
+    gamma fp k ≤ gamma fp n := by
+  obtain ⟨m, rfl⟩ := Nat.exists_eq_add_of_le h
+  have hval' : (↑k + ↑m) * fp.u < 1 := by
+    have h := hn; unfold gammaValid at h; push_cast at h; exact h
+  have hku  : (↑k : ℝ) * fp.u < 1 :=
+    by linarith [mul_nonneg (by exact_mod_cast m.zero_le : (0:ℝ) ≤ ↑m) fp.u_nonneg]
+  have hmu  : (↑m : ℝ) * fp.u < 1 :=
+    by linarith [mul_nonneg (by exact_mod_cast k.zero_le : (0:ℝ) ≤ ↑k) fp.u_nonneg]
+  have hdk  : (0 : ℝ) < 1 - ↑k * fp.u        := by linarith
+  have hdm  : (0 : ℝ) < 1 - ↑m * fp.u        := by linarith
+  have hdkm : (0 : ℝ) < 1 - (↑k + ↑m) * fp.u := by linarith
+  have hγk  : 0 ≤ gamma fp k :=
+    div_nonneg (mul_nonneg (by exact_mod_cast k.zero_le) fp.u_nonneg) (by linarith)
+  have hγm  : 0 ≤ gamma fp m :=
+    div_nonneg (mul_nonneg (by exact_mod_cast m.zero_le) fp.u_nonneg) (by linarith)
+  -- γ(k) + γ(m) + γ(k)·γ(m) ≤ γ(k+m)  (same identity as in gamma_mul)
+  have h_ineq : gamma fp k + gamma fp m + gamma fp k * gamma fp m ≤ gamma fp (k + m) := by
+    unfold gamma; push_cast; rw [← sub_nonneg]
+    have key : (↑k + ↑m) * fp.u / (1 - (↑k + ↑m) * fp.u) -
+               (↑k * fp.u / (1 - ↑k * fp.u) + ↑m * fp.u / (1 - ↑m * fp.u) +
+                ↑k * fp.u / (1 - ↑k * fp.u) * (↑m * fp.u / (1 - ↑m * fp.u))) =
+               ↑k * ↑m * fp.u ^ 2 /
+               ((1 - ↑k * fp.u) * (1 - ↑m * fp.u) * (1 - (↑k + ↑m) * fp.u)) := by
+      field_simp [hdk.ne', hdm.ne', hdkm.ne']; ring
+    rw [key]
+    exact div_nonneg
+      (mul_nonneg (mul_nonneg (by exact_mod_cast k.zero_le) (by exact_mod_cast m.zero_le))
+                  (sq_nonneg fp.u))
+      (le_of_lt (mul_pos (mul_pos hdk hdm) hdkm))
+  linarith [mul_nonneg hγk hγm]
+
+/-- The unit roundoff is bounded by γ(k) for any k ≥ 1.
+
+    Proof: u ≤ k·u ≤ k·u/(1−k·u) = γ(k),
+    since k ≥ 1 gives u ≤ k·u, and 1−k·u ≤ 1 gives k·u ≤ k·u/(1−k·u). -/
+lemma u_le_gamma (fp : FPModel) {k : ℕ} (hk : 0 < k) (hval : gammaValid fp k) :
+    fp.u ≤ gamma fp k := by
+  unfold gamma
+  have hku  : (↑k : ℝ) * fp.u < 1 := hval
+  have hdk  : (0 : ℝ) < 1 - ↑k * fp.u := by linarith
+  have hk1  : (1 : ℝ) ≤ ↑k := by exact_mod_cast hk
+  -- fp.u ≤ k * fp.u  (since k ≥ 1)
+  have h1 : fp.u ≤ ↑k * fp.u := le_mul_of_one_le_left fp.u_nonneg hk1
+  -- k * fp.u ≤ k * fp.u / (1 - k * fp.u)  (since 1 - k * fp.u ≤ 1)
+  have h2 : ↑k * fp.u ≤ ↑k * fp.u / (1 - ↑k * fp.u) := by
+    by_contra hc
+    push_neg at hc
+    have hmul := mul_lt_mul_of_pos_right hc hdk
+    have hcancel : ↑k * fp.u / (1 - ↑k * fp.u) * (1 - ↑k * fp.u) = ↑k * fp.u := by
+      field_simp [hdk.ne']
+    rw [hcancel] at hmul
+    nlinarith [mul_nonneg (mul_nonneg (by linarith : (0:ℝ) ≤ ↑k) fp.u_nonneg) fp.u_nonneg]
+  linarith
+
+-- ============================================================
 -- §3.1  Product lemma
 -- ============================================================
 
