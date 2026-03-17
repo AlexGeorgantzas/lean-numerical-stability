@@ -3,6 +3,7 @@
 import Mathlib.Data.Real.Basic
 import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Ring
+import Mathlib.Tactic.Linarith
 import LeanFpAnalysis.FP.Model
 import LeanFpAnalysis.FP.Analysis.Error
 
@@ -123,6 +124,28 @@ lemma forward_from_backward (f df : ℝ → ℝ) (a ε xhat : ℝ)
     (hback : backwardErrorBounded f a xhat ε)
     (hlin  : ∀ Δa : ℝ, |Δa| ≤ ε → |f (a + Δa) - f a| ≤ |df a| * |Δa|) :
     relError xhat (f a) ≤ condNumber f df a * (ε / |a|) := by
-    sorry
+  unfold relError condNumber
+  obtain ⟨Δa, hΔa, hfΔa⟩ := hback
+  rw [← hfΔa]
+  have hfa_pos : 0 < |f a| := abs_pos.mpr hf
+  have ha_pos  : 0 < |a|   := abs_pos.mpr ha
+  -- |f(a+Δa) - f a| ≤ |df a| * ε
+  have h1 : |f (a + Δa) - f a| ≤ |df a| * ε :=
+    le_trans (hlin Δa hΔa) (mul_le_mul_of_nonneg_left hΔa (abs_nonneg _))
+  -- condNumber simplifies: |a * df a / f a| * (ε / |a|) = |df a| * ε / |f a|
+  have hrhs : |a * df a / f a| * (ε / |a|) = |df a| * ε / |f a| := by
+    rw [abs_div, abs_mul]
+    field_simp [ha_pos.ne', hfa_pos.ne']
+  rw [hrhs]
+  -- Reduce to h1 by contradiction: assume strict inequality, multiply by |f a|
+  by_contra h
+  push_neg at h
+  have hmul := mul_lt_mul_of_pos_right h hfa_pos
+  have hc1 : |f (a + Δa) - f a| / |f a| * |f a| = |f (a + Δa) - f a| := by
+    field_simp [hfa_pos.ne']
+  have hc2 : |df a| * ε / |f a| * |f a| = |df a| * ε := by
+    field_simp [hfa_pos.ne']
+  rw [hc1, hc2] at hmul
+  linarith
 
 end LeanFpAnalysis.FP
