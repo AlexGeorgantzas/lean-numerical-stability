@@ -131,20 +131,61 @@ lemma prod_error_bound (fp : FPModel) (n : ℕ) (δ : Fin n → ℝ)
 -- §3.4  Lemma 3.3 — γ arithmetic rules
 -- ============================================================
 
-/-- **γ multiplication rule** (Higham §3.4, Lemma 3.3 part 1).
+/- **γ multiplication rule** (Higham §3.4, Lemma 3.3 part 1).
 
     If |θⱼ| ≤ γ(j) and |θₖ| ≤ γ(k), then (1+θⱼ)(1+θₖ) = 1+θ
     for some θ with |θ| ≤ γ(j+k).
 
     Proof sketch: expand (1+θⱼ)(1+θₖ) = 1 + (θⱼ + θₖ + θⱼθₖ) and bound
       |θⱼ + θₖ + θⱼθₖ| ≤ γ(j) + γ(k) + γ(j)·γ(k) = γ(j+k)
-    using the algebraic identity γ(j) + γ(k) + γ(j)·γ(k) = γ(j+k). -/
+    using the inequality γ(j) + γ(k) + γ(j)·γ(k) ≤ γ(j+k), proved via
+    γ(j+k) − (γ(j)+γ(k)+γ(j)γ(k)) = j·k·u² / ((1−j·u)(1−k·u)(1−(j+k)·u)) ≥ 0. -/
+
 lemma gamma_mul (fp : FPModel) (j k : ℕ) (θj θk : ℝ)
     (hj  : |θj| ≤ gamma fp j)
     (hk  : |θk| ≤ gamma fp k)
     (hval : gammaValid fp (j + k)) :
     ∃ θ : ℝ, |θ| ≤ gamma fp (j + k) ∧ (1 + θj) * (1 + θk) = 1 + θ := by
-  sorry
+  refine ⟨θj + θk + θj * θk, ?_, by ring⟩
+  -- Sub-step 1: positivity facts
+  have hval' : (↑j + ↑k) * fp.u < 1 := by
+    have h := hval; unfold gammaValid at h; push_cast at h; exact h
+  have hju : (↑j : ℝ) * fp.u < 1 := by
+    linarith [mul_nonneg (by exact_mod_cast k.zero_le : (0:ℝ) ≤ ↑k) fp.u_nonneg]
+  have hku : (↑k : ℝ) * fp.u < 1 := by
+    linarith [mul_nonneg (by exact_mod_cast j.zero_le : (0:ℝ) ≤ ↑j) fp.u_nonneg]
+  have hdj  : (0 : ℝ) < 1 - ↑j * fp.u       := by linarith
+  have hdk  : (0 : ℝ) < 1 - ↑k * fp.u       := by linarith
+  have hdjk : (0 : ℝ) < 1 - (↑j + ↑k) * fp.u := by linarith
+  have hγj : 0 ≤ gamma fp j :=
+    div_nonneg (mul_nonneg (by exact_mod_cast j.zero_le) fp.u_nonneg) (by linarith)
+  have hγk : 0 ≤ gamma fp k :=
+    div_nonneg (mul_nonneg (by exact_mod_cast k.zero_le) fp.u_nonneg) (by linarith)
+  -- Sub-step 2: cross term bound
+  have hmul : |θj * θk| ≤ gamma fp j * gamma fp k :=
+    abs_mul θj θk ▸ mul_le_mul hj hk (abs_nonneg _) hγj
+  -- Sub-step 3: triangle inequality
+  have h_tri : |θj + θk + θj * θk| ≤ gamma fp j + gamma fp k + gamma fp j * gamma fp k := by
+    rw [abs_le]
+    constructor
+    · linarith [neg_abs_le θj, neg_abs_le θk, neg_abs_le (θj * θk)]
+    · linarith [le_abs_self θj, le_abs_self θk, le_abs_self (θj * θk)]
+  -- Sub-step 4: γ(j) + γ(k) + γ(j)·γ(k) ≤ γ(j+k)
+  have h_gamma_ineq : gamma fp j + gamma fp k + gamma fp j * gamma fp k ≤ gamma fp (j + k) := by
+    unfold gamma; push_cast
+    rw [← sub_nonneg]
+    have key : (↑j + ↑k) * fp.u / (1 - (↑j + ↑k) * fp.u) -
+               (↑j * fp.u / (1 - ↑j * fp.u) + ↑k * fp.u / (1 - ↑k * fp.u) +
+                ↑j * fp.u / (1 - ↑j * fp.u) * (↑k * fp.u / (1 - ↑k * fp.u))) =
+               ↑j * ↑k * fp.u ^ 2 /
+               ((1 - ↑j * fp.u) * (1 - ↑k * fp.u) * (1 - (↑j + ↑k) * fp.u)) := by
+      field_simp [hdj.ne', hdk.ne', hdjk.ne']; ring
+    rw [key]
+    apply div_nonneg
+    · exact mul_nonneg (mul_nonneg (by exact_mod_cast j.zero_le) (by exact_mod_cast k.zero_le))
+                       (sq_nonneg fp.u)
+    · exact le_of_lt (mul_pos (mul_pos hdj hdk) hdjk)
+  linarith
 
 /-- **γ reciprocal rule** (Higham §3.4, Lemma 3.3 part 2).
 
