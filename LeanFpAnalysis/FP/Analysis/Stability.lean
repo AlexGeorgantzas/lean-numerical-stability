@@ -74,6 +74,38 @@ def isVectorBackwardStable (fp : FPModel) (n m : ℕ)
   ∀ a : Fin n → ℝ, backwardErrorBoundedVec n m f a (alg a) (c * fp.u)
 
 -- ============================================================
+-- §1.7  Relative componentwise backward stability (two-input scalar problems)
+-- ============================================================
+
+/-- Relative componentwise backward error bound for a two-input scalar problem
+    `f : (Fin n → ℝ) → (Fin n → ℝ) → ℝ`.
+
+    Asserts that there exists a componentwise perturbation Δx with
+    |Δx i| ≤ ε * |x i| for all i, such that `xhat` is the *exact* result
+    of the unperturbed `f` at the perturbed first input:
+      ∃ Δx, (∀ i, |Δx i| ≤ ε * |x i|) ∧ f(fun i => x i + Δx i, y) = xhat
+
+    This is the relative componentwise form of the backward error:
+    each component of x is perturbed by at most a ε-fraction of its magnitude,
+    matching Higham's condition (3.4) for the inner product. -/
+def relBackwardErrorBounded2 (n : ℕ) (f : (Fin n → ℝ) → (Fin n → ℝ) → ℝ)
+    (x y : Fin n → ℝ) (xhat : ℝ) (ε : ℝ) : Prop :=
+  ∃ Δx : Fin n → ℝ, (∀ i, |Δx i| ≤ ε * |x i|) ∧ f (fun i => x i + Δx i) y = xhat
+
+/-- An algorithm `alg` computing a two-input scalar problem `f` is
+    **relatively componentwise backward stable** with bound ε if, for every
+    pair of inputs `(x, y)`, the computed result is the exact answer for a
+    first-input perturbation with relative componentwise bound ε:
+      ∀ x y, ∃ Δx, (∀ i, |Δx i| ≤ ε * |x i|) ∧ f(x + Δx, y) = alg(x, y)
+
+    Setting ε = γ(n) and `f = inner product` recovers Higham §3.1 (3.4). -/
+def isRelComponentwiseBackwardStable (n : ℕ)
+    (f : (Fin n → ℝ) → (Fin n → ℝ) → ℝ)
+    (alg : (Fin n → ℝ) → (Fin n → ℝ) → ℝ)
+    (ε : ℝ) : Prop :=
+  ∀ x y : Fin n → ℝ, relBackwardErrorBounded2 n f x y (alg x y) ε
+
+-- ============================================================
 -- §1.9  Condition number of a scalar problem
 -- ============================================================
 

@@ -7,6 +7,7 @@ import LeanFpAnalysis.FP.Model
 import LeanFpAnalysis.FP.Analysis.Error
 import LeanFpAnalysis.FP.Analysis.Rounding
 import LeanFpAnalysis.FP.Analysis.Summation
+import LeanFpAnalysis.FP.Analysis.Stability
 
 namespace LeanFpAnalysis.FP
 
@@ -127,5 +128,108 @@ theorem dotProduct_error_bound (fp : FPModel) (n : ℕ)
                   mul_le_mul_of_nonneg_left (hηs i) (mul_nonneg (abs_nonneg _) (abs_nonneg _)))
       _ = gamma fp (n' + 1) * ∑ i : Fin (n' + 1), |x i| * |y i| := by
               rw [Fin.sum_univ_succ, ← Finset.sum_mul]; ring
+
+/-- **Dot product componentwise backward error** (Higham §3.1, equation 3.3).
+
+    The computed floating-point dot product satisfies:
+      fl_dotProduct fp x y = ∑ i, x i * y i * (1 + η i)
+
+    where each |η i| ≤ γ(n).  This is the *primary* backward error result
+    from which backward stability (3.4) and the forward bound (3.5) derive. -/
+theorem dotProduct_backward_error (fp : FPModel) (n : ℕ)
+    (x y : Fin n → ℝ) (hn : gammaValid fp n) :
+    ∃ η : Fin n → ℝ,
+      (∀ i, |η i| ≤ gamma fp n) ∧
+      fl_dotProduct fp n x y = ∑ i : Fin n, x i * y i * (1 + η i) := by
+  cases n with
+  | zero => exact ⟨fun i => i.elim0, fun i => i.elim0, by simp [fl_dotProduct]⟩
+  | succ n' =>
+    have h1valid : gammaValid fp 1 := gammaValid_mono fp (by omega) hn
+    have hn' : gammaValid fp n' := gammaValid_mono fp (Nat.le_succ n') hn
+    let δ : Fin (n' + 1) → ℝ := fun i => Classical.choose (fp.model_mul (x i) (y i))
+    have hδ : ∀ i, |δ i| ≤ fp.u ∧ fp.fl_mul (x i) (y i) = x i * y i * (1 + δ i) :=
+      fun i => Classical.choose_spec (fp.model_mul (x i) (y i))
+    have hδ_1 : ∀ i, |δ i| ≤ gamma fp 1 :=
+      fun i => le_trans (hδ i).1 (u_le_gamma fp one_pos h1valid)
+    obtain ⟨Θ, θ, hΘ, hθ, hfold⟩ :=
+      fl_sum_error_init fp n' (fun i => fp.fl_mul (x i.succ) (y i.succ))
+        (fp.fl_mul (x 0) (y 0)) hn'
+    have hdot : fl_dotProduct fp (n' + 1) x y =
+        x 0 * y 0 * (1 + δ 0) * (1 + Θ) +
+        ∑ i : Fin n', x i.succ * y i.succ * (1 + δ i.succ) * (1 + θ i) := by
+      show Fin.foldl n' (fun acc i => fp.fl_add acc (fp.fl_mul (x i.succ) (y i.succ)))
+          (fp.fl_mul (x 0) (y 0)) = _
+      rw [hfold, (hδ 0).2]
+      congr 1
+      apply Finset.sum_congr rfl; intro i _
+      rw [(hδ i.succ).2]
+    -- Build η : Fin (n'+1) → ℝ using Fin.cons
+    let η₀ : ℝ := δ 0 + Θ + δ 0 * Θ
+    let ηs : Fin n' → ℝ := fun i => δ i.succ + θ i + δ i.succ * θ i
+    let η : Fin (n' + 1) → ℝ := Fin.cons η₀ ηs
+    refine ⟨η, ?_, ?_⟩
+    · intro i
+      refine Fin.cases ?_ ?_ i
+      · -- i = 0: |η₀| ≤ γ(n'+1)
+        simp only [η, Fin.cons_zero]
+        obtain ⟨e, he, heq⟩ := gamma_mul fp n' 1 Θ (δ 0) hΘ (hδ_1 0) hn
+        have hval : e = η₀ := by
+          have hring : (1 + Θ) * (1 + δ 0) = 1 + η₀ := by simp only [η₀]; ring
+          linarith [heq, hring]
+        rw [← hval]; exact he
+      · -- i = j.succ: |ηs j| ≤ γ(n'+1)
+        intro j
+        simp only [η, Fin.cons_succ]
+        obtain ⟨e, he, heq⟩ := gamma_mul fp n' 1 (θ j) (δ j.succ) (hθ j) (hδ_1 j.succ) hn
+        have hval : e = ηs j := by
+          have hring : (1 + θ j) * (1 + δ j.succ) = 1 + ηs j := by simp only [ηs]; ring
+          linarith [heq, hring]
+        rw [← hval]; exact he
+    · rw [hdot, Fin.sum_univ_succ]
+      simp only [η, η₀, ηs, Fin.cons_zero, Fin.cons_succ]
+      congr 1
+      · ring
+      · apply Finset.sum_congr rfl; intro i _; ring
+
+/-- **Dot product backward stability** (Higham §3.1, equation 3.4).
+
+    The computed floating-point dot product is the exact inner product of a
+    componentwise-perturbed input vector `x + Δx` with `y`:
+      fl_dotProduct fp x y = ∑ i, (x i + Δx i) * y i
+
+    where |Δx i| ≤ γ(n) * |x i| for all i.
+
+    Proof: set Δxᵢ = xᵢ * ηᵢ using the witnesses from `dotProduct_backward_error`. -/
+theorem dotProduct_backward_stable_x (fp : FPModel) (n : ℕ)
+    (x y : Fin n → ℝ) (hn : gammaValid fp n) :
+    ∃ Δx : Fin n → ℝ,
+      (∀ i, |Δx i| ≤ gamma fp n * |x i|) ∧
+      fl_dotProduct fp n x y = ∑ i : Fin n, (x i + Δx i) * y i := by
+  obtain ⟨η, hη, hfl⟩ := dotProduct_backward_error fp n x y hn
+  refine ⟨fun i => x i * η i, ?_, ?_⟩
+  · intro i
+    rw [abs_mul, mul_comm (gamma fp n)]
+    exact mul_le_mul_of_nonneg_left (hη i) (abs_nonneg _)
+  · rw [hfl]
+    apply Finset.sum_congr rfl; intro i _
+    ring
+
+/-- **The dot product algorithm is relatively componentwise backward stable**
+    (Higham §3.2).
+
+    Formally: `fl_dotProduct fp n` satisfies `isRelComponentwiseBackwardStable`
+    with bound `γ(n)`, where the exact problem is the standard inner product
+    `∑ i, x i * y i`.
+
+    This connects `dotProduct_backward_stable_x` (Higham 3.4) to the formal
+    stability predicate in `Stability.lean`. -/
+theorem dotProduct_isRelBackwardStable (fp : FPModel) (n : ℕ)
+    (hn : gammaValid fp n) :
+    isRelComponentwiseBackwardStable n
+      (fun x y => ∑ i : Fin n, x i * y i)
+      (fun x y => fl_dotProduct fp n x y)
+      (gamma fp n) := fun x y => by
+  obtain ⟨Δx, hΔx, hfl⟩ := dotProduct_backward_stable_x fp n x y hn
+  exact ⟨Δx, hΔx, hfl.symm⟩
 
 end LeanFpAnalysis.FP
