@@ -191,6 +191,29 @@ theorem dotProduct_backward_error (fp : FPModel) (n : ℕ)
       · ring
       · apply Finset.sum_congr rfl; intro i _; ring
 
+/-- **Dot product backward stability — y-perturbation** (Higham §3.1, equation 3.4).
+
+    The computed floating-point dot product is the exact inner product of `x`
+    with a componentwise-perturbed `y + Δy`:
+      fl_dotProduct fp x y = ∑ i, x i * (y i + Δy i)
+
+    where |Δy i| ≤ γ(n) * |y i| for all i.
+
+    Proof: set Δyᵢ = yᵢ * ηᵢ using the witnesses from `dotProduct_backward_error`. -/
+theorem dotProduct_backward_stable_y (fp : FPModel) (n : ℕ)
+    (x y : Fin n → ℝ) (hn : gammaValid fp n) :
+    ∃ Δy : Fin n → ℝ,
+      (∀ i, |Δy i| ≤ gamma fp n * |y i|) ∧
+      fl_dotProduct fp n x y = ∑ i : Fin n, x i * (y i + Δy i) := by
+  obtain ⟨η, hη, hfl⟩ := dotProduct_backward_error fp n x y hn
+  refine ⟨fun i => y i * η i, ?_, ?_⟩
+  · intro i
+    rw [abs_mul, mul_comm (gamma fp n)]
+    exact mul_le_mul_of_nonneg_left (hη i) (abs_nonneg _)
+  · rw [hfl]
+    apply Finset.sum_congr rfl; intro i _
+    ring
+
 /-- **Dot product backward stability** (Higham §3.1, equation 3.4).
 
     The computed floating-point dot product is the exact inner product of a
