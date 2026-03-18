@@ -339,4 +339,123 @@ lemma gamma_div (fp : FPModel) (j k : ℕ) (θj θk : ℝ)
   have : (1 + θj) / (1 + θk) = (1 + θj) * (1 / (1 + θk)) := by ring
   rw [this, hinv, hmul]
 
+-- ============================================================
+-- §3.4  Additional Lemma 3.3 rules (standalone)
+-- ============================================================
+
+/-- **Lemma 3.3 rule 6** (standalone): γ(j) + γ(k) + γ(j)·γ(k) ≤ γ(j+k).
+
+    This algebraic identity underlies both `gamma_mul` and `gamma_mono`.
+    Proof: γ(j+k) − (γ(j)+γ(k)+γ(j)γ(k)) = j·k·u² / ((1−ju)(1−ku)(1−(j+k)u)) ≥ 0. -/
+lemma gamma_sum_le (fp : FPModel) (j k : ℕ) (hval : gammaValid fp (j + k)) :
+    gamma fp j + gamma fp k + gamma fp j * gamma fp k ≤ gamma fp (j + k) := by
+  have hval' : (↑j + ↑k) * fp.u < 1 := by
+    have h := hval; unfold gammaValid at h; push_cast at h; exact h
+  have hju : (↑j : ℝ) * fp.u < 1 :=
+    by linarith [mul_nonneg (by exact_mod_cast k.zero_le : (0:ℝ) ≤ ↑k) fp.u_nonneg]
+  have hku : (↑k : ℝ) * fp.u < 1 :=
+    by linarith [mul_nonneg (by exact_mod_cast j.zero_le : (0:ℝ) ≤ ↑j) fp.u_nonneg]
+  have hdj  : (0 : ℝ) < 1 - ↑j * fp.u        := by linarith
+  have hdk  : (0 : ℝ) < 1 - ↑k * fp.u        := by linarith
+  have hdjk : (0 : ℝ) < 1 - (↑j + ↑k) * fp.u := by linarith
+  unfold gamma; push_cast; rw [← sub_nonneg]
+  have key : (↑j + ↑k) * fp.u / (1 - (↑j + ↑k) * fp.u) -
+             (↑j * fp.u / (1 - ↑j * fp.u) + ↑k * fp.u / (1 - ↑k * fp.u) +
+              ↑j * fp.u / (1 - ↑j * fp.u) * (↑k * fp.u / (1 - ↑k * fp.u))) =
+             ↑j * ↑k * fp.u ^ 2 /
+             ((1 - ↑j * fp.u) * (1 - ↑k * fp.u) * (1 - (↑j + ↑k) * fp.u)) := by
+    field_simp [hdj.ne', hdk.ne', hdjk.ne']; ring
+  rw [key]
+  exact div_nonneg
+    (mul_nonneg (mul_nonneg (by exact_mod_cast j.zero_le) (by exact_mod_cast k.zero_le))
+                (sq_nonneg fp.u))
+    (le_of_lt (mul_pos (mul_pos hdj hdk) hdjk))
+
+/-- **Lemma 3.3 rule 5**: γ(k) + u ≤ γ(k+1).
+
+    Proof: γ(k+1) − (γ(k)+u) = u²·(2k+1−k(k+1)u) / ((1−ku)(1−(k+1)u)) ≥ 0,
+    since k(k+1)u < k ≤ 2k+1 from gammaValid fp (k+1). -/
+lemma gamma_add_u_le (fp : FPModel) (k : ℕ) (hval : gammaValid fp (k + 1)) :
+    gamma fp k + fp.u ≤ gamma fp (k + 1) := by
+  have hku  : (↑k : ℝ) * fp.u < 1 := gammaValid_mono fp (Nat.le_succ k) hval
+  have hk1u : ((↑k : ℝ) + 1) * fp.u < 1 := by
+    have h := hval; unfold gammaValid at h; push_cast at h; exact h
+  have hdk  : (0 : ℝ) < 1 - ↑k * fp.u        := by linarith
+  have hdk1 : (0 : ℝ) < 1 - (↑k + 1) * fp.u  := by linarith
+  unfold gamma; push_cast; rw [← sub_nonneg]
+  have key : (↑k + 1) * fp.u / (1 - (↑k + 1) * fp.u) -
+             (↑k * fp.u / (1 - ↑k * fp.u) + fp.u) =
+             fp.u ^ 2 * (2 * ↑k + 1 - ↑k * (↑k + 1) * fp.u) /
+             ((1 - ↑k * fp.u) * (1 - (↑k + 1) * fp.u)) := by
+    field_simp [hdk.ne', hdk1.ne']; ring
+  rw [key]
+  apply div_nonneg
+  · apply mul_nonneg (sq_nonneg fp.u)
+    have hk0 : (0 : ℝ) ≤ ↑k := by exact_mod_cast k.zero_le
+    have : ↑k * ((↑k + 1) * fp.u) ≤ ↑k * 1 :=
+      mul_le_mul_of_nonneg_left (le_of_lt hk1u) hk0
+    linarith
+  · exact le_of_lt (mul_pos hdk hdk1)
+
+/-- **Lemma 3.3 rule 4**: i·γ(k) ≤ γ(i·k) for i ≥ 1.
+
+    Proof: i·(ku/(1−ku)) = iku/(1−ku) ≤ iku/(1−iku),
+    since i ≥ 1 gives iku ≥ ku, hence 1−iku ≤ 1−ku (smaller denominator).
+    Algebraically: γ(ik) − i·γ(k) = i(i−1)(ku)² / ((1−iku)(1−ku)) ≥ 0. -/
+lemma gamma_nsmul_le (fp : FPModel) (i k : ℕ) (hi : 1 ≤ i)
+    (hval : gammaValid fp (i * k)) :
+    (i : ℝ) * gamma fp k ≤ gamma fp (i * k) := by
+  have hiku : (↑i * ↑k) * fp.u < 1 := by
+    have h := hval; unfold gammaValid at h; push_cast at h; linarith
+  have hi1 : (1 : ℝ) ≤ ↑i := by exact_mod_cast hi
+  have hk0 : (0 : ℝ) ≤ ↑k := by exact_mod_cast k.zero_le
+  have hku : (↑k : ℝ) * fp.u < 1 := by
+    nlinarith [mul_nonneg hk0 fp.u_nonneg]
+  have hdiku : (0 : ℝ) < 1 - ↑i * ↑k * fp.u := by linarith
+  have hdku  : (0 : ℝ) < 1 - ↑k * fp.u       := by linarith
+  unfold gamma; push_cast; rw [← sub_nonneg]
+  have key : ↑i * ↑k * fp.u / (1 - ↑i * ↑k * fp.u) -
+             ↑i * (↑k * fp.u / (1 - ↑k * fp.u)) =
+             ↑i * (↑i - 1) * (↑k * fp.u) ^ 2 /
+             ((1 - ↑i * ↑k * fp.u) * (1 - ↑k * fp.u)) := by
+    field_simp [hdiku.ne', hdku.ne']; ring
+  rw [key]
+  apply div_nonneg
+  · apply mul_nonneg
+    · exact mul_nonneg (by exact_mod_cast Nat.zero_le i) (by linarith)
+    · exact sq_nonneg _
+  · exact le_of_lt (mul_pos hdiku hdku)
+
+/-- **Helper**: γ(k) < 1 whenever gammaValid fp (2k).
+
+    Proof: gammaValid fp (2k) gives 2ku < 1, so ku < 1/2,
+    hence ku/(1−ku) < 1 iff ku < 1−ku iff 2ku < 1. -/
+lemma gamma_lt_one (fp : FPModel) (k : ℕ) (hval : gammaValid fp (2 * k)) :
+    gamma fp k < 1 := by
+  have hku : (↑k : ℝ) * fp.u < 1 :=
+    gammaValid_mono fp (by omega) hval
+  have h2ku : 2 * (↑k : ℝ) * fp.u < 1 := by
+    have h := hval; unfold gammaValid at h; push_cast at h; linarith
+  have hdk : (0 : ℝ) < 1 - ↑k * fp.u := by linarith
+  unfold gamma
+  rw [div_lt_one hdk]
+  linarith
+
+/-- **Lemma 3.3 rule 3**: γ(j)·γ(k) ≤ γ(min j k).
+
+    WLOG j ≤ k (min = j).  Then γ(k) < 1 (from gammaValid fp (2k)),
+    so γ(j)·γ(k) ≤ γ(j)·1 = γ(j).
+
+    Precondition: gammaValid fp (2·k) (the larger index) ensures γ(k) < 1. -/
+lemma gamma_prod_le (fp : FPModel) (j k : ℕ) (hjk : j ≤ k)
+    (hval2k : gammaValid fp (2 * k)) :
+    gamma fp j * gamma fp k ≤ gamma fp j := by
+  have hval_j : gammaValid fp j :=
+    gammaValid_mono fp (le_trans hjk (by omega)) hval2k
+  have hγj    : 0 ≤ gamma fp j   := gamma_nonneg fp hval_j
+  have hγk_lt : gamma fp k < 1   := gamma_lt_one fp k hval2k
+  calc gamma fp j * gamma fp k
+      ≤ gamma fp j * 1 := mul_le_mul_of_nonneg_left (le_of_lt hγk_lt) hγj
+    _ = gamma fp j     := mul_one _
+
 end LeanFpAnalysis.FP
