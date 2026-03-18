@@ -42,7 +42,13 @@ theorem matVec_backward_error (fp : FPModel) (m n : ℕ)
     ∃ ΔA : Fin m → Fin n → ℝ,
       (∀ i j, |ΔA i j| ≤ gamma fp n * |A i j|) ∧
       ∀ i, fl_matVec fp m n A x i = ∑ j : Fin n, (A i j + ΔA i j) * x j := by
-  sorry
+  -- Extract per-row witnesses via Classical.choose
+  let Δrow : Fin m → Fin n → ℝ :=
+    fun i => Classical.choose (dotProduct_backward_stable_x fp n (A i) x hn)
+  have hrow : ∀ i, (∀ j, |Δrow i j| ≤ gamma fp n * |A i j|) ∧
+      fl_dotProduct fp n (A i) x = ∑ j : Fin n, (A i j + Δrow i j) * x j :=
+    fun i => Classical.choose_spec (dotProduct_backward_stable_x fp n (A i) x hn)
+  exact ⟨Δrow, fun i j => (hrow i).1 j, fun i => (hrow i).2⟩
 
 /-- **Matrix-vector forward error bound** (Higham §3.5, equation 3.11).
 
@@ -58,27 +64,24 @@ theorem matVec_error_bound (fp : FPModel) (m n : ℕ)
     (hn : gammaValid fp n) :
     ∀ i : Fin m,
       |fl_matVec fp m n A x i - ∑ j : Fin n, A i j * x j| ≤
-        gamma fp n * ∑ j : Fin n, |A i j| * |x j| := by
-  sorry
+        gamma fp n * ∑ j : Fin n, |A i j| * |x j| :=
+  fun i => dotProduct_error_bound fp n (A i) x hn
 
-/-- **Matrix-vector backward stability** (Higham §3.5).
+/-- **Matrix-vector row-wise backward stability** (Higham §3.5).
 
-    Connects `matVec_backward_error` to the formal stability predicate.
+    Each row of `fl_matVec` is computed by `fl_dotProduct`, which is relatively
+    componentwise backward stable with bound γ(n).  This theorem makes that
+    explicit: the per-row inner product algorithm satisfies
+    `isRelComponentwiseBackwardStable` with the row of A as the perturbed input.
 
-    The computed matrix-vector product is relatively componentwise backward stable:
-    the ith output is the exact inner product of a componentwise-perturbed ith row
-    with x.  Each entry of A is perturbed by at most γ(n) * |Aᵢⱼ|.
-
-    Note: this reuses `isRelComponentwiseBackwardStable` from Stability.lean,
-    instantiated to the two-input scalar problem (row i of A, x) ↦ row_i · x.
-    The global m-row statement follows by applying the per-row result to each i. -/
-theorem matVec_isRelBackwardStable (fp : FPModel) (m n : ℕ)
+    The global backward error for the full matrix (3.10) is captured by
+    `matVec_backward_error`, which constructs a perturbation ΔA row-by-row. -/
+theorem matVec_row_isRelBackwardStable (fp : FPModel) (n : ℕ)
     (hn : gammaValid fp n) :
-    ∀ i : Fin m,
-      isRelComponentwiseBackwardStable n
-        (fun a x => ∑ j : Fin n, a j * x j)
-        (fun a x => fl_dotProduct fp n a x)
-        (gamma fp n) := by
-  sorry
+    isRelComponentwiseBackwardStable n
+      (fun a x => ∑ j : Fin n, a j * x j)
+      (fun a x => fl_dotProduct fp n a x)
+      (gamma fp n) :=
+  dotProduct_isRelBackwardStable fp n hn
 
 end LeanFpAnalysis.FP
