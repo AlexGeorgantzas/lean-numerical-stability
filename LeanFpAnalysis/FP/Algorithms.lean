@@ -3,6 +3,7 @@
 
 import LeanFpAnalysis.FP.Algorithms.RecursiveSum
 import LeanFpAnalysis.FP.Algorithms.PairwiseSum
+import LeanFpAnalysis.FP.Algorithms.SumTree
 import LeanFpAnalysis.FP.Algorithms.DotProduct
 import LeanFpAnalysis.FP.Algorithms.OuterProduct
 import LeanFpAnalysis.FP.Algorithms.MatVec
