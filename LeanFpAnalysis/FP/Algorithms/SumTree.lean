@@ -58,7 +58,7 @@ def numAdds : SumTree n → ℕ
   | .node l r => l.numAdds + r.numAdds + 1
 
 /-- Every `SumTree n` has `n ≥ 1`. -/
-lemma n_pos : ∀ (t : SumTree n), 0 < n := by
+lemma n_pos : ∀ (_ : SumTree n), 0 < n := by
   intro t; induction t with
   | leaf => norm_num
   | node _ _ ihl ihr => omega
@@ -122,7 +122,7 @@ lemma eval_cast {m n : ℕ} (h : m = n) (fp : FPModel) (t : SumTree m) (v : Fin 
     `gamma_mul`, giving per-summand error `ηL + δ + ηL·δ` bounded by
     `γ(l.depth + 1) ≤ γ(depth (node l r))`. -/
 theorem backward_error (fp : FPModel) {n : ℕ} (t : SumTree n) :
-    ∀ (ht : gammaValid fp t.depth) (v : Fin n → ℝ), ∃ η : Fin n → ℝ,
+    ∀ (_ : gammaValid fp t.depth) (v : Fin n → ℝ), ∃ η : Fin n → ℝ,
       (∀ i, |η i| ≤ gamma fp t.depth) ∧
       t.eval fp v = ∑ i : Fin n, v i * (1 + η i) := by
   induction t with
