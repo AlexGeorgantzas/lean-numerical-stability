@@ -27,32 +27,40 @@ open scoped BigOperators
 noncomputable def fl_recursiveSum (fp : FPModel) (n : ℕ) (v : Fin n → ℝ) : ℝ :=
   Fin.foldl n (fun acc i => fp.fl_add acc (v i)) 0
 
-/-- **Recursive summation backward error** (Higham §4.2).
+/-- **Recursive summation backward error** (Higham §4.2, eq. 4.4).
 
     The computed recursive sum satisfies:
       `fl_recursiveSum fp n v = ∑ i, v i * (1 + θ i)`
-    where each `|θ i| ≤ γ(n)`.
+    where each `|θ i| ≤ γ(n - 1)`.
 
     Backward result: the computed sum is the *exact* sum of perturbed
-    inputs `vᵢ * (1 + θᵢ)`.  This is a named wrapper around `fl_sum_error`. -/
+    inputs `vᵢ * (1 + θᵢ)`.  The bound γ(n-1) is tight: no number xᵢ
+    participates in more than n - 1 additions (Higham §4.2).  The first
+    step `fl_add 0 (v 0) = v 0` is exact by `fl_add_zero`, leaving only
+    n - 1 rounding steps; this is captured via `fl_sum_error_tight`. -/
 theorem recursiveSum_backward_error (fp : FPModel) (n : ℕ) (v : Fin n → ℝ)
-    (hn : gammaValid fp n) :
+    (hn : gammaValid fp (n - 1)) :
     ∃ θ : Fin n → ℝ,
-      (∀ i, |θ i| ≤ gamma fp n) ∧
-      fl_recursiveSum fp n v = ∑ i : Fin n, v i * (1 + θ i) :=
-  fl_sum_error fp n v hn
+      (∀ i, |θ i| ≤ gamma fp (n - 1)) ∧
+      fl_recursiveSum fp n v = ∑ i : Fin n, v i * (1 + θ i) := by
+  rcases Nat.eq_zero_or_pos n with rfl | hpos
+  · exact ⟨Fin.elim0, fun i => i.elim0, by simp [fl_recursiveSum]⟩
+  · exact fl_sum_error_tight fp n hpos v hn
 
 /-- **Recursive summation forward error bound** (Higham §4.2, equation 4.4).
 
     The absolute error of recursive summation satisfies:
-      `|fl_recursiveSum fp n v - ∑ i, v i| ≤ γ(n) * ∑ i, |v i|`
+      `|fl_recursiveSum fp n v - ∑ i, v i| ≤ γ(n - 1) * ∑ i, |v i|`
+
+    This matches Higham's eq. (4.4) exactly: the constant is n - 1, not n,
+    because the initial `fl_add 0 (v 0)` is exact (see `recursiveSum_backward_error`).
 
     Proof: from the backward form `∑ vᵢ(1+θᵢ)`, the error equals
-    `∑ vᵢθᵢ`; triangle inequality + `|θᵢ| ≤ γ(n)` close the bound. -/
+    `∑ vᵢθᵢ`; triangle inequality + `|θᵢ| ≤ γ(n-1)` close the bound. -/
 theorem recursiveSum_forward_error_bound (fp : FPModel) (n : ℕ) (v : Fin n → ℝ)
-    (hn : gammaValid fp n) :
+    (hn : gammaValid fp (n - 1)) :
     |fl_recursiveSum fp n v - ∑ i : Fin n, v i| ≤
-      gamma fp n * ∑ i : Fin n, |v i| := by
+      gamma fp (n - 1) * ∑ i : Fin n, |v i| := by
   obtain ⟨θ, hθ, hfold⟩ := recursiveSum_backward_error fp n v hn
   have herr : fl_recursiveSum fp n v - ∑ i : Fin n, v i =
       ∑ i : Fin n, v i * θ i := by
@@ -63,10 +71,10 @@ theorem recursiveSum_forward_error_bound (fp : FPModel) (n : ℕ) (v : Fin n →
       ≤ ∑ i : Fin n, |v i * θ i| := Finset.abs_sum_le_sum_abs _ _
     _ = ∑ i : Fin n, |v i| * |θ i| := by
           apply Finset.sum_congr rfl; intro i _; rw [abs_mul]
-    _ ≤ ∑ i : Fin n, |v i| * gamma fp n :=
+    _ ≤ ∑ i : Fin n, |v i| * gamma fp (n - 1) :=
           Finset.sum_le_sum fun i _ =>
             mul_le_mul_of_nonneg_left (hθ i) (abs_nonneg _)
-    _ = gamma fp n * ∑ i : Fin n, |v i| := by
+    _ = gamma fp (n - 1) * ∑ i : Fin n, |v i| := by
           rw [← Finset.sum_mul, mul_comm]
 
 -- ============================================================

@@ -159,4 +159,46 @@ lemma fl_sum_error_init (fp : FPModel) (n : ℕ) (v : Fin n → ℝ) (s : ℝ)
       rw [hsum_rw]
       ring
 
+/-- **Tight summation error** (Higham §4.2, eq. 4.4 exact constant).
+
+    For n ≥ 1 values, recursive summation starting from 0 satisfies:
+      `fl_sum fp n v = ∑ i, v i * (1 + θ i)`
+    where each `|θ i| ≤ γ(n - 1)`.
+
+    This matches Higham's backward error bound γ(n-1), tighter than the
+    γ(n) from `fl_sum_error`.  The improvement comes from `fl_add_zero`:
+    the first step `fl_add 0 (v 0) = v 0` is exact, reducing the effective
+    number of rounding steps from n to n - 1.
+
+    Proof: peel the first step via `Fin.foldl_succ`; apply `fl_add_zero`
+    to show it is exact; then apply `fl_sum_error_init` for the remaining
+    `n - 1` additions. -/
+lemma fl_sum_error_tight (fp : FPModel) (n : ℕ) (hn : 0 < n) (v : Fin n → ℝ)
+    (hval : gammaValid fp (n - 1)) :
+    ∃ θ : Fin n → ℝ,
+      (∀ i, |θ i| ≤ gamma fp (n - 1)) ∧
+      Fin.foldl n (fun acc i => fp.fl_add acc (v i)) 0 =
+        ∑ i : Fin n, v i * (1 + θ i) := by
+  -- Write n = m + 1
+  obtain ⟨m, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (Nat.pos_iff_ne_zero.mp hn)
+  simp only [Nat.succ_sub_one] at hval
+  -- Peel the first addition: foldl (m+1) f 0 = foldl m f' (f 0 0)
+  have hpeel : Fin.foldl (m + 1) (fun acc i => fp.fl_add acc (v i)) 0 =
+      Fin.foldl m (fun acc i => fp.fl_add acc (v i.succ)) (fp.fl_add 0 (v 0)) :=
+    Fin.foldl_succ _ _
+  -- The first step is exact by fl_add_zero
+  rw [hpeel, fp.fl_add_zero]
+  -- Apply fl_sum_error_init for the remaining m steps
+  obtain ⟨Θ, θ, hΘ, hθ, hfold⟩ :=
+    fl_sum_error_init fp m (fun i => v i.succ) (v 0) hval
+  rw [hfold]
+  -- Build η : Fin (m+1) → ℝ via Fin.cons: η 0 = Θ, η i.succ = θ i
+  refine ⟨Fin.cons Θ θ, ?_, ?_⟩
+  · intro i
+    refine Fin.cases ?_ ?_ i
+    · simp only [Fin.cons_zero]; exact hΘ
+    · intro j; simp only [Fin.cons_succ]; exact hθ j
+  · rw [Fin.sum_univ_succ]
+    simp only [Fin.cons_zero, Fin.cons_succ]
+
 end LeanFpAnalysis.FP

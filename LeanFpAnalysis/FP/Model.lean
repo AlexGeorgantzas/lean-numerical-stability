@@ -20,6 +20,10 @@ structure FPModel where
   fl_mul : ℝ → ℝ → ℝ
   fl_div : ℝ → ℝ → ℝ
 
+  /-- Adding 0 is exact: fl(0 + x) = x.  This holds in IEEE 754 because
+      0 + x = x exactly, so no rounding error arises. -/
+  fl_add_zero : ∀ x : ℝ, fl_add 0 x = x
+
   model_add :
     ∀ x y, ∃ δ : ℝ,
       |δ| ≤ u ∧
