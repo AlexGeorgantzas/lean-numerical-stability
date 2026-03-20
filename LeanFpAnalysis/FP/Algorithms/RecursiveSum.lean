@@ -47,6 +47,23 @@ theorem recursiveSum_backward_error (fp : FPModel) (n : ℕ) (v : Fin n → ℝ)
   · exact ⟨Fin.elim0, fun i => i.elim0, by simp [fl_recursiveSum]⟩
   · exact fl_sum_error_tight fp n hpos v hn
 
+/-- **Exact error decomposition** (Higham §4.2, eq. 4.2 — per-input form).
+
+    Given backward error witnesses `θ` certifying
+      `fl_recursiveSum fp n v = ∑ i, v i * (1 + θ i)`,
+    the absolute error decomposes as:
+      `fl_recursiveSum fp n v - ∑ i, v i = ∑ i, v i * θ i`
+
+    This is the per-input counterpart of Higham's eq. (4.2), which writes the
+    error as a sum of local contributions `δᵢ T̂ᵢ`.  It is the stepping stone
+    from the backward error representation to the forward bound (4.4). -/
+lemma recursiveSum_error_decomp (fp : FPModel) (n : ℕ) (v : Fin n → ℝ)
+    (θ : Fin n → ℝ)
+    (hfl : fl_recursiveSum fp n v = ∑ i : Fin n, v i * (1 + θ i)) :
+    fl_recursiveSum fp n v - ∑ i : Fin n, v i = ∑ i : Fin n, v i * θ i := by
+  rw [hfl, ← Finset.sum_sub_distrib]
+  apply Finset.sum_congr rfl; intro i _; ring
+
 /-- **Recursive summation forward error bound** (Higham §4.2, equation 4.4).
 
     The absolute error of recursive summation satisfies:
@@ -55,18 +72,14 @@ theorem recursiveSum_backward_error (fp : FPModel) (n : ℕ) (v : Fin n → ℝ)
     This matches Higham's eq. (4.4) exactly: the constant is n - 1, not n,
     because the initial `fl_add 0 (v 0)` is exact (see `recursiveSum_backward_error`).
 
-    Proof: from the backward form `∑ vᵢ(1+θᵢ)`, the error equals
-    `∑ vᵢθᵢ`; triangle inequality + `|θᵢ| ≤ γ(n-1)` close the bound. -/
+    Proof: from the backward form `∑ vᵢ(1+θᵢ)`, apply `recursiveSum_error_decomp`
+    to get the error equals `∑ vᵢθᵢ`; triangle inequality + `|θᵢ| ≤ γ(n-1)` close. -/
 theorem recursiveSum_forward_error_bound (fp : FPModel) (n : ℕ) (v : Fin n → ℝ)
     (hn : gammaValid fp (n - 1)) :
     |fl_recursiveSum fp n v - ∑ i : Fin n, v i| ≤
       gamma fp (n - 1) * ∑ i : Fin n, |v i| := by
   obtain ⟨θ, hθ, hfold⟩ := recursiveSum_backward_error fp n v hn
-  have herr : fl_recursiveSum fp n v - ∑ i : Fin n, v i =
-      ∑ i : Fin n, v i * θ i := by
-    rw [hfold, ← Finset.sum_sub_distrib]
-    apply Finset.sum_congr rfl; intro i _; ring
-  rw [herr]
+  rw [recursiveSum_error_decomp fp n v θ hfold]
   calc |∑ i : Fin n, v i * θ i|
       ≤ ∑ i : Fin n, |v i * θ i| := Finset.abs_sum_le_sum_abs _ _
     _ = ∑ i : Fin n, |v i| * |θ i| := by
