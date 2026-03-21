@@ -301,6 +301,128 @@ theorem unitUpperTri_inv_entry_bound (n : ℕ) (V V_inv : Fin n → Fin n → �
   linarith
 
 -- ============================================================
+-- Row-sum bound for inverse of unit upper triangular matrix
+-- ============================================================
+
+/-- Left-inverse recurrence: for j > i,
+    ∑_{k: i≤k<j} U_inv_ik * U_kj + U_inv_ij * U_jj = 0. -/
+theorem inv_left_recurrence (n : ℕ) (U U_inv : Fin n → Fin n → ℝ)
+    (hUT : ∀ i j : Fin n, j.val < i.val → U i j = 0)
+    (_hU_diag : ∀ i : Fin n, U i i ≠ 0)
+    (hLInv : IsLeftInverse n U U_inv)
+    (hInv_ut : ∀ i j : Fin n, j.val < i.val → U_inv i j = 0) :
+    ∀ i j : Fin n, i.val < j.val →
+      ∑ k ∈ Finset.univ.filter (fun k : Fin n => i.val ≤ k.val ∧ k.val < j.val),
+        U_inv i k * U k j +
+      U_inv i j * U j j = 0 := by
+  intro i j hij
+  have hL := hLInv i j
+  simp [show i ≠ j from Fin.ne_of_val_ne (by omega)] at hL
+  rw [← Finset.add_sum_erase _ _ (Finset.mem_univ j)] at hL
+  have hrest : ∑ k ∈ Finset.univ.erase j, U_inv i k * U k j =
+      ∑ k ∈ Finset.univ.filter (fun k : Fin n => i.val ≤ k.val ∧ k.val < j.val),
+        U_inv i k * U k j := by
+    symm; apply Finset.sum_subset
+    · intro k hk
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hk
+      exact Finset.mem_erase.mpr ⟨Fin.ne_of_val_ne (by omega), Finset.mem_univ _⟩
+    · intro k hk hknot
+      rw [Finset.mem_erase] at hk
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hknot
+      push_neg at hknot
+      by_cases hlt : k.val < i.val
+      · rw [hInv_ut i k hlt, zero_mul]
+      · push_neg at hlt
+        rw [hUT k j (by omega), mul_zero]
+  rw [hrest] at hL; linarith
+
+/-- Row-sum bound: ∑_{k: i≤k≤j} |V_inv_ik| ≤ 2^(j-i) for unit upper triangular V
+    with |V_ij| ≤ 1. Uses left-inverse recurrence and the double-S trick. -/
+private theorem inv_row_sum_bound (n : ℕ) (V V_inv : Fin n → Fin n → ℝ)
+    (hVT : ∀ i j : Fin n, j.val < i.val → V i j = 0)
+    (hV_unit : ∀ i : Fin n, V i i = 1)
+    (hV_bound : ∀ i j : Fin n, i.val < j.val → |V i j| ≤ 1)
+    (hLInv : IsLeftInverse n V V_inv)
+    (hInv_ut : ∀ i j : Fin n, j.val < i.val → V_inv i j = 0)
+    (hInv_diag : ∀ i : Fin n, V_inv i i = 1) :
+    ∀ (d : ℕ), ∀ (i j : Fin n), j.val - i.val = d → i.val ≤ j.val →
+      ∑ k ∈ Finset.univ.filter (fun k : Fin n => i.val ≤ k.val ∧ k.val ≤ j.val),
+        |V_inv i k| ≤ 2 ^ d := by
+  intro d
+  induction d with
+  | zero =>
+    intro i j hdiff hij
+    have heq : i = j := Fin.ext (by omega)
+    subst heq
+    have : Finset.univ.filter (fun k : Fin n => i.val ≤ k.val ∧ k.val ≤ i.val) = {i} := by
+      ext k; simp [Finset.mem_filter, Finset.mem_singleton]
+      constructor
+      · intro ⟨h1, h2⟩; exact Fin.ext (by omega)
+      · intro h; subst h; exact ⟨le_refl _, le_refl _⟩
+    rw [this, Finset.sum_singleton, hInv_diag, abs_one]; norm_num
+  | succ d' ih =>
+    intro i j hdiff hij
+    by_cases heq : i.val = j.val
+    · omega
+    · have hij' : i.val < j.val := by omega
+      -- Split off k = j from the sum
+      have hj_mem : j ∈ Finset.univ.filter
+          (fun k : Fin n => i.val ≤ k.val ∧ k.val ≤ j.val) := by
+        simp [Finset.mem_filter]; omega
+      rw [← Finset.add_sum_erase _ _ hj_mem]
+      -- The remaining sum is R(i, j-1)
+      have hfilt_eq : (Finset.univ.filter
+            (fun k : Fin n => i.val ≤ k.val ∧ k.val ≤ j.val)).erase j =
+          Finset.univ.filter (fun k : Fin n => i.val ≤ k.val ∧ k.val < j.val) := by
+        ext k; simp only [Finset.mem_erase, Finset.mem_filter, Finset.mem_univ, true_and]
+        constructor
+        · intro ⟨hne, h1, h2⟩; exact ⟨h1, by omega⟩
+        · intro ⟨h1, h2⟩; exact ⟨Fin.ne_of_val_ne (by omega), h1, by omega⟩
+      rw [hfilt_eq]
+      -- The left recurrence gives |V_inv i j| ≤ ∑_{k: i≤k<j} |V_inv_ik|
+      have hrec := inv_left_recurrence n V V_inv hVT
+        (by intro i; rw [hV_unit]; exact one_ne_zero) hLInv hInv_ut i j hij'
+      rw [hV_unit, mul_one] at hrec
+      have hvinv_eq : V_inv i j = -(∑ k ∈ Finset.univ.filter (fun k : Fin n =>
+          i.val ≤ k.val ∧ k.val < j.val), V_inv i k * V k j) := by linarith
+      have hvinv_bound : |V_inv i j| ≤
+          ∑ k ∈ Finset.univ.filter (fun k : Fin n =>
+            i.val ≤ k.val ∧ k.val < j.val), |V_inv i k| := by
+        rw [hvinv_eq, abs_neg]
+        calc |∑ k ∈ Finset.univ.filter (fun k : Fin n =>
+              i.val ≤ k.val ∧ k.val < j.val), V_inv i k * V k j|
+            ≤ ∑ k ∈ Finset.univ.filter (fun k : Fin n =>
+              i.val ≤ k.val ∧ k.val < j.val), |V_inv i k * V k j| :=
+              Finset.abs_sum_le_sum_abs _ _
+          _ = ∑ k ∈ Finset.univ.filter (fun k : Fin n =>
+              i.val ≤ k.val ∧ k.val < j.val), |V_inv i k| * |V k j| := by
+              apply Finset.sum_congr rfl; intro k _; exact abs_mul _ _
+          _ ≤ ∑ k ∈ Finset.univ.filter (fun k : Fin n =>
+              i.val ≤ k.val ∧ k.val < j.val), |V_inv i k| := by
+              apply Finset.sum_le_sum; intro k hk
+              simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hk
+              have hVkj : |V k j| ≤ 1 := hV_bound k j (by omega)
+              calc |V_inv i k| * |V k j|
+                  ≤ |V_inv i k| * 1 :=
+                    mul_le_mul_of_nonneg_left hVkj (abs_nonneg _)
+                _ = |V_inv i k| := mul_one _
+      -- Apply IH with j' = ⟨j.val - 1, _⟩
+      have hj1_lt : j.val - 1 < n := by omega
+      have hfilt_eq2 : Finset.univ.filter (fun k : Fin n =>
+            i.val ≤ k.val ∧ k.val < j.val) =
+          Finset.univ.filter (fun k : Fin n =>
+            i.val ≤ k.val ∧ k.val ≤ j.val - 1) := by
+        ext k; simp only [Finset.mem_filter, Finset.mem_univ, true_and]; omega
+      rw [hfilt_eq2] at hvinv_bound ⊢
+      have hR : ∑ k ∈ Finset.univ.filter (fun k : Fin n =>
+            i.val ≤ k.val ∧ k.val ≤ j.val - 1), |V_inv i k| ≤ 2 ^ d' := by
+        exact ih i ⟨j.val - 1, hj1_lt⟩ (by simp; omega) (by simp; omega)
+      have : |V_inv i j| + ∑ k ∈ Finset.univ.filter (fun k : Fin n =>
+            i.val ≤ k.val ∧ k.val ≤ j.val - 1), |V_inv i k|
+          ≤ 2 ^ d' + 2 ^ d' := add_le_add (le_trans hvinv_bound hR) hR
+      linarith [show (2 : ℝ) ^ d' + 2 ^ d' = 2 ^ (d' + 1) by ring]
+
+-- ============================================================
 -- Lemma 8.6: diagonal dominance bound on |U⁻¹||U|
 -- ============================================================
 
@@ -310,13 +432,92 @@ theorem unitUpperTri_inv_entry_bound (n : ℕ) (V V_inv : Fin n → Fin n → �
     then W = |U⁻¹||U| satisfies w_ij ≤ 2^(j-i) for all j ≥ i.
 
     Proof: write V = D⁻¹U where D = diag(U_ii). Then V is unit upper triangular
-    with |V_ij| ≤ 1, and |U⁻¹||U| = |V⁻¹||V|. Apply unitUpperTri_inv_entry_bound. -/
+    with |V_ij| ≤ 1, and (|U⁻¹||U|)_ij = (|V⁻¹||V|)_ij ≤ ∑_k |V⁻¹_ik| ≤ 2^(j-i). -/
 theorem lemma_8_6 (n : ℕ) (U U_inv : Fin n → Fin n → ℝ)
     (hDD : IsDiagDominantUpper n U)
     (hInv : IsInverse n U U_inv) :
     ∀ i j : Fin n, i.val ≤ j.val →
       ∑ k : Fin n, |U_inv i k| * |U k j| ≤ 2 ^ (j.val - i.val) := by
-  sorry
+  obtain ⟨hUT, hU_diag, hU_dom⟩ := hDD
+  obtain ⟨hLInv, _hRInv⟩ := hInv
+  have hInv_ut := inv_upper_tri n U U_inv hUT hU_diag hLInv
+  intro i j hij
+  -- Zero out terms outside [i, j]
+  have hsum_reduce : ∑ k : Fin n, |U_inv i k| * |U k j| =
+      ∑ k ∈ Finset.univ.filter (fun k : Fin n => i.val ≤ k.val ∧ k.val ≤ j.val),
+        |U_inv i k| * |U k j| := by
+    symm; apply Finset.sum_subset (Finset.filter_subset _ _)
+    intro k _ hknot
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hknot
+    push_neg at hknot
+    by_cases hlt : k.val < i.val
+    · rw [hInv_ut i k hlt, abs_zero, zero_mul]
+    · push_neg at hlt
+      rw [hUT k j (by omega), abs_zero, mul_zero]
+  rw [hsum_reduce]
+  -- Define V = D⁻¹U: V_ij = U_ij / U_ii
+  -- Key identity: |U_inv_ik| * |U_kj| = |V_inv_ik| * |V_kj|
+  -- where V_inv_ij = U_inv_ij * U_jj
+  -- Proof: |U_inv_ik| * |U_kj| = (|V_inv_ik| / |U_kk|) * (|U_kk| * |V_kj|) = |V_inv_ik| * |V_kj|
+  -- Then: ∑ |V_inv_ik| * |V_kj| ≤ ∑ |V_inv_ik| (since |V_kj| ≤ 1)
+  -- And: ∑ |V_inv_ik| ≤ 2^(j-i) by inv_row_sum_bound
+  --
+  -- We define V and V_inv locally and verify properties.
+  let V : Fin n → Fin n → ℝ := fun a b => U a b / U a a
+  let V_inv : Fin n → Fin n → ℝ := fun a b => U_inv a b * U b b
+  -- V properties
+  have hVT : ∀ a b : Fin n, b.val < a.val → V a b = 0 := by
+    intro a b hab; simp only [V, hUT a b hab, zero_div]
+  have hV_unit : ∀ a : Fin n, V a a = 1 := by
+    intro a; simp only [V]; exact div_self (hU_diag a)
+  have hV_bound : ∀ a b : Fin n, a.val < b.val → |V a b| ≤ 1 := by
+    intro a b hab; simp only [V, abs_div]
+    exact (div_le_one (abs_pos.mpr (hU_diag a))).mpr (hU_dom a b hab)
+  -- V_inv properties
+  have hVinv_ut : ∀ a b : Fin n, b.val < a.val → V_inv a b = 0 := by
+    intro a b hab; simp only [V_inv, hInv_ut a b hab, zero_mul]
+  have hVinv_diag : ∀ a : Fin n, V_inv a a = 1 := by
+    intro a; simp only [V_inv]
+    rw [inv_diag_entry n U U_inv hUT hU_diag hLInv hInv_ut a]
+    field_simp [hU_diag a]
+  -- V_inv is a left inverse of V
+  have hVLInv : IsLeftInverse n V V_inv := by
+    intro a b; simp only [V, V_inv]
+    have h := hLInv a b
+    have hsimp : ∑ k : Fin n, U_inv a k * U k k * (U k b / U k k) =
+        ∑ k : Fin n, U_inv a k * U k b := by
+      apply Finset.sum_congr rfl; intro k _
+      have hk := hU_diag k; field_simp [hk]
+    rw [hsimp]; exact h
+  -- Convert sum: |U_inv_ik| * |U_kj| = |V_inv_ik| * |V_kj|
+  have hconv : ∀ k : Fin n, |U_inv i k| * |U k j| = |V_inv i k| * |V k j| := by
+    intro k
+    simp only [V, V_inv]
+    have hk := hU_diag k
+    rw [show U_inv i k * U k k = U k k * U_inv i k from mul_comm _ _]
+    rw [abs_mul, abs_div]
+    have hkpos : (0 : ℝ) < |U k k| := abs_pos.mpr hk
+    field_simp [ne_of_gt hkpos]
+  calc ∑ k ∈ Finset.univ.filter (fun k : Fin n => i.val ≤ k.val ∧ k.val ≤ j.val),
+        |U_inv i k| * |U k j|
+      = ∑ k ∈ Finset.univ.filter (fun k : Fin n => i.val ≤ k.val ∧ k.val ≤ j.val),
+        |V_inv i k| * |V k j| := by
+        apply Finset.sum_congr rfl; intro k _; exact hconv k
+    _ ≤ ∑ k ∈ Finset.univ.filter (fun k : Fin n => i.val ≤ k.val ∧ k.val ≤ j.val),
+        |V_inv i k| := by
+        apply Finset.sum_le_sum; intro k hk
+        simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hk
+        have hVkj : |V k j| ≤ 1 := by
+          by_cases hkj : k.val < j.val
+          · exact hV_bound k j hkj
+          · have : k = j := Fin.ext (by omega)
+            subst this; rw [hV_unit, abs_one]
+        calc |V_inv i k| * |V k j|
+            ≤ |V_inv i k| * 1 := mul_le_mul_of_nonneg_left hVkj (abs_nonneg _)
+          _ = |V_inv i k| := mul_one _
+    _ ≤ 2 ^ (j.val - i.val) :=
+        inv_row_sum_bound n V V_inv hVT hV_unit hV_bound hVLInv hVinv_ut hVinv_diag
+          (j.val - i.val) i j (by omega) hij
 
 -- ============================================================
 -- Theorem 8.7: componentwise forward error under diagonal dominance
