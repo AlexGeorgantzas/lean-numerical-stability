@@ -9,3 +9,4 @@ import LeanFpAnalysis.FP.Algorithms.OuterProduct
 import LeanFpAnalysis.FP.Algorithms.MatVec
 import LeanFpAnalysis.FP.Algorithms.MatMul
 import LeanFpAnalysis.FP.Algorithms.TriangularSolve
+import LeanFpAnalysis.FP.Algorithms.ForwardSub
