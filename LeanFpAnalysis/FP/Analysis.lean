@@ -6,3 +6,4 @@ import LeanFpAnalysis.FP.Analysis.Rounding
 import LeanFpAnalysis.FP.Analysis.Summation
 import LeanFpAnalysis.FP.Analysis.SubtractionFold
 import LeanFpAnalysis.FP.Analysis.Stability
+import LeanFpAnalysis.FP.Analysis.ForwardError
