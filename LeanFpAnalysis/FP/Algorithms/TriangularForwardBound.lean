@@ -544,6 +544,115 @@ theorem theorem_8_7 (fp : FPModel) (n : ℕ)
         2 ^ (n - i.val) * gamma fp n *
           Finset.sup' (Finset.univ.filter (fun j : Fin n => i.val ≤ j.val))
             ⟨i, by simp [Finset.mem_filter]⟩ (fun j => |x_hat j|) := by
-  sorry
+  intro x_hat
+  have hUT := hDD.1
+  have hU_diag := hDD.2.1
+  have hLInv := hInv.1
+  have hInv_ut := inv_upper_tri n U U_inv hUT hU_diag hLInv
+  have hfwd := backSub_forward_error fp n U U_inv x b hU_diag hUT hLInv hTx hn
+  intro i
+  let M := Finset.sup' (Finset.univ.filter (fun j : Fin n => i.val ≤ j.val))
+    ⟨i, by simp [Finset.mem_filter]⟩ (fun j => |x_hat j|)
+  -- Step 1: Rewrite the double sum via Fubini
+  have hfubini : ∑ j : Fin n, |U_inv i j| * (∑ k : Fin n, |U j k| * |x_hat k|) =
+      ∑ k : Fin n, (∑ j : Fin n, |U_inv i j| * |U j k|) * |x_hat k| := by
+    simp_rw [Finset.mul_sum]
+    rw [Finset.sum_comm]
+    apply Finset.sum_congr rfl; intro k _
+    rw [Finset.sum_mul]
+    apply Finset.sum_congr rfl; intro j _; ring
+  -- Step 2: For k < i, the inner sum W_ik = 0
+  have hW_zero : ∀ k : Fin n, k.val < i.val →
+      ∑ j : Fin n, |U_inv i j| * |U j k| = 0 := by
+    intro k hki
+    apply Finset.sum_eq_zero; intro j _
+    by_cases hjk : k.val < j.val
+    · rw [hUT j k hjk, abs_zero, mul_zero]
+    · push_neg at hjk
+      rw [hInv_ut i j (by omega), abs_zero, zero_mul]
+  -- Step 3: Factor out M from the weighted sum
+  -- ∑_k W_ik * |x̂_k| ≤ M * ∑_k W_ik  (since W_ik ≥ 0 and |x̂_k| ≤ M for k ≥ i)
+  have hfactor : ∑ k : Fin n, (∑ j : Fin n, |U_inv i j| * |U j k|) * |x_hat k| ≤
+      M * ∑ k : Fin n, (∑ j : Fin n, |U_inv i j| * |U j k|) := by
+    rw [Finset.mul_sum]
+    apply Finset.sum_le_sum; intro k _
+    by_cases hki : i.val ≤ k.val
+    · have hW_nn : 0 ≤ ∑ j : Fin n, |U_inv i j| * |U j k| :=
+        Finset.sum_nonneg (fun j _ => mul_nonneg (abs_nonneg _) (abs_nonneg _))
+      have hM : |x_hat k| ≤ M :=
+        Finset.le_sup' (fun j => |x_hat j|)
+          (by simp [Finset.mem_filter]; exact hki)
+      calc (∑ j : Fin n, |U_inv i j| * |U j k|) * |x_hat k|
+          ≤ (∑ j : Fin n, |U_inv i j| * |U j k|) * M :=
+            mul_le_mul_of_nonneg_left hM hW_nn
+        _ = M * (∑ j : Fin n, |U_inv i j| * |U j k|) := by ring
+    · push_neg at hki
+      rw [hW_zero k hki, zero_mul, mul_zero]
+  -- Step 4: Bound ∑_k W_ik ≤ 2^{n-i} using lemma_8_6 + geometric sum
+  -- Helper: geometric sum bound ∑_{r=0}^{m-1} 2^r ≤ 2^m
+  have geom_le : ∀ (m : ℕ), ∑ r ∈ Finset.range m, (2 : ℝ) ^ r ≤ 2 ^ m := by
+    intro m; induction m with
+    | zero => simp
+    | succ m' ihm =>
+      rw [Finset.sum_range_succ]
+      linarith [show (2 : ℝ) ^ m' + 2 ^ m' = 2 ^ (m' + 1) from by ring]
+  have hgeom : ∑ k : Fin n, (∑ j : Fin n, |U_inv i j| * |U j k|) ≤ 2 ^ (n - i.val) := by
+    -- Replace full sum with filtered sum (k < i terms are 0)
+    have hsplit : ∑ k : Fin n, (∑ j : Fin n, |U_inv i j| * |U j k|) =
+        ∑ k ∈ Finset.univ.filter (fun k : Fin n => i.val ≤ k.val),
+          (∑ j : Fin n, |U_inv i j| * |U j k|) := by
+      symm; apply Finset.sum_subset (Finset.filter_subset _ _)
+      intro k _ hk
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and, not_le] at hk
+      exact hW_zero k hk
+    rw [hsplit]
+    -- Bound each term by 2^{k-i} via lemma_8_6
+    have hbound : ∑ k ∈ Finset.univ.filter (fun k : Fin n => i.val ≤ k.val),
+        (∑ j : Fin n, |U_inv i j| * |U j k|) ≤
+        ∑ k ∈ Finset.univ.filter (fun k : Fin n => i.val ≤ k.val),
+          (2 : ℝ) ^ (k.val - i.val) := by
+      apply Finset.sum_le_sum; intro k hk
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hk
+      exact lemma_8_6 n U U_inv hDD hInv i k hk
+    -- Reindex via image: the filtered sum over Fin n maps to a subset of range(n-i)
+    let S := Finset.univ.filter (fun k : Fin n => i.val ≤ k.val)
+    have hinj : ∀ k1 ∈ S, ∀ k2 ∈ S, k1.val - i.val = k2.val - i.val → k1 = k2 := by
+      intro k1 hk1 k2 hk2 heq
+      have hk1' : i.val ≤ k1.val := (Finset.mem_filter.mp hk1).2
+      have hk2' : i.val ≤ k2.val := (Finset.mem_filter.mp hk2).2
+      exact Fin.ext (by omega)
+    have himg_sub : S.image (fun k : Fin n => k.val - i.val) ⊆
+        Finset.range (n - i.val) := by
+      intro r hr
+      rw [Finset.mem_image] at hr
+      obtain ⟨k, hk, rfl⟩ := hr
+      have hk' : i.val ≤ k.val := (Finset.mem_filter.mp hk).2
+      simp only [Finset.mem_range]; omega
+    have hreindex : ∑ k ∈ S, (2 : ℝ) ^ (k.val - i.val) =
+        ∑ r ∈ S.image (fun k : Fin n => k.val - i.val), (2 : ℝ) ^ r := by
+      rw [Finset.sum_image (fun k1 hk1 k2 hk2 heq => hinj k1 hk1 k2 hk2 heq)]
+    rw [hreindex] at hbound
+    calc ∑ k ∈ S, (∑ j : Fin n, |U_inv i j| * |U j k|)
+        ≤ ∑ r ∈ S.image (fun k : Fin n => k.val - i.val), (2 : ℝ) ^ r := hbound
+      _ ≤ ∑ r ∈ Finset.range (n - i.val), (2 : ℝ) ^ r :=
+          Finset.sum_le_sum_of_subset_of_nonneg himg_sub (fun r _ _ => by positivity)
+      _ ≤ 2 ^ (n - i.val) := geom_le (n - i.val)
+  -- M ≥ 0
+  have hM_nn : (0 : ℝ) ≤ M :=
+    le_trans (abs_nonneg (x_hat i))
+      (Finset.le_sup' (fun j => |x_hat j|)
+        (Finset.mem_filter.mpr ⟨Finset.mem_univ i, le_refl i.val⟩))
+  -- Combine everything
+  calc |x i - x_hat i|
+      ≤ gamma fp n * ∑ j : Fin n, |U_inv i j| *
+          (∑ k : Fin n, |U j k| * |x_hat k|) := hfwd i
+    _ = gamma fp n * ∑ k : Fin n, (∑ j : Fin n, |U_inv i j| * |U j k|) *
+          |x_hat k| := by rw [hfubini]
+    _ ≤ gamma fp n * (M * ∑ k : Fin n, (∑ j : Fin n, |U_inv i j| * |U j k|)) :=
+        mul_le_mul_of_nonneg_left hfactor (gamma_nonneg fp hn)
+    _ ≤ gamma fp n * (M * 2 ^ (n - i.val)) :=
+        mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left hgeom hM_nn)
+          (gamma_nonneg fp hn)
+    _ = 2 ^ (n - i.val) * gamma fp n * M := by ring
 
 end LeanFpAnalysis.FP
