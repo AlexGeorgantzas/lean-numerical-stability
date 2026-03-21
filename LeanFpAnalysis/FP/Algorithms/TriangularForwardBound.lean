@@ -433,7 +433,7 @@ theorem inv_row_sum_bound (n : ℕ) (V V_inv : Fin n → Fin n → ℝ)
 
     Proof: write V = D⁻¹U where D = diag(U_ii). Then V is unit upper triangular
     with |V_ij| ≤ 1, and (|U⁻¹||U|)_ij = (|V⁻¹||V|)_ij ≤ ∑_k |V⁻¹_ik| ≤ 2^(j-i). -/
-theorem lemma_8_6 (n : ℕ) (U U_inv : Fin n → Fin n → ℝ)
+theorem inv_abs_mul_bound_diagDom (n : ℕ) (U U_inv : Fin n → Fin n → ℝ)
     (hDD : IsDiagDominantUpper n U)
     (hInv : IsInverse n U U_inv) :
     ∀ i j : Fin n, i.val ≤ j.val →
@@ -531,7 +531,7 @@ theorem lemma_8_6 (n : ℕ) (U U_inv : Fin n → Fin n → ℝ)
 
     This bound shows that later components of x are always computed to high
     accuracy relative to the elements already computed. -/
-theorem theorem_8_7 (fp : FPModel) (n : ℕ)
+theorem backSub_forward_error_diagDom (fp : FPModel) (n : ℕ)
     (U U_inv : Fin n → Fin n → ℝ)
     (x b : Fin n → ℝ)
     (hDD : IsDiagDominantUpper n U)
@@ -588,7 +588,7 @@ theorem theorem_8_7 (fp : FPModel) (n : ℕ)
         _ = M * (∑ j : Fin n, |U_inv i j| * |U j k|) := by ring
     · push_neg at hki
       rw [hW_zero k hki, zero_mul, mul_zero]
-  -- Step 4: Bound ∑_k W_ik ≤ 2^{n-i} using lemma_8_6 + geometric sum
+  -- Step 4: Bound ∑_k W_ik ≤ 2^{n-i} using inv_abs_mul_bound_diagDom + geometric sum
   -- Helper: geometric sum bound ∑_{r=0}^{m-1} 2^r ≤ 2^m
   have geom_le : ∀ (m : ℕ), ∑ r ∈ Finset.range m, (2 : ℝ) ^ r ≤ 2 ^ m := by
     intro m; induction m with
@@ -606,14 +606,14 @@ theorem theorem_8_7 (fp : FPModel) (n : ℕ)
       simp only [Finset.mem_filter, Finset.mem_univ, true_and, not_le] at hk
       exact hW_zero k hk
     rw [hsplit]
-    -- Bound each term by 2^{k-i} via lemma_8_6
+    -- Bound each term by 2^{k-i} via inv_abs_mul_bound_diagDom
     have hbound : ∑ k ∈ Finset.univ.filter (fun k : Fin n => i.val ≤ k.val),
         (∑ j : Fin n, |U_inv i j| * |U j k|) ≤
         ∑ k ∈ Finset.univ.filter (fun k : Fin n => i.val ≤ k.val),
           (2 : ℝ) ^ (k.val - i.val) := by
       apply Finset.sum_le_sum; intro k hk
       simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hk
-      exact lemma_8_6 n U U_inv hDD hInv i k hk
+      exact inv_abs_mul_bound_diagDom n U U_inv hDD hInv i k hk
     -- Reindex via image: the filtered sum over Fin n maps to a subset of range(n-i)
     let S := Finset.univ.filter (fun k : Fin n => i.val ≤ k.val)
     have hinj : ∀ k1 ∈ S, ∀ k2 ∈ S, k1.val - i.val = k2.val - i.val → k1 = k2 := by

@@ -279,7 +279,7 @@ theorem inv_row_sum_upper (n : ℕ) (U U_inv : Fin n → Fin n → ℝ)
   obtain ⟨hLInv, _hRInv⟩ := hInv
   have hInv_ut := inv_upper_tri n U U_inv hUT hU_diag hLInv
   intro i
-  -- Define V = D⁻¹U, V_inv = U_inv * D (same factoring as lemma_8_6)
+  -- Define V = D⁻¹U, V_inv = U_inv * D (same factoring as inv_abs_mul_bound_diagDom)
   let V : Fin n → Fin n → ℝ := fun a b => U a b / U a a
   let V_inv : Fin n → Fin n → ℝ := fun a b => U_inv a b * U b b
   -- V properties
@@ -360,5 +360,292 @@ theorem inv_row_sum_upper (n : ℕ) (U U_inv : Fin n → Fin n → ℝ)
     _ ≤ (1 / α) * 2 ^ (n - 1 - i.val) :=
         mul_le_mul_of_nonneg_left hV_sum (by positivity)
     _ = 2 ^ (n - 1 - i.val) * (1 / α) := by ring
+
+-- ============================================================
+-- Lower triangular inverse infrastructure
+-- ============================================================
+
+/-- The left inverse of a lower triangular matrix is lower triangular.
+
+    Proof by downward strong induction on j: for j > i, the left inverse equation
+    ∑_k L_inv_ik * L_kj = 0 reduces to L_inv_ij * L_jj = 0
+    because for k < j, L_kj = 0 (lower triangularity of L), and for k > j,
+    L_inv_ik = 0 by the induction hypothesis (since i < j < k). -/
+theorem inv_lower_tri (n : ℕ) (L L_inv : Fin n → Fin n → ℝ)
+    (hLT : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hL_diag : ∀ i : Fin n, L i i ≠ 0)
+    (hInv : IsLeftInverse n L L_inv) :
+    ∀ i j : Fin n, i.val < j.val → L_inv i j = 0 := by
+  -- Downward induction: prove for large j first using strong induction on (n - jv)
+  suffices ∀ (d : ℕ), ∀ (jv : ℕ) (hjv : jv < n), n - jv ≤ d →
+      ∀ i : Fin n, i.val < jv → L_inv i ⟨jv, hjv⟩ = 0 by
+    intro i j hij; exact this (n - j.val) j.val j.isLt (le_refl _) i hij
+  intro d
+  induction d with
+  | zero =>
+    intro jv hjv hd i hi
+    omega
+  | succ d' ih =>
+    intro jv hjv hd i hi
+    let j : Fin n := ⟨jv, hjv⟩
+    have hij : i ≠ j := Fin.ne_of_val_ne (by simp [j]; omega)
+    have h := hInv i j
+    simp [hij] at h
+    have : L_inv i j * L j j = 0 := by
+      suffices ∑ k : Fin n, L_inv i k * L k j = L_inv i j * L j j by linarith
+      rw [← Finset.add_sum_erase _ _ (Finset.mem_univ j)]
+      suffices ∑ k ∈ Finset.univ.erase j, L_inv i k * L k j = 0 by linarith
+      apply Finset.sum_eq_zero; intro k hk
+      have hk_ne := Finset.ne_of_mem_erase hk
+      by_cases hklt : k.val < jv
+      · -- k < j: L_kj = 0 by lower triangularity
+        rw [hLT k j (by simp [j]; exact hklt), mul_zero]
+      · -- k > j: L_inv_ik = 0 by IH (i < j < k, and n - k < n - j)
+        push_neg at hklt
+        have hkgt : jv < k.val := by
+          by_contra hc; push_neg at hc
+          exact hk_ne (Fin.ext (by simp [j]; omega))
+        rw [ih k.val k.isLt (by omega) i (by omega), zero_mul]
+    exact (mul_eq_zero.mp this).elim id (fun h => absurd h (hL_diag _))
+
+/-- Diagonal entries of the inverse of a lower triangular matrix: (L_inv)_ii = 1 / L_ii. -/
+theorem inv_diag_entry_lower (n : ℕ) (L L_inv : Fin n → Fin n → ℝ)
+    (hLT : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hL_diag : ∀ i : Fin n, L i i ≠ 0)
+    (hInv : IsLeftInverse n L L_inv)
+    (hInv_lt : ∀ i j : Fin n, i.val < j.val → L_inv i j = 0) :
+    ∀ i : Fin n, L_inv i i = 1 / L i i := by
+  intro i
+  have h := hInv i i
+  simp at h
+  have honly : ∑ k : Fin n, L_inv i k * L k i = L_inv i i * L i i := by
+    rw [← Finset.add_sum_erase _ _ (Finset.mem_univ i)]
+    suffices ∑ k ∈ Finset.univ.erase i, L_inv i k * L k i = 0 by linarith
+    apply Finset.sum_eq_zero; intro k hk
+    have hki := Finset.ne_of_mem_erase hk
+    by_cases hlt : i.val < k.val
+    · rw [hInv_lt i k hlt, zero_mul]
+    · push_neg at hlt
+      rw [hLT k i (by omega), mul_zero]
+  rw [honly] at h
+  have hmul : L_inv i i * L i i = 1 := h
+  have hne := hL_diag i
+  field_simp [hne]
+  linarith
+
+/-- Recursive formula for off-diagonal entries of the inverse of a lower triangular
+    matrix (right inverse form).
+    For j < i: L_ii * L_inv_ij = -∑_{k: j ≤ k < i} L_ik * L_inv_kj. -/
+theorem inv_recurrence_lower (n : ℕ) (L L_inv : Fin n → Fin n → ℝ)
+    (hLT : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (_hL_diag : ∀ i : Fin n, L i i ≠ 0)
+    (hRInv : IsRightInverse n L L_inv)
+    (hInv_lt : ∀ i j : Fin n, i.val < j.val → L_inv i j = 0) :
+    ∀ i j : Fin n, j.val < i.val →
+      L i i * L_inv i j +
+      ∑ k ∈ Finset.univ.filter (fun k : Fin n => j.val ≤ k.val ∧ k.val < i.val),
+        L i k * L_inv k j = 0 := by
+  intro i j hij
+  have hR := hRInv i j
+  simp [show i ≠ j from Fin.ne_of_val_ne (by omega)] at hR
+  rw [← Finset.add_sum_erase _ _ (Finset.mem_univ i)] at hR
+  have hrest : ∑ k ∈ Finset.univ.erase i, L i k * L_inv k j =
+      ∑ k ∈ Finset.univ.filter (fun k : Fin n => j.val ≤ k.val ∧ k.val < i.val),
+        L i k * L_inv k j := by
+    symm; apply Finset.sum_subset
+    · intro k hk
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hk
+      exact Finset.mem_erase.mpr ⟨Fin.ne_of_val_ne (by omega), Finset.mem_univ _⟩
+    · intro k hk hknot
+      rw [Finset.mem_erase] at hk
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hknot
+      push_neg at hknot
+      by_cases hlt : i.val ≤ k.val
+      · rw [hLT i k (by omega), zero_mul]
+      · push_neg at hlt
+        rw [hInv_lt k j (by omega), mul_zero]
+  rw [hrest] at hR; linarith
+
+-- ============================================================
+-- M-matrix inverse nonnegativity (lower triangular)
+-- ============================================================
+
+/-- The inverse of a lower triangular M-matrix has nonneg entries.
+
+    Proof: by induction on i - j using the right-inverse recurrence.
+    For i > j: L_ii * L_inv_ij = -∑ L_ik * L_inv_kj.
+    Since L_ik ≤ 0 (off-diagonal, k < i) and L_inv_kj ≥ 0 (IH), the sum ≤ 0,
+    so L_ii * L_inv_ij ≥ 0. With L_ii > 0, L_inv_ij ≥ 0. -/
+theorem lower_tri_mmatrix_inv_nonneg (n : ℕ) (T T_inv : Fin n → Fin n → ℝ)
+    (hLT : ∀ i j : Fin n, i.val < j.val → T i j = 0)
+    (hT_diag_pos : ∀ i : Fin n, 0 < T i i)
+    (hT_offdiag : ∀ i j : Fin n, j.val < i.val → T i j ≤ 0)
+    (hRInv : IsRightInverse n T T_inv)
+    (hInv_lt : ∀ i j : Fin n, i.val < j.val → T_inv i j = 0) :
+    ∀ i j : Fin n, 0 ≤ T_inv i j := by
+  suffices h : ∀ (d : ℕ), ∀ i j : Fin n, i.val - j.val ≤ d → j.val ≤ i.val →
+      0 ≤ T_inv i j from
+    fun i j => by
+      by_cases hij : j.val ≤ i.val
+      · exact h (i.val - j.val) i j (le_refl _) hij
+      · push_neg at hij; rw [hInv_lt i j (by omega)]
+  intro d
+  induction d with
+  | zero =>
+    intro i j hdiff hij
+    have heq : i = j := Fin.ext (by omega)
+    subst heq
+    have hR := hRInv i i; simp at hR
+    have hdiag : T i i * T_inv i i = 1 := by
+      rw [← Finset.add_sum_erase _ _ (Finset.mem_univ i)] at hR
+      suffices ∑ k ∈ Finset.univ.erase i, T i k * T_inv k i = 0 by linarith
+      apply Finset.sum_eq_zero; intro k hk
+      have hki : k ≠ i := Finset.ne_of_mem_erase hk
+      by_cases hlt : i.val < k.val
+      · rw [hLT i k hlt, zero_mul]
+      · rw [hInv_lt k i (by omega), mul_zero]
+    have : 0 < T_inv i i := by
+      by_contra hc; push_neg at hc
+      linarith [mul_nonpos_of_nonneg_of_nonpos (le_of_lt (hT_diag_pos i)) hc]
+    linarith
+  | succ d' ih =>
+    intro i j hdiff hij
+    by_cases heq : i.val = j.val
+    · exact ih i j (by omega) (by omega)
+    · have hij' : j.val < i.val := by omega
+      have hrec := inv_recurrence_lower n T T_inv hLT (fun k => ne_of_gt (hT_diag_pos k))
+        hRInv hInv_lt i j hij'
+      have hsum_neg : ∑ k ∈ Finset.univ.filter
+          (fun k : Fin n => j.val ≤ k.val ∧ k.val < i.val),
+          T i k * T_inv k j ≤ 0 := by
+        apply Finset.sum_nonpos; intro k hk
+        simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hk
+        exact mul_nonpos_of_nonpos_of_nonneg (hT_offdiag i k (by omega))
+          (ih k j (by omega) (by omega))
+      have h_prod_nn : 0 ≤ T i i * T_inv i j := by linarith
+      have h1 : 0 ≤ T i i * T_inv i j / T i i :=
+        div_nonneg h_prod_nn (le_of_lt (hT_diag_pos i))
+      rwa [mul_div_cancel_left₀ (T_inv i j) (ne_of_gt (hT_diag_pos i))] at h1
+
+-- ============================================================
+-- |L⁻¹| ≤ M(L)⁻¹ for lower triangular matrices
+-- ============================================================
+
+/-- **Theorem 8.11, first inequality, lower triangular** (Higham §8.3).
+
+    For a nonsingular lower triangular L with inverse L_inv, and M_inv the
+    inverse of M(L), we have |L_inv_ij| ≤ M_inv_ij componentwise. -/
+theorem abs_inv_le_compMatrix_inv_lower (n : ℕ) (L L_inv M_inv : Fin n → Fin n → ℝ)
+    (hLT : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hL_diag : ∀ i : Fin n, L i i ≠ 0)
+    (hInv : IsInverse n L L_inv)
+    (hM_RInv : IsRightInverse n (comparisonMatrix n L) M_inv)
+    (hM_inv_lt : ∀ i j : Fin n, i.val < j.val → M_inv i j = 0) :
+    ∀ i j : Fin n, |L_inv i j| ≤ M_inv i j := by
+  have hInv_lt := inv_lower_tri n L L_inv hLT hL_diag hInv.1
+  -- M(L) is a lower triangular M-matrix
+  have hM_diag_pos : ∀ i : Fin n, 0 < comparisonMatrix n L i i := by
+    intro i; simp [comparisonMatrix]; exact hL_diag i
+  have hM_offdiag : ∀ i j : Fin n, j.val < i.val → comparisonMatrix n L i j ≤ 0 := by
+    intro i j _; simp [comparisonMatrix, show i ≠ j from Fin.ne_of_val_ne (by omega)]
+  have hM_lt : ∀ i j : Fin n, i.val < j.val → comparisonMatrix n L i j = 0 := by
+    intro i j hij; unfold comparisonMatrix
+    simp [show i ≠ j from Fin.ne_of_val_ne (by omega), hLT i j hij]
+  have hM_nn := lower_tri_mmatrix_inv_nonneg n (comparisonMatrix n L) M_inv
+    hM_lt hM_diag_pos hM_offdiag hM_RInv hM_inv_lt
+  -- Prove |L_inv_ij| ≤ M_inv_ij by induction on i - j
+  suffices h : ∀ (d : ℕ), ∀ i j : Fin n, i.val - j.val ≤ d → j.val ≤ i.val →
+      |L_inv i j| ≤ M_inv i j from
+    fun i j => by
+      by_cases hij : j.val ≤ i.val
+      · exact h (i.val - j.val) i j (le_refl _) hij
+      · push_neg at hij
+        rw [hInv_lt i j (by omega), hM_inv_lt i j (by omega), abs_zero]
+  intro d
+  induction d with
+  | zero =>
+    intro i j hdiff hij
+    have heq : i = j := Fin.ext (by omega)
+    subst heq
+    rw [inv_diag_entry_lower n L L_inv hLT hL_diag hInv.1 hInv_lt, abs_div, abs_one]
+    -- M_inv_ii = 1/|L_ii| from right inverse equation
+    have hMR := hM_RInv i i; simp at hMR
+    have hM_diag : comparisonMatrix n L i i * M_inv i i = 1 := by
+      rw [← Finset.add_sum_erase _ _ (Finset.mem_univ i)] at hMR
+      suffices ∑ k ∈ Finset.univ.erase i, comparisonMatrix n L i k * M_inv k i = 0 by
+        linarith
+      apply Finset.sum_eq_zero; intro k hk
+      have hki : k ≠ i := Finset.ne_of_mem_erase hk
+      by_cases hlt : i.val < k.val
+      · rw [hM_lt i k hlt, zero_mul]
+      · rw [hM_inv_lt k i (by omega), mul_zero]
+    simp [comparisonMatrix] at hM_diag
+    have : M_inv i i = 1 / |L i i| := by
+      field_simp [ne_of_gt (abs_pos.mpr (hL_diag i))]; linarith
+    rw [this]
+  | succ d' ih =>
+    intro i j hdiff hij
+    by_cases heq : i.val = j.val
+    · exact ih i j (by omega) (by omega)
+    · have hij' : j.val < i.val := by omega
+      -- Recurrence for L_inv
+      have hrec_L := inv_recurrence_lower n L L_inv hLT hL_diag hInv.2 hInv_lt i j hij'
+      -- Recurrence for M(L)_inv
+      have hrec_M := inv_recurrence_lower n (comparisonMatrix n L) M_inv hM_lt
+        (fun k => ne_of_gt (hM_diag_pos k)) hM_RInv hM_inv_lt i j hij'
+      have hLii_pos : 0 < |L i i| := abs_pos.mpr (hL_diag i)
+      have hLii_ne : L i i ≠ 0 := hL_diag i
+      -- |L_inv_ij| = |∑...| / |L_ii|
+      have hL_prod : L i i * L_inv i j =
+          -(∑ k ∈ Finset.univ.filter (fun k : Fin n => j.val ≤ k.val ∧ k.val < i.val),
+            L i k * L_inv k j) := by linarith
+      have habs_eq : |L_inv i j| =
+          |∑ k ∈ Finset.univ.filter (fun k : Fin n => j.val ≤ k.val ∧ k.val < i.val),
+            L i k * L_inv k j| / |L i i| := by
+        have h1 : L_inv i j = -(∑ k ∈ Finset.univ.filter
+            (fun k : Fin n => j.val ≤ k.val ∧ k.val < i.val),
+            L i k * L_inv k j) / L i i := by
+          field_simp [hLii_ne]; linarith
+        rw [h1, abs_div, abs_neg]
+      -- comparisonMatrix n L i i = |L i i|
+      have hM_ii : comparisonMatrix n L i i = |L i i| := by simp [comparisonMatrix]
+      -- For j < k < i: comparisonMatrix n L i k = -|L i k|
+      have hM_ik : ∀ k : Fin n, k.val < i.val →
+          comparisonMatrix n L i k = -|L i k| := by
+        intro k hik; unfold comparisonMatrix
+        simp [show i ≠ k from Fin.ne_of_val_ne (by omega)]
+      -- From M recurrence: |L_ii| * M_inv_ij = ∑ |L_ik| * M_inv_kj
+      have hM_prod : |L i i| * M_inv i j =
+          ∑ k ∈ Finset.univ.filter (fun k : Fin n => j.val ≤ k.val ∧ k.val < i.val),
+            |L i k| * M_inv k j := by
+        have hsum_rw : ∑ k ∈ Finset.univ.filter
+            (fun k : Fin n => j.val ≤ k.val ∧ k.val < i.val),
+            comparisonMatrix n L i k * M_inv k j =
+            -(∑ k ∈ Finset.univ.filter
+            (fun k : Fin n => j.val ≤ k.val ∧ k.val < i.val),
+            |L i k| * M_inv k j) := by
+          rw [← Finset.sum_neg_distrib]
+          apply Finset.sum_congr rfl; intro k hk
+          simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hk
+          rw [hM_ik k hk.2]; ring
+        rw [hM_ii] at hrec_M; rw [hsum_rw] at hrec_M; linarith
+      -- Main calc chain
+      calc |L_inv i j|
+          = |∑ k ∈ Finset.univ.filter (fun k : Fin n => j.val ≤ k.val ∧ k.val < i.val),
+              L i k * L_inv k j| / |L i i| := habs_eq
+        _ ≤ (∑ k ∈ Finset.univ.filter (fun k : Fin n => j.val ≤ k.val ∧ k.val < i.val),
+              |L i k * L_inv k j|) / |L i i| :=
+            div_le_div_of_nonneg_right (Finset.abs_sum_le_sum_abs _ _) (le_of_lt hLii_pos)
+        _ = (∑ k ∈ Finset.univ.filter (fun k : Fin n => j.val ≤ k.val ∧ k.val < i.val),
+              |L i k| * |L_inv k j|) / |L i i| := by
+            congr 1; apply Finset.sum_congr rfl; intro k _; exact abs_mul _ _
+        _ ≤ (∑ k ∈ Finset.univ.filter (fun k : Fin n => j.val ≤ k.val ∧ k.val < i.val),
+              |L i k| * M_inv k j) / |L i i| := by
+            apply div_le_div_of_nonneg_right _ (le_of_lt hLii_pos)
+            apply Finset.sum_le_sum; intro k hk
+            simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hk
+            exact mul_le_mul_of_nonneg_left (ih k j (by omega) (by omega)) (abs_nonneg _)
+        _ = M_inv i j := by
+            rw [← hM_prod]; field_simp [ne_of_gt hLii_pos]
 
 end LeanFpAnalysis.FP

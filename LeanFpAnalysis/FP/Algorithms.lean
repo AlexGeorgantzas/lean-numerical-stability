@@ -13,3 +13,5 @@ import LeanFpAnalysis.FP.Algorithms.ForwardSub
 import LeanFpAnalysis.FP.Algorithms.TriangularSolveCombined
 import LeanFpAnalysis.FP.Algorithms.TriangularForwardBound
 import LeanFpAnalysis.FP.Algorithms.InverseBounds
+import LeanFpAnalysis.FP.Algorithms.TriangularForwardComparison
+import LeanFpAnalysis.FP.Algorithms.MMatrix
