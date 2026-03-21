@@ -153,7 +153,7 @@ theorem inv_recurrence (n : ℕ) (U U_inv : Fin n → Fin n → ℝ)
     the inverse of a unit upper triangular matrix with |V_ij| ≤ 1.
     Proved by the "double S" trick: S(i,j) = ∑_{k: i≤k≤j} |V_inv k j| ≤ 2^d.
     Then |V_inv i j| ≤ S(i+1,j) ≤ 2^{d-1}. -/
-private theorem inv_sum_bound (n : ℕ) (V V_inv : Fin n → Fin n → ℝ)
+theorem inv_sum_bound (n : ℕ) (V V_inv : Fin n → Fin n → ℝ)
     (hVT : ∀ i j : Fin n, j.val < i.val → V i j = 0)
     (hV_unit : ∀ i : Fin n, V i i = 1)
     (hV_bound : ∀ i j : Fin n, i.val < j.val → |V i j| ≤ 1)
@@ -338,7 +338,7 @@ theorem inv_left_recurrence (n : ℕ) (U U_inv : Fin n → Fin n → ℝ)
 
 /-- Row-sum bound: ∑_{k: i≤k≤j} |V_inv_ik| ≤ 2^(j-i) for unit upper triangular V
     with |V_ij| ≤ 1. Uses left-inverse recurrence and the double-S trick. -/
-private theorem inv_row_sum_bound (n : ℕ) (V V_inv : Fin n → Fin n → ℝ)
+theorem inv_row_sum_bound (n : ℕ) (V V_inv : Fin n → Fin n → ℝ)
     (hVT : ∀ i j : Fin n, j.val < i.val → V i j = 0)
     (hV_unit : ∀ i : Fin n, V i i = 1)
     (hV_bound : ∀ i j : Fin n, i.val < j.val → |V i j| ≤ 1)
