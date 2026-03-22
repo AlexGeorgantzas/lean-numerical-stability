@@ -193,4 +193,89 @@ theorem mmatrix_forwardSub_nonneg_and_bound (fp : FPModel) (n : ℕ)
         congr 1; apply Finset.sum_congr rfl; intro k _
         rw [abs_of_nonneg (hx_hat_nn k)]
 
+-- ============================================================
+-- Full Corollary 8.10: M-matrix forward error with direct bound
+-- ============================================================
+
+/-- **Full Corollary 8.10** (Higham §8.2, pp. 158–159).
+
+    For a lower triangular M-matrix L with b ≥ 0, the computed solution
+    from forward substitution satisfies:
+      |x_i - x̂_i| ≤ μ_i · |x_i|
+
+    where μ_k = (1+γ(n+1))^k · (1+u) − 1 ≤ (n²+n+1)u + O(u²).
+
+    This shows that every component of the solution is computed to high
+    relative accuracy when T is an M-matrix and b ≥ 0, irrespective of
+    the condition number κ(T).
+
+    Proof: From Theorem 8.9, |x_i - x̂_i| ≤ μ_i · (M(L)⁻¹|b|)_i.
+    For M-matrices: M(L) = L, so M(L)⁻¹ = L⁻¹.
+    Since L⁻¹ ≥ 0 and b ≥ 0, M(L)⁻¹|b| = L⁻¹b = x ≥ 0 = |x|. -/
+theorem mmatrix_forward_error_direct (fp : FPModel) (n : ℕ)
+    (L L_inv : Fin n → Fin n → ℝ)
+    (x b : Fin n → ℝ)
+    (hLT : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hL_diag_pos : ∀ i : Fin n, 0 < L i i)
+    (hL_offdiag : ∀ i j : Fin n, j.val < i.val → L i j ≤ 0)
+    (hInv : IsInverse n L L_inv)
+    (hTx : ∀ i, ∑ j : Fin n, L i j * x j = b i)
+    (hb : ∀ i, 0 ≤ b i)
+    (hn : gammaValid fp n)
+    (hn1 : gammaValid fp (n + 1))
+    (h2n : gammaValid fp (2 * n)) :
+    let x_hat := fl_forwardSub fp n L b
+    (∀ i, 0 ≤ x i) ∧
+    (∀ i, 0 ≤ x_hat i) ∧
+    (∀ i, |x i - x_hat i| ≤ mu fp n i.val * |x i|) := by
+  intro x_hat
+  have hL_diag : ∀ i, L i i ≠ 0 := fun i => ne_of_gt (hL_diag_pos i)
+  -- Part 1: exact solution nonneg
+  have hx_nn : ∀ i, 0 ≤ x i :=
+    lower_tri_mmatrix_solution_nonneg n L x b hLT hL_diag_pos hL_offdiag hTx hb
+  -- Part 2: computed solution nonneg
+  have hx_hat_nn : ∀ i, 0 ≤ x_hat i :=
+    forwardSub_nonneg fp n L b hLT hL_diag_pos hL_offdiag hb hn h2n
+  -- M(L) = L for M-matrices
+  have hML := comparisonMatrix_eq_self_mmatrix_lower n L hLT hL_diag_pos hL_offdiag
+  -- L_inv is lower triangular
+  have hInv_lt := inv_lower_tri n L L_inv hLT hL_diag hInv.1
+  -- L_inv is a right inverse of M(L) = L
+  have hM_RInv : IsRightInverse n (comparisonMatrix n L) L_inv := by
+    rw [hML]; exact hInv.2
+  -- Part 3: Apply Theorem 8.9
+  have h89 := forwardSub_forward_error_direct fp n L L_inv L_inv x b
+    hL_diag hLT hInv hM_RInv hInv_lt hTx hn hn1
+  refine ⟨hx_nn, hx_hat_nn, ?_⟩
+  -- Show y_i = |x_i| for M-matrices with b ≥ 0
+  -- y_i = Σ_j L_inv i j * |b_j| = Σ_j L_inv i j * b_j = x_i = |x_i|
+  intro i
+  have h89i := h89 i
+  -- y_i = Σ_j L_inv i j * |b_j|
+  -- Since b ≥ 0: |b_j| = b_j
+  have hb_abs : ∀ j : Fin n, |b j| = b j := fun j => abs_of_nonneg (hb j)
+  -- So y_i = Σ_j L_inv i j * b_j
+  have hy_eq_sum : (∑ j : Fin n, L_inv i j * |b j|) = ∑ j : Fin n, L_inv i j * b j := by
+    apply Finset.sum_congr rfl; intro j _; rw [hb_abs]
+  -- x_i = Σ_j L_inv i j * b_j (from L_inv * L * x = x and Lx = b)
+  have hx_eq : x i = ∑ j : Fin n, L_inv i j * b j := by
+    have hLI := hInv.1 i
+    have : ∑ j : Fin n, L_inv i j * b j =
+        ∑ j : Fin n, L_inv i j * (∑ k : Fin n, L j k * x k) := by
+      congr 1; funext j; rw [hTx j]
+    rw [this]
+    simp_rw [Finset.mul_sum]
+    rw [Finset.sum_comm]
+    simp_rw [← mul_assoc, ← Finset.sum_mul]
+    have hsimp : ∀ k : Fin n,
+        (∑ j : Fin n, L_inv i j * L j k) * x k = (if i = k then 1 else 0) * x k := by
+      intro k; congr 1; exact hLI k
+    simp_rw [hsimp]; simp [Finset.mem_univ]
+  -- y_i = x_i = |x_i| (since x ≥ 0)
+  have hy_eq : (∑ j : Fin n, L_inv i j * |b j|) = |x i| := by
+    rw [hy_eq_sum, ← hx_eq, abs_of_nonneg (hx_nn i)]
+  dsimp only at h89i
+  rw [hy_eq] at h89i
+  exact h89i
+
 end LeanFpAnalysis.FP
