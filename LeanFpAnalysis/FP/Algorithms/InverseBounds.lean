@@ -241,7 +241,7 @@ theorem abs_inv_le_compMatrix_inv (n : ℕ) (U U_inv M_inv : Fin n → Fin n →
     satisfies ∑_j |U_inv i j| ≥ 1/|U_ii|.
 
     In particular, max_i ∑_j |U_inv_ij| ≥ 1/min_k |U_kk|. -/
-theorem inv_row_sum_lower (n : ℕ) (U U_inv : Fin n → Fin n → ℝ)
+theorem triInv_row_sum_lowerBound (n : ℕ) (U U_inv : Fin n → Fin n → ℝ)
     (hUT : ∀ i j : Fin n, j.val < i.val → U i j = 0)
     (hU_diag : ∀ i : Fin n, U i i ≠ 0)
     (hInv : IsInverse n U U_inv) :
@@ -269,7 +269,7 @@ theorem inv_row_sum_lower (n : ℕ) (U U_inv : Fin n → Fin n → ℝ)
     triangular with |V_ij| ≤ 1, and |U_inv_ij| = |V_inv_ij| / |U_jj|.
     So ∑_j |U_inv_ij| ≤ (1/min_k |U_kk|) · ∑_j |V_inv_ij|
        ≤ (1/min_k |U_kk|) · 2^{n-1-i}   by inv_row_sum_bound. -/
-theorem inv_row_sum_upper (n : ℕ) (U U_inv : Fin n → Fin n → ℝ)
+theorem triInv_row_sum_upperBound (n : ℕ) (U U_inv : Fin n → Fin n → ℝ)
     (hDD : IsDiagDominantUpper n U)
     (hInv : IsInverse n U U_inv) :
     ∀ i : Fin n, ∑ j : Fin n, |U_inv i j| ≤
@@ -535,7 +535,7 @@ theorem lower_tri_mmatrix_inv_nonneg (n : ℕ) (T T_inv : Fin n → Fin n → �
 
     For a nonsingular lower triangular L with inverse L_inv, and M_inv the
     inverse of M(L), we have |L_inv_ij| ≤ M_inv_ij componentwise. -/
-theorem abs_inv_le_compMatrix_inv_lower (n : ℕ) (L L_inv M_inv : Fin n → Fin n → ℝ)
+theorem abs_inv_le_compMatrix_inv_lowerTri (n : ℕ) (L L_inv M_inv : Fin n → Fin n → ℝ)
     (hLT : ∀ i j : Fin n, i.val < j.val → L i j = 0)
     (hL_diag : ∀ i : Fin n, L i i ≠ 0)
     (hInv : IsInverse n L L_inv)

@@ -52,7 +52,7 @@ theorem forwardSub_forward_error_comparison (fp : FPModel) (n : ℕ)
       gamma fp n * ∑ j : Fin n, M_inv i j * (∑ k : Fin n, |L j k| * |x_hat k|) := by
   intro x_hat
   have hfwd := forwardSub_forward_error fp n L L_inv x b hL hLT hInv.1 hTx hn
-  have habs_bound := abs_inv_le_compMatrix_inv_lower n L L_inv M_inv hLT hL hInv
+  have habs_bound := abs_inv_le_compMatrix_inv_lowerTri n L L_inv M_inv hLT hL hInv
     hM_RInv hM_inv_lt
   -- M_inv has nonneg entries (M-matrix inverse)
   have hM_nn := lower_tri_mmatrix_inv_nonneg n (comparisonMatrix n L) M_inv
@@ -159,7 +159,7 @@ lemma exact_solution_le_comp_inv_abs_b (n : ℕ)
     (hM_inv_lt : ∀ i j : Fin n, i.val < j.val → M_inv i j = 0)
     (hTx : ∀ i, ∑ j : Fin n, L i j * x j = b i) :
     ∀ i, |x i| ≤ ∑ j : Fin n, M_inv i j * |b j| := by
-  have habs := abs_inv_le_compMatrix_inv_lower n L L_inv M_inv hLT hL_diag hInv
+  have habs := abs_inv_le_compMatrix_inv_lowerTri n L L_inv M_inv hLT hL_diag hInv
     hM_RInv hM_inv_lt
   intro i
   -- x = L_inv * b, so x_i = Σ L_inv_ij * b_j
@@ -194,9 +194,9 @@ lemma exact_solution_le_comp_inv_abs_b (n : ℕ)
 lemma compMatrix_inv_row_eq (n : ℕ)
     (L M_inv : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
     (hLT : ∀ i j : Fin n, i.val < j.val → L i j = 0)
-    (hL_diag : ∀ i : Fin n, L i i ≠ 0)
+    (_hL_diag : ∀ i : Fin n, L i i ≠ 0)
     (hM_RInv : IsRightInverse n (comparisonMatrix n L) M_inv)
-    (hM_inv_lt : ∀ i j : Fin n, i.val < j.val → M_inv i j = 0)
+    (_hM_inv_lt : ∀ i j : Fin n, i.val < j.val → M_inv i j = 0)
     (i : Fin n) :
     let y := fun i => ∑ j : Fin n, M_inv i j * |b j|
     |L i i| * y i = |b i| +
@@ -214,7 +214,7 @@ lemma compMatrix_inv_row_eq (n : ℕ)
     rw [Finset.sum_comm]
     simp_rw [← mul_assoc, ← Finset.sum_mul]
     conv_rhs => rw [show |b i'| = ∑ j : Fin n, (if i' = j then 1 else 0) * |b j| by
-      simp [Finset.sum_ite_eq']]
+      simp [Finset.mem_univ]]
     apply Finset.sum_congr rfl; intro j _
     congr 1; exact hM_RInv i' j
   have hrow := hMy i
@@ -261,7 +261,7 @@ set_option maxHeartbeats 800000
 
     This bound involves |b| (not |L||x̂|) and gives the tighter coefficient
     μ_n ≤ (n²+n+1)u + O(u²) when expanded. -/
-theorem forwardSub_forward_error_direct (fp : FPModel) (n : ℕ)
+theorem forwardSub_forward_error_mu_bound (fp : FPModel) (n : ℕ)
     (L L_inv M_inv : Fin n → Fin n → ℝ)
     (x b : Fin n → ℝ)
     (hL_diag : ∀ i : Fin n, L i i ≠ 0)

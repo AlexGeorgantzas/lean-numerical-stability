@@ -152,7 +152,7 @@ theorem forwardSub_nonneg (fp : FPModel) (n : ℕ)
 
     Note: Higham's full Corollary 8.10 gives the tighter bound
     |x - x̂| ≤ ((n²+n+1)u + O(u²))|x| via a direct recurrence proof. -/
-theorem mmatrix_forwardSub_nonneg_and_bound (fp : FPModel) (n : ℕ)
+theorem mmatrix_forwardSub_componentwise_bound (fp : FPModel) (n : ℕ)
     (L L_inv : Fin n → Fin n → ℝ)
     (x b : Fin n → ℝ)
     (hLT : ∀ i j : Fin n, i.val < j.val → L i j = 0)
@@ -212,7 +212,7 @@ theorem mmatrix_forwardSub_nonneg_and_bound (fp : FPModel) (n : ℕ)
     Proof: From Theorem 8.9, |x_i - x̂_i| ≤ μ_i · (M(L)⁻¹|b|)_i.
     For M-matrices: M(L) = L, so M(L)⁻¹ = L⁻¹.
     Since L⁻¹ ≥ 0 and b ≥ 0, M(L)⁻¹|b| = L⁻¹b = x ≥ 0 = |x|. -/
-theorem mmatrix_forward_error_direct (fp : FPModel) (n : ℕ)
+theorem mmatrix_forwardSub_relative_error (fp : FPModel) (n : ℕ)
     (L L_inv : Fin n → Fin n → ℝ)
     (x b : Fin n → ℝ)
     (hLT : ∀ i j : Fin n, i.val < j.val → L i j = 0)
@@ -244,7 +244,7 @@ theorem mmatrix_forward_error_direct (fp : FPModel) (n : ℕ)
   have hM_RInv : IsRightInverse n (comparisonMatrix n L) L_inv := by
     rw [hML]; exact hInv.2
   -- Part 3: Apply Theorem 8.9
-  have h89 := forwardSub_forward_error_direct fp n L L_inv L_inv x b
+  have h89 := forwardSub_forward_error_mu_bound fp n L L_inv L_inv x b
     hL_diag hLT hInv hM_RInv hInv_lt hTx hn hn1
   refine ⟨hx_nn, hx_hat_nn, ?_⟩
   -- Show y_i = |x_i| for M-matrices with b ≥ 0

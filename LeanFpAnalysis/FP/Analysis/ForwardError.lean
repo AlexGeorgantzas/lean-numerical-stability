@@ -43,6 +43,14 @@ noncomputable def absMatrix (n : ℕ) (A : Fin n → Fin n → ℝ) :
 def IsLeftInverse (n : ℕ) (T T_inv : Fin n → Fin n → ℝ) : Prop :=
   ∀ i j : Fin n, ∑ k : Fin n, T_inv i k * T k j = if i = j then 1 else 0
 
+/-- T_inv is a right inverse of T: T * T_inv = I. -/
+def IsRightInverse (n : ℕ) (T T_inv : Fin n → Fin n → ℝ) : Prop :=
+  ∀ i j : Fin n, ∑ k : Fin n, T i k * T_inv k j = if i = j then 1 else 0
+
+/-- Full inverse: both left and right inverse. -/
+def IsInverse (n : ℕ) (T T_inv : Fin n → Fin n → ℝ) : Prop :=
+  IsLeftInverse n T T_inv ∧ IsRightInverse n T T_inv
+
 -- ============================================================
 -- Forward error from backward error (Higham §8.2, top)
 -- ============================================================

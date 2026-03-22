@@ -22,14 +22,6 @@ open scoped BigOperators
 -- Definitions
 -- ============================================================
 
-/-- T_inv is a right inverse of T: T * T_inv = I. -/
-def IsRightInverse (n : ℕ) (T T_inv : Fin n → Fin n → ℝ) : Prop :=
-  ∀ i j : Fin n, ∑ k : Fin n, T i k * T_inv k j = if i = j then 1 else 0
-
-/-- Full inverse: both left and right inverse. -/
-def IsInverse (n : ℕ) (T T_inv : Fin n → Fin n → ℝ) : Prop :=
-  IsLeftInverse n T T_inv ∧ IsRightInverse n T T_inv
-
 /-- Upper triangular with diagonal dominance:
     |U_ii| ≥ |U_ij| for all j > i (Higham condition (8.4)). -/
 def IsDiagDominantUpper (n : ℕ) (U : Fin n → Fin n → ℝ) : Prop :=
