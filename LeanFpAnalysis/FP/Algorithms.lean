@@ -15,3 +15,10 @@ import LeanFpAnalysis.FP.Algorithms.TriangularForwardBound
 import LeanFpAnalysis.FP.Algorithms.InverseBounds
 import LeanFpAnalysis.FP.Algorithms.TriangularForwardComparison
 import LeanFpAnalysis.FP.Algorithms.MMatrix
+import LeanFpAnalysis.FP.Algorithms.LU.GaussianElimination
+import LeanFpAnalysis.FP.Algorithms.LU.LUSolve
+import LeanFpAnalysis.FP.Algorithms.LU.GrowthFactor
+import LeanFpAnalysis.FP.Algorithms.LU.Tridiagonal
+import LeanFpAnalysis.FP.Algorithms.LU.TridiagonalRecurrence
+import LeanFpAnalysis.FP.Algorithms.LU.SpecialMatrices
+import LeanFpAnalysis.FP.Algorithms.LU.Doolittle

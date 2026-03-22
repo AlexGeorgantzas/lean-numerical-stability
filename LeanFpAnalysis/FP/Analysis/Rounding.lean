@@ -458,4 +458,31 @@ lemma gamma_prod_le (fp : FPModel) (j k : ℕ) (hjk : j ≤ k)
       ≤ gamma fp j * 1 := mul_le_mul_of_nonneg_left (le_of_lt hγk_lt) hγj
     _ = gamma fp j     := mul_one _
 
+/-- **γ absorption rule**: 3γ(n) + γ(n)² ≤ γ(3n).
+
+    This allows the LU solve backward error coefficient 3γ(n) + γ(n)²
+    (from Theorem 9.4) to be absorbed into the cleaner γ(3n) bound.
+
+    Proof: apply `gamma_sum_le` twice:
+      3γ + γ² = (γ + γ + γ²) + γ ≤ γ(2n) + γ(n) ≤ γ(2n) + γ(n) + γ(2n)γ(n) ≤ γ(3n). -/
+lemma three_gamma_plus_sq_le_gamma (fp : FPModel) (n : ℕ)
+    (hval : gammaValid fp (3 * n)) :
+    3 * gamma fp n + gamma fp n ^ 2 ≤ gamma fp (3 * n) := by
+  have hval_nn : gammaValid fp (n + n) :=
+    gammaValid_mono fp (by omega) hval
+  have h1 : gamma fp n + gamma fp n + gamma fp n * gamma fp n ≤ gamma fp (n + n) :=
+    gamma_sum_le fp n n hval_nn
+  have h2 : gamma fp (n + n) + gamma fp n + gamma fp (n + n) * gamma fp n ≤
+      gamma fp (n + n + n) :=
+    gamma_sum_le fp (n + n) n (by rwa [show n + n + n = 3 * n from by omega])
+  have hγ_nn : 0 ≤ gamma fp (n + n) := gamma_nonneg fp hval_nn
+  have hγ_n : 0 ≤ gamma fp n := gamma_nonneg fp (gammaValid_mono fp (by omega) hval)
+  calc 3 * gamma fp n + gamma fp n ^ 2
+      = (gamma fp n + gamma fp n + gamma fp n * gamma fp n) + gamma fp n := by ring
+    _ ≤ gamma fp (n + n) + gamma fp n := by linarith
+    _ ≤ gamma fp (n + n) + gamma fp n + gamma fp (n + n) * gamma fp n := by
+        linarith [mul_nonneg hγ_nn hγ_n]
+    _ ≤ gamma fp (n + n + n) := h2
+    _ = gamma fp (3 * n) := by congr 1; omega
+
 end LeanFpAnalysis.FP
