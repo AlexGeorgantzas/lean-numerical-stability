@@ -14,6 +14,7 @@ import Mathlib.Data.Real.Basic
 import Mathlib.Data.Real.Sqrt
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
+import Mathlib.Algebra.BigOperators.Field
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import LeanFpAnalysis.FP.Model
@@ -101,59 +102,51 @@ private lemma schur_pd {m : ℕ} {A : Fin (m + 1) → Fin (m + 1) → ℝ}
   have hsym : ∀ i : Fin m, A i.succ 0 = A 0 i.succ := fun i => hSPD.1 i.succ 0
   have ht' : ∑ i : Fin m, y i * A 0 i.succ = t := by
     show ∑ i, y i * A 0 i.succ = ∑ j, A 0 j.succ * y j; congr 1; ext i; ring
-  -- We show (y^T S y) * A₀₀ = (x^T A x) * A₀₀, then cancel A₀₀ > 0.
-  suffices hmul :
-      (∑ i : Fin m, ∑ j : Fin m, y i *
-        (A i.succ j.succ - A 0 i.succ * A 0 j.succ / A 0 0) * y j) * A 0 0 =
-      (∑ i : Fin (m + 1), ∑ j : Fin (m + 1), x i * A i j * x j) * A 0 0 by
-    have heq := mul_right_cancel₀ ha_ne hmul; linarith
-  -- Both sides equal Q * A₀₀ - t².
-  -- LHS * A₀₀ = Q * A₀₀ - t²
-  have lhs_mul : (∑ i : Fin m, ∑ j : Fin m, y i *
-      (A i.succ j.succ - A 0 i.succ * A 0 j.succ / A 0 0) * y j) * A 0 0 =
-      Q * A 0 0 - t * t := by
-    rw [Finset.sum_mul]; simp_rw [Finset.sum_mul]
-    simp_rw [show ∀ (i j : Fin m),
-        y i * (A i.succ j.succ - A 0 i.succ * A 0 j.succ / A 0 0) * y j * A 0 0 =
-        y i * A i.succ j.succ * y j * A 0 0 -
-        (y i * A 0 i.succ) * (A 0 j.succ * y j)
-        from fun i j => by field_simp; ring]
+  -- We show y^T S y = x^T A x, then use x^T A x > 0.
+  suffices heq :
+      ∑ i : Fin m, ∑ j : Fin m, y i *
+        (A i.succ j.succ - A 0 i.succ * A 0 j.succ / A 0 0) * y j =
+      ∑ i : Fin (m + 1), ∑ j : Fin (m + 1), x i * A i j * x j by linarith
+  -- Both sides equal Q - t²/A₀₀.
+  -- LHS = Q - t²/A₀₀
+  have lhs_eq : ∑ i : Fin m, ∑ j : Fin m, y i *
+      (A i.succ j.succ - A 0 i.succ * A 0 j.succ / A 0 0) * y j =
+      Q - t * t / A 0 0 := by
+    simp_rw [show ∀ (i j : Fin m), y i *
+        (A i.succ j.succ - A 0 i.succ * A 0 j.succ / A 0 0) * y j =
+        y i * A i.succ j.succ * y j -
+        (y i * A 0 i.succ) * (A 0 j.succ * y j) / A 0 0
+        from fun i j => by ring]
     simp_rw [Finset.sum_sub_distrib]
     congr 1
-    · -- ∑ᵢ ∑ⱼ yᵢ A_{i+1,j+1} yⱼ * A₀₀ = Q * A₀₀
-      simp_rw [show ∀ (i j : Fin m), y i * A i.succ j.succ * y j * A 0 0 =
-          A 0 0 * (y i * A i.succ j.succ * y j) from fun i j => by ring,
-        ← Finset.mul_sum]; ring
-    · -- ∑ᵢ ∑ⱼ (yᵢ aᵢ)(aⱼ yⱼ) = t²
-      simp_rw [← Finset.mul_sum, ← Finset.sum_mul, ht']
-  -- RHS * A₀₀ = Q * A₀₀ - t²
-  have rhs_mul : (∑ i : Fin (m + 1), ∑ j : Fin (m + 1), x i * A i j * x j) * A 0 0 =
-      Q * A 0 0 - t * t := by
-    rw [Finset.sum_mul]; simp_rw [Finset.sum_mul]
-    rw [Fin.sum_univ_succ]; simp only [x, Fin.cons_zero, Fin.cons_succ]
-    simp_rw [Fin.sum_univ_succ]; simp only [Fin.cons_zero, Fin.cons_succ, hsym]
-    -- Clear fractions in scalar terms
-    have h1 : (-t / A 0 0) * A 0 0 * (-t / A 0 0) * A 0 0 = t * t := by
-      field_simp; ring
-    simp_rw [show ∀ j : Fin m, (-t / A 0 0) * A 0 j.succ * y j * A 0 0 =
-        (-t) * (A 0 j.succ * y j) from fun j => by field_simp; ring]
-    simp_rw [show ∀ i : Fin m, y i * A 0 i.succ * (-t / A 0 0) * A 0 0 =
-        (-t) * (y i * A 0 i.succ) from fun i => by field_simp; ring]
-    rw [h1]
-    -- Factor single sums
-    have sum_j : ∑ j : Fin m, (-t) * (A 0 j.succ * y j) = -(t * t) := by
-      rw [← Finset.mul_sum]; ring
-    rw [sum_j]
-    -- Split the combined sum ∑ᵢ (cross_i + Q_row_i)
+    -- Factor /A₀₀ out of double sum, then factor product of sums
+    simp_rw [← Finset.sum_div]
+    congr 1
+    simp_rw [← Finset.mul_sum]
+    simp_rw [← Finset.sum_mul]
+    rw [ht']
+  -- RHS = Q - t²/A₀₀
+  have rhs_eq : ∑ i : Fin (m + 1), ∑ j : Fin (m + 1), x i * A i j * x j =
+      Q - t * t / A 0 0 := by
+    rw [Fin.sum_univ_succ]
+    simp only [x, Fin.cons_zero, Fin.cons_succ]
+    rw [Fin.sum_univ_succ]
+    simp only [Fin.cons_zero, Fin.cons_succ]
+    -- Factor the j-sum for i=0
+    simp_rw [show ∀ j : Fin m, (-t / A 0 0) * A 0 j.succ * y j =
+        (-t / A 0 0) * (A 0 j.succ * y j) from fun j => by ring]
+    rw [← Finset.mul_sum]
+    -- Expand inner sums for i = succ
+    simp_rw [Fin.sum_univ_succ]
+    simp only [Fin.cons_zero, Fin.cons_succ, hsym]
+    -- Split ∑ᵢ (cross_i + Q_row_i)
     simp_rw [Finset.sum_add_distrib]
-    have sum_i : ∑ i : Fin m, (-t) * (y i * A 0 i.succ) = -(t * t) := by
-      rw [← Finset.mul_sum, ht']; ring
-    rw [sum_i]
-    -- Factor the double sum
-    simp_rw [show ∀ (i j : Fin m), y i * A i.succ j.succ * y j * A 0 0 =
-        A 0 0 * (y i * A i.succ j.succ * y j) from fun i j => by ring,
-      ← Finset.mul_sum]; ring
-  rw [lhs_mul, rhs_mul]
+    -- Factor ∑ᵢ yᵢ A₀,i+1 (-t/A₀₀) = t * (-t/A₀₀)
+    rw [← Finset.sum_mul, ht']
+    -- Now: scalar expression + Q = Q - t²/A₀₀
+    field_simp; ring
+  -- Conclude
+  rw [lhs_eq, rhs_eq]
 
 /-- **Cholesky existence** (Higham §10.1, Theorem 10.1).
 
