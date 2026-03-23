@@ -1,47 +1,78 @@
-# lean-fp-analysis
+# LeanFpAnalysis
 
-A Lean 4 library for formally verifying the floating-point error analysis of numerical algorithms, following Higham's *Accuracy and Stability of Numerical Algorithms*.
+A Lean 4 library for formally verified floating-point error analysis, following Higham's *Accuracy and Stability of Numerical Algorithms* (2nd ed., SIAM, 2002).
 
-## Goal
+All results are machine-checked with **zero sorry statements**. Proofs use tight constants matching Higham exactly (e.g., γ(n) not γ(n+1) for the dot product bound).
 
-Automatically prove backward and forward stability bounds for standard linear algebra algorithms in finite-precision arithmetic — using Lean's type system and Mathlib as the mathematical foundation.
+## Floating-point model
 
-## Model
-
-The library is built on a Higham-style axiomatic floating-point model ([`FP/Model.lean`](LeanFpAnalysis/FP/Model.lean)). Every arithmetic operation satisfies:
+The library uses an axiomatic floating-point model ([`FP/Model.lean`](LeanFpAnalysis/FP/Model.lean)) rather than a concrete IEEE 754 representation. Every arithmetic operation satisfies:
 
 ```
-fl(x ∘ y) = (x ∘ y)(1 + δ),   |δ| ≤ u
+fl(x ∘ y) = (x ∘ y)(1 + δ),  |δ| ≤ u
 ```
 
-where `u` is the unit roundoff. No specific precision (e.g. IEEE 754) is assumed; all results hold for any model satisfying the axiom.
+where `u` is the unit roundoff. This makes all results valid for **any** floating-point system satisfying the standard model.
 
-## Module Structure
+## What's covered
 
-```
-LeanFpAnalysis/
-  FP/
-    Model.lean               — FPModel structure (axiomatic model)
-    Analysis/
-      Error.lean             — absError, relError (§1.2)
-      Rounding.lean          — gamma, prod_error_bound, gamma_mul, gamma_inv
-      Summation.lean         — fl_sum_error, fl_sum_error_init
-      Stability.lean         — backward stability predicates, condition number (§1.7–1.9)
-    Algorithms/
-      DotProduct.lean        — fl_dotProduct, dotProduct_error_bound  (Higham §3.5)
-      MatVec.lean            — fl_matVec, matVec_backward_error, matVec_error_bound
-```
+The library formalizes results from **Chapters 1, 3, 4, 8, and 9** of Higham.
 
-## Key Results
+### Core theory
 
-| Lemma | Location | Statement |
+| Topic | Higham ref | Key results |
 |---|---|---|
-| `prod_error_bound` | `Analysis/Rounding` | `\|∏(1+δᵢ) - 1\| ≤ γ(n)` |
-| `gamma_mul` | `Analysis/Rounding` | `γ(j)·γ(k) + γ(j) + γ(k) ≤ γ(j+k)` |
-| `gamma_inv` | `Analysis/Rounding` | `\|1/(1+θ) - 1\| ≤ γ(2k)` when `\|θ\| ≤ γ(k)` |
-| `fl_sum_error` | `Analysis/Summation` | Accumulated sum error ≤ γ(n)·Σ\|xᵢ\| |
-| `dotProduct_error_bound` | `Algorithms/DotProduct` | `\|fl(xᵀy) - xᵀy\| ≤ γ(n)·Σ\|xᵢ\|\|yᵢ\|` (Higham §3.5) |
-| `matVec_error_bound` | `Algorithms/MatVec` | `\|fl(Ax)ᵢ - (Ax)ᵢ\| ≤ γ(n)·Σⱼ\|Aᵢⱼ\|\|xⱼ\|` |
+| Error measures | §1.2 | `absError`, `relError`, `compRelErrorBounded` |
+| Backward stability | §1.7–1.9 | `backwardErrorBounded`, `condNumber`, `forward_from_backward` |
+| γ-function | §3.1, §3.4 | `gamma`, `prod_error_bound`, `gamma_mul`, `gamma_inv`, `gamma_div` |
+| Summation error | §3.1 | `fl_sum_error`, `fl_sum_error_init`, `fl_sub_sum_error_init` |
+
+### Algorithms
+
+| Algorithm | Higham ref | Key results |
+|---|---|---|
+| Dot product | §3.5 | `dotProduct_error_bound` — tight γ(n) bound |
+| Matrix-vector product | §3.5 | `matVec_backward_error`, `matVec_error_bound` |
+| Outer product | §3.1 | `outerProduct_error_bound` |
+| Matrix multiplication | §3.5 | `matMul_error_bound` |
+| Recursive summation | §4.1–4.2 | `recursive_sum_backward_error`, `recursive_sum_forward_error` |
+| Pairwise summation | §4.2 | Backward and forward error bounds |
+| Tree summation | §4.2 | `sumTree_backward_error` |
+| Back substitution | §8.1 | `backSub_backward_error` (Theorem 8.5) |
+| Forward substitution | §8.1 | `forwardSub_backward_error` (Theorem 8.5) |
+| Combined LU solve | §8.1 | `lu_solve_combined_backward_error` (Corollary 8.6) |
+| Forward error bounds | §8.2 | `diag_dominant_forward_error` (Th. 8.7), `theorem_8_9` |
+| M-matrix solutions | §8.2 | `corollary_8_10` (componentwise relative error) |
+| Inverse bounds | §8.3 | `theorem_8_11_first_ineq`, `theorem_8_11_upper_bound` (Th. 8.13) |
+| LU factorization | §9.3 | `LUBackwardError` (Theorem 9.3) |
+| LU solve | §9.4 | `lu_solve_backward_error` (Theorem 9.4) |
+| SPD matrices | §9.4 | `spd_growth_factor_bound`, `spd_backward_stability` (Th. 9.11) |
+| M-matrix LU | §9.4 | `mmatrix_optimal_growth` (Theorem 9.11) |
+| Banded LU | §9.5 | `banded_lu_backward_error` |
+
+## Installation
+
+Add to your `lakefile.toml`:
+
+```toml
+[[require]]
+name = "LeanFpAnalysis"
+git = "https://github.com/AlexGeorgantzas/lean-fp-analysis"
+rev = "main"
+```
+
+Or to your `lakefile.lean`:
+
+```lean
+require LeanFpAnalysis from git
+  "https://github.com/AlexGeorgantzas/lean-fp-analysis" @ "main"
+```
+
+Then in your Lean files:
+
+```lean
+import LeanFpAnalysis.FP
+```
 
 ## Building
 
@@ -51,7 +82,8 @@ Requires [Lean 4](https://leanprover.github.io) with [Lake](https://github.com/l
 lake build
 ```
 
-Toolchain: `leanprover/lean4:v4.29.0-rc3`, Mathlib `v4.29.0`.
+- Lean toolchain: `leanprover/lean4:v4.29.0-rc3`
+- Mathlib: `v4.29.0`
 
 > **Note:** On a fresh clone, `lake build` may fail with a ProofWidgets build error. Run:
 > ```bash
@@ -61,6 +93,72 @@ Toolchain: `leanprover/lean4:v4.29.0-rc3`, Mathlib `v4.29.0`.
 > tar xzf /tmp/pw.tar.gz -C .lake/build/packages/proofwidgets
 > ```
 
+## Usage example
+
+```lean
+import LeanFpAnalysis.FP
+open LeanFpAnalysis.FP
+
+variable (fp : FPModel) (n : ℕ)
+
+-- The γ-function bounds accumulated rounding error
+#check gamma fp n  -- γ(n) = nu / (1 - nu)
+
+-- Dot product: |fl(x·y) - x·y| ≤ γ(n) · Σ|xᵢ||yᵢ|
+#check dotProduct_error_bound
+
+-- Back substitution: (U + ΔU)x̂ = b with |ΔU| ≤ γ(n)|U|
+#check backSub_backward_error
+
+-- LU solve: (A + ΔA)x̂ = b with |ΔA| ≤ (3γ(n) + γ(n)²)|L̂||Û|
+#check lu_solve_backward_error
+```
+
+## Module structure
+
+```
+LeanFpAnalysis/FP/
+├── Model.lean                  — Axiomatic FPModel
+├── Analysis/
+│   ├── Error.lean              — Error measures (§1.2)
+│   ├── Rounding.lean           — γ-function, product error bounds (§3.1, §3.4)
+│   ├── Summation.lean          — Summation error (§3.1)
+│   ├── SubtractionFold.lean    — Subtraction fold error (§3.1)
+│   ├── Stability.lean          — Backward stability definitions (§1.7–1.9)
+│   └── ForwardError.lean       — Forward error from backward error (§8.2)
+└── Algorithms/
+    ├── DotProduct.lean         — Dot product (§3.5)
+    ├── MatVec.lean             — Matrix-vector product (§3.5)
+    ├── OuterProduct.lean       — Outer product (§3.1)
+    ├── MatMul.lean             — Matrix multiplication
+    ├── RecursiveSum.lean       — Recursive summation (§4.1–4.2)
+    ├── PairwiseSum.lean        — Pairwise summation (§4.2)
+    ├── SumTree.lean            — Tree summation (§4.2)
+    ├── TriangularSolve.lean    — Back substitution (§8.1)
+    ├── ForwardSub.lean         — Forward substitution (§8.1)
+    ├── TriangularSolveCombined.lean    — Combined LU solve (§8.1)
+    ├── TriangularForwardBound.lean     — Diagonal dominance bounds (§8.2)
+    ├── TriangularForwardComparison.lean — Comparison matrix bounds (§8.2)
+    ├── InverseBounds.lean      — Inverse bounds (§8.3)
+    ├── MMatrix.lean            — M-matrix properties (§8.2)
+    └── LU/
+        ├── GaussianElimination.lean    — LU backward error (§9.3)
+        ├── LUSolve.lean                — LU solve backward error (§9.4)
+        ├── GrowthFactor.lean           — Growth factor (§9.3–9.4)
+        ├── SpecialMatrices.lean        — SPD, M-matrix, sign-equivalent (§9.4)
+        ├── Tridiagonal.lean            — Banded/tridiagonal LU (§9.5)
+        ├── TridiagonalRecurrence.lean  — Tridiagonal recurrence
+        └── Doolittle.lean              — Doolittle algorithm
+```
+
+## Roadmap
+
+More chapters from Higham are planned. Contributions and requests are welcome — open an issue if there's a specific algorithm or result you need formalized.
+
 ## References
 
 N. J. Higham, *Accuracy and Stability of Numerical Algorithms*, 2nd ed., SIAM, 2002.
+
+## License
+
+MIT
