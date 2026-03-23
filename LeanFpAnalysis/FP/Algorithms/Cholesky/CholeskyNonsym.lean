@@ -58,6 +58,31 @@ lemma symmetric_skew_decomposition (n : ℕ) (A : Fin n → Fin n → ℝ) :
     ∀ i j : Fin n, A i j = symmetricPart n A i j + skewSymmetricPart n A i j := by
   intro i j; unfold symmetricPart skewSymmetricPart; ring
 
+/-- x^T A_S x = x^T A x: the skew-symmetric part vanishes in quadratic forms.
+
+    Proof: x^T A_S x = (1/2)(x^T A x + x^T A^T x) = (1/2)(S + S) = S
+    since x^T A^T x = ∑ᵢⱼ xᵢ Aⱼᵢ xⱼ = ∑ⱼᵢ xⱼ Aᵢⱼ xᵢ = x^T A x
+    by swapping summation indices. -/
+lemma symPart_quadForm_eq (n : ℕ) (A : Fin n → Fin n → ℝ) (x : Fin n → ℝ) :
+    ∑ i : Fin n, ∑ j : Fin n, x i * symmetricPart n A i j * x j =
+    ∑ i : Fin n, ∑ j : Fin n, x i * A i j * x j := by
+  unfold symmetricPart
+  -- Step 1: split (A i j + A j i)/2 into two halved terms
+  have key : ∀ (i j : Fin n),
+      x i * ((A i j + A j i) / 2) * x j =
+      x i * A i j * x j / 2 + x i * A j i * x j / 2 := fun i j => by ring
+  simp_rw [key, Finset.sum_add_distrib]
+  -- Step 2: the transposed sum equals the original by index swap
+  have swap_div : ∑ i : Fin n, ∑ j : Fin n, x i * A j i * x j / 2 =
+      ∑ i : Fin n, ∑ j : Fin n, x i * A i j * x j / 2 := by
+    conv_lhs => rw [Finset.sum_comm]
+    congr 1; ext i; congr 1; ext j; ring
+  -- Step 3: S/2 + S/2 = S
+  rw [swap_div, ← Finset.sum_add_distrib]
+  congr 1; ext i
+  rw [← Finset.sum_add_distrib]
+  congr 1; ext j; ring
+
 /-- Nonsymmetric PD is equivalent to symmetric part being SPD. -/
 lemma nonsymPosDef_iff_symPartSPD (n : ℕ) (A : Fin n → Fin n → ℝ) :
     IsNonsymPosDef n A ↔ IsSymPosDef n (symmetricPart n A) := by
@@ -66,24 +91,9 @@ lemma nonsymPosDef_iff_symPartSPD (n : ℕ) (A : Fin n → Fin n → ℝ) :
     constructor
     · exact symmetricPart_symmetric n A
     · intro x hx
-      have h := hPD x hx
-      suffices ∑ i : Fin n, ∑ j : Fin n, x i * symmetricPart n A i j * x j =
-          ∑ i : Fin n, ∑ j : Fin n, x i * A i j * x j by
-        linarith
-      -- x^T A_S x = x^T A x because x^T A_K x = 0 for skew-symmetric A_K
-      congr 1; ext i; congr 1; ext j
-      unfold symmetricPart
-      ring_nf
-      sorry -- requires showing x^T A_K x = 0 for skew A_K
+      rw [symPart_quadForm_eq]; exact hPD x hx
   · intro hSPD x hx
-    have h := hSPD.2 x hx
-    suffices ∑ i : Fin n, ∑ j : Fin n, x i * A i j * x j =
-        ∑ i : Fin n, ∑ j : Fin n, x i * symmetricPart n A i j * x j by
-      linarith
-    congr 1; ext i; congr 1; ext j
-    unfold symmetricPart
-    ring_nf
-    sorry -- same identity
+    rw [← symPart_quadForm_eq]; exact hSPD.2 x hx
 
 -- ============================================================
 -- §10.5  Chi factor
