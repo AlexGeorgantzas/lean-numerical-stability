@@ -10,6 +10,7 @@
 -- - Partial pivoting (Bunch-Kaufman): same α, O(n²) comparisons
 
 import Mathlib.Data.Real.Basic
+import Mathlib.Data.Real.Sqrt
 import Mathlib.Analysis.SpecialFunctions.Pow.Real
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
@@ -98,6 +99,19 @@ structure BlockLDLTBackwardError (n : ℕ) (A L_hat D_hat : Fin n → Fin n → 
 
     α is the positive root of 4α² − α − 1 = 0. -/
 noncomputable def bunchParlettAlpha : ℝ := (1 + Real.sqrt 17) / 8
+
+/-- **Bunch-Parlett α is a root of 4α² − α − 1 = 0**.
+
+    This algebraic identity characterizes α = (1 + √17)/8 as the solution that
+    minimizes the worst-case element growth. -/
+theorem bunch_parlett_alpha_root :
+    4 * bunchParlettAlpha ^ 2 - bunchParlettAlpha - 1 = 0 := by
+  unfold bunchParlettAlpha
+  have h17 : Real.sqrt 17 * Real.sqrt 17 = 17 :=
+    Real.mul_self_sqrt (by norm_num : (0 : ℝ) ≤ 17)
+  have h8 : (8 : ℝ) ≠ 0 := by norm_num
+  field_simp
+  nlinarith [h17]
 
 /-- **Bunch-Parlett growth factor bound** (Higham §10.4.1).
 

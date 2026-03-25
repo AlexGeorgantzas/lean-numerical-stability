@@ -346,4 +346,130 @@ theorem lu_solve_backward_error_tight (fp : FPModel) (n : ℕ)
     _ ≤ gamma fp (3 * n) * ∑ k : Fin n, |L_hat i k| * |U_hat k j| :=
         mul_le_mul_of_nonneg_right h_absorb hW
 
+/-- **Mixed-ε LU solve backward error** (generalization of Theorem 9.4).
+
+    Like `lu_solve_backward_error_bw` but takes separate error bounds for
+    factorization (ε₁), forward substitution (ε₂), and back substitution (ε₃).
+
+    The combined bound is: |ΔA_ij| ≤ (ε₁ + ε₂ + ε₃ + ε₂·ε₃) · (|L̂||Û|)_ij
+
+    This is useful for Cholesky where the factorization error γ(n+1) differs
+    from the triangular solve errors γ(n), giving a tighter result than
+    promoting everything to the maximum ε. -/
+theorem lu_solve_backward_error_mixed (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (y_hat x_hat : Fin n → ℝ)
+    (ε₁ ε₂ ε₃ : ℝ) (_hε₁ : 0 ≤ ε₁) (hε₂ : 0 ≤ ε₂) (_hε₃ : 0 ≤ ε₃)
+    -- LU factorization: L̂Û = A + ΔA_LU with |ΔA_LU| ≤ ε₁|L̂||Û|
+    (ΔA_LU : Fin n → Fin n → ℝ)
+    (hΔA_LU_bound : ∀ i j, |ΔA_LU i j| ≤ ε₁ * ∑ k : Fin n, |L_hat i k| * |U_hat k j|)
+    (hΔA_LU_eq : ∀ i j, ∑ k : Fin n, L_hat i k * U_hat k j = A i j + ΔA_LU i j)
+    -- Forward substitution: (L̂ + ΔL)ŷ = b with |ΔL| ≤ ε₂|L̂|
+    (b : Fin n → ℝ)
+    (ΔL : Fin n → Fin n → ℝ)
+    (hΔL_bound : ∀ i j, |ΔL i j| ≤ ε₂ * |L_hat i j|)
+    (hΔL_eq : ∀ i, ∑ j : Fin n, (L_hat i j + ΔL i j) * y_hat j = b i)
+    -- Back substitution: (Û + ΔU)x̂ = ŷ with |ΔU| ≤ ε₃|Û|
+    (ΔU : Fin n → Fin n → ℝ)
+    (hΔU_bound : ∀ i j, |ΔU i j| ≤ ε₃ * |U_hat i j|)
+    (hΔU_eq : ∀ i, ∑ j : Fin n, (U_hat i j + ΔU i j) * x_hat j = y_hat i) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤
+        (ε₁ + ε₂ + ε₃ + ε₂ * ε₃) * ∑ k : Fin n, |L_hat i k| * |U_hat k j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  let ΔA : Fin n → Fin n → ℝ := fun i j =>
+    ΔA_LU i j +
+    ∑ k : Fin n, L_hat i k * ΔU k j +
+    ∑ k : Fin n, ΔL i k * U_hat k j +
+    ∑ k : Fin n, ΔL i k * ΔU k j
+  refine ⟨ΔA, fun i j => ?_, fun i => ?_⟩
+  · show |ΔA i j| ≤ _
+    have h1 : |ΔA_LU i j| ≤ ε₁ * ∑ k : Fin n, |L_hat i k| * |U_hat k j| :=
+      hΔA_LU_bound i j
+    have h2 : |∑ k : Fin n, L_hat i k * ΔU k j| ≤
+        ε₃ * ∑ k : Fin n, |L_hat i k| * |U_hat k j| := by
+      calc |∑ k : Fin n, L_hat i k * ΔU k j|
+          ≤ ∑ k : Fin n, |L_hat i k * ΔU k j| := Finset.abs_sum_le_sum_abs _ _
+        _ = ∑ k : Fin n, |L_hat i k| * |ΔU k j| := by
+            apply Finset.sum_congr rfl; intro k _; exact abs_mul _ _
+        _ ≤ ∑ k : Fin n, |L_hat i k| * (ε₃ * |U_hat k j|) := by
+            apply Finset.sum_le_sum; intro k _
+            exact mul_le_mul_of_nonneg_left (hΔU_bound k j) (abs_nonneg _)
+        _ = ε₃ * ∑ k : Fin n, |L_hat i k| * |U_hat k j| := by
+            rw [Finset.mul_sum]
+            apply Finset.sum_congr rfl; intro k _; ring
+    have h3 : |∑ k : Fin n, ΔL i k * U_hat k j| ≤
+        ε₂ * ∑ k : Fin n, |L_hat i k| * |U_hat k j| := by
+      calc |∑ k : Fin n, ΔL i k * U_hat k j|
+          ≤ ∑ k : Fin n, |ΔL i k * U_hat k j| := Finset.abs_sum_le_sum_abs _ _
+        _ = ∑ k : Fin n, |ΔL i k| * |U_hat k j| := by
+            apply Finset.sum_congr rfl; intro k _; exact abs_mul _ _
+        _ ≤ ∑ k : Fin n, (ε₂ * |L_hat i k|) * |U_hat k j| := by
+            apply Finset.sum_le_sum; intro k _
+            exact mul_le_mul_of_nonneg_right (hΔL_bound i k) (abs_nonneg _)
+        _ = ε₂ * ∑ k : Fin n, |L_hat i k| * |U_hat k j| := by
+            rw [Finset.mul_sum]
+            apply Finset.sum_congr rfl; intro k _; ring
+    have h4 : |∑ k : Fin n, ΔL i k * ΔU k j| ≤
+        (ε₂ * ε₃) * ∑ k : Fin n, |L_hat i k| * |U_hat k j| := by
+      calc |∑ k : Fin n, ΔL i k * ΔU k j|
+          ≤ ∑ k : Fin n, |ΔL i k * ΔU k j| := Finset.abs_sum_le_sum_abs _ _
+        _ = ∑ k : Fin n, |ΔL i k| * |ΔU k j| := by
+            apply Finset.sum_congr rfl; intro k _; exact abs_mul _ _
+        _ ≤ ∑ k : Fin n, (ε₂ * |L_hat i k|) * (ε₃ * |U_hat k j|) := by
+            apply Finset.sum_le_sum; intro k _
+            apply mul_le_mul (hΔL_bound i k) (hΔU_bound k j)
+              (abs_nonneg _) (mul_nonneg hε₂ (abs_nonneg _))
+        _ = (ε₂ * ε₃) * ∑ k : Fin n, |L_hat i k| * |U_hat k j| := by
+            rw [Finset.mul_sum]
+            apply Finset.sum_congr rfl; intro k _; ring
+    let W := ∑ k : Fin n, |L_hat i k| * |U_hat k j|
+    have hab : |ΔA_LU i j + ∑ k, L_hat i k * ΔU k j +
+               ∑ k, ΔL i k * U_hat k j + ∑ k, ΔL i k * ΔU k j| ≤
+        |ΔA_LU i j| + |∑ k, L_hat i k * ΔU k j| +
+        |∑ k, ΔL i k * U_hat k j| + |∑ k, ΔL i k * ΔU k j| := by
+      rw [abs_le]; constructor
+      · linarith [neg_abs_le (ΔA_LU i j),
+                   neg_abs_le (∑ k, L_hat i k * ΔU k j),
+                   neg_abs_le (∑ k, ΔL i k * U_hat k j),
+                   neg_abs_le (∑ k, ΔL i k * ΔU k j)]
+      · linarith [le_abs_self (ΔA_LU i j),
+                   le_abs_self (∑ k, L_hat i k * ΔU k j),
+                   le_abs_self (∑ k, ΔL i k * U_hat k j),
+                   le_abs_self (∑ k, ΔL i k * ΔU k j)]
+    calc |ΔA i j| = |ΔA_LU i j + ∑ k, L_hat i k * ΔU k j +
+                     ∑ k, ΔL i k * U_hat k j + ∑ k, ΔL i k * ΔU k j| := rfl
+      _ ≤ |ΔA_LU i j| + |∑ k, L_hat i k * ΔU k j| +
+          |∑ k, ΔL i k * U_hat k j| + |∑ k, ΔL i k * ΔU k j| := hab
+      _ ≤ ε₁ * W + ε₃ * W + ε₂ * W + (ε₂ * ε₃) * W := by linarith [h1, h2, h3, h4]
+      _ = (ε₁ + ε₂ + ε₃ + ε₂ * ε₃) * W := by ring
+  · show ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i
+    have hb : ∑ k : Fin n, (L_hat i k + ΔL i k) *
+        (∑ j : Fin n, (U_hat k j + ΔU k j) * x_hat j) = b i := by
+      rw [← hΔL_eq i]
+      apply Finset.sum_congr rfl
+      intro k _; rw [hΔU_eq k]
+    have hexpand : ∀ j : Fin n,
+        ∑ k : Fin n, (L_hat i k + ΔL i k) * (U_hat k j + ΔU k j) =
+        A i j + ΔA i j := by
+      intro j
+      have hLU_eq := hΔA_LU_eq i j
+      have hprod : ∑ k : Fin n, (L_hat i k + ΔL i k) * (U_hat k j + ΔU k j) =
+          ∑ k, L_hat i k * U_hat k j + ∑ k, L_hat i k * ΔU k j +
+          ∑ k, ΔL i k * U_hat k j + ∑ k, ΔL i k * ΔU k j := by
+        simp_rw [mul_add, add_mul, Finset.sum_add_distrib]; ring
+      rw [hprod, hLU_eq]
+      show A i j + ΔA_LU i j + ∑ k, L_hat i k * ΔU k j +
+           ∑ k, ΔL i k * U_hat k j + ∑ k, ΔL i k * ΔU k j =
+        A i j + (ΔA_LU i j + ∑ k, L_hat i k * ΔU k j +
+                 ∑ k, ΔL i k * U_hat k j + ∑ k, ΔL i k * ΔU k j)
+      ring
+    rw [← hb]
+    simp_rw [Finset.mul_sum]
+    rw [Finset.sum_comm]
+    apply Finset.sum_congr rfl
+    intro j _
+    simp_rw [← mul_assoc]
+    rw [← Finset.sum_mul, hexpand j]
+
 end LeanFpAnalysis.FP

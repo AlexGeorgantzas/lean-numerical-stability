@@ -20,6 +20,7 @@ import Mathlib.Tactic.Ring
 import LeanFpAnalysis.FP.Model
 import LeanFpAnalysis.FP.Analysis.Rounding
 import LeanFpAnalysis.FP.Algorithms.LU.GaussianElimination
+import LeanFpAnalysis.FP.Algorithms.LU.GrowthFactor
 
 namespace LeanFpAnalysis.FP
 
@@ -231,6 +232,86 @@ theorem cholesky_existence (n : ℕ) (A : Fin n → Fin n → ℝ)
         linarith
 
 -- ============================================================
+-- §10.1  Theorem 10.1: Cholesky uniqueness
+-- ============================================================
+
+/-- **Cholesky uniqueness helper**: if two upper triangular matrices with
+    positive diagonals satisfy R₁^T R₁ = R₂^T R₂, then R₁ = R₂.
+
+    Proof by induction on n. The (0,0) entry gives R₁(0,0)² = R₂(0,0)²,
+    and positivity forces equality. The first row follows by cancellation.
+    The submatrix products then agree, and the IH completes the proof. -/
+private lemma cholesky_factor_uniqueness :
+    ∀ (n : ℕ) (R₁ R₂ : Fin n → Fin n → ℝ),
+    (∀ i j : Fin n, j.val < i.val → R₁ i j = 0) →
+    (∀ i j : Fin n, j.val < i.val → R₂ i j = 0) →
+    (∀ i : Fin n, 0 < R₁ i i) →
+    (∀ i : Fin n, 0 < R₂ i i) →
+    (∀ i j : Fin n, ∑ k : Fin n, R₁ k i * R₁ k j = ∑ k : Fin n, R₂ k i * R₂ k j) →
+    ∀ i j : Fin n, R₁ i j = R₂ i j := by
+  intro n; induction n with
+  | zero => intro _ _ _ _ _ _ _ i; exact Fin.elim0 i
+  | succ m ih =>
+    intro R₁ R₂ hR₁_up hR₂_up hR₁_diag hR₂_diag hprod
+    -- Column 0 entries are zero for k > 0
+    have hR₁_c0 : ∀ k : Fin m, R₁ k.succ 0 = 0 :=
+      fun k => hR₁_up k.succ 0 (Nat.succ_pos _)
+    have hR₂_c0 : ∀ k : Fin m, R₂ k.succ 0 = 0 :=
+      fun k => hR₂_up k.succ 0 (Nat.succ_pos _)
+    -- R₁ 0 0 = R₂ 0 0 (from (0,0) entry: a² = b², a > 0, b > 0)
+    have h00 : R₁ 0 0 = R₂ 0 0 := by
+      have hp := hprod 0 0
+      rw [Fin.sum_univ_succ, Fin.sum_univ_succ] at hp
+      simp only [hR₁_c0, hR₂_c0, zero_mul, Finset.sum_const_zero, add_zero] at hp
+      have hfact : (R₁ 0 0 - R₂ 0 0) * (R₁ 0 0 + R₂ 0 0) = 0 := by nlinarith
+      have hsum : 0 < R₁ 0 0 + R₂ 0 0 := by linarith [hR₁_diag 0, hR₂_diag 0]
+      cases mul_eq_zero.mp hfact with
+      | inl h => linarith
+      | inr h => linarith
+    -- First row: R₁ 0 j = R₂ 0 j for all j
+    have h0j : ∀ j : Fin (m + 1), R₁ 0 j = R₂ 0 j := by
+      intro j; by_cases hj : j = 0
+      · subst hj; exact h00
+      · have hp := hprod 0 j
+        rw [Fin.sum_univ_succ, Fin.sum_univ_succ] at hp
+        simp only [hR₁_c0, hR₂_c0, zero_mul, Finset.sum_const_zero, add_zero] at hp
+        rw [h00] at hp; exact mul_left_cancel₀ (ne_of_gt (hR₂_diag 0)) hp
+    -- Submatrix products agree
+    have hsub : ∀ i j : Fin m,
+        ∑ k : Fin m, R₁ k.succ i.succ * R₁ k.succ j.succ =
+        ∑ k : Fin m, R₂ k.succ i.succ * R₂ k.succ j.succ := by
+      intro i j; have hp := hprod i.succ j.succ
+      rw [Fin.sum_univ_succ, Fin.sum_univ_succ] at hp
+      rw [h0j i.succ, h0j j.succ] at hp; linarith
+    -- Apply IH to submatrices
+    have hih := ih (fun k p => R₁ k.succ p.succ) (fun k p => R₂ k.succ p.succ)
+      (fun i j hij => hR₁_up i.succ j.succ (Nat.succ_lt_succ hij))
+      (fun i j hij => hR₂_up i.succ j.succ (Nat.succ_lt_succ hij))
+      (fun i => hR₁_diag i.succ) (fun i => hR₂_diag i.succ) hsub
+    -- Combine
+    intro i j
+    by_cases hi : i = 0
+    · subst hi; exact h0j j
+    · by_cases hj : j = 0
+      · subst hj
+        have hi_pos : (0 : Fin (m + 1)).val < i.val :=
+          Nat.pos_of_ne_zero (fun h => hi (Fin.ext h))
+        rw [hR₁_up i 0 hi_pos, hR₂_up i 0 hi_pos]
+      · have := hih (i.pred hi) (j.pred hj)
+        simp only [Fin.succ_pred] at this; exact this
+
+/-- **Cholesky uniqueness** (Higham §10.1, Theorem 10.1, part 2).
+
+    The Cholesky factorization A = R^T R with R upper triangular and
+    positive diagonal is unique. If R₁ and R₂ both satisfy
+    CholeskyFactSpec, then R₁ = R₂ entry-by-entry. -/
+theorem cholesky_uniqueness (n : ℕ) (A R₁ R₂ : Fin n → Fin n → ℝ)
+    (h₁ : CholeskyFactSpec n A R₁) (h₂ : CholeskyFactSpec n A R₂) :
+    ∀ i j : Fin n, R₁ i j = R₂ i j :=
+  cholesky_factor_uniqueness n R₁ R₂ h₁.R_upper h₂.R_upper h₁.R_diag_pos h₂.R_diag_pos
+    (fun i j => by rw [h₁.product_eq, h₂.product_eq])
+
+-- ============================================================
 -- §10.1  Theorem 10.3: Backward error (perturbation form)
 -- ============================================================
 
@@ -363,5 +444,39 @@ theorem cholesky_spd_backward_stable (n : ℕ)
     _ ≤ ε * (|A i j| / (1 - ε)) := by
         apply mul_le_mul_of_nonneg_left hgrowth hε_nn
     _ = ε / (1 - ε) * |A i j| := by ring
+
+-- ============================================================
+-- §10.1  Normwise backward stability (equation 10.7)
+-- ============================================================
+
+/-- **SPD normwise backward stability** (Higham §10.1, equation 10.7).
+
+    For SPD matrices with nonneg Cholesky factors and ε < 1:
+      ‖ΔA‖∞ ≤ ε/(1−ε) · ‖A‖∞
+
+    This follows from the componentwise bound |ΔA_{ij}| ≤ ε/(1−ε)|A_{ij}|
+    by summing over rows and taking the maximum. -/
+theorem cholesky_spd_backward_stable_normwise (n : ℕ) (hn : 0 < n)
+    (A R_hat : Fin n → Fin n → ℝ) (ε : ℝ) (hε_lt : ε < 1) (hε_nn : 0 ≤ ε)
+    (hChol : CholeskyBackwardError n A R_hat ε)
+    (hR_nn : ∀ k j : Fin n, 0 ≤ R_hat k j) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      infNorm hn ΔA ≤ ε / (1 - ε) * infNorm hn A ∧
+      (∀ i j, ∑ k : Fin n, R_hat k i * R_hat k j = A i j + ΔA i j) := by
+  obtain ⟨ΔA, hΔA_bound, hΔA_eq⟩ :=
+    cholesky_spd_backward_stable n A R_hat ε hε_lt hε_nn hChol hR_nn
+  refine ⟨ΔA, ?_, hΔA_eq⟩
+  have h1ε : (0 : ℝ) < 1 - ε := by linarith
+  have hc_nn : 0 ≤ ε / (1 - ε) := div_nonneg hε_nn (le_of_lt h1ε)
+  -- infNorm(ΔA) = max_i ∑_j |ΔA_ij| ≤ ε/(1-ε) · max_i ∑_j |A_ij| = ε/(1-ε) · infNorm(A)
+  apply Finset.sup'_le
+  intro i _
+  calc ∑ j : Fin n, |ΔA i j|
+      ≤ ∑ j : Fin n, ε / (1 - ε) * |A i j| :=
+        Finset.sum_le_sum (fun j _ => hΔA_bound i j)
+    _ = ε / (1 - ε) * ∑ j : Fin n, |A i j| := (Finset.mul_sum _ _ _).symm
+    _ ≤ ε / (1 - ε) * infNorm hn A := by
+        apply mul_le_mul_of_nonneg_left _ hc_nn
+        exact Finset.le_sup' (fun i => ∑ j : Fin n, |A i j|) (Finset.mem_univ i)
 
 end LeanFpAnalysis.FP
