@@ -4,7 +4,6 @@
 --
 -- Core results:
 --   upperBidiagInvEntry/lowerBidiagInvEntry: explicit product formulas
---   abs_sum_eq_sum_abs_of_nonneg_terms: sign propagation
 --   tridiag_exact_inv_abs: Theorem 14.7 (|U⁻¹||L⁻¹| = |A⁻¹| when sign coherent)
 --   bidiag_abs_inv_eq_compMatrix_inv: Eq 14.10 (|B⁻¹| = M(B)⁻¹ for bidiag B)
 --   tridiag_diagdom_cond_bound: Theorem 14.8 ((2n−1) bound for diag-dominant)
@@ -65,26 +64,6 @@ lemma lowerBidiagInvEntry_diag {n : ℕ} (l : Fin n → ℝ) (i : Fin n) :
   simp only [lowerBidiagInvEntry, lt_irrefl, ite_false]
   apply Finset.prod_eq_one
   intro q hq; simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hq; omega
-
--- ============================================================
--- Sign propagation
--- ============================================================
-
-/-- Absolute value of sum equals sum of absolute values for nonneg terms. -/
-theorem abs_sum_eq_sum_abs_of_nonneg_terms {n : ℕ}
-    (f : Fin n → ℝ) (hf : ∀ k : Fin n, 0 ≤ f k) :
-    |∑ k : Fin n, f k| = ∑ k : Fin n, |f k| := by
-  rw [abs_of_nonneg (Finset.sum_nonneg (fun k _ => hf k))]
-  apply Finset.sum_congr rfl; intro k _; rw [abs_of_nonneg (hf k)]
-
-/-- Variant for nonpositive terms. -/
-theorem abs_sum_eq_sum_abs_of_nonpos_terms {n : ℕ}
-    (f : Fin n → ℝ) (hf : ∀ k : Fin n, f k ≤ 0) :
-    |∑ k : Fin n, f k| = ∑ k : Fin n, |f k| := by
-  rw [abs_of_nonpos (Finset.sum_nonpos (fun k _ => hf k)),
-    show -(∑ k : Fin n, f k) = ∑ k : Fin n, -f k from by
-      rw [Finset.sum_neg_distrib]]
-  apply Finset.sum_congr rfl; intro k _; rw [abs_of_nonpos (hf k)]
 
 -- ============================================================
 -- §14.5  Theorem 14.7: |U⁻¹||L⁻¹| = |A⁻¹| for tridiagonal
@@ -149,46 +128,6 @@ theorem bidiag_abs_inv_eq_compMatrix_inv (n : ℕ)
     · apply Finset.prod_congr rfl
       intro p _
       rw [abs_div, abs_neg]
-
--- ============================================================
--- §14.5  L⁻¹ = U · A⁻¹ for A = LU
--- ============================================================
-
-/-- **L⁻¹ = U · A⁻¹** when A = LU. From L⁻¹A = L⁻¹(LU) = (L⁻¹L)U = U,
-    right-multiplying by A⁻¹ gives L⁻¹ = UA⁻¹. -/
-lemma L_inv_eq_matMul_U_Ainv (n : ℕ)
-    (A L U A_inv L_inv : Fin n → Fin n → ℝ)
-    (hLU : ∀ i j, ∑ k : Fin n, L i k * U k j = A i j)
-    (hLInv : IsLeftInverse n L L_inv)
-    (hAInv : IsRightInverse n A A_inv) :
-    ∀ k j, L_inv k j = ∑ l : Fin n, U k l * A_inv l j := by
-  -- First: L⁻¹ · A = U
-  have hLA : ∀ k' j', ∑ m : Fin n, L_inv k' m * A m j' = U k' j' := by
-    intro k' j'
-    calc ∑ m : Fin n, L_inv k' m * A m j'
-        = ∑ m : Fin n, L_inv k' m * (∑ p : Fin n, L m p * U p j') := by
-          apply Finset.sum_congr rfl; intro m _; rw [hLU]
-      _ = ∑ p : Fin n, (∑ m : Fin n, L_inv k' m * L m p) * U p j' := by
-          simp_rw [Finset.mul_sum]; rw [Finset.sum_comm]
-          apply Finset.sum_congr rfl; intro p _
-          rw [Finset.sum_mul]
-          apply Finset.sum_congr rfl; intro m _; ring
-      _ = ∑ p : Fin n, (if k' = p then 1 else 0) * U p j' := by
-          apply Finset.sum_congr rfl; intro p _; rw [hLInv k' p]
-      _ = U k' j' := by simp
-  -- Derive: L⁻¹ = U · A⁻¹
-  intro k j
-  calc L_inv k j
-      = ∑ m : Fin n, L_inv k m * (if m = j then 1 else 0) := by simp
-    _ = ∑ m : Fin n, L_inv k m * (∑ l : Fin n, A m l * A_inv l j) := by
-        apply Finset.sum_congr rfl; intro m _; rw [hAInv]
-    _ = ∑ l : Fin n, (∑ m : Fin n, L_inv k m * A m l) * A_inv l j := by
-        simp_rw [Finset.mul_sum]; rw [Finset.sum_comm]
-        apply Finset.sum_congr rfl; intro l _
-        rw [Finset.sum_mul]
-        apply Finset.sum_congr rfl; intro m _; ring
-    _ = ∑ l : Fin n, U k l * A_inv l j := by
-        apply Finset.sum_congr rfl; intro l _; rw [hLA]
 
 -- ============================================================
 -- §14.5  Row sum bound for unit bidiagonal |V⁻¹|·|V|

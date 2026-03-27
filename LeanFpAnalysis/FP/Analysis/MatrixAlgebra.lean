@@ -88,6 +88,12 @@ noncomputable def absMatrix (n : ℕ) (A : Fin n → Fin n → ℝ) :
     Fin n → Fin n → ℝ :=
   fun i j => |A i j|
 
+/-- ∑ |f k * g k| = ∑ |f k| * |g k|.
+    Eliminates the common `apply Finset.sum_congr rfl; intro k _; exact abs_mul _ _` pattern. -/
+lemma Finset.sum_abs_mul {n : ℕ} (f g : Fin n → ℝ) :
+    ∑ k : Fin n, |f k * g k| = ∑ k : Fin n, |f k| * |g k| :=
+  Finset.sum_congr rfl (fun k _ => abs_mul (f k) (g k))
+
 -- ============================================================
 -- Matrix inverse predicates
 -- ============================================================
@@ -232,7 +238,155 @@ theorem neumann_telescope_right (n : ℕ) (M : Fin n → Fin n → ℝ) (N : ℕ
     rw [h2]; ring
 
 -- ============================================================
--- Infinity norm for matrices
+-- Infinity norm and 1-norm (computable via Finset.sup')
+-- ============================================================
+
+/-- Infinity norm of a vector: max_i |v_i|.
+    Defined as a supremum over the finite index set. -/
+noncomputable def infNormVec {n : ℕ} (hn : 0 < n) (v : Fin n → ℝ) : ℝ :=
+  Finset.sup' Finset.univ (Finset.univ_nonempty_iff.mpr ⟨⟨0, hn⟩⟩) (fun i => |v i|)
+
+/-- Infinity norm of a matrix: max_i ∑_j |A_ij|.
+    This is the operator norm subordinate to the vector infinity norm. -/
+noncomputable def infNorm {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ) : ℝ :=
+  Finset.sup' Finset.univ (Finset.univ_nonempty_iff.mpr ⟨⟨0, hn⟩⟩)
+    (fun i => ∑ j : Fin n, |A i j|)
+
+/-- Infinity norm of a matrix is nonneg. -/
+lemma infNorm_nonneg {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ) :
+    0 ≤ infNorm hn A := by
+  have h0 : (⟨0, hn⟩ : Fin n) ∈ Finset.univ := Finset.mem_univ _
+  have : 0 ≤ ∑ j : Fin n, |A ⟨0, hn⟩ j| :=
+    Finset.sum_nonneg (fun j _ => abs_nonneg _)
+  exact le_trans this (Finset.le_sup' (fun i => ∑ j : Fin n, |A i j|) h0)
+
+/-- Infinity norm of a vector is nonneg. -/
+lemma infNormVec_nonneg {n : ℕ} (hn : 0 < n) (v : Fin n → ℝ) :
+    0 ≤ infNormVec hn v := by
+  have h0 : (⟨0, hn⟩ : Fin n) ∈ Finset.univ := Finset.mem_univ _
+  have : 0 ≤ |v ⟨0, hn⟩| := abs_nonneg _
+  exact le_trans this (Finset.le_sup' (fun i => |v i|) h0)
+
+/-- 1-norm of a matrix (max column sum): max_j ∑_i |A_ij|.
+    This is the operator norm subordinate to the vector 1-norm. -/
+noncomputable def oneNorm {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ) : ℝ :=
+  Finset.sup' Finset.univ (Finset.univ_nonempty_iff.mpr ⟨⟨0, hn⟩⟩)
+    (fun j => ∑ i : Fin n, |A i j|)
+
+/-- 1-norm of a matrix is nonneg. -/
+lemma oneNorm_nonneg {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ) :
+    0 ≤ oneNorm hn A := by
+  have h0 : (⟨0, hn⟩ : Fin n) ∈ Finset.univ := Finset.mem_univ _
+  have : 0 ≤ ∑ i : Fin n, |A i ⟨0, hn⟩| :=
+    Finset.sum_nonneg (fun i _ => abs_nonneg _)
+  exact le_trans this (Finset.le_sup' (fun j => ∑ i : Fin n, |A i j|) h0)
+
+/-- 1-norm equals ∞-norm of the transpose. -/
+theorem oneNorm_eq_infNorm_transpose {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) :
+    oneNorm hn A = infNorm hn (fun i j => A j i) := by
+  unfold oneNorm infNorm
+  rfl
+
+/-- Each column sum is bounded by the 1-norm. -/
+lemma col_sum_le_oneNorm {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ)
+    (j : Fin n) : ∑ i : Fin n, |A i j| ≤ oneNorm hn A :=
+  Finset.le_sup' (fun j => ∑ i : Fin n, |A i j|) (Finset.mem_univ j)
+
+-- ============================================================
+-- Diagonal matrix infrastructure
+-- ============================================================
+
+/-- Diagonal matrix from a vector. -/
+noncomputable def diagMatrix {n : ℕ} (d : Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j => if i = j then d i else 0
+
+/-- Right multiplication by a diagonal matrix: (A · diag(d))_ij = A_ij · d_j. -/
+lemma matMul_diagMatrix_right {n : ℕ} (A : Fin n → Fin n → ℝ) (d : Fin n → ℝ) :
+    ∀ i j, matMul n (A) (diagMatrix d) i j = A i j * d j := by
+  intro i j
+  simp only [matMul, diagMatrix]
+  rw [show (∑ k : Fin n, A i k * (if k = j then d k else 0)) = A i j * d j from by
+    conv_lhs =>
+      arg 2; ext k
+      rw [show A i k * (if k = j then d k else 0) =
+          if k = j then A i k * d k else 0 from by split_ifs <;> simp]
+    simp [Finset.sum_ite_eq']]
+
+/-- Left multiplication by a diagonal matrix: (diag(d) · A)_ij = d_i · A_ij. -/
+lemma matMul_diagMatrix_left {n : ℕ} (d : Fin n → ℝ) (A : Fin n → Fin n → ℝ) :
+    ∀ i j, matMul n (diagMatrix d) A i j = d i * A i j := by
+  intro i j
+  simp only [matMul, diagMatrix]
+  rw [show (∑ k : Fin n, (if i = k then d i else 0) * A k j) = d i * A i j from by
+    conv_lhs =>
+      arg 2; ext k
+      rw [show (if i = k then d i else 0) * A k j =
+          if i = k then d i * A k j else 0 from by split_ifs <;> simp]
+    simp [Finset.sum_ite_eq]]
+
+-- ============================================================
+-- Absolute value of sums (sign propagation)
+-- ============================================================
+
+/-- Absolute value of sum equals sum of absolute values for nonneg terms. -/
+theorem abs_sum_eq_sum_abs_of_nonneg_terms {n : ℕ}
+    (f : Fin n → ℝ) (hf : ∀ k : Fin n, 0 ≤ f k) :
+    |∑ k : Fin n, f k| = ∑ k : Fin n, |f k| := by
+  rw [abs_of_nonneg (Finset.sum_nonneg (fun k _ => hf k))]
+  apply Finset.sum_congr rfl; intro k _; rw [abs_of_nonneg (hf k)]
+
+/-- Variant for nonpositive terms. -/
+theorem abs_sum_eq_sum_abs_of_nonpos_terms {n : ℕ}
+    (f : Fin n → ℝ) (hf : ∀ k : Fin n, f k ≤ 0) :
+    |∑ k : Fin n, f k| = ∑ k : Fin n, |f k| := by
+  rw [abs_of_nonpos (Finset.sum_nonpos (fun k _ => hf k)),
+    show -(∑ k : Fin n, f k) = ∑ k : Fin n, -f k from by
+      rw [Finset.sum_neg_distrib]]
+  apply Finset.sum_congr rfl; intro k _; rw [abs_of_nonpos (hf k)]
+
+-- ============================================================
+-- L⁻¹ = U · A⁻¹ for LU factorizations
+-- ============================================================
+
+/-- **L⁻¹ = U · A⁻¹** when A = LU. From L⁻¹A = L⁻¹(LU) = (L⁻¹L)U = U,
+    right-multiplying by A⁻¹ gives L⁻¹ = UA⁻¹. -/
+lemma L_inv_eq_matMul_U_Ainv (n : ℕ)
+    (A L U A_inv L_inv : Fin n → Fin n → ℝ)
+    (hLU : ∀ i j, ∑ k : Fin n, L i k * U k j = A i j)
+    (hLInv : IsLeftInverse n L L_inv)
+    (hAInv : IsRightInverse n A A_inv) :
+    ∀ k j, L_inv k j = ∑ l : Fin n, U k l * A_inv l j := by
+  -- First: L⁻¹ · A = U
+  have hLA : ∀ k' j', ∑ m : Fin n, L_inv k' m * A m j' = U k' j' := by
+    intro k' j'
+    calc ∑ m : Fin n, L_inv k' m * A m j'
+        = ∑ m : Fin n, L_inv k' m * (∑ p : Fin n, L m p * U p j') := by
+          apply Finset.sum_congr rfl; intro m _; rw [hLU]
+      _ = ∑ p : Fin n, (∑ m : Fin n, L_inv k' m * L m p) * U p j' := by
+          simp_rw [Finset.mul_sum]; rw [Finset.sum_comm]
+          apply Finset.sum_congr rfl; intro p _
+          rw [Finset.sum_mul]
+          apply Finset.sum_congr rfl; intro m _; ring
+      _ = ∑ p : Fin n, (if k' = p then 1 else 0) * U p j' := by
+          apply Finset.sum_congr rfl; intro p _; rw [hLInv k' p]
+      _ = U k' j' := by simp
+  -- Derive: L⁻¹ = U · A⁻¹
+  intro k j
+  calc L_inv k j
+      = ∑ m : Fin n, L_inv k m * (if m = j then 1 else 0) := by simp
+    _ = ∑ m : Fin n, L_inv k m * (∑ l : Fin n, A m l * A_inv l j) := by
+        apply Finset.sum_congr rfl; intro m _; rw [hAInv]
+    _ = ∑ l : Fin n, (∑ m : Fin n, L_inv k m * A m l) * A_inv l j := by
+        simp_rw [Finset.mul_sum]; rw [Finset.sum_comm]
+        apply Finset.sum_congr rfl; intro l _
+        rw [Finset.sum_mul]
+        apply Finset.sum_congr rfl; intro m _; ring
+    _ = ∑ l : Fin n, U k l * A_inv l j := by
+        apply Finset.sum_congr rfl; intro l _; rw [hLA]
+
+-- ============================================================
+-- Infinity norm for matrices (predicate form for Neumann series)
 -- ============================================================
 
 /-- **Infinity norm** of a matrix: max row sum of absolute values.
