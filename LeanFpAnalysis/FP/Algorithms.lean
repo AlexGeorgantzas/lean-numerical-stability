@@ -33,3 +33,5 @@ import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyNonsym
 import LeanFpAnalysis.FP.Algorithms.IterativeRefinement
 import LeanFpAnalysis.FP.Algorithms.MatrixInversion
 import LeanFpAnalysis.FP.Algorithms.GaussJordan
+import LeanFpAnalysis.FP.Algorithms.CondEstimation
+import LeanFpAnalysis.FP.Algorithms.LU.TridiagonalCond

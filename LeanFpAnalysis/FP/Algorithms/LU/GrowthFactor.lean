@@ -50,6 +50,68 @@ lemma infNormVec_nonneg {n : ℕ} (hn : 0 < n) (v : Fin n → ℝ) :
   exact le_trans this (Finset.le_sup' (fun i => |v i|) h0)
 
 -- ============================================================
+-- 1-norm definition (§14.1)
+-- ============================================================
+
+/-- 1-norm of a matrix (max column sum): max_j ∑_i |A_ij|.
+    This is the operator norm subordinate to the vector 1-norm. -/
+noncomputable def oneNorm {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ) : ℝ :=
+  Finset.sup' Finset.univ (Finset.univ_nonempty_iff.mpr ⟨⟨0, hn⟩⟩)
+    (fun j => ∑ i : Fin n, |A i j|)
+
+/-- 1-norm of a matrix is nonneg. -/
+lemma oneNorm_nonneg {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ) :
+    0 ≤ oneNorm hn A := by
+  have h0 : (⟨0, hn⟩ : Fin n) ∈ Finset.univ := Finset.mem_univ _
+  have : 0 ≤ ∑ i : Fin n, |A i ⟨0, hn⟩| :=
+    Finset.sum_nonneg (fun i _ => abs_nonneg _)
+  exact le_trans this (Finset.le_sup' (fun j => ∑ i : Fin n, |A i j|) h0)
+
+/-- 1-norm equals ∞-norm of the transpose. -/
+theorem oneNorm_eq_infNorm_transpose {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) :
+    oneNorm hn A = infNorm hn (fun i j => A j i) := by
+  unfold oneNorm infNorm
+  rfl
+
+/-- Each column sum is bounded by the 1-norm. -/
+lemma col_sum_le_oneNorm {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ)
+    (j : Fin n) : ∑ i : Fin n, |A i j| ≤ oneNorm hn A :=
+  Finset.le_sup' (fun j => ∑ i : Fin n, |A i j|) (Finset.mem_univ j)
+
+-- ============================================================
+-- Diagonal matrix infrastructure (§14.1)
+-- ============================================================
+
+/-- Diagonal matrix from a vector. -/
+noncomputable def diagMatrix {n : ℕ} (d : Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j => if i = j then d i else 0
+
+/-- Right multiplication by a diagonal matrix: (A · diag(d))_ij = A_ij · d_j. -/
+lemma matMul_diagMatrix_right {n : ℕ} (A : Fin n → Fin n → ℝ) (d : Fin n → ℝ) :
+    ∀ i j, matMul n (A) (diagMatrix d) i j = A i j * d j := by
+  intro i j
+  simp only [matMul, diagMatrix]
+  rw [show (∑ k : Fin n, A i k * (if k = j then d k else 0)) = A i j * d j from by
+    conv_lhs =>
+      arg 2; ext k
+      rw [show A i k * (if k = j then d k else 0) =
+          if k = j then A i k * d k else 0 from by split_ifs <;> simp]
+    simp [Finset.sum_ite_eq']]
+
+/-- Left multiplication by a diagonal matrix: (diag(d) · A)_ij = d_i · A_ij. -/
+lemma matMul_diagMatrix_left {n : ℕ} (d : Fin n → ℝ) (A : Fin n → Fin n → ℝ) :
+    ∀ i j, matMul n (diagMatrix d) A i j = d i * A i j := by
+  intro i j
+  simp only [matMul, diagMatrix]
+  rw [show (∑ k : Fin n, (if i = k then d i else 0) * A k j) = d i * A i j from by
+    conv_lhs =>
+      arg 2; ext k
+      rw [show (if i = k then d i else 0) * A k j =
+          if i = k then d i * A k j else 0 from by split_ifs <;> simp]
+    simp [Finset.sum_ite_eq]]
+
+-- ============================================================
 -- §9.3  Growth factor definition
 -- ============================================================
 
