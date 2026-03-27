@@ -1,8 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(pip3 install --quiet pymupdf)",
-      "Bash(python3 -c \":*)"
+      "Bash(npm *)",
+      "Bash(git commit *)",
+      "Bash(colcon *)"
     ]
   },
   "hooks": {

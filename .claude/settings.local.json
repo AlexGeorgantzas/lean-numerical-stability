@@ -1,20 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(lake build)",
-      "Bash(lake clean)",
-      "Bash(lake exe cache get)",
-      "Bash(lake build LeanFpAnalysis)",
-      "Bash(lake build LeanFpAnalysis.FP.Analysis.Summation)",
-      "Bash(aristotle prove-from-file LeanFpAnalysis/FP/Analysis/Summation.lean --output-file LeanFpAnalysis/FP/Analysis/Summation_aristotle.lean)",
-      "Bash(ARISTOTLE_API_KEY=\"arstl_z_AHLtuasRuhg1WK6YNT5SqPnXvB2jmSlgbteNqnavg\" aristotle prove-from-file LeanFpAnalysis/FP/Analysis/Summation.lean --output-file LeanFpAnalysis/FP/Analysis/Summation_aristotle.lean)",
-      "Bash(pdftotext /Users/georgiosalexandrosgeorgantzas/Documents/GitHub/lean-fp-analysis/References/Chapter01.pdf -)",
-      "Bash(lake build LeanFpAnalysis.FP.Analysis.Error)",
-      "Bash(lake build LeanFpAnalysis.FP.Analysis.Stability)",
-      "Bash(brew list poppler)",
-      "Bash(python3 -c \"import pdfminer; print\\(''pdfminer ok''\\)\")",
-      "Bash(python3 -c \"import pypdf; print\\(''pypdf ok''\\)\")",
-      "Bash(python3 -c \"import fitz; print\\(''pymupdf ok''\\)\")"
+      "Bash"
     ]
   }
 }
+
