@@ -125,11 +125,11 @@ private lemma psd_zero_diag_row_zero {m : ℕ} {A : Fin (m + 1) → Fin (m + 1) 
   have inner : ∀ i : Fin (m + 1), ∑ k : Fin (m + 1), A i k *
       (if k = (0 : Fin (m + 1)) then (1 : ℝ) else if k = j.succ then t else 0) =
       A i 0 + t * A i j.succ := by
-    intro i; rw [Fin.sum_univ_succ]; simp only [show (0 : Fin (m + 1)) = 0 from rfl, ite_true, mul_one]
+    intro i; rw [Fin.sum_univ_succ]; simp only [ite_true, mul_one]
     congr 1
     rw [Finset.sum_eq_single j]
     · simp only [show j.succ ≠ (0 : Fin (m + 1)) from Fin.succ_ne_zero _,
-                  ite_false, show j.succ = j.succ from rfl, ite_true]; ring
+                  ite_false, ite_true]; ring
     · intro b _ hb
       have : b.succ ≠ j.succ := fun h => hb (Fin.succ_injective _ h)
       simp [Fin.succ_ne_zero, this]
@@ -144,10 +144,10 @@ private lemma psd_zero_diag_row_zero {m : ℕ} {A : Fin (m + 1) → Fin (m + 1) 
   simp_rw [← Finset.mul_sum, inner]
   -- Outer sum: ∑_i x_i · (A_{i,0} + t·A_{i,j+1})
   rw [Fin.sum_univ_succ]
-  simp only [show (0 : Fin (m + 1)) = 0 from rfl, ite_true, one_mul]
+  simp only [ite_true, one_mul]
   rw [Finset.sum_eq_single j]
   · simp only [show j.succ ≠ (0 : Fin (m + 1)) from Fin.succ_ne_zero _,
-                ite_false, show j.succ = j.succ from rfl, ite_true]
+                ite_false, ite_true]
     rw [h00, hPSD.1 j.succ 0]; ring
   · intro b _ hb
     have : b.succ ≠ j.succ := fun h => hb (Fin.succ_injective _ h)

@@ -22,6 +22,7 @@ import LeanFpAnalysis.FP.Algorithms.LU.Tridiagonal
 import LeanFpAnalysis.FP.Algorithms.LU.TridiagonalRecurrence
 import LeanFpAnalysis.FP.Algorithms.LU.SpecialMatrices
 import LeanFpAnalysis.FP.Algorithms.LU.Doolittle
+import LeanFpAnalysis.FP.Algorithms.LU.BlockLU
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskySpec
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskySolve
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyDemmel
@@ -30,3 +31,5 @@ import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyPSD
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyIndefinite
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyNonsym
 import LeanFpAnalysis.FP.Algorithms.IterativeRefinement
+import LeanFpAnalysis.FP.Algorithms.MatrixInversion
+import LeanFpAnalysis.FP.Algorithms.GaussJordan
