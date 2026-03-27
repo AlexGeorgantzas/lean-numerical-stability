@@ -71,6 +71,40 @@ lemma idMatrix_mulVec (n : ℕ) (v : Fin n → ℝ) :
   ext i; unfold idMatrix; simp [Finset.mem_univ]
 
 -- ============================================================
+-- Matrix-vector operations and componentwise absolute values
+-- ============================================================
+
+/-- Matrix-vector product: (Av)_i = ∑_j A_ij v_j. -/
+noncomputable def matMulVec (n : ℕ) (A : Fin n → Fin n → ℝ) (v : Fin n → ℝ) :
+    Fin n → ℝ :=
+  fun i => ∑ j : Fin n, A i j * v j
+
+/-- Componentwise absolute value of a vector. -/
+noncomputable def absVec (n : ℕ) (v : Fin n → ℝ) : Fin n → ℝ :=
+  fun i => |v i|
+
+/-- Componentwise absolute value of a matrix. -/
+noncomputable def absMatrix (n : ℕ) (A : Fin n → Fin n → ℝ) :
+    Fin n → Fin n → ℝ :=
+  fun i j => |A i j|
+
+-- ============================================================
+-- Matrix inverse predicates
+-- ============================================================
+
+/-- T_inv is a left inverse of T: T_inv * T = I. -/
+def IsLeftInverse (n : ℕ) (T T_inv : Fin n → Fin n → ℝ) : Prop :=
+  ∀ i j : Fin n, ∑ k : Fin n, T_inv i k * T k j = if i = j then 1 else 0
+
+/-- T_inv is a right inverse of T: T * T_inv = I. -/
+def IsRightInverse (n : ℕ) (T T_inv : Fin n → Fin n → ℝ) : Prop :=
+  ∀ i j : Fin n, ∑ k : Fin n, T i k * T_inv k j = if i = j then 1 else 0
+
+/-- Full inverse: both left and right inverse. -/
+def IsInverse (n : ℕ) (T T_inv : Fin n → Fin n → ℝ) : Prop :=
+  IsLeftInverse n T T_inv ∧ IsRightInverse n T T_inv
+
+-- ============================================================
 -- Matrix subtraction: I − M
 -- ============================================================
 

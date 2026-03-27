@@ -14,42 +14,13 @@ import Mathlib.Tactic.Ring
 import Mathlib.Tactic.FieldSimp
 import LeanFpAnalysis.FP.Model
 import LeanFpAnalysis.FP.Analysis.Rounding
+import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
 import LeanFpAnalysis.FP.Algorithms.TriangularSolve
 import LeanFpAnalysis.FP.Algorithms.ForwardSub
 
 namespace LeanFpAnalysis.FP
 
 open scoped BigOperators
-
--- ============================================================
--- Matrix-vector operations over Fin n → Fin n → ℝ
--- ============================================================
-
-/-- Matrix-vector product: (Av)_i = ∑_j A_ij v_j. -/
-noncomputable def matMulVec (n : ℕ) (A : Fin n → Fin n → ℝ) (v : Fin n → ℝ) :
-    Fin n → ℝ :=
-  fun i => ∑ j : Fin n, A i j * v j
-
-/-- Componentwise absolute value of a vector. -/
-noncomputable def absVec (n : ℕ) (v : Fin n → ℝ) : Fin n → ℝ :=
-  fun i => |v i|
-
-/-- Componentwise absolute value of a matrix. -/
-noncomputable def absMatrix (n : ℕ) (A : Fin n → Fin n → ℝ) :
-    Fin n → Fin n → ℝ :=
-  fun i j => |A i j|
-
-/-- T_inv is a left inverse of T: T_inv * T = I. -/
-def IsLeftInverse (n : ℕ) (T T_inv : Fin n → Fin n → ℝ) : Prop :=
-  ∀ i j : Fin n, ∑ k : Fin n, T_inv i k * T k j = if i = j then 1 else 0
-
-/-- T_inv is a right inverse of T: T * T_inv = I. -/
-def IsRightInverse (n : ℕ) (T T_inv : Fin n → Fin n → ℝ) : Prop :=
-  ∀ i j : Fin n, ∑ k : Fin n, T i k * T_inv k j = if i = j then 1 else 0
-
-/-- Full inverse: both left and right inverse. -/
-def IsInverse (n : ℕ) (T T_inv : Fin n → Fin n → ℝ) : Prop :=
-  IsLeftInverse n T T_inv ∧ IsRightInverse n T T_inv
 
 -- ============================================================
 -- Forward error from backward error (Higham §8.2, top)
