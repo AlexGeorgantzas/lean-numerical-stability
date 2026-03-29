@@ -228,7 +228,7 @@ theorem inv_sum_bound (n : ℕ) (V V_inv : Fin n → Fin n → ℝ)
             i.val < k.val ∧ k.val ≤ j.val) =
           Finset.univ.filter (fun k : Fin n =>
             i.val + 1 ≤ k.val ∧ k.val ≤ j.val) := by
-        ext k; simp [Finset.mem_filter]; omega
+        ext k; simp only [Finset.mem_filter, Finset.mem_univ, true_and]; omega
       rw [hfilt_eq2] at hvinv_bound
       -- Step 4: Apply IH to get S(i+1, j) ≤ 2^d'
       have hi1_lt : i.val + 1 < n := by omega

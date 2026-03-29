@@ -7,9 +7,11 @@
 -- (Higham §11) and forward error analysis (§8.2).
 
 import Mathlib.Data.Real.Basic
+import Mathlib.Data.Real.Sqrt
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.BigOperators.Ring.Finset
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
+import Mathlib.Data.Fintype.BigOperators
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import Mathlib.Tactic.FieldSimp
@@ -384,6 +386,311 @@ lemma L_inv_eq_matMul_U_Ainv (n : ℕ)
         apply Finset.sum_congr rfl; intro m _; ring
     _ = ∑ l : Fin n, U k l * A_inv l j := by
         apply Finset.sum_congr rfl; intro l _; rw [hLA]
+
+-- ============================================================
+-- Matrix transpose
+-- ============================================================
+
+/-- **Matrix transpose**: (Aᵀ)_{ij} = A_{ji}. -/
+noncomputable def matTranspose {n : ℕ} (A : Fin n → Fin n → ℝ) :
+    Fin n → Fin n → ℝ :=
+  fun i j => A j i
+
+/-- Transpose of transpose is the original. -/
+theorem matTranspose_involutive {n : ℕ} (A : Fin n → Fin n → ℝ) :
+    matTranspose (matTranspose A) = A := by
+  ext i j; rfl
+
+/-- Transpose distributes over multiplication: (AB)ᵀ = BᵀAᵀ. -/
+theorem matTranspose_matMul {n : ℕ} (A B : Fin n → Fin n → ℝ) :
+    matTranspose (matMul n A B) = matMul n (matTranspose B) (matTranspose A) := by
+  ext i j; unfold matTranspose matMul
+  apply Finset.sum_congr rfl; intro k _; ring
+
+/-- Transpose of identity is identity. -/
+theorem matTranspose_id {n : ℕ} : matTranspose (idMatrix n) = idMatrix n := by
+  ext i j; unfold matTranspose idMatrix
+  simp [eq_comm]
+
+-- ============================================================
+-- Frobenius norm (squared and unsquared)
+-- ============================================================
+
+/-- **Squared Frobenius norm**: ‖A‖²_F = ∑_{ij} A_{ij}². -/
+noncomputable def frobNormSq {n : ℕ} (A : Fin n → Fin n → ℝ) : ℝ :=
+  ∑ i : Fin n, ∑ j : Fin n, A i j ^ 2
+
+/-- Squared Frobenius norm is nonneg. -/
+lemma frobNormSq_nonneg {n : ℕ} (A : Fin n → Fin n → ℝ) :
+    0 ≤ frobNormSq A := by
+  apply Finset.sum_nonneg; intro i _
+  apply Finset.sum_nonneg; intro j _
+  exact sq_nonneg _
+
+/-- **Frobenius norm**: ‖A‖_F = √(∑_{ij} A_{ij}²). -/
+noncomputable def frobNorm {n : ℕ} (A : Fin n → Fin n → ℝ) : ℝ :=
+  Real.sqrt (frobNormSq A)
+
+/-- Frobenius norm is nonneg. -/
+lemma frobNorm_nonneg {n : ℕ} (A : Fin n → Fin n → ℝ) :
+    0 ≤ frobNorm A :=
+  Real.sqrt_nonneg _
+
+/-- ‖A‖²_F = ‖A‖_F². -/
+lemma frobNorm_sq {n : ℕ} (A : Fin n → Fin n → ℝ) :
+    frobNorm A ^ 2 = frobNormSq A := by
+  unfold frobNorm
+  rw [sq, Real.mul_self_sqrt (frobNormSq_nonneg A)]
+
+/-- ‖A‖_F = 0 iff A = 0. -/
+theorem frobNorm_eq_zero_iff {n : ℕ} (A : Fin n → Fin n → ℝ) :
+    frobNorm A = 0 ↔ ∀ i j, A i j = 0 := by
+  unfold frobNorm
+  rw [Real.sqrt_eq_zero (frobNormSq_nonneg A)]
+  unfold frobNormSq
+  constructor
+  · intro h
+    have h1 : ∀ i ∈ Finset.univ, ∑ j : Fin n, A i j ^ 2 = 0 :=
+      (Finset.sum_eq_zero_iff_of_nonneg
+        (fun i _ => Finset.sum_nonneg (fun j _ => sq_nonneg (A i j)))).mp h
+    intro i j
+    have h2 : A i j ^ 2 = 0 :=
+      (Finset.sum_eq_zero_iff_of_nonneg (fun j _ => sq_nonneg (A i j))).mp
+        (h1 i (Finset.mem_univ i)) j (Finset.mem_univ j)
+    exact pow_eq_zero_iff (by norm_num : 2 ≠ 0) |>.mp h2
+  · intro h
+    apply Finset.sum_eq_zero; intro i _
+    apply Finset.sum_eq_zero; intro j _
+    rw [h i j]; ring
+
+/-- Frobenius norm is invariant under transpose: ‖Aᵀ‖_F = ‖A‖_F. -/
+theorem frobNormSq_transpose {n : ℕ} (A : Fin n → Fin n → ℝ) :
+    frobNormSq (matTranspose A) = frobNormSq A := by
+  unfold frobNormSq matTranspose
+  rw [Finset.sum_comm]
+
+/-- Frobenius norm is invariant under transpose. -/
+theorem frobNorm_transpose {n : ℕ} (A : Fin n → Fin n → ℝ) :
+    frobNorm (matTranspose A) = frobNorm A := by
+  unfold frobNorm; rw [frobNormSq_transpose]
+
+/-- **Frobenius submultiplicativity** (squared form):
+    ‖AB‖²_F ≤ ‖A‖²_F · ‖B‖²_F.
+
+    Proof uses Cauchy-Schwarz for finite sums. -/
+theorem frobNormSq_matMul_le {n : ℕ} (A B : Fin n → Fin n → ℝ) :
+    frobNormSq (matMul n A B) ≤ frobNormSq A * frobNormSq B := by
+  unfold frobNormSq matMul
+  -- By Cauchy-Schwarz: (∑_k A_ik B_kj)² ≤ (∑_k A_ik²)(∑_k B_kj²)
+  -- Then sum over i,j and factor.
+  calc ∑ i : Fin n, ∑ j : Fin n, (∑ k : Fin n, A i k * B k j) ^ 2
+      ≤ ∑ i : Fin n, ∑ j : Fin n,
+          (∑ k : Fin n, A i k ^ 2) * (∑ k : Fin n, B k j ^ 2) := by
+        apply Finset.sum_le_sum; intro i _
+        apply Finset.sum_le_sum; intro j _
+        exact Finset.sum_mul_sq_le_sq_mul_sq Finset.univ (fun k => A i k) (fun k => B k j)
+    _ = (∑ i : Fin n, ∑ k : Fin n, A i k ^ 2) *
+        (∑ k : Fin n, ∑ j : Fin n, B k j ^ 2) := by
+        have key : ∀ i : Fin n,
+            ∑ j : Fin n, (∑ k : Fin n, A i k ^ 2) * (∑ k : Fin n, B k j ^ 2) =
+            (∑ k : Fin n, A i k ^ 2) * ∑ j : Fin n, ∑ k : Fin n, B k j ^ 2 := by
+          intro i; rw [Finset.mul_sum]
+        simp_rw [key, ← Finset.sum_mul, Finset.sum_comm (f := fun k j => B k j ^ 2)]
+
+/-- **Frobenius submultiplicativity** (unsquared form):
+    ‖AB‖_F ≤ ‖A‖_F · ‖B‖_F. -/
+theorem frobNorm_matMul_le {n : ℕ} (A B : Fin n → Fin n → ℝ) :
+    frobNorm (matMul n A B) ≤ frobNorm A * frobNorm B := by
+  unfold frobNorm
+  rw [← Real.sqrt_mul (frobNormSq_nonneg A)]
+  exact Real.sqrt_le_sqrt (frobNormSq_matMul_le A B)
+
+/-- **Cauchy-Schwarz for Frobenius inner product**:
+    (∑_ij A_ij B_ij)² ≤ ‖A‖²_F · ‖B‖²_F.
+
+    Proved by applying `Finset.sum_mul_sq_le_sq_mul_sq` to the
+    flattened sum over Fin n × Fin n. -/
+theorem frobInnerProduct_sq_le {n : ℕ} (A B : Fin n → Fin n → ℝ) :
+    (∑ i : Fin n, ∑ j : Fin n, A i j * B i j) ^ 2 ≤
+    frobNormSq A * frobNormSq B := by
+  unfold frobNormSq
+  -- Flatten: use Cauchy-Schwarz on Fin n × Fin n
+  have cs := Finset.sum_mul_sq_le_sq_mul_sq
+    (Finset.univ ×ˢ (Finset.univ : Finset (Fin n)))
+    (fun p : Fin n × Fin n => A p.1 p.2)
+    (fun p : Fin n × Fin n => B p.1 p.2)
+  -- Convert ∑ p ∈ univ ×ˢ univ to ∑ i, ∑ j via Fintype.sum_prod_type'
+  simp only [Finset.univ_product_univ] at cs
+  rw [Fintype.sum_prod_type' (fun i j => A i j * B i j),
+      Fintype.sum_prod_type' (fun i j => A i j ^ 2),
+      Fintype.sum_prod_type' (fun i j => B i j ^ 2)] at cs
+  exact cs
+
+/-- **Frobenius inner product bound**: ∑_ij A_ij B_ij ≤ ‖A‖_F · ‖B‖_F.
+    Follows from Cauchy-Schwarz and ‖·‖_F = √(‖·‖²_F). -/
+theorem frobInnerProduct_le {n : ℕ} (A B : Fin n → Fin n → ℝ) :
+    ∑ i : Fin n, ∑ j : Fin n, A i j * B i j ≤ frobNorm A * frobNorm B := by
+  -- From CS: (∑ AB)² ≤ ‖A‖²_F ‖B‖²_F = (‖A‖_F ‖B‖_F)²
+  have hcs := frobInnerProduct_sq_le A B
+  have hnn : 0 ≤ frobNorm A * frobNorm B :=
+    mul_nonneg (frobNorm_nonneg A) (frobNorm_nonneg B)
+  -- (∑ AB)² ≤ (‖A‖_F ‖B‖_F)² and ‖A‖_F ‖B‖_F ≥ 0 → ∑ AB ≤ ‖A‖_F ‖B‖_F
+  rw [show frobNormSq A * frobNormSq B = (frobNorm A * frobNorm B) ^ 2 from by
+    rw [show (frobNorm A * frobNorm B) ^ 2 = frobNorm A ^ 2 * frobNorm B ^ 2 from by ring,
+        frobNorm_sq, frobNorm_sq]] at hcs
+  nlinarith [sq_abs (∑ i : Fin n, ∑ j : Fin n, A i j * B i j)]
+
+/-- **Frobenius triangle inequality** (squared form):
+    ‖A + B‖²_F ≤ (‖A‖_F + ‖B‖_F)². -/
+theorem frobNormSq_add_le {n : ℕ} (A B : Fin n → Fin n → ℝ) :
+    frobNormSq (fun i j => A i j + B i j) ≤
+    (frobNorm A + frobNorm B) ^ 2 := by
+  -- ‖A+B‖²_F = ‖A‖²_F + 2⟨A,B⟩ + ‖B‖²_F
+  -- ≤ ‖A‖²_F + 2‖A‖_F‖B‖_F + ‖B‖²_F = (‖A‖_F + ‖B‖_F)²
+  have hexp : frobNormSq (fun i j => A i j + B i j) =
+      frobNormSq A + 2 * (∑ i : Fin n, ∑ j : Fin n, A i j * B i j) +
+      frobNormSq B := by
+    unfold frobNormSq
+    simp_rw [show ∀ i j : Fin n, (A i j + B i j) ^ 2 =
+        A i j ^ 2 + 2 * (A i j * B i j) + B i j ^ 2 from fun i j => by ring,
+      Finset.sum_add_distrib]
+    rw [show ∑ x : Fin n, ∑ x_1 : Fin n, 2 * (A x x_1 * B x x_1) =
+        2 * ∑ x : Fin n, ∑ x_1 : Fin n, A x x_1 * B x x_1 from by
+      rw [Finset.mul_sum]; apply Finset.sum_congr rfl; intro i _
+      rw [Finset.mul_sum]]
+  rw [hexp, show (frobNorm A + frobNorm B) ^ 2 =
+      frobNorm A ^ 2 + 2 * (frobNorm A * frobNorm B) + frobNorm B ^ 2 from by ring,
+    frobNorm_sq, frobNorm_sq]
+  linarith [frobInnerProduct_le A B]
+
+/-- **Frobenius triangle inequality**: ‖A + B‖_F ≤ ‖A‖_F + ‖B‖_F. -/
+theorem frobNorm_add_le {n : ℕ} (A B : Fin n → Fin n → ℝ) :
+    frobNorm (fun i j => A i j + B i j) ≤ frobNorm A + frobNorm B := by
+  have hnn : 0 ≤ frobNorm A + frobNorm B :=
+    add_nonneg (frobNorm_nonneg A) (frobNorm_nonneg B)
+  rw [← Real.sqrt_sq hnn]
+  exact Real.sqrt_le_sqrt (frobNormSq_add_le A B)
+
+/-- Frobenius norm is invariant under negation: ‖-A‖²_F = ‖A‖²_F. -/
+theorem frobNormSq_neg {n : ℕ} (A : Fin n → Fin n → ℝ) :
+    frobNormSq (fun i j => -A i j) = frobNormSq A := by
+  unfold frobNormSq; congr 1; ext i; congr 1; ext j; ring
+
+/-- Frobenius norm is invariant under negation: ‖-A‖_F = ‖A‖_F. -/
+theorem frobNorm_neg {n : ℕ} (A : Fin n → Fin n → ℝ) :
+    frobNorm (fun i j => -A i j) = frobNorm A := by
+  unfold frobNorm; rw [frobNormSq_neg]
+
+/-- **Frobenius triangle inequality for subtraction**: ‖A - B‖_F ≤ ‖A‖_F + ‖B‖_F. -/
+theorem frobNorm_sub_le {n : ℕ} (A B : Fin n → Fin n → ℝ) :
+    frobNorm (fun i j => A i j - B i j) ≤ frobNorm A + frobNorm B := by
+  have h := frobNorm_add_le A (fun i j => -B i j)
+  rw [frobNorm_neg] at h
+  convert h using 2
+
+-- ============================================================
+-- Orthogonal matrices
+-- ============================================================
+
+/-- **Orthogonal matrix**: U is orthogonal iff UᵀU = I and UUᵀ = I.
+    For finite square real matrices, either condition implies the other,
+    but we bundle both for convenience. -/
+def IsOrthogonal (n : ℕ) (U : Fin n → Fin n → ℝ) : Prop :=
+  IsInverse n U (matTranspose U)
+
+/-- Orthogonal matrices satisfy UᵀU = I (Uᵀ is a left inverse). -/
+lemma IsOrthogonal.left_inv {n : ℕ} {U : Fin n → Fin n → ℝ}
+    (hU : IsOrthogonal n U) : IsLeftInverse n U (matTranspose U) := hU.1
+
+/-- Orthogonal matrices satisfy UUᵀ = I (Uᵀ is a right inverse). -/
+lemma IsOrthogonal.right_inv {n : ℕ} {U : Fin n → Fin n → ℝ}
+    (hU : IsOrthogonal n U) : IsRightInverse n U (matTranspose U) := hU.2
+
+/-- For orthogonal U, columns are orthonormal: ∑_k U_ki U_kj = δ_ij. -/
+lemma IsOrthogonal.col_orthonormal {n : ℕ} {U : Fin n → Fin n → ℝ}
+    (hU : IsOrthogonal n U) (i j : Fin n) :
+    ∑ k : Fin n, U k i * U k j = if i = j then 1 else 0 := by
+  have := hU.1 i j; unfold matTranspose at this; exact this
+
+/-- For orthogonal U, rows are orthonormal: ∑_k U_ik U_jk = δ_ij. -/
+lemma IsOrthogonal.row_orthonormal {n : ℕ} {U : Fin n → Fin n → ℝ}
+    (hU : IsOrthogonal n U) (i j : Fin n) :
+    ∑ k : Fin n, U i k * U j k = if i = j then 1 else 0 := by
+  have := hU.2 i j; unfold matTranspose at this; exact this
+
+/-- Frobenius norm is invariant under left multiplication by orthogonal matrix:
+    ‖UA‖²_F = ‖A‖²_F.
+
+    Proof: ‖UA‖²_F = tr((UA)ᵀUA) = tr(AᵀUᵀUA) = tr(AᵀA) = ‖A‖²_F.
+    We prove this directly by expanding sums and using orthogonality. -/
+theorem frobNormSq_orthogonal_left {n : ℕ} (U A : Fin n → Fin n → ℝ)
+    (hU : IsOrthogonal n U) :
+    frobNormSq (matMul n U A) = frobNormSq A := by
+  unfold frobNormSq matMul
+  -- ∑_i ∑_j (∑_k U_ik A_kj)² = ∑_i ∑_j A_ij²
+  -- Strategy: swap to ∑_j ∑_i on LHS, then for fixed j show
+  -- ∑_i (∑_k U_ik A_kj)² = ∑_k A_kj² via column orthogonality.
+  conv_lhs => rw [Finset.sum_comm]
+  -- LHS is now ∑_j ∑_i (∑_k U_ik A_kj)², RHS is still ∑_i ∑_j A_ij²
+  conv_rhs => rw [Finset.sum_comm]
+  -- RHS is now ∑_j ∑_i A_ij²
+  apply Finset.sum_congr rfl; intro j _
+  -- Goal: ∑_i (∑_k U_ik A_kj)² = ∑_i A_ij²
+  -- For fixed j, expand and use column orthogonality of U.
+  have expand : ∀ i : Fin n,
+      (∑ k : Fin n, U i k * A k j) ^ 2 =
+      ∑ k : Fin n, ∑ l : Fin n, U i k * U i l * (A k j * A l j) := by
+    intro i; rw [sq, Finset.sum_mul]
+    apply Finset.sum_congr rfl; intro k _
+    rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl; intro l _; ring
+  simp_rw [expand]
+  -- Goal: ∑_i ∑_k ∑_l U_ik U_il (A_kj A_lj) = ∑_i A_ij²
+  -- Swap to ∑_k ∑_i ∑_l, then ∑_k ∑_l ∑_i
+  rw [Finset.sum_comm]
+  -- Goal: ∑_k ∑_i ∑_l U_ik U_il (A_kj A_lj) = ∑_i A_ij²
+  -- For fixed k, collapse using orthogonality
+  have collapse : ∀ k : Fin n,
+      ∑ i : Fin n, ∑ l : Fin n, U i k * U i l * (A k j * A l j) = A k j ^ 2 := by
+    intro k; rw [Finset.sum_comm]
+    -- ∑_l ∑_i U_ik U_il (A_kj A_lj) = A_kj²
+    -- Factor: ∑_i U_ik U_il (A_kj A_lj) = (∑_i U_ik U_il)(A_kj A_lj)
+    have factor : ∀ l : Fin n,
+        ∑ i : Fin n, U i k * U i l * (A k j * A l j) =
+        (∑ i : Fin n, U i k * U i l) * (A k j * A l j) := by
+      intro l; rw [← Finset.sum_mul]
+    simp_rw [factor, hU.col_orthonormal]
+    simp [Finset.sum_ite_eq, Finset.mem_univ]; ring
+  exact Finset.sum_congr rfl (fun k _ => collapse k)
+
+/-- Frobenius norm is invariant under right multiplication by orthogonal matrix:
+    ‖AV‖²_F = ‖A‖²_F. -/
+theorem frobNormSq_orthogonal_right {n : ℕ} (A V : Fin n → Fin n → ℝ)
+    (hV : IsOrthogonal n V) :
+    frobNormSq (matMul n A V) = frobNormSq A := by
+  unfold frobNormSq matMul
+  -- For fixed i: ∑_j (∑_k A_ik V_kj)² = ∑_k A_ik² (by row orthogonality of V)
+  apply Finset.sum_congr rfl; intro i _
+  have expand : ∀ j : Fin n,
+      (∑ k : Fin n, A i k * V k j) ^ 2 =
+      ∑ k : Fin n, ∑ l : Fin n, A i k * A i l * (V k j * V l j) := by
+    intro j; rw [sq, Finset.sum_mul]
+    apply Finset.sum_congr rfl; intro k _
+    rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl; intro l _; ring
+  simp_rw [expand]
+  have collapse : ∀ k : Fin n,
+      ∑ j : Fin n, ∑ l : Fin n, A i k * A i l * (V k j * V l j) = A i k ^ 2 := by
+    intro k
+    rw [Finset.sum_comm]
+    have factor : ∀ l : Fin n,
+        ∑ j : Fin n, A i k * A i l * (V k j * V l j) =
+        A i k * A i l * (∑ j : Fin n, V k j * V l j) := by
+      intro l; rw [Finset.mul_sum]
+    simp_rw [factor, hV.row_orthonormal]
+    simp [Finset.sum_ite_eq, Finset.mem_univ]; ring
+  rw [Finset.sum_comm]
+  exact Finset.sum_congr rfl (fun k _ => collapse k)
 
 -- ============================================================
 -- Infinity norm for matrices (predicate form for Neumann series)
