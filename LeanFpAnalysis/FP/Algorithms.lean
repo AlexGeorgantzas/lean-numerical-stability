@@ -38,3 +38,4 @@ import LeanFpAnalysis.FP.Algorithms.LU.TridiagonalCond
 import LeanFpAnalysis.FP.Algorithms.Sylvester.SylvesterSpec
 import LeanFpAnalysis.FP.Algorithms.Sylvester.SylvesterBackward
 import LeanFpAnalysis.FP.Algorithms.Sylvester.SylvesterPerturbation
+import LeanFpAnalysis.FP.Algorithms.StationaryIteration

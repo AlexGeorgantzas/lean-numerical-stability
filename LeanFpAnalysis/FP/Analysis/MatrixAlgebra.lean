@@ -758,6 +758,86 @@ theorem matPow_infNorm_bound (n : ℕ) (M : Fin n → Fin n → ℝ)
       _ = c * c ^ k := by ring
 
 -- ============================================================
+-- ∞-norm submultiplicativity (general, no nonneg requirement)
+-- ============================================================
+
+/-- Each row sum of a matrix is bounded by its ∞-norm. -/
+lemma row_sum_le_infNorm {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ)
+    (i : Fin n) : ∑ j : Fin n, |A i j| ≤ infNorm hn A :=
+  Finset.le_sup' (fun i => ∑ j : Fin n, |A i j|) (Finset.mem_univ i)
+
+/-- **∞-norm submultiplicativity**: ‖AB‖∞ ≤ ‖A‖∞ · ‖B‖∞.
+    Unlike `matPow_infNorm_bound`, this requires no nonnegativity hypothesis. -/
+theorem infNorm_matMul_le {n : ℕ} (hn : 0 < n)
+    (A B : Fin n → Fin n → ℝ) :
+    infNorm hn (matMul n A B) ≤ infNorm hn A * infNorm hn B := by
+  unfold infNorm
+  apply Finset.sup'_le
+  intro i _
+  -- Row i of AB: ∑_j |∑_k A_{ik} B_{kj}| ≤ ∑_j ∑_k |A_{ik}|·|B_{kj}|
+  calc ∑ j : Fin n, |matMul n A B i j|
+      ≤ ∑ j : Fin n, ∑ k : Fin n, |A i k| * |B k j| := by
+        apply Finset.sum_le_sum; intro j _
+        unfold matMul
+        calc |∑ k : Fin n, A i k * B k j|
+            ≤ ∑ k : Fin n, |A i k * B k j| := Finset.abs_sum_le_sum_abs _ _
+          _ = ∑ k : Fin n, |A i k| * |B k j| := by
+              congr 1; ext k; exact abs_mul _ _
+    _ = ∑ k : Fin n, |A i k| * ∑ j : Fin n, |B k j| := by
+        rw [Finset.sum_comm]; congr 1; ext k; rw [Finset.mul_sum]
+    _ ≤ ∑ k : Fin n, |A i k| * infNorm hn B := by
+        apply Finset.sum_le_sum; intro k _
+        exact mul_le_mul_of_nonneg_left (row_sum_le_infNorm hn B k) (abs_nonneg _)
+    _ = (∑ k : Fin n, |A i k|) * infNorm hn B := by rw [Finset.sum_mul]
+    _ ≤ infNorm hn A * infNorm hn B := by
+        apply mul_le_mul_of_nonneg_right (row_sum_le_infNorm hn A i) (infNorm_nonneg hn B)
+
+/-- **‖M^k‖∞ ≤ ‖M‖∞^k** for any matrix (no nonneg requirement).
+    Generalizes `matPow_infNorm_bound` by removing the M ≥ 0 hypothesis. -/
+theorem infNorm_matPow_le {n : ℕ} (hn : 0 < n)
+    (M : Fin n → Fin n → ℝ) (k : ℕ) :
+    infNorm hn (matPow n M k) ≤ infNorm hn M ^ k := by
+  induction k with
+  | zero =>
+    simp only [matPow, pow_zero]
+    unfold infNorm idMatrix
+    apply Finset.sup'_le; intro i _
+    have : ∀ j : Fin n, |if i = j then (1 : ℝ) else 0| = if i = j then 1 else 0 := by
+      intro j; split <;> simp
+    simp_rw [this, Finset.sum_ite_eq, Finset.mem_univ, if_true]; linarith
+  | succ k ih =>
+    have hnn := infNorm_nonneg hn M
+    calc infNorm hn (matPow n M (k + 1))
+        = infNorm hn (matMul n M (matPow n M k)) := by rw [matPow_succ]
+      _ ≤ infNorm hn M * infNorm hn (matPow n M k) := infNorm_matMul_le hn M _
+      _ ≤ infNorm hn M * infNorm hn M ^ k :=
+          mul_le_mul_of_nonneg_left ih hnn
+      _ = infNorm hn M ^ (k + 1) := by ring
+
+-- ============================================================
+-- Matrix-vector product: associativity and triangle inequality
+-- ============================================================
+
+/-- Matrix-vector product associativity: ((AB)v)_i = (A(Bv))_i. -/
+theorem matMulVec_matMul (n : ℕ) (A B : Fin n → Fin n → ℝ) (v : Fin n → ℝ) :
+    ∀ i, matMulVec n (matMul n A B) v i = matMulVec n A (matMulVec n B v) i := by
+  intro i; unfold matMulVec matMul
+  simp_rw [Finset.sum_mul, Finset.mul_sum]
+  rw [Finset.sum_comm]
+  congr 1; ext k; congr 1; ext j; ring
+
+/-- Triangle inequality for matrix-vector product:
+    |Ax|_i ≤ ∑_j |A_{ij}| · |x_j|. -/
+theorem abs_matMulVec_le (n : ℕ) (A : Fin n → Fin n → ℝ) (x : Fin n → ℝ) :
+    ∀ i : Fin n, |matMulVec n A x i| ≤ ∑ j : Fin n, |A i j| * |x j| := by
+  intro i
+  unfold matMulVec
+  calc |∑ j : Fin n, A i j * x j|
+      ≤ ∑ j : Fin n, |A i j * x j| := Finset.abs_sum_le_sum_abs _ _
+    _ = ∑ j : Fin n, |A i j| * |x j| := by
+        congr 1; ext j; exact abs_mul (A i j) (x j)
+
+-- ============================================================
 -- Neumann partial sum: nonneg entries when M ≥ 0
 -- ============================================================
 

@@ -42,16 +42,6 @@ def vecLe (n : ℕ) (u v : Fin n → ℝ) : Prop := ∀ i : Fin n, u i ≤ v i
 def matLe (n : ℕ) (A B : Fin n → Fin n → ℝ) : Prop :=
   ∀ i j : Fin n, A i j ≤ B i j
 
-/-- Triangle inequality for matrix-vector product:
-    |Ax|_i ≤ ∑_j |A_{ij}| · |x_j|. -/
-lemma abs_matMulVec_le (n : ℕ) (A : Fin n → Fin n → ℝ) (x : Fin n → ℝ) :
-    ∀ i : Fin n, |matMulVec n A x i| ≤ ∑ j : Fin n, |A i j| * |x j| := by
-  intro i
-  unfold matMulVec
-  calc |∑ j : Fin n, A i j * x j|
-      ≤ ∑ j : Fin n, |A i j * x j| := Finset.abs_sum_le_sum_abs _ _
-    _ = ∑ j : Fin n, |A i j| * |x j| := by
-        congr 1; ext j; exact abs_mul (A i j) (x j)
 
 -- ============================================================
 -- §11.1  Solver specification (equation 11.5)
