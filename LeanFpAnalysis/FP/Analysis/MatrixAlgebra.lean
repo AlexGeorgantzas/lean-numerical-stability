@@ -692,6 +692,81 @@ theorem frobNormSq_orthogonal_right {n : ℕ} (A V : Fin n → Fin n → ℝ)
   rw [Finset.sum_comm]
   exact Finset.sum_congr rfl (fun k _ => collapse k)
 
+/-- ‖UA‖_F = ‖A‖_F when U is orthogonal. -/
+theorem frobNorm_orthogonal_left {n : ℕ} (U A : Fin n → Fin n → ℝ)
+    (hU : IsOrthogonal n U) :
+    frobNorm (matMul n U A) = frobNorm A := by
+  unfold frobNorm; congr 1; exact frobNormSq_orthogonal_left U A hU
+
+/-- ‖AV‖_F = ‖A‖_F when V is orthogonal. -/
+theorem frobNorm_orthogonal_right {n : ℕ} (A V : Fin n → Fin n → ℝ)
+    (hV : IsOrthogonal n V) :
+    frobNorm (matMul n A V) = frobNorm A := by
+  unfold frobNorm; congr 1; exact frobNormSq_orthogonal_right A V hV
+
+/-- Transpose of orthogonal matrix is orthogonal.
+
+    Since (Uᵀ)ᵀ = U, we have (Uᵀ)ᵀUᵀ = UUᵀ = I and Uᵀ(Uᵀ)ᵀ = UᵀU = I. -/
+theorem IsOrthogonal.transpose {n : ℕ} {U : Fin n → Fin n → ℝ}
+    (hU : IsOrthogonal n U) : IsOrthogonal n (matTranspose U) :=
+  -- matTranspose (matTranspose U) = U definitionally at each entry,
+  -- so IsLeftInverse for Uᵀ is IsRightInverse for U and vice versa.
+  ⟨hU.right_inv, hU.left_inv⟩
+
+/-- Product of orthogonal matrices is orthogonal.
+
+    Proof: (UV)ᵀ(UV) = VᵀUᵀUV = VᵀV = I and
+    (UV)(UV)ᵀ = UVVᵀUᵀ = UUᵀ = I, both by expanding sums and
+    using column/row orthonormality of U and V. -/
+theorem IsOrthogonal.mul {n : ℕ} {U V : Fin n → Fin n → ℝ}
+    (hU : IsOrthogonal n U) (hV : IsOrthogonal n V) :
+    IsOrthogonal n (matMul n U V) := by
+  constructor
+  · -- Left inverse: (UV)ᵀ(UV) = I
+    intro i j
+    have h1 : ∀ k : Fin n,
+        matTranspose (matMul n U V) i k = ∑ l : Fin n, U k l * V l i := by
+      intro k; rfl
+    have h2 : ∀ k : Fin n,
+        matMul n U V k j = ∑ m : Fin n, U k m * V m j := by
+      intro k; rfl
+    simp_rw [h1, h2]
+    -- Goal: ∑_k (∑_l U_{kl} V_{li}) * (∑_m U_{km} V_{mj}) = δ_{ij}
+    -- Step 1: distribute to triple sum ∑_k ∑_l ∑_m
+    conv_lhs => arg 2; ext k; rw [Finset.sum_mul]
+    conv_lhs => arg 2; ext k; arg 2; ext l; rw [Finset.mul_sum]
+    -- Step 2: swap to ∑_l ∑_m ∑_k
+    rw [Finset.sum_comm]
+    conv_lhs => arg 2; ext l; rw [Finset.sum_comm]
+    -- Step 3: factor out V terms and use column orthonormality of U
+    conv_lhs =>
+      arg 2; ext l; arg 2; ext m; arg 2; ext k
+      rw [show U k l * V l i * (U k m * V m j) =
+          V l i * V m j * (U k l * U k m) by ring]
+    simp_rw [← Finset.mul_sum, hU.col_orthonormal]
+    simp [Finset.sum_ite_eq, Finset.mem_univ]
+    exact hV.col_orthonormal i j
+  · -- Right inverse: (UV)(UV)ᵀ = I
+    intro i j
+    have h1 : ∀ k : Fin n,
+        matMul n U V i k = ∑ l : Fin n, U i l * V l k := by
+      intro k; rfl
+    have h2 : ∀ k : Fin n,
+        matTranspose (matMul n U V) k j = ∑ m : Fin n, U j m * V m k := by
+      intro k; rfl
+    simp_rw [h1, h2]
+    conv_lhs => arg 2; ext k; rw [Finset.sum_mul]
+    conv_lhs => arg 2; ext k; arg 2; ext l; rw [Finset.mul_sum]
+    rw [Finset.sum_comm]
+    conv_lhs => arg 2; ext l; rw [Finset.sum_comm]
+    conv_lhs =>
+      arg 2; ext l; arg 2; ext m; arg 2; ext k
+      rw [show U i l * V l k * (U j m * V m k) =
+          U i l * U j m * (V l k * V m k) by ring]
+    simp_rw [← Finset.mul_sum, hV.row_orthonormal]
+    simp [Finset.sum_ite_eq, Finset.mem_univ]
+    exact hU.row_orthonormal i j
+
 -- ============================================================
 -- Infinity norm for matrices (predicate form for Neumann series)
 -- ============================================================
@@ -836,6 +911,41 @@ theorem abs_matMulVec_le (n : ℕ) (A : Fin n → Fin n → ℝ) (x : Fin n → 
       ≤ ∑ j : Fin n, |A i j * x j| := Finset.abs_sum_le_sum_abs _ _
     _ = ∑ j : Fin n, |A i j| * |x j| := by
         congr 1; ext j; exact abs_mul (A i j) (x j)
+
+/-- **‖Av‖∞ ≤ ‖A‖∞ · ‖v‖∞**: submultiplicativity for matrix-vector product. -/
+theorem infNormVec_matMulVec_le {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) (v : Fin n → ℝ) :
+    infNormVec hn (matMulVec n A v) ≤ infNorm hn A * infNormVec hn v := by
+  unfold infNormVec matMulVec
+  apply Finset.sup'_le; intro i _
+  calc |∑ j : Fin n, A i j * v j|
+      ≤ ∑ j : Fin n, |A i j * v j| := Finset.abs_sum_le_sum_abs _ _
+    _ = ∑ j : Fin n, |A i j| * |v j| := by congr 1; ext j; exact abs_mul _ _
+    _ ≤ ∑ j : Fin n, |A i j| * Finset.sup' Finset.univ
+          (Finset.univ_nonempty_iff.mpr ⟨⟨0, hn⟩⟩) (fun i => |v i|) := by
+        apply Finset.sum_le_sum; intro j _
+        exact mul_le_mul_of_nonneg_left
+          (Finset.le_sup' (fun i => |v i|) (Finset.mem_univ j)) (abs_nonneg _)
+    _ = (∑ j : Fin n, |A i j|) * Finset.sup' Finset.univ
+          (Finset.univ_nonempty_iff.mpr ⟨⟨0, hn⟩⟩) (fun i => |v i|) := by
+        rw [Finset.sum_mul]
+    _ ≤ infNorm hn A * Finset.sup' Finset.univ
+          (Finset.univ_nonempty_iff.mpr ⟨⟨0, hn⟩⟩) (fun i => |v i|) := by
+        apply mul_le_mul_of_nonneg_right (row_sum_le_infNorm hn A i)
+        apply Finset.le_sup'_of_le _ (Finset.mem_univ ⟨0, hn⟩)
+        exact abs_nonneg _
+
+/-- Infinity norm of |A| equals infinity norm of A. -/
+theorem infNorm_absMatrix {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ) :
+    infNorm hn (absMatrix n A) = infNorm hn A := by
+  unfold infNorm absMatrix
+  congr 1; ext i; congr 1; ext j
+  exact abs_abs (A i j)
+
+/-- Infinity norm of |v| equals infinity norm of v. -/
+theorem infNormVec_absVec {n : ℕ} (hn : 0 < n) (v : Fin n → ℝ) :
+    infNormVec hn (absVec n v) = infNormVec hn v := by
+  unfold infNormVec absVec; congr 1; ext i; exact abs_abs (v i)
 
 -- ============================================================
 -- Neumann partial sum: nonneg entries when M ≥ 0

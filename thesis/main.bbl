@@ -1,0 +1,55 @@
+\begin{thebibliography}{KATB23}
+
+\bibitem[BM11]{boldo2011flocq}
+Sylvie Boldo and Guillaume Melquiond.
+\newblock {Flocq}: A unified library for proving floating-point algorithms in
+  {Coq}.
+\newblock {\em Proceedings of the 20th IEEE Symposium on Computer Arithmetic
+  (ARITH)}, pages 243--252, 2011.
+
+\bibitem[Dem97]{demmel1997}
+James~W. Demmel.
+\newblock {\em Applied Numerical Linear Algebra}.
+\newblock SIAM, 1997.
+
+\bibitem[dMU21]{moura2021lean4}
+Leonardo de~Moura and Sebastian Ullrich.
+\newblock The {Lean 4} theorem prover and programming language.
+\newblock In {\em Proceedings of the 28th International Conference on Automated
+  Deduction (CADE-28)}, pages 625--635. Springer, 2021.
+
+\bibitem[{Har}25]{aristotle2025}
+{Harmonic}.
+\newblock Aristotle: Scaling lean 4 theorem proving with reinforcement
+  learning.
+\newblock Technical Report, Harmonic Inc., 2025.
+
+\bibitem[Hig02]{higham2002}
+Nicholas~J. Higham.
+\newblock {\em Accuracy and Stability of Numerical Algorithms}.
+\newblock SIAM, 2nd edition, 2002.
+
+\bibitem[{IEE}19]{ieee754_2019}
+{IEEE}.
+\newblock {IEEE} standard for floating-point arithmetic ({IEEE} std 754-2019).
+\newblock IEEE Std 754-2019, 2019.
+
+\bibitem[KATB23]{kellison2023}
+Ariel~E. Kellison, Andrew~W. Appel, Mohit Tekriwal, and David Bindel.
+\newblock {LAProof}: A library of formal proofs of accuracy and correctness for
+  linear algebra programs.
+\newblock In {\em 30th IEEE Symposium on Computer Arithmetic (ARITH)}, pages
+  127--134. IEEE, 2023.
+
+\bibitem[{The}20]{mathlib2020}
+{The mathlib Community}.
+\newblock The {Lean} mathematical library.
+\newblock {\em Proceedings of the 9th ACM SIGPLAN International Conference on
+  Certified Programs and Proofs (CPP)}, pages 367--381, 2020.
+
+\bibitem[Wil63]{wilkinson1963}
+James~H. Wilkinson.
+\newblock {\em Rounding Errors in Algebraic Processes}.
+\newblock Prentice-Hall, 1963.
+
+\end{thebibliography}

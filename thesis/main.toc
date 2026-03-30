@@ -1,0 +1,27 @@
+\babel@toc {english}{}\relax 
+\contentsline {section}{\numberline {1}Εισαγωγή}{2}{}%
+\contentsline {subsection}{\numberline {1.1}Κίνητρο}{2}{}%
+\contentsline {subsection}{\numberline {1.2}Συνεισφορά}{2}{}%
+\contentsline {subsection}{\numberline {1.3}Δομή της εργασίας}{3}{}%
+\contentsline {section}{\numberline {2}Θεωρητικό Υπόβαθρο}{4}{}%
+\contentsline {subsection}{\numberline {2.1}Αριθμητική κινητής υποδιαστολής}{4}{}%
+\contentsline {subsection}{\numberline {2.2}Το πλαίσιο του Higham}{4}{}%
+\contentsline {subsection}{\numberline {2.3}Lean 4 και Mathlib}{4}{}%
+\contentsline {section}{\numberline {3}Η Βιβλιοθήκη \texttt {lean-fp-analysis}}{4}{}%
+\contentsline {subsection}{\numberline {3.1}Σχεδίαση του FPModel}{4}{}%
+\contentsline {subsection}{\numberline {3.2}Gamma calculus}{4}{}%
+\contentsline {subsection}{\numberline {3.3}Kernel contracts}{4}{}%
+\contentsline {subsection}{\numberline {3.4}Αρχιτεκτονική modules}{4}{}%
+\contentsline {section}{\numberline {4}Μελέτη Σύνθεσης}{4}{}%
+\contentsline {section}{\numberline {5}Σύγκριση και Ανάλυση}{4}{}%
+\contentsline {subsection}{\numberline {5.1}Σύγκριση με LAProof (Coq)}{4}{}%
+\contentsline {subsection}{\numberline {5.2}Κόστος απόδειξης και εκφραστικότητα}{4}{}%
+\contentsline {section}{\numberline {6}Αξιολόγηση LLM}{4}{}%
+\contentsline {subsection}{\numberline {6.1}Ερευνητικό ερώτημα}{4}{}%
+\contentsline {subsection}{\numberline {6.2}Πειραματική διάταξη}{4}{}%
+\contentsline {subsection}{\numberline {6.3}Αποτελέσματα}{4}{}%
+\contentsline {subsection}{\numberline {6.4}Συζήτηση}{4}{}%
+\contentsline {section}{\numberline {7}Συμπεράσματα}{4}{}%
+\contentsline {subsection}{\numberline {7.1}Συνεισφορές}{4}{}%
+\contentsline {subsection}{\numberline {7.2}Περιορισμοί}{4}{}%
+\contentsline {subsection}{\numberline {7.3}Μελλοντική εργασία}{4}{}%

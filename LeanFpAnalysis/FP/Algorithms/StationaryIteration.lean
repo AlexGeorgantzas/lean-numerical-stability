@@ -465,29 +465,6 @@ theorem one_step_residual (n : ℕ) (A M N M_inv : Fin n → Fin n → ℝ)
 -- §16.2  Normwise one-step bound and forward bound (eqs 16.5, 16.8)
 -- ============================================================
 
-/-- ‖Av‖∞ ≤ ‖A‖∞ · ‖v‖∞: submultiplicativity for matrix-vector product. -/
-theorem infNormVec_matMulVec_le {n : ℕ} (hn : 0 < n)
-    (A : Fin n → Fin n → ℝ) (v : Fin n → ℝ) :
-    infNormVec hn (matMulVec n A v) ≤ infNorm hn A * infNormVec hn v := by
-  unfold infNormVec matMulVec
-  apply Finset.sup'_le; intro i _
-  calc |∑ j : Fin n, A i j * v j|
-      ≤ ∑ j : Fin n, |A i j * v j| := Finset.abs_sum_le_sum_abs _ _
-    _ = ∑ j : Fin n, |A i j| * |v j| := by congr 1; ext j; exact abs_mul _ _
-    _ ≤ ∑ j : Fin n, |A i j| * Finset.sup' Finset.univ
-          (Finset.univ_nonempty_iff.mpr ⟨⟨0, hn⟩⟩) (fun i => |v i|) := by
-        apply Finset.sum_le_sum; intro j _
-        exact mul_le_mul_of_nonneg_left
-          (Finset.le_sup' (fun i => |v i|) (Finset.mem_univ j)) (abs_nonneg _)
-    _ = (∑ j : Fin n, |A i j|) * Finset.sup' Finset.univ
-          (Finset.univ_nonempty_iff.mpr ⟨⟨0, hn⟩⟩) (fun i => |v i|) := by
-        rw [Finset.sum_mul]
-    _ ≤ infNorm hn A * Finset.sup' Finset.univ
-          (Finset.univ_nonempty_iff.mpr ⟨⟨0, hn⟩⟩) (fun i => |v i|) := by
-        apply mul_le_mul_of_nonneg_right (row_sum_le_infNorm hn A i)
-        apply Finset.le_sup'_of_le _ (Finset.mem_univ ⟨0, hn⟩)
-        exact abs_nonneg _
-
 /-- Normwise one-step error bound from `one_step_error`:
     ‖e_{k+1}‖∞ ≤ ‖G‖∞·‖e_k‖∞ + ‖M⁻¹‖∞·‖ξ_k‖∞. -/
 theorem normwise_one_step_bound (n : ℕ) (hn : 0 < n)

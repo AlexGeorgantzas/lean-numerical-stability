@@ -39,3 +39,4 @@ import LeanFpAnalysis.FP.Algorithms.Sylvester.SylvesterSpec
 import LeanFpAnalysis.FP.Algorithms.Sylvester.SylvesterBackward
 import LeanFpAnalysis.FP.Algorithms.Sylvester.SylvesterPerturbation
 import LeanFpAnalysis.FP.Algorithms.StationaryIteration
+import LeanFpAnalysis.FP.Algorithms.MatrixPowers
