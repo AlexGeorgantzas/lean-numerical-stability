@@ -40,3 +40,11 @@ import LeanFpAnalysis.FP.Algorithms.Sylvester.SylvesterBackward
 import LeanFpAnalysis.FP.Algorithms.Sylvester.SylvesterPerturbation
 import LeanFpAnalysis.FP.Algorithms.StationaryIteration
 import LeanFpAnalysis.FP.Algorithms.MatrixPowers
+import LeanFpAnalysis.FP.Algorithms.QR.HouseholderSpec
+import LeanFpAnalysis.FP.Algorithms.QR.GivensSpec
+import LeanFpAnalysis.FP.Algorithms.QR.HouseholderQR
+import LeanFpAnalysis.FP.Algorithms.QR.GivensQR
+import LeanFpAnalysis.FP.Algorithms.QR.QRSolve
+import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSPerturbation
+import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSQRSolve
+import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSNormalEquations

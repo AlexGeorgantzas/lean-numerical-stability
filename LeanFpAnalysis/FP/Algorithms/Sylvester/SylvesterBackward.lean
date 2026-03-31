@@ -43,16 +43,6 @@ noncomputable def svdResidual (n : ℕ)
     (R : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
   matMul n (matMul n (matTranspose U) R) V
 
-/-- Uᵀ is orthogonal when U is orthogonal. -/
-lemma IsOrthogonal.transpose {n : ℕ} {U : Fin n → Fin n → ℝ}
-    (hU : IsOrthogonal n U) : IsOrthogonal n (matTranspose U) := by
-  unfold IsOrthogonal IsInverse IsLeftInverse IsRightInverse matTranspose at hU ⊢
-  constructor
-  · -- Goal: ∑ k, U i k * U j k = δ_{ij}  (from hU.2)
-    exact hU.2
-  · -- Goal: ∑ k, U k i * U k j = δ_{ij}  (from hU.1)
-    exact hU.1
-
 /-- The SVD-transformed residual has the same Frobenius norm as R:
     ‖R̃‖²_F = ‖R‖²_F, since orthogonal transformations preserve ‖·‖_F. -/
 theorem svdResidual_frobNormSq (n : ℕ) (U V R : Fin n → Fin n → ℝ)

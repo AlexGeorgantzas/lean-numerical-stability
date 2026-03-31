@@ -58,6 +58,20 @@ theorem matMul_assoc (n : ℕ) (A B C : Fin n → Fin n → ℝ) :
   apply Finset.sum_congr rfl; intro k _
   apply Finset.sum_congr rfl; intro l _; ring
 
+/-- Left distributivity: (A + B)·C = A·C + B·C (pointwise). -/
+theorem matMul_add_left (n : ℕ) (A B C : Fin n → Fin n → ℝ) :
+    matMul n (fun a b => A a b + B a b) C =
+    fun i j => matMul n A C i j + matMul n B C i j := by
+  ext i j; unfold matMul; rw [← Finset.sum_add_distrib]
+  apply Finset.sum_congr rfl; intro k _; ring
+
+/-- Right distributivity: A·(B + C) = A·B + A·C (pointwise). -/
+theorem matMul_add_right (n : ℕ) (A B C : Fin n → Fin n → ℝ) :
+    matMul n A (fun a b => B a b + C a b) =
+    fun i j => matMul n A B i j + matMul n A C i j := by
+  ext i j; unfold matMul; rw [← Finset.sum_add_distrib]
+  apply Finset.sum_congr rfl; intro k _; ring
+
 /-- Matrix-vector product via matMul: (Av)_i = ∑_j A_{ij} v_j.
     This connects matMul to the existing matMulVec. -/
 theorem matMul_vec_eq (n : ℕ) (A : Fin n → Fin n → ℝ) (v : Fin n → ℝ) :

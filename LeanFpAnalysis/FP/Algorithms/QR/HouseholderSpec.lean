@@ -61,24 +61,50 @@ theorem outerProd_self_mul (n : ℕ) (v : Fin n → ℝ) :
 theorem householder_orthogonal (n : ℕ) (v : Fin n → ℝ) (β : ℝ)
     (hβ : β * (∑ k : Fin n, v k * v k) = 2) :
     IsOrthogonal n (householder n v β) := by
-  -- Since P is symmetric, PᵀP = P·P. We show P·P = I.
   have hsym := householder_symmetric n v β
-  constructor
-  · -- PᵀP = PP = I
-    intro i j
-    rw [hsym]; unfold householder matMul idMatrix
-    -- ∑_k (δ_{ik} − β v_i v_k)(δ_{kj} − β v_k v_j)
-    -- = δ_{ij} − 2β v_i v_j + β² (∑_k v_k²)(v_i v_j)
-    -- = δ_{ij} − 2β v_i v_j + 2β v_i v_j = δ_{ij}
-    simp only [ite_mul, one_mul, zero_mul, mul_ite, mul_one, mul_zero]
-    rw [Finset.sum_ite_eq, Finset.mem_univ, if_pos trivial]
-    -- Now goal involves: (1 - β * v i * v i) * (if i = j then 1 else 0) - ...
-    -- + β² terms that collapse
-    sorry
-  · -- PPᵀ = PP = I (same by symmetry)
-    intro i j
-    rw [hsym]; unfold householder matMul idMatrix
-    sorry
+  -- Since P = Pᵀ, both PᵀP and PPᵀ equal P². We prove P²=I.
+  suffices hPP : ∀ i j : Fin n,
+      ∑ k : Fin n, householder n v β i k * householder n v β k j =
+        if i = j then 1 else 0 by
+    exact ⟨fun i j => by rw [hsym]; exact hPP i j,
+           fun i j => by rw [hsym]; exact hPP i j⟩
+  intro i j
+  simp only [householder]
+  -- Goal: ∑_k (δ_{ik} - β v_i v_k)(δ_{kj} - β v_k v_j) = δ_{ij}
+  -- Expand into four terms: T1 - T2 - T3 + T4
+  have expand : ∀ k : Fin n,
+      (idMatrix n i k - β * v i * v k) * (idMatrix n k j - β * v k * v j) =
+      idMatrix n i k * idMatrix n k j - idMatrix n i k * (β * v k * v j) -
+      β * v i * v k * idMatrix n k j + β * v i * v k * (β * v k * v j) := by
+    intro k; ring
+  simp_rw [expand, Finset.sum_add_distrib, Finset.sum_sub_distrib]
+  -- Compute each term:
+  -- T1: ∑_k δ_{ik} δ_{kj} = δ_{ij}
+  have T1 : ∑ k : Fin n, idMatrix n i k * idMatrix n k j = idMatrix n i j := by
+    simp only [idMatrix, ite_mul, one_mul, zero_mul]
+    simp [Finset.sum_ite_eq, Finset.mem_univ]
+  -- T2: ∑_k δ_{ik} (β v_k v_j) = β v_i v_j
+  have T2 : ∑ k : Fin n, idMatrix n i k * (β * v k * v j) = β * v i * v j := by
+    simp only [idMatrix, ite_mul, one_mul, zero_mul]
+    simp [Finset.sum_ite_eq, Finset.mem_univ]
+  -- T3: ∑_k (β v_i v_k) δ_{kj} = β v_i v_j
+  have T3 : ∑ k : Fin n, β * v i * v k * idMatrix n k j = β * v i * v j := by
+    simp only [idMatrix, mul_ite, mul_one, mul_zero]
+    simp [Finset.sum_ite_eq', Finset.mem_univ]
+  -- T4: ∑_k β² v_i v_k² v_j = β²(∑v²) v_i v_j
+  have T4 : ∑ k : Fin n, β * v i * v k * (β * v k * v j) =
+      β ^ 2 * v i * v j * ∑ k : Fin n, v k * v k := by
+    rw [Finset.mul_sum]; apply Finset.sum_congr rfl; intro k _; ring
+  rw [T1, T2, T3, T4]
+  -- idMatrix n i j - βv_iv_j - βv_iv_j + β²(∑v²)v_iv_j = δ_{ij}
+  -- Use β(∑v²) = 2, so β²(∑v²) = 2β
+  have hβ2 : β ^ 2 * (∑ k : Fin n, v k * v k) = 2 * β := by
+    have : β ^ 2 * (∑ k, v k * v k) = β * (β * (∑ k, v k * v k)) := by ring
+    rw [this, hβ]; ring
+  rw [show β ^ 2 * v i * v j * ∑ k, v k * v k =
+      v i * v j * (β ^ 2 * ∑ k, v k * v k) by ring, hβ2]
+  -- idMatrix n i j + v_i * v_j * (-2β + 2β) = δ_{ij}
+  unfold idMatrix; ring
 
 -- ============================================================
 -- §18.3  Lemma 18.2: Householder application backward error
