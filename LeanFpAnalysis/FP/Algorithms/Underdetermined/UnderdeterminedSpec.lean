@@ -17,8 +17,6 @@
 -- perturbations can be symmetrized without increasing the bound.
 
 import Mathlib.Data.Real.Basic
-import Mathlib.Algebra.BigOperators.Group.Finset.Basic
-import Mathlib.Tactic.Linarith
 import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
 
 namespace LeanFpAnalysis.FP
