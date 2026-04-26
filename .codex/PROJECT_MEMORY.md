@@ -5,7 +5,7 @@ automatic stability analysis. The model is axiomatic and intentionally not tied
 to IEEE 754. All core results should be stated over `FPModel` and `Real`.
 
 Last review by Codex: 2026-04-26.
-Current fix branch: `codex/library-integrity-fixes`.
+Current main commit after integrity fixes: `015d6c4`.
 
 ## Build State
 
@@ -17,9 +17,8 @@ Current fix branch: `codex/library-integrity-fixes`.
   `QR/HouseholderQR.lean`, `QR/GivensQR.lean`, `QR/QRSolve.lean`,
   `LeastSquares/LSQRSolve.lean`, `LeastSquares/LSNormalEquations.lean`, and
   `FastMatMul.lean`.
-- After the 2026-04-26 fix pass, source edits are on branch
-  `codex/library-integrity-fixes`; `.codex/PROJECT_MEMORY.md` is new and
-  `.vscode/extensions.json` remains an unrelated untracked file.
+- After the 2026-04-26 fix pass, `main` was fast-forward merged to
+  `015d6c4`; `.vscode/extensions.json` remains an unrelated untracked file.
 
 ## Claude Context Found
 
@@ -125,6 +124,53 @@ These compile, but should not be treated as fully derived stability results:
 - The benchmark tree is currently incomplete in the working copy: the new
   `benchmark/condition_a` and `benchmark/condition_c` directories have config
   files only and no Lean exercise files.
+
+## Benchmark Context
+
+Claude memory says the thesis benchmark is designed as `10 tasks × 3
+conditions`, with three difficulty tiers.  Research question: does access to
+`LeanFpAnalysis` help LLMs prove FP stability results they otherwise cannot?
+
+Conditions:
+
+- **A: Bare**: Mathlib only; the agent must invent the FP model, gamma
+  calculus, algorithm definitions, intermediate lemmas, and proof.
+- **B: Axioms only**: provide only `FPModel`, `gamma`, and `gammaValid`; the
+  agent still has to build all intermediate algorithm lemmas.
+- **C: Full library**: provide full `LeanFpAnalysis` imports and task theorem;
+  the agent should compose existing library results.
+
+Intended task list from Claude traces:
+
+- Tier 1 direct application:
+  `T01_SymmetricMatVec`, `T02_UnitTriangularForwardSub`, and `T03` either
+  `NormwiseMatVecBound` in older generated task files or
+  `ResidualStoppingCriterion` in later README/file-history traces. Resolve this
+  before regenerating benchmark files; the later thesis README-style design
+  appears to prefer `ResidualStoppingCriterion`.
+- Tier 2 composition:
+  `T04_PLUSolve`, `T05_TwoStepRefinement`, `T06_LDLtSolve`.
+- Tier 3 novel reasoning:
+  `T07_ScaledMatVec`, `T08_GEMV`, `T09_BlockTriangularSolve`,
+  `T10_StationaryInexactSolve`.
+
+Metrics from Claude benchmark design: `pass@1`, `pass@5`, remaining `sorry`
+count in best attempt, human edit distance/lines, proof validity via
+`lake build`, and response/proof lines of code.
+
+Current repo state: tracked benchmark files are only
+`benchmark/condition_a/{lakefile.toml,lean-toolchain,.claude/settings.json}`
+and `benchmark/condition_c/{lakefile.toml,lean-toolchain,.claude/settings.json,
+.claude/CLAUDE.md}`.  There is no tracked `condition_b`, no tracked task Lean
+files, and no tracked benchmark runner/validator scripts.  Claude session
+history shows older task files once lived under `LeanFpAnalysis/FP/Benchmark`
+and/or `benchmark/tasks`, then were removed/moved; regenerate cleanly rather
+than relying on the old tree.
+
+Condition C Claude prompt file: `benchmark/condition_c/.claude/CLAUDE.md`
+describes full-library access, tells agents to replace `sorry` in
+`ConditionC/` exercises, and lists key library modules and Lean 4 proof
+patterns.
 
 ## 2026-04-26 Fix Pass
 
