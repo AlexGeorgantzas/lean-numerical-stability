@@ -1,0 +1,11 @@
+name = "ConditionA"
+version = "0.1.0"
+defaultTargets = ["ConditionA"]
+
+[[lean_lib]]
+name = "ConditionA"
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+rev = "v4.29.0"

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.3.22)  30 MAR 2026 18:05
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.3.22)  6 APR 2026 18:45
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1003,7 +1003,35 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
 
-[4] (./main.bbl)
+[4] (./main.bbl
+! Undefined control sequence.
+l.26 \newblock Preprint. Code: \url
+                                   {https://github.com/facebookresearch/repo...
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+
+Underfull \hbox (badness 8113) in paragraph at lines 23--27
+[]\OT1/cmr/m/n/12 (+20) Fabian Gloeckle, Amine Ram-mal, Thomas Ar-nal, R^^Semi 
+Munos,
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 23--27
+\OT1/cmr/m/n/12 (+20) Vivien Ca-bannes, Gabriel Syn-naeve, and Syed Ah-mad Haya
+t.
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 23--27
+\OT1/cmr/m/n/12 (+20) Au-to-matic text-book for-mal-iza-tion, 2026.  Preprint. 
+Code:
+ []
+
+)
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 14.49998pt, for example:
@@ -1018,28 +1046,29 @@ L3 programming layer <2026-01-19>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 14655 strings out of 467525
- 302246 string characters out of 5418982
- 715462 words of memory out of 5000000
- 43336 multiletter control sequences out of 15000+600000
+ 14659 strings out of 467525
+ 302301 string characters out of 5418982
+ 715486 words of memory out of 5000000
+ 43340 multiletter control sequences out of 15000+600000
  643173 words of font info for 113 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  73i,11n,80p,1001b,543s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb
 ></usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb><
-/usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb></
-usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt12.pfb></u
-sr/local/texlive/2026/texmf-dist/fonts/type1/public/cbfonts/grmi1200.pfb></usr/
-local/texlive/2026/texmf-dist/fonts/type1/public/cbfonts/grmn1200.pfb></usr/loc
-al/texlive/2026/texmf-dist/fonts/type1/public/cbfonts/grmn1440.pfb></usr/local/
-texlive/2026/texmf-dist/fonts/type1/public/cbfonts/grxn1200.pfb></usr/local/tex
-live/2026/texmf-dist/fonts/type1/public/cbfonts/grxn1440.pfb></usr/local/texliv
-e/2026/texmf-dist/fonts/type1/public/cbfonts/grxn1728.pfb></usr/local/texlive/2
-026/texmf-dist/fonts/type1/public/cbfonts/grxn2074.pfb>
-Output written on main.pdf (6 pages, 207550 bytes).
+/usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></us
+r/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb></usr
+/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt12.pfb></usr/
+local/texlive/2026/texmf-dist/fonts/type1/public/cbfonts/grmi1200.pfb></usr/loc
+al/texlive/2026/texmf-dist/fonts/type1/public/cbfonts/grmn1200.pfb></usr/local/
+texlive/2026/texmf-dist/fonts/type1/public/cbfonts/grmn1440.pfb></usr/local/tex
+live/2026/texmf-dist/fonts/type1/public/cbfonts/grxn1200.pfb></usr/local/texliv
+e/2026/texmf-dist/fonts/type1/public/cbfonts/grxn1440.pfb></usr/local/texlive/2
+026/texmf-dist/fonts/type1/public/cbfonts/grxn1728.pfb></usr/local/texlive/2026
+/texmf-dist/fonts/type1/public/cbfonts/grxn2074.pfb>
+Output written on main.pdf (6 pages, 217139 bytes).
 PDF statistics:
- 79 PDF objects out of 1000 (max. 8388607)
- 47 compressed objects within 1 object stream
+ 84 PDF objects out of 1000 (max. 8388607)
+ 50 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  23558 words of extra memory for PDF output out of 24883 (max. 10000000)
 

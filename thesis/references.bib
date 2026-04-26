@@ -1,3 +1,11 @@
+% ═══════════════════════════════════════════════════════════════
+% ΒΙΒΛΙΟΓΡΑΦΙΑ — lean-fp-analysis διπλωματική
+% Κάθε entry έχει σχόλιο με τον λόγο ύπαρξής του
+% ═══════════════════════════════════════════════════════════════
+
+% ── Κεφ. 1-4: Κύριο πλαίσιο αναφοράς ──────────────────────────
+
+% Το βιβλίο που τυποποιούμε. Βάση ολόκληρης της βιβλιοθήκης (18 κεφάλαια).
 @book{higham2002,
   author    = {Nicholas J. Higham},
   title     = {Accuracy and Stability of Numerical Algorithms},
@@ -6,24 +14,37 @@
   year      = {2002},
 }
 
-@inproceedings{kellison2023,
-  author    = {Ariel E. Kellison and Andrew W. Appel and Mohit Tekriwal and David Bindel},
-  title     = {{LAProof}: A Library of Formal Proofs of Accuracy and Correctness for Linear Algebra Programs},
-  booktitle = {30th IEEE Symposium on Computer Arithmetic (ARITH)},
-  year      = {2023},
-  pages     = {127--134},
-  publisher = {IEEE},
+% Πρόδρομος του Higham. Θεμελίωσε την ανάλυση σφαλμάτων στρογγυλοποίησης.
+% Κίνητρο στο Κεφ. 1 (ιστορικό πλαίσιο).
+@book{wilkinson1963,
+  author    = {James H. Wilkinson},
+  title     = {Rounding Errors in Algebraic Processes},
+  publisher = {Prentice-Hall},
+  year      = {1963},
 }
 
-@article{boldo2011flocq,
-  author    = {Sylvie Boldo and Guillaume Melquiond},
-  title     = {{Flocq}: A Unified Library for Proving Floating-Point Algorithms in {Coq}},
-  journal   = {Proceedings of the 20th IEEE Symposium on Computer Arithmetic (ARITH)},
-  year      = {2011},
-  pages     = {243--252},
-  publisher = {IEEE},
+% Συμπληρωματικό textbook αριθμητικής γραμμικής άλγεβρας.
+% Κεφ. 2 (θεωρητικό υπόβαθρο) για perturbation theory και condition numbers.
+@book{demmel1997,
+  author    = {James W. Demmel},
+  title     = {Applied Numerical Linear Algebra},
+  publisher = {SIAM},
+  year      = {1997},
 }
 
+% Πρότυπο IEEE 754. Το FPModel μας είναι αφηρημένο αλλά αναφέρεται ως
+% κύρια πρακτική αναπαράσταση (Κεφ. 2, Κεφ. 3 — σχεδίαση FPModel).
+@misc{ieee754_2019,
+  author    = {{IEEE}},
+  title     = {{IEEE} Standard for Floating-Point Arithmetic ({IEEE} Std 754-2019)},
+  year      = {2019},
+  howpublished = {IEEE Std 754-2019},
+}
+
+% ── Κεφ. 2-3: Lean 4 & Mathlib ────────────────────────────────
+
+% Η γλώσσα στην οποία γράφτηκε η βιβλιοθήκη.
+% Κεφ. 2 (Lean 4 υπόβαθρο) + Κεφ. 3 (αρχιτεκτονική).
 @inproceedings{moura2021lean4,
   author    = {Leonardo de Moura and Sebastian Ullrich},
   title     = {The {Lean 4} Theorem Prover and Programming Language},
@@ -33,6 +54,8 @@
   publisher = {Springer},
 }
 
+% Η μαθηματική βιβλιοθήκη πάνω στην οποία χτίζεται το lean-fp-analysis.
+% Κεφ. 2 (Mathlib υπόβαθρο) + Κεφ. 3 (αρχιτεκτονική, imports, type system).
 @article{mathlib2020,
   author    = {{The mathlib Community}},
   title     = {The {Lean} Mathematical Library},
@@ -42,6 +65,35 @@
   publisher = {ACM},
 }
 
+% ── Κεφ. 5: Σύγκριση — related work σε formal FP verification ─
+
+% Κύρια σύγκριση στο Κεφ. 5. Μόνη άλλη βιβλιοθήκη FP error bounds (σε Coq).
+% Καλύπτει μόνο BLAS kernels, χωρίς compositionality. Η βιβλιοθήκη μας
+% επεκτείνεται σε 18 κεφάλαια Higham + σύνθεση.
+@inproceedings{kellison2023,
+  author    = {Ariel E. Kellison and Andrew W. Appel and Mohit Tekriwal and David Bindel},
+  title     = {{LAProof}: A Library of Formal Proofs of Accuracy and Correctness for Linear Algebra Programs},
+  booktitle = {30th IEEE Symposium on Computer Arithmetic (ARITH)},
+  year      = {2023},
+  pages     = {127--134},
+  publisher = {IEEE},
+}
+
+% Βιβλιοθήκη FP ιδιοτήτων στρογγυλοποίησης σε Coq. Θεμέλιο πάνω στο οποίο
+% χτίστηκε η LAProof. Κεφ. 1 (κίνητρο) + Κεφ. 5 (σύγκριση ecosystem).
+@article{boldo2011flocq,
+  author    = {Sylvie Boldo and Guillaume Melquiond},
+  title     = {{Flocq}: A Unified Library for Proving Floating-Point Algorithms in {Coq}},
+  journal   = {Proceedings of the 20th IEEE Symposium on Computer Arithmetic (ARITH)},
+  year      = {2011},
+  pages     = {243--252},
+  publisher = {IEEE},
+}
+
+% ── Κεφ. 6: Αξιολόγηση LLM ────────────────────────────────────
+
+% LLM theorem prover σε Lean 4 με RL. Ένα από τα μοντέλα που αξιολογούμε
+% στο benchmark (Κεφ. 6). State-of-the-art σε autoformalization.
 @misc{aristotle2025,
   author    = {{Harmonic}},
   title     = {Aristotle: Scaling Lean 4 Theorem Proving with Reinforcement Learning},
@@ -49,23 +101,23 @@
   howpublished = {Technical Report, Harmonic Inc.},
 }
 
-@book{wilkinson1963,
-  author    = {James H. Wilkinson},
-  title     = {Rounding Errors in Algebraic Processes},
-  publisher = {Prentice-Hall},
-  year      = {1963},
+% Πιο κοντινό prior work στο Κεφ. 6. Δείχνει ότι file-level context βοηθάει
+% LLMs (+131% relative improvement). Εμείς ρωτάμε: αν αντί για τυχαίο context
+% δώσεις σχεδιασμένη βιβλιοθήκη σε εξειδικευμένο domain (FP stability),
+% η βελτίωση είναι ακόμα μεγαλύτερη; First-of-its-kind σύγκριση.
+@inproceedings{hu2025minictx,
+  title     = {mini{CTX}: Neural Theorem Proving with (Long-){C}ontexts},
+  author    = {Hu, Jiewen and Zhu, Thomas and Welleck, Sean},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2025},
 }
 
-@book{demmel1997,
-  author    = {James W. Demmel},
-  title     = {Applied Numerical Linear Algebra},
-  publisher = {SIAM},
-  year      = {1997},
-}
-
-@misc{ieee754_2019,
-  author    = {{IEEE}},
-  title     = {{IEEE} Standard for Floating-Point Arithmetic ({IEEE} Std 754-2019)},
-  year      = {2019},
-  howpublished = {IEEE Std 754-2019},
+% Multi-agent formalization ολόκληρου textbook σε Lean 4 (30K agents).
+% Κεφ. 6 (σύγκριση προσεγγίσεων: single-agent vs multi-agent).
+% Δουλεύει σε pure math — ερώτημα αν δουλεύει σε FP numerical analysis.
+@misc{gloeckle2026repoprover,
+  author    = {Fabian Gloeckle and Rammal, Amine and Arnal, Thomas and Munos, R\'{e}mi and Cabannes, Vivien and Synnaeve, Gabriel and Hayat, Syed Ahmad},
+  title     = {Automatic Textbook Formalization},
+  year      = {2026},
+  note      = {Preprint. Code: \url{https://github.com/facebookresearch/repoprover}},
 }
