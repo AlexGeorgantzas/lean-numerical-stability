@@ -2,7 +2,7 @@
 
 A Lean 4 library for formally verified floating-point error analysis, following Higham's *Accuracy and Stability of Numerical Algorithms* (2nd ed., SIAM, 2002).
 
-All results are machine-checked with **zero sorry statements**. Proofs use tight constants matching Higham exactly (e.g., γ(n) not γ(n+1) for the dot product bound).
+The core results are machine-checked with **zero sorry statements**. Proofs use tight constants matching Higham exactly where the library proves the full local analysis (e.g., γ(n) not γ(n+1) for the dot product bound). Some high-level chapter modules intentionally expose abstract interfaces whose hypotheses state the remaining local algorithm analysis explicitly.
 
 ## Floating-point model
 
@@ -16,7 +16,7 @@ where `u` is the unit roundoff. This makes all results valid for **any** floatin
 
 ## What's covered
 
-The library formalizes results from **Chapters 1, 3, 4, 8, and 9** of Higham.
+The library formalizes reusable results and stability contracts from **Chapters 1, 3, 4, 8, and 9** of Higham, plus selected higher-chapter interfaces used for compositional stability proofs.
 
 ### Core theory
 
@@ -42,7 +42,7 @@ The library formalizes results from **Chapters 1, 3, 4, 8, and 9** of Higham.
 | Forward substitution | §8.1 | `forwardSub_backward_error` (Theorem 8.5) |
 | Combined LU solve | §8.1 | `lu_solve_combined_backward_error` (Corollary 8.6) |
 | Forward error bounds | §8.2 | `diag_dominant_forward_error` (Th. 8.7), `theorem_8_9` |
-| M-matrix solutions | §8.2 | `corollary_8_10` (componentwise relative error) |
+| M-matrix solutions | §8.2 | `mmatrix_forwardSub_relative_error` (componentwise relative error in μ-form) |
 | Inverse bounds | §8.3 | `theorem_8_11_first_ineq`, `theorem_8_11_upper_bound` (Th. 8.13) |
 | LU factorization | §9.3 | `LUBackwardError` (Theorem 9.3) |
 | LU solve | §9.4 | `lu_solve_backward_error` (Theorem 9.4) |

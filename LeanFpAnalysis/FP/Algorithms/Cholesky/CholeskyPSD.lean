@@ -397,7 +397,11 @@ noncomputable def schurComplement (n k : ℕ) (A A11_inv : Fin n → Fin n → �
 -- §10.3  Lemma 10.10: Schur complement perturbation
 -- ============================================================
 
-/-- **Schur complement perturbation identity** (Higham §10.3, Lemma 10.10). -/
+/-- **Abstract Schur complement perturbation interface**
+    (Higham §10.3, Lemma 10.10).
+
+    The perturbation estimate is supplied as `hbound`; the theorem gives it a
+    named interface for later PSD Cholesky results. -/
 theorem schur_complement_perturbation (n k : ℕ)
     (A E A11_inv : Fin n → Fin n → ℝ)
     (W_norm : ℝ) (_hW_norm : 0 ≤ W_norm)
@@ -416,7 +420,7 @@ theorem schur_complement_perturbation (n k : ℕ)
 -- §10.3  Lemma 10.12: W-norm bound
 -- ============================================================
 
-/-- **W-norm bound** (Higham §10.3, Lemma 10.12). -/
+/-- **Abstract W-norm bound interface** (Higham §10.3, Lemma 10.12). -/
 theorem w_norm_bound_from_cond
     (W_norm κ_A11 : ℝ) (_hκ : 0 ≤ κ_A11)
     (hW : W_norm ^ 2 ≤ κ_A11) :
@@ -427,7 +431,8 @@ theorem w_norm_bound_from_cond
 -- §10.3  Lemma 10.13: Complete pivoting bound
 -- ============================================================
 
-/-- **Complete pivoting bound on ‖W‖²** (Higham §10.3, Lemma 10.13). -/
+/-- **Abstract complete-pivoting bound on ‖W‖²**
+    (Higham §10.3, Lemma 10.13). -/
 theorem complete_pivoting_w_bound (n r : ℕ) (_hr : r ≤ n)
     (W_norm_sq : ℝ)
     (_hW : W_norm_sq ≤ (↑(n - r) : ℝ) * ((4 : ℝ) ^ r - 1) / 3) :
@@ -438,7 +443,12 @@ theorem complete_pivoting_w_bound (n r : ℕ) (_hr : r ≤ n)
 -- §10.3  Theorem 10.14: PSD Cholesky error analysis
 -- ============================================================
 
-/-- **Backward error for PSD Cholesky** (Higham §10.3, Theorem 10.14). -/
+/-- **Abstract backward-error interface for PSD Cholesky**
+    (Higham §10.3, Theorem 10.14).
+
+    The hypothesis `hbackward` supplies the detailed pivoted PSD Cholesky
+    analysis; this theorem projects the product equation and componentwise
+    error bound used by downstream modules. -/
 theorem psd_cholesky_backward_error (n : ℕ) (fp : FPModel)
     (A : Fin n → Fin n → ℝ)
     (r : ℕ) (_hr : r ≤ n) (_hr_pos : 0 < r)
@@ -465,7 +475,7 @@ theorem psd_cholesky_backward_error (n : ℕ) (fp : FPModel)
 -- §10.3  Termination criteria
 -- ============================================================
 
-/-- **Termination criterion (10.27)** for PSD Cholesky. -/
+/-- **Abstract termination-criterion interface (10.27)** for PSD Cholesky. -/
 theorem psd_cholesky_termination_bound
     (residual_norm matrix_norm : ℝ)
     (n : ℕ) (u : ℝ) (_hu : 0 ≤ u)

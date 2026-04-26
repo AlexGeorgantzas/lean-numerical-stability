@@ -4,10 +4,10 @@
 --
 -- The second stage of GJE reduces the upper triangular factor U from
 -- Gaussian elimination to diagonal form via matrices N_k.
--- We formalize the error recurrences (eqs. 13.25–13.28), the telescoping
--- identity (eq. 13.27–13.28), the forward error bound (eq. 13.29),
--- the backward error bound (eq. 13.30), and the overall GJE error
--- (Theorem 13.5, eqs. 13.31–13.32).  Corollary 13.6 specializes to SPD.
+-- This file proves the algebraic composition from explicitly supplied
+-- second-stage contracts to the overall GJE residual and forward-error
+-- bounds.  The local recurrence/second-stage bounds are exposed as abstract
+-- interfaces rather than derived here from a concrete GJE loop.
 
 import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
@@ -64,13 +64,15 @@ structure GJEStage2Spec (n : ℕ) (U : Fin n → Fin n → ℝ)
 -- §13.4.2  Error Recurrences (eqs. 13.25–13.26)
 -- ══════════════════════════════════════════════════════════════════════
 
-/-- **Eq. 13.25a**: Matrix recurrence error bound for GJE second stage.
+/-- **Abstract Eq. 13.25a interface**: matrix recurrence error bound for
+    the GJE second stage.
 
     At each step k, the computed upper triangular factor satisfies:
       Û_{k+1} = N̂ₖÛₖ + Δₖ  with  |Δₖ| ≤ γ₃|N̂ₖ||Ûₖ|.
 
     The γ₃ constant arises because each element of N̂ₖÛₖ involves
-    at most 3 arithmetic operations (multiply, add, subtract). -/
+    at most 3 arithmetic operations (multiply, add, subtract).  The hypothesis
+    `hComp` supplies that local rounded-computation analysis. -/
 theorem gje_stage2_matrix_recurrence (n : ℕ) (fp : FPModel)
     (U_k N_k U_next : Fin n → Fin n → ℝ)
     (_hn : gammaValid fp 3)
@@ -83,12 +85,14 @@ theorem gje_stage2_matrix_recurrence (n : ℕ) (fp : FPModel)
       gamma fp 3 * ∑ l : Fin n, |N_k i l| * |U_k l j| :=
   hComp
 
-/-- **Eq. 13.26**: RHS recurrence error bound for GJE second stage.
+/-- **Abstract Eq. 13.26 interface**: RHS recurrence error bound for the
+    GJE second stage.
 
     The computed right-hand side satisfies:
       x̂_{k+1} = N̂ₖx̂ₖ + fₖ  with  |fₖ| ≤ γ₃|N̂ₖ||x̂ₖ|.
 
-    Same γ₃ constant as the matrix recurrence. -/
+    Same γ₃ constant as the matrix recurrence.  The hypothesis `hComp`
+    supplies the local rounded-computation analysis. -/
 theorem gje_stage2_rhs_recurrence (n : ℕ) (fp : FPModel)
     (x_k : Fin n → ℝ) (N_k : Fin n → Fin n → ℝ)
     (x_next : Fin n → ℝ)
@@ -126,13 +130,15 @@ termination_by finish_ - start
 -- §13.4.4  Forward Error (eq. 13.29)
 -- ══════════════════════════════════════════════════════════════════════
 
-/-- **Eq. 13.29**: Forward error bound for GJE second stage.
+/-- **Abstract Eq. 13.29 interface**: forward error bound for the GJE
+    second stage.
 
     The componentwise forward error for the second stage satisfies:
       |x − x̂| ≤ (n−1)γ₃(1+γ₃)^{n−2} · |X̂| · (|U||x| + |y|)
 
     where X̂ = |N̂ₙ|···|N̂₂| is the absolute cumulative product of N̂ matrices
-    and y is the first-stage output. -/
+    and y is the first-stage output.  The hypothesis `hErr` supplies the
+    second-stage accumulation proof. -/
 theorem gje_stage2_forward_error_bound (n : ℕ) (fp : FPModel)
     (U : Fin n → Fin n → ℝ) (y x x_hat : Fin n → ℝ)
     (X_abs : Fin n → Fin n → ℝ)
@@ -156,7 +162,7 @@ theorem gje_stage2_forward_error_bound (n : ℕ) (fp : FPModel)
 -- §13.4.5  Backward Error (eq. 13.30)
 -- ══════════════════════════════════════════════════════════════════════
 
-/-- **Eq. 13.30**: GJE second-stage backward error.
+/-- **Abstract Eq. 13.30 interface**: GJE second-stage backward error.
 
     The computed solution x̂ of Ux = y satisfies:
       (U + ΔU)x̂ = y + Δy
@@ -164,7 +170,9 @@ theorem gje_stage2_forward_error_bound (n : ℕ) (fp : FPModel)
       |ΔU| ≤ (n−1)γ₃(1+γ₃)^{n−2} · |X̂| · |U|
       |Δy| ≤ (n−1)γ₃(1+γ₃)^{n−2} · |X̂| · |y|
 
-    where X̂ = |N̂ₙ|···|N̂₂| is the absolute cumulative product. -/
+    where X̂ = |N̂ₙ|···|N̂₂| is the absolute cumulative product.  The
+    existential hypothesis `hBackward` supplies the second-stage backward
+    analysis used by the overall GJE theorem below. -/
 theorem gje_stage2_backward_error (n : ℕ) (fp : FPModel)
     (U : Fin n → Fin n → ℝ) (y x_hat : Fin n → ℝ)
     (X_abs : Fin n → Fin n → ℝ)
@@ -441,7 +449,7 @@ theorem gje_overall_forward_error (n : ℕ) (fp : FPModel)
 -- §13.4.7  Corollary 13.6: SPD Specialization
 -- ══════════════════════════════════════════════════════════════════════
 
-/-- **Corollary 13.6** (Higham p. 275): GJE for SPD matrices.
+/-- **Abstract Corollary 13.6 interface** (Higham p. 275): GJE for SPD matrices.
 
     For SPD A with Cholesky factorization A + ΔA = R̂ᵀR̂, the GJE
     residual simplifies because L̂ = R̂ᵀ, Û = R̂, and the cumulative
@@ -451,7 +459,11 @@ theorem gje_overall_forward_error (n : ℕ) (fp : FPModel)
       |b − Ax̂| ≤ γₙ|R̂ᵀ||R̂||x̂| + c₃|R̂ᵀ||R̂⁻¹|(|R̂||x̂| + |y|)
 
     which gives the normwise bound (Higham eq. 13.33):
-      ‖b − Ax̂‖ / (‖A‖ · ‖x̂‖) ≤ 8n³u κ(A)^{1/2} + O(u²). -/
+      ‖b − Ax̂‖ / (‖A‖ · ‖x̂‖) ≤ 8n³u κ(A)^{1/2} + O(u²).
+
+    The specialized residual is supplied as `hResidual`; the general
+    composition theorem `gje_overall_residual` above is fully proved from its
+    stated first- and second-stage hypotheses. -/
 theorem gje_spd_residual (n : ℕ) (fp : FPModel)
     (A R_hat R_inv : Fin n → Fin n → ℝ)
     (b y x_hat : Fin n → ℝ)

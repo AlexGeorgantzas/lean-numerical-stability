@@ -1,15 +1,16 @@
 -- Algorithms/MMatrix.lean
 --
--- Higham §8.2: M-matrix solution properties and weak Corollary 8.10.
+-- Higham §8.2: M-matrix solution properties and Corollary 8.10 in μ-form.
 --
 -- When L is a lower triangular M-matrix and b ≥ 0:
 --   1. The exact solution x = L⁻¹b is nonneg
 --   2. The computed solution x̂ = fl_forwardSub(L, b) is nonneg
 --   3. |x_i - x̂_i| ≤ γ(n) · (L⁻¹ |L| x̂)_i  (componentwise)
+--   4. |x_i - x̂_i| ≤ μ_i · |x_i|  (relative-error form)
 --
--- Note: Higham's full Corollary 8.10 states |x - x̂| ≤ ((n²+n+1)u + O(u²))|x|.
--- This requires the direct recurrence proof from pp. 158–159 and is left
--- as future work.
+-- The theorem below proves the relative-error statement using the library's
+-- μ constant.  The asymptotic simplification
+-- μ_i ≤ (n²+n+1)u + O(u²) is not formalized as a separate Big-O theorem.
 
 import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
@@ -194,16 +195,18 @@ theorem mmatrix_forwardSub_componentwise_bound (fp : FPModel) (n : ℕ)
         rw [abs_of_nonneg (hx_hat_nn k)]
 
 -- ============================================================
--- Full Corollary 8.10: M-matrix forward error with direct bound
+-- Corollary 8.10 in μ-form: M-matrix forward relative error
 -- ============================================================
 
-/-- **Full Corollary 8.10** (Higham §8.2, pp. 158–159).
+/-- **Corollary 8.10 in μ-form** (Higham §8.2, pp. 158–159).
 
     For a lower triangular M-matrix L with b ≥ 0, the computed solution
     from forward substitution satisfies:
       |x_i - x̂_i| ≤ μ_i · |x_i|
 
-    where μ_k = (1+γ(n+1))^k · (1+u) − 1 ≤ (n²+n+1)u + O(u²).
+    where μ_k = (1+γ(n+1))^k · (1+u) − 1.  Higham further simplifies
+    this to (n²+n+1)u + O(u²); that asymptotic expansion is not formalized
+    as a separate Big-O theorem here.
 
     This shows that every component of the solution is computed to high
     relative accuracy when T is an M-matrix and b ≥ 0, irrespective of

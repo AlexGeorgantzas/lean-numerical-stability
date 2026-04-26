@@ -45,8 +45,12 @@ theorem sylvester_perturbation_equation (n : ℕ)
   simp only [add_mul, mul_add, Finset.sum_add_distrib] at hP
   linarith
 
-/-- **First-order perturbation equation** (eq 15.22, dropping second-order terms):
-    A·ΔX - ΔX·B = ΔC - ΔA·X + X·ΔB. -/
+/-- **First-order perturbation equation interface**
+    (eq 15.22, dropping second-order terms):
+    A·ΔX - ΔX·B = ΔC - ΔA·X + X·ΔB.
+
+    The linearized equation is supplied as `hLin`; the nonlinear perturbation
+    identity above records where the omitted second-order terms come from. -/
 theorem sylvester_perturbation_first_order (n : ℕ)
     (A B X ΔA ΔB ΔC ΔX : Fin n → Fin n → ℝ)
     (hLin : ∀ i j, sylvesterOp n A B ΔX i j =

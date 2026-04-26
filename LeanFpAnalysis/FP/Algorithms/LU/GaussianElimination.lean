@@ -122,7 +122,7 @@ structure PermutedLUBackwardError (n : ℕ) (A L_hat U_hat : Fin n → Fin n →
 
     A is SPD if A is symmetric and x^T A x > 0 for all nonzero x.
     SPD matrices have LU factorizations (A = LDL^T) with L > 0 and D > 0,
-    and admit Cholesky factorization A = GG^T.
+    and have a Cholesky factorization A = GG^T.
 
     For the stability analysis, the key property is |L||U| = |LU| = |A|
     (Theorem 9.11a), giving optimal backward error bounds. -/

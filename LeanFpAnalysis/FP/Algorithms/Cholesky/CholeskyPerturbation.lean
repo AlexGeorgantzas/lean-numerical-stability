@@ -46,14 +46,16 @@ lemma triuPart_diag_and_above {n : ℕ} (A : Fin n → Fin n → ℝ) :
 -- §10.2  Theorem 10.8: Sun perturbation bound (normwise)
 -- ============================================================
 
-/-- **Cholesky perturbation normwise bound** (Higham §10.2, Theorem 10.8, first part).
+/-- **Abstract Cholesky perturbation normwise-bound interface**
+    (Higham §10.2, Theorem 10.8, first part).
 
     If A is SPD with A = R^T R and ΔA is symmetric with ‖A⁻¹ΔA‖₂ < 1,
     then A + ΔA = (R + ΔR)^T(R + ΔR) where:
       frobNormSq(ΔR) ≤ (κ₂(A) / (2 · norm₂(A)))² · frobNormSq(ΔA) + O(‖ΔA‖²)
 
     We state the first-order bound in squared form to avoid sqrt.
-    The condition number κ₂(A) = ‖A‖₂ · ‖A⁻¹‖₂ is taken as a hypothesis. -/
+    The condition number κ₂(A) = ‖A‖₂ · ‖A⁻¹‖₂ is taken as a hypothesis.
+    The perturbation existence/bound itself is supplied as `hpert`. -/
 theorem cholesky_perturbation_normwise (n : ℕ)
     (A R : Fin n → Fin n → ℝ)
     (ΔA : Fin n → Fin n → ℝ)

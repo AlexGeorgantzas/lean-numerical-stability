@@ -113,7 +113,7 @@ theorem bunch_parlett_alpha_root :
   field_simp
   nlinarith [h17]
 
-/-- **Bunch-Parlett growth factor bound** (Higham §10.4.1).
+/-- **Abstract Bunch-Parlett growth-factor interface** (Higham §10.4.1).
 
     The diagonal pivoting method with complete pivoting has
     growth factor bounded by (1 + α⁻¹)^{n−1} where α = (1+√17)/8.
@@ -121,7 +121,8 @@ theorem bunch_parlett_alpha_root :
     Since 1 + α⁻¹ ≈ 2.57, this gives growth ≤ (2.57)^{n−1}.
 
     A more detailed analysis by Bunch shows that the growth factor
-    is no more than 3.07(n−1)^{0.446} times the LU complete pivoting bound. -/
+    is no more than 3.07(n−1)^{0.446} times the LU complete pivoting bound.
+    The hypothesis `hρ` supplies the pivot-growth analysis. -/
 theorem bunch_parlett_growth_bound (n : ℕ) (_hn : 0 < n)
     (ρ_n : ℝ)
     -- Growth factor hypothesis: ρ_n ≤ (1 + α⁻¹)^{n-1}
@@ -129,11 +130,12 @@ theorem bunch_parlett_growth_bound (n : ℕ) (_hn : 0 < n)
     ρ_n ≤ (1 + bunchParlettAlpha⁻¹) ^ (n - 1) :=
   hρ
 
-/-- **Bunch-Parlett L-factor bound** (Higham §10.4.1).
+/-- **Abstract Bunch-Parlett L-factor bound interface** (Higham §10.4.1).
 
     For the complete pivoting strategy, no element of CE⁻¹ (the
     multiplier block) exceeds max{1/α, 1/(1-α)} in absolute value.
-    This bounds ‖L‖ independently of A. -/
+    This bounds ‖L‖ independently of A.  The entrywise multiplier bound is
+    supplied as `hL`. -/
 theorem bunch_parlett_L_bound (n : ℕ)
     (L : Fin n → Fin n → ℝ)
     (c_bound : ℝ)
@@ -146,7 +148,7 @@ theorem bunch_parlett_L_bound (n : ℕ)
 -- §10.4.2  Partial pivoting (Bunch-Kaufman)
 -- ============================================================
 
-/-- **Bunch-Kaufman partial pivoting** (Higham §10.4.2).
+/-- **Abstract Bunch-Kaufman stability interface** (Higham §10.4.2).
 
     Same α = (1+√17)/8 as complete pivoting, but requires only
     O(n²) comparisons (searches at most two columns per stage).
@@ -155,7 +157,9 @@ theorem bunch_parlett_L_bound (n : ℕ)
     though no example is known where this bound is attained.
 
     The stability result for partial pivoting:
-      ‖|L̂||D̂||L̂^T|‖_M ≤ 36n · ρ_n · ‖A‖_M -/
+      ‖|L̂||D̂||L̂^T|‖_M ≤ 36n · ρ_n · ‖A‖_M
+
+    The hypothesis `hstab` supplies the pivoting/stability analysis. -/
 theorem bunch_kaufman_stability (n : ℕ)
     (A L_hat D_hat : Fin n → Fin n → ℝ)
     (ρ_n : ℝ)
@@ -173,13 +177,15 @@ theorem bunch_kaufman_stability (n : ℕ)
       36 * ↑n * ρ_n * maxNorm_A :=
   hstab
 
-/-- **Bunch-Kaufman backward error for solve** (Higham §10.4, Higham [559, 1995]).
+/-- **Abstract Bunch-Kaufman solve backward-error interface**
+    (Higham §10.4, Higham [559, 1995]).
 
     The computed solution to Ax = b via diagonal pivoting with
     partial pivoting satisfies:
       (A + ΔA) x̂ = b  with  |ΔA| ≤ p₂(n) · u · |L̂| · |D̂| · |L̂^T|
 
-    where p₂ is a linear polynomial in n. -/
+    where p₂ is a linear polynomial in n.  The hypothesis `hsolve` supplies
+    the detailed solve analysis. -/
 theorem bunch_kaufman_solve_backward_error (n : ℕ) (fp : FPModel)
     (A L_hat D_hat : Fin n → Fin n → ℝ)
     (σ : Fin n → Fin n) (b : Fin n → ℝ)

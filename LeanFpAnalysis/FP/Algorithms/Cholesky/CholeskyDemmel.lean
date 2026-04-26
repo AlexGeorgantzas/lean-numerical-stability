@@ -63,42 +63,8 @@ theorem cholesky_demmel_bound (n : ℕ)
     cholesky_backward_error_perturbation n A R_hat ε hε hChol
   refine ⟨ΔA, fun i j => ?_, hΔA_eq⟩
   have h1_ε_pos : (0 : ℝ) < 1 - ε := by linarith
-  have hS := absRT_R_product_nonneg n R_hat i j
-  -- From backward error: |ΔA_ij| ≤ ε · ∑_k |R̂_{ki}||R̂_{kj}|
-  -- From Cauchy-Schwarz: ∑_k |R̂_{ki}||R̂_{kj}| ≤ d_i · d_j
-  -- From nonneg: ∑_k |R̂_{ki}||R̂_{kj}| = ∑_k R̂_{ki} R̂_{kj} ≤ |A_ij|/(1-ε)
-  -- But we want: |ΔA_ij| ≤ ε/(1-ε) · d_i · d_j
-  -- This follows from: |ΔA_ij| ≤ ε · d_i · d_j, then... no.
-  -- Actually the Demmel bound is tighter than that. Let me re-derive.
-  -- From the backward error: R̂^T R̂ = A + ΔA, |ΔA| ≤ ε |R̂^T||R̂|
-  -- So: (1-ε)|R̂^T||R̂| ≤ |A| ≤ (1+ε)|R̂^T||R̂|
-  -- Hence: |ΔA| ≤ ε |R̂^T||R̂| ≤ ε/(1-ε) |A|
-  -- And also: |ΔA| ≤ ε |R̂^T||R̂| ≤ ε · d_i · d_j (from CS)
-  -- The Demmel bound is: |ΔA| ≤ ε/(1-ε) d d^T, which uses the
-  -- tighter analysis via (10.8): d_i² = (R̂^T R̂)_{ii} = a_{ii} + (ΔA)_{ii}
-  -- So d_i² ≤ a_{ii}(1 + ε/(1-ε)) = a_{ii}/(1-ε).
-  -- And: |ΔA_{ij}| ≤ ε · d_i d_j ≤ ... but we want ε/(1-ε).
-  -- Actually the book says |ΔA| ≤ (1-γ)⁻¹ γ dd^T.
-  -- Let me re-read: "(R̂^T R̂ - A)_{ij} ≤ γ_{n+1} (|R̂^T||R̂|)_{ij}"
-  -- and "(|R̂^T||R̂|)_{ij} ≤ d_i d_j" by Cauchy-Schwarz.
-  -- So |ΔA_{ij}| ≤ γ_{n+1} d_i d_j directly. No factor (1-γ)⁻¹ yet.
-  -- The factor (1-γ)⁻¹ comes from expressing dd^T in terms of A:
-  -- d_i² = (R̂^T R̂)_{ii} ≤ |a_{ii}|/(1-ε). So...
-  -- The actual Theorem 10.5 states |ΔA| ≤ (1-γ)⁻¹ γ dd^T.
-  -- Wait no. Let me re-read the book text.
-  -- "Theorem 10.5 (Demmel). |R̂^T R̂ - A| ≤ (1-γ_{n+1})⁻¹ γ_{n+1} dd^T"
-  -- where d_i = ‖R̂_{:,i}‖₂.
-  -- Hmm, that's strange — (1-γ)⁻¹ γ > γ, so this is a WEAKER bound
-  -- than the direct |ΔA| ≤ γ dd^T. Why?
-  -- Looking at the proof: Theorem 10.5 says |ΔA| ≤ γ_{n+1}|R̂^T||R̂|
-  -- (from Theorem 10.3), then |(R̂^T R̂)_{ij}| ≤ d_i d_j (Cauchy-Schwarz),
-  -- and combining with (1-γ) gives the bound expressed in terms of d.
-  -- Actually, in the book, the formula (1-γ)⁻¹ γ appears because
-  -- of equation (10.8) which relates d to the diagonal of A.
-  -- For a DIRECT Cauchy-Schwarz bound: |ΔA| ≤ γ d d^T.
-  -- The (1-γ)⁻¹ factor applies when relating d to diag(A)^{1/2}.
-  -- Let me just state both versions.
-  -- For now, state the direct version: |ΔA| ≤ ε d d^T.
+  -- The direct Cauchy-Schwarz estimate gives |ΔA_ij| ≤ ε d_i d_j.
+  -- Since 0 ≤ ε < 1, this immediately weakens to ε/(1-ε) d_i d_j.
   calc |ΔA i j| ≤ ε * ∑ k : Fin n, |R_hat k i| * |R_hat k j| := hΔA_bound i j
     _ ≤ ε * (d i * d j) := by
         apply mul_le_mul_of_nonneg_left (hCS i j) hε
@@ -138,7 +104,8 @@ theorem cholesky_demmel_bound_direct (n : ℕ)
 -- We represent D as a vector of positive reals. The scaling is passed as
 -- a hypothesis `hDHD` rather than computed, avoiding the need for Real.sqrt.
 
-/-- **Demmel-Wilkinson scaled forward error** (Higham §10.1, Theorem 10.6).
+/-- **Abstract Demmel-Wilkinson scaled forward-error interface**
+    (Higham §10.1, Theorem 10.6).
 
     Let A = DHD where D = diag(a_{ii}^{1/2}). Then:
       ‖D⁻¹(x − x̂)‖₂ / ‖D⁻¹x‖₂ ≤ f(n) · κ₂(H) · u
@@ -154,7 +121,10 @@ theorem cholesky_demmel_bound_direct (n : ℕ)
     - |ΔA₂| ≤ diag(γ_i) |R̂^T| (forward sub)
     - |ΔA₃| ≤ diag(γ_{n-i+1}) |R̂| (back sub)
     - Scaling: D⁻¹ dd^T D⁻¹ = ee^T where e_i = d_i/√(a_{ii})
-    - ‖D⁻¹ dd^T D⁻¹‖₂ ≤ n (since d_i² ≤ a_{ii}/(1−γ)) -/
+    - ‖D⁻¹ dd^T D⁻¹‖₂ ≤ n (since d_i² ≤ a_{ii}/(1−γ))
+
+    The hypothesis `hscaled_err` supplies this combined perturbation/scaling
+    argument; the theorem records the reusable named contract. -/
 theorem cholesky_scaled_forward_error (n : ℕ) (_fp : FPModel)
     (A : Fin n → Fin n → ℝ)
     (D : Fin n → ℝ)
@@ -174,7 +144,8 @@ theorem cholesky_scaled_forward_error (n : ℕ) (_fp : FPModel)
 -- §10.1  Theorem 10.7: Cholesky success condition
 -- ============================================================
 
-/-- **Cholesky success condition** (Higham §10.1, Theorem 10.7).
+/-- **Cholesky success-condition threshold consequence**
+    (Higham §10.1, Theorem 10.7).
 
     Let A = DHD where D = diag(a_{ii}^{1/2}).
     - If lam_min(H) > nγ_{n+1}/(1−γ_{n+1}), then Cholesky succeeds.
@@ -188,7 +159,9 @@ theorem cholesky_scaled_forward_error (n : ℕ) (_fp : FPModel)
     H + D⁻¹ΔAD⁻¹ is positive definite, ensuring the factorization
     of A + ΔA = D(H + D⁻¹ΔAD⁻¹)D succeeds.
 
-    We state this with the eigenvalue condition as a hypothesis. -/
+    This theorem formalizes the sign consequence of the Higham threshold:
+    the full spectral success theorem is represented by the eigenvalue-bound
+    hypotheses rather than derived from a concrete factorization loop. -/
 theorem cholesky_success_condition (n : ℕ) (fp : FPModel)
     (A : Fin n → Fin n → ℝ)
     (D : Fin n → ℝ) (H : Fin n → Fin n → ℝ)
@@ -214,12 +187,12 @@ theorem cholesky_success_condition (n : ℕ) (fp : FPModel)
     · linarith
   linarith
 
-/-- **Cholesky failure condition** (Higham §10.1, Theorem 10.7, second part).
+/-- **Cholesky failure-condition threshold consequence**
+    (Higham §10.1, Theorem 10.7, second part).
 
-    If lam_min(H) < −nγ_{n+1}/(1−γ_{n+1}), then Cholesky must fail.
-
-    This is because the backward error from Theorem 10.5 would make
-    A + ΔA indefinite, contradicting the fact that R̂^T R̂ = A + ΔA ≥ 0. -/
+    This theorem formalizes the sign consequence `lam_min < 0`; the full
+    algorithmic failure result is not derived here from a concrete Cholesky
+    execution. -/
 theorem cholesky_failure_condition (n : ℕ) (fp : FPModel)
     (lam_min : ℝ)
     (hn1 : gammaValid fp (n + 1))

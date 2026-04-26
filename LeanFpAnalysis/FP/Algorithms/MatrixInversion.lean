@@ -5,7 +5,10 @@
 -- §13.2: Triangular matrix inversion (Methods 1, 2, block variants).
 -- §13.3: Full matrix inversion via LU factorization (Methods A, B, C, D).
 --
--- All results from Du Croz and Higham (1992) as presented in Higham §13.
+-- The internally proved results derive residual/forward-error consequences
+-- from explicit componentwise contracts.  Some higher-level algorithmic
+-- kernels are exposed as abstract interfaces when their detailed loop error
+-- analysis is not formalized in this module.
 
 import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
@@ -583,16 +586,17 @@ structure Method2Spec (fp : FPModel) (n : ℕ)
   /-- Upper triangle is zero (since L is lower triangular, L⁻¹ is too). -/
   upper_zero : ∀ i j : Fin n, i.val < j.val → X_hat i j = 0
 
-/-- **Lemma 13.1** (Higham eq. 13.8): Method 2 left residual.
+/-- **Abstract Lemma 13.1 interface** (Higham eq. 13.8): Method 2 left residual.
 
     The computed inverse X̂ from Method 2 satisfies the left residual bound:
       |X̂L − I| ≤ c'ₙu · (|X̂| · |L|).
 
-    This is proved by induction on n, using the 2×2 block partition
+    Higham proves this by induction on n using the 2×2 block partition
     L = [[α, 0], [y, M]], X̂ = [[β̂, 0], [ẑ, N̂]].
 
-    The hypothesis `hLeftRes` asserts the bound directly, abstracting over
-    the inductive structure of Method 2. -/
+    This theorem is an abstract interface: the hypothesis `hLeftRes` is the
+    Method 2 local/inductive analysis, and the theorem records the named
+    contract for reuse by later matrix-inversion results. -/
 theorem triInv_method2_left_residual (n : ℕ) (fp : FPModel)
     (L : Fin n → Fin n → ℝ) (X_hat : Fin n → Fin n → ℝ)
     (_hL_diag : ∀ i : Fin n, L i i ≠ 0)
@@ -612,14 +616,23 @@ theorem triInv_method2_left_residual (n : ℕ) (fp : FPModel)
 
     Method 1B computes X̂ ≈ L⁻¹ in block form: for j = 1:N,
     diagonal blocks Xⱼⱼ = Lⱼⱼ⁻¹ by Method 1, then off-diagonal
-    blocks by block forward substitution. -/
+    blocks by block forward substitution.
+
+    The block indexing details are intentionally abstracted away; the reusable
+    numerical content is the per-column backward-error contract produced by the
+    diagonal block inversions and block forward substitutions. -/
 structure BlockMethod1BSpec (fp : FPModel) (n N : ℕ)
     (L : Fin n → Fin n → ℝ) (X_hat : Fin n → Fin n → ℝ) : Prop where
-  /-- Each diagonal block satisfies the right residual of Method 1. -/
-  diag_right_res : ∀ _j : Fin N, ∃ _blockSize : ℕ,
-    True  -- placeholder for block indexing
-  /-- Off-diagonal blocks computed by forward substitution. -/
-  offdiag_fwdsub : True  -- placeholder
+  /-- The declared number of blocks is compatible with the matrix dimension. -/
+  block_count_le_dim : N ≤ n
+  /-- The computed inverse has the expected lower-triangular shape. -/
+  lower_triangular_inverse : ∀ i j : Fin n, i.val < j.val → X_hat i j = 0
+  /-- Each computed column satisfies the backward-error contract obtained from
+      the Method 1 diagonal block solve and the block forward substitutions. -/
+  column_backward_error : ∀ j : Fin n, ∃ ΔL : Fin n → Fin n → ℝ,
+    (∀ i k, |ΔL i k| ≤ gamma fp n * |L i k|) ∧
+    ∀ i, ∑ k : Fin n, (L i k + ΔL i k) * X_hat k j =
+      if i = j then 1 else 0
 
 /-- **Lemma 13.2** (Higham eq. 13.10): Method 1B right residual.
 
@@ -665,12 +678,28 @@ theorem triInv_method1B_right_residual (n : ℕ) (fp : FPModel)
         rw [Finset.mul_sum]
         apply Finset.sum_congr rfl; intro k _; ring
 
-/-- **Lemma 13.3**: Method 2C left residual.
+/-- Method 1B right residual obtained from the block-method specification. -/
+theorem triInv_method1B_right_residual_from_spec (n N : ℕ) (fp : FPModel)
+    (L X_hat : Fin n → Fin n → ℝ)
+    (hL_diag : ∀ i : Fin n, L i i ≠ 0)
+    (hLT : ∀ i j : Fin n, j.val > i.val → L i j = 0)
+    (hn : gammaValid fp n)
+    (hSpec : BlockMethod1BSpec fp n N L X_hat) :
+    ∀ i j : Fin n,
+      |∑ k : Fin n, L i k * X_hat k j - if i = j then 1 else 0| ≤
+      gamma fp n * ∑ k : Fin n, |L i k| * |X_hat k j| :=
+  triInv_method1B_right_residual n fp L X_hat hL_diag hLT hn
+    hSpec.column_backward_error
+
+/-- **Abstract Lemma 13.3 interface**: Method 2C left residual.
 
     |X̂L − I| ≤ cₙu|X̂||L|.
 
     Method 2C (LAPACK's xTRTRI) achieves the same left residual bound as
-    the unblocked Method 2. -/
+    the unblocked Method 2.
+
+    This theorem is a named abstract interface: `hLeftRes` supplies the
+    Method 2C block-loop residual analysis. -/
 theorem triInv_method2C_left_residual (n : ℕ) (fp : FPModel)
     (L X_hat : Fin n → Fin n → ℝ)
     (_hL_diag : ∀ i : Fin n, L i i ≠ 0)
@@ -1005,14 +1034,17 @@ theorem methodB_left_residual (n : ℕ) (fp : FPModel)
 
 -- §13.3.3  Method C: solve UXL = I
 
-/-- **Method C mixed residual** (Higham eq. 13.19).
+/-- **Abstract Method C mixed residual interface** (Higham eq. 13.19).
 
     Method C solves UX̂L = I, computing X̂ a partial row and column at a time.
     The "mixed" residual satisfies:
       |ÛX̂L̂ − I| ≤ cₙu|Û||X̂||L̂|.
 
     From this, bounds on both the left and right residuals (weaker than A/B)
-    can be obtained by multiplying by |U⁻¹| or |L⁻¹|. -/
+    can be obtained by multiplying by |U⁻¹| or |L⁻¹|.
+
+    The hypothesis `hMixed` is the local Method C error analysis; later
+    theorems in this file derive forward-error consequences from it. -/
 theorem methodC_mixed_residual (n : ℕ) (fp : FPModel)
     (U_hat L_hat X_hat : Fin n → Fin n → ℝ)
     (_hn : gammaValid fp n)
@@ -1139,14 +1171,18 @@ theorem methodC_forward_error (n : ℕ) (fp : FPModel)
 
 -- §13.3.4  Method D: compute L⁻¹ and U⁻¹ separately, form product
 
-/-- **Method D left residual** (Higham eq. 13.20–13.23).
+/-- **Abstract Method D left residual interface** (Higham eq. 13.20–13.23).
 
     Method D: compute X_L ≈ L⁻¹ and X_U ≈ U⁻¹ separately,
     then form X̂ = fl(X_U · X_L).
 
     From eq. 13.20: X̂ = X_U · X_L + Δ(X_U, X_L).
     The left residual satisfies (eq. 13.23):
-      |X̂A − I| ≤ c''ₙu|U⁻¹||L⁻¹||L̂||Û|. -/
+      |X̂A − I| ≤ c''ₙu|U⁻¹||L⁻¹||L̂||Û|.
+
+    This theorem records the named residual contract once the separate
+    triangular-inverse and matrix-product error terms have been combined by an
+    external/local Method D analysis. -/
 theorem methodD_left_residual (n : ℕ) (fp : FPModel)
     (A L_hat U_hat : Fin n → Fin n → ℝ)
     (X_U X_L X_hat : Fin n → Fin n → ℝ)
@@ -1177,14 +1213,15 @@ theorem methodD_left_residual (n : ℕ) (fp : FPModel)
           (∑ k₂ : Fin n, |L_hat k₁ k₂| * |U_hat k₂ j|) :=
   hLeftRes
 
-/-- **Method D SPD specialization** (Higham §13.3.4, p. 274).
+/-- **Abstract Method D SPD specialization** (Higham §13.3.4, p. 274).
 
     For A = RᵀR (Cholesky), Method D computes X_R ≈ R⁻¹ and forms
     X̂ = X_R · X_Rᵀ.  Using the symmetry, the left residual satisfies
       |X̂A − I| ≤ dₙu|X_R||X_Rᵀ||R̂ᵀ||R̂|.
 
     This is the specialization of methodD_left_residual with
-    L̂ = R̂ᵀ, Û = R̂, X_L = X_Rᵀ, X_U = X_R. -/
+    L̂ = R̂ᵀ, Û = R̂, X_L = X_Rᵀ, X_U = X_R.  The final specialized
+    residual is supplied as `hLeftRes`. -/
 theorem methodD_spd_left_residual (n : ℕ) (fp : FPModel)
     (A R_hat : Fin n → Fin n → ℝ)
     (X_R X_hat : Fin n → Fin n → ℝ)

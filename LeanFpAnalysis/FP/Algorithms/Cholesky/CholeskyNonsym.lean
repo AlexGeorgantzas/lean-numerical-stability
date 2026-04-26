@@ -114,7 +114,8 @@ noncomputable def chiFactor {n : ℕ} (_hn : 0 < n)
 -- §10.5  Golub-Van Loan growth bound (10.29)
 -- ============================================================
 
-/-- **Golub-Van Loan LU growth bound for nonsymmetric PD** (Higham §10.5, eq 10.29).
+/-- **Abstract Golub-Van Loan LU growth-bound interface for nonsymmetric PD**
+    (Higham §10.5, eq 10.29).
 
     For the exact LU factors of a nonsymmetric PD matrix A:
       ‖|L||U|‖_F ≤ √(n · κ₂(A_S)) · ‖A‖_F
@@ -124,7 +125,8 @@ noncomputable def chiFactor {n : ℕ} (_hn : 0 < n)
 
     This shows LU without pivoting is safe provided that the symmetric
     part is not too ill-conditioned relative to the norm of the
-    skew-symmetric part. -/
+    skew-symmetric part.  The Frobenius growth estimate is supplied as
+    `hbound`. -/
 theorem nonsym_pd_lu_growth_bound (n : ℕ) (_hn : 0 < n)
     (A L U : Fin n → Fin n → ℝ)
     (_hPD : IsNonsymPosDef n A)
@@ -141,13 +143,16 @@ theorem nonsym_pd_lu_growth_bound (n : ℕ) (_hn : 0 < n)
 -- §10.5  Mathias success condition
 -- ============================================================
 
-/-- **Mathias success condition** (Higham §10.5).
+/-- **Abstract Mathias success-condition interface** (Higham §10.5).
 
     LU factorization (without pivoting) of a nonsymmetric PD matrix A
     succeeds if 24 · n^{3/2} · χ(A) · u < 1.
 
     Moreover, the computed LU factors satisfy:
-      ‖|L̂||Û|‖_F ≤ (1 + 30un^{3/2}χ(A)) · √(n·κ₂(A_S)) · ‖A‖_F -/
+      ‖|L̂||Û|‖_F ≤ (1 + 30un^{3/2}χ(A)) · √(n·κ₂(A_S)) · ‖A‖_F
+
+    This theorem records the supplied success inequality as a named contract;
+    it does not derive the full LU execution result. -/
 theorem mathias_lu_success (_n : ℕ) (fp : FPModel)
     (chi : ℝ) (_hchi : 0 < chi)
     -- n_three_half represents n^{3/2} (avoiding Real.rpow)
