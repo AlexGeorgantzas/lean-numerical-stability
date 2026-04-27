@@ -146,6 +146,11 @@ solutions, or "for task N use theorem X".
 
 Every task must be a stability-analysis task for an algorithm.  The benchmark
 should not drift into pure algebra, pure matrix theory, or generic Lean puzzles.
+The tasks also should not be restricted to statements appearing verbatim in
+Higham.  Much of the point of the library is that Higham-style infrastructure
+has already been formalized; the benchmark should test whether an agent can use
+that infrastructure to perform new stability analyses for composed algorithms,
+certificates, and task-local variants.
 
 A good task has the following properties:
 
@@ -156,6 +161,9 @@ A good task has the following properties:
 - The proof requires some stability reasoning: unpacking a contract,
   composing local errors, converting backward error to residual error, or
   absorbing gamma constants.
+- The task is grounded in a real stability-analysis pattern: an internal
+  library theorem chain, a standard numerical analysis result, or an explicitly
+  defined algorithm variant whose assumptions match the model.
 - The task is not a known textbook theorem copied verbatim with a common Lean
   formalization available online.
 
@@ -163,6 +171,14 @@ Hard tasks are allowed to require extra assumptions or task-local algorithm
 variants.  That is acceptable if the assumptions are explicit and mathematically
 defensible.  What should be avoided is a false theorem or an underspecified
 algorithm.
+
+For the final task or final two tasks, the desired outcome is asymmetric:
+Condition A should plausibly fail because it lacks the formal FP/gamma/matrix
+infrastructure, while Condition C should have a plausible path through the
+library.  It is acceptable to leave the actual solver outcome open.  What is not
+acceptable is leaving the theorem truth open.  The theorem statement must be
+grounded before the run by conservative assumptions and a clear library theorem
+chain, even if no Codex-written proof is produced before evaluation.
 
 ### Proposed Task Ladder
 
@@ -173,6 +189,17 @@ The working task-spec source is `benchmark/tasks/TASK_SPECS.md`.  It is used to
 develop exact theorem shapes before generating Condition A and Condition C
 workspaces.  It is not solver-facing material and should not be copied into
 generated benchmark runs.
+
+Because Codex is the evaluated solver, benchmark tasks should not be pre-solved
+by Codex in the repository before evaluation.  Pre-solving would create
+unnecessary contamination risk, especially if the same conversation or files are
+available to the evaluated run.  The safer protocol is:
+
+- write theorem statements and task-local definitions;
+- generate Condition A and Condition C workspaces with `sorry`;
+- run fresh solver attempts;
+- only after solver runs, add hidden reference proofs or post-hoc validation
+  artifacts if needed to diagnose failures.
 
 #### 1. Scaled Dot Product Backward Stability
 
@@ -524,8 +551,6 @@ Suggested metrics:
 ### Current Open Decisions
 
 - Exact theorem statements for all ten tasks.
-- Whether Tasks 1-5 should each have reference proofs before finalizing the
-  harder tasks.
 - Whether Task 10 should target forward error or residual error.
 - Whether the Condition C solver workspace should be a filtered copy of the
   repository or a normal dependency project pointing to a library checkout.

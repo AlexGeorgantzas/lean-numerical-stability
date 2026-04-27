@@ -11,15 +11,35 @@ Each task below must eventually become an exact Lean theorem statement.  The
 Condition A and Condition C versions should target the same theorem shape; the
 difference is only which supporting library material is available.
 
+Tasks do not have to come directly from Higham.  Most of the library already
+formalizes reusable Higham-style infrastructure, so benchmark tasks should
+mainly test new stability analyses that are grounded in the library's theorem
+surface: algorithm compositions, practical certificates, conversions between
+backward/residual/forward error, or small task-local variants with explicit
+assumptions.
+
+Do not add reference proofs for these tasks before the evaluated solver runs.
+Since Codex is the evaluated solver, pre-solving tasks in this repository or in
+this conversation risks contaminating the benchmark.  The benchmark should first
+generate theorem statements with `sorry`, run the solver in isolated/fresh
+workspaces, and only then add hidden reference proofs or post-hoc repairs if a
+statement needs validation.
+
 ## Global Requirements
 
 - Every task is a floating-point stability analysis for an algorithm.
 - The target theorem must be true under the stated assumptions.
 - The theorem should not be an exact restatement of an existing
   `LeanFpAnalysis` theorem.
+- The theorem should be grounded in a real stability-analysis pattern, either
+  from the current library's internal theorem chain, a standard numerical
+  stability result, or a task-local algorithm variant with explicit assumptions.
 - Early tasks should require small but real composition.
 - Later tasks should require multi-result composition.
 - Final solver-facing files should not include expected proof routes.
+- For the hardest tasks, it is acceptable that Condition A is expected to fail.
+  That failure should be due to missing formal infrastructure, not because the
+  theorem is false or underspecified.
 
 ## T01: Scaled Dot Product Backward Stability
 
@@ -34,8 +54,7 @@ noncomputable def fl_scaledDot (fp : FPModel) (n : Nat)
 Target shape:
 
 ```lean
-theorem scaledDot_backward_error
-    (fp : FPModel) (n : Nat)
+theorem scaledDot_backward_error (fp : FPModel) (n : Nat)
     (alpha : Real) (x y : Fin n -> Real)
     (hn1 : gammaValid fp (n + 1)) :
     exists eta : Fin n -> Real,
@@ -313,4 +332,3 @@ theorem stationary_forwardSub_residual_bound
 
 Reason for inclusion: bridges a concrete floating-point triangular local solve
 to the abstract stationary-iteration residual bound.
-

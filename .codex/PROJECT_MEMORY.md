@@ -200,11 +200,21 @@ Task-selection rule: hard is fine, but invalid/unprovable statements are not a
 useful benchmark.  If a task needs extra exactness assumptions or a slightly
 different algorithm variant, state those assumptions or define that variant
 explicitly.  Every task should be stability analysis for an algorithm.
+Do not restrict task discovery to Higham statements: use the current library's
+formal theorem surface to design new algorithm-composition and certificate
+tasks.  The hardest tasks should be true under clear assumptions and grounded in
+existing internal theorem chains, while leaving the actual solver success/fail
+outcome open.
 
 Benchmark task theorem shapes are being drafted in
 `benchmark/tasks/TASK_SPECS.md`.  This is benchmark-source/planning material,
 not solver-facing input.  Generated Condition A/C workspaces should receive
 only the current task file and the allowed condition environment.
+Do not pre-solve benchmark tasks with Codex before evaluation.  Since Codex is
+the evaluated solver, repository reference proofs or same-conversation proofs
+create avoidable contamination risk.  Generate theorem statements with `sorry`,
+run fresh isolated solver attempts, then add hidden reference proofs or
+post-hoc validation artifacts only after evaluation if needed.
 
 Draft task ladder proposed 2026-04-27, not yet finalized:
 
