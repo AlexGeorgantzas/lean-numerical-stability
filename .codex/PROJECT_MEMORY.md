@@ -20,22 +20,17 @@ Current main commit after integrity fixes: `015d6c4`.
 - After the 2026-04-26 fix pass, `main` was fast-forward merged to
   `015d6c4`; `.vscode/extensions.json` remains an unrelated untracked file.
 
-## Claude Context Found
+## Earlier Context Found
 
-- `.claude/settings.json` and `.claude/settings.local.json` contain tool
-  permission/settings only.
-- The old `benchmark/condition_c/.claude/CLAUDE.md` file was the only
-  substantive in-repo Claude memory. It was benchmark-specific and contained a
-  high-level module map plus Lean proof hints, so it was removed when Condition
-  C was clarified to mean fresh-agent access to the public library only.
-- Additional Claude project memory exists outside the repo at
-  `/Users/georgiosalexandrosgeorgantzas/.claude/projects/-Users-georgiosalexandrosgeorgantzas-Documents-GitHub-lean-fp-analysis/memory/MEMORY.md`.
-  It frames the project as a VSCL/Thrust A thesis library for compositional
-  stability-carrying foundations, not as a goal to formalize all of Higham.
-- Durable user/project preferences from Claude memory: formalize only reusable
-  stepping stones for future stability proofs; always search the existing
-  codebase before claiming a theorem or definition is missing; put proof
-  sketches in docstrings; keep Higham constants exact.
+- Old in-repo agent settings and benchmark prompt files were removed so the
+  repository no longer carries tool-specific benchmark guidance.
+- Earlier project notes framed the project as a VSCL/Thrust A thesis library
+  for compositional stability-carrying foundations, not as a goal to formalize
+  all of Higham.
+- Durable user/project preferences: formalize only reusable stepping stones for
+  future stability proofs; always search the existing codebase before claiming
+  a theorem or definition is missing; put proof sketches in docstrings; keep
+  Higham constants exact.
 
 ## Top-Level Structure
 
@@ -141,10 +136,10 @@ Conditions:
   same theorem target as Condition C.
 - **C: Full library**: provide full `LeanFpAnalysis` imports and task theorem;
   the agent should use the repository as a first-time user of the library.
-  Condition C should not provide Claude/Codex memory files, private notes, or
+  Condition C should not provide agent memory files, private notes, or
   task-specific proof hints. Its help should come from the library itself:
-  module organization, theorem names, docstrings, comments, and a general
-  orientation prompt describing what the library contains.
+  module organization, theorem names, docstrings, comments, and public
+  orientation material describing what the library contains.
 
 Execution note: Codex will be the evaluated solver, so the benchmark must be
 mostly automatic and must avoid condition leakage.  Condition A should run in an
@@ -164,10 +159,16 @@ Condition C documentation surface: the public library guide should be
 `docs/LIBRARY_LOOKUP.md`, linked from `README.md`, with a companion exploratory
 Lean file at `examples/LibraryLookup.lean`.  This guide is acceptable help for
 Condition C because it is normal repository documentation and is not
-Codex/Claude-specific.  It should remain free of benchmark task names, expected
-proof routes, and task-specific hints.
+agent-specific.  It should remain free of benchmark task names, expected proof
+routes, and task-specific hints.
 
-Intended task list from Claude traces:
+Project-wide decision notes now live in `thesis/DECISION_LOG.md`.  This
+file is intentionally solver-invisible material: it records why choices were
+made, rejected alternatives, benchmark task ordering, expected difficulty, and
+automation policy.  Do not copy it into Condition A or Condition C solver
+workspaces.
+
+Earlier generated task list considered:
 
 - Tier 1 direct application:
   `T01_SymmetricMatVec`, `T02_UnitTriangularForwardSub`, and `T03` either
@@ -181,25 +182,62 @@ Intended task list from Claude traces:
   `T07_ScaledMatVec`, `T08_GEMV`, `T09_BlockTriangularSolve`,
   `T10_StationaryInexactSolve`.
 
-Metrics from Claude benchmark design: `pass@1`, `pass@5`, remaining `sorry`
+Metrics from earlier benchmark design: `pass@1`, `pass@5`, remaining `sorry`
 count in best attempt, human edit distance/lines, proof validity via
 `lake build`, and response/proof lines of code.
 
 Current repo state after the lookup-guide pass: tracked benchmark files are only
-`benchmark/condition_a/{lakefile.toml,lean-toolchain,.claude/settings.json}`
-and `benchmark/condition_c/{lakefile.toml,lean-toolchain,.claude/settings.json}`.
-The old `benchmark/condition_c/.claude/CLAUDE.md` prompt/memory file was
-removed because Condition C should use public library docs rather than
-agent-specific hidden guidance.  There is no tracked task Lean file and no
-tracked benchmark runner/validator script.  Claude session history shows older
-task files once lived under `LeanFpAnalysis/FP/Benchmark` and/or
-`benchmark/tasks`, then were removed/moved; regenerate cleanly rather than
-relying on the old tree.
+`benchmark/condition_a/{lakefile.toml,lean-toolchain}` and
+`benchmark/condition_c/{lakefile.toml,lean-toolchain}`.  Tool-specific
+benchmark settings and prompt/memory files were removed because Condition C
+should use public library docs rather than hidden guidance.  There is no
+tracked task Lean file and no tracked benchmark runner/validator script.
+Earlier session history shows older task files once lived under
+`LeanFpAnalysis/FP/Benchmark` and/or `benchmark/tasks`, then were removed/moved;
+regenerate cleanly rather than relying on the old tree.
 
 Task-selection rule: hard is fine, but invalid/unprovable statements are not a
 useful benchmark.  If a task needs extra exactness assumptions or a slightly
 different algorithm variant, state those assumptions or define that variant
 explicitly.  Every task should be stability analysis for an algorithm.
+
+Draft task ladder proposed 2026-04-27, not yet finalized:
+
+1. Scaled dot product backward stability: define a task-local algorithm that
+   computes `fl_mul alpha (fl_dotProduct x y)` and prove a gamma-composed
+   componentwise backward-error statement.
+2. Shifted dot product forward stability: define a task-local algorithm that
+   computes `fl_add c (fl_dotProduct x y)` and prove an absolute forward-error
+   bound involving `|c| + sum |x_i||y_i|`.
+3. Residual stopping certificate: use `fl_residual` and prove that a small
+   computed residual implies a bound on the exact residual after accounting for
+   residual-computation error.
+4. Triangular solve residual certificate: derive a componentwise residual bound
+   for `fl_forwardSub` or `fl_backSub` from the triangular backward-error
+   theorem.
+5. BLAS GEMV stability: define a task-local `alpha*A*x + beta*y` algorithm
+   using `fl_matVec`, scalar multiplications, and additions, and prove a
+   componentwise forward-error bound with an absorbed gamma constant.
+6. Combined triangular solve as a backward-stable solve for `A = L*U`: expand
+   `(L+DeltaL)(U+DeltaU)` from `triangularSolve_backward_error` to a single
+   perturbation bound of size about `2*gamma + gamma^2`.
+7. LU solve with growth-scaled relative backward error: combine
+   `lu_solve_backward_error` with a componentwise growth hypothesis
+   `|L||U| <= rho |A|`.
+8. Cholesky solve with growth-scaled relative backward error: combine
+   `cholesky_solve_backward_error` with a factor-product growth hypothesis.
+9. One-step iterative refinement with conventional residual and a
+   backward-stable correction solve: combine residual computation with the
+   one-step refinement residual bound.
+10. Stationary iteration with inexact triangular local solves: derive or
+    instantiate `ComputedIteration`/local-error hypotheses for a concrete
+    splitting step and then prove a normwise residual or forward-error bound.
+
+Avoid old generated tasks as-is: symmetric matvec is likely false without a
+symmetry-preserving perturbation theorem; unit triangular solve with zero
+diagonal perturbation needs an explicit unit-diagonal algorithm variant; LDLT
+currently leans on abstract interfaces; old block triangular solve was too
+partial unless reformulated as a full residual/backward-error statement.
 
 ## 2026-04-26 Fix Pass
 
