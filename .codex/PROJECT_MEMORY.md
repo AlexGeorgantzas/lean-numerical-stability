@@ -210,6 +210,7 @@ Benchmark task theorem shapes are being drafted in
 `benchmark/tasks/TASK_SPECS.md`.  This is benchmark-source/planning material,
 not solver-facing input.  Generated Condition A/C workspaces should receive
 only the current task file and the allowed condition environment.
+Generated-workspace rules live in `benchmark/RUN_PROTOCOL.md`.
 Do not pre-solve benchmark tasks with Codex before evaluation.  Since Codex is
 the evaluated solver, repository reference proofs or same-conversation proofs
 create avoidable contamination risk.  Generate theorem statements with `sorry`,

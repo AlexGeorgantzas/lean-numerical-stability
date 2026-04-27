@@ -190,6 +190,10 @@ develop exact theorem shapes before generating Condition A and Condition C
 workspaces.  It is not solver-facing material and should not be copied into
 generated benchmark runs.
 
+The generated-workspace protocol is tracked in `benchmark/RUN_PROTOCOL.md`.
+That file describes what is copied into Condition A and Condition C and what
+must be excluded.
+
 Because Codex is the evaluated solver, benchmark tasks should not be pre-solved
 by Codex in the repository before evaluation.  Pre-solving would create
 unnecessary contamination risk, especially if the same conversation or files are
