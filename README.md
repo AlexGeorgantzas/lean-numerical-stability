@@ -18,6 +18,10 @@ where `u` is the unit roundoff. This makes all results valid for **any** floatin
 
 The library formalizes reusable results and stability contracts from **Chapters 1, 3, 4, 8, and 9** of Higham, plus selected higher-chapter interfaces used for compositional stability proofs.
 
+For a searchable map from stability-analysis goals to files, definitions, and
+theorem names, see [`docs/LIBRARY_LOOKUP.md`](docs/LIBRARY_LOOKUP.md).  For a
+Lean `#check` companion index, see [`examples/LibraryLookup.lean`](examples/LibraryLookup.lean).
+
 ### Core theory
 
 | Topic | Higham ref | Key results |

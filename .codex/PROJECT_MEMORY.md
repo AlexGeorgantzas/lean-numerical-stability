@@ -24,9 +24,10 @@ Current main commit after integrity fixes: `015d6c4`.
 
 - `.claude/settings.json` and `.claude/settings.local.json` contain tool
   permission/settings only.
-- `benchmark/condition_c/.claude/CLAUDE.md` is the only substantive Claude
-  memory. It is benchmark-specific and describes Condition C as full-library
-  access, with a high-level module map and Lean proof hints.
+- The old `benchmark/condition_c/.claude/CLAUDE.md` file was the only
+  substantive in-repo Claude memory. It was benchmark-specific and contained a
+  high-level module map plus Lean proof hints, so it was removed when Condition
+  C was clarified to mean fresh-agent access to the public library only.
 - Additional Claude project memory exists outside the repo at
   `/Users/georgiosalexandrosgeorgantzas/.claude/projects/-Users-georgiosalexandrosgeorgantzas-Documents-GitHub-lean-fp-analysis/memory/MEMORY.md`.
   It frames the project as a VSCL/Thrust A thesis library for compositional
@@ -127,18 +128,44 @@ These compile, but should not be treated as fully derived stability results:
 
 ## Benchmark Context
 
-Claude memory says the thesis benchmark is designed as `10 tasks × 3
-conditions`, with three difficulty tiers.  Research question: does access to
-`LeanFpAnalysis` help LLMs prove FP stability results they otherwise cannot?
+Revised user decision on 2026-04-27: skip the old Condition B.  The thesis
+benchmark should be `10 tasks × 2 conditions`, with tasks in increasing
+difficulty.  Research question: does access to `LeanFpAnalysis` help Codex
+prove FP stability-analysis results it otherwise cannot?
 
 Conditions:
 
 - **A: Bare**: Mathlib only; the agent must invent the FP model, gamma
-  calculus, algorithm definitions, intermediate lemmas, and proof.
-- **B: Axioms only**: provide only `FPModel`, `gamma`, and `gammaValid`; the
-  agent still has to build all intermediate algorithm lemmas.
+  calculus, algorithm definitions, intermediate lemmas, and proof.  Condition A
+  should still include the bare minimum definitions needed to state exactly the
+  same theorem target as Condition C.
 - **C: Full library**: provide full `LeanFpAnalysis` imports and task theorem;
-  the agent should compose existing library results.
+  the agent should use the repository as a first-time user of the library.
+  Condition C should not provide Claude/Codex memory files, private notes, or
+  task-specific proof hints. Its help should come from the library itself:
+  module organization, theorem names, docstrings, comments, and a general
+  orientation prompt describing what the library contains.
+
+Execution note: Codex will be the evaluated solver, so the benchmark must be
+mostly automatic and must avoid condition leakage.  Condition A should run in an
+isolated project/worktree that does not expose `LeanFpAnalysis`; otherwise the
+agent could inspect the parent repository.  Final task files should avoid proof
+hints or expected-approach comments.
+
+Task difficulty rule: the exercises should not be exact theorem lookups or
+one-line lemma chaining, especially in the first five tasks.  Early tasks should
+still require the agent to instantiate algorithm definitions, bridge notation,
+perform small algebraic rewrites, or combine a local statement with a library
+contract.  Later tasks should become progressively more compositional and may
+require substantial new glue lemmas or algorithm variants, while remaining true
+statements over the stated model.
+
+Condition C documentation surface: the public library guide should be
+`docs/LIBRARY_LOOKUP.md`, linked from `README.md`, with a companion exploratory
+Lean file at `examples/LibraryLookup.lean`.  This guide is acceptable help for
+Condition C because it is normal repository documentation and is not
+Codex/Claude-specific.  It should remain free of benchmark task names, expected
+proof routes, and task-specific hints.
 
 Intended task list from Claude traces:
 
@@ -158,19 +185,21 @@ Metrics from Claude benchmark design: `pass@1`, `pass@5`, remaining `sorry`
 count in best attempt, human edit distance/lines, proof validity via
 `lake build`, and response/proof lines of code.
 
-Current repo state: tracked benchmark files are only
+Current repo state after the lookup-guide pass: tracked benchmark files are only
 `benchmark/condition_a/{lakefile.toml,lean-toolchain,.claude/settings.json}`
-and `benchmark/condition_c/{lakefile.toml,lean-toolchain,.claude/settings.json,
-.claude/CLAUDE.md}`.  There is no tracked `condition_b`, no tracked task Lean
-files, and no tracked benchmark runner/validator scripts.  Claude session
-history shows older task files once lived under `LeanFpAnalysis/FP/Benchmark`
-and/or `benchmark/tasks`, then were removed/moved; regenerate cleanly rather
-than relying on the old tree.
+and `benchmark/condition_c/{lakefile.toml,lean-toolchain,.claude/settings.json}`.
+The old `benchmark/condition_c/.claude/CLAUDE.md` prompt/memory file was
+removed because Condition C should use public library docs rather than
+agent-specific hidden guidance.  There is no tracked task Lean file and no
+tracked benchmark runner/validator script.  Claude session history shows older
+task files once lived under `LeanFpAnalysis/FP/Benchmark` and/or
+`benchmark/tasks`, then were removed/moved; regenerate cleanly rather than
+relying on the old tree.
 
-Condition C Claude prompt file: `benchmark/condition_c/.claude/CLAUDE.md`
-describes full-library access, tells agents to replace `sorry` in
-`ConditionC/` exercises, and lists key library modules and Lean 4 proof
-patterns.
+Task-selection rule: hard is fine, but invalid/unprovable statements are not a
+useful benchmark.  If a task needs extra exactness assumptions or a slightly
+different algorithm variant, state those assumptions or define that variant
+explicitly.  Every task should be stability analysis for an algorithm.
 
 ## 2026-04-26 Fix Pass
 
