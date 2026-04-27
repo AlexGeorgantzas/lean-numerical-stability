@@ -169,6 +169,11 @@ algorithm.
 The current draft is a sequence of ten tasks in increasing difficulty.  The
 names below are descriptive, not final theorem names.
 
+The working task-spec source is `benchmark/tasks/TASK_SPECS.md`.  It is used to
+develop exact theorem shapes before generating Condition A and Condition C
+workspaces.  It is not solver-facing material and should not be copied into
+generated benchmark runs.
+
 #### 1. Scaled Dot Product Backward Stability
 
 Algorithm: compute `alpha * (x^T y)` by first computing a floating-point dot

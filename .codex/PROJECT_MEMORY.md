@@ -201,6 +201,11 @@ useful benchmark.  If a task needs extra exactness assumptions or a slightly
 different algorithm variant, state those assumptions or define that variant
 explicitly.  Every task should be stability analysis for an algorithm.
 
+Benchmark task theorem shapes are being drafted in
+`benchmark/tasks/TASK_SPECS.md`.  This is benchmark-source/planning material,
+not solver-facing input.  Generated Condition A/C workspaces should receive
+only the current task file and the allowed condition environment.
+
 Draft task ladder proposed 2026-04-27, not yet finalized:
 
 1. Scaled dot product backward stability: define a task-local algorithm that
