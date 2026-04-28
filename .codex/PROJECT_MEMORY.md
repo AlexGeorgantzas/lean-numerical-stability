@@ -5,7 +5,8 @@ automatic stability analysis. The model is axiomatic and intentionally not tied
 to IEEE 754. All core results should be stated over `FPModel` and `Real`.
 
 Last review by Codex: 2026-04-28.
-Current main includes the T01 workspace-generator pass.
+Current branch `benchmark` contains the benchmark harness and T01
+workspace-generator pass.  `main` is kept as the core-library branch.
 
 ## Build State
 
@@ -18,9 +19,8 @@ Current main includes the T01 workspace-generator pass.
   `LeastSquares/LSQRSolve.lean`, `LeastSquares/LSNormalEquations.lean`, and
   `FastMatMul.lean`.
 - After the 2026-04-26 fix pass, `main` was fast-forward merged to
-  `015d6c4`.  Benchmark setup commits through `414439c` added the public lookup
-  guide, task specs, anti-contamination protocol, and byte-identical
-  solver-facing T01 task shape.
+  `015d6c4`.  Benchmark setup commits through `f54206d` live on branch
+  `benchmark`.
 - `.vscode/` remains unrelated untracked local editor state.
 
 ## Earlier Context Found
