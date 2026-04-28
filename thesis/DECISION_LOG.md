@@ -1,13 +1,93 @@
 # Project Decision Log
 
-This file records design decisions for the LeanFpAnalysis project. It is
-intended as thesis source material and project memory.
+This file records design decisions for the LeanFpAnalysis project.  It is
+intended as thesis source material and durable project memory.
+
+The log is project-wide, not only a benchmark log.  It should record decisions
+about library design, proof organization, documentation, branches, benchmark
+methodology, and thesis-facing rationale.  Benchmarking is the current active
+work on this branch, so the benchmark sections below are detailed.
 
 Important: do not include this file in solver-facing benchmark workspaces.  It
 may contain benchmark intent, task ordering, expected difficulty, and reasons
 for choosing particular tasks.  Condition C should expose the public library,
 source comments, `README.md`, `docs/LIBRARY_LOOKUP.md`, and examples, but not
 project decision notes like this file.
+
+## Branch Policy
+
+### Decision: Keep Benchmark Work On A Dedicated Branch
+
+Benchmark artifacts live on branch `benchmark`.
+
+This includes:
+
+- benchmark task files;
+- condition-specific stubs;
+- generated-workspace scripts;
+- run protocols;
+- task-selection rationale;
+- contamination checks;
+- solver-attempt logs, when added.
+
+Reason: benchmark design is exploratory and has different risks from the core
+library.  It may need several iterations, and it must avoid accidentally mixing
+solver-facing material with private design rationale.  Keeping it on its own
+branch lets the core library remain stable while benchmark infrastructure
+evolves.
+
+`main` is the core-library branch.  It may keep project-wide thesis notes and
+reusable public documentation, but benchmark harness files should not live on
+`main` unless explicitly merged later.
+
+## Core Library Decisions
+
+### Decision: Use An Axiomatic Floating-Point Model
+
+The library is built around `FPModel`, an axiomatic model over `Real`, rather
+than a specific IEEE 754 formalization.
+
+Reason: the goal is automatic stability analysis in a general mathematical
+floating-point model.  The core theorem statements should be reusable across
+formats and rounding implementations, as long as they satisfy the model
+axioms.
+
+Consequence: avoid adding IEEE-specific assumptions to core modules.  If they
+are ever needed, they should belong in a separate optional module.
+
+### Decision: Build Stability Proofs Compositionally
+
+New results should reuse existing lower-level contracts whenever possible:
+rounding lemmas support summation, summation supports dot products, dot
+products support matvec/matmul, and triangular solve contracts support
+higher-level solve analyses.
+
+Reason: the thesis goal is not only to formalize isolated theorems, but to test
+whether a library of reusable stability components helps future analyses.
+
+### Decision: Mark Abstract Interfaces Honestly
+
+Some high-level results are specification-transfer theorems: they take an
+external or abstract hypothesis that is already close to the desired numerical
+contract, then package the consequence.
+
+Reason: these are useful named interfaces, but they should not be advertised as
+fully derived floating-point analyses from `FPModel`.
+
+Consequence: wrappers around external assumptions should be documented as
+abstract/specification-transfer results.
+
+### Decision: Keep Public Lookup Documentation
+
+The files `docs/LIBRARY_LOOKUP.md` and `examples/LibraryLookup.lean` are public
+library documentation.
+
+Reason: the library is large.  A central lookup guide helps humans and tools
+discover relevant definitions and theorem families without relying on private
+agent memory.
+
+These files are allowed on `main` because they describe the library generally.
+They should avoid task-specific proof scripts.
 
 ## Benchmark Design Rationale
 
