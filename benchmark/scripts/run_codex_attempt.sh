@@ -55,6 +55,19 @@ timestamp="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 codex_bin="$(command -v codex)"
 commit="$(git -C "${repo_root}" rev-parse HEAD)"
 branch="$(git -C "${repo_root}" branch --show-current)"
+codex_home="$(mktemp -d "${TMPDIR:-/tmp}/codex-benchmark-home.XXXXXX")"
+cleanup_codex_home() {
+  rm -rf "${codex_home}"
+}
+trap cleanup_codex_home EXIT
+
+if [[ ! -f "${HOME}/.codex/auth.json" ]]; then
+  echo "missing Codex auth at ${HOME}/.codex/auth.json" >&2
+  exit 2
+fi
+cp "${HOME}/.codex/auth.json" "${codex_home}/auth.json"
+chmod 700 "${codex_home}"
+chmod 600 "${codex_home}/auth.json"
 
 cat > "${result_dir}/attempt_metadata.md" <<EOF
 # Attempt Metadata
@@ -65,14 +78,18 @@ cat > "${result_dir}/attempt_metadata.md" <<EOF
 - source_commit: \`${commit}\`
 - started_at_utc: \`${timestamp}\`
 - codex_bin: \`${codex_bin}\`
-- codex_mode: \`--ask-for-approval never exec --ephemeral --ignore-user-config --ignore-rules --skip-git-repo-check\`
+- codex_mode: \`auth-only temporary CODEX_HOME; --disable plugins --disable memories --ask-for-approval never exec --ephemeral --ignore-user-config --ignore-rules --skip-git-repo-check\`
 EOF
 
 cp "${workspace}/SOLVER_PROMPT.md" "${result_dir}/SOLVER_PROMPT.md"
 cp "${canonical_task}" "${result_dir}/CanonicalTask.lean"
 
 set +e
-codex --ask-for-approval never exec \
+CODEX_HOME="${codex_home}" codex \
+  --disable plugins \
+  --disable memories \
+  --ask-for-approval never \
+  exec \
   --ephemeral \
   --ignore-user-config \
   --ignore-rules \

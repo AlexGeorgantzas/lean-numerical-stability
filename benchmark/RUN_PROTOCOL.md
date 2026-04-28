@@ -126,6 +126,9 @@ a repository symlink and avoids cloning/building Mathlib twice, while copying
 only dependency packages, not benchmark notes or library proof attempts.
 `run_codex_attempt.sh` invokes a fresh non-interactive Codex process with
 ephemeral session storage and archives the attempt under
-`benchmark/results/<run-id>/<condition>/`.  `validate_attempt.sh` is the
-post-attempt validator: it rejects changes outside the theorem proof body,
-remaining placeholders, forbidden declarations, and build failures.
+`benchmark/results/<run-id>/<condition>/`.  It runs Codex with a temporary
+auth-only `CODEX_HOME`, disables plugin and memory features, ignores user
+configuration and rules, and removes the temporary home after the attempt.
+`validate_attempt.sh` is the post-attempt validator: it rejects changes outside
+the theorem proof body, remaining placeholders, forbidden declarations, and
+build failures.

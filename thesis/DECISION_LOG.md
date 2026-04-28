@@ -688,6 +688,21 @@ or previous attempts into either solver workspace.
 Reason: full no-cache builds are too slow for repeated runs, but repository
 symlinks are a contamination risk.
 
+### Decision: Run Solvers With An Auth-Only Temporary Codex Home
+
+Solver attempts should not inherit Codex memories, prior sessions, project
+rules, user configuration, or global plugins from the orchestration machine.
+
+`benchmark/scripts/run_codex_attempt.sh` now creates a temporary `CODEX_HOME`
+containing only `auth.json`, runs `codex exec` with ephemeral session storage,
+`--ignore-user-config`, `--ignore-rules`, `--disable plugins`, and
+`--disable memories`, then deletes the temporary home after the attempt.
+
+Reason: `--ignore-user-config` alone still allowed the installed Codex CLI to
+touch global plugin metadata.  The benchmark requires a fresh solver process
+whose useful information comes from the generated workspace, the task prompt,
+and, in Condition C, the library itself.
+
 ### Current Open Decisions
 
 - Exact theorem statements for all ten tasks.
