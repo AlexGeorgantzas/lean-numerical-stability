@@ -5,8 +5,8 @@ automatic stability analysis. The model is axiomatic and intentionally not tied
 to IEEE 754. All core results should be stated over `FPModel` and `Real`.
 
 Last review by Codex: 2026-04-28.
-Current `main` is for the core library. Benchmark work lives on
-`benchmark/t01-harness`.
+Current `main` is for the core library. Benchmark work lives on branch
+`benchmark`.
 
 ## Build State
 
@@ -19,7 +19,7 @@ Current `main` is for the core library. Benchmark work lives on
   `LeastSquares/LSQRSolve.lean`, `LeastSquares/LSNormalEquations.lean`, and
   `FastMatMul.lean`.
 - After the 2026-04-26 fix pass, `main` was fast-forward merged to
-  `015d6c4`.  Later benchmark work was split onto `benchmark/t01-harness`.
+  `015d6c4`.  Later benchmark work was split onto branch `benchmark`.
 - `.vscode/` remains unrelated untracked local editor state.
 
 ## Earlier Context Found
@@ -122,7 +122,7 @@ These compile, but should not be treated as fully derived stability results:
 ## Branch Notes
 
 - Benchmark artifacts and benchmark-specific decision notes were moved to
-  branch `benchmark/t01-harness` on 2026-04-28.
+  branch `benchmark` on 2026-04-28.
 - Keep benchmark task files, stubs, generated-workspace scripts, run protocols,
   and task-selection rationale off `main` unless the user explicitly decides to
   merge them back.
