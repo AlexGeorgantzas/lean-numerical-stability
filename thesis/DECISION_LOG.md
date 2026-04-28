@@ -672,6 +672,22 @@ Archived result material should include the solver prompt, final
 codes, and metadata.  This prevents loss when temporary workspaces are cleaned
 up while keeping solver-facing workspaces isolated.
 
+### Decision: Use A Clean Dependency Copy, Not A Repo Symlink
+
+For real runs, generated workspaces should not use symlinks into the project
+repository's `.lake/packages`, because that creates a filesystem path back to
+the source repository.
+
+The current harness instead lets Condition A clone/build third-party Lake
+packages, then copies that dependency package directory into Condition C before
+the Condition C preflight.  This copies Mathlib and related third-party
+dependencies only.  It does not copy `LeanFpAnalysis` from Condition C into
+Condition A, and it does not copy benchmark notes, thesis notes, memory files,
+or previous attempts into either solver workspace.
+
+Reason: full no-cache builds are too slow for repeated runs, but repository
+symlinks are a contamination risk.
+
 ### Current Open Decisions
 
 - Exact theorem statements for all ten tasks.

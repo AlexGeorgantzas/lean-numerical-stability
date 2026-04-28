@@ -67,6 +67,14 @@ shasum -a 256 \
 echo "preflight build: Condition A"
 (cd "${condition_a}" && lake build BenchmarkTask) 2>&1 | tee "${meta_dir}/preflight_condition_a.log"
 
+if [[ "${BENCHMARK_COPY_DEPS_FROM_CONDITION_A:-1}" == "1" &&
+      -d "${condition_a}/.lake/packages" &&
+      ! -e "${condition_c}/.lake/packages" ]]; then
+  echo "copying third-party dependency packages from Condition A to Condition C"
+  mkdir -p "${condition_c}/.lake"
+  cp -R "${condition_a}/.lake/packages" "${condition_c}/.lake/packages"
+fi
+
 echo "preflight build: Condition C"
 (cd "${condition_c}" && lake build BenchmarkTask) 2>&1 | tee "${meta_dir}/preflight_condition_c.log"
 

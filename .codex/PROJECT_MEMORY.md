@@ -238,6 +238,11 @@ allowed; it is not a proof.  Post-attempt validation rejects changes before the
 theorem proof body, remaining `sorry`/`admit`, forbidden declarations, and
 build failures.  The unsolved generated T01 workspace correctly fails
 post-attempt validation because it still contains `sorry`.
+For clean runs, do not use the repo `.lake/packages` symlink shortcut; it leaks
+a path back to the source checkout.  The harness now copies third-party Lake
+dependency packages from the built Condition A workspace into Condition C, which
+avoids rebuilding Mathlib twice without copying benchmark notes or library
+solutions into Condition A.
 
 Draft task ladder proposed 2026-04-27, not yet finalized:
 

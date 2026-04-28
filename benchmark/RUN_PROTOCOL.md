@@ -120,8 +120,12 @@ benchmark/scripts/validate_attempt.sh <condition-workspace> benchmark/tasks/T01_
 
 `prepare_solver_run.sh` creates both condition workspaces, writes a neutral
 solver prompt, records metadata, checks task hashes, and runs the preflight
-builds.  `run_codex_attempt.sh` invokes a fresh non-interactive Codex process
-with ephemeral session storage and archives the attempt under
+builds.  By default it copies the third-party Lake dependency packages built
+for Condition A into Condition C before the Condition C preflight.  This avoids
+a repository symlink and avoids cloning/building Mathlib twice, while copying
+only dependency packages, not benchmark notes or library proof attempts.
+`run_codex_attempt.sh` invokes a fresh non-interactive Codex process with
+ephemeral session storage and archives the attempt under
 `benchmark/results/<run-id>/<condition>/`.  `validate_attempt.sh` is the
 post-attempt validator: it rejects changes outside the theorem proof body,
 remaining placeholders, forbidden declarations, and build failures.
