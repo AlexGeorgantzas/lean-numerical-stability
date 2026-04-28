@@ -4,8 +4,8 @@ This guide is a public map of the floating-point analysis library. It is meant
 for Lean users, documentation tools, and automated agents that need to discover
 which files and theorem names are relevant to a stability-analysis goal.
 
-It is not a benchmark solution guide: it does not name benchmark exercises or
-give task-specific proof scripts.
+It is not a proof-script guide: it maps library concepts and theorem names
+without giving task-specific scripts.
 
 ## How To Import
 
@@ -173,4 +173,3 @@ When a theorem almost matches a goal, compare:
 - whether the theorem perturbs one input, one row/column, or a whole matrix;
 - whether the theorem requires triangular zero-pattern assumptions, nonzero
   diagonal assumptions, or an abstract factorization/solver specification.
-

@@ -8,7 +8,7 @@ Run it with:
 
   lake env lean examples/LibraryLookup.lean
 
-It intentionally contains no benchmark-task proof scripts.
+It intentionally contains no task-specific proof scripts.
 -/
 
 -- Floating-point model and gamma calculus
@@ -96,4 +96,3 @@ It intentionally contains no benchmark-task proof scripts.
 #check componentwise_forward_error
 #check forward_error_from_backward_error
 #check normwise_forward_error_exact
-

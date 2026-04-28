@@ -5,7 +5,8 @@ automatic stability analysis. The model is axiomatic and intentionally not tied
 to IEEE 754. All core results should be stated over `FPModel` and `Real`.
 
 Last review by Codex: 2026-04-28.
-Current main includes the T01 workspace-generator pass.
+Current `main` is for the core library. Benchmark work lives on
+`benchmark/t01-harness`.
 
 ## Build State
 
@@ -18,9 +19,7 @@ Current main includes the T01 workspace-generator pass.
   `LeastSquares/LSQRSolve.lean`, `LeastSquares/LSNormalEquations.lean`, and
   `FastMatMul.lean`.
 - After the 2026-04-26 fix pass, `main` was fast-forward merged to
-  `015d6c4`.  Benchmark setup commits through `414439c` added the public lookup
-  guide, task specs, anti-contamination protocol, and byte-identical
-  solver-facing T01 task shape.
+  `015d6c4`.  Later benchmark work was split onto `benchmark/t01-harness`.
 - `.vscode/` remains unrelated untracked local editor state.
 
 ## Earlier Context Found
@@ -120,154 +119,13 @@ These compile, but should not be treated as fully derived stability results:
 - `MMatrix.lean` proves the Corollary 8.10 relative-error statement in μ-form
   via `mmatrix_forwardSub_relative_error`.  It does not separately formalize
   the asymptotic simplification `μ_i ≤ (n²+n+1)u + O(u²)` as a Big-O theorem.
-- The benchmark tree now has canonical task specs, a neutral unsolved T01 task,
-  and a first generated-workspace harness.  The harness copies the same
-  `Task.lean` into both conditions, then satisfies `import LeanFpAnalysis.FP`
-  with either a task-local bare stub (Condition A) or the real library
-  (Condition C).
+## Branch Notes
 
-## Benchmark Context
-
-Revised user decision on 2026-04-27: skip the old Condition B.  The thesis
-benchmark should be `10 tasks × 2 conditions`, with tasks in increasing
-difficulty.  Research question: does access to `LeanFpAnalysis` help Codex
-prove FP stability-analysis results it otherwise cannot?
-
-Conditions:
-
-- **A: Bare**: Mathlib only; the agent must invent the FP model, gamma
-  calculus, algorithm definitions, intermediate lemmas, and proof.  Condition A
-  should still include the bare minimum definitions needed to state exactly the
-  same theorem target as Condition C.  Generated A/C workspaces should use
-  byte-identical task files; Condition A satisfies `import LeanFpAnalysis.FP`
-  with generated bare stubs, while Condition C uses the real library.
-- **C: Full library**: provide full `LeanFpAnalysis` imports and task theorem;
-  the agent should use the repository as a first-time user of the library.
-  Condition C should not provide agent memory files, private notes, or
-  task-specific proof hints. Its help should come from the library itself:
-  module organization, theorem names, docstrings, comments, and public
-  orientation material describing what the library contains.
-
-Execution note: Codex will be the evaluated solver, so the benchmark must be
-mostly automatic and must avoid condition leakage.  Condition A should run in an
-isolated project/worktree that does not expose `LeanFpAnalysis`; otherwise the
-agent could inspect the parent repository.  Final task files should avoid proof
-hints or expected-approach comments.
-
-Task difficulty rule: the exercises should not be exact theorem lookups or
-one-line lemma chaining, especially in the first five tasks.  Early tasks should
-still require the agent to instantiate algorithm definitions, bridge notation,
-perform small algebraic rewrites, or combine a local statement with a library
-contract.  Later tasks should become progressively more compositional and may
-require substantial new glue lemmas or algorithm variants, while remaining true
-statements over the stated model.
-
-Condition C documentation surface: the public library guide should be
-`docs/LIBRARY_LOOKUP.md`, linked from `README.md`, with a companion exploratory
-Lean file at `examples/LibraryLookup.lean`.  This guide is acceptable help for
-Condition C because it is normal repository documentation and is not
-agent-specific.  It should remain free of benchmark task names, expected proof
-routes, and task-specific hints.
-
-Project-wide decision notes now live in `thesis/DECISION_LOG.md`.  This
-file is intentionally solver-invisible material: it records why choices were
-made, rejected alternatives, benchmark task ordering, expected difficulty, and
-automation policy.  Do not copy it into Condition A or Condition C solver
-workspaces.
-
-Earlier generated task list considered:
-
-- Tier 1 direct application:
-  `T01_SymmetricMatVec`, `T02_UnitTriangularForwardSub`, and `T03` either
-  `NormwiseMatVecBound` in older generated task files or
-  `ResidualStoppingCriterion` in later README/file-history traces. Resolve this
-  before regenerating benchmark files; the later thesis README-style design
-  appears to prefer `ResidualStoppingCriterion`.
-- Tier 2 composition:
-  `T04_PLUSolve`, `T05_TwoStepRefinement`, `T06_LDLtSolve`.
-- Tier 3 novel reasoning:
-  `T07_ScaledMatVec`, `T08_GEMV`, `T09_BlockTriangularSolve`,
-  `T10_StationaryInexactSolve`.
-
-Metrics from earlier benchmark design: `pass@1`, `pass@5`, remaining `sorry`
-count in best attempt, human edit distance/lines, proof validity via
-`lake build`, and response/proof lines of code.
-
-Current benchmark source state: `benchmark/tasks/T01_ScaledDot/Task.lean` is
-the canonical unsolved task file; `benchmark/stubs/T01_ScaledDot/` supplies the
-Condition A import provider; `benchmark/scripts/generate_task_workspace.sh`
-creates paired generated workspaces.  Tool-specific benchmark settings and
-prompt/memory files were removed because Condition C should use public library
-docs rather than hidden guidance.  Older generated task files that once lived
-under `LeanFpAnalysis/FP/Benchmark` or earlier benchmark folders should not be
-trusted; regenerate cleanly from the current benchmark tree.
-
-Task-selection rule: hard is fine, but invalid/unprovable statements are not a
-useful benchmark.  If a task needs extra exactness assumptions or a slightly
-different algorithm variant, state those assumptions or define that variant
-explicitly.  Every task should be stability analysis for an algorithm.
-Do not restrict task discovery to Higham statements: use the current library's
-formal theorem surface to design new algorithm-composition and certificate
-tasks.  The hardest tasks should be true under clear assumptions and grounded in
-existing internal theorem chains, while leaving the actual solver success/fail
-outcome open.
-
-Benchmark task theorem shapes are being drafted in
-`benchmark/tasks/TASK_SPECS.md`.  This is benchmark-source/planning material,
-not solver-facing input.  Generated Condition A/C workspaces should receive
-only the current task file and the allowed condition environment.
-Generated-workspace rules live in `benchmark/RUN_PROTOCOL.md`.
-Do not pre-solve benchmark tasks with Codex before evaluation.  Since Codex is
-the evaluated solver, repository reference proofs or same-conversation proofs
-create avoidable contamination risk.  Generate theorem statements with `sorry`,
-run fresh isolated solver attempts, then add hidden reference proofs or
-post-hoc validation artifacts only after evaluation if needed.
-
-T01 experiment status on 2026-04-28: the generated Condition A workspace builds
-with only the bare `LeanFpAnalysis.FP` stub and the expected `sorry` warning;
-the generated Condition C workspace builds with the real library and the same
-expected `sorry` warning.  Validate generated workspaces with
-`lake build BenchmarkTask`, not direct `lake env lean BenchmarkTask.lean`,
-because the generated local import provider must first be built into `.olean`
-files.
-
-Draft task ladder proposed 2026-04-27, not yet finalized:
-
-1. Scaled dot product backward stability: define a task-local algorithm that
-   computes `fl_mul alpha (fl_dotProduct x y)` and prove a gamma-composed
-   componentwise backward-error statement.
-2. Shifted dot product forward stability: define a task-local algorithm that
-   computes `fl_add c (fl_dotProduct x y)` and prove an absolute forward-error
-   bound involving `|c| + sum |x_i||y_i|`.
-3. Residual stopping certificate: use `fl_residual` and prove that a small
-   computed residual implies a bound on the exact residual after accounting for
-   residual-computation error.
-4. Triangular solve residual certificate: derive a componentwise residual bound
-   for `fl_forwardSub` or `fl_backSub` from the triangular backward-error
-   theorem.
-5. BLAS GEMV stability: define a task-local `alpha*A*x + beta*y` algorithm
-   using `fl_matVec`, scalar multiplications, and additions, and prove a
-   componentwise forward-error bound with an absorbed gamma constant.
-6. Combined triangular solve as a backward-stable solve for `A = L*U`: expand
-   `(L+DeltaL)(U+DeltaU)` from `triangularSolve_backward_error` to a single
-   perturbation bound of size about `2*gamma + gamma^2`.
-7. LU solve with growth-scaled relative backward error: combine
-   `lu_solve_backward_error` with a componentwise growth hypothesis
-   `|L||U| <= rho |A|`.
-8. Cholesky solve with growth-scaled relative backward error: combine
-   `cholesky_solve_backward_error` with a factor-product growth hypothesis.
-9. One-step iterative refinement with conventional residual and a
-   backward-stable correction solve: combine residual computation with the
-   one-step refinement residual bound.
-10. Stationary iteration with inexact triangular local solves: derive or
-    instantiate `ComputedIteration`/local-error hypotheses for a concrete
-    splitting step and then prove a normwise residual or forward-error bound.
-
-Avoid old generated tasks as-is: symmetric matvec is likely false without a
-symmetry-preserving perturbation theorem; unit triangular solve with zero
-diagonal perturbation needs an explicit unit-diagonal algorithm variant; LDLT
-currently leans on abstract interfaces; old block triangular solve was too
-partial unless reformulated as a full residual/backward-error statement.
+- Benchmark artifacts and benchmark-specific decision notes were moved to
+  branch `benchmark/t01-harness` on 2026-04-28.
+- Keep benchmark task files, stubs, generated-workspace scripts, run protocols,
+  and task-selection rationale off `main` unless the user explicitly decides to
+  merge them back.
 
 ## 2026-04-26 Fix Pass
 
