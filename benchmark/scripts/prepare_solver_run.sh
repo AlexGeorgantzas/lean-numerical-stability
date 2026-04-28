@@ -7,12 +7,17 @@ run_root="${2:-/tmp/lean-fp-benchmark-runs/${task}-$(date +%Y%m%d-%H%M%S)}"
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "${script_dir}/../.." && pwd)"
 
+# shellcheck source=benchmark/scripts/shared_lake_packages.sh
+source "${script_dir}/shared_lake_packages.sh"
+
 task_file="${repo_root}/benchmark/tasks/${task}/Task.lean"
 
 if [[ ! -f "${task_file}" ]]; then
   echo "missing task file: ${task_file}" >&2
   exit 1
 fi
+
+benchmark_require_free_space "${run_root}" "${BENCHMARK_MIN_FREE_GB:-8}"
 
 "${script_dir}/generate_task_workspace.sh" "${task}" "${run_root}"
 
@@ -36,6 +41,7 @@ cat > "${meta_dir}/run_metadata.md" <<EOF
 - task_sha256: \`${task_sha}\`
 - condition_a_workspace: \`${condition_a}\`
 - condition_c_workspace: \`${condition_c}\`
+- shared_lake_packages: \`$(benchmark_shared_lake_packages_dir "${repo_root}")\`
 
 The task files in both condition workspaces must remain byte-identical before
 the solver starts.
@@ -67,7 +73,7 @@ shasum -a 256 \
 echo "preflight build: Condition A"
 (cd "${condition_a}" && lake build BenchmarkTask) 2>&1 | tee "${meta_dir}/preflight_condition_a.log"
 
-if [[ "${BENCHMARK_COPY_DEPS_FROM_CONDITION_A:-1}" == "1" &&
+if [[ "${BENCHMARK_COPY_DEPS_FROM_CONDITION_A:-0}" == "1" &&
       -d "${condition_a}/.lake/packages" &&
       ! -e "${condition_c}/.lake/packages" ]]; then
   echo "copying third-party dependency packages from Condition A to Condition C"

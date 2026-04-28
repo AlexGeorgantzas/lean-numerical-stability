@@ -113,17 +113,22 @@ After an agent attempt:
 For the current local harness, use:
 
 ```bash
+benchmark/scripts/setup_shared_lake_packages.sh
 benchmark/scripts/prepare_solver_run.sh T01_ScaledDot
 benchmark/scripts/run_codex_attempt.sh <condition-workspace> condition_a benchmark/tasks/T01_ScaledDot/Task.lean
 benchmark/scripts/validate_attempt.sh <condition-workspace> benchmark/tasks/T01_ScaledDot/Task.lean
+benchmark/scripts/archive_preflight_run.sh <run-root>
+benchmark/scripts/cleanup_run_workspaces.sh <run-root>
 ```
 
 `prepare_solver_run.sh` creates both condition workspaces, writes a neutral
 solver prompt, records metadata, checks task hashes, and runs the preflight
-builds.  By default it copies the third-party Lake dependency packages built
-for Condition A into Condition C before the Condition C preflight.  This avoids
-a repository symlink and avoids cloning/building Mathlib twice, while copying
-only dependency packages, not benchmark notes or library proof attempts.
+builds.  Generated workspaces use a shared third-party Lake package cache under
+`~/.cache/lean-fp-analysis/lake-packages/...` by default.  This keeps Mathlib
+and other Lake dependencies reusable across generated workspaces without giving
+the solver a symlink back to the project repository.  The shared cache contains
+third-party packages only, not benchmark notes, thesis notes, memory files,
+previous attempts, or `LeanFpAnalysis` source.
 `run_codex_attempt.sh` invokes a fresh non-interactive Codex process with
 ephemeral session storage and archives the attempt under
 `benchmark/results/<run-id>/<condition>/`.  It runs Codex with a temporary
@@ -131,4 +136,5 @@ auth-only `CODEX_HOME`, disables plugin and memory features, ignores user
 configuration and rules, and removes the temporary home after the attempt.
 `validate_attempt.sh` is the post-attempt validator: it rejects changes outside
 the theorem proof body, remaining placeholders, forbidden declarations, and
-build failures.
+build failures.  `cleanup_run_workspaces.sh` removes temporary run workspaces
+after results have been archived.

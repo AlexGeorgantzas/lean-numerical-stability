@@ -656,9 +656,28 @@ definitions, namespaces, or theorem statements.
 
 Current scripts:
 
+- `benchmark/scripts/setup_shared_lake_packages.sh`
 - `benchmark/scripts/prepare_solver_run.sh`
 - `benchmark/scripts/run_codex_attempt.sh`
 - `benchmark/scripts/validate_attempt.sh`
+- `benchmark/scripts/archive_preflight_run.sh`
+- `benchmark/scripts/cleanup_run_workspaces.sh`
+
+### Decision: Condition C Keeps The Whole Public Library
+
+Condition C should not import or expose only task-specific modules.  The goal
+is to test whether a fresh solver can discover and use the library as a whole,
+as a user would after loading the project for the first time.
+
+The task file remains neutral and contains no task-specific proof guidance.
+Condition C receives the full public library copy, README, docs, and examples;
+it does not receive benchmark meta-notes, thesis notes, memory files, previous
+attempts, or solution sketches.
+
+Reason: narrowing imports per task would turn the benchmark into a directed
+lemma-lookup exercise.  The intended measurement is broader: whether the
+library is organized and documented well enough for the solver to find the
+right concepts without private help.
 
 ### Decision: Archive Solver Results Inside The Repository
 
@@ -672,21 +691,26 @@ Archived result material should include the solver prompt, final
 codes, and metadata.  This prevents loss when temporary workspaces are cleaned
 up while keeping solver-facing workspaces isolated.
 
-### Decision: Use A Clean Dependency Copy, Not A Repo Symlink
+### Decision: Use A Shared Third-Party Lake Package Cache
 
-For real runs, generated workspaces should not use symlinks into the project
-repository's `.lake/packages`, because that creates a filesystem path back to
-the source repository.
+Generated benchmark workspaces should not reclone or rebuild Mathlib for every
+run.  They also should not use symlinks into the project repository's
+`.lake/packages`, because that creates a filesystem path back to the source
+repository.
 
-The current harness instead lets Condition A clone/build third-party Lake
-packages, then copies that dependency package directory into Condition C before
-the Condition C preflight.  This copies Mathlib and related third-party
-dependencies only.  It does not copy `LeanFpAnalysis` from Condition C into
-Condition A, and it does not copy benchmark notes, thesis notes, memory files,
-or previous attempts into either solver workspace.
+The current harness keeps third-party Lake packages in a shared cache under
+`~/.cache/lean-fp-analysis/lake-packages/...`.  The repository's
+`.lake/packages` and generated benchmark workspaces point to that cache.
 
-Reason: full no-cache builds are too slow for repeated runs, but repository
-symlinks are a contamination risk.
+The shared cache contains Mathlib and related third-party dependencies only.
+It does not contain `LeanFpAnalysis` source, benchmark notes, thesis notes,
+memory files, previous attempts, or task solutions.  Condition A still receives
+only the generated stubs plus the byte-identical task file.  Condition C still
+receives the full public library copy, README, docs, and examples.
+
+Reason: full no-cache builds are too slow and disk-heavy for repeated runs.
+The benchmark needs fresh solver memory and isolated task workspaces, not a
+fresh clone of public third-party dependencies for every attempt.
 
 ### Decision: Run Solvers With An Auth-Only Temporary Codex Home
 
@@ -707,6 +731,4 @@ and, in Condition C, the library itself.
 
 - Exact theorem statements for all ten tasks.
 - Whether Task 10 should target forward error or residual error.
-- Whether the Condition C solver workspace should be a filtered copy of the
-  repository or a normal dependency project pointing to a library checkout.
 - The final contamination-search protocol and log format.

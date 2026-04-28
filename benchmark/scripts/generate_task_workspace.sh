@@ -7,6 +7,9 @@ run_root="${2:-/tmp/lean-fp-benchmark-runs/${task}-$(date +%Y%m%d-%H%M%S)}"
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "${script_dir}/../.." && pwd)"
 
+# shellcheck source=benchmark/scripts/shared_lake_packages.sh
+source "${script_dir}/shared_lake_packages.sh"
+
 task_dir="${repo_root}/benchmark/tasks/${task}"
 stub_dir="${repo_root}/benchmark/stubs/${task}"
 condition_a_template="${repo_root}/benchmark/condition_a"
@@ -46,10 +49,9 @@ cp "${repo_root}/README.md" "${condition_c}/README.md"
 cp -R "${repo_root}/docs" "${condition_c}/docs"
 cp -R "${repo_root}/examples" "${condition_c}/examples"
 
-if [[ "${BENCHMARK_LINK_LAKE_PACKAGES:-0}" == "1" ]]; then
+if [[ "${BENCHMARK_USE_SHARED_LAKE_PACKAGES:-1}" == "1" ]]; then
   for condition_dir in "${condition_a}" "${condition_c}"; do
-    mkdir -p "${condition_dir}/.lake"
-    ln -s "${repo_root}/.lake/packages" "${condition_dir}/.lake/packages"
+    benchmark_link_shared_lake_packages "${repo_root}" "${condition_dir}"
   done
 fi
 
