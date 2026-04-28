@@ -639,6 +639,26 @@ Suggested metrics:
 - human edit distance to a reference proof, if reference proofs are created;
 - qualitative failure reason.
 
+### Decision: Separate Preflight Build From Post-Attempt Validation
+
+A generated task should first be checked with `sorry` allowed.  This confirms
+that the theorem statement, imports, and condition-specific environment are
+coherent.  It does not count as solving the theorem.
+
+After a solver attempt, validation is stricter: only the theorem proof body may
+change, `lake build BenchmarkTask` must succeed, and the workspace must not
+contain `sorry`, `admit`, new `axiom`, `opaque`, or `unsafe` declarations.
+
+Reason: the benchmark needs both checks.  Preflight build catches bad task
+statements before wasting solver runs.  Post-attempt validation catches invalid
+or weakened solver outputs, including changes to imports, task-local
+definitions, namespaces, or theorem statements.
+
+Current scripts:
+
+- `benchmark/scripts/prepare_solver_run.sh`
+- `benchmark/scripts/validate_attempt.sh`
+
 ### Current Open Decisions
 
 - Exact theorem statements for all ten tasks.

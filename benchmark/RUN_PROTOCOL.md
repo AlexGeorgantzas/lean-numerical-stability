@@ -98,8 +98,27 @@ Before running an agent attempt, the generated task package should build with
 lake build BenchmarkTask
 ```
 
+This is called a preflight build.  It only means the generated package,
+imports, definitions, and theorem statement are coherent enough for Lean to
+compile.  It does not mean the theorem has been proved.
+
 After an agent attempt:
 
 - run `lake build`;
 - reject if any `sorry`, `admit`, new `axiom`, or weakened theorem remains;
+- reject if imports, task-local definitions, namespaces, or the theorem
+  statement changed;
 - record build result, diff, proof lines, and failure reason.
+
+For the current local harness, use:
+
+```bash
+benchmark/scripts/prepare_solver_run.sh T01_ScaledDot
+benchmark/scripts/validate_attempt.sh <condition-workspace> benchmark/tasks/T01_ScaledDot/Task.lean
+```
+
+`prepare_solver_run.sh` creates both condition workspaces, writes a neutral
+solver prompt, records metadata, checks task hashes, and runs the preflight
+builds.  `validate_attempt.sh` is the post-attempt validator: it rejects changes
+outside the theorem proof body, remaining placeholders, forbidden declarations,
+and build failures.

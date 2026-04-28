@@ -19,8 +19,7 @@ workspace-generator pass.  `main` is kept as the core-library branch.
   `LeastSquares/LSQRSolve.lean`, `LeastSquares/LSNormalEquations.lean`, and
   `FastMatMul.lean`.
 - After the 2026-04-26 fix pass, `main` was fast-forward merged to
-  `015d6c4`.  Benchmark setup commits through `f54206d` live on branch
-  `benchmark`.
+  `015d6c4`.  Benchmark setup commits live on branch `benchmark`.
 - `.vscode/` remains unrelated untracked local editor state.
 
 ## Earlier Context Found
@@ -196,11 +195,14 @@ count in best attempt, human edit distance/lines, proof validity via
 Current benchmark source state: `benchmark/tasks/T01_ScaledDot/Task.lean` is
 the canonical unsolved task file; `benchmark/stubs/T01_ScaledDot/` supplies the
 Condition A import provider; `benchmark/scripts/generate_task_workspace.sh`
-creates paired generated workspaces.  Tool-specific benchmark settings and
-prompt/memory files were removed because Condition C should use public library
-docs rather than hidden guidance.  Older generated task files that once lived
-under `LeanFpAnalysis/FP/Benchmark` or earlier benchmark folders should not be
-trusted; regenerate cleanly from the current benchmark tree.
+creates paired generated workspaces; `benchmark/scripts/prepare_solver_run.sh`
+adds run metadata, neutral prompts, hash checks, and preflight builds;
+`benchmark/scripts/validate_attempt.sh` is the post-attempt validator.  Tool-
+specific benchmark settings and prompt/memory files were removed because
+Condition C should use public library docs rather than hidden guidance.  Older
+generated task files that once lived under `LeanFpAnalysis/FP/Benchmark` or
+earlier benchmark folders should not be trusted; regenerate cleanly from the
+current benchmark tree.
 
 Task-selection rule: hard is fine, but invalid/unprovable statements are not a
 useful benchmark.  If a task needs extra exactness assumptions or a slightly
@@ -229,7 +231,11 @@ the generated Condition C workspace builds with the real library and the same
 expected `sorry` warning.  Validate generated workspaces with
 `lake build BenchmarkTask`, not direct `lake env lean BenchmarkTask.lean`,
 because the generated local import provider must first be built into `.olean`
-files.
+files.  A preflight build means the generated task compiles with `sorry`
+allowed; it is not a proof.  Post-attempt validation rejects changes before the
+theorem proof body, remaining `sorry`/`admit`, forbidden declarations, and
+build failures.  The unsolved generated T01 workspace correctly fails
+post-attempt validation because it still contains `sorry`.
 
 Draft task ladder proposed 2026-04-27, not yet finalized:
 
