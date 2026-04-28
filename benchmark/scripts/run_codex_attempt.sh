@@ -38,7 +38,7 @@ case "${condition}" in
 esac
 
 if [[ -z "${result_root}" ]]; then
-  run_id="$(basename "$(dirname "$(dirname "${workspace}")")")"
+  run_id="$(basename "$(dirname "$(dirname "$(dirname "${workspace}")")")")"
   result_root="${repo_root}/benchmark/results/${run_id}"
 fi
 
@@ -65,20 +65,19 @@ cat > "${result_dir}/attempt_metadata.md" <<EOF
 - source_commit: \`${commit}\`
 - started_at_utc: \`${timestamp}\`
 - codex_bin: \`${codex_bin}\`
-- codex_mode: \`exec --ephemeral --ignore-user-config --ignore-rules --skip-git-repo-check\`
+- codex_mode: \`--ask-for-approval never exec --ephemeral --ignore-user-config --ignore-rules --skip-git-repo-check\`
 EOF
 
 cp "${workspace}/SOLVER_PROMPT.md" "${result_dir}/SOLVER_PROMPT.md"
 cp "${canonical_task}" "${result_dir}/CanonicalTask.lean"
 
 set +e
-codex exec \
+codex --ask-for-approval never exec \
   --ephemeral \
   --ignore-user-config \
   --ignore-rules \
   --skip-git-repo-check \
   --sandbox workspace-write \
-  --ask-for-approval never \
   --cd "${workspace}" \
   --json \
   --output-last-message "${result_dir}/codex_last_message.txt" \
