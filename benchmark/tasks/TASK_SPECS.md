@@ -8,8 +8,10 @@ only the task theorem file for the current task plus the allowed environment
 for that condition.
 
 Each task below must eventually become an exact Lean theorem statement.  The
-Condition A and Condition C versions should target the same theorem shape; the
-difference is only which supporting library material is available.
+generated Condition A and Condition C workspaces should receive byte-identical
+copies of the task file.  The difference is only which implementation of the
+imported library surface is available: Condition A gets generated bare stubs,
+while Condition C gets the actual LeanFpAnalysis library.
 
 Tasks do not have to come directly from Higham.  Most of the library already
 formalizes reusable Higham-style infrastructure, so benchmark tasks should

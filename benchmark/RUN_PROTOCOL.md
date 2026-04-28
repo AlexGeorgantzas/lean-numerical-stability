@@ -31,12 +31,13 @@ Generated Condition A contains:
 - `lakefile.toml`
 - `lean-toolchain`
 - Mathlib dependency
-- a task file with the theorem statement and `sorry`
-- only the bare definitions required to state that theorem
+- the same task file used in Condition C, copied without edits
+- a local bare `LeanFpAnalysis.FP` provider containing only the definitions
+  required to state the theorem
 
 Generated Condition A must not contain:
 
-- `LeanFpAnalysis/`
+- the real `LeanFpAnalysis/` library
 - `docs/`
 - `examples/`
 - `benchmark/tasks/`
@@ -50,7 +51,7 @@ Generated Condition C contains:
 - `lean-toolchain`
 - the LeanFpAnalysis library or a dependency path to a clean checkout
 - public library docs: `README.md`, `docs/LIBRARY_LOOKUP.md`, examples
-- a task file with the theorem statement and `sorry`
+- the same task file used in Condition A, copied without edits
 
 Generated Condition C must not contain:
 
@@ -61,6 +62,12 @@ Generated Condition C must not contain:
 - any reference proof files
 
 ## Solver-Facing Task Rule
+
+For each task, Condition A and Condition C should receive byte-identical copies
+of the task file.  The task file should normally import `LeanFpAnalysis.FP` in
+both conditions.  In Condition A this module name is supplied by a generated
+bare stub with just enough definitions to state the theorem; in Condition C it
+is supplied by the actual library.
 
 The solver-facing task file should contain:
 
@@ -81,4 +88,3 @@ After an agent attempt:
 - run `lake build`;
 - reject if any `sorry`, `admit`, new `axiom`, or weakened theorem remains;
 - record build result, diff, proof lines, and failure reason.
-

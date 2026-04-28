@@ -133,7 +133,9 @@ Conditions:
 - **A: Bare**: Mathlib only; the agent must invent the FP model, gamma
   calculus, algorithm definitions, intermediate lemmas, and proof.  Condition A
   should still include the bare minimum definitions needed to state exactly the
-  same theorem target as Condition C.
+  same theorem target as Condition C.  Generated A/C workspaces should use
+  byte-identical task files; Condition A satisfies `import LeanFpAnalysis.FP`
+  with generated bare stubs, while Condition C uses the real library.
 - **C: Full library**: provide full `LeanFpAnalysis` imports and task theorem;
   the agent should use the repository as a first-time user of the library.
   Condition C should not provide agent memory files, private notes, or

@@ -85,6 +85,12 @@ The theorem statement should be syntactically and semantically the same target
 as in Condition C wherever possible.  The point is not to give Condition A a
 different problem; the point is to remove the library support.
 
+The preferred implementation is to copy the exact same task file into both
+generated workspaces.  The task file imports `LeanFpAnalysis.FP` in both
+conditions.  In Condition A that import is satisfied by a generated bare stub
+with only the definitions required to state the theorem; in Condition C it is
+satisfied by the actual library.
+
 ### Decision: Condition C Should Be Fresh But Documented
 
 Condition C should model a realistic first encounter with the library.  The
@@ -200,7 +206,8 @@ unnecessary contamination risk, especially if the same conversation or files are
 available to the evaluated run.  The safer protocol is:
 
 - write theorem statements and task-local definitions;
-- generate Condition A and Condition C workspaces with `sorry`;
+- generate Condition A and Condition C workspaces with byte-identical task
+  files containing `sorry`;
 - run fresh solver attempts;
 - only after solver runs, add hidden reference proofs or post-hoc validation
   artifacts if needed to diagnose failures.
