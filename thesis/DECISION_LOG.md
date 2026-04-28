@@ -657,7 +657,20 @@ definitions, namespaces, or theorem statements.
 Current scripts:
 
 - `benchmark/scripts/prepare_solver_run.sh`
+- `benchmark/scripts/run_codex_attempt.sh`
 - `benchmark/scripts/validate_attempt.sh`
+
+### Decision: Archive Solver Results Inside The Repository
+
+Generated solver workspaces should remain outside the repository, normally
+under `/tmp`, so the solver does not see benchmark design notes or previous
+attempts.  However, the results of each attempt should be copied back to
+`benchmark/results/<run-id>/<condition>/`.
+
+Archived result material should include the solver prompt, final
+`BenchmarkTask.lean`, diff against the canonical task, validation log, exit
+codes, and metadata.  This prevents loss when temporary workspaces are cleaned
+up while keeping solver-facing workspaces isolated.
 
 ### Current Open Decisions
 

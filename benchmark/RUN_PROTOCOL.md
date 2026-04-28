@@ -114,11 +114,14 @@ For the current local harness, use:
 
 ```bash
 benchmark/scripts/prepare_solver_run.sh T01_ScaledDot
+benchmark/scripts/run_codex_attempt.sh <condition-workspace> condition_a benchmark/tasks/T01_ScaledDot/Task.lean
 benchmark/scripts/validate_attempt.sh <condition-workspace> benchmark/tasks/T01_ScaledDot/Task.lean
 ```
 
 `prepare_solver_run.sh` creates both condition workspaces, writes a neutral
 solver prompt, records metadata, checks task hashes, and runs the preflight
-builds.  `validate_attempt.sh` is the post-attempt validator: it rejects changes
-outside the theorem proof body, remaining placeholders, forbidden declarations,
-and build failures.
+builds.  `run_codex_attempt.sh` invokes a fresh non-interactive Codex process
+with ephemeral session storage and archives the attempt under
+`benchmark/results/<run-id>/<condition>/`.  `validate_attempt.sh` is the
+post-attempt validator: it rejects changes outside the theorem proof body,
+remaining placeholders, forbidden declarations, and build failures.

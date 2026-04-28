@@ -197,6 +197,8 @@ the canonical unsolved task file; `benchmark/stubs/T01_ScaledDot/` supplies the
 Condition A import provider; `benchmark/scripts/generate_task_workspace.sh`
 creates paired generated workspaces; `benchmark/scripts/prepare_solver_run.sh`
 adds run metadata, neutral prompts, hash checks, and preflight builds;
+`benchmark/scripts/run_codex_attempt.sh` invokes fresh ephemeral Codex attempts
+and archives outputs under `benchmark/results/<run-id>/<condition>/`;
 `benchmark/scripts/validate_attempt.sh` is the post-attempt validator.  Tool-
 specific benchmark settings and prompt/memory files were removed because
 Condition C should use public library docs rather than hidden guidance.  Older
