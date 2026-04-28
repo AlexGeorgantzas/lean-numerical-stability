@@ -1,15 +1,14 @@
 name = "ConditionC"
 version = "0.1.0"
-defaultTargets = ["ConditionC"]
+defaultTargets = ["BenchmarkTask"]
 
 [[lean_lib]]
-name = "ConditionC"
+name = "LeanFpAnalysis"
+
+[[lean_lib]]
+name = "BenchmarkTask"
 
 [[require]]
 name = "mathlib"
 scope = "leanprover-community"
 rev = "v4.29.0"
-
-[[require]]
-name = "LeanFpAnalysis"
-path = "../.."

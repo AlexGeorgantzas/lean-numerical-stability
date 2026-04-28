@@ -8,9 +8,15 @@ tree.
 ## Source Tree Roles
 
 - `benchmark/tasks/`: canonical task statements and task-spec notes.
-- `benchmark/condition_a/`: template Lake config for the bare condition.
-- `benchmark/condition_c/`: template Lake config for the full-library
-  condition.
+- `benchmark/condition_a/`: generated-workspace Lake config template for the
+  bare condition.
+- `benchmark/condition_c/`: generated-workspace Lake config template for the
+  full-library condition.
+- `benchmark/stubs/<task>/`: generated-workspace source for the bare
+  Condition A `LeanFpAnalysis.FP` module. These stubs define only names needed
+  by the task statement; they should not include stability theorems or gamma
+  calculus lemmas.
+- `benchmark/scripts/`: helper scripts for generating workspaces.
 - `docs/`, `README.md`, `examples/`: public library documentation allowed in
   Condition C.
 - `thesis/DECISION_LOG.md`: project/thesis notes, never solver-facing.
@@ -38,6 +44,11 @@ Generated Condition A contains:
 Generated Condition A must not contain:
 
 - the real `LeanFpAnalysis/` library
+- proved library stability theorems such as `dotProduct_backward_error`,
+  `matVec_backward_error`, `forwardSub_backward_error`, or
+  `lu_solve_backward_error`
+- proved gamma-calculus lemmas such as `gamma_mul`, `gamma_sum_le`, or
+  `prod_error_bound`
 - `docs/`
 - `examples/`
 - `benchmark/tasks/`
@@ -80,8 +91,12 @@ The solver-facing task file should contain:
 
 ## Validation
 
-Before running an agent attempt, the generated task file should typecheck with
-`sorry` allowed.
+Before running an agent attempt, the generated task package should build with
+`sorry` allowed:
+
+```bash
+lake build BenchmarkTask
+```
 
 After an agent attempt:
 

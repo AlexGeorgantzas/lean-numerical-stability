@@ -1,9 +1,12 @@
 name = "ConditionA"
 version = "0.1.0"
-defaultTargets = ["ConditionA"]
+defaultTargets = ["BenchmarkTask"]
 
 [[lean_lib]]
-name = "ConditionA"
+name = "LeanFpAnalysis"
+
+[[lean_lib]]
+name = "BenchmarkTask"
 
 [[require]]
 name = "mathlib"

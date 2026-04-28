@@ -4,8 +4,8 @@ Project: `LeanFpAnalysis`, a Lean 4 library for floating-point arithmetic and
 automatic stability analysis. The model is axiomatic and intentionally not tied
 to IEEE 754. All core results should be stated over `FPModel` and `Real`.
 
-Last review by Codex: 2026-04-26.
-Current main commit after integrity fixes: `015d6c4`.
+Last review by Codex: 2026-04-28.
+Current main includes the T01 workspace-generator pass.
 
 ## Build State
 
@@ -18,7 +18,10 @@ Current main commit after integrity fixes: `015d6c4`.
   `LeastSquares/LSQRSolve.lean`, `LeastSquares/LSNormalEquations.lean`, and
   `FastMatMul.lean`.
 - After the 2026-04-26 fix pass, `main` was fast-forward merged to
-  `015d6c4`; `.vscode/extensions.json` remains an unrelated untracked file.
+  `015d6c4`.  Benchmark setup commits through `414439c` added the public lookup
+  guide, task specs, anti-contamination protocol, and byte-identical
+  solver-facing T01 task shape.
+- `.vscode/` remains unrelated untracked local editor state.
 
 ## Earlier Context Found
 
@@ -117,9 +120,11 @@ These compile, but should not be treated as fully derived stability results:
 - `MMatrix.lean` proves the Corollary 8.10 relative-error statement in μ-form
   via `mmatrix_forwardSub_relative_error`.  It does not separately formalize
   the asymptotic simplification `μ_i ≤ (n²+n+1)u + O(u²)` as a Big-O theorem.
-- The benchmark tree is currently incomplete in the working copy: the new
-  `benchmark/condition_a` and `benchmark/condition_c` directories have config
-  files only and no Lean exercise files.
+- The benchmark tree now has canonical task specs, a neutral unsolved T01 task,
+  and a first generated-workspace harness.  The harness copies the same
+  `Task.lean` into both conditions, then satisfies `import LeanFpAnalysis.FP`
+  with either a task-local bare stub (Condition A) or the real library
+  (Condition C).
 
 ## Benchmark Context
 
@@ -188,15 +193,14 @@ Metrics from earlier benchmark design: `pass@1`, `pass@5`, remaining `sorry`
 count in best attempt, human edit distance/lines, proof validity via
 `lake build`, and response/proof lines of code.
 
-Current repo state after the lookup-guide pass: tracked benchmark files are only
-`benchmark/condition_a/{lakefile.toml,lean-toolchain}` and
-`benchmark/condition_c/{lakefile.toml,lean-toolchain}`.  Tool-specific
-benchmark settings and prompt/memory files were removed because Condition C
-should use public library docs rather than hidden guidance.  There is no
-tracked task Lean file and no tracked benchmark runner/validator script.
-Earlier session history shows older task files once lived under
-`LeanFpAnalysis/FP/Benchmark` and/or `benchmark/tasks`, then were removed/moved;
-regenerate cleanly rather than relying on the old tree.
+Current benchmark source state: `benchmark/tasks/T01_ScaledDot/Task.lean` is
+the canonical unsolved task file; `benchmark/stubs/T01_ScaledDot/` supplies the
+Condition A import provider; `benchmark/scripts/generate_task_workspace.sh`
+creates paired generated workspaces.  Tool-specific benchmark settings and
+prompt/memory files were removed because Condition C should use public library
+docs rather than hidden guidance.  Older generated task files that once lived
+under `LeanFpAnalysis/FP/Benchmark` or earlier benchmark folders should not be
+trusted; regenerate cleanly from the current benchmark tree.
 
 Task-selection rule: hard is fine, but invalid/unprovable statements are not a
 useful benchmark.  If a task needs extra exactness assumptions or a slightly
@@ -218,6 +222,14 @@ the evaluated solver, repository reference proofs or same-conversation proofs
 create avoidable contamination risk.  Generate theorem statements with `sorry`,
 run fresh isolated solver attempts, then add hidden reference proofs or
 post-hoc validation artifacts only after evaluation if needed.
+
+T01 experiment status on 2026-04-28: the generated Condition A workspace builds
+with only the bare `LeanFpAnalysis.FP` stub and the expected `sorry` warning;
+the generated Condition C workspace builds with the real library and the same
+expected `sorry` warning.  Validate generated workspaces with
+`lake build BenchmarkTask`, not direct `lake env lean BenchmarkTask.lean`,
+because the generated local import provider must first be built into `.olean`
+files.
 
 Draft task ladder proposed 2026-04-27, not yet finalized:
 
