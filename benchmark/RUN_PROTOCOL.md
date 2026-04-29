@@ -133,7 +133,9 @@ previous attempts, or `LeanFpAnalysis` source.
 ephemeral session storage and archives the attempt under
 `benchmark/results/<run-id>/<condition>/`.  It runs Codex with a temporary
 auth-only `CODEX_HOME`, disables plugin and memory features, ignores user
-configuration and rules, and removes the temporary home after the attempt.
+configuration and rules, enforces a timeout
+(`BENCHMARK_CODEX_TIMEOUT_SECONDS`, default 900), and removes the temporary
+home after the attempt.
 `validate_attempt.sh` is the post-attempt validator: it rejects changes outside
 the theorem proof body, remaining placeholders, forbidden declarations, and
 build failures.  `cleanup_run_workspaces.sh` removes temporary run workspaces

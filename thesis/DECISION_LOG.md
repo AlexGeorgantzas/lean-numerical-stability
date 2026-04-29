@@ -727,6 +727,16 @@ touch global plugin metadata.  The benchmark requires a fresh solver process
 whose useful information comes from the generated workspace, the task prompt,
 and, in Condition C, the library itself.
 
+### Decision: Use An Explicit Solver Timeout
+
+Solver attempts should have a fixed wall-clock timeout.  The current harness
+uses `BENCHMARK_CODEX_TIMEOUT_SECONDS`, defaulting to 900 seconds, and archives
+a timeout marker when the Codex process is stopped.
+
+Reason: benchmark runs must be reproducible and bounded.  Open-ended attempts
+make results hard to compare and can waste compute time even when disk usage is
+controlled.
+
 ### Current Open Decisions
 
 - Exact theorem statements for all ten tasks.

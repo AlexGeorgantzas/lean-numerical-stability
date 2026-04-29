@@ -55,6 +55,7 @@ timestamp="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 codex_bin="$(command -v codex)"
 commit="$(git -C "${repo_root}" rev-parse HEAD)"
 branch="$(git -C "${repo_root}" branch --show-current)"
+timeout_seconds="${BENCHMARK_CODEX_TIMEOUT_SECONDS:-900}"
 codex_home="$(mktemp -d "${TMPDIR:-/tmp}/codex-benchmark-home.XXXXXX")"
 cleanup_codex_home() {
   rm -rf "${codex_home}"
@@ -79,6 +80,7 @@ cat > "${result_dir}/attempt_metadata.md" <<EOF
 - started_at_utc: \`${timestamp}\`
 - codex_bin: \`${codex_bin}\`
 - codex_mode: \`auth-only temporary CODEX_HOME; --disable plugins --disable memories --ask-for-approval never exec --ephemeral --ignore-user-config --ignore-rules --skip-git-repo-check\`
+- timeout_seconds: \`${timeout_seconds}\`
 EOF
 
 cp "${workspace}/SOLVER_PROMPT.md" "${result_dir}/SOLVER_PROMPT.md"
@@ -100,8 +102,25 @@ CODEX_HOME="${codex_home}" codex \
   --output-last-message "${result_dir}/codex_last_message.txt" \
   - < "${workspace}/SOLVER_PROMPT.md" \
   > "${result_dir}/codex_events.jsonl" \
-  2> "${result_dir}/codex_stderr.log"
+  2> "${result_dir}/codex_stderr.log" &
+codex_pid=$!
+
+(
+  sleep "${timeout_seconds}"
+  if kill -0 "${codex_pid}" 2>/dev/null; then
+    echo "timed out after ${timeout_seconds} seconds" > "${result_dir}/timeout.txt"
+    kill -TERM "${codex_pid}" 2>/dev/null || true
+  fi
+) &
+watchdog_pid=$!
+
+wait "${codex_pid}"
 codex_status=$?
+kill "${watchdog_pid}" 2>/dev/null || true
+wait "${watchdog_pid}" 2>/dev/null || true
+if [[ -f "${result_dir}/timeout.txt" ]]; then
+  codex_status=124
+fi
 set -e
 
 echo "${codex_status}" > "${result_dir}/codex_exit_code.txt"
