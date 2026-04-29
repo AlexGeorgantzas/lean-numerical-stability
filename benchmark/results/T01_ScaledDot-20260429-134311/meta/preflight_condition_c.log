@@ -1,0 +1,264 @@
+✔ [1966/2029] Built LeanFpAnalysis.FP.Analysis.Error (8.3s)
+✔ [1967/2029] Built LeanFpAnalysis.FP.Model (8.6s)
+✔ [1968/2029] Built LeanFpAnalysis.FP.Algorithms.OuterProduct (10s)
+✔ [1969/2029] Built LeanFpAnalysis.FP.Analysis.Stability (16s)
+✔ [1970/2029] Built LeanFpAnalysis.FP.Analysis.Rounding (21s)
+✔ [1971/2029] Built LeanFpAnalysis.FP.Analysis.MatrixAlgebra (31s)
+✔ [1972/2029] Built LeanFpAnalysis.FP.Analysis.Summation (21s)
+✔ [1973/2029] Built LeanFpAnalysis.FP.Algorithms.SumTree (23s)
+✔ [1974/2029] Built LeanFpAnalysis.FP.Algorithms.PairwiseSum (24s)
+✔ [1975/2029] Built LeanFpAnalysis.FP.Algorithms.LeastSquares.LSPerturbation (24s)
+✔ [1976/2029] Built LeanFpAnalysis.FP.Analysis.SubtractionFold (27s)
+✔ [1977/2029] Built LeanFpAnalysis.FP.Algorithms.Underdetermined.UnderdeterminedSpec (25s)
+⚠ [1978/2029] Built LeanFpAnalysis.FP.Algorithms.FastMatMul (26s)
+warning: LeanFpAnalysis/FP/Algorithms/FastMatMul.lean:149:5: unused variable `hn`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+⚠ [1979/2029] Built LeanFpAnalysis.FP.Algorithms.QR.QRSolve (27s)
+warning: LeanFpAnalysis/FP/Algorithms/QR/QRSolve.lean:67:51: unused variable `hn`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LeanFpAnalysis/FP/Algorithms/QR/QRSolve.lean:73:5: unused variable `hΔA₁`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LeanFpAnalysis/FP/Algorithms/QR/QRSolve.lean:77:5: unused variable `hΔR`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LeanFpAnalysis/FP/Algorithms/QR/QRSolve.lean:144:5: unused variable `hc₁`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LeanFpAnalysis/FP/Algorithms/QR/QRSolve.lean:144:20: unused variable `hc₂`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+✔ [1980/2029] Built LeanFpAnalysis.FP.Algorithms.QR.HouseholderSpec (33s)
+✔ [1981/2029] Built LeanFpAnalysis.FP.Algorithms.MatrixPowers (34s)
+✔ [1982/2029] Built LeanFpAnalysis.FP.Algorithms.RecursiveSum (32s)
+✔ [1983/2029] Built LeanFpAnalysis.FP.Algorithms.Sylvester.SylvesterSpec (35s)
+✔ [1984/2029] Built LeanFpAnalysis.FP.Algorithms.DotProduct (37s)
+⚠ [1985/2029] Built LeanFpAnalysis.FP.Algorithms.QR.GivensSpec (53s)
+warning: LeanFpAnalysis/FP/Algorithms/QR/GivensSpec.lean:54:12: This simp argument is unused:
+  h1
+
+Hint: Omit it from the simp argument list.
+  simp [h1̵,̵ ̵h̵2, hpq]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LeanFpAnalysis/FP/Algorithms/QR/GivensSpec.lean:66:12: This simp argument is unused:
+  h1
+
+Hint: Omit it from the simp argument list.
+  simp [h1̵,̵ ̵h̵2, hqp, hpq]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LeanFpAnalysis/FP/Algorithms/QR/GivensSpec.lean:66:25: This simp argument is unused:
+  hpq
+
+Hint: Omit it from the simp argument list.
+  simp [h1, h2, hqp,̵ ̵h̵p̵q̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LeanFpAnalysis/FP/Algorithms/QR/GivensSpec.lean:75:18: This simp argument is unused:
+  Ne.symm hkp
+
+Hint: Omit it from the simp argument list.
+  simp [hkp, hkq, Ne.symm hkp̵,̵ ̵N̵e̵.̵s̵y̵m̵m̵ ̵h̵k̵q]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LeanFpAnalysis/FP/Algorithms/QR/GivensSpec.lean:75:31: This simp argument is unused:
+  Ne.symm hkq
+
+Hint: Omit it from the simp argument list.
+  simp [hkp, hkq, Ne.symm hkp,̵ ̵N̵e̵.̵s̵y̵m̵m̵ ̵h̵k̵q̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LeanFpAnalysis/FP/Algorithms/QR/GivensSpec.lean:90:14: This simp argument is unused:
+  hqp
+
+Hint: Omit it from the simp argument list.
+  simp [h1,̵ ̵h̵q̵p̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LeanFpAnalysis/FP/Algorithms/QR/GivensSpec.lean:92:12: This simp argument is unused:
+  h1
+
+Hint: Omit it from the simp argument list.
+  simp [h1̵,̵ ̵h̵2, hqp, hpq]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LeanFpAnalysis/FP/Algorithms/QR/GivensSpec.lean:93:20: This simp argument is unused:
+  Ne.symm h1
+
+Hint: Omit it from the simp argument list.
+  simp [h1, h2,̵ ̵N̵e̵.̵s̵y̵m̵m̵ ̵h̵1̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LeanFpAnalysis/FP/Algorithms/QR/GivensSpec.lean:104:12: This simp argument is unused:
+  h1
+
+Hint: Omit it from the simp argument list.
+  simp [h1̵,̵ ̵h̵2, hqp]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LeanFpAnalysis/FP/Algorithms/QR/GivensSpec.lean:105:20: This simp argument is unused:
+  Ne.symm h2
+
+Hint: Omit it from the simp argument list.
+  simp [h1, h2,̵ ̵N̵e̵.̵s̵y̵m̵m̵ ̵h̵2̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LeanFpAnalysis/FP/Algorithms/QR/GivensSpec.lean:181:29: This simp argument is unused:
+  Ne.symm hjq
+
+Hint: Omit it from the simp argument list.
+  simp [Ne.symm hjp,̵ ̵N̵e̵.̵s̵y̵m̵m̵ ̵h̵j̵q̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LeanFpAnalysis/FP/Algorithms/QR/GivensSpec.lean:196:18: This simp argument is unused:
+  Ne.symm hjp
+
+Hint: Omit it from the simp argument list.
+  simp [Ne.symm hjp̵,̵ ̵N̵e̵.̵s̵y̵m̵m̵ ̵h̵j̵q]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LeanFpAnalysis/FP/Algorithms/QR/GivensSpec.lean:202:27: This simp argument is unused:
+  Ne.symm hip
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵N̵e̵.̵s̵y̵m̵m̵ ̵h̵i̵p̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LeanFpAnalysis/FP/Algorithms/QR/GivensSpec.lean:204:29: This simp argument is unused:
+  Ne.symm hiq
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵N̵e̵.̵s̵y̵m̵m̵ ̵h̵i̵q̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LeanFpAnalysis/FP/Algorithms/QR/GivensSpec.lean:205:18: This simp argument is unused:
+  Ne.symm hip
+
+Hint: Omit it from the simp argument list.
+  simp [Ne.symm hip̵,̵ ̵N̵e̵.̵s̵y̵m̵m̵ ̵h̵i̵q]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LeanFpAnalysis/FP/Algorithms/QR/GivensSpec.lean:205:31: This simp argument is unused:
+  Ne.symm hiq
+
+Hint: Omit it from the simp argument list.
+  simp [Ne.symm hip,̵ ̵N̵e̵.̵s̵y̵m̵m̵ ̵h̵i̵q̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LeanFpAnalysis/FP/Algorithms/QR/GivensSpec.lean:236:29: This simp argument is unused:
+  Ne.symm hjq
+
+Hint: Omit it from the simp argument list.
+  simp [Ne.symm hjp,̵ ̵N̵e̵.̵s̵y̵m̵m̵ ̵h̵j̵q̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LeanFpAnalysis/FP/Algorithms/QR/GivensSpec.lean:251:18: This simp argument is unused:
+  Ne.symm hjp
+
+Hint: Omit it from the simp argument list.
+  simp [Ne.symm hjp̵,̵ ̵N̵e̵.̵s̵y̵m̵m̵ ̵h̵j̵q]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LeanFpAnalysis/FP/Algorithms/QR/GivensSpec.lean:257:27: This simp argument is unused:
+  Ne.symm hip
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵N̵e̵.̵s̵y̵m̵m̵ ̵h̵i̵p̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LeanFpAnalysis/FP/Algorithms/QR/GivensSpec.lean:259:29: This simp argument is unused:
+  Ne.symm hiq
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵N̵e̵.̵s̵y̵m̵m̵ ̵h̵i̵q̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LeanFpAnalysis/FP/Algorithms/QR/GivensSpec.lean:260:18: This simp argument is unused:
+  Ne.symm hip
+
+Hint: Omit it from the simp argument list.
+  simp [Ne.symm hip̵,̵ ̵N̵e̵.̵s̵y̵m̵m̵ ̵h̵i̵q]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LeanFpAnalysis/FP/Algorithms/QR/GivensSpec.lean:260:31: This simp argument is unused:
+  Ne.symm hiq
+
+Hint: Omit it from the simp argument list.
+  simp [Ne.symm hip,̵ ̵N̵e̵.̵s̵y̵m̵m̵ ̵h̵i̵q̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+✔ [1986/2029] Built LeanFpAnalysis.FP.Algorithms.StationaryIteration (59s)
+⚠ [1987/2029] Built LeanFpAnalysis.FP.Algorithms.QR.HouseholderQR (30s)
+warning: LeanFpAnalysis/FP/Algorithms/QR/HouseholderQR.lean:73:5: unused variable `hc_step`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LeanFpAnalysis/FP/Algorithms/QR/HouseholderQR.lean:159:41: unused variable `hn`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LeanFpAnalysis/FP/Algorithms/QR/HouseholderQR.lean:160:43: unused variable `hc`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+✔ [1988/2029] Built LeanFpAnalysis.FP.Algorithms.MatVec (24s)
+✔ [1989/2029] Built LeanFpAnalysis.FP.Algorithms.Sylvester.SylvesterPerturbation (36s)
+✔ [1990/2029] Built LeanFpAnalysis.FP.Algorithms.MatMul (20s)
+✔ [1991/2029] Built LeanFpAnalysis.FP.Algorithms.ForwardSub (54s)
+✔ [1992/2029] Built LeanFpAnalysis.FP.Algorithms.Sylvester.SylvesterBackward (49s)
+✔ [1993/2029] Built LeanFpAnalysis.FP.Algorithms.TriangularSolve (82s)
+⚠ [1994/2029] Built LeanFpAnalysis.FP.Algorithms.QR.GivensQR (24s)
+warning: LeanFpAnalysis/FP/Algorithms/QR/GivensQR.lean:69:44: unused variable `hr`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LeanFpAnalysis/FP/Algorithms/QR/GivensQR.lean:70:43: unused variable `hc`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+✔ [1995/2029] Built LeanFpAnalysis.FP.Algorithms.TriangularSolveCombined (12s)
+✔ [1996/2029] Built LeanFpAnalysis.FP.Algorithms.LU.GaussianElimination (16s)
+✔ [1997/2029] Built LeanFpAnalysis.FP.Analysis.ForwardError (18s)
+✔ [1998/2029] Built LeanFpAnalysis.FP.Algorithms.LU.LUSolve (55s)
+✔ [1999/2029] Built LeanFpAnalysis.FP.Analysis.PerturbationTheory (60s)
+✔ [2000/2029] Built LeanFpAnalysis.FP.Algorithms.TriangularForwardBound (68s)
+✔ [2001/2029] Built LeanFpAnalysis.FP.Algorithms.GaussJordan (68s)
+✔ [2002/2029] Built LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyIndefinite (100s)
+✔ [2003/2029] Built LeanFpAnalysis.FP.Analysis (50s)
+✔ [2004/2029] Built LeanFpAnalysis.FP.Algorithms.LU.Doolittle (57s)
+⚠ [2005/2029] Built LeanFpAnalysis.FP.Algorithms.LeastSquares.LSQRSolve (45s)
+warning: LeanFpAnalysis/FP/Algorithms/LeastSquares/LSQRSolve.lean:122:5: unused variable `hε_G`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LeanFpAnalysis/FP/Algorithms/LeastSquares/LSQRSolve.lean:122:22: unused variable `hε_g`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+✔ [2006/2029] Built LeanFpAnalysis.FP.Algorithms.LU.Tridiagonal (60s)
+✔ [2007/2029] Built LeanFpAnalysis.FP.Algorithms.LU.GrowthFactor (60s)
+✔ [2008/2029] Built LeanFpAnalysis.FP.Algorithms.IterativeRefinement (133s)
+✔ [2009/2029] Built LeanFpAnalysis.FP.Algorithms.InverseBounds (64s)
+✔ [2010/2029] Built LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyNonsym (46s)
+✔ [2011/2029] Built LeanFpAnalysis.FP.Algorithms.CondEstimation (50s)
+✔ [2012/2029] Built LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskySpec (55s)
+✔ [2013/2029] Built LeanFpAnalysis.FP.Algorithms.LU.TridiagonalRecurrence (62s)
+✔ [2014/2029] Built LeanFpAnalysis.FP.Algorithms.LU.BlockLU (69s)
+✔ [2015/2029] Built LeanFpAnalysis.FP.Algorithms.LU.SpecialMatrices (57s)
+✔ [2016/2029] Built LeanFpAnalysis.FP.Algorithms.MatrixInversion (74s)
+✔ [2017/2029] Built LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyPerturbation (26s)
+✔ [2018/2029] Built LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskySolve (33s)
+✔ [2019/2029] Built LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyDemmel (33s)
+✔ [2020/2029] Built LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyPSD (40s)
+✔ [2021/2029] Built LeanFpAnalysis.FP.Algorithms.LU.TridiagonalCond (27s)
+✔ [2022/2029] Built LeanFpAnalysis.FP.Algorithms.TriangularForwardComparison (90s)
+⚠ [2023/2029] Built LeanFpAnalysis.FP.Algorithms.LeastSquares.LSNormalEquations (19s)
+warning: LeanFpAnalysis/FP/Algorithms/LeastSquares/LSNormalEquations.lean:101:5: unused variable `hm`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LeanFpAnalysis/FP/Algorithms/LeastSquares/LSNormalEquations.lean:205:5: unused variable `hKappa`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+✔ [2024/2029] Built LeanFpAnalysis.FP.Algorithms.Underdetermined.UnderdeterminedSolve (19s)
+✔ [2025/2029] Built LeanFpAnalysis.FP.Algorithms.MMatrix (15s)
+✔ [2026/2029] Built LeanFpAnalysis.FP.Algorithms (22s)
+✔ [2027/2029] Built LeanFpAnalysis.FP (20s)
+⚠ [2028/2029] Built BenchmarkTask (13s)
+warning: BenchmarkTask.lean:11:8: declaration uses `sorry`
+Build completed successfully (2029 jobs).
