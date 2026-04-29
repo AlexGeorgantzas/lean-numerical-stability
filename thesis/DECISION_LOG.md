@@ -657,6 +657,7 @@ definitions, namespaces, or theorem statements.
 Current scripts:
 
 - `benchmark/scripts/setup_shared_lake_packages.sh`
+- `benchmark/scripts/setup_condition_c_snapshot.sh`
 - `benchmark/scripts/prepare_solver_run.sh`
 - `benchmark/scripts/run_codex_attempt.sh`
 - `benchmark/scripts/validate_attempt.sh`
@@ -670,14 +671,19 @@ is to test whether a fresh solver can discover and use the library as a whole,
 as a user would after loading the project for the first time.
 
 The task file remains neutral and contains no task-specific proof guidance.
-Condition C receives the full public library copy, README, docs, and examples;
-it does not receive benchmark meta-notes, thesis notes, memory files, previous
-attempts, or solution sketches.
+Condition C receives access to the full public library, README, docs, and
+examples through a shared read-only snapshot.  Each solver attempt still runs
+in a fresh task workspace containing only the task file, prompt, Lake config,
+and symlinks/dependency paths to the snapshot.  It does not receive benchmark
+meta-notes, thesis notes, memory files, previous attempts, or solution
+sketches.
 
 Reason: narrowing imports per task would turn the benchmark into a directed
 lemma-lookup exercise.  The intended measurement is broader: whether the
 library is organized and documented well enough for the solver to find the
-right concepts without private help.
+right concepts without private help.  A shared snapshot avoids recopying and
+rebuilding the library for every attempt while preventing one run from building
+on edits made by a previous run.
 
 ### Decision: Archive Solver Results Inside The Repository
 
@@ -704,15 +710,35 @@ The current harness keeps third-party Lake packages in a shared cache under
 `~/.cache/lean-fp-analysis/lake-packages/...`.  The repository's
 `.lake/packages` and generated benchmark workspaces point to that cache.
 
-The shared cache contains Mathlib and related third-party dependencies only.
-It does not contain `LeanFpAnalysis` source, benchmark notes, thesis notes,
-memory files, previous attempts, or task solutions.  Condition A still receives
-only the generated stubs plus the byte-identical task file.  Condition C still
-receives the full public library copy, README, docs, and examples.
+The shared Lake package cache contains Mathlib and related third-party
+dependencies only.  It does not contain `LeanFpAnalysis` source, benchmark
+notes, thesis notes, memory files, previous attempts, or task solutions.
+Condition A still receives only the generated stubs plus the byte-identical
+task file.  Condition C receives a dependency path and inspection symlinks to a
+separate shared read-only `LeanFpAnalysis` snapshot.
 
 Reason: full no-cache builds are too slow and disk-heavy for repeated runs.
 The benchmark needs fresh solver memory and isolated task workspaces, not a
 fresh clone of public third-party dependencies for every attempt.
+
+### Decision: Run Expensive Benchmark Infrastructure In The Cloud
+
+The first build of the shared Condition C snapshot compiles the whole public
+library and is too CPU/RAM-heavy to run repeatedly on the laptop used for
+writing.  Expensive benchmark infrastructure should therefore run on a cloud
+runner.
+
+The repository now has a manual GitHub Actions workflow for benchmark
+preflight: it checks out the branch, prepares the shared Lake package cache,
+builds or restores the Condition C snapshot, generates fresh task workspaces,
+runs preflight builds for both conditions, archives metadata, and uploads the
+archive as an artifact.
+
+Reason: GitHub Actions gives reproducible logs and downloadable artifacts
+without consuming local laptop resources.  Solver attempts are not added to
+this workflow yet because Codex authentication on a non-local runner must be
+chosen explicitly; the workflow currently covers the heavy Lean/snapshot side
+of the benchmark.
 
 ### Decision: Run Solvers With An Auth-Only Temporary Codex Home
 

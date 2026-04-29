@@ -127,7 +127,7 @@ set -e
 echo "${codex_status}" > "${result_dir}/codex_exit_code.txt"
 
 cp "${workspace}/BenchmarkTask.lean" "${result_dir}/BenchmarkTask.after.lean"
-find "${workspace}" -path "${workspace}/.lake" -prune -o -type f -print | sort > "${result_dir}/workspace_files.txt"
+find "${workspace}" -path "${workspace}/.lake" -prune -o \( -type f -o -type l \) -print | sort > "${result_dir}/workspace_files.txt"
 diff -u "${canonical_task}" "${workspace}/BenchmarkTask.lean" > "${result_dir}/BenchmarkTask.diff" || true
 
 set +e

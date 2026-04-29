@@ -23,6 +23,7 @@ benchmark_require_free_space "${run_root}" "${BENCHMARK_MIN_FREE_GB:-8}"
 
 condition_a="${run_root}/condition_a/${task}"
 condition_c="${run_root}/condition_c/${task}"
+condition_c_snapshot="$(benchmark_condition_c_snapshot_dir "${repo_root}")"
 meta_dir="${run_root}/meta"
 mkdir -p "${meta_dir}"
 
@@ -41,6 +42,7 @@ cat > "${meta_dir}/run_metadata.md" <<EOF
 - task_sha256: \`${task_sha}\`
 - condition_a_workspace: \`${condition_a}\`
 - condition_c_workspace: \`${condition_c}\`
+- condition_c_snapshot: \`${condition_c_snapshot}\`
 - shared_lake_packages: \`$(benchmark_shared_lake_packages_dir "${repo_root}")\`
 
 The task files in both condition workspaces must remain byte-identical before

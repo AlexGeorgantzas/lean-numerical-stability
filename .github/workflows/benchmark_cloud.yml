@@ -1,0 +1,68 @@
+name: Benchmark Cloud Preflight
+
+on:
+  workflow_dispatch:
+    inputs:
+      task:
+        description: Benchmark task name
+        required: true
+        default: T01_ScaledDot
+
+jobs:
+  preflight:
+    name: Prepare benchmark task
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    env:
+      BENCHMARK_MIN_FREE_GB: "1"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Restore benchmark caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/lean-fp-analysis/lake-packages
+            ~/.cache/lean-fp-analysis/condition-c-snapshots
+          key: benchmark-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.toml', 'LeanFpAnalysis.lean', 'LeanFpAnalysis/**', 'Main.lean', 'README.md', 'docs/**', 'examples/**') }}
+          restore-keys: |
+            benchmark-${{ runner.os }}-
+
+      - name: Install Lean and build repository
+        uses: leanprover/lean-action@v1
+
+      - name: Prepare benchmark workspaces
+        id: prepare
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          task="${{ inputs.task }}"
+          run_root="/tmp/lean-fp-benchmark-runs/${task}-$(date -u +%Y%m%d-%H%M%S)"
+
+          benchmark/scripts/setup_shared_lake_packages.sh
+          benchmark/scripts/setup_condition_c_snapshot.sh
+          benchmark/scripts/prepare_solver_run.sh "${task}" "${run_root}"
+          benchmark/scripts/archive_preflight_run.sh "${run_root}"
+
+          source benchmark/scripts/shared_lake_packages.sh
+          result_root="$(benchmark_result_root_for_run_id "${PWD}" "$(basename "${run_root}")")"
+
+          echo "run_root=${run_root}" >> "${GITHUB_OUTPUT}"
+          echo "result_root=${result_root}" >> "${GITHUB_OUTPUT}"
+
+      - name: Upload preflight archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-preflight-${{ inputs.task }}
+          path: ${{ steps.prepare.outputs.result_root }}
+          if-no-files-found: error
+
+      - name: Cleanup generated run workspaces
+        if: always() && steps.prepare.outputs.run_root != ''
+        shell: bash
+        run: |
+          benchmark/scripts/cleanup_run_workspaces.sh "${{ steps.prepare.outputs.run_root }}"

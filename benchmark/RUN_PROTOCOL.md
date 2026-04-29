@@ -11,7 +11,8 @@ tree.
 - `benchmark/condition_a/`: generated-workspace Lake config template for the
   bare condition.
 - `benchmark/condition_c/`: generated-workspace Lake config template for the
-  full-library condition.
+  full-library condition.  The generated package depends on a shared
+  Condition C snapshot rather than copying the library into every attempt.
 - `benchmark/stubs/<task>/`: generated-workspace source for the bare
   Condition A `LeanFpAnalysis.FP` module. These stubs define only names needed
   by the task statement; they should not include stability theorems or gamma
@@ -60,9 +61,16 @@ Generated Condition C contains:
 
 - `lakefile.toml`
 - `lean-toolchain`
-- the LeanFpAnalysis library or a dependency path to a clean checkout
-- public library docs: `README.md`, `docs/LIBRARY_LOOKUP.md`, examples
 - the same task file used in Condition A, copied without edits
+- a dependency path to the shared read-only Condition C snapshot
+- symlinks to public library docs/source: `README.md`,
+  `docs/LIBRARY_LOOKUP.md`, examples, and `public_library/`
+
+The shared Condition C snapshot contains:
+
+- `LeanFpAnalysis.lean` and `LeanFpAnalysis/`
+- public library docs: `README.md`, `docs/LIBRARY_LOOKUP.md`, examples
+- Lake files needed to build the public library
 
 Generated Condition C must not contain:
 
@@ -71,6 +79,14 @@ Generated Condition C must not contain:
 - benchmark task-spec notes
 - previous attempts or solutions
 - any reference proof files
+
+The shared Condition C snapshot must not contain:
+
+- `.codex/`
+- `.claude/`
+- `benchmark/`
+- `thesis/`
+- previous attempts or solutions
 
 ## Solver-Facing Task Rule
 
@@ -114,6 +130,7 @@ For the current local harness, use:
 
 ```bash
 benchmark/scripts/setup_shared_lake_packages.sh
+benchmark/scripts/setup_condition_c_snapshot.sh
 benchmark/scripts/prepare_solver_run.sh T01_ScaledDot
 benchmark/scripts/run_codex_attempt.sh <condition-workspace> condition_a benchmark/tasks/T01_ScaledDot/Task.lean
 benchmark/scripts/validate_attempt.sh <condition-workspace> benchmark/tasks/T01_ScaledDot/Task.lean
@@ -129,6 +146,15 @@ and other Lake dependencies reusable across generated workspaces without giving
 the solver a symlink back to the project repository.  The shared cache contains
 third-party packages only, not benchmark notes, thesis notes, memory files,
 previous attempts, or `LeanFpAnalysis` source.
+`setup_condition_c_snapshot.sh` creates a shared read-only snapshot of the
+public library for Condition C.  Condition C task workspaces depend on this
+snapshot through Lake and expose it through symlinks for inspection, but solver
+edits still happen in a fresh per-attempt task workspace.
+
+The manual GitHub Actions workflow `.github/workflows/benchmark_cloud.yml`
+runs the expensive snapshot and preflight steps on a hosted runner and uploads
+the archived preflight metadata as an artifact.  Solver attempts are kept out
+of that workflow until Codex authentication for a non-local runner is chosen.
 `run_codex_attempt.sh` invokes a fresh non-interactive Codex process with
 ephemeral session storage and archives the attempt under
 `benchmark/results/<task>/<timestamp>/<condition>/`, where generated run ids

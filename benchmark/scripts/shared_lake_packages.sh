@@ -21,6 +21,37 @@ benchmark_shared_lake_packages_dir() {
   echo "${cache_root}/$(benchmark_toolchain_id "${repo_root}")-$(benchmark_manifest_id "${repo_root}")"
 }
 
+benchmark_condition_c_public_id() {
+  local repo_root="$1"
+  (
+    cd "${repo_root}"
+    git ls-files -z \
+      LeanFpAnalysis.lean \
+      LeanFpAnalysis \
+      Main.lean \
+      README.md \
+      docs \
+      examples \
+      lakefile.toml \
+      lake-manifest.json \
+      lean-toolchain |
+      xargs -0 shasum -a 256 |
+      shasum -a 256 |
+      awk '{print substr($1, 1, 16)}'
+  )
+}
+
+benchmark_condition_c_snapshot_dir() {
+  local repo_root="$1"
+  if [[ -n "${BENCHMARK_CONDITION_C_SNAPSHOT:-}" ]]; then
+    echo "${BENCHMARK_CONDITION_C_SNAPSHOT}"
+    return
+  fi
+
+  local cache_root="${XDG_CACHE_HOME:-${HOME}/.cache}/lean-fp-analysis/condition-c-snapshots"
+  echo "${cache_root}/$(benchmark_toolchain_id "${repo_root}")-$(benchmark_condition_c_public_id "${repo_root}")"
+}
+
 benchmark_result_root_for_run_id() {
   local repo_root="$1"
   local run_id="$2"

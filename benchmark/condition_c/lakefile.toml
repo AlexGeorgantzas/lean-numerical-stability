@@ -3,12 +3,8 @@ version = "0.1.0"
 defaultTargets = ["BenchmarkTask"]
 
 [[lean_lib]]
-name = "LeanFpAnalysis"
-
-[[lean_lib]]
 name = "BenchmarkTask"
 
 [[require]]
-name = "mathlib"
-scope = "leanprover-community"
-rev = "v4.29.0"
+name = "LeanFpAnalysis"
+path = "@BENCHMARK_CONDITION_C_SNAPSHOT@"

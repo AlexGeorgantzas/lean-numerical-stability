@@ -76,6 +76,18 @@ while IFS= read -r lean_file; do
   fi
 done < <(find "${workspace}" -path "${workspace}/.lake" -prune -o -name '*.lean' -type f -print)
 
+if [[ -f "${workspace}/.benchmark_condition_c_snapshot" ]]; then
+  snapshot_dir="$(<"${workspace}/.benchmark_condition_c_snapshot")"
+  snapshot_hashes="${snapshot_dir}/.benchmark_condition_c_public_files.sha256"
+  if [[ ! -f "${snapshot_hashes}" ]]; then
+    echo "validation failed: missing Condition C snapshot hash file: ${snapshot_hashes}" >&2
+    errors=1
+  elif ! (cd "${snapshot_dir}" && shasum -a 256 -c .benchmark_condition_c_public_files.sha256); then
+    echo "validation failed: Condition C snapshot changed during attempt" >&2
+    errors=1
+  fi
+fi
+
 if ! (cd "${workspace}" && lake build BenchmarkTask); then
   echo "validation failed: lake build BenchmarkTask failed" >&2
   errors=1
