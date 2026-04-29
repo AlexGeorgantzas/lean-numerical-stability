@@ -21,6 +21,17 @@ benchmark_shared_lake_packages_dir() {
   echo "${cache_root}/$(benchmark_toolchain_id "${repo_root}")-$(benchmark_manifest_id "${repo_root}")"
 }
 
+benchmark_result_root_for_run_id() {
+  local repo_root="$1"
+  local run_id="$2"
+
+  if [[ "${run_id}" =~ ^(.+)-([0-9]{8}-[0-9]{6})$ ]]; then
+    echo "${repo_root}/benchmark/results/${BASH_REMATCH[1]}/${BASH_REMATCH[2]}"
+  else
+    echo "${repo_root}/benchmark/results/${run_id}"
+  fi
+}
+
 benchmark_require_free_space() {
   local path="$1"
   local min_gb="${2:-8}"

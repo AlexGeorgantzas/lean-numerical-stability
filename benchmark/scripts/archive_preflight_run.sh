@@ -11,9 +11,10 @@ fi
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "${script_dir}/../.." && pwd)"
+source "${script_dir}/shared_lake_packages.sh"
 
 if [[ -z "${result_root}" ]]; then
-  result_root="${repo_root}/benchmark/results/$(basename "${run_root}")"
+  result_root="$(benchmark_result_root_for_run_id "${repo_root}" "$(basename "${run_root}")")"
 fi
 
 mkdir -p "${result_root}"

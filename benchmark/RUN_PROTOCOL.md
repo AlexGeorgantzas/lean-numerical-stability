@@ -131,7 +131,8 @@ third-party packages only, not benchmark notes, thesis notes, memory files,
 previous attempts, or `LeanFpAnalysis` source.
 `run_codex_attempt.sh` invokes a fresh non-interactive Codex process with
 ephemeral session storage and archives the attempt under
-`benchmark/results/<run-id>/<condition>/`.  It runs Codex with a temporary
+`benchmark/results/<task>/<timestamp>/<condition>/`, where generated run ids
+have the form `<task>-YYYYMMDD-HHMMSS`.  It runs Codex with a temporary
 auth-only `CODEX_HOME`, disables plugin and memory features, ignores user
 configuration and rules, enforces a timeout
 (`BENCHMARK_CODEX_TIMEOUT_SECONDS`, default 900), and removes the temporary

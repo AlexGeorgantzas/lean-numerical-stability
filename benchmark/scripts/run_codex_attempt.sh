@@ -13,6 +13,7 @@ fi
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "${script_dir}/../.." && pwd)"
+source "${script_dir}/shared_lake_packages.sh"
 
 if [[ ! -d "${workspace}" ]]; then
   echo "missing workspace: ${workspace}" >&2
@@ -39,7 +40,7 @@ esac
 
 if [[ -z "${result_root}" ]]; then
   run_id="$(basename "$(dirname "$(dirname "$(dirname "${workspace}")")")")"
-  result_root="${repo_root}/benchmark/results/${run_id}"
+  result_root="$(benchmark_result_root_for_run_id "${repo_root}" "${run_id}")"
 fi
 
 result_dir="${result_root}/${condition}"

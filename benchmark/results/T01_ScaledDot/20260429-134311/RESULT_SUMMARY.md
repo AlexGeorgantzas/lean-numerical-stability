@@ -2,7 +2,7 @@
 
 - Task: `T01_ScaledDot`
 - Run root: `/tmp/lean-fp-benchmark-runs/T01_ScaledDot-20260429-134311`
-- Result archive: `benchmark/results/T01_ScaledDot-20260429-134311`
+- Result archive: `benchmark/results/T01_ScaledDot/20260429-134311`
 - Shared Lake package cache: used
 - Peak archived run workspace size observed: about `101M`
 

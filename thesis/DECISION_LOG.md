@@ -684,12 +684,14 @@ right concepts without private help.
 Generated solver workspaces should remain outside the repository, normally
 under `/tmp`, so the solver does not see benchmark design notes or previous
 attempts.  However, the results of each attempt should be copied back to
-`benchmark/results/<run-id>/<condition>/`.
+`benchmark/results/<task>/<timestamp>/<condition>/`.
 
 Archived result material should include the solver prompt, final
 `BenchmarkTask.lean`, diff against the canonical task, validation log, exit
 codes, and metadata.  This prevents loss when temporary workspaces are cleaned
-up while keeping solver-facing workspaces isolated.
+up while keeping solver-facing workspaces isolated.  Results are grouped by
+task first so repeated attempts for one task can be compared without mixing
+them with other benchmark exercises.
 
 ### Decision: Use A Shared Third-Party Lake Package Cache
 
