@@ -1,0 +1,12 @@
+--- benchmark/tasks/T01_ScaledDot/Task.lean	2026-04-28 14:45:16
++++ /tmp/lean-fp-benchmark-runs/T01_ScaledDot-20260501-140133/condition_a/T01_ScaledDot/BenchmarkTask.lean	2026-05-01 14:09:16
+@@ -15,7 +15,7 @@
+       (∀ i, |η i| ≤ gamma fp (n + 1)) ∧
+       fl_scaledDot fp n alpha x y =
+         alpha * ∑ i : Fin n, x i * y i * (1 + η i) := by
+-  sorry
++  classical
++  grind [fl_scaledDot, fl_dotProduct, gamma, gammaValid]
+ 
+ end LeanFpAnalysis.FP
+-

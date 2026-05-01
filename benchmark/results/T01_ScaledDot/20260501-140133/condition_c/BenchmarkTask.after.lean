@@ -1,0 +1,49 @@
+import LeanFpAnalysis.FP
+
+namespace LeanFpAnalysis.FP
+
+open scoped BigOperators
+
+noncomputable def fl_scaledDot (fp : FPModel) (n : ℕ)
+    (alpha : ℝ) (x y : Fin n → ℝ) : ℝ :=
+  fp.fl_mul alpha (fl_dotProduct fp n x y)
+
+theorem scaledDot_backward_error (fp : FPModel) (n : ℕ)
+    (alpha : ℝ) (x y : Fin n → ℝ)
+    (hn1 : gammaValid fp (n + 1)) :
+    ∃ η : Fin n → ℝ,
+      (∀ i, |η i| ≤ gamma fp (n + 1)) ∧
+      fl_scaledDot fp n alpha x y =
+        alpha * ∑ i : Fin n, x i * y i * (1 + η i) := by
+  have hn : gammaValid fp n := gammaValid_mono fp (by omega) hn1
+  have h1 : gammaValid fp 1 := gammaValid_mono fp (by omega) hn1
+  obtain ⟨θ, hθ, hdot⟩ := dotProduct_backward_error fp n x y hn
+  obtain ⟨δ, hδ, hmul⟩ := fp.model_mul alpha (fl_dotProduct fp n x y)
+  have hδγ : |δ| ≤ gamma fp 1 :=
+    le_trans hδ (u_le_gamma fp one_pos h1)
+  let η : Fin n → ℝ := fun i =>
+    Classical.choose (gamma_mul fp n 1 (θ i) δ (hθ i) hδγ hn1)
+  refine ⟨η, ?_, ?_⟩
+  · intro i
+    exact (Classical.choose_spec (gamma_mul fp n 1 (θ i) δ (hθ i) hδγ hn1)).1
+  · have hη :
+        ∀ i, (1 + θ i) * (1 + δ) = 1 + η i := by
+      intro i
+      exact (Classical.choose_spec (gamma_mul fp n 1 (θ i) δ (hθ i) hδγ hn1)).2
+    have hsum :
+        (∑ i : Fin n, x i * y i * (1 + θ i)) * (1 + δ) =
+          ∑ i : Fin n, x i * y i * (1 + η i) := by
+      rw [Finset.sum_mul]
+      apply Finset.sum_congr rfl
+      intro i _
+      calc
+        x i * y i * (1 + θ i) * (1 + δ)
+            = x i * y i * ((1 + θ i) * (1 + δ)) := by ring
+        _ = x i * y i * (1 + η i) := by rw [hη i]
+    rw [fl_scaledDot, hmul, hdot]
+    calc
+      (alpha * (∑ i : Fin n, x i * y i * (1 + θ i))) * (1 + δ)
+          = alpha * ((∑ i : Fin n, x i * y i * (1 + θ i)) * (1 + δ)) := by ring
+      _ = alpha * ∑ i : Fin n, x i * y i * (1 + η i) := by rw [hsum]
+
+end LeanFpAnalysis.FP

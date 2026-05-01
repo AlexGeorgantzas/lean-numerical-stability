@@ -1,0 +1,10 @@
+/tmp/lean-fp-benchmark-runs/T01_ScaledDot-20260501-140133/condition_c/T01_ScaledDot/.benchmark_condition_c_snapshot
+/tmp/lean-fp-benchmark-runs/T01_ScaledDot-20260501-140133/condition_c/T01_ScaledDot/BenchmarkTask.lean
+/tmp/lean-fp-benchmark-runs/T01_ScaledDot-20260501-140133/condition_c/T01_ScaledDot/README.md
+/tmp/lean-fp-benchmark-runs/T01_ScaledDot-20260501-140133/condition_c/T01_ScaledDot/SOLVER_PROMPT.md
+/tmp/lean-fp-benchmark-runs/T01_ScaledDot-20260501-140133/condition_c/T01_ScaledDot/docs
+/tmp/lean-fp-benchmark-runs/T01_ScaledDot-20260501-140133/condition_c/T01_ScaledDot/examples
+/tmp/lean-fp-benchmark-runs/T01_ScaledDot-20260501-140133/condition_c/T01_ScaledDot/lake-manifest.json
+/tmp/lean-fp-benchmark-runs/T01_ScaledDot-20260501-140133/condition_c/T01_ScaledDot/lakefile.toml
+/tmp/lean-fp-benchmark-runs/T01_ScaledDot-20260501-140133/condition_c/T01_ScaledDot/lean-toolchain
+/tmp/lean-fp-benchmark-runs/T01_ScaledDot-20260501-140133/condition_c/T01_ScaledDot/public_library

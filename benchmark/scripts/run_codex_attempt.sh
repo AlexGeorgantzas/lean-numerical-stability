@@ -39,7 +39,7 @@ case "${condition}" in
 esac
 
 if [[ -z "${result_root}" ]]; then
-  run_id="$(basename "$(dirname "$(dirname "$(dirname "${workspace}")")")")"
+  run_id="$(basename "$(dirname "$(dirname "${workspace}")")")"
   result_root="$(benchmark_result_root_for_run_id "${repo_root}" "${run_id}")"
 fi
 

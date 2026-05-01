@@ -1,0 +1,8 @@
+I wasn’t able to complete the Lean proof within this turn.
+
+Current status:
+- `BenchmarkTask.lean` has no `sorry`, but the proof body is not accepted by Lean.
+- `lake build BenchmarkTask` also fails before elaboration because Lake cannot write a lock file under `/Users/.../.cache/.../mathlib/.lake/config/...`.
+- A direct `lean BenchmarkTask.lean` check using `LEAN_PATH` reaches the theorem and reports the proof is incomplete.
+
+The remaining work is a real backward-error proof for the finite dot-product fold, including the coefficient bound `|(1 + θ) * (1 + δ) - 1| ≤ gamma fp (k + 1)`.

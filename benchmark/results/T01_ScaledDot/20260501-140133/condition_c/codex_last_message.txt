@@ -1,0 +1,6 @@
+Implemented the proof in [BenchmarkTask.lean](/tmp/lean-fp-benchmark-runs/T01_ScaledDot-20260501-140133/condition_c/T01_ScaledDot/BenchmarkTask.lean:11). It uses `dotProduct_backward_error`, models the final scalar multiply with `fp.model_mul`, and combines perturbations pointwise via `gamma_mul` to get the γ(n+1) bound.
+
+Verification:
+- `lean BenchmarkTask.lean` passed using the project’s compiled library paths.
+- `lake build BenchmarkTask` could not run in this sandbox because Lake tried to write a lock file under `/Users/.../.cache/.../mathlib/.lake/config/...`, outside the writable workspace, and failed with `operation not permitted`.
+- Confirmed no `sorry`, `admit`, `axiom`, `opaque`, or `unsafe` remains in `BenchmarkTask.lean`.

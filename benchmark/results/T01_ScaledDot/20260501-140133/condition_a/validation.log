@@ -1,0 +1,46 @@
+✖ [854/855] Building BenchmarkTask (3.7s)
+trace: .> LEAN_PATH=/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/Cli/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/batteries/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/Qq/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/aesop/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/proofwidgets/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/importGraph/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/LeanSearchClient/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/plausible/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/mathlib/.lake/build/lib/lean:/private/tmp/lean-fp-benchmark-runs/T01_ScaledDot-20260501-140133/condition_a/T01_ScaledDot/.lake/build/lib/lean /Users/georgiosalexandrosgeorgantzas/.elan/toolchains/leanprover--lean4---v4.29.0-rc3/bin/lean /private/tmp/lean-fp-benchmark-runs/T01_ScaledDot-20260501-140133/condition_a/T01_ScaledDot/BenchmarkTask.lean -o /private/tmp/lean-fp-benchmark-runs/T01_ScaledDot-20260501-140133/condition_a/T01_ScaledDot/.lake/build/lib/lean/BenchmarkTask.olean -i /private/tmp/lean-fp-benchmark-runs/T01_ScaledDot-20260501-140133/condition_a/T01_ScaledDot/.lake/build/lib/lean/BenchmarkTask.ilean -c /private/tmp/lean-fp-benchmark-runs/T01_ScaledDot-20260501-140133/condition_a/T01_ScaledDot/.lake/build/ir/BenchmarkTask.c --setup /private/tmp/lean-fp-benchmark-runs/T01_ScaledDot-20260501-140133/condition_a/T01_ScaledDot/.lake/build/ir/BenchmarkTask.setup.json --json
+error: BenchmarkTask.lean:19:2: `grind` failed
+case grind
+fp : FPModel
+n : ℕ
+alpha : ℝ
+x y : Fin n → ℝ
+hn1 : gammaValid fp (n + 1)
+h : ∀ (a : Fin n → ℝ), fl_scaledDot fp n alpha x y = alpha * ∑ i, x i * y i * (1 + a i) → ∃ i, ¬|a i| ≤ gamma fp (n + 1)
+⊢ False
+[grind] Goal diagnostics
+  [facts] Asserted facts
+    [prop] gammaValid fp (n + 1)
+    [prop] ∀ (a : Fin n → ℝ),
+          fl_scaledDot fp n alpha x y = alpha * ∑ i, x i * y i * (1 + a i) → ∃ i, ¬|a i| ≤ gamma fp (n + 1)
+    [prop] gammaValid fp (n + 1) = ((↑n + 1) * fp.u < 1)
+  [eqc] True propositions
+    [prop] gammaValid fp (n + 1)
+    [prop] ∀ (a : Fin n → ℝ),
+          fl_scaledDot fp n alpha x y = alpha * ∑ i, x i * y i * (1 + a i) → ∃ i, ¬|a i| ≤ gamma fp (n + 1)
+    [prop] gammaValid fp (n + 1) = ((↑n + 1) * fp.u < 1)
+    [prop] (↑n + 1) * fp.u < 1
+  [ematch] E-matching patterns
+    [thm] fl_scaledDot.eq_1: [fl_scaledDot #4 #3 #2 #1 #0]
+    [thm] fl_dotProduct.eq_1: [fl_dotProduct #2 `[0] #1 #0]
+    [thm] fl_dotProduct.eq_2: [fl_dotProduct #3 (#2 + 1) #1 #0]
+    [thm] gamma.eq_1: [gamma #1 #0]
+    [thm] gammaValid.eq_1: [gammaValid #1 #0]
+  [cutsat] Assignment satisfying linear constraints
+    [assign] n := 0
+  [linarith] Linarith assignment for `ℝ`
+    [assign] alpha := 2
+    [assign] fp.u := 0
+[grind] Issues
+  [issue] failed to create E-match local theorem for
+        ∀ (a : Fin n → ℝ),
+          fl_scaledDot fp n alpha x y = alpha * ∑ i, x i * y i * (1 + a i) → ∃ i, ¬|a i| ≤ gamma fp (n + 1)
+[grind] Diagnostics
+  [thm] E-Matching instances
+    [thm] gammaValid.eq_1 ↦ 1
+error: Lean exited with code 1
+Some required targets logged failures:
+- BenchmarkTask
+error: build failed
+validation failed: lake build BenchmarkTask failed
