@@ -268,8 +268,19 @@ chain, even if no Codex-written proof is produced before evaluation.
 
 ### Proposed Task Ladder
 
-The current draft is a sequence of ten tasks in increasing difficulty.  The
-names below are descriptive, not final theorem names.
+The current benchmark suite is a sequence of ten tasks in increasing
+difficulty.  The solver-facing files are:
+
+- `benchmark/tasks/T01_ScaledDot/Task.lean`
+- `benchmark/tasks/T02_ShiftedDot/Task.lean`
+- `benchmark/tasks/T03_ResidualCertificate/Task.lean`
+- `benchmark/tasks/T04_ForwardSubResidual/Task.lean`
+- `benchmark/tasks/T05_Gemv/Task.lean`
+- `benchmark/tasks/T06_TriangularSolveSingle/Task.lean`
+- `benchmark/tasks/T07_LUSolveGrowth/Task.lean`
+- `benchmark/tasks/T08_CholeskySolveGrowth/Task.lean`
+- `benchmark/tasks/T09_OneStepRefinement/Task.lean`
+- `benchmark/tasks/T10_StationaryForwardSub/Task.lean`
 
 The working task-spec source is `benchmark/tasks/TASK_SPECS.md`.  It is used to
 develop exact theorem shapes before generating Condition A and Condition C
@@ -291,6 +302,12 @@ available to the evaluated run.  The safer protocol is:
 - run fresh solver attempts;
 - only after solver runs, add hidden reference proofs or post-hoc validation
   artifacts if needed to diagnose failures.
+
+All ten current task files have passed preflight builds with `sorry` allowed in
+both Condition A and Condition C.  This establishes that the Lean statements
+and generated environments are coherent enough to compile.  It does not
+establish that the theorems have been proved, and it should not be reported as
+a solver success.
 
 #### 1. Scaled Dot Product Backward Stability
 
@@ -659,10 +676,31 @@ Current scripts:
 - `benchmark/scripts/setup_shared_lake_packages.sh`
 - `benchmark/scripts/setup_condition_c_snapshot.sh`
 - `benchmark/scripts/prepare_solver_run.sh`
+- `benchmark/scripts/run_task_once.sh`
 - `benchmark/scripts/run_codex_attempt.sh`
 - `benchmark/scripts/validate_attempt.sh`
+- `benchmark/scripts/analyze_run.sh`
 - `benchmark/scripts/archive_preflight_run.sh`
 - `benchmark/scripts/cleanup_run_workspaces.sh`
+
+### Decision: Use A Common Bare Stub For Condition A
+
+Condition A now has a default stub module at
+`benchmark/stubs/common/LeanFpAnalysis/FP.lean`.  A task may still receive a
+task-specific stub later if its statement needs a narrower surface, but the
+common stub is the default.
+
+Reason: the benchmark has ten tasks sharing the same public import
+`LeanFpAnalysis.FP`.  Maintaining ten nearly identical stubs would be noisy and
+would create unnecessary opportunities for accidental differences between
+tasks.  A common stub keeps Condition A consistent: it exposes only bare
+definitions and abstract contracts needed for the theorem statements to parse,
+without proved stability theorems, gamma calculus, lookup documentation, or
+examples.
+
+Consequence: Condition A can define the same theorem targets as Condition C,
+but it should not have the reusable proof infrastructure that the thesis is
+trying to evaluate.
 
 ### Decision: Condition C Keeps The Whole Public Library
 
@@ -758,15 +796,49 @@ and, in Condition C, the library itself.
 ### Decision: Use An Explicit Solver Timeout
 
 Solver attempts should have a fixed wall-clock timeout.  The current harness
-uses `BENCHMARK_CODEX_TIMEOUT_SECONDS`, defaulting to 900 seconds, and archives
-a timeout marker when the Codex process is stopped.
+uses `BENCHMARK_CODEX_TIMEOUT_SECONDS`, defaulting to 1200 seconds, and
+archives a timeout marker when the Codex process is stopped.
 
 Reason: benchmark runs must be reproducible and bounded.  Open-ended attempts
 make results hard to compare and can waste compute time even when disk usage is
 controlled.
 
+The timeout was increased from 900 seconds to 1200 seconds because a
+20-minute attempt is a better compromise for this benchmark: short enough to
+run repeated trials, but long enough that Condition C has time to inspect the
+large library and attempt a genuine proof rather than failing due to navigation
+latency.
+
+### Decision: Produce An Analysis After Every Run
+
+Each official run should produce `RUN_ANALYSIS.md` and `metrics.tsv` in the
+archived result directory.
+
+Reason: raw Codex logs, Lean logs, diffs, and validation files are necessary
+for auditability but are too scattered for thesis analysis.  A compact analysis
+file makes every run immediately interpretable while preserving the raw
+artifacts for later inspection.
+
+The metrics currently recorded per condition are:
+
+- Codex exit code;
+- validation exit code;
+- timeout marker;
+- start and finish timestamps;
+- Codex event-log line count;
+- diff line count;
+- proof-line count;
+- remaining placeholder count;
+- forbidden declaration count.
+
+These metrics are deliberately mechanical.  They do not replace human
+classification of failure modes, but they make it easier to compare runs and to
+identify cases where a condition timed out, left placeholders, changed too much
+code, or failed validation despite Codex exiting normally.
+
 ### Current Open Decisions
 
-- Exact theorem statements for all ten tasks.
-- Whether Task 10 should target forward error or residual error.
 - The final contamination-search protocol and log format.
+- Number of repeated attempts per task and per condition.
+- Whether to add hidden reference proofs after the first solver evaluation
+  round for diagnostic purposes.

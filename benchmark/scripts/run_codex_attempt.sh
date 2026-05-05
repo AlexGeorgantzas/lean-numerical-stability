@@ -56,7 +56,7 @@ timestamp="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 codex_bin="$(command -v codex)"
 commit="$(git -C "${repo_root}" rev-parse HEAD)"
 branch="$(git -C "${repo_root}" branch --show-current)"
-timeout_seconds="${BENCHMARK_CODEX_TIMEOUT_SECONDS:-900}"
+timeout_seconds="${BENCHMARK_CODEX_TIMEOUT_SECONDS:-1200}"
 codex_home="$(mktemp -d "${TMPDIR:-/tmp}/codex-benchmark-home.XXXXXX")"
 cleanup_codex_home() {
   rm -rf "${codex_home}"

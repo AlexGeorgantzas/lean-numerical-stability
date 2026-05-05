@@ -12,6 +12,7 @@ source "${script_dir}/shared_lake_packages.sh"
 
 task_dir="${repo_root}/benchmark/tasks/${task}"
 stub_dir="${repo_root}/benchmark/stubs/${task}"
+common_stub_dir="${repo_root}/benchmark/stubs/common"
 condition_a_template="${repo_root}/benchmark/condition_a"
 condition_c_template="${repo_root}/benchmark/condition_c"
 condition_c_snapshot="$(benchmark_condition_c_snapshot_dir "${repo_root}")"
@@ -22,7 +23,11 @@ if [[ ! -f "${task_dir}/Task.lean" ]]; then
 fi
 
 if [[ ! -d "${stub_dir}" ]]; then
-  echo "missing Condition A stub directory: ${stub_dir}" >&2
+  stub_dir="${common_stub_dir}"
+fi
+
+if [[ ! -d "${stub_dir}" ]]; then
+  echo "missing Condition A stub directory for ${task}, and no common stub exists" >&2
   exit 1
 fi
 

@@ -13,10 +13,12 @@ tree.
 - `benchmark/condition_c/`: generated-workspace Lake config template for the
   full-library condition.  The generated package depends on a shared
   Condition C snapshot rather than copying the library into every attempt.
-- `benchmark/stubs/<task>/`: generated-workspace source for the bare
-  Condition A `LeanFpAnalysis.FP` module. These stubs define only names needed
-  by the task statement; they should not include stability theorems or gamma
-  calculus lemmas.
+- `benchmark/stubs/<task>/`: optional task-specific generated-workspace source
+  for the bare Condition A `LeanFpAnalysis.FP` module.
+- `benchmark/stubs/common/`: default bare Condition A `LeanFpAnalysis.FP`
+  provider used when a task has no task-specific stub. It defines only names
+  needed by the benchmark theorem statements; it should not include stability
+  theorems or gamma-calculus lemmas.
 - `benchmark/scripts/`: helper scripts for generating workspaces.
 - `docs/`, `README.md`, `examples/`: public library documentation allowed in
   Condition C.
@@ -126,16 +128,12 @@ After an agent attempt:
   statement changed;
 - record build result, diff, proof lines, and failure reason.
 
-For the current local harness, use:
+For the current local harness, run a full one-task attempt with:
 
 ```bash
 benchmark/scripts/setup_shared_lake_packages.sh
 benchmark/scripts/setup_condition_c_snapshot.sh
-benchmark/scripts/prepare_solver_run.sh T01_ScaledDot
-benchmark/scripts/run_codex_attempt.sh <condition-workspace> condition_a benchmark/tasks/T01_ScaledDot/Task.lean
-benchmark/scripts/validate_attempt.sh <condition-workspace> benchmark/tasks/T01_ScaledDot/Task.lean
-benchmark/scripts/archive_preflight_run.sh <run-root>
-benchmark/scripts/cleanup_run_workspaces.sh <run-root>
+BENCHMARK_CODEX_TIMEOUT_SECONDS=1200 benchmark/scripts/run_task_once.sh T01_ScaledDot
 ```
 
 `prepare_solver_run.sh` creates both condition workspaces, writes a neutral
@@ -161,9 +159,28 @@ ephemeral session storage and archives the attempt under
 have the form `<task>-YYYYMMDD-HHMMSS`.  It runs Codex with a temporary
 auth-only `CODEX_HOME`, disables plugin and memory features, ignores user
 configuration and rules, enforces a timeout
-(`BENCHMARK_CODEX_TIMEOUT_SECONDS`, default 900), and removes the temporary
+(`BENCHMARK_CODEX_TIMEOUT_SECONDS`, default 1200), and removes the temporary
 home after the attempt.
 `validate_attempt.sh` is the post-attempt validator: it rejects changes outside
 the theorem proof body, remaining placeholders, forbidden declarations, and
 build failures.  `cleanup_run_workspaces.sh` removes temporary run workspaces
 after results have been archived.
+
+`run_task_once.sh` is the preferred local entrypoint.  It prepares fresh
+Condition A and Condition C workspaces for one task, archives preflight
+metadata, runs both solver attempts with the same timeout, validates each
+attempt, writes `RUN_ANALYSIS.md` and `metrics.tsv`, then removes the temporary
+workspaces.
+
+`analyze_run.sh` writes a compact post-run analysis under the archived result
+root.  The metrics table records, per condition:
+
+- Codex exit code;
+- validation exit code;
+- timeout marker;
+- start and finish timestamps;
+- Codex event-log line count;
+- diff line count;
+- proof-line count;
+- remaining placeholder count;
+- forbidden declaration count.
