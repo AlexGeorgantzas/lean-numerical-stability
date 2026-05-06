@@ -1,0 +1,5 @@
+Implemented the proof in [BenchmarkTask.lean](/private/tmp/lean-fp-benchmark-runs/T04_ForwardSubResidual-20260505-222035/condition_c/T04_ForwardSubResidual/BenchmarkTask.lean:16). It derives the residual bound from `forwardSub_backward_error`, rewrites the residual as the perturbation row sum, then applies absolute-sum and componentwise perturbation bounds.
+
+Verification:
+- `lean BenchmarkTask.lean` passed using the workspace’s local olean paths.
+- `lake build BenchmarkTask` was attempted twice, but Lake was blocked by sandbox permissions on an external cache lock file under `/Users/.../.cache/lean-fp-analysis/.../lakefile.olean.lock`.

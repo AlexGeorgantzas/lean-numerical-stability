@@ -1,0 +1,37 @@
+--- /Users/georgiosalexandrosgeorgantzas/Documents/GitHub/lean-fp-analysis/benchmark/tasks/T04_ForwardSubResidual/Task.lean	2026-05-05 17:48:49
++++ /tmp/lean-fp-benchmark-runs/T04_ForwardSubResidual-20260505-222035/condition_c/T04_ForwardSubResidual/BenchmarkTask.lean	2026-05-05 22:27:37
+@@ -13,6 +13,33 @@
+     ∀ i : Fin n,
+       |b i - ∑ j : Fin n, L i j * xhat j| ≤
+         gamma fp n * ∑ j : Fin n, |L i j| * |xhat j| := by
+-  sorry
++  dsimp only
++  let xhat := fl_forwardSub fp n L b
++  obtain ⟨ΔL, hΔL, hsolve⟩ :=
++    forwardSub_backward_error fp n L b hdiag hlower hn
++  intro i
++  have hsolve_i : ∑ j : Fin n, (L i j + ΔL i j) * xhat j = b i := by
++    simpa [xhat] using hsolve i
++  have hres_eq :
++      b i - ∑ j : Fin n, L i j * xhat j =
++        ∑ j : Fin n, ΔL i j * xhat j := by
++    rw [← hsolve_i]
++    simp_rw [add_mul]
++    rw [Finset.sum_add_distrib]
++    ring
++  calc
++    |b i - ∑ j : Fin n, L i j * xhat j|
++        = |∑ j : Fin n, ΔL i j * xhat j| := by rw [hres_eq]
++    _ ≤ ∑ j : Fin n, |ΔL i j * xhat j| := Finset.abs_sum_le_sum_abs _ _
++    _ ≤ ∑ j : Fin n, gamma fp n * |L i j| * |xhat j| := by
++      apply Finset.sum_le_sum
++      intro j _
++      rw [abs_mul]
++      exact mul_le_mul_of_nonneg_right (hΔL i j) (abs_nonneg _)
++    _ = gamma fp n * ∑ j : Fin n, |L i j| * |xhat j| := by
++      rw [Finset.mul_sum]
++      apply Finset.sum_congr rfl
++      intro j _
++      ring
+ 
+ end LeanFpAnalysis.FP

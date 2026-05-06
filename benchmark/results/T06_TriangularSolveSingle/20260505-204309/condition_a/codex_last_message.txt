@@ -1,0 +1,13 @@
+I could not replace the `sorry` with a valid proof because the theorem is false as stated.
+
+The blocker is in [FP.lean](/private/tmp/lean-fp-benchmark-runs/T06_TriangularSolveSingle-20260505-204309/condition_a/T06_TriangularSolveSingle/LeanFpAnalysis/FP.lean:57): both `fl_forwardSub` and `fl_backSub` are defined as the zero vector. So in [BenchmarkTask.lean](/private/tmp/lean-fp-benchmark-runs/T06_TriangularSolveSingle-20260505-204309/condition_a/T06_TriangularSolveSingle/BenchmarkTask.lean:14), `xhat` is always zero, and the final equation reduces to:
+
+```lean
+∀ i, 0 = b i
+```
+
+for arbitrary `b`.
+
+A concrete counterexample is `n = 1`, exact arithmetic with `u = 0`, `L = U = 1`, and `b = 1`. The diagonal, triangular, and `gammaValid` hypotheses all hold, but the conclusion requires `0 = 1`. I also checked this counterexample with Lean via stdin.
+
+I did not edit `BenchmarkTask.lean`, since any proof would require changing the theorem/definitions or using a forbidden escape hatch. I also could not run `lake build BenchmarkTask`: normal `lake` hit a sandbox write error in the external Lean cache, and redirecting `HOME` tried to download dependencies but network is unavailable.

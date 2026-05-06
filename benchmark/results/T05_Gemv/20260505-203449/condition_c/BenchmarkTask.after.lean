@@ -1,0 +1,137 @@
+import LeanFpAnalysis.FP
+
+namespace LeanFpAnalysis.FP
+
+open scoped BigOperators
+
+noncomputable def fl_gemv (fp : FPModel) (m n : ℕ)
+    (alpha beta : ℝ)
+    (A : Fin m → Fin n → ℝ) (x : Fin n → ℝ) (y : Fin m → ℝ) :
+    Fin m → ℝ :=
+  fun i =>
+    fp.fl_add
+      (fp.fl_mul alpha (fl_matVec fp m n A x i))
+      (fp.fl_mul beta (y i))
+
+theorem gemv_backward_error (fp : FPModel) (m n : ℕ)
+    (alpha beta : ℝ)
+    (A : Fin m → Fin n → ℝ) (x : Fin n → ℝ) (y : Fin m → ℝ)
+    (hn2 : gammaValid fp (n + 2)) :
+    ∃ ΔA : Fin m → Fin n → ℝ,
+    ∃ Δy : Fin m → ℝ,
+      (∀ i j, |ΔA i j| ≤ gamma fp (n + 2) * |A i j|) ∧
+      (∀ i, |Δy i| ≤ gamma fp (n + 2) * |y i|) ∧
+      ∀ i,
+        fl_gemv fp m n alpha beta A x y i =
+          alpha * ∑ j : Fin n, (A i j + ΔA i j) * x j +
+          beta * (y i + Δy i) := by
+  have hn : gammaValid fp n := gammaValid_mono fp (by omega) hn2
+  have hn1 : gammaValid fp (n + 1) := gammaValid_mono fp (by omega) hn2
+  have h1 : gammaValid fp 1 := gammaValid_mono fp (by omega) hn2
+  have h2 : gammaValid fp 2 := gammaValid_mono fp (by omega) hn2
+  let η : Fin m → Fin n → ℝ :=
+    fun i => Classical.choose (dotProduct_backward_error fp n (A i) x hn)
+  have hη : ∀ i j, |η i j| ≤ gamma fp n :=
+    fun i j => (Classical.choose_spec (dotProduct_backward_error fp n (A i) x hn)).1 j
+  have hdot : ∀ i,
+      fl_matVec fp m n A x i = ∑ j : Fin n, A i j * x j * (1 + η i j) :=
+    fun i => (Classical.choose_spec (dotProduct_backward_error fp n (A i) x hn)).2
+  let δα : Fin m → ℝ :=
+    fun i => Classical.choose (fp.model_mul alpha (fl_matVec fp m n A x i))
+  let δβ : Fin m → ℝ :=
+    fun i => Classical.choose (fp.model_mul beta (y i))
+  let δs : Fin m → ℝ :=
+    fun i =>
+      Classical.choose
+        (fp.model_add
+          (fp.fl_mul alpha (fl_matVec fp m n A x i))
+          (fp.fl_mul beta (y i)))
+  have hδα : ∀ i, |δα i| ≤ gamma fp 1 ∧
+      fp.fl_mul alpha (fl_matVec fp m n A x i) =
+        (alpha * fl_matVec fp m n A x i) * (1 + δα i) := by
+    intro i
+    have h := Classical.choose_spec (fp.model_mul alpha (fl_matVec fp m n A x i))
+    exact ⟨le_trans h.1 (u_le_gamma fp one_pos h1), h.2⟩
+  have hδβ : ∀ i, |δβ i| ≤ gamma fp 1 ∧
+      fp.fl_mul beta (y i) = (beta * y i) * (1 + δβ i) := by
+    intro i
+    have h := Classical.choose_spec (fp.model_mul beta (y i))
+    exact ⟨le_trans h.1 (u_le_gamma fp one_pos h1), h.2⟩
+  have hδs : ∀ i, |δs i| ≤ gamma fp 1 ∧
+      fp.fl_add
+        (fp.fl_mul alpha (fl_matVec fp m n A x i))
+        (fp.fl_mul beta (y i)) =
+        (fp.fl_mul alpha (fl_matVec fp m n A x i) +
+          fp.fl_mul beta (y i)) * (1 + δs i) := by
+    intro i
+    have h :=
+      Classical.choose_spec
+        (fp.model_add
+          (fp.fl_mul alpha (fl_matVec fp m n A x i))
+          (fp.fl_mul beta (y i)))
+    exact ⟨le_trans h.1 (u_le_gamma fp one_pos h1), h.2⟩
+  let θA₁ : Fin m → Fin n → ℝ :=
+    fun i j => η i j + δα i + η i j * δα i
+  let θA : Fin m → Fin n → ℝ :=
+    fun i j => θA₁ i j + δs i + θA₁ i j * δs i
+  let θy : Fin m → ℝ :=
+    fun i => δβ i + δs i + δβ i * δs i
+  have hθA₁ : ∀ i j, |θA₁ i j| ≤ gamma fp (n + 1) := by
+    intro i j
+    obtain ⟨θ, hθ, hprod⟩ := gamma_mul fp n 1 (η i j) (δα i) (hη i j) (hδα i).1 hn1
+    have hθeq : θ = θA₁ i j := by
+      have hprod' : (1 + η i j) * (1 + δα i) = 1 + θA₁ i j := by
+        simp only [θA₁]
+        ring
+      linarith
+    simpa [hθeq] using hθ
+  have hθA : ∀ i j, |θA i j| ≤ gamma fp (n + 2) := by
+    intro i j
+    obtain ⟨θ, hθ, hprod⟩ :=
+      gamma_mul fp (n + 1) 1 (θA₁ i j) (δs i) (hθA₁ i j) (hδs i).1 hn2
+    have hθeq : θ = θA i j := by
+      have hprod' : (1 + θA₁ i j) * (1 + δs i) = 1 + θA i j := by
+        simp only [θA]
+        ring
+      linarith
+    simpa [hθeq] using hθ
+  have hθy : ∀ i, |θy i| ≤ gamma fp (n + 2) := by
+    intro i
+    obtain ⟨θ, hθ, hprod⟩ := gamma_mul fp 1 1 (δβ i) (δs i) (hδβ i).1 (hδs i).1 h2
+    have hθeq : θ = θy i := by
+      have hprod' : (1 + δβ i) * (1 + δs i) = 1 + θy i := by
+        simp only [θy]
+        ring
+      linarith
+    exact le_trans (by simpa [hθeq] using hθ) (gamma_mono fp (by omega) hn2)
+  refine ⟨fun i j => A i j * θA i j, fun i => y i * θy i, ?_, ?_, ?_⟩
+  · intro i j
+    rw [abs_mul, mul_comm (gamma fp (n + 2))]
+    exact mul_le_mul_of_nonneg_left (hθA i j) (abs_nonneg _)
+  · intro i
+    rw [abs_mul, mul_comm (gamma fp (n + 2))]
+    exact mul_le_mul_of_nonneg_left (hθy i) (abs_nonneg _)
+  · intro i
+    rw [fl_gemv, (hδs i).2, (hδα i).2, (hδβ i).2, hdot i]
+    have hsumA :
+        (∑ j : Fin n, A i j * x j * (1 + η i j)) * (1 + δα i) * (1 + δs i) =
+          ∑ j : Fin n, (A i j + A i j * θA i j) * x j := by
+      rw [Finset.sum_mul, Finset.sum_mul]
+      apply Finset.sum_congr rfl
+      intro j _
+      simp only [θA₁, θA]
+      ring
+    calc
+      ((alpha * (∑ j : Fin n, A i j * x j * (1 + η i j))) * (1 + δα i) +
+          (beta * y i) * (1 + δβ i)) * (1 + δs i)
+          = alpha *
+              ((∑ j : Fin n, A i j * x j * (1 + η i j)) *
+                (1 + δα i) * (1 + δs i)) +
+              beta * (y i + y i * θy i) := by
+                simp only [θy]
+                ring
+      _ = alpha * (∑ j : Fin n, (A i j + A i j * θA i j) * x j) +
+          beta * (y i + y i * θy i) := by
+            rw [hsumA]
+
+end LeanFpAnalysis.FP

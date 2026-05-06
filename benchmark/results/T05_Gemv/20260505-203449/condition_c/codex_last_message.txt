@@ -1,0 +1,8 @@
+Implemented the proof in [BenchmarkTask.lean](/tmp/lean-fp-benchmark-runs/T05_Gemv-20260505-203449/condition_c/T05_Gemv/BenchmarkTask.lean).
+
+Verification:
+- `lean BenchmarkTask.lean` with the project/package `LEAN_PATH` passes.
+- `lake build BenchmarkTask` was run, but Lake failed before elaboration due sandbox permissions on an external cache lock file:
+  `/Users/.../mathlib/.lake/config/mathlib/lakefile.olean.lock`.
+
+No `sorry`, `admit`, `axiom`, `opaque`, or `unsafe` remains in `BenchmarkTask.lean`.

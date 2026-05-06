@@ -1,0 +1,29 @@
+I did not edit `BenchmarkTask.lean` because the theorem is false under the current definitions.
+
+Counterexample sketch:
+
+- `n = 1`
+- exact FP model with `u = 0`
+- `A = M = Minv = 1`, `N = 0`
+- `b = x = 1`
+- `xhat 0 = x`, and `xhat k = 0` for all `k > 0`
+- `q = 0`, `μ = 0`
+
+All assumptions are satisfiable. In particular, `fl_forwardSub` is defined in [LeanFpAnalysis/FP.lean](/tmp/lean-fp-benchmark-runs/T10_StationaryForwardSub-20260505-211935/condition_a/T10_StationaryForwardSub/LeanFpAnalysis/FP.lean:58) as the constant zero vector, so the step assumption holds.
+
+But the conclusion becomes essentially:
+
+```lean
+1 ≤ 0
+```
+
+because the residual at `m + 1` is `b - A * 0 = 1`, while the initial residual is zero and `μ = 0`.
+
+I also tried `lake build BenchmarkTask`, but Lake was blocked by the sandbox while touching an external Lean cache lock file:
+
+```text
+operation not permitted
+.../mathlib/.lake/config/mathlib/lakefile.olean.lock
+```
+
+So there is no valid proof body to insert without changing the theorem statement or strengthening the assumptions.

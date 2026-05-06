@@ -1,0 +1,8 @@
+I wasn’t able to complete the Lean proof. I restored `BenchmarkTask.lean` to its original state with the existing `sorry` rather than leaving a broken attempted proof.
+
+I also attempted `lake build BenchmarkTask`, but Lake fails before elaborating the target due to sandbox permissions on the cached mathlib lock file:
+
+```text
+error: operation not permitted
+file: /Users/.../.cache/lean-fp-analysis/.../mathlib/.lake/config/mathlib/lakefile.olean.lock
+```

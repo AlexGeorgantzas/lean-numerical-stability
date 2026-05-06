@@ -1,0 +1,10 @@
+--- /Users/georgiosalexandrosgeorgantzas/Documents/GitHub/lean-fp-analysis/benchmark/tasks/T10_StationaryForwardSub/Task.lean	2026-05-05 17:48:50
++++ /tmp/lean-fp-benchmark-runs/T10_StationaryForwardSub-20260505-211207/condition_a/T10_StationaryForwardSub/BenchmarkTask.lean	2026-05-05 21:12:55
+@@ -30,6 +30,6 @@
+       q ^ (m + 1) *
+         infNormVec hnpos (fun i => b i - ∑ j : Fin n, A i j * xhat 0 j) +
+       μ * infNorm hnpos (matSub_id n (dualIterMatrix n N Minv)) / (1 - q) := by
+-  sorry
++  simp [infNormVec, infNorm]
+ 
+ end LeanFpAnalysis.FP

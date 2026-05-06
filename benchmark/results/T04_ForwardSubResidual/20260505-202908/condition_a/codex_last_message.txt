@@ -1,0 +1,11 @@
+I could not replace the `sorry` with a valid proof because the theorem in [BenchmarkTask.lean](/private/tmp/lean-fp-benchmark-runs/T04_ForwardSubResidual-20260505-202908/condition_a/T04_ForwardSubResidual/BenchmarkTask.lean:7) is false with the current definitions.
+
+The issue is [fl_forwardSub](/private/tmp/lean-fp-benchmark-runs/T04_ForwardSubResidual-20260505-202908/condition_a/T04_ForwardSubResidual/LeanFpAnalysis/FP.lean:57): it always returns `fun _ => 0`. For an exact-arithmetic `FPModel` with `u = 0`, `n = 1`, `L 0 0 = 1`, and `b 0 = 1`, all hypotheses hold, but the conclusion reduces to:
+
+```lean
+|1 - 0| ≤ 0 * 0
+```
+
+that is `1 ≤ 0`.
+
+I verified this counterexample with Lean via `lean --stdin`. I also ran the requested `lake build BenchmarkTask`, but Lake is blocked by the sandbox trying to access a lock file under `/Users/.../.cache/.../lakefile.olean.lock`. No source files were edited.

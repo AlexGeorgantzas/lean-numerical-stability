@@ -1,0 +1,5 @@
+Implemented the proof in [BenchmarkTask.lean](/private/tmp/lean-fp-benchmark-runs/T06_TriangularSolveSingle-20260505-204309/condition_c/T06_TriangularSolveSingle/BenchmarkTask.lean).
+
+Verification:
+- `LEAN_PATH=... lean BenchmarkTask.lean` succeeds.
+- `lake build BenchmarkTask` was attempted, but the sandbox blocked Lake from writing a lock file under `/Users/.../.cache/.../mathlib/.lake/config/...`. This is outside the writable workspace, so Lake exits before checking the file.

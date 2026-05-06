@@ -64,8 +64,8 @@ if [[ "${canonical_prefix}" != "${attempt_prefix}" ]]; then
   errors=1
 fi
 
-if rg -n '\b(sorry|admit)\b' "${attempt_task}"; then
-  echo "validation failed: attempted task still contains sorry/admit" >&2
+if rg -n '\b(sorry|admit|sorryAx)\b' "${attempt_task}"; then
+  echo "validation failed: attempted task still contains sorry/admit/sorryAx" >&2
   errors=1
 fi
 

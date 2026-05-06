@@ -1,0 +1,40 @@
+--- /Users/georgiosalexandrosgeorgantzas/Documents/GitHub/lean-fp-analysis/benchmark/tasks/T09_OneStepRefinement/Task.lean	2026-05-05 17:48:50
++++ /tmp/lean-fp-benchmark-runs/T09_OneStepRefinement-20260505-205939/condition_c/T09_OneStepRefinement/BenchmarkTask.lean	2026-05-05 21:10:36
+@@ -22,6 +22,36 @@
+         μ * ∑ j : Fin n, |A i j| * |dhat j| +
+         gamma fp (n + 1) *
+           (|b i| + ∑ j : Fin n, |A i j| * |x0 j|) := by
+-  sorry
++  dsimp
++  intro i
++  let r : Fin n → ℝ := fun i => b i - ∑ j : Fin n, A i j * x0 j
++  let rhat : Fin n → ℝ := fl_residual fp n A x0 b
++  let ω : Fin n → ℝ :=
++    fun i => gamma fp (n + 1) *
++      (|b i| + ∑ j : Fin n, |A i j| * |x0 j|)
++  have hr : ∀ i, r i = b i - ∑ j : Fin n, A i j * x0 j := by
++    intro i
++    rfl
++  have hres : ∀ i, |rhat i - r i| ≤ (0 : ℝ) * |r i| + ω i := by
++    intro i
++    have h :=
++      conventional_residual_error fp n A x0 b hn hn1 i
++    dsimp [rhat, r, ω]
++    simpa using h
++  have hω_nonneg : ∀ i, 0 ≤ ω i := by
++    intro i
++    dsimp [ω]
++    exact mul_nonneg (gamma_nonneg fp hn1)
++      (add_nonneg (abs_nonneg _) (Finset.sum_nonneg
++        (fun j _ => mul_nonneg (abs_nonneg _) (abs_nonneg _))))
++  have hx1 : ∀ i : Fin n, (fun i => x0 i + dhat i) i = x0 i + dhat i := by
++    intro i
++    rfl
++  have hbound :=
++    one_step_residual_bound n A x0 dhat rhat ΔA μ 0 ω b r
++      hr hres hsolve hΔ (fun i => x0 i + dhat i) hx1
++      hμ_nonneg (by norm_num) hω_nonneg i
++  dsimp [ω] at hbound
++  simpa using hbound
+ 
+ end LeanFpAnalysis.FP

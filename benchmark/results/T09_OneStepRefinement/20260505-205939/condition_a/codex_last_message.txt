@@ -1,0 +1,5 @@
+I wasn’t able to complete a valid proof within the constraints.
+
+The blocker is that `LeanFpAnalysis/FP.lean` defines `fl_residual` and `fl_dotProduct`, but provides no rounding-error lemmas for them. Proving the theorem requires deriving a full dot-product/residual forward error bound from the primitive `FPModel.model_*` fields inside this theorem body, including the `gamma fp (n + 1)` bound. I prototyped several Lean proof pieces, but the full residual bound is substantially larger than the theorem-local proof expected here.
+
+I did not edit `BenchmarkTask.lean`, so the original `sorry` remains.

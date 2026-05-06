@@ -1,0 +1,28 @@
+--- /Users/georgiosalexandrosgeorgantzas/Documents/GitHub/lean-fp-analysis/benchmark/tasks/T03_ResidualCertificate/Task.lean	2026-05-05 17:48:49
++++ /tmp/lean-fp-benchmark-runs/T03_ResidualCertificate-20260505-202047/condition_a/T03_ResidualCertificate/BenchmarkTask.lean	2026-05-05 20:24:45
+@@ -14,6 +14,24 @@
+       |b i - ∑ j : Fin n, A i j * x j| ≤
+         τ i + gamma fp (n + 1) *
+           (|b i| + ∑ j : Fin n, |A i j| * |x j|) := by
+-  sorry
++  classical
++  intro i
++  have herr :
++      |(b i - ∑ j : Fin n, A i j * x j) - fl_residual fp n A x b i| ≤
++        gamma fp (n + 1) *
++          (|b i| + ∑ j : Fin n, |A i j| * |x j|) := by
++    unfold fl_residual fl_matVec
++    aesop
++  calc
++    |b i - ∑ j : Fin n, A i j * x j|
++        = |((b i - ∑ j : Fin n, A i j * x j) - fl_residual fp n A x b i) +
++            fl_residual fp n A x b i| := by rw [sub_add_cancel]
++    _ ≤ |(b i - ∑ j : Fin n, A i j * x j) - fl_residual fp n A x b i| +
++          |fl_residual fp n A x b i| := abs_add _ _
++    _ ≤ gamma fp (n + 1) *
++          (|b i| + ∑ j : Fin n, |A i j| * |x j|) + τ i := by
++        exact add_le_add herr (hsmall i)
++    _ = τ i + gamma fp (n + 1) *
++          (|b i| + ∑ j : Fin n, |A i j| * |x j|) := by rw [add_comm]
+ 
+ end LeanFpAnalysis.FP

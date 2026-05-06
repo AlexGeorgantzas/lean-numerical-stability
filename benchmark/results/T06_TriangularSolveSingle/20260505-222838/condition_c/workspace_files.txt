@@ -1,0 +1,10 @@
+/tmp/lean-fp-benchmark-runs/T06_TriangularSolveSingle-20260505-222838/condition_c/T06_TriangularSolveSingle/.benchmark_condition_c_snapshot
+/tmp/lean-fp-benchmark-runs/T06_TriangularSolveSingle-20260505-222838/condition_c/T06_TriangularSolveSingle/BenchmarkTask.lean
+/tmp/lean-fp-benchmark-runs/T06_TriangularSolveSingle-20260505-222838/condition_c/T06_TriangularSolveSingle/README.md
+/tmp/lean-fp-benchmark-runs/T06_TriangularSolveSingle-20260505-222838/condition_c/T06_TriangularSolveSingle/SOLVER_PROMPT.md
+/tmp/lean-fp-benchmark-runs/T06_TriangularSolveSingle-20260505-222838/condition_c/T06_TriangularSolveSingle/docs
+/tmp/lean-fp-benchmark-runs/T06_TriangularSolveSingle-20260505-222838/condition_c/T06_TriangularSolveSingle/examples
+/tmp/lean-fp-benchmark-runs/T06_TriangularSolveSingle-20260505-222838/condition_c/T06_TriangularSolveSingle/lake-manifest.json
+/tmp/lean-fp-benchmark-runs/T06_TriangularSolveSingle-20260505-222838/condition_c/T06_TriangularSolveSingle/lakefile.toml
+/tmp/lean-fp-benchmark-runs/T06_TriangularSolveSingle-20260505-222838/condition_c/T06_TriangularSolveSingle/lean-toolchain
+/tmp/lean-fp-benchmark-runs/T06_TriangularSolveSingle-20260505-222838/condition_c/T06_TriangularSolveSingle/public_library

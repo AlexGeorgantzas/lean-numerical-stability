@@ -1,0 +1,70 @@
+import LeanFpAnalysis.FP
+
+namespace LeanFpAnalysis.FP
+
+open scoped BigOperators
+
+theorem cholesky_solve_growth_backward_error (fp : FPModel) (n : ℕ)
+    (A Rhat : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (ρ : ℝ)
+    (hRdiag : ∀ i, Rhat i i ≠ 0)
+    (hChol : CholeskyBackwardError n A Rhat (gamma fp (n + 1)))
+    (hn1 : gammaValid fp (n + 1))
+    (hn3 : gammaValid fp (3 * n + 1))
+    (hρ_nonneg : 0 ≤ ρ)
+    (hgrowth : ∀ i j,
+      ∑ k : Fin n, |Rhat k i| * |Rhat k j| ≤ ρ * |A i j|) :
+    let RhatT := fun i j : Fin n => Rhat j i
+    let yhat := fl_forwardSub fp n RhatT b
+    let xhat := fl_backSub fp n Rhat yhat
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j,
+        |ΔA i j| ≤ gamma fp (3 * n + 1) * ρ * |A i j|) ∧
+      ∀ i, ∑ j : Fin n, (A i j + ΔA i j) * xhat j = b i := by
+  let RhatT := fun i j : Fin n => Rhat j i
+  let yhat := fl_forwardSub fp n RhatT b
+  let xhat := fl_backSub fp n Rhat yhat
+  obtain ⟨ΔA, hΔA_bound, hΔA_eq⟩ :=
+    cholesky_solve_backward_error_expanded fp n A Rhat b hRdiag hChol hn1
+  refine ⟨ΔA, ?_, hΔA_eq⟩
+  intro i j
+  have hρA_nonneg : 0 ≤ ρ * |A i j| := mul_nonneg hρ_nonneg (abs_nonneg _)
+  have hstep1 : gamma fp n + gamma fp n + gamma fp n * gamma fp n ≤
+      gamma fp (2 * n) := by
+    have heq : n + n = 2 * n := by omega
+    have h := gamma_sum_le fp n n (gammaValid_mono fp (by omega) hn3)
+    rw [heq] at h
+    exact h
+  have hstep2 : gamma fp (n + 1) + gamma fp (2 * n) ≤
+      gamma fp (3 * n + 1) := by
+    have heq : (n + 1) + 2 * n = 3 * n + 1 := by omega
+    have h := gamma_sum_le fp (n + 1) (2 * n) (heq ▸ hn3)
+    have hnn1 : 0 ≤ gamma fp (n + 1) := gamma_nonneg fp hn1
+    have hnn2 : 0 ≤ gamma fp (2 * n) := by
+      apply gamma_nonneg fp
+      exact gammaValid_mono fp (by omega) hn3
+    rw [heq] at h
+    linarith [mul_nonneg hnn1 hnn2]
+  have habsorb : gamma fp (n + 1) + 2 * gamma fp n + gamma fp n ^ 2 ≤
+      gamma fp (3 * n + 1) := by
+    have : gamma fp (n + 1) + 2 * gamma fp n + gamma fp n ^ 2 =
+        gamma fp (n + 1) + (gamma fp n + gamma fp n + gamma fp n * gamma fp n) := by
+      ring
+    rw [this]
+    linarith [hstep1, hstep2]
+  have hS_nonneg : 0 ≤ ∑ k : Fin n, |Rhat k i| * |Rhat k j| :=
+    absRT_R_product_nonneg n Rhat i j
+  have hγ3_nonneg : 0 ≤ gamma fp (3 * n + 1) := gamma_nonneg fp hn3
+  calc
+    |ΔA i j| ≤
+        (gamma fp (n + 1) + 2 * gamma fp n + gamma fp n ^ 2) *
+          ∑ k : Fin n, |Rhat k i| * |Rhat k j| := hΔA_bound i j
+    _ ≤ gamma fp (3 * n + 1) *
+          ∑ k : Fin n, |Rhat k i| * |Rhat k j| := by
+        exact mul_le_mul_of_nonneg_right habsorb hS_nonneg
+    _ ≤ gamma fp (3 * n + 1) * (ρ * |A i j|) := by
+        exact mul_le_mul_of_nonneg_left (hgrowth i j) hγ3_nonneg
+    _ = gamma fp (3 * n + 1) * ρ * |A i j| := by
+        ring_nf
+
+end LeanFpAnalysis.FP

@@ -1,0 +1,20 @@
+--- /Users/georgiosalexandrosgeorgantzas/Documents/GitHub/lean-fp-analysis/benchmark/tasks/T08_CholeskySolveGrowth/Task.lean	2026-05-05 17:48:50
++++ /tmp/lean-fp-benchmark-runs/T08_CholeskySolveGrowth-20260505-225058/condition_c/T08_CholeskySolveGrowth/BenchmarkTask.lean	2026-05-05 22:57:06
+@@ -21,6 +21,16 @@
+       (∀ i j,
+         |ΔA i j| ≤ gamma fp (3 * n + 1) * ρ * |A i j|) ∧
+       ∀ i, ∑ j : Fin n, (A i j + ΔA i j) * xhat j = b i := by
+-  sorry
++  have _hρ_nonneg : 0 ≤ ρ := hρ_nonneg
++  obtain ⟨ΔA, hΔA_bound, hΔA_eq⟩ :=
++    cholesky_solve_backward_error fp n A Rhat b hRdiag hChol hn1 hn3
++  refine ⟨ΔA, fun i j => ?_, hΔA_eq⟩
++  have hγ_nonneg : 0 ≤ gamma fp (3 * n + 1) := gamma_nonneg fp hn3
++  calc
++    |ΔA i j| ≤ gamma fp (3 * n + 1) *
++        ∑ k : Fin n, |Rhat k i| * |Rhat k j| := hΔA_bound i j
++    _ ≤ gamma fp (3 * n + 1) * (ρ * |A i j|) := by
++        exact mul_le_mul_of_nonneg_left (hgrowth i j) hγ_nonneg
++    _ = gamma fp (3 * n + 1) * ρ * |A i j| := by ring
+ 
+ end LeanFpAnalysis.FP

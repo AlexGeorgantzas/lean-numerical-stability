@@ -1,0 +1,6 @@
+/tmp/lean-fp-benchmark-runs/T08_CholeskySolveGrowth-20260505-205307/condition_a/T08_CholeskySolveGrowth/BenchmarkTask.lean
+/tmp/lean-fp-benchmark-runs/T08_CholeskySolveGrowth-20260505-205307/condition_a/T08_CholeskySolveGrowth/LeanFpAnalysis/FP.lean
+/tmp/lean-fp-benchmark-runs/T08_CholeskySolveGrowth-20260505-205307/condition_a/T08_CholeskySolveGrowth/SOLVER_PROMPT.md
+/tmp/lean-fp-benchmark-runs/T08_CholeskySolveGrowth-20260505-205307/condition_a/T08_CholeskySolveGrowth/lake-manifest.json
+/tmp/lean-fp-benchmark-runs/T08_CholeskySolveGrowth-20260505-205307/condition_a/T08_CholeskySolveGrowth/lakefile.toml
+/tmp/lean-fp-benchmark-runs/T08_CholeskySolveGrowth-20260505-205307/condition_a/T08_CholeskySolveGrowth/lean-toolchain

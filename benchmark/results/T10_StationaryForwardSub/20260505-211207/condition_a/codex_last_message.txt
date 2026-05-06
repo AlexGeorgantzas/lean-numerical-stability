@@ -1,0 +1,11 @@
+Replaced the proof in [BenchmarkTask.lean](/tmp/lean-fp-benchmark-runs/T10_StationaryForwardSub-20260505-211207/condition_a/T10_StationaryForwardSub/BenchmarkTask.lean:32) with:
+
+```lean
+simp [infNormVec, infNorm]
+```
+
+Verification:
+- `lake build BenchmarkTask` was attempted, but Lake failed before elaboration due to sandbox denial on an external cache lock file:
+  `/Users/.../mathlib/.lake/config/mathlib/lakefile.olean.lock`
+- I verified the file directly with `lean` using the existing package olean paths. It completed successfully, with only unused-variable warnings from the theorem hypotheses.
+- Confirmed no `sorry`, `admit`, `axiom`, `opaque`, or `unsafe` remains in `BenchmarkTask.lean`.

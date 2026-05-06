@@ -1,0 +1,132 @@
+✖ [854/855] Building BenchmarkTask (1.8s)
+trace: .> LEAN_PATH=/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/Cli/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/batteries/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/Qq/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/aesop/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/proofwidgets/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/importGraph/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/LeanSearchClient/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/plausible/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/mathlib/.lake/build/lib/lean:/private/tmp/lean-fp-benchmark-runs/T02_ShiftedDot-20260505-200758/condition_a/T02_ShiftedDot/.lake/build/lib/lean /Users/georgiosalexandrosgeorgantzas/.elan/toolchains/leanprover--lean4---v4.29.0-rc3/bin/lean /private/tmp/lean-fp-benchmark-runs/T02_ShiftedDot-20260505-200758/condition_a/T02_ShiftedDot/BenchmarkTask.lean -o /private/tmp/lean-fp-benchmark-runs/T02_ShiftedDot-20260505-200758/condition_a/T02_ShiftedDot/.lake/build/lib/lean/BenchmarkTask.olean -i /private/tmp/lean-fp-benchmark-runs/T02_ShiftedDot-20260505-200758/condition_a/T02_ShiftedDot/.lake/build/lib/lean/BenchmarkTask.ilean -c /private/tmp/lean-fp-benchmark-runs/T02_ShiftedDot-20260505-200758/condition_a/T02_ShiftedDot/.lake/build/ir/BenchmarkTask.c --setup /private/tmp/lean-fp-benchmark-runs/T02_ShiftedDot-20260505-200758/condition_a/T02_ShiftedDot/.lake/build/ir/BenchmarkTask.setup.json --json
+error: BenchmarkTask.lean:17:2: `grind` failed
+case grind.2.1.1.1
+fp : FPModel
+n : ℕ
+c : ℝ
+x y : Fin n → ℝ
+hn1 : gammaValid fp (n + 1)
+h : ¬|fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i)| ≤ gamma fp (n + 1) * (|c| + ∑ i, |x i| * |y i|)
+h_1 : ¬1 - (↑n + 1) * fp.u = 0
+h_2 : (fun i => |x i| * |y i|) = fun i => x i * y i
+h_3 : c ≤ -c
+h_4 : fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i) ≤ -(fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i))
+⊢ False
+[grind] Goal diagnostics
+  [facts] Asserted facts
+    [prop] gammaValid fp (n + 1)
+    [prop] ¬|fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i)| ≤ gamma fp (n + 1) * (|c| + ∑ i, |x i| * |y i|)
+    [prop] fl_shiftedDot fp n c x y = fp.fl_add c (fl_dotProduct fp n x y)
+    [prop] gamma fp (n + 1) = (↑n + 1) * fp.u * (1 - (↑n + 1) * fp.u)⁻¹
+    [prop] if 1 - (↑n + 1) * fp.u = 0 then (1 - (↑n + 1) * fp.u)⁻¹ = 0
+        else (1 - (↑n + 1) * fp.u) * (1 - (↑n + 1) * fp.u)⁻¹ = 1
+    [prop] gammaValid fp (n + 1) = ((↑n + 1) * fp.u < 1)
+    [prop] |c| = max c (-c)
+    [prop] |fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i)| =
+          max (fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i)) (-(fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i)))
+    [prop] max (fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i)) (-(fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i))) =
+          if fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i) ≤ -(fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i)) then
+            -(fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i))
+          else fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i)
+    [prop] max c (-c) = if c ≤ -c then -c else c
+    [prop] ¬1 - (↑n + 1) * fp.u = 0
+    [prop] (fun i => |x i| * |y i|) = fun i => x i * y i
+    [prop] c ≤ -c
+    [prop] fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i) ≤ -(fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i))
+  [eqc] True propositions
+    [prop] gammaValid fp (n + 1)
+    [prop] (1 - (↑n + 1) * fp.u) * (1 - (↑n + 1) * fp.u)⁻¹ = 1
+    [prop] (fun i => |x i| * |y i|) = fun i => x i * y i
+    [prop] if 1 - (↑n + 1) * fp.u = 0 then (1 - (↑n + 1) * fp.u)⁻¹ = 0
+        else (1 - (↑n + 1) * fp.u) * (1 - (↑n + 1) * fp.u)⁻¹ = 1
+    [prop] gammaValid fp (n + 1) = ((↑n + 1) * fp.u < 1)
+    [prop] (↑n + 1) * fp.u < 1
+    [prop] c ≤ -c
+    [prop] fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i) ≤ -(fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i))
+  [eqc] False propositions
+    [prop] 1 - (↑n + 1) * fp.u = 0
+    [prop] |fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i)| ≤ gamma fp (n + 1) * (|c| + ∑ i, |x i| * |y i|)
+  [eqc] Equivalence classes
+    [eqc] {gamma fp (n + 1), (↑n + 1) * fp.u * (1 - (↑n + 1) * fp.u)⁻¹}
+    [eqc] {|c|, -c, max c (-c)}
+      [eqc] {if c ≤ -c then -c else c}
+    [eqc] {|fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i)|,
+        -(fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i)),
+        max (fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i)) (-(fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i)))}
+      [eqc] {if
+              fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i) ≤ -(fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i)) then
+            -(fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i))
+          else fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i)}
+    [eqc] {∑ i, x i * y i, ∑ i, |x i| * |y i|}
+    [eqc] {fl_shiftedDot fp n c x y, fp.fl_add c (fl_dotProduct fp n x y)}
+    [eqc] {(1 - (↑n + 1) * fp.u) * (1 - (↑n + 1) * fp.u)⁻¹, 1}
+    [eqc] {fun i => x i * y i, fun i => |x i| * |y i|}
+  [cases] Case analyses
+    [cases] [2/2]: if 1 - (↑n + 1) * fp.u = 0 then (1 - (↑n + 1) * fp.u)⁻¹ = 0
+        else (1 - (↑n + 1) * fp.u) * (1 - (↑n + 1) * fp.u)⁻¹ = 1
+      [cases] source: E-matching `gamma.eq_1`
+    [cases] [1/2]: (fun i => |x i| * |y i|) = fun i => x i * y i
+      [cases] source: Initial goal
+    [cases] [1/2]: if c ≤ -c then -c else c
+      [cases] source: E-matching `max_def`
+    [cases] [1/2]: if
+            fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i) ≤ -(fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i)) then
+          -(fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i))
+        else fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i)
+      [cases] source: E-matching `max_def`
+  [ematch] E-matching patterns
+    [thm] fl_shiftedDot.eq_1: [fl_shiftedDot #4 #3 #2 #1 #0]
+    [thm] fl_dotProduct.eq_1: [fl_dotProduct #2 `[0] #1 #0]
+    [thm] fl_dotProduct.eq_2: [fl_dotProduct #3 (#2 + 1) #1 #0]
+    [thm] gamma.eq_1: [gamma #1 #0]
+    [thm] gammaValid.eq_1: [gammaValid #1 #0]
+    [thm] abs.eq_1: [@abs #3 #2 #1 #0]
+    [thm] max_def: [@max #3 _ #1 #0]
+    [thm] Rat.max_def: [@max `[ℚ] `[Rat.instMax] #1 #0]
+    [thm] Int.max_def: [@max `[ℤ] `[Int.instMax] #1 #0]
+    [thm] Nat.max_def: [@max `[ℕ] `[Nat.instMax] #1 #0]
+  [cutsat] Assignment satisfying linear constraints
+    [assign] n := 0
+  [linarith] Linarith assignment for `ℝ`
+    [assign] c := 0
+    [assign] gamma fp (n + 1) := 0
+    [assign] |c| := 0
+    [assign] |fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i)| := 23
+    [assign] ∑ i, x i * y i := 0
+    [assign] ∑ i, |x i| * |y i| := 0
+    [assign] fl_shiftedDot fp n c x y := 14
+    [assign] fp.u := 0
+    [assign] fp.fl_add c (fl_dotProduct fp n x y) := 14
+    [assign] fl_dotProduct fp n x y := 15
+    [assign] max c (-c) := 0
+    [assign] max (fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i))
+          (-(fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i))) := 23
+  [ring] Ring `ℝ`
+    [basis] Basis
+      [_] ↑n * fp.u * (1 - (↑n + 1) * fp.u)⁻¹ + fp.u * (1 - (↑n + 1) * fp.u)⁻¹ + -1 * gamma fp (n + 1) = 0
+      [_] fl_shiftedDot fp n c x y + |c| + -1 * ∑ i, |x i| * |y i| + |fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i)| =
+            0
+      [_] c + |c| = 0
+      [_] ∑ i, x i * y i + -1 * ∑ i, |x i| * |y i| = 0
+      [_] gamma fp (n + 1) + -1 * (1 - (↑n + 1) * fp.u)⁻¹ + 1 = 0
+  [assoc] Operator `max`
+    [basis] Basis
+      [_] max (fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i)) (-(fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i))) =
+            -(fl_shiftedDot fp n c x y - (c + ∑ i, x i * y i))
+      [_] max c (-c) = -c
+    [properties] Properties
+      [_] commutative
+      [_] idempotent
+[grind] Diagnostics
+  [thm] E-Matching instances
+    [thm] max_def ↦ 2
+    [thm] abs.eq_1 ↦ 2
+    [thm] fl_shiftedDot.eq_1 ↦ 1
+    [thm] gamma.eq_1 ↦ 1
+    [thm] gammaValid.eq_1 ↦ 1
+error: Lean exited with code 1
+Some required targets logged failures:
+- BenchmarkTask
+error: build failed
+validation failed: lake build BenchmarkTask failed

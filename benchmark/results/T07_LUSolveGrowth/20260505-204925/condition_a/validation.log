@@ -1,0 +1,5 @@
+24:  sorry
+validation failed: attempted task still contains sorry/admit
+⚠ [854/855] Replayed BenchmarkTask
+warning: BenchmarkTask.lean:7:8: declaration uses `sorry`
+Build completed successfully (855 jobs).

@@ -702,6 +702,49 @@ Consequence: Condition A can define the same theorem targets as Condition C,
 but it should not have the reusable proof infrastructure that the thesis is
 trying to evaluate.
 
+### Decision: Bare Stubs Must Use Faithful Definitions
+
+Condition A stubs may omit proved stability theorems, gamma-calculus lemmas,
+lookup documentation, and examples.  They should not replace real definitions
+with degenerate placeholders when those definitions appear in the theorem
+target.
+
+This was discovered during the first pass@1 run on May 5, 2026.  The initial
+common stub defined `infNormVec` and `infNorm` as `0`.  That allowed
+Condition A to prove Task 10 by `simp [infNormVec, infNorm]`, making the
+control theorem trivial.  That result was invalid as a benchmark datapoint.
+
+The stub was corrected so `infNormVec` and `infNorm` use the same finite
+supremum definitions as the public library.  Task 10 was then rerun.  Under
+the corrected stub, Condition A failed and Condition C passed.
+
+A second stub issue was found in the same audit.  The initial common stub
+defined `fl_forwardSub` and `fl_backSub` as zero-valued placeholders, while
+Tasks 4, 6, 7, 8, and 10 mention those algorithms in their theorem targets.
+That changed the meaning of the control condition.  The stub now copies the
+same fold-based algorithm definitions from the public library, while still
+omitting the associated stability theorems.  The affected tasks were rerun
+under this audited stub.
+
+Reason: the benchmark should remove reusable proof infrastructure from
+Condition A, not change the mathematical meaning of the task.  A bare
+definition is acceptable; a degenerate replacement that weakens the theorem is
+not.
+
+The current audit is recorded in
+`benchmark/stubs/CONDITION_A_STUB_AUDIT.md`.
+
+### Decision: Reject Lean Placeholder Escape Hatches
+
+Post-attempt validation rejects `sorry`, `admit`, `sorryAx`, and new
+`axiom`/`opaque`/`unsafe` declarations.
+
+Reason: a first T07 rerun produced `exact sorryAx _ true` in Condition A.  This
+is semantically the same problem as leaving a `sorry`: Lean accepts the file,
+but the theorem has not actually been proved.  The validator and run analyzer
+now treat `sorryAx` as a forbidden placeholder, and T07 was rerun with that
+rule in place.
+
 ### Decision: Condition C Keeps The Whole Public Library
 
 Condition C should not import or expose only task-specific modules.  The goal

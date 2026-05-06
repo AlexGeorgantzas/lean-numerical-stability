@@ -1,0 +1,10 @@
+/tmp/lean-fp-benchmark-runs/T10_StationaryForwardSub-20260505-211207/condition_c/T10_StationaryForwardSub/.benchmark_condition_c_snapshot
+/tmp/lean-fp-benchmark-runs/T10_StationaryForwardSub-20260505-211207/condition_c/T10_StationaryForwardSub/BenchmarkTask.lean
+/tmp/lean-fp-benchmark-runs/T10_StationaryForwardSub-20260505-211207/condition_c/T10_StationaryForwardSub/README.md
+/tmp/lean-fp-benchmark-runs/T10_StationaryForwardSub-20260505-211207/condition_c/T10_StationaryForwardSub/SOLVER_PROMPT.md
+/tmp/lean-fp-benchmark-runs/T10_StationaryForwardSub-20260505-211207/condition_c/T10_StationaryForwardSub/docs
+/tmp/lean-fp-benchmark-runs/T10_StationaryForwardSub-20260505-211207/condition_c/T10_StationaryForwardSub/examples
+/tmp/lean-fp-benchmark-runs/T10_StationaryForwardSub-20260505-211207/condition_c/T10_StationaryForwardSub/lake-manifest.json
+/tmp/lean-fp-benchmark-runs/T10_StationaryForwardSub-20260505-211207/condition_c/T10_StationaryForwardSub/lakefile.toml
+/tmp/lean-fp-benchmark-runs/T10_StationaryForwardSub-20260505-211207/condition_c/T10_StationaryForwardSub/lean-toolchain
+/tmp/lean-fp-benchmark-runs/T10_StationaryForwardSub-20260505-211207/condition_c/T10_StationaryForwardSub/public_library

@@ -1,0 +1,5 @@
+Implemented the proof in [BenchmarkTask.lean](/tmp/lean-fp-benchmark-runs/T03_ResidualCertificate-20260505-202047/condition_c/T03_ResidualCertificate/BenchmarkTask.lean:17). It uses `conventional_residual_error`, triangle inequality, and the stopping hypothesis `hsmall`.
+
+Verification:
+- `lean BenchmarkTask.lean` with explicit `LEAN_PATH`: passed.
+- `lake build BenchmarkTask`: attempted, but Lake failed before building due sandbox denial writing `/Users/.../mathlib/.lake/config/mathlib/lakefile.olean.lock`. No `sorry`/`admit`/forbidden declarations remain in `BenchmarkTask.lean`.

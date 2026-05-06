@@ -1,0 +1,5 @@
+Implemented the proof in [BenchmarkTask.lean](/private/tmp/lean-fp-benchmark-runs/T07_LUSolveGrowth-20260505-204925/condition_c/T07_LUSolveGrowth/BenchmarkTask.lean:19). It uses the library `lu_solve_backward_error` theorem, then applies the supplied growth bound to obtain the requested componentwise error bound.
+
+Verification:
+- `lean BenchmarkTask.lean` with the dependency `LEAN_PATH` succeeds.
+- `lake build BenchmarkTask` was attempted, but Lake is blocked by sandbox permissions trying to write `/Users/.../mathlib/.lake/config/mathlib/lakefile.olean.lock`, which is outside the workspace.

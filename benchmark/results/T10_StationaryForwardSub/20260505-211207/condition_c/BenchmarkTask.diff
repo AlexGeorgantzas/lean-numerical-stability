@@ -1,0 +1,86 @@
+--- /Users/georgiosalexandrosgeorgantzas/Documents/GitHub/lean-fp-analysis/benchmark/tasks/T10_StationaryForwardSub/Task.lean	2026-05-05 17:48:50
++++ /tmp/lean-fp-benchmark-runs/T10_StationaryForwardSub-20260505-211207/condition_c/T10_StationaryForwardSub/BenchmarkTask.lean	2026-05-05 21:17:17
+@@ -30,6 +30,82 @@
+       q ^ (m + 1) *
+         infNormVec hnpos (fun i => b i - ∑ j : Fin n, A i j * xhat 0 j) +
+       μ * infNorm hnpos (matSub_id n (dualIterMatrix n N Minv)) / (1 - q) := by
+-  sorry
++  let rhs : ℕ → Fin n → ℝ := fun k i => ∑ j : Fin n, N i j * xhat k j + b i
++  let Δ : ℕ → Fin n → Fin n → ℝ := fun k =>
++    Classical.choose (forwardSub_backward_error fp n M (rhs k) hMdiag hMLT hgamma)
++  have hΔ_bound : ∀ k i j, |Δ k i j| ≤ gamma fp n * |M i j| := by
++    intro k
++    exact (Classical.choose_spec
++      (forwardSub_backward_error fp n M (rhs k) hMdiag hMLT hgamma)).1
++  have hΔ_eq : ∀ k i,
++      ∑ j : Fin n, (M i j + Δ k i j) *
++        fl_forwardSub fp n M (rhs k) j = rhs k i := by
++    intro k
++    exact (Classical.choose_spec
++      (forwardSub_backward_error fp n M (rhs k) hMdiag hMLT hgamma)).2
++  let ξ : ℕ → Fin n → ℝ := fun k i => -∑ j : Fin n, Δ k i j * xhat (k + 1) j
++  have hIter : ComputedIteration n M N b xhat ξ := by
++    refine ⟨?_⟩
++    intro k i
++    have hx : xhat (k + 1) = fl_forwardSub fp n M (rhs k) := by
++      simpa [rhs] using hstep k
++    have hrow := hΔ_eq k i
++    rw [← hx] at hrow
++    dsimp [rhs] at hrow ⊢
++    dsimp [ξ]
++    calc
++      ∑ j : Fin n, M i j * xhat (k + 1) j
++          = (∑ j : Fin n, (M i j + Δ k i j) * xhat (k + 1) j) -
++              ∑ j : Fin n, Δ k i j * xhat (k + 1) j := by
++            rw [← Finset.sum_sub_distrib]
++            congr 1
++            ext j
++            ring
++      _ = ∑ j : Fin n, N i j * xhat k j + b i +
++              -∑ j : Fin n, Δ k i j * xhat (k + 1) j := by
++            rw [hrow]
++            ring
++  have hξ_bound : ∀ k, infNormVec hnpos (ξ k) ≤ μ := by
++    intro k
++    calc
++      infNormVec hnpos (ξ k)
++          ≤ infNormVec hnpos
++              (fun i => gamma fp n * ∑ j : Fin n, |M i j| * |xhat (k + 1) j|) := by
++            unfold infNormVec
++            apply Finset.sup'_le
++            intro i hi
++            dsimp [ξ]
++            calc
++              |-∑ j : Fin n, Δ k i j * xhat (k + 1) j|
++                  = |∑ j : Fin n, Δ k i j * xhat (k + 1) j| := by
++                    rw [abs_neg]
++              _ ≤ ∑ j : Fin n, |Δ k i j * xhat (k + 1) j| :=
++                    Finset.abs_sum_le_sum_abs _ _
++              _ = ∑ j : Fin n, |Δ k i j| * |xhat (k + 1) j| := by
++                    congr 1
++                    ext j
++                    exact abs_mul _ _
++              _ ≤ ∑ j : Fin n,
++                    (gamma fp n * |M i j|) * |xhat (k + 1) j| := by
++                    apply Finset.sum_le_sum
++                    intro j hj
++                    exact mul_le_mul_of_nonneg_right (hΔ_bound k i j) (abs_nonneg _)
++              _ = gamma fp n * ∑ j : Fin n, |M i j| * |xhat (k + 1) j| := by
++                    rw [Finset.mul_sum]
++                    congr 1
++                    ext j
++                    ring
++              _ ≤ infNormVec hnpos
++                    (fun i => gamma fp n *
++                      (∑ j : Fin n, |M i j| * |xhat (k + 1) j|)) := by
++                    unfold infNormVec
++                    exact le_trans (le_abs_self _)
++                      (Finset.le_sup'
++                        (fun i => |gamma fp n *
++                          (∑ j : Fin n, |M i j| * |xhat (k + 1) j|)|)
++                        (Finset.mem_univ i))
++      _ ≤ μ := hlocal k
++  exact normwise_residual_bound n hnpos A M N Minv hS b x hAx xhat ξ hIter
++    q hq_nonneg hq_lt_one hH μ hμ_nonneg hξ_bound m
+ 
+ end LeanFpAnalysis.FP

@@ -1,0 +1,13 @@
+I can’t produce a valid Lean proof for this theorem as stated. The statement is false with the current local definitions.
+
+Counterexample outline:
+
+- Use exact arithmetic: `fp.u = 0`, all `fl_*` operations exact.
+- Let `n = 2`, `Rhat = [[1, 1], [0, 1]]`, `A = Rhatᵀ * Rhat = [[1, 1], [1, 2]]`, `b = (1, 0)`, `ρ = 1`.
+- All assumptions hold: diagonal nonzero, Cholesky backward error is exact with `gamma = 0`, growth holds, and `gammaValid` holds.
+- But the local `fl_forwardSub` processes rows in descending order. For `RhatT = [[1,0],[1,1]]`, it computes `yhat = (1, 0)` instead of the exact lower-triangular solve `(1, -1)`.
+- Then `fl_backSub` computes `xhat = (1, 0)`.
+- Since `gamma fp (3*n+1) = 0`, the bound forces `ΔA = 0`.
+- The required equation fails at row `1`: `(A*xhat)_1 = 1`, but `b_1 = 0`.
+
+I did not edit `BenchmarkTask.lean`, because replacing the proof with a real term would require proving a false proposition. I also attempted `lake build BenchmarkTask`, but the sandbox blocks Lake from writing a dependency lock file under the host cache; redirecting `HOME` makes Lake try to download dependencies, which is blocked by disabled network access.

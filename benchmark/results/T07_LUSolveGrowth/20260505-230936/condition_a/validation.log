@@ -1,0 +1,46 @@
+✖ [956/957] Building BenchmarkTask (2.4s)
+trace: .> LEAN_PATH=/private/tmp/lean-fp-benchmark-runs/T07_LUSolveGrowth-20260505-230936/condition_a/T07_LUSolveGrowth/.lake/packages/Cli/.lake/build/lib/lean:/private/tmp/lean-fp-benchmark-runs/T07_LUSolveGrowth-20260505-230936/condition_a/T07_LUSolveGrowth/.lake/packages/batteries/.lake/build/lib/lean:/private/tmp/lean-fp-benchmark-runs/T07_LUSolveGrowth-20260505-230936/condition_a/T07_LUSolveGrowth/.lake/packages/Qq/.lake/build/lib/lean:/private/tmp/lean-fp-benchmark-runs/T07_LUSolveGrowth-20260505-230936/condition_a/T07_LUSolveGrowth/.lake/packages/aesop/.lake/build/lib/lean:/private/tmp/lean-fp-benchmark-runs/T07_LUSolveGrowth-20260505-230936/condition_a/T07_LUSolveGrowth/.lake/packages/proofwidgets/.lake/build/lib/lean:/private/tmp/lean-fp-benchmark-runs/T07_LUSolveGrowth-20260505-230936/condition_a/T07_LUSolveGrowth/.lake/packages/importGraph/.lake/build/lib/lean:/private/tmp/lean-fp-benchmark-runs/T07_LUSolveGrowth-20260505-230936/condition_a/T07_LUSolveGrowth/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/private/tmp/lean-fp-benchmark-runs/T07_LUSolveGrowth-20260505-230936/condition_a/T07_LUSolveGrowth/.lake/packages/plausible/.lake/build/lib/lean:/private/tmp/lean-fp-benchmark-runs/T07_LUSolveGrowth-20260505-230936/condition_a/T07_LUSolveGrowth/.lake/packages/mathlib/.lake/build/lib/lean:/private/tmp/lean-fp-benchmark-runs/T07_LUSolveGrowth-20260505-230936/condition_a/T07_LUSolveGrowth/.lake/build/lib/lean /Users/georgiosalexandrosgeorgantzas/.elan/toolchains/leanprover--lean4---v4.29.0-rc3/bin/lean /private/tmp/lean-fp-benchmark-runs/T07_LUSolveGrowth-20260505-230936/condition_a/T07_LUSolveGrowth/BenchmarkTask.lean -o /private/tmp/lean-fp-benchmark-runs/T07_LUSolveGrowth-20260505-230936/condition_a/T07_LUSolveGrowth/.lake/build/lib/lean/BenchmarkTask.olean -i /private/tmp/lean-fp-benchmark-runs/T07_LUSolveGrowth-20260505-230936/condition_a/T07_LUSolveGrowth/.lake/build/lib/lean/BenchmarkTask.ilean -c /private/tmp/lean-fp-benchmark-runs/T07_LUSolveGrowth-20260505-230936/condition_a/T07_LUSolveGrowth/.lake/build/ir/BenchmarkTask.c --setup /private/tmp/lean-fp-benchmark-runs/T07_LUSolveGrowth-20260505-230936/condition_a/T07_LUSolveGrowth/.lake/build/ir/BenchmarkTask.setup.json --json
+error: BenchmarkTask.lean:41:9: unknown tactic
+error: BenchmarkTask.lean:38:15: Tactic `unfold` failed to unfold `gamma` in
+  gammaValid fp n
+error: BenchmarkTask.lean:40:63: unsolved goals
+fp : FPModel
+n : ℕ
+A Lhat Uhat : Fin n → Fin n → ℝ
+b : Fin n → ℝ
+ρ : ℝ
+hLdiag : ∀ (i : Fin n), Lhat i i ≠ 0
+hUdiag : ∀ (i : Fin n), Uhat i i ≠ 0
+hLU : LUBackwardError n A Lhat Uhat (gamma fp n)
+hn : gammaValid fp n
+hρ_nonneg : 0 ≤ ρ
+hgrowth : ∀ (i j : Fin n), ∑ k, |Lhat i k| * |Uhat k j| ≤ ρ * |A i j|
+yhat : Fin n → ℝ := fl_forwardSub fp n Lhat b
+xhat : Fin n → ℝ := fl_backSub fp n Uhat yhat
+ΔA : Fin n → Fin n → ℝ := fun i j => ∑ k, Lhat i k * Uhat k j - A i j
+i j : Fin n
+h₁ : |∑ k, Lhat i k * Uhat k j - A i j| ≤ gamma fp n * ∑ k, |Lhat i k| * |Uhat k j|
+h₂ : ∑ k, |Lhat i k| * |Uhat k j| ≤ ρ * |A i j|
+⊢ gamma fp n * (ρ * |A i j|) ≤ (3 * gamma fp n + gamma fp n ^ 2) * ρ * |A i j|
+error: BenchmarkTask.lean:23:59: unsolved goals
+case refine_2
+fp : FPModel
+n : ℕ
+A Lhat Uhat : Fin n → Fin n → ℝ
+b : Fin n → ℝ
+ρ : ℝ
+hLdiag : ∀ (i : Fin n), Lhat i i ≠ 0
+hUdiag : ∀ (i : Fin n), Uhat i i ≠ 0
+hLU : LUBackwardError n A Lhat Uhat (gamma fp n)
+hn : gammaValid fp n
+hρ_nonneg : 0 ≤ ρ
+hgrowth : ∀ (i j : Fin n), ∑ k, |Lhat i k| * |Uhat k j| ≤ ρ * |A i j|
+yhat : Fin n → ℝ := fl_forwardSub fp n Lhat b
+xhat : Fin n → ℝ := fl_backSub fp n Uhat yhat
+ΔA : Fin n → Fin n → ℝ := fun i j => ∑ k, Lhat i k * Uhat k j - A i j
+⊢ ∀ (i : Fin n), ∑ j, (A i j + ΔA i j) * fl_backSub fp n Uhat (fl_forwardSub fp n Lhat b) j = b i
+error: Lean exited with code 1
+Some required targets logged failures:
+- BenchmarkTask
+error: build failed
+validation failed: lake build BenchmarkTask failed

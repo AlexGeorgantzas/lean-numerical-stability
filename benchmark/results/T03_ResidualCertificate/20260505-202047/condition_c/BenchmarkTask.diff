@@ -1,0 +1,29 @@
+--- /Users/georgiosalexandrosgeorgantzas/Documents/GitHub/lean-fp-analysis/benchmark/tasks/T03_ResidualCertificate/Task.lean	2026-05-05 17:48:49
++++ /tmp/lean-fp-benchmark-runs/T03_ResidualCertificate-20260505-202047/condition_c/T03_ResidualCertificate/BenchmarkTask.lean	2026-05-05 20:28:21
+@@ -14,6 +14,25 @@
+       |b i - ∑ j : Fin n, A i j * x j| ≤
+         τ i + gamma fp (n + 1) *
+           (|b i| + ∑ j : Fin n, |A i j| * |x j|) := by
+-  sorry
++  intro i
++  have hτi : 0 ≤ τ i := hτ_nonneg i
++  have hconv := conventional_residual_error fp n A x b hn hn1 i
++  have htri :
++      |b i - ∑ j : Fin n, A i j * x j| ≤
++        |fl_residual fp n A x b i - (b i - ∑ j : Fin n, A i j * x j)| +
++          |fl_residual fp n A x b i| := by
++    calc
++      |b i - ∑ j : Fin n, A i j * x j|
++          = |(b i - ∑ j : Fin n, A i j * x j) -
++              fl_residual fp n A x b i + fl_residual fp n A x b i| := by
++            ring_nf
++      _ ≤ |(b i - ∑ j : Fin n, A i j * x j) -
++              fl_residual fp n A x b i| +
++            |fl_residual fp n A x b i| := abs_add_le _ _
++      _ = |fl_residual fp n A x b i -
++              (b i - ∑ j : Fin n, A i j * x j)| +
++            |fl_residual fp n A x b i| := by
++            rw [abs_sub_comm]
++  linarith [htri, hconv, hsmall i, hτi]
+ 
+ end LeanFpAnalysis.FP

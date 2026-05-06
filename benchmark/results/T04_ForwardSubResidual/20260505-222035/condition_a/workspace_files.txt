@@ -1,0 +1,6 @@
+/tmp/lean-fp-benchmark-runs/T04_ForwardSubResidual-20260505-222035/condition_a/T04_ForwardSubResidual/BenchmarkTask.lean
+/tmp/lean-fp-benchmark-runs/T04_ForwardSubResidual-20260505-222035/condition_a/T04_ForwardSubResidual/LeanFpAnalysis/FP.lean
+/tmp/lean-fp-benchmark-runs/T04_ForwardSubResidual-20260505-222035/condition_a/T04_ForwardSubResidual/SOLVER_PROMPT.md
+/tmp/lean-fp-benchmark-runs/T04_ForwardSubResidual-20260505-222035/condition_a/T04_ForwardSubResidual/lake-manifest.json
+/tmp/lean-fp-benchmark-runs/T04_ForwardSubResidual-20260505-222035/condition_a/T04_ForwardSubResidual/lakefile.toml
+/tmp/lean-fp-benchmark-runs/T04_ForwardSubResidual-20260505-222035/condition_a/T04_ForwardSubResidual/lean-toolchain

@@ -62,7 +62,7 @@ summarize_condition() {
   events="$(count_lines "${dir}/codex_events.jsonl")"
   diff_lines="$(count_lines "${dir}/BenchmarkTask.diff")"
   changed_files="$(count_lines "${dir}/workspace_files.txt")"
-  placeholders="$(count_rg '\\b(sorry|admit)\\b' "${dir}/BenchmarkTask.after.lean")"
+  placeholders="$(count_rg '\\b(sorry|admit|sorryAx)\\b' "${dir}/BenchmarkTask.after.lean")"
   forbidden="$(count_rg '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "${dir}/BenchmarkTask.after.lean")"
 
   proof_lines="unknown"

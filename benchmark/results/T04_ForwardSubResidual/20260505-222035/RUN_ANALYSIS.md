@@ -1,0 +1,80 @@
+# Run Analysis
+
+- task: `T04_ForwardSubResidual`
+- run_timestamp: `20260505-222035`
+- result_root: `/Users/georgiosalexandrosgeorgantzas/Documents/GitHub/lean-fp-analysis/benchmark/results/T04_ForwardSubResidual/20260505-222035`
+
+## Outcome
+
+- Condition A validation exit: `1`
+- Condition A timeout: `no`
+- Condition C validation exit: `0`
+- Condition C timeout: `no`
+
+Interpretation: Condition A failed while Condition C passed under the same run protocol.
+
+## Metrics
+
+```tsv
+condition	codex_exit	validation_exit	timeout	started_at_utc	finished_at_utc	codex_event_lines	diff_lines	proof_lines	placeholder_count	forbidden_decl_count
+condition_a	0	1	no	2026-05-05T19:21:00Z	2026-05-05T19:25:50Z	58	0	4	0	0
+condition_c	0	0	no	2026-05-05T19:25:50Z	2026-05-05T19:28:38Z	73	37	31	0	0
+```
+
+## Failure Notes
+
+
+### condition_a
+
+```text
+16:  sorry
+validation failed: attempted task still contains sorry/admit
+⚠ [956/957] Replayed BenchmarkTask
+warning: BenchmarkTask.lean:7:8: declaration uses `sorry`
+Build completed successfully (957 jobs).
+```
+
+### condition_c
+
+```text
+warning: LeanFpAnalysis/FP/Algorithms/QR/GivensQR.lean:70:43: unused variable `hc`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+⚠ [2017/2030] Replayed LeanFpAnalysis.FP.Algorithms.QR.QRSolve
+warning: LeanFpAnalysis/FP/Algorithms/QR/QRSolve.lean:67:51: unused variable `hn`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LeanFpAnalysis/FP/Algorithms/QR/QRSolve.lean:73:5: unused variable `hΔA₁`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LeanFpAnalysis/FP/Algorithms/QR/QRSolve.lean:77:5: unused variable `hΔR`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LeanFpAnalysis/FP/Algorithms/QR/QRSolve.lean:144:5: unused variable `hc₁`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LeanFpAnalysis/FP/Algorithms/QR/QRSolve.lean:144:20: unused variable `hc₂`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+⚠ [2019/2030] Replayed LeanFpAnalysis.FP.Algorithms.LeastSquares.LSQRSolve
+warning: LeanFpAnalysis/FP/Algorithms/LeastSquares/LSQRSolve.lean:122:5: unused variable `hε_G`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LeanFpAnalysis/FP/Algorithms/LeastSquares/LSQRSolve.lean:122:22: unused variable `hε_g`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+⚠ [2020/2030] Replayed LeanFpAnalysis.FP.Algorithms.LeastSquares.LSNormalEquations
+warning: LeanFpAnalysis/FP/Algorithms/LeastSquares/LSNormalEquations.lean:101:5: unused variable `hm`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LeanFpAnalysis/FP/Algorithms/LeastSquares/LSNormalEquations.lean:205:5: unused variable `hKappa`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+⚠ [2023/2030] Replayed LeanFpAnalysis.FP.Algorithms.FastMatMul
+warning: LeanFpAnalysis/FP/Algorithms/FastMatMul.lean:149:5: unused variable `hn`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+✔ [2029/2030] Built BenchmarkTask (6.3s)
+Build completed successfully (2030 jobs).
+validation passed: /tmp/lean-fp-benchmark-runs/T04_ForwardSubResidual-20260505-222035/condition_c/T04_ForwardSubResidual
+```

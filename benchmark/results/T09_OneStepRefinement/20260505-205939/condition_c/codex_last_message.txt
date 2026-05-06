@@ -1,0 +1,6 @@
+Implemented the proof in [BenchmarkTask.lean](/tmp/lean-fp-benchmark-runs/T09_OneStepRefinement-20260505-205939/condition_c/T09_OneStepRefinement/BenchmarkTask.lean:25).
+
+Verification:
+- `lake build BenchmarkTask` could not run because the sandbox blocked Lake from writing an external mathlib lock file under `/Users/.../.cache/...`.
+- I verified the file directly with Lean using an explicit `LEAN_PATH`; `lean BenchmarkTask.lean` completed successfully.
+- Confirmed no `sorry`, `admit`, `axiom`, `opaque`, or `unsafe` remains in `BenchmarkTask.lean`.

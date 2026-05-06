@@ -1,0 +1,6 @@
+/tmp/lean-fp-benchmark-runs/T07_LUSolveGrowth-20260505-230936/condition_a/T07_LUSolveGrowth/BenchmarkTask.lean
+/tmp/lean-fp-benchmark-runs/T07_LUSolveGrowth-20260505-230936/condition_a/T07_LUSolveGrowth/LeanFpAnalysis/FP.lean
+/tmp/lean-fp-benchmark-runs/T07_LUSolveGrowth-20260505-230936/condition_a/T07_LUSolveGrowth/SOLVER_PROMPT.md
+/tmp/lean-fp-benchmark-runs/T07_LUSolveGrowth-20260505-230936/condition_a/T07_LUSolveGrowth/lake-manifest.json
+/tmp/lean-fp-benchmark-runs/T07_LUSolveGrowth-20260505-230936/condition_a/T07_LUSolveGrowth/lakefile.toml
+/tmp/lean-fp-benchmark-runs/T07_LUSolveGrowth-20260505-230936/condition_a/T07_LUSolveGrowth/lean-toolchain

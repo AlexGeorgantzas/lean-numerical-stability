@@ -1,0 +1,6 @@
+Implemented the proof in [BenchmarkTask.lean](/tmp/lean-fp-benchmark-runs/T01_ScaledDot-20260505-195836/condition_c/T01_ScaledDot/BenchmarkTask.lean:18). It uses `dotProduct_backward_error` and folds the final `fl_mul alpha ...` rounding error into each component via `gamma_mul`.
+
+Verification:
+- `lean BenchmarkTask.lean` with the existing built library search paths: passed.
+- `lake build BenchmarkTask`: failed due sandbox permission on an external cache lock file:
+  `/Users/.../.cache/lean-fp-analysis/.../mathlib/.lake/config/mathlib/lakefile.olean.lock`

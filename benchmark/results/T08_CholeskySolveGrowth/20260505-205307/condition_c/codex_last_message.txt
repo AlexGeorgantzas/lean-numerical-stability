@@ -1,0 +1,6 @@
+Implemented the proof in [BenchmarkTask.lean](/tmp/lean-fp-benchmark-runs/T08_CholeskySolveGrowth-20260505-205307/condition_c/T08_CholeskySolveGrowth/BenchmarkTask.lean:24). The proof uses the expanded Cholesky solve backward-error theorem, absorbs the gamma terms into `gamma fp (3 * n + 1)`, then applies the supplied growth bound.
+
+Verification:
+- `lean BenchmarkTask.lean` with the workspace/library artifact path: passed.
+- `lake build BenchmarkTask`: attempted, but Lake fails before elaborating the task due sandbox denial on the external mathlib lock file:
+  `operation not permitted ... mathlib/.lake/config/mathlib/lakefile.olean.lock`

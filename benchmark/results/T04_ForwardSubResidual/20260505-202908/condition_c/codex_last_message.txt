@@ -1,0 +1,6 @@
+Implemented the proof in [BenchmarkTask.lean](/tmp/lean-fp-benchmark-runs/T04_ForwardSubResidual-20260505-202908/condition_c/T04_ForwardSubResidual/BenchmarkTask.lean:16). It uses `forwardSub_backward_error`, rewrites the residual as the perturbation sum, then bounds it componentwise.
+
+Verification:
+- `lake build BenchmarkTask` was attempted but failed because the sandbox cannot write the external Lean cache lock file under `/Users/.../.cache/...`.
+- I verified the file with direct Lean using an explicit `LEAN_PATH`; `lean BenchmarkTask.lean` completed successfully.
+- `rg` found no `sorry`, `admit`, `axiom`, `opaque`, or `unsafe` in `BenchmarkTask.lean`.

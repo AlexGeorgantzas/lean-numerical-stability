@@ -1,0 +1,20 @@
+I can’t produce a valid Lean proof because the theorem is false with the current local definitions.
+
+`fl_forwardSub` and `fl_backSub` are both defined in [LeanFpAnalysis/FP.lean](/private/tmp/lean-fp-benchmark-runs/T07_LUSolveGrowth-20260505-204925/condition_a/T07_LUSolveGrowth/LeanFpAnalysis/FP.lean:57) as zero functions, so `xhat j = 0`. The final required equation becomes:
+
+```lean
+∀ i, ∑ j : Fin n, (A i j + ΔA i j) * 0 = b i
+```
+
+so for any nonempty `Fin n`, it requires `b i = 0`, but `b` is arbitrary.
+
+Concrete counterexample: take `n = 1`, exact arithmetic with `u = 0`, `A = Lhat = Uhat = fun _ _ => 1`, `ρ = 1`, and `b = fun _ => 1`. The LU and growth assumptions hold, but the conclusion requires `0 = 1`.
+
+I also tried `lake build BenchmarkTask`, but the sandbox blocks the existing Lean cache lock:
+
+```text
+operation not permitted
+.../mathlib/.lake/config/mathlib/lakefile.olean.lock
+```
+
+I did not edit `BenchmarkTask.lean`, since any replacement proof would have to use a forbidden escape hatch or exploit inconsistency that is not present.

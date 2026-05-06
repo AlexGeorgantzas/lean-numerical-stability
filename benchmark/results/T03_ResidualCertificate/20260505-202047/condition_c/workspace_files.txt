@@ -1,0 +1,10 @@
+/tmp/lean-fp-benchmark-runs/T03_ResidualCertificate-20260505-202047/condition_c/T03_ResidualCertificate/.benchmark_condition_c_snapshot
+/tmp/lean-fp-benchmark-runs/T03_ResidualCertificate-20260505-202047/condition_c/T03_ResidualCertificate/BenchmarkTask.lean
+/tmp/lean-fp-benchmark-runs/T03_ResidualCertificate-20260505-202047/condition_c/T03_ResidualCertificate/README.md
+/tmp/lean-fp-benchmark-runs/T03_ResidualCertificate-20260505-202047/condition_c/T03_ResidualCertificate/SOLVER_PROMPT.md
+/tmp/lean-fp-benchmark-runs/T03_ResidualCertificate-20260505-202047/condition_c/T03_ResidualCertificate/docs
+/tmp/lean-fp-benchmark-runs/T03_ResidualCertificate-20260505-202047/condition_c/T03_ResidualCertificate/examples
+/tmp/lean-fp-benchmark-runs/T03_ResidualCertificate-20260505-202047/condition_c/T03_ResidualCertificate/lake-manifest.json
+/tmp/lean-fp-benchmark-runs/T03_ResidualCertificate-20260505-202047/condition_c/T03_ResidualCertificate/lakefile.toml
+/tmp/lean-fp-benchmark-runs/T03_ResidualCertificate-20260505-202047/condition_c/T03_ResidualCertificate/lean-toolchain
+/tmp/lean-fp-benchmark-runs/T03_ResidualCertificate-20260505-202047/condition_c/T03_ResidualCertificate/public_library

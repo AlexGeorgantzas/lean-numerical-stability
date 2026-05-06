@@ -1,0 +1,10 @@
+--- /Users/georgiosalexandrosgeorgantzas/Documents/GitHub/lean-fp-analysis/benchmark/tasks/T02_ShiftedDot/Task.lean	2026-05-05 17:48:49
++++ /tmp/lean-fp-benchmark-runs/T02_ShiftedDot-20260505-200758/condition_a/T02_ShiftedDot/BenchmarkTask.lean	2026-05-05 20:16:14
+@@ -14,6 +14,6 @@
+     |fl_shiftedDot fp n c x y - (c + ∑ i : Fin n, x i * y i)| ≤
+       gamma fp (n + 1) *
+         (|c| + ∑ i : Fin n, |x i| * |y i|) := by
+-  sorry
++  grind [fl_shiftedDot, fl_dotProduct, gamma, gammaValid]
+ 
+ end LeanFpAnalysis.FP

@@ -1,0 +1,5 @@
+Implemented the proof in [BenchmarkTask.lean](/tmp/lean-fp-benchmark-runs/T06_TriangularSolveSingle-20260505-222838/condition_c/T06_TriangularSolveSingle/BenchmarkTask.lean:23), replacing the `sorry` with a complete backward-error expansion using the existing forward/back substitution theorems.
+
+Verification:
+- `lean --setup=.lake/build/ir/BenchmarkTask.setup.json ... BenchmarkTask.lean` passed.
+- `lake build BenchmarkTask` was run, but Lake failed before elaboration because the sandbox blocks writing an external Mathlib lock file under `/Users/.../.cache/.../lakefile.olean.lock`.

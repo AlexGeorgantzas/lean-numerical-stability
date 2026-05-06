@@ -1,6 +1,8 @@
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Fintype.Basic
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
+import Mathlib.Algebra.BigOperators.Fin
+import Mathlib.Order.ConditionallyCompleteLattice.Finset
 
 namespace LeanFpAnalysis.FP
 
@@ -54,13 +56,45 @@ noncomputable def fl_residual (fp : FPModel) (n : ℕ)
     (A : Fin n → Fin n → ℝ) (x b : Fin n → ℝ) : Fin n → ℝ :=
   fun i => fp.fl_sub (b i) (fl_matVec fp n n A x i)
 
-noncomputable def fl_forwardSub (_fp : FPModel) (n : ℕ)
-    (_L : Fin n → Fin n → ℝ) (_b : Fin n → ℝ) : Fin n → ℝ :=
-  fun _ => 0
+noncomputable def fl_forwardSub_steps (fp : FPModel) (n : ℕ)
+    (L : Fin n → Fin n → ℝ) (b : Fin n → ℝ) :
+    ∀ (k : ℕ), k ≤ n → (Fin n → ℝ) → Fin n → ℝ
+  | 0,     _,  x => x
+  | k + 1, hk, x =>
+      have hlt : n - k - 1 < n := by omega
+      let ik : Fin n := ⟨n - k - 1, hlt⟩
+      let m := n - k - 1
+      let s := Fin.foldl m (fun acc (t : Fin m) =>
+                  fp.fl_sub acc
+                    (fp.fl_mul (L ik ⟨t.val, by omega⟩)
+                               (x   ⟨t.val, by omega⟩)))
+                (b ik)
+      let x' : Fin n → ℝ := Function.update x ik (fp.fl_div s (L ik ik))
+      fl_forwardSub_steps fp n L b k (Nat.le_of_succ_le hk) x'
 
-noncomputable def fl_backSub (_fp : FPModel) (n : ℕ)
-    (_U : Fin n → Fin n → ℝ) (_b : Fin n → ℝ) : Fin n → ℝ :=
-  fun _ => 0
+noncomputable def fl_forwardSub (fp : FPModel) (n : ℕ)
+    (L : Fin n → Fin n → ℝ) (b : Fin n → ℝ) : Fin n → ℝ :=
+  fl_forwardSub_steps fp n L b n (le_refl n) (fun _ => 0)
+
+noncomputable def fl_backSub_steps (fp : FPModel) (n : ℕ)
+    (U : Fin n → Fin n → ℝ) (b : Fin n → ℝ) :
+    ∀ (k : ℕ), k ≤ n → (Fin n → ℝ) → Fin n → ℝ
+  | 0,     _,  x => x
+  | k + 1, hk, x =>
+      have hlt : k < n := hk
+      let ik : Fin n := ⟨k, hlt⟩
+      let m := n - k - 1
+      let s := Fin.foldl m (fun acc (t : Fin m) =>
+                  fp.fl_sub acc
+                    (fp.fl_mul (U ik ⟨k + 1 + t.val, by omega⟩)
+                               (x   ⟨k + 1 + t.val, by omega⟩)))
+                (b ik)
+      let x' : Fin n → ℝ := Function.update x ik (fp.fl_div s (U ik ik))
+      fl_backSub_steps fp n U b k (Nat.le_of_succ_le hk) x'
+
+noncomputable def fl_backSub (fp : FPModel) (n : ℕ)
+    (U : Fin n → Fin n → ℝ) (b : Fin n → ℝ) : Fin n → ℝ :=
+  fl_backSub_steps fp n U b n (le_refl n) (fun _ => 0)
 
 noncomputable def matMul (n : ℕ) (A B : Fin n → Fin n → ℝ) :
     Fin n → Fin n → ℝ :=
@@ -77,11 +111,18 @@ noncomputable def matSub_id (n : ℕ) (M : Fin n → Fin n → ℝ) :
     Fin n → Fin n → ℝ :=
   fun i j => idMatrix n i j - M i j
 
-noncomputable def infNormVec {n : ℕ} (_hn : 0 < n) (_v : Fin n → ℝ) : ℝ :=
-  0
+noncomputable def infNormVec {n : ℕ} (hn : 0 < n) (v : Fin n → ℝ) : ℝ :=
+  Finset.sup' Finset.univ (Finset.univ_nonempty_iff.mpr ⟨⟨0, hn⟩⟩) (fun i => |v i|)
 
-noncomputable def infNorm {n : ℕ} (_hn : 0 < n) (_A : Fin n → Fin n → ℝ) : ℝ :=
-  0
+noncomputable def infNorm {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ) : ℝ :=
+  Finset.sup' Finset.univ (Finset.univ_nonempty_iff.mpr ⟨⟨0, hn⟩⟩)
+    (fun i => ∑ j : Fin n, |A i j|)
+
+def IsLeftInverse (n : ℕ) (T T_inv : Fin n → Fin n → ℝ) : Prop :=
+  ∀ i j : Fin n, ∑ k : Fin n, T_inv i k * T k j = if i = j then 1 else 0
+
+def IsRightInverse (n : ℕ) (T T_inv : Fin n → Fin n → ℝ) : Prop :=
+  ∀ i j : Fin n, ∑ k : Fin n, T i k * T_inv k j = if i = j then 1 else 0
 
 structure LUBackwardError (n : ℕ) (A L_hat U_hat : Fin n → Fin n → ℝ)
     (ε : ℝ) : Prop where
@@ -101,8 +142,8 @@ structure CholeskyBackwardError (n : ℕ) (A R_hat : Fin n → Fin n → ℝ)
 
 structure SplittingSpec (n : ℕ) (A M N M_inv : Fin n → Fin n → ℝ) : Prop where
   splitting : ∀ i j, A i j = M i j - N i j
-  inv_left : ∀ i j : Fin n, ∑ k : Fin n, M_inv i k * M k j = idMatrix n i j
-  inv_right : ∀ i j : Fin n, ∑ k : Fin n, M i k * M_inv k j = idMatrix n i j
+  inv_left : IsLeftInverse n M M_inv
+  inv_right : IsRightInverse n M M_inv
 
 noncomputable def dualIterMatrix (n : ℕ) (N M_inv : Fin n → Fin n → ℝ) :
     Fin n → Fin n → ℝ :=

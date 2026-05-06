@@ -1,0 +1,8 @@
+Implemented the proof in [BenchmarkTask.lean](/tmp/lean-fp-benchmark-runs/T10_StationaryForwardSub-20260505-225743/condition_c/T10_StationaryForwardSub/BenchmarkTask.lean:32), replacing the `sorry` only inside the theorem body.
+
+Verification:
+- `lean BenchmarkTask.lean` passes when run directly with the project’s compiled library paths.
+- `lake build BenchmarkTask` was attempted twice, but Lake is blocked by sandbox permissions trying to access an external cache lock file:
+  `.../mathlib/.lake/config/mathlib/lakefile.olean.lock`
+
+No `sorry`, `admit`, `axiom`, `opaque`, or `unsafe` remain in `BenchmarkTask.lean`.
