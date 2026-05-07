@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
 
 
-TASKS = [
+DEFAULT_TASKS = [
     "T01_ScaledDot",
     "T02_ShiftedDot",
     "T03_ResidualCertificate",
@@ -26,7 +26,7 @@ TASKS = [
     "T10_StationaryForwardSub",
 ]
 
-TASK_LABELS = {
+DEFAULT_TASK_LABELS = {
     "T01_ScaledDot": "T01\nScaled Dot",
     "T02_ShiftedDot": "T02\nShifted Dot",
     "T03_ResidualCertificate": "T03\nResidual Cert.",
@@ -93,9 +93,48 @@ def select_run(task_dir: Path, date_prefix: str | None) -> Path:
     return sorted(candidates, key=lambda p: p.name)[-1]
 
 
-def read_metrics(results_root: Path, date_prefix: str | None) -> list[Metric]:
+def generated_label(task: str) -> str:
+    if "_" not in task:
+        return task
+    prefix, rest = task.split("_", 1)
+    words = rest.replace("_", " ")
+    return f"{prefix}\n{words}"
+
+
+def read_task_list(path: Path) -> tuple[list[str], dict[str, str]]:
+    tasks: list[str] = []
+    labels: dict[str, str] = {}
+    with path.open() as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            parts = line.split("\t")
+            task = parts[0].strip()
+            if not task or task == "task":
+                continue
+            label = parts[1].strip().replace("\\n", "\n") if len(parts) > 1 else generated_label(task)
+            tasks.append(task)
+            labels[task] = label
+    if not tasks:
+        raise ValueError(f"no tasks found in {path}")
+    return tasks, labels
+
+
+def task_config(args: argparse.Namespace) -> tuple[list[str], dict[str, str]]:
+    if args.task_list:
+        return read_task_list(Path(args.task_list))
+    if args.tasks:
+        tasks = [task.strip() for task in args.tasks.split(",") if task.strip()]
+        if not tasks:
+            raise ValueError("--tasks did not contain any task names")
+        return tasks, {task: generated_label(task) for task in tasks}
+    return DEFAULT_TASKS, DEFAULT_TASK_LABELS
+
+
+def read_metrics(results_root: Path, date_prefix: str | None, tasks: list[str]) -> list[Metric]:
     rows: list[Metric] = []
-    for task in TASKS:
+    for task in tasks:
         run_dir = select_run(results_root / task, date_prefix)
         with (run_dir / "metrics.tsv").open(newline="") as f:
             reader = csv.DictReader(f, delimiter="\t")
@@ -166,13 +205,18 @@ def save_plot(fig: plt.Figure, output_dir: Path, stem: str) -> None:
     plt.close(fig)
 
 
-def plot_pass_matrix(rows: list[Metric], output_dir: Path) -> None:
+def plot_pass_matrix(
+    rows: list[Metric],
+    output_dir: Path,
+    tasks: list[str],
+    task_labels: dict[str, str],
+) -> None:
     by_key = {(row.task, row.condition): row for row in rows}
     fig, ax = plt.subplots(figsize=(12, 3.8))
     colors = {True: "#2e7d32", False: "#c62828"}
 
     for y, condition in enumerate(["condition_a", "condition_c"]):
-        for x, task in enumerate(TASKS):
+        for x, task in enumerate(tasks):
             row = by_key[(task, condition)]
             ax.barh(y, 0.86, left=x - 0.43, height=0.62, color=colors[row.passed])
             ax.text(
@@ -187,9 +231,10 @@ def plot_pass_matrix(rows: list[Metric], output_dir: Path) -> None:
             )
 
     ax.set_yticks([0, 1], [CONDITION_LABELS["condition_a"], CONDITION_LABELS["condition_c"]])
-    ax.set_xticks(range(len(TASKS)), [TASK_LABELS[t] for t in TASKS], fontsize=8)
-    ax.set_xlim(-0.55, len(TASKS) - 0.45)
-    ax.set_title("Pass@1 Validation Outcome by Task")
+    ax.set_xticks(range(len(tasks)), [task_labels.get(t, generated_label(t)) for t in tasks], fontsize=8)
+    ax.set_xlim(-0.55, len(tasks) - 0.45)
+    ax.set_xlabel("Predefined task order")
+    ax.set_title("Pass@1 Validation Outcome")
     ax.legend(
         handles=[Patch(color=colors[True], label="Pass"), Patch(color=colors[False], label="Fail")],
         loc="upper center",
@@ -205,21 +250,24 @@ def plot_pass_matrix(rows: list[Metric], output_dir: Path) -> None:
 def plot_grouped_bars(
     rows: list[Metric],
     output_dir: Path,
+    tasks: list[str],
+    task_labels: dict[str, str],
     stem: str,
     title: str,
     ylabel: str,
     value_fn,
 ) -> None:
     by_key = {(row.task, row.condition): row for row in rows}
-    xs = list(range(len(TASKS)))
+    xs = list(range(len(tasks)))
     width = 0.36
-    a_values = [value_fn(by_key[(task, "condition_a")]) for task in TASKS]
-    c_values = [value_fn(by_key[(task, "condition_c")]) for task in TASKS]
+    a_values = [value_fn(by_key[(task, "condition_a")]) for task in tasks]
+    c_values = [value_fn(by_key[(task, "condition_c")]) for task in tasks]
 
     fig, ax = plt.subplots(figsize=(12, 4.4))
     ax.bar([x - width / 2 for x in xs], a_values, width, label="Condition A", color="#7b8da6")
     ax.bar([x + width / 2 for x in xs], c_values, width, label="Condition C", color="#2f6f9f")
-    ax.set_xticks(xs, [TASK_LABELS[t] for t in TASKS], fontsize=8)
+    ax.set_xticks(xs, [task_labels.get(t, generated_label(t)) for t in tasks], fontsize=8)
+    ax.set_xlabel("Predefined task order")
     ax.set_ylabel(ylabel)
     ax.set_title(title)
     ax.legend(frameon=False)
@@ -229,10 +277,17 @@ def plot_grouped_bars(
     save_plot(fig, output_dir, stem)
 
 
-def plot_elapsed(rows: list[Metric], output_dir: Path) -> None:
+def plot_elapsed(
+    rows: list[Metric],
+    output_dir: Path,
+    tasks: list[str],
+    task_labels: dict[str, str],
+) -> None:
     plot_grouped_bars(
         rows,
         output_dir,
+        tasks,
+        task_labels,
         "elapsed_minutes",
         "Solver Attempt Duration",
         "minutes",
@@ -240,10 +295,17 @@ def plot_elapsed(rows: list[Metric], output_dir: Path) -> None:
     )
 
 
-def plot_proof_lines(rows: list[Metric], output_dir: Path) -> None:
+def plot_proof_lines(
+    rows: list[Metric],
+    output_dir: Path,
+    tasks: list[str],
+    task_labels: dict[str, str],
+) -> None:
     plot_grouped_bars(
         rows,
         output_dir,
+        tasks,
+        task_labels,
         "proof_lines",
         "Proof Body Lines in Final Attempt",
         "lines",
@@ -251,10 +313,17 @@ def plot_proof_lines(rows: list[Metric], output_dir: Path) -> None:
     )
 
 
-def plot_event_lines(rows: list[Metric], output_dir: Path) -> None:
+def plot_event_lines(
+    rows: list[Metric],
+    output_dir: Path,
+    tasks: list[str],
+    task_labels: dict[str, str],
+) -> None:
     plot_grouped_bars(
         rows,
         output_dir,
+        tasks,
+        task_labels,
         "codex_event_lines",
         "Codex Event Log Lines",
         "JSONL lines",
@@ -267,18 +336,21 @@ def main() -> None:
     parser.add_argument("--results-root", default="benchmark/results")
     parser.add_argument("--date-prefix", default="20260505")
     parser.add_argument("--output-dir", default="benchmark/results/plots/pass_at_1_20260505")
+    parser.add_argument("--task-list", help="TSV file with task and optional label columns")
+    parser.add_argument("--tasks", help="Comma-separated task names; overrides the default T-suite")
     args = parser.parse_args()
 
     results_root = Path(args.results_root)
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    rows = read_metrics(results_root, args.date_prefix)
+    tasks, task_labels = task_config(args)
+    rows = read_metrics(results_root, args.date_prefix, tasks)
     write_aggregate(rows, output_dir)
-    plot_pass_matrix(rows, output_dir)
-    plot_elapsed(rows, output_dir)
-    plot_proof_lines(rows, output_dir)
-    plot_event_lines(rows, output_dir)
+    plot_pass_matrix(rows, output_dir, tasks, task_labels)
+    plot_elapsed(rows, output_dir, tasks, task_labels)
+    plot_proof_lines(rows, output_dir, tasks, task_labels)
+    plot_event_lines(rows, output_dir, tasks, task_labels)
 
     print(f"wrote plots to {output_dir}")
 

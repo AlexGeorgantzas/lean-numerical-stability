@@ -82,5 +82,5 @@
 +      _ ≤ μ := hlocal k
 +  exact normwise_residual_bound n hnpos A M N Minv hS b x hAx xhat ξ hIter
 +    q hq_nonneg hq_lt_one hH μ hμ_nonneg hξ_bound m
- 
+
  end LeanFpAnalysis.FP

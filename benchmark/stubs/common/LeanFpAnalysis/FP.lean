@@ -3,6 +3,7 @@ import Mathlib.Data.Fintype.Basic
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.BigOperators.Fin
 import Mathlib.Order.ConditionallyCompleteLattice.Finset
+import Mathlib.Analysis.SpecialFunctions.Sqrt
 
 namespace LeanFpAnalysis.FP
 
@@ -51,6 +52,10 @@ noncomputable def fl_dotProduct (fp : FPModel) (n : ℕ)
 noncomputable def fl_matVec (fp : FPModel) (m n : ℕ)
     (A : Fin m → Fin n → ℝ) (x : Fin n → ℝ) : Fin m → ℝ :=
   fun i => fl_dotProduct fp n (A i) x
+
+noncomputable def fl_matMul (fp : FPModel) (m n p : ℕ)
+    (A : Fin m → Fin n → ℝ) (B : Fin n → Fin p → ℝ) : Fin m → Fin p → ℝ :=
+  fun i j => fl_matVec fp m n A (fun k => B k j) i
 
 noncomputable def fl_residual (fp : FPModel) (n : ℕ)
     (A : Fin n → Fin n → ℝ) (x b : Fin n → ℝ) : Fin n → ℝ :=
@@ -111,6 +116,12 @@ noncomputable def matSub_id (n : ℕ) (M : Fin n → Fin n → ℝ) :
     Fin n → Fin n → ℝ :=
   fun i j => idMatrix n i j - M i j
 
+noncomputable def frobNormSq {n : ℕ} (A : Fin n → Fin n → ℝ) : ℝ :=
+  ∑ i : Fin n, ∑ j : Fin n, A i j ^ 2
+
+noncomputable def frobNorm {n : ℕ} (A : Fin n → Fin n → ℝ) : ℝ :=
+  Real.sqrt (frobNormSq A)
+
 noncomputable def infNormVec {n : ℕ} (hn : 0 < n) (v : Fin n → ℝ) : ℝ :=
   Finset.sup' Finset.univ (Finset.univ_nonempty_iff.mpr ⟨⟨0, hn⟩⟩) (fun i => |v i|)
 
@@ -123,6 +134,9 @@ def IsLeftInverse (n : ℕ) (T T_inv : Fin n → Fin n → ℝ) : Prop :=
 
 def IsRightInverse (n : ℕ) (T T_inv : Fin n → Fin n → ℝ) : Prop :=
   ∀ i j : Fin n, ∑ k : Fin n, T i k * T_inv k j = if i = j then 1 else 0
+
+def IsInverse (n : ℕ) (T T_inv : Fin n → Fin n → ℝ) : Prop :=
+  IsLeftInverse n T T_inv ∧ IsRightInverse n T T_inv
 
 structure LUBackwardError (n : ℕ) (A L_hat U_hat : Fin n → Fin n → ℝ)
     (ε : ℝ) : Prop where
@@ -153,5 +167,13 @@ structure ComputedIteration (n : ℕ) (M N : Fin n → Fin n → ℝ)
     (b : Fin n → ℝ) (x_hat : ℕ → (Fin n → ℝ)) (ξ : ℕ → (Fin n → ℝ)) : Prop where
   step : ∀ k i, ∑ j : Fin n, M i j * x_hat (k + 1) j =
     ∑ j : Fin n, N i j * x_hat k j + b i + ξ k i
+
+structure LSQRSolveBackwardError (n : ℕ)
+    (ATA : Fin n → Fin n → ℝ) (ATb x_hat : Fin n → ℝ)
+    (c_G c_g : ℝ) : Prop where
+  result : ∃ (ΔG : Fin n → Fin n → ℝ) (Δg : Fin n → ℝ),
+    (∀ i, matMulVec n (fun a b => ATA a b + ΔG a b) x_hat i = ATb i + Δg i) ∧
+    frobNorm ΔG ≤ c_G ∧
+    (∀ i, |Δg i| ≤ c_g)
 
 end LeanFpAnalysis.FP

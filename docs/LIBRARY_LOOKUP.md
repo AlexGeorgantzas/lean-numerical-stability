@@ -48,7 +48,7 @@ For a smaller import, use the file listed in the tables below.
 | Iterative refinement | `LeanFpAnalysis/FP/Algorithms/IterativeRefinement.lean` | `SolverSpec`, `ResidualError` | `one_step_refinement_error_identity`, `one_step_residual_bound`, `one_step_backward_error_contraction`, `lu_refinement_backward_stable`, `refinement_forward_error_bound`, `thm_11_4_residual_bound` | Mixes exact algebra, solver specifications, and residual computation bounds. |
 | Stationary iteration | `LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean` | iteration/residual helpers | `one_step_error`, `local_error_simplified`, `residual_eq_A_error`, `one_step_residual`, `normwise_forward_bound`, `main_forward_bound`, `normwise_one_step_residual_bound`, `normwise_residual_bound` | Useful for harder compositional stability analyses. |
 | Matrix algebra infrastructure | `LeanFpAnalysis/FP/Analysis/MatrixAlgebra.lean` | matrix products, identities, norms, inverses | `matMul_id_right`, `matMul_id_left`, `matMul_assoc`, `matMul_vec_eq`, `matMulVec_matMul` | Large foundational file for exact matrix reasoning. |
-| Perturbation theory | `LeanFpAnalysis/FP/Analysis/PerturbationTheory.lean` | residual and perturbation quantities | `forward_error_from_residual`, `componentwise_forward_error`, `forward_error_from_backward_error`, `componentwise_forward_error_exact`, `normwise_forward_error_exact` | Converts residual/backward-error hypotheses into forward-error conclusions. |
+| Perturbation theory | `LeanFpAnalysis/FP/Analysis/PerturbationTheory.lean` | residual and perturbation quantities | `forward_error_from_residual`, `normwise_perturbation_bound`, `componentwise_forward_error`, `componentwise_forward_error_standard`, `forward_error_from_backward_error`, `componentwise_forward_error_exact`, `normwise_forward_error_exact` | Converts residual/backward-error hypotheses into forward-error conclusions. Use `componentwise_forward_error_standard` for the common `|DeltaA| <= eps*|A|`, `|Deltab| <= eps*|b|` form. |
 
 ## Main Dependency Chains
 
@@ -129,6 +129,7 @@ floating-point analysis.
 Known abstract-interface areas include:
 
 - `Algorithms/GaussJordan.lean`
+- `Algorithms/FastMatMul.lean`
 - parts of `Algorithms/MatrixInversion.lean`
 - `Algorithms/Cholesky/CholeskyDemmel.lean`
 - `Algorithms/Cholesky/CholeskyIndefinite.lean`
@@ -173,4 +174,3 @@ When a theorem almost matches a goal, compare:
 - whether the theorem perturbs one input, one row/column, or a whole matrix;
 - whether the theorem requires triangular zero-pattern assumptions, nonzero
   diagonal assumptions, or an abstract factorization/solver specification.
-

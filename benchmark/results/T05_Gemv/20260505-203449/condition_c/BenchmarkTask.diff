@@ -113,5 +113,5 @@
 +      _ = alpha * (∑ j : Fin n, (A i j + A i j * θA i j) * x j) +
 +          beta * (y i + y i * θy i) := by
 +            rw [hsumA]
- 
+
  end LeanFpAnalysis.FP

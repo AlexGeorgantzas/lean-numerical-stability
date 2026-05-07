@@ -24,5 +24,5 @@
 +        exact add_le_add herr (hsmall i)
 +    _ = τ i + gamma fp (n + 1) *
 +          (|b i| + ∑ j : Fin n, |A i j| * |x j|) := by rw [add_comm]
- 
+
  end LeanFpAnalysis.FP

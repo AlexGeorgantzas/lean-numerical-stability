@@ -25,5 +25,5 @@
 +            |fl_residual fp n A x b i| := by
 +            rw [abs_sub_comm]
 +  linarith [htri, hconv, hsmall i, hτi]
- 
+
  end LeanFpAnalysis.FP

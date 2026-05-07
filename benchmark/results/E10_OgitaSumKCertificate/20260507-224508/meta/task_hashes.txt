@@ -1,0 +1,3 @@
+59b59552a3fb691ced203423a6bf6dd3d036ddb712eec3a2a34b21054e6d6c6c  /tmp/lean-fp-benchmark-runs/E10_OgitaSumKCertificate-20260507-224508/condition_a/E10_OgitaSumKCertificate/BenchmarkTask.lean
+59b59552a3fb691ced203423a6bf6dd3d036ddb712eec3a2a34b21054e6d6c6c  /tmp/lean-fp-benchmark-runs/E10_OgitaSumKCertificate-20260507-224508/condition_c/E10_OgitaSumKCertificate/BenchmarkTask.lean
+59b59552a3fb691ced203423a6bf6dd3d036ddb712eec3a2a34b21054e6d6c6c  /Users/georgiosalexandrosgeorgantzas/Documents/GitHub/lean-fp-analysis/benchmark/tasks/E10_OgitaSumKCertificate/Task.lean

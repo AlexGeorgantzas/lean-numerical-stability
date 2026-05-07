@@ -18,4 +18,3 @@ theorem scaledDot_backward_error (fp : FPModel) (n : ℕ)
   sorry
 
 end LeanFpAnalysis.FP
-

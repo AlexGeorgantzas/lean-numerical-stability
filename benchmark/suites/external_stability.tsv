@@ -1,0 +1,11 @@
+# task	label
+E01_LapackBerrBackward	E01\nBERR
+E02_TemplatesResidualStop	E02\nResidual Stop
+E03_LapackFerrForward	E03\nFERR
+E04_LapackLevel3Matmul	E04\nLevel 3 GEMM
+E05_LapackTriangularResidual	E05\nTri. Residual
+E06_OettliPragerForward	E06\nO-P Forward
+E07_TemplatesStationaryResidual	E07\nStationary
+E08_LapackLSQRForward	E08\nLS QR
+E09_LapackNormalEquations	E09\nNormal Eq.
+E10_OgitaSumKCertificate	E10\nSumK Cert.

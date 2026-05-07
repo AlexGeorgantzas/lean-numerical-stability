@@ -6,5 +6,5 @@
        ∀ i, ∑ j : Fin n, (A i j + ΔA i j) * xhat j = b i := by
 -  sorry
 +  exact sorryAx _ true
- 
+
  end LeanFpAnalysis.FP

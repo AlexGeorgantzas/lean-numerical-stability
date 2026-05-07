@@ -16,5 +16,5 @@
 +      hΔA_bound i j
 +    _ = ((3 * gamma fp n + gamma fp n ^ 2) * ρ) * |A i j| := by
 +      ring
- 
+
  end LeanFpAnalysis.FP

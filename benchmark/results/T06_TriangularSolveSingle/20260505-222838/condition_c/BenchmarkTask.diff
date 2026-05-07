@@ -113,5 +113,5 @@
 +    intro j _
 +    simp_rw [← mul_assoc]
 +    rw [← Finset.sum_mul, hexpand j]
- 
+
  end LeanFpAnalysis.FP

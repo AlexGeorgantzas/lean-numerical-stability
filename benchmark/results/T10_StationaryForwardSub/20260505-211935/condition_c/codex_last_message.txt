@@ -3,5 +3,5 @@ Implemented the proof in `BenchmarkTask.lean`, replacing the `sorry` only inside
 Verification:
 - `lean BenchmarkTask.lean` passes with the existing compiled dependency paths.
 - `lake build BenchmarkTask` was attempted, but Lake fails before elaborating the task because it cannot write the external mathlib cache lock file:
-  `.../mathlib/.lake/config/mathlib/lakefile.olean.lock`  
+  `.../mathlib/.lake/config/mathlib/lakefile.olean.lock`
   error: `operation not permitted`.

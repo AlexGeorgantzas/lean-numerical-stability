@@ -7,6 +7,6 @@
 -  sorry
 +  classical
 +  grind [fl_scaledDot, fl_dotProduct, gamma, gammaValid]
- 
+
  end LeanFpAnalysis.FP
 -

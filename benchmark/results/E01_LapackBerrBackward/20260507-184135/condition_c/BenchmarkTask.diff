@@ -1,0 +1,51 @@
+--- /Users/georgiosalexandrosgeorgantzas/Documents/GitHub/lean-fp-analysis/benchmark/tasks/E01_LapackBerrBackward/Task.lean	2026-05-07 03:15:27
++++ /tmp/lean-fp-benchmark-runs/E01_LapackBerrBackward-20260507-184135/condition_c/E01_LapackBerrBackward/BenchmarkTask.lean	2026-05-07 18:49:46
+@@ -28,7 +28,46 @@
+         gamma fp (n + 1) * lapackBerrDenom n A x b i ≤
+           eta * lapackBerrDenom n A x b i) :
+     componentwiseBackwardCompatible n A x b eta := by
+-  sorry
++  have hBound : ∀ i : Fin n, |residualVec n A x b i| ≤
++      eta * (∑ j : Fin n, |A i j| * |x j| + |b i|) := by
++    intro i
++    have hreserr :=
++      conventional_residual_error fp n A x b hn hn1 i
++    have htri : |b i - ∑ j : Fin n, A i j * x j| ≤
++        |fl_residual fp n A x b i| +
++          |fl_residual fp n A x b i -
++            (b i - ∑ j : Fin n, A i j * x j)| := by
++      rw [abs_le]
++      constructor
++      · linarith [neg_le_abs (fl_residual fp n A x b i),
++          le_abs_self (fl_residual fp n A x b i -
++            (b i - ∑ j : Fin n, A i j * x j))]
++      · linarith [le_abs_self (fl_residual fp n A x b i),
++          neg_le_abs (fl_residual fp n A x b i -
++            (b i - ∑ j : Fin n, A i j * x j))]
++    have hdenom :
++        lapackBerrDenom n A x b i =
++          |b i| + ∑ j : Fin n, |A i j| * |x j| := rfl
++    have hres : |residualVec n A x b i| ≤
++        eta * lapackBerrDenom n A x b i := by
++      unfold residualVec
++      calc
++        |b i - ∑ j : Fin n, A i j * x j|
++            ≤ |fl_residual fp n A x b i| +
++                |fl_residual fp n A x b i -
++                  (b i - ∑ j : Fin n, A i j * x j)| := htri
++        _ ≤ |fl_residual fp n A x b i| +
++              gamma fp (n + 1) * lapackBerrDenom n A x b i := by
++            exact add_le_add_right (by simpa [lapackBerrDenom] using hreserr) _
++        _ ≤ eta * lapackBerrDenom n A x b i := hcert i
++    calc
++      |residualVec n A x b i|
++          ≤ eta * lapackBerrDenom n A x b i := hres
++      _ = eta * (∑ j : Fin n, |A i j| * |x j| + |b i|) := by
++          rw [hdenom]
++          ring
++  exact oettli_prager_sufficient n A x b
++    (fun i j => |A i j|) (fun i => |b i|) eta
++    heta_nonneg (fun i j => abs_nonneg _) (fun i => abs_nonneg _) hBound
+
+ end LeanFpAnalysis.FP
+-

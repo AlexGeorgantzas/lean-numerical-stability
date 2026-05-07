@@ -1,0 +1,40 @@
+✖ [1966/1967] Building BenchmarkTask (3.3s)
+trace: .> LEAN_PATH=/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/Cli/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/batteries/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/Qq/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/aesop/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/proofwidgets/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/importGraph/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/LeanSearchClient/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/plausible/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/mathlib/.lake/build/lib/lean:/private/tmp/lean-fp-benchmark-runs/E06_OettliPragerForward-20260507-215812/condition_a/E06_OettliPragerForward/.lake/build/lib/lean /Users/georgiosalexandrosgeorgantzas/.elan/toolchains/leanprover--lean4---v4.29.0-rc3/bin/lean /private/tmp/lean-fp-benchmark-runs/E06_OettliPragerForward-20260507-215812/condition_a/E06_OettliPragerForward/BenchmarkTask.lean -o /private/tmp/lean-fp-benchmark-runs/E06_OettliPragerForward-20260507-215812/condition_a/E06_OettliPragerForward/.lake/build/lib/lean/BenchmarkTask.olean -i /private/tmp/lean-fp-benchmark-runs/E06_OettliPragerForward-20260507-215812/condition_a/E06_OettliPragerForward/.lake/build/lib/lean/BenchmarkTask.ilean -c /private/tmp/lean-fp-benchmark-runs/E06_OettliPragerForward-20260507-215812/condition_a/E06_OettliPragerForward/.lake/build/ir/BenchmarkTask.c --setup /private/tmp/lean-fp-benchmark-runs/E06_OettliPragerForward-20260507-215812/condition_a/E06_OettliPragerForward/.lake/build/ir/BenchmarkTask.setup.json --json
+error: BenchmarkTask.lean:74:45: Unknown identifier `abs_add`
+error: BenchmarkTask.lean:78:20: Application type mismatch: The argument
+  fun k => DeltaA j k * xhat k
+has type
+  Fin n → ℝ
+but is expected to have type
+  Finset ?m.699
+in the application
+  Finset.abs_sum_le_sum_abs ?m.707 fun k => DeltaA j k * xhat k
+error: BenchmarkTask.lean:77:45: Application type mismatch: The argument
+  Finset.univ
+has type
+  Finset (Fin n)
+but is expected to have type
+  ?m.699 → ?m.700
+in the application
+  Finset.abs_sum_le_sum_abs Finset.univ
+error: BenchmarkTask.lean:97:67: Application type mismatch: The argument
+  fun j => A_inv i j * r j
+has type
+  Fin n → ℝ
+but is expected to have type
+  Finset ?m.840
+in the application
+  Finset.abs_sum_le_sum_abs ?m.848 fun j => A_inv i j * r j
+error: BenchmarkTask.lean:97:36: Application type mismatch: The argument
+  Finset.univ
+has type
+  Finset (Fin n)
+but is expected to have type
+  ?m.840 → ?m.841
+in the application
+  Finset.abs_sum_le_sum_abs Finset.univ
+error: Lean exited with code 1
+Some required targets logged failures:
+- BenchmarkTask
+error: build failed
+validation failed: lake build BenchmarkTask failed

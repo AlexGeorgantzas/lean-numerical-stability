@@ -2,14 +2,16 @@
 
 - task: `T03_ResidualCertificate`
 - run_timestamp: `20260505-202047`
-- result_root: `/Users/georgiosalexandrosgeorgantzas/Documents/GitHub/lean-fp-analysis/benchmark/results/T03_ResidualCertificate/20260505-202047`
+- result_root: `benchmark/results/T03_ResidualCertificate/20260505-202047`
 
 ## Outcome
 
 - Condition A validation exit: `1`
 - Condition A timeout: `no`
+- Condition A classification: failed: final Lean file did not build
 - Condition C validation exit: `0`
 - Condition C timeout: `no`
+- Condition C classification: passed validation
 
 Interpretation: Condition A failed while Condition C passed under the same run protocol.
 
@@ -20,6 +22,14 @@ condition	codex_exit	validation_exit	timeout	started_at_utc	finished_at_utc	code
 condition_a	0	1	no	2026-05-05T17:21:05Z	2026-05-05T17:26:08Z	68	28	22	0	0
 condition_c	0	0	no	2026-05-05T17:26:08Z	2026-05-05T17:29:07Z	73	29	23	0	0
 ```
+
+## Public Solver Messages
+
+- Condition A: `benchmark/results/T03_ResidualCertificate/20260505-202047/condition_a/agent_messages.md`
+- Condition C: `benchmark/results/T03_ResidualCertificate/20260505-202047/condition_c/agent_messages.md`
+
+These files summarize public solver progress messages extracted from
+`codex_events.jsonl`. They are not hidden chain-of-thought.
 
 ## Failure Notes
 

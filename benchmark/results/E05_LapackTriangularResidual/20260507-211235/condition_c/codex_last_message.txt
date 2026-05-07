@@ -1,0 +1,5 @@
+Implemented the proof in [BenchmarkTask.lean](/tmp/lean-fp-benchmark-runs/E05_LapackTriangularResidual-20260507-211235/condition_c/E05_LapackTriangularResidual/BenchmarkTask.lean:11). It uses `backSub_backward_error`, rewrites the residual as the perturbation matrix-vector product, and applies `infNormVec_matMulVec_le`.
+
+Verification:
+- Direct Lean elaboration of `BenchmarkTask.lean`: passed.
+- `lake build BenchmarkTask`: blocked before compilation because Lake tried to download dependencies and failed with `Could not resolve host: github.com`.

@@ -8,6 +8,7 @@ tree.
 ## Source Tree Roles
 
 - `benchmark/tasks/`: canonical task statements and task-spec notes.
+- `benchmark/suites/`: task-list files used for plotting and batch planning.
 - `benchmark/condition_a/`: generated-workspace Lake config template for the
   bare condition.
 - `benchmark/condition_c/`: generated-workspace Lake config template for the
@@ -123,7 +124,8 @@ compile.  It does not mean the theorem has been proved.
 After an agent attempt:
 
 - run `lake build`;
-- reject if any `sorry`, `admit`, new `axiom`, or weakened theorem remains;
+- reject if any `sorry`, `admit`, `sorryAx`, new `axiom`, or weakened theorem
+  remains;
 - reject if imports, task-local definitions, namespaces, or the theorem
   statement changed;
 - record build result, diff, proof lines, and failure reason.
@@ -134,6 +136,18 @@ For the current local harness, run a full one-task attempt with:
 benchmark/scripts/setup_shared_lake_packages.sh
 benchmark/scripts/setup_condition_c_snapshot.sh
 BENCHMARK_CODEX_TIMEOUT_SECONDS=1200 benchmark/scripts/run_task_once.sh T01_ScaledDot
+```
+
+For the external-source pilot suite, use task names from:
+
+```text
+benchmark/suites/external_stability.tsv
+```
+
+For example:
+
+```bash
+BENCHMARK_CODEX_TIMEOUT_SECONDS=1200 benchmark/scripts/run_task_once.sh E01_LapackBerrBackward
 ```
 
 `prepare_solver_run.sh` creates both condition workspaces, writes a neutral
@@ -157,14 +171,34 @@ of that workflow until Codex authentication for a non-local runner is chosen.
 ephemeral session storage and archives the attempt under
 `benchmark/results/<task>/<timestamp>/<condition>/`, where generated run ids
 have the form `<task>-YYYYMMDD-HHMMSS`.  It runs Codex with a temporary
-auth-only `CODEX_HOME`, disables plugin and memory features, ignores user
-configuration and rules, enforces a timeout
-(`BENCHMARK_CODEX_TIMEOUT_SECONDS`, default 1200), and removes the temporary
-home after the attempt.
+auth-only `CODEX_HOME`, a temporary `HOME`, and a temporary `XDG_CACHE_HOME`.
+It passes the host `ELAN_HOME` only so the already installed Lean toolchain is
+available without forcing Elan to download into the temporary home.  It also
+places a workspace-local `lake` wrapper first on `PATH`.  The wrapper supports
+the solver-requested `lake build BenchmarkTask` command by invoking `lean`
+directly with the `LEAN_PATH` computed by Lake during preflight.  This gives
+the solver real Lean feedback on `BenchmarkTask.lean` without letting Lake
+write lock files inside an external package cache.  Post-run validation still
+uses the real Lake build, not this wrapper.  The runner also adds only the
+shared third-party Lake package cache as an explicit Codex directory, so
+tooling can inspect/reuse prebuilt Mathlib dependencies without granting
+Condition A access to the full `LeanFpAnalysis` snapshot.  It disables plugin
+and memory features, ignores user configuration and rules, enforces a
+process-group timeout
+(`BENCHMARK_CODEX_TIMEOUT_SECONDS`, default 1200) through
+`run_with_timeout.py`, and removes the temporary home after the attempt.
 `validate_attempt.sh` is the post-attempt validator: it rejects changes outside
 the theorem proof body, remaining placeholders, forbidden declarations, and
 build failures.  `cleanup_run_workspaces.sh` removes temporary run workspaces
 after results have been archived.
+
+Every condition archive contains the final solver output
+`BenchmarkTask.after.lean`, the canonical task file, a diff, validation log,
+solver event log, extracted public solver messages, final solver message,
+workspace file list, exit codes, and attempt metadata.  These files are the
+evidence used to decide whether a failure is a real failed proof, a harness
+issue, or an invalid attempt.  The extracted public messages are useful audit
+context, but they are not hidden chain-of-thought.
 
 `run_task_once.sh` is the preferred local entrypoint.  It prepares fresh
 Condition A and Condition C workspaces for one task, archives preflight
@@ -184,3 +218,17 @@ root.  The metrics table records, per condition:
 - proof-line count;
 - remaining placeholder count;
 - forbidden declaration count.
+- mechanical validation classification.
+
+It also writes `agent_messages.md` for each condition by extracting public
+`agent_message` events from `codex_events.jsonl`.
+
+`plot_pass_at_1.py` accepts either the old built-in prototype task list or an
+explicit task-list file.  For the external-source suite:
+
+```bash
+python3 benchmark/scripts/plot_pass_at_1.py \
+  --task-list benchmark/suites/external_stability.tsv \
+  --date-prefix YYYYMMDD \
+  --output-dir benchmark/results/plots/pass_at_1_YYYYMMDD_external
+```

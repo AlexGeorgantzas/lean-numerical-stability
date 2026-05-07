@@ -6,5 +6,5 @@
          (|c| + ∑ i : Fin n, |x i| * |y i|) := by
 -  sorry
 +  grind [fl_shiftedDot, fl_dotProduct, gamma, gammaValid]
- 
+
  end LeanFpAnalysis.FP

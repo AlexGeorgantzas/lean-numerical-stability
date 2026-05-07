@@ -35,6 +35,6 @@
 +      (alpha * (∑ i : Fin n, x i * y i * (1 + θ i))) * (1 + δ)
 +          = alpha * ((∑ i : Fin n, x i * y i * (1 + θ i)) * (1 + δ)) := by ring
 +      _ = alpha * ∑ i : Fin n, x i * y i * (1 + η i) := by rw [hsum]
- 
+
  end LeanFpAnalysis.FP
 -

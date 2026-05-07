@@ -50,5 +50,5 @@
 +        exact mul_le_mul_of_nonneg_left (hgrowth i j) hγ3_nonneg
 +    _ = gamma fp (3 * n + 1) * ρ * |A i j| := by
 +        ring_nf
- 
+
  end LeanFpAnalysis.FP

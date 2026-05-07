@@ -26,5 +26,5 @@
 +  · intro i
 +    dsimp [ΔA]
 +    simp [sub_eq_add_neg, add_assoc]
- 
+
  end LeanFpAnalysis.FP

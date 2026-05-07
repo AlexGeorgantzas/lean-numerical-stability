@@ -33,6 +33,6 @@
 +            intro i _
 +            rw [← hηeq i]
 +            ring
- 
+
  end LeanFpAnalysis.FP
 -

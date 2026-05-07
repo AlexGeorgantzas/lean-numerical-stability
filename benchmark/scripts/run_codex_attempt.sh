@@ -54,10 +54,15 @@ fi
 
 timestamp="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 codex_bin="$(command -v codex)"
+real_lake_bin="$(command -v lake)"
+real_lean_bin="$(command -v lean)"
 commit="$(git -C "${repo_root}" rev-parse HEAD)"
 branch="$(git -C "${repo_root}" branch --show-current)"
 timeout_seconds="${BENCHMARK_CODEX_TIMEOUT_SECONDS:-1200}"
+shared_packages="$(benchmark_shared_lake_packages_dir "${repo_root}")"
+elan_home="${ELAN_HOME:-${HOME}/.elan}"
 codex_home="$(mktemp -d "${TMPDIR:-/tmp}/codex-benchmark-home.XXXXXX")"
+solver_home="${codex_home}/home"
 cleanup_codex_home() {
   rm -rf "${codex_home}"
 }
@@ -67,9 +72,66 @@ if [[ ! -f "${HOME}/.codex/auth.json" ]]; then
   echo "missing Codex auth at ${HOME}/.codex/auth.json" >&2
   exit 2
 fi
+if [[ ! -d "${elan_home}" ]]; then
+  echo "missing ELAN_HOME/toolchain directory: ${elan_home}" >&2
+  exit 2
+fi
 cp "${HOME}/.codex/auth.json" "${codex_home}/auth.json"
 chmod 700 "${codex_home}"
 chmod 600 "${codex_home}/auth.json"
+mkdir -p "${solver_home}/.cache"
+chmod 700 "${solver_home}"
+
+solver_bin="${workspace}/.benchmark_bin"
+solver_env="${workspace}/.benchmark_env"
+mkdir -p "${solver_bin}" "${solver_env}"
+
+(
+  cd "${workspace}"
+  "${real_lake_bin}" env sh -c 'printf "%s" "$LEAN_PATH"'
+) > "${solver_env}/LEAN_PATH"
+
+cat > "${solver_bin}/lake" <<EOF
+#!/usr/bin/env bash
+set -euo pipefail
+
+script_dir="\$(cd "\$(dirname "\${BASH_SOURCE[0]}")" && pwd)"
+workspace="\$(cd "\${script_dir}/.." && pwd)"
+lean_path_file="\${workspace}/.benchmark_env/LEAN_PATH"
+
+if [[ ! -f "\${lean_path_file}" ]]; then
+  echo "missing benchmark Lean environment: \${lean_path_file}" >&2
+  exit 2
+fi
+
+export LEAN_PATH="\$(cat "\${lean_path_file}")"
+
+case "\${1:-}" in
+  build)
+    if [[ "\${2:-}" == "BenchmarkTask" ]]; then
+      shift 2
+      if [[ "\$#" -ne 0 ]]; then
+        echo "benchmark lake wrapper supports only: lake build BenchmarkTask" >&2
+        exit 2
+      fi
+      exec "${real_lean_bin}" "\${workspace}/BenchmarkTask.lean"
+    fi
+    ;;
+  lean)
+    shift
+    exec "${real_lean_bin}" "\$@"
+    ;;
+  env)
+    if [[ "\${2:-}" == "lean" ]]; then
+      shift 2
+      exec "${real_lean_bin}" "\$@"
+    fi
+    ;;
+esac
+
+exec "${real_lake_bin}" "\$@"
+EOF
+chmod +x "${solver_bin}/lake"
 
 cat > "${result_dir}/attempt_metadata.md" <<EOF
 # Attempt Metadata
@@ -80,7 +142,10 @@ cat > "${result_dir}/attempt_metadata.md" <<EOF
 - source_commit: \`${commit}\`
 - started_at_utc: \`${timestamp}\`
 - codex_bin: \`${codex_bin}\`
-- codex_mode: \`auth-only temporary CODEX_HOME; --disable plugins --disable memories --ask-for-approval never exec --ephemeral --ignore-user-config --ignore-rules --skip-git-repo-check\`
+- codex_mode: \`auth-only temporary CODEX_HOME; temporary HOME/XDG_CACHE_HOME; host ELAN_HOME for Lean toolchain only; workspace-local lake wrapper first on PATH for solver-side BenchmarkTask typechecking; shared third-party Lake package cache added with --add-dir; --disable plugins --disable memories --ask-for-approval never exec --ephemeral --ignore-user-config --ignore-rules --skip-git-repo-check\`
+- elan_home: \`${elan_home}\`
+- shared_lake_packages_add_dir: \`${shared_packages}\`
+- solver_lake_wrapper: \`${solver_bin}/lake\`
 - timeout_seconds: \`${timeout_seconds}\`
 EOF
 
@@ -88,37 +153,34 @@ cp "${workspace}/SOLVER_PROMPT.md" "${result_dir}/SOLVER_PROMPT.md"
 cp "${canonical_task}" "${result_dir}/CanonicalTask.lean"
 
 set +e
-CODEX_HOME="${codex_home}" codex \
-  --disable plugins \
-  --disable memories \
-  --ask-for-approval never \
-  exec \
-  --ephemeral \
-  --ignore-user-config \
-  --ignore-rules \
-  --skip-git-repo-check \
-  --sandbox workspace-write \
-  --cd "${workspace}" \
-  --json \
-  --output-last-message "${result_dir}/codex_last_message.txt" \
-  - < "${workspace}/SOLVER_PROMPT.md" \
-  > "${result_dir}/codex_events.jsonl" \
-  2> "${result_dir}/codex_stderr.log" &
-codex_pid=$!
-
-(
-  sleep "${timeout_seconds}"
-  if kill -0 "${codex_pid}" 2>/dev/null; then
-    echo "timed out after ${timeout_seconds} seconds" > "${result_dir}/timeout.txt"
-    kill -TERM "${codex_pid}" 2>/dev/null || true
-  fi
-) &
-watchdog_pid=$!
-
-wait "${codex_pid}"
+"${script_dir}/run_with_timeout.py" \
+  --timeout-seconds "${timeout_seconds}" \
+  --timeout-file "${result_dir}/timeout.txt" \
+  --stdout "${result_dir}/codex_events.jsonl" \
+  --stderr "${result_dir}/codex_stderr.log" \
+  -- \
+  env \
+    "CODEX_HOME=${codex_home}" \
+    "HOME=${solver_home}" \
+    "XDG_CACHE_HOME=${solver_home}/.cache" \
+    "ELAN_HOME=${elan_home}" \
+    "PATH=${solver_bin}:${PATH}" \
+    "${codex_bin}" \
+    --disable plugins \
+    --disable memories \
+    --ask-for-approval never \
+    exec \
+    --ephemeral \
+    --ignore-user-config \
+    --ignore-rules \
+    --skip-git-repo-check \
+    --sandbox workspace-write \
+    --cd "${workspace}" \
+    --add-dir "${shared_packages}" \
+    --json \
+    --output-last-message "${result_dir}/codex_last_message.txt" \
+    - < "${workspace}/SOLVER_PROMPT.md"
 codex_status=$?
-kill "${watchdog_pid}" 2>/dev/null || true
-wait "${watchdog_pid}" 2>/dev/null || true
 if [[ -f "${result_dir}/timeout.txt" ]]; then
   codex_status=124
 fi

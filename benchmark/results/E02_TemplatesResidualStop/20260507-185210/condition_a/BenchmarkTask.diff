@@ -1,0 +1,7 @@
+--- /Users/georgiosalexandrosgeorgantzas/Documents/GitHub/lean-fp-analysis/benchmark/tasks/E02_TemplatesResidualStop/Task.lean	2026-05-07 04:00:19
++++ /tmp/lean-fp-benchmark-runs/E02_TemplatesResidualStop-20260507-185210/condition_a/E02_TemplatesResidualStop/BenchmarkTask.lean	2026-05-07 20:11:24
+@@ -28,4 +28,3 @@
+   sorry
+
+ end LeanFpAnalysis.FP
+-

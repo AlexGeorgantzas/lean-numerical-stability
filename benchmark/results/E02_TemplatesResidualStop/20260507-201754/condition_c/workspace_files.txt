@@ -1,0 +1,10 @@
+/tmp/lean-fp-benchmark-runs/E02_TemplatesResidualStop-20260507-201754/condition_c/E02_TemplatesResidualStop/.benchmark_condition_c_snapshot
+/tmp/lean-fp-benchmark-runs/E02_TemplatesResidualStop-20260507-201754/condition_c/E02_TemplatesResidualStop/BenchmarkTask.lean
+/tmp/lean-fp-benchmark-runs/E02_TemplatesResidualStop-20260507-201754/condition_c/E02_TemplatesResidualStop/README.md
+/tmp/lean-fp-benchmark-runs/E02_TemplatesResidualStop-20260507-201754/condition_c/E02_TemplatesResidualStop/SOLVER_PROMPT.md
+/tmp/lean-fp-benchmark-runs/E02_TemplatesResidualStop-20260507-201754/condition_c/E02_TemplatesResidualStop/docs
+/tmp/lean-fp-benchmark-runs/E02_TemplatesResidualStop-20260507-201754/condition_c/E02_TemplatesResidualStop/examples
+/tmp/lean-fp-benchmark-runs/E02_TemplatesResidualStop-20260507-201754/condition_c/E02_TemplatesResidualStop/lake-manifest.json
+/tmp/lean-fp-benchmark-runs/E02_TemplatesResidualStop-20260507-201754/condition_c/E02_TemplatesResidualStop/lakefile.toml
+/tmp/lean-fp-benchmark-runs/E02_TemplatesResidualStop-20260507-201754/condition_c/E02_TemplatesResidualStop/lean-toolchain
+/tmp/lean-fp-benchmark-runs/E02_TemplatesResidualStop-20260507-201754/condition_c/E02_TemplatesResidualStop/public_library

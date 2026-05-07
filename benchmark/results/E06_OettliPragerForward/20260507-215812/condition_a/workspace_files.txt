@@ -1,0 +1,6 @@
+/tmp/lean-fp-benchmark-runs/E06_OettliPragerForward-20260507-215812/condition_a/E06_OettliPragerForward/BenchmarkTask.lean
+/tmp/lean-fp-benchmark-runs/E06_OettliPragerForward-20260507-215812/condition_a/E06_OettliPragerForward/LeanFpAnalysis/FP.lean
+/tmp/lean-fp-benchmark-runs/E06_OettliPragerForward-20260507-215812/condition_a/E06_OettliPragerForward/SOLVER_PROMPT.md
+/tmp/lean-fp-benchmark-runs/E06_OettliPragerForward-20260507-215812/condition_a/E06_OettliPragerForward/lake-manifest.json
+/tmp/lean-fp-benchmark-runs/E06_OettliPragerForward-20260507-215812/condition_a/E06_OettliPragerForward/lakefile.toml
+/tmp/lean-fp-benchmark-runs/E06_OettliPragerForward-20260507-215812/condition_a/E06_OettliPragerForward/lean-toolchain

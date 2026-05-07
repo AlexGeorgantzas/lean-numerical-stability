@@ -58,5 +58,5 @@
 +          (|c| + ∑ i : Fin n, |x i| * |y i|) := by
 +      rw [← Finset.sum_mul]
 +      ring
- 
+
  end LeanFpAnalysis.FP

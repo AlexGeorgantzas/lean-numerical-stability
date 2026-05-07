@@ -16,5 +16,5 @@
 +      ∀ i, ∑ j : Fin n,
 +        ((∑ k : Fin n, L i k * U k j) + ΔA i j) *
 +          (fl_backSub fp n U (fl_forwardSub fp n L b)) j = b i))
- 
+
  end LeanFpAnalysis.FP

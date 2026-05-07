@@ -1,0 +1,10 @@
+Implemented the proof in [BenchmarkTask.lean](/tmp/lean-fp-benchmark-runs/E05_LapackTriangularResidual-20260507-214953/condition_c/E05_LapackTriangularResidual/BenchmarkTask.lean:20).
+
+The proof uses `backSub_backward_error` to get the perturbation `ΔU`, rewrites the residual as `-ΔU * xhat`, then applies `infNormVec_matMulVec_le` plus the componentwise perturbation bound to finish the infinity-norm estimate.
+
+Verification: I ran `lake build BenchmarkTask`, but Lake failed before elaborating the file due to a sandbox permission error on an external cached mathlib lock file:
+
+```text
+operation not permitted
+.../mathlib/.lake/config/mathlib/lakefile.olean.lock
+```

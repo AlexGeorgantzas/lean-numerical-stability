@@ -1,0 +1,7 @@
+Implemented the proof in [BenchmarkTask.lean](/tmp/lean-fp-benchmark-runs/E10_OgitaSumKCertificate-20260507-224508/condition_c/E10_OgitaSumKCertificate/BenchmarkTask.lean:31), replacing the `sorry` only.
+
+Verification passed:
+
+```bash
+lake build BenchmarkTask
+```

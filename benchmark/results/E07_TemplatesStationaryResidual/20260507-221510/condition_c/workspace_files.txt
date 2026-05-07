@@ -1,0 +1,10 @@
+/tmp/lean-fp-benchmark-runs/E07_TemplatesStationaryResidual-20260507-221510/condition_c/E07_TemplatesStationaryResidual/.benchmark_condition_c_snapshot
+/tmp/lean-fp-benchmark-runs/E07_TemplatesStationaryResidual-20260507-221510/condition_c/E07_TemplatesStationaryResidual/BenchmarkTask.lean
+/tmp/lean-fp-benchmark-runs/E07_TemplatesStationaryResidual-20260507-221510/condition_c/E07_TemplatesStationaryResidual/README.md
+/tmp/lean-fp-benchmark-runs/E07_TemplatesStationaryResidual-20260507-221510/condition_c/E07_TemplatesStationaryResidual/SOLVER_PROMPT.md
+/tmp/lean-fp-benchmark-runs/E07_TemplatesStationaryResidual-20260507-221510/condition_c/E07_TemplatesStationaryResidual/docs
+/tmp/lean-fp-benchmark-runs/E07_TemplatesStationaryResidual-20260507-221510/condition_c/E07_TemplatesStationaryResidual/examples
+/tmp/lean-fp-benchmark-runs/E07_TemplatesStationaryResidual-20260507-221510/condition_c/E07_TemplatesStationaryResidual/lake-manifest.json
+/tmp/lean-fp-benchmark-runs/E07_TemplatesStationaryResidual-20260507-221510/condition_c/E07_TemplatesStationaryResidual/lakefile.toml
+/tmp/lean-fp-benchmark-runs/E07_TemplatesStationaryResidual-20260507-221510/condition_c/E07_TemplatesStationaryResidual/lean-toolchain
+/tmp/lean-fp-benchmark-runs/E07_TemplatesStationaryResidual-20260507-221510/condition_c/E07_TemplatesStationaryResidual/public_library

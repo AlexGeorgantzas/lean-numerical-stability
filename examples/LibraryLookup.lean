@@ -93,7 +93,8 @@ It intentionally contains no benchmark-task proof scripts.
 #check matMul_vec_eq
 #check matMulVec_matMul
 #check forward_error_from_residual
+#check normwise_perturbation_bound
 #check componentwise_forward_error
+#check componentwise_forward_error_standard
 #check forward_error_from_backward_error
 #check normwise_forward_error_exact
-

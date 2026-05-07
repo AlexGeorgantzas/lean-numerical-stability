@@ -46,6 +46,66 @@ count_rg() {
   fi
 }
 
+classify_condition() {
+  local condition="$1"
+  local dir="${result_root}/${condition}"
+  local validation_exit log task_file
+
+  validation_exit="$(cat "${dir}/validation_exit_code.txt" 2>/dev/null || echo missing)"
+  log="${dir}/validation.log"
+  task_file="${dir}/BenchmarkTask.after.lean"
+
+  if [[ "${validation_exit}" == "0" ]]; then
+    echo "passed validation"
+  elif [[ -f "${log}" ]] && rg -q "task interface changed before theorem proof body" "${log}"; then
+    echo "failed: task interface changed"
+  elif [[ -f "${log}" ]] && rg -q "attempted task still contains sorry/admit/sorryAx" "${log}"; then
+    echo "failed: proof placeholder remained"
+  elif [[ -f "${log}" ]] && rg -q "forbidden declaration" "${log}"; then
+    echo "failed: forbidden declaration introduced"
+  elif [[ -f "${log}" ]] && rg -q "Condition C snapshot changed" "${log}"; then
+    echo "failed: Condition C snapshot changed"
+  elif [[ -f "${log}" ]] && rg -q "lake build BenchmarkTask failed" "${log}"; then
+    echo "failed: final Lean file did not build"
+  elif [[ -f "${task_file}" ]] && rg -q '\b(sorry|admit|sorryAx)\b' "${task_file}"; then
+    echo "failed: proof placeholder remained"
+  else
+    echo "failed: inspect validation.log"
+  fi
+}
+
+extract_agent_messages() {
+  local condition="$1"
+  local dir="${result_root}/${condition}"
+  local events="${dir}/codex_events.jsonl"
+  local out="${dir}/agent_messages.md"
+
+  if [[ ! -f "${events}" ]]; then
+    return
+  fi
+
+  {
+    echo "# Public Solver Messages"
+    echo
+    echo "Extracted from \`codex_events.jsonl\`."
+    echo
+    echo "These are public progress/final messages emitted by the solver. They"
+    echo "are useful for audit, but they are not hidden chain-of-thought."
+    echo
+    if command -v jq >/dev/null 2>&1; then
+      jq -r '
+        select(.type == "item.completed" and .item.type == "agent_message")
+        | .item.text
+        | split("\n")
+        | map("> " + .)
+        | join("\n") + "\n"
+      ' "${events}"
+    else
+      echo "jq unavailable; inspect codex_events.jsonl directly."
+    fi
+  } > "${out}"
+}
+
 summarize_condition() {
   local condition="$1"
   local dir="${result_root}/${condition}"
@@ -62,7 +122,7 @@ summarize_condition() {
   events="$(count_lines "${dir}/codex_events.jsonl")"
   diff_lines="$(count_lines "${dir}/BenchmarkTask.diff")"
   changed_files="$(count_lines "${dir}/workspace_files.txt")"
-  placeholders="$(count_rg '\\b(sorry|admit|sorryAx)\\b' "${dir}/BenchmarkTask.after.lean")"
+  placeholders="$(count_rg '\b(sorry|admit|sorryAx)\b' "${dir}/BenchmarkTask.after.lean")"
   forbidden="$(count_rg '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "${dir}/BenchmarkTask.after.lean")"
 
   proof_lines="unknown"
@@ -86,6 +146,9 @@ timestamp="$(basename "${result_root}")"
 analysis="${result_root}/RUN_ANALYSIS.md"
 metrics="${result_root}/metrics.tsv"
 
+extract_agent_messages condition_a
+extract_agent_messages condition_c
+
 {
   printf 'condition\tcodex_exit\tvalidation_exit\ttimeout\tstarted_at_utc\tfinished_at_utc\tcodex_event_lines\tdiff_lines\tproof_lines\tplaceholder_count\tforbidden_decl_count\n'
   summarize_condition condition_a
@@ -96,6 +159,8 @@ a_validation="$(awk -F'\t' '$1 == "condition_a" { print $3 }' "${metrics}")"
 c_validation="$(awk -F'\t' '$1 == "condition_c" { print $3 }' "${metrics}")"
 a_timeout="$(awk -F'\t' '$1 == "condition_a" { print $4 }' "${metrics}")"
 c_timeout="$(awk -F'\t' '$1 == "condition_c" { print $4 }' "${metrics}")"
+a_classification="$(classify_condition condition_a)"
+c_classification="$(classify_condition condition_c)"
 
 {
   echo "# Run Analysis"
@@ -108,8 +173,10 @@ c_timeout="$(awk -F'\t' '$1 == "condition_c" { print $4 }' "${metrics}")"
   echo
   echo "- Condition A validation exit: \`${a_validation:-missing}\`"
   echo "- Condition A timeout: \`${a_timeout:-missing}\`"
+  echo "- Condition A classification: ${a_classification}"
   echo "- Condition C validation exit: \`${c_validation:-missing}\`"
   echo "- Condition C timeout: \`${c_timeout:-missing}\`"
+  echo "- Condition C classification: ${c_classification}"
   echo
   if [[ "${a_validation:-missing}" != "0" && "${c_validation:-missing}" == "0" ]]; then
     echo "Interpretation: Condition A failed while Condition C passed under the same run protocol."
@@ -126,6 +193,14 @@ c_timeout="$(awk -F'\t' '$1 == "condition_c" { print $4 }' "${metrics}")"
   echo '```tsv'
   cat "${metrics}"
   echo '```'
+  echo
+  echo "## Public Solver Messages"
+  echo
+  echo "- Condition A: \`${result_root}/condition_a/agent_messages.md\`"
+  echo "- Condition C: \`${result_root}/condition_c/agent_messages.md\`"
+  echo
+  echo "These files summarize public solver progress messages extracted from"
+  echo "\`codex_events.jsonl\`. They are not hidden chain-of-thought."
   echo
   echo "## Failure Notes"
   echo

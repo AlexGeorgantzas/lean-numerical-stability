@@ -17,15 +17,18 @@ rather than replacing it with a degenerate placeholder.
 | `gamma`, `gammaValid` | `LeanFpAnalysis/FP/Analysis/Rounding.lean` | Bare definitions only; no gamma lemmas exposed. |
 | `fl_dotProduct` | `LeanFpAnalysis/FP/Analysis/DotProduct.lean` | Algorithm definition exposed; dot-product theorems omitted. |
 | `fl_matVec` | `LeanFpAnalysis/FP/Analysis/Matrix.lean` | Algorithm definition exposed; matvec theorems omitted. |
+| `fl_matMul` | `LeanFpAnalysis/FP/Algorithms/MatMul.lean` | Algorithm definition exposed; matrix-product theorems omitted. |
 | `fl_residual` | `LeanFpAnalysis/FP/Algorithms/IterativeRefinement.lean` | Algorithm definition exposed; residual theorems omitted. |
 | `fl_forwardSub`, `fl_forwardSub_steps` | `LeanFpAnalysis/FP/Algorithms/ForwardSub.lean` | Fold-based algorithm definitions copied. |
 | `fl_backSub`, `fl_backSub_steps` | `LeanFpAnalysis/FP/Algorithms/TriangularSolve.lean` | Fold-based algorithm definitions copied. |
 | `matMul`, `matMulVec`, `idMatrix`, `matSub_id` | `LeanFpAnalysis/FP/Analysis/MatrixAlgebra.lean` | Bare algebraic definitions exposed; algebra lemmas omitted. |
+| `frobNormSq`, `frobNorm` | `LeanFpAnalysis/FP/Analysis/MatrixAlgebra.lean` | Bare norm definitions exposed for least-squares certificates; norm lemmas omitted. |
 | `infNormVec`, `infNorm` | `LeanFpAnalysis/FP/Analysis/MatrixAlgebra.lean` | Finite-supremum definitions copied. |
-| `IsLeftInverse`, `IsRightInverse` | `LeanFpAnalysis/FP/Analysis/MatrixAlgebra.lean` | Predicate definitions copied. |
+| `IsLeftInverse`, `IsRightInverse`, `IsInverse` | `LeanFpAnalysis/FP/Analysis/MatrixAlgebra.lean` | Predicate definitions copied. |
 | `LUBackwardError` | `LeanFpAnalysis/FP/Algorithms/LU.lean` | Specification structure exposed; LU theorems omitted. |
 | `CholeskyBackwardError` | `LeanFpAnalysis/FP/Algorithms/Cholesky.lean` | Specification structure exposed; Cholesky theorems omitted. |
 | `SplittingSpec`, `dualIterMatrix`, `ComputedIteration` | `LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean` | Statement-level definitions copied; stationary-iteration theorems omitted. |
+| `LSQRSolveBackwardError` | `LeanFpAnalysis/FP/Algorithms/LeastSquares/LSQRSolve.lean` | Specification structure exposed; QR least-squares theorems omitted. |
 
 ## Fixed Issues
 
@@ -39,7 +42,8 @@ rather than replacing it with a degenerate placeholder.
 
 ## Remaining Caveat
 
-This audit checks the shared names used by the current ten task statements.  If
-new tasks add more public-library names to Condition A theorem targets, this
-file and the common stub must be audited again before the run is treated as an
-official benchmark datapoint.
+This audit checks the shared names used by the prototype `T01`-`T10` tasks and
+the external-source pilot `E01`-`E10` tasks as of May 7, 2026.  If new tasks
+add more public-library names to Condition A theorem targets, this file and
+the common stub must be audited again before the run is treated as an official
+benchmark datapoint.

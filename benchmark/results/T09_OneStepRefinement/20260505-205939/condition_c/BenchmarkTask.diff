@@ -36,5 +36,5 @@
 +      hμ_nonneg (by norm_num) hω_nonneg i
 +  dsimp [ω] at hbound
 +  simpa using hbound
- 
+
  end LeanFpAnalysis.FP

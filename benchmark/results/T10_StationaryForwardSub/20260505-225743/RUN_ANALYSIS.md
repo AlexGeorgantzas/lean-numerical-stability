@@ -2,14 +2,16 @@
 
 - task: `T10_StationaryForwardSub`
 - run_timestamp: `20260505-225743`
-- result_root: `/Users/georgiosalexandrosgeorgantzas/Documents/GitHub/lean-fp-analysis/benchmark/results/T10_StationaryForwardSub/20260505-225743`
+- result_root: `benchmark/results/T10_StationaryForwardSub/20260505-225743`
 
 ## Outcome
 
 - Condition A validation exit: `1`
 - Condition A timeout: `no`
+- Condition A classification: failed: proof placeholder remained
 - Condition C validation exit: `0`
 - Condition C timeout: `no`
+- Condition C classification: passed validation
 
 Interpretation: Condition A failed while Condition C passed under the same run protocol.
 
@@ -17,9 +19,17 @@ Interpretation: Condition A failed while Condition C passed under the same run p
 
 ```tsv
 condition	codex_exit	validation_exit	timeout	started_at_utc	finished_at_utc	codex_event_lines	diff_lines	proof_lines	placeholder_count	forbidden_decl_count
-condition_a	0	1	no	2026-05-05T19:58:05Z	2026-05-05T20:05:00Z	87	0	4	0	0
+condition_a	0	1	no	2026-05-05T19:58:05Z	2026-05-05T20:05:00Z	87	0	4	1	0
 condition_c	0	0	no	2026-05-05T20:05:00Z	2026-05-05T20:09:30Z	81	94	88	0	0
 ```
+
+## Public Solver Messages
+
+- Condition A: `benchmark/results/T10_StationaryForwardSub/20260505-225743/condition_a/agent_messages.md`
+- Condition C: `benchmark/results/T10_StationaryForwardSub/20260505-225743/condition_c/agent_messages.md`
+
+These files summarize public solver progress messages extracted from
+`codex_events.jsonl`. They are not hidden chain-of-thought.
 
 ## Failure Notes
 

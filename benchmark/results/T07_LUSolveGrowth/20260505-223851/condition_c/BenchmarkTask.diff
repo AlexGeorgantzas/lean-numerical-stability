@@ -25,5 +25,5 @@
 +        have hρA : 0 ≤ ρ * |A i j| := mul_nonneg hρ_nonneg (abs_nonneg _)
 +        nlinarith [hρA, sq_nonneg (gamma fp n)]
 +    _ = ((3 * gamma fp n + gamma fp n ^ 2) * ρ) * |A i j| := by ring
- 
+
  end LeanFpAnalysis.FP

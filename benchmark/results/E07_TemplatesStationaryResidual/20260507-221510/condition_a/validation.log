@@ -1,0 +1,6 @@
+⚠ [1966/1967] Built BenchmarkTask (3.6s)
+warning: BenchmarkTask.lean:18:5: unused variable `hAx`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+Build completed successfully (1967 jobs).
+validation passed: /tmp/lean-fp-benchmark-runs/E07_TemplatesStationaryResidual-20260507-221510/condition_a/E07_TemplatesStationaryResidual

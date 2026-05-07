@@ -1,0 +1,3 @@
+condition	codex_exit	validation_exit	timeout	started_at_utc	finished_at_utc	codex_event_lines	diff_lines	proof_lines	placeholder_count	forbidden_decl_count
+condition_a	0	1	no	2026-05-07T18:58:32Z	2026-05-07T19:01:36Z	52	94	88	0	0
+condition_c	0	1	no	2026-05-07T19:01:36Z	2026-05-07T19:03:50Z	56	105	99	0	0

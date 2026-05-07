@@ -6,5 +6,5 @@
        μ * infNorm hnpos (matSub_id n (dualIterMatrix n N Minv)) / (1 - q) := by
 -  sorry
 +  simp [infNormVec, infNorm]
- 
+
  end LeanFpAnalysis.FP

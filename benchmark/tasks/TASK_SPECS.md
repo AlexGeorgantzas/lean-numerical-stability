@@ -21,6 +21,20 @@ surface: algorithm compositions, practical certificates, conversions between
 backward/residual/forward error, or small task-local variants with explicit
 assumptions.
 
+The task order is a composition ladder, not a claim that observed solver time
+must increase monotonically.  Later tasks are intended to involve more layers
+of stability reasoning.  They may still be solved faster in Condition C if the
+solver quickly discovers the relevant library theorem.  See
+`benchmark/tasks/TASK_DERIVATION.md` for the prototype source-material and
+composition-depth table.
+
+Important: the original `T01`-`T10` tasks are a prototype Higham-centered set.
+They are useful for testing the harness, Condition A/C isolation, and artifact
+capture, but they should not be treated as the final thesis benchmark.  The
+external-source pilot set `E01`-`E10` is now tracked in
+`benchmark/tasks/EXTERNAL_TASK_DERIVATION.md` and follows
+`benchmark/tasks/TASK_SOURCE_STRATEGY.md` more closely.
+
 Do not add reference proofs for these tasks before the evaluated solver runs.
 Since Codex is the evaluated solver, pre-solving tasks in this repository or in
 this conversation risks contaminating the benchmark.  The benchmark should keep
@@ -28,13 +42,20 @@ the theorem statements with `sorry`, run the solver in isolated/fresh
 workspaces, and only then add hidden reference proofs or post-hoc repairs if a
 statement needs validation.
 
-All ten solver-facing task files have been preflight-built with `sorry` allowed
-under both Condition A and Condition C.  This confirms that the statements,
-imports, and generated environments typecheck.  It does not prove the theorems.
+The prototype `T01`-`T10` task files have been preflight-built with `sorry`
+allowed under both Condition A and Condition C.  The external `E01`-`E10`
+pilot task files have been checked directly against both the full library and
+the bare Condition A stub.  These checks confirm that the statements and
+imports typecheck.  They do not prove the theorems.
 
 ## Global Requirements
 
 - Every task is a floating-point stability analysis for an algorithm.
+- The theorem conclusion must be a forward-error, backward-error,
+  residual-error, or stability-conversion bound.  Do not include tasks that
+  assume the final source bound and only restate it.
+- Task-specific algorithm definitions belong in the task file, not in the
+  public library, unless they are genuine permanent reusable library features.
 - The target theorem must be true under the stated assumptions.
 - The theorem should not be an exact restatement of an existing
   `LeanFpAnalysis` theorem.
@@ -42,7 +63,10 @@ imports, and generated environments typecheck.  It does not prove the theorems.
   from the current library's internal theorem chain, a standard numerical
   stability result, or a task-local algorithm variant with explicit assumptions.
 - Early tasks should require small but real composition.
-- Later tasks should require multi-result composition.
+- Later tasks should require multi-result composition or a bridge from a
+  concrete algorithm to an abstract library framework.
+- Each task should have source material explaining where the algorithmic
+  stability pattern and target bound come from.
 - Final solver-facing files should not include expected proof routes.
 - For the hardest tasks, it is acceptable that Condition A is expected to fail.
   That failure should be due to missing formal infrastructure, not because the

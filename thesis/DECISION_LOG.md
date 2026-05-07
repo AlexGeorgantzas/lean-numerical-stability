@@ -71,6 +71,20 @@ Some high-level results are specification-transfer theorems: they take an
 external or abstract hypothesis that is already close to the desired numerical
 contract, then package the consequence.
 
+In concrete terms, there are two different kinds of theorem in the library:
+
+- fully derived floating-point analyses, where the theorem starts from
+  `FPModel`, algorithm definitions, and structural assumptions, then proves the
+  error bound;
+- abstract interfaces, where the theorem assumes a contract such as "this
+  solver returns `xhat` satisfying `(A + DeltaA)xhat = b` with
+  `|DeltaA| <= mu |A|`", then derives a consequence from that contract.
+
+The second kind is still useful.  It lets later proofs be written against a
+clean solver or factorization contract before every possible implementation of
+that contract has been formalized.  But it is not the same achievement as
+proving the contract from floating-point operations.
+
 Reason: these are useful named interfaces, but they should not be advertised as
 fully derived floating-point analyses from `FPModel`.
 
@@ -258,6 +272,17 @@ variants.  That is acceptable if the assumptions are explicit and mathematically
 defensible.  What should be avoided is a false theorem or an underspecified
 algorithm.
 
+Each task should have explicit source material.  In practice this means:
+
+- the algorithmic pattern should be traceable to a standard stability-analysis
+  source, usually Higham's *Accuracy and Stability of Numerical Algorithms*;
+- the bound should be justified by a named theorem chain in LeanFpAnalysis or
+  by a documented local composition of such theorems;
+- if the task introduces an extra assumption, such as a growth hypothesis, the
+  assumption must be stated in the theorem and explained in the task notes.
+
+The task-source record is `benchmark/tasks/TASK_DERIVATION.md`.
+
 For the final task or final two tasks, the desired outcome is asymmetric:
 Condition A should plausibly fail because it lacks the formal FP/gamma/matrix
 infrastructure, while Condition C should have a plausible path through the
@@ -269,7 +294,15 @@ chain, even if no Codex-written proof is produced before evaluation.
 ### Proposed Task Ladder
 
 The current benchmark suite is a sequence of ten tasks in increasing
-difficulty.  The solver-facing files are:
+composition depth.  It should not be described as empirically increasing
+difficulty if the evidence is solver runtime, because elapsed time is not
+monotone: a later task can be quick in Condition C when the right library
+theorem is discovered early.  The intended ordering is a composition ladder:
+early tasks compose one local theorem with one FP operation, while later tasks
+compose multiple contracts or bridge concrete algorithms to abstract iterative
+frameworks.
+
+The solver-facing files are:
 
 - `benchmark/tasks/T01_ScaledDot/Task.lean`
 - `benchmark/tasks/T02_ShiftedDot/Task.lean`
@@ -286,6 +319,9 @@ The working task-spec source is `benchmark/tasks/TASK_SPECS.md`.  It is used to
 develop exact theorem shapes before generating Condition A and Condition C
 workspaces.  It is not solver-facing material and should not be copied into
 generated benchmark runs.
+
+The task-source and composition-depth record is
+`benchmark/tasks/TASK_DERIVATION.md`.  It is also not solver-facing material.
 
 The generated-workspace protocol is tracked in `benchmark/RUN_PROTOCOL.md`.
 That file describes what is copied into Condition A and Condition C and what
@@ -874,14 +910,393 @@ The metrics currently recorded per condition are:
 - remaining placeholder count;
 - forbidden declaration count.
 
+The analysis also records a mechanical validation classification, such as
+"proof placeholder remained", "task interface changed", or "final Lean file did
+not build".
+
 These metrics are deliberately mechanical.  They do not replace human
 classification of failure modes, but they make it easier to compare runs and to
 identify cases where a condition timed out, left placeholders, changed too much
 code, or failed validation despite Codex exiting normally.
 
+### Decision: Audit Condition A Failures, Not Just Pass/Fail
+
+Condition A failures should be auditable from the archived artifacts.  The
+harness saves the final `BenchmarkTask.after.lean`, diff, validation log,
+solver event log, extracted public solver messages, final solver message,
+metadata, `RUN_ANALYSIS.md`, and `metrics.tsv` for every task and condition.
+
+Reason: the thesis claim should not rest on a closed-minded rejection rule.
+If Condition A fails, we need to know whether it left `sorry`, used a forbidden
+escape hatch, changed the theorem, or attempted a proof that Lean rejected.
+
+The extracted public solver messages are saved as audit context, not as hidden
+chain-of-thought.  They can show, for example, that the solver identified a
+missing residual-error lemma or tried a natural perturbation witness, but the
+formal result is still determined by the archived Lean artifact and validator.
+
+The corrected 2026-05-05 pass@1 run has a separate failure audit at
+`benchmark/results/CONDITION_A_FAILURE_AUDIT_20260505.md`.  Its conclusion is
+that the Condition A attempts are valid pass@1 failures under the protocol, but
+not proof that Condition A is impossible in principle.  Repeated attempts,
+larger timeouts, or different prompts remain separate measurements.
+
+### Decision: Require Exact Source Anchors For Benchmark Bounds
+
+Every benchmark task must identify the exact source of its target bound.  A
+valid source record must include both the external numerical-analysis anchor
+such as a Higham theorem, equation, algorithm, or BLAS operation, and the
+LeanFpAnalysis definitions/theorems that formally justify the exact task
+statement.
+
+Reason: "stability analysis task inspired by Higham" is too vague for thesis
+work.  The target theorem includes a specific bound, so the benchmark must say
+where that bound comes from and which local theorem chain supports it.
+
+Consequence: tasks may be derived compositions rather than verbatim textbook
+theorems, but this must be documented honestly.  The source document
+`benchmark/tasks/TASK_DERIVATION.md` now distinguishes textbook anchors,
+formal Lean anchors, and task-local composition steps for every task.
+
+### Decision: Treat The Current Task Set As Prototype, Not Final Evidence
+
+The current ten benchmark tasks are too Higham-centered.  Since
+LeanFpAnalysis formalizes a large amount of Higham-style floating-point
+stability analysis, a successful Condition C run on those tasks may partly
+measure access to a formalized version of the same source material.
+
+Reason: the thesis benchmark should test whether the library helps an agent
+perform stability analysis on algorithms and contracts that are not merely
+restatements of the book the library follows most closely.
+
+Consequence: the existing pass@1 results are retained as harness diagnostics:
+they validate workspace isolation, artifact capture, and the broad Condition
+A/C gap mechanism.  They should not be presented as the final benchmark claim.
+The final task set must use a diversified source mix, recorded in
+`benchmark/tasks/TASK_SOURCE_STRATEGY.md`, with substantial non-Higham sources
+such as LAPACK error-bound documentation, Netlib Templates stopping criteria,
+Wilkinson-style growth-factor analysis, fast-matrix-multiplication stability
+papers, and least-squares references.
+
+The external-source survey is tracked in
+`benchmark/tasks/EXTERNAL_STABILITY_SOURCE_SURVEY.md`.  It distinguishes
+algorithm/API sources, such as BLAS `DGEMV`, from actual stability-bound
+sources.  This prevents using an external algorithm name while silently deriving
+the bound from Higham-only material.
+
+### Decision: Keep Benchmark-Specific Algorithms Inline
+
+Paper-derived benchmark tasks should not be supported by adding
+task-specific algorithm definitions or source-bound predicates to the public
+library immediately before evaluation.
+
+Reason: if the public library contains exactly the paper-specific definitions
+needed by a benchmark task, Condition C may be helped by benchmark scaffolding
+rather than by the reusable floating-point stability library.  The task file is
+the artifact copied byte-identically into both Condition A and Condition C, so
+task-local algorithms should live there unless they are genuine permanent
+library features.
+
+Consequence: definitions such as compensated `TwoSum`/`TwoProduct`, `SumK`,
+`DotK`, and DDHK paper-specific coefficients should be inlined in the relevant
+solver-facing task file.  The public library should provide reusable
+infrastructure, such as `FPModel`, `gamma`, matrix algebra, residual theory,
+summation/dot-product primitives, and perturbation theory.
+
+### Decision: Benchmark Tasks Must Be Stability Proofs
+
+The final benchmark should contain only tasks whose conclusion is a stability
+bound for an algorithm: forward error, backward error, residual error, or a
+certified conversion between these notions for a computed quantity.
+
+Reason: proving a corollary from a hypothesis that already states the source
+error bound is too weak for this benchmark.  It may be mathematically useful,
+but it does not test whether the agent can perform automatic stability
+analysis.
+
+Consequence: candidate tasks that merely assume the paper's final absolute
+bound and derive a relative-error restatement are not accepted as final tasks.
+Acceptable extra assumptions are structural or model assumptions that the
+library deliberately does not provide, such as no-underflow hypotheses or
+error-free transformation contracts, provided the theorem still proves the
+algorithm's error bound rather than assuming it.
+
+The first stability-only pilot is
+`benchmark/tasks/E01_LapackBerrBackward/Task.lean`.  It uses a LAPACK/Oettli-
+Prager style residual certificate: if the computed residual is small enough
+after accounting for floating-point residual-computation error, then the
+approximate vector is an exact solution of a componentwise perturbed linear
+system.
+
+Two additional stability-only pilots were added:
+
+- `benchmark/tasks/E02_TemplatesResidualStop/Task.lean`, a Netlib Templates
+  residual-stopping criterion proving a forward-error bound.
+- `benchmark/tasks/E03_LapackFerrForward/Task.lean`, a LAPACK `FERR`-style
+  forward-error certificate from the computed residual plus residual-rounding
+  allowance.
+
+Seven more external-source pilot tasks were then added to cover matrix
+multiplication, triangular solves, least squares, stationary iterations, and a
+paper-derived compensated summation certificate:
+
+- `benchmark/tasks/E04_LapackLevel3Matmul/Task.lean`, a LAPACK Level 3
+  BLAS-style normwise forward-error bound for matrix multiplication.
+- `benchmark/tasks/E05_LapackTriangularResidual/Task.lean`, a LAPACK Level 3
+  BLAS-style residual bound for triangular solve.
+- `benchmark/tasks/E06_OettliPragerForward/Task.lean`, a componentwise
+  backward-to-forward error conversion based on Oettli-Prager/LAPACK
+  componentwise conditioning.
+- `benchmark/tasks/E07_TemplatesStationaryResidual/Task.lean`, a Netlib
+  Templates-style residual bound for inexact stationary iteration.
+- `benchmark/tasks/E08_LapackLSQRForward/Task.lean`, a QR least-squares
+  perturbation certificate converted into a forward-error bound.
+- `benchmark/tasks/E09_LapackNormalEquations/Task.lean`, a normal-equations
+  perturbation certificate converted into a forward-error bound.
+- `benchmark/tasks/E10_OgitaSumKCertificate/Task.lean`, an
+  Ogita-Rump-Oishi `SumK` certificate proving an absolute error bound from
+  sourced distillation assumptions.
+
+This E01-E10 set is a source-backed pilot set, not yet a frozen thesis
+benchmark.  E08-E10 are intentionally documented as specification-transfer or
+certificate-level tasks because the public library does not currently
+formalize full rectangular QR, IEEE error-free transformations, or the full
+paper algorithms from raw `FPModel`.
+
+The derivation record for these external-source tasks is
+`benchmark/tasks/EXTERNAL_TASK_DERIVATION.md`.
+
+An initial contamination screen is tracked in
+`benchmark/tasks/CONTAMINATION_CHECKS.md`.  It records exact-name searches for
+the E01-E10 theorem names and task-local definitions.  This is a development
+screen, not a final thesis audit; official runs still require a final
+contamination check after theorem names and prompts are frozen.
+
+The theorem-truth audit is tracked in
+`benchmark/tasks/THEOREM_TRUTH_AUDIT.md`.  It records which E01-E10 statements
+are supported by existing library theorem chains, which are too direct as
+benchmark tasks, and which are certificate-level rather than full algorithm
+analyses.
+
+Current audit conclusion after revising E07 and E08:
+
+- E01-E09 are suitable serious candidates.
+- E07 now requires a bridge from a task-local stationary-iteration local-error
+  definition to the library's abstract `ComputedIteration` contract.
+- E08 now requires unpacking a QR least-squares backward-error certificate
+  before applying the forward-error infrastructure, but it remains a
+  specification-transfer theorem rather than a full rectangular QR algorithm
+  proof.
+- E10 is a valid certificate-level paper task, but not a full formalization of
+  Ogita-Rump-Oishi `SumK` from raw floating-point operations.
+
+The external-source suite file is
+`benchmark/suites/external_stability.tsv`.  It is used by plotting/reporting
+tools to avoid hardcoding the old prototype `T01`-`T10` task list.  The
+plotting script now accepts `--task-list` and can therefore plot either the
+prototype suite or the external-source suite without changing source code.
+
+A generated-workspace preflight was run for `E01_LapackBerrBackward` after the
+suite/script changes.  Both Condition A and Condition C built
+`BenchmarkTask` with `sorry` allowed, confirming that the actual harness path
+works for the new external task naming scheme.  No Codex solver attempt was
+run in this preflight.
+
+The first controlled external-source solver run was then executed for
+`E01_LapackBerrBackward` with a 1200-second timeout per condition.  Condition A
+failed validation without timing out and left the original `sorry`.  Its public
+solver messages identified the missing residual-error theorem for
+`fl_residual` as the blocker.  Condition C passed validation using
+`conventional_residual_error` and `oettli_prager_sufficient`.  The run is
+recorded in `benchmark/results/EXTERNAL_PILOT_20260507.md`.
+
+An E02 pilot run also separated the conditions qualitatively: Condition A left
+`sorry` and Condition C passed.  However, it exposed a timeout-enforcement
+problem.  Condition A recorded `timeout_seconds = 1200` but ran much longer
+than 1200 seconds and did not produce `timeout.txt`.  This E02 result should
+not be treated as an official timing-valid datapoint.
+
+The runner was updated to use `benchmark/scripts/run_with_timeout.py`, a
+Python process-group timeout wrapper.  It starts the solver in a new process
+group, writes a timeout marker, sends `SIGTERM`, and escalates to `SIGKILL`
+after a grace period.  A local test confirmed that a command sleeping for
+5 seconds is terminated after a 1-second timeout with exit code 124.
+
+E02 was rerun after the timeout fix.  The timing-valid rerun is
+`benchmark/results/E02_TemplatesResidualStop/20260507-201754`: Condition A
+failed validation in about 5.5 minutes with the original `sorry` still present,
+while Condition C passed validation in about 4.5 minutes.  This is now the E02
+pilot datapoint to cite; the earlier E02 run remains only as evidence for the
+timeout bug and the qualitative failure mode.
+
+E03 was then run with the fixed timeout wrapper:
+`benchmark/results/E03_LapackFerrForward/20260507-202911`.  Condition A failed
+validation without timing out and left `sorry`; its public messages again
+identified the missing floating residual error lemma as the blocker.  Condition
+C passed validation by using the residual-error and forward-error
+infrastructure plus norm/supremum reasoning.
+
+E04 was run next:
+`benchmark/results/E04_LapackLevel3Matmul/20260507-204055`.  Condition A failed
+validation without timing out and left the original `sorry`.  Its public
+messages identified the missing dot-product/matrix-multiplication error theorem
+as the blocker.  Condition C passed validation by using the library theorem
+`matMul_error_bound`, then proving the rectangular infinity-norm row-sum bound
+locally inside the task file.  This is an important pilot datapoint because it
+shows the A/C gap is not limited to residual-certificate tasks.
+
+E05 was then run:
+`benchmark/results/E05_LapackTriangularResidual/20260507-205025`.  Condition A
+failed validation without timing out, while Condition C passed.  However, this
+run exposed an isolation weakness.  The Condition A attempted proof called
+`backSub_backward_error`, which is correctly unavailable from the Condition A
+stub and was rejected by validation.  The public solver messages say the solver
+had discovered a compiled companion library in a local cache and manually
+tested with an extra search path.  Therefore this E05 attempt is useful as a
+harness diagnostic but should not be cited as an isolation-clean datapoint.
+
+The harness was hardened in response.  The neutral solver prompt now explicitly
+treats the current workspace as the whole benchmark environment, forbids
+inspection of the original repository, user home directories, global caches,
+previous results, and manually discovered external paths, and forbids manual
+`LEAN_PATH` or `--root` additions.  `benchmark/scripts/run_codex_attempt.sh`
+also now runs Codex with a temporary `HOME` and `XDG_CACHE_HOME`, in addition
+to the existing temporary auth-only `CODEX_HOME`.  The first hardened rerun
+showed that this prevented the earlier Condition A cache-theorem attempt, but
+it also made solver-side `lake build` try to fetch dependencies because the
+build sandbox could not use the shared Lake package cache cleanly.  The runner
+was therefore updated again to add only the shared third-party Lake package
+cache as a Codex `--add-dir`.  That cache contains Mathlib-style dependencies,
+not the full `LeanFpAnalysis` snapshot, so it should support solver-side builds
+without giving Condition A the library being benchmarked.  This does not by
+itself prove OS-level noninterference, but it removes the obvious
+cache-discovery path and makes future Condition A runs cleaner.
+
+A further cause of the solver-side build artifact was identified: setting
+`HOME` to a temporary directory also made Elan search for the Lean toolchain in
+that temporary home, so `lean` and `lake` attempted to download the toolchain
+from GitHub.  The runner now passes the host `ELAN_HOME` explicitly while still
+keeping `HOME` and `XDG_CACHE_HOME` temporary.  This exposes the installed Lean
+toolchain, not benchmark memory or the FP library.
+
+E05 was rerun after the prompt and `ELAN_HOME` fixes:
+`benchmark/results/E05_LapackTriangularResidual/20260507-214953`.  This is the
+E05 datapoint to cite.  Condition A failed validation without timing out and
+left the original `sorry`; its public messages stayed within the local stub and
+reported that no triangular-solve residual theorem was available.  Condition C
+passed validation by finding `backSub_backward_error`, rewriting the residual
+as a perturbation matrix-vector product, and using `infNormVec_matMulVec_le`.
+The only remaining nuisance is that solver-side `lake build BenchmarkTask`
+still reports an external Mathlib lock-file sandbox error.  The post-run
+validator then builds the archived final file successfully, so validation
+remains the authoritative pass/fail check.
+
+E06 was run next:
+`benchmark/results/E06_OettliPragerForward/20260507-215812`.  Both conditions
+failed validation.  This is not evidence that the theorem is false: the theorem
+truth route is still `componentwise_forward_error_standard` after unpacking
+the task-local `opBackwardCompatible` hypothesis.  The Condition C attempt
+instead wrote a large local finite-sum proof and failed on Lean details.  The
+failure exposed a public-documentation gap: `docs/LIBRARY_LOOKUP.md` listed
+`componentwise_forward_error` but not the standard specialization
+`componentwise_forward_error_standard`, even though this is the theorem users
+need for the common `|DeltaA| <= eps*|A|`, `|Deltab| <= eps*|b|` form.  The
+lookup table and `examples/LibraryLookup.lean` were updated to include
+`componentwise_forward_error_standard` and `normwise_perturbation_bound`.
+
+E06 was rerun after rebuilding the Condition C snapshot with the updated
+lookup table:
+`benchmark/results/E06_OettliPragerForward/20260507-220547`.  Both conditions
+still failed validation.  Condition C again wrote a local finite-sum proof and
+failed on Lean details instead of applying
+`componentwise_forward_error_standard`.  This is an important benchmark design
+signal: merely listing the theorem name was not enough for Codex to use it in
+this task.  E06 should either be placed later in the difficulty ordering, or
+the public library guide should gain a general perturbation-transfer pattern
+section that explains how to use specification-transfer theorems without
+mentioning benchmark tasks.
+
+E07 was run next:
+`benchmark/results/E07_TemplatesStationaryResidual/20260507-221510`.  Both
+conditions passed.  Condition A produced a long local derivation of the
+stationary residual recurrence and scalar contraction from the task-visible
+definitions.  Condition C produced a much shorter proof by constructing the
+`ComputedIteration` bridge and applying `normwise_residual_bound`.  This means
+E07 is not a good pass/fail separation task in its current form.  It may still
+serve as an efficiency-gap example, but if the benchmark's criterion is
+"Condition A fails, Condition C succeeds", E07 should be redesigned or replaced.
+
+E08 was then run:
+`benchmark/results/E08_LapackLSQRForward/20260507-222525`.  Condition A failed
+validation after attempting a long local least-squares perturbation proof.
+Condition C passed validation with a short proof: it extracted `DeltaG` and
+`Deltag` from `LSQRSolveBackwardError` and applied `ls_qr_forward_error`.  This
+is a clean pass/fail separation, with the caveat already recorded in the task
+audit that E08 is a specification-transfer certificate rather than a full QR
+algorithm analysis from raw floating-point operations.
+
+E09 was run next:
+`benchmark/results/E09_LapackNormalEquations/20260507-223046`.  Both
+conditions failed validation.  Condition A attempted to rebuild a local
+normal-equations perturbation proof and failed on ordinary Lean details.
+Condition C found the intended public theorem,
+`ls_normal_equations_forward_error`, but failed on a small finite-sum
+normalization step in the wrapper inequality.  This should be read as an
+informative C failure, not as a false-theorem signal.  It also makes the
+remaining solver-side Lake lock-file artifact more important: the validator
+reached and archived the true Lean error, but the solver itself reported that
+its `lake build BenchmarkTask` command was blocked before useful compiler
+feedback by an external Mathlib lock-file write.  Fixing that solver-feedback
+artifact is now a benchmark-harness priority before drawing strong conclusions
+from C failures.
+
+The solver-side Lake lock-file artifact was diagnosed after E09.  The
+generated workspaces symlink `.lake/packages` to a shared package cache under
+`~/.cache`; Codex can read enough of that cache to use prebuilt dependencies,
+but its workspace sandbox cannot write through that external symlink to
+Lake's package-configuration lock files.  Granting the shared cache with
+`--add-dir` was not sufficient on this machine.  The chosen fix is a
+workspace-local `lake` wrapper installed by `run_codex_attempt.sh` and placed
+first on `PATH` only for the solver process.  For the benchmark-required
+command `lake build BenchmarkTask`, the wrapper invokes `lean` directly using
+the `LEAN_PATH` computed by the real Lake preflight.  This gives the solver
+actual Lean elaboration errors for the task file while keeping post-run
+validation authoritative: `validate_attempt.sh` still runs the real Lake build
+outside the solver sandbox.  This is a harness fix, not solver guidance about
+how to prove any task.
+
+E10 was run after the solver-side Lake wrapper fix:
+`benchmark/results/E10_OgitaSumKCertificate/20260507-224508`.  Both conditions
+passed quickly.  This is an important negative task-design result.  Although
+E10 is sourced from a real compensated-summation stability-certificate
+pattern, the theorem as stated exposes the hard numerical-analysis facts as
+task-local certificate assumptions.  The proof left to the solver is mostly
+real arithmetic: use the final-rounding assumption, use the stage bound at
+`K - 2`, and combine powers/nonnegativity.  Condition A can do that without
+the library.  Therefore E10 should not be used as the final hard
+library-separation task in its current form.  It may remain as a
+certificate-arithmetic sanity check, but a replacement final task should force
+the solver to derive or compose a stability bound from library contracts that
+are absent in Condition A.
+
+The May 7 external-suite pilot plots were generated at
+`benchmark/results/plots/pass_at_1_20260507_external/`.  Using the latest run
+for each E01-E10 task on that date, the pass/fail pattern is:
+
+- A-fail/C-pass: E01, E02, E03, E04, E05, E08.
+- both fail: E06, E09.
+- both pass: E07, E10.
+
+Decision consequence: the external-source suite is a successful pilot of the
+harness and task-sourcing method, but not a frozen thesis benchmark.  The
+final benchmark should keep or adapt the clean separation tasks, redesign or
+replace E07 and E10, and decide whether E06/E09 need better public
+perturbation-transfer guidance or should be replaced by tasks whose Condition
+C route is more discoverable.
+
 ### Current Open Decisions
 
-- The final contamination-search protocol and log format.
+- The final contamination-search protocol and publication-grade audit.
 - Number of repeated attempts per task and per condition.
 - Whether to add hidden reference proofs after the first solver evaluation
   round for diagnostic purposes.
