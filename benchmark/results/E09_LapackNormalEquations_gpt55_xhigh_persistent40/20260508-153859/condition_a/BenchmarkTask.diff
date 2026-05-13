@@ -1,0 +1,104 @@
+--- /Users/georgiosalexandrosgeorgantzas/Documents/GitHub/lean-fp-analysis/benchmark/tasks/E09_LapackNormalEquations/Task.lean	2026-05-07 22:51:53
++++ /tmp/lean-fp-benchmark-runs/E09_LapackNormalEquations_gpt55_xhigh_persistent40-20260508-153859/condition_a/E09_LapackNormalEquations/BenchmarkTask.lean	2026-05-08 15:42:40
+@@ -22,6 +22,100 @@
+       ∑ j : Fin n, |ATA_inv i j| *
+         (epsG * ∑ k : Fin n, |ATA j k| * |xhat k| +
+           epsg * |ATb j|) := by
+-  sorry
++  classical
++  intro i
++  have _hepsG_nonneg : 0 ≤ epsG := hepsG_nonneg
++  have _hepsg_nonneg : 0 ≤ epsg := hepsg_nonneg
++  let e : Fin n → ℝ := fun k => xhat k - x k
++  let r : Fin n → ℝ := fun j => Deltag j - ∑ k : Fin n, DeltaG j k * xhat k
++  have hLeft : IsLeftInverse n ATA ATA_inv := hInv.1
++  have hATAe : ∀ j : Fin n, ∑ k : Fin n, ATA j k * e k = r j := by
++    intro j
++    have hExact' : ∑ k : Fin n, ATA j k * x k = ATb j := by
++      simpa [matMulVec] using hExact j
++    have hPerturbed' :
++        (∑ k : Fin n, ATA j k * xhat k) +
++            (∑ k : Fin n, DeltaG j k * xhat k) =
++          (∑ k : Fin n, ATA j k * x k) + Deltag j := by
++      calc
++        (∑ k : Fin n, ATA j k * xhat k) +
++            (∑ k : Fin n, DeltaG j k * xhat k)
++            = ∑ k : Fin n, (ATA j k + DeltaG j k) * xhat k := by
++                simp [add_mul, Finset.sum_add_distrib]
++        _ = ATb j + Deltag j := hPerturbed j
++        _ = (∑ k : Fin n, ATA j k * x k) + Deltag j := by
++                rw [hExact']
++    calc
++      ∑ k : Fin n, ATA j k * e k
++          = (∑ k : Fin n, ATA j k * xhat k) -
++              (∑ k : Fin n, ATA j k * x k) := by
++              simp [e, mul_sub, Finset.sum_sub_distrib]
++      _ = Deltag j - ∑ k : Fin n, DeltaG j k * xhat k := by
++              linarith
++      _ = r j := rfl
++  have hExpand : (∑ j : Fin n, ATA_inv i j * r j) = e i := by
++    calc
++      ∑ j : Fin n, ATA_inv i j * r j
++          = ∑ j : Fin n, ATA_inv i j * (∑ k : Fin n, ATA j k * e k) := by
++              simp [hATAe]
++      _ = ∑ j : Fin n, ∑ k : Fin n, ATA_inv i j * (ATA j k * e k) := by
++              simp [Finset.mul_sum]
++      _ = ∑ k : Fin n, ∑ j : Fin n, ATA_inv i j * (ATA j k * e k) := by
++              rw [Finset.sum_comm]
++      _ = ∑ k : Fin n, (∑ j : Fin n, ATA_inv i j * ATA j k) * e k := by
++              simp [Finset.sum_mul, mul_assoc]
++      _ = ∑ k : Fin n, (if i = k then 1 else 0) * e k := by
++              refine Finset.sum_congr rfl ?_
++              intro k hk
++              rw [hLeft i k]
++      _ = e i := by
++              simp [e]
++  have hr_bound : ∀ j : Fin n, |r j| ≤
++      epsG * (∑ k : Fin n, |ATA j k| * |xhat k|) + epsg * |ATb j| := by
++    intro j
++    have hsumDelta : |∑ k : Fin n, DeltaG j k * xhat k| ≤
++        epsG * (∑ k : Fin n, |ATA j k| * |xhat k|) := by
++      calc
++        |∑ k : Fin n, DeltaG j k * xhat k|
++            ≤ ∑ k : Fin n, |DeltaG j k * xhat k| := by
++                simpa using
++                  (Finset.abs_sum_le_sum_abs (s := Finset.univ)
++                    (f := fun k : Fin n => DeltaG j k * xhat k))
++        _ = ∑ k : Fin n, |DeltaG j k| * |xhat k| := by
++                simp [abs_mul]
++        _ ≤ ∑ k : Fin n, (epsG * |ATA j k|) * |xhat k| := by
++                refine Finset.sum_le_sum ?_
++                intro k hk
++                exact mul_le_mul_of_nonneg_right (hDeltaG j k) (abs_nonneg (xhat k))
++        _ = epsG * (∑ k : Fin n, |ATA j k| * |xhat k|) := by
++                rw [Finset.mul_sum]
++                simp [mul_assoc]
++    have htri : |Deltag j - ∑ k : Fin n, DeltaG j k * xhat k| ≤
++        |Deltag j| + |∑ k : Fin n, DeltaG j k * xhat k| := by
++      simpa [sub_eq_add_neg] using
++        (abs_add_le (Deltag j) (-(∑ k : Fin n, DeltaG j k * xhat k)))
++    calc
++      |r j| = |Deltag j - ∑ k : Fin n, DeltaG j k * xhat k| := rfl
++      _ ≤ |Deltag j| + |∑ k : Fin n, DeltaG j k * xhat k| := htri
++      _ ≤ epsg * |ATb j| + epsG * (∑ k : Fin n, |ATA j k| * |xhat k|) := by
++              exact add_le_add (hDeltag j) hsumDelta
++      _ = epsG * (∑ k : Fin n, |ATA j k| * |xhat k|) + epsg * |ATb j| := by
++              ring
++  calc
++    |xhat i - x i| = |e i| := rfl
++    _ = |∑ j : Fin n, ATA_inv i j * r j| := by
++            exact congrArg abs hExpand.symm
++    _ ≤ ∑ j : Fin n, |ATA_inv i j * r j| := by
++            simpa using
++              (Finset.abs_sum_le_sum_abs (s := Finset.univ)
++                (f := fun j : Fin n => ATA_inv i j * r j))
++    _ = ∑ j : Fin n, |ATA_inv i j| * |r j| := by
++            simp [abs_mul]
++    _ ≤ ∑ j : Fin n, |ATA_inv i j| *
++        (epsG * ∑ k : Fin n, |ATA j k| * |xhat k| +
++          epsg * |ATb j|) := by
++            refine Finset.sum_le_sum ?_
++            intro j hj
++            exact mul_le_mul_of_nonneg_left (hr_bound j) (abs_nonneg (ATA_inv i j))
+ 
+ end LeanFpAnalysis.FP

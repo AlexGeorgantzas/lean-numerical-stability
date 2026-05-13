@@ -11,6 +11,9 @@ repo_root="$(cd "${script_dir}/../.." && pwd)"
 source "${script_dir}/shared_lake_packages.sh"
 
 timeout_seconds="${BENCHMARK_CODEX_TIMEOUT_SECONDS:-1200}"
+solver_prompt_variant="${BENCHMARK_SOLVER_PROMPT_VARIANT:-standard}"
+codex_model="${BENCHMARK_CODEX_MODEL:-}"
+codex_reasoning_effort="${BENCHMARK_CODEX_REASONING_EFFORT:-}"
 task_file="${repo_root}/benchmark/tasks/${task}/Task.lean"
 result_root="$(benchmark_result_root_for_run_id "${repo_root}" "$(basename "${run_root}")")"
 
@@ -18,10 +21,16 @@ result_root="$(benchmark_result_root_for_run_id "${repo_root}" "$(basename "${ru
 "${script_dir}/archive_preflight_run.sh" "${run_root}" "${result_root}"
 
 BENCHMARK_CODEX_TIMEOUT_SECONDS="${timeout_seconds}" \
+BENCHMARK_SOLVER_PROMPT_VARIANT="${solver_prompt_variant}" \
+BENCHMARK_CODEX_MODEL="${codex_model}" \
+BENCHMARK_CODEX_REASONING_EFFORT="${codex_reasoning_effort}" \
   "${script_dir}/run_codex_attempt.sh" \
   "${run_root}/condition_a/${task}" condition_a "${task_file}" "${result_root}"
 
 BENCHMARK_CODEX_TIMEOUT_SECONDS="${timeout_seconds}" \
+BENCHMARK_SOLVER_PROMPT_VARIANT="${solver_prompt_variant}" \
+BENCHMARK_CODEX_MODEL="${codex_model}" \
+BENCHMARK_CODEX_REASONING_EFFORT="${codex_reasoning_effort}" \
   "${script_dir}/run_codex_attempt.sh" \
   "${run_root}/condition_c/${task}" condition_c "${task_file}" "${result_root}"
 

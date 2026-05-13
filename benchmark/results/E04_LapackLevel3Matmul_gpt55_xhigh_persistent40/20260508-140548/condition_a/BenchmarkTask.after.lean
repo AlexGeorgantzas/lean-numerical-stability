@@ -1,0 +1,290 @@
+import LeanFpAnalysis.FP
+
+namespace LeanFpAnalysis.FP
+
+open scoped BigOperators
+
+noncomputable def rectInfNorm (m n : ℕ) (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ) : ℝ :=
+  Finset.sup' Finset.univ
+    (Finset.univ_nonempty_iff.mpr ⟨⟨0, hm⟩⟩)
+    (fun i => ∑ j : Fin n, |A i j|)
+
+theorem lapack_level3_matmul_forward_error
+    (fp : FPModel) (m n p : ℕ) (hm : 0 < m) (hnpos : 0 < n)
+    (A : Fin m → Fin n → ℝ) (B : Fin n → Fin p → ℝ)
+    (hn : gammaValid fp n) :
+    rectInfNorm m p hm
+        (fun i j => fl_matMul fp m n p A B i j - ∑ k : Fin n, A i k * B k j) ≤
+      gamma fp n * rectInfNorm m n hm A * rectInfNorm n p hnpos B := by
+  classical
+  have gamma_nonneg : ∀ {q : ℕ}, gammaValid fp q → 0 ≤ gamma fp q := by
+    intro q hq
+    unfold gamma gammaValid at *
+    have hden : 0 ≤ 1 - (q : ℝ) * fp.u := by linarith
+    have hnum : 0 ≤ (q : ℝ) * fp.u := mul_nonneg (Nat.cast_nonneg _) fp.u_nonneg
+    exact div_nonneg hnum hden
+  have gamma_prev_valid : ∀ (q : ℕ), gammaValid fp (q + 2) → gammaValid fp (q + 1) := by
+    intro q hq
+    unfold gammaValid at *
+    have hcast : ((q + 1 : ℕ) : ℝ) ≤ ((q + 2 : ℕ) : ℝ) := by
+      exact_mod_cast Nat.succ_le_succ (Nat.le_succ q)
+    have hleprod : ((q + 1 : ℕ) : ℝ) * fp.u ≤ ((q + 2 : ℕ) : ℝ) * fp.u :=
+      mul_le_mul_of_nonneg_right hcast fp.u_nonneg
+    exact lt_of_le_of_lt hleprod hq
+  have gamma_one_ge_u : gammaValid fp 1 → fp.u ≤ gamma fp 1 := by
+    intro h
+    unfold gamma gammaValid at *
+    norm_num at h ⊢
+    have hdenpos : 0 < 1 - fp.u := by linarith [fp.u_nonneg]
+    rw [le_div_iff₀ hdenpos]
+    nlinarith [fp.u_nonneg]
+  have gamma_step : ∀ (q : ℕ), gammaValid fp (q + 2) →
+      (1 + gamma fp (q + 1)) * (1 + fp.u) - 1 ≤ gamma fp (q + 2) := by
+    intro q h
+    unfold gamma gammaValid at *
+    have hu := fp.u_nonneg
+    have hcast : ((q + 1 : ℕ) : ℝ) ≤ ((q + 2 : ℕ) : ℝ) := by
+      exact_mod_cast Nat.succ_le_succ (Nat.le_succ q)
+    have hleprod : ((q + 1 : ℕ) : ℝ) * fp.u ≤ ((q + 2 : ℕ) : ℝ) * fp.u :=
+      mul_le_mul_of_nonneg_right hcast hu
+    have hden1 : 0 < 1 - ((q + 1 : ℕ) : ℝ) * fp.u := by linarith
+    have hden2 : 0 < 1 - ((q + 2 : ℕ) : ℝ) * fp.u := by linarith
+    have hbnum : 0 ≤ ((q + 2 : ℕ) : ℝ) * fp.u := mul_nonneg (Nat.cast_nonneg _) hu
+    calc
+      (1 + ((q + 1 : ℕ) : ℝ) * fp.u / (1 - ((q + 1 : ℕ) : ℝ) * fp.u)) *
+            (1 + fp.u) -
+          1
+          = (((q + 2 : ℕ) : ℝ) * fp.u) / (1 - ((q + 1 : ℕ) : ℝ) * fp.u) := by
+              field_simp [hden1.ne']
+              have hqcast : ((q + 2 : ℕ) : ℝ) = ((q + 1 : ℕ) : ℝ) + 1 := by
+                norm_num
+                linarith
+              rw [hqcast]
+              ring
+      _ ≤ (((q + 2 : ℕ) : ℝ) * fp.u) / (1 - ((q + 2 : ℕ) : ℝ) * fp.u) := by
+              exact div_le_div_of_nonneg_left hbnum hden2 (by linarith)
+  have gamma_two : ∀ (q : ℕ), gammaValid fp (q + 2) →
+      (1 + fp.u) * (1 + fp.u) - 1 ≤ gamma fp (q + 2) := by
+    intro q h
+    unfold gamma gammaValid at *
+    have hu := fp.u_nonneg
+    have hn2 : (2 : ℝ) ≤ ((q + 2 : ℕ) : ℝ) := by
+      exact_mod_cast Nat.succ_le_succ (Nat.succ_le_succ (Nat.zero_le q))
+    have hnumge : (2 : ℝ) * fp.u ≤ ((q + 2 : ℕ) : ℝ) * fp.u :=
+      mul_le_mul_of_nonneg_right hn2 hu
+    have hden2 : 0 < 1 - ((q + 2 : ℕ) : ℝ) * fp.u := by linarith
+    have hleft_le_2u :
+        (1 + fp.u) * (1 + fp.u) - 1 ≤
+          (2 : ℝ) * fp.u / (1 - ((q + 2 : ℕ) : ℝ) * fp.u) := by
+      rw [le_div_iff₀ hden2]
+      ring_nf
+      have hNnonneg : 0 ≤ ((2 + q : ℕ) : ℝ) := Nat.cast_nonneg _
+      have hNlarge : (1 : ℝ) ≤ ((2 + q : ℕ) : ℝ) * 2 := by
+        have hNat : 1 ≤ 2 + q := by omega
+        have hNge1 : (1 : ℝ) ≤ ((2 + q : ℕ) : ℝ) := by exact_mod_cast hNat
+        nlinarith
+      have hu2 : 0 ≤ fp.u ^ 2 := sq_nonneg fp.u
+      have hu3 : 0 ≤ fp.u ^ 3 := by nlinarith [hu, hu2, mul_nonneg hu2 hu]
+      have hu3N : 0 ≤ fp.u ^ 3 * ((2 + q : ℕ) : ℝ) := mul_nonneg hu3 hNnonneg
+      have hu2_le : fp.u ^ 2 ≤ fp.u ^ 2 * ((2 + q : ℕ) : ℝ) * 2 := by
+        calc
+          fp.u ^ 2 = fp.u ^ 2 * 1 := by ring
+          _ ≤ fp.u ^ 2 * (((2 + q : ℕ) : ℝ) * 2) :=
+            mul_le_mul_of_nonneg_left hNlarge hu2
+          _ = fp.u ^ 2 * ((2 + q : ℕ) : ℝ) * 2 := by ring
+      nlinarith
+    calc
+      (1 + fp.u) * (1 + fp.u) - 1 ≤
+          (2 : ℝ) * fp.u / (1 - ((q + 2 : ℕ) : ℝ) * fp.u) := hleft_le_2u
+      _ ≤ (((q + 2 : ℕ) : ℝ) * fp.u) / (1 - ((q + 2 : ℕ) : ℝ) * fp.u) := by
+        exact div_le_div_of_nonneg_right hnumge (by linarith [hden2])
+  have theta_step_bound : ∀ (q : ℕ) (hq : gammaValid fp (q + 2)) (theta delta : ℝ),
+      |theta| ≤ gamma fp (q + 1) → |delta| ≤ fp.u →
+      |(1 + theta) * (1 + delta) - 1| ≤ gamma fp (q + 2) := by
+    intro q hq theta delta htheta hdelta
+    have hgprev : 0 ≤ gamma fp (q + 1) := gamma_nonneg (gamma_prev_valid q hq)
+    have hmul : |theta| * |delta| ≤ gamma fp (q + 1) * fp.u :=
+      mul_le_mul htheta hdelta (abs_nonneg delta) hgprev
+    calc
+      |(1 + theta) * (1 + delta) - 1| = |theta + delta + theta * delta| := by ring_nf
+      _ ≤ |theta| + |delta| + |theta * delta| := abs_add_three theta delta (theta * delta)
+      _ = |theta| + |delta| + |theta| * |delta| := by rw [abs_mul]
+      _ ≤ gamma fp (q + 1) + fp.u + gamma fp (q + 1) * fp.u := by nlinarith
+      _ = (1 + gamma fp (q + 1)) * (1 + fp.u) - 1 := by ring
+      _ ≤ gamma fp (q + 2) := gamma_step q hq
+  have delta_step_bound : ∀ (q : ℕ) (hq : gammaValid fp (q + 2)) (delta eps : ℝ),
+      |delta| ≤ fp.u → |eps| ≤ fp.u →
+      |(1 + delta) * (1 + eps) - 1| ≤ gamma fp (q + 2) := by
+    intro q hq delta eps hdelta heps
+    have hmul : |delta| * |eps| ≤ fp.u * fp.u :=
+      mul_le_mul hdelta heps (abs_nonneg eps) fp.u_nonneg
+    calc
+      |(1 + delta) * (1 + eps) - 1| = |delta + eps + delta * eps| := by ring_nf
+      _ ≤ |delta| + |eps| + |delta * eps| := abs_add_three delta eps (delta * eps)
+      _ = |delta| + |eps| + |delta| * |eps| := by rw [abs_mul]
+      _ ≤ fp.u + fp.u + fp.u * fp.u := by nlinarith
+      _ = (1 + fp.u) * (1 + fp.u) - 1 := by ring
+      _ ≤ gamma fp (q + 2) := gamma_two q hq
+  have dot_repr : ∀ (q : ℕ), gammaValid fp q → 0 < q → ∀ x y : Fin q → ℝ,
+      ∃ theta : Fin q → ℝ,
+        (∀ k, |theta k| ≤ gamma fp q) ∧
+        fl_dotProduct fp q x y = ∑ k : Fin q, x k * y k * (1 + theta k) := by
+    intro q hq hqpos x y
+    induction q with
+    | zero => cases hqpos
+    | succ q ih =>
+        cases q with
+        | zero =>
+            rcases fp.model_mul (x 0) (y 0) with ⟨δ, hδ, hfl⟩
+            refine ⟨fun _ => δ, ?_, ?_⟩
+            · intro k
+              exact le_trans hδ (gamma_one_ge_u hq)
+            · simp [fl_dotProduct, hfl]
+        | succ q =>
+            have hprev : gammaValid fp (q + 1) := gamma_prev_valid q hq
+            have hprevpos : 0 < q + 1 := by omega
+            rcases ih hprev hprevpos (fun i : Fin (q + 1) => x i.castSucc)
+                (fun i : Fin (q + 1) => y i.castSucc) with ⟨theta, htheta, hrepr⟩
+            rcases fp.model_mul (x (Fin.last (q + 1))) (y (Fin.last (q + 1))) with
+              ⟨δm, hδm, hmulfl⟩
+            rcases fp.model_add
+                (fl_dotProduct fp (q + 1) (fun i : Fin (q + 1) => x i.castSucc)
+                  (fun i : Fin (q + 1) => y i.castSucc))
+                (fp.fl_mul (x (Fin.last (q + 1))) (y (Fin.last (q + 1)))) with
+              ⟨δa, hδa, haddfl⟩
+            let theta' : Fin (q + 2) → ℝ :=
+              Fin.snoc (fun i : Fin (q + 1) => (1 + theta i) * (1 + δa) - 1)
+                ((1 + δm) * (1 + δa) - 1)
+            refine ⟨theta', ?_, ?_⟩
+            · intro k
+              refine Fin.lastCases ?last ?cast k
+              · dsimp [theta']
+                rw [Fin.snoc_last]
+                exact delta_step_bound q hq δm δa hδm hδa
+              · intro i
+                dsimp [theta']
+                rw [Fin.snoc_castSucc]
+                exact theta_step_bound q hq (theta i) δa (htheta i) hδa
+            · rw [show fl_dotProduct fp (q + 2) x y =
+                  fp.fl_add
+                    (fl_dotProduct fp (q + 1) (fun i : Fin (q + 1) => x i.castSucc)
+                      (fun i : Fin (q + 1) => y i.castSucc))
+                    (fp.fl_mul (x (Fin.last (q + 1))) (y (Fin.last (q + 1)))) by
+                    simp [fl_dotProduct, Fin.foldl_succ_last]]
+              rw [haddfl, hmulfl, hrepr]
+              conv_rhs => rw [Fin.sum_univ_castSucc]
+              dsimp [theta']
+              simp_rw [Fin.snoc_castSucc]
+              rw [Fin.snoc_last]
+              have hsum :
+                  (∑ i : Fin (q + 1), x i.castSucc * y i.castSucc *
+                      (1 + ((1 + theta i) * (1 + δa) - 1))) =
+                    (∑ i : Fin (q + 1), x i.castSucc * y i.castSucc * (1 + theta i)) *
+                      (1 + δa) := by
+                rw [Finset.sum_mul]
+                apply Finset.sum_congr rfl
+                intro i hi
+                ring
+              have hlast : x (Fin.last (q + 1)) * y (Fin.last (q + 1)) *
+                      (1 + ((1 + δm) * (1 + δa) - 1)) =
+                    x (Fin.last (q + 1)) * y (Fin.last (q + 1)) * (1 + δm) *
+                      (1 + δa) := by
+                ring
+              rw [hsum, hlast]
+              ring
+  let normA : ℝ := rectInfNorm m n hm A
+  let normB : ℝ := rectInfNorm n p hnpos B
+  have hg : 0 ≤ gamma fp n := gamma_nonneg hn
+  have hArow : ∀ i : Fin m, (∑ k : Fin n, |A i k|) ≤ normA := by
+    intro i
+    dsimp [normA, rectInfNorm]
+    exact Finset.le_sup' (fun i => ∑ k : Fin n, |A i k|) (Finset.mem_univ i)
+  have hBrow : ∀ k : Fin n, (∑ j : Fin p, |B k j|) ≤ normB := by
+    intro k
+    dsimp [normB, rectInfNorm]
+    exact Finset.le_sup' (fun k => ∑ j : Fin p, |B k j|) (Finset.mem_univ k)
+  have hnormB_nonneg : 0 ≤ normB := by
+    let k0 : Fin n := ⟨0, hnpos⟩
+    exact le_trans (Finset.sum_nonneg (by intro j hj; exact abs_nonneg (B k0 j))) (hBrow k0)
+  have dot_error : ∀ i : Fin m, ∀ j : Fin p,
+      |fl_matMul fp m n p A B i j - ∑ k : Fin n, A i k * B k j| ≤
+        gamma fp n * ∑ k : Fin n, |A i k * B k j| := by
+    intro i j
+    rcases dot_repr n hn hnpos (A i) (fun k : Fin n => B k j) with ⟨theta, htheta, hrepr⟩
+    rw [fl_matMul, fl_matVec, hrepr]
+    have hdiff :
+        (∑ k : Fin n, A i k * B k j * (1 + theta k)) -
+            (∑ k : Fin n, A i k * B k j) =
+          ∑ k : Fin n, A i k * B k j * theta k := by
+      rw [← Finset.sum_sub_distrib]
+      apply Finset.sum_congr rfl
+      intro k hk
+      ring
+    rw [hdiff]
+    calc
+      |∑ k : Fin n, A i k * B k j * theta k| ≤
+          ∑ k : Fin n, |A i k * B k j * theta k| :=
+        Finset.abs_sum_le_sum_abs (fun k : Fin n => A i k * B k j * theta k) Finset.univ
+      _ = ∑ k : Fin n, |A i k * B k j| * |theta k| := by
+        apply Finset.sum_congr rfl
+        intro k hk
+        rw [abs_mul]
+      _ ≤ ∑ k : Fin n, |A i k * B k j| * gamma fp n := by
+        apply Finset.sum_le_sum
+        intro k hk
+        exact mul_le_mul_of_nonneg_left (htheta k) (abs_nonneg (A i k * B k j))
+      _ = gamma fp n * ∑ k : Fin n, |A i k * B k j| := by
+        rw [← Finset.sum_mul]
+        ring
+  have row_bound : ∀ i : Fin m,
+      (∑ j : Fin p, |fl_matMul fp m n p A B i j - ∑ k : Fin n, A i k * B k j|) ≤
+        gamma fp n * (∑ k : Fin n, |A i k|) * normB := by
+    intro i
+    calc
+      (∑ j : Fin p, |fl_matMul fp m n p A B i j - ∑ k : Fin n, A i k * B k j|)
+          ≤ ∑ j : Fin p, gamma fp n * ∑ k : Fin n, |A i k * B k j| := by
+            apply Finset.sum_le_sum
+            intro j hj
+            exact dot_error i j
+      _ = gamma fp n * ∑ k : Fin n, |A i k| * ∑ j : Fin p, |B k j| := by
+            rw [← Finset.mul_sum]
+            congr 1
+            calc
+              (∑ j : Fin p, ∑ k : Fin n, |A i k * B k j|)
+                  = ∑ j : Fin p, ∑ k : Fin n, |A i k| * |B k j| := by
+                    apply Finset.sum_congr rfl
+                    intro j hj
+                    apply Finset.sum_congr rfl
+                    intro k hk
+                    rw [abs_mul]
+              _ = ∑ k : Fin n, ∑ j : Fin p, |A i k| * |B k j| := by
+                    rw [Finset.sum_comm]
+              _ = ∑ k : Fin n, |A i k| * ∑ j : Fin p, |B k j| := by
+                    apply Finset.sum_congr rfl
+                    intro k hk
+                    rw [Finset.mul_sum]
+      _ ≤ gamma fp n * (∑ k : Fin n, |A i k| * normB) := by
+            apply mul_le_mul_of_nonneg_left
+            · apply Finset.sum_le_sum
+              intro k hk
+              exact mul_le_mul_of_nonneg_left (hBrow k) (abs_nonneg (A i k))
+            · exact hg
+      _ = gamma fp n * (∑ k : Fin n, |A i k|) * normB := by
+            rw [← Finset.sum_mul]
+            ring
+  have row_bound_norm : ∀ i : Fin m,
+      (∑ j : Fin p, |fl_matMul fp m n p A B i j - ∑ k : Fin n, A i k * B k j|) ≤
+        gamma fp n * normA * normB := by
+    intro i
+    exact le_trans (row_bound i)
+      (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left (hArow i) hg) hnormB_nonneg)
+  change rectInfNorm m p hm
+      (fun i j => fl_matMul fp m n p A B i j - ∑ k : Fin n, A i k * B k j) ≤
+    gamma fp n * normA * normB
+  dsimp [rectInfNorm]
+  apply Finset.sup'_le
+  intro i hi
+  exact row_bound_norm i
+
+end LeanFpAnalysis.FP

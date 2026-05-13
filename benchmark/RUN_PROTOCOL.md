@@ -150,6 +150,18 @@ For example:
 BENCHMARK_CODEX_TIMEOUT_SECONDS=1200 benchmark/scripts/run_task_once.sh E01_LapackBerrBackward
 ```
 
+Official solver runs should pin the Codex model and reasoning effort instead
+of relying on CLI defaults.  For the current GPT-5.5 extra-high persistent
+variant, use:
+
+```bash
+BENCHMARK_CODEX_MODEL=gpt-5.5 \
+BENCHMARK_CODEX_REASONING_EFFORT=xhigh \
+BENCHMARK_SOLVER_PROMPT_VARIANT=persistent \
+BENCHMARK_CODEX_TIMEOUT_SECONDS=1200 \
+benchmark/scripts/run_task_once.sh E01_LapackBerrBackward
+```
+
 `prepare_solver_run.sh` creates both condition workspaces, writes a neutral
 solver prompt, records metadata, checks task hashes, and runs the preflight
 builds.  Generated workspaces use a shared third-party Lake package cache under
@@ -158,6 +170,11 @@ and other Lake dependencies reusable across generated workspaces without giving
 the solver a symlink back to the project repository.  The shared cache contains
 third-party packages only, not benchmark notes, thesis notes, memory files,
 previous attempts, or `LeanFpAnalysis` source.
+By default the solver prompt variant is `standard`.  Set
+`BENCHMARK_SOLVER_PROMPT_VARIANT=persistent` for a separate persistence
+experiment in which the solver is explicitly instructed not to stop after one
+failed proof route, but to keep using Lean feedback until the external timeout
+or a successful `lake build BenchmarkTask`.
 `setup_condition_c_snapshot.sh` creates a shared read-only snapshot of the
 public library for Condition C.  Condition C task workspaces depend on this
 snapshot through Lake and expose it through symlinks for inspection, but solver
@@ -186,7 +203,10 @@ Condition A access to the full `LeanFpAnalysis` snapshot.  It disables plugin
 and memory features, ignores user configuration and rules, enforces a
 process-group timeout
 (`BENCHMARK_CODEX_TIMEOUT_SECONDS`, default 1200) through
-`run_with_timeout.py`, and removes the temporary home after the attempt.
+`run_with_timeout.py`, and removes the temporary home after the attempt.  When
+`BENCHMARK_CODEX_MODEL` or `BENCHMARK_CODEX_REASONING_EFFORT` is set, the
+runner passes them as `--model` and `-c model_reasoning_effort=...` and records
+the values in attempt metadata.
 `validate_attempt.sh` is the post-attempt validator: it rejects changes outside
 the theorem proof body, remaining placeholders, forbidden declarations, and
 build failures.  `cleanup_run_workspaces.sh` removes temporary run workspaces

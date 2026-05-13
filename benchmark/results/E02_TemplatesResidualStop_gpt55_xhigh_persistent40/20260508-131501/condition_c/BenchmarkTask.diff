@@ -1,0 +1,66 @@
+--- /Users/georgiosalexandrosgeorgantzas/Documents/GitHub/lean-fp-analysis/benchmark/tasks/E02_TemplatesResidualStop/Task.lean	2026-05-07 22:51:53
++++ /tmp/lean-fp-benchmark-runs/E02_TemplatesResidualStop_gpt55_xhigh_persistent40-20260508-131501/condition_c/E02_TemplatesResidualStop/BenchmarkTask.lean	2026-05-08 13:36:56
+@@ -25,6 +25,62 @@
+         stopTol * infNormVec hnpos xhat) :
+     infNormVec hnpos (fun i => x i - xhat i) ≤
+       stopTol * infNormVec hnpos xhat := by
+-  sorry
++  have hround := conventional_residual_error fp n A xhat b hn hn1
++  have hresBound : ∀ i : Fin n, |residualVec n A xhat b i| ≤ residualTol := by
++    intro i
++    have hround_i :
++        |fl_residual fp n A xhat b i - residualVec n A xhat b i| ≤
++          gamma fp (n + 1) *
++            (|b i| + ∑ j : Fin n, |A i j| * |xhat j|) := by
++      simpa [residualVec] using hround i
++    have htri :
++        |residualVec n A xhat b i| ≤
++          |fl_residual fp n A xhat b i| +
++            |fl_residual fp n A xhat b i - residualVec n A xhat b i| := by
++      calc
++        |residualVec n A xhat b i|
++            = |fl_residual fp n A xhat b i +
++                (residualVec n A xhat b i -
++                  fl_residual fp n A xhat b i)| := by
++                ring_nf
++        _ ≤ |fl_residual fp n A xhat b i| +
++              |residualVec n A xhat b i -
++                fl_residual fp n A xhat b i| := abs_add_le _ _
++        _ = |fl_residual fp n A xhat b i| +
++              |fl_residual fp n A xhat b i -
++                residualVec n A xhat b i| := by
++                rw [abs_sub_comm]
++    calc
++      |residualVec n A xhat b i|
++          ≤ |fl_residual fp n A xhat b i| +
++              |fl_residual fp n A xhat b i - residualVec n A xhat b i| := htri
++      _ ≤ |fl_residual fp n A xhat b i| +
++            gamma fp (n + 1) *
++              (|b i| + ∑ j : Fin n, |A i j| * |xhat j|) := by
++            exact add_le_add (le_refl _) hround_i
++      _ ≤ residualTol := by
++            simpa [templatesResidualAllowance] using hcert i
++  have hFwd := forward_error_from_residual n A A_inv x xhat b hInv hAx
++  have hnorm :
++      infNormVec hnpos (fun i => x i - xhat i) ≤
++        infNorm hnpos A_inv * residualTol := by
++    unfold infNormVec
++    apply Finset.sup'_le
++    intro i _
++    calc
++      |(fun i => x i - xhat i) i|
++          = |x i - xhat i| := rfl
++      _ ≤ ∑ j : Fin n, |A_inv i j| *
++            |residualVec n A xhat b j| := hFwd i
++      _ ≤ ∑ j : Fin n, |A_inv i j| * residualTol := by
++            apply Finset.sum_le_sum
++            intro j _
++            exact mul_le_mul_of_nonneg_left (hresBound j) (abs_nonneg _)
++      _ = (∑ j : Fin n, |A_inv i j|) * residualTol := by
++            rw [Finset.sum_mul]
++      _ ≤ infNorm hnpos A_inv * residualTol := by
++            exact mul_le_mul_of_nonneg_right
++              (row_sum_le_infNorm hnpos A_inv i) hresidualTol_nonneg
++  exact le_trans hnorm hstop
+ 
+ end LeanFpAnalysis.FP

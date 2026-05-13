@@ -1,0 +1,3 @@
+Implemented the proof in `BenchmarkTask.lean` by extracting the QR backward-error perturbations from `hQR.result` and applying `ls_qr_forward_error`.
+
+Verification: `lake build BenchmarkTask` succeeds.

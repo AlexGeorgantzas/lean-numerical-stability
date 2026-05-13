@@ -1,0 +1,6 @@
+Implemented the proof in [BenchmarkTask.lean](/tmp/lean-fp-benchmark-runs/E01_LapackBerrBackward_gpt55_xhigh_persistent40-20260508-124411/condition_c/E01_LapackBerrBackward/BenchmarkTask.lean:30).
+
+The proof uses `conventional_residual_error` to convert the computed residual certificate into an exact residual bound, then applies `oettli_prager_sufficient` with `E = |A|` and `f = |b|`.
+
+Verification:
+`lake build BenchmarkTask` succeeds.

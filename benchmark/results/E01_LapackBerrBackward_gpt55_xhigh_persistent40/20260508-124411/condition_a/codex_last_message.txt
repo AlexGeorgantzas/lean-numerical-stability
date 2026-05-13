@@ -1,0 +1,7 @@
+Implemented the proof in [BenchmarkTask.lean](/tmp/lean-fp-benchmark-runs/E01_LapackBerrBackward_gpt55_xhigh_persistent40-20260508-124411/condition_a/E01_LapackBerrBackward/BenchmarkTask.lean).
+
+Verification passed:
+
+```bash
+lake build BenchmarkTask
+```

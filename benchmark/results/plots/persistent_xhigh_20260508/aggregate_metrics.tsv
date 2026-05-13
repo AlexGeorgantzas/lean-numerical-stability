@@ -1,0 +1,5 @@
+task	run	condition	codex_exit	validation_exit	passed	timeout	elapsed_minutes	codex_event_lines	diff_lines	proof_lines	placeholder_count	forbidden_decl_count
+E01_LapackBerrBackward_gpt55_xhigh_persistent	20260508-021347	condition_a	124	1	0	yes	20.10	88	0	4	1	0
+E01_LapackBerrBackward_gpt55_xhigh_persistent	20260508-021347	condition_c	0	0	1	no	5.20	74	142	136	0	0
+E06_OettliPragerForward_gpt55_xhigh_persistent	20260508-024006	condition_a	0	0	1	no	3.58	45	153	147	0	0
+E06_OettliPragerForward_gpt55_xhigh_persistent	20260508-024006	condition_c	0	0	1	no	1.02	36	12	6	0	0

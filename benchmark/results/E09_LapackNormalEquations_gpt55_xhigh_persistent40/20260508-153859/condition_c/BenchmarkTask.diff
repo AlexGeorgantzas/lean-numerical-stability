@@ -1,0 +1,43 @@
+--- /Users/georgiosalexandrosgeorgantzas/Documents/GitHub/lean-fp-analysis/benchmark/tasks/E09_LapackNormalEquations/Task.lean	2026-05-07 22:51:53
++++ /tmp/lean-fp-benchmark-runs/E09_LapackNormalEquations_gpt55_xhigh_persistent40-20260508-153859/condition_c/E09_LapackNormalEquations/BenchmarkTask.lean	2026-05-08 15:44:44
+@@ -22,6 +22,39 @@
+       ∑ j : Fin n, |ATA_inv i j| *
+         (epsG * ∑ k : Fin n, |ATA j k| * |xhat k| +
+           epsg * |ATb j|) := by
+-  sorry
++  intro i
++  have _ : 0 ≤ epsG := hepsG_nonneg
++  have _ : 0 ≤ epsg := hepsg_nonneg
++  have hFwd :
++      |x i - xhat i| ≤
++        ∑ j : Fin n, |ATA_inv i j| *
++          (∑ k : Fin n, |DeltaG j k| * |xhat k| + |Deltag j|) :=
++    normwise_perturbation_bound n ATA ATA_inv x xhat ATb DeltaG Deltag
++      hInv.1 (fun i => hExact i) hPerturbed i
++  rw [abs_sub_comm]
++  calc
++    |x i - xhat i|
++        ≤ ∑ j : Fin n, |ATA_inv i j| *
++            (∑ k : Fin n, |DeltaG j k| * |xhat k| + |Deltag j|) := hFwd
++    _ ≤ ∑ j : Fin n, |ATA_inv i j| *
++          (epsG * ∑ k : Fin n, |ATA j k| * |xhat k| +
++            epsg * |ATb j|) := by
++        apply Finset.sum_le_sum
++        intro j _
++        apply mul_le_mul_of_nonneg_left
++        · apply add_le_add
++          · calc
++              ∑ k : Fin n, |DeltaG j k| * |xhat k|
++                  ≤ ∑ k : Fin n, (epsG * |ATA j k|) * |xhat k| := by
++                    apply Finset.sum_le_sum
++                    intro k _
++                    exact mul_le_mul_of_nonneg_right (hDeltaG j k) (abs_nonneg _)
++              _ = epsG * ∑ k : Fin n, |ATA j k| * |xhat k| := by
++                    rw [Finset.mul_sum]
++                    apply Finset.sum_congr rfl
++                    intro k _
++                    ring
++          · exact hDeltag j
++        · exact abs_nonneg _
+ 
+ end LeanFpAnalysis.FP

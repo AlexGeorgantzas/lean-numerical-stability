@@ -1294,6 +1294,107 @@ replace E07 and E10, and decide whether E06/E09 need better public
 perturbation-transfer guidance or should be replaced by tasks whose Condition
 C route is more discoverable.
 
+### Decision: Add A Separate Persistence Prompt Benchmark
+
+The May 7 pass@1 runs remain valid standard-prompt evidence.  They show what
+Codex did when asked normally to prove the theorem and rejected by validation
+if it left `sorry` or produced a non-building proof.  A Condition A attempt
+that stops with `sorry` should be interpreted as "the standard prompt did not
+make the model persist to a proof", not as a mathematical impossibility
+result.
+
+A separate persistence experiment is now allowed through
+`BENCHMARK_SOLVER_PROMPT_VARIANT=persistent`.  This prompt explicitly tells the
+solver not to stop after one failed proof route, to keep running
+`lake build BenchmarkTask`, and to continue revising until the external
+timeout or a local build success.
+
+Reason: this tests a different question from the original pass@1 benchmark.
+The standard benchmark asks whether the library helps under an ordinary
+one-shot proof prompt.  The persistence benchmark asks whether extra pressure
+and more wall-clock time let Condition A overcome the absence of the library.
+
+Consequence: persistent-prompt runs must be archived separately and should not
+replace or invalidate standard-prompt runs.  The prompt variant is recorded in
+run metadata and attempt metadata.
+
+The first persistent-prompt pilot was run on E01:
+`benchmark/results/E01_LapackBerrBackward_persistent/20260508-014020`.
+The timeout was increased to 3600 seconds per condition.  Condition A still
+failed and Condition C passed.  The important difference is the failure mode:
+Condition A no longer left the original `sorry`; it produced a long
+constructive perturbation proof and failed at the exact residual-rounding
+estimate that the bare Condition A stub does not provide.  This supports a
+two-benchmark story: standard prompting tests ordinary one-shot use, while
+persistent prompting tests whether pressure and more time let Condition A
+reconstruct missing stability infrastructure.  For E01, the answer was still
+no, although the model did useful additional work before failing.
+
+### Decision: Pin Model And Effort For Persistent Runs
+
+The earlier benchmark harness used `codex exec` with `--ignore-user-config`,
+but did not pass an explicit model or reasoning effort.  That makes the runs
+useful as pilots but not precise enough for thesis-quality reproduction.
+
+The runner now accepts:
+
+- `BENCHMARK_CODEX_MODEL`;
+- `BENCHMARK_CODEX_REASONING_EFFORT`.
+
+The current stronger persistence protocol is:
+
+- `BENCHMARK_CODEX_MODEL=gpt-5.5`;
+- `BENCHMARK_CODEX_REASONING_EFFORT=xhigh`;
+- `BENCHMARK_SOLVER_PROMPT_VARIANT=persistent`;
+- `BENCHMARK_CODEX_TIMEOUT_SECONDS=1200`.
+
+Reason: if the thesis compares conditions A and C, the solver identity and
+reasoning budget must be part of the experimental treatment, not an implicit
+desktop-app default.
+
+Consequence: every official run must record the model and effort in both run
+metadata and attempt metadata.  Unpinned earlier runs should be described as
+pilots unless they are rerun under pinned settings.
+
+Two pinned GPT-5.5 xhigh persistent runs were performed:
+
+- E01:
+  `benchmark/results/E01_LapackBerrBackward_gpt55_xhigh_persistent/20260508-021347`.
+- E06:
+  `benchmark/results/E06_OettliPragerForward_gpt55_xhigh_persistent/20260508-024006`.
+
+E01 is a clean separation result under the stronger protocol: Condition A
+timed out after 1200 seconds with the original `sorry` still present, while
+Condition C passed in about five minutes.
+
+E06 is not a clean separation task under the stronger protocol: both
+conditions passed.  Condition C used the library theorem
+`componentwise_forward_error_standard` in a very short proof, while Condition
+A rederived the Oettli-Prager finite-sum algebra directly.  This is evidence
+that E06 is too abstract and self-contained to serve as a hard
+library-necessity task for GPT-5.5 xhigh persistence, even though it remains a
+valid stability theorem.
+
+The full E01-E10 external suite was then rerun with a 40-minute timeout per
+condition under the pinned GPT-5.5 xhigh persistent protocol:
+`benchmark/results/PERSISTENT40_XHIGH_SUITE_20260508.md`.
+
+Result: all ten tasks passed in both Condition A and Condition C.  This is a
+major benchmark-design finding.  The current E-suite does not separate the
+conditions by pass/fail once the solver is given GPT-5.5 xhigh, persistent
+instructions, and 40 minutes per condition.
+
+However, the run still shows an efficiency gap.  Across E01-E10, Condition A
+used 155.84 total solver minutes, while Condition C used 25.71.  Condition A
+averaged 254.4 proof-body lines, while Condition C averaged 47.5.
+
+Consequence: the current external-source tasks are valid stability tasks, but
+they are not hard enough for the intended final pass/fail benchmark under the
+strong persistent protocol.  They can support an efficiency-gap story, but the
+final benchmark needs harder tasks whose theorem statements do not expose the
+key numerical-analysis facts as local assumptions and whose Condition C proofs
+must compose nontrivial library stability contracts unavailable to Condition A.
+
 ### Current Open Decisions
 
 - The final contamination-search protocol and publication-grade audit.

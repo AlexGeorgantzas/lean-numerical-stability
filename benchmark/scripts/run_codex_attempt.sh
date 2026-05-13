@@ -61,6 +61,9 @@ branch="$(git -C "${repo_root}" branch --show-current)"
 timeout_seconds="${BENCHMARK_CODEX_TIMEOUT_SECONDS:-1200}"
 shared_packages="$(benchmark_shared_lake_packages_dir "${repo_root}")"
 elan_home="${ELAN_HOME:-${HOME}/.elan}"
+solver_prompt_variant="${BENCHMARK_SOLVER_PROMPT_VARIANT:-standard}"
+codex_model="${BENCHMARK_CODEX_MODEL:-}"
+codex_reasoning_effort="${BENCHMARK_CODEX_REASONING_EFFORT:-}"
 codex_home="$(mktemp -d "${TMPDIR:-/tmp}/codex-benchmark-home.XXXXXX")"
 solver_home="${codex_home}/home"
 cleanup_codex_home() {
@@ -76,6 +79,14 @@ if [[ ! -d "${elan_home}" ]]; then
   echo "missing ELAN_HOME/toolchain directory: ${elan_home}" >&2
   exit 2
 fi
+case "${codex_reasoning_effort}" in
+  ""|low|medium|high|xhigh) ;;
+  *)
+    echo "invalid BENCHMARK_CODEX_REASONING_EFFORT: ${codex_reasoning_effort}" >&2
+    echo "expected one of: low, medium, high, xhigh" >&2
+    exit 2
+    ;;
+esac
 cp "${HOME}/.codex/auth.json" "${codex_home}/auth.json"
 chmod 700 "${codex_home}"
 chmod 600 "${codex_home}/auth.json"
@@ -142,7 +153,10 @@ cat > "${result_dir}/attempt_metadata.md" <<EOF
 - source_commit: \`${commit}\`
 - started_at_utc: \`${timestamp}\`
 - codex_bin: \`${codex_bin}\`
-- codex_mode: \`auth-only temporary CODEX_HOME; temporary HOME/XDG_CACHE_HOME; host ELAN_HOME for Lean toolchain only; workspace-local lake wrapper first on PATH for solver-side BenchmarkTask typechecking; shared third-party Lake package cache added with --add-dir; --disable plugins --disable memories --ask-for-approval never exec --ephemeral --ignore-user-config --ignore-rules --skip-git-repo-check\`
+- codex_model: \`${codex_model:-<cli-default>}\`
+- codex_reasoning_effort: \`${codex_reasoning_effort:-<cli-default>}\`
+- solver_prompt_variant: \`${solver_prompt_variant}\`
+- codex_mode: \`auth-only temporary CODEX_HOME; temporary HOME/XDG_CACHE_HOME; host ELAN_HOME for Lean toolchain only; workspace-local lake wrapper first on PATH for solver-side BenchmarkTask typechecking; shared third-party Lake package cache added with --add-dir; optional --model from BENCHMARK_CODEX_MODEL; optional -c model_reasoning_effort from BENCHMARK_CODEX_REASONING_EFFORT; --disable plugins --disable memories --ask-for-approval never exec --ephemeral --ignore-user-config --ignore-rules --skip-git-repo-check\`
 - elan_home: \`${elan_home}\`
 - shared_lake_packages_add_dir: \`${shared_packages}\`
 - solver_lake_wrapper: \`${solver_bin}/lake\`
@@ -151,6 +165,26 @@ EOF
 
 cp "${workspace}/SOLVER_PROMPT.md" "${result_dir}/SOLVER_PROMPT.md"
 cp "${canonical_task}" "${result_dir}/CanonicalTask.lean"
+
+codex_exec_args=(
+  --ephemeral
+  --ignore-user-config
+  --ignore-rules
+  --skip-git-repo-check
+  --sandbox workspace-write
+  --cd "${workspace}"
+  --add-dir "${shared_packages}"
+  --json
+  --output-last-message "${result_dir}/codex_last_message.txt"
+)
+
+if [[ -n "${codex_model}" ]]; then
+  codex_exec_args=(--model "${codex_model}" "${codex_exec_args[@]}")
+fi
+
+if [[ -n "${codex_reasoning_effort}" ]]; then
+  codex_exec_args=(-c "model_reasoning_effort=\"${codex_reasoning_effort}\"" "${codex_exec_args[@]}")
+fi
 
 set +e
 "${script_dir}/run_with_timeout.py" \
@@ -170,15 +204,7 @@ set +e
     --disable memories \
     --ask-for-approval never \
     exec \
-    --ephemeral \
-    --ignore-user-config \
-    --ignore-rules \
-    --skip-git-repo-check \
-    --sandbox workspace-write \
-    --cd "${workspace}" \
-    --add-dir "${shared_packages}" \
-    --json \
-    --output-last-message "${result_dir}/codex_last_message.txt" \
+    "${codex_exec_args[@]}" \
     - < "${workspace}/SOLVER_PROMPT.md"
 codex_status=$?
 if [[ -f "${result_dir}/timeout.txt" ]]; then

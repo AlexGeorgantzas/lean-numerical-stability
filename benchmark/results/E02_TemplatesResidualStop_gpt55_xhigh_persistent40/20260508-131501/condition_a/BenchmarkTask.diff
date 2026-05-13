@@ -1,0 +1,381 @@
+--- /Users/georgiosalexandrosgeorgantzas/Documents/GitHub/lean-fp-analysis/benchmark/tasks/E02_TemplatesResidualStop/Task.lean	2026-05-07 22:51:53
++++ /tmp/lean-fp-benchmark-runs/E02_TemplatesResidualStop_gpt55_xhigh_persistent40-20260508-131501/condition_a/E02_TemplatesResidualStop/BenchmarkTask.lean	2026-05-08 13:33:37
+@@ -25,6 +25,377 @@
+         stopTol * infNormVec hnpos xhat) :
+     infNormVec hnpos (fun i => x i - xhat i) ≤
+       stopTol * infNormVec hnpos xhat := by
+-  sorry
++  have valid_of_le : ∀ {a b : ℕ}, a ≤ b → gammaValid fp b → gammaValid fp a := by
++    intro a b hab hb
++    unfold gammaValid at hb ⊢
++    have hle_nat : (a : ℝ) ≤ (b : ℝ) := by exact_mod_cast hab
++    have hle : (a : ℝ) * fp.u ≤ (b : ℝ) * fp.u := by
++      exact mul_le_mul_of_nonneg_right hle_nat fp.u_nonneg
++    exact lt_of_le_of_lt hle hb
++  have gamma_step : ∀ q : ℕ, gammaValid fp (q + 1) →
++      gamma fp q + fp.u * (1 + gamma fp q) ≤ gamma fp (q + 1) := by
++    intro q hv
++    have hvq : gammaValid fp q := valid_of_le (Nat.le_succ q) hv
++    have hdenposq : 0 < 1 - (q : ℝ) * fp.u := by exact sub_pos.mpr hvq
++    have hdenposq1 : 0 < 1 - ((q + 1 : ℕ) : ℝ) * fp.u := by
++      exact sub_pos.mpr hv
++    have hnum_nonneg : 0 ≤ ((q + 1 : ℕ) : ℝ) * fp.u := by
++      exact mul_nonneg (Nat.cast_nonneg _) fp.u_nonneg
++    have hden_le : 1 - ((q + 1 : ℕ) : ℝ) * fp.u ≤ 1 - (q : ℝ) * fp.u := by
++      have hle : (q : ℝ) * fp.u ≤ ((q + 1 : ℕ) : ℝ) * fp.u := by
++        have hq : (q : ℝ) ≤ ((q + 1 : ℕ) : ℝ) := by
++          exact_mod_cast Nat.le_succ q
++        exact mul_le_mul_of_nonneg_right hq fp.u_nonneg
++      linarith
++    have hleft_eq : gamma fp q + fp.u * (1 + gamma fp q) =
++        (((q + 1 : ℕ) : ℝ) * fp.u) / (1 - (q : ℝ) * fp.u) := by
++      unfold gamma
++      field_simp [ne_of_gt hdenposq]
++      simp only [Nat.cast_add, Nat.cast_one]
++      ring
++    rw [hleft_eq]
++    unfold gamma
++    exact div_le_div_of_nonneg_left hnum_nonneg hdenposq1 hden_le
++  have gamma_two : ∀ r : ℕ, 2 ≤ r → gammaValid fp r →
++      2 * fp.u + fp.u ^ 2 ≤ gamma fp r := by
++    intro r hr hv
++    have hdenpos : 0 < 1 - (r : ℝ) * fp.u := by exact sub_pos.mpr hv
++    rw [gamma]
++    rw [le_div_iff₀ hdenpos]
++    have hrR : (2 : ℝ) ≤ (r : ℝ) := by exact_mod_cast hr
++    have hu : 0 ≤ fp.u := fp.u_nonneg
++    have huv : (r : ℝ) * fp.u < 1 := hv
++    nlinarith [mul_nonneg (by nlinarith : (0 : ℝ) ≤ (r : ℝ)) hu,
++      sq_nonneg fp.u,
++      mul_nonneg (sub_nonneg.mpr (le_of_lt huv)) (sq_nonneg fp.u)]
++  have u_le_gamma : ∀ r : ℕ, 1 ≤ r → gammaValid fp r → fp.u ≤ gamma fp r := by
++    intro r hr hv
++    have hdenpos : 0 < 1 - (r : ℝ) * fp.u := by exact sub_pos.mpr hv
++    rw [gamma]
++    rw [le_div_iff₀ hdenpos]
++    have hrR : (1 : ℝ) ≤ (r : ℝ) := by exact_mod_cast hr
++    have hu : 0 ≤ fp.u := fp.u_nonneg
++    have huv : (r : ℝ) * fp.u < 1 := hv
++    nlinarith [mul_nonneg (by nlinarith : (0 : ℝ) ≤ (r : ℝ)) hu,
++      sq_nonneg fp.u]
++  have fold_bound :
++      ∀ (m q : ℕ), 0 < q → gammaValid fp (q + m) →
++      ∀ (x y : Fin m → ℝ) (acc s B : ℝ),
++        0 ≤ B → |s| ≤ B → |acc - s| ≤ gamma fp q * B →
++        |Fin.foldl m (fun acc i => fp.fl_add acc (fp.fl_mul (x i) (y i))) acc -
++            (s + ∑ i : Fin m, x i * y i)| ≤
++          gamma fp (q + m) * (B + ∑ i : Fin m, |x i * y i|) := by
++    intro m
++    induction m with
++    | zero =>
++        intro q hq hvalid x y acc s B hB hs hacc
++        simpa [Fin.foldl_zero] using hacc
++    | succ m ih =>
++        intro q hq hvalid x y acc s B hB hs hacc
++        have hvalid_q1 : gammaValid fp (q + 1) := by
++          exact valid_of_le (by omega : q + 1 ≤ q + (m + 1)) hvalid
++        let t : ℝ := x 0 * y 0
++        obtain ⟨δm, hδm, hmul⟩ := fp.model_mul (x 0) (y 0)
++        obtain ⟨δa, hδa, hadd⟩ :=
++          fp.model_add acc (fp.fl_mul (x 0) (y 0))
++        have hacc_abs : |acc| ≤ (1 + gamma fp q) * B := by
++          calc
++            |acc| = |(acc - s) + s| := by ring_nf
++            _ ≤ |acc - s| + |s| := abs_add_le (acc - s) s
++            _ ≤ gamma fp q * B + B := add_le_add hacc hs
++            _ = (1 + gamma fp q) * B := by ring
++        have hp_err : |fp.fl_mul (x 0) (y 0) - t| ≤ fp.u * |t| := by
++          dsimp [t]
++          rw [hmul]
++          calc
++            |(x 0 * y 0) * (1 + δm) - x 0 * y 0| =
++                |(x 0 * y 0) * δm| := by ring_nf
++            _ = |x 0 * y 0| * |δm| := by rw [abs_mul]
++            _ ≤ |x 0 * y 0| * fp.u :=
++                mul_le_mul_of_nonneg_left hδm (abs_nonneg (x 0 * y 0))
++            _ = fp.u * |x 0 * y 0| := by ring
++        have hp_abs : |fp.fl_mul (x 0) (y 0)| ≤ (1 + fp.u) * |t| := by
++          dsimp [t]
++          rw [hmul]
++          have h1δ : |1 + δm| ≤ 1 + fp.u := by
++            calc
++              |(1 : ℝ) + δm| ≤ |(1 : ℝ)| + |δm| := abs_add_le (1 : ℝ) δm
++              _ ≤ 1 + fp.u := by
++                simp
++                exact hδm
++          calc
++            |(x 0 * y 0) * (1 + δm)| = |x 0 * y 0| * |1 + δm| := by
++              rw [abs_mul]
++            _ ≤ |x 0 * y 0| * (1 + fp.u) :=
++                mul_le_mul_of_nonneg_left h1δ (abs_nonneg (x 0 * y 0))
++            _ = (1 + fp.u) * |x 0 * y 0| := by ring
++        have hnewMag : |s + t| ≤ B + |t| := by
++          calc
++            |s + t| ≤ |s| + |t| := abs_add_le s t
++            _ ≤ B + |t| := by linarith
++        have hB' : 0 ≤ B + |t| := by
++          exact add_nonneg hB (abs_nonneg t)
++        have hnewErr :
++            |fp.fl_add acc (fp.fl_mul (x 0) (y 0)) - (s + t)| ≤
++              gamma fp (q + 1) * (B + |t|) := by
++          rw [hadd]
++          have hdecomp :
++              (acc + fp.fl_mul (x 0) (y 0)) * (1 + δa) - (s + t) =
++                ((acc - s) + (fp.fl_mul (x 0) (y 0) - t)) +
++                  δa * (acc + fp.fl_mul (x 0) (y 0)) := by
++            ring_nf
++          calc
++            |(acc + fp.fl_mul (x 0) (y 0)) * (1 + δa) - (s + t)|
++                = |((acc - s) + (fp.fl_mul (x 0) (y 0) - t)) +
++                    δa * (acc + fp.fl_mul (x 0) (y 0))| := by
++                    rw [hdecomp]
++            _ ≤ |(acc - s) + (fp.fl_mul (x 0) (y 0) - t)| +
++                  |δa * (acc + fp.fl_mul (x 0) (y 0))| :=
++                  abs_add_le ((acc - s) + (fp.fl_mul (x 0) (y 0) - t))
++                    (δa * (acc + fp.fl_mul (x 0) (y 0)))
++            _ ≤ (|acc - s| + |fp.fl_mul (x 0) (y 0) - t|) +
++                  |δa| * |acc + fp.fl_mul (x 0) (y 0)| := by
++                  gcongr
++                  · exact abs_add_le (acc - s) (fp.fl_mul (x 0) (y 0) - t)
++                  · rw [abs_mul]
++            _ ≤ (gamma fp q * B + fp.u * |t|) +
++                  fp.u * ((1 + gamma fp q) * B + (1 + fp.u) * |t|) := by
++                  apply add_le_add
++                  · exact add_le_add hacc hp_err
++                  · calc
++                      |δa| * |acc + fp.fl_mul (x 0) (y 0)|
++                          ≤ fp.u * |acc + fp.fl_mul (x 0) (y 0)| :=
++                            mul_le_mul_of_nonneg_right hδa
++                              (abs_nonneg (acc + fp.fl_mul (x 0) (y 0)))
++                      _ ≤ fp.u * (|acc| + |fp.fl_mul (x 0) (y 0)|) := by
++                            exact mul_le_mul_of_nonneg_left
++                              (abs_add_le acc (fp.fl_mul (x 0) (y 0))) fp.u_nonneg
++                      _ ≤ fp.u * ((1 + gamma fp q) * B + (1 + fp.u) * |t|) := by
++                            exact mul_le_mul_of_nonneg_left
++                              (add_le_add hacc_abs hp_abs) fp.u_nonneg
++            _ ≤ gamma fp (q + 1) * (B + |t|) := by
++                  have hcoefB :
++                      gamma fp q + fp.u * (1 + gamma fp q) ≤ gamma fp (q + 1) :=
++                    gamma_step q hvalid_q1
++                  have hcoefT : fp.u + fp.u * (1 + fp.u) ≤ gamma fp (q + 1) := by
++                    have h2 : 2 * fp.u + fp.u ^ 2 ≤ gamma fp (q + 1) :=
++                      gamma_two (q + 1) (by omega) hvalid_q1
++                    nlinarith
++                  have hBpart :
++                      (gamma fp q + fp.u * (1 + gamma fp q)) * B ≤
++                        gamma fp (q + 1) * B :=
++                    mul_le_mul_of_nonneg_right hcoefB hB
++                  have htpart :
++                      (fp.u + fp.u * (1 + fp.u)) * |t| ≤
++                        gamma fp (q + 1) * |t| :=
++                    mul_le_mul_of_nonneg_right hcoefT (abs_nonneg t)
++                  nlinarith
++        have htail := ih (q + 1) (Nat.succ_pos q)
++          (by simpa [Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using hvalid)
++          (fun i : Fin m => x i.succ) (fun i : Fin m => y i.succ)
++          (fp.fl_add acc (fp.fl_mul (x 0) (y 0))) (s + t) (B + |t|)
++          hB' hnewMag hnewErr
++        rw [Fin.foldl_succ]
++        simpa [t, Fin.sum_univ_succ, Nat.add_assoc, Nat.add_comm, Nat.add_left_comm,
++          add_assoc, add_comm, add_left_comm] using htail
++  have dot_bound : ∀ (m : ℕ) (x y : Fin m → ℝ), gammaValid fp m →
++      |fl_dotProduct fp m x y - ∑ j : Fin m, x j * y j| ≤
++        gamma fp m * (∑ j : Fin m, |x j * y j|) := by
++    intro m
++    cases m with
++    | zero =>
++        intro x y hvalid
++        simp [fl_dotProduct, gamma]
++    | succ m =>
++        intro x y hvalid
++        let t0 : ℝ := x 0 * y 0
++        obtain ⟨δ, hδ, hmul⟩ := fp.model_mul (x 0) (y 0)
++        have hinit : |fp.fl_mul (x 0) (y 0) - t0| ≤ gamma fp 1 * |t0| := by
++          have hp : |fp.fl_mul (x 0) (y 0) - t0| ≤ fp.u * |t0| := by
++            dsimp [t0]
++            rw [hmul]
++            calc
++              |(x 0 * y 0) * (1 + δ) - x 0 * y 0| =
++                  |(x 0 * y 0) * δ| := by ring_nf
++              _ = |x 0 * y 0| * |δ| := by rw [abs_mul]
++              _ ≤ |x 0 * y 0| * fp.u :=
++                  mul_le_mul_of_nonneg_left hδ (abs_nonneg (x 0 * y 0))
++              _ = fp.u * |x 0 * y 0| := by ring
++          have hvalid1 : gammaValid fp 1 :=
++            valid_of_le (by omega : 1 ≤ m + 1) hvalid
++          exact le_trans hp
++            (mul_le_mul_of_nonneg_right (u_le_gamma 1 (by omega) hvalid1)
++              (abs_nonneg t0))
++        have htail := fold_bound m 1 (by omega)
++          (by simpa [Nat.add_comm] using hvalid)
++          (fun i : Fin m => x i.succ) (fun i : Fin m => y i.succ)
++          (fp.fl_mul (x 0) (y 0)) t0 |t0|
++          (abs_nonneg t0) (le_rfl) hinit
++        simpa [fl_dotProduct, t0, Fin.sum_univ_succ, Nat.add_assoc,
++          Nat.add_comm, Nat.add_left_comm, add_assoc, add_comm, add_left_comm]
++          using htail
++  have residual_error : ∀ i : Fin n,
++      |fl_residual fp n A xhat b i - (b i - ∑ j : Fin n, A i j * xhat j)| ≤
++        gamma fp (n + 1) * (|b i| + ∑ j : Fin n, |A i j * xhat j|) := by
++    intro i
++    let c : ℝ := fl_matVec fp n n A xhat i
++    let d : ℝ := ∑ j : Fin n, A i j * xhat j
++    let S : ℝ := ∑ j : Fin n, |A i j * xhat j|
++    have hdot : |c - d| ≤ gamma fp n * S := by
++      dsimp [c, d, S, fl_matVec]
++      exact dot_bound n (A i) xhat hn
++    have hS_nonneg : 0 ≤ S := by
++      dsimp [S]
++      exact Finset.sum_nonneg (fun j hj => abs_nonneg (A i j * xhat j))
++    have hd_abs : |d| ≤ S := by
++      dsimp [d, S]
++      simpa using (Finset.abs_sum_le_sum_abs
++        (fun j : Fin n => A i j * xhat j) Finset.univ)
++    have hc_abs : |c| ≤ (1 + gamma fp n) * S := by
++      calc
++        |c| = |(c - d) + d| := by ring_nf
++        _ ≤ |c - d| + |d| := abs_add_le (c - d) d
++        _ ≤ gamma fp n * S + S := add_le_add hdot hd_abs
++        _ = (1 + gamma fp n) * S := by ring
++    obtain ⟨δ, hδ, hsub⟩ := fp.model_sub (b i) c
++    have hbmc_abs : |b i - c| ≤ |b i| + (1 + gamma fp n) * S := by
++      calc
++        |b i - c| ≤ |b i| + |c| := abs_sub (b i) c
++        _ ≤ |b i| + (1 + gamma fp n) * S := by linarith
++    have hres_decomp : (b i - c) * (1 + δ) - (b i - d) =
++        (d - c) + δ * (b i - c) := by
++      ring
++    rw [fl_residual, hsub]
++    dsimp [c] at hres_decomp
++    change |(b i - c) * (1 + δ) - (b i - d)| ≤
++      gamma fp (n + 1) * (|b i| + S)
++    calc
++      |(b i - c) * (1 + δ) - (b i - d)|
++          = |(d - c) + δ * (b i - c)| := by rw [hres_decomp]
++      _ ≤ |d - c| + |δ * (b i - c)| :=
++          abs_add_le (d - c) (δ * (b i - c))
++      _ = |c - d| + |δ| * |b i - c| := by rw [abs_sub_comm d c, abs_mul]
++      _ ≤ gamma fp n * S + fp.u * (|b i| + (1 + gamma fp n) * S) := by
++          exact add_le_add hdot
++            (mul_le_mul hδ hbmc_abs (abs_nonneg (b i - c)) fp.u_nonneg)
++      _ ≤ gamma fp (n + 1) * (|b i| + S) := by
++          have hcoefS :
++              gamma fp n + fp.u * (1 + gamma fp n) ≤ gamma fp (n + 1) :=
++            gamma_step n hn1
++          have hcoefB : fp.u ≤ gamma fp (n + 1) :=
++            u_le_gamma (n + 1) (by omega) hn1
++          have hBpart : fp.u * |b i| ≤ gamma fp (n + 1) * |b i| :=
++            mul_le_mul_of_nonneg_right hcoefB (abs_nonneg (b i))
++          have hSpart :
++              (gamma fp n + fp.u * (1 + gamma fp n)) * S ≤
++                gamma fp (n + 1) * S :=
++            mul_le_mul_of_nonneg_right hcoefS hS_nonneg
++          nlinarith
++  have hresid : ∀ i : Fin n, |b i - ∑ j : Fin n, A i j * xhat j| ≤ residualTol := by
++    intro i
++    let r : ℝ := fl_residual fp n A xhat b i
++    let e : ℝ := b i - ∑ j : Fin n, A i j * xhat j
++    let S : ℝ := ∑ j : Fin n, |A i j * xhat j|
++    have herr : |r - e| ≤ gamma fp (n + 1) * (|b i| + S) := by
++      dsimp [r, e, S]
++      exact residual_error i
++    calc
++      |b i - ∑ j : Fin n, A i j * xhat j|
++          = |r + (e - r)| := by
++            dsimp [r, e]
++            ring_nf
++      _ ≤ |r| + |e - r| := abs_add_le r (e - r)
++      _ = |r| + |r - e| := by rw [abs_sub_comm e r]
++      _ ≤ |r| + gamma fp (n + 1) * (|b i| + S) :=
++          add_le_add (le_refl |r|) herr
++      _ = templatesResidualAllowance fp n A xhat b i := by
++            dsimp [r, S, templatesResidualAllowance]
++            simp [abs_mul]
++      _ ≤ residualTol := hcert i
++  have hAinv_apply : ∀ (i : Fin n) (v : Fin n → ℝ),
++      (∑ k : Fin n, A_inv i k * (∑ j : Fin n, A k j * v j)) = v i := by
++    intro i v
++    calc
++      (∑ k : Fin n, A_inv i k * (∑ j : Fin n, A k j * v j))
++          = ∑ j : Fin n, (∑ k : Fin n, A_inv i k * A k j) * v j := by
++              simp only [Finset.mul_sum]
++              rw [Finset.sum_comm]
++              apply Finset.sum_congr rfl
++              intro j hj
++              rw [Finset.sum_mul]
++              apply Finset.sum_congr rfl
++              intro k hk
++              ring
++      _ = ∑ j : Fin n, (if i = j then 1 else 0) * v j := by
++              apply Finset.sum_congr rfl
++              intro j hj
++              rw [hInv i j]
++      _ = v i := by
++              rw [Finset.sum_eq_single_of_mem i (Finset.mem_univ i)]
++              · simp
++              · intro j hj hji
++                have hij : i ≠ j := by
++                  intro h
++                  exact hji h.symm
++                simp [hij]
++  have hErr_le_inv : infNormVec hnpos (fun i => x i - xhat i) ≤
++      infNorm hnpos A_inv * residualTol := by
++    unfold infNormVec
++    rw [Finset.sup'_le_iff]
++    intro i hi
++    have hx_exact : (∑ k : Fin n, A_inv i k * b k) = x i := by
++      simpa [hAx] using hAinv_apply i x
++    have hxhat_exact :
++        (∑ k : Fin n, A_inv i k * (∑ j : Fin n, A k j * xhat j)) = xhat i := by
++      exact hAinv_apply i xhat
++    have hx_repr : x i - xhat i =
++        ∑ k : Fin n, A_inv i k * (b k - ∑ j : Fin n, A k j * xhat j) := by
++      calc
++        x i - xhat i =
++            (∑ k : Fin n, A_inv i k * b k) -
++              (∑ k : Fin n, A_inv i k * (∑ j : Fin n, A k j * xhat j)) := by
++                rw [hx_exact, hxhat_exact]
++        _ = ∑ k : Fin n, (A_inv i k * b k -
++            A_inv i k * (∑ j : Fin n, A k j * xhat j)) := by
++              rw [Finset.sum_sub_distrib]
++        _ = ∑ k : Fin n, A_inv i k *
++            (b k - ∑ j : Fin n, A k j * xhat j) := by
++              apply Finset.sum_congr rfl
++              intro k hk
++              ring
++    calc
++      |(fun i => x i - xhat i) i|
++          = |∑ k : Fin n, A_inv i k *
++              (b k - ∑ j : Fin n, A k j * xhat j)| := by
++                change |x i - xhat i| =
++                  |∑ k : Fin n, A_inv i k *
++                    (b k - ∑ j : Fin n, A k j * xhat j)|
++                rw [hx_repr]
++      _ ≤ ∑ k : Fin n,
++            |A_inv i k * (b k - ∑ j : Fin n, A k j * xhat j)| := by
++              simpa using (Finset.abs_sum_le_sum_abs
++                (fun k : Fin n =>
++                  A_inv i k * (b k - ∑ j : Fin n, A k j * xhat j))
++                Finset.univ)
++      _ = ∑ k : Fin n, |A_inv i k| *
++            |b k - ∑ j : Fin n, A k j * xhat j| := by
++              apply Finset.sum_congr rfl
++              intro k hk
++              rw [abs_mul]
++      _ ≤ ∑ k : Fin n, |A_inv i k| * residualTol := by
++              apply Finset.sum_le_sum
++              intro k hk
++              exact mul_le_mul_of_nonneg_left (hresid k) (abs_nonneg (A_inv i k))
++      _ = (∑ k : Fin n, |A_inv i k|) * residualTol := by
++              rw [Finset.sum_mul]
++      _ ≤ infNorm hnpos A_inv * residualTol := by
++              exact mul_le_mul_of_nonneg_right
++                (by
++                  unfold infNorm
++                  exact Finset.le_sup'
++                    (fun r : Fin n => ∑ j : Fin n, |A_inv r j|)
++                    (Finset.mem_univ i))
++                hresidualTol_nonneg
++  exact le_trans hErr_le_inv hstop
+ 
+ end LeanFpAnalysis.FP

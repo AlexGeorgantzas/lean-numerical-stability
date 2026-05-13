@@ -1,0 +1,12 @@
+/tmp/lean-fp-benchmark-runs/E04_LapackLevel3Matmul_gpt55_xhigh_persistent40-20260508-140548/condition_c/E04_LapackLevel3Matmul/.benchmark_bin/lake
+/tmp/lean-fp-benchmark-runs/E04_LapackLevel3Matmul_gpt55_xhigh_persistent40-20260508-140548/condition_c/E04_LapackLevel3Matmul/.benchmark_condition_c_snapshot
+/tmp/lean-fp-benchmark-runs/E04_LapackLevel3Matmul_gpt55_xhigh_persistent40-20260508-140548/condition_c/E04_LapackLevel3Matmul/.benchmark_env/LEAN_PATH
+/tmp/lean-fp-benchmark-runs/E04_LapackLevel3Matmul_gpt55_xhigh_persistent40-20260508-140548/condition_c/E04_LapackLevel3Matmul/BenchmarkTask.lean
+/tmp/lean-fp-benchmark-runs/E04_LapackLevel3Matmul_gpt55_xhigh_persistent40-20260508-140548/condition_c/E04_LapackLevel3Matmul/README.md
+/tmp/lean-fp-benchmark-runs/E04_LapackLevel3Matmul_gpt55_xhigh_persistent40-20260508-140548/condition_c/E04_LapackLevel3Matmul/SOLVER_PROMPT.md
+/tmp/lean-fp-benchmark-runs/E04_LapackLevel3Matmul_gpt55_xhigh_persistent40-20260508-140548/condition_c/E04_LapackLevel3Matmul/docs
+/tmp/lean-fp-benchmark-runs/E04_LapackLevel3Matmul_gpt55_xhigh_persistent40-20260508-140548/condition_c/E04_LapackLevel3Matmul/examples
+/tmp/lean-fp-benchmark-runs/E04_LapackLevel3Matmul_gpt55_xhigh_persistent40-20260508-140548/condition_c/E04_LapackLevel3Matmul/lake-manifest.json
+/tmp/lean-fp-benchmark-runs/E04_LapackLevel3Matmul_gpt55_xhigh_persistent40-20260508-140548/condition_c/E04_LapackLevel3Matmul/lakefile.toml
+/tmp/lean-fp-benchmark-runs/E04_LapackLevel3Matmul_gpt55_xhigh_persistent40-20260508-140548/condition_c/E04_LapackLevel3Matmul/lean-toolchain
+/tmp/lean-fp-benchmark-runs/E04_LapackLevel3Matmul_gpt55_xhigh_persistent40-20260508-140548/condition_c/E04_LapackLevel3Matmul/public_library

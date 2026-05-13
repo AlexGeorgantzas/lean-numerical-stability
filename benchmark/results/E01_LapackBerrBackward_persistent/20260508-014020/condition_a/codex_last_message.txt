@@ -1,0 +1,14 @@
+I wasn’t able to complete a valid proof within this run.
+
+Current state:
+- Replaced the original `sorry` with a constructive perturbation proof skeleton.
+- The weighted `DeltaA` / `Deltab` construction typechecks.
+- `lake build BenchmarkTask` still fails at the remaining residual-rounding estimate:
+
+```lean
+|b i - ∑ j, A i j * x j| ≤
+  |fl_residual fp n A x b i| +
+    gamma fp (n + 1) * lapackBerrDenom n A x b i
+```
+
+That estimate is the standard floating-point residual error bound, but the local library has only definitions and no supporting lemmas for `fl_dotProduct` / `fl_residual`, so it would need to be formalized from the `FPModel` axioms.

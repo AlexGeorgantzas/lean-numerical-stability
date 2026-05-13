@@ -1,0 +1,400 @@
+import LeanFpAnalysis.FP
+
+namespace LeanFpAnalysis.FP
+
+open scoped BigOperators
+
+noncomputable def lapackBerrDenom (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (x b : Fin n → ℝ) (i : Fin n) : ℝ :=
+  |b i| + ∑ j : Fin n, |A i j| * |x j|
+
+def componentwiseBackwardCompatible (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (x b : Fin n → ℝ) (eta : ℝ) : Prop :=
+  ∃ DeltaA : Fin n → Fin n → ℝ,
+  ∃ Deltab : Fin n → ℝ,
+    (∀ i j, |DeltaA i j| ≤ eta * |A i j|) ∧
+    (∀ i, |Deltab i| ≤ eta * |b i|) ∧
+    ∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x j = b i + Deltab i
+
+theorem lapackBerr_backward_certificate
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (x b : Fin n → ℝ)
+    (eta : ℝ)
+    (hn : gammaValid fp n)
+    (hn1 : gammaValid fp (n + 1))
+    (heta_nonneg : 0 ≤ eta)
+    (hcert : ∀ i : Fin n,
+      |fl_residual fp n A x b i| +
+        gamma fp (n + 1) * lapackBerrDenom n A x b i ≤
+          eta * lapackBerrDenom n A x b i) :
+    componentwiseBackwardCompatible n A x b eta := by
+  classical
+  have gamma_valid_mono :
+      ∀ {m k : ℕ}, m ≤ k → gammaValid fp k → gammaValid fp m := by
+    intro m k hmk hk
+    unfold gammaValid at *
+    have hcast : (m : ℝ) ≤ (k : ℝ) := by exact_mod_cast hmk
+    have hmul : (m : ℝ) * fp.u ≤ (k : ℝ) * fp.u :=
+      mul_le_mul_of_nonneg_right hcast fp.u_nonneg
+    exact lt_of_le_of_lt hmul hk
+  have gamma_nonneg : ∀ m : ℕ, gammaValid fp m → 0 ≤ gamma fp m := by
+    intro m hm
+    have hden : 0 ≤ 1 - (m : ℝ) * fp.u := by
+      unfold gammaValid at hm
+      exact le_of_lt (sub_pos.mpr hm)
+    unfold gamma
+    exact div_nonneg (mul_nonneg (Nat.cast_nonneg m) fp.u_nonneg) hden
+  have gamma_ge_u :
+      ∀ {m : ℕ}, 1 ≤ m → gammaValid fp m → fp.u ≤ gamma fp m := by
+    intro m hmpos hm
+    have hu : 0 ≤ fp.u := fp.u_nonneg
+    have hm_ge_one : (1 : ℝ) ≤ (m : ℝ) := by exact_mod_cast hmpos
+    have hmu_nonneg : 0 ≤ (m : ℝ) * fp.u :=
+      mul_nonneg (Nat.cast_nonneg m) hu
+    have hdenpos : 0 < 1 - (m : ℝ) * fp.u := by
+      unfold gammaValid at hm
+      nlinarith
+    rw [gamma]
+    rw [le_div_iff₀ hdenpos]
+    nlinarith [mul_le_mul_of_nonneg_right hm_ge_one hu, hmu_nonneg]
+  have gamma_step :
+      ∀ m : ℕ, gammaValid fp (m + 1) →
+        gamma fp m + fp.u * (1 + gamma fp m) ≤ gamma fp (m + 1) := by
+    intro m hm1
+    have hm : gammaValid fp m := gamma_valid_mono (Nat.le_succ m) hm1
+    have hdenm : 0 < 1 - (m : ℝ) * fp.u := by
+      unfold gammaValid at hm
+      nlinarith
+    have hdenmp : 0 < 1 - ((m + 1 : ℕ) : ℝ) * fp.u := by
+      unfold gammaValid at hm1
+      nlinarith
+    have hleft :
+        gamma fp m + fp.u * (1 + gamma fp m) =
+          (((m + 1 : ℕ) : ℝ) * fp.u) / (1 - (m : ℝ) * fp.u) := by
+      simp only [gamma, Nat.cast_add, Nat.cast_one]
+      have hdenm' : 1 - (m : ℝ) * fp.u ≠ 0 := ne_of_gt hdenm
+      field_simp [hdenm']
+      ring
+    rw [hleft, gamma]
+    have hnum_nonneg : 0 ≤ (((m + 1 : ℕ) : ℝ) * fp.u) :=
+      mul_nonneg (Nat.cast_nonneg _) fp.u_nonneg
+    have hdenle : 1 - ((m + 1 : ℕ) : ℝ) * fp.u ≤ 1 - (m : ℝ) * fp.u := by
+      have hcast : (m : ℝ) ≤ ((m + 1 : ℕ) : ℝ) := by
+        exact_mod_cast Nat.le_succ m
+      have hmulu := mul_le_mul_of_nonneg_right hcast fp.u_nonneg
+      nlinarith
+    exact div_le_div_of_nonneg_left hnum_nonneg hdenmp hdenle
+  have combine_bound :
+      ∀ {m : ℕ} {θ δ : ℝ}, gammaValid fp (m + 1) →
+        |θ| ≤ gamma fp m → |δ| ≤ fp.u →
+          |(1 + θ) * (1 + δ) - 1| ≤ gamma fp (m + 1) := by
+    intro m θ δ hm1 hθ hδ
+    have hm : gammaValid fp m := gamma_valid_mono (Nat.le_succ m) hm1
+    have hg_nonneg : 0 ≤ gamma fp m := gamma_nonneg m hm
+    have hmul : |θ * δ| ≤ gamma fp m * fp.u := by
+      rw [abs_mul]
+      exact mul_le_mul hθ hδ (abs_nonneg δ) hg_nonneg
+    have htri : |(1 + θ) * (1 + δ) - 1| ≤ |θ| + |δ| + |θ * δ| := by
+      calc
+        |(1 + θ) * (1 + δ) - 1| = |θ + δ + θ * δ| := by ring_nf
+        _ ≤ |θ + δ| + |θ * δ| := abs_add_le (θ + δ) (θ * δ)
+        _ ≤ |θ| + |δ| + |θ * δ| := by
+          have := abs_add_le θ δ
+          linarith
+    calc
+      |(1 + θ) * (1 + δ) - 1| ≤ |θ| + |δ| + |θ * δ| := htri
+      _ ≤ gamma fp m + fp.u + gamma fp m * fp.u := by linarith
+      _ = gamma fp m + fp.u * (1 + gamma fp m) := by ring
+      _ ≤ gamma fp (m + 1) := gamma_step m hm1
+  have dot_rep :
+      ∀ (m : ℕ), gammaValid fp m → (x y : Fin m → ℝ) →
+        ∃ θ : Fin m → ℝ,
+          (∀ i, |θ i| ≤ gamma fp m) ∧
+          fl_dotProduct fp m x y = ∑ i : Fin m, x i * y i * (1 + θ i) := by
+    intro m
+    induction m with
+    | zero =>
+        intro hm x y
+        refine ⟨fun i => Fin.elim0 i, ?_, ?_⟩
+        · intro i
+          exact Fin.elim0 i
+        · simp [fl_dotProduct]
+    | succ m ih =>
+        cases m with
+        | zero =>
+            intro hm x y
+            rcases fp.model_mul (x 0) (y 0) with ⟨δ, hδ, hfl⟩
+            refine ⟨fun _ => δ, ?_, ?_⟩
+            · intro i
+              exact le_trans hδ (gamma_ge_u (m := 1) (by norm_num) hm)
+            · simp [fl_dotProduct, hfl]
+        | succ k =>
+            intro hm x y
+            have hprev : gammaValid fp (k + 1) :=
+              gamma_valid_mono (Nat.le_succ (k + 1)) hm
+            rcases ih hprev
+                (fun i : Fin (k + 1) => x i.castSucc)
+                (fun i : Fin (k + 1) => y i.castSucc) with
+              ⟨θp, hθp, hflp⟩
+            let last : Fin (k + 2) := Fin.last (k + 1)
+            rcases fp.model_mul (x last) (y last) with ⟨δm, hδm, hflm⟩
+            rcases fp.model_add
+                (fl_dotProduct fp (k + 1)
+                  (fun i : Fin (k + 1) => x i.castSucc)
+                  (fun i : Fin (k + 1) => y i.castSucc))
+                (fp.fl_mul (x last) (y last)) with ⟨δa, hδa, hfla⟩
+            let θlast : ℝ := (1 + δm) * (1 + δa) - 1
+            let θ : Fin (k + 2) → ℝ :=
+              Fin.lastCases θlast
+                (fun i : Fin (k + 1) => (1 + θp i) * (1 + δa) - 1)
+            refine ⟨θ, ?_, ?_⟩
+            · intro i
+              change
+                |Fin.lastCases θlast
+                    (fun i : Fin (k + 1) => (1 + θp i) * (1 + δa) - 1) i| ≤
+                  gamma fp (k + 2)
+              refine Fin.lastCases ?_ ?_ i
+              · have huγprev : fp.u ≤ gamma fp (k + 1) :=
+                  gamma_ge_u (m := k + 1)
+                    (Nat.succ_le_succ (Nat.zero_le k)) hprev
+                simpa [θlast] using
+                  (combine_bound (m := k + 1) hm (le_trans hδm huγprev) hδa)
+              · intro i
+                simpa using (combine_bound (m := k + 1) hm (hθp i) hδa)
+            · calc
+                fl_dotProduct fp (k + 2) x y
+                    = fp.fl_add
+                        (fl_dotProduct fp (k + 1)
+                          (fun i : Fin (k + 1) => x i.castSucc)
+                          (fun i : Fin (k + 1) => y i.castSucc))
+                        (fp.fl_mul (x last) (y last)) := by
+                          simp [fl_dotProduct, Fin.foldl_succ_last, last]
+                _ = (fl_dotProduct fp (k + 1)
+                        (fun i : Fin (k + 1) => x i.castSucc)
+                        (fun i : Fin (k + 1) => y i.castSucc) +
+                        fp.fl_mul (x last) (y last)) * (1 + δa) := hfla
+                _ = ((∑ i : Fin (k + 1),
+                        x i.castSucc * y i.castSucc * (1 + θp i)) +
+                        (x last * y last) * (1 + δm)) * (1 + δa) := by
+                          rw [hflp, hflm]
+                _ = ∑ i : Fin (k + 2), x i * y i * (1 + θ i) := by
+                  subst θ
+                  subst θlast
+                  subst last
+                  rw [Fin.sum_univ_castSucc (fun i : Fin (k + 2) =>
+                    x i * y i * (1 + Fin.lastCases ((1 + δm) * (1 + δa) - 1)
+                      (fun i : Fin (k + 1) => (1 + θp i) * (1 + δa) - 1) i))]
+                  simp [Fin.lastCases, add_mul, mul_add, Finset.sum_add_distrib,
+                    Finset.mul_sum, mul_assoc, mul_left_comm, mul_comm]
+  have residual_bound :
+      ∀ i : Fin n,
+        |b i - ∑ j : Fin n, A i j * x j| ≤
+          |fl_residual fp n A x b i| +
+            gamma fp (n + 1) * lapackBerrDenom n A x b i := by
+    intro i
+    rcases dot_rep n hn (A i) x with ⟨θ, hθ, hdot⟩
+    rcases fp.model_sub (b i) (fl_matVec fp n n A x i) with ⟨δs, hδs, hfls⟩
+    let e : ℝ := b i - ∑ j : Fin n, A i j * x j
+    let flr : ℝ := fl_residual fp n A x b i
+    let S : ℝ := ∑ j : Fin n, |A i j| * |x j|
+    let D : ℝ := lapackBerrDenom n A x b i
+    have hu_le_gamma : fp.u ≤ gamma fp (n + 1) :=
+      gamma_ge_u (m := n + 1) (Nat.succ_le_succ (Nat.zero_le n)) hn1
+    have hflr_eq :
+        flr = (b i - ∑ j : Fin n, A i j * x j * (1 + θ j)) * (1 + δs) := by
+      have hfls' := hfls
+      simp [fl_matVec, hdot] at hfls'
+      simpa [flr, fl_residual, fl_matVec, hdot] using hfls'
+    have hcoef : ∀ j : Fin n, |(1 + θ j) * (1 + δs) - 1| ≤ gamma fp (n + 1) := by
+      intro j
+      exact combine_bound (m := n) hn1 (hθ j) hδs
+    have hsumerr :
+        |∑ j : Fin n, A i j * x j * ((1 + θ j) * (1 + δs) - 1)| ≤
+          gamma fp (n + 1) * S := by
+      calc
+        |∑ j : Fin n, A i j * x j * ((1 + θ j) * (1 + δs) - 1)|
+            ≤ ∑ j : Fin n, |A i j * x j * ((1 + θ j) * (1 + δs) - 1)| := by
+              simpa using
+                (Finset.abs_sum_le_sum_abs
+                  (fun j : Fin n => A i j * x j * ((1 + θ j) * (1 + δs) - 1))
+                  Finset.univ)
+        _ ≤ ∑ j : Fin n, gamma fp (n + 1) * (|A i j| * |x j|) := by
+          apply Finset.sum_le_sum
+          intro j hj
+          have hcoefj := hcoef j
+          calc
+            |A i j * x j * ((1 + θ j) * (1 + δs) - 1)|
+                = (|A i j| * |x j|) * |(1 + θ j) * (1 + δs) - 1| := by
+                  simp [abs_mul, mul_assoc]
+            _ ≤ (|A i j| * |x j|) * gamma fp (n + 1) := by
+              exact mul_le_mul_of_nonneg_left hcoefj
+                (mul_nonneg (abs_nonneg _) (abs_nonneg _))
+            _ = gamma fp (n + 1) * (|A i j| * |x j|) := by ring
+        _ = gamma fp (n + 1) * S := by
+          simp [S, Finset.mul_sum]
+    have hb_err : |b i * δs| ≤ gamma fp (n + 1) * |b i| := by
+      calc
+        |b i * δs| = |b i| * |δs| := abs_mul (b i) δs
+        _ ≤ |b i| * gamma fp (n + 1) := by
+          exact mul_le_mul_of_nonneg_left (le_trans hδs hu_le_gamma) (abs_nonneg _)
+        _ = gamma fp (n + 1) * |b i| := by ring
+    have herr : |flr - e| ≤ gamma fp (n + 1) * D := by
+      have herr_eq :
+          flr - e =
+            b i * δs - ∑ j : Fin n,
+              A i j * x j * ((1 + θ j) * (1 + δs) - 1) := by
+        rw [hflr_eq]
+        simp [e, sub_eq_add_neg, mul_add, Finset.sum_add_distrib,
+          Finset.sum_neg_distrib, Finset.mul_sum, mul_left_comm, mul_comm]
+        abel
+      rw [herr_eq]
+      calc
+        |b i * δs -
+            ∑ j : Fin n, A i j * x j * ((1 + θ j) * (1 + δs) - 1)|
+            ≤ |b i * δs| +
+              |∑ j : Fin n, A i j * x j * ((1 + θ j) * (1 + δs) - 1)| :=
+                abs_sub (b i * δs)
+                  (∑ j : Fin n, A i j * x j * ((1 + θ j) * (1 + δs) - 1))
+        _ ≤ gamma fp (n + 1) * |b i| + gamma fp (n + 1) * S := by linarith
+        _ = gamma fp (n + 1) * D := by
+          simp [D, lapackBerrDenom, S, mul_add]
+    have htri : |e| ≤ |flr| + |flr - e| := by
+      calc
+        |e| = |flr - (flr - e)| := by
+          congr 1
+          ring
+        _ ≤ |flr| + |flr - e| := abs_sub flr (flr - e)
+    calc
+      |b i - ∑ j : Fin n, A i j * x j| = |e| := by simp [e]
+      _ ≤ |flr| + |flr - e| := htri
+      _ ≤ |flr| + gamma fp (n + 1) * D := by linarith
+      _ = |fl_residual fp n A x b i| +
+            gamma fp (n + 1) * lapackBerrDenom n A x b i := by
+              simp [flr, D]
+  have exact_residual :
+      ∀ i : Fin n,
+        |b i - ∑ j : Fin n, A i j * x j| ≤
+          eta * lapackBerrDenom n A x b i := by
+    intro i
+    exact le_trans (residual_bound i) (hcert i)
+  let r : Fin n → ℝ := fun i => b i - ∑ j : Fin n, A i j * x j
+  let denom : Fin n → ℝ := fun i => lapackBerrDenom n A x b i
+  let DeltaA : Fin n → Fin n → ℝ := fun i j =>
+    if hD : denom i = 0 then 0
+    else if hx : x j = 0 then 0
+    else (r i * (|A i j| * |x j|) / denom i) / x j
+  let Deltab : Fin n → ℝ := fun i =>
+    if hD : denom i = 0 then 0 else -(r i * |b i| / denom i)
+  have denom_nonneg : ∀ i : Fin n, 0 ≤ denom i := by
+    intro i
+    simp [denom, lapackBerrDenom]
+    positivity
+  refine ⟨DeltaA, Deltab, ?_, ?_, ?_⟩
+  · intro i j
+    by_cases hD0 : denom i = 0
+    · simpa [DeltaA, hD0] using mul_nonneg heta_nonneg (abs_nonneg (A i j))
+    · have hDpos : 0 < denom i :=
+        lt_of_le_of_ne (denom_nonneg i) (Ne.symm hD0)
+      by_cases hx0 : x j = 0
+      · simpa [DeltaA, hD0, hx0] using
+          mul_nonneg heta_nonneg (abs_nonneg (A i j))
+      · have hcalc :
+            |(r i * (|A i j| * |x j|) / denom i) / x j| =
+              |r i| * |A i j| / denom i := by
+          have hDabs : |denom i| = denom i := abs_of_nonneg (denom_nonneg i)
+          have hxabs_ne : |x j| ≠ 0 := (abs_ne_zero).mpr hx0
+          rw [abs_div, abs_div, abs_mul, abs_mul, hDabs]
+          simp only [abs_abs]
+          field_simp [hxabs_ne]
+        have hr : |r i| ≤ eta * denom i := by
+          simpa [r, denom] using exact_residual i
+        have hbound : |r i| * |A i j| / denom i ≤ eta * |A i j| := by
+          have hmul := mul_le_mul_of_nonneg_right hr (abs_nonneg (A i j))
+          have hdiv := div_le_div_of_nonneg_right hmul (le_of_lt hDpos)
+          calc
+            |r i| * |A i j| / denom i ≤
+                (eta * denom i) * |A i j| / denom i := hdiv
+            _ = eta * |A i j| := by
+              field_simp [hD0]
+        simpa [DeltaA, hD0, hx0, hcalc] using hbound
+  · intro i
+    by_cases hD0 : denom i = 0
+    · simpa [Deltab, hD0] using mul_nonneg heta_nonneg (abs_nonneg (b i))
+    · have hDpos : 0 < denom i :=
+        lt_of_le_of_ne (denom_nonneg i) (Ne.symm hD0)
+      have hcalc : |-(r i * |b i| / denom i)| = |r i| * |b i| / denom i := by
+        have hDabs : |denom i| = denom i := abs_of_nonneg (denom_nonneg i)
+        rw [abs_neg, abs_div, abs_mul, hDabs]
+        simp only [abs_abs]
+      have hr : |r i| ≤ eta * denom i := by
+        simpa [r, denom] using exact_residual i
+      have hbound : |r i| * |b i| / denom i ≤ eta * |b i| := by
+        have hmul := mul_le_mul_of_nonneg_right hr (abs_nonneg (b i))
+        have hdiv := div_le_div_of_nonneg_right hmul (le_of_lt hDpos)
+        calc
+          |r i| * |b i| / denom i ≤ (eta * denom i) * |b i| / denom i := hdiv
+          _ = eta * |b i| := by
+            field_simp [hD0]
+      simpa [Deltab, hD0, hcalc] using hbound
+  · intro i
+    by_cases hD0 : denom i = 0
+    · have hr_le_zero : |r i| ≤ 0 := by
+        simpa [r, denom, hD0] using exact_residual i
+      have hr0 : r i = 0 := by
+        exact abs_eq_zero.mp (le_antisymm hr_le_zero (abs_nonneg (r i)))
+      have hsum_eq : (∑ j : Fin n, A i j * x j) = b i := by
+        dsimp [r] at hr0
+        linarith
+      simp [DeltaA, Deltab, hD0, hsum_eq]
+    · have hDdef : denom i = |b i| + ∑ j : Fin n, |A i j| * |x j| := by
+        simp [denom, lapackBerrDenom]
+      have hDelta_term :
+          ∀ j : Fin n, DeltaA i j * x j =
+            r i * (|A i j| * |x j|) / denom i := by
+        intro j
+        by_cases hx0 : x j = 0
+        · simp [DeltaA, hD0, hx0]
+        · simp [DeltaA, hD0, hx0]
+      have hDelta_sum :
+          (∑ j : Fin n, DeltaA i j * x j) =
+            r i * (∑ j : Fin n, |A i j| * |x j|) / denom i := by
+        calc
+          (∑ j : Fin n, DeltaA i j * x j) =
+              ∑ j : Fin n, r i * (|A i j| * |x j|) / denom i := by
+                apply Finset.sum_congr rfl
+                intro j hj
+                exact hDelta_term j
+          _ = r i * (∑ j : Fin n, |A i j| * |x j|) / denom i := by
+            simp [div_eq_mul_inv, Finset.mul_sum, mul_assoc, mul_comm]
+      calc
+        (∑ j : Fin n, (A i j + DeltaA i j) * x j)
+            = ∑ j : Fin n, (A i j * x j + DeltaA i j * x j) := by
+              apply Finset.sum_congr rfl
+              intro j hj
+              ring
+        _ = (∑ j : Fin n, A i j * x j) +
+              ∑ j : Fin n, DeltaA i j * x j := by
+                rw [Finset.sum_add_distrib]
+        _ = (∑ j : Fin n, A i j * x j) +
+              r i * (∑ j : Fin n, |A i j| * |x j|) / denom i := by
+                rw [hDelta_sum]
+        _ = b i + Deltab i := by
+          simp [Deltab, hD0]
+          have hdenexpr :
+              (∑ j : Fin n, |A i j| * |x j|) + |b i| ≠ 0 := by
+            intro hzero
+            apply hD0
+            rw [hDdef]
+            linarith
+          have hdenexpr' :
+              |b i| + (∑ j : Fin n, |A i j| * |x j|) ≠ 0 := by
+            intro hzero
+            apply hD0
+            rw [hDdef]
+            exact hzero
+          have hrdef : r i = b i - ∑ j : Fin n, A i j * x j := rfl
+          rw [hrdef, hDdef]
+          field_simp [hdenexpr, hdenexpr']
+          ring
+
+end LeanFpAnalysis.FP

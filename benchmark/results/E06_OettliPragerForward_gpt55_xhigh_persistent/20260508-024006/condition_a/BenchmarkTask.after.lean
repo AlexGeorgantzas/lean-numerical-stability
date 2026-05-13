@@ -1,0 +1,171 @@
+import LeanFpAnalysis.FP
+
+namespace LeanFpAnalysis.FP
+
+open scoped BigOperators
+
+def opBackwardCompatible (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (x b : Fin n → ℝ) (eta : ℝ) : Prop :=
+  ∃ DeltaA : Fin n → Fin n → ℝ,
+  ∃ Deltab : Fin n → ℝ,
+    (∀ i j, |DeltaA i j| ≤ eta * |A i j|) ∧
+    (∀ i, |Deltab i| ≤ eta * |b i|) ∧
+    ∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x j = b i + Deltab i
+
+theorem oettli_prager_backward_to_forward_error
+    (n : ℕ)
+    (A A_inv : Fin n → Fin n → ℝ)
+    (x xhat b : Fin n → ℝ) (eta : ℝ)
+    (hInv : IsLeftInverse n A A_inv)
+    (hAx : ∀ i, ∑ j : Fin n, A i j * x j = b i)
+    (heta_nonneg : 0 ≤ eta)
+    (hback : opBackwardCompatible n A xhat b eta) :
+    ∀ i : Fin n, |x i - xhat i| ≤
+      eta * ∑ j : Fin n, |A_inv i j| *
+        (∑ k : Fin n, |A j k| * |xhat k| + |b j|) := by
+  classical
+  have _ : 0 ≤ eta := heta_nonneg
+  rcases hback with ⟨DeltaA, Deltab, hDeltaA, hDeltab, hback_eq⟩
+  intro i
+  let e : Fin n → ℝ := fun k => x k - xhat k
+  have hrow : ∀ j : Fin n,
+      ∑ k : Fin n, A j k * e k =
+        ∑ k : Fin n, DeltaA j k * xhat k - Deltab j := by
+    intro j
+    have hsplit :
+        ∑ k : Fin n, (A j k + DeltaA j k) * xhat k =
+          (∑ k : Fin n, A j k * xhat k) +
+            ∑ k : Fin n, DeltaA j k * xhat k := by
+      rw [← Finset.sum_add_distrib]
+      apply Finset.sum_congr rfl
+      intro k _
+      ring
+    have hbackj : (∑ k : Fin n, A j k * xhat k) +
+        ∑ k : Fin n, DeltaA j k * xhat k = b j + Deltab j := by
+      simpa [hsplit] using hback_eq j
+    calc
+      ∑ k : Fin n, A j k * e k
+          = (∑ k : Fin n, A j k * x k) -
+              ∑ k : Fin n, A j k * xhat k := by
+            rw [← Finset.sum_sub_distrib]
+            apply Finset.sum_congr rfl
+            intro k _
+            simp [e]
+            ring
+      _ = b j - ∑ k : Fin n, A j k * xhat k := by
+            rw [hAx j]
+      _ = ∑ k : Fin n, DeltaA j k * xhat k - Deltab j := by
+            linarith
+  have hleft :
+      (∑ j : Fin n, A_inv i j * (∑ k : Fin n, A j k * e k)) = e i := by
+    calc
+      ∑ j : Fin n, A_inv i j * (∑ k : Fin n, A j k * e k)
+          = ∑ j : Fin n, ∑ k : Fin n, A_inv i j * (A j k * e k) := by
+            apply Finset.sum_congr rfl
+            intro j _
+            rw [Finset.mul_sum]
+      _ = ∑ k : Fin n, ∑ j : Fin n, A_inv i j * (A j k * e k) := by
+            rw [Finset.sum_comm]
+      _ = ∑ k : Fin n, (∑ j : Fin n, A_inv i j * A j k) * e k := by
+            apply Finset.sum_congr rfl
+            intro k _
+            rw [Finset.sum_mul]
+            apply Finset.sum_congr rfl
+            intro j _
+            ring
+      _ = ∑ k : Fin n, (if i = k then (1 : ℝ) else 0) * e k := by
+            apply Finset.sum_congr rfl
+            intro k _
+            rw [hInv i k]
+      _ = e i := by
+            rw [Finset.sum_eq_single i]
+            · simp
+            · intro k _ hk
+              have hik : i ≠ k := by
+                intro h
+                exact hk h.symm
+              simp [hik]
+            · intro hi
+              exact (hi (Finset.mem_univ i)).elim
+  have hrepr :
+      e i = ∑ j : Fin n, A_inv i j *
+        (∑ k : Fin n, DeltaA j k * xhat k - Deltab j) := by
+    rw [← hleft]
+    apply Finset.sum_congr rfl
+    intro j _
+    rw [hrow j]
+  have hterm : ∀ j : Fin n,
+      |∑ k : Fin n, DeltaA j k * xhat k - Deltab j| ≤
+        eta * (∑ k : Fin n, |A j k| * |xhat k| + |b j|) := by
+    intro j
+    have hsum_abs :
+        |∑ k : Fin n, DeltaA j k * xhat k| ≤
+          ∑ k : Fin n, |DeltaA j k| * |xhat k| := by
+      calc
+        |∑ k : Fin n, DeltaA j k * xhat k|
+            ≤ ∑ k : Fin n, |DeltaA j k * xhat k| := by
+              simpa using
+                (Finset.abs_sum_le_sum_abs
+                  (fun k : Fin n => DeltaA j k * xhat k) Finset.univ)
+        _ = ∑ k : Fin n, |DeltaA j k| * |xhat k| := by
+              apply Finset.sum_congr rfl
+              intro k _
+              rw [abs_mul]
+    have hsum_bound :
+        (∑ k : Fin n, |DeltaA j k| * |xhat k|) ≤
+          eta * ∑ k : Fin n, |A j k| * |xhat k| := by
+      calc
+        (∑ k : Fin n, |DeltaA j k| * |xhat k|)
+            ≤ ∑ k : Fin n, (eta * |A j k|) * |xhat k| := by
+              apply Finset.sum_le_sum
+              intro k _
+              exact mul_le_mul_of_nonneg_right (hDeltaA j k) (abs_nonneg (xhat k))
+        _ = eta * ∑ k : Fin n, |A j k| * |xhat k| := by
+              rw [Finset.mul_sum]
+              apply Finset.sum_congr rfl
+              intro k _
+              ring
+    calc
+      |∑ k : Fin n, DeltaA j k * xhat k - Deltab j|
+          ≤ |∑ k : Fin n, DeltaA j k * xhat k| + |Deltab j| := by
+            exact abs_sub _ _
+      _ ≤ (∑ k : Fin n, |DeltaA j k| * |xhat k|) + |Deltab j| := by
+            exact add_le_add_left hsum_abs _
+      _ ≤ eta * (∑ k : Fin n, |A j k| * |xhat k|) + eta * |b j| := by
+            exact add_le_add hsum_bound (hDeltab j)
+      _ = eta * (∑ k : Fin n, |A j k| * |xhat k| + |b j|) := by
+            ring
+  calc
+    |x i - xhat i| = |e i| := by
+      simp [e]
+    _ = |∑ j : Fin n, A_inv i j *
+          (∑ k : Fin n, DeltaA j k * xhat k - Deltab j)| := by
+      rw [hrepr]
+    _ ≤ ∑ j : Fin n,
+          |A_inv i j * (∑ k : Fin n, DeltaA j k * xhat k - Deltab j)| := by
+      simpa using
+        (Finset.abs_sum_le_sum_abs
+          (fun j : Fin n =>
+            A_inv i j *
+              (∑ k : Fin n, DeltaA j k * xhat k - Deltab j))
+          Finset.univ)
+    _ = ∑ j : Fin n,
+          |A_inv i j| *
+            |∑ k : Fin n, DeltaA j k * xhat k - Deltab j| := by
+      apply Finset.sum_congr rfl
+      intro j _
+      rw [abs_mul]
+    _ ≤ ∑ j : Fin n,
+          |A_inv i j| *
+            (eta * (∑ k : Fin n, |A j k| * |xhat k| + |b j|)) := by
+      apply Finset.sum_le_sum
+      intro j _
+      exact mul_le_mul_of_nonneg_left (hterm j) (abs_nonneg (A_inv i j))
+    _ = eta * ∑ j : Fin n, |A_inv i j| *
+          (∑ k : Fin n, |A j k| * |xhat k| + |b j|) := by
+      rw [Finset.mul_sum]
+      apply Finset.sum_congr rfl
+      intro j _
+      ring
+
+end LeanFpAnalysis.FP

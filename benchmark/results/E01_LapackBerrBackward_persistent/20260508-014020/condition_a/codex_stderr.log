@@ -1,0 +1,12 @@
+2026-05-07T22:44:38.151745Z ERROR codex_core::tools::router: error=apply_patch verification failed: Failed to find expected lines in /tmp/lean-fp-benchmark-runs/E01_LapackBerrBackward_persistent-20260508-014020/condition_a/E01_LapackBerrBackward/BenchmarkTask.lean:
+        have hden_nonneg : 0 ≤ denom i := by
+          simp [denom, lapackBerrDenom]
+          exact Finset.sum_nonneg (by
+            intro j hj
+            exact mul_nonneg (abs_nonneg _) (abs_nonneg _))
+2026-05-07T22:44:42.592685Z ERROR codex_core::tools::router: error=apply_patch verification failed: Failed to find expected lines in /tmp/lean-fp-benchmark-runs/E01_LapackBerrBackward_persistent-20260508-014020/condition_a/E01_LapackBerrBackward/BenchmarkTask.lean:
+        have hden_nonneg : 0 ≤ denom i := by
+          simp [denom, lapackBerrDenom]
+          exact Finset.sum_nonneg (by
+            intro j hj
+            exact mul_nonneg (abs_nonneg _) (abs_nonneg _))

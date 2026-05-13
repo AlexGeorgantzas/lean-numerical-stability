@@ -1,0 +1,13 @@
+--- /Users/georgiosalexandrosgeorgantzas/Documents/GitHub/lean-fp-analysis/benchmark/tasks/E08_LapackLSQRForward/Task.lean	2026-05-07 22:51:53
++++ /tmp/lean-fp-benchmark-runs/E08_LapackLSQRForward_gpt55_xhigh_persistent40-20260508-153330/condition_c/E08_LapackLSQRForward/BenchmarkTask.lean	2026-05-08 15:38:44
+@@ -22,6 +22,9 @@
+       ∀ i : Fin n, |xhat i - x i| ≤
+         ∑ j : Fin n, |ATA_inv i j| *
+           (∑ k : Fin n, |DeltaG j k| * |xhat k| + |Deltag j|) := by
+-  sorry
++  obtain ⟨DeltaG, Deltag, hPerturbed, hDeltaG, hDeltag⟩ := hQR.result
++  refine ⟨DeltaG, Deltag, hPerturbed, hDeltaG, hDeltag, ?_⟩
++  exact ls_qr_forward_error n ATA ATA_inv hInv ATb x xhat hExact
++    DeltaG Deltag hPerturbed
+ 
+ end LeanFpAnalysis.FP

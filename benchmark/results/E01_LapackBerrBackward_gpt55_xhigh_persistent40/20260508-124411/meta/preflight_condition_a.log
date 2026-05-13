@@ -1,0 +1,4 @@
+✔ [1965/1967] Built LeanFpAnalysis.FP (17s)
+⚠ [1966/1967] Built BenchmarkTask (3.2s)
+warning: BenchmarkTask.lean:19:8: declaration uses `sorry`
+Build completed successfully (1967 jobs).

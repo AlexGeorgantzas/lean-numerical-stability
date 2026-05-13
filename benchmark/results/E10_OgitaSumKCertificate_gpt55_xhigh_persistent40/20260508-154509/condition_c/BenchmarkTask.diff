@@ -1,0 +1,51 @@
+--- /Users/georgiosalexandrosgeorgantzas/Documents/GitHub/lean-fp-analysis/benchmark/tasks/E10_OgitaSumKCertificate/Task.lean	2026-05-07 22:51:53
++++ /tmp/lean-fp-benchmark-runs/E10_OgitaSumKCertificate_gpt55_xhigh_persistent40-20260508-154509/condition_c/E10_OgitaSumKCertificate/BenchmarkTask.lean	2026-05-08 15:50:01
+@@ -31,6 +31,47 @@
+     |res - s| ≤
+       (fp.u + 3 * gamma fp (n - 1) ^ 2) * |s| +
+         gamma fp (2 * n - 2) ^ K * sumAbs n p0 := by
+-  sorry
++  have hK_low : 1 ≤ K - 2 := by omega
++  have hK_high : K - 2 ≤ K - 1 := by omega
++  have hstage :
++      sumAbs n (hcert.stage (K - 2)) ≤
++        3 * |s| + gamma fp (2 * n - 2) ^ (K - 2) * sumAbs n p0 :=
++    hcert.abs_stage_bound (K - 2) hK_low hK_high
++  have hγsq_nonneg : 0 ≤ gamma fp (n - 1) ^ 2 := sq_nonneg _
++  have htail_nonneg :
++      0 ≤ gamma fp (2 * n - 2) ^ (K - 2) * sumAbs n p0 :=
++    mul_nonneg (pow_nonneg hgamma_nonneg _) hS_nonneg
++  have hpow_tail :
++      gamma fp (n - 1) ^ 2 *
++          (gamma fp (2 * n - 2) ^ (K - 2) * sumAbs n p0) ≤
++        gamma fp (2 * n - 2) ^ K * sumAbs n p0 := by
++    calc
++      gamma fp (n - 1) ^ 2 *
++          (gamma fp (2 * n - 2) ^ (K - 2) * sumAbs n p0)
++          ≤ gamma fp (2 * n - 2) ^ 2 *
++              (gamma fp (2 * n - 2) ^ (K - 2) * sumAbs n p0) :=
++            mul_le_mul_of_nonneg_right hgamma_sq htail_nonneg
++      _ = gamma fp (2 * n - 2) ^ K * sumAbs n p0 := by
++            have hpow : 2 + (K - 2) = K := by omega
++            rw [← mul_assoc, ← pow_add, hpow]
++  calc
++    |res - s| ≤
++        fp.u * |s| +
++          gamma fp (n - 1) ^ 2 * sumAbs n (hcert.stage (K - 2)) :=
++      hcert.final_rounding_bound
++    _ ≤
++        fp.u * |s| +
++          gamma fp (n - 1) ^ 2 *
++            (3 * |s| + gamma fp (2 * n - 2) ^ (K - 2) * sumAbs n p0) := by
++      exact add_le_add_right (mul_le_mul_of_nonneg_left hstage hγsq_nonneg) _
++    _ =
++        (fp.u + 3 * gamma fp (n - 1) ^ 2) * |s| +
++          gamma fp (n - 1) ^ 2 *
++            (gamma fp (2 * n - 2) ^ (K - 2) * sumAbs n p0) := by
++      ring
++    _ ≤
++        (fp.u + 3 * gamma fp (n - 1) ^ 2) * |s| +
++          gamma fp (2 * n - 2) ^ K * sumAbs n p0 := by
++      exact add_le_add_right hpow_tail _
+ 
+ end LeanFpAnalysis.FP

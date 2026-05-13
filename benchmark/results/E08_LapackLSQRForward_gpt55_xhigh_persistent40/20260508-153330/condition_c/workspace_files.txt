@@ -1,0 +1,12 @@
+/tmp/lean-fp-benchmark-runs/E08_LapackLSQRForward_gpt55_xhigh_persistent40-20260508-153330/condition_c/E08_LapackLSQRForward/.benchmark_bin/lake
+/tmp/lean-fp-benchmark-runs/E08_LapackLSQRForward_gpt55_xhigh_persistent40-20260508-153330/condition_c/E08_LapackLSQRForward/.benchmark_condition_c_snapshot
+/tmp/lean-fp-benchmark-runs/E08_LapackLSQRForward_gpt55_xhigh_persistent40-20260508-153330/condition_c/E08_LapackLSQRForward/.benchmark_env/LEAN_PATH
+/tmp/lean-fp-benchmark-runs/E08_LapackLSQRForward_gpt55_xhigh_persistent40-20260508-153330/condition_c/E08_LapackLSQRForward/BenchmarkTask.lean
+/tmp/lean-fp-benchmark-runs/E08_LapackLSQRForward_gpt55_xhigh_persistent40-20260508-153330/condition_c/E08_LapackLSQRForward/README.md
+/tmp/lean-fp-benchmark-runs/E08_LapackLSQRForward_gpt55_xhigh_persistent40-20260508-153330/condition_c/E08_LapackLSQRForward/SOLVER_PROMPT.md
+/tmp/lean-fp-benchmark-runs/E08_LapackLSQRForward_gpt55_xhigh_persistent40-20260508-153330/condition_c/E08_LapackLSQRForward/docs
+/tmp/lean-fp-benchmark-runs/E08_LapackLSQRForward_gpt55_xhigh_persistent40-20260508-153330/condition_c/E08_LapackLSQRForward/examples
+/tmp/lean-fp-benchmark-runs/E08_LapackLSQRForward_gpt55_xhigh_persistent40-20260508-153330/condition_c/E08_LapackLSQRForward/lake-manifest.json
+/tmp/lean-fp-benchmark-runs/E08_LapackLSQRForward_gpt55_xhigh_persistent40-20260508-153330/condition_c/E08_LapackLSQRForward/lakefile.toml
+/tmp/lean-fp-benchmark-runs/E08_LapackLSQRForward_gpt55_xhigh_persistent40-20260508-153330/condition_c/E08_LapackLSQRForward/lean-toolchain
+/tmp/lean-fp-benchmark-runs/E08_LapackLSQRForward_gpt55_xhigh_persistent40-20260508-153330/condition_c/E08_LapackLSQRForward/public_library

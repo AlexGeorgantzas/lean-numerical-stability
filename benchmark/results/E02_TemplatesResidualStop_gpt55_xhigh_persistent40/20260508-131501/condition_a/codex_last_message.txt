@@ -1,0 +1,6 @@
+Implemented the proof in `BenchmarkTask.lean`.
+
+Verification:
+`lake build BenchmarkTask` succeeds.
+
+Also checked there are no remaining `sorry`, `admit`, `axiom`, `opaque`, or `unsafe` markers in `BenchmarkTask.lean`.

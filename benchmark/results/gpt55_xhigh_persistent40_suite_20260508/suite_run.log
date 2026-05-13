@@ -1,0 +1,20 @@
+[2026-05-08T09:44:11Z] START E01_LapackBerrBackward
+[2026-05-08T10:15:01Z] END E01_LapackBerrBackward benchmark/results/E01_LapackBerrBackward_gpt55_xhigh_persistent40/20260508-124411
+[2026-05-08T10:15:01Z] START E02_TemplatesResidualStop
+[2026-05-08T10:37:15Z] END E02_TemplatesResidualStop benchmark/results/E02_TemplatesResidualStop_gpt55_xhigh_persistent40/20260508-131501
+[2026-05-08T10:37:15Z] START E03_LapackFerrForward
+[2026-05-08T11:05:48Z] END E03_LapackFerrForward benchmark/results/E03_LapackFerrForward_gpt55_xhigh_persistent40/20260508-133715
+[2026-05-08T11:05:48Z] START E04_LapackLevel3Matmul
+[2026-05-08T11:30:49Z] END E04_LapackLevel3Matmul benchmark/results/E04_LapackLevel3Matmul_gpt55_xhigh_persistent40/20260508-140548
+[2026-05-08T11:30:49Z] START E05_LapackTriangularResidual
+[2026-05-08T12:03:19Z] END E05_LapackTriangularResidual benchmark/results/E05_LapackTriangularResidual_gpt55_xhigh_persistent40/20260508-143049
+[2026-05-08T12:03:19Z] START E06_OettliPragerForward
+[2026-05-08T12:14:39Z] END E06_OettliPragerForward benchmark/results/E06_OettliPragerForward_gpt55_xhigh_persistent40/20260508-150319
+[2026-05-08T12:14:39Z] START E07_TemplatesStationaryResidual
+[2026-05-08T12:33:30Z] END E07_TemplatesStationaryResidual benchmark/results/E07_TemplatesStationaryResidual_gpt55_xhigh_persistent40/20260508-151439
+[2026-05-08T12:33:30Z] START E08_LapackLSQRForward
+[2026-05-08T12:38:59Z] END E08_LapackLSQRForward benchmark/results/E08_LapackLSQRForward_gpt55_xhigh_persistent40/20260508-153330
+[2026-05-08T12:38:59Z] START E09_LapackNormalEquations
+[2026-05-08T12:45:09Z] END E09_LapackNormalEquations benchmark/results/E09_LapackNormalEquations_gpt55_xhigh_persistent40/20260508-153859
+[2026-05-08T12:45:09Z] START E10_OgitaSumKCertificate
+[2026-05-08T12:50:45Z] END E10_OgitaSumKCertificate benchmark/results/E10_OgitaSumKCertificate_gpt55_xhigh_persistent40/20260508-154509

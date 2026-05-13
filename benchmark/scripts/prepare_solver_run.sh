@@ -31,11 +31,17 @@ task_sha="$(shasum -a 256 "${task_file}" | awk '{print $1}')"
 commit="$(git -C "${repo_root}" rev-parse HEAD)"
 branch="$(git -C "${repo_root}" branch --show-current)"
 timestamp="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+solver_prompt_variant="${BENCHMARK_SOLVER_PROMPT_VARIANT:-standard}"
+codex_model="${BENCHMARK_CODEX_MODEL:-}"
+codex_reasoning_effort="${BENCHMARK_CODEX_REASONING_EFFORT:-}"
 
 cat > "${meta_dir}/run_metadata.md" <<EOF
 # Benchmark Run Metadata
 
 - task: \`${task}\`
+- solver_prompt_variant: \`${solver_prompt_variant}\`
+- codex_model: \`${codex_model:-<cli-default>}\`
+- codex_reasoning_effort: \`${codex_reasoning_effort:-<cli-default>}\`
 - source_branch: \`${branch}\`
 - source_commit: \`${commit}\`
 - generated_at_utc: \`${timestamp}\`
@@ -49,7 +55,9 @@ The task files in both condition workspaces must remain byte-identical before
 the solver starts.
 EOF
 
-cat > "${meta_dir}/solver_prompt.md" <<'EOF'
+case "${solver_prompt_variant}" in
+  standard)
+    cat > "${meta_dir}/solver_prompt.md" <<'EOF'
 You are solving a Lean 4 benchmark task in this generated workspace.
 
 Work only inside the current workspace. Prove the theorem in
@@ -72,6 +80,60 @@ Rules:
 - Do not add `axiom`, `opaque`, `unsafe`, `admit`, or `sorry`.
 - After editing, run `lake build BenchmarkTask`.
 EOF
+    ;;
+  persistent)
+    cat > "${meta_dir}/solver_prompt.md" <<'EOF'
+You are solving a Lean 4 benchmark task in this generated workspace.
+
+Work only inside the current workspace. Prove the theorem in
+`BenchmarkTask.lean` by replacing the `sorry` proof with a complete Lean proof.
+
+This is a persistence benchmark. Do not stop after one failed proof idea. Keep
+working until `lake build BenchmarkTask` succeeds or the external timeout stops
+the attempt.
+
+Persistence requirements:
+- Do not leave the original `sorry`.
+- Removing `sorry` is not enough. A proof attempt only counts when
+  `lake build BenchmarkTask` succeeds.
+- If there are no `sorry`s but Lean still reports errors or unsolved goals,
+  continue editing until those errors are resolved.
+- Do not end with a final message saying the proof is incomplete while there is
+  still time to try alternatives.
+- If `lake build BenchmarkTask` fails, read the Lean errors, revise the proof,
+  and run `lake build BenchmarkTask` again.
+- If a theorem name is unavailable, search the files visible in this workspace
+  for alternatives, then try another proof route.
+- Prefer a small complete proof over a large speculative proof. If one route
+  becomes stuck, replace it with a different route rather than stopping.
+- Only finish when the proof validates locally with `lake build BenchmarkTask`,
+  or when the external timeout terminates the run.
+
+Rules:
+- Treat the current workspace as the whole benchmark environment.
+- You may inspect files and symlinks that are already present as entries in
+  the current workspace, such as `public_library`, `README.md`, `docs`, or
+  `examples` when they exist.
+- Do not inspect the original repository, user home directories, global caches,
+  previous result directories, or manually discovered paths outside the
+  workspace.
+- Do not add manual `LEAN_PATH`, `--root`, or other search paths. Use the
+  imports and Lake package configuration already present in the workspace.
+- Only edit the proof body of the theorem in `BenchmarkTask.lean`.
+- Do not change imports, task-local definitions, namespaces, or the theorem
+  statement.
+- Put any helper reasoning inside the theorem proof.
+- Do not add `axiom`, `opaque`, `unsafe`, `admit`, or `sorry`.
+- After every proof attempt, run `lake build BenchmarkTask` and use the errors
+  to continue.
+EOF
+    ;;
+  *)
+    echo "unknown BENCHMARK_SOLVER_PROMPT_VARIANT: ${solver_prompt_variant}" >&2
+    echo "expected: standard or persistent" >&2
+    exit 2
+    ;;
+esac
 
 cp "${meta_dir}/solver_prompt.md" "${condition_a}/SOLVER_PROMPT.md"
 cp "${meta_dir}/solver_prompt.md" "${condition_c}/SOLVER_PROMPT.md"

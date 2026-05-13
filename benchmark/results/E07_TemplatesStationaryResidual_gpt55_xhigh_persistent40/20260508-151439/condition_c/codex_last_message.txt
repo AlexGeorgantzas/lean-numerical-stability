@@ -1,0 +1,9 @@
+Implemented the proof in [BenchmarkTask.lean](/tmp/lean-fp-benchmark-runs/E07_TemplatesStationaryResidual_gpt55_xhigh_persistent40-20260508-151439/condition_c/E07_TemplatesStationaryResidual/BenchmarkTask.lean).
+
+The proof instantiates the existing `normwise_residual_bound` with `stationaryLocalError` as the local error term and proves the corresponding `ComputedIteration` step algebraically.
+
+Verification passed:
+
+```bash
+lake build BenchmarkTask
+```

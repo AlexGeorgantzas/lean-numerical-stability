@@ -1,0 +1,5 @@
+Implemented the proof in `BenchmarkTask.lean`.
+
+Verification:
+- `lake build BenchmarkTask` succeeds.
+- `BenchmarkTask.lean` contains no `sorry` or `admit`.
