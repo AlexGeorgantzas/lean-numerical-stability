@@ -1,6 +1,0 @@
-Implemented the proof in `BenchmarkTask.lean` by extracting `DeltaG`/`Deltag` from `hQR.result` and applying the existing `ls_qr_forward_error` theorem.
-
-Verification:
-- `rg "sorry|admit|axiom|opaque|unsafe" BenchmarkTask.lean` found nothing.
-- Ran `lake build BenchmarkTask`, but the sandbox blocked Lake from writing an external package lock file:
-  `.../mathlib/.lake/config/mathlib/lakefile.olean.lock` with `operation not permitted`.

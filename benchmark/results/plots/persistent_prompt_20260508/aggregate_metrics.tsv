@@ -1,3 +1,0 @@
-task	run	condition	codex_exit	validation_exit	passed	timeout	elapsed_minutes	codex_event_lines	diff_lines	proof_lines	placeholder_count	forbidden_decl_count
-E01_LapackBerrBackward_persistent	20260508-014020	condition_a	0	1	0	no	8.50	91	147	141	0	0
-E01_LapackBerrBackward_persistent	20260508-014020	condition_c	0	0	1	no	3.65	58	180	174	0	0

@@ -1,8 +1,0 @@
-/tmp/lean-fp-benchmark-runs/E01_LapackBerrBackward_gpt55_xhigh_persistent-20260508-021347/condition_a/E01_LapackBerrBackward/.benchmark_bin/lake
-/tmp/lean-fp-benchmark-runs/E01_LapackBerrBackward_gpt55_xhigh_persistent-20260508-021347/condition_a/E01_LapackBerrBackward/.benchmark_env/LEAN_PATH
-/tmp/lean-fp-benchmark-runs/E01_LapackBerrBackward_gpt55_xhigh_persistent-20260508-021347/condition_a/E01_LapackBerrBackward/BenchmarkTask.lean
-/tmp/lean-fp-benchmark-runs/E01_LapackBerrBackward_gpt55_xhigh_persistent-20260508-021347/condition_a/E01_LapackBerrBackward/LeanFpAnalysis/FP.lean
-/tmp/lean-fp-benchmark-runs/E01_LapackBerrBackward_gpt55_xhigh_persistent-20260508-021347/condition_a/E01_LapackBerrBackward/SOLVER_PROMPT.md
-/tmp/lean-fp-benchmark-runs/E01_LapackBerrBackward_gpt55_xhigh_persistent-20260508-021347/condition_a/E01_LapackBerrBackward/lake-manifest.json
-/tmp/lean-fp-benchmark-runs/E01_LapackBerrBackward_gpt55_xhigh_persistent-20260508-021347/condition_a/E01_LapackBerrBackward/lakefile.toml
-/tmp/lean-fp-benchmark-runs/E01_LapackBerrBackward_gpt55_xhigh_persistent-20260508-021347/condition_a/E01_LapackBerrBackward/lean-toolchain

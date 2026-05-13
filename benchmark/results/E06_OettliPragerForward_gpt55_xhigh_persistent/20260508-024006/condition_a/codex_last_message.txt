@@ -1,9 +1,0 @@
-Implemented the proof in `BenchmarkTask.lean`.
-
-Verification passed:
-
-```bash
-lake build BenchmarkTask
-```
-
-No `sorry` or `admit` remains in the task file.

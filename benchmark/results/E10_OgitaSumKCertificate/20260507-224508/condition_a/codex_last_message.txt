@@ -1,7 +1,0 @@
-Implemented the proof in [BenchmarkTask.lean](/tmp/lean-fp-benchmark-runs/E10_OgitaSumKCertificate-20260507-224508/condition_a/E10_OgitaSumKCertificate/BenchmarkTask.lean:23), using the certificate’s final rounding bound and the stage bound at `K - 2`, then closing the remaining real arithmetic with nonnegativity and power algebra.
-
-Verification passed:
-
-```bash
-lake build BenchmarkTask
-```

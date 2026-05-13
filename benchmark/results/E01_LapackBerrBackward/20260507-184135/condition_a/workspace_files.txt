@@ -1,6 +1,0 @@
-/tmp/lean-fp-benchmark-runs/E01_LapackBerrBackward-20260507-184135/condition_a/E01_LapackBerrBackward/BenchmarkTask.lean
-/tmp/lean-fp-benchmark-runs/E01_LapackBerrBackward-20260507-184135/condition_a/E01_LapackBerrBackward/LeanFpAnalysis/FP.lean
-/tmp/lean-fp-benchmark-runs/E01_LapackBerrBackward-20260507-184135/condition_a/E01_LapackBerrBackward/SOLVER_PROMPT.md
-/tmp/lean-fp-benchmark-runs/E01_LapackBerrBackward-20260507-184135/condition_a/E01_LapackBerrBackward/lake-manifest.json
-/tmp/lean-fp-benchmark-runs/E01_LapackBerrBackward-20260507-184135/condition_a/E01_LapackBerrBackward/lakefile.toml
-/tmp/lean-fp-benchmark-runs/E01_LapackBerrBackward-20260507-184135/condition_a/E01_LapackBerrBackward/lean-toolchain

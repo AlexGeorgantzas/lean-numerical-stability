@@ -1,7 +1,0 @@
---- /Users/georgiosalexandrosgeorgantzas/Documents/GitHub/lean-fp-analysis/benchmark/tasks/E03_LapackFerrForward/Task.lean	2026-05-07 04:00:34
-+++ /tmp/lean-fp-benchmark-runs/E03_LapackFerrForward-20260507-202911/condition_a/E03_LapackFerrForward/BenchmarkTask.lean	2026-05-07 20:35:54
-@@ -33,4 +33,3 @@
-   sorry
-
- end LeanFpAnalysis.FP
--

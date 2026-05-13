@@ -1,3 +1,0 @@
-Implemented the proof in [BenchmarkTask.lean](/tmp/lean-fp-benchmark-runs/E06_OettliPragerForward_gpt55_xhigh_persistent-20260508-024006/condition_c/E06_OettliPragerForward/BenchmarkTask.lean:24) by destructuring `hback` and applying `componentwise_forward_error_standard`.
-
-Verification: `lake build BenchmarkTask` succeeds.

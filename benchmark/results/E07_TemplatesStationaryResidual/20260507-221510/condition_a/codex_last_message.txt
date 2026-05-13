@@ -1,9 +1,0 @@
-Implemented the proof in [BenchmarkTask.lean](/tmp/lean-fp-benchmark-runs/E07_TemplatesStationaryResidual-20260507-221510/condition_a/E07_TemplatesStationaryResidual/BenchmarkTask.lean).
-
-Verification:
-- Direct Lean type-check passed, with only an unused `hAx` warning.
-- `lake build BenchmarkTask` could not run in this sandbox because Lake tries to create a lock file under the external package cache:
-  `.../mathlib/.lake/config/mathlib/lakefile.olean.lock`
-  and gets `operation not permitted`.
-
-No `sorry`, `admit`, `axiom`, `opaque`, or `unsafe` remains in `BenchmarkTask.lean`.

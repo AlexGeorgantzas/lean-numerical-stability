@@ -1,3 +1,0 @@
-f49d17bb65d870ccbed8f71268c95b91f43b17e1e8c7d12752a0eec8e05bde0a  /tmp/lean-fp-benchmark-runs/E02_TemplatesResidualStop-20260507-185210/condition_a/E02_TemplatesResidualStop/BenchmarkTask.lean
-f49d17bb65d870ccbed8f71268c95b91f43b17e1e8c7d12752a0eec8e05bde0a  /tmp/lean-fp-benchmark-runs/E02_TemplatesResidualStop-20260507-185210/condition_c/E02_TemplatesResidualStop/BenchmarkTask.lean
-f49d17bb65d870ccbed8f71268c95b91f43b17e1e8c7d12752a0eec8e05bde0a  /Users/georgiosalexandrosgeorgantzas/Documents/GitHub/lean-fp-analysis/benchmark/tasks/E02_TemplatesResidualStop/Task.lean

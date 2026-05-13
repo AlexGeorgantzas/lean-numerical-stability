@@ -1,5 +1,0 @@
-Implemented the proof in [BenchmarkTask.lean](/tmp/lean-fp-benchmark-runs/E01_LapackBerrBackward-20260507-184135/condition_c/E01_LapackBerrBackward/BenchmarkTask.lean:31). It derives the exact residual bound from `conventional_residual_error` plus the certificate, then applies `oettli_prager_sufficient` with `E = |A|` and `f = |b|`.
-
-Verification:
-- `lean BenchmarkTask.lean` passed with the project library paths.
-- `lake build BenchmarkTask` could not run in this sandbox because Lake tried to create a lock file under `/Users/.../.cache/.../mathlib/.lake/config/...`, which is outside the writable workspace and returned `operation not permitted`.

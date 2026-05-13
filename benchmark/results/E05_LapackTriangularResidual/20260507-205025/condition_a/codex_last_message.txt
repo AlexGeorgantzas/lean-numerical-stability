@@ -1,5 +1,0 @@
-Implemented the proof body in [BenchmarkTask.lean](/tmp/lean-fp-benchmark-runs/E05_LapackTriangularResidual-20260507-205025/condition_a/E05_LapackTriangularResidual/BenchmarkTask.lean:20). The proof uses the backward-error perturbation equation for `fl_backSub`, then derives the infinity-norm residual bound by bounding each row and taking the finite supremum.
-
-Verification:
-- `lean BenchmarkTask.lean` succeeds when the cached companion `LeanFpAnalysis.FP.Algorithms.TriangularSolve` module is on `LEAN_PATH`.
-- `lake build BenchmarkTask` could not run in this sandbox: Lake failed before elaborating the file with `operation not permitted` on the external mathlib lock file under `/Users/.../.cache/.../lakefile.olean.lock`.
