@@ -113,6 +113,22 @@ a Householder reflector construction layer before attempting a full
 4. repeated reflector application;
 5. full QR factorization and solve bounds.
 
+### Decision: Reuse Mathlib For Exact Infrastructure
+
+Exact algebra, signs, dot products, matrices, and normed-space facts should use
+Mathlib where this can be done without disrupting existing public APIs.
+
+Reason: the library should focus on floating-point operation order and
+stability contracts, not re-proving general mathematical infrastructure already
+available upstream.
+
+Consequence: low-level QR code now bridges `exactNorm2Sq` to Mathlib
+`dotProduct`, records how `householderSign` relates to `Real.sign`, and keeps
+local definitions only where they encode floating-point computation order or
+preserve compatibility with the existing `Fin n → ℝ` API.  A full migration to
+Mathlib `Matrix` or `EuclideanSpace` is intentionally out of scope for this
+pass.
+
 ### Decision: Keep Public Lookup Documentation
 
 The files `docs/LIBRARY_LOOKUP.md` and `examples/LibraryLookup.lean` are public

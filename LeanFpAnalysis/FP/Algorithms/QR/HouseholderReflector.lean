@@ -12,6 +12,7 @@
 -- scalar that makes I - βvvᵀ orthogonal.
 
 import Mathlib.Data.Real.Basic
+import Mathlib.Data.Real.Sign
 import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Ring
 import LeanFpAnalysis.FP.Algorithms.Norm2
@@ -35,6 +36,23 @@ noncomputable def householderSign (x : ℝ) : ℝ :=
 theorem abs_householderSign (x : ℝ) : |householderSign x| = 1 := by
   unfold householderSign
   split <;> norm_num
+
+@[simp]
+theorem householderSign_zero : householderSign 0 = 1 := by
+  simp [householderSign]
+
+/-- Away from zero, the Householder sign choice agrees with Mathlib's
+    `Real.sign`.  At zero they intentionally differ: `householderSign 0 = 1`,
+    while `Real.sign 0 = 0`. -/
+theorem householderSign_eq_realSign_of_ne {x : ℝ} (hx : x ≠ 0) :
+    householderSign x = Real.sign x := by
+  rcases lt_or_gt_of_ne hx with hxlt | hxgt
+  · rw [Real.sign_of_neg hxlt]
+    unfold householderSign
+    simp [not_le_of_gt hxlt]
+  · rw [Real.sign_of_pos hxgt]
+    unfold householderSign
+    simp [le_of_lt hxgt]
 
 theorem householderSign_mul_eq_abs (x : ℝ) :
     householderSign x * x = |x| := by
@@ -70,6 +88,21 @@ noncomputable def fl_householderAlpha (fp : FPModel) (n : ℕ)
     (x : Fin (n + 1) → ℝ) : ℝ :=
   -(householderSign (x 0)) * fl_norm2 fp (n + 1) x
 
+/-- Unrolled form of the rounded norm inside `fl_householderAlpha`. -/
+theorem fl_householderAlpha_unroll (fp : FPModel) (n : ℕ)
+    (x : Fin (n + 1) → ℝ) (hn : gammaValid fp (2 * (n + 1))) :
+    ∃ (η : Fin (n + 1) → ℝ) (δ : ℝ),
+      (∀ i : Fin (n + 1), |η i| ≤ gamma fp (n + 1)) ∧
+      |δ| ≤ fp.u ∧
+      fl_householderAlpha fp n x =
+        -(householderSign (x 0)) *
+          (Real.sqrt (∑ i : Fin (n + 1), x i * x i * (1 + η i)) * (1 + δ)) := by
+  obtain ⟨η, δ, hη, hδ, hnorm⟩ :=
+    fl_norm2_unroll_of_gammaValid_two_mul fp (n + 1) x hn
+  refine ⟨η, δ, hη, hδ, ?_⟩
+  unfold fl_householderAlpha
+  rw [hnorm]
+
 /-- Floating-point Householder vector construction from a column segment.
 
     For a vector `x`, this sets
@@ -83,6 +116,39 @@ noncomputable def fl_householderVector (fp : FPModel) (n : ℕ)
     (x : Fin (n + 1) → ℝ) : Fin (n + 1) → ℝ :=
   fun i => if i = 0 then fp.fl_sub (x i) (fl_householderAlpha fp n x) else x i
 
+/-- Unrolled form of `fl_householderVector`.
+
+    The first component is computed by one rounded subtraction after the rounded
+    norm in `fl_householderAlpha`; every tail component is copied exactly. -/
+theorem fl_householderVector_unroll (fp : FPModel) (n : ℕ)
+    (x : Fin (n + 1) → ℝ) (hn : gammaValid fp (2 * (n + 1))) :
+    ∃ (η : Fin (n + 1) → ℝ) (δnorm δsub : ℝ),
+      (∀ i : Fin (n + 1), |η i| ≤ gamma fp (n + 1)) ∧
+      |δnorm| ≤ fp.u ∧
+      |δsub| ≤ fp.u ∧
+      fl_householderVector fp n x 0 =
+        (x 0 -
+          (-(householderSign (x 0)) *
+            (Real.sqrt (∑ i : Fin (n + 1), x i * x i * (1 + η i)) *
+              (1 + δnorm)))) * (1 + δsub) ∧
+      (∀ i : Fin (n + 1), i ≠ 0 → fl_householderVector fp n x i = x i) := by
+  obtain ⟨η, δnorm, hη, hδnorm, halpha⟩ :=
+    fl_householderAlpha_unroll fp n x hn
+  let α := fl_householderAlpha fp n x
+  let δsub : ℝ := Classical.choose (fp.model_sub (x 0) α)
+  have hδsub :
+      |δsub| ≤ fp.u ∧ fp.fl_sub (x 0) α = (x 0 - α) * (1 + δsub) :=
+    Classical.choose_spec (fp.model_sub (x 0) α)
+  refine ⟨η, δnorm, δsub, hη, hδnorm, hδsub.1, ?_, ?_⟩
+  · unfold fl_householderVector
+    simp only [↓reduceIte]
+    change fp.fl_sub (x 0) α = _
+    rw [hδsub.2]
+    rw [show α = fl_householderAlpha fp n x by rfl, halpha]
+  · intro i hi
+    unfold fl_householderVector
+    simp [hi]
+
 /-- Rounded scalar `β` computed from a Householder vector using a rounded
     dot product and rounded division.
 
@@ -92,6 +158,24 @@ noncomputable def fl_householderVector (fp : FPModel) (n : ℕ)
 noncomputable def fl_householderBeta (fp : FPModel) (n : ℕ)
     (v : Fin n → ℝ) : ℝ :=
   fp.fl_div 2 (fl_norm2Sq fp n v)
+
+/-- Unrolled form of `fl_householderBeta`.
+
+    This exposes the rounded dot product used for `vᵀv` and the final rounded
+    division by that computed denominator. -/
+theorem fl_householderBeta_unroll (fp : FPModel) (n : ℕ)
+    (v : Fin n → ℝ) (hn : gammaValid fp n)
+    (hden : fl_norm2Sq fp n v ≠ 0) :
+    ∃ (η : Fin n → ℝ) (δdiv : ℝ),
+      (∀ i : Fin n, |η i| ≤ gamma fp n) ∧
+      |δdiv| ≤ fp.u ∧
+      fl_householderBeta fp n v =
+        (2 / (∑ i : Fin n, v i * v i * (1 + η i))) * (1 + δdiv) := by
+  obtain ⟨η, hη, hsum⟩ := fl_norm2Sq_backward_error fp n v hn
+  obtain ⟨δdiv, hδdiv, hdiv⟩ := fp.model_div 2 (fl_norm2Sq fp n v) hden
+  refine ⟨η, δdiv, hη, hδdiv, ?_⟩
+  unfold fl_householderBeta
+  rw [hdiv, hsum]
 
 /-- Exact orthogonal reflector associated with the rounded vector constructed
     from `x`.

@@ -75,10 +75,15 @@ Current `main` is for the core library. Benchmark work lives on branch
 - `DotProduct` supports `MatVec`.
 - `MatVec` supports `MatMul` and matrix inversion residual results.
 - `DotProduct` supports `Norm2`, which gives the reusable `fl_norm2Sq` and
-  `fl_norm2` kernels needed by Householder reflector construction.
+  `fl_norm2` kernels needed by Householder reflector construction.  `Norm2`
+  bridges exact squared norms to Mathlib `dotProduct` through
+  `exactNorm2Sq_eq_dotProduct`, while preserving the existing function-based
+  vector API.
 - `Norm2` supports `QR/HouseholderReflector.lean`, which defines sign choice,
   rounded Householder vector construction, rounded beta, and the exact
-  orthogonal reflector associated with a computed vector.
+  orthogonal reflector associated with a computed vector.  `householderSign`
+  intentionally has value `1` at zero, so it is local, but it agrees with
+  Mathlib `Real.sign` away from zero.
 - `HouseholderReflector`/`DotProduct` support the first implementation-backed
   QR application kernel: `QR/HouseholderApply.lean` defines
   `fl_householderApply` and proves its unrolled rounding-error and
@@ -151,11 +156,17 @@ These compile, but should not be treated as fully derived stability results:
   inputs.
 - Added `Algorithms/Norm2.lean` with exact and floating 2-norm kernels:
   `exactNorm2Sq`, `exactNorm2`, `fl_norm2Sq`, `fl_norm2`,
-  `fl_norm2Sq_backward_error`, and `fl_norm2_unroll`.
+  `fl_norm2Sq_backward_error`, `fl_norm2Sq_nonneg_of_gammaValid_two_mul`,
+  `fl_norm2_unroll`, and `fl_norm2_unroll_of_gammaValid_two_mul`.
 - Added `Algorithms/QR/HouseholderReflector.lean` with `householderSign`,
   `exactHouseholderBeta`, `fl_householderAlpha`, `fl_householderVector`,
   `fl_householderBeta`, `exactHouseholderFromRoundedVector`, and the
   orthogonality bridge `exactHouseholder_orthogonal`.
+- Added Mathlib alignment bridges: `exactNorm2Sq_eq_dotProduct`,
+  `exactNorm2Sq_eq_zero_iff`, `exactNorm2Sq_pos_iff`,
+  `householderSign_zero`, and `householderSign_eq_realSign_of_ne`.
+- Added construction unroll lemmas: `fl_householderAlpha_unroll`,
+  `fl_householderVector_unroll`, and `fl_householderBeta_unroll`.
 - `fl_householderApply fp n v β b` models the rounded operation order
   `σ̂ = fl(vᵀb)`, `τ̂ = fl(βσ̂)`, `ŷᵢ = fl(bᵢ - fl(τ̂vᵢ))`, with `v` and `β`
   already supplied.

@@ -9,6 +9,7 @@
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Real.Sqrt
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
+import Mathlib.LinearAlgebra.Matrix.DotProduct
 import LeanFpAnalysis.FP.Algorithms.DotProduct
 
 namespace LeanFpAnalysis.FP
@@ -22,6 +23,11 @@ open scoped BigOperators
 /-- Exact squared Euclidean norm, `∑ᵢ xᵢ²`. -/
 noncomputable def exactNorm2Sq (n : ℕ) (x : Fin n → ℝ) : ℝ :=
   ∑ i : Fin n, x i * x i
+
+/-- Bridge to Mathlib's exact dot-product notation. -/
+theorem exactNorm2Sq_eq_dotProduct (n : ℕ) (x : Fin n → ℝ) :
+    exactNorm2Sq n x = x ⬝ᵥ x := by
+  rfl
 
 /-- Exact Euclidean norm, `sqrt (∑ᵢ xᵢ²)`. -/
 noncomputable def exactNorm2 (n : ℕ) (x : Fin n → ℝ) : ℝ :=
@@ -43,6 +49,29 @@ theorem exactNorm2Sq_nonneg (n : ℕ) (x : Fin n → ℝ) :
   unfold exactNorm2Sq
   exact Finset.sum_nonneg fun i _ => mul_self_nonneg (x i)
 
+/-- The squared 2-norm is zero exactly for the zero vector. -/
+theorem exactNorm2Sq_eq_zero_iff (n : ℕ) (x : Fin n → ℝ) :
+    exactNorm2Sq n x = 0 ↔ x = 0 := by
+  rw [exactNorm2Sq_eq_dotProduct]
+  exact dotProduct_self_eq_zero
+
+/-- The squared 2-norm is nonzero exactly for a nonzero vector. -/
+theorem exactNorm2Sq_ne_zero_iff (n : ℕ) (x : Fin n → ℝ) :
+    exactNorm2Sq n x ≠ 0 ↔ x ≠ 0 := by
+  exact not_congr (exactNorm2Sq_eq_zero_iff n x)
+
+/-- The squared 2-norm is positive exactly for a nonzero vector. -/
+theorem exactNorm2Sq_pos_iff (n : ℕ) (x : Fin n → ℝ) :
+    0 < exactNorm2Sq n x ↔ x ≠ 0 := by
+  constructor
+  · intro h hx
+    rw [hx] at h
+    simp [exactNorm2Sq] at h
+  · intro hx
+    have hne : exactNorm2Sq n x ≠ 0 :=
+      (exactNorm2Sq_ne_zero_iff n x).2 hx
+    exact lt_of_le_of_ne (exactNorm2Sq_nonneg n x) (Ne.symm hne)
+
 theorem exactNorm2_nonneg (n : ℕ) (x : Fin n → ℝ) :
     0 ≤ exactNorm2 n x := by
   unfold exactNorm2
@@ -55,6 +84,21 @@ theorem fl_norm2Sq_backward_error (fp : FPModel) (n : ℕ)
       (∀ i : Fin n, |η i| ≤ gamma fp n) ∧
       fl_norm2Sq fp n x = ∑ i : Fin n, x i * x i * (1 + η i) := by
   simpa [fl_norm2Sq] using dotProduct_backward_error fp n x x hn
+
+/-- The computed sum of squares is nonnegative when the dot-product error
+    factors remain nonnegative.  The `2*n` validity condition is the standard
+    way to obtain `gamma fp n < 1`. -/
+theorem fl_norm2Sq_nonneg_of_gammaValid_two_mul (fp : FPModel) (n : ℕ)
+    (x : Fin n → ℝ) (hn : gammaValid fp (2 * n)) :
+    0 ≤ fl_norm2Sq fp n x := by
+  have hn_small : gammaValid fp n := gammaValid_mono fp (by omega) hn
+  obtain ⟨η, hη, hsum⟩ := fl_norm2Sq_backward_error fp n x hn_small
+  rw [hsum]
+  exact Finset.sum_nonneg fun i _ => by
+    have hγ_lt : gamma fp n < 1 := gamma_lt_one fp n hn
+    have hfactor : 0 ≤ 1 + η i := by
+      linarith [neg_abs_le (η i), hη i, hγ_lt]
+    exact mul_nonneg (mul_self_nonneg (x i)) hfactor
 
 /-- Unrolled form for the floating-point 2-norm.
 
@@ -79,5 +123,17 @@ theorem fl_norm2_unroll (fp : FPModel) (n : ℕ)
   refine ⟨η, δ, hη, hδ, ?_⟩
   unfold fl_norm2
   rw [hsqrt, hsum]
+
+/-- Convenience form of `fl_norm2_unroll` using the standard `2*n`
+    `gammaValid` side condition to discharge square-root nonnegativity. -/
+theorem fl_norm2_unroll_of_gammaValid_two_mul (fp : FPModel) (n : ℕ)
+    (x : Fin n → ℝ) (hn : gammaValid fp (2 * n)) :
+    ∃ (η : Fin n → ℝ) (δ : ℝ),
+      (∀ i : Fin n, |η i| ≤ gamma fp n) ∧
+      |δ| ≤ fp.u ∧
+      fl_norm2 fp n x =
+        Real.sqrt (∑ i : Fin n, x i * x i * (1 + η i)) * (1 + δ) := by
+  exact fl_norm2_unroll fp n x (gammaValid_mono fp (by omega) hn)
+    (fl_norm2Sq_nonneg_of_gammaValid_two_mul fp n x hn)
 
 end LeanFpAnalysis.FP

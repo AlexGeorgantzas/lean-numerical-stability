@@ -29,7 +29,7 @@ For a smaller import, use the file listed in the tables below.
 | Subtraction folds and inverse products | `LeanFpAnalysis/FP/Analysis/SubtractionFold.lean` | subtraction accumulation helpers | `fl_sub_sum_error_init`, `inv_prod_error_bound` | Used heavily by triangular substitution proofs. |
 | Dot product forward error | `LeanFpAnalysis/FP/Algorithms/DotProduct.lean` | `fl_dotProduct` | `dotProduct_error_bound` | Tight `gamma fp n` bound for the sequential dot product. |
 | Dot product backward error | `LeanFpAnalysis/FP/Algorithms/DotProduct.lean` | `fl_dotProduct` | `dotProduct_backward_error`, `dotProduct_backward_stable_x`, `dotProduct_backward_stable_y`, `dotProduct_isRelBackwardStable` | Componentwise relative perturbations of one input vector. |
-| Floating 2-norm | `LeanFpAnalysis/FP/Algorithms/Norm2.lean` | `exactNorm2Sq`, `exactNorm2`, `fl_norm2Sq`, `fl_norm2` | `fl_norm2Sq_backward_error`, `fl_norm2_unroll` | Computes `xᵀx` by `fl_dotProduct`, then applies the rounded `FPModel.fl_sqrt`. |
+| Floating 2-norm | `LeanFpAnalysis/FP/Algorithms/Norm2.lean` | `exactNorm2Sq`, `exactNorm2`, `fl_norm2Sq`, `fl_norm2` | `exactNorm2Sq_eq_dotProduct`, `exactNorm2Sq_eq_zero_iff`, `exactNorm2Sq_pos_iff`, `fl_norm2Sq_backward_error`, `fl_norm2Sq_nonneg_of_gammaValid_two_mul`, `fl_norm2_unroll`, `fl_norm2_unroll_of_gammaValid_two_mul` | Exact facts bridge to Mathlib `dotProduct`; FP facts compute `xᵀx` by `fl_dotProduct`, then apply rounded `FPModel.fl_sqrt`. |
 | Matrix-vector product | `LeanFpAnalysis/FP/Algorithms/MatVec.lean` | `fl_matVec` | `matVec_backward_error`, `matVec_error_bound`, `matVec_row_isRelBackwardStable` | Built row-by-row from dot products. |
 | Matrix multiplication | `LeanFpAnalysis/FP/Algorithms/MatMul.lean` | `fl_matMul` | `matMul_error_bound`, `matMul_backward_error_col` | Backward theorem is columnwise; each column may use a different perturbation. |
 | Outer product | `LeanFpAnalysis/FP/Algorithms/OuterProduct.lean` | `fl_outerProduct` | `outerProduct_error_bound`, `outerProduct_backward_error` | Useful for rank-one update reasoning. |
@@ -45,7 +45,7 @@ For a smaller import, use the file listed in the tables below.
 | Structured LU bounds | `LeanFpAnalysis/FP/Algorithms/LU/GrowthFactor.lean`, `SpecialMatrices.lean`, `Tridiagonal.lean`, `Doolittle.lean`, `BlockLU.lean` | growth-factor and special-matrix specs | `diagDom_lu_solve_backward_stable`, `spd_lu_backward_error`, `mmatrix_lu_backward_stable`, `banded_lu_backward_error`, `doolittle_solve_backward_error`, `block_lu_solve_backward_error` | Some structured results are specification-level interfaces; inspect hypotheses. |
 | Cholesky factorization | `LeanFpAnalysis/FP/Algorithms/Cholesky/CholeskySpec.lean` | `CholeskyBackwardError` | `cholesky_backward_error_perturbation`, `cholesky_backward_error_relative`, `cholesky_spd_backward_stable` | Factorization contract for SPD-style analyses. |
 | Cholesky solve | `LeanFpAnalysis/FP/Algorithms/Cholesky/CholeskySolve.lean` | `fl_forwardSub`, `fl_backSub`, `CholeskyBackwardError` | `cholesky_solve_backward_error_expanded`, `cholesky_solve_backward_error`, `cholesky_solve_spd_backward_stable` | Composes Cholesky factorization with two triangular solves. |
-| Householder reflector construction | `LeanFpAnalysis/FP/Algorithms/QR/HouseholderReflector.lean` | `householderSign`, `exactHouseholderBeta`, `fl_householderAlpha`, `fl_householderVector`, `fl_householderBeta`, `exactHouseholderFromRoundedVector` | `exactHouseholder_orthogonal`, `exactHouseholderBeta_mul_norm2Sq`, `householderSign_mul_eq_abs` | Starts the low-level construction layer. It distinguishes rounded construction data from the exact orthogonal reflector associated with a vector. |
+| Householder reflector construction | `LeanFpAnalysis/FP/Algorithms/QR/HouseholderReflector.lean` | `householderSign`, `exactHouseholderBeta`, `fl_householderAlpha`, `fl_householderVector`, `fl_householderBeta`, `exactHouseholderFromRoundedVector` | `householderSign_zero`, `householderSign_eq_realSign_of_ne`, `exactHouseholder_orthogonal`, `exactHouseholderBeta_mul_norm2Sq`, `fl_householderAlpha_unroll`, `fl_householderVector_unroll`, `fl_householderBeta_unroll` | Starts the low-level construction layer. `householderSign` intentionally differs from Mathlib `Real.sign` at zero; rounded construction data is kept separate from exact orthogonal reflectors. |
 | Householder application | `LeanFpAnalysis/FP/Algorithms/QR/HouseholderApply.lean` | `fl_householderApply`, `HouseholderAppError` | `fl_householderApply_unroll`, `fl_householderApply_matrix_perturbation`, `fl_householderApply_appError_actualBound` | Concrete rounded application of `I - βvvᵀ` to a vector. The current bridge uses the actual perturbation norm; the closed-form Higham Lemma 18.2 bound is future work. |
 | QR factorization and QR solve | `LeanFpAnalysis/FP/Algorithms/QR/*.lean` | `householder`, `givensRotation`, `HouseholderQRBackwardError`, `GivensQRBackwardError`, `QRSolveBackwardError` | `householder_qr_backward`, `givens_qr_backward`, `qr_solve_backward_from_components`, `qr_solve_perturbation_bound` | Mostly contract/interface level beyond Householder application. There is not yet a full `fl_householder_qr` or `fl_qr_solve`. |
 | Residual computation | `LeanFpAnalysis/FP/Algorithms/IterativeRefinement.lean` | `fl_residual`, `ResidualError` | `conventional_residual_error` | Bound for the computed residual `fl(b - A*x_hat)`. |
@@ -129,9 +129,15 @@ library lemmas. Good examples are:
 
 - `dotProduct_error_bound`
 - `dotProduct_backward_error`
+- `exactNorm2Sq_eq_dotProduct`
 - `fl_norm2Sq_backward_error`
+- `fl_norm2Sq_nonneg_of_gammaValid_two_mul`
 - `fl_norm2_unroll`
+- `fl_norm2_unroll_of_gammaValid_two_mul`
 - `exactHouseholder_orthogonal`
+- `fl_householderAlpha_unroll`
+- `fl_householderVector_unroll`
+- `fl_householderBeta_unroll`
 - `matVec_backward_error`
 - `matMul_error_bound`
 - `forwardSub_backward_error`
