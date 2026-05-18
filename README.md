@@ -20,7 +20,7 @@ The library formalizes reusable results and stability contracts from **Chapters 
 
 For a searchable map from stability-analysis goals to files, definitions, and
 theorem names, see [`docs/LIBRARY_LOOKUP.md`](docs/LIBRARY_LOOKUP.md).  For a
-Lean `#check` companion index, see [`examples/LibraryLookup.lean`](examples/LibraryLookup.lean).
+Lean `#check` companion index, see [`docs/LibraryLookup.lean`](docs/LibraryLookup.lean).
 
 ### Core theory
 

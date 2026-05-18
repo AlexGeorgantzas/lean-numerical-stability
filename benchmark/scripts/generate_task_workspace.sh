@@ -57,7 +57,6 @@ printf '%s\n' "${condition_c_snapshot}" > "${condition_c}/.benchmark_condition_c
 ln -s "${condition_c_snapshot}" "${condition_c}/public_library"
 ln -s "${condition_c_snapshot}/README.md" "${condition_c}/README.md"
 ln -s "${condition_c_snapshot}/docs" "${condition_c}/docs"
-ln -s "${condition_c_snapshot}/examples" "${condition_c}/examples"
 
 if [[ "${BENCHMARK_USE_SHARED_LAKE_PACKAGES:-1}" == "1" ]]; then
   for condition_dir in "${condition_a}" "${condition_c}"; do

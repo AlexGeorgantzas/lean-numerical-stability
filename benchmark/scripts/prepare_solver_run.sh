@@ -66,8 +66,8 @@ Work only inside the current workspace. Prove the theorem in
 Rules:
 - Treat the current workspace as the whole benchmark environment.
 - You may inspect files and symlinks that are already present as entries in
-  the current workspace, such as `public_library`, `README.md`, `docs`, or
-  `examples` when they exist.
+  the current workspace, such as `public_library`, `README.md`, or `docs`
+  when they exist.
 - Do not inspect the original repository, user home directories, global caches,
   previous result directories, or manually discovered paths outside the
   workspace.
@@ -112,8 +112,8 @@ Persistence requirements:
 Rules:
 - Treat the current workspace as the whole benchmark environment.
 - You may inspect files and symlinks that are already present as entries in
-  the current workspace, such as `public_library`, `README.md`, `docs`, or
-  `examples` when they exist.
+  the current workspace, such as `public_library`, `README.md`, or `docs`
+  when they exist.
 - Do not inspect the original repository, user home directories, global caches,
   previous result directories, or manually discovered paths outside the
   workspace.

@@ -5,7 +5,7 @@ This file records the current audit of
 
 Condition A is allowed to expose bare definitions and theorem-statement data
 types.  It must not expose proved stability theorems, gamma arithmetic lemmas,
-lookup documentation, examples, or solver hints.  When a definition appears in
+lookup documentation, or solver hints.  When a definition appears in
 a benchmark theorem target, the stub should preserve the public library meaning
 rather than replacing it with a degenerate placeholder.
 
@@ -15,8 +15,8 @@ rather than replacing it with a degenerate placeholder.
 | --- | --- | --- |
 | `FPModel` | `LeanFpAnalysis/FP/Model.lean` | Bare model fields copied for task statements. |
 | `gamma`, `gammaValid` | `LeanFpAnalysis/FP/Analysis/Rounding.lean` | Bare definitions only; no gamma lemmas exposed. |
-| `fl_dotProduct` | `LeanFpAnalysis/FP/Analysis/DotProduct.lean` | Algorithm definition exposed; dot-product theorems omitted. |
-| `fl_matVec` | `LeanFpAnalysis/FP/Analysis/Matrix.lean` | Algorithm definition exposed; matvec theorems omitted. |
+| `fl_dotProduct` | `LeanFpAnalysis/FP/Algorithms/DotProduct.lean` | Algorithm definition exposed; dot-product theorems omitted. |
+| `fl_matVec` | `LeanFpAnalysis/FP/Algorithms/MatVec.lean` | Algorithm definition exposed; matvec theorems omitted. |
 | `fl_matMul` | `LeanFpAnalysis/FP/Algorithms/MatMul.lean` | Algorithm definition exposed; matrix-product theorems omitted. |
 | `fl_residual` | `LeanFpAnalysis/FP/Algorithms/IterativeRefinement.lean` | Algorithm definition exposed; residual theorems omitted. |
 | `fl_forwardSub`, `fl_forwardSub_steps` | `LeanFpAnalysis/FP/Algorithms/ForwardSub.lean` | Fold-based algorithm definitions copied. |
@@ -25,8 +25,8 @@ rather than replacing it with a degenerate placeholder.
 | `frobNormSq`, `frobNorm` | `LeanFpAnalysis/FP/Analysis/MatrixAlgebra.lean` | Bare norm definitions exposed for least-squares certificates; norm lemmas omitted. |
 | `infNormVec`, `infNorm` | `LeanFpAnalysis/FP/Analysis/MatrixAlgebra.lean` | Finite-supremum definitions copied. |
 | `IsLeftInverse`, `IsRightInverse`, `IsInverse` | `LeanFpAnalysis/FP/Analysis/MatrixAlgebra.lean` | Predicate definitions copied. |
-| `LUBackwardError` | `LeanFpAnalysis/FP/Algorithms/LU.lean` | Specification structure exposed; LU theorems omitted. |
-| `CholeskyBackwardError` | `LeanFpAnalysis/FP/Algorithms/Cholesky.lean` | Specification structure exposed; Cholesky theorems omitted. |
+| `LUBackwardError` | `LeanFpAnalysis/FP/Algorithms/LU/GaussianElimination.lean` | Specification structure exposed; LU theorems omitted. |
+| `CholeskyBackwardError` | `LeanFpAnalysis/FP/Algorithms/Cholesky/CholeskySpec.lean` | Specification structure exposed; Cholesky theorems omitted. |
 | `SplittingSpec`, `dualIterMatrix`, `ComputedIteration` | `LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean` | Statement-level definitions copied; stationary-iteration theorems omitted. |
 | `LSQRSolveBackwardError` | `LeanFpAnalysis/FP/Algorithms/LeastSquares/LSQRSolve.lean` | Specification structure exposed; QR least-squares theorems omitted. |
 

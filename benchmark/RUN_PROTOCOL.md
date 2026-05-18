@@ -21,7 +21,7 @@ tree.
   needed by the benchmark theorem statements; it should not include stability
   theorems or gamma-calculus lemmas.
 - `benchmark/scripts/`: helper scripts for generating workspaces.
-- `docs/`, `README.md`, `examples/`: public library documentation allowed in
+- `docs/`, `README.md`: public library documentation allowed in
   Condition C.
 - `thesis/DECISION_LOG.md`: project/thesis notes, never solver-facing.
 - `.codex/`: local agent memory, never solver-facing.
@@ -54,7 +54,6 @@ Generated Condition A must not contain:
 - proved gamma-calculus lemmas such as `gamma_mul`, `gamma_sum_le`, or
   `prod_error_bound`
 - `docs/`
-- `examples/`
 - `benchmark/tasks/`
 - `thesis/`
 - `.codex/`
@@ -67,12 +66,12 @@ Generated Condition C contains:
 - the same task file used in Condition A, copied without edits
 - a dependency path to the shared read-only Condition C snapshot
 - symlinks to public library docs/source: `README.md`,
-  `docs/LIBRARY_LOOKUP.md`, examples, and `public_library/`
+  `docs/`, and `public_library/`
 
 The shared Condition C snapshot contains:
 
 - `LeanFpAnalysis.lean` and `LeanFpAnalysis/`
-- public library docs: `README.md`, `docs/LIBRARY_LOOKUP.md`, examples
+- public library docs: `README.md` and `docs/`
 - Lake files needed to build the public library
 
 Generated Condition C must not contain:

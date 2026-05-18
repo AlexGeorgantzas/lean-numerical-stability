@@ -31,7 +31,6 @@ benchmark_condition_c_public_id() {
       Main.lean \
       README.md \
       docs \
-      examples \
       lakefile.toml \
       lake-manifest.json \
       lean-toolchain |

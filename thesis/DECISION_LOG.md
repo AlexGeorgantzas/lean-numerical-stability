@@ -11,7 +11,7 @@ work on this branch, so the benchmark sections below are detailed.
 Important: do not include this file in solver-facing benchmark workspaces.  It
 may contain benchmark intent, task ordering, expected difficulty, and reasons
 for choosing particular tasks.  Condition C should expose the public library,
-source comments, `README.md`, `docs/LIBRARY_LOOKUP.md`, and examples, but not
+source comments, `README.md`, and `docs/`, but not
 project decision notes like this file.
 
 ## Branch Policy
@@ -93,7 +93,7 @@ abstract/specification-transfer results.
 
 ### Decision: Keep Public Lookup Documentation
 
-The files `docs/LIBRARY_LOOKUP.md` and `examples/LibraryLookup.lean` are public
+The files `docs/LIBRARY_LOOKUP.md` and `docs/LibraryLookup.lean` are public
 library documentation.
 
 Reason: the library is large.  A central lookup guide helps humans and tools
@@ -136,7 +136,7 @@ The current design uses only two conditions:
   minimum definitions needed to state the theorem target.
 - **Condition C: Full library.**  The solver gets the LeanFpAnalysis library as
   a normal user would: public source files, comments/docstrings, README,
-  lookup guide, and examples.
+  and lookup documentation.
 
 The reason for dropping Condition B is that it is less directly aligned with
 the thesis question.  Condition B would measure whether the agent can rebuild a
@@ -198,7 +198,7 @@ Allowed Condition C material:
 - theorem names and docstrings;
 - `README.md`;
 - `docs/LIBRARY_LOOKUP.md`;
-- `examples/LibraryLookup.lean`;
+- `docs/LibraryLookup.lean`;
 - task statement.
 
 Disallowed Condition C material:
@@ -232,7 +232,7 @@ Chosen option: public lookup documentation.
 Files:
 
 - `docs/LIBRARY_LOOKUP.md`
-- `examples/LibraryLookup.lean`
+- `docs/LibraryLookup.lean`
 
 Reason chosen: this is normal library documentation.  It tells users where
 definitions and theorem families live without giving benchmark-specific proof
@@ -732,7 +732,7 @@ would create unnecessary opportunities for accidental differences between
 tasks.  A common stub keeps Condition A consistent: it exposes only bare
 definitions and abstract contracts needed for the theorem statements to parse,
 without proved stability theorems, gamma calculus, lookup documentation, or
-examples.
+solver-facing documentation.
 
 Consequence: Condition A can define the same theorem targets as Condition C,
 but it should not have the reusable proof infrastructure that the thesis is
@@ -741,7 +741,7 @@ trying to evaluate.
 ### Decision: Bare Stubs Must Use Faithful Definitions
 
 Condition A stubs may omit proved stability theorems, gamma-calculus lemmas,
-lookup documentation, and examples.  They should not replace real definitions
+and lookup documentation.  They should not replace real definitions
 with degenerate placeholders when those definitions appear in the theorem
 target.
 
@@ -788,8 +788,8 @@ is to test whether a fresh solver can discover and use the library as a whole,
 as a user would after loading the project for the first time.
 
 The task file remains neutral and contains no task-specific proof guidance.
-Condition C receives access to the full public library, README, docs, and
-examples through a shared read-only snapshot.  Each solver attempt still runs
+Condition C receives access to the full public library, README, and docs
+through a shared read-only snapshot.  Each solver attempt still runs
 in a fresh task workspace containing only the task file, prompt, Lake config,
 and symlinks/dependency paths to the snapshot.  It does not receive benchmark
 meta-notes, thesis notes, memory files, previous attempts, or solution
@@ -1201,7 +1201,7 @@ failure exposed a public-documentation gap: `docs/LIBRARY_LOOKUP.md` listed
 `componentwise_forward_error` but not the standard specialization
 `componentwise_forward_error_standard`, even though this is the theorem users
 need for the common `|DeltaA| <= eps*|A|`, `|Deltab| <= eps*|b|` form.  The
-lookup table and `examples/LibraryLookup.lean` were updated to include
+lookup table and `docs/LibraryLookup.lean` were updated to include
 `componentwise_forward_error_standard` and `normwise_perturbation_bound`.
 
 E06 was rerun after rebuilding the Condition C snapshot with the updated

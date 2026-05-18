@@ -58,7 +58,6 @@ copy_if_exists "${repo_root}/LeanFpAnalysis" "${tmp_snapshot}/LeanFpAnalysis"
 copy_if_exists "${repo_root}/Main.lean" "${tmp_snapshot}/Main.lean"
 copy_if_exists "${repo_root}/README.md" "${tmp_snapshot}/README.md"
 copy_if_exists "${repo_root}/docs" "${tmp_snapshot}/docs"
-copy_if_exists "${repo_root}/examples" "${tmp_snapshot}/examples"
 copy_if_exists "${repo_root}/lakefile.toml" "${tmp_snapshot}/lakefile.toml"
 copy_if_exists "${repo_root}/lake-manifest.json" "${tmp_snapshot}/lake-manifest.json"
 copy_if_exists "${repo_root}/lean-toolchain" "${tmp_snapshot}/lean-toolchain"
@@ -77,7 +76,6 @@ echo "  ${snapshot_dir}"
     Main.lean \
     README.md \
     docs \
-    examples \
     lakefile.toml \
     lake-manifest.json \
     lean-toolchain \
