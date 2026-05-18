@@ -1,0 +1,98 @@
+✖ [1966/1967] Building BenchmarkTask (2.8s)
+trace: .> LEAN_PATH=/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/Cli/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/batteries/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/Qq/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/aesop/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/proofwidgets/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/importGraph/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/LeanSearchClient/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/plausible/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/mathlib/.lake/build/lib/lean:/private/tmp/lean-fp-benchmark-runs/E08_LapackLSQRForward-20260507-222525/condition_a/E08_LapackLSQRForward/.lake/build/lib/lean /Users/georgiosalexandrosgeorgantzas/.elan/toolchains/leanprover--lean4---v4.29.0-rc3/bin/lean /private/tmp/lean-fp-benchmark-runs/E08_LapackLSQRForward-20260507-222525/condition_a/E08_LapackLSQRForward/BenchmarkTask.lean -o /private/tmp/lean-fp-benchmark-runs/E08_LapackLSQRForward-20260507-222525/condition_a/E08_LapackLSQRForward/.lake/build/lib/lean/BenchmarkTask.olean -i /private/tmp/lean-fp-benchmark-runs/E08_LapackLSQRForward-20260507-222525/condition_a/E08_LapackLSQRForward/.lake/build/lib/lean/BenchmarkTask.ilean -c /private/tmp/lean-fp-benchmark-runs/E08_LapackLSQRForward-20260507-222525/condition_a/E08_LapackLSQRForward/.lake/build/ir/BenchmarkTask.c --setup /private/tmp/lean-fp-benchmark-runs/E08_LapackLSQRForward-20260507-222525/condition_a/E08_LapackLSQRForward/.lake/build/ir/BenchmarkTask.setup.json --json
+error: BenchmarkTask.lean:49:18: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  ATb j
+in the target expression
+  ∑ k, ATA j k * xhat k - ∑ k, ATA j k * x k = Deltag j - ∑ k, DeltaG j k * xhat k
+
+n : ℕ
+ATA ATA_inv : Fin n → Fin n → ℝ
+ATb x xhat : Fin n → ℝ
+cG cg : ℝ
+hInv : IsInverse n ATA ATA_inv
+hExact : ∀ (i : Fin n), matMulVec n ATA x i = ATb i
+hQR : LSQRSolveBackwardError n ATA ATb xhat cG cg
+DeltaG : Fin n → Fin n → ℝ
+Deltag : Fin n → ℝ
+hPert : ∀ (i : Fin n), matMulVec n (fun a b => ATA a b + DeltaG a b) xhat i = ATb i + Deltag i
+hDeltaG : frobNorm DeltaG ≤ cG
+hDeltag : ∀ (i : Fin n), |Deltag i| ≤ cg
+i : Fin n
+hleft : IsLeftInverse n ATA ATA_inv
+j : Fin n
+he : ∑ j_1, ATA j j_1 * x j_1 = ATb j
+hp : ∑ x, (ATA j x + DeltaG j x) * xhat x = ATb j + Deltag j
+⊢ ∑ k, ATA j k * xhat k - ∑ k, ATA j k * x k = Deltag j - ∑ k, DeltaG j k * xhat k
+error: BenchmarkTask.lean:64:14: unsolved goals
+case h₀
+n : ℕ
+ATA ATA_inv : Fin n → Fin n → ℝ
+ATb x xhat : Fin n → ℝ
+cG cg : ℝ
+hInv : IsInverse n ATA ATA_inv
+hExact : ∀ (i : Fin n), matMulVec n ATA x i = ATb i
+hQR : LSQRSolveBackwardError n ATA ATb xhat cG cg
+DeltaG : Fin n → Fin n → ℝ
+Deltag : Fin n → ℝ
+hPert : ∀ (i : Fin n), matMulVec n (fun a b => ATA a b + DeltaG a b) xhat i = ATb i + Deltag i
+hDeltaG : frobNorm DeltaG ≤ cG
+hDeltag : ∀ (i : Fin n), |Deltag i| ≤ cg
+i : Fin n
+hleft : IsLeftInverse n ATA ATA_inv
+hrow : ∀ (j : Fin n), ∑ k, ATA j k * (xhat k - x k) = Deltag j - ∑ k, DeltaG j k * xhat k
+b : Fin n
+a✝ : b ∈ Finset.univ
+hb : b ≠ i
+⊢ i = b → xhat b - x b = 0
+error: BenchmarkTask.lean:78:18: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  ?a * ∑ i ∈ ?s, ?f i
+in the target expression
+  (∑ k_1, ATA_inv i k_1 * ATA k_1 k) * (xhat k - x k) = ∑ x_1, ATA_inv i x_1 * (ATA x_1 k * (xhat k - x k))
+
+n : ℕ
+ATA ATA_inv : Fin n → Fin n → ℝ
+ATb x xhat : Fin n → ℝ
+cG cg : ℝ
+hInv : IsInverse n ATA ATA_inv
+hExact : ∀ (i : Fin n), matMulVec n ATA x i = ATb i
+hQR : LSQRSolveBackwardError n ATA ATb xhat cG cg
+DeltaG : Fin n → Fin n → ℝ
+Deltag : Fin n → ℝ
+hPert : ∀ (i : Fin n), matMulVec n (fun a b => ATA a b + DeltaG a b) xhat i = ATb i + Deltag i
+hDeltaG : frobNorm DeltaG ≤ cG
+hDeltag : ∀ (i : Fin n), |Deltag i| ≤ cg
+i : Fin n
+hleft : IsLeftInverse n ATA ATA_inv
+hrow : ∀ (j : Fin n), ∑ k, ATA j k * (xhat k - x k) = Deltag j - ∑ k, DeltaG j k * xhat k
+k : Fin n
+a✝ : k ∈ Finset.univ
+⊢ (∑ k_1, ATA_inv i k_1 * ATA k_1 k) * (xhat k - x k) = ∑ x_1, ATA_inv i x_1 * (ATA x_1 k * (xhat k - x k))
+error: BenchmarkTask.lean:94:44: Application type mismatch: The argument
+  Finset.univ
+has type
+  Finset ?m.617
+but is expected to have type
+  ?m.612 → ?m.613
+in the application
+  Finset.abs_sum_le_sum_abs Finset.univ
+error: BenchmarkTask.lean:110:22: Unknown identifier `abs_add`
+error: BenchmarkTask.lean:112:69: Application type mismatch: The argument
+  Finset.univ
+has type
+  Finset ?m.816
+but is expected to have type
+  ?m.811 → ?m.812
+in the application
+  Finset.abs_sum_le_sum_abs Finset.univ
+warning: BenchmarkTask.lean:65:22: This simp argument is unused:
+  hb
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵h̵b̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+error: Lean exited with code 1
+Some required targets logged failures:
+- BenchmarkTask
+error: build failed
+validation failed: lake build BenchmarkTask failed

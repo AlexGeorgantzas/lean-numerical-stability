@@ -1,0 +1,10 @@
+I couldn’t complete the Lean proof in this workspace.
+
+`lake build BenchmarkTask` fails before proof checking because Lake tries to fetch `mathlib` and network access is unavailable:
+
+```text
+error: error during download
+info: caused by: [6] Couldn't resolve host name (Could not resolve host: github.com)
+```
+
+I did not edit `BenchmarkTask.lean`, since I don’t have a verified replacement proof and the local project only contains definitions, not the numerical-analysis lemmas needed for this residual bound.

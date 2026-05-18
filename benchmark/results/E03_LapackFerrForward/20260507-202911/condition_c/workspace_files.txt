@@ -1,0 +1,10 @@
+/tmp/lean-fp-benchmark-runs/E03_LapackFerrForward-20260507-202911/condition_c/E03_LapackFerrForward/.benchmark_condition_c_snapshot
+/tmp/lean-fp-benchmark-runs/E03_LapackFerrForward-20260507-202911/condition_c/E03_LapackFerrForward/BenchmarkTask.lean
+/tmp/lean-fp-benchmark-runs/E03_LapackFerrForward-20260507-202911/condition_c/E03_LapackFerrForward/README.md
+/tmp/lean-fp-benchmark-runs/E03_LapackFerrForward-20260507-202911/condition_c/E03_LapackFerrForward/SOLVER_PROMPT.md
+/tmp/lean-fp-benchmark-runs/E03_LapackFerrForward-20260507-202911/condition_c/E03_LapackFerrForward/docs
+/tmp/lean-fp-benchmark-runs/E03_LapackFerrForward-20260507-202911/condition_c/E03_LapackFerrForward/examples
+/tmp/lean-fp-benchmark-runs/E03_LapackFerrForward-20260507-202911/condition_c/E03_LapackFerrForward/lake-manifest.json
+/tmp/lean-fp-benchmark-runs/E03_LapackFerrForward-20260507-202911/condition_c/E03_LapackFerrForward/lakefile.toml
+/tmp/lean-fp-benchmark-runs/E03_LapackFerrForward-20260507-202911/condition_c/E03_LapackFerrForward/lean-toolchain
+/tmp/lean-fp-benchmark-runs/E03_LapackFerrForward-20260507-202911/condition_c/E03_LapackFerrForward/public_library

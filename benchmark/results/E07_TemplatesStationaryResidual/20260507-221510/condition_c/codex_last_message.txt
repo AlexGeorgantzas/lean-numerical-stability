@@ -1,0 +1,12 @@
+Implemented the proof in [BenchmarkTask.lean](/tmp/lean-fp-benchmark-runs/E07_TemplatesStationaryResidual-20260507-221510/condition_c/E07_TemplatesStationaryResidual/BenchmarkTask.lean:29).
+
+The proof defines `ξ` as `stationaryLocalError`, proves it satisfies `ComputedIteration`, then applies the existing `normwise_residual_bound`.
+
+Verification: I ran `lake build BenchmarkTask`, but Lake was blocked by the sandbox when trying to touch an external package-cache lock file:
+
+```text
+operation not permitted
+.../mathlib/.lake/config/mathlib/lakefile.olean.lock
+```
+
+I also tried `lake env lean BenchmarkTask.lean` and hit the same sandbox boundary.

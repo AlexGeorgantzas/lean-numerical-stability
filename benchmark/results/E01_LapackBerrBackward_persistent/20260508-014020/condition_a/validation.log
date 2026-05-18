@@ -1,0 +1,55 @@
+✖ [1966/1967] Building BenchmarkTask (6.9s)
+trace: .> LEAN_PATH=/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/Cli/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/batteries/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/Qq/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/aesop/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/proofwidgets/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/importGraph/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/LeanSearchClient/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/plausible/.lake/build/lib/lean:/Users/georgiosalexandrosgeorgantzas/.cache/lean-fp-analysis/lake-packages/leanprover-lean4-v4.29.0-rc3-54d24c7bebd8e87d/mathlib/.lake/build/lib/lean:/private/tmp/lean-fp-benchmark-runs/E01_LapackBerrBackward_persistent-20260508-014020/condition_a/E01_LapackBerrBackward/.lake/build/lib/lean /Users/georgiosalexandrosgeorgantzas/.elan/toolchains/leanprover--lean4---v4.29.0-rc3/bin/lean /private/tmp/lean-fp-benchmark-runs/E01_LapackBerrBackward_persistent-20260508-014020/condition_a/E01_LapackBerrBackward/BenchmarkTask.lean -o /private/tmp/lean-fp-benchmark-runs/E01_LapackBerrBackward_persistent-20260508-014020/condition_a/E01_LapackBerrBackward/.lake/build/lib/lean/BenchmarkTask.olean -i /private/tmp/lean-fp-benchmark-runs/E01_LapackBerrBackward_persistent-20260508-014020/condition_a/E01_LapackBerrBackward/.lake/build/lib/lean/BenchmarkTask.ilean -c /private/tmp/lean-fp-benchmark-runs/E01_LapackBerrBackward_persistent-20260508-014020/condition_a/E01_LapackBerrBackward/.lake/build/ir/BenchmarkTask.c --setup /private/tmp/lean-fp-benchmark-runs/E01_LapackBerrBackward_persistent-20260508-014020/condition_a/E01_LapackBerrBackward/.lake/build/ir/BenchmarkTask.setup.json --json
+error: BenchmarkTask.lean:57:12: linarith failed to find a contradiction
+case h
+fp : FPModel
+n : ℕ
+A : Fin n → Fin n → ℝ
+x b : Fin n → ℝ
+eta : ℝ
+hn : gammaValid fp n
+hn1 : gammaValid fp (n + 1)
+heta_nonneg : 0 ≤ eta
+hcert :
+  ∀ (i : Fin n),
+    |fl_residual fp n A x b i| + gamma fp (n + 1) * lapackBerrDenom n A x b i ≤ eta * lapackBerrDenom n A x b i
+exactResidual : Fin n → ℝ := fun i => b i - ∑ j, A i j * x j
+denom : Fin n → ℝ := lapackBerrDenom n A x b
+sgn : ℝ → ℝ := fun t => if 0 ≤ t then 1 else -1
+theta : Fin n → ℝ := fun i => if denom i = 0 then 0 else exactResidual i / denom i
+i j : Fin n
+hden : ¬denom i = 0
+hden_nonneg : 0 ≤ denom i
+hden_pos : 0 < denom i
+a✝ : |fl_residual fp n A x b i| + gamma fp (n + 1) * denom i < |exactResidual i|
+⊢ False
+failed
+error: BenchmarkTask.lean:86:12: linarith failed to find a contradiction
+case h
+fp : FPModel
+n : ℕ
+A : Fin n → Fin n → ℝ
+x b : Fin n → ℝ
+eta : ℝ
+hn : gammaValid fp n
+hn1 : gammaValid fp (n + 1)
+heta_nonneg : 0 ≤ eta
+hcert :
+  ∀ (i : Fin n),
+    |fl_residual fp n A x b i| + gamma fp (n + 1) * lapackBerrDenom n A x b i ≤ eta * lapackBerrDenom n A x b i
+exactResidual : Fin n → ℝ := fun i => b i - ∑ j, A i j * x j
+denom : Fin n → ℝ := lapackBerrDenom n A x b
+sgn : ℝ → ℝ := fun t => if 0 ≤ t then 1 else -1
+theta : Fin n → ℝ := fun i => if denom i = 0 then 0 else exactResidual i / denom i
+i : Fin n
+hden : ¬denom i = 0
+hden_nonneg : 0 ≤ denom i
+hden_pos : 0 < denom i
+a✝ : |fl_residual fp n A x b i| + gamma fp (n + 1) * denom i < |exactResidual i|
+⊢ False
+failed
+error: Lean exited with code 1
+Some required targets logged failures:
+- BenchmarkTask
+error: build failed
+validation failed: lake build BenchmarkTask failed

@@ -1,0 +1,8 @@
+Updated [BenchmarkTask.lean](/tmp/lean-fp-benchmark-runs/E05_LapackTriangularResidual-20260507-212519/condition_c/E05_LapackTriangularResidual/BenchmarkTask.lean:18) by replacing the `sorry` with a proof body that unfolds `triangularResidual` and applies an imported residual-bound theorem.
+
+Verification: I ran `lake build BenchmarkTask`, but the build did not reach Lean checking. It fails immediately because Lake/Elan tries to download from GitHub and network access is blocked:
+
+```text
+error: error during download
+info: caused by: [6] Couldn't resolve host name (Could not resolve host: github.com)
+```

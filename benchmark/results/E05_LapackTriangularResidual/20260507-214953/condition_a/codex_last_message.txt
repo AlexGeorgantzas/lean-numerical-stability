@@ -1,0 +1,11 @@
+I wasn’t able to complete a valid Lean proof for `lapack_level3_triangular_solve_residual` within the local API.
+
+I also ran the required build command, but it is blocked by the sandbox because Lake tries to access a dependency lock under a global cache path outside the workspace:
+
+```text
+lake build BenchmarkTask
+error: operation not permitted
+file: /Users/.../.cache/lean-fp-analysis/.../mathlib/.lake/config/mathlib/lakefile.olean.lock
+```
+
+I did not edit `BenchmarkTask.lean`, since I could not produce a sound proof body without `sorry`/`admit` or changing the task-local library.
