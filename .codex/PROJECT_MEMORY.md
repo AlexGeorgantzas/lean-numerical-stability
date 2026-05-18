@@ -73,6 +73,9 @@ Current `main` is for the core library. Benchmark work lives on branch
 - `Summation` supports `DotProduct`.
 - `DotProduct` supports `MatVec`.
 - `MatVec` supports `MatMul` and matrix inversion residual results.
+- `DotProduct` now also supports the first implementation-backed QR kernel:
+  `QR/HouseholderApply.lean` defines `fl_householderApply` and proves its
+  unrolled rounding-error and matrix-perturbation forms.
 - `TriangularSolve` and `ForwardSub` use `SubtractionFold`/`Rounding` and feed
   `TriangularSolveCombined`, `ForwardError`, `MMatrix`, LU solve, Cholesky
   solve, matrix inversion, and underdetermined systems.
@@ -126,6 +129,29 @@ These compile, but should not be treated as fully derived stability results:
 - Keep benchmark task files, stubs, generated-workspace scripts, run protocols,
   and task-selection rationale off `main` unless the user explicitly decides to
   merge them back.
+- Library implementation work after the benchmark audit lives on
+  `codex/qr-implementation`.  The first step is bottom-up QR strengthening:
+  keep existing QR contracts unchanged, add concrete rounded kernels, then
+  prove bridge theorems showing the kernels satisfy the contracts.
+
+## 2026-05 QR Implementation Work
+
+- Added `Algorithms/QR/HouseholderApply.lean` as the first concrete QR kernel.
+- `fl_householderApply fp n v β b` models the rounded operation order
+  `σ̂ = fl(vᵀb)`, `τ̂ = fl(βσ̂)`, `ŷᵢ = fl(bᵢ - fl(τ̂vᵢ))`, with `v` and `β`
+  already supplied.
+- `fl_householderApply_unroll` reuses `dotProduct_backward_error` and the
+  `FPModel` multiplication/subtraction axioms to expose the exact local
+  rounding-error witnesses.
+- `fl_householderApply_matrix_perturbation` proves the concrete computation can
+  be written as `(P + ΔP)b` for `P = I - βvvᵀ`.
+- `fl_householderApply_appError_actualBound` connects the concrete kernel to
+  the existing `HouseholderAppError` contract using the actual perturbation norm
+  as the bound.
+- This is not yet the full Higham Lemma 18.2 closed-form bound, and it is not
+  yet a full `fl_householder_qr` factorization.  Reflector construction still
+  needs careful treatment because the current `FPModel` has no rounded square
+  root/sign/norm primitives.
 
 ## 2026-04-26 Fix Pass
 

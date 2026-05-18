@@ -74,6 +74,23 @@ fully derived floating-point analyses from `FPModel`.
 Consequence: wrappers around external assumptions should be documented as
 abstract/specification-transfer results.
 
+### Decision: Strengthen High-Level Contracts Bottom-Up
+
+Existing Higham-style contracts such as `HouseholderAppError`,
+`HouseholderQRBackwardError`, `LUBackwardError`, and
+`CholeskyBackwardError` should remain as reusable interfaces.
+
+Reason: downstream theorems should depend on stable mathematical contracts, not
+on every detail of a particular implementation.  The gap to close is not the
+existence of the contract, but whether concrete rounded algorithms are proved to
+satisfy it.
+
+Consequence: implementation work should add new `def`s and bridge theorems
+under the existing contracts, rather than rewriting the high-level theorem
+statements or changing Higham's bounds.  For QR, the first implementation-backed
+layer is concrete Householder application with `v` and `β` already supplied; the
+full reflector-construction and QR-factorization stages come later.
+
 ### Decision: Keep Public Lookup Documentation
 
 The files `docs/LIBRARY_LOOKUP.md` and `examples/LibraryLookup.lean` are public
