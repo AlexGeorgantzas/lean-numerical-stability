@@ -22,13 +22,14 @@ For a smaller import, use the file listed in the tables below.
 
 | Goal shape | Start with | Main definitions | Main theorem names | Notes |
 |---|---|---|---|---|
-| Floating-point model assumptions | `LeanFpAnalysis/FP/Model.lean` | `FPModel` | fields `model_add`, `model_sub`, `model_mul`, `model_div` | Axiomatic Higham-style model; not IEEE-specific. |
+| Floating-point model assumptions | `LeanFpAnalysis/FP/Model.lean` | `FPModel` | fields `model_add`, `model_sub`, `model_mul`, `model_div`, `model_sqrt` | Axiomatic Higham-style model; not IEEE-specific. Square root is modeled for nonnegative inputs. |
 | Accumulated rounding errors | `LeanFpAnalysis/FP/Analysis/Rounding.lean` | `gamma`, `gammaValid` | `gammaValid_mono`, `gamma_nonneg`, `gamma_mono`, `prod_error_bound`, `gamma_mul`, `gamma_inv`, `gamma_div`, `gamma_sum_le` | Most algorithm bounds require a `gammaValid fp k` hypothesis. |
 | Basic error and stability predicates | `LeanFpAnalysis/FP/Analysis/Error.lean`, `LeanFpAnalysis/FP/Analysis/Stability.lean` | `absError`, `relError`, `backwardErrorBounded`, `backwardErrorBoundedVec`, `relBackwardErrorBounded2`, `isRelComponentwiseBackwardStable` | `forward_from_backward` | General scalar/vector definitions used by low-level algorithm contracts. |
 | Sequential summation | `LeanFpAnalysis/FP/Analysis/Summation.lean` | accumulated sums through `Fin.foldl` | `fl_sum_error`, `fl_sum_error_init`, `fl_sum_error_tight` | Core input to dot-product proofs. |
 | Subtraction folds and inverse products | `LeanFpAnalysis/FP/Analysis/SubtractionFold.lean` | subtraction accumulation helpers | `fl_sub_sum_error_init`, `inv_prod_error_bound` | Used heavily by triangular substitution proofs. |
 | Dot product forward error | `LeanFpAnalysis/FP/Algorithms/DotProduct.lean` | `fl_dotProduct` | `dotProduct_error_bound` | Tight `gamma fp n` bound for the sequential dot product. |
 | Dot product backward error | `LeanFpAnalysis/FP/Algorithms/DotProduct.lean` | `fl_dotProduct` | `dotProduct_backward_error`, `dotProduct_backward_stable_x`, `dotProduct_backward_stable_y`, `dotProduct_isRelBackwardStable` | Componentwise relative perturbations of one input vector. |
+| Floating 2-norm | `LeanFpAnalysis/FP/Algorithms/Norm2.lean` | `exactNorm2Sq`, `exactNorm2`, `fl_norm2Sq`, `fl_norm2` | `fl_norm2Sq_backward_error`, `fl_norm2_unroll` | Computes `xᵀx` by `fl_dotProduct`, then applies the rounded `FPModel.fl_sqrt`. |
 | Matrix-vector product | `LeanFpAnalysis/FP/Algorithms/MatVec.lean` | `fl_matVec` | `matVec_backward_error`, `matVec_error_bound`, `matVec_row_isRelBackwardStable` | Built row-by-row from dot products. |
 | Matrix multiplication | `LeanFpAnalysis/FP/Algorithms/MatMul.lean` | `fl_matMul` | `matMul_error_bound`, `matMul_backward_error_col` | Backward theorem is columnwise; each column may use a different perturbation. |
 | Outer product | `LeanFpAnalysis/FP/Algorithms/OuterProduct.lean` | `fl_outerProduct` | `outerProduct_error_bound`, `outerProduct_backward_error` | Useful for rank-one update reasoning. |
@@ -44,6 +45,7 @@ For a smaller import, use the file listed in the tables below.
 | Structured LU bounds | `LeanFpAnalysis/FP/Algorithms/LU/GrowthFactor.lean`, `SpecialMatrices.lean`, `Tridiagonal.lean`, `Doolittle.lean`, `BlockLU.lean` | growth-factor and special-matrix specs | `diagDom_lu_solve_backward_stable`, `spd_lu_backward_error`, `mmatrix_lu_backward_stable`, `banded_lu_backward_error`, `doolittle_solve_backward_error`, `block_lu_solve_backward_error` | Some structured results are specification-level interfaces; inspect hypotheses. |
 | Cholesky factorization | `LeanFpAnalysis/FP/Algorithms/Cholesky/CholeskySpec.lean` | `CholeskyBackwardError` | `cholesky_backward_error_perturbation`, `cholesky_backward_error_relative`, `cholesky_spd_backward_stable` | Factorization contract for SPD-style analyses. |
 | Cholesky solve | `LeanFpAnalysis/FP/Algorithms/Cholesky/CholeskySolve.lean` | `fl_forwardSub`, `fl_backSub`, `CholeskyBackwardError` | `cholesky_solve_backward_error_expanded`, `cholesky_solve_backward_error`, `cholesky_solve_spd_backward_stable` | Composes Cholesky factorization with two triangular solves. |
+| Householder reflector construction | `LeanFpAnalysis/FP/Algorithms/QR/HouseholderReflector.lean` | `householderSign`, `exactHouseholderBeta`, `fl_householderAlpha`, `fl_householderVector`, `fl_householderBeta`, `exactHouseholderFromRoundedVector` | `exactHouseholder_orthogonal`, `exactHouseholderBeta_mul_norm2Sq`, `householderSign_mul_eq_abs` | Starts the low-level construction layer. It distinguishes rounded construction data from the exact orthogonal reflector associated with a vector. |
 | Householder application | `LeanFpAnalysis/FP/Algorithms/QR/HouseholderApply.lean` | `fl_householderApply`, `HouseholderAppError` | `fl_householderApply_unroll`, `fl_householderApply_matrix_perturbation`, `fl_householderApply_appError_actualBound` | Concrete rounded application of `I - βvvᵀ` to a vector. The current bridge uses the actual perturbation norm; the closed-form Higham Lemma 18.2 bound is future work. |
 | QR factorization and QR solve | `LeanFpAnalysis/FP/Algorithms/QR/*.lean` | `householder`, `givensRotation`, `HouseholderQRBackwardError`, `GivensQRBackwardError`, `QRSolveBackwardError` | `householder_qr_backward`, `givens_qr_backward`, `qr_solve_backward_from_components`, `qr_solve_perturbation_bound` | Mostly contract/interface level beyond Householder application. There is not yet a full `fl_householder_qr` or `fl_qr_solve`. |
 | Residual computation | `LeanFpAnalysis/FP/Algorithms/IterativeRefinement.lean` | `fl_residual`, `ResidualError` | `conventional_residual_error` | Bound for the computed residual `fl(b - A*x_hat)`. |
@@ -72,6 +74,8 @@ Model
 
 Model
   -> DotProduct
+  -> Norm2
+  -> HouseholderReflector
   -> HouseholderApply
   -> QR application contracts
 
@@ -101,10 +105,14 @@ first identify whether it is:
 | `gamma fp n` | definition | `Analysis/Rounding.lean` | Higham `gamma_n = n*u / (1 - n*u)`. |
 | `gammaValid fp n` | definition | `Analysis/Rounding.lean` | Side condition `(n : Real) * fp.u < 1`. |
 | `fl_dotProduct` | definition | `Algorithms/DotProduct.lean` | Sequential floating-point dot product. |
+| `fl_norm2` | definition | `Algorithms/Norm2.lean` | Floating-point Euclidean norm: `fl_sqrt (fl_dotProduct x x)`. |
 | `fl_matVec` | definition | `Algorithms/MatVec.lean` | Rowwise floating-point matrix-vector product. |
 | `fl_matMul` | definition | `Algorithms/MatMul.lean` | Columnwise matrix-matrix product via `fl_matVec`. |
 | `fl_forwardSub` | definition | `Algorithms/ForwardSub.lean` | Floating-point lower-triangular solve. |
 | `fl_backSub` | definition | `Algorithms/TriangularSolve.lean` | Floating-point upper-triangular solve. |
+| `fl_householderVector` | definition | `Algorithms/QR/HouseholderReflector.lean` | Rounded Householder vector construction from a column segment. |
+| `exactHouseholderBeta` | definition | `Algorithms/QR/HouseholderReflector.lean` | Exact scalar `2/(vᵀv)` making a nonzero Householder vector define an orthogonal reflector. |
+| `fl_householderBeta` | definition | `Algorithms/QR/HouseholderReflector.lean` | Rounded scalar from `2 / fl(vᵀv)`; not automatically an exact orthogonality certificate. |
 | `fl_householderApply` | definition | `Algorithms/QR/HouseholderApply.lean` | Floating-point application of `I - βvvᵀ` with `v` and `β` already given. |
 | `fl_residual` | definition | `Algorithms/IterativeRefinement.lean` | Floating-point residual `fl(b - fl(A*x))`. |
 | `LUBackwardError` | structure | `Algorithms/LU/GaussianElimination.lean` | Backward-error contract for computed LU factors. |
@@ -121,6 +129,9 @@ library lemmas. Good examples are:
 
 - `dotProduct_error_bound`
 - `dotProduct_backward_error`
+- `fl_norm2Sq_backward_error`
+- `fl_norm2_unroll`
+- `exactHouseholder_orthogonal`
 - `matVec_backward_error`
 - `matMul_error_bound`
 - `forwardSub_backward_error`

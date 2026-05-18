@@ -91,6 +91,28 @@ statements or changing Higham's bounds.  For QR, the first implementation-backed
 layer is concrete Householder application with `v` and `β` already supplied; the
 full reflector-construction and QR-factorization stages come later.
 
+### Decision: Add Missing Primitive Operations Before Full QR
+
+Full Householder QR cannot honestly be an end-to-end floating-point algorithm
+unless the primitive operations used to construct reflectors are present in the
+model.
+
+Reason: reflector construction uses a Euclidean norm, hence a square root, and
+it uses exact branch/sign choices.  Treating the reflector vector and scalar as
+already supplied is useful for application lemmas, but it is not a complete
+algorithmic derivation from the input matrix.
+
+Consequence: the core `FPModel` now includes a rounded square-root primitive
+for nonnegative inputs.  The library adds a reusable floating 2-norm kernel and
+a Householder reflector construction layer before attempting a full
+`fl_householder_qr` theorem.  The proof path should be:
+
+1. primitive operation model;
+2. floating norm and reflector-vector construction;
+3. Householder application bound;
+4. repeated reflector application;
+5. full QR factorization and solve bounds.
+
 ### Decision: Keep Public Lookup Documentation
 
 The files `docs/LIBRARY_LOOKUP.md` and `examples/LibraryLookup.lean` are public

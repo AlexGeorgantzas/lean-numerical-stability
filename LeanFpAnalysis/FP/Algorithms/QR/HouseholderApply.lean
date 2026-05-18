@@ -34,9 +34,9 @@ open scoped BigOperators
       τ̂ = fl(β σ̂)
       ŷᵢ = fl(bᵢ - fl(τ̂ vᵢ))
 
-    The vector `v` and scalar `β` are assumed already chosen.  This deliberately
-    does not model the separate reflector-construction stage, which requires
-    square root/sign/norm operations beyond the current `FPModel`. -/
+    The vector `v` and scalar `β` are assumed already chosen.  The lower-level
+    reflector-construction helpers live in `HouseholderReflector.lean`; this
+    file focuses only on applying a supplied reflector. -/
 noncomputable def fl_householderApply (fp : FPModel) (n : ℕ)
     (v : Fin n → ℝ) (β : ℝ) (b : Fin n → ℝ) : Fin n → ℝ :=
   let σ := fl_dotProduct fp n v b

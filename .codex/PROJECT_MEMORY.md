@@ -48,8 +48,9 @@ Current `main` is for the core library. Benchmark work lives on branch
 
 ## Foundation Modules
 
-- `Model.lean`: `FPModel` with `u`, `u_nonneg`, `fl_add/sub/mul/div`, exact
-  `fl_add_zero`, and standard relative-error axioms for each operation.
+- `Model.lean`: `FPModel` with `u`, `u_nonneg`, `fl_add/sub/mul/div/sqrt`,
+  exact `fl_add_zero`, and standard relative-error axioms for each operation.
+  The square-root axiom is stated for nonnegative inputs.
 - `Analysis/Error.lean`: `absError`, `relError`, `compRelErrorBounded`.
 - `Analysis/Stability.lean`: scalar/vector backward-error predicates,
   componentwise relative backward stability, scalar `condNumber`, and
@@ -73,9 +74,15 @@ Current `main` is for the core library. Benchmark work lives on branch
 - `Summation` supports `DotProduct`.
 - `DotProduct` supports `MatVec`.
 - `MatVec` supports `MatMul` and matrix inversion residual results.
-- `DotProduct` now also supports the first implementation-backed QR kernel:
-  `QR/HouseholderApply.lean` defines `fl_householderApply` and proves its
-  unrolled rounding-error and matrix-perturbation forms.
+- `DotProduct` supports `Norm2`, which gives the reusable `fl_norm2Sq` and
+  `fl_norm2` kernels needed by Householder reflector construction.
+- `Norm2` supports `QR/HouseholderReflector.lean`, which defines sign choice,
+  rounded Householder vector construction, rounded beta, and the exact
+  orthogonal reflector associated with a computed vector.
+- `HouseholderReflector`/`DotProduct` support the first implementation-backed
+  QR application kernel: `QR/HouseholderApply.lean` defines
+  `fl_householderApply` and proves its unrolled rounding-error and
+  matrix-perturbation forms.
 - `TriangularSolve` and `ForwardSub` use `SubtractionFold`/`Rounding` and feed
   `TriangularSolveCombined`, `ForwardError`, `MMatrix`, LU solve, Cholesky
   solve, matrix inversion, and underdetermined systems.
@@ -137,6 +144,18 @@ These compile, but should not be treated as fully derived stability results:
 ## 2026-05 QR Implementation Work
 
 - Added `Algorithms/QR/HouseholderApply.lean` as the first concrete QR kernel.
+- Corrected the QR implementation plan to start with missing low-level
+  primitives rather than treating reflector construction as permanently out of
+  scope.
+- Extended `FPModel` with `fl_sqrt` and `model_sqrt` for nonnegative real
+  inputs.
+- Added `Algorithms/Norm2.lean` with exact and floating 2-norm kernels:
+  `exactNorm2Sq`, `exactNorm2`, `fl_norm2Sq`, `fl_norm2`,
+  `fl_norm2Sq_backward_error`, and `fl_norm2_unroll`.
+- Added `Algorithms/QR/HouseholderReflector.lean` with `householderSign`,
+  `exactHouseholderBeta`, `fl_householderAlpha`, `fl_householderVector`,
+  `fl_householderBeta`, `exactHouseholderFromRoundedVector`, and the
+  orthogonality bridge `exactHouseholder_orthogonal`.
 - `fl_householderApply fp n v β b` models the rounded operation order
   `σ̂ = fl(vᵀb)`, `τ̂ = fl(βσ̂)`, `ŷᵢ = fl(bᵢ - fl(τ̂vᵢ))`, with `v` and `β`
   already supplied.
@@ -149,9 +168,10 @@ These compile, but should not be treated as fully derived stability results:
   the existing `HouseholderAppError` contract using the actual perturbation norm
   as the bound.
 - This is not yet the full Higham Lemma 18.2 closed-form bound, and it is not
-  yet a full `fl_householder_qr` factorization.  Reflector construction still
-  needs careful treatment because the current `FPModel` has no rounded square
-  root/sign/norm primitives.
+  yet a full `fl_householder_qr` factorization.  The low-level square-root and
+  norm construction layer now exists; the remaining work is proving the
+  reflector-construction perturbation properties, bounding Householder
+  application with Higham's closed form, and composing repeated reflectors.
 
 ## 2026-04-26 Fix Pass
 
