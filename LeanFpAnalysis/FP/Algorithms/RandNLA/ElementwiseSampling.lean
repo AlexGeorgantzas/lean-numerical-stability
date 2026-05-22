@@ -2,6 +2,11 @@
 --
 -- Floating-point stability infrastructure for the element-wise sampling
 -- meta-algorithm in Drineas--Mahoney's CACM RandNLA survey, Algorithm 1.
+--
+-- Reference:
+-- Petros Drineas and Michael W. Mahoney, "RandNLA: Randomized Numerical
+-- Linear Algebra," Communications of the ACM 59(6), 80-90, 2016.
+-- https://dl.acm.org/doi/10.1145/2842602
 
 import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
@@ -28,7 +33,12 @@ probability `pᵢⱼ` and updates the sketch entry by
 
 This file formalizes the deterministic floating-point stability of one such
 sampled-entry update. It also specializes the scaling to the squared-magnitude
-probabilities used in the first RandNLA analysis:
+probabilities used in Algorithm 1 of Drineas and Mahoney's CACM RandNLA
+survey:
+
+Petros Drineas and Michael W. Mahoney, "RandNLA: Randomized Numerical
+Linear Algebra," Communications of the ACM 59(6), 80-90, 2016.
+https://dl.acm.org/doi/10.1145/2842602
 
 `pᵢⱼ = Aᵢⱼ² / ∑ₖ∑ₗ Aₖₗ²`.
 

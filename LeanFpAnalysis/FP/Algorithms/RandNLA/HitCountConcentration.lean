@@ -1,6 +1,11 @@
 -- Algorithms/RandNLA/HitCountConcentration.lean
 --
 -- Elementary finite-probability concentration for the Algorithm 1 hit counter.
+--
+-- Reference:
+-- Petros Drineas and Michael W. Mahoney, "RandNLA: Randomized Numerical
+-- Linear Algebra," Communications of the ACM 59(6), 80-90, 2016.
+-- https://dl.acm.org/doi/10.1145/2842602
 
 import Mathlib.Data.Real.Basic
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
@@ -19,7 +24,9 @@ open scoped BigOperators
 ## Concentration for the element-wise sampling hit counter
 
 This file adds a small finite-probability layer around the deterministic
-Algorithm 1 trace formalization.  It proves a marginal-only Markov upper-tail
+Algorithm 1 trace formalization from Drineas and Mahoney's CACM RandNLA
+survey (https://dl.acm.org/doi/10.1145/2842602). It proves a marginal-only
+Markov upper-tail
 bound, a pairwise-independence Chebyshev bound around the mean, and Chernoff
 upper-tail bounds for
 
