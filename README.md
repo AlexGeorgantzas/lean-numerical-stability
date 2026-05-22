@@ -24,36 +24,36 @@ Lean `#check` companion index, see [`examples/LibraryLookup.lean`](examples/Libr
 
 ### Core theory
 
-| Topic | Higham ref | Key results |
+| Topic | Source | Key results |
 |---|---|---|
-| Error measures | §1.2 | `absError`, `relError`, `compRelErrorBounded` |
-| Backward stability | §1.7–1.9 | `backwardErrorBounded`, `condNumber`, `forward_from_backward` |
-| γ-function | §3.1, §3.4 | `gamma`, `prod_error_bound`, `gamma_mul`, `gamma_inv`, `gamma_div` |
-| Summation error | §3.1 | `fl_sum_error`, `fl_sum_error_init`, `fl_sub_sum_error_init` |
+| Error measures | Higham §1.2 | `absError`, `relError`, `compRelErrorBounded` |
+| Backward stability | Higham §1.7–1.9 | `backwardErrorBounded`, `condNumber`, `forward_from_backward` |
+| γ-function | Higham §3.1, §3.4 | `gamma`, `prod_error_bound`, `gamma_mul`, `gamma_inv`, `gamma_div` |
+| Summation error | Higham §3.1 | `fl_sum_error`, `fl_sum_error_init`, `fl_sub_sum_error_init` |
 
 ### Algorithms
 
-| Algorithm | Higham ref | Key results |
+| Algorithm | Source | Key results |
 |---|---|---|
-| Dot product | §3.5 | `dotProduct_error_bound` — tight γ(n) bound |
-| Matrix-vector product | §3.5 | `matVec_backward_error`, `matVec_error_bound` |
-| Outer product | §3.1 | `outerProduct_error_bound` |
-| Matrix multiplication | §3.5 | `matMul_error_bound` |
-| RandNLA element-wise sampling | [Drineas-Mahoney Algorithm 1](https://dl.acm.org/doi/10.1145/2842602) | `fl_elementwiseTraceSketch_sqMag_error_bound`, `highProbability_sqMagTraceStability_of_markov_budget`, `highProbability_sqMagTraceStability_of_pairwise_chebyshev_budget`, `highProbability_sqMagTraceStability_of_independent_chernoff_budget`, `highProbability_sqMagTraceStability_of_independent_chernoff_optimized_tail_budget` |
-| Recursive summation | §4.1–4.2 | `recursive_sum_backward_error`, `recursive_sum_forward_error` |
-| Pairwise summation | §4.2 | Backward and forward error bounds |
-| Tree summation | §4.2 | `sumTree_backward_error` |
-| Back substitution | §8.1 | `backSub_backward_error` (Theorem 8.5) |
-| Forward substitution | §8.1 | `forwardSub_backward_error` (Theorem 8.5) |
-| Combined LU solve | §8.1 | `lu_solve_combined_backward_error` (Corollary 8.6) |
-| Forward error bounds | §8.2 | `diag_dominant_forward_error` (Th. 8.7), `theorem_8_9` |
-| M-matrix solutions | §8.2 | `mmatrix_forwardSub_relative_error` (componentwise relative error in μ-form) |
-| Inverse bounds | §8.3 | `theorem_8_11_first_ineq`, `theorem_8_11_upper_bound` (Th. 8.13) |
-| LU factorization | §9.3 | `LUBackwardError` (Theorem 9.3) |
-| LU solve | §9.4 | `lu_solve_backward_error` (Theorem 9.4) |
-| SPD matrices | §9.4 | `spd_growth_factor_bound`, `spd_backward_stability` (Th. 9.11) |
-| M-matrix LU | §9.4 | `mmatrix_optimal_growth` (Theorem 9.11) |
-| Banded LU | §9.5 | `banded_lu_backward_error` |
+| Dot product | Higham §3.5 | `dotProduct_error_bound` — tight γ(n) bound |
+| Matrix-vector product | Higham §3.5 | `matVec_backward_error`, `matVec_error_bound` |
+| Outer product | Higham §3.1 | `outerProduct_error_bound` |
+| Matrix multiplication | Higham §3.5 | `matMul_error_bound` |
+| RandNLA element-wise sampling | Drineas-Mahoney, [Algorithm 1](https://dl.acm.org/doi/10.1145/2842602) | `fl_elementwiseTraceSketch_sqMag_error_bound`, `highProbability_sqMagTraceStability_of_markov_budget`, `highProbability_sqMagTraceStability_of_pairwise_chebyshev_budget`, `highProbability_sqMagTraceStability_of_independent_chernoff_budget`, `highProbability_sqMagTraceStability_of_independent_chernoff_optimized_tail_budget` |
+| Recursive summation | Higham §4.1–4.2 | `recursive_sum_backward_error`, `recursive_sum_forward_error` |
+| Pairwise summation | Higham §4.2 | Backward and forward error bounds |
+| Tree summation | Higham §4.2 | `sumTree_backward_error` |
+| Back substitution | Higham §8.1 | `backSub_backward_error` (Theorem 8.5) |
+| Forward substitution | Higham §8.1 | `forwardSub_backward_error` (Theorem 8.5) |
+| Combined LU solve | Higham §8.1 | `lu_solve_combined_backward_error` (Corollary 8.6) |
+| Forward error bounds | Higham §8.2 | `diag_dominant_forward_error` (Th. 8.7), `theorem_8_9` |
+| M-matrix solutions | Higham §8.2 | `mmatrix_forwardSub_relative_error` (componentwise relative error in μ-form) |
+| Inverse bounds | Higham §8.3 | `theorem_8_11_first_ineq`, `theorem_8_11_upper_bound` (Th. 8.13) |
+| LU factorization | Higham §9.3 | `LUBackwardError` (Theorem 9.3) |
+| LU solve | Higham §9.4 | `lu_solve_backward_error` (Theorem 9.4) |
+| SPD matrices | Higham §9.4 | `spd_growth_factor_bound`, `spd_backward_stability` (Th. 9.11) |
+| M-matrix LU | Higham §9.4 | `mmatrix_optimal_growth` (Theorem 9.11) |
+| Banded LU | Higham §9.5 | `banded_lu_backward_error` |
 
 ## Installation
 
