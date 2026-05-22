@@ -16,7 +16,7 @@ where `u` is the unit roundoff. This makes all results valid for **any** floatin
 
 ## What's covered
 
-The library formalizes reusable results and stability contracts from **Chapters 1, 3, 4, 8, and 9** of Higham, plus selected higher-chapter interfaces used for compositional stability proofs.
+The library formalizes reusable results and stability contracts from **Chapters 1, 3, 4, 8, and 9** of Higham, plus selected higher-chapter interfaces used for compositional stability proofs. It also includes a RandNLA case study for the element-wise sampling meta-algorithm from Drineas and Mahoney's CACM survey.
 
 For a searchable map from stability-analysis goals to files, definitions, and
 theorem names, see [`docs/LIBRARY_LOOKUP.md`](docs/LIBRARY_LOOKUP.md).  For a
@@ -39,7 +39,7 @@ Lean `#check` companion index, see [`examples/LibraryLookup.lean`](examples/Libr
 | Matrix-vector product | §3.5 | `matVec_backward_error`, `matVec_error_bound` |
 | Outer product | §3.1 | `outerProduct_error_bound` |
 | Matrix multiplication | §3.5 | `matMul_error_bound` |
-| RandNLA element-wise sampling | Drineas–Mahoney Algorithm 1 | `fl_elementwiseTraceSketch_sqMag_error_bound`, `highProbability_sqMagTraceStability_of_markov_budget`, `highProbability_sqMagTraceStability_of_pairwise_chebyshev_budget`, `highProbability_sqMagTraceStability_of_chernoff_budget` |
+| RandNLA element-wise sampling | Drineas-Mahoney Algorithm 1 | `fl_elementwiseTraceSketch_sqMag_error_bound`, `highProbability_sqMagTraceStability_of_markov_budget`, `highProbability_sqMagTraceStability_of_pairwise_chebyshev_budget`, `highProbability_sqMagTraceStability_of_independent_chernoff_budget`, `highProbability_sqMagTraceStability_of_independent_chernoff_optimized_tail_budget` |
 | Recursive summation | §4.1–4.2 | `recursive_sum_backward_error`, `recursive_sum_forward_error` |
 | Pairwise summation | §4.2 | Backward and forward error bounds |
 | Tree summation | §4.2 | `sumTree_backward_error` |
@@ -119,6 +119,33 @@ variable (fp : FPModel) (n : ℕ)
 #check lu_solve_backward_error
 ```
 
+## RandNLA Algorithm 1
+
+The RandNLA development formalizes element-wise sampling with squared-magnitude probabilities
+
+```
+p_ij = A_ij^2 / sum_{k,l} A_kl^2.
+```
+
+The deterministic theorem family reduces the floating-point trace error to a bound on the hit counter `q_ij`. The randomized theorem family then proves high-probability hit-count bounds using finite Markov, pairwise-Chebyshev, and Chernoff arguments.
+
+Key entry points:
+
+```lean
+import LeanFpAnalysis.FP.Algorithms.RandNLA
+open LeanFpAnalysis.FP
+
+#check fl_elementwiseTraceSketch_sqMag_error_bound
+#check highProbability_sqMagTraceStability_of_markov_budget
+#check highProbability_sqMagTraceStability_of_pairwise_chebyshev_budget
+#check highProbability_sqMagTraceStability_of_independent_chernoff_budget
+#check highProbability_sqMagTraceStability_of_independent_chernoff_optimized_tail_budget
+```
+
+For the theorem ledger and prose proof summary, see
+[`docs/RANDNLA_ALGORITHM1_STABILITY_LEDGER.md`](docs/RANDNLA_ALGORITHM1_STABILITY_LEDGER.md)
+and [`docs/Algorithm1_Stability_Proof_Summary.pdf`](docs/Algorithm1_Stability_Proof_Summary.pdf).
+
 ## Module structure
 
 ```
@@ -130,14 +157,18 @@ LeanFpAnalysis/FP/
 │   ├── Summation.lean          — Summation error (§3.1)
 │   ├── SubtractionFold.lean    — Subtraction fold error (§3.1)
 │   ├── Stability.lean          — Backward stability definitions (§1.7–1.9)
-│   └── ForwardError.lean       — Forward error from backward error (§8.2)
+│   ├── ForwardError.lean       — Forward error from backward error (§8.2)
+│   ├── FiniteProbability.lean  — Finite probability, Markov/Chebyshev/Chernoff kernels
+│   ├── MatrixAlgebra.lean      — Exact matrix algebra and norms
+│   └── PerturbationTheory.lean — Forward-error perturbation theory
 └── Algorithms/
     ├── DotProduct.lean         — Dot product (§3.5)
     ├── MatVec.lean             — Matrix-vector product (§3.5)
     ├── OuterProduct.lean       — Outer product (§3.1)
     ├── MatMul.lean             — Matrix multiplication
     ├── RandNLA/
-    │   └── ElementwiseSampling.lean — Algorithm 1 sampled-entry updates and traces
+    │   ├── ElementwiseSampling.lean    — Algorithm 1 updates, traces, hit counts, stability events
+    │   └── HitCountConcentration.lean  — Markov, Chebyshev, Chernoff high-probability stability
     ├── RecursiveSum.lean       — Recursive summation (§4.1–4.2)
     ├── PairwiseSum.lean        — Pairwise summation (§4.2)
     ├── SumTree.lean            — Tree summation (§4.2)
