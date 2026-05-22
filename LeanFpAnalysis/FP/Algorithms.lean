@@ -51,3 +51,4 @@ import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSNormalEquations
 import LeanFpAnalysis.FP.Algorithms.Underdetermined.UnderdeterminedSpec
 import LeanFpAnalysis.FP.Algorithms.Underdetermined.UnderdeterminedSolve
 import LeanFpAnalysis.FP.Algorithms.FastMatMul
+import LeanFpAnalysis.FP.Algorithms.RandNLA

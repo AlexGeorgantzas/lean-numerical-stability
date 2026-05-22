@@ -4,15 +4,15 @@ Project: `LeanFpAnalysis`, a Lean 4 library for floating-point arithmetic and
 automatic stability analysis. The model is axiomatic and intentionally not tied
 to IEEE 754. All core results should be stated over `FPModel` and `Real`.
 
-Last review by Codex: 2026-04-28.
-Current `main` is for the core library. Benchmark work lives on branch
-`benchmark`.
+Last review by Codex: 2026-05-22.
+Current RandNLA work is on branch `RandNLA_Kimon`. Benchmark work lives on
+branch `benchmark`.
 
 ## Build State
 
 - `lake build` succeeds with Lean toolchain `leanprover/lean4:v4.29.0-rc3`.
-- No real `sorry`, `admit`, `axiom`, or `opaque` declarations were found in
-  `LeanFpAnalysis`.
+- No real `sorry`, `admit`, `axiom`, `unsafe`, or `opaque` declarations were
+  found in `LeanFpAnalysis` during the 2026-05-22 health check.
 - Current build warnings are cleanup warnings concentrated in QR/least-squares:
   unused simp arguments in `QR/GivensSpec.lean`, unused variables in
   `QR/HouseholderQR.lean`, `QR/GivensQR.lean`, `QR/QRSolve.lean`,
@@ -40,7 +40,7 @@ Current `main` is for the core library. Benchmark work lives on branch
 - `LeanFpAnalysis/FP.lean` imports `Model`, `Analysis`, and `Algorithms`.
 - `LeanFpAnalysis/FP/Analysis.lean` re-exports:
   `Error`, `Rounding`, `Summation`, `SubtractionFold`, `Stability`,
-  `ForwardError`, `MatrixAlgebra`, `PerturbationTheory`.
+  `ForwardError`, `FiniteProbability`, `MatrixAlgebra`, `PerturbationTheory`.
 - `LeanFpAnalysis/FP/Algorithms.lean` re-exports the algorithm families:
   summation, dot/matvec/matmul, triangular solves and bounds, LU, Cholesky,
   QR, least squares, Sylvester, iterative refinement, matrix inversion,
@@ -61,6 +61,8 @@ Current `main` is for the core library. Benchmark work lives on branch
   `fl_sum_error_tight`.
 - `Analysis/SubtractionFold.lean`: subtraction-fold and inverse-product
   error lemmas used by triangular substitution proofs.
+- `Analysis/FiniteProbability.lean`: lightweight finite probability spaces,
+  finite Markov, Chebyshev, exponential Markov, and Chernoff kernels.
 - `Analysis/MatrixAlgebra.lean`: exact matrix operations, inverses, norms,
   transpose, Frobenius algebra, orthogonal matrices, Neumann-series style
   bounds. This is foundational but very large and could eventually be split.
@@ -80,6 +82,12 @@ Current `main` is for the core library. Benchmark work lives on branch
   predicates from `MatrixAlgebra`.
 - LU modules build from Gaussian elimination specs into solve and growth-factor
   results; Cholesky solve reuses triangular solves and Cholesky specs.
+- RandNLA Algorithm 1 now builds as:
+  `ElementwiseSampling` for squared-magnitude probabilities, deterministic
+  sampled-entry updates, traces, hit counts, and entrywise stability events;
+  `Analysis/FiniteProbability` for generic probability kernels; and
+  `HitCountConcentration` for Markov, pairwise-Chebyshev, and canonical
+  product-law Chernoff concentration plus high-probability stability.
 
 ## Known Weak Spots
 
@@ -112,6 +120,10 @@ These compile, but should not be treated as fully derived stability results:
   orthogonality, and Neumann theory. A future split into matrix basics, norms,
   orthogonal/Frobenius, and Neumann/resolvent infrastructure would improve
   maintainability.
+- `HitCountConcentration.lean` is large but now logically narrower after moving
+  generic finite-probability kernels to `Analysis/FiniteProbability.lean`. It
+  remains internally sectioned; future growth could justify splitting hit-count
+  moments, budgets, and the squared-magnitude product trace law.
 - Triangular inverse infrastructure is split across
   `TriangularForwardBound.lean` and `InverseBounds.lean`. This works, but a
   neutral `Analysis/TriangularAlgebra.lean` or `Algorithms/TriangularInverse`
@@ -123,9 +135,36 @@ These compile, but should not be treated as fully derived stability results:
 
 - Benchmark artifacts and benchmark-specific decision notes were moved to
   branch `benchmark` on 2026-04-28.
+- RandNLA Algorithm 1 deterministic and randomized stability work lives on
+  branch `RandNLA_Kimon`. The public entry point is
+  `LeanFpAnalysis.FP.Algorithms.RandNLA`.
 - Keep benchmark task files, stubs, generated-workspace scripts, run protocols,
   and task-selection rationale off `main` unless the user explicitly decides to
   merge them back.
+
+## 2026-05-22 RandNLA Algorithm 1 Work
+
+- Added `Algorithms/RandNLA/ElementwiseSampling.lean` and
+  `Algorithms/RandNLA/HitCountConcentration.lean`, re-exported through
+  `Algorithms/RandNLA.lean` and `Algorithms.lean`.
+- Formalized squared-magnitude sampling probabilities
+  `p_ij = A_ij^2 / ‖A‖_F^2`, deterministic Algorithm 1 sampled-entry updates,
+  trace hit counts, and entrywise floating-point stability budgets.
+- Proved high-probability stability routes using Markov, pairwise-Chebyshev,
+  and Chernoff concentration for the hit counter.
+- Closed the Chernoff gap for the canonical independent Algorithm 1 sampler:
+  `sqMagTraceProbability` is the finite product trace law, and
+  `sqMagTraceProbability_chernoff_mgf_bound` proves the Bernoulli-sum MGF bound
+  from that product law rather than assuming it.
+- The final canonical high-probability stability APIs are
+  `highProbability_sqMagTraceStability_of_independent_chernoff_budget` and
+  `highProbability_sqMagTraceStability_of_independent_chernoff_optimized_tail_budget`.
+- Generic `*_of_mgf_bound` lemmas remain only as reusable probability bridges;
+  they are not the final theorem to cite for Algorithm 1.
+- `docs/LIBRARY_LOOKUP.md`, `examples/LibraryLookup.lean`,
+  `docs/RANDNLA_ALGORITHM1_STABILITY_LEDGER.md`, and
+  `docs/Algorithm1_Stability_Proof_Summary.pdf` document the current theorem
+  map.
 
 ## 2026-04-26 Fix Pass
 

@@ -33,6 +33,18 @@ It intentionally contains no task-specific proof scripts.
 #check isRelComponentwiseBackwardStable
 #check forward_from_backward
 
+-- Finite probability and concentration kernels
+#check FiniteProbability
+#check FiniteProbability.eventProb
+#check FiniteProbability.expectationNat
+#check FiniteProbability.expectationReal
+#check FiniteProbability.eventProb_nonneg
+#check FiniteProbability.eventProb_mono
+#check FiniteProbability.eventProb_nat_le_ge_one_sub_expectationNat_div_succ
+#check FiniteProbability.eventProb_abs_sub_le_ge_one_sub_of_second_moment
+#check FiniteProbability.eventProb_nat_ge_le_exp_mul_mgf
+#check FiniteProbability.eventProb_nat_le_ge_one_sub_chernoff_of_mgf_bound
+
 -- Summation and dot products
 #check fl_sum_error
 #check fl_sum_error_init
@@ -54,6 +66,77 @@ It intentionally contains no task-specific proof scripts.
 #check matMul_backward_error_col
 #check outerProduct_error_bound
 #check outerProduct_backward_error
+
+-- RandNLA element-wise sampling
+#check sqMagProb
+#check sqMagProb_sum_eq_one
+#check elementwiseSampleUpdate
+#check ElementwiseTrace
+#check hitCount
+#check elementwiseTraceSketch
+#check fl_elementwiseTraceSketch
+#check elementwiseTraceSketch_eq_repeat_of_hitCount
+#check fl_elementwiseTraceSketch_eq_repeat_of_hitCount
+#check fl_elementwiseUpdateEntry_error_bound
+#check fl_elementwiseUpdateEntry_sqMag_error_bound
+#check fl_repeatElementwiseUpdateEntry_error_bound
+#check fl_repeatElementwiseUpdateEntry_sqMag_error_bound
+#check fl_elementwiseTraceSketch_error_bound
+#check elementwiseTraceSketch_sqMag_eq
+#check fl_elementwiseTraceSketch_sqMag_error_bound
+#check fl_elementwiseTraceSketch_sqMag_error_bound_exact
+#check fl_elementwiseSketch_zero_init_sqMag_error_bound
+#check fl_elementwiseTraceSketch_entrywise_sqMag_error_bound
+#check sqMagTraceErrorBudget
+#check sqMagTraceErrorBudget_mono
+#check fl_elementwiseTraceSketch_sqMag_error_bound_of_hitCount_le
+#check hitCountAtMostEvent
+#check sqMagTraceStabilityEvent
+#check hitCountAtMostEvent_subset_sqMagTraceStabilityEvent
+#check probability_sqMagTraceStability_of_hitCount_concentration
+#check highProbability_sqMagTraceStability_of_hitCount_concentration
+#check hitIndicator
+#check hitCount_eq_sum_indicator
+#check expectationNat_hitCount_eq_sum_step_hit_probs
+#check expectationNat_hitCount_eq_steps_mul_hitProb
+#check expectationReal_hitCount_centered_sq_eq_pairwise
+#check hitCount_concentration_markov_of_marginal_hitProb
+#check hitCount_concentrates_of_marginal_hitProb
+#check hitCount_concentration_sqMag_markov
+#check hitCount_concentrates_sqMag
+#check markovHitCountBudget
+#check sqMagMarkovHitCountBudget
+#check chebyshevHitCountBudget
+#check sqMagChebyshevHitCountBudget
+#check sampleHitIndicator
+#check sqMagTraceProbMass
+#check sqMagTraceProbability
+#check sqMagTraceProbability_expectationReal_exp_hitCount_eq
+#check sqMagTraceProbability_chernoff_mgf_bound
+#check hitCountChernoffMGFBound
+#check sqMagHitCountChernoffMGFBound
+#check hitCount_concentrates_sqMag_chernoff_of_mgf_bound
+#check hitCount_concentrates_sqMag_chernoff_optimized_of_mgf_bound
+#check chernoffHitCountTail
+#check sqMagChernoffHitCountTail
+#check chernoffHitCountBudget
+#check sqMagChernoffHitCountBudget
+#check chernoffOptimizedHitCountTail
+#check sqMagChernoffOptimizedHitCountTail
+#check hitCount_concentrates_sqMag_around_mean_pairwise
+#check hitCount_concentrates_sqMag_chernoff_independent
+#check hitCount_concentrates_sqMag_chernoff_independent_budget
+#check hitCount_concentrates_sqMag_chernoff_optimized_independent
+#check hitCount_concentrates_sqMag_chernoff_optimized_independent_of_tail_budget
+#check highProbability_sqMagTraceStability_of_marginal_hitProb
+#check highProbability_sqMagTraceStability_of_marginal_hitProb_of_tail_budget
+#check highProbability_sqMagTraceStability_of_pairwise_hitCount_deviation
+#check highProbability_sqMagTraceStability_of_markov_budget
+#check highProbability_sqMagTraceStability_of_pairwise_chebyshev_budget
+#check highProbability_sqMagTraceStability_of_independent_chernoff_budget
+#check highProbability_sqMagTraceStability_of_independent_chernoff_optimized_tail_budget
+#check TraceValidForSqMag
+#check fl_elementwiseTraceSketch_all_hit_sqMag_error_bound
 
 -- Triangular solves
 #check fl_forwardSub

@@ -603,6 +603,72 @@ theorem frobNorm_sub_le {n : ℕ} (A B : Fin n → Fin n → ℝ) :
   convert h using 2
 
 -- ============================================================
+-- Rectangular Frobenius norm infrastructure
+-- ============================================================
+
+/-- **Squared Frobenius norm for rectangular matrices**:
+    ‖A‖²_F = ∑ᵢ∑ⱼ Aᵢⱼ² for A ∈ ℝ^{m×n}.
+
+    The original `frobNormSq` is square-matrix specialized because much of
+    the library's linear-system infrastructure is square. RandNLA sampling
+    algorithms naturally act on rectangular data matrices, so we expose this
+    rectangular variant for their probability weights and scaling factors. -/
+noncomputable def frobNormSqRect {m n : ℕ} (A : Fin m → Fin n → ℝ) : ℝ :=
+  ∑ i : Fin m, ∑ j : Fin n, A i j ^ 2
+
+/-- Squared rectangular Frobenius norm is nonnegative. -/
+lemma frobNormSqRect_nonneg {m n : ℕ} (A : Fin m → Fin n → ℝ) :
+    0 ≤ frobNormSqRect A := by
+  unfold frobNormSqRect
+  apply Finset.sum_nonneg; intro i _
+  apply Finset.sum_nonneg; intro j _
+  exact sq_nonneg _
+
+/-- For square matrices, the rectangular squared Frobenius norm agrees with
+    the existing square-matrix definition. -/
+theorem frobNormSqRect_eq_frobNormSq {n : ℕ} (A : Fin n → Fin n → ℝ) :
+    frobNormSqRect A = frobNormSq A := rfl
+
+/-- A rectangular matrix has zero squared Frobenius norm iff all entries are
+    zero. -/
+theorem frobNormSqRect_eq_zero_iff {m n : ℕ} (A : Fin m → Fin n → ℝ) :
+    frobNormSqRect A = 0 ↔ ∀ i j, A i j = 0 := by
+  unfold frobNormSqRect
+  constructor
+  · intro h
+    have hrow : ∀ i ∈ (Finset.univ : Finset (Fin m)),
+        ∑ j : Fin n, A i j ^ 2 = 0 :=
+      (Finset.sum_eq_zero_iff_of_nonneg
+        (fun i _ => Finset.sum_nonneg (fun j _ => sq_nonneg (A i j)))).mp h
+    intro i j
+    have hterm : A i j ^ 2 = 0 :=
+      (Finset.sum_eq_zero_iff_of_nonneg (fun j _ => sq_nonneg (A i j))).mp
+        (hrow i (Finset.mem_univ i)) j (Finset.mem_univ j)
+    exact pow_eq_zero_iff (by norm_num : 2 ≠ 0) |>.mp hterm
+  · intro h
+    apply Finset.sum_eq_zero; intro i _
+    apply Finset.sum_eq_zero; intro j _
+    rw [h i j]; ring
+
+/-- If one entry is nonzero, then the rectangular squared Frobenius norm is
+    nonzero. -/
+lemma frobNormSqRect_ne_zero_of_entry_ne_zero {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (i : Fin m) (j : Fin n)
+    (hAij : A i j ≠ 0) :
+    frobNormSqRect A ≠ 0 := by
+  intro hzero
+  exact hAij ((frobNormSqRect_eq_zero_iff A).mp hzero i j)
+
+/-- If one entry is nonzero, then the rectangular squared Frobenius norm is
+    positive. -/
+lemma frobNormSqRect_pos_of_entry_ne_zero {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (i : Fin m) (j : Fin n)
+    (hAij : A i j ≠ 0) :
+    0 < frobNormSqRect A :=
+  lt_of_le_of_ne (frobNormSqRect_nonneg A)
+    (Ne.symm (frobNormSqRect_ne_zero_of_entry_ne_zero A i j hAij))
+
+-- ============================================================
 -- Orthogonal matrices
 -- ============================================================
 

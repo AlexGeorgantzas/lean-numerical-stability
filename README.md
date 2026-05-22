@@ -39,6 +39,7 @@ Lean `#check` companion index, see [`examples/LibraryLookup.lean`](examples/Libr
 | Matrix-vector product | §3.5 | `matVec_backward_error`, `matVec_error_bound` |
 | Outer product | §3.1 | `outerProduct_error_bound` |
 | Matrix multiplication | §3.5 | `matMul_error_bound` |
+| RandNLA element-wise sampling | Drineas–Mahoney Algorithm 1 | `fl_elementwiseTraceSketch_sqMag_error_bound`, `highProbability_sqMagTraceStability_of_markov_budget`, `highProbability_sqMagTraceStability_of_pairwise_chebyshev_budget`, `highProbability_sqMagTraceStability_of_chernoff_budget` |
 | Recursive summation | §4.1–4.2 | `recursive_sum_backward_error`, `recursive_sum_forward_error` |
 | Pairwise summation | §4.2 | Backward and forward error bounds |
 | Tree summation | §4.2 | `sumTree_backward_error` |
@@ -135,6 +136,8 @@ LeanFpAnalysis/FP/
     ├── MatVec.lean             — Matrix-vector product (§3.5)
     ├── OuterProduct.lean       — Outer product (§3.1)
     ├── MatMul.lean             — Matrix multiplication
+    ├── RandNLA/
+    │   └── ElementwiseSampling.lean — Algorithm 1 sampled-entry updates and traces
     ├── RecursiveSum.lean       — Recursive summation (§4.1–4.2)
     ├── PairwiseSum.lean        — Pairwise summation (§4.2)
     ├── SumTree.lean            — Tree summation (§4.2)

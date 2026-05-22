@@ -18,6 +18,9 @@ open LeanFpAnalysis.FP
 
 For a smaller import, use the file listed in the tables below.
 
+For the completed deterministic RandNLA Algorithm 1 stability proof ledger, see
+[`RANDNLA_ALGORITHM1_STABILITY_LEDGER.md`](RANDNLA_ALGORITHM1_STABILITY_LEDGER.md).
+
 ## Goal-To-Theorem Lookup
 
 | Goal shape | Start with | Main definitions | Main theorem names | Notes |
@@ -25,6 +28,7 @@ For a smaller import, use the file listed in the tables below.
 | Floating-point model assumptions | `LeanFpAnalysis/FP/Model.lean` | `FPModel` | fields `model_add`, `model_sub`, `model_mul`, `model_div` | Axiomatic Higham-style model; not IEEE-specific. |
 | Accumulated rounding errors | `LeanFpAnalysis/FP/Analysis/Rounding.lean` | `gamma`, `gammaValid` | `gammaValid_mono`, `gamma_nonneg`, `gamma_mono`, `prod_error_bound`, `gamma_mul`, `gamma_inv`, `gamma_div`, `gamma_sum_le` | Most algorithm bounds require a `gammaValid fp k` hypothesis. |
 | Basic error and stability predicates | `LeanFpAnalysis/FP/Analysis/Error.lean`, `LeanFpAnalysis/FP/Analysis/Stability.lean` | `absError`, `relError`, `backwardErrorBounded`, `backwardErrorBoundedVec`, `relBackwardErrorBounded2`, `isRelComponentwiseBackwardStable` | `forward_from_backward` | General scalar/vector definitions used by low-level algorithm contracts. |
+| Finite probability and concentration kernels | `LeanFpAnalysis/FP/Analysis/FiniteProbability.lean` | `FiniteProbability`, `FiniteProbability.eventProb`, `FiniteProbability.expectationNat`, `FiniteProbability.expectationReal` | `FiniteProbability.eventProb_nat_le_ge_one_sub_expectationNat_div_succ`, `FiniteProbability.eventProb_abs_sub_le_ge_one_sub_of_second_moment`, `FiniteProbability.eventProb_nat_ge_le_exp_mul_mgf`, `FiniteProbability.eventProb_nat_le_ge_one_sub_chernoff_of_mgf_bound` | General finite-space Markov, Chebyshev, and Chernoff kernels used by RandNLA and reusable by future randomized analyses. |
 | Sequential summation | `LeanFpAnalysis/FP/Analysis/Summation.lean` | accumulated sums through `Fin.foldl` | `fl_sum_error`, `fl_sum_error_init`, `fl_sum_error_tight` | Core input to dot-product proofs. |
 | Subtraction folds and inverse products | `LeanFpAnalysis/FP/Analysis/SubtractionFold.lean` | subtraction accumulation helpers | `fl_sub_sum_error_init`, `inv_prod_error_bound` | Used heavily by triangular substitution proofs. |
 | Dot product forward error | `LeanFpAnalysis/FP/Algorithms/DotProduct.lean` | `fl_dotProduct` | `dotProduct_error_bound` | Tight `gamma fp n` bound for the sequential dot product. |
@@ -32,6 +36,7 @@ For a smaller import, use the file listed in the tables below.
 | Matrix-vector product | `LeanFpAnalysis/FP/Algorithms/MatVec.lean` | `fl_matVec` | `matVec_backward_error`, `matVec_error_bound`, `matVec_row_isRelBackwardStable` | Built row-by-row from dot products. |
 | Matrix multiplication | `LeanFpAnalysis/FP/Algorithms/MatMul.lean` | `fl_matMul` | `matMul_error_bound`, `matMul_backward_error_col` | Backward theorem is columnwise; each column may use a different perturbation. |
 | Outer product | `LeanFpAnalysis/FP/Algorithms/OuterProduct.lean` | `fl_outerProduct` | `outerProduct_error_bound`, `outerProduct_backward_error` | Useful for rank-one update reasoning. |
+| RandNLA element-wise sampling update | `LeanFpAnalysis/FP/Algorithms/RandNLA/ElementwiseSampling.lean`, `LeanFpAnalysis/FP/Algorithms/RandNLA/HitCountConcentration.lean` | `sqMagProb`, `elementwiseSampleUpdate`, `fl_elementwiseSampleUpdate`, `ElementwiseTrace`, `hitCount`, `elementwiseTraceSketch`, `fl_elementwiseTraceSketch`, `sqMagTraceErrorBudget`, `sqMagTraceProbability`, `hitCountAtMostEvent`, `hitCountDeviationEvent`, `sqMagTraceStabilityEvent`, `markovHitCountBudget`, `chebyshevHitCountBudget`, `chernoffHitCountBudget`, `sqMagChernoffHitCountBudget`, `TraceValidForSqMag` | `sqMagProb_sum_eq_one`, `elementwiseIncrement_sqMag_eq`, `elementwiseTraceSketch_eq_repeat_of_hitCount`, `fl_elementwiseTraceSketch_eq_repeat_of_hitCount`, `fl_elementwiseTraceSketch_sqMag_error_bound`, `fl_elementwiseTraceSketch_sqMag_error_bound_exact`, `fl_elementwiseSketch_zero_init_sqMag_error_bound`, `fl_elementwiseTraceSketch_entrywise_sqMag_error_bound`, `fl_elementwiseTraceSketch_sqMag_error_bound_of_hitCount_le`, `hitCount_concentrates_sqMag`, `hitCount_concentrates_sqMag_around_mean_pairwise`, `sqMagTraceProbability_expectationReal_exp_hitCount_eq`, `sqMagTraceProbability_chernoff_mgf_bound`, `hitCount_concentrates_sqMag_chernoff_independent`, `hitCount_concentrates_sqMag_chernoff_independent_budget`, `hitCount_concentrates_sqMag_chernoff_optimized_independent`, `hitCount_concentrates_sqMag_chernoff_optimized_independent_of_tail_budget`, `highProbability_sqMagTraceStability_of_marginal_hitProb_of_tail_budget`, `highProbability_sqMagTraceStability_of_pairwise_hitCount_deviation`, `highProbability_sqMagTraceStability_of_markov_budget`, `highProbability_sqMagTraceStability_of_pairwise_chebyshev_budget`, `highProbability_sqMagTraceStability_of_independent_chernoff_budget`, `highProbability_sqMagTraceStability_of_independent_chernoff_optimized_tail_budget` | Complete deterministic FP stability for Algorithm 1 sampled-entry traces with squared-magnitude probabilities, plus Markov, pairwise-Chebyshev, and fully derived Chernoff concentration for the canonical independent trace sampler and chosen-budget high-probability stability corollaries. Uses `Analysis/FiniteProbability.lean` for generic probability kernels. |
 | Recursive, pairwise, and tree summation | `LeanFpAnalysis/FP/Algorithms/RecursiveSum.lean`, `PairwiseSum.lean`, `SumTree.lean` | recursive/tree sum algorithms | `recursiveSum_backward_error`, `recursiveSum_forward_error_bound`, `pairwiseSum_backward_error`, `pairwiseSum_forward_error_bound`, `backward_error`, `forward_error` | `SumTree.backward_error` and `SumTree.forward_error` are in the same namespace and have generic names. |
 | Forward substitution | `LeanFpAnalysis/FP/Algorithms/ForwardSub.lean` | `fl_forwardSub` | `forwardSub_backward_error`, `fl_forwardSub_satisfies_spec` | Lower-triangular solve. Requires nonzero diagonal and lower-triangular zero pattern. |
 | Back substitution | `LeanFpAnalysis/FP/Algorithms/TriangularSolve.lean` | `fl_backSub` | `backSub_backward_error`, `backSub_backward_error_perturbed`, `backSub_backward_error_dual`, `fl_backSub_satisfies_spec` | Upper-triangular solve. Requires nonzero diagonal and upper-triangular zero pattern. |
@@ -62,6 +67,10 @@ Model
   -> MatVec
   -> MatMul
 
+FiniteProbability
+  -> Markov / Chebyshev / Chernoff kernels
+  -> randomized high-probability algorithm analyses
+
 Model
   -> Rounding and SubtractionFold
   -> ForwardSub / BackSub
@@ -74,6 +83,18 @@ MatrixAlgebra + PerturbationTheory
 MatVec + residual definitions
   -> IterativeRefinement
   -> StationaryIteration-style bounds
+
+RandNLA element-wise sampling
+  -> FiniteProbability
+  -> rectangular Frobenius norm infrastructure
+  -> squared-magnitude probabilities
+  -> one-sample Algorithm 1 update stability
+  -> deterministic trace hit-count reductions
+  -> complete entrywise Algorithm 1 trace stability
+  -> finite-probability Markov concentration for hitCount
+  -> pairwise-Chebyshev concentration for hitCount
+  -> canonical product-law Chernoff concentration for hitCount
+  -> high-probability stability with an explicit count budget Q
 ```
 
 When a target statement looks like a new algorithm-level stability result,
@@ -86,6 +107,36 @@ first identify whether it is:
 - a perturbation conversion, where an existing backward/residual bound needs to
   be converted into a forward-error bound.
 
+## Library Health Notes
+
+Last checked: 2026-05-22.
+
+- The main dependency direction is coherent: `Model` and `Analysis` provide
+  reusable infrastructure; algorithm files build on those foundations; higher
+  algorithm modules compose lower kernel contracts.
+- The current Lean tree has 66 `.lean` files, and the 2026-05-22 scan found no
+  `sorry`, `admit`, `axiom`, `unsafe`, or `opaque` tokens in `LeanFpAnalysis`.
+- Generic finite-probability material now lives in
+  `Analysis/FiniteProbability.lean`, not inside RandNLA. This keeps Markov,
+  Chebyshev, and Chernoff kernels reusable for future randomized algorithms.
+- RandNLA Algorithm 1 is organized as two algorithm modules:
+  `ElementwiseSampling.lean` contains the deterministic update, trace, hit
+  count, and stability-event vocabulary; `HitCountConcentration.lean` contains
+  hit-count expectation, Markov/Chebyshev/Chernoff concentration, the canonical
+  product trace law, and high-probability stability corollaries.
+- The canonical RandNLA Chernoff theorems do not assume the MGF bound. They use
+  `sqMagTraceProbability_chernoff_mgf_bound`, which is proved from the product
+  trace distribution. The generic `*_of_mgf_bound` lemmas remain as reusable
+  probability bridges, not as the final Algorithm 1 API.
+- `HitCountConcentration.lean` is still large. It is internally sectioned and
+  builds on `FiniteProbability`, but if more randomized algorithms are added,
+  a future split into `HitCountMoments`, `HitCountBudgets`, and
+  `SqMagTraceProbability` would be a reasonable maintenance refactor.
+- `MatrixAlgebra.lean`, `MatrixInversion.lean`, and `IterativeRefinement.lean`
+  remain the largest modules. They compile and are logically placed, but future
+  maintainability would improve by splitting broad exact-algebra and high-level
+  interface material once there is sustained work in those areas.
+
 ## Common Definitions
 
 | Name | Kind | Location | Meaning |
@@ -96,6 +147,18 @@ first identify whether it is:
 | `fl_dotProduct` | definition | `Algorithms/DotProduct.lean` | Sequential floating-point dot product. |
 | `fl_matVec` | definition | `Algorithms/MatVec.lean` | Rowwise floating-point matrix-vector product. |
 | `fl_matMul` | definition | `Algorithms/MatMul.lean` | Columnwise matrix-matrix product via `fl_matVec`. |
+| `sqMagProb` | definition | `Algorithms/RandNLA/ElementwiseSampling.lean` | Squared-magnitude probability `Aᵢⱼ² / ‖A‖²_F` for Algorithm 1. |
+| `fl_elementwiseSampleUpdate` | definition | `Algorithms/RandNLA/ElementwiseSampling.lean` | Floating-point one-sample update for RandNLA Algorithm 1. |
+| `ElementwiseTrace` | abbreviation | `Algorithms/RandNLA/ElementwiseSampling.lean` | Deterministic sequence of sampled matrix entries for Algorithm 1. |
+| `hitCount` | definition | `Algorithms/RandNLA/ElementwiseSampling.lean` | Number of trace steps hitting a fixed output entry. |
+| `fl_elementwiseTraceSketch` | definition | `Algorithms/RandNLA/ElementwiseSampling.lean` | Entrywise floating-point trace update with no-ops on non-hit steps. |
+| `sqMagTraceErrorBudget` | definition | `Algorithms/RandNLA/ElementwiseSampling.lean` | Deterministic stability budget using an upper bound `Q` for the hit counter. |
+| `FiniteProbability` | structure | `Analysis/FiniteProbability.lean` | Lightweight real-valued finite probability space for randomized analyses. |
+| `hitCountAtMostEvent` | definition | `Algorithms/RandNLA/ElementwiseSampling.lean` | Random-trace event that an entry is hit at most `Q` times. |
+| `sqMagTraceStabilityEvent` | definition | `Algorithms/RandNLA/ElementwiseSampling.lean` | Random-trace event that the stability bound with budget `Q` holds. |
+| `TraceValidForSqMag` | definition | `Algorithms/RandNLA/ElementwiseSampling.lean` | Validity predicate requiring sampled entries to be nonzero under squared-magnitude sampling. |
+| `sqMagChernoffHitCountBudget` | definition | `Algorithms/RandNLA/HitCountConcentration.lean` | Explicit Chernoff count budget using a tunable exponential parameter. |
+| `sqMagChernoffOptimizedHitCountTail` | definition | `Algorithms/RandNLA/HitCountConcentration.lean` | Optimized Chernoff upper-tail expression with `lam = log((Q+1)/(steps*p_ij))`. |
 | `fl_forwardSub` | definition | `Algorithms/ForwardSub.lean` | Floating-point lower-triangular solve. |
 | `fl_backSub` | definition | `Algorithms/TriangularSolve.lean` | Floating-point upper-triangular solve. |
 | `fl_residual` | definition | `Algorithms/IterativeRefinement.lean` | Floating-point residual `fl(b - fl(A*x))`. |
@@ -113,6 +176,28 @@ library lemmas. Good examples are:
 - `dotProduct_backward_error`
 - `matVec_backward_error`
 - `matMul_error_bound`
+- `FiniteProbability.eventProb_nat_le_ge_one_sub_expectationNat_div_succ`
+- `FiniteProbability.eventProb_abs_sub_le_ge_one_sub_of_second_moment`
+- `FiniteProbability.eventProb_nat_le_ge_one_sub_chernoff_of_mgf_bound`
+- `fl_elementwiseUpdateEntry_sqMag_error_bound`
+- `fl_repeatElementwiseUpdateEntry_sqMag_error_bound`
+- `fl_elementwiseTraceSketch_sqMag_error_bound`
+- `fl_elementwiseTraceSketch_sqMag_error_bound_exact`
+- `fl_elementwiseSketch_zero_init_sqMag_error_bound`
+- `fl_elementwiseTraceSketch_entrywise_sqMag_error_bound`
+- `fl_elementwiseTraceSketch_sqMag_error_bound_of_hitCount_le`
+- `hitCount_concentrates_sqMag`
+- `hitCount_concentrates_sqMag_around_mean_pairwise`
+- `sqMagTraceProbability_chernoff_mgf_bound`
+- `hitCount_concentrates_sqMag_chernoff_independent`
+- `hitCount_concentrates_sqMag_chernoff_optimized_independent`
+- `highProbability_sqMagTraceStability_of_marginal_hitProb_of_tail_budget`
+- `highProbability_sqMagTraceStability_of_pairwise_hitCount_deviation`
+- `highProbability_sqMagTraceStability_of_markov_budget`
+- `highProbability_sqMagTraceStability_of_pairwise_chebyshev_budget`
+- `highProbability_sqMagTraceStability_of_independent_chernoff_budget`
+- `highProbability_sqMagTraceStability_of_independent_chernoff_optimized_tail_budget`
+- `fl_elementwiseTraceSketch_all_hit_sqMag_error_bound`
 - `forwardSub_backward_error`
 - `backSub_backward_error`
 - `triangularSolve_backward_error`
