@@ -110,6 +110,88 @@ theorem expectationReal_const_mul (P : FiniteProbability Ω) (X : Ω → ℝ) (c
   intro ω _
   ring
 
+/-- Monotonicity of expectation on a finite probability space. -/
+theorem expectationReal_mono (P : FiniteProbability Ω) {X Y : Ω → ℝ}
+    (hXY : ∀ ω, X ω ≤ Y ω) :
+    P.expectationReal X ≤ P.expectationReal Y := by
+  classical
+  unfold expectationReal
+  apply Finset.sum_le_sum
+  intro ω _
+  exact mul_le_mul_of_nonneg_left (hXY ω) (P.prob_nonneg ω)
+
+/-- Absolute value of a finite expectation is bounded by the expectation of
+    the absolute value. -/
+theorem abs_expectationReal_le_expectationReal_abs
+    (P : FiniteProbability Ω) (X : Ω → ℝ) :
+    |P.expectationReal X| ≤ P.expectationReal (fun ω => |X ω|) := by
+  classical
+  unfold expectationReal
+  calc
+    |∑ ω, P.prob ω * X ω|
+        ≤ ∑ ω : Ω, |P.prob ω * X ω| := Finset.abs_sum_le_sum_abs _ _
+    _ = ∑ ω : Ω, P.prob ω * |X ω| := by
+        apply Finset.sum_congr rfl
+        intro ω _
+        rw [abs_mul, abs_of_nonneg (P.prob_nonneg ω)]
+
+/-- Finite Cauchy--Schwarz for expectations:
+    `(E Z)^2 ≤ E[Z^2]`. -/
+theorem expectationReal_sq_le_expectationReal_sq
+    (P : FiniteProbability Ω) (Z : Ω → ℝ) :
+    P.expectationReal Z ^ 2 ≤ P.expectationReal (fun ω => Z ω ^ 2) := by
+  classical
+  have hcs := Finset.sum_mul_sq_le_sq_mul_sq
+    (s := (Finset.univ : Finset Ω))
+    (f := fun ω => Real.sqrt (P.prob ω))
+    (g := fun ω => Real.sqrt (P.prob ω) * Z ω)
+  have hleft :
+      (∑ ω : Ω, Real.sqrt (P.prob ω) *
+        (Real.sqrt (P.prob ω) * Z ω)) = P.expectationReal Z := by
+    unfold expectationReal
+    apply Finset.sum_congr rfl
+    intro ω _
+    rw [← mul_assoc, Real.mul_self_sqrt (P.prob_nonneg ω)]
+  have hfirst :
+      (∑ ω : Ω, Real.sqrt (P.prob ω) ^ 2) = 1 := by
+    calc
+      ∑ ω : Ω, Real.sqrt (P.prob ω) ^ 2
+          = ∑ ω : Ω, P.prob ω := by
+              apply Finset.sum_congr rfl
+              intro ω _
+              exact Real.sq_sqrt (P.prob_nonneg ω)
+      _ = 1 := P.prob_sum
+  have hsecond :
+      (∑ ω : Ω, (Real.sqrt (P.prob ω) * Z ω) ^ 2) =
+        P.expectationReal (fun ω => Z ω ^ 2) := by
+    unfold expectationReal
+    apply Finset.sum_congr rfl
+    intro ω _
+    rw [mul_pow, Real.sq_sqrt (P.prob_nonneg ω)]
+  rw [hleft, hfirst, hsecond] at hcs
+  simpa using hcs
+
+/-- Finite Jensen/Cauchy corollary for nonnegative random variables:
+    `E Z ≤ sqrt(E[Z^2])`. -/
+theorem expectationReal_le_sqrt_expectationReal_sq
+    (P : FiniteProbability Ω) (Z : Ω → ℝ) (hZ : ∀ ω, 0 ≤ Z ω) :
+    P.expectationReal Z ≤ Real.sqrt (P.expectationReal (fun ω => Z ω ^ 2)) := by
+  have hsq := expectationReal_sq_le_expectationReal_sq P Z
+  have hEZ_nonneg : 0 ≤ P.expectationReal Z := by
+    unfold expectationReal
+    exact Finset.sum_nonneg fun ω _ =>
+      mul_nonneg (P.prob_nonneg ω) (hZ ω)
+  have hEZ2_nonneg : 0 ≤ P.expectationReal (fun ω => Z ω ^ 2) := by
+    unfold expectationReal
+    exact Finset.sum_nonneg fun ω _ =>
+      mul_nonneg (P.prob_nonneg ω) (sq_nonneg (Z ω))
+  have hsq_sqrt : P.expectationReal Z ^ 2 ≤
+      (Real.sqrt (P.expectationReal (fun ω => Z ω ^ 2))) ^ 2 := by
+    rw [Real.sq_sqrt hEZ2_nonneg]
+    exact hsq
+  have habs := (sq_le_sq).mp hsq_sqrt
+  simpa [abs_of_nonneg hEZ_nonneg, abs_of_nonneg (Real.sqrt_nonneg _)] using habs
+
 theorem eventProb_nonneg (P : FiniteProbability Ω) (E : Set Ω) :
     0 ≤ P.eventProb E := by
   classical
@@ -142,6 +224,130 @@ theorem eventProb_add_eventProb_compl (P : FiniteProbability Ω) (E : Set Ω) :
   apply Finset.sum_congr rfl
   intro ω _
   by_cases hω : ω ∈ E <;> simp [hω]
+
+/-- The whole finite sample space has probability one. -/
+theorem eventProb_univ (P : FiniteProbability Ω) :
+    P.eventProb Set.univ = 1 := by
+  classical
+  unfold eventProb
+  simpa using P.prob_sum
+
+/-- Finite union-bound rearrangement:
+    `P(E) + P(F) ≤ P(E ∩ F) + 1`. -/
+theorem eventProb_add_le_eventProb_inter_add_one
+    (P : FiniteProbability Ω) (E F : Set Ω) :
+    P.eventProb E + P.eventProb F ≤ P.eventProb (E ∩ F) + 1 := by
+  classical
+  calc
+    P.eventProb E + P.eventProb F
+        = ∑ ω,
+            ((if ω ∈ E then P.prob ω else 0) +
+              (if ω ∈ F then P.prob ω else 0)) := by
+            unfold eventProb
+            rw [Finset.sum_add_distrib]
+    _ ≤ ∑ ω,
+          ((if ω ∈ E ∩ F then P.prob ω else 0) + P.prob ω) := by
+            apply Finset.sum_le_sum
+            intro ω _
+            by_cases hE : ω ∈ E <;> by_cases hF : ω ∈ F <;>
+              simp [hE, hF, P.prob_nonneg ω]
+    _ = P.eventProb (E ∩ F) + 1 := by
+            unfold eventProb
+            rw [Finset.sum_add_distrib, P.prob_sum]
+            congr 1
+            apply Finset.sum_congr rfl
+            intro ω _
+            by_cases hω : ω ∈ E ∩ F <;> simp [hω]
+
+/-- If two events each hold with probabilities at least `1 - δ₁` and
+    `1 - δ₂`, then their intersection holds with probability at least
+    `1 - (δ₁ + δ₂)`. -/
+theorem eventProb_inter_ge_one_sub_add
+    (P : FiniteProbability Ω) (E F : Set Ω) (δ₁ δ₂ : ℝ)
+    (hE : 1 - δ₁ ≤ P.eventProb E)
+    (hF : 1 - δ₂ ≤ P.eventProb F) :
+    1 - (δ₁ + δ₂) ≤ P.eventProb (E ∩ F) := by
+  have hsum := eventProb_add_le_eventProb_inter_add_one P E F
+  linarith
+
+/-- Finite Markov inequality for nonnegative real-valued random variables. -/
+theorem eventProb_real_ge_le_expectationReal_div
+    (P : FiniteProbability Ω) (X : Ω → ℝ) {T : ℝ}
+    (hX : ∀ ω, 0 ≤ X ω) (hT : 0 < T) :
+    P.eventProb {ω | T ≤ X ω} ≤ P.expectationReal X / T := by
+  classical
+  let M : ℝ := ∑ ω, P.prob ω * (X ω / T)
+  have hle : P.eventProb {ω | T ≤ X ω} ≤ M := by
+    unfold eventProb M
+    apply Finset.sum_le_sum
+    intro ω _
+    by_cases hω : ω ∈ {ω | T ≤ X ω}
+    · have hone : 1 ≤ X ω / T := by
+        rw [one_le_div hT]
+        exact hω
+      have hmain : P.prob ω ≤ P.prob ω * (X ω / T) := by
+        calc
+          P.prob ω = P.prob ω * 1 := by ring
+          _ ≤ P.prob ω * (X ω / T) :=
+              mul_le_mul_of_nonneg_left hone (P.prob_nonneg ω)
+      simpa [hω] using hmain
+    · have hratio_nonneg : 0 ≤ X ω / T :=
+        div_nonneg (hX ω) (le_of_lt hT)
+      have hmain : 0 ≤ P.prob ω * (X ω / T) :=
+        mul_nonneg (P.prob_nonneg ω) hratio_nonneg
+      simpa [hω] using hmain
+  have hM : M = P.expectationReal X / T := by
+    unfold M expectationReal
+    calc
+      ∑ ω, P.prob ω * (X ω / T)
+          = ∑ ω, (P.prob ω * X ω) * T⁻¹ := by
+              apply Finset.sum_congr rfl
+              intro ω _
+              ring_nf
+      _ = (∑ ω, P.prob ω * X ω) * T⁻¹ := by
+              rw [Finset.sum_mul]
+      _ = (∑ ω, P.prob ω * X ω) / T := by
+              rw [div_eq_mul_inv]
+  exact hle.trans_eq hM
+
+/-- Lower-tail Markov form for nonnegative real-valued random variables. -/
+theorem eventProb_real_le_ge_one_sub_expectationReal_div
+    (P : FiniteProbability Ω) (X : Ω → ℝ) (T : ℝ)
+    (hX : ∀ ω, 0 ≤ X ω) (hT : 0 < T) :
+    1 - P.expectationReal X / T ≤ P.eventProb {ω | X ω ≤ T} := by
+  classical
+  let E : Set Ω := {ω | X ω ≤ T}
+  have htail :=
+    eventProb_real_ge_le_expectationReal_div P X hX hT
+  have hcompl_subset : Eᶜ ⊆ {ω | T ≤ X ω} := by
+    intro ω hω
+    simp [E] at hω
+    exact le_of_lt hω
+  have htailE :
+      P.eventProb Eᶜ ≤ P.expectationReal X / T :=
+    (eventProb_mono P hcompl_subset).trans htail
+  have hsplit := eventProb_add_eventProb_compl P E
+  linarith
+
+/-- High-probability squared-moment bound:
+    `Pr[Z ≤ η] ≥ 1 - E[Z²]/η²` for nonnegative `Z`. -/
+theorem eventProb_le_ge_one_sub_expectationReal_sq_div
+    (P : FiniteProbability Ω) (Z : Ω → ℝ) (η : ℝ)
+    (hZ : ∀ ω, 0 ≤ Z ω) (hη : 0 < η) :
+    1 - P.expectationReal (fun ω => Z ω ^ 2) / η ^ 2 ≤
+      P.eventProb {ω | Z ω ≤ η} := by
+  classical
+  have hηsq : 0 < η ^ 2 := sq_pos_of_pos hη
+  have hmarkov :=
+    eventProb_real_le_ge_one_sub_expectationReal_div
+      P (fun ω => Z ω ^ 2) (η ^ 2)
+      (fun ω => sq_nonneg (Z ω)) hηsq
+  have hsubset : {ω | Z ω ^ 2 ≤ η ^ 2} ⊆ {ω | Z ω ≤ η} := by
+    intro ω hω
+    change Z ω ^ 2 ≤ η ^ 2 at hω
+    have habs := (sq_le_sq).mp hω
+    simpa [abs_of_nonneg (hZ ω), abs_of_nonneg (le_of_lt hη)] using habs
+  exact hmarkov.trans (eventProb_mono P hsubset)
 
 /-- Finite Markov inequality for natural-valued random variables. -/
 theorem eventProb_nat_ge_le_expectationNat_div

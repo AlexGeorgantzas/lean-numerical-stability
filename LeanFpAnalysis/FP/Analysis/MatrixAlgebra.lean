@@ -456,6 +456,23 @@ lemma frobNorm_sq {n : ℕ} (A : Fin n → Fin n → ℝ) :
   unfold frobNorm
   rw [sq, Real.mul_self_sqrt (frobNormSq_nonneg A)]
 
+/-- Frobenius norm monotonicity from entrywise absolute-value domination. -/
+theorem frobNorm_le_of_entry_abs_le {n : ℕ}
+    (A B : Fin n → Fin n → ℝ)
+    (hB_nonneg : ∀ i j, 0 ≤ B i j)
+    (h : ∀ i j, |A i j| ≤ B i j) :
+    frobNorm A ≤ frobNorm B := by
+  unfold frobNorm
+  apply Real.sqrt_le_sqrt
+  unfold frobNormSq
+  apply Finset.sum_le_sum
+  intro i _
+  apply Finset.sum_le_sum
+  intro j _
+  have habs : |A i j| ≤ |B i j| := by
+    simpa [abs_of_nonneg (hB_nonneg i j)] using h i j
+  exact (sq_le_sq).mpr habs
+
 /-- ‖A‖_F = 0 iff A = 0. -/
 theorem frobNorm_eq_zero_iff {n : ℕ} (A : Fin n → Fin n → ℝ) :
     frobNorm A = 0 ↔ ∀ i j, A i j = 0 := by

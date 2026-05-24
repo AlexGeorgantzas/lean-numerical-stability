@@ -4,7 +4,7 @@ Project: `LeanFpAnalysis`, a Lean 4 library for floating-point arithmetic and
 automatic stability analysis. The model is axiomatic and intentionally not tied
 to IEEE 754. All core results should be stated over `FPModel` and `Real`.
 
-Last review by Codex: 2026-05-22.
+Last review by Codex: 2026-05-23.
 Current RandNLA work is on branch `RandNLA_Kimon`. Benchmark work lives on
 branch `benchmark`.
 
@@ -12,7 +12,7 @@ branch `benchmark`.
 
 - `lake build` succeeds with Lean toolchain `leanprover/lean4:v4.29.0-rc3`.
 - No real `sorry`, `admit`, `axiom`, `unsafe`, or `opaque` declarations were
-  found in `LeanFpAnalysis` during the 2026-05-22 health check.
+  found in `LeanFpAnalysis` during the 2026-05-23 health check.
 - Current build warnings are cleanup warnings concentrated in QR/least-squares:
   unused simp arguments in `QR/GivensSpec.lean`, unused variables in
   `QR/HouseholderQR.lean`, `QR/GivensQR.lean`, `QR/QRSolve.lean`,
@@ -88,6 +88,14 @@ branch `benchmark`.
   `Analysis/FiniteProbability` for generic probability kernels; and
   `HitCountConcentration` for Markov, pairwise-Chebyshev, and canonical
   product-law Chernoff concentration plus high-probability stability.
+- RandNLA Algorithm 2 row sampling builds in `Algorithms/RandNLA/RowSampling.lean`
+  and `Algorithms/RandNLA/RowSamplingGram.lean`: equation (4) norm-squared row
+  probabilities, literal sampled rows, local one-division FP stability,
+  elementwise unbiasedness of `Atildeᵀ Atilde`, the iid variance calculation,
+  high-probability equation (5), and explicit FP perturbation/bias theorems for
+  the Gram matrix.
+  Do not cite any grouped row-hit or Chernoff-count theorem for Algorithm 2;
+  Algorithm 2 does not accumulate repeated sampled rows.
 
 ## Known Weak Spots
 
@@ -138,6 +146,14 @@ These compile, but should not be treated as fully derived stability results:
 - RandNLA Algorithm 1 deterministic and randomized stability work lives on
   branch `RandNLA_Kimon`. The public entry point is
   `LeanFpAnalysis.FP.Algorithms.RandNLA`.
+- Algorithm 2 row sampling is also on `RandNLA_Kimon`; cite
+  `fl_rowSampleSketch_error_bound` for the local sampled-entry FP division
+  bound, `rowSqNormTraceProbability_expectationReal_rowSampleGram_entry` for
+  unbiasedness of `Atildeᵀ Atilde`,
+  `rowSqNormTraceProbability_eventProb_rowSampleGram_frob_error_le_epsilon`
+  for the exact high-probability equation (5) bound, and
+  `rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_tau_of_entrywise_budget`
+  for the deterministic-budget FP corollary with `δτ = 0`.
 - Keep benchmark task files, stubs, generated-workspace scripts, run protocols,
   and task-selection rationale off `main` unless the user explicitly decides to
   merge them back.
@@ -165,6 +181,40 @@ These compile, but should not be treated as fully derived stability results:
   `docs/RANDNLA_ALGORITHM1_STABILITY_LEDGER.md`, and
   `docs/Algorithm1_Stability_Proof_Summary.pdf` document the current theorem
   map.
+
+## 2026-05-23 RandNLA Algorithm 2 Work
+
+- Added `Algorithms/RandNLA/RowSampling.lean` for Algorithm 2 from the CACM
+  RandNLA paper, using equation (4)
+  `p_i = ||A_i*||_2^2 / ||A||_F^2`, and
+  `Algorithms/RandNLA/RowSamplingGram.lean` for the Gram-matrix analysis.
+- Formalized row norms, row probabilities, literal sampled sketches
+  (`rowSampleSketch`, `fl_rowSampleSketch`), the canonical independent product
+  row-trace law, `rowGram`, `rowSampleGram`, and `fl_rowSampleGram`.
+- Correction: the earlier grouped row-hit/count material and the sampled-sketch
+  probability-one event were removed from the Algorithm 2 API because Algorithm
+  2 returns an `s × n` sampled matrix and does not sum repeated row samples.
+  The later 2026-05-23 health pass also removed the unused `rowSampleHits`
+  helper to keep the row-sampling API away from hit-count terminology.
+- Main APIs:
+  `fl_rowSampleSketch_error_bound`,
+  `rowSqNormTraceProbability_expectationReal_rowSampleGram_entry`,
+  `rowSqNormTraceProbability_expectationReal_rowSampleGram_frob_error_sq_le`,
+  `rowSqNormTraceProbability_eventProb_rowSampleGram_frob_error_le_epsilon`,
+  `rowSqNormTraceProbability_eventProb_rowSampleGram_frob_error_le_epsilon_of_budget`,
+  `rowSampleGram_entry_error_bound_of_entrywise`,
+  `rowSampleGram_frob_error_bound_of_entrywise`,
+  `rowSqNormTraceProbability_expectationReal_fl_rowSampleGram_entry_bias_bound_of_entrywise`,
+  `rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_tau`,
+  `rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_tau_of_forall`,
+  `rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_tau_of_entrywise_budget`.
+- Important distinction: `..._epsilon_add_tau` is a generic union-bound
+  transfer theorem with a separate perturbation failure `δτ`. The final
+  deterministic-budget FP corollaries are `..._of_forall` and
+  `..._of_entrywise_budget`; there the perturbation event is all sample traces,
+  so `δτ = 0` and the failure probability remains `1/(s ε^2)`.
+- Natural-language theorem/corollary summary:
+  `docs/Algorithm2_RowSampling_Stability_Proof_Summary.pdf`.
 
 ## 2026-04-26 Fix Pass
 

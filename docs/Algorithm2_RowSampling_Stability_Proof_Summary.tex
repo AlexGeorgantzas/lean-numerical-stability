@@ -1,0 +1,464 @@
+\documentclass[11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{enumitem}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  urlcolor=blue
+}
+
+\newcommand{\fl}{\operatorname{fl}}
+\newcommand{\Frob}[1]{\lVert #1\rVert_F}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Atil}{\widetilde A}
+\newcommand{\lean}[1]{\texttt{\detokenize{#1}}}
+\newcommand{\leanfit}[1]{\resizebox{\linewidth}{!}{\texttt{\detokenize{#1}}}}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+
+\theoremstyle{remark}
+\newtheorem*{leanref}{Lean reference}
+\newtheorem*{remark}{Remark}
+
+\title{Theorem and Corollary Summary\\
+for RandNLA Algorithm 2 Row Sampling}
+\author{LeanFpAnalysis repository}
+\date{}
+
+\begin{document}
+\sloppy
+\maketitle
+
+\section*{Overview}
+
+This note summarizes the corrected Lean formalization for Algorithm 2, the
+row-sampling meta-algorithm from Drineas and Mahoney's CACM RandNLA survey
+\href{https://dl.acm.org/doi/10.1145/2842602}{``RandNLA: Randomized Numerical
+Linear Algebra''}. Algorithm 2 samples rows independently and returns an
+\(s\times n\) matrix \(\Atil\). The relevant randomized object is the Gram
+matrix \(\Atil^T\Atil\), not a grouped sum over repeated row hits.
+
+The formalization uses the equation (4) distribution
+\[
+  p_i =
+  \frac{\lVert A_{i*}\rVert_2^2}{\Frob{A}^2}
+  =
+  \frac{\sum_j A_{ij}^2}{\sum_{k,l} A_{kl}^2}.
+\]
+If output row \(t\) samples input row \(i_t\), then
+\[
+  \Atil_{tj} = \frac{A_{i_tj}}{\sqrt{s p_{i_t}}}.
+\]
+
+\section*{Row Distribution}
+
+\begin{definition}[Norm-squared row probabilities]
+For \(A\in\R^{m\times n}\), define
+\[
+  r_i = \sum_j A_{ij}^2,\qquad
+  D = \Frob{A}^2 = \sum_i r_i,\qquad
+  p_i = r_i/D.
+\]
+\end{definition}
+
+\begin{leanref}
+\[
+\lean{rowNormSq},\quad
+\lean{rowSqNormProbDen},\quad
+\lean{rowSqNormProb}.
+\]
+\end{leanref}
+
+\begin{theorem}[Probability normalization]
+If \(D\ne 0\), then \(\sum_i p_i=1\). If \(D>0\), then \(p_i\ge 0\) for all
+rows \(i\). If row \(i\) contains a nonzero entry, then \(p_i>0\).
+\end{theorem}
+
+\begin{leanref}
+\[
+\begin{array}{l}
+\lean{rowSqNormProb_sum_eq_one},\\
+\lean{rowSqNormProb_nonneg},\\
+\lean{rowSqNormProb_pos_of_entry_ne_zero}.
+\end{array}
+\]
+\end{leanref}
+
+\begin{corollary}[Nonzero row-scaling denominator]
+If \(s>0\) and \(p_i>0\), then \(\sqrt{s p_i}\ne 0\).
+\end{corollary}
+
+\begin{leanref}
+\[
+\lean{rowSampleScaleDen_ne_zero}.
+\]
+\end{leanref}
+
+\section*{Sampled Sketch Stability}
+
+\begin{definition}[Exact and floating sampled rows]
+The exact sampled sketch entry is
+\[
+  \Atil_{tj}=\frac{A_{i_tj}}{\sqrt{s p_{i_t}}}.
+\]
+The floating-point sampled sketch entry is
+\[
+  \widehat{\Atil}_{tj}
+  =
+  \fl\left(\frac{A_{i_tj}}{\sqrt{s p_{i_t}}}\right).
+\]
+\end{definition}
+
+\begin{leanref}
+\[
+\lean{rowSampleIncrement},\quad
+\lean{fl_rowSampleIncrement},\quad
+\lean{rowSampleSketch},\quad
+\lean{fl_rowSampleSketch}.
+\]
+\end{leanref}
+
+\begin{theorem}[One sampled entry is stable]
+If \(\sqrt{s p_{i_t}}\ne 0\), then
+\[
+  \left|\widehat{\Atil}_{tj}-\Atil_{tj}\right|
+  \le
+  u\,|\Atil_{tj}|.
+\]
+\end{theorem}
+
+\begin{leanref}
+\[
+\lean{fl_rowSampleSketch_error_bound}.
+\]
+\end{leanref}
+
+\begin{remark}
+No random hit counter appears in this theorem. Algorithm 2 returns repeated
+sampled rows as repeated output rows; it does not add them into a single output
+entry.
+\end{remark}
+
+\section*{Gram Matrix Expectation}
+
+\begin{definition}[Exact and sampled Gram matrices]
+The exact Gram matrix is
+\[
+  (A^T A)_{jk} = \sum_i A_{ij}A_{ik}.
+\]
+For a sampled trace, the sampled Gram matrix is
+\[
+  (\Atil^T\Atil)_{jk}
+  =
+  \sum_{t=1}^s \Atil_{tj}\Atil_{tk}.
+\]
+\end{definition}
+
+\begin{leanref}
+\[
+\lean{rowGram},\quad
+\lean{rowSketchGram},\quad
+\lean{rowSampleGram},\quad
+\lean{fl_rowSampleGram}.
+\]
+\end{leanref}
+
+\begin{theorem}[Elementwise unbiasedness of \(\Atil^T\Atil\)]
+Assume \(D>0\) and \(s>0\). Under the independent norm-squared row sampler,
+\[
+  \E\left[(\Atil^T\Atil)_{jk}\right] = (A^T A)_{jk}
+\]
+for every pair of columns \(j,k\).
+\end{theorem}
+
+\begin{leanref}
+\[
+\lean{rowSqNormTraceProbability_expectationReal_rowSampleGram_entry}.
+\]
+\end{leanref}
+
+\section*{Equation (5)}
+
+\begin{lemma}[Finite iid variance kernel]
+For any scalar row statistic \(f(i)\), if
+\[
+  \mu = \sum_i p_i f(i),
+\]
+then the independent trace satisfies
+\[
+  \E\left[
+    \left(
+      \frac{1}{s}\sum_{t=1}^s f(i_t) - \mu
+    \right)^2
+  \right]
+  =
+  \frac{1}{s}\sum_i p_i(f(i)-\mu)^2.
+\]
+This is proved from the product trace law, not assumed.
+\end{lemma}
+
+\begin{leanref}
+\[
+\lean{rowSqNormTraceProbability_expectationReal_sampleAverage_sub_mean_sq}.
+\]
+\end{leanref}
+
+\begin{theorem}[Squared Frobenius second moment]
+Assume \(D>0\) and \(s>0\). Then
+\[
+  \E\left[\Frob{\Atil^T\Atil - A^T A}^2\right]
+  \le
+  \frac{D^2}{s}.
+\]
+Since \(D=\Frob{A}^2\), this is
+\[
+  \E\left[\Frob{\Atil^T\Atil - A^T A}^2\right]
+  \le
+  \frac{\Frob{A}^4}{s}.
+\]
+\end{theorem}
+
+\begin{leanref}
+\[
+\lean{rowSqNormTraceProbability_expectationReal_rowSampleGram_frob_error_sq_le}.
+\]
+\end{leanref}
+
+\begin{corollary}[Expectation consequence]
+Assume \(D>0\) and \(s>0\). Then
+\[
+  \E\left[\Frob{\Atil^T\Atil - A^T A}\right]
+  \le
+  \frac{1}{\sqrt{s}}\Frob{A}^2.
+\]
+This expectation bound is useful, but it is weaker than the high-probability
+form of equation (5). The Lean proof derives it from the squared-moment theorem
+using a finite Cauchy--Schwarz/Jensen inequality proved in the repository's
+finite-probability library.
+\end{corollary}
+
+\begin{leanref}
+\[
+\begin{array}{l}
+\lean{FiniteProbability.expectationReal_le_sqrt_expectationReal_sq},\\
+\lean{rowSqNormTraceProbability_expectationReal_rowSampleGram_frob_error_le}.
+\end{array}
+\]
+\end{leanref}
+
+\begin{theorem}[Equation (5), high-probability form]
+Assume \(D>0\), \(s>0\), and \(\varepsilon>0\). Then
+\[
+  \Pr\!\left[
+    \Frob{\Atil^T\Atil-A^TA}
+    \le \varepsilon \Frob{A}^2
+  \right]
+  \ge
+  1-\frac{1}{s\varepsilon^2}.
+\]
+Equivalently, if \(1/(s\varepsilon^2)\le \delta\), then the same event has
+probability at least \(1-\delta\). This is the high-probability Markov
+consequence of the squared Frobenius second moment above.
+\end{theorem}
+
+\begin{leanref}
+\leavevmode\par
+\noindent
+\leanfit{FiniteProbability.eventProb_le_ge_one_sub_expectationReal_sq_div}
+
+\vspace{0.35em}
+\noindent
+\leanfit{rowSqNormTraceProbability_eventProb_rowSampleGram_frob_error_le_epsilon}
+
+\vspace{0.35em}
+\noindent
+\leanfit{rowSqNormTraceProbability_eventProb_rowSampleGram_frob_error_le_epsilon_of_budget}
+\end{leanref}
+
+\section*{Floating-Point Effect on the Gram Matrix}
+
+\begin{theorem}[Entrywise Gram perturbation from sampled-sketch stability]
+Suppose a computed sampled sketch \(\widehat{\Atil}\) satisfies
+\[
+  |\widehat{\Atil}_{tj}-\Atil_{tj}|
+  \le u|\Atil_{tj}|
+\]
+for every sampled output entry. Then each Gram entry satisfies
+\[
+  \left|
+    (\widehat{\Atil}^{\,T}\widehat{\Atil})_{jk}
+    -
+    (\Atil^T\Atil)_{jk}
+  \right|
+  \le
+  (2u+u^2)\sum_{t=1}^s |\Atil_{tj}|\,|\Atil_{tk}|.
+\]
+\end{theorem}
+
+\begin{leanref}
+\[
+\lean{rowSampleGram_entry_error_bound_of_entrywise}.
+\]
+\end{leanref}
+
+\begin{corollary}[Expected Gram-entry bias from sampled-sketch stability]
+Under the same entrywise stability assumption, the expected bias in each
+computed Gram entry is bounded by the expected deterministic perturbation:
+\[
+  \left|
+    \E\left[(\widehat{\Atil}^{\,T}\widehat{\Atil})_{jk}\right]
+    -
+    (A^T A)_{jk}
+  \right|
+  \le
+  (2u+u^2)\,
+  \E\left[\sum_{t=1}^s |\Atil_{tj}|\,|\Atil_{tk}|\right].
+\]
+For the concrete floating-point sketch, Lean states the same result with
+\(u\) instantiated as the model unit roundoff.
+\end{corollary}
+
+\begin{leanref}
+\leavevmode\par
+\noindent
+\leanfit{rowSqNormTraceProbability_expectationReal_rowSketchGram_entry_bias_bound_of_entrywise}
+
+\vspace{0.35em}
+\noindent
+\leanfit{rowSqNormTraceProbability_expectationReal_fl_rowSampleGram_entry_bias_bound_of_entrywise}
+\end{leanref}
+
+\begin{corollary}[Expectation bound with a floating-point perturbation term]
+For any perturbed sampled sketch \(B\),
+\[
+  \E\left[\Frob{B^TB-A^TA}\right]
+  \le
+  \frac{1}{\sqrt{s}}\Frob{A}^2
+  +
+  \E\left[\Frob{B^TB-\Atil^T\Atil}\right].
+\]
+In particular, taking \(B=\widehat{\Atil}\) gives the floating-point version:
+the exact RandNLA equation (5) term remains, and all rounding effects are
+isolated in the expected Gram perturbation
+\(\E[\Frob{\widehat{\Atil}^{\,T}\widehat{\Atil}-\Atil^T\Atil}]\).
+\end{corollary}
+
+\begin{leanref}
+\leavevmode\par
+\[
+\begin{array}{l}
+\lean{FiniteProbability.expectationReal_mono},\\
+\lean{FiniteProbability.abs_expectationReal_le_expectationReal_abs}.
+\end{array}
+\]
+\noindent
+\leanfit{rowSqNormTraceProbability_expectationReal_rowSketchGram_frob_error_le_add_perturb}
+
+\vspace{0.35em}
+\noindent
+\leanfit{rowSqNormTraceProbability_expectationReal_fl_rowSampleGram_frob_error_le_add_perturb}
+\end{leanref}
+
+\begin{remark}[High-probability perturbation transfer]
+Lean first proves a generic transfer lemma. If the floating-point Gram
+perturbation is known only with high probability,
+\[
+  \Pr\!\left[
+    \Frob{\widehat{\Atil}^{\,T}\widehat{\Atil}-\Atil^T\Atil}
+    \le \tau
+  \right]\ge 1-\delta_\tau.
+\]
+Then
+\[
+  \Pr\!\left[
+    \Frob{\widehat{\Atil}^{\,T}\widehat{\Atil}-A^TA}
+    \le
+    \varepsilon\Frob{A}^2+\tau
+  \right]
+  \ge
+  1-\left(\frac{1}{s\varepsilon^2}+\delta_\tau\right).
+\]
+This is a union-bound transfer statement, not a new concentration theorem for
+the floating-point perturbation. It is useful only if one later proves a
+nontrivial high-probability perturbation bound with a smaller \(\tau\) than the
+worst-case deterministic budget.
+\end{remark}
+
+\begin{corollary}[High-probability equation (5) in floating point]
+Assume \(D>0\), \(s>0\), and \(\varepsilon>0\). Suppose the floating-point Gram
+perturbation is bounded deterministically for every sample trace:
+\[
+  \Frob{\widehat{\Atil}^{\,T}\widehat{\Atil}-\Atil^T\Atil}
+  \le \tau.
+\]
+Then
+\[
+  \Pr\!\left[
+    \Frob{\widehat{\Atil}^{\,T}\widehat{\Atil}-A^TA}
+    \le
+    \varepsilon\Frob{A}^2+\tau
+  \right]
+  \ge
+  1-\frac{1}{s\varepsilon^2}.
+\]
+Equivalently, this is the generic transfer statement with
+\(\delta_\tau=0\), because the perturbation event is the whole sample space.
+Lean also contains a version that derives this deterministic perturbation
+premise from the entrywise sampled-sketch stability theorem and the explicit
+Frobenius budget
+\[
+  \Frob{
+    (2u+u^2)
+    \sum_{t=1}^s |\Atil_{tj}|\,|\Atil_{tk}|
+  } \le \tau.
+\]
+For this currently proved entrywise-budget version, no additional
+floating-point failure probability is paid.
+\end{corollary}
+
+\begin{leanref}
+\leavevmode\par
+\[
+\lean{FiniteProbability.eventProb_inter_ge_one_sub_add}.
+\]
+\noindent
+\leanfit{rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_tau}
+
+\vspace{0.35em}
+\noindent
+\leanfit{rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_tau_of_forall}
+
+\vspace{0.35em}
+\noindent
+\leanfit{rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_tau_of_entrywise_budget}
+\end{leanref}
+
+\section*{File Organization}
+
+\begin{itemize}[leftmargin=2em]
+  \item \lean{LeanFpAnalysis/FP/Algorithms/RandNLA/RowSampling.lean} contains
+  equation (4), row traces, sampled-row scaling, and local sampled-entry
+  floating-point stability.
+  \item \lean{LeanFpAnalysis/FP/Algorithms/RandNLA/RowSamplingGram.lean}
+  contains the Gram matrices, independent-trace marginal facts, unbiasedness,
+  the iid variance proof, high-probability equation (5), and the floating-point
+  Gram perturbation theorems.
+  \item \lean{LeanFpAnalysis/FP/Analysis/FiniteProbability.lean} contains the
+  reusable finite Markov, union-bound, monotonicity, absolute-expectation, and
+  Cauchy--Schwarz/Jensen lemmas used by the expectation and high-probability
+  arguments.
+\end{itemize}
+
+\end{document}

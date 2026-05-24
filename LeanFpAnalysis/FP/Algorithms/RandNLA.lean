@@ -8,3 +8,5 @@
 
 import LeanFpAnalysis.FP.Algorithms.RandNLA.ElementwiseSampling
 import LeanFpAnalysis.FP.Algorithms.RandNLA.HitCountConcentration
+import LeanFpAnalysis.FP.Algorithms.RandNLA.RowSampling
+import LeanFpAnalysis.FP.Algorithms.RandNLA.RowSamplingGram

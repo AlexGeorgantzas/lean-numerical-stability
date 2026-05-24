@@ -40,6 +40,7 @@ Lean `#check` companion index, see [`examples/LibraryLookup.lean`](examples/Libr
 | Outer product | Higham §3.1 | `outerProduct_error_bound` |
 | Matrix multiplication | Higham §3.5 | `matMul_error_bound` |
 | RandNLA element-wise sampling | Drineas-Mahoney, [Algorithm 1](https://dl.acm.org/doi/10.1145/2842602) | `fl_elementwiseTraceSketch_sqMag_error_bound`, `highProbability_sqMagTraceStability_of_markov_budget`, `highProbability_sqMagTraceStability_of_pairwise_chebyshev_budget`, `highProbability_sqMagTraceStability_of_independent_chernoff_budget`, `highProbability_sqMagTraceStability_of_independent_chernoff_optimized_tail_budget` |
+| RandNLA row sampling | Drineas-Mahoney, [Algorithm 2, equation (4), and equation (5)](https://dl.acm.org/doi/10.1145/2842602) | `rowSqNormProb`, `rowSampleSketch`, `rowSqNormTraceProbability_expectationReal_rowSampleGram_entry`, `rowSqNormTraceProbability_eventProb_rowSampleGram_frob_error_le_epsilon`, `rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_tau_of_entrywise_budget` |
 | Recursive summation | Higham §4.1–4.2 | `recursive_sum_backward_error`, `recursive_sum_forward_error` |
 | Pairwise summation | Higham §4.2 | Backward and forward error bounds |
 | Tree summation | Higham §4.2 | `sumTree_backward_error` |
@@ -149,6 +150,41 @@ For the theorem ledger and prose proof summary, see
 [`docs/RANDNLA_ALGORITHM1_STABILITY_LEDGER.md`](docs/RANDNLA_ALGORITHM1_STABILITY_LEDGER.md)
 and [`docs/Algorithm1_Stability_Proof_Summary.pdf`](docs/Algorithm1_Stability_Proof_Summary.pdf).
 
+Algorithm 2 row sampling is also formalized for the equation (4) distribution
+`p_i = ||A_i*||_2^2 / ||A||_F^2`. The row-sampling API proves the literal
+sampled-sketch entrywise floating-point stability bound, elementwise
+unbiasedness of `ÃᵀÃ`, the squared-Frobenius second moment, and the expectation
+bound plus the high-probability Markov form of equation (5):
+`Pr[||ÃᵀÃ - AᵀA||_F ≤ ε ||A||_F²] ≥ 1 - 1/(s ε²)`. Since Algorithm 2 returns
+sampled rows rather than accumulating repeated samples, no hit-count or
+Chernoff stability bound is involved in this floating-point result. The
+floating-point layer is tracked as an explicit perturbation. The final
+deterministic-budget corollary uses `δτ = 0`: if the computed Gram
+perturbation is at most `τ` for every sample trace, then
+`Pr[||fl(Ã)ᵀfl(Ã) - AᵀA||_F ≤ ε ||A||_F² + τ] ≥ 1 - 1/(s ε²)`.
+The library also keeps the more general union-bound transfer lemma with a
+separate high-probability perturbation event `1 - δτ`, for future use if a
+sharper probabilistic rounding perturbation theorem is proved.
+
+```lean
+#check rowSqNormProb
+#check fl_rowSampleSketch_error_bound
+#check rowSqNormTraceProbability_expectationReal_rowSampleGram_entry
+#check rowSqNormTraceProbability_expectationReal_rowSampleGram_frob_error_sq_le
+#check rowSqNormTraceProbability_expectationReal_rowSampleGram_frob_error_le
+#check rowSqNormTraceProbability_eventProb_rowSampleGram_frob_error_le_epsilon
+#check rowSqNormTraceProbability_eventProb_rowSampleGram_frob_error_le_epsilon_of_budget
+#check rowSampleGram_entry_error_bound_of_entrywise
+#check rowSqNormTraceProbability_expectationReal_fl_rowSampleGram_entry_bias_bound_of_entrywise
+#check rowSqNormTraceProbability_expectationReal_fl_rowSampleGram_frob_error_le_add_perturb
+#check rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_tau
+#check rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_tau_of_forall
+#check rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_tau_of_entrywise_budget
+```
+
+For the theorem and corollary summary in prose, see
+[`docs/Algorithm2_RowSampling_Stability_Proof_Summary.pdf`](docs/Algorithm2_RowSampling_Stability_Proof_Summary.pdf).
+
 ## Module structure
 
 ```
@@ -171,7 +207,9 @@ LeanFpAnalysis/FP/
     ├── MatMul.lean             — Matrix multiplication
     ├── RandNLA/
     │   ├── ElementwiseSampling.lean    — Algorithm 1 updates, traces, hit counts, stability events
-    │   └── HitCountConcentration.lean  — Markov, Chebyshev, Chernoff high-probability stability
+    │   ├── HitCountConcentration.lean  — Markov, Chebyshev, Chernoff high-probability stability
+    │   ├── RowSampling.lean            — Algorithm 2 row probabilities, traces, and sampled sketches
+    │   └── RowSamplingGram.lean        — Algorithm 2 Gram expectation, equation (5), and FP perturbation
     ├── RecursiveSum.lean       — Recursive summation (§4.1–4.2)
     ├── PairwiseSum.lean        — Pairwise summation (§4.2)
     ├── SumTree.lean            — Tree summation (§4.2)
