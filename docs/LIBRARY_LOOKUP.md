@@ -40,7 +40,7 @@ see [`Algorithm2_RowSampling_Stability_Proof_Summary.pdf`](Algorithm2_RowSamplin
 | Matrix multiplication | `LeanFpAnalysis/FP/Algorithms/MatMul.lean` | `fl_matMul` | `matMul_error_bound`, `matMul_backward_error_col` | Backward theorem is columnwise; each column may use a different perturbation. |
 | Outer product | `LeanFpAnalysis/FP/Algorithms/OuterProduct.lean` | `fl_outerProduct` | `outerProduct_error_bound`, `outerProduct_backward_error` | Useful for rank-one update reasoning. |
 | RandNLA element-wise sampling update | `LeanFpAnalysis/FP/Algorithms/RandNLA/ElementwiseSampling.lean`, `LeanFpAnalysis/FP/Algorithms/RandNLA/HitCountConcentration.lean` | `sqMagProb`, `elementwiseSampleUpdate`, `fl_elementwiseSampleUpdate`, `ElementwiseTrace`, `hitCount`, `elementwiseTraceSketch`, `fl_elementwiseTraceSketch`, `sqMagTraceErrorBudget`, `sqMagTraceProbability`, `hitCountAtMostEvent`, `hitCountDeviationEvent`, `sqMagTraceStabilityEvent`, `markovHitCountBudget`, `chebyshevHitCountBudget`, `chernoffHitCountBudget`, `sqMagChernoffHitCountBudget`, `TraceValidForSqMag` | `sqMagProb_sum_eq_one`, `elementwiseIncrement_sqMag_eq`, `elementwiseTraceSketch_eq_repeat_of_hitCount`, `fl_elementwiseTraceSketch_eq_repeat_of_hitCount`, `fl_elementwiseTraceSketch_sqMag_error_bound`, `fl_elementwiseTraceSketch_sqMag_error_bound_exact`, `fl_elementwiseSketch_zero_init_sqMag_error_bound`, `fl_elementwiseTraceSketch_entrywise_sqMag_error_bound`, `fl_elementwiseTraceSketch_sqMag_error_bound_of_hitCount_le`, `hitCount_concentrates_sqMag`, `hitCount_concentrates_sqMag_around_mean_pairwise`, `sqMagTraceProbability_expectationReal_exp_hitCount_eq`, `sqMagTraceProbability_chernoff_mgf_bound`, `hitCount_concentrates_sqMag_chernoff_independent`, `hitCount_concentrates_sqMag_chernoff_independent_budget`, `hitCount_concentrates_sqMag_chernoff_optimized_independent`, `hitCount_concentrates_sqMag_chernoff_optimized_independent_of_tail_budget`, `highProbability_sqMagTraceStability_of_marginal_hitProb_of_tail_budget`, `highProbability_sqMagTraceStability_of_pairwise_hitCount_deviation`, `highProbability_sqMagTraceStability_of_markov_budget`, `highProbability_sqMagTraceStability_of_pairwise_chebyshev_budget`, `highProbability_sqMagTraceStability_of_independent_chernoff_budget`, `highProbability_sqMagTraceStability_of_independent_chernoff_optimized_tail_budget` | Complete deterministic FP stability for Algorithm 1 sampled-entry traces with squared-magnitude probabilities, plus Markov, pairwise-Chebyshev, and fully derived Chernoff concentration for the canonical independent trace sampler and chosen-budget high-probability stability corollaries. Uses `Analysis/FiniteProbability.lean` for generic probability kernels. |
-| RandNLA row sampling update | `LeanFpAnalysis/FP/Algorithms/RandNLA/RowSampling.lean`, `LeanFpAnalysis/FP/Algorithms/RandNLA/RowSamplingGram.lean` | `rowNormSq`, `rowSqNormProb`, `RowTrace`, `rowSampleScaleDen`, `rowSampleIncrement`, `rowSampleSketch`, `fl_rowSampleSketch`, `rowSqNormTraceProbability`, `rowGram`, `rowSketchGram`, `rowSampleGram`, `fl_rowSampleGram`, `rowOuterGramSample` | `rowSqNormProb_sum_eq_one`, `rowSampleScaleDen_ne_zero`, `fl_rowSampleIncrement_error_bound`, `fl_rowSampleSketch_error_bound`, `rowSqNormTraceProbMass_sum_eq_one`, `rowSqNormTraceProbability_expectationReal_rowSampleGram_entry`, `rowSqNormTraceProbability_expectationReal_rowSampleGram_frob_error_sq_le`, `rowSqNormTraceProbability_eventProb_rowSampleGram_frob_error_le_epsilon`, `rowSqNormTraceProbability_eventProb_rowSampleGram_frob_error_le_epsilon_of_budget`, `rowSampleGram_entry_error_bound_of_entrywise`, `rowSampleGram_frob_error_bound_of_entrywise`, `rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_tau`, `rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_tau_of_forall`, `rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_tau_of_entrywise_budget` | Algorithm 2 row sampling for equation (4), `p_i = ||A_i*||_2^2 / ||A||_F^2`, and the high-probability equation (5) bound for `||AᵀA - ÃᵀÃ||_F`. `RowSampling.lean` contains the literal sampled sketch and local division stability; `RowSamplingGram.lean` contains the Gram expectation, iid variance, high-probability Frobenius error, the generic FP perturbation transfer lemma, and the deterministic-budget FP corollary where `δτ = 0`. |
+| RandNLA row sampling update | `LeanFpAnalysis/FP/Algorithms/RandNLA/RowSampling.lean`, `LeanFpAnalysis/FP/Algorithms/RandNLA/RowSamplingGram.lean` | `rowNormSq`, `rowSqNormProb`, `RowTrace`, `rowTracePositiveProb`, `rowSampleScaleDen`, `rowSampleIncrement`, `rowSampleSketch`, `fl_rowSampleSketch`, `rowSqNormTraceProbability`, `rowGram`, `rowSketchGram`, `rowSampleGram`, `fl_rowSampleGram`, `fl_rowSampleGramDot`, `rowOuterGramSample`, `rowSampleGramFpPerturbBudget`, `rowSampleGramDotProductBudget`, `rowSampleGramFullFpPerturbBudget` | `rowSqNormProb_sum_eq_one`, `rowSampleScaleDen_ne_zero`, `fl_rowSampleIncrement_error_bound`, `fl_rowSampleSketch_error_bound`, `rowSqNormTraceProbMass_sum_eq_one`, `rowSqNormTraceProbability_eventProb_rowTracePositiveProb`, `rowSqNormTraceProbability_expectationReal_rowSampleGram_entry`, `rowSqNormTraceProbability_expectationReal_rowSampleGram_frob_error_sq_le`, `rowSqNormTraceProbability_eventProb_rowSampleGram_frob_error_le_epsilon`, `rowSqNormTraceProbability_eventProb_rowSampleGram_frob_error_le_epsilon_of_budget`, `rowSampleGram_entry_error_bound_of_entrywise`, `rowSampleGram_frob_error_bound_of_entrywise`, `rowSketchGram_dot_frob_error_bound_of_entrywise`, `rowSampleGram_perturb_budget_le_explicit`, `rowSampleGram_dot_product_budget_le_explicit`, `rowSqNormTraceProbability_eventProb_computedGram_frob_error_le_epsilon_add_tau`, `rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_explicit_budget`, `rowSqNormTraceProbability_eventProb_fl_rowSampleGramDot_frob_error_le_epsilon_add_explicit_budget` | Algorithm 2 row sampling for equation (4), `p_i = ||A_i*||_2^2 / ||A||_F^2`, and the high-probability equation (5) bound for `||AᵀA - ÃᵀÃ||_F`. `RowSampling.lean` contains the literal sampled sketch, local division stability, and probability-one support theorem for positive-probability sampled rows; `RowSamplingGram.lean` contains the Gram expectation, iid variance, high-probability Frobenius error, a generic computed-Gram transfer lemma, the exact-sum rounded-sketch FP corollary, and the fully floating-point Gram corollary that reuses `DotProduct.lean`. |
 | Recursive, pairwise, and tree summation | `LeanFpAnalysis/FP/Algorithms/RecursiveSum.lean`, `PairwiseSum.lean`, `SumTree.lean` | recursive/tree sum algorithms | `recursiveSum_backward_error`, `recursiveSum_forward_error_bound`, `pairwiseSum_backward_error`, `pairwiseSum_forward_error_bound`, `backward_error`, `forward_error` | `SumTree.backward_error` and `SumTree.forward_error` are in the same namespace and have generic names. |
 | Forward substitution | `LeanFpAnalysis/FP/Algorithms/ForwardSub.lean` | `fl_forwardSub` | `forwardSub_backward_error`, `fl_forwardSub_satisfies_spec` | Lower-triangular solve. Requires nonzero diagonal and lower-triangular zero pattern. |
 | Back substitution | `LeanFpAnalysis/FP/Algorithms/TriangularSolve.lean` | `fl_backSub` | `backSub_backward_error`, `backSub_backward_error_perturbed`, `backSub_backward_error_dual`, `fl_backSub_satisfies_spec` | Upper-triangular solve. Requires nonzero diagonal and upper-triangular zero pattern. |
@@ -107,12 +107,15 @@ RandNLA row sampling
   -> literal Algorithm 2 sampled rows scaled by 1 / sqrt(s*p_i)
   -> one-division floating-point stability
   -> product row-trace law
+  -> probability-one support theorem for positive-probability sampled rows
   -> Gram matrices A^T A and Atilde^T Atilde
   -> elementwise unbiasedness of Atilde^T Atilde
   -> finite iid variance calculation from the product trace law
   -> equation (5) squared-moment and high-probability Frobenius bounds
   -> generic floating-point perturbation transfer lemma
-  -> deterministic-budget floating-point equation (5) corollary with δτ = 0
+  -> exact-sum rounded-sketch FP corollary with δτ = 0
+  -> DotProduct.fl_dotProduct / dotProduct_error_bound
+  -> fully floating-point Gram corollary with δτ = 0
 ```
 
 When a target statement looks like a new algorithm-level stability result,
@@ -147,8 +150,10 @@ Last checked: 2026-05-23.
   accumulator: Algorithm 2 returns an `s × n` sampled matrix. The corrected
   probabilistic analysis studies `AᵀA - ÃᵀÃ`, proving unbiasedness,
   the squared-Frobenius second moment, the high-probability form of equation
-  (5), the generic FP perturbation transfer lemma, and the deterministic-budget
-  FP corollary where `δτ = 0`.
+  (5), the probability-one support theorem for positive-probability row traces,
+  the generic FP perturbation transfer lemma, the exact-sum rounded-sketch FP
+  corollary, and the fully floating-point Gram corollary that reuses the
+  repository dot-product theorem. In both final corollaries `δτ = 0`.
 - The canonical RandNLA Chernoff theorems do not assume the MGF bound. They use
   `sqMagTraceProbability_chernoff_mgf_bound`, which is proved from the product
   trace distribution. The generic `*_of_mgf_bound` lemmas remain as reusable
@@ -188,10 +193,15 @@ Last checked: 2026-05-23.
 | `RowTrace` | abbreviation | `Algorithms/RandNLA/RowSampling.lean` | Deterministic sequence of sampled row indices for Algorithm 2. |
 | `rowSampleSketch` | definition | `Algorithms/RandNLA/RowSampling.lean` | Literal sampled-output matrix for Algorithm 2, with sampled row `t` scaled by `1 / sqrt(s * p_i)`. |
 | `rowSqNormTraceProbability` | definition | `Algorithms/RandNLA/RowSampling.lean` | Canonical independent product law for Algorithm 2 row traces. |
+| `rowTracePositiveProb` | definition | `Algorithms/RandNLA/RowSampling.lean` | Support predicate saying every sampled row has positive sampling probability. |
 | `rowGram` | definition | `Algorithms/RandNLA/RowSamplingGram.lean` | Exact Gram matrix `AᵀA` for a rectangular data matrix. |
 | `rowSketchGram` | definition | `Algorithms/RandNLA/RowSamplingGram.lean` | Gram matrix of any row sketch, used to state perturbed-sketch theorems. |
 | `rowSampleGram` | definition | `Algorithms/RandNLA/RowSamplingGram.lean` | Sampled Gram matrix `ÃᵀÃ` for an Algorithm 2 row trace. |
+| `fl_rowSampleGramDot` | definition | `Algorithms/RandNLA/RowSamplingGram.lean` | Fully floating-point sampled Gram matrix, with each entry computed by `fl_dotProduct`. |
 | `rowOuterGramSample` | definition | `Algorithms/RandNLA/RowSamplingGram.lean` | One unscaled row outer-product estimator `A_i*ᵀ A_i* / p_i`. |
+| `rowSampleGramFpPerturbBudget` | definition | `Algorithms/RandNLA/RowSamplingGram.lean` | Explicit worst-case budget for row-rescaling division perturbation in Algorithm 2. |
+| `rowSampleGramDotProductBudget` | definition | `Algorithms/RandNLA/RowSamplingGram.lean` | Explicit budget for computing rounded-sketch Gram entries with `fl_dotProduct`. |
+| `rowSampleGramFullFpPerturbBudget` | definition | `Algorithms/RandNLA/RowSamplingGram.lean` | Sum of row-rescaling and dot-product budgets for the fully floating-point Algorithm 2 Gram. |
 | `fl_forwardSub` | definition | `Algorithms/ForwardSub.lean` | Floating-point lower-triangular solve. |
 | `fl_backSub` | definition | `Algorithms/TriangularSolve.lean` | Floating-point upper-triangular solve. |
 | `fl_residual` | definition | `Algorithms/IterativeRefinement.lean` | Floating-point residual `fl(b - fl(A*x))`. |
@@ -237,6 +247,8 @@ library lemmas. Good examples are:
 - `rowSqNormTraceProbability_eventProb_rowSampleGram_frob_error_le_epsilon`
 - `rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_tau_of_forall`
 - `rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_tau_of_entrywise_budget`
+- `rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_explicit_budget`
+- `rowSqNormTraceProbability_eventProb_fl_rowSampleGramDot_frob_error_le_epsilon_add_explicit_budget`
 - `forwardSub_backward_error`
 - `backSub_backward_error`
 - `triangularSolve_backward_error`

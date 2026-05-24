@@ -40,7 +40,7 @@ Lean `#check` companion index, see [`examples/LibraryLookup.lean`](examples/Libr
 | Outer product | Higham §3.1 | `outerProduct_error_bound` |
 | Matrix multiplication | Higham §3.5 | `matMul_error_bound` |
 | RandNLA element-wise sampling | Drineas-Mahoney, [Algorithm 1](https://dl.acm.org/doi/10.1145/2842602) | `fl_elementwiseTraceSketch_sqMag_error_bound`, `highProbability_sqMagTraceStability_of_markov_budget`, `highProbability_sqMagTraceStability_of_pairwise_chebyshev_budget`, `highProbability_sqMagTraceStability_of_independent_chernoff_budget`, `highProbability_sqMagTraceStability_of_independent_chernoff_optimized_tail_budget` |
-| RandNLA row sampling | Drineas-Mahoney, [Algorithm 2, equation (4), and equation (5)](https://dl.acm.org/doi/10.1145/2842602) | `rowSqNormProb`, `rowSampleSketch`, `rowSqNormTraceProbability_expectationReal_rowSampleGram_entry`, `rowSqNormTraceProbability_eventProb_rowSampleGram_frob_error_le_epsilon`, `rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_tau_of_entrywise_budget` |
+| RandNLA row sampling | Drineas-Mahoney, [Algorithm 2, equation (4), and equation (5)](https://dl.acm.org/doi/10.1145/2842602) | `rowSqNormProb`, `rowSampleSketch`, `rowSqNormTraceProbability_expectationReal_rowSampleGram_entry`, `rowSqNormTraceProbability_eventProb_rowSampleGram_frob_error_le_epsilon`, `rowSqNormTraceProbability_eventProb_fl_rowSampleGramDot_frob_error_le_epsilon_add_explicit_budget` |
 | Recursive summation | Higham §4.1–4.2 | `recursive_sum_backward_error`, `recursive_sum_forward_error` |
 | Pairwise summation | Higham §4.2 | Backward and forward error bounds |
 | Tree summation | Higham §4.2 | `sumTree_backward_error` |
@@ -158,10 +158,15 @@ bound plus the high-probability Markov form of equation (5):
 `Pr[||ÃᵀÃ - AᵀA||_F ≤ ε ||A||_F²] ≥ 1 - 1/(s ε²)`. Since Algorithm 2 returns
 sampled rows rather than accumulating repeated samples, no hit-count or
 Chernoff stability bound is involved in this floating-point result. The
-floating-point layer is tracked as an explicit perturbation. The final
-deterministic-budget corollary uses `δτ = 0`: if the computed Gram
-perturbation is at most `τ` for every sample trace, then
-`Pr[||fl(Ã)ᵀfl(Ã) - AᵀA||_F ≤ ε ||A||_F² + τ] ≥ 1 - 1/(s ε²)`.
+floating-point layer is tracked as an explicit perturbation. The fully
+floating-point Gram theorem reuses the library's `fl_dotProduct` and
+`dotProduct_error_bound`, then combines row-rescaling division error with
+dot-product evaluation error through the deterministic budget
+`rowSampleGramFullFpPerturbBudget fp s A`:
+`Pr[||fl_dot(Ã)ᵀfl_dot(Ã) - AᵀA||_F ≤ ε ||A||_F² + rowSampleGramFullFpPerturbBudget fp s A] ≥ 1 - 1/(s ε²)`.
+This theorem proves internally that zero-probability row traces have zero mass,
+so the floating-point division model is applied only on the positive-probability
+support of the sampler.
 The library also keeps the more general union-bound transfer lemma with a
 separate high-probability perturbation event `1 - δτ`, for future use if a
 sharper probabilistic rounding perturbation theorem is proved.
@@ -175,11 +180,23 @@ sharper probabilistic rounding perturbation theorem is proved.
 #check rowSqNormTraceProbability_eventProb_rowSampleGram_frob_error_le_epsilon
 #check rowSqNormTraceProbability_eventProb_rowSampleGram_frob_error_le_epsilon_of_budget
 #check rowSampleGram_entry_error_bound_of_entrywise
+#check rowTracePositiveProb
+#check rowSqNormTraceProbability_eventProb_rowTracePositiveProb
+#check fl_rowSampleGramDot
+#check rowSampleGramFpPerturbBudget
+#check rowSampleGramDotProductBudget
+#check rowSampleGramFullFpPerturbBudget
+#check rowSampleGram_perturb_budget_le_explicit
+#check rowSketchGram_dot_frob_error_bound_of_entrywise
+#check rowSampleGram_dot_product_budget_le_explicit
 #check rowSqNormTraceProbability_expectationReal_fl_rowSampleGram_entry_bias_bound_of_entrywise
 #check rowSqNormTraceProbability_expectationReal_fl_rowSampleGram_frob_error_le_add_perturb
+#check rowSqNormTraceProbability_eventProb_computedGram_frob_error_le_epsilon_add_tau
 #check rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_tau
 #check rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_tau_of_forall
 #check rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_tau_of_entrywise_budget
+#check rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_explicit_budget
+#check rowSqNormTraceProbability_eventProb_fl_rowSampleGramDot_frob_error_le_epsilon_add_explicit_budget
 ```
 
 For the theorem and corollary summary in prose, see

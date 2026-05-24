@@ -92,8 +92,9 @@ branch `benchmark`.
   and `Algorithms/RandNLA/RowSamplingGram.lean`: equation (4) norm-squared row
   probabilities, literal sampled rows, local one-division FP stability,
   elementwise unbiasedness of `Atildeᵀ Atilde`, the iid variance calculation,
-  high-probability equation (5), and explicit FP perturbation/bias theorems for
-  the Gram matrix.
+  high-probability equation (5), the probability-one support theorem for
+  positive-probability row traces, and explicit FP perturbation/bias theorems
+  for the Gram matrix.
   Do not cite any grouped row-hit or Chernoff-count theorem for Algorithm 2;
   Algorithm 2 does not accumulate repeated sampled rows.
 
@@ -152,8 +153,9 @@ These compile, but should not be treated as fully derived stability results:
   unbiasedness of `Atildeᵀ Atilde`,
   `rowSqNormTraceProbability_eventProb_rowSampleGram_frob_error_le_epsilon`
   for the exact high-probability equation (5) bound, and
-  `rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_tau_of_entrywise_budget`
-  for the deterministic-budget FP corollary with `δτ = 0`.
+  `rowSqNormTraceProbability_eventProb_fl_rowSampleGramDot_frob_error_le_epsilon_add_explicit_budget`
+  for the fully floating-point Gram corollary; it reuses `fl_dotProduct` /
+  `dotProduct_error_bound` and has an explicit budget with `δτ = 0`.
 - Keep benchmark task files, stubs, generated-workspace scripts, run protocols,
   and task-selection rationale off `main` unless the user explicitly decides to
   merge them back.
@@ -196,23 +198,40 @@ These compile, but should not be treated as fully derived stability results:
   2 returns an `s × n` sampled matrix and does not sum repeated row samples.
   The later 2026-05-23 health pass also removed the unused `rowSampleHits`
   helper to keep the row-sampling API away from hit-count terminology.
+- Closed the later FP-premise gap: `rowTracePositiveProb` and
+  `rowSqNormTraceProbability_eventProb_rowTracePositiveProb` prove the product
+  law has probability-one support on positive-probability sampled rows, and
+  `rowSampleGramFpPerturbBudget` /
+  `rowSampleGram_perturb_budget_le_explicit` give an explicit deterministic
+  Gram perturbation budget.
+- Added the fully floating-point Gram path `fl_rowSampleGramDot`, which reuses
+  the repository's `fl_dotProduct` and `dotProduct_error_bound` instead of
+  re-proving dot-product rounding inside RandNLA. Its final closed corollary is
+  `rowSqNormTraceProbability_eventProb_fl_rowSampleGramDot_frob_error_le_epsilon_add_explicit_budget`.
 - Main APIs:
   `fl_rowSampleSketch_error_bound`,
+  `rowSqNormTraceProbability_eventProb_rowTracePositiveProb`,
   `rowSqNormTraceProbability_expectationReal_rowSampleGram_entry`,
   `rowSqNormTraceProbability_expectationReal_rowSampleGram_frob_error_sq_le`,
   `rowSqNormTraceProbability_eventProb_rowSampleGram_frob_error_le_epsilon`,
   `rowSqNormTraceProbability_eventProb_rowSampleGram_frob_error_le_epsilon_of_budget`,
   `rowSampleGram_entry_error_bound_of_entrywise`,
   `rowSampleGram_frob_error_bound_of_entrywise`,
+  `rowSampleGramFpPerturbBudget`,
+  `rowSampleGramDotProductBudget`,
+  `rowSampleGramFullFpPerturbBudget`,
+  `rowSampleGram_perturb_budget_le_explicit`,
+  `rowSampleGram_dot_product_budget_le_explicit`,
   `rowSqNormTraceProbability_expectationReal_fl_rowSampleGram_entry_bias_bound_of_entrywise`,
   `rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_tau`,
   `rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_tau_of_forall`,
-  `rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_tau_of_entrywise_budget`.
+  `rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_tau_of_entrywise_budget`,
+  `rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_explicit_budget`,
+  `rowSqNormTraceProbability_eventProb_fl_rowSampleGramDot_frob_error_le_epsilon_add_explicit_budget`.
 - Important distinction: `..._epsilon_add_tau` is a generic union-bound
   transfer theorem with a separate perturbation failure `δτ`. The final
-  deterministic-budget FP corollaries are `..._of_forall` and
-  `..._of_entrywise_budget`; there the perturbation event is all sample traces,
-  so `δτ = 0` and the failure probability remains `1/(s ε^2)`.
+  theorem to cite is now `..._add_explicit_budget`; it proves the support,
+  entrywise FP stability, explicit budget, and `δτ = 0` internally.
 - Natural-language theorem/corollary summary:
   `docs/Algorithm2_RowSampling_Stability_Proof_Summary.pdf`.
 

@@ -277,4 +277,55 @@ noncomputable def rowSqNormTraceProbability {m n steps : ℕ}
   prob_nonneg := rowSqNormTraceProbMass_nonneg A hden
   prob_sum := rowSqNormTraceProbMass_sum_eq_one A hden.ne'
 
+/-- Trace-support predicate for Algorithm 2: every sampled row has positive
+    norm-squared probability. Zero-probability rows have zero mass under the
+    product trace law, but this predicate is exactly where the floating-point
+    division model can be applied without a denominator-zero premise. -/
+def rowTracePositiveProb {m n steps : ℕ}
+    (A : Fin m → Fin n → ℝ) (samples : RowTrace m steps) : Prop :=
+  ∀ t : Fin steps, 0 < rowSqNormProb A (samples t)
+
+theorem rowSqNormTraceProbMass_eq_zero_of_exists_prob_zero {m n steps : ℕ}
+    (A : Fin m → Fin n → ℝ) (samples : RowTrace m steps)
+    (hzero : ∃ t : Fin steps, rowSqNormProb A (samples t) = 0) :
+    rowSqNormTraceProbMass A samples = 0 := by
+  classical
+  rcases hzero with ⟨t, ht⟩
+  unfold rowSqNormTraceProbMass
+  exact Finset.prod_eq_zero (Finset.mem_univ t) ht
+
+/-- The independent Algorithm 2 row sampler assigns probability one to traces
+    whose sampled rows all have positive row-sampling probability. -/
+theorem rowSqNormTraceProbability_eventProb_rowTracePositiveProb
+    {m n steps : ℕ} (A : Fin m → Fin n → ℝ)
+    (hden : 0 < rowSqNormProbDen A) :
+    (rowSqNormTraceProbability (steps := steps) A hden).eventProb
+      {samples | rowTracePositiveProb A samples} = 1 := by
+  classical
+  let P := rowSqNormTraceProbability (steps := steps) A hden
+  let Good : Set (RowTrace m steps) := {samples | rowTracePositiveProb A samples}
+  have hcompl_zero : P.eventProb Goodᶜ = 0 := by
+    unfold FiniteProbability.eventProb
+    apply Finset.sum_eq_zero
+    intro samples _
+    by_cases hbad : samples ∈ Goodᶜ
+    · have hnot_good : samples ∉ Good := by simpa using hbad
+      have hexists : ∃ t : Fin steps, rowSqNormProb A (samples t) = 0 := by
+        by_contra hno
+        have hgood : samples ∈ Good := by
+          intro t
+          have hne : rowSqNormProb A (samples t) ≠ 0 := by
+            intro hzero
+            exact hno ⟨t, hzero⟩
+          exact lt_of_le_of_ne
+            (rowSqNormProb_nonneg A hden (samples t)) (Ne.symm hne)
+        exact hnot_good hgood
+      have hmass :=
+        rowSqNormTraceProbMass_eq_zero_of_exists_prob_zero A samples hexists
+      simp [P, Good, rowSqNormTraceProbability, hbad, hmass]
+    · simp [hbad]
+  have hsplit := P.eventProb_add_eventProb_compl Good
+  rw [hcompl_zero] at hsplit
+  linarith
+
 end LeanFpAnalysis.FP

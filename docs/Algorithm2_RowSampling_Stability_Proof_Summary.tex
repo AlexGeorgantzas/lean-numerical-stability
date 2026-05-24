@@ -171,7 +171,8 @@ For a sampled trace, the sampled Gram matrix is
 \lean{rowGram},\quad
 \lean{rowSketchGram},\quad
 \lean{rowSampleGram},\quad
-\lean{fl_rowSampleGram}.
+\lean{fl_rowSampleGram},\quad
+\lean{fl_rowSampleGramDot}.
 \]
 \end{leanref}
 
@@ -396,36 +397,63 @@ nontrivial high-probability perturbation bound with a smaller \(\tau\) than the
 worst-case deterministic budget.
 \end{remark}
 
-\begin{corollary}[High-probability equation (5) in floating point]
-Assume \(D>0\), \(s>0\), and \(\varepsilon>0\). Suppose the floating-point Gram
-perturbation is bounded deterministically for every sample trace:
+\begin{corollary}[High-probability equation (5) with exact Gram summation]
+Assume \(D>0\), \(s>0\), and \(\varepsilon>0\). If the sampled rows are rounded
+but the Gram matrix of the rounded sketch is formed as an exact sum, define
 \[
-  \Frob{\widehat{\Atil}^{\,T}\widehat{\Atil}-\Atil^T\Atil}
-  \le \tau.
+  \tau_{\rm scale} =
+  \left\|\,\bigl((2u+u^2)D\bigr)_{j,k=1}^n\,\right\|_F.
 \]
 Then
 \[
   \Pr\!\left[
     \Frob{\widehat{\Atil}^{\,T}\widehat{\Atil}-A^TA}
     \le
-    \varepsilon\Frob{A}^2+\tau
+    \varepsilon\Frob{A}^2+\tau_{\rm scale}
   \right]
   \ge
   1-\frac{1}{s\varepsilon^2}.
 \]
-Equivalently, this is the generic transfer statement with
-\(\delta_\tau=0\), because the perturbation event is the whole sample space.
-Lean also contains a version that derives this deterministic perturbation
-premise from the entrywise sampled-sketch stability theorem and the explicit
-Frobenius budget
+Lean proves that zero-probability sampled rows have zero mass under the product
+trace law; on the probability-one support, every sampled row has positive
+probability, so the floating-point division model applies to the row scaling.
+The Gram perturbation is then bounded by
 \[
   \Frob{
     (2u+u^2)
     \sum_{t=1}^s |\Atil_{tj}|\,|\Atil_{tk}|
-  } \le \tau.
+  }
+  \le
+  \tau_*.
 \]
-For this currently proved entrywise-budget version, no additional
-floating-point failure probability is paid.
+Thus no additional floating-point failure probability is paid:
+\(\delta_\tau=0\).
+\end{corollary}
+
+\begin{corollary}[High-probability equation (5) with floating-point dot products]
+Assume in addition the repository's dot-product guard
+\lean{gammaValid fp s}. Let
+\[
+  \tau_{\rm dot} =
+  \left\|\,\bigl(\gamma_s(1+u)^2D\bigr)_{j,k=1}^n\,\right\|_F,
+  \qquad
+  \tau_{\rm full}=\tau_{\rm scale}+\tau_{\rm dot}.
+\]
+If each Gram entry is computed by the already formalized
+\lean{fl_dotProduct} algorithm, then
+\[
+  \Pr\!\left[
+    \Frob{\mathrm{fl\_dot}(\widehat{\Atil})^T
+      \mathrm{fl\_dot}(\widehat{\Atil})-A^TA}
+    \le
+    \varepsilon\Frob{A}^2+\tau_{\rm full}
+  \right]
+  \ge
+  1-\frac{1}{s\varepsilon^2}.
+\]
+This is the fully floating-point corollary. The Gram dot-product error is not
+reproved inside the RandNLA development; Lean reuses the library theorem
+\lean{dotProduct_error_bound}.
 \end{corollary}
 
 \begin{leanref}
@@ -443,6 +471,38 @@ floating-point failure probability is paid.
 \vspace{0.35em}
 \noindent
 \leanfit{rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_tau_of_entrywise_budget}
+
+\vspace{0.35em}
+\noindent
+\leanfit{rowSqNormTraceProbability_eventProb_rowTracePositiveProb}
+
+\vspace{0.35em}
+\noindent
+\leanfit{rowSampleGramFpPerturbBudget}
+
+\vspace{0.35em}
+\noindent
+\leanfit{rowSampleGramDotProductBudget}
+
+\vspace{0.35em}
+\noindent
+\leanfit{rowSampleGramFullFpPerturbBudget}
+
+\vspace{0.35em}
+\noindent
+\leanfit{rowSampleGram_perturb_budget_le_explicit}
+
+\vspace{0.35em}
+\noindent
+\leanfit{rowSampleGram_dot_product_budget_le_explicit}
+
+\vspace{0.35em}
+\noindent
+\leanfit{rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_explicit_budget}
+
+\vspace{0.35em}
+\noindent
+\leanfit{rowSqNormTraceProbability_eventProb_fl_rowSampleGramDot_frob_error_le_epsilon_add_explicit_budget}
 \end{leanref}
 
 \section*{File Organization}
@@ -450,11 +510,16 @@ floating-point failure probability is paid.
 \begin{itemize}[leftmargin=2em]
   \item \lean{LeanFpAnalysis/FP/Algorithms/RandNLA/RowSampling.lean} contains
   equation (4), row traces, sampled-row scaling, and local sampled-entry
-  floating-point stability.
+  floating-point stability, plus the probability-one support theorem for
+  positive-probability sampled rows.
   \item \lean{LeanFpAnalysis/FP/Algorithms/RandNLA/RowSamplingGram.lean}
   contains the Gram matrices, independent-trace marginal facts, unbiasedness,
   the iid variance proof, high-probability equation (5), and the floating-point
-  Gram perturbation theorems.
+  Gram perturbation theorems, including the exact-sum and fully floating-point
+  explicit-budget FP corollaries.
+  \item \lean{LeanFpAnalysis/FP/Algorithms/DotProduct.lean} provides
+  \lean{fl_dotProduct} and \lean{dotProduct_error_bound}; the fully
+  floating-point Algorithm 2 Gram theorem reuses these results.
   \item \lean{LeanFpAnalysis/FP/Analysis/FiniteProbability.lean} contains the
   reusable finite Markov, union-bound, monotonicity, absolute-expectation, and
   Cauchy--Schwarz/Jensen lemmas used by the expectation and high-probability
