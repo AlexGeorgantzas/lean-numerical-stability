@@ -5,6 +5,11 @@
 --
 -- This provides the matrix inverse theory needed for iterative refinement
 -- (Higham §11) and forward error analysis (§8.2).
+--
+-- This file is exact algebra, not floating-point algorithm code.  It keeps the
+-- library's existing `Fin n → Fin n → ℝ` matrix representation.  Future cleanup
+-- should bridge more of these definitions to Mathlib `Matrix` facts where this
+-- can be done without disrupting downstream APIs.
 
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Real.Sqrt

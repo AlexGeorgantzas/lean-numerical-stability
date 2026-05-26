@@ -152,6 +152,16 @@ These compile, but should not be treated as fully derived stability results:
 
 ## 2026-05 End-To-End Rebuild Work
 
+- End goal for this branch: each important high-level stability contract should
+  eventually be backed by a concrete rounded `fl_*` algorithm and a theorem
+  proving that algorithm satisfies the contract from `FPModel`, rather than
+  only assuming the contract.
+- Step 1 foundation audit began with `FPModel`, `Rounding`, `Summation`,
+  `SubtractionFold`, `Stability`, and `MatrixAlgebra`.  The scan found no
+  `sorry`, `admit`, `axiom`, or `opaque` in these files.  The main immediate
+  gap was documentation precision: distinguish the Higham standard model from
+  extra exactness assumptions, and mark `MatrixAlgebra` as exact algebra rather
+  than floating-point algorithm code.
 - Corrected the QR implementation plan to start with missing low-level
   primitives rather than treating reflector construction as permanently out of
   scope.
