@@ -85,19 +85,12 @@ Benchmark work lives on branch `benchmark`.
 - `DotProduct` supports `MatVec`.
 - `MatVec` supports `MatMul` and matrix inversion residual results.
 - `DotProduct` supports `Norm2`, which gives the reusable `fl_norm2Sq` and
-  `fl_norm2` kernels needed by Householder reflector construction.  `Norm2`
-  bridges exact squared norms to Mathlib `dotProduct` through
+  `fl_norm2` kernels needed by later Householder reflector construction.
+  `Norm2` bridges exact squared norms to Mathlib `dotProduct` through
   `exactNorm2Sq_eq_dotProduct`, while preserving the existing function-based
-  vector API.
-- `Norm2` supports `QR/HouseholderReflector.lean`, which defines sign choice,
-  rounded Householder vector construction, rounded beta, and the exact
-  orthogonal reflector associated with a computed vector.  `householderSign`
-  intentionally has value `1` at zero, so it is local, but it agrees with
-  Mathlib `Real.sign` away from zero.
-- `HouseholderReflector`/`DotProduct` support the first implementation-backed
-  QR application kernel: `QR/HouseholderApply.lean` defines
-  `fl_householderApply` and proves its unrolled rounding-error and
-  matrix-perturbation forms.
+  vector API.  Premature Householder construction/application modules were
+  removed from `end-to-end-rebuild` so the branch can proceed bottom-up from
+  foundations before returning to QR-specific kernels.
 - `TriangularSolve` and `ForwardSub` use `SubtractionFold`/`Rounding` and feed
   `TriangularSolveCombined`, `ForwardError`, `MMatrix`, LU solve, Cholesky
   solve, matrix inversion, and underdetermined systems.
@@ -153,13 +146,12 @@ These compile, but should not be treated as fully derived stability results:
   merge them back.
 - Library implementation work after the benchmark audit lives on
   `end-to-end-rebuild`, renamed from the earlier QR-specific branch.
-  The first step is bottom-up QR strengthening:
-  keep existing QR contracts unchanged, add concrete rounded kernels, then
-  prove bridge theorems showing the kernels satisfy the contracts.
+  The branch should proceed bottom-up: stabilize the general foundations first,
+  then add concrete rounded kernels, then prove bridge theorems showing those
+  kernels satisfy the existing contracts.
 
-## 2026-05 QR Implementation Work
+## 2026-05 End-To-End Rebuild Work
 
-- Added `Algorithms/QR/HouseholderApply.lean` as the first concrete QR kernel.
 - Corrected the QR implementation plan to start with missing low-level
   primitives rather than treating reflector construction as permanently out of
   scope.
@@ -169,31 +161,14 @@ These compile, but should not be treated as fully derived stability results:
   `exactNorm2Sq`, `exactNorm2`, `fl_norm2Sq`, `fl_norm2`,
   `fl_norm2Sq_backward_error`, `fl_norm2Sq_nonneg_of_gammaValid_two_mul`,
   `fl_norm2_unroll`, and `fl_norm2_unroll_of_gammaValid_two_mul`.
-- Added `Algorithms/QR/HouseholderReflector.lean` with `householderSign`,
-  `exactHouseholderBeta`, `fl_householderAlpha`, `fl_householderVector`,
-  `fl_householderBeta`, `exactHouseholderFromRoundedVector`, and the
-  orthogonality bridge `exactHouseholder_orthogonal`.
 - Added Mathlib alignment bridges: `exactNorm2Sq_eq_dotProduct`,
-  `exactNorm2Sq_eq_zero_iff`, `exactNorm2Sq_pos_iff`,
-  `householderSign_zero`, and `householderSign_eq_realSign_of_ne`.
-- Added construction unroll lemmas: `fl_householderAlpha_unroll`,
-  `fl_householderVector_unroll`, and `fl_householderBeta_unroll`.
-- `fl_householderApply fp n v β b` models the rounded operation order
-  `σ̂ = fl(vᵀb)`, `τ̂ = fl(βσ̂)`, `ŷᵢ = fl(bᵢ - fl(τ̂vᵢ))`, with `v` and `β`
-  already supplied.
-- `fl_householderApply_unroll` reuses `dotProduct_backward_error` and the
-  `FPModel` multiplication/subtraction axioms to expose the exact local
-  rounding-error witnesses.
-- `fl_householderApply_matrix_perturbation` proves the concrete computation can
-  be written as `(P + ΔP)b` for `P = I - βvvᵀ`.
-- `fl_householderApply_appError_actualBound` connects the concrete kernel to
-  the existing `HouseholderAppError` contract using the actual perturbation norm
-  as the bound.
-- This is not yet the full Higham Lemma 18.2 closed-form bound, and it is not
-  yet a full `fl_householder_qr` factorization.  The low-level square-root and
-  norm construction layer now exists; the remaining work is proving the
-  reflector-construction perturbation properties, bounding Householder
-  application with Higham's closed form, and composing repeated reflectors.
+  `exactNorm2Sq_eq_zero_iff`, and `exactNorm2Sq_pos_iff`.
+- Removed premature `HouseholderReflector` and `HouseholderApply` additions from
+  the active branch.  They were useful prototypes, but the user decided the
+  rebuild should not move into Householder-specific kernels before auditing the
+  lower-level foundation chain.
+- Current next step is the bottom-up audit/cleanup beginning with `DotProduct`
+  and its exact-specification bridge to Mathlib `dotProduct`.
 
 ## 2026-04-26 Fix Pass
 

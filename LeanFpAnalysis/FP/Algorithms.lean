@@ -43,8 +43,6 @@ import LeanFpAnalysis.FP.Algorithms.StationaryIteration
 import LeanFpAnalysis.FP.Algorithms.MatrixPowers
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderSpec
 import LeanFpAnalysis.FP.Algorithms.QR.GivensSpec
-import LeanFpAnalysis.FP.Algorithms.QR.HouseholderReflector
-import LeanFpAnalysis.FP.Algorithms.QR.HouseholderApply
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderQR
 import LeanFpAnalysis.FP.Algorithms.QR.GivensQR
 import LeanFpAnalysis.FP.Algorithms.QR.QRSolve

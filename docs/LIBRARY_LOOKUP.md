@@ -45,9 +45,7 @@ For a smaller import, use the file listed in the tables below.
 | Structured LU bounds | `LeanFpAnalysis/FP/Algorithms/LU/GrowthFactor.lean`, `SpecialMatrices.lean`, `Tridiagonal.lean`, `Doolittle.lean`, `BlockLU.lean` | growth-factor and special-matrix specs | `diagDom_lu_solve_backward_stable`, `spd_lu_backward_error`, `mmatrix_lu_backward_stable`, `banded_lu_backward_error`, `doolittle_solve_backward_error`, `block_lu_solve_backward_error` | Some structured results are specification-level interfaces; inspect hypotheses. |
 | Cholesky factorization | `LeanFpAnalysis/FP/Algorithms/Cholesky/CholeskySpec.lean` | `CholeskyBackwardError` | `cholesky_backward_error_perturbation`, `cholesky_backward_error_relative`, `cholesky_spd_backward_stable` | Factorization contract for SPD-style analyses. |
 | Cholesky solve | `LeanFpAnalysis/FP/Algorithms/Cholesky/CholeskySolve.lean` | `fl_forwardSub`, `fl_backSub`, `CholeskyBackwardError` | `cholesky_solve_backward_error_expanded`, `cholesky_solve_backward_error`, `cholesky_solve_spd_backward_stable` | Composes Cholesky factorization with two triangular solves. |
-| Householder reflector construction | `LeanFpAnalysis/FP/Algorithms/QR/HouseholderReflector.lean` | `householderSign`, `exactHouseholderBeta`, `fl_householderAlpha`, `fl_householderVector`, `fl_householderBeta`, `exactHouseholderFromRoundedVector` | `householderSign_zero`, `householderSign_eq_realSign_of_ne`, `exactHouseholder_orthogonal`, `exactHouseholderBeta_mul_norm2Sq`, `fl_householderAlpha_unroll`, `fl_householderVector_unroll`, `fl_householderBeta_unroll` | Starts the low-level construction layer. `householderSign` intentionally differs from Mathlib `Real.sign` at zero; rounded construction data is kept separate from exact orthogonal reflectors. |
-| Householder application | `LeanFpAnalysis/FP/Algorithms/QR/HouseholderApply.lean` | `fl_householderApply`, `HouseholderAppError` | `fl_householderApply_unroll`, `fl_householderApply_matrix_perturbation`, `fl_householderApply_appError_actualBound` | Concrete rounded application of `I - βvvᵀ` to a vector. The current bridge uses the actual perturbation norm; the closed-form Higham Lemma 18.2 bound is future work. |
-| QR factorization and QR solve | `LeanFpAnalysis/FP/Algorithms/QR/*.lean` | `householder`, `givensRotation`, `HouseholderQRBackwardError`, `GivensQRBackwardError`, `QRSolveBackwardError` | `householder_qr_backward`, `givens_qr_backward`, `qr_solve_backward_from_components`, `qr_solve_perturbation_bound` | Mostly contract/interface level beyond Householder application. There is not yet a full `fl_householder_qr` or `fl_qr_solve`. |
+| QR factorization and QR solve | `LeanFpAnalysis/FP/Algorithms/QR/*.lean` | `householder`, `givensRotation`, `HouseholderQRBackwardError`, `GivensQRBackwardError`, `QRSolveBackwardError` | `householder_qr_backward`, `givens_qr_backward`, `qr_solve_backward_from_components`, `qr_solve_perturbation_bound` | Mostly contract/interface level. There is not yet a full `fl_householder_qr`, `fl_householderApply`, or `fl_qr_solve`. |
 | Residual computation | `LeanFpAnalysis/FP/Algorithms/IterativeRefinement.lean` | `fl_residual`, `ResidualError` | `conventional_residual_error` | Bound for the computed residual `fl(b - A*x_hat)`. |
 | Iterative refinement | `LeanFpAnalysis/FP/Algorithms/IterativeRefinement.lean` | `SolverSpec`, `ResidualError` | `one_step_refinement_error_identity`, `one_step_residual_bound`, `one_step_backward_error_contraction`, `lu_refinement_backward_stable`, `refinement_forward_error_bound`, `thm_11_4_residual_bound` | Mixes exact algebra, solver specifications, and residual computation bounds. |
 | Stationary iteration | `LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean` | iteration/residual helpers | `one_step_error`, `local_error_simplified`, `residual_eq_A_error`, `one_step_residual`, `normwise_forward_bound`, `main_forward_bound`, `normwise_one_step_residual_bound`, `normwise_residual_bound` | Useful for harder compositional stability analyses. |
@@ -75,9 +73,7 @@ Model
 Model
   -> DotProduct
   -> Norm2
-  -> HouseholderReflector
-  -> HouseholderApply
-  -> QR application contracts
+  -> future Householder construction/application work
 
 MatrixAlgebra + PerturbationTheory
   -> forward-error and residual-based analyses
@@ -110,10 +106,6 @@ first identify whether it is:
 | `fl_matMul` | definition | `Algorithms/MatMul.lean` | Columnwise matrix-matrix product via `fl_matVec`. |
 | `fl_forwardSub` | definition | `Algorithms/ForwardSub.lean` | Floating-point lower-triangular solve. |
 | `fl_backSub` | definition | `Algorithms/TriangularSolve.lean` | Floating-point upper-triangular solve. |
-| `fl_householderVector` | definition | `Algorithms/QR/HouseholderReflector.lean` | Rounded Householder vector construction from a column segment. |
-| `exactHouseholderBeta` | definition | `Algorithms/QR/HouseholderReflector.lean` | Exact scalar `2/(vᵀv)` making a nonzero Householder vector define an orthogonal reflector. |
-| `fl_householderBeta` | definition | `Algorithms/QR/HouseholderReflector.lean` | Rounded scalar from `2 / fl(vᵀv)`; not automatically an exact orthogonality certificate. |
-| `fl_householderApply` | definition | `Algorithms/QR/HouseholderApply.lean` | Floating-point application of `I - βvvᵀ` with `v` and `β` already given. |
 | `fl_residual` | definition | `Algorithms/IterativeRefinement.lean` | Floating-point residual `fl(b - fl(A*x))`. |
 | `LUBackwardError` | structure | `Algorithms/LU/GaussianElimination.lean` | Backward-error contract for computed LU factors. |
 | `CholeskyBackwardError` | structure | `Algorithms/Cholesky/CholeskySpec.lean` | Backward-error contract for computed Cholesky factors. |
@@ -134,17 +126,11 @@ library lemmas. Good examples are:
 - `fl_norm2Sq_nonneg_of_gammaValid_two_mul`
 - `fl_norm2_unroll`
 - `fl_norm2_unroll_of_gammaValid_two_mul`
-- `exactHouseholder_orthogonal`
-- `fl_householderAlpha_unroll`
-- `fl_householderVector_unroll`
-- `fl_householderBeta_unroll`
 - `matVec_backward_error`
 - `matMul_error_bound`
 - `forwardSub_backward_error`
 - `backSub_backward_error`
 - `triangularSolve_backward_error`
-- `fl_householderApply_unroll`
-- `fl_householderApply_matrix_perturbation`
 - `lu_solve_backward_error`
 - `cholesky_solve_backward_error`
 - `conventional_residual_error`
