@@ -5,8 +5,11 @@ automatic stability analysis. The model is axiomatic and intentionally not tied
 to IEEE 754. All core results should be stated over `FPModel` and `Real`.
 
 Last review by Codex: 2026-04-28.
-Current `main` is for the core library. Benchmark work lives on branch
-`benchmark`.
+Current `main` is for the stable core library.  The main commit before the
+end-to-end stability rebuild is tagged as
+`main-stable-before-end-to-end-20260527` at
+`d5c0fa90c69c36f794f176c96f2dd4d293bb5aa3`.
+Benchmark work lives on branch `benchmark`.
 
 ## Build State
 
@@ -72,6 +75,13 @@ Current `main` is for the core library. Benchmark work lives on branch
 
 - `Rounding` supports `Summation` and `SubtractionFold`.
 - `Summation` supports `DotProduct`.
+- Exact algebraic operations should be separated from rounded algorithms.
+  For dot product, Mathlib's `x ⬝ᵥ y = ∑ i, x i * y i` is the exact
+  specification, while local `fl_dotProduct` is the rounded left-to-right
+  recurrence using `fp.fl_mul` and `fp.fl_add`.  Stability theorems should
+  compare the rounded algorithm to the exact Mathlib specification; they should
+  not pretend the whole dot product always has a single global relative error,
+  because cancellation can make that false.
 - `DotProduct` supports `MatVec`.
 - `MatVec` supports `MatMul` and matrix inversion residual results.
 - `DotProduct` supports `Norm2`, which gives the reusable `fl_norm2Sq` and
@@ -142,7 +152,8 @@ These compile, but should not be treated as fully derived stability results:
   and task-selection rationale off `main` unless the user explicitly decides to
   merge them back.
 - Library implementation work after the benchmark audit lives on
-  `codex/qr-implementation`.  The first step is bottom-up QR strengthening:
+  `codex/end-to-end-stability`, renamed from `codex/qr-implementation`.
+  The first step is bottom-up QR strengthening:
   keep existing QR contracts unchanged, add concrete rounded kernels, then
   prove bridge theorems showing the kernels satisfy the contracts.
 
