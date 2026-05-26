@@ -152,7 +152,7 @@ These compile, but should not be treated as fully derived stability results:
   and task-selection rationale off `main` unless the user explicitly decides to
   merge them back.
 - Library implementation work after the benchmark audit lives on
-  `codex/end-to-end-stability`, renamed from `codex/qr-implementation`.
+  `end-to-end-rebuild`, renamed from the earlier QR-specific branch.
   The first step is bottom-up QR strengthening:
   keep existing QR contracts unchanged, add concrete rounded kernels, then
   prove bridge theorems showing the kernels satisfy the contracts.
