@@ -18,6 +18,23 @@ open LeanFpAnalysis.FP
 
 For a smaller import, use the file listed in the tables below.
 
+## Exact Algebra And Norm Policy
+
+Mathlib is the source of truth for exact dot products, matrix algebra, and
+norms.  Use Mathlib notation directly when the object already has a
+Mathlib-native type, for example `x ⬝ᵥ y`, `‖WithLp.toLp 2 x‖`, or `‖A‖` for
+`A : RMat m n` under the appropriate matrix norm scope.
+
+Some existing algorithm APIs still use function-shaped matrices
+`RMatFn m n := Fin m → Fin n → ℝ`.  For those legacy APIs, use compatibility
+wrappers such as `frobNorm` and `infNorm`.  These wrappers are bridges to
+Mathlib norms via `Matrix.of`; they are not independent norm definitions.
+
+New exact matrix-facing APIs should prefer `RMat m n := Matrix (Fin m) (Fin n)
+ℝ`, especially for rectangular algorithms such as QR and least squares.
+Existing `fl_*` algorithms may continue using `RMatFn` while the implementation
+layer is migrated gradually.
+
 ## Goal-To-Theorem Lookup
 
 | Goal shape | Start with | Main definitions | Main theorem names | Notes |
@@ -29,7 +46,7 @@ For a smaller import, use the file listed in the tables below.
 | Subtraction folds and inverse products | `LeanFpAnalysis/FP/Analysis/SubtractionFold.lean` | subtraction accumulation helpers | `fl_sub_sum_error_init`, `inv_prod_error_bound` | Used heavily by triangular substitution proofs. |
 | Dot product forward error | `LeanFpAnalysis/FP/Algorithms/DotProduct.lean` | `fl_dotProduct` | `dotProduct_error_bound` | Tight `gamma fp n` bound for the sequential dot product. |
 | Dot product backward error | `LeanFpAnalysis/FP/Algorithms/DotProduct.lean` | `fl_dotProduct` | `dotProduct_backward_error`, `dotProduct_backward_stable_x`, `dotProduct_backward_stable_y`, `dotProduct_isRelBackwardStable` | Componentwise relative perturbations of one input vector. |
-| Floating 2-norm | `LeanFpAnalysis/FP/Algorithms/Norm2.lean` | `exactNorm2Sq`, `exactNorm2`, `fl_norm2Sq`, `fl_norm2` | `exactNorm2Sq_eq_dotProduct`, `exactNorm2Sq_eq_zero_iff`, `exactNorm2Sq_pos_iff`, `fl_norm2Sq_backward_error`, `fl_norm2Sq_nonneg_of_gammaValid_two_mul`, `fl_norm2_unroll`, `fl_norm2_unroll_of_gammaValid_two_mul` | Exact facts bridge to Mathlib `dotProduct`; FP facts compute `xᵀx` by `fl_dotProduct`, then apply rounded `FPModel.fl_sqrt`. |
+| Floating 2-norm | `LeanFpAnalysis/FP/Algorithms/Norm2.lean` | `fl_norm2Sq`, `fl_norm2` | `norm_toLp_two_eq_sqrt_dotProduct`, `dotProduct_self_nonneg_real`, `dotProduct_self_eq_zero_iff_real`, `dotProduct_self_pos_iff_real`, `fl_norm2Sq_backward_error`, `fl_norm2Sq_nonneg_of_gammaValid_two_mul`, `fl_norm2_unroll`, `fl_norm2_unroll_of_gammaValid_two_mul` | Exact facts use Mathlib `dotProduct` and `‖WithLp.toLp 2 x‖` directly; FP facts compute `xᵀx` by `fl_dotProduct`, then apply rounded `FPModel.fl_sqrt`. |
 | Matrix-vector product | `LeanFpAnalysis/FP/Algorithms/MatVec.lean` | `fl_matVec` | `matVec_backward_error`, `matVec_error_bound`, `matVec_row_isRelBackwardStable` | Built row-by-row from dot products. |
 | Matrix multiplication | `LeanFpAnalysis/FP/Algorithms/MatMul.lean` | `fl_matMul` | `matMul_error_bound`, `matMul_backward_error_col` | Backward theorem is columnwise; each column may use a different perturbation. |
 | Outer product | `LeanFpAnalysis/FP/Algorithms/OuterProduct.lean` | `fl_outerProduct` | `outerProduct_error_bound`, `outerProduct_backward_error` | Useful for rank-one update reasoning. |
@@ -49,7 +66,7 @@ For a smaller import, use the file listed in the tables below.
 | Residual computation | `LeanFpAnalysis/FP/Algorithms/IterativeRefinement.lean` | `fl_residual`, `ResidualError` | `conventional_residual_error` | Bound for the computed residual `fl(b - A*x_hat)`. |
 | Iterative refinement | `LeanFpAnalysis/FP/Algorithms/IterativeRefinement.lean` | `SolverSpec`, `ResidualError` | `one_step_refinement_error_identity`, `one_step_residual_bound`, `one_step_backward_error_contraction`, `lu_refinement_backward_stable`, `refinement_forward_error_bound`, `thm_11_4_residual_bound` | Mixes exact algebra, solver specifications, and residual computation bounds. |
 | Stationary iteration | `LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean` | iteration/residual helpers | `one_step_error`, `local_error_simplified`, `residual_eq_A_error`, `one_step_residual`, `normwise_forward_bound`, `main_forward_bound`, `normwise_one_step_residual_bound`, `normwise_residual_bound` | Useful for harder compositional stability analyses. |
-| Matrix algebra infrastructure | `LeanFpAnalysis/FP/Analysis/MatrixAlgebra.lean` | matrix products, identities, norms, inverses | `matMul_id_right`, `matMul_id_left`, `matMul_assoc`, `matMul_vec_eq`, `matMulVec_matMul` | Large foundational file for exact matrix reasoning. |
+| Matrix algebra infrastructure | `LeanFpAnalysis/FP/Analysis/MatrixAlgebra.lean` | `RVec`, `RMat`, `RSqMat`, `RMatFn`, `frobNorm`, `infNorm`, matrix products, identities, inverses | `matMul_id_right`, `matMul_id_left`, `matMul_assoc`, `matMul_vec_eq`, `matMulVec_matMul`, `frobNorm_matMul_le`, `row_sum_le_infNorm` | Exact matrix reasoning. `frobNorm` and `infNorm` are compatibility wrappers over Mathlib norms for legacy function-shaped matrices. |
 | Perturbation theory | `LeanFpAnalysis/FP/Analysis/PerturbationTheory.lean` | residual and perturbation quantities | `forward_error_from_residual`, `componentwise_forward_error`, `forward_error_from_backward_error`, `componentwise_forward_error_exact`, `normwise_forward_error_exact` | Converts residual/backward-error hypotheses into forward-error conclusions. |
 
 ## Main Dependency Chains
@@ -121,7 +138,8 @@ library lemmas. Good examples are:
 
 - `dotProduct_error_bound`
 - `dotProduct_backward_error`
-- `exactNorm2Sq_eq_dotProduct`
+- `norm_toLp_two_eq_sqrt_dotProduct`
+- `dotProduct_self_pos_iff_real`
 - `fl_norm2Sq_backward_error`
 - `fl_norm2Sq_nonneg_of_gammaValid_two_mul`
 - `fl_norm2_unroll`

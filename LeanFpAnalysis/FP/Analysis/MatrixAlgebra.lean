@@ -6,10 +6,14 @@
 -- This provides the matrix inverse theory needed for iterative refinement
 -- (Higham §11) and forward error analysis (§8.2).
 --
--- This file is exact algebra, not floating-point algorithm code.  It keeps the
--- library's existing `Fin n → Fin n → ℝ` matrix representation, while exact
--- norm definitions are compatibility wrappers around Mathlib matrix/vector
--- norms.
+-- This file is exact algebra, not floating-point algorithm code.
+--
+-- Exact algebra and norms use Mathlib as the source of truth.  When an object
+-- already has a Mathlib-native type such as `Matrix (Fin m) (Fin n) ℝ`, use
+-- Mathlib notation directly.  When existing algorithm code uses the legacy
+-- function-shaped representation `Fin m → Fin n → ℝ`, use the compatibility
+-- wrappers in this file (`frobNorm`, `infNorm`, etc.).  These wrappers should
+-- be read as bridges to Mathlib, not as independent mathematical definitions.
 
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Real.Sqrt
@@ -34,7 +38,8 @@ open scoped BigOperators NNReal Matrix.Norms.Frobenius
 abbrev RVec (n : ℕ) := Fin n → ℝ
 
 /-- Rectangular real matrix using Mathlib's matrix type.  New exact
-    matrix-facing APIs should prefer this shape when possible. -/
+    matrix-facing APIs should prefer this shape when possible, especially for
+    rectangular algorithms such as QR and least squares. -/
 abbrev RMat (m n : ℕ) := Matrix (Fin m) (Fin n) ℝ
 
 /-- Square real matrix using Mathlib's matrix type. -/
@@ -43,7 +48,8 @@ abbrev RSqMat (n : ℕ) := RMat n n
 /-- Legacy function-shaped rectangular real matrix.  Existing algorithm code
     still uses this representation heavily; it is definitionally the same data
     as `RMat m n`, but Lean's norm instances are not the same unless we coerce
-    through `Matrix.of`. -/
+    through `Matrix.of`.  New code should use this shape only when it needs to
+    interoperate with existing `fl_*` algorithms or square matrix infrastructure. -/
 abbrev RMatFn (m n : ℕ) := Fin m → Fin n → ℝ
 
 -- ============================================================
