@@ -71,7 +71,8 @@ theorem sep_implies_unique_solution (n : ℕ) (A B : Fin n → Fin n → ℝ)
   have hD_ne : frobNormSq D ≠ 0 := by
     intro h_eq
     have hzero := (frobNorm_eq_zero_iff D).mp (by
-      unfold frobNorm; rw [Real.sqrt_eq_zero (frobNormSq_nonneg D)]; exact h_eq)
+      rw [frobNorm_eq_sqrt_frobNormSq, Real.sqrt_eq_zero (frobNormSq_nonneg D)]
+      exact h_eq)
     exact hne (sub_eq_zero.mp (hzero i₀ j₀))
   -- sylvesterOp(D) = 0
   have hD_zero : ∀ i j, sylvesterOp n A B D i j = 0 := by

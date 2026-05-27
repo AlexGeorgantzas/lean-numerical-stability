@@ -86,11 +86,11 @@ Benchmark work lives on branch `benchmark`.
 - `MatVec` supports `MatMul` and matrix inversion residual results.
 - `DotProduct` supports `Norm2`, which gives the reusable `fl_norm2Sq` and
   `fl_norm2` kernels needed by later Householder reflector construction.
-  `Norm2` bridges exact squared norms to Mathlib `dotProduct` through
-  `exactNorm2Sq_eq_dotProduct`, while preserving the existing function-based
-  vector API.  Premature Householder construction/application modules were
-  removed from `end-to-end-rebuild` so the branch can proceed bottom-up from
-  foundations before returning to QR-specific kernels.
+  `Norm2` states exact facts directly over Mathlib's `x ⬝ᵥ x` and
+  `‖WithLp.toLp 2 x‖`; it should not reintroduce exact vector-norm aliases.
+  Premature Householder construction/application modules were removed from
+  `end-to-end-rebuild` so the branch can proceed bottom-up from foundations
+  before returning to QR-specific kernels.
 - `TriangularSolve` and `ForwardSub` use `SubtractionFold`/`Rounding` and feed
   `TriangularSolveCombined`, `ForwardError`, `MMatrix`, LU solve, Cholesky
   solve, matrix inversion, and underdetermined systems.
@@ -162,17 +162,36 @@ These compile, but should not be treated as fully derived stability results:
   gap was documentation precision: distinguish the Higham standard model from
   extra exactness assumptions, and mark `MatrixAlgebra` as exact algebra rather
   than floating-point algorithm code.
+- Foundation cleanup replaced the old locally-defined `infNorm hn A` API with
+  Mathlib-backed compatibility wrappers: `infNormVec v := ‖v‖` and
+  `infNorm A := ‖Matrix.of A‖` with a local Mathlib `linfty` operator-norm
+  instance.  `infNormBound n M c` is now the clean norm inequality
+  `infNorm M ≤ c`, with row-wise bridge lemmas `row_sum_le_infNorm`,
+  `infNorm_le_of_row_sum_le`, and `row_sum_le_of_infNormBound` for
+  Neumann proofs.
+- Exact norm policy: use Mathlib norm/dot-product infrastructure directly for
+  exact algebra and avoid duplicate local aliases when practical.  Exact vector
+  aliases `exactNorm2Sq`, `exactNorm2`, `norm2Sq`, and `norm2Vec` were removed;
+  `Norm2` now states exact facts over `x ⬝ᵥ x` and `‖WithLp.toLp 2 x‖`
+  directly.  Floating-point kernels such as `fl_dotProduct`, `fl_norm2Sq`, and
+  `fl_norm2` remain local because they encode rounded operation order.
+- Remaining exact matrix names `infNormVec`, `infNorm`, `oneNorm`,
+  `frobNorm`, and `frobNormSq` are still present and widely used.  Treat them
+  as a pending API decision: either migrate theorem statements to raw Mathlib
+  norm notation with local/scoped instances, or explicitly justify them as
+  representation bridges from `Fin n → Fin n → ℝ` matrices to Mathlib
+  `Matrix`.  Do not introduce further exact norm aliases.
 - Corrected the QR implementation plan to start with missing low-level
   primitives rather than treating reflector construction as permanently out of
   scope.
 - Extended `FPModel` with `fl_sqrt` and `model_sqrt` for nonnegative real
   inputs.
-- Added `Algorithms/Norm2.lean` with exact and floating 2-norm kernels:
-  `exactNorm2Sq`, `exactNorm2`, `fl_norm2Sq`, `fl_norm2`,
-  `fl_norm2Sq_backward_error`, `fl_norm2Sq_nonneg_of_gammaValid_two_mul`,
-  `fl_norm2_unroll`, and `fl_norm2_unroll_of_gammaValid_two_mul`.
-- Added Mathlib alignment bridges: `exactNorm2Sq_eq_dotProduct`,
-  `exactNorm2Sq_eq_zero_iff`, and `exactNorm2Sq_pos_iff`.
+- Added `Algorithms/Norm2.lean` with floating 2-norm kernels `fl_norm2Sq` and
+  `fl_norm2`, plus exact Mathlib facts over `x ⬝ᵥ x` and
+  `‖WithLp.toLp 2 x‖`: `norm_toLp_two_eq_sqrt_dotProduct`,
+  `dotProduct_self_nonneg_real`, `dotProduct_self_eq_zero_iff_real`,
+  `dotProduct_self_ne_zero_iff_real`, `dotProduct_self_pos_iff_real`, and
+  `norm_toLp_two_nonneg`.
 - Removed premature `HouseholderReflector` and `HouseholderApply` additions from
   the active branch.  They were useful prototypes, but the user decided the
   rebuild should not move into Householder-specific kernels before auditing the

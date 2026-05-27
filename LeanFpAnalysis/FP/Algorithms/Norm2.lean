@@ -9,6 +9,7 @@
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Real.Sqrt
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
+import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.LinearAlgebra.Matrix.DotProduct
 import LeanFpAnalysis.FP.Algorithms.DotProduct
 
@@ -17,21 +18,16 @@ namespace LeanFpAnalysis.FP
 open scoped BigOperators
 
 -- ============================================================
--- Exact and floating-point vector 2-norm kernels
+-- Exact Mathlib facts and floating-point vector 2-norm kernels
 -- ============================================================
 
-/-- Exact squared Euclidean norm, `∑ᵢ xᵢ²`. -/
-noncomputable def exactNorm2Sq (n : ℕ) (x : Fin n → ℝ) : ℝ :=
-  ∑ i : Fin n, x i * x i
-
-/-- Bridge to Mathlib's exact dot-product notation. -/
-theorem exactNorm2Sq_eq_dotProduct (n : ℕ) (x : Fin n → ℝ) :
-    exactNorm2Sq n x = x ⬝ᵥ x := by
-  rfl
-
-/-- Exact Euclidean norm, `sqrt (∑ᵢ xᵢ²)`. -/
-noncomputable def exactNorm2 (n : ℕ) (x : Fin n → ℝ) : ℝ :=
-  Real.sqrt (exactNorm2Sq n x)
+/-- Mathlib's finite-product L2 norm is the square root of the dot product. -/
+theorem norm_toLp_two_eq_sqrt_dotProduct (n : ℕ) (x : Fin n → ℝ) :
+    ‖WithLp.toLp 2 x‖ = Real.sqrt (x ⬝ᵥ x) := by
+  rw [PiLp.norm_eq_of_L2]
+  simp [Real.norm_eq_abs, sq_abs, Real.sqrt_eq_rpow]
+  unfold dotProduct
+  simp [pow_two]
 
 /-- Floating-point squared 2-norm computed as the dot product `xᵀx`. -/
 noncomputable def fl_norm2Sq (fp : FPModel) (n : ℕ) (x : Fin n → ℝ) : ℝ :=
@@ -44,38 +40,36 @@ noncomputable def fl_norm2Sq (fp : FPModel) (n : ℕ) (x : Fin n → ℝ) : ℝ 
 noncomputable def fl_norm2 (fp : FPModel) (n : ℕ) (x : Fin n → ℝ) : ℝ :=
   fp.fl_sqrt (fl_norm2Sq fp n x)
 
-theorem exactNorm2Sq_nonneg (n : ℕ) (x : Fin n → ℝ) :
-    0 ≤ exactNorm2Sq n x := by
-  unfold exactNorm2Sq
+theorem dotProduct_self_nonneg_real (n : ℕ) (x : Fin n → ℝ) :
+    0 ≤ x ⬝ᵥ x := by
+  unfold dotProduct
   exact Finset.sum_nonneg fun i _ => mul_self_nonneg (x i)
 
 /-- The squared 2-norm is zero exactly for the zero vector. -/
-theorem exactNorm2Sq_eq_zero_iff (n : ℕ) (x : Fin n → ℝ) :
-    exactNorm2Sq n x = 0 ↔ x = 0 := by
-  rw [exactNorm2Sq_eq_dotProduct]
+theorem dotProduct_self_eq_zero_iff_real (n : ℕ) (x : Fin n → ℝ) :
+    x ⬝ᵥ x = 0 ↔ x = 0 := by
   exact dotProduct_self_eq_zero
 
 /-- The squared 2-norm is nonzero exactly for a nonzero vector. -/
-theorem exactNorm2Sq_ne_zero_iff (n : ℕ) (x : Fin n → ℝ) :
-    exactNorm2Sq n x ≠ 0 ↔ x ≠ 0 := by
-  exact not_congr (exactNorm2Sq_eq_zero_iff n x)
+theorem dotProduct_self_ne_zero_iff_real (n : ℕ) (x : Fin n → ℝ) :
+    x ⬝ᵥ x ≠ 0 ↔ x ≠ 0 := by
+  exact not_congr (dotProduct_self_eq_zero_iff_real n x)
 
 /-- The squared 2-norm is positive exactly for a nonzero vector. -/
-theorem exactNorm2Sq_pos_iff (n : ℕ) (x : Fin n → ℝ) :
-    0 < exactNorm2Sq n x ↔ x ≠ 0 := by
+theorem dotProduct_self_pos_iff_real (n : ℕ) (x : Fin n → ℝ) :
+    0 < x ⬝ᵥ x ↔ x ≠ 0 := by
   constructor
   · intro h hx
     rw [hx] at h
-    simp [exactNorm2Sq] at h
+    simp [dotProduct] at h
   · intro hx
-    have hne : exactNorm2Sq n x ≠ 0 :=
-      (exactNorm2Sq_ne_zero_iff n x).2 hx
-    exact lt_of_le_of_ne (exactNorm2Sq_nonneg n x) (Ne.symm hne)
+    have hne : x ⬝ᵥ x ≠ 0 :=
+      (dotProduct_self_ne_zero_iff_real n x).2 hx
+    exact lt_of_le_of_ne (dotProduct_self_nonneg_real n x) (Ne.symm hne)
 
-theorem exactNorm2_nonneg (n : ℕ) (x : Fin n → ℝ) :
-    0 ≤ exactNorm2 n x := by
-  unfold exactNorm2
-  exact Real.sqrt_nonneg _
+theorem norm_toLp_two_nonneg (n : ℕ) (x : Fin n → ℝ) :
+    0 ≤ ‖WithLp.toLp 2 x‖ := by
+  exact norm_nonneg _
 
 /-- Backward-error form for the computed sum of squares. -/
 theorem fl_norm2Sq_backward_error (fp : FPModel) (n : ℕ)

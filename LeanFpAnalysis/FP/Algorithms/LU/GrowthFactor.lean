@@ -32,9 +32,9 @@ open scoped BigOperators
     This measures how much the entries of Û can grow relative to A.
     For partial pivoting, |L̂_ij| ≤ 1, so the growth factor controls
     the backward error via ||ΔA||∞ ≤ O(nρ_n)||A||∞. -/
-noncomputable def growthFactor {n : ℕ} (hn : 0 < n)
-    (A U_hat : Fin n → Fin n → ℝ) (_hA : 0 < infNorm hn A) : ℝ :=
-  infNorm hn U_hat / infNorm hn A
+noncomputable def growthFactor {n : ℕ} (_hn : 0 < n)
+    (A U_hat : Fin n → Fin n → ℝ) (_hA : 0 < infNorm A) : ℝ :=
+  infNorm U_hat / infNorm A
 
 -- ============================================================
 -- §9.4  Normwise backward error from componentwise (Theorem 9.5)
@@ -52,16 +52,16 @@ noncomputable def growthFactor {n : ℕ} (hn : 0 < n)
                    ≤ ε ||L̂||∞ · ||Û||∞
 
     This is used in the proof of Theorem 9.5 (Wilkinson's bound). -/
-theorem componentwise_to_normwise_bound (n : ℕ) (hn : 0 < n)
+theorem componentwise_to_normwise_bound (n : ℕ) (_hn : 0 < n)
     (L_hat U_hat ΔA : Fin n → Fin n → ℝ)
     (ε : ℝ) (hε : 0 ≤ ε)
     (hΔA : ∀ i j, |ΔA i j| ≤ ε * ∑ k : Fin n, |L_hat i k| * |U_hat k j|) :
     ∀ i : Fin n, ∑ j : Fin n, |ΔA i j| ≤
-      ε * (∑ k : Fin n, |L_hat i k|) * (infNorm hn U_hat) := by
+      ε * (∑ k : Fin n, |L_hat i k|) * (infNorm U_hat) := by
   intro i
-  have hU_row_bound : ∀ k : Fin n, ∑ j : Fin n, |U_hat k j| ≤ infNorm hn U_hat := by
+  have hU_row_bound : ∀ k : Fin n, ∑ j : Fin n, |U_hat k j| ≤ infNorm U_hat := by
     intro k
-    exact Finset.le_sup' (fun k => ∑ j : Fin n, |U_hat k j|) (Finset.mem_univ k)
+    exact row_sum_le_infNorm U_hat k
   calc ∑ j : Fin n, |ΔA i j|
       ≤ ∑ j : Fin n, ε * ∑ k : Fin n, |L_hat i k| * |U_hat k j| := by
         apply Finset.sum_le_sum; intro j _; exact hΔA i j
@@ -72,13 +72,13 @@ theorem componentwise_to_normwise_bound (n : ℕ) (hn : 0 < n)
         rw [Finset.sum_comm]
         apply Finset.sum_congr rfl; intro k _
         rw [← Finset.mul_sum]
-    _ ≤ ε * ∑ k : Fin n, |L_hat i k| * infNorm hn U_hat := by
+    _ ≤ ε * ∑ k : Fin n, |L_hat i k| * infNorm U_hat := by
         apply mul_le_mul_of_nonneg_left _ hε
         apply Finset.sum_le_sum; intro k _
         exact mul_le_mul_of_nonneg_left (hU_row_bound k) (abs_nonneg _)
-    _ = ε * (∑ k : Fin n, |L_hat i k|) * infNorm hn U_hat := by
-        conv_lhs => rw [show ∑ k : Fin n, |L_hat i k| * infNorm hn U_hat =
-          (∑ k : Fin n, |L_hat i k|) * infNorm hn U_hat from
+    _ = ε * (∑ k : Fin n, |L_hat i k|) * infNorm U_hat := by
+        conv_lhs => rw [show ∑ k : Fin n, |L_hat i k| * infNorm U_hat =
+          (∑ k : Fin n, |L_hat i k|) * infNorm U_hat from
           (Finset.sum_mul _ _ _).symm]
         rw [mul_assoc]
 
@@ -107,14 +107,14 @@ theorem wilkinson_normwise_row_bound (n : ℕ) (hn : 0 < n)
     (ε : ℝ) (hε : 0 ≤ ε)
     (hΔA : ∀ i j, |ΔA i j| ≤ ε * ∑ k : Fin n, |L_hat i k| * |U_hat k j|)
     (hL_bound : ∀ i j : Fin n, |L_hat i j| ≤ 1) :
-    ∀ i : Fin n, ∑ j : Fin n, |ΔA i j| ≤ ε * ↑n * infNorm hn U_hat := by
+    ∀ i : Fin n, ∑ j : Fin n, |ΔA i j| ≤ ε * ↑n * infNorm U_hat := by
   intro i
   have h1 := componentwise_to_normwise_bound n hn L_hat U_hat ΔA ε hε hΔA i
   have h2 := partial_pivot_L_row_sum_le n L_hat hL_bound i
   calc ∑ j : Fin n, |ΔA i j|
-      ≤ ε * (∑ k : Fin n, |L_hat i k|) * infNorm hn U_hat := h1
-    _ ≤ ε * ↑n * infNorm hn U_hat := by
-        apply mul_le_mul_of_nonneg_right _ (infNorm_nonneg hn U_hat)
+      ≤ ε * (∑ k : Fin n, |L_hat i k|) * infNorm U_hat := h1
+    _ ≤ ε * ↑n * infNorm U_hat := by
+        apply mul_le_mul_of_nonneg_right _ (infNorm_nonneg U_hat)
         exact mul_le_mul_of_nonneg_left h2 hε
 
 /-- **Wilkinson normwise bound** (Higham §9.4, Theorem 9.5, full version).
@@ -129,11 +129,11 @@ theorem wilkinson_normwise_infNorm (n : ℕ) (hn : 0 < n)
     (ε : ℝ) (hε : 0 ≤ ε)
     (hΔA : ∀ i j, |ΔA i j| ≤ ε * ∑ k : Fin n, |L_hat i k| * |U_hat k j|)
     (hL_bound : ∀ i j : Fin n, |L_hat i j| ≤ 1) :
-    infNorm hn ΔA ≤ ε * ↑n * infNorm hn U_hat := by
-  unfold infNorm
-  apply Finset.sup'_le
-  intro i _
-  exact wilkinson_normwise_row_bound n hn L_hat U_hat ΔA ε hε hΔA hL_bound i
+    infNorm ΔA ≤ ε * ↑n * infNorm U_hat := by
+  apply infNorm_le_of_row_sum_le
+  · intro i
+    exact wilkinson_normwise_row_bound n hn L_hat U_hat ΔA ε hε hΔA hL_bound i
+  · exact mul_nonneg (mul_nonneg hε (Nat.cast_nonneg' n)) (infNorm_nonneg U_hat)
 
 /-- **Tight Wilkinson normwise bound** (Higham §9.4, Theorem 9.5 with γ_{3n}).
 
@@ -155,7 +155,7 @@ theorem wilkinson_normwise_infNorm_tight (fp : FPModel) (n : ℕ) (hn : 0 < n)
     let y_hat := fl_forwardSub fp n L_hat b
     let x_hat := fl_backSub fp n U_hat y_hat
     ∃ ΔA : Fin n → Fin n → ℝ,
-      (infNorm hn ΔA ≤ gamma fp (3 * n) * ↑n * infNorm hn U_hat) ∧
+      (infNorm ΔA ≤ gamma fp (3 * n) * ↑n * infNorm U_hat) ∧
       (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
   intro y_hat x_hat
   obtain ⟨ΔA, hΔA_bound, hΔA_eq⟩ :=

@@ -391,27 +391,27 @@ private theorem geom_partial_sum_le (q : ℝ) (hq : 0 ≤ q) (hq1 : q < 1) (m : 
 theorem sigma_bound (n : ℕ) (hn : 0 < n)
     (H : Fin n → Fin n → ℝ)
     (q : ℝ) (hq : 0 ≤ q) (hq1 : q < 1)
-    (hH : infNorm hn H ≤ q) (m : ℕ) :
+    (hH : infNorm H ≤ q) (m : ℕ) :
     ∑ k ∈ Finset.range (m + 1),
-      infNorm hn (matMul n (matPow n H k) (matSub_id n H)) ≤
-    infNorm hn (matSub_id n H) / (1 - q) := by
+      infNorm (matMul n (matPow n H k) (matSub_id n H)) ≤
+    infNorm (matSub_id n H) / (1 - q) := by
   have hq1' : (0 : ℝ) < 1 - q := by linarith
   calc ∑ k ∈ Finset.range (m + 1),
-        infNorm hn (matMul n (matPow n H k) (matSub_id n H))
+        infNorm (matMul n (matPow n H k) (matSub_id n H))
       ≤ ∑ k ∈ Finset.range (m + 1),
-        (q ^ k * infNorm hn (matSub_id n H)) := by
+        (q ^ k * infNorm (matSub_id n H)) := by
         gcongr with k _
-        calc infNorm hn (matMul n (matPow n H k) (matSub_id n H))
-            ≤ infNorm hn (matPow n H k) * infNorm hn (matSub_id n H) :=
+        calc infNorm (matMul n (matPow n H k) (matSub_id n H))
+            ≤ infNorm (matPow n H k) * infNorm (matSub_id n H) :=
               infNorm_matMul_le hn _ _
-          _ ≤ q ^ k * infNorm hn (matSub_id n H) := by
-              apply mul_le_mul_of_nonneg_right _ (infNorm_nonneg hn _)
-              exact (infNorm_matPow_le hn H k).trans (pow_le_pow_left₀ (infNorm_nonneg hn H) hH k)
-    _ = (∑ k ∈ Finset.range (m + 1), q ^ k) * infNorm hn (matSub_id n H) := by
+          _ ≤ q ^ k * infNorm (matSub_id n H) := by
+              apply mul_le_mul_of_nonneg_right _ (infNorm_nonneg _)
+              exact (infNorm_matPow_le hn H k).trans (pow_le_pow_left₀ (infNorm_nonneg H) hH k)
+    _ = (∑ k ∈ Finset.range (m + 1), q ^ k) * infNorm (matSub_id n H) := by
         rw [Finset.sum_mul]
-    _ ≤ (1 / (1 - q)) * infNorm hn (matSub_id n H) := by
-        apply mul_le_mul_of_nonneg_right (geom_partial_sum_le q hq hq1 m) (infNorm_nonneg hn _)
-    _ = infNorm hn (matSub_id n H) / (1 - q) := by
+    _ ≤ (1 / (1 - q)) * infNorm (matSub_id n H) := by
+        apply mul_le_mul_of_nonneg_right (geom_partial_sum_le q hq hq1 m) (infNorm_nonneg _)
+    _ = infNorm (matSub_id n H) / (1 - q) := by
         rw [one_div, mul_comm, div_eq_mul_inv]
 
 -- ============================================================
@@ -467,23 +467,27 @@ theorem one_step_residual (n : ℕ) (A M N M_inv : Fin n → Fin n → ℝ)
 
 /-- Normwise one-step error bound from `one_step_error`:
     ‖e_{k+1}‖∞ ≤ ‖G‖∞·‖e_k‖∞ + ‖M⁻¹‖∞·‖ξ_k‖∞. -/
-theorem normwise_one_step_bound (n : ℕ) (hn : 0 < n)
+theorem normwise_one_step_bound (n : ℕ) (_hn : 0 < n)
     (A M N M_inv : Fin n → Fin n → ℝ)
     (hS : SplittingSpec n A M N M_inv)
     (b x : Fin n → ℝ) (hAx : ∀ i, ∑ j : Fin n, A i j * x j = b i)
     (x_hat : ℕ → (Fin n → ℝ)) (ξ : ℕ → (Fin n → ℝ))
     (hIter : ComputedIteration n M N b x_hat ξ) (k : ℕ) :
-    infNormVec hn (fun i => x i - x_hat (k + 1) i) ≤
-      infNorm hn (iterMatrix n M_inv N) *
-        infNormVec hn (fun i => x i - x_hat k i) +
-      infNorm hn M_inv * infNormVec hn (ξ k) := by
+    infNormVec (fun i => x i - x_hat (k + 1) i) ≤
+      infNorm (iterMatrix n M_inv N) *
+        infNormVec (fun i => x i - x_hat k i) +
+      infNorm M_inv * infNormVec (ξ k) := by
   have hstep := one_step_error n A M N M_inv hS b x hAx x_hat ξ hIter k
   -- Suffices to show for each component i
   suffices h : ∀ i : Fin n, |x i - x_hat (k + 1) i| ≤
-      infNorm hn (iterMatrix n M_inv N) *
-        infNormVec hn (fun i => x i - x_hat k i) +
-      infNorm hn M_inv * infNormVec hn (ξ k) by
-    unfold infNormVec; apply Finset.sup'_le; intro i _; exact h i
+      infNorm (iterMatrix n M_inv N) *
+        infNormVec (fun i => x i - x_hat k i) +
+      infNorm M_inv * infNormVec (ξ k) by
+    apply infNormVec_le_of_abs_le
+    · exact h
+    · exact add_nonneg
+        (mul_nonneg (infNorm_nonneg _) (infNormVec_nonneg _))
+        (mul_nonneg (infNorm_nonneg _) (infNormVec_nonneg _))
   intro i; rw [hstep i]
   -- |∑ G_{ij}(x_j - x̂_{k,j}) - ∑ M⁻¹_{ij}ξ_{k,j}| ≤ ‖G‖·‖e_k‖ + ‖M⁻¹‖·‖ξ_k‖
   -- Step 1: triangle inequality
@@ -501,27 +505,27 @@ theorem normwise_one_step_bound (n : ℕ) (hn : 0 < n)
   -- Step 3: bound sums using infNormVec
   have ha2 : ∑ j : Fin n, |iterMatrix n M_inv N i j| * |x j - x_hat k j| ≤
       (∑ j, |iterMatrix n M_inv N i j|) *
-        infNormVec hn (fun i => x i - x_hat k i) := by
+        infNormVec (fun i => x i - x_hat k i) := by
     rw [Finset.sum_mul]; apply Finset.sum_le_sum; intro j _
     apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
-    exact Finset.le_sup' (fun i => |x i - x_hat k i|) (Finset.mem_univ j)
+    exact abs_le_infNormVec (fun i => x i - x_hat k i) j
   have hb2 : ∑ j : Fin n, |M_inv i j| * |ξ k j| ≤
-      (∑ j, |M_inv i j|) * infNormVec hn (ξ k) := by
+      (∑ j, |M_inv i j|) * infNormVec (ξ k) := by
     rw [Finset.sum_mul]; apply Finset.sum_le_sum; intro j _
     apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
-    exact Finset.le_sup' (fun i => |ξ k i|) (Finset.mem_univ j)
+    exact abs_le_infNormVec (ξ k) j
   -- Combine
   calc |a - b| ≤ |a| + |b| := htri
     _ ≤ (∑ j, |iterMatrix n M_inv N i j|) *
-          infNormVec hn (fun i => x i - x_hat k i) +
-        (∑ j, |M_inv i j|) * infNormVec hn (ξ k) := by
+          infNormVec (fun i => x i - x_hat k i) +
+        (∑ j, |M_inv i j|) * infNormVec (ξ k) := by
         linarith [ha_bound.trans ha2, hb_bound.trans hb2]
-    _ ≤ infNorm hn (iterMatrix n M_inv N) *
-          infNormVec hn (fun i => x i - x_hat k i) +
-        infNorm hn M_inv * infNormVec hn (ξ k) := by
+    _ ≤ infNorm (iterMatrix n M_inv N) *
+          infNormVec (fun i => x i - x_hat k i) +
+        infNorm M_inv * infNormVec (ξ k) := by
         apply add_le_add <;>
-          exact mul_le_mul_of_nonneg_right (row_sum_le_infNorm hn _ i)
-            (infNormVec_nonneg hn _)
+          exact mul_le_mul_of_nonneg_right (row_sum_le_infNorm _ i)
+            (infNormVec_nonneg _)
 
 /-- **Eq. 16.8 (Normwise forward bound)**: ‖e_{m+1}‖∞ ≤ q^{m+1}·‖e₀‖∞ + μ·‖M⁻¹‖∞/(1−q)
     where q ≥ ‖G‖∞ and μ ≥ ‖ξ_k‖∞ for all k.  Proved by induction
@@ -532,52 +536,52 @@ theorem normwise_forward_bound (n : ℕ) (hn : 0 < n)
     (b x : Fin n → ℝ) (hAx : ∀ i, ∑ j : Fin n, A i j * x j = b i)
     (x_hat : ℕ → (Fin n → ℝ)) (ξ : ℕ → (Fin n → ℝ))
     (hIter : ComputedIteration n M N b x_hat ξ)
-    (q : ℝ) (hq : 0 ≤ q) (hq1 : q < 1) (hG : infNorm hn (iterMatrix n M_inv N) ≤ q)
-    (μ : ℝ) (hμ : 0 ≤ μ) (hξ_bound : ∀ k, infNormVec hn (ξ k) ≤ μ)
+    (q : ℝ) (hq : 0 ≤ q) (hq1 : q < 1) (hG : infNorm (iterMatrix n M_inv N) ≤ q)
+    (μ : ℝ) (hμ : 0 ≤ μ) (hξ_bound : ∀ k, infNormVec (ξ k) ≤ μ)
     (m : ℕ) :
-    infNormVec hn (fun i => x i - x_hat (m + 1) i) ≤
-      q ^ (m + 1) * infNormVec hn (fun i => x i - x_hat 0 i) +
-      μ * infNorm hn M_inv / (1 - q) := by
+    infNormVec (fun i => x i - x_hat (m + 1) i) ≤
+      q ^ (m + 1) * infNormVec (fun i => x i - x_hat 0 i) +
+      μ * infNorm M_inv / (1 - q) := by
   have hq1' : (0 : ℝ) < 1 - q := by linarith
-  have hMn : 0 ≤ infNorm hn M_inv := infNorm_nonneg hn _
-  have he₀ := infNormVec_nonneg hn (fun i => x i - x_hat 0 i)
+  have hMn : 0 ≤ infNorm M_inv := infNorm_nonneg _
+  have he₀ := infNormVec_nonneg (fun i => x i - x_hat 0 i)
   induction m with
   | zero =>
     have hone := normwise_one_step_bound n hn A M N M_inv hS b x hAx x_hat ξ hIter 0
-    calc infNormVec hn (fun i => x i - x_hat 1 i)
-        ≤ infNorm hn (iterMatrix n M_inv N) *
-            infNormVec hn (fun i => x i - x_hat 0 i) +
-          infNorm hn M_inv * infNormVec hn (ξ 0) := hone
-      _ ≤ q * infNormVec hn (fun i => x i - x_hat 0 i) +
-          infNorm hn M_inv * μ := by
+    calc infNormVec (fun i => x i - x_hat 1 i)
+        ≤ infNorm (iterMatrix n M_inv N) *
+            infNormVec (fun i => x i - x_hat 0 i) +
+          infNorm M_inv * infNormVec (ξ 0) := hone
+      _ ≤ q * infNormVec (fun i => x i - x_hat 0 i) +
+          infNorm M_inv * μ := by
           apply add_le_add
-          · exact mul_le_mul_of_nonneg_right hG (infNormVec_nonneg hn _)
+          · exact mul_le_mul_of_nonneg_right hG (infNormVec_nonneg _)
           · exact mul_le_mul_of_nonneg_left (hξ_bound 0) hMn
-      _ = q ^ 1 * infNormVec hn (fun i => x i - x_hat 0 i) +
-          μ * infNorm hn M_inv := by rw [pow_one]; ring
-      _ ≤ q ^ 1 * infNormVec hn (fun i => x i - x_hat 0 i) +
-          μ * infNorm hn M_inv / (1 - q) := by
-          have hnn : 0 ≤ μ * infNorm hn M_inv := mul_nonneg hμ hMn
-          have hdiv : μ * infNorm hn M_inv ≤ μ * infNorm hn M_inv / (1 - q) := by
+      _ = q ^ 1 * infNormVec (fun i => x i - x_hat 0 i) +
+          μ * infNorm M_inv := by rw [pow_one]; ring
+      _ ≤ q ^ 1 * infNormVec (fun i => x i - x_hat 0 i) +
+          μ * infNorm M_inv / (1 - q) := by
+          have hnn : 0 ≤ μ * infNorm M_inv := mul_nonneg hμ hMn
+          have hdiv : μ * infNorm M_inv ≤ μ * infNorm M_inv / (1 - q) := by
             rw [le_div_iff₀ hq1']; nlinarith
           linarith
   | succ m ih =>
     have hone := normwise_one_step_bound n hn A M N M_inv hS b x hAx x_hat ξ hIter (m + 1)
-    calc infNormVec hn (fun i => x i - x_hat (m + 2) i)
-        ≤ infNorm hn (iterMatrix n M_inv N) *
-            infNormVec hn (fun i => x i - x_hat (m + 1) i) +
-          infNorm hn M_inv * infNormVec hn (ξ (m + 1)) := hone
-      _ ≤ q * (q ^ (m + 1) * infNormVec hn (fun i => x i - x_hat 0 i) +
-            μ * infNorm hn M_inv / (1 - q)) +
-          infNorm hn M_inv * μ := by
+    calc infNormVec (fun i => x i - x_hat (m + 2) i)
+        ≤ infNorm (iterMatrix n M_inv N) *
+            infNormVec (fun i => x i - x_hat (m + 1) i) +
+          infNorm M_inv * infNormVec (ξ (m + 1)) := hone
+      _ ≤ q * (q ^ (m + 1) * infNormVec (fun i => x i - x_hat 0 i) +
+            μ * infNorm M_inv / (1 - q)) +
+          infNorm M_inv * μ := by
           apply add_le_add
-          · exact le_trans (mul_le_mul_of_nonneg_right hG (infNormVec_nonneg hn _))
+          · exact le_trans (mul_le_mul_of_nonneg_right hG (infNormVec_nonneg _))
               (mul_le_mul_of_nonneg_left ih hq)
           · exact mul_le_mul_of_nonneg_left (hξ_bound _) hMn
-      _ = q ^ (m + 2) * infNormVec hn (fun i => x i - x_hat 0 i) +
-          (q * (μ * infNorm hn M_inv / (1 - q)) + μ * infNorm hn M_inv) := by ring
-      _ = q ^ (m + 2) * infNormVec hn (fun i => x i - x_hat 0 i) +
-          μ * infNorm hn M_inv / (1 - q) := by
+      _ = q ^ (m + 2) * infNormVec (fun i => x i - x_hat 0 i) +
+          (q * (μ * infNorm M_inv / (1 - q)) + μ * infNorm M_inv) := by ring
+      _ = q ^ (m + 2) * infNormVec (fun i => x i - x_hat 0 i) +
+          μ * infNorm M_inv / (1 - q) := by
           congr 1
           field_simp
           ring
@@ -627,32 +631,36 @@ theorem main_forward_bound (n : ℕ) (G M_inv A_inv : Fin n → Fin n → ℝ)
 
 /-- Normwise one-step residual bound from `one_step_residual`:
     ‖r_{k+1}‖∞ ≤ ‖H‖∞·‖r_k‖∞ + ‖I−H‖∞·‖ξ_k‖∞. -/
-theorem normwise_one_step_residual_bound (n : ℕ) (hn : 0 < n)
+theorem normwise_one_step_residual_bound (n : ℕ) (_hn : 0 < n)
     (A M N M_inv : Fin n → Fin n → ℝ)
     (hS : SplittingSpec n A M N M_inv)
     (b x : Fin n → ℝ) (hAx : ∀ i, ∑ j : Fin n, A i j * x j = b i)
     (x_hat : ℕ → (Fin n → ℝ)) (ξ : ℕ → (Fin n → ℝ))
     (hIter : ComputedIteration n M N b x_hat ξ) (k : ℕ) :
-    infNormVec hn (fun i => b i - ∑ j, A i j * x_hat (k + 1) j) ≤
-      infNorm hn (dualIterMatrix n N M_inv) *
-        infNormVec hn (fun i => b i - ∑ j, A i j * x_hat k j) +
-      infNorm hn (matSub_id n (dualIterMatrix n N M_inv)) *
-        infNormVec hn (ξ k) := by
+    infNormVec (fun i => b i - ∑ j, A i j * x_hat (k + 1) j) ≤
+      infNorm (dualIterMatrix n N M_inv) *
+        infNormVec (fun i => b i - ∑ j, A i j * x_hat k j) +
+      infNorm (matSub_id n (dualIterMatrix n N M_inv)) *
+        infNormVec (ξ k) := by
   have hres := one_step_residual n A M N M_inv hS b x hAx x_hat ξ hIter
   suffices h : ∀ i : Fin n, |b i - ∑ j, A i j * x_hat (k + 1) j| ≤
-      infNorm hn (dualIterMatrix n N M_inv) *
-        infNormVec hn (fun i => b i - ∑ j, A i j * x_hat k j) +
-      infNorm hn (matSub_id n (dualIterMatrix n N M_inv)) *
-        infNormVec hn (ξ k) by
-    unfold infNormVec; apply Finset.sup'_le; intro i _; exact h i
+      infNorm (dualIterMatrix n N M_inv) *
+        infNormVec (fun i => b i - ∑ j, A i j * x_hat k j) +
+      infNorm (matSub_id n (dualIterMatrix n N M_inv)) *
+        infNormVec (ξ k) by
+    apply infNormVec_le_of_abs_le
+    · exact h
+    · exact add_nonneg
+        (mul_nonneg (infNorm_nonneg _) (infNormVec_nonneg _))
+        (mul_nonneg (infNorm_nonneg _) (infNormVec_nonneg _))
   intro i; rw [hres k i]
   -- |Hr_k - (I-H)ξ_k| ≤ |Hr_k| + |(I-H)ξ_k| ≤ ‖H‖·‖r_k‖ + ‖I-H‖·‖ξ_k‖
   set a := matMulVec n (dualIterMatrix n N M_inv)
       (fun j => b j - ∑ l, A j l * x_hat k l) i
   set c := matMulVec n (matSub_id n (dualIterMatrix n N M_inv)) (ξ k) i
   have htri : |a - c| ≤ |a| + |c| := (abs_add_le a (-c)).trans (by rw [abs_neg])
-  have ha : |a| ≤ infNorm hn (dualIterMatrix n N M_inv) *
-      infNormVec hn (fun i => b i - ∑ j, A i j * x_hat k j) := by
+  have ha : |a| ≤ infNorm (dualIterMatrix n N M_inv) *
+      infNormVec (fun i => b i - ∑ j, A i j * x_hat k j) := by
     change |∑ j : Fin n, dualIterMatrix n N M_inv i j *
         (b j - ∑ l, A j l * x_hat k l)| ≤ _
     calc |∑ j, dualIterMatrix n N M_inv i j *
@@ -663,20 +671,19 @@ theorem normwise_one_step_residual_bound (n : ℕ) (hn : 0 < n)
             |b j - ∑ l, A j l * x_hat k l| := by
           congr 1; ext j; exact abs_mul _ _
       _ ≤ ∑ j, |dualIterMatrix n N M_inv i j| *
-            infNormVec hn (fun i => b i - ∑ j, A i j * x_hat k j) := by
+            infNormVec (fun i => b i - ∑ j, A i j * x_hat k j) := by
           apply Finset.sum_le_sum; intro j _
           apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
-          exact Finset.le_sup' (fun i => |b i - ∑ j, A i j * x_hat k j|)
-            (Finset.mem_univ j)
+          exact abs_le_infNormVec (fun i => b i - ∑ j, A i j * x_hat k j) j
       _ = (∑ j, |dualIterMatrix n N M_inv i j|) *
-            infNormVec hn (fun i => b i - ∑ j, A i j * x_hat k j) := by
+            infNormVec (fun i => b i - ∑ j, A i j * x_hat k j) := by
           rw [Finset.sum_mul]
-      _ ≤ infNorm hn (dualIterMatrix n N M_inv) *
-            infNormVec hn (fun i => b i - ∑ j, A i j * x_hat k j) :=
-          mul_le_mul_of_nonneg_right (row_sum_le_infNorm hn _ i)
-            (infNormVec_nonneg hn _)
-  have hc : |c| ≤ infNorm hn (matSub_id n (dualIterMatrix n N M_inv)) *
-      infNormVec hn (ξ k) := by
+      _ ≤ infNorm (dualIterMatrix n N M_inv) *
+            infNormVec (fun i => b i - ∑ j, A i j * x_hat k j) :=
+          mul_le_mul_of_nonneg_right (row_sum_le_infNorm _ i)
+            (infNormVec_nonneg _)
+  have hc : |c| ≤ infNorm (matSub_id n (dualIterMatrix n N M_inv)) *
+      infNormVec (ξ k) := by
     change |∑ j : Fin n, matSub_id n (dualIterMatrix n N M_inv) i j *
         ξ k j| ≤ _
     calc |∑ j, matSub_id n (dualIterMatrix n N M_inv) i j * ξ k j|
@@ -685,16 +692,16 @@ theorem normwise_one_step_residual_bound (n : ℕ) (hn : 0 < n)
       _ = ∑ j, |matSub_id n (dualIterMatrix n N M_inv) i j| * |ξ k j| := by
           congr 1; ext j; exact abs_mul _ _
       _ ≤ ∑ j, |matSub_id n (dualIterMatrix n N M_inv) i j| *
-            infNormVec hn (ξ k) := by
+            infNormVec (ξ k) := by
           apply Finset.sum_le_sum; intro j _
           apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
-          exact Finset.le_sup' (fun i => |ξ k i|) (Finset.mem_univ j)
+          exact abs_le_infNormVec (ξ k) j
       _ = (∑ j, |matSub_id n (dualIterMatrix n N M_inv) i j|) *
-            infNormVec hn (ξ k) := by rw [Finset.sum_mul]
-      _ ≤ infNorm hn (matSub_id n (dualIterMatrix n N M_inv)) *
-            infNormVec hn (ξ k) :=
-          mul_le_mul_of_nonneg_right (row_sum_le_infNorm hn _ i)
-            (infNormVec_nonneg hn _)
+            infNormVec (ξ k) := by rw [Finset.sum_mul]
+      _ ≤ infNorm (matSub_id n (dualIterMatrix n N M_inv)) *
+            infNormVec (ξ k) :=
+          mul_le_mul_of_nonneg_right (row_sum_le_infNorm _ i)
+            (infNormVec_nonneg _)
   linarith
 
 /-- **Eq. 16.19 (Normwise residual bound)**: ‖r_{m+1}‖∞ ≤ q^{m+1}·‖r₀‖∞ + μ·‖I−H‖∞/(1−q)
@@ -707,67 +714,67 @@ theorem normwise_residual_bound (n : ℕ) (hn : 0 < n)
     (x_hat : ℕ → (Fin n → ℝ)) (ξ : ℕ → (Fin n → ℝ))
     (hIter : ComputedIteration n M N b x_hat ξ)
     (q : ℝ) (hq : 0 ≤ q) (hq1 : q < 1)
-    (hH : infNorm hn (dualIterMatrix n N M_inv) ≤ q)
-    (μ : ℝ) (hμ : 0 ≤ μ) (hξ_bound : ∀ k, infNormVec hn (ξ k) ≤ μ)
+    (hH : infNorm (dualIterMatrix n N M_inv) ≤ q)
+    (μ : ℝ) (hμ : 0 ≤ μ) (hξ_bound : ∀ k, infNormVec (ξ k) ≤ μ)
     (m : ℕ) :
-    infNormVec hn (fun i => b i - ∑ j, A i j * x_hat (m + 1) j) ≤
-      q ^ (m + 1) * infNormVec hn (fun i => b i - ∑ j, A i j * x_hat 0 j) +
-      μ * infNorm hn (matSub_id n (dualIterMatrix n N M_inv)) / (1 - q) := by
+    infNormVec (fun i => b i - ∑ j, A i j * x_hat (m + 1) j) ≤
+      q ^ (m + 1) * infNormVec (fun i => b i - ∑ j, A i j * x_hat 0 j) +
+      μ * infNorm (matSub_id n (dualIterMatrix n N M_inv)) / (1 - q) := by
   have hq1' : (0 : ℝ) < 1 - q := by linarith
-  have hImH := infNorm_nonneg hn (matSub_id n (dualIterMatrix n N M_inv))
+  have hImH := infNorm_nonneg (matSub_id n (dualIterMatrix n N M_inv))
   induction m with
   | zero =>
     have hone := normwise_one_step_residual_bound n hn A M N M_inv hS b x hAx
         x_hat ξ hIter 0
-    calc infNormVec hn (fun i => b i - ∑ j, A i j * x_hat 1 j)
-        ≤ infNorm hn (dualIterMatrix n N M_inv) *
-            infNormVec hn (fun i => b i - ∑ j, A i j * x_hat 0 j) +
-          infNorm hn (matSub_id n (dualIterMatrix n N M_inv)) *
-            infNormVec hn (ξ 0) := hone
-      _ ≤ q * infNormVec hn (fun i => b i - ∑ j, A i j * x_hat 0 j) +
-          infNorm hn (matSub_id n (dualIterMatrix n N M_inv)) * μ := by
+    calc infNormVec (fun i => b i - ∑ j, A i j * x_hat 1 j)
+        ≤ infNorm (dualIterMatrix n N M_inv) *
+            infNormVec (fun i => b i - ∑ j, A i j * x_hat 0 j) +
+          infNorm (matSub_id n (dualIterMatrix n N M_inv)) *
+            infNormVec (ξ 0) := hone
+      _ ≤ q * infNormVec (fun i => b i - ∑ j, A i j * x_hat 0 j) +
+          infNorm (matSub_id n (dualIterMatrix n N M_inv)) * μ := by
           apply add_le_add
-          · exact mul_le_mul_of_nonneg_right hH (infNormVec_nonneg hn _)
+          · exact mul_le_mul_of_nonneg_right hH (infNormVec_nonneg _)
           · exact mul_le_mul_of_nonneg_left (hξ_bound 0) hImH
-      _ = q ^ 1 * infNormVec hn (fun i => b i - ∑ j, A i j * x_hat 0 j) +
-          μ * infNorm hn (matSub_id n (dualIterMatrix n N M_inv)) := by
+      _ = q ^ 1 * infNormVec (fun i => b i - ∑ j, A i j * x_hat 0 j) +
+          μ * infNorm (matSub_id n (dualIterMatrix n N M_inv)) := by
           rw [pow_one]; ring
-      _ ≤ q ^ 1 * infNormVec hn (fun i => b i - ∑ j, A i j * x_hat 0 j) +
-          μ * infNorm hn (matSub_id n (dualIterMatrix n N M_inv)) /
+      _ ≤ q ^ 1 * infNormVec (fun i => b i - ∑ j, A i j * x_hat 0 j) +
+          μ * infNorm (matSub_id n (dualIterMatrix n N M_inv)) /
             (1 - q) := by
-          have hnn : 0 ≤ μ * infNorm hn (matSub_id n (dualIterMatrix n N M_inv)) :=
+          have hnn : 0 ≤ μ * infNorm (matSub_id n (dualIterMatrix n N M_inv)) :=
             mul_nonneg hμ hImH
-          have hdiv : μ * infNorm hn (matSub_id n (dualIterMatrix n N M_inv)) ≤
-              μ * infNorm hn (matSub_id n (dualIterMatrix n N M_inv)) /
+          have hdiv : μ * infNorm (matSub_id n (dualIterMatrix n N M_inv)) ≤
+              μ * infNorm (matSub_id n (dualIterMatrix n N M_inv)) /
                 (1 - q) := by
             rw [le_div_iff₀ hq1']; nlinarith
           linarith
   | succ m ih =>
     have hone := normwise_one_step_residual_bound n hn A M N M_inv hS b x hAx
         x_hat ξ hIter (m + 1)
-    calc infNormVec hn (fun i => b i - ∑ j, A i j * x_hat (m + 2) j)
-        ≤ infNorm hn (dualIterMatrix n N M_inv) *
-            infNormVec hn (fun i => b i - ∑ j, A i j * x_hat (m + 1) j) +
-          infNorm hn (matSub_id n (dualIterMatrix n N M_inv)) *
-            infNormVec hn (ξ (m + 1)) := hone
+    calc infNormVec (fun i => b i - ∑ j, A i j * x_hat (m + 2) j)
+        ≤ infNorm (dualIterMatrix n N M_inv) *
+            infNormVec (fun i => b i - ∑ j, A i j * x_hat (m + 1) j) +
+          infNorm (matSub_id n (dualIterMatrix n N M_inv)) *
+            infNormVec (ξ (m + 1)) := hone
       _ ≤ q * (q ^ (m + 1) *
-              infNormVec hn (fun i => b i - ∑ j, A i j * x_hat 0 j) +
-            μ * infNorm hn (matSub_id n (dualIterMatrix n N M_inv)) /
+              infNormVec (fun i => b i - ∑ j, A i j * x_hat 0 j) +
+            μ * infNorm (matSub_id n (dualIterMatrix n N M_inv)) /
               (1 - q)) +
-          infNorm hn (matSub_id n (dualIterMatrix n N M_inv)) * μ := by
+          infNorm (matSub_id n (dualIterMatrix n N M_inv)) * μ := by
           apply add_le_add
-          · exact le_trans (mul_le_mul_of_nonneg_right hH (infNormVec_nonneg hn _))
+          · exact le_trans (mul_le_mul_of_nonneg_right hH (infNormVec_nonneg _))
               (mul_le_mul_of_nonneg_left ih hq)
           · exact mul_le_mul_of_nonneg_left (hξ_bound _) hImH
       _ = q ^ (m + 2) *
-            infNormVec hn (fun i => b i - ∑ j, A i j * x_hat 0 j) +
-          (q * (μ * infNorm hn (matSub_id n (dualIterMatrix n N M_inv)) /
+            infNormVec (fun i => b i - ∑ j, A i j * x_hat 0 j) +
+          (q * (μ * infNorm (matSub_id n (dualIterMatrix n N M_inv)) /
             (1 - q)) +
-           μ * infNorm hn (matSub_id n (dualIterMatrix n N M_inv))) := by
+           μ * infNorm (matSub_id n (dualIterMatrix n N M_inv))) := by
           ring
       _ = q ^ (m + 2) *
-            infNormVec hn (fun i => b i - ∑ j, A i j * x_hat 0 j) +
-          μ * infNorm hn (matSub_id n (dualIterMatrix n N M_inv)) /
+            infNormVec (fun i => b i - ∑ j, A i j * x_hat 0 j) +
+          μ * infNorm (matSub_id n (dualIterMatrix n N M_inv)) /
             (1 - q) := by
           congr 1; field_simp; ring
 

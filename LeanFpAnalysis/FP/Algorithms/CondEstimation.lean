@@ -36,31 +36,43 @@ open scoped BigOperators
     to a matrix norm estimation problem (which only requires A⁻¹ D).
     The key insight: when d ≥ 0, |A⁻¹_{ij}| · d_j = |A⁻¹_{ij} · d_j|,
     so the row sums coincide. -/
-theorem cond_norm_identity (n : ℕ) (hn : 0 < n)
+theorem cond_norm_identity (n : ℕ) (_hn : 0 < n)
     (A_inv : Fin n → Fin n → ℝ) (d : Fin n → ℝ) (hd : ∀ i, 0 ≤ d i) :
-    infNormVec hn (fun i => ∑ j : Fin n, |A_inv i j| * d j) =
-    infNorm hn (fun i j => A_inv i j * d j) := by
-  unfold infNormVec infNorm
-  congr 1
-  ext i
-  -- Show: |∑ j, |A_inv i j| * d j| = ∑ j, |A_inv i j * d j|
-  -- LHS: the sum is nonneg (each term nonneg), so |sum| = sum
-  -- RHS: |A_inv i j * d j| = |A_inv i j| * |d j| = |A_inv i j| * d j (since d ≥ 0)
-  have hsum_nonneg : 0 ≤ ∑ j : Fin n, |A_inv i j| * d j :=
-    Finset.sum_nonneg (fun j _ => mul_nonneg (abs_nonneg _) (hd j))
-  rw [abs_of_nonneg hsum_nonneg]
-  apply Finset.sum_congr rfl
-  intro j _
-  rw [abs_mul, abs_of_nonneg (hd j)]
+    infNormVec (fun i => ∑ j : Fin n, |A_inv i j| * d j) =
+    infNorm (fun i j => A_inv i j * d j) := by
+  let w : Fin n → ℝ := fun i => ∑ j : Fin n, |A_inv i j| * d j
+  let B : Fin n → Fin n → ℝ := fun i j => A_inv i j * d j
+  have hrow : ∀ i : Fin n, w i = ∑ j : Fin n, |B i j| := by
+    intro i
+    unfold w B
+    apply Finset.sum_congr rfl
+    intro j _
+    rw [abs_mul, abs_of_nonneg (hd j)]
+  have hw_nonneg : ∀ i : Fin n, 0 ≤ w i := by
+    intro i
+    unfold w
+    exact Finset.sum_nonneg (fun j _ => mul_nonneg (abs_nonneg _) (hd j))
+  change infNormVec w = infNorm B
+  apply le_antisymm
+  · apply infNormVec_le_of_abs_le
+    · intro i
+      rw [abs_of_nonneg (hw_nonneg i), hrow i]
+      exact row_sum_le_infNorm B i
+    · exact infNorm_nonneg B
+  · apply infNorm_le_of_row_sum_le
+    · intro i
+      rw [← hrow i, ← abs_of_nonneg (hw_nonneg i)]
+      exact abs_le_infNormVec w i
+    · exact infNormVec_nonneg w
 
 /-- **1-norm/∞-norm duality** (Higham §14.1, equation after 14.1).
 
     ‖B‖₁ = ‖Bᵀ‖∞: the 1-norm of B equals the ∞-norm of its transpose.
     This connects 1-norm condition estimation to ∞-norm problems. -/
-theorem oneNorm_eq_infNorm_transpose' (n : ℕ) (hn : 0 < n)
+theorem oneNorm_eq_infNorm_transpose' (n : ℕ) (_hn : 0 < n)
     (B : Fin n → Fin n → ℝ) :
-    oneNorm hn B = infNorm hn (fun i j => B j i) :=
-  oneNorm_eq_infNorm_transpose hn B
+    oneNorm B = infNorm (fun i j => B j i) :=
+  oneNorm_eq_infNorm_transpose B
 
 -- ============================================================
 -- §14.3  1-norm power method (Algorithm 14.3)
@@ -140,7 +152,7 @@ noncomputable def oneNormStep {n : ℕ} (hn : 0 < n)
   let z := fun j => ∑ i : Fin n, A i j * ξ i           -- z = Aᵀξ
   let γ_new := oneNormVec y                             -- γ = ‖y‖₁
   let zTx := ∑ i : Fin n, z i * st.x i                 -- zᵀx
-  if infNormVec hn z ≤ zTx then
+  if infNormVec z ≤ zTx then
     (⟨st.x, γ_new⟩, true)  -- converged
   else
     let j_max := argmaxAbs hn z
@@ -167,10 +179,10 @@ noncomputable def oneNormPowerMethod {n : ℕ} (hn : 0 < n)
 -- ============================================================
 
 /-- The 1-norm submultiplicativity for matrix-vector: ‖Ax‖₁ ≤ ‖A‖₁ · ‖x‖₁. -/
-lemma oneNormVec_matVec_le {n : ℕ} (hn : 0 < n)
+lemma oneNormVec_matVec_le {n : ℕ} (_hn : 0 < n)
     (A : Fin n → Fin n → ℝ) (x : Fin n → ℝ) :
     oneNormVec (fun i => ∑ j : Fin n, A i j * x j) ≤
-    oneNorm hn A * oneNormVec x := by
+    oneNorm A * oneNormVec x := by
   unfold oneNormVec
   -- ‖Ax‖₁ = ∑_i |∑_j A_ij x_j| ≤ ∑_i ∑_j |A_ij| |x_j|
   --        = ∑_j |x_j| ∑_i |A_ij| ≤ ∑_j |x_j| · ‖A‖₁ = ‖A‖₁ · ‖x‖₁
@@ -185,10 +197,10 @@ lemma oneNormVec_matVec_le {n : ℕ} (hn : 0 < n)
         apply Finset.sum_congr rfl; intro j _
         rw [Finset.mul_sum]
         apply Finset.sum_congr rfl; intro i _; ring
-    _ ≤ ∑ j : Fin n, |x j| * oneNorm hn A := by
+    _ ≤ ∑ j : Fin n, |x j| * oneNorm A := by
         apply Finset.sum_le_sum; intro j _
-        exact mul_le_mul_of_nonneg_left (col_sum_le_oneNorm hn A j) (abs_nonneg _)
-    _ = oneNorm hn A * ∑ j : Fin n, |x j| := by
+        exact mul_le_mul_of_nonneg_left (col_sum_le_oneNorm A j) (abs_nonneg _)
+    _ = oneNorm A * ∑ j : Fin n, |x j| := by
         rw [Finset.mul_sum]
         apply Finset.sum_congr rfl; intro j _; ring
 
@@ -205,18 +217,18 @@ private lemma oneNormStep_gamma_eq {n : ℕ} (hn : 0 < n)
     (A : Fin n → Fin n → ℝ) (st : OneNormState n) :
     (oneNormStep hn A st).1.γ =
     oneNormVec (fun i => ∑ j : Fin n, A i j * st.x j) := by
-  simp only [oneNormStep]
+  simp [oneNormStep]
   split_ifs <;> rfl
 
 private lemma oneNormStep_gamma_le {n : ℕ} (hn : 0 < n)
     (A : Fin n → Fin n → ℝ) (st : OneNormState n)
     (hx : oneNormVec st.x ≤ 1) :
-    (oneNormStep hn A st).1.γ ≤ oneNorm hn A := by
+    (oneNormStep hn A st).1.γ ≤ oneNorm A := by
   rw [oneNormStep_gamma_eq hn A st]
-  calc oneNormVec _ ≤ oneNorm hn A * oneNormVec st.x :=
+  calc oneNormVec _ ≤ oneNorm A * oneNormVec st.x :=
         oneNormVec_matVec_le hn A st.x
-    _ ≤ oneNorm hn A * 1 := mul_le_mul_of_nonneg_left hx (oneNorm_nonneg hn A)
-    _ = oneNorm hn A := mul_one _
+    _ ≤ oneNorm A * 1 := mul_le_mul_of_nonneg_left hx (oneNorm_nonneg A)
+    _ = oneNorm A := mul_one _
 
 /-- oneNormStep output x satisfies ‖x‖₁ ≤ 1. -/
 private lemma oneNormStep_x_le {n : ℕ} (hn : 0 < n)
@@ -232,7 +244,7 @@ private lemma oneNormStep_x_le {n : ℕ} (hn : 0 < n)
 private lemma oneNormPowerMethod_invariant {n : ℕ} (hn : 0 < n)
     (A : Fin n → Fin n → ℝ) (fuel : ℕ) :
     oneNormVec (oneNormPowerMethod hn A fuel).x ≤ 1 ∧
-    (oneNormPowerMethod hn A fuel).γ ≤ oneNorm hn A := by
+    (oneNormPowerMethod hn A fuel).γ ≤ oneNorm A := by
   induction fuel with
   | zero =>
     constructor
@@ -266,7 +278,7 @@ private lemma oneNormPowerMethod_invariant {n : ℕ} (hn : 0 < n)
     so γ ≤ ‖A‖₁ · ‖x‖₁ ≤ ‖A‖₁. -/
 theorem oneNormPowerMethod_lower_bound {n : ℕ} (hn : 0 < n)
     (A : Fin n → Fin n → ℝ) (fuel : ℕ) :
-    (oneNormPowerMethod hn A fuel).γ ≤ oneNorm hn A :=
+    (oneNormPowerMethod hn A fuel).γ ≤ oneNorm A :=
   (oneNormPowerMethod_invariant hn A fuel).2
 
 /-- **Algorithm 14.4** (Higham §14.3, LAPACK 1-norm estimator).
@@ -302,14 +314,14 @@ noncomputable def lapackNormEstimator {n : ℕ} (hn : 0 < n)
     The max of two lower bounds is also a lower bound. -/
 theorem lapackNormEstimator_lower_bound {n : ℕ} (hn : 0 < n)
     (A : Fin n → Fin n → ℝ) :
-    lapackNormEstimator hn A ≤ oneNorm hn A := by
+    lapackNormEstimator hn A ≤ oneNorm A := by
   unfold lapackNormEstimator
   split_ifs with h1n
   · apply max_le
     · exact oneNormPowerMethod_lower_bound hn A 5
     · -- ‖Ab‖₁ / ‖b‖₁ ≤ ‖A‖₁
       by_cases hb : oneNormVec (lapackAltVec h1n) = 0
-      · simp [hb]; exact oneNorm_nonneg hn A
+      · simp [hb]; exact oneNorm_nonneg A
       · have hbpos : 0 < oneNormVec (lapackAltVec h1n) :=
           lt_of_le_of_ne (oneNormVec_nonneg _) (Ne.symm hb)
         rw [div_le_iff₀ hbpos]

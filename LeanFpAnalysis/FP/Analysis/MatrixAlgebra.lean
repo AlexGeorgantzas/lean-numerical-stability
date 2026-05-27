@@ -7,12 +7,13 @@
 -- (Higham §11) and forward error analysis (§8.2).
 --
 -- This file is exact algebra, not floating-point algorithm code.  It keeps the
--- library's existing `Fin n → Fin n → ℝ` matrix representation.  Future cleanup
--- should bridge more of these definitions to Mathlib `Matrix` facts where this
--- can be done without disrupting downstream APIs.
+-- library's existing `Fin n → Fin n → ℝ` matrix representation, while exact
+-- norm definitions are compatibility wrappers around Mathlib matrix/vector
+-- norms.
 
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Real.Sqrt
+import Mathlib.Analysis.Matrix.Normed
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.BigOperators.Ring.Finset
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
@@ -23,7 +24,7 @@ import Mathlib.Tactic.FieldSimp
 
 namespace LeanFpAnalysis.FP
 
-open scoped BigOperators
+open scoped BigOperators NNReal
 
 -- ============================================================
 -- Matrix multiplication (exact, non-FP)
@@ -259,60 +260,110 @@ theorem neumann_telescope_right (n : ℕ) (M : Fin n → Fin n → ℝ) (N : ℕ
     rw [h2]; ring
 
 -- ============================================================
--- Infinity norm and 1-norm (computable via Finset.sup')
+-- Infinity norm and 1-norm
 -- ============================================================
 
-/-- Infinity norm of a vector: max_i |v_i|.
-    Defined as a supremum over the finite index set. -/
-noncomputable def infNormVec {n : ℕ} (hn : 0 < n) (v : Fin n → ℝ) : ℝ :=
-  Finset.sup' Finset.univ (Finset.univ_nonempty_iff.mpr ⟨⟨0, hn⟩⟩) (fun i => |v i|)
+/-- Compatibility name for Mathlib's finite-function sup norm:
+    `‖v‖ = max_i |v_i|`, with value `0` for `Fin 0`. -/
+noncomputable def infNormVec {n : ℕ} (v : Fin n → ℝ) : ℝ :=
+  ‖v‖
 
-/-- Infinity norm of a matrix: max_i ∑_j |A_ij|.
-    This is the operator norm subordinate to the vector infinity norm. -/
-noncomputable def infNorm {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ) : ℝ :=
-  Finset.sup' Finset.univ (Finset.univ_nonempty_iff.mpr ⟨⟨0, hn⟩⟩)
-    (fun i => ∑ j : Fin n, |A i j|)
+/-- Compatibility name for Mathlib's `linfty` matrix operator norm:
+    `‖A‖∞ = max_i ∑_j |A_ij|`, with value `0` for `Fin 0`. -/
+noncomputable def infNorm {n : ℕ} (A : Fin n → Fin n → ℝ) : ℝ :=
+  letI := Matrix.linftyOpNormedRing (n := Fin n) (α := ℝ)
+  ‖(Matrix.of A : Matrix (Fin n) (Fin n) ℝ)‖
 
 /-- Infinity norm of a matrix is nonneg. -/
-lemma infNorm_nonneg {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ) :
-    0 ≤ infNorm hn A := by
-  have h0 : (⟨0, hn⟩ : Fin n) ∈ Finset.univ := Finset.mem_univ _
-  have : 0 ≤ ∑ j : Fin n, |A ⟨0, hn⟩ j| :=
-    Finset.sum_nonneg (fun j _ => abs_nonneg _)
-  exact le_trans this (Finset.le_sup' (fun i => ∑ j : Fin n, |A i j|) h0)
+lemma infNorm_nonneg {n : ℕ} (A : Fin n → Fin n → ℝ) :
+    0 ≤ infNorm A := by
+  letI := Matrix.linftyOpNormedRing (n := Fin n) (α := ℝ)
+  unfold infNorm
+  exact norm_nonneg _
 
 /-- Infinity norm of a vector is nonneg. -/
-lemma infNormVec_nonneg {n : ℕ} (hn : 0 < n) (v : Fin n → ℝ) :
-    0 ≤ infNormVec hn v := by
-  have h0 : (⟨0, hn⟩ : Fin n) ∈ Finset.univ := Finset.mem_univ _
-  have : 0 ≤ |v ⟨0, hn⟩| := abs_nonneg _
-  exact le_trans this (Finset.le_sup' (fun i => |v i|) h0)
+lemma infNormVec_nonneg {n : ℕ} (v : Fin n → ℝ) :
+    0 ≤ infNormVec v := by
+  unfold infNormVec
+  exact norm_nonneg _
 
 /-- 1-norm of a matrix (max column sum): max_j ∑_i |A_ij|.
-    This is the operator norm subordinate to the vector 1-norm. -/
-noncomputable def oneNorm {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ) : ℝ :=
-  Finset.sup' Finset.univ (Finset.univ_nonempty_iff.mpr ⟨⟨0, hn⟩⟩)
-    (fun j => ∑ i : Fin n, |A i j|)
+    This is the Mathlib `linfty` operator norm of the transpose. -/
+noncomputable def oneNorm {n : ℕ} (A : Fin n → Fin n → ℝ) : ℝ :=
+  infNorm (fun i j => A j i)
 
 /-- 1-norm of a matrix is nonneg. -/
-lemma oneNorm_nonneg {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ) :
-    0 ≤ oneNorm hn A := by
-  have h0 : (⟨0, hn⟩ : Fin n) ∈ Finset.univ := Finset.mem_univ _
-  have : 0 ≤ ∑ i : Fin n, |A i ⟨0, hn⟩| :=
-    Finset.sum_nonneg (fun i _ => abs_nonneg _)
-  exact le_trans this (Finset.le_sup' (fun j => ∑ i : Fin n, |A i j|) h0)
+lemma oneNorm_nonneg {n : ℕ} (A : Fin n → Fin n → ℝ) :
+    0 ≤ oneNorm A := by
+  unfold oneNorm
+  exact infNorm_nonneg _
 
 /-- 1-norm equals ∞-norm of the transpose. -/
-theorem oneNorm_eq_infNorm_transpose {n : ℕ} (hn : 0 < n)
-    (A : Fin n → Fin n → ℝ) :
-    oneNorm hn A = infNorm hn (fun i j => A j i) := by
-  unfold oneNorm infNorm
+theorem oneNorm_eq_infNorm_transpose {n : ℕ} (A : Fin n → Fin n → ℝ) :
+    oneNorm A = infNorm (fun i j => A j i) := by
   rfl
 
+/-- Each row sum of a matrix is bounded by its ∞-norm. -/
+lemma row_sum_le_infNorm {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (i : Fin n) : ∑ j : Fin n, |A i j| ≤ infNorm A := by
+  unfold infNorm
+  rw [Matrix.linfty_opNorm_def]
+  let f : Fin n → ℝ≥0 :=
+    fun i => ∑ j : Fin n, ‖(Matrix.of A : Matrix (Fin n) (Fin n) ℝ) i j‖₊
+  have hnn : f i ≤ Finset.univ.sup f :=
+    Finset.le_sup (s := (Finset.univ : Finset (Fin n))) (f := f) (Finset.mem_univ i)
+  have h : (f i : ℝ) ≤ ((Finset.univ.sup f : ℝ≥0) : ℝ) := by
+    exact_mod_cast hnn
+  simpa [f, Real.norm_eq_abs, NNReal.coe_sum] using h
+
+/-- A row-wise proof gives an ∞-norm bound. -/
+lemma infNorm_le_of_row_sum_le {n : ℕ} (A : Fin n → Fin n → ℝ) {c : ℝ}
+    (hrows : ∀ i : Fin n, ∑ j : Fin n, |A i j| ≤ c) (hc : 0 ≤ c) :
+    infNorm A ≤ c := by
+  unfold infNorm
+  rw [Matrix.linfty_opNorm_def]
+  let f : Fin n → ℝ≥0 :=
+    fun i => ∑ j : Fin n, ‖(Matrix.of A : Matrix (Fin n) (Fin n) ℝ) i j‖₊
+  have hrows_nn : ∀ i, f i ≤ Real.toNNReal c := by
+    intro i
+    rw [← NNReal.coe_le_coe, Real.coe_toNNReal c hc]
+    simpa [f, Real.norm_eq_abs, NNReal.coe_sum] using hrows i
+  have hsup : Finset.univ.sup f ≤ Real.toNNReal c :=
+    Finset.sup_le (fun i _ => hrows_nn i)
+  have hreal : ((Finset.univ.sup f : ℝ≥0) : ℝ) ≤ c := by
+    rw [← Real.coe_toNNReal c hc]
+    exact_mod_cast hsup
+  simpa [f] using hreal
+
 /-- Each column sum is bounded by the 1-norm. -/
-lemma col_sum_le_oneNorm {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ)
-    (j : Fin n) : ∑ i : Fin n, |A i j| ≤ oneNorm hn A :=
-  Finset.le_sup' (fun j => ∑ i : Fin n, |A i j|) (Finset.mem_univ j)
+lemma col_sum_le_oneNorm {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (j : Fin n) : ∑ i : Fin n, |A i j| ≤ oneNorm A := by
+  exact row_sum_le_infNorm (fun i j => A j i) j
+
+/-- Each component of a vector is bounded by its ∞-norm. -/
+lemma abs_le_infNormVec {n : ℕ} (v : Fin n → ℝ) (i : Fin n) :
+    |v i| ≤ infNormVec v := by
+  unfold infNormVec
+  simpa using norm_le_pi_norm v i
+
+/-- A componentwise bound gives a vector ∞-norm bound. -/
+lemma infNormVec_le_of_abs_le {n : ℕ} (v : Fin n → ℝ) {c : ℝ}
+    (h : ∀ i : Fin n, |v i| ≤ c) (hc : 0 ≤ c) :
+    infNormVec v ≤ c := by
+  unfold infNormVec
+  rw [pi_norm_le_iff_of_nonneg hc]
+  intro i
+  simpa using h i
+
+/-- A column-wise proof gives a 1-norm bound. -/
+lemma oneNorm_le_of_col_sum_le {n : ℕ} (A : Fin n → Fin n → ℝ) {c : ℝ}
+    (hcols : ∀ j : Fin n, ∑ i : Fin n, |A i j| ≤ c) (hc : 0 ≤ c) :
+    oneNorm A ≤ c := by
+  unfold oneNorm
+  apply infNorm_le_of_row_sum_le
+  · intro j
+    exact hcols j
+  · exact hc
 
 -- ============================================================
 -- Diagonal matrix infrastructure
@@ -446,25 +497,35 @@ lemma frobNormSq_nonneg {n : ℕ} (A : Fin n → Fin n → ℝ) :
   apply Finset.sum_nonneg; intro j _
   exact sq_nonneg _
 
-/-- **Frobenius norm**: ‖A‖_F = √(∑_{ij} A_{ij}²). -/
+/-- Compatibility name for Mathlib's Frobenius matrix norm. -/
 noncomputable def frobNorm {n : ℕ} (A : Fin n → Fin n → ℝ) : ℝ :=
-  Real.sqrt (frobNormSq A)
+  letI := Matrix.frobeniusNormedAddCommGroup (m := Fin n) (n := Fin n) (α := ℝ)
+  ‖(Matrix.of A : Matrix (Fin n) (Fin n) ℝ)‖
+
+/-- Mathlib's Frobenius norm agrees with the local squared-norm convenience. -/
+lemma frobNorm_eq_sqrt_frobNormSq {n : ℕ} (A : Fin n → Fin n → ℝ) :
+    frobNorm A = Real.sqrt (frobNormSq A) := by
+  unfold frobNorm frobNormSq
+  rw [Matrix.frobenius_norm_def]
+  simp [Matrix.of_apply, Real.norm_eq_abs, sq_abs, Real.sqrt_eq_rpow]
 
 /-- Frobenius norm is nonneg. -/
 lemma frobNorm_nonneg {n : ℕ} (A : Fin n → Fin n → ℝ) :
-    0 ≤ frobNorm A :=
-  Real.sqrt_nonneg _
+    0 ≤ frobNorm A := by
+  letI := Matrix.frobeniusNormedAddCommGroup (m := Fin n) (n := Fin n) (α := ℝ)
+  unfold frobNorm
+  exact norm_nonneg _
 
 /-- ‖A‖²_F = ‖A‖_F². -/
 lemma frobNorm_sq {n : ℕ} (A : Fin n → Fin n → ℝ) :
     frobNorm A ^ 2 = frobNormSq A := by
-  unfold frobNorm
+  rw [frobNorm_eq_sqrt_frobNormSq]
   rw [sq, Real.mul_self_sqrt (frobNormSq_nonneg A)]
 
 /-- ‖A‖_F = 0 iff A = 0. -/
 theorem frobNorm_eq_zero_iff {n : ℕ} (A : Fin n → Fin n → ℝ) :
     frobNorm A = 0 ↔ ∀ i j, A i j = 0 := by
-  unfold frobNorm
+  rw [frobNorm_eq_sqrt_frobNormSq]
   rw [Real.sqrt_eq_zero (frobNormSq_nonneg A)]
   unfold frobNormSq
   constructor
@@ -491,7 +552,7 @@ theorem frobNormSq_transpose {n : ℕ} (A : Fin n → Fin n → ℝ) :
 /-- Frobenius norm is invariant under transpose. -/
 theorem frobNorm_transpose {n : ℕ} (A : Fin n → Fin n → ℝ) :
     frobNorm (matTranspose A) = frobNorm A := by
-  unfold frobNorm; rw [frobNormSq_transpose]
+  rw [frobNorm_eq_sqrt_frobNormSq, frobNorm_eq_sqrt_frobNormSq, frobNormSq_transpose]
 
 /-- **Frobenius submultiplicativity** (squared form):
     ‖AB‖²_F ≤ ‖A‖²_F · ‖B‖²_F.
@@ -520,9 +581,10 @@ theorem frobNormSq_matMul_le {n : ℕ} (A B : Fin n → Fin n → ℝ) :
     ‖AB‖_F ≤ ‖A‖_F · ‖B‖_F. -/
 theorem frobNorm_matMul_le {n : ℕ} (A B : Fin n → Fin n → ℝ) :
     frobNorm (matMul n A B) ≤ frobNorm A * frobNorm B := by
-  unfold frobNorm
-  rw [← Real.sqrt_mul (frobNormSq_nonneg A)]
-  exact Real.sqrt_le_sqrt (frobNormSq_matMul_le A B)
+  unfold frobNorm matMul
+  simpa [Matrix.mul_apply] using
+    (Matrix.frobenius_norm_mul (Matrix.of A : Matrix (Fin n) (Fin n) ℝ)
+      (Matrix.of B : Matrix (Fin n) (Fin n) ℝ))
 
 /-- **Cauchy-Schwarz for Frobenius inner product**:
     (∑_ij A_ij B_ij)² ≤ ‖A‖²_F · ‖B‖²_F.
@@ -585,10 +647,11 @@ theorem frobNormSq_add_le {n : ℕ} (A B : Fin n → Fin n → ℝ) :
 /-- **Frobenius triangle inequality**: ‖A + B‖_F ≤ ‖A‖_F + ‖B‖_F. -/
 theorem frobNorm_add_le {n : ℕ} (A B : Fin n → Fin n → ℝ) :
     frobNorm (fun i j => A i j + B i j) ≤ frobNorm A + frobNorm B := by
-  have hnn : 0 ≤ frobNorm A + frobNorm B :=
-    add_nonneg (frobNorm_nonneg A) (frobNorm_nonneg B)
-  rw [← Real.sqrt_sq hnn]
-  exact Real.sqrt_le_sqrt (frobNormSq_add_le A B)
+  letI := Matrix.frobeniusNormedAddCommGroup (m := Fin n) (n := Fin n) (α := ℝ)
+  unfold frobNorm
+  simpa using
+    (norm_add_le (Matrix.of A : Matrix (Fin n) (Fin n) ℝ)
+      (Matrix.of B : Matrix (Fin n) (Fin n) ℝ))
 
 /-- Frobenius norm is invariant under negation: ‖-A‖²_F = ‖A‖²_F. -/
 theorem frobNormSq_neg {n : ℕ} (A : Fin n → Fin n → ℝ) :
@@ -598,14 +661,18 @@ theorem frobNormSq_neg {n : ℕ} (A : Fin n → Fin n → ℝ) :
 /-- Frobenius norm is invariant under negation: ‖-A‖_F = ‖A‖_F. -/
 theorem frobNorm_neg {n : ℕ} (A : Fin n → Fin n → ℝ) :
     frobNorm (fun i j => -A i j) = frobNorm A := by
-  unfold frobNorm; rw [frobNormSq_neg]
+  letI := Matrix.frobeniusNormedAddCommGroup (m := Fin n) (n := Fin n) (α := ℝ)
+  unfold frobNorm
+  simpa using norm_neg (Matrix.of A : Matrix (Fin n) (Fin n) ℝ)
 
 /-- **Frobenius triangle inequality for subtraction**: ‖A - B‖_F ≤ ‖A‖_F + ‖B‖_F. -/
 theorem frobNorm_sub_le {n : ℕ} (A B : Fin n → Fin n → ℝ) :
     frobNorm (fun i j => A i j - B i j) ≤ frobNorm A + frobNorm B := by
-  have h := frobNorm_add_le A (fun i j => -B i j)
-  rw [frobNorm_neg] at h
-  convert h using 2
+  letI := Matrix.frobeniusNormedAddCommGroup (m := Fin n) (n := Fin n) (α := ℝ)
+  unfold frobNorm
+  simpa [sub_eq_add_neg] using
+    (norm_sub_le (Matrix.of A : Matrix (Fin n) (Fin n) ℝ)
+      (Matrix.of B : Matrix (Fin n) (Fin n) ℝ))
 
 -- ============================================================
 -- Orthogonal matrices
@@ -715,13 +782,15 @@ theorem frobNormSq_orthogonal_right {n : ℕ} (A V : Fin n → Fin n → ℝ)
 theorem frobNorm_orthogonal_left {n : ℕ} (U A : Fin n → Fin n → ℝ)
     (hU : IsOrthogonal n U) :
     frobNorm (matMul n U A) = frobNorm A := by
-  unfold frobNorm; congr 1; exact frobNormSq_orthogonal_left U A hU
+  rw [frobNorm_eq_sqrt_frobNormSq, frobNorm_eq_sqrt_frobNormSq,
+    frobNormSq_orthogonal_left U A hU]
 
 /-- ‖AV‖_F = ‖A‖_F when V is orthogonal. -/
 theorem frobNorm_orthogonal_right {n : ℕ} (A V : Fin n → Fin n → ℝ)
     (hV : IsOrthogonal n V) :
     frobNorm (matMul n A V) = frobNorm A := by
-  unfold frobNorm; congr 1; exact frobNormSq_orthogonal_right A V hV
+  rw [frobNorm_eq_sqrt_frobNormSq, frobNorm_eq_sqrt_frobNormSq,
+    frobNormSq_orthogonal_right A V hV]
 
 /-- Transpose of orthogonal matrix is orthogonal.
 
@@ -787,14 +856,29 @@ theorem IsOrthogonal.mul {n : ℕ} {U V : Fin n → Fin n → ℝ}
     exact hU.row_orthonormal i j
 
 -- ============================================================
--- Infinity norm for matrices (predicate form for Neumann series)
+-- Infinity norm bounds for Neumann series
 -- ============================================================
 
-/-- **Infinity norm** of a matrix: max row sum of absolute values.
-    We define this as a hypothesis-based predicate rather than computing it,
-    since the max over Fin n is well-defined but awkward to work with. -/
+/-- **Infinity norm bound**: `‖M‖∞ ≤ c`.
+
+    Earlier versions used the equivalent row-wise predicate
+    `∀ i, ∑ j, |M i j| ≤ c`. With total `infNorm`, the norm inequality is the
+    cleaner public statement; `row_sum_le_of_infNormBound` recovers the row-wise
+    form needed inside Neumann-series proofs. -/
 def infNormBound (n : ℕ) (M : Fin n → Fin n → ℝ) (c : ℝ) : Prop :=
-  ∀ i : Fin n, ∑ j : Fin n, |M i j| ≤ c
+  infNorm M ≤ c
+
+/-- A row-wise proof gives an ∞-norm bound. -/
+lemma infNormBound_of_row_sum_le {n : ℕ} (A : Fin n → Fin n → ℝ) {c : ℝ}
+    (hrows : ∀ i : Fin n, ∑ j : Fin n, |A i j| ≤ c) (hc : 0 ≤ c) :
+    infNormBound n A c := by
+  exact infNorm_le_of_row_sum_le A hrows hc
+
+/-- An ∞-norm bound implies every row sum is bounded. -/
+lemma row_sum_le_of_infNormBound {n : ℕ} {A : Fin n → Fin n → ℝ} {c : ℝ}
+    (hbound : infNormBound n A c) (i : Fin n) :
+    ∑ j : Fin n, |A i j| ≤ c :=
+  le_trans (row_sum_le_infNorm A i) hbound
 
 -- ============================================================
 -- Nonneg matrix power entry bounds
@@ -819,94 +903,78 @@ theorem matPow_infNorm_bound (n : ℕ) (M : Fin n → Fin n → ℝ)
     infNormBound n (matPow n M k) (c ^ k) := by
   induction k with
   | zero =>
-    intro i; simp only [matPow, pow_zero]
-    unfold idMatrix infNormBound at *
-    have : ∀ j : Fin n, |if i = j then (1 : ℝ) else 0| = if i = j then 1 else 0 := by
-      intro j; split <;> simp
-    simp_rw [this, Finset.sum_ite_eq, Finset.mem_univ, if_true]; linarith
+    apply infNormBound_of_row_sum_le
+    · intro i; simp only [matPow, pow_zero]
+      unfold idMatrix
+      have : ∀ j : Fin n, |if i = j then (1 : ℝ) else 0| = if i = j then 1 else 0 := by
+        intro j; split <;> simp
+      simp_rw [this, Finset.sum_ite_eq, Finset.mem_univ, if_true]; linarith
+    · norm_num
   | succ k ih =>
-    intro i; simp only [matPow_succ, pow_succ']
-    unfold matMul
-    -- ∑_j |∑_l M_{il} M^k_{lj}| ≤ ∑_j ∑_l M_{il} · M^k_{lj}  (all nonneg)
-    -- = ∑_l M_{il} · (∑_j M^k_{lj}) ≤ ∑_l M_{il} · c^k ≤ c · c^k
-    calc ∑ j : Fin n, |∑ l : Fin n, M i l * matPow n M k l j|
-        = ∑ j : Fin n, ∑ l : Fin n, M i l * matPow n M k l j := by
-          congr 1; ext j; rw [abs_of_nonneg]
-          exact Finset.sum_nonneg (fun l _ => mul_nonneg (hM i l) (matPow_nonneg n M hM k l j))
-      _ = ∑ l : Fin n, M i l * ∑ j : Fin n, matPow n M k l j := by
-          rw [Finset.sum_comm]; congr 1; ext l; rw [Finset.mul_sum]
-      _ ≤ ∑ l : Fin n, M i l * c ^ k := by
-          apply Finset.sum_le_sum; intro l _
-          apply mul_le_mul_of_nonneg_left _ (hM i l)
-          have := ih l
-          calc ∑ j : Fin n, matPow n M k l j
-              = ∑ j : Fin n, |matPow n M k l j| := by
-                congr 1; ext j; rw [abs_of_nonneg (matPow_nonneg n M hM k l j)]
-            _ ≤ c ^ k := ih l
-      _ = c ^ k * ∑ l : Fin n, M i l := by rw [Finset.mul_sum]; congr 1; ext l; ring
-      _ ≤ c ^ k * c := by
-          apply mul_le_mul_of_nonneg_left _ (pow_nonneg hc k)
-          calc ∑ l : Fin n, M i l = ∑ l : Fin n, |M i l| := by
-                congr 1; ext l; rw [abs_of_nonneg (hM i l)]
-            _ ≤ c := hbound i
-      _ = c * c ^ k := by ring
+    apply infNormBound_of_row_sum_le
+    · intro i; simp only [matPow_succ, pow_succ']
+      unfold matMul
+      -- ∑_j |∑_l M_{il} M^k_{lj}| ≤ ∑_j ∑_l M_{il} · M^k_{lj}  (all nonneg)
+      -- = ∑_l M_{il} · (∑_j M^k_{lj}) ≤ ∑_l M_{il} · c^k ≤ c · c^k
+      calc ∑ j : Fin n, |∑ l : Fin n, M i l * matPow n M k l j|
+          = ∑ j : Fin n, ∑ l : Fin n, M i l * matPow n M k l j := by
+            congr 1; ext j; rw [abs_of_nonneg]
+            exact Finset.sum_nonneg (fun l _ => mul_nonneg (hM i l) (matPow_nonneg n M hM k l j))
+        _ = ∑ l : Fin n, M i l * ∑ j : Fin n, matPow n M k l j := by
+            rw [Finset.sum_comm]; congr 1; ext l; rw [Finset.mul_sum]
+        _ ≤ ∑ l : Fin n, M i l * c ^ k := by
+            apply Finset.sum_le_sum; intro l _
+            apply mul_le_mul_of_nonneg_left _ (hM i l)
+            calc ∑ j : Fin n, matPow n M k l j
+                = ∑ j : Fin n, |matPow n M k l j| := by
+                  congr 1; ext j; rw [abs_of_nonneg (matPow_nonneg n M hM k l j)]
+              _ ≤ c ^ k := row_sum_le_of_infNormBound ih l
+        _ = c ^ k * ∑ l : Fin n, M i l := by rw [Finset.mul_sum]; congr 1; ext l; ring
+        _ ≤ c ^ k * c := by
+            apply mul_le_mul_of_nonneg_left _ (pow_nonneg hc k)
+            calc ∑ l : Fin n, M i l = ∑ l : Fin n, |M i l| := by
+                  congr 1; ext l; rw [abs_of_nonneg (hM i l)]
+              _ ≤ c := row_sum_le_of_infNormBound hbound i
+        _ = c * c ^ k := by ring
+    · exact pow_nonneg hc (k + 1)
 
 -- ============================================================
 -- ∞-norm submultiplicativity (general, no nonneg requirement)
 -- ============================================================
 
-/-- Each row sum of a matrix is bounded by its ∞-norm. -/
-lemma row_sum_le_infNorm {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ)
-    (i : Fin n) : ∑ j : Fin n, |A i j| ≤ infNorm hn A :=
-  Finset.le_sup' (fun i => ∑ j : Fin n, |A i j|) (Finset.mem_univ i)
-
 /-- **∞-norm submultiplicativity**: ‖AB‖∞ ≤ ‖A‖∞ · ‖B‖∞.
     Unlike `matPow_infNorm_bound`, this requires no nonnegativity hypothesis. -/
-theorem infNorm_matMul_le {n : ℕ} (hn : 0 < n)
+theorem infNorm_matMul_le {n : ℕ} (_hn : 0 < n)
     (A B : Fin n → Fin n → ℝ) :
-    infNorm hn (matMul n A B) ≤ infNorm hn A * infNorm hn B := by
-  unfold infNorm
-  apply Finset.sup'_le
-  intro i _
-  -- Row i of AB: ∑_j |∑_k A_{ik} B_{kj}| ≤ ∑_j ∑_k |A_{ik}|·|B_{kj}|
-  calc ∑ j : Fin n, |matMul n A B i j|
-      ≤ ∑ j : Fin n, ∑ k : Fin n, |A i k| * |B k j| := by
-        apply Finset.sum_le_sum; intro j _
-        unfold matMul
-        calc |∑ k : Fin n, A i k * B k j|
-            ≤ ∑ k : Fin n, |A i k * B k j| := Finset.abs_sum_le_sum_abs _ _
-          _ = ∑ k : Fin n, |A i k| * |B k j| := by
-              congr 1; ext k; exact abs_mul _ _
-    _ = ∑ k : Fin n, |A i k| * ∑ j : Fin n, |B k j| := by
-        rw [Finset.sum_comm]; congr 1; ext k; rw [Finset.mul_sum]
-    _ ≤ ∑ k : Fin n, |A i k| * infNorm hn B := by
-        apply Finset.sum_le_sum; intro k _
-        exact mul_le_mul_of_nonneg_left (row_sum_le_infNorm hn B k) (abs_nonneg _)
-    _ = (∑ k : Fin n, |A i k|) * infNorm hn B := by rw [Finset.sum_mul]
-    _ ≤ infNorm hn A * infNorm hn B := by
-        apply mul_le_mul_of_nonneg_right (row_sum_le_infNorm hn A i) (infNorm_nonneg hn B)
+    infNorm (matMul n A B) ≤ infNorm A * infNorm B := by
+  unfold infNorm matMul
+  simpa [Matrix.mul_apply] using
+    (Matrix.linfty_opNorm_mul (Matrix.of A : Matrix (Fin n) (Fin n) ℝ)
+      (Matrix.of B : Matrix (Fin n) (Fin n) ℝ))
 
 /-- **‖M^k‖∞ ≤ ‖M‖∞^k** for any matrix (no nonneg requirement).
     Generalizes `matPow_infNorm_bound` by removing the M ≥ 0 hypothesis. -/
 theorem infNorm_matPow_le {n : ℕ} (hn : 0 < n)
     (M : Fin n → Fin n → ℝ) (k : ℕ) :
-    infNorm hn (matPow n M k) ≤ infNorm hn M ^ k := by
+    infNorm (matPow n M k) ≤ infNorm M ^ k := by
   induction k with
   | zero =>
     simp only [matPow, pow_zero]
-    unfold infNorm idMatrix
-    apply Finset.sup'_le; intro i _
-    have : ∀ j : Fin n, |if i = j then (1 : ℝ) else 0| = if i = j then 1 else 0 := by
-      intro j; split <;> simp
-    simp_rw [this, Finset.sum_ite_eq, Finset.mem_univ, if_true]; linarith
+    apply infNorm_le_of_row_sum_le
+    · intro i
+      unfold idMatrix
+      have : ∀ j : Fin n, |if i = j then (1 : ℝ) else 0| = if i = j then 1 else 0 := by
+        intro j; split <;> simp
+      simp_rw [this, Finset.sum_ite_eq, Finset.mem_univ, if_true]; linarith
+    · norm_num
   | succ k ih =>
-    have hnn := infNorm_nonneg hn M
-    calc infNorm hn (matPow n M (k + 1))
-        = infNorm hn (matMul n M (matPow n M k)) := by rw [matPow_succ]
-      _ ≤ infNorm hn M * infNorm hn (matPow n M k) := infNorm_matMul_le hn M _
-      _ ≤ infNorm hn M * infNorm hn M ^ k :=
+    have hnn := infNorm_nonneg M
+    calc infNorm (matPow n M (k + 1))
+        = infNorm (matMul n M (matPow n M k)) := by rw [matPow_succ]
+      _ ≤ infNorm M * infNorm (matPow n M k) := infNorm_matMul_le hn M _
+      _ ≤ infNorm M * infNorm M ^ k :=
           mul_le_mul_of_nonneg_left ih hnn
-      _ = infNorm hn M ^ (k + 1) := by ring
+      _ = infNorm M ^ (k + 1) := by ring
 
 -- ============================================================
 -- Matrix-vector product: associativity and triangle inequality
@@ -932,39 +1000,50 @@ theorem abs_matMulVec_le (n : ℕ) (A : Fin n → Fin n → ℝ) (x : Fin n → 
         congr 1; ext j; exact abs_mul (A i j) (x j)
 
 /-- **‖Av‖∞ ≤ ‖A‖∞ · ‖v‖∞**: submultiplicativity for matrix-vector product. -/
-theorem infNormVec_matMulVec_le {n : ℕ} (hn : 0 < n)
+theorem infNormVec_matMulVec_le {n : ℕ} (_hn : 0 < n)
     (A : Fin n → Fin n → ℝ) (v : Fin n → ℝ) :
-    infNormVec hn (matMulVec n A v) ≤ infNorm hn A * infNormVec hn v := by
-  unfold infNormVec matMulVec
-  apply Finset.sup'_le; intro i _
-  calc |∑ j : Fin n, A i j * v j|
-      ≤ ∑ j : Fin n, |A i j * v j| := Finset.abs_sum_le_sum_abs _ _
-    _ = ∑ j : Fin n, |A i j| * |v j| := by congr 1; ext j; exact abs_mul _ _
-    _ ≤ ∑ j : Fin n, |A i j| * Finset.sup' Finset.univ
-          (Finset.univ_nonempty_iff.mpr ⟨⟨0, hn⟩⟩) (fun i => |v i|) := by
-        apply Finset.sum_le_sum; intro j _
-        exact mul_le_mul_of_nonneg_left
-          (Finset.le_sup' (fun i => |v i|) (Finset.mem_univ j)) (abs_nonneg _)
-    _ = (∑ j : Fin n, |A i j|) * Finset.sup' Finset.univ
-          (Finset.univ_nonempty_iff.mpr ⟨⟨0, hn⟩⟩) (fun i => |v i|) := by
-        rw [Finset.sum_mul]
-    _ ≤ infNorm hn A * Finset.sup' Finset.univ
-          (Finset.univ_nonempty_iff.mpr ⟨⟨0, hn⟩⟩) (fun i => |v i|) := by
-        apply mul_le_mul_of_nonneg_right (row_sum_le_infNorm hn A i)
-        apply Finset.le_sup'_of_le _ (Finset.mem_univ ⟨0, hn⟩)
-        exact abs_nonneg _
+    infNormVec (matMulVec n A v) ≤ infNorm A * infNormVec v := by
+  unfold infNormVec infNorm matMulVec
+  simpa [Matrix.mulVec] using
+    (Matrix.linfty_opNorm_mulVec (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) v)
 
 /-- Infinity norm of |A| equals infinity norm of A. -/
-theorem infNorm_absMatrix {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ) :
-    infNorm hn (absMatrix n A) = infNorm hn A := by
-  unfold infNorm absMatrix
-  congr 1; ext i; congr 1; ext j
-  exact abs_abs (A i j)
+theorem infNorm_absMatrix {n : ℕ} (_hn : 0 < n) (A : Fin n → Fin n → ℝ) :
+    infNorm (absMatrix n A) = infNorm A := by
+  apply le_antisymm
+  · apply infNorm_le_of_row_sum_le
+    · intro i
+      calc ∑ j : Fin n, |absMatrix n A i j|
+          = ∑ j : Fin n, |A i j| := by
+            unfold absMatrix
+            congr 1; ext j; exact abs_abs (A i j)
+        _ ≤ infNorm A := row_sum_le_infNorm A i
+    · exact infNorm_nonneg A
+  · apply infNorm_le_of_row_sum_le
+    · intro i
+      calc ∑ j : Fin n, |A i j|
+          = ∑ j : Fin n, |absMatrix n A i j| := by
+            unfold absMatrix
+            congr 1; ext j; exact (abs_abs (A i j)).symm
+        _ ≤ infNorm (absMatrix n A) := row_sum_le_infNorm (absMatrix n A) i
+    · exact infNorm_nonneg (absMatrix n A)
 
 /-- Infinity norm of |v| equals infinity norm of v. -/
-theorem infNormVec_absVec {n : ℕ} (hn : 0 < n) (v : Fin n → ℝ) :
-    infNormVec hn (absVec n v) = infNormVec hn v := by
-  unfold infNormVec absVec; congr 1; ext i; exact abs_abs (v i)
+theorem infNormVec_absVec {n : ℕ} (_hn : 0 < n) (v : Fin n → ℝ) :
+    infNormVec (absVec n v) = infNormVec v := by
+  apply le_antisymm
+  · apply infNormVec_le_of_abs_le
+    · intro i
+      unfold absVec
+      rw [abs_abs]
+      exact abs_le_infNormVec v i
+    · exact infNormVec_nonneg v
+  · apply infNormVec_le_of_abs_le
+    · intro i
+      have h := abs_le_infNormVec (absVec n v) i
+      unfold absVec at h
+      rwa [abs_abs] at h
+    · exact infNormVec_nonneg (absVec n v)
 
 -- ============================================================
 -- Neumann partial sum: nonneg entries when M ≥ 0
@@ -1016,7 +1095,8 @@ theorem neumannSum_rowSum_bound (n : ℕ) (M : Fin n → Fin n → ℝ)
       calc ∑ j, matPow n M (N + 1) i j
           = ∑ j, |matPow n M (N + 1) i j| := by
             congr 1; ext j; rw [abs_of_nonneg (matPow_nonneg n M hM (N + 1) i j)]
-        _ ≤ c ^ (N + 1) := matPow_infNorm_bound n M hM c hc_nn hbound (N + 1) i
+        _ ≤ c ^ (N + 1) :=
+          row_sum_le_of_infNormBound (matPow_infNorm_bound n M hM c hc_nn hbound (N + 1)) i
     have hc1 : (0 : ℝ) < 1 - c := by linarith
     calc ∑ j, neumannSum n M N i j + ∑ j, matPow n M (N + 1) i j
         ≤ (1 - c ^ (N + 1)) / (1 - c) + c ^ (N + 1) := add_le_add h1 h2
@@ -1182,7 +1262,7 @@ theorem neumann_exact_scalar_resolution (n : ℕ) (hn : 0 < n)
       have hrow : ∑ j : Fin n, M i j ≤ c := by
         calc ∑ j, M i j = ∑ j, |M i j| := by
               congr 1; ext j; rw [abs_of_nonneg (hM i j)]
-          _ ≤ c := hbound i
+          _ ≤ c := row_sum_le_of_infNormBound hbound i
       calc ∑ j, M i j * |w j| ≤ ∑ j, M i j * W := hMW
         _ = W * ∑ j, M i j := hMW_eq
         _ ≤ W * c := mul_le_mul_of_nonneg_left hrow hW_nn

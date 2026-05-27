@@ -511,7 +511,7 @@ theorem triInv_method1_forward_error_firstorder (n : ℕ) (fp : FPModel)
 
     When ‖X̂‖∞ ≈ ‖L⁻¹‖∞ (i.e. to first order), this gives
     relative error ≤ cₙu · cond(L⁻¹). -/
-theorem triInv_method1_normwise_error (n : ℕ) (hn0 : 0 < n) (fp : FPModel)
+theorem triInv_method1_normwise_error (n : ℕ) (_hn0 : 0 < n) (fp : FPModel)
     (L L_inv : Fin n → Fin n → ℝ)
     (hL_diag : ∀ i : Fin n, L i i ≠ 0)
     (hLT : ∀ i j : Fin n, j.val > i.val → L i j = 0)
@@ -519,8 +519,8 @@ theorem triInv_method1_normwise_error (n : ℕ) (hn0 : 0 < n) (fp : FPModel)
     (hgv : gammaValid fp n) :
     let X_hat : Fin n → Fin n → ℝ :=
       fun i j => fl_forwardSub fp n L (fun k => if k = j then 1 else 0) i
-    infNorm hn0 (fun i j => X_hat i j - L_inv i j) ≤
-      gamma fp n * infNorm hn0 (fun i j =>
+    infNorm (fun i j => X_hat i j - L_inv i j) ≤
+      gamma fp n * infNorm (fun i j =>
         ∑ k₁ : Fin n, |L_inv i k₁| *
           (∑ k₂ : Fin n, |L k₁ k₂| * |X_hat k₂ j|)) := by
   intro X_hat
@@ -547,18 +547,16 @@ theorem triInv_method1_normwise_error (n : ℕ) (hn0 : 0 < n) (fp : FPModel)
   -- ∑_j M i j = ∑_j |M i j| since M ≥ 0
   have habs_eq : ∀ i j : Fin n, |M i j| = M i j :=
     fun i j => abs_of_nonneg (hnn i j)
-  unfold infNorm
-  apply Finset.sup'_le; intro i _
-  calc ∑ j : Fin n, |(fun i j => X_hat i j - L_inv i j) i j|
-      ≤ gamma fp n * ∑ j : Fin n, M i j := hRow i
-    _ = gamma fp n * ∑ j : Fin n, |(fun i j => M i j) i j| := by
-        congr 1; apply Finset.sum_congr rfl; intro j _; exact (habs_eq i j).symm
-    _ ≤ gamma fp n * Finset.sup' Finset.univ
-          (Finset.univ_nonempty_iff.mpr ⟨⟨0, hn0⟩⟩)
-          (fun i => ∑ j : Fin n, |(fun i j => M i j) i j|) := by
-        apply mul_le_mul_of_nonneg_left _ (gamma_nonneg fp hgv)
-        exact Finset.le_sup' (f := fun (i : Fin n) =>
-          ∑ j : Fin n, |(fun i j => M i j) i j|) (Finset.mem_univ i)
+  apply infNorm_le_of_row_sum_le
+  · intro i
+    calc ∑ j : Fin n, |(fun i j => X_hat i j - L_inv i j) i j|
+        ≤ gamma fp n * ∑ j : Fin n, M i j := hRow i
+      _ = gamma fp n * ∑ j : Fin n, |(fun i j => M i j) i j| := by
+          congr 1; apply Finset.sum_congr rfl; intro j _; exact (habs_eq i j).symm
+      _ ≤ gamma fp n * infNorm M := by
+          apply mul_le_mul_of_nonneg_left _ (gamma_nonneg fp hgv)
+          exact row_sum_le_infNorm M i
+  · exact mul_nonneg (gamma_nonneg fp hgv) (infNorm_nonneg M)
 
 -- §13.2.1  Method 2 (reverse-order column computation via mat-vec multiply)
 

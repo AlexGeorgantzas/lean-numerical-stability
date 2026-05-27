@@ -125,35 +125,36 @@ theorem matPow_componentwise_bound (n : ℕ) (A : Fin n → Fin n → ℝ)
 theorem matPow_normwise_bound (n : ℕ) (hn : 0 < n)
     (A : Fin n → Fin n → ℝ) (v : ℕ → (Fin n → ℝ)) (c : ℝ) (hc : 0 ≤ c)
     (hComp : ComputedMatPowVec n A v c) (m : ℕ) :
-    infNormVec hn (v m) ≤ ((1 + c) * infNorm hn A) ^ m * infNormVec hn (v 0) := by
-  unfold infNormVec
-  apply Finset.sup'_le; intro i _
-  have hcw := matPow_componentwise_bound n A v c hc hComp m i
-  -- Pointwise bound on the matMulVec term
-  have hmv : matMulVec n (matPow n (absMatrix n A) m) (absVec n (v 0)) i ≤
-      infNorm hn A ^ m * infNormVec hn (v 0) := by
-    calc matMulVec n (matPow n (absMatrix n A) m) (absVec n (v 0)) i
-        ≤ |matMulVec n (matPow n (absMatrix n A) m) (absVec n (v 0)) i| :=
-          le_abs_self _
-      _ ≤ infNormVec hn (matMulVec n (matPow n (absMatrix n A) m) (absVec n (v 0))) := by
-          unfold infNormVec
-          exact Finset.le_sup' (f := fun i => |matMulVec n (matPow n (absMatrix n A) m)
-            (absVec n (v 0)) i|) (Finset.mem_univ i)
-      _ ≤ infNorm hn (matPow n (absMatrix n A) m) * infNormVec hn (absVec n (v 0)) :=
-          infNormVec_matMulVec_le hn _ _
-      _ ≤ infNorm hn A ^ m * infNormVec hn (absVec n (v 0)) := by
-          apply mul_le_mul_of_nonneg_right _ (infNormVec_nonneg hn _)
-          calc infNorm hn (matPow n (absMatrix n A) m)
-              ≤ infNorm hn (absMatrix n A) ^ m := infNorm_matPow_le hn _ _
-            _ = infNorm hn A ^ m := by rw [infNorm_absMatrix]
-      _ = infNorm hn A ^ m * infNormVec hn (v 0) := by
-          rw [infNormVec_absVec]
-  calc |v m i|
-      ≤ (1 + c) ^ m * matMulVec n (matPow n (absMatrix n A) m) (absVec n (v 0)) i := hcw
-    _ ≤ (1 + c) ^ m * (infNorm hn A ^ m * infNormVec hn (v 0)) :=
-        mul_le_mul_of_nonneg_left hmv (pow_nonneg (by linarith) m)
-    _ = ((1 + c) * infNorm hn A) ^ m * infNormVec hn (v 0) := by
-        rw [← mul_assoc, ← mul_pow]
+    infNormVec (v m) ≤ ((1 + c) * infNorm A) ^ m * infNormVec (v 0) := by
+  apply infNormVec_le_of_abs_le
+  · intro i
+    have hcw := matPow_componentwise_bound n A v c hc hComp m i
+    -- Pointwise bound on the matMulVec term
+    have hmv : matMulVec n (matPow n (absMatrix n A) m) (absVec n (v 0)) i ≤
+        infNorm A ^ m * infNormVec (v 0) := by
+      calc matMulVec n (matPow n (absMatrix n A) m) (absVec n (v 0)) i
+          ≤ |matMulVec n (matPow n (absMatrix n A) m) (absVec n (v 0)) i| :=
+            le_abs_self _
+        _ ≤ infNormVec (matMulVec n (matPow n (absMatrix n A) m) (absVec n (v 0))) :=
+            abs_le_infNormVec _ i
+        _ ≤ infNorm (matPow n (absMatrix n A) m) * infNormVec (absVec n (v 0)) :=
+            infNormVec_matMulVec_le hn _ _
+        _ ≤ infNorm A ^ m * infNormVec (absVec n (v 0)) := by
+            apply mul_le_mul_of_nonneg_right _ (infNormVec_nonneg _)
+            calc infNorm (matPow n (absMatrix n A) m)
+                ≤ infNorm (absMatrix n A) ^ m := infNorm_matPow_le hn _ _
+              _ = infNorm A ^ m := by rw [infNorm_absMatrix hn]
+        _ = infNorm A ^ m * infNormVec (v 0) := by
+            rw [infNormVec_absVec hn]
+    calc |v m i|
+        ≤ (1 + c) ^ m * matMulVec n (matPow n (absMatrix n A) m) (absVec n (v 0)) i := hcw
+      _ ≤ (1 + c) ^ m * (infNorm A ^ m * infNormVec (v 0)) :=
+          mul_le_mul_of_nonneg_left hmv (pow_nonneg (by linarith) m)
+      _ = ((1 + c) * infNorm A) ^ m * infNormVec (v 0) := by
+          rw [← mul_assoc, ← mul_pow]
+  · exact mul_nonneg
+      (pow_nonneg (mul_nonneg (by linarith) (infNorm_nonneg A)) m)
+      (infNormVec_nonneg _)
 
 -- ============================================================
 -- §17.2  Sufficient convergence condition (normwise, eq 17.12)
@@ -169,15 +170,15 @@ theorem matPow_normwise_bound (n : ℕ) (hn : 0 < n)
 theorem matPow_convergence_bound (n : ℕ) (hn : 0 < n)
     (A : Fin n → Fin n → ℝ) (v : ℕ → (Fin n → ℝ)) (c : ℝ) (hc : 0 ≤ c)
     (hComp : ComputedMatPowVec n A v c)
-    (q : ℝ) (hq : (1 + c) * infNorm hn A ≤ q) (m : ℕ) :
-    infNormVec hn (v m) ≤ q ^ m * infNormVec hn (v 0) := by
-  calc infNormVec hn (v m)
-      ≤ ((1 + c) * infNorm hn A) ^ m * infNormVec hn (v 0) :=
+    (q : ℝ) (hq : (1 + c) * infNorm A ≤ q) (m : ℕ) :
+    infNormVec (v m) ≤ q ^ m * infNormVec (v 0) := by
+  calc infNormVec (v m)
+      ≤ ((1 + c) * infNorm A) ^ m * infNormVec (v 0) :=
         matPow_normwise_bound n hn A v c hc hComp m
-    _ ≤ q ^ m * infNormVec hn (v 0) := by
-        apply mul_le_mul_of_nonneg_right _ (infNormVec_nonneg hn _)
+    _ ≤ q ^ m * infNormVec (v 0) := by
+        apply mul_le_mul_of_nonneg_right _ (infNormVec_nonneg _)
         exact pow_le_pow_left₀
-          (mul_nonneg (by linarith) (infNorm_nonneg hn A)) hq m
+          (mul_nonneg (by linarith) (infNorm_nonneg A)) hq m
 
 -- ============================================================
 -- §17.2  Matrix-level componentwise bound (column by column)
@@ -247,9 +248,9 @@ theorem similarity_product_bound (n : ℕ) (hn : 0 < n)
     (q : ℝ) (hq : 0 ≤ q)
     (hBound : ∀ ΔA : Fin n → Fin n → ℝ,
       (∀ i j, |ΔA i j| ≤ c * |A i j|) →
-      infNorm hn (matMul n S_inv (matMul n (fun i j => A i j + ΔA i j) S)) ≤ q) :
-    ∀ m, infNormVec hn (matMulVec n S_inv (v m)) ≤
-      q ^ m * infNormVec hn (matMulVec n S_inv (v 0)) := by
+      infNorm (matMul n S_inv (matMul n (fun i j => A i j + ΔA i j) S)) ≤ q) :
+    ∀ m, infNormVec (matMulVec n S_inv (v m)) ≤
+      q ^ m * infNormVec (matMulVec n S_inv (v 0)) := by
   intro m; induction m with
   | zero => simp [pow_zero, one_mul]
   | succ m ih =>
@@ -287,22 +288,22 @@ theorem similarity_product_bound (n : ℕ) (hn : 0 < n)
         matMulVec_matMul n (matMul n S_inv (matMul n B S)) S_inv (v m) i
       exact h1.trans (h2.trans (h3.trans h4))
     -- ‖S⁻¹ v_{m+1}‖ ≤ ‖S⁻¹BS‖ · ‖S⁻¹ v_m‖ ≤ q · ‖S⁻¹ v_m‖
-    have h1 : infNormVec hn (matMulVec n S_inv (v (m + 1))) ≤
-        q * infNormVec hn (matMulVec n S_inv (v m)) := by
-      calc infNormVec hn (matMulVec n S_inv (v (m + 1)))
-          = infNormVec hn (matMulVec n (matMul n S_inv (matMul n B S))
+    have h1 : infNormVec (matMulVec n S_inv (v (m + 1))) ≤
+        q * infNormVec (matMulVec n S_inv (v m)) := by
+      calc infNormVec (matMulVec n S_inv (v (m + 1)))
+          = infNormVec (matMulVec n (matMul n S_inv (matMul n B S))
               (matMulVec n S_inv (v m))) := by
-            unfold infNormVec; congr 1; ext i'; exact congr_arg abs (key i')
-        _ ≤ infNorm hn (matMul n S_inv (matMul n B S)) *
-            infNormVec hn (matMulVec n S_inv (v m)) :=
+            exact congrArg infNormVec (funext key)
+        _ ≤ infNorm (matMul n S_inv (matMul n B S)) *
+            infNormVec (matMulVec n S_inv (v m)) :=
             infNormVec_matMulVec_le hn _ _
-        _ ≤ q * infNormVec hn (matMulVec n S_inv (v m)) :=
-            mul_le_mul_of_nonneg_right hBk (infNormVec_nonneg hn _)
-    calc infNormVec hn (matMulVec n S_inv (v (m + 1)))
-        ≤ q * infNormVec hn (matMulVec n S_inv (v m)) := h1
-      _ ≤ q * (q ^ m * infNormVec hn (matMulVec n S_inv (v 0))) :=
+        _ ≤ q * infNormVec (matMulVec n S_inv (v m)) :=
+            mul_le_mul_of_nonneg_right hBk (infNormVec_nonneg _)
+    calc infNormVec (matMulVec n S_inv (v (m + 1)))
+        ≤ q * infNormVec (matMulVec n S_inv (v m)) := h1
+      _ ≤ q * (q ^ m * infNormVec (matMulVec n S_inv (v 0))) :=
           mul_le_mul_of_nonneg_left ih hq
-      _ = q ^ (m + 1) * infNormVec hn (matMulVec n S_inv (v 0)) := by ring
+      _ = q ^ (m + 1) * infNormVec (matMulVec n S_inv (v 0)) := by ring
 
 -- ============================================================
 -- §17.2  Corollary: normwise bound via similarity
@@ -321,10 +322,10 @@ theorem similarity_normwise_bound (n : ℕ) (hn : 0 < n)
     (q : ℝ) (hq : 0 ≤ q)
     (hBound : ∀ ΔA : Fin n → Fin n → ℝ,
       (∀ i j, |ΔA i j| ≤ c * |A i j|) →
-      infNorm hn (matMul n S_inv (matMul n (fun i j => A i j + ΔA i j) S)) ≤ q)
+      infNorm (matMul n S_inv (matMul n (fun i j => A i j + ΔA i j) S)) ≤ q)
     (m : ℕ) :
-    infNormVec hn (v m) ≤
-      infNorm hn S * infNorm hn S_inv * q ^ m * infNormVec hn (v 0) := by
+    infNormVec (v m) ≤
+      infNorm S * infNorm S_inv * q ^ m * infNormVec (v 0) := by
   have hSS : matMul n S S_inv = idMatrix n := by ext a b; exact hSr a b
   -- Step 1: w = S(S⁻¹w) so ‖w‖ ≤ ‖S‖·‖S⁻¹w‖
   have hv_eq : ∀ (w : Fin n → ℝ) (i : Fin n),
@@ -333,35 +334,37 @@ theorem similarity_normwise_bound (n : ℕ) (hn : 0 < n)
     have h1 := (matMulVec_matMul n S S_inv w i).symm
     rw [h1, hSS]; unfold matMulVec idMatrix; simp [Finset.mem_univ]
   have h_norm_le : ∀ (w : Fin n → ℝ),
-      infNormVec hn w ≤ infNorm hn S * infNormVec hn (matMulVec n S_inv w) := by
-    intro w; unfold infNormVec
-    apply Finset.sup'_le; intro i _
-    rw [hv_eq w i]
-    calc |matMulVec n S (matMulVec n S_inv w) i|
-        ≤ ∑ j, |S i j| * |matMulVec n S_inv w j| := abs_matMulVec_le n S _ i
-      _ ≤ ∑ j : Fin n, |S i j| * infNormVec hn (matMulVec n S_inv w) := by
-          apply Finset.sum_le_sum; intro j _
-          apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
-          exact Finset.le_sup' (f := fun j => |matMulVec n S_inv w j|) (Finset.mem_univ j)
-      _ = (∑ j : Fin n, |S i j|) * infNormVec hn (matMulVec n S_inv w) :=
-          (Finset.sum_mul ..).symm
-      _ ≤ infNorm hn S * infNormVec hn (matMulVec n S_inv w) :=
-          mul_le_mul_of_nonneg_right (row_sum_le_infNorm hn S i)
-            (infNormVec_nonneg hn _)
+      infNormVec w ≤ infNorm S * infNormVec (matMulVec n S_inv w) := by
+    intro w
+    apply infNormVec_le_of_abs_le
+    · intro i
+      rw [hv_eq w i]
+      calc |matMulVec n S (matMulVec n S_inv w) i|
+          ≤ ∑ j, |S i j| * |matMulVec n S_inv w j| := abs_matMulVec_le n S _ i
+        _ ≤ ∑ j : Fin n, |S i j| * infNormVec (matMulVec n S_inv w) := by
+            apply Finset.sum_le_sum; intro j _
+            apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
+            exact abs_le_infNormVec (matMulVec n S_inv w) j
+        _ = (∑ j : Fin n, |S i j|) * infNormVec (matMulVec n S_inv w) :=
+            (Finset.sum_mul ..).symm
+        _ ≤ infNorm S * infNormVec (matMulVec n S_inv w) :=
+            mul_le_mul_of_nonneg_right (row_sum_le_infNorm S i)
+              (infNormVec_nonneg _)
+    · exact mul_nonneg (infNorm_nonneg _) (infNormVec_nonneg _)
   -- Step 2: combine
   have h2 := similarity_product_bound n hn A S S_inv hSr v c hComp q hq hBound m
-  have h3 : infNormVec hn (matMulVec n S_inv (v 0)) ≤
-      infNorm hn S_inv * infNormVec hn (v 0) :=
+  have h3 : infNormVec (matMulVec n S_inv (v 0)) ≤
+      infNorm S_inv * infNormVec (v 0) :=
     infNormVec_matMulVec_le hn S_inv (v 0)
-  calc infNormVec hn (v m)
-      ≤ infNorm hn S * infNormVec hn (matMulVec n S_inv (v m)) := h_norm_le (v m)
-    _ ≤ infNorm hn S * (q ^ m * infNormVec hn (matMulVec n S_inv (v 0))) :=
-        mul_le_mul_of_nonneg_left h2 (infNorm_nonneg hn S)
-    _ ≤ infNorm hn S * (q ^ m * (infNorm hn S_inv * infNormVec hn (v 0))) :=
+  calc infNormVec (v m)
+      ≤ infNorm S * infNormVec (matMulVec n S_inv (v m)) := h_norm_le (v m)
+    _ ≤ infNorm S * (q ^ m * infNormVec (matMulVec n S_inv (v 0))) :=
+        mul_le_mul_of_nonneg_left h2 (infNorm_nonneg S)
+    _ ≤ infNorm S * (q ^ m * (infNorm S_inv * infNormVec (v 0))) :=
         mul_le_mul_of_nonneg_left
           (mul_le_mul_of_nonneg_left h3 (pow_nonneg hq m))
-          (infNorm_nonneg hn S)
-    _ = infNorm hn S * infNorm hn S_inv * q ^ m * infNormVec hn (v 0) := by ring
+          (infNorm_nonneg S)
+    _ = infNorm S * infNorm S_inv * q ^ m * infNormVec (v 0) := by ring
 
 -- ============================================================
 -- Theorem 17.1: JordanFormSpec and convergence condition
@@ -399,15 +402,15 @@ structure JordanFormSpec (n : ℕ) (hn : 0 < n)
       absorbing all valid perturbations. -/
   similarity_absorbs :
     ∀ (η : ℝ), 0 ≤ η →
-    4 * max_block_size * η * (infNorm hn X * infNorm hn X_inv) *
-      infNorm hn A < (1 - spectral_radius) ^ max_block_size →
+    4 * max_block_size * η * (infNorm X * infNorm X_inv) *
+      infNorm A < (1 - spectral_radius) ^ max_block_size →
     ∃ S S_inv : Fin n → Fin n → ℝ,
     ∃ q : ℝ,
       IsRightInverse n S S_inv ∧
       0 ≤ q ∧ q < 1 ∧
       (∀ ΔA : Fin n → Fin n → ℝ,
         (∀ i j, |ΔA i j| ≤ η * |A i j|) →
-        infNorm hn (matMul n S_inv
+        infNorm (matMul n S_inv
           (matMul n (fun i j => A i j + ΔA i j) S)) ≤ q)
 
 /-- **Theorem 17.1** (Higham–Knight): sufficient condition for convergence
@@ -434,15 +437,15 @@ theorem higham_knight_17_1 (n : ℕ) (hn : 0 < n)
     (v : ℕ → (Fin n → ℝ)) (c : ℝ) (hc : 0 ≤ c)
     (hComp : ComputedMatPowVec n A v c)
     (hCond : 4 * hJ.max_block_size * c *
-      (infNorm hn X * infNorm hn X_inv) * infNorm hn A <
+      (infNorm X * infNorm X_inv) * infNorm A <
       (1 - hJ.spectral_radius) ^ hJ.max_block_size) :
     ∃ (C q : ℝ), 0 ≤ C ∧ 0 ≤ q ∧ q < 1 ∧
-      ∀ m, infNormVec hn (v m) ≤
-        C * q ^ m * infNormVec hn (v 0) := by
+      ∀ m, infNormVec (v m) ≤
+        C * q ^ m * infNormVec (v 0) := by
   obtain ⟨S, S_inv, q, hSr, hq0, hq1, hAbsorb⟩ :=
     hJ.similarity_absorbs c hc hCond
-  exact ⟨infNorm hn S * infNorm hn S_inv, q,
-    mul_nonneg (infNorm_nonneg hn S) (infNorm_nonneg hn S_inv),
+  exact ⟨infNorm S * infNorm S_inv, q,
+    mul_nonneg (infNorm_nonneg S) (infNorm_nonneg S_inv),
     hq0, hq1, fun m =>
     similarity_normwise_bound n hn A S S_inv hSr v c hComp q hq0 hAbsorb m⟩
 
