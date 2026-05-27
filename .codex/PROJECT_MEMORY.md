@@ -175,12 +175,26 @@ These compile, but should not be treated as fully derived stability results:
   `Norm2` now states exact facts over `x ⬝ᵥ x` and `‖WithLp.toLp 2 x‖`
   directly.  Floating-point kernels such as `fl_dotProduct`, `fl_norm2Sq`, and
   `fl_norm2` remain local because they encode rounded operation order.
-- Remaining exact matrix names `infNormVec`, `infNorm`, `oneNorm`,
-  `frobNorm`, and `frobNormSq` are still present and widely used.  Treat them
-  as a pending API decision: either migrate theorem statements to raw Mathlib
-  norm notation with local/scoped instances, or explicitly justify them as
-  representation bridges from `Fin n → Fin n → ℝ` matrices to Mathlib
-  `Matrix`.  Do not introduce further exact norm aliases.
+- Matrix shape aliases were added in `MatrixAlgebra`: `RVec n := Fin n → ℝ`,
+  `RMat m n := Matrix (Fin m) (Fin n) ℝ`, `RSqMat n := RMat n n`, and
+  `RMatFn m n := Fin m → Fin n → ℝ`.  New exact matrix-facing APIs should
+  prefer `RMat` when possible, while existing algorithm code may keep using
+  `RMatFn` during gradual migration.
+- Current exact Frobenius policy: keep `frobNorm` as a readable rectangular
+  compatibility wrapper over Mathlib, not as an independent norm definition:
+  `frobNorm A := ‖(Matrix.of A : RMat m n)‖`.  The source of truth is
+  Mathlib's Frobenius norm, while public statements over legacy function-shaped
+  matrices stay readable.  Keep `frobNormSq` only as a squared convenience for
+  existing sum-of-squares algebra and sep/Sylvester proofs until a separate
+  squared-norm migration is planned.
+- Matrix-shape policy for the rebuild: rectangular real matrices are needed
+  before full QR/least-squares implementation-backed proofs.  Avoid adding new
+  square-only exact infrastructure unless the algorithm is inherently square.
+  Prefer APIs that can move toward `Matrix (Fin m) (Fin n) ℝ` or compatible
+  `Fin m → Fin n → ℝ` wrappers.  Do not attempt a silent global migration to
+  complex matrices: complex floating-point arithmetic needs an explicit later
+  model, probably built from real rounded operations on real and imaginary
+  parts rather than by treating `ℂ` operations as primitive.
 - Corrected the QR implementation plan to start with missing low-level
   primitives rather than treating reflector construction as permanently out of
   scope.

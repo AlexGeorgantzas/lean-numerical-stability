@@ -22,7 +22,7 @@ import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
 
 namespace LeanFpAnalysis.FP
 
-open scoped BigOperators
+open scoped BigOperators Matrix.Norms.Frobenius
 
 -- ============================================================
 -- §18.3  Theorem 18.5: QR-based solve backward error
@@ -140,12 +140,16 @@ theorem qr_solve_backward_from_components (n : ℕ) (hn : 0 < n)
 theorem qr_solve_perturbation_bound (n : ℕ)
     (Q : Fin n → Fin n → ℝ) (ΔA₁ ΔR : Fin n → Fin n → ℝ)
     (hQ : IsOrthogonal n Q)
-    (hΔA₁ : frobNorm ΔA₁ ≤ c₁) (hΔR : frobNorm ΔR ≤ c₂)
+    (hΔA₁ : frobNorm ΔA₁ ≤ c₁)
+    (hΔR : frobNorm ΔR ≤ c₂)
     (hc₁ : 0 ≤ c₁) (hc₂ : 0 ≤ c₂) :
     frobNorm (fun a b => ΔA₁ a b + matMul n Q ΔR a b) ≤ c₁ + c₂ := by
   calc frobNorm (fun a b => ΔA₁ a b + matMul n Q ΔR a b)
-      ≤ frobNorm ΔA₁ + frobNorm (matMul n Q ΔR) := frobNorm_add_le ΔA₁ (matMul n Q ΔR)
-    _ = frobNorm ΔA₁ + frobNorm ΔR := by
+      ≤ frobNorm ΔA₁ +
+          frobNorm (matMul n Q ΔR) :=
+            frobNorm_add_le ΔA₁ (matMul n Q ΔR)
+    _ = frobNorm ΔA₁ +
+          frobNorm ΔR := by
         rw [frobNorm_orthogonal_left Q ΔR hQ]
     _ ≤ c₁ + c₂ := by linarith
 

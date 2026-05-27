@@ -20,7 +20,7 @@ import LeanFpAnalysis.FP.Algorithms.QR.HouseholderQR
 
 namespace LeanFpAnalysis.FP
 
-open scoped BigOperators
+open scoped BigOperators Matrix.Norms.Frobenius
 
 -- ============================================================
 -- §18.5  Lemma 18.8: Sequence of Givens rotations backward error
@@ -69,7 +69,8 @@ structure GivensQRBackwardError (n : ℕ) (A R_hat : Fin n → Fin n → ℝ)
 theorem givens_qr_backward (n : ℕ) (r : ℕ) (hr : 0 < r)
     (A R_hat : Fin n → Fin n → ℝ) (c : ℝ) (hc : 0 ≤ c)
     (hSeq : GivensSequenceBackwardError n A R_hat r c) :
-    GivensQRBackwardError n A R_hat (↑r * c * frobNorm A) := by
+    GivensQRBackwardError n A R_hat
+      (↑r * c * frobNorm A) := by
   obtain ⟨Q, ΔA, hQ, hAhat, hbound⟩ := hSeq.result
   exact ⟨⟨Q, ΔA, hQ, by
     intro i j

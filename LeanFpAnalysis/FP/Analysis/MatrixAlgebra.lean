@@ -24,7 +24,27 @@ import Mathlib.Tactic.FieldSimp
 
 namespace LeanFpAnalysis.FP
 
-open scoped BigOperators NNReal
+open scoped BigOperators NNReal Matrix.Norms.Frobenius
+
+-- ============================================================
+-- Public exact vector/matrix shape aliases
+-- ============================================================
+
+/-- Real vector indexed by `Fin n`. -/
+abbrev RVec (n : ℕ) := Fin n → ℝ
+
+/-- Rectangular real matrix using Mathlib's matrix type.  New exact
+    matrix-facing APIs should prefer this shape when possible. -/
+abbrev RMat (m n : ℕ) := Matrix (Fin m) (Fin n) ℝ
+
+/-- Square real matrix using Mathlib's matrix type. -/
+abbrev RSqMat (n : ℕ) := RMat n n
+
+/-- Legacy function-shaped rectangular real matrix.  Existing algorithm code
+    still uses this representation heavily; it is definitionally the same data
+    as `RMat m n`, but Lean's norm instances are not the same unless we coerce
+    through `Matrix.of`. -/
+abbrev RMatFn (m n : ℕ) := Fin m → Fin n → ℝ
 
 -- ============================================================
 -- Matrix multiplication (exact, non-FP)
@@ -277,9 +297,9 @@ noncomputable def infNorm {n : ℕ} (A : Fin n → Fin n → ℝ) : ℝ :=
 /-- Infinity norm of a matrix is nonneg. -/
 lemma infNorm_nonneg {n : ℕ} (A : Fin n → Fin n → ℝ) :
     0 ≤ infNorm A := by
-  letI := Matrix.linftyOpNormedRing (n := Fin n) (α := ℝ)
   unfold infNorm
-  exact norm_nonneg _
+  rw [Matrix.linfty_opNorm_def]
+  exact NNReal.coe_nonneg _
 
 /-- Infinity norm of a vector is nonneg. -/
 lemma infNormVec_nonneg {n : ℕ} (v : Fin n → ℝ) :
@@ -487,43 +507,42 @@ theorem matTranspose_id {n : ℕ} : matTranspose (idMatrix n) = idMatrix n := by
 -- ============================================================
 
 /-- **Squared Frobenius norm**: ‖A‖²_F = ∑_{ij} A_{ij}². -/
-noncomputable def frobNormSq {n : ℕ} (A : Fin n → Fin n → ℝ) : ℝ :=
-  ∑ i : Fin n, ∑ j : Fin n, A i j ^ 2
+noncomputable def frobNormSq {m n : ℕ} (A : RMatFn m n) : ℝ :=
+  ∑ i : Fin m, ∑ j : Fin n, A i j ^ 2
+
+/-- **Frobenius norm** as a Mathlib-backed compatibility wrapper for the
+    library's function-shaped matrices.  The source of truth is Mathlib's
+    Frobenius norm on `Matrix`, not a separate local norm definition. -/
+noncomputable abbrev frobNorm {m n : ℕ} (A : RMatFn m n) : ℝ :=
+  ‖(Matrix.of A : RMat m n)‖
 
 /-- Squared Frobenius norm is nonneg. -/
-lemma frobNormSq_nonneg {n : ℕ} (A : Fin n → Fin n → ℝ) :
+lemma frobNormSq_nonneg {m n : ℕ} (A : RMatFn m n) :
     0 ≤ frobNormSq A := by
   apply Finset.sum_nonneg; intro i _
   apply Finset.sum_nonneg; intro j _
   exact sq_nonneg _
 
-/-- Compatibility name for Mathlib's Frobenius matrix norm. -/
-noncomputable def frobNorm {n : ℕ} (A : Fin n → Fin n → ℝ) : ℝ :=
-  letI := Matrix.frobeniusNormedAddCommGroup (m := Fin n) (n := Fin n) (α := ℝ)
-  ‖(Matrix.of A : Matrix (Fin n) (Fin n) ℝ)‖
-
 /-- Mathlib's Frobenius norm agrees with the local squared-norm convenience. -/
-lemma frobNorm_eq_sqrt_frobNormSq {n : ℕ} (A : Fin n → Fin n → ℝ) :
+lemma frobNorm_eq_sqrt_frobNormSq {m n : ℕ} (A : RMatFn m n) :
     frobNorm A = Real.sqrt (frobNormSq A) := by
   unfold frobNorm frobNormSq
   rw [Matrix.frobenius_norm_def]
   simp [Matrix.of_apply, Real.norm_eq_abs, sq_abs, Real.sqrt_eq_rpow]
 
 /-- Frobenius norm is nonneg. -/
-lemma frobNorm_nonneg {n : ℕ} (A : Fin n → Fin n → ℝ) :
+lemma frobNorm_nonneg {m n : ℕ} (A : RMatFn m n) :
     0 ≤ frobNorm A := by
-  letI := Matrix.frobeniusNormedAddCommGroup (m := Fin n) (n := Fin n) (α := ℝ)
-  unfold frobNorm
   exact norm_nonneg _
 
 /-- ‖A‖²_F = ‖A‖_F². -/
-lemma frobNorm_sq {n : ℕ} (A : Fin n → Fin n → ℝ) :
+lemma frobNorm_sq {m n : ℕ} (A : RMatFn m n) :
     frobNorm A ^ 2 = frobNormSq A := by
   rw [frobNorm_eq_sqrt_frobNormSq]
   rw [sq, Real.mul_self_sqrt (frobNormSq_nonneg A)]
 
 /-- ‖A‖_F = 0 iff A = 0. -/
-theorem frobNorm_eq_zero_iff {n : ℕ} (A : Fin n → Fin n → ℝ) :
+theorem frobNorm_eq_zero_iff {m n : ℕ} (A : RMatFn m n) :
     frobNorm A = 0 ↔ ∀ i j, A i j = 0 := by
   rw [frobNorm_eq_sqrt_frobNormSq]
   rw [Real.sqrt_eq_zero (frobNormSq_nonneg A)]
@@ -581,7 +600,7 @@ theorem frobNormSq_matMul_le {n : ℕ} (A B : Fin n → Fin n → ℝ) :
     ‖AB‖_F ≤ ‖A‖_F · ‖B‖_F. -/
 theorem frobNorm_matMul_le {n : ℕ} (A B : Fin n → Fin n → ℝ) :
     frobNorm (matMul n A B) ≤ frobNorm A * frobNorm B := by
-  unfold frobNorm matMul
+  unfold matMul
   simpa [Matrix.mul_apply] using
     (Matrix.frobenius_norm_mul (Matrix.of A : Matrix (Fin n) (Fin n) ℝ)
       (Matrix.of B : Matrix (Fin n) (Fin n) ℝ))
@@ -610,14 +629,17 @@ theorem frobInnerProduct_sq_le {n : ℕ} (A B : Fin n → Fin n → ℝ) :
 /-- **Frobenius inner product bound**: ∑_ij A_ij B_ij ≤ ‖A‖_F · ‖B‖_F.
     Follows from Cauchy-Schwarz and ‖·‖_F = √(‖·‖²_F). -/
 theorem frobInnerProduct_le {n : ℕ} (A B : Fin n → Fin n → ℝ) :
-    ∑ i : Fin n, ∑ j : Fin n, A i j * B i j ≤ frobNorm A * frobNorm B := by
+    ∑ i : Fin n, ∑ j : Fin n, A i j * B i j ≤
+      frobNorm A * frobNorm B := by
   -- From CS: (∑ AB)² ≤ ‖A‖²_F ‖B‖²_F = (‖A‖_F ‖B‖_F)²
   have hcs := frobInnerProduct_sq_le A B
   have hnn : 0 ≤ frobNorm A * frobNorm B :=
     mul_nonneg (frobNorm_nonneg A) (frobNorm_nonneg B)
   -- (∑ AB)² ≤ (‖A‖_F ‖B‖_F)² and ‖A‖_F ‖B‖_F ≥ 0 → ∑ AB ≤ ‖A‖_F ‖B‖_F
-  rw [show frobNormSq A * frobNormSq B = (frobNorm A * frobNorm B) ^ 2 from by
-    rw [show (frobNorm A * frobNorm B) ^ 2 = frobNorm A ^ 2 * frobNorm B ^ 2 from by ring,
+  rw [show frobNormSq A * frobNormSq B =
+      (frobNorm A * frobNorm B) ^ 2 from by
+    rw [show (frobNorm A * frobNorm B) ^ 2 =
+          frobNorm A ^ 2 * frobNorm B ^ 2 from by ring,
         frobNorm_sq, frobNorm_sq]] at hcs
   nlinarith [sq_abs (∑ i : Fin n, ∑ j : Fin n, A i j * B i j)]
 
@@ -647,8 +669,6 @@ theorem frobNormSq_add_le {n : ℕ} (A B : Fin n → Fin n → ℝ) :
 /-- **Frobenius triangle inequality**: ‖A + B‖_F ≤ ‖A‖_F + ‖B‖_F. -/
 theorem frobNorm_add_le {n : ℕ} (A B : Fin n → Fin n → ℝ) :
     frobNorm (fun i j => A i j + B i j) ≤ frobNorm A + frobNorm B := by
-  letI := Matrix.frobeniusNormedAddCommGroup (m := Fin n) (n := Fin n) (α := ℝ)
-  unfold frobNorm
   simpa using
     (norm_add_le (Matrix.of A : Matrix (Fin n) (Fin n) ℝ)
       (Matrix.of B : Matrix (Fin n) (Fin n) ℝ))
@@ -661,15 +681,11 @@ theorem frobNormSq_neg {n : ℕ} (A : Fin n → Fin n → ℝ) :
 /-- Frobenius norm is invariant under negation: ‖-A‖_F = ‖A‖_F. -/
 theorem frobNorm_neg {n : ℕ} (A : Fin n → Fin n → ℝ) :
     frobNorm (fun i j => -A i j) = frobNorm A := by
-  letI := Matrix.frobeniusNormedAddCommGroup (m := Fin n) (n := Fin n) (α := ℝ)
-  unfold frobNorm
   simpa using norm_neg (Matrix.of A : Matrix (Fin n) (Fin n) ℝ)
 
 /-- **Frobenius triangle inequality for subtraction**: ‖A - B‖_F ≤ ‖A‖_F + ‖B‖_F. -/
 theorem frobNorm_sub_le {n : ℕ} (A B : Fin n → Fin n → ℝ) :
     frobNorm (fun i j => A i j - B i j) ≤ frobNorm A + frobNorm B := by
-  letI := Matrix.frobeniusNormedAddCommGroup (m := Fin n) (n := Fin n) (α := ℝ)
-  unfold frobNorm
   simpa [sub_eq_add_neg] using
     (norm_sub_le (Matrix.of A : Matrix (Fin n) (Fin n) ℝ)
       (Matrix.of B : Matrix (Fin n) (Fin n) ℝ))

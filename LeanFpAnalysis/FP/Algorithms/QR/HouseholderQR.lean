@@ -19,7 +19,7 @@ import LeanFpAnalysis.FP.Algorithms.QR.HouseholderSpec
 
 namespace LeanFpAnalysis.FP
 
-open scoped BigOperators
+open scoped BigOperators Matrix.Norms.Frobenius
 
 -- ============================================================
 -- §18.3  Lemma 18.3: Sequence of orthogonal transformations
@@ -45,7 +45,8 @@ structure OrthogonalSequenceBackwardError (n : ℕ) (A : Fin n → Fin n → ℝ
     IsOrthogonal n Q ∧
     (∀ i j, A_hat i j =
       matMul n (matTranspose Q) (fun a b => A a b + ΔA a b) i j) ∧
-    frobNorm ΔA ≤ ↑r * c * frobNorm A
+    frobNorm ΔA ≤
+      ↑r * c * frobNorm A
 
 /-- **Single-step backward error accumulation** (Lemma 18.3 engine).
 
@@ -78,7 +79,9 @@ theorem orthogonal_sequence_one_step (n : ℕ)
       IsOrthogonal n Q' ∧
       (∀ i j, A_next i j =
         matMul n (matTranspose Q') (fun a b => A a b + ΔA' a b) i j) ∧
-      frobNorm ΔA' ≤ frobNorm ΔA + c_step * frobNorm (fun a b => A a b + ΔA a b) := by
+      frobNorm ΔA' ≤
+        frobNorm ΔA +
+          c_step * frobNorm (fun a b => A a b + ΔA a b) := by
   -- Witnesses: Q' = Q·Pᵀ, ΔA' = ΔA + E where E = Q'·ΔP·Â
   let Q' := matMul n Q (matTranspose P)
   let B : Fin n → Fin n → ℝ := fun a b => A a b + ΔA a b
@@ -118,19 +121,32 @@ theorem orthogonal_sequence_one_step (n : ℕ)
           (congr_fun (congr_fun (matMul_add_right n (matTranspose Q') B E) i) j).symm
   · -- Bound: ‖ΔA'‖_F ≤ ‖ΔA‖_F + c_step · ‖B‖_F
     show frobNorm (fun a b => ΔA a b + E a b) ≤
-      frobNorm ΔA + c_step * frobNorm B
-    have hfE : frobNorm E = frobNorm (matMul n ΔP A_hat) := by
+      frobNorm ΔA +
+        c_step * frobNorm B
+    have hfE :
+        frobNorm E =
+          frobNorm (matMul n ΔP A_hat) := by
       show frobNorm (matMul n (matMul n Q' ΔP) A_hat) = _
       rw [matMul_assoc]; exact frobNorm_orthogonal_left Q' _ hQ'
-    have hfÂ : frobNorm A_hat = frobNorm B := by
+    have hfÂ :
+        frobNorm A_hat =
+          frobNorm B := by
       rw [hÂ]; exact frobNorm_orthogonal_left (matTranspose Q) B hQ.transpose
     calc frobNorm (fun a b => ΔA a b + E a b)
-        ≤ frobNorm ΔA + frobNorm E := frobNorm_add_le ΔA E
-      _ = frobNorm ΔA + frobNorm (matMul n ΔP A_hat) := by rw [hfE]
-      _ ≤ frobNorm ΔA + frobNorm ΔP * frobNorm A_hat := by
+        ≤ frobNorm ΔA +
+            frobNorm E := frobNorm_add_le ΔA E
+      _ = frobNorm ΔA +
+            frobNorm (matMul n ΔP A_hat) := by
+          rw [hfE]
+      _ ≤ frobNorm ΔA +
+            frobNorm ΔP *
+              frobNorm A_hat := by
           linarith [frobNorm_matMul_le ΔP A_hat]
-      _ = frobNorm ΔA + frobNorm ΔP * frobNorm B := by rw [hfÂ]
-      _ ≤ frobNorm ΔA + c_step * frobNorm B := by
+      _ = frobNorm ΔA +
+            frobNorm ΔP *
+              frobNorm B := by rw [hfÂ]
+      _ ≤ frobNorm ΔA +
+            c_step * frobNorm B := by
           linarith [mul_le_mul_of_nonneg_right hΔP (frobNorm_nonneg B)]
 
 -- ============================================================
@@ -159,7 +175,8 @@ structure HouseholderQRBackwardError (n : ℕ) (A R_hat : Fin n → Fin n → �
 theorem householder_qr_backward (n : ℕ) (hn : 0 < n)
     (A R_hat : Fin n → Fin n → ℝ) (c : ℝ) (hc : 0 ≤ c)
     (hSeq : OrthogonalSequenceBackwardError n A R_hat n c) :
-    HouseholderQRBackwardError n A R_hat (↑n * c * frobNorm A) := by
+    HouseholderQRBackwardError n A R_hat
+      (↑n * c * frobNorm A) := by
   obtain ⟨Q, ΔA, hQ, hAhat, hbound⟩ := hSeq.result
   exact ⟨⟨Q, ΔA, hQ, by
     intro i j

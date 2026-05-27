@@ -17,7 +17,7 @@ import LeanFpAnalysis.FP.Algorithms.Sylvester.SylvesterSpec
 
 namespace LeanFpAnalysis.FP
 
-open scoped BigOperators
+open scoped BigOperators Matrix.Norms.Frobenius
 
 -- ============================================================
 -- SVD representation (§15.2, eq 15.13)
