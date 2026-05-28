@@ -129,6 +129,22 @@ theorem covering_polytopes_by_balls_param {V : Finset E} {ε : ℝ} {k : ℕ}
   exact convexHull_covered_by_empiricalCenters (E := E) (V := V)
     (D := 1) (ε := ε) (k := k) (by norm_num) hk hdiam hε
 
+/-- The pointwise covering statement as an explicit union of closed balls. -/
+theorem convexHull_subset_iUnion_closedBall_empiricalCenters
+    {V : Finset E} {ε : ℝ} {k : ℕ}
+    (hk : 0 < k) (hdiam : PairwiseNormBound (V : Set E) 1)
+    (hε : 1 / Real.sqrt (k : ℝ) ≤ ε) :
+    convexHull ℝ (V : Set E) ⊆
+      ⋃ c ∈ empiricalCenters V k, Metric.closedBall c ε := by
+  intro x hx
+  rcases
+    (covering_polytopes_by_balls_param
+      (E := E) (V := V) (ε := ε) (k := k) hk hdiam hε).1 x hx
+    with ⟨c, hc, hxc⟩
+  refine Set.mem_iUnion.mpr ⟨c, ?_⟩
+  refine Set.mem_iUnion.mpr ⟨hc, ?_⟩
+  simpa [Metric.mem_closedBall, dist_eq_norm] using hxc
+
 lemma one_div_sqrt_natCeil_one_div_sq_le {ε : ℝ} (hε : 0 < ε) :
     1 / Real.sqrt ((⌈(1 / ε ^ 2 : ℝ)⌉₊ : ℝ)) ≤ ε := by
   let k : ℕ := ⌈(1 / ε ^ 2 : ℝ)⌉₊
@@ -163,6 +179,36 @@ theorem covering_polytopes_by_balls {V : Finset E} {ε : ℝ}
   exact covering_polytopes_by_balls_param (E := E) (V := V) (ε := ε)
     (k := ⌈(1 / ε ^ 2 : ℝ)⌉₊) hk hdiam
     (one_div_sqrt_natCeil_one_div_sq_le hε)
+
+/-- Named-polytope version of HDP Corollary 0.0.4. If `P` is the convex hull
+of a finset `V` with `N` vertices and diameter at most `1`, then `P` is covered
+by at most `N^ceil(1/ε^2)` balls of radius `ε`. -/
+theorem covering_polytope_by_balls_named
+    {P : Set E} {V : Finset E} {N : ℕ} {ε : ℝ}
+    (hP : P = convexHull ℝ (V : Set E))
+    (hN : V.card = N)
+    (hε : 0 < ε)
+    (hdiamP : PairwiseNormBound P 1) :
+    ∃ C : Set E,
+      C.ncard ≤ N ^ ⌈(1 / ε ^ 2 : ℝ)⌉₊ ∧
+      ∀ x ∈ P, ∃ c ∈ C, ‖x - c‖ ≤ ε := by
+  classical
+  let k : ℕ := ⌈(1 / ε ^ 2 : ℝ)⌉₊
+  let C : Set E := empiricalCenters V k
+  refine ⟨C, ?_, ?_⟩
+  · have hcard := empiricalCenters_ncard_le V k
+    simpa [C, k, hN] using hcard
+  · intro x hx
+    have hx' : x ∈ convexHull ℝ (V : Set E) := by
+      simpa [hP] using hx
+    have hdiamV : PairwiseNormBound (V : Set E) 1 := by
+      intro s hs t ht
+      apply hdiamP
+      · simpa [hP] using subset_convexHull ℝ (V : Set E) hs
+      · simpa [hP] using subset_convexHull ℝ (V : Set E) ht
+    exact
+      (covering_polytopes_by_balls
+        (E := E) (V := V) (ε := ε) hε hdiamV).1 x hx'
 
 /-- HDP Exercise 0.0.6 in parameterized form. Using unordered empirical
 averages improves the count from ordered `N^k` choices to the stars-and-bars
@@ -218,5 +264,25 @@ theorem improved_covering_polytopes_by_balls {V : Finset E} {ε : ℝ}
         (Real.exp 1 + Real.exp 1 * ε ^ 2 * (V.card : ℝ)) ^ k := by
     exact pow_le_pow_left₀ (by positivity) hbase k
   simpa [k] using hcard_real.trans (hchoose_mono.trans (hchoose_exp.trans hpow))
+
+/-- Book-style version of HDP Exercise 0.0.6: there exists an absolute
+constant `C` for the improved covering estimate. The concrete theorem above
+uses the explicit value `C = e`; this wrapper exposes the existential form. -/
+theorem improved_covering_polytopes_by_balls_exists_C {V : Finset E} {ε : ℝ}
+    (hε : 0 < ε) (hdiam : PairwiseNormBound (V : Set E) 1) :
+    ∃ C : ℝ,
+      0 < C ∧
+      (∀ x ∈ convexHull ℝ (V : Set E),
+        ∃ c ∈ unorderedEmpiricalCenters V ⌈(1 / ε ^ 2 : ℝ)⌉₊,
+          ‖x - c‖ ≤ ε) ∧
+      ((unorderedEmpiricalCenters V ⌈(1 / ε ^ 2 : ℝ)⌉₊).ncard : ℝ) ≤
+        (C + C * ε ^ 2 * (V.card : ℝ)) ^
+          ⌈(1 / ε ^ 2 : ℝ)⌉₊ := by
+  refine ⟨Real.exp 1, Real.exp_pos 1, ?_, ?_⟩
+  · exact (improved_covering_polytopes_by_balls
+      (E := E) (V := V) (ε := ε) hε hdiam).1
+  · simpa [mul_assoc] using
+      (improved_covering_polytopes_by_balls
+        (E := E) (V := V) (ε := ε) hε hdiam).2
 
 end LeanFpAnalysis.HDP

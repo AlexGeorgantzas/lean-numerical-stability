@@ -102,12 +102,18 @@ It intentionally contains no task-specific proof scripts.
 -- HDP appetizer entry points
 #check PairwiseNormBound
 #check empiricalAverage
+#check pairwiseNormBound_of_diam_le
 #check caratheodory_finiteDimensional
 #check approximate_caratheodory_theorem_0_0_2
+#check approximate_caratheodory_of_diam_le
 #check empiricalCenters_ncard_le
 #check covering_polytopes_by_balls_param
+#check convexHull_subset_iUnion_closedBall_empiricalCenters
 #check covering_polytopes_by_balls
+#check covering_polytope_by_balls_named
 #check unorderedEmpiricalCenters_ncard_le_choose
 #check improved_covering_polytopes_by_balls
+#check improved_covering_polytopes_by_balls_exists_C
 #check exercise_0_0_5_binomial_chain
+#check weighted_variance_sum_independent
 #check weighted_variance_identity

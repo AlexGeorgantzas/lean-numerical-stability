@@ -40,4 +40,16 @@ theorem approximate_caratheodory_theorem_0_0_2
       ‖x - empiricalAverage pts‖ ≤ 1 / Real.sqrt (k : ℝ) :=
   approximate_caratheodory_unit (E := E) hdiam hx hk
 
+/-- HDP Theorem 0.0.2, with the diameter hypothesis stated using mathlib's
+`Metric.diam`. The boundedness assumption is the standard side condition
+needed for `Metric.diam` to control pairwise distances. -/
+theorem approximate_caratheodory_of_diam_le
+    {T : Set E} (hbounded : Bornology.IsBounded T) (hdiam : Metric.diam T ≤ 1)
+    {x : E} (hx : x ∈ convexHull ℝ T) {k : ℕ} (hk : 0 < k) :
+    ∃ pts : Fin k → E,
+      (∀ j, pts j ∈ T) ∧
+      ‖x - empiricalAverage pts‖ ≤ 1 / Real.sqrt (k : ℝ) := by
+  exact approximate_caratheodory_unit (E := E)
+    (pairwiseNormBound_of_diam_le hbounded hdiam) hx hk
+
 end LeanFpAnalysis.HDP

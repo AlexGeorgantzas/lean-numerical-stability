@@ -1,5 +1,6 @@
 import Mathlib.Analysis.Convex.Caratheodory
 import Mathlib.Analysis.InnerProductSpace.Basic
+import Mathlib.Topology.MetricSpace.Bounded
 import Mathlib.Tactic
 
 /-!
@@ -21,6 +22,26 @@ variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
 covering proofs. -/
 def PairwiseNormBound (T : Set E) (D : ℝ) : Prop :=
   ∀ ⦃s⦄, s ∈ T → ∀ ⦃t⦄, t ∈ T → ‖s - t‖ ≤ D
+
+omit [InnerProductSpace ℝ E] in
+/-- The pointwise diameter bound implies the standard mathlib diameter bound. -/
+lemma diam_le_of_pairwiseNormBound {T : Set E} {D : ℝ}
+    (hD : 0 ≤ D) (hdiam : PairwiseNormBound T D) :
+    Metric.diam T ≤ D := by
+  refine Metric.diam_le_of_forall_dist_le hD ?_
+  intro s hs t ht
+  simpa [dist_eq_norm] using hdiam hs ht
+
+omit [InnerProductSpace ℝ E] in
+/-- Bridge from mathlib's bounded real diameter API to `PairwiseNormBound`.
+The boundedness hypothesis is needed because `Metric.diam` is defined via
+`ENNReal.toReal`, which is `0` on infinite extended diameter. -/
+lemma pairwiseNormBound_of_diam_le {T : Set E} {D : ℝ}
+    (hbounded : Bornology.IsBounded T) (hdiam : Metric.diam T ≤ D) :
+    PairwiseNormBound T D := by
+  intro s hs t ht
+  rw [← dist_eq_norm]
+  exact (Metric.dist_le_diam_of_mem hbounded hs ht).trans hdiam
 
 /-- Equal-weight average of `k` points. -/
 noncomputable def empiricalAverage {k : ℕ} (x : Fin k → E) : E :=
