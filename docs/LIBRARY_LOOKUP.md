@@ -16,6 +16,15 @@ import LeanFpAnalysis.FP
 open LeanFpAnalysis.FP
 ```
 
+For the separate Vershynin HDP library, use:
+
+```lean
+import LeanFpAnalysis.HDP
+open LeanFpAnalysis.HDP
+```
+
+See `docs/HDP_LIBRARY_LOOKUP.md` for the HDP-specific map.
+
 For a smaller import, use the file listed in the tables below.
 
 ## Goal-To-Theorem Lookup

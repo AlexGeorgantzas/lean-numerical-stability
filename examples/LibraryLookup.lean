@@ -1,6 +1,8 @@
 import LeanFpAnalysis.FP
+import LeanFpAnalysis.HDP
 
 open LeanFpAnalysis.FP
+open LeanFpAnalysis.HDP
 
 /-!
 This file is a small executable index for library exploration.
@@ -96,3 +98,16 @@ It intentionally contains no task-specific proof scripts.
 #check componentwise_forward_error
 #check forward_error_from_backward_error
 #check normwise_forward_error_exact
+
+-- HDP appetizer entry points
+#check PairwiseNormBound
+#check empiricalAverage
+#check caratheodory_finiteDimensional
+#check approximate_caratheodory_theorem_0_0_2
+#check empiricalCenters_ncard_le
+#check covering_polytopes_by_balls_param
+#check covering_polytopes_by_balls
+#check unorderedEmpiricalCenters_ncard_le_choose
+#check improved_covering_polytopes_by_balls
+#check exercise_0_0_5_binomial_chain
+#check weighted_variance_identity
