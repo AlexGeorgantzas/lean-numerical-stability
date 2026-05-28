@@ -21,7 +21,7 @@ import LeanFpAnalysis.FP.Analysis.PerturbationTheory
 
 namespace LeanFpAnalysis.FP
 
-open scoped BigOperators
+open scoped BigOperators Matrix.Norms.Frobenius
 
 -- ============================================================
 -- §19.2  Theorem 19.3: QR LS backward stability

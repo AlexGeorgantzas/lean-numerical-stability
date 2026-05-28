@@ -26,7 +26,7 @@ import LeanFpAnalysis.FP.Algorithms.Underdetermined.UnderdeterminedSpec
 
 namespace LeanFpAnalysis.FP
 
-open scoped BigOperators
+open scoped BigOperators Matrix.Norms.Frobenius
 
 -- ============================================================
 -- §20.3  Theorem 20.3: Q method backward stability

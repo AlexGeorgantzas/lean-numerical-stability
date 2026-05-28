@@ -259,9 +259,9 @@ theorem tridiag_diagdom_cond_bound (n : ℕ) (hn : 0 < n)
     (hAInv : IsRightInverse n A A_inv)
     (hRowSumBound : ∀ i : Fin n,
       ∑ l : Fin n, ∑ k : Fin n, |U_inv i k| * |U k l| ≤ 2 * ↑n - 1) :
-    infNormVec hn (fun i => ∑ j : Fin n,
+    infNormVec (fun i => ∑ j : Fin n,
       (∑ k : Fin n, |U_inv i k| * |L_inv k j|) * y j) ≤
-    (2 * ↑n - 1) * infNormVec hn (fun i => ∑ j : Fin n,
+    (2 * ↑n - 1) * infNormVec (fun i => ∑ j : Fin n,
       |A_inv i j| * y j) := by
   -- L⁻¹ = U · A⁻¹
   have hLinv_eq := L_inv_eq_matMul_U_Ainv n A L U A_inv L_inv hLU hLInv hAInv
@@ -278,18 +278,21 @@ theorem tridiag_diagdom_cond_bound (n : ℕ) (hn : 0 < n)
   have hw_nn : ∀ l, 0 ≤ w l :=
     fun l => Finset.sum_nonneg fun j _ => mul_nonneg (abs_nonneg _) (hy j)
   -- w_l ≤ infNormVec(w)
-  have hw_le_norm : ∀ l : Fin n, w l ≤ infNormVec hn w := by
+  have hw_le_norm : ∀ l : Fin n, w l ≤ infNormVec w := by
     intro l
-    have h1 : |w l| ≤ infNormVec hn w := by
-      unfold infNormVec
-      exact Finset.le_sup' (fun (l : Fin n) => |w l|) (Finset.mem_univ l)
+    have h1 : |w l| ≤ infNormVec w := abs_le_infNormVec w l
     rw [abs_of_nonneg (hw_nn l)] at h1; exact h1
   -- Suffices: each row bounded by (2n-1) · infNormVec(w)
   suffices key : ∀ i : Fin n,
       |∑ j : Fin n, (∑ k : Fin n, |U_inv i k| * |L_inv k j|) * y j| ≤
-      (2 * ↑n - 1) * infNormVec hn w by
-    unfold infNormVec
-    exact Finset.sup'_le _ _ fun i _ => key i
+      (2 * ↑n - 1) * infNormVec w by
+    apply infNormVec_le_of_abs_le
+    · exact key
+    · exact mul_nonneg (by
+        have hn1Nat : 1 ≤ n := Nat.succ_le_of_lt hn
+        have hn1 : (1 : ℝ) ≤ n := by exact_mod_cast hn1Nat
+        linarith)
+        (infNormVec_nonneg w)
   intro i
   -- LHS_i is nonneg
   have hLHS_nn : 0 ≤ ∑ j : Fin n, (∑ k : Fin n, |U_inv i k| * |L_inv k j|) * y j :=
@@ -331,16 +334,16 @@ theorem tridiag_diagdom_cond_bound (n : ℕ) (hn : 0 < n)
   -- Step 3: ∑_l c_il · w_l ≤ (∑_l c_il) · ‖w‖∞ ≤ (2n-1) · ‖w‖∞
   have hc_nn : ∀ l, 0 ≤ ∑ k : Fin n, |U_inv i k| * |U k l| :=
     fun l => Finset.sum_nonneg fun k _ => mul_nonneg (abs_nonneg _) (abs_nonneg _)
-  have hinfNorm_nn : 0 ≤ infNormVec hn w := by
+  have hinfNorm_nn : 0 ≤ infNormVec w := by
     have := hw_le_norm ⟨0, hn⟩; linarith [hw_nn ⟨0, hn⟩]
   calc ∑ j : Fin n, (∑ k : Fin n, |U_inv i k| * |L_inv k j|) * y j
       ≤ ∑ l : Fin n, (∑ k : Fin n, |U_inv i k| * |U k l|) * w l := hRow
-    _ ≤ ∑ l : Fin n, (∑ k : Fin n, |U_inv i k| * |U k l|) * infNormVec hn w := by
+    _ ≤ ∑ l : Fin n, (∑ k : Fin n, |U_inv i k| * |U k l|) * infNormVec w := by
         apply Finset.sum_le_sum; intro l _
         exact mul_le_mul_of_nonneg_left (hw_le_norm l) (hc_nn l)
-    _ = (∑ l : Fin n, ∑ k : Fin n, |U_inv i k| * |U k l|) * infNormVec hn w := by
+    _ = (∑ l : Fin n, ∑ k : Fin n, |U_inv i k| * |U k l|) * infNormVec w := by
         rw [Finset.sum_mul]
-    _ ≤ (2 * ↑n - 1) * infNormVec hn w :=
+    _ ≤ (2 * ↑n - 1) * infNormVec w :=
         mul_le_mul_of_nonneg_right (hRowSumBound i) hinfNorm_nn
 
 -- ============================================================

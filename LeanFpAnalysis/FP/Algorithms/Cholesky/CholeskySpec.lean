@@ -456,12 +456,12 @@ theorem cholesky_spd_backward_stable (n : ℕ)
 
     This follows from the componentwise bound |ΔA_{ij}| ≤ ε/(1−ε)|A_{ij}|
     by summing over rows and taking the maximum. -/
-theorem cholesky_spd_backward_stable_normwise (n : ℕ) (hn : 0 < n)
+theorem cholesky_spd_backward_stable_normwise (n : ℕ) (_hn : 0 < n)
     (A R_hat : Fin n → Fin n → ℝ) (ε : ℝ) (hε_lt : ε < 1) (hε_nn : 0 ≤ ε)
     (hChol : CholeskyBackwardError n A R_hat ε)
     (hR_nn : ∀ k j : Fin n, 0 ≤ R_hat k j) :
     ∃ ΔA : Fin n → Fin n → ℝ,
-      infNorm hn ΔA ≤ ε / (1 - ε) * infNorm hn A ∧
+      infNorm ΔA ≤ ε / (1 - ε) * infNorm A ∧
       (∀ i j, ∑ k : Fin n, R_hat k i * R_hat k j = A i j + ΔA i j) := by
   obtain ⟨ΔA, hΔA_bound, hΔA_eq⟩ :=
     cholesky_spd_backward_stable n A R_hat ε hε_lt hε_nn hChol hR_nn
@@ -469,14 +469,15 @@ theorem cholesky_spd_backward_stable_normwise (n : ℕ) (hn : 0 < n)
   have h1ε : (0 : ℝ) < 1 - ε := by linarith
   have hc_nn : 0 ≤ ε / (1 - ε) := div_nonneg hε_nn (le_of_lt h1ε)
   -- infNorm(ΔA) = max_i ∑_j |ΔA_ij| ≤ ε/(1-ε) · max_i ∑_j |A_ij| = ε/(1-ε) · infNorm(A)
-  apply Finset.sup'_le
-  intro i _
-  calc ∑ j : Fin n, |ΔA i j|
-      ≤ ∑ j : Fin n, ε / (1 - ε) * |A i j| :=
-        Finset.sum_le_sum (fun j _ => hΔA_bound i j)
-    _ = ε / (1 - ε) * ∑ j : Fin n, |A i j| := (Finset.mul_sum _ _ _).symm
-    _ ≤ ε / (1 - ε) * infNorm hn A := by
-        apply mul_le_mul_of_nonneg_left _ hc_nn
-        exact Finset.le_sup' (fun i => ∑ j : Fin n, |A i j|) (Finset.mem_univ i)
+  apply infNorm_le_of_row_sum_le
+  · intro i
+    calc ∑ j : Fin n, |ΔA i j|
+        ≤ ∑ j : Fin n, ε / (1 - ε) * |A i j| :=
+          Finset.sum_le_sum (fun j _ => hΔA_bound i j)
+      _ = ε / (1 - ε) * ∑ j : Fin n, |A i j| := (Finset.mul_sum _ _ _).symm
+      _ ≤ ε / (1 - ε) * infNorm A := by
+          apply mul_le_mul_of_nonneg_left _ hc_nn
+          exact row_sum_le_infNorm A i
+  · exact mul_nonneg hc_nn (infNorm_nonneg A)
 
 end LeanFpAnalysis.FP

@@ -24,11 +24,28 @@ For the completed deterministic RandNLA Algorithm 1 stability proof ledger, see
 For the theorem-style prose summary of the Algorithm 2 row-sampling results,
 see [`Algorithm2_RowSampling_Stability_Proof_Summary.pdf`](Algorithm2_RowSampling_Stability_Proof_Summary.pdf).
 
+## Exact Algebra And Norm Policy
+
+Mathlib is the source of truth for exact dot products, matrix algebra, and
+norms.  Use Mathlib notation directly when the object already has a
+Mathlib-native type, for example `x ⬝ᵥ y`, `‖WithLp.toLp 2 x‖`, or `‖A‖` for
+`A : RMat m n` under the appropriate matrix norm scope.
+
+Some existing algorithm APIs still use function-shaped matrices
+`RMatFn m n := Fin m → Fin n → ℝ`.  For those legacy APIs, use compatibility
+wrappers such as `frobNorm` and `infNorm`.  These wrappers are bridges to
+Mathlib norms via `Matrix.of`; they are not independent norm definitions.
+
+New exact matrix-facing APIs should prefer `RMat m n := Matrix (Fin m) (Fin n)
+ℝ`, especially for rectangular algorithms such as QR and least squares.
+Existing `fl_*` algorithms may continue using `RMatFn` while the implementation
+layer is migrated gradually.
+
 ## Goal-To-Theorem Lookup
 
 | Goal shape | Start with | Main definitions | Main theorem names | Notes |
 |---|---|---|---|---|
-| Floating-point model assumptions | `LeanFpAnalysis/FP/Model.lean` | `FPModel` | fields `model_add`, `model_sub`, `model_mul`, `model_div` | Axiomatic Higham-style model; not IEEE-specific. |
+| Floating-point model assumptions | `LeanFpAnalysis/FP/Model.lean` | `FPModel` | fields `model_add`, `model_sub`, `model_mul`, `model_div`, `model_sqrt` | Axiomatic Higham-style model; not IEEE-specific. Square root is modeled for nonnegative inputs. |
 | Accumulated rounding errors | `LeanFpAnalysis/FP/Analysis/Rounding.lean` | `gamma`, `gammaValid` | `gammaValid_mono`, `gamma_nonneg`, `gamma_mono`, `prod_error_bound`, `gamma_mul`, `gamma_inv`, `gamma_div`, `gamma_sum_le` | Most algorithm bounds require a `gammaValid fp k` hypothesis. |
 | Basic error and stability predicates | `LeanFpAnalysis/FP/Analysis/Error.lean`, `LeanFpAnalysis/FP/Analysis/Stability.lean` | `absError`, `relError`, `backwardErrorBounded`, `backwardErrorBoundedVec`, `relBackwardErrorBounded2`, `isRelComponentwiseBackwardStable` | `forward_from_backward` | General scalar/vector definitions used by low-level algorithm contracts. |
 | Finite probability and concentration kernels | `LeanFpAnalysis/FP/Analysis/FiniteProbability.lean` | `FiniteProbability`, `FiniteProbability.eventProb`, `FiniteProbability.expectationNat`, `FiniteProbability.expectationReal` | `FiniteProbability.expectationReal_mono`, `FiniteProbability.abs_expectationReal_le_expectationReal_abs`, `FiniteProbability.eventProb_inter_ge_one_sub_add`, `FiniteProbability.eventProb_real_le_ge_one_sub_expectationReal_div`, `FiniteProbability.eventProb_le_ge_one_sub_expectationReal_sq_div`, `FiniteProbability.expectationReal_sq_le_expectationReal_sq`, `FiniteProbability.expectationReal_le_sqrt_expectationReal_sq`, `FiniteProbability.eventProb_nat_le_ge_one_sub_expectationNat_div_succ`, `FiniteProbability.eventProb_abs_sub_le_ge_one_sub_of_second_moment`, `FiniteProbability.eventProb_nat_ge_le_exp_mul_mgf`, `FiniteProbability.eventProb_nat_le_ge_one_sub_chernoff_of_mgf_bound` | General finite-space expectation, high-probability Markov, union-bound, Cauchy/Jensen, Chebyshev, and Chernoff kernels used by RandNLA and reusable by future randomized analyses. |
@@ -36,6 +53,7 @@ see [`Algorithm2_RowSampling_Stability_Proof_Summary.pdf`](Algorithm2_RowSamplin
 | Subtraction folds and inverse products | `LeanFpAnalysis/FP/Analysis/SubtractionFold.lean` | subtraction accumulation helpers | `fl_sub_sum_error_init`, `inv_prod_error_bound` | Used heavily by triangular substitution proofs. |
 | Dot product forward error | `LeanFpAnalysis/FP/Algorithms/DotProduct.lean` | `fl_dotProduct` | `dotProduct_error_bound` | Tight `gamma fp n` bound for the sequential dot product. |
 | Dot product backward error | `LeanFpAnalysis/FP/Algorithms/DotProduct.lean` | `fl_dotProduct` | `dotProduct_backward_error`, `dotProduct_backward_stable_x`, `dotProduct_backward_stable_y`, `dotProduct_isRelBackwardStable` | Componentwise relative perturbations of one input vector. |
+| Floating 2-norm | `LeanFpAnalysis/FP/Algorithms/Norm2.lean` | `fl_norm2Sq`, `fl_norm2` | `norm_toLp_two_eq_sqrt_dotProduct`, `dotProduct_self_nonneg_real`, `dotProduct_self_eq_zero_iff_real`, `dotProduct_self_pos_iff_real`, `fl_norm2Sq_backward_error`, `fl_norm2Sq_nonneg_of_gammaValid_two_mul`, `fl_norm2_unroll`, `fl_norm2_unroll_of_gammaValid_two_mul` | Exact facts use Mathlib `dotProduct` and `‖WithLp.toLp 2 x‖` directly; FP facts compute `xᵀx` by `fl_dotProduct`, then apply rounded `FPModel.fl_sqrt`. |
 | Matrix-vector product | `LeanFpAnalysis/FP/Algorithms/MatVec.lean` | `fl_matVec` | `matVec_backward_error`, `matVec_error_bound`, `matVec_row_isRelBackwardStable` | Built row-by-row from dot products. |
 | Matrix multiplication | `LeanFpAnalysis/FP/Algorithms/MatMul.lean` | `fl_matMul` | `matMul_error_bound`, `matMul_backward_error_col` | Backward theorem is columnwise; each column may use a different perturbation. |
 | Outer product | `LeanFpAnalysis/FP/Algorithms/OuterProduct.lean` | `fl_outerProduct` | `outerProduct_error_bound`, `outerProduct_backward_error` | Useful for rank-one update reasoning. |
@@ -53,10 +71,11 @@ see [`Algorithm2_RowSampling_Stability_Proof_Summary.pdf`](Algorithm2_RowSamplin
 | Structured LU bounds | `LeanFpAnalysis/FP/Algorithms/LU/GrowthFactor.lean`, `SpecialMatrices.lean`, `Tridiagonal.lean`, `Doolittle.lean`, `BlockLU.lean` | growth-factor and special-matrix specs | `diagDom_lu_solve_backward_stable`, `spd_lu_backward_error`, `mmatrix_lu_backward_stable`, `banded_lu_backward_error`, `doolittle_solve_backward_error`, `block_lu_solve_backward_error` | Some structured results are specification-level interfaces; inspect hypotheses. |
 | Cholesky factorization | `LeanFpAnalysis/FP/Algorithms/Cholesky/CholeskySpec.lean` | `CholeskyBackwardError` | `cholesky_backward_error_perturbation`, `cholesky_backward_error_relative`, `cholesky_spd_backward_stable` | Factorization contract for SPD-style analyses. |
 | Cholesky solve | `LeanFpAnalysis/FP/Algorithms/Cholesky/CholeskySolve.lean` | `fl_forwardSub`, `fl_backSub`, `CholeskyBackwardError` | `cholesky_solve_backward_error_expanded`, `cholesky_solve_backward_error`, `cholesky_solve_spd_backward_stable` | Composes Cholesky factorization with two triangular solves. |
+| QR factorization and QR solve | `LeanFpAnalysis/FP/Algorithms/QR/*.lean` | `householder`, `givensRotation`, `HouseholderQRBackwardError`, `GivensQRBackwardError`, `QRSolveBackwardError` | `householder_qr_backward`, `givens_qr_backward`, `qr_solve_backward_from_components`, `qr_solve_perturbation_bound` | Mostly contract/interface level. There is not yet a full `fl_householder_qr`, `fl_householderApply`, or `fl_qr_solve`. |
 | Residual computation | `LeanFpAnalysis/FP/Algorithms/IterativeRefinement.lean` | `fl_residual`, `ResidualError` | `conventional_residual_error` | Bound for the computed residual `fl(b - A*x_hat)`. |
 | Iterative refinement | `LeanFpAnalysis/FP/Algorithms/IterativeRefinement.lean` | `SolverSpec`, `ResidualError` | `one_step_refinement_error_identity`, `one_step_residual_bound`, `one_step_backward_error_contraction`, `lu_refinement_backward_stable`, `refinement_forward_error_bound`, `thm_11_4_residual_bound` | Mixes exact algebra, solver specifications, and residual computation bounds. |
 | Stationary iteration | `LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean` | iteration/residual helpers | `one_step_error`, `local_error_simplified`, `residual_eq_A_error`, `one_step_residual`, `normwise_forward_bound`, `main_forward_bound`, `normwise_one_step_residual_bound`, `normwise_residual_bound` | Useful for harder compositional stability analyses. |
-| Matrix algebra infrastructure | `LeanFpAnalysis/FP/Analysis/MatrixAlgebra.lean` | matrix products, identities, norms, inverses | `matMul_id_right`, `matMul_id_left`, `matMul_assoc`, `matMul_vec_eq`, `matMulVec_matMul`, `frobNorm_le_of_entry_abs_le` | Large foundational file for exact matrix reasoning. |
+| Matrix algebra infrastructure | `LeanFpAnalysis/FP/Analysis/MatrixAlgebra.lean` | `RVec`, `RMat`, `RSqMat`, `RMatFn`, `frobNorm`, `infNorm`, matrix products, identities, norms, inverses | `matMul_id_right`, `matMul_id_left`, `matMul_assoc`, `matMul_vec_eq`, `matMulVec_matMul`, `frobNorm_le_of_entry_abs_le`, `frobNorm_matMul_le`, `row_sum_le_infNorm` | Exact matrix reasoning. `frobNorm` and `infNorm` are compatibility wrappers over Mathlib norms for legacy function-shaped matrices; legacy RandNLA files also reuse the entrywise Frobenius bridge. |
 | Perturbation theory | `LeanFpAnalysis/FP/Analysis/PerturbationTheory.lean` | residual and perturbation quantities | `forward_error_from_residual`, `componentwise_forward_error`, `forward_error_from_backward_error`, `componentwise_forward_error_exact`, `normwise_forward_error_exact` | Converts residual/backward-error hypotheses into forward-error conclusions. |
 
 ## Main Dependency Chains
@@ -80,6 +99,11 @@ Model
   -> ForwardSub / BackSub
   -> TriangularSolveCombined
   -> LU solve and Cholesky solve
+
+Model
+  -> DotProduct
+  -> Norm2
+  -> future Householder construction/application work
 
 MatrixAlgebra + PerturbationTheory
   -> forward-error and residual-based analyses
@@ -175,6 +199,7 @@ Last checked: 2026-05-23.
 | `gamma fp n` | definition | `Analysis/Rounding.lean` | Higham `gamma_n = n*u / (1 - n*u)`. |
 | `gammaValid fp n` | definition | `Analysis/Rounding.lean` | Side condition `(n : Real) * fp.u < 1`. |
 | `fl_dotProduct` | definition | `Algorithms/DotProduct.lean` | Sequential floating-point dot product. |
+| `fl_norm2` | definition | `Algorithms/Norm2.lean` | Floating-point Euclidean norm: `fl_sqrt (fl_dotProduct x x)`. |
 | `fl_matVec` | definition | `Algorithms/MatVec.lean` | Rowwise floating-point matrix-vector product. |
 | `fl_matMul` | definition | `Algorithms/MatMul.lean` | Columnwise matrix-matrix product via `fl_matVec`. |
 | `sqMagProb` | definition | `Algorithms/RandNLA/ElementwiseSampling.lean` | Squared-magnitude probability `Aᵢⱼ² / ‖A‖²_F` for Algorithm 1. |
@@ -207,6 +232,8 @@ Last checked: 2026-05-23.
 | `fl_residual` | definition | `Algorithms/IterativeRefinement.lean` | Floating-point residual `fl(b - fl(A*x))`. |
 | `LUBackwardError` | structure | `Algorithms/LU/GaussianElimination.lean` | Backward-error contract for computed LU factors. |
 | `CholeskyBackwardError` | structure | `Algorithms/Cholesky/CholeskySpec.lean` | Backward-error contract for computed Cholesky factors. |
+| `HouseholderAppError` | structure | `Algorithms/QR/HouseholderSpec.lean` | Backward-error contract for applying a Householder reflector. |
+| `QRSolveBackwardError` | structure | `Algorithms/QR/QRSolve.lean` | Backward-error contract for QR-based solve. |
 | `SolverSpec` | structure | `Algorithms/IterativeRefinement.lean` | Abstract componentwise backward-stable solver. |
 | `ResidualError` | structure | `Algorithms/IterativeRefinement.lean` | Componentwise residual-computation error contract. |
 
@@ -217,6 +244,12 @@ library lemmas. Good examples are:
 
 - `dotProduct_error_bound`
 - `dotProduct_backward_error`
+- `norm_toLp_two_eq_sqrt_dotProduct`
+- `dotProduct_self_pos_iff_real`
+- `fl_norm2Sq_backward_error`
+- `fl_norm2Sq_nonneg_of_gammaValid_two_mul`
+- `fl_norm2_unroll`
+- `fl_norm2_unroll_of_gammaValid_two_mul`
 - `matVec_backward_error`
 - `matMul_error_bound`
 - `FiniteProbability.eventProb_nat_le_ge_one_sub_expectationNat_div_succ`
@@ -271,6 +304,9 @@ Known abstract-interface areas include:
 - `Algorithms/Cholesky/CholeskyNonsym.lean`
 - `Algorithms/Cholesky/CholeskyPSD.lean`
 - `Algorithms/Cholesky/CholeskyPerturbation.lean`
+- `Algorithms/QR/HouseholderQR.lean`
+- `Algorithms/QR/GivensQR.lean`
+- `Algorithms/QR/QRSolve.lean`
 - `Algorithms/Sylvester/SylvesterPerturbation.lean`
 
 The safest way to classify a theorem is to inspect the statement. If a

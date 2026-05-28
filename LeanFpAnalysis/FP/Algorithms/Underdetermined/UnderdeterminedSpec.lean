@@ -21,7 +21,7 @@ import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
 
 namespace LeanFpAnalysis.FP
 
-open scoped BigOperators
+open scoped BigOperators Matrix.Norms.Frobenius
 
 -- ============================================================
 -- §20.1  Minimum-norm solution specification
@@ -102,7 +102,8 @@ structure KielbasinskiSchwetlickUndet (m : ℕ)
       with ‖ΔG‖ ≤ (eps1² + eps2²)^{1/2} such that x̂ is the
       minimum-norm solution to a nearby system. -/
   symmetrized : ∃ (ΔG : Fin m → Fin m → ℝ),
-    frobNorm ΔG ≤ Real.sqrt (eps1 ^ 2 + eps2 ^ 2) ∧
+    frobNorm ΔG ≤
+      Real.sqrt (eps1 ^ 2 + eps2 ^ 2) ∧
     (∀ i, matMulVec m (fun a b => AAT a b + ΔG a b) x_hat i = b i)
 
 end LeanFpAnalysis.FP

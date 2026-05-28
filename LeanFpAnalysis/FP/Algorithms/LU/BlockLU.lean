@@ -17,7 +17,6 @@
   - IsBlockDiagDomCol, IsBlockDiagDomRow: block diagonal dominance (eq. 12.16)
   - block_diag_dom_schur_inherit: Theorem 12.5 one-step
   - block_diag_dom_growth_bound_step: Theorem 12.6 one-step
-  - norm2Sq, norm2Vec: vector 2-norm (§12.3.2)
   - spd_submatrix_inv_2norm_bound: Lemma 12.7
   - spd_schur_cond_bound: Lemma 12.8
   - block_lu_stability_spd: eq. 12.23
@@ -41,24 +40,6 @@ import LeanFpAnalysis.FP.Algorithms.LU.GrowthFactor
 namespace LeanFpAnalysis.FP
 
 open scoped BigOperators
-
--- ============================================================
--- Vector 2-norm (§12.3.2)
--- ============================================================
-
-/-- Squared Euclidean norm: ‖v‖₂² = ∑_i v_i². -/
-noncomputable def norm2Sq {n : ℕ} (v : Fin n → ℝ) : ℝ :=
-  ∑ i : Fin n, v i ^ 2
-
-/-- Euclidean (2-norm) of a vector: ‖v‖₂ = √(∑_i v_i²). -/
-noncomputable def norm2Vec {n : ℕ} (v : Fin n → ℝ) : ℝ :=
-  Real.sqrt (norm2Sq v)
-
-lemma norm2Sq_nonneg {n : ℕ} (v : Fin n → ℝ) : 0 ≤ norm2Sq v :=
-  Finset.sum_nonneg fun i _ => sq_nonneg (v i)
-
-lemma norm2Vec_nonneg {n : ℕ} (v : Fin n → ℝ) : 0 ≤ norm2Vec v :=
-  Real.sqrt_nonneg _
 
 -- ============================================================
 -- §12.1  Block matrix definitions

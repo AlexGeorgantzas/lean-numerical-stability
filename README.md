@@ -14,6 +14,21 @@ fl(x ∘ y) = (x ∘ y)(1 + δ),  |δ| ≤ u
 
 where `u` is the unit roundoff. This makes all results valid for **any** floating-point system satisfying the standard model.
 
+## Exact algebra and matrix norms
+
+Exact algebra and norm infrastructure uses Mathlib as the source of truth. For
+Mathlib-native matrices, theorem statements should use Mathlib notation directly,
+for example `‖A‖` under the appropriate matrix norm scope.
+
+The current algorithm layer still contains legacy function-shaped matrices
+`Fin m → Fin n → ℝ`. For those APIs, the library provides documented
+compatibility wrappers such as `frobNorm` and `infNorm`. These wrappers are not
+independent norm definitions; they coerce through `Matrix.of` and then use
+Mathlib's matrix norms. New exact matrix-facing APIs should prefer the
+rectangular alias `RMat m n := Matrix (Fin m) (Fin n) ℝ` when possible, while
+existing `fl_*` algorithms may continue to use `RMatFn m n := Fin m → Fin n → ℝ`
+during gradual migration.
+
 ## What's covered
 
 The library formalizes reusable results and stability contracts from **Chapters 1, 3, 4, 8, and 9** of Higham, plus selected higher-chapter interfaces used for compositional stability proofs. It also includes a RandNLA case study for the element-wise sampling meta-algorithm from Drineas and Mahoney's CACM survey, ["RandNLA: Randomized Numerical Linear Algebra"](https://dl.acm.org/doi/10.1145/2842602).

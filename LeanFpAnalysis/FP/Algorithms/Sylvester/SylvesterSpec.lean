@@ -16,7 +16,7 @@ import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
 
 namespace LeanFpAnalysis.FP
 
-open scoped BigOperators
+open scoped BigOperators Matrix.Norms.Frobenius
 
 -- ============================================================
 -- The Sylvester equation: AX - XB = C (§15, eq 15.1)
@@ -71,7 +71,8 @@ theorem sep_implies_unique_solution (n : ℕ) (A B : Fin n → Fin n → ℝ)
   have hD_ne : frobNormSq D ≠ 0 := by
     intro h_eq
     have hzero := (frobNorm_eq_zero_iff D).mp (by
-      unfold frobNorm; rw [Real.sqrt_eq_zero (frobNormSq_nonneg D)]; exact h_eq)
+      rw [frobNorm_eq_sqrt_frobNormSq, Real.sqrt_eq_zero (frobNormSq_nonneg D)]
+      exact h_eq)
     exact hne (sub_eq_zero.mp (hzero i₀ j₀))
   -- sylvesterOp(D) = 0
   have hD_zero : ∀ i j, sylvesterOp n A B D i j = 0 := by
@@ -190,33 +191,45 @@ theorem residual_bound (n : ℕ)
   -- Then, ‖ΔAY - YΔB‖_F ≤ ‖ΔAY‖_F + ‖YΔB‖_F
   -- And ‖ΔAY‖_F ≤ ‖ΔA‖_F ‖Y‖_F, ‖YΔB‖_F ≤ ‖Y‖_F ‖ΔB‖_F
   -- Step 1: ‖ΔAY‖_F ≤ ‖ΔA‖_F ‖Y‖_F ≤ ηα ‖Y‖_F
-  have h1 : frobNorm (matMul n ΔA Y) ≤ η * α * frobNorm Y :=
+  have h1 : frobNorm (matMul n ΔA Y) ≤
+      η * α * frobNorm Y :=
     le_trans (frobNorm_matMul_le ΔA Y)
       (mul_le_mul_of_nonneg_right hΔA (frobNorm_nonneg Y))
   -- Step 2: ‖YΔB‖_F ≤ ‖Y‖_F ‖ΔB‖_F ≤ ‖Y‖_F ηβ
-  have h2 : frobNorm (matMul n Y ΔB) ≤ frobNorm Y * (η * β) :=
+  have h2 : frobNorm (matMul n Y ΔB) ≤
+      frobNorm Y * (η * β) :=
     le_trans (frobNorm_matMul_le Y ΔB)
       (mul_le_mul_of_nonneg_left hΔB (frobNorm_nonneg Y))
   -- Step 3: ‖R‖_F ≤ ‖ΔAY‖_F + ‖YΔB‖_F + ‖ΔC‖_F via triangle inequality
   -- First rewrite R pointwise using residual_decomposition
-  have hReq : frobNorm (sylvesterResidual n A B C Y) =
+  have hReq :
+      frobNorm (sylvesterResidual n A B C Y) =
       frobNorm (fun i j => matMul n ΔA Y i j - matMul n Y ΔB i j - ΔC i j) := by
     congr 1; ext i j; exact hR i j
   rw [hReq]
   -- ‖ΔAY - YΔB - ΔC‖_F = ‖(ΔAY - YΔB) - ΔC‖_F ≤ ‖ΔAY - YΔB‖_F + ‖ΔC‖_F
-  have h3 : frobNorm (fun i j => matMul n ΔA Y i j - matMul n Y ΔB i j - ΔC i j) ≤
-      frobNorm (fun i j => matMul n ΔA Y i j - matMul n Y ΔB i j) + frobNorm ΔC := by
+  have h3 :
+      frobNorm (fun i j => matMul n ΔA Y i j - matMul n Y ΔB i j - ΔC i j) ≤
+      frobNorm (fun i j => matMul n ΔA Y i j - matMul n Y ΔB i j) +
+        frobNorm ΔC := by
     have := frobNorm_sub_le (fun i j => matMul n ΔA Y i j - matMul n Y ΔB i j) ΔC
     convert this using 2
   -- ‖ΔAY - YΔB‖_F ≤ ‖ΔAY‖_F + ‖YΔB‖_F
-  have h4 : frobNorm (fun i j => matMul n ΔA Y i j - matMul n Y ΔB i j) ≤
-      frobNorm (matMul n ΔA Y) + frobNorm (matMul n Y ΔB) :=
+  have h4 :
+      frobNorm (fun i j => matMul n ΔA Y i j - matMul n Y ΔB i j) ≤
+      frobNorm (matMul n ΔA Y) +
+        frobNorm (matMul n Y ΔB) :=
     frobNorm_sub_le (matMul n ΔA Y) (matMul n Y ΔB)
   -- Combine: ‖R‖_F ≤ ηα‖Y‖_F + ‖Y‖_F ηβ + ηγ = ((α+β)‖Y‖_F + γ)η
-  have h5 : frobNorm (matMul n ΔA Y) + frobNorm (matMul n Y ΔB) + frobNorm ΔC ≤
-      (η * α * frobNorm Y + frobNorm Y * (η * β)) + η * γ :=
+  have h5 :
+      frobNorm (matMul n ΔA Y) +
+          frobNorm (matMul n Y ΔB) +
+          frobNorm ΔC ≤
+      (η * α * frobNorm Y +
+        frobNorm Y * (η * β)) + η * γ :=
     add_le_add (add_le_add h1 h2) hΔC
-  have h6 : (η * α * frobNorm Y + frobNorm Y * (η * β)) + η * γ =
+  have h6 : (η * α * frobNorm Y +
+        frobNorm Y * (η * β)) + η * γ =
       ((α + β) * frobNorm Y + γ) * η := by ring
   linarith
 

@@ -18,7 +18,7 @@ import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
 
 namespace LeanFpAnalysis.FP
 
-open scoped BigOperators
+open scoped BigOperators Matrix.Norms.Frobenius
 
 -- ============================================================
 -- §18.5  Givens rotation definition

@@ -14,6 +14,8 @@ namespace LeanFpAnalysis.FP
 # Accumulated Rounding Error Bound (γ)
 
 Following Higham, "Accuracy and Stability of Numerical Algorithms", §3.1.
+The central source statements are Lemma 3.1 for products of local rounding
+factors and Lemma 3.3 in §3.4 for algebraic rules on `θ_k`/`γ_k` terms.
 
 For a sequence of n elementary floating-point operations each introducing
 a relative error at most u (the unit roundoff), the worst-case accumulated
@@ -214,7 +216,6 @@ lemma prod_error_bound (fp : FPModel) (n : ℕ) (δ : Fin n → ℝ)
       |θⱼ + θₖ + θⱼθₖ| ≤ γ(j) + γ(k) + γ(j)·γ(k) = γ(j+k)
     using the inequality γ(j) + γ(k) + γ(j)·γ(k) ≤ γ(j+k), proved via
     γ(j+k) − (γ(j)+γ(k)+γ(j)γ(k)) = j·k·u² / ((1−j·u)(1−k·u)(1−(j+k)·u)) ≥ 0. -/
-
 lemma gamma_mul (fp : FPModel) (j k : ℕ) (θj θk : ℝ)
     (hj  : |θj| ≤ gamma fp j)
     (hk  : |θk| ≤ gamma fp k)

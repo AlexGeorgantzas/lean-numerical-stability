@@ -4,9 +4,13 @@ Project: `LeanFpAnalysis`, a Lean 4 library for floating-point arithmetic and
 automatic stability analysis. The model is axiomatic and intentionally not tied
 to IEEE 754. All core results should be stated over `FPModel` and `Real`.
 
-Last review by Codex: 2026-05-23.
-Current RandNLA work is on branch `RandNLA_Kimon`. Benchmark work lives on
-branch `benchmark`.
+Last review by Codex: 2026-05-28.
+Current RandNLA work is on branch `RandNLA_Kimon`.  Current `main` is for the
+stable core library, and benchmark work lives on branch `benchmark`.  The main
+commit before the
+end-to-end stability rebuild is tagged as
+`main-stable-before-end-to-end-20260527` at
+`d5c0fa90c69c36f794f176c96f2dd4d293bb5aa3`.
 
 ## Build State
 
@@ -48,8 +52,9 @@ branch `benchmark`.
 
 ## Foundation Modules
 
-- `Model.lean`: `FPModel` with `u`, `u_nonneg`, `fl_add/sub/mul/div`, exact
-  `fl_add_zero`, and standard relative-error axioms for each operation.
+- `Model.lean`: `FPModel` with `u`, `u_nonneg`, `fl_add/sub/mul/div/sqrt`,
+  exact `fl_add_zero`, and standard relative-error axioms for each operation.
+  The square-root axiom is stated for nonnegative inputs.
 - `Analysis/Error.lean`: `absError`, `relError`, `compRelErrorBounded`.
 - `Analysis/Stability.lean`: scalar/vector backward-error predicates,
   componentwise relative backward stability, scalar `condNumber`, and
@@ -73,8 +78,22 @@ branch `benchmark`.
 
 - `Rounding` supports `Summation` and `SubtractionFold`.
 - `Summation` supports `DotProduct`.
+- Exact algebraic operations should be separated from rounded algorithms.
+  For dot product, Mathlib's `x ⬝ᵥ y = ∑ i, x i * y i` is the exact
+  specification, while local `fl_dotProduct` is the rounded left-to-right
+  recurrence using `fp.fl_mul` and `fp.fl_add`.  Stability theorems should
+  compare the rounded algorithm to the exact Mathlib specification; they should
+  not pretend the whole dot product always has a single global relative error,
+  because cancellation can make that false.
 - `DotProduct` supports `MatVec`.
 - `MatVec` supports `MatMul` and matrix inversion residual results.
+- `DotProduct` supports `Norm2`, which gives the reusable `fl_norm2Sq` and
+  `fl_norm2` kernels needed by later Householder reflector construction.
+  `Norm2` states exact facts directly over Mathlib's `x ⬝ᵥ x` and
+  `‖WithLp.toLp 2 x‖`; it should not reintroduce exact vector-norm aliases.
+  Premature Householder construction/application modules were removed from
+  `end-to-end-rebuild` so the branch can proceed bottom-up from foundations
+  before returning to QR-specific kernels.
 - `TriangularSolve` and `ForwardSub` use `SubtractionFold`/`Rounding` and feed
   `TriangularSolveCombined`, `ForwardError`, `MMatrix`, LU solve, Cholesky
   solve, matrix inversion, and underdetermined systems.
@@ -159,6 +178,74 @@ These compile, but should not be treated as fully derived stability results:
 - Keep benchmark task files, stubs, generated-workspace scripts, run protocols,
   and task-selection rationale off `main` unless the user explicitly decides to
   merge them back.
+- Library implementation work after the benchmark audit lives on
+  `end-to-end-rebuild`, renamed from the earlier QR-specific branch.
+  The branch should proceed bottom-up: stabilize the general foundations first,
+  then add concrete rounded kernels, then prove bridge theorems showing those
+  kernels satisfy the existing contracts.
+
+## 2026-05 End-To-End Rebuild Work
+
+- End goal for this branch: each important high-level stability contract should
+  eventually be backed by a concrete rounded `fl_*` algorithm and a theorem
+  proving that algorithm satisfies the contract from `FPModel`, rather than
+  only assuming the contract.
+- Step 1 foundation audit began with `FPModel`, `Rounding`, `Summation`,
+  `SubtractionFold`, `Stability`, and `MatrixAlgebra`.  The scan found no
+  `sorry`, `admit`, `axiom`, or `opaque` in these files.  The main immediate
+  gap was documentation precision: distinguish the Higham standard model from
+  extra exactness assumptions, and mark `MatrixAlgebra` as exact algebra rather
+  than floating-point algorithm code.
+- Foundation cleanup replaced the old locally-defined `infNorm hn A` API with
+  Mathlib-backed compatibility wrappers: `infNormVec v := ‖v‖` and
+  `infNorm A := ‖Matrix.of A‖` with a local Mathlib `linfty` operator-norm
+  instance.  `infNormBound n M c` is now the clean norm inequality
+  `infNorm M ≤ c`, with row-wise bridge lemmas `row_sum_le_infNorm`,
+  `infNorm_le_of_row_sum_le`, and `row_sum_le_of_infNormBound` for
+  Neumann proofs.
+- Exact norm policy: use Mathlib norm/dot-product infrastructure directly for
+  exact algebra and avoid duplicate local aliases when practical.  Exact vector
+  aliases `exactNorm2Sq`, `exactNorm2`, `norm2Sq`, and `norm2Vec` were removed;
+  `Norm2` now states exact facts over `x ⬝ᵥ x` and `‖WithLp.toLp 2 x‖`
+  directly.  Floating-point kernels such as `fl_dotProduct`, `fl_norm2Sq`, and
+  `fl_norm2` remain local because they encode rounded operation order.
+- Matrix shape aliases were added in `MatrixAlgebra`: `RVec n := Fin n → ℝ`,
+  `RMat m n := Matrix (Fin m) (Fin n) ℝ`, `RSqMat n := RMat n n`, and
+  `RMatFn m n := Fin m → Fin n → ℝ`.  New exact matrix-facing APIs should
+  prefer `RMat` when possible, while existing algorithm code may keep using
+  `RMatFn` during gradual migration.
+- Current exact Frobenius policy: keep `frobNorm` as a readable rectangular
+  compatibility wrapper over Mathlib, not as an independent norm definition:
+  `frobNorm A := ‖(Matrix.of A : RMat m n)‖`.  The source of truth is
+  Mathlib's Frobenius norm, while public statements over legacy function-shaped
+  matrices stay readable.  Keep `frobNormSq` only as a squared convenience for
+  existing sum-of-squares algebra and sep/Sylvester proofs until a separate
+  squared-norm migration is planned.
+- Matrix-shape policy for the rebuild: rectangular real matrices are needed
+  before full QR/least-squares implementation-backed proofs.  Avoid adding new
+  square-only exact infrastructure unless the algorithm is inherently square.
+  Prefer APIs that can move toward `Matrix (Fin m) (Fin n) ℝ` or compatible
+  `Fin m → Fin n → ℝ` wrappers.  Do not attempt a silent global migration to
+  complex matrices: complex floating-point arithmetic needs an explicit later
+  model, probably built from real rounded operations on real and imaginary
+  parts rather than by treating `ℂ` operations as primitive.
+- Corrected the QR implementation plan to start with missing low-level
+  primitives rather than treating reflector construction as permanently out of
+  scope.
+- Extended `FPModel` with `fl_sqrt` and `model_sqrt` for nonnegative real
+  inputs.
+- Added `Algorithms/Norm2.lean` with floating 2-norm kernels `fl_norm2Sq` and
+  `fl_norm2`, plus exact Mathlib facts over `x ⬝ᵥ x` and
+  `‖WithLp.toLp 2 x‖`: `norm_toLp_two_eq_sqrt_dotProduct`,
+  `dotProduct_self_nonneg_real`, `dotProduct_self_eq_zero_iff_real`,
+  `dotProduct_self_ne_zero_iff_real`, `dotProduct_self_pos_iff_real`, and
+  `norm_toLp_two_nonneg`.
+- Removed premature `HouseholderReflector` and `HouseholderApply` additions from
+  the active branch.  They were useful prototypes, but the user decided the
+  rebuild should not move into Householder-specific kernels before auditing the
+  lower-level foundation chain.
+- Current next step is the bottom-up audit/cleanup beginning with `DotProduct`
+  and its exact-specification bridge to Mathlib `dotProduct`.
 
 ## 2026-05-22 RandNLA Algorithm 1 Work
 

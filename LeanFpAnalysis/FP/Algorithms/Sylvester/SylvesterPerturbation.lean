@@ -17,7 +17,7 @@ import LeanFpAnalysis.FP.Algorithms.Sylvester.SylvesterSpec
 
 namespace LeanFpAnalysis.FP
 
-open scoped BigOperators
+open scoped BigOperators Matrix.Norms.Frobenius
 
 -- ============================================================
 -- Linearized perturbation equation (§15.3, eq 15.22)
@@ -80,23 +80,28 @@ theorem sylvester_perturbation_bound (n : ℕ)
     (hLin : ∀ i j, sylvesterOp n A B ΔX i j =
       ΔC i j - matMul n ΔA X i j + matMul n X ΔB i j)
     (hΔX_ne : frobNormSq ΔX ≠ 0) :
-    frobNorm ΔX ≤ (1 / σ) * ((α + β) * frobNorm X + γ) * ε := by
+    frobNorm ΔX ≤
+      (1 / σ) * ((α + β) * frobNorm X + γ) * ε := by
   -- Step 1: sep bound gives σ‖ΔX‖_F ≤ ‖A·ΔX - ΔX·B‖_F
-  have hSepBound : σ * frobNorm ΔX ≤ frobNorm (sylvesterOp n A B ΔX) := by
+  have hSepBound : σ * frobNorm ΔX ≤
+      frobNorm (sylvesterOp n A B ΔX) := by
     have h := hSep.2 ΔX hΔX_ne
     -- h : σ² · ‖ΔX‖²_F ≤ ‖T(ΔX)‖²_F
     -- Take sqrt: σ · ‖ΔX‖_F ≤ ‖T(ΔX)‖_F
     have hσ_nn : 0 ≤ σ := le_of_lt hσ
     rw [← frobNorm_sq, ← frobNorm_sq] at h
-    have h1 : σ * frobNorm ΔX ≥ 0 := mul_nonneg hσ_nn (frobNorm_nonneg ΔX)
-    nlinarith [sq_nonneg (σ * frobNorm ΔX - frobNorm (sylvesterOp n A B ΔX)),
+    have h1 : σ * frobNorm ΔX ≥ 0 :=
+      mul_nonneg hσ_nn (frobNorm_nonneg ΔX)
+    nlinarith [sq_nonneg (σ * frobNorm ΔX -
+                  frobNorm (sylvesterOp n A B ΔX)),
                frobNorm_nonneg (sylvesterOp n A B ΔX)]
   -- Step 2: ‖T(ΔX)‖_F = ‖RHS‖_F ≤ ‖ΔC‖_F + ‖ΔA·X‖_F + ‖X·ΔB‖_F
   --         ≤ εγ + εα‖X‖_F + ‖X‖_Fεβ = ε((α+β)‖X‖_F + γ)
   have hRHS : frobNorm (sylvesterOp n A B ΔX) ≤
       ((α + β) * frobNorm X + γ) * ε := by
     -- Rewrite T(ΔX) using the linearized equation
-    have hReq : frobNorm (sylvesterOp n A B ΔX) =
+    have hReq :
+        frobNorm (sylvesterOp n A B ΔX) =
         frobNorm (fun i j =>
           ΔC i j - matMul n ΔA X i j + matMul n X ΔB i j) := by
       congr 1; ext i j; exact hLin i j
@@ -114,17 +119,20 @@ theorem sylvester_perturbation_bound (n : ℕ)
     -- ‖X·ΔB - ΔA·X‖_F ≤ ‖X·ΔB‖_F + ‖ΔA·X‖_F
     have htri2 := frobNorm_sub_le (matMul n X ΔB) (matMul n ΔA X)
     -- ‖ΔA·X‖_F ≤ ‖ΔA‖_F · ‖X‖_F ≤ εα · ‖X‖_F
-    have hAX : frobNorm (matMul n ΔA X) ≤ ε * α * frobNorm X :=
+    have hAX : frobNorm (matMul n ΔA X) ≤
+        ε * α * frobNorm X :=
       le_trans (frobNorm_matMul_le ΔA X)
         (mul_le_mul_of_nonneg_right hΔA (frobNorm_nonneg X))
     -- ‖X·ΔB‖_F ≤ ‖X‖_F · ‖ΔB‖_F ≤ ‖X‖_F · εβ
-    have hXB : frobNorm (matMul n X ΔB) ≤ frobNorm X * (ε * β) :=
+    have hXB : frobNorm (matMul n X ΔB) ≤
+        frobNorm X * (ε * β) :=
       le_trans (frobNorm_matMul_le X ΔB)
         (mul_le_mul_of_nonneg_left hΔB (frobNorm_nonneg X))
     linarith
   -- Step 3: Combine: σ‖ΔX‖_F ≤ ε((α+β)‖X‖_F + γ), so ‖ΔX‖_F ≤ (1/σ)ε((α+β)‖X‖_F + γ)
   have hσ_ne : σ ≠ 0 := ne_of_gt hσ
-  rw [show (1 / σ) * ((α + β) * frobNorm X + γ) * ε =
+  rw [show (1 / σ) * ((α + β) *
+        frobNorm X + γ) * ε =
       ((α + β) * frobNorm X + γ) * ε / σ from by ring]
   rw [le_div_iff₀ hσ]
   linarith
@@ -160,15 +168,18 @@ theorem sylvester_aposteriori_bound (n : ℕ)
   have hσ_nn : 0 ≤ σ := le_of_lt hσ
   rw [← frobNorm_sq, ← frobNorm_sq] at hSepBound
   -- σ · ‖E‖_F ≤ ‖T(E)‖_F = ‖R‖_F
-  have hReq : frobNorm (sylvesterOp n A B (fun i' j' => X i' j' - X_hat i' j')) =
+  have hReq :
+      frobNorm (sylvesterOp n A B (fun i' j' => X i' j' - X_hat i' j')) =
       frobNorm (sylvesterResidual n A B C X_hat) := by
     congr 1; ext i j; exact hE_eq i j
   rw [show (1 / σ) * frobNorm (sylvesterResidual n A B C X_hat) =
-      frobNorm (sylvesterResidual n A B C X_hat) / σ from by ring]
+      frobNorm (sylvesterResidual n A B C X_hat) / σ
+      from by ring]
   rw [le_div_iff₀ hσ, ← hReq]
   -- Need: σ · ‖E‖_F ≤ ‖T(E)‖_F
   -- From hSepBound: σ² · ‖E‖²_F ≤ ‖T(E)‖²_F
-  nlinarith [sq_nonneg (σ * frobNorm (fun i j => X i j - X_hat i j) -
+  nlinarith [sq_nonneg (σ *
+               frobNorm (fun i j => X i j - X_hat i j) -
                frobNorm (sylvesterOp n A B (fun i' j' => X i' j' - X_hat i' j'))),
              frobNorm_nonneg (sylvesterOp n A B (fun i' j' => X i' j' - X_hat i' j'))]
 
@@ -195,7 +206,8 @@ theorem lyapunov_perturbation_bound (n : ℕ)
       ΔC i j - matMul n ΔA X i j +
       matMul n X (fun i' j' => -matTranspose ΔA i' j') i j)
     (hΔX_ne : frobNormSq ΔX ≠ 0) :
-    frobNorm ΔX ≤ (1 / σ) * (2 * α * frobNorm X + γ) * ε := by
+    frobNorm ΔX ≤
+      (1 / σ) * (2 * α * frobNorm X + γ) * ε := by
   -- ‖-ΔAᵀ‖_F = ‖ΔA‖_F (negation + transpose preserve Frobenius norm)
   have hΔB : frobNorm (fun i j => -matTranspose ΔA i j) ≤ ε * α := by
     rw [show (fun i j => -matTranspose ΔA i j) =
@@ -218,7 +230,8 @@ theorem lyapunov_perturbation_bound (n : ℕ)
     condition number for the Sylvester equation. -/
 noncomputable def condSylvester (n : ℕ) (_A _B X : Fin n → Fin n → ℝ)
     (α β γ σ : ℝ) : ℝ :=
-  ((α + β) * frobNorm X + γ) / (σ * frobNorm X)
+  ((α + β) * frobNorm X + γ) /
+    (σ * frobNorm X)
 
 /-- The relative perturbation bound in terms of κ_Sylv. -/
 theorem sylvester_relative_perturbation (n : ℕ)
@@ -233,7 +246,9 @@ theorem sylvester_relative_perturbation (n : ℕ)
     (hΔX_ne : frobNormSq ΔX ≠ 0)
     (hX_ne : frobNorm X ≠ 0)
     (hX_pos : 0 < frobNorm X) :
-    frobNorm ΔX / frobNorm X ≤ condSylvester n A B X α β γ σ * ε := by
+    frobNorm ΔX /
+      frobNorm X ≤
+      condSylvester n A B X α β γ σ * ε := by
   have habs := sylvester_perturbation_bound n A B X ΔA ΔB ΔC ΔX σ hσ hSep
     α β γ ε hα hβ hγ hε hΔA hΔB hΔC hLin hΔX_ne
   -- habs: ‖ΔX‖ ≤ (1/σ)((α+β)‖X‖+γ)ε
@@ -243,7 +258,9 @@ theorem sylvester_relative_perturbation (n : ℕ)
   rw [div_le_iff₀ hX_pos]
   calc frobNorm ΔX
       ≤ 1 / σ * ((α + β) * frobNorm X + γ) * ε := habs
-    _ = ((α + β) * frobNorm X + γ) / (σ * frobNorm X) * ε * frobNorm X := by
+    _ = ((α + β) * frobNorm X + γ) /
+          (σ * frobNorm X) * ε *
+          frobNorm X := by
         field_simp
 
 end LeanFpAnalysis.FP
