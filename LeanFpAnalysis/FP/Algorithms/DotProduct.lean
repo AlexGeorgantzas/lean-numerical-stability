@@ -21,7 +21,7 @@ open scoped BigOperators
 
     Starting from the first rounded product (rather than 0) avoids the
     spurious extra rounding error that would arise from fl_add(0, fl_mul …),
-    allowing the tight γₙ bound of Higham §3.5. -/
+    allowing the standard γₙ inner-product bound of Higham §3.1. -/
 noncomputable def fl_dotProduct (fp : FPModel) (n : ℕ)
     (x y : Fin n → ℝ) : ℝ :=
   match n with
@@ -30,7 +30,7 @@ noncomputable def fl_dotProduct (fp : FPModel) (n : ℕ)
       Fin.foldl n' (fun acc i => fp.fl_add acc (fp.fl_mul (x i.succ) (y i.succ)))
         (fp.fl_mul (x 0) (y 0))
 
-/-- **Dot product rounding error bound** (Higham §3.5, tight bound).
+/-- **Dot product rounding error bound** (Higham §3.1, equation 3.5).
 
     The computed floating-point dot product satisfies:
       |fl_dotProduct fp x y - ∑ i, x i * y i| ≤ γ(n) * ∑ i, |x i| * |y i|

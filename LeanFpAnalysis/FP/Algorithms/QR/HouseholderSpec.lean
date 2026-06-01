@@ -106,9 +106,79 @@ theorem householder_orthogonal (n : ℕ) (v : Fin n → ℝ) (β : ℝ)
   -- idMatrix n i j + v_i * v_j * (-2β + 2β) = δ_{ij}
   unfold idMatrix; ring
 
+/-- Normalized vector corresponding to the unnormalized Householder form
+    `I - beta * v * vᵀ`.
+
+    If `0 ≤ beta`, then `sqrt(beta) * v` turns the reflector into the
+    normalized form `I - w*wᵀ` used in Higham's equation (18.3). -/
+noncomputable def householderNormalizedVector (n : ℕ)
+    (v : Fin n → ℝ) (beta : ℝ) : Fin n → ℝ :=
+  fun i => Real.sqrt beta * v i
+
+/-- The normalized `beta = 1` Householder form is algebraically the same as
+    the unnormalized `beta` form when `beta ≥ 0`. -/
+theorem householder_normalizedVector_eq (n : ℕ)
+    (v : Fin n → ℝ) (beta : ℝ) (hbeta : 0 ≤ beta) :
+    householder n (householderNormalizedVector n v beta) 1 =
+      householder n v beta := by
+  ext i j
+  unfold householder householderNormalizedVector
+  have hsqrt : Real.sqrt beta * Real.sqrt beta = beta :=
+    Real.mul_self_sqrt hbeta
+  rw [show 1 * (Real.sqrt beta * v i) * (Real.sqrt beta * v j) =
+      beta * v i * v j by
+    calc
+      1 * (Real.sqrt beta * v i) * (Real.sqrt beta * v j)
+          = (Real.sqrt beta * Real.sqrt beta) * v i * v j := by ring
+      _ = beta * v i * v j := by rw [hsqrt]]
+
+/-- If `beta * (vᵀv) = 2`, then the normalized Householder vector has
+    squared 2-norm equal to `2`. -/
+theorem householderNormalizedVector_norm_sq (n : ℕ)
+    (v : Fin n → ℝ) (beta : ℝ) (hbeta_nonneg : 0 ≤ beta)
+    (hbeta : beta * (∑ i : Fin n, v i * v i) = 2) :
+    (∑ i : Fin n,
+      householderNormalizedVector n v beta i *
+        householderNormalizedVector n v beta i) = 2 := by
+  unfold householderNormalizedVector
+  have hsqrt : Real.sqrt beta * Real.sqrt beta = beta :=
+    Real.mul_self_sqrt hbeta_nonneg
+  calc
+    (∑ i : Fin n, (Real.sqrt beta * v i) * (Real.sqrt beta * v i))
+        = ∑ i : Fin n, beta * (v i * v i) := by
+          apply Finset.sum_congr rfl
+          intro i _
+          calc
+            (Real.sqrt beta * v i) * (Real.sqrt beta * v i)
+                = (Real.sqrt beta * Real.sqrt beta) * (v i * v i) := by ring
+            _ = beta * (v i * v i) := by rw [hsqrt]
+    _ = beta * (∑ i : Fin n, v i * v i) := by
+          rw [Finset.mul_sum]
+    _ = 2 := hbeta
+
 -- ============================================================
 -- §18.3  Lemma 18.2: Householder application backward error
 -- ============================================================
+
+/-- **Householder vector perturbation model** (Higham equation 18.3).
+
+    After Lemma 18.1, Higham rewrites Householder matrices in the normalized
+    form `P = I - v vᵀ`, where `‖v‖₂ = sqrt 2`, and assumes the computed vector
+    satisfies `v_hat = v + Δv` with componentwise bound
+    `|Δv| ≤ eps |v|`.  In the book, `eps` is written as a generic
+    `γ_{cm}` constant.
+
+    This structure is the precise intermediate contract that should be proved
+    from the concrete `fl_householderVector` construction before proving the
+    `HouseholderAppError` bridge below. -/
+structure HouseholderVectorError (n : ℕ) (v v_hat : Fin n → ℝ)
+    (eps : ℝ) : Prop where
+  /-- Normalized Householder-vector convention: `‖v‖₂² = 2`. -/
+  norm_sq : (∑ i : Fin n, v i * v i) = 2
+  /-- Computed vector is a componentwise small perturbation of the exact vector. -/
+  pert : ∃ Δv : Fin n → ℝ,
+    (∀ i, v_hat i = v i + Δv i) ∧
+    ∀ i, |Δv i| ≤ eps * |v i|
 
 /-- **Backward error model for Householder application** (Lemma 18.2).
 
@@ -116,10 +186,12 @@ theorem householder_orthogonal (n : ℕ) (v : Fin n → ℝ) (β : ℝ)
     floating-point arithmetic, the computed result ŷ satisfies
     ŷ = (P + ΔP)b where ‖ΔP‖_F ≤ c.
 
-    This axiomatizes the result of Lemma 18.2 since the detailed proof
-    requires low-level FP analysis of the dot product + outer product
-    computation pattern (Lemma 18.1 + eq 18.3). The bound c is
-    typically γ̃_{cm} where c is a small constant and m = n. -/
+    Lemma 18.2 assumes the computed Householder vector satisfies
+    `HouseholderVectorError` above, then analyzes the dot-product and vector
+    update computation.  Until the concrete bridge from `fl_householderVector`
+    and `fl_householderApply` is proved, this structure is a specification
+    interface rather than an end-to-end result.  The bound c is typically
+    a generic `γ_{cm}` where c is a small integer and m = n. -/
 structure HouseholderAppError (n : ℕ) (P : Fin n → Fin n → ℝ)
     (b y_hat : Fin n → ℝ) (c : ℝ) : Prop where
   /-- P is orthogonal. -/

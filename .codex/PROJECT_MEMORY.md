@@ -212,6 +212,112 @@ These compile, but should not be treated as fully derived stability results:
   lower-level foundation chain.
 - Current next step is the bottom-up audit/cleanup beginning with `DotProduct`
   and its exact-specification bridge to Mathlib `dotProduct`.
+- Rebuild standard clarified with the dot-product/QR contrast.  `DotProduct.lean`
+  is the positive template: it defines a concrete rounded algorithm
+  `fl_dotProduct` from `FPModel` primitives and proves
+  `dotProduct_backward_error` from that definition using summation and gamma
+  lemmas.  QR is not yet at that standard: `householder_qr_backward` consumes an
+  assumed `OrthogonalSequenceBackwardError`, and `HouseholderAppError` is a
+  specification of one-step reflector application rather than a theorem derived
+  from concrete rounded Householder construction/application code.
+- Whole-library repass aim: keep contracts/specification structures as useful
+  modular interfaces, but add implementation-backed bridge theorems wherever a
+  public algorithmic stability result currently depends only on a supplied
+  contract.  The desired chain is `FPModel` primitives -> concrete `fl_*`
+  algorithm -> theorem that the algorithm satisfies its contract -> final
+  stability theorem.  Avoid claiming end-to-end stability for modules that stop
+  before the bridge theorem.
+- A local Codex skill for this workflow was created at
+  `~/.codex/skills/lean-fp-stability-audit/SKILL.md`.  Use it when auditing or
+  rebuilding modules for implementation-backed stability proofs.
+- Skill/source policy: always compare the proof boundary against the original
+  source, not just the current Lean file.  If Higham or another source proves a
+  lower-level bound, the rebuild should formalize that bound rather than treating
+  it as a permanent assumption in a higher-level theorem.  QR/Householder in
+  Higham Chapter 18 is the motivating example.
+- Internal rebuild planning files were created under ignored `thesis/`:
+  `thesis/IMPLEMENTATION_BACKED_AUDIT.md` records the current module-by-module
+  classification, and `thesis/REPASS_LEDGER.md` records the phased checklist for
+  the repass.  Future work should use these with the
+  `lean-fp-stability-audit` skill.
+- Treat `thesis/REPASS_LEDGER.md` as living documentation.  Update it whenever
+  a higher-level proof reveals a missing lower-level rounded operation, bridge
+  theorem, source reference, or dependency not visible in the initial audit.
+- Phase 1 foundation audit completed on 2026-06-01.  Targeted `lake env lean`
+  passed for `FP/Model.lean`, `Analysis/Rounding.lean`, `Analysis/Error.lean`,
+  `Analysis/Summation.lean`, `Analysis/SubtractionFold.lean`,
+  `Analysis/Stability.lean`, and `Analysis/MatrixAlgebra.lean`.  Only narrow
+  documentation edits were made: `fl_add_zero` is explicitly an extra exactness
+  hypothesis, and `gammaValid` is described as model-parametric rather than
+  IEEE-specific.
+- Phase 2 scalar/vector audit completed on 2026-06-01.  Targeted `lake env lean`
+  passed for `RecursiveSum.lean`, `PairwiseSum.lean`, `SumTree.lean`,
+  `DotProduct.lean`, `OuterProduct.lean`, and `Norm2.lean`.  `DotProduct` is the
+  positive implementation-backed template.  `OuterProduct` documentation was
+  corrected to stress that its perturbation theorem is row-wise and not a global
+  backward-stability result, matching Higham's discussion after equation (3.6).
+  `Norm2` is implementation-backed as a kernel, but any Householder-specific
+  construction theorem remains pending until the Chapter 18 source boundary is
+  checked.
+- Phase 3 basic matrix-kernel audit completed on 2026-06-01.  Targeted
+  `lake env lean` passed for `MatVec.lean`, `MatMul.lean`, and
+  `LeastSquares/LSNormalEquations.lean`.  Added concrete bridge theorems
+  `gramProductError_from_fl_matMul` and `gramVecError_from_fl_matVec`, so the
+  normal-equations Gram product/vector contracts can now be proved from
+  `fl_matMul` and `fl_matVec`.  Cholesky remains the contract-level dependency
+  in normal equations.
+- Phase 4 triangular-solve audit completed on 2026-06-01.  `TriangularSolve` and
+  `ForwardSub` are implementation-backed: the concrete recursive rounded
+  algorithms prove `fl_backSub_satisfies_spec` and
+  `fl_forwardSub_satisfies_spec`, then the backward-error theorems consume those
+  proved row-spec bridges.  `TriangularSolveCombined` only composes those proved
+  results.  The derived forward-error/comparison/M-matrix theorems take exact
+  inverse, exact-solution, diagonal-dominance, M-matrix, and `gammaValid`
+  hypotheses; these are mathematical problem assumptions, not missing rounded
+  algorithm contracts.  `TriangularForwardComparison` was relabelled so the
+  backward-error-derived comparison bound is not confused with Higham's direct
+  Theorem 8.9 μ-bound (`forwardSub_forward_error_mu_bound`).
+- Phase 5 low-level QR rebuild started on 2026-06-01.  Added
+  `Algorithms/QR/HouseholderReflector.lean` with concrete rounded kernels
+  `fl_householderAlpha`, `fl_householderVector`, and `fl_householderBeta`.
+  Their unroll lemmas reduce the construction to existing `fl_norm2`,
+  `fl_dotProduct`, `fp.model_sub`, `fp.model_mul`, and `fp.model_div` layers.
+  Added `Algorithms/QR/HouseholderApply.lean` with concrete rounded
+  `fl_householderApply`, modeling `b - beta * v * (v^T b)` and unrolling it into
+  dot-product, multiplication, and subtraction errors.  These are not yet Higham
+  Lemma 18.1 or Lemma 18.2 as stability theorems; the next missing bridges are
+  the perturbation bound for the constructed reflector and the proof that
+  `fl_householderApply` satisfies `HouseholderAppError`.
+- Phase 5 source boundary update on 2026-06-02: inspecting `References/Chapter18.pdf`
+  page images confirmed that Higham Lemma 18.2 assumes the normalized reflector
+  perturbation model from equation (18.3) before deriving the application error
+  `y_hat = (P + ΔP)b`.  Added `HouseholderVectorError` to
+  `HouseholderSpec.lean` to represent that intermediate contract explicitly, and
+  added `householder_matMulVec_eq` in `HouseholderApply.lean` to connect the
+  exact reflector matrix with the closed-form expression
+  `b - beta * v * (v^T b)`.  Do not add a vacuous theorem that proves
+  `HouseholderAppError` by manufacturing an arbitrary post-hoc `ΔP`; the real
+  bridge is `fl_householderVector -> HouseholderVectorError`, followed by
+  `fl_householderApply + HouseholderVectorError -> HouseholderAppError`.
+- Phase 5 exact-form update on 2026-06-02: added exact Householder construction
+  definitions `householderAlpha`, `householderVector`, and `householderBeta`,
+  plus `householderBeta_mul_norm_sq`.  Added normalized-form support
+  `householderNormalizedVector`, `householder_normalizedVector_eq`, and
+  `householderNormalizedVector_norm_sq`.  This proves the algebraic bridge
+  between the library's unnormalized `I - beta v v^T` reflector and Higham's
+  normalized `I - v v^T` equation (18.3) form.  The floating-point bridge is
+  still pending: prove the rounded construction satisfies the normalized-vector
+  perturbation model before proving `HouseholderAppError`.
+- Also added `householder_exact_orthogonal`: exact `householderVector` together
+  with exact `householderBeta` produces an orthogonal reflector whenever
+  `v^T v` is nonzero.  Later rounded proofs should compare the computed
+  construction against this exact reflector rather than re-proving exact
+  orthogonality algebra.
+- Added `fl_householderVector_tail_eq_householderVector`, proving the
+  implementation-backed exact-copy part of Higham Lemma 18.1: all non-first
+  components of the rounded Householder vector agree with the exact vector.
+  The hard remaining Lemma 18.1 work is the first-component perturbation and
+  beta perturbation bounds.
 
 ## 2026-04-26 Fix Pass
 

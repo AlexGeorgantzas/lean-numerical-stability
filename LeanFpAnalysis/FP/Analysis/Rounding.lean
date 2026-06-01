@@ -23,8 +23,8 @@ relative error is bounded by γ(n), defined below.
 
 The definition is valid only under the side condition `n * u < 1`,
 which ensures the denominator is positive and the bound is finite.
-This condition is always satisfied in practice for reasonable n,
-since u is of order 2⁻⁵³ for IEEE double precision.
+The library keeps this condition explicit as `gammaValid` instead of baking in
+any particular floating-point format.
 -/
 
 -- ============================================================
@@ -45,8 +45,8 @@ noncomputable def gamma (fp : FPModel) (n : ℕ) : ℝ :=
 /-- Well-definedness guard for `gamma`.
     The denominator `1 - n * u` is positive iff `n * u < 1`.
     All lemmas that use `gamma` in a meaningful bound require this hypothesis.
-    In practice this holds for any realistic algorithm depth, since
-    u ≈ 2⁻⁵³ in double precision. -/
+    This is deliberately model-parametric; callers provide it for the relevant
+    operation count and floating-point model. -/
 def gammaValid (fp : FPModel) (n : ℕ) : Prop :=
   (n : ℝ) * fp.u < 1
 

@@ -40,20 +40,21 @@ theorem outerProduct_error_bound (fp : FPModel) (m n : ℕ)
   rw [h_eq, abs_mul, mul_comm (|x i * y j|)]
   exact mul_le_mul_of_nonneg_right hδ (abs_nonneg _)
 
-/-- **Outer product backward error** (Higham §3.1).
+/-- **Row-wise outer product perturbation representation** (Higham §3.1).
 
     The computed outer product is the exact outer product of x with a
-    perturbed ỹ: there exists Δy such that
+    row-dependent perturbed ỹ: for each fixed row `i`, there exists Δy such that
       ∀ j, |Δy j| ≤ fp.u * |y j|
       ∀ i j, fl_outerProduct fp x y i j = x i * (y j + Δy j)
 
-    Proof: for each j, take Δy j = y j * δᵢⱼ.  However, since δᵢⱼ may
-    vary with i, a single global Δy independent of i does not exist in
-    general.  The "backward error in y" form is therefore stated column-
-    by-column (fixing i): for each row i there exists Δyᵢ with the
-    stated bound.
+    This is deliberately not advertised as full backward stability of the
+    outer-product algorithm.  Higham notes after equation (3.6) that the
+    computed outer product generally cannot be written as
+    `(x + Δx)(y + Δy)ᵀ`, because the computed matrix need not remain rank one.
 
-    This is the column-indexed form. -/
+    Proof: for each fixed row `i` and column `j`, take
+    `Δy j = y j * δᵢⱼ`.  Since δᵢⱼ may vary with `i`, a single global Δy
+    independent of the row does not exist in general. -/
 theorem outerProduct_backward_error (fp : FPModel) (m n : ℕ)
     (x : Fin m → ℝ) (y : Fin n → ℝ) :
     ∀ i : Fin m, ∃ Δy : Fin n → ℝ,

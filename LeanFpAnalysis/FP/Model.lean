@@ -8,9 +8,9 @@ namespace LeanFpAnalysis.FP
 /--
 A Higham-style axiomatic floating-point model.
 
-Source: Higham, *Accuracy and Stability of Numerical Algorithms*, 2nd ed.,
-§2.2, standard model (2.4).  We use the non-strict formal variant
-`|δ| ≤ u` of Higham's usual `|δ| < u`.
+Primary source: Higham, *Accuracy and Stability of Numerical Algorithms*,
+2nd ed., §2.2, standard model (2.4).  We use the non-strict formal variant
+`|δ| ≤ u` of Higham's usual strict `|δ| < u`.
 
 Each primitive arithmetic operation satisfies:
 `fl(x op y) = (x op y) * (1 + δ)`, with `|δ| ≤ u`.
@@ -35,9 +35,11 @@ structure FPModel where
 
   /-- Additional exactness axiom: `fl(0 + x) = x`.
 
-      This is not a consequence of the relative-error standard model above.
-      It is included explicitly because tight recursive-summation constants use
-      the first addition from zero as exact. -/
+      This is not a consequence of Higham's relative-error standard model (2.4).
+      It is a deliberately separate hypothesis because tight recursive-summation
+      constants use the first addition from zero as exact.  Results that need
+      this sharper constant depend on this extra model field, not on (2.4)
+      alone. -/
   fl_add_zero : ∀ x : ℝ, fl_add 0 x = x
 
   model_add :
