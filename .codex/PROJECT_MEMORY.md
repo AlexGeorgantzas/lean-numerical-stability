@@ -813,6 +813,18 @@ These compile, but should not be treated as fully derived stability results:
   rounded `R_safe` algorithm and its bridge to the backward-error contract.
   Returning a separately computed floating-point `Q` would be a distinct future
   API, not a prerequisite for the current `R` or QR-solve stability claims.
+- Started the explicit `Q` layer for Householder QR without claiming a rounded
+  accumulated `Q_hat`.  Added `fl_householderQRPanel_Q_safe`,
+  `fl_householderQR_Q_safe`, and `HouseholderQRWitness` /
+  `fl_householderQR_safe_witness`.  These expose the exact orthogonal witness
+  generated from the same safe branch choices and rounded trailing panels as
+  `fl_householderQR_R_safe`.  Proved
+  `fl_householderQRPanel_Q_safe_orthogonal`,
+  `fl_householderQR_Q_safe_orthogonal_of_global_gammaValid`, and witness
+  wrappers for `Q` orthogonality, `R` upper-triangularity, and the existing
+  structured `R` backward-error theorem.  Next explicit-`Q` milestone: prove a
+  theorem tying this concrete witness `Q` directly to the perturbation equation,
+  instead of only exposing the same `R` backward-error theorem existentially.
 
 ## 2026-04-26 Fix Pass
 

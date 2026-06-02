@@ -1355,6 +1355,101 @@ noncomputable def fl_householderQR_R_safe (fp : FPModel) (n : ℕ)
     (A : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
   fl_householderQRPanel_R_safe fp n n A
 
+/-- Exact orthogonal-factor witness associated with the zero-aware rounded
+    Householder QR panel algorithm.
+
+    This is not a separately rounded accumulated `Q_hat`.  It records the exact
+    product of ideal Householder reflectors used in the backward-error
+    representation for the same branch choices and rounded trailing panels as
+    `fl_householderQRPanel_R_safe`.  It is the first explicit `Q`-side object
+    needed before adding a public `(Q, R)` factorization API. -/
+noncomputable def fl_householderQRPanel_Q_safe (fp : FPModel) :
+    (m p : ℕ) → (Fin m → Fin p → ℝ) → Fin m → Fin m → ℝ
+  | 0, _, _A => idMatrix 0
+  | m + 1, 0, _A => idMatrix (m + 1)
+  | m + 1, p + 1, A =>
+      if _hcol : panelFirstColumn (Nat.succ_pos p) A = 0 then
+        embedTrailingOne
+          (fl_householderQRPanel_Q_safe fp m p (trailingPanel A))
+      else
+        let P : Fin (m + 1) → Fin (m + 1) → ℝ :=
+          householder (m + 1)
+            (householderNormalizedVector (m + 1)
+              (householderVector (Nat.succ_pos m)
+                (panelFirstColumn (Nat.succ_pos p) A))
+              (householderBetaFromScale (Nat.succ_pos m)
+                (panelFirstColumn (Nat.succ_pos p) A))) 1
+        let Astep : Fin (m + 1) → Fin (p + 1) → ℝ :=
+          fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+            (fl_householderNormalizedVector fp (Nat.succ_pos m)
+              (panelFirstColumn (Nat.succ_pos p) A)) 1 A
+        let Qt : Fin m → Fin m → ℝ :=
+          fl_householderQRPanel_Q_safe fp m p (trailingPanel Astep)
+        matTranspose
+          (matMul (m + 1) (embedTrailingOne (matTranspose Qt)) P)
+
+@[simp] theorem fl_householderQRPanel_Q_safe_zero_rows (fp : FPModel)
+    {p : ℕ} (A : Fin 0 → Fin p → ℝ) :
+    fl_householderQRPanel_Q_safe fp 0 p A = idMatrix 0 := rfl
+
+@[simp] theorem fl_householderQRPanel_Q_safe_zero_cols (fp : FPModel)
+    {m : ℕ} (A : Fin (m + 1) → Fin 0 → ℝ) :
+    fl_householderQRPanel_Q_safe fp (m + 1) 0 A = idMatrix (m + 1) := rfl
+
+@[simp] theorem fl_householderQRPanel_Q_safe_succ_succ_zero (fp : FPModel)
+    {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (hcol : panelFirstColumn (Nat.succ_pos p) A = 0) :
+    fl_householderQRPanel_Q_safe fp (m + 1) (p + 1) A =
+      embedTrailingOne
+        (fl_householderQRPanel_Q_safe fp m p (trailingPanel A)) := by
+  simp [fl_householderQRPanel_Q_safe, hcol]
+
+@[simp] theorem fl_householderQRPanel_Q_safe_succ_succ_nonzero (fp : FPModel)
+    {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (hcol : panelFirstColumn (Nat.succ_pos p) A ≠ 0) :
+    fl_householderQRPanel_Q_safe fp (m + 1) (p + 1) A =
+      let P : Fin (m + 1) → Fin (m + 1) → ℝ :=
+        householder (m + 1)
+          (householderNormalizedVector (m + 1)
+            (householderVector (Nat.succ_pos m)
+              (panelFirstColumn (Nat.succ_pos p) A))
+            (householderBetaFromScale (Nat.succ_pos m)
+              (panelFirstColumn (Nat.succ_pos p) A))) 1
+      let Astep : Fin (m + 1) → Fin (p + 1) → ℝ :=
+        fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A)) 1 A
+      let Qt : Fin m → Fin m → ℝ :=
+        fl_householderQRPanel_Q_safe fp m p (trailingPanel Astep)
+      matTranspose
+        (matMul (m + 1) (embedTrailingOne (matTranspose Qt)) P) := by
+  simp [fl_householderQRPanel_Q_safe, hcol]
+
+/-- Square specialization of the explicit exact `Q` witness associated with
+    `fl_householderQR_R_safe`. -/
+noncomputable def fl_householderQR_Q_safe (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fl_householderQRPanel_Q_safe fp n n A
+
+/-- Public paired object for the current Householder QR layer.
+
+    `Q` is the explicit exact orthogonal witness associated with the
+    backward-error representation, and `R` is the concrete rounded
+    zero-aware `R` output.  This is intentionally not named as a rounded
+    `(Q_hat, R_hat)` implementation: forming a separately rounded accumulated
+    `Q_hat` is a later algorithmic layer. -/
+structure HouseholderQRWitness (n : ℕ) where
+  /-- Exact orthogonal witness generated from the safe QR branch choices. -/
+  Q : Fin n → Fin n → ℝ
+  /-- Concrete rounded zero-aware `R` output. -/
+  R : Fin n → Fin n → ℝ
+
+/-- Paired exact-`Q` witness and rounded `R_safe` output for Householder QR. -/
+noncomputable def fl_householderQR_safe_witness (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) : HouseholderQRWitness n :=
+  { Q := fl_householderQR_Q_safe fp n A
+    R := fl_householderQR_R_safe fp n A }
+
 /-- Recursive readiness predicate for the concrete Householder QR `R` panel
     algorithm.
 
@@ -1643,6 +1738,97 @@ theorem fl_householder_first_column_panel_step_error (fp : FPModel)
   simpa [householderConstructApplyBound] using
     fl_householderConstructApply_matrix_step_error_rect fp hm0
       (panelFirstColumn hp0 A) A hx hvalid
+
+/-- The explicit exact `Q` witness associated with the zero-aware rounded
+    Householder QR panel algorithm is orthogonal.
+
+    This proves the first `Q`-side bridge: the recursive object
+    `fl_householderQRPanel_Q_safe` is a genuine exact orthogonal matrix for the
+    same safe branch choices used by `fl_householderQRPanel_R_safe`. -/
+theorem fl_householderQRPanel_Q_safe_orthogonal (fp : FPModel) :
+    ∀ (m p : ℕ) (A : Fin m → Fin p → ℝ),
+      HouseholderQRPanelSafeReady fp m p A →
+      IsOrthogonal m (fl_householderQRPanel_Q_safe fp m p A) := by
+  intro m
+  induction m with
+  | zero =>
+      intro p A _hready
+      simpa [fl_householderQRPanel_Q_safe] using idMatrix_orthogonal 0
+  | succ m ih =>
+      intro p
+      cases p with
+      | zero =>
+          intro A _hready
+          simpa [fl_householderQRPanel_Q_safe] using idMatrix_orthogonal (m + 1)
+      | succ p =>
+          intro A hready
+          by_cases hcol : panelFirstColumn (Nat.succ_pos p) A = 0
+          · have htailReady :
+                HouseholderQRPanelSafeReady fp m p (trailingPanel A) := by
+              simpa [HouseholderQRPanelSafeReady, hcol] using hready
+            have hQt :
+                IsOrthogonal m
+                  (fl_householderQRPanel_Q_safe fp m p (trailingPanel A)) :=
+              ih p (trailingPanel A) htailReady
+            simpa [fl_householderQRPanel_Q_safe, hcol] using
+              embedTrailingOne_orthogonal
+                (fl_householderQRPanel_Q_safe fp m p (trailingPanel A)) hQt
+          · have hready' :
+                gammaValid fp (11 * (m + 1) + 23) ∧
+                HouseholderQRPanelSafeReady fp m p
+                  (fl_householderTrailingPanelStep fp A) := by
+              simpa [HouseholderQRPanelSafeReady, hcol] using hready
+            let P : Fin (m + 1) → Fin (m + 1) → ℝ :=
+              householder (m + 1)
+                (householderNormalizedVector (m + 1)
+                  (householderVector (Nat.succ_pos m)
+                    (panelFirstColumn (Nat.succ_pos p) A))
+                  (householderBetaFromScale (Nat.succ_pos m)
+                    (panelFirstColumn (Nat.succ_pos p) A))) 1
+            let Astep : Fin (m + 1) → Fin (p + 1) → ℝ :=
+              fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+                (fl_householderNormalizedVector fp (Nat.succ_pos m)
+                  (panelFirstColumn (Nat.succ_pos p) A)) 1 A
+            let Qt : Fin m → Fin m → ℝ :=
+              fl_householderQRPanel_Q_safe fp m p (trailingPanel Astep)
+            have htailReady' :
+                HouseholderQRPanelSafeReady fp m p (trailingPanel Astep) := by
+              simpa [Astep, fl_householderTrailingPanelStep] using hready'.2
+            have hQt : IsOrthogonal m Qt := by
+              simpa [Qt] using ih p (trailingPanel Astep) htailReady'
+            have hEmb :
+                IsOrthogonal (m + 1)
+                  (embedTrailingOne (matTranspose Qt)) :=
+              embedTrailingOne_orthogonal (matTranspose Qt) hQt.transpose
+            have hP : IsOrthogonal (m + 1) P := by
+              have hstep :=
+                fl_householder_first_column_panel_step_error fp
+                  (Nat.succ_pos m) (Nat.succ_pos p) A hcol hready'.1
+              simpa [P, householderConstructApplyBound] using hstep.orth
+            have hM :
+                IsOrthogonal (m + 1)
+                  (matMul (m + 1) (embedTrailingOne (matTranspose Qt)) P) :=
+              hEmb.mul hP
+            simpa [fl_householderQRPanel_Q_safe, hcol, P, Astep, Qt] using
+              hM.transpose
+
+/-- Square specialization: the explicit exact `Q` witness associated with
+    `fl_householderQR_R_safe` is orthogonal. -/
+theorem fl_householderQR_Q_safe_orthogonal (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (hready : HouseholderQRPanelSafeReady fp n n A) :
+    IsOrthogonal n (fl_householderQR_Q_safe fp n A) := by
+  simpa [fl_householderQR_Q_safe] using
+    fl_householderQRPanel_Q_safe_orthogonal fp n n A hready
+
+/-- Global-gamma wrapper for orthogonality of the explicit exact `Q` witness
+    associated with the zero-aware Householder QR `R` algorithm. -/
+theorem fl_householderQR_Q_safe_orthogonal_of_global_gammaValid
+    (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (hvalid : gammaValid fp (11 * n + 23)) :
+    IsOrthogonal n (fl_householderQR_Q_safe fp n A) := by
+  exact fl_householderQR_Q_safe_orthogonal fp n A
+    (HouseholderQRPanelSafeReady_square_of_global_gammaValid fp n A hvalid)
 
 /-- Exact first-column value after applying the constructed Householder
     reflector to a panel. -/
@@ -2791,5 +2977,33 @@ theorem fl_householderQR_R_safe_structured_backward_error_of_global_gammaValid
       (householderQRBackwardCoeffSafe fp n A * frobNorm A) := by
   exact fl_householderQR_R_safe_structured_backward_error fp n A
     (HouseholderQRPanelSafeReady_square_of_global_gammaValid fp n A hvalid)
+
+/-- The `Q` field of the public safe Householder QR witness is orthogonal. -/
+theorem fl_householderQR_safe_witness_Q_orthogonal_of_global_gammaValid
+    (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (hvalid : gammaValid fp (11 * n + 23)) :
+    IsOrthogonal n (fl_householderQR_safe_witness fp n A).Q := by
+  simpa [fl_householderQR_safe_witness] using
+    fl_householderQR_Q_safe_orthogonal_of_global_gammaValid fp n A hvalid
+
+/-- The `R` field of the public safe Householder QR witness is upper
+    triangular. -/
+theorem fl_householderQR_safe_witness_R_upper
+    (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ) :
+    IsUpperTriangular n (fl_householderQR_safe_witness fp n A).R := by
+  simpa [fl_householderQR_safe_witness] using
+    fl_householderQR_R_safe_upper fp n A
+
+/-- The `R` field of the public safe Householder QR witness satisfies the
+    implementation-backed structured backward-error theorem. -/
+theorem fl_householderQR_safe_witness_R_structured_backward_error_of_global_gammaValid
+    (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (hvalid : gammaValid fp (11 * n + 23)) :
+    StructuredHouseholderQRBackwardError n A
+      (fl_householderQR_safe_witness fp n A).R
+      (householderQRBackwardCoeffSafe fp n A * frobNorm A) := by
+  simpa [fl_householderQR_safe_witness] using
+    fl_householderQR_R_safe_structured_backward_error_of_global_gammaValid
+      fp n A hvalid
 
 end LeanFpAnalysis.FP
