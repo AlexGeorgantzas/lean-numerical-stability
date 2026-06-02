@@ -980,6 +980,27 @@ These compile, but should not be treated as fully derived stability results:
   `fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_growth_accum_error_of_global_gammaValid`
   expose that coarser but easier-to-cite bound.  The sharper closed-form theorem
   remains the canonical result.
+- Added source-facing growth wrappers for the implementation-backed
+  Householder QR `R_hat` theorem:
+  `householderQRBackwardCoeffSafe_le_highamGrowth`,
+  `fl_householderQR_R_safe_backward_error_highamGrowth_of_global_gammaValid`,
+  `fl_householderQR_safe_witness_explicit_backward_error_highamGrowth_of_global_gammaValid`,
+  and
+  `fl_householderQR_computed_safe_R_hat_explicit_backward_error_highamGrowth_of_global_gammaValid`.
+  These prove the concrete safe rounded `R` algorithm satisfies a
+  dimension-only bound `n*c*(1+c)^n*‖A‖_F`, with
+  `c = householderConstructApplyBound fp n`, by first bounding the
+  branch-sensitive implementation coefficient by `residualAccumBound` and then
+  solving/bounding that recurrence.
+- Added `HouseholderQRComputedFactorsResidualError` and
+  `fl_householderQR_computed_safe_residual_error_highamGrowth_of_global_gammaValid`.
+  This is the theorem that directly uses the concrete product
+  `Q_hat * R_hat`: it proves a residual bound for the rounded factors by
+  combining the exact-witness `R_hat` backward error with the bounded
+  perturbation `Q_hat = Q_safe + ΔQ`.  It deliberately does not assert that
+  `Q_hat` is orthogonal.  Higham Theorem 18.4 uses an exact orthogonal product
+  of Householder reflectors; a separately rounded accumulated `Q_hat` is only
+  near that exact factor under the general `FPModel`.
 
 ## 2026-04-26 Fix Pass
 
