@@ -417,6 +417,15 @@ These compile, but should not be treated as fully derived stability results:
   columnwise Householder step has a single residual matrix `E` with
   `A_hat = P*A + E` and `‖E‖_F ≤ c*‖A‖_F`.  The next gap is turning repeated
   residual steps into the final `Qᵀ(A+ΔA)`/QR backward-error statement.
+- Added residual-form sequence one-step theorems in `HouseholderQR.lean`:
+  `orthogonal_sequence_one_step_of_residual` and
+  `orthogonal_sequence_one_step_of_columnwise_error`.  These advance the
+  sequence invariant from `A_hat = Qᵀ(A+ΔA)` through a step
+  `A_next = P*A_hat + E` with `‖E‖_F ≤ c‖A_hat‖_F`, and the columnwise version
+  consumes `ColumnwiseHouseholderStepError` directly.  This avoids the stronger
+  old assumption that one global `ΔP` explains a whole matrix step.  The
+  remaining QR gap is the repeated-step induction/loop model and the final
+  connection to `HouseholderQRBackwardError`.
 
 ## 2026-04-26 Fix Pass
 

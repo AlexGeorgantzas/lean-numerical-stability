@@ -16,6 +16,7 @@ import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderSpec
+import LeanFpAnalysis.FP.Algorithms.QR.HouseholderMatrixStep
 
 namespace LeanFpAnalysis.FP
 
@@ -34,9 +35,9 @@ open scoped BigOperators Matrix.Norms.Frobenius
     where Q = P₁ᵀ···Pᵣᵀ is orthogonal and ‖ΔA‖_F ≤ r·c·‖A‖_F
     (to first order in c, assuming r·c < 1).
 
-    We axiomatize this result via a structure capturing the hypotheses
-    and conclusion, since the detailed inductive proof involves
-    careful tracking of perturbation products. -/
+    This structure records the final sequence-level conclusion.  The residual
+    one-step bridge below is now proved, but the repeated concrete QR loop still
+    has to be connected to this structure by an induction over reflectors. -/
 structure OrthogonalSequenceBackwardError (n : ℕ) (A : Fin n → Fin n → ℝ)
     (A_hat : Fin n → Fin n → ℝ) (r : ℕ) (c : ℝ) : Prop where
   /-- There exist an orthogonal Q and perturbation ΔA such that
@@ -71,7 +72,7 @@ theorem orthogonal_sequence_one_step (n : ℕ)
     (P : Fin n → Fin n → ℝ) (ΔP : Fin n → Fin n → ℝ)
     (hP : IsOrthogonal n P)
     (hΔP : frobNorm ΔP ≤ c_step)
-    (hc_step : 0 ≤ c_step)
+    (_hc_step : 0 ≤ c_step)
     (A_next : Fin n → Fin n → ℝ)
     (hNext : ∀ i j, A_next i j =
       matMul n (fun a b => P a b + ΔP a b) A_hat i j) :
@@ -149,6 +150,102 @@ theorem orthogonal_sequence_one_step (n : ℕ)
             c_step * frobNorm B := by
           linarith [mul_le_mul_of_nonneg_right hΔP (frobNorm_nonneg B)]
 
+/-- **Residual-form single-step backward error accumulation**.
+
+    This is the one-step engine needed after columnwise Householder
+    perturbations have been aggregated to a single residual matrix `E`.
+    Compared with `orthogonal_sequence_one_step`, this theorem does not require
+    one global perturbation matrix `ΔP` satisfying
+    `A_next = (P + ΔP) A_hat`.  It only needs the weaker and source-aligned
+    residual form `A_next = P A_hat + E` with `‖E‖_F ≤ c_step‖A_hat‖_F`. -/
+theorem orthogonal_sequence_one_step_of_residual (n : ℕ)
+    (A A_hat : Fin n → Fin n → ℝ)
+    (Q : Fin n → Fin n → ℝ) (ΔA : Fin n → Fin n → ℝ)
+    (hQ : IsOrthogonal n Q)
+    (hAhat : ∀ i j, A_hat i j =
+      matMul n (matTranspose Q) (fun a b => A a b + ΔA a b) i j)
+    (P : Fin n → Fin n → ℝ)
+    (hP : IsOrthogonal n P)
+    (A_next E : Fin n → Fin n → ℝ)
+    (hNext : ∀ i j, A_next i j = matMul n P A_hat i j + E i j)
+    (hE : frobNorm E ≤ c_step * frobNorm A_hat) :
+    ∃ (Q' : Fin n → Fin n → ℝ) (ΔA' : Fin n → Fin n → ℝ),
+      IsOrthogonal n Q' ∧
+      (∀ i j, A_next i j =
+        matMul n (matTranspose Q') (fun a b => A a b + ΔA' a b) i j) ∧
+      frobNorm ΔA' ≤
+        frobNorm ΔA +
+          c_step * frobNorm (fun a b => A a b + ΔA a b) := by
+  let Q' := matMul n Q (matTranspose P)
+  let B : Fin n → Fin n → ℝ := fun a b => A a b + ΔA a b
+  let E' : Fin n → Fin n → ℝ := matMul n Q' E
+  let ΔA' : Fin n → Fin n → ℝ := fun a b => ΔA a b + E' a b
+  have hQ' : IsOrthogonal n Q' := hQ.mul hP.transpose
+  have hÂ : A_hat = matMul n (matTranspose Q) B :=
+    funext fun k => funext fun l => hAhat k l
+  have hQ'inv : matMul n (matTranspose Q') Q' = idMatrix n :=
+    funext fun a => funext fun b => hQ'.left_inv a b
+  have hQ'T : matTranspose Q' = matMul n P (matTranspose Q) := by
+    show matTranspose (matMul n Q (matTranspose P)) = _
+    rw [matTranspose_matMul, matTranspose_involutive]
+  have eq1 : matMul n (matTranspose Q') B = matMul n P A_hat := by
+    rw [hQ'T, matMul_assoc, ← hÂ]
+  have eq2 : matMul n (matTranspose Q') E' = E := by
+    show matMul n (matTranspose Q') (matMul n Q' E) = _
+    rw [← matMul_assoc, hQ'inv, matMul_id_left]
+  use Q', ΔA'
+  refine ⟨hQ', ?_, ?_⟩
+  · have hBE : (fun a b => A a b + ΔA' a b) = fun a b => B a b + E' a b :=
+      funext fun a => funext fun b =>
+        show A a b + (ΔA a b + E' a b) = (A a b + ΔA a b) + E' a b from by ring
+    intro i j
+    rw [hNext i j, hBE]
+    calc matMul n P A_hat i j + E i j
+        = matMul n (matTranspose Q') B i j +
+            matMul n (matTranspose Q') E' i j := by
+          rw [← congr_fun (congr_fun eq1 i) j, ← congr_fun (congr_fun eq2 i) j]
+      _ = matMul n (matTranspose Q') (fun a b => B a b + E' a b) i j :=
+          (congr_fun (congr_fun (matMul_add_right n (matTranspose Q') B E') i) j).symm
+  · have hfE' : frobNorm E' = frobNorm E := by
+      show frobNorm (matMul n Q' E) = _
+      exact frobNorm_orthogonal_left Q' E hQ'
+    have hfÂ :
+        frobNorm A_hat =
+          frobNorm B := by
+      rw [hÂ]; exact frobNorm_orthogonal_left (matTranspose Q) B hQ.transpose
+    show frobNorm (fun a b => ΔA a b + E' a b) ≤
+      frobNorm ΔA +
+        c_step * frobNorm B
+    calc frobNorm (fun a b => ΔA a b + E' a b)
+        ≤ frobNorm ΔA + frobNorm E' := frobNorm_add_le ΔA E'
+      _ = frobNorm ΔA + frobNorm E := by rw [hfE']
+      _ ≤ frobNorm ΔA + c_step * frobNorm A_hat := by
+          linarith [hE]
+      _ = frobNorm ΔA + c_step * frobNorm B := by rw [hfÂ]
+
+/-- Residual-form accumulation specialized to a columnwise Householder matrix
+    step.  The residual bound is produced by
+    `ColumnwiseHouseholderStepError.exists_residual_matrix_bound`. -/
+theorem orthogonal_sequence_one_step_of_columnwise_error (n : ℕ)
+    (A A_hat : Fin n → Fin n → ℝ)
+    (Q : Fin n → Fin n → ℝ) (ΔA : Fin n → Fin n → ℝ)
+    (hQ : IsOrthogonal n Q)
+    (hAhat : ∀ i j, A_hat i j =
+      matMul n (matTranspose Q) (fun a b => A a b + ΔA a b) i j)
+    (P : Fin n → Fin n → ℝ) (A_next : Fin n → Fin n → ℝ)
+    (hStep : ColumnwiseHouseholderStepError n P A_hat A_next c_step)
+    (hc_step : 0 ≤ c_step) :
+    ∃ (Q' : Fin n → Fin n → ℝ) (ΔA' : Fin n → Fin n → ℝ),
+      IsOrthogonal n Q' ∧
+      (∀ i j, A_next i j =
+        matMul n (matTranspose Q') (fun a b => A a b + ΔA' a b) i j) ∧
+      frobNorm ΔA' ≤
+        frobNorm ΔA +
+          c_step * frobNorm (fun a b => A a b + ΔA a b) := by
+  obtain ⟨E, hNext, hE⟩ := hStep.exists_residual_matrix_bound hc_step
+  exact orthogonal_sequence_one_step_of_residual n A A_hat Q ΔA hQ hAhat
+    P hStep.orth A_next E hNext hE
+
 -- ============================================================
 -- §18.3  Theorem 18.4: Householder QR backward error
 -- ============================================================
@@ -158,10 +255,10 @@ theorem orthogonal_sequence_one_step (n : ℕ)
     The computed R̂ from Householder QR satisfies A + ΔA = Q·R̂
     where Q is orthogonal and ‖ΔA‖_F ≤ c_bound.
 
-    This axiomatizes Theorem 18.4 since it follows from Lemma 18.3
-    applied with r = n Householder transformations, each with per-step
-    error bounded by γ̃_{cm}. The bound is c_bound = n · γ̃_{cm} · ‖A‖_F
-    (normwise) or the componentwise variant. -/
+    This is the final QR backward-error contract.  The wrapper theorem below
+    derives it from a supplied `OrthogonalSequenceBackwardError`; the rebuild is
+    adding concrete bridges that prove this sequence hypothesis from rounded
+    Householder construction/application steps. -/
 structure HouseholderQRBackwardError (n : ℕ) (A R_hat : Fin n → Fin n → ℝ)
     (c_bound : ℝ) : Prop where
   /-- There exists an orthogonal Q such that A + ΔA = Q·R̂ with bounded ΔA. -/
@@ -172,8 +269,8 @@ structure HouseholderQRBackwardError (n : ℕ) (A R_hat : Fin n → Fin n → �
 
 /-- Theorem 18.4 instantiation: n Householder steps with per-step error ≤ c
     yield total backward error ≤ n · c · ‖A‖_F. -/
-theorem householder_qr_backward (n : ℕ) (hn : 0 < n)
-    (A R_hat : Fin n → Fin n → ℝ) (c : ℝ) (hc : 0 ≤ c)
+theorem householder_qr_backward (n : ℕ) (_hn : 0 < n)
+    (A R_hat : Fin n → Fin n → ℝ) (c : ℝ) (_hc : 0 ≤ c)
     (hSeq : OrthogonalSequenceBackwardError n A R_hat n c) :
     HouseholderQRBackwardError n A R_hat
       (↑n * c * frobNorm A) := by
