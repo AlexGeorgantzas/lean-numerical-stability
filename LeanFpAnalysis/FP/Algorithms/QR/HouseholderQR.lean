@@ -989,6 +989,68 @@ theorem frobNorm_trailingPanel_le {m p : ℕ}
   rw [frobNorm_eq_sqrt_frobNormSq, frobNorm_eq_sqrt_frobNormSq]
   exact Real.sqrt_le_sqrt (frobNormSq_trailingPanel_le A)
 
+/-- Reconstructing a panel from the same top row and trailing panel while
+    zeroing the first-column tail cannot increase the squared Frobenius norm. -/
+theorem frobNormSq_panelFromTopAndTrailing_extract_le {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ) :
+    frobNormSq
+      (panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+        (trailingPanel A)) ≤
+      frobNormSq A := by
+  let B : Fin (m + 1) → Fin (p + 1) → ℝ :=
+    panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+      (trailingPanel A)
+  have hrow0 :
+      (∑ j : Fin (p + 1), B 0 j ^ 2) =
+        ∑ j : Fin (p + 1), A 0 j ^ 2 := by
+    rw [Fin.sum_univ_succ
+      (fun j : Fin (p + 1) => B 0 j ^ 2)]
+    rw [Fin.sum_univ_succ
+      (fun j : Fin (p + 1) => A 0 j ^ 2)]
+    simp [B]
+  have htail :
+      (∑ i : Fin m, ∑ j : Fin (p + 1), B i.succ j ^ 2) =
+        ∑ i : Fin m, ∑ j : Fin p, A i.succ j.succ ^ 2 := by
+    apply Finset.sum_congr rfl
+    intro i _
+    rw [Fin.sum_univ_succ]
+    simp [B]
+  unfold frobNormSq
+  rw [show
+      (∑ i : Fin (m + 1), ∑ j : Fin (p + 1), B i j ^ 2) =
+        (∑ j : Fin (p + 1), B 0 j ^ 2) +
+          ∑ i : Fin m, ∑ j : Fin (p + 1), B i.succ j ^ 2 by
+    rw [Fin.sum_univ_succ]]
+  rw [show
+      (∑ i : Fin (m + 1), ∑ j : Fin (p + 1), A i j ^ 2) =
+        (∑ j : Fin (p + 1), A 0 j ^ 2) +
+          ∑ i : Fin m, ∑ j : Fin (p + 1), A i.succ j ^ 2 by
+    rw [Fin.sum_univ_succ]]
+  rw [hrow0, htail]
+  rw [show
+      (∑ i : Fin m, ∑ j : Fin (p + 1), A i.succ j ^ 2) =
+        ∑ i : Fin m,
+          (A i.succ 0 ^ 2 + ∑ j : Fin p, A i.succ j.succ ^ 2) by
+    apply Finset.sum_congr rfl
+    intro i _
+    rw [Fin.sum_univ_succ]]
+  rw [Finset.sum_add_distrib]
+  have hcol0 :
+      0 ≤ ∑ i : Fin m, A i.succ 0 ^ 2 :=
+    Finset.sum_nonneg fun i _ => sq_nonneg (A i.succ 0)
+  linarith
+
+/-- Reconstructing a panel from the same top row and trailing panel while
+    zeroing the first-column tail cannot increase the Frobenius norm. -/
+theorem frobNorm_panelFromTopAndTrailing_extract_le {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ) :
+    frobNorm
+      (panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+        (trailingPanel A)) ≤
+      frobNorm A := by
+  rw [frobNorm_eq_sqrt_frobNormSq, frobNorm_eq_sqrt_frobNormSq]
+  exact Real.sqrt_le_sqrt (frobNormSq_panelFromTopAndTrailing_extract_le A)
+
 /-- One concrete Householder QR trailing-panel update.
 
     Given an `(m+1) × (p+1)` panel, construct the Householder reflector from
@@ -1378,6 +1440,61 @@ theorem fl_householder_first_column_panel_step_residual_and_shape
   refine ⟨E, hNext, hE, ?_, ?_⟩
   · simpa [P] using householder_panel_exact_topLeft A hx
   · simpa [P] using householder_panel_exact_firstColumnTailZero A hx
+
+/-- Stored first-column Householder panel step.
+
+    The rounded panel application may contain rounded values below the diagonal
+    in the completed first column.  The QR `R` algorithm stores those entries as
+    structural zeros.  Because the corresponding exact Householder application
+    has zero first-column tail, this only removes part of the residual and
+    preserves the same normwise residual bound. -/
+theorem fl_householder_first_column_panel_stored_residual_and_shape
+    (fp : FPModel) {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (hx : panelFirstColumn (Nat.succ_pos p) A ≠ 0)
+    (hvalid : gammaValid fp (11 * (m + 1) + 23)) :
+    let P : Fin (m + 1) → Fin (m + 1) → ℝ :=
+      householder (m + 1)
+        (householderNormalizedVector (m + 1)
+          (householderVector (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A))
+          (householderBetaFromScale (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A))) 1
+    let Ahat : Fin (m + 1) → Fin (p + 1) → ℝ :=
+      fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+        (fl_householderNormalizedVector fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A)) 1 A
+    let Rstep : Fin (m + 1) → Fin (p + 1) → ℝ :=
+      panelFromTopAndTrailing (panelTopLeft Ahat) (panelTopRowTail Ahat)
+        (trailingPanel Ahat)
+    ∃ E : Fin (m + 1) → Fin (p + 1) → ℝ,
+      (∀ i j,
+        Rstep i j =
+          matMulRect (m + 1) (m + 1) (p + 1) P A i j + E i j) ∧
+      frobNorm E ≤ householderConstructApplyBound fp (m + 1) * frobNorm A ∧
+      panelFirstColumnTailZero Rstep := by
+  intro P Ahat Rstep
+  obtain ⟨Efull, hrep, hEfull, _htop, hzero⟩ :=
+    fl_householder_first_column_panel_step_residual_and_shape fp A hx hvalid
+  let Estore : Fin (m + 1) → Fin (p + 1) → ℝ :=
+    panelFromTopAndTrailing (panelTopLeft Efull) (panelTopRowTail Efull)
+      (trailingPanel Efull)
+  refine ⟨Estore, ?_, ?_, ?_⟩
+  · intro i j
+    refine Fin.cases ?_ ?_ i
+    · refine Fin.cases ?_ ?_ j
+      · simpa [Rstep, Ahat, P, Estore, panelTopLeft] using hrep 0 0
+      · intro j
+        simpa [Rstep, Ahat, P, Estore, panelTopRowTail] using hrep 0 j.succ
+    · intro i
+      refine Fin.cases ?_ ?_ j
+      · have hPzero : matMulRect (m + 1) (m + 1) (p + 1) P A i.succ 0 = 0 := by
+          simpa [P, panelFirstColumnTailZero, panelFirstColumnTail] using hzero i
+        simp [Rstep, Estore, hPzero]
+      · intro j
+        simpa [Rstep, Ahat, P, Estore, trailingPanel] using hrep i.succ j.succ
+  · exact le_trans (frobNorm_panelFromTopAndTrailing_extract_le Efull) hEfull
+  · simp [Rstep]
 
 /-- Residual form of the concrete shrinking Householder QR panel step.
 

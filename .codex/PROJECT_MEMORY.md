@@ -587,6 +587,12 @@ These compile, but should not be treated as fully derived stability results:
   and top-row tail are the values computed by the current rounded panel step,
   the completed first-column tail is structurally zero, and the trailing panel
   is exactly the recursive output on `fl_householderTrailingPanelStep`.
+- Added the stored first-column panel residual bridge:
+  `fl_householder_first_column_panel_stored_residual_and_shape`.  It proves
+  that after the rounded first-column panel step, replacing the completed
+  first-column tail by structural zeros preserves the same residual bound,
+  because the exact Householder application has zero tail there and the
+  Frobenius norm cannot increase when that residual slice is zeroed.
 
 ## 2026-04-26 Fix Pass
 
