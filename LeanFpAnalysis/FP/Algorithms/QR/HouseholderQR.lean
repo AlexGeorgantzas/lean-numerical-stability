@@ -352,6 +352,79 @@ theorem residual_orthogonal_sequence_backward_error (n r : ℕ)
           rw [← hrec]]
         exact htotal
 
+/-- Sequence theorem specialized to columnwise Householder step contracts. -/
+theorem columnwise_householder_sequence_backward_error (n r : ℕ)
+    (Aseq : ℕ → Fin n → Fin n → ℝ)
+    (Pseq : ℕ → Fin n → Fin n → ℝ) (c : ℝ) (hc : 0 ≤ c)
+    (hStep : ∀ k : ℕ, k < r →
+      ColumnwiseHouseholderStepError n (Pseq k) (Aseq k) (Aseq (k + 1)) c) :
+    ∃ (Q : Fin n → Fin n → ℝ) (ΔA : Fin n → Fin n → ℝ),
+      IsOrthogonal n Q ∧
+      (∀ i j : Fin n, Aseq r i j =
+        matMul n (matTranspose Q)
+          (fun a b => Aseq 0 a b + ΔA a b) i j) ∧
+      frobNorm ΔA ≤ residualAccumBound c r * frobNorm (Aseq 0) := by
+  apply residual_orthogonal_sequence_backward_error n r Aseq Pseq c hc
+  · intro k hk
+    exact (hStep k hk).orth
+  · intro k hk
+    obtain ⟨E, hNext, hE⟩ := (hStep k hk).exists_residual_matrix_bound hc
+    exact ⟨E, hNext, hE⟩
+
+/-- Raw bound produced by the concrete one-step Householder construction and
+    application bridge. -/
+noncomputable def householderConstructApplyBound (fp : FPModel) (n : ℕ) : ℝ :=
+  Real.sqrt ((n : ℝ) * fp.u ^ 2) + 2 * gamma fp (11 * n + 23)
+
+/-- The concrete one-step Householder construction/application bound is
+    nonnegative under the corresponding gamma-validity side condition. -/
+lemma householderConstructApplyBound_nonneg (fp : FPModel) (n : ℕ)
+    (hvalid : gammaValid fp (11 * n + 23)) :
+    0 ≤ householderConstructApplyBound fp n := by
+  unfold householderConstructApplyBound
+  have hsqrt : 0 ≤ Real.sqrt ((n : ℝ) * fp.u ^ 2) := Real.sqrt_nonneg _
+  have hγ : 0 ≤ gamma fp (11 * n + 23) := gamma_nonneg fp hvalid
+  nlinarith
+
+/-- Repeated concrete Householder construction/application sequence.
+
+    This theorem is not yet a full QR factorization theorem: `xseq` supplies the
+    vectors from which each reflector is constructed, and `hAstep` states that
+    the matrix sequence is updated by applying the corresponding concrete
+    rounded reflector to all columns.  It proves that such a concrete sequence
+    satisfies the residual-form orthogonal-sequence backward-error result. -/
+theorem fl_householder_sequence_backward_error (fp : FPModel) {n r : ℕ}
+    (hn0 : 0 < n)
+    (Aseq : ℕ → Fin n → Fin n → ℝ)
+    (xseq : ℕ → Fin n → ℝ)
+    (hx : ∀ k : ℕ, k < r → xseq k ≠ 0)
+    (hvalid : gammaValid fp (11 * n + 23))
+    (hAstep : ∀ k : ℕ, k < r →
+      Aseq (k + 1) =
+        fl_householderApplyMatrix fp n
+          (fl_householderNormalizedVector fp hn0 (xseq k)) 1 (Aseq k)) :
+    ∃ (Q : Fin n → Fin n → ℝ) (ΔA : Fin n → Fin n → ℝ),
+      IsOrthogonal n Q ∧
+      (∀ i j : Fin n, Aseq r i j =
+        matMul n (matTranspose Q)
+          (fun a b => Aseq 0 a b + ΔA a b) i j) ∧
+      frobNorm ΔA ≤
+        residualAccumBound (householderConstructApplyBound fp n) r *
+          frobNorm (Aseq 0) := by
+  let Pseq : ℕ → Fin n → Fin n → ℝ := fun k =>
+    householder n
+      (householderNormalizedVector n
+        (householderVector hn0 (xseq k)) (householderBetaFromScale hn0 (xseq k))) 1
+  apply columnwise_householder_sequence_backward_error n r Aseq Pseq
+    (householderConstructApplyBound fp n)
+    (householderConstructApplyBound_nonneg fp n hvalid)
+  intro k hk
+  have hraw :=
+    fl_householderConstructApply_matrix_step_error fp hn0 (xseq k) (Aseq k)
+      (hx k hk) hvalid
+  rw [hAstep k hk]
+  simpa [Pseq, householderConstructApplyBound] using hraw
+
 -- ============================================================
 -- §18.3  Theorem 18.4: Householder QR backward error
 -- ============================================================

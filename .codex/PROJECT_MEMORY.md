@@ -437,6 +437,16 @@ These compile, but should not be treated as fully derived stability results:
   The next QR gap is a concrete Householder QR loop/sequence feeding these
   hypotheses, plus a sourced gamma-collapse lemma if the public theorem should
   recover Higham's `r*c`/`γ_cm` style bound.
+- Added `columnwise_householder_sequence_backward_error`,
+  `householderConstructApplyBound`, `householderConstructApplyBound_nonneg`,
+  and `fl_householder_sequence_backward_error`.  The last theorem proves that
+  any matrix sequence updated by repeated concrete
+  `fl_householderApplyMatrix` steps, with reflectors concretely constructed
+  from nonzero `xseq k`, satisfies the residual orthogonal-sequence
+  backward-error theorem.  This is still not full QR factorization because the
+  theorem does not yet define/select the QR trailing-column vectors or prove
+  triangularization; it is the implementation-backed repeated-reflector bridge
+  needed before that final QR loop theorem.
 
 ## 2026-04-26 Fix Pass
 
