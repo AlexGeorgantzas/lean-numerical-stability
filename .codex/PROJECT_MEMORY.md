@@ -392,6 +392,13 @@ These compile, but should not be treated as fully derived stability results:
   The bound is currently the raw expression
   `sqrt(n*u^2) + 2*gamma(2a+n+3)`, not yet collapsed into Higham's generic
   `gamma_cm` notation.
+- Added `Algorithms/QR/HouseholderOneStep.lean` with
+  `fl_householderConstructApply_appError`, combining the concrete construction
+  bridge `fl_householderVectorError` with
+  `fl_householderApply_normalized_appError`.  For nonzero input vectors and
+  `gammaValid fp (11*n+23)`, concrete construction plus concrete application
+  now satisfies `HouseholderAppError` for one reflector, again with the raw
+  bound `sqrt(n*u^2) + 2*gamma(11*n+23)`.
 
 ## 2026-04-26 Fix Pass
 
