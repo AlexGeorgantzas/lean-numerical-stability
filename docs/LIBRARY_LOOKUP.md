@@ -106,12 +106,15 @@ These absorb the concrete recursive coefficient into
 `gammaValid` side condition.
 For rectangular panels, use
 `householderQRPanelBackwardCoeffSafe_le_gamma_higham_rect`,
+`fl_householderQRPanel_R_safe_upper_trapezoidal`,
 `fl_householderQRPanel_R_safe_explicit_backward_error_gammaHigham_of_global_gammaValid`,
+`fl_householderQRPanel_R_safe_structured_explicit_backward_error_gammaHigham_of_global_gammaValid`,
 or the tall specialization
-`fl_householderQRPanel_R_safe_explicit_backward_error_tall_gammaHigham_of_global_gammaValid`.
+`fl_householderQRPanel_R_safe_structured_explicit_backward_error_tall_gammaHigham_of_global_gammaValid`.
 These are implementation-backed statements for the concrete zero-aware rounded
 panel `R_safe` algorithm with the exact orthogonal `Q_safe` witness, using
-`min m p` stages, or `p` stages in the tall `p ≤ m` case.
+`min m p` stages, or `p` stages in the tall `p ≤ m` case.  The structured
+versions also include the rectangular upper-trapezoidal shape of `R_safe`.
 `fl_householderQRPanel_Qhat_safe_accum_error`,
 `fl_householderQR_Qhat_safe_accum_error_of_global_gammaValid`, and
 `fl_householderQR_computed_safe_Q_hat_accum_error_of_global_gammaValid` prove

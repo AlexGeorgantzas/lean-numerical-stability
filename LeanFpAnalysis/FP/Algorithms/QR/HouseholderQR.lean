@@ -4002,6 +4002,17 @@ theorem fl_householder_first_column_panel_sequence_backward_error
 def IsUpperTriangular (n : ℕ) (R : Fin n → Fin n → ℝ) : Prop :=
   ∀ i j : Fin n, j.val < i.val → R i j = 0
 
+/-- Upper-trapezoidal shape predicate for rectangular QR `R` panels. -/
+def IsUpperTrapezoidal (m p : ℕ) (R : Fin m → Fin p → ℝ) : Prop :=
+  ∀ i j, j.val < i.val → R i j = 0
+
+/-- Square upper-trapezoidal shape is the same as upper-triangular shape. -/
+theorem IsUpperTrapezoidal.to_upperTriangular {n : ℕ}
+    {R : Fin n → Fin n → ℝ}
+    (h : IsUpperTrapezoidal n n R) :
+    IsUpperTriangular n R := by
+  simpa [IsUpperTrapezoidal, IsUpperTriangular] using h
+
 /-- Reconstructing a square panel with a zero first-column tail preserves
     upper-triangularity exactly when the trailing panel is upper triangular. -/
 theorem IsUpperTriangular_panelFromTopAndTrailing {n : ℕ}
@@ -4021,6 +4032,77 @@ theorem IsUpperTriangular_panelFromTopAndTrailing {n : ℕ}
     · intro j hji
       have hjlt : j.val < i.val := Nat.succ_lt_succ_iff.mp hji
       simpa [IsUpperTriangular] using htail i j hjlt
+
+/-- Reconstructing a rectangular panel with a zero first-column tail preserves
+    upper-trapezoidal shape exactly when the trailing panel is upper
+    trapezoidal. -/
+theorem IsUpperTrapezoidal_panelFromTopAndTrailing {m p : ℕ}
+    (a00 : ℝ) (top : Fin p → ℝ) (tail : Fin m → Fin p → ℝ)
+    (htail : IsUpperTrapezoidal m p tail) :
+    IsUpperTrapezoidal (m + 1) (p + 1)
+      (panelFromTopAndTrailing a00 top tail) := by
+  intro i j hji
+  revert hji
+  refine Fin.cases ?_ ?_ i
+  · intro hji
+    exact False.elim ((Nat.not_lt_zero j.val) hji)
+  · intro i hji
+    revert hji
+    refine Fin.cases ?_ ?_ j
+    · intro _hji
+      simp
+    · intro j hji
+      have hjlt : j.val < i.val := Nat.succ_lt_succ_iff.mp hji
+      simpa [IsUpperTrapezoidal] using htail i j hjlt
+
+/-- The zero-aware recursive rounded Householder QR panel algorithm returns an
+    upper-trapezoidal rectangular `R` panel by construction. -/
+theorem fl_householderQRPanel_R_safe_upper_trapezoidal (fp : FPModel) :
+    ∀ (m p : ℕ) (A : Fin m → Fin p → ℝ),
+      IsUpperTrapezoidal m p (fl_householderQRPanel_R_safe fp m p A) := by
+  intro m
+  induction m with
+  | zero =>
+      intro p A i
+      exact Fin.elim0 i
+  | succ m ih =>
+      intro p
+      cases p with
+      | zero =>
+          intro A i j
+          exact Fin.elim0 j
+      | succ p =>
+          intro A
+          by_cases hcol : panelFirstColumn (Nat.succ_pos p) A = 0
+          · have htail :
+                IsUpperTrapezoidal m p
+                  (fl_householderQRPanel_R_safe fp m p (trailingPanel A)) :=
+              ih p (trailingPanel A)
+            have hmain :=
+              IsUpperTrapezoidal_panelFromTopAndTrailing
+                (panelTopLeft A) (panelTopRowTail A)
+                (fl_householderQRPanel_R_safe fp m p (trailingPanel A)) htail
+            simpa [fl_householderQRPanel_R_safe, hcol] using hmain
+          · let Astep : Fin (m + 1) → Fin (p + 1) → ℝ :=
+              fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+                (fl_householderNormalizedVector fp (Nat.succ_pos m)
+                  (panelFirstColumn (Nat.succ_pos p) A)) 1 A
+            have htail :
+                IsUpperTrapezoidal m p
+                  (fl_householderQRPanel_R_safe fp m p (trailingPanel Astep)) :=
+              ih p (trailingPanel Astep)
+            have hmain :=
+              IsUpperTrapezoidal_panelFromTopAndTrailing
+                (panelTopLeft Astep) (panelTopRowTail Astep)
+                (fl_householderQRPanel_R_safe fp m p (trailingPanel Astep)) htail
+            simpa [fl_householderQRPanel_R_safe, hcol, Astep] using hmain
+
+/-- Square specialization of the upper-trapezoidal panel theorem. -/
+theorem fl_householderQR_R_safe_upper_trapezoidal (fp : FPModel)
+    (n : ℕ) (A : Fin n → Fin n → ℝ) :
+    IsUpperTrapezoidal n n (fl_householderQR_R_safe fp n A) := by
+  simpa [fl_householderQR_R_safe] using
+    fl_householderQRPanel_R_safe_upper_trapezoidal fp n n A
 
 /-- The recursive rounded Householder QR `R` algorithm returns an
     upper-triangular matrix by construction. -/
@@ -4595,6 +4677,18 @@ structure HouseholderQRPanelExplicitBackwardError (m p : ℕ)
       matMulRect m m p (matTranspose Q)
         (fun a b => A a b + ΔA a b) i j) ∧
     frobNorm ΔA ≤ c_bound
+
+/-- Rectangular panel QR backward-error contract with both the structural
+    upper-trapezoidal `R` fact and the explicit exact orthogonal witness. -/
+structure StructuredHouseholderQRPanelExplicitBackwardError (m p : ℕ)
+    (A : Fin m → Fin p → ℝ) (Q : Fin m → Fin m → ℝ)
+    (R_hat : Fin m → Fin p → ℝ) (c_bound : ℝ) : Prop where
+  /-- The computed `R` panel has the rectangular upper-trapezoidal QR shape. -/
+  upper : IsUpperTrapezoidal m p R_hat
+  /-- The supplied exact orthogonal witness realizes the backward-error
+      equation. -/
+  backward :
+    HouseholderQRPanelExplicitBackwardError m p A Q R_hat c_bound
 
 /-- Forget the explicit `Q` witness and recover the existing existential panel
     contract. -/
@@ -5519,6 +5613,24 @@ theorem fl_householderQRPanel_R_safe_backward_error_gammaHigham_of_global_gammaV
   (fl_householderQRPanel_R_safe_explicit_backward_error_gammaHigham_of_global_gammaValid
     fp m p A hsteps hvalid).to_backward_error
 
+/-- Structured rectangular implementation-backed Householder QR panel theorem:
+    the concrete zero-aware rounded `R_safe` panel is upper trapezoidal and
+    satisfies the explicit-`Q_safe` single-`gamma` backward-error bound. -/
+theorem fl_householderQRPanel_R_safe_structured_explicit_backward_error_gammaHigham_of_global_gammaValid
+    (fp : FPModel) (m p : ℕ) (A : Fin m → Fin p → ℝ)
+    (hsteps : 0 < Nat.min m p)
+    (hvalid :
+      gammaValid fp (Nat.min m p * householderConstructApplyGammaIndex m)) :
+    StructuredHouseholderQRPanelExplicitBackwardError m p A
+      (fl_householderQRPanel_Q_safe fp m p A)
+      (fl_householderQRPanel_R_safe fp m p A)
+      (gamma fp (Nat.min m p * householderConstructApplyGammaIndex m) *
+        frobNorm A) := by
+  exact ⟨
+    fl_householderQRPanel_R_safe_upper_trapezoidal fp m p A,
+    fl_householderQRPanel_R_safe_explicit_backward_error_gammaHigham_of_global_gammaValid
+      fp m p A hsteps hvalid⟩
+
 /-- Tall rectangular specialization of the explicit Householder QR panel
     theorem.  For an `m × p` panel with `p ≤ m` and `0 < p`, the stage count is
     exactly the number of columns `p`, matching the usual tall QR statement. -/
@@ -5548,6 +5660,24 @@ theorem fl_householderQRPanel_R_safe_backward_error_tall_gammaHigham_of_global_g
       (gamma fp (p * householderConstructApplyGammaIndex m) * frobNorm A) :=
   (fl_householderQRPanel_R_safe_explicit_backward_error_tall_gammaHigham_of_global_gammaValid
     fp m p A hp hpm hvalid).to_backward_error
+
+/-- Structured tall rectangular specialization of the Householder QR panel
+    theorem.  This is the closest formal panel-level counterpart to Higham's
+    tall rectangular QR statement: `R_safe` is upper trapezoidal and the
+    explicit exact `Q_safe` witness realizes the single-`gamma` backward-error
+    equation. -/
+theorem fl_householderQRPanel_R_safe_structured_explicit_backward_error_tall_gammaHigham_of_global_gammaValid
+    (fp : FPModel) (m p : ℕ) (A : Fin m → Fin p → ℝ)
+    (hp : 0 < p) (hpm : p ≤ m)
+    (hvalid : gammaValid fp (p * householderConstructApplyGammaIndex m)) :
+    StructuredHouseholderQRPanelExplicitBackwardError m p A
+      (fl_householderQRPanel_Q_safe fp m p A)
+      (fl_householderQRPanel_R_safe fp m p A)
+      (gamma fp (p * householderConstructApplyGammaIndex m) * frobNorm A) := by
+  exact ⟨
+    fl_householderQRPanel_R_safe_upper_trapezoidal fp m p A,
+    fl_householderQRPanel_R_safe_explicit_backward_error_tall_gammaHigham_of_global_gammaValid
+      fp m p A hp hpm hvalid⟩
 
 /-- Convert the square rectangular-panel QR representation
     `R = Qᵀ(A + ΔA)` to the existing square QR backward-error contract

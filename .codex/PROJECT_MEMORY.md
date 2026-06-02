@@ -1031,6 +1031,14 @@ These compile, but should not be treated as fully derived stability results:
   rewrites the stage count to the number of columns when `p ≤ m` and `0 < p`.
   This aligns the implementation-backed panel theorem more closely with
   Higham's rectangular Householder QR statement.
+- Added rectangular `R_safe` shape packaging for Householder QR.  The predicate
+  `IsUpperTrapezoidal m p R` generalizes the square `IsUpperTriangular`
+  condition, and `fl_householderQRPanel_R_safe_upper_trapezoidal` proves that
+  the concrete zero-aware recursive panel algorithm returns an upper
+  trapezoidal `R` panel by construction.  The structured theorem
+  `fl_householderQRPanel_R_safe_structured_explicit_backward_error_tall_gammaHigham_of_global_gammaValid`
+  packages this shape fact with the tall rectangular explicit-`Q_safe`
+  single-gamma backward-error theorem.
 
 ## 2026-04-26 Fix Pass
 
