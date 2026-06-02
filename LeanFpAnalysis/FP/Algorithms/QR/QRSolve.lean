@@ -2980,4 +2980,41 @@ theorem fl_householderQR_solve_safe_backward_error_gammaHigham_of_global_gammaVa
       (frobNorm_nonneg A))
     le_rfl
 
+/-- Source-facing implementation-backed zero-aware Householder QR solve theorem
+    with both the QR-factorization bound and the RHS-transform bound presented
+    by dimension-only coefficients.
+
+    Compared with
+    `fl_householderQR_solve_safe_backward_error_gammaHigham_of_global_gammaValid`,
+    this theorem replaces the raw recursive RHS perturbation expression by
+    `householderQRRhsGrowthCoeff fp n * ‖b‖∞`.  The RHS coefficient is still
+    derived from the concrete rounded RHS recursion; it is not an assumed
+    contract. -/
+theorem fl_householderQR_solve_safe_backward_error_gammaHigham_rhsGrowth_of_global_gammaValid
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex n))
+    (hdiag : ∀ i : Fin n, fl_householderQR_R_safe fp n A i i ≠ 0) :
+    QRSolveBackwardError n A b (fl_householderQR_solve_safe fp n A b)
+      ((gamma fp (n * householderConstructApplyGammaIndex n) * frobNorm A) +
+        gamma fp n * frobNorm (fl_householderQR_R_safe fp n A))
+      (householderQRRhsGrowthCoeff fp n * infNormVec b) := by
+  let K := householderConstructApplyGammaIndex n
+  have hK_le_nK : K ≤ n * K := by
+    have hn1 : 1 ≤ n := Nat.succ_le_of_lt hn
+    simpa using Nat.mul_le_mul_right K hn1
+  have hbase_le_K : 11 * n + 23 ≤ K := by
+    dsimp [K, householderConstructApplyGammaIndex]
+    omega
+  have hbase_valid : gammaValid fp (11 * n + 23) :=
+    gammaValid_mono fp (le_trans hbase_le_K hK_le_nK) hvalid
+  have hraw :=
+    fl_householderQR_solve_safe_backward_error_gammaHigham_of_global_gammaValid
+      fp n A b hn hvalid hdiag
+  refine hraw.mono le_rfl ?_
+  exact householderQRRhsBackwardBoundSafe_le_growthCoeff_of_global_gammaValid
+    fp n A b hbase_valid
+
 end LeanFpAnalysis.FP

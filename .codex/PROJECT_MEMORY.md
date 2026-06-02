@@ -1068,8 +1068,11 @@ These compile, but should not be treated as fully derived stability results:
   The dimension-only coefficient `householderQRRhsGrowthCoeff` then controls
   the raw recursive RHS perturbation bound via
   `householderQRRhsBackwardBoundSafe_le_growthCoeff_of_global_gammaValid`.
-  This does not change the final solve theorem yet, but it removes the main
-  obstacle to replacing the printed RHS bound by a coefficient times `‖b‖∞`.
+  The final wrapper
+  `fl_householderQR_solve_safe_backward_error_gammaHigham_rhsGrowth_of_global_gammaValid`
+  now presents the matrix perturbation bound with the single-gamma QR
+  factorization coefficient plus the separate triangular-solve term, and the
+  RHS perturbation bound as `householderQRRhsGrowthCoeff fp n * ‖b‖∞`.
 
 ## 2026-04-26 Fix Pass
 
