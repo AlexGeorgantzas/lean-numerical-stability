@@ -87,6 +87,12 @@ noncomputable def fl_givensS (fp : FPModel) (xi xj : ℝ) : ℝ :=
     givensCoeffVector xi xj 1 = xj := by
   simp [givensCoeffVector]
 
+theorem givensCoeffVector_sum_sq (xi xj : ℝ) :
+    (∑ k : Fin 2, givensCoeffVector xi xj k * givensCoeffVector xi xj k) =
+      xi ^ 2 + xj ^ 2 := by
+  rw [Fin.sum_univ_two]
+  simp [pow_two]
+
 theorem givensDenom_sq (xi xj : ℝ) :
     givensDenom xi xj ^ 2 = xi ^ 2 + xj ^ 2 := by
   unfold givensDenom
@@ -146,6 +152,81 @@ theorem givensCoeff_first_component (xi xj : ℝ)
 
 @[simp] theorem fl_givensS_unroll (fp : FPModel) (xi xj : ℝ) :
     fl_givensS fp xi xj = fp.fl_div xj (fl_givensDenom fp xi xj) := rfl
+
+/-- Conservative implementation-backed coefficient division bridge.
+
+    This proves the shared denominator/division part for `fl_givensC` and
+    `fl_givensS` from the concrete kernels.  It reuses `fl_norm2` for the
+    denominator, then combines the denominator perturbation with the final
+    rounded division.  The resulting `gamma fp 6` bound is intentionally
+    conservative; Higham Lemma 18.6 states the sharper `gamma_4` coefficient
+    bound, whose proof is omitted in the text and remains a separate target. -/
+theorem fl_givensCoeff_div_relative_error_conservative (fp : FPModel)
+    (xi xj z : ℝ) (h : xi ^ 2 + xj ^ 2 ≠ 0)
+    (hvalid : gammaValid fp 6) :
+    ∃ θ : ℝ,
+      |θ| ≤ gamma fp 6 ∧
+      fp.fl_div z (fl_givensDenom fp xi xj) =
+        (z / givensDenom xi xj) * (1 + θ) := by
+  obtain ⟨θd, hθd, hden⟩ :=
+    fl_norm2_relative_error fp 2 (givensCoeffVector xi xj) hvalid
+  have hsqrt :
+      Real.sqrt (∑ i : Fin 2,
+        givensCoeffVector xi xj i * givensCoeffVector xi xj i) =
+        givensDenom xi xj := by
+    rw [givensCoeffVector_sum_sq]
+    rfl
+  have hden_rel :
+      fl_givensDenom fp xi xj = givensDenom xi xj * (1 + θd) := by
+    unfold fl_givensDenom
+    rw [hden, hsqrt]
+  have hθd2 : |θd| ≤ gamma fp 3 := by
+    simpa using hθd
+  have hγ3_lt : gamma fp 3 < 1 := by
+    have hvalid6 : gammaValid fp (2 * 3) := by
+      simpa using hvalid
+    exact gamma_lt_one fp 3 hvalid6
+  have hpos : 0 < 1 + θd := by
+    linarith [neg_abs_le θd, hθd2, hγ3_lt]
+  have hd_ne : givensDenom xi xj ≠ 0 :=
+    givensDenom_ne_zero (xi := xi) (xj := xj) h
+  have hfl_den_ne : fl_givensDenom fp xi xj ≠ 0 := by
+    rw [hden_rel]
+    exact mul_ne_zero hd_ne hpos.ne'
+  obtain ⟨δ, hδ, hdiv⟩ :=
+    fp.model_div z (fl_givensDenom fp xi xj) hfl_den_ne
+  obtain ⟨ψ, hψ, hcollapse⟩ :=
+    gamma_inv_mul_roundoff fp 3 θd δ (by decide) hθd2 hδ hpos (by simpa using hvalid)
+  refine ⟨ψ, hψ, ?_⟩
+  rw [hdiv, hden_rel]
+  calc
+    z / (givensDenom xi xj * (1 + θd)) * (1 + δ)
+        = (z / givensDenom xi xj) * ((1 / (1 + θd)) * (1 + δ)) := by
+            field_simp [hd_ne, hpos.ne']
+    _ = (z / givensDenom xi xj) * (1 + ψ) := by
+            rw [hcollapse]
+
+/-- Conservative relative-error theorem for the concrete rounded Givens
+    cosine coefficient. -/
+theorem fl_givensC_relative_error_conservative (fp : FPModel)
+    (xi xj : ℝ) (h : xi ^ 2 + xj ^ 2 ≠ 0)
+    (hvalid : gammaValid fp 6) :
+    ∃ θ : ℝ,
+      |θ| ≤ gamma fp 6 ∧
+      fl_givensC fp xi xj = givensC xi xj * (1 + θ) := by
+  simpa [fl_givensC, givensC] using
+    fl_givensCoeff_div_relative_error_conservative fp xi xj xi h hvalid
+
+/-- Conservative relative-error theorem for the concrete rounded Givens
+    sine coefficient. -/
+theorem fl_givensS_relative_error_conservative (fp : FPModel)
+    (xi xj : ℝ) (h : xi ^ 2 + xj ^ 2 ≠ 0)
+    (hvalid : gammaValid fp 6) :
+    ∃ θ : ℝ,
+      |θ| ≤ gamma fp 6 ∧
+      fl_givensS fp xi xj = givensS xi xj * (1 + θ) := by
+  simpa [fl_givensS, givensS] using
+    fl_givensCoeff_div_relative_error_conservative fp xi xj xj h hvalid
 
 /-- Concrete floating-point application of a Givens rotation with supplied
     exact parameters `c` and `s`.

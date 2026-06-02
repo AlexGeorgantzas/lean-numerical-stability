@@ -694,8 +694,11 @@ These compile, but should not be treated as fully derived stability results:
   `givensCoeff_first_component`, and `givensRotation_constructed_orthogonal`.
   Added rounded coefficient kernels `fl_givensDenom`, `fl_givensC`, and
   `fl_givensS`, with the denominator deliberately routed through the existing
-  `fl_norm2` kernel.  The next Givens target is the Lemma 18.6 relative-error
-  bridge from these concrete kernels to `ĉ = c(1+θ₄)` and `ŝ = s(1+θ'₄)`.
+  `fl_norm2` kernel.  Added conservative implementation-backed coefficient
+  bridges `fl_givensC_relative_error_conservative` and
+  `fl_givensS_relative_error_conservative`, proving `gamma fp 6` relative
+  error bounds from `fl_norm2` plus rounded division.  The sharper Higham
+  Lemma 18.6 target `ĉ = c(1+θ₄)` and `ŝ = s(1+θ'₄)` is still pending.
 - Added exact vector embedding algebra for the QR RHS recursion:
   `vectorTrailingPerturbation`, `embedTrailingOne_matMulVec_top`,
   `vectorTail_embedTrailingOne_matMulVec`, and
