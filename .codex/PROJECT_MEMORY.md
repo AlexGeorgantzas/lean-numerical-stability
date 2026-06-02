@@ -697,8 +697,11 @@ These compile, but should not be treated as fully derived stability results:
   `fl_norm2` kernel.  Added conservative implementation-backed coefficient
   bridges `fl_givensC_relative_error_conservative` and
   `fl_givensS_relative_error_conservative`, proving `gamma fp 6` relative
-  error bounds from `fl_norm2` plus rounded division.  The sharper Higham
-  Lemma 18.6 target `ĉ = c(1+θ₄)` and `ŝ = s(1+θ'₄)` is still pending.
+  error bounds from `fl_norm2` plus rounded division.  Added the
+  `GivensCoeffError` wrapper and `fl_givensCoeffError_conservative` so later
+  Givens application/sequence proofs can consume coefficient contracts without
+  unpacking both scalar theorems manually.  The sharper Higham Lemma 18.6
+  target `ĉ = c(1+θ₄)` and `ŝ = s(1+θ'₄)` is still pending.
 - Added exact vector embedding algebra for the QR RHS recursion:
   `vectorTrailingPerturbation`, `embedTrailingOne_matMulVec_top`,
   `vectorTail_embedTrailingOne_matMulVec`, and

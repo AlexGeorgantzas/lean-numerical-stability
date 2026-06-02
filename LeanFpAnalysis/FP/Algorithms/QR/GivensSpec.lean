@@ -228,6 +228,28 @@ theorem fl_givensS_relative_error_conservative (fp : FPModel)
   simpa [fl_givensS, givensS] using
     fl_givensCoeff_div_relative_error_conservative fp xi xj xj h hvalid
 
+/-- Relative-error contract for computed Givens coefficients.
+
+    Higham Lemma 18.6 supplies this contract with `μ = γ₄`.  The concrete
+    theorem below currently supplies a conservative `μ = γ₆`, derived from the
+    existing rounded norm and division infrastructure. -/
+structure GivensCoeffError (c s c_hat s_hat μ : ℝ) : Prop where
+  /-- Computed cosine is a relative perturbation of exact cosine. -/
+  c_rel : ∃ θ : ℝ, |θ| ≤ μ ∧ c_hat = c * (1 + θ)
+  /-- Computed sine is a relative perturbation of exact sine. -/
+  s_rel : ∃ θ : ℝ, |θ| ≤ μ ∧ s_hat = s * (1 + θ)
+
+/-- The concrete rounded Givens coefficient kernels satisfy the coefficient
+    contract with a conservative `gamma fp 6` bound. -/
+theorem fl_givensCoeffError_conservative (fp : FPModel)
+    (xi xj : ℝ) (h : xi ^ 2 + xj ^ 2 ≠ 0)
+    (hvalid : gammaValid fp 6) :
+    GivensCoeffError (givensC xi xj) (givensS xi xj)
+      (fl_givensC fp xi xj) (fl_givensS fp xi xj) (gamma fp 6) := by
+  constructor
+  · exact fl_givensC_relative_error_conservative fp xi xj h hvalid
+  · exact fl_givensS_relative_error_conservative fp xi xj h hvalid
+
 /-- Concrete floating-point application of a Givens rotation with supplied
     exact parameters `c` and `s`.
 
