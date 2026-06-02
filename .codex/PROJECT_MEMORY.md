@@ -543,6 +543,11 @@ These compile, but should not be treated as fully derived stability results:
   top-left/first-column-tail-zero facts for the underlying reflector step.
   Remaining QR work: induction over `householderPanelStateIterate`, plus a
   richer state that records accumulated `Q` and completed `R` structure.
+- Added `HouseholderPanelStepReady` and `HouseholderPanelRunReady`, plus
+  `householderPanelRunReady_head` and `householderPanelRunReady_tail`.  These
+  predicates record the per-step nonzero-column and gamma-validity hypotheses
+  needed to use the implementation-backed one-step panel bridge during an
+  induction over `householderPanelStateIterate`.
 
 ## 2026-04-26 Fix Pass
 

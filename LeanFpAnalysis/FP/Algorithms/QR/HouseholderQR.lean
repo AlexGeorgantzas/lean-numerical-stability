@@ -803,6 +803,27 @@ noncomputable def householderPanelStateIterate (fp : FPModel) :
   | k + 1, S => householderPanelStateIterate fp k
       (householderPanelStateStep fp S)
 
+/-- Per-step hypotheses needed to apply the implementation-backed Householder
+    panel bridge to an active panel state.
+
+    Empty-row or empty-column states require no further QR panel step.  A
+    nonempty active panel needs a nonzero first column and the gamma-validity
+    condition for the current row dimension. -/
+def HouseholderPanelStepReady (fp : FPModel)
+    (S : HouseholderPanelState) : Prop :=
+  match S with
+  | ⟨m + 1, p + 1, A⟩ =>
+      panelFirstColumn (Nat.succ_pos p) A ≠ 0 ∧
+      gammaValid fp (11 * (m + 1) + 23)
+  | _ => True
+
+/-- Every step in a finite active-panel run has the hypotheses needed by the
+    one-step implementation-backed bridge. -/
+def HouseholderPanelRunReady (fp : FPModel)
+    (r : ℕ) (S : HouseholderPanelState) : Prop :=
+  ∀ k : ℕ, k < r →
+    HouseholderPanelStepReady fp (householderPanelStateIterate fp k S)
+
 @[simp] theorem householderPanelStateStep_nonempty (fp : FPModel)
     {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ) :
     householderPanelStateStep fp ⟨m + 1, p + 1, A⟩ =
@@ -816,6 +837,34 @@ noncomputable def householderPanelStateIterate (fp : FPModel) :
     (k : ℕ) (S : HouseholderPanelState) :
     householderPanelStateIterate fp (k + 1) S =
       householderPanelStateIterate fp k (householderPanelStateStep fp S) := rfl
+
+@[simp] theorem householderPanelStepReady_nonempty (fp : FPModel)
+    {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ) :
+    HouseholderPanelStepReady fp ⟨m + 1, p + 1, A⟩ ↔
+      panelFirstColumn (Nat.succ_pos p) A ≠ 0 ∧
+      gammaValid fp (11 * (m + 1) + 23) := by
+  rfl
+
+theorem householderPanelRunReady_zero (fp : FPModel)
+    (S : HouseholderPanelState) :
+    HouseholderPanelRunReady fp 0 S := by
+  intro k hk
+  exact False.elim ((Nat.not_lt_zero k) hk)
+
+/-- The first step of a nonempty ready run is ready. -/
+theorem householderPanelRunReady_head (fp : FPModel)
+    {r : ℕ} {S : HouseholderPanelState}
+    (h : HouseholderPanelRunReady fp (r + 1) S) :
+    HouseholderPanelStepReady fp S := by
+  exact h 0 (Nat.succ_pos r)
+
+/-- The tail of a ready run is ready after performing the first step. -/
+theorem householderPanelRunReady_tail (fp : FPModel)
+    {r : ℕ} {S : HouseholderPanelState}
+    (h : HouseholderPanelRunReady fp (r + 1) S) :
+    HouseholderPanelRunReady fp r (householderPanelStateStep fp S) := by
+  intro k hk
+  simpa [HouseholderPanelRunReady] using h (k + 1) (Nat.succ_lt_succ hk)
 
 /-- If a full nonempty panel is updated by the concrete first-column
     Householder step, then the next trailing panel is exactly
