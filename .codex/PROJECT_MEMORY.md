@@ -848,6 +848,17 @@ These compile, but should not be treated as fully derived stability results:
   `fl_householderConstructApply_matrix_step_error_rect`.  This is still a
   one-step theorem; the accumulated recursive `Q_hat` stability theorem is not
   proved yet.
+- Added `fl_householderQRPanel_Qhat_safe_succ_succ_nonzero_residual_bound`,
+  the residual-matrix form of one nonzero rounded `Q_hat` update.  It exposes
+  `Qhat_next = P * embedTrailingOne(Qtail_hat) + E` with
+  `‖E‖_F ≤ householderConstructApplyBound fp (m+1) *
+  ‖embedTrailingOne Qtail_hat‖_F`, using the existing rectangular residual
+  aggregation theorem.
+- Added computed-factor `R_hat` wrappers:
+  `fl_householderQR_computed_safe_R_hat_upper` and
+  `fl_householderQR_computed_safe_R_hat_structured_backward_error_of_global_gammaValid`.
+  These reuse the proved `R_safe` facts through the `HouseholderQRComputedFactors`
+  API and deliberately do not assert any full stability property of `Q_hat`.
 
 ## 2026-04-26 Fix Pass
 

@@ -1542,8 +1542,7 @@ theorem fl_householderQRPanel_Qhat_safe_succ_succ_nonzero_step_error
             (panelFirstColumn (Nat.succ_pos p) A))) 1)
       (embedTrailingOne Qtail_hat)
       (fl_householderQRPanel_Qhat_safe fp (m + 1) (p + 1) A)
-      (Real.sqrt (((m + 1) : ℝ) * fp.u ^ 2) +
-        2 * gamma fp (11 * (m + 1) + 23)) := by
+      (householderConstructApplyBound fp (m + 1)) := by
   dsimp only
   let Astep : Fin (m + 1) → Fin (p + 1) → ℝ :=
     fl_householderApplyMatrixRect fp (m + 1) (p + 1)
@@ -1555,7 +1554,66 @@ theorem fl_householderQRPanel_Qhat_safe_succ_succ_nonzero_step_error
     fl_householderConstructApply_matrix_step_error_rect fp
       (Nat.succ_pos m) (panelFirstColumn (Nat.succ_pos p) A)
       (embedTrailingOne Qtail_hat) hcol hvalid
-  simpa [fl_householderQRPanel_Qhat_safe, hcol, Astep, Qtail_hat] using hstep
+  simpa [fl_householderQRPanel_Qhat_safe, hcol, Astep, Qtail_hat,
+    householderConstructApplyBound] using hstep
+
+/-- Residual form of one nonzero rounded `Q_hat` accumulator update.
+
+    This is the exact form needed for the future recursive `Q_hat`
+    accumulation analysis: the computed accumulator update is an exact
+    Householder application to the embedded trailing accumulator plus a single
+    residual matrix whose Frobenius norm is bounded by the lower-level
+    implementation-backed Householder coefficient. -/
+theorem fl_householderQRPanel_Qhat_safe_succ_succ_nonzero_residual_bound
+    (fp : FPModel) {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (hcol : panelFirstColumn (Nat.succ_pos p) A ≠ 0)
+    (hvalid : gammaValid fp (11 * (m + 1) + 23)) :
+    let Astep : Fin (m + 1) → Fin (p + 1) → ℝ :=
+      fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+        (fl_householderNormalizedVector fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A)) 1 A
+    let Qtail_hat : Fin m → Fin m → ℝ :=
+      fl_householderQRPanel_Qhat_safe fp m p (trailingPanel Astep)
+    let P : Fin (m + 1) → Fin (m + 1) → ℝ :=
+      householder (m + 1)
+        (householderNormalizedVector (m + 1)
+          (householderVector (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A))
+          (householderBetaFromScale (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A))) 1
+    ∃ E : Fin (m + 1) → Fin (m + 1) → ℝ,
+      (∀ i j : Fin (m + 1),
+        fl_householderQRPanel_Qhat_safe fp (m + 1) (p + 1) A i j =
+          matMulRect (m + 1) (m + 1) (m + 1) P
+            (embedTrailingOne Qtail_hat) i j + E i j) ∧
+      frobNorm E ≤
+        householderConstructApplyBound fp (m + 1) *
+          frobNorm (embedTrailingOne Qtail_hat) := by
+  dsimp only
+  let Astep : Fin (m + 1) → Fin (p + 1) → ℝ :=
+    fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+      (fl_householderNormalizedVector fp (Nat.succ_pos m)
+        (panelFirstColumn (Nat.succ_pos p) A)) 1 A
+  let Qtail_hat : Fin m → Fin m → ℝ :=
+    fl_householderQRPanel_Qhat_safe fp m p (trailingPanel Astep)
+  let P : Fin (m + 1) → Fin (m + 1) → ℝ :=
+    householder (m + 1)
+      (householderNormalizedVector (m + 1)
+        (householderVector (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A))
+        (householderBetaFromScale (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A))) 1
+  have hstep :
+      ColumnwiseHouseholderStepErrorRect (m + 1) (m + 1) P
+        (embedTrailingOne Qtail_hat)
+        (fl_householderQRPanel_Qhat_safe fp (m + 1) (p + 1) A)
+        (householderConstructApplyBound fp (m + 1)) := by
+    simpa [P, Astep, Qtail_hat] using
+      fl_householderQRPanel_Qhat_safe_succ_succ_nonzero_step_error
+        fp A hcol hvalid
+  exact hstep.exists_residual_matrix_bound
+    (householderConstructApplyBound_nonneg fp (m + 1) hvalid)
 
 /-- Square specialization of the rounded accumulated Householder QR `Q_hat`
     algorithm. -/
@@ -3566,6 +3624,31 @@ theorem fl_householderQR_safe_witness_R_structured_backward_error_of_global_gamm
       (fl_householderQR_safe_witness fp n A).R
       (householderQRBackwardCoeffSafe fp n A * frobNorm A) := by
   simpa [fl_householderQR_safe_witness] using
+    fl_householderQR_R_safe_structured_backward_error_of_global_gammaValid
+      fp n A hvalid
+
+/-- The `R_hat` field of the concrete computed-factor API is upper
+    triangular.  This is inherited from the zero-aware rounded `R_safe`
+    algorithm; it does not claim any property of the rounded `Q_hat` field. -/
+theorem fl_householderQR_computed_safe_R_hat_upper
+    (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ) :
+    IsUpperTriangular n (fl_householderQR_computed_safe fp n A).R_hat := by
+  simpa [fl_householderQR_computed_safe] using
+    fl_householderQR_R_safe_upper fp n A
+
+/-- The `R_hat` field of the concrete computed-factor API satisfies the same
+    implementation-backed structured backward-error theorem as `R_safe`.
+
+    The rounded `Q_hat` field is intentionally not used in this theorem; the
+    QR backward-error statement is still expressed with the exact orthogonal
+    witness from `HouseholderQRWitness`. -/
+theorem fl_householderQR_computed_safe_R_hat_structured_backward_error_of_global_gammaValid
+    (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (hvalid : gammaValid fp (11 * n + 23)) :
+    StructuredHouseholderQRBackwardError n A
+      (fl_householderQR_computed_safe fp n A).R_hat
+      (householderQRBackwardCoeffSafe fp n A * frobNorm A) := by
+  simpa [fl_householderQR_computed_safe] using
     fl_householderQR_R_safe_structured_backward_error_of_global_gammaValid
       fp n A hvalid
 
