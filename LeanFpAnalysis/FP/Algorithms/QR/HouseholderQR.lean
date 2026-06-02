@@ -1106,6 +1106,37 @@ theorem householderPanelStateStep_nonempty_residual_and_shape
   · simpa [P] using householder_panel_exact_topLeft A hx
   · simpa [P] using householder_panel_exact_firstColumnTailZero A hx
 
+/-- State-level one-step bridge using the packaged readiness predicate. -/
+theorem householderPanelStateStep_nonempty_residual_and_shape_of_ready
+    (fp : FPModel) {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (hready : HouseholderPanelStepReady fp ⟨m + 1, p + 1, A⟩) :
+    let P : Fin (m + 1) → Fin (m + 1) → ℝ :=
+      householder (m + 1)
+        (householderNormalizedVector (m + 1)
+          (householderVector (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A))
+          (householderBetaFromScale (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A))) 1
+    ∃ E : Fin m → Fin p → ℝ,
+      (∀ i j,
+        (householderPanelStateStep fp ⟨m + 1, p + 1, A⟩).panel i j =
+          trailingPanel (matMulRect (m + 1) (m + 1) (p + 1) P A) i j +
+            E i j) ∧
+      frobNorm E ≤
+        householderConstructApplyBound fp (m + 1) * frobNorm A ∧
+      panelTopLeft (matMulRect (m + 1) (m + 1) (p + 1) P A) =
+        -householderScale (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A) ∧
+      panelFirstColumnTailZero
+        (matMulRect (m + 1) (m + 1) (p + 1) P A) := by
+  have hready' :
+      panelFirstColumn (Nat.succ_pos p) A ≠ 0 ∧
+      gammaValid fp (11 * (m + 1) + 23) := by
+    simpa using hready
+  exact householderPanelStateStep_nonempty_residual_and_shape fp A
+    hready'.1 hready'.2
+
 /-- Repeated rectangular panel sequence where each reflector is constructed
     from the current panel's first column.
 

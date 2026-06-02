@@ -548,6 +548,10 @@ These compile, but should not be treated as fully derived stability results:
   predicates record the per-step nonzero-column and gamma-validity hypotheses
   needed to use the implementation-backed one-step panel bridge during an
   induction over `householderPanelStateIterate`.
+- Added `householderPanelStateStep_nonempty_residual_and_shape_of_ready`, so the
+  state-level one-step bridge can consume `HouseholderPanelStepReady` directly
+  instead of unpacking nonzero-column and gamma-validity hypotheses at every
+  future induction site.
 
 ## 2026-04-26 Fix Pass
 
