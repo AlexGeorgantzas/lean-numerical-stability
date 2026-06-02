@@ -1479,9 +1479,10 @@ theorem HouseholderQRPanelSafeReady_square_of_global_gammaValid
 
 /-- Active trailing-panel state for a Householder QR loop.
 
-    This state tracks only the active panel dimensions and entries.  It does
-    not yet store the accumulated `Q` factor or the completed rows of `R`; those
-    are the next layer needed for a full QR factorization theorem. -/
+    This state tracks only the active panel dimensions and entries.  It is a
+    legacy loop scaffold for local step reasoning; the final implementation-
+    backed `R` theorems below use the direct recursive panel algorithms
+    `fl_householderQRPanel_R` and `fl_householderQRPanel_R_safe`. -/
 structure HouseholderPanelState where
   /-- Number of active panel rows. -/
   rows : ℕ
@@ -2175,10 +2176,11 @@ theorem householderQRPanelBackwardCoeff_nonneg (fp : FPModel) :
     The computed R̂ from Householder QR satisfies A + ΔA = Q·R̂
     where Q is orthogonal and ‖ΔA‖_F ≤ c_bound.
 
-    This is the final QR backward-error contract.  The wrapper theorem below
-    derives it from a supplied `OrthogonalSequenceBackwardError`; the rebuild is
-    adding concrete bridges that prove this sequence hypothesis from rounded
-    Householder construction/application steps. -/
+    This is the final QR backward-error contract.  Some wrapper theorems below
+    derive it from a supplied `OrthogonalSequenceBackwardError`, while
+    `fl_householderQR_R_backward_error` and
+    `fl_householderQR_R_safe_backward_error` prove it from concrete rounded
+    Householder QR `R` algorithms. -/
 structure HouseholderQRBackwardError (n : ℕ) (A R_hat : Fin n → Fin n → ℝ)
     (c_bound : ℝ) : Prop where
   /-- There exists an orthogonal Q such that A + ΔA = Q·R̂ with bounded ΔA. -/
@@ -2469,9 +2471,9 @@ theorem householder_qr_panel_backward_cons {m p : ℕ}
     Householder QR `R` panel algorithm.
 
     This is the main rectangular induction bridge for the concrete recursive
-    loop `fl_householderQRPanel_R`.  It is still rectangular/panel-level; the
-    square final wrapper to the existing `HouseholderQRBackwardError` contract
-    is the next layer. -/
+    loop `fl_householderQRPanel_R`.  The square wrapper
+    `fl_householderQR_R_backward_error` converts it to the existing
+    `HouseholderQRBackwardError` contract. -/
 theorem fl_householderQRPanel_R_backward_error (fp : FPModel) :
     ∀ (m p : ℕ) (A : Fin m → Fin p → ℝ),
       HouseholderQRPanelReady fp m p A →
