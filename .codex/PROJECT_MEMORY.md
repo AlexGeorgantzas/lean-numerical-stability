@@ -822,9 +822,16 @@ These compile, but should not be treated as fully derived stability results:
   `fl_householderQRPanel_Q_safe_orthogonal`,
   `fl_householderQR_Q_safe_orthogonal_of_global_gammaValid`, and witness
   wrappers for `Q` orthogonality, `R` upper-triangularity, and the existing
-  structured `R` backward-error theorem.  Next explicit-`Q` milestone: prove a
-  theorem tying this concrete witness `Q` directly to the perturbation equation,
-  instead of only exposing the same `R` backward-error theorem existentially.
+  structured `R` backward-error theorem.
+- Completed the next explicit-`Q` milestone.  Added
+  `HouseholderQRPanelExplicitBackwardError` and
+  `HouseholderQRExplicitBackwardError`, plus explicit skip/cons algebra,
+  `fl_householderQRPanel_R_safe_explicit_backward_error`, and
+  `fl_householderQR_safe_witness_explicit_backward_error_of_global_gammaValid`.
+  The public safe witness now satisfies a fixed-`Q` perturbation equation:
+  its `Q` field is the orthogonal factor used in `Q * R = A + ΔA`, with the
+  same branch-dependent `householderQRBackwardCoeffSafe` bound.  This is still
+  an exact `Q` witness, not a rounded accumulated `Q_hat`.
 
 ## 2026-04-26 Fix Pass
 
