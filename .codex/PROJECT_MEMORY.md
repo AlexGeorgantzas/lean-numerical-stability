@@ -878,6 +878,11 @@ These compile, but should not be treated as fully derived stability results:
   zero and nonzero safe branches into one residual theorem of the form
   `Qhat_current = P_step * embedTrailingOne(Qhat_tail) + E` with the
   branch-appropriate coefficient.
+- Added `householderQRPanel_Qhat_stepCoeff_safe_nonneg` and the bundled
+  `fl_householderQRPanel_Qhat_safe_succ_succ_step_interface`, which packages
+  exact-step orthogonality, coefficient nonnegativity, and residual form for
+  one safe `Q_hat` step.  Future recursive proofs should use this theorem as
+  the local step interface.
 
 ## 2026-04-26 Fix Pass
 

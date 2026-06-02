@@ -1687,6 +1687,17 @@ noncomputable def householderQRPanel_Qhat_stepCoeff_safe (fp : FPModel)
   else
     householderConstructApplyBound fp (m + 1)
 
+/-- The local residual coefficient for one safe `Q_hat` step is nonnegative
+    under the same gamma-validity condition used by the nonzero branch. -/
+theorem householderQRPanel_Qhat_stepCoeff_safe_nonneg (fp : FPModel)
+    {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (hvalid : gammaValid fp (11 * (m + 1) + 23)) :
+    0 ≤ householderQRPanel_Qhat_stepCoeff_safe fp A := by
+  by_cases hcol : panelFirstColumn (Nat.succ_pos p) A = 0
+  · simp [householderQRPanel_Qhat_stepCoeff_safe, hcol]
+  · simpa [householderQRPanel_Qhat_stepCoeff_safe, hcol] using
+      householderConstructApplyBound_nonneg fp (m + 1) hvalid
+
 /-- The exact transformation used by one safe `Q_hat` step is orthogonal. -/
 theorem householderQRPanel_Qhat_stepP_safe_orthogonal (fp : FPModel)
     {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ)
@@ -1737,6 +1748,32 @@ theorem fl_householderQRPanel_Qhat_safe_succ_succ_residual_bound
       fl_householderQRPanel_Qhat_tail_safe,
       fl_householderTrailingPanelStepSafe, fl_householderTrailingPanelStep,
       hcol] using hnonzero
+
+/-- Complete local interface for one safe rounded `Q_hat` accumulator step:
+    the exact step matrix is orthogonal, the local coefficient is
+    nonnegative, and the rounded step has a bounded residual form. -/
+theorem fl_householderQRPanel_Qhat_safe_succ_succ_step_interface
+    (fp : FPModel) {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (hvalid : gammaValid fp (11 * (m + 1) + 23)) :
+    IsOrthogonal (m + 1) (householderQRPanel_Qhat_stepP_safe A) ∧
+    0 ≤ householderQRPanel_Qhat_stepCoeff_safe fp A ∧
+    ∃ E : Fin (m + 1) → Fin (m + 1) → ℝ,
+      (∀ i j : Fin (m + 1),
+        fl_householderQRPanel_Qhat_safe fp (m + 1) (p + 1) A i j =
+          matMulRect (m + 1) (m + 1) (m + 1)
+            (householderQRPanel_Qhat_stepP_safe A)
+            (embedTrailingOne
+              (fl_householderQRPanel_Qhat_tail_safe fp A)) i j +
+              E i j) ∧
+      frobNorm E ≤
+        householderQRPanel_Qhat_stepCoeff_safe fp A *
+          frobNorm
+            (embedTrailingOne
+              (fl_householderQRPanel_Qhat_tail_safe fp A)) := by
+  exact ⟨householderQRPanel_Qhat_stepP_safe_orthogonal fp A hvalid,
+    householderQRPanel_Qhat_stepCoeff_safe_nonneg fp A hvalid,
+    fl_householderQRPanel_Qhat_safe_succ_succ_residual_bound fp A hvalid⟩
 
 /-- Square specialization of the rounded accumulated Householder QR `Q_hat`
     algorithm. -/

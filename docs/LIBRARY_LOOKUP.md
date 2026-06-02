@@ -94,8 +94,11 @@ safe-step interface:
 `householderQRPanel_Qhat_stepP_safe`,
 `fl_householderQRPanel_Qhat_tail_safe`,
 `householderQRPanel_Qhat_stepCoeff_safe`,
+`householderQRPanel_Qhat_stepCoeff_safe_nonneg`,
 `householderQRPanel_Qhat_stepP_safe_orthogonal`, and
-`fl_householderQRPanel_Qhat_safe_succ_succ_residual_bound`.
+`fl_householderQRPanel_Qhat_safe_succ_succ_residual_bound`.  The bundled
+one-step theorem is
+`fl_householderQRPanel_Qhat_safe_succ_succ_step_interface`.
 
 ## Main Dependency Chains
 
