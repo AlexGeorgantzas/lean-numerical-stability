@@ -1829,6 +1829,40 @@ noncomputable def householderQRPanelBackwardCoeff (fp : FPModel) :
 noncomputable def householderQRBackwardCoeff (fp : FPModel) (n : ℕ) : ℝ :=
   householderQRPanelBackwardCoeff fp n n
 
+/-- The recursive QR panel backward-error coefficient is nonnegative whenever
+    the concrete QR panel run is ready. -/
+theorem householderQRPanelBackwardCoeff_nonneg (fp : FPModel) :
+    ∀ (m p : ℕ) (A : Fin m → Fin p → ℝ),
+      HouseholderQRPanelReady fp m p A →
+      0 ≤ householderQRPanelBackwardCoeff fp m p := by
+  intro m
+  induction m with
+  | zero =>
+      intro p A _hready
+      simp [householderQRPanelBackwardCoeff]
+  | succ m ih =>
+      intro p
+      cases p with
+      | zero =>
+          intro A _hready
+          simp [householderQRPanelBackwardCoeff]
+      | succ p =>
+          intro A hready
+          have hxvalid :
+              panelFirstColumn (Nat.succ_pos p) A ≠ 0 ∧
+              gammaValid fp (11 * (m + 1) + 23) ∧
+              HouseholderQRPanelReady fp m p (fl_householderTrailingPanelStep fp A) := by
+            simpa using hready
+          let c := householderConstructApplyBound fp (m + 1)
+          let α := householderQRPanelBackwardCoeff fp m p
+          have hc : 0 ≤ c := by
+            simpa [c] using
+              householderConstructApplyBound_nonneg fp (m + 1) hxvalid.2.1
+          have hα : 0 ≤ α := by
+            simpa [α] using ih p (fl_householderTrailingPanelStep fp A) hxvalid.2.2
+          simp [householderQRPanelBackwardCoeff]
+          nlinarith
+
 /-- **Theorem 18.4**: Householder QR factorization backward error (normwise).
 
     The computed R̂ from Householder QR satisfies A + ΔA = Q·R̂
@@ -2055,6 +2089,86 @@ theorem householder_qr_panel_backward_cons {m p : ℕ}
       _ ≤ c * frobNorm A + α * ((1 + c) * frobNorm A) := by
           exact add_le_add hE hΔTbound
       _ = (c + α * (1 + c)) * frobNorm A := by ring
+
+/-- Implementation-backed recursive backward error theorem for the rounded
+    Householder QR `R` panel algorithm.
+
+    This is the main rectangular induction bridge for the concrete recursive
+    loop `fl_householderQRPanel_R`.  It is still rectangular/panel-level; the
+    square final wrapper to the existing `HouseholderQRBackwardError` contract
+    is the next layer. -/
+theorem fl_householderQRPanel_R_backward_error (fp : FPModel) :
+    ∀ (m p : ℕ) (A : Fin m → Fin p → ℝ),
+      HouseholderQRPanelReady fp m p A →
+      HouseholderQRPanelBackwardError m p A
+        (fl_householderQRPanel_R fp m p A)
+        (householderQRPanelBackwardCoeff fp m p * frobNorm A) := by
+  intro m
+  induction m with
+  | zero =>
+      intro p A _hready
+      simpa [householderQRPanelBackwardCoeff] using
+        householder_qr_panel_backward_zero_rows p A
+  | succ m ih =>
+      intro p
+      cases p with
+      | zero =>
+          intro A _hready
+          simpa [householderQRPanelBackwardCoeff] using
+            householder_qr_panel_backward_zero_cols m A
+      | succ p =>
+          intro A hready
+          have hready' :
+              panelFirstColumn (Nat.succ_pos p) A ≠ 0 ∧
+              gammaValid fp (11 * (m + 1) + 23) ∧
+              HouseholderQRPanelReady fp m p (fl_householderTrailingPanelStep fp A) := by
+            simpa using hready
+          let P : Fin (m + 1) → Fin (m + 1) → ℝ :=
+            householder (m + 1)
+              (householderNormalizedVector (m + 1)
+                (householderVector (Nat.succ_pos m)
+                  (panelFirstColumn (Nat.succ_pos p) A))
+                (householderBetaFromScale (Nat.succ_pos m)
+                  (panelFirstColumn (Nat.succ_pos p) A))) 1
+          let Ahat : Fin (m + 1) → Fin (p + 1) → ℝ :=
+            fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+              (fl_householderNormalizedVector fp (Nat.succ_pos m)
+                (panelFirstColumn (Nat.succ_pos p) A)) 1 A
+          let S : Fin (m + 1) → Fin (p + 1) → ℝ :=
+            panelFromTopAndTrailing (panelTopLeft Ahat) (panelTopRowTail Ahat)
+              (trailingPanel Ahat)
+          obtain ⟨E, hSrep, hE, hSzero⟩ :=
+            fl_householder_first_column_panel_stored_residual_and_shape fp A
+              hready'.1 hready'.2.1
+          have hPorth : IsOrthogonal (m + 1) P := by
+            have hstep :=
+              fl_householder_first_column_panel_step_error fp
+                (Nat.succ_pos m) (Nat.succ_pos p) A hready'.1 hready'.2.1
+            simpa [P, householderConstructApplyBound] using hstep.orth
+          have hStrailing :
+              trailingPanel S = fl_householderTrailingPanelStep fp A := by
+            simp [S, Ahat, fl_householderTrailingPanelStep]
+          have hTailRaw :=
+            ih p (fl_householderTrailingPanelStep fp A) hready'.2.2
+          have hTail :
+              HouseholderQRPanelBackwardError m p (trailingPanel S)
+                (fl_householderQRPanel_R fp m p (fl_householderTrailingPanelStep fp A))
+                (householderQRPanelBackwardCoeff fp m p *
+                  frobNorm (trailingPanel S)) := by
+            rw [hStrailing]
+            exact hTailRaw
+          have hα :
+              0 ≤ householderQRPanelBackwardCoeff fp m p :=
+            householderQRPanelBackwardCoeff_nonneg fp m p
+              (fl_householderTrailingPanelStep fp A) hready'.2.2
+          have hCons :=
+            householder_qr_panel_backward_cons A S P E
+              (fl_householderQRPanel_R fp m p (fl_householderTrailingPanelStep fp A))
+              (householderConstructApplyBound fp (m + 1))
+              (householderQRPanelBackwardCoeff fp m p)
+              hPorth hSrep hE hSzero hTail hα
+          simpa [fl_householderQRPanel_R, householderQRPanelBackwardCoeff,
+            S, Ahat, P, fl_householderTrailingPanelStep] using hCons
 
 /-- QR backward-error contract including the structural fact that the computed
     `R_hat` is upper triangular.

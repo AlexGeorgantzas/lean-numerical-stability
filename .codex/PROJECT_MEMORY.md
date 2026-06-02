@@ -615,6 +615,12 @@ These compile, but should not be treated as fully derived stability results:
   rectangular QR backward-error proof for the trailing panel yields a full-panel
   backward-error proof.  This composes the tail proof with `embedTrailingOne`
   and uses the coefficient update `c + α*(1+c)`.
+- Proved `fl_householderQRPanel_R_backward_error`, the implementation-backed
+  recursive backward-error theorem for the concrete rounded
+  `fl_householderQRPanel_R` loop under `HouseholderQRPanelReady`.  This closes
+  the rectangular/panel-level bridge from concrete QR recursion to
+  `HouseholderQRPanelBackwardError`; the remaining QR work is the square wrapper
+  into `HouseholderQRBackwardError`/`StructuredHouseholderQRBackwardError`.
 
 ## 2026-04-26 Fix Pass
 
