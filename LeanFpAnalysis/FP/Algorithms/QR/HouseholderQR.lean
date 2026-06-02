@@ -1450,6 +1450,108 @@ noncomputable def fl_householderQR_safe_witness (fp : FPModel) (n : ℕ)
   { Q := fl_householderQR_Q_safe fp n A
     R := fl_householderQR_R_safe fp n A }
 
+/-- Rounded accumulated `Q_hat` for the zero-aware Householder QR panel loop.
+
+    This is a concrete `fl_*` algorithmic object, unlike
+    `fl_householderQRPanel_Q_safe`, which is the exact orthogonal witness used
+    in the backward-error proof.  In the nonzero branch, the same rounded
+    Householder reflector that updates the active panel is applied columnwise
+    to the embedded trailing `Q_hat` accumulator.
+
+    No stability or orthogonality theorem is claimed here yet.  The next proof
+    milestone is a separate bridge showing that this rounded accumulation
+    satisfies an appropriate perturbation contract. -/
+noncomputable def fl_householderQRPanel_Qhat_safe (fp : FPModel) :
+    (m p : ℕ) → (Fin m → Fin p → ℝ) → Fin m → Fin m → ℝ
+  | 0, _, _A => idMatrix 0
+  | m + 1, 0, _A => idMatrix (m + 1)
+  | m + 1, p + 1, A =>
+      if _hcol : panelFirstColumn (Nat.succ_pos p) A = 0 then
+        embedTrailingOne
+          (fl_householderQRPanel_Qhat_safe fp m p (trailingPanel A))
+      else
+        let Astep : Fin (m + 1) → Fin (p + 1) → ℝ :=
+          fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+            (fl_householderNormalizedVector fp (Nat.succ_pos m)
+              (panelFirstColumn (Nat.succ_pos p) A)) 1 A
+        let Qtail_hat : Fin m → Fin m → ℝ :=
+          fl_householderQRPanel_Qhat_safe fp m p (trailingPanel Astep)
+        fl_householderApplyMatrixRect fp (m + 1) (m + 1)
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A)) 1
+          (embedTrailingOne Qtail_hat)
+
+@[simp] theorem fl_householderQRPanel_Qhat_safe_zero_rows (fp : FPModel)
+    {p : ℕ} (A : Fin 0 → Fin p → ℝ) :
+    fl_householderQRPanel_Qhat_safe fp 0 p A = idMatrix 0 := rfl
+
+@[simp] theorem fl_householderQRPanel_Qhat_safe_zero_cols (fp : FPModel)
+    {m : ℕ} (A : Fin (m + 1) → Fin 0 → ℝ) :
+    fl_householderQRPanel_Qhat_safe fp (m + 1) 0 A = idMatrix (m + 1) := rfl
+
+@[simp] theorem fl_householderQRPanel_Qhat_safe_succ_succ_zero (fp : FPModel)
+    {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (hcol : panelFirstColumn (Nat.succ_pos p) A = 0) :
+    fl_householderQRPanel_Qhat_safe fp (m + 1) (p + 1) A =
+      embedTrailingOne
+        (fl_householderQRPanel_Qhat_safe fp m p (trailingPanel A)) := by
+  simp [fl_householderQRPanel_Qhat_safe, hcol]
+
+@[simp] theorem fl_householderQRPanel_Qhat_safe_succ_succ_nonzero
+    (fp : FPModel) {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (hcol : panelFirstColumn (Nat.succ_pos p) A ≠ 0) :
+    fl_householderQRPanel_Qhat_safe fp (m + 1) (p + 1) A =
+      let Astep : Fin (m + 1) → Fin (p + 1) → ℝ :=
+        fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A)) 1 A
+      let Qtail_hat : Fin m → Fin m → ℝ :=
+        fl_householderQRPanel_Qhat_safe fp m p (trailingPanel Astep)
+      fl_householderApplyMatrixRect fp (m + 1) (m + 1)
+        (fl_householderNormalizedVector fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A)) 1
+        (embedTrailingOne Qtail_hat) := by
+  simp [fl_householderQRPanel_Qhat_safe, hcol]
+
+/-- Square specialization of the rounded accumulated Householder QR `Q_hat`
+    algorithm. -/
+noncomputable def fl_householderQR_Qhat_safe (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fl_householderQRPanel_Qhat_safe fp n n A
+
+/-- Public concrete computed-factor object for the current Householder QR
+    implementation.
+
+    `Q_hat` is the rounded accumulated factor produced by applying the rounded
+    reflector sequence to an identity-style accumulator.  `R_hat` is the
+    zero-aware rounded `R` output.  The current proved backward-error theorem is
+    still attached to the exact witness API `HouseholderQRWitness`; this object
+    records the concrete `(Q_hat, R_hat)` API that the next proof layer should
+    analyze. -/
+structure HouseholderQRComputedFactors (n : ℕ) where
+  /-- Rounded accumulated Householder `Q_hat`. -/
+  Q_hat : Fin n → Fin n → ℝ
+  /-- Concrete rounded zero-aware `R_hat`. -/
+  R_hat : Fin n → Fin n → ℝ
+
+/-- Concrete rounded `(Q_hat, R_hat)` pair for the zero-aware Householder QR
+    implementation. -/
+noncomputable def fl_householderQR_computed_safe (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) : HouseholderQRComputedFactors n :=
+  { Q_hat := fl_householderQR_Qhat_safe fp n A
+    R_hat := fl_householderQR_R_safe fp n A }
+
+@[simp] theorem fl_householderQR_computed_safe_Q_hat (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) :
+    (fl_householderQR_computed_safe fp n A).Q_hat =
+      fl_householderQR_Qhat_safe fp n A := rfl
+
+@[simp] theorem fl_householderQR_computed_safe_R_hat (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) :
+    (fl_householderQR_computed_safe fp n A).R_hat =
+      fl_householderQR_R_safe fp n A := rfl
+
 /-- Recursive readiness predicate for the concrete Householder QR `R` panel
     algorithm.
 

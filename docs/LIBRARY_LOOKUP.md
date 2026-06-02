@@ -69,6 +69,14 @@ layer is migrated gradually.
 | Matrix algebra infrastructure | `LeanFpAnalysis/FP/Analysis/MatrixAlgebra.lean` | `RVec`, `RMat`, `RSqMat`, `RMatFn`, `frobNorm`, `infNorm`, matrix products, identities, inverses | `matMul_id_right`, `matMul_id_left`, `matMul_assoc`, `matMul_vec_eq`, `matMulVec_matMul`, `frobNorm_matMul_le`, `abs_entry_le_frobNorm`, `abs_matMulVec_le_card_bound_infNormVec`, `IsOrthogonal.abs_matMulVec_le_card_infNormVec`, `row_sum_le_infNorm` | Exact matrix reasoning. `frobNorm` and `infNorm` are compatibility wrappers over Mathlib norms for legacy function-shaped matrices. |
 | Perturbation theory | `LeanFpAnalysis/FP/Analysis/PerturbationTheory.lean` | residual and perturbation quantities | `forward_error_from_residual`, `componentwise_forward_error`, `forward_error_from_backward_error`, `componentwise_forward_error_exact`, `normwise_forward_error_exact` | Converts residual/backward-error hypotheses into forward-error conclusions. |
 
+Householder QR now has two distinct `Q`-side APIs.  Use
+`fl_householderQR_Q_safe` / `HouseholderQRWitness` when you need the exact
+orthogonal witness that appears in the proved backward-error equation.  Use
+`fl_householderQR_Qhat_safe` / `HouseholderQRComputedFactors` when you need the
+concrete rounded accumulated `Q_hat` object.  The rounded `Q_hat` API is an
+algorithm definition only for now; its orthogonality and backward-error bridge
+are the next proof layer.
+
 ## Main Dependency Chains
 
 The strongest internally derived results follow these chains:

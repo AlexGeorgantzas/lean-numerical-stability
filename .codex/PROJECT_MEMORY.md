@@ -832,6 +832,15 @@ These compile, but should not be treated as fully derived stability results:
   its `Q` field is the orthogonal factor used in `Q * R = A + ΔA`, with the
   same branch-dependent `householderQRBackwardCoeffSafe` bound.  This is still
   an exact `Q` witness, not a rounded accumulated `Q_hat`.
+- Started the concrete rounded `Q_hat` API for Householder QR.  Added
+  `fl_householderQRPanel_Qhat_safe`, `fl_householderQR_Qhat_safe`,
+  `HouseholderQRComputedFactors`, and `fl_householderQR_computed_safe`.
+  The nonzero recursive branch applies the same rounded Householder reflector
+  used for the panel update to the embedded trailing `Q_hat` accumulator via
+  `fl_householderApplyMatrixRect`; zero branches embed the trailing accumulator
+  exactly.  No orthogonality or backward-error theorem is claimed for `Q_hat`
+  yet.  The next proof layer is a rounded-accumulation bridge relating this
+  computed `Q_hat` to the exact witness or to an explicit perturbation model.
 
 ## 2026-04-26 Fix Pass
 
