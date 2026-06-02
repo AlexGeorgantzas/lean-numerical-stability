@@ -211,16 +211,21 @@ These compile, but should not be treated as fully derived stability results:
   the active branch.  They were useful prototypes, but the user decided the
   rebuild should not move into Householder-specific kernels before auditing the
   lower-level foundation chain.
-- Current next step is the bottom-up audit/cleanup beginning with `DotProduct`
-  and its exact-specification bridge to Mathlib `dotProduct`.
+- Historical early-rebuild next step was the bottom-up audit/cleanup beginning
+  with `DotProduct` and its exact-specification bridge to Mathlib
+  `dotProduct`; that phase has since been used as the template for the QR
+  rebuild.
 - Rebuild standard clarified with the dot-product/QR contrast.  `DotProduct.lean`
   is the positive template: it defines a concrete rounded algorithm
   `fl_dotProduct` from `FPModel` primitives and proves
   `dotProduct_backward_error` from that definition using summation and gamma
-  lemmas.  QR is not yet at that standard: `householder_qr_backward` consumes an
-  assumed `OrthogonalSequenceBackwardError`, and `HouseholderAppError` is a
-  specification of one-step reflector application rather than a theorem derived
-  from concrete rounded Householder construction/application code.
+  lemmas.  At the start of the rebuild, QR was not at that standard:
+  `householder_qr_backward` consumed an assumed
+  `OrthogonalSequenceBackwardError`, and `HouseholderAppError` was only a
+  specification.  The current Householder QR safe `R`, safe RHS, safe solve,
+  and computed `(Q_hat, R_hat)` layers now have concrete implementation-backed
+  bridge theorems; the old sequence-level theorem remains as a reusable
+  transfer theorem, not the main implementation-backed result.
 - Whole-library repass aim: keep contracts/specification structures as useful
   modular interfaces, but add implementation-backed bridge theorems wherever a
   public algorithmic stability result currently depends only on a supplied
@@ -896,10 +901,9 @@ These compile, but should not be treated as fully derived stability results:
   `fl_householderQR_Qhat_safe_accum_error_of_global_gammaValid` and
   `fl_householderQR_computed_safe_Q_hat_accum_error_of_global_gammaValid` prove
   that the concrete rounded accumulated `Q_hat` is an exact orthogonal matrix
-  plus a bounded perturbation.  This closes the raw recursive perturbation
-  layer, but the bound is not yet simplified to a closed-form norm-growth
-  estimate and the exact orthogonal factor is not yet compared with
-  `fl_householderQR_Q_safe`.
+  plus a bounded perturbation.  This closed the raw recursive perturbation
+  layer; later bullets record the closed-form simplification and comparison
+  with `fl_householderQR_Q_safe`.
 - Added a cleaner recursive accumulated `Q_hat` bound,
   `householderQRPanel_QhatClosedBound`.  The helper
   `HouseholderQRPanelQhatAccumError.embedTrailingOne_norm_le` bounds the
@@ -923,8 +927,8 @@ These compile, but should not be treated as fully derived stability results:
   closed recursive bound.  The public wrapper
   `fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_closed_accum_error_of_global_gammaValid`
   states this for `(fl_householderQR_computed_safe fp n A).Q_hat` against the
-  `Q` field of `fl_householderQR_safe_witness`.  The remaining computed-`Q_hat`
-  polishing step is the compact closed-form growth estimate.
+  `Q` field of `fl_householderQR_safe_witness`.  Later bullets record the
+  compact closed-form growth estimate and its coarser citation-friendly bound.
 - Added the dimension-only uniform recursive computed-`Q_hat` bound
   `householderQR_QhatUniformClosedBound`.  Supporting lemmas prove
   `householderConstructApplyBound_mono`,
