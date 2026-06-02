@@ -633,6 +633,12 @@ These compile, but should not be treated as fully derived stability results:
   equations plus perturbation bounds into `QRSolveBackwardError`.  This fixes
   the algebraic packaging gap for Higham Theorem 18.5, but it is still not a
   concrete `fl_qr_solve` implementation-backed theorem.
+- Added concrete QR-solve objects in `QR/QRSolve.lean`:
+  `fl_householderQRPanel_rhs`, square alias `fl_householderQR_rhs`, and
+  `fl_householderQR_solve`.  The RHS recursion applies the same rounded
+  Householder reflectors chosen from the active `A` panel to `b`, then the solve
+  definition calls `fl_backSub` on `fl_householderQR_R` and the transformed RHS.
+  The full solve stability bridge remains pending.
 
 ## 2026-04-26 Fix Pass
 

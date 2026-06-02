@@ -19,6 +19,8 @@ import Mathlib.Algebra.Order.BigOperators.Group.Finset
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
+import LeanFpAnalysis.FP.Algorithms.TriangularSolve
+import LeanFpAnalysis.FP.Algorithms.QR.HouseholderQR
 
 namespace LeanFpAnalysis.FP
 
@@ -51,6 +53,131 @@ structure QRSolveBackwardError (n : ℕ)
     (∀ i, matMulVec n (fun a b => A a b + ΔA a b) x_hat i = b i + Δb i) ∧
     frobNorm ΔA ≤ c_A ∧
     (∀ i, |Δb i| ≤ c_b)
+
+/-- Drop the first entry of a nonempty vector.  This is exact indexing
+    infrastructure for the QR solve right-hand-side recursion. -/
+noncomputable def vectorTail {m : ℕ} (b : Fin (m + 1) → ℝ) : Fin m → ℝ :=
+  fun i => b i.succ
+
+/-- Reconstruct a nonempty vector from its first entry and tail. -/
+noncomputable def vectorFromTopTail {m : ℕ}
+    (b0 : ℝ) (tail : Fin m → ℝ) : Fin (m + 1) → ℝ :=
+  fun i =>
+    if hi : i = 0 then b0 else tail (i.pred hi)
+
+@[simp] theorem vectorTail_apply {m : ℕ}
+    (b : Fin (m + 1) → ℝ) (i : Fin m) :
+    vectorTail b i = b i.succ := rfl
+
+@[simp] theorem vectorFromTopTail_zero {m : ℕ}
+    (b0 : ℝ) (tail : Fin m → ℝ) :
+    vectorFromTopTail b0 tail 0 = b0 := by
+  simp [vectorFromTopTail]
+
+@[simp] theorem vectorFromTopTail_succ {m : ℕ}
+    (b0 : ℝ) (tail : Fin m → ℝ) (i : Fin m) :
+    vectorFromTopTail b0 tail i.succ = tail i := by
+  simp [vectorFromTopTail]
+
+@[simp] theorem vectorTail_vectorFromTopTail {m : ℕ}
+    (b0 : ℝ) (tail : Fin m → ℝ) :
+    vectorTail (vectorFromTopTail b0 tail) = tail := by
+  ext i
+  rfl
+
+/-- Recursive rounded application of the Householder QR reflector sequence to
+    a right-hand side.
+
+    The reflectors are chosen from the current active panel of `A`, exactly as
+    in `fl_householderQRPanel_R`.  At each nonempty panel step we apply the same
+    rounded reflector to `b`, store the computed top entry, and recurse on the
+    computed trailing panel and the tail of the transformed right-hand side.
+
+    This is a concrete `fl_*` component for future QR-solve proofs.  It does
+    not compute reflectors from `b`; it follows the QR factorization of `A`. -/
+noncomputable def fl_householderQRPanel_rhs (fp : FPModel) :
+    (m p : ℕ) → (Fin m → Fin p → ℝ) → (Fin m → ℝ) → Fin m → ℝ
+  | 0, _, _A, b => b
+  | Nat.succ _, 0, _A, b => b
+  | m + 1, p + 1, A, b =>
+      let v : Fin (m + 1) → ℝ :=
+        fl_householderNormalizedVector fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A)
+      let Astep : Fin (m + 1) → Fin (p + 1) → ℝ :=
+        fl_householderApplyMatrixRect fp (m + 1) (p + 1) v 1 A
+      let bstep : Fin (m + 1) → ℝ :=
+        fl_householderApply fp (m + 1) v 1 b
+      vectorFromTopTail (bstep 0)
+        (fl_householderQRPanel_rhs fp m p (trailingPanel Astep)
+          (vectorTail bstep))
+
+@[simp] theorem fl_householderQRPanel_rhs_zero_rows (fp : FPModel)
+    {p : ℕ} (A : Fin 0 → Fin p → ℝ) (b : Fin 0 → ℝ) :
+    fl_householderQRPanel_rhs fp 0 p A b = b := rfl
+
+@[simp] theorem fl_householderQRPanel_rhs_zero_cols (fp : FPModel)
+    {m : ℕ} (A : Fin (m + 1) → Fin 0 → ℝ) (b : Fin (m + 1) → ℝ) :
+    fl_householderQRPanel_rhs fp (m + 1) 0 A b = b := rfl
+
+@[simp] theorem fl_householderQRPanel_rhs_succ_succ (fp : FPModel)
+    {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (b : Fin (m + 1) → ℝ) :
+    fl_householderQRPanel_rhs fp (m + 1) (p + 1) A b =
+      let v : Fin (m + 1) → ℝ :=
+        fl_householderNormalizedVector fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A)
+      let Astep : Fin (m + 1) → Fin (p + 1) → ℝ :=
+        fl_householderApplyMatrixRect fp (m + 1) (p + 1) v 1 A
+      let bstep : Fin (m + 1) → ℝ :=
+        fl_householderApply fp (m + 1) v 1 b
+      vectorFromTopTail (bstep 0)
+        (fl_householderQRPanel_rhs fp m p (trailingPanel Astep)
+          (vectorTail bstep)) := rfl
+
+/-- The QR right-hand-side recursion stores the top entry computed by the
+    current rounded Householder application. -/
+theorem fl_householderQRPanel_rhs_top_succ_succ (fp : FPModel)
+    {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (b : Fin (m + 1) → ℝ) :
+    fl_householderQRPanel_rhs fp (m + 1) (p + 1) A b 0 =
+      fl_householderApply fp (m + 1)
+        (fl_householderNormalizedVector fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A)) 1 b 0 := by
+  simp [fl_householderQRPanel_rhs]
+
+/-- The tail of the QR right-hand-side recursion is the recursive output on the
+    concrete trailing panel and the tail of the current transformed right-hand
+    side. -/
+theorem vectorTail_fl_householderQRPanel_rhs_succ_succ (fp : FPModel)
+    {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (b : Fin (m + 1) → ℝ) :
+    vectorTail (fl_householderQRPanel_rhs fp (m + 1) (p + 1) A b) =
+      fl_householderQRPanel_rhs fp m p (fl_householderTrailingPanelStep fp A)
+        (vectorTail
+          (fl_householderApply fp (m + 1)
+            (fl_householderNormalizedVector fp (Nat.succ_pos m)
+              (panelFirstColumn (Nat.succ_pos p) A)) 1 b)) := by
+  simp [fl_householderQRPanel_rhs, fl_householderTrailingPanelStep]
+
+/-- Square specialization of the concrete QR right-hand-side transformation. -/
+noncomputable def fl_householderQR_rhs (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ) : Fin n → ℝ :=
+  fl_householderQRPanel_rhs fp n n A b
+
+/-- Concrete QR-based linear solve:
+
+    1. compute the recursive rounded Householder `R` factor;
+    2. apply the same rounded reflector sequence to `b`;
+    3. solve the resulting triangular system by concrete rounded back
+       substitution.
+
+    The implementation-backed stability theorem for this full solve is still
+    pending; this definition fixes the algorithmic object that theorem should
+    analyze. -/
+noncomputable def fl_householderQR_solve (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ) : Fin n → ℝ :=
+  fl_backSub fp n (fl_householderQR_R fp n A)
+    (fl_householderQR_rhs fp n A b)
 
 /-- **Theorem 18.5 composition**: QR solve backward error from components.
 
