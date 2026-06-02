@@ -1078,6 +1078,15 @@ These compile, but should not be treated as fully derived stability results:
   `fl_householderQR_solve_safe_backward_error_gammaHigham_rhsClosedGrowth_of_global_gammaValid`
   packages it into the final solve contract.  This closed RHS expression is a
   local derived citation bound, not a sharp Higham constant.
+- Added `HouseholderQRExplicitBackwardError.frobNorm_R_hat_le` and
+  `fl_householderQR_R_safe_frobNorm_le_gammaHigham_of_global_gammaValid` in
+  `QR/HouseholderQR.lean`, proving that the computed safe `R` factor satisfies
+  `‖R_safe‖_F ≤ (1 + gamma_K) ‖A‖_F` from the explicit QR backward-error
+  theorem.  The solve wrapper
+  `fl_householderQR_solve_safe_backward_error_gammaHigham_closedInputBounds_of_global_gammaValid`
+  now presents both final solve bounds in terms of the original inputs `A` and
+  `b`, while keeping QR factorization and back-substitution contributions
+  visibly separated in the matrix coefficient.
 
 ## 2026-04-26 Fix Pass
 

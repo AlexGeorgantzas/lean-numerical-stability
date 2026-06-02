@@ -4815,6 +4815,30 @@ theorem HouseholderQRExplicitBackwardError.mono {n : ℕ}
   obtain ⟨ΔA, hrep, hΔA⟩ := h.result
   exact ⟨h.orth, h.upper, ⟨ΔA, hrep, le_trans hΔA hc⟩⟩
 
+set_option maxHeartbeats 800000 in
+/-- A fixed-`Q` QR backward-error theorem also controls the Frobenius norm of
+    the computed `R_hat`.
+
+    From `Q R_hat = A + ΔA` and orthogonality of `Q`, we get
+    `‖R_hat‖_F = ‖Q R_hat‖_F ≤ ‖A‖_F + ‖ΔA‖_F`. -/
+theorem HouseholderQRExplicitBackwardError.frobNorm_R_hat_le {n : ℕ}
+    {A Q R_hat : Fin n → Fin n → ℝ} {c_bound : ℝ}
+    (h : HouseholderQRExplicitBackwardError n A Q R_hat c_bound) :
+    frobNorm R_hat ≤ frobNorm A + c_bound := by
+  obtain ⟨ΔA, hrep, hΔA⟩ := h.result
+  have hQR :
+      matMul n Q R_hat = fun i j => A i j + ΔA i j := by
+    ext i j
+    exact hrep i j
+  calc
+    frobNorm R_hat
+        = frobNorm (matMul n Q R_hat) := by
+            exact (frobNorm_orthogonal_left Q R_hat h.orth).symm
+    _ = frobNorm (fun i j => A i j + ΔA i j) := by
+        rw [hQR]
+    _ ≤ frobNorm A + frobNorm ΔA := frobNorm_add_le A ΔA
+    _ ≤ frobNorm A + c_bound := add_le_add (le_refl (frobNorm A)) hΔA
+
 /-- Empty-row panels satisfy the rectangular QR backward-error target
     trivially. -/
 theorem householder_qr_panel_backward_zero_rows (p : ℕ)
@@ -6081,6 +6105,33 @@ theorem fl_householderQR_safe_witness_explicit_backward_error_gammaHigham_of_glo
   exact mul_le_mul_of_nonneg_right
     (householderQRBackwardCoeffSafe_le_gamma_higham fp n A hn hvalid)
     (frobNorm_nonneg A)
+
+/-- The safe computed `R` factor has Frobenius norm controlled by the input
+    matrix and the same single-gamma QR factorization coefficient.
+
+    This is a derived consequence of the implementation-backed explicit
+    backward-error theorem for `R_safe`; it is useful when composing QR with
+    triangular solve, whose perturbation term contains `‖R_safe‖_F`. -/
+theorem fl_householderQR_R_safe_frobNorm_le_gammaHigham_of_global_gammaValid
+    (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex n)) :
+    frobNorm (fl_householderQR_R_safe fp n A) ≤
+      (1 + gamma fp (n * householderConstructApplyGammaIndex n)) *
+        frobNorm A := by
+  have hQR :=
+    fl_householderQR_safe_witness_explicit_backward_error_gammaHigham_of_global_gammaValid
+      fp n A hn hvalid
+  have hnorm := hQR.frobNorm_R_hat_le
+  calc
+    frobNorm (fl_householderQR_R_safe fp n A)
+        ≤ frobNorm A +
+            gamma fp (n * householderConstructApplyGammaIndex n) *
+              frobNorm A := by
+          simpa [fl_householderQR_safe_witness] using hnorm
+    _ = (1 + gamma fp (n * householderConstructApplyGammaIndex n)) *
+          frobNorm A := by ring
 
 /-- The computed-factor `R_hat` field satisfies the explicit exact-witness
     Householder QR backward-error theorem.

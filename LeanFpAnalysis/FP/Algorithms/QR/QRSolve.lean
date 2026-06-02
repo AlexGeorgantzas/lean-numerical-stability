@@ -3209,4 +3209,69 @@ theorem fl_householderQR_solve_safe_backward_error_gammaHigham_rhsClosedGrowth_o
     (householderQRRhsGrowthCoeff_le_closedGrowth fp n hbase_valid)
     (infNormVec_nonneg b)
 
+/-- Source-facing implementation-backed zero-aware Householder QR solve theorem
+    with both solve-side printed bounds depending only on the original inputs.
+
+    Compared with
+    `fl_householderQR_solve_safe_backward_error_gammaHigham_rhsClosedGrowth_of_global_gammaValid`,
+    this theorem also removes the intermediate `‖R_safe‖_F` from the matrix
+    perturbation bound, using the explicit QR backward-error theorem to prove
+    `‖R_safe‖_F ≤ (1 + gamma_K) ‖A‖_F`.  The back-substitution contribution is
+    still kept visibly separate in the coefficient
+    `gamma_n * (1 + gamma_K)`. -/
+theorem fl_householderQR_solve_safe_backward_error_gammaHigham_closedInputBounds_of_global_gammaValid
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex n))
+    (hdiag : ∀ i : Fin n, fl_householderQR_R_safe fp n A i i ≠ 0) :
+    QRSolveBackwardError n A b (fl_householderQR_solve_safe fp n A b)
+      ((gamma fp (n * householderConstructApplyGammaIndex n) +
+          gamma fp n *
+            (1 + gamma fp (n * householderConstructApplyGammaIndex n))) *
+        frobNorm A)
+      (((n : ℝ) * ((n : ℝ) ^ 2 * householderConstructApplyBound fp n) *
+          (1 + (n : ℝ) ^ 2 *
+            (1 + householderConstructApplyBound fp n)) ^ n) *
+        infNormVec b) := by
+  let K := householderConstructApplyGammaIndex n
+  let G : ℝ := gamma fp (n * K)
+  let gn : ℝ := gamma fp n
+  have hK_le_nK : K ≤ n * K := by
+    have hn1 : 1 ≤ n := Nat.succ_le_of_lt hn
+    simpa using Nat.mul_le_mul_right K hn1
+  have hbase_le_K : 11 * n + 23 ≤ K := by
+    dsimp [K, householderConstructApplyGammaIndex]
+    omega
+  have hbase_valid : gammaValid fp (11 * n + 23) :=
+    gammaValid_mono fp (le_trans hbase_le_K hK_le_nK) hvalid
+  have hn_valid : gammaValid fp n :=
+    gammaValid_mono fp (by omega) hbase_valid
+  have hraw :=
+    fl_householderQR_solve_safe_backward_error_gammaHigham_rhsClosedGrowth_of_global_gammaValid
+      fp n A b hn hvalid hdiag
+  refine hraw.mono ?_ le_rfl
+  have hR :
+      frobNorm (fl_householderQR_R_safe fp n A) ≤ (1 + G) * frobNorm A := by
+    simpa [G, K] using
+      fl_householderQR_R_safe_frobNorm_le_gammaHigham_of_global_gammaValid
+        fp n A hn hvalid
+  have htri :
+      gn * frobNorm (fl_householderQR_R_safe fp n A) ≤
+        gn * ((1 + G) * frobNorm A) := by
+    exact mul_le_mul_of_nonneg_left hR (by
+      simpa [gn] using gamma_nonneg fp hn_valid)
+  calc
+    (gamma fp (n * householderConstructApplyGammaIndex n) * frobNorm A) +
+        gamma fp n * frobNorm (fl_householderQR_R_safe fp n A)
+        ≤ G * frobNorm A + gn * ((1 + G) * frobNorm A) := by
+            simpa [G, gn, K] using add_le_add_left htri (G * frobNorm A)
+    _ = (G + gn * (1 + G)) * frobNorm A := by ring
+    _ = (gamma fp (n * householderConstructApplyGammaIndex n) +
+          gamma fp n *
+            (1 + gamma fp (n * householderConstructApplyGammaIndex n))) *
+        frobNorm A := by
+        simp [G, gn, K]
+
 end LeanFpAnalysis.FP

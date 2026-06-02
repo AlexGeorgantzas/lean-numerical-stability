@@ -196,12 +196,18 @@ solve components are explained by the same `fl_householderQR_Q_safe` witness.
 The final `QRSolveBackwardError` remains existential in `Q` because its public
 statement only exposes the solved system perturbation.
 For the source-facing final safe solve theorem, prefer
-`fl_householderQR_solve_safe_backward_error_gammaHigham_rhsClosedGrowth_of_global_gammaValid`.
-It replaces the QR-factorization part of the solve bound by the same explicit
-single-gamma Householder coefficient used in the QR factorization theorem,
-keeps the separate back-substitution term, and presents the RHS perturbation
-with a nonrecursive conservative growth expression from
-`householderQRRhsGrowthCoeff_le_closedGrowth`.
+`fl_householderQR_solve_safe_backward_error_gammaHigham_closedInputBounds_of_global_gammaValid`.
+It presents both solve-side printed bounds in terms of the original inputs:
+the matrix perturbation uses the single-gamma Householder QR coefficient plus
+the separate back-substitution coefficient after bounding
+`‖R_safe‖_F ≤ (1 + gamma_K) ‖A‖_F`, and the RHS perturbation uses the
+nonrecursive conservative growth expression from
+`householderQRRhsGrowthCoeff_le_closedGrowth`.  The reusable `R_safe` norm
+bridge is `fl_householderQR_R_safe_frobNorm_le_gammaHigham_of_global_gammaValid`,
+derived from `HouseholderQRExplicitBackwardError.frobNorm_R_hat_le`.
+The sibling theorem
+`fl_householderQR_solve_safe_backward_error_gammaHigham_rhsClosedGrowth_of_global_gammaValid`
+keeps the intermediate `‖R_safe‖_F` in the matrix perturbation bound.
 The sibling theorem
 `fl_householderQR_solve_safe_backward_error_gammaHigham_rhsGrowth_of_global_gammaValid`
 keeps the tighter recursive RHS growth coefficient
