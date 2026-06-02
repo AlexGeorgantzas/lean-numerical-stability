@@ -280,6 +280,91 @@ lemma residualAccumBound_eq_one_add_pow_sub_one (c : ℝ) :
       simp [residualAccumBound, ih]
       ring
 
+/-- Monotonicity of the residual accumulation recurrence in the local step
+    coefficient. -/
+lemma residualAccumBound_mono {c d : ℝ}
+    (hc : 0 ≤ c) (hcd : c ≤ d) :
+    ∀ r : ℕ, residualAccumBound c r ≤ residualAccumBound d r := by
+  intro r
+  induction r with
+  | zero =>
+      simp [residualAccumBound]
+  | succ r ih =>
+      have hd : 0 ≤ d := le_trans hc hcd
+      have hcres : 0 ≤ residualAccumBound c r :=
+        residualAccumBound_nonneg c hc r
+      have hdres : 0 ≤ residualAccumBound d r :=
+        residualAccumBound_nonneg d hd r
+      have hone :
+          1 + residualAccumBound c r ≤
+            1 + residualAccumBound d r := by linarith
+      have hone_nonneg : 0 ≤ 1 + residualAccumBound c r := by linarith
+      have hmul :
+          c * (1 + residualAccumBound c r) ≤
+            d * (1 + residualAccumBound d r) :=
+        mul_le_mul hcd hone hone_nonneg hd
+      simp [residualAccumBound]
+      exact add_le_add ih hmul
+
+/-- If each local step coefficient is already bounded by `gamma k`, the
+    residual accumulation over `r` steps is bounded by `gamma (r*k)`.
+
+    This is the formal version of absorbing repeated first-order local
+    `gamma` bounds into one larger Higham `gamma` term. -/
+lemma residualAccumBound_gamma_le_gamma_mul (fp : FPModel) (k : ℕ) :
+    ∀ r : ℕ, gammaValid fp (r * k) →
+      residualAccumBound (gamma fp k) r ≤ gamma fp (r * k) := by
+  intro r
+  induction r with
+  | zero =>
+      intro _hvalid
+      simp [residualAccumBound, gamma]
+  | succ r ih =>
+      intro hvalid
+      have hvalid_r : gammaValid fp (r * k) :=
+        gammaValid_mono fp (by
+          rw [Nat.succ_mul]
+          omega) hvalid
+      have hvalid_k : gammaValid fp k :=
+        gammaValid_mono fp (by
+          rw [Nat.succ_mul]
+          omega) hvalid
+      have hγk_nonneg : 0 ≤ gamma fp k :=
+        gamma_nonneg fp hvalid_k
+      have hγr_nonneg : 0 ≤ gamma fp (r * k) :=
+        gamma_nonneg fp hvalid_r
+      have hih := ih hvalid_r
+      have hmul :
+          residualAccumBound (gamma fp k) r * gamma fp k ≤
+            gamma fp (r * k) * gamma fp k :=
+        mul_le_mul_of_nonneg_right hih hγk_nonneg
+      have hstep :
+          residualAccumBound (gamma fp k) r +
+              gamma fp k +
+              residualAccumBound (gamma fp k) r * gamma fp k ≤
+            gamma fp (r * k) + gamma fp k +
+              gamma fp (r * k) * gamma fp k := by
+        linarith
+      have hsum :
+          gamma fp (r * k) + gamma fp k +
+              gamma fp (r * k) * gamma fp k ≤
+            gamma fp (r * k + k) :=
+        gamma_sum_le fp (r * k) k (by
+          rwa [← Nat.succ_mul])
+      calc
+        residualAccumBound (gamma fp k) (r + 1)
+            =
+          residualAccumBound (gamma fp k) r +
+            gamma fp k +
+            residualAccumBound (gamma fp k) r * gamma fp k := by
+              simp [residualAccumBound]
+              ring
+        _ ≤ gamma fp (r * k) + gamma fp k +
+              gamma fp (r * k) * gamma fp k := hstep
+        _ ≤ gamma fp (r * k + k) := hsum
+        _ = gamma fp ((r + 1) * k) := by
+              rw [Nat.succ_mul]
+
 /-- **Repeated residual-form orthogonal sequence theorem**.
 
     If each step has the form `A_{k+1} = P_k A_k + E_k`, with `P_k`
@@ -391,6 +476,15 @@ theorem columnwise_householder_sequence_backward_error (n r : ℕ)
 noncomputable def householderConstructApplyBound (fp : FPModel) (n : ℕ) : ℝ :=
   Real.sqrt ((n : ℝ) * fp.u ^ 2) + 2 * gamma fp (11 * n + 23)
 
+/-- Concrete operation-count index used to absorb the one-step Householder
+    construction/application bound into a single Higham `gamma` term.
+
+    The factor `3` comes from the local inequality
+    `sqrt(n*u^2) + 2*gamma(11n+23) ≤ 3*gamma(11n+23)`, followed by Higham's
+    `i*gamma(k) ≤ gamma(i*k)` rule. -/
+def householderConstructApplyGammaIndex (n : ℕ) : ℕ :=
+  3 * (11 * n + 23)
+
 /-- The concrete one-step Householder construction/application bound is
     nonnegative under the corresponding gamma-validity side condition. -/
 lemma householderConstructApplyBound_nonneg (fp : FPModel) (n : ℕ)
@@ -400,6 +494,71 @@ lemma householderConstructApplyBound_nonneg (fp : FPModel) (n : ℕ)
   have hsqrt : 0 ≤ Real.sqrt ((n : ℝ) * fp.u ^ 2) := Real.sqrt_nonneg _
   have hγ : 0 ≤ gamma fp (11 * n + 23) := gamma_nonneg fp hvalid
   nlinarith
+
+/-- The concrete one-step Householder construction/application coefficient is
+    bounded by a single Higham `gamma` term. -/
+theorem householderConstructApplyBound_le_gamma (fp : FPModel) (n : ℕ)
+    (hvalid : gammaValid fp (householderConstructApplyGammaIndex n)) :
+    householderConstructApplyBound fp n ≤
+      gamma fp (householderConstructApplyGammaIndex n) := by
+  let k : ℕ := 11 * n + 23
+  have hk_pos : 0 < k := by
+    dsimp [k]
+    omega
+  have hvalid_k : gammaValid fp k :=
+    gammaValid_mono fp (by
+      dsimp [householderConstructApplyGammaIndex, k]
+      omega) hvalid
+  have hn_le_k : n ≤ k := by
+    dsimp [k]
+    omega
+  have hn_le_k_real : (n : ℝ) ≤ (k : ℝ) := by
+    exact_mod_cast hn_le_k
+  have hk_ge_one : (1 : ℝ) ≤ (k : ℝ) := by
+    exact_mod_cast hk_pos
+  have hk_le_ksq : (k : ℝ) ≤ (k : ℝ) ^ 2 := by
+    nlinarith
+  have hn_le_ksq : (n : ℝ) ≤ (k : ℝ) ^ 2 :=
+    le_trans hn_le_k_real hk_le_ksq
+  have hu2_nonneg : 0 ≤ fp.u ^ 2 := sq_nonneg fp.u
+  have harg :
+      (n : ℝ) * fp.u ^ 2 ≤ (k : ℝ) ^ 2 * fp.u ^ 2 :=
+    mul_le_mul_of_nonneg_right hn_le_ksq hu2_nonneg
+  have hsqrt_le :
+      Real.sqrt ((n : ℝ) * fp.u ^ 2) ≤
+        Real.sqrt ((k : ℝ) ^ 2 * fp.u ^ 2) :=
+    Real.sqrt_le_sqrt harg
+  have hsqrt_rhs :
+      Real.sqrt ((k : ℝ) ^ 2 * fp.u ^ 2) = (k : ℝ) * fp.u := by
+    have hsq :
+        (k : ℝ) ^ 2 * fp.u ^ 2 = ((k : ℝ) * fp.u) ^ 2 := by
+      ring
+    rw [hsq, Real.sqrt_sq_eq_abs]
+    exact abs_of_nonneg
+      (mul_nonneg (by exact_mod_cast Nat.zero_le k) fp.u_nonneg)
+  have hsqrt_gamma :
+      Real.sqrt ((n : ℝ) * fp.u ^ 2) ≤ gamma fp k := by
+    calc
+      Real.sqrt ((n : ℝ) * fp.u ^ 2)
+          ≤ Real.sqrt ((k : ℝ) ^ 2 * fp.u ^ 2) := hsqrt_le
+      _ = (k : ℝ) * fp.u := hsqrt_rhs
+      _ ≤ gamma fp k := n_mul_u_le_gamma fp k hvalid_k
+  have hγ_nonneg : 0 ≤ gamma fp k := gamma_nonneg fp hvalid_k
+  have hlocal :
+      householderConstructApplyBound fp n ≤ 3 * gamma fp k := by
+    dsimp [householderConstructApplyBound, k]
+    nlinarith
+  have hthree :
+      (3 : ℝ) * gamma fp k ≤ gamma fp (3 * k) :=
+    gamma_nsmul_le fp 3 k (by norm_num) (by
+      simpa [householderConstructApplyGammaIndex, k] using hvalid)
+  calc
+    householderConstructApplyBound fp n
+        ≤ 3 * gamma fp k := hlocal
+    _ = (3 : ℝ) * gamma fp k := by norm_num
+    _ ≤ gamma fp (3 * k) := hthree
+    _ = gamma fp (householderConstructApplyGammaIndex n) := by
+        simp [householderConstructApplyGammaIndex, k]
 
 /-- Repeated concrete Householder construction/application sequence.
 
@@ -4174,6 +4333,58 @@ theorem householderQRBackwardCoeffSafe_le_highamGrowth
     exact one_add_pow_sub_one_le_nat_mul_growth hC n
   exact le_trans hcoeff hgrowth
 
+/-- Higham-style single-`gamma` upper bound for the implementation-backed
+    zero-aware Householder QR coefficient.
+
+    This absorbs the concrete one-step coefficient into
+    `gamma (householderConstructApplyGammaIndex n)` and then absorbs the
+    `n`-step residual recurrence into `gamma (n * householderConstructApplyGammaIndex n)`.
+    The positivity hypothesis on `n` is the usual nonempty QR setting and lets
+    the one-step validity follow from the larger accumulated validity. -/
+theorem householderQRBackwardCoeffSafe_le_gamma_higham
+    (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex n)) :
+    householderQRBackwardCoeffSafe fp n A ≤
+      gamma fp (n * householderConstructApplyGammaIndex n) := by
+  let K := householderConstructApplyGammaIndex n
+  have hK_le_nK : K ≤ n * K := by
+    have hn1 : 1 ≤ n := Nat.succ_le_of_lt hn
+    simpa using Nat.mul_le_mul_right K hn1
+  have hbase_le_K : 11 * n + 23 ≤ K := by
+    dsimp [K, householderConstructApplyGammaIndex]
+    omega
+  have hbase_le_nK : 11 * n + 23 ≤ n * K :=
+    le_trans hbase_le_K hK_le_nK
+  have hvalid_base : gammaValid fp (11 * n + 23) :=
+    gammaValid_mono fp hbase_le_nK hvalid
+  have hvalid_K : gammaValid fp K :=
+    gammaValid_mono fp hK_le_nK hvalid
+  have hc_nonneg : 0 ≤ householderConstructApplyBound fp n :=
+    householderConstructApplyBound_nonneg fp n hvalid_base
+  have hc_le_gamma :
+      householderConstructApplyBound fp n ≤ gamma fp K := by
+    simpa [K] using householderConstructApplyBound_le_gamma fp n hvalid_K
+  have hcoeff :
+      householderQRBackwardCoeffSafe fp n A ≤
+        residualAccumBound (householderConstructApplyBound fp n) n :=
+    householderQRBackwardCoeffSafe_le_residualAccumBound fp n A hvalid_base
+  have hmono :
+      residualAccumBound (householderConstructApplyBound fp n) n ≤
+        residualAccumBound (gamma fp K) n :=
+    residualAccumBound_mono hc_nonneg hc_le_gamma n
+  have hgamma :
+      residualAccumBound (gamma fp K) n ≤ gamma fp (n * K) :=
+    residualAccumBound_gamma_le_gamma_mul fp K n hvalid
+  calc
+    householderQRBackwardCoeffSafe fp n A
+        ≤ residualAccumBound (householderConstructApplyBound fp n) n := hcoeff
+    _ ≤ residualAccumBound (gamma fp K) n := hmono
+    _ ≤ gamma fp (n * K) := hgamma
+    _ = gamma fp (n * householderConstructApplyGammaIndex n) := by
+        simp [K]
+
 /-- **Theorem 18.4**: Householder QR factorization backward error (normwise).
 
     The computed R̂ from Householder QR satisfies A + ΔA = Q·R̂
@@ -5171,6 +5382,38 @@ theorem fl_householderQR_R_safe_backward_error_highamGrowth_of_global_gammaValid
     (householderQRBackwardCoeffSafe_le_highamGrowth fp n A hvalid)
     (frobNorm_nonneg A)
 
+/-- Implementation-backed Householder QR `R` backward error with the recursive
+    coefficient absorbed into one Higham `gamma` term.
+
+    This is the closest source-facing version of Higham Theorem 18.4 for the
+    concrete zero-aware rounded `R` algorithm: the bound is
+    `gamma (n*K) * ‖A‖_F`, where
+    `K = householderConstructApplyGammaIndex n` is a concrete formal choice of
+    Higham's hidden `c*m` operation-count constant. -/
+theorem fl_householderQR_R_safe_backward_error_gammaHigham_of_global_gammaValid
+    (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex n)) :
+    HouseholderQRBackwardError n A (fl_householderQR_R_safe fp n A)
+      (gamma fp (n * householderConstructApplyGammaIndex n) * frobNorm A) := by
+  let K := householderConstructApplyGammaIndex n
+  have hK_le_nK : K ≤ n * K := by
+    have hn1 : 1 ≤ n := Nat.succ_le_of_lt hn
+    simpa using Nat.mul_le_mul_right K hn1
+  have hbase_le_K : 11 * n + 23 ≤ K := by
+    dsimp [K, householderConstructApplyGammaIndex]
+    omega
+  have hbase_valid : gammaValid fp (11 * n + 23) :=
+    gammaValid_mono fp (le_trans hbase_le_K hK_le_nK) hvalid
+  have hraw :=
+    fl_householderQR_R_safe_backward_error_of_global_gammaValid
+      fp n A hbase_valid
+  refine hraw.mono ?_
+  exact mul_le_mul_of_nonneg_right
+    (householderQRBackwardCoeffSafe_le_gamma_higham fp n A hn hvalid)
+    (frobNorm_nonneg A)
+
 /-- QR backward-error contract including the structural fact that the computed
     `R_hat` is upper triangular.
 
@@ -5358,6 +5601,34 @@ theorem fl_householderQR_safe_witness_explicit_backward_error_highamGrowth_of_gl
     (householderQRBackwardCoeffSafe_le_highamGrowth fp n A hvalid)
     (frobNorm_nonneg A)
 
+/-- Fixed-`Q` implementation-backed Householder QR theorem with the bound
+    absorbed into one Higham `gamma` term. -/
+theorem fl_householderQR_safe_witness_explicit_backward_error_gammaHigham_of_global_gammaValid
+    (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex n)) :
+    HouseholderQRExplicitBackwardError n A
+      (fl_householderQR_safe_witness fp n A).Q
+      (fl_householderQR_safe_witness fp n A).R
+      (gamma fp (n * householderConstructApplyGammaIndex n) * frobNorm A) := by
+  let K := householderConstructApplyGammaIndex n
+  have hK_le_nK : K ≤ n * K := by
+    have hn1 : 1 ≤ n := Nat.succ_le_of_lt hn
+    simpa using Nat.mul_le_mul_right K hn1
+  have hbase_le_K : 11 * n + 23 ≤ K := by
+    dsimp [K, householderConstructApplyGammaIndex]
+    omega
+  have hbase_valid : gammaValid fp (11 * n + 23) :=
+    gammaValid_mono fp (le_trans hbase_le_K hK_le_nK) hvalid
+  have hraw :=
+    fl_householderQR_safe_witness_explicit_backward_error_of_global_gammaValid
+      fp n A hbase_valid
+  refine hraw.mono ?_
+  exact mul_le_mul_of_nonneg_right
+    (householderQRBackwardCoeffSafe_le_gamma_higham fp n A hn hvalid)
+    (frobNorm_nonneg A)
+
 /-- The computed-factor `R_hat` field satisfies the explicit exact-witness
     Householder QR backward-error theorem.
 
@@ -5388,6 +5659,21 @@ theorem fl_householderQR_computed_safe_R_hat_explicit_backward_error_highamGrowt
   simpa [fl_householderQR_computed_safe] using
     fl_householderQR_safe_witness_explicit_backward_error_highamGrowth_of_global_gammaValid
       fp n A hvalid
+
+/-- The computed-factor `R_hat` field satisfies the fixed exact-witness
+    Householder QR theorem with one Higham `gamma` coefficient. -/
+theorem fl_householderQR_computed_safe_R_hat_explicit_backward_error_gammaHigham_of_global_gammaValid
+    (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex n)) :
+    HouseholderQRExplicitBackwardError n A
+      (fl_householderQR_safe_witness fp n A).Q
+      (fl_householderQR_computed_safe fp n A).R_hat
+      (gamma fp (n * householderConstructApplyGammaIndex n) * frobNorm A) := by
+  simpa [fl_householderQR_computed_safe] using
+    fl_householderQR_safe_witness_explicit_backward_error_gammaHigham_of_global_gammaValid
+      fp n A hn hvalid
 
 /-- Combined computed-factor contract for the current Householder QR API.
 
@@ -5515,6 +5801,38 @@ theorem fl_householderQR_computed_safe_explicit_error_highamGrowth_of_global_gam
     fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_growth_accum_error_of_global_gammaValid
       fp n A hvalid⟩
 
+/-- Combined computed-factor contract where the `R_hat` backward-error bound is
+    absorbed into one Higham `gamma` term.
+
+    The `Q_hat` field is still stated as a perturbation of the same exact
+    orthogonal witness; it is not asserted to be exactly orthogonal. -/
+theorem fl_householderQR_computed_safe_explicit_error_gammaHigham_of_global_gammaValid
+    (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex n)) :
+    HouseholderQRComputedFactorsExplicitError n A
+      (fl_householderQR_computed_safe fp n A)
+      (fl_householderQR_safe_witness fp n A).Q
+      (gamma fp (n * householderConstructApplyGammaIndex n) * frobNorm A)
+      ((n : ℝ) * householderConstructApplyBound fp n *
+        (1 + householderConstructApplyBound fp n) ^ n *
+        Real.sqrt (n : ℝ)) := by
+  let K := householderConstructApplyGammaIndex n
+  have hK_le_nK : K ≤ n * K := by
+    have hn1 : 1 ≤ n := Nat.succ_le_of_lt hn
+    simpa using Nat.mul_le_mul_right K hn1
+  have hbase_le_K : 11 * n + 23 ≤ K := by
+    dsimp [K, householderConstructApplyGammaIndex]
+    omega
+  have hbase_valid : gammaValid fp (11 * n + 23) :=
+    gammaValid_mono fp (le_trans hbase_le_K hK_le_nK) hvalid
+  exact ⟨
+    fl_householderQR_computed_safe_R_hat_explicit_backward_error_gammaHigham_of_global_gammaValid
+      fp n A hn hvalid,
+    fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_growth_accum_error_of_global_gammaValid
+      fp n A hbase_valid⟩
+
 /-- Residual theorem for the concrete computed Householder QR factors.
 
     This is the theorem that directly uses `Q_hat * R_hat`.  It is derived
@@ -5534,5 +5852,23 @@ theorem fl_householderQR_computed_safe_residual_error_highamGrowth_of_global_gam
   exact
     (fl_householderQR_computed_safe_explicit_error_highamGrowth_of_global_gammaValid
       fp n A hvalid).to_residual_error
+
+/-- Residual theorem for the concrete computed Householder QR factors with the
+    `R_hat` backward-error part absorbed into one Higham `gamma` term. -/
+theorem fl_householderQR_computed_safe_residual_error_gammaHigham_of_global_gammaValid
+    (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex n)) :
+    HouseholderQRComputedFactorsResidualError n A
+      (fl_householderQR_computed_safe fp n A)
+      ((gamma fp (n * householderConstructApplyGammaIndex n) * frobNorm A) +
+        ((n : ℝ) * householderConstructApplyBound fp n *
+          (1 + householderConstructApplyBound fp n) ^ n *
+          Real.sqrt (n : ℝ)) *
+          frobNorm (fl_householderQR_computed_safe fp n A).R_hat) := by
+  exact
+    (fl_householderQR_computed_safe_explicit_error_gammaHigham_of_global_gammaValid
+      fp n A hn hvalid).to_residual_error
 
 end LeanFpAnalysis.FP

@@ -1001,6 +1001,22 @@ These compile, but should not be treated as fully derived stability results:
   `Q_hat` is orthogonal.  Higham Theorem 18.4 uses an exact orthogonal product
   of Householder reflectors; a separately rounded accumulated `Q_hat` is only
   near that exact factor under the general `FPModel`.
+- Added single-`gamma` Householder QR wrappers.  `Rounding.lean` now has
+  `n_mul_u_le_gamma`, and `HouseholderQR.lean` has
+  `residualAccumBound_mono`,
+  `residualAccumBound_gamma_le_gamma_mul`,
+  `householderConstructApplyGammaIndex`,
+  `householderConstructApplyBound_le_gamma`, and
+  `householderQRBackwardCoeffSafe_le_gamma_higham`.  The public theorem
+  `fl_householderQR_computed_safe_R_hat_explicit_backward_error_gammaHigham_of_global_gammaValid`
+  states the implementation-backed computed `R_hat` theorem with bound
+  `gamma fp (n * householderConstructApplyGammaIndex n) * ‖A‖_F`.  The paired
+  computed-factor and residual wrappers are
+  `fl_householderQR_computed_safe_explicit_error_gammaHigham_of_global_gammaValid`
+  and
+  `fl_householderQR_computed_safe_residual_error_gammaHigham_of_global_gammaValid`.
+  This is the closest formal counterpart to Higham Theorem 18.4's hidden
+  `n γ_cm` notation while keeping the operation count explicit.
 
 ## 2026-04-26 Fix Pass
 

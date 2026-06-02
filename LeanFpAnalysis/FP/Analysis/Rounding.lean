@@ -124,6 +124,20 @@ lemma u_le_gamma (fp : FPModel) {k : ℕ} (hk : 0 < k) (hval : gammaValid fp k) 
     nlinarith [mul_nonneg (mul_nonneg (by linarith : (0:ℝ) ≤ ↑k) fp.u_nonneg) fp.u_nonneg]
   linarith
 
+/-- The raw first-order quantity `n*u` is bounded by `gamma n`.
+
+    This is the same denominator-shrinking fact as `u_le_gamma`, but without
+    first dividing out the operation count. -/
+lemma n_mul_u_le_gamma (fp : FPModel) (n : ℕ) (hval : gammaValid fp n) :
+    (n : ℝ) * fp.u ≤ gamma fp n := by
+  unfold gamma
+  have hnu : (n : ℝ) * fp.u < 1 := hval
+  have hden : 0 < 1 - (n : ℝ) * fp.u := by linarith
+  have ha : 0 ≤ (n : ℝ) * fp.u :=
+    mul_nonneg (by exact_mod_cast n.zero_le) fp.u_nonneg
+  rw [le_div_iff₀ hden]
+  nlinarith [sq_nonneg ((n : ℝ) * fp.u)]
+
 -- ============================================================
 -- §3.1  Product lemma
 -- ============================================================

@@ -93,6 +93,17 @@ source-facing growth coefficient on the `R_hat` theorem, use
 `fl_householderQR_safe_witness_explicit_backward_error_highamGrowth_of_global_gammaValid`,
 or
 `fl_householderQR_computed_safe_R_hat_explicit_backward_error_highamGrowth_of_global_gammaValid`.
+For the closest single-`gamma` counterpart to Higham Theorem 18.4, use
+`householderConstructApplyGammaIndex`,
+`householderConstructApplyBound_le_gamma`,
+`householderQRBackwardCoeffSafe_le_gamma_higham`,
+`fl_householderQR_R_safe_backward_error_gammaHigham_of_global_gammaValid`,
+`fl_householderQR_safe_witness_explicit_backward_error_gammaHigham_of_global_gammaValid`,
+or
+`fl_householderQR_computed_safe_R_hat_explicit_backward_error_gammaHigham_of_global_gammaValid`.
+These absorb the concrete recursive coefficient into
+`gamma fp (n * householderConstructApplyGammaIndex n)` under the corresponding
+`gammaValid` side condition.
 `fl_householderQRPanel_Qhat_safe_accum_error`,
 `fl_householderQR_Qhat_safe_accum_error_of_global_gammaValid`, and
 `fl_householderQR_computed_safe_Q_hat_accum_error_of_global_gammaValid` prove
@@ -121,10 +132,15 @@ this `Q_hat` theorem with the explicit exact-witness backward-error theorem
 for `R_hat`, making it the main theorem to cite for the current computed
 `(Q_hat, R_hat)` API.  Its growth-bound counterpart is
 `fl_householderQR_computed_safe_explicit_error_highamGrowth_of_global_gammaValid`.
+Its single-`gamma` `R_hat` counterpart is
+`fl_householderQR_computed_safe_explicit_error_gammaHigham_of_global_gammaValid`.
 For a direct theorem about the product of the rounded factors, use
 `fl_householderQR_computed_safe_residual_error_highamGrowth_of_global_gammaValid`;
 it proves a residual bound for `Q_hat * R_hat`, not exact orthogonality of
-`Q_hat`.  For a simpler but coarser printed coefficient, use
+`Q_hat`.  The corresponding residual theorem with a single-`gamma` `R_hat`
+term is
+`fl_householderQR_computed_safe_residual_error_gammaHigham_of_global_gammaValid`.
+For a simpler but coarser printed coefficient, use
 `householderQR_QhatClosedFormBound_le_growth`,
 `fl_householderQR_Qhat_safe_fixed_Q_safe_growth_accum_error_of_global_gammaValid`,
 or
