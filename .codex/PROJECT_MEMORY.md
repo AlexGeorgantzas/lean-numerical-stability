@@ -495,6 +495,14 @@ These compile, but should not be treated as fully derived stability results:
   first-column Householder panel step.  Remaining QR work: dependent induction
   across changing dimensions, exact zeroing/triangularization, and packaging
   into the final `HouseholderQRBackwardError`.
+- Added exact Householder zeroing lemmas in `HouseholderOneStep.lean`:
+  `householderVector_dot_original_eq_scale_mul_zero`,
+  `householder_constructed_matMulVec_first`, and
+  `householder_constructed_matMulVec_tail_zero`.  These prove the exact
+  triangularization kernel for one constructed reflector:
+  the source column is mapped to `-s e_0`, so all tail components are zero.
+  This is exact algebra, not yet a rounded triangularization theorem for the
+  full QR loop.
 
 ## 2026-04-26 Fix Pass
 
