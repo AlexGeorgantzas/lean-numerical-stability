@@ -883,6 +883,11 @@ These compile, but should not be treated as fully derived stability results:
   exact-step orthogonality, coefficient nonnegativity, and residual form for
   one safe `Q_hat` step.  Future recursive proofs should use this theorem as
   the local step interface.
+- Added exact embedding norm facts for the next accumulated-`Q_hat` proof:
+  `frobNormSq_embedTrailingOne`, `frobNorm_embedTrailingOne`, and
+  `frobNorm_embedTrailingOne_of_orthogonal`.  These make explicit that
+  embedding a trailing block adds exactly the leading identity contribution to
+  the Frobenius square.
 
 ## 2026-04-26 Fix Pass
 

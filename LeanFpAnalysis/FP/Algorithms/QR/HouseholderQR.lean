@@ -888,6 +888,25 @@ theorem frobNorm_panelTrailingPerturbation {m p : ℕ}
     embedTrailingOne U i.succ j.succ = U i j := by
   simp [embedTrailingOne]
 
+/-- Squared Frobenius norm of a one-step trailing-block embedding.
+
+    The leading diagonal entry contributes `1`; all other new first-row and
+    first-column entries are zero, and the trailing block contributes the
+    original squared Frobenius norm. -/
+theorem frobNormSq_embedTrailingOne {m : ℕ}
+    (U : Fin m → Fin m → ℝ) :
+    frobNormSq (embedTrailingOne U) = 1 + frobNormSq U := by
+  unfold frobNormSq
+  rw [Fin.sum_univ_succ]
+  simp [Fin.sum_univ_succ]
+
+/-- Frobenius norm of a one-step trailing-block embedding. -/
+theorem frobNorm_embedTrailingOne {m : ℕ}
+    (U : Fin m → Fin m → ℝ) :
+    frobNorm (embedTrailingOne U) =
+      Real.sqrt (1 + frobNormSq U) := by
+  rw [frobNorm_eq_sqrt_frobNormSq, frobNormSq_embedTrailingOne]
+
 /-- Transpose commutes with one-step trailing-block embedding. -/
 theorem matTranspose_embedTrailingOne {m : ℕ}
     (U : Fin m → Fin m → ℝ) :
@@ -988,6 +1007,12 @@ theorem embedTrailingOne_orthogonal {m : ℕ}
     rw [matTranspose_embedTrailingOne, matMul_embedTrailingOne, hright,
       embedTrailingOne_idMatrix]
     rfl
+
+/-- Frobenius norm of an embedded exact orthogonal trailing factor. -/
+theorem frobNorm_embedTrailingOne_of_orthogonal {m : ℕ}
+    (U : Fin m → Fin m → ℝ) (hU : IsOrthogonal m U) :
+    frobNorm (embedTrailingOne U) = Real.sqrt ((m + 1 : ℕ) : ℝ) := by
+  exact (embedTrailingOne_orthogonal U hU).frobNorm_eq_sqrt_card
 
 /-- Left multiplication by an embedded trailing-block matrix leaves the top row
     of a rectangular panel unchanged. -/

@@ -98,7 +98,10 @@ safe-step interface:
 `householderQRPanel_Qhat_stepP_safe_orthogonal`, and
 `fl_householderQRPanel_Qhat_safe_succ_succ_residual_bound`.  The bundled
 one-step theorem is
-`fl_householderQRPanel_Qhat_safe_succ_succ_step_interface`.
+`fl_householderQRPanel_Qhat_safe_succ_succ_step_interface`.  Exact embedding
+norm facts useful for this proof layer are `frobNormSq_embedTrailingOne`,
+`frobNorm_embedTrailingOne`, and
+`frobNorm_embedTrailingOne_of_orthogonal`.
 
 ## Main Dependency Chains
 
