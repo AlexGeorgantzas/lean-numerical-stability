@@ -683,6 +683,21 @@ def panelFirstColumnTailZero {m p : ℕ}
     (A : Fin (m + 1) → Fin (p + 1) → ℝ) : Prop :=
   ∀ i : Fin m, panelFirstColumnTail A i = 0
 
+/-- Embed an `m × m` matrix as the lower-right block of an `(m+1) × (m+1)`
+    matrix, with a leading `1` on the diagonal and zeros in the first row and
+    first column.
+
+    This exact algebraic operation is the bridge between a Householder
+    reflector acting on the active trailing panel and the same reflector viewed
+    as a full-size orthogonal transformation in the QR loop. -/
+noncomputable def embedTrailingOne {m : ℕ}
+    (U : Fin m → Fin m → ℝ) : Fin (m + 1) → Fin (m + 1) → ℝ :=
+  fun i j =>
+    if hi : i = 0 then
+      if j = 0 then 1 else 0
+    else
+      if hj : j = 0 then 0 else U (i.pred hi) (j.pred hj)
+
 @[simp] theorem panelDropFirstRow_apply {m p : ℕ}
     (A : Fin (m + 1) → Fin p → ℝ) (i : Fin m) (j : Fin p) :
     panelDropFirstRow A i j = A i.succ j := rfl
@@ -706,6 +721,26 @@ def panelFirstColumnTailZero {m p : ℕ}
 @[simp] theorem panelFirstColumnTail_apply {m p : ℕ}
     (A : Fin (m + 1) → Fin (p + 1) → ℝ) (i : Fin m) :
     panelFirstColumnTail A i = A i.succ 0 := rfl
+
+@[simp] theorem embedTrailingOne_zero_zero {m : ℕ}
+    (U : Fin m → Fin m → ℝ) :
+    embedTrailingOne U 0 0 = 1 := by
+  simp [embedTrailingOne]
+
+@[simp] theorem embedTrailingOne_zero_succ {m : ℕ}
+    (U : Fin m → Fin m → ℝ) (j : Fin m) :
+    embedTrailingOne U 0 j.succ = 0 := by
+  simp [embedTrailingOne]
+
+@[simp] theorem embedTrailingOne_succ_zero {m : ℕ}
+    (U : Fin m → Fin m → ℝ) (i : Fin m) :
+    embedTrailingOne U i.succ 0 = 0 := by
+  simp [embedTrailingOne]
+
+@[simp] theorem embedTrailingOne_succ_succ {m : ℕ}
+    (U : Fin m → Fin m → ℝ) (i j : Fin m) :
+    embedTrailingOne U i.succ j.succ = U i j := by
+  simp [embedTrailingOne]
 
 /-- Dropping first row and first column is the same as taking the trailing
     panel in either order. -/

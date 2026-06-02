@@ -559,6 +559,10 @@ These compile, but should not be treated as fully derived stability results:
 - Added `householderPanelStepReady_nonempty_of_global_gammaValid`, allowing a
   global `gammaValid fp (11*N+23)` assumption for an original row dimension to
   satisfy the current active panel's smaller per-step gamma condition.
+- Added `embedTrailingOne` in `HouseholderQR.lean`, embedding an active-panel
+  square matrix as the lower-right block of a matrix with leading scalar
+  identity.  This is the exact algebraic bridge needed before a trailing-panel
+  Householder reflector can be composed as a full-size QR transformation.
 
 ## 2026-04-26 Fix Pass
 
