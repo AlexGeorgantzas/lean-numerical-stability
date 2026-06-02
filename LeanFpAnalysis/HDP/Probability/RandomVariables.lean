@@ -1,4 +1,6 @@
 import Mathlib.MeasureTheory.Function.LpSeminorm.LpNorm
+import Mathlib.MeasureTheory.Function.LpSpace.Complete
+import Mathlib.MeasureTheory.Function.L2Space
 import Mathlib.MeasureTheory.Measure.Real
 import Mathlib.Probability.CDF
 import Mathlib.Probability.Distributions.Gaussian.Real
@@ -70,6 +72,20 @@ def eAbsoluteMoment (p : ℝ) : ℝ≥0∞ :=
 `Inequalities.lean`. -/
 def lpNorm (p : ℝ≥0∞) : ℝ≥0∞ :=
   eLpNorm X p μ
+
+/-- The book's `L^∞` seminorm definition:
+`‖X‖_{L∞} = ess sup ‖X‖`, written in extended nonnegative form. -/
+theorem lpNorm_top_eq_essSup_enorm :
+    lpNorm X μ ∞ = essSup (fun ω => ‖X ω‖ₑ) μ := by
+  simp [lpNorm, eLpNorm_exponent_top, eLpNormEssSup_eq_essSup_enorm]
+
+/-- Real-valued version of the book's `L^∞` seminorm definition:
+`‖X‖_{L∞} = ess sup |X|`. -/
+theorem lpNorm_top_eq_essSup_abs :
+    lpNorm X μ ∞ = essSup (fun ω => ENNReal.ofReal |X ω|) μ := by
+  rw [lpNorm_top_eq_essSup_enorm]
+  congr with ω
+  rw [← ofReal_norm_eq_enorm, Real.norm_eq_abs]
 
 /-- The `L^2` inner product of real random variables: `E[XY]`. -/
 def l2Inner : ℝ :=
@@ -151,6 +167,51 @@ theorem centralMoment_two_eq_variance (hX : AEMeasurable X μ) :
 
 end RealRandomVariables
 
+section LpSpace
+
+variable [NormedAddCommGroup E] {p : ℝ≥0∞}
+
+/-- Book-facing membership predicate for `L^p`: random variables with finite
+`L^p` seminorm, together with mathlib's a.e. strong measurability condition. -/
+def hdpMemLp (X : Ω → E) (p : ℝ≥0∞) (μ : Measure Ω) : Prop :=
+  MemLp X p μ
+
+/-- The actual `L^p` space, using mathlib's quotient space of a.e.-equal functions. -/
+abbrev hdpLp (F : Type*) [NormedAddCommGroup F] (p : ℝ≥0∞) (μ : Measure Ω) :=
+  Lp F p μ
+
+/-- HDP set-builder notation for `L^p` agrees with mathlib's `MemLp`. -/
+theorem hdpMemLp_iff_memLp (X : Ω → E) :
+    hdpMemLp X p μ ↔ MemLp X p μ := Iff.rfl
+
+/-- Expanded HDP description of `L^p`: a.e. strong measurability plus finite
+extended `L^p` seminorm. -/
+theorem hdpMemLp_iff_aestronglyMeasurable_and_eLpNorm_lt_top (X : Ω → E) :
+    hdpMemLp X p μ ↔ AEStronglyMeasurable X μ ∧ eLpNorm X p μ < ∞ := Iff.rfl
+
+end LpSpace
+
+section LpGeometry
+
+variable [NormedAddCommGroup E]
+
+/-- HDP Section 1.1: for `1 ≤ p`, mathlib's `Lp E p μ` is complete. -/
+theorem hdpLp_completeSpace [CompleteSpace E] {p : ℝ≥0∞} [Fact (1 ≤ p)] :
+    CompleteSpace (hdpLp (Ω := Ω) E p μ) := by
+  infer_instance
+
+/-- HDP Section 1.1: `L^2` of real random variables is a Hilbert space. -/
+def hdpL2_real_innerProductSpace :
+    InnerProductSpace ℝ (hdpLp (Ω := Ω) ℝ 2 μ) := by
+  infer_instance
+
+/-- HDP Section 1.1: `L^2` of real random variables is complete. -/
+theorem hdpL2_real_completeSpace :
+    CompleteSpace (hdpLp (Ω := Ω) ℝ 2 μ) := by
+  infer_instance
+
+end LpGeometry
+
 section DistributionFunctions
 
 variable (X : Ω → ℝ) (μ : Measure Ω)
@@ -204,6 +265,35 @@ theorem upperTail_eq_one_sub_cdf [IsProbabilityMeasure μ] (hX : Measurable X) (
   simp [upperTail, cumulativeDistribution, hset, MeasureTheory.measureReal_compl hmeas]
 
 end DistributionFunctions
+
+section CDFDeterminesLaw
+
+variable {Ω' : Type*} [MeasurableSpace Ω']
+variable {ν : Measure Ω'} [IsProbabilityMeasure μ] [IsProbabilityMeasure ν]
+variable {X : Ω → ℝ} {Y : Ω' → ℝ}
+
+/-- HDP Section 1.1: a real-valued random variable's CDF determines its law. -/
+theorem distribution_eq_of_cdf_eq
+    (hX : Measurable X) (hY : Measurable Y)
+    (hCDF : ∀ t : ℝ,
+      cumulativeDistribution X μ t = cumulativeDistribution Y ν t) :
+    distribution X μ = distribution Y ν := by
+  haveI : IsFiniteMeasure (distribution X μ) := by
+    simpa [distribution] using Measure.isFiniteMeasure_map μ X
+  haveI : IsFiniteMeasure (distribution Y ν) := by
+    simpa [distribution] using Measure.isFiniteMeasure_map ν Y
+  refine Measure.ext_of_Iic (distribution X μ) (distribution Y ν) fun t => ?_
+  have hreal :
+      (distribution X μ).real (Set.Iic t) = (distribution Y ν).real (Set.Iic t) := by
+    exact
+      (cumulativeDistribution_eq_distribution_Iic (X := X) (μ := μ) hX t).symm.trans
+        ((hCDF t).trans
+          (cumulativeDistribution_eq_distribution_Iic (X := Y) (μ := ν) hY t))
+  exact (MeasureTheory.measureReal_eq_measureReal_iff
+    (μ := distribution X μ) (ν := distribution Y ν)
+    (s := Set.Iic t) (t := Set.Iic t)).mp hreal
+
+end CDFDeterminesLaw
 
 section NamedDistributions
 
