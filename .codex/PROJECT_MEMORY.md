@@ -399,6 +399,16 @@ These compile, but should not be treated as fully derived stability results:
   `gammaValid fp (11*n+23)`, concrete construction plus concrete application
   now satisfies `HouseholderAppError` for one reflector, again with the raw
   bound `sqrt(n*u^2) + 2*gamma(11*n+23)`.
+- Added `Algorithms/QR/HouseholderMatrixStep.lean` with
+  `fl_householderApplyMatrix`, `ColumnwiseHouseholderStepError`, and
+  `fl_householderConstructApply_matrix_step_error`.  This lifts the concrete
+  one-vector reflector result to a concrete matrix-column step: each output
+  column of `fl_householderApplyMatrix` satisfies `HouseholderAppError` with a
+  column-dependent perturbation matrix.  This is intentionally weaker than the
+  existing `orthogonal_sequence_one_step` hypothesis, which uses one global
+  `ΔP` for the whole matrix step; Higham's Lemma 18.3 proof is columnwise, so
+  the next QR bridge must aggregate column-dependent perturbations rather than
+  silently forcing them into a global perturbation.
 
 ## 2026-04-26 Fix Pass
 
