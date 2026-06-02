@@ -14,6 +14,7 @@ import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
+import LeanFpAnalysis.FP.Model
 import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
 
 namespace LeanFpAnalysis.FP
@@ -38,6 +39,28 @@ noncomputable def givensRotation (n : ℕ) (p q : Fin n) (c s : ℝ) :
     else if i = q ∧ j = p then -s
     else if i = j then 1
     else 0
+
+/-- Concrete floating-point application of a Givens rotation with supplied
+    exact parameters `c` and `s`.
+
+    Only the two affected components are rounded:
+
+    * `y_p = fl_add (fl_mul c x_p) (fl_mul s x_q)`;
+    * `y_q = fl_sub (fl_mul c x_q) (fl_mul s x_p)`;
+    * all other entries are copied exactly.
+
+    This is the low-level algorithmic object needed before rebuilding
+    Givens QR end-to-end.  It assumes `c` and `s` have already been supplied;
+    a separate rotation-construction kernel is still needed for full Givens QR. -/
+noncomputable def fl_givensApply (fp : FPModel) (n : ℕ)
+    (p q : Fin n) (c s : ℝ) (x : Fin n → ℝ) : Fin n → ℝ :=
+  fun i =>
+    if i = p then
+      fp.fl_add (fp.fl_mul c (x p)) (fp.fl_mul s (x q))
+    else if i = q then
+      fp.fl_sub (fp.fl_mul c (x q)) (fp.fl_mul s (x p))
+    else
+      x i
 
 -- ============================================================
 -- Point-value lemmas for givensRotation
@@ -103,6 +126,99 @@ private lemma giv_col_q (n : ℕ) (p q : Fin n) (c s : ℝ) (hpq : p ≠ q) (i :
   · by_cases h2 : i = q
     · simp [h1, h2, hqp]
     · simp [h1, h2, Ne.symm h2]
+
+@[simp] theorem fl_givensApply_p (fp : FPModel) (n : ℕ)
+    (p q : Fin n) (c s : ℝ) (x : Fin n → ℝ) :
+    fl_givensApply fp n p q c s x p =
+      fp.fl_add (fp.fl_mul c (x p)) (fp.fl_mul s (x q)) := by
+  simp [fl_givensApply]
+
+@[simp] theorem fl_givensApply_q (fp : FPModel) (n : ℕ)
+    (p q : Fin n) (c s : ℝ) (x : Fin n → ℝ) (hpq : p ≠ q) :
+    fl_givensApply fp n p q c s x q =
+      fp.fl_sub (fp.fl_mul c (x q)) (fp.fl_mul s (x p)) := by
+  simp [fl_givensApply, hpq.symm]
+
+@[simp] theorem fl_givensApply_other (fp : FPModel) (n : ℕ)
+    (p q i : Fin n) (c s : ℝ) (x : Fin n → ℝ)
+    (hip : i ≠ p) (hiq : i ≠ q) :
+    fl_givensApply fp n p q c s x i = x i := by
+  simp [fl_givensApply, hip, hiq]
+
+/-- Exact `p`-component of applying a Givens rotation to a vector. -/
+theorem givensRotation_matMulVec_p (n : ℕ) (p q : Fin n)
+    (c s : ℝ) (x : Fin n → ℝ) (hpq : p ≠ q) :
+    matMulVec n (givensRotation n p q c s) x p =
+      c * x p + s * x q := by
+  let f : Fin n → ℝ := fun j =>
+    (if j = p then c else if j = q then s else 0) * x j
+  have hp : p ∈ (Finset.univ : Finset (Fin n)) := Finset.mem_univ p
+  have hq : q ∈ (Finset.univ : Finset (Fin n)).erase p :=
+    Finset.mem_erase.mpr ⟨hpq.symm, Finset.mem_univ q⟩
+  have hrest : ∑ j ∈ (Finset.univ.erase p).erase q, f j = 0 := by
+    apply Finset.sum_eq_zero
+    intro j hj
+    simp only [Finset.mem_erase, Finset.mem_univ, and_true] at hj
+    have hjq : j ≠ q := hj.1
+    have hjp : j ≠ p := hj.2
+    simp [f, hjp, hjq]
+  unfold matMulVec
+  calc
+    (∑ j : Fin n, givensRotation n p q c s p j * x j)
+        = ∑ j : Fin n, f j := by
+        apply Finset.sum_congr rfl
+        intro j _
+        simp [f, giv_row_p n p q c s hpq j]
+    _ = f p + f q + ∑ j ∈ (Finset.univ.erase p).erase q, f j := by
+        rw [← Finset.add_sum_erase _ f hp, ← Finset.add_sum_erase _ f hq]
+        ring
+    _ = c * x p + s * x q := by
+        rw [hrest]
+        simp [f, hpq.symm]
+
+/-- Exact `q`-component of applying a Givens rotation to a vector. -/
+theorem givensRotation_matMulVec_q (n : ℕ) (p q : Fin n)
+    (c s : ℝ) (x : Fin n → ℝ) (hpq : p ≠ q) :
+    matMulVec n (givensRotation n p q c s) x q =
+      c * x q - s * x p := by
+  let f : Fin n → ℝ := fun j =>
+    (if j = p then -s else if j = q then c else 0) * x j
+  have hp : p ∈ (Finset.univ : Finset (Fin n)) := Finset.mem_univ p
+  have hq : q ∈ (Finset.univ : Finset (Fin n)).erase p :=
+    Finset.mem_erase.mpr ⟨hpq.symm, Finset.mem_univ q⟩
+  have hrest : ∑ j ∈ (Finset.univ.erase p).erase q, f j = 0 := by
+    apply Finset.sum_eq_zero
+    intro j hj
+    simp only [Finset.mem_erase, Finset.mem_univ, and_true] at hj
+    have hjq : j ≠ q := hj.1
+    have hjp : j ≠ p := hj.2
+    simp [f, hjp, hjq]
+  unfold matMulVec
+  calc
+    (∑ j : Fin n, givensRotation n p q c s q j * x j)
+        = ∑ j : Fin n, f j := by
+        apply Finset.sum_congr rfl
+        intro j _
+        simp [f, giv_row_q n p q c s hpq j]
+    _ = f p + f q + ∑ j ∈ (Finset.univ.erase p).erase q, f j := by
+        rw [← Finset.add_sum_erase _ f hp, ← Finset.add_sum_erase _ f hq]
+        ring
+    _ = c * x q - s * x p := by
+        rw [hrest]
+        simp [f, hpq.symm]
+        ring
+
+/-- Unaffected components of an exact Givens application are copied. -/
+theorem givensRotation_matMulVec_other (n : ℕ) (p q i : Fin n)
+    (c s : ℝ) (x : Fin n → ℝ) (hip : i ≠ p) (hiq : i ≠ q) :
+    matMulVec n (givensRotation n p q c s) x i = x i := by
+  unfold matMulVec
+  rw [show (∑ j : Fin n, givensRotation n p q c s i j * x j) =
+      ∑ j : Fin n, (if i = j then 1 else 0) * x j from by
+        apply Finset.sum_congr rfl
+        intro j _
+        rw [giv_row_other n p q c s i j hip hiq]]
+  simp [Finset.sum_ite_eq, Finset.mem_univ]
 
 /-- G(p,q,c,s) is orthogonal when c² + s² = 1 and p ≠ q.
 
@@ -269,8 +385,8 @@ theorem givensRotation_orthogonal (n : ℕ) (p q : Fin n) (c s : ℝ)
     floating-point arithmetic, the computed result ŷ satisfies
     ŷ = (G + ΔG)x where ‖ΔG‖_F ≤ c.
 
-    This axiomatizes the result of Lemma 18.7. The bound c is
-    typically √2·γ₆ (6 flops per affected component). -/
+    This records the result of Lemma 18.7 as a reusable contract. The bound c
+    is typically √2·γ₆ (6 flops per affected component). -/
 structure GivensAppError (n : ℕ) (G : Fin n → Fin n → ℝ)
     (x y_hat : Fin n → ℝ) (c : ℝ) : Prop where
   /-- G is orthogonal. -/

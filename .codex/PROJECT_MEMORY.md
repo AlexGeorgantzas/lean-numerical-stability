@@ -678,6 +678,14 @@ These compile, but should not be treated as fully derived stability results:
   `householderQRBackwardCoeff fp n * ‖A‖_F +
   gamma fp n * ‖fl_householderQR_R fp n A‖_F`; the RHS bound is
   `householderQRRhsBackwardBound fp n A b`.
+- Began the Givens rebuild in `QR/GivensSpec.lean`.  Added concrete
+  `fl_givensApply`, which applies supplied exact `c,s` parameters by two
+  rounded multiplications plus rounded add/sub on the affected components and
+  copies all other components exactly.  Added exact unroll lemmas for the
+  computed and exact `p`, `q`, and unaffected components.  This is only the
+  low-level application kernel; the `fl_givensApply -> GivensAppError` bridge,
+  rotation-parameter construction, and full `fl_givens_qr` loop are still
+  pending.
 - Added exact vector embedding algebra for the QR RHS recursion:
   `vectorTrailingPerturbation`, `embedTrailingOne_matMulVec_top`,
   `vectorTail_embedTrailingOne_matMulVec`, and
