@@ -711,6 +711,18 @@ These compile, but should not be treated as fully derived stability results:
   `gamma fp 6` coefficient bridge with two rounded operations in the
   application.  This is implementation-backed but not the sharp Higham Lemma
   18.7 constant `sqrt 2 * gamma_6`.
+- Added `QR/GivensMatrixStep.lean`, defining `fl_givensApplyMatrix` and
+  `fl_givensApplyMatrixRect` plus square/rectangular `ColumnwiseGivensStepError`
+  contracts.  Proved `fl_givensApply_computed_matrix_step_error` and its
+  rectangular version from the concrete computed-coefficient vector bridge, then
+  proved residual matrix aggregation lemmas.  Added
+  `fl_givens_sequence_backward_error` and
+  `fl_givens_panel_sequence_backward_error` in `GivensQR.lean`, which accumulate
+  any supplied concrete sequence of computed Givens updates via the existing
+  residual orthogonal sequence theorem under an explicit uniform per-step bound.
+  The remaining gap for full Givens QR is choosing/formalizing the annihilation
+  schedule and proving the produced sequence has the QR triangular shape and a
+  source-clean uniform bound.
 - Added exact vector embedding algebra for the QR RHS recursion:
   `vectorTrailingPerturbation`, `embedTrailingOne_matMulVec_top`,
   `vectorTail_embedTrailingOne_matMulVec`, and

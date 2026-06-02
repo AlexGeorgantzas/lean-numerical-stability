@@ -47,6 +47,7 @@ import LeanFpAnalysis.FP.Algorithms.QR.HouseholderOneStep
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderMatrixStep
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderSpec
 import LeanFpAnalysis.FP.Algorithms.QR.GivensSpec
+import LeanFpAnalysis.FP.Algorithms.QR.GivensMatrixStep
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderQR
 import LeanFpAnalysis.FP.Algorithms.QR.GivensQR
 import LeanFpAnalysis.FP.Algorithms.QR.QRSolve

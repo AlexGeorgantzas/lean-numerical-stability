@@ -16,6 +16,7 @@ import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
 import LeanFpAnalysis.FP.Algorithms.QR.GivensSpec
+import LeanFpAnalysis.FP.Algorithms.QR.GivensMatrixStep
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderQR
 
 namespace LeanFpAnalysis.FP
@@ -79,5 +80,117 @@ theorem givens_qr_backward (n : ℕ) (r : ℕ) (hr : 0 < r)
     have hQQT : matMul n Q (matTranspose Q) = idMatrix n :=
       funext fun a => funext fun b => hQ.right_inv a b
     rw [hR, ← matMul_assoc, hQQT, matMul_id_left], hbound⟩⟩
+
+/-- Repeated concrete computed-coefficient Givens matrix applications.
+
+    This theorem is the implementation-backed sequence bridge below the full
+    Givens QR loop.  It does not choose the QR annihilation schedule.  Instead,
+    it assumes a concrete matrix sequence whose step `k` is exactly
+    `fl_givensApplyMatrix` with the supplied row pair and two-vector used to
+    construct the rotation coefficients.  Each step is proved from the concrete
+    `fl_givensC`/`fl_givensS`/`fl_givensApply` kernels, then accumulated by the
+    generic residual-form orthogonal sequence theorem. -/
+theorem fl_givens_sequence_backward_error (fp : FPModel) {n r : ℕ}
+    (Aseq : ℕ → Fin n → Fin n → ℝ)
+    (pseq qseq : ℕ → Fin n)
+    (xiseq xjseq : ℕ → ℝ)
+    (c : ℝ) (hc : 0 ≤ c)
+    (hpq : ∀ k : ℕ, k < r → pseq k ≠ qseq k)
+    (hnz : ∀ k : ℕ, k < r → xiseq k ^ 2 + xjseq k ^ 2 ≠ 0)
+    (hvalid : gammaValid fp 8)
+    (hstep_bound : ∀ k : ℕ, k < r →
+      gamma fp 8 *
+        frobNorm (givensRotation n (pseq k) (qseq k)
+          (givensC (xiseq k) (xjseq k))
+          (givensS (xiseq k) (xjseq k))) ≤ c)
+    (hAstep : ∀ k : ℕ, k < r →
+      Aseq (k + 1) =
+        fl_givensApplyMatrix fp n (pseq k) (qseq k)
+          (xiseq k) (xjseq k) (Aseq k)) :
+    ∃ (Q : Fin n → Fin n → ℝ) (ΔA : Fin n → Fin n → ℝ),
+      IsOrthogonal n Q ∧
+      (∀ i j : Fin n, Aseq r i j =
+        matMul n (matTranspose Q)
+          (fun a b => Aseq 0 a b + ΔA a b) i j) ∧
+      frobNorm ΔA ≤ residualAccumBound c r * frobNorm (Aseq 0) := by
+  let Pseq : ℕ → Fin n → Fin n → ℝ := fun k =>
+    givensRotation n (pseq k) (qseq k)
+      (givensC (xiseq k) (xjseq k))
+      (givensS (xiseq k) (xjseq k))
+  apply residual_orthogonal_sequence_backward_error n r Aseq Pseq c hc
+  · intro k hk
+    exact givensRotation_constructed_orthogonal n (pseq k) (qseq k)
+      (xiseq k) (xjseq k) (hpq k hk) (hnz k hk)
+  · intro k hk
+    have hraw :=
+      fl_givensApply_computed_matrix_step_error fp n (pseq k) (qseq k)
+        (xiseq k) (xjseq k) (Aseq k) (hpq k hk) (hnz k hk) hvalid
+    have hcstep : 0 ≤
+        gamma fp 8 *
+          frobNorm (givensRotation n (pseq k) (qseq k)
+            (givensC (xiseq k) (xjseq k))
+            (givensS (xiseq k) (xjseq k))) := by
+      exact mul_nonneg (gamma_nonneg fp hvalid) (frobNorm_nonneg _)
+    obtain ⟨E, hNext, hE⟩ := hraw.exists_residual_matrix_bound hcstep
+    refine ⟨E, ?_, ?_⟩
+    · intro i j
+      rw [hAstep k hk]
+      simpa [Pseq] using hNext i j
+    · exact le_trans hE
+        (mul_le_mul_of_nonneg_right (hstep_bound k hk)
+          (frobNorm_nonneg (Aseq k)))
+
+/-- Rectangular-panel version of `fl_givens_sequence_backward_error`. -/
+theorem fl_givens_panel_sequence_backward_error (fp : FPModel)
+    {m cols r : ℕ}
+    (Aseq : ℕ → Fin m → Fin cols → ℝ)
+    (pseq qseq : ℕ → Fin m)
+    (xiseq xjseq : ℕ → ℝ)
+    (c : ℝ) (hc : 0 ≤ c)
+    (hpq : ∀ k : ℕ, k < r → pseq k ≠ qseq k)
+    (hnz : ∀ k : ℕ, k < r → xiseq k ^ 2 + xjseq k ^ 2 ≠ 0)
+    (hvalid : gammaValid fp 8)
+    (hstep_bound : ∀ k : ℕ, k < r →
+      gamma fp 8 *
+        frobNorm (givensRotation m (pseq k) (qseq k)
+          (givensC (xiseq k) (xjseq k))
+          (givensS (xiseq k) (xjseq k))) ≤ c)
+    (hAstep : ∀ k : ℕ, k < r →
+      Aseq (k + 1) =
+        fl_givensApplyMatrixRect fp m cols (pseq k) (qseq k)
+          (xiseq k) (xjseq k) (Aseq k)) :
+    ∃ (Q : Fin m → Fin m → ℝ) (ΔA : Fin m → Fin cols → ℝ),
+      IsOrthogonal m Q ∧
+      (∀ (i : Fin m) (j : Fin cols), Aseq r i j =
+        matMulRect m m cols (matTranspose Q)
+          (fun a b => Aseq 0 a b + ΔA a b) i j) ∧
+      frobNorm ΔA ≤ residualAccumBound c r * frobNorm (Aseq 0) := by
+  let Pseq : ℕ → Fin m → Fin m → ℝ := fun k =>
+    givensRotation m (pseq k) (qseq k)
+      (givensC (xiseq k) (xjseq k))
+      (givensS (xiseq k) (xjseq k))
+  apply residual_orthogonal_sequence_backward_error_rect m cols r Aseq Pseq c hc
+  · intro k hk
+    exact givensRotation_constructed_orthogonal m (pseq k) (qseq k)
+      (xiseq k) (xjseq k) (hpq k hk) (hnz k hk)
+  · intro k hk
+    have hraw :=
+      fl_givensApply_computed_matrix_step_error_rect fp m cols
+        (pseq k) (qseq k) (xiseq k) (xjseq k) (Aseq k)
+        (hpq k hk) (hnz k hk) hvalid
+    have hcstep : 0 ≤
+        gamma fp 8 *
+          frobNorm (givensRotation m (pseq k) (qseq k)
+            (givensC (xiseq k) (xjseq k))
+            (givensS (xiseq k) (xjseq k))) := by
+      exact mul_nonneg (gamma_nonneg fp hvalid) (frobNorm_nonneg _)
+    obtain ⟨E, hNext, hE⟩ := hraw.exists_residual_matrix_bound hcstep
+    refine ⟨E, ?_, ?_⟩
+    · intro i j
+      rw [hAstep k hk]
+      simpa [Pseq] using hNext i j
+    · exact le_trans hE
+        (mul_le_mul_of_nonneg_right (hstep_bound k hk)
+          (frobNorm_nonneg (Aseq k)))
 
 end LeanFpAnalysis.FP
