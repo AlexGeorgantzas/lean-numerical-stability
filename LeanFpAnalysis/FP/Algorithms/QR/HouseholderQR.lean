@@ -883,6 +883,50 @@ theorem householder_panel_exact_firstColumnTailZero
     householder_first_column_panel_exact_tail_zero
       (Nat.succ_pos m) (Nat.succ_pos p) A hx i.succ hi
 
+/-- Concrete rounded first-column Householder panel step, packaged with both
+    its residual bound and the exact triangularization shape of the underlying
+    exact reflector step. -/
+theorem fl_householder_first_column_panel_step_residual_and_shape
+    (fp : FPModel) {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (hx : panelFirstColumn (Nat.succ_pos p) A ≠ 0)
+    (hvalid : gammaValid fp (11 * (m + 1) + 23)) :
+    let P : Fin (m + 1) → Fin (m + 1) → ℝ :=
+      householder (m + 1)
+        (householderNormalizedVector (m + 1)
+          (householderVector (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A))
+          (householderBetaFromScale (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A))) 1
+    ∃ E : Fin (m + 1) → Fin (p + 1) → ℝ,
+      (∀ i j,
+        fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A)) 1 A i j =
+          matMulRect (m + 1) (m + 1) (p + 1) P A i j + E i j) ∧
+      frobNorm E ≤ householderConstructApplyBound fp (m + 1) * frobNorm A ∧
+      panelTopLeft (matMulRect (m + 1) (m + 1) (p + 1) P A) =
+        -householderScale (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A) ∧
+      panelFirstColumnTailZero
+        (matMulRect (m + 1) (m + 1) (p + 1) P A) := by
+  intro P
+  have hstep :
+      ColumnwiseHouseholderStepErrorRect (m + 1) (p + 1) P A
+        (fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A)) 1 A)
+        (householderConstructApplyBound fp (m + 1)) := by
+    simpa [P] using
+      fl_householder_first_column_panel_step_error fp
+        (Nat.succ_pos m) (Nat.succ_pos p) A hx hvalid
+  obtain ⟨E, hNext, hE⟩ :=
+    hstep.exists_residual_matrix_bound
+      (householderConstructApplyBound_nonneg fp (m + 1) hvalid)
+  refine ⟨E, hNext, hE, ?_, ?_⟩
+  · simpa [P] using householder_panel_exact_topLeft A hx
+  · simpa [P] using householder_panel_exact_firstColumnTailZero A hx
+
 /-- Residual form of the concrete shrinking Householder QR panel step.
 
     The full first-column panel step already has a residual matrix bound.

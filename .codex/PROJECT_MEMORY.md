@@ -517,6 +517,12 @@ These compile, but should not be treated as fully derived stability results:
   `householder_panel_exact_firstColumnTailZero`, so the one-step exact
   triangularization result is now stated in the panel shape that the future QR
   loop will consume.
+- Added `fl_householder_first_column_panel_step_residual_and_shape`, which
+  packages one concrete rounded first-column Householder panel update with:
+  a residual matrix bound for the computed full-panel update, the exact
+  top-left value of the underlying reflector step, and exact first-column tail
+  zeroing.  This is the one-step implementation-backed panel bridge; remaining
+  QR work is the dependent induction over shrinking panels and final packaging.
 
 ## 2026-04-26 Fix Pass
 
