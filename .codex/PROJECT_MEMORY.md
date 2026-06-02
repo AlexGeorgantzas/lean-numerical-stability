@@ -910,8 +910,21 @@ These compile, but should not be treated as fully derived stability results:
   `fl_householderQR_Qhat_safe_closed_accum_error_of_global_gammaValid` and
   `fl_householderQR_computed_safe_Q_hat_closed_accum_error_of_global_gammaValid`
   expose the resulting computed-`Q_hat` perturbation theorem.  This is still
-  recursive and branch-sensitive; the remaining polishing step is a compact
+  recursive and branch-sensitive; the next polishing steps were a compact
   closed-form growth estimate and comparison with the exact `Q_safe` witness.
+- Fixed the exact reference factor in the computed-`Q_hat` perturbation theorem
+  to the existing `Q_safe` witness.  The step-orientation lemma
+  `fl_householderQRPanel_Q_safe_succ_succ_as_stepP_safe` uses Householder
+  symmetry to show that `Q_safe` follows the same `P * embed(Qtail)` orientation
+  as the rounded `Q_hat` residual recurrence.  The new fixed-reference contract
+  `HouseholderQRPanelQhatFixedAccumError` and the recursive theorem
+  `fl_householderQRPanel_Qhat_safe_fixed_Q_safe_closed_accum_error` prove that
+  `fl_householderQRPanel_Qhat_safe = fl_householderQRPanel_Q_safe + ΔQ` with the
+  closed recursive bound.  The public wrapper
+  `fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_closed_accum_error_of_global_gammaValid`
+  states this for `(fl_householderQR_computed_safe fp n A).Q_hat` against the
+  `Q` field of `fl_householderQR_safe_witness`.  The remaining computed-`Q_hat`
+  polishing step is the compact closed-form growth estimate.
 
 ## 2026-04-26 Fix Pass
 
