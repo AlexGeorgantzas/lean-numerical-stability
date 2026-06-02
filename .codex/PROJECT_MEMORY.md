@@ -1017,6 +1017,20 @@ These compile, but should not be treated as fully derived stability results:
   `fl_householderQR_computed_safe_residual_error_gammaHigham_of_global_gammaValid`.
   This is the closest formal counterpart to Higham Theorem 18.4's hidden
   `n γ_cm` notation while keeping the operation count explicit.
+- Added rectangular single-`gamma` Householder QR panel wrappers.  The sharper
+  bound `householderQRPanelBackwardCoeffSafe_le_residualAccumBound_min_global`
+  counts at most `min m p` recursive panel stages, and
+  `householderQRPanelBackwardCoeffSafe_le_gamma_higham_rect` absorbs that
+  rectangular recurrence into one gamma term.  The public theorem
+  `fl_householderQRPanel_R_safe_explicit_backward_error_gammaHigham_of_global_gammaValid`
+  states that the concrete zero-aware rounded rectangular `R_safe` panel and
+  exact orthogonal `Q_safe` witness satisfy
+  `‖ΔA‖_F ≤ gamma fp (min m p * householderConstructApplyGammaIndex m) * ‖A‖_F`.
+  The tall specialization
+  `fl_householderQRPanel_R_safe_explicit_backward_error_tall_gammaHigham_of_global_gammaValid`
+  rewrites the stage count to the number of columns when `p ≤ m` and `0 < p`.
+  This aligns the implementation-backed panel theorem more closely with
+  Higham's rectangular Householder QR statement.
 
 ## 2026-04-26 Fix Pass
 
