@@ -246,6 +246,112 @@ theorem orthogonal_sequence_one_step_of_columnwise_error (n : ℕ)
   exact orthogonal_sequence_one_step_of_residual n A A_hat Q ΔA hQ hAhat
     P hStep.orth A_next E hNext hE
 
+/-- Recurrence for the normwise error accumulated by repeated residual-form
+    orthogonal steps.  It keeps the higher-order terms rather than replacing
+    the bound by the first-order approximation `r*c`. -/
+def residualAccumBound (c : ℝ) : ℕ → ℝ
+  | 0 => 0
+  | k + 1 => residualAccumBound c k + c * (1 + residualAccumBound c k)
+
+/-- The residual accumulation recurrence is nonnegative for nonnegative step
+    bounds. -/
+lemma residualAccumBound_nonneg (c : ℝ) (hc : 0 ≤ c) :
+    ∀ r : ℕ, 0 ≤ residualAccumBound c r := by
+  intro r
+  induction r with
+  | zero =>
+      simp [residualAccumBound]
+  | succ r ih =>
+      simp [residualAccumBound]
+      nlinarith
+
+/-- **Repeated residual-form orthogonal sequence theorem**.
+
+    If each step has the form `A_{k+1} = P_k A_k + E_k`, with `P_k`
+    orthogonal and `‖E_k‖_F ≤ c‖A_k‖_F`, then the final matrix has the
+    backward-error representation
+    `A_r = Qᵀ(A_0 + ΔA)` with
+    `‖ΔA‖_F ≤ residualAccumBound c r * ‖A_0‖_F`.
+
+    This is a sound repeated-step version of Higham Lemma 18.3 before the
+    usual first-order/gamma simplification to a bound of the form `r*c`. -/
+theorem residual_orthogonal_sequence_backward_error (n r : ℕ)
+    (Aseq : ℕ → Fin n → Fin n → ℝ)
+    (Pseq : ℕ → Fin n → Fin n → ℝ) (c : ℝ) (hc : 0 ≤ c)
+    (hP : ∀ k : ℕ, k < r → IsOrthogonal n (Pseq k))
+    (hStep : ∀ k : ℕ, k < r → ∃ E : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, Aseq (k + 1) i j =
+        matMul n (Pseq k) (Aseq k) i j + E i j) ∧
+      frobNorm E ≤ c * frobNorm (Aseq k)) :
+    ∃ (Q : Fin n → Fin n → ℝ) (ΔA : Fin n → Fin n → ℝ),
+      IsOrthogonal n Q ∧
+      (∀ i j : Fin n, Aseq r i j =
+        matMul n (matTranspose Q)
+          (fun a b => Aseq 0 a b + ΔA a b) i j) ∧
+      frobNorm ΔA ≤ residualAccumBound c r * frobNorm (Aseq 0) := by
+  induction r with
+  | zero =>
+      let Z : Fin n → Fin n → ℝ := fun _ _ => 0
+      refine ⟨idMatrix n, Z, idMatrix_orthogonal n, ?_, ?_⟩
+      · intro i j
+        simp [Z, matTranspose_id, matMul_id_left]
+      · have hZ : frobNorm Z = 0 := by
+          rw [frobNorm_eq_zero_iff]
+          intro i j
+          rfl
+        simp [residualAccumBound, Z, hZ]
+  | succ r ih =>
+      have hP_prefix : ∀ k : ℕ, k < r → IsOrthogonal n (Pseq k) := by
+        intro k hk
+        exact hP k (Nat.lt_trans hk (Nat.lt_succ_self r))
+      have hStep_prefix : ∀ k : ℕ, k < r → ∃ E : Fin n → Fin n → ℝ,
+        (∀ i j : Fin n, Aseq (k + 1) i j =
+          matMul n (Pseq k) (Aseq k) i j + E i j) ∧
+        frobNorm E ≤ c * frobNorm (Aseq k) := by
+        intro k hk
+        exact hStep k (Nat.lt_trans hk (Nat.lt_succ_self r))
+      obtain ⟨Q, ΔA, hQ, hAhat, hΔA⟩ := ih hP_prefix hStep_prefix
+      obtain ⟨E, hNext, hE⟩ := hStep r (Nat.lt_succ_self r)
+      obtain ⟨Q', ΔA', hQ', hRep, hStepBound⟩ :=
+        orthogonal_sequence_one_step_of_residual n (Aseq 0) (Aseq r)
+          Q ΔA hQ hAhat (Pseq r) (hP r (Nat.lt_succ_self r))
+          (Aseq (r + 1)) E hNext hE
+      refine ⟨Q', ΔA', hQ', ?_, ?_⟩
+      · simpa using hRep
+      · let α : ℝ := residualAccumBound c r
+        let N : ℝ := frobNorm (Aseq 0)
+        have hΔA' : frobNorm ΔA ≤ α * N := by
+          simpa [α, N] using hΔA
+        have hB :
+            frobNorm (fun a b => Aseq 0 a b + ΔA a b) ≤
+              (1 + α) * N := by
+          calc
+            frobNorm (fun a b => Aseq 0 a b + ΔA a b)
+                ≤ frobNorm (Aseq 0) + frobNorm ΔA :=
+                  frobNorm_add_le (Aseq 0) ΔA
+            _ ≤ N + α * N := by
+                simpa [N] using add_le_add_left hΔA' (frobNorm (Aseq 0))
+            _ = (1 + α) * N := by ring
+        have htotal :
+            frobNorm ΔA' ≤ α * N + c * ((1 + α) * N) := by
+          calc
+            frobNorm ΔA'
+                ≤ frobNorm ΔA +
+                    c * frobNorm (fun a b => Aseq 0 a b + ΔA a b) :=
+                  hStepBound
+            _ ≤ α * N + c * ((1 + α) * N) := by
+                exact add_le_add hΔA'
+                  (mul_le_mul_of_nonneg_left hB hc)
+        have hrec :
+            residualAccumBound c (r + 1) * N =
+              α * N + c * ((1 + α) * N) := by
+          simp [residualAccumBound, α]
+          ring
+        rw [show residualAccumBound c (r + 1) * frobNorm (Aseq 0) =
+            α * N + c * ((1 + α) * N) from by
+          rw [← hrec]]
+        exact htotal
+
 -- ============================================================
 -- §18.3  Theorem 18.4: Householder QR backward error
 -- ============================================================

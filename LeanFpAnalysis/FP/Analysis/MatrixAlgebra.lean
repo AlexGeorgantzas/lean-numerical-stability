@@ -835,6 +835,16 @@ lemma IsOrthogonal.left_inv {n : ℕ} {U : Fin n → Fin n → ℝ}
 lemma IsOrthogonal.right_inv {n : ℕ} {U : Fin n → Fin n → ℝ}
     (hU : IsOrthogonal n U) : IsRightInverse n U (matTranspose U) := hU.2
 
+/-- The identity matrix is orthogonal. -/
+theorem idMatrix_orthogonal (n : ℕ) : IsOrthogonal n (idMatrix n) := by
+  constructor
+  · intro i j
+    unfold matTranspose idMatrix
+    simp [Finset.mem_univ, eq_comm]
+  · intro i j
+    unfold matTranspose idMatrix
+    simp [Finset.mem_univ]
+
 /-- For orthogonal U, columns are orthonormal: ∑_k U_ki U_kj = δ_ij. -/
 lemma IsOrthogonal.col_orthonormal {n : ℕ} {U : Fin n → Fin n → ℝ}
     (hU : IsOrthogonal n U) (i j : Fin n) :

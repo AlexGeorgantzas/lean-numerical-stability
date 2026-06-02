@@ -426,6 +426,17 @@ These compile, but should not be treated as fully derived stability results:
   old assumption that one global `ΔP` explains a whole matrix step.  The
   remaining QR gap is the repeated-step induction/loop model and the final
   connection to `HouseholderQRBackwardError`.
+- Added `idMatrix_orthogonal` in `MatrixAlgebra.lean` and the conservative
+  repeated residual theorem `residual_orthogonal_sequence_backward_error` in
+  `HouseholderQR.lean`.  If each step has
+  `A_{k+1} = P_k*A_k + E_k`, each `P_k` is orthogonal, and
+  `‖E_k‖_F ≤ c‖A_k‖_F`, the theorem proves
+  `A_r = Qᵀ(A_0+ΔA)` with
+  `‖ΔA‖_F ≤ residualAccumBound c r * ‖A_0‖_F`.  This keeps higher-order terms
+  via a recurrence instead of forcing the first-order `r*c` simplification.
+  The next QR gap is a concrete Householder QR loop/sequence feeding these
+  hypotheses, plus a sourced gamma-collapse lemma if the public theorem should
+  recover Higham's `r*c`/`γ_cm` style bound.
 
 ## 2026-04-26 Fix Pass
 
