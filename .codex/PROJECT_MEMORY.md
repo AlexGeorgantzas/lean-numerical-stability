@@ -967,6 +967,15 @@ These compile, but should not be treated as fully derived stability results:
   `fl_householderQR_solve_components_safe_fixed_Q_safe_backward_error`
   directly, so the final safe solve theorem is proved through the fixed
   `Q_safe` component bridge even though its public statement hides `Q`.
+- Added a simpler growth corollary for the computed `Q_hat` perturbation
+  theorem.  `householderQR_QhatClosedFormBound_le_growth` proves
+  `((1+c)^k - 1) sqrt(N) ≤ k*c*(1+c)^k*sqrt(N)` for
+  `c = householderConstructApplyBound fp N`, and the public wrappers
+  `fl_householderQR_Qhat_safe_fixed_Q_safe_growth_accum_error_of_global_gammaValid`
+  and
+  `fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_growth_accum_error_of_global_gammaValid`
+  expose that coarser but easier-to-cite bound.  The sharper closed-form theorem
+  remains the canonical result.
 
 ## 2026-04-26 Fix Pass
 

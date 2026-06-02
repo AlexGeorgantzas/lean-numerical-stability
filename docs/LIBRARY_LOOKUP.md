@@ -114,10 +114,14 @@ exposes the resulting closed-form computed-`Q_hat` perturbation theorem.
 `fl_householderQR_computed_safe_explicit_error_of_global_gammaValid` packages
 this `Q_hat` theorem with the explicit exact-witness backward-error theorem
 for `R_hat`, making it the main theorem to cite for the current computed
-`(Q_hat, R_hat)` API.  The remaining `Q_hat` polishing work is only to decide
-whether this coefficient
-should be further weakened/simplified into a more conventional printed
-constant.  The branch-combined
+`(Q_hat, R_hat)` API.  For a simpler but coarser printed coefficient, use
+`householderQR_QhatClosedFormBound_le_growth`,
+`fl_householderQR_Qhat_safe_fixed_Q_safe_growth_accum_error_of_global_gammaValid`,
+or
+`fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_growth_accum_error_of_global_gammaValid`.
+These bound the exact closed form by
+`n*c*(1+c)^n*sqrt(n)`, where `c = householderConstructApplyBound fp n`.
+The branch-combined
 safe-step interface feeding the recursive theorem is:
 `householderQRPanel_Qhat_stepP_safe`,
 `fl_householderQRPanel_Qhat_tail_safe`,

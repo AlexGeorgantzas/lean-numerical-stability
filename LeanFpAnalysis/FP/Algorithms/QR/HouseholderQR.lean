@@ -1971,6 +1971,74 @@ theorem householderQR_QhatUniformClosedBound_eq_closedForm
         householderQR_QhatClosedFormBound, ih]
       ring
 
+/-- Elementary growth bound for the closed form
+    `(1 + c)^k - 1`.
+
+    This is local algebra used to turn the exact accumulated `Q_hat` recurrence
+    solution into a simpler, monotone citation bound. -/
+lemma one_add_pow_sub_one_le_nat_mul_growth {c : ℝ}
+    (hc : 0 ≤ c) :
+    ∀ k : ℕ, (1 + c) ^ k - 1 ≤
+      (k : ℝ) * c * (1 + c) ^ k := by
+  intro k
+  induction k with
+  | zero =>
+      simp
+  | succ k ih =>
+      let a : ℝ := 1 + c
+      have ha_nonneg : 0 ≤ a := by
+        dsimp [a]
+        linarith
+      have ha_ge_one : 1 ≤ a := by
+        dsimp [a]
+        linarith
+      have hpow_nonneg : 0 ≤ a ^ k := pow_nonneg ha_nonneg k
+      have hpow_le : a ^ k ≤ a ^ (k + 1) := by
+        calc
+          a ^ k = a ^ k * 1 := by ring
+          _ ≤ a ^ k * a :=
+              mul_le_mul_of_nonneg_left ha_ge_one hpow_nonneg
+          _ = a ^ (k + 1) := by
+              rw [pow_succ]
+      have hcoef_nonneg : 0 ≤ ((k : ℝ) + 1) * c :=
+        mul_nonneg (by positivity) hc
+      calc
+        (1 + c) ^ (k + 1) - 1
+            = (a ^ k - 1) + c * a ^ k := by
+                dsimp [a]
+                rw [pow_succ]
+                ring
+        _ ≤ (k : ℝ) * c * a ^ k + c * a ^ k := by
+            exact add_le_add ih (le_refl _)
+        _ = ((k : ℝ) + 1) * c * a ^ k := by ring
+        _ ≤ ((k : ℝ) + 1) * c * a ^ (k + 1) := by
+            exact mul_le_mul_of_nonneg_left hpow_le hcoef_nonneg
+        _ = ((k + 1 : ℕ) : ℝ) * c * (1 + c) ^ (k + 1) := by
+            dsimp [a]
+            norm_num [Nat.cast_add, Nat.cast_one]
+
+/-- Simpler upper bound for the exact closed-form accumulated `Q_hat`
+    perturbation bound.
+
+    The exact solution remains `householderQR_QhatClosedFormBound`.  This
+    theorem derives the coarser but easier-to-read bound
+    `k*c*(1+c)^k*sqrt(N)` where
+    `c = householderConstructApplyBound fp N`. -/
+theorem householderQR_QhatClosedFormBound_le_growth
+    (fp : FPModel) (N k : ℕ)
+    (hvalid : gammaValid fp (11 * N + 23)) :
+    householderQR_QhatClosedFormBound fp N k ≤
+      (k : ℝ) * householderConstructApplyBound fp N *
+        (1 + householderConstructApplyBound fp N) ^ k *
+        Real.sqrt (N : ℝ) := by
+  unfold householderQR_QhatClosedFormBound
+  have hc :
+      0 ≤ householderConstructApplyBound fp N :=
+    householderConstructApplyBound_nonneg fp N hvalid
+  have hcore :=
+    one_add_pow_sub_one_le_nat_mul_growth hc k
+  exact mul_le_mul_of_nonneg_right hcore (Real.sqrt_nonneg (N : ℝ))
+
 /-- The uniform accumulated `Q_hat` bound is nonnegative. -/
 lemma householderQR_QhatUniformClosedBound_nonneg
     (fp : FPModel) (N : ℕ)
@@ -3131,6 +3199,43 @@ theorem fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_closed_form_accum_erro
       (householderQR_QhatClosedFormBound fp n n) := by
   simpa [fl_householderQR_safe_witness, fl_householderQR_computed_safe] using
     fl_householderQR_Qhat_safe_fixed_Q_safe_closed_form_accum_error_of_global_gammaValid
+      fp n A hvalid
+
+/-- Global-gamma wrapper for the fixed-`Q_safe` accumulated `Q_hat`
+    perturbation theorem with a simpler growth bound.
+
+    This is a coarser corollary of the exact closed-form theorem:
+    `((1+c)^n - 1) sqrt(n)` is bounded by
+    `n*c*(1+c)^n*sqrt(n)`, where
+    `c = householderConstructApplyBound fp n`. -/
+theorem fl_householderQR_Qhat_safe_fixed_Q_safe_growth_accum_error_of_global_gammaValid
+    (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (hvalid : gammaValid fp (11 * n + 23)) :
+    HouseholderQRPanelQhatFixedAccumError n
+      (fl_householderQR_Q_safe fp n A)
+      (fl_householderQR_Qhat_safe fp n A)
+      ((n : ℝ) * householderConstructApplyBound fp n *
+        (1 + householderConstructApplyBound fp n) ^ n *
+        Real.sqrt (n : ℝ)) := by
+  have hClosed :=
+    fl_householderQR_Qhat_safe_fixed_Q_safe_closed_form_accum_error_of_global_gammaValid
+      fp n A hvalid
+  exact hClosed.mono
+    (householderQR_QhatClosedFormBound_le_growth fp n n hvalid)
+
+/-- The computed-factor `Q_hat` field differs from the exact safe witness by
+    the simpler growth accumulated `Q_hat` perturbation bound. -/
+theorem fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_growth_accum_error_of_global_gammaValid
+    (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (hvalid : gammaValid fp (11 * n + 23)) :
+    HouseholderQRPanelQhatFixedAccumError n
+      (fl_householderQR_safe_witness fp n A).Q
+      (fl_householderQR_computed_safe fp n A).Q_hat
+      ((n : ℝ) * householderConstructApplyBound fp n *
+        (1 + householderConstructApplyBound fp n) ^ n *
+        Real.sqrt (n : ℝ)) := by
+  simpa [fl_householderQR_safe_witness, fl_householderQR_computed_safe] using
+    fl_householderQR_Qhat_safe_fixed_Q_safe_growth_accum_error_of_global_gammaValid
       fp n A hvalid
 
 /-- Active trailing-panel state for a Householder QR loop.
