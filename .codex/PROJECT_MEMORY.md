@@ -563,6 +563,10 @@ These compile, but should not be treated as fully derived stability results:
   square matrix as the lower-right block of a matrix with leading scalar
   identity.  This is the exact algebraic bridge needed before a trailing-panel
   Householder reflector can be composed as a full-size QR transformation.
+- Added exact embedding algebra for `embedTrailingOne`: transpose commutation,
+  multiplication commutation, identity preservation, and orthogonality
+  preservation.  This means an orthogonal active-panel reflector can now be
+  lifted to a full-size orthogonal transformation.
 
 ## 2026-04-26 Fix Pass
 

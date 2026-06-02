@@ -742,6 +742,107 @@ noncomputable def embedTrailingOne {m : ℕ}
     embedTrailingOne U i.succ j.succ = U i j := by
   simp [embedTrailingOne]
 
+/-- Transpose commutes with one-step trailing-block embedding. -/
+theorem matTranspose_embedTrailingOne {m : ℕ}
+    (U : Fin m → Fin m → ℝ) :
+    matTranspose (embedTrailingOne U) =
+      embedTrailingOne (matTranspose U) := by
+  ext i j
+  refine Fin.cases ?_ ?_ i
+  · refine Fin.cases ?_ ?_ j
+    · simp [matTranspose]
+    · intro j
+      simp [matTranspose]
+  · intro i
+    refine Fin.cases ?_ ?_ j
+    · simp [matTranspose]
+    · intro j
+      simp [matTranspose]
+
+/-- Matrix multiplication commutes with one-step trailing-block embedding. -/
+theorem matMul_embedTrailingOne {m : ℕ}
+    (U V : Fin m → Fin m → ℝ) :
+    matMul (m + 1) (embedTrailingOne U) (embedTrailingOne V) =
+      embedTrailingOne (matMul m U V) := by
+  ext i j
+  refine Fin.cases ?_ ?_ i
+  · refine Fin.cases ?_ ?_ j
+    · rw [show matMul (m + 1) (embedTrailingOne U) (embedTrailingOne V)
+            0 0 =
+          ∑ k : Fin (m + 1),
+            embedTrailingOne U 0 k * embedTrailingOne V k 0 by rfl]
+      rw [Fin.sum_univ_succ]
+      simp
+    · intro j
+      rw [show matMul (m + 1) (embedTrailingOne U) (embedTrailingOne V)
+            0 j.succ =
+          ∑ k : Fin (m + 1),
+            embedTrailingOne U 0 k * embedTrailingOne V k j.succ by rfl]
+      rw [Fin.sum_univ_succ]
+      simp
+  · intro i
+    refine Fin.cases ?_ ?_ j
+    · rw [show matMul (m + 1) (embedTrailingOne U) (embedTrailingOne V)
+            i.succ 0 =
+          ∑ k : Fin (m + 1),
+            embedTrailingOne U i.succ k * embedTrailingOne V k 0 by rfl]
+      rw [Fin.sum_univ_succ]
+      simp
+    · intro j
+      rw [show matMul (m + 1) (embedTrailingOne U) (embedTrailingOne V)
+            i.succ j.succ =
+          ∑ k : Fin (m + 1),
+            embedTrailingOne U i.succ k * embedTrailingOne V k j.succ by rfl]
+      rw [Fin.sum_univ_succ]
+      simp [matMul]
+
+/-- The identity matrix is preserved by one-step trailing-block embedding. -/
+theorem embedTrailingOne_idMatrix (m : ℕ) :
+    embedTrailingOne (idMatrix m) = idMatrix (m + 1) := by
+  ext i j
+  refine Fin.cases ?_ ?_ i
+  · refine Fin.cases ?_ ?_ j
+    · simp [idMatrix]
+    · intro j
+      have h : (0 : Fin (m + 1)) ≠ j.succ := by
+        exact Ne.symm (Fin.succ_ne_zero j)
+      simp [idMatrix, h]
+  · intro i
+    refine Fin.cases ?_ ?_ j
+    · have h : i.succ ≠ (0 : Fin (m + 1)) := Fin.succ_ne_zero i
+      simp [idMatrix, h]
+    · intro j
+      simp [idMatrix]
+
+/-- Embedding a trailing-block orthogonal matrix with a leading scalar identity
+    produces an orthogonal full matrix. -/
+theorem embedTrailingOne_orthogonal {m : ℕ}
+    (U : Fin m → Fin m → ℝ) (hU : IsOrthogonal m U) :
+    IsOrthogonal (m + 1) (embedTrailingOne U) := by
+  have hleft :
+      matMul m (matTranspose U) U = idMatrix m := by
+    ext i j
+    exact hU.left_inv i j
+  have hright :
+      matMul m U (matTranspose U) = idMatrix m := by
+    ext i j
+    exact hU.right_inv i j
+  constructor
+  · intro i j
+    show matMul (m + 1)
+        (matTranspose (embedTrailingOne U)) (embedTrailingOne U) i j =
+      if i = j then 1 else 0
+    rw [matTranspose_embedTrailingOne, matMul_embedTrailingOne, hleft,
+      embedTrailingOne_idMatrix]
+    rfl
+  · intro i j
+    show matMul (m + 1)
+        (embedTrailingOne U) (matTranspose (embedTrailingOne U)) i j =
+      if i = j then 1 else 0
+    rw [matTranspose_embedTrailingOne, matMul_embedTrailingOne, hright,
+      embedTrailingOne_idMatrix]
+    rfl
+
 /-- Dropping first row and first column is the same as taking the trailing
     panel in either order. -/
 theorem trailingPanel_eq_dropFirstRow_dropFirstCol {m p : ℕ}
