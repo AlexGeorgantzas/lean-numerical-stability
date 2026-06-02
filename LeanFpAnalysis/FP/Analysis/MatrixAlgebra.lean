@@ -968,6 +968,61 @@ lemma IsOrthogonal.row_orthonormal {n : ℕ} {U : Fin n → Fin n → ℝ}
     ∑ k : Fin n, U i k * U j k = if i = j then 1 else 0 := by
   have := hU.2 i j; unfold matTranspose at this; exact this
 
+/-- Every entry of a real orthogonal matrix has absolute value at most `1`.
+    This is a crude but useful componentwise consequence of row
+    orthonormality. -/
+lemma IsOrthogonal.abs_entry_le_one {n : ℕ} {U : Fin n → Fin n → ℝ}
+    (hU : IsOrthogonal n U) (i j : Fin n) :
+    |U i j| ≤ 1 := by
+  have hentry_row : U i j ^ 2 ≤ ∑ k : Fin n, U i k ^ 2 := by
+    exact Finset.single_le_sum (fun k _ => sq_nonneg (U i k))
+      (Finset.mem_univ j)
+  have hrow : (∑ k : Fin n, U i k ^ 2) = 1 := by
+    simpa [sq] using hU.row_orthonormal i i
+  have hsq : U i j ^ 2 ≤ 1 := by
+    rwa [hrow] at hentry_row
+  calc |U i j|
+      = Real.sqrt (U i j ^ 2) := by rw [Real.sqrt_sq_eq_abs]
+    _ ≤ Real.sqrt 1 := Real.sqrt_le_sqrt hsq
+    _ = 1 := by norm_num
+
+/-- Componentwise bound for applying an orthogonal matrix:
+    `|(Ux)_i| ≤ n ‖x‖∞`.  The factor is intentionally crude and follows only
+    from `|Uᵢⱼ| ≤ 1`; sharper norm conversions can be added later. -/
+theorem IsOrthogonal.abs_matMulVec_le_card_infNormVec {n : ℕ}
+    {U : Fin n → Fin n → ℝ} (hU : IsOrthogonal n U)
+    (x : Fin n → ℝ) (i : Fin n) :
+    |matMulVec n U x i| ≤ (n : ℝ) * infNormVec x := by
+  have hterm : ∀ j : Fin n,
+      |U i j| * |x j| ≤ 1 * infNormVec x := by
+    intro j
+    exact mul_le_mul (hU.abs_entry_le_one i j)
+      (abs_le_infNormVec x j) (abs_nonneg _) zero_le_one
+  calc |matMulVec n U x i|
+      ≤ ∑ j : Fin n, |U i j| * |x j| := by
+          unfold matMulVec
+          calc |∑ j : Fin n, U i j * x j|
+              ≤ ∑ j : Fin n, |U i j * x j| :=
+                  Finset.abs_sum_le_sum_abs _ _
+            _ = ∑ j : Fin n, |U i j| * |x j| := by
+                congr 1
+                ext j
+                exact abs_mul (U i j) (x j)
+    _ ≤ ∑ _j : Fin n, 1 * infNormVec x :=
+          Finset.sum_le_sum (fun j _ => hterm j)
+    _ = (n : ℝ) * infNormVec x := by
+        simp [Finset.card_univ]
+
+/-- Infinity-norm version of `IsOrthogonal.abs_matMulVec_le_card_infNormVec`. -/
+theorem IsOrthogonal.infNormVec_matMulVec_le_card {n : ℕ}
+    {U : Fin n → Fin n → ℝ} (hU : IsOrthogonal n U)
+    (x : Fin n → ℝ) :
+    infNormVec (matMulVec n U x) ≤ (n : ℝ) * infNormVec x := by
+  apply infNormVec_le_of_abs_le
+  · intro i
+    exact hU.abs_matMulVec_le_card_infNormVec x i
+  · exact mul_nonneg (by positivity) (infNormVec_nonneg x)
+
 /-- Frobenius norm is invariant under left multiplication by orthogonal matrix:
     ‖UA‖²_F = ‖A‖²_F.
 
@@ -1309,6 +1364,63 @@ theorem abs_matMulVec_le (n : ℕ) (A : Fin n → Fin n → ℝ) (x : Fin n → 
       ≤ ∑ j : Fin n, |A i j * x j| := Finset.abs_sum_le_sum_abs _ _
     _ = ∑ j : Fin n, |A i j| * |x j| := by
         congr 1; ext j; exact abs_mul (A i j) (x j)
+
+/-- Each entry of a function-shaped matrix is bounded by its Mathlib-backed
+    Frobenius norm. -/
+lemma abs_entry_le_frobNorm {m n : ℕ} (A : RMatFn m n)
+    (i : Fin m) (j : Fin n) :
+    |A i j| ≤ frobNorm A := by
+  have hentry_row : A i j ^ 2 ≤ ∑ k : Fin n, A i k ^ 2 := by
+    exact Finset.single_le_sum (fun k _ => sq_nonneg (A i k))
+      (Finset.mem_univ j)
+  have hrow_total :
+      (∑ k : Fin n, A i k ^ 2) ≤
+        ∑ r : Fin m, ∑ k : Fin n, A r k ^ 2 := by
+    exact Finset.single_le_sum
+      (fun r _ => Finset.sum_nonneg (fun k _ => sq_nonneg (A r k)))
+      (Finset.mem_univ i)
+  have hsq : A i j ^ 2 ≤ frobNormSq A := by
+    unfold frobNormSq
+    exact le_trans hentry_row hrow_total
+  calc |A i j|
+      = Real.sqrt (A i j ^ 2) := by rw [Real.sqrt_sq_eq_abs]
+    _ ≤ Real.sqrt (frobNormSq A) := Real.sqrt_le_sqrt hsq
+    _ = frobNorm A := by rw [frobNorm_eq_sqrt_frobNormSq]
+
+/-- Componentwise matrix-vector bound from Frobenius and vector ∞-norm:
+    `|(Ax)_i| ≤ n ‖A‖_F ‖x‖∞`.  This intentionally uses a simple
+    dimension-explicit bound for stability-contract plumbing; sharper
+    norm-specific bounds can be added where needed. -/
+theorem abs_matMulVec_le_card_frobNorm_infNormVec {n : ℕ}
+    (A : Fin n → Fin n → ℝ) (x : Fin n → ℝ) (i : Fin n) :
+    |matMulVec n A x i| ≤ (n : ℝ) * frobNorm A * infNormVec x := by
+  have hterm : ∀ j : Fin n,
+      |A i j| * |x j| ≤ frobNorm A * infNormVec x := by
+    intro j
+    exact mul_le_mul (abs_entry_le_frobNorm A i j)
+      (abs_le_infNormVec x j) (abs_nonneg _) (frobNorm_nonneg A)
+  calc |matMulVec n A x i|
+      ≤ ∑ j : Fin n, |A i j| * |x j| :=
+          abs_matMulVec_le n A x i
+    _ ≤ ∑ _j : Fin n, frobNorm A * infNormVec x :=
+          Finset.sum_le_sum (fun j _ => hterm j)
+    _ = (n : ℝ) * frobNorm A * infNormVec x := by
+        simp [Finset.card_univ]
+        ring
+
+/-- Componentwise matrix-vector bound when the matrix has a known Frobenius
+    norm bound: if `‖A‖_F ≤ c`, then `|(Ax)_i| ≤ n c ‖x‖∞`. -/
+theorem abs_matMulVec_le_card_bound_infNormVec {n : ℕ}
+    (A : Fin n → Fin n → ℝ) (x : Fin n → ℝ) {c : ℝ}
+    (_hc : 0 ≤ c) (hA : frobNorm A ≤ c) (i : Fin n) :
+    |matMulVec n A x i| ≤ (n : ℝ) * c * infNormVec x := by
+  have hscale : (n : ℝ) * frobNorm A ≤ (n : ℝ) * c :=
+    mul_le_mul_of_nonneg_left hA (by positivity)
+  have hprod :
+      (n : ℝ) * frobNorm A * infNormVec x ≤
+        (n : ℝ) * c * infNormVec x :=
+    mul_le_mul_of_nonneg_right hscale (infNormVec_nonneg x)
+  exact le_trans (abs_matMulVec_le_card_frobNorm_infNormVec A x i) hprod
 
 /-- **‖Av‖∞ ≤ ‖A‖∞ · ‖v‖∞**: submultiplicativity for matrix-vector product. -/
 theorem infNormVec_matMulVec_le {n : ℕ} (_hn : 0 < n)

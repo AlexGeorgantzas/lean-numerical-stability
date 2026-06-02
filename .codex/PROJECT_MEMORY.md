@@ -645,6 +645,21 @@ These compile, but should not be treated as fully derived stability results:
   `fl_householder_first_column_rhs_step_residual`.  These expose the computed
   RHS update as `P*b + e` with `e = ΔP*b`, using the same panel-selected
   Householder reflector as the QR factorization step.
+- Added exact componentwise support in `MatrixAlgebra.lean`:
+  `abs_entry_le_frobNorm`, `abs_matMulVec_le_card_frobNorm_infNormVec`,
+  `abs_matMulVec_le_card_bound_infNormVec`, and orthogonal transport bounds
+  `IsOrthogonal.abs_entry_le_one`,
+  `IsOrthogonal.abs_matMulVec_le_card_infNormVec`, and
+  `IsOrthogonal.infNormVec_matMulVec_le_card`.  These are crude but proved
+  exact bounds needed to track QR-solve residual vectors without introducing
+  a new assumption.
+- Added `HouseholderAppError.exists_residual_vector_bound` and
+  `fl_householder_first_column_rhs_step_residual_bound` in `QR/QRSolve.lean`.
+  The concrete first-column RHS Householder step now has an explicit
+  componentwise residual bound
+  `(m+1) * householderConstructApplyBound fp (m+1) * infNormVec b`.
+  The recursive RHS sequence theorem and final `fl_householderQR_solve`
+  theorem are still pending.
 - Added exact vector embedding algebra for the QR RHS recursion:
   `vectorTrailingPerturbation`, `embedTrailingOne_matMulVec_top`,
   `vectorTail_embedTrailingOne_matMulVec`, and
