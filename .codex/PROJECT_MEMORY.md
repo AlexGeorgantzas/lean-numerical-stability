@@ -770,6 +770,22 @@ These compile, but should not be treated as fully derived stability results:
   through `QRSolve.lean`; the current solve theorem still uses the older
   nonzero-panel `fl_householderQR_R` path and requires nonzero diagonal of the
   computed `R`.
+- Propagated the zero-aware Householder recursion through `QR/QRSolve.lean`.
+  Added `fl_householderQRPanel_rhs_safe`, `fl_householderQR_rhs_safe`, and
+  `fl_householderQR_solve_safe`, plus the branch-dependent RHS bound
+  `householderQRRhsPanelBackwardBoundSafe`.  Added exact RHS and shared-`Q`
+  skip theorems:
+  `householder_qr_rhs_panel_backward_skip_zero_column` and
+  `householder_qr_panel_solve_backward_skip_zero_column`.
+- Proved the safe RHS and solve bridge theorems:
+  `fl_householderQRPanel_rhs_safe_backward_error`,
+  `fl_householderQR_rhs_safe_backward_error`,
+  `fl_householderQRPanel_solve_components_safe_backward_error`,
+  `fl_householderQR_solve_components_safe_backward_error`, and
+  `fl_householderQR_solve_safe_backward_error`.  Householder QR solve now has
+  an implementation-backed zero-aware path.  Remaining assumptions are the
+  inherent back-substitution side conditions: `0 < n`, nonzero diagonal of the
+  computed `fl_householderQR_R_safe fp n A`, and `gammaValid fp n`.
 
 ## 2026-04-26 Fix Pass
 
