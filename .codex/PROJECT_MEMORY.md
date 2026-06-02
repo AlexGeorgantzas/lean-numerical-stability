@@ -746,6 +746,30 @@ These compile, but should not be treated as fully derived stability results:
   `vectorTail_embedTrailingOne_matMulVec`, and
   `vectorFromTopTail_lift_trailing_rep`.  These are the vector analogues of the
   panel block-lift lemmas and prepare the recursive RHS backward-error proof.
+- Returned to Householder QR before continuing Givens.  Added the zero-column
+  skip infrastructure in `QR/HouseholderQR.lean`:
+  `panelFirstColumnTailZero_of_panelFirstColumn_eq_zero`,
+  `panelFromTopAndTrailing_of_panelFirstColumn_eq_zero`, and
+  `householder_qr_panel_backward_skip_zero_column`.  These prove that if an
+  active panel's first column is already zero, the QR loop can skip the
+  reflector exactly and lift the recursive trailing-panel backward-error proof
+  to the full panel with an embedded leading identity.
+- Added zero-aware Householder QR `R` definitions:
+  `fl_householderTrailingPanelStepSafe`, `fl_householderQRPanel_R_safe`, and
+  square alias `fl_householderQR_R_safe`.  Added
+  `HouseholderQRPanelSafeReady`, which removes the old "all active first
+  columns are nonzero" requirement; gamma validity is required only on
+  nonzero branches where a rounded reflector is actually computed.
+- Added branch-dependent coefficient
+  `householderQRPanelBackwardCoeffSafe` and proved
+  `fl_householderQRPanel_R_safe_backward_error`,
+  `fl_householderQR_R_safe_backward_error`, and
+  `fl_householderQR_R_safe_structured_backward_error`.  The preferred
+  Householder QR `R` theorem is now implementation-backed for zero and nonzero
+  active columns.  Remaining QR-solve work: propagate the safe QR/RHS recursion
+  through `QRSolve.lean`; the current solve theorem still uses the older
+  nonzero-panel `fl_householderQR_R` path and requires nonzero diagonal of the
+  computed `R`.
 
 ## 2026-04-26 Fix Pass
 

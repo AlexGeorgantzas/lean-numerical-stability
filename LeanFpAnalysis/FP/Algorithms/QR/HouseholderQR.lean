@@ -828,6 +828,29 @@ theorem panelFromTopAndTrailing_of_firstColumnTailZero {m p : ℕ}
     · intro j
       rfl
 
+/-- If the whole first column of a nonempty panel is zero, then its
+    first-column tail is zero.  This is the exact algebraic fact needed by the
+    zero/skip branch of a Householder QR implementation: no reflector is needed
+    to complete a column that is already zero in the active panel. -/
+theorem panelFirstColumnTailZero_of_panelFirstColumn_eq_zero {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (hcol : panelFirstColumn (Nat.succ_pos p) A = 0) :
+    panelFirstColumnTailZero A := by
+  intro i
+  have h := congrFun hcol i.succ
+  simpa [panelFirstColumn, panelFirstColumnTail] using h
+
+/-- Zero first-column panels are exactly reconstructed from their top row and
+    trailing panel.  This is the reconstruction lemma used when the QR loop
+    skips a degenerate Householder step. -/
+theorem panelFromTopAndTrailing_of_panelFirstColumn_eq_zero {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (hcol : panelFirstColumn (Nat.succ_pos p) A = 0) :
+    panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+      (trailingPanel A) = A := by
+  exact panelFromTopAndTrailing_of_firstColumnTailZero A
+    (panelFirstColumnTailZero_of_panelFirstColumn_eq_zero A hcol)
+
 /-- The embedded trailing-panel perturbation has exactly the same squared
     Frobenius norm as the trailing perturbation. -/
 theorem frobNormSq_panelTrailingPerturbation {m p : ℕ}
@@ -1236,11 +1259,101 @@ theorem trailingPanel_fl_householderQRPanel_R_succ_succ (fp : FPModel)
       fl_householderQRPanel_R fp m p (fl_householderTrailingPanelStep fp A) := by
   simp [fl_householderQRPanel_R, fl_householderTrailingPanelStep]
 
+/-- Zero-aware trailing-panel step for Householder QR.
+
+    If the active first column is zero, the reflector is skipped and the next
+    active panel is the exact trailing panel.  Otherwise this is the concrete
+    rounded Householder trailing-panel step. -/
+noncomputable def fl_householderTrailingPanelStepSafe (fp : FPModel)
+    {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ) :
+    Fin m → Fin p → ℝ :=
+  if panelFirstColumn (Nat.succ_pos p) A = 0 then
+    trailingPanel A
+  else
+    fl_householderTrailingPanelStep fp A
+
+/-- Zero-aware recursive rounded Householder QR panel algorithm returning the
+    `R` panel.
+
+    This variant closes the main degeneracy gap in the older implementation:
+    nonzero active columns use the concrete rounded Householder step, while
+    zero active columns skip the reflector and recurse on the trailing panel.
+    The original `fl_householderQRPanel_R` is preserved for compatibility with
+    the nonzero-panel theorem. -/
+noncomputable def fl_householderQRPanel_R_safe (fp : FPModel) :
+    (m p : ℕ) → (Fin m → Fin p → ℝ) → Fin m → Fin p → ℝ
+  | 0, _, A => A
+  | Nat.succ _, 0, A => A
+  | m + 1, p + 1, A =>
+      if _hcol : panelFirstColumn (Nat.succ_pos p) A = 0 then
+        panelFromTopAndTrailing
+          (panelTopLeft A)
+          (panelTopRowTail A)
+          (fl_householderQRPanel_R_safe fp m p (trailingPanel A))
+      else
+        let Astep : Fin (m + 1) → Fin (p + 1) → ℝ :=
+          fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+            (fl_householderNormalizedVector fp (Nat.succ_pos m)
+              (panelFirstColumn (Nat.succ_pos p) A)) 1 A
+        panelFromTopAndTrailing
+          (panelTopLeft Astep)
+          (panelTopRowTail Astep)
+          (fl_householderQRPanel_R_safe fp m p (trailingPanel Astep))
+
+@[simp] theorem fl_householderQRPanel_R_safe_zero_rows (fp : FPModel)
+    {p : ℕ} (A : Fin 0 → Fin p → ℝ) :
+    fl_householderQRPanel_R_safe fp 0 p A = A := rfl
+
+@[simp] theorem fl_householderQRPanel_R_safe_zero_cols (fp : FPModel)
+    {m : ℕ} (A : Fin (m + 1) → Fin 0 → ℝ) :
+    fl_householderQRPanel_R_safe fp (m + 1) 0 A = A := rfl
+
+@[simp] theorem fl_householderQRPanel_R_safe_succ_succ_zero (fp : FPModel)
+    {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (hcol : panelFirstColumn (Nat.succ_pos p) A = 0) :
+    fl_householderQRPanel_R_safe fp (m + 1) (p + 1) A =
+      panelFromTopAndTrailing
+        (panelTopLeft A)
+        (panelTopRowTail A)
+        (fl_householderQRPanel_R_safe fp m p (trailingPanel A)) := by
+  simp [fl_householderQRPanel_R_safe, hcol]
+
+@[simp] theorem fl_householderQRPanel_R_safe_succ_succ_nonzero (fp : FPModel)
+    {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (hcol : panelFirstColumn (Nat.succ_pos p) A ≠ 0) :
+    fl_householderQRPanel_R_safe fp (m + 1) (p + 1) A =
+      let Astep : Fin (m + 1) → Fin (p + 1) → ℝ :=
+        fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A)) 1 A
+      panelFromTopAndTrailing
+        (panelTopLeft Astep)
+        (panelTopRowTail Astep)
+        (fl_householderQRPanel_R_safe fp m p (trailingPanel Astep)) := by
+  simp [fl_householderQRPanel_R_safe, hcol]
+
+/-- The zero-aware recursive QR `R` algorithm makes the completed
+    first-column tail structurally zero in every nonempty panel. -/
+theorem panelFirstColumnTailZero_fl_householderQRPanel_R_safe_succ_succ
+    (fp : FPModel) {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ) :
+    panelFirstColumnTailZero
+      (fl_householderQRPanel_R_safe fp (m + 1) (p + 1) A) := by
+  by_cases hcol : panelFirstColumn (Nat.succ_pos p) A = 0
+  · simp [fl_householderQRPanel_R_safe, hcol]
+  · simp [fl_householderQRPanel_R_safe, hcol]
+
 /-- Square specialization of the recursive rounded Householder QR `R`
     algorithm. -/
 noncomputable def fl_householderQR_R (fp : FPModel) (n : ℕ)
     (A : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
   fl_householderQRPanel_R fp n n A
+
+/-- Square specialization of the zero-aware recursive rounded Householder QR
+    `R` algorithm. -/
+noncomputable def fl_householderQR_R_safe (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fl_householderQRPanel_R_safe fp n n A
 
 /-- Recursive readiness predicate for the concrete Householder QR `R` panel
     algorithm.
@@ -1275,6 +1388,49 @@ def HouseholderQRPanelReady (fp : FPModel) :
       gammaValid fp (11 * (m + 1) + 23) ∧
       HouseholderQRPanelReady fp m p (fl_householderTrailingPanelStep fp A) := by
   rfl
+
+/-- Readiness predicate for the zero-aware Householder QR panel algorithm.
+
+    Unlike `HouseholderQRPanelReady`, this predicate does not require every
+    active first column to be nonzero.  A zero active column is handled by an
+    exact skip branch; only the nonzero branch needs the gamma-validity
+    hypothesis required by the rounded Householder construction/application
+    theorem. -/
+def HouseholderQRPanelSafeReady (fp : FPModel) :
+    (m p : ℕ) → (Fin m → Fin p → ℝ) → Prop
+  | 0, _, _ => True
+  | Nat.succ _, 0, _ => True
+  | m + 1, p + 1, A =>
+      if panelFirstColumn (Nat.succ_pos p) A = 0 then
+        HouseholderQRPanelSafeReady fp m p (trailingPanel A)
+      else
+        gammaValid fp (11 * (m + 1) + 23) ∧
+        HouseholderQRPanelSafeReady fp m p (fl_householderTrailingPanelStep fp A)
+
+@[simp] theorem HouseholderQRPanelSafeReady_zero_rows (fp : FPModel)
+    {p : ℕ} (A : Fin 0 → Fin p → ℝ) :
+    HouseholderQRPanelSafeReady fp 0 p A := by
+  trivial
+
+@[simp] theorem HouseholderQRPanelSafeReady_zero_cols (fp : FPModel)
+    {m : ℕ} (A : Fin (m + 1) → Fin 0 → ℝ) :
+    HouseholderQRPanelSafeReady fp (m + 1) 0 A := by
+  trivial
+
+@[simp] theorem HouseholderQRPanelSafeReady_succ_succ_zero (fp : FPModel)
+    {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (hcol : panelFirstColumn (Nat.succ_pos p) A = 0) :
+    HouseholderQRPanelSafeReady fp (m + 1) (p + 1) A ↔
+      HouseholderQRPanelSafeReady fp m p (trailingPanel A) := by
+  simp [HouseholderQRPanelSafeReady, hcol]
+
+@[simp] theorem HouseholderQRPanelSafeReady_succ_succ_nonzero (fp : FPModel)
+    {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (hcol : panelFirstColumn (Nat.succ_pos p) A ≠ 0) :
+    HouseholderQRPanelSafeReady fp (m + 1) (p + 1) A ↔
+      gammaValid fp (11 * (m + 1) + 23) ∧
+      HouseholderQRPanelSafeReady fp m p (fl_householderTrailingPanelStep fp A) := by
+  simp [HouseholderQRPanelSafeReady, hcol]
 
 /-- Active trailing-panel state for a Householder QR loop.
 
@@ -1809,6 +1965,44 @@ theorem fl_householderQR_R_upper (fp : FPModel) :
         (fl_householderQRPanel_R fp n n (trailingPanel Astep))
         (by simpa [fl_householderQR_R] using ih (trailingPanel Astep))
 
+/-- The zero-aware recursive rounded Householder QR `R` algorithm returns an
+    upper-triangular matrix by construction. -/
+theorem fl_householderQR_R_safe_upper (fp : FPModel) :
+    ∀ (n : ℕ) (A : Fin n → Fin n → ℝ),
+      IsUpperTriangular n (fl_householderQR_R_safe fp n A) := by
+  intro n
+  induction n with
+  | zero =>
+      intro A i
+      exact Fin.elim0 i
+  | succ n ih =>
+      intro A
+      by_cases hcol : panelFirstColumn (Nat.succ_pos n) A = 0
+      · have htail :
+            IsUpperTriangular n
+              (fl_householderQRPanel_R_safe fp n n (trailingPanel A)) := by
+          simpa [fl_householderQR_R_safe] using ih (trailingPanel A)
+        have hmain :=
+          IsUpperTriangular_panelFromTopAndTrailing
+            (panelTopLeft A) (panelTopRowTail A)
+            (fl_householderQRPanel_R_safe fp n n (trailingPanel A)) htail
+        simpa [fl_householderQR_R_safe, fl_householderQRPanel_R_safe, hcol]
+          using hmain
+      · let Astep : Fin (n + 1) → Fin (n + 1) → ℝ :=
+          fl_householderApplyMatrixRect fp (n + 1) (n + 1)
+            (fl_householderNormalizedVector fp (Nat.succ_pos n)
+              (panelFirstColumn (Nat.succ_pos n) A)) 1 A
+        have htail :
+            IsUpperTriangular n
+              (fl_householderQRPanel_R_safe fp n n (trailingPanel Astep)) := by
+          simpa [fl_householderQR_R_safe] using ih (trailingPanel Astep)
+        have hmain :=
+          IsUpperTriangular_panelFromTopAndTrailing
+            (panelTopLeft Astep) (panelTopRowTail Astep)
+            (fl_householderQRPanel_R_safe fp n n (trailingPanel Astep)) htail
+        simpa [fl_householderQR_R_safe, fl_householderQRPanel_R_safe, hcol, Astep]
+          using hmain
+
 /-- Recursive coefficient for the future implementation-backed Householder QR
     panel backward-error theorem.
 
@@ -1828,6 +2022,74 @@ noncomputable def householderQRPanelBackwardCoeff (fp : FPModel) :
     coefficient. -/
 noncomputable def householderQRBackwardCoeff (fp : FPModel) (n : ℕ) : ℝ :=
   householderQRPanelBackwardCoeff fp n n
+
+/-- Branch-dependent backward-error coefficient for the zero-aware Householder
+    QR panel algorithm.
+
+    A zero active first column contributes no rounded reflector-application
+    error and recurses directly on the exact trailing panel.  A nonzero active
+    column uses the same concrete Householder construction/application bound as
+    `householderQRPanelBackwardCoeff`. -/
+noncomputable def householderQRPanelBackwardCoeffSafe (fp : FPModel) :
+    (m p : ℕ) → (Fin m → Fin p → ℝ) → ℝ
+  | 0, _, _ => 0
+  | Nat.succ _, 0, _ => 0
+  | m + 1, p + 1, A =>
+      if panelFirstColumn (Nat.succ_pos p) A = 0 then
+        householderQRPanelBackwardCoeffSafe fp m p (trailingPanel A)
+      else
+        let c := householderConstructApplyBound fp (m + 1)
+        c + householderQRPanelBackwardCoeffSafe fp m p
+              (fl_householderTrailingPanelStep fp A) * (1 + c)
+
+/-- Square specialization of the zero-aware Householder QR backward-error
+    coefficient. -/
+noncomputable def householderQRBackwardCoeffSafe (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) : ℝ :=
+  householderQRPanelBackwardCoeffSafe fp n n A
+
+/-- The zero-aware QR panel coefficient is nonnegative whenever the safe run
+    has the gamma hypotheses needed for every nonzero rounded reflector
+    branch. -/
+theorem householderQRPanelBackwardCoeffSafe_nonneg (fp : FPModel) :
+    ∀ (m p : ℕ) (A : Fin m → Fin p → ℝ),
+      HouseholderQRPanelSafeReady fp m p A →
+      0 ≤ householderQRPanelBackwardCoeffSafe fp m p A := by
+  intro m
+  induction m with
+  | zero =>
+      intro p A _hready
+      simp [householderQRPanelBackwardCoeffSafe]
+  | succ m ih =>
+      intro p
+      cases p with
+      | zero =>
+          intro A _hready
+          simp [householderQRPanelBackwardCoeffSafe]
+      | succ p =>
+          intro A hready
+          by_cases hcol : panelFirstColumn (Nat.succ_pos p) A = 0
+          · have htail :
+                HouseholderQRPanelSafeReady fp m p (trailingPanel A) := by
+              simpa [HouseholderQRPanelSafeReady, hcol] using hready
+            simpa [householderQRPanelBackwardCoeffSafe, hcol] using
+              ih p (trailingPanel A) htail
+          · have hready' :
+                gammaValid fp (11 * (m + 1) + 23) ∧
+                HouseholderQRPanelSafeReady fp m p
+                  (fl_householderTrailingPanelStep fp A) := by
+              simpa [HouseholderQRPanelSafeReady, hcol] using hready
+            let c := householderConstructApplyBound fp (m + 1)
+            let α := householderQRPanelBackwardCoeffSafe fp m p
+              (fl_householderTrailingPanelStep fp A)
+            have hc : 0 ≤ c := by
+              simpa [c] using
+                householderConstructApplyBound_nonneg fp (m + 1) hready'.1
+            have hα : 0 ≤ α := by
+              simpa [α] using
+                ih p (fl_householderTrailingPanelStep fp A) hready'.2
+            simp [householderQRPanelBackwardCoeffSafe, hcol]
+            nlinarith
 
 /-- The recursive QR panel backward-error coefficient is nonnegative whenever
     the concrete QR panel run is ready. -/
@@ -1926,6 +2188,74 @@ theorem householder_qr_panel_backward_zero_cols (m : ℕ)
       intro i j
       exact Fin.elim0 j
     simp [Z, hZ]
+
+/-- Algebraic skip step for a degenerate active Householder QR panel.
+
+    If the current first column is already zero, no reflector is needed for the
+    active column.  A backward-error proof for the trailing panel can be lifted
+    to the full panel by embedding the trailing orthogonal factor with a
+    leading identity and by embedding the trailing perturbation.  This theorem
+    is exact QR bookkeeping; it introduces no new floating-point assumption. -/
+theorem householder_qr_panel_backward_skip_zero_column {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (Rtail : Fin m → Fin p → ℝ)
+    (α : ℝ)
+    (hcol : panelFirstColumn (Nat.succ_pos p) A = 0)
+    (hTail :
+      HouseholderQRPanelBackwardError m p (trailingPanel A) Rtail
+        (α * frobNorm (trailingPanel A)))
+    (hα : 0 ≤ α) :
+    HouseholderQRPanelBackwardError (m + 1) (p + 1) A
+      (panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A) Rtail)
+      (α * frobNorm A) := by
+  obtain ⟨Qt, ΔT, hQt, hTailRep, hΔT⟩ := hTail.result
+  let ΔA : Fin (m + 1) → Fin (p + 1) → ℝ :=
+    panelTrailingPerturbation ΔT
+  let Q : Fin (m + 1) → Fin (m + 1) → ℝ :=
+    embedTrailingOne Qt
+  refine ⟨⟨Q, ΔA, ?_, ?_, ?_⟩⟩
+  · exact embedTrailingOne_orthogonal Qt hQt
+  · have hLift :=
+      panelFromTopAndTrailing_lift_trailing_rep Qt
+        (panelTopLeft A) (panelTopRowTail A)
+        (trailingPanel A) Rtail ΔT hTailRep
+    have hAblocks :
+        panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+          (trailingPanel A) = A :=
+      panelFromTopAndTrailing_of_panelFirstColumn_eq_zero A hcol
+    have hInside :
+        (fun i j =>
+          panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+              (trailingPanel A) i j +
+            panelTrailingPerturbation ΔT i j) =
+          fun i j => A i j + ΔA i j := by
+      ext i j
+      rw [hAblocks]
+    have hQtrans :
+        matTranspose Q = embedTrailingOne (matTranspose Qt) := by
+      simp [Q, matTranspose_embedTrailingOne]
+    intro i j
+    calc
+      panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A) Rtail i j
+          =
+        matMulRect (m + 1) (m + 1) (p + 1)
+          (embedTrailingOne (matTranspose Qt))
+          (fun i j =>
+            panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+                (trailingPanel A) i j +
+              panelTrailingPerturbation ΔT i j) i j := by
+            exact congrFun (congrFun hLift i) j
+      _ =
+        matMulRect (m + 1) (m + 1) (p + 1) (matTranspose Q)
+          (fun i j => A i j + ΔA i j) i j := by
+            rw [hQtrans, hInside]
+  · have hΔnorm : frobNorm ΔA = frobNorm ΔT := by
+      exact frobNorm_panelTrailingPerturbation ΔT
+    calc
+      frobNorm ΔA = frobNorm ΔT := hΔnorm
+      _ ≤ α * frobNorm (trailingPanel A) := hΔT
+      _ ≤ α * frobNorm A :=
+          mul_le_mul_of_nonneg_left (frobNorm_trailingPanel_le A) hα
 
 /-- Algebraic cons step for the recursive rectangular QR panel backward-error
     proof.
@@ -2170,6 +2500,112 @@ theorem fl_householderQRPanel_R_backward_error (fp : FPModel) :
           simpa [fl_householderQRPanel_R, householderQRPanelBackwardCoeff,
             S, Ahat, P, fl_householderTrailingPanelStep] using hCons
 
+/-- Implementation-backed recursive backward-error theorem for the
+    zero-aware rounded Householder QR `R` panel algorithm.
+
+    This theorem removes the nonzero-active-column assumption from
+    `fl_householderQRPanel_R_backward_error`.  When the active first column is
+    zero, the algorithm skips the reflector and lifts the recursive trailing
+    proof exactly.  When the active first column is nonzero, it uses the
+    implementation-backed Householder construction/application bridge. -/
+theorem fl_householderQRPanel_R_safe_backward_error (fp : FPModel) :
+    ∀ (m p : ℕ) (A : Fin m → Fin p → ℝ),
+      HouseholderQRPanelSafeReady fp m p A →
+      HouseholderQRPanelBackwardError m p A
+        (fl_householderQRPanel_R_safe fp m p A)
+        (householderQRPanelBackwardCoeffSafe fp m p A * frobNorm A) := by
+  intro m
+  induction m with
+  | zero =>
+      intro p A _hready
+      simpa [householderQRPanelBackwardCoeffSafe] using
+        householder_qr_panel_backward_zero_rows p A
+  | succ m ih =>
+      intro p
+      cases p with
+      | zero =>
+          intro A _hready
+          simpa [householderQRPanelBackwardCoeffSafe] using
+            householder_qr_panel_backward_zero_cols m A
+      | succ p =>
+          intro A hready
+          by_cases hcol : panelFirstColumn (Nat.succ_pos p) A = 0
+          · have htailReady :
+                HouseholderQRPanelSafeReady fp m p (trailingPanel A) := by
+              simpa [HouseholderQRPanelSafeReady, hcol] using hready
+            have hTailRaw :=
+              ih p (trailingPanel A) htailReady
+            have hα :
+                0 ≤ householderQRPanelBackwardCoeffSafe fp m p
+                  (trailingPanel A) :=
+              householderQRPanelBackwardCoeffSafe_nonneg fp m p
+                (trailingPanel A) htailReady
+            have hSkip :=
+              householder_qr_panel_backward_skip_zero_column A
+                (fl_householderQRPanel_R_safe fp m p (trailingPanel A))
+                (householderQRPanelBackwardCoeffSafe fp m p
+                  (trailingPanel A))
+                hcol hTailRaw hα
+            simpa [fl_householderQRPanel_R_safe,
+              householderQRPanelBackwardCoeffSafe, hcol] using hSkip
+          · have hready' :
+                gammaValid fp (11 * (m + 1) + 23) ∧
+                HouseholderQRPanelSafeReady fp m p
+                  (fl_householderTrailingPanelStep fp A) := by
+              simpa [HouseholderQRPanelSafeReady, hcol] using hready
+            let P : Fin (m + 1) → Fin (m + 1) → ℝ :=
+              householder (m + 1)
+                (householderNormalizedVector (m + 1)
+                  (householderVector (Nat.succ_pos m)
+                    (panelFirstColumn (Nat.succ_pos p) A))
+                  (householderBetaFromScale (Nat.succ_pos m)
+                    (panelFirstColumn (Nat.succ_pos p) A))) 1
+            let Ahat : Fin (m + 1) → Fin (p + 1) → ℝ :=
+              fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+                (fl_householderNormalizedVector fp (Nat.succ_pos m)
+                  (panelFirstColumn (Nat.succ_pos p) A)) 1 A
+            let S : Fin (m + 1) → Fin (p + 1) → ℝ :=
+              panelFromTopAndTrailing (panelTopLeft Ahat) (panelTopRowTail Ahat)
+                (trailingPanel Ahat)
+            obtain ⟨E, hSrep, hE, hSzero⟩ :=
+              fl_householder_first_column_panel_stored_residual_and_shape fp A
+                hcol hready'.1
+            have hPorth : IsOrthogonal (m + 1) P := by
+              have hstep :=
+                fl_householder_first_column_panel_step_error fp
+                  (Nat.succ_pos m) (Nat.succ_pos p) A hcol hready'.1
+              simpa [P, householderConstructApplyBound] using hstep.orth
+            have hStrailing :
+                trailingPanel S = fl_householderTrailingPanelStep fp A := by
+              simp [S, Ahat, fl_householderTrailingPanelStep]
+            have hTailRaw :=
+              ih p (fl_householderTrailingPanelStep fp A) hready'.2
+            have hTail :
+                HouseholderQRPanelBackwardError m p (trailingPanel S)
+                  (fl_householderQRPanel_R_safe fp m p
+                    (fl_householderTrailingPanelStep fp A))
+                  (householderQRPanelBackwardCoeffSafe fp m p
+                    (fl_householderTrailingPanelStep fp A) *
+                    frobNorm (trailingPanel S)) := by
+              rw [hStrailing]
+              exact hTailRaw
+            have hα :
+                0 ≤ householderQRPanelBackwardCoeffSafe fp m p
+                  (fl_householderTrailingPanelStep fp A) :=
+              householderQRPanelBackwardCoeffSafe_nonneg fp m p
+                (fl_householderTrailingPanelStep fp A) hready'.2
+            have hCons :=
+              householder_qr_panel_backward_cons A S P E
+                (fl_householderQRPanel_R_safe fp m p
+                  (fl_householderTrailingPanelStep fp A))
+                (householderConstructApplyBound fp (m + 1))
+                (householderQRPanelBackwardCoeffSafe fp m p
+                  (fl_householderTrailingPanelStep fp A))
+                hPorth hSrep hE hSzero hTail hα
+            simpa [fl_householderQRPanel_R_safe,
+              householderQRPanelBackwardCoeffSafe, hcol,
+              S, Ahat, P, fl_householderTrailingPanelStep] using hCons
+
 /-- Convert the square rectangular-panel QR representation
     `R = Qᵀ(A + ΔA)` to the existing square QR backward-error contract
     `Q R = A + ΔA`. -/
@@ -2199,6 +2635,21 @@ theorem fl_householderQR_R_backward_error (fp : FPModel) (n : ℕ)
   apply householder_qr_panel_backward_to_square
   simpa [fl_householderQR_R, householderQRBackwardCoeff] using
     fl_householderQRPanel_R_backward_error fp n n A hready
+
+/-- Implementation-backed square backward-error theorem for the zero-aware
+    concrete recursive rounded Householder QR `R` algorithm.
+
+    This is the preferred end-to-end `R` theorem: zero active columns are
+    handled by exact skip branches, while nonzero active columns are analyzed
+    through the concrete rounded Householder construction/application kernels. -/
+theorem fl_householderQR_R_safe_backward_error (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (hready : HouseholderQRPanelSafeReady fp n n A) :
+    HouseholderQRBackwardError n A (fl_householderQR_R_safe fp n A)
+      (householderQRBackwardCoeffSafe fp n A * frobNorm A) := by
+  apply householder_qr_panel_backward_to_square
+  simpa [fl_householderQR_R_safe, householderQRBackwardCoeffSafe] using
+    fl_householderQRPanel_R_safe_backward_error fp n n A hready
 
 /-- QR backward-error contract including the structural fact that the computed
     `R_hat` is upper triangular.
@@ -2257,5 +2708,18 @@ theorem fl_householderQR_R_structured_backward_error (fp : FPModel) (n : ℕ)
       (householderQRBackwardCoeff fp n * frobNorm A) := by
   exact ⟨fl_householderQR_R_backward_error fp n A hready,
     fl_householderQR_R_upper fp n A⟩
+
+/-- Implementation-backed structured QR theorem for the zero-aware concrete
+    recursive rounded Householder QR `R` algorithm.
+
+    This theorem packages the preferred safe backward-error theorem with the
+    structural fact that the returned `R` matrix is upper triangular. -/
+theorem fl_householderQR_R_safe_structured_backward_error (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (hready : HouseholderQRPanelSafeReady fp n n A) :
+    StructuredHouseholderQRBackwardError n A (fl_householderQR_R_safe fp n A)
+      (householderQRBackwardCoeffSafe fp n A * frobNorm A) := by
+  exact ⟨fl_householderQR_R_safe_backward_error fp n A hready,
+    fl_householderQR_R_safe_upper fp n A⟩
 
 end LeanFpAnalysis.FP
