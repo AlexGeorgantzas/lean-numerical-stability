@@ -447,6 +447,18 @@ These compile, but should not be treated as fully derived stability results:
   theorem does not yet define/select the QR trailing-column vectors or prove
   triangularization; it is the implementation-backed repeated-reflector bridge
   needed before that final QR loop theorem.
+- Added rectangular panel infrastructure for Householder QR trailing updates:
+  `matMulRect` in `MatrixAlgebra.lean`,
+  `frobNormSq_columnwise_matMulVec_le_rect`,
+  `frobNorm_columnwise_matMulVec_le_rect`,
+  `fl_householderApplyMatrixRect`,
+  `ColumnwiseHouseholderStepErrorRect`, and
+  `fl_householderConstructApply_matrix_step_error_rect`.  A square
+  Householder reflector can now be applied to an `m × p` panel, and the
+  concrete rounded panel update has a columnwise backward-error contract plus a
+  single residual matrix bound `‖E‖_F ≤ c‖A‖_F`.  This is needed before the
+  real QR loop can operate on trailing rectangular panels instead of only
+  square full matrices.
 
 ## 2026-04-26 Fix Pass
 

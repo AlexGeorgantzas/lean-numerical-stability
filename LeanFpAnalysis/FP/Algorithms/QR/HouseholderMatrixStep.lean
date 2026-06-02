@@ -25,6 +25,14 @@ noncomputable def fl_householderApplyMatrix (fp : FPModel) (n : ℕ)
     Fin n → Fin n → ℝ :=
   fun i j => fl_householderApply fp n v beta (fun k => A k j) i
 
+/-- Apply one rounded Householder reflector to every column of a rectangular
+    `m × p` panel.  This is the panel-update shape needed by QR trailing
+    subproblems. -/
+noncomputable def fl_householderApplyMatrixRect (fp : FPModel) (m p : ℕ)
+    (v : Fin m → ℝ) (beta : ℝ) (A : Fin m → Fin p → ℝ) :
+    Fin m → Fin p → ℝ :=
+  fun i j => fl_householderApply fp m v beta (fun k => A k j) i
+
 /-- Columnwise matrix-step form of Higham Lemma 18.2.
 
     For each matrix column `j`, the rounded application satisfies
@@ -45,6 +53,22 @@ structure ColumnwiseHouseholderStepError (n : ℕ)
     ∀ i : Fin n, A_hat i j =
       matMulVec n (fun a b => P a b + ΔPj a b) (fun k => A k j) i
 
+/-- Rectangular panel form of `ColumnwiseHouseholderStepError`.
+
+    The reflector is `m × m`, while the panel being updated is `m × p`.  As in
+    the square version, each panel column gets its own perturbation matrix. -/
+structure ColumnwiseHouseholderStepErrorRect (m p : ℕ)
+    (P : Fin m → Fin m → ℝ) (A A_hat : Fin m → Fin p → ℝ)
+    (c : ℝ) : Prop where
+  /-- The exact reflector is orthogonal. -/
+  orth : IsOrthogonal m P
+  /-- Every computed output column is a backward-stable Householder application,
+      with a column-dependent perturbation matrix. -/
+  pert : ∀ j : Fin p, ∃ ΔPj : Fin m → Fin m → ℝ,
+    frobNorm ΔPj ≤ c ∧
+    ∀ i : Fin m, A_hat i j =
+      matMulVec m (fun a b => P a b + ΔPj a b) (fun k => A k j) i
+
 /-- Package per-column `HouseholderAppError` facts as a columnwise matrix-step
     error statement. -/
 theorem columnwiseHouseholderStepError_of_appError (n : ℕ)
@@ -53,6 +77,18 @@ theorem columnwiseHouseholderStepError_of_appError (n : ℕ)
     (hcols : ∀ j : Fin n,
       HouseholderAppError n P (fun i => A i j) (fun i => A_hat i j) c) :
     ColumnwiseHouseholderStepError n P A A_hat c := by
+  refine ⟨hP, ?_⟩
+  intro j
+  exact (hcols j).pert
+
+/-- Package per-column `HouseholderAppError` facts as a rectangular panel-step
+    error statement. -/
+theorem columnwiseHouseholderStepErrorRect_of_appError (m p : ℕ)
+    (P : Fin m → Fin m → ℝ) (A A_hat : Fin m → Fin p → ℝ) (c : ℝ)
+    (hP : IsOrthogonal m P)
+    (hcols : ∀ j : Fin p,
+      HouseholderAppError m P (fun i => A i j) (fun i => A_hat i j) c) :
+    ColumnwiseHouseholderStepErrorRect m p P A A_hat c := by
   refine ⟨hP, ?_⟩
   intro j
   exact (hcols j).pert
@@ -95,6 +131,39 @@ theorem fl_householderConstructApply_matrix_step_error (fp : FPModel) {n : ℕ}
       fl_householderConstructApply_appError fp hn0 x (fun k => A k j)
         hx hvalid
     simpa [P, fl_householderApplyMatrix] using happ
+
+/-- Concrete Householder construction plus concrete rectangular panel
+    application satisfies the rectangular matrix-step contract. -/
+theorem fl_householderConstructApply_matrix_step_error_rect (fp : FPModel)
+    {m p : ℕ}
+    (hm0 : 0 < m) (x : Fin m → ℝ) (A : Fin m → Fin p → ℝ)
+    (hx : x ≠ 0)
+    (hvalid : gammaValid fp (11 * m + 23)) :
+    ColumnwiseHouseholderStepErrorRect m p
+      (householder m
+        (householderNormalizedVector m
+          (householderVector hm0 x) (householderBetaFromScale hm0 x)) 1)
+      A
+      (fl_householderApplyMatrixRect fp m p
+        (fl_householderNormalizedVector fp hm0 x) 1 A)
+      (Real.sqrt ((m : ℝ) * fp.u ^ 2) +
+        2 * gamma fp (11 * m + 23)) := by
+  let P : Fin m → Fin m → ℝ :=
+    householder m
+      (householderNormalizedVector m
+        (householderVector hm0 x) (householderBetaFromScale hm0 x)) 1
+  have hP : IsOrthogonal m P := by
+    have happ :=
+      fl_householderConstructApply_appError fp hm0 x (fun _ : Fin m => 0)
+        hx hvalid
+    simpa [P] using happ.orth
+  apply columnwiseHouseholderStepErrorRect_of_appError m p P
+  · exact hP
+  · intro j
+    have happ :=
+      fl_householderConstructApply_appError fp hm0 x (fun k => A k j)
+        hx hvalid
+    simpa [P, fl_householderApplyMatrixRect] using happ
 
 /-- Residual form of a columnwise Householder matrix step.
 
@@ -164,5 +233,65 @@ theorem ColumnwiseHouseholderStepError.exists_residual_matrix_bound {n : ℕ}
       frobNorm E ≤ c * frobNorm A := by
   obtain ⟨E, hEA, hcol⟩ := hstep.exists_residual_matrix
   exact ⟨E, hEA, frobNorm_columnwise_matMulVec_le E A hc hcol⟩
+
+/-- Residual form of a rectangular columnwise Householder panel step. -/
+theorem ColumnwiseHouseholderStepErrorRect.column_residual {m p : ℕ}
+    {P : Fin m → Fin m → ℝ} {A A_hat : Fin m → Fin p → ℝ} {c : ℝ}
+    (hstep : ColumnwiseHouseholderStepErrorRect m p P A A_hat c) :
+    ∀ j : Fin p, ∃ ΔPj : Fin m → Fin m → ℝ,
+      frobNorm ΔPj ≤ c ∧
+      ∀ i : Fin m, A_hat i j =
+        matMulRect m m p P A i j +
+          matMulVec m ΔPj (fun k => A k j) i := by
+  intro j
+  obtain ⟨ΔPj, hΔPj, hcol⟩ := hstep.pert j
+  refine ⟨ΔPj, hΔPj, ?_⟩
+  intro i
+  rw [hcol i]
+  unfold matMulVec matMulRect
+  rw [← Finset.sum_add_distrib]
+  apply Finset.sum_congr rfl
+  intro k _
+  ring
+
+/-- Rectangular matrix residual form of a columnwise Householder panel step. -/
+theorem ColumnwiseHouseholderStepErrorRect.exists_residual_matrix {m p : ℕ}
+    {P : Fin m → Fin m → ℝ} {A A_hat : Fin m → Fin p → ℝ} {c : ℝ}
+    (hstep : ColumnwiseHouseholderStepErrorRect m p P A A_hat c) :
+    ∃ E : Fin m → Fin p → ℝ,
+      (∀ (i : Fin m) (j : Fin p),
+        A_hat i j = matMulRect m m p P A i j + E i j) ∧
+      ∀ j : Fin p, ∃ ΔPj : Fin m → Fin m → ℝ,
+        frobNorm ΔPj ≤ c ∧
+        ∀ i : Fin m, E i j =
+          matMulVec m ΔPj (fun k => A k j) i := by
+  classical
+  let hres := hstep.column_residual
+  let ΔP : Fin p → Fin m → Fin m → ℝ := fun j => Classical.choose (hres j)
+  let E : Fin m → Fin p → ℝ :=
+    fun i j => matMulVec m (ΔP j) (fun k => A k j) i
+  refine ⟨E, ?_, ?_⟩
+  · intro i j
+    have hspec := Classical.choose_spec (hres j)
+    exact hspec.2 i
+  · intro j
+    have hspec := Classical.choose_spec (hres j)
+    refine ⟨ΔP j, hspec.1, ?_⟩
+    intro i
+    rfl
+
+/-- Normwise residual consequence of a rectangular columnwise Householder panel
+    step. -/
+theorem ColumnwiseHouseholderStepErrorRect.exists_residual_matrix_bound
+    {m p : ℕ}
+    {P : Fin m → Fin m → ℝ} {A A_hat : Fin m → Fin p → ℝ} {c : ℝ}
+    (hstep : ColumnwiseHouseholderStepErrorRect m p P A A_hat c)
+    (hc : 0 ≤ c) :
+    ∃ E : Fin m → Fin p → ℝ,
+      (∀ (i : Fin m) (j : Fin p),
+        A_hat i j = matMulRect m m p P A i j + E i j) ∧
+      frobNorm E ≤ c * frobNorm A := by
+  obtain ⟨E, hEA, hcol⟩ := hstep.exists_residual_matrix
+  exact ⟨E, hEA, frobNorm_columnwise_matMulVec_le_rect E A hc hcol⟩
 
 end LeanFpAnalysis.FP

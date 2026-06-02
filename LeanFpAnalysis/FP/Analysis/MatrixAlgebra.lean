@@ -127,6 +127,16 @@ noncomputable def matMulVec (n : ℕ) (A : Fin n → Fin n → ℝ) (v : Fin n �
     Fin n → ℝ :=
   fun i => ∑ j : Fin n, A i j * v j
 
+/-- Rectangular matrix-matrix product: `(AB)ᵢⱼ = ∑ₖ Aᵢₖ Bₖⱼ`.
+
+    This is exact algebra, not a floating-point algorithm.  It is the shape
+    needed for QR trailing blocks, where a square Householder reflector acts on
+    a rectangular panel. -/
+noncomputable def matMulRect (m n p : ℕ)
+    (A : Fin m → Fin n → ℝ) (B : Fin n → Fin p → ℝ) :
+    Fin m → Fin p → ℝ :=
+  fun i j => ∑ k : Fin n, A i k * B k j
+
 /-- Componentwise absolute value of a vector. -/
 noncomputable def absVec (n : ℕ) (v : Fin n → ℝ) : Fin n → ℝ :=
   fun i => |v i|
@@ -725,6 +735,69 @@ theorem frobNorm_columnwise_matMulVec_le {n : ℕ}
       ∀ i : Fin n, E i j = matMulVec n Δj (fun k => A k j) i) :
     frobNorm E ≤ c * frobNorm A := by
   have hsq := frobNormSq_columnwise_matMulVec_le E A hc hcol
+  apply frobNorm_le_of_frobNormSq_le_sq E
+    (mul_nonneg hc (frobNorm_nonneg A))
+  rw [show (c * frobNorm A) ^ 2 = c ^ 2 * frobNormSq A from by
+    rw [show (c * frobNorm A) ^ 2 = c ^ 2 * frobNorm A ^ 2 from by ring,
+      frobNorm_sq]]
+  exact hsq
+
+/-- Rectangular squared Frobenius aggregation for column-dependent residuals.
+
+    If every residual column of an `m × p` panel has the form
+    `E[:,j] = Δ_j * A[:,j]` and each `‖Δ_j‖_F ≤ c`, then
+    `‖E‖²_F ≤ c² ‖A‖²_F`. -/
+theorem frobNormSq_columnwise_matMulVec_le_rect {m p : ℕ}
+    (E A : Fin m → Fin p → ℝ) {c : ℝ} (hc : 0 ≤ c)
+    (hcol : ∀ j : Fin p, ∃ Δj : Fin m → Fin m → ℝ,
+      frobNorm Δj ≤ c ∧
+      ∀ i : Fin m, E i j = matMulVec m Δj (fun k => A k j) i) :
+    frobNormSq E ≤ c ^ 2 * frobNormSq A := by
+  unfold frobNormSq
+  rw [Finset.sum_comm]
+  calc
+    (∑ j : Fin p, ∑ i : Fin m, E i j ^ 2)
+        ≤ ∑ j : Fin p, c ^ 2 * (∑ k : Fin m, A k j ^ 2) := by
+          apply Finset.sum_le_sum
+          intro j _
+          obtain ⟨Δj, hΔj, hE⟩ := hcol j
+          have hΔsq : frobNormSq Δj ≤ c ^ 2 := by
+            have habs : |frobNorm Δj| ≤ |c| := by
+              simpa [abs_of_nonneg (frobNorm_nonneg Δj), abs_of_nonneg hc]
+                using hΔj
+            have hs : frobNorm Δj ^ 2 ≤ c ^ 2 := (sq_le_sq).2 habs
+            rwa [frobNorm_sq] at hs
+          have hcolsq :
+              (∑ i : Fin m, E i j ^ 2) =
+                ∑ i : Fin m, matMulVec m Δj (fun k => A k j) i ^ 2 := by
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [hE i]
+          rw [hcolsq]
+          calc
+            (∑ i : Fin m, matMulVec m Δj (fun k => A k j) i ^ 2)
+                ≤ frobNormSq Δj * (∑ k : Fin m, A k j ^ 2) :=
+                  matMulVec_sum_sq_le_frobNormSq_mul_sum_sq Δj (fun k => A k j)
+            _ ≤ c ^ 2 * (∑ k : Fin m, A k j ^ 2) := by
+                apply mul_le_mul_of_nonneg_right hΔsq
+                exact Finset.sum_nonneg fun k _ => sq_nonneg (A k j)
+    _ = c ^ 2 * (∑ j : Fin p, ∑ k : Fin m, A k j ^ 2) := by
+        rw [Finset.mul_sum]
+    _ = c ^ 2 * (∑ k : Fin m, ∑ j : Fin p, A k j ^ 2) := by
+        rw [Finset.sum_comm]
+
+/-- Rectangular Frobenius aggregation for column-dependent residuals.
+
+    If every residual column of an `m × p` panel has the form
+    `E[:,j] = Δ_j * A[:,j]` and each `‖Δ_j‖_F ≤ c`, then
+    `‖E‖_F ≤ c ‖A‖_F`. -/
+theorem frobNorm_columnwise_matMulVec_le_rect {m p : ℕ}
+    (E A : Fin m → Fin p → ℝ) {c : ℝ} (hc : 0 ≤ c)
+    (hcol : ∀ j : Fin p, ∃ Δj : Fin m → Fin m → ℝ,
+      frobNorm Δj ≤ c ∧
+      ∀ i : Fin m, E i j = matMulVec m Δj (fun k => A k j) i) :
+    frobNorm E ≤ c * frobNorm A := by
+  have hsq := frobNormSq_columnwise_matMulVec_le_rect E A hc hcol
   apply frobNorm_le_of_frobNormSq_le_sq E
     (mul_nonneg hc (frobNorm_nonneg A))
   rw [show (c * frobNorm A) ^ 2 = c ^ 2 * frobNormSq A from by
