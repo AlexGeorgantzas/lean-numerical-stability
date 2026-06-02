@@ -841,6 +841,13 @@ These compile, but should not be treated as fully derived stability results:
   exactly.  No orthogonality or backward-error theorem is claimed for `Q_hat`
   yet.  The next proof layer is a rounded-accumulation bridge relating this
   computed `Q_hat` to the exact witness or to an explicit perturbation model.
+- Added the first `Q_hat` bridge theorem:
+  `fl_householderQRPanel_Qhat_safe_succ_succ_nonzero_step_error`.  For each
+  nonzero active panel, the rounded `Q_hat` accumulator update satisfies the
+  existing implementation-backed rectangular Householder matrix-step error via
+  `fl_householderConstructApply_matrix_step_error_rect`.  This is still a
+  one-step theorem; the accumulated recursive `Q_hat` stability theorem is not
+  proved yet.
 
 ## 2026-04-26 Fix Pass
 

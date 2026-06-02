@@ -1514,6 +1514,49 @@ noncomputable def fl_householderQRPanel_Qhat_safe (fp : FPModel) :
         (embedTrailingOne Qtail_hat) := by
   simp [fl_householderQRPanel_Qhat_safe, hcol]
 
+/-- One nonzero branch of the rounded `Q_hat` accumulator has the same
+    concrete columnwise Householder matrix-step error as any rounded
+    Householder application.
+
+    This is the first local bridge for the computed `Q_hat` API: the full
+    accumulated `Q_hat` theorem still needs a separate recursive composition
+    proof, but each nonzero update is already connected to the lower-level
+    implementation-backed Householder application theorem. -/
+theorem fl_householderQRPanel_Qhat_safe_succ_succ_nonzero_step_error
+    (fp : FPModel) {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (hcol : panelFirstColumn (Nat.succ_pos p) A ≠ 0)
+    (hvalid : gammaValid fp (11 * (m + 1) + 23)) :
+    let Astep : Fin (m + 1) → Fin (p + 1) → ℝ :=
+      fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+        (fl_householderNormalizedVector fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A)) 1 A
+    let Qtail_hat : Fin m → Fin m → ℝ :=
+      fl_householderQRPanel_Qhat_safe fp m p (trailingPanel Astep)
+    ColumnwiseHouseholderStepErrorRect (m + 1) (m + 1)
+      (householder (m + 1)
+        (householderNormalizedVector (m + 1)
+          (householderVector (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A))
+          (householderBetaFromScale (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A))) 1)
+      (embedTrailingOne Qtail_hat)
+      (fl_householderQRPanel_Qhat_safe fp (m + 1) (p + 1) A)
+      (Real.sqrt (((m + 1) : ℝ) * fp.u ^ 2) +
+        2 * gamma fp (11 * (m + 1) + 23)) := by
+  dsimp only
+  let Astep : Fin (m + 1) → Fin (p + 1) → ℝ :=
+    fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+      (fl_householderNormalizedVector fp (Nat.succ_pos m)
+        (panelFirstColumn (Nat.succ_pos p) A)) 1 A
+  let Qtail_hat : Fin m → Fin m → ℝ :=
+    fl_householderQRPanel_Qhat_safe fp m p (trailingPanel Astep)
+  have hstep :=
+    fl_householderConstructApply_matrix_step_error_rect fp
+      (Nat.succ_pos m) (panelFirstColumn (Nat.succ_pos p) A)
+      (embedTrailingOne Qtail_hat) hcol hvalid
+  simpa [fl_householderQRPanel_Qhat_safe, hcol, Astep, Qtail_hat] using hstep
+
 /-- Square specialization of the rounded accumulated Householder QR `Q_hat`
     algorithm. -/
 noncomputable def fl_householderQR_Qhat_safe (fp : FPModel) (n : ℕ)

@@ -73,9 +73,11 @@ Householder QR now has two distinct `Q`-side APIs.  Use
 `fl_householderQR_Q_safe` / `HouseholderQRWitness` when you need the exact
 orthogonal witness that appears in the proved backward-error equation.  Use
 `fl_householderQR_Qhat_safe` / `HouseholderQRComputedFactors` when you need the
-concrete rounded accumulated `Q_hat` object.  The rounded `Q_hat` API is an
-algorithm definition only for now; its orthogonality and backward-error bridge
-are the next proof layer.
+concrete rounded accumulated `Q_hat` object.
+`fl_householderQRPanel_Qhat_safe_succ_succ_nonzero_step_error` proves the
+one-step implementation-backed matrix-step error for each nonzero rounded
+`Q_hat` update.  The full recursive orthogonality/backward-error bridge for the
+accumulated `Q_hat` remains the next proof layer.
 
 ## Main Dependency Chains
 
