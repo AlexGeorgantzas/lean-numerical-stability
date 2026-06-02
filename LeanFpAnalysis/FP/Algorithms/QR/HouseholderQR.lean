@@ -663,6 +663,26 @@ noncomputable def trailingPanel {m p : ℕ}
     (A : Fin (m + 1) → Fin (p + 1) → ℝ) : Fin m → Fin p → ℝ :=
   fun i j => A i.succ j.succ
 
+/-- Top-left entry of a nonempty rectangular panel. -/
+noncomputable def panelTopLeft {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ) : ℝ :=
+  A 0 0
+
+/-- First row after the top-left entry of a nonempty panel. -/
+noncomputable def panelTopRowTail {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ) : Fin p → ℝ :=
+  fun j => A 0 j.succ
+
+/-- First column below the top-left entry of a nonempty panel. -/
+noncomputable def panelFirstColumnTail {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ) : Fin m → ℝ :=
+  fun i => A i.succ 0
+
+/-- The first-column tail of a panel has been zeroed. -/
+def panelFirstColumnTailZero {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ) : Prop :=
+  ∀ i : Fin m, panelFirstColumnTail A i = 0
+
 @[simp] theorem panelDropFirstRow_apply {m p : ℕ}
     (A : Fin (m + 1) → Fin p → ℝ) (i : Fin m) (j : Fin p) :
     panelDropFirstRow A i j = A i.succ j := rfl
@@ -674,6 +694,18 @@ noncomputable def trailingPanel {m p : ℕ}
 @[simp] theorem trailingPanel_apply {m p : ℕ}
     (A : Fin (m + 1) → Fin (p + 1) → ℝ) (i : Fin m) (j : Fin p) :
     trailingPanel A i j = A i.succ j.succ := rfl
+
+@[simp] theorem panelTopLeft_apply {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ) :
+    panelTopLeft A = A 0 0 := rfl
+
+@[simp] theorem panelTopRowTail_apply {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ) (j : Fin p) :
+    panelTopRowTail A j = A 0 j.succ := rfl
+
+@[simp] theorem panelFirstColumnTail_apply {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ) (i : Fin m) :
+    panelFirstColumnTail A i = A i.succ 0 := rfl
 
 /-- Dropping first row and first column is the same as taking the trailing
     panel in either order. -/
@@ -810,6 +842,46 @@ theorem householder_first_column_panel_exact_tail_zero
   simpa [matMulRect, matMulVec, panelFirstColumn] using
     householder_constructed_matMulVec_tail_zero hm0
       (panelFirstColumn hp0 A) hx i hi
+
+/-- Exact top-left entry after a constructed Householder panel step. -/
+theorem householder_panel_exact_topLeft
+    {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (hx : panelFirstColumn (Nat.succ_pos p) A ≠ 0) :
+    panelTopLeft
+      (matMulRect (m + 1) (m + 1) (p + 1)
+        (householder (m + 1)
+          (householderNormalizedVector (m + 1)
+            (householderVector (Nat.succ_pos m)
+              (panelFirstColumn (Nat.succ_pos p) A))
+            (householderBetaFromScale (Nat.succ_pos m)
+              (panelFirstColumn (Nat.succ_pos p) A))) 1)
+        A) =
+      -householderScale (Nat.succ_pos m) (panelFirstColumn (Nat.succ_pos p) A) := by
+  simpa [panelTopLeft] using
+    householder_first_column_panel_exact_first
+      (Nat.succ_pos m) (Nat.succ_pos p) A hx
+
+/-- Exact first-column tail zeroing after a constructed Householder panel
+    step, stated with the panel-decomposition predicate. -/
+theorem householder_panel_exact_firstColumnTailZero
+    {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (hx : panelFirstColumn (Nat.succ_pos p) A ≠ 0) :
+    panelFirstColumnTailZero
+      (matMulRect (m + 1) (m + 1) (p + 1)
+        (householder (m + 1)
+          (householderNormalizedVector (m + 1)
+            (householderVector (Nat.succ_pos m)
+              (panelFirstColumn (Nat.succ_pos p) A))
+            (householderBetaFromScale (Nat.succ_pos m)
+              (panelFirstColumn (Nat.succ_pos p) A))) 1)
+        A) := by
+  intro i
+  have hi :
+      i.succ ≠ (⟨0, Nat.succ_pos m⟩ : Fin (m + 1)) :=
+    Fin.succ_ne_zero i
+  simpa [panelFirstColumnTailZero, panelFirstColumnTail] using
+    householder_first_column_panel_exact_tail_zero
+      (Nat.succ_pos m) (Nat.succ_pos p) A hx i.succ hi
 
 /-- Residual form of the concrete shrinking Householder QR panel step.
 

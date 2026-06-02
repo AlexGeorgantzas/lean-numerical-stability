@@ -510,6 +510,13 @@ These compile, but should not be treated as fully derived stability results:
   applying the constructed exact reflector.  The next QR gap is to combine this
   exact zeroing fact with the rounded residual theorem in the shrinking-panel
   induction.
+- Added panel decomposition infrastructure in `HouseholderQR.lean`:
+  `panelTopLeft`, `panelTopRowTail`, `panelFirstColumnTail`, and
+  `panelFirstColumnTailZero`.  Added exact bridges
+  `householder_panel_exact_topLeft` and
+  `householder_panel_exact_firstColumnTailZero`, so the one-step exact
+  triangularization result is now stated in the panel shape that the future QR
+  loop will consume.
 
 ## 2026-04-26 Fix Pass
 
