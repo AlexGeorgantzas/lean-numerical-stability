@@ -869,6 +869,15 @@ These compile, but should not be treated as fully derived stability results:
   perturbation equation already proved for `fl_householderQR_safe_witness`.
   The witness `Q` remains exact; this is not a theorem about the rounded
   accumulated `Q_hat`.
+- Added a branch-combined safe-step interface for future recursive `Q_hat`
+  proofs: `householderQRPanel_Qhat_stepP_safe`,
+  `fl_householderQRPanel_Qhat_tail_safe`,
+  `householderQRPanel_Qhat_stepCoeff_safe`,
+  `householderQRPanel_Qhat_stepP_safe_orthogonal`, and
+  `fl_householderQRPanel_Qhat_safe_succ_succ_residual_bound`.  This packages
+  zero and nonzero safe branches into one residual theorem of the form
+  `Qhat_current = P_step * embedTrailingOne(Qhat_tail) + E` with the
+  branch-appropriate coefficient.
 
 ## 2026-04-26 Fix Pass
 

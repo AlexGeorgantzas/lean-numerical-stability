@@ -1654,6 +1654,90 @@ theorem fl_householderQRPanel_Qhat_safe_succ_succ_nonzero_residual_bound
   exact hstep.exists_residual_matrix_bound
     (householderConstructApplyBound_nonneg fp (m + 1) hvalid)
 
+/-- Exact transformation used by one safe `Q_hat` accumulator step.
+
+    The zero-column branch skips the reflector and uses the identity.  The
+    nonzero branch uses the exact Householder reflector corresponding to the
+    same active first column used by the rounded panel update. -/
+noncomputable def householderQRPanel_Qhat_stepP_safe {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ) :
+    Fin (m + 1) → Fin (m + 1) → ℝ :=
+  if panelFirstColumn (Nat.succ_pos p) A = 0 then
+    idMatrix (m + 1)
+  else
+    householder (m + 1)
+      (householderNormalizedVector (m + 1)
+        (householderVector (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A))
+        (householderBetaFromScale (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A))) 1
+
+/-- Recursive tail accumulator used by one safe `Q_hat` step. -/
+noncomputable def fl_householderQRPanel_Qhat_tail_safe (fp : FPModel)
+    {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ) :
+    Fin m → Fin m → ℝ :=
+  fl_householderQRPanel_Qhat_safe fp m p
+    (fl_householderTrailingPanelStepSafe fp A)
+
+/-- Local residual coefficient for one safe `Q_hat` accumulator step. -/
+noncomputable def householderQRPanel_Qhat_stepCoeff_safe (fp : FPModel)
+    {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ) : ℝ :=
+  if panelFirstColumn (Nat.succ_pos p) A = 0 then
+    0
+  else
+    householderConstructApplyBound fp (m + 1)
+
+/-- The exact transformation used by one safe `Q_hat` step is orthogonal. -/
+theorem householderQRPanel_Qhat_stepP_safe_orthogonal (fp : FPModel)
+    {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (hvalid : gammaValid fp (11 * (m + 1) + 23)) :
+    IsOrthogonal (m + 1) (householderQRPanel_Qhat_stepP_safe A) := by
+  by_cases hcol : panelFirstColumn (Nat.succ_pos p) A = 0
+  · simpa [householderQRPanel_Qhat_stepP_safe, hcol] using
+      idMatrix_orthogonal (m + 1)
+  · have hstep :=
+      fl_householderQRPanel_Qhat_safe_succ_succ_nonzero_step_error
+        fp A hcol hvalid
+    simpa [householderQRPanel_Qhat_stepP_safe, hcol] using hstep.orth
+
+/-- Unified residual form for one safe rounded `Q_hat` accumulator step.
+
+    This combines the zero-column skip branch and the nonzero rounded
+    Householder branch into one theorem.  It is the interface intended for the
+    future recursive accumulated-`Q_hat` analysis. -/
+theorem fl_householderQRPanel_Qhat_safe_succ_succ_residual_bound
+    (fp : FPModel) {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (hvalid : gammaValid fp (11 * (m + 1) + 23)) :
+    ∃ E : Fin (m + 1) → Fin (m + 1) → ℝ,
+      (∀ i j : Fin (m + 1),
+        fl_householderQRPanel_Qhat_safe fp (m + 1) (p + 1) A i j =
+          matMulRect (m + 1) (m + 1) (m + 1)
+            (householderQRPanel_Qhat_stepP_safe A)
+            (embedTrailingOne
+              (fl_householderQRPanel_Qhat_tail_safe fp A)) i j +
+              E i j) ∧
+      frobNorm E ≤
+        householderQRPanel_Qhat_stepCoeff_safe fp A *
+          frobNorm
+            (embedTrailingOne
+              (fl_householderQRPanel_Qhat_tail_safe fp A)) := by
+  by_cases hcol : panelFirstColumn (Nat.succ_pos p) A = 0
+  · have hzero :=
+      fl_householderQRPanel_Qhat_safe_succ_succ_zero_residual_bound fp A hcol
+    simpa [householderQRPanel_Qhat_stepP_safe,
+      householderQRPanel_Qhat_stepCoeff_safe,
+      fl_householderQRPanel_Qhat_tail_safe,
+      fl_householderTrailingPanelStepSafe, hcol] using hzero
+  · have hnonzero :=
+      fl_householderQRPanel_Qhat_safe_succ_succ_nonzero_residual_bound
+        fp A hcol hvalid
+    simpa [householderQRPanel_Qhat_stepP_safe,
+      householderQRPanel_Qhat_stepCoeff_safe,
+      fl_householderQRPanel_Qhat_tail_safe,
+      fl_householderTrailingPanelStepSafe, fl_householderTrailingPanelStep,
+      hcol] using hnonzero
+
 /-- Square specialization of the rounded accumulated Householder QR `Q_hat`
     algorithm. -/
 noncomputable def fl_householderQR_Qhat_safe (fp : FPModel) (n : ℕ)

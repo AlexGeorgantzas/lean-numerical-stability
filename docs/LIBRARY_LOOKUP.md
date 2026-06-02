@@ -89,7 +89,13 @@ transfer the already-proved `R_safe` facts to the `R_hat` field;
 `fl_householderQR_computed_safe_R_hat_explicit_backward_error_of_global_gammaValid`
 does the same for the explicit exact-witness perturbation equation.  The full
 recursive orthogonality/backward-error bridge for the accumulated `Q_hat`
-remains the next proof layer.
+remains the next proof layer.  For that next layer, use the branch-combined
+safe-step interface:
+`householderQRPanel_Qhat_stepP_safe`,
+`fl_householderQRPanel_Qhat_tail_safe`,
+`householderQRPanel_Qhat_stepCoeff_safe`,
+`householderQRPanel_Qhat_stepP_safe_orthogonal`, and
+`fl_householderQRPanel_Qhat_safe_succ_succ_residual_bound`.
 
 ## Main Dependency Chains
 
