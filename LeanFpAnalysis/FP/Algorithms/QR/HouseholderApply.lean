@@ -362,6 +362,172 @@ theorem householderApplyDeltaMatrix_normalized_entry_gamma
   rw [hfact i j, hprod]
   ring
 
+/-- Frobenius bound for the diagonal matrix produced by the final componentwise
+    subtraction roundoff in a Householder application. -/
+theorem householderApply_sub_error_frob_bound (fp : FPModel) (n : ℕ)
+    (δsub : Fin n → ℝ)
+    (hδsub : ∀ i : Fin n, |δsub i| ≤ fp.u) :
+    frobNorm (fun i j => idMatrix n i j * δsub i) ≤
+      Real.sqrt ((n : ℝ) * fp.u ^ 2) := by
+  let B : Fin n → Fin n → ℝ := fun i j => if i = j then fp.u else 0
+  apply frobNorm_le_of_entrywise_abs_le_sum_sq
+    (fun i j => idMatrix n i j * δsub i) B
+  · intro i j
+    by_cases hij : i = j
+    · simpa [B, idMatrix, hij] using hδsub i
+    · simp [B, idMatrix, hij]
+  · calc
+      (∑ i : Fin n, ∑ j : Fin n, (B i j) ^ 2)
+          = ∑ i : Fin n, fp.u ^ 2 := by
+            apply Finset.sum_congr rfl
+            intro i _
+            simp [B, Finset.sum_ite_eq, Finset.mem_univ]
+      _ = (n : ℝ) * fp.u ^ 2 := by
+            simp
+      _ ≤ (Real.sqrt ((n : ℝ) * fp.u ^ 2)) ^ 2 := by
+            rw [Real.sq_sqrt]
+            exact mul_nonneg (Nat.cast_nonneg' n) (sq_nonneg fp.u)
+  · exact Real.sqrt_nonneg _
+
+/-- Frobenius bound for the outer-product part of the normalized Householder
+    application perturbation.  The normalization `∑ |v_i|² = 2` gives
+    `‖v vᵀ‖_F = 2`, so entrywise gamma factors contribute at most `2γ`. -/
+theorem householderApply_outer_gamma_frob_bound (fp : FPModel) (n k : ℕ)
+    (v : Fin n → ℝ) (θ : Fin n → Fin n → ℝ)
+    (hvnorm : (∑ i : Fin n, |v i| ^ 2) = 2)
+    (hθ : ∀ i j : Fin n, |θ i j| ≤ gamma fp k)
+    (hvalid : gammaValid fp k) :
+    frobNorm (fun i j => -v i * v j * θ i j) ≤
+      2 * gamma fp k := by
+  let γ : ℝ := gamma fp k
+  have hγ : 0 ≤ γ := gamma_nonneg fp hvalid
+  have hvnorm_sq : (∑ i : Fin n, v i ^ 2) = 2 := by
+    calc
+      (∑ i : Fin n, v i ^ 2)
+          = ∑ i : Fin n, |v i| ^ 2 := by
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [sq_abs]
+      _ = 2 := hvnorm
+  let B : Fin n → Fin n → ℝ := fun i j => γ * |v i| * |v j|
+  apply frobNorm_le_of_entrywise_abs_le_sum_sq
+    (fun i j => -v i * v j * θ i j) B
+  · intro i j
+    have hp : 0 ≤ |v i| * |v j| :=
+      mul_nonneg (abs_nonneg _) (abs_nonneg _)
+    calc
+      |-v i * v j * θ i j|
+          = |v i| * |v j| * |θ i j| := by
+            rw [abs_mul, abs_mul, abs_neg]
+      _ ≤ |v i| * |v j| * γ :=
+            mul_le_mul_of_nonneg_left (hθ i j) hp
+      _ = B i j := by
+            simp [B, γ]
+            ring
+  · calc
+      (∑ i : Fin n, ∑ j : Fin n, (B i j) ^ 2)
+          = ∑ i : Fin n,
+              (γ ^ 2 * v i ^ 2 * (∑ j : Fin n, v j ^ 2)) := by
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [Finset.mul_sum]
+            apply Finset.sum_congr rfl
+            intro j _
+            have hsq_i : |v i| ^ 2 = v i ^ 2 := sq_abs (v i)
+            have hsq_j : |v j| ^ 2 = v j ^ 2 := sq_abs (v j)
+            simp [B]
+            calc
+              (γ * |v i| * |v j|) ^ 2 =
+                  γ ^ 2 * |v i| ^ 2 * |v j| ^ 2 := by ring
+              _ = γ ^ 2 * v i ^ 2 * v j ^ 2 := by
+                  rw [hsq_i, hsq_j]
+      _ = ∑ i : Fin n, (γ ^ 2 * v i ^ 2 * 2) := by
+            rw [hvnorm_sq]
+      _ = 2 * (∑ i : Fin n, γ ^ 2 * v i ^ 2) := by
+            rw [Finset.mul_sum]
+            apply Finset.sum_congr rfl
+            intro i _
+            ring
+      _ = 2 * (γ ^ 2 * (∑ i : Fin n, |v i| ^ 2)) := by
+            congr 1
+            rw [Finset.mul_sum]
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [sq_abs]
+      _ = (2 * γ) ^ 2 := by
+            rw [hvnorm]
+            ring
+      _ ≤ (2 * gamma fp k) ^ 2 := by
+            simp [γ]
+  · exact mul_nonneg (by norm_num) hγ
+
+/-- Concrete Frobenius bound for the normalized Householder application
+    perturbation matrix.
+
+    This is the normwise part of the Lemma 18.2 bridge, with the bound kept in
+    a transparent raw form:
+    the final subtraction contributes `sqrt(n*u^2)`, and the normalized
+    rank-one part contributes `2*gamma(2a+n+3)`.  A later cleanup can collapse
+    this expression into a single generic `γ_cm` constant if needed. -/
+theorem householderApplyDeltaMatrix_normalized_frob_bound
+    (fp : FPModel) (a n : ℕ)
+    (v v_hat : Fin n → ℝ) (eps : ℝ)
+    (η : Fin n → ℝ) (δw : ℝ) (δmul δsub : Fin n → ℝ)
+    (hvec : HouseholderVectorError n v v_hat eps)
+    (heps_nonneg : 0 ≤ eps)
+    (heps_bound : eps ≤ gamma fp a)
+    (hη : ∀ j : Fin n, |η j| ≤ gamma fp n)
+    (hδw : |δw| ≤ fp.u)
+    (hδmul : ∀ i : Fin n, |δmul i| ≤ fp.u)
+    (hδsub : ∀ i : Fin n, |δsub i| ≤ fp.u)
+    (hvalid : gammaValid fp (2 * a + n + 3)) :
+    frobNorm
+      (householderApplyDeltaMatrix n (householder n v 1) v_hat 1
+        η δw δmul δsub) ≤
+      Real.sqrt ((n : ℝ) * fp.u ^ 2) +
+        2 * gamma fp (2 * a + n + 3) := by
+  let k : ℕ := 2 * a + n + 3
+  have hentry :=
+    householderApplyDeltaMatrix_normalized_entry_gamma fp a n v v_hat eps
+      η δw δmul δsub hvec heps_nonneg heps_bound hη hδw hδmul hδsub
+      hvalid
+  let θ : Fin n → Fin n → ℝ := fun i j => Classical.choose (hentry i j)
+  have hθ : ∀ i j : Fin n, |θ i j| ≤ gamma fp k := by
+    intro i j
+    have hspec := Classical.choose_spec (hentry i j)
+    simpa [θ, k] using hspec.1
+  let D : Fin n → Fin n → ℝ := fun i j => idMatrix n i j * δsub i
+  let E : Fin n → Fin n → ℝ := fun i j => -v i * v j * θ i j
+  have hdecomp :
+      householderApplyDeltaMatrix n (householder n v 1) v_hat 1
+          η δw δmul δsub =
+        fun i j => D i j + E i j := by
+    ext i j
+    have hspec := Classical.choose_spec (hentry i j)
+    rw [hspec.2]
+    simp [D, E, θ]
+    ring
+  calc
+    frobNorm
+        (householderApplyDeltaMatrix n (householder n v 1) v_hat 1
+          η δw δmul δsub)
+        = frobNorm (fun i j => D i j + E i j) := by
+          rw [hdecomp]
+    _ ≤ frobNorm D + frobNorm E :=
+          frobNorm_add_le D E
+    _ ≤ Real.sqrt ((n : ℝ) * fp.u ^ 2) +
+          2 * gamma fp (2 * a + n + 3) := by
+          have hD :
+              frobNorm D ≤ Real.sqrt ((n : ℝ) * fp.u ^ 2) := by
+            simpa [D] using
+              householderApply_sub_error_frob_bound fp n δsub hδsub
+          have hE :
+              frobNorm E ≤ 2 * gamma fp (2 * a + n + 3) := by
+            simpa [E, k] using
+              householderApply_outer_gamma_frob_bound fp n k v θ
+                (householderVectorError_sum_abs_sq hvec) hθ hvalid
+          exact add_le_add hD hE
+
 /-- If the concrete perturbation matrix extracted from the rounded
     Householder-application kernel has the required Frobenius bound, then the
     rounded kernel satisfies the `HouseholderAppError` contract.
@@ -399,5 +565,39 @@ theorem fl_householderApply_appError_of_matrix_bound (fp : FPModel) (n : ℕ)
           apply Finset.sum_congr rfl
           intro j _
           ring
+
+/-- Implementation-backed normalized Householder application error theorem.
+
+    This is the concrete one-reflector bridge corresponding to Higham Lemma
+    18.2 in normalized form `P = I - v vᵀ`: if the computed vector satisfies
+    equation (18.3), then the concrete rounded application
+    `fl_householderApply fp n v_hat 1 b` satisfies `HouseholderAppError`.
+
+    The bound is deliberately left as a transparent raw expression.  Higham's
+    text writes this as a generic `γ_cm`; proving a single-gamma presentation is
+    a later constants-cleanup step, not a missing algorithmic bridge. -/
+theorem fl_householderApply_normalized_appError
+    (fp : FPModel) (a n : ℕ)
+    (v v_hat : Fin n → ℝ) (eps : ℝ) (b : Fin n → ℝ)
+    (hvec : HouseholderVectorError n v v_hat eps)
+    (heps_nonneg : 0 ≤ eps)
+    (heps_bound : eps ≤ gamma fp a)
+    (hvalid : gammaValid fp (2 * a + n + 3)) :
+    HouseholderAppError n (householder n v 1) b
+      (fl_householderApply fp n v_hat 1 b)
+      (Real.sqrt ((n : ℝ) * fp.u ^ 2) +
+        2 * gamma fp (2 * a + n + 3)) := by
+  have hn : gammaValid fp n :=
+    gammaValid_mono fp (by omega) hvalid
+  have horth : IsOrthogonal n (householder n v 1) :=
+    householder_orthogonal n v 1 (by simpa using hvec.norm_sq)
+  apply fl_householderApply_appError_of_matrix_bound fp n
+    (householder n v 1) v_hat 1 b
+    (Real.sqrt ((n : ℝ) * fp.u ^ 2) +
+      2 * gamma fp (2 * a + n + 3)) hn horth
+  intro η δw δmul δsub hη hδw hδmul hδsub
+  exact householderApplyDeltaMatrix_normalized_frob_bound fp a n
+    v v_hat eps η δw δmul δsub hvec heps_nonneg heps_bound
+    hη hδw hδmul hδsub hvalid
 
 end LeanFpAnalysis.FP

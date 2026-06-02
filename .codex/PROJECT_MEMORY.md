@@ -382,6 +382,16 @@ These compile, but should not be treated as fully derived stability results:
   entrywise gamma theorems for the normalized application delta.  The current
   next gap is now the final Frobenius summation estimate that turns these
   entrywise gamma facts into a concrete `HouseholderAppError` bound.
+- Completed the normalized one-reflector Householder application bridge:
+  `householderApply_sub_error_frob_bound`,
+  `householderApply_outer_gamma_frob_bound`,
+  `householderApplyDeltaMatrix_normalized_frob_bound`, and
+  `fl_householderApply_normalized_appError`.  This proves that if equation
+  (18.3) is supplied for a normalized computed vector, then the concrete
+  rounded `fl_householderApply fp n v_hat 1 b` satisfies `HouseholderAppError`.
+  The bound is currently the raw expression
+  `sqrt(n*u^2) + 2*gamma(2a+n+3)`, not yet collapsed into Higham's generic
+  `gamma_cm` notation.
 
 ## 2026-04-26 Fix Pass
 
