@@ -34,6 +34,39 @@ open LeanFpAnalysis.HDP
 | 6 | Improved covering exercise: concrete constant `e` and existential absolute-constant wrapper. | Done | `Appetizer/Covering.lean` |
 | 7 | Library health: lookup docs, executable lookup files, and unfinished-proof/build checks. | Maintained | `docs/HDP_LIBRARY_LOOKUP.md`, `examples/HDPLibraryLookup.lean` |
 
+## Chapter 1 Status
+
+Chapter import:
+
+```lean
+import LeanFpAnalysis.HDP.Chapter01
+```
+
+| Book item | Lean file | Main names | Notes |
+|---|---|---|---|
+| Section 1.1, expectation and transforms | `LeanFpAnalysis/HDP/Probability/RandomVariables.lean` | `expectation`, `momentGeneratingFunction`, `momentGeneratingFunction_eq_mgf` | Book notation wrappers over mathlib's Bochner expectation and `mgf`. |
+| Section 1.1, moments and `L^p` quantities | `Probability/RandomVariables.lean` | `rawMoment`, `absoluteMoment`, `eAbsoluteMoment`, `lpNorm`, `l2Norm`, `l2Norm_eq_sqrt_absMoment` | Includes finite-real and extended nonnegative moment forms. |
+| Section 1.1, variance, standard deviation, covariance | `Probability/RandomVariables.lean` | `standardDeviation`, `variance_eq_expectation_sq_sub_mean`, `standardDeviation_sq`, `standardDeviation_eq_l2Norm_centered`, `covariance_eq_l2Inner_centered`, `centralMoment_two_eq_variance` | Uses mathlib's `Var`, `stdDev`, and covariance API; identities keep the book's normalization. |
+| Section 1.1, distribution functions and normal density | `Probability/RandomVariables.lean` | `distribution`, `cumulativeDistribution`, `upperTail`, `lowerTail`, `upperTail_eq_one_sub_cdf`, `standardNormalDensity`, `standardNormalMeasure` | CDF/tail definitions and the standard normal density `exp (-x^2/2) / sqrt (2*pi)`. |
+| Section 1.2, Jensen and `L^p` inequalities | `Probability/Inequalities.lean` | `jensen_integral`, `lpNorm_mono_exponent`, `minkowski_eLpNorm`, `holder_integral_mul_abs`, `cauchy_schwarz_integral_mul` | Reuses mathlib convex-integral, eLpNorm, Holder, and Cauchy-Schwarz statements. |
+| Lemma 1.2.1 and Exercises 1.2.2-1.2.3 | `Probability/Inequalities.lean` | `integral_identity_nonnegative`, `integral_identity_real`, `eAbsoluteMoment_eq_lintegral_tail` | Exact layer-cake identities, including the two-sided real tail identity and extended moment-tail identity. |
+| Proposition 1.2.4 and Corollary 1.2.5 | `Probability/Inequalities.lean` | `markov_inequality`, `chebyshev_inequality` | Exact book bounds: `P{X ≥ t} ≤ E X / t` and `P{|X - E X| ≥ t} ≤ Var(X)/t^2`. |
+| Section 1.3, sample means and strong law | `Probability/LimitTheorems.lean` | `partialSum`, `sampleMean`, `variance_sampleMean_eq`, `strong_law_large_numbers_real` | Variance of the sample mean is exactly `σ2 / N`; SLLN wraps mathlib's real pairwise-independent strong law. |
+| Theorem 1.3.2, central limit theorem | `Probability/LimitTheorems.lean` | `standardNormalProbability`, `standardNormal_tail_eq_integral`, `normalizedSum`, `centralLimitConclusion`, `LindebergLevyCLTHypotheses`, `lindebergLevyCentralLimitTheoremStatement` | Hypotheses and exact conclusion are recorded without a fake projection proof. A genuine proof still needs the characteristic-function Taylor expansion and Levy continuity theorem infrastructure. |
+| Bernoulli, binomial, Poisson distributions | `Probability/LimitTheorems.lean` | `bernoulliNatPMF`, `binomialNatPMF`, `poissonPointProbability`, `poissonProbabilityMeasure` | PMF/measure definitions matching the chapter's distributions; Poisson point mass is `exp (-λ) * λ^k / k!`. |
+| Theorem 1.3.4, Poisson limit theorem | `Probability/LimitTheorems.lean` | `poissonTriangularSum`, `rowParameterSum`, `rowParameterMax`, `poissonLimitConclusion`, `PoissonLimitTheoremHypotheses`, `poissonLimitTheoremStatement`, `probabilityMeasure_nat_tendsto_of_singleton`, `poisson_limit_of_point_probabilities` | Hypotheses and exact conclusion are recorded without a fake projection proof. The discrete weak-convergence bridge from point probabilities is genuinely proved; the Bernoulli triangular-array point-probability asymptotic remains to be formalized. |
+
+## Chapter 1 Formalization Plan
+
+| Phase | Scope | Status | Core files |
+|---|---|---|---|
+| 1 | Chapter import and modular probability subfiles. | Done | `Chapter01.lean`, `Probability.lean` |
+| 2 | Section 1.1 notation and identities for expectations, moments, norms, variance/covariance, CDFs, tails, and standard normal density. | Done | `Probability/RandomVariables.lean` |
+| 3 | Section 1.2 inequalities and tail identities, reusing mathlib's Jensen, `L^p`, Holder, layer-cake, Markov, and Chebyshev APIs. | Done | `Probability/Inequalities.lean` |
+| 4 | Section 1.3 sample-mean variance and SLLN. | Done | `Probability/LimitTheorems.lean` |
+| 5 | Section 1.3 CLT and Poisson limit theorem statements; discrete point-probability convergence bridge for Poisson laws. | Partial | `Probability/LimitTheorems.lean` |
+| 6 | Library health: lookup docs, executable lookup file, import graph, and no unfinished proofs under `LeanFpAnalysis/HDP`. | Maintained | `docs/HDP_LIBRARY_LOOKUP.md`, `examples/HDPLibraryLookup.lean` |
+
 ## Main Dependency Chain
 
 ```text
@@ -45,9 +78,20 @@ Geometry.Convex
   -> Appetizer.Covering
 
 Probability.Variance is independent support material for Exercise 0.0.3.
+
+Probability.RandomVariables
+  -> Probability.Inequalities
+  -> Probability.LimitTheorems
+  -> Chapter01
 ```
 
 ## Common Imports
+
+Use Chapter 1:
+
+```lean
+import LeanFpAnalysis.HDP.Chapter01
+```
 
 Use the full appetizer:
 
@@ -67,4 +111,7 @@ import LeanFpAnalysis.HDP.Geometry.Convex
 rg "approximate_caratheodory|PairwiseNormBound|empiricalCenters" LeanFpAnalysis/HDP
 rg "binomial_chain|unorderedEmpiricalCenters|improved_covering" LeanFpAnalysis/HDP
 rg "variance|productWeight|weighted_variance" LeanFpAnalysis/HDP
+rg "expectation|momentGeneratingFunction|standardDeviation|cumulativeDistribution" LeanFpAnalysis/HDP
+rg "jensen_integral|markov_inequality|chebyshev_inequality|integral_identity" LeanFpAnalysis/HDP
+rg "strong_law|centralLimitConclusion|poissonLimitConclusion|point_probabilities" LeanFpAnalysis/HDP
 ```
