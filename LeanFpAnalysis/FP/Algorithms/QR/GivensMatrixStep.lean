@@ -29,6 +29,22 @@ noncomputable def fl_givensApplyMatrixRect (fp : FPModel) (m cols : ℕ)
     fl_givensApply fp m p q
       (fl_givensC fp xi xj) (fl_givensS fp xi xj) (fun k => A k j) i
 
+/-- Concrete square Givens column step.
+
+    The two-vector used to construct the rotation is taken from the current
+    matrix column: `(A p col, A q col)`.  This is the local operation used by
+    a future full Givens QR annihilation schedule. -/
+noncomputable def fl_givensColumnStepMatrix (fp : FPModel) (n : ℕ)
+    (p q col : Fin n) (A : Fin n → Fin n → ℝ) :
+    Fin n → Fin n → ℝ :=
+  fl_givensApplyMatrix fp n p q (A p col) (A q col) A
+
+/-- Concrete rectangular-panel Givens column step. -/
+noncomputable def fl_givensColumnStepMatrixRect (fp : FPModel) (m cols : ℕ)
+    (p q : Fin m) (col : Fin cols) (A : Fin m → Fin cols → ℝ) :
+    Fin m → Fin cols → ℝ :=
+  fl_givensApplyMatrixRect fp m cols p q (A p col) (A q col) A
+
 /-- Columnwise matrix-step form for one Givens rotation.
 
     Each output column is represented as `(G + ΔG_j) A[:,j]`; the perturbation
@@ -124,6 +140,46 @@ theorem fl_givensApply_computed_matrix_step_error_rect (fp : FPModel)
     simpa [G, fl_givensApplyMatrixRect] using
       fl_givensApply_computed_app_error_conservative fp m p q xi xj
         (fun k => A k j) hpq h hvalid
+
+/-- Concrete square Givens column step satisfies the columnwise matrix-step
+    contract, with coefficients computed from the current matrix column. -/
+theorem fl_givensColumnStep_matrix_step_error (fp : FPModel) (n : ℕ)
+    (p q col : Fin n) (A : Fin n → Fin n → ℝ)
+    (hpq : p ≠ q) (h : A p col ^ 2 + A q col ^ 2 ≠ 0)
+    (hvalid : gammaValid fp 8) :
+    ColumnwiseGivensStepError n
+      (givensRotation n p q (givensC (A p col) (A q col))
+        (givensS (A p col) (A q col)))
+      A
+      (fl_givensColumnStepMatrix fp n p q col A)
+      (gamma fp 8 *
+        frobNorm (givensRotation n p q
+          (givensC (A p col) (A q col))
+          (givensS (A p col) (A q col)))) := by
+  simpa [fl_givensColumnStepMatrix] using
+    fl_givensApply_computed_matrix_step_error fp n p q
+      (A p col) (A q col) A hpq h hvalid
+
+/-- Concrete rectangular-panel Givens column step satisfies the columnwise
+    matrix-step contract, with coefficients computed from the current panel
+    column. -/
+theorem fl_givensColumnStep_matrix_step_error_rect (fp : FPModel)
+    (m cols : ℕ)
+    (p q : Fin m) (col : Fin cols) (A : Fin m → Fin cols → ℝ)
+    (hpq : p ≠ q) (h : A p col ^ 2 + A q col ^ 2 ≠ 0)
+    (hvalid : gammaValid fp 8) :
+    ColumnwiseGivensStepErrorRect m cols
+      (givensRotation m p q (givensC (A p col) (A q col))
+        (givensS (A p col) (A q col)))
+      A
+      (fl_givensColumnStepMatrixRect fp m cols p q col A)
+      (gamma fp 8 *
+        frobNorm (givensRotation m p q
+          (givensC (A p col) (A q col))
+          (givensS (A p col) (A q col)))) := by
+  simpa [fl_givensColumnStepMatrixRect] using
+    fl_givensApply_computed_matrix_step_error_rect fp m cols p q
+      (A p col) (A q col) A hpq h hvalid
 
 /-- Residual form of a square columnwise Givens matrix step. -/
 theorem ColumnwiseGivensStepError.column_residual {n : ℕ}

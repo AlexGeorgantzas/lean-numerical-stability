@@ -178,6 +178,40 @@ theorem fl_givens_sequence_backward_error_uniform (fp : FPModel) {n r : ℕ}
     rw [hG.frobNorm_eq_sqrt_card]
   · exact hAstep
 
+/-- Uniform-bound sequence theorem for concrete Givens column steps.
+
+    Compared with `fl_givens_sequence_backward_error_uniform`, this theorem
+    obtains each rotation's two-vector from the current matrix column
+    `(Aseq k (pseq k) (colseq k), Aseq k (qseq k) (colseq k))`.  This is one
+    layer closer to a full Givens QR loop; the remaining missing piece is the
+    actual annihilation schedule and triangular-shape proof. -/
+theorem fl_givens_column_sequence_backward_error_uniform (fp : FPModel)
+    {n r : ℕ}
+    (Aseq : ℕ → Fin n → Fin n → ℝ)
+    (pseq qseq colseq : ℕ → Fin n)
+    (hpq : ∀ k : ℕ, k < r → pseq k ≠ qseq k)
+    (hnz : ∀ k : ℕ, k < r →
+      Aseq k (pseq k) (colseq k) ^ 2 +
+        Aseq k (qseq k) (colseq k) ^ 2 ≠ 0)
+    (hvalid : gammaValid fp 8)
+    (hAstep : ∀ k : ℕ, k < r →
+      Aseq (k + 1) =
+        fl_givensColumnStepMatrix fp n (pseq k) (qseq k)
+          (colseq k) (Aseq k)) :
+    ∃ (Q : Fin n → Fin n → ℝ) (ΔA : Fin n → Fin n → ℝ),
+      IsOrthogonal n Q ∧
+      (∀ i j : Fin n, Aseq r i j =
+        matMul n (matTranspose Q)
+          (fun a b => Aseq 0 a b + ΔA a b) i j) ∧
+      frobNorm ΔA ≤
+        residualAccumBound (gamma fp 8 * Real.sqrt (n : ℝ)) r *
+          frobNorm (Aseq 0) := by
+  apply fl_givens_sequence_backward_error_uniform fp Aseq pseq qseq
+    (fun k => Aseq k (pseq k) (colseq k))
+    (fun k => Aseq k (qseq k) (colseq k)) hpq hnz hvalid
+  intro k hk
+  simpa [fl_givensColumnStepMatrix] using hAstep k hk
+
 /-- Rectangular-panel version of `fl_givens_sequence_backward_error`. -/
 theorem fl_givens_panel_sequence_backward_error (fp : FPModel)
     {m cols r : ℕ}
@@ -265,5 +299,35 @@ theorem fl_givens_panel_sequence_backward_error_uniform (fp : FPModel)
         (xiseq k) (xjseq k) (hpq k hk) (hnz k hk)
     rw [hG.frobNorm_eq_sqrt_card]
   · exact hAstep
+
+/-- Uniform-bound rectangular-panel sequence theorem for concrete Givens
+    column steps. -/
+theorem fl_givens_column_panel_sequence_backward_error_uniform (fp : FPModel)
+    {m cols r : ℕ}
+    (Aseq : ℕ → Fin m → Fin cols → ℝ)
+    (pseq qseq : ℕ → Fin m)
+    (colseq : ℕ → Fin cols)
+    (hpq : ∀ k : ℕ, k < r → pseq k ≠ qseq k)
+    (hnz : ∀ k : ℕ, k < r →
+      Aseq k (pseq k) (colseq k) ^ 2 +
+        Aseq k (qseq k) (colseq k) ^ 2 ≠ 0)
+    (hvalid : gammaValid fp 8)
+    (hAstep : ∀ k : ℕ, k < r →
+      Aseq (k + 1) =
+        fl_givensColumnStepMatrixRect fp m cols (pseq k) (qseq k)
+          (colseq k) (Aseq k)) :
+    ∃ (Q : Fin m → Fin m → ℝ) (ΔA : Fin m → Fin cols → ℝ),
+      IsOrthogonal m Q ∧
+      (∀ (i : Fin m) (j : Fin cols), Aseq r i j =
+        matMulRect m m cols (matTranspose Q)
+          (fun a b => Aseq 0 a b + ΔA a b) i j) ∧
+      frobNorm ΔA ≤
+        residualAccumBound (gamma fp 8 * Real.sqrt (m : ℝ)) r *
+          frobNorm (Aseq 0) := by
+  apply fl_givens_panel_sequence_backward_error_uniform fp Aseq pseq qseq
+    (fun k => Aseq k (pseq k) (colseq k))
+    (fun k => Aseq k (qseq k) (colseq k)) hpq hnz hvalid
+  intro k hk
+  simpa [fl_givensColumnStepMatrixRect] using hAstep k hk
 
 end LeanFpAnalysis.FP

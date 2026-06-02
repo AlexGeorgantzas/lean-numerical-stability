@@ -731,6 +731,16 @@ These compile, but should not be treated as fully derived stability results:
   `fl_givens_sequence_backward_error_uniform` and
   `fl_givens_panel_sequence_backward_error_uniform`, discharging the earlier
   explicit per-step norm-bound assumption with `gamma fp 8 * sqrt n`.
+- Added concrete current-matrix Givens column steps:
+  `fl_givensColumnStepMatrix` and `fl_givensColumnStepMatrixRect`, with bridge
+  theorems `fl_givensColumnStep_matrix_step_error` and the rectangular variant.
+  Added sequence corollaries
+  `fl_givens_column_sequence_backward_error_uniform` and
+  `fl_givens_column_panel_sequence_backward_error_uniform`, where each rotation
+  coefficient is computed from the evolving matrix entries
+  `(Aseq k (pseq k) (colseq k), Aseq k (qseq k) (colseq k))`.  The remaining
+  full-Givens-QR gap is now specifically the annihilation schedule, nonzero
+  guards for the selected pivots, and the final upper-triangular shape proof.
 - Added exact vector embedding algebra for the QR RHS recursion:
   `vectorTrailingPerturbation`, `embedTrailingOne_matMulVec_top`,
   `vectorTail_embedTrailingOne_matMulVec`, and
