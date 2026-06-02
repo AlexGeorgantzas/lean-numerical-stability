@@ -638,7 +638,6 @@ These compile, but should not be treated as fully derived stability results:
   `fl_householderQR_solve`.  The RHS recursion applies the same rounded
   Householder reflectors chosen from the active `A` panel to `b`, then the solve
   definition calls `fl_backSub` on `fl_householderQR_R` and the transformed RHS.
-  The full solve stability bridge remains pending.
 - Added RHS one-step residual bridge in `QR/QRSolve.lean`:
   `HouseholderAppError.exists_residual_vector`,
   `fl_householder_first_column_rhs_step_error`, and
@@ -664,10 +663,21 @@ These compile, but should not be treated as fully derived stability results:
   `fl_householderQRPanel_rhs_backward_error`, and
   `fl_householderQR_rhs_backward_error`.  The concrete RHS reflector recursion
   is now implementation-backed under `HouseholderQRPanelReady`, with a
-  recursive componentwise perturbation bound.  The final
-  `fl_householderQR_solve` theorem is still pending because the QR `R` proof,
-  RHS proof, and back-substitution proof must still be combined with a common
-  orthogonal factor.
+  recursive componentwise perturbation bound.
+- Added the simultaneous shared-orthogonal-factor bridge
+  `HouseholderQRPanelSolveBackwardError`,
+  `householder_qr_panel_solve_backward_cons`,
+  `fl_householderQRPanel_solve_components_backward_error`, and
+  `fl_householderQR_solve_components_backward_error`.  This closes the
+  common-`Q` gap between the concrete `R` proof and concrete RHS proof.
+- Added `fl_householderQR_solve_backward_error`, the implementation-backed
+  theorem for the concrete Householder QR solve.  It combines the shared-`Q`
+  QR/RHS component theorem with `backSub_backward_error`.  Side assumptions are
+  explicit: `HouseholderQRPanelReady`, nonzero diagonal of the computed
+  `fl_householderQR_R`, `0 < n`, and `gammaValid fp n`.  The matrix bound is
+  `householderQRBackwardCoeff fp n * ‖A‖_F +
+  gamma fp n * ‖fl_householderQR_R fp n A‖_F`; the RHS bound is
+  `householderQRRhsBackwardBound fp n A b`.
 - Added exact vector embedding algebra for the QR RHS recursion:
   `vectorTrailingPerturbation`, `embedTrailingOne_matMulVec_top`,
   `vectorTail_embedTrailingOne_matMulVec`, and

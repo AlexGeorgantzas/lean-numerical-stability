@@ -633,6 +633,32 @@ lemma frobNorm_le_of_entrywise_abs_le_sum_sq {m n : ℕ}
   frobNorm_le_of_frobNormSq_le_sq A hc
     (le_trans (frobNormSq_le_sum_sq_of_entrywise_abs_le A B hentry) hsum)
 
+/-- A componentwise relative entry bound gives a Frobenius norm bound:
+    if `|Aᵢⱼ| ≤ c |Bᵢⱼ|` and `0 ≤ c`, then `‖A‖_F ≤ c ‖B‖_F`. -/
+lemma frobNorm_le_const_mul_frobNorm_of_entrywise_abs_le {m n : ℕ}
+    (A B : RMatFn m n) {c : ℝ} (hc : 0 ≤ c)
+    (hentry : ∀ i : Fin m, ∀ j : Fin n, |A i j| ≤ c * |B i j|) :
+    frobNorm A ≤ c * frobNorm B := by
+  apply frobNorm_le_of_entrywise_abs_le_sum_sq A (fun i j => c * |B i j|)
+  · exact hentry
+  · calc
+      (∑ i : Fin m, ∑ j : Fin n, (c * |B i j|) ^ 2)
+          = c ^ 2 * frobNormSq B := by
+            unfold frobNormSq
+            simp_rw [show ∀ x : ℝ, (c * |x|) ^ 2 = c ^ 2 * x ^ 2 from by
+              intro x
+              rw [show (c * |x|) ^ 2 = c ^ 2 * |x| ^ 2 from by ring, sq_abs]]
+            rw [Finset.mul_sum]
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [Finset.mul_sum]
+      _ = (c * frobNorm B) ^ 2 := by
+            rw [show (c * frobNorm B) ^ 2 =
+                c ^ 2 * frobNorm B ^ 2 from by ring,
+              frobNorm_sq]
+      _ ≤ (c * frobNorm B) ^ 2 := le_rfl
+  · exact mul_nonneg hc (frobNorm_nonneg B)
+
 /-- ‖A‖_F = 0 iff A = 0. -/
 theorem frobNorm_eq_zero_iff {m n : ℕ} (A : RMatFn m n) :
     frobNorm A = 0 ↔ ∀ i j, A i j = 0 := by
