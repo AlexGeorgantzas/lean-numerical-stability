@@ -571,6 +571,12 @@ These compile, but should not be treated as fully derived stability results:
   multiplication leaves the top row unchanged and the trailing panel becomes
   the smaller `matMulRect` action on the old trailing panel.  These lemmas
   connect full-size embedded transformations with active-panel updates.
+- Added `panelFromTopAndTrailing`, exact QR bookkeeping that reconstructs a
+  nonempty panel from the computed top row and trailing panel while setting the
+  first-column tail to zero.  This supports an implementation-backed `R_hat`
+  algorithm whose upper-triangular shape is by construction, not by assuming
+  rounded operations produce exact zeros.  A recursive triangularity lemma for
+  this constructor is also available.
 
 ## 2026-04-26 Fix Pass
 

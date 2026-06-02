@@ -683,6 +683,21 @@ def panelFirstColumnTailZero {m p : ℕ}
     (A : Fin (m + 1) → Fin (p + 1) → ℝ) : Prop :=
   ∀ i : Fin m, panelFirstColumnTail A i = 0
 
+/-- Reconstruct a nonempty panel from its top-left entry, top-row tail, and
+    trailing panel, setting the first-column tail to zero.
+
+    This is exact QR bookkeeping: after one Householder step, the algorithm
+    stores the completed first column as triangular zeros and recurses on the
+    trailing panel.  No floating-point operation is hidden in this definition. -/
+noncomputable def panelFromTopAndTrailing {m p : ℕ}
+    (a00 : ℝ) (top : Fin p → ℝ) (tail : Fin m → Fin p → ℝ) :
+    Fin (m + 1) → Fin (p + 1) → ℝ :=
+  fun i j =>
+    if hi : i = 0 then
+      if hj : j = 0 then a00 else top (j.pred hj)
+    else
+      if hj : j = 0 then 0 else tail (i.pred hi) (j.pred hj)
+
 /-- Embed an `m × m` matrix as the lower-right block of an `(m+1) × (m+1)`
     matrix, with a leading `1` on the diagonal and zeros in the first row and
     first column.
@@ -721,6 +736,71 @@ noncomputable def embedTrailingOne {m : ℕ}
 @[simp] theorem panelFirstColumnTail_apply {m p : ℕ}
     (A : Fin (m + 1) → Fin (p + 1) → ℝ) (i : Fin m) :
     panelFirstColumnTail A i = A i.succ 0 := rfl
+
+@[simp] theorem panelFromTopAndTrailing_zero_zero {m p : ℕ}
+    (a00 : ℝ) (top : Fin p → ℝ) (tail : Fin m → Fin p → ℝ) :
+    panelFromTopAndTrailing a00 top tail 0 0 = a00 := by
+  simp [panelFromTopAndTrailing]
+
+@[simp] theorem panelFromTopAndTrailing_zero_succ {m p : ℕ}
+    (a00 : ℝ) (top : Fin p → ℝ) (tail : Fin m → Fin p → ℝ)
+    (j : Fin p) :
+    panelFromTopAndTrailing a00 top tail 0 j.succ = top j := by
+  simp [panelFromTopAndTrailing]
+
+@[simp] theorem panelFromTopAndTrailing_succ_zero {m p : ℕ}
+    (a00 : ℝ) (top : Fin p → ℝ) (tail : Fin m → Fin p → ℝ)
+    (i : Fin m) :
+    panelFromTopAndTrailing a00 top tail i.succ 0 = 0 := by
+  simp [panelFromTopAndTrailing]
+
+@[simp] theorem panelFromTopAndTrailing_succ_succ {m p : ℕ}
+    (a00 : ℝ) (top : Fin p → ℝ) (tail : Fin m → Fin p → ℝ)
+    (i : Fin m) (j : Fin p) :
+    panelFromTopAndTrailing a00 top tail i.succ j.succ = tail i j := by
+  simp [panelFromTopAndTrailing]
+
+@[simp] theorem panelTopLeft_panelFromTopAndTrailing {m p : ℕ}
+    (a00 : ℝ) (top : Fin p → ℝ) (tail : Fin m → Fin p → ℝ) :
+    panelTopLeft (panelFromTopAndTrailing a00 top tail) = a00 := by
+  rfl
+
+@[simp] theorem panelTopRowTail_panelFromTopAndTrailing {m p : ℕ}
+    (a00 : ℝ) (top : Fin p → ℝ) (tail : Fin m → Fin p → ℝ) :
+    panelTopRowTail (panelFromTopAndTrailing a00 top tail) = top := by
+  ext j
+  rfl
+
+@[simp] theorem trailingPanel_panelFromTopAndTrailing {m p : ℕ}
+    (a00 : ℝ) (top : Fin p → ℝ) (tail : Fin m → Fin p → ℝ) :
+    trailingPanel (panelFromTopAndTrailing a00 top tail) = tail := by
+  ext i j
+  rfl
+
+@[simp] theorem panelFirstColumnTailZero_panelFromTopAndTrailing {m p : ℕ}
+    (a00 : ℝ) (top : Fin p → ℝ) (tail : Fin m → Fin p → ℝ) :
+    panelFirstColumnTailZero (panelFromTopAndTrailing a00 top tail) := by
+  intro i
+  rfl
+
+/-- A panel whose first-column tail is zero is exactly reconstructed from its
+    visible top row and trailing panel. -/
+theorem panelFromTopAndTrailing_of_firstColumnTailZero {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (hzero : panelFirstColumnTailZero A) :
+    panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+      (trailingPanel A) = A := by
+  ext i j
+  refine Fin.cases ?_ ?_ i
+  · refine Fin.cases ?_ ?_ j
+    · rfl
+    · intro j
+      rfl
+  · intro i
+    refine Fin.cases ?_ ?_ j
+    · simpa [panelFirstColumnTailZero, panelFirstColumnTail] using (hzero i).symm
+    · intro j
+      rfl
 
 @[simp] theorem embedTrailingOne_zero_zero {m : ℕ}
     (U : Fin m → Fin m → ℝ) :
@@ -1364,6 +1444,26 @@ theorem fl_householder_first_column_panel_sequence_backward_error
 /-- Upper-triangular shape predicate for square QR `R` factors. -/
 def IsUpperTriangular (n : ℕ) (R : Fin n → Fin n → ℝ) : Prop :=
   ∀ i j : Fin n, j.val < i.val → R i j = 0
+
+/-- Reconstructing a square panel with a zero first-column tail preserves
+    upper-triangularity exactly when the trailing panel is upper triangular. -/
+theorem IsUpperTriangular_panelFromTopAndTrailing {n : ℕ}
+    (a00 : ℝ) (top : Fin n → ℝ) (tail : Fin n → Fin n → ℝ)
+    (htail : IsUpperTriangular n tail) :
+    IsUpperTriangular (n + 1) (panelFromTopAndTrailing a00 top tail) := by
+  intro i j hji
+  revert hji
+  refine Fin.cases ?_ ?_ i
+  · intro hji
+    exact False.elim ((Nat.not_lt_zero j.val) hji)
+  · intro i hji
+    revert hji
+    refine Fin.cases ?_ ?_ j
+    · intro _hji
+      simp
+    · intro j hji
+      have hjlt : j.val < i.val := Nat.succ_lt_succ_iff.mp hji
+      simpa [IsUpperTriangular] using htail i j hjlt
 
 /-- **Theorem 18.4**: Householder QR factorization backward error (normwise).
 
