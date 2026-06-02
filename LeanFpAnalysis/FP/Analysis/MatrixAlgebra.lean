@@ -137,6 +137,44 @@ noncomputable def matMulRect (m n p : ℕ)
     Fin m → Fin p → ℝ :=
   fun i j => ∑ k : Fin n, A i k * B k j
 
+/-- Left multiplication by identity for rectangular matrices. -/
+theorem matMulRect_id_left (m p : ℕ) (A : Fin m → Fin p → ℝ) :
+    matMulRect m m p (idMatrix m) A = A := by
+  ext i j
+  unfold matMulRect idMatrix
+  simp [Finset.sum_ite_eq, Finset.mem_univ]
+
+/-- Right distributivity for rectangular multiplication:
+    `A*(B+C) = A*B + A*C`. -/
+theorem matMulRect_add_right (m n p : ℕ)
+    (A : Fin m → Fin n → ℝ)
+    (B C : Fin n → Fin p → ℝ) :
+    matMulRect m n p A (fun a b => B a b + C a b) =
+      fun i j => matMulRect m n p A B i j +
+        matMulRect m n p A C i j := by
+  ext i j
+  unfold matMulRect
+  rw [← Finset.sum_add_distrib]
+  apply Finset.sum_congr rfl
+  intro k _
+  ring
+
+/-- Associativity for a square left product acting on a rectangular panel:
+    `(AB)C = A(BC)`. -/
+theorem matMulRect_assoc_square_left (m p : ℕ)
+    (A B : Fin m → Fin m → ℝ) (C : Fin m → Fin p → ℝ) :
+    matMulRect m m p (matMul m A B) C =
+      matMulRect m m p A (matMulRect m m p B C) := by
+  ext i j
+  unfold matMulRect matMul
+  simp_rw [Finset.sum_mul, Finset.mul_sum]
+  rw [Finset.sum_comm]
+  apply Finset.sum_congr rfl
+  intro k _
+  apply Finset.sum_congr rfl
+  intro l _
+  ring
+
 /-- Componentwise absolute value of a vector. -/
 noncomputable def absVec (n : ℕ) (v : Fin n → ℝ) : Fin n → ℝ :=
   fun i => |v i|
@@ -1010,6 +1048,53 @@ theorem frobNorm_orthogonal_left {n : ℕ} (U A : Fin n → Fin n → ℝ)
     frobNorm (matMul n U A) = frobNorm A := by
   rw [frobNorm_eq_sqrt_frobNormSq, frobNorm_eq_sqrt_frobNormSq,
     frobNormSq_orthogonal_left U A hU]
+
+/-- Frobenius norm is invariant under left multiplication by an orthogonal
+    square matrix on a rectangular panel. -/
+theorem frobNormSq_orthogonal_left_rect {m p : ℕ}
+    (U : Fin m → Fin m → ℝ) (A : Fin m → Fin p → ℝ)
+    (hU : IsOrthogonal m U) :
+    frobNormSq (matMulRect m m p U A) = frobNormSq A := by
+  unfold frobNormSq matMulRect
+  conv_lhs => rw [Finset.sum_comm]
+  conv_rhs => rw [Finset.sum_comm]
+  apply Finset.sum_congr rfl
+  intro j _
+  have expand : ∀ i : Fin m,
+      (∑ k : Fin m, U i k * A k j) ^ 2 =
+      ∑ k : Fin m, ∑ l : Fin m, U i k * U i l * (A k j * A l j) := by
+    intro i
+    rw [sq, Finset.sum_mul]
+    apply Finset.sum_congr rfl
+    intro k _
+    rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl
+    intro l _
+    ring
+  simp_rw [expand]
+  rw [Finset.sum_comm]
+  have collapse : ∀ k : Fin m,
+      ∑ i : Fin m, ∑ l : Fin m, U i k * U i l * (A k j * A l j) =
+        A k j ^ 2 := by
+    intro k
+    rw [Finset.sum_comm]
+    have factor : ∀ l : Fin m,
+        ∑ i : Fin m, U i k * U i l * (A k j * A l j) =
+          (∑ i : Fin m, U i k * U i l) * (A k j * A l j) := by
+      intro l
+      rw [← Finset.sum_mul]
+    simp_rw [factor, hU.col_orthonormal]
+    simp [Finset.sum_ite_eq, Finset.mem_univ]
+    ring
+  exact Finset.sum_congr rfl (fun k _ => collapse k)
+
+/-- `‖UA‖_F = ‖A‖_F` for rectangular panels when `U` is orthogonal. -/
+theorem frobNorm_orthogonal_left_rect {m p : ℕ}
+    (U : Fin m → Fin m → ℝ) (A : Fin m → Fin p → ℝ)
+    (hU : IsOrthogonal m U) :
+    frobNorm (matMulRect m m p U A) = frobNorm A := by
+  rw [frobNorm_eq_sqrt_frobNormSq, frobNorm_eq_sqrt_frobNormSq,
+    frobNormSq_orthogonal_left_rect U A hU]
 
 /-- ‖AV‖_F = ‖A‖_F when V is orthogonal. -/
 theorem frobNorm_orthogonal_right {n : ℕ} (A V : Fin n → Fin n → ℝ)

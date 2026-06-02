@@ -425,6 +425,221 @@ theorem fl_householder_sequence_backward_error (fp : FPModel) {n r : ℕ}
   rw [hAstep k hk]
   simpa [Pseq, householderConstructApplyBound] using hraw
 
+/-- Residual-form single-step accumulation for rectangular panels. -/
+theorem orthogonal_sequence_one_step_of_residual_rect (m p : ℕ)
+    (A A_hat : Fin m → Fin p → ℝ)
+    (Q : Fin m → Fin m → ℝ) (ΔA : Fin m → Fin p → ℝ)
+    (hQ : IsOrthogonal m Q)
+    (hAhat : ∀ i j, A_hat i j =
+      matMulRect m m p (matTranspose Q) (fun a b => A a b + ΔA a b) i j)
+    (P : Fin m → Fin m → ℝ)
+    (hP : IsOrthogonal m P)
+    (A_next E : Fin m → Fin p → ℝ)
+    (hNext : ∀ i j, A_next i j =
+      matMulRect m m p P A_hat i j + E i j)
+    (hE : frobNorm E ≤ c_step * frobNorm A_hat) :
+    ∃ (Q' : Fin m → Fin m → ℝ) (ΔA' : Fin m → Fin p → ℝ),
+      IsOrthogonal m Q' ∧
+      (∀ i j, A_next i j =
+        matMulRect m m p (matTranspose Q')
+          (fun a b => A a b + ΔA' a b) i j) ∧
+      frobNorm ΔA' ≤
+        frobNorm ΔA +
+          c_step * frobNorm (fun a b => A a b + ΔA a b) := by
+  let Q' := matMul m Q (matTranspose P)
+  let B : Fin m → Fin p → ℝ := fun a b => A a b + ΔA a b
+  let E' : Fin m → Fin p → ℝ := matMulRect m m p Q' E
+  let ΔA' : Fin m → Fin p → ℝ := fun a b => ΔA a b + E' a b
+  have hQ' : IsOrthogonal m Q' := hQ.mul hP.transpose
+  have hÂ : A_hat = matMulRect m m p (matTranspose Q) B :=
+    funext fun k => funext fun l => hAhat k l
+  have hQ'inv : matMul m (matTranspose Q') Q' = idMatrix m :=
+    funext fun a => funext fun b => hQ'.left_inv a b
+  have hQ'T : matTranspose Q' = matMul m P (matTranspose Q) := by
+    show matTranspose (matMul m Q (matTranspose P)) = _
+    rw [matTranspose_matMul, matTranspose_involutive]
+  have eq1 :
+      matMulRect m m p (matTranspose Q') B =
+        matMulRect m m p P A_hat := by
+    rw [hQ'T, matMulRect_assoc_square_left, ← hÂ]
+  have eq2 : matMulRect m m p (matTranspose Q') E' = E := by
+    show matMulRect m m p (matTranspose Q') (matMulRect m m p Q' E) = _
+    rw [← matMulRect_assoc_square_left, hQ'inv, matMulRect_id_left]
+  use Q', ΔA'
+  refine ⟨hQ', ?_, ?_⟩
+  · have hBE : (fun a b => A a b + ΔA' a b) = fun a b => B a b + E' a b :=
+      funext fun a => funext fun b =>
+        show A a b + (ΔA a b + E' a b) = (A a b + ΔA a b) + E' a b from by ring
+    intro i j
+    rw [hNext i j, hBE]
+    calc matMulRect m m p P A_hat i j + E i j
+        = matMulRect m m p (matTranspose Q') B i j +
+            matMulRect m m p (matTranspose Q') E' i j := by
+          rw [← congr_fun (congr_fun eq1 i) j, ← congr_fun (congr_fun eq2 i) j]
+      _ = matMulRect m m p (matTranspose Q') (fun a b => B a b + E' a b) i j :=
+          (congr_fun
+            (congr_fun (matMulRect_add_right m m p (matTranspose Q') B E') i) j).symm
+  · have hfE' : frobNorm E' = frobNorm E := by
+      show frobNorm (matMulRect m m p Q' E) = _
+      exact frobNorm_orthogonal_left_rect Q' E hQ'
+    have hfÂ :
+        frobNorm A_hat =
+          frobNorm B := by
+      rw [hÂ]
+      exact frobNorm_orthogonal_left_rect (matTranspose Q) B hQ.transpose
+    show frobNorm (fun a b => ΔA a b + E' a b) ≤
+      frobNorm ΔA +
+        c_step * frobNorm B
+    calc frobNorm (fun a b => ΔA a b + E' a b)
+        ≤ frobNorm ΔA + frobNorm E' :=
+          norm_add_le (Matrix.of ΔA : Matrix (Fin m) (Fin p) ℝ)
+            (Matrix.of E' : Matrix (Fin m) (Fin p) ℝ)
+      _ = frobNorm ΔA + frobNorm E := by rw [hfE']
+      _ ≤ frobNorm ΔA + c_step * frobNorm A_hat := by
+          linarith [hE]
+      _ = frobNorm ΔA + c_step * frobNorm B := by rw [hfÂ]
+
+/-- Repeated residual-form orthogonal sequence theorem for rectangular panels. -/
+theorem residual_orthogonal_sequence_backward_error_rect (m p r : ℕ)
+    (Aseq : ℕ → Fin m → Fin p → ℝ)
+    (Pseq : ℕ → Fin m → Fin m → ℝ) (c : ℝ) (hc : 0 ≤ c)
+    (hP : ∀ k : ℕ, k < r → IsOrthogonal m (Pseq k))
+    (hStep : ∀ k : ℕ, k < r → ∃ E : Fin m → Fin p → ℝ,
+      (∀ (i : Fin m) (j : Fin p), Aseq (k + 1) i j =
+        matMulRect m m p (Pseq k) (Aseq k) i j + E i j) ∧
+      frobNorm E ≤ c * frobNorm (Aseq k)) :
+    ∃ (Q : Fin m → Fin m → ℝ) (ΔA : Fin m → Fin p → ℝ),
+      IsOrthogonal m Q ∧
+      (∀ (i : Fin m) (j : Fin p), Aseq r i j =
+        matMulRect m m p (matTranspose Q)
+          (fun a b => Aseq 0 a b + ΔA a b) i j) ∧
+      frobNorm ΔA ≤ residualAccumBound c r * frobNorm (Aseq 0) := by
+  induction r with
+  | zero =>
+      let Z : Fin m → Fin p → ℝ := fun _ _ => 0
+      refine ⟨idMatrix m, Z, idMatrix_orthogonal m, ?_, ?_⟩
+      · intro i j
+        simp [Z, matTranspose_id, matMulRect_id_left]
+      · have hZ : frobNorm Z = 0 := by
+          rw [frobNorm_eq_zero_iff]
+          intro i j
+          rfl
+        simp [residualAccumBound, Z, hZ]
+  | succ r ih =>
+      have hP_prefix : ∀ k : ℕ, k < r → IsOrthogonal m (Pseq k) := by
+        intro k hk
+        exact hP k (Nat.lt_trans hk (Nat.lt_succ_self r))
+      have hStep_prefix : ∀ k : ℕ, k < r → ∃ E : Fin m → Fin p → ℝ,
+        (∀ (i : Fin m) (j : Fin p), Aseq (k + 1) i j =
+          matMulRect m m p (Pseq k) (Aseq k) i j + E i j) ∧
+        frobNorm E ≤ c * frobNorm (Aseq k) := by
+        intro k hk
+        exact hStep k (Nat.lt_trans hk (Nat.lt_succ_self r))
+      obtain ⟨Q, ΔA, hQ, hAhat, hΔA⟩ := ih hP_prefix hStep_prefix
+      obtain ⟨E, hNext, hE⟩ := hStep r (Nat.lt_succ_self r)
+      obtain ⟨Q', ΔA', hQ', hRep, hStepBound⟩ :=
+        orthogonal_sequence_one_step_of_residual_rect m p (Aseq 0) (Aseq r)
+          Q ΔA hQ hAhat (Pseq r) (hP r (Nat.lt_succ_self r))
+          (Aseq (r + 1)) E hNext hE
+      refine ⟨Q', ΔA', hQ', ?_, ?_⟩
+      · simpa using hRep
+      · let α : ℝ := residualAccumBound c r
+        let N : ℝ := frobNorm (Aseq 0)
+        have hΔA' : frobNorm ΔA ≤ α * N := by
+          simpa [α, N] using hΔA
+        have hB :
+            frobNorm (fun a b => Aseq 0 a b + ΔA a b) ≤
+              (1 + α) * N := by
+          calc
+            frobNorm (fun a b => Aseq 0 a b + ΔA a b)
+                ≤ frobNorm (Aseq 0) + frobNorm ΔA :=
+                  norm_add_le (Matrix.of (Aseq 0) : Matrix (Fin m) (Fin p) ℝ)
+                    (Matrix.of ΔA : Matrix (Fin m) (Fin p) ℝ)
+            _ ≤ N + α * N := by
+                simpa [N] using add_le_add_left hΔA' (frobNorm (Aseq 0))
+            _ = (1 + α) * N := by ring
+        have htotal :
+            frobNorm ΔA' ≤ α * N + c * ((1 + α) * N) := by
+          calc
+            frobNorm ΔA'
+                ≤ frobNorm ΔA +
+                    c * frobNorm (fun a b => Aseq 0 a b + ΔA a b) :=
+                  hStepBound
+            _ ≤ α * N + c * ((1 + α) * N) := by
+                exact add_le_add hΔA'
+                  (mul_le_mul_of_nonneg_left hB hc)
+        have hrec :
+            residualAccumBound c (r + 1) * N =
+              α * N + c * ((1 + α) * N) := by
+          simp [residualAccumBound, α]
+          ring
+        rw [show residualAccumBound c (r + 1) * frobNorm (Aseq 0) =
+            α * N + c * ((1 + α) * N) from by
+          rw [← hrec]]
+        exact htotal
+
+/-- Rectangular panel sequence theorem specialized to columnwise Householder
+    panel-step contracts. -/
+theorem columnwise_householder_panel_sequence_backward_error (m p r : ℕ)
+    (Aseq : ℕ → Fin m → Fin p → ℝ)
+    (Pseq : ℕ → Fin m → Fin m → ℝ) (c : ℝ) (hc : 0 ≤ c)
+    (hStep : ∀ k : ℕ, k < r →
+      ColumnwiseHouseholderStepErrorRect m p
+        (Pseq k) (Aseq k) (Aseq (k + 1)) c) :
+    ∃ (Q : Fin m → Fin m → ℝ) (ΔA : Fin m → Fin p → ℝ),
+      IsOrthogonal m Q ∧
+      (∀ (i : Fin m) (j : Fin p), Aseq r i j =
+        matMulRect m m p (matTranspose Q)
+          (fun a b => Aseq 0 a b + ΔA a b) i j) ∧
+      frobNorm ΔA ≤ residualAccumBound c r * frobNorm (Aseq 0) := by
+  apply residual_orthogonal_sequence_backward_error_rect m p r Aseq Pseq c hc
+  · intro k hk
+    exact (hStep k hk).orth
+  · intro k hk
+    obtain ⟨E, hNext, hE⟩ := (hStep k hk).exists_residual_matrix_bound hc
+    exact ⟨E, hNext, hE⟩
+
+/-- Repeated concrete Householder construction/application on a rectangular
+    panel sequence.
+
+    This is the panel analogue of `fl_householder_sequence_backward_error`.
+    It still does not choose the QR trailing-column vectors; it proves the
+    reusable fact that once such vectors and concrete panel updates are supplied,
+    the resulting repeated panel update is backward stable in the residual
+    sequence sense. -/
+theorem fl_householder_panel_sequence_backward_error (fp : FPModel)
+    {m p r : ℕ}
+    (hm0 : 0 < m)
+    (Aseq : ℕ → Fin m → Fin p → ℝ)
+    (xseq : ℕ → Fin m → ℝ)
+    (hx : ∀ k : ℕ, k < r → xseq k ≠ 0)
+    (hvalid : gammaValid fp (11 * m + 23))
+    (hAstep : ∀ k : ℕ, k < r →
+      Aseq (k + 1) =
+        fl_householderApplyMatrixRect fp m p
+          (fl_householderNormalizedVector fp hm0 (xseq k)) 1 (Aseq k)) :
+    ∃ (Q : Fin m → Fin m → ℝ) (ΔA : Fin m → Fin p → ℝ),
+      IsOrthogonal m Q ∧
+      (∀ (i : Fin m) (j : Fin p), Aseq r i j =
+        matMulRect m m p (matTranspose Q)
+          (fun a b => Aseq 0 a b + ΔA a b) i j) ∧
+      frobNorm ΔA ≤
+        residualAccumBound (householderConstructApplyBound fp m) r *
+          frobNorm (Aseq 0) := by
+  let Pseq : ℕ → Fin m → Fin m → ℝ := fun k =>
+    householder m
+      (householderNormalizedVector m
+        (householderVector hm0 (xseq k)) (householderBetaFromScale hm0 (xseq k))) 1
+  apply columnwise_householder_panel_sequence_backward_error m p r Aseq Pseq
+    (householderConstructApplyBound fp m)
+    (householderConstructApplyBound_nonneg fp m hvalid)
+  intro k hk
+  have hraw :=
+    fl_householderConstructApply_matrix_step_error_rect fp hm0 (xseq k) (Aseq k)
+      (hx k hk) hvalid
+  rw [hAstep k hk]
+  simpa [Pseq, householderConstructApplyBound] using hraw
+
 -- ============================================================
 -- §18.3  Theorem 18.4: Householder QR backward error
 -- ============================================================

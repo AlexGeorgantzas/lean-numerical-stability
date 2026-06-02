@@ -459,6 +459,18 @@ These compile, but should not be treated as fully derived stability results:
   single residual matrix bound `‖E‖_F ≤ c‖A‖_F`.  This is needed before the
   real QR loop can operate on trailing rectangular panels instead of only
   square full matrices.
+- Added exact rectangular orthogonal algebra:
+  `matMulRect_id_left`, `matMulRect_add_right`,
+  `matMulRect_assoc_square_left`, `frobNormSq_orthogonal_left_rect`, and
+  `frobNorm_orthogonal_left_rect`.  Added rectangular residual sequence
+  theorems in `HouseholderQR.lean`:
+  `orthogonal_sequence_one_step_of_residual_rect`,
+  `residual_orthogonal_sequence_backward_error_rect`,
+  `columnwise_householder_panel_sequence_backward_error`, and
+  `fl_householder_panel_sequence_backward_error`.  Repeated concrete
+  Householder panel updates now satisfy a rectangular backward-error sequence
+  theorem.  Remaining QR work: define the actual trailing-panel loop and prove
+  it supplies these panel update hypotheses and triangularization.
 
 ## 2026-04-26 Fix Pass
 
