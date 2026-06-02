@@ -99,9 +99,8 @@ theorem columnwiseHouseholderStepErrorRect_of_appError (m p : ℕ)
     This is the matrix version of `fl_householderConstructApply_appError`.
     It proves the implementation-backed result that every column of
     `fl_householderApplyMatrix` has a Higham Lemma 18.2 style backward error.
-    It does not yet prove the repeated-reflector QR sequence theorem; the next
-    step is to aggregate these column-dependent perturbations across matrix
-    steps as in Higham Lemma 18.3. -/
+    The repeated-reflector QR sequence theorem is proved in
+    `HouseholderQR.lean`; this file supplies the one-step matrix contract. -/
 theorem fl_householderConstructApply_matrix_step_error (fp : FPModel) {n : ℕ}
     (hn0 : 0 < n) (x : Fin n → ℝ) (A : Fin n → Fin n → ℝ)
     (hx : x ≠ 0)

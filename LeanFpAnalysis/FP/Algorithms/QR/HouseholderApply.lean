@@ -231,8 +231,8 @@ theorem fl_householderApply_matrix_unroll (fp : FPModel) (n : ℕ)
 
     This turns the additive vector perturbation model from equation (18.3) into
     relative factors and exposes the product of all vector, dot-product,
-    multiplication, and subtraction errors.  The remaining Lemma 18.2 task is
-    to bound this factor product by a suitable `γ_cm`. -/
+    multiplication, and subtraction errors.  The Frobenius bound for the
+    normalized case is proved later in this file. -/
 theorem householderApplyDeltaMatrix_normalized_factorization (n : ℕ)
     (v v_hat : Fin n → ℝ) (eps : ℝ)
     (η : Fin n → ℝ) (δw : ℝ) (δmul δsub : Fin n → ℝ)
@@ -532,9 +532,10 @@ theorem householderApplyDeltaMatrix_normalized_frob_bound
     Householder-application kernel has the required Frobenius bound, then the
     rounded kernel satisfies the `HouseholderAppError` contract.
 
-    This theorem is intentionally only a packaging bridge: it does not prove the
-    Lemma 18.2 norm estimate.  The hypothesis `hbound` is the remaining source
-    theorem to formalize, not an arbitrary post-hoc perturbation. -/
+    This theorem is intentionally a packaging bridge for callers that already
+    have the needed perturbation-matrix bound.  The concrete normalized bound is
+    proved later in this file and consumed by
+    `fl_householderApply_normalized_appError`. -/
 theorem fl_householderApply_appError_of_matrix_bound (fp : FPModel) (n : ℕ)
     (P : Fin n → Fin n → ℝ) (v : Fin n → ℝ) (beta : ℝ)
     (b : Fin n → ℝ) (c : ℝ)

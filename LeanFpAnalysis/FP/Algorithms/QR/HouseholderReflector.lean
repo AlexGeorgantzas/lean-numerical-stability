@@ -262,10 +262,10 @@ theorem householder_exact_orthogonal {n : ℕ} (hn : 0 < n)
     `γ_{n+2}`, and the computed beta is a relative perturbation of Higham's
     exact formula `1/(s*v_0)` with `γ_{4n+8}`.
 
-    The contract is intentionally stated before the proof.  It is the bridge
-    that must eventually be proved from `fl_householderScale`,
-    `fl_householderVector`, and `fl_householderBeta`; higher QR proofs should
-    consume this only after that bridge exists. -/
+    The contract is intentionally stated before the implementation-backed
+    proof below.  The theorem `fl_householderConstruction_error` proves it from
+    `fl_householderScale`, `fl_householderVector`, and
+    `fl_householderBeta`; higher QR proofs consume that proved bridge. -/
 structure HouseholderConstructionError (fp : FPModel) {n : ℕ} (hn : 0 < n)
     (x v_hat : Fin n → ℝ) (beta_hat : ℝ) : Prop where
   /-- Higham Lemma 18.1: `v_hat(2:n) = v(2:n)`. -/
@@ -494,8 +494,9 @@ theorem fl_householderVector_tail (fp : FPModel)
   simp [fl_householderVector, hi]
 
 /-- Tail components of the rounded Householder vector agree with the exact
-    Householder vector.  This is the easy, exact-copy part of Higham Lemma
-    18.1; the first-component perturbation bound is the hard remaining step. -/
+    Householder vector.  This is the exact-copy part of Higham Lemma 18.1; the
+    first-component perturbation bound is proved later in this file by
+    `fl_householderVector_zero_relative_error`. -/
 theorem fl_householderVector_tail_eq_householderVector (fp : FPModel)
     {n : ℕ} (hn : 0 < n) (x : Fin n → ℝ) (i : Fin n)
     (hi : i ≠ ⟨0, hn⟩) :

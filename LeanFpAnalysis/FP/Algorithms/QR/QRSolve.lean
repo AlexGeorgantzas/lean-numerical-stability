@@ -804,8 +804,8 @@ theorem householder_qr_panel_solve_backward_skip_zero_column {m p : ℕ}
     rounded reflector to `b`, store the computed top entry, and recurse on the
     computed trailing panel and the tail of the transformed right-hand side.
 
-    This is a concrete `fl_*` component for future QR-solve proofs.  It does
-    not compute reflectors from `b`; it follows the QR factorization of `A`. -/
+    This is a concrete `fl_*` component of the QR-solve proofs.  It does not
+    compute reflectors from `b`; it follows the QR factorization of `A`. -/
 noncomputable def fl_householderQRPanel_rhs (fp : FPModel) :
     (m p : ℕ) → (Fin m → Fin p → ℝ) → (Fin m → ℝ) → Fin m → ℝ
   | 0, _, _A, b => b
@@ -882,9 +882,10 @@ noncomputable def fl_householderQR_rhs (fp : FPModel) (n : ℕ)
     3. solve the resulting triangular system by concrete rounded back
        substitution.
 
-    The implementation-backed stability theorem for this full solve is still
-    pending; this definition fixes the algorithmic object that theorem should
-    analyze. -/
+    The implementation-backed theorem `fl_householderQR_solve_backward_error`
+    analyzes this nonzero-panel path.  The zero-aware
+    `fl_householderQR_solve_safe` variant is preferred when active QR columns
+    may be zero. -/
 noncomputable def fl_householderQR_solve (fp : FPModel) (n : ℕ)
     (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ) : Fin n → ℝ :=
   fl_backSub fp n (fl_householderQR_R fp n A)
@@ -1253,8 +1254,9 @@ theorem fl_householder_first_column_rhs_step_residual_bound (fp : FPModel)
     `HouseholderQRPanelReady` hypotheses, the concrete
     `fl_householderQRPanel_rhs` loop has a representation
     `Qᵀ(b + Δb)` with a componentwise recursive perturbation bound.  The
-    theorem does not yet combine this RHS proof with the QR `R` proof and
-    triangular solve into the final `fl_householderQR_solve` theorem. -/
+    combination with the QR `R` proof and triangular solve is carried out by
+    `fl_householderQRPanel_solve_components_backward_error` and the square
+    theorem `fl_householderQR_solve_backward_error`. -/
 theorem fl_householderQRPanel_rhs_backward_error (fp : FPModel) :
     ∀ (m p : ℕ) (A : Fin m → Fin p → ℝ) (b : Fin m → ℝ),
       HouseholderQRPanelReady fp m p A →
@@ -1924,9 +1926,10 @@ theorem qr_solve_perturbation_bound (n : ℕ)
       `c_hat = Qᵀ(b + Δb)`;
 
     the advertised `QRSolveBackwardError` follows with
-    `ΔA = ΔA₁ + Q ΔR` and matrix bound `c₁ + c₂`.  This remains
-    component-level; it does not yet define the concrete rounded `fl_qr_solve`
-    that produces the component hypotheses. -/
+    `ΔA = ΔA₁ + Q ΔR` and matrix bound `c₁ + c₂`.  This remains a reusable
+    component-level transfer theorem.  The concrete rounded solve paths are
+    connected to it by `fl_householderQR_solve_backward_error` and
+    `fl_householderQR_solve_safe_backward_error`. -/
 theorem qr_solve_backward_error_from_components (n : ℕ) (hn : 0 < n)
     (A : Fin n → Fin n → ℝ)
     (Q : Fin n → Fin n → ℝ) (R_hat : Fin n → Fin n → ℝ)

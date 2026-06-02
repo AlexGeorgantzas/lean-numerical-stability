@@ -2048,8 +2048,8 @@ theorem fl_householderQR_R_safe_upper (fp : FPModel) :
         simpa [fl_householderQR_R_safe, fl_householderQRPanel_R_safe, hcol, Astep]
           using hmain
 
-/-- Recursive coefficient for the future implementation-backed Householder QR
-    panel backward-error theorem.
+/-- Recursive coefficient for the implementation-backed nonzero-panel
+    Householder QR panel backward-error theorem.
 
     For a nonempty panel, the first concrete Householder panel step contributes
     `c = householderConstructApplyBound fp (m+1)`.  The recursive tail bound is
@@ -2710,8 +2710,9 @@ theorem fl_householderQR_R_safe_backward_error_of_global_gammaValid
     `R_hat` is upper triangular.
 
     The older `HouseholderQRBackwardError` is the normwise backward-error part
-    only.  A full implementation-backed QR theorem should eventually prove this
-    stronger packaged contract from the concrete rounded QR loop. -/
+    only.  The concrete rounded QR loop proves this stronger packaged contract
+    in `fl_householderQR_R_structured_backward_error` and the zero-aware
+    `fl_householderQR_R_safe_structured_backward_error`. -/
 structure StructuredHouseholderQRBackwardError
     (n : ℕ) (A R_hat : Fin n → Fin n → ℝ) (c_bound : ℝ) : Prop where
   /-- Normwise Householder QR backward error. -/
@@ -2739,9 +2740,11 @@ theorem householder_qr_backward (n : ℕ) (_hn : 0 < n)
 /-- Structured QR contract derived from the existing backward-error theorem
     plus a separately supplied upper-triangularity proof.
 
-    This is intentionally a packaging theorem, not the final end-to-end QR
-    result.  The rebuild still has to prove the `hUpper` input from the concrete
-    rounded Householder QR loop. -/
+    This is intentionally a packaging theorem for arbitrary `R_hat`, not the
+    concrete rounded QR result.  The concrete QR algorithms discharge the
+    `hUpper` input separately in
+    `fl_householderQR_R_structured_backward_error` and
+    `fl_householderQR_R_safe_structured_backward_error`. -/
 theorem structured_householder_qr_backward (n : ℕ) (hn : 0 < n)
     (A R_hat : Fin n → Fin n → ℝ) (c : ℝ) (hc : 0 ≤ c)
     (hSeq : OrthogonalSequenceBackwardError n A R_hat n c)

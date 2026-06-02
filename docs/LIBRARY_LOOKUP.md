@@ -90,7 +90,8 @@ Model
 Model
   -> DotProduct
   -> Norm2
-  -> future Householder construction/application work
+  -> Householder construction/application
+  -> safe Householder QR and QR solve
 
 MatrixAlgebra + PerturbationTheory
   -> forward-error and residual-based analyses

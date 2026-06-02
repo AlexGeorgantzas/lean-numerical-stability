@@ -800,6 +800,13 @@ These compile, but should not be treated as fully derived stability results:
   preferred safe solve theorem now asks for `0 < n`, global
   `gammaValid fp (11*n+23)`, and nonzero diagonal of computed `R_safe`; the
   back-substitution `gammaValid fp n` condition is derived internally.
+- Supersession note: older historical bullets in this memory file that describe
+  Householder QR `R` or Householder QR solve as pending are now superseded by
+  the zero-aware implementation-backed theorems above.  The remaining
+  Householder QR limitations are narrower: the safe solve still assumes
+  nonsingularity via a nonzero diagonal condition for the computed `R_safe`, and
+  it does not yet build or return an explicit accumulated `Q` matrix as part of
+  the algorithm output.
 
 ## 2026-04-26 Fix Pass
 
