@@ -1047,6 +1047,12 @@ These compile, but should not be treated as fully derived stability results:
   fixed-reference `Q_hat = Q_safe + ΔQ` perturbation theorem.  As in the square
   computed-factor API, it deliberately does not claim that rounded `Q_hat` is
   exactly orthogonal.
+- Added exact rectangular matrix algebra needed for computed-factor residuals:
+  `matMulRect_add_left` and `frobNorm_matMulRect_le`.  The theorem
+  `fl_householderQRPanel_computed_safe_residual_error_tall_gammaHigham_of_global_gammaValid`
+  now directly states a residual bound for the concrete tall rectangular
+  product `Q_hat * R_hat`, derived from the rectangular computed-factor
+  explicit-error package.
 
 ## 2026-04-26 Fix Pass
 

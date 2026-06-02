@@ -159,6 +159,21 @@ theorem matMulRect_add_right (m n p : ℕ)
   intro k _
   ring
 
+/-- Left distributivity for rectangular multiplication:
+    `(A+B)*C = A*C + B*C`. -/
+theorem matMulRect_add_left (m n p : ℕ)
+    (A B : Fin m → Fin n → ℝ)
+    (C : Fin n → Fin p → ℝ) :
+    matMulRect m n p (fun a b => A a b + B a b) C =
+      fun i j => matMulRect m n p A C i j +
+        matMulRect m n p B C i j := by
+  ext i j
+  unfold matMulRect
+  rw [← Finset.sum_add_distrib]
+  apply Finset.sum_congr rfl
+  intro k _
+  ring
+
 /-- Associativity for a square left product acting on a rectangular panel:
     `(AB)C = A(BC)`. -/
 theorem matMulRect_assoc_square_left (m p : ℕ)
@@ -722,6 +737,16 @@ theorem frobNorm_matMul_le {n : ℕ} (A B : Fin n → Fin n → ℝ) :
   simpa [Matrix.mul_apply] using
     (Matrix.frobenius_norm_mul (Matrix.of A : Matrix (Fin n) (Fin n) ℝ)
       (Matrix.of B : Matrix (Fin n) (Fin n) ℝ))
+
+/-- Frobenius submultiplicativity for a square matrix acting on a rectangular
+    matrix. -/
+theorem frobNorm_matMulRect_le {m p : ℕ}
+    (A : Fin m → Fin m → ℝ) (B : Fin m → Fin p → ℝ) :
+    frobNorm (matMulRect m m p A B) ≤ frobNorm A * frobNorm B := by
+  unfold matMulRect
+  simpa [Matrix.mul_apply] using
+    (Matrix.frobenius_norm_mul (Matrix.of A : Matrix (Fin m) (Fin m) ℝ)
+      (Matrix.of B : Matrix (Fin m) (Fin p) ℝ))
 
 /-- Matrix-vector product squared-sum bound using the Frobenius norm:
     `∑ᵢ ((Ax)_i)^2 ≤ ‖A‖²_F * ∑ⱼ x_j^2`.

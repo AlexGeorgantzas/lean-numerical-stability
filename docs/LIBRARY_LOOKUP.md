@@ -124,6 +124,10 @@ This packages the concrete panel `(Q_hat, R_hat)` output with the same honest
 two-layer interpretation used in the square API: `R_hat` is backward stable
 against exact `Q_safe`, while rounded `Q_hat` is a bounded perturbation of
 `Q_safe`, not an exactly orthogonal factor.
+For a direct theorem about the rectangular rounded product itself, use
+`fl_householderQRPanel_computed_safe_residual_error_tall_gammaHigham_of_global_gammaValid`;
+it proves a residual bound for `Q_hat * R_hat`.  The exact algebra helpers
+behind this theorem are `matMulRect_add_left` and `frobNorm_matMulRect_le`.
 `fl_householderQRPanel_Qhat_safe_accum_error`,
 `fl_householderQR_Qhat_safe_accum_error_of_global_gammaValid`, and
 `fl_householderQR_computed_safe_Q_hat_accum_error_of_global_gammaValid` prove

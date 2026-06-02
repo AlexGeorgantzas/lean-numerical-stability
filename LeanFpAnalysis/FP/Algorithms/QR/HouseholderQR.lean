@@ -6222,6 +6222,116 @@ theorem fl_householderQRPanel_computed_safe_explicit_error_tall_gammaHigham_of_g
       fp m p A hsteps (by simpa [Nat.min_eq_right hpm] using hvalid)
   simpa [Nat.min_eq_right hpm] using hmain
 
+/-- Residual contract for the concrete rectangular panel computed
+    `(Q_hat, R_hat)` product.
+
+    This contract intentionally does not assert that `Q_hat` is orthogonal.
+    It records what the rounded panel factors themselves satisfy: their product
+    is the original panel plus a bounded residual. -/
+structure HouseholderQRPanelComputedFactorsResidualError
+    (m p : ℕ) (A : Fin m → Fin p → ℝ)
+    (F : HouseholderQRPanelComputedFactors m p) (c_bound : ℝ) : Prop where
+  /-- There is a residual panel explaining the computed product
+      `Q_hat * R_hat`. -/
+  result : ∃ E : Fin m → Fin p → ℝ,
+    (∀ i j, matMulRect m m p F.Q_hat F.R_hat i j = A i j + E i j) ∧
+    frobNorm E ≤ c_bound
+
+/-- Convert the rectangular fixed exact-witness computed-factor theorem into a
+    residual theorem for the concrete product `Q_hat * R_hat`.
+
+    If `Q_hat = Q + ΔQ` and `R_hat = Qᵀ(A + ΔA)`, then
+    `Q_hat*R_hat = A + (ΔA + ΔQ*R_hat)`. -/
+theorem HouseholderQRPanelComputedFactorsExplicitError.to_residual_error
+    {m p : ℕ} {A : Fin m → Fin p → ℝ}
+    {F : HouseholderQRPanelComputedFactors m p}
+    {Q : Fin m → Fin m → ℝ} {cR cQ : ℝ}
+    (h : HouseholderQRPanelComputedFactorsExplicitError m p A F Q cR cQ) :
+    HouseholderQRPanelComputedFactorsResidualError m p A F
+      (cR + cQ * frobNorm F.R_hat) := by
+  obtain ⟨ΔA, hRrep, hΔA⟩ := h.r_error.backward.result
+  obtain ⟨ΔQ, hQrep, hΔQ⟩ := h.q_error.result
+  let EQR : Fin m → Fin p → ℝ := matMulRect m m p ΔQ F.R_hat
+  let E : Fin m → Fin p → ℝ := fun i j => ΔA i j + EQR i j
+  refine ⟨⟨E, ?_, ?_⟩⟩
+  · have hQhat :
+        F.Q_hat = fun i j => Q i j + ΔQ i j := by
+      ext i j
+      exact hQrep i j
+    have hQR : ∀ i j, matMulRect m m p Q F.R_hat i j = A i j + ΔA i j := by
+      have hRmat :
+          F.R_hat =
+            matMulRect m m p (matTranspose Q)
+              (fun a b => A a b + ΔA a b) := by
+        ext i j
+        exact hRrep i j
+      have hQQT : matMul m Q (matTranspose Q) = idMatrix m := by
+        ext i j
+        exact h.r_error.backward.orth.right_inv i j
+      intro i j
+      calc
+        matMulRect m m p Q F.R_hat i j
+            = matMulRect m m p Q
+                (matMulRect m m p (matTranspose Q)
+                  (fun a b => A a b + ΔA a b)) i j := by
+                rw [hRmat]
+        _ = matMulRect m m p (matMul m Q (matTranspose Q))
+              (fun a b => A a b + ΔA a b) i j := by
+                rw [← matMulRect_assoc_square_left]
+        _ = matMulRect m m p (idMatrix m)
+              (fun a b => A a b + ΔA a b) i j := by
+                rw [hQQT]
+        _ = A i j + ΔA i j := by
+                rw [matMulRect_id_left]
+    intro i j
+    calc
+      matMulRect m m p F.Q_hat F.R_hat i j
+          = matMulRect m m p (fun a b => Q a b + ΔQ a b) F.R_hat i j := by
+              rw [hQhat]
+      _ = matMulRect m m p Q F.R_hat i j +
+            matMulRect m m p ΔQ F.R_hat i j :=
+          congrFun (congrFun (matMulRect_add_left m m p Q ΔQ F.R_hat) i) j
+      _ = A i j + ΔA i j + EQR i j := by
+          rw [hQR i j]
+      _ = A i j + E i j := by
+          simp [E, EQR]
+          ring
+  · have hEadd :
+        frobNorm E ≤ frobNorm ΔA + frobNorm EQR := by
+      show frobNorm (fun i j => ΔA i j + EQR i j) ≤
+        frobNorm ΔA + frobNorm EQR
+      exact norm_add_le
+        (Matrix.of ΔA : Matrix (Fin m) (Fin p) ℝ)
+        (Matrix.of EQR : Matrix (Fin m) (Fin p) ℝ)
+    have hEQR :
+        frobNorm EQR ≤ cQ * frobNorm F.R_hat := by
+      calc
+        frobNorm EQR
+            = frobNorm (matMulRect m m p ΔQ F.R_hat) := rfl
+        _ ≤ frobNorm ΔQ * frobNorm F.R_hat :=
+            frobNorm_matMulRect_le ΔQ F.R_hat
+        _ ≤ cQ * frobNorm F.R_hat :=
+            mul_le_mul_of_nonneg_right hΔQ (frobNorm_nonneg F.R_hat)
+    linarith
+
+/-- Residual theorem for concrete tall rectangular computed Householder QR
+    panel factors.  This directly uses the rounded product `Q_hat * R_hat`
+    while preserving the caveat that `Q_hat` is not asserted to be orthogonal. -/
+theorem fl_householderQRPanel_computed_safe_residual_error_tall_gammaHigham_of_global_gammaValid
+    (fp : FPModel) (m p : ℕ) (A : Fin m → Fin p → ℝ)
+    (hp : 0 < p) (hpm : p ≤ m)
+    (hvalid : gammaValid fp (p * householderConstructApplyGammaIndex m)) :
+    HouseholderQRPanelComputedFactorsResidualError m p A
+      (fl_householderQRPanel_computed_safe fp m p A)
+      ((gamma fp (p * householderConstructApplyGammaIndex m) * frobNorm A) +
+        ((m : ℝ) * householderConstructApplyBound fp m *
+          (1 + householderConstructApplyBound fp m) ^ m *
+          Real.sqrt (m : ℝ)) *
+          frobNorm (fl_householderQRPanel_computed_safe fp m p A).R_hat) := by
+  exact
+    (fl_householderQRPanel_computed_safe_explicit_error_tall_gammaHigham_of_global_gammaValid
+      fp m p A hp hpm hvalid).to_residual_error
+
 /-- Residual contract for the concrete computed `(Q_hat, R_hat)` product.
 
     This contract intentionally does not assert that `Q_hat` is orthogonal.
