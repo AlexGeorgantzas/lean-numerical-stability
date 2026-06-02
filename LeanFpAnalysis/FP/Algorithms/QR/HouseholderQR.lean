@@ -686,6 +686,37 @@ theorem trailingPanel_eq_dropFirstCol_dropFirstRow {m p : ℕ}
     (A : Fin (m + 1) → Fin (p + 1) → ℝ) :
     trailingPanel A = panelDropFirstCol (panelDropFirstRow A) := rfl
 
+/-- Taking a trailing panel cannot increase the squared Frobenius norm. -/
+theorem frobNormSq_trailingPanel_le {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ) :
+    frobNormSq (trailingPanel A) ≤ frobNormSq A := by
+  unfold frobNormSq trailingPanel
+  rw [Fin.sum_univ_succ
+    (fun i : Fin (m + 1) => ∑ j : Fin (p + 1), A i j ^ 2)]
+  rw [show
+      (∑ i : Fin m, ∑ j : Fin (p + 1), A i.succ j ^ 2) =
+        ∑ i : Fin m,
+          (A i.succ 0 ^ 2 + ∑ j : Fin p, A i.succ j.succ ^ 2) by
+    apply Finset.sum_congr rfl
+    intro i _
+    rw [Fin.sum_univ_succ
+      (fun j : Fin (p + 1) => A i.succ j ^ 2)]]
+  rw [Finset.sum_add_distrib]
+  have hrow0 :
+      0 ≤ ∑ j : Fin (p + 1), A 0 j ^ 2 :=
+    Finset.sum_nonneg fun j _ => sq_nonneg (A 0 j)
+  have hcol0 :
+      0 ≤ ∑ i : Fin m, A i.succ 0 ^ 2 :=
+    Finset.sum_nonneg fun i _ => sq_nonneg (A i.succ 0)
+  linarith
+
+/-- Taking a trailing panel cannot increase the Frobenius norm. -/
+theorem frobNorm_trailingPanel_le {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ) :
+    frobNorm (trailingPanel A) ≤ frobNorm A := by
+  rw [frobNorm_eq_sqrt_frobNormSq, frobNorm_eq_sqrt_frobNormSq]
+  exact Real.sqrt_le_sqrt (frobNormSq_trailingPanel_le A)
+
 /-- One concrete Householder QR trailing-panel update.
 
     Given an `(m+1) × (p+1)` panel, construct the Householder reflector from
@@ -747,6 +778,49 @@ theorem fl_householder_first_column_panel_step_error (fp : FPModel)
   simpa [householderConstructApplyBound] using
     fl_householderConstructApply_matrix_step_error_rect fp hm0
       (panelFirstColumn hp0 A) A hx hvalid
+
+/-- Residual form of the concrete shrinking Householder QR panel step.
+
+    The full first-column panel step already has a residual matrix bound.
+    Restricting that residual to the trailing block gives a residual
+    representation for `fl_householderTrailingPanelStep`.  This is the
+    one-step bridge needed before an induction over shrinking QR panels. -/
+theorem fl_householderTrailingPanelStep_residual
+    (fp : FPModel) {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (hx : panelFirstColumn (Nat.succ_pos p) A ≠ 0)
+    (hvalid : gammaValid fp (11 * (m + 1) + 23)) :
+    let P : Fin (m + 1) → Fin (m + 1) → ℝ :=
+      householder (m + 1)
+        (householderNormalizedVector (m + 1)
+          (householderVector (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A))
+          (householderBetaFromScale (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A))) 1
+    ∃ E : Fin m → Fin p → ℝ,
+      (∀ i j, fl_householderTrailingPanelStep fp A i j =
+        trailingPanel (matMulRect (m + 1) (m + 1) (p + 1) P A) i j +
+          E i j) ∧
+      frobNorm E ≤
+        householderConstructApplyBound fp (m + 1) * frobNorm A := by
+  intro P
+  have hstep :
+      ColumnwiseHouseholderStepErrorRect (m + 1) (p + 1) P A
+        (fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A)) 1 A)
+        (householderConstructApplyBound fp (m + 1)) := by
+    simpa [P] using
+      fl_householder_first_column_panel_step_error fp
+        (Nat.succ_pos m) (Nat.succ_pos p) A hx hvalid
+  obtain ⟨Efull, hNext, hEfull⟩ :=
+    hstep.exists_residual_matrix_bound
+      (householderConstructApplyBound_nonneg fp (m + 1) hvalid)
+  refine ⟨trailingPanel Efull, ?_, ?_⟩
+  · intro i j
+    have h := hNext i.succ j.succ
+    simpa [fl_householderTrailingPanelStep, trailingPanel, P] using h
+  · exact le_trans (frobNorm_trailingPanel_le Efull) hEfull
 
 /-- Repeated rectangular panel sequence where each reflector is constructed
     from the current panel's first column.

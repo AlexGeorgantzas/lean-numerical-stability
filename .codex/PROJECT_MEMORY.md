@@ -489,6 +489,12 @@ These compile, but should not be treated as fully derived stability results:
   `m × p` panel.  This is still an indexing/algorithm-definition layer; the
   next proof gap is an induction over these dependent shrinking panel shapes
   and the exact triangularization property.
+- Added `frobNormSq_trailingPanel_le`, `frobNorm_trailingPanel_le`, and
+  `fl_householderTrailingPanelStep_residual`.  The concrete one-step shrinking
+  QR panel update now has a residual representation inherited from the full
+  first-column Householder panel step.  Remaining QR work: dependent induction
+  across changing dimensions, exact zeroing/triangularization, and packaging
+  into the final `HouseholderQRBackwardError`.
 
 ## 2026-04-26 Fix Pass
 
