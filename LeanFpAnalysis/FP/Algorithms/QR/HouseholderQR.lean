@@ -845,6 +845,18 @@ def HouseholderPanelRunReady (fp : FPModel)
       gammaValid fp (11 * (m + 1) + 23) := by
   rfl
 
+/-- A global gamma-validity assumption for a larger row dimension supplies the
+    per-step gamma-validity needed by a smaller active panel. -/
+theorem householderPanelStepReady_nonempty_of_global_gammaValid
+    (fp : FPModel) {m p N : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (hrows : m + 1 ≤ N)
+    (hx : panelFirstColumn (Nat.succ_pos p) A ≠ 0)
+    (hvalid : gammaValid fp (11 * N + 23)) :
+    HouseholderPanelStepReady fp ⟨m + 1, p + 1, A⟩ := by
+  refine ⟨hx, ?_⟩
+  exact gammaValid_mono fp (by omega) hvalid
+
 theorem householderPanelRunReady_zero (fp : FPModel)
     (S : HouseholderPanelState) :
     HouseholderPanelRunReady fp 0 S := by

@@ -556,6 +556,9 @@ These compile, but should not be treated as fully derived stability results:
   `r+1` into a ready current step and a ready tail after
   `householderPanelStateStep`.  This is the intended induction shape for future
   repeated active-panel proofs.
+- Added `householderPanelStepReady_nonempty_of_global_gammaValid`, allowing a
+  global `gammaValid fp (11*N+23)` assumption for an original row dimension to
+  satisfy the current active panel's smaller per-step gamma condition.
 
 ## 2026-04-26 Fix Pass
 
