@@ -779,6 +779,38 @@ theorem fl_householder_first_column_panel_step_error (fp : FPModel)
     fl_householderConstructApply_matrix_step_error_rect fp hm0
       (panelFirstColumn hp0 A) A hx hvalid
 
+/-- Exact first-column value after applying the constructed Householder
+    reflector to a panel. -/
+theorem householder_first_column_panel_exact_first
+    {m p : ℕ} (hm0 : 0 < m) (hp0 : 0 < p)
+    (A : Fin m → Fin p → ℝ) (hx : panelFirstColumn hp0 A ≠ 0) :
+    matMulRect m m p
+      (householder m
+        (householderNormalizedVector m
+          (householderVector hm0 (panelFirstColumn hp0 A))
+          (householderBetaFromScale hm0 (panelFirstColumn hp0 A))) 1)
+      A ⟨0, hm0⟩ ⟨0, hp0⟩ =
+        -householderScale hm0 (panelFirstColumn hp0 A) := by
+  simpa [matMulRect, matMulVec, panelFirstColumn] using
+    householder_constructed_matMulVec_first hm0 (panelFirstColumn hp0 A) hx
+
+/-- Exact first-column tail zeroing after applying the constructed Householder
+    reflector to a panel.  This is the exact triangularization fact for one
+    Householder panel step. -/
+theorem householder_first_column_panel_exact_tail_zero
+    {m p : ℕ} (hm0 : 0 < m) (hp0 : 0 < p)
+    (A : Fin m → Fin p → ℝ) (hx : panelFirstColumn hp0 A ≠ 0)
+    (i : Fin m) (hi : i ≠ ⟨0, hm0⟩) :
+    matMulRect m m p
+      (householder m
+        (householderNormalizedVector m
+          (householderVector hm0 (panelFirstColumn hp0 A))
+          (householderBetaFromScale hm0 (panelFirstColumn hp0 A))) 1)
+      A i ⟨0, hp0⟩ = 0 := by
+  simpa [matMulRect, matMulVec, panelFirstColumn] using
+    householder_constructed_matMulVec_tail_zero hm0
+      (panelFirstColumn hp0 A) hx i hi
+
 /-- Residual form of the concrete shrinking Householder QR panel step.
 
     The full first-column panel step already has a residual matrix bound.

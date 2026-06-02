@@ -503,6 +503,13 @@ These compile, but should not be treated as fully derived stability results:
   the source column is mapped to `-s e_0`, so all tail components are zero.
   This is exact algebra, not yet a rounded triangularization theorem for the
   full QR loop.
+- Added panel-level exact triangularization bridges in `HouseholderQR.lean`:
+  `householder_first_column_panel_exact_first` and
+  `householder_first_column_panel_exact_tail_zero`.  These lift the exact
+  one-vector zeroing theorem to the first column of a rectangular panel after
+  applying the constructed exact reflector.  The next QR gap is to combine this
+  exact zeroing fact with the rounded residual theorem in the shrinking-panel
+  induction.
 
 ## 2026-04-26 Fix Pass
 
