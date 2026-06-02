@@ -1893,6 +1893,169 @@ theorem householder_qr_panel_backward_zero_cols (m : ℕ)
       exact Fin.elim0 j
     simp [Z, hZ]
 
+/-- Algebraic cons step for the recursive rectangular QR panel backward-error
+    proof.
+
+    If the current stored panel `S` is one residual away from applying an
+    orthogonal first-step reflector `P` to `A`, and the trailing panel of `S`
+    already has a QR panel backward-error proof, then replacing the trailing
+    panel by that recursive `Rtail` gives a full-panel backward-error proof. -/
+theorem householder_qr_panel_backward_cons {m p : ℕ}
+    (A S : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (P : Fin (m + 1) → Fin (m + 1) → ℝ)
+    (E : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (Rtail : Fin m → Fin p → ℝ)
+    (c α : ℝ)
+    (hP : IsOrthogonal (m + 1) P)
+    (hSrep : ∀ i j,
+      S i j = matMulRect (m + 1) (m + 1) (p + 1) P A i j + E i j)
+    (hE : frobNorm E ≤ c * frobNorm A)
+    (hSzero : panelFirstColumnTailZero S)
+    (hTail :
+      HouseholderQRPanelBackwardError m p (trailingPanel S) Rtail
+        (α * frobNorm (trailingPanel S)))
+    (hα : 0 ≤ α) :
+    HouseholderQRPanelBackwardError (m + 1) (p + 1) A
+      (panelFromTopAndTrailing (panelTopLeft S) (panelTopRowTail S) Rtail)
+      ((c + α * (1 + c)) * frobNorm A) := by
+  obtain ⟨Qt, ΔT, hQt, hTailRep, hΔT⟩ := hTail.result
+  let Δtail : Fin (m + 1) → Fin (p + 1) → ℝ :=
+    panelTrailingPerturbation ΔT
+  let Eta : Fin (m + 1) → Fin (p + 1) → ℝ :=
+    fun i j => E i j + Δtail i j
+  let ΔA : Fin (m + 1) → Fin (p + 1) → ℝ :=
+    matMulRect (m + 1) (m + 1) (p + 1) (matTranspose P) Eta
+  let M : Fin (m + 1) → Fin (m + 1) → ℝ :=
+    matMul (m + 1) (embedTrailingOne (matTranspose Qt)) P
+  let Q : Fin (m + 1) → Fin (m + 1) → ℝ := matTranspose M
+  refine ⟨⟨Q, ΔA, ?_, ?_, ?_⟩⟩
+  · have hEmb : IsOrthogonal (m + 1) (embedTrailingOne (matTranspose Qt)) :=
+      embedTrailingOne_orthogonal (matTranspose Qt) hQt.transpose
+    have hM : IsOrthogonal (m + 1) M := hEmb.mul hP
+    exact hM.transpose
+  · have hLift :=
+      panelFromTopAndTrailing_lift_trailing_rep Qt
+        (panelTopLeft S) (panelTopRowTail S)
+        (trailingPanel S) Rtail ΔT hTailRep
+    have hSblocks :
+        panelFromTopAndTrailing (panelTopLeft S) (panelTopRowTail S)
+          (trailingPanel S) = S :=
+      panelFromTopAndTrailing_of_firstColumnTailZero S hSzero
+    have hInside :
+        (fun i j =>
+          panelFromTopAndTrailing (panelTopLeft S) (panelTopRowTail S)
+              (trailingPanel S) i j +
+            panelTrailingPerturbation ΔT i j) =
+          fun i j => S i j + Δtail i j := by
+      ext i j
+      rw [hSblocks]
+    have hPA_Eta :
+        (fun i j => S i j + Δtail i j) =
+          matMulRect (m + 1) (m + 1) (p + 1) P
+            (fun a b => A a b + ΔA a b) := by
+      ext i j
+      have hPPt :
+          matMul (m + 1) P (matTranspose P) = idMatrix (m + 1) := by
+        ext a b
+        exact hP.right_inv a b
+      have hPΔ :
+          matMulRect (m + 1) (m + 1) (p + 1) P ΔA = Eta := by
+        show matMulRect (m + 1) (m + 1) (p + 1) P
+            (matMulRect (m + 1) (m + 1) (p + 1) (matTranspose P) Eta) = Eta
+        rw [← matMulRect_assoc_square_left, hPPt, matMulRect_id_left]
+      calc
+        S i j + Δtail i j
+            = (matMulRect (m + 1) (m + 1) (p + 1) P A i j + E i j) +
+                Δtail i j := by rw [hSrep i j]
+        _ = matMulRect (m + 1) (m + 1) (p + 1) P A i j +
+              Eta i j := by
+            simp [Eta]
+            ring
+        _ = matMulRect (m + 1) (m + 1) (p + 1) P A i j +
+              matMulRect (m + 1) (m + 1) (p + 1) P ΔA i j := by
+            rw [hPΔ]
+        _ = matMulRect (m + 1) (m + 1) (p + 1) P
+              (fun a b => A a b + ΔA a b) i j := by
+            rw [← congr_fun
+              (congr_fun
+                (matMulRect_add_right (m + 1) (m + 1) (p + 1) P A ΔA) i) j]
+    intro i j
+    have hLift' :
+        panelFromTopAndTrailing (panelTopLeft S) (panelTopRowTail S) Rtail =
+          matMulRect (m + 1) (m + 1) (p + 1)
+            (embedTrailingOne (matTranspose Qt))
+            (fun i j => S i j + Δtail i j) := by
+      rw [hLift]
+      congr
+    rw [hLift']
+    show matMulRect (m + 1) (m + 1) (p + 1)
+        (embedTrailingOne (matTranspose Qt))
+        (fun i j => S i j + Δtail i j) i j =
+      matMulRect (m + 1) (m + 1) (p + 1) (matTranspose Q)
+        (fun a b => A a b + ΔA a b) i j
+    rw [hPA_Eta]
+    show matMulRect (m + 1) (m + 1) (p + 1)
+        (embedTrailingOne (matTranspose Qt))
+        (matMulRect (m + 1) (m + 1) (p + 1) P
+          (fun a b => A a b + ΔA a b)) i j =
+      matMulRect (m + 1) (m + 1) (p + 1) (matTranspose Q)
+        (fun a b => A a b + ΔA a b) i j
+    rw [← matMulRect_assoc_square_left]
+    simp [Q, M, matTranspose_involutive]
+  · have hΔnorm :
+        frobNorm ΔA = frobNorm Eta := by
+      show frobNorm
+          (matMulRect (m + 1) (m + 1) (p + 1) (matTranspose P) Eta) =
+        frobNorm Eta
+      exact frobNorm_orthogonal_left_rect (matTranspose P) Eta hP.transpose
+    have hΔtailnorm : frobNorm Δtail = frobNorm ΔT := by
+      exact frobNorm_panelTrailingPerturbation ΔT
+    have hEta :
+        frobNorm Eta ≤ frobNorm E + frobNorm Δtail := by
+      show frobNorm (fun i j => E i j + Δtail i j) ≤
+        frobNorm E + frobNorm Δtail
+      exact norm_add_le
+        (Matrix.of E : Matrix (Fin (m + 1)) (Fin (p + 1)) ℝ)
+        (Matrix.of Δtail : Matrix (Fin (m + 1)) (Fin (p + 1)) ℝ)
+    have hSnorm :
+        frobNorm S ≤ (1 + c) * frobNorm A := by
+      have hSfun :
+          S = fun i j =>
+            matMulRect (m + 1) (m + 1) (p + 1) P A i j + E i j :=
+        funext fun i => funext fun j => hSrep i j
+      calc
+        frobNorm S
+            = frobNorm
+                (fun i j =>
+                  matMulRect (m + 1) (m + 1) (p + 1) P A i j + E i j) := by
+              rw [hSfun]
+        _ ≤ frobNorm (matMulRect (m + 1) (m + 1) (p + 1) P A) +
+              frobNorm E := by
+            exact norm_add_le
+              (Matrix.of
+                (matMulRect (m + 1) (m + 1) (p + 1) P A) :
+                  Matrix (Fin (m + 1)) (Fin (p + 1)) ℝ)
+              (Matrix.of E : Matrix (Fin (m + 1)) (Fin (p + 1)) ℝ)
+        _ = frobNorm A + frobNorm E := by
+            rw [frobNorm_orthogonal_left_rect P A hP]
+        _ ≤ frobNorm A + c * frobNorm A := by
+            exact add_le_add (le_refl (frobNorm A)) hE
+        _ = (1 + c) * frobNorm A := by ring
+    have hTnorm :
+        frobNorm (trailingPanel S) ≤ (1 + c) * frobNorm A :=
+      le_trans (frobNorm_trailingPanel_le S) hSnorm
+    have hΔTbound :
+        frobNorm ΔT ≤ α * ((1 + c) * frobNorm A) :=
+      le_trans hΔT (mul_le_mul_of_nonneg_left hTnorm hα)
+    calc
+      frobNorm ΔA
+          = frobNorm Eta := hΔnorm
+      _ ≤ frobNorm E + frobNorm Δtail := hEta
+      _ = frobNorm E + frobNorm ΔT := by rw [hΔtailnorm]
+      _ ≤ c * frobNorm A + α * ((1 + c) * frobNorm A) := by
+          exact add_le_add hE hΔTbound
+      _ = (c + α * (1 + c)) * frobNorm A := by ring
+
 /-- QR backward-error contract including the structural fact that the computed
     `R_hat` is upper triangular.
 

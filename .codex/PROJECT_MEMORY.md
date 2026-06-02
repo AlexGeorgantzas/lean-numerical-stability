@@ -610,6 +610,11 @@ These compile, but should not be treated as fully derived stability results:
   cases.  This target records `R_hat = Qᵀ(A + ΔA)` for rectangular panels; the
   square wrapper still needs to convert it to the existing
   `HouseholderQRBackwardError` form.
+- Proved `householder_qr_panel_backward_cons`, the generic recursive cons
+  theorem: a stored one-step residual bound for the current panel plus a
+  rectangular QR backward-error proof for the trailing panel yields a full-panel
+  backward-error proof.  This composes the tail proof with `embedTrailingOne`
+  and uses the coefficient update `c + α*(1+c)`.
 
 ## 2026-04-26 Fix Pass
 
