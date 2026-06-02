@@ -807,6 +807,12 @@ These compile, but should not be treated as fully derived stability results:
   nonsingularity via a nonzero diagonal condition for the computed `R_safe`, and
   it does not yet build or return an explicit accumulated `Q` matrix as part of
   the algorithm output.
+- Interpretation note: an existential exact orthogonal `Q` in
+  `HouseholderQRBackwardError` is acceptable for the Higham-style QR
+  backward-error theorem.  The implementation-backed part is the concrete
+  rounded `R_safe` algorithm and its bridge to the backward-error contract.
+  Returning a separately computed floating-point `Q` would be a distinct future
+  API, not a prerequisite for the current `R` or QR-solve stability claims.
 
 ## 2026-04-26 Fix Pass
 
