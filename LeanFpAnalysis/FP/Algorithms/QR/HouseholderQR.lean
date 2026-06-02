@@ -1847,6 +1847,33 @@ noncomputable def householderQRPanel_QhatAccumBound (fp : FPModel) :
     (fp : FPModel) {m : ℕ} (A : Fin (m + 1) → Fin 0 → ℝ) :
     householderQRPanel_QhatAccumBound fp (m + 1) 0 A = 0 := rfl
 
+/-- Recursive accumulated `Q_hat` bound with the embedded tail norm eliminated.
+
+    At each step, the raw factor `‖embedTrailingOne Qtail_hat‖_F` is bounded by
+    the Frobenius norm of an exact embedded orthogonal block,
+    `sqrt (m + 1)`, plus the already accumulated tail perturbation.  This is
+    still recursive and branch-sensitive, but it no longer depends on the
+    concrete accumulated `Q_hat` value. -/
+noncomputable def householderQRPanel_QhatClosedBound (fp : FPModel) :
+    (m p : ℕ) → (Fin m → Fin p → ℝ) → ℝ
+  | 0, _, _A => 0
+  | Nat.succ _, 0, _A => 0
+  | m + 1, p + 1, A =>
+      let ηtail :=
+        householderQRPanel_QhatClosedBound fp m p
+          (fl_householderTrailingPanelStepSafe fp A)
+      ηtail +
+        householderQRPanel_Qhat_stepCoeff_safe fp A *
+          (Real.sqrt ((m + 1 : ℕ) : ℝ) + ηtail)
+
+@[simp] theorem householderQRPanel_QhatClosedBound_zero_rows
+    (fp : FPModel) {p : ℕ} (A : Fin 0 → Fin p → ℝ) :
+    householderQRPanel_QhatClosedBound fp 0 p A = 0 := rfl
+
+@[simp] theorem householderQRPanel_QhatClosedBound_zero_cols
+    (fp : FPModel) {m : ℕ} (A : Fin (m + 1) → Fin 0 → ℝ) :
+    householderQRPanel_QhatClosedBound fp (m + 1) 0 A = 0 := rfl
+
 /-- Accumulated perturbation statement for a rounded `Q_hat`: it is an exact
     orthogonal matrix plus a Frobenius-norm-bounded perturbation. -/
 structure HouseholderQRPanelQhatAccumError (m : ℕ)
@@ -1857,6 +1884,46 @@ structure HouseholderQRPanelQhatAccumError (m : ℕ)
     IsOrthogonal m Q ∧
     (∀ i j, Q_hat i j = Q i j + ΔQ i j) ∧
     frobNorm ΔQ ≤ η
+
+/-- Accumulated `Q_hat` perturbation bounds are monotone in the bound value. -/
+theorem HouseholderQRPanelQhatAccumError.mono {m : ℕ}
+    {Q_hat : Fin m → Fin m → ℝ} {η η' : ℝ}
+    (h : HouseholderQRPanelQhatAccumError m Q_hat η)
+    (hη : η ≤ η') :
+    HouseholderQRPanelQhatAccumError m Q_hat η' := by
+  obtain ⟨Q, ΔQ, hQ, hrep, hΔQ⟩ := h.result
+  exact ⟨⟨Q, ΔQ, hQ, hrep, le_trans hΔQ hη⟩⟩
+
+/-- The embedded tail accumulator norm is controlled by the exact orthogonal
+    block size plus the accumulated tail perturbation. -/
+theorem HouseholderQRPanelQhatAccumError.embedTrailingOne_norm_le {m : ℕ}
+    {Qtail_hat : Fin m → Fin m → ℝ} {ηtail : ℝ}
+    (hTail : HouseholderQRPanelQhatAccumError m Qtail_hat ηtail) :
+    frobNorm (embedTrailingOne Qtail_hat) ≤
+      Real.sqrt ((m + 1 : ℕ) : ℝ) + ηtail := by
+  obtain ⟨Qt, ΔT, hQt, hTailRep, hΔT⟩ := hTail.result
+  let Δemb : Fin (m + 1) → Fin (m + 1) → ℝ :=
+    panelTrailingPerturbation ΔT
+  have hemb :
+      embedTrailingOne Qtail_hat =
+        fun i j => embedTrailingOne Qt i j + Δemb i j := by
+    ext i j
+    exact embedTrailingOne_add_panelTrailingPerturbation hTailRep i j
+  calc
+    frobNorm (embedTrailingOne Qtail_hat)
+        = frobNorm (fun i j => embedTrailingOne Qt i j + Δemb i j) := by
+          rw [hemb]
+    _ ≤ frobNorm (embedTrailingOne Qt) + frobNorm Δemb := by
+          exact norm_add_le
+            (Matrix.of (embedTrailingOne Qt) :
+              Matrix (Fin (m + 1)) (Fin (m + 1)) ℝ)
+            (Matrix.of Δemb :
+              Matrix (Fin (m + 1)) (Fin (m + 1)) ℝ)
+    _ = Real.sqrt ((m + 1 : ℕ) : ℝ) + frobNorm ΔT := by
+          rw [frobNorm_embedTrailingOne_of_orthogonal Qt hQt,
+            frobNorm_panelTrailingPerturbation]
+    _ ≤ Real.sqrt ((m + 1 : ℕ) : ℝ) + ηtail :=
+          add_le_add_right hΔT _
 
 /-- Algebraic one-step extension for accumulated rounded `Q_hat` errors. -/
 theorem HouseholderQRPanelQhatAccumError.cons {m : ℕ}
@@ -1940,6 +2007,30 @@ theorem HouseholderQRPanelQhatAccumError.cons {m : ℕ}
       _ = frobNorm ΔT + frobNorm E := by rw [hPΔ, hΔemb]
       _ ≤ ηtail + c * frobNorm (embedTrailingOne Qtail_hat) :=
           add_le_add hΔT hE
+
+/-- One-step extension using the closed recursive `Q_hat` bound. -/
+theorem HouseholderQRPanelQhatAccumError.cons_closed {m : ℕ}
+    {Qtail_hat : Fin m → Fin m → ℝ} {ηtail : ℝ}
+    (hTail : HouseholderQRPanelQhatAccumError m Qtail_hat ηtail)
+    (P : Fin (m + 1) → Fin (m + 1) → ℝ)
+    (Q_hat : Fin (m + 1) → Fin (m + 1) → ℝ) (c : ℝ)
+    (hP : IsOrthogonal (m + 1) P)
+    (hc : 0 ≤ c)
+    (hStep : ∃ E : Fin (m + 1) → Fin (m + 1) → ℝ,
+      (∀ i j : Fin (m + 1),
+        Q_hat i j =
+          matMulRect (m + 1) (m + 1) (m + 1) P
+            (embedTrailingOne Qtail_hat) i j + E i j) ∧
+      frobNorm E ≤ c * frobNorm (embedTrailingOne Qtail_hat)) :
+    HouseholderQRPanelQhatAccumError (m + 1) Q_hat
+      (ηtail + c * (Real.sqrt ((m + 1 : ℕ) : ℝ) + ηtail)) := by
+  have hRaw :=
+    HouseholderQRPanelQhatAccumError.cons hTail P Q_hat c hP hStep
+  have htailNorm :=
+    HouseholderQRPanelQhatAccumError.embedTrailingOne_norm_le hTail
+  refine hRaw.mono ?_
+  exact add_le_add_right
+    (mul_le_mul_of_nonneg_left htailNorm hc) ηtail
 
 /-- Square specialization of the rounded accumulated Householder QR `Q_hat`
     algorithm. -/
@@ -2167,6 +2258,122 @@ theorem fl_householderQRPanel_Qhat_safe_accum_error (fp : FPModel) :
                 (householderQRPanel_Qhat_stepCoeff_safe fp A) hP hStep
             simpa [householderQRPanel_QhatAccumBound] using hCons
 
+/-- Recursive accumulated perturbation theorem for the rounded `Q_hat` panel
+    algorithm using the closed recursive bound.
+
+    Compared with `fl_householderQRPanel_Qhat_safe_accum_error`, this statement
+    removes the explicit dependence on the actual embedded tail accumulator norm
+    from the bound.  Each step instead uses
+    `sqrt (m + 1) + ηtail`, where `ηtail` is the already accumulated tail
+    perturbation bound. -/
+theorem fl_householderQRPanel_Qhat_safe_closed_accum_error (fp : FPModel) :
+    ∀ (m p : ℕ) (A : Fin m → Fin p → ℝ),
+      HouseholderQRPanelSafeReady fp m p A →
+      HouseholderQRPanelQhatAccumError m
+        (fl_householderQRPanel_Qhat_safe fp m p A)
+        (householderQRPanel_QhatClosedBound fp m p A) := by
+  intro m
+  induction m with
+  | zero =>
+      intro p A _hready
+      let Z : Fin 0 → Fin 0 → ℝ := fun i _ => Fin.elim0 i
+      refine ⟨⟨idMatrix 0, Z, idMatrix_orthogonal 0, ?_, ?_⟩⟩
+      · intro i
+        exact Fin.elim0 i
+      · have hZ : frobNorm Z = 0 := by
+          rw [frobNorm_eq_zero_iff]
+          intro i
+          exact Fin.elim0 i
+        simp [Z, hZ]
+  | succ m ih =>
+      intro p
+      cases p with
+      | zero =>
+          intro A _hready
+          let Z : Fin (m + 1) → Fin (m + 1) → ℝ := fun _ _ => 0
+          refine ⟨⟨idMatrix (m + 1), Z, idMatrix_orthogonal (m + 1), ?_, ?_⟩⟩
+          · intro i j
+            simp [fl_householderQRPanel_Qhat_safe, Z]
+          · have hZ : frobNorm Z = 0 := by
+              rw [frobNorm_eq_zero_iff]
+              intro i j
+              rfl
+            simp [householderQRPanel_QhatClosedBound, Z, hZ]
+      | succ p =>
+          intro A hready
+          by_cases hcol : panelFirstColumn (Nat.succ_pos p) A = 0
+          · have htailReady :
+                HouseholderQRPanelSafeReady fp m p (trailingPanel A) := by
+              simpa [HouseholderQRPanelSafeReady, hcol] using hready
+            have hTailBase :=
+              ih p (trailingPanel A) htailReady
+            have hTail :
+                HouseholderQRPanelQhatAccumError m
+                  (fl_householderQRPanel_Qhat_tail_safe fp A)
+                  (householderQRPanel_QhatClosedBound fp m p
+                    (fl_householderTrailingPanelStepSafe fp A)) := by
+              simpa [fl_householderQRPanel_Qhat_tail_safe,
+                fl_householderTrailingPanelStepSafe, hcol] using hTailBase
+            have hStep :
+                ∃ E : Fin (m + 1) → Fin (m + 1) → ℝ,
+                  (∀ i j : Fin (m + 1),
+                    fl_householderQRPanel_Qhat_safe fp (m + 1) (p + 1) A i j =
+                      matMulRect (m + 1) (m + 1) (m + 1)
+                        (householderQRPanel_Qhat_stepP_safe A)
+                        (embedTrailingOne
+                          (fl_householderQRPanel_Qhat_tail_safe fp A)) i j +
+                        E i j) ∧
+                  frobNorm E ≤
+                    householderQRPanel_Qhat_stepCoeff_safe fp A *
+                      frobNorm
+                        (embedTrailingOne
+                          (fl_householderQRPanel_Qhat_tail_safe fp A)) := by
+              simpa [householderQRPanel_Qhat_stepP_safe,
+                householderQRPanel_Qhat_stepCoeff_safe,
+                fl_householderQRPanel_Qhat_tail_safe,
+                fl_householderTrailingPanelStepSafe, hcol] using
+                fl_householderQRPanel_Qhat_safe_succ_succ_zero_residual_bound
+                  fp A hcol
+            have hP :
+                IsOrthogonal (m + 1) (householderQRPanel_Qhat_stepP_safe A) := by
+              simpa [householderQRPanel_Qhat_stepP_safe, hcol] using
+                idMatrix_orthogonal (m + 1)
+            have hc : 0 ≤ householderQRPanel_Qhat_stepCoeff_safe fp A := by
+              simp [householderQRPanel_Qhat_stepCoeff_safe, hcol]
+            have hCons :=
+              HouseholderQRPanelQhatAccumError.cons_closed hTail
+                (householderQRPanel_Qhat_stepP_safe A)
+                (fl_householderQRPanel_Qhat_safe fp (m + 1) (p + 1) A)
+                (householderQRPanel_Qhat_stepCoeff_safe fp A) hP hc hStep
+            simpa [householderQRPanel_QhatClosedBound] using hCons
+          · have hready' :
+                gammaValid fp (11 * (m + 1) + 23) ∧
+                HouseholderQRPanelSafeReady fp m p
+                  (fl_householderTrailingPanelStep fp A) := by
+              simpa [HouseholderQRPanelSafeReady, hcol] using hready
+            have hTailBase :=
+              ih p (fl_householderTrailingPanelStep fp A) hready'.2
+            have hTail :
+                HouseholderQRPanelQhatAccumError m
+                  (fl_householderQRPanel_Qhat_tail_safe fp A)
+                  (householderQRPanel_QhatClosedBound fp m p
+                    (fl_householderTrailingPanelStepSafe fp A)) := by
+              simpa [fl_householderQRPanel_Qhat_tail_safe,
+                fl_householderTrailingPanelStepSafe, hcol] using hTailBase
+            have hStep :=
+              fl_householderQRPanel_Qhat_safe_succ_succ_residual_bound
+                fp A hready'.1
+            have hP :=
+              householderQRPanel_Qhat_stepP_safe_orthogonal fp A hready'.1
+            have hc :=
+              householderQRPanel_Qhat_stepCoeff_safe_nonneg fp A hready'.1
+            have hCons :=
+              HouseholderQRPanelQhatAccumError.cons_closed hTail
+                (householderQRPanel_Qhat_stepP_safe A)
+                (fl_householderQRPanel_Qhat_safe fp (m + 1) (p + 1) A)
+                (householderQRPanel_Qhat_stepCoeff_safe fp A) hP hc hStep
+            simpa [householderQRPanel_QhatClosedBound] using hCons
+
 /-- A single global gamma-validity hypothesis supplies all branch-local
     gamma-validity assumptions needed by the zero-aware Householder QR panel
     algorithm.
@@ -2244,6 +2451,41 @@ theorem fl_householderQR_computed_safe_Q_hat_accum_error_of_global_gammaValid
       (householderQRPanel_QhatAccumBound fp n n A) := by
   simpa [fl_householderQR_computed_safe] using
     fl_householderQR_Qhat_safe_accum_error_of_global_gammaValid fp n A hvalid
+
+/-- Square specialization of the closed accumulated perturbation theorem for
+    the rounded `Q_hat` algorithm. -/
+theorem fl_householderQR_Qhat_safe_closed_accum_error
+    (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (hready : HouseholderQRPanelSafeReady fp n n A) :
+    HouseholderQRPanelQhatAccumError n
+      (fl_householderQR_Qhat_safe fp n A)
+      (householderQRPanel_QhatClosedBound fp n n A) := by
+  simpa [fl_householderQR_Qhat_safe] using
+    fl_householderQRPanel_Qhat_safe_closed_accum_error fp n n A hready
+
+/-- Global-gamma wrapper for the closed accumulated perturbation theorem for
+    the rounded `Q_hat` algorithm. -/
+theorem fl_householderQR_Qhat_safe_closed_accum_error_of_global_gammaValid
+    (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (hvalid : gammaValid fp (11 * n + 23)) :
+    HouseholderQRPanelQhatAccumError n
+      (fl_householderQR_Qhat_safe fp n A)
+      (householderQRPanel_QhatClosedBound fp n n A) := by
+  exact fl_householderQR_Qhat_safe_closed_accum_error fp n A
+    (HouseholderQRPanelSafeReady_square_of_global_gammaValid fp n A hvalid)
+
+/-- The `Q_hat` field of the concrete computed-factor API is an exact
+    orthogonal matrix plus a perturbation bounded by the closed recursive
+    accumulated `Q_hat` bound. -/
+theorem fl_householderQR_computed_safe_Q_hat_closed_accum_error_of_global_gammaValid
+    (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (hvalid : gammaValid fp (11 * n + 23)) :
+    HouseholderQRPanelQhatAccumError n
+      (fl_householderQR_computed_safe fp n A).Q_hat
+      (householderQRPanel_QhatClosedBound fp n n A) := by
+  simpa [fl_householderQR_computed_safe] using
+    fl_householderQR_Qhat_safe_closed_accum_error_of_global_gammaValid
+      fp n A hvalid
 
 /-- Active trailing-panel state for a Householder QR loop.
 

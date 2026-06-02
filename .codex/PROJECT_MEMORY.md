@@ -900,6 +900,18 @@ These compile, but should not be treated as fully derived stability results:
   layer, but the bound is not yet simplified to a closed-form norm-growth
   estimate and the exact orthogonal factor is not yet compared with
   `fl_householderQR_Q_safe`.
+- Added a cleaner recursive accumulated `Q_hat` bound,
+  `householderQRPanel_QhatClosedBound`.  The helper
+  `HouseholderQRPanelQhatAccumError.embedTrailingOne_norm_le` bounds the
+  embedded tail accumulator norm by `sqrt (m + 1) + ηtail`, and
+  `HouseholderQRPanelQhatAccumError.cons_closed` threads this through one
+  Householder step.  The panel theorem
+  `fl_householderQRPanel_Qhat_safe_closed_accum_error` and global wrappers
+  `fl_householderQR_Qhat_safe_closed_accum_error_of_global_gammaValid` and
+  `fl_householderQR_computed_safe_Q_hat_closed_accum_error_of_global_gammaValid`
+  expose the resulting computed-`Q_hat` perturbation theorem.  This is still
+  recursive and branch-sensitive; the remaining polishing step is a compact
+  closed-form growth estimate and comparison with the exact `Q_safe` witness.
 
 ## 2026-04-26 Fix Pass
 

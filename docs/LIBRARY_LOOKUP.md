@@ -93,9 +93,15 @@ does the same for the explicit exact-witness perturbation equation.
 `fl_householderQR_computed_safe_Q_hat_accum_error_of_global_gammaValid` prove
 that rounded accumulated `Q_hat` is an exact orthogonal matrix plus a bounded
 perturbation, using the raw recursive bound
-`householderQRPanel_QhatAccumBound`.  The remaining `Q_hat` work is to simplify
-that raw bound into a closed-form norm-growth result and compare the exact
-orthogonal factor with `fl_householderQR_Q_safe`.  The branch-combined
+`householderQRPanel_QhatAccumBound`.  The cleaner wrappers
+`fl_householderQRPanel_Qhat_safe_closed_accum_error`,
+`fl_householderQR_Qhat_safe_closed_accum_error_of_global_gammaValid`, and
+`fl_householderQR_computed_safe_Q_hat_closed_accum_error_of_global_gammaValid`
+replace each embedded-tail `Q_hat` norm in that raw bound by
+`sqrt (m + 1) + ηtail`, using `householderQRPanel_QhatClosedBound`.  The
+remaining `Q_hat` work is to simplify this recursive bound into a compact
+Higham-style closed-form growth estimate and compare the exact orthogonal
+factor with `fl_householderQR_Q_safe`.  The branch-combined
 safe-step interface feeding the recursive theorem is:
 `householderQRPanel_Qhat_stepP_safe`,
 `fl_householderQRPanel_Qhat_tail_safe`,
