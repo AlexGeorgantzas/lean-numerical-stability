@@ -283,10 +283,11 @@ theorem householderVectorError_vhat_abs_sq_sum_le {n : ℕ}
 
     Lemma 18.2 assumes the computed Householder vector satisfies
     `HouseholderVectorError` above, then analyzes the dot-product and vector
-    update computation.  Until the concrete bridge from `fl_householderVector`
-    and `fl_householderApply` is proved, this structure is a specification
-    interface rather than an end-to-end result.  The bound c is typically
-    a generic `γ_{cm}` where c is a small integer and m = n. -/
+    update computation.  The concrete bridge from `fl_householderVector` and
+    `fl_householderApply` is proved in the Householder one-step/matrix-step
+    modules; this structure remains as the reusable application contract.  The
+    bound c is typically a generic `γ_{cm}` where c is a small integer and
+    m = n. -/
 structure HouseholderAppError (n : ℕ) (P : Fin n → Fin n → ℝ)
     (b y_hat : Fin n → ℝ) (c : ℝ) : Prop where
   /-- P is orthogonal. -/

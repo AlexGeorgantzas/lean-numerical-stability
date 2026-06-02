@@ -639,6 +639,12 @@ These compile, but should not be treated as fully derived stability results:
   Householder reflectors chosen from the active `A` panel to `b`, then the solve
   definition calls `fl_backSub` on `fl_householderQR_R` and the transformed RHS.
   The full solve stability bridge remains pending.
+- Added RHS one-step residual bridge in `QR/QRSolve.lean`:
+  `HouseholderAppError.exists_residual_vector`,
+  `fl_householder_first_column_rhs_step_error`, and
+  `fl_householder_first_column_rhs_step_residual`.  These expose the computed
+  RHS update as `P*b + e` with `e = ΔP*b`, using the same panel-selected
+  Householder reflector as the QR factorization step.
 
 ## 2026-04-26 Fix Pass
 

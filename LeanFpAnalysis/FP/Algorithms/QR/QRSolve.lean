@@ -179,6 +179,81 @@ noncomputable def fl_householderQR_solve (fp : FPModel) (n : ℕ)
   fl_backSub fp n (fl_householderQR_R fp n A)
     (fl_householderQR_rhs fp n A b)
 
+/-- Residual-vector form of a one-vector Householder application contract.
+
+    `HouseholderAppError` states `y = (P + ΔP)b`.  This lemma exposes the
+    equivalent residual form `y = P b + e`, where `e = ΔP b`. -/
+theorem HouseholderAppError.exists_residual_vector {n : ℕ}
+    {P : Fin n → Fin n → ℝ} {b y : Fin n → ℝ} {c : ℝ}
+    (hstep : HouseholderAppError n P b y c) :
+    ∃ e : Fin n → ℝ,
+      (∀ i, y i = matMulVec n P b i + e i) ∧
+      ∃ ΔP : Fin n → Fin n → ℝ,
+        frobNorm ΔP ≤ c ∧
+        ∀ i, e i = matMulVec n ΔP b i := by
+  obtain ⟨ΔP, hΔP, hpert⟩ := hstep.pert
+  refine ⟨fun i => matMulVec n ΔP b i, ?_, ⟨ΔP, hΔP, ?_⟩⟩
+  · intro i
+    rw [hpert i]
+    unfold matMulVec
+    rw [← Finset.sum_add_distrib]
+    apply Finset.sum_congr rfl
+    intro k _
+    ring
+  · intro i
+    rfl
+
+/-- Concrete one-step right-hand-side Householder application where the
+    reflector is constructed from the current QR panel's first column. -/
+theorem fl_householder_first_column_rhs_step_error (fp : FPModel)
+    {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ) (b : Fin (m + 1) → ℝ)
+    (hx : panelFirstColumn (Nat.succ_pos p) A ≠ 0)
+    (hvalid : gammaValid fp (11 * (m + 1) + 23)) :
+    HouseholderAppError (m + 1)
+      (householder (m + 1)
+        (householderNormalizedVector (m + 1)
+          (householderVector (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A))
+          (householderBetaFromScale (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A))) 1)
+      b
+      (fl_householderApply fp (m + 1)
+        (fl_householderNormalizedVector fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A)) 1 b)
+      (householderConstructApplyBound fp (m + 1)) := by
+  simpa [householderConstructApplyBound] using
+    fl_householderConstructApply_appError fp (Nat.succ_pos m)
+      (panelFirstColumn (Nat.succ_pos p) A) b hx hvalid
+
+/-- Residual-vector form of the concrete QR first-column right-hand-side
+    Householder step. -/
+theorem fl_householder_first_column_rhs_step_residual (fp : FPModel)
+    {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ) (b : Fin (m + 1) → ℝ)
+    (hx : panelFirstColumn (Nat.succ_pos p) A ≠ 0)
+    (hvalid : gammaValid fp (11 * (m + 1) + 23)) :
+    let P : Fin (m + 1) → Fin (m + 1) → ℝ :=
+      householder (m + 1)
+        (householderNormalizedVector (m + 1)
+          (householderVector (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A))
+          (householderBetaFromScale (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A))) 1
+    ∃ e : Fin (m + 1) → ℝ,
+      (∀ i,
+        fl_householderApply fp (m + 1)
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A)) 1 b i =
+          matMulVec (m + 1) P b i + e i) ∧
+      ∃ ΔP : Fin (m + 1) → Fin (m + 1) → ℝ,
+        frobNorm ΔP ≤ householderConstructApplyBound fp (m + 1) ∧
+        ∀ i, e i = matMulVec (m + 1) ΔP b i := by
+  intro P
+  have hstep :=
+    fl_householder_first_column_rhs_step_error fp A b hx hvalid
+  simpa [P] using hstep.exists_residual_vector
+
 /-- **Theorem 18.5 composition**: QR solve backward error from components.
 
     If we have:
