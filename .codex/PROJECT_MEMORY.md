@@ -477,6 +477,11 @@ These compile, but should not be treated as fully derived stability results:
   panel step.  It is the first link from arbitrary supplied construction
   vectors toward an actual QR loop, but it still does not define recursive
   trailing panels or prove triangularization.
+- Added `fl_householder_first_column_panel_sequence_backward_error`, which
+  repeats the first-column panel choice over a fixed rectangular panel shape.
+  This removes the arbitrary `xseq` layer for fixed panels.  Remaining QR work
+  is still the dependent trailing-panel loop with shrinking dimensions and the
+  triangularization/package proof.
 
 ## 2026-04-26 Fix Pass
 

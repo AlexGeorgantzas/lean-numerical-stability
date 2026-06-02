@@ -671,6 +671,35 @@ theorem fl_householder_first_column_panel_step_error (fp : FPModel)
     fl_householderConstructApply_matrix_step_error_rect fp hm0
       (panelFirstColumn hp0 A) A hx hvalid
 
+/-- Repeated rectangular panel sequence where each reflector is constructed
+    from the current panel's first column.
+
+    This is closer to a QR panel loop than
+    `fl_householder_panel_sequence_backward_error`, but it still keeps a fixed
+    panel shape.  The full QR loop must additionally shrink the trailing panel
+    after each step and prove triangularization. -/
+theorem fl_householder_first_column_panel_sequence_backward_error
+    (fp : FPModel) {m p r : ℕ}
+    (hm0 : 0 < m) (hp0 : 0 < p)
+    (Aseq : ℕ → Fin m → Fin p → ℝ)
+    (hx : ∀ k : ℕ, k < r → panelFirstColumn hp0 (Aseq k) ≠ 0)
+    (hvalid : gammaValid fp (11 * m + 23))
+    (hAstep : ∀ k : ℕ, k < r →
+      Aseq (k + 1) =
+        fl_householderApplyMatrixRect fp m p
+          (fl_householderNormalizedVector fp hm0 (panelFirstColumn hp0 (Aseq k)))
+          1 (Aseq k)) :
+    ∃ (Q : Fin m → Fin m → ℝ) (ΔA : Fin m → Fin p → ℝ),
+      IsOrthogonal m Q ∧
+      (∀ (i : Fin m) (j : Fin p), Aseq r i j =
+        matMulRect m m p (matTranspose Q)
+          (fun a b => Aseq 0 a b + ΔA a b) i j) ∧
+      frobNorm ΔA ≤
+        residualAccumBound (householderConstructApplyBound fp m) r *
+          frobNorm (Aseq 0) := by
+  let xseq : ℕ → Fin m → ℝ := fun k => panelFirstColumn hp0 (Aseq k)
+  exact fl_householder_panel_sequence_backward_error fp hm0 Aseq xseq hx hvalid hAstep
+
 -- ============================================================
 -- §18.3  Theorem 18.4: Householder QR backward error
 -- ============================================================
