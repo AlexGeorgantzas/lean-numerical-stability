@@ -1946,6 +1946,31 @@ noncomputable def householderQR_QhatUniformClosedBound
     (fp : FPModel) (N : ℕ) :
     householderQR_QhatUniformClosedBound fp N 0 = 0 := rfl
 
+/-- Closed-form solution of the dimension-only uniform accumulated `Q_hat`
+    perturbation recurrence. -/
+noncomputable def householderQR_QhatClosedFormBound
+    (fp : FPModel) (N k : ℕ) : ℝ :=
+  ((1 + householderConstructApplyBound fp N) ^ k - 1) *
+    Real.sqrt (N : ℝ)
+
+/-- The dimension-only recursive accumulated `Q_hat` bound solves exactly to
+    `((1+c)^k - 1) sqrt(N)`, where
+    `c = householderConstructApplyBound fp N`. -/
+theorem householderQR_QhatUniformClosedBound_eq_closedForm
+    (fp : FPModel) (N : ℕ) :
+    ∀ k : ℕ,
+      householderQR_QhatUniformClosedBound fp N k =
+        householderQR_QhatClosedFormBound fp N k := by
+  intro k
+  induction k with
+  | zero =>
+      simp [householderQR_QhatUniformClosedBound,
+        householderQR_QhatClosedFormBound]
+  | succ k ih =>
+      simp [householderQR_QhatUniformClosedBound,
+        householderQR_QhatClosedFormBound, ih]
+      ring
+
 /-- The uniform accumulated `Q_hat` bound is nonnegative. -/
 lemma householderQR_QhatUniformClosedBound_nonneg
     (fp : FPModel) (N : ℕ)
@@ -3078,6 +3103,34 @@ theorem fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_uniform_accum_error_of
       (householderQR_QhatUniformClosedBound fp n n) := by
   simpa [fl_householderQR_safe_witness, fl_householderQR_computed_safe] using
     fl_householderQR_Qhat_safe_fixed_Q_safe_uniform_accum_error_of_global_gammaValid
+      fp n A hvalid
+
+/-- Square/global wrapper for the closed-form accumulated `Q_hat` perturbation
+    bound with fixed `Q_safe` reference. -/
+theorem fl_householderQR_Qhat_safe_fixed_Q_safe_closed_form_accum_error_of_global_gammaValid
+    (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (hvalid : gammaValid fp (11 * n + 23)) :
+    HouseholderQRPanelQhatFixedAccumError n
+      (fl_householderQR_Q_safe fp n A)
+      (fl_householderQR_Qhat_safe fp n A)
+      (householderQR_QhatClosedFormBound fp n n) := by
+  have hUniform :=
+    fl_householderQR_Qhat_safe_fixed_Q_safe_uniform_accum_error_of_global_gammaValid
+      fp n A hvalid
+  simpa [householderQR_QhatUniformClosedBound_eq_closedForm] using hUniform
+
+/-- The computed-factor `Q_hat` field differs from the safe witness `Q` field
+    by a perturbation bounded by the closed-form accumulated `Q_hat` growth
+    factor. -/
+theorem fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_closed_form_accum_error_of_global_gammaValid
+    (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (hvalid : gammaValid fp (11 * n + 23)) :
+    HouseholderQRPanelQhatFixedAccumError n
+      (fl_householderQR_safe_witness fp n A).Q
+      (fl_householderQR_computed_safe fp n A).Q_hat
+      (householderQR_QhatClosedFormBound fp n n) := by
+  simpa [fl_householderQR_safe_witness, fl_householderQR_computed_safe] using
+    fl_householderQR_Qhat_safe_fixed_Q_safe_closed_form_accum_error_of_global_gammaValid
       fp n A hvalid
 
 /-- Active trailing-panel state for a Householder QR loop.

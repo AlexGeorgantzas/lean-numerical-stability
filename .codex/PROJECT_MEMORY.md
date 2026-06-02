@@ -936,6 +936,15 @@ These compile, but should not be treated as fully derived stability results:
   by a perturbation bounded by a dimension-only recurrence using
   `householderConstructApplyBound fp n` and `sqrt n`.  The next step is to
   solve or upper-bound this recurrence by a compact closed-form expression.
+- Solved the uniform computed-`Q_hat` recurrence exactly.  The local derived
+  bound `householderQR_QhatClosedFormBound fp n k` is
+  `((1 + householderConstructApplyBound fp n)^k - 1) * sqrt n`, and
+  `householderQR_QhatUniformClosedBound_eq_closedForm` proves the recursive and
+  closed forms are equal.  The public theorem
+  `fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_closed_form_accum_error_of_global_gammaValid`
+  now states `Q_hat = Q_safe + ΔQ` with this closed-form bound.  Remaining
+  QR-side polish is optional coefficient simplification/weakening into a more
+  conventional printed Higham-style constant, not the recurrence solution.
 
 ## 2026-04-26 Fix Pass
 

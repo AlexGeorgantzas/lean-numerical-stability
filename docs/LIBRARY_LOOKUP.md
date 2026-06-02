@@ -107,9 +107,13 @@ to the `Q` field of `fl_householderQR_safe_witness`, not merely existential.
 `fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_uniform_accum_error_of_global_gammaValid`
 replace the branch-sensitive recursive coefficients by a dimension-only
 recursive bound depending on `householderConstructApplyBound fp n` and
-`sqrt n`.  The remaining `Q_hat` work is to solve/simplify that uniform
-recurrence into a compact Higham-style closed-form growth estimate.  The
-branch-combined
+`sqrt n`.  `householderQR_QhatClosedFormBound` solves that recurrence as
+`((1 + householderConstructApplyBound fp n)^n - 1) * sqrt n`, and
+`fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_closed_form_accum_error_of_global_gammaValid`
+exposes the resulting closed-form computed-`Q_hat` perturbation theorem.  The
+remaining `Q_hat` polishing work is only to decide whether this coefficient
+should be further weakened/simplified into a more conventional printed
+constant.  The branch-combined
 safe-step interface feeding the recursive theorem is:
 `householderQRPanel_Qhat_stepP_safe`,
 `fl_householderQRPanel_Qhat_tail_safe`,
