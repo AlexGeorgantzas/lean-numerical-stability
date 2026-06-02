@@ -63,6 +63,35 @@ noncomputable def fl_householderApply (fp : FPModel) (n : ℕ)
   let w := fp.fl_mul beta t
   fun i => fp.fl_sub (b i) (fp.fl_mul w (v i))
 
+/-- Matrix represented by the primitive rounding errors in one rounded
+    Householder application.
+
+    This is not an arbitrary post-hoc perturbation.  Each entry is determined
+    by the same dot-product, scalar-multiplication, componentwise
+    multiplication, and subtraction error variables that occur in
+    `fl_householderApply_unroll`. -/
+noncomputable def householderApplyRoundedMatrix (n : ℕ)
+    (v : Fin n → ℝ) (beta : ℝ)
+    (η : Fin n → ℝ) (δw : ℝ)
+    (δmul δsub : Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j =>
+    idMatrix n i j * (1 + δsub i) -
+      (beta * (1 + δw)) * v i * (1 + δmul i) *
+        v j * (1 + η j) * (1 + δsub i)
+
+/-- Concrete perturbation matrix represented by the primitive rounding errors
+    in one Householder application, relative to an exact target matrix `P`.
+
+    The next Higham Lemma 18.2 step is precisely to bound this matrix in
+    Frobenius norm when `P = I - v vᵀ`, the input vector satisfies
+    `HouseholderVectorError`, and the displayed rounding variables satisfy the
+    primitive `FPModel` bounds. -/
+noncomputable def householderApplyDeltaMatrix (n : ℕ)
+    (P : Fin n → Fin n → ℝ) (v : Fin n → ℝ) (beta : ℝ)
+    (η : Fin n → ℝ) (δw : ℝ)
+    (δmul δsub : Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j => householderApplyRoundedMatrix n v beta η δw δmul δsub i j - P i j
+
 /-- Unroll the concrete Householder-vector application into primitive rounding
     errors from the dot product, one scalar multiplication, one per-component
     multiplication, and one per-component subtraction. -/
@@ -116,5 +145,123 @@ theorem fl_householderApply_unroll (fp : FPModel) (n : ℕ)
   rw [happ, hsub_eq i, hmul_eq i]
   rw [show w = beta * t * (1 + δw) from hw,
       show t = ∑ j : Fin n, v j * b j * (1 + η j) from hdot]
+
+/-- Matrix-form unroll for the concrete rounded Householder application.
+
+    The rounded output is exactly the product of `b` by the matrix
+    `householderApplyRoundedMatrix` built from the primitive rounding errors.
+    This is the algebraic bridge needed before proving the Lemma 18.2
+    Frobenius-norm perturbation bound. -/
+theorem fl_householderApply_matrix_unroll (fp : FPModel) (n : ℕ)
+    (v : Fin n → ℝ) (beta : ℝ) (b : Fin n → ℝ)
+    (hn : gammaValid fp n) :
+    ∃ (η : Fin n → ℝ) (δw : ℝ) (δmul δsub : Fin n → ℝ),
+      (∀ j : Fin n, |η j| ≤ gamma fp n) ∧
+      |δw| ≤ fp.u ∧
+      (∀ i : Fin n, |δmul i| ≤ fp.u) ∧
+      (∀ i : Fin n, |δsub i| ≤ fp.u) ∧
+      fl_householderApply fp n v beta b =
+        matMulVec n
+          (householderApplyRoundedMatrix n v beta η δw δmul δsub) b := by
+  obtain ⟨η, δw, δmul, δsub, hη, hδw, hδmul, hδsub, hunroll⟩ :=
+    fl_householderApply_unroll fp n v beta b hn
+  refine ⟨η, δw, δmul, δsub, hη, hδw, hδmul, hδsub, ?_⟩
+  ext i
+  rw [hunroll i]
+  unfold matMulVec householderApplyRoundedMatrix
+  have hfirst :
+      (∑ j : Fin n, idMatrix n i j * (1 + δsub i) * b j) =
+        b i * (1 + δsub i) := by
+    unfold idMatrix
+    simp [Finset.sum_ite_eq, Finset.mem_univ]
+    ring
+  have hsecond :
+      (∑ j : Fin n,
+          ((beta * (1 + δw)) * v i * (1 + δmul i) *
+            v j * (1 + η j) * (1 + δsub i)) * b j) =
+        (((beta * (∑ j : Fin n, v j * b j * (1 + η j))) *
+          (1 + δw)) * v i * (1 + δmul i)) * (1 + δsub i) := by
+    calc
+      (∑ j : Fin n,
+          ((beta * (1 + δw)) * v i * (1 + δmul i) *
+            v j * (1 + η j) * (1 + δsub i)) * b j)
+          =
+            (beta * (1 + δw) * v i * (1 + δmul i) * (1 + δsub i)) *
+              (∑ j : Fin n, v j * b j * (1 + η j)) := by
+                rw [Finset.mul_sum]
+                apply Finset.sum_congr rfl
+                intro j _
+                ring
+      _ =
+        (((beta * (∑ j : Fin n, v j * b j * (1 + η j))) *
+          (1 + δw)) * v i * (1 + δmul i)) * (1 + δsub i) := by
+            ring
+  have hmatrix :
+      (∑ j : Fin n,
+          (idMatrix n i j * (1 + δsub i) -
+            beta * (1 + δw) * v i * (1 + δmul i) *
+              v j * (1 + η j) * (1 + δsub i)) * b j) =
+        b i * (1 + δsub i) -
+          (((beta * (∑ j : Fin n, v j * b j * (1 + η j))) *
+            (1 + δw)) * v i * (1 + δmul i)) * (1 + δsub i) := by
+    calc
+      (∑ j : Fin n,
+          (idMatrix n i j * (1 + δsub i) -
+            beta * (1 + δw) * v i * (1 + δmul i) *
+              v j * (1 + η j) * (1 + δsub i)) * b j)
+          =
+            (∑ j : Fin n, idMatrix n i j * (1 + δsub i) * b j) -
+              (∑ j : Fin n,
+                ((beta * (1 + δw)) * v i * (1 + δmul i) *
+                  v j * (1 + η j) * (1 + δsub i)) * b j) := by
+                rw [← Finset.sum_sub_distrib]
+                apply Finset.sum_congr rfl
+                intro j _
+                ring
+      _ =
+          b i * (1 + δsub i) -
+            (((beta * (∑ j : Fin n, v j * b j * (1 + η j))) *
+              (1 + δw)) * v i * (1 + δmul i)) * (1 + δsub i) := by
+            rw [hfirst, hsecond]
+  rw [hmatrix]
+  ring
+
+/-- If the concrete perturbation matrix extracted from the rounded
+    Householder-application kernel has the required Frobenius bound, then the
+    rounded kernel satisfies the `HouseholderAppError` contract.
+
+    This theorem is intentionally only a packaging bridge: it does not prove the
+    Lemma 18.2 norm estimate.  The hypothesis `hbound` is the remaining source
+    theorem to formalize, not an arbitrary post-hoc perturbation. -/
+theorem fl_householderApply_appError_of_matrix_bound (fp : FPModel) (n : ℕ)
+    (P : Fin n → Fin n → ℝ) (v : Fin n → ℝ) (beta : ℝ)
+    (b : Fin n → ℝ) (c : ℝ)
+    (hn : gammaValid fp n) (horth : IsOrthogonal n P)
+    (hbound :
+      ∀ (η : Fin n → ℝ) (δw : ℝ) (δmul δsub : Fin n → ℝ),
+        (∀ j : Fin n, |η j| ≤ gamma fp n) →
+        |δw| ≤ fp.u →
+        (∀ i : Fin n, |δmul i| ≤ fp.u) →
+        (∀ i : Fin n, |δsub i| ≤ fp.u) →
+        frobNorm
+          (householderApplyDeltaMatrix n P v beta η δw δmul δsub) ≤ c) :
+    HouseholderAppError n P b (fl_householderApply fp n v beta b) c := by
+  obtain ⟨η, δw, δmul, δsub, hη, hδw, hδmul, hδsub, hmatrix⟩ :=
+    fl_householderApply_matrix_unroll fp n v beta b hn
+  refine ⟨horth, ?_⟩
+  refine ⟨householderApplyDeltaMatrix n P v beta η δw δmul δsub,
+    hbound η δw δmul δsub hη hδw hδmul hδsub, ?_⟩
+  intro i
+  calc
+    fl_householderApply fp n v beta b i =
+        matMulVec n (householderApplyRoundedMatrix n v beta η δw δmul δsub) b i := by
+          exact congr_fun hmatrix i
+    _ = matMulVec n
+          (fun a j =>
+            P a j + householderApplyDeltaMatrix n P v beta η δw δmul δsub a j) b i := by
+          unfold matMulVec householderApplyDeltaMatrix
+          apply Finset.sum_congr rfl
+          intro j _
+          ring
 
 end LeanFpAnalysis.FP

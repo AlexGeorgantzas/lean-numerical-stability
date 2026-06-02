@@ -60,7 +60,8 @@ Benchmark work lives on branch `benchmark`.
   `forward_from_backward`.
 - `Analysis/Rounding.lean`: `gamma`, `gammaValid`, gamma monotonicity and
   arithmetic, `prod_error_bound`, `gamma_mul`, `gamma_inv`, `gamma_div`,
-  absorption lemmas such as `three_gamma_plus_sq_le_gamma`.
+  `gamma_inv_mul_roundoff`, and absorption lemmas such as
+  `three_gamma_plus_sq_le_gamma`.
 - `Analysis/Summation.lean`: `fl_sum_error`, `fl_sum_error_init`,
   `fl_sum_error_tight`.
 - `Analysis/SubtractionFold.lean`: subtraction-fold and inverse-product
@@ -256,9 +257,9 @@ These compile, but should not be treated as fully derived stability results:
   positive implementation-backed template.  `OuterProduct` documentation was
   corrected to stress that its perturbation theorem is row-wise and not a global
   backward-stability result, matching Higham's discussion after equation (3.6).
-  `Norm2` is implementation-backed as a kernel, but any Householder-specific
-  construction theorem remains pending until the Chapter 18 source boundary is
-  checked.
+  `Norm2` is implementation-backed as a kernel.  Later Phase 5 work added the
+  Householder-specific norm bridges needed for Chapter 18 reflector
+  construction.
 - Phase 3 basic matrix-kernel audit completed on 2026-06-01.  Targeted
   `lake env lean` passed for `MatVec.lean`, `MatMul.lean`, and
   `LeastSquares/LSNormalEquations.lean`.  Added concrete bridge theorems
@@ -279,15 +280,21 @@ These compile, but should not be treated as fully derived stability results:
   Theorem 8.9 μ-bound (`forwardSub_forward_error_mu_bound`).
 - Phase 5 low-level QR rebuild started on 2026-06-01.  Added
   `Algorithms/QR/HouseholderReflector.lean` with concrete rounded kernels
-  `fl_householderAlpha`, `fl_householderVector`, and `fl_householderBeta`.
+  `fl_householderScale`, `fl_householderVector`, and `fl_householderBeta`.
+  Source alignment matters here: Higham Lemma 18.1 computes
+  `s = sign(x_0)||x||_2`, `v_0 = fl_add x_0 s_hat`, and
+  `beta_hat = fl_div 1 (fl_mul s_hat v_hat_0)`.  The dot-product beta path
+  `2/fl_dotProduct(v,v)` is an alternate algorithm and should not be used to
+  claim Higham's `γ_{4n+8}` bound.  Applying `sign(x_0)` is exact in Higham's
+  operation count, so `fl_householderScale` is an exact sign change of
+  `fl_norm2`, not a rounded multiplication.  The current kernels follow the source order.
   Their unroll lemmas reduce the construction to existing `fl_norm2`,
-  `fl_dotProduct`, `fp.model_sub`, `fp.model_mul`, and `fp.model_div` layers.
+  `fp.model_add`, `fp.model_mul`, and `fp.model_div` layers.
   Added `Algorithms/QR/HouseholderApply.lean` with concrete rounded
   `fl_householderApply`, modeling `b - beta * v * (v^T b)` and unrolling it into
-  dot-product, multiplication, and subtraction errors.  These are not yet Higham
-  Lemma 18.1 or Lemma 18.2 as stability theorems; the next missing bridges are
-  the perturbation bound for the constructed reflector and the proof that
-  `fl_householderApply` satisfies `HouseholderAppError`.
+  dot-product, multiplication, and subtraction errors.  Lemma 18.1 is now
+  implementation-backed by later bridge theorems; Lemma 18.2 application
+  stability remains the next missing bridge.
 - Phase 5 source boundary update on 2026-06-02: inspecting `References/Chapter18.pdf`
   page images confirmed that Higham Lemma 18.2 assumes the normalized reflector
   perturbation model from equation (18.3) before deriving the application error
@@ -300,14 +307,14 @@ These compile, but should not be treated as fully derived stability results:
   bridge is `fl_householderVector -> HouseholderVectorError`, followed by
   `fl_householderApply + HouseholderVectorError -> HouseholderAppError`.
 - Phase 5 exact-form update on 2026-06-02: added exact Householder construction
-  definitions `householderAlpha`, `householderVector`, and `householderBeta`,
-  plus `householderBeta_mul_norm_sq`.  Added normalized-form support
+  definitions `householderScale`, `householderAlpha`, `householderVector`,
+  `householderBeta`, and `householderBetaFromScale`, plus
+  `householderBeta_mul_norm_sq`.  Added normalized-form support
   `householderNormalizedVector`, `householder_normalizedVector_eq`, and
   `householderNormalizedVector_norm_sq`.  This proves the algebraic bridge
   between the library's unnormalized `I - beta v v^T` reflector and Higham's
-  normalized `I - v v^T` equation (18.3) form.  The floating-point bridge is
-  still pending: prove the rounded construction satisfies the normalized-vector
-  perturbation model before proving `HouseholderAppError`.
+  normalized `I - v v^T` equation (18.3) form.  Later bridge theorems prove the
+  rounded construction satisfies the normalized-vector perturbation model.
 - Also added `householder_exact_orthogonal`: exact `householderVector` together
   with exact `householderBeta` produces an orthogonal reflector whenever
   `v^T v` is nonzero.  Later rounded proofs should compare the computed
@@ -316,8 +323,57 @@ These compile, but should not be treated as fully derived stability results:
 - Added `fl_householderVector_tail_eq_householderVector`, proving the
   implementation-backed exact-copy part of Higham Lemma 18.1: all non-first
   components of the rounded Householder vector agree with the exact vector.
-  The hard remaining Lemma 18.1 work is the first-component perturbation and
-  beta perturbation bounds.
+- Added `HouseholderConstructionError`, the explicit Higham Lemma 18.1 contract:
+  tail equality, first-component relative error bounded by `γ_{n+2}`, and beta
+  relative error bounded by `γ_{4n+8}`.  Also added exact source-alignment
+  lemmas `householderScale_mul_self`,
+  `householderVector_norm_sq_eq_two_scale_mul`, and
+  `householderBetaFromScale_eq_householderBeta`, connecting the source beta
+  formula `1/(s*v_0)` with the reflector beta formula `2/(v^T v)`.
+- Added Householder-facing norm bridges in `Norm2.lean`:
+  `weighted_sum_relative_error_nonneg`, `fl_norm2Sq_relative_error`, and
+  `fl_norm2_relative_error_sqrt_factor`.  These prove the source step
+  `fl(x^T x) = (1+θ_n)x^T x` and expose
+  `fl(||x||_2) = sqrt(x^T x) * sqrt(1+θ_n) * (1+δ)`.
+  Added the exact square-root perturbation lemma
+  `sqrt_one_add_sub_one_abs_le_abs`, the gamma bridge
+  `sqrt_one_add_mul_roundoff_gamma`, and the source-style norm theorem
+  `fl_norm2_relative_error`, so the rounded norm now has
+  `fl_norm2 x = ||x||_2 * (1+θ_{n+1})` from the concrete `fl_norm2`
+  implementation.
+- Added `householderVector_zero_abs_eq`, proving the exact no-cancellation fact
+  `|x_0+s| = |x_0| + |s|`, and
+  `fl_householderScale_relative_error_sqrt_factor`, which composes the new
+  `fl_norm2` bridge with exact sign application.  Added
+  `fl_householderScale_relative_error` and
+  `fl_householderVector_zero_relative_error`, proving the
+  first-component `γ_{n+2}` part of Higham Lemma 18.1 for nonzero inputs from
+  the concrete rounded Householder vector implementation.
+- Added `gamma_inv_mul_roundoff` in `Rounding.lean` so a reciprocal of a
+  `γ_k`-perturbed denominator plus the final division rounding can be bounded
+  by `γ_{2k}`.  This preserves Higham's beta constant rather than weakening it
+  by one extra gamma index.
+- Added `fl_householderBeta_denominator_relative_error`,
+  `fl_householderBeta_relative_error`, and `fl_householderConstructionError`.
+  For nonzero inputs, the concrete rounded Householder construction now
+  satisfies the full `HouseholderConstructionError` contract matching Higham
+  Lemma 18.1: exact tail copy, first-component `γ_{n+2}` perturbation, and
+  beta `γ_{4n+8}` perturbation.
+- Added `sqrt_one_add_mul_relative_gamma` in `Norm2.lean` and the normalized
+  Householder construction bridges `householderVectorError_from_construction`
+  and `fl_householderVectorError`.  For nonzero inputs and a stronger
+  `gammaValid fp (8*n+16)` side condition, the concrete rounded construction
+  now satisfies Higham equation (18.3) after algebraic normalization, with
+  explicit bound `γ_{5n+10}` as a concrete instance of Higham's generic
+  `γ_{cm}`.
+- Added `householderApplyRoundedMatrix`,
+  `householderApplyDeltaMatrix`, `fl_householderApply_matrix_unroll`, and
+  `fl_householderApply_appError_of_matrix_bound`.  These prove that the
+  concrete rounded Householder application is multiplication by a matrix
+  determined by the primitive rounding errors, and they isolate the exact
+  remaining Lemma 18.2 obligation: prove a Frobenius norm bound for that
+  concrete delta matrix from `HouseholderVectorError` and the primitive error
+  bounds.  This is not yet the full Lemma 18.2 stability theorem.
 
 ## 2026-04-26 Fix Pass
 
