@@ -482,6 +482,13 @@ These compile, but should not be treated as fully derived stability results:
   This removes the arbitrary `xseq` layer for fixed panels.  Remaining QR work
   is still the dependent trailing-panel loop with shrinking dimensions and the
   triangularization/package proof.
+- Added exact trailing-panel indexing infrastructure in `HouseholderQR.lean`:
+  `panelDropFirstRow`, `panelDropFirstCol`, and `trailingPanel`, plus the
+  concrete rounded shrinking step `fl_householderTrailingPanelStep`.  This
+  models one QR move from an `(m+1) × (p+1)` panel to its updated trailing
+  `m × p` panel.  This is still an indexing/algorithm-definition layer; the
+  next proof gap is an induction over these dependent shrinking panel shapes
+  and the exact triangularization property.
 
 ## 2026-04-26 Fix Pass
 

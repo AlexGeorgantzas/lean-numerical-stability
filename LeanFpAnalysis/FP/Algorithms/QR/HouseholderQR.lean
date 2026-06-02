@@ -646,6 +646,83 @@ noncomputable def panelFirstColumn {m p : ℕ} (hp0 : 0 < p)
     (A : Fin m → Fin p → ℝ) : Fin m → ℝ :=
   fun i => A i ⟨0, hp0⟩
 
+/-- Drop the first row of a rectangular panel.  This is exact indexing
+    infrastructure, not a floating-point operation. -/
+noncomputable def panelDropFirstRow {m p : ℕ}
+    (A : Fin (m + 1) → Fin p → ℝ) : Fin m → Fin p → ℝ :=
+  fun i j => A i.succ j
+
+/-- Drop the first column of a rectangular panel.  This is exact indexing
+    infrastructure, not a floating-point operation. -/
+noncomputable def panelDropFirstCol {m p : ℕ}
+    (A : Fin m → Fin (p + 1) → ℝ) : Fin m → Fin p → ℝ :=
+  fun i j => A i j.succ
+
+/-- The trailing panel obtained by deleting the first row and first column. -/
+noncomputable def trailingPanel {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ) : Fin m → Fin p → ℝ :=
+  fun i j => A i.succ j.succ
+
+@[simp] theorem panelDropFirstRow_apply {m p : ℕ}
+    (A : Fin (m + 1) → Fin p → ℝ) (i : Fin m) (j : Fin p) :
+    panelDropFirstRow A i j = A i.succ j := rfl
+
+@[simp] theorem panelDropFirstCol_apply {m p : ℕ}
+    (A : Fin m → Fin (p + 1) → ℝ) (i : Fin m) (j : Fin p) :
+    panelDropFirstCol A i j = A i j.succ := rfl
+
+@[simp] theorem trailingPanel_apply {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ) (i : Fin m) (j : Fin p) :
+    trailingPanel A i j = A i.succ j.succ := rfl
+
+/-- Dropping first row and first column is the same as taking the trailing
+    panel in either order. -/
+theorem trailingPanel_eq_dropFirstRow_dropFirstCol {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ) :
+    trailingPanel A = panelDropFirstRow (panelDropFirstCol A) := rfl
+
+/-- Dropping first column then first row is also the trailing panel. -/
+theorem trailingPanel_eq_dropFirstCol_dropFirstRow {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ) :
+    trailingPanel A = panelDropFirstCol (panelDropFirstRow A) := rfl
+
+/-- One concrete Householder QR trailing-panel update.
+
+    Given an `(m+1) × (p+1)` panel, construct the Householder reflector from
+    the panel's first column, apply the rounded reflector to the whole panel,
+    then return the trailing `m × p` panel.  This is the concrete shrinking
+    step needed before defining the dependent full QR loop. -/
+noncomputable def fl_householderTrailingPanelStep (fp : FPModel)
+    {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ) :
+    Fin m → Fin p → ℝ :=
+  trailingPanel
+    (fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+      (fl_householderNormalizedVector fp (Nat.succ_pos m)
+        (panelFirstColumn (Nat.succ_pos p) A)) 1 A)
+
+@[simp] theorem fl_householderTrailingPanelStep_apply (fp : FPModel)
+    {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (i : Fin m) (j : Fin p) :
+    fl_householderTrailingPanelStep fp A i j =
+      fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+        (fl_householderNormalizedVector fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A)) 1 A i.succ j.succ := rfl
+
+/-- If a full nonempty panel is updated by the concrete first-column
+    Householder step, then the next trailing panel is exactly
+    `fl_householderTrailingPanelStep`. -/
+theorem trailingPanel_first_column_panel_step_eq
+    (fp : FPModel) {m p : ℕ}
+    (A A_next : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (hAstep :
+      A_next =
+        fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A)) 1 A) :
+    trailingPanel A_next = fl_householderTrailingPanelStep fp A := by
+  rw [hAstep]
+  rfl
+
 /-- One concrete Householder panel step where the reflector is constructed from
     the first column of the current panel.
 
