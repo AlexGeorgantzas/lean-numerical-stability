@@ -1184,6 +1184,28 @@ theorem frobNorm_orthogonal_right {n : ℕ} (A V : Fin n → Fin n → ℝ)
   rw [frobNorm_eq_sqrt_frobNormSq, frobNorm_eq_sqrt_frobNormSq,
     frobNormSq_orthogonal_right A V hV]
 
+/-- Squared Frobenius norm of the identity matrix is the dimension. -/
+theorem frobNormSq_idMatrix (n : ℕ) :
+    frobNormSq (idMatrix n) = (n : ℝ) := by
+  unfold frobNormSq idMatrix
+  simp [Finset.sum_ite_eq, Finset.mem_univ]
+
+/-- Squared Frobenius norm of an orthogonal matrix is the dimension. -/
+theorem IsOrthogonal.frobNormSq_eq_card {n : ℕ} {U : Fin n → Fin n → ℝ}
+    (hU : IsOrthogonal n U) :
+    frobNormSq U = (n : ℝ) := by
+  calc
+    frobNormSq U = frobNormSq (matMul n U (idMatrix n)) := by
+      rw [matMul_id_right]
+    _ = frobNormSq (idMatrix n) := frobNormSq_orthogonal_left U (idMatrix n) hU
+    _ = (n : ℝ) := frobNormSq_idMatrix n
+
+/-- Frobenius norm of an orthogonal matrix is `sqrt n`. -/
+theorem IsOrthogonal.frobNorm_eq_sqrt_card {n : ℕ} {U : Fin n → Fin n → ℝ}
+    (hU : IsOrthogonal n U) :
+    frobNorm U = Real.sqrt (n : ℝ) := by
+  rw [frobNorm_eq_sqrt_frobNormSq, hU.frobNormSq_eq_card]
+
 /-- Transpose of orthogonal matrix is orthogonal.
 
     Since (Uᵀ)ᵀ = U, we have (Uᵀ)ᵀUᵀ = UUᵀ = I and Uᵀ(Uᵀ)ᵀ = UᵀU = I. -/

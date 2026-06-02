@@ -723,6 +723,14 @@ These compile, but should not be treated as fully derived stability results:
   The remaining gap for full Givens QR is choosing/formalizing the annihilation
   schedule and proving the produced sequence has the QR triangular shape and a
   source-clean uniform bound.
+- Added exact Frobenius facts in `MatrixAlgebra.lean`:
+  `frobNormSq_idMatrix`, `IsOrthogonal.frobNormSq_eq_card`, and
+  `IsOrthogonal.frobNorm_eq_sqrt_card`.  These reuse existing exact Frobenius
+  invariance under orthogonal multiplication and show `‖U‖_F = sqrt n` for
+  orthogonal `n × n` matrices.  Added uniform Givens sequence corollaries
+  `fl_givens_sequence_backward_error_uniform` and
+  `fl_givens_panel_sequence_backward_error_uniform`, discharging the earlier
+  explicit per-step norm-bound assumption with `gamma fp 8 * sqrt n`.
 - Added exact vector embedding algebra for the QR RHS recursion:
   `vectorTrailingPerturbation`, `embedTrailingOne_matMulVec_top`,
   `vectorTail_embedTrailingOne_matMulVec`, and

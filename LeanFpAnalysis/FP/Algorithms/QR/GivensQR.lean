@@ -140,6 +140,44 @@ theorem fl_givens_sequence_backward_error (fp : FPModel) {n r : ℕ}
         (mul_le_mul_of_nonneg_right (hstep_bound k hk)
           (frobNorm_nonneg (Aseq k)))
 
+/-- Uniform-bound corollary for repeated computed Givens matrix applications.
+
+    Since every exact Givens rotation is orthogonal, its Frobenius norm is
+    `sqrt n`.  This removes the explicit per-step bound assumption from
+    `fl_givens_sequence_backward_error`, while keeping the conservative
+    `gamma fp 8` constant inherited from the computed-coefficient bridge. -/
+theorem fl_givens_sequence_backward_error_uniform (fp : FPModel) {n r : ℕ}
+    (Aseq : ℕ → Fin n → Fin n → ℝ)
+    (pseq qseq : ℕ → Fin n)
+    (xiseq xjseq : ℕ → ℝ)
+    (hpq : ∀ k : ℕ, k < r → pseq k ≠ qseq k)
+    (hnz : ∀ k : ℕ, k < r → xiseq k ^ 2 + xjseq k ^ 2 ≠ 0)
+    (hvalid : gammaValid fp 8)
+    (hAstep : ∀ k : ℕ, k < r →
+      Aseq (k + 1) =
+        fl_givensApplyMatrix fp n (pseq k) (qseq k)
+          (xiseq k) (xjseq k) (Aseq k)) :
+    ∃ (Q : Fin n → Fin n → ℝ) (ΔA : Fin n → Fin n → ℝ),
+      IsOrthogonal n Q ∧
+      (∀ i j : Fin n, Aseq r i j =
+        matMul n (matTranspose Q)
+          (fun a b => Aseq 0 a b + ΔA a b) i j) ∧
+      frobNorm ΔA ≤
+        residualAccumBound (gamma fp 8 * Real.sqrt (n : ℝ)) r *
+          frobNorm (Aseq 0) := by
+  apply fl_givens_sequence_backward_error fp Aseq pseq qseq xiseq xjseq
+    (gamma fp 8 * Real.sqrt (n : ℝ))
+  · exact mul_nonneg (gamma_nonneg fp hvalid) (Real.sqrt_nonneg _)
+  · exact hpq
+  · exact hnz
+  · exact hvalid
+  · intro k hk
+    have hG :=
+      givensRotation_constructed_orthogonal n (pseq k) (qseq k)
+        (xiseq k) (xjseq k) (hpq k hk) (hnz k hk)
+    rw [hG.frobNorm_eq_sqrt_card]
+  · exact hAstep
+
 /-- Rectangular-panel version of `fl_givens_sequence_backward_error`. -/
 theorem fl_givens_panel_sequence_backward_error (fp : FPModel)
     {m cols r : ℕ}
@@ -192,5 +230,40 @@ theorem fl_givens_panel_sequence_backward_error (fp : FPModel)
     · exact le_trans hE
         (mul_le_mul_of_nonneg_right (hstep_bound k hk)
           (frobNorm_nonneg (Aseq k)))
+
+/-- Uniform-bound rectangular-panel corollary for repeated computed Givens
+    applications. -/
+theorem fl_givens_panel_sequence_backward_error_uniform (fp : FPModel)
+    {m cols r : ℕ}
+    (Aseq : ℕ → Fin m → Fin cols → ℝ)
+    (pseq qseq : ℕ → Fin m)
+    (xiseq xjseq : ℕ → ℝ)
+    (hpq : ∀ k : ℕ, k < r → pseq k ≠ qseq k)
+    (hnz : ∀ k : ℕ, k < r → xiseq k ^ 2 + xjseq k ^ 2 ≠ 0)
+    (hvalid : gammaValid fp 8)
+    (hAstep : ∀ k : ℕ, k < r →
+      Aseq (k + 1) =
+        fl_givensApplyMatrixRect fp m cols (pseq k) (qseq k)
+          (xiseq k) (xjseq k) (Aseq k)) :
+    ∃ (Q : Fin m → Fin m → ℝ) (ΔA : Fin m → Fin cols → ℝ),
+      IsOrthogonal m Q ∧
+      (∀ (i : Fin m) (j : Fin cols), Aseq r i j =
+        matMulRect m m cols (matTranspose Q)
+          (fun a b => Aseq 0 a b + ΔA a b) i j) ∧
+      frobNorm ΔA ≤
+        residualAccumBound (gamma fp 8 * Real.sqrt (m : ℝ)) r *
+          frobNorm (Aseq 0) := by
+  apply fl_givens_panel_sequence_backward_error fp Aseq pseq qseq xiseq xjseq
+    (gamma fp 8 * Real.sqrt (m : ℝ))
+  · exact mul_nonneg (gamma_nonneg fp hvalid) (Real.sqrt_nonneg _)
+  · exact hpq
+  · exact hnz
+  · exact hvalid
+  · intro k hk
+    have hG :=
+      givensRotation_constructed_orthogonal m (pseq k) (qseq k)
+        (xiseq k) (xjseq k) (hpq k hk) (hnz k hk)
+    rw [hG.frobNorm_eq_sqrt_card]
+  · exact hAstep
 
 end LeanFpAnalysis.FP
