@@ -702,6 +702,15 @@ These compile, but should not be treated as fully derived stability results:
   Givens application/sequence proofs can consume coefficient contracts without
   unpacking both scalar theorems manually.  The sharper Higham Lemma 18.6
   target `ĉ = c(1+θ₄)` and `ŝ = s(1+θ'₄)` is still pending.
+- Added `fl_givensApply_coeffError_app_error` and
+  `fl_givensApply_computed_app_error_conservative`.  These close the concrete
+  Givens coefficient-plus-application path: coefficients are computed by
+  `fl_givensC`/`fl_givensS` and then used by `fl_givensApply`, producing a
+  `GivensAppError` for the exact constructed rotation.  The bound is the
+  conservative `gamma fp 8 * ‖G‖_F`, obtained by combining the current
+  `gamma fp 6` coefficient bridge with two rounded operations in the
+  application.  This is implementation-backed but not the sharp Higham Lemma
+  18.7 constant `sqrt 2 * gamma_6`.
 - Added exact vector embedding algebra for the QR RHS recursion:
   `vectorTrailingPerturbation`, `embedTrailingOne_matMulVec_top`,
   `vectorTail_embedTrailingOne_matMulVec`, and

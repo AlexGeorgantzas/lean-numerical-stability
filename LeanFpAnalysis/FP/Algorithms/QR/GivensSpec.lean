@@ -864,4 +864,275 @@ theorem fl_givensApply_supplied_app_error (fp : FPModel) (n : ℕ)
             intro j _
             simp [hΔrow j]
 
+/-- Conservative coefficient-plus-application Givens bridge.
+
+    This theorem combines a coefficient relative-error contract with the
+    concrete `fl_givensApply` kernel.  If the supplied rounded coefficients
+    satisfy `c_hat = c(1+θ)` and `s_hat = s(1+θ')` with coefficient errors
+    bounded by `gamma fp 6`, then the rounded application is a backward
+    perturbation of the exact orthogonal rotation with a conservative
+    `gamma fp 8` entrywise/Frobenius bound.
+
+    This is implementation-backed once paired with
+    `fl_givensCoeffError_conservative`; the constant is intentionally not
+    advertised as Higham's sharper Lemma 18.7 `sqrt 2 * gamma_6` bound. -/
+theorem fl_givensApply_coeffError_app_error (fp : FPModel) (n : ℕ)
+    (p q : Fin n) (c s c_hat s_hat μ : ℝ) (x : Fin n → ℝ)
+    (hpq : p ≠ q) (hcs : c ^ 2 + s ^ 2 = 1)
+    (hμ : μ ≤ gamma fp 6)
+    (hcoeff : GivensCoeffError c s c_hat s_hat μ)
+    (hvalid : gammaValid fp 8) :
+    GivensAppError n (givensRotation n p q c s) x
+      (fl_givensApply fp n p q c_hat s_hat x)
+      (gamma fp 8 * frobNorm (givensRotation n p q c s)) := by
+  obtain ⟨εc, hεc, hc_hat⟩ := hcoeff.c_rel
+  obtain ⟨εs, hεs, hs_hat⟩ := hcoeff.s_rel
+  obtain ⟨δcp, hδcp, hmul_cp⟩ := fp.model_mul c_hat (x p)
+  obtain ⟨δsp, hδsp, hmul_sp⟩ := fp.model_mul s_hat (x q)
+  obtain ⟨δadd, hδadd, hadd⟩ :=
+    fp.model_add (fp.fl_mul c_hat (x p)) (fp.fl_mul s_hat (x q))
+  obtain ⟨δcq, hδcq, hmul_cq⟩ := fp.model_mul c_hat (x q)
+  obtain ⟨δsq, hδsq, hmul_sq⟩ := fp.model_mul s_hat (x p)
+  obtain ⟨δsub, hδsub, hsub⟩ :=
+    fp.model_sub (fp.fl_mul c_hat (x q)) (fp.fl_mul s_hat (x p))
+  have hvalid1 : gammaValid fp 1 := gammaValid_mono fp (by omega) hvalid
+  have hu_le_γ1 : fp.u ≤ gamma fp 1 := u_le_gamma fp one_pos hvalid1
+  have hεc6 : |εc| ≤ gamma fp 6 := le_trans hεc hμ
+  have hεs6 : |εs| ≤ gamma fp 6 := le_trans hεs hμ
+  have hδcpγ : |δcp| ≤ gamma fp 1 := le_trans hδcp hu_le_γ1
+  have hδspγ : |δsp| ≤ gamma fp 1 := le_trans hδsp hu_le_γ1
+  have hδaddγ : |δadd| ≤ gamma fp 1 := le_trans hδadd hu_le_γ1
+  have hδcqγ : |δcq| ≤ gamma fp 1 := le_trans hδcq hu_le_γ1
+  have hδsqγ : |δsq| ≤ gamma fp 1 := le_trans hδsq hu_le_γ1
+  have hδsubγ : |δsub| ≤ gamma fp 1 := le_trans hδsub hu_le_γ1
+  have hvalid7 : gammaValid fp 7 := gammaValid_mono fp (by omega) hvalid
+  obtain ⟨φcp, hφcp, hφcp_eq⟩ :=
+    gamma_mul fp 6 1 εc δcp hεc6 hδcpγ (by simpa using hvalid7)
+  obtain ⟨φsp, hφsp, hφsp_eq⟩ :=
+    gamma_mul fp 6 1 εs δsp hεs6 hδspγ (by simpa using hvalid7)
+  obtain ⟨φcq, hφcq, hφcq_eq⟩ :=
+    gamma_mul fp 6 1 εc δcq hεc6 hδcqγ (by simpa using hvalid7)
+  obtain ⟨φsq, hφsq, hφsq_eq⟩ :=
+    gamma_mul fp 6 1 εs δsq hεs6 hδsqγ (by simpa using hvalid7)
+  obtain ⟨θcp, hθcp, hθcp_eq⟩ :=
+    gamma_mul fp 7 1 φcp δadd (by simpa using hφcp) hδaddγ (by simpa using hvalid)
+  obtain ⟨θsp, hθsp, hθsp_eq⟩ :=
+    gamma_mul fp 7 1 φsp δadd (by simpa using hφsp) hδaddγ (by simpa using hvalid)
+  obtain ⟨θcq, hθcq, hθcq_eq⟩ :=
+    gamma_mul fp 7 1 φcq δsub (by simpa using hφcq) hδsubγ (by simpa using hvalid)
+  obtain ⟨θsq, hθsq, hθsq_eq⟩ :=
+    gamma_mul fp 7 1 φsq δsub (by simpa using hφsq) hδsubγ (by simpa using hvalid)
+  have hθcp8 : |θcp| ≤ gamma fp 8 := by simpa using hθcp
+  have hθsp8 : |θsp| ≤ gamma fp 8 := by simpa using hθsp
+  have hθcq8 : |θcq| ≤ gamma fp 8 := by simpa using hθcq
+  have hθsq8 : |θsq| ≤ gamma fp 8 := by simpa using hθsq
+  let ΔG : Fin n → Fin n → ℝ := fun i j =>
+    if i = p ∧ j = p then c * θcp
+    else if i = p ∧ j = q then s * θsp
+    else if i = q ∧ j = q then c * θcq
+    else if i = q ∧ j = p then -s * θsq
+    else 0
+  have hγ8_nonneg : 0 ≤ gamma fp 8 := gamma_nonneg fp hvalid
+  have hmul_bound :
+      ∀ a θ : ℝ, |θ| ≤ gamma fp 8 → |a * θ| ≤ gamma fp 8 * |a| := by
+    intro a θ hθ
+    calc
+      |a * θ| = |a| * |θ| := by rw [abs_mul]
+      _ ≤ |a| * gamma fp 8 := mul_le_mul_of_nonneg_left hθ (abs_nonneg a)
+      _ = gamma fp 8 * |a| := by ring
+  have hp_alg :
+      fl_givensApply fp n p q c_hat s_hat x p =
+        c * (1 + θcp) * x p + s * (1 + θsp) * x q := by
+    calc
+      fl_givensApply fp n p q c_hat s_hat x p
+          = fp.fl_add (fp.fl_mul c_hat (x p)) (fp.fl_mul s_hat (x q)) := by
+              simp
+      _ = (fp.fl_mul c_hat (x p) + fp.fl_mul s_hat (x q)) * (1 + δadd) := hadd
+      _ = ((c_hat * x p) * (1 + δcp) + (s_hat * x q) * (1 + δsp)) *
+            (1 + δadd) := by rw [hmul_cp, hmul_sp]
+      _ = ((c * (1 + εc) * x p) * (1 + δcp) +
+            (s * (1 + εs) * x q) * (1 + δsp)) * (1 + δadd) := by
+              rw [hc_hat, hs_hat]
+      _ = c * x p * ((1 + εc) * (1 + δcp) * (1 + δadd)) +
+            s * x q * ((1 + εs) * (1 + δsp) * (1 + δadd)) := by ring
+      _ = c * x p * ((1 + φcp) * (1 + δadd)) +
+            s * x q * ((1 + φsp) * (1 + δadd)) := by
+              rw [hφcp_eq, hφsp_eq]
+      _ = c * x p * (1 + θcp) + s * x q * (1 + θsp) := by
+              rw [hθcp_eq, hθsp_eq]
+      _ = c * (1 + θcp) * x p + s * (1 + θsp) * x q := by ring
+  have hq_alg :
+      fl_givensApply fp n p q c_hat s_hat x q =
+        c * (1 + θcq) * x q - s * (1 + θsq) * x p := by
+    calc
+      fl_givensApply fp n p q c_hat s_hat x q
+          = fp.fl_sub (fp.fl_mul c_hat (x q)) (fp.fl_mul s_hat (x p)) := by
+              exact fl_givensApply_q fp n p q c_hat s_hat x hpq
+      _ = (fp.fl_mul c_hat (x q) - fp.fl_mul s_hat (x p)) * (1 + δsub) := hsub
+      _ = ((c_hat * x q) * (1 + δcq) - (s_hat * x p) * (1 + δsq)) *
+            (1 + δsub) := by rw [hmul_cq, hmul_sq]
+      _ = ((c * (1 + εc) * x q) * (1 + δcq) -
+            (s * (1 + εs) * x p) * (1 + δsq)) * (1 + δsub) := by
+              rw [hc_hat, hs_hat]
+      _ = c * x q * ((1 + εc) * (1 + δcq) * (1 + δsub)) -
+            s * x p * ((1 + εs) * (1 + δsq) * (1 + δsub)) := by ring
+      _ = c * x q * ((1 + φcq) * (1 + δsub)) -
+            s * x p * ((1 + φsq) * (1 + δsub)) := by
+              rw [hφcq_eq, hφsq_eq]
+      _ = c * x q * (1 + θcq) - s * x p * (1 + θsq) := by
+              rw [hθcq_eq, hθsq_eq]
+      _ = c * (1 + θcq) * x q - s * (1 + θsq) * x p := by ring
+  refine ⟨givensRotation_orthogonal n p q c s hpq hcs, ?_⟩
+  refine ⟨ΔG, ?_, ?_⟩
+  · apply frobNorm_le_const_mul_frobNorm_of_entrywise_abs_le
+    · exact hγ8_nonneg
+    · intro i j
+      by_cases hip : i = p
+      · by_cases hjp : j = p
+        · have hΔ : ΔG i j = c * θcp := by simp [ΔG, hip, hjp]
+          have hG : givensRotation n p q c s i j = c := by
+            simp [givensRotation, hip, hjp]
+          rw [hΔ, hG]
+          exact hmul_bound c θcp hθcp8
+        · by_cases hjq : j = q
+          · have hΔ : ΔG i j = s * θsp := by
+              simp [ΔG, hip, hjq, hpq.symm]
+            have hG : givensRotation n p q c s i j = s := by
+              simp [givensRotation, hip, hjq, hpq, hpq.symm]
+            rw [hΔ, hG]
+            exact hmul_bound s θsp hθsp8
+          · have hΔ : ΔG i j = 0 := by simp [ΔG, hip, hjp, hjq]
+            rw [hΔ, abs_zero]
+            exact mul_nonneg hγ8_nonneg (abs_nonneg _)
+      · by_cases hiq : i = q
+        · by_cases hjq : j = q
+          · have hΔ : ΔG i j = c * θcq := by
+              simp [ΔG, hiq, hjq, hpq.symm]
+            have hG : givensRotation n p q c s i j = c := by
+              simp [givensRotation, hiq, hjq, hpq.symm]
+            rw [hΔ, hG]
+            exact hmul_bound c θcq hθcq8
+          · by_cases hjp : j = p
+            · have hΔ : ΔG i j = -s * θsq := by
+                simp [ΔG, hiq, hjp, hpq, hpq.symm]
+              have hG : givensRotation n p q c s i j = -s := by
+                simp [givensRotation, hiq, hjp, hpq, hpq.symm]
+              have hneg : |-s * θsq| ≤ gamma fp 8 * |-s| :=
+                hmul_bound (-s) θsq hθsq8
+              rw [hΔ, hG]
+              simpa [abs_neg] using hneg
+            · have hΔ : ΔG i j = 0 := by simp [ΔG, hiq, hjp, hjq]
+              rw [hΔ, abs_zero]
+              exact mul_nonneg hγ8_nonneg (abs_nonneg _)
+        · have hΔ : ΔG i j = 0 := by simp [ΔG, hip, hiq]
+          rw [hΔ, abs_zero]
+          exact mul_nonneg hγ8_nonneg (abs_nonneg _)
+  · intro i
+    by_cases hip : i = p
+    · subst i
+      have hrow : ∀ j : Fin n,
+          givensRotation n p q c s p j + ΔG p j =
+            if j = p then c * (1 + θcp)
+            else if j = q then s * (1 + θsp)
+            else 0 := by
+        intro j
+        rw [giv_row_p n p q c s hpq j]
+        by_cases hjp : j = p
+        · simp [ΔG, hjp]
+          ring
+        · by_cases hjq : j = q
+          · simp [ΔG, hjq, hpq.symm]
+            ring
+          · simp [ΔG, hjp, hjq]
+      calc
+        fl_givensApply fp n p q c_hat s_hat x p
+            = c * (1 + θcp) * x p + s * (1 + θsp) * x q := hp_alg
+        _ = (∑ j : Fin n,
+              (if j = p then c * (1 + θcp)
+               else if j = q then s * (1 + θsp)
+               else 0) * x j) := by
+              rw [sum_two_point n p q (c * (1 + θcp)) (s * (1 + θsp)) x hpq]
+        _ = matMulVec n (fun a b => givensRotation n p q c s a b + ΔG a b) x p := by
+              unfold matMulVec
+              apply Finset.sum_congr rfl
+              intro j _
+              change (if j = p then c * (1 + θcp)
+                else if j = q then s * (1 + θsp)
+                else 0) * x j =
+                (givensRotation n p q c s p j + ΔG p j) * x j
+              rw [hrow j]
+    · by_cases hiq : i = q
+      · subst i
+        have hrow : ∀ j : Fin n,
+            givensRotation n p q c s q j + ΔG q j =
+              if j = p then -s * (1 + θsq)
+              else if j = q then c * (1 + θcq)
+              else 0 := by
+          intro j
+          rw [giv_row_q n p q c s hpq j]
+          by_cases hjp : j = p
+          · simp [ΔG, hjp, hpq, hpq.symm]
+            ring_nf
+          · by_cases hjq : j = q
+            · simp [ΔG, hjq, hpq.symm]
+              ring
+            · simp [ΔG, hjp, hjq]
+        calc
+          fl_givensApply fp n p q c_hat s_hat x q
+              = c * (1 + θcq) * x q - s * (1 + θsq) * x p := hq_alg
+          _ = (-s * (1 + θsq)) * x p + (c * (1 + θcq)) * x q := by ring
+          _ = (∑ j : Fin n,
+                (if j = p then -s * (1 + θsq)
+                 else if j = q then c * (1 + θcq)
+                 else 0) * x j) := by
+                rw [sum_two_point n p q (-s * (1 + θsq)) (c * (1 + θcq)) x hpq]
+          _ = matMulVec n (fun a b => givensRotation n p q c s a b + ΔG a b) x q := by
+                unfold matMulVec
+                apply Finset.sum_congr rfl
+                intro j _
+                change (if j = p then -s * (1 + θsq)
+                  else if j = q then c * (1 + θcq)
+                  else 0) * x j =
+                  (givensRotation n p q c s q j + ΔG q j) * x j
+                rw [hrow j]
+      · have hΔrow : ∀ j : Fin n, ΔG i j = 0 := by
+          intro j
+          simp [ΔG, hip, hiq]
+        calc
+          fl_givensApply fp n p q c_hat s_hat x i = x i := by
+            simp [fl_givensApply, hip, hiq]
+          _ = matMulVec n (givensRotation n p q c s) x i := by
+            rw [givensRotation_matMulVec_other n p q i c s x hip hiq]
+          _ = matMulVec n (fun a b => givensRotation n p q c s a b + ΔG a b) x i := by
+            unfold matMulVec
+            apply Finset.sum_congr rfl
+            intro j _
+            simp [hΔrow j]
+
+/-- Concrete computed-coefficient Givens application bridge.
+
+    This is the current implementation-backed version of the coefficient
+    construction plus application path: coefficients are produced by
+    `fl_givensC`/`fl_givensS`, then applied by `fl_givensApply`.  The proof
+    is conservative (`gamma fp 8`) because it reuses the existing rounded norm
+    plus division analysis rather than Higham's omitted sharper coefficient
+    proof for Lemma 18.6. -/
+theorem fl_givensApply_computed_app_error_conservative (fp : FPModel) (n : ℕ)
+    (p q : Fin n) (xi xj : ℝ) (x : Fin n → ℝ)
+    (hpq : p ≠ q) (h : xi ^ 2 + xj ^ 2 ≠ 0)
+    (hvalid : gammaValid fp 8) :
+    GivensAppError n
+      (givensRotation n p q (givensC xi xj) (givensS xi xj)) x
+      (fl_givensApply fp n p q
+        (fl_givensC fp xi xj) (fl_givensS fp xi xj) x)
+      (gamma fp 8 *
+        frobNorm (givensRotation n p q (givensC xi xj) (givensS xi xj))) := by
+  have hcoeff :=
+    fl_givensCoeffError_conservative fp xi xj h
+      (gammaValid_mono fp (by omega) hvalid)
+  exact fl_givensApply_coeffError_app_error fp n p q
+    (givensC xi xj) (givensS xi xj)
+    (fl_givensC fp xi xj) (fl_givensS fp xi xj) (gamma fp 6) x
+    hpq (givensCoeff_norm_sq xi xj h) (le_rfl) hcoeff hvalid
+
 end LeanFpAnalysis.FP
