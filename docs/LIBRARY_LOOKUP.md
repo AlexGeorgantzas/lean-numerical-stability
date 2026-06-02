@@ -115,6 +115,15 @@ These are implementation-backed statements for the concrete zero-aware rounded
 panel `R_safe` algorithm with the exact orthogonal `Q_safe` witness, using
 `min m p` stages, or `p` stages in the tall `p ≤ m` case.  The structured
 versions also include the rectangular upper-trapezoidal shape of `R_safe`.
+For a rectangular computed-factor API, use
+`HouseholderQRPanelComputedFactors`,
+`fl_householderQRPanel_computed_safe`,
+`fl_householderQRPanel_Qhat_safe_fixed_Q_safe_growth_accum_error`, and
+`fl_householderQRPanel_computed_safe_explicit_error_tall_gammaHigham_of_global_gammaValid`.
+This packages the concrete panel `(Q_hat, R_hat)` output with the same honest
+two-layer interpretation used in the square API: `R_hat` is backward stable
+against exact `Q_safe`, while rounded `Q_hat` is a bounded perturbation of
+`Q_safe`, not an exactly orthogonal factor.
 `fl_householderQRPanel_Qhat_safe_accum_error`,
 `fl_householderQR_Qhat_safe_accum_error_of_global_gammaValid`, and
 `fl_householderQR_computed_safe_Q_hat_accum_error_of_global_gammaValid` prove

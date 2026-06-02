@@ -2706,6 +2706,17 @@ structure HouseholderQRComputedFactors (n : ℕ) where
   /-- Concrete rounded zero-aware `R_hat`. -/
   R_hat : Fin n → Fin n → ℝ
 
+/-- Public concrete computed-factor object for a rectangular Householder QR
+    panel.
+
+    `Q_hat` is square because it acts on the row space of the active panel;
+    `R_hat` has the same rectangular shape as the panel. -/
+structure HouseholderQRPanelComputedFactors (m p : ℕ) where
+  /-- Rounded accumulated Householder `Q_hat` for the panel row space. -/
+  Q_hat : Fin m → Fin m → ℝ
+  /-- Concrete rounded zero-aware rectangular `R_hat` panel. -/
+  R_hat : Fin m → Fin p → ℝ
+
 /-- Concrete rounded `(Q_hat, R_hat)` pair for the zero-aware Householder QR
     implementation. -/
 noncomputable def fl_householderQR_computed_safe (fp : FPModel) (n : ℕ)
@@ -2722,6 +2733,24 @@ noncomputable def fl_householderQR_computed_safe (fp : FPModel) (n : ℕ)
     (A : Fin n → Fin n → ℝ) :
     (fl_householderQR_computed_safe fp n A).R_hat =
       fl_householderQR_R_safe fp n A := rfl
+
+/-- Concrete rounded `(Q_hat, R_hat)` pair for the zero-aware rectangular
+    Householder QR panel implementation. -/
+noncomputable def fl_householderQRPanel_computed_safe (fp : FPModel)
+    (m p : ℕ) (A : Fin m → Fin p → ℝ) :
+    HouseholderQRPanelComputedFactors m p :=
+  { Q_hat := fl_householderQRPanel_Qhat_safe fp m p A
+    R_hat := fl_householderQRPanel_R_safe fp m p A }
+
+@[simp] theorem fl_householderQRPanel_computed_safe_Q_hat (fp : FPModel)
+    (m p : ℕ) (A : Fin m → Fin p → ℝ) :
+    (fl_householderQRPanel_computed_safe fp m p A).Q_hat =
+      fl_householderQRPanel_Qhat_safe fp m p A := rfl
+
+@[simp] theorem fl_householderQRPanel_computed_safe_R_hat (fp : FPModel)
+    (m p : ℕ) (A : Fin m → Fin p → ℝ) :
+    (fl_householderQRPanel_computed_safe fp m p A).R_hat =
+      fl_householderQRPanel_R_safe fp m p A := rfl
 
 /-- Recursive readiness predicate for the concrete Householder QR `R` panel
     algorithm.
@@ -3329,6 +3358,35 @@ theorem fl_householderQRPanel_Qhat_safe_fixed_Q_safe_uniform_accum_error
   have hBound :=
     householderQRPanel_QhatClosedBound_le_uniform fp m p N A hmN hvalid
   exact hFixed.mono hBound
+
+/-- Panel/global wrapper for the fixed-`Q_safe` accumulated `Q_hat`
+    perturbation theorem with a simpler growth bound.
+
+    This is the rectangular-panel counterpart of the square
+    `fl_householderQR_Qhat_safe_fixed_Q_safe_growth_accum_error_of_global_gammaValid`.
+    It bounds the concrete rounded accumulated `Q_hat` by the exact `Q_safe`
+    witness using the ambient row bound `N`. -/
+theorem fl_householderQRPanel_Qhat_safe_fixed_Q_safe_growth_accum_error
+    (fp : FPModel) (m p N : ℕ) (A : Fin m → Fin p → ℝ)
+    (hmN : m ≤ N)
+    (hvalid : gammaValid fp (11 * N + 23)) :
+    HouseholderQRPanelQhatFixedAccumError m
+      (fl_householderQRPanel_Q_safe fp m p A)
+      (fl_householderQRPanel_Qhat_safe fp m p A)
+      ((m : ℝ) * householderConstructApplyBound fp N *
+        (1 + householderConstructApplyBound fp N) ^ m *
+        Real.sqrt (N : ℝ)) := by
+  have hUniform :=
+    fl_householderQRPanel_Qhat_safe_fixed_Q_safe_uniform_accum_error
+      fp m p N A hmN hvalid
+  have hClosed :
+      HouseholderQRPanelQhatFixedAccumError m
+        (fl_householderQRPanel_Q_safe fp m p A)
+        (fl_householderQRPanel_Qhat_safe fp m p A)
+        (householderQR_QhatClosedFormBound fp N m) := by
+    simpa [householderQR_QhatUniformClosedBound_eq_closedForm] using hUniform
+  exact hClosed.mono
+    (householderQR_QhatClosedFormBound_le_growth fp N m hvalid)
 
 /-- Square/global wrapper for the dimension-only uniform accumulated `Q_hat`
     perturbation bound with fixed `Q_safe` reference. -/
@@ -6085,6 +6143,84 @@ structure HouseholderQRComputedFactorsExplicitError
   /-- Perturbation theorem for the rounded accumulated `Q_hat` against the same
       exact reference factor `Q`. -/
   q_error : HouseholderQRPanelQhatFixedAccumError n Q F.Q_hat cQ
+
+/-- Combined computed-factor contract for rectangular Householder QR panels.
+
+    The rounded `R_hat` panel has the structured explicit exact-witness
+    backward-error theorem, while the rounded accumulated `Q_hat` field is the
+    same exact witness plus a bounded perturbation. -/
+structure HouseholderQRPanelComputedFactorsExplicitError
+    (m p : ℕ) (A : Fin m → Fin p → ℝ)
+    (F : HouseholderQRPanelComputedFactors m p)
+    (Q : Fin m → Fin m → ℝ) (cR cQ : ℝ) : Prop where
+  /-- Structured backward-error theorem for the computed rectangular `R_hat`
+      panel against the exact reference factor `Q`. -/
+  r_error :
+    StructuredHouseholderQRPanelExplicitBackwardError m p A Q F.R_hat cR
+  /-- Perturbation theorem for the rounded accumulated `Q_hat` against the same
+      exact reference factor `Q`. -/
+  q_error : HouseholderQRPanelQhatFixedAccumError m Q F.Q_hat cQ
+
+/-- Rectangular computed-factor contract where the `R_hat` backward-error
+    bound is absorbed into one Higham `gamma` term.
+
+    This is the panel analogue of
+    `fl_householderQR_computed_safe_explicit_error_gammaHigham_of_global_gammaValid`.
+    It keeps the valid two-layer statement: the computed `R_hat` is explained
+    by the exact orthogonal `Q_safe`, and the rounded accumulated `Q_hat` is a
+    bounded perturbation of that same `Q_safe`. -/
+theorem fl_householderQRPanel_computed_safe_explicit_error_gammaHigham_of_global_gammaValid
+    (fp : FPModel) (m p : ℕ) (A : Fin m → Fin p → ℝ)
+    (hsteps : 0 < Nat.min m p)
+    (hvalid :
+      gammaValid fp (Nat.min m p * householderConstructApplyGammaIndex m)) :
+    HouseholderQRPanelComputedFactorsExplicitError m p A
+      (fl_householderQRPanel_computed_safe fp m p A)
+      (fl_householderQRPanel_Q_safe fp m p A)
+      (gamma fp (Nat.min m p * householderConstructApplyGammaIndex m) *
+        frobNorm A)
+      ((m : ℝ) * householderConstructApplyBound fp m *
+        (1 + householderConstructApplyBound fp m) ^ m *
+        Real.sqrt (m : ℝ)) := by
+  let s := Nat.min m p
+  let K := householderConstructApplyGammaIndex m
+  have hK_le_sK : K ≤ s * K := by
+    have hs1 : 1 ≤ s := Nat.succ_le_of_lt hsteps
+    simpa using Nat.mul_le_mul_right K hs1
+  have hbase_le_K : 11 * m + 23 ≤ K := by
+    dsimp [K, householderConstructApplyGammaIndex]
+    omega
+  have hbase_valid : gammaValid fp (11 * m + 23) :=
+    gammaValid_mono fp (le_trans hbase_le_K hK_le_sK) (by
+      simpa [s, K] using hvalid)
+  exact ⟨
+    by
+      simpa [fl_householderQRPanel_computed_safe] using
+        fl_householderQRPanel_R_safe_structured_explicit_backward_error_gammaHigham_of_global_gammaValid
+          fp m p A hsteps hvalid,
+    by
+      simpa [fl_householderQRPanel_computed_safe] using
+        fl_householderQRPanel_Qhat_safe_fixed_Q_safe_growth_accum_error
+          fp m p m A (le_refl m) hbase_valid⟩
+
+/-- Tall rectangular specialization of the computed-factor contract. -/
+theorem fl_householderQRPanel_computed_safe_explicit_error_tall_gammaHigham_of_global_gammaValid
+    (fp : FPModel) (m p : ℕ) (A : Fin m → Fin p → ℝ)
+    (hp : 0 < p) (hpm : p ≤ m)
+    (hvalid : gammaValid fp (p * householderConstructApplyGammaIndex m)) :
+    HouseholderQRPanelComputedFactorsExplicitError m p A
+      (fl_householderQRPanel_computed_safe fp m p A)
+      (fl_householderQRPanel_Q_safe fp m p A)
+      (gamma fp (p * householderConstructApplyGammaIndex m) * frobNorm A)
+      ((m : ℝ) * householderConstructApplyBound fp m *
+        (1 + householderConstructApplyBound fp m) ^ m *
+        Real.sqrt (m : ℝ)) := by
+  have hsteps : 0 < Nat.min m p := by
+    simpa [Nat.min_eq_right hpm] using hp
+  have hmain :=
+    fl_householderQRPanel_computed_safe_explicit_error_gammaHigham_of_global_gammaValid
+      fp m p A hsteps (by simpa [Nat.min_eq_right hpm] using hvalid)
+  simpa [Nat.min_eq_right hpm] using hmain
 
 /-- Residual contract for the concrete computed `(Q_hat, R_hat)` product.
 

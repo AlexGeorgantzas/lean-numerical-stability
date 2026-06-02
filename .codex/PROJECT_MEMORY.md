@@ -1039,6 +1039,14 @@ These compile, but should not be treated as fully derived stability results:
   `fl_householderQRPanel_R_safe_structured_explicit_backward_error_tall_gammaHigham_of_global_gammaValid`
   packages this shape fact with the tall rectangular explicit-`Q_safe`
   single-gamma backward-error theorem.
+- Added rectangular computed-factor packaging.  `HouseholderQRPanelComputedFactors`
+  and `fl_householderQRPanel_computed_safe` expose the panel-level concrete
+  `(Q_hat, R_hat)` object.  The theorem
+  `fl_householderQRPanel_computed_safe_explicit_error_tall_gammaHigham_of_global_gammaValid`
+  packages the structured tall rectangular `R_hat` theorem with the
+  fixed-reference `Q_hat = Q_safe + ΔQ` perturbation theorem.  As in the square
+  computed-factor API, it deliberately does not claim that rounded `Q_hat` is
+  exactly orthogonal.
 
 ## 2026-04-26 Fix Pass
 
