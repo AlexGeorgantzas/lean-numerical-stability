@@ -628,6 +628,11 @@ These compile, but should not be treated as fully derived stability results:
   Householder QR `R` algorithm now satisfies the existing structured QR
   backward-error contract, with the explicit `HouseholderQRPanelReady`
   assumptions and recursive coefficient `householderQRBackwardCoeff`.
+- In `QR/QRSolve.lean`, added `qr_solve_backward_error_from_components`, which
+  packages the existing QR-factorization, `Qᵀb`, and back-substitution component
+  equations plus perturbation bounds into `QRSolveBackwardError`.  This fixes
+  the algebraic packaging gap for Higham Theorem 18.5, but it is still not a
+  concrete `fl_qr_solve` implementation-backed theorem.
 
 ## 2026-04-26 Fix Pass
 

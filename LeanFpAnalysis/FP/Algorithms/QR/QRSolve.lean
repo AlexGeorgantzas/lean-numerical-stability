@@ -38,9 +38,10 @@ open scoped BigOperators Matrix.Norms.Frobenius
     The combined backward error is (A + ΔA)x̂ = b + Δb where
     the bounds on ΔA, Δb depend on the per-step error constants.
 
-    We axiomatize this structure since the detailed proof requires
-    composing three backward error results with careful tracking
-    of how perturbations interact through the factorization stages. -/
+    This is the final QR-solve contract.  The component-composition theorem
+    below proves how QR factorization, `Qᵀb` application, and back substitution
+    combine into this contract.  A concrete `fl_qr_solve` loop is still a
+    separate implementation-backed bridge to build. -/
 structure QRSolveBackwardError (n : ℕ)
     (A : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
     (c_A c_b : ℝ) : Prop where
@@ -61,20 +62,20 @@ structure QRSolveBackwardError (n : ℕ)
     Then (A + ΔA)x̂ = b + Δb where ΔA = ΔA₁ + Q·ΔR, so
     ‖ΔA‖_F ≤ c₁ + c₂ (using orthogonal invariance ‖Q·ΔR‖_F = ‖ΔR‖_F).
 
-    The detailed composition is axiomatized since it requires careful
-    algebra to combine the three stages, but the key insight is that
-    orthogonal transformations preserve backward error magnitudes. -/
-theorem qr_solve_backward_from_components (n : ℕ) (hn : 0 < n)
+    This theorem proves the pointwise algebra for combining the three stages;
+    `qr_solve_backward_error_from_components` below packages it with the
+    perturbation bounds into `QRSolveBackwardError`. -/
+theorem qr_solve_backward_from_components (n : ℕ) (_hn : 0 < n)
     (A : Fin n → Fin n → ℝ)
     (Q : Fin n → Fin n → ℝ) (R_hat : Fin n → Fin n → ℝ)
     (ΔA₁ : Fin n → Fin n → ℝ)
     (hQ : IsOrthogonal n Q)
     (hQR : ∀ i j, matMul n Q R_hat i j = A i j + ΔA₁ i j)
-    (hΔA₁ : frobNorm ΔA₁ ≤ c₁)
+    (_hΔA₁ : frobNorm ΔA₁ ≤ c₁)
     (x_hat : Fin n → ℝ) (c_hat : Fin n → ℝ)
     (ΔR : Fin n → Fin n → ℝ)
     (hSolve : ∀ i, matMulVec n (fun a b => R_hat a b + ΔR a b) x_hat i = c_hat i)
-    (hΔR : frobNorm ΔR ≤ c₂)
+    (_hΔR : frobNorm ΔR ≤ c₂)
     (b : Fin n → ℝ) (Δb : Fin n → ℝ)
     (hQb : ∀ i, c_hat i = matMulVec n (matTranspose Q) (fun k => b k + Δb k) i) :
     ∀ i, matMulVec n (fun a b => A a b + ΔA₁ a b +
@@ -142,7 +143,7 @@ theorem qr_solve_perturbation_bound (n : ℕ)
     (hQ : IsOrthogonal n Q)
     (hΔA₁ : frobNorm ΔA₁ ≤ c₁)
     (hΔR : frobNorm ΔR ≤ c₂)
-    (hc₁ : 0 ≤ c₁) (hc₂ : 0 ≤ c₂) :
+    (_hc₁ : 0 ≤ c₁) (_hc₂ : 0 ≤ c₂) :
     frobNorm (fun a b => ΔA₁ a b + matMul n Q ΔR a b) ≤ c₁ + c₂ := by
   calc frobNorm (fun a b => ΔA₁ a b + matMul n Q ΔR a b)
       ≤ frobNorm ΔA₁ +
@@ -152,5 +153,51 @@ theorem qr_solve_perturbation_bound (n : ℕ)
           frobNorm ΔR := by
         rw [frobNorm_orthogonal_left Q ΔR hQ]
     _ ≤ c₁ + c₂ := by linarith
+
+/-- **Packaged QR-solve backward error from component contracts**.
+
+    This theorem closes the algebraic packaging gap in Theorem 18.5: once the
+    three component stages are available,
+
+    * QR factorization: `Q R_hat = A + ΔA₁`;
+    * triangular solve: `(R_hat + ΔR) x_hat = c_hat`;
+    * orthogonal application to the right-hand side:
+      `c_hat = Qᵀ(b + Δb)`;
+
+    the advertised `QRSolveBackwardError` follows with
+    `ΔA = ΔA₁ + Q ΔR` and matrix bound `c₁ + c₂`.  This remains
+    component-level; it does not yet define the concrete rounded `fl_qr_solve`
+    that produces the component hypotheses. -/
+theorem qr_solve_backward_error_from_components (n : ℕ) (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ)
+    (Q : Fin n → Fin n → ℝ) (R_hat : Fin n → Fin n → ℝ)
+    (ΔA₁ : Fin n → Fin n → ℝ)
+    (hQ : IsOrthogonal n Q)
+    (hQR : ∀ i j, matMul n Q R_hat i j = A i j + ΔA₁ i j)
+    (hΔA₁ : frobNorm ΔA₁ ≤ c₁)
+    (x_hat : Fin n → ℝ) (c_hat : Fin n → ℝ)
+    (ΔR : Fin n → Fin n → ℝ)
+    (hSolve : ∀ i,
+      matMulVec n (fun a b => R_hat a b + ΔR a b) x_hat i = c_hat i)
+    (hΔR : frobNorm ΔR ≤ c₂)
+    (b : Fin n → ℝ) (Δb : Fin n → ℝ)
+    (hQb : ∀ i,
+      c_hat i = matMulVec n (matTranspose Q) (fun k => b k + Δb k) i)
+    (hΔb : ∀ i, |Δb i| ≤ c_b)
+    (hc₁ : 0 ≤ c₁) (hc₂ : 0 ≤ c₂) :
+    QRSolveBackwardError n A b x_hat (c₁ + c₂) c_b := by
+  let ΔA : Fin n → Fin n → ℝ := fun a b => ΔA₁ a b + matMul n Q ΔR a b
+  refine ⟨ΔA, Δb, ?_, ?_, hΔb⟩
+  · intro i
+    have hmat :
+        (fun a b => A a b + ΔA a b) =
+          fun a b => A a b + ΔA₁ a b + matMul n Q ΔR a b := by
+      ext a b
+      simp [ΔA]
+      ring
+    rw [hmat]
+    exact qr_solve_backward_from_components n hn A Q R_hat ΔA₁ hQ hQR hΔA₁
+      x_hat c_hat ΔR hSolve hΔR b Δb hQb i
+  · exact qr_solve_perturbation_bound n Q ΔA₁ ΔR hQ hΔA₁ hΔR hc₁ hc₂
 
 end LeanFpAnalysis.FP
