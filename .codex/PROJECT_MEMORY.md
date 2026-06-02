@@ -598,6 +598,13 @@ These compile, but should not be treated as fully derived stability results:
   lift a tail backward representation into the full panel using
   `embedTrailingOne`, which is the block-composition step needed for the
   recursive QR backward-error induction.
+- Added `HouseholderQRPanelReady`, a recursive readiness predicate for the
+  concrete `fl_householderQRPanel_R` loop.  Each nonempty panel requires a
+  nonzero current first column, the matching gamma-validity condition, and
+  readiness of the concrete trailing-panel step.
+- Added `householderQRPanelBackwardCoeff` and square alias
+  `householderQRBackwardCoeff`, the recursive coefficient intended for the
+  future implementation-backed QR backward-error induction.
 
 ## 2026-04-26 Fix Pass
 

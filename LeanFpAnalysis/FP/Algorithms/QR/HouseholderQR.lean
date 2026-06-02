@@ -1242,6 +1242,40 @@ noncomputable def fl_householderQR_R (fp : FPModel) (n : ℕ)
     (A : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
   fl_householderQRPanel_R fp n n A
 
+/-- Recursive readiness predicate for the concrete Householder QR `R` panel
+    algorithm.
+
+    Each nonempty active panel needs a nonzero first column and the gamma
+    validity condition required by the concrete first-column Householder
+    construction/application bridge.  The predicate then recurses on the
+    computed trailing panel used by `fl_householderQRPanel_R`. -/
+def HouseholderQRPanelReady (fp : FPModel) :
+    (m p : ℕ) → (Fin m → Fin p → ℝ) → Prop
+  | 0, _, _ => True
+  | Nat.succ _, 0, _ => True
+  | m + 1, p + 1, A =>
+      panelFirstColumn (Nat.succ_pos p) A ≠ 0 ∧
+      gammaValid fp (11 * (m + 1) + 23) ∧
+      HouseholderQRPanelReady fp m p (fl_householderTrailingPanelStep fp A)
+
+@[simp] theorem HouseholderQRPanelReady_zero_rows (fp : FPModel)
+    {p : ℕ} (A : Fin 0 → Fin p → ℝ) :
+    HouseholderQRPanelReady fp 0 p A := by
+  trivial
+
+@[simp] theorem HouseholderQRPanelReady_zero_cols (fp : FPModel)
+    {m : ℕ} (A : Fin (m + 1) → Fin 0 → ℝ) :
+    HouseholderQRPanelReady fp (m + 1) 0 A := by
+  trivial
+
+@[simp] theorem HouseholderQRPanelReady_succ_succ (fp : FPModel)
+    {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ) :
+    HouseholderQRPanelReady fp (m + 1) (p + 1) A ↔
+      panelFirstColumn (Nat.succ_pos p) A ≠ 0 ∧
+      gammaValid fp (11 * (m + 1) + 23) ∧
+      HouseholderQRPanelReady fp m p (fl_householderTrailingPanelStep fp A) := by
+  rfl
+
 /-- Active trailing-panel state for a Householder QR loop.
 
     This state tracks only the active panel dimensions and entries.  It does
@@ -1774,6 +1808,26 @@ theorem fl_householderQR_R_upper (fp : FPModel) :
         (panelTopLeft Astep) (panelTopRowTail Astep)
         (fl_householderQRPanel_R fp n n (trailingPanel Astep))
         (by simpa [fl_householderQR_R] using ih (trailingPanel Astep))
+
+/-- Recursive coefficient for the future implementation-backed Householder QR
+    panel backward-error theorem.
+
+    For a nonempty panel, the first concrete Householder panel step contributes
+    `c = householderConstructApplyBound fp (m+1)`.  The recursive tail bound is
+    then applied to a trailing panel whose norm is bounded by `(1+c)` times the
+    current panel norm. -/
+noncomputable def householderQRPanelBackwardCoeff (fp : FPModel) :
+    ℕ → ℕ → ℝ
+  | 0, _ => 0
+  | Nat.succ _, 0 => 0
+  | m + 1, p + 1 =>
+      let c := householderConstructApplyBound fp (m + 1)
+      c + householderQRPanelBackwardCoeff fp m p * (1 + c)
+
+/-- Square specialization of the recursive QR panel backward-error
+    coefficient. -/
+noncomputable def householderQRBackwardCoeff (fp : FPModel) (n : ℕ) : ℝ :=
+  householderQRPanelBackwardCoeff fp n n
 
 /-- **Theorem 18.4**: Householder QR factorization backward error (normwise).
 
