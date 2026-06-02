@@ -85,7 +85,9 @@ matrix.
 The computed-factor wrappers
 `fl_householderQR_computed_safe_R_hat_upper` and
 `fl_householderQR_computed_safe_R_hat_structured_backward_error_of_global_gammaValid`
-transfer the already-proved `R_safe` facts to the `R_hat` field.  The full
+transfer the already-proved `R_safe` facts to the `R_hat` field;
+`fl_householderQR_computed_safe_R_hat_explicit_backward_error_of_global_gammaValid`
+does the same for the explicit exact-witness perturbation equation.  The full
 recursive orthogonality/backward-error bridge for the accumulated `Q_hat`
 remains the next proof layer.
 

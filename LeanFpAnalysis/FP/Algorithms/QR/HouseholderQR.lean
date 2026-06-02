@@ -3722,4 +3722,21 @@ theorem fl_householderQR_safe_witness_explicit_backward_error_of_global_gammaVal
       (fl_householderQR_R_safe_upper fp n A)
   simpa [fl_householderQR_safe_witness] using hExplicit
 
+/-- The computed-factor `R_hat` field satisfies the explicit exact-witness
+    Householder QR backward-error theorem.
+
+    The `Q` used here is still the exact orthogonal witness from
+    `fl_householderQR_safe_witness`, not the rounded accumulated `Q_hat` field
+    from `fl_householderQR_computed_safe`. -/
+theorem fl_householderQR_computed_safe_R_hat_explicit_backward_error_of_global_gammaValid
+    (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (hvalid : gammaValid fp (11 * n + 23)) :
+    HouseholderQRExplicitBackwardError n A
+      (fl_householderQR_safe_witness fp n A).Q
+      (fl_householderQR_computed_safe fp n A).R_hat
+      (householderQRBackwardCoeffSafe fp n A * frobNorm A) := by
+  simpa [fl_householderQR_computed_safe] using
+    fl_householderQR_safe_witness_explicit_backward_error_of_global_gammaValid
+      fp n A hvalid
+
 end LeanFpAnalysis.FP

@@ -863,6 +863,12 @@ These compile, but should not be treated as fully derived stability results:
   `fl_householderQR_computed_safe_R_hat_structured_backward_error_of_global_gammaValid`.
   These reuse the proved `R_safe` facts through the `HouseholderQRComputedFactors`
   API and deliberately do not assert any full stability property of `Q_hat`.
+- Added
+  `fl_householderQR_computed_safe_R_hat_explicit_backward_error_of_global_gammaValid`,
+  which gives the computed-factor `R_hat` field the explicit exact-witness
+  perturbation equation already proved for `fl_householderQR_safe_witness`.
+  The witness `Q` remains exact; this is not a theorem about the rounded
+  accumulated `Q_hat`.
 
 ## 2026-04-26 Fix Pass
 
