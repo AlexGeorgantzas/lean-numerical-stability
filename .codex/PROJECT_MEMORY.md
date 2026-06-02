@@ -925,6 +925,17 @@ These compile, but should not be treated as fully derived stability results:
   states this for `(fl_householderQR_computed_safe fp n A).Q_hat` against the
   `Q` field of `fl_householderQR_safe_witness`.  The remaining computed-`Q_hat`
   polishing step is the compact closed-form growth estimate.
+- Added the dimension-only uniform recursive computed-`Q_hat` bound
+  `householderQR_QhatUniformClosedBound`.  Supporting lemmas prove
+  `householderConstructApplyBound_mono`,
+  `householderQRPanel_Qhat_stepCoeff_safe_le_global`,
+  nonnegativity of the branch-sensitive closed bound, and
+  `householderQRPanel_QhatClosedBound_le_uniform`.  The public theorem
+  `fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_uniform_accum_error_of_global_gammaValid`
+  now states that the computed `Q_hat` differs from the exact safe witness `Q`
+  by a perturbation bounded by a dimension-only recurrence using
+  `householderConstructApplyBound fp n` and `sqrt n`.  The next step is to
+  solve or upper-bound this recurrence by a compact closed-form expression.
 
 ## 2026-04-26 Fix Pass
 

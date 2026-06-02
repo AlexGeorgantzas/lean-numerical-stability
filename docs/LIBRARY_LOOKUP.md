@@ -103,8 +103,13 @@ replace each embedded-tail `Q_hat` norm in that raw bound by
 `fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_closed_accum_error_of_global_gammaValid`
 strengthen this again: the exact orthogonal factor explaining `Q_hat` is fixed
 to the `Q` field of `fl_householderQR_safe_witness`, not merely existential.
-The remaining `Q_hat` work is to simplify the recursive bound into a compact
-Higham-style closed-form growth estimate.  The branch-combined
+`householderQR_QhatUniformClosedBound` and
+`fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_uniform_accum_error_of_global_gammaValid`
+replace the branch-sensitive recursive coefficients by a dimension-only
+recursive bound depending on `householderConstructApplyBound fp n` and
+`sqrt n`.  The remaining `Q_hat` work is to solve/simplify that uniform
+recurrence into a compact Higham-style closed-form growth estimate.  The
+branch-combined
 safe-step interface feeding the recursive theorem is:
 `householderQRPanel_Qhat_stepP_safe`,
 `fl_householderQRPanel_Qhat_tail_safe`,

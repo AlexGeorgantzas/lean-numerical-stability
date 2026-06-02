@@ -1928,6 +1928,180 @@ noncomputable def householderQRPanel_QhatClosedBound (fp : FPModel) :
     (fp : FPModel) {m : ℕ} (A : Fin (m + 1) → Fin 0 → ℝ) :
     householderQRPanel_QhatClosedBound fp (m + 1) 0 A = 0 := rfl
 
+/-- Dimension-only recursive upper bound for accumulated rounded `Q_hat`
+    perturbations.
+
+    This replaces all branch-dependent step coefficients by the uniform
+    coefficient `householderConstructApplyBound fp N` and all embedded
+    orthogonal block norms by `sqrt N`. -/
+noncomputable def householderQR_QhatUniformClosedBound
+    (fp : FPModel) (N : ℕ) : ℕ → ℝ
+  | 0 => 0
+  | k + 1 =>
+      let η := householderQR_QhatUniformClosedBound fp N k
+      η + householderConstructApplyBound fp N *
+        (Real.sqrt (N : ℝ) + η)
+
+@[simp] theorem householderQR_QhatUniformClosedBound_zero
+    (fp : FPModel) (N : ℕ) :
+    householderQR_QhatUniformClosedBound fp N 0 = 0 := rfl
+
+/-- The uniform accumulated `Q_hat` bound is nonnegative. -/
+lemma householderQR_QhatUniformClosedBound_nonneg
+    (fp : FPModel) (N : ℕ)
+    (hvalid : gammaValid fp (11 * N + 23)) :
+    ∀ k : ℕ, 0 ≤ householderQR_QhatUniformClosedBound fp N k := by
+  intro k
+  induction k with
+  | zero =>
+      simp [householderQR_QhatUniformClosedBound]
+  | succ k ih =>
+      have hc : 0 ≤ householderConstructApplyBound fp N :=
+        householderConstructApplyBound_nonneg fp N hvalid
+      have hs : 0 ≤ Real.sqrt (N : ℝ) := Real.sqrt_nonneg _
+      simp [householderQR_QhatUniformClosedBound]
+      exact add_nonneg ih (mul_nonneg hc (add_nonneg hs ih))
+
+/-- The one-step Householder construction/application coefficient is monotone
+    in the active dimension under a gamma-validity hypothesis for the larger
+    dimension. -/
+lemma householderConstructApplyBound_mono (fp : FPModel)
+    {k N : ℕ} (hkN : k ≤ N)
+    (hvalid : gammaValid fp (11 * N + 23)) :
+    householderConstructApplyBound fp k ≤
+      householderConstructApplyBound fp N := by
+  unfold householderConstructApplyBound
+  have hkN_real : (k : ℝ) ≤ (N : ℝ) := by
+    exact_mod_cast hkN
+  have hu2 : 0 ≤ fp.u ^ 2 := sq_nonneg fp.u
+  have hs_arg : (k : ℝ) * fp.u ^ 2 ≤ (N : ℝ) * fp.u ^ 2 :=
+    mul_le_mul_of_nonneg_right hkN_real hu2
+  have hsqrt :
+      Real.sqrt ((k : ℝ) * fp.u ^ 2) ≤
+        Real.sqrt ((N : ℝ) * fp.u ^ 2) :=
+    Real.sqrt_le_sqrt hs_arg
+  have hgamma :
+      gamma fp (11 * k + 23) ≤ gamma fp (11 * N + 23) :=
+    gamma_mono fp (by omega) hvalid
+  linarith
+
+/-- A safe `Q_hat` step coefficient is bounded by a uniform larger-dimension
+    Householder coefficient. -/
+lemma householderQRPanel_Qhat_stepCoeff_safe_le_global
+    (fp : FPModel) {m p N : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (hmN : m + 1 ≤ N)
+    (hvalid : gammaValid fp (11 * N + 23)) :
+    householderQRPanel_Qhat_stepCoeff_safe fp A ≤
+      householderConstructApplyBound fp N := by
+  by_cases hcol : panelFirstColumn (Nat.succ_pos p) A = 0
+  · have hnonneg :
+        0 ≤ householderConstructApplyBound fp N :=
+      householderConstructApplyBound_nonneg fp N hvalid
+    simpa [householderQRPanel_Qhat_stepCoeff_safe, hcol] using hnonneg
+  · simpa [householderQRPanel_Qhat_stepCoeff_safe, hcol] using
+      householderConstructApplyBound_mono fp hmN hvalid
+
+/-- The branch-sensitive closed accumulated `Q_hat` bound is nonnegative under
+    a single global gamma-validity hypothesis. -/
+theorem householderQRPanel_QhatClosedBound_nonneg_of_global_gammaValid
+    (fp : FPModel) :
+    ∀ (m p N : ℕ) (A : Fin m → Fin p → ℝ),
+      m ≤ N →
+      gammaValid fp (11 * N + 23) →
+      0 ≤ householderQRPanel_QhatClosedBound fp m p A := by
+  intro m
+  induction m with
+  | zero =>
+      intro p N A _hmN _hvalid
+      simp [householderQRPanel_QhatClosedBound]
+  | succ m ih =>
+      intro p N A hmN hvalid
+      cases p with
+      | zero =>
+          simp [householderQRPanel_QhatClosedBound]
+      | succ p =>
+          have htail :
+              0 ≤ householderQRPanel_QhatClosedBound fp m p
+                (fl_householderTrailingPanelStepSafe fp A) :=
+            ih p N (fl_householderTrailingPanelStepSafe fp A) (by omega) hvalid
+          have hstepValid : gammaValid fp (11 * (m + 1) + 23) :=
+            gammaValid_mono fp (by omega) hvalid
+          have hc :
+              0 ≤ householderQRPanel_Qhat_stepCoeff_safe fp A :=
+            householderQRPanel_Qhat_stepCoeff_safe_nonneg fp A hstepValid
+          have hs : 0 ≤ Real.sqrt ((m : ℝ) + 1) :=
+            Real.sqrt_nonneg _
+          simp [householderQRPanel_QhatClosedBound]
+          exact add_nonneg htail
+            (mul_nonneg hc (add_nonneg hs htail))
+
+/-- The branch-sensitive closed accumulated `Q_hat` bound is controlled by the
+    dimension-only uniform recursive bound. -/
+theorem householderQRPanel_QhatClosedBound_le_uniform
+    (fp : FPModel) :
+    ∀ (m p N : ℕ) (A : Fin m → Fin p → ℝ),
+      m ≤ N →
+      gammaValid fp (11 * N + 23) →
+      householderQRPanel_QhatClosedBound fp m p A ≤
+        householderQR_QhatUniformClosedBound fp N m := by
+  intro m
+  induction m with
+  | zero =>
+      intro p N A _hmN _hvalid
+      simp [householderQRPanel_QhatClosedBound,
+        householderQR_QhatUniformClosedBound]
+  | succ m ih =>
+      intro p N A hmN hvalid
+      cases p with
+      | zero =>
+          exact householderQR_QhatUniformClosedBound_nonneg fp N hvalid (m + 1)
+      | succ p =>
+          let η : ℝ :=
+            householderQRPanel_QhatClosedBound fp m p
+              (fl_householderTrailingPanelStepSafe fp A)
+          let U : ℝ := householderQR_QhatUniformClosedBound fp N m
+          let a : ℝ := householderQRPanel_Qhat_stepCoeff_safe fp A
+          let c : ℝ := householderConstructApplyBound fp N
+          let s : ℝ := Real.sqrt ((m + 1 : ℕ) : ℝ)
+          let B : ℝ := Real.sqrt (N : ℝ)
+          have hηU : η ≤ U :=
+            ih p N (fl_householderTrailingPanelStepSafe fp A) (by omega) hvalid
+          have hη_nonneg : 0 ≤ η :=
+            householderQRPanel_QhatClosedBound_nonneg_of_global_gammaValid
+              fp m p N (fl_householderTrailingPanelStepSafe fp A)
+              (by omega) hvalid
+          have ha_nonneg : 0 ≤ a := by
+            have hstepValid : gammaValid fp (11 * (m + 1) + 23) :=
+              gammaValid_mono fp (by omega) hvalid
+            simpa [a] using
+              householderQRPanel_Qhat_stepCoeff_safe_nonneg fp A hstepValid
+          have ha_le_c : a ≤ c := by
+            simpa [a, c] using
+              householderQRPanel_Qhat_stepCoeff_safe_le_global fp A hmN hvalid
+          have hc_nonneg : 0 ≤ c := by
+            simpa [c] using householderConstructApplyBound_nonneg fp N hvalid
+          have hs_le_B : s ≤ B := by
+            have hcast : ((m + 1 : ℕ) : ℝ) ≤ (N : ℝ) := by
+              exact_mod_cast hmN
+            simpa [s, B] using Real.sqrt_le_sqrt hcast
+          have hterm : s + η ≤ B + U :=
+            add_le_add hs_le_B hηU
+          have hterm_nonneg : 0 ≤ s + η := by
+            have hs_nonneg : 0 ≤ s := by
+              simp [s]
+            exact add_nonneg hs_nonneg hη_nonneg
+          have hmul :
+              a * (s + η) ≤ c * (B + U) := by
+            have h1 : a * (s + η) ≤ c * (s + η) :=
+              mul_le_mul_of_nonneg_right ha_le_c hterm_nonneg
+            have h2 : c * (s + η) ≤ c * (B + U) :=
+              mul_le_mul_of_nonneg_left hterm hc_nonneg
+            exact le_trans h1 h2
+          simpa [householderQRPanel_QhatClosedBound,
+            householderQR_QhatUniformClosedBound, η, U, a, c, s, B] using
+            add_le_add hηU hmul
+
 /-- Accumulated perturbation statement for a rounded `Q_hat`: it is an exact
     orthogonal matrix plus a Frobenius-norm-bounded perturbation. -/
 structure HouseholderQRPanelQhatAccumError (m : ℕ)
@@ -2858,6 +3032,52 @@ theorem fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_closed_accum_error_of_
       (householderQRPanel_QhatClosedBound fp n n A) := by
   simpa [fl_householderQR_safe_witness, fl_householderQR_computed_safe] using
     fl_householderQR_Qhat_safe_fixed_Q_safe_closed_accum_error_of_global_gammaValid
+      fp n A hvalid
+
+/-- Panel theorem bounding the fixed-`Q_safe` accumulated `Q_hat` perturbation
+    by the dimension-only uniform recursive bound. -/
+theorem fl_householderQRPanel_Qhat_safe_fixed_Q_safe_uniform_accum_error
+    (fp : FPModel) (m p N : ℕ) (A : Fin m → Fin p → ℝ)
+    (hmN : m ≤ N)
+    (hvalid : gammaValid fp (11 * N + 23)) :
+    HouseholderQRPanelQhatFixedAccumError m
+      (fl_householderQRPanel_Q_safe fp m p A)
+      (fl_householderQRPanel_Qhat_safe fp m p A)
+      (householderQR_QhatUniformClosedBound fp N m) := by
+  have hready :
+      HouseholderQRPanelSafeReady fp m p A :=
+    HouseholderQRPanelSafeReady_of_global_gammaValid fp m p N A hmN hvalid
+  have hFixed :=
+    fl_householderQRPanel_Qhat_safe_fixed_Q_safe_closed_accum_error
+      fp m p A hready
+  have hBound :=
+    householderQRPanel_QhatClosedBound_le_uniform fp m p N A hmN hvalid
+  exact hFixed.mono hBound
+
+/-- Square/global wrapper for the dimension-only uniform accumulated `Q_hat`
+    perturbation bound with fixed `Q_safe` reference. -/
+theorem fl_householderQR_Qhat_safe_fixed_Q_safe_uniform_accum_error_of_global_gammaValid
+    (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (hvalid : gammaValid fp (11 * n + 23)) :
+    HouseholderQRPanelQhatFixedAccumError n
+      (fl_householderQR_Q_safe fp n A)
+      (fl_householderQR_Qhat_safe fp n A)
+      (householderQR_QhatUniformClosedBound fp n n) := by
+  simpa [fl_householderQR_Q_safe, fl_householderQR_Qhat_safe] using
+    fl_householderQRPanel_Qhat_safe_fixed_Q_safe_uniform_accum_error
+      fp n n n A (le_refl n) hvalid
+
+/-- The computed-factor `Q_hat` field differs from the safe witness `Q` field
+    by a perturbation bounded by the dimension-only uniform recursive bound. -/
+theorem fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_uniform_accum_error_of_global_gammaValid
+    (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (hvalid : gammaValid fp (11 * n + 23)) :
+    HouseholderQRPanelQhatFixedAccumError n
+      (fl_householderQR_safe_witness fp n A).Q
+      (fl_householderQR_computed_safe fp n A).Q_hat
+      (householderQR_QhatUniformClosedBound fp n n) := by
+  simpa [fl_householderQR_safe_witness, fl_householderQR_computed_safe] using
+    fl_householderQR_Qhat_safe_fixed_Q_safe_uniform_accum_error_of_global_gammaValid
       fp n A hvalid
 
 /-- Active trailing-panel state for a Householder QR loop.
