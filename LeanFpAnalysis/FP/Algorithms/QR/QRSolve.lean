@@ -1473,6 +1473,18 @@ theorem fl_householderQR_rhs_safe_backward_error (fp : FPModel) (n : ℕ)
   simpa [fl_householderQR_rhs_safe, householderQRRhsBackwardBoundSafe] using
     fl_householderQRPanel_rhs_safe_backward_error fp n n A b hready
 
+/-- Global-gamma wrapper for the zero-aware implementation-backed RHS-transform
+    theorem. -/
+theorem fl_householderQR_rhs_safe_backward_error_of_global_gammaValid
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (hvalid : gammaValid fp (11 * n + 23)) :
+    HouseholderQRRhsPanelBackwardError n n A b
+      (fl_householderQR_rhs_safe fp n A b)
+      (householderQRRhsBackwardBoundSafe fp n A b) := by
+  exact fl_householderQR_rhs_safe_backward_error fp n A b
+    (HouseholderQRPanelSafeReady_square_of_global_gammaValid fp n A hvalid)
+
 /-- Implementation-backed simultaneous backward-error theorem for the concrete
     Householder QR `R` panel and RHS transform.
 
@@ -1785,6 +1797,20 @@ theorem fl_householderQR_solve_components_safe_backward_error (fp : FPModel)
     householderQRBackwardCoeffSafe, householderQRRhsBackwardBoundSafe] using
     fl_householderQRPanel_solve_components_safe_backward_error fp n n A b hready
 
+/-- Global-gamma wrapper for the zero-aware simultaneous concrete QR/RHS
+    component theorem. -/
+theorem fl_householderQR_solve_components_safe_backward_error_of_global_gammaValid
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (hvalid : gammaValid fp (11 * n + 23)) :
+    HouseholderQRPanelSolveBackwardError n n A
+      (fl_householderQR_R_safe fp n A)
+      b (fl_householderQR_rhs_safe fp n A b)
+      (householderQRBackwardCoeffSafe fp n A * frobNorm A)
+      (householderQRRhsBackwardBoundSafe fp n A b) := by
+  exact fl_householderQR_solve_components_safe_backward_error fp n A b
+    (HouseholderQRPanelSafeReady_square_of_global_gammaValid fp n A hvalid)
+
 /-- **Theorem 18.5 composition**: QR solve backward error from components.
 
     If we have:
@@ -2070,5 +2096,31 @@ theorem fl_householderQR_solve_safe_backward_error (fp : FPModel) (n : ℕ)
     hQ hQR hΔA₁
     (fl_householderQR_solve_safe fp n A b) c_hat ΔR hSolve hΔR
     b Δb hQb hΔb hc₁ hc₂
+
+/-- Global-gamma wrapper for the implementation-backed zero-aware concrete
+    Householder QR solve theorem.
+
+    The single `gammaValid fp (11*n+23)` assumption supplies the QR reflector
+    construction/application gamma conditions and the smaller back-substitution
+    `gammaValid fp n` condition.  The nonzero diagonal hypothesis remains
+    explicit because it is the mathematical side condition for the triangular
+    solve stage. -/
+theorem fl_householderQR_solve_safe_backward_error_of_global_gammaValid
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid : gammaValid fp (11 * n + 23))
+    (hdiag : ∀ i : Fin n, fl_householderQR_R_safe fp n A i i ≠ 0) :
+    QRSolveBackwardError n A b (fl_householderQR_solve_safe fp n A b)
+      (householderQRBackwardCoeffSafe fp n A * frobNorm A +
+        gamma fp n * frobNorm (fl_householderQR_R_safe fp n A))
+      (householderQRRhsBackwardBoundSafe fp n A b) := by
+  have hready :
+      HouseholderQRPanelSafeReady fp n n A :=
+    HouseholderQRPanelSafeReady_square_of_global_gammaValid fp n A hvalid
+  have hgamma : gammaValid fp n :=
+    gammaValid_mono fp (by omega) hvalid
+  exact fl_householderQR_solve_safe_backward_error fp n A b
+    hn hready hdiag hgamma
 
 end LeanFpAnalysis.FP

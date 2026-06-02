@@ -1432,6 +1432,51 @@ def HouseholderQRPanelSafeReady (fp : FPModel) :
       HouseholderQRPanelSafeReady fp m p (fl_householderTrailingPanelStep fp A) := by
   simp [HouseholderQRPanelSafeReady, hcol]
 
+/-- A single global gamma-validity hypothesis supplies all branch-local
+    gamma-validity assumptions needed by the zero-aware Householder QR panel
+    algorithm.
+
+    Zero active columns require no rounded reflector theorem.  Nonzero active
+    columns use `gammaValid fp (11 * rows + 23)`, which follows by monotonicity
+    from the global row bound. -/
+theorem HouseholderQRPanelSafeReady_of_global_gammaValid (fp : FPModel) :
+    ∀ (m p N : ℕ) (A : Fin m → Fin p → ℝ),
+      m ≤ N →
+      gammaValid fp (11 * N + 23) →
+      HouseholderQRPanelSafeReady fp m p A := by
+  intro m
+  induction m with
+  | zero =>
+      intro p N A _hrows _hvalid
+      trivial
+  | succ m ih =>
+      intro p N A hrows hvalid
+      cases p with
+      | zero =>
+          trivial
+      | succ p =>
+          by_cases hcol : panelFirstColumn (Nat.succ_pos p) A = 0
+          · have htail :
+                HouseholderQRPanelSafeReady fp m p (trailingPanel A) :=
+              ih p N (trailingPanel A) (by omega) hvalid
+            simpa [HouseholderQRPanelSafeReady, hcol] using htail
+          · have hstep : gammaValid fp (11 * (m + 1) + 23) :=
+              gammaValid_mono fp (by omega) hvalid
+            have htail :
+                HouseholderQRPanelSafeReady fp m p
+                  (fl_householderTrailingPanelStep fp A) :=
+              ih p N (fl_householderTrailingPanelStep fp A) (by omega) hvalid
+            simpa [HouseholderQRPanelSafeReady, hcol] using ⟨hstep, htail⟩
+
+/-- Square specialization of
+    `HouseholderQRPanelSafeReady_of_global_gammaValid`. -/
+theorem HouseholderQRPanelSafeReady_square_of_global_gammaValid
+    (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (hvalid : gammaValid fp (11 * n + 23)) :
+    HouseholderQRPanelSafeReady fp n n A :=
+  HouseholderQRPanelSafeReady_of_global_gammaValid fp n n n A
+    (le_refl n) hvalid
+
 /-- Active trailing-panel state for a Householder QR loop.
 
     This state tracks only the active panel dimensions and entries.  It does
@@ -2651,6 +2696,16 @@ theorem fl_householderQR_R_safe_backward_error (fp : FPModel) (n : ℕ)
   simpa [fl_householderQR_R_safe, householderQRBackwardCoeffSafe] using
     fl_householderQRPanel_R_safe_backward_error fp n n A hready
 
+/-- Global-gamma wrapper for the implementation-backed zero-aware Householder
+    QR `R` backward-error theorem. -/
+theorem fl_householderQR_R_safe_backward_error_of_global_gammaValid
+    (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (hvalid : gammaValid fp (11 * n + 23)) :
+    HouseholderQRBackwardError n A (fl_householderQR_R_safe fp n A)
+      (householderQRBackwardCoeffSafe fp n A * frobNorm A) := by
+  exact fl_householderQR_R_safe_backward_error fp n A
+    (HouseholderQRPanelSafeReady_square_of_global_gammaValid fp n A hvalid)
+
 /-- QR backward-error contract including the structural fact that the computed
     `R_hat` is upper triangular.
 
@@ -2721,5 +2776,15 @@ theorem fl_householderQR_R_safe_structured_backward_error (fp : FPModel) (n : �
       (householderQRBackwardCoeffSafe fp n A * frobNorm A) := by
   exact ⟨fl_householderQR_R_safe_backward_error fp n A hready,
     fl_householderQR_R_safe_upper fp n A⟩
+
+/-- Global-gamma wrapper for the implementation-backed structured zero-aware
+    Householder QR theorem. -/
+theorem fl_householderQR_R_safe_structured_backward_error_of_global_gammaValid
+    (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (hvalid : gammaValid fp (11 * n + 23)) :
+    StructuredHouseholderQRBackwardError n A (fl_householderQR_R_safe fp n A)
+      (householderQRBackwardCoeffSafe fp n A * frobNorm A) := by
+  exact fl_householderQR_R_safe_structured_backward_error fp n A
+    (HouseholderQRPanelSafeReady_square_of_global_gammaValid fp n A hvalid)
 
 end LeanFpAnalysis.FP

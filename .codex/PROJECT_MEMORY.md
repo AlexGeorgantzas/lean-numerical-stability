@@ -786,6 +786,20 @@ These compile, but should not be treated as fully derived stability results:
   an implementation-backed zero-aware path.  Remaining assumptions are the
   inherent back-substitution side conditions: `0 < n`, nonzero diagonal of the
   computed `fl_householderQR_R_safe fp n A`, and `gammaValid fp n`.
+- Simplified the public safe Householder QR API by deriving recursive
+  `HouseholderQRPanelSafeReady` from a single global gamma assumption.  Added
+  `HouseholderQRPanelSafeReady_of_global_gammaValid`,
+  `HouseholderQRPanelSafeReady_square_of_global_gammaValid`, and global-gamma
+  wrappers for safe `R`, structured `R`, RHS, shared QR/RHS components, and
+  solve:
+  `fl_householderQR_R_safe_backward_error_of_global_gammaValid`,
+  `fl_householderQR_R_safe_structured_backward_error_of_global_gammaValid`,
+  `fl_householderQR_rhs_safe_backward_error_of_global_gammaValid`,
+  `fl_householderQR_solve_components_safe_backward_error_of_global_gammaValid`,
+  and `fl_householderQR_solve_safe_backward_error_of_global_gammaValid`.  The
+  preferred safe solve theorem now asks for `0 < n`, global
+  `gammaValid fp (11*n+23)`, and nonzero diagonal of computed `R_safe`; the
+  back-substitution `gammaValid fp n` condition is derived internally.
 
 ## 2026-04-26 Fix Pass
 
