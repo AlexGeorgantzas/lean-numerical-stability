@@ -552,6 +552,10 @@ These compile, but should not be treated as fully derived stability results:
   state-level one-step bridge can consume `HouseholderPanelStepReady` directly
   instead of unpacking nonzero-column and gamma-validity hypotheses at every
   future induction site.
+- Added `householderPanelRunReady_succ_iff`, splitting a ready run of length
+  `r+1` into a ready current step and a ready tail after
+  `householderPanelStateStep`.  This is the intended induction shape for future
+  repeated active-panel proofs.
 
 ## 2026-04-26 Fix Pass
 

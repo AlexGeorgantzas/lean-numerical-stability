@@ -866,6 +866,25 @@ theorem householderPanelRunReady_tail (fp : FPModel)
   intro k hk
   simpa [HouseholderPanelRunReady] using h (k + 1) (Nat.succ_lt_succ hk)
 
+/-- Split a nonempty ready run into the current ready step and the ready tail.
+    This is the induction shape needed by repeated-panel proofs. -/
+theorem householderPanelRunReady_succ_iff (fp : FPModel)
+    {r : ℕ} {S : HouseholderPanelState} :
+    HouseholderPanelRunReady fp (r + 1) S ↔
+      HouseholderPanelStepReady fp S ∧
+      HouseholderPanelRunReady fp r (householderPanelStateStep fp S) := by
+  constructor
+  · intro h
+    exact ⟨householderPanelRunReady_head fp h,
+      householderPanelRunReady_tail fp h⟩
+  · intro h k hk
+    cases k with
+    | zero =>
+        simpa using h.1
+    | succ k =>
+        have hk_tail : k < r := Nat.succ_lt_succ_iff.mp hk
+        simpa [HouseholderPanelRunReady] using h.2 k hk_tail
+
 /-- If a full nonempty panel is updated by the concrete first-column
     Householder step, then the next trailing panel is exactly
     `fl_householderTrailingPanelStep`. -/
