@@ -531,6 +531,12 @@ These compile, but should not be treated as fully derived stability results:
   theorem from the old backward-error theorem plus a supplied triangularity
   proof; the rebuild still has to prove triangularity from the concrete rounded
   QR loop.
+- Added `HouseholderPanelState`, `householderPanelStateStep`, and
+  `householderPanelStateIterate` as the first dependent-loop substrate for
+  Householder QR.  The state tracks the active trailing panel and the concrete
+  step shrinks nonempty panels using `fl_householderTrailingPanelStep`.  It does
+  not yet store the accumulated `Q` or completed `R` rows, so it is not a full
+  QR algorithm definition yet.
 
 ## 2026-04-26 Fix Pass
 

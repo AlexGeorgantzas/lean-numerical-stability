@@ -771,6 +771,52 @@ noncomputable def fl_householderTrailingPanelStep (fp : FPModel)
         (fl_householderNormalizedVector fp (Nat.succ_pos m)
           (panelFirstColumn (Nat.succ_pos p) A)) 1 A i.succ j.succ := rfl
 
+/-- Active trailing-panel state for a Householder QR loop.
+
+    This state tracks only the active panel dimensions and entries.  It does
+    not yet store the accumulated `Q` factor or the completed rows of `R`; those
+    are the next layer needed for a full QR factorization theorem. -/
+structure HouseholderPanelState where
+  /-- Number of active panel rows. -/
+  rows : ℕ
+  /-- Number of active panel columns. -/
+  cols : ℕ
+  /-- Active panel entries. -/
+  panel : Fin rows → Fin cols → ℝ
+
+/-- One concrete active-panel step in the shrinking Householder QR loop.
+
+    If both dimensions are nonzero, apply the concrete first-column Householder
+    update and keep the trailing panel.  If either dimension is zero, leave the
+    state unchanged. -/
+noncomputable def householderPanelStateStep (fp : FPModel)
+    (S : HouseholderPanelState) : HouseholderPanelState :=
+  match S with
+  | ⟨m + 1, p + 1, A⟩ =>
+      ⟨m, p, fl_householderTrailingPanelStep fp A⟩
+  | S => S
+
+/-- Iterate the concrete active-panel shrinking step. -/
+noncomputable def householderPanelStateIterate (fp : FPModel) :
+    ℕ → HouseholderPanelState → HouseholderPanelState
+  | 0, S => S
+  | k + 1, S => householderPanelStateIterate fp k
+      (householderPanelStateStep fp S)
+
+@[simp] theorem householderPanelStateStep_nonempty (fp : FPModel)
+    {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ) :
+    householderPanelStateStep fp ⟨m + 1, p + 1, A⟩ =
+      ⟨m, p, fl_householderTrailingPanelStep fp A⟩ := rfl
+
+@[simp] theorem householderPanelStateIterate_zero (fp : FPModel)
+    (S : HouseholderPanelState) :
+    householderPanelStateIterate fp 0 S = S := rfl
+
+@[simp] theorem householderPanelStateIterate_succ (fp : FPModel)
+    (k : ℕ) (S : HouseholderPanelState) :
+    householderPanelStateIterate fp (k + 1) S =
+      householderPanelStateIterate fp k (householderPanelStateStep fp S) := rfl
+
 /-- If a full nonempty panel is updated by the concrete first-column
     Householder step, then the next trailing panel is exactly
     `fl_householderTrailingPanelStep`. -/
