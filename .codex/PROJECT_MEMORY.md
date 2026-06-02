@@ -658,8 +658,16 @@ These compile, but should not be treated as fully derived stability results:
   The concrete first-column RHS Householder step now has an explicit
   componentwise residual bound
   `(m+1) * householderConstructApplyBound fp (m+1) * infNormVec b`.
-  The recursive RHS sequence theorem and final `fl_householderQR_solve`
-  theorem are still pending.
+  Added `HouseholderQRRhsPanelBackwardError`,
+  `householderQRRhsPanelBackwardBound`,
+  `householder_qr_rhs_panel_backward_cons`,
+  `fl_householderQRPanel_rhs_backward_error`, and
+  `fl_householderQR_rhs_backward_error`.  The concrete RHS reflector recursion
+  is now implementation-backed under `HouseholderQRPanelReady`, with a
+  recursive componentwise perturbation bound.  The final
+  `fl_householderQR_solve` theorem is still pending because the QR `R` proof,
+  RHS proof, and back-substitution proof must still be combined with a common
+  orthogonal factor.
 - Added exact vector embedding algebra for the QR RHS recursion:
   `vectorTrailingPerturbation`, `embedTrailingOne_matMulVec_top`,
   `vectorTail_embedTrailingOne_matMulVec`, and

@@ -54,6 +54,22 @@ structure QRSolveBackwardError (n : ℕ)
     frobNorm ΔA ≤ c_A ∧
     (∀ i, |Δb i| ≤ c_b)
 
+/-- Rectangular active-panel contract for the right-hand-side transform in
+    Householder QR solve.
+
+    The active panel `A` determines the reflector sequence, while `b` is the
+    active right-hand side being transformed by that sequence.  The result is
+    represented as `Qᵀ(b + Δb)` with a componentwise perturbation bound. -/
+structure HouseholderQRRhsPanelBackwardError (m p : ℕ)
+    (A : Fin m → Fin p → ℝ) (b c_hat : Fin m → ℝ)
+    (c_bound : ℝ) : Prop where
+  /-- There exist an orthogonal transformation and a bounded RHS perturbation. -/
+  result : ∃ (Q : Fin m → Fin m → ℝ) (Δb : Fin m → ℝ),
+    IsOrthogonal m Q ∧
+    (∀ i, c_hat i =
+      matMulVec m (matTranspose Q) (fun k => b k + Δb k) i) ∧
+    (∀ i, |Δb i| ≤ c_bound)
+
 /-- Drop the first entry of a nonempty vector.  This is exact indexing
     infrastructure for the QR solve right-hand-side recursion. -/
 noncomputable def vectorTail {m : ℕ} (b : Fin (m + 1) → ℝ) : Fin m → ℝ :=
@@ -91,6 +107,15 @@ noncomputable def vectorTrailingPerturbation {m : ℕ}
   ext i
   rfl
 
+@[simp] theorem vectorFromTopTail_self {m : ℕ}
+    (b : Fin (m + 1) → ℝ) :
+    vectorFromTopTail (b 0) (vectorTail b) = b := by
+  ext i
+  refine Fin.cases ?_ ?_ i
+  · rfl
+  · intro i
+    rfl
+
 @[simp] theorem vectorTrailingPerturbation_zero {m : ℕ}
     (tail : Fin m → ℝ) :
     vectorTrailingPerturbation tail 0 = 0 := by
@@ -100,6 +125,29 @@ noncomputable def vectorTrailingPerturbation {m : ℕ}
     (tail : Fin m → ℝ) (i : Fin m) :
     vectorTrailingPerturbation tail i.succ = tail i := by
   rfl
+
+/-- Empty-row RHS panels satisfy the RHS backward-error target trivially. -/
+theorem householder_qr_rhs_panel_backward_zero_rows (p : ℕ)
+    (A : Fin 0 → Fin p → ℝ) (b : Fin 0 → ℝ) :
+    HouseholderQRRhsPanelBackwardError 0 p A b b 0 := by
+  let Z : Fin 0 → ℝ := fun i => Fin.elim0 i
+  refine ⟨⟨idMatrix 0, Z, idMatrix_orthogonal 0, ?_, ?_⟩⟩
+  · intro i
+    exact Fin.elim0 i
+  · intro i
+    exact Fin.elim0 i
+
+/-- Empty-column active panels apply no QR reflectors to the RHS, so the
+    transformed RHS is exactly the input RHS. -/
+theorem householder_qr_rhs_panel_backward_zero_cols (m : ℕ)
+    (A : Fin (m + 1) → Fin 0 → ℝ) (b : Fin (m + 1) → ℝ) :
+    HouseholderQRRhsPanelBackwardError (m + 1) 0 A b b 0 := by
+  let Z : Fin (m + 1) → ℝ := fun _ => 0
+  refine ⟨⟨idMatrix (m + 1), Z, idMatrix_orthogonal (m + 1), ?_, ?_⟩⟩
+  · intro i
+    simp [matMulVec, matTranspose, idMatrix, Z, Finset.mem_univ]
+  · intro i
+    simp [Z]
 
 /-- Left multiplication by an embedded trailing-block matrix leaves the top
     component of a vector unchanged. -/
@@ -143,6 +191,136 @@ theorem vectorFromTopTail_lift_trailing_rep {m : ℕ}
     unfold matMulVec
     rw [Fin.sum_univ_succ]
     simp
+
+/-- Recursive cons step for the Householder QR RHS transform.
+
+    If the current rounded reflector step has residual form `y = P*b + e`,
+    and the recursive tail transform has a backward-error representation, then
+    the full RHS transform has a backward-error representation.  The bound is
+    deliberately crude: the accumulated residual is first bounded
+    componentwise by `c + α`, then transported through `Pᵀ`, costing a factor
+    equal to the active dimension. -/
+theorem householder_qr_rhs_panel_backward_cons {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (A_tail : Fin m → Fin p → ℝ)
+    (P : Fin (m + 1) → Fin (m + 1) → ℝ)
+    (b y e : Fin (m + 1) → ℝ)
+    (ctail : Fin m → ℝ)
+    (c α : ℝ)
+    (hP : IsOrthogonal (m + 1) P)
+    (hy : ∀ i, y i = matMulVec (m + 1) P b i + e i)
+    (he : ∀ i, |e i| ≤ c)
+    (hTail :
+      HouseholderQRRhsPanelBackwardError m p A_tail (vectorTail y) ctail α)
+    (hc : 0 ≤ c) (hα : 0 ≤ α) :
+    HouseholderQRRhsPanelBackwardError (m + 1) (p + 1) A b
+      (vectorFromTopTail (y 0) ctail)
+      ((m + 1 : ℝ) * (c + α)) := by
+  obtain ⟨Qt, Δtail, hQt, hTailRep, hΔtail⟩ := hTail.result
+  let ΔtailFull : Fin (m + 1) → ℝ := vectorTrailingPerturbation Δtail
+  let Eta : Fin (m + 1) → ℝ := fun i => e i + ΔtailFull i
+  let Δb : Fin (m + 1) → ℝ :=
+    matMulVec (m + 1) (matTranspose P) Eta
+  let M : Fin (m + 1) → Fin (m + 1) → ℝ :=
+    matMul (m + 1) (embedTrailingOne (matTranspose Qt)) P
+  let Q : Fin (m + 1) → Fin (m + 1) → ℝ := matTranspose M
+  refine ⟨⟨Q, Δb, ?_, ?_, ?_⟩⟩
+  · have hEmb :
+        IsOrthogonal (m + 1) (embedTrailingOne (matTranspose Qt)) :=
+      embedTrailingOne_orthogonal (matTranspose Qt) hQt.transpose
+    have hM : IsOrthogonal (m + 1) M := hEmb.mul hP
+    exact hM.transpose
+  · have hLift :=
+      vectorFromTopTail_lift_trailing_rep Qt
+        (y 0) (vectorTail y) ctail Δtail hTailRep
+    have hInside :
+        (fun i => vectorFromTopTail (y 0) (vectorTail y) i +
+          vectorTrailingPerturbation Δtail i) =
+        fun i => y i + ΔtailFull i := by
+      ext i
+      simp [ΔtailFull]
+    have hPΔ : ∀ i,
+        matMulVec (m + 1) P Δb i = Eta i := by
+      intro i
+      have hPPt :
+          matMul (m + 1) P (matTranspose P) = idMatrix (m + 1) := by
+        ext a b
+        exact hP.right_inv a b
+      calc
+        matMulVec (m + 1) P Δb i
+            = matMulVec (m + 1) P
+                (matMulVec (m + 1) (matTranspose P) Eta) i := rfl
+        _ = matMulVec (m + 1)
+              (matMul (m + 1) P (matTranspose P)) Eta i := by
+            exact (matMulVec_matMul (m + 1) P (matTranspose P) Eta i).symm
+        _ = matMulVec (m + 1) (idMatrix (m + 1)) Eta i := by
+            rw [hPPt]
+        _ = Eta i := by
+            simpa using congr_fun (idMatrix_mulVec (m + 1) Eta) i
+    have hyEta :
+        (fun i => y i + ΔtailFull i) =
+          matMulVec (m + 1) P (fun k => b k + Δb k) := by
+      ext i
+      calc
+        y i + ΔtailFull i
+            = (matMulVec (m + 1) P b i + e i) + ΔtailFull i := by
+                rw [hy i]
+        _ = matMulVec (m + 1) P b i + Eta i := by
+            simp [Eta]
+            ring
+        _ = matMulVec (m + 1) P b i +
+              matMulVec (m + 1) P Δb i := by
+            rw [hPΔ i]
+        _ = matMulVec (m + 1) P (fun k => b k + Δb k) i := by
+            unfold matMulVec
+            rw [← Finset.sum_add_distrib]
+            apply Finset.sum_congr rfl
+            intro k _
+            ring
+    intro i
+    have hLift' :
+        vectorFromTopTail (y 0) ctail =
+          matMulVec (m + 1) (embedTrailingOne (matTranspose Qt))
+            (fun i => y i + ΔtailFull i) := by
+      rw [hLift]
+      congr
+    calc
+      vectorFromTopTail (y 0) ctail i
+          = matMulVec (m + 1) (embedTrailingOne (matTranspose Qt))
+              (fun i => y i + ΔtailFull i) i := by
+            rw [hLift']
+      _ = matMulVec (m + 1) (embedTrailingOne (matTranspose Qt))
+            (matMulVec (m + 1) P (fun k => b k + Δb k)) i := by
+          rw [hyEta]
+      _ = matMulVec (m + 1) M (fun k => b k + Δb k) i := by
+          exact (matMulVec_matMul (m + 1)
+            (embedTrailingOne (matTranspose Qt)) P
+            (fun k => b k + Δb k) i).symm
+      _ = matMulVec (m + 1) (matTranspose Q)
+            (fun k => b k + Δb k) i := by
+          simp [Q, M, matTranspose_involutive]
+  · have hEtaComp : ∀ i, |Eta i| ≤ c + α := by
+      intro i
+      have htail : |ΔtailFull i| ≤ α := by
+        refine Fin.cases ?_ ?_ i
+        · simpa [ΔtailFull] using hα
+        · intro i
+          simpa [ΔtailFull] using hΔtail i
+      calc
+        |Eta i| = |e i + ΔtailFull i| := rfl
+        _ ≤ |e i| + |ΔtailFull i| := abs_add_le _ _
+        _ ≤ c + α := add_le_add (he i) htail
+    have hEtaInf : infNormVec Eta ≤ c + α :=
+      infNormVec_le_of_abs_le Eta hEtaComp (add_nonneg hc hα)
+    intro i
+    calc
+      |Δb i|
+          = |matMulVec (m + 1) (matTranspose P) Eta i| := rfl
+      _ ≤ (m + 1 : ℝ) * infNormVec Eta := by
+          simpa [Nat.cast_add, Nat.cast_one] using
+            hP.transpose.abs_matMulVec_le_card_infNormVec Eta i
+      _ ≤ (m + 1 : ℝ) * (c + α) := by
+          exact mul_le_mul_of_nonneg_left hEtaInf (by positivity)
 
 /-- Recursive rounded application of the Householder QR reflector sequence to
     a right-hand side.
@@ -237,6 +415,83 @@ noncomputable def fl_householderQR_solve (fp : FPModel) (n : ℕ)
     (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ) : Fin n → ℝ :=
   fl_backSub fp n (fl_householderQR_R fp n A)
     (fl_householderQR_rhs fp n A b)
+
+/-- Recursive componentwise perturbation bound for the concrete QR RHS
+    transform.
+
+    The bound follows the actual computed RHS recursion: each nonempty step
+    contributes the bounded residual from applying the current rounded
+    Householder reflector to `b`, and the tail contribution is transported back
+    through the current exact reflector with the crude orthogonal factor
+    `(m+1)`.  This is intentionally an implementation-backed recursive bound,
+    not yet a collapsed Higham-style closed form. -/
+noncomputable def householderQRRhsPanelBackwardBound (fp : FPModel) :
+    (m p : ℕ) → (Fin m → Fin p → ℝ) → (Fin m → ℝ) → ℝ
+  | 0, _, _A, _b => 0
+  | Nat.succ _, 0, _A, _b => 0
+  | m + 1, p + 1, A, b =>
+      let bstep : Fin (m + 1) → ℝ :=
+        fl_householderApply fp (m + 1)
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A)) 1 b
+      let cstep : ℝ :=
+        (m + 1 : ℝ) * householderConstructApplyBound fp (m + 1) *
+          infNormVec b
+      (m + 1 : ℝ) *
+        (cstep +
+          householderQRRhsPanelBackwardBound fp m p
+            (fl_householderTrailingPanelStep fp A) (vectorTail bstep))
+
+/-- Square specialization of the recursive QR RHS perturbation bound. -/
+noncomputable def householderQRRhsBackwardBound (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ) : ℝ :=
+  householderQRRhsPanelBackwardBound fp n n A b
+
+/-- The recursive QR RHS perturbation bound is nonnegative whenever the
+    concrete Householder QR panel run is ready. -/
+theorem householderQRRhsPanelBackwardBound_nonneg (fp : FPModel) :
+    ∀ (m p : ℕ) (A : Fin m → Fin p → ℝ) (b : Fin m → ℝ),
+      HouseholderQRPanelReady fp m p A →
+      0 ≤ householderQRRhsPanelBackwardBound fp m p A b := by
+  intro m
+  induction m with
+  | zero =>
+      intro p A b _hready
+      simp [householderQRRhsPanelBackwardBound]
+  | succ m ih =>
+      intro p
+      cases p with
+      | zero =>
+          intro A b _hready
+          simp [householderQRRhsPanelBackwardBound]
+      | succ p =>
+          intro A b hready
+          have hready' :
+              panelFirstColumn (Nat.succ_pos p) A ≠ 0 ∧
+              gammaValid fp (11 * (m + 1) + 23) ∧
+              HouseholderQRPanelReady fp m p (fl_householderTrailingPanelStep fp A) := by
+            simpa using hready
+          let bstep : Fin (m + 1) → ℝ :=
+            fl_householderApply fp (m + 1)
+              (fl_householderNormalizedVector fp (Nat.succ_pos m)
+                (panelFirstColumn (Nat.succ_pos p) A)) 1 b
+          let cstep : ℝ :=
+            (m + 1 : ℝ) * householderConstructApplyBound fp (m + 1) *
+              infNormVec b
+          have hcstep : 0 ≤ cstep := by
+            have hc :
+                0 ≤ householderConstructApplyBound fp (m + 1) :=
+              householderConstructApplyBound_nonneg fp (m + 1) hready'.2.1
+            exact mul_nonneg
+              (mul_nonneg (by positivity) hc)
+              (infNormVec_nonneg b)
+          have htail :
+              0 ≤ householderQRRhsPanelBackwardBound fp m p
+                (fl_householderTrailingPanelStep fp A) (vectorTail bstep) :=
+            ih p (fl_householderTrailingPanelStep fp A) (vectorTail bstep)
+              hready'.2.2
+          simp [householderQRRhsPanelBackwardBound]
+          exact mul_nonneg (by positivity) (add_nonneg hcstep htail)
 
 /-- Residual-vector form of a one-vector Householder application contract.
 
@@ -359,6 +614,112 @@ theorem fl_householder_first_column_rhs_step_residual_bound (fp : FPModel)
       0 ≤ householderConstructApplyBound fp (m + 1) :=
     householderConstructApplyBound_nonneg fp (m + 1) hvalid
   simpa [P] using hstep.exists_residual_vector_bound hc
+
+/-- Implementation-backed recursive backward-error theorem for the concrete
+    Householder QR right-hand-side transform.
+
+    This proves the RHS analogue of the recursive `R` theorem: under the same
+    `HouseholderQRPanelReady` hypotheses, the concrete
+    `fl_householderQRPanel_rhs` loop has a representation
+    `Qᵀ(b + Δb)` with a componentwise recursive perturbation bound.  The
+    theorem does not yet combine this RHS proof with the QR `R` proof and
+    triangular solve into the final `fl_householderQR_solve` theorem. -/
+theorem fl_householderQRPanel_rhs_backward_error (fp : FPModel) :
+    ∀ (m p : ℕ) (A : Fin m → Fin p → ℝ) (b : Fin m → ℝ),
+      HouseholderQRPanelReady fp m p A →
+      HouseholderQRRhsPanelBackwardError m p A b
+        (fl_householderQRPanel_rhs fp m p A b)
+        (householderQRRhsPanelBackwardBound fp m p A b) := by
+  intro m
+  induction m with
+  | zero =>
+      intro p A b _hready
+      simpa [fl_householderQRPanel_rhs, householderQRRhsPanelBackwardBound]
+        using householder_qr_rhs_panel_backward_zero_rows p A b
+  | succ m ih =>
+      intro p
+      cases p with
+      | zero =>
+          intro A b _hready
+          simpa [fl_householderQRPanel_rhs, householderQRRhsPanelBackwardBound]
+            using householder_qr_rhs_panel_backward_zero_cols m A b
+      | succ p =>
+          intro A b hready
+          have hready' :
+              panelFirstColumn (Nat.succ_pos p) A ≠ 0 ∧
+              gammaValid fp (11 * (m + 1) + 23) ∧
+              HouseholderQRPanelReady fp m p (fl_householderTrailingPanelStep fp A) := by
+            simpa using hready
+          let P : Fin (m + 1) → Fin (m + 1) → ℝ :=
+            householder (m + 1)
+              (householderNormalizedVector (m + 1)
+                (householderVector (Nat.succ_pos m)
+                  (panelFirstColumn (Nat.succ_pos p) A))
+                (householderBetaFromScale (Nat.succ_pos m)
+                  (panelFirstColumn (Nat.succ_pos p) A))) 1
+          let bstep : Fin (m + 1) → ℝ :=
+            fl_householderApply fp (m + 1)
+              (fl_householderNormalizedVector fp (Nat.succ_pos m)
+                (panelFirstColumn (Nat.succ_pos p) A)) 1 b
+          let cstep : ℝ :=
+            (m + 1 : ℝ) * householderConstructApplyBound fp (m + 1) *
+              infNormVec b
+          obtain ⟨e, hy, he⟩ := by
+            have hraw :=
+              fl_householder_first_column_rhs_step_residual_bound fp A b
+                hready'.1 hready'.2.1
+            simpa [P, bstep, cstep, Nat.cast_add, Nat.cast_one] using hraw
+          have hPorth : IsOrthogonal (m + 1) P := by
+            have hstep :=
+              fl_householder_first_column_rhs_step_error fp A b
+                hready'.1 hready'.2.1
+            simpa [P] using hstep.orth
+          have hTail :
+              HouseholderQRRhsPanelBackwardError m p
+                (fl_householderTrailingPanelStep fp A) (vectorTail bstep)
+                (fl_householderQRPanel_rhs fp m p
+                  (fl_householderTrailingPanelStep fp A) (vectorTail bstep))
+                (householderQRRhsPanelBackwardBound fp m p
+                  (fl_householderTrailingPanelStep fp A) (vectorTail bstep)) :=
+            ih p (fl_householderTrailingPanelStep fp A) (vectorTail bstep)
+              hready'.2.2
+          have hcstep : 0 ≤ cstep := by
+            have hc :
+                0 ≤ householderConstructApplyBound fp (m + 1) :=
+              householderConstructApplyBound_nonneg fp (m + 1) hready'.2.1
+            exact mul_nonneg
+              (mul_nonneg (by positivity) hc)
+              (infNormVec_nonneg b)
+          have htailNonneg :
+              0 ≤ householderQRRhsPanelBackwardBound fp m p
+                (fl_householderTrailingPanelStep fp A) (vectorTail bstep) :=
+            householderQRRhsPanelBackwardBound_nonneg fp m p
+              (fl_householderTrailingPanelStep fp A) (vectorTail bstep)
+              hready'.2.2
+          have hCons :=
+            householder_qr_rhs_panel_backward_cons A
+              (fl_householderTrailingPanelStep fp A) P b bstep e
+              (fl_householderQRPanel_rhs fp m p
+                (fl_householderTrailingPanelStep fp A) (vectorTail bstep))
+              cstep
+              (householderQRRhsPanelBackwardBound fp m p
+                (fl_householderTrailingPanelStep fp A) (vectorTail bstep))
+              hPorth hy he hTail hcstep htailNonneg
+          simpa [fl_householderQRPanel_rhs,
+            householderQRRhsPanelBackwardBound, P, bstep, cstep,
+            fl_householderTrailingPanelStep, Nat.cast_add, Nat.cast_one]
+            using hCons
+
+/-- Square specialization of the implementation-backed RHS-transform theorem
+    for concrete Householder QR solve. -/
+theorem fl_householderQR_rhs_backward_error (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (hready : HouseholderQRPanelReady fp n n A) :
+    HouseholderQRRhsPanelBackwardError n n A b
+      (fl_householderQR_rhs fp n A b)
+      (householderQRRhsBackwardBound fp n A b) := by
+  simpa [fl_householderQR_rhs, householderQRRhsBackwardBound] using
+    fl_householderQRPanel_rhs_backward_error fp n n A b hready
 
 /-- **Theorem 18.5 composition**: QR solve backward error from components.
 
