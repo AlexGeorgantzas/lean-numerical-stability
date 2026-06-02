@@ -698,6 +698,12 @@ noncomputable def panelFromTopAndTrailing {m p : ℕ}
     else
       if hj : j = 0 then 0 else tail (i.pred hi) (j.pred hj)
 
+/-- Embed a trailing-panel perturbation into a larger panel, with zero top row
+    and zero completed first-column tail. -/
+noncomputable def panelTrailingPerturbation {m p : ℕ}
+    (tail : Fin m → Fin p → ℝ) : Fin (m + 1) → Fin (p + 1) → ℝ :=
+  panelFromTopAndTrailing 0 (fun _ => 0) tail
+
 /-- Embed an `m × m` matrix as the lower-right block of an `(m+1) × (m+1)`
     matrix, with a leading `1` on the diagonal and zeros in the first row and
     first column.
@@ -783,6 +789,26 @@ noncomputable def embedTrailingOne {m : ℕ}
   intro i
   rfl
 
+@[simp] theorem panelTrailingPerturbation_zero_zero {m p : ℕ}
+    (tail : Fin m → Fin p → ℝ) :
+    panelTrailingPerturbation tail 0 0 = 0 := by
+  rfl
+
+@[simp] theorem panelTrailingPerturbation_zero_succ {m p : ℕ}
+    (tail : Fin m → Fin p → ℝ) (j : Fin p) :
+    panelTrailingPerturbation tail 0 j.succ = 0 := by
+  rfl
+
+@[simp] theorem panelTrailingPerturbation_succ_zero {m p : ℕ}
+    (tail : Fin m → Fin p → ℝ) (i : Fin m) :
+    panelTrailingPerturbation tail i.succ 0 = 0 := by
+  rfl
+
+@[simp] theorem panelTrailingPerturbation_succ_succ {m p : ℕ}
+    (tail : Fin m → Fin p → ℝ) (i : Fin m) (j : Fin p) :
+    panelTrailingPerturbation tail i.succ j.succ = tail i j := by
+  rfl
+
 /-- A panel whose first-column tail is zero is exactly reconstructed from its
     visible top row and trailing panel. -/
 theorem panelFromTopAndTrailing_of_firstColumnTailZero {m p : ℕ}
@@ -801,6 +827,23 @@ theorem panelFromTopAndTrailing_of_firstColumnTailZero {m p : ℕ}
     · simpa [panelFirstColumnTailZero, panelFirstColumnTail] using (hzero i).symm
     · intro j
       rfl
+
+/-- The embedded trailing-panel perturbation has exactly the same squared
+    Frobenius norm as the trailing perturbation. -/
+theorem frobNormSq_panelTrailingPerturbation {m p : ℕ}
+    (tail : Fin m → Fin p → ℝ) :
+    frobNormSq (panelTrailingPerturbation tail) = frobNormSq tail := by
+  unfold frobNormSq panelTrailingPerturbation
+  rw [Fin.sum_univ_succ]
+  simp [panelFromTopAndTrailing, Fin.sum_univ_succ]
+
+/-- The embedded trailing-panel perturbation has exactly the same Frobenius
+    norm as the trailing perturbation. -/
+theorem frobNorm_panelTrailingPerturbation {m p : ℕ}
+    (tail : Fin m → Fin p → ℝ) :
+    frobNorm (panelTrailingPerturbation tail) = frobNorm tail := by
+  rw [frobNorm_eq_sqrt_frobNormSq, frobNorm_eq_sqrt_frobNormSq,
+    frobNormSq_panelTrailingPerturbation]
 
 @[simp] theorem embedTrailingOne_zero_zero {m : ℕ}
     (U : Fin m → Fin m → ℝ) :
@@ -946,6 +989,46 @@ theorem trailingPanel_embedTrailingOne_matMulRect {m p : ℕ}
   unfold trailingPanel matMulRect
   rw [Fin.sum_univ_succ]
   simp
+
+/-- Lift a trailing-panel backward representation to the full panel by
+    embedding the trailing orthogonal factor with a leading identity.
+
+    The full perturbation has zero top row and zero completed first-column
+    tail, and its trailing block is the tail perturbation. -/
+theorem panelFromTopAndTrailing_lift_trailing_rep {m p : ℕ}
+    (Q : Fin m → Fin m → ℝ)
+    (a00 : ℝ) (top : Fin p → ℝ)
+    (T Rtail ΔT : Fin m → Fin p → ℝ)
+    (hTail : ∀ i j, Rtail i j =
+      matMulRect m m p (matTranspose Q)
+        (fun a b => T a b + ΔT a b) i j) :
+    panelFromTopAndTrailing a00 top Rtail =
+      matMulRect (m + 1) (m + 1) (p + 1)
+        (embedTrailingOne (matTranspose Q))
+        (fun i j =>
+          panelFromTopAndTrailing a00 top T i j +
+            panelTrailingPerturbation ΔT i j) := by
+  ext i j
+  refine Fin.cases ?_ ?_ i
+  · refine Fin.cases ?_ ?_ j
+    · unfold matMulRect
+      rw [Fin.sum_univ_succ]
+      simp
+    · intro j
+      unfold matMulRect
+      rw [Fin.sum_univ_succ]
+      simp
+  · intro i
+    refine Fin.cases ?_ ?_ j
+    · unfold matMulRect
+      rw [Fin.sum_univ_succ]
+      simp
+    · intro j
+      simp only [panelFromTopAndTrailing_succ_succ]
+      rw [hTail i j]
+      unfold matMulRect
+      rw [Fin.sum_univ_succ]
+      simp
 
 /-- Dropping first row and first column is the same as taking the trailing
     panel in either order. -/

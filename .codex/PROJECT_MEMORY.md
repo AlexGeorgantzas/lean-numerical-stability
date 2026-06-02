@@ -593,6 +593,11 @@ These compile, but should not be treated as fully derived stability results:
   first-column tail by structural zeros preserves the same residual bound,
   because the exact Householder application has zero tail there and the
   Frobenius norm cannot increase when that residual slice is zeroed.
+- Added `panelTrailingPerturbation` and its Frobenius norm equality, plus
+  `panelFromTopAndTrailing_lift_trailing_rep`.  These exact algebra lemmas
+  lift a tail backward representation into the full panel using
+  `embedTrailingOne`, which is the block-composition step needed for the
+  recursive QR backward-error induction.
 
 ## 2026-04-26 Fix Pass
 
