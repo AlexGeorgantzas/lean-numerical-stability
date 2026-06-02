@@ -1073,6 +1073,11 @@ These compile, but should not be treated as fully derived stability results:
   now presents the matrix perturbation bound with the single-gamma QR
   factorization coefficient plus the separate triangular-solve term, and the
   RHS perturbation bound as `householderQRRhsGrowthCoeff fp n * ‖b‖∞`.
+  The theorem `householderQRRhsGrowthCoeff_le_closedGrowth` gives a conservative
+  nonrecursive growth bound for that RHS coefficient, and
+  `fl_householderQR_solve_safe_backward_error_gammaHigham_rhsClosedGrowth_of_global_gammaValid`
+  packages it into the final solve contract.  This closed RHS expression is a
+  local derived citation bound, not a sharp Higham constant.
 
 ## 2026-04-26 Fix Pass
 

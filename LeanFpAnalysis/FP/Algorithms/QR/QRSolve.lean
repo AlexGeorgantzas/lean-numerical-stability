@@ -1399,6 +1399,160 @@ theorem householderQRRhsGrowthCoeff_nonneg (fp : FPModel) (n : ℕ)
   simpa [householderQRRhsGrowthCoeff] using
     householderQRRhsPanelGrowthCoeff_nonneg fp n n hvalid
 
+/-- Conservative closed growth bound for the square QR RHS growth
+    coefficient.
+
+    This is a local derived bound, not a sharp Higham constant.  It replaces
+    the decreasing-dimension recursive coefficient by a uniform `n`-dimensional
+    growth expression, using monotonicity of the one-step Householder
+    construction/application coefficient. -/
+theorem householderQRRhsGrowthCoeff_le_closedGrowth
+    (fp : FPModel) :
+    ∀ n : ℕ, gammaValid fp (11 * n + 23) →
+      householderQRRhsGrowthCoeff fp n ≤
+        (n : ℝ) * ((n : ℝ) ^ 2 * householderConstructApplyBound fp n) *
+          (1 + (n : ℝ) ^ 2 *
+            (1 + householderConstructApplyBound fp n)) ^ n := by
+  intro n
+  induction n with
+  | zero =>
+      intro _hvalid
+      simp [householderQRRhsGrowthCoeff, householderQRRhsPanelGrowthCoeff]
+  | succ n ih =>
+      intro hvalid
+      let sR : ℝ := (n + 1 : ℝ)
+      let C : ℝ := householderConstructApplyBound fp (n + 1)
+      let A : ℝ := 1 + sR ^ 2 * (1 + C)
+      let B : ℝ := sR ^ 2 * C
+      let tail : ℝ := householderQRRhsGrowthCoeff fp n
+      have hvalid_tail : gammaValid fp (11 * n + 23) :=
+        gammaValid_mono fp (by omega) hvalid
+      have hC : 0 ≤ C := by
+        simpa [C] using
+          householderConstructApplyBound_nonneg fp (n + 1) hvalid
+      have hCt : 0 ≤ householderConstructApplyBound fp n :=
+        householderConstructApplyBound_nonneg fp n hvalid_tail
+      have hCt_le_C :
+          householderConstructApplyBound fp n ≤ C := by
+        simpa [C] using
+          householderConstructApplyBound_mono fp (Nat.le_succ n) hvalid
+      have hsR_nonneg : 0 ≤ sR := by
+        dsimp [sR]
+        positivity
+      have hA_ge_one : 1 ≤ A := by
+        dsimp [A]
+        nlinarith [sq_nonneg sR, hC]
+      have hA_nonneg : 0 ≤ A := by linarith
+      have hB_nonneg : 0 ≤ B := by
+        dsimp [B]
+        exact mul_nonneg (sq_nonneg sR) hC
+      have htail_nonneg : 0 ≤ tail := by
+        simpa [tail] using
+          householderQRRhsGrowthCoeff_nonneg fp n hvalid_tail
+      have hn_sq_le :
+          (n : ℝ) ^ 2 ≤ sR ^ 2 := by
+        have hn_le_s : (n : ℝ) ≤ sR := by
+          dsimp [sR]
+          norm_num [Nat.cast_add, Nat.cast_one]
+        nlinarith [sq_nonneg (n : ℝ), sq_nonneg sR]
+      have hBt_le_B :
+          (n : ℝ) ^ 2 * householderConstructApplyBound fp n ≤ B := by
+        dsimp [B]
+        exact mul_le_mul hn_sq_le hCt_le_C hCt (sq_nonneg sR)
+      have hAt_le_A :
+          1 + (n : ℝ) ^ 2 *
+              (1 + householderConstructApplyBound fp n) ≤ A := by
+        have h1_le : 1 + householderConstructApplyBound fp n ≤ 1 + C := by
+          linarith
+        have h1_nonneg : 0 ≤ 1 + householderConstructApplyBound fp n := by
+          linarith
+        have hprod :
+            (n : ℝ) ^ 2 * (1 + householderConstructApplyBound fp n) ≤
+              sR ^ 2 * (1 + C) :=
+          mul_le_mul hn_sq_le h1_le h1_nonneg (sq_nonneg sR)
+        dsimp [A]
+        linarith
+      have hAt_nonneg :
+          0 ≤ 1 + (n : ℝ) ^ 2 *
+              (1 + householderConstructApplyBound fp n) := by
+        exact add_nonneg zero_le_one
+          (mul_nonneg (sq_nonneg (n : ℝ)) (by linarith))
+      have hpow :
+          (1 + (n : ℝ) ^ 2 *
+              (1 + householderConstructApplyBound fp n)) ^ n ≤
+            A ^ n :=
+        pow_le_pow_left₀ hAt_nonneg hAt_le_A n
+      have htail_to_global :
+          tail ≤ (n : ℝ) * B * A ^ n := by
+        have hIH := ih hvalid_tail
+        have hprod :
+            ((n : ℝ) ^ 2 * householderConstructApplyBound fp n) *
+                (1 + (n : ℝ) ^ 2 *
+                  (1 + householderConstructApplyBound fp n)) ^ n ≤
+              B * A ^ n :=
+          mul_le_mul hBt_le_B hpow
+            (pow_nonneg hAt_nonneg n) hB_nonneg
+        have hscaled :
+            (n : ℝ) *
+                (((n : ℝ) ^ 2 * householderConstructApplyBound fp n) *
+                  (1 + (n : ℝ) ^ 2 *
+                    (1 + householderConstructApplyBound fp n)) ^ n) ≤
+              (n : ℝ) * (B * A ^ n) :=
+          mul_le_mul_of_nonneg_left hprod (by positivity)
+        calc
+          tail
+              ≤ (n : ℝ) *
+                  ((n : ℝ) ^ 2 * householderConstructApplyBound fp n) *
+                  (1 + (n : ℝ) ^ 2 *
+                    (1 + householderConstructApplyBound fp n)) ^ n := hIH
+          _ = (n : ℝ) *
+                (((n : ℝ) ^ 2 * householderConstructApplyBound fp n) *
+                  (1 + (n : ℝ) ^ 2 *
+                    (1 + householderConstructApplyBound fp n)) ^ n) := by
+              ring
+          _ ≤ (n : ℝ) * (B * A ^ n) := hscaled
+          _ = (n : ℝ) * B * A ^ n := by ring
+      have hrec :
+          householderQRRhsGrowthCoeff fp (n + 1) = B + tail * A := by
+        simp [householderQRRhsGrowthCoeff,
+          householderQRRhsPanelGrowthCoeff, tail, B, A, C, sR]
+        ring
+      have hpow_ge_one : 1 ≤ A ^ (n + 1) := by
+        have hbase : (1 : ℝ) ^ (n + 1) ≤ A ^ (n + 1) :=
+          pow_le_pow_left₀ zero_le_one hA_ge_one (n + 1)
+        simpa using hbase
+      have hB_le_Bpow : B ≤ B * A ^ (n + 1) := by
+        calc
+          B = B * 1 := by ring
+          _ ≤ B * A ^ (n + 1) :=
+              mul_le_mul_of_nonneg_left hpow_ge_one hB_nonneg
+      calc
+        householderQRRhsGrowthCoeff fp (n + 1)
+            = B + tail * A := hrec
+        _ ≤ B + ((n : ℝ) * B * A ^ n) * A := by
+            have hmul :
+                tail * A ≤ ((n : ℝ) * B * A ^ n) * A :=
+              mul_le_mul_of_nonneg_right htail_to_global hA_nonneg
+            exact add_le_add (le_refl B) hmul
+        _ = B + (n : ℝ) * B * A ^ (n + 1) := by
+            rw [pow_succ]
+            ring
+        _ ≤ ((n + 1 : ℕ) : ℝ) * B * A ^ (n + 1) := by
+            calc
+              B + (n : ℝ) * B * A ^ (n + 1)
+                  ≤ B * A ^ (n + 1) +
+                      (n : ℝ) * B * A ^ (n + 1) := by
+                    exact add_le_add hB_le_Bpow (le_refl _)
+              _ = (((n : ℝ) + 1) * B * A ^ (n + 1)) := by ring
+              _ = ((n + 1 : ℕ) : ℝ) * B * A ^ (n + 1) := by
+                    norm_num [Nat.cast_add, Nat.cast_one]
+        _ = ((n + 1 : ℕ) : ℝ) *
+              (((n + 1 : ℕ) : ℝ) ^ 2 *
+                householderConstructApplyBound fp (n + 1)) *
+              (1 + ((n + 1 : ℕ) : ℝ) ^ 2 *
+                (1 + householderConstructApplyBound fp (n + 1))) ^ (n + 1) := by
+            simp [A, B, C, sR]
+
 /-- The recursive QR RHS perturbation bound is nonnegative whenever the
     concrete Householder QR panel run is ready. -/
 theorem householderQRRhsPanelBackwardBound_nonneg (fp : FPModel) :
@@ -3016,5 +3170,43 @@ theorem fl_householderQR_solve_safe_backward_error_gammaHigham_rhsGrowth_of_glob
   refine hraw.mono le_rfl ?_
   exact householderQRRhsBackwardBoundSafe_le_growthCoeff_of_global_gammaValid
     fp n A b hbase_valid
+
+/-- Source-facing implementation-backed zero-aware Householder QR solve theorem
+    with a nonrecursive closed growth expression for the RHS perturbation
+    bound.
+
+    The RHS expression is conservative and locally derived from
+    `householderQRRhsGrowthCoeff_le_closedGrowth`; it should be read as a
+    convenient citation bound rather than Higham's sharp hidden constant. -/
+theorem fl_householderQR_solve_safe_backward_error_gammaHigham_rhsClosedGrowth_of_global_gammaValid
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex n))
+    (hdiag : ∀ i : Fin n, fl_householderQR_R_safe fp n A i i ≠ 0) :
+    QRSolveBackwardError n A b (fl_householderQR_solve_safe fp n A b)
+      ((gamma fp (n * householderConstructApplyGammaIndex n) * frobNorm A) +
+        gamma fp n * frobNorm (fl_householderQR_R_safe fp n A))
+      (((n : ℝ) * ((n : ℝ) ^ 2 * householderConstructApplyBound fp n) *
+          (1 + (n : ℝ) ^ 2 *
+            (1 + householderConstructApplyBound fp n)) ^ n) *
+        infNormVec b) := by
+  let K := householderConstructApplyGammaIndex n
+  have hK_le_nK : K ≤ n * K := by
+    have hn1 : 1 ≤ n := Nat.succ_le_of_lt hn
+    simpa using Nat.mul_le_mul_right K hn1
+  have hbase_le_K : 11 * n + 23 ≤ K := by
+    dsimp [K, householderConstructApplyGammaIndex]
+    omega
+  have hbase_valid : gammaValid fp (11 * n + 23) :=
+    gammaValid_mono fp (le_trans hbase_le_K hK_le_nK) hvalid
+  have hraw :=
+    fl_householderQR_solve_safe_backward_error_gammaHigham_rhsGrowth_of_global_gammaValid
+      fp n A b hn hvalid hdiag
+  refine hraw.mono le_rfl ?_
+  exact mul_le_mul_of_nonneg_right
+    (householderQRRhsGrowthCoeff_le_closedGrowth fp n hbase_valid)
+    (infNormVec_nonneg b)
 
 end LeanFpAnalysis.FP
