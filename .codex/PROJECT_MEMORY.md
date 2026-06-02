@@ -537,6 +537,12 @@ These compile, but should not be treated as fully derived stability results:
   step shrinks nonempty panels using `fl_householderTrailingPanelStep`.  It does
   not yet store the accumulated `Q` or completed `R` rows, so it is not a full
   QR algorithm definition yet.
+- Added `householderPanelStateStep_nonempty_residual_and_shape`, the state-level
+  one-step bridge.  For a nonempty active panel, the concrete state transition
+  has a residual representation for the next active panel and reuses the exact
+  top-left/first-column-tail-zero facts for the underlying reflector step.
+  Remaining QR work: induction over `householderPanelStateIterate`, plus a
+  richer state that records accumulated `Q` and completed `R` structure.
 
 ## 2026-04-26 Fix Pass
 

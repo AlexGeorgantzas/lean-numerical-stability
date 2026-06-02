@@ -1016,6 +1016,47 @@ theorem fl_householderTrailingPanelStep_residual
     simpa [fl_householderTrailingPanelStep, trailingPanel, P] using h
   · exact le_trans (frobNorm_trailingPanel_le Efull) hEfull
 
+/-- One nonempty active-panel state step, packaged with the residual bound for
+    the next active panel and the exact shape facts for the full reflector
+    application.
+
+    This is the state-level version of
+    `fl_householderTrailingPanelStep_residual` plus the exact first-column
+    triangularization lemmas.  It is still a one-step result; the full QR loop
+    requires induction over this theorem. -/
+theorem householderPanelStateStep_nonempty_residual_and_shape
+    (fp : FPModel) {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (hx : panelFirstColumn (Nat.succ_pos p) A ≠ 0)
+    (hvalid : gammaValid fp (11 * (m + 1) + 23)) :
+    let P : Fin (m + 1) → Fin (m + 1) → ℝ :=
+      householder (m + 1)
+        (householderNormalizedVector (m + 1)
+          (householderVector (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A))
+          (householderBetaFromScale (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A))) 1
+    ∃ E : Fin m → Fin p → ℝ,
+      (∀ i j,
+        (householderPanelStateStep fp ⟨m + 1, p + 1, A⟩).panel i j =
+          trailingPanel (matMulRect (m + 1) (m + 1) (p + 1) P A) i j +
+            E i j) ∧
+      frobNorm E ≤
+        householderConstructApplyBound fp (m + 1) * frobNorm A ∧
+      panelTopLeft (matMulRect (m + 1) (m + 1) (p + 1) P A) =
+        -householderScale (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A) ∧
+      panelFirstColumnTailZero
+        (matMulRect (m + 1) (m + 1) (p + 1) P A) := by
+  intro P
+  obtain ⟨E, hErep, hEbound⟩ :=
+    fl_householderTrailingPanelStep_residual fp A hx hvalid
+  refine ⟨E, ?_, hEbound, ?_, ?_⟩
+  · intro i j
+    simpa [householderPanelStateStep, P] using hErep i j
+  · simpa [P] using householder_panel_exact_topLeft A hx
+  · simpa [P] using householder_panel_exact_firstColumnTailZero A hx
+
 /-- Repeated rectangular panel sequence where each reflector is constructed
     from the current panel's first column.
 
