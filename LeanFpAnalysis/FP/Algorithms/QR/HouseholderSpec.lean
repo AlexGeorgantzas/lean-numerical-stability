@@ -180,6 +180,101 @@ structure HouseholderVectorError (n : ℕ) (v v_hat : Fin n → ℝ)
     (∀ i, v_hat i = v i + Δv i) ∧
     ∀ i, |Δv i| ≤ eps * |v i|
 
+/-- Equation (18.3) also gives `∑ |v_i|² = 2` for the normalized exact
+    Householder vector. -/
+theorem householderVectorError_sum_abs_sq {n : ℕ} {v v_hat : Fin n → ℝ}
+    {eps : ℝ} (hvec : HouseholderVectorError n v v_hat eps) :
+    (∑ i : Fin n, |v i| ^ 2) = 2 := by
+  calc
+    (∑ i : Fin n, |v i| ^ 2)
+        = ∑ i : Fin n, v i * v i := by
+          apply Finset.sum_congr rfl
+          intro i _
+          rw [sq_abs, pow_two]
+    _ = 2 := hvec.norm_sq
+
+/-- Componentwise consequence of equation (18.3):
+    `|v_hat_i| ≤ (1 + eps)|v_i|`. -/
+theorem householderVectorError_vhat_abs_le {n : ℕ} {v v_hat : Fin n → ℝ}
+    {eps : ℝ} (hvec : HouseholderVectorError n v v_hat eps) :
+    ∀ i : Fin n, |v_hat i| ≤ (1 + eps) * |v i| := by
+  obtain ⟨Δv, hvhat, hΔv⟩ := hvec.pert
+  intro i
+  calc
+    |v_hat i| = |v i + Δv i| := by rw [hvhat i]
+    _ ≤ |v i| + |Δv i| := abs_add_le (v i) (Δv i)
+    _ ≤ |v i| + eps * |v i| := by
+      linarith [hΔv i]
+    _ = (1 + eps) * |v i| := by ring
+
+/-- Relative-factor form of equation (18.3): if
+    `v_hat = v + Δv` with `|Δv_i| ≤ eps |v_i|`, then
+    `v_hat_i = v_i(1+alpha_i)` with `|alpha_i| ≤ eps`.
+
+    The zero-component case is forced by the componentwise bound: if `v_i = 0`
+    then `Δv_i = 0`, so taking `alpha_i = 0` is valid. -/
+theorem householderVectorError_relative_factors {n : ℕ}
+    {v v_hat : Fin n → ℝ} {eps : ℝ}
+    (hvec : HouseholderVectorError n v v_hat eps) (heps : 0 ≤ eps) :
+    ∃ alpha : Fin n → ℝ,
+      (∀ i : Fin n, |alpha i| ≤ eps) ∧
+      ∀ i : Fin n, v_hat i = v i * (1 + alpha i) := by
+  classical
+  obtain ⟨Δv, hvhat, hΔv⟩ := hvec.pert
+  let alpha : Fin n → ℝ := fun i => if v i = 0 then 0 else Δv i / v i
+  refine ⟨alpha, ?_, ?_⟩
+  · intro i
+    unfold alpha
+    by_cases hv : v i = 0
+    · simp [hv, heps]
+    · simp [hv]
+      have hvabs : 0 < |v i| := abs_pos.mpr hv
+      calc
+        |Δv i / v i| = |Δv i| / |v i| := abs_div _ _
+        _ ≤ (eps * |v i|) / |v i| :=
+          div_le_div_of_nonneg_right (hΔv i) (le_of_lt hvabs)
+        _ = eps := by
+          field_simp [hvabs.ne']
+  · intro i
+    unfold alpha
+    by_cases hv : v i = 0
+    · have hΔ_zero : Δv i = 0 := by
+        have hbd := hΔv i
+        rw [hv, abs_zero, mul_zero] at hbd
+        exact abs_eq_zero.mp (le_antisymm hbd (abs_nonneg _))
+      rw [hvhat i, hv, hΔ_zero]
+      simp
+    · rw [hvhat i]
+      simp [hv]
+      field_simp [hv]
+
+/-- Squared-sum bound for the computed normalized Householder vector implied
+    by equation (18.3). -/
+theorem householderVectorError_vhat_abs_sq_sum_le {n : ℕ}
+    {v v_hat : Fin n → ℝ} {eps : ℝ}
+    (hvec : HouseholderVectorError n v v_hat eps) (heps : 0 ≤ eps) :
+    (∑ i : Fin n, |v_hat i| ^ 2) ≤ 2 * (1 + eps) ^ 2 := by
+  have hle := householderVectorError_vhat_abs_le hvec
+  calc
+    (∑ i : Fin n, |v_hat i| ^ 2)
+        ≤ ∑ i : Fin n, ((1 + eps) * |v i|) ^ 2 := by
+          apply Finset.sum_le_sum
+          intro i _
+          have hscale_nonneg : 0 ≤ (1 + eps) * |v i| :=
+            mul_nonneg (by linarith) (abs_nonneg _)
+          have hdiff : 0 ≤ (1 + eps) * |v i| - |v_hat i| := by
+            linarith [hle i]
+          nlinarith [sq_nonneg ((1 + eps) * |v i| - |v_hat i|),
+            abs_nonneg (v_hat i), hscale_nonneg]
+    _ = (1 + eps) ^ 2 * (∑ i : Fin n, |v i| ^ 2) := by
+      rw [Finset.mul_sum]
+      apply Finset.sum_congr rfl
+      intro i _
+      ring
+    _ = 2 * (1 + eps) ^ 2 := by
+      rw [householderVectorError_sum_abs_sq hvec]
+      ring
+
 /-- **Backward error model for Householder application** (Lemma 18.2).
 
     When a Householder matrix P is applied to a vector b in

@@ -547,6 +547,44 @@ lemma frobNorm_sq {m n : ℕ} (A : RMatFn m n) :
   rw [frobNorm_eq_sqrt_frobNormSq]
   rw [sq, Real.mul_self_sqrt (frobNormSq_nonneg A)]
 
+/-- A squared Frobenius bound gives the corresponding Frobenius bound. -/
+lemma frobNorm_le_of_frobNormSq_le_sq {m n : ℕ} (A : RMatFn m n) {c : ℝ}
+    (hc : 0 ≤ c) (h : frobNormSq A ≤ c ^ 2) :
+    frobNorm A ≤ c := by
+  rw [frobNorm_eq_sqrt_frobNormSq]
+  calc
+    Real.sqrt (frobNormSq A) ≤ Real.sqrt (c ^ 2) :=
+      Real.sqrt_le_sqrt h
+    _ = c := by
+      rw [Real.sqrt_sq_eq_abs, abs_of_nonneg hc]
+
+/-- Entrywise absolute-value bounds imply a squared Frobenius bound. -/
+lemma frobNormSq_le_sum_sq_of_entrywise_abs_le {m n : ℕ}
+    (A B : RMatFn m n)
+    (h : ∀ i : Fin m, ∀ j : Fin n, |A i j| ≤ B i j) :
+    frobNormSq A ≤ ∑ i : Fin m, ∑ j : Fin n, (B i j) ^ 2 := by
+  unfold frobNormSq
+  apply Finset.sum_le_sum
+  intro i _
+  apply Finset.sum_le_sum
+  intro j _
+  have hB : 0 ≤ B i j := le_trans (abs_nonneg _) (h i j)
+  have habs : |A i j| ≤ |B i j| := by
+    simpa [abs_of_nonneg hB] using h i j
+  have hsq : (A i j) ^ 2 ≤ (B i j) ^ 2 := (sq_le_sq).2 habs
+  simpa using hsq
+
+/-- Entrywise absolute-value bounds plus a squared-sum bound imply a
+    Frobenius norm bound. -/
+lemma frobNorm_le_of_entrywise_abs_le_sum_sq {m n : ℕ}
+    (A B : RMatFn m n) {c : ℝ}
+    (hentry : ∀ i : Fin m, ∀ j : Fin n, |A i j| ≤ B i j)
+    (hsum : (∑ i : Fin m, ∑ j : Fin n, (B i j) ^ 2) ≤ c ^ 2)
+    (hc : 0 ≤ c) :
+    frobNorm A ≤ c :=
+  frobNorm_le_of_frobNormSq_le_sq A hc
+    (le_trans (frobNormSq_le_sum_sq_of_entrywise_abs_le A B hentry) hsum)
+
 /-- ‖A‖_F = 0 iff A = 0. -/
 theorem frobNorm_eq_zero_iff {m n : ℕ} (A : RMatFn m n) :
     frobNorm A = 0 ↔ ∀ i j, A i j = 0 := by

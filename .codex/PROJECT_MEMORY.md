@@ -374,6 +374,14 @@ These compile, but should not be treated as fully derived stability results:
   remaining Lemma 18.2 obligation: prove a Frobenius norm bound for that
   concrete delta matrix from `HouseholderVectorError` and the primitive error
   bounds.  This is not yet the full Lemma 18.2 stability theorem.
+- Added exact norm helpers in `MatrixAlgebra.lean` turning entrywise absolute
+  bounds into Frobenius bounds, plus `HouseholderVectorError` consequences in
+  `HouseholderSpec.lean`: sum-of-squares for the normalized vector, a
+  componentwise magnitude bound for the computed vector, and relative factors
+  `v_hat_i = v_i(1+alpha_i)`.  Added `HouseholderApply` factorization and
+  entrywise gamma theorems for the normalized application delta.  The current
+  next gap is now the final Frobenius summation estimate that turns these
+  entrywise gamma facts into a concrete `HouseholderAppError` bound.
 
 ## 2026-04-26 Fix Pass
 

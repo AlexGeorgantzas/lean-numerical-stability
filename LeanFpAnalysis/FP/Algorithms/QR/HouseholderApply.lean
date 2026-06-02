@@ -226,6 +226,142 @@ theorem fl_householderApply_matrix_unroll (fp : FPModel) (n : ℕ)
   rw [hmatrix]
   ring
 
+/-- Exact factorization of the concrete application perturbation matrix in
+    Higham's normalized Householder form `P = I - v vᵀ`.
+
+    This turns the additive vector perturbation model from equation (18.3) into
+    relative factors and exposes the product of all vector, dot-product,
+    multiplication, and subtraction errors.  The remaining Lemma 18.2 task is
+    to bound this factor product by a suitable `γ_cm`. -/
+theorem householderApplyDeltaMatrix_normalized_factorization (n : ℕ)
+    (v v_hat : Fin n → ℝ) (eps : ℝ)
+    (η : Fin n → ℝ) (δw : ℝ) (δmul δsub : Fin n → ℝ)
+    (hvec : HouseholderVectorError n v v_hat eps) (heps : 0 ≤ eps) :
+    ∃ alpha : Fin n → ℝ,
+      (∀ i : Fin n, |alpha i| ≤ eps) ∧
+      ∀ i j : Fin n,
+        householderApplyDeltaMatrix n (householder n v 1) v_hat 1
+            η δw δmul δsub i j =
+          idMatrix n i j * δsub i -
+            v i * v j *
+              (((1 + alpha i) * (1 + alpha j) * (1 + δw) *
+                (1 + δmul i) * (1 + η j) * (1 + δsub i)) - 1) := by
+  obtain ⟨alpha, hα, hvhat⟩ :=
+    householderVectorError_relative_factors hvec heps
+  refine ⟨alpha, hα, ?_⟩
+  intro i j
+  simp [householderApplyDeltaMatrix, householderApplyRoundedMatrix,
+    householder, hvhat i, hvhat j]
+  ring
+
+/-- Product-gamma bridge for the error factors in one normalized Householder
+    application.
+
+    The factors are, in order: the two vector-construction perturbations, the
+    scalar multiplication for `w`, the component multiplication, the dot-product
+    perturbation, and the final subtraction perturbation. -/
+theorem householderApply_error_factor_gamma (fp : FPModel) (a n : ℕ)
+    (αi αj η δw δmul δsub : ℝ)
+    (hαi : |αi| ≤ gamma fp a)
+    (hαj : |αj| ≤ gamma fp a)
+    (hη : |η| ≤ gamma fp n)
+    (hδw : |δw| ≤ fp.u)
+    (hδmul : |δmul| ≤ fp.u)
+    (hδsub : |δsub| ≤ fp.u)
+    (hvalid : gammaValid fp (2 * a + n + 3)) :
+    ∃ θ : ℝ,
+      |θ| ≤ gamma fp (2 * a + n + 3) ∧
+      (1 + αi) * (1 + αj) * (1 + δw) * (1 + δmul) *
+          (1 + η) * (1 + δsub) =
+        1 + θ := by
+  have hvalid_aa : gammaValid fp (a + a) :=
+    gammaValid_mono fp (by omega) hvalid
+  obtain ⟨θ1, hθ1, hprod1⟩ :=
+    gamma_mul fp a a αi αj hαi hαj hvalid_aa
+  have hδw_gamma : |δw| ≤ gamma fp 1 :=
+    le_trans hδw (u_le_gamma fp (by norm_num)
+      (gammaValid_mono fp (by omega) hvalid))
+  have hδmul_gamma : |δmul| ≤ gamma fp 1 :=
+    le_trans hδmul (u_le_gamma fp (by norm_num)
+      (gammaValid_mono fp (by omega) hvalid))
+  have hδsub_gamma : |δsub| ≤ gamma fp 1 :=
+    le_trans hδsub (u_le_gamma fp (by norm_num)
+      (gammaValid_mono fp (by omega) hvalid))
+  have hvalid_2 : gammaValid fp ((a + a) + 1) :=
+    gammaValid_mono fp (by omega) hvalid
+  obtain ⟨θ2, hθ2, hprod2⟩ :=
+    gamma_mul fp (a + a) 1 θ1 δw hθ1 hδw_gamma hvalid_2
+  have hvalid_3 : gammaValid fp (((a + a) + 1) + 1) :=
+    gammaValid_mono fp (by omega) hvalid
+  obtain ⟨θ3, hθ3, hprod3⟩ :=
+    gamma_mul fp ((a + a) + 1) 1 θ2 δmul hθ2 hδmul_gamma hvalid_3
+  have hvalid_4 : gammaValid fp ((((a + a) + 1) + 1) + n) :=
+    gammaValid_mono fp (by omega) hvalid
+  obtain ⟨θ4, hθ4, hprod4⟩ :=
+    gamma_mul fp (((a + a) + 1) + 1) n θ3 η hθ3 hη hvalid_4
+  have hvalid_5 : gammaValid fp (((((a + a) + 1) + 1) + n) + 1) :=
+    gammaValid_mono fp (by omega) hvalid
+  obtain ⟨θ5, hθ5, hprod5⟩ :=
+    gamma_mul fp ((((a + a) + 1) + 1) + n) 1 θ4 δsub
+      hθ4 hδsub_gamma hvalid_5
+  refine ⟨θ5, ?_, ?_⟩
+  · simpa [Nat.two_mul, Nat.add_assoc, Nat.add_comm, Nat.add_left_comm]
+      using hθ5
+  · calc
+      (1 + αi) * (1 + αj) * (1 + δw) * (1 + δmul) *
+          (1 + η) * (1 + δsub)
+          =
+            (((((1 + αi) * (1 + αj)) * (1 + δw)) *
+              (1 + δmul)) * (1 + η)) * (1 + δsub) := by
+                ring
+      _ = ((((1 + θ1) * (1 + δw)) * (1 + δmul)) *
+            (1 + η)) * (1 + δsub) := by rw [hprod1]
+      _ = (((1 + θ2) * (1 + δmul)) * (1 + η)) *
+            (1 + δsub) := by rw [hprod2]
+      _ = ((1 + θ3) * (1 + η)) * (1 + δsub) := by rw [hprod3]
+      _ = (1 + θ4) * (1 + δsub) := by rw [hprod4]
+      _ = 1 + θ5 := hprod5
+
+/-- Entrywise gamma form for the normalized Householder application delta.
+
+    If the computed Householder vector satisfies equation (18.3) with
+    `eps ≤ gamma fp a`, then every entry of the concrete perturbation matrix
+    has the algebraic form
+    `δ_ij δsub_i - v_i v_j θ_ij`, where `|θ_ij|` is bounded by the gamma count
+    for the two vector factors, the dot product, and the three scalar rounded
+    operations. -/
+theorem householderApplyDeltaMatrix_normalized_entry_gamma
+    (fp : FPModel) (a n : ℕ)
+    (v v_hat : Fin n → ℝ) (eps : ℝ)
+    (η : Fin n → ℝ) (δw : ℝ) (δmul δsub : Fin n → ℝ)
+    (hvec : HouseholderVectorError n v v_hat eps)
+    (heps_nonneg : 0 ≤ eps)
+    (heps_bound : eps ≤ gamma fp a)
+    (hη : ∀ j : Fin n, |η j| ≤ gamma fp n)
+    (hδw : |δw| ≤ fp.u)
+    (hδmul : ∀ i : Fin n, |δmul i| ≤ fp.u)
+    (hδsub : ∀ i : Fin n, |δsub i| ≤ fp.u)
+    (hvalid : gammaValid fp (2 * a + n + 3)) :
+    ∀ i j : Fin n,
+      ∃ θ : ℝ,
+        |θ| ≤ gamma fp (2 * a + n + 3) ∧
+        householderApplyDeltaMatrix n (householder n v 1) v_hat 1
+            η δw δmul δsub i j =
+          idMatrix n i j * δsub i - v i * v j * θ := by
+  obtain ⟨alpha, hα, hfact⟩ :=
+    householderApplyDeltaMatrix_normalized_factorization n v v_hat eps
+      η δw δmul δsub hvec heps_nonneg
+  intro i j
+  have hαi : |alpha i| ≤ gamma fp a := le_trans (hα i) heps_bound
+  have hαj : |alpha j| ≤ gamma fp a := le_trans (hα j) heps_bound
+  obtain ⟨θ, hθ, hprod⟩ :=
+    householderApply_error_factor_gamma fp a n (alpha i) (alpha j)
+      (η j) δw (δmul i) (δsub i)
+      hαi hαj (hη j) hδw (hδmul i) (hδsub i) hvalid
+  refine ⟨θ, hθ, ?_⟩
+  rw [hfact i j, hprod]
+  ring
+
 /-- If the concrete perturbation matrix extracted from the rounded
     Householder-application kernel has the required Frobenius bound, then the
     rounded kernel satisfies the `HouseholderAppError` contract.
