@@ -577,6 +577,12 @@ These compile, but should not be treated as fully derived stability results:
   algorithm whose upper-triangular shape is by construction, not by assuming
   rounded operations produce exact zeros.  A recursive triangularity lemma for
   this constructor is also available.
+- Added `fl_householderQRPanel_R` and square alias `fl_householderQR_R`, the
+  first recursive rounded Householder QR loop that returns an `R` panel.  It
+  applies the concrete rounded first-column reflector, stores the computed top
+  row, zeroes the completed first-column tail by construction, and recurses on
+  the computed trailing panel.  Proved `fl_householderQR_R_upper`; backward
+  error for this recursive loop is still pending.
 
 ## 2026-04-26 Fix Pass
 

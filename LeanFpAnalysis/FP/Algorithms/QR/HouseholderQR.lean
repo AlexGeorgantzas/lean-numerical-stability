@@ -1011,6 +1011,53 @@ noncomputable def fl_householderTrailingPanelStep (fp : FPModel)
         (fl_householderNormalizedVector fp (Nat.succ_pos m)
           (panelFirstColumn (Nat.succ_pos p) A)) 1 A i.succ j.succ := rfl
 
+/-- Recursive rounded Householder QR panel algorithm returning the `R` panel.
+
+    In a nonempty panel, it computes the rounded first-column Householder
+    application, stores the computed top row, sets the completed first-column
+    tail to zero by construction, and recurses on the computed trailing panel.
+    This is the concrete loop that the later backward-error theorem must
+    connect to the residual-sequence analysis. -/
+noncomputable def fl_householderQRPanel_R (fp : FPModel) :
+    (m p : ℕ) → (Fin m → Fin p → ℝ) → Fin m → Fin p → ℝ
+  | 0, _, A => A
+  | Nat.succ _, 0, A => A
+  | m + 1, p + 1, A =>
+      let Astep : Fin (m + 1) → Fin (p + 1) → ℝ :=
+        fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A)) 1 A
+      panelFromTopAndTrailing
+        (panelTopLeft Astep)
+        (panelTopRowTail Astep)
+        (fl_householderQRPanel_R fp m p (trailingPanel Astep))
+
+@[simp] theorem fl_householderQRPanel_R_zero_rows (fp : FPModel)
+    {p : ℕ} (A : Fin 0 → Fin p → ℝ) :
+    fl_householderQRPanel_R fp 0 p A = A := rfl
+
+@[simp] theorem fl_householderQRPanel_R_zero_cols (fp : FPModel)
+    {m : ℕ} (A : Fin (m + 1) → Fin 0 → ℝ) :
+    fl_householderQRPanel_R fp (m + 1) 0 A = A := rfl
+
+@[simp] theorem fl_householderQRPanel_R_succ_succ (fp : FPModel)
+    {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ) :
+    fl_householderQRPanel_R fp (m + 1) (p + 1) A =
+      let Astep : Fin (m + 1) → Fin (p + 1) → ℝ :=
+        fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A)) 1 A
+      panelFromTopAndTrailing
+        (panelTopLeft Astep)
+        (panelTopRowTail Astep)
+        (fl_householderQRPanel_R fp m p (trailingPanel Astep)) := rfl
+
+/-- Square specialization of the recursive rounded Householder QR `R`
+    algorithm. -/
+noncomputable def fl_householderQR_R (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fl_householderQRPanel_R fp n n A
+
 /-- Active trailing-panel state for a Householder QR loop.
 
     This state tracks only the active panel dimensions and entries.  It does
@@ -1464,6 +1511,30 @@ theorem IsUpperTriangular_panelFromTopAndTrailing {n : ℕ}
     · intro j hji
       have hjlt : j.val < i.val := Nat.succ_lt_succ_iff.mp hji
       simpa [IsUpperTriangular] using htail i j hjlt
+
+/-- The recursive rounded Householder QR `R` algorithm returns an
+    upper-triangular matrix by construction. -/
+theorem fl_householderQR_R_upper (fp : FPModel) :
+    ∀ (n : ℕ) (A : Fin n → Fin n → ℝ),
+      IsUpperTriangular n (fl_householderQR_R fp n A) := by
+  intro n
+  induction n with
+  | zero =>
+      intro A i
+      exact Fin.elim0 i
+  | succ n ih =>
+      intro A
+      let Astep : Fin (n + 1) → Fin (n + 1) → ℝ :=
+        fl_householderApplyMatrixRect fp (n + 1) (n + 1)
+          (fl_householderNormalizedVector fp (Nat.succ_pos n)
+            (panelFirstColumn (Nat.succ_pos n) A)) 1 A
+      change IsUpperTriangular (n + 1)
+        (panelFromTopAndTrailing (panelTopLeft Astep) (panelTopRowTail Astep)
+          (fl_householderQRPanel_R fp n n (trailingPanel Astep)))
+      exact IsUpperTriangular_panelFromTopAndTrailing
+        (panelTopLeft Astep) (panelTopRowTail Astep)
+        (fl_householderQRPanel_R fp n n (trailingPanel Astep))
+        (by simpa [fl_householderQR_R] using ih (trailingPanel Astep))
 
 /-- **Theorem 18.4**: Householder QR factorization backward error (normwise).
 
