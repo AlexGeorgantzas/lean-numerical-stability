@@ -843,6 +843,30 @@ theorem embedTrailingOne_orthogonal {m : ℕ}
       embedTrailingOne_idMatrix]
     rfl
 
+/-- Left multiplication by an embedded trailing-block matrix leaves the top row
+    of a rectangular panel unchanged. -/
+theorem embedTrailingOne_matMulRect_top_row {m p : ℕ}
+    (U : Fin m → Fin m → ℝ)
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ) (j : Fin (p + 1)) :
+    matMulRect (m + 1) (m + 1) (p + 1) (embedTrailingOne U) A 0 j =
+      A 0 j := by
+  unfold matMulRect
+  rw [Fin.sum_univ_succ]
+  simp
+
+/-- The trailing panel of an embedded trailing-block multiplication is the
+    smaller multiplication of the trailing panel. -/
+theorem trailingPanel_embedTrailingOne_matMulRect {m p : ℕ}
+    (U : Fin m → Fin m → ℝ)
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ) :
+    trailingPanel
+      (matMulRect (m + 1) (m + 1) (p + 1) (embedTrailingOne U) A) =
+        matMulRect m m p U (trailingPanel A) := by
+  ext i j
+  unfold trailingPanel matMulRect
+  rw [Fin.sum_univ_succ]
+  simp
+
 /-- Dropping first row and first column is the same as taking the trailing
     panel in either order. -/
 theorem trailingPanel_eq_dropFirstRow_dropFirstCol {m p : ℕ}

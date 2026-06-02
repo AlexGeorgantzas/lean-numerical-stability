@@ -567,6 +567,10 @@ These compile, but should not be treated as fully derived stability results:
   multiplication commutation, identity preservation, and orthogonality
   preservation.  This means an orthogonal active-panel reflector can now be
   lifted to a full-size orthogonal transformation.
+- Added rectangular panel action lemmas for `embedTrailingOne`: left
+  multiplication leaves the top row unchanged and the trailing panel becomes
+  the smaller `matMulRect` action on the old trailing panel.  These lemmas
+  connect full-size embedded transformations with active-panel updates.
 
 ## 2026-04-26 Fix Pass
 
