@@ -14,9 +14,11 @@ import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
+import Mathlib.Tactic.FieldSimp
 import LeanFpAnalysis.FP.Model
 import LeanFpAnalysis.FP.Analysis.Rounding
 import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
+import LeanFpAnalysis.FP.Algorithms.Norm2
 
 namespace LeanFpAnalysis.FP
 
@@ -40,6 +42,110 @@ noncomputable def givensRotation (n : ℕ) (p q : Fin n) (c s : ℝ) :
     else if i = q ∧ j = p then -s
     else if i = j then 1
     else 0
+
+-- ============================================================
+-- §18.5  Givens coefficient construction
+-- ============================================================
+
+/-- Exact denominator in Higham equation (18.14):
+    `sqrt(x_i^2 + x_j^2)`. -/
+noncomputable def givensDenom (xi xj : ℝ) : ℝ :=
+  Real.sqrt (xi ^ 2 + xj ^ 2)
+
+/-- Exact cosine coefficient in Higham equation (18.14). -/
+noncomputable def givensC (xi xj : ℝ) : ℝ :=
+  xi / givensDenom xi xj
+
+/-- Exact sine coefficient in Higham equation (18.14). -/
+noncomputable def givensS (xi xj : ℝ) : ℝ :=
+  xj / givensDenom xi xj
+
+/-- Two-vector used to reuse the existing rounded 2-norm kernel for Givens
+    coefficient construction. -/
+noncomputable def givensCoeffVector (xi xj : ℝ) : Fin 2 → ℝ :=
+  fun k => if k = 0 then xi else xj
+
+/-- Rounded denominator for Givens coefficient construction.  This deliberately
+    reuses `fl_norm2`, so the square-root/domain analysis is shared with the
+    lower-level norm kernel instead of being duplicated in the Givens file. -/
+noncomputable def fl_givensDenom (fp : FPModel) (xi xj : ℝ) : ℝ :=
+  fl_norm2 fp 2 (givensCoeffVector xi xj)
+
+/-- Rounded cosine coefficient using the rounded denominator. -/
+noncomputable def fl_givensC (fp : FPModel) (xi xj : ℝ) : ℝ :=
+  fp.fl_div xi (fl_givensDenom fp xi xj)
+
+/-- Rounded sine coefficient using the rounded denominator. -/
+noncomputable def fl_givensS (fp : FPModel) (xi xj : ℝ) : ℝ :=
+  fp.fl_div xj (fl_givensDenom fp xi xj)
+
+@[simp] theorem givensCoeffVector_zero (xi xj : ℝ) :
+    givensCoeffVector xi xj 0 = xi := by
+  simp [givensCoeffVector]
+
+@[simp] theorem givensCoeffVector_one (xi xj : ℝ) :
+    givensCoeffVector xi xj 1 = xj := by
+  simp [givensCoeffVector]
+
+theorem givensDenom_sq (xi xj : ℝ) :
+    givensDenom xi xj ^ 2 = xi ^ 2 + xj ^ 2 := by
+  unfold givensDenom
+  rw [Real.sq_sqrt]
+  exact add_nonneg (sq_nonneg xi) (sq_nonneg xj)
+
+theorem givensDenom_ne_zero {xi xj : ℝ}
+    (h : xi ^ 2 + xj ^ 2 ≠ 0) :
+    givensDenom xi xj ≠ 0 := by
+  intro hd
+  have hsq := givensDenom_sq xi xj
+  rw [hd] at hsq
+  have hzero : xi ^ 2 + xj ^ 2 = 0 := by
+    nlinarith
+  exact h hzero
+
+/-- Exact coefficients from (18.14) satisfy `c^2+s^2=1` whenever the source
+    two-vector is nonzero. -/
+theorem givensCoeff_norm_sq (xi xj : ℝ)
+    (h : xi ^ 2 + xj ^ 2 ≠ 0) :
+    givensC xi xj ^ 2 + givensS xi xj ^ 2 = 1 := by
+  let d := givensDenom xi xj
+  have hd : d ≠ 0 := givensDenom_ne_zero (xi := xi) (xj := xj) h
+  have hd_sq : d ^ 2 = xi ^ 2 + xj ^ 2 := givensDenom_sq xi xj
+  unfold givensC givensS
+  change (xi / d) ^ 2 + (xj / d) ^ 2 = 1
+  field_simp [hd]
+  nlinarith
+
+/-- The constructed exact rotation zeros the second component. -/
+theorem givensCoeff_zero_second (xi xj : ℝ) :
+    -givensS xi xj * xi + givensC xi xj * xj = 0 := by
+  unfold givensS givensC
+  by_cases hd : givensDenom xi xj = 0
+  · rw [hd]
+    simp
+  · field_simp [hd]
+    ring
+
+/-- The first transformed component is the exact Givens denominator. -/
+theorem givensCoeff_first_component (xi xj : ℝ)
+    (h : xi ^ 2 + xj ^ 2 ≠ 0) :
+    givensC xi xj * xi + givensS xi xj * xj = givensDenom xi xj := by
+  let d := givensDenom xi xj
+  have hd : d ≠ 0 := givensDenom_ne_zero (xi := xi) (xj := xj) h
+  have hd_sq : d ^ 2 = xi ^ 2 + xj ^ 2 := givensDenom_sq xi xj
+  unfold givensC givensS
+  change xi / d * xi + xj / d * xj = d
+  field_simp [hd]
+  nlinarith
+
+@[simp] theorem fl_givensDenom_unroll (fp : FPModel) (xi xj : ℝ) :
+    fl_givensDenom fp xi xj = fl_norm2 fp 2 (givensCoeffVector xi xj) := rfl
+
+@[simp] theorem fl_givensC_unroll (fp : FPModel) (xi xj : ℝ) :
+    fl_givensC fp xi xj = fp.fl_div xi (fl_givensDenom fp xi xj) := rfl
+
+@[simp] theorem fl_givensS_unroll (fp : FPModel) (xi xj : ℝ) :
+    fl_givensS fp xi xj = fp.fl_div xj (fl_givensDenom fp xi xj) := rfl
 
 /-- Concrete floating-point application of a Givens rotation with supplied
     exact parameters `c` and `s`.
@@ -401,6 +507,13 @@ theorem givensRotation_orthogonal (n : ℕ) (p q : Fin n) (c s : ℝ)
         · by_cases hjq : j = q
           · subst hjq; simp [Ne.symm hiq]
           · simp [Ne.symm hip, Ne.symm hiq]
+
+/-- The exact coefficients from (18.14) produce an orthogonal rotation. -/
+theorem givensRotation_constructed_orthogonal (n : ℕ) (p q : Fin n)
+    (xi xj : ℝ) (hpq : p ≠ q) (h : xi ^ 2 + xj ^ 2 ≠ 0) :
+    IsOrthogonal n (givensRotation n p q (givensC xi xj) (givensS xi xj)) :=
+  givensRotation_orthogonal n p q (givensC xi xj) (givensS xi xj) hpq
+    (givensCoeff_norm_sq xi xj h)
 
 -- ============================================================
 -- §18.5  Lemma 18.7: Givens application backward error

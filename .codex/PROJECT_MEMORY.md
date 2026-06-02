@@ -688,6 +688,14 @@ These compile, but should not be treated as fully derived stability results:
   `gamma fp 2 * ‖givensRotation n p q c s‖_F`.  This is implementation-backed
   for exact supplied `c,s`; rounded rotation-parameter construction and the
   full `fl_givens_qr` loop are still pending.
+- Added exact Givens coefficient construction from Higham (18.14):
+  `givensDenom`, `givensC`, and `givensS`, plus exact facts
+  `givensCoeff_norm_sq`, `givensCoeff_zero_second`,
+  `givensCoeff_first_component`, and `givensRotation_constructed_orthogonal`.
+  Added rounded coefficient kernels `fl_givensDenom`, `fl_givensC`, and
+  `fl_givensS`, with the denominator deliberately routed through the existing
+  `fl_norm2` kernel.  The next Givens target is the Lemma 18.6 relative-error
+  bridge from these concrete kernels to `ĉ = c(1+θ₄)` and `ŝ = s(1+θ'₄)`.
 - Added exact vector embedding algebra for the QR RHS recursion:
   `vectorTrailingPerturbation`, `embedTrailingOne_matMulVec_top`,
   `vectorTail_embedTrailingOne_matMulVec`, and
