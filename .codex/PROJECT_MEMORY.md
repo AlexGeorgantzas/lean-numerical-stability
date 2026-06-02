@@ -854,6 +854,10 @@ These compile, but should not be treated as fully derived stability results:
   `‖E‖_F ≤ householderConstructApplyBound fp (m+1) *
   ‖embedTrailingOne Qtail_hat‖_F`, using the existing rectangular residual
   aggregation theorem.
+- Added `fl_householderQRPanel_Qhat_safe_succ_succ_zero_residual_bound`, which
+  records the safe zero-column skip branch as an identity transformation on the
+  embedded trailing `Q_hat` accumulator with zero residual.  Future recursive
+  `Q_hat` accumulation proofs now have residual lemmas for both branch cases.
 - Added computed-factor `R_hat` wrappers:
   `fl_householderQR_computed_safe_R_hat_upper` and
   `fl_householderQR_computed_safe_R_hat_structured_backward_error_of_global_gammaValid`.

@@ -1497,6 +1497,45 @@ noncomputable def fl_householderQRPanel_Qhat_safe (fp : FPModel) :
         (fl_householderQRPanel_Qhat_safe fp m p (trailingPanel A)) := by
   simp [fl_householderQRPanel_Qhat_safe, hcol]
 
+/-- Residual form of one zero-column rounded `Q_hat` accumulator update.
+
+    When the active first column is zero, the safe QR loop skips the reflector.
+    The `Q_hat` accumulator is therefore just the embedded trailing accumulator,
+    equivalently an identity transformation plus zero residual. -/
+theorem fl_householderQRPanel_Qhat_safe_succ_succ_zero_residual_bound
+    (fp : FPModel) {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (hcol : panelFirstColumn (Nat.succ_pos p) A = 0) :
+    let Qtail_hat : Fin m → Fin m → ℝ :=
+      fl_householderQRPanel_Qhat_safe fp m p (trailingPanel A)
+    ∃ E : Fin (m + 1) → Fin (m + 1) → ℝ,
+      (∀ i j : Fin (m + 1),
+        fl_householderQRPanel_Qhat_safe fp (m + 1) (p + 1) A i j =
+          matMulRect (m + 1) (m + 1) (m + 1)
+            (idMatrix (m + 1)) (embedTrailingOne Qtail_hat) i j +
+              E i j) ∧
+      frobNorm E ≤ 0 * frobNorm (embedTrailingOne Qtail_hat) := by
+  dsimp only
+  let Qtail_hat : Fin m → Fin m → ℝ :=
+    fl_householderQRPanel_Qhat_safe fp m p (trailingPanel A)
+  let Z : Fin (m + 1) → Fin (m + 1) → ℝ := fun _ _ => 0
+  refine ⟨Z, ?_, ?_⟩
+  · intro i j
+    have hid :
+        matMulRect (m + 1) (m + 1) (m + 1)
+          (idMatrix (m + 1)) (embedTrailingOne Qtail_hat) =
+            embedTrailingOne Qtail_hat :=
+      matMulRect_id_left (m + 1) (m + 1) (embedTrailingOne Qtail_hat)
+    rw [fl_householderQRPanel_Qhat_safe_succ_succ_zero fp A hcol,
+      congr_fun (congr_fun hid i) j]
+    simp [Qtail_hat, Z]
+  · have hZ : frobNorm Z = 0 := by
+      rw [frobNorm_eq_zero_iff]
+      intro i j
+      rfl
+    rw [hZ]
+    simp
+
 @[simp] theorem fl_householderQRPanel_Qhat_safe_succ_succ_nonzero
     (fp : FPModel) {m p : ℕ}
     (A : Fin (m + 1) → Fin (p + 1) → ℝ)

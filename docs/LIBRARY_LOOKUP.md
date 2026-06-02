@@ -76,9 +76,12 @@ orthogonal witness that appears in the proved backward-error equation.  Use
 concrete rounded accumulated `Q_hat` object.
 `fl_householderQRPanel_Qhat_safe_succ_succ_nonzero_step_error` proves the
 one-step implementation-backed matrix-step error for each nonzero rounded
-`Q_hat` update, and
+`Q_hat` update,
+`fl_householderQRPanel_Qhat_safe_succ_succ_zero_residual_bound` records the
+zero-column skip branch as an identity update with zero residual, and
 `fl_householderQRPanel_Qhat_safe_succ_succ_nonzero_residual_bound` packages the
-same update as an exact Householder application plus a bounded residual matrix.
+nonzero update as an exact Householder application plus a bounded residual
+matrix.
 The computed-factor wrappers
 `fl_householderQR_computed_safe_R_hat_upper` and
 `fl_householderQR_computed_safe_R_hat_structured_backward_error_of_global_gammaValid`
