@@ -1053,6 +1053,13 @@ These compile, but should not be treated as fully derived stability results:
   now directly states a residual bound for the concrete tall rectangular
   product `Q_hat * R_hat`, derived from the rectangular computed-factor
   explicit-error package.
+- Added a source-facing single-gamma wrapper for the safe concrete Householder
+  QR solve.  `QRSolveBackwardError.mono` supports bound weakening, and
+  `fl_householderQR_solve_safe_backward_error_gammaHigham_of_global_gammaValid`
+  replaces the recursive QR coefficient in the final solve theorem by
+  `gamma fp (n * householderConstructApplyGammaIndex n) * ‖A‖_F`.  The
+  back-substitution contribution `gamma fp n * ‖R_safe‖_F` remains separate
+  because it belongs to the triangular solve stage.
 
 ## 2026-04-26 Fix Pass
 

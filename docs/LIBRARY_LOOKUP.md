@@ -195,6 +195,11 @@ show that the concrete rounded RHS transform and simultaneous `(R_safe, c_hat)`
 solve components are explained by the same `fl_householderQR_Q_safe` witness.
 The final `QRSolveBackwardError` remains existential in `Q` because its public
 statement only exposes the solved system perturbation.
+For the source-facing final safe solve theorem, use
+`fl_householderQR_solve_safe_backward_error_gammaHigham_of_global_gammaValid`;
+it replaces the QR-factorization part of the solve bound by the same explicit
+single-gamma Householder coefficient used in the QR factorization theorem,
+while keeping the separate back-substitution term.
 
 ## Main Dependency Chains
 

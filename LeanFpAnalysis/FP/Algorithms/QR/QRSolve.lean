@@ -42,8 +42,8 @@ open scoped BigOperators Matrix.Norms.Frobenius
 
     This is the final QR-solve contract.  The component-composition theorem
     below proves how QR factorization, `Qᵀb` application, and back substitution
-    combine into this contract.  A concrete `fl_qr_solve` loop is still a
-    separate implementation-backed bridge to build. -/
+    combine into this contract.  The zero-aware concrete
+    `fl_householderQR_solve_safe` bridge is proved at the end of this file. -/
 structure QRSolveBackwardError (n : ℕ)
     (A : Fin n → Fin n → ℝ) (b x_hat : Fin n → ℝ)
     (c_A c_b : ℝ) : Prop where
@@ -53,6 +53,18 @@ structure QRSolveBackwardError (n : ℕ)
     (∀ i, matMulVec n (fun a b => A a b + ΔA a b) x_hat i = b i + Δb i) ∧
     frobNorm ΔA ≤ c_A ∧
     (∀ i, |Δb i| ≤ c_b)
+
+/-- QR-solve backward-error bounds are monotone in the advertised matrix and
+    right-hand-side perturbation bounds. -/
+theorem QRSolveBackwardError.mono {n : ℕ}
+    {A : Fin n → Fin n → ℝ} {b x_hat : Fin n → ℝ}
+    {c_A c_b c_A' c_b' : ℝ}
+    (h : QRSolveBackwardError n A b x_hat c_A c_b)
+    (hA : c_A ≤ c_A') (hb : c_b ≤ c_b') :
+    QRSolveBackwardError n A b x_hat c_A' c_b' := by
+  obtain ⟨ΔA, Δb, hrep, hΔA, hΔb⟩ := h.result
+  exact ⟨⟨ΔA, Δb, hrep, le_trans hΔA hA, fun i =>
+    le_trans (hΔb i) hb⟩⟩
 
 /-- Rectangular active-panel contract for the right-hand-side transform in
     Householder QR solve.
@@ -2613,5 +2625,42 @@ theorem fl_householderQR_solve_safe_backward_error_of_global_gammaValid
     gammaValid_mono fp (by omega) hvalid
   exact fl_householderQR_solve_safe_backward_error fp n A b
     hn hready hdiag hgamma
+
+/-- Implementation-backed zero-aware Householder QR solve theorem with the QR
+    factorization part absorbed into the same single Higham-style `gamma` term
+    used by the Householder QR factorization theorem.
+
+    The final solve bound still contains the separate backward-substitution
+    contribution `gamma n * ‖R_safe‖_F`, because that is the triangular solve
+    stage, not the QR factorization stage. -/
+theorem fl_householderQR_solve_safe_backward_error_gammaHigham_of_global_gammaValid
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex n))
+    (hdiag : ∀ i : Fin n, fl_householderQR_R_safe fp n A i i ≠ 0) :
+    QRSolveBackwardError n A b (fl_householderQR_solve_safe fp n A b)
+      ((gamma fp (n * householderConstructApplyGammaIndex n) * frobNorm A) +
+        gamma fp n * frobNorm (fl_householderQR_R_safe fp n A))
+      (householderQRRhsBackwardBoundSafe fp n A b) := by
+  let K := householderConstructApplyGammaIndex n
+  have hK_le_nK : K ≤ n * K := by
+    have hn1 : 1 ≤ n := Nat.succ_le_of_lt hn
+    simpa using Nat.mul_le_mul_right K hn1
+  have hbase_le_K : 11 * n + 23 ≤ K := by
+    dsimp [K, householderConstructApplyGammaIndex]
+    omega
+  have hbase_valid : gammaValid fp (11 * n + 23) :=
+    gammaValid_mono fp (le_trans hbase_le_K hK_le_nK) hvalid
+  have hraw :=
+    fl_householderQR_solve_safe_backward_error_of_global_gammaValid
+      fp n A b hn hbase_valid hdiag
+  refine hraw.mono ?_ le_rfl
+  exact add_le_add
+    (mul_le_mul_of_nonneg_right
+      (householderQRBackwardCoeffSafe_le_gamma_higham fp n A hn hvalid)
+      (frobNorm_nonneg A))
+    le_rfl
 
 end LeanFpAnalysis.FP
