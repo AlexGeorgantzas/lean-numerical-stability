@@ -523,6 +523,14 @@ These compile, but should not be treated as fully derived stability results:
   top-left value of the underlying reflector step, and exact first-column tail
   zeroing.  This is the one-step implementation-backed panel bridge; remaining
   QR work is the dependent induction over shrinking panels and final packaging.
+- Added `IsUpperTriangular` and
+  `StructuredHouseholderQRBackwardError` in `HouseholderQR.lean`.  The original
+  `HouseholderQRBackwardError` remains the normwise backward-error contract
+  only; the structured contract explicitly includes the `R_hat` upper-triangular
+  shape requirement.  `structured_householder_qr_backward` is only a packaging
+  theorem from the old backward-error theorem plus a supplied triangularity
+  proof; the rebuild still has to prove triangularity from the concrete rounded
+  QR loop.
 
 ## 2026-04-26 Fix Pass
 

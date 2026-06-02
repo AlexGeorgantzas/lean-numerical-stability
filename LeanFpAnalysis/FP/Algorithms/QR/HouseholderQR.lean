@@ -1003,6 +1003,10 @@ theorem fl_householder_first_column_panel_sequence_backward_error
 -- §18.3  Theorem 18.4: Householder QR backward error
 -- ============================================================
 
+/-- Upper-triangular shape predicate for square QR `R` factors. -/
+def IsUpperTriangular (n : ℕ) (R : Fin n → Fin n → ℝ) : Prop :=
+  ∀ i j : Fin n, j.val < i.val → R i j = 0
+
 /-- **Theorem 18.4**: Householder QR factorization backward error (normwise).
 
     The computed R̂ from Householder QR satisfies A + ΔA = Q·R̂
@@ -1020,6 +1024,19 @@ structure HouseholderQRBackwardError (n : ℕ) (A R_hat : Fin n → Fin n → �
     (∀ i j, matMul n Q R_hat i j = A i j + ΔA i j) ∧
     frobNorm ΔA ≤ c_bound
 
+/-- QR backward-error contract including the structural fact that the computed
+    `R_hat` is upper triangular.
+
+    The older `HouseholderQRBackwardError` is the normwise backward-error part
+    only.  A full implementation-backed QR theorem should eventually prove this
+    stronger packaged contract from the concrete rounded QR loop. -/
+structure StructuredHouseholderQRBackwardError
+    (n : ℕ) (A R_hat : Fin n → Fin n → ℝ) (c_bound : ℝ) : Prop where
+  /-- Normwise Householder QR backward error. -/
+  backward : HouseholderQRBackwardError n A R_hat c_bound
+  /-- The returned `R_hat` has the expected upper-triangular shape. -/
+  upper : IsUpperTriangular n R_hat
+
 /-- Theorem 18.4 instantiation: n Householder steps with per-step error ≤ c
     yield total backward error ≤ n · c · ‖A‖_F. -/
 theorem householder_qr_backward (n : ℕ) (_hn : 0 < n)
@@ -1036,5 +1053,19 @@ theorem householder_qr_backward (n : ℕ) (_hn : 0 < n)
     have hQQT : matMul n Q (matTranspose Q) = idMatrix n :=
       funext fun a => funext fun b => hQ.right_inv a b
     rw [hR, ← matMul_assoc, hQQT, matMul_id_left], hbound⟩⟩
+
+/-- Structured QR contract derived from the existing backward-error theorem
+    plus a separately supplied upper-triangularity proof.
+
+    This is intentionally a packaging theorem, not the final end-to-end QR
+    result.  The rebuild still has to prove the `hUpper` input from the concrete
+    rounded Householder QR loop. -/
+theorem structured_householder_qr_backward (n : ℕ) (hn : 0 < n)
+    (A R_hat : Fin n → Fin n → ℝ) (c : ℝ) (hc : 0 ≤ c)
+    (hSeq : OrthogonalSequenceBackwardError n A R_hat n c)
+    (hUpper : IsUpperTriangular n R_hat) :
+    StructuredHouseholderQRBackwardError n A R_hat
+      (↑n * c * frobNorm A) := by
+  exact ⟨householder_qr_backward n hn A R_hat c hc hSeq, hUpper⟩
 
 end LeanFpAnalysis.FP
