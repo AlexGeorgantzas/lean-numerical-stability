@@ -583,6 +583,10 @@ These compile, but should not be treated as fully derived stability results:
   row, zeroes the completed first-column tail by construction, and recurses on
   the computed trailing panel.  Proved `fl_householderQR_R_upper`; backward
   error for this recursive loop is still pending.
+- Added projection lemmas for `fl_householderQRPanel_R`: the top-left entry
+  and top-row tail are the values computed by the current rounded panel step,
+  the completed first-column tail is structurally zero, and the trailing panel
+  is exactly the recursive output on `fl_householderTrailingPanelStep`.
 
 ## 2026-04-26 Fix Pass
 

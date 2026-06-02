@@ -1052,6 +1052,45 @@ noncomputable def fl_householderQRPanel_R (fp : FPModel) :
         (panelTopRowTail Astep)
         (fl_householderQRPanel_R fp m p (trailingPanel Astep)) := rfl
 
+/-- The recursive QR `R` algorithm stores the computed top-left entry from the
+    current rounded Householder panel step. -/
+theorem panelTopLeft_fl_householderQRPanel_R_succ_succ (fp : FPModel)
+    {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ) :
+    panelTopLeft (fl_householderQRPanel_R fp (m + 1) (p + 1) A) =
+      panelTopLeft
+        (fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A)) 1 A) := by
+  simp [fl_householderQRPanel_R]
+
+/-- The recursive QR `R` algorithm stores the computed top-row tail from the
+    current rounded Householder panel step. -/
+theorem panelTopRowTail_fl_householderQRPanel_R_succ_succ (fp : FPModel)
+    {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ) :
+    panelTopRowTail (fl_householderQRPanel_R fp (m + 1) (p + 1) A) =
+      panelTopRowTail
+        (fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A)) 1 A) := by
+  simp [fl_householderQRPanel_R]
+
+/-- The recursive QR `R` algorithm makes the completed first-column tail
+    structurally zero. -/
+theorem panelFirstColumnTailZero_fl_householderQRPanel_R_succ_succ
+    (fp : FPModel) {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ) :
+    panelFirstColumnTailZero
+      (fl_householderQRPanel_R fp (m + 1) (p + 1) A) := by
+  simp [fl_householderQRPanel_R]
+
+/-- The recursive QR `R` algorithm recurses exactly on the concrete rounded
+    trailing-panel step. -/
+theorem trailingPanel_fl_householderQRPanel_R_succ_succ (fp : FPModel)
+    {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ) :
+    trailingPanel (fl_householderQRPanel_R fp (m + 1) (p + 1) A) =
+      fl_householderQRPanel_R fp m p (fl_householderTrailingPanelStep fp A) := by
+  simp [fl_householderQRPanel_R, fl_householderTrailingPanelStep]
+
 /-- Square specialization of the recursive rounded Householder QR `R`
     algorithm. -/
 noncomputable def fl_householderQR_R (fp : FPModel) (n : ℕ)
