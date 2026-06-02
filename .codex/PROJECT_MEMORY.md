@@ -645,6 +645,11 @@ These compile, but should not be treated as fully derived stability results:
   `fl_householder_first_column_rhs_step_residual`.  These expose the computed
   RHS update as `P*b + e` with `e = ΔP*b`, using the same panel-selected
   Householder reflector as the QR factorization step.
+- Added exact vector embedding algebra for the QR RHS recursion:
+  `vectorTrailingPerturbation`, `embedTrailingOne_matMulVec_top`,
+  `vectorTail_embedTrailingOne_matMulVec`, and
+  `vectorFromTopTail_lift_trailing_rep`.  These are the vector analogues of the
+  panel block-lift lemmas and prepare the recursive RHS backward-error proof.
 
 ## 2026-04-26 Fix Pass
 

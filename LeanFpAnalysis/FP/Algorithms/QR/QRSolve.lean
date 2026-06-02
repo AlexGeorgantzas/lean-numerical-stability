@@ -65,6 +65,12 @@ noncomputable def vectorFromTopTail {m : ℕ}
   fun i =>
     if hi : i = 0 then b0 else tail (i.pred hi)
 
+/-- Embed a tail-vector perturbation into a nonempty vector with zero first
+    component. -/
+noncomputable def vectorTrailingPerturbation {m : ℕ}
+    (tail : Fin m → ℝ) : Fin (m + 1) → ℝ :=
+  vectorFromTopTail 0 tail
+
 @[simp] theorem vectorTail_apply {m : ℕ}
     (b : Fin (m + 1) → ℝ) (i : Fin m) :
     vectorTail b i = b i.succ := rfl
@@ -84,6 +90,59 @@ noncomputable def vectorFromTopTail {m : ℕ}
     vectorTail (vectorFromTopTail b0 tail) = tail := by
   ext i
   rfl
+
+@[simp] theorem vectorTrailingPerturbation_zero {m : ℕ}
+    (tail : Fin m → ℝ) :
+    vectorTrailingPerturbation tail 0 = 0 := by
+  rfl
+
+@[simp] theorem vectorTrailingPerturbation_succ {m : ℕ}
+    (tail : Fin m → ℝ) (i : Fin m) :
+    vectorTrailingPerturbation tail i.succ = tail i := by
+  rfl
+
+/-- Left multiplication by an embedded trailing-block matrix leaves the top
+    component of a vector unchanged. -/
+theorem embedTrailingOne_matMulVec_top {m : ℕ}
+    (U : Fin m → Fin m → ℝ) (b : Fin (m + 1) → ℝ) :
+    matMulVec (m + 1) (embedTrailingOne U) b 0 = b 0 := by
+  unfold matMulVec
+  rw [Fin.sum_univ_succ]
+  simp
+
+/-- The tail of an embedded trailing-block matrix-vector product is the smaller
+    matrix-vector product on the vector tail. -/
+theorem vectorTail_embedTrailingOne_matMulVec {m : ℕ}
+    (U : Fin m → Fin m → ℝ) (b : Fin (m + 1) → ℝ) :
+    vectorTail (matMulVec (m + 1) (embedTrailingOne U) b) =
+      matMulVec m U (vectorTail b) := by
+  ext i
+  unfold vectorTail matMulVec
+  rw [Fin.sum_univ_succ]
+  simp
+
+/-- Lift a tail-vector backward representation to the full vector by embedding
+    the trailing orthogonal factor with a leading identity. -/
+theorem vectorFromTopTail_lift_trailing_rep {m : ℕ}
+    (Q : Fin m → Fin m → ℝ)
+    (b0 : ℝ) (tail ctail Δtail : Fin m → ℝ)
+    (hTail : ∀ i, ctail i =
+      matMulVec m (matTranspose Q) (fun k => tail k + Δtail k) i) :
+    vectorFromTopTail b0 ctail =
+      matMulVec (m + 1) (embedTrailingOne (matTranspose Q))
+        (fun i => vectorFromTopTail b0 tail i +
+          vectorTrailingPerturbation Δtail i) := by
+  ext i
+  refine Fin.cases ?_ ?_ i
+  · unfold matMulVec
+    rw [Fin.sum_univ_succ]
+    simp
+  · intro i
+    simp only [vectorFromTopTail_succ]
+    rw [hTail i]
+    unfold matMulVec
+    rw [Fin.sum_univ_succ]
+    simp
 
 /-- Recursive rounded application of the Householder QR reflector sequence to
     a right-hand side.
