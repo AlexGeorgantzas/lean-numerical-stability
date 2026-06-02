@@ -2170,6 +2170,36 @@ theorem fl_householderQRPanel_R_backward_error (fp : FPModel) :
           simpa [fl_householderQRPanel_R, householderQRPanelBackwardCoeff,
             S, Ahat, P, fl_householderTrailingPanelStep] using hCons
 
+/-- Convert the square rectangular-panel QR representation
+    `R = Qᵀ(A + ΔA)` to the existing square QR backward-error contract
+    `Q R = A + ΔA`. -/
+theorem householder_qr_panel_backward_to_square {n : ℕ}
+    (A R_hat : Fin n → Fin n → ℝ) (c_bound : ℝ)
+    (hPanel : HouseholderQRPanelBackwardError n n A R_hat c_bound) :
+    HouseholderQRBackwardError n A R_hat c_bound := by
+  obtain ⟨Q, ΔA, hQ, hR, hΔ⟩ := hPanel.result
+  refine ⟨⟨Q, ΔA, hQ, ?_, hΔ⟩⟩
+  intro i j
+  have hRmat :
+      R_hat = matMul n (matTranspose Q) (fun a b => A a b + ΔA a b) := by
+    ext a b
+    simpa [matMul, matMulRect] using hR a b
+  have hQQT : matMul n Q (matTranspose Q) = idMatrix n := by
+    ext a b
+    exact hQ.right_inv a b
+  rw [hRmat, ← matMul_assoc, hQQT, matMul_id_left]
+
+/-- Implementation-backed square backward-error theorem for the concrete
+    recursive rounded Householder QR `R` algorithm. -/
+theorem fl_householderQR_R_backward_error (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (hready : HouseholderQRPanelReady fp n n A) :
+    HouseholderQRBackwardError n A (fl_householderQR_R fp n A)
+      (householderQRBackwardCoeff fp n * frobNorm A) := by
+  apply householder_qr_panel_backward_to_square
+  simpa [fl_householderQR_R, householderQRBackwardCoeff] using
+    fl_householderQRPanel_R_backward_error fp n n A hready
+
 /-- QR backward-error contract including the structural fact that the computed
     `R_hat` is upper triangular.
 
@@ -2213,5 +2243,19 @@ theorem structured_householder_qr_backward (n : ℕ) (hn : 0 < n)
     StructuredHouseholderQRBackwardError n A R_hat
       (↑n * c * frobNorm A) := by
   exact ⟨householder_qr_backward n hn A R_hat c hc hSeq, hUpper⟩
+
+/-- Implementation-backed structured QR theorem for the concrete recursive
+    rounded Householder QR `R` algorithm.
+
+    This theorem combines the recursive panel backward-error bridge with the
+    structural fact that `fl_householderQR_R` returns an upper-triangular
+    matrix by construction. -/
+theorem fl_householderQR_R_structured_backward_error (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (hready : HouseholderQRPanelReady fp n n A) :
+    StructuredHouseholderQRBackwardError n A (fl_householderQR_R fp n A)
+      (householderQRBackwardCoeff fp n * frobNorm A) := by
+  exact ⟨fl_householderQR_R_backward_error fp n A hready,
+    fl_householderQR_R_upper fp n A⟩
 
 end LeanFpAnalysis.FP

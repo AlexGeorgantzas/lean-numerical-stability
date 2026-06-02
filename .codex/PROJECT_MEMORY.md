@@ -621,6 +621,13 @@ These compile, but should not be treated as fully derived stability results:
   the rectangular/panel-level bridge from concrete QR recursion to
   `HouseholderQRPanelBackwardError`; the remaining QR work is the square wrapper
   into `HouseholderQRBackwardError`/`StructuredHouseholderQRBackwardError`.
+- Proved the square wrappers:
+  `householder_qr_panel_backward_to_square`,
+  `fl_householderQR_R_backward_error`, and
+  `fl_householderQR_R_structured_backward_error`.  The concrete recursive
+  Householder QR `R` algorithm now satisfies the existing structured QR
+  backward-error contract, with the explicit `HouseholderQRPanelReady`
+  assumptions and recursive coefficient `householderQRBackwardCoeff`.
 
 ## 2026-04-26 Fix Pass
 
