@@ -2541,9 +2541,12 @@ theorem fl_householderQR_solve_safe_backward_error (fp : FPModel) (n : ℕ)
       (householderQRRhsBackwardBoundSafe fp n A b) := by
   let R_hat : Fin n → Fin n → ℝ := fl_householderQR_R_safe fp n A
   let c_hat : Fin n → ℝ := fl_householderQR_rhs_safe fp n A b
+  let Q : Fin n → Fin n → ℝ := fl_householderQR_Q_safe fp n A
   have hComp :=
-    fl_householderQR_solve_components_safe_backward_error fp n A b hready
-  obtain ⟨Q, ΔA₁, Δb, hQ, hR, hQb, hΔA₁, hΔb⟩ := hComp.result
+    fl_householderQR_solve_components_safe_fixed_Q_safe_backward_error
+      fp n A b hready
+  obtain ⟨ΔA₁, Δb, hR, hQb, hΔA₁, hΔb⟩ := hComp.result
+  have hQ : IsOrthogonal n Q := hComp.orth
   have hQR : ∀ i j, matMul n Q R_hat i j = A i j + ΔA₁ i j := by
     intro i j
     have hRmat :

@@ -963,6 +963,10 @@ These compile, but should not be treated as fully derived stability results:
   explicit `fl_householderQR_Q_safe` witness.  The final
   `QRSolveBackwardError` remains existential in `Q` because its public solved
   system statement does not expose the factor.
+- The proof of `fl_householderQR_solve_safe_backward_error` now consumes
+  `fl_householderQR_solve_components_safe_fixed_Q_safe_backward_error`
+  directly, so the final safe solve theorem is proved through the fixed
+  `Q_safe` component bridge even though its public statement hides `Q`.
 
 ## 2026-04-26 Fix Pass
 
