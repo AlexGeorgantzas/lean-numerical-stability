@@ -1846,6 +1846,53 @@ structure HouseholderQRBackwardError (n : ℕ) (A R_hat : Fin n → Fin n → �
     (∀ i j, matMul n Q R_hat i j = A i j + ΔA i j) ∧
     frobNorm ΔA ≤ c_bound
 
+/-- Rectangular panel form of the QR backward-error target.
+
+    This is the natural induction target for the recursive implementation:
+    the active panel may be rectangular even when the original problem is
+    square.  It records the equivalent representation
+    `R_hat = Qᵀ(A + ΔA)`; the square wrapper later converts this to
+    `A + ΔA = Q R_hat`. -/
+structure HouseholderQRPanelBackwardError (m p : ℕ)
+    (A R_hat : Fin m → Fin p → ℝ) (c_bound : ℝ) : Prop where
+  /-- There exist an orthogonal `Q` and bounded panel perturbation `ΔA`. -/
+  result : ∃ (Q : Fin m → Fin m → ℝ) (ΔA : Fin m → Fin p → ℝ),
+    IsOrthogonal m Q ∧
+    (∀ i j, R_hat i j =
+      matMulRect m m p (matTranspose Q)
+        (fun a b => A a b + ΔA a b) i j) ∧
+    frobNorm ΔA ≤ c_bound
+
+/-- Empty-row panels satisfy the rectangular QR backward-error target
+    trivially. -/
+theorem householder_qr_panel_backward_zero_rows (p : ℕ)
+    (A : Fin 0 → Fin p → ℝ) :
+    HouseholderQRPanelBackwardError 0 p A A 0 := by
+  let Z : Fin 0 → Fin p → ℝ := fun _ _ => 0
+  refine ⟨⟨idMatrix 0, Z, idMatrix_orthogonal 0, ?_, ?_⟩⟩
+  · intro i
+    exact Fin.elim0 i
+  · have hZ : frobNorm Z = 0 := by
+      rw [frobNorm_eq_zero_iff]
+      intro i
+      exact Fin.elim0 i
+    simp [Z, hZ]
+
+/-- Empty-column panels satisfy the rectangular QR backward-error target
+    trivially. -/
+theorem householder_qr_panel_backward_zero_cols (m : ℕ)
+    (A : Fin (m + 1) → Fin 0 → ℝ) :
+    HouseholderQRPanelBackwardError (m + 1) 0 A A 0 := by
+  let Z : Fin (m + 1) → Fin 0 → ℝ := fun _ _ => 0
+  refine ⟨⟨idMatrix (m + 1), Z, idMatrix_orthogonal (m + 1), ?_, ?_⟩⟩
+  · intro i j
+    exact Fin.elim0 j
+  · have hZ : frobNorm Z = 0 := by
+      rw [frobNorm_eq_zero_iff]
+      intro i j
+      exact Fin.elim0 j
+    simp [Z, hZ]
+
 /-- QR backward-error contract including the structural fact that the computed
     `R_hat` is upper triangular.
 

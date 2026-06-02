@@ -605,6 +605,11 @@ These compile, but should not be treated as fully derived stability results:
 - Added `householderQRPanelBackwardCoeff` and square alias
   `householderQRBackwardCoeff`, the recursive coefficient intended for the
   future implementation-backed QR backward-error induction.
+- Added `HouseholderQRPanelBackwardError`, the rectangular induction target for
+  the recursive QR implementation, plus trivial empty-row and empty-column base
+  cases.  This target records `R_hat = Qᵀ(A + ΔA)` for rectangular panels; the
+  square wrapper still needs to convert it to the existing
+  `HouseholderQRBackwardError` form.
 
 ## 2026-04-26 Fix Pass
 
