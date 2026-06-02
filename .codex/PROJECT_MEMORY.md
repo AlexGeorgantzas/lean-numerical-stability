@@ -1060,6 +1060,16 @@ These compile, but should not be treated as fully derived stability results:
   `gamma fp (n * householderConstructApplyGammaIndex n) * ‖A‖_F`.  The
   back-substitution contribution `gamma fp n * ‖R_safe‖_F` remains separate
   because it belongs to the triangular solve stage.
+- Added the first closed-form bridge for the safe Householder QR RHS bound in
+  `QR/QRSolve.lean`.  `vectorTail_infNormVec_le` is exact indexing algebra;
+  `fl_householder_first_column_rhs_step_infNormVec_le` and
+  `vectorTail_fl_householder_first_column_rhs_step_infNormVec_le` derive
+  one-step RHS norm growth from the concrete `fl_householderApply` bridge.
+  The dimension-only coefficient `householderQRRhsGrowthCoeff` then controls
+  the raw recursive RHS perturbation bound via
+  `householderQRRhsBackwardBoundSafe_le_growthCoeff_of_global_gammaValid`.
+  This does not change the final solve theorem yet, but it removes the main
+  obstacle to replacing the printed RHS bound by a coefficient times `‖b‖∞`.
 
 ## 2026-04-26 Fix Pass
 

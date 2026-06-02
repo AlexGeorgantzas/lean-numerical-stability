@@ -200,6 +200,18 @@ For the source-facing final safe solve theorem, use
 it replaces the QR-factorization part of the solve bound by the same explicit
 single-gamma Householder coefficient used in the QR factorization theorem,
 while keeping the separate back-substitution term.
+For the RHS perturbation side, the raw implementation-backed theorem still
+uses the recursive bound `householderQRRhsBackwardBoundSafe`, because that
+bound follows the actual computed intermediate right-hand sides.  To eliminate
+those intermediate vectors from estimates, use
+`householderQRRhsGrowthCoeff` together with
+`householderQRRhsBackwardBoundSafe_le_growthCoeff_of_global_gammaValid`, which
+proves
+`householderQRRhsBackwardBoundSafe fp n A b ≤ householderQRRhsGrowthCoeff fp n * infNormVec b`.
+The one-step ingredients are
+`fl_householder_first_column_rhs_step_infNormVec_le`,
+`vectorTail_fl_householder_first_column_rhs_step_infNormVec_le`, and the exact
+tail lemma `vectorTail_infNormVec_le`.
 
 ## Main Dependency Chains
 
