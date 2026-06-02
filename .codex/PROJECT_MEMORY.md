@@ -888,6 +888,18 @@ These compile, but should not be treated as fully derived stability results:
   `frobNorm_embedTrailingOne_of_orthogonal`.  These make explicit that
   embedding a trailing block adds exactly the leading identity contribution to
   the Frobenius square.
+- Added the first recursive accumulated `Q_hat` perturbation theorem.  The raw
+  recursive bound is `householderQRPanel_QhatAccumBound`, the contract shape is
+  `HouseholderQRPanelQhatAccumError`, and the algebraic one-step extension is
+  `HouseholderQRPanelQhatAccumError.cons`.  The main panel theorem
+  `fl_householderQRPanel_Qhat_safe_accum_error` and its square/global wrappers
+  `fl_householderQR_Qhat_safe_accum_error_of_global_gammaValid` and
+  `fl_householderQR_computed_safe_Q_hat_accum_error_of_global_gammaValid` prove
+  that the concrete rounded accumulated `Q_hat` is an exact orthogonal matrix
+  plus a bounded perturbation.  This closes the raw recursive perturbation
+  layer, but the bound is not yet simplified to a closed-form norm-growth
+  estimate and the exact orthogonal factor is not yet compared with
+  `fl_householderQR_Q_safe`.
 
 ## 2026-04-26 Fix Pass
 

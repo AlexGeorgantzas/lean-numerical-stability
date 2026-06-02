@@ -87,10 +87,16 @@ The computed-factor wrappers
 `fl_householderQR_computed_safe_R_hat_structured_backward_error_of_global_gammaValid`
 transfer the already-proved `R_safe` facts to the `R_hat` field;
 `fl_householderQR_computed_safe_R_hat_explicit_backward_error_of_global_gammaValid`
-does the same for the explicit exact-witness perturbation equation.  The full
-recursive orthogonality/backward-error bridge for the accumulated `Q_hat`
-remains the next proof layer.  For that next layer, use the branch-combined
-safe-step interface:
+does the same for the explicit exact-witness perturbation equation.
+`fl_householderQRPanel_Qhat_safe_accum_error`,
+`fl_householderQR_Qhat_safe_accum_error_of_global_gammaValid`, and
+`fl_householderQR_computed_safe_Q_hat_accum_error_of_global_gammaValid` prove
+that rounded accumulated `Q_hat` is an exact orthogonal matrix plus a bounded
+perturbation, using the raw recursive bound
+`householderQRPanel_QhatAccumBound`.  The remaining `Q_hat` work is to simplify
+that raw bound into a closed-form norm-growth result and compare the exact
+orthogonal factor with `fl_householderQR_Q_safe`.  The branch-combined
+safe-step interface feeding the recursive theorem is:
 `householderQRPanel_Qhat_stepP_safe`,
 `fl_householderQRPanel_Qhat_tail_safe`,
 `householderQRPanel_Qhat_stepCoeff_safe`,
