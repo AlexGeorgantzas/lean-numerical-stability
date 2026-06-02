@@ -682,10 +682,12 @@ These compile, but should not be treated as fully derived stability results:
   `fl_givensApply`, which applies supplied exact `c,s` parameters by two
   rounded multiplications plus rounded add/sub on the affected components and
   copies all other components exactly.  Added exact unroll lemmas for the
-  computed and exact `p`, `q`, and unaffected components.  This is only the
-  low-level application kernel; the `fl_givensApply -> GivensAppError` bridge,
-  rotation-parameter construction, and full `fl_givens_qr` loop are still
-  pending.
+  computed and exact `p`, `q`, and unaffected components.  Added
+  `fl_givensApply_supplied_app_error`, proving the concrete supplied-parameter
+  kernel satisfies `GivensAppError` with the conservative bound
+  `gamma fp 2 * ‖givensRotation n p q c s‖_F`.  This is implementation-backed
+  for exact supplied `c,s`; rounded rotation-parameter construction and the
+  full `fl_givens_qr` loop are still pending.
 - Added exact vector embedding algebra for the QR RHS recursion:
   `vectorTrailingPerturbation`, `embedTrailingOne_matMulVec_top`,
   `vectorTail_embedTrailingOne_matMulVec`, and
