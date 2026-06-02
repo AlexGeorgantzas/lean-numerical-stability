@@ -945,6 +945,13 @@ These compile, but should not be treated as fully derived stability results:
   now states `Q_hat = Q_safe + ΔQ` with this closed-form bound.  Remaining
   QR-side polish is optional coefficient simplification/weakening into a more
   conventional printed Higham-style constant, not the recurrence solution.
+- Added `HouseholderQRComputedFactorsExplicitError` and the public theorem
+  `fl_householderQR_computed_safe_explicit_error_of_global_gammaValid`, which
+  packages the current computed `(Q_hat, R_hat)` API honestly: `R_hat` satisfies
+  the explicit exact-witness backward-error theorem, and `Q_hat` is the same
+  exact witness plus a perturbation bounded by `householderQR_QhatClosedFormBound`.
+  This is the main theorem to cite for the current computed Householder QR
+  factor pair.
 
 ## 2026-04-26 Fix Pass
 

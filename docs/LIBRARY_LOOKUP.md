@@ -110,8 +110,12 @@ recursive bound depending on `householderConstructApplyBound fp n` and
 `sqrt n`.  `householderQR_QhatClosedFormBound` solves that recurrence as
 `((1 + householderConstructApplyBound fp n)^n - 1) * sqrt n`, and
 `fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_closed_form_accum_error_of_global_gammaValid`
-exposes the resulting closed-form computed-`Q_hat` perturbation theorem.  The
-remaining `Q_hat` polishing work is only to decide whether this coefficient
+exposes the resulting closed-form computed-`Q_hat` perturbation theorem.
+`fl_householderQR_computed_safe_explicit_error_of_global_gammaValid` packages
+this `Q_hat` theorem with the explicit exact-witness backward-error theorem
+for `R_hat`, making it the main theorem to cite for the current computed
+`(Q_hat, R_hat)` API.  The remaining `Q_hat` polishing work is only to decide
+whether this coefficient
 should be further weakened/simplified into a more conventional printed
 constant.  The branch-combined
 safe-step interface feeding the recursive theorem is:

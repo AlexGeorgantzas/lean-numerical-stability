@@ -5058,4 +5058,37 @@ theorem fl_householderQR_computed_safe_R_hat_explicit_backward_error_of_global_g
     fl_householderQR_safe_witness_explicit_backward_error_of_global_gammaValid
       fp n A hvalid
 
+/-- Combined computed-factor contract for the current Householder QR API.
+
+    The rounded `R_hat` field has the explicit exact-witness backward-error
+    theorem, while the rounded accumulated `Q_hat` field is the same exact
+    witness plus a bounded perturbation. -/
+structure HouseholderQRComputedFactorsExplicitError
+    (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (F : HouseholderQRComputedFactors n)
+    (Q : Fin n → Fin n → ℝ) (cR cQ : ℝ) : Prop where
+  /-- Backward-error theorem for the computed `R_hat` against the exact
+      reference factor `Q`. -/
+  r_error : HouseholderQRExplicitBackwardError n A Q F.R_hat cR
+  /-- Perturbation theorem for the rounded accumulated `Q_hat` against the same
+      exact reference factor `Q`. -/
+  q_error : HouseholderQRPanelQhatFixedAccumError n Q F.Q_hat cQ
+
+/-- The concrete computed Householder QR factors satisfy the combined
+    exact-witness contract: `R_hat` is backward stable against the safe exact
+    witness, and `Q_hat` is a bounded perturbation of that same witness. -/
+theorem fl_householderQR_computed_safe_explicit_error_of_global_gammaValid
+    (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (hvalid : gammaValid fp (11 * n + 23)) :
+    HouseholderQRComputedFactorsExplicitError n A
+      (fl_householderQR_computed_safe fp n A)
+      (fl_householderQR_safe_witness fp n A).Q
+      (householderQRBackwardCoeffSafe fp n A * frobNorm A)
+      (householderQR_QhatClosedFormBound fp n n) := by
+  exact ⟨
+    fl_householderQR_computed_safe_R_hat_explicit_backward_error_of_global_gammaValid
+      fp n A hvalid,
+    fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_closed_form_accum_error_of_global_gammaValid
+      fp n A hvalid⟩
+
 end LeanFpAnalysis.FP
