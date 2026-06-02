@@ -471,6 +471,12 @@ These compile, but should not be treated as fully derived stability results:
   Householder panel updates now satisfy a rectangular backward-error sequence
   theorem.  Remaining QR work: define the actual trailing-panel loop and prove
   it supplies these panel update hypotheses and triangularization.
+- Added `panelFirstColumn` and
+  `fl_householder_first_column_panel_step_error`.  This specializes the
+  rectangular panel bridge to the first-column choice used by a Householder QR
+  panel step.  It is the first link from arbitrary supplied construction
+  vectors toward an actual QR loop, but it still does not define recursive
+  trailing panels or prove triangularization.
 
 ## 2026-04-26 Fix Pass
 

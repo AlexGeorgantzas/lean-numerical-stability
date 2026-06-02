@@ -640,6 +640,37 @@ theorem fl_householder_panel_sequence_backward_error (fp : FPModel)
   rw [hAstep k hk]
   simpa [Pseq, householderConstructApplyBound] using hraw
 
+/-- First column of a nonempty rectangular panel.  In a Householder QR panel
+    step, this is the vector used to construct the next reflector. -/
+noncomputable def panelFirstColumn {m p : ℕ} (hp0 : 0 < p)
+    (A : Fin m → Fin p → ℝ) : Fin m → ℝ :=
+  fun i => A i ⟨0, hp0⟩
+
+/-- One concrete Householder panel step where the reflector is constructed from
+    the first column of the current panel.
+
+    This is still only the first-column panel bridge, not the full QR loop:
+    later QR code must show that successive trailing panels are formed from the
+    previous update and that the first-column choice matches the mathematical
+    QR iteration. -/
+theorem fl_householder_first_column_panel_step_error (fp : FPModel)
+    {m p : ℕ}
+    (hm0 : 0 < m) (hp0 : 0 < p) (A : Fin m → Fin p → ℝ)
+    (hx : panelFirstColumn hp0 A ≠ 0)
+    (hvalid : gammaValid fp (11 * m + 23)) :
+    ColumnwiseHouseholderStepErrorRect m p
+      (householder m
+        (householderNormalizedVector m
+          (householderVector hm0 (panelFirstColumn hp0 A))
+          (householderBetaFromScale hm0 (panelFirstColumn hp0 A))) 1)
+      A
+      (fl_householderApplyMatrixRect fp m p
+        (fl_householderNormalizedVector fp hm0 (panelFirstColumn hp0 A)) 1 A)
+      (householderConstructApplyBound fp m) := by
+  simpa [householderConstructApplyBound] using
+    fl_householderConstructApply_matrix_step_error_rect fp hm0
+      (panelFirstColumn hp0 A) A hx hvalid
+
 -- ============================================================
 -- §18.3  Theorem 18.4: Householder QR backward error
 -- ============================================================
