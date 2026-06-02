@@ -96,4 +96,73 @@ theorem fl_householderConstructApply_matrix_step_error (fp : FPModel) {n : ℕ}
         hx hvalid
     simpa [P, fl_householderApplyMatrix] using happ
 
+/-- Residual form of a columnwise Householder matrix step.
+
+    Each computed column is the exact reflector application plus the residual
+    produced by that column's perturbation matrix:
+    `A_hat[:,j] = P*A[:,j] + ΔP_j*A[:,j]`. -/
+theorem ColumnwiseHouseholderStepError.column_residual {n : ℕ}
+    {P A A_hat : Fin n → Fin n → ℝ} {c : ℝ}
+    (hstep : ColumnwiseHouseholderStepError n P A A_hat c) :
+    ∀ j : Fin n, ∃ ΔPj : Fin n → Fin n → ℝ,
+      frobNorm ΔPj ≤ c ∧
+      ∀ i : Fin n, A_hat i j =
+        matMul n P A i j +
+          matMulVec n ΔPj (fun k => A k j) i := by
+  intro j
+  obtain ⟨ΔPj, hΔPj, hcol⟩ := hstep.pert j
+  refine ⟨ΔPj, hΔPj, ?_⟩
+  intro i
+  rw [hcol i]
+  unfold matMulVec matMul
+  rw [← Finset.sum_add_distrib]
+  apply Finset.sum_congr rfl
+  intro k _
+  ring
+
+/-- Matrix residual form of a columnwise Householder matrix step.
+
+    There is a residual matrix `E` such that `A_hat = P*A + E`, and every
+    column of `E` is still represented as `ΔP_j*A[:,j]` with
+    `‖ΔP_j‖_F ≤ c`.  This is the exact algebraic handle needed for the
+    Higham Lemma 18.3 aggregation step. -/
+theorem ColumnwiseHouseholderStepError.exists_residual_matrix {n : ℕ}
+    {P A A_hat : Fin n → Fin n → ℝ} {c : ℝ}
+    (hstep : ColumnwiseHouseholderStepError n P A A_hat c) :
+    ∃ E : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, A_hat i j = matMul n P A i j + E i j) ∧
+      ∀ j : Fin n, ∃ ΔPj : Fin n → Fin n → ℝ,
+        frobNorm ΔPj ≤ c ∧
+        ∀ i : Fin n, E i j =
+          matMulVec n ΔPj (fun k => A k j) i := by
+  classical
+  let hres := hstep.column_residual
+  let ΔP : Fin n → Fin n → Fin n → ℝ := fun j => Classical.choose (hres j)
+  let E : Fin n → Fin n → ℝ :=
+    fun i j => matMulVec n (ΔP j) (fun k => A k j) i
+  refine ⟨E, ?_, ?_⟩
+  · intro i j
+    have hspec := Classical.choose_spec (hres j)
+    exact hspec.2 i
+  · intro j
+    have hspec := Classical.choose_spec (hres j)
+    refine ⟨ΔP j, hspec.1, ?_⟩
+    intro i
+    rfl
+
+/-- Normwise residual consequence of a columnwise Householder matrix step.
+
+    The column-dependent perturbations aggregate to a single residual matrix
+    `E` satisfying `A_hat = P*A + E` and `‖E‖_F ≤ c‖A‖_F`.  This is the
+    first exact aggregation step needed for Higham Lemma 18.3. -/
+theorem ColumnwiseHouseholderStepError.exists_residual_matrix_bound {n : ℕ}
+    {P A A_hat : Fin n → Fin n → ℝ} {c : ℝ}
+    (hstep : ColumnwiseHouseholderStepError n P A A_hat c)
+    (hc : 0 ≤ c) :
+    ∃ E : Fin n → Fin n → ℝ,
+      (∀ i j : Fin n, A_hat i j = matMul n P A i j + E i j) ∧
+      frobNorm E ≤ c * frobNorm A := by
+  obtain ⟨E, hEA, hcol⟩ := hstep.exists_residual_matrix
+  exact ⟨E, hEA, frobNorm_columnwise_matMulVec_le E A hc hcol⟩
+
 end LeanFpAnalysis.FP

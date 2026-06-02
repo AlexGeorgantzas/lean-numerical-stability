@@ -409,6 +409,14 @@ These compile, but should not be treated as fully derived stability results:
   `ΔP` for the whole matrix step; Higham's Lemma 18.3 proof is columnwise, so
   the next QR bridge must aggregate column-dependent perturbations rather than
   silently forcing them into a global perturbation.
+- Added exact columnwise Frobenius aggregation lemmas in `MatrixAlgebra.lean`:
+  `matMulVec_sum_sq_le_frobNormSq_mul_sum_sq`,
+  `frobNormSq_columnwise_matMulVec_le`, and
+  `frobNorm_columnwise_matMulVec_le`.  `HouseholderMatrixStep.lean` now exposes
+  `ColumnwiseHouseholderStepError.exists_residual_matrix_bound`, proving that a
+  columnwise Householder step has a single residual matrix `E` with
+  `A_hat = P*A + E` and `‖E‖_F ≤ c*‖A‖_F`.  The next gap is turning repeated
+  residual steps into the final `Qᵀ(A+ΔA)`/QR backward-error statement.
 
 ## 2026-04-26 Fix Pass
 

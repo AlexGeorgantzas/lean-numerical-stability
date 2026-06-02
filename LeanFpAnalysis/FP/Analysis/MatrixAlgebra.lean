@@ -649,6 +649,89 @@ theorem frobNorm_matMul_le {n : ℕ} (A B : Fin n → Fin n → ℝ) :
     (Matrix.frobenius_norm_mul (Matrix.of A : Matrix (Fin n) (Fin n) ℝ)
       (Matrix.of B : Matrix (Fin n) (Fin n) ℝ))
 
+/-- Matrix-vector product squared-sum bound using the Frobenius norm:
+    `∑ᵢ ((Ax)_i)^2 ≤ ‖A‖²_F * ∑ⱼ x_j^2`.
+
+    This is the columnwise form needed when aggregating backward errors whose
+    perturbation matrix may depend on the output column. -/
+theorem matMulVec_sum_sq_le_frobNormSq_mul_sum_sq {n : ℕ}
+    (A : Fin n → Fin n → ℝ) (x : Fin n → ℝ) :
+    (∑ i : Fin n, matMulVec n A x i ^ 2) ≤
+      frobNormSq A * (∑ k : Fin n, x k ^ 2) := by
+  unfold matMulVec frobNormSq
+  calc
+    (∑ i : Fin n, (∑ j : Fin n, A i j * x j) ^ 2)
+        ≤ ∑ i : Fin n,
+            (∑ j : Fin n, A i j ^ 2) * (∑ j : Fin n, x j ^ 2) := by
+          apply Finset.sum_le_sum
+          intro i _
+          exact Finset.sum_mul_sq_le_sq_mul_sq Finset.univ
+            (fun j => A i j) (fun j => x j)
+    _ = (∑ i : Fin n, ∑ j : Fin n, A i j ^ 2) *
+          (∑ k : Fin n, x k ^ 2) := by
+        rw [Finset.sum_mul]
+
+/-- Squared Frobenius aggregation for column-dependent matrix-vector residuals.
+
+    If every residual column has the form `E[:,j] = Δ_j * A[:,j]` and each
+    `‖Δ_j‖_F ≤ c`, then `‖E‖²_F ≤ c² ‖A‖²_F`. -/
+theorem frobNormSq_columnwise_matMulVec_le {n : ℕ}
+    (E A : Fin n → Fin n → ℝ) {c : ℝ} (hc : 0 ≤ c)
+    (hcol : ∀ j : Fin n, ∃ Δj : Fin n → Fin n → ℝ,
+      frobNorm Δj ≤ c ∧
+      ∀ i : Fin n, E i j = matMulVec n Δj (fun k => A k j) i) :
+    frobNormSq E ≤ c ^ 2 * frobNormSq A := by
+  unfold frobNormSq
+  rw [Finset.sum_comm]
+  calc
+    (∑ j : Fin n, ∑ i : Fin n, E i j ^ 2)
+        ≤ ∑ j : Fin n, c ^ 2 * (∑ k : Fin n, A k j ^ 2) := by
+          apply Finset.sum_le_sum
+          intro j _
+          obtain ⟨Δj, hΔj, hE⟩ := hcol j
+          have hΔsq : frobNormSq Δj ≤ c ^ 2 := by
+            have habs : |frobNorm Δj| ≤ |c| := by
+              simpa [abs_of_nonneg (frobNorm_nonneg Δj), abs_of_nonneg hc]
+                using hΔj
+            have hs : frobNorm Δj ^ 2 ≤ c ^ 2 := (sq_le_sq).2 habs
+            rwa [frobNorm_sq] at hs
+          have hcolsq :
+              (∑ i : Fin n, E i j ^ 2) =
+                ∑ i : Fin n, matMulVec n Δj (fun k => A k j) i ^ 2 := by
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [hE i]
+          rw [hcolsq]
+          calc
+            (∑ i : Fin n, matMulVec n Δj (fun k => A k j) i ^ 2)
+                ≤ frobNormSq Δj * (∑ k : Fin n, A k j ^ 2) :=
+                  matMulVec_sum_sq_le_frobNormSq_mul_sum_sq Δj (fun k => A k j)
+            _ ≤ c ^ 2 * (∑ k : Fin n, A k j ^ 2) := by
+                apply mul_le_mul_of_nonneg_right hΔsq
+                exact Finset.sum_nonneg fun k _ => sq_nonneg (A k j)
+    _ = c ^ 2 * (∑ j : Fin n, ∑ k : Fin n, A k j ^ 2) := by
+        rw [Finset.mul_sum]
+    _ = c ^ 2 * (∑ k : Fin n, ∑ j : Fin n, A k j ^ 2) := by
+        rw [Finset.sum_comm]
+
+/-- Frobenius aggregation for column-dependent matrix-vector residuals.
+
+    If every residual column has the form `E[:,j] = Δ_j * A[:,j]` and each
+    `‖Δ_j‖_F ≤ c`, then `‖E‖_F ≤ c ‖A‖_F`. -/
+theorem frobNorm_columnwise_matMulVec_le {n : ℕ}
+    (E A : Fin n → Fin n → ℝ) {c : ℝ} (hc : 0 ≤ c)
+    (hcol : ∀ j : Fin n, ∃ Δj : Fin n → Fin n → ℝ,
+      frobNorm Δj ≤ c ∧
+      ∀ i : Fin n, E i j = matMulVec n Δj (fun k => A k j) i) :
+    frobNorm E ≤ c * frobNorm A := by
+  have hsq := frobNormSq_columnwise_matMulVec_le E A hc hcol
+  apply frobNorm_le_of_frobNormSq_le_sq E
+    (mul_nonneg hc (frobNorm_nonneg A))
+  rw [show (c * frobNorm A) ^ 2 = c ^ 2 * frobNormSq A from by
+    rw [show (c * frobNorm A) ^ 2 = c ^ 2 * frobNorm A ^ 2 from by ring,
+      frobNorm_sq]]
+  exact hsq
+
 /-- **Cauchy-Schwarz for Frobenius inner product**:
     (∑_ij A_ij B_ij)² ≤ ‖A‖²_F · ‖B‖²_F.
 
