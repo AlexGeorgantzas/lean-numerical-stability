@@ -131,6 +131,17 @@ norm facts useful for this proof layer are `frobNormSq_embedTrailingOne`,
 `frobNorm_embedTrailingOne`, and
 `frobNorm_embedTrailingOne_of_orthogonal`.
 
+For QR solve component proofs where the exact orthogonal factor must be named,
+use `HouseholderQRRhsPanelExplicitBackwardError` and
+`HouseholderQRPanelSolveFixedBackwardError`.  The safe implementation-backed
+wrappers
+`fl_householderQR_rhs_safe_explicit_backward_error_of_global_gammaValid` and
+`fl_householderQR_solve_components_safe_fixed_Q_safe_backward_error_of_global_gammaValid`
+show that the concrete rounded RHS transform and simultaneous `(R_safe, c_hat)`
+solve components are explained by the same `fl_householderQR_Q_safe` witness.
+The final `QRSolveBackwardError` remains existential in `Q` because its public
+statement only exposes the solved system perturbation.
+
 ## Main Dependency Chains
 
 The strongest internally derived results follow these chains:
@@ -191,7 +202,9 @@ first identify whether it is:
 | `CholeskyBackwardError` | structure | `Algorithms/Cholesky/CholeskySpec.lean` | Backward-error contract for computed Cholesky factors. |
 | `HouseholderAppError` | structure | `Algorithms/QR/HouseholderSpec.lean` | Backward-error contract for applying a Householder reflector. |
 | `HouseholderQRRhsPanelBackwardError` | structure | `Algorithms/QR/QRSolve.lean` | Backward-error contract for the RHS transform in Householder QR solve. |
+| `HouseholderQRRhsPanelExplicitBackwardError` | structure | `Algorithms/QR/QRSolve.lean` | Fixed-orthogonal-witness RHS transform contract for Householder QR solve. |
 | `HouseholderQRPanelSolveBackwardError` | structure | `Algorithms/QR/QRSolve.lean` | Shared-orthogonal-factor contract for the QR `R` panel and RHS transform. |
+| `HouseholderQRPanelSolveFixedBackwardError` | structure | `Algorithms/QR/QRSolve.lean` | Fixed-orthogonal-witness shared contract for the QR `R` panel and RHS transform. |
 | `QRSolveBackwardError` | structure | `Algorithms/QR/QRSolve.lean` | Backward-error contract for QR-based solve. |
 | `SolverSpec` | structure | `Algorithms/IterativeRefinement.lean` | Abstract componentwise backward-stable solver. |
 | `ResidualError` | structure | `Algorithms/IterativeRefinement.lean` | Componentwise residual-computation error contract. |

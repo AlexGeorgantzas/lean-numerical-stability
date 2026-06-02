@@ -952,6 +952,17 @@ These compile, but should not be treated as fully derived stability results:
   exact witness plus a perturbation bounded by `householderQR_QhatClosedFormBound`.
   This is the main theorem to cite for the current computed Householder QR
   factor pair.
+- Tightened the QR-solve component layer with fixed exact witnesses.  In
+  `QR/QRSolve.lean`, added `HouseholderQRRhsPanelExplicitBackwardError`,
+  `HouseholderQRPanelSolveFixedBackwardError`, explicit RHS base/cons/skip
+  lemmas, and
+  `fl_householderQR_rhs_safe_explicit_backward_error_of_global_gammaValid`.
+  The theorem
+  `fl_householderQR_solve_components_safe_fixed_Q_safe_backward_error_of_global_gammaValid`
+  now packages the concrete safe `R` panel and safe RHS transform with the same
+  explicit `fl_householderQR_Q_safe` witness.  The final
+  `QRSolveBackwardError` remains existential in `Q` because its public solved
+  system statement does not expose the factor.
 
 ## 2026-04-26 Fix Pass
 

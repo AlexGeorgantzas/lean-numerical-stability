@@ -70,6 +70,36 @@ structure HouseholderQRRhsPanelBackwardError (m p : ℕ)
       matMulVec m (matTranspose Q) (fun k => b k + Δb k) i) ∧
     (∀ i, |Δb i| ≤ c_bound)
 
+/-- Rectangular active-panel RHS transform contract with the orthogonal factor
+    made explicit.
+
+    This strengthens `HouseholderQRRhsPanelBackwardError` by fixing the `Q`
+    witness.  It is the RHS analogue of
+    `HouseholderQRPanelExplicitBackwardError` from `HouseholderQR.lean`, and it
+    lets QR solve component theorems name the same exact `Q_safe` witness used
+    by the concrete rounded `R_safe` recursion. -/
+structure HouseholderQRRhsPanelExplicitBackwardError (m p : ℕ)
+    (A : Fin m → Fin p → ℝ) (b : Fin m → ℝ)
+    (Q : Fin m → Fin m → ℝ) (c_hat : Fin m → ℝ)
+    (c_bound : ℝ) : Prop where
+  /-- The supplied `Q` is orthogonal. -/
+  orth : IsOrthogonal m Q
+  /-- The supplied `Q` realizes the RHS perturbation equation. -/
+  result : ∃ Δb : Fin m → ℝ,
+    (∀ i, c_hat i =
+      matMulVec m (matTranspose Q) (fun k => b k + Δb k) i) ∧
+    (∀ i, |Δb i| ≤ c_bound)
+
+/-- Forget the explicit `Q` witness and recover the existing existential RHS
+    panel contract. -/
+theorem HouseholderQRRhsPanelExplicitBackwardError.to_backward_error {m p : ℕ}
+    {A : Fin m → Fin p → ℝ} {b c_hat : Fin m → ℝ}
+    {Q : Fin m → Fin m → ℝ} {c_bound : ℝ}
+    (h : HouseholderQRRhsPanelExplicitBackwardError m p A b Q c_hat c_bound) :
+    HouseholderQRRhsPanelBackwardError m p A b c_hat c_bound := by
+  obtain ⟨Δb, hrep, hΔb⟩ := h.result
+  exact ⟨⟨Q, Δb, h.orth, hrep, hΔb⟩⟩
+
 /-- Simultaneous panel contract for Householder QR solve components.
 
     This is stronger than separately proving QR factorization and RHS
@@ -90,6 +120,53 @@ structure HouseholderQRPanelSolveBackwardError (m p : ℕ)
       matMulVec m (matTranspose Q) (fun k => b k + Δb k) i) ∧
     frobNorm ΔA ≤ c_A ∧
     (∀ i, |Δb i| ≤ c_b)
+
+/-- Simultaneous panel contract for Householder QR solve components with the
+    shared orthogonal factor fixed.
+
+    This is the fixed-`Q` strengthening of
+    `HouseholderQRPanelSolveBackwardError`.  The current concrete safe
+    Householder QR solve will use `fl_householderQRPanel_Q_safe` as this fixed
+    witness. -/
+structure HouseholderQRPanelSolveFixedBackwardError (m p : ℕ)
+    (A R_hat : Fin m → Fin p → ℝ) (b c_hat : Fin m → ℝ)
+    (Q : Fin m → Fin m → ℝ) (c_A c_b : ℝ) : Prop where
+  /-- The supplied common `Q` is orthogonal. -/
+  orth : IsOrthogonal m Q
+  /-- The supplied `Q` explains both the rounded panel and the transformed RHS. -/
+  result : ∃ (ΔA : Fin m → Fin p → ℝ) (Δb : Fin m → ℝ),
+    (∀ i j, R_hat i j =
+      matMulRect m m p (matTranspose Q)
+        (fun r col => A r col + ΔA r col) i j) ∧
+    (∀ i, c_hat i =
+      matMulVec m (matTranspose Q) (fun k => b k + Δb k) i) ∧
+    frobNorm ΔA ≤ c_A ∧
+    (∀ i, |Δb i| ≤ c_b)
+
+/-- Forget the fixed common `Q` witness and recover the existing shared-`Q`
+    existential solve component contract. -/
+theorem HouseholderQRPanelSolveFixedBackwardError.to_backward_error {m p : ℕ}
+    {A R_hat : Fin m → Fin p → ℝ} {b c_hat : Fin m → ℝ}
+    {Q : Fin m → Fin m → ℝ} {c_A c_b : ℝ}
+    (h : HouseholderQRPanelSolveFixedBackwardError m p A R_hat b c_hat Q
+      c_A c_b) :
+    HouseholderQRPanelSolveBackwardError m p A R_hat b c_hat c_A c_b := by
+  obtain ⟨ΔA, Δb, hR, hb, hΔA, hΔb⟩ := h.result
+  exact ⟨⟨Q, ΔA, Δb, h.orth, hR, hb, hΔA, hΔb⟩⟩
+
+/-- Package explicit fixed-`Q` QR-panel and RHS-transform contracts into the
+    simultaneous fixed-`Q` solve component contract. -/
+theorem HouseholderQRPanelSolveFixedBackwardError.of_explicit_components
+    {m p : ℕ}
+    {A R_hat : Fin m → Fin p → ℝ} {b c_hat : Fin m → ℝ}
+    {Q : Fin m → Fin m → ℝ} {c_A c_b : ℝ}
+    (hR : HouseholderQRPanelExplicitBackwardError m p A Q R_hat c_A)
+    (hb : HouseholderQRRhsPanelExplicitBackwardError m p A b Q c_hat c_b) :
+    HouseholderQRPanelSolveFixedBackwardError m p A R_hat b c_hat Q
+      c_A c_b := by
+  obtain ⟨ΔA, hRrep, hΔA⟩ := hR.result
+  obtain ⟨Δb, hbRep, hΔb⟩ := hb.result
+  exact ⟨hR.orth, ⟨ΔA, Δb, hRrep, hbRep, hΔA, hΔb⟩⟩
 
 /-- Drop the first entry of a nonempty vector.  This is exact indexing
     infrastructure for the QR solve right-hand-side recursion. -/
@@ -165,6 +242,31 @@ theorem householder_qr_rhs_panel_backward_zero_cols (m : ℕ)
     HouseholderQRRhsPanelBackwardError (m + 1) 0 A b b 0 := by
   let Z : Fin (m + 1) → ℝ := fun _ => 0
   refine ⟨⟨idMatrix (m + 1), Z, idMatrix_orthogonal (m + 1), ?_, ?_⟩⟩
+  · intro i
+    simp [matMulVec, matTranspose, idMatrix, Z, Finset.mem_univ]
+  · intro i
+    simp [Z]
+
+/-- Empty-row RHS panels satisfy the explicit-`Q` RHS target trivially with
+    the empty identity matrix. -/
+theorem householder_qr_rhs_panel_explicit_backward_zero_rows (p : ℕ)
+    (A : Fin 0 → Fin p → ℝ) (b : Fin 0 → ℝ) :
+    HouseholderQRRhsPanelExplicitBackwardError 0 p A b (idMatrix 0) b 0 := by
+  let Z : Fin 0 → ℝ := fun i => Fin.elim0 i
+  refine ⟨idMatrix_orthogonal 0, ⟨Z, ?_, ?_⟩⟩
+  · intro i
+    exact Fin.elim0 i
+  · intro i
+    exact Fin.elim0 i
+
+/-- Empty-column active panels satisfy the explicit-`Q` RHS target trivially
+    with the identity matrix. -/
+theorem householder_qr_rhs_panel_explicit_backward_zero_cols (m : ℕ)
+    (A : Fin (m + 1) → Fin 0 → ℝ) (b : Fin (m + 1) → ℝ) :
+    HouseholderQRRhsPanelExplicitBackwardError (m + 1) 0 A b
+      (idMatrix (m + 1)) b 0 := by
+  let Z : Fin (m + 1) → ℝ := fun _ => 0
+  refine ⟨idMatrix_orthogonal (m + 1), ⟨Z, ?_, ?_⟩⟩
   · intro i
     simp [matMulVec, matTranspose, idMatrix, Z, Finset.mem_univ]
   · intro i
@@ -383,6 +485,137 @@ theorem householder_qr_rhs_panel_backward_cons {m p : ℕ}
       _ ≤ (m + 1 : ℝ) * (c + α) := by
           exact mul_le_mul_of_nonneg_left hEtaInf (by positivity)
 
+/-- Explicit-`Q` recursive cons step for the Householder QR RHS transform.
+
+    This is the fixed-witness version of
+    `householder_qr_rhs_panel_backward_cons`: the theorem conclusion names the
+    exact orthogonal factor obtained by prepending the current reflector `P` to
+    the explicit tail factor `Qt`. -/
+theorem householder_qr_rhs_panel_explicit_backward_cons {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (A_tail : Fin m → Fin p → ℝ)
+    (P : Fin (m + 1) → Fin (m + 1) → ℝ)
+    (Qt : Fin m → Fin m → ℝ)
+    (b y e : Fin (m + 1) → ℝ)
+    (ctail : Fin m → ℝ)
+    (c α : ℝ)
+    (hP : IsOrthogonal (m + 1) P)
+    (hy : ∀ i, y i = matMulVec (m + 1) P b i + e i)
+    (he : ∀ i, |e i| ≤ c)
+    (hTail :
+      HouseholderQRRhsPanelExplicitBackwardError m p A_tail
+        (vectorTail y) Qt ctail α)
+    (hc : 0 ≤ c) (hα : 0 ≤ α) :
+    HouseholderQRRhsPanelExplicitBackwardError (m + 1) (p + 1) A b
+      (matTranspose (matMul (m + 1) (embedTrailingOne (matTranspose Qt)) P))
+      (vectorFromTopTail (y 0) ctail)
+      ((m + 1 : ℝ) * (c + α)) := by
+  obtain ⟨Δtail, hTailRep, hΔtail⟩ := hTail.result
+  let ΔtailFull : Fin (m + 1) → ℝ := vectorTrailingPerturbation Δtail
+  let Eta : Fin (m + 1) → ℝ := fun i => e i + ΔtailFull i
+  let Δb : Fin (m + 1) → ℝ :=
+    matMulVec (m + 1) (matTranspose P) Eta
+  let M : Fin (m + 1) → Fin (m + 1) → ℝ :=
+    matMul (m + 1) (embedTrailingOne (matTranspose Qt)) P
+  let Q : Fin (m + 1) → Fin (m + 1) → ℝ := matTranspose M
+  refine ⟨?_, ⟨Δb, ?_, ?_⟩⟩
+  · have hEmb :
+        IsOrthogonal (m + 1) (embedTrailingOne (matTranspose Qt)) :=
+      embedTrailingOne_orthogonal (matTranspose Qt) hTail.orth.transpose
+    have hM : IsOrthogonal (m + 1) M := hEmb.mul hP
+    simpa [Q, M] using hM.transpose
+  · have hLift :=
+      vectorFromTopTail_lift_trailing_rep Qt
+        (y 0) (vectorTail y) ctail Δtail hTailRep
+    have hPΔ : ∀ i,
+        matMulVec (m + 1) P Δb i = Eta i := by
+      intro i
+      have hPPt :
+          matMul (m + 1) P (matTranspose P) = idMatrix (m + 1) := by
+        ext a b
+        exact hP.right_inv a b
+      calc
+        matMulVec (m + 1) P Δb i
+            = matMulVec (m + 1) P
+                (matMulVec (m + 1) (matTranspose P) Eta) i := rfl
+        _ = matMulVec (m + 1)
+              (matMul (m + 1) P (matTranspose P)) Eta i := by
+            exact (matMulVec_matMul (m + 1) P (matTranspose P) Eta i).symm
+        _ = matMulVec (m + 1) (idMatrix (m + 1)) Eta i := by
+            rw [hPPt]
+        _ = Eta i := by
+            simpa using congr_fun (idMatrix_mulVec (m + 1) Eta) i
+    have hyEta :
+        (fun i => y i + ΔtailFull i) =
+          matMulVec (m + 1) P (fun k => b k + Δb k) := by
+      ext i
+      calc
+        y i + ΔtailFull i
+            = (matMulVec (m + 1) P b i + e i) + ΔtailFull i := by
+                rw [hy i]
+        _ = matMulVec (m + 1) P b i + Eta i := by
+            simp [Eta]
+            ring
+        _ = matMulVec (m + 1) P b i +
+              matMulVec (m + 1) P Δb i := by
+            rw [hPΔ i]
+        _ = matMulVec (m + 1) P (fun k => b k + Δb k) i := by
+            unfold matMulVec
+            rw [← Finset.sum_add_distrib]
+            apply Finset.sum_congr rfl
+            intro k _
+            ring
+    intro i
+    have hLift' :
+        vectorFromTopTail (y 0) ctail =
+          matMulVec (m + 1) (embedTrailingOne (matTranspose Qt))
+            (fun i => y i + ΔtailFull i) := by
+      rw [hLift]
+      have hInside :
+          (fun i => vectorFromTopTail (y 0) (vectorTail y) i +
+            vectorTrailingPerturbation Δtail i) =
+          fun i => y i + ΔtailFull i := by
+        ext i
+        simp [ΔtailFull]
+      rw [hInside]
+    calc
+      vectorFromTopTail (y 0) ctail i
+          = matMulVec (m + 1) (embedTrailingOne (matTranspose Qt))
+              (fun i => y i + ΔtailFull i) i := by
+            rw [hLift']
+      _ = matMulVec (m + 1) (embedTrailingOne (matTranspose Qt))
+            (matMulVec (m + 1) P (fun k => b k + Δb k)) i := by
+          rw [hyEta]
+      _ = matMulVec (m + 1) M (fun k => b k + Δb k) i := by
+          exact (matMulVec_matMul (m + 1)
+            (embedTrailingOne (matTranspose Qt)) P
+            (fun k => b k + Δb k) i).symm
+      _ = matMulVec (m + 1) (matTranspose Q)
+            (fun k => b k + Δb k) i := by
+          simp [Q, M, matTranspose_involutive]
+  · have hEtaComp : ∀ i, |Eta i| ≤ c + α := by
+      intro i
+      have htail : |ΔtailFull i| ≤ α := by
+        refine Fin.cases ?_ ?_ i
+        · simpa [ΔtailFull] using hα
+        · intro i
+          simpa [ΔtailFull] using hΔtail i
+      calc
+        |Eta i| = |e i + ΔtailFull i| := rfl
+        _ ≤ |e i| + |ΔtailFull i| := abs_add_le _ _
+        _ ≤ c + α := add_le_add (he i) htail
+    have hEtaInf : infNormVec Eta ≤ c + α :=
+      infNormVec_le_of_abs_le Eta hEtaComp (add_nonneg hc hα)
+    intro i
+    calc
+      |Δb i|
+          = |matMulVec (m + 1) (matTranspose P) Eta i| := rfl
+      _ ≤ (m + 1 : ℝ) * infNormVec Eta := by
+          simpa [Nat.cast_add, Nat.cast_one] using
+            hP.transpose.abs_matMulVec_le_card_infNormVec Eta i
+      _ ≤ (m + 1 : ℝ) * (c + α) := by
+          exact mul_le_mul_of_nonneg_left hEtaInf (by positivity)
+
 /-- Algebraic skip step for the QR RHS transform when the active panel column
     is zero.
 
@@ -427,6 +660,50 @@ theorem householder_qr_rhs_panel_backward_skip_zero_column {m p : ℕ}
       _ = matMulVec (m + 1) (matTranspose Q)
             (fun i => b i + Δb i) i := by
           rw [hQtrans, hInside]
+  · intro i
+    refine Fin.cases ?_ ?_ i
+    · simpa [Δb] using hβ
+    · intro i
+      simpa [Δb] using hΔtail i
+
+/-- Explicit-`Q` algebraic skip step for the QR RHS transform when the active
+    panel column is zero. -/
+theorem householder_qr_rhs_panel_explicit_backward_skip_zero_column {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (b : Fin (m + 1) → ℝ)
+    (Qt : Fin m → Fin m → ℝ)
+    (ctail : Fin m → ℝ)
+    (β : ℝ)
+    (_hcol : panelFirstColumn (Nat.succ_pos p) A = 0)
+    (hTail :
+      HouseholderQRRhsPanelExplicitBackwardError m p (trailingPanel A)
+        (vectorTail b) Qt ctail β)
+    (hβ : 0 ≤ β) :
+    HouseholderQRRhsPanelExplicitBackwardError (m + 1) (p + 1) A b
+      (embedTrailingOne Qt)
+      (vectorFromTopTail (b 0) ctail) β := by
+  obtain ⟨Δtail, hTailRep, hΔtail⟩ := hTail.result
+  let Δb : Fin (m + 1) → ℝ := vectorTrailingPerturbation Δtail
+  refine ⟨embedTrailingOne_orthogonal Qt hTail.orth, ⟨Δb, ?_, ?_⟩⟩
+  · have hLift :=
+      vectorFromTopTail_lift_trailing_rep Qt
+        (b 0) (vectorTail b) ctail Δtail hTailRep
+    have hInside :
+        (fun i => vectorFromTopTail (b 0) (vectorTail b) i +
+          vectorTrailingPerturbation Δtail i) =
+        fun i => b i + Δb i := by
+      ext i
+      simp [Δb]
+    intro i
+    calc
+      vectorFromTopTail (b 0) ctail i
+          = matMulVec (m + 1) (embedTrailingOne (matTranspose Qt))
+              (fun i => vectorFromTopTail (b 0) (vectorTail b) i +
+                vectorTrailingPerturbation Δtail i) i := by
+            exact congrFun hLift i
+      _ = matMulVec (m + 1) (matTranspose (embedTrailingOne Qt))
+            (fun i => b i + Δb i) i := by
+          rw [matTranspose_embedTrailingOne, hInside]
   · intro i
     refine Fin.cases ?_ ?_ i
     · simpa [Δb] using hβ
@@ -1475,6 +1752,156 @@ theorem fl_householderQR_rhs_safe_backward_error (fp : FPModel) (n : ℕ)
   simpa [fl_householderQR_rhs_safe, householderQRRhsBackwardBoundSafe] using
     fl_householderQRPanel_rhs_safe_backward_error fp n n A b hready
 
+/-- Implementation-backed recursive backward-error theorem for the zero-aware
+    concrete Householder QR RHS transform with the exact `Q_safe` witness
+    fixed.
+
+    This is the RHS-side bridge needed for fixed-witness QR solve component
+    theorems: the same `fl_householderQRPanel_Q_safe` recursion that explains
+    `R_safe` also explains the rounded right-hand-side transform. -/
+theorem fl_householderQRPanel_rhs_safe_explicit_backward_error
+    (fp : FPModel) :
+    ∀ (m p : ℕ) (A : Fin m → Fin p → ℝ) (b : Fin m → ℝ),
+      HouseholderQRPanelSafeReady fp m p A →
+      HouseholderQRRhsPanelExplicitBackwardError m p A b
+        (fl_householderQRPanel_Q_safe fp m p A)
+        (fl_householderQRPanel_rhs_safe fp m p A b)
+        (householderQRRhsPanelBackwardBoundSafe fp m p A b) := by
+  intro m
+  induction m with
+  | zero =>
+      intro p A b _hready
+      simpa [fl_householderQRPanel_Q_safe, fl_householderQRPanel_rhs_safe,
+        householderQRRhsPanelBackwardBoundSafe] using
+        householder_qr_rhs_panel_explicit_backward_zero_rows p A b
+  | succ m ih =>
+      intro p
+      cases p with
+      | zero =>
+          intro A b _hready
+          simpa [fl_householderQRPanel_Q_safe, fl_householderQRPanel_rhs_safe,
+            householderQRRhsPanelBackwardBoundSafe] using
+            householder_qr_rhs_panel_explicit_backward_zero_cols m A b
+      | succ p =>
+          intro A b hready
+          by_cases hcol : panelFirstColumn (Nat.succ_pos p) A = 0
+          · have htailReady :
+                HouseholderQRPanelSafeReady fp m p (trailingPanel A) := by
+              simpa [HouseholderQRPanelSafeReady, hcol] using hready
+            have hTailRaw :=
+              ih p (trailingPanel A) (vectorTail b) htailReady
+            have hβ :
+                0 ≤ householderQRRhsPanelBackwardBoundSafe fp m p
+                  (trailingPanel A) (vectorTail b) :=
+              householderQRRhsPanelBackwardBoundSafe_nonneg fp m p
+                (trailingPanel A) (vectorTail b) htailReady
+            have hSkip :=
+              householder_qr_rhs_panel_explicit_backward_skip_zero_column A b
+                (fl_householderQRPanel_Q_safe fp m p (trailingPanel A))
+                (fl_householderQRPanel_rhs_safe fp m p
+                  (trailingPanel A) (vectorTail b))
+                (householderQRRhsPanelBackwardBoundSafe fp m p
+                  (trailingPanel A) (vectorTail b))
+                hcol hTailRaw hβ
+            simpa [fl_householderQRPanel_Q_safe,
+              fl_householderQRPanel_rhs_safe,
+              householderQRRhsPanelBackwardBoundSafe, hcol] using hSkip
+          · have hready' :
+                gammaValid fp (11 * (m + 1) + 23) ∧
+                HouseholderQRPanelSafeReady fp m p
+                  (fl_householderTrailingPanelStep fp A) := by
+              simpa [HouseholderQRPanelSafeReady, hcol] using hready
+            let P : Fin (m + 1) → Fin (m + 1) → ℝ :=
+              householder (m + 1)
+                (householderNormalizedVector (m + 1)
+                  (householderVector (Nat.succ_pos m)
+                    (panelFirstColumn (Nat.succ_pos p) A))
+                  (householderBetaFromScale (Nat.succ_pos m)
+                    (panelFirstColumn (Nat.succ_pos p) A))) 1
+            let bstep : Fin (m + 1) → ℝ :=
+              fl_householderApply fp (m + 1)
+                (fl_householderNormalizedVector fp (Nat.succ_pos m)
+                  (panelFirstColumn (Nat.succ_pos p) A)) 1 b
+            let cstep : ℝ :=
+              (m + 1 : ℝ) * householderConstructApplyBound fp (m + 1) *
+                infNormVec b
+            obtain ⟨e, hy, he⟩ := by
+              have hraw :=
+                fl_householder_first_column_rhs_step_residual_bound fp A b
+                  hcol hready'.1
+              simpa [P, bstep, cstep, Nat.cast_add, Nat.cast_one] using hraw
+            have hPorth : IsOrthogonal (m + 1) P := by
+              have hstep :=
+                fl_householder_first_column_rhs_step_error fp A b
+                  hcol hready'.1
+              simpa [P] using hstep.orth
+            have hTail :
+                HouseholderQRRhsPanelExplicitBackwardError m p
+                  (fl_householderTrailingPanelStep fp A) (vectorTail bstep)
+                  (fl_householderQRPanel_Q_safe fp m p
+                    (fl_householderTrailingPanelStep fp A))
+                  (fl_householderQRPanel_rhs_safe fp m p
+                    (fl_householderTrailingPanelStep fp A) (vectorTail bstep))
+                  (householderQRRhsPanelBackwardBoundSafe fp m p
+                    (fl_householderTrailingPanelStep fp A) (vectorTail bstep)) :=
+              ih p (fl_householderTrailingPanelStep fp A) (vectorTail bstep)
+                hready'.2
+            have hcstep : 0 ≤ cstep := by
+              have hc :
+                  0 ≤ householderConstructApplyBound fp (m + 1) :=
+                householderConstructApplyBound_nonneg fp (m + 1) hready'.1
+              exact mul_nonneg
+                (mul_nonneg (by positivity) hc)
+                (infNormVec_nonneg b)
+            have htailNonneg :
+                0 ≤ householderQRRhsPanelBackwardBoundSafe fp m p
+                  (fl_householderTrailingPanelStep fp A) (vectorTail bstep) :=
+              householderQRRhsPanelBackwardBoundSafe_nonneg fp m p
+                (fl_householderTrailingPanelStep fp A) (vectorTail bstep)
+                hready'.2
+            have hCons :=
+              householder_qr_rhs_panel_explicit_backward_cons A
+                (fl_householderTrailingPanelStep fp A) P
+                (fl_householderQRPanel_Q_safe fp m p
+                  (fl_householderTrailingPanelStep fp A))
+                b bstep e
+                (fl_householderQRPanel_rhs_safe fp m p
+                  (fl_householderTrailingPanelStep fp A) (vectorTail bstep))
+                cstep
+                (householderQRRhsPanelBackwardBoundSafe fp m p
+                  (fl_householderTrailingPanelStep fp A) (vectorTail bstep))
+                hPorth hy he hTail hcstep htailNonneg
+            simpa [fl_householderQRPanel_Q_safe,
+              fl_householderQRPanel_rhs_safe,
+              householderQRRhsPanelBackwardBoundSafe, hcol, P, bstep, cstep,
+              fl_householderTrailingPanelStep, Nat.cast_add, Nat.cast_one]
+              using hCons
+
+/-- Square specialization of the explicit fixed-`Q_safe` RHS theorem. -/
+theorem fl_householderQR_rhs_safe_explicit_backward_error
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (hready : HouseholderQRPanelSafeReady fp n n A) :
+    HouseholderQRRhsPanelExplicitBackwardError n n A b
+      (fl_householderQR_Q_safe fp n A)
+      (fl_householderQR_rhs_safe fp n A b)
+      (householderQRRhsBackwardBoundSafe fp n A b) := by
+  simpa [fl_householderQR_Q_safe, fl_householderQR_rhs_safe,
+    householderQRRhsBackwardBoundSafe] using
+    fl_householderQRPanel_rhs_safe_explicit_backward_error fp n n A b hready
+
+/-- Global-gamma wrapper for the explicit fixed-`Q_safe` RHS theorem. -/
+theorem fl_householderQR_rhs_safe_explicit_backward_error_of_global_gammaValid
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (hvalid : gammaValid fp (11 * n + 23)) :
+    HouseholderQRRhsPanelExplicitBackwardError n n A b
+      (fl_householderQR_Q_safe fp n A)
+      (fl_householderQR_rhs_safe fp n A b)
+      (householderQRRhsBackwardBoundSafe fp n A b) := by
+  exact fl_householderQR_rhs_safe_explicit_backward_error fp n A b
+    (HouseholderQRPanelSafeReady_square_of_global_gammaValid fp n A hvalid)
+
 /-- Global-gamma wrapper for the zero-aware implementation-backed RHS-transform
     theorem. -/
 theorem fl_householderQR_rhs_safe_backward_error_of_global_gammaValid
@@ -1811,6 +2238,64 @@ theorem fl_householderQR_solve_components_safe_backward_error_of_global_gammaVal
       (householderQRBackwardCoeffSafe fp n A * frobNorm A)
       (householderQRRhsBackwardBoundSafe fp n A b) := by
   exact fl_householderQR_solve_components_safe_backward_error fp n A b
+    (HouseholderQRPanelSafeReady_square_of_global_gammaValid fp n A hvalid)
+
+/-- Implementation-backed simultaneous backward-error theorem for the
+    zero-aware concrete Householder QR `R` panel and RHS transform with the
+    exact `Q_safe` witness fixed.
+
+    This packages the explicit `R_safe` theorem from `HouseholderQR.lean` and
+    the explicit RHS theorem above.  It strengthens
+    `fl_householderQRPanel_solve_components_safe_backward_error` by naming the
+    concrete exact orthogonal factor generated by the same safe QR recursion. -/
+theorem fl_householderQRPanel_solve_components_safe_fixed_Q_safe_backward_error
+    (fp : FPModel) (m p : ℕ)
+    (A : Fin m → Fin p → ℝ) (b : Fin m → ℝ)
+    (hready : HouseholderQRPanelSafeReady fp m p A) :
+    HouseholderQRPanelSolveFixedBackwardError m p A
+      (fl_householderQRPanel_R_safe fp m p A)
+      b (fl_householderQRPanel_rhs_safe fp m p A b)
+      (fl_householderQRPanel_Q_safe fp m p A)
+      (householderQRPanelBackwardCoeffSafe fp m p A * frobNorm A)
+      (householderQRRhsPanelBackwardBoundSafe fp m p A b) := by
+  have hR :=
+    fl_householderQRPanel_R_safe_explicit_backward_error fp m p A hready
+  have hb :=
+    fl_householderQRPanel_rhs_safe_explicit_backward_error fp m p A b hready
+  exact HouseholderQRPanelSolveFixedBackwardError.of_explicit_components hR hb
+
+/-- Square specialization of the fixed-`Q_safe` simultaneous concrete QR/RHS
+    component theorem. -/
+theorem fl_householderQR_solve_components_safe_fixed_Q_safe_backward_error
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (hready : HouseholderQRPanelSafeReady fp n n A) :
+    HouseholderQRPanelSolveFixedBackwardError n n A
+      (fl_householderQR_R_safe fp n A)
+      b (fl_householderQR_rhs_safe fp n A b)
+      (fl_householderQR_Q_safe fp n A)
+      (householderQRBackwardCoeffSafe fp n A * frobNorm A)
+      (householderQRRhsBackwardBoundSafe fp n A b) := by
+  simpa [fl_householderQR_R_safe, fl_householderQR_rhs_safe,
+    fl_householderQR_Q_safe, householderQRBackwardCoeffSafe,
+    householderQRRhsBackwardBoundSafe] using
+    fl_householderQRPanel_solve_components_safe_fixed_Q_safe_backward_error
+      fp n n A b hready
+
+/-- Global-gamma wrapper for the fixed-`Q_safe` simultaneous concrete QR/RHS
+    component theorem. -/
+theorem fl_householderQR_solve_components_safe_fixed_Q_safe_backward_error_of_global_gammaValid
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (hvalid : gammaValid fp (11 * n + 23)) :
+    HouseholderQRPanelSolveFixedBackwardError n n A
+      (fl_householderQR_R_safe fp n A)
+      b (fl_householderQR_rhs_safe fp n A b)
+      (fl_householderQR_Q_safe fp n A)
+      (householderQRBackwardCoeffSafe fp n A * frobNorm A)
+      (householderQRRhsBackwardBoundSafe fp n A b) := by
+  exact fl_householderQR_solve_components_safe_fixed_Q_safe_backward_error
+    fp n A b
     (HouseholderQRPanelSafeReady_square_of_global_gammaValid fp n A hvalid)
 
 /-- **Theorem 18.5 composition**: QR solve backward error from components.
