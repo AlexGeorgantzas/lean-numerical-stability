@@ -1,9 +1,13 @@
 import LeanFpAnalysis.HDP.Probability.Inequalities
 import Mathlib.Analysis.Asymptotics.Defs
+import Mathlib.Analysis.Asymptotics.Lemmas
 import Mathlib.Algebra.BigOperators.Ring.Finset
 import Mathlib.Data.Fintype.Powerset
 import Mathlib.MeasureTheory.Function.ConvergenceInDistribution
-import Mathlib.Probability.Distributions.Poisson
+import Mathlib.MeasureTheory.Measure.CharacteristicFunction.TaylorExpansion
+import Mathlib.MeasureTheory.Measure.LevyConvergence
+import Mathlib.Probability.Independence.CharacteristicFunction
+import Mathlib.Probability.Distributions.Poisson.Basic
 import Mathlib.Probability.ProbabilityMassFunction.Binomial
 import Mathlib.Probability.StrongLaw
 import Mathlib.Tactic
@@ -12,11 +16,9 @@ import Mathlib.Tactic
 # Limit Theorems
 
 HDP Chapter 1, Section 1.3. The strong law is provided by mathlib and wrapped
-in book-style notation. The Lindeberg-Levy CLT and the full Bernoulli
-triangular-array Poisson limit theorem require substantial characteristic
-function/asymptotic infrastructure not currently present in this library, so
-this file records their exact hypotheses/conclusions as definitions rather than
-pretending to prove them by assuming the conclusion.
+in book-style notation. The Lindeberg-Levy CLT uses mathlib's characteristic-
+function Taylor expansion and Lévy continuity theorem, together with the local
+book-style normalization and characteristic-function factorization lemmas below.
 -/
 
 noncomputable section
@@ -434,6 +436,474 @@ def centralLimitConclusion [IsProbabilityMeasure μ]
     atTop
     (𝓝 standardNormalProbability)
 
+/-- Characteristic-function form of the CLT conclusion:
+the normalized sums have characteristic functions converging pointwise to that
+of `N(0,1)`, namely `exp (-t^2/2)`. -/
+def centralLimitCharacteristicFunctionConclusion [IsProbabilityMeasure μ]
+    (X : ℕ → Ω → ℝ) (m σ : ℝ) : Prop :=
+  ∀ t : ℝ,
+    Tendsto
+      (fun N : ℕ => charFun (μ.map (normalizedSum X m σ N)) t)
+      atTop
+      (𝓝 (Complex.exp (-(t : ℂ) ^ 2 / 2)))
+
+/-- The second-order characteristic-function expansion for one centered
+summand, in exactly the sequence form used in the Lindeberg-Levy proof. This is
+proved below from the moment assumptions, not assumed as a CLT hypothesis. -/
+def lindebergLevySecondOrderCharFunExpansion [IsProbabilityMeasure μ]
+    (Y : Ω → ℝ) (σ : ℝ) : Prop :=
+  ∀ t : ℝ,
+    Tendsto
+      (fun N : ℕ =>
+        (N : ℂ) *
+          (charFun (μ.map Y) (t / (σ * Real.sqrt (N : ℝ))) - 1))
+      atTop
+      (𝓝 (-(t : ℂ) ^ 2 / 2))
+
+/-- Characteristic function of the standard normal probability measure. -/
+theorem standardNormal_charFun (t : ℝ) :
+    charFun standardNormalMeasure t =
+      Complex.exp (-(t : ℂ) ^ 2 / 2) := by
+  rw [standardNormalMeasure, ProbabilityTheory.charFun_gaussianReal]
+  congr 1
+  norm_num
+  ring
+
+/-- Lévy-continuity bridge for the CLT: pointwise convergence of
+characteristic functions implies convergence in distribution of the laws. -/
+theorem centralLimitConclusion_of_characteristicFunction
+    [IsProbabilityMeasure μ]
+    {X : ℕ → Ω → ℝ} {m σ : ℝ}
+    (hZ : ∀ N, AEMeasurable (normalizedSum X m σ N) μ)
+    (hcf : centralLimitCharacteristicFunctionConclusion (μ := μ) X m σ) :
+    centralLimitConclusion (μ := μ) X m σ hZ := by
+  unfold centralLimitConclusion
+  refine MeasureTheory.ProbabilityMeasure.tendsto_of_tendsto_charFun ?_
+  intro t
+  have ht := hcf t
+  simpa [lawOf_toMeasure, standardNormalProbability, standardNormal_charFun t] using ht
+
+/-- The centered finite sum used in the characteristic-function proof of the
+Lindeberg-Levy CLT. -/
+def centeredPartialSum (X : ℕ → Ω → ℝ) (m : ℝ) (N : ℕ) (ω : Ω) : ℝ :=
+  ∑ i : Fin N, (X i ω - m)
+
+omit [MeasurableSpace Ω] in
+@[simp]
+lemma centeredPartialSum_def (X : ℕ → Ω → ℝ) (m : ℝ) (N : ℕ) (ω : Ω) :
+    centeredPartialSum X m N ω = ∑ i : Fin N, (X i ω - m) := rfl
+
+omit [MeasurableSpace Ω] in
+/-- The existing HDP normalization can be read as a scalar multiple of the
+centered finite sum. -/
+theorem normalizedSum_eq_centeredPartialSum
+    (X : ℕ → Ω → ℝ) (m σ : ℝ) (N : ℕ) (ω : Ω) :
+    normalizedSum X m σ N ω =
+      (σ * Real.sqrt (N : ℝ))⁻¹ * centeredPartialSum X m N ω := by
+  rw [normalizedSum_eq_sum_centered]
+  simp [centeredPartialSum, Finset.sum_range, div_eq_inv_mul]
+
+omit [MeasurableSpace Ω] in
+/-- The HDP normalization is the normalized sum of standardized centered
+variables `(X_i - m) / σ`. -/
+theorem normalizedSum_eq_inv_sqrt_mul_sum_standardized
+    (X : ℕ → Ω → ℝ) (m σ : ℝ) (N : ℕ) (ω : Ω) :
+    normalizedSum X m σ N ω =
+      (Real.sqrt (N : ℝ))⁻¹ *
+        ∑ i ∈ Finset.range N, (X i ω - m) / σ := by
+  rw [normalizedSum_eq_sum_centered]
+  rw [Finset.sum_div]
+  rw [Finset.mul_sum]
+  simp [div_eq_inv_mul]
+  apply Finset.sum_congr rfl
+  intro i _hi
+  ring
+
+/-- AEMeasurability of the normalized sum from AEMeasurability of the
+summands. -/
+theorem normalizedSum_aemeasurable
+    {X : ℕ → Ω → ℝ} {m σ : ℝ}
+    (hX : ∀ n, AEMeasurable (X n) μ) (N : ℕ) :
+    AEMeasurable (normalizedSum X m σ N) μ := by
+  have hsum :
+      AEMeasurable (centeredPartialSum X m N) μ := by
+    have hsum_fun :
+        AEMeasurable (∑ i : Fin N, fun ω => X i ω - m) μ :=
+      Finset.aemeasurable_sum (s := (Finset.univ : Finset (Fin N)))
+        (fun i _ => (hX i).sub (aemeasurable_const (μ := μ) (b := m)))
+    exact AEMeasurable.congr hsum_fun (ae_of_all μ fun ω => by
+      simp [centeredPartialSum, Finset.sum_apply])
+  exact AEMeasurable.congr
+    (hsum.const_mul ((σ * Real.sqrt (N : ℝ))⁻¹))
+    (ae_of_all μ fun ω => by
+      exact (normalizedSum_eq_centeredPartialSum X m σ N ω).symm)
+
+/-- Centering and scaling makes the first summand mean zero. -/
+theorem lindebergLevy_standardized_mean_eq_zero
+    [IsProbabilityMeasure μ]
+    {Y : Ω → ℝ} {m σ : ℝ}
+    (hY_int : Integrable Y μ)
+    (hmean : μ[Y] = m)
+    (hσ : σ ≠ 0) :
+    μ[fun ω => (Y ω - m) / σ] = 0 := by
+  calc
+    μ[fun ω => (Y ω - m) / σ]
+        = μ[fun ω => (Y ω - m) * σ⁻¹] := by
+          simp [div_eq_mul_inv]
+    _ = μ[fun ω => Y ω - m] * σ⁻¹ := by
+          rw [integral_mul_const]
+    _ = σ⁻¹ * μ[fun ω => Y ω - m] := by ring
+    _ = σ⁻¹ * (μ[Y] - μ[fun _ : Ω => m]) := by
+          rw [integral_sub hY_int (integrable_const m)]
+    _ = σ⁻¹ * (m - m) := by
+          simp [hmean]
+    _ = σ⁻¹ * 0 := by ring
+    _ = (σ⁻¹ * σ) * 0 := by ring
+    _ = 0 := by
+          rw [inv_mul_cancel₀ hσ]
+          norm_num
+
+/-- Centering and scaling makes the first summand have second moment one. -/
+theorem lindebergLevy_standardized_second_moment_eq_one
+    [IsProbabilityMeasure μ]
+    {Y : Ω → ℝ} {m σ : ℝ}
+    (hY_mlp : MemLp Y 2 μ)
+    (hmean : μ[Y] = m)
+    (hvar : Var[Y; μ] = σ ^ 2)
+    (hσ : σ ≠ 0) :
+    μ[fun ω => ((Y ω - m) / σ) ^ 2] = 1 := by
+  have hvar_formula :
+      Var[Y; μ] = μ[fun ω => (Y ω - μ[Y]) ^ 2] :=
+    ProbabilityTheory.variance_eq_integral hY_mlp.aemeasurable
+  have hcenter_sq :
+      μ[fun ω => (Y ω - m) ^ 2] = σ ^ 2 := by
+    calc
+      μ[fun ω => (Y ω - m) ^ 2]
+          = μ[fun ω => (Y ω - μ[Y]) ^ 2] := by
+              simp [hmean]
+      _ = Var[Y; μ] := by
+              rw [hvar_formula]
+      _ = σ ^ 2 := hvar
+  calc
+    μ[fun ω => ((Y ω - m) / σ) ^ 2]
+        = μ[fun ω => σ⁻¹ ^ 2 * (Y ω - m) ^ 2] := by
+            congr 1
+            funext ω
+            field_simp [hσ]
+    _ = σ⁻¹ ^ 2 * μ[fun ω => (Y ω - m) ^ 2] := by
+            rw [integral_const_mul]
+    _ = σ⁻¹ ^ 2 * σ ^ 2 := by
+            rw [hcenter_sq]
+    _ = 1 := by
+            field_simp [hσ]
+
+/-- The characteristic-function Taylor expansion for the standardized first
+summand. This is the analytic input replacing the old conditional
+`secondOrder_charFun` hypothesis. -/
+theorem lindebergLevy_standardized_charFun_taylor
+    [IsProbabilityMeasure μ]
+    {Y : Ω → ℝ} {m σ : ℝ}
+    (hY_meas : AEMeasurable Y μ)
+    (hY_int : Integrable Y μ)
+    (hY_mlp : MemLp Y 2 μ)
+    (hmean : μ[Y] = m)
+    (hvar : Var[Y; μ] = σ ^ 2)
+    (hσ : σ ≠ 0) :
+    (fun u : ℝ =>
+        charFun (μ.map fun ω => (Y ω - m) / σ) u
+          - (1 - (u : ℂ) ^ 2 / 2))
+      =o[𝓝 0]
+    (fun u : ℝ => u ^ 2) := by
+  have hZ_meas :
+      AEMeasurable (fun ω => (Y ω - m) / σ) μ :=
+    (hY_meas.sub aemeasurable_const).div_const σ
+  have hZ_mean :
+      μ[fun ω => (Y ω - m) / σ] = 0 :=
+    lindebergLevy_standardized_mean_eq_zero
+      (μ := μ) hY_int hmean hσ
+  have hZ_sq :
+      μ[fun ω => ((Y ω - m) / σ) ^ 2] = 1 :=
+    lindebergLevy_standardized_second_moment_eq_one
+      (μ := μ) hY_mlp hmean hvar hσ
+  simpa using
+    MeasureTheory.taylor_charFun_two
+      (P := μ)
+      (X := fun ω => (Y ω - m) / σ)
+      hZ_meas hZ_mean hZ_sq
+
+/-- Scaling identity for characteristic functions of divided random variables. -/
+theorem charFun_div_eq_charFun_scaled
+    [IsProbabilityMeasure μ]
+    {Y : Ω → ℝ} {σ t : ℝ}
+    (hY : AEMeasurable Y μ) :
+    charFun (μ.map (fun ω => Y ω / σ)) t =
+      charFun (μ.map Y) (t / σ) := by
+  have hcongr :
+      (fun ω => Y ω / σ) =ᵐ[μ] fun ω => σ⁻¹ * Y ω := by
+    exact ae_of_all μ fun ω => by
+      simp [div_eq_inv_mul, mul_comm]
+  rw [Measure.map_congr hcongr]
+  change charFun (Measure.map ((fun x : ℝ => σ⁻¹ * x) ∘ Y) μ) t =
+    charFun (Measure.map Y μ) (t / σ)
+  rw [← AEMeasurable.map_map_of_aemeasurable
+    (g := fun x : ℝ => σ⁻¹ * x) (f := Y)
+    (by fun_prop) hY]
+  rw [charFun_map_mul]
+  simp [div_eq_inv_mul, mul_comm]
+
+/-- Frequency-specialized scaling identity used in the CLT proof. -/
+theorem charFun_div_sqrt_eq_charFun_scaled_sqrt
+    [IsProbabilityMeasure μ]
+    {Y : Ω → ℝ} {σ : ℝ}
+    (hY : AEMeasurable Y μ)
+    (N : ℕ) (t : ℝ) :
+    charFun (μ.map (fun ω => Y ω / σ)) (t / Real.sqrt (N : ℝ)) =
+      charFun (μ.map Y) (t / (σ * Real.sqrt (N : ℝ))) := by
+  convert charFun_div_eq_charFun_scaled
+    (μ := μ) (Y := Y) (σ := σ) (t := t / Real.sqrt (N : ℝ)) hY using 2
+  ring_nf
+
+/-- Sequential form of the second-order Taylor expansion used in the CLT:
+`φ(u) = 1 - u² / 2 + o(u²)` at `0` implies
+`N * (φ(t / sqrt N) - 1) → -t² / 2`. -/
+theorem standardized_secondOrder_sequence_of_taylor
+    {φ : ℝ → ℂ}
+    (htaylor :
+      (fun u : ℝ => φ u - (1 - (u : ℂ) ^ 2 / 2))
+        =o[𝓝 0]
+      (fun u : ℝ => u ^ 2))
+    (t : ℝ) :
+    Tendsto
+      (fun N : ℕ =>
+        (N : ℂ) * (φ (t / Real.sqrt (N : ℝ)) - 1))
+      atTop
+      (𝓝 (-(t : ℂ) ^ 2 / 2)) := by
+  let u : ℕ → ℝ := fun N => t / Real.sqrt (N : ℝ)
+  let r : ℝ → ℂ := fun u => φ u - (1 - (u : ℂ) ^ 2 / 2)
+  have hu : Tendsto u atTop (𝓝 0) := by
+    simpa [u] using
+      (tendsto_const_nhds.div_atTop
+        (Real.tendsto_sqrt_atTop.comp
+          (tendsto_natCast_atTop_atTop :
+            Tendsto (fun N : ℕ => (N : ℝ)) atTop atTop)) :
+        Tendsto (fun N : ℕ => t / Real.sqrt (N : ℝ)) atTop (𝓝 0))
+  have hr_real : (fun N : ℕ => r (u N)) =o[atTop] (fun N : ℕ => (u N) ^ 2) := by
+    simpa [r, Function.comp_def] using htaylor.comp_tendsto hu
+  by_cases ht : t = 0
+  · subst t
+    have hr_const : Tendsto (fun _ : ℕ => r 0) atTop (𝓝 0) := by
+      have hconst :
+          (fun _ : ℕ => r 0) =o[atTop] (fun _ : ℕ => (0 : ℝ)) := by
+        simpa [r, Function.comp_def] using
+          htaylor.comp_tendsto
+            (tendsto_const_nhds :
+              Tendsto (fun _ : ℕ => (0 : ℝ)) atTop (𝓝 0))
+      exact hconst.trans_tendsto tendsto_const_nhds
+    have hr0 : r 0 = 0 :=
+      tendsto_nhds_unique tendsto_const_nhds hr_const
+    have hφ0 : φ 0 = 1 := by
+      have : φ 0 - (1 - (0 : ℂ) ^ 2 / 2) = 0 := by
+        simpa [r] using hr0
+      simpa using sub_eq_zero.mp this
+    simp [hφ0]
+  · have hr_complex :
+        (fun N : ℕ => r (u N)) =o[atTop]
+          (fun N : ℕ => ((u N : ℂ) ^ 2)) := by
+      rw [← Asymptotics.isLittleO_norm_right]
+      rw [← Asymptotics.isLittleO_norm_right] at hr_real
+      simpa [Complex.normSq] using hr_real
+    have hratio :
+        Tendsto
+          (fun N : ℕ => r (u N) / ((u N : ℂ) ^ 2))
+          atTop (𝓝 0) :=
+      hr_complex.tendsto_div_nhds_zero
+    have hNu2 :
+        Tendsto
+          (fun N : ℕ => (N : ℂ) * ((u N : ℂ) ^ 2))
+          atTop
+          (𝓝 ((t : ℂ) ^ 2)) := by
+      apply tendsto_nhds_of_eventually_eq
+      filter_upwards [eventually_ne_atTop 0] with N hN
+      dsimp [u]
+      have hreal :
+          (N : ℝ) * (t / Real.sqrt (N : ℝ)) ^ 2 = t ^ 2 := by
+        rw [div_pow, Real.sq_sqrt (Nat.cast_nonneg N)]
+        field_simp [Nat.cast_ne_zero.mpr hN]
+      exact_mod_cast hreal
+    have hrem :
+        Tendsto (fun N : ℕ => (N : ℂ) * r (u N)) atTop (𝓝 0) := by
+      have hprod := hNu2.mul hratio
+      have heq :
+          (fun N : ℕ =>
+              (N : ℂ) * ((u N : ℂ) ^ 2) *
+                (r (u N) / ((u N : ℂ) ^ 2))) =ᶠ[atTop]
+            fun N : ℕ => (N : ℂ) * r (u N) := by
+        filter_upwards [eventually_ne_atTop 0] with N hN
+        have huc : (u N : ℂ) ≠ 0 := by
+          dsimp [u]
+          have hsqrt_pos : 0 < Real.sqrt (N : ℝ) :=
+            Real.sqrt_pos.mpr (Nat.cast_pos.mpr (Nat.pos_of_ne_zero hN))
+          have hune : (t / Real.sqrt (N : ℝ) : ℝ) ≠ 0 :=
+            div_ne_zero ht hsqrt_pos.ne'
+          exact Complex.ofReal_ne_zero.mpr hune
+        have hu_ne : (u N : ℂ) ^ 2 ≠ 0 :=
+          pow_ne_zero 2 huc
+        rw [div_eq_mul_inv]
+        calc
+          (N : ℂ) * (u N : ℂ) ^ 2 *
+              (r (u N) * (((u N : ℂ) ^ 2)⁻¹)) =
+            (N : ℂ) * r (u N) *
+              (((u N : ℂ) ^ 2) * (((u N : ℂ) ^ 2)⁻¹)) := by
+              ring
+          _ = (N : ℂ) * r (u N) * 1 := by
+              rw [mul_inv_cancel₀ hu_ne]
+          _ = (N : ℂ) * r (u N) := by
+              ring
+      simpa using hprod.congr' heq
+    have hmain :
+        Tendsto
+          (fun N : ℕ =>
+            (N : ℂ) * (-(u N : ℂ) ^ 2 / 2))
+          atTop
+          (𝓝 (-(t : ℂ) ^ 2 / 2)) := by
+      have h' := hNu2.const_mul (-(1 / 2 : ℂ))
+      convert h' using 1
+      · ext N
+        ring
+      · ring_nf
+    have hsum := hmain.add hrem
+    have heq :
+        (fun N : ℕ =>
+            (N : ℂ) * (-(u N : ℂ) ^ 2 / 2) +
+              (N : ℂ) * r (u N)) =ᶠ[atTop]
+          fun N : ℕ => (N : ℂ) * (φ (t / Real.sqrt (N : ℝ)) - 1) := by
+      filter_upwards with N
+      dsimp [r, u]
+      ring
+    simpa using hsum.congr' heq
+
+/-- The second-order characteristic-function expansion follows from the usual
+one-variable moment assumptions. This is the former analytic gap in the
+Lindeberg-Levy CLT proof. -/
+theorem lindebergLevySecondOrderCharFunExpansion_of_moments
+    [IsProbabilityMeasure μ]
+    {Y : Ω → ℝ} {m σ : ℝ}
+    (hY_meas : AEMeasurable Y μ)
+    (hY_int : Integrable Y μ)
+    (hY_mlp : MemLp Y 2 μ)
+    (hmean : μ[Y] = m)
+    (hvar : Var[Y; μ] = σ ^ 2)
+    (hσ : σ ≠ 0) :
+    lindebergLevySecondOrderCharFunExpansion
+      (μ := μ) (fun ω => Y ω - m) σ := by
+  intro t
+  have htaylor :
+      (fun u : ℝ =>
+          charFun (μ.map fun ω => (Y ω - m) / σ) u
+            - (1 - (u : ℂ) ^ 2 / 2))
+        =o[𝓝 0]
+      (fun u : ℝ => u ^ 2) :=
+    lindebergLevy_standardized_charFun_taylor
+      (μ := μ) (Y := Y) (m := m) (σ := σ)
+      hY_meas hY_int hY_mlp hmean hvar hσ
+  have hseq :=
+    standardized_secondOrder_sequence_of_taylor htaylor t
+  refine hseq.congr' ?_
+  filter_upwards with N
+  rw [charFun_div_sqrt_eq_charFun_scaled_sqrt
+    (μ := μ) (Y := fun ω => Y ω - m) (σ := σ)
+    ((hY_meas.sub aemeasurable_const)) N t]
+
+/-- Characteristic-function factorization for the normalized sum in the
+Lindeberg-Levy CLT proof. This is the genuine independence step:
+the characteristic function of the normalized sum is the `N`-th power of the
+characteristic function of one centered summand, evaluated at the scaled
+frequency. -/
+theorem charFun_normalizedSum_eq_pow
+    [IsProbabilityMeasure μ]
+    {X : ℕ → Ω → ℝ} {m σ : ℝ}
+    (hX : ∀ n, AEMeasurable (X n) μ)
+    (hindep : iIndepFun X μ)
+    (hident : ∀ n, IdentDistrib (X 0) (X n) μ μ)
+    (N : ℕ) (t : ℝ) :
+    charFun (μ.map (normalizedSum X m σ N)) t =
+      (charFun (μ.map (fun ω => X 0 ω - m))
+        (t / (σ * Real.sqrt (N : ℝ)))) ^ N := by
+  classical
+  let Y : Fin N → Ω → ℝ := fun i ω => X i ω - m
+  let S : Ω → ℝ := ∑ i : Fin N, Y i
+  let c : ℝ := (σ * Real.sqrt (N : ℝ))⁻¹
+  have hY_meas : ∀ i : Fin N, AEMeasurable (Y i) μ := by
+    intro i
+    exact (hX i).sub aemeasurable_const
+  have hY_indep : iIndepFun Y μ := by
+    have hres : iIndepFun (fun i : Fin N => X (i : ℕ)) μ :=
+      hindep.precomp Fin.val_injective
+    exact hres.comp (fun _ x => x - m) (fun _ => measurable_id.sub measurable_const)
+  have hS_meas : AEMeasurable S μ := by
+    change AEMeasurable (∑ i : Fin N, Y i) μ
+    exact Finset.aemeasurable_sum (s := (Finset.univ : Finset (Fin N)))
+      fun i _ => hY_meas i
+  have hnorm_ae : normalizedSum X m σ N =ᵐ[μ] fun ω => c * S ω := by
+    exact ae_of_all μ fun ω => by
+      simp [S, Y, c, normalizedSum_eq_centeredPartialSum, centeredPartialSum]
+  rw [Measure.map_congr hnorm_ae]
+  change
+    charFun (Measure.map ((fun x : ℝ => c * x) ∘ S) μ) t =
+      charFun (Measure.map (fun ω => X 0 ω - m) μ)
+        (t / (σ * Real.sqrt (N : ℝ))) ^ N
+  rw [← AEMeasurable.map_map_of_aemeasurable
+    (g := fun x : ℝ => c * x) (f := S)
+    (by fun_prop) hS_meas]
+  rw [charFun_map_mul]
+  have hsum_cf :
+      charFun (μ.map S) (c * t) =
+        ∏ i : Fin N, charFun (μ.map (Y i)) (c * t) := by
+    simpa [S] using congrFun (hY_indep.charFun_map_sum_eq_prod hY_meas) (c * t)
+  rw [hsum_cf]
+  have hfactor :
+      ∀ i : Fin N,
+        charFun (μ.map (Y i)) (c * t) =
+          charFun (μ.map (fun ω => X 0 ω - m)) (c * t) := by
+    intro i
+    have hi : IdentDistrib (fun ω => X 0 ω - m) (Y i) μ μ :=
+      (hident i).comp (measurable_id.sub measurable_const)
+    rw [← hi.map_eq]
+  rw [Finset.prod_congr rfl (fun i _ => hfactor i)]
+  simp [c, div_eq_inv_mul, mul_comm]
+
+/-- From the characteristic-function Taylor expansion for the standardized
+summand, the normalized sums converge pointwise to the standard normal
+characteristic function. -/
+theorem lindebergLevyCentralLimitTheorem_characteristicFunction
+    [IsProbabilityMeasure μ]
+    {X : ℕ → Ω → ℝ} {m σ : ℝ}
+    (hX : ∀ n, AEMeasurable (X n) μ)
+    (hX_int : Integrable (X 0) μ)
+    (hX_mlp : MemLp (X 0) 2 μ)
+    (hindep : iIndepFun X μ)
+    (hident : ∀ n, IdentDistrib (X n) (X 0) μ μ)
+    (hmean : μ[X 0] = m)
+    (hvar : Var[X 0; μ] = σ ^ 2)
+    (hσ : 0 < σ) :
+    centralLimitCharacteristicFunctionConclusion (μ := μ) X m σ := by
+  have hσ_ne : σ ≠ 0 := ne_of_gt hσ
+  have hsecond :
+      lindebergLevySecondOrderCharFunExpansion
+        (μ := μ) (fun ω => X 0 ω - m) σ :=
+    lindebergLevySecondOrderCharFunExpansion_of_moments
+      (μ := μ) (Y := X 0) (m := m) (σ := σ)
+      (hX 0) hX_int hX_mlp hmean hvar hσ_ne
+  intro t
+  have hpow :=
+    Complex.tendsto_one_add_pow_exp_of_tendsto (hsecond t)
+  exact hpow.congr' (by
+    filter_upwards with N
+    rw [charFun_normalizedSum_eq_pow
+      (μ := μ) hX hindep (fun n => (hident n).symm) N t]
+    congr 1
+    ring)
+
 /-- Tail form of the CLT obtained from convergence in distribution at the
 Gaussian continuity set `[t, ∞)`. -/
 theorem centralLimit_tail_tendsto
@@ -503,22 +973,52 @@ theorem centralLimit_tail_tendsto_integral
 This structure deliberately contains only assumptions, not the conclusion. -/
 structure LindebergLevyCLTHypotheses [IsProbabilityMeasure μ]
     (X : ℕ → Ω → ℝ) (m σ : ℝ) : Prop where
+  aemeasurable : ∀ i, AEMeasurable (X i) μ
   integrable_zero : Integrable (X 0) μ
   square_integrable_zero : MemLp (X 0) 2 μ
-  independent : Pairwise ((· ⟂ᵢ[μ] ·) on X)
+  independent : iIndepFun X μ
   identDistrib : ∀ i, IdentDistrib (X i) (X 0) μ μ
   mean_eq : μ[X 0] = m
   variance_eq : Var[X 0; μ] = σ ^ 2
   sigma_pos : 0 < σ
-  normalized_aemeasurable : ∀ N, AEMeasurable (normalizedSum X m σ N) μ
 
-/-- The exact proposition stated by HDP Theorem 1.3.2. It is kept as a
-statement object until the characteristic-function/Taylor proof infrastructure
-is formalized. -/
+/-- Characteristic-function form of HDP Theorem 1.3.2, proved from the
+book-style hypotheses by the characteristic-function Taylor theorem. -/
+theorem lindebergLevyCentralLimitTheorem_characteristicFunction_of_hypotheses
+    [IsProbabilityMeasure μ]
+    {X : ℕ → Ω → ℝ} {m σ : ℝ}
+    (h : LindebergLevyCLTHypotheses (μ := μ) X m σ) :
+    centralLimitCharacteristicFunctionConclusion (μ := μ) X m σ :=
+  lindebergLevyCentralLimitTheorem_characteristicFunction
+    (μ := μ) h.aemeasurable h.integrable_zero h.square_integrable_zero
+    h.independent h.identDistrib h.mean_eq h.variance_eq h.sigma_pos
+
+/-- Genuine Lindeberg-Levy CLT: i.i.d. real random variables with finite
+second moment, mean `m`, and variance `σ²`, with `σ > 0`, have normalized sums
+converging in distribution to the standard normal law. -/
+theorem lindebergLevyCentralLimitTheorem
+    [IsProbabilityMeasure μ]
+    {X : ℕ → Ω → ℝ} {m σ : ℝ}
+    (h : LindebergLevyCLTHypotheses (μ := μ) X m σ) :
+    centralLimitConclusion
+      (μ := μ) X m σ
+      (normalizedSum_aemeasurable (μ := μ) h.aemeasurable) :=
+  centralLimitConclusion_of_characteristicFunction
+    (μ := μ)
+    (X := X)
+    (m := m)
+    (σ := σ)
+    (normalizedSum_aemeasurable (μ := μ) h.aemeasurable)
+    (lindebergLevyCentralLimitTheorem_characteristicFunction_of_hypotheses
+      (μ := μ) h)
+
+/-- The convergence-in-distribution proposition stated by HDP Theorem 1.3.2. -/
 def lindebergLevyCentralLimitTheoremStatement [IsProbabilityMeasure μ]
     (X : ℕ → Ω → ℝ) (m σ : ℝ) : Prop :=
   ∀ h : LindebergLevyCLTHypotheses (μ := μ) X m σ,
-    centralLimitConclusion (μ := μ) X m σ h.normalized_aemeasurable
+    centralLimitConclusion
+      (μ := μ) X m σ
+      (normalizedSum_aemeasurable (μ := μ) h.aemeasurable)
 
 end GaussianLimit
 
@@ -1148,7 +1648,7 @@ theorem hasLaw_sum_bernoulliNatPMF_eq_binomialNatPMF
 
 /-- Poisson point probability from HDP (1.8). -/
 def poissonPointProbability (lam : ℝ≥0) (k : ℕ) : ℝ :=
-  ProbabilityTheory.poissonPMFReal lam k
+  Real.exp (-(lam : ℝ)) * (lam : ℝ) ^ k / (Nat.factorial k)
 
 @[simp]
 lemma poissonPointProbability_eq (lam : ℝ≥0) (k : ℕ) :
@@ -1166,11 +1666,8 @@ theorem poissonProbabilityMeasure_singleton
       =
     ENNReal.ofReal
       (Real.exp (-(lam : ℝ)) * (lam : ℝ) ^ k / Nat.factorial k) := by
-  change (ProbabilityTheory.poissonPMF lam).toMeasure {k} =
-    ENNReal.ofReal
-      (Real.exp (-(lam : ℝ)) * (lam : ℝ) ^ k / Nat.factorial k)
-  rw [PMF.toMeasure_apply_singleton _ k (measurableSet_singleton k)]
-  rfl
+  simpa [poissonProbabilityMeasure] using
+    ProbabilityTheory.poissonMeasure_singleton lam k
 
 /-- Row sum `S_N = ∑_{i < N} X_{N,i}` for the Poisson limit theorem. -/
 def poissonTriangularSum (X : ℕ → ℕ → Ω → ℕ) (N : ℕ) (ω : Ω) : ℕ :=
@@ -1183,6 +1680,716 @@ def rowParameterSum (p : ℕ → ℕ → ℝ≥0) (N : ℕ) : ℝ :=
 /-- Maximum Bernoulli parameter in row `N`. -/
 def rowParameterMax (p : ℕ → ℕ → ℝ≥0) (N : ℕ) : ℝ≥0 :=
   (Finset.range N).sup (p N)
+
+set_option maxHeartbeats 800000
+set_option maxRecDepth 4000
+set_option linter.unusedSimpArgs false
+set_option linter.unusedVariables false
+
+namespace PoissonLimitAux
+
+open Finset
+
+/-- Real-valued Bernoulli point mass on `ℕ`, used by the Poisson-binomial
+asymptotic proof. -/
+def bernoulliPMFReal (p : ℝ) (k : ℕ) : ℝ :=
+  if k = 0 then 1 - p else if k = 1 then p else 0
+
+/-- Real-valued Poisson point mass. -/
+def poissonPMFReal (lam : ℝ) (k : ℕ) : ℝ :=
+  Real.exp (-lam) * lam ^ k / k.factorial
+
+/-- The row sum `S_N = ∑ᵢ X_{N,i}`. -/
+def rowSum
+    {Ω : ℕ → Type*}
+    (X : (N : ℕ) → Fin N → Ω N → ℕ)
+    (N : ℕ) : Ω N → ℕ :=
+  fun ω => ∑ i : Fin N, X N i ω
+
+/-- The row maximum `max_{i≤N} p_{N,i}`, with value `0` for the empty row. -/
+def rowMax
+    (p : (N : ℕ) → Fin N → ℝ)
+    (N : ℕ) : ℝ :=
+  if h : 0 < N then
+    Finset.sup' Finset.univ ⟨⟨0, h⟩, Finset.mem_univ _⟩ (fun i : Fin N => p N i)
+  else 0
+
+/-! ## Combinatorial definitions -/
+
+/-- The combinatorial formula for the sum of independent Bernoullis. -/
+def bernoulliSumProb {N : ℕ} (p : Fin N → ℝ) (k : ℕ) : ℝ :=
+  ∑ A ∈ (Finset.univ : Finset (Fin N)).powersetCard k,
+    (∏ i ∈ A, p i) * ∏ i ∈ (Finset.univ \ A), (1 - p i)
+
+/-- The k-th elementary symmetric polynomial. -/
+def esymm {N : ℕ} (x : Fin N → ℝ) (k : ℕ) : ℝ :=
+  ∑ A ∈ (Finset.univ : Finset (Fin N)).powersetCard k,
+    ∏ i ∈ A, x i
+
+/-! ## Elementary symmetric polynomial bounds -/
+
+lemma esymm_nonneg {N : ℕ} (x : Fin N → ℝ) (hx : ∀ i, 0 ≤ x i) (k : ℕ) :
+    0 ≤ esymm x k := by
+  exact Finset.sum_nonneg fun _ _ => Finset.prod_nonneg fun _ _ => hx _
+
+lemma factorial_mul_esymm_le_sum_pow {N : ℕ} (x : Fin N → ℝ)
+    (hx : ∀ i, 0 ≤ x i) (k : ℕ) :
+    (k.factorial : ℝ) * esymm x k ≤ (∑ i : Fin N, x i) ^ k := by
+  set F := (Fin k → Fin N) with hF_def
+  set S := {f : F | Function.Injective f} with hS_def
+  have hS_card : ∑ f ∈ Finset.univ.filter (fun f : F => Function.Injective f),
+      (∏ i, x (f i)) = k.factorial * esymm x k := by
+    have h_subset_prod :
+        ∀ A ∈ Finset.powersetCard k (Finset.univ : Finset (Fin N)),
+          ∑ f ∈ Finset.filter
+              (fun f : F => Function.Injective f ∧ Finset.image f Finset.univ = A)
+              Finset.univ,
+            (∏ i, x (f i)) =
+              k.factorial * (∏ i ∈ A, x i) := by
+      intro A hA
+      have h_subset_prod : ∀ f : F,
+          Function.Injective f ∧ Finset.image f Finset.univ = A →
+            (∏ i, x (f i)) = (∏ i ∈ A, x i) := by
+        intro f hf
+        rw [← hf.2, Finset.prod_image (by tauto)]
+      rw [Finset.sum_congr rfl fun f hf => h_subset_prod f <| Finset.mem_filter.mp hf |>.2]
+      norm_num [Finset.mem_powersetCard.mp hA]
+      ring_nf
+      have h_inj_count :
+          Finset.card (Finset.filter
+              (fun f : Fin k → Fin N =>
+                Function.Injective f ∧ Finset.image f Finset.univ = A)
+              Finset.univ) =
+            Finset.card (Finset.image
+              (fun f : Fin k ≃ A => fun i => (f i : Fin N))
+              (Finset.univ : Finset (Fin k ≃ A))) := by
+        congr with f
+        simp +decide [Function.Injective, Finset.ext_iff]
+        constructor <;> intro h
+        · have h_equiv : ∃ a : Fin k ≃ A, ∀ i, a i = f i := by
+            have h_image : Finset.image f Finset.univ = A := by
+              ext
+              simp [h]
+            exact ⟨Equiv.ofBijective (fun i => ⟨f i, by aesop⟩)
+              ⟨fun i j hij => h.1 <| by aesop, fun i => by aesop⟩,
+              fun i => rfl⟩
+          exact ⟨h_equiv.choose, funext h_equiv.choose_spec⟩
+        · rcases h with ⟨a, rfl⟩
+          simp +decide [Function.Injective, Finset.mem_image]
+          exact fun i => ⟨fun ⟨j, hj⟩ => hj ▸ Subtype.mem _, fun hi =>
+            ⟨a.symm ⟨i, hi⟩, by simp +decide⟩⟩
+      rw [h_inj_count, Finset.card_image_of_injective] <;> norm_num [Function.Injective]
+      · rw [Fintype.card_equiv]
+        aesop
+        exact Fintype.equivOfCardEq (by simp +decide [Finset.mem_powersetCard.mp hA])
+      · simp +decide [funext_iff, Equiv.ext_iff]
+    have h_sum_subset_prod :
+        ∑ f ∈ Finset.univ.filter (fun f : F => Function.Injective f), (∏ i, x (f i)) =
+          ∑ A ∈ Finset.powersetCard k (Finset.univ : Finset (Fin N)),
+            ∑ f ∈ Finset.filter
+                (fun f : F => Function.Injective f ∧ Finset.image f Finset.univ = A)
+                Finset.univ,
+              (∏ i, x (f i)) := by
+      rw [← Finset.sum_biUnion]
+      · congr with f
+        simp +decide [Function.Injective]
+        exact fun h => by rw [Finset.card_image_of_injective _ h, Finset.card_fin]
+      · exact fun A hA B hB hAB => Finset.disjoint_left.mpr fun f hfA hfB =>
+          hAB <| by aesop
+    rw [h_sum_subset_prod, Finset.sum_congr rfl h_subset_prod,
+      ← Finset.mul_sum _ _ _, esymm]
+  rw [← hS_card]
+  refine' le_trans
+    (Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _)
+      fun _ _ _ => Finset.prod_nonneg fun _ _ => hx _) _
+  rw [← Fin.prod_const]
+  rw [Finset.prod_sum]
+  simp +decide [Finset.prod_apply]
+  refine' le_of_eq (Finset.sum_bij (fun f _ => fun i _ => f i) _ _ _ _) <;>
+    simp +decide [Function.Injective]
+  · simp +contextual [funext_iff]
+    exact fun f g h => funext h
+  · exact fun b => ⟨fun i => b i (Finset.mem_univ i), rfl⟩
+
+lemma collision_sum_le {k N : ℕ} (x : Fin N → ℝ) (hx : ∀ i, 0 ≤ x i)
+    (m : ℝ) (hm : ∀ i, x i ≤ m) (j l : Fin k) (hjl : j ≠ l) :
+    ∑ f : Fin k → Fin N, (if f j = f l then ∏ i, x (f i) else 0) ≤
+      m * (∑ a : Fin N, x a) ^ (k - 1) := by
+  by_contra! h_contra
+  have h_fubini :
+      ∑ f : Fin k → Fin N, (if f j = f l then ∏ i, x (f i) else 0) =
+        ∑ a : Fin N, ∑ f : Fin k → Fin N,
+          (if f j = a ∧ f l = a then ∏ i, x (f i) else 0) := by
+    rw [Finset.sum_comm, Finset.sum_congr rfl]
+    intro f hf
+    by_cases h : f j = f l <;> simp +decide [h]
+    rw [Finset.sum_eq_zero]
+    aesop
+  have h_inner : ∀ a : Fin N,
+      ∑ f : Fin k → Fin N,
+          (if f j = a ∧ f l = a then ∏ i, x (f i) else 0) =
+        x a ^ 2 * (∑ b : Fin N, x b) ^ (k - 2) := by
+    intro a
+    have h_inner_sum :
+        ∑ f : Fin k → Fin N,
+            (if f j = a ∧ f l = a then ∏ i, x (f i) else 0) =
+          ∑ f : Fin k → Fin N,
+            (∏ i,
+              if i = j ∨ i = l then if f i = a then x a else 0 else x (f i)) := by
+      refine' Finset.sum_congr rfl fun f hf => _
+      by_cases h : f j = a <;> by_cases h' : f l = a <;>
+        simp +decide [h, h', Finset.prod_ite, Finset.filter_or, Finset.filter_eq']
+      rw [← Finset.prod_sdiff <| Finset.subset_univ {j, l}]
+      simp +decide [*, Finset.filter_insert, Finset.filter_singleton]
+      rw [show (Finset.univ \ {j, l} : Finset (Fin k)) =
+          Finset.filter (fun i => ¬i = j ∧ ¬i = l) Finset.univ by
+        ext i
+        aesop]
+      ring_nf
+    have h_inner_sum :
+        ∑ f : Fin k → Fin N,
+            (∏ i,
+              if i = j ∨ i = l then if f i = a then x a else 0 else x (f i)) =
+          (∏ i : Fin k,
+            (∑ b : Fin N,
+              if i = j ∨ i = l then if b = a then x a else 0 else x b)) := by
+      rw [Finset.prod_sum]
+      refine' Finset.sum_bij (fun f _ => fun i _ => f i) _ _ _ _ <;> simp +decide
+      · simp +decide [funext_iff]
+      · exact fun b => ⟨fun i => b i (Finset.mem_univ i), rfl⟩
+    rw [‹(∑ f : Fin k → Fin N,
+        if f j = a ∧ f l = a then ∏ i, x (f i) else 0) =
+          ∑ f : Fin k → Fin N,
+            ∏ i,
+              if i = j ∨ i = l then if f i = a then x a else 0 else x (f i)›,
+      h_inner_sum]
+    rw [← Finset.prod_sdiff (Finset.subset_univ {j, l})]
+    simp +decide [Finset.prod_ite, Finset.filter_or, Finset.filter_eq', hjl]
+    simp +decide [Finset.filter_ne', Finset.filter_and, hjl]
+    simp +decide [Finset.card_sdiff, Finset.card_singleton, Finset.card_univ, hjl]
+    ring_nf
+  have h_sum : ∑ a : Fin N, x a ^ 2 * (∑ b : Fin N, x b) ^ (k - 2)
+      ≤ m * (∑ a : Fin N, x a) ^ (k - 1) := by
+    have h_sq_le_m_x : ∀ a : Fin N, x a ^ 2 ≤ m * x a := by
+      exact fun i => by nlinarith only [hx i, hm i]
+    convert Finset.sum_le_sum fun i _ =>
+      mul_le_mul_of_nonneg_right (h_sq_le_m_x i)
+        (pow_nonneg (Finset.sum_nonneg fun _ _ => hx _) (k - 2)) using 1
+    rcases k with (_ | _ | k) <;>
+      simp +decide [pow_succ', mul_assoc, mul_comm, mul_left_comm, Finset.mul_sum _ _ _] at *
+    · fin_cases j
+    · fin_cases j
+      fin_cases l
+      trivial
+    · simp +decide only [← mul_assoc, ← sum_mul]
+      rw [← Finset.mul_sum _ _ _]
+  grind
+
+lemma sum_pow_sub_factorial_mul_esymm_le {N : ℕ} (x : Fin N → ℝ)
+    (hx : ∀ i, 0 ≤ x i) (m : ℝ) (hm : ∀ i, x i ≤ m) (k : ℕ) :
+    (∑ i : Fin N, x i) ^ k - (k.factorial : ℝ) * esymm x k ≤
+      k * (k - 1) / 2 * m * (∑ i : Fin N, x i) ^ (k - 1) := by
+  have hD_def :
+      (∑ i, x i) ^ k - (k.factorial : ℝ) * esymm x k =
+        ∑ f : Fin k → Fin N, (∏ i, x (f i)) -
+          ∑ f : Fin k → Fin N,
+            (if Function.Injective f then ∏ i, x (f i) else 0) := by
+    have hD_def : (k.factorial : ℝ) * esymm x k =
+        ∑ f : Fin k → Fin N,
+          (if Function.Injective f then ∏ i : Fin k, x (f i) else 0) := by
+      have h_factorial_esymm :
+          ∑ f : Fin k → Fin N,
+              (if Function.Injective f then ∏ i : Fin k, x (f i) else 0) =
+            ∑ A ∈ Finset.powersetCard k (Finset.univ : Finset (Fin N)),
+              (∏ i ∈ A, x i) * (k.factorial : ℝ) := by
+        have h_inj_sum : ∀ A ∈ Finset.powersetCard k (Finset.univ : Finset (Fin N)),
+            ∑ f : Fin k → Fin N,
+                (if Function.Injective f ∧ Finset.image f Finset.univ = A then
+                  ∏ i, x (f i) else 0) =
+              (∏ i ∈ A, x i) * (Nat.factorial k : ℝ) := by
+          intro A hA
+          have h_inj_count :
+              Finset.card (Finset.filter
+                (fun f : Fin k → Fin N =>
+                  Function.Injective f ∧ Finset.image f Finset.univ = A)
+                (Finset.univ : Finset (Fin k → Fin N))) =
+                Nat.factorial k := by
+            have h_inj_sum :
+                Finset.card (Finset.filter
+                  (fun f : Fin k → Fin N =>
+                    Function.Injective f ∧ Finset.image f Finset.univ = A)
+                  (Finset.univ : Finset (Fin k → Fin N))) =
+                  Finset.card (Finset.image
+                    (fun f : Fin k ≃ A => fun i => f i |>.1)
+                    (Finset.univ : Finset (Fin k ≃ A))) := by
+              congr with f
+              constructor <;> intro hf <;> simp_all +decide [Finset.ext_iff]
+              · use Equiv.ofBijective (fun i => ⟨f i, by
+                  exact hf.2 _ |>.1 ⟨i, rfl⟩⟩) (by
+                    exact ⟨fun i j hij => hf.1 <| by
+                      simpa using congr_arg Subtype.val hij, fun i => by
+                        obtain ⟨j, hj⟩ := hf.2 i |>.2 i.2
+                        exact ⟨j, Subtype.ext hj⟩⟩)
+                aesop
+              · rcases hf with ⟨a, rfl⟩
+                simp +decide [Function.Injective, Finset.mem_image]
+                exact fun i => ⟨fun ⟨j, hj⟩ => hj ▸ Subtype.mem _, fun hi =>
+                  ⟨a.symm ⟨i, hi⟩, by simp +decide⟩⟩
+            rw [h_inj_sum, Finset.card_image_of_injective]
+            · simp +decide [Finset.card_univ, Fintype.card_perm]
+              rw [Fintype.card_equiv]
+              aesop
+              exact Fintype.equivOfCardEq (by aesop)
+            · intro f g hfg
+              ext i
+              replace hfg := congr_fun hfg i
+              aesop
+          have h_inj_sum : ∀ f : Fin k → Fin N,
+              Function.Injective f ∧ Finset.image f Finset.univ = A →
+                ∏ i, x (f i) = ∏ i ∈ A, x i := by
+            intro f hf
+            rw [← hf.2, Finset.prod_image (by aesop)]
+          simp_all +decide [Finset.sum_ite]
+          ring_nf
+        rw [← Finset.sum_congr rfl h_inj_sum, Finset.sum_comm]
+        congr! 1
+        by_cases h : Function.Injective ‹Fin k → Fin N› <;> simp +decide [h]
+        exact fun h' => False.elim <| h' <| by
+          rw [Finset.card_image_of_injective _ h, Finset.card_fin]
+      simp_all +decide [mul_comm, Finset.mul_sum _ _ _, esymm]
+    rw [hD_def, ← Fin.prod_const]
+    rw [Finset.prod_sum]
+    refine' congrArg₂ _ (Finset.sum_bij (fun f hf => fun i => f i (Finset.mem_univ i))
+      _ _ _ _) rfl <;> simp +decide
+    · simp +contextual [funext_iff]
+    · exact fun b => ⟨fun i _ => b i, rfl⟩
+  have h_pair_bound : ∀ j l : Fin k, j < l →
+      ∑ f : Fin k → Fin N,
+        (if f j = f l then ∏ i, x (f i) else 0) ≤
+          m * (∑ i, x i) ^ (k - 1) := by
+    intros j l hjl
+    apply collision_sum_le x hx m hm j l hjl.ne
+  have h_sum_pairs :
+      ∑ f : Fin k → Fin N,
+          (if ∃ j l : Fin k, j < l ∧ f j = f l then ∏ i, x (f i) else 0) ≤
+        (k * (k - 1) / 2 : ℝ) * m * (∑ i, x i) ^ (k - 1) := by
+    have h_sum_pairs :
+        ∑ f : Fin k → Fin N,
+            (if ∃ j l : Fin k, j < l ∧ f j = f l then ∏ i, x (f i) else 0) ≤
+          ∑ j : Fin k, ∑ l ∈ Finset.Ioi j,
+            ∑ f : Fin k → Fin N,
+              (if f j = f l then ∏ i, x (f i) else 0) := by
+      have h_sum_pairs : ∀ f : Fin k → Fin N,
+          (if ∃ j l : Fin k, j < l ∧ f j = f l then ∏ i, x (f i) else 0) ≤
+            ∑ j : Fin k, ∑ l ∈ Finset.Ioi j,
+              (if f j = f l then ∏ i, x (f i) else 0) := by
+        intro f
+        split_ifs
+        · obtain ⟨j, l, hjl, h⟩ := ‹_›
+          exact le_trans (by aesop)
+            (Finset.single_le_sum
+              (fun a _ => Finset.sum_nonneg fun b _ => by
+                split_ifs <;>
+                  nlinarith [show 0 ≤ ∏ i, x (f i) from
+                    Finset.prod_nonneg fun _ _ => hx _])
+              (Finset.mem_univ j) |>
+              le_trans (Finset.single_le_sum
+                (fun b _ => by
+                  split_ifs <;>
+                    nlinarith [show 0 ≤ ∏ i, x (f i) from
+                      Finset.prod_nonneg fun _ _ => hx _])
+                (Finset.mem_Ioi.mpr hjl)))
+        · exact Finset.sum_nonneg fun i hi => Finset.sum_nonneg fun j hj => by
+            split_ifs <;> [exact Finset.prod_nonneg fun _ _ => hx _; exact le_rfl]
+      refine' le_trans (Finset.sum_le_sum fun f _ => h_sum_pairs f) _
+      rw [Finset.sum_comm]
+      exact Finset.sum_le_sum fun i hi => by rw [Finset.sum_comm]
+    refine le_trans h_sum_pairs <|
+      le_trans (Finset.sum_le_sum fun i hi => Finset.sum_le_sum fun j hj =>
+        h_pair_bound i j <| Finset.mem_Ioi.mp hj) ?_
+    norm_num [← Finset.mul_sum _ _ _, ← Finset.sum_mul]
+    rw [show (∑ i : Fin k, (k - 1 - i : ℕ) : ℝ) = k * (k - 1) / 2 from by
+      have hNat : (∑ i : Fin k, (k - 1 - i : ℕ)) = k * (k - 1) / 2 := by
+        rw [Fin.sum_univ_eq_sum_range (fun j => k - 1 - j) k]
+        rw [Finset.sum_range_reflect (fun j => j) k]
+        exact Finset.sum_range_id k
+      rw [← Nat.cast_sum, hNat]
+      rw [Nat.cast_div_charZero (Nat.two_dvd_mul_sub_one k)]
+      by_cases hk : k = 0
+      · simp [hk]
+      · have hkpos : 0 < k := Nat.pos_of_ne_zero hk
+        rw [Nat.cast_mul, Nat.cast_pred hkpos]
+        ring_nf]
+    ring_nf
+    norm_num
+  convert h_sum_pairs using 1
+  convert hD_def using 1
+  rw [← Finset.sum_sub_distrib]
+  congr
+  ext f
+  by_cases hf : Function.Injective f <;> simp +decide [hf]
+  · exact fun i j hij h => False.elim <| hij.ne <| hf h
+  · exact fun h => False.elim <| hf <| fun i j hij =>
+      le_antisymm (le_of_not_gt fun hi => h _ _ hi hij.symm)
+        (le_of_not_gt fun hj => h _ _ hj hij)
+
+/-! ## Measure-theoretic lemma -/
+
+lemma prob_sum_eq_bernoulliSumProb
+    {N : ℕ} {Ω : Type*} [MeasurableSpace Ω]
+    (μ : Measure Ω) [IsProbabilityMeasure μ]
+    (X : Fin N → Ω → ℕ)
+    (p : Fin N → ℝ)
+    (hp_nonneg : ∀ i, 0 ≤ p i)
+    (hp_le_one : ∀ i, p i ≤ 1)
+    (hX_meas : ∀ i, Measurable (X i))
+    (h_indep : ProbabilityTheory.iIndepFun X μ)
+    (h_bernoulli : ∀ i k, (μ {ω | X i ω = k}).toReal = bernoulliPMFReal (p i) k)
+    (k : ℕ) :
+    (μ {ω | ∑ i : Fin N, X i ω = k}).toReal = bernoulliSumProb p k := by
+  revert k
+  intro k
+  have h_sum_eq : μ {ω | (∑ i, X i ω) = k} =
+      ∑ A ∈ Finset.powersetCard k Finset.univ,
+        μ (⋂ i, {ω | (X i ω) = if i ∈ A then 1 else 0}) := by
+    have meas_set : ∀ i, μ {ω | X i ω ≤ 1} = 1 := by
+      intro i
+      have h_le_one : μ {ω | X i ω ≤ 1} =
+          μ {ω | X i ω = 0} + μ {ω | X i ω = 1} := by
+        rw [← MeasureTheory.measure_union] <;> congr
+        ext ω
+        simp +decide [Nat.le_one_iff_eq_zero_or_eq_one]
+        aesop
+        · exact Set.disjoint_left.mpr fun ω hω₀ hω₁ => by
+            simpa [hω₀.out] using hω₁.out
+        · exact hX_meas i (MeasurableSingletonClass.measurableSet_singleton _)
+      have := h_bernoulli i 0
+      have := h_bernoulli i 1
+      simp_all +decide [bernoulliPMFReal]
+      rw [← ENNReal.toReal_eq_one_iff]
+      have := h_bernoulli i 0
+      have := h_bernoulli i 1
+      simp_all +decide [ENNReal.toReal_add]
+    have h_sum_eq : μ {ω | (∑ i, X i ω) = k} =
+        μ (⋃ A ∈ Finset.powersetCard k Finset.univ,
+          (⋂ i, {ω | (X i ω) = if i ∈ A then 1 else 0})) := by
+      have h_sum_eq : ∀ᵐ ω ∂μ,
+          (∑ i, X i ω) = k ↔
+            ∃ A ∈ Finset.powersetCard k Finset.univ,
+              ∀ i, X i ω = if i ∈ A then 1 else 0 := by
+        have h_sum_eq : ∀ᵐ ω ∂μ, ∀ i, X i ω ≤ 1 := by
+          have h_sum_eq : ∀ i, μ {ω | X i ω > 1} = 0 := by
+            intro i
+            have h_sum_eq : μ {ω | X i ω > 1} =
+                μ (Set.univ \ {ω | X i ω ≤ 1}) := by
+              exact congr_arg _ (by ext; simp +decide [not_le])
+            rw [h_sum_eq, MeasureTheory.measure_diff] <;> norm_num [meas_set]
+            exact measurableSet_le (hX_meas i) measurable_const |>
+              MeasurableSet.nullMeasurableSet
+          filter_upwards
+            [MeasureTheory.measure_eq_zero_iff_ae_notMem.mp
+              (MeasureTheory.measure_iUnion_null fun i => h_sum_eq i)] with ω hω using
+              fun i => not_lt.1 fun contra => hω <| Set.mem_iUnion.2 ⟨i, contra⟩
+        filter_upwards [h_sum_eq] with ω hω
+        constructor
+        · intro hk
+          use Finset.univ.filter (fun i => X i ω = 1)
+          simp_all +decide [Finset.mem_powersetCard, Finset.sum_ite]
+          exact ⟨by
+            rw [← hk, Finset.card_filter]
+            exact Finset.sum_congr rfl fun i _ => by
+              specialize hω i
+              interval_cases X i ω <;> trivial, fun i => by
+            specialize hω i
+            interval_cases X i ω <;> trivial⟩
+        · rintro ⟨A, hA₁, hA₂⟩
+          simp_all +decide [Finset.sum_ite]
+      exact MeasureTheory.measure_congr (Filter.eventuallyEq_set.mpr <| by simpa using h_sum_eq)
+    rw [h_sum_eq, MeasureTheory.measure_biUnion_finset]
+    · intro A hA B hB hAB
+      simp_all +decide [Set.disjoint_left]
+      grind
+    · exact fun A hA => MeasurableSet.iInter fun i =>
+        measurableSet_eq_fun (hX_meas i) measurable_const
+  rw [h_sum_eq, ENNReal.toReal_sum]
+  · refine' Finset.sum_congr rfl fun A hA => _
+    have h_prod : μ (⋂ i, {ω | X i ω = if i ∈ A then 1 else 0}) =
+        ∏ i, μ {ω | X i ω = if i ∈ A then 1 else 0} := by
+      have := h_indep.measure_inter_preimage_eq_mul
+      simpa using this Finset.univ
+        (fun i _ => MeasurableSingletonClass.measurableSet_singleton _)
+    simp_all +decide [bernoulliPMFReal]
+    simp +decide [Finset.prod_ite, Finset.filter_mem_eq_inter, Finset.filter_not]
+  · exact fun _ _ => MeasureTheory.measure_ne_top _ _
+
+/-! ## Analytic convergence lemmas -/
+
+lemma bernoulliSumProb_ge_esymm_mul_prod
+    {N : ℕ} (p : Fin N → ℝ) (hp : ∀ i, 0 ≤ p i) (hp1 : ∀ i, p i ≤ 1) (k : ℕ) :
+    bernoulliSumProb p k ≥ esymm p k * ∏ i : Fin N, (1 - p i) := by
+  rw [ge_iff_le]
+  unfold bernoulliSumProb esymm
+  rw [Finset.sum_mul _ _ _]
+  refine Finset.sum_le_sum ?_
+  intro A _hA
+  have hp_prod_nonneg : 0 ≤ ∏ i ∈ A, p i :=
+    Finset.prod_nonneg fun i _ => hp i
+  have hcomp_nonneg : 0 ≤ ∏ i ∈ (Finset.univ \ A), (1 - p i) :=
+    Finset.prod_nonneg fun i _ => sub_nonneg.2 (hp1 i)
+  have hA_le_one : ∏ i ∈ A, (1 - p i) ≤ 1 :=
+    Finset.prod_le_one
+      (fun i _ => sub_nonneg.2 (hp1 i))
+      (fun i _ => sub_le_self _ (hp i))
+  have hall_eq :
+      (∏ i : Fin N, (1 - p i)) =
+        (∏ i ∈ (Finset.univ \ A), (1 - p i)) *
+          ∏ i ∈ A, (1 - p i) := by
+    simpa [mul_comm] using
+      (Finset.prod_sdiff (s₁ := A) (s₂ := (Finset.univ : Finset (Fin N)))
+        (f := fun i => 1 - p i) (Finset.subset_univ A)).symm
+  rw [hall_eq]
+  exact mul_le_mul_of_nonneg_left
+    (mul_le_of_le_one_right hcomp_nonneg hA_le_one)
+    hp_prod_nonneg
+
+lemma bernoulliSumProb_le_esymm_mul_prod_div
+    {N : ℕ} (p : Fin N → ℝ) (hp : ∀ i, 0 ≤ p i) (hp1 : ∀ i, p i ≤ 1)
+    (m : ℝ) (hm : ∀ i, p i ≤ m) (hm1 : m < 1) (k : ℕ) :
+    bernoulliSumProb p k ≤ esymm p k * (∏ i : Fin N, (1 - p i)) / (1 - m) ^ k := by
+  have h_prod_sdiff : ∀ A ∈ Finset.powersetCard k (Finset.univ : Finset (Fin N)),
+      ∏ i ∈ (Finset.univ \ A), (1 - p i) ≤
+        (∏ i, (1 - p i)) / (1 - m) ^ k := by
+    intro A hA
+    have h_prod_sdiff : ∏ i ∈ (Finset.univ \ A), (1 - p i) =
+        (∏ i, (1 - p i)) / (∏ i ∈ A, (1 - p i)) := by
+      exact eq_div_of_mul_eq
+        (Finset.prod_ne_zero_iff.mpr fun i hi => by linarith [hp i, hp1 i, hm i, hm1])
+        (Finset.prod_sdiff <| Finset.subset_univ _)
+    rw [h_prod_sdiff, Finset.mem_powersetCard] at *
+    gcongr
+    · exact Finset.prod_nonneg fun _ _ => sub_nonneg.2 <| hp1 _
+    · exact pow_pos (by linarith) _
+    · exact le_trans (by norm_num [hA.2])
+        (Finset.prod_le_prod (fun _ _ => sub_nonneg.2 hm1.le)
+          fun _ _ => sub_le_sub_left (hm _) _)
+  convert Finset.sum_le_sum fun A hA =>
+    mul_le_mul_of_nonneg_left (h_prod_sdiff A hA)
+      (Finset.prod_nonneg fun i _ => hp i) using 1
+  unfold esymm
+  simp_rw [div_eq_mul_inv]
+  simp_rw [Finset.sum_mul]
+  exact Finset.sum_congr rfl fun _ _ => by ring_nf
+
+lemma prod_one_sub_tendsto_exp_neg
+    (p : (N : ℕ) → Fin N → ℝ) (lam : ℝ)
+    (hp_nonneg : ∀ N i, 0 ≤ p N i)
+    (hp_le_one : ∀ N i, p N i ≤ 1)
+    (h_max : Tendsto (fun N => rowMax p N) atTop (𝓝 0))
+    (h_mean : Tendsto (fun N => ∑ i : Fin N, p N i) atTop (𝓝 lam)) :
+    Tendsto (fun N => ∏ i : Fin N, (1 - p N i)) atTop (𝓝 (Real.exp (-lam))) := by
+  have h_log_approx :
+      Filter.Tendsto
+        (fun N => ∑ i : Fin N, -Real.log (1 - p N i) - ∑ i : Fin N, p N i)
+        Filter.atTop (nhds 0) := by
+    have h_bound : ∀ᶠ N in Filter.atTop, ∀ i : Fin N,
+        |(-Real.log (1 - p N i)) - p N i| ≤ (p N i)^2 / (1 - p N i) := by
+      have h_frac_zero : ∀ᶠ N in Filter.atTop, ∀ i : Fin N, p N i < 1 := by
+        filter_upwards [h_max.eventually (gt_mem_nhds zero_lt_one)] with N hN using
+          fun i => lt_of_le_of_lt (by
+            unfold rowMax
+            split_ifs <;>
+              [exact Finset.le_sup' (fun i => p N i) (Finset.mem_univ i);
+               linarith [Fin.is_lt i]]) hN
+      filter_upwards [h_frac_zero] with N hN i
+      rw [abs_le]
+      constructor <;>
+        nlinarith [hp_nonneg N i, hp_le_one N i, hN i,
+          Real.log_inv (1 - p N i),
+          Real.log_le_sub_one_of_pos
+            (inv_pos.mpr (by linarith [hp_nonneg N i, hp_le_one N i, hN i] :
+              0 < 1 - p N i)),
+          Real.log_le_sub_one_of_pos
+            (by linarith [hp_nonneg N i, hp_le_one N i, hN i] : 0 < 1 - p N i),
+          mul_inv_cancel₀
+            (by linarith [hp_nonneg N i, hp_le_one N i, hN i] : (1 - p N i) ≠ 0),
+          div_mul_cancel₀ (p N i ^ 2)
+            (by linarith [hp_nonneg N i, hp_le_one N i, hN i] :
+              (1 - p N i) ≠ 0)]
+    have h_bound' : ∀ᶠ N in Filter.atTop, ∀ i : Fin N,
+        |(-Real.log (1 - p N i)) - p N i| ≤ (p N i)^2 / (1 - rowMax p N) := by
+      have h_bound' : ∀ᶠ N in Filter.atTop, ∀ i : Fin N, p N i ≤ rowMax p N := by
+        filter_upwards [Filter.eventually_gt_atTop 0] with N hN i using by
+          unfold rowMax
+          aesop
+      filter_upwards [h_bound, h_bound', h_max.eventually (gt_mem_nhds zero_lt_one)] with
+        N hN₁ hN₂ hN₃ i using
+          le_trans (hN₁ i)
+            (div_le_div_of_nonneg_left (sq_nonneg _)
+              (by linarith [hp_nonneg N i, hp_le_one N i]) (by linarith [hN₂ i]))
+    have h_sum_sq : Filter.Tendsto (fun N => ∑ i : Fin N, (p N i)^2)
+        Filter.atTop (nhds 0) := by
+      have h_sum_sq_le : ∀ N,
+          ∑ i : Fin N, (p N i)^2 ≤ rowMax p N * ∑ i : Fin N, p N i := by
+        intro N
+        rw [Finset.mul_sum _ _ _]
+        refine' Finset.sum_le_sum fun i _ => _
+        rcases N with (_ | N) <;> norm_num [rowMax] at *
+        nlinarith only [hp_nonneg (N + 1) i, hp_le_one (N + 1) i,
+          Finset.le_sup' (fun i => p (N + 1) i) (Finset.mem_univ i)]
+      exact squeeze_zero (fun N => Finset.sum_nonneg fun _ _ => sq_nonneg _)
+        h_sum_sq_le (by simpa using h_max.mul h_mean)
+    have h_sum_abs_diff : Filter.Tendsto
+        (fun N => ∑ i : Fin N, |(-Real.log (1 - p N i)) - p N i|)
+        Filter.atTop (nhds 0) := by
+      refine' squeeze_zero_norm' _ _
+      use fun N => (∑ i, p N i ^ 2) / (1 - rowMax p N)
+      · filter_upwards [h_bound'] with N hN using by
+          rw [Real.norm_of_nonneg (Finset.sum_nonneg fun _ _ => abs_nonneg _)]
+          simpa only [Finset.sum_div _ _ _] using Finset.sum_le_sum fun i _ => hN i
+      · simpa using h_sum_sq.div (h_max.const_sub 1) (by norm_num)
+    refine' squeeze_zero_norm (fun N => _) h_sum_abs_diff
+    simpa only [← Finset.sum_sub_distrib] using Finset.abs_sum_le_sum_abs _ _
+  have h_prod_exp :
+      Filter.Tendsto (fun N => Real.exp (-∑ i : Fin N, -Real.log (1 - p N i)))
+        Filter.atTop (nhds (Real.exp (-lam))) := by
+    exact Filter.Tendsto.rexp (by simpa using h_mean.add h_log_approx |> Filter.Tendsto.neg)
+  refine h_prod_exp.congr' ?_
+  have h_prod_eq_exp : ∀ᶠ N in Filter.atTop, ∀ i : Fin N, 1 - p N i > 0 := by
+    filter_upwards [h_max.eventually (gt_mem_nhds zero_lt_one)] with N hN using
+      fun i => sub_pos_of_lt <| lt_of_le_of_lt (show p N i ≤ rowMax p N from by
+        unfold rowMax
+        split_ifs <;>
+          [exact Finset.le_sup' (fun i => p N i) (Finset.mem_univ i);
+           linarith [Fin.is_lt i]]) hN
+  filter_upwards [h_prod_eq_exp] with N hN using by
+    rw [Finset.sum_neg_distrib, neg_neg, Real.exp_sum,
+      Finset.prod_congr rfl fun i hi => Real.exp_log (hN i)]
+
+lemma esymm_tendsto
+    (p : (N : ℕ) → Fin N → ℝ) (lam : ℝ)
+    (hlam : 0 ≤ lam)
+    (hp_nonneg : ∀ N i, 0 ≤ p N i)
+    (hp_le_one : ∀ N i, p N i ≤ 1)
+    (h_max : Tendsto (fun N => rowMax p N) atTop (𝓝 0))
+    (h_mean : Tendsto (fun N => ∑ i : Fin N, p N i) atTop (𝓝 lam))
+    (k : ℕ) :
+    Tendsto (fun N => esymm (p N) k) atTop (𝓝 (lam ^ k / k.factorial)) := by
+  have h_squeeze : ∀ N ≥ 1,
+      esymm (p N) k ≤ (∑ i, p N i) ^ k / k.factorial ∧
+        esymm (p N) k ≥
+          (∑ i, p N i) ^ k / k.factorial -
+            k * (k - 1) / 2 * rowMax p N * (∑ i, p N i) ^ (k - 1) / k.factorial := by
+    intro N hN
+    constructor
+    · exact le_div_iff₀' (by positivity) |>.2
+        (factorial_mul_esymm_le_sum_pow (p N) (fun i => hp_nonneg N i) k)
+    · have := sum_pow_sub_factorial_mul_esymm_le (p N) (hp_nonneg N) (rowMax p N) (?_) k
+      · rw [div_sub_div_same, ge_iff_le, div_le_iff₀] <;> first | positivity | linarith
+      · unfold rowMax
+        aesop
+  have h_squeeze :
+      Filter.Tendsto (fun N => (∑ i, p N i) ^ k / k.factorial) atTop
+          (nhds (lam ^ k / k.factorial)) ∧
+        Filter.Tendsto
+          (fun N =>
+            k * (k - 1) / 2 * rowMax p N * (∑ i, p N i) ^ (k - 1) / k.factorial)
+          atTop (nhds 0) := by
+    exact ⟨by simpa using h_mean.pow k |> Filter.Tendsto.div_const <| k.factorial,
+      by
+        simpa using Filter.Tendsto.div_const
+          (Filter.Tendsto.mul (tendsto_const_nhds.mul h_max) <| h_mean.pow (k - 1)) _⟩
+  refine' tendsto_of_tendsto_of_tendsto_of_le_of_le'
+    (by simpa using h_squeeze.1.sub h_squeeze.2) h_squeeze.1 _ _
+  · filter_upwards [Filter.eventually_ge_atTop 1] with N hN using by
+      linarith [‹∀ N ≥ 1,
+        esymm (p N) k ≤ (∑ i, p N i) ^ k / k.factorial ∧
+          esymm (p N) k ≥
+            (∑ i, p N i) ^ k / k.factorial -
+              k * (k - 1) / 2 * rowMax p N *
+                (∑ i, p N i) ^ (k - 1) / k.factorial› N hN]
+  · filter_upwards [Filter.eventually_ge_atTop 1] with N hN using by aesop
+
+/-! ## Main point-probability theorem -/
+
+theorem point_probability_tendsto
+    {Ω : ℕ → Type*}
+    [∀ N, MeasurableSpace (Ω N)]
+    (μ : (N : ℕ) → Measure (Ω N))
+    [∀ N, IsProbabilityMeasure (μ N)]
+    (X : (N : ℕ) → Fin N → Ω N → ℕ)
+    (p : (N : ℕ) → Fin N → ℝ)
+    (lam : ℝ)
+    (hlam : 0 ≤ lam)
+    (hp_nonneg : ∀ N i, 0 ≤ p N i)
+    (hp_le_one : ∀ N i, p N i ≤ 1)
+    (hX_meas : ∀ N i, Measurable (X N i))
+    (h_indep : ∀ N, ProbabilityTheory.iIndepFun (fun i : Fin N => X N i) (μ N))
+    (h_bernoulli :
+      ∀ N i k,
+        ((μ N) {ω | X N i ω = k}).toReal = bernoulliPMFReal (p N i) k)
+    (h_max :
+      Tendsto (fun N : ℕ => rowMax p N) atTop (𝓝 0))
+    (h_mean :
+      Tendsto (fun N : ℕ => ∑ i : Fin N, p N i) atTop (𝓝 lam)) :
+    ∀ k : ℕ,
+      Tendsto
+        (fun N : ℕ => ((μ N) {ω | rowSum X N ω = k}).toReal)
+        atTop
+        (𝓝 (poissonPMFReal lam k)) := by
+  intro k
+  have h_squeeze : ∀ᶠ N in Filter.atTop, rowMax p N < 1 := by
+    exact h_max.eventually (gt_mem_nhds zero_lt_one)
+  have h_squeeze : ∀ᶠ N in Filter.atTop,
+      bernoulliSumProb (p N) k ≥ esymm (p N) k * ∏ i, (1 - p N i) ∧
+        bernoulliSumProb (p N) k ≤
+          esymm (p N) k * (∏ i, (1 - p N i)) / (1 - rowMax p N) ^ k := by
+    filter_upwards [h_squeeze, Filter.eventually_gt_atTop 0] with N hN hN'
+    refine' ⟨bernoulliSumProb_ge_esymm_mul_prod _ (fun i => hp_nonneg N i)
+      (fun i => hp_le_one N i) _, _⟩
+    apply bernoulliSumProb_le_esymm_mul_prod_div
+    · exact hp_nonneg N
+    · exact fun i => hp_le_one N i
+    · unfold rowMax
+      aesop
+    · exact hN
+  have h_squeeze :
+      Filter.Tendsto (fun N => esymm (p N) k * ∏ i, (1 - p N i)) Filter.atTop
+          (nhds (lam ^ k / k.factorial * Real.exp (-lam))) ∧
+        Filter.Tendsto
+          (fun N => esymm (p N) k * (∏ i, (1 - p N i)) / (1 - rowMax p N) ^ k)
+          Filter.atTop (nhds (lam ^ k / k.factorial * Real.exp (-lam))) := by
+    have h_squeeze : Filter.Tendsto (fun N => esymm (p N) k) Filter.atTop
+        (nhds (lam ^ k / k.factorial)) ∧
+          Filter.Tendsto (fun N => ∏ i, (1 - p N i)) Filter.atTop
+            (nhds (Real.exp (-lam))) := by
+      exact ⟨esymm_tendsto p lam hlam hp_nonneg hp_le_one h_max h_mean k,
+        prod_one_sub_tendsto_exp_neg p lam hp_nonneg hp_le_one h_max h_mean⟩
+    exact ⟨h_squeeze.1.mul h_squeeze.2, by
+      simpa using
+        Filter.Tendsto.div (h_squeeze.1.mul h_squeeze.2)
+          (Filter.Tendsto.pow (h_max.const_sub 1) k)
+          (pow_ne_zero k (by norm_num))⟩
+  have h_squeeze : Filter.Tendsto (fun N => bernoulliSumProb (p N) k) Filter.atTop
+      (nhds (lam ^ k / k.factorial * Real.exp (-lam))) := by
+    exact tendsto_of_tendsto_of_tendsto_of_le_of_le' h_squeeze.1 h_squeeze.2
+      (by filter_upwards
+        [‹∀ᶠ N in atTop,
+          bernoulliSumProb (p N) k ≥ esymm (p N) k * ∏ i, (1 - p N i) ∧
+            bernoulliSumProb (p N) k ≤
+              (esymm (p N) k * ∏ i, (1 - p N i)) / (1 - rowMax p N) ^ k›] with N hN using hN.1)
+      (by filter_upwards
+        [‹∀ᶠ N in atTop,
+          bernoulliSumProb (p N) k ≥ esymm (p N) k * ∏ i, (1 - p N i) ∧
+            bernoulliSumProb (p N) k ≤
+              (esymm (p N) k * ∏ i, (1 - p N i)) / (1 - rowMax p N) ^ k›] with N hN using hN.2)
+  convert h_squeeze using 1
+  · ext N
+    convert prob_sum_eq_bernoulliSumProb (μ N) (X N) (p N) (hp_nonneg N) (hp_le_one N)
+      (hX_meas N) (h_indep N) (h_bernoulli N) k using 1
+  · unfold poissonPMFReal
+    ring_nf
+
+end PoissonLimitAux
 
 /-- The convergence-in-distribution conclusion of HDP Theorem 1.3.4. -/
 def poissonLimitConclusion [IsProbabilityMeasure μ]
@@ -1197,6 +2404,7 @@ def poissonLimitConclusion [IsProbabilityMeasure μ]
 This structure deliberately contains only assumptions, not the conclusion. -/
 structure PoissonLimitTheoremHypotheses [IsProbabilityMeasure μ]
     (X : ℕ → ℕ → Ω → ℕ) (p : ℕ → ℕ → ℝ≥0) (lam : ℝ≥0) : Prop where
+  measurable : ∀ N i, Measurable (X N i)
   parameter_le_one : ∀ N i, p N i ≤ 1
   independent_rows :
     ∀ N, iIndepFun (fun i : Fin N => X N i) μ
@@ -1210,13 +2418,178 @@ structure PoissonLimitTheoremHypotheses [IsProbabilityMeasure μ]
   sum_aemeasurable :
     ∀ N, AEMeasurable (poissonTriangularSum X N) μ
 
-/-- The exact proposition stated by HDP Theorem 1.3.4. It is kept as a
-statement object until the Bernoulli triangular-array point-probability
-asymptotic is formalized. -/
-def poissonLimitTheoremStatement [IsProbabilityMeasure μ]
-    (X : ℕ → ℕ → Ω → ℕ) (p : ℕ → ℕ → ℝ≥0) (lam : ℝ≥0) : Prop :=
-  ∀ h : PoissonLimitTheoremHypotheses (μ := μ) X p lam,
-    poissonLimitConclusion (μ := μ) X lam h.sum_aemeasurable
+omit [MeasurableSpace Ω] in
+private lemma poissonLimitAux_rowSum_eq
+    (X : ℕ → ℕ → Ω → ℕ) (N : ℕ) (ω : Ω) :
+    PoissonLimitAux.rowSum (fun N (i : Fin N) (ω : Ω) => X N i ω) N ω =
+      poissonTriangularSum X N ω := by
+  simp [PoissonLimitAux.rowSum, poissonTriangularSum, Finset.sum_range]
+
+private lemma finset_univ_map_fin_valEmbedding (N : ℕ) :
+    (Finset.univ.map (Fin.valEmbedding : Fin N ↪ ℕ)) = Finset.range N := by
+  ext i
+  constructor
+  · intro hi
+    rcases Finset.mem_map.mp hi with ⟨a, _ha, rfl⟩
+    exact Finset.mem_range.mpr a.isLt
+  · intro hi
+    exact Finset.mem_map.mpr ⟨⟨i, Finset.mem_range.mp hi⟩, Finset.mem_univ _, rfl⟩
+
+private lemma poissonLimitAux_rowMax_eq_rowParameterMax
+    (p : ℕ → ℕ → ℝ≥0) (N : ℕ) :
+    PoissonLimitAux.rowMax (fun N (i : Fin N) => (p N i : ℝ)) N =
+      (rowParameterMax p N : ℝ) := by
+  unfold PoissonLimitAux.rowMax
+  by_cases hN : 0 < N
+  · simp [hN]
+    have hsup_real :
+        Finset.sup' (Finset.univ : Finset (Fin N)) ⟨⟨0, hN⟩, Finset.mem_univ _⟩
+            (fun i : Fin N => (p N i : ℝ)) =
+          ((((Finset.univ : Finset (Fin N)).sup (fun i : Fin N => p N i)) : ℝ≥0) : ℝ) := by
+      let H : (Finset.univ : Finset (Fin N)).Nonempty :=
+        ⟨⟨0, hN⟩, Finset.mem_univ _⟩
+      let L : ℝ :=
+        Finset.sup' (Finset.univ : Finset (Fin N)) H (fun i : Fin N => (p N i : ℝ))
+      have hL_nonneg : 0 ≤ L := by
+        have hle : (0 : ℝ) ≤ (p N (⟨0, hN⟩ : Fin N) : ℝ) := by
+          exact_mod_cast (p N (⟨0, hN⟩ : Fin N)).2
+        exact hle.trans
+          (Finset.le_sup' (s := (Finset.univ : Finset (Fin N)))
+            (fun i : Fin N => (p N i : ℝ)) (Finset.mem_univ _))
+      let Lnn : ℝ≥0 := ⟨L, hL_nonneg⟩
+      apply le_antisymm
+      · rw [Finset.sup'_le_iff]
+        intro i _hi
+        exact_mod_cast
+          (Finset.le_sup (s := (Finset.univ : Finset (Fin N)))
+            (f := fun i : Fin N => p N i) (Finset.mem_univ i))
+      · change
+          ((((Finset.univ : Finset (Fin N)).sup (fun i : Fin N => p N i)) : ℝ≥0) : ℝ) ≤ L
+        have hsup_le :
+            ((Finset.univ : Finset (Fin N)).sup (fun i : Fin N => p N i)) ≤ Lnn := by
+          exact Finset.sup_le_iff.mpr fun i _hi =>
+            NNReal.coe_le_coe.mpr
+              (Finset.le_sup' (s := (Finset.univ : Finset (Fin N)))
+                (fun i : Fin N => (p N i : ℝ)) (Finset.mem_univ i))
+        exact NNReal.coe_le_coe.mpr hsup_le
+    rw [hsup_real]
+    have hfin :
+        (((Finset.univ : Finset (Fin N)).sup (fun i : Fin N => p N i)) : ℝ≥0) =
+          rowParameterMax p N := by
+      unfold rowParameterMax
+      rw [← finset_univ_map_fin_valEmbedding N]
+      rw [Finset.sup_map]
+      rfl
+    rw [hfin]
+  · have hN0 : N = 0 := Nat.eq_zero_of_not_pos hN
+    simp [hN0, rowParameterMax]
+
+private lemma poissonLimitAux_parameter_sum_eq
+    (p : ℕ → ℕ → ℝ≥0) (N : ℕ) :
+    (∑ i : Fin N, (p N i : ℝ)) = rowParameterSum p N := by
+  rw [rowParameterSum]
+  exact Fin.sum_univ_eq_sum_range (fun i => (p N i : ℝ)) N
+
+private lemma bernoulli_hasLaw_pointProbability_real
+    [IsProbabilityMeasure μ]
+    {X : Ω → ℕ} {p : ℝ≥0} {hp : p ≤ 1}
+    (hLaw : HasLaw X ((bernoulliNatPMF p hp).toMeasure) μ) :
+    ∀ k : ℕ,
+      (μ {ω | X ω = k}).toReal = PoissonLimitAux.bernoulliPMFReal (p : ℝ) k := by
+  intro k
+  by_cases hk0 : k = 0
+  · subst k
+    have hzero := measureReal_eq_zero_of_hasLaw_bernoulliNatPMF (μ := μ) (X := X) hLaw
+    rw [← measureReal_def]
+    rw [hzero, NNReal.coe_sub hp]
+    simp [PoissonLimitAux.bernoulliPMFReal]
+  · by_cases hk1 : k = 1
+    · subst k
+      have hone := measureReal_eq_one_of_hasLaw_bernoulliNatPMF (μ := μ) (X := X) hLaw
+      rw [← measureReal_def]
+      simpa [PoissonLimitAux.bernoulliPMFReal] using hone
+    · have hpre : μ {ω | X ω = k} = ((bernoulliNatPMF p hp).toMeasure) ({k} : Set ℕ) := by
+        rw [← hLaw.map_eq]
+        exact (Measure.map_apply_of_aemeasurable hLaw.aemeasurable
+          (measurableSet_singleton k)).symm
+      rw [hpre, PMF.toMeasure_apply_singleton]
+      · simp [PoissonLimitAux.bernoulliPMFReal, hk0, hk1,
+          bernoulliNatPMF_apply_of_ne_zero_one hk0 hk1]
+      · exact measurableSet_singleton k
+
+private lemma poissonProbabilityMeasure_singleton_real
+    (lam : ℝ≥0) (k : ℕ) :
+    ((poissonProbabilityMeasure lam ({k} : Set ℕ) : ℝ≥0) : ℝ) =
+      poissonPointProbability lam k := by
+  rw [← ProbabilityMeasure.measureReal_eq_coe_coeFn]
+  rw [measureReal_def, poissonProbabilityMeasure_singleton]
+  rw [ENNReal.toReal_ofReal]
+  · rfl
+  · positivity
+
+private lemma lawOf_poissonTriangularSum_singleton_real
+    [IsProbabilityMeasure μ]
+    {X : ℕ → ℕ → Ω → ℕ}
+    (hS : ∀ N, AEMeasurable (poissonTriangularSum X N) μ)
+    (N k : ℕ) :
+    ((lawOf (μ := μ) (poissonTriangularSum X N) (hS N) ({k} : Set ℕ) : ℝ≥0) : ℝ) =
+      (μ {ω | poissonTriangularSum X N ω = k}).toReal := by
+  rw [← ProbabilityMeasure.measureReal_eq_coe_coeFn]
+  rw [measureReal_def, lawOf_toMeasure]
+  rw [Measure.map_apply_of_aemeasurable (hS N) (measurableSet_singleton k)]
+  rfl
+
+/-- Point-probability form of HDP Theorem 1.3.4. This is the substantive
+Bernoulli triangular-array asymptotic: for each fixed `k`, the probability that
+the row sum has value `k` converges to the corresponding Poisson mass. -/
+theorem poissonLimit_point_probabilities
+    [IsProbabilityMeasure μ]
+    {X : ℕ → ℕ → Ω → ℕ} {p : ℕ → ℕ → ℝ≥0} {lam : ℝ≥0}
+    (h : PoissonLimitTheoremHypotheses (μ := μ) X p lam) :
+    ∀ k : ℕ,
+      Tendsto
+        (fun N : ℕ => (μ {ω | poissonTriangularSum X N ω = k}).toReal)
+        atTop
+        (𝓝 (poissonPointProbability lam k)) := by
+  let Xfin : (N : ℕ) → Fin N → Ω → ℕ := fun N i ω => X N i ω
+  let pfin : (N : ℕ) → Fin N → ℝ := fun N i => (p N i : ℝ)
+  have hp_nonneg : ∀ N (i : Fin N), 0 ≤ pfin N i := by
+    intro N i
+    exact_mod_cast (p N i).2
+  have hp_le_one : ∀ N (i : Fin N), pfin N i ≤ 1 := by
+    intro N i
+    exact_mod_cast h.parameter_le_one N i
+  have hbern :
+      ∀ N (i : Fin N) k,
+        (μ {ω | Xfin N i ω = k}).toReal =
+          PoissonLimitAux.bernoulliPMFReal (pfin N i) k := by
+    intro N i k
+    exact bernoulli_hasLaw_pointProbability_real
+      (μ := μ) (X := X N i) (p := p N i)
+      (hp := h.parameter_le_one N i)
+      (h.bernoulli_law N i i.isLt) k
+  have hmax : Tendsto (fun N : ℕ => PoissonLimitAux.rowMax pfin N) atTop (𝓝 0) := by
+    refine (NNReal.tendsto_coe.mpr h.max_parameter_tendsto_zero).congr' ?_
+    filter_upwards with N
+    exact (poissonLimitAux_rowMax_eq_rowParameterMax p N).symm
+  have hmean : Tendsto (fun N : ℕ => ∑ i : Fin N, pfin N i) atTop (𝓝 (lam : ℝ)) := by
+    refine h.sum_parameter_tendsto.congr' ?_
+    filter_upwards with N
+    exact (poissonLimitAux_parameter_sum_eq p N).symm
+  have hpoint :=
+    PoissonLimitAux.point_probability_tendsto
+      (Ω := fun _ : ℕ => Ω)
+      (μ := fun _ : ℕ => μ)
+      (X := Xfin)
+      (p := pfin)
+      (lam := (lam : ℝ))
+      (by exact_mod_cast (lam.2 : 0 ≤ lam))
+      hp_nonneg hp_le_one (fun N i => by simpa [Xfin] using h.measurable N i)
+      h.independent_rows hbern hmax hmean
+  intro k
+  have hk := hpoint k
+  simpa [Xfin, pfin, poissonLimitAux_rowSum_eq,
+    poissonPointProbability_eq, PoissonLimitAux.poissonPMFReal] using hk
 
 /-- A genuine Poisson-limit bridge: if the point probabilities of the row sums
 converge to the Poisson point probabilities, then the row-sum laws converge in
@@ -1233,6 +2606,26 @@ theorem poisson_limit_of_point_probabilities [IsProbabilityMeasure μ]
           (𝓝 (poissonProbabilityMeasure lam ({k} : Set ℕ)))) :
     poissonLimitConclusion (μ := μ) X lam hS :=
   probabilityMeasure_nat_tendsto_of_singleton hpoint
+
+/-- HDP Theorem 1.3.4, the Poisson limit theorem for triangular arrays of
+independent Bernoulli variables. -/
+theorem poissonLimitTheorem
+    [IsProbabilityMeasure μ]
+    {X : ℕ → ℕ → Ω → ℕ} {p : ℕ → ℕ → ℝ≥0} {lam : ℝ≥0}
+    (h : PoissonLimitTheoremHypotheses (μ := μ) X p lam) :
+    poissonLimitConclusion (μ := μ) X lam h.sum_aemeasurable := by
+  apply poisson_limit_of_point_probabilities h.sum_aemeasurable
+  intro k
+  apply NNReal.tendsto_coe.mp
+  have hreal := poissonLimit_point_probabilities (μ := μ) h k
+  simpa [lawOf_poissonTriangularSum_singleton_real h.sum_aemeasurable,
+    poissonProbabilityMeasure_singleton_real] using hreal
+
+/-- The exact proposition stated by HDP Theorem 1.3.4. -/
+def poissonLimitTheoremStatement [IsProbabilityMeasure μ]
+    (X : ℕ → ℕ → Ω → ℕ) (p : ℕ → ℕ → ℝ≥0) (lam : ℝ≥0) : Prop :=
+  ∀ h : PoissonLimitTheoremHypotheses (μ := μ) X p lam,
+    poissonLimitConclusion (μ := μ) X lam h.sum_aemeasurable
 
 end BernoulliBinomialPoisson
 
