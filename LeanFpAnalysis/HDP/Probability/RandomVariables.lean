@@ -228,6 +228,10 @@ def cumulativeDistribution (t : ℝ) : ℝ :=
 def upperTail (t : ℝ) : ℝ :=
   μ.real {ω | t < X ω}
 
+/-- Closed upper tail `P{X ≥ t}`. -/
+def closedUpperTail (t : ℝ) : ℝ :=
+  μ.real {ω | t ≤ X ω}
+
 /-- Lower strict tail `P{X < t}`. -/
 def lowerTail (t : ℝ) : ℝ :=
   μ.real {ω | X ω < t}
@@ -245,6 +249,10 @@ lemma upperTail_def (t : ℝ) :
     upperTail X μ t = μ.real {ω | t < X ω} := rfl
 
 @[simp]
+lemma closedUpperTail_def (t : ℝ) :
+    closedUpperTail X μ t = μ.real {ω | t ≤ X ω} := rfl
+
+@[simp]
 lemma lowerTail_def (t : ℝ) :
     lowerTail X μ t = μ.real {ω | X ω < t} := rfl
 
@@ -252,6 +260,12 @@ lemma lowerTail_def (t : ℝ) :
 theorem cumulativeDistribution_eq_distribution_Iic (hX : Measurable X) (t : ℝ) :
     cumulativeDistribution X μ t = (distribution X μ).real (Set.Iic t) := by
   rw [cumulativeDistribution, distribution, MeasureTheory.map_measureReal_apply hX measurableSet_Iic]
+  rfl
+
+/-- The closed upper tail agrees with the real measure of the `Ici` set under the law of `X`. -/
+theorem closedUpperTail_eq_distribution_Ici (hX : Measurable X) (t : ℝ) :
+    closedUpperTail X μ t = (distribution X μ).real (Set.Ici t) := by
+  rw [closedUpperTail, distribution, MeasureTheory.map_measureReal_apply hX measurableSet_Ici]
   rfl
 
 /-- Tail/CDF relation `P{X > t} = 1 - F_X(t)` for probability measures. -/
@@ -263,6 +277,17 @@ theorem upperTail_eq_one_sub_cdf [IsProbabilityMeasure μ] (hX : Measurable X) (
   have hmeas : MeasurableSet {ω : Ω | X ω ≤ t} :=
     measurableSet_le hX measurable_const
   simp [upperTail, cumulativeDistribution, hset, MeasureTheory.measureReal_compl hmeas]
+
+/-- Closed-tail/open-lower-tail relation `P{X ≥ t} = 1 - P{X < t}`. -/
+theorem closedUpperTail_eq_one_sub_lowerTail [IsProbabilityMeasure μ]
+    (hX : Measurable X) (t : ℝ) :
+    closedUpperTail X μ t = 1 - lowerTail X μ t := by
+  have hset : {ω : Ω | t ≤ X ω} = {ω : Ω | X ω < t}ᶜ := by
+    ext ω
+    simp [not_lt]
+  have hmeas : MeasurableSet {ω : Ω | X ω < t} :=
+    measurableSet_lt hX measurable_const
+  simp [closedUpperTail, lowerTail, hset, MeasureTheory.measureReal_compl hmeas]
 
 end DistributionFunctions
 

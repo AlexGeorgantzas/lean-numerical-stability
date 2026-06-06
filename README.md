@@ -1,6 +1,6 @@
 # LeanFpAnalysis
 
-A Lean 4 library for formally verified floating-point error analysis, following Higham's *Accuracy and Stability of Numerical Algorithms* (2nd ed., SIAM, 2002).
+A Lean 4 library for formally verified floating-point error analysis, following Higham's *Accuracy and Stability of Numerical Algorithms* (2nd ed., SIAM, 2002).  The repository also contains a separate formalization track for Vershynin's *High-Dimensional Probability* in the `LeanFpAnalysis.HDP` namespace.
 
 The core results are machine-checked with **zero sorry statements**. Proofs use tight constants matching Higham exactly where the library proves the full local analysis (e.g., γ(n) not γ(n+1) for the dot product bound). Some high-level chapter modules intentionally expose abstract interfaces whose hypotheses state the remaining local algorithm analysis explicitly.
 
@@ -16,11 +16,17 @@ where `u` is the unit roundoff. This makes all results valid for **any** floatin
 
 ## What's covered
 
-The library formalizes reusable results and stability contracts from **Chapters 1, 3, 4, 8, and 9** of Higham, plus selected higher-chapter interfaces used for compositional stability proofs.
+The floating-point library formalizes reusable results and stability contracts from **Chapters 1, 3, 4, 8, and 9** of Higham, plus selected higher-chapter interfaces used for compositional stability proofs.
 
 For a searchable map from stability-analysis goals to files, definitions, and
 theorem names, see [`docs/LIBRARY_LOOKUP.md`](docs/LIBRARY_LOOKUP.md).  For a
 Lean `#check` companion index, see [`examples/LibraryLookup.lean`](examples/LibraryLookup.lean).
+
+For the HDP formalization, see [`docs/HDP_LIBRARY_LOOKUP.md`](docs/HDP_LIBRARY_LOOKUP.md)
+and [`examples/HDPLibraryLookup.lean`](examples/HDPLibraryLookup.lean).  The current
+Chapter 2 concentration layer includes a genuine end-to-end Berry-Esseen theorem
+with explicit constant `C = 3` (`berryEsseen`), plus retained Prawitz/Shevtsova
+bridge infrastructure for the later exact displayed constant `C = 1`.
 
 ### Core theory
 

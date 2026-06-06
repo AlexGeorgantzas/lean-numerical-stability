@@ -23,7 +23,10 @@ import LeanFpAnalysis.HDP
 open LeanFpAnalysis.HDP
 ```
 
-See `docs/HDP_LIBRARY_LOOKUP.md` for the HDP-specific map.
+See `docs/HDP_LIBRARY_LOOKUP.md` for the HDP-specific map.  The HDP Chapter 2
+lookup currently records a completed Berry-Esseen theorem with constant `C = 3`
+and the retained Prawitz/Shevtsova bridge API for the future exact `C = 1`
+sharpening.
 
 For a smaller import, use the file listed in the tables below.
 

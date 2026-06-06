@@ -872,6 +872,25 @@ theorem charFun_normalizedSum_eq_pow
   rw [Finset.prod_congr rfl (fun i _ => hfactor i)]
   simp [c, div_eq_inv_mul, mul_comm]
 
+/-- Characteristic-function factorization for normalized sums, expressed in
+terms of the standardized one-summand law.  This is the form used by the
+Berry-Esseen Fourier estimates. -/
+theorem charFun_normalizedSum_eq_standardized_pow
+    [IsProbabilityMeasure μ]
+    {X : ℕ → Ω → ℝ} {m σ : ℝ}
+    (hX : ∀ n, AEMeasurable (X n) μ)
+    (hindep : iIndepFun X μ)
+    (hident : ∀ n, IdentDistrib (X n) (X 0) μ μ)
+    (N : ℕ) (t : ℝ) :
+    charFun (μ.map (normalizedSum X m σ N)) t =
+      (charFun (μ.map (fun ω => (X 0 ω - m) / σ))
+        (t / Real.sqrt (N : ℝ))) ^ N := by
+  rw [charFun_normalizedSum_eq_pow
+    (μ := μ) hX hindep (fun n => (hident n).symm) N t]
+  rw [charFun_div_sqrt_eq_charFun_scaled_sqrt
+    (μ := μ) (Y := fun ω => X 0 ω - m) (σ := σ)
+    ((hX 0).sub aemeasurable_const) N t]
+
 /-- From the characteristic-function Taylor expansion for the standardized
 summand, the normalized sums converge pointwise to the standard normal
 characteristic function. -/
