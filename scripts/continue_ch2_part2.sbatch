@@ -1,5 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=hdp-ch2p2-codex
+#SBATCH --partition=KFOUNTOU
 #SBATCH --time=96:50:00
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=32G
