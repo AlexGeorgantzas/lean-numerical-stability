@@ -1,3 +1,6 @@
 /.lake
 /formal/
 /helper_lean_code/
+/slurm/
+/handoff_docs/
+/scripts/

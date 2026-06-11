@@ -1,16 +1,16 @@
 #!/bin/bash
 #SBATCH --job-name=hdp-ch2p2-codex
-#SBATCH --partition=KFOUNTOU
-#SBATCH --time=96:50:00
+#SBATCH --time=6:50:00
 #SBATCH --cpus-per-task=4
-#SBATCH --mem=32G
+#SBATCH --mem=16G
+#SBATCH --partition=KFOUNTOU
 #SBATCH --output=slurm/ch2p2-%j.out
 #SBATCH --error=slurm/ch2p2-%j.err
 
 set -euo pipefail
 
 REPO="/u501/m2fetrat/MyCodes/lean-fp-analysis"
-HANDOFF="${REPO}/docs/ch2_part2_sbatch_handoff.md"
+HANDOFF="${REPO}/handoff_docs/ch2_part2_sbatch_handoff.md"
 SOURCE_PDF="${REPO}/helper_lean_code/Chapter02_Concentration of sums of independent random variables_part2.pdf"
 LOG_DIR="${REPO}/slurm"
 
@@ -62,10 +62,10 @@ git status --short
 echo
 
 CODEX_BASE_ARGS=(
+  --ask-for-approval never
   exec
   -C "$REPO"
   --sandbox workspace-write
-  --ask-for-approval never
   -c shell_environment_policy.inherit=all
   --output-last-message "$LAST_MESSAGE"
 )

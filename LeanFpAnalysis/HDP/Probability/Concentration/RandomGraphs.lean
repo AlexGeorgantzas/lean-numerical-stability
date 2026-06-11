@@ -1,6 +1,8 @@
 import LeanFpAnalysis.HDP.Probability.Concentration.Basic
 import LeanFpAnalysis.HDP.Probability.Concentration.Chernoff
+import Mathlib.Data.Finset.Union
 import Mathlib.Probability.Combinatorics.BinomialRandomGraph.Defs
+import Mathlib.Probability.Independence.InfinitePi
 import Mathlib.Combinatorics.SimpleGraph.Finite
 import Mathlib.Order.Filter.AtTopBot.Basic
 
@@ -89,6 +91,685 @@ lemma graphAllDegreesBelowEvent_eq_compl_someAtLeast (L : ℝ) :
   exact mem_graphAllDegreesBelowEvent_iff_not_mem_high G L
 
 end Events
+
+section EdgeCylinders
+
+variable {ι V J : Type*}
+
+/-- Finite cylinder event for a `setBernoulli` random set: all elements of the
+finite set `E` are present. -/
+def setBernoulliFinsetPresentEvent (E : Finset ι) : Set (Set ι) :=
+  {s | ∀ e ∈ E, e ∈ s}
+
+/-- Graph event that all edges in the finite set `E` are present. -/
+def graphEdgesPresentFinsetEvent (E : Finset (Sym2 V)) :
+    Set (SimpleGraph V) :=
+  {G | ∀ e ∈ E, e ∈ G.edgeSet}
+
+lemma measurableSet_graphEdgesPresentFinsetEvent
+    (E : Finset (Sym2 V)) :
+    MeasurableSet (graphEdgesPresentFinsetEvent (V := V) E) := by
+  classical
+  rw [show graphEdgesPresentFinsetEvent (V := V) E =
+      ⋂ e ∈ E, {G : SimpleGraph V | e ∈ G.edgeSet} by
+    ext G
+    simp [graphEdgesPresentFinsetEvent]]
+  exact E.measurableSet_biInter fun e _he =>
+    (measurableSet_mem e).preimage SimpleGraph.measurable_edgeSet
+
+/-- Exact finite-cylinder probability under `setBernoulli`: if all required
+coordinates lie in the active set `u`, the probability that they are all present
+is `p ^ |E|`. -/
+lemma setBernoulliFinsetPresentEvent_probability
+    (u : Set ι) (p : unitInterval) (E : Finset ι)
+    (hE : ↑E ⊆ u) :
+    setBer(u, p) (setBernoulliFinsetPresentEvent E) =
+      (unitInterval.toNNReal p : ℝ≥0∞) ^ E.card := by
+  classical
+  rw [ProbabilityTheory.setBernoulli_apply']
+  have hpre :
+      ((fun p : ι → Prop => {i | p i}) ⁻¹'
+          setBernoulliFinsetPresentEvent E)
+        =
+      Set.pi (E : Set ι) (fun _ => ({True} : Set Prop)) := by
+    ext f
+    simp [setBernoulliFinsetPresentEvent, Set.mem_pi]
+  rw [hpre]
+  rw [Measure.infinitePi_pi]
+  · calc
+      (∏ e ∈ E,
+          (unitInterval.toNNReal p • Measure.dirac (e ∈ u) +
+              unitInterval.toNNReal (unitInterval.symm p) • Measure.dirac False)
+            ({True} : Set Prop))
+          =
+        ∏ _e ∈ E, (unitInterval.toNNReal p : ℝ≥0∞) := by
+          refine Finset.prod_congr rfl ?_
+          intro e he
+          have heu : e ∈ u := hE (by simpa using he)
+          simp only [heu, Measure.coe_add, Pi.add_apply, Measure.smul_apply,
+            Measure.dirac_apply, ENNReal.smul_def, smul_eq_mul]
+          simp
+      _ = (unitInterval.toNNReal p : ℝ≥0∞) ^ E.card := by
+          simp
+  · intro e _he
+    exact measurableSet_singleton True
+
+/-- Finite cylinder event for a `setBernoulli` random set: among the
+coordinates in `E`, exactly the coordinates in `T` are present. Coordinates
+outside `E` are unrestricted. -/
+def setBernoulliFinsetExactEvent (E T : Finset ι) : Set (Set ι) :=
+  {s | ∀ e ∈ E, (e ∈ s ↔ e ∈ T)}
+
+lemma finset_prod_ite_mem_eq_pow_mul_pow {α M : Type*}
+    [DecidableEq α] [CommMonoid M] (E T : Finset α) (hT : T ⊆ E)
+    (a b : M) :
+    (∏ e ∈ E, if e ∈ T then a else b) =
+      a ^ T.card * b ^ (E.card - T.card) := by
+  classical
+  have hfilter : E.filter (fun e => e ∈ T) = T := by
+    ext e
+    constructor
+    · intro h
+      exact (Finset.mem_filter.mp h).2
+    · intro heT
+      exact Finset.mem_filter.mpr ⟨hT heT, heT⟩
+  have hfilterNot : E.filter (fun e => e ∉ T) = E \ T := by
+    ext e
+    simp
+  calc
+    (∏ e ∈ E, if e ∈ T then a else b)
+        = (∏ e ∈ E.filter (fun e => e ∈ T),
+              if e ∈ T then a else b) *
+            (∏ e ∈ E.filter (fun e => e ∉ T),
+              if e ∈ T then a else b) := by
+          rw [← Finset.prod_filter_mul_prod_filter_not
+            (s := E) (p := fun e => e ∈ T)
+            (f := fun e => if e ∈ T then a else b)]
+    _ = (∏ _e ∈ T, a) * (∏ _e ∈ E \ T, b) := by
+          rw [hfilter, hfilterNot]
+          congr 1
+          · exact Finset.prod_congr rfl fun e he => by simp [he]
+          · refine Finset.prod_congr rfl fun e he => ?_
+            have hnot : e ∉ T := (Finset.mem_sdiff.mp he).2
+            simp [hnot]
+    _ = a ^ T.card * b ^ (E.card - T.card) := by
+          simp [Finset.card_sdiff_of_subset hT]
+
+/-- Exact finite-cylinder probability under `setBernoulli`: if `T ⊆ E` and
+all coordinates in `E` lie in the active set `u`, then the probability that
+exactly `T` is present among `E` is
+`p ^ |T| (1-p) ^ (|E|-|T|)`. -/
+lemma setBernoulliFinsetExactEvent_probability
+    [DecidableEq ι] (u : Set ι) (p : unitInterval) (E T : Finset ι)
+    (hE : ↑E ⊆ u) (hT : T ⊆ E) :
+    setBer(u, p) (setBernoulliFinsetExactEvent E T) =
+      (unitInterval.toNNReal p : ℝ≥0∞) ^ T.card *
+        (unitInterval.toNNReal (unitInterval.symm p) : ℝ≥0∞) ^
+          (E.card - T.card) := by
+  classical
+  rw [ProbabilityTheory.setBernoulli_apply']
+  have hpre :
+      ((fun p : ι → Prop => {i | p i}) ⁻¹'
+          setBernoulliFinsetExactEvent E T)
+        =
+      Set.pi (E : Set ι)
+        (fun e =>
+          if e ∈ T then ({True} : Set Prop) else ({False} : Set Prop)) := by
+    ext f
+    simp only [Set.mem_preimage, setBernoulliFinsetExactEvent,
+      Set.mem_setOf_eq, Set.mem_pi, Finset.mem_coe]
+    constructor
+    · intro h e heE
+      by_cases heT : e ∈ T
+      · simp [heT, (h e heE).2 heT]
+      · have hnot : ¬ f e := fun hf => heT ((h e heE).1 hf)
+        simp [heT, hnot]
+    · intro h e heE
+      have he := h e heE
+      by_cases heT : e ∈ T
+      · simp [heT] at he
+        exact ⟨fun _ => heT, fun _ => he⟩
+      · simp [heT] at he
+        exact ⟨fun hf => (he hf).elim, fun hmem => False.elim (heT hmem)⟩
+  rw [hpre]
+  rw [Measure.infinitePi_pi]
+  · calc
+      (∏ e ∈ E,
+          (unitInterval.toNNReal p • Measure.dirac (e ∈ u) +
+              unitInterval.toNNReal (unitInterval.symm p) • Measure.dirac False)
+            (if e ∈ T then ({True} : Set Prop) else ({False} : Set Prop)))
+          =
+        ∏ e ∈ E,
+          if e ∈ T then
+            (unitInterval.toNNReal p : ℝ≥0∞)
+          else
+            (unitInterval.toNNReal (unitInterval.symm p) : ℝ≥0∞) := by
+          refine Finset.prod_congr rfl ?_
+          intro e heE
+          have heu : e ∈ u := hE (by simpa using heE)
+          by_cases heT : e ∈ T
+          · simp only [heT, if_true, heu, Measure.coe_add, Pi.add_apply,
+              Measure.smul_apply, Measure.dirac_apply, ENNReal.smul_def,
+              smul_eq_mul]
+            simp
+          · simp only [heT, if_false, heu, Measure.coe_add, Pi.add_apply,
+              Measure.smul_apply, Measure.dirac_apply, ENNReal.smul_def,
+              smul_eq_mul]
+            simp
+      _ =
+        (unitInterval.toNNReal p : ℝ≥0∞) ^ T.card *
+          (unitInterval.toNNReal (unitInterval.symm p) : ℝ≥0∞) ^
+            (E.card - T.card) := by
+          exact finset_prod_ite_mem_eq_pow_mul_pow E T hT _ _
+  · intro e _he
+    by_cases heT : e ∈ T <;> simp [heT]
+
+/-- The finite-cylinder probability transported to the binomial random graph
+model. Requiring a finite set of non-diagonal edges to be present has
+probability `p ^ |E|`. -/
+lemma binomialRandom_graphEdgesPresentFinsetEvent_probability
+    [Countable V] (p : unitInterval) (E : Finset (Sym2 V))
+    (hE : (E : Set (Sym2 V)) ⊆ Sym2.diagSetᶜ) :
+    SimpleGraph.binomialRandom V p
+        (graphEdgesPresentFinsetEvent (V := V) E)
+      =
+      (unitInterval.toNNReal p : ℝ≥0∞) ^ E.card := by
+  classical
+  rw [SimpleGraph.binomialRandom_eq_map]
+  rw [Measure.map_apply SimpleGraph.measurable_fromEdgeSet
+    (measurableSet_graphEdgesPresentFinsetEvent (V := V) E)]
+  have hpre :
+      SimpleGraph.fromEdgeSet ⁻¹'
+          graphEdgesPresentFinsetEvent (V := V) E
+        =
+      setBernoulliFinsetPresentEvent E := by
+    ext s
+    simp only [Set.mem_preimage, graphEdgesPresentFinsetEvent,
+      setBernoulliFinsetPresentEvent]
+    constructor
+    · intro hs e he
+      have hesdiff : e ∈ (SimpleGraph.fromEdgeSet s).edgeSet := hs e he
+      rw [SimpleGraph.edgeSet_fromEdgeSet] at hesdiff
+      exact hesdiff.1
+    · intro hs e he
+      have hnotdiag : e ∈ Sym2.diagSetᶜ := hE (by simpa using he)
+      rw [SimpleGraph.edgeSet_fromEdgeSet]
+      exact ⟨hs e he, hnotdiag⟩
+  rw [hpre]
+  exact
+    setBernoulliFinsetPresentEvent_probability
+      (u := Sym2.diagSetᶜ) (p := p) (E := E) hE
+
+/-- Graph event that, among the finite edge set `E`, exactly the edges in `T`
+are present. Edges outside `E` are unrestricted. -/
+def graphEdgesExactFinsetEvent (E T : Finset (Sym2 V)) :
+    Set (SimpleGraph V) :=
+  {G | ∀ e ∈ E, (e ∈ G.edgeSet ↔ e ∈ T)}
+
+lemma measurableSet_graphEdgesExactFinsetEvent
+    [DecidableEq (Sym2 V)] (E T : Finset (Sym2 V)) :
+    MeasurableSet (graphEdgesExactFinsetEvent (V := V) E T) := by
+  classical
+  rw [show graphEdgesExactFinsetEvent (V := V) E T =
+      ⋂ e ∈ E,
+        if e ∈ T then {G : SimpleGraph V | e ∈ G.edgeSet}
+        else {G : SimpleGraph V | e ∉ G.edgeSet} by
+    ext G
+    simp only [Set.mem_iInter, graphEdgesExactFinsetEvent, Set.mem_setOf_eq]
+    constructor
+    · intro h e heE
+      by_cases heT : e ∈ T
+      · simp [heT, (h e heE).2 heT]
+      · have hnot : e ∉ G.edgeSet := fun hmem => heT ((h e heE).1 hmem)
+        simp [heT, hnot]
+    · intro h e heE
+      have he := h e heE
+      by_cases heT : e ∈ T
+      · simp [heT] at he
+        exact ⟨fun _ => heT, fun _ => he⟩
+      · simp [heT] at he
+        exact ⟨fun hmem => (he hmem).elim,
+          fun hmemT => False.elim (heT hmemT)⟩]
+  exact E.measurableSet_biInter fun e _he => by
+    by_cases heT : e ∈ T
+    · simpa only [heT, if_true] using
+        (measurableSet_mem e).preimage SimpleGraph.measurable_edgeSet
+    · simpa only [heT, if_false] using
+        ((measurableSet_mem e).preimage SimpleGraph.measurable_edgeSet).compl
+
+/-- Exact finite-cylinder probability transported to `G(n,p)`: requiring exactly
+`T` among a finite set `E` of non-diagonal edges has probability
+`p ^ |T| (1-p) ^ (|E|-|T|)`. -/
+lemma binomialRandom_graphEdgesExactFinsetEvent_probability
+    [Countable V] [DecidableEq (Sym2 V)] (p : unitInterval)
+    (E T : Finset (Sym2 V))
+    (hE : (E : Set (Sym2 V)) ⊆ Sym2.diagSetᶜ) (hT : T ⊆ E) :
+    SimpleGraph.binomialRandom V p
+        (graphEdgesExactFinsetEvent (V := V) E T) =
+      (unitInterval.toNNReal p : ℝ≥0∞) ^ T.card *
+        (unitInterval.toNNReal (unitInterval.symm p) : ℝ≥0∞) ^
+          (E.card - T.card) := by
+  classical
+  rw [SimpleGraph.binomialRandom_eq_map]
+  rw [Measure.map_apply SimpleGraph.measurable_fromEdgeSet
+    (measurableSet_graphEdgesExactFinsetEvent (V := V) E T)]
+  have hpre :
+      SimpleGraph.fromEdgeSet ⁻¹'
+          graphEdgesExactFinsetEvent (V := V) E T =
+        setBernoulliFinsetExactEvent E T := by
+    ext s
+    simp only [Set.mem_preimage, graphEdgesExactFinsetEvent,
+      setBernoulliFinsetExactEvent, Set.mem_setOf_eq]
+    constructor
+    · intro hs e heE
+      have hnotdiag : e ∈ Sym2.diagSetᶜ := hE (by simpa using heE)
+      rw [Set.mem_compl_iff, Sym2.mem_diagSet] at hnotdiag
+      have hiff := hs e heE
+      rw [SimpleGraph.edgeSet_fromEdgeSet] at hiff
+      simp [hnotdiag] at hiff
+      exact hiff
+    · intro hs e heE
+      have hnotdiag : e ∈ Sym2.diagSetᶜ := hE (by simpa using heE)
+      rw [Set.mem_compl_iff, Sym2.mem_diagSet] at hnotdiag
+      rw [SimpleGraph.edgeSet_fromEdgeSet]
+      simp [hnotdiag, hs e heE]
+  rw [hpre]
+  exact setBernoulliFinsetExactEvent_probability
+    (u := Sym2.diagSetᶜ) (p := p) (E := E) (T := T) hE hT
+
+lemma graphEdgesPresentFinsetEvent_iInter_eq_biUnion
+    [DecidableEq (Sym2 V)] (E : J → Finset (Sym2 V))
+    (s : Finset J) :
+    (⋂ j ∈ s, graphEdgesPresentFinsetEvent (V := V) (E j))
+      =
+    graphEdgesPresentFinsetEvent (V := V) (s.biUnion E) := by
+  ext G
+  simp only [Set.mem_iInter, graphEdgesPresentFinsetEvent, Set.mem_setOf_eq,
+    Finset.mem_biUnion]
+  constructor
+  · intro h e he
+    rcases he with ⟨j, hjs, heE⟩
+    exact h j hjs e heE
+  · intro h j hjs e heE
+    exact h e ⟨j, hjs, heE⟩
+
+lemma coe_finset_biUnion_subset {α β : Type*} [DecidableEq β]
+    {s : Finset α} {E : α → Finset β} {u : Set β}
+    (hE : ∀ a ∈ s, ↑(E a) ⊆ u) :
+    ↑(s.biUnion E) ⊆ u := by
+  intro x hx
+  simp only [Finset.mem_coe, Finset.mem_biUnion] at hx
+  rcases hx with ⟨a, has, hxE⟩
+  exact hE a has hxE
+
+lemma card_biUnion_of_pairwiseDisjoint
+    {α β : Type*} [DecidableEq β]
+    {s : Finset α} {E : α → Finset β}
+    (hdisj : (s : Set α).PairwiseDisjoint E) :
+    (s.biUnion E).card = ∑ a ∈ s, (E a).card := by
+  simpa using Finset.card_biUnion hdisj
+
+/-- Disjoint finite edge cylinders are independent under the binomial random
+graph measure. -/
+theorem binomialRandom_graphEdgesPresentFinsetEvent_iIndepSet
+    [Countable V] [DecidableEq (Sym2 V)]
+    (p : unitInterval) (E : J → Finset (Sym2 V))
+    (hdiag : ∀ j, (E j : Set (Sym2 V)) ⊆ Sym2.diagSetᶜ)
+    (hdisj : (Set.univ : Set J).PairwiseDisjoint E) :
+    iIndepSet
+      (fun j => graphEdgesPresentFinsetEvent (V := V) (E j))
+      (SimpleGraph.binomialRandom V p) := by
+  classical
+  refine (iIndepSet_iff_meas_biInter
+    (μ := SimpleGraph.binomialRandom V p)
+    (f := fun j => graphEdgesPresentFinsetEvent (V := V) (E j))
+    (fun j => measurableSet_graphEdgesPresentFinsetEvent (V := V) (E j))).2 ?_
+  intro s
+  rw [graphEdgesPresentFinsetEvent_iInter_eq_biUnion (V := V) E s]
+  rw [binomialRandom_graphEdgesPresentFinsetEvent_probability
+    (V := V) (p := p) (E := s.biUnion E)]
+  · rw [card_biUnion_of_pairwiseDisjoint]
+    · symm
+      calc
+        (∏ j ∈ s,
+            SimpleGraph.binomialRandom V p
+              (graphEdgesPresentFinsetEvent (V := V) (E j)))
+            =
+          ∏ j ∈ s,
+            (unitInterval.toNNReal p : ℝ≥0∞) ^ (E j).card := by
+            refine Finset.prod_congr rfl ?_
+            intro j _hj
+            exact binomialRandom_graphEdgesPresentFinsetEvent_probability
+              (V := V) (p := p) (E := E j) (hdiag j)
+        _ = (unitInterval.toNNReal p : ℝ≥0∞) ^
+              (∑ j ∈ s, (E j).card) := by
+            exact Finset.prod_pow_eq_pow_sum s (fun j => (E j).card)
+              (unitInterval.toNNReal p : ℝ≥0∞)
+    · exact hdisj.subset (by simp)
+  · exact coe_finset_biUnion_subset (fun j _hj => hdiag j)
+
+end EdgeCylinders
+
+section StarWitnesses
+
+variable {V J : Type*}
+
+/-- The finite set of unordered edges from a center `v` to a finite leaf set
+`S`. The embedding form records that the number of edges is exactly `|S|`. -/
+def graphStarEdgeFinset (v : V) (S : Finset V) : Finset (Sym2 V) :=
+  S.map (Sym2.mkEmbedding v)
+
+@[simp]
+lemma graphStarEdgeFinset_card (v : V) (S : Finset V) :
+    (graphStarEdgeFinset v S).card = S.card := by
+  simp [graphStarEdgeFinset]
+
+/-- The event that all edges from `v` to vertices in `S` are present. -/
+def graphStarPresentEvent (v : V) (S : Finset V) : Set (SimpleGraph V) :=
+  {G | ∀ w ∈ S, G.Adj v w}
+
+lemma graphStarPresentEvent_eq_graphEdgesPresentFinsetEvent
+    (v : V) (S : Finset V) :
+    graphStarPresentEvent (V := V) v S =
+      graphEdgesPresentFinsetEvent (V := V) (graphStarEdgeFinset v S) := by
+  ext G
+  simp [graphStarPresentEvent, graphEdgesPresentFinsetEvent,
+    graphStarEdgeFinset, SimpleGraph.mem_edgeSet]
+
+lemma measurableSet_graphStarPresentEvent (v : V) (S : Finset V) :
+    MeasurableSet (graphStarPresentEvent (V := V) v S) := by
+  rw [graphStarPresentEvent_eq_graphEdgesPresentFinsetEvent]
+  exact measurableSet_graphEdgesPresentFinsetEvent _
+
+lemma graphStarEdgeFinset_subset_diag_compl {v : V} {S : Finset V}
+    (hvS : v ∉ S) :
+    (graphStarEdgeFinset v S : Set (Sym2 V)) ⊆ Sym2.diagSetᶜ := by
+  intro e he
+  rcases Finset.mem_map.mp he with ⟨w, hw, rfl⟩
+  change s(v, w) ∈ Sym2.diagSetᶜ
+  rw [Set.mem_compl_iff, Sym2.mem_diagSet, Sym2.mk_isDiag_iff]
+  intro hvw
+  exact hvS (by simpa [hvw] using hw)
+
+/-- Exact probability of a concrete star witness in `G(n,p)`: all `|S|` star
+edges are present. -/
+lemma binomialRandom_graphStarPresentEvent_probability
+    [Countable V] [DecidableEq (Sym2 V)] (p : unitInterval)
+    {v : V} {S : Finset V} (hvS : v ∉ S) :
+    SimpleGraph.binomialRandom V p
+        (graphStarPresentEvent (V := V) v S) =
+      (unitInterval.toNNReal p : ℝ≥0∞) ^ S.card := by
+  rw [graphStarPresentEvent_eq_graphEdgesPresentFinsetEvent]
+  rw [binomialRandom_graphEdgesPresentFinsetEvent_probability
+    (V := V) (p := p) (E := graphStarEdgeFinset v S)]
+  · simp
+  · exact graphStarEdgeFinset_subset_diag_compl hvS
+
+/-- Real-probability form of
+`binomialRandom_graphStarPresentEvent_probability`. -/
+lemma binomialRandom_graphStarPresentEvent_probability_real
+    [Countable V] [DecidableEq (Sym2 V)] (p : unitInterval)
+    {v : V} {S : Finset V} (hvS : v ∉ S) :
+    (SimpleGraph.binomialRandom V p).real
+        (graphStarPresentEvent (V := V) v S) =
+      (unitInterval.toNNReal p : ℝ) ^ S.card := by
+  rw [measureReal_def,
+    binomialRandom_graphStarPresentEvent_probability (V := V) p hvS]
+  simp
+
+/-- Disjoint star edge blocks give independent star-present witness events. -/
+theorem binomialRandom_graphStarPresentEvent_iIndepSet
+    [Countable V] [DecidableEq (Sym2 V)]
+    (p : unitInterval) (v : J → V) (S : J → Finset V)
+    (hvS : ∀ j, v j ∉ S j)
+    (hdisj : (Set.univ : Set J).PairwiseDisjoint
+      (fun j => graphStarEdgeFinset (v j) (S j))) :
+    iIndepSet
+      (fun j => graphStarPresentEvent (V := V) (v j) (S j))
+      (SimpleGraph.binomialRandom V p) := by
+  simpa [graphStarPresentEvent_eq_graphEdgesPresentFinsetEvent] using
+    (binomialRandom_graphEdgesPresentFinsetEvent_iIndepSet
+      (V := V) (J := J) (p := p)
+      (E := fun j => graphStarEdgeFinset (v j) (S j))
+      (hdiag := fun j => graphStarEdgeFinset_subset_diag_compl (hvS j))
+      (hdisj := hdisj))
+
+lemma graphStarPresentEvent_subset_degreeAtLeast [Fintype V]
+    {v : V} {S : Finset V} {L : ℝ}
+    (hL : L ≤ (S.card : ℝ)) :
+    graphStarPresentEvent (V := V) v S ⊆
+      graphDegreeAtLeastEvent (V := V) L v := by
+  intro G hG
+  have hsubset : (S : Set V) ⊆ G.neighborSet v := by
+    intro w hw
+    exact (SimpleGraph.mem_neighborSet G v w).2 (hG w (by simpa using hw))
+  have hleNat : S.card ≤ graphDegree G v := by
+    have hle := Set.ncard_le_ncard hsubset (Set.toFinite (G.neighborSet v))
+    simpa [graphDegree] using hle
+  exact hL.trans (by exact_mod_cast hleNat)
+
+lemma graphStarPresentEvent_subset_someDegreeAtLeast [Fintype V]
+    {v : V} {S : Finset V} {L : ℝ}
+    (hL : L ≤ (S.card : ℝ)) :
+    graphStarPresentEvent (V := V) v S ⊆
+      graphSomeDegreeAtLeastEvent (V := V) L := by
+  intro G hG
+  exact ⟨v, graphStarPresentEvent_subset_degreeAtLeast (V := V) hL hG⟩
+
+/-- The event that, among the finite leaf set `S`, exactly the vertices in `T`
+are adjacent to the center `v`. -/
+def graphStarExactEvent (v : V) (S T : Finset V) : Set (SimpleGraph V) :=
+  {G | ∀ w ∈ S, (G.Adj v w ↔ w ∈ T)}
+
+lemma graphStarExactEvent_eq_graphEdgesExactFinsetEvent
+    {v : V} {S T : Finset V} (hvS : v ∉ S) :
+    graphStarExactEvent (V := V) v S T =
+      graphEdgesExactFinsetEvent (V := V)
+        (graphStarEdgeFinset v S) (graphStarEdgeFinset v T) := by
+  ext G
+  simp [graphStarExactEvent, graphEdgesExactFinsetEvent,
+    graphStarEdgeFinset, SimpleGraph.mem_edgeSet]
+  constructor
+  · intro h a haS
+    have hmem : (∃ b ∈ T, b = a ∨ v = a ∧ b = v) ↔ a ∈ T := by
+      constructor
+      · rintro ⟨b, hbT, hba | ⟨hva, _hbv⟩⟩
+        · simpa [hba] using hbT
+        · exact False.elim (hvS (by simpa [hva] using haS))
+      · intro haT
+        exact ⟨a, haT, Or.inl rfl⟩
+    exact (h a haS).trans hmem.symm
+  · intro h a haS
+    have hmem : (∃ b ∈ T, b = a ∨ v = a ∧ b = v) ↔ a ∈ T := by
+      constructor
+      · rintro ⟨b, hbT, hba | ⟨hva, _hbv⟩⟩
+        · simpa [hba] using hbT
+        · exact False.elim (hvS (by simpa [hva] using haS))
+      · intro haT
+        exact ⟨a, haT, Or.inl rfl⟩
+    exact (h a haS).trans hmem
+
+lemma graphStarEdgeFinset_subset {v : V} {S T : Finset V} (hT : T ⊆ S) :
+    graphStarEdgeFinset v T ⊆ graphStarEdgeFinset v S := by
+  intro e he
+  rcases Finset.mem_map.mp he with ⟨w, hw, rfl⟩
+  exact Finset.mem_map.mpr ⟨w, hT hw, rfl⟩
+
+lemma measurableSet_graphStarExactEvent
+    [DecidableEq (Sym2 V)] {v : V} {S T : Finset V} (hvS : v ∉ S) :
+    MeasurableSet (graphStarExactEvent (V := V) v S T) := by
+  rw [graphStarExactEvent_eq_graphEdgesExactFinsetEvent hvS]
+  exact measurableSet_graphEdgesExactFinsetEvent _ _
+
+/-- Exact probability of a star pattern in `G(n,p)`: among `S`, exactly `T`
+is adjacent to the center. -/
+lemma binomialRandom_graphStarExactEvent_probability
+    [Countable V] [DecidableEq (Sym2 V)] (p : unitInterval)
+    {v : V} {S T : Finset V} (hvS : v ∉ S) (hT : T ⊆ S) :
+    SimpleGraph.binomialRandom V p
+        (graphStarExactEvent (V := V) v S T) =
+      (unitInterval.toNNReal p : ℝ≥0∞) ^ T.card *
+        (unitInterval.toNNReal (unitInterval.symm p) : ℝ≥0∞) ^
+          (S.card - T.card) := by
+  rw [graphStarExactEvent_eq_graphEdgesExactFinsetEvent hvS]
+  rw [binomialRandom_graphEdgesExactFinsetEvent_probability
+    (V := V) (p := p) (E := graphStarEdgeFinset v S)
+    (T := graphStarEdgeFinset v T)]
+  · simp
+  · exact graphStarEdgeFinset_subset_diag_compl hvS
+  · exact graphStarEdgeFinset_subset hT
+
+/-- Real-probability form of
+`binomialRandom_graphStarExactEvent_probability`. -/
+lemma binomialRandom_graphStarExactEvent_probability_real
+    [Countable V] [DecidableEq (Sym2 V)] (p : unitInterval)
+    {v : V} {S T : Finset V} (hvS : v ∉ S) (hT : T ⊆ S) :
+    (SimpleGraph.binomialRandom V p).real
+        (graphStarExactEvent (V := V) v S T) =
+      (unitInterval.toNNReal p : ℝ) ^ T.card *
+        (unitInterval.toNNReal (unitInterval.symm p) : ℝ) ^
+          (S.card - T.card) := by
+  rw [measureReal_def,
+    binomialRandom_graphStarExactEvent_probability (V := V) p hvS hT]
+  simp
+
+lemma graphStarExactEvent_subset_degreeAtLeast [Fintype V]
+    {v : V} {S T : Finset V} {L : ℝ} (hT : T ⊆ S)
+    (hL : L ≤ (T.card : ℝ)) :
+    graphStarExactEvent (V := V) v S T ⊆
+      graphDegreeAtLeastEvent (V := V) L v := by
+  intro G hG
+  refine graphStarPresentEvent_subset_degreeAtLeast
+    (V := V) (v := v) (S := T) hL ?_
+  intro w hwT
+  exact (hG w (hT hwT)).2 hwT
+
+lemma graphStarExactEvent_subset_someDegreeAtLeast [Fintype V]
+    {v : V} {S T : Finset V} {L : ℝ} (hT : T ⊆ S)
+    (hL : L ≤ (T.card : ℝ)) :
+    graphStarExactEvent (V := V) v S T ⊆
+      graphSomeDegreeAtLeastEvent (V := V) L := by
+  intro G hG
+  exact ⟨v, graphStarExactEvent_subset_degreeAtLeast (V := V) hT hL hG⟩
+
+lemma graphStarExactEvent_disjoint_of_ne
+    {v : V} {S T U : Finset V}
+    (hT : T ⊆ S) (hU : U ⊆ S) (hne : T ≠ U) :
+    Disjoint (graphStarExactEvent (V := V) v S T)
+      (graphStarExactEvent (V := V) v S U) := by
+  rw [Set.disjoint_left]
+  intro G hGT hGU
+  exact hne (by
+    ext w
+    by_cases hwS : w ∈ S
+    · constructor
+      · intro hwT
+        exact (hGU w hwS).1 ((hGT w hwS).2 hwT)
+      · intro hwU
+        exact (hGT w hwS).1 ((hGU w hwS).2 hwU)
+    · constructor
+      · intro hwT
+        exact False.elim (hwS (hT hwT))
+      · intro hwU
+        exact False.elim (hwS (hU hwU)))
+
+/-- A binomial lower-mass bound for one star in `G(n,p)`: for any fixed center
+`v` and candidate neighbor set `S`, the probability that `v` has degree at
+least `k` is at least the single binomial mass
+`choose(|S|, k) p^k (1-p)^(|S|-k)`. -/
+theorem binomialRandom_graphDegreeAtLeast_probability_ge_star_binomial_mass
+    [Fintype V] [Countable V] [DecidableEq (Sym2 V)]
+    (p : unitInterval) {v : V} {S : Finset V} (hvS : v ∉ S) (k : ℕ) :
+    (Nat.choose S.card k : ℝ) *
+        (unitInterval.toNNReal p : ℝ) ^ k *
+          (unitInterval.toNNReal (unitInterval.symm p) : ℝ) ^ (S.card - k)
+      ≤ (SimpleGraph.binomialRandom V p).real
+          (graphDegreeAtLeastEvent (V := V) (k : ℝ) v) := by
+  classical
+  let C : Finset (Finset V) := S.powersetCard k
+  let A : Finset V → Set (SimpleGraph V) :=
+    fun T => graphStarExactEvent (V := V) v S T
+  have hpd : (↑C : Set (Finset V)).PairwiseDisjoint A := by
+    intro T hTC U hUC hne
+    have hTsub : T ⊆ S := (Finset.mem_powersetCard.mp hTC).1
+    have hUsub : U ⊆ S := (Finset.mem_powersetCard.mp hUC).1
+    exact graphStarExactEvent_disjoint_of_ne
+      (V := V) (v := v) (S := S) hTsub hUsub hne
+  have hmeas : ∀ T ∈ C, MeasurableSet (A T) := by
+    intro T _hT
+    exact measurableSet_graphStarExactEvent
+      (V := V) (v := v) (S := S) (T := T) hvS
+  have hUnionReal :
+      (SimpleGraph.binomialRandom V p).real (⋃ T ∈ C, A T) =
+        ∑ T ∈ C, (SimpleGraph.binomialRandom V p).real (A T) := by
+    exact MeasureTheory.measureReal_biUnion_finset
+      (μ := SimpleGraph.binomialRandom V p) hpd hmeas
+  have hterm : ∀ T ∈ C,
+      (SimpleGraph.binomialRandom V p).real (A T) =
+        (unitInterval.toNNReal p : ℝ) ^ k *
+          (unitInterval.toNNReal (unitInterval.symm p) : ℝ) ^
+            (S.card - k) := by
+    intro T hTC
+    have hTsub : T ⊆ S := (Finset.mem_powersetCard.mp hTC).1
+    have hTcard : T.card = k := (Finset.mem_powersetCard.mp hTC).2
+    rw [binomialRandom_graphStarExactEvent_probability_real
+      (V := V) (p := p) (v := v) (S := S) (T := T) hvS hTsub]
+    rw [hTcard]
+  have hUnionEval :
+      (SimpleGraph.binomialRandom V p).real (⋃ T ∈ C, A T) =
+        (Nat.choose S.card k : ℝ) *
+          ((unitInterval.toNNReal p : ℝ) ^ k *
+            (unitInterval.toNNReal (unitInterval.symm p) : ℝ) ^
+              (S.card - k)) := by
+    rw [hUnionReal]
+    calc
+      (∑ T ∈ C, (SimpleGraph.binomialRandom V p).real (A T))
+          =
+        ∑ _T ∈ C,
+          ((unitInterval.toNNReal p : ℝ) ^ k *
+            (unitInterval.toNNReal (unitInterval.symm p) : ℝ) ^
+              (S.card - k)) := by
+            exact Finset.sum_congr rfl fun T hTC => hterm T hTC
+      _ =
+        (C.card : ℝ) *
+          ((unitInterval.toNNReal p : ℝ) ^ k *
+            (unitInterval.toNNReal (unitInterval.symm p) : ℝ) ^
+              (S.card - k)) := by
+            simp
+      _ =
+        (Nat.choose S.card k : ℝ) *
+          ((unitInterval.toNNReal p : ℝ) ^ k *
+            (unitInterval.toNNReal (unitInterval.symm p) : ℝ) ^
+              (S.card - k)) := by
+            simp [C, Finset.card_powersetCard]
+  have hsubset :
+      (⋃ T ∈ C, A T) ⊆
+        graphDegreeAtLeastEvent (V := V) (k : ℝ) v := by
+    intro G hG
+    simp only [Set.mem_iUnion] at hG
+    rcases hG with ⟨T, hTC, hGA⟩
+    have hTsub : T ⊆ S := (Finset.mem_powersetCard.mp hTC).1
+    have hTcard : T.card = k := (Finset.mem_powersetCard.mp hTC).2
+    exact graphStarExactEvent_subset_degreeAtLeast
+      (V := V) (v := v) (S := S) (T := T) hTsub (by rw [hTcard]) hGA
+  calc
+    (Nat.choose S.card k : ℝ) *
+        (unitInterval.toNNReal p : ℝ) ^ k *
+          (unitInterval.toNNReal (unitInterval.symm p) : ℝ) ^ (S.card - k)
+        =
+      (Nat.choose S.card k : ℝ) *
+        ((unitInterval.toNNReal p : ℝ) ^ k *
+          (unitInterval.toNNReal (unitInterval.symm p) : ℝ) ^
+            (S.card - k)) := by
+        ring
+    _ = (SimpleGraph.binomialRandom V p).real (⋃ T ∈ C, A T) :=
+      hUnionEval.symm
+    _ ≤
+      (SimpleGraph.binomialRandom V p).real
+        (graphDegreeAtLeastEvent (V := V) (k : ℝ) v) :=
+      MeasureTheory.measureReal_mono hsubset
+
+end StarWitnesses
 
 section DegreeComplements
 
@@ -353,6 +1034,103 @@ theorem very_sparse_graphs_far_from_regular_probability_ge_nine_tenths_of_indepe
     (q := q) hBmeas hindep hprob hbudget hforces
 
 end DegreeLowerWitnesses
+
+section StarLowerWitnesses
+
+variable {V J : Type*}
+variable [Fintype V] [Countable V] [DecidableEq (Sym2 V)] [Fintype J]
+
+/-- Concrete `G(n,p)` lower-bound amplifier from disjoint star witnesses. Each
+block is a finite star whose center is outside the leaf set; the disjointness
+hypothesis is on the underlying unordered edge blocks. -/
+theorem graphSomeDegreeAtLeast_probability_ge_one_sub_pow_one_sub_of_disjoint_star_witnesses
+    (p : unitInterval) {L q : ℝ} (v : J → V) (S : J → Finset V)
+    (hvS : ∀ j, v j ∉ S j)
+    (hprob : ∀ j, q ≤ (unitInterval.toNNReal p : ℝ) ^ (S j).card)
+    (hcard : ∀ j, L ≤ ((S j).card : ℝ))
+    (hdisj : (Set.univ : Set J).PairwiseDisjoint
+      (fun j => graphStarEdgeFinset (v j) (S j))) :
+    1 - (1 - q) ^ Fintype.card J
+      ≤ (SimpleGraph.binomialRandom V p).real
+          (graphSomeDegreeAtLeastEvent (V := V) L) := by
+  refine
+    graphSomeDegreeAtLeast_probability_ge_one_sub_pow_one_sub_of_independent_witnesses
+      (μ := SimpleGraph.binomialRandom V p) (V := V) (J := J)
+      (L := L) (q := q)
+      (B := fun j => graphStarPresentEvent (V := V) (v j) (S j))
+      ?_ ?_ ?_ ?_
+  · intro j
+    exact measurableSet_graphStarPresentEvent (V := V) (v j) (S j)
+  · exact binomialRandom_graphStarPresentEvent_iIndepSet
+      (V := V) (J := J) p v S hvS hdisj
+  · intro j
+    rw [binomialRandom_graphStarPresentEvent_probability_real
+      (V := V) p (hvS j)]
+    exact hprob j
+  · intro j
+    exact graphStarPresentEvent_subset_someDegreeAtLeast (V := V) (hcard j)
+
+/-- `0.9` form of the concrete `G(n,p)` star-witness lower-bound amplifier. -/
+theorem graphSomeDegreeAtLeast_probability_ge_nine_tenths_of_disjoint_star_witnesses
+    (p : unitInterval) {L q : ℝ} (v : J → V) (S : J → Finset V)
+    (hvS : ∀ j, v j ∉ S j)
+    (hprob : ∀ j, q ≤ (unitInterval.toNNReal p : ℝ) ^ (S j).card)
+    (hcard : ∀ j, L ≤ ((S j).card : ℝ))
+    (hbudget : (1 - q) ^ Fintype.card J ≤ 1 / 10)
+    (hdisj : (Set.univ : Set J).PairwiseDisjoint
+      (fun j => graphStarEdgeFinset (v j) (S j))) :
+    9 / 10 ≤
+      (SimpleGraph.binomialRandom V p).real
+        (graphSomeDegreeAtLeastEvent (V := V) L) := by
+  have hlower :=
+    graphSomeDegreeAtLeast_probability_ge_one_sub_pow_one_sub_of_disjoint_star_witnesses
+      (V := V) (J := J) p (L := L) (q := q) v S
+      hvS hprob hcard hdisj
+  nlinarith
+
+/-- Concrete `G(n,p)` finite star-witness form for HDP Exercise 2.4.4:
+disjoint star witnesses that each force degree at least `10d` amplify to the
+book's displayed high-probability lower bound. -/
+theorem sparse_graphs_not_almost_regular_probability_ge_nine_tenths_of_disjoint_star_witnesses
+    (p : unitInterval) {d q : ℝ} (v : J → V) (S : J → Finset V)
+    (hvS : ∀ j, v j ∉ S j)
+    (hprob : ∀ j, q ≤ (unitInterval.toNNReal p : ℝ) ^ (S j).card)
+    (hcard : ∀ j, 10 * d ≤ ((S j).card : ℝ))
+    (hbudget : (1 - q) ^ Fintype.card J ≤ 1 / 10)
+    (hdisj : (Set.univ : Set J).PairwiseDisjoint
+      (fun j => graphStarEdgeFinset (v j) (S j))) :
+    9 / 10 ≤
+      (SimpleGraph.binomialRandom V p).real
+        (graphSomeDegreeAtLeastEvent (V := V) (10 * d)) :=
+  graphSomeDegreeAtLeast_probability_ge_nine_tenths_of_disjoint_star_witnesses
+    (V := V) (J := J) p (L := 10 * d) (q := q) v S
+    hvS hprob hcard hbudget hdisj
+
+/-- Concrete `G(n,p)` finite star-witness form for HDP Exercise 2.4.5 at the
+very-sparse lower scale `log n / log log n`. -/
+theorem very_sparse_graphs_far_from_regular_probability_ge_nine_tenths_of_disjoint_star_witnesses
+    (p : unitInterval) {A q : ℝ} (v : J → V) (S : J → Finset V)
+    (hvS : ∀ j, v j ∉ S j)
+    (hprob : ∀ j, q ≤ (unitInterval.toNNReal p : ℝ) ^ (S j).card)
+    (hcard : ∀ j,
+      A * Real.log (Fintype.card V : ℝ) /
+          Real.log (Real.log (Fintype.card V : ℝ))
+        ≤ ((S j).card : ℝ))
+    (hbudget : (1 - q) ^ Fintype.card J ≤ 1 / 10)
+    (hdisj : (Set.univ : Set J).PairwiseDisjoint
+      (fun j => graphStarEdgeFinset (v j) (S j))) :
+    9 / 10 ≤
+      (SimpleGraph.binomialRandom V p).real
+        (graphSomeDegreeAtLeastEvent (V := V)
+          (A * Real.log (Fintype.card V : ℝ) /
+            Real.log (Real.log (Fintype.card V : ℝ)))) :=
+  graphSomeDegreeAtLeast_probability_ge_nine_tenths_of_disjoint_star_witnesses
+    (V := V) (J := J) p
+    (L := A * Real.log (Fintype.card V : ℝ) /
+      Real.log (Real.log (Fintype.card V : ℝ)))
+    (q := q) v S hvS hprob hcard hbudget hdisj
+
+end StarLowerWitnesses
 
 section DenseGraphs
 
