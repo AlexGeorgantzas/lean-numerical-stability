@@ -19,12 +19,24 @@ mkdir -p "$LOG_DIR"
 export PATH="${HOME}/.elan/bin:${PATH}"
 export CODEX_HOME="${CODEX_HOME:-${HOME}/.codex}"
 
+if [[ -z "${CODEX_BIN:-}" ]]; then
+  if command -v codex >/dev/null 2>&1; then
+    CODEX_BIN="$(command -v codex)"
+  elif [[ -x "${HOME}/.vscode-server/extensions/openai.chatgpt-26.602.71036-linux-x64/bin/linux-x86_64/codex" ]]; then
+    CODEX_BIN="${HOME}/.vscode-server/extensions/openai.chatgpt-26.602.71036-linux-x64/bin/linux-x86_64/codex"
+  else
+    echo "Could not find Codex CLI. Set CODEX_BIN=/absolute/path/to/codex and resubmit." >&2
+    exit 1
+  fi
+fi
+
 LAST_MESSAGE="${LOG_DIR}/ch2p2-last-${SLURM_JOB_ID:-manual}.md"
 
 echo "== HDP Chapter 2 part 2 Codex continuation =="
 echo "Repo: $REPO"
 echo "Handoff: $HANDOFF"
 echo "Source PDF: $SOURCE_PDF"
+echo "Codex CLI: $CODEX_BIN"
 echo "Last-message output: $LAST_MESSAGE"
 echo "Started: $(date -Is)"
 echo
@@ -40,7 +52,7 @@ if [[ ! -r "$SOURCE_PDF" ]]; then
 fi
 
 echo "== Tool versions =="
-codex --version
+"$CODEX_BIN" --version
 lake --version
 echo
 
@@ -59,13 +71,13 @@ CODEX_BASE_ARGS=(
 
 if [[ -n "${CODEX_RESUME_SESSION:-}" ]]; then
   echo "== Running: codex exec resume ${CODEX_RESUME_SESSION} =="
-  codex "${CODEX_BASE_ARGS[@]}" resume "$CODEX_RESUME_SESSION" - < "$HANDOFF"
+  "$CODEX_BIN" "${CODEX_BASE_ARGS[@]}" resume "$CODEX_RESUME_SESSION" - < "$HANDOFF"
 elif [[ "${CODEX_RESUME_LAST:-0}" == "1" ]]; then
   echo "== Running: codex exec resume --last =="
-  codex "${CODEX_BASE_ARGS[@]}" resume --last - < "$HANDOFF"
+  "$CODEX_BIN" "${CODEX_BASE_ARGS[@]}" resume --last - < "$HANDOFF"
 else
   echo "== Running: codex exec with handoff prompt =="
-  codex "${CODEX_BASE_ARGS[@]}" - < "$HANDOFF"
+  "$CODEX_BIN" "${CODEX_BASE_ARGS[@]}" - < "$HANDOFF"
 fi
 
 echo
