@@ -63,6 +63,12 @@ These warnings are not proof holes, but they can be cleaned if convenient.
 
 ## Chapter 2 Part 2 Inventory
 
+The source PDF is available in the workspace at:
+
+`helper_lean_code/Chapter02_Concentration of sums of independent random variables_part2.pdf`
+
+Before claiming completion, reread this PDF from the filesystem and compare the formalized statements against it. Do not rely only on the inventory below; the inventory is a navigation aid, not a substitute for the PDF.
+
 The PDF part covers:
 
 - Section 2.4, random graph degrees:

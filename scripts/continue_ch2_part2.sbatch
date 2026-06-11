@@ -10,6 +10,7 @@ set -euo pipefail
 
 REPO="/u501/m2fetrat/MyCodes/lean-fp-analysis"
 HANDOFF="${REPO}/docs/ch2_part2_sbatch_handoff.md"
+SOURCE_PDF="${REPO}/helper_lean_code/Chapter02_Concentration of sums of independent random variables_part2.pdf"
 LOG_DIR="${REPO}/slurm"
 
 cd "$REPO"
@@ -23,9 +24,20 @@ LAST_MESSAGE="${LOG_DIR}/ch2p2-last-${SLURM_JOB_ID:-manual}.md"
 echo "== HDP Chapter 2 part 2 Codex continuation =="
 echo "Repo: $REPO"
 echo "Handoff: $HANDOFF"
+echo "Source PDF: $SOURCE_PDF"
 echo "Last-message output: $LAST_MESSAGE"
 echo "Started: $(date -Is)"
 echo
+
+if [[ ! -r "$HANDOFF" ]]; then
+  echo "Missing handoff prompt: $HANDOFF" >&2
+  exit 1
+fi
+
+if [[ ! -r "$SOURCE_PDF" ]]; then
+  echo "Missing Chapter 2 part 2 PDF: $SOURCE_PDF" >&2
+  exit 1
+fi
 
 echo "== Tool versions =="
 codex --version
