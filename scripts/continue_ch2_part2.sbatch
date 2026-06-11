@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=hdp-ch2p2-codex
-#SBATCH --time=06:50:00
+#SBATCH --time=96:50:00
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=32G
 #SBATCH --output=slurm/ch2p2-%j.out
