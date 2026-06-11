@@ -21,6 +21,114 @@ namespace LeanFpAnalysis.HDP
 
 variable {Ω : Type*} [MeasurableSpace Ω] {μ : Measure Ω}
 
+section UnionBounds
+
+variable {ι : Type*} [Fintype ι]
+
+/-- Finite union bound for real-valued probabilities. -/
+theorem measureReal_exists_le_sum (A : ι → Set Ω) :
+    μ.real {ω | ∃ i, ω ∈ A i} ≤ ∑ i, μ.real (A i) := by
+  classical
+  have hset :
+      {ω | ∃ i, ω ∈ A i} =
+        ⋃ i ∈ (Finset.univ : Finset ι), A i := by
+    ext ω
+    simp
+  rw [hset]
+  simpa using
+    (MeasureTheory.measureReal_biUnion_finset_le
+      (μ := μ) (s := (Finset.univ : Finset ι)) (f := A))
+
+/-- Exact probability of a finite union of independent events, written through
+the product of complementary probabilities. This is the lower-bound counterpart
+to `measureReal_exists_le_sum`. -/
+theorem measureReal_exists_eq_one_sub_prod_compl_of_iIndepSet
+    [IsProbabilityMeasure μ]
+    {A : ι → Set Ω}
+    (hAmeas : ∀ i, MeasurableSet (A i))
+    (hindep : iIndepSet A μ) :
+    μ.real {ω | ∃ i, ω ∈ A i}
+      = 1 - ∏ i, μ.real ((A i)ᶜ) := by
+  classical
+  let C : Set Ω := ⋂ i, (A i)ᶜ
+  have hC_meas : MeasurableSet C := by
+    dsimp [C]
+    exact MeasurableSet.iInter fun i => (hAmeas i).compl
+  have hUnion_eq : {ω | ∃ i, ω ∈ A i} = Cᶜ := by
+    ext ω
+    simp [C]
+  have hIndep :
+      iIndep (fun i => MeasurableSpace.generateFrom {A i}) μ :=
+    (iIndepSet_iff_iIndep A μ).1 hindep
+  have hC_measure :
+      μ C = ∏ i, μ ((A i)ᶜ) := by
+    dsimp [C]
+    simpa using
+      hIndep.meas_iInter
+        (s := fun i : ι => (A i)ᶜ)
+        (fun i =>
+          (MeasurableSpace.measurableSet_generateFrom
+            (show A i ∈ ({A i} : Set (Set Ω)) from
+              Set.mem_singleton (A i))).compl)
+  have hC_real :
+      μ.real C = ∏ i, μ.real ((A i)ᶜ) := by
+    rw [measureReal_def, hC_measure, ENNReal.toReal_prod]
+    simp [measureReal_def]
+  rw [hUnion_eq, MeasureTheory.measureReal_compl hC_meas,
+    MeasureTheory.probReal_univ, hC_real]
+
+/-- If each event in a finite independent family has probability at least `q`,
+then the probability that at least one event occurs is at least
+`1 - (1 - q)^n`. -/
+theorem measureReal_exists_ge_one_sub_pow_one_sub_of_iIndepSet
+    [IsProbabilityMeasure μ]
+    {A : ι → Set Ω} {q : ℝ}
+    (hAmeas : ∀ i, MeasurableSet (A i))
+    (hindep : iIndepSet A μ)
+    (hprob : ∀ i, q ≤ μ.real (A i)) :
+    1 - (1 - q) ^ Fintype.card ι
+      ≤ μ.real {ω | ∃ i, ω ∈ A i} := by
+  classical
+  have hEq :=
+    measureReal_exists_eq_one_sub_prod_compl_of_iIndepSet
+      (μ := μ) (A := A) hAmeas hindep
+  have hcomp_le : ∀ i, μ.real ((A i)ᶜ) ≤ 1 - q := by
+    intro i
+    have hcompl :=
+      MeasureTheory.measureReal_compl (μ := μ) (s := A i) (hAmeas i)
+    rw [MeasureTheory.probReal_univ] at hcompl
+    linarith [hprob i]
+  have hprod :
+      ∏ i, μ.real ((A i)ᶜ) ≤ (1 - q) ^ Fintype.card ι := by
+    calc
+      ∏ i, μ.real ((A i)ᶜ)
+          ≤ ∏ _i : ι, (1 - q) := by
+        refine Finset.prod_le_prod ?_ ?_
+        · intro i _hi
+          exact MeasureTheory.measureReal_nonneg
+        · intro i _hi
+          exact hcomp_le i
+      _ = (1 - q) ^ Fintype.card ι := by
+        simp
+  rw [hEq]
+  linarith
+
+/-- A convenient `0.9` form of the finite independent-union lower bound. -/
+theorem measureReal_exists_ge_nine_tenths_of_iIndepSet
+    [IsProbabilityMeasure μ]
+    {A : ι → Set Ω} {q : ℝ}
+    (hAmeas : ∀ i, MeasurableSet (A i))
+    (hindep : iIndepSet A μ)
+    (hprob : ∀ i, q ≤ μ.real (A i))
+    (hbudget : (1 - q) ^ Fintype.card ι ≤ 1 / 10) :
+    9 / 10 ≤ μ.real {ω | ∃ i, ω ∈ A i} := by
+  have hlower :=
+    measureReal_exists_ge_one_sub_pow_one_sub_of_iIndepSet
+      (μ := μ) (A := A) (q := q) hAmeas hindep hprob
+  nlinarith
+
+end UnionBounds
+
 section FiniteL2
 
 /-- Squared Euclidean norm of a finite coefficient vector, written in coordinates.

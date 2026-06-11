@@ -1,0 +1,664 @@
+import LeanFpAnalysis.HDP.Probability.Concentration.Basic
+import LeanFpAnalysis.HDP.Probability.Concentration.Chernoff
+import Mathlib.Probability.Combinatorics.BinomialRandomGraph.Defs
+import Mathlib.Combinatorics.SimpleGraph.Finite
+import Mathlib.Order.Filter.AtTopBot.Basic
+
+/-!
+# Random Graph Degree Bounds
+
+Book-facing event and union-bound statements for HDP Chapter 2, Section 2.4.
+The degree tail input is kept explicit, so these lemmas can be used both with
+the Bernoulli/Chernoff API already formalized in this library and with future
+edge-coordinate facts about `SimpleGraph.binomialRandom`.
+-/
+
+noncomputable section
+
+open Filter MeasureTheory ProbabilityTheory
+open scoped BigOperators ENNReal NNReal ProbabilityTheory Topology
+
+namespace LeanFpAnalysis.HDP
+
+section Events
+
+variable {V : Type*}
+
+/-- The degree of a vertex, stated using `Set.ncard` so it is available without
+choosing decidability data for graph adjacency. -/
+def graphDegree (G : SimpleGraph V) (v : V) : ℕ :=
+  (G.neighborSet v).ncard
+
+/-- The event that one vertex has degree deviating from `d` by at least
+`ε d`. -/
+def graphDegreeDeviationEvent (d ε : ℝ) (v : V) : Set (SimpleGraph V) :=
+  {G | ε * d ≤ |(graphDegree G v : ℝ) - d|}
+
+/-- The event that some vertex has degree deviating from `d` by at least
+`ε d`. This is the bad event in Proposition 2.4.1. -/
+def graphSomeDegreeDeviationEvent (d ε : ℝ) : Set (SimpleGraph V) :=
+  {G | ∃ v, G ∈ graphDegreeDeviationEvent (V := V) d ε v}
+
+/-- The event that one vertex has degree at least a prescribed level. -/
+def graphDegreeAtLeastEvent (L : ℝ) (v : V) : Set (SimpleGraph V) :=
+  {G | L ≤ (graphDegree G v : ℝ)}
+
+/-- The event that some vertex has degree at least a prescribed level. -/
+def graphSomeDegreeAtLeastEvent (L : ℝ) : Set (SimpleGraph V) :=
+  {G | ∃ v, G ∈ graphDegreeAtLeastEvent (V := V) L v}
+
+/-- The good event for maximum-degree upper bounds: every vertex has degree
+strictly below a prescribed level. -/
+def graphAllDegreesBelowEvent (L : ℝ) : Set (SimpleGraph V) :=
+  {G | ∀ v, (graphDegree G v : ℝ) < L}
+
+/-- The event that all vertices have degrees strictly within `ε d` of `d`. -/
+def graphAllDegreesWithinEvent (d ε : ℝ) : Set (SimpleGraph V) :=
+  {G | ∀ v, |(graphDegree G v : ℝ) - d| < ε * d}
+
+lemma mem_graphAllDegreesWithinEvent_iff_not_mem_bad
+    (G : SimpleGraph V) (d ε : ℝ) :
+    G ∈ graphAllDegreesWithinEvent (V := V) d ε ↔
+      G ∉ graphSomeDegreeDeviationEvent (V := V) d ε := by
+  classical
+  simp [graphAllDegreesWithinEvent, graphSomeDegreeDeviationEvent,
+    graphDegreeDeviationEvent, not_le]
+
+/-- The good all-degrees event is the complement of the bad some-degree
+deviation event. -/
+lemma graphAllDegreesWithinEvent_eq_compl_someDeviation (d ε : ℝ) :
+    graphAllDegreesWithinEvent (V := V) d ε =
+      (graphSomeDegreeDeviationEvent (V := V) d ε)ᶜ := by
+  ext G
+  exact mem_graphAllDegreesWithinEvent_iff_not_mem_bad G d ε
+
+lemma mem_graphAllDegreesBelowEvent_iff_not_mem_high
+    (G : SimpleGraph V) (L : ℝ) :
+    G ∈ graphAllDegreesBelowEvent (V := V) L ↔
+      G ∉ graphSomeDegreeAtLeastEvent (V := V) L := by
+  classical
+  simp [graphAllDegreesBelowEvent, graphSomeDegreeAtLeastEvent,
+    graphDegreeAtLeastEvent, not_le]
+
+/-- The good maximum-degree event is the complement of the bad event that some
+vertex has degree at least the prescribed threshold. -/
+lemma graphAllDegreesBelowEvent_eq_compl_someAtLeast (L : ℝ) :
+    graphAllDegreesBelowEvent (V := V) L =
+      (graphSomeDegreeAtLeastEvent (V := V) L)ᶜ := by
+  ext G
+  exact mem_graphAllDegreesBelowEvent_iff_not_mem_high G L
+
+end Events
+
+section DegreeComplements
+
+variable {V : Type*} [MeasurableSpace (SimpleGraph V)]
+variable {μ : Measure (SimpleGraph V)}
+
+/-- Complement form of the random-graph union bound: if the bad event has
+probability at most `δ`, then the good all-degrees event has probability at
+least `1 - δ`. -/
+theorem graphAllDegreesWithin_probability_ge_one_sub
+    [IsProbabilityMeasure μ] {d ε δ : ℝ}
+    (hmeas :
+      MeasurableSet (graphSomeDegreeDeviationEvent (V := V) d ε))
+    (hbad :
+      μ.real (graphSomeDegreeDeviationEvent (V := V) d ε) ≤ δ) :
+    1 - δ ≤ μ.real (graphAllDegreesWithinEvent (V := V) d ε) := by
+  rw [graphAllDegreesWithinEvent_eq_compl_someDeviation,
+    MeasureTheory.measureReal_compl hmeas]
+  rw [MeasureTheory.probReal_univ]
+  linarith
+
+/-- Complement form of the maximum-degree union bound: if the event that some
+vertex has degree at least `L` has probability at most `δ`, then with
+probability at least `1 - δ` all degrees are below `L`. -/
+theorem graphAllDegreesBelow_probability_ge_one_sub
+    [IsProbabilityMeasure μ] {L δ : ℝ}
+    (hmeas :
+      MeasurableSet (graphSomeDegreeAtLeastEvent (V := V) L))
+    (hbad :
+      μ.real (graphSomeDegreeAtLeastEvent (V := V) L) ≤ δ) :
+    1 - δ ≤ μ.real (graphAllDegreesBelowEvent (V := V) L) := by
+  rw [graphAllDegreesBelowEvent_eq_compl_someAtLeast,
+    MeasureTheory.measureReal_compl hmeas]
+  rw [MeasureTheory.probReal_univ]
+  linarith
+
+end DegreeComplements
+
+section DegreeUnionBounds
+
+variable {V : Type*} [Fintype V] [MeasurableSpace (SimpleGraph V)]
+variable {μ : Measure (SimpleGraph V)}
+
+/-- Union-bound amplification of per-vertex degree deviation probabilities. -/
+theorem graphSomeDegreeDeviation_probability_le_sum (d ε : ℝ) :
+    μ.real (graphSomeDegreeDeviationEvent (V := V) d ε)
+      ≤ ∑ v, μ.real (graphDegreeDeviationEvent (V := V) d ε v) := by
+  classical
+  simpa [graphSomeDegreeDeviationEvent] using
+    (measureReal_exists_le_sum
+      (μ := μ)
+      (A := fun v : V => graphDegreeDeviationEvent (V := V) d ε v))
+
+/-- Uniform per-vertex degree deviation tail implies a graph-wide bad-event
+bound. -/
+theorem graphSomeDegreeDeviation_probability_le_of_forall
+    {d ε q : ℝ}
+    (htail : ∀ v, μ.real (graphDegreeDeviationEvent (V := V) d ε v) ≤ q) :
+    μ.real (graphSomeDegreeDeviationEvent (V := V) d ε)
+      ≤ (Fintype.card V : ℝ) * q := by
+  classical
+  calc
+    μ.real (graphSomeDegreeDeviationEvent (V := V) d ε)
+        ≤ ∑ v, μ.real (graphDegreeDeviationEvent (V := V) d ε v) :=
+      graphSomeDegreeDeviation_probability_le_sum (μ := μ) d ε
+    _ ≤ ∑ _v : V, q := by
+      exact Finset.sum_le_sum fun v _hv => htail v
+    _ = (Fintype.card V : ℝ) * q := by
+      simp
+
+/-- Union-bound amplification of per-vertex high-degree probabilities. This is
+the reusable proof pattern behind Exercises 2.4.2 and 2.4.3. -/
+theorem graphSomeDegreeAtLeast_probability_le_sum (L : ℝ) :
+    μ.real (graphSomeDegreeAtLeastEvent (V := V) L)
+      ≤ ∑ v, μ.real (graphDegreeAtLeastEvent (V := V) L v) := by
+  classical
+  simpa [graphSomeDegreeAtLeastEvent] using
+    (measureReal_exists_le_sum
+      (μ := μ)
+      (A := fun v : V => graphDegreeAtLeastEvent (V := V) L v))
+
+/-- Uniform per-vertex high-degree tail implies a graph-wide maximum-degree
+bound. -/
+theorem graphSomeDegreeAtLeast_probability_le_of_forall
+    {L q : ℝ}
+    (htail : ∀ v, μ.real (graphDegreeAtLeastEvent (V := V) L v) ≤ q) :
+    μ.real (graphSomeDegreeAtLeastEvent (V := V) L)
+      ≤ (Fintype.card V : ℝ) * q := by
+  classical
+  calc
+    μ.real (graphSomeDegreeAtLeastEvent (V := V) L)
+        ≤ ∑ v, μ.real (graphDegreeAtLeastEvent (V := V) L v) :=
+      graphSomeDegreeAtLeast_probability_le_sum (μ := μ) L
+    _ ≤ ∑ _v : V, q := by
+      exact Finset.sum_le_sum fun v _hv => htail v
+    _ = (Fintype.card V : ℝ) * q := by
+      simp
+
+/-- High-probability maximum-degree upper bound obtained from uniform
+per-vertex tails and a union-budget of `0.1`. -/
+theorem graphAllDegreesBelow_probability_ge_nine_tenths_of_forall
+    [IsProbabilityMeasure μ] {L q : ℝ}
+    (hmeas :
+      MeasurableSet (graphSomeDegreeAtLeastEvent (V := V) L))
+    (htail : ∀ v, μ.real (graphDegreeAtLeastEvent (V := V) L v) ≤ q)
+    (hcard : (Fintype.card V : ℝ) * q ≤ 1 / 10) :
+    9 / 10 ≤ μ.real (graphAllDegreesBelowEvent (V := V) L) := by
+  have hbad :
+      μ.real (graphSomeDegreeAtLeastEvent (V := V) L) ≤ 1 / 10 := by
+    exact (graphSomeDegreeAtLeast_probability_le_of_forall
+      (μ := μ) (V := V) (L := L) (q := q) htail).trans hcard
+  have hgood :=
+    graphAllDegreesBelow_probability_ge_one_sub
+      (μ := μ) (V := V) (L := L) (δ := 1 / 10) hmeas hbad
+  norm_num at hgood ⊢
+  exact hgood
+
+end DegreeUnionBounds
+
+section SparseUpperBounds
+
+variable {V : Type*} [Fintype V] [MeasurableSpace (SimpleGraph V)]
+variable {μ : Measure (SimpleGraph V)}
+
+/-- Quantitative form of HDP Exercise 2.4.2: if the per-vertex probability
+of degree at least `A log n` has union-budget at most `0.1`, then with
+probability at least `0.9` all degrees are `O(log n)` with constant `A`. -/
+theorem sparse_graphs_degree_upper_bound_probability_ge_nine_tenths
+    [IsProbabilityMeasure μ] {A q : ℝ}
+    (hmeas :
+      MeasurableSet
+        (graphSomeDegreeAtLeastEvent (V := V)
+          (A * Real.log (Fintype.card V : ℝ))))
+    (htail : ∀ v,
+      μ.real
+        (graphDegreeAtLeastEvent (V := V)
+          (A * Real.log (Fintype.card V : ℝ)) v) ≤ q)
+    (hcard : (Fintype.card V : ℝ) * q ≤ 1 / 10) :
+    9 / 10 ≤
+      μ.real
+        (graphAllDegreesBelowEvent (V := V)
+          (A * Real.log (Fintype.card V : ℝ))) :=
+  graphAllDegreesBelow_probability_ge_nine_tenths_of_forall
+    (μ := μ) (V := V)
+    (L := A * Real.log (Fintype.card V : ℝ)) (q := q)
+    hmeas htail hcard
+
+/-- Quantitative form of HDP Exercise 2.4.3: if the per-vertex probability
+of degree at least `A log n / log log n` has union-budget at most `0.1`, then
+with probability at least `0.9` all degrees have that order. -/
+theorem very_sparse_graphs_degree_upper_bound_probability_ge_nine_tenths
+    [IsProbabilityMeasure μ] {A q : ℝ}
+    (hmeas :
+      MeasurableSet
+        (graphSomeDegreeAtLeastEvent (V := V)
+          (A * Real.log (Fintype.card V : ℝ) /
+            Real.log (Real.log (Fintype.card V : ℝ)))))
+    (htail : ∀ v,
+      μ.real
+        (graphDegreeAtLeastEvent (V := V)
+          (A * Real.log (Fintype.card V : ℝ) /
+            Real.log (Real.log (Fintype.card V : ℝ))) v) ≤ q)
+    (hcard : (Fintype.card V : ℝ) * q ≤ 1 / 10) :
+    9 / 10 ≤
+      μ.real
+        (graphAllDegreesBelowEvent (V := V)
+          (A * Real.log (Fintype.card V : ℝ) /
+            Real.log (Real.log (Fintype.card V : ℝ)))) :=
+  graphAllDegreesBelow_probability_ge_nine_tenths_of_forall
+    (μ := μ) (V := V)
+    (L := A * Real.log (Fintype.card V : ℝ) /
+      Real.log (Real.log (Fintype.card V : ℝ))) (q := q)
+    hmeas htail hcard
+
+end SparseUpperBounds
+
+section DegreeLowerWitnesses
+
+variable {V J : Type*} [Fintype J] [MeasurableSpace (SimpleGraph V)]
+variable {μ : Measure (SimpleGraph V)}
+
+/-- Independent witness events for high-degree vertices amplify to a graph-level
+lower bound. This is the reusable probability step behind the hints for
+Exercises 2.4.4 and 2.4.5: construct independent events, each forcing the
+existence of a high-degree vertex, then take the complementary product. -/
+theorem graphSomeDegreeAtLeast_probability_ge_one_sub_pow_one_sub_of_independent_witnesses
+    [IsProbabilityMeasure μ] {L q : ℝ} {B : J → Set (SimpleGraph V)}
+    (hBmeas : ∀ j, MeasurableSet (B j))
+    (hindep : iIndepSet B μ)
+    (hprob : ∀ j, q ≤ μ.real (B j))
+    (hforces : ∀ j, B j ⊆ graphSomeDegreeAtLeastEvent (V := V) L) :
+    1 - (1 - q) ^ Fintype.card J
+      ≤ μ.real (graphSomeDegreeAtLeastEvent (V := V) L) := by
+  have hwitness :
+      1 - (1 - q) ^ Fintype.card J
+        ≤ μ.real {G | ∃ j, G ∈ B j} :=
+    measureReal_exists_ge_one_sub_pow_one_sub_of_iIndepSet
+      (μ := μ) (A := B) (q := q) hBmeas hindep hprob
+  have hsubset :
+      {G | ∃ j, G ∈ B j} ⊆ graphSomeDegreeAtLeastEvent (V := V) L := by
+    rintro G ⟨j, hGj⟩
+    exact hforces j hGj
+  exact hwitness.trans (MeasureTheory.measureReal_mono hsubset)
+
+/-- `0.9` form of the independent-witness lower bound for random-graph maximum
+degrees. -/
+theorem graphSomeDegreeAtLeast_probability_ge_nine_tenths_of_independent_witnesses
+    [IsProbabilityMeasure μ] {L q : ℝ} {B : J → Set (SimpleGraph V)}
+    (hBmeas : ∀ j, MeasurableSet (B j))
+    (hindep : iIndepSet B μ)
+    (hprob : ∀ j, q ≤ μ.real (B j))
+    (hbudget : (1 - q) ^ Fintype.card J ≤ 1 / 10)
+    (hforces : ∀ j, B j ⊆ graphSomeDegreeAtLeastEvent (V := V) L) :
+    9 / 10 ≤ μ.real (graphSomeDegreeAtLeastEvent (V := V) L) := by
+  have hlower :=
+    graphSomeDegreeAtLeast_probability_ge_one_sub_pow_one_sub_of_independent_witnesses
+      (μ := μ) (V := V) (J := J) (L := L) (q := q)
+      hBmeas hindep hprob hforces
+  nlinarith
+
+/-- HDP Exercise 2.4.4, finite witness form: if one has independent witness
+events, each with probability at least `q`, each forcing some vertex to have
+degree at least `10d`, and the complementary product is at most `0.1`, then
+with probability at least `0.9` the sparse graph is not almost regular in the
+book's displayed sense. -/
+theorem sparse_graphs_not_almost_regular_probability_ge_nine_tenths_of_independent_witnesses
+    [IsProbabilityMeasure μ] {d q : ℝ} {B : J → Set (SimpleGraph V)}
+    (hBmeas : ∀ j, MeasurableSet (B j))
+    (hindep : iIndepSet B μ)
+    (hprob : ∀ j, q ≤ μ.real (B j))
+    (hbudget : (1 - q) ^ Fintype.card J ≤ 1 / 10)
+    (hforces : ∀ j,
+      B j ⊆ graphSomeDegreeAtLeastEvent (V := V) (10 * d)) :
+    9 / 10 ≤
+      μ.real (graphSomeDegreeAtLeastEvent (V := V) (10 * d)) :=
+  graphSomeDegreeAtLeast_probability_ge_nine_tenths_of_independent_witnesses
+    (μ := μ) (V := V) (J := J) (L := 10 * d) (q := q)
+    hBmeas hindep hprob hbudget hforces
+
+/-- HDP Exercise 2.4.5, finite witness form: independent witnesses that each
+force a vertex of degree at least `A log n / log log n` amplify to the
+book's `0.9` high-probability lower bound. -/
+theorem very_sparse_graphs_far_from_regular_probability_ge_nine_tenths_of_independent_witnesses
+    [Fintype V] [IsProbabilityMeasure μ] {A q : ℝ}
+    {B : J → Set (SimpleGraph V)}
+    (hBmeas : ∀ j, MeasurableSet (B j))
+    (hindep : iIndepSet B μ)
+    (hprob : ∀ j, q ≤ μ.real (B j))
+    (hbudget : (1 - q) ^ Fintype.card J ≤ 1 / 10)
+    (hforces : ∀ j,
+      B j ⊆ graphSomeDegreeAtLeastEvent (V := V)
+        (A * Real.log (Fintype.card V : ℝ) /
+          Real.log (Real.log (Fintype.card V : ℝ)))) :
+    9 / 10 ≤
+      μ.real (graphSomeDegreeAtLeastEvent (V := V)
+        (A * Real.log (Fintype.card V : ℝ) /
+          Real.log (Real.log (Fintype.card V : ℝ)))) :=
+  graphSomeDegreeAtLeast_probability_ge_nine_tenths_of_independent_witnesses
+    (μ := μ) (V := V) (J := J)
+    (L := A * Real.log (Fintype.card V : ℝ) /
+      Real.log (Real.log (Fintype.card V : ℝ)))
+    (q := q) hBmeas hindep hprob hbudget hforces
+
+end DegreeLowerWitnesses
+
+section DenseGraphs
+
+variable {V : Type*} [Fintype V] [MeasurableSpace (SimpleGraph V)]
+variable {μ : Measure (SimpleGraph V)}
+
+/-- The book's displayed per-vertex bound in the proof of Proposition 2.4.1:
+`2 exp(-c d)`. -/
+def denseGraphBookVertexTailBound (c d : ℝ) : ℝ :=
+  2 * Real.exp (-c * d)
+
+/-- The explicit bound supplied by this library's Chernoff small-deviation
+constant: `2 exp(-(1/4) d ε²)`. -/
+def chernoffSmallDeviationVertexTailBound (d ε : ℝ) : ℝ :=
+  2 * Real.exp (-(1 / 4 : ℝ) * d * ε ^ 2)
+
+/-- HDP Proposition 2.4.1, finite quantitative form: if every vertex satisfies
+the displayed Chernoff tail `2 exp(-c d)` and the union-bound expression is at
+most `0.1`, then the probability of a vertex outside `[0.9d, 1.1d]` is at most
+`0.1`. -/
+theorem dense_graphs_are_almost_regular_book_bound
+    {c d : ℝ}
+    (htail : ∀ v,
+      μ.real (graphDegreeDeviationEvent (V := V) d (1 / 10) v)
+        ≤ denseGraphBookVertexTailBound c d)
+    (hcard :
+      (Fintype.card V : ℝ) * denseGraphBookVertexTailBound c d ≤ 1 / 10) :
+    μ.real (graphSomeDegreeDeviationEvent (V := V) d (1 / 10))
+      ≤ 1 / 10 := by
+  calc
+    μ.real (graphSomeDegreeDeviationEvent (V := V) d (1 / 10))
+        ≤ (Fintype.card V : ℝ) * denseGraphBookVertexTailBound c d :=
+      graphSomeDegreeDeviation_probability_le_of_forall
+        (μ := μ) (d := d) (ε := 1 / 10)
+        (q := denseGraphBookVertexTailBound c d) htail
+    _ ≤ 1 / 10 := hcard
+
+/-- Proposition 2.4.1 with the book's logarithmic growth condition made
+quantitative: if `d ≥ log(20n)/c`, then the union-bound term
+`n · 2 exp(-cd)` is at most `0.1`. -/
+theorem dense_graphs_are_almost_regular_book_bound_of_log_card
+    {c d : ℝ}
+    (hc : 0 < c)
+    (hcard_pos : 0 < Fintype.card V)
+    (hd : Real.log (20 * (Fintype.card V : ℝ)) / c ≤ d)
+    (htail : ∀ v,
+      μ.real (graphDegreeDeviationEvent (V := V) d (1 / 10) v)
+        ≤ denseGraphBookVertexTailBound c d) :
+    μ.real (graphSomeDegreeDeviationEvent (V := V) d (1 / 10))
+      ≤ 1 / 10 := by
+  classical
+  let n : ℝ := Fintype.card V
+  have hn_pos : 0 < n := by
+    dsimp [n]
+    exact_mod_cast hcard_pos
+  have htwenty_n_pos : 0 < 20 * n := by positivity
+  have hlog_le : Real.log (20 * n) ≤ c * d := by
+    rw [div_le_iff₀ hc] at hd
+    simpa [n, mul_comm] using hd
+  have hexp_le :
+      Real.exp (-c * d) ≤ 1 / (20 * n) := by
+    calc
+      Real.exp (-c * d)
+          ≤ Real.exp (-Real.log (20 * n)) := by
+        rw [Real.exp_le_exp]
+        linarith
+      _ = 1 / (20 * n) := by
+        rw [Real.exp_neg, Real.exp_log htwenty_n_pos]
+        ring
+  refine dense_graphs_are_almost_regular_book_bound
+    (μ := μ) (V := V) (c := c) (d := d) htail ?_
+  calc
+    (Fintype.card V : ℝ) * denseGraphBookVertexTailBound c d
+        = n * (2 * Real.exp (-c * d)) := by
+      simp [n, denseGraphBookVertexTailBound]
+    _ ≤ n * (2 * (1 / (20 * n))) := by
+      gcongr
+    _ = 1 / 10 := by
+      field_simp [ne_of_gt hn_pos]
+      norm_num
+
+/-- Proposition 2.4.1 with the explicit small-deviation Chernoff constant used
+elsewhere in this library. -/
+theorem dense_graphs_are_almost_regular_chernoff_bound
+    {d : ℝ}
+    (htail : ∀ v,
+      μ.real (graphDegreeDeviationEvent (V := V) d (1 / 10) v)
+        ≤ chernoffSmallDeviationVertexTailBound d (1 / 10))
+    (hcard :
+      (Fintype.card V : ℝ) * chernoffSmallDeviationVertexTailBound d (1 / 10)
+        ≤ 1 / 10) :
+    μ.real (graphSomeDegreeDeviationEvent (V := V) d (1 / 10))
+      ≤ 1 / 10 := by
+  calc
+    μ.real (graphSomeDegreeDeviationEvent (V := V) d (1 / 10))
+        ≤ (Fintype.card V : ℝ)
+            * chernoffSmallDeviationVertexTailBound d (1 / 10) :=
+      graphSomeDegreeDeviation_probability_le_of_forall
+        (μ := μ) (d := d) (ε := 1 / 10)
+        (q := chernoffSmallDeviationVertexTailBound d (1 / 10)) htail
+    _ ≤ 1 / 10 := hcard
+
+/-- HDP Proposition 2.4.1 in the displayed probability form: under the
+book-tail and logarithmic union-budget hypotheses, the all-degrees-good event
+has probability at least `0.9`. -/
+theorem dense_graphs_are_almost_regular_probability_ge_nine_tenths
+    [IsProbabilityMeasure μ] {c d : ℝ}
+    (hmeas :
+      MeasurableSet
+        (graphSomeDegreeDeviationEvent (V := V) d (1 / 10)))
+    (htail : ∀ v,
+      μ.real (graphDegreeDeviationEvent (V := V) d (1 / 10) v)
+        ≤ denseGraphBookVertexTailBound c d)
+    (hcard :
+      (Fintype.card V : ℝ) * denseGraphBookVertexTailBound c d ≤ 1 / 10) :
+    9 / 10 ≤ μ.real (graphAllDegreesWithinEvent (V := V) d (1 / 10)) := by
+  have hbad :
+      μ.real (graphSomeDegreeDeviationEvent (V := V) d (1 / 10))
+        ≤ 1 / 10 :=
+    dense_graphs_are_almost_regular_book_bound
+      (μ := μ) (V := V) (c := c) (d := d) htail hcard
+  have hgood :=
+    graphAllDegreesWithin_probability_ge_one_sub
+      (μ := μ) (V := V) (d := d) (ε := 1 / 10)
+      (δ := 1 / 10) hmeas hbad
+  norm_num at hgood ⊢
+  exact hgood
+
+/-- Proposition 2.4.1 in probability form with the logarithmic condition
+`d ≥ log(20n)/c` made explicit. -/
+theorem dense_graphs_are_almost_regular_probability_ge_nine_tenths_of_log_card
+    [IsProbabilityMeasure μ] {c d : ℝ}
+    (hmeas :
+      MeasurableSet
+        (graphSomeDegreeDeviationEvent (V := V) d (1 / 10)))
+    (hc : 0 < c)
+    (hcard_pos : 0 < Fintype.card V)
+    (hd : Real.log (20 * (Fintype.card V : ℝ)) / c ≤ d)
+    (htail : ∀ v,
+      μ.real (graphDegreeDeviationEvent (V := V) d (1 / 10) v)
+        ≤ denseGraphBookVertexTailBound c d) :
+    9 / 10 ≤ μ.real (graphAllDegreesWithinEvent (V := V) d (1 / 10)) := by
+  have hbad :
+      μ.real (graphSomeDegreeDeviationEvent (V := V) d (1 / 10))
+        ≤ 1 / 10 :=
+    dense_graphs_are_almost_regular_book_bound_of_log_card
+      (μ := μ) (V := V) (c := c) (d := d)
+      hc hcard_pos hd htail
+  have hgood :=
+    graphAllDegreesWithin_probability_ge_one_sub
+      (μ := μ) (V := V) (d := d) (ε := 1 / 10)
+      (δ := 1 / 10) hmeas hbad
+  norm_num at hgood ⊢
+  exact hgood
+
+end DenseGraphs
+
+section Asymptotic
+
+variable {α : Type*} {l : Filter α}
+variable {V : α → Type*}
+variable {J : α → Type*}
+variable [∀ n, Fintype (V n)]
+variable [∀ n, Fintype (J n)]
+variable [∀ n, MeasurableSpace (SimpleGraph (V n))]
+
+/-- Asymptotic form of Proposition 2.4.1: once the union-bound expression tends
+to zero, the bad-degree probability tends to zero. The hypothesis `htail` is
+the per-vertex Chernoff line in the book proof. -/
+theorem graphSomeDegreeDeviation_probability_tendsto_zero
+    (μ : ∀ n, Measure (SimpleGraph (V n))) (d ε q : α → ℝ)
+    (htail : ∀ n v,
+      (μ n).real (graphDegreeDeviationEvent (V := V n) (d n) (ε n) v) ≤ q n)
+    (hq :
+      Tendsto (fun n => (Fintype.card (V n) : ℝ) * q n) l (𝓝 0)) :
+    Tendsto
+      (fun n =>
+        (μ n).real
+          (graphSomeDegreeDeviationEvent (V := V n) (d n) (ε n)))
+      l (𝓝 0) := by
+  refine tendsto_of_tendsto_of_tendsto_of_le_of_le
+    (g := fun _n => (0 : ℝ))
+    (h := fun n => (Fintype.card (V n) : ℝ) * q n)
+    tendsto_const_nhds hq ?_ ?_
+  · intro n
+    exact MeasureTheory.measureReal_nonneg
+  · intro n
+    exact graphSomeDegreeDeviation_probability_le_of_forall
+      (μ := μ n) (d := d n) (ε := ε n) (q := q n) (htail n)
+
+/-- Asymptotic union-bound form for maximum-degree upper bounds, the common
+core of Exercises 2.4.2 and 2.4.3. -/
+theorem graphSomeDegreeAtLeast_probability_tendsto_zero
+    (μ : ∀ n, Measure (SimpleGraph (V n))) (L q : α → ℝ)
+    (htail : ∀ n v,
+      (μ n).real (graphDegreeAtLeastEvent (V := V n) (L n) v) ≤ q n)
+    (hq :
+      Tendsto (fun n => (Fintype.card (V n) : ℝ) * q n) l (𝓝 0)) :
+    Tendsto
+      (fun n =>
+        (μ n).real (graphSomeDegreeAtLeastEvent (V := V n) (L n)))
+      l (𝓝 0) := by
+  refine tendsto_of_tendsto_of_tendsto_of_le_of_le
+    (g := fun _n => (0 : ℝ))
+    (h := fun n => (Fintype.card (V n) : ℝ) * q n)
+    tendsto_const_nhds hq ?_ ?_
+  · intro n
+    exact MeasureTheory.measureReal_nonneg
+  · intro n
+    exact graphSomeDegreeAtLeast_probability_le_of_forall
+      (μ := μ n) (L := L n) (q := q n) (htail n)
+
+/-- Asymptotic independent-witness lower bound for maximum degrees: if the
+probability that all independent witnesses fail tends to zero, then the
+probability of seeing some vertex above the threshold tends to one. -/
+theorem graphSomeDegreeAtLeast_probability_tendsto_one_of_independent_witnesses
+    (μ : ∀ n, Measure (SimpleGraph (V n)))
+    [∀ n, IsProbabilityMeasure (μ n)]
+    (L q : α → ℝ)
+    (B : ∀ n, J n → Set (SimpleGraph (V n)))
+    (hBmeas : ∀ n j, MeasurableSet (B n j))
+    (hindep : ∀ n, iIndepSet (B n) (μ n))
+    (hprob : ∀ n j, q n ≤ (μ n).real (B n j))
+    (hbudget :
+      Tendsto
+        (fun n => (1 - q n) ^ Fintype.card (J n)) l (𝓝 0))
+    (hforces : ∀ n j,
+      B n j ⊆ graphSomeDegreeAtLeastEvent (V := V n) (L n)) :
+    Tendsto
+      (fun n =>
+        (μ n).real (graphSomeDegreeAtLeastEvent (V := V n) (L n)))
+      l (𝓝 1) := by
+  have hlower_tendsto :
+      Tendsto
+        (fun n => 1 - (1 - q n) ^ Fintype.card (J n)) l (𝓝 1) := by
+    simpa using (tendsto_const_nhds.sub hbudget)
+  refine tendsto_of_tendsto_of_tendsto_of_le_of_le
+    (g := fun n => 1 - (1 - q n) ^ Fintype.card (J n))
+    (h := fun _n => (1 : ℝ))
+    hlower_tendsto tendsto_const_nhds ?_ ?_
+  · intro n
+    exact
+      graphSomeDegreeAtLeast_probability_ge_one_sub_pow_one_sub_of_independent_witnesses
+        (μ := μ n) (V := V n) (J := J n) (L := L n) (q := q n)
+        (hBmeas n) (hindep n) (hprob n) (hforces n)
+  · intro n
+    exact measureReal_le_one
+
+/-- HDP Exercise 2.4.4, asymptotic independent-witness form: once the modified
+independent degree witnesses from the hint have a vanishing all-fail
+probability, the event that some vertex has degree at least `10d` holds with
+probability tending to one. -/
+theorem sparse_graphs_not_almost_regular_probability_tendsto_one_of_independent_witnesses
+    (μ : ∀ n, Measure (SimpleGraph (V n)))
+    [∀ n, IsProbabilityMeasure (μ n)]
+    (d q : α → ℝ)
+    (B : ∀ n, J n → Set (SimpleGraph (V n)))
+    (hBmeas : ∀ n j, MeasurableSet (B n j))
+    (hindep : ∀ n, iIndepSet (B n) (μ n))
+    (hprob : ∀ n j, q n ≤ (μ n).real (B n j))
+    (hbudget :
+      Tendsto
+        (fun n => (1 - q n) ^ Fintype.card (J n)) l (𝓝 0))
+    (hforces : ∀ n j,
+      B n j ⊆ graphSomeDegreeAtLeastEvent (V := V n) (10 * d n)) :
+    Tendsto
+      (fun n =>
+        (μ n).real
+          (graphSomeDegreeAtLeastEvent (V := V n) (10 * d n)))
+      l (𝓝 1) :=
+  graphSomeDegreeAtLeast_probability_tendsto_one_of_independent_witnesses
+    (V := V) (J := J) (l := l) (μ := μ)
+    (L := fun n => 10 * d n) (q := q) (B := B)
+    hBmeas hindep hprob hbudget hforces
+
+/-- HDP Exercise 2.4.5, asymptotic independent-witness form for the matching
+very-sparse lower scale `log n / log log n`. -/
+theorem very_sparse_graphs_far_from_regular_probability_tendsto_one_of_independent_witnesses
+    (μ : ∀ n, Measure (SimpleGraph (V n)))
+    [∀ n, IsProbabilityMeasure (μ n)]
+    (A q : α → ℝ)
+    (B : ∀ n, J n → Set (SimpleGraph (V n)))
+    (hBmeas : ∀ n j, MeasurableSet (B n j))
+    (hindep : ∀ n, iIndepSet (B n) (μ n))
+    (hprob : ∀ n j, q n ≤ (μ n).real (B n j))
+    (hbudget :
+      Tendsto
+        (fun n => (1 - q n) ^ Fintype.card (J n)) l (𝓝 0))
+    (hforces : ∀ n j,
+      B n j ⊆ graphSomeDegreeAtLeastEvent (V := V n)
+        (A n * Real.log (Fintype.card (V n) : ℝ) /
+          Real.log (Real.log (Fintype.card (V n) : ℝ)))) :
+    Tendsto
+      (fun n =>
+        (μ n).real
+          (graphSomeDegreeAtLeastEvent (V := V n)
+            (A n * Real.log (Fintype.card (V n) : ℝ) /
+              Real.log (Real.log (Fintype.card (V n) : ℝ)))))
+      l (𝓝 1) :=
+  graphSomeDegreeAtLeast_probability_tendsto_one_of_independent_witnesses
+    (V := V) (J := J) (l := l) (μ := μ)
+    (L := fun n =>
+      A n * Real.log (Fintype.card (V n) : ℝ) /
+        Real.log (Real.log (Fintype.card (V n) : ℝ)))
+    (q := q) (B := B) hBmeas hindep hprob hbudget hforces
+
+end Asymptotic
+
+end LeanFpAnalysis.HDP

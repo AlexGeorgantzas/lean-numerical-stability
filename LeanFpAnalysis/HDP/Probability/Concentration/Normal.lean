@@ -28,6 +28,19 @@ lemma standardNormalConstant_nonneg : 0 ≤ standardNormalConstant := by
   dsimp [standardNormalConstant]
   positivity
 
+lemma one_sixteenth_le_standardNormalConstant :
+    (1 / 16 : ℝ) ≤ standardNormalConstant := by
+  dsimp [standardNormalConstant]
+  have hsqrt_pos : 0 < Real.sqrt (2 * Real.pi) := by
+    positivity
+  have hsqrt_le : Real.sqrt (2 * Real.pi) ≤ 16 := by
+    rw [Real.sqrt_le_iff]
+    constructor
+    · norm_num
+    · nlinarith [Real.pi_le_four]
+  simpa [one_div] using
+    (one_div_le_one_div_of_le hsqrt_pos hsqrt_le)
+
 lemma standardNormalDensity_nonneg (x : ℝ) :
     0 ≤ standardNormalDensity x :=
   ProbabilityTheory.gaussianPDFReal_nonneg 0 1 x
