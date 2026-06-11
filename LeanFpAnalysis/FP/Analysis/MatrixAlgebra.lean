@@ -553,7 +553,7 @@ theorem frobNorm_le_of_entry_abs_le {n : ℕ}
     (hB_nonneg : ∀ i j, 0 ≤ B i j)
     (h : ∀ i j, |A i j| ≤ B i j) :
     frobNorm A ≤ frobNorm B := by
-  unfold frobNorm
+  rw [frobNorm_eq_sqrt_frobNormSq A, frobNorm_eq_sqrt_frobNormSq B]
   apply Real.sqrt_le_sqrt
   unfold frobNormSq
   apply Finset.sum_le_sum
