@@ -3,6 +3,7 @@
 import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.BigOperators.Fin
+import Mathlib.Algebra.Order.BigOperators.Group.Finset
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import LeanFpAnalysis.FP.Model
@@ -11,6 +12,387 @@ import LeanFpAnalysis.FP.Analysis.Rounding
 namespace LeanFpAnalysis.FP
 
 open scoped BigOperators
+
+/-- A finite family is one-signed if every entry is nonnegative or every entry
+is nonpositive. -/
+def OneSigned {ι : Type*} (v : ι → ℝ) : Prop :=
+  (∀ i, 0 ≤ v i) ∨ (∀ i, v i ≤ 0)
+
+/-- A finite family has cancellation amplification at least `κ` when the sum
+of magnitudes is at least `κ` times the magnitude of the exact sum.  This
+formalizes the Chapter 4 "heavy cancellation" phrase
+`sum |xᵢ| >> |sum xᵢ|` as a theorem-friendly ratio lower bound. -/
+def HeavyCancellationAtLeast {ι : Type*} [Fintype ι]
+    (v : ι → ℝ) (κ : ℝ) : Prop :=
+  κ * |∑ i, v i| ≤ ∑ i, |v i|
+
+/-- For a nonnegative finite family, the sum of absolute values is the ordinary
+sum. -/
+lemma sum_abs_eq_sum_of_nonneg {ι : Type*} [Fintype ι] (v : ι → ℝ)
+    (hv : ∀ i, 0 ≤ v i) :
+    (∑ i, |v i|) = ∑ i, v i := by
+  apply Finset.sum_congr rfl
+  intro i _
+  exact abs_of_nonneg (hv i)
+
+/-- For a nonpositive finite family, the sum of absolute values is the negative
+ordinary sum. -/
+lemma sum_abs_eq_neg_sum_of_nonpos {ι : Type*} [Fintype ι] (v : ι → ℝ)
+    (hv : ∀ i, v i ≤ 0) :
+    (∑ i, |v i|) = -∑ i, v i := by
+  calc
+    (∑ i, |v i|) = ∑ i, -v i := by
+      apply Finset.sum_congr rfl
+      intro i _
+      exact abs_of_nonpos (hv i)
+    _ = -∑ i, v i := by
+      rw [Finset.sum_neg_distrib]
+
+/-- For a one-signed finite family, the absolute-value sum equals the absolute
+value of the ordinary sum. -/
+lemma sum_abs_eq_abs_sum_of_oneSigned {ι : Type*} [Fintype ι] (v : ι → ℝ)
+    (hv : OneSigned v) :
+    (∑ i, |v i|) = |∑ i, v i| := by
+  rcases hv with hnonneg | hnonpos
+  · have hsum_nonneg : 0 ≤ ∑ i, v i :=
+      Finset.sum_nonneg (fun i _ => hnonneg i)
+    rw [sum_abs_eq_sum_of_nonneg v hnonneg, abs_of_nonneg hsum_nonneg]
+  · have hsum_nonpos : ∑ i, v i ≤ 0 :=
+      Finset.sum_nonpos (fun i _ => hnonpos i)
+    rw [sum_abs_eq_neg_sum_of_nonpos v hnonpos, abs_of_nonpos hsum_nonpos]
+
+/-- The triangle-inequality equality case used by Problem 4.1: a finite real
+family has `sum |xᵢ| = |sum xᵢ|` exactly when all entries have one sign. -/
+lemma sum_abs_eq_abs_sum_iff_oneSigned {ι : Type*} [Fintype ι] (v : ι → ℝ) :
+    (∑ i, |v i|) = |∑ i, v i| ↔ OneSigned v := by
+  constructor
+  · intro h
+    by_cases hsum_nonneg : 0 ≤ ∑ i, v i
+    · left
+      have hzero : ∑ i, (|v i| - v i) = 0 := by
+        rw [Finset.sum_sub_distrib, h, abs_of_nonneg hsum_nonneg]
+        ring
+      have hterm_nonneg :
+          ∀ i ∈ (Finset.univ : Finset ι), 0 ≤ |v i| - v i := by
+        intro i _hi
+        exact sub_nonneg.mpr (le_abs_self (v i))
+      have hzero_each :
+          ∀ i ∈ (Finset.univ : Finset ι), |v i| - v i = 0 :=
+        (Finset.sum_eq_zero_iff_of_nonneg hterm_nonneg).1 (by simpa using hzero)
+      intro i
+      have hi := hzero_each i (Finset.mem_univ i)
+      exact abs_eq_self.mp (by linarith)
+    · right
+      have hsum_nonpos : ∑ i, v i ≤ 0 := le_of_not_ge hsum_nonneg
+      have hzero : ∑ i, (|v i| + v i) = 0 := by
+        rw [Finset.sum_add_distrib, h, abs_of_nonpos hsum_nonpos]
+        ring
+      have hterm_nonneg :
+          ∀ i ∈ (Finset.univ : Finset ι), 0 ≤ |v i| + v i := by
+        intro i _hi
+        linarith [neg_le_abs (v i)]
+      have hzero_each :
+          ∀ i ∈ (Finset.univ : Finset ι), |v i| + v i = 0 :=
+        (Finset.sum_eq_zero_iff_of_nonneg hterm_nonneg).1 (by simpa using hzero)
+      intro i
+      have hi := hzero_each i (Finset.mem_univ i)
+      exact abs_eq_neg_self.mp (by linarith)
+  · exact sum_abs_eq_abs_sum_of_oneSigned v
+
+/-! ## Problem 4.1: condition number for summation -/
+
+/-- Componentwise relative perturbation model for the exact summation map. -/
+def SummationComponentwisePerturbation {ι : Type*} (v Δ : ι → ℝ) (ε : ℝ) : Prop :=
+  ∀ i, |Δ i| ≤ ε * |v i|
+
+/-- Higham Problem 4.1's closed-form condition number for
+`S(x) = sum_i x_i` under componentwise relative perturbations. -/
+noncomputable def summationConditionNumber {ι : Type*} [Fintype ι] (v : ι → ℝ) :
+    ℝ :=
+  (∑ i, |v i|) / |∑ i, v i|
+
+/-- Problem 4.1 closed form, exposed as a named theorem for lookup. -/
+theorem summationConditionNumber_eq {ι : Type*} [Fintype ι] (v : ι → ℝ) :
+    summationConditionNumber v = (∑ i, |v i|) / |∑ i, v i| := rfl
+
+/-- The absolute output perturbation of exact summation is bounded by the
+componentwise perturbation radius times `sum |xᵢ|`. -/
+theorem summationComponentwisePerturbation_abs_error_le {ι : Type*} [Fintype ι]
+    (v Δ : ι → ℝ) {ε : ℝ}
+    (hΔ : SummationComponentwisePerturbation v Δ ε) :
+    |(∑ i, (v i + Δ i)) - ∑ i, v i| ≤ ε * ∑ i, |v i| := by
+  have hdiff :
+      (∑ i, (v i + Δ i)) - ∑ i, v i = ∑ i, Δ i := by
+    rw [Finset.sum_add_distrib]
+    ring
+  rw [hdiff]
+  calc
+    |∑ i, Δ i| ≤ ∑ i, |Δ i| := Finset.abs_sum_le_sum_abs _ _
+    _ ≤ ∑ i, ε * |v i| :=
+      Finset.sum_le_sum (fun i _hi => hΔ i)
+    _ = ε * ∑ i, |v i| := by
+      rw [Finset.mul_sum]
+
+/-- Dividing the preceding perturbation inequality by the nonzero exact sum
+gives the condition-number bound. -/
+theorem summationComponentwisePerturbation_rel_error_le_condition {ι : Type*}
+    [Fintype ι] (v Δ : ι → ℝ) {ε : ℝ}
+    (hΔ : SummationComponentwisePerturbation v Δ ε)
+    (hsum : (∑ i, v i) ≠ 0) :
+    |(∑ i, (v i + Δ i)) - ∑ i, v i| / |∑ i, v i| ≤
+      ε * summationConditionNumber v := by
+  have hden : 0 < |∑ i, v i| := abs_pos.mpr hsum
+  have habs := summationComponentwisePerturbation_abs_error_le v Δ hΔ
+  calc
+    |(∑ i, (v i + Δ i)) - ∑ i, v i| / |∑ i, v i| ≤
+        (ε * ∑ i, |v i|) / |∑ i, v i| :=
+      div_le_div_of_nonneg_right habs (le_of_lt hden)
+    _ = ε * summationConditionNumber v := by
+      rw [summationConditionNumber_eq]
+      ring
+
+/-- The closed-form condition number is sharp: the sign-aligned componentwise
+perturbation attains the upper bound for every nonnegative perturbation radius. -/
+theorem summationConditionNumber_attained {ι : Type*} [Fintype ι]
+    (v : ι → ℝ) {ε : ℝ} (hε : 0 ≤ ε)
+    (_hsum : (∑ i, v i) ≠ 0) :
+    ∃ Δ : ι → ℝ,
+      SummationComponentwisePerturbation v Δ ε ∧
+        |(∑ i, (v i + Δ i)) - ∑ i, v i| / |∑ i, v i| =
+          ε * summationConditionNumber v := by
+  by_cases hsum_nonneg : 0 ≤ ∑ i, v i
+  · refine ⟨fun i => ε * |v i|, ?_, ?_⟩
+    · intro i
+      rw [abs_mul, abs_of_nonneg hε, abs_of_nonneg (abs_nonneg (v i))]
+    · have hdiff :
+          (∑ i, (v i + ε * |v i|)) - ∑ i, v i =
+            ε * ∑ i, |v i| := by
+        rw [Finset.sum_add_distrib, Finset.mul_sum]
+        ring
+      have hsum_abs_nonneg : 0 ≤ ε * ∑ i, |v i| :=
+        mul_nonneg hε (Finset.sum_nonneg (fun i _hi => abs_nonneg (v i)))
+      rw [hdiff, abs_of_nonneg hsum_abs_nonneg, summationConditionNumber_eq]
+      ring
+  · refine ⟨fun i => -ε * |v i|, ?_, ?_⟩
+    · intro i
+      rw [abs_mul, abs_neg, abs_of_nonneg hε,
+        abs_of_nonneg (abs_nonneg (v i))]
+    · have hdiff :
+          (∑ i, (v i + -ε * |v i|)) - ∑ i, v i =
+            -ε * ∑ i, |v i| := by
+        rw [Finset.sum_add_distrib, Finset.mul_sum]
+        ring
+      have hsum_abs_nonneg : 0 ≤ ε * ∑ i, |v i| :=
+        mul_nonneg hε (Finset.sum_nonneg (fun i _hi => abs_nonneg (v i)))
+      rw [hdiff]
+      have hneg : abs (-ε * ∑ i, |v i|) = ε * ∑ i, |v i| := by
+        have hrewrite : -ε * ∑ i, |v i| = -(ε * ∑ i, |v i|) := by
+          ring
+        rw [hrewrite, abs_neg, abs_of_nonneg hsum_abs_nonneg]
+      rw [hneg, summationConditionNumber_eq]
+      ring
+
+/-- Higham Problem 4.1: the summation condition number is always at least one
+on the nonzero exact-sum domain. -/
+theorem one_le_summationConditionNumber {ι : Type*} [Fintype ι] (v : ι → ℝ)
+    (hsum : (∑ i, v i) ≠ 0) :
+    1 ≤ summationConditionNumber v := by
+  have hden_pos : 0 < |∑ i, v i| := abs_pos.mpr hsum
+  have htriangle : |∑ i, v i| ≤ ∑ i, |v i| :=
+    Finset.abs_sum_le_sum_abs _ _
+  have hdiv := div_le_div_of_nonneg_right htriangle (le_of_lt hden_pos)
+  rw [summationConditionNumber_eq]
+  simpa [div_self hden_pos.ne'] using hdiv
+
+/-- Higham Problem 4.1: one-signed data have condition number exactly one,
+provided the exact sum is nonzero. -/
+theorem summationConditionNumber_eq_one_of_oneSigned {ι : Type*} [Fintype ι]
+    (v : ι → ℝ) (hv : OneSigned v) (hsum : (∑ i, v i) ≠ 0) :
+    summationConditionNumber v = 1 := by
+  have hden : |∑ i, v i| ≠ 0 := abs_ne_zero.mpr hsum
+  rw [summationConditionNumber_eq, sum_abs_eq_abs_sum_of_oneSigned v hv,
+    div_self hden]
+
+/-- Higham Problem 4.1: on the nonzero exact-sum domain, the condition number
+takes the value `1` exactly in the no-cancellation one-signed case. -/
+theorem summationConditionNumber_eq_one_iff_oneSigned {ι : Type*} [Fintype ι]
+    (v : ι → ℝ) (hsum : (∑ i, v i) ≠ 0) :
+    summationConditionNumber v = 1 ↔ OneSigned v := by
+  constructor
+  · intro hcond
+    apply (sum_abs_eq_abs_sum_iff_oneSigned v).1
+    have hden : |∑ i, v i| ≠ 0 := abs_ne_zero.mpr hsum
+    have hmul :
+        (summationConditionNumber v) * |∑ i, v i| =
+          1 * |∑ i, v i| := by
+      rw [hcond]
+    rw [summationConditionNumber_eq] at hmul
+    simpa [div_mul_cancel₀ _ hden] using hmul
+  · intro hv
+    exact summationConditionNumber_eq_one_of_oneSigned v hv hsum
+
+/-- Product of the suffix of local summation factors that affects term `i`.
+
+For left-to-right summation with local factors `1 + delta j`, the term inserted
+at step `i` is multiplied by every factor from step `i` through the final step. -/
+noncomputable def sumSuffixErrorProduct : (n : ℕ) → (Fin n → ℝ) → Fin n → ℝ
+  | 0, _ => fun i => i.elim0
+  | n + 1, delta =>
+      Fin.lastCases (1 + delta (Fin.last n))
+        (fun i => sumSuffixErrorProduct n (fun j => delta j.castSucc) i *
+          (1 + delta (Fin.last n)))
+
+/-- The recursive suffix-factor definition is the source-style product over
+all local factors from index `i` through the final accumulation step. -/
+theorem sumSuffixErrorProduct_eq_prod_if (n : ℕ) (delta : Fin n → ℝ)
+    (i : Fin n) :
+    sumSuffixErrorProduct n delta i =
+      ∏ j : Fin n, if i.val ≤ j.val then 1 + delta j else 1 := by
+  induction n with
+  | zero =>
+      exact i.elim0
+  | succ n ih =>
+      refine Fin.lastCases ?_ ?_ i
+      · rw [Fin.prod_univ_castSucc]
+        simp [sumSuffixErrorProduct]
+        have hprefix :
+            (∏ x : Fin n, if n ≤ x.val then 1 + delta x.castSucc else 1) = 1 := by
+          apply Finset.prod_eq_one
+          intro j _hj
+          simp [Nat.not_le.mpr j.isLt]
+        calc
+          1 + delta (Fin.last n) =
+              1 * (1 + delta (Fin.last n)) := by ring
+          _ =
+              (∏ x : Fin n, if n ≤ x.val then 1 + delta x.castSucc else 1) *
+                (1 + delta (Fin.last n)) :=
+              congrArg (fun a => a * (1 + delta (Fin.last n))) hprefix.symm
+      · intro i
+        rw [Fin.prod_univ_castSucc]
+        simp [sumSuffixErrorProduct, ih]
+
+/-- A suffix product of local summation factors is itself a `1 + θ`
+factor, with the `gamma` index equal to the number of factors in that suffix.
+
+This is the variable-budget form needed for Higham Problem 4.3: the first
+two terms pass through all remaining additions, while a term inserted later
+passes through only the suffix of additions after its insertion. -/
+lemma sumSuffixErrorProduct_exists_theta_le_gamma (fp : FPModel) (n : ℕ)
+    (delta : Fin n → ℝ) (hdelta : ∀ i, |delta i| ≤ fp.u)
+    (i : Fin n) (hvalid : gammaValid fp (n - i.val)) :
+    ∃ θ : ℝ, |θ| ≤ gamma fp (n - i.val) ∧
+      sumSuffixErrorProduct n delta i = 1 + θ := by
+  induction n with
+  | zero =>
+      exact i.elim0
+  | succ n ih =>
+      refine Fin.lastCases
+        (motive := fun i : Fin (n + 1) =>
+          gammaValid fp (n + 1 - i.val) →
+            ∃ θ : ℝ, |θ| ≤ gamma fp (n + 1 - i.val) ∧
+              sumSuffixErrorProduct (n + 1) delta i = 1 + θ)
+        ?_ ?_ i hvalid
+      · intro hvalidLast
+        refine ⟨delta (Fin.last n), ?_, ?_⟩
+        · have hpos : 0 < n + 1 - (Fin.last n).val := by simp
+          exact le_trans (hdelta (Fin.last n)) (u_le_gamma fp hpos hvalidLast)
+        · simp [sumSuffixErrorProduct]
+      · intro j hvalidJ
+        have hvalidJ' : gammaValid fp (n + 1 - j.val) := by
+          simpa using hvalidJ
+        have hvalid_old : gammaValid fp (n - j.val) :=
+          gammaValid_mono fp (by
+            have hj := j.isLt
+            omega) hvalidJ'
+        obtain ⟨θold, hθold, hprod_old⟩ :=
+          ih (fun k : Fin n => delta k.castSucc) (fun k => hdelta k.castSucc) j
+            hvalid_old
+        have hvalid1 : gammaValid fp 1 :=
+          gammaValid_mono fp (by
+            have hj := j.isLt
+            omega) hvalidJ'
+        have hdelta1 : |delta (Fin.last n)| ≤ gamma fp 1 :=
+          le_trans (hdelta (Fin.last n)) (u_le_gamma fp one_pos hvalid1)
+        have hvalid_comb : gammaValid fp ((n - j.val) + 1) := by
+          have hrem : (n - j.val) + 1 = n + 1 - j.val := by
+            have hj := j.isLt
+            omega
+          simpa [hrem] using hvalidJ'
+        obtain ⟨θ, hθ, hprod⟩ :=
+          gamma_mul fp (n - j.val) 1 θold (delta (Fin.last n))
+            hθold hdelta1 hvalid_comb
+        refine ⟨θ, ?_, ?_⟩
+        · have hrem : (n - j.val) + 1 = n + 1 - j.val := by
+            have hj := j.isLt
+            omega
+          simpa [hrem] using hθ
+        · rw [show sumSuffixErrorProduct (n + 1) delta j.castSucc =
+              sumSuffixErrorProduct n (fun k : Fin n => delta k.castSucc) j *
+                (1 + delta (Fin.last n)) by
+                simp [sumSuffixErrorProduct]]
+          rw [hprod_old]
+          exact hprod
+
+/-- Exact algebraic expansion of a left-to-right rounded-addition fold with
+specified local relative-error factors.
+
+This is the factor-level summation identity underlying Higham Chapter 3,
+equations (3.1)--(3.2): the initial accumulator carries every local factor,
+and each inserted term carries the suffix of factors from its insertion step. -/
+theorem foldl_add_mul_one_add_suffix_expansion (n : ℕ)
+    (v : Fin n → ℝ) (s : ℝ) (delta : Fin n → ℝ) :
+    Fin.foldl n (fun acc i => (acc + v i) * (1 + delta i)) s =
+      s * (∏ i : Fin n, (1 + delta i)) +
+        ∑ i : Fin n, v i * sumSuffixErrorProduct n delta i := by
+  induction n with
+  | zero =>
+      simp [sumSuffixErrorProduct]
+  | succ n ih =>
+      rw [Fin.foldl_succ_last, ih]
+      rw [Fin.prod_univ_castSucc, Fin.sum_univ_castSucc]
+      simp [sumSuffixErrorProduct]
+      rw [add_mul, add_mul]
+      rw [Finset.sum_mul]
+      ring_nf
+
+/-- Floating-point summation with an initial accumulator, expanded with the
+actual local addition factors rather than compressed `gamma` witnesses.
+
+This is the FP-facing factor expansion needed for Chapter 3 equations
+(3.1)--(3.2) and the sharper small-`nu` dot-product route: each local `fl_add`
+contributes one factor `1 + delta i`, and each inserted term carries the suffix
+of factors from its insertion step. -/
+lemma fl_sum_error_init_suffix_expansion (fp : FPModel) (n : ℕ)
+    (v : Fin n → ℝ) (s : ℝ) :
+    ∃ delta : Fin n → ℝ,
+      (∀ i, |delta i| ≤ fp.u) ∧
+      Fin.foldl n (fun acc i => fp.fl_add acc (v i)) s =
+        s * (∏ i : Fin n, (1 + delta i)) +
+          ∑ i : Fin n, v i * sumSuffixErrorProduct n delta i := by
+  induction n generalizing s with
+  | zero =>
+      exact ⟨fun i => i.elim0, fun i => i.elim0, by simp [sumSuffixErrorProduct]⟩
+  | succ n ih =>
+      obtain ⟨delta', hdelta', hfold'⟩ :=
+        ih (fun i => v i.castSucc) s
+      obtain ⟨deltaLast, hdeltaLast, hflLast⟩ :=
+        fp.model_add
+          (Fin.foldl n (fun acc i => fp.fl_add acc (v i.castSucc)) s)
+          (v (Fin.last n))
+      refine ⟨Fin.lastCases deltaLast delta', ?_, ?_⟩
+      · intro i
+        refine Fin.lastCases ?_ ?_ i
+        · simp only [Fin.lastCases_last]
+          exact hdeltaLast
+        · intro j
+          simp only [Fin.lastCases_castSucc]
+          exact hdelta' j
+      · rw [Fin.foldl_succ_last, hflLast, hfold']
+        rw [Fin.prod_univ_castSucc, Fin.sum_univ_castSucc]
+        simp [sumSuffixErrorProduct]
+        rw [add_mul, add_mul]
+        rw [Finset.sum_mul]
+        ring_nf
 
 /-- **Summation rounding error lemma** (Higham §3.1).
 

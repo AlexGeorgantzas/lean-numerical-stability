@@ -98,7 +98,7 @@ theorem ls_normal_equations_backward (fp : FPModel) (n : ℕ)
     (hGramVec : GramVecError n c_hat ATb absATb (gamma fp m))
     (hChol : CholeskyBackwardError n C_hat R_hat (gamma fp (n + 1)))
     (hR_diag : ∀ i : Fin n, R_hat i i ≠ 0)
-    (hm : gammaValid fp m)
+    (_hm : gammaValid fp m)
     (hn1 : gammaValid fp (n + 1)) :
     let R_hatT := fun i j : Fin n => R_hat j i
     let y_hat := fl_forwardSub fp n R_hatT c_hat
@@ -180,6 +180,177 @@ theorem ls_normal_equations_forward_error (n : ℕ)
     hInv.1 (fun i => hExact i) hPerturbed i
 
 -- ============================================================
+-- §19.4  Concrete normal-equations/Cholesky forward certificate
+-- ============================================================
+
+/-- Computed solution vector produced by the normal-equations Cholesky solve
+    used in `ls_normal_equations_backward`. -/
+noncomputable def normalEqCholeskyXHat (fp : FPModel) (n : ℕ)
+    (c_hat : Fin n → ℝ) (R_hat : Fin n → Fin n → ℝ) : Fin n → ℝ :=
+  fl_backSub fp n R_hat
+    (fl_forwardSub fp n (fun i j : Fin n => R_hat j i) c_hat)
+
+/-- Componentwise Gram perturbation radius from the concrete
+    normal-equations/Cholesky backward-error theorem. -/
+noncomputable def normalEqCholeskyGramBound {m n : ℕ} (fp : FPModel)
+    (absATA : Fin n → Fin n → ℝ) (R_hat : Fin n → Fin n → ℝ) :
+    Fin n → Fin n → ℝ :=
+  fun i j =>
+    gamma fp m * absATA i j +
+      (gamma fp (n + 1) + 2 * gamma fp n + gamma fp n ^ 2) *
+        ∑ k : Fin n, |R_hat k i| * |R_hat k j|
+
+/-- Componentwise right-hand-side perturbation radius from the concrete
+    normal-equations/Cholesky backward-error theorem. -/
+noncomputable def normalEqCholeskyRhsBound {m n : ℕ} (fp : FPModel)
+    (absATb : Fin n → ℝ) : Fin n → ℝ :=
+  fun i => gamma fp m * absATb i
+
+/-- Componentwise forward-error certificate obtained by applying the inverse
+    Gram matrix to the normal-equations/Cholesky perturbation radii. -/
+noncomputable def normalEqCholeskySolverDx {m n : ℕ} (fp : FPModel)
+    (ATA_inv : Fin n → Fin n → ℝ)
+    (absATA : Fin n → Fin n → ℝ) (absATb : Fin n → ℝ)
+    (R_hat : Fin n → Fin n → ℝ) (x_hat : Fin n → ℝ) :
+    Fin n → ℝ :=
+  fun i =>
+    ∑ j : Fin n, |ATA_inv i j| *
+      (∑ k : Fin n,
+          normalEqCholeskyGramBound (m := m) fp absATA R_hat j k *
+            |x_hat k| +
+        normalEqCholeskyRhsBound (m := m) fp absATb j)
+
+/-- The normal-equations/Cholesky Gram perturbation radius is nonnegative
+    under the usual nonnegative magnitude hypotheses. -/
+theorem normalEqCholeskyGramBound_nonneg {m n : ℕ} (fp : FPModel)
+    (absATA : Fin n → Fin n → ℝ) (R_hat : Fin n → Fin n → ℝ)
+    (habsATA : ∀ i j : Fin n, 0 ≤ absATA i j)
+    (hm : gammaValid fp m) (hn1 : gammaValid fp (n + 1)) :
+    ∀ i j : Fin n,
+      0 ≤ normalEqCholeskyGramBound (m := m) fp absATA R_hat i j := by
+  intro i j
+  have hn : gammaValid fp n :=
+    gammaValid_mono fp (Nat.le_succ n) hn1
+  have hγm : 0 ≤ gamma fp m := gamma_nonneg fp hm
+  have hγn1 : 0 ≤ gamma fp (n + 1) := gamma_nonneg fp hn1
+  have hγn : 0 ≤ gamma fp n := gamma_nonneg fp hn
+  have hcoef :
+      0 ≤ gamma fp (n + 1) + 2 * gamma fp n + gamma fp n ^ 2 := by
+    have htwo : 0 ≤ 2 * gamma fp n := mul_nonneg (by norm_num) hγn
+    have hsquare : 0 ≤ gamma fp n ^ 2 := sq_nonneg (gamma fp n)
+    linarith
+  have hsum :
+      0 ≤ ∑ k : Fin n, |R_hat k i| * |R_hat k j| :=
+    Finset.sum_nonneg (fun k _ => mul_nonneg (abs_nonneg _) (abs_nonneg _))
+  unfold normalEqCholeskyGramBound
+  exact
+    add_nonneg
+      (mul_nonneg hγm (habsATA i j))
+      (mul_nonneg hcoef hsum)
+
+/-- The normal-equations/Cholesky right-hand-side perturbation radius is
+    nonnegative under the usual nonnegative magnitude hypotheses. -/
+theorem normalEqCholeskyRhsBound_nonneg {m n : ℕ} (fp : FPModel)
+    (absATb : Fin n → ℝ)
+    (habsATb : ∀ i : Fin n, 0 ≤ absATb i)
+    (hm : gammaValid fp m) :
+    ∀ i : Fin n, 0 ≤ normalEqCholeskyRhsBound (m := m) fp absATb i := by
+  intro i
+  unfold normalEqCholeskyRhsBound
+  exact mul_nonneg (gamma_nonneg fp hm) (habsATb i)
+
+/-- The normal-equations/Cholesky solver certificate is componentwise
+    nonnegative. -/
+theorem normalEqCholeskySolverDx_nonneg {m n : ℕ} (fp : FPModel)
+    (ATA_inv : Fin n → Fin n → ℝ)
+    (absATA : Fin n → Fin n → ℝ) (absATb : Fin n → ℝ)
+    (R_hat : Fin n → Fin n → ℝ) (x_hat : Fin n → ℝ)
+    (habsATA : ∀ i j : Fin n, 0 ≤ absATA i j)
+    (habsATb : ∀ i : Fin n, 0 ≤ absATb i)
+    (hm : gammaValid fp m) (hn1 : gammaValid fp (n + 1)) :
+    ∀ i : Fin n,
+      0 ≤ normalEqCholeskySolverDx
+        (m := m) fp ATA_inv absATA absATb R_hat x_hat i := by
+  intro i
+  unfold normalEqCholeskySolverDx
+  apply Finset.sum_nonneg
+  intro j _
+  apply mul_nonneg (abs_nonneg _)
+  apply add_nonneg
+  · apply Finset.sum_nonneg
+    intro k _
+    exact
+      mul_nonneg
+        (normalEqCholeskyGramBound_nonneg
+          (m := m) fp absATA R_hat habsATA hm hn1 j k)
+        (abs_nonneg _)
+  · exact normalEqCholeskyRhsBound_nonneg (m := m) fp absATb habsATb hm j
+
+/-- Concrete forward-error certificate for the normal-equations/Cholesky
+    least-squares solve.
+
+This is the implementation-backed counterpart of the abstract perturbed Gram
+certificate: the perturbations are supplied by the repository's local
+`ls_normal_equations_backward` theorem, and the componentwise certificate is
+obtained by reusing `ls_normal_equations_forward_error`. -/
+theorem normal_equations_cholesky_forward_error_certificate {m n : ℕ}
+    (fp : FPModel)
+    (ATA ATA_inv : Fin n → Fin n → ℝ)
+    (hInv : IsInverse n ATA ATA_inv)
+    (ATb xStar : Fin n → ℝ)
+    (hExact : ∀ i, matMulVec n ATA xStar i = ATb i)
+    (absATA : Fin n → Fin n → ℝ) (absATb : Fin n → ℝ)
+    (C_hat : Fin n → Fin n → ℝ) (c_hat : Fin n → ℝ)
+    (R_hat : Fin n → Fin n → ℝ)
+    (hGram : GramProductError n C_hat ATA absATA (gamma fp m))
+    (hGramVec : GramVecError n c_hat ATb absATb (gamma fp m))
+    (hChol : CholeskyBackwardError n C_hat R_hat (gamma fp (n + 1)))
+    (hR_diag : ∀ i : Fin n, R_hat i i ≠ 0)
+    (hm : gammaValid fp m) (hn1 : gammaValid fp (n + 1)) :
+    ∀ i : Fin n,
+      |normalEqCholeskyXHat fp n c_hat R_hat i - xStar i| ≤
+        normalEqCholeskySolverDx
+          (m := m) fp ATA_inv absATA absATb R_hat
+          (normalEqCholeskyXHat fp n c_hat R_hat) i := by
+  rcases
+    ls_normal_equations_backward (m := m) fp n ATA ATb absATA absATb
+      C_hat c_hat R_hat hGram hGramVec hChol hR_diag hm hn1 with
+    ⟨ΔA, Δc, hPerturbed, hΔA_bound, hΔc_bound⟩
+  have hPerturbed' :
+      ∀ i : Fin n,
+        ∑ j : Fin n,
+            (ATA i j + ΔA i j) *
+              normalEqCholeskyXHat fp n c_hat R_hat j =
+          ATb i + Δc i := by
+    simpa [normalEqCholeskyXHat] using hPerturbed
+  have hFwd :=
+    ls_normal_equations_forward_error n ATA ATA_inv hInv ATb xStar
+      (normalEqCholeskyXHat fp n c_hat R_hat) hExact ΔA Δc hPerturbed'
+  intro i
+  calc
+    |normalEqCholeskyXHat fp n c_hat R_hat i - xStar i|
+        ≤ ∑ j : Fin n, |ATA_inv i j| *
+            (∑ k : Fin n,
+                |ΔA j k| *
+                  |normalEqCholeskyXHat fp n c_hat R_hat k| +
+              |Δc j|) := hFwd i
+    _ ≤ normalEqCholeskySolverDx
+          (m := m) fp ATA_inv absATA absATb R_hat
+          (normalEqCholeskyXHat fp n c_hat R_hat) i := by
+        unfold normalEqCholeskySolverDx
+        apply Finset.sum_le_sum
+        intro j _
+        apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
+        apply add_le_add
+        · apply Finset.sum_le_sum
+          intro k _
+          exact
+            mul_le_mul_of_nonneg_right
+              (hΔA_bound j k)
+              (abs_nonneg _)
+        · exact hΔc_bound j
+
+-- ============================================================
 -- §19.4  Condition number squaring (eq 19.14 explanation)
 -- ============================================================
 
@@ -202,7 +373,7 @@ structure GramConditionSquared (n : ℕ)
     QR method:        forward_err ≤ κ₂(A) · ε. -/
 theorem ne_forward_error_kappa_squared
     (kappa_A kappa_gram eps_backward forward_err : ℝ)
-    (hKappa : 1 ≤ kappa_A)
+    (_hKappa : 1 ≤ kappa_A)
     (hGram : kappa_gram ≤ kappa_A ^ 2)
     (hForward : forward_err ≤ kappa_gram * eps_backward)
     (hEps : 0 ≤ eps_backward) :

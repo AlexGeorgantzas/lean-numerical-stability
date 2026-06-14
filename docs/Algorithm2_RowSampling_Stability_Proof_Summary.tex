@@ -1,0 +1,620 @@
+\documentclass[11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{enumitem}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  urlcolor=blue
+}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\fl}{\operatorname{fl}}
+\newcommand{\Frob}[1]{\left\lVert #1\right\rVert_F}
+\newcommand{\Norm}[1]{\left\lVert #1\right\rVert_2}
+\newcommand{\Atil}{\widetilde A}
+\newcommand{\Util}{\widetilde U}
+\newcommand{\Ahat}{\widehat{\widetilde A}}
+\newcommand{\Uhat}{\widehat{\widetilde U}}
+\newcommand{\Ghat}{\widehat G}
+\newcommand{\D}{D}
+\newcommand{\uunit}{u}
+\newcommand{\gammas}{\gamma_s}
+\newcommand{\OneMat}{\mathbf 1_{n\times n}}
+\newcommand{\lean}[1]{\texttt{\detokenize{#1}}}
+\newcommand{\leanfit}[1]{\noindent{\scriptsize\nolinkurl{#1}}\par}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+\newenvironment{formalized}
+  {\begin{quote}\small\noindent\textbf{Lean formalization.}\par\smallskip}
+  {\end{quote}}
+
+\title{Formal Stability Bounds for RandNLA Algorithm 2}
+\author{LeanFpAnalysis repository}
+\date{}
+
+\begin{document}
+\sloppy
+
+\maketitle
+
+\begin{abstract}
+This note states, in standard mathematical form, the Lean formalization of
+Algorithm 2 from Drineas and Mahoney's CACM RandNLA survey,
+\href{https://dl.acm.org/doi/10.1145/2842602}{RandNLA: Randomized Numerical
+Linear Algebra}.  The first part records the row-sampling Frobenius guarantee
+for the squared-row-norm distribution.  The second part specializes the same
+formal machinery to leverage-score sampling, equation (6), and proves the
+subspace-embedding estimate of equation (7), including the additional
+floating-point perturbation term.
+\end{abstract}
+
+\section{Notation and Algorithm}
+
+Let \(A\in\R^{m\times n}\).  For its \(i\)-th row write \(A_{i*}\), and set
+\[
+  r_i(A)=\Norm{A_{i*}}^2=\sum_{j=1}^n A_{ij}^2,\qquad
+  \D(A)=\Frob{A}^2=\sum_{i=1}^m r_i(A).
+\]
+Algorithm 2 samples indices \(I_1,\ldots,I_s\) independently from a row
+distribution \(p=(p_1,\ldots,p_m)\).  The sampled and rescaled sketch is
+\[
+  \Atil_{tj}=\frac{A_{I_tj}}{\sqrt{s\,p_{I_t}}},
+  \qquad 1\le t\le s,\quad 1\le j\le n .
+\]
+The exact sampled Gram matrix is
+\[
+  G(\Atil)=\Atil^T\Atil,\qquad
+  G(A)=A^TA.
+\]
+
+The floating-point model has unit roundoff \(\uunit\).  The repository uses
+\(\gamma_s\) for the standard dot-product error factor, with the Lean
+side-condition \(\lean{gammaValid fp s}\).  We distinguish two computed Gram
+matrices:
+\[
+  \widehat G_{\rm scale}=G(\Ahat),
+  \qquad
+  \widehat G_{\rm dot}=\fl_{\rm dot}(\Ahat)^T\fl_{\rm dot}(\Ahat),
+\]
+where \(\Ahat\) denotes the sketch obtained after rounded row scaling, and
+\(\widehat G_{\rm dot}\) computes each Gram entry using the repository's
+floating-point dot-product algorithm.
+
+\section{Equation (4): Squared-Row-Norm Sampling}
+
+\begin{definition}[Squared-row-norm probabilities]
+Assume \(\D(A)>0\).  The equation (4) distribution is
+\[
+  p_i=\frac{r_i(A)}{\D(A)}
+  =
+  \frac{\sum_j A_{ij}^2}{\sum_{k,\ell} A_{k\ell}^2}.
+\]
+\end{definition}
+
+\begin{lemma}[Probability and support]
+If \(\D(A)\ne0\), then \(\sum_i p_i=1\).  If \(\D(A)>0\), then
+\(p_i\ge0\) for all \(i\).  Moreover, if row \(i\) contains a nonzero entry,
+then \(p_i>0\), and for \(s>0\) the scaling denominator
+\(\sqrt{s\,p_i}\) is nonzero.
+\end{lemma}
+
+\begin{formalized}
+\lean{rowSqNormProb_sum_eq_one}\par
+\lean{rowSqNormProb_nonneg}\par
+\lean{rowSqNormProb_pos_of_entry_ne_zero}\par
+\lean{rowSampleScaleDen_ne_zero}
+\end{formalized}
+
+\begin{lemma}[One rounded sampled row entry]
+For a sampled row with \(p_{I_t}>0\), the rounded scaling operation satisfies
+\[
+  \left|\widehat{\Atil}_{tj}-\Atil_{tj}\right|
+  \le
+  \uunit\,|\Atil_{tj}|.
+\]
+\end{lemma}
+
+\begin{formalized}
+\lean{fl_rowSampleSketch_error_bound}.
+\end{formalized}
+
+\begin{remark}
+Algorithm 2 does not aggregate repeated samples into a single row.  Repeated
+draws produce repeated output rows.  Consequently the relevant random object is
+the sampled Gram matrix \(\Atil^T\Atil\), not a grouped hit-count update.
+\end{remark}
+
+\section{Exact Gram Approximation}
+
+\begin{theorem}[Unbiased sampled Gram entries]
+Assume \(\D(A)>0\) and \(s>0\).  Under the independent row sampler with
+probabilities \(p_i=r_i(A)/\D(A)\),
+\[
+  \E\bigl[(\Atil^T\Atil)_{jk}\bigr]=(A^TA)_{jk}
+  \qquad\text{for all }j,k.
+\]
+\end{theorem}
+
+\begin{formalized}
+\leanfit{rowSqNormTraceProbability_expectationReal_rowSampleGram_entry}
+\end{formalized}
+
+\begin{theorem}[Second moment for the Frobenius error]
+Assume \(\D(A)>0\) and \(s>0\).  Then
+\[
+  \E\!\left[\Frob{\Atil^T\Atil-A^TA}^2\right]
+  \le
+  \frac{\D(A)^2}{s}.
+\]
+\end{theorem}
+
+\begin{formalized}
+\leanfit{rowSqNormTraceProbability_expectationReal_sampleAverage_sub_mean_sq}
+
+\leanfit{rowSqNormTraceProbability_expectationReal_rowSampleGram_frob_error_sq_le}
+\end{formalized}
+
+\begin{theorem}[Equation (5)]
+Assume \(\D(A)>0\), \(s>0\), and \(\varepsilon>0\).  Then
+\[
+  \Prob\!\left[
+    \Frob{\Atil^T\Atil-A^TA}
+    \le
+    \varepsilon\,\D(A)
+  \right]
+  \ge
+  1-\frac{1}{s\varepsilon^2}.
+\]
+Equivalently, since \(\D(A)=\Frob{A}^2\),
+\[
+  \Prob\!\left[
+    \Frob{\Atil^T\Atil-A^TA}
+    \le
+    \varepsilon\,\Frob{A}^2
+  \right]
+  \ge
+  1-\frac{1}{s\varepsilon^2}.
+\]
+\end{theorem}
+
+\begin{formalized}
+\leanfit{FiniteProbability.eventProb_le_ge_one_sub_expectationReal_sq_div}
+
+\leanfit{rowSqNormTraceProbability_eventProb_rowSampleGram_frob_error_le_epsilon}
+\end{formalized}
+
+\section{Floating-Point Perturbation of Equation (5)}
+
+The formalized perturbation bounds are deterministic on the probability-one
+support where every sampled row has positive sampling probability.  Define
+\(\OneMat\) to be the \(n\times n\) all-ones matrix.  The Lean budgets are
+Frobenius norms of constant \(n\times n\) matrices:
+\[
+  \tau_{\rm scale}(A)
+  =
+  \Frob{(2\uunit+\uunit^2)\D(A)\OneMat},
+\]
+\[
+  \tau_{\rm dot}(A)
+  =
+  \Frob{\gammas(1+\uunit)^2\D(A)\OneMat},
+  \qquad
+  \tau_{\rm full}(A)=\tau_{\rm scale}(A)+\tau_{\rm dot}(A).
+\]
+Equivalently, since these scalar entries are nonnegative,
+\[
+  \tau_{\rm scale}(A)=n(2\uunit+\uunit^2)\D(A),
+  \qquad
+  \tau_{\rm dot}(A)=n\gammas(1+\uunit)^2\D(A).
+\]
+These are worst-case Frobenius budgets for, respectively, rounded row scaling
+and rounded dot products in the Gram computation.
+
+\begin{theorem}[Rounded scaling, exact Gram summation]
+Assume \(\D(A)>0\), \(s>0\), and \(\varepsilon>0\).  If the sketch entries are
+rounded but \(G(\Ahat)=\Ahat^T\Ahat\) is formed as an exact real Gram matrix,
+then
+\[
+  \Prob\!\left[
+    \Frob{\widehat G_{\rm scale}-A^TA}
+    \le
+    \varepsilon\,\D(A)+\tau_{\rm scale}(A)
+  \right]
+  \ge
+  1-\frac{1}{s\varepsilon^2}.
+\]
+\end{theorem}
+
+\begin{formalized}
+\lean{rowSampleGramFpPerturbBudget}\par
+\lean{rowSampleGramFpPerturbBudget_eq_nat_mul}\par
+\lean{rowSampleGram_perturb_budget_le_explicit}
+
+\leanfit{rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_explicit_budget}
+\end{formalized}
+
+\begin{theorem}[Fully floating-point Gram approximation]
+Assume \(\D(A)>0\), \(s>0\), \(\varepsilon>0\), and
+\(\lean{gammaValid fp s}\).  If each Gram entry is computed by the repository's
+floating-point dot-product algorithm after Algorithm 2 has already returned its
+sampled-and-scaled rows, then
+\[
+  \Prob\!\left[
+    \Frob{\widehat G_{\rm dot}-A^TA}
+    \le
+    \varepsilon\,\D(A)+\tau_{\rm full}(A)
+  \right]
+  \ge
+  1-\frac{1}{s\varepsilon^2}.
+\]
+\end{theorem}
+
+\begin{formalized}
+\lean{dotProduct_error_bound}\par
+\lean{rowSampleGramDotProductBudget}\par
+\lean{rowSampleGramDotProductBudget_eq_nat_mul}\par
+\lean{rowSampleGramFullFpPerturbBudget}
+
+\leanfit{rowSqNormTraceProbability_eventProb_fl_rowSampleGramDot_frob_error_le_epsilon_add_explicit_budget}
+\end{formalized}
+
+\begin{corollary}[\(\tau_{\rm dot}=0\) scaling-only specialization]
+Assume \(\D(A)>0\), \(s>0\), and \(\varepsilon>0\).  If Algorithm 2 only
+computes the sampled-and-scaled rows in floating point, and the Gram matrix is
+introduced afterwards as the exact mathematical matrix
+\(\widehat G_{\rm scale}=\Ahat^T\Ahat\), then the appropriate analysis model has
+zero dot-product budget:
+\[
+  \tau_{\rm dot}(A)=0.
+\]
+Consequently,
+\[
+  \Prob\!\left[
+    \Frob{\widehat G_{\rm scale}-A^TA}
+    \le
+    \varepsilon\,\D(A)+\tau_{\rm scale}(A)
+  \right]
+  \ge
+  1-\frac{1}{s\varepsilon^2},
+\]
+where
+\[
+  \tau_{\rm scale}(A)=n(2\uunit+\uunit^2)\D(A).
+\]
+This is formalized as a separate theorem about the theoretical Gram matrix
+formed from rounded rows, not as the computed-dot-product matrix with an
+ignored dot-product error.  It is the faithful Algorithm 2 floating-point
+stability statement when the Gram matrix appears only in the analysis.
+\end{corollary}
+
+\begin{formalized}
+\lean{rowSampleGramFpPerturbBudget_eq_nat_mul}\par
+\leanfit{rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_scaling_budget}
+\leanfit{rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_tau_dot_zero}
+\end{formalized}
+
+\section{Equation (6): Leverage-Score Sampling}
+
+Let \(U\in\R^{m\times n}\) have orthonormal columns:
+\[
+  U^TU=I_n.
+\]
+The \(i\)-th leverage score is
+\[
+  \ell_i=\Norm{U_{i*}}^2.
+\]
+Since
+\[
+  \sum_{i=1}^m \ell_i
+  =
+  \Frob{U}^2
+  =
+  \operatorname{trace}(U^TU)
+  =
+  n,
+\]
+equation (6) is
+\[
+  p_i
+  =
+  \frac{\ell_i}{\sum_r \ell_r}
+  =
+  \frac{\ell_i}{n}.
+\]
+
+\begin{theorem}[Formal equation (6)]
+If \(U^TU=I_n\), then the squared-row-norm distribution applied to \(U\)
+satisfies
+\[
+  p_i=\frac{\Norm{U_{i*}}^2}{n}
+  \qquad\text{and}\qquad
+  \sum_i p_i=1
+\]
+for \(n>0\).
+\end{theorem}
+
+\begin{formalized}
+\lean{HasOrthonormalColumns}\par
+\lean{leverageScore}\par
+\lean{leverageScoreProb}\par
+\leanfit{rowSqNormProbDen_eq_nat_of_orthonormal_columns}
+
+\leanfit{leverageScoreProb_eq_rowNormSq_div_nat}
+
+\lean{leverageScoreProb_sum_eq_one}
+\end{formalized}
+
+\section{Equation (7): Subspace Embedding}
+
+The repository states the operator-2 estimate in vector-action form.  For a
+square matrix \(M\), define
+\[
+  \operatorname{Op2Le}(M,c)
+  \quad\Longleftrightarrow\quad
+  \forall x\in\R^n,\ \Norm{Mx}\le c\Norm{x}.
+\]
+The formal proof uses the standard implication
+\[
+  \Frob{M}\le c
+  \quad\Longrightarrow\quad
+  \operatorname{Op2Le}(M,c).
+\]
+
+\begin{formalized}
+\lean{vecNorm2}\par
+\lean{opNorm2Le}\par
+\leanfit{vecNorm2_matMulVec_le_frobNorm_mul}
+
+\lean{opNorm2Le_of_frobNorm_le}
+\end{formalized}
+
+\begin{theorem}[Equation (7), exact arithmetic]
+Let \(U\in\R^{m\times n}\) satisfy \(U^TU=I_n\).  Assume \(n>0\), \(s>0\),
+and \(\varepsilon>0\).  Let \(\Util\) be the Algorithm 2 sketch produced by
+sampling rows of \(U\) with the leverage probabilities \(p_i=\Norm{U_{i*}}^2/n\).
+Then
+\[
+  \Prob\!\left[
+    \forall x\in\R^n,
+    \Norm{(\Util^T\Util-I_n)x}
+    \le
+    \varepsilon\Norm{x}
+  \right]
+  \ge
+  1-\frac{1}{s(\varepsilon/n)^2}.
+\]
+\end{theorem}
+
+\begin{formalized}
+\lean{rowGram_eq_id_of_orthonormal_columns}.
+
+\leanfit{leverageTraceProbability_eventProb_rowSampleGram_opNorm2_error_le_epsilon}
+\end{formalized}
+
+\begin{corollary}[Equation (7), concrete computed-denominator floating-point arithmetic]
+Assume the exact Bennett sample-budget hypotheses for equation (7), and assume
+\(\lean{gammaValid fp s}\).  Let \(\widehat G_{\rm dot}(U)\) be the
+floating-point sampled Gram matrix formed from the exact leverage law
+\(p_i=\|U_{i*}\|_2^2/n\), the concrete denominator routine
+\[
+  \widehat d_i=\operatorname{flsqrt}(\operatorname{flmul}(s,p_i)),
+\]
+rounded row divisions, and rounded length-\(s\) Gram dot products.  Then the
+two-sided finite-Loewner event
+\[
+  \widehat G_{\rm dot}(U)-I_n
+  \preceq
+  \bigl(\varepsilon+\tau_{\rm comp}(U;s)\bigr)I_n,
+  \qquad
+  I_n-\widehat G_{\rm dot}(U)
+  \preceq
+  \bigl(\varepsilon+\tau_{\rm comp}(U;s)\bigr)I_n
+\]
+has probability at least \(1-\delta\), with
+\[
+  \tau_{\rm comp}(U;s)
+  =
+  n^2\left((2\eta_U+\eta_U^2)+\gamma_s(1+\eta_U)^2\right).
+\]
+Here \(\eta_U\) is the effective row-scaling relative error induced by the
+same computed denominator routine.  The matrix \(U\) is an exact supplied
+orthonormal-column basis; this corollary does not compute \(U\) from a data
+matrix.
+\end{corollary}
+
+\begin{formalized}
+\lean{leverage_fl_rowSampleGramDot_perturb_bound}.
+
+\leanfit{leverageTraceProbability_eventProb_fl_rowSampleGramDot_opNorm2_error_le_epsilon_add_budget}
+\leanfit{leverageFlMulThenSqrtRowScaleDen}
+\leanfit{leverageTraceProbability_eventProb_fl_rowSampleGramDotWithFlMulThenSqrtDen_two_sided_finiteLoewnerLe_ge_one_sub_delta_of_sample_budget}
+\end{formalized}
+
+\begin{corollary}[Equation (7), actual input \(A=UC\) and computed Gram]
+Let \(U\in\R^{m\times r}\) satisfy \(U^TU=I_r\), let
+\(C\in\R^{r\times q}\), and set \(A=UC\).  The exact leverage law is
+\(p_i=\|U_{i*}\|_2^2/r\), and the implementation samples rows of the actual
+matrix \(A\).  The exact analysis witnesses \(U,C\) are not computed by this
+theorem.
+
+Under the same Bennett sample-budget hypotheses with \(r\) in place of \(n\),
+the exact sampled actual-input Gram satisfies
+\[
+  \Pr\!\left[
+    \widetilde A_U^T\widetilde A_U-A^TA\preceq \varepsilon A^TA
+    \ \hbox{and}\
+    A^TA-\widetilde A_U^T\widetilde A_U\preceq \varepsilon A^TA
+  \right]\ge 1-\delta .
+\]
+With the concrete denominator
+\(\widehat d_i=\fl_{\rm sqrt}(\fl_{\rm mul}(s,p_i))\), rounded row divisions
+on entries of \(A\), and rounded length-\(s\) Gram dot products, the computed
+Gram satisfies
+\[
+  \Pr\!\left[
+    \widehat G_{\rm dot}(A;U)-A^TA
+      \preceq \varepsilon A^TA+T_A^{\rm fp}I_q
+    \ \hbox{and}\
+    A^TA-\widehat G_{\rm dot}(A;U)
+      \preceq \varepsilon A^TA+T_A^{\rm fp}I_q
+  \right]\ge 1-\delta .
+\]
+Here
+\[
+  T_A^{\rm fp}
+  =
+  \left(\gamma_s(1+\eta_U^A)^2+2\eta_U^A+(\eta_U^A)^2\right)
+  \sum_{j=1}^q
+  \left(\sum_{i:\,p_i>0}\frac{|A_{ij}|}{\sqrt{p_i}}\right)^2,
+\]
+where
+\[
+  \eta_U^A
+  =
+  u+(1+u)
+  \sum_{i:\,p_i>0}
+  \frac{\sqrt{s p_i}\,(\sqrt{1+u}\,u+u)}
+       {|\fl_{\rm sqrt}(\fl_{\rm mul}(s,p_i))|}.
+\]
+For fixed \(U,C,m,r,q,s\), this radius is
+\[
+  \Theta\!\left(
+    (\gamma_s+u(1+|\{i:p_i>0\}|))
+    \sum_{j=1}^q
+    \left(\sum_{i:\,p_i>0}\frac{|A_{ij}|}{\sqrt{p_i}}\right)^2
+  \right)
+\]
+and tends to zero as \(u,\gamma_s\to0\) when positive-probability computed
+denominators remain nonzero.
+\end{corollary}
+
+\begin{formalized}
+\leanfit{leverageFactoredInputSampleGram}
+\leanfit{leverageTraceProbability_eventProb_factoredInputSampleGram_two_sided_finiteLoewnerLe_ge_one_sub_delta_of_sample_budget}
+\leanfit{leverageFactoredInputDenGramBudget}
+\leanfit{leverage_fl_rowSampleGramDotWithComputedDen_factoredInput_perturb_bound}
+\leanfit{leverageTraceProbability_eventProb_factoredInput_fl_rowSampleGramDotWithFlMulThenSqrtDen_two_sided_finiteLoewnerLe_ge_one_sub_delta_of_sample_budget}
+\end{formalized}
+
+\begin{corollary}[Equation (7), stored basis table and computed Gram]
+Let \(U\in\R^{m\times n}\) satisfy \(U^TU=I_n\), and let the exact leverage
+law be \(p_i=\|U_{i*}\|_2^2/n\).  The probabilities and samples are exact
+mathematical objects.  The three closed stored-basis modes are
+\[
+  \widehat U^{(\mathrm{mul1})}_{ij}=\fl_{\rm mul}(U_{ij},1),\qquad
+  \widehat U^{(\mathrm{add0})}_{ij}=\fl_{\rm add}(U_{ij},0),\qquad
+  \widehat U^{(\mathrm{sub0})}_{ij}=\fl_{\rm sub}(U_{ij},0),
+\]
+and all satisfy
+\[
+  |\widehat U^{(\mu)}_{ij}-U_{ij}|\le u|U_{ij}|.
+\]
+With
+\[
+  \rho_U=
+  \sum_{i:\,p_i>0}
+  \frac{\sqrt{s p_i}\,(\sqrt{1+u}\,u+u)}
+       {|\fl_{\rm sqrt}(\fl_{\rm mul}(s,p_i))|},
+  \qquad
+  \lambda_U=2u+u^2+(1+u)^2\rho_U ,
+\]
+define the expanded deterministic radius
+\[
+  T_U^{\rm fp}
+  =
+  \left(\gamma_s(1+\lambda_U)^2+2\lambda_U+\lambda_U^2\right)
+  \sum_{j=1}^n
+  \left(\sum_{i:\,p_i>0}\frac{|U_{ij}|}{\sqrt{p_i}}\right)^2 .
+\]
+Under the exact Bennett sample-budget hypotheses and \(\gamma_s\) validity,
+the Gram matrix computed from \(\widehat U^{(\mu)}\), the concrete denominator
+\(\widehat d_i=\fl_{\rm sqrt}(\fl_{\rm mul}(s,p_i))\), rounded row divisions,
+and rounded length-\(s\) dot products satisfies
+\[
+  \Pr\!\left[
+    \widehat G_{\rm dot}^{(\mu)}-I_n\preceq
+      (\varepsilon+T_U^{\rm fp})I_n
+    \ \hbox{and}\
+    I_n-\widehat G_{\rm dot}^{(\mu)}\preceq
+      (\varepsilon+T_U^{\rm fp})I_n
+  \right]\ge 1-\delta
+\]
+for every \(\mu\in\{\mathrm{mul1},\mathrm{add0},\mathrm{sub0}\}\).
+This charges the stored basis table, denominator formation, row divisions, and
+Gram dot products.  It does not claim that a QR or SVD routine has computed
+\(U\) from a data matrix.
+\end{corollary}
+
+\begin{formalized}
+\leanfit{RowSamplingLeverageComputedBasis.lean}
+\leanfit{leverageComputedBasisDenGramBudget}
+\noindent Stored-basis final wrappers are provided for the mul-one, add-zero,
+and sub-zero modes.
+\end{formalized}
+
+\section{Hypotheses and Scope}
+
+\begin{itemize}[leftmargin=2em]
+  \item The exact equation (7) theorem assumes only \(U^TU=I_n\), \(n>0\),
+  \(s>0\), and \(\varepsilon>0\).
+  \item The source-aligned finite-Loewner equation (7) theorem assumes the
+  displayed Bennett sample-budget inequalities and \(n>1\).
+  \item The floating-point equation (7) corollaries additionally assume
+  \(\lean{gammaValid fp s}\), inherited from the dot-product theorem.
+  \item The older vector-action/Frobenius-to-operator consequence remains
+  available, but the final equation (7) theorem surface is the formalized
+  Oliveira/Tropp-style finite-Loewner Bennett route.
+  \item The actual-input theorem uses exact analysis witnesses \(A=UC\) and
+  computes with rows of \(A\); it charges the concrete denominator, row
+  divisions, and Gram dot products.
+  \item The stored-basis theorem charges the modeled rounded-copy table used
+  in the sketch.  It still does not formalize a QR, SVD, or other routine that
+  generates \(U\) from a data matrix.
+  \item The proof does not formalize computation or approximation of leverage
+  probabilities.  Equation (6) is the exact input sampling distribution once an
+  orthonormal-column matrix \(U\) is fixed.
+  \item The proof uses the vector-action operator predicate
+  \(\operatorname{Op2Le}\) rather than introducing a supremum-valued spectral
+  norm object.
+\end{itemize}
+
+\section{File Map}
+
+\begin{itemize}[leftmargin=2em]
+  \item \lean{RowSampling.lean}: row probabilities, product traces, sampled
+  row scaling, and local floating-point scaling stability.
+  \item \lean{RowSamplingGram.lean}: Gram matrices, unbiasedness, second
+  moments, equation (5), and the floating-point Gram perturbation theorems.
+  \item \lean{RowSamplingLeverage.lean}: equation (6) and equation (7) for
+  leverage-score row sampling.
+  \item \lean{RowSamplingLeverageMGF.lean}: source-aligned Bennett
+  finite-Loewner equation (7), including the concrete computed-denominator
+  floating-point endpoint.
+  \item \lean{RowSamplingLeverageComputedBasis.lean}: actual-input
+  \(A=UC\) equation (7) endpoint and stored-basis table equation (7) endpoint
+  for the three rounded-copy modes
+  \(\fl_{\rm mul}(U_{ij},1)\), \(\fl_{\rm add}(U_{ij},0)\), and
+  \(\fl_{\rm sub}(U_{ij},0)\).
+  \item \lean{MatrixAlgebra.lean}: Frobenius norm, vector 2-norm, and the
+  Frobenius-to-operator bound used in equation (7).
+  \item \lean{DotProduct.lean}: floating-point dot-product stability reused by
+  the fully floating-point Gram theorem.
+  \item \lean{FiniteProbability.lean}: finite Markov, union-bound,
+  monotonicity, and expectation lemmas.
+\end{itemize}
+
+\end{document}

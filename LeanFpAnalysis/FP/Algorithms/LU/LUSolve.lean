@@ -472,4 +472,45 @@ theorem lu_solve_backward_error_mixed (n : ℕ)
     simp_rw [← mul_assoc]
     rw [← Finset.sum_mul, hexpand j]
 
+/-- LU solve backward error with an exposed factorization coefficient.
+
+The LU factorization may be certified at level `epsLU`, while the forward and
+back triangular solves are still the concrete repository routines and therefore
+charge `gamma fp n`.  The total coefficient is
+`epsLU + 2 * gamma fp n + gamma fp n ^ 2`. -/
+theorem lu_solve_backward_error_factor_gamma (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    {epsLU : ℝ}
+    (hepsLU : 0 ≤ epsLU)
+    (hL_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hLU : LUBackwardError n A L_hat U_hat epsLU)
+    (hn : gammaValid fp n) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤
+        (epsLU + 2 * gamma fp n + gamma fp n ^ 2) *
+          ∑ k : Fin n, |L_hat i k| * |U_hat k j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  intro y_hat x_hat
+  obtain ⟨ΔA_LU, hΔA_LU_bound, hΔA_LU_eq⟩ :=
+    lu_backward_error_perturbation n A L_hat U_hat epsLU hepsLU hLU
+  obtain ⟨ΔL, hΔL_bound, hΔL_eq⟩ :=
+    forwardSub_backward_error fp n L_hat b hL_diag hLU.L_upper_zero hn
+  obtain ⟨ΔU, hΔU_bound, hΔU_eq⟩ :=
+    backSub_backward_error fp n U_hat y_hat hU_diag hLU.U_lower_zero hn
+  obtain ⟨ΔA, hΔA_bound, hΔA_eq⟩ :=
+    lu_solve_backward_error_mixed n A L_hat U_hat y_hat x_hat
+      epsLU (gamma fp n) (gamma fp n)
+      hepsLU (gamma_nonneg fp hn) (gamma_nonneg fp hn)
+      ΔA_LU hΔA_LU_bound hΔA_LU_eq
+      b ΔL hΔL_bound hΔL_eq
+      ΔU hΔU_bound hΔU_eq
+  refine ⟨ΔA, ?_, hΔA_eq⟩
+  intro i j
+  convert hΔA_bound i j using 1
+  ring
+
 end LeanFpAnalysis.FP

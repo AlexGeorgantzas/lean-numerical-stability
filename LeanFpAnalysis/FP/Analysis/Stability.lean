@@ -12,15 +12,16 @@ namespace LeanFpAnalysis.FP
 /-!
 # Stability and Condition Number
 
-Following Higham, "Accuracy and Stability of Numerical Algorithms", §1.7–§1.9.
+Following Higham, "Accuracy and Stability of Numerical Algorithms", §1.5–§1.6.
 
 We formalise the key concepts that classify how well an algorithm handles
 the unavoidable rounding errors introduced by finite precision arithmetic:
-backward stability and the condition number of a problem.
+backward error, forward error, mixed stability, numerical stability, and the
+condition number of a problem.
 -/
 
 -- ============================================================
--- §1.7  Backward error predicates
+-- §1.5  Backward and forward error predicates
 -- ============================================================
 
 /-- Backward error bound for a computed result `xhat` for scalar problem `f` at input `a`.
@@ -45,8 +46,62 @@ def backwardErrorBoundedVec (n m : ℕ) (f : (Fin n → ℝ) → (Fin m → ℝ)
     (a : Fin n → ℝ) (xhat : Fin m → ℝ) (ε : ℝ) : Prop :=
   ∃ Δa : Fin n → ℝ, (∀ i, |Δa i| ≤ ε) ∧ f (fun i => a i + Δa i) = xhat
 
+/-- Forward error bound for a scalar computed result `xhat`.
+
+    This names Higham's forward-error viewpoint: the computed answer is close
+    to the exact answer `f a` for the original data.  The bound is relative,
+    using `relError`; callers should separately enforce `f a ≠ 0` when they
+    need the mathematical nonzero-domain convention. -/
+noncomputable def forwardErrorBounded (f : ℝ → ℝ) (a xhat ε : ℝ) : Prop :=
+  relError xhat (f a) ≤ ε
+
+/-- Normwise forward error bound for vector problems, parameterized by the
+chosen norm. -/
+noncomputable def forwardErrorBoundedVec (n m : ℕ)
+    (norm : (Fin m → ℝ) → ℝ)
+    (f : (Fin n → ℝ) → (Fin m → ℝ))
+    (a : Fin n → ℝ) (xhat : Fin m → ℝ) (ε : ℝ) : Prop :=
+  normwiseRelError m norm xhat (f a) ≤ ε
+
+/-- Normwise backward error for vector problems, parameterized by the chosen
+input norm.  This is the normed analogue of `backwardErrorBoundedVec`: the
+computed result is exact for `a + Δa`, with `||Δa|| <= ε`. -/
+def normwiseBackwardErrorBoundedVec (n m : ℕ)
+    (normIn : (Fin n → ℝ) → ℝ)
+    (f : (Fin n → ℝ) → (Fin m → ℝ))
+    (a : Fin n → ℝ) (xhat : Fin m → ℝ) (ε : ℝ) : Prop :=
+  ∃ Δa : Fin n → ℝ, normIn Δa ≤ ε ∧ f (fun i => a i + Δa i) = xhat
+
+/-- Higham §1.5 mixed forward-backward error for scalar problems:
+the computed result plus a small output perturbation is the exact result for a
+smallly perturbed input. -/
+def mixedForwardBackwardErrorBounded (f : ℝ → ℝ) (a xhat εBack εForw : ℝ) :
+    Prop :=
+  ∃ Δa Δy : ℝ,
+    |Δa| ≤ εBack ∧ |Δy| ≤ εForw ∧ xhat + Δy = f (a + Δa)
+
+/-- Vector-valued mixed forward-backward error: the input perturbation is
+componentwise bounded and the output perturbation is componentwise bounded. -/
+def mixedForwardBackwardErrorBoundedVec (n m : ℕ)
+    (f : (Fin n → ℝ) → (Fin m → ℝ))
+    (a : Fin n → ℝ) (xhat : Fin m → ℝ) (εBack εForw : ℝ) : Prop :=
+  ∃ Δa : Fin n → ℝ, ∃ Δy : Fin m → ℝ,
+    (∀ i, |Δa i| ≤ εBack) ∧
+    (∀ j, |Δy j| ≤ εForw) ∧
+    (fun j => xhat j + Δy j) = f (fun i => a i + Δa i)
+
+/-- A backward-error certificate is a mixed forward-backward certificate with
+zero forward perturbation. -/
+theorem mixedForwardBackward_of_backward (f : ℝ → ℝ) (a xhat εBack εForw : ℝ)
+    (hback : backwardErrorBounded f a xhat εBack) (hforw : 0 ≤ εForw) :
+    mixedForwardBackwardErrorBounded f a xhat εBack εForw := by
+  obtain ⟨Δa, hΔa, hEq⟩ := hback
+  refine ⟨Δa, 0, hΔa, ?_, ?_⟩
+  · simpa using hforw
+  · simp [hEq]
+
 -- ============================================================
--- §1.7  Backward stability (scalar problems)
+-- §1.5  Backward stability (scalar problems)
 -- ============================================================
 
 /-- An algorithm computing `f : ℝ → ℝ` at input `a` is **backward stable**
@@ -60,7 +115,7 @@ def isBackwardStable (fp : FPModel) (f : ℝ → ℝ) (alg : ℝ → ℝ)
   ∀ a : ℝ, backwardErrorBounded f a (alg a) (c * fp.u)
 
 -- ============================================================
--- §1.7  Backward stability (vector problems)
+-- §1.5  Backward stability (vector problems)
 -- ============================================================
 
 /-- Backward stability for a vector-to-vector problem `f : (Fin n → ℝ) → (Fin m → ℝ)`.
@@ -74,7 +129,46 @@ def isVectorBackwardStable (fp : FPModel) (n m : ℕ)
   ∀ a : Fin n → ℝ, backwardErrorBoundedVec n m f a (alg a) (c * fp.u)
 
 -- ============================================================
--- §1.7  Relative componentwise backward stability (two-input scalar problems)
+-- §1.5  Numerical and forward stability
+-- ============================================================
+
+/-- Higham §1.5 numerical stability in mixed forward-backward form.  The
+constants multiply the model unit roundoff and are supplied by the concrete
+algorithm analysis. -/
+def isNumericallyStable (fp : FPModel) (f : ℝ → ℝ) (alg : ℝ → ℝ)
+    (cBack cForw : ℝ) : Prop :=
+  ∀ a : ℝ,
+    mixedForwardBackwardErrorBounded f a (alg a) (cBack * fp.u) (cForw * fp.u)
+
+/-- Vector-valued numerical stability in mixed forward-backward form. -/
+def isVectorNumericallyStable (fp : FPModel) (n m : ℕ)
+    (f : (Fin n → ℝ) → (Fin m → ℝ))
+    (alg : (Fin n → ℝ) → (Fin m → ℝ))
+    (cBack cForw : ℝ) : Prop :=
+  ∀ a : Fin n → ℝ,
+    mixedForwardBackwardErrorBoundedVec n m f a (alg a)
+      (cBack * fp.u) (cForw * fp.u)
+
+/-- Higham's forward-stability comparison: `alg` has forward errors bounded by
+a constant multiple of a reference algorithm's forward errors.  In Chapter 1
+the reference class is a backward-stable method for the same problem. -/
+noncomputable def isForwardStableRelativeTo (f : ℝ → ℝ) (alg referenceAlg : ℝ → ℝ)
+    (c : ℝ) : Prop :=
+  ∀ a : ℝ, relError (alg a) (f a) ≤ c * relError (referenceAlg a) (f a)
+
+/-- Vector version of `isForwardStableRelativeTo`, parameterized by the chosen
+output norm. -/
+noncomputable def isVectorForwardStableRelativeTo (n m : ℕ)
+    (norm : (Fin m → ℝ) → ℝ)
+    (f : (Fin n → ℝ) → (Fin m → ℝ))
+    (alg referenceAlg : (Fin n → ℝ) → (Fin m → ℝ))
+    (c : ℝ) : Prop :=
+  ∀ a : Fin n → ℝ,
+    normwiseRelError m norm (alg a) (f a) ≤
+      c * normwiseRelError m norm (referenceAlg a) (f a)
+
+-- ============================================================
+-- §1.5  Relative componentwise backward stability (two-input scalar problems)
 -- ============================================================
 
 /-- Relative componentwise backward error bound for a two-input scalar problem
@@ -106,7 +200,7 @@ def isRelComponentwiseBackwardStable (n : ℕ)
   ∀ x y : Fin n → ℝ, relBackwardErrorBounded2 n f x y (alg x y) ε
 
 -- ============================================================
--- §1.9  Condition number of a scalar problem
+-- §1.6  Condition number of a scalar problem
 -- ============================================================
 
 /-- The condition number of a differentiable scalar problem `f` at input `a`.
@@ -129,11 +223,96 @@ noncomputable def condNumber (f df : ℝ → ℝ) (a : ℝ) : ℝ :=
 def isWellConditioned (f df : ℝ → ℝ) (a κ_max : ℝ) : Prop :=
   condNumber f df a ≤ κ_max
 
+/-- Normwise local condition-number bound for a finite-dimensional vector
+problem.  The predicate says that every perturbation `Δa` of size at most `ρ`
+has relative output change bounded by
+`κ * (||Δa||_in / ||a||_in)`.
+
+This is the finite-vector surface for Higham §1.6's statement that, when vector
+data or vector outputs are involved, condition numbers are defined with norms
+and measure the maximum relative change. -/
+noncomputable def normwiseConditionNumberBoundedVec (n m : ℕ)
+    (normIn : (Fin n → ℝ) → ℝ) (normOut : (Fin m → ℝ) → ℝ)
+    (f : (Fin n → ℝ) → (Fin m → ℝ))
+    (a : Fin n → ℝ) (κ ρ : ℝ) : Prop :=
+  ∀ Δa : Fin n → ℝ, normIn Δa ≤ ρ →
+    normwiseRelError m normOut (f (fun i => a i + Δa i)) (f a) ≤
+      κ * (normIn Δa / normIn a)
+
+/-- Source-facing supremum form of the normwise condition number.
+
+The number `κ` is the least upper bound, in the inequality form used by
+Higham's local condition-number estimate, for all perturbations with
+`||Δa||_in <= ρ`.  This avoids baking in a specific topology or compactness
+theorem for arbitrary user-supplied norms; concrete norm/continuity choices can
+later prove this predicate by an attainment theorem. -/
+noncomputable def normwiseConditionNumberSupremumVec (n m : ℕ)
+    (normIn : (Fin n → ℝ) → ℝ) (normOut : (Fin m → ℝ) → ℝ)
+    (f : (Fin n → ℝ) → (Fin m → ℝ))
+    (a : Fin n → ℝ) (κ ρ : ℝ) : Prop :=
+  normwiseConditionNumberBoundedVec n m normIn normOut f a κ ρ ∧
+    ∀ κ' : ℝ,
+      normwiseConditionNumberBoundedVec n m normIn normOut f a κ' ρ →
+        κ ≤ κ'
+
+/-- Attained maximum form of the normwise condition number.  The positive
+relative perturbation condition excludes the zero-denominator perturbation when
+turning an attained upper bound into a least upper bound. -/
+noncomputable def normwiseConditionNumberAttainedVec (n m : ℕ)
+    (normIn : (Fin n → ℝ) → ℝ) (normOut : (Fin m → ℝ) → ℝ)
+    (f : (Fin n → ℝ) → (Fin m → ℝ))
+    (a : Fin n → ℝ) (κ ρ : ℝ) : Prop :=
+  ∃ Δa : Fin n → ℝ,
+    normIn Δa ≤ ρ ∧
+      0 < normIn Δa / normIn a ∧
+        normwiseRelError m normOut (f (fun i => a i + Δa i)) (f a) =
+          κ * (normIn Δa / normIn a)
+
+theorem normwiseConditionNumberSupremumVec.bounded (n m : ℕ)
+    (normIn : (Fin n → ℝ) → ℝ) (normOut : (Fin m → ℝ) → ℝ)
+    (f : (Fin n → ℝ) → (Fin m → ℝ))
+    (a : Fin n → ℝ) (κ ρ : ℝ)
+    (hκ : normwiseConditionNumberSupremumVec n m normIn normOut f a κ ρ) :
+    normwiseConditionNumberBoundedVec n m normIn normOut f a κ ρ :=
+  hκ.1
+
+theorem normwiseConditionNumberSupremumVec.le_of_bound (n m : ℕ)
+    (normIn : (Fin n → ℝ) → ℝ) (normOut : (Fin m → ℝ) → ℝ)
+    (f : (Fin n → ℝ) → (Fin m → ℝ))
+    (a : Fin n → ℝ) (κ κ' ρ : ℝ)
+    (hκ : normwiseConditionNumberSupremumVec n m normIn normOut f a κ ρ)
+    (hbound :
+      normwiseConditionNumberBoundedVec n m normIn normOut f a κ' ρ) :
+    κ ≤ κ' :=
+  hκ.2 κ' hbound
+
+/-- If an upper bound is attained at a perturbation with positive relative
+size, then it is the source-facing supremum condition number. -/
+theorem normwiseConditionNumberSupremumVec_of_attained_bound (n m : ℕ)
+    (normIn : (Fin n → ℝ) → ℝ) (normOut : (Fin m → ℝ) → ℝ)
+    (f : (Fin n → ℝ) → (Fin m → ℝ))
+    (a : Fin n → ℝ) (κ ρ : ℝ)
+    (hbound :
+      normwiseConditionNumberBoundedVec n m normIn normOut f a κ ρ)
+    (hattain :
+      normwiseConditionNumberAttainedVec n m normIn normOut f a κ ρ) :
+    normwiseConditionNumberSupremumVec n m normIn normOut f a κ ρ := by
+  refine ⟨hbound, ?_⟩
+  intro κ' hbound'
+  rcases hattain with ⟨Δa, hΔa, hrelpos, hattain_eq⟩
+  have hκ' := hbound' Δa hΔa
+  rw [hattain_eq] at hκ'
+  have hdiv :
+      κ * (normIn Δa / normIn a) / (normIn Δa / normIn a) ≤
+        κ' * (normIn Δa / normIn a) / (normIn Δa / normIn a) :=
+    div_le_div_of_nonneg_right hκ' (le_of_lt hrelpos)
+  simpa [hrelpos.ne'] using hdiv
+
 -- ============================================================
--- §1.7  Forward error from backward error + condition number
+-- §1.6  Forward error from backward error + condition number
 -- ============================================================
 
-/-- **Fundamental theorem of backward error analysis** (Higham §1.7).
+/-- **Fundamental theorem of backward error analysis** (Higham §1.6).
 
     If the computed result `xhat` has absolute backward error at most ε, i.e.,
       ∃ Δa, |Δa| ≤ ε ∧ f(a + Δa) = xhat,
@@ -179,5 +358,50 @@ lemma forward_from_backward (f df : ℝ → ℝ) (a ε xhat : ℝ)
     field_simp [hfa_pos.ne']
   rw [hc1, hc2] at hmul
   linarith
+
+/-- Normwise vector form of the Chapter 1 rule of thumb:
+
+`forward error <= condition number * backward error`.
+
+If `xhat` is exact for a normwise input perturbation `Δa` with
+`||Δa||_in <= ε`, and the problem has local normwise condition-number bound
+`κ` on the same perturbation radius, then the normwise forward error is bounded
+by `κ * (ε / ||a||_in)`. -/
+theorem normwise_forward_from_backward_vec (n m : ℕ)
+    (normIn : (Fin n → ℝ) → ℝ) (normOut : (Fin m → ℝ) → ℝ)
+    (f : (Fin n → ℝ) → (Fin m → ℝ))
+    (a : Fin n → ℝ) (xhat : Fin m → ℝ) (ε κ : ℝ)
+    (ha : 0 < normIn a)
+    (hκ : 0 ≤ κ)
+    (hback : normwiseBackwardErrorBoundedVec n m normIn f a xhat ε)
+    (hcond : normwiseConditionNumberBoundedVec n m normIn normOut f a κ ε) :
+    forwardErrorBoundedVec n m normOut f a xhat (κ * (ε / normIn a)) := by
+  unfold forwardErrorBoundedVec
+  obtain ⟨Δa, hΔa, hxhat⟩ := hback
+  rw [← hxhat]
+  have hlocal := hcond Δa hΔa
+  calc
+    normwiseRelError m normOut (f (fun i => a i + Δa i)) (f a)
+        ≤ κ * (normIn Δa / normIn a) := hlocal
+    _ ≤ κ * (ε / normIn a) := by
+        exact mul_le_mul_of_nonneg_left
+          (div_le_div_of_nonneg_right hΔa (le_of_lt ha)) hκ
+
+/-- Supremum-valued version of the normwise Chapter 1 rule of thumb.  It uses
+the source-facing least-upper-bound condition number directly, then delegates to
+the existing local bound theorem. -/
+theorem normwise_forward_from_backward_vec_of_condition_supremum (n m : ℕ)
+    (normIn : (Fin n → ℝ) → ℝ) (normOut : (Fin m → ℝ) → ℝ)
+    (f : (Fin n → ℝ) → (Fin m → ℝ))
+    (a : Fin n → ℝ) (xhat : Fin m → ℝ) (ε κ : ℝ)
+    (ha : 0 < normIn a)
+    (hκ_nonneg : 0 ≤ κ)
+    (hback : normwiseBackwardErrorBoundedVec n m normIn f a xhat ε)
+    (hκ :
+      normwiseConditionNumberSupremumVec n m normIn normOut f a κ ε) :
+    forwardErrorBoundedVec n m normOut f a xhat (κ * (ε / normIn a)) := by
+  exact
+    normwise_forward_from_backward_vec n m normIn normOut f a xhat ε κ ha
+      hκ_nonneg hback hκ.bounded
 
 end LeanFpAnalysis.FP

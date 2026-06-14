@@ -12,6 +12,7 @@ import Mathlib.Tactic.FieldSimp
 import LeanFpAnalysis.FP.Model
 import LeanFpAnalysis.FP.Analysis.Rounding
 import LeanFpAnalysis.FP.Analysis.ForwardError
+import LeanFpAnalysis.FP.Analysis.PerturbationTheory
 import LeanFpAnalysis.FP.Algorithms.TriangularSolve
 
 namespace LeanFpAnalysis.FP
@@ -28,6 +29,147 @@ def IsDiagDominantUpper (n : ℕ) (U : Fin n → Fin n → ℝ) : Prop :=
   (∀ i j : Fin n, j.val < i.val → U i j = 0) ∧
   (∀ i : Fin n, U i i ≠ 0) ∧
   (∀ i j : Fin n, i.val < j.val → |U i j| ≤ |U i i|)
+
+/-- A repository diagonally dominant upper-triangular matrix is nonsingular.
+
+The definition `IsDiagDominantUpper` includes both upper-triangular shape and
+nonzero diagonal entries, so this is just the shared triangular determinant
+lemma in the local vocabulary. -/
+theorem det_ne_zero_of_diagDominantUpper (n : ℕ)
+    (U : Fin n → Fin n → ℝ)
+    (hDD : IsDiagDominantUpper n U) :
+    Matrix.det (U : Matrix (Fin n) (Fin n) ℝ) ≠ 0 :=
+  det_ne_zero_of_upper_triangular_diag_ne_zero n U hDD.1 hDD.2.1
+
+/-- A concrete upper-triangular nonsingular-domain matrix that is not
+    diagonally dominant: `[[1, 2], [0, 1]]`. -/
+def diagDominanceCounterexample2 : Fin 2 → Fin 2 → ℝ :=
+  fun i j =>
+    if i.val = 0 ∧ j.val = 0 then 1
+    else if i.val = 0 ∧ j.val = 1 then 2
+    else if i.val = 1 ∧ j.val = 1 then 1
+    else 0
+
+theorem diagDominanceCounterexample2_upper :
+    ∀ i j : Fin 2, j.val < i.val →
+      diagDominanceCounterexample2 i j = 0 := by
+  intro i j hji
+  fin_cases i <;> fin_cases j <;>
+    simp [diagDominanceCounterexample2] at hji ⊢
+
+theorem diagDominanceCounterexample2_diag_nonzero :
+    ∀ i : Fin 2, diagDominanceCounterexample2 i i ≠ 0 := by
+  intro i
+  fin_cases i <;> norm_num [diagDominanceCounterexample2]
+
+theorem diagDominanceCounterexample2_det_ne_zero :
+    Matrix.det
+      (diagDominanceCounterexample2 : Matrix (Fin 2) (Fin 2) ℝ) ≠ 0 := by
+  norm_num [diagDominanceCounterexample2, Matrix.det_fin_two]
+
+theorem diagDominanceCounterexample2_not_diagDominant :
+    ¬ IsDiagDominantUpper 2 diagDominanceCounterexample2 := by
+  intro hDD
+  have hbad := hDD.2.2 ⟨0, by norm_num⟩ ⟨1, by norm_num⟩ (by norm_num)
+  norm_num [diagDominanceCounterexample2] at hbad
+
+/-- Route elimination for QR bottleneck work: upper-triangular shape plus
+    nonzero diagonal entries alone does not imply the repository's diagonal
+    dominance hypothesis. -/
+theorem not_forall_upper_tri_diag_nonzero_implies_diagDominant :
+    ¬ (∀ U : Fin 2 → Fin 2 → ℝ,
+      (∀ i j : Fin 2, j.val < i.val → U i j = 0) →
+      (∀ i : Fin 2, U i i ≠ 0) →
+      IsDiagDominantUpper 2 U) := by
+  intro h
+  exact diagDominanceCounterexample2_not_diagDominant
+    (h diagDominanceCounterexample2
+      diagDominanceCounterexample2_upper
+      diagDominanceCounterexample2_diag_nonzero)
+
+/-- Route elimination for QR bottleneck work: upper-triangular nonsingularity
+    alone does not imply the repository's diagonal dominance hypothesis. -/
+theorem not_forall_upper_tri_det_ne_zero_implies_diagDominant :
+    ¬ (∀ U : Matrix (Fin 2) (Fin 2) ℝ,
+      (∀ i j : Fin 2, j.val < i.val → U i j = 0) →
+      Matrix.det U ≠ 0 →
+      IsDiagDominantUpper 2 U) := by
+  intro h
+  exact diagDominanceCounterexample2_not_diagDominant
+    (h (diagDominanceCounterexample2 : Matrix (Fin 2) (Fin 2) ℝ)
+      diagDominanceCounterexample2_upper
+      diagDominanceCounterexample2_det_ne_zero)
+
+/-- Route elimination for QR bottleneck work: an explicit finite
+    `κ∞` certificate, upper-triangular shape, and nonsingularity still do not
+    imply the repository's diagonal-dominance hypothesis.
+
+    The witness is again `[[1, 2], [0, 1]]`; the condition-number budget is
+    chosen to be the matrix's own local `κ∞` value, so the obstruction is not
+    absence of a finite conditioning bound.  A positive QR route must supply a
+    genuinely stronger invariant, or keep diagonal dominance visible. -/
+theorem exists_upper_tri_det_ne_zero_kappaInf_bound_not_diagDominant :
+    ∃ (U : Matrix (Fin 2) (Fin 2) ℝ) (κ : ℝ),
+      (∀ i j : Fin 2, j.val < i.val → U i j = 0) ∧
+      Matrix.det U ≠ 0 ∧
+      kappaInf 2 (by norm_num : 0 < 2) U (nonsingInv 2 U) ≤ κ ∧
+      ¬ IsDiagDominantUpper 2 U := by
+  let U : Matrix (Fin 2) (Fin 2) ℝ := diagDominanceCounterexample2
+  let κ : ℝ := kappaInf 2 (by norm_num : 0 < 2) U (nonsingInv 2 U)
+  exact ⟨U, κ, diagDominanceCounterexample2_upper,
+    diagDominanceCounterexample2_det_ne_zero, le_rfl,
+    diagDominanceCounterexample2_not_diagDominant⟩
+
+/-- Universal-form companion to
+    `exists_upper_tri_det_ne_zero_kappaInf_bound_not_diagDominant`. -/
+theorem not_forall_upper_tri_det_ne_zero_kappaInf_bound_implies_diagDominant :
+    ¬ (∀ (U : Matrix (Fin 2) (Fin 2) ℝ) (κ : ℝ),
+      (∀ i j : Fin 2, j.val < i.val → U i j = 0) →
+      Matrix.det U ≠ 0 →
+      kappaInf 2 (by norm_num : 0 < 2) U (nonsingInv 2 U) ≤ κ →
+      IsDiagDominantUpper 2 U) := by
+  intro h
+  rcases exists_upper_tri_det_ne_zero_kappaInf_bound_not_diagDominant with
+    ⟨U, κ, hupper, hdet, hκ, hnotDD⟩
+  exact hnotDD (h U κ hupper hdet hκ)
+
+/-- Route elimination for the rectangular QR bottleneck: an exact
+    orthogonal-times-upper factorization with nonzero triangular diagonal does
+    not imply the repository's diagonal-dominance hypothesis.  The witness is
+    the same upper-triangular matrix `[[1, 2], [0, 1]]`, written as
+    `A = I * R`.  Thus a positive unpivoted QR route cannot obtain diagonal
+    dominance merely from the final exact QR shape; it needs a genuinely
+    stronger computed-loop/off-diagonal-control invariant, or it must keep
+    diagonal dominance visible as a domain hypothesis. -/
+theorem exists_orthogonal_upper_factorization_not_diagDominant :
+    ∃ (A Q R : Fin 2 → Fin 2 → ℝ),
+      IsOrthogonal 2 Q ∧
+      (∀ i j : Fin 2, j.val < i.val → R i j = 0) ∧
+      (∀ i : Fin 2, R i i ≠ 0) ∧
+      (∀ i j : Fin 2, matMul 2 Q R i j = A i j) ∧
+      ¬ IsDiagDominantUpper 2 R := by
+  refine ⟨diagDominanceCounterexample2, idMatrix 2,
+    diagDominanceCounterexample2, IsOrthogonal.id 2,
+    diagDominanceCounterexample2_upper,
+    diagDominanceCounterexample2_diag_nonzero, ?_,
+    diagDominanceCounterexample2_not_diagDominant⟩
+  intro i j
+  exact congrFun (congrFun
+    (matMul_id_left 2 diagDominanceCounterexample2) i) j
+
+/-- Universal-form companion to
+    `exists_orthogonal_upper_factorization_not_diagDominant`. -/
+theorem not_forall_orthogonal_upper_factorization_implies_diagDominant :
+    ¬ (∀ (A Q R : Fin 2 → Fin 2 → ℝ),
+      IsOrthogonal 2 Q →
+      (∀ i j : Fin 2, j.val < i.val → R i j = 0) →
+      (∀ i : Fin 2, R i i ≠ 0) →
+      (∀ i j : Fin 2, matMul 2 Q R i j = A i j) →
+      IsDiagDominantUpper 2 R) := by
+  intro h
+  rcases exists_orthogonal_upper_factorization_not_diagDominant with
+    ⟨A, Q, R, hQ, hupper, hdiag, hfactor, hnotDD⟩
+  exact hnotDD (h A Q R hQ hupper hdiag hfactor)
 
 -- ============================================================
 -- Properties of the inverse of an upper triangular matrix

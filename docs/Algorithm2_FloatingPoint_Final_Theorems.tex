@@ -1,0 +1,687 @@
+\documentclass[11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{url}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Frob}[1]{\left\lVert #1\right\rVert_F}
+\newcommand{\Norm}[1]{\left\lVert #1\right\rVert_2}
+\newcommand{\Atil}{\widetilde A}
+\newcommand{\Util}{\widetilde U}
+\newcommand{\Ahat}{\widehat A}
+\newcommand{\Ghat}{\widehat G}
+\newcommand{\I}{I}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\One}{\mathbf 1}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem*{baseline}{Exact baseline}
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+
+\title{Algorithm 2: Floating-Point Changes to Equations (5) and (7)}
+\author{}
+\date{}
+
+\begin{document}
+\sloppy
+
+\maketitle
+
+\section*{Notation and Arithmetic Model}
+
+Let \(A\in\R^{m\times n}\).  The \(i\)-th row of \(A\) is \(A_{i*}\), and
+\[
+  D(A)=\Frob{A}^2=\sum_{i=1}^m \Norm{A_{i*}}^2 .
+\]
+Assume \(D(A)>0\).  Algorithm 2 samples indices
+\[
+  I_1,\ldots,I_s\in\{1,\ldots,m\}
+\]
+independently from the exact row-norm probability law
+\[
+  p_i=\frac{\Norm{A_{i*}}^2}{D(A)}.
+\]
+The probability symbol \(\Prob[\cdot]\) is always taken with respect to this
+exact product sampling law.  This is the row-sampling law from Algorithm 2 in
+Drineas and Mahoney's RandNLA survey \cite{DrineasMahoney2016RandNLA}.
+
+The exact sampled sketch is \(\Atil\in\R^{s\times n}\), with entries
+\[
+  \Atil_{tj}=\frac{A_{I_tj}}{\sqrt{s\,p_{I_t}}}.
+\]
+The exact Gram matrix of a matrix \(B\) is \(B^TB\).  Thus the exact sampled
+Gram matrix is \(\Atil^T\Atil\), and the exact reference Gram matrix is
+\(A^TA\).
+
+The floating-point unit roundoff is \(u\ge0\).  When a Gram entry is computed
+by a length-\(s\) floating-point dot product, \(\gamma_s\) denotes the usual
+valid dot-product error factor.  The probabilities \(p_i\) and the sampling law
+are exact by convention, but the non-probability denominator
+\[
+  d_i=\sqrt{s\,p_i}
+\]
+is computed.  The concrete denominator routine formalized here is
+\[
+  \widehat d_i=\operatorname{flsqrt}(\operatorname{flmul}(s,p_i)).
+\]
+It satisfies, for every positive-probability row,
+\[
+  |\widehat d_i-d_i|
+  \le
+  d_i\,\alpha(u),
+  \qquad
+  \alpha(u)=\sqrt{1+u}\,u+u,
+  \qquad
+  \widehat d_i\ne0.
+\]
+Define the support relative denominator budget and the resulting effective
+row-scaling relative error by
+\[
+  \rho_A
+  =
+  \sum_{i:\,p_i>0}
+    \frac{d_i\,\alpha(u)}{|\widehat d_i|},
+  \qquad
+  \eta_A
+  =
+  u+(1+u)\rho_A .
+\]
+The deterministic perturbation budgets used below are
+\[
+  \tau_{\rm scale}^{\rm comp}(A)
+  =
+  n(2\eta_A+\eta_A^2)D(A),
+\]
+\[
+  \tau_{\rm dot}^{\rm comp}(A;s)
+  =
+  n\gamma_s(1+\eta_A)^2D(A),
+\]
+and
+\[
+  \tau_{\rm full}^{\rm comp}(A;s)
+  =
+  \tau_{\rm scale}^{\rm comp}(A)+\tau_{\rm dot}^{\rm comp}(A;s).
+\]
+For comparison, if \(d_i\) is supplied exactly, then \(\rho_A=0\),
+\(\eta_A=u\), and these reduce to the older exact-denominator budgets.
+
+\section*{What Is Exact and What Is Computed}
+
+\begin{itemize}
+  \item Exact arithmetic inputs: the matrix \(A\), the probabilities \(p_i\),
+  the random samples \(I_t\), the exact sketch \(\Atil\), and the exact
+  reference Gram matrix \(A^TA\).
+  \item Computed denominator table: \(\widehat d_i\) is computed by
+  \(\operatorname{flsqrt}(\operatorname{flmul}(s,p_i))\).  This is a
+  floating-point non-probability quantity and its error contributes through
+  \(\rho_A\) and \(\eta_A\).
+  \item Floating-point row-scaling output:
+  \(\Ahat_{\rm comp}\in\R^{s\times n}\) denotes the sketch whose entries are
+  produced as \(\operatorname{fldiv}(A_{I_tj},\widehat d_{I_t})\).
+  \item Exact arithmetic after a floating-point sketch: the matrix
+  \(\Ahat_{\rm comp}^T\Ahat_{\rm comp}\) is the exact mathematical Gram matrix
+  of the already rounded sketch.  No dot-product kernel is charged in this
+  model.
+  \item Floating-point computed Gram output: \(\Ghat_{\rm dot}(A)\) denotes the
+  Gram matrix whose entries are computed by floating-point dot products applied
+  to the computed-denominator rounded sketch \(\Ahat_{\rm comp}\).  This model
+  charges denominator computation, rounded row scaling, and dot products through
+  \(\tau_{\rm full}^{\rm comp}(A;s)\).
+  \item Equation (7) exact analysis basis: the matrix \(U\) is the exact
+  orthonormal-column basis used to define the leverage probabilities, the exact
+  sampling law, and the reference matrix \(\I_n\).
+  \item Equation (7) computed basis table: the final stored-basis theorem below
+  uses a rounded table \(\widehat U^{(\mu)}\) in the sampled sketch and charges
+  its entrywise storage error, the computed denominator table, rounded row
+  divisions, and rounded Gram dot products.  The three closed storage modes are
+  \(\mu\in\{\mathrm{mul1},\mathrm{add0},\mathrm{sub0}\}\).
+  \item Equation (7) actual-input endpoint: when an exact analysis
+  factorization \(A=UC\) is supplied with \(U^TU=I\), the theorem below samples
+  rows of the actual input \(A\) using the exact leverage law defined by \(U\).
+  The computed non-probability quantities are the concrete denominator table,
+  the rounded row divisions on entries of \(A\), and the rounded Gram dot
+  products.  The factors \(U\) and \(C\) are exact analysis/probability
+  witnesses in that theorem, not computed algorithm outputs.
+  \item Equation (7) basis generation from a data matrix: the theorem below
+  does not claim that a QR, SVD, or rank-revealing routine has computed \(U\)
+  from a matrix \(A\).  Such a routine must provide its own computed-basis
+  theorem before it can be composed with this stored-basis endpoint.
+\end{itemize}
+
+\section*{Equation (5)}
+
+\begin{baseline}[Equation (5), exact arithmetic]
+This is equation (5) in the RandNLA survey
+\cite{DrineasMahoney2016RandNLA}.
+For \(s>0\) and \(\eps>0\),
+\[
+  \Prob\!\left[
+    \Frob{\Atil^T\Atil-A^TA}
+    \le \eps D(A)
+  \right]
+  \ge
+  1-\frac{1}{s\eps^2}.
+\]
+\end{baseline}
+
+\begin{theorem}[Equation (5), computed denominators and rounded row scaling]
+For \(s>0\) and \(\eps>0\),
+\[
+  \Prob\!\left[
+    \Frob{\Ahat_{\rm comp}^T\Ahat_{\rm comp}-A^TA}
+    \le
+    \eps D(A)+\tau_{\rm scale}^{\rm comp}(A)
+  \right]
+  \ge
+  1-\frac{1}{s\eps^2}.
+\]
+Thus the exact equation (5) sampling probability is unchanged, while the
+threshold is enlarged by the proved deterministic denominator-plus-division
+budget.
+\end{theorem}
+
+\begin{theorem}[Equation (5), fully computed denominators and Gram]
+Assume the length-\(s\) dot-product factor \(\gamma_s\) is valid.  For \(s>0\)
+and \(\eps>0\),
+\[
+  \Prob\!\left[
+    \Frob{\Ghat_{\rm dot}(A)-A^TA}
+    \le
+    \eps D(A)+\tau_{\rm full}^{\rm comp}(A;s)
+  \right]
+  \ge
+  1-\frac{1}{s\eps^2}.
+\]
+The additive floating-point part has order
+\[
+  \tau_{\rm full}^{\rm comp}(A;s)
+  =
+  \Theta\!\left(
+    nD(A)\bigl(\eta_A+\eta_A^2+\gamma_s(1+\eta_A)^2\bigr)
+  \right).
+\]
+In the small-roundoff regime where \(\eta_A\to0\) and \(\gamma_s\to0\),
+\[
+  \tau_{\rm full}^{\rm comp}(A;s)
+  =
+  \Theta\!\left(nD(A)(\eta_A+\gamma_s)\right).
+\]
+For the concrete denominator routine above, \(\alpha(u)=\Theta(u)\), and
+\(\eta_A\) is determined by \(u\), the exact probabilities, and the computed
+denominators \(\widehat d_i\).  For fixed \(A,m,n,s\) and nonzero computed
+positive-probability denominators, the additive FP budget tends to zero as
+\(u,\gamma_s\to0\), so the result is non-vacuous.
+\end{theorem}
+
+\section*{Equation (7)}
+
+Now let \(U\in\R^{m\times n}\) have orthonormal columns:
+\[
+  U^TU=\I_n.
+\]
+Assume \(n>1\).  Algorithm 2 samples rows from the exact leverage-score law
+\[
+  p_i^U=\frac{\Norm{U_{i*}}^2}{n}.
+\]
+Let \(\Util\in\R^{s\times n}\) be the exact leverage-sampled sketch.  For
+symmetric matrices \(X,Y\in\R^{n\times n}\), write \(X\preceq Y\) when
+\[
+  x^T X x\le x^T Y x
+  \qquad\hbox{for every }x\in\R^n.
+\]
+
+\begin{baseline}[Equation (7), exact Bennett form]
+This is the leverage-score subspace-embedding bound corresponding to equation
+(7) in the RandNLA survey \cite{DrineasMahoney2016RandNLA}.  The underlying
+leverage-sampling theorem appears, for example, in
+Drineas--Mahoney--Muthukrishnan--Sarlos \cite{DrineasMahoneyMuthukrishnanSarlos2011}
+and is stated here through the rank-one covariance concentration route of
+Oliveira \cite{Oliveira2010} and Tropp-style matrix concentration
+\cite{Tropp2012}.
+Assume \(s>0\), \(\eps>0\), \(\delta>0\), and
+\[
+  \log\frac{2n}{\delta}
+  \le
+  s\,\frac{\eps^2}{2(n-1)+(2/3)n\eps},
+  \qquad
+  \log\frac{2n}{\delta}
+  \le
+  s\,\frac{\eps^2}{2(n-1)+(2/3)\eps}.
+\]
+Then
+\[
+  \Prob\!\left[
+    \Util^T\Util-\I_n\preceq \eps\I_n
+    \ \hbox{and}\
+    \I_n-\Util^T\Util\preceq \eps\I_n
+  \right]\ge 1-\delta .
+\]
+\end{baseline}
+
+\begin{theorem}[Equation (7), computed-denominator floating-point Bennett form]
+Assume the hypotheses and sample-budget inequalities in the exact Bennett
+baseline, and assume the length-\(s\) dot-product factor \(\gamma_s\) is valid.
+Let \(\Ghat_{\rm dot}(U)\) be the floating-point computed Gram matrix formed
+from the leverage-sampled sketch using the concrete computed denominator
+\(\widehat d_i^U=\operatorname{flsqrt}(\operatorname{flmul}(s,p_i^U))\),
+rounded row scaling, and rounded length-\(s\) Gram dot products.  Then
+\[
+  \Prob\!\left[
+    \Ghat_{\rm dot}(U)-\I_n
+      \preceq
+      \bigl(\eps+\tau_{\rm full}^{\rm comp}(U;s)\bigr)\I_n
+    \ \hbox{and}\
+    \I_n-\Ghat_{\rm dot}(U)
+      \preceq
+      \bigl(\eps+\tau_{\rm full}^{\rm comp}(U;s)\bigr)\I_n
+  \right]\ge 1-\delta .
+\]
+Since \(U^TU=\I_n\), \(D(U)=\Frob{U}^2=n\), and therefore
+\[
+  \tau_{\rm full}^{\rm comp}(U;s)
+  =
+  n^2\bigl(2\eta_U+\eta_U^2+\gamma_s(1+\eta_U)^2\bigr).
+\]
+Its small-roundoff order is
+\[
+  \tau_{\rm full}^{\rm comp}(U;s)
+  =
+  \Theta\!\left(n^2(\eta_U+\gamma_s)\right),
+  \qquad
+  \eta_U=u+(1+u)
+  \sum_{i:\,p_i^U>0}
+    \frac{\sqrt{s p_i^U}\,\alpha(u)}
+         {|\operatorname{flsqrt}(\operatorname{flmul}(s,p_i^U))|}.
+\]
+\end{theorem}
+
+\subsection*{Actual Input Matrix for Equation (7)}
+
+This subsection states the end-to-end row-sampling conclusion for the actual
+matrix whose leverage scores are analyzed.  To avoid overloading dimensions,
+let \(U\in\R^{m\times r}\) have orthonormal columns, let
+\(C\in\R^{r\times q}\), and define
+\[
+  A=UC\in\R^{m\times q}.
+\]
+The exact leverage probabilities are
+\[
+  p_i^U=\frac{\Norm{U_{i*}}^2}{r}.
+\]
+The factors \(U\) and \(C\) are exact analysis/probability witnesses here:
+the theorem does not assert that a QR, SVD, or rank-revealing routine has
+computed them.  The implemented sampled sketch uses rows of \(A\), not rows of
+\(U\).  Its exact row \(t\) is
+\[
+  \widetilde A_{U,t*}
+  =
+  \frac{A_{I_t*}}{\sqrt{s p_{I_t}^U}},
+  \qquad I_t\sim p^U .
+\]
+Assume \(r>1\), \(s>0\), \(\eps>0\), \(\delta>0\), and
+\[
+  \log\frac{2r}{\delta}
+  \le
+  s\,\frac{\eps^2}{2(r-1)+(2/3)r\eps},
+  \qquad
+  \log\frac{2r}{\delta}
+  \le
+  s\,\frac{\eps^2}{2(r-1)+(2/3)\eps}.
+\]
+Then exact arithmetic gives the relative Gram statement
+\[
+  \Prob\!\left[
+    \widetilde A_U^T\widetilde A_U-A^TA
+      \preceq \eps A^TA
+    \ \hbox{and}\
+    A^TA-\widetilde A_U^T\widetilde A_U
+      \preceq \eps A^TA
+  \right]\ge 1-\delta .
+\]
+
+For floating-point arithmetic, the concrete leverage denominator is
+\[
+  \widehat d_i^U
+  =
+  \operatorname{flsqrt}(\operatorname{flmul}(s,p_i^U)),
+\]
+and the effective row-scaling relative error is
+\[
+  \eta_U^A
+  =
+  u+(1+u)
+  \sum_{i:\,p_i^U>0}
+  \frac{\sqrt{s p_i^U}\,(\sqrt{1+u}\,u+u)}
+       {|\operatorname{flsqrt}(\operatorname{flmul}(s,p_i^U))|}.
+\]
+For each actual-input column \(j\), define
+\[
+  L_j^A
+  =
+  \sum_{i:\,p_i^U>0}\frac{|A_{ij}|}{\sqrt{p_i^U}}.
+\]
+The fully computed actual-input radius is
+\[
+  T_A^{\rm fp}
+  =
+  \left(
+    \gamma_s(1+\eta_U^A)^2+2\eta_U^A+(\eta_U^A)^2
+  \right)
+  \sum_{j=1}^q (L_j^A)^2 .
+\]
+With all local shorthand expanded, this is
+\[
+\begin{aligned}
+T_A^{\rm fp}
+&=
+\Biggl[
+\gamma_s
+\left(
+1+u+(1+u)
+  \sum_{i:\,\Norm{U_{i*}}^2/r>0}
+  \frac{\sqrt{s\,\Norm{U_{i*}}^2/r}\,(\sqrt{1+u}\,u+u)}
+       {|\operatorname{flsqrt}(\operatorname{flmul}(s,\Norm{U_{i*}}^2/r))|}
+\right)^2 \\
+&\qquad
++2\left(
+u+(1+u)
+  \sum_{i:\,\Norm{U_{i*}}^2/r>0}
+  \frac{\sqrt{s\,\Norm{U_{i*}}^2/r}\,(\sqrt{1+u}\,u+u)}
+       {|\operatorname{flsqrt}(\operatorname{flmul}(s,\Norm{U_{i*}}^2/r))|}
+\right) \\
+&\qquad
++\left(
+u+(1+u)
+  \sum_{i:\,\Norm{U_{i*}}^2/r>0}
+  \frac{\sqrt{s\,\Norm{U_{i*}}^2/r}\,(\sqrt{1+u}\,u+u)}
+       {|\operatorname{flsqrt}(\operatorname{flmul}(s,\Norm{U_{i*}}^2/r))|}
+\right)^2
+\Biggr] \\
+&\qquad\qquad\cdot
+\sum_{j=1}^q
+\left(
+  \sum_{i:\,\Norm{U_{i*}}^2/r>0}
+  \frac{\left|\sum_{\ell=1}^r U_{i\ell}C_{\ell j}\right|}
+       {\sqrt{\Norm{U_{i*}}^2/r}}
+\right)^2 .
+\end{aligned}
+\]
+
+\begin{theorem}[Equation (7), actual input matrix and computed Gram]
+Under the hypotheses above, assume the length-\(s\) dot-product factor
+\(\gamma_s\) is valid.  Let \(\Ghat_{\rm dot}(A;U)\) be the floating-point
+Gram computed by sampling exact rows of \(A=UC\) from the exact leverage law
+defined by \(U\), computing
+\(\widehat d_i^U=\operatorname{flsqrt}(\operatorname{flmul}(s,p_i^U))\),
+rounding the sampled-row divisions, and computing the Gram entries by
+floating-point dot products.  Then
+\[
+  \Prob\!\left[
+    \Ghat_{\rm dot}(A;U)-A^TA
+      \preceq
+      \eps A^TA+T_A^{\rm fp}\I_q
+    \ \hbox{and}\
+    A^TA-\Ghat_{\rm dot}(A;U)
+      \preceq
+      \eps A^TA+T_A^{\rm fp}\I_q
+  \right]\ge 1-\delta .
+\]
+\end{theorem}
+
+\begin{remark}
+Let \(k_U=|\{i:p_i^U>0\}|\).  In the fixed-problem small-roundoff regime where
+\(U,C,m,r,q,s\) are fixed, positive-probability computed denominators remain
+nonzero and converge to their exact values, and \(u,\gamma_s\to0\),
+\[
+  \eta_U^A=\Theta(u(1+k_U)).
+\]
+Consequently
+\[
+  T_A^{\rm fp}
+  =
+  \Theta\!\left(
+    \bigl(\gamma_s+\eta_U^A\bigr)
+    \sum_{j=1}^q (L_j^A)^2
+  \right)
+  =
+  \Theta\!\left(
+    \left(\gamma_s+u(1+k_U)\right)
+    \sum_{j=1}^q
+    \left(
+      \sum_{i:\,p_i^U>0}
+      \frac{|A_{ij}|}{\sqrt{p_i^U}}
+    \right)^2
+  \right).
+\]
+The radius tends to zero in this regime, so the computed actual-input theorem
+is non-vacuous.  If a concrete implementation first computes \(U\) or \(C\),
+that QR/SVD/rank-revealing routine must be certified separately before this
+exact-analysis-witness theorem is claimed for that generation path.
+\end{remark}
+
+\subsection*{Stored Basis Table for Equation (7)}
+
+The basis-sampled computed-denominator theorem above charges the computed
+denominator, row divisions, and dot products while using the exact entries of
+\(U\) in the sampled sketch.  The next result is the implementation-facing
+stored-basis endpoint for the modeled rounded-copy paths.  The exact basis
+\(U\) still defines the probability law and the reference identity matrix, but
+the computed sketch uses a stored table.
+
+Let
+\[
+  \mathcal M=\{\mathrm{mul1},\mathrm{add0},\mathrm{sub0}\}.
+\]
+For \(\mu\in\mathcal M\), define the stored basis table by
+\[
+  \widehat U^{(\mathrm{mul1})}_{ij}
+    =\operatorname{flmul}(U_{ij},1),
+  \qquad
+  \widehat U^{(\mathrm{add0})}_{ij}
+    =\operatorname{fladd}(U_{ij},0),
+  \qquad
+  \widehat U^{(\mathrm{sub0})}_{ij}
+    =\operatorname{flsub}(U_{ij},0).
+\]
+For each of these three storage modes,
+\[
+  |\widehat U^{(\mu)}_{ij}-U_{ij}|\le u|U_{ij}|.
+\]
+The leverage denominator is still computed by
+\[
+  d_i^U=\sqrt{s\,p_i^U},
+  \qquad
+  \widehat d_i^U
+  =
+  \operatorname{flsqrt}(\operatorname{flmul}(s,p_i^U)).
+\]
+On positive-probability rows, the concrete denominator routine proves
+\[
+  |\widehat d_i^U-d_i^U|\le d_i^U\,\alpha(u),
+  \qquad
+  \widehat d_i^U\ne0.
+\]
+Define the denominator relative budget
+\[
+  \rho_U
+  =
+  \sum_{i:\,p_i^U>0}
+  \frac{\sqrt{s p_i^U}\,(\sqrt{1+u}\,u+u)}
+       {|\operatorname{flsqrt}(\operatorname{flmul}(s,p_i^U))|}.
+\]
+The total relative sampled-entry budget from denominator formation, rounded
+division, and one rounded-copy storage of the basis table is
+\[
+  \lambda_U
+  =
+  2u+u^2+(1+u)^2\rho_U .
+\]
+For each column \(j\), define the exact positive-support column magnitude
+\[
+  B_j^U
+  =
+  \sum_{i:\,p_i^U>0}\frac{|U_{ij}|}{\sqrt{p_i^U}}.
+\]
+The stored-basis sampled-Gram perturbation radius is
+\[
+  T_U^{\rm fp}
+  =
+  \left(
+    \gamma_s(1+\lambda_U)^2+2\lambda_U+\lambda_U^2
+  \right)
+  \sum_{j=1}^n (B_j^U)^2 .
+\]
+Equivalently, with every shorthand replaced,
+\[
+\begin{aligned}
+T_U^{\rm fp}
+&=
+\Biggl[
+\gamma_s
+\left(
+  1+
+  2u+u^2
+  +(1+u)^2
+  \sum_{i:\,p_i^U>0}
+  \frac{\sqrt{s p_i^U}\,(\sqrt{1+u}\,u+u)}
+       {|\operatorname{flsqrt}(\operatorname{flmul}(s,p_i^U))|}
+\right)^2 \\
+&\qquad
++2\left(
+  2u+u^2
+  +(1+u)^2
+  \sum_{i:\,p_i^U>0}
+  \frac{\sqrt{s p_i^U}\,(\sqrt{1+u}\,u+u)}
+       {|\operatorname{flsqrt}(\operatorname{flmul}(s,p_i^U))|}
+\right) \\
+&\qquad
++\left(
+  2u+u^2
+  +(1+u)^2
+  \sum_{i:\,p_i^U>0}
+  \frac{\sqrt{s p_i^U}\,(\sqrt{1+u}\,u+u)}
+       {|\operatorname{flsqrt}(\operatorname{flmul}(s,p_i^U))|}
+\right)^2
+\Biggr]
+\sum_{j=1}^n
+\left(
+  \sum_{i:\,p_i^U>0}\frac{|U_{ij}|}{\sqrt{p_i^U}}
+\right)^2 .
+\end{aligned}
+\]
+
+\begin{theorem}[Equation (7), stored basis table and computed Gram]
+Assume the hypotheses and sample-budget inequalities in the exact Bennett
+baseline, and assume the length-\(s\) dot-product factor \(\gamma_s\) is valid.
+Fix any storage mode \(\mu\in\mathcal M\).  Let
+\(\Ghat_{\rm dot}^{(\mu)}(U)\) be the matrix whose entries are computed from
+the exact leverage samples by using the stored table
+\(\widehat U^{(\mu)}\), the concrete denominator table
+\(\widehat d_i^U=\operatorname{flsqrt}(\operatorname{flmul}(s,p_i^U))\),
+rounded row divisions, and rounded length-\(s\) Gram dot products.  Then
+\[
+  \Prob\!\left[
+    \Ghat_{\rm dot}^{(\mu)}(U)-\I_n
+      \preceq
+      \bigl(\eps+T_U^{\rm fp}\bigr)\I_n
+    \ \hbox{and}\
+    \I_n-\Ghat_{\rm dot}^{(\mu)}(U)
+      \preceq
+      \bigl(\eps+T_U^{\rm fp}\bigr)\I_n
+  \right]\ge 1-\delta .
+\]
+This is a final theorem for the three modeled stored-table paths
+\(\operatorname{flmul}(U_{ij},1)\), \(\operatorname{fladd}(U_{ij},0)\), and
+\(\operatorname{flsub}(U_{ij},0)\).  It is not a theorem about computing \(U\)
+from a data matrix by QR, SVD, or another basis-generation routine.
+\end{theorem}
+
+\begin{remark}
+In the small-roundoff regime with fixed \(U,m,n,s\), nonzero computed
+positive-probability denominators, and
+\(\widehat d_i^U/d_i^U\to1\), the denominator sum satisfies
+\[
+  \rho_U=\Theta\!\left(u\,|\{i:p_i^U>0\}|\right),
+  \qquad
+  \lambda_U=\Theta\!\left(u(1+|\{i:p_i^U>0\}|)\right).
+\]
+Thus the stored-basis radius has the compact order
+\[
+  T_U^{\rm fp}
+  =
+  \Theta\!\left(
+    \bigl(\gamma_s+\lambda_U\bigr)
+    \sum_{j=1}^n (B_j^U)^2
+  \right),
+\]
+or, with the column magnitude expanded,
+\[
+  T_U^{\rm fp}
+  =
+  \Theta\!\left(
+    \left(\gamma_s+u(1+|\{i:p_i^U>0\}|)\right)
+    \sum_{j=1}^n
+    \left(
+      \sum_{i:\,p_i^U>0}\frac{|U_{ij}|}{\sqrt{p_i^U}}
+    \right)^2
+  \right).
+\]
+Since \(U^TU=I_n\) and \(n>1\), the displayed column factor is finite and
+positive.  Therefore \(T_U^{\rm fp}\to0\) as \(u,\gamma_s\to0\) in this fixed
+problem regime, so the stored-basis theorem is non-vacuous.
+\end{remark}
+
+\begin{remark}
+The older vector-action consequence has probability
+\[
+  1-\frac{1}{s(\eps/n)^2}
+\]
+and the exact-denominator threshold
+obtained by setting \(\rho_U=0\) and \(\eta_U=u\).  The Bennett
+finite-Loewner results above are the current Algorithm 2 theorem surfaces for
+the concrete computed-denominator path and for the three modeled stored-basis
+paths.
+\end{remark}
+
+\section*{References}
+
+\begin{thebibliography}{9}
+
+\bibitem{DrineasMahoney2016RandNLA}
+Petros Drineas and Michael W. Mahoney.
+\newblock RandNLA: randomized numerical linear algebra.
+\newblock \emph{Communications of the ACM}, 59(6):80--90, 2016.
+\newblock \url{https://doi.org/10.1145/2842602}.
+
+\bibitem{DrineasMahoneyMuthukrishnanSarlos2011}
+Petros Drineas, Michael W. Mahoney, S. Muthukrishnan, and Tamas Sarlos.
+\newblock Faster least squares approximation.
+\newblock \emph{Numerische Mathematik}, 117:219--249, 2011.
+
+\bibitem{Oliveira2010}
+Roberto I. Oliveira.
+\newblock Sums of random Hermitian matrices and an inequality by Rudelson.
+\newblock arXiv:1004.3821, 2010.
+\newblock \url{https://arxiv.org/abs/1004.3821}.
+
+\bibitem{Tropp2012}
+Joel A. Tropp.
+\newblock User-friendly tail bounds for sums of random matrices.
+\newblock \emph{Foundations of Computational Mathematics}, 12:389--434, 2012.
+\newblock \url{https://doi.org/10.1007/s10208-011-9099-z}.
+
+\bibitem{Higham2002}
+Nicholas J. Higham.
+\newblock \emph{Accuracy and Stability of Numerical Algorithms}.
+\newblock Second edition, SIAM, 2002.
+\newblock Standard source for the floating-point dot-product and
+roundoff-error model used to state the deterministic perturbation budgets.
+
+\end{thebibliography}
+
+\end{document}

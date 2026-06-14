@@ -1,0 +1,6005 @@
+\documentclass[11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{url}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Exp}{\mathbb{E}}
+\newcommand{\Frob}[1]{\left\lVert #1\right\rVert_F}
+\newcommand{\Norm}[1]{\left\lVert #1\right\rVert_2}
+\newcommand{\NormOne}[1]{\left\lVert #1\right\rVert_1}
+\newcommand{\EntryOne}[1]{\left\lVert #1\right\rVert_{1,1}}
+\newcommand{\fl}{\operatorname{fl}}
+\newcommand{\I}{I}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\diag}{\operatorname{diag}}
+\newcommand{\tr}{\operatorname{tr}}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem*{baseline}{Exact baseline}
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+
+\title{Algorithm 3: Floating-Point Theorem Surfaces for SRHT and CountSketch Preconditioning}
+\author{}
+\date{}
+
+\begin{document}
+\sloppy
+
+\maketitle
+
+\section*{Scope}
+
+Algorithm 3 in the RandNLA survey applies random projection or
+preconditioning matrices to an input matrix \(A\):
+\[
+  \Pi_L A,\qquad A\Pi_R,\qquad \Pi_L A\Pi_R .
+\]
+The survey states this step for several random projection families
+\cite{DrineasMahoney2016RandNLA}.  This note records the final theorem
+surfaces for the closed signed-Hadamard/SRHT branch, the collision-free
+CountSketch actual-input branch, and the current implementation-facing
+CountSketch product-grid sparse-Gram branch.  The SRHT part includes
+deterministic orthogonal-preconditioning identities, exact SRHT row-norm
+uniformization, uniform row sampling after preconditioning, and the
+floating-point transfer terms.  The CountSketch part covers concrete
+collision-free and finite-cover Markov/Frobenius routes with sparse-apply and
+sparse-Gram floating-point arithmetic.  These CountSketch routes are not the
+optimal input-sparsity subspace embedding theorem of Clarkson--Woodruff
+\cite{ClarksonWoodruff2013}.
+Gaussian and FJLT transforms are not included here.
+
+\section*{Notation}
+
+Let \(m,n,s\) be positive integers, and let \(U\in\R^{m\times n}\) have
+orthonormal columns:
+\[
+  U^T U=\I_n .
+\]
+For a matrix \(V\in\R^{m\times n}\), write \(V_{i*}\) for row \(i\).  If
+\(V^TV=\I_n\), define its leverage probability
+\[
+  \ell_i(V)=\frac{\Norm{V_{i*}}^2}{n}.
+\]
+
+Let \(H\in\R^{m\times m}\) be an exact orthogonal matrix whose entries are
+flat:
+\[
+  H^T H=\I_m,\qquad H_{ik}^2=\frac1m\quad\text{for all }i,k.
+\]
+Let \(\omega=(\omega_1,\ldots,\omega_m)\) be an exact Rademacher sign vector,
+meaning that the \(2^m\) sign vectors in \(\{\pm1\}^m\) are equally likely.
+Set
+\[
+  D_\omega=\diag(\omega_1,\ldots,\omega_m),\qquad
+  V_\omega=H D_\omega U .
+\]
+The random signs are the only randomness in \(V_\omega\).
+
+After preconditioning, draw exact iid uniform row indices
+\[
+  J_1,\ldots,J_s\in\{1,\ldots,m\},
+  \qquad
+  \Prob[J_t=i]=\frac1m .
+\]
+The exact uniform-row sketch of \(V_\omega\) is
+\[
+  \widetilde V_{\omega,J,tj}
+  =
+  \frac{(V_\omega)_{J_tj}}{\sqrt{s/m}} ,
+\]
+and its exact sampled Gram matrix is
+\[
+  G_s(V_\omega)
+  =
+  \widetilde V_{\omega,J}^{\,T}\widetilde V_{\omega,J}
+  =
+  \frac1s\sum_{t=1}^s m\,
+  (V_\omega)_{J_t*}^{\,T}(V_\omega)_{J_t*}.
+\]
+The probability symbol \(\Prob[\cdot]\) is always taken with respect to the
+exact product law of \(\omega\) and \(J=(J_1,\ldots,J_s)\), unless a theorem
+explicitly restricts it to the sign law or the row-sampling law.
+
+For symmetric matrices \(X,Y\in\R^{n\times n}\), write \(X\preceq Y\) when
+\[
+  x^T X x\le x^T Y x
+  \qquad\text{for every }x\in\R^n .
+\]
+
+Let \(u\ge0\) be the floating-point unit roundoff.  When a length-\(r\)
+floating-point dot product or matrix product is charged, \(\gamma_r\) denotes
+the valid accumulated roundoff factor for that length, in the usual Higham
+model \cite{Higham2002}.  For a deterministic row-norm cap \(R\ge0\), define
+the uniform-row floating-point budgets
+\[
+  \tau_{\rm scale}(R)
+  =
+  n(2u+u^2)mR,
+\]
+\[
+  \tau_{\rm dot}(R;s)
+  =
+  n\,\gamma_s(1+u)^2mR,
+\]
+and
+\[
+  \tau_{\rm unif}(R;s)
+  =
+  \tau_{\rm scale}(R)+\tau_{\rm dot}(R;s).
+\]
+Here \(\tau_{\rm scale}\) charges rounded uniform row scaling and
+\(\tau_{\rm dot}\) charges the final rounded Gram dot products.
+
+For \(\theta>0\), \(L>0\), and \(\eps>0\), define
+\[
+  \beta_+(\theta,L)
+  =
+  \frac{\exp(\theta L)-\theta L-1}{L^2},
+  \qquad
+  \beta_-(\theta)
+  =
+  \exp(\theta)-\theta-1,
+\]
+and the exact uniform-row tail budget
+\[
+\begin{aligned}
+  \Phi(\theta,L,\eps,s,n)
+  &:=
+  e^{-\theta s\eps}\,n\,
+    e^{s\beta_+(\theta,L)(L^2+1)}
+  \\
+  &\quad+
+  e^{-\theta s\eps}\,n\,
+    e^{s\beta_-(\theta)(L^2+1)} .
+\end{aligned}
+\]
+The parameter \(\eps\) is the exact user-chosen subspace-embedding distortion
+tolerance.  It is not computed by Algorithm 3 and therefore carries no
+floating-point error term.  Once \(\eps\) is chosen, the sample size \(s\) and
+Chernoff parameter \(\theta\) must make the exact sampling budget
+\(\Phi(\theta,L,\eps,s,n)\) small enough.  A standard constant-distortion
+instantiation is \(\eps=1/2\); keeping \(\eps\) symbolic gives the usual
+accuracy-versus-sample-size tradeoff.
+For a dimension parameter \(q\), row-bound parameter \(L\), distortion
+tolerance \(\eps\), and sampling failure budget \(\delta\), define the exact
+sample-count rule
+\[
+  s_{\min}(L,\eps,\delta;q)
+  =
+  \min\left\{
+    k\in\mathbb N_{>0}:
+    \exists\,\theta>0\text{ such that }
+    \Phi(\theta,L,\eps,k,q)\le\delta
+  \right\}.
+\]
+Thus \(s\) is an exact integer design parameter: the algorithm draws exactly
+\(s\) iid uniform row indices after this value has been chosen.  The choice of
+\(s\) is not a floating-point computation in the theorem.  The usual
+matrix-Chernoff scaling \cite{Tropp2012} gives the sufficient order
+\[
+  s_{\min}(L,\eps,\delta;q)
+  =
+  O\!\left(\frac{L}{\eps^2}\log\frac{q}{\delta}\right),
+\]
+with absolute constants in the standard \(0<\eps<1\) regime.
+For the source-sharp SRHT row-norm radius, define
+\[
+  S(t)=\sqrt{\frac nm}+t,\qquad
+  R(t)=S(t)^2,\qquad
+  L(t)=mR(t),\qquad
+  \tau_{\rm SRHT}(t)=\tau_{\rm unif}(R(t);s).
+\]
+
+\section*{What Is Exact and What Is Computed}
+
+\begin{itemize}
+  \item Exact arithmetic objects: the input matrix \(A\) as handed to
+  Algorithm 3, any analysis-only orthonormal basis \(U\) for a column space,
+  \(H\), \(D_\omega\), \(V_\omega\), the Rademacher sign law, the uniform row
+  law, the exact sketch \(\widetilde V_{\omega,J}\), and exact Gram matrices
+  such as \(G_s(V_\omega)\).  These are the mathematical reference objects in
+  the probability bounds.
+  \item Exact integer and Boolean objects: a Sylvester/Walsh sign pattern
+  generated from bit parities is an exact deterministic sign table.  Its
+  entries are \(\pm1\) exactly.  The scale factor \(\sqrt{1/m}\), if computed
+  in floating point, is not part of that exact integer/Boolean generation.
+  The sample count \(s\) is an exact positive integer chosen from the
+  sampling-budget rule \(s_{\min}\); the theorem does not model floating-point
+  error in choosing this integer.
+  \item Floating-point objects after an exact \(V_\omega\) is supplied:
+  the uniform denominator \(\sqrt{s/m}\) may be replaced by a computed
+  \(\widehat d\), the sampled rows may be scaled by rounded division, and the
+  final Gram entries may be computed by rounded dot products.  These operations
+  are charged by denominator and \(\tau_{\rm unif}\) budgets.
+  \item Floating-point objects used to form \(V_\omega\): an implementation may
+  store or generate \(\widehat H\), store realized signs
+  \(\widehat\omega\), form \(\widehat P_\omega\approx HD_\omega\), use a
+  computed input basis \(\widehat U\), and form
+  \(\widehat V_\omega=\fl(\widehat P_\omega\widehat U)\).  These quantities
+  are computable in floating point only after explicit entrywise or normwise
+  certificates are supplied.
+  \item Floating-point objects used on the actual input matrix \(A\): the
+  materialized SRHT preconditioner \(\widehat P_\omega\), the product
+  \(\widehat Y_\omega=\fl(\widehat P_\omega A)\), rounded uniform-row scaling,
+  and the rounded sampled Gram matrix are computed.  The exact comparison
+  objects are \(Y_\omega=P_\omega A\), the exact scaled sample from
+  \(Y_\omega\), and \(A^TA\).
+  \item A QR, SVD, singular-vector, or basis routine that produces
+  \(\widehat U\) is not part of the SRHT probability theorem.  Its error enters
+  through a separate matrix certificate for \(\widehat U-U\).  Without that
+  certificate, the theorem remains an exact-\(U\) statement.
+\end{itemize}
+
+\section*{Deterministic Orthogonal Preconditioning}
+
+\begin{theorem}[Exact Frobenius stability]
+Let \(A\in\R^{m\times n}\).  If
+\(\Pi_L\in\R^{m\times m}\) and \(\Pi_R\in\R^{n\times n}\) are exact
+orthogonal matrices, then
+\[
+  \Frob{\Pi_LA}=\Frob{A},\qquad
+  \Frob{A\Pi_R}=\Frob{A},\qquad
+  \Frob{\Pi_LA\Pi_R}=\Frob{A}.
+\]
+\end{theorem}
+
+\begin{theorem}[Exact orthonormal-column and leverage-denominator invariance]
+Let \(U\in\R^{m\times n}\) satisfy \(U^TU=\I_n\).  If
+\(\Pi_L\in\R^{m\times m}\) and \(\Pi_R\in\R^{n\times n}\) are exact
+orthogonal matrices, then
+\[
+  (\Pi_LU)^T(\Pi_LU)=\I_n,\qquad
+  (U\Pi_R)^T(U\Pi_R)=\I_n,\qquad
+  (\Pi_LU\Pi_R)^T(\Pi_LU\Pi_R)=\I_n .
+\]
+Consequently the leverage denominator remains exactly \(n\):
+\[
+  \sum_{i=1}^m \Norm{(\Pi_LU)_{i*}}^2
+  =
+  \sum_{i=1}^m \Norm{(U\Pi_R)_{i*}}^2
+  =
+  \sum_{i=1}^m \Norm{(\Pi_LU\Pi_R)_{i*}}^2
+  =
+  n .
+\]
+\end{theorem}
+
+\begin{theorem}[Exact signed-Hadamard orthogonal preprocessing]
+Let \(H\in\R^{m\times m}\) be exact orthogonal, and let
+\(\omega\in\{\pm1\}^m\).  Then \(D_\omega\) and \(HD_\omega\) are orthogonal.
+For every \(U\in\R^{m\times n}\) with \(U^TU=\I_n\),
+\[
+  (HD_\omega U)^T(HD_\omega U)=\I_n,
+  \qquad
+  \sum_{i=1}^m \Norm{(HD_\omega U)_{i*}}^2=n .
+\]
+Under the exact Rademacher law, this event has probability one.
+\end{theorem}
+
+\section*{Uniform Row Denominator}
+
+\begin{theorem}[Computed uniform-row denominator certificate]
+Let
+\[
+  d=\sqrt{s/m},\qquad \widehat d\ne0,\qquad d\ne0,
+  \qquad |\widehat d-d|\le \eta_d .
+\]
+For an exact row value \(V_{ij}\), define the exact scaled value
+\[
+  B_{ij}=V_{ij}/d
+\]
+and the floating-point scaled value
+\[
+  \widehat B_{ij}^{\,\widehat d}=\fl(V_{ij}/\widehat d).
+\]
+Then
+\[
+  \left|\widehat B_{ij}^{\,\widehat d}-B_{ij}\right|
+  \le
+  \left|V_{ij}/\widehat d\right|u
+  +
+  \frac{|V_{ij}|\,\eta_d}{|\widehat d|\,|d|}.
+\]
+The row index is still drawn from the exact uniform law \(1/m\).  Only the
+non-probability scalar \(\widehat d\) and the final rounded division are
+charged.
+\end{theorem}
+
+\begin{theorem}[Closed denominator routines]
+Assume \(0<u<1\), \(m>0\), \(s>0\), and \(d=\sqrt{s/m}\).  The preceding
+certificate applies with the following choices of \(\eta_d\):
+\[
+\begin{array}{@{}ll@{}}
+\text{exact denominator} &
+  \eta_d=0,\\[2mm]
+\widehat d=\fl(\sqrt{s/m})\text{ with exact input }s/m &
+  \eta_d=d\,u,\\[2mm]
+\widehat x=\fl(s/m),\ \widehat d=\fl(\sqrt{\widehat x}) &
+  \eta_d=d\bigl(\sqrt{1+u}\,u+u\bigr),\\[2mm]
+\widehat r=\fl(1/m),\ \widehat x=\fl(s\widehat r),\
+  \widehat d=\fl(\sqrt{\widehat x}) &
+  \eta_d=d\left(\sqrt{(1+u)(1+u)}\,u+2u+u^2\right),\\[2mm]
+\widehat s_0=\fl(\sqrt{s}),\ \widehat m_0=\fl(\sqrt{m}),\
+  \widehat d=\fl(\widehat s_0/\widehat m_0) &
+  \eta_d=d\,\dfrac{3u+u^2}{1-u},\\[4mm]
+\widehat s_0=\fl(\sqrt{s}),\ \widehat m_0=\fl(\sqrt{m}),\
+  \widehat r_m=\fl(1/\widehat m_0),\
+  \widehat d=\fl(\widehat s_0\widehat r_m) &
+  \eta_d=d\,\dfrac{4u+3u^2+u^3}{1-u}.
+\end{array}
+\]
+Each line charges a different floating-point way to compute the same exact
+denominator \(d=\sqrt{s/m}\).  None of these routines changes the uniform row
+law.
+The final SRHT implementation-facing theorems below use the last routine,
+\[
+  \widehat d_\star
+  =
+  \fl\!\left(
+    \fl(\sqrt{s})\,\fl(1/\fl(\sqrt m))
+  \right),
+  \qquad
+  |\widehat d_\star-d|
+  \le
+  d\,\frac{4u+3u^2+u^3}{1-u}.
+\]
+The stored-sign CountSketch endpoint at the end of this note is also
+instantiated with the four rounded alternatives above: exact-input square
+root, divide-then-square-root, reciprocal-multiply-then-square-root, and
+square-root-divide-square-root.  The exact-denominator line remains an
+analysis/infrastructure specialization rather than a floating-point
+denominator computation.
+\end{theorem}
+
+\section*{Exact SRHT Uniformization}
+
+\begin{baseline}[Source-sharp signed-Hadamard row norms]
+Assume \(m>0\), \(U^TU=\I_n\), and \(H_{ik}^2=1/m\) for every \(i,k\).
+For every \(t>0\),
+\[
+  \Prob_\omega\!\left[
+    \forall i,\quad
+    \Norm{(HD_\omega U)_{i*}}\le
+    \sqrt{\frac nm}+t
+  \right]
+  \ge
+  1-m\exp\!\left(-\frac{mt^2}{8}\right).
+\]
+Equivalently,
+\[
+  \Prob_\omega\!\left[
+    \forall i,\quad
+    \ell_i(HD_\omega U)\le
+    \frac{(\sqrt{n/m}+t)^2}{n}
+  \right]
+  \ge
+  1-m\exp\!\left(-\frac{mt^2}{8}\right).
+\]
+This is the signed-Hadamard/SRHT row-norm bound corresponding to Tropp's SRHT
+analysis \cite{Tropp2011SRHT}; the CACM Algorithm 3 discussion uses this kind
+of random preprocessing to make subsequent uniform row sampling effective
+\cite{DrineasMahoney2016RandNLA}.
+\end{baseline}
+
+\begin{theorem}[Logarithmic SRHT preprocessing radius]
+Let \(0<\delta_{\rm pre}<m\), and set
+\[
+  t_\delta=\sqrt{\frac{8\log(m/\delta_{\rm pre})}{m}} .
+\]
+Then
+\[
+  \Prob_\omega\!\left[
+    \forall i,\quad
+    \Norm{(HD_\omega U)_{i*}}^2
+    \le
+    \left(\sqrt{\frac nm}+t_\delta\right)^2
+  \right]
+  \ge
+  1-\delta_{\rm pre}.
+\]
+\end{theorem}
+
+\begin{baseline}[Coordinate-Hoeffding fallback]
+Let \(B\ge0\), \(\lambda>0\), and define
+\[
+  \eta_{\rm coord}(B,\lambda,m)
+  =
+  2\exp(-\lambda B)\exp\!\left(\frac{\lambda^2}{2m}\right).
+\]
+If
+\[
+  \sum_{i=1}^m\sum_{j=1}^n
+    \eta_{\rm coord}(B,\lambda,m)
+  \le
+  \delta_{\rm pre},
+\]
+then
+\[
+  \Prob_\omega\!\left[
+    \forall i,\quad
+    \Norm{(HD_\omega U)_{i*}}^2\le nB^2
+  \right]
+  \ge
+  1-\delta_{\rm pre}.
+\]
+When \(H\) is orthogonal and \(n>0\), the same event implies
+\[
+  \ell_i(HD_\omega U)\le B^2
+  \qquad\text{for every }i.
+\]
+This fallback is weaker than the source-sharp SRHT radius, but it has the same
+exact/computed separation: the signs are random exact objects, while all later
+floating-point arithmetic is charged separately.
+\end{baseline}
+
+\section*{Exact Uniform Row Sampling After Preconditioning}
+
+\begin{theorem}[Uniform one-step Loewner bound]
+Let \(V\in\R^{m\times n}\) have orthonormal columns, and define
+\[
+  X_i(V)=m\,V_{i*}^{\,T}V_{i*}\in\R^{n\times n}.
+\]
+Then \(X_i(V)\succeq0\) and
+\[
+  \frac1m\sum_{i=1}^m X_i(V)=\I_n .
+\]
+If \(\Norm{V_{i*}}^2\le R\), then
+\[
+  X_i(V)\preceq mR\,\I_n .
+\]
+\end{theorem}
+
+\begin{baseline}[Uniform row sample-average concentration]
+Let \(V\in\R^{m\times n}\) have orthonormal columns.  Suppose that for every
+row \(i\),
+\[
+  X_i(V)\preceq L\I_n,\qquad m\Norm{V_{i*}}^2\le L .
+\]
+If
+\[
+  \Phi(\theta,L,\eps,s,n)\le\delta_{\rm sample},
+\]
+then
+\[
+  \Prob_J\!\left[
+    G_s(V)-\I_n\preceq\eps\I_n
+    \ \text{and}\
+    -(G_s(V)-\I_n)\preceq\eps\I_n
+  \right]
+  \ge
+  1-\delta_{\rm sample}.
+\]
+This is the matrix trace-MGF row-sampling bound used in the SRHT composition;
+the matrix concentration lineage is represented by Tropp's matrix tail bounds
+\cite{Tropp2012}.
+\end{baseline}
+
+\begin{theorem}[Exact source-sharp SRHT plus uniform row sampling]
+Let \(t>0\).  Assume
+\[
+  m\exp\!\left(-\frac{mt^2}{8}\right)
+  \le
+  \delta_{\rm pre}
+\]
+and
+\[
+  \Phi(\theta,L(t),\eps,s,n)\le\delta_{\rm sample}.
+\]
+Then, under the exact product law of Rademacher preprocessing and iid uniform
+row sampling,
+\[
+  \Prob\!\left[
+    G_s(V_\omega)-\I_n\preceq\eps\I_n
+    \ \text{and}\
+    -(G_s(V_\omega)-\I_n)\preceq\eps\I_n
+  \right]
+  \ge
+  1-\delta_{\rm pre}-\delta_{\rm sample}.
+\]
+\end{theorem}
+
+\begin{theorem}[Exact logarithmic SRHT plus uniform row sampling]
+Let \(0<\delta_{\rm pre}<m\), and set
+\[
+  t_\delta=\sqrt{\frac{8\log(m/\delta_{\rm pre})}{m}} .
+\]
+If
+\[
+  \Phi(\theta,L(t_\delta),\eps,s,n)\le\delta_{\rm sample},
+\]
+then
+\[
+  \Prob\!\left[
+    G_s(V_\omega)-\I_n\preceq\eps\I_n
+    \ \text{and}\
+    -(G_s(V_\omega)-\I_n)\preceq\eps\I_n
+  \right]
+  \ge
+  1-\delta_{\rm pre}-\delta_{\rm sample}.
+\]
+\end{theorem}
+
+\section*{Floating-Point Uniform Row Sampling}
+
+In this section \(V_\omega=HD_\omega U\) is still the exact mathematical
+preconditioned basis.  Let
+\[
+  \widehat G_{\omega,J}^{\rm exactV}
+\]
+denote the Gram matrix whose sampled rows are taken from this exact
+\(V_\omega\), whose row scaling is carried out by floating-point division, and
+whose entries are computed by floating-point dot products.
+
+\begin{theorem}[Fixed row-norm floating-point radius]
+Assume \(\gamma_s\) is valid.  If every sampled exact row satisfies
+\[
+  \Norm{(V_\omega)_{J_t*}}^2\le R
+  \qquad(t=1,\ldots,s),
+\]
+then
+\[
+  \Frob{
+    \widehat G_{\omega,J}^{\rm exactV}-G_s(V_\omega)
+  }
+  \le
+  \tau_{\rm unif}(R;s).
+\]
+Consequently, any exact two-sided Loewner event with radius \(\eps\) transfers
+to the computed Gram matrix with radius
+\(\eps+\tau_{\rm unif}(R;s)\).
+\end{theorem}
+
+\begin{theorem}[Source-sharp SRHT floating-point uniform row sampling]
+Let \(t>0\).  Assume
+\[
+  m\exp\!\left(-\frac{mt^2}{8}\right)
+  \le
+  \delta_{\rm pre},
+  \qquad
+  \Phi(\theta,L(t),\eps,s,n)\le\delta_{\rm sample},
+\]
+and assume \(\gamma_s\) is valid.  Then
+\[
+  \Prob\!\left[
+    -(\eps+\tau_{\rm SRHT}(t))\I_n
+    \preceq
+    \widehat G_{\omega,J}^{\rm exactV}-\I_n
+    \preceq
+    (\eps+\tau_{\rm SRHT}(t))\I_n
+  \right]
+  \ge
+  1-\delta_{\rm pre}-\delta_{\rm sample}.
+\]
+The logarithmic version substitutes
+\[
+  t=\sqrt{\frac{8\log(m/\delta_{\rm pre})}{m}}
+\]
+whenever \(0<\delta_{\rm pre}<m\).
+\end{theorem}
+
+\begin{remark}
+The probability lower bound is unchanged from the exact SRHT theorem.  The only
+change is the deterministic additive radius
+\[
+  \tau_{\rm SRHT}(t)
+  =
+  n(2u+u^2)mR(t)
+  +
+  n\gamma_s(1+u)^2mR(t).
+\]
+The first term is row-scaling error and the second term is dot-product error.
+\end{remark}
+
+\section*{Fully Computed Modeled SRHT Bounds}
+
+This section fixes a concrete computed path and gives actual error bounds for
+that path.  The path is a materialized scaled-pattern SRHT preconditioner:
+the sign pattern is generated exactly by integer/Boolean arithmetic, the
+normalization scale is rounded, the realized Rademacher signs are stored by a
+rounded copy routine, the preconditioner matrix is formed by rounded products,
+and the preconditioned matrix or sampled Gram matrix is computed in floating
+point.  The probability laws are still exact mathematical laws.
+
+The closed fully computed path below does not claim to cover an arbitrary
+computed QR/SVD basis routine, an arbitrary FHT memory layout, or an arbitrary
+vectorized overwrite schedule.  Those paths are not part of the final theorem
+unless their concrete roundoff recurrences are reduced to the same displayed
+computed quantities.
+
+For any transform dimension \(N\), define
+\[
+  \widehat p_N
+  =
+  \frac{(1+\gamma_N)(1+u)^2}{\sqrt N},
+\]
+\[
+  \alpha_N
+  =
+  \frac{\gamma_N(1+u)^2+u(1+u)+u}{\sqrt N},
+\]
+and
+\[
+  \kappa_N=\gamma_N\widehat p_N+\alpha_N .
+\]
+Here \(\widehat p_N\) bounds the magnitude of every computed materialized SRHT
+entry, \(\alpha_N\) bounds the absolute error of every computed materialized
+SRHT entry, and \(\kappa_N\) is the coefficient that appears when multiplying
+one such computed preconditioner by a matrix.  These quantities are small when
+the usual accumulated factors \(\gamma_N\) and the unit roundoff \(u\) are
+small; the \(1/\sqrt N\) scaling is the Hadamard normalization.
+
+\begin{theorem}[Computed materialized scaled-pattern SRHT preconditioner]
+Let \(N>0\), and let \(S\in\R^{N\times N}\) be an exact sign-pattern table:
+\[
+  S_{ij}^2=1 .
+\]
+For the Sylvester/Walsh SRHT, \(S\) is the exact bit-parity sign table and is
+therefore generated with exact integer/Boolean arithmetic.  Define the exact
+and computed scales
+\[
+  c_N=\sqrt{1/N},\qquad \widehat c_N=\fl(\sqrt{1/N}),
+\]
+the exact and computed scaled tables
+\[
+  H_{ij}=c_NS_{ij},\qquad \widehat H_{ij}=\widehat c_NS_{ij},
+\]
+and the scale-table error radius
+\[
+  E^H_{ij}=c_Nu|S_{ij}|.
+\]
+Then
+\[
+  |\widehat H_{ij}-H_{ij}|\le E^H_{ij},
+  \qquad H_{ij}^2=\frac1N .
+\]
+
+Let \(\sigma\in\{\pm1\}^N\) be the exact realized Rademacher sign vector.  The
+implementation stores it by one of the rounded copy routines
+\[
+  \widehat\sigma_i=\fl(\sigma_i\cdot1),\qquad
+  \widehat\sigma_i^+=\fl(\sigma_i+0),\qquad
+  \widehat\sigma_i^-=\fl(\sigma_i-0).
+\]
+For any one of these three stored sign vectors, write the stored vector as
+\(\widehat\sigma^{\rho}\).  Since \(|\sigma_i|=1\), its sign-storage error is
+\[
+  |\widehat\sigma^{\rho}_i-\sigma_i|\le E^{\sigma,\rho}_i,
+  \qquad E^{\sigma,\rho}_i=u .
+\]
+Set
+\[
+  D=\diag(\sigma),\qquad
+  \widehat D^\rho=\diag(\widehat\sigma^\rho),\qquad
+  P=HD,\qquad
+  \widehat P^\rho=\fl(\widehat H\widehat D^\rho).
+\]
+Under the floating-point model with valid \(\gamma_N\), the computed
+materialized preconditioner satisfies
+\[
+  |\widehat P^\rho_{ij}|\le \widehat p_N,
+  \qquad
+  |\widehat P^\rho_{ij}-P_{ij}|\le \alpha_N .
+\]
+Thus the bound charges the rounded scale, rounded sign storage, and rounded
+formation of the materialized \(HD\) preconditioner, but it exposes the result
+through the two interpretable scalars \(\widehat p_N\) and \(\alpha_N\).
+\end{theorem}
+
+\begin{theorem}[Computed Algorithm 3 preconditioned matrices]
+Let \(A\in\R^{m\times n}\) be the exact input matrix for Algorithm 3.  Let
+\(S^L\in\R^{m\times m}\) and \(S^R\in\R^{n\times n}\) be exact sign-pattern
+tables:
+\[
+  (S^L_{ik})^2=1,\qquad (S^R_{kj})^2=1 .
+\]
+Let \(\sigma^L\in\{\pm1\}^m\) and \(\sigma^R\in\{\pm1\}^n\) be the exact
+realized Rademacher sign vectors.  Store each sign by one of the rounded copy
+routines \(\fl(\sigma_i\cdot1)\), \(\fl(\sigma_i+0)\), or
+\(\fl(\sigma_i-0)\), and call the stored signs
+\(\widehat\sigma^L\) and \(\widehat\sigma^R\).  Then
+\[
+  |\widehat\sigma^L_i-\sigma^L_i|\le u,\qquad
+  |\widehat\sigma^R_j-\sigma^R_j|\le u .
+\]
+Define the exact and computed left scale tables
+\[
+  c_m=\sqrt{1/m},\qquad \widehat c_m=\fl(\sqrt{1/m}),
+\]
+\[
+  H^L_{ik}=c_mS^L_{ik},\qquad
+  \widehat H^L_{ik}=\widehat c_mS^L_{ik},
+  \qquad
+  E^{H,L}_{ik}=c_mu|S^L_{ik}|.
+\]
+Define the exact and computed right scale tables
+\[
+  c_n=\sqrt{1/n},\qquad \widehat c_n=\fl(\sqrt{1/n}),
+\]
+\[
+  H^R_{kj}=c_nS^R_{kj},\qquad
+  \widehat H^R_{kj}=\widehat c_nS^R_{kj},
+  \qquad
+  E^{H,R}_{kj}=c_nu|S^R_{kj}|.
+\]
+Set
+\[
+  P_L=H^L\diag(\sigma^L),\qquad
+  \widehat P_L=\fl(\widehat H^L\diag(\widehat\sigma^L)),
+\]
+\[
+  P_R=H^R\diag(\sigma^R),\qquad
+  \widehat P_R=\fl(\widehat H^R\diag(\widehat\sigma^R)).
+\]
+The entrywise preconditioner radii are
+\[
+  |\widehat P_{L,ik}-P_{L,ik}|\le \alpha_m,
+  \qquad
+  |\widehat P_{R,kj}-P_{R,kj}|\le \alpha_n,
+\]
+and the computed preconditioner entries satisfy
+\[
+  |\widehat P_{L,ik}|\le\widehat p_m,
+  \qquad
+  |\widehat P_{R,kj}|\le\widehat p_n .
+\]
+
+For left preconditioning, define
+\[
+  B_L=P_LA,\qquad \widehat B_L=\fl(\widehat P_LA),
+\]
+then
+\[
+  |(\widehat B_L)_{ij}-(B_L)_{ij}|
+  \le
+  \kappa_m\,\NormOne{A_{*j}}
+  \le
+  \kappa_m\sqrt m\,\Norm{A_{*j}} .
+\]
+
+For right preconditioning, define
+\[
+  B_R=AP_R,\qquad \widehat B_R=\fl(A\widehat P_R),
+\]
+then
+\[
+  |(\widehat B_R)_{ij}-(B_R)_{ij}|
+  \le
+  \kappa_n\,\NormOne{A_{i*}}
+  \le
+  \kappa_n\sqrt n\,\Norm{A_{i*}} .
+\]
+
+For two-sided preconditioning, first compute \(\widehat W=\widehat B_L\) and
+let \(W=P_LA\).  Then compute
+\[
+  B_{LR}=P_LAP_R,\qquad
+  \widehat B_{LR}=\fl(\widehat W\,\widehat P_R).
+\]
+Let
+\[
+  \EntryOne{A}=\sum_{p=1}^m\sum_{q=1}^n |A_{pq}|.
+\]
+Then the row-sensitive bound is
+\[
+  |(\widehat B_{LR})_{ij}-(B_{LR})_{ij}|
+  \le
+  (\gamma_n\widehat p_n+\alpha_n)\NormOne{W_{i*}}
+  +
+  (1+\gamma_n)\widehat p_n\kappa_m\EntryOne{A}.
+\]
+Consequently,
+\[
+\begin{aligned}
+  |(\widehat B_{LR})_{ij}-(B_{LR})_{ij}|
+  &\le
+  (\gamma_n\widehat p_n+\alpha_n)\sqrt n\,\Frob{A}
+  \\
+  &\quad+
+  (1+\gamma_n)\widehat p_n\kappa_m\EntryOne{A}.
+\end{aligned}
+\]
+These three displayed bounds are the Algorithm 3 floating-point changes for
+the computed matrices \(\Pi_LA\), \(A\Pi_R\), and \(\Pi_LA\Pi_R\) on the
+materialized scaled-pattern SRHT path.
+\end{theorem}
+
+\begin{theorem}[Computed materialized SRHT basis and uniform-row Gram]
+Let \(U\in\R^{m\times n}\) be the exact orthonormal-column analysis basis used
+in the SRHT subspace-embedding theorem.  Let \(S\in\R^{m\times m}\) be an exact
+sign-pattern table with \(S_{ia}^2=1\), and let
+\(\omega\in\{\pm1\}^m\) be the exact realized Rademacher sign vector.  Store
+the signs by one of the rounded copy routines
+\(\fl(\omega_a\cdot1)\), \(\fl(\omega_a+0)\), or \(\fl(\omega_a-0)\), and
+write the stored signs as \(\widehat\omega^\rho\).  Then
+\[
+  |\widehat\omega^\rho_a-\omega_a|\le u .
+\]
+Define
+\[
+  c_m=\sqrt{1/m},\qquad \widehat c_m=\fl(\sqrt{1/m}),
+\]
+\[
+  H_{ia}=c_mS_{ia},\qquad
+  \widehat H_{ia}=\widehat c_mS_{ia},
+  \qquad
+  E^H_{ia}=c_mu|S_{ia}|.
+\]
+Set
+\[
+  D_\omega=\diag(\omega),\qquad
+  \widehat D_\omega^\rho=\diag(\widehat\omega^\rho),
+\]
+\[
+  P_\omega=HD_\omega,\qquad
+  \widehat P_\omega^\rho=\fl(\widehat H\widehat D_\omega^\rho).
+\]
+Define
+\[
+  V_\omega=P_\omega U,\qquad
+  \widehat V_\omega^\rho=\fl(\widehat P_\omega^\rho U).
+\]
+Define the computed-basis entry radius
+\[
+  \Delta_V
+  =
+  \kappa_m\sqrt m
+  =
+  \gamma_m(2+\gamma_m)(1+u)^2+u(1+u)+u .
+\]
+Then
+\[
+  |\widehat V^\rho_{\omega,ij}-(V_\omega)_{ij}|
+  \le
+  \Delta_V .
+\]
+The scalar \(\Delta_V\) uses only the universal column bound
+\(\NormOne{U_{*j}}\le\sqrt m\), which follows from \(U^TU=\I_n\).  Thus no
+column-by-column property of \(U\) is needed in the final displayed radius.
+
+Let \(J=(J_1,\ldots,J_s)\) be the exact uniform row sample.  The final concrete
+SRHT endpoint uses the computed denominator
+\[
+  d=\sqrt{s/m},
+  \qquad
+  \widehat d_\star
+  =
+  \fl\!\left(
+    \fl(\sqrt{s})\,\fl(1/\fl(\sqrt m))
+  \right),
+\]
+and the locally proved denominator certificate gives
+\[
+  \widehat d_\star\ne0,
+  \qquad
+  |\widehat d_\star-d|
+  \le
+  d\,\frac{4u+3u^2+u^3}{1-u}.
+\]
+Define the concrete relative denominator error
+\[
+  \delta_d=\frac{4u+3u^2+u^3}{1-u},
+  \qquad 0\le\delta_d<1,
+\]
+and the relative scaled-row entry error
+\[
+  \zeta(t)
+  =
+  \frac{S(t)(u+\delta_d)+(1+u)\Delta_V}
+       {(1-\delta_d)S(t)}.
+\]
+On the exact SRHT row-norm event, every exact scaled sketch entry has absolute
+value at most \(\sqrt{m/s}\,S(t)\), and every computed scaled sketch entry
+differs from it by at most \(\sqrt{m/s}\,S(t)\zeta(t)\).
+
+Let the computed sampled matrix be
+\[
+  \widehat B^\rho_{tj}
+  =
+  \fl\!\left(\widehat V^\rho_{\omega,J_tj}/\widehat d_\star\right),
+  \qquad
+  \widehat G_{\omega,J}^\rho
+  =
+  \fl\!\left((\widehat B^\rho)^T\widehat B^\rho\right).
+\]
+Define the final readable floating-point radius
+\[
+  T_{\rm SRHT}^{\rm fp}(t)
+  =
+  nm\,S(t)^2
+  \left(
+    2\zeta(t)+\zeta(t)^2
+    +
+    \gamma_s\bigl(1+\zeta(t)\bigr)^2
+  \right).
+\]
+Equivalently, substituting \(\zeta(t)\), \(S(t)\), \(\delta_d\), and
+\(\Delta_V\), the same exact radius is
+\begingroup
+\small
+\[
+\begin{aligned}
+  T_{\rm SRHT}^{\rm fp}(t)
+  &=
+  nm\left(\sqrt{\frac nm}+t\right)^2
+  \Bigg[
+    2
+    \frac{
+      \left(\sqrt{\frac nm}+t\right)
+      \left(u+\frac{4u+3u^2+u^3}{1-u}\right)
+      +(1+u)
+      \left(\gamma_m(2+\gamma_m)(1+u)^2+u(1+u)+u\right)
+    }{
+      \left(1-\frac{4u+3u^2+u^3}{1-u}\right)
+      \left(\sqrt{\frac nm}+t\right)
+    }
+  \\
+  &\quad+
+    \left(
+    \frac{
+      \left(\sqrt{\frac nm}+t\right)
+      \left(u+\frac{4u+3u^2+u^3}{1-u}\right)
+      +(1+u)
+      \left(\gamma_m(2+\gamma_m)(1+u)^2+u(1+u)+u\right)
+    }{
+      \left(1-\frac{4u+3u^2+u^3}{1-u}\right)
+      \left(\sqrt{\frac nm}+t\right)
+    }
+    \right)^2
+  \\
+  &\quad+
+    \gamma_s
+    \left(
+      1+
+      \frac{
+        \left(\sqrt{\frac nm}+t\right)
+        \left(u+\frac{4u+3u^2+u^3}{1-u}\right)
+        +(1+u)
+        \left(\gamma_m(2+\gamma_m)(1+u)^2+u(1+u)+u\right)
+      }{
+        \left(1-\frac{4u+3u^2+u^3}{1-u}\right)
+        \left(\sqrt{\frac nm}+t\right)
+      }
+    \right)^2
+  \Bigg].
+\end{aligned}
+\]
+\endgroup
+In the small-roundoff regime
+\[
+  0\le u,\gamma_m,\gamma_s,\frac{4u+3u^2+u^3}{1-u}\le c<1,
+  \qquad \sqrt{\frac nm}+t>0,
+\]
+the component terms have the orders
+\[
+  \Delta_V=\Theta(\gamma_m+u),
+  \qquad
+  \zeta(t)
+  =
+  \Theta\!\left(
+    u+\frac{4u+3u^2+u^3}{1-u}
+    +\frac{\gamma_m+u}{\sqrt{n/m}+t}
+  \right),
+\]
+with constants depending only on the fixed bound \(c\).  Since all terms are
+nonnegative and
+\[
+  2\zeta+\zeta^2+\gamma_s(1+\zeta)^2
+  =
+  \Theta(\zeta+\gamma_s)
+  \qquad(0\le \zeta,\gamma_s\le c),
+\]
+the final radius has the asymptotic order
+\[
+  T_{\rm SRHT}^{\rm fp}(t)
+  =
+  \Theta\!\left(
+    nm\left(\sqrt{\frac nm}+t\right)^2
+    \left[
+      \gamma_s+u+\frac{4u+3u^2+u^3}{1-u}
+      +\frac{\gamma_m+u}{\sqrt{n/m}+t}
+    \right]
+  \right).
+\]
+Equivalently,
+\[
+  T_{\rm SRHT}^{\rm fp}(t)
+  =
+  \Theta\!\left(
+    nm\left(\sqrt{\frac nm}+t\right)^2
+      \left(\gamma_s+u+\frac{4u+3u^2+u^3}{1-u}\right)
+    +
+    nm\left(\sqrt{\frac nm}+t\right)(\gamma_m+u)
+  \right).
+\]
+In the same irreducible variables,
+\[
+\begin{aligned}
+  T_{\rm SRHT}^{\rm fp}(t)
+  &=
+  \Theta\!\left(
+    nm\left(\sqrt{\frac nm}+t\right)^2
+    \left(\gamma_s+u+\frac{4u+3u^2+u^3}{1-u}\right)
+  \right.
+  \\
+  &\qquad\left.
+    +
+    nm\left(\sqrt{\frac nm}+t\right)(\gamma_m+u)
+  \right).
+\end{aligned}
+\]
+
+Assume the exact SRHT preprocessing and uniform-row sample budgets
+\[
+  m\exp\!\left(-\frac{mt^2}{8}\right)\le\delta_{\rm pre},
+  \qquad
+  \Phi(\theta,L(t),\eps,s,n)\le\delta_{\rm sample}.
+\]
+Then the fully computed materialized SRHT Gram satisfies
+\[
+  \Prob\!\left[
+    -(\eps+T_{\rm SRHT}^{\rm fp}(t))\I_n
+    \preceq
+    \widehat G_{\omega,J}^\rho-\I_n
+    \preceq
+    (\eps+T_{\rm SRHT}^{\rm fp}(t))\I_n
+  \right]
+  \ge
+  1-\delta_{\rm pre}-\delta_{\rm sample}.
+\]
+No additional perturbation event is used.  The radius depends only on \(u\),
+\(\gamma_m\), \(\gamma_s\), \(m,n,s\), the SRHT parameter \(t\), and the
+concrete relative denominator error
+\(\delta_d=(4u+3u^2+u^3)/(1-u)\).  For fixed \(m,n,s,t\),
+\[
+  T_{\rm SRHT}^{\rm fp}(t)\longrightarrow 0
+  \qquad
+  \text{as}\qquad
+  u,\gamma_m,\gamma_s,\frac{4u+3u^2+u^3}{1-u}\longrightarrow 0,
+\]
+so the bound is non-vacuous in the small-roundoff regime.  In the
+exact-denominator infrastructure specialization, \(\delta_d=0\); that is not
+the selected final concrete denominator routine in this note.
+\end{theorem}
+
+\begin{remark}
+The previous theorem is an analysis-basis theorem.  It is the right statement
+when the exact SRHT subspace-embedding analysis is written for an
+orthonormal-column matrix \(U\), but it is not by itself the Algorithm 3
+input-matrix theorem.  Algorithm 3 receives \(A\), and the computed product is
+\(\fl(\widehat P_\omega A)\), not \(\fl(\widehat P_\omega U)\).
+\end{remark}
+
+\begin{theorem}[Fully computed SRHT theorem on the Algorithm 3 input matrix]
+Let \(A\in\R^{m\times n}\) be the exact input matrix handed to Algorithm 3.
+Assume \(A\ne0\), let \(r=\operatorname{rank}(A)\), and choose exact
+analysis-only factors
+\[
+  U_A\in\R^{m\times r},
+  \qquad
+  C_A\in\R^{r\times n},
+  \qquad
+  U_A^TU_A=\I_r,
+  \qquad
+  A=U_AC_A .
+\]
+The matrices \(U_A\) and \(C_A\) are exact arithmetic objects used only in the
+analysis.  They are not computed by Algorithm 3.  The implemented algorithm
+computes with the input matrix \(A\).
+
+Let \(0<\delta_{\rm pre}<m\), \(0\le\delta_{\rm sample}\), and
+\(0<\eps<1\).  Set
+\[
+  t_{\rm pre}=\sqrt{\frac{8\log(m/\delta_{\rm pre})}{m}},
+  \qquad
+  S_A=\sqrt{\frac rm}+t_{\rm pre},
+  \qquad
+  L_A=mS_A^2 .
+\]
+Choose the exact sample count \(s\) and an exact Chernoff parameter
+\(\theta_A>0\) so that
+\[
+  \Phi(\theta_A,L_A,\eps,s,r)\le\delta_{\rm sample}.
+\]
+The choice of \(s\), \(\theta_A\), and the probability laws below is exact
+arithmetic; no sampling probability table is computed.
+
+Let \(\mathcal S\in\R^{m\times m}\) be an exact sign-pattern table such that
+\[
+  H_{ia}=\sqrt{1/m}\,\mathcal S_{ia}
+\]
+is orthogonal and flat.  Let \(\omega\in\{\pm1\}^m\) be the exact Rademacher
+sign vector, and let \(J=(J_1,\ldots,J_s)\) be the exact uniform row-sample
+trace.  The concrete computed SRHT path in this theorem is
+\[
+  \widehat H_{ia}=\fl(\sqrt{1/m})\,\mathcal S_{ia},
+  \qquad
+  \widehat\omega_a=\fl(\omega_a\cdot1),
+  \qquad
+  \widehat D_\omega=\diag(\widehat\omega),
+\]
+\[
+  P_\omega=H\diag(\omega),
+  \qquad
+  \widehat P_\omega=\fl(\widehat H\widehat D_\omega),
+  \qquad
+  Y_\omega=P_\omega A,
+  \qquad
+  \widehat Y_\omega=\fl(\widehat P_\omega A).
+\]
+Here \(P_\omega,Y_\omega\) are exact references, while
+\(\widehat P_\omega,\widehat Y_\omega\) are computed floating-point objects.
+The stored-sign path displayed here uses \(\fl(\omega_a\cdot1)\); the
+formalization also has the analogous add-zero and subtract-zero stored-sign
+certificates.
+
+Let the final concrete uniform row-scale denominator be
+\[
+  d=\sqrt{s/m},
+  \qquad
+  \widehat d_\star
+  =
+  \fl\!\left(
+    \fl(\sqrt{s})\,\fl(1/\fl(\sqrt m))
+  \right).
+\]
+The value \(\widehat d_\star\) is a computed non-probability quantity, and the
+formalized certificate proves
+\[
+  \widehat d_\star\ne0,
+  \qquad
+  |\widehat d_\star-d|
+  \le
+  d\,\frac{4u+3u^2+u^3}{1-u}.
+\]
+Define
+\[
+  B_{\omega,J,tj}=\frac{(Y_\omega)_{J_tj}}{d},
+  \qquad
+  \widetilde B_{\omega,J,tj}=
+    \frac{(\widehat Y_\omega)_{J_tj}}{d},
+  \qquad
+  \widehat B_{\omega,J,tj}=
+    \fl\!\left(\frac{(\widehat Y_\omega)_{J_tj}}{\widehat d_\star}\right),
+\]
+and
+\[
+  \widehat G_A(\omega,J)
+  =
+  \fl\!\left(\widehat B_{\omega,J}^{\,T}\widehat B_{\omega,J}\right).
+\]
+
+The fully computed perturbation radius is
+\[
+  \tau_A^{\rm cd}(\omega,J)
+  =
+  \tau_{\rm den}(\omega,J)
+  +
+  \tau_{\rm dot}(\omega,J)
+  +
+  \tau_{\rm prod}(\omega,J).
+\]
+First define the row-scaling entry budget
+\[
+  E^{\rm den}_{tj}
+  =
+  |\widehat B_{\omega,J,tj}|\,u
+  +
+  \frac{|(\widehat Y_\omega)_{J_tj}|\,d\,
+        \frac{4u+3u^2+u^3}{1-u}}
+       {|\widehat d_\star|\,d}.
+\]
+Then
+\[
+  \tau_{\rm den}(\omega,J)
+  =
+  \left\|
+    \left(
+      \sum_{t=1}^s
+      E^{\rm den}_{tj}|\widehat B_{\omega,J,tk}|
+      +
+      |\widetilde B_{\omega,J,tj}|E^{\rm den}_{tk}
+    \right)_{j,k=1}^n
+  \right\|_F
+\]
+and
+\[
+  \tau_{\rm dot}(\omega,J)
+  =
+  \left\|
+    \left(
+      \gamma_s
+      \sum_{t=1}^s
+      |\widehat B_{\omega,J,tj}|\,|\widehat B_{\omega,J,tk}|
+    \right)_{j,k=1}^n
+  \right\|_F .
+\]
+For the product term, let
+\[
+  e^H_{ia}=\sqrt{1/m}\,u\,|\mathcal S_{ia}|,
+  \qquad
+  e^\omega_a=u,
+\]
+and define the preconditioner-entry budget
+\[
+\begin{aligned}
+  E^P_{\omega,ia}
+  &=
+  \gamma_m
+  \sum_{b=1}^m |\widehat H_{ib}|\,
+    |\widehat D_{\omega,ba}|
+  +
+  \sum_{b=1}^m e^H_{ib}\,|\widehat D_{\omega,ba}|
+  +
+  \sum_{b=1}^m |H_{ib}|\,e^\omega_b\,{\bf 1}_{b=a}.
+\end{aligned}
+\]
+The entrywise budget for the computed product
+\(\widehat Y_\omega=\fl(\widehat P_\omega A)\) is
+\[
+  E^Y_{\omega,ij}
+  =
+  \gamma_m\sum_{a=1}^m
+    |(\widehat P_\omega)_{ia}|\,|A_{aj}|
+  +
+  \sum_{a=1}^m E^P_{\omega,ia}|A_{aj}|,
+\]
+and
+\[
+  \tau_{\rm prod}(\omega,J)
+  =
+  \left\|
+    \left(
+      \sum_{t=1}^s
+      \frac{E^Y_{\omega,J_tj}}{d}
+        |\widetilde B_{\omega,J,tk}|
+      +
+      |B_{\omega,J,tj}|
+      \frac{E^Y_{\omega,J_tk}}{d}
+    \right)_{j,k=1}^n
+  \right\|_F .
+\]
+Then the fully computed Algorithm 3 sampled input Gram satisfies
+\[
+  \Prob\!\left[
+    (1-\eps)A^TA-\tau_A^{\rm cd}(\omega,J)\I_n
+    \preceq
+    \widehat G_A(\omega,J)
+    \preceq
+    (1+\eps)A^TA+\tau_A^{\rm cd}(\omega,J)\I_n
+  \right]
+  \ge
+  1-\delta_{\rm pre}-\delta_{\rm sample}.
+\]
+There is no extra perturbation event, no extra existence hypothesis, and no
+\(\delta_{\rm comp}\) in this final statement.  All probabilities are exact
+Rademacher and exact uniform-row probabilities.  All non-probability computed
+objects on this SRHT path are charged in \(\tau_A^{\rm cd}\).
+\end{theorem}
+
+\begin{theorem}[Concrete Sylvester/Walsh FHT specialization]
+Fix \(p\in\mathbb N\) and set \(m=2^p\).  Define the exact
+Sylvester/Walsh sign table
+\[
+  S_p(i,a)=
+  \begin{cases}
+    -1, & \text{if the bit parity of }i\wedge a\text{ is odd},\\
+     1, & \text{otherwise,}
+  \end{cases}
+\]
+and define the normalized exact table
+\[
+  H_p(i,a)=\sqrt{1/m}\,S_p(i,a).
+\]
+The formalized result proves from this definition that \(H_p^TH_p=I_m\) and
+\((H_p)_{ia}^2=1/m\).  Thus these are exact arithmetic facts about the
+generated bit table, not hypotheses supplied to the final theorem.
+
+Let the exact Algorithm 3 input have the analysis factorization
+\[
+  A=U_AC_A,\qquad U_A^TU_A=I_r .
+\]
+The matrices \(U_A\) and \(C_A\) are exact analysis-only witnesses.  The
+implemented computation uses \(A\) directly.  For an exact Rademacher sign
+vector \(\omega\), the concrete computed preconditioner is obtained by storing
+the realized signs with the rounded multiply-one copy path, applying the
+generated Sylvester/Walsh FHT butterfly schedule, and rounding the
+normalization by \(\fl(\sqrt{1/m})\).  It then computes
+\[
+  \widehat Y_\omega=\fl(\widehat P_\omega A).
+\]
+For the downstream uniform row sketch, the concrete computed denominator is
+\[
+  d=\sqrt{s/m},\qquad
+  \widehat d_\star
+  =
+  \fl\!\left(
+    \fl(\sqrt{s})\,\fl(1/\fl(\sqrt m))
+  \right),
+\]
+with the same certified radius
+\[
+  |\widehat d_\star-d|
+  \le
+  d\,\frac{4u+3u^2+u^3}{1-u}.
+\]
+Let \(\tau_{A,{\rm syl}}^{\rm cd}(\omega,J)\) be the fully expanded radius
+\(\tau_A^{\rm cd}(\omega,J)\) from the preceding theorem after substituting
+\(\mathcal S=S_p\), \(H=H_p\), \(m=2^p\), and the generated-FHT stored-sign
+preconditioner just described.
+
+With
+\[
+  t_{\rm pre}=\sqrt{\frac{8\log(m/\delta_{\rm pre})}{m}},
+  \qquad
+  S_A=\sqrt{\frac rm}+t_{\rm pre},
+  \qquad
+  L_A=mS_A^2,
+\]
+and with the same exact sample-budget condition
+\[
+  \Phi(\theta_A,L_A,\eps,s,r)\le\delta_{\rm sample},
+\]
+the computed sampled input Gram satisfies
+\[
+  \Prob\!\left[
+    (1-\eps)A^TA-\tau_{A,{\rm syl}}^{\rm cd}(\omega,J)\I_n
+    \preceq
+    \widehat G_A(\omega,J)
+    \preceq
+    (1+\eps)A^TA+\tau_{A,{\rm syl}}^{\rm cd}(\omega,J)\I_n
+  \right]
+  \ge
+  1-\delta_{\rm pre}-\delta_{\rm sample}.
+\]
+The exact objects are \(A\), \(U_A\), \(C_A\), \(S_p\), \(H_p\), and the
+Rademacher and uniform-row laws.  The computed objects are the stored sign
+vector, generated FHT butterflies, rounded normalization, \(\widehat P_\omega\),
+\(\widehat Y_\omega\), \(\widehat d_\star\), sampled row divisions, and Gram
+dot products.  No external orthogonality witness, flatness witness,
+perturbation event, or extra existence hypothesis appears.
+\end{theorem}
+
+\begin{corollary}[Stored-input generated-FHT endpoints]
+Keep the hypotheses and source sample-budget condition of the preceding
+Sylvester/Walsh specialization.  Let
+\[
+  P_\omega=H_p\diag(\omega),
+  \qquad
+  Y_\omega=P_\omega A,
+  \qquad
+  d=\sqrt{s/m}.
+\]
+These are exact analysis references.  The exact matrices \(U_A\), \(C_A\),
+\(A=U_AC_A\), \(H_p\), and \(P_\omega\) are not computed in this corollary,
+and the Rademacher and uniform-row laws are exact mathematical laws.
+
+Choose one concrete input-storage mode
+\[
+  \rho\in\{\mathrm{mul1},\mathrm{add0},\mathrm{sub0}\}.
+\]
+The implemented input-storage step is
+\[
+  \widehat A^{\rm in}_{aj}=
+  \begin{cases}
+    \fl_{\rm mul}(A_{aj},1),&\rho=\mathrm{mul1},\\
+    \fl_{\rm add}(A_{aj},0),&\rho=\mathrm{add0},\\
+    \fl_{\rm sub}(A_{aj},0),&\rho=\mathrm{sub0},
+  \end{cases}
+  \qquad
+  E^A_{aj}=u|A_{aj}|,
+\]
+so
+\[
+  |\widehat A^{\rm in}_{aj}-A_{aj}|\le E^A_{aj}.
+\]
+This is the only new computed object relative to the preceding
+generated-FHT endpoint.  The stored-sign generated-FHT preconditioner
+\(\widehat P_\omega\), its exact reference \(P_\omega\), and its entrywise
+budget \(E^P_{\omega,ia}\) are the same objects used above:
+\[
+  |(\widehat P_\omega)_{ia}-(P_\omega)_{ia}|
+  \le E^P_{\omega,ia}.
+\]
+The implementation then forms the computed preconditioned input
+\[
+  \widehat Y^{\rm in}_{\omega}
+  =
+  \fl(\widehat P_\omega \widehat A^{\rm in}).
+\]
+The fully expanded entrywise product budget is
+\[
+  E^{Y,{\rm in}}_{\omega,ij}
+  =
+  \gamma_m\sum_{a=1}^m
+    |(\widehat P_\omega)_{ia}|\,|\widehat A^{\rm in}_{aj}|
+  +
+  \sum_{a=1}^m E^P_{\omega,ia}|\widehat A^{\rm in}_{aj}|
+  +
+  \sum_{a=1}^m |(P_\omega)_{ia}|\,u|A_{aj}|.
+\]
+The last summand is the exact input-storage contribution; it is not a
+probability term and not a hidden certificate.
+
+Use the same computed denominator
+\[
+  \widehat d_\star
+  =
+  \fl\!\left(
+    \fl(\sqrt{s})\,\fl(1/\fl(\sqrt m))
+  \right),
+  \qquad
+  |\widehat d_\star-d|
+  \le
+  d\,\delta_d,
+  \qquad
+  \delta_d=\frac{4u+3u^2+u^3}{1-u}.
+\]
+For sampled rows \(J_1,\ldots,J_s\), define
+\[
+  B_{\omega,J,tj}=\frac{(Y_\omega)_{J_tj}}{d},
+  \qquad
+  \widetilde B^{{\rm in}}_{\omega,J,tj}
+  =
+  \frac{(\widehat Y^{\rm in}_\omega)_{J_tj}}{d},
+  \qquad
+  \widehat B^{{\rm in}}_{\omega,J,tj}
+  =
+  \fl\!\left(
+    \frac{(\widehat Y^{\rm in}_\omega)_{J_tj}}{\widehat d_\star}
+  \right).
+\]
+The computed sampled Gram is
+\[
+  \widehat G_A^{\rm in}(\omega,J)
+  =
+  \fl\!\left(
+    (\widehat B^{{\rm in}}_{\omega,J})^T
+    \widehat B^{{\rm in}}_{\omega,J}
+  \right).
+\]
+The row-scaling budget is
+\[
+  E^{{\rm den},{\rm in}}_{tj}
+  =
+  |\widehat B^{{\rm in}}_{\omega,J,tj}|\,u
+  +
+  \frac{|(\widehat Y^{\rm in}_\omega)_{J_tj}|\,d\,\delta_d}
+       {|\widehat d_\star|\,d}.
+\]
+Define
+\[
+  \tau_{{\rm den},{\rm in}}(\omega,J)
+  =
+  \left\|
+    \left(
+      \sum_{t=1}^s
+      E^{{\rm den},{\rm in}}_{tj}
+      |\widehat B^{{\rm in}}_{\omega,J,tk}|
+      +
+      |\widetilde B^{{\rm in}}_{\omega,J,tj}|
+      E^{{\rm den},{\rm in}}_{tk}
+    \right)_{j,k=1}^n
+  \right\|_F,
+\]
+\[
+  \tau_{{\rm dot},{\rm in}}(\omega,J)
+  =
+  \left\|
+    \left(
+      \gamma_s
+      \sum_{t=1}^s
+      |\widehat B^{{\rm in}}_{\omega,J,tj}|\,
+      |\widehat B^{{\rm in}}_{\omega,J,tk}|
+    \right)_{j,k=1}^n
+  \right\|_F,
+\]
+and
+\[
+  \tau_{{\rm prod},{\rm in}}(\omega,J)
+  =
+  \left\|
+    \left(
+      \sum_{t=1}^s
+      \frac{E^{Y,{\rm in}}_{\omega,J_tj}}{d}
+        |\widetilde B^{{\rm in}}_{\omega,J,tk}|
+      +
+      |B_{\omega,J,tj}|
+      \frac{E^{Y,{\rm in}}_{\omega,J_tk}}{d}
+    \right)_{j,k=1}^n
+  \right\|_F .
+\]
+The final stored-input radius is
+\[
+  \tau_{A,{\rm in}}^{\rm cd}(\omega,J)
+  =
+  \tau_{{\rm den},{\rm in}}(\omega,J)
+  +
+  \tau_{{\rm dot},{\rm in}}(\omega,J)
+  +
+  \tau_{{\rm prod},{\rm in}}(\omega,J).
+\]
+Then
+\[
+  \Prob\!\left[
+    (1-\eps)A^TA-\tau_{A,{\rm in}}^{\rm cd}(\omega,J)\I_n
+    \preceq
+    \widehat G_A^{\rm in}(\omega,J)
+    \preceq
+    (1+\eps)A^TA+\tau_{A,{\rm in}}^{\rm cd}(\omega,J)\I_n
+  \right]
+  \ge
+  1-\delta_{\rm pre}-\delta_{\rm sample}.
+\]
+
+The input-storage part of the product radius is exactly
+\[
+  \Delta_{\rm in}(\omega,J)
+  =
+  u
+  \left\|
+    \left(
+      \sum_{t=1}^s
+      \frac{\sum_{a=1}^m |(P_\omega)_{J_ta}|\,|A_{aj}|}{d}
+        |\widetilde B^{{\rm in}}_{\omega,J,tk}|
+      +
+      |B_{\omega,J,tj}|
+      \frac{\sum_{a=1}^m |(P_\omega)_{J_ta}|\,|A_{ak}|}{d}
+    \right)_{j,k=1}^n
+  \right\|_F .
+\]
+Thus, for fixed \(m,n,s,p,A,\omega,J\), fixed \(d>0\), and nonzero displayed
+coefficient,
+\[
+  \Delta_{\rm in}(\omega,J)
+  =
+  \Theta\!\left(
+    u
+    \left\|
+      \left(
+        \sum_{t=1}^s
+        \frac{\sum_{a=1}^m |(P_\omega)_{J_ta}|\,|A_{aj}|}{d}
+          |\widetilde B^{{\rm in}}_{\omega,J,tk}|
+        +
+        |B_{\omega,J,tj}|
+        \frac{\sum_{a=1}^m |(P_\omega)_{J_ta}|\,|A_{ak}|}{d}
+      \right)_{j,k=1}^n
+    \right\|_F
+  \right).
+\]
+The whole radius has the same non-vacuity property as the preceding
+generated-FHT endpoint: for fixed dimensions, fixed exact references, and
+sample realizations with \(\widehat d_\star\) bounded away from zero,
+\[
+  \tau_{A,{\rm in}}^{\rm cd}(\omega,J)\to0
+  \quad\text{as}\quad
+  u,\gamma_m,\gamma_s,E^P\to0.
+\]
+\end{corollary}
+
+\begin{corollary}[All-coordinate add-zero FHT writeback specialization]
+Keep the notation and hypotheses of the preceding Sylvester/Walsh
+specialization.  Define the exact signed-Hadamard preconditioner
+\[
+  P_\omega=H_p\diag(\omega).
+\]
+Let \(\mathcal P_p=((q_\ell,r_\ell))_{\ell=1}^{L_p}\) be the deterministic
+ordered pair schedule used by the generated Sylvester/Walsh FHT.  Here
+\(q_\ell,r_\ell\in\{1,\ldots,m\}\), and \(L_p\) is the number of butterfly
+pairs in the schedule.  For the standard radix-two Sylvester schedule,
+\(L_p=p2^{p-1}\) when \(p>0\), and \(L_p=0\) when \(p=0\).
+
+For each column \(a\) of the diagonal sign matrix, initialize the exact FHT
+input, computed stored input, and entrywise input-error budget by
+\[
+  x_i^{(0,a)}=\omega_a{\bf 1}_{i=a},\qquad
+  \widehat x_i^{(0,a)}
+  =
+  \begin{cases}
+    \fl(\omega_a\cdot 1),& i=a,\\
+    0,& i\ne a,
+  \end{cases}
+  \qquad
+  E_i^{(0,a)}=u{\bf 1}_{i=a}.
+\]
+For \(\ell=1,\ldots,L_p\), write \(q=q_\ell\) and \(r=r_\ell\).  The exact
+reference vector \(x^{(\ell,a)}\) is obtained from \(x^{(\ell-1,a)}\) by the
+exact butterfly \(x_q+x_r\), \(x_q-x_r\), leaving all other coordinates
+unchanged.  The computed pre-writeback vector \(y^{(\ell,a)}\) is
+\[
+  y_q^{(\ell,a)}
+    =\fl(\widehat x_q^{(\ell-1,a)}+\widehat x_r^{(\ell-1,a)}),
+  \qquad
+  y_r^{(\ell,a)}
+    =\fl(\widehat x_q^{(\ell-1,a)}-\widehat x_r^{(\ell-1,a)}),
+\]
+and \(y_i^{(\ell,a)}=\widehat x_i^{(\ell-1,a)}\) for \(i\notin\{q,r\}\).
+Before the explicit copy/writeback, define
+\[
+  F_i^{(\ell,a)}
+  =
+  \begin{cases}
+    u|\widehat x_q^{(\ell-1,a)}+\widehat x_r^{(\ell-1,a)}|
+      +E_q^{(\ell-1,a)}+E_r^{(\ell-1,a)},& i=q,\\
+    u|\widehat x_q^{(\ell-1,a)}-\widehat x_r^{(\ell-1,a)}|
+      +E_q^{(\ell-1,a)}+E_r^{(\ell-1,a)},& i=r,\\
+    E_i^{(\ell-1,a)},& i\notin\{q,r\}.
+  \end{cases}
+\]
+The all-coordinate add-zero implementation stores every post-butterfly
+coordinate, including untouched coordinates, by
+\[
+  \widehat x_i^{(\ell,a)}=\fl(y_i^{(\ell,a)}+0),
+  \qquad
+  E_i^{(\ell,a)}
+    =
+    F_i^{(\ell,a)}+u|y_i^{(\ell,a)}|.
+\]
+The final term \(u|y_i^{(\ell,a)}|\) is precisely the additional
+floating-point writeback/copy charge.  It is a computed non-probability
+operation; it does not alter the Rademacher or row-sampling law.
+
+Set
+\[
+  c_p=\sqrt{1/m},\qquad
+  \widehat c_p=\fl(\sqrt{1/m}),\qquad
+  \eta_p=c_pu .
+\]
+The computed add-zero FHT preconditioner and its entrywise error budget are
+\[
+  \widehat P^+_{\omega,ia}
+  =
+  \fl\!\left(\widehat c_p\,\widehat x_i^{(L_p,a)}\right),
+\]
+and
+\[
+  E^{P,+}_{\omega,ia}
+  =
+  u|\widehat c_p\,\widehat x_i^{(L_p,a)}|
+  +
+  |\widehat c_p|E_i^{(L_p,a)}
+  +
+  \eta_p\bigl(|\widehat x_i^{(L_p,a)}|+E_i^{(L_p,a)}\bigr).
+\]
+Thus
+\[
+  |\widehat P^+_{\omega,ia}-(P_\omega)_{ia}|
+  \le E^{P,+}_{\omega,ia}.
+\]
+
+Define the computed left-preconditioned matrix
+\[
+  \widehat Y^+_{\omega}=\fl(\widehat P^+_{\omega}A)
+\]
+and the corresponding product budget
+\[
+  E^{Y,+}_{\omega,ij}
+  =
+  \gamma_m\sum_{a=1}^m
+    |\widehat P^+_{\omega,ia}|\,|A_{aj}|
+  +
+  \sum_{a=1}^m E^{P,+}_{\omega,ia}|A_{aj}|.
+\]
+With the same exact \(d=\sqrt{s/m}\) and the same computed
+\(\widehat d_\star\), set
+\[
+  B_{\omega,J,tj}=\frac{(Y_\omega)_{J_tj}}{d},
+  \qquad
+  \widetilde B^+_{\omega,J,tj}
+    =
+    \frac{(\widehat Y^+_\omega)_{J_tj}}{d},
+  \qquad
+  \widehat B^+_{\omega,J,tj}
+    =
+    \fl\!\left(\frac{(\widehat Y^+_\omega)_{J_tj}}{\widehat d_\star}\right),
+\]
+and
+\[
+  \widehat G_A^+(\omega,J)
+  =
+  \fl\!\left((\widehat B^+_{\omega,J})^T\widehat B^+_{\omega,J}\right).
+\]
+Let
+\[
+  \delta_d=\frac{4u+3u^2+u^3}{1-u}.
+\]
+The row-scaling budget is
+\[
+  E^{{\rm den},+}_{tj}
+  =
+  |\widehat B^+_{\omega,J,tj}|\,u
+  +
+  \frac{|(\widehat Y^+_\omega)_{J_tj}|\,d\,\delta_d}
+       {|\widehat d_\star|\,d}.
+\]
+Define
+\[
+  \tau_{{\rm den},+}(\omega,J)
+  =
+  \left\|
+    \left(
+      \sum_{t=1}^s
+      E^{{\rm den},+}_{tj}|\widehat B^+_{\omega,J,tk}|
+      +
+      |\widetilde B^+_{\omega,J,tj}|E^{{\rm den},+}_{tk}
+    \right)_{j,k=1}^n
+  \right\|_F,
+\]
+\[
+  \tau_{{\rm dot},+}(\omega,J)
+  =
+  \left\|
+    \left(
+      \gamma_s
+      \sum_{t=1}^s
+      |\widehat B^+_{\omega,J,tj}|\,|\widehat B^+_{\omega,J,tk}|
+    \right)_{j,k=1}^n
+  \right\|_F,
+\]
+and
+\[
+  \tau_{{\rm prod},+}(\omega,J)
+  =
+  \left\|
+    \left(
+      \sum_{t=1}^s
+      \frac{E^{Y,+}_{\omega,J_tj}}{d}
+        |\widetilde B^+_{\omega,J,tk}|
+      +
+      |B_{\omega,J,tj}|
+      \frac{E^{Y,+}_{\omega,J_tk}}{d}
+    \right)_{j,k=1}^n
+  \right\|_F .
+\]
+Finally set
+\[
+  \tau_{A,{\rm syl},+}^{\rm cd}(\omega,J)
+  =
+  \tau_{{\rm den},+}(\omega,J)
+  +
+  \tau_{{\rm dot},+}(\omega,J)
+  +
+  \tau_{{\rm prod},+}(\omega,J).
+\]
+
+Under the same exact preprocessing and sample-budget condition as in the
+preceding theorem,
+\[
+  \Prob\!\left[
+    (1-\eps)A^TA-\tau_{A,{\rm syl},+}^{\rm cd}(\omega,J)\I_n
+    \preceq
+    \widehat G_A^+(\omega,J)
+    \preceq
+    (1+\eps)A^TA+\tau_{A,{\rm syl},+}^{\rm cd}(\omega,J)\I_n
+  \right]
+  \ge
+  1-\delta_{\rm pre}-\delta_{\rm sample}.
+\]
+For fixed \(p,m,n,s,A,\omega,J\), the additional writeback terms are finite
+sums of factors proportional to \(u\).  In the small-roundoff regime
+\(\gamma_m=\Theta(mu)\), \(\gamma_s=\Theta(su)\), and
+\(\delta_d=\Theta(u)\), the displayed deterministic radius satisfies
+\begin{align*}
+  \tau_{A,{\rm syl},+}^{\rm cd}(\omega,J)
+  &=
+  O\!\Biggl(
+    (u+\gamma_m+\gamma_s+\delta_d)
+    \Biggl[
+      \sum_{i,a}|\widehat x_i^{(L_p,a)}|\|A_{a,*}\|_1 \\
+  &\hspace{2.8cm}
+      +
+      \sum_{\ell=1}^{L_p}\sum_{i,a}
+        |y_i^{(\ell,a)}|\|A_{a,*}\|_1
+      +
+      \sum_{t,j,k}
+        |\widehat B^+_{\omega,J,tj}|
+        |\widehat B^+_{\omega,J,tk}|
+    \Biggr]
+  \Biggr),
+\end{align*}
+with \(\Theta\) of the same expanded expression whenever the bracketed
+realized magnitude is bounded above and below by positive constants independent
+of \(u\).  In particular,
+\(\tau_{A,{\rm syl},+}^{\rm cd}(\omega,J)\to0\) as the roundoff quantities
+tend to zero with the dimensions, exact input, and realized randomness fixed.
+\end{corollary}
+
+\begin{corollary}[Modified-coordinate add-zero FHT writeback specialization]
+Keep the notation and hypotheses of Corollary 17.  The modified-coordinate
+writeback implementation uses the same exact \(P_\omega\), the same pair
+schedule \(\mathcal P_p=((q_\ell,r_\ell))_{\ell=1}^{L_p}\), and the same
+computed pre-writeback vector \(y^{(\ell,a)}\) and pre-writeback budget
+\(F^{(\ell,a)}\).  It differs only in the storage step after each butterfly:
+for \(q=q_\ell\) and \(r=r_\ell\),
+\[
+  \widehat x_i^{(\ell,a),\mathrm{mc}}
+  =
+  \begin{cases}
+    \fl(y_i^{(\ell,a),\mathrm{mc}}+0),& i\in\{q,r\},\\
+    y_i^{(\ell,a),\mathrm{mc}},& i\notin\{q,r\},
+  \end{cases}
+\]
+and
+\[
+  E_i^{(\ell,a),\mathrm{mc}}
+  =
+  \begin{cases}
+    F_i^{(\ell,a),\mathrm{mc}}+u|y_i^{(\ell,a),\mathrm{mc}}|,
+      & i\in\{q,r\},\\
+    F_i^{(\ell,a),\mathrm{mc}},& i\notin\{q,r\}.
+  \end{cases}
+\]
+The superscript \({\rm mc}\) denotes the modified-coordinate recurrence.  Thus
+only the two coordinates whose FHT values are changed by the butterfly receive
+the extra add-zero copy charge.
+
+With the same
+\[
+  c_p=\sqrt{1/m},\qquad
+  \widehat c_p=\fl(\sqrt{1/m}),\qquad
+  \eta_p=c_pu,
+\]
+define
+\[
+  \widehat P^{\rm mc}_{\omega,ia}
+  =
+  \fl\!\left(\widehat c_p\,\widehat x_i^{(L_p,a),\mathrm{mc}}\right)
+\]
+and
+\[
+  E^{P,{\rm mc}}_{\omega,ia}
+  =
+  u|\widehat c_p\,\widehat x_i^{(L_p,a),\mathrm{mc}}|
+  +
+  |\widehat c_p|E_i^{(L_p,a),\mathrm{mc}}
+  +
+  \eta_p\bigl(
+    |\widehat x_i^{(L_p,a),\mathrm{mc}}|
+    +E_i^{(L_p,a),\mathrm{mc}}
+  \bigr).
+\]
+Then
+\[
+  |\widehat P^{\rm mc}_{\omega,ia}-(P_\omega)_{ia}|
+  \le E^{P,{\rm mc}}_{\omega,ia}.
+\]
+Define
+\[
+  \widehat Y^{\rm mc}_\omega=\fl(\widehat P^{\rm mc}_\omega A),
+\]
+\[
+  E^{Y,{\rm mc}}_{\omega,ij}
+  =
+  \gamma_m\sum_{a=1}^m
+    |\widehat P^{\rm mc}_{\omega,ia}|\,|A_{aj}|
+  +
+  \sum_{a=1}^m E^{P,{\rm mc}}_{\omega,ia}|A_{aj}|.
+\]
+Using the same concrete denominator \(\widehat d_\star\), define
+\[
+  \widetilde B^{\rm mc}_{\omega,J,tj}
+    =
+    \frac{(\widehat Y^{\rm mc}_\omega)_{J_tj}}{d},
+  \qquad
+  \widehat B^{\rm mc}_{\omega,J,tj}
+    =
+    \fl\!\left(
+      \frac{(\widehat Y^{\rm mc}_\omega)_{J_tj}}{\widehat d_\star}
+    \right),
+\]
+and
+\[
+  \widehat G_A^{\rm mc}(\omega,J)
+  =
+  \fl\!\left(
+    (\widehat B^{\rm mc}_{\omega,J})^T
+    \widehat B^{\rm mc}_{\omega,J}
+  \right).
+\]
+Define
+\[
+  E^{{\rm den},{\rm mc}}_{tj}
+  =
+  |\widehat B^{\rm mc}_{\omega,J,tj}|\,u
+  +
+  \frac{|(\widehat Y^{\rm mc}_\omega)_{J_tj}|\,d\,\delta_d}
+       {|\widehat d_\star|\,d}.
+\]
+Then
+\[
+  \tau_{{\rm den},{\rm mc}}(\omega,J)
+  =
+  \left\|
+    \left(
+      \sum_{t=1}^s
+      E^{{\rm den},{\rm mc}}_{tj}
+        |\widehat B^{\rm mc}_{\omega,J,tk}|
+      +
+      |\widetilde B^{\rm mc}_{\omega,J,tj}|
+        E^{{\rm den},{\rm mc}}_{tk}
+    \right)_{j,k=1}^n
+  \right\|_F,
+\]
+\[
+  \tau_{{\rm dot},{\rm mc}}(\omega,J)
+  =
+  \left\|
+    \left(
+      \gamma_s
+      \sum_{t=1}^s
+      |\widehat B^{\rm mc}_{\omega,J,tj}|\,
+      |\widehat B^{\rm mc}_{\omega,J,tk}|
+    \right)_{j,k=1}^n
+  \right\|_F,
+\]
+and
+\[
+  \tau_{{\rm prod},{\rm mc}}(\omega,J)
+  =
+  \left\|
+    \left(
+      \sum_{t=1}^s
+      \frac{E^{Y,{\rm mc}}_{\omega,J_tj}}{d}
+        |\widetilde B^{\rm mc}_{\omega,J,tk}|
+      +
+      |B_{\omega,J,tj}|
+      \frac{E^{Y,{\rm mc}}_{\omega,J_tk}}{d}
+    \right)_{j,k=1}^n
+  \right\|_F .
+\]
+The full modified-coordinate radius is
+\[
+  \tau_{A,{\rm syl},{\rm mc}}^{\rm cd}(\omega,J)
+  =
+  \tau_{{\rm den},{\rm mc}}(\omega,J)
+  +
+  \tau_{{\rm dot},{\rm mc}}(\omega,J)
+  +
+  \tau_{{\rm prod},{\rm mc}}(\omega,J).
+\]
+
+Under the same exact preprocessing and sample-budget condition,
+\[
+  \Prob\!\left[
+    (1-\eps)A^TA-\tau_{A,{\rm syl},{\rm mc}}^{\rm cd}(\omega,J)\I_n
+    \preceq
+    \widehat G_A^{\rm mc}(\omega,J)
+    \preceq
+    (1+\eps)A^TA+\tau_{A,{\rm syl},{\rm mc}}^{\rm cd}(\omega,J)\I_n
+  \right]
+  \ge
+  1-\delta_{\rm pre}-\delta_{\rm sample}.
+\]
+For fixed \(p,m,n,s,A,\omega,J\), the extra modified-coordinate copy terms are
+finite sums of factors \(u|y_i^{(\ell,a),\mathrm{mc}}|\) only over
+\(i\in\{q_\ell,r_\ell\}\).  In the same small-roundoff regime,
+\[
+  \tau_{A,{\rm syl},{\rm mc}}^{\rm cd}(\omega,J)
+  =
+  O\!\left(
+    \tau_{A,{\rm syl},+}^{\rm cd}(\omega,J)
+  \right),
+\]
+and its irreducible copy contribution replaces
+\[
+  \sum_{\ell=1}^{L_p}\sum_{i,a}
+    |y_i^{(\ell,a)}|\|A_{a,*}\|_1
+\]
+by the smaller realized sum
+\[
+  \sum_{\ell=1}^{L_p}\sum_{a}
+    \left(
+      |y_{q_\ell}^{(\ell,a),\mathrm{mc}}|
+      +
+      |y_{r_\ell}^{(\ell,a),\mathrm{mc}}|
+    \right)\|A_{a,*}\|_1 .
+\]
+Consequently the modified-coordinate radius is non-vacuous and tends to zero
+as the roundoff quantities tend to zero with all dimensions, exact inputs, and
+realized randomness fixed.
+\end{corollary}
+
+\begin{corollary}[All-coordinate multiply-one and subtract-zero FHT writeback specializations]
+Keep the notation and hypotheses of the all-coordinate add-zero FHT
+specialization.  Let
+\[
+  \rho\in\{{\rm mul1},{\rm sub0}\}
+\]
+be a label for the two additional all-coordinate storage routines, and define
+the rounded storage map
+\[
+  c_{\rm mul1}(z)=\fl(z\cdot1),
+  \qquad
+  c_{\rm sub0}(z)=\fl(z-0).
+\]
+Both routines use the same exact signed-Hadamard preconditioner
+\[
+  P_\omega=H_p\diag(\omega),
+\]
+the same exact Sylvester/Walsh pair schedule
+\(\mathcal P_p=((q_\ell,r_\ell))_{\ell=1}^{L_p}\), and the same exact
+Rademacher and exact uniform-row probability laws as before.  Their computed
+initial diagonal sign columns are still stored by the rounded multiply-one
+sign copy:
+\[
+  x_i^{(0,a),\rho}=\omega_a{\bf 1}_{i=a},\qquad
+  \widehat x_i^{(0,a),\rho}
+  =
+  \begin{cases}
+    \fl(\omega_a\cdot1),& i=a,\\
+    0,& i\ne a,
+  \end{cases}
+  \qquad
+  E_i^{(0,a),\rho}=u{\bf 1}_{i=a}.
+\]
+
+For \(\ell=1,\ldots,L_p\), write \(q=q_\ell\) and \(r=r_\ell\).  The exact
+reference vector \(x^{(\ell,a),\rho}\) is obtained by the exact FHT butterfly.
+The computed pre-writeback vector is
+\[
+  y_q^{(\ell,a),\rho}
+    =\fl(\widehat x_q^{(\ell-1,a),\rho}
+          +\widehat x_r^{(\ell-1,a),\rho}),
+  \qquad
+  y_r^{(\ell,a),\rho}
+    =\fl(\widehat x_q^{(\ell-1,a),\rho}
+          -\widehat x_r^{(\ell-1,a),\rho}),
+\]
+and \(y_i^{(\ell,a),\rho}=\widehat x_i^{(\ell-1,a),\rho}\) for
+\(i\notin\{q,r\}\).  Before the explicit copy/writeback, define
+\[
+  F_i^{(\ell,a),\rho}
+  =
+  \begin{cases}
+    u|\widehat x_q^{(\ell-1,a),\rho}
+      +\widehat x_r^{(\ell-1,a),\rho}|
+      +E_q^{(\ell-1,a),\rho}+E_r^{(\ell-1,a),\rho},& i=q,\\
+    u|\widehat x_q^{(\ell-1,a),\rho}
+      -\widehat x_r^{(\ell-1,a),\rho}|
+      +E_q^{(\ell-1,a),\rho}+E_r^{(\ell-1,a),\rho},& i=r,\\
+    E_i^{(\ell-1,a),\rho},& i\notin\{q,r\}.
+  \end{cases}
+\]
+The all-coordinate \(\rho\)-writeback step stores every coordinate by
+\[
+  \widehat x_i^{(\ell,a),\rho}=c_\rho(y_i^{(\ell,a),\rho}),
+  \qquad
+  E_i^{(\ell,a),\rho}
+    =
+    F_i^{(\ell,a),\rho}+u|y_i^{(\ell,a),\rho}|.
+\]
+Thus both \(z\mapsto\fl(z\cdot1)\) and \(z\mapsto\fl(z-0)\) are charged as
+computed non-probability writebacks, while the random signs and sampled rows
+remain exact.
+
+With
+\[
+  c_p=\sqrt{1/m},\qquad
+  \widehat c_p=\fl(\sqrt{1/m}),\qquad
+  \eta_p=c_pu,
+\]
+define
+\[
+  \widehat P^\rho_{\omega,ia}
+  =
+  \fl\!\left(\widehat c_p\,\widehat x_i^{(L_p,a),\rho}\right),
+\]
+\[
+  E^{P,\rho}_{\omega,ia}
+  =
+  u|\widehat c_p\,\widehat x_i^{(L_p,a),\rho}|
+  +
+  |\widehat c_p|E_i^{(L_p,a),\rho}
+  +
+  \eta_p\bigl(|\widehat x_i^{(L_p,a),\rho}|
+      +E_i^{(L_p,a),\rho}\bigr).
+\]
+Then
+\[
+  |\widehat P^\rho_{\omega,ia}-(P_\omega)_{ia}|
+  \le E^{P,\rho}_{\omega,ia}.
+\]
+Define
+\[
+  \widehat Y^\rho_\omega=\fl(\widehat P^\rho_\omega A),
+  \qquad
+  E^{Y,\rho}_{\omega,ij}
+  =
+  \gamma_m\sum_{a=1}^m
+    |\widehat P^\rho_{\omega,ia}|\,|A_{aj}|
+  +
+  \sum_{a=1}^m E^{P,\rho}_{\omega,ia}|A_{aj}|.
+\]
+Using the same exact denominator \(d=\sqrt{s/m}\), the same computed
+\(\widehat d_\star\), and the same
+\[
+  \delta_d=\frac{4u+3u^2+u^3}{1-u},
+\]
+define
+\[
+  \widetilde B^\rho_{\omega,J,tj}
+    =
+    \frac{(\widehat Y^\rho_\omega)_{J_tj}}{d},
+  \qquad
+  \widehat B^\rho_{\omega,J,tj}
+    =
+    \fl\!\left(
+      \frac{(\widehat Y^\rho_\omega)_{J_tj}}{\widehat d_\star}
+    \right),
+\]
+\[
+  \widehat G_A^\rho(\omega,J)
+  =
+  \fl\!\left((\widehat B^\rho_{\omega,J})^T
+             \widehat B^\rho_{\omega,J}\right),
+\]
+and
+\[
+  E^{{\rm den},\rho}_{tj}
+  =
+  |\widehat B^\rho_{\omega,J,tj}|\,u
+  +
+  \frac{|(\widehat Y^\rho_\omega)_{J_tj}|\,d\,\delta_d}
+       {|\widehat d_\star|\,d}.
+\]
+The denominator, dot-product, and preconditioned-product contributions are
+\[
+  \tau_{{\rm den},\rho}(\omega,J)
+  =
+  \left\|
+    \left(
+      \sum_{t=1}^s
+      E^{{\rm den},\rho}_{tj}
+        |\widehat B^\rho_{\omega,J,tk}|
+      +
+      |\widetilde B^\rho_{\omega,J,tj}|
+        E^{{\rm den},\rho}_{tk}
+    \right)_{j,k=1}^n
+  \right\|_F,
+\]
+\[
+  \tau_{{\rm dot},\rho}(\omega,J)
+  =
+  \left\|
+    \left(
+      \gamma_s\sum_{t=1}^s
+      |\widehat B^\rho_{\omega,J,tj}|\,
+      |\widehat B^\rho_{\omega,J,tk}|
+    \right)_{j,k=1}^n
+  \right\|_F,
+\]
+and
+\[
+  \tau_{{\rm prod},\rho}(\omega,J)
+  =
+  \left\|
+    \left(
+      \sum_{t=1}^s
+      \frac{E^{Y,\rho}_{\omega,J_tj}}{d}
+        |\widetilde B^\rho_{\omega,J,tk}|
+      +
+      |B_{\omega,J,tj}|
+      \frac{E^{Y,\rho}_{\omega,J_tk}}{d}
+    \right)_{j,k=1}^n
+  \right\|_F .
+\]
+Set
+\[
+  \tau_{A,{\rm syl},\rho}^{\rm cd}(\omega,J)
+  =
+  \tau_{{\rm den},\rho}(\omega,J)
+  +
+  \tau_{{\rm dot},\rho}(\omega,J)
+  +
+  \tau_{{\rm prod},\rho}(\omega,J).
+\]
+Under the same exact preprocessing and sample-budget condition,
+\[
+  \Prob\!\left[
+    (1-\eps)A^TA-\tau_{A,{\rm syl},\rho}^{\rm cd}(\omega,J)\I_n
+    \preceq
+    \widehat G_A^\rho(\omega,J)
+    \preceq
+    (1+\eps)A^TA+\tau_{A,{\rm syl},\rho}^{\rm cd}(\omega,J)\I_n
+  \right]
+  \ge
+  1-\delta_{\rm pre}-\delta_{\rm sample}.
+\]
+
+For fixed \(p,m,n,s,A,\omega,J\), the irreducible all-coordinate copy
+contribution is
+\[
+  \sum_{\ell=1}^{L_p}\sum_{i,a}
+    |y_i^{(\ell,a),\rho}|\|A_{a,*}\|_1 .
+\]
+In the small-roundoff regime
+\(\gamma_m=\Theta(mu)\), \(\gamma_s=\Theta(su)\), and
+\(\delta_d=\Theta(u)\),
+\begin{align*}
+  \tau_{A,{\rm syl},\rho}^{\rm cd}(\omega,J)
+  &=
+  O\!\Biggl(
+    (u+\gamma_m+\gamma_s+\delta_d)
+    \Biggl[
+      \sum_{i,a}|\widehat x_i^{(L_p,a),\rho}|\|A_{a,*}\|_1\\
+  &\hspace{2.8cm}
+      +
+      \sum_{\ell=1}^{L_p}\sum_{i,a}
+        |y_i^{(\ell,a),\rho}|\|A_{a,*}\|_1
+      +
+      \sum_{t,j,k}
+        |\widehat B^\rho_{\omega,J,tj}|
+        |\widehat B^\rho_{\omega,J,tk}|
+    \Biggr]
+  \Biggr).
+\end{align*}
+The same expression is a \(\Theta\)-order description whenever the bracketed
+realized magnitude is bounded above and below by positive constants
+independent of \(u\).  Consequently both \({\rm mul1}\) and \({\rm sub0}\)
+radii are non-vacuous and tend to zero as the roundoff quantities tend to zero
+with all dimensions, exact inputs, and realized randomness fixed.
+\end{corollary}
+
+\begin{corollary}[Modified-coordinate multiply-one and subtract-zero FHT writeback specializations]
+Keep the notation and hypotheses of the modified-coordinate add-zero
+specialization and the all-coordinate \({\rm mul1}/{\rm sub0}\)
+specialization.  Let
+\[
+  \rho\in\{{\rm mul1},{\rm sub0}\},
+  \qquad
+  c_{\rm mul1}(z)=\fl(z\cdot1),
+  \qquad
+  c_{\rm sub0}(z)=\fl(z-0).
+\]
+The exact signed-Hadamard preconditioner is still
+\[
+  P_\omega=H_p\diag(\omega),
+\]
+and the pair schedule is still
+\[
+  \mathcal P_p=((q_\ell,r_\ell))_{\ell=1}^{L_p}.
+\]
+For each column \(a\), initialize
+\[
+  x_i^{(0,a),{\rm mc},\rho}=\omega_a{\bf 1}_{i=a},\qquad
+  \widehat x_i^{(0,a),{\rm mc},\rho}
+  =
+  \begin{cases}
+    \fl(\omega_a\cdot1),& i=a,\\
+    0,& i\ne a,
+  \end{cases}
+  \qquad
+  E_i^{(0,a),{\rm mc},\rho}=u{\bf 1}_{i=a}.
+\]
+For the \(\ell\)-th pair, write \(q=q_\ell\) and \(r=r_\ell\).  The exact
+reference vector \(x^{(\ell,a),{\rm mc},\rho}\) is obtained by the exact FHT
+butterfly.  The computed pre-writeback vector is
+\[
+  y_q^{(\ell,a),{\rm mc},\rho}
+    =
+    \fl(\widehat x_q^{(\ell-1,a),{\rm mc},\rho}
+        +\widehat x_r^{(\ell-1,a),{\rm mc},\rho}),
+\]
+\[
+  y_r^{(\ell,a),{\rm mc},\rho}
+    =
+    \fl(\widehat x_q^{(\ell-1,a),{\rm mc},\rho}
+        -\widehat x_r^{(\ell-1,a),{\rm mc},\rho}),
+\]
+and \(y_i^{(\ell,a),{\rm mc},\rho}
+=\widehat x_i^{(\ell-1,a),{\rm mc},\rho}\) for \(i\notin\{q,r\}\).
+Before the explicit modified-coordinate writeback, define
+\[
+  F_i^{(\ell,a),{\rm mc},\rho}
+  =
+  \begin{cases}
+    u|\widehat x_q^{(\ell-1,a),{\rm mc},\rho}
+      +\widehat x_r^{(\ell-1,a),{\rm mc},\rho}|
+      +E_q^{(\ell-1,a),{\rm mc},\rho}
+      +E_r^{(\ell-1,a),{\rm mc},\rho},& i=q,\\
+    u|\widehat x_q^{(\ell-1,a),{\rm mc},\rho}
+      -\widehat x_r^{(\ell-1,a),{\rm mc},\rho}|
+      +E_q^{(\ell-1,a),{\rm mc},\rho}
+      +E_r^{(\ell-1,a),{\rm mc},\rho},& i=r,\\
+    E_i^{(\ell-1,a),{\rm mc},\rho},& i\notin\{q,r\}.
+  \end{cases}
+\]
+The modified-coordinate \(\rho\)-writeback stores only the two butterfly
+outputs:
+\[
+  \widehat x_i^{(\ell,a),{\rm mc},\rho}
+  =
+  \begin{cases}
+    c_\rho(y_i^{(\ell,a),{\rm mc},\rho}),& i\in\{q,r\},\\
+    y_i^{(\ell,a),{\rm mc},\rho},& i\notin\{q,r\},
+  \end{cases}
+\]
+\[
+  E_i^{(\ell,a),{\rm mc},\rho}
+  =
+  \begin{cases}
+    F_i^{(\ell,a),{\rm mc},\rho}
+      +u|y_i^{(\ell,a),{\rm mc},\rho}|,& i\in\{q,r\},\\
+    F_i^{(\ell,a),{\rm mc},\rho},& i\notin\{q,r\}.
+  \end{cases}
+\]
+Thus \(z\mapsto\fl(z\cdot1)\) and \(z\mapsto\fl(z-0)\) are charged only on
+modified coordinates; untouched coordinates carry their prior propagated
+error without a writeback term.
+
+With
+\[
+  c_p=\sqrt{1/m},\qquad
+  \widehat c_p=\fl(\sqrt{1/m}),\qquad
+  \eta_p=c_pu,
+\]
+define
+\[
+  \widehat P^{{\rm mc},\rho}_{\omega,ia}
+  =
+  \fl\!\left(
+    \widehat c_p\,\widehat x_i^{(L_p,a),{\rm mc},\rho}
+  \right),
+\]
+\[
+  E^{P,{\rm mc},\rho}_{\omega,ia}
+  =
+  u|\widehat c_p\,\widehat x_i^{(L_p,a),{\rm mc},\rho}|
+  +
+  |\widehat c_p|E_i^{(L_p,a),{\rm mc},\rho}
+  +
+  \eta_p\bigl(
+    |\widehat x_i^{(L_p,a),{\rm mc},\rho}|
+    +E_i^{(L_p,a),{\rm mc},\rho}
+  \bigr).
+\]
+Then
+\[
+  |\widehat P^{{\rm mc},\rho}_{\omega,ia}-(P_\omega)_{ia}|
+  \le E^{P,{\rm mc},\rho}_{\omega,ia}.
+\]
+Set
+\[
+  \widehat Y^{{\rm mc},\rho}_\omega
+  =
+  \fl(\widehat P^{{\rm mc},\rho}_\omega A),
+\]
+\[
+  E^{Y,{\rm mc},\rho}_{\omega,ij}
+  =
+  \gamma_m\sum_{a=1}^m
+    |\widehat P^{{\rm mc},\rho}_{\omega,ia}|\,|A_{aj}|
+  +
+  \sum_{a=1}^m E^{P,{\rm mc},\rho}_{\omega,ia}|A_{aj}|.
+\]
+Using the same \(d=\sqrt{s/m}\), \(\widehat d_\star\), and
+\(\delta_d=(4u+3u^2+u^3)/(1-u)\), define
+\[
+  \widetilde B^{{\rm mc},\rho}_{\omega,J,tj}
+    =
+    \frac{(\widehat Y^{{\rm mc},\rho}_\omega)_{J_tj}}{d},
+  \qquad
+  \widehat B^{{\rm mc},\rho}_{\omega,J,tj}
+    =
+    \fl\!\left(
+      \frac{(\widehat Y^{{\rm mc},\rho}_\omega)_{J_tj}}
+           {\widehat d_\star}
+    \right),
+\]
+\[
+  \widehat G_A^{{\rm mc},\rho}(\omega,J)
+  =
+  \fl\!\left(
+    (\widehat B^{{\rm mc},\rho}_{\omega,J})^T
+    \widehat B^{{\rm mc},\rho}_{\omega,J}
+  \right).
+\]
+Let
+\[
+  E^{{\rm den},{\rm mc},\rho}_{tj}
+  =
+  |\widehat B^{{\rm mc},\rho}_{\omega,J,tj}|\,u
+  +
+  \frac{|(\widehat Y^{{\rm mc},\rho}_\omega)_{J_tj}|\,d\,\delta_d}
+       {|\widehat d_\star|\,d}.
+\]
+Define
+\[
+  \tau_{{\rm den},{\rm mc},\rho}(\omega,J)
+  =
+  \left\|
+    \left(
+      \sum_{t=1}^s
+      E^{{\rm den},{\rm mc},\rho}_{tj}
+        |\widehat B^{{\rm mc},\rho}_{\omega,J,tk}|
+      +
+      |\widetilde B^{{\rm mc},\rho}_{\omega,J,tj}|
+        E^{{\rm den},{\rm mc},\rho}_{tk}
+    \right)_{j,k=1}^n
+  \right\|_F,
+\]
+\[
+  \tau_{{\rm dot},{\rm mc},\rho}(\omega,J)
+  =
+  \left\|
+    \left(
+      \gamma_s\sum_{t=1}^s
+      |\widehat B^{{\rm mc},\rho}_{\omega,J,tj}|\,
+      |\widehat B^{{\rm mc},\rho}_{\omega,J,tk}|
+    \right)_{j,k=1}^n
+  \right\|_F,
+\]
+and
+\[
+  \tau_{{\rm prod},{\rm mc},\rho}(\omega,J)
+  =
+  \left\|
+    \left(
+      \sum_{t=1}^s
+      \frac{E^{Y,{\rm mc},\rho}_{\omega,J_tj}}{d}
+        |\widetilde B^{{\rm mc},\rho}_{\omega,J,tk}|
+      +
+      |B_{\omega,J,tj}|
+      \frac{E^{Y,{\rm mc},\rho}_{\omega,J_tk}}{d}
+    \right)_{j,k=1}^n
+  \right\|_F .
+\]
+The full modified-coordinate \(\rho\)-radius is
+\[
+  \tau_{A,{\rm syl},{\rm mc},\rho}^{\rm cd}(\omega,J)
+  =
+  \tau_{{\rm den},{\rm mc},\rho}(\omega,J)
+  +
+  \tau_{{\rm dot},{\rm mc},\rho}(\omega,J)
+  +
+  \tau_{{\rm prod},{\rm mc},\rho}(\omega,J).
+\]
+Under the same exact preprocessing and sample-budget condition,
+\[
+  \Prob\!\left[
+    (1-\eps)A^TA-\tau_{A,{\rm syl},{\rm mc},\rho}^{\rm cd}(\omega,J)\I_n
+    \preceq
+    \widehat G_A^{{\rm mc},\rho}(\omega,J)
+    \preceq
+    (1+\eps)A^TA+\tau_{A,{\rm syl},{\rm mc},\rho}^{\rm cd}(\omega,J)\I_n
+  \right]
+  \ge
+  1-\delta_{\rm pre}-\delta_{\rm sample}.
+\]
+
+For fixed \(p,m,n,s,A,\omega,J\), the modified-coordinate copy contribution is
+\[
+  \sum_{\ell=1}^{L_p}\sum_a
+  \left(
+    |y_{q_\ell}^{(\ell,a),{\rm mc},\rho}|
+    +
+    |y_{r_\ell}^{(\ell,a),{\rm mc},\rho}|
+  \right)\|A_{a,*}\|_1 .
+\]
+In the small-roundoff regime
+\(\gamma_m=\Theta(mu)\), \(\gamma_s=\Theta(su)\), and
+\(\delta_d=\Theta(u)\),
+\begin{align*}
+  \tau_{A,{\rm syl},{\rm mc},\rho}^{\rm cd}(\omega,J)
+  &=
+  O\!\Biggl(
+    (u+\gamma_m+\gamma_s+\delta_d)
+    \Biggl[
+      \sum_{i,a}
+        |\widehat x_i^{(L_p,a),{\rm mc},\rho}|\|A_{a,*}\|_1\\
+  &\hspace{2.7cm}
+      +
+      \sum_{\ell=1}^{L_p}\sum_a
+        \left(
+          |y_{q_\ell}^{(\ell,a),{\rm mc},\rho}|
+          +
+          |y_{r_\ell}^{(\ell,a),{\rm mc},\rho}|
+        \right)\|A_{a,*}\|_1\\
+  &\hspace{2.7cm}
+      +
+      \sum_{t,j,k}
+        |\widehat B^{{\rm mc},\rho}_{\omega,J,tj}|
+        |\widehat B^{{\rm mc},\rho}_{\omega,J,tk}|
+    \Biggr]
+  \Biggr).
+\end{align*}
+The same expression is a \(\Theta\)-order description whenever the bracketed
+realized magnitude is bounded above and below by positive constants
+independent of \(u\).  Consequently both modified-coordinate \({\rm mul1}\)
+and modified-coordinate \({\rm sub0}\) radii are non-vacuous and tend to zero
+as the roundoff quantities tend to zero with all dimensions, exact inputs, and
+realized randomness fixed.
+
+For the modeled functional FHT schedules, the formalized same-stage
+no-alias/order facts show that distinct generated butterfly pairs commute for
+the rounded base update and for all three modified-coordinate writeback
+routines.  These facts justify reordering distinct pairs inside one
+generated stage for this model; they do not assert arbitrary in-place,
+vectorized, or overwrite-array semantics.  The same certificates are also
+specialized to the concrete Sylvester/Walsh stage list
+\(\operatorname{Pairs}_{\rm syl}(p,r)\), so the \(2^p\)-dimensional generated
+stage interface can be used directly without unfolding to a generic stride
+schedule.
+The matching no-touch facts for the rounded base schedule and the three
+modified-coordinate writeback schedules say that any coordinate outside every
+scheduled pair is returned unchanged.  This is why the
+modified-coordinate copy contribution appears only on pair outputs; the
+statement is not claimed for all-coordinate writeback routines, which rewrite
+every coordinate by design.
+The corresponding propagated-budget certificates are also proved: on those
+same untouched coordinates, the base rounded budget and the three
+modified-coordinate budgets remain exactly equal to the incoming radius \(E_i\).
+The same value and propagated-budget certificates are specialized to the
+concrete Sylvester/Walsh generated interfaces: the full generated schedule
+\(\operatorname{Pairs}_{\rm syl}(p)\) and a single generated stage
+\(\operatorname{Pairs}_{\rm syl}(p,r)\).  Thus, whenever a coordinate is outside
+every pair in the relevant generated list, the full or one-stage rounded base
+schedule and the three modified-coordinate schedules return the incoming value,
+and their propagated budgets return exactly the incoming radius.  This adds no
+probability-law term and no additional roundoff radius; it is a concrete
+interface wrapper for the already charged functional schedules.
+\end{corollary}
+
+\begin{corollary}[Readable deterministic cap for computed SRHT on the Algorithm 3 input]
+Let \(A\in\R^{m\times n}\) be the exact input matrix handed to Algorithm 3.
+Let \(0<\delta_{\rm pre}<m\) be the target SRHT preprocessing failure budget.
+Let \(0<\delta_{\rm sample}<1\) be the target uniform-row sampling failure
+budget.  Fix an exact distortion tolerance \(0<\eps<1\), and set
+\[
+  t_{\rm pre}
+  =
+  \sqrt{\frac{8\log(m/\delta_{\rm pre})}{m}} .
+\]
+This is the standard logarithmic choice from Tropp's SRHT row-norm analysis
+\cite{Tropp2011SRHT}.  It makes
+\[
+  m\exp\!\left(-\frac{m t_{\rm pre}^2}{8}\right)
+  =
+  \delta_{\rm pre}.
+\]
+Assume first that \(A\ne0\).  Let
+\[
+  r=\operatorname{rank}(A)
+\]
+and choose exact analysis-only matrices \(U_A\in\R^{m\times r}\) and
+\(C_A\in\R^{r\times n}\) such that
+\[
+  U_A^TU_A=\I_r,
+  \qquad
+  A=U_AC_A .
+\]
+The matrix \(U_A\) is not computed by the algorithm in this theorem.  It is
+only the exact column-space basis used to state the SRHT probability event.
+This corollary is the fixed-radius readable cap obtained by bounding the
+sample-dependent radius \(\tau_A^{\rm cd}(\omega,J)\) from the preceding theorem
+on the same exact SRHT row-norm event.
+
+Let \(\mathcal S\in\R^{m\times m}\) be an exact sign-pattern table with
+\(\mathcal S_{ia}^2=1\), and let
+\(\omega\in\{\pm1\}^m\) be the exact realized Rademacher sign vector.  Store
+the signs by one of the rounded copy routines
+\(\fl(\omega_a\cdot1)\), \(\fl(\omega_a+0)\), or \(\fl(\omega_a-0)\), and
+write the stored signs as \(\widehat\omega^\rho\), so that
+\[
+  |\widehat\omega^\rho_a-\omega_a|\le u .
+\]
+Define
+\[
+  c_m=\sqrt{1/m},\qquad \widehat c_m=\fl(\sqrt{1/m}),
+\]
+\[
+  H_{ia}=c_m\mathcal S_{ia},
+  \qquad
+  \widehat H_{ia}=\widehat c_m\mathcal S_{ia},
+\]
+\[
+  D_\omega=\diag(\omega),\qquad
+  \widehat D_\omega^\rho=\diag(\widehat\omega^\rho),
+\]
+and
+\[
+  P_\omega=HD_\omega,\qquad
+  \widehat P_\omega^\rho=\fl(\widehat H\widehat D_\omega^\rho).
+\]
+Then \(P_\omega\) is exact arithmetic and orthogonal, while
+\(\widehat P_\omega^\rho\) is the computed materialized preconditioner.  The
+computed preconditioner is charged by the rounded-scale, stored-sign, and
+rounded \(H\diag(\omega)\) product budgets displayed in the preceding theorem.
+
+Define the exact and computed Algorithm 3 preconditioned matrices
+\[
+  Y_\omega=P_\omega A,
+  \qquad
+  \widehat Y_\omega^\rho=\fl(\widehat P_\omega^\rho A).
+\]
+For every row \(i\) and column \(j\),
+\[
+  |\widehat Y^\rho_{\omega,ij}-(Y_\omega)_{ij}|
+  \le
+  \kappa_m\NormOne{A_{*j}} .
+\]
+Thus the preconditioned matrix bound is for the actual input matrix \(A\), not
+for an assumed orthonormal input.
+
+Define the column-size parameters
+\[
+  a_1=\max_{1\le j\le n}\NormOne{A_{*j}},
+  \qquad
+  a_2=\max_{1\le j\le n}\Norm{A_{*j}},
+  \qquad
+  \mu_A=\frac{a_1}{\sqrt m\,a_2}.
+\]
+Since \(A\ne0\), \(a_2>0\); also \(0<\mu_A\le1\).  Define the
+rank-sensitive logarithmic SRHT radius
+\[
+  S_{A,\log}(\delta_{\rm pre})
+  =
+  \sqrt{\frac rm}
+  +
+  \sqrt{\frac{8\log(m/\delta_{\rm pre})}{m}},
+  \qquad
+  L_{A,\log}(\delta_{\rm pre})
+  =
+  m\,S_{A,\log}(\delta_{\rm pre})^2,
+\]
+choose the exact row-sample count
+\[
+  s
+  =
+  s_{\min}\!\left(
+    L_{A,\log}(\delta_{\rm pre}),
+    \eps,
+    \delta_{\rm sample};
+    r
+  \right),
+\]
+and choose any exact Chernoff parameter \(\theta_A>0\) witnessing this
+definition, so that
+\[
+  \Phi(\theta_A,L_{A,\log}(\delta_{\rm pre}),\eps,s,r)
+  \le\delta_{\rm sample}.
+\]
+For a standard constant-distortion specialization, take \(\eps=1/2\); then
+\[
+  s
+  =
+  s_{\min}\!\left(
+    L_{A,\log}(\delta_{\rm pre}),
+    1/2,
+    \delta_{\rm sample};
+    r
+  \right),
+\]
+and the literature-order sufficient scaling is
+\[
+  s
+  =
+  O\!\left(
+    \left(
+      \sqrt r+\sqrt{8\log(m/\delta_{\rm pre})}
+    \right)^2
+    \log\frac{r}{\delta_{\rm sample}}
+  \right).
+\]
+For symbolic \(0<\eps<1\), the same rule gives
+\[
+  s
+  =
+  O\!\left(
+    \frac{
+      \left(
+        \sqrt r+\sqrt{8\log(m/\delta_{\rm pre})}
+      \right)^2
+    }{\eps^2}
+    \log\frac{r}{\delta_{\rm sample}}
+  \right).
+\]
+This is an exact parameter-selection step, not a floating-point computation.
+Define the explicit preconditioner-product roundoff scalar
+\[
+  K_m
+  =
+  \gamma_m(2+\gamma_m)(1+u)^2+u(1+u)+u .
+\]
+Equivalently, \(\kappa_m=K_m/\sqrt m\).  Let
+\[
+  d=\sqrt{s/m},
+  \qquad
+  \widehat d_\star
+  =
+  \fl\!\left(
+    \fl(\sqrt{s})\,\fl(1/\fl(\sqrt m))
+  \right),
+\]
+and
+\[
+  \delta_d=\frac{4u+3u^2+u^3}{1-u},
+  \qquad 0\le\delta_d<1 .
+\]
+The denominator certificate proves
+\(\widehat d_\star\ne0\) and
+\(|\widehat d_\star-d|\le d\,\delta_d\).
+On the exact SRHT row-norm event for \(U_A\), every exact scaled input-sketch
+entry satisfies
+\[
+  \left|
+    \frac{(Y_\omega)_{J_tj}}{d}
+  \right|
+  \le
+  \sqrt{\frac ms}\,S_{A,\log}(\delta_{\rm pre})\,a_2 .
+\]
+Here the column norm of \(C_A\) equals the column norm of \(A\), because
+\(U_A^TU_A=\I_r\) and \(A=U_AC_A\).
+Every corresponding computed scaled entry differs from it by at most the same
+quantity times
+\[
+  \zeta_{A,\log}(\delta_{\rm pre})
+  =
+  \frac{
+    u+\delta_d+
+    (1+u)\mu_AK_m/S_{A,\log}(\delta_{\rm pre})
+  }{1-\delta_d}.
+\]
+
+Let
+\[
+  B_{\omega,J,tj}=\frac{(Y_\omega)_{J_tj}}{d},
+  \qquad
+  \widehat B^\rho_{\omega,J,tj}
+  =
+  \fl\!\left(\widehat Y^\rho_{\omega,J_tj}/\widehat d_\star\right).
+\]
+The exact sampled input Gram and computed sampled input Gram are
+\[
+  G_A(\omega,J)=B_{\omega,J}^{\,T}B_{\omega,J},
+  \qquad
+  \widehat G_A^\rho(\omega,J)
+  =
+  \fl\!\left((\widehat B^\rho_{\omega,J})^T
+             \widehat B^\rho_{\omega,J}\right).
+\]
+Conditioned on \(\omega\), the exact row sample is unbiased:
+\[
+  \Exp_J[G_A(\omega,J)\mid\omega]
+  =
+  (P_\omega A)^T(P_\omega A)
+  =
+  A^TA .
+\]
+This identity is exact arithmetic; it is not computed by the algorithm.
+
+Define the final floating-point radius by the fully expanded formula
+\[
+\begin{aligned}
+  T_{A,\log}^{\rm fp}(\delta_{\rm pre})
+  &=
+  nm
+  \left(
+    \sqrt{\frac rm}
+    +
+    \sqrt{\frac{8\log(m/\delta_{\rm pre})}{m}}
+  \right)^2
+  \\
+  &\quad\times
+  \left(\max_{1\le j\le n}\Norm{A_{*j}}\right)^2
+  \\
+  &\quad\times
+  \Bigg[
+    2
+    \frac{
+      u+\frac{4u+3u^2+u^3}{1-u}
+      +
+      (1+u)
+      \frac{\max_{1\le j\le n}\NormOne{A_{*j}}}
+           {\sqrt m\,\max_{1\le j\le n}\Norm{A_{*j}}}
+      \frac{\gamma_m(2+\gamma_m)(1+u)^2+u(1+u)+u}
+           {
+             \sqrt{r/m}
+             +
+             \sqrt{\frac{8\log(m/\delta_{\rm pre})}{m}}
+           }
+    }{
+      1-\frac{4u+3u^2+u^3}{1-u}
+    }
+  \\
+  &\quad+
+    \left(
+    \frac{
+      u+\frac{4u+3u^2+u^3}{1-u}
+      +
+      (1+u)
+      \frac{\max_{1\le j\le n}\NormOne{A_{*j}}}
+           {\sqrt m\,\max_{1\le j\le n}\Norm{A_{*j}}}
+      \frac{\gamma_m(2+\gamma_m)(1+u)^2+u(1+u)+u}
+           {
+             \sqrt{r/m}
+             +
+             \sqrt{\frac{8\log(m/\delta_{\rm pre})}{m}}
+           }
+    }{
+      1-\frac{4u+3u^2+u^3}{1-u}
+    }
+    \right)^2
+  \\
+  &\quad+
+    \gamma_s
+    \left(
+      1+
+      \frac{
+        u+\frac{4u+3u^2+u^3}{1-u}
+        +
+        (1+u)
+        \frac{\max_{1\le j\le n}\NormOne{A_{*j}}}
+             {\sqrt m\,\max_{1\le j\le n}\Norm{A_{*j}}}
+        \frac{\gamma_m(2+\gamma_m)(1+u)^2+u(1+u)+u}
+             {
+               \sqrt{r/m}
+               +
+               \sqrt{\frac{8\log(m/\delta_{\rm pre})}{m}}
+             }
+      }{
+        1-\frac{4u+3u^2+u^3}{1-u}
+      }
+    \right)^2
+  \Bigg].
+\end{aligned}
+\]
+This is exactly the compact expression
+\[
+  nm\,S_{A,\log}(\delta_{\rm pre})^2a_2^2
+  \left(
+    2\zeta_{A,\log}(\delta_{\rm pre})
+    +\zeta_{A,\log}(\delta_{\rm pre})^2
+    +
+    \gamma_s(1+\zeta_{A,\log}(\delta_{\rm pre}))^2
+  \right),
+\]
+but all locally introduced shorthand has been recursively replaced in the
+displayed definition of \(T_{A,\log}^{\rm fp}(\delta_{\rm pre})\), including
+the concrete denominator relative error
+\((4u+3u^2+u^3)/(1-u)\).  The exact-denominator variant is available as
+infrastructure by replacing this relative denominator term by \(0\); it is not
+the selected final concrete endpoint in this corollary.
+On the same exact SRHT row-norm event,
+\[
+  \Frob{\widehat G_A^\rho(\omega,J)-G_A(\omega,J)}
+  \le
+  T_{A,\log}^{\rm fp}(\delta_{\rm pre}).
+\]
+
+By construction of the exact sample count \(s\) and witness \(\theta_A\),
+\[
+  \Phi(\theta_A,L_{A,\log}(\delta_{\rm pre}),\eps,s,r)
+  \le\delta_{\rm sample}.
+\]
+Then the fully computed Algorithm 3 sampled input Gram satisfies
+\[
+  \Prob\!\left[
+    (1-\eps)A^TA-T_{A,\log}^{\rm fp}(\delta_{\rm pre})\I_n
+    \preceq
+    \widehat G_A^\rho(\omega,J)
+    \preceq
+    (1+\eps)A^TA+T_{A,\log}^{\rm fp}(\delta_{\rm pre})\I_n
+  \right]
+  \ge
+  1-\delta_{\rm pre}-\delta_{\rm sample}.
+\]
+The probability uses only the exact Rademacher and exact uniform-row laws.  No
+probability table is computed.  The non-probability computations charged in
+\(T_{A,\log}^{\rm fp}(\delta_{\rm pre})\) are the rounded scale
+\(\widehat c_m\), rounded sign storage, rounded formation of
+\(\widehat P_\omega^\rho\), rounded formation of
+\(\widehat Y_\omega^\rho=\fl(\widehat P_\omega^\rho A)\), rounded denominator
+\(\widehat d_\star\), rounded row scaling, and rounded Gram dot products.
+
+In the small-roundoff regime
+\[
+  0\le u,\gamma_m,\gamma_s,\frac{4u+3u^2+u^3}{1-u}\le c<1,
+  \qquad
+  \sqrt{\frac rm}+\sqrt{\frac{8\log(m/\delta_{\rm pre})}{m}}>0,
+  \qquad
+  A\ne0,
+\]
+with \(m,n,r,s,\delta_{\rm pre}\) and the column norms of \(A\) fixed, the
+expanded relative error fraction in
+\(T_{A,\log}^{\rm fp}(\delta_{\rm pre})\) has order
+\[
+  \Theta\!\left(
+    u+\frac{4u+3u^2+u^3}{1-u}
+    +
+    \frac{
+      (\gamma_m+u)\max_{1\le j\le n}\NormOne{A_{*j}}
+    }{
+      \sqrt m
+      \left(
+        \sqrt{r/m}+\sqrt{\frac{8\log(m/\delta_{\rm pre})}{m}}
+      \right)
+      \max_{1\le j\le n}\Norm{A_{*j}}
+    }
+  \right),
+\]
+and
+\begingroup
+\small
+\[
+\begin{aligned}
+  T_{A,\log}^{\rm fp}(\delta_{\rm pre})
+  =
+  \Theta\!\left(
+    nm
+    \left(
+      \sqrt{\frac rm}
+      +
+      \sqrt{\frac{8\log(m/\delta_{\rm pre})}{m}}
+    \right)^2
+    \right.
+  \\
+  \left.
+    \qquad\times
+    \left(\max_{1\le j\le n}\Norm{A_{*j}}\right)^2
+    \left[
+      \gamma_s+u+\frac{4u+3u^2+u^3}{1-u}
+      +
+      \frac{
+        (\gamma_m+u)\max_{1\le j\le n}\NormOne{A_{*j}}
+      }{
+        \sqrt m
+        \left(
+          \sqrt{r/m}+\sqrt{\frac{8\log(m/\delta_{\rm pre})}{m}}
+        \right)
+        \max_{1\le j\le n}\Norm{A_{*j}}
+      }
+    \right]
+  \right).
+\end{aligned}
+\]
+\endgroup
+Equivalently,
+\begingroup
+\small
+\[
+\begin{aligned}
+  T_{A,\log}^{\rm fp}(\delta_{\rm pre})
+  =
+  \Theta\!\left(
+    nm
+    \left(
+      \sqrt{\frac rm}
+      +
+      \sqrt{\frac{8\log(m/\delta_{\rm pre})}{m}}
+    \right)^2
+    \right.
+  \\
+  \left.
+    \qquad\times
+    \left(\max_{1\le j\le n}\Norm{A_{*j}}\right)^2
+    \left(\gamma_s+u+\frac{4u+3u^2+u^3}{1-u}\right)
+  \right.
+  \\
+  \left.
+    +
+    n\sqrt m
+    \left(
+      \sqrt{\frac rm}
+      +
+      \sqrt{\frac{8\log(m/\delta_{\rm pre})}{m}}
+    \right)
+    \left(\max_{1\le j\le n}\NormOne{A_{*j}}\right)
+    \left(\max_{1\le j\le n}\Norm{A_{*j}}\right)
+    (\gamma_m+u)
+  \right).
+\end{aligned}
+\]
+\endgroup
+For fixed \(A,m,n,r,s,\delta_{\rm pre}\),
+\[
+  T_{A,\log}^{\rm fp}(\delta_{\rm pre})\longrightarrow0
+  \qquad
+  \text{as}\qquad
+  u,\gamma_m,\gamma_s,\frac{4u+3u^2+u^3}{1-u}\longrightarrow0,
+\]
+so the result is non-vacuous.  If \(A=0\), then \(a_1=a_2=0\),
+\(A^TA=0\), the exact and computed preconditioned products are zero in the
+floating-point model, and the theorem holds with
+\(T_{A,\log}^{\rm fp}(\delta_{\rm pre})=0\).
+\end{corollary}
+
+\section*{CountSketch Sparse-Gram Endpoints}
+
+This section records the currently closed CountSketch branches for Algorithm
+3.  The CountSketch transform is the usual sparse embedding pattern
+\cite{CharikarChenFarachColton2002,ClarksonWoodruff2013}.  The first closed
+route below is collision-free, with probability loss \(m^2/r\); it is
+non-vacuous only when \(r\) is larger than \(m^2\).  The later product-grid
+route is the local finite-cover Markov/Frobenius route.  Neither route should
+be read as the optimal Clarkson--Woodruff subspace-embedding concentration
+theorem.
+
+Let \(r\) be the number of CountSketch buckets.  A hash
+\[
+  h:\{1,\ldots,m\}\to\{1,\ldots,r\}
+\]
+and a sign vector \(\omega\in\{\pm1\}^m\) are sampled from the exact
+CountSketch product law.  Sampling probabilities are exact mathematical laws
+in this note.  Define the exact sparse CountSketch matrix
+\[
+  S_{h,\omega}(i,k)=
+  \begin{cases}
+    \omega_k,& h(k)=i,\\
+    0,& h(k)\ne i,
+  \end{cases}
+\]
+and the exact sketched matrix
+\[
+  Y(h,\omega;A)=S_{h,\omega}A .
+\]
+The exact CountSketch Gram error is
+\[
+  \Delta_{\rm CS}(h,\omega;A)
+  =
+  Y(h,\omega;A)^TY(h,\omega;A)-A^TA .
+\]
+
+The computed sparse matrix \(\widehat Y\) is formed entrywise by multiplying
+each selected input entry by its exact sign in floating point and then
+accumulating each bucket in floating point.  Let
+\[
+  b_i(h)=\#\{k:h(k)=i\}
+\]
+be the exact bucket size.  The entrywise sparse-apply error radius is
+\[
+  E^{\rm CS}_{ij}(h,\omega;A)
+  =
+  \bigl(u+\gamma_{b_i(h)}+u\gamma_{b_i(h)}\bigr)
+  \sum_{k:h(k)=i}|\omega_k|\,|A_{kj}|.
+\]
+This is computable from the exact realized hash/sign pattern and the exact
+input magnitudes.  It charges the rounded signed products and the rounded
+bucket accumulation.  Let \(|Y|\) denote entrywise absolute value.  The rounded
+sparse-Gram matrix is
+\[
+  \widehat G(h,\omega;A)
+  =
+  \fl\!\left(\widehat Y^T\widehat Y\right),
+\]
+where each Gram entry is a rounded length-\(r\) dot product.  The fully
+expanded sparse-Gram floating-point radius is
+\[
+\begin{aligned}
+  T_{\rm CSGram}^{\rm fp}(h,\omega;A)
+  &:=
+  \Frob{
+    \left(
+      \gamma_r
+      \sum_{i=1}^{r}
+      \bigl(|Y_{ij}|+E^{\rm CS}_{ij}\bigr)
+      \bigl(|Y_{ik}|+E^{\rm CS}_{ik}\bigr)
+    \right)_{j,k=1}^{n}
+  }
+  \\
+  &\quad+
+  \Frob{
+    \left(
+      \sum_{i=1}^{r}
+      \left[
+        E^{\rm CS}_{ij}|Y_{ik}|
+        +
+        |Y_{ij}|E^{\rm CS}_{ik}
+        +
+        E^{\rm CS}_{ij}E^{\rm CS}_{ik}
+      \right]
+    \right)_{j,k=1}^{n}
+  } .
+\end{aligned}
+\]
+For fixed \(h,\omega,A\), valid \(\gamma_r\), and small bucket roundoff,
+\[
+  T_{\rm CSGram}^{\rm fp}
+  =
+  \Theta\!\left(
+    \gamma_r\Frob{|Y|^T|Y|}
+    +
+    \Frob{(E^{\rm CS})^T|Y|+|Y|^TE^{\rm CS}}
+  \right)
+\]
+when the displayed leading term is nonzero.  Since
+\(E^{\rm CS}_{ij}=\Theta((u+\gamma_{b_i})\sum_{k:h(k)=i}|A_{kj}|)\), the
+radius vanishes as \(u,\gamma_r,\gamma_{b_i}\to0\) for fixed realized
+hash/sign data and fixed \(A\).
+
+\subsection*{Collision-Free Actual-Input Route}
+
+Let \(q\) be an exact analysis dimension.  Let
+\[
+  U\in\R^{m\times q},\qquad C\in\R^{q\times n},
+  \qquad U^TU=\I_q,\qquad A=UC .
+\]
+The matrices \(U\) and \(C\) are exact analysis witnesses for the column space
+of the input.  Algorithm 3 is not assumed to compute them in this theorem; the
+implemented arithmetic below uses the actual input entries of \(A\).
+
+The collision-free event is
+\[
+  h(a)\ne h(b)\qquad\text{for every }a\ne b.
+\]
+Under the exact CountSketch hash law,
+\[
+  \Prob_h[h\text{ is collision-free}]\ge 1-\frac{m^2}{r}.
+\]
+On this event, the exact sparse transform preserves all Gram matrices:
+\[
+  Y(h,\omega;A)^TY(h,\omega;A)=A^TA .
+\]
+The Rademacher signs remain exact mathematical signs; only their use in
+floating-point multiplications is charged.
+
+After the exact CountSketch draw, let
+\[
+  \sigma_1,\ldots,\sigma_s\in\{1,\ldots,r\}
+\]
+be exact iid uniform row samples.  Let \(\delta_{\rm samp}\ge0\) be such that
+\[
+  \Phi(\theta,r,\eps,s,q)\le\delta_{\rm samp},
+  \qquad \theta>0.
+\]
+Here the uniform-row Loewner radius parameter is \(L=r\), because a
+collision-free CountSketch applied to an orthonormal \(U\) has orthonormal
+columns and every row has squared norm at most one.  Thus a uniform row sample
+from the \(r\)-row preconditioned matrix has one-sample Loewner radius \(r\).
+
+Set
+\[
+  d=\sqrt{s/r},\qquad
+  \widehat d_\star=
+  \fl\!\left(\fl(\sqrt{s})\,\fl(1/\fl(\sqrt r))\right),
+\]
+and
+\[
+  \Delta_\star=\frac{4u+3u^2+u^3}{1-u}.
+\]
+The concrete denominator routine proves
+\[
+  \widehat d_\star\ne0,\qquad
+  |\widehat d_\star-d|\le d\,\Delta_\star .
+\]
+Define the exact and computed sampled rows
+\[
+  B_{tj}=\frac{Y_{\sigma_tj}}{d},\qquad
+  \widehat B_{tj}=\fl\!\left(
+    \frac{\widehat Y_{\sigma_tj}}{\widehat d_\star}\right),
+  \qquad
+  \widetilde B_{tj}=\frac{\widehat Y_{\sigma_tj}}{d}.
+\]
+The denominator-and-division entry radius is
+\[
+  E^{\rm den}_{tj}
+  =
+  u|\widehat B_{tj}|
+  +
+  \frac{|\widehat Y_{\sigma_tj}|}{|\widehat d_\star|}\,\Delta_\star .
+\]
+The sparse-apply entry radius propagated to the sampled rows is
+\[
+  F_{tj}
+  =
+  \frac{E^{\rm CS}_{\sigma_tj}(h,\omega;A)}{d}.
+\]
+The fully expanded downstream floating-point radius is
+\[
+  T_{\rm CF,row}^{\rm fp}
+  =
+  T_{\rm den}^{\rm fp}
+  +
+  T_{\rm dot}^{\rm fp}
+  +
+  T_{\rm basis}^{\rm fp},
+\]
+where
+\[
+  T_{\rm den}^{\rm fp}
+  =
+  \Frob{
+    \left(
+      \sum_{t=1}^{s}
+      E^{\rm den}_{tj}|\widehat B_{tk}|
+      +
+      |\widetilde B_{tj}|E^{\rm den}_{tk}
+    \right)_{j,k=1}^{n}},
+\]
+\[
+  T_{\rm dot}^{\rm fp}
+  =
+  \Frob{
+    \left(
+      \gamma_s\sum_{t=1}^{s}
+      |\widehat B_{tj}|\,|\widehat B_{tk}|
+    \right)_{j,k=1}^{n}},
+\]
+and
+\[
+  T_{\rm basis}^{\rm fp}
+  =
+  \Frob{
+    \left(
+      \sum_{t=1}^{s}
+      F_{tj}|\widetilde B_{tk}|+|B_{tj}|F_{tk}
+    \right)_{j,k=1}^{n}} .
+\]
+
+\begin{corollary}[Collision-free CountSketch actual-input sampled Gram]
+Assume \(r>0\), \(s>0\), \(U^TU=\I_q\), \(A=UC\), valid \(\gamma_m\) for the
+sparse bucket accumulations, valid \(\gamma_s\) for the sampled-Gram dot
+products, \(0<u<1\), \(\theta>0\), and
+\[
+  \Phi(\theta,r,\eps,s,q)\le\delta_{\rm samp},
+  \qquad
+  \frac{m^2}{r}+\delta_{\rm samp}\le\delta .
+\]
+Let
+\[
+  \widehat G_{\rm CF}^{\rm fp}
+  =
+  \fl\!\left(\widehat B^T\widehat B\right)
+\]
+be the matrix produced by the implemented path: rounded sparse CountSketch
+apply to the actual input \(A\), the concrete denominator
+\(\widehat d_\star\), rounded sampled-row divisions, and rounded length-\(s\)
+Gram dot products.  Then
+\[
+\begin{aligned}
+&\Prob_{h,\omega,\sigma}
+  \left[
+    -\eps A^TA-T_{\rm CF,row}^{\rm fp}\I_n
+    \preceq
+    \widehat G_{\rm CF}^{\rm fp}-A^TA
+    \preceq
+    \eps A^TA+T_{\rm CF,row}^{\rm fp}\I_n
+  \right]
+  \ge 1-\delta .
+\end{aligned}
+\]
+The exact objects are \(A\), the analysis witnesses \(U,C\), the hash/sign
+law, the uniform row-sampling law, \(Y=S_{h,\omega}A\), and \(A^TA\).  The
+computed non-probability objects are \(\widehat Y\), \(\widehat d_\star\),
+\(\widehat B\), and \(\widehat G_{\rm CF}^{\rm fp}\).  There is no
+perturbation-event hypothesis, extra existence hypothesis, generic
+denominator parameter, or probability-computation error term.
+
+For fixed realized \(h,\omega,\sigma,A\), fixed \(d>0\), and nonzero leading
+deterministic coefficient,
+\[
+\begin{aligned}
+  T_{\rm CF,row}^{\rm fp}
+  =
+  \Theta\!\Big(
+  &\gamma_s\Frob{|\widehat B|^T|\widehat B|}
+  +
+  \Frob{(E^{\rm den})^T|\widehat B|
+        +|\widetilde B|^TE^{\rm den}}
+  \\
+  &+
+  \Frob{F^T|\widetilde B|+|B|^TF}
+  \Big),
+\end{aligned}
+\]
+with the irreducible substitutions
+\[
+  E^{\rm den}_{tj}
+  =
+  \Theta\!\left(
+    u|\widehat B_{tj}|
+    +
+    \frac{|\widehat Y_{\sigma_tj}|}{|\widehat d_\star|}
+    \frac{4u+3u^2+u^3}{1-u}
+  \right)
+\]
+and
+\[
+  F_{tj}
+  =
+  \Theta\!\left(
+    \frac{u+\gamma_{b_{\sigma_t}(h)}}{\sqrt{s/r}}
+    \sum_{k:h(k)=\sigma_t}|A_{kj}|
+  \right).
+\]
+Consequently \(T_{\rm CF,row}^{\rm fp}\to0\) as
+\[
+  u,\gamma_s,\gamma_{b_i(h)},\frac{4u+3u^2+u^3}{1-u}\to0
+\]
+for fixed realized data.  The exact probability loss has order
+\[
+  \Theta\!\left(\frac{m^2}{r}+\Phi(\theta,r,\eps,s,q)\right),
+\]
+and is non-vacuous when \(m^2/r+\Phi(\theta,r,\eps,s,q)<1\).
+\end{corollary}
+
+\subsection*{Stored-Sign Collision-Free Actual-Input Route}
+
+The preceding actual-input theorem uses exact Rademacher signs directly in the
+modeled sparse apply.  If the implementation first stores the realized signs,
+the probability law is unchanged, but the stored signs are computed
+non-probability objects and their rounding must be charged.
+
+Let the storage mode be
+\[
+  \rho_{\rm sig}\in\{\mathrm{mul1},\mathrm{add0},\mathrm{sub0}\},
+\]
+where
+\[
+  \widehat\omega_k^{\rho_{\rm sig}}
+  \in
+  \{\fl(\omega_k\cdot1),\,\fl(\omega_k+0),\,\fl(\omega_k-0)\}.
+\]
+Since \(|\omega_k|=1\), each concrete mode satisfies
+\[
+  |\widehat\omega_k^{\rho_{\rm sig}}-\omega_k|\le u .
+\]
+The exact objects remain \(U,C,A=UC\), \(Y=S_{h,\omega}A\), the exact
+hash/sign law, the exact uniform row-sampling law, and \(A^TA\).  The
+computed non-probability objects are now the stored sign table
+\(\widehat\omega^{\rho_{\rm sig}}\), the rounded sparse apply
+\(\widehat Y^{\rho_{\rm sig}}\), the concrete denominator
+\(\widehat d_\star\), rounded sampled-row divisions, and rounded
+sampled-Gram dot products.
+
+For each CountSketch bucket \(i\), define the stored-sign sparse-apply radius
+\[
+\begin{aligned}
+  E^{{\rm CS},\rho_{\rm sig}}_{ij}(h,\omega;A)
+  &:=
+  \bigl(u+\gamma_{b_i(h)}+u\gamma_{b_i(h)}\bigr)
+  \sum_{k:h(k)=i}
+      |\widehat\omega_k^{\rho_{\rm sig}}|\,|A_{kj}|\\
+  &\quad+
+  \sum_{k:h(k)=i}
+      |\widehat\omega_k^{\rho_{\rm sig}}-\omega_k|\,|A_{kj}| .
+\end{aligned}
+\]
+After exact row samples \(\sigma_1,\ldots,\sigma_s\), set
+\[
+  B_{tj}=\frac{Y_{\sigma_tj}}{d},\qquad
+  \widehat B^{\rho_{\rm sig}}_{tj}
+  =
+  \fl\!\left(
+    \frac{\widehat Y^{\rho_{\rm sig}}_{\sigma_tj}}
+         {\widehat d_\star}\right),
+  \qquad
+  \widetilde B^{\rho_{\rm sig}}_{tj}
+  =
+  \frac{\widehat Y^{\rho_{\rm sig}}_{\sigma_tj}}{d}.
+\]
+The denominator-and-division radius becomes
+\[
+  E^{{\rm den},\rho_{\rm sig}}_{tj}
+  =
+  u|\widehat B^{\rho_{\rm sig}}_{tj}|
+  +
+  \frac{|\widehat Y^{\rho_{\rm sig}}_{\sigma_tj}|}
+       {|\widehat d_\star|}
+  \frac{4u+3u^2+u^3}{1-u},
+\]
+and the sampled sparse-apply radius is
+\[
+  F^{\rho_{\rm sig}}_{tj}
+  =
+  \frac{E^{{\rm CS},\rho_{\rm sig}}_{\sigma_tj}(h,\omega;A)}{d}.
+\]
+Define the stored-sign collision-free downstream radius by the irreducible
+sum
+\[
+  T_{{\rm CF,row},\rho_{\rm sig}}^{\rm fp}
+  =
+  T_{{\rm den},\rho_{\rm sig}}^{\rm fp}
+  +
+  T_{{\rm dot},\rho_{\rm sig}}^{\rm fp}
+  +
+  T_{{\rm basis},\rho_{\rm sig}}^{\rm fp},
+\]
+where
+\[
+  T_{{\rm den},\rho_{\rm sig}}^{\rm fp}
+  =
+  \Frob{
+    \left(
+      \sum_{t=1}^{s}
+      E^{{\rm den},\rho_{\rm sig}}_{tj}
+      |\widehat B^{\rho_{\rm sig}}_{tk}|
+      +
+      |\widetilde B^{\rho_{\rm sig}}_{tj}|
+      E^{{\rm den},\rho_{\rm sig}}_{tk}
+    \right)_{j,k=1}^{n}},
+\]
+\[
+  T_{{\rm dot},\rho_{\rm sig}}^{\rm fp}
+  =
+  \Frob{
+    \left(
+      \gamma_s\sum_{t=1}^{s}
+      |\widehat B^{\rho_{\rm sig}}_{tj}|\,
+      |\widehat B^{\rho_{\rm sig}}_{tk}|
+    \right)_{j,k=1}^{n}},
+\]
+and
+\[
+  T_{{\rm basis},\rho_{\rm sig}}^{\rm fp}
+  =
+  \Frob{
+    \left(
+      \sum_{t=1}^{s}
+      F^{\rho_{\rm sig}}_{tj}
+      |\widetilde B^{\rho_{\rm sig}}_{tk}|
+      +
+      |B_{tj}|F^{\rho_{\rm sig}}_{tk}
+    \right)_{j,k=1}^{n}} .
+\]
+
+\begin{corollary}[Stored-sign collision-free CountSketch actual-input sampled Gram]
+Assume the hypotheses of the preceding collision-free actual-input corollary,
+and store every realized Rademacher sign by one of
+\(\mathrm{mul1},\mathrm{add0},\mathrm{sub0}\) before the sparse apply.  Let
+\[
+  \widehat G_{{\rm CF},\rho_{\rm sig}}^{\rm fp}
+  =
+  \fl\!\left(
+    (\widehat B^{\rho_{\rm sig}})^T
+    \widehat B^{\rho_{\rm sig}}\right)
+\]
+be the matrix produced by the implemented path: rounded sign storage, rounded
+sparse CountSketch apply to the actual input \(A\), the concrete denominator
+\(\widehat d_\star\), rounded sampled-row divisions, and rounded length-\(s\)
+Gram dot products.  Then
+\[
+\begin{aligned}
+&\Prob_{h,\omega,\sigma}
+  \left[
+    -\eps A^TA-T_{{\rm CF,row},\rho_{\rm sig}}^{\rm fp}\I_n
+    \preceq
+    \widehat G_{{\rm CF},\rho_{\rm sig}}^{\rm fp}-A^TA
+    \preceq
+    \eps A^TA+T_{{\rm CF,row},\rho_{\rm sig}}^{\rm fp}\I_n
+  \right]
+  \ge 1-\delta .
+\end{aligned}
+\]
+No extra probability loss is introduced by sign storage; the storage errors
+enter only through the deterministic radius \(T_{{\rm CF,row},\rho_{\rm sig}}^{\rm fp}\).
+
+For fixed realized \(h,\omega,\sigma,A\), fixed \(d>0\), and nonzero leading
+deterministic coefficient,
+\[
+\begin{aligned}
+  T_{{\rm CF,row},\rho_{\rm sig}}^{\rm fp}
+  =
+  \Theta\!\Big(
+  &\gamma_s\Frob{
+      |\widehat B^{\rho_{\rm sig}}|^T
+      |\widehat B^{\rho_{\rm sig}}|}
+  +
+  \Frob{
+      (E^{{\rm den},\rho_{\rm sig}})^T
+      |\widehat B^{\rho_{\rm sig}}|
+      +
+      |\widetilde B^{\rho_{\rm sig}}|^T
+      E^{{\rm den},\rho_{\rm sig}}}
+  \\
+  &+
+  \Frob{
+      (F^{\rho_{\rm sig}})^T|\widetilde B^{\rho_{\rm sig}}|
+      +
+      |B|^TF^{\rho_{\rm sig}}}
+  \Big),
+\end{aligned}
+\]
+with the irreducible substitutions
+\[
+  E^{{\rm den},\rho_{\rm sig}}_{tj}
+  =
+  \Theta\!\left(
+    u|\widehat B^{\rho_{\rm sig}}_{tj}|
+    +
+    \frac{|\widehat Y^{\rho_{\rm sig}}_{\sigma_tj}|}
+         {|\widehat d_\star|}
+    \frac{4u+3u^2+u^3}{1-u}
+  \right)
+\]
+and
+\[
+  F^{\rho_{\rm sig}}_{tj}
+  =
+  \Theta\!\left(
+    \frac{u+\gamma_{b_{\sigma_t}(h)}}{\sqrt{s/r}}
+    \sum_{k:h(k)=\sigma_t}|A_{kj}|
+  \right).
+\]
+Hence \(T_{{\rm CF,row},\rho_{\rm sig}}^{\rm fp}\to0\) as
+\[
+  u,\gamma_s,\gamma_{b_i(h)},\frac{4u+3u^2+u^3}{1-u}\to0
+\]
+for fixed realized data.  The probability loss is still
+\[
+  \Theta\!\left(\frac{m^2}{r}+\Phi(\theta,r,\eps,s,q)\right),
+\]
+so the result is non-vacuous under the same condition
+\(m^2/r+\Phi(\theta,r,\eps,s,q)<1\).
+\end{corollary}
+
+\subsection*{Permuted-Bucket Stored-Sign Actual-Input Route}
+
+Some sparse CountSketch implementations traverse the entries in each realized
+bucket in a fixed order chosen by the implementation.  For a realized hash
+\(h\), let
+\[
+  \pi_i(h):\{0,\ldots,b_i(h)-1\}\to\{0,\ldots,b_i(h)-1\}
+\]
+be the exact permutation used to traverse bucket \(i\), and let
+\[
+  k_{i,t}^{\pi}(h)
+  :=
+  \mathrm{bucketIndex}\bigl(h,i,\pi_i(h)(t)\bigr)
+\]
+be the original input-row index reached at traversal position \(t\).  The
+permutations \(\pi_i(h)\) are exact discrete implementation choices.  They are
+not random laws and are not floating-point real quantities, but the sparse
+signed products and bucket accumulations executed in that order are computed
+and must be charged.
+
+With the same stored sign modes
+\(\rho_{\rm sig}\in\{\mathrm{mul1},\mathrm{add0},\mathrm{sub0}\}\), define
+the permuted sparse-apply entry radius
+\[
+\begin{aligned}
+  E^{{\rm CS},\rho_{\rm sig},\pi}_{ij}(h,\omega;A)
+  &:=
+  \bigl(u+\gamma_{b_i(h)}+u\gamma_{b_i(h)}\bigr)
+  \sum_{t=0}^{b_i(h)-1}
+    |\widehat\omega_{k_{i,t}^{\pi}(h)}^{\rho_{\rm sig}}|\,
+    |A_{k_{i,t}^{\pi}(h),j}|\\
+  &\quad+
+  \sum_{t=0}^{b_i(h)-1}
+    |\widehat\omega_{k_{i,t}^{\pi}(h)}^{\rho_{\rm sig}}
+      -\omega_{k_{i,t}^{\pi}(h)}|\,
+    |A_{k_{i,t}^{\pi}(h),j}| .
+\end{aligned}
+\]
+Let \(\widehat Y^{\rho_{\rm sig},\pi}\) be the rounded sparse CountSketch
+apply to the actual input \(A\), using the stored signs and the traversal
+orders \(\pi_i(h)\).  Define
+\[
+  \widehat B^{\rho_{\rm sig},\pi}_{tj}
+  =
+  \fl\!\left(
+    \frac{\widehat Y^{\rho_{\rm sig},\pi}_{\sigma_tj}}
+         {\widehat d_\star}\right),
+  \qquad
+  \widetilde B^{\rho_{\rm sig},\pi}_{tj}
+  =
+  \frac{\widehat Y^{\rho_{\rm sig},\pi}_{\sigma_tj}}{d},
+\]
+\[
+  E^{{\rm den},\rho_{\rm sig},\pi}_{tj}
+  =
+  u|\widehat B^{\rho_{\rm sig},\pi}_{tj}|
+  +
+  \frac{|\widehat Y^{\rho_{\rm sig},\pi}_{\sigma_tj}|}
+       {|\widehat d_\star|}
+  \frac{4u+3u^2+u^3}{1-u},
+\]
+and
+\[
+  F^{\rho_{\rm sig},\pi}_{tj}
+  =
+  \frac{E^{{\rm CS},\rho_{\rm sig},\pi}_{\sigma_tj}
+        (h,\omega;A)}{d}.
+\]
+The irreducible permuted-bucket stored-sign downstream radius is
+\[
+  T_{{\rm CF,row},\rho_{\rm sig},\pi}^{\rm fp}
+  =
+  T_{{\rm den},\rho_{\rm sig},\pi}^{\rm fp}
+  +
+  T_{{\rm dot},\rho_{\rm sig},\pi}^{\rm fp}
+  +
+  T_{{\rm basis},\rho_{\rm sig},\pi}^{\rm fp},
+\]
+where
+\[
+\begin{aligned}
+  T_{{\rm den},\rho_{\rm sig},\pi}^{\rm fp}
+  &:=
+  \Frob{
+    (E^{{\rm den},\rho_{\rm sig},\pi})^T
+    |\widehat B^{\rho_{\rm sig},\pi}|
+    +
+    |\widetilde B^{\rho_{\rm sig},\pi}|^T
+    E^{{\rm den},\rho_{\rm sig},\pi}},\\
+  T_{{\rm dot},\rho_{\rm sig},\pi}^{\rm fp}
+  &:=
+  \gamma_s
+  \Frob{
+    |\widehat B^{\rho_{\rm sig},\pi}|^T
+    |\widehat B^{\rho_{\rm sig},\pi}|},\\
+  T_{{\rm basis},\rho_{\rm sig},\pi}^{\rm fp}
+  &:=
+  \Frob{
+    (F^{\rho_{\rm sig},\pi})^T
+    |\widetilde B^{\rho_{\rm sig},\pi}|
+    +
+    |B|^TF^{\rho_{\rm sig},\pi}} .
+\end{aligned}
+\]
+
+\begin{corollary}[Permuted-bucket stored-sign collision-free actual-input sampled Gram]
+Assume the hypotheses of the stored-sign collision-free actual-input
+corollary, and fix the exact bucket traversal orders \(\pi_i(h)\).  Let
+\[
+  \widehat G_{{\rm CF},\rho_{\rm sig},\pi}^{\rm fp}
+  =
+  \fl\!\left(
+    (\widehat B^{\rho_{\rm sig},\pi})^T
+    \widehat B^{\rho_{\rm sig},\pi}\right)
+\]
+be the matrix produced by rounded sign storage, permuted-order rounded sparse
+CountSketch apply to the actual input \(A\), the concrete denominator
+\(\widehat d_\star\), rounded sampled-row divisions, and rounded length-\(s\)
+Gram dot products.  Then
+\[
+\begin{aligned}
+&\Prob_{h,\omega,\sigma}
+  \left[
+    -\eps A^TA
+    -T_{{\rm CF,row},\rho_{\rm sig},\pi}^{\rm fp}\I_n
+    \preceq
+    \widehat G_{{\rm CF},\rho_{\rm sig},\pi}^{\rm fp}-A^TA
+    \preceq
+    \eps A^TA
+    +T_{{\rm CF,row},\rho_{\rm sig},\pi}^{\rm fp}\I_n
+  \right]
+  \ge 1-\delta .
+\end{aligned}
+\]
+Exact objects are \(U,C,A=UC\), the hash/sign/row-sampling laws, the bucket
+orders \(\pi_i(h)\), \(Y=S_{h,\omega}A\), and \(A^TA\).  Computed
+non-probability objects are the stored signs, sparse signed products,
+permuted-order bucket accumulations, \(\widehat d_\star\), row divisions, and
+Gram dot products.  No extra probability loss is introduced by the traversal
+order.
+
+For fixed realized \(h,\omega,\sigma,A,\pi\), fixed \(d>0\), and nonzero
+leading deterministic coefficient,
+\[
+\begin{aligned}
+  T_{{\rm CF,row},\rho_{\rm sig},\pi}^{\rm fp}
+  =
+  \Theta\!\Big(
+  &\gamma_s\Frob{
+      |\widehat B^{\rho_{\rm sig},\pi}|^T
+      |\widehat B^{\rho_{\rm sig},\pi}|}
+  +
+  \Frob{
+      (E^{{\rm den},\rho_{\rm sig},\pi})^T
+      |\widehat B^{\rho_{\rm sig},\pi}|
+      +
+      |\widetilde B^{\rho_{\rm sig},\pi}|^T
+      E^{{\rm den},\rho_{\rm sig},\pi}}
+  \\
+  &+
+  \Frob{
+      (F^{\rho_{\rm sig},\pi})^T
+      |\widetilde B^{\rho_{\rm sig},\pi}|
+      +
+      |B|^TF^{\rho_{\rm sig},\pi}}
+  \Big),
+\end{aligned}
+\]
+with the irreducible substitutions
+\[
+  E^{{\rm den},\rho_{\rm sig},\pi}_{tj}
+  =
+  \Theta\!\left(
+    u|\widehat B^{\rho_{\rm sig},\pi}_{tj}|
+    +
+    \frac{|\widehat Y^{\rho_{\rm sig},\pi}_{\sigma_tj}|}
+         {|\widehat d_\star|}
+    \frac{4u+3u^2+u^3}{1-u}
+  \right)
+\]
+and
+\[
+  F^{\rho_{\rm sig},\pi}_{tj}
+  =
+  \Theta\!\left(
+    \frac{u+\gamma_{b_{\sigma_t}(h)}}{\sqrt{s/r}}
+    \sum_{v=0}^{b_{\sigma_t}(h)-1}
+      |A_{k_{\sigma_t,v}^{\pi}(h),j}|
+  \right).
+\]
+Therefore \(T_{{\rm CF,row},\rho_{\rm sig},\pi}^{\rm fp}\to0\) as
+\[
+  u,\gamma_s,\gamma_{b_i(h)},\frac{4u+3u^2+u^3}{1-u}\to0
+\]
+for fixed realized data.  The probability loss is unchanged,
+\[
+  \Theta\!\left(\frac{m^2}{r}+\Phi(\theta,r,\eps,s,q)\right),
+\]
+so the result is non-vacuous under
+\(m^2/r+\Phi(\theta,r,\eps,s,q)<1\).
+\end{corollary}
+
+\subsection*{Tree-Reduced Stored-Sign Actual-Input Route}
+
+Some sparse CountSketch implementations reduce each bucket by a fixed binary
+summation tree instead of a flat left-to-right accumulation.  The tree shapes
+are exact discrete implementation choices.  They are not random laws and are
+not floating-point real quantities, but the arithmetic performed along each
+tree is computed and must be charged.
+
+For a realized hash \(h\), let \(\mathcal T_i(h)\) be the exact tree used for
+bucket \(i\), and let \(d_i^{\mathcal T}(h)\) be its depth.  Assume the
+roundoff guard for every realized tree depth is valid, so
+\(\gamma_{d_i^{\mathcal T}(h)}\) is defined.  With the same stored sign modes
+\(\rho_{\rm sig}\in\{\mathrm{mul1},\mathrm{add0},\mathrm{sub0}\}\), define
+\[
+\begin{aligned}
+  E^{{\rm CS},\rho_{\rm sig},\mathcal T}_{ij}(h,\omega;A)
+  &:=
+  \bigl(u+\gamma_{d_i^{\mathcal T}(h)}
+        +u\gamma_{d_i^{\mathcal T}(h)}\bigr)
+  \sum_{k:h(k)=i}
+      |\widehat\omega_k^{\rho_{\rm sig}}|\,|A_{kj}|\\
+  &\quad+
+  \sum_{k:h(k)=i}
+      |\widehat\omega_k^{\rho_{\rm sig}}-\omega_k|\,|A_{kj}| .
+\end{aligned}
+\]
+This is the only change from the flat stored-sign radius: the bucket
+accumulation factor \(\gamma_{b_i(h)}\) is replaced by the tree-depth factor
+\(\gamma_{d_i^{\mathcal T}(h)}\).  Let
+\(\widehat Y^{\rho_{\rm sig},\mathcal T}\) be the rounded sparse CountSketch
+apply to the actual input \(A\) using the stored signs and the tree reductions.
+Define
+\[
+  \widehat B^{\rho_{\rm sig},\mathcal T}_{tj}
+  =
+  \fl\!\left(
+    \frac{\widehat Y^{\rho_{\rm sig},\mathcal T}_{\sigma_tj}}
+         {\widehat d_\star}\right),
+  \qquad
+  \widetilde B^{\rho_{\rm sig},\mathcal T}_{tj}
+  =
+  \frac{\widehat Y^{\rho_{\rm sig},\mathcal T}_{\sigma_tj}}{d},
+\]
+\[
+  E^{{\rm den},\rho_{\rm sig},\mathcal T}_{tj}
+  =
+  u|\widehat B^{\rho_{\rm sig},\mathcal T}_{tj}|
+  +
+  \frac{|\widehat Y^{\rho_{\rm sig},\mathcal T}_{\sigma_tj}|}
+       {|\widehat d_\star|}
+  \frac{4u+3u^2+u^3}{1-u},
+\]
+and
+\[
+  F^{\rho_{\rm sig},\mathcal T}_{tj}
+  =
+  \frac{E^{{\rm CS},\rho_{\rm sig},\mathcal T}_{\sigma_tj}
+        (h,\omega;A)}{d}.
+\]
+The irreducible tree-reduced stored-sign downstream radius is
+\[
+  T_{{\rm CF,row},\rho_{\rm sig},\mathcal T}^{\rm fp}
+  =
+  T_{{\rm den},\rho_{\rm sig},\mathcal T}^{\rm fp}
+  +
+  T_{{\rm dot},\rho_{\rm sig},\mathcal T}^{\rm fp}
+  +
+  T_{{\rm basis},\rho_{\rm sig},\mathcal T}^{\rm fp},
+\]
+where the three terms are obtained from the preceding stored-sign definitions
+by replacing
+\(\widehat B^{\rho_{\rm sig}},\widetilde B^{\rho_{\rm sig}},
+E^{{\rm den},\rho_{\rm sig}},F^{\rho_{\rm sig}}\) by their
+\(\mathcal T\)-decorated versions.
+
+\begin{corollary}[Tree-reduced stored-sign collision-free actual-input sampled Gram]
+Assume the hypotheses of the stored-sign collision-free actual-input
+corollary, and assume the tree-depth roundoff guards above.  Let
+\[
+  \widehat G_{{\rm CF},\rho_{\rm sig},\mathcal T}^{\rm fp}
+  =
+  \fl\!\left(
+    (\widehat B^{\rho_{\rm sig},\mathcal T})^T
+    \widehat B^{\rho_{\rm sig},\mathcal T}\right)
+\]
+be the matrix produced by rounded sign storage, tree-reduced rounded sparse
+CountSketch apply to the actual input \(A\), the concrete denominator
+\(\widehat d_\star\), rounded sampled-row divisions, and rounded length-\(s\)
+Gram dot products.  Then
+\[
+\begin{aligned}
+&\Prob_{h,\omega,\sigma}
+  \left[
+    -\eps A^TA
+    -T_{{\rm CF,row},\rho_{\rm sig},\mathcal T}^{\rm fp}\I_n
+    \preceq
+    \widehat G_{{\rm CF},\rho_{\rm sig},\mathcal T}^{\rm fp}-A^TA
+    \preceq
+    \eps A^TA
+    +T_{{\rm CF,row},\rho_{\rm sig},\mathcal T}^{\rm fp}\I_n
+  \right]
+  \ge 1-\delta .
+\end{aligned}
+\]
+Exact objects are \(U,C,A=UC\), the hash/sign/row-sampling laws, the tree
+shapes, \(Y=S_{h,\omega}A\), and \(A^TA\).  Computed non-probability objects
+are the stored signs, tree-reduced sparse products and accumulations,
+\(\widehat d_\star\), row divisions, and Gram dot products.  No extra
+probability loss is introduced by the tree choice.
+
+For fixed realized \(h,\omega,\sigma,A,\mathcal T\), fixed \(d>0\), and
+nonzero leading deterministic coefficient,
+\[
+\begin{aligned}
+  T_{{\rm CF,row},\rho_{\rm sig},\mathcal T}^{\rm fp}
+  =
+  \Theta\!\Big(
+  &\gamma_s\Frob{
+      |\widehat B^{\rho_{\rm sig},\mathcal T}|^T
+      |\widehat B^{\rho_{\rm sig},\mathcal T}|}
+  +
+  \Frob{
+      (E^{{\rm den},\rho_{\rm sig},\mathcal T})^T
+      |\widehat B^{\rho_{\rm sig},\mathcal T}|
+      +
+      |\widetilde B^{\rho_{\rm sig},\mathcal T}|^T
+      E^{{\rm den},\rho_{\rm sig},\mathcal T}}
+  \\
+  &+
+  \Frob{
+      (F^{\rho_{\rm sig},\mathcal T})^T
+      |\widetilde B^{\rho_{\rm sig},\mathcal T}|
+      +
+      |B|^TF^{\rho_{\rm sig},\mathcal T}}
+  \Big),
+\end{aligned}
+\]
+with
+\[
+  E^{{\rm den},\rho_{\rm sig},\mathcal T}_{tj}
+  =
+  \Theta\!\left(
+    u|\widehat B^{\rho_{\rm sig},\mathcal T}_{tj}|
+    +
+    \frac{|\widehat Y^{\rho_{\rm sig},\mathcal T}_{\sigma_tj}|}
+         {|\widehat d_\star|}
+    \frac{4u+3u^2+u^3}{1-u}
+  \right)
+\]
+and
+\[
+  F^{\rho_{\rm sig},\mathcal T}_{tj}
+  =
+  \Theta\!\left(
+    \frac{u+\gamma_{d_{\sigma_t}^{\mathcal T}(h)}}{\sqrt{s/r}}
+    \sum_{k:h(k)=\sigma_t}|A_{kj}|
+  \right).
+\]
+If the bucket trees are balanced, then
+\(\gamma_{d_i^{\mathcal T}(h)}=\Theta(u\log(b_i(h)+1))\) in the
+small-roundoff fixed-realization regime, so the sampled sparse-apply term is
+\[
+  F^{\rho_{\rm sig},\mathcal T}_{tj}
+  =
+  \Theta\!\left(
+    \frac{u(1+\log(b_{\sigma_t}(h)+1))}{\sqrt{s/r}}
+    \sum_{k:h(k)=\sigma_t}|A_{kj}|
+  \right).
+\]
+The probability loss remains
+\[
+  \Theta\!\left(\frac{m^2}{r}+\Phi(\theta,r,\eps,s,q)\right),
+\]
+and the deterministic radius vanishes as
+\[
+  u,\gamma_s,\gamma_{d_i^{\mathcal T}(h)},
+  \frac{4u+3u^2+u^3}{1-u}\to0
+\]
+for fixed realized data.
+\end{corollary}
+
+\subsection*{Product-Grid Stored CountSketch Signs}
+
+If the realized CountSketch signs are stored before the sparse apply, the
+probability law is still exact, but the stored sign table is a computed
+non-probability object.  For a storage mode
+\[
+  \rho\in\{\mathrm{mul1},\mathrm{add0},\mathrm{sub0}\},
+\]
+define
+\[
+  \widehat\omega_k^\rho
+  \in
+  \{\fl(\omega_k\cdot1),\,\fl(\omega_k+0),\,\fl(\omega_k-0)\}.
+\]
+Since \(|\omega_k|=1\), each of these concrete storage modes satisfies
+\[
+  |\widehat\omega_k^\rho-\omega_k|\le u .
+\]
+The computed sparse apply now multiplies \(A_{kj}\) by
+\(\widehat\omega_k^\rho\), not by the exact sign.  Its irreducible
+entrywise radius is
+\[
+\begin{aligned}
+  E^{{\rm CS},\rho}_{ij}(h,\omega;A)
+  &:=
+  \bigl(u+\gamma_{b_i(h)}+u\gamma_{b_i(h)}\bigr)
+  \sum_{k:h(k)=i}|\widehat\omega_k^\rho|\,|A_{kj}|
+  +
+  u\sum_{k:h(k)=i}|A_{kj}|.
+\end{aligned}
+\]
+The first term is the sparse product and bucket-accumulation error using the
+stored signs; the second term is the exact deterministic storage deviation
+back to the ideal \(S_{h,\omega}A\).  The resulting deterministic Gram radius
+is obtained from the previous display by replacing \(E^{\rm CS}\) with
+\(E^{{\rm CS},\rho}\):
+\[
+\begin{aligned}
+  T_{{\rm CSGram},\rho}^{\rm fp}(h,\omega;A)
+  &:=
+  \Frob{
+    \left(
+      \gamma_r
+      \sum_{i=1}^{r}
+      \bigl(|Y_{ij}|+E^{{\rm CS},\rho}_{ij}\bigr)
+      \bigl(|Y_{ik}|+E^{{\rm CS},\rho}_{ik}\bigr)
+    \right)_{j,k=1}^{n}
+  }
+  \\
+  &\quad+
+  \Frob{
+    \left(
+      \sum_{i=1}^{r}
+      \left[
+        E^{{\rm CS},\rho}_{ij}|Y_{ik}|
+        +
+        |Y_{ij}|E^{{\rm CS},\rho}_{ik}
+        +
+        E^{{\rm CS},\rho}_{ij}E^{{\rm CS},\rho}_{ik}
+      \right]
+    \right)_{j,k=1}^{n}
+  } .
+\end{aligned}
+\]
+For each fixed realized \(h,\omega,A\),
+\[
+  \Frob{\widehat G^\rho-Y^TY}
+  \le
+  T_{{\rm CSGram},\rho}^{\rm fp}(h,\omega;A).
+\]
+Moreover
+\[
+  T_{{\rm CSGram},\rho}^{\rm fp}
+  =
+  \Theta\!\left(
+    \gamma_r\Frob{|Y|^T|Y|}
+    +
+    \Frob{(E^{{\rm CS},\rho})^T|Y|+|Y|^TE^{{\rm CS},\rho}}
+  \right),
+\]
+with
+\[
+  E^{{\rm CS},\rho}_{ij}
+  =
+  \Theta\!\left(
+    (u+\gamma_{b_i(h)})
+    \sum_{k:h(k)=i}|A_{kj}|
+  \right)
+\]
+for the three displayed storage modes.  Thus the stored-sign radius is
+non-vacuous: it tends to zero as \(u,\gamma_r,\gamma_{b_i}\to0\) for fixed
+realized data and fixed \(A\).
+
+\begin{corollary}[Product-grid CountSketch sparse-Gram theorem with stored signs]
+Let \(A\in\R^{m\times n}\) be the exact input matrix handed to Algorithm 3,
+and let the exact CountSketch law draw \(h\) and \(\omega\).  Let
+\(\rho_{\rm sig}\in\{\mathrm{mul1},\mathrm{add0},\mathrm{sub0}\}\) select one
+of the three sign-storage routines above.  Let \(\mathcal I\) be a finite
+exact index set, let \(g:\mathcal I\to\R\) be an exact one-dimensional grid
+covering \([-1,1]\) with radius \(\delta_{\rm grid}\), and assume
+\[
+  \delta_{\rm grid}\ge0,\qquad
+  \sqrt n\,\delta_{\rm grid}\le\rho,\qquad
+  \eta>0,\qquad
+  L>0 .
+\]
+For every \(a:\{1,\ldots,n\}\to\mathcal I\), define
+\[
+  z_a(j)=g(a(j)),\qquad j=1,\ldots,n .
+\]
+Set
+\[
+  \tau_{{\rm pg},\rho_{\rm sig}}^{\rm fp}(h,\omega;A)
+  =
+  \eta+L(2\rho+\rho^2)
+  +
+  T_{{\rm CSGram},\rho_{\rm sig}}^{\rm fp}(h,\omega;A).
+\]
+If the floating-point model has valid \(\gamma_m\) and \(\gamma_r\), then
+\[
+\begin{aligned}
+&\Prob_{h,\omega}
+  \left[
+    -\tau_{{\rm pg},\rho_{\rm sig}}^{\rm fp}(h,\omega;A)\I_n
+    \preceq
+    \widehat G^{\rho_{\rm sig}}(h,\omega;A)-A^TA
+    \preceq
+    \tau_{{\rm pg},\rho_{\rm sig}}^{\rm fp}(h,\omega;A)\I_n
+  \right]
+\\
+&\qquad\ge
+  1-
+  \left(
+    \sum_{a:\{1,\ldots,n\}\to\mathcal I}
+      \frac{2\Norm{Az_a}^4}{r\eta^2}
+    +
+      \frac{2\Frob{A}^4}{rL^2}
+  \right).
+\end{aligned}
+\]
+Equivalently, if the displayed product-grid loss is at most \(\delta\), the
+stored-sign computed sparse-Gram Loewner event has probability at least
+\(1-\delta\).
+
+The product-grid loss is unchanged by sign storage because it belongs to the
+exact hash/sign probability analysis.  The computed non-probability quantities
+are the stored sign table \(\widehat\omega^{\rho_{\rm sig}}\), the sparse
+signed products, bucket accumulations, and rounded Gram dot products; their
+floating-point contribution is exactly the deterministic radius
+\(T_{{\rm CSGram},\rho_{\rm sig}}^{\rm fp}\).  For fixed exact \(A\), fixed
+grid, fixed \(\eta,L\), and nonzero numerator, the probability-loss order is
+\[
+  \Theta\!\left(
+    \frac{
+      \sum_a\Norm{Az_a}^4/\eta^2+\Frob{A}^4/L^2
+    }{r}
+  \right),
+\]
+while the additional floating-point radius has the \(\Theta\)-order displayed
+above and tends to zero with \(u,\gamma_r,\gamma_{b_i}\).
+\end{corollary}
+
+\subsection*{Stored CountSketch Signs with Permuted Bucket Layouts}
+
+The preceding stored-sign theorem used the canonical exact enumeration of each
+bucket.  A sparse implementation may instead visit the selected rows in a
+different fixed memory order.  For each realized exact hash \(h\), let
+\[
+  B_i(h)=\{k:h(k)=i\},\qquad b_i(h)=|B_i(h)|,
+\]
+and let
+\[
+  k_{i,1},\ldots,k_{i,b_i(h)}
+\]
+be any exact ordering of the same bucket.  This ordering is a discrete index
+operation, not a floating-point real computation.  With stored signs
+\(\widehat\omega^\rho\), define the permuted sparse-apply radius
+\[
+\begin{aligned}
+  E^{{\rm CS},\rho,\pi}_{ij}(h,\omega;A)
+  &:=
+  \bigl(u+\gamma_{b_i(h)}+u\gamma_{b_i(h)}\bigr)
+  \sum_{t=1}^{b_i(h)}
+    |\widehat\omega^{\rho_{\rm sig}}_{k_{i,t}}|\,|A_{k_{i,t}j}|
+  \\
+  &\quad+
+  u\sum_{t=1}^{b_i(h)}|A_{k_{i,t}j}|.
+\end{aligned}
+\]
+The first line charges the rounded signed products and the rounded
+left-to-right accumulation in the chosen order.  The second line charges the
+storage error of the realized signs.  The exact ideal reference remains
+\[
+  Y_{ij}=\sum_{k:h(k)=i}\omega_k A_{kj}.
+\]
+The corresponding Gram radius is
+\[
+\begin{aligned}
+  T_{{\rm CSGram},\rho,\pi}^{\rm fp}(h,\omega;A)
+  &:=
+  \Frob{
+    \left(
+      \gamma_r
+      \sum_{i=1}^{r}
+      \bigl(|Y_{ij}|+E^{{\rm CS},\rho,\pi}_{ij}\bigr)
+      \bigl(|Y_{ik}|+E^{{\rm CS},\rho,\pi}_{ik}\bigr)
+    \right)_{j,k=1}^{n}
+  }
+  \\
+  &\quad+
+  \Frob{
+    \left(
+      \sum_{i=1}^{r}
+      \left[
+        E^{{\rm CS},\rho,\pi}_{ij}|Y_{ik}|
+        +
+        |Y_{ij}|E^{{\rm CS},\rho,\pi}_{ik}
+        +
+        E^{{\rm CS},\rho,\pi}_{ij}E^{{\rm CS},\rho,\pi}_{ik}
+      \right]
+    \right)_{j,k=1}^{n}
+  } .
+\end{aligned}
+\]
+
+\begin{corollary}[Product-grid CountSketch sparse-Gram theorem with stored signs and permuted buckets]
+Keep the product-grid hypotheses of the preceding stored-sign corollary, and
+fix any exact bucket ordering \(\pi\) for every realized hash \(h\).  Let
+\[
+  \widehat G^{\rho_{\rm sig},\pi}(h,\omega;A)
+\]
+be the computed Gram formed by storing the signs with mode
+\(\rho_{\rm sig}\), visiting each bucket in the chosen order, accumulating
+the sparse products in that order, and then forming rounded length-\(r\) Gram
+dot products.  Set
+\[
+  \tau_{{\rm pg},\rho_{\rm sig},\pi}^{\rm fp}(h,\omega;A)
+  =
+  \eta+L(2\rho+\rho^2)
+  +
+  T_{{\rm CSGram},\rho_{\rm sig},\pi}^{\rm fp}(h,\omega;A).
+\]
+If the floating-point model has valid \(\gamma_m\) and \(\gamma_r\), then
+\[
+\begin{aligned}
+&\Prob_{h,\omega}
+  \left[
+    -\tau_{{\rm pg},\rho_{\rm sig},\pi}^{\rm fp}(h,\omega;A)\I_n
+    \preceq
+    \widehat G^{\rho_{\rm sig},\pi}(h,\omega;A)-A^TA
+    \preceq
+    \tau_{{\rm pg},\rho_{\rm sig},\pi}^{\rm fp}(h,\omega;A)\I_n
+  \right]
+\\
+&\qquad\ge
+  1-
+  \left(
+    \sum_{a:\{1,\ldots,n\}\to\mathcal I}
+      \frac{2\Norm{Az_a}^4}{r\eta^2}
+    +
+      \frac{2\Frob{A}^4}{rL^2}
+  \right).
+\end{aligned}
+\]
+Equivalently, the same event has probability at least \(1-\delta\) whenever
+the displayed product-grid loss is at most \(\delta\).
+
+The exact objects are \(A\), \(h\), \(\omega\), the bucket order \(\pi\), the
+grid vectors \(z_a\), and the reference \(A^TA\).  The computed
+non-probability objects are the stored sign table, the rounded signed
+products, the rounded bucket accumulations in the chosen order, and the
+rounded Gram dot products.  For fixed realized \(h,\omega,\pi,A\),
+\[
+  E^{{\rm CS},\rho,\pi}_{ij}
+  =
+  \Theta\!\left(
+    (u+\gamma_{b_i(h)})
+    \sum_{t=1}^{b_i(h)}|A_{k_{i,t}j}|
+  \right)
+\]
+for the three stored-sign modes, and
+\[
+  T_{{\rm CSGram},\rho,\pi}^{\rm fp}
+  =
+  \Theta\!\left(
+    \gamma_r\Frob{|Y|^T|Y|}
+    +
+    \Frob{(E^{{\rm CS},\rho,\pi})^T|Y|
+      +|Y|^TE^{{\rm CS},\rho,\pi}}
+  \right)
+\]
+when the displayed leading term is nonzero.  The roundoff radius tends to zero
+as \(u,\gamma_r,\gamma_{b_i}\to0\) for fixed realized data and fixed \(A\).
+\end{corollary}
+
+\subsection*{Stored CountSketch Signs with Tree-Reduced Bucket Accumulation}
+
+The preceding stored-sign and permuted-bucket statements use a left-to-right
+fold within each CountSketch bucket.  A parallel sparse implementation may
+instead reduce the bucket entries by a binary summation tree.  For every
+realized exact hash \(h\), define
+\[
+  B_i(h)=\{k:h(k)=i\},
+  \qquad
+  b_i(h)=|B_i(h)|,
+\]
+and fix an exact enumeration
+\[
+  k_{i,1},\ldots,k_{i,b_i(h)}
+\]
+of \(B_i(h)\).  For each bucket \(i\), let
+\[
+  \mathcal T_i(h)
+\]
+be an exact binary summation tree with \(b_i(h)+1\) leaves.  The first
+\(b_i(h)\) leaves hold the rounded signed products, and the last leaf is the
+exact zero padding value.  The zero padding is not a floating-point
+operation; it is only a modeling convention that lets empty buckets use the
+same tree statement.  Let
+\[
+  d_i(h)=\mathrm{depth}\bigl(\mathcal T_i(h)\bigr).
+\]
+The floating-point assumptions for this route are valid \(\gamma_{d_i(h)}\)
+for every realized bucket tree and valid \(\gamma_r\) for each length-\(r\)
+Gram dot product.
+
+As before, the exact Rademacher signs are \(\omega_k\in\{-1,1\}\).  The
+implemented sign table is
+\[
+  \widehat\omega^{\rho_{\rm sig}},
+  \qquad
+  \rho_{\rm sig}\in\{\mathrm{mul1},\mathrm{add0},\mathrm{sub0}\},
+\]
+where the three modes store signs by \(\fl(\omega_k\cdot1)\),
+\(\fl(\omega_k+0)\), or \(\fl(\omega_k-0)\).  Let \(e_k^{\rho_{\rm sig}}\)
+be the certified storage radius satisfying
+\[
+  |\widehat\omega_k^{\rho_{\rm sig}}-\omega_k|
+  \le e_k^{\rho_{\rm sig}} .
+\]
+For the three concrete modes above, \(e_k^{\rho_{\rm sig}}\le u\) because
+\(|\omega_k|=1\).  Define the tree-reduced stored-sign sparse-apply entry
+radius
+\[
+\begin{aligned}
+  E^{{\rm CS},\rho,\mathcal T}_{ij}(h,\omega;A)
+  &:=
+  \bigl(u+\gamma_{d_i(h)}+u\gamma_{d_i(h)}\bigr)
+  \sum_{t=1}^{b_i(h)}
+    |\widehat\omega^{\rho_{\rm sig}}_{k_{i,t}}|\,|A_{k_{i,t}j}|
+\\
+  &\quad+
+  \sum_{t=1}^{b_i(h)}
+    e_{k_{i,t}}^{\rho_{\rm sig}}\,|A_{k_{i,t}j}|.
+\end{aligned}
+\]
+The first line charges the rounded signed products and the rounded tree
+reduction.  The second line charges the stored sign table.  The exact ideal
+reference is still
+\[
+  Y_{ij}=\sum_{k:h(k)=i}\omega_k A_{kj}.
+\]
+Let \(\widehat Y^{\rho_{\rm sig},\mathcal T}\) be the computed sparse sketch
+formed from the stored signs, rounded signed products, and the bucket trees.
+The corresponding fully expanded deterministic Gram radius is
+\[
+\begin{aligned}
+  T_{{\rm CSGram},\rho,\mathcal T}^{\rm fp}(h,\omega;A)
+  &:=
+  \Frob{
+    \left(
+      \gamma_r
+      \sum_{i=1}^{r}
+      \bigl(|Y_{ij}|+E^{{\rm CS},\rho,\mathcal T}_{ij}\bigr)
+      \bigl(|Y_{ik}|+E^{{\rm CS},\rho,\mathcal T}_{ik}\bigr)
+    \right)_{j,k=1}^{n}
+  }
+\\
+  &\quad+
+  \Frob{
+    \left(
+      \sum_{i=1}^{r}
+      \left[
+        E^{{\rm CS},\rho,\mathcal T}_{ij}|Y_{ik}|
+        +
+        |Y_{ij}|E^{{\rm CS},\rho,\mathcal T}_{ik}
+        +
+        E^{{\rm CS},\rho,\mathcal T}_{ij}
+          E^{{\rm CS},\rho,\mathcal T}_{ik}
+      \right]
+    \right)_{j,k=1}^{n}
+  } .
+\end{aligned}
+\]
+
+\begin{corollary}[Product-grid CountSketch sparse-Gram theorem with stored signs and tree reductions]
+Keep the product-grid hypotheses of the stored-sign corollary, and fix exact
+bucket trees \(\mathcal T_i(h)\) for every realized hash \(h\).  Let
+\[
+  \widehat G^{\rho_{\rm sig},\mathcal T}(h,\omega;A)
+  =
+  \fl\!\left(
+    (\widehat Y^{\rho_{\rm sig},\mathcal T})^T
+    \widehat Y^{\rho_{\rm sig},\mathcal T}
+  \right)
+\]
+be the computed Gram whose length-\(r\) dot products are rounded.  Set
+\[
+  \tau_{{\rm pg},\rho_{\rm sig},\mathcal T}^{\rm fp}(h,\omega;A)
+  =
+  \eta+L(2\rho+\rho^2)
+  +
+  T_{{\rm CSGram},\rho_{\rm sig},\mathcal T}^{\rm fp}(h,\omega;A).
+\]
+If the floating-point model has valid \(\gamma_{d_i(h)}\) for every bucket
+tree and valid \(\gamma_r\), then
+\[
+\begin{aligned}
+&\Prob_{h,\omega}
+  \left[
+    -\tau_{{\rm pg},\rho_{\rm sig},\mathcal T}^{\rm fp}(h,\omega;A)\I_n
+    \preceq
+    \widehat G^{\rho_{\rm sig},\mathcal T}(h,\omega;A)-A^TA
+    \preceq
+    \tau_{{\rm pg},\rho_{\rm sig},\mathcal T}^{\rm fp}(h,\omega;A)\I_n
+  \right]
+\\
+&\qquad\ge
+  1-
+  \left(
+    \sum_{a:\{1,\ldots,n\}\to\mathcal I}
+      \frac{2\Norm{Az_a}^4}{r\eta^2}
+    +
+      \frac{2\Frob{A}^4}{rL^2}
+  \right).
+\end{aligned}
+\]
+Equivalently, the same event has probability at least \(1-\delta\) whenever
+the displayed product-grid loss is at most \(\delta\).
+
+The exact objects are \(A\), \(h\), \(\omega\), the product-grid vectors
+\(z_a\), the reference \(A^TA\), and the tree shapes
+\(\mathcal T_i(h)\).  These tree shapes are exact discrete algorithm choices,
+not floating-point real computations.  The computed non-probability objects
+are the stored sign table, the rounded signed products, the rounded
+tree-reduced bucket accumulations, and the rounded Gram dot products.
+
+For fixed realized \(h,\omega,\mathcal T,A\), and for the three concrete
+stored-sign modes, the entry budget has small-roundoff order
+\[
+  E^{{\rm CS},\rho,\mathcal T}_{ij}
+  =
+  \Theta\!\left(
+    (u+\gamma_{d_i(h)})
+    \sum_{t=1}^{b_i(h)}|A_{k_{i,t}j}|
+  \right)
+\]
+whenever the displayed bucket-column absolute sum is nonzero.  If balanced
+trees are selected, so that
+\[
+  d_i(h)=\Theta\!\bigl(\log(b_i(h)+1)\bigr),
+\]
+then \(\gamma_{d_i(h)}=\Theta(u\log(b_i(h)+1))\) in the usual small-\(u\)
+regime, and therefore
+\[
+  E^{{\rm CS},\rho,\mathcal T}_{ij}
+  =
+  \Theta\!\left(
+    u(1+\log(b_i(h)+1))
+    \sum_{t=1}^{b_i(h)}|A_{k_{i,t}j}|
+  \right).
+\]
+The deterministic Gram radius satisfies
+\[
+  T_{{\rm CSGram},\rho,\mathcal T}^{\rm fp}
+  =
+  \Theta\!\left(
+    \gamma_r\Frob{|Y|^T|Y|}
+    +
+    \Frob{(E^{{\rm CS},\rho,\mathcal T})^T|Y|
+      +|Y|^TE^{{\rm CS},\rho,\mathcal T}}
+  \right)
+\]
+when the displayed leading term is nonzero; the exact expanded formula above
+retains the higher-order \(E^TE\) and \(\gamma_r E\)-dependent terms.  The
+probability-loss order is unchanged,
+\[
+  \Theta\!\left(
+    \frac{
+      \sum_a\Norm{Az_a}^4/\eta^2+\Frob{A}^4/L^2
+    }{r}
+  \right)
+\]
+for fixed exact input/grid/threshold data and nonzero numerator.  The result
+is non-vacuous whenever the displayed product-grid loss is below one, and the
+deterministic roundoff radius tends to zero as
+\[
+  u,\gamma_r,\gamma_{d_i(h)},e_k^{\rho_{\rm sig}}\longrightarrow0
+\]
+for fixed realized data and fixed exact \(A\).
+\end{corollary}
+
+\begin{corollary}[Product-grid CountSketch sparse-Gram theorem]
+Let \(A\in\R^{m\times n}\) be the exact input matrix handed to Algorithm 3.
+Let \(\mathcal I\) be a finite exact index set, and let
+\[
+  g:\mathcal I\to\R
+\]
+be an exact one-dimensional grid that covers \([-1,1]\) with radius
+\(\delta_{\rm grid}\).  Assume
+\[
+  \delta_{\rm grid}\ge0,
+  \qquad
+  \sqrt n\,\delta_{\rm grid}\le\rho,
+  \qquad
+  \eta>0,
+  \qquad
+  L>0.
+\]
+For each product-grid index \(a:\{1,\ldots,n\}\to\mathcal I\), define
+\[
+  z_a(j)=g(a(j)),\qquad j=1,\ldots,n .
+\]
+Then \(\{z_a\}\) is an exact \(\rho\)-cover of the Euclidean unit ball in
+\(\R^n\), and it has cardinality \(|\mathcal I|^n\).
+
+Set
+\[
+  \tau_{\rm pg}^{\rm fp}(h,\omega;A)
+  =
+  \eta+L(2\rho+\rho^2)+T_{\rm CSGram}^{\rm fp}(h,\omega;A).
+\]
+If the floating-point model has valid \(\gamma_m\) and \(\gamma_r\), then
+\[
+\begin{aligned}
+&\Prob_{h,\omega}
+  \left[
+    -\tau_{\rm pg}^{\rm fp}(h,\omega;A)\I_n
+    \preceq
+    \widehat G(h,\omega;A)-A^TA
+    \preceq
+    \tau_{\rm pg}^{\rm fp}(h,\omega;A)\I_n
+  \right]
+\\
+&\qquad\ge
+  1-
+  \left(
+    \sum_{a:\{1,\ldots,n\}\to\mathcal I}
+      \frac{2\Norm{Az_a}^4}{r\eta^2}
+    +
+      \frac{2\Frob{A}^4}{rL^2}
+  \right).
+\end{aligned}
+\]
+Equivalently, if the displayed product-grid loss is at most \(\delta\), the
+same computed sparse-Gram Loewner event has probability at least
+\(1-\delta\).
+
+All quantities in the product-grid loss are exact arithmetic analysis
+quantities: \(A\), the grid \(g\), the product vectors \(z_a\), and the exact
+hash/sign law.  The computed non-probability quantities are precisely
+\(\widehat Y\) and \(\widehat G\), and their floating-point errors are charged
+by the expanded \(T_{\rm CSGram}^{\rm fp}\) above.
+
+For fixed exact \(A\), fixed grid \(g\), and fixed positive \(\eta,L\), the
+probability loss has order
+\[
+  \Theta\!\left(
+    \frac{
+      \sum_{a:\{1,\ldots,n\}\to\mathcal I}\Norm{Az_a}^4/\eta^2
+      +
+      \Frob{A}^4/L^2
+    }{r}
+  \right)
+\]
+when the numerator is nonzero, and it is exactly zero when the numerator is
+zero.  The probability bound is non-vacuous whenever the displayed loss is
+less than one.  The floating-point radius is non-vacuous because
+\[
+  T_{\rm CSGram}^{\rm fp}(h,\omega;A)\to0
+  \quad\text{as}\quad
+  u,\gamma_r,\gamma_{b_i(h)}\to0
+\]
+for fixed realized \(h,\omega\) and fixed exact input \(A\).
+\end{corollary}
+
+\begin{corollary}[Orthonormal product-grid CountSketch sparse-Gram theorem]
+Keep the exact CountSketch product-grid notation above.  Let
+\(U\in\R^{m\times n}\) be an exact orthonormal-column analysis matrix,
+\[
+  U^TU=\I_n .
+\]
+For each product-grid index \(a:\{1,\ldots,n\}\to\mathcal I\), define the
+exact grid vector
+\[
+  z_a(j)=g(a(j)).
+\]
+Because \(U\) has orthonormal columns,
+\[
+  \Norm{Uz_a}^2=\Norm{z_a}^2,
+  \qquad
+  \Frob{U}^2=n .
+\]
+Thus the exact product-grid probability loss reduces to the irreducible
+orthonormal form
+\[
+  \mathcal L_{\rm pg}^{\rm orth}
+  =
+  \sum_{a:\{1,\ldots,n\}\to\mathcal I}
+    \frac{2\Norm{z_a}^4}{r\eta^2}
+  +
+    \frac{2n^2}{rL^2}.
+\]
+Let
+\[
+  \tau_{\rm pg}^{\rm fp}(h,\omega;U)
+  =
+  \eta+L(2\rho+\rho^2)+T_{\rm CSGram}^{\rm fp}(h,\omega;U),
+\]
+where \(T_{\rm CSGram}^{\rm fp}\) is the sparse-apply and rounded-Gram
+radius defined above.  If the floating-point model has valid \(\gamma_m\) and
+\(\gamma_r\), then
+\[
+\begin{aligned}
+&\Prob_{h,\omega}
+  \left[
+    -\tau_{\rm pg}^{\rm fp}(h,\omega;U)\I_n
+    \preceq
+    \widehat G(h,\omega;U)-\I_n
+    \preceq
+    \tau_{\rm pg}^{\rm fp}(h,\omega;U)\I_n
+  \right]
+\\
+&\qquad\ge
+  1-\mathcal L_{\rm pg}^{\rm orth}.
+\end{aligned}
+\]
+Equivalently, if \(\mathcal L_{\rm pg}^{\rm orth}\le\delta\), the same
+computed sparse-Gram Loewner event has probability at least \(1-\delta\).
+
+For the stored-sign implementation path, let
+\(\rho_{\rm sig}\in\{\mathrm{mul1},\mathrm{add0},\mathrm{sub0}\}\), store the
+realized signs as \(\widehat\omega^{\rho_{\rm sig}}\), and replace
+\(T_{\rm CSGram}^{\rm fp}\) by
+\(T_{{\rm CSGram},\rho_{\rm sig}}^{\rm fp}\).  Then the same probability loss
+\(\mathcal L_{\rm pg}^{\rm orth}\) holds for the stored-sign computed event
+\[
+  -\tau_{{\rm pg},\rho_{\rm sig}}^{\rm fp}(h,\omega;U)\I_n
+  \preceq
+  \widehat G^{\rho_{\rm sig}}(h,\omega;U)-\I_n
+  \preceq
+  \tau_{{\rm pg},\rho_{\rm sig}}^{\rm fp}(h,\omega;U)\I_n,
+\]
+where
+\[
+  \tau_{{\rm pg},\rho_{\rm sig}}^{\rm fp}(h,\omega;U)
+  =
+  \eta+L(2\rho+\rho^2)
+  +
+  T_{{\rm CSGram},\rho_{\rm sig}}^{\rm fp}(h,\omega;U).
+\]
+The exact objects are \(U\), the grid \(g\), the product-grid vectors \(z_a\),
+and the hash/sign probability law.  In the stored-sign path, the computed
+non-probability objects are the stored sign table, sparse signed products,
+bucket accumulations, and rounded Gram dot products.  The statement does not
+charge probability construction, and it does not rely on an auxiliary
+perturbation event or supplied certificate.
+
+For fixed exact grid and fixed positive \(\eta,L\), the irreducible
+probability-loss order is
+\[
+  \mathcal L_{\rm pg}^{\rm orth}
+  =
+  \Theta\!\left(
+    \frac{
+      \sum_{a:\{1,\ldots,n\}\to\mathcal I}\Norm{z_a}^4/\eta^2
+      +
+      n^2/L^2
+    }{r}
+  \right)
+\]
+when the numerator is nonzero, and the loss is exactly zero when the numerator
+is zero.  The result is non-vacuous whenever
+\(\mathcal L_{\rm pg}^{\rm orth}<1\).  The deterministic floating-point radius
+tends to zero as the relevant \(u,\gamma_r,\gamma_{b_i(h)}\), and stored-sign
+copy radii tend to zero for fixed realized data.
+\end{corollary}
+
+\subsection*{Downstream Uniform Rows After CountSketch}
+
+After the CountSketch preprocessing, Algorithm 3 may sample \(s\) rows from
+the \(r\)-row sketched matrix.  Let
+\[
+  \sigma=(\sigma_1,\ldots,\sigma_s),
+  \qquad
+  \sigma_q\in\{1,\ldots,r\},
+\]
+be exact iid uniform row indices.  Define the exact denominator
+\[
+  d=\sqrt{s/r}.
+\]
+The concrete denominator routine used here computes
+\[
+  \widehat d
+  =
+  \fl\!\left(
+    \sqrt{s}\,
+    \fl\!\left(\frac{1}{\sqrt r}\right)
+  \right),
+\]
+implemented as
+\[
+  \fl_{\rm mul}\!\left(
+    \fl_{\rm sqrt}(s),
+    \fl_{\rm div}\!\left(1,\fl_{\rm sqrt}(r)\right)
+  \right),
+\]
+and the proved denominator error radius is
+\[
+  E_d
+  =
+  d\,\frac{4u+3u^2+u^3}{1-u},
+  \qquad
+  |\widehat d-d|\le E_d.
+\]
+Assume \(\widehat d\ne0\), which is part of the concrete denominator
+certificate.
+
+For a realized \(h,\omega,\sigma\), define the exact scaled sampled rows
+\[
+  B_{qj}
+  =
+  \frac{Y_{\sigma_q j}}{d},
+  \qquad
+  q=1,\ldots,s,\quad j=1,\ldots,n.
+\]
+The implementation uses the already computed sparse sketch \(\widehat Y\) and
+forms
+\[
+  \widehat B_{qj}
+  =
+  \fl\!\left(\frac{\widehat Y_{\sigma_q j}}{\widehat d}\right).
+\]
+An explicit entrywise radius for this sampled-row scaling is
+\[
+  E^B_{qj}
+  =
+  \frac{u|\widehat Y_{\sigma_q j}|}{|\widehat d|}
+  +
+  \frac{E^{\rm CS}_{\sigma_q j}}{|\widehat d|}
+  +
+  \frac{|Y_{\sigma_q j}|E_d}{|\widehat d|\,|d|}.
+\]
+The first term charges the rounded division by \(\widehat d\), the second term
+propagates the computed sparse-apply error, and the third term charges the
+computed denominator.
+
+The final sampled Gram is
+\[
+  \widehat G_{\rm row}(h,\omega,\sigma;A)
+  =
+  \fl\!\left(\widehat B^T\widehat B\right),
+\]
+with rounded length-\(s\) dot products.  Its fully expanded deterministic
+floating-point radius is
+\[
+\begin{aligned}
+  T_{\rm CS,row}^{\rm fp}
+  &:=
+  \Frob{
+    \left(
+      \gamma_s
+      \sum_{q=1}^{s}
+        \bigl(|B_{qj}|+E^B_{qj}\bigr)
+        \bigl(|B_{qk}|+E^B_{qk}\bigr)
+    \right)_{j,k=1}^{n}
+  }
+  \\
+  &\quad+
+  \Frob{
+    \left(
+      \sum_{q=1}^{s}
+      \left[
+        E^B_{qj}|B_{qk}|
+        +
+        |B_{qj}|E^B_{qk}
+        +
+        E^B_{qj}E^B_{qk}
+      \right]
+    \right)_{j,k=1}^{n}
+  } .
+\end{aligned}
+\]
+For fixed realized \(h,\omega,\sigma,A\), this radius tends to zero as
+\[
+  u,\gamma_s,\gamma_{b_i(h)},E_d\longrightarrow0 .
+\]
+
+\begin{corollary}[Product-grid CountSketch plus downstream uniform rows]
+Keep the hypotheses and product-grid notation of the preceding CountSketch
+corollary.  Let \(\eta_{\rm row}>0\), and set
+\[
+  \tau_{\rm CS}=\eta+L(2\rho+\rho^2).
+\]
+Then the fully computed downstream sampled Gram satisfies
+\[
+\begin{aligned}
+&\Prob_{h,\omega,\sigma}
+  \left[
+    -\bigl(\tau_{\rm CS}+\eta_{\rm row}
+      +T_{\rm CS,row}^{\rm fp}\bigr)\I_n
+    \preceq
+    \widehat G_{\rm row}(h,\omega,\sigma;A)-A^TA
+  \right.
+\\[-2pt]
+&\left.\hspace{4.4cm}
+    \preceq
+    \bigl(\tau_{\rm CS}+\eta_{\rm row}
+      +T_{\rm CS,row}^{\rm fp}\bigr)\I_n
+  \right]
+\\
+&\qquad\ge
+  1-\mathcal L_{\rm pg,row},
+\end{aligned}
+\]
+where the exact product-grid loss is
+\[
+\begin{aligned}
+  \mathcal L_{\rm pg,row}
+  &:=
+  \sum_{a:\{1,\ldots,n\}\to\mathcal I}
+    \frac{2}{r\eta^2}
+      \sum_{p\ne q}
+        \bigl((Az_a)_p(Az_a)_q\bigr)^2
+\\
+&\quad+
+  \frac{2}{rL^2}
+    \sum_{j,k=1}^{n}\sum_{p\ne q}
+      (A_{pj}A_{qk})^2
+  +
+  \frac{r\,m^2\Frob{A}^4}{s\eta_{\rm row}^2}.
+\end{aligned}
+\]
+Equivalently, if \(\mathcal L_{\rm pg,row}\le\delta\), then the displayed
+fully computed event has probability at least \(1-\delta\).
+
+The exact objects are \(A\), the product grid \(z_a\), the exact hash/sign
+law, and the exact uniform row-sampling law.  The computed non-probability
+objects are \(\widehat Y\), \(\widehat d\), \(\widehat B\), and
+\(\widehat G_{\rm row}\).  Their errors are charged by
+\(E^{\rm CS}\), \(E_d\), \(E^B\), and the expanded
+\(T_{\rm CS,row}^{\rm fp}\).
+
+In the fixed exact-input/grid/threshold regime, the probability loss has order
+\[
+  \Theta\!\left(
+    \sum_{a:\{1,\ldots,n\}\to\mathcal I}
+      \frac{\sum_{p\ne q}((Az_a)_p(Az_a)_q)^2}{r\eta^2}
+    +
+    \frac{\sum_{j,k=1}^{n}\sum_{p\ne q}(A_{pj}A_{qk})^2}{rL^2}
+    +
+    \frac{r\,m^2\Frob{A}^4}{s\eta_{\rm row}^2}
+  \right)
+\]
+when the displayed numerator is nonzero.  The result is non-vacuous whenever
+\(\mathcal L_{\rm pg,row}<1\), and its deterministic floating-point radius
+vanishes when the charged roundoff and denominator errors vanish.
+\end{corollary}
+
+\begin{corollary}[Product-grid CountSketch plus downstream uniform rows with stored signs]
+Keep the exact product-grid notation above, and let the CountSketch signs be
+stored by one of the concrete routines
+\[
+  \rho_{\rm sig}\in\{\mathrm{mul1},\mathrm{add0},\mathrm{sub0}\}.
+\]
+Thus \(\widehat\omega^{\rho_{\rm sig}}\) is respectively formed by
+\(\fl(\omega_k\cdot1)\), \(\fl(\omega_k+0)\), or \(\fl(\omega_k-0)\), and
+\[
+  E^{{\rm CS},\rho_{\rm sig}}_{ij}
+  =
+  \bigl(u+\gamma_{b_i(h)}+u\gamma_{b_i(h)}\bigr)
+  \sum_{k:h(k)=i}|\widehat\omega_k^{\rho_{\rm sig}}|\,|A_{kj}|
+  +
+  u\sum_{k:h(k)=i}|A_{kj}|
+\]
+is the stored-sign sparse-apply entry radius defined before the sparse-Gram
+corollary.
+
+For a realized row trace \(\sigma=(\sigma_1,\ldots,\sigma_s)\), define
+\[
+  \widehat Y^{\rho_{\rm sig}}= \fl(S_{h,\widehat\omega^{\rho_{\rm sig}}}A),
+  \qquad
+  \widetilde B^{\rho_{\rm sig}}_{qj}
+  =
+  \frac{\widehat Y^{\rho_{\rm sig}}_{\sigma_qj}}{d},
+  \qquad
+  \widehat B^{\rho_{\rm sig}}_{qj}
+  =
+  \fl\!\left(
+    \frac{\widehat Y^{\rho_{\rm sig}}_{\sigma_qj}}{\widehat d}
+  \right).
+\]
+The exact reference \(B_{qj}=Y_{\sigma_qj}/d\) uses the exact CountSketch
+signs and the exact denominator.  The computed-denominator row entry radius
+for the stored-sign computed sketch is
+\[
+  E^{{\rm den},\rho_{\rm sig}}_{qj}
+  =
+  |\widehat B^{\rho_{\rm sig}}_{qj}|\,u
+  +
+  \frac{|\widehat Y^{\rho_{\rm sig}}_{\sigma_qj}|\,E_d}
+       {|\widehat d|\,|d|}.
+\]
+The stored-sign basis perturbation sampled at row \(q\) is
+\[
+  F^{\rho_{\rm sig}}_{qj}
+  =
+  \frac{E^{{\rm CS},\rho_{\rm sig}}_{\sigma_qj}}{d}.
+\]
+Now define the irreducible deterministic downstream radius
+\[
+  T_{{\rm CS,row},\rho_{\rm sig}}^{\rm fp}
+  =
+  T_{{\rm den},\rho_{\rm sig}}^{\rm fp}
+  +
+  T_{{\rm dot},\rho_{\rm sig}}^{\rm fp}
+  +
+  T_{{\rm basis},\rho_{\rm sig}}^{\rm fp},
+\]
+where
+\[
+  T_{{\rm den},\rho_{\rm sig}}^{\rm fp}
+  =
+  \Frob{
+    \left(
+      \sum_{q=1}^{s}
+      E^{{\rm den},\rho_{\rm sig}}_{qj}
+        |\widehat B^{\rho_{\rm sig}}_{qk}|
+      +
+      |\widetilde B^{\rho_{\rm sig}}_{qj}|
+        E^{{\rm den},\rho_{\rm sig}}_{qk}
+    \right)_{j,k=1}^{n}
+  },
+\]
+\[
+  T_{{\rm dot},\rho_{\rm sig}}^{\rm fp}
+  =
+  \Frob{
+    \left(
+      \gamma_s\sum_{q=1}^{s}
+      |\widehat B^{\rho_{\rm sig}}_{qj}|
+      |\widehat B^{\rho_{\rm sig}}_{qk}|
+    \right)_{j,k=1}^{n}
+  },
+\]
+and
+\[
+  T_{{\rm basis},\rho_{\rm sig}}^{\rm fp}
+  =
+  \Frob{
+    \left(
+      \sum_{q=1}^{s}
+      F^{\rho_{\rm sig}}_{qj}
+        |\widetilde B^{\rho_{\rm sig}}_{qk}|
+      +
+      |B_{qj}|F^{\rho_{\rm sig}}_{qk}
+    \right)_{j,k=1}^{n}
+  }.
+\]
+
+With \(\eta_{\rm row}>0\) and
+\[
+  \tau_{\rm CS}=\eta+L(2\rho+\rho^2),
+\]
+the fully computed stored-sign downstream sampled Gram
+\[
+  \widehat G_{\rm row}^{\rho_{\rm sig}}(h,\omega,\sigma;A)
+  =
+  \fl\!\left(
+    (\widehat B^{\rho_{\rm sig}})^T
+    \widehat B^{\rho_{\rm sig}}
+  \right)
+\]
+satisfies
+\[
+\begin{aligned}
+&\Prob_{h,\omega,\sigma}
+  \left[
+    -\bigl(\tau_{\rm CS}+\eta_{\rm row}
+      +T_{{\rm CS,row},\rho_{\rm sig}}^{\rm fp}\bigr)\I_n
+    \preceq
+    \widehat G_{\rm row}^{\rho_{\rm sig}}(h,\omega,\sigma;A)-A^TA
+  \right.
+\\[-2pt]
+&\left.\hspace{4.2cm}
+    \preceq
+    \bigl(\tau_{\rm CS}+\eta_{\rm row}
+      +T_{{\rm CS,row},\rho_{\rm sig}}^{\rm fp}\bigr)\I_n
+  \right]
+\\
+&\qquad\ge
+  1-\mathcal L_{\rm pg,row}.
+\end{aligned}
+\]
+Equivalently, if the exact loss \(\mathcal L_{\rm pg,row}\) displayed in the
+preceding corollary is at most \(\delta\), then this stored-sign fully
+computed event has probability at least \(1-\delta\).
+
+The exact objects are \(A\), the product grid \(z_a\), the exact CountSketch
+hash/sign law, and the exact uniform row-sampling law.  The computed
+non-probability objects are \(\widehat\omega^{\rho_{\rm sig}}\),
+\(\widehat Y^{\rho_{\rm sig}}\), \(\widehat d\),
+\(\widehat B^{\rho_{\rm sig}}\), and
+\(\widehat G_{\rm row}^{\rho_{\rm sig}}\).  No perturbation event or
+extra existence assumption is supplied.
+
+For fixed realized \(h,\omega,\sigma,A\), fixed exact denominator \(d>0\),
+and nonzero leading deterministic coefficient,
+\[
+  \begin{aligned}
+  T_{{\rm CS,row},\rho_{\rm sig}}^{\rm fp}
+  =
+  \Theta\!\Big(
+  &\gamma_s
+      \Frob{|\widehat B^{\rho_{\rm sig}}|^T
+            |\widehat B^{\rho_{\rm sig}}|}
+  \\
+  &+
+    \Frob{(E^{{\rm den},\rho_{\rm sig}})^T
+          |\widehat B^{\rho_{\rm sig}}|
+          +
+          |\widetilde B^{\rho_{\rm sig}}|^T
+          E^{{\rm den},\rho_{\rm sig}}}
+  \\
+  &+
+    \Frob{(F^{\rho_{\rm sig}})^T
+          |\widetilde B^{\rho_{\rm sig}}|
+          +
+          |B|^TF^{\rho_{\rm sig}}}
+  \Big).
+  \end{aligned}
+\]
+Substituting the irreducible definitions,
+\[
+  E^{{\rm den},\rho_{\rm sig}}_{qj}
+  =
+  \Theta\!\left(
+    u|\widehat B^{\rho_{\rm sig}}_{qj}|
+    +
+    \frac{|\widehat Y^{\rho_{\rm sig}}_{\sigma_qj}|}{|\widehat d|\,|d|}
+    d\,\frac{4u+3u^2+u^3}{1-u}
+  \right),
+\]
+and
+\[
+  F^{\rho_{\rm sig}}_{qj}
+  =
+  \Theta\!\left(
+    \frac{u+\gamma_{b_{\sigma_q}(h)}}{d}
+    \sum_{k:h(k)=\sigma_q}|A_{kj}|
+  \right).
+\]
+Thus, in the small-roundoff regime with fixed realized data,
+\[
+  T_{{\rm CS,row},\rho_{\rm sig}}^{\rm fp}
+  \to0
+  \quad\text{as}\quad
+  u,\gamma_s,\gamma_{b_i(h)},\frac{4u+3u^2+u^3}{1-u}\to0.
+\]
+The probability-loss order remains the same \(\Theta\)-order as in the
+preceding downstream corollary, because sign storage is a deterministic
+floating-point radius and not a probability-law perturbation.
+\end{corollary}
+
+\begin{corollary}[Orthonormal product-grid CountSketch plus downstream uniform rows with stored signs]
+Keep the product-grid, stored-sign, and downstream row notation introduced
+above.  Now specialize the exact input to an orthonormal-column analysis
+matrix \(U\in\R^{m\times n}\), so
+\[
+  U^TU=\I_n .
+\]
+For each product-grid index \(a:\{1,\ldots,n\}\to\mathcal I\), keep
+\[
+  z_a(j)=g(a(j)).
+\]
+The orthonormal identities
+\[
+  \Norm{Uz_a}^2=\Norm{z_a}^2,
+  \qquad
+  \Frob{U}^2=n
+\]
+turn the stored-sign downstream product-grid loss into
+\[
+\begin{aligned}
+  \mathcal L_{\rm pg,row}^{\rm orth}
+  &:=
+  \sum_{a:\{1,\ldots,n\}\to\mathcal I}
+    \frac{2\Norm{z_a}^4}{r\eta^2}
+  +
+    \frac{2n^2}{rL^2}
+  +
+    \frac{r(mn)^2}{s\eta_{\rm row}^2}.
+\end{aligned}
+\]
+Let \(\rho_{\rm sig}\in\{\mathrm{mul1},\mathrm{add0},\mathrm{sub0}\}\) be
+one of the three stored-sign copy routines defined above, and let
+\[
+  \tau_{{\rm pg,row},\rho_{\rm sig}}^{\rm fp}(h,\omega,\sigma;U)
+  =
+  \eta+L(2\rho+\rho^2)
+  +\eta_{\rm row}
+  +T_{{\rm CS,row},\rho_{\rm sig}}^{\rm fp}(h,\omega,\sigma;U).
+\]
+Then the fully computed stored-sign downstream sampled Gram satisfies
+\[
+\begin{aligned}
+&\Prob_{h,\omega,\sigma}
+  \left[
+    -\tau_{{\rm pg,row},\rho_{\rm sig}}^{\rm fp}(h,\omega,\sigma;U)\I_n
+    \preceq
+    \widehat G_{\rm row}^{\rho_{\rm sig}}(h,\omega,\sigma;U)-\I_n
+  \right.
+\\[-2pt]
+&\left.\hspace{4.5cm}
+    \preceq
+    \tau_{{\rm pg,row},\rho_{\rm sig}}^{\rm fp}(h,\omega,\sigma;U)\I_n
+  \right]
+\\
+&\qquad\ge
+  1-\mathcal L_{\rm pg,row}^{\rm orth}.
+\end{aligned}
+\]
+Equivalently, if \(\mathcal L_{\rm pg,row}^{\rm orth}\le\delta\), the same
+fully computed event has probability at least \(1-\delta\).
+
+The exact objects are \(U\), the product grid \(g\), the grid vectors \(z_a\),
+the exact CountSketch hash/sign law, and the exact downstream uniform-row law.
+The computed non-probability objects are the stored sign table,
+\(\widehat Y^{\rho_{\rm sig}}\), the concrete denominator \(\widehat d\),
+the rounded sampled rows \(\widehat B^{\rho_{\rm sig}}\), and the rounded
+sampled Gram \(\widehat G_{\rm row}^{\rho_{\rm sig}}\).  The displayed
+radius charges sign storage, sparse signed products, bucket accumulation,
+denominator formation, row divisions, and sampled-Gram dot products.
+
+For fixed exact grid and fixed positive \(\eta,L,\eta_{\rm row}\), the
+irreducible probability-loss order is
+\[
+  \mathcal L_{\rm pg,row}^{\rm orth}
+  =
+  \Theta\!\left(
+    \frac{
+      \sum_{a:\{1,\ldots,n\}\to\mathcal I}\Norm{z_a}^4/\eta^2
+      +
+      n^2/L^2
+    }{r}
+    +
+    \frac{r\,m^2n^2}{s\eta_{\rm row}^2}
+  \right)
+\]
+when the displayed numerator is nonzero.  The result is non-vacuous whenever
+\(\mathcal L_{\rm pg,row}^{\rm orth}<1\).  For fixed realized data, its
+deterministic floating-point radius tends to zero as the unit roundoff,
+\(\gamma_s\), the bucket-accumulation \(\gamma\)-factors, and the denominator
+error tend to zero.
+\end{corollary}
+
+\begin{corollary}[Orthonormal product-grid downstream uniform rows with fixed-order or tree-reduced buckets]
+Keep the exact orthonormal input \(U\), product-grid vectors \(z_a\), and
+loss \(\mathcal L_{\rm pg,row}^{\rm orth}\) from the preceding corollary.
+For every realized exact hash \(h\), consider either of the following exact
+discrete layout choices.
+
+First, a fixed-order layout \(\pi\) specifies, for every bucket \(i\), an
+ordering of the exact bucket set \(B_i(h)=\{k:h(k)=i\}\).  Second, a
+tree-reduced layout \(\mathcal T\) specifies, for every bucket \(i\), an exact
+binary summation tree with depth \(d_i^{\mathcal T}(h)\).  The choices
+\(\pi\) and \(\mathcal T\) are exact discrete inputs, not floating-point
+computations.  Arithmetic performed along the chosen order or tree is
+floating-point arithmetic and is charged in the deterministic radius.
+
+Let
+\[
+  \ell\in\{\pi,\mathcal T\}
+\]
+denote one of these two layouts.  For a stored-sign routine
+\[
+  \rho_{\rm sig}\in\{\mathrm{mul1},\mathrm{add0},\mathrm{sub0}\},
+\]
+write
+\[
+  \widehat Y^{\rho_{\rm sig},\ell}(h,\omega;U)
+\]
+for the computed sparse CountSketch basis obtained from \(U\) by storing the
+realized signs, forming rounded signed products, and accumulating each bucket
+according to layout \(\ell\).  The downstream sampled rows use the concrete
+computed denominator
+\[
+  \widehat d_\star
+  =
+  \fl\!\left(
+    \fl(\sqrt{s})\,\fl(1/\fl(\sqrt r))
+  \right),
+\]
+then round the row divisions and the sampled-Gram dot products.  Let the final
+computed sampled Gram be
+\[
+  \widehat G_{{\rm row}}^{\rho_{\rm sig},\ell}(h,\omega,\sigma;U).
+\]
+
+Define
+\[
+  \tau_{{\rm pg,row},\rho_{\rm sig},\ell}^{\rm fp}
+  (h,\omega,\sigma;U)
+  =
+  \eta+L(2\rho+\rho^2)
+  +\eta_{\rm row}
+  +T_{{\rm CS,row},\rho_{\rm sig},\ell}^{\rm fp}(h,\omega,\sigma;U),
+\]
+where \(T_{{\rm CS,row},\rho_{\rm sig},\pi}^{\rm fp}\) charges stored signs,
+rounded sparse products, fixed-order bucket accumulation, denominator
+formation, sampled-row divisions, and sampled-Gram dot products, while
+\(T_{{\rm CS,row},\rho_{\rm sig},\mathcal T}^{\rm fp}\) charges the same
+operations with the bucket-accumulation \(\gamma\)-factor replaced by the
+tree-depth factors \(\gamma_{d_i^{\mathcal T}(h)}\).  The tree-reduced
+statement assumes these tree-depth \(\gamma\)-factors are valid.
+
+Then, for either \(\ell=\pi\) or \(\ell=\mathcal T\),
+\[
+\begin{aligned}
+&\Prob_{h,\omega,\sigma}
+  \left[
+    -\tau_{{\rm pg,row},\rho_{\rm sig},\ell}^{\rm fp}
+      (h,\omega,\sigma;U)\I_n
+    \preceq
+    \widehat G_{{\rm row}}^{\rho_{\rm sig},\ell}(h,\omega,\sigma;U)-\I_n
+  \right.
+\\[-2pt]
+&\left.\hspace{4.5cm}
+    \preceq
+    \tau_{{\rm pg,row},\rho_{\rm sig},\ell}^{\rm fp}
+      (h,\omega,\sigma;U)\I_n
+  \right]
+\\
+&\qquad\ge
+  1-\mathcal L_{\rm pg,row}^{\rm orth}.
+\end{aligned}
+\]
+Equivalently, if \(\mathcal L_{\rm pg,row}^{\rm orth}\le\delta\), the same
+fully computed layout-specific event has probability at least \(1-\delta\).
+
+The exact objects are \(U\), the grid \(g\), the vectors \(z_a\), the exact
+hash/sign laws, the exact downstream row law, and the exact layout choice
+\(\ell\).  The computed non-probability objects are the stored signs,
+layout-specific sparse products and bucket accumulations, \(\widehat d_\star\),
+the rounded sampled rows, and the rounded sampled Gram.  No probability
+construction is charged, and no auxiliary perturbation event is supplied.
+
+The probability-loss order is the same irreducible order as in the preceding
+corollary,
+\[
+  \mathcal L_{\rm pg,row}^{\rm orth}
+  =
+  \Theta\!\left(
+    \frac{
+      \sum_{a:\{1,\ldots,n\}\to\mathcal I}\Norm{z_a}^4/\eta^2
+      +
+      n^2/L^2
+    }{r}
+    +
+    \frac{r\,m^2n^2}{s\eta_{\rm row}^2}
+  \right),
+\]
+for fixed exact grid and fixed positive \(\eta,L,\eta_{\rm row}\) when the
+displayed numerator is nonzero.  For fixed realized data, the layout-specific
+deterministic radius tends to zero as the unit roundoff, \(\gamma_s\),
+the fixed-order bucket \(\gamma\)-factors, or the tree-depth
+\(\gamma\)-factors, and the denominator error tend to zero.
+\end{corollary}
+
+\begin{corollary}[Product-grid CountSketch plus downstream uniform rows with stored signs and permuted buckets]
+Keep the exact product-grid notation and exact loss
+\(\mathcal L_{\rm pg,row}\) from the preceding downstream corollaries.  Let
+the CountSketch signs be stored by
+\[
+  \rho_{\rm sig}\in\{\mathrm{mul1},\mathrm{add0},\mathrm{sub0}\},
+\]
+so each stored sign satisfies
+\[
+  |\widehat\omega_k^{\rho_{\rm sig}}-\omega_k|\le u .
+\]
+For each realized exact hash \(h\), fix an exact bucket order
+\[
+  k_{i,1},\ldots,k_{i,b_i(h)}
+  \quad\text{of}\quad
+  B_i(h)=\{k:h(k)=i\}.
+\]
+The order is an exact discrete memory-layout input and is not a
+floating-point quantity.
+
+The exact sparse sketch is
+\[
+  Y_{ij}
+  =
+  \sum_{t=1}^{b_i(h)}\omega_{k_{i,t}}A_{k_{i,t}j}.
+\]
+The computed sparse sketch
+\[
+  \widehat Y^{\rho_{\rm sig},\pi}
+  =
+  \fl_\pi(S_{h,\widehat\omega^{\rho_{\rm sig}}}A)
+\]
+stores the signs, forms rounded signed products, and accumulates the selected
+bucket entries in the chosen order \(\pi\).  Its entrywise radius is
+\[
+\begin{aligned}
+  E^{{\rm CS},\rho_{\rm sig},\pi}_{ij}
+  &:=
+  \bigl(u+\gamma_{b_i(h)}+u\gamma_{b_i(h)}\bigr)
+  \sum_{t=1}^{b_i(h)}
+    |\widehat\omega^{\rho_{\rm sig}}_{k_{i,t}}|\,|A_{k_{i,t}j}|
+  \\
+  &\quad+
+  u\sum_{t=1}^{b_i(h)}|A_{k_{i,t}j}|.
+\end{aligned}
+\]
+
+Let the downstream exact row trace be
+\(\sigma=(\sigma_1,\ldots,\sigma_s)\), where each
+\(\sigma_q\in\{1,\ldots,r\}\) is drawn from the exact uniform law.  Set
+\[
+  d=\sqrt{s/r},
+  \qquad
+  \widehat d_\star
+  =
+  \fl\!\left(
+    \fl(\sqrt{s})\,\fl(1/\fl(\sqrt r))
+  \right),
+\]
+and assume the concrete denominator certificate
+\[
+  \widehat d_\star\ne0,\qquad
+  |\widehat d_\star-d|
+  \le
+  d\,\Delta_\star,
+  \qquad
+  \Delta_\star=\frac{4u+3u^2+u^3}{1-u}.
+\]
+Define
+\[
+  B_{qj}=\frac{Y_{\sigma_qj}}{d},
+  \qquad
+  \widetilde B^{\rho_{\rm sig},\pi}_{qj}
+  =
+  \frac{\widehat Y^{\rho_{\rm sig},\pi}_{\sigma_qj}}{d},
+\]
+and
+\[
+  \widehat B^{\rho_{\rm sig},\pi}_{qj}
+  =
+  \fl\!\left(
+    \frac{\widehat Y^{\rho_{\rm sig},\pi}_{\sigma_qj}}
+         {\widehat d_\star}
+  \right).
+\]
+The computed-denominator row entry radius is
+\[
+  E^{{\rm den},\rho_{\rm sig},\pi}_{qj}
+  =
+  u|\widehat B^{\rho_{\rm sig},\pi}_{qj}|
+  +
+  \frac{|\widehat Y^{\rho_{\rm sig},\pi}_{\sigma_qj}|}
+       {|\widehat d_\star|}\,\Delta_\star ,
+\]
+and the sampled sparse-sketch basis perturbation is
+\[
+  F^{\rho_{\rm sig},\pi}_{qj}
+  =
+  \frac{E^{{\rm CS},\rho_{\rm sig},\pi}_{\sigma_qj}}{d}.
+\]
+
+Define the deterministic downstream floating-point radius by
+\[
+  T_{{\rm CS,row},\rho_{\rm sig},\pi}^{\rm fp}
+  =
+  T_{{\rm den},\rho_{\rm sig},\pi}^{\rm fp}
+  +
+  T_{{\rm dot},\rho_{\rm sig},\pi}^{\rm fp}
+  +
+  T_{{\rm basis},\rho_{\rm sig},\pi}^{\rm fp},
+\]
+where
+\[
+  T_{{\rm den},\rho_{\rm sig},\pi}^{\rm fp}
+  =
+  \Frob{
+    \left(
+      \sum_{q=1}^{s}
+      E^{{\rm den},\rho_{\rm sig},\pi}_{qj}
+        |\widehat B^{\rho_{\rm sig},\pi}_{qk}|
+      +
+      |\widetilde B^{\rho_{\rm sig},\pi}_{qj}|
+        E^{{\rm den},\rho_{\rm sig},\pi}_{qk}
+    \right)_{j,k=1}^{n}
+  },
+\]
+\[
+  T_{{\rm dot},\rho_{\rm sig},\pi}^{\rm fp}
+  =
+  \Frob{
+    \left(
+      \gamma_s\sum_{q=1}^{s}
+      |\widehat B^{\rho_{\rm sig},\pi}_{qj}|
+      |\widehat B^{\rho_{\rm sig},\pi}_{qk}|
+    \right)_{j,k=1}^{n}
+  },
+\]
+and
+\[
+  T_{{\rm basis},\rho_{\rm sig},\pi}^{\rm fp}
+  =
+  \Frob{
+    \left(
+      \sum_{q=1}^{s}
+      F^{\rho_{\rm sig},\pi}_{qj}
+        |\widetilde B^{\rho_{\rm sig},\pi}_{qk}|
+      +
+      |B_{qj}|F^{\rho_{\rm sig},\pi}_{qk}
+    \right)_{j,k=1}^{n}
+  }.
+\]
+
+With \(\eta_{\rm row}>0\) and
+\[
+  \tau_{\rm CS}=\eta+L(2\rho+\rho^2),
+\]
+the fully computed sampled Gram
+\[
+  \widehat G_{\rm row}^{\rho_{\rm sig},\pi}(h,\omega,\sigma;A)
+  =
+  \fl\!\left(
+    (\widehat B^{\rho_{\rm sig},\pi})^T
+    \widehat B^{\rho_{\rm sig},\pi}
+  \right)
+\]
+satisfies
+\[
+\begin{aligned}
+&\Prob_{h,\omega,\sigma}
+  \left[
+    -\bigl(\tau_{\rm CS}+\eta_{\rm row}
+      +T_{{\rm CS,row},\rho_{\rm sig},\pi}^{\rm fp}\bigr)\I_n
+    \preceq
+    \widehat G_{\rm row}^{\rho_{\rm sig},\pi}(h,\omega,\sigma;A)-A^TA
+  \right.
+\\[-2pt]
+&\left.\hspace{4.0cm}
+    \preceq
+    \bigl(\tau_{\rm CS}+\eta_{\rm row}
+      +T_{{\rm CS,row},\rho_{\rm sig},\pi}^{\rm fp}\bigr)\I_n
+  \right]
+  \ge
+  1-\mathcal L_{\rm pg,row}.
+\end{aligned}
+\]
+Equivalently, if \(\mathcal L_{\rm pg,row}\le\delta\), then the displayed
+fully computed event has probability at least \(1-\delta\).
+
+The exact objects are \(A\), the product grid \(z_a\), the exact CountSketch
+hash/sign law, the exact row-sampling law, the exact per-bucket order
+\(\pi\), and the exact reference \(A^TA\).  The computed non-probability
+objects are \(\widehat\omega^{\rho_{\rm sig}}\),
+\(\widehat Y^{\rho_{\rm sig},\pi}\), \(\widehat d_\star\),
+\(\widehat B^{\rho_{\rm sig},\pi}\), and
+\(\widehat G_{\rm row}^{\rho_{\rm sig},\pi}\).
+
+For fixed realized \(h,\omega,\sigma,\pi,A\), fixed \(d>0\), and nonzero
+leading deterministic coefficient,
+\[
+  \begin{aligned}
+  T_{{\rm CS,row},\rho_{\rm sig},\pi}^{\rm fp}
+  =
+  \Theta\!\Big(
+  &\gamma_s
+      \Frob{|\widehat B^{\rho_{\rm sig},\pi}|^T
+            |\widehat B^{\rho_{\rm sig},\pi}|}
+  \\
+  &+
+    \Frob{(E^{{\rm den},\rho_{\rm sig},\pi})^T
+          |\widehat B^{\rho_{\rm sig},\pi}|
+          +
+          |\widetilde B^{\rho_{\rm sig},\pi}|^T
+          E^{{\rm den},\rho_{\rm sig},\pi}}
+  \\
+  &+
+    \Frob{(F^{\rho_{\rm sig},\pi})^T
+          |\widetilde B^{\rho_{\rm sig},\pi}|
+          +
+          |B|^TF^{\rho_{\rm sig},\pi}}
+  \Big).
+  \end{aligned}
+\]
+Substituting the irreducible definitions,
+\[
+  E^{{\rm den},\rho_{\rm sig},\pi}_{qj}
+  =
+  \Theta\!\left(
+    u|\widehat B^{\rho_{\rm sig},\pi}_{qj}|
+    +
+    \frac{|\widehat Y^{\rho_{\rm sig},\pi}_{\sigma_qj}|}
+         {|\widehat d_\star|}
+    \frac{4u+3u^2+u^3}{1-u}
+  \right),
+\]
+and
+\[
+  F^{\rho_{\rm sig},\pi}_{qj}
+  =
+  \Theta\!\left(
+    \frac{u+\gamma_{b_{\sigma_q}(h)}}{d}
+    \sum_{t=1}^{b_{\sigma_q}(h)}
+      |A_{k_{\sigma_q,t}j}|
+  \right).
+\]
+The deterministic radius tends to zero as
+\[
+  u,\gamma_s,\gamma_{b_i(h)},\frac{4u+3u^2+u^3}{1-u}\to0
+\]
+for fixed realized data, while the probability loss remains exactly
+\(\mathcal L_{\rm pg,row}\).
+\end{corollary}
+
+\begin{corollary}[Product-grid CountSketch plus downstream uniform rows with stored signs and tree-reduced buckets]
+Let \(A\in\R^{m\times n}\) be the exact input matrix, let \(r>0\) be the
+number of CountSketch rows, and let \(s>0\) be the number of downstream
+uniformly sampled rows.  Let \(\mathcal I\) be the exact finite product-grid
+index set, let \(z_a\in\R^n\) denote the exact grid vector indexed by
+\(a:\{1,\ldots,n\}\to\mathcal I\), and let
+\(\eta,L,\rho,\eta_{\rm row}>0\).  Define the exact product-grid plus
+downstream row-sampling loss
+\[
+  \mathcal L_{\rm pg,row}
+  =
+  \sum_{a:\{1,\ldots,n\}\to\mathcal I}
+    \frac{2\Norm{Az_a}^4}{r\eta^2}
+  +
+    \frac{2\Frob{A}^4}{rL^2}
+  +
+    \frac{r\,m^2\Frob{A}^4}{s\eta_{\rm row}^2}.
+\]
+The exact CountSketch hash is \(h:\{1,\ldots,m\}\to\{1,\ldots,r\}\), the
+exact signs are \(\omega_k\in\{-1,1\}\), and the exact downstream row trace is
+\(\sigma=(\sigma_1,\ldots,\sigma_s)\), drawn from the exact iid uniform law on
+\(\{1,\ldots,r\}\).  These probability laws are exact mathematical inputs.
+
+Let the implemented sign table be formed by one of the concrete routines
+\[
+  \rho_{\rm sig}\in\{\mathrm{mul1},\mathrm{add0},\mathrm{sub0}\},
+\]
+so that \(\widehat\omega_k^{\rho_{\rm sig}}\) is respectively
+\(\fl(\omega_k\cdot1)\), \(\fl(\omega_k+0)\), or \(\fl(\omega_k-0)\), and
+\[
+  |\widehat\omega_k^{\rho_{\rm sig}}-\omega_k|\le u.
+\]
+For each realized hash \(h\) and bucket \(i\), set
+\[
+  B_i(h)=\{k:h(k)=i\},
+  \qquad
+  b_i(h)=|B_i(h)|,
+\]
+and fix an exact enumeration
+\[
+  k_{i,1},\ldots,k_{i,b_i(h)}
+\]
+of \(B_i(h)\).  Let \(\mathcal T_i(h)\) be an exact binary summation tree with
+\(b_i(h)+1\) leaves: the first \(b_i(h)\) leaves hold the rounded signed
+products, and the final leaf is an exact zero padding value.  Define
+\[
+  d_i(h)=\mathrm{depth}\bigl(\mathcal T_i(h)\bigr).
+\]
+Assume the floating-point model has valid \(\gamma_{d_i(h)}\) for every
+realized bucket tree and valid \(\gamma_s\) for the downstream length-\(s\)
+sampled-Gram dot products.
+
+The exact sparse sketch is
+\[
+  Y_{ij}
+  =
+  \sum_{t=1}^{b_i(h)}
+    \omega_{k_{i,t}}A_{k_{i,t}j}.
+\]
+The computed sparse sketch
+\[
+  \widehat Y^{\rho_{\rm sig},\mathcal T}
+\]
+is obtained by storing the signs, forming rounded products
+\(\fl(\widehat\omega_{k_{i,t}}^{\rho_{\rm sig}}A_{k_{i,t}j})\), and reducing
+each bucket through \(\mathcal T_i(h)\).  Its entrywise radius is
+\[
+\begin{aligned}
+  E^{{\rm CS},\rho_{\rm sig},\mathcal T}_{ij}
+  &:=
+  \bigl(u+\gamma_{d_i(h)}+u\gamma_{d_i(h)}\bigr)
+  \sum_{t=1}^{b_i(h)}
+    |\widehat\omega^{\rho_{\rm sig}}_{k_{i,t}}|\,|A_{k_{i,t}j}|
+\\
+  &\quad+
+  u\sum_{t=1}^{b_i(h)}|A_{k_{i,t}j}|.
+\end{aligned}
+\]
+
+Set the exact row-scale denominator and the concrete computed denominator to
+\[
+  d=\sqrt{s/r},
+  \qquad
+  \widehat d_\star
+  =
+  \fl\!\left(
+    \fl(\sqrt{s})\,\fl(1/\fl(\sqrt r))
+  \right).
+\]
+The concrete denominator certificate is
+\[
+  \widehat d_\star\ne0,\qquad
+  |\widehat d_\star-d|\le d\,\Delta_\star,
+  \qquad
+  \Delta_\star=\frac{4u+3u^2+u^3}{1-u}.
+\]
+For \(q=1,\ldots,s\) and \(j=1,\ldots,n\), define
+\[
+  B_{qj}=\frac{Y_{\sigma_qj}}{d},
+  \qquad
+  \widetilde B^{\rho_{\rm sig},\mathcal T}_{qj}
+  =
+  \frac{\widehat Y^{\rho_{\rm sig},\mathcal T}_{\sigma_qj}}{d},
+\]
+and
+\[
+  \widehat B^{\rho_{\rm sig},\mathcal T}_{qj}
+  =
+  \fl\!\left(
+    \frac{\widehat Y^{\rho_{\rm sig},\mathcal T}_{\sigma_qj}}
+         {\widehat d_\star}
+  \right).
+\]
+The computed-denominator row entry radius is
+\[
+  E^{{\rm den},\rho_{\rm sig},\mathcal T}_{qj}
+  =
+  u|\widehat B^{\rho_{\rm sig},\mathcal T}_{qj}|
+  +
+  \frac{|\widehat Y^{\rho_{\rm sig},\mathcal T}_{\sigma_qj}|}
+       {|\widehat d_\star|}\,\Delta_\star ,
+\]
+and the sampled sparse-sketch basis perturbation is
+\[
+  F^{\rho_{\rm sig},\mathcal T}_{qj}
+  =
+  \frac{E^{{\rm CS},\rho_{\rm sig},\mathcal T}_{\sigma_qj}}{d}.
+\]
+
+Define the deterministic downstream floating-point radius
+\[
+  T_{{\rm CS,row},\rho_{\rm sig},\mathcal T}^{\rm fp}
+  =
+  T_{{\rm den},\rho_{\rm sig},\mathcal T}^{\rm fp}
+  +
+  T_{{\rm dot},\rho_{\rm sig},\mathcal T}^{\rm fp}
+  +
+  T_{{\rm basis},\rho_{\rm sig},\mathcal T}^{\rm fp},
+\]
+where
+\[
+  T_{{\rm den},\rho_{\rm sig},\mathcal T}^{\rm fp}
+  =
+  \Frob{
+    \left(
+      \sum_{q=1}^{s}
+      E^{{\rm den},\rho_{\rm sig},\mathcal T}_{qj}
+        |\widehat B^{\rho_{\rm sig},\mathcal T}_{qk}|
+      +
+      |\widetilde B^{\rho_{\rm sig},\mathcal T}_{qj}|
+        E^{{\rm den},\rho_{\rm sig},\mathcal T}_{qk}
+    \right)_{j,k=1}^{n}
+  },
+\]
+\[
+  T_{{\rm dot},\rho_{\rm sig},\mathcal T}^{\rm fp}
+  =
+  \Frob{
+    \left(
+      \gamma_s\sum_{q=1}^{s}
+      |\widehat B^{\rho_{\rm sig},\mathcal T}_{qj}|
+      |\widehat B^{\rho_{\rm sig},\mathcal T}_{qk}|
+    \right)_{j,k=1}^{n}
+  },
+\]
+and
+\[
+  T_{{\rm basis},\rho_{\rm sig},\mathcal T}^{\rm fp}
+  =
+  \Frob{
+    \left(
+      \sum_{q=1}^{s}
+      F^{\rho_{\rm sig},\mathcal T}_{qj}
+        |\widetilde B^{\rho_{\rm sig},\mathcal T}_{qk}|
+      +
+      |B_{qj}|F^{\rho_{\rm sig},\mathcal T}_{qk}
+    \right)_{j,k=1}^{n}
+  }.
+\]
+
+With
+\[
+  \tau_{\rm CS}=\eta+L(2\rho+\rho^2),
+\]
+the fully computed sampled Gram
+\[
+  \widehat G_{\rm row}^{\rho_{\rm sig},\mathcal T}(h,\omega,\sigma;A)
+  =
+  \fl\!\left(
+    (\widehat B^{\rho_{\rm sig},\mathcal T})^T
+    \widehat B^{\rho_{\rm sig},\mathcal T}
+  \right)
+\]
+satisfies
+\[
+\begin{aligned}
+&\Prob_{h,\omega,\sigma}
+  \left[
+    -\bigl(\tau_{\rm CS}+\eta_{\rm row}
+      +T_{{\rm CS,row},\rho_{\rm sig},\mathcal T}^{\rm fp}\bigr)\I_n
+    \preceq
+    \widehat G_{\rm row}^{\rho_{\rm sig},\mathcal T}(h,\omega,\sigma;A)-A^TA
+  \right.
+\\[-2pt]
+&\left.\hspace{4.0cm}
+    \preceq
+    \bigl(\tau_{\rm CS}+\eta_{\rm row}
+      +T_{{\rm CS,row},\rho_{\rm sig},\mathcal T}^{\rm fp}\bigr)\I_n
+  \right]
+  \ge
+  1-\mathcal L_{\rm pg,row}.
+\end{aligned}
+\]
+Equivalently, if \(\mathcal L_{\rm pg,row}\le\delta\), then the displayed
+fully computed event has probability at least \(1-\delta\).
+
+The exact objects are \(A\), the product grid \(z_a\), the exact CountSketch
+hash/sign law, the exact downstream row-sampling law, the exact tree shapes
+\(\mathcal T_i(h)\), and the reference \(A^TA\).  The tree shapes are exact
+discrete implementation choices and not floating-point real computations.  The
+computed non-probability objects are \(\widehat\omega^{\rho_{\rm sig}}\),
+\(\widehat Y^{\rho_{\rm sig},\mathcal T}\), \(\widehat d_\star\),
+\(\widehat B^{\rho_{\rm sig},\mathcal T}\), and
+\(\widehat G_{\rm row}^{\rho_{\rm sig},\mathcal T}\).  No extra
+perturbation event or extra existence hypothesis is used.
+
+For fixed realized \(h,\omega,\sigma,\mathcal T,A\), fixed \(d>0\), and
+nonzero leading deterministic coefficient,
+\[
+  \begin{aligned}
+  T_{{\rm CS,row},\rho_{\rm sig},\mathcal T}^{\rm fp}
+  =
+  \Theta\!\Big(
+  &\gamma_s
+      \Frob{|\widehat B^{\rho_{\rm sig},\mathcal T}|^T
+            |\widehat B^{\rho_{\rm sig},\mathcal T}|}
+  \\
+  &+
+    \Frob{(E^{{\rm den},\rho_{\rm sig},\mathcal T})^T
+          |\widehat B^{\rho_{\rm sig},\mathcal T}|
+          +
+          |\widetilde B^{\rho_{\rm sig},\mathcal T}|^T
+          E^{{\rm den},\rho_{\rm sig},\mathcal T}}
+  \\
+  &+
+    \Frob{(F^{\rho_{\rm sig},\mathcal T})^T
+          |\widetilde B^{\rho_{\rm sig},\mathcal T}|
+          +
+          |B|^TF^{\rho_{\rm sig},\mathcal T}}
+  \Big).
+  \end{aligned}
+\]
+Substituting the irreducible definitions,
+\[
+  E^{{\rm den},\rho_{\rm sig},\mathcal T}_{qj}
+  =
+  \Theta\!\left(
+    u|\widehat B^{\rho_{\rm sig},\mathcal T}_{qj}|
+    +
+    \frac{|\widehat Y^{\rho_{\rm sig},\mathcal T}_{\sigma_qj}|}
+         {|\widehat d_\star|}
+    \frac{4u+3u^2+u^3}{1-u}
+  \right),
+\]
+and
+\[
+  F^{\rho_{\rm sig},\mathcal T}_{qj}
+  =
+  \Theta\!\left(
+    \frac{u+\gamma_{d_{\sigma_q}(h)}}{d}
+    \sum_{t=1}^{b_{\sigma_q}(h)}
+      |A_{k_{\sigma_q,t}j}|
+  \right).
+\]
+If the selected bucket trees are balanced, so that
+\[
+  d_i(h)=\Theta\!\bigl(\log(b_i(h)+1)\bigr),
+\]
+then in the usual small-\(u\) regime
+\[
+  F^{\rho_{\rm sig},\mathcal T}_{qj}
+  =
+  \Theta\!\left(
+    \frac{u(1+\log(b_{\sigma_q}(h)+1))}{d}
+    \sum_{t=1}^{b_{\sigma_q}(h)}
+      |A_{k_{\sigma_q,t}j}|
+  \right).
+\]
+The deterministic radius tends to zero as
+\[
+  u,\gamma_s,\gamma_{d_i(h)},\Delta_\star\to0
+\]
+for fixed realized data, while the probability loss remains exactly
+\(\mathcal L_{\rm pg,row}\).
+\end{corollary}
+
+\begin{corollary}[Stored-sign CountSketch with alternate computed denominators]
+Keep the hypotheses, exact product-grid loss \(\mathcal L_{\rm pg,row}\),
+stored-sign mode
+\[
+  \rho_{\rm sig}\in\{\mathrm{mul1},\mathrm{add0},\mathrm{sub0}\},
+\]
+and exact denominator \(d=\sqrt{s/r}\) from the preceding stored-sign
+corollary.  Let the denominator route be
+\[
+  \lambda\in
+  \{\mathrm{sqrtExact},\mathrm{divSqrt},
+    \mathrm{invMulSqrt},\mathrm{sqrtDivSqrt}\}.
+\]
+The corresponding computed denominators are
+\[
+\begin{array}{@{}ll@{}}
+\lambda=\mathrm{sqrtExact}:&
+  \widehat d_\lambda=\fl_{\rm sqrt}(s/r),
+  \quad\text{where the input ratio }s/r\text{ is supplied exactly},\\[1mm]
+\lambda=\mathrm{divSqrt}:&
+  \widehat d_\lambda=\fl_{\rm sqrt}(\fl_{\rm div}(s,r)),\\[1mm]
+\lambda=\mathrm{invMulSqrt}:&
+  \widehat d_\lambda=\fl_{\rm sqrt}(\fl_{\rm mul}(s,\fl_{\rm div}(1,r))),\\[1mm]
+\lambda=\mathrm{sqrtDivSqrt}:&
+  \widehat d_\lambda=\fl_{\rm div}(\fl_{\rm sqrt}(s),\fl_{\rm sqrt}(r)).
+\end{array}
+\]
+For each route the concrete denominator certificate proves
+\[
+  \widehat d_\lambda\ne0,\qquad
+  |\widehat d_\lambda-d|\le d\,\Delta_\lambda,
+\]
+where
+\[
+\begin{array}{@{}ll@{}}
+\Delta_{\mathrm{sqrtExact}}=u,&
+\Delta_{\mathrm{divSqrt}}=\sqrt{1+u}\,u+u,\\[1mm]
+\Delta_{\mathrm{invMulSqrt}}=\sqrt{(1+u)(1+u)}\,u+2u+u^2,&
+\Delta_{\mathrm{sqrtDivSqrt}}=\dfrac{3u+u^2}{1-u}.
+\end{array}
+\]
+Define the route-dependent scaled rows
+\[
+  \widehat B^{\rho_{\rm sig},\lambda}_{qj}
+  =
+  \fl\!\left(
+    \frac{\widehat Y^{\rho_{\rm sig}}_{\sigma_qj}}
+         {\widehat d_\lambda}
+  \right),
+  \qquad
+  \widetilde B^{\rho_{\rm sig}}_{qj}
+  =
+  \frac{\widehat Y^{\rho_{\rm sig}}_{\sigma_qj}}{d}.
+\]
+The exact reference \(B_{qj}=Y_{\sigma_qj}/d\) is unchanged.  The
+route-dependent computed-denominator row entry radius is
+\[
+  E^{{\rm den},\rho_{\rm sig},\lambda}_{qj}
+  =
+  u|\widehat B^{\rho_{\rm sig},\lambda}_{qj}|
+  +
+  \frac{|\widehat Y^{\rho_{\rm sig}}_{\sigma_qj}|}
+       {|\widehat d_\lambda|}\,\Delta_\lambda .
+\]
+The stored-sign sparse-apply sampled radius is still
+\[
+  F^{\rho_{\rm sig}}_{qj}
+  =
+  \frac{E^{{\rm CS},\rho_{\rm sig}}_{\sigma_qj}}{d}.
+\]
+Set
+\[
+  T_{{\rm CS,row},\rho_{\rm sig},\lambda}^{\rm fp}
+  =
+  T_{{\rm den},\rho_{\rm sig},\lambda}^{\rm fp}
+  +
+  T_{{\rm dot},\rho_{\rm sig},\lambda}^{\rm fp}
+  +
+  T_{{\rm basis},\rho_{\rm sig},\lambda}^{\rm fp},
+\]
+with
+\[
+  T_{{\rm den},\rho_{\rm sig},\lambda}^{\rm fp}
+  =
+  \Frob{
+    \left(
+      \sum_{q=1}^{s}
+      E^{{\rm den},\rho_{\rm sig},\lambda}_{qj}
+        |\widehat B^{\rho_{\rm sig},\lambda}_{qk}|
+      +
+      |\widetilde B^{\rho_{\rm sig}}_{qj}|
+        E^{{\rm den},\rho_{\rm sig},\lambda}_{qk}
+    \right)_{j,k=1}^{n}
+  },
+\]
+\[
+  T_{{\rm dot},\rho_{\rm sig},\lambda}^{\rm fp}
+  =
+  \Frob{
+    \left(
+      \gamma_s\sum_{q=1}^{s}
+      |\widehat B^{\rho_{\rm sig},\lambda}_{qj}|
+      |\widehat B^{\rho_{\rm sig},\lambda}_{qk}|
+    \right)_{j,k=1}^{n}
+  },
+\]
+and
+\[
+  T_{{\rm basis},\rho_{\rm sig},\lambda}^{\rm fp}
+  =
+  \Frob{
+    \left(
+      \sum_{q=1}^{s}
+      F^{\rho_{\rm sig}}_{qj}
+        |\widetilde B^{\rho_{\rm sig}}_{qk}|
+      +
+      |B_{qj}|F^{\rho_{\rm sig}}_{qk}
+    \right)_{j,k=1}^{n}
+  }.
+\]
+Then the fully computed stored-sign downstream sampled Gram
+\[
+  \widehat G_{\rm row}^{\rho_{\rm sig},\lambda}(h,\omega,\sigma;A)
+  =
+  \fl\!\left(
+    (\widehat B^{\rho_{\rm sig},\lambda})^T
+    \widehat B^{\rho_{\rm sig},\lambda}
+  \right)
+\]
+satisfies
+\[
+\begin{aligned}
+&\Prob_{h,\omega,\sigma}
+  \left[
+    -\bigl(\tau_{\rm CS}+\eta_{\rm row}
+      +T_{{\rm CS,row},\rho_{\rm sig},\lambda}^{\rm fp}\bigr)\I_n
+    \preceq
+    \widehat G_{\rm row}^{\rho_{\rm sig},\lambda}(h,\omega,\sigma;A)-A^TA
+  \right.
+\\[-2pt]
+&\left.\hspace{4.0cm}
+    \preceq
+    \bigl(\tau_{\rm CS}+\eta_{\rm row}
+      +T_{{\rm CS,row},\rho_{\rm sig},\lambda}^{\rm fp}\bigr)\I_n
+  \right]
+  \ge
+  1-\mathcal L_{\rm pg,row}.
+\end{aligned}
+\]
+Equivalently, if \(\mathcal L_{\rm pg,row}\le\delta\), then the displayed
+fully computed event has probability at least \(1-\delta\).
+
+The exact objects are \(A\), the product grid \(z_a\), the exact CountSketch
+hash/sign law, the exact uniform row-sampling law, and the exact reference
+matrix \(A^TA\).  The computed non-probability objects are
+\(\widehat\omega^{\rho_{\rm sig}}\),
+\(\widehat Y^{\rho_{\rm sig}}\), \(\widehat d_\lambda\),
+\(\widehat B^{\rho_{\rm sig},\lambda}\), and
+\(\widehat G_{\rm row}^{\rho_{\rm sig},\lambda}\).
+
+For fixed realized \(h,\omega,\sigma,A\), fixed \(d>0\), and nonzero leading
+deterministic coefficient,
+\[
+  \begin{aligned}
+  T_{{\rm CS,row},\rho_{\rm sig},\lambda}^{\rm fp}
+  =
+  \Theta\!\Big(
+  &\gamma_s
+      \Frob{|\widehat B^{\rho_{\rm sig},\lambda}|^T
+            |\widehat B^{\rho_{\rm sig},\lambda}|}
+  \\
+  &+
+    \Frob{(E^{{\rm den},\rho_{\rm sig},\lambda})^T
+          |\widehat B^{\rho_{\rm sig},\lambda}|
+          +
+          |\widetilde B^{\rho_{\rm sig}}|^T
+          E^{{\rm den},\rho_{\rm sig},\lambda}}
+  \\
+  &+
+    \Frob{(F^{\rho_{\rm sig}})^T
+          |\widetilde B^{\rho_{\rm sig}}|
+          +
+          |B|^TF^{\rho_{\rm sig}}}
+  \Big),
+  \end{aligned}
+\]
+and, after substituting the irreducible definitions,
+\[
+  E^{{\rm den},\rho_{\rm sig},\lambda}_{qj}
+  =
+  \Theta\!\left(
+    u|\widehat B^{\rho_{\rm sig},\lambda}_{qj}|
+    +
+    \frac{|\widehat Y^{\rho_{\rm sig}}_{\sigma_qj}|}
+         {|\widehat d_\lambda|}\Delta_\lambda
+  \right),
+\]
+\[
+  F^{\rho_{\rm sig}}_{qj}
+  =
+  \Theta\!\left(
+    \frac{u+\gamma_{b_{\sigma_q}(h)}}{d}
+    \sum_{k:h(k)=\sigma_q}|A_{kj}|
+  \right).
+\]
+Thus the deterministic floating-point radius is non-vacuous in the small
+roundoff regime and tends to zero as
+\[
+  u,\gamma_s,\gamma_{b_i(h)},\Delta_\lambda\to0.
+\]
+The probability-loss order is unchanged from the exact product-grid
+CountSketch plus exact downstream row-sampling loss; denominator computation
+affects only the deterministic radius.
+\end{corollary}
+
+\begin{thebibliography}{9}
+
+\bibitem{DrineasMahoney2016RandNLA}
+Petros Drineas and Michael W. Mahoney.
+\newblock RandNLA: randomized numerical linear algebra.
+\newblock \emph{Communications of the ACM}, 59(6):80--90, 2016.
+\newblock \url{https://doi.org/10.1145/2842602}.
+
+\bibitem{Tropp2011SRHT}
+Joel A. Tropp.
+\newblock Improved analysis of the subsampled randomized Hadamard transform.
+\newblock \emph{Advances in Adaptive Data Analysis}, 3(1--2):115--126, 2011.
+\newblock \url{https://doi.org/10.1142/S1793536911000787};
+preprint \url{https://arxiv.org/abs/1011.1595}.
+
+\bibitem{CharikarChenFarachColton2002}
+Moses Charikar, Kevin Chen, and Martin Farach-Colton.
+\newblock Finding frequent items in data streams.
+\newblock In \emph{Automata, Languages and Programming}, ICALP 2002,
+Lecture Notes in Computer Science 2380, pages 693--703, 2002.
+\newblock \url{https://doi.org/10.1007/3-540-45465-9_59}.
+
+\bibitem{ClarksonWoodruff2013}
+Kenneth L. Clarkson and David P. Woodruff.
+\newblock Low rank approximation and regression in input sparsity time.
+\newblock In \emph{Proceedings of the 45th Annual ACM Symposium on Theory of
+Computing}, pages 81--90, 2013.
+\newblock \url{https://doi.org/10.1145/2488608.2488620};
+preprint \url{https://arxiv.org/abs/1207.6365}.
+
+\bibitem{Ledoux1997}
+Michel Ledoux.
+\newblock On Talagrand's deviation inequalities for product measures.
+\newblock \emph{ESAIM: Probability and Statistics}, 1:63--87, 1997.
+\newblock \url{https://doi.org/10.1051/ps:1997103}.
+
+\bibitem{Tropp2012}
+Joel A. Tropp.
+\newblock User-friendly tail bounds for sums of random matrices.
+\newblock \emph{Foundations of Computational Mathematics}, 12:389--434, 2012.
+\newblock \url{https://doi.org/10.1007/s10208-011-9099-z}.
+
+\bibitem{Higham2002}
+Nicholas J. Higham.
+\newblock \emph{Accuracy and Stability of Numerical Algorithms}.
+\newblock Second edition, SIAM, 2002.
+
+\end{thebibliography}
+
+\end{document}

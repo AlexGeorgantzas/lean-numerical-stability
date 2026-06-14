@@ -10,6 +10,7 @@
 
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Real.Sqrt
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
 import Mathlib.Tactic.Linarith
@@ -103,6 +104,89 @@ private lemma giv_col_q (n : ℕ) (p q : Fin n) (c s : ℝ) (hpq : p ≠ q) (i :
   · by_cases h2 : i = q
     · simp [h1, h2, hqp]
     · simp [h1, h2, Ne.symm h2]
+
+private lemma givens_sum_split (n : ℕ) (p q : Fin n) (hpq : p ≠ q)
+    (f : Fin n → ℝ) :
+    ∑ k, f k = f p + f q + ∑ k ∈ (Finset.univ.erase p).erase q, f k := by
+  have hqp : q ≠ p := hpq.symm
+  have hp := Finset.mem_univ p
+  have hq : q ∈ (Finset.univ : Finset (Fin n)).erase p :=
+    Finset.mem_erase.mpr ⟨hqp, Finset.mem_univ q⟩
+  rw [← Finset.add_sum_erase _ f hp, ← Finset.add_sum_erase _ f hq]
+  ring
+
+private lemma givens_row_p_rest_sum_zero (n : ℕ) (p q : Fin n) (c s : ℝ)
+    (x : Fin n → ℝ) (hpq : p ≠ q) :
+    ∑ k ∈ (Finset.univ.erase p).erase q,
+        givensRotation n p q c s p k * x k = 0 := by
+  apply Finset.sum_eq_zero
+  intro k hk
+  have hk_ne_q : k ≠ q := (Finset.mem_erase.mp hk).1
+  have hk_mem_erase_p : k ∈ (Finset.univ.erase p) := (Finset.mem_erase.mp hk).2
+  have hk_ne_p : k ≠ p := (Finset.mem_erase.mp hk_mem_erase_p).1
+  rw [giv_row_p n p q c s hpq k]
+  simp [hk_ne_p, hk_ne_q]
+
+private lemma givens_row_q_rest_sum_zero (n : ℕ) (p q : Fin n) (c s : ℝ)
+    (x : Fin n → ℝ) (hpq : p ≠ q) :
+    ∑ k ∈ (Finset.univ.erase p).erase q,
+        givensRotation n p q c s q k * x k = 0 := by
+  apply Finset.sum_eq_zero
+  intro k hk
+  have hk_ne_q : k ≠ q := (Finset.mem_erase.mp hk).1
+  have hk_mem_erase_p : k ∈ (Finset.univ.erase p) := (Finset.mem_erase.mp hk).2
+  have hk_ne_p : k ≠ p := (Finset.mem_erase.mp hk_mem_erase_p).1
+  rw [giv_row_q n p q c s hpq k]
+  simp [hk_ne_p, hk_ne_q]
+
+/-- Applying a Givens rotation gives the expected first affected component:
+`(Gx)_p = c*x_p + s*x_q`. -/
+theorem givensRotation_mulVec_p (n : ℕ) (p q : Fin n) (c s : ℝ)
+    (x : Fin n → ℝ) (hpq : p ≠ q) :
+    matMulVec n (givensRotation n p q c s) x p = c * x p + s * x q := by
+  unfold matMulVec
+  rw [givens_sum_split n p q hpq
+    (fun k => givensRotation n p q c s p k * x k)]
+  rw [givens_row_p_rest_sum_zero n p q c s x hpq]
+  rw [giv_row_p n p q c s hpq p, giv_row_p n p q c s hpq q]
+  simp [hpq.symm]
+
+/-- Applying a Givens rotation gives the expected second affected component:
+`(Gx)_q = -s*x_p + c*x_q`. -/
+theorem givensRotation_mulVec_q (n : ℕ) (p q : Fin n) (c s : ℝ)
+    (x : Fin n → ℝ) (hpq : p ≠ q) :
+    matMulVec n (givensRotation n p q c s) x q = -s * x p + c * x q := by
+  unfold matMulVec
+  rw [givens_sum_split n p q hpq
+    (fun k => givensRotation n p q c s q k * x k)]
+  rw [givens_row_q_rest_sum_zero n p q c s x hpq]
+  rw [giv_row_q n p q c s hpq p, giv_row_q n p q c s hpq q]
+  simp [hpq.symm]
+
+/-- Source-facing zeroing property for the Givens block.  If the two affected
+input entries are `a` and `b`, then the ratio choice `c=a/r`, `s=b/r` makes
+the second affected component vanish. -/
+theorem givensRotation_ratio_zeroes_q (n : ℕ) (p q : Fin n)
+    (a b r : ℝ) (x : Fin n → ℝ) (hpq : p ≠ q) :
+    matMulVec n (givensRotation n p q (a / r) (b / r))
+        (fun i => if i = p then a else if i = q then b else x i) q = 0 := by
+  rw [givensRotation_mulVec_q n p q (a / r) (b / r)
+    (fun i => if i = p then a else if i = q then b else x i) hpq]
+  simp [hpq.symm]
+  ring
+
+/-- With the same ratio choice, the first affected component becomes
+`(a^2+b^2)/r`.  When `r = sqrt(a^2+b^2)` this is the usual positive norm
+component, while the companion theorem above records the zeroed component. -/
+theorem givensRotation_ratio_mulVec_p (n : ℕ) (p q : Fin n)
+    (a b r : ℝ) (x : Fin n → ℝ) (hpq : p ≠ q) :
+    matMulVec n (givensRotation n p q (a / r) (b / r))
+        (fun i => if i = p then a else if i = q then b else x i) p =
+      (a ^ 2 + b ^ 2) / r := by
+  rw [givensRotation_mulVec_p n p q (a / r) (b / r)
+    (fun i => if i = p then a else if i = q then b else x i) hpq]
+  simp [hpq.symm]
+  ring
 
 /-- G(p,q,c,s) is orthogonal when c² + s² = 1 and p ≠ q.
 
@@ -258,6 +342,49 @@ theorem givensRotation_orthogonal (n : ℕ) (p q : Fin n) (c s : ℝ)
         · by_cases hjq : j = q
           · subst hjq; simp [Ne.symm hiq]
           · simp [Ne.symm hip, Ne.symm hiq]
+
+/-- Chapter 1's displayed Givens block
+`[[cos theta, sin theta], [-sin theta, cos theta]]` is orthogonal when placed
+in any two distinct coordinates. -/
+theorem givensRotation_trig_orthogonal (n : ℕ) (p q : Fin n) (theta : ℝ)
+    (hpq : p ≠ q) :
+    IsOrthogonal n (givensRotation n p q (Real.cos theta) (Real.sin theta)) :=
+  givensRotation_orthogonal n p q (Real.cos theta) (Real.sin theta)
+    hpq (Real.cos_sq_add_sin_sq theta)
+
+/-- Number of Givens rotations in the rectangular zeroing order described in
+Higham Chapter 1, §1.14.2.  For column `j` (zero-indexed), the algorithm
+zeros the `m - (j + 1)` entries below the diagonal. -/
+def givensQRRectangularRotationCount (m n : ℕ) : ℕ :=
+  Finset.sum (Finset.range n) (fun j => m - (j + 1))
+
+/-- Doubled integer form of the source count
+`p = n * (m - (n + 1) / 2)` for the rectangular Givens zeroing schedule.
+The doubled statement avoids any ambiguity about division in natural numbers. -/
+theorem givensQRRectangularRotationCount_twice_int (m n : ℕ) :
+    2 * Finset.sum (Finset.range n)
+        (fun j => ((m : ℤ) - ((j + 1 : ℕ) : ℤ))) =
+      (n : ℤ) * (2 * (m : ℤ) - ((n : ℤ) + 1)) := by
+  induction n with
+  | zero =>
+      simp
+  | succ n ih =>
+      rw [Finset.sum_range_succ]
+      simp only [Nat.cast_add, Nat.cast_one]
+      rw [mul_add]
+      have ih' :
+          2 * Finset.sum (Finset.range n)
+              (fun j => ((m : ℤ) - ((j : ℤ) + 1))) =
+            (n : ℤ) * (2 * (m : ℤ) - ((n : ℤ) + 1)) := by
+        simpa [Nat.cast_add, Nat.cast_one] using ih
+      rw [ih']
+      ring
+
+/-- The particular `10 x 6` matrix in Higham Figure 1.5 uses `39` Givens
+rotations in the stated rectangular zeroing order. -/
+theorem givensQRRectangularRotationCount_ten_by_six :
+    givensQRRectangularRotationCount 10 6 = 39 := by
+  decide
 
 -- ============================================================
 -- §18.5  Lemma 18.7: Givens application backward error

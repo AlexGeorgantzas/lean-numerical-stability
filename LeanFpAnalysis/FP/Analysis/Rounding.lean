@@ -61,10 +61,83 @@ lemma gammaValid_mono (fp : FPModel) {k n : ℕ} (h : k ≤ n) (hn : gammaValid 
   have hkn : (k : ℝ) ≤ n := by exact_mod_cast h
   linarith [mul_le_mul_of_nonneg_right hkn fp.u_nonneg]
 
+/-- A displayed unit-roundoff cap implies the corresponding `gammaValid` guard.
+
+This is useful for public theorem surfaces stated with an explicit cap `Ucap`:
+if `fp.u ≤ Ucap` and the displayed cap satisfies `(n : ℝ) * Ucap < 1`, then
+the usual validity condition `(n : ℝ) * fp.u < 1` is not an additional
+hypothesis. -/
+lemma gammaValid_of_u_le_cap (fp : FPModel) (n : ℕ) (Ucap : ℝ)
+    (hu : fp.u ≤ Ucap) (hcap : (n : ℝ) * Ucap < 1) :
+    gammaValid fp n := by
+  unfold gammaValid
+  have hn_nonneg : (0 : ℝ) ≤ n := by exact_mod_cast n.zero_le
+  exact lt_of_le_of_lt (mul_le_mul_of_nonneg_left hu hn_nonneg) hcap
+
 /-- `gamma` is nonneg whenever `gammaValid` holds. -/
 lemma gamma_nonneg (fp : FPModel) {n : ℕ} (hn : gammaValid fp n) : 0 ≤ gamma fp n :=
   div_nonneg (mul_nonneg (by exact_mod_cast n.zero_le) fp.u_nonneg)
              (by unfold gammaValid at hn; linarith)
+
+/-- Exact split of `γ_n` into its first-order unit-roundoff term plus the
+quadratic-and-higher rational remainder. -/
+lemma gamma_eq_linear_plus_quadratic_remainder (fp : FPModel) (n : ℕ)
+    (hn : gammaValid fp n) :
+    gamma fp n =
+      (n : ℝ) * fp.u + (((n : ℝ) * fp.u) ^ 2) /
+        (1 - (n : ℝ) * fp.u) := by
+  have hden : 1 - (n : ℝ) * fp.u ≠ 0 := by
+    unfold gammaValid at hn
+    linarith
+  unfold gamma
+  field_simp [hden]
+  ring
+
+/-- If the accumulated first-order term is at most one half, then `γ_n` is at
+most twice the first-order term.  This is the standard way to turn a proved
+`gamma` bound into a readable linear-in-`nu` surface under an explicit smallness
+regime. -/
+lemma gamma_le_two_mul_n_u_of_nu_le_half (fp : FPModel) (n : ℕ)
+    (hhalf : (n : ℝ) * fp.u ≤ 1 / 2) :
+    gamma fp n ≤ 2 * ((n : ℝ) * fp.u) := by
+  set a : ℝ := (n : ℝ) * fp.u
+  have ha_nonneg : 0 ≤ a := by
+    exact mul_nonneg (by exact_mod_cast n.zero_le) fp.u_nonneg
+  have hden_pos : 0 < 1 - a := by
+    linarith
+  unfold gamma
+  change a / (1 - a) ≤ 2 * a
+  rw [div_le_iff₀ hden_pos]
+  nlinarith
+
+/-- Source-shaped `nu` simplification for the `γ_{n-1}` radius.
+
+For a nonempty `n`-term sum, the exact `gamma (n - 1)` radius is at most
+`n * u` whenever the displayed smallness side condition
+`n * (n - 1) * u ≤ 1` holds. -/
+lemma gamma_pred_le_n_mul_u_of_n_mul_pred_u_le_one (fp : FPModel) {n : ℕ}
+    (hn : 0 < n) (hvalid : gammaValid fp (n - 1))
+    (hsmall : (n : ℝ) * (((n - 1 : ℕ) : ℝ) * fp.u) ≤ 1) :
+    gamma fp (n - 1) ≤ (n : ℝ) * fp.u := by
+  set k : ℕ := n - 1
+  set a : ℝ := (k : ℝ) * fp.u
+  have hden_pos : 0 < 1 - a := by
+    unfold gammaValid at hvalid
+    dsimp [k, a] at hvalid
+    linarith
+  have hsmall_u : ((n : ℝ) * a) * fp.u ≤ fp.u := by
+    have h := mul_le_mul_of_nonneg_right hsmall fp.u_nonneg
+    simpa [a, k, mul_assoc] using h
+  have hdiff : (n : ℝ) * fp.u - a = fp.u := by
+    have hk : (k : ℝ) + 1 = (n : ℝ) := by
+      exact_mod_cast (Nat.sub_add_cancel hn)
+    rw [← hk]
+    dsimp [a]
+    ring
+  unfold gamma
+  change a / (1 - a) ≤ (n : ℝ) * fp.u
+  rw [div_le_iff₀ hden_pos]
+  nlinarith
 
 /-- `gamma` is monotone in n.
 
@@ -124,11 +197,55 @@ lemma u_le_gamma (fp : FPModel) {k : ℕ} (hk : 0 < k) (hval : gammaValid fp k) 
     nlinarith [mul_nonneg (mul_nonneg (by linarith : (0:ℝ) ≤ ↑k) fp.u_nonneg) fp.u_nonneg]
   linarith
 
+/-- Cap `gamma fp n` by replacing the unit roundoff with a displayed upper cap.
+
+This is the monotonicity of `x ↦ n*x/(1-n*x)` on the validity interval,
+packaged in the form needed by downstream explicit floating-point budgets. -/
+lemma gamma_le_of_u_le_cap (fp : FPModel) (n : ℕ) (Ucap : ℝ)
+    (hu : fp.u ≤ Ucap) (hcap : (n : ℝ) * Ucap < 1) :
+    gamma fp n ≤ ((n : ℝ) * Ucap) / (1 - (n : ℝ) * Ucap) := by
+  unfold gamma
+  have hn_nonneg : (0 : ℝ) ≤ n := by exact_mod_cast n.zero_le
+  have hnu : (n : ℝ) * fp.u < 1 := by
+    exact lt_of_le_of_lt (mul_le_mul_of_nonneg_left hu hn_nonneg) hcap
+  have hdenu : 0 < 1 - (n : ℝ) * fp.u := by linarith
+  have hdenU : 0 < 1 - (n : ℝ) * Ucap := by linarith
+  rw [← sub_nonneg]
+  have key :
+      (n : ℝ) * Ucap / (1 - (n : ℝ) * Ucap) -
+          (n : ℝ) * fp.u / (1 - (n : ℝ) * fp.u) =
+        (n : ℝ) * (Ucap - fp.u) /
+          ((1 - (n : ℝ) * Ucap) * (1 - (n : ℝ) * fp.u)) := by
+    field_simp [hdenU.ne', hdenu.ne']
+    ring
+  rw [key]
+  exact div_nonneg
+    (mul_nonneg hn_nonneg (sub_nonneg.mpr hu))
+    (le_of_lt (mul_pos hdenU hdenu))
+
+/-- Displayed-cap version of `gamma_le_of_u_le_cap`.
+
+If `Gcap` dominates the rational expression obtained by replacing `u` with
+`Ucap`, then `Gcap` is a valid upper bound for `gamma fp n`. -/
+lemma gamma_le_Gcap_of_u_le_cap (fp : FPModel) (n : ℕ) (Ucap Gcap : ℝ)
+    (hu : fp.u ≤ Ucap) (hcap : (n : ℝ) * Ucap < 1)
+    (hGcap : ((n : ℝ) * Ucap) / (1 - (n : ℝ) * Ucap) ≤ Gcap) :
+    gamma fp n ≤ Gcap :=
+  le_trans (gamma_le_of_u_le_cap fp n Ucap hu hcap) hGcap
+
 -- ============================================================
 -- §3.1  Product lemma
 -- ============================================================
 
 open scoped BigOperators
+
+/-- Product over an appended finite tuple splits into the product of its pieces. -/
+lemma fin_prod_append {α : Type*} [CommMonoid α] (j k : ℕ)
+    (a : Fin j → α) (b : Fin k → α) :
+    (∏ i : Fin (j + k), Fin.append a b i) =
+      (∏ i : Fin j, a i) * (∏ i : Fin k, b i) := by
+  rw [← Fin.prod_ofFn (Fin.append a b), List.ofFn_fin_append,
+    List.prod_append, Fin.prod_ofFn a, Fin.prod_ofFn b]
 
 /-- **Product rounding error lemma** (Higham §3.1, Lemma 3.1).
 
@@ -262,6 +379,167 @@ lemma gamma_mul (fp : FPModel) (j k : ℕ) (θj θk : ℝ)
     · exact le_of_lt (mul_pos (mul_pos hdj hdk) hdjk)
   linarith
 
+/-- **Signed product rounding error lemma** (Higham §3.1, Lemma 3.1).
+
+    Given `n` rounding errors with `|δᵢ| ≤ u`, a product containing each
+    factor either as `(1 + δᵢ)` or as its reciprocal has the form `1 + θ`
+    with `|θ| ≤ γ(n)`.
+
+    The Boolean selector `neg i` represents Higham's exponent `pᵢ = -1`
+    when true and `pᵢ = +1` when false.  This avoids committing downstream
+    users to a particular integer-power encoding while proving the signed
+    content of Lemma 3.1. -/
+lemma prod_signed_error_bound (fp : FPModel) (n : ℕ) (δ : Fin n → ℝ)
+    (neg : Fin n → Bool)
+    (hδ : ∀ i, |δ i| ≤ fp.u)
+    (hn : gammaValid fp n) :
+    ∃ θ : ℝ, |θ| ≤ gamma fp n ∧
+      ∏ i : Fin n, (if neg i then 1 / (1 + δ i) else 1 + δ i) = 1 + θ := by
+  induction n with
+  | zero =>
+      exact ⟨0, by simp [gamma], by simp⟩
+  | succ n ih =>
+      have hn_pred : gammaValid fp n := gammaValid_mono fp (Nat.le_succ n) hn
+      have h1valid : gammaValid fp 1 := gammaValid_mono fp (by omega) hn
+      have hu : fp.u < 1 := by
+        unfold gammaValid at h1valid
+        simpa using h1valid
+      obtain ⟨θ', hθ', hprod⟩ :=
+        ih (fun i => δ i.castSucc) (fun i => neg i.castSucc)
+          (fun i => hδ i.castSucc) hn_pred
+      let δ_last : ℝ := δ (Fin.last n)
+      let α : ℝ := if neg (Fin.last n) then -δ_last / (1 + δ_last) else δ_last
+      have hδ_last : |δ_last| ≤ fp.u := hδ (Fin.last n)
+      have hpos : (0 : ℝ) < 1 + δ_last := by
+        linarith [neg_abs_le δ_last]
+      have hfactor :
+          (if neg (Fin.last n) then 1 / (1 + δ_last) else 1 + δ_last) = 1 + α := by
+        cases hneg : neg (Fin.last n)
+        · simp [α, hneg]
+        · simp [α, hneg]
+          field_simp [hpos.ne']
+          ring
+      have hα_bound : |α| ≤ gamma fp 1 := by
+        cases hneg : neg (Fin.last n)
+        · simp [α, hneg]
+          exact le_trans hδ_last (u_le_gamma fp one_pos h1valid)
+        · simp [α, hneg, abs_div, abs_neg, abs_of_pos hpos]
+          have h1u : (0 : ℝ) < 1 - fp.u := by linarith
+          have hγ1 : gamma fp 1 = fp.u / (1 - fp.u) := by
+            unfold gamma
+            simp
+          rw [hγ1, ← sub_nonneg]
+          have key : fp.u / (1 - fp.u) - |δ_last| / (1 + δ_last) =
+                 (fp.u * (1 + δ_last) - |δ_last| * (1 - fp.u)) /
+                 ((1 - fp.u) * (1 + δ_last)) := by
+            field_simp [h1u.ne', hpos.ne']
+          rw [key]
+          apply div_nonneg
+          · nlinarith [neg_abs_le δ_last, fp.u_nonneg]
+          · exact le_of_lt (mul_pos h1u hpos)
+      obtain ⟨η, hη, heq⟩ := gamma_mul fp n 1 θ' α hθ' hα_bound hn
+      refine ⟨η, hη, ?_⟩
+      rw [Fin.prod_univ_castSucc, hprod]
+      show (1 + θ') *
+          (if neg (Fin.last n) then 1 / (1 + δ (Fin.last n)) else 1 + δ (Fin.last n)) =
+        1 + η
+      rw [show δ (Fin.last n) = δ_last from rfl, hfactor]
+      exact heq
+
+/-- **Stewart relative-error counter** `<k>` (Higham §3.4, eq. (3.9)).
+
+The counter denotes a product of `k` local factors, each either `(1 + δᵢ)` or
+its reciprocal, with `|δᵢ| <= u`.  A true Boolean selector means that the
+corresponding source exponent is `-1`; false means `+1`. -/
+noncomputable def relErrorCounter (fp : FPModel) (k : ℕ) (c : ℝ) : Prop :=
+  ∃ (δ : Fin k → ℝ) (neg : Fin k → Bool),
+    (∀ i, |δ i| ≤ fp.u) ∧
+      c = ∏ i : Fin k, (if neg i then 1 / (1 + δ i) else 1 + δ i)
+
+/-- A Stewart counter is bounded by the matching `γ` term. -/
+lemma relErrorCounter_abs_sub_one_le_gamma (fp : FPModel) (k : ℕ) (c : ℝ)
+    (hc : relErrorCounter fp k c) (hk : gammaValid fp k) :
+    |c - 1| ≤ gamma fp k := by
+  rcases hc with ⟨δ, neg, hδ, hc_eq⟩
+  obtain ⟨θ, hθ, hprod⟩ := prod_signed_error_bound fp k δ neg hδ hk
+  have hcθ : c = 1 + θ := by
+    rw [hc_eq, hprod]
+  rw [hcθ]
+  simpa using hθ
+
+/-- Stewart counter multiplication rule: `<j><k> = <j+k>`. -/
+lemma relErrorCounter_mul (fp : FPModel) (j k : ℕ) (cj ck : ℝ)
+    (hcj : relErrorCounter fp j cj) (hck : relErrorCounter fp k ck) :
+    relErrorCounter fp (j + k) (cj * ck) := by
+  rcases hcj with ⟨δj, negj, hδj, hcj_eq⟩
+  rcases hck with ⟨δk, negk, hδk, hck_eq⟩
+  refine ⟨Fin.append δj δk, Fin.append negj negk, ?_, ?_⟩
+  · intro i
+    refine Fin.addCases ?_ ?_ i
+    · intro i
+      simpa only [Fin.append_left] using hδj i
+    · intro i
+      simpa only [Fin.append_right] using hδk i
+  · rw [hcj_eq, hck_eq]
+    rw [← fin_prod_append j k
+      (fun i : Fin j => if negj i then 1 / (1 + δj i) else 1 + δj i)
+      (fun i : Fin k => if negk i then 1 / (1 + δk i) else 1 + δk i)]
+    apply Finset.prod_congr rfl
+    intro i _
+    refine Fin.addCases ?_ ?_ i
+    · intro i
+      simp only [Fin.append_left]
+    · intro i
+      simp only [Fin.append_right]
+
+/-- Positivity of a local signed factor when the unit roundoff is below one. -/
+lemma relErrorCounter_factor_pos (fp : FPModel) {δ : ℝ} {neg : Bool}
+    (hδ : |δ| ≤ fp.u) (hu : fp.u < 1) :
+    0 < if neg then 1 / (1 + δ) else 1 + δ := by
+  have hpos : (0 : ℝ) < 1 + δ := by
+    linarith [neg_abs_le δ, hδ, hu]
+  split
+  · exact div_pos zero_lt_one hpos
+  · exact hpos
+
+/-- Stewart counter reciprocal rule: if `c = <k>` and `u < 1`, then `1/c = <k>`. -/
+lemma relErrorCounter_inv (fp : FPModel) (k : ℕ) (c : ℝ)
+    (hc : relErrorCounter fp k c) (hu : fp.u < 1) :
+    relErrorCounter fp k (1 / c) := by
+  rcases hc with ⟨δ, neg, hδ, hc_eq⟩
+  refine ⟨δ, fun i => !neg i, hδ, ?_⟩
+  let f : Fin k → ℝ := fun i => if neg i then 1 / (1 + δ i) else 1 + δ i
+  let g : Fin k → ℝ := fun i => if !neg i then 1 / (1 + δ i) else 1 + δ i
+  have hf_pos : ∀ i, 0 < f i := by
+    intro i
+    exact relErrorCounter_factor_pos fp (hδ i) hu
+  have hf_ne : (∏ i : Fin k, f i) ≠ 0 :=
+    (Finset.prod_pos (fun i _ => hf_pos i)).ne'
+  have hgf : (∏ i : Fin k, g i) * (∏ i : Fin k, f i) = 1 := by
+    rw [← Finset.prod_mul_distrib]
+    apply Finset.prod_eq_one
+    intro i _
+    have hpos : (0 : ℝ) < 1 + δ i := by
+      linarith [neg_abs_le (δ i), hδ i, hu]
+    cases hneg : neg i <;> simp [f, g, hneg]
+    · field_simp [hpos.ne']
+    · field_simp [hpos.ne']
+  have hg_eq : (∏ i : Fin k, g i) = 1 / (∏ i : Fin k, f i) := by
+    field_simp [hf_ne]
+    simpa [mul_comm] using hgf
+  rw [hc_eq]
+  exact hg_eq.symm
+
+/-- Stewart counter division rule: `<j>/<k> = <j+k>`, with `u < 1` for
+nonzero reciprocal factors. -/
+lemma relErrorCounter_div (fp : FPModel) (j k : ℕ) (cj ck : ℝ)
+    (hcj : relErrorCounter fp j cj) (hck : relErrorCounter fp k ck)
+    (hu : fp.u < 1) :
+    relErrorCounter fp (j + k) (cj / ck) := by
+  have hck_inv : relErrorCounter fp k (1 / ck) :=
+    relErrorCounter_inv fp k ck hck hu
+  simpa [div_eq_mul_inv] using relErrorCounter_mul fp j k cj (1 / ck) hcj hck_inv
+
 /-- **γ reciprocal rule** (Higham §3.4, Lemma 3.3 part 2).
 
     If |θₖ| ≤ γ(k) and 1 + θₖ > 0, then 1/(1+θₖ) = 1+θ
@@ -339,6 +617,182 @@ lemma gamma_div (fp : FPModel) (j k : ℕ) (θj θk : ℝ)
   refine ⟨θ'', hθ'', ?_⟩
   have : (1 + θj) / (1 + θk) = (1 + θj) * (1 / (1 + θk)) := by ring
   rw [this, hinv, hmul]
+
+/-- Scalar inequality for the sharp denominator branch in Higham Lemma 3.3.
+
+If the denominator index `j` is no larger than the numerator index `k`, then
+the worst quotient error radius `(γ_k + γ_j)/(1 - γ_j)` is bounded by
+`γ_{k+j}`. -/
+lemma gamma_add_div_one_sub_gamma_le_of_le (fp : FPModel) (k j : ℕ)
+    (hjk : j ≤ k) (hval : gammaValid fp (k + j)) :
+    (gamma fp k + gamma fp j) / (1 - gamma fp j) ≤ gamma fp (k + j) := by
+  have hvalk : gammaValid fp k := gammaValid_mono fp (by omega) hval
+  have hvalj : gammaValid fp j := gammaValid_mono fp (by omega) hval
+  have h2j_le : 2 * j ≤ k + j := by omega
+  have hval2j : gammaValid fp (2 * j) := gammaValid_mono fp h2j_le hval
+  have hku : (k : ℝ) * fp.u < 1 := by
+    simpa [gammaValid] using hvalk
+  have hju : (j : ℝ) * fp.u < 1 := by
+    simpa [gammaValid] using hvalj
+  have h2ju : 2 * (j : ℝ) * fp.u < 1 := by
+    have h := hval2j
+    unfold gammaValid at h
+    push_cast at h
+    linarith
+  have hkj : ((k : ℝ) + (j : ℝ)) * fp.u < 1 := by
+    have h := hval
+    unfold gammaValid at h
+    push_cast at h
+    exact h
+  have hdk : (0 : ℝ) < 1 - (k : ℝ) * fp.u := by linarith
+  have hdj : (0 : ℝ) < 1 - (j : ℝ) * fp.u := by linarith
+  have hd2j : (0 : ℝ) < 1 - 2 * (j : ℝ) * fp.u := by linarith
+  have hdkj : (0 : ℝ) < 1 - ((k : ℝ) + (j : ℝ)) * fp.u := by linarith
+  have hγj_lt : gamma fp j < 1 := by
+    unfold gamma
+    rw [div_lt_one hdj]
+    linarith
+  have hdenγj : (0 : ℝ) < 1 - gamma fp j := by linarith
+  rw [← sub_nonneg]
+  unfold gamma
+  push_cast
+  set A : ℝ := (k : ℝ) * fp.u
+  set B : ℝ := (j : ℝ) * fp.u
+  have hABsum : ((k : ℝ) + (j : ℝ)) * fp.u = A + B := by
+    simp [A, B]
+    ring
+  rw [hABsum]
+  change 0 ≤
+    (A + B) / (1 - (A + B)) -
+      (A / (1 - A) + B / (1 - B)) /
+        (1 - B / (1 - B))
+  have hdA : 1 - A ≠ 0 := by simpa [A] using hdk.ne'
+  have hdB : 1 - B ≠ 0 := by simpa [B] using hdj.ne'
+  have hd2B : 1 - 2 * B ≠ 0 := by
+    simpa [B, mul_comm, mul_left_comm, mul_assoc] using hd2j.ne'
+  have hd2B' : 1 - B * 2 ≠ 0 := by
+    simpa [mul_comm] using hd2B
+  have hdAB : 1 - (A + B) ≠ 0 := by
+    simpa [A, B, add_mul, add_comm, add_left_comm, add_assoc] using hdkj.ne'
+  have hdGammaB : 1 - B / (1 - B) ≠ 0 := by
+    simpa [B, gamma] using hdenγj.ne'
+  have hd2B_pos : (0 : ℝ) < 1 - 2 * B := by
+    simpa [B, mul_comm, mul_left_comm, mul_assoc] using hd2j
+  have hdAB_pos : (0 : ℝ) < 1 - (A + B) := by
+    simpa [A, B, add_mul, add_comm, add_left_comm, add_assoc] using hdkj
+  have key :
+      (A + B) / (1 - (A + B)) -
+          (A / (1 - A) + B / (1 - B)) /
+            (1 - B / (1 - B)) =
+        (B * (A - B)) /
+          ((1 - A) * (1 - 2 * B) * (1 - (A + B))) := by
+    have hden_simpl : 1 - B / (1 - B) = (1 - 2 * B) / (1 - B) := by
+      field_simp [hdB]
+      ring
+    rw [hden_simpl]
+    field_simp [hdA, hdB, hd2B, hd2B', hdAB]
+    ring_nf
+    norm_num [Nat.rawCast]
+    change A * B * (Nat.rawCast 1 : ℝ) = A * B
+    simp [Nat.rawCast]
+  rw [key]
+  apply div_nonneg
+  · apply mul_nonneg
+    · simpa [B] using mul_nonneg (by exact_mod_cast j.zero_le) fp.u_nonneg
+    · simpa [A, B, sub_mul] using
+        mul_nonneg (sub_nonneg.mpr (by exact_mod_cast hjk : (j : ℝ) ≤ k)) fp.u_nonneg
+  · exact le_of_lt (mul_pos (mul_pos hdk hd2B_pos) hdAB_pos)
+
+/-- **Lemma 3.3 quotient rule, sharp branch**.
+
+If `|θ_k| ≤ γ_k`, `|θ_j| ≤ γ_j`, and `j ≤ k`, then
+`(1+θ_k)/(1+θ_j) = 1+θ_{k+j}`.  This is the first branch of the
+second displayed relation in Higham Chapter 3 Lemma 3.3. -/
+lemma gamma_div_le_branch (fp : FPModel) (k j : ℕ) (θk θj : ℝ)
+    (hjk : j ≤ k)
+    (hk : |θk| ≤ gamma fp k)
+    (hj : |θj| ≤ gamma fp j)
+    (hval : gammaValid fp (k + j)) :
+    ∃ θ : ℝ, |θ| ≤ gamma fp (k + j) ∧
+      (1 + θk) / (1 + θj) = 1 + θ := by
+  have hvalk : gammaValid fp k := gammaValid_mono fp (by omega) hval
+  have hvalj : gammaValid fp j := gammaValid_mono fp (by omega) hval
+  have hval2j : gammaValid fp (2 * j) :=
+    gammaValid_mono fp (by omega) hval
+  have hγk_nonneg : 0 ≤ gamma fp k := gamma_nonneg fp hvalk
+  have hγj_nonneg : 0 ≤ gamma fp j := gamma_nonneg fp hvalj
+  have hju : (j : ℝ) * fp.u < 1 := by
+    simpa [gammaValid] using hvalj
+  have h2ju : 2 * (j : ℝ) * fp.u < 1 := by
+    have h := hval2j
+    unfold gammaValid at h
+    push_cast at h
+    linarith
+  have hdj : (0 : ℝ) < 1 - (j : ℝ) * fp.u := by linarith
+  have hγj_lt : gamma fp j < 1 := by
+    unfold gamma
+    rw [div_lt_one hdj]
+    linarith
+  have hθj_low : -gamma fp j ≤ θj := by
+    linarith [neg_abs_le θj, hj]
+  have hdenpos : (0 : ℝ) < 1 + θj := by linarith
+  refine ⟨(θk - θj) / (1 + θj), ?_, ?_⟩
+  · have hdenlower : 1 - gamma fp j ≤ 1 + θj := by linarith
+    have hdenγpos : (0 : ℝ) < 1 - gamma fp j := by linarith
+    have hnum : |θk - θj| ≤ gamma fp k + gamma fp j := by
+      calc
+        |θk - θj| ≤ |θk| + |θj| := by
+          simpa [sub_eq_add_neg, abs_neg] using abs_add_le θk (-θj)
+        _ ≤ gamma fp k + gamma fp j := add_le_add hk hj
+    have hsum_nonneg : 0 ≤ gamma fp k + gamma fp j :=
+      add_nonneg hγk_nonneg hγj_nonneg
+    have hfrac1 :
+        |θk - θj| / (1 + θj) ≤
+          (gamma fp k + gamma fp j) / (1 + θj) :=
+      div_le_div_of_nonneg_right hnum (le_of_lt hdenpos)
+    have hfrac2 :
+        (gamma fp k + gamma fp j) / (1 + θj) ≤
+          (gamma fp k + gamma fp j) / (1 - gamma fp j) :=
+      div_le_div_of_nonneg_left hsum_nonneg hdenγpos hdenlower
+    have hgamma :=
+      gamma_add_div_one_sub_gamma_le_of_le fp k j hjk hval
+    rw [abs_div, abs_of_pos hdenpos]
+    exact le_trans (le_trans hfrac1 hfrac2) hgamma
+  · field_simp [hdenpos.ne']
+    ring
+
+/-- **Lemma 3.3 quotient rule, general/large-denominator branch**.
+
+If `|θ_k| ≤ γ_k`, `|θ_j| ≤ γ_j`, and `j > k`, then the abstract quotient
+can still be bounded as `1+θ_{k+2j}`.  The proof is the existing independent
+denominator reciprocal rule, with denominator positivity derived from the
+`gammaValid fp (k + 2*j)` guard. -/
+lemma gamma_div_gt_branch (fp : FPModel) (k j : ℕ) (θk θj : ℝ)
+    (_hgt : k < j)
+    (hk : |θk| ≤ gamma fp k)
+    (hj : |θj| ≤ gamma fp j)
+    (hval : gammaValid fp (k + 2 * j)) :
+    ∃ θ : ℝ, |θ| ≤ gamma fp (k + 2 * j) ∧
+      (1 + θk) / (1 + θj) = 1 + θ := by
+  have hval2j : gammaValid fp (2 * j) :=
+    gammaValid_mono fp (by omega) hval
+  have hvalj : gammaValid fp j := gammaValid_mono fp (by omega) hval
+  have hju : (j : ℝ) * fp.u < 1 := by
+    simpa [gammaValid] using hvalj
+  have h2ju : 2 * (j : ℝ) * fp.u < 1 := by
+    have h := hval2j
+    unfold gammaValid at h
+    push_cast at h
+    linarith
+  have hdj : (0 : ℝ) < 1 - (j : ℝ) * fp.u := by linarith
+  have hγj_lt : gamma fp j < 1 := by
+    unfold gamma
+    rw [div_lt_one hdj]
+    linarith
+  have hθj_low : -gamma fp j ≤ θj := by
+    linarith [neg_abs_le θj, hj]
+  have hdenpos : (0 : ℝ) < 1 + θj := by linarith
+  exact gamma_div fp k j θk θj hk hj hdenpos hval
 
 -- ============================================================
 -- §3.4  Additional Lemma 3.3 rules (standalone)
