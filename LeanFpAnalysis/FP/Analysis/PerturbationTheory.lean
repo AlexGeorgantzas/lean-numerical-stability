@@ -32,6 +32,405 @@ noncomputable def residualVec (n : ℕ) (A : Fin n → Fin n → ℝ)
     (y b : Fin n → ℝ) : Fin n → ℝ :=
   fun i => b i - ∑ j : Fin n, A i j * y j
 
+/-- Scaled/relative residual `||b - Ay||₂ / (||A||₂ ||y||₂)`, with the
+matrix norm value supplied explicitly.  This is the scaled residual used in
+Higham Chapter 1 and Lemma 1.1, represented through the repository's
+operator-2-norm predicate surface. -/
+noncomputable def relativeResidual2 (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (y b : Fin n → ℝ) (matrixNormA : ℝ) : ℝ :=
+  vecNorm2 (residualVec n A y b) / (matrixNormA * vecNorm2 y)
+
+-- ============================================================
+-- Chapter 1 residual/backward-error bridge
+-- ============================================================
+
+/-- Rank-one perturbation used in Higham Lemma 1.1's proof route:
+`ΔA = r yᵀ / (yᵀ y)`, represented with the repository's finite vectors. -/
+noncomputable def residualRankOnePerturbation (n : ℕ)
+    (r y : Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j => (1 / vecNorm2Sq y) * (r i * y j)
+
+/-- The rank-one residual perturbation maps `y` back to `r`, provided
+`y` has nonzero Euclidean norm. -/
+theorem residualRankOnePerturbation_mul_vec (n : ℕ)
+    (r y : Fin n → ℝ) (hy : vecNorm2 y ≠ 0) :
+    matMulVec n (residualRankOnePerturbation n r y) y = r := by
+  have hsq : vecNorm2Sq y ≠ 0 := by
+    intro hzero
+    have hnormsq : vecNorm2 y ^ 2 = 0 := by
+      rw [vecNorm2_sq, hzero]
+    exact hy (sq_eq_zero_iff.mp hnormsq)
+  have hsq' : (∑ i : Fin n, y i ^ 2) ≠ 0 := by
+    simpa [vecNorm2Sq] using hsq
+  ext i
+  unfold residualRankOnePerturbation matMulVec vecNorm2Sq
+  calc
+    (∑ j : Fin n, (1 / ∑ i : Fin n, y i ^ 2) * (r i * y j) * y j)
+        = ∑ j : Fin n, ((1 / ∑ i : Fin n, y i ^ 2) * r i) * y j ^ 2 := by
+          apply Finset.sum_congr rfl
+          intro j _
+          ring
+    _ = ((1 / ∑ j : Fin n, y j ^ 2) * r i) *
+            (∑ j : Fin n, y j ^ 2) := by
+          rw [Finset.mul_sum]
+    _ = r i := by
+          field_simp [hsq']
+
+/-- The rank-one perturbation makes the approximate solution `y` exact for
+the perturbed system `(A + ΔA)y = b`, where `ΔA = r yᵀ/(yᵀy)` and
+`r = b - Ay`. -/
+theorem residualRankOnePerturbation_solves (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (y b : Fin n → ℝ)
+    (hy : vecNorm2 y ≠ 0) :
+    let ΔA := residualRankOnePerturbation n (residualVec n A y b) y
+    ∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * y j = b i := by
+  intro ΔA i
+  have hmul :=
+    congrFun (residualRankOnePerturbation_mul_vec n (residualVec n A y b) y hy) i
+  unfold matMulVec at hmul
+  have hmul' :
+      ∑ j : Fin n,
+        residualRankOnePerturbation n (fun i => b i - ∑ j, A i j * y j) y i j *
+          y j = residualVec n A y b i := by
+    simpa [residualVec] using hmul
+  unfold ΔA
+  calc
+    (∑ j : Fin n,
+        (A i j + residualRankOnePerturbation n (fun i => b i - ∑ j, A i j * y j) y i j) *
+          y j)
+        = ∑ j : Fin n,
+            (A i j * y j +
+              residualRankOnePerturbation n (fun i => b i - ∑ j, A i j * y j) y i j *
+                y j) := by
+              apply Finset.sum_congr rfl
+              intro j _
+              ring
+    _ = ∑ j : Fin n, A i j * y j +
+          ∑ j : Fin n,
+            residualRankOnePerturbation n (fun i => b i - ∑ j, A i j * y j) y i j *
+              y j := by
+              rw [Finset.sum_add_distrib]
+    _ = ∑ j : Fin n, A i j * y j + residualVec n A y b i := by
+          rw [hmul']
+    _ = b i := by
+          unfold residualVec
+          ring
+
+/-- Frobenius norm of the rank-one residual perturbation.  This is the exact
+Frobenius analogue of the rank-one norm computation used in Higham Lemma 1.1. -/
+theorem frobNorm_residualRankOnePerturbation (n : ℕ)
+    (r y : Fin n → ℝ) (hy : vecNorm2 y ≠ 0) :
+    frobNorm (residualRankOnePerturbation n r y) =
+      vecNorm2 r / vecNorm2 y := by
+  change frobNorm (fun i j => (1 / vecNorm2Sq y) * (r i * y j)) =
+    vecNorm2 r / vecNorm2 y
+  simpa [one_div] using
+    frobNorm_rankOne_div_vecNorm2Sq r y hy
+
+/-- The rank-one residual perturbation has operator 2-norm at most
+`||r||₂ / ||y||₂`, stated using the repository's predicate-style
+`opNorm2Le`. -/
+theorem opNorm2Le_residualRankOnePerturbation (n : ℕ)
+    (r y : Fin n → ℝ) (hy : vecNorm2 y ≠ 0) :
+    opNorm2Le (residualRankOnePerturbation n r y) (vecNorm2 r / vecNorm2 y) := by
+  have hypos : 0 < vecNorm2 y :=
+    lt_of_le_of_ne (vecNorm2_nonneg y) (Ne.symm hy)
+  have hden_pos : 0 < vecNorm2Sq y := by
+    rw [← vecNorm2_sq]
+    exact sq_pos_of_pos hypos
+  intro x
+  let inner : ℝ := ∑ j : Fin n, y j * x j
+  let scalar : ℝ := (1 / vecNorm2Sq y) * inner
+  have hMx :
+      matMulVec n (residualRankOnePerturbation n r y) x =
+        fun i : Fin n => scalar * r i := by
+    ext i
+    unfold residualRankOnePerturbation matMulVec scalar inner
+    calc
+      (∑ j : Fin n, (1 / vecNorm2Sq y) * (r i * y j) * x j)
+          = ∑ j : Fin n, ((1 / vecNorm2Sq y) * (y j * x j)) * r i := by
+              apply Finset.sum_congr rfl
+              intro j _
+              ring
+      _ = (∑ j : Fin n, (1 / vecNorm2Sq y) * (y j * x j)) * r i := by
+              rw [← Finset.sum_mul]
+      _ = ((1 / vecNorm2Sq y) * ∑ j : Fin n, y j * x j) * r i := by
+              rw [← Finset.mul_sum]
+  rw [hMx, vecNorm2_smul]
+  have hinner : |inner| ≤ vecNorm2 y * vecNorm2 x := by
+    simpa [inner] using abs_vecInnerProduct_le_vecNorm2_mul y x
+  have hscalar : |scalar| ≤ vecNorm2 x / vecNorm2 y := by
+    unfold scalar
+    rw [abs_mul, abs_of_pos (one_div_pos.mpr hden_pos)]
+    calc
+      (1 / vecNorm2Sq y) * |inner|
+          ≤ (1 / vecNorm2Sq y) * (vecNorm2 y * vecNorm2 x) :=
+            mul_le_mul_of_nonneg_left hinner (le_of_lt (one_div_pos.mpr hden_pos))
+      _ = vecNorm2 x / vecNorm2 y := by
+            rw [← vecNorm2_sq]
+            field_simp [hypos.ne']
+  calc
+    |scalar| * vecNorm2 r
+        ≤ (vecNorm2 x / vecNorm2 y) * vecNorm2 r :=
+          mul_le_mul_of_nonneg_right hscalar (vecNorm2_nonneg r)
+    _ = (vecNorm2 r / vecNorm2 y) * vecNorm2 x := by
+          field_simp [hypos.ne']
+
+/-- If a perturbation makes `y` solve `(A + ΔA)y = b`, then the residual is
+exactly `ΔA y`. -/
+theorem residualVec_eq_matMulVec_of_perturbed_solve (n : ℕ)
+    (A ΔA : Fin n → Fin n → ℝ) (y b : Fin n → ℝ)
+    (hPerturbed : ∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * y j = b i) :
+    residualVec n A y b = matMulVec n ΔA y := by
+  ext i
+  unfold residualVec matMulVec
+  have h := hPerturbed i
+  have hsplit :
+      ∑ j : Fin n, (A i j + ΔA i j) * y j =
+        ∑ j : Fin n, A i j * y j + ∑ j : Fin n, ΔA i j * y j := by
+    rw [← Finset.sum_add_distrib]
+    apply Finset.sum_congr rfl
+    intro j _
+    ring
+  rw [hsplit] at h
+  linarith
+
+/-- Any perturbation that makes `y` solve `(A + ΔA)y = b` must have Frobenius
+norm large enough to account for the residual.  Together with
+`frobNorm_residualRankOnePerturbation`, this gives the Frobenius-norm version
+of the Lemma 1.1 rank-one construction. -/
+theorem residual_norm_le_frobNorm_mul_solution_norm_of_perturbed_solve
+    (n : ℕ) (A ΔA : Fin n → Fin n → ℝ) (y b : Fin n → ℝ)
+    (hPerturbed : ∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * y j = b i) :
+    vecNorm2 (residualVec n A y b) ≤ frobNorm ΔA * vecNorm2 y := by
+  have hres := residualVec_eq_matMulVec_of_perturbed_solve n A ΔA y b hPerturbed
+  rw [hres]
+  exact vecNorm2_matMulVec_le_frobNorm_mul ΔA y
+
+/-- Any perturbation with an operator-2 bound that makes `y` solve the
+perturbed system must have budget at least `||r||₂ / ||y||₂`. -/
+theorem residual_norm_div_solution_norm_le_of_opNorm2Le_perturbed_solve
+    (n : ℕ) (A ΔA : Fin n → Fin n → ℝ) (y b : Fin n → ℝ) (c : ℝ)
+    (hy : vecNorm2 y ≠ 0)
+    (hPerturbed : ∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * y j = b i)
+    (hΔA : opNorm2Le ΔA c) :
+    vecNorm2 (residualVec n A y b) / vecNorm2 y ≤ c := by
+  have hypos : 0 < vecNorm2 y :=
+    lt_of_le_of_ne (vecNorm2_nonneg y) (Ne.symm hy)
+  have hres := residualVec_eq_matMulVec_of_perturbed_solve n A ΔA y b hPerturbed
+  have hle : vecNorm2 (residualVec n A y b) ≤ c * vecNorm2 y := by
+    rw [hres]
+    exact hΔA y
+  rw [div_le_iff₀ hypos]
+  simpa [mul_comm] using hle
+
+/-- Higham §1.10.1 rounded-exact-solution residual identity.  If `x` solves
+`A*x=b` exactly and `z=x+Δx`, then the residual of `z` is `-A*Δx`. -/
+theorem residualVec_add_error_eq_neg_matMulVec
+    (n : ℕ) (A : Fin n → Fin n → ℝ) (x Δx b : Fin n → ℝ)
+    (hAx : ∀ i : Fin n, ∑ j : Fin n, A i j * x j = b i) :
+    residualVec n A (fun i => x i + Δx i) b =
+      fun i => -matMulVec n A Δx i := by
+  ext i
+  unfold residualVec matMulVec
+  rw [← hAx i]
+  simp_rw [mul_add, Finset.sum_add_distrib]
+  ring
+
+/-- Norm form of the rounded-exact-solution residual identity:
+`||b - A(x+Δx)||₂ = ||AΔx||₂`. -/
+theorem residual_norm_add_error_eq_matMulVec_norm
+    (n : ℕ) (A : Fin n → Fin n → ℝ) (x Δx b : Fin n → ℝ)
+    (hAx : ∀ i : Fin n, ∑ j : Fin n, A i j * x j = b i) :
+    vecNorm2 (residualVec n A (fun i => x i + Δx i) b) =
+      vecNorm2 (matMulVec n A Δx) := by
+  rw [residualVec_add_error_eq_neg_matMulVec n A x Δx b hAx]
+  exact vecNorm2_neg (matMulVec n A Δx)
+
+/-- If `||A||₂ ≤ A_norm`, then the residual of the rounded exact solution is
+controlled by the matrix action on the rounding error. -/
+theorem roundedExactSolution_residual_norm_le_opNorm2
+    (n : ℕ) (A : Fin n → Fin n → ℝ) (x Δx b : Fin n → ℝ)
+    (A_norm : ℝ)
+    (hAx : ∀ i : Fin n, ∑ j : Fin n, A i j * x j = b i)
+    (hA : opNorm2Le A A_norm) :
+    vecNorm2 (residualVec n A (fun i => x i + Δx i) b) ≤
+      A_norm * vecNorm2 Δx := by
+  rw [residual_norm_add_error_eq_matMulVec_norm n A x Δx b hAx]
+  exact hA Δx
+
+/-- Higham §1.10.1 rounded-exact-solution residual comparison: if
+`||Δx||₂ ≤ u ||x||₂` and `||A||₂ ≤ A_norm`, then
+`||b - A(x+Δx)||₂ ≤ A_norm * u * ||x||₂`. -/
+theorem roundedExactSolution_residual_norm_le_opNorm2_mul_relative_error
+    (n : ℕ) (A : Fin n → Fin n → ℝ) (x Δx b : Fin n → ℝ)
+    (A_norm u : ℝ)
+    (hAx : ∀ i : Fin n, ∑ j : Fin n, A i j * x j = b i)
+    (hA : opNorm2Le A A_norm) (hA_nonneg : 0 ≤ A_norm)
+    (hΔx : vecNorm2 Δx ≤ u * vecNorm2 x) :
+    vecNorm2 (residualVec n A (fun i => x i + Δx i) b) ≤
+      A_norm * u * vecNorm2 x := by
+  calc
+    vecNorm2 (residualVec n A (fun i => x i + Δx i) b)
+        ≤ A_norm * vecNorm2 Δx :=
+          roundedExactSolution_residual_norm_le_opNorm2 n A x Δx b A_norm hAx hA
+    _ ≤ A_norm * (u * vecNorm2 x) :=
+          mul_le_mul_of_nonneg_left hΔx hA_nonneg
+    _ = A_norm * u * vecNorm2 x := by ring
+
+/-- Uncancelled scaled-residual version of the rounded-exact-solution bound:
+`||b-Az||₂/(||A||₂||z||₂) ≤ (||A||₂ u ||x||₂)/(||A||₂||z||₂)`,
+for `z = x + Δx`. -/
+theorem roundedExactSolution_relativeResidual2_le_uncancelled
+    (n : ℕ) (A : Fin n → Fin n → ℝ) (x Δx b : Fin n → ℝ)
+    (A_norm u : ℝ)
+    (hAx : ∀ i : Fin n, ∑ j : Fin n, A i j * x j = b i)
+    (hA : opNorm2Le A A_norm) (hA_nonneg : 0 ≤ A_norm)
+    (hden : 0 < A_norm * vecNorm2 (fun i => x i + Δx i))
+    (hΔx : vecNorm2 Δx ≤ u * vecNorm2 x) :
+    relativeResidual2 n A (fun i => x i + Δx i) b A_norm ≤
+      (A_norm * u * vecNorm2 x) /
+        (A_norm * vecNorm2 (fun i => x i + Δx i)) := by
+  unfold relativeResidual2
+  exact div_le_div_of_nonneg_right
+    (roundedExactSolution_residual_norm_le_opNorm2_mul_relative_error
+      n A x Δx b A_norm u hAx hA hA_nonneg hΔx)
+    (le_of_lt hden)
+
+/-- Cancelled scaled-residual comparison for the rounded exact solution:
+if `||A||₂ ≤ A_norm`, `A_norm > 0`, and `||Δx||₂ ≤ u||x||₂`, then
+`relativeResidual2(A, x+Δx, b) ≤ u ||x||₂ / ||x+Δx||₂`. -/
+theorem roundedExactSolution_relativeResidual2_le_relative_error_factor
+    (n : ℕ) (A : Fin n → Fin n → ℝ) (x Δx b : Fin n → ℝ)
+    (A_norm u : ℝ)
+    (hAx : ∀ i : Fin n, ∑ j : Fin n, A i j * x j = b i)
+    (hA : opNorm2Le A A_norm) (hApos : 0 < A_norm)
+    (hz : vecNorm2 (fun i => x i + Δx i) ≠ 0)
+    (hΔx : vecNorm2 Δx ≤ u * vecNorm2 x) :
+    relativeResidual2 n A (fun i => x i + Δx i) b A_norm ≤
+      u * vecNorm2 x / vecNorm2 (fun i => x i + Δx i) := by
+  have hzpos : 0 < vecNorm2 (fun i => x i + Δx i) :=
+    lt_of_le_of_ne (vecNorm2_nonneg _) (Ne.symm hz)
+  have hden : 0 < A_norm * vecNorm2 (fun i => x i + Δx i) :=
+    mul_pos hApos hzpos
+  calc
+    relativeResidual2 n A (fun i => x i + Δx i) b A_norm
+        ≤ (A_norm * u * vecNorm2 x) /
+            (A_norm * vecNorm2 (fun i => x i + Δx i)) :=
+          roundedExactSolution_relativeResidual2_le_uncancelled
+            n A x Δx b A_norm u hAx hA (le_of_lt hApos) hden hΔx
+    _ = u * vecNorm2 x / vecNorm2 (fun i => x i + Δx i) := by
+          field_simp [ne_of_gt hApos, ne_of_gt hzpos]
+
+/-- Absolute matrix-only backward-error predicate for Higham Lemma 1.1,
+using `opNorm2Le` as the repository's operator-2-norm surface. -/
+def matrixOnlyBackwardError2Le (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (y b : Fin n → ℝ) (η : ℝ) : Prop :=
+  ∃ ΔA : Fin n → Fin n → ℝ,
+    (∀ i : Fin n, ∑ j : Fin n, (A i j + ΔA i j) * y j = b i) ∧
+    opNorm2Le ΔA η
+
+/-- Relative matrix-only backward-error predicate, where `matrixNormA` is the
+positive matrix norm value used for scaling.  For Higham Lemma 1.1 this value is
+`||A||₂`; the repository currently supplies it as an explicit positive scalar
+rather than a supremum-valued matrix norm definition. -/
+def relativeMatrixOnlyBackwardError2Le (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (y b : Fin n → ℝ)
+    (matrixNormA η : ℝ) : Prop :=
+  matrixOnlyBackwardError2Le n A y b (η * matrixNormA)
+
+/-- Higham Lemma 1.1, predicate form: among all perturbations to `A` that make
+`y` an exact solution, the optimal operator-2 perturbation budget is
+`||b - Ay||₂ / ||y||₂`, and it is attained by the rank-one perturbation
+`(b - Ay)yᵀ/(yᵀy)`. -/
+theorem higham_lemma_1_1_operator2_predicate (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (y b : Fin n → ℝ)
+    (hy : vecNorm2 y ≠ 0) :
+    let η := vecNorm2 (residualVec n A y b) / vecNorm2 y
+    matrixOnlyBackwardError2Le n A y b η ∧
+      ∀ c : ℝ, matrixOnlyBackwardError2Le n A y b c → η ≤ c := by
+  intro η
+  constructor
+  · refine ⟨residualRankOnePerturbation n (residualVec n A y b) y, ?_, ?_⟩
+    · exact residualRankOnePerturbation_solves n A y b hy
+    · simpa [η] using
+        opNorm2Le_residualRankOnePerturbation n (residualVec n A y b) y hy
+  · intro c hc
+    obtain ⟨ΔA, hPerturbed, hΔA⟩ := hc
+    simpa [η] using
+      residual_norm_div_solution_norm_le_of_opNorm2Le_perturbed_solve
+        n A ΔA y b c hy hPerturbed hΔA
+
+/-- Higham Lemma 1.1, relative-residual predicate form.  If `matrixNormA` is
+the positive value of `||A||₂`, then the relative residual
+`||b - Ay||₂ / (||A||₂ ||y||₂)` is exactly the optimal relative matrix-only
+backward-error budget. -/
+theorem higham_lemma_1_1_relativeResidual2_predicate (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (y b : Fin n → ℝ)
+    (matrixNormA : ℝ) (hy : vecNorm2 y ≠ 0) (hApos : 0 < matrixNormA) :
+    let η := vecNorm2 (residualVec n A y b) / (matrixNormA * vecNorm2 y)
+    relativeMatrixOnlyBackwardError2Le n A y b matrixNormA η ∧
+      ∀ c : ℝ, relativeMatrixOnlyBackwardError2Le n A y b matrixNormA c → η ≤ c := by
+  intro η
+  have hypos : 0 < vecNorm2 y :=
+    lt_of_le_of_ne (vecNorm2_nonneg y) (Ne.symm hy)
+  have habs := higham_lemma_1_1_operator2_predicate n A y b hy
+  constructor
+  · obtain ⟨ΔA, hPerturbed, hOp⟩ := habs.1
+    refine ⟨ΔA, hPerturbed, ?_⟩
+    have hη :
+        η * matrixNormA =
+          vecNorm2 (residualVec n A y b) / vecNorm2 y := by
+      dsimp [η]
+      field_simp [hApos.ne', hypos.ne']
+    simpa [relativeMatrixOnlyBackwardError2Le, matrixOnlyBackwardError2Le, hη] using hOp
+  · intro c hc
+    have habsLower := habs.2 (c * matrixNormA) hc
+    have hη :
+        η * matrixNormA =
+          vecNorm2 (residualVec n A y b) / vecNorm2 y := by
+      dsimp [η]
+      field_simp [hApos.ne', hypos.ne']
+    have hmul : η * matrixNormA ≤ c * matrixNormA := by
+      simpa [hη] using habsLower
+    exact (mul_le_mul_iff_of_pos_right hApos).mp hmul
+
+/-- Direct use form of Higham Lemma 1.1: any relative matrix-only backward
+error certificate with operator-2 budget `η * ||A||₂` bounds the displayed
+scaled residual by `η`. -/
+theorem relativeResidual2_le_of_relativeMatrixOnlyBackwardError2Le (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (y b : Fin n → ℝ)
+    (matrixNormA η : ℝ) (hy : vecNorm2 y ≠ 0) (hApos : 0 < matrixNormA)
+    (hback : relativeMatrixOnlyBackwardError2Le n A y b matrixNormA η) :
+    relativeResidual2 n A y b matrixNormA ≤ η := by
+  have hlemma :=
+    higham_lemma_1_1_relativeResidual2_predicate n A y b matrixNormA hy hApos
+  simpa [relativeResidual2] using hlemma.2 η hback
+
+/-- For a 2-by-2 matrix, the infinity-norm bound implies an operator-2 bound
+after the elementary `sqrt 2` Frobenius comparison. -/
+theorem opNorm2Le_of_sqrt_two_infNorm_le
+    (M : Fin 2 → Fin 2 → ℝ) {c : ℝ}
+    (hM : Real.sqrt (2 : ℝ) * infNorm M ≤ c) :
+    opNorm2Le M c := by
+  apply opNorm2Le_of_frobNorm_le
+  have hsq :
+      frobNorm M ^ 2 ≤ (Real.sqrt (2 : ℝ) * infNorm M) ^ 2 := by
+    have hbase := frobNorm_sq_le_nat_mul_infNorm_sq (n := 2) M
+    have hscale :
+        (Real.sqrt (2 : ℝ) * infNorm M) ^ 2 =
+          (2 : ℝ) * infNorm M ^ 2 := by
+      rw [mul_pow, Real.sq_sqrt (by norm_num)]
+    simpa [hscale] using hbase
+  have hF_nonneg : 0 ≤ frobNorm M := frobNorm_nonneg M
+  have hscale_nonneg : 0 ≤ Real.sqrt (2 : ℝ) * infNorm M :=
+    mul_nonneg (Real.sqrt_nonneg _) (infNorm_nonneg M)
+  have hF_le_scale : frobNorm M ≤ Real.sqrt (2 : ℝ) * infNorm M := by
+    have habs : |frobNorm M| ≤ |Real.sqrt (2 : ℝ) * infNorm M| :=
+      (sq_le_sq).mp hsq
+    simpa [abs_of_nonneg hF_nonneg, abs_of_nonneg hscale_nonneg] using habs
+  exact le_trans hF_le_scale hM
+
 -- ============================================================
 -- §7.1  Forward error from residual
 -- ============================================================
@@ -326,6 +725,112 @@ theorem condSkeel_le_kappaInf (n : ℕ) (hn : 0 < n)
     _ = Finset.sup' Finset.univ hne (fun i' => ∑ j : Fin n, |A i' j|) *
         Finset.sup' Finset.univ hne (fun i' => ∑ j : Fin n, |A_inv i' j|) := by
         ring
+
+/-- The repository `infNorm` agrees with the explicit finite row-sum maximum
+    used in Higham's \(\kappa_\infty\) definition. -/
+theorem infNorm_eq_sup_row_sum (n : ℕ) (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) :
+    infNorm A =
+      Finset.sup' Finset.univ
+        (Finset.univ_nonempty_iff.mpr ⟨⟨0, hn⟩⟩)
+        (fun i => ∑ j : Fin n, |A i j|) := by
+  let s : Finset (Fin n) := Finset.univ
+  have hne : s.Nonempty := Finset.univ_nonempty_iff.mpr ⟨⟨0, hn⟩⟩
+  have hsup_nonneg :
+      0 ≤ Finset.sup' s hne (fun i => ∑ j : Fin n, |A i j|) := by
+    have hrow0 : 0 ≤ ∑ j : Fin n, |A ⟨0, hn⟩ j| :=
+      Finset.sum_nonneg (fun j _ => abs_nonneg (A ⟨0, hn⟩ j))
+    exact le_trans hrow0
+      (Finset.le_sup' (fun i => ∑ j : Fin n, |A i j|)
+        (Finset.mem_univ ⟨0, hn⟩))
+  apply le_antisymm
+  · apply infNorm_le_of_row_sum_le
+    · intro i
+      exact Finset.le_sup' (fun i => ∑ j : Fin n, |A i j|)
+        (Finset.mem_univ i)
+    · exact hsup_nonneg
+  · apply Finset.sup'_le
+    intro i _
+    exact row_sum_le_infNorm A i
+
+/-- Higham's `kappaInf` is exactly the product of the repository infinity
+    norms. -/
+theorem kappaInf_eq_infNorm_mul_infNorm (n : ℕ) (hn : 0 < n)
+    (A A_inv : Fin n → Fin n → ℝ) :
+    kappaInf n hn A A_inv = infNorm A * infNorm A_inv := by
+  unfold kappaInf
+  rw [← infNorm_eq_sup_row_sum n hn A,
+    ← infNorm_eq_sup_row_sum n hn A_inv]
+
+/-- Nonnegativity of Higham's infinity-norm condition number. -/
+lemma kappaInf_nonneg (n : ℕ) (hn : 0 < n)
+    (A A_inv : Fin n → Fin n → ℝ) :
+    0 ≤ kappaInf n hn A A_inv := by
+  rw [kappaInf_eq_infNorm_mul_infNorm n hn A A_inv]
+  exact mul_nonneg (infNorm_nonneg A) (infNorm_nonneg A_inv)
+
+/-- A \(\kappa_\infty\) bound and a positive lower bound on `‖A‖∞` give an
+    upper bound on `‖A⁻¹‖∞`. -/
+theorem infNorm_inv_le_of_kappaInf_le_and_norm_lower (n : ℕ) (hn : 0 < n)
+    (A A_inv : Fin n → Fin n → ℝ) (κ ρ : ℝ)
+    (hρ : 0 < ρ)
+    (hρ_le : ρ ≤ infNorm A)
+    (hκ : kappaInf n hn A A_inv ≤ κ) :
+    infNorm A_inv ≤ κ / ρ := by
+  have hprod : ρ * infNorm A_inv ≤ κ := by
+    calc ρ * infNorm A_inv
+        ≤ infNorm A * infNorm A_inv :=
+          mul_le_mul_of_nonneg_right hρ_le (infNorm_nonneg A_inv)
+      _ = kappaInf n hn A A_inv := by
+          rw [kappaInf_eq_infNorm_mul_infNorm n hn A A_inv]
+      _ ≤ κ := hκ
+  exact (le_div_iff₀ hρ).mpr (by simpa [mul_comm] using hprod)
+
+/-- A \(\kappa_\infty\) bound for a nonsingular matrix bounds
+    `‖A_inv‖∞` with the actual denominator `‖A‖∞`.
+
+    This removes the auxiliary lower-bound parameter `ρ` when a determinant
+    certificate is already available. -/
+theorem infNorm_inv_le_of_kappaInf_le_and_det_ne_zero (n : ℕ) (hn : 0 < n)
+    (A A_inv : Fin n → Fin n → ℝ) (κ : ℝ)
+    (hdet : Matrix.det (A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hκ : kappaInf n hn A A_inv ≤ κ) :
+    infNorm A_inv ≤ κ / infNorm A :=
+  infNorm_inv_le_of_kappaInf_le_and_norm_lower n hn A A_inv κ (infNorm A)
+    (infNorm_pos_of_det_ne_zero hn A hdet) (le_rfl) hκ
+
+/-- Squared-budget form of the \(\kappa_\infty\)-to-inverse-norm bridge.
+    This is the shape needed by the QR nonbreakdown route. -/
+theorem infNorm_sq_budget_of_kappaInf_le_and_norm_lower (n : ℕ) (hn : 0 < n)
+    (A A_inv : Fin n → Fin n → ℝ) (κ ρ K : ℝ)
+    (hρ : 0 < ρ)
+    (hρ_le : ρ ≤ infNorm A)
+    (hκ : kappaInf n hn A A_inv ≤ κ)
+    (hbudget : (n : ℝ) * (κ / ρ) ^ 2 ≤ K) :
+    (n : ℝ) * infNorm A_inv ^ 2 ≤ K := by
+  have hle :
+      infNorm A_inv ≤ κ / ρ :=
+    infNorm_inv_le_of_kappaInf_le_and_norm_lower n hn A A_inv κ ρ hρ hρ_le hκ
+  have hκ_nonneg : 0 ≤ κ := le_trans (kappaInf_nonneg n hn A A_inv) hκ
+  have hdiv_nonneg : 0 ≤ κ / ρ := div_nonneg hκ_nonneg (le_of_lt hρ)
+  have hinv_nonneg : 0 ≤ infNorm A_inv := infNorm_nonneg A_inv
+  have hsquare : infNorm A_inv ^ 2 ≤ (κ / ρ) ^ 2 := by
+    nlinarith
+  exact
+    (mul_le_mul_of_nonneg_left hsquare (Nat.cast_nonneg n)).trans hbudget
+
+/-- Squared-budget form of the determinant-based
+    \(\kappa_\infty\)-to-inverse-norm bridge. -/
+theorem infNorm_sq_budget_of_kappaInf_le_and_det_ne_zero (n : ℕ) (hn : 0 < n)
+    (A A_inv : Fin n → Fin n → ℝ) (κ K : ℝ)
+    (hdet : Matrix.det (A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hκ : kappaInf n hn A A_inv ≤ κ)
+    (hbudget : (n : ℝ) * (κ / infNorm A) ^ 2 ≤ K) :
+    (n : ℝ) * infNorm A_inv ^ 2 ≤ K := by
+  exact
+    infNorm_sq_budget_of_kappaInf_le_and_norm_lower n hn A A_inv κ
+      (infNorm A) K (infNorm_pos_of_det_ne_zero hn A hdet) (le_rfl) hκ
+      hbudget
 
 -- ============================================================
 -- §7.3  Oettli–Prager sufficient direction (Theorem 7.3 ⇐)

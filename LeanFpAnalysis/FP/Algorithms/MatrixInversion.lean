@@ -719,6 +719,15 @@ theorem triInv_method2C_left_residual (n : ℕ) (fp : FPModel)
 
 -- §13.3.1  Method A: solve Ax̂ⱼ = eⱼ for each column
 
+/-- Computed inverse produced by Method A after an LU factorization: each
+column solves `L_hat y = e_j`, then `U_hat x = y`. -/
+noncomputable def methodAComputedInverse (fp : FPModel) (n : ℕ)
+    (L_hat U_hat : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j =>
+    let b_j : Fin n → ℝ := fun k => if k = j then 1 else 0
+    let y_hat := fl_forwardSub fp n L_hat b_j
+    fl_backSub fp n U_hat y_hat i
+
 /-- **Method A column-wise backward error** (Higham eq. 13.15).
 
     Method A computes X̂ ≈ A⁻¹ by solving Ax̂ⱼ = eⱼ for j = 1:n via LU.
@@ -740,6 +749,77 @@ theorem methodA_column_backward_error (n : ℕ) (fp : FPModel)
         ∀ i, ∑ k : Fin n, (A i k + ΔA i k) * x_hat_j k = b_j i := by
   intro j b_j y_hat x_hat_j
   exact lu_solve_backward_error fp n A L_hat U_hat b_j hL_diag hU_diag hLU hn
+
+/-- Method A column-wise backward error specialized to the named computed
+inverse matrix `methodAComputedInverse`. -/
+theorem methodA_column_backward_error_computed_inverse (n : ℕ) (fp : FPModel)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (hL_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hn : gammaValid fp n) :
+    ∀ j : Fin n,
+      ∃ ΔA : Fin n → Fin n → ℝ,
+        (∀ i k, |ΔA i k| ≤ (3 * gamma fp n + gamma fp n ^ 2) *
+          ∑ l : Fin n, |L_hat i l| * |U_hat l k|) ∧
+        ∀ i, ∑ k : Fin n,
+          (A i k + ΔA i k) *
+            methodAComputedInverse fp n L_hat U_hat k j =
+          if i = j then 1 else 0 := by
+  intro j
+  simpa [methodAComputedInverse] using
+    methodA_column_backward_error n fp A L_hat U_hat
+      hL_diag hU_diag hLU hn j
+
+/-- Method A column-wise backward error with an exposed LU factorization
+coefficient.  The LU factorization is certified at level `epsLU`, while the
+forward and back triangular solves are still charged at `gamma fp n`. -/
+theorem methodA_column_backward_error_factor_bound (n : ℕ) (fp : FPModel)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    {epsLU : ℝ}
+    (hepsLU : 0 ≤ epsLU)
+    (hL_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hLU : LUBackwardError n A L_hat U_hat epsLU)
+    (hn : gammaValid fp n) :
+    ∀ j : Fin n,
+      let b_j : Fin n → ℝ := fun i => if i = j then 1 else 0
+      let y_hat := fl_forwardSub fp n L_hat b_j
+      let x_hat_j := fl_backSub fp n U_hat y_hat
+      ∃ ΔA : Fin n → Fin n → ℝ,
+        (∀ i k, |ΔA i k| ≤
+          (epsLU + 2 * gamma fp n + gamma fp n ^ 2) *
+            ∑ l : Fin n, |L_hat i l| * |U_hat l k|) ∧
+        ∀ i, ∑ k : Fin n, (A i k + ΔA i k) * x_hat_j k = b_j i := by
+  intro j b_j y_hat x_hat_j
+  exact
+    lu_solve_backward_error_factor_gamma fp n A L_hat U_hat b_j
+      hepsLU hL_diag hU_diag hLU hn
+
+/-- Coefficient-exposed Method A column-wise backward error specialized to the
+named computed inverse matrix `methodAComputedInverse`. -/
+theorem methodA_column_backward_error_computed_inverse_factor_bound
+    (n : ℕ) (fp : FPModel)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    {epsLU : ℝ}
+    (hepsLU : 0 ≤ epsLU)
+    (hL_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hLU : LUBackwardError n A L_hat U_hat epsLU)
+    (hn : gammaValid fp n) :
+    ∀ j : Fin n,
+      ∃ ΔA : Fin n → Fin n → ℝ,
+        (∀ i k, |ΔA i k| ≤
+          (epsLU + 2 * gamma fp n + gamma fp n ^ 2) *
+            ∑ l : Fin n, |L_hat i l| * |U_hat l k|) ∧
+        ∀ i, ∑ k : Fin n,
+          (A i k + ΔA i k) *
+            methodAComputedInverse fp n L_hat U_hat k j =
+          if i = j then 1 else 0 := by
+  intro j
+  simpa [methodAComputedInverse] using
+    methodA_column_backward_error_factor_bound n fp A L_hat U_hat
+      hepsLU hL_diag hU_diag hLU hn j
 
 /-- **Method A right residual** (Higham eq. 13.16).
 
@@ -785,6 +865,48 @@ theorem methodA_right_residual (n : ℕ) (fp : FPModel)
         exact mul_le_mul_of_nonneg_right (hΔA_bound i k) (abs_nonneg _)
     _ = (3 * gamma fp n + gamma fp n ^ 2) *
           ∑ k : Fin n, (∑ l : Fin n, |L_hat i l| * |U_hat l k|) *
+            |X_hat k j| := by
+        rw [Finset.mul_sum]
+        apply Finset.sum_congr rfl; intro k _; ring
+
+/-- Method A right residual with an externally supplied componentwise column
+backward-error coefficient `c`. -/
+theorem methodA_right_residual_of_column_bound (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (X_hat : Fin n → Fin n → ℝ)
+    (c : ℝ)
+    (hCol : ∀ j : Fin n, ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i k, |ΔA i k| ≤ c *
+        ∑ l : Fin n, |L_hat i l| * |U_hat l k|) ∧
+      ∀ i, ∑ k : Fin n, (A i k + ΔA i k) * X_hat k j =
+        if i = j then 1 else 0) :
+    ∀ i j : Fin n,
+      |∑ k : Fin n, A i k * X_hat k j - if i = j then 1 else 0| ≤
+      c * ∑ k : Fin n, (∑ l : Fin n, |L_hat i l| * |U_hat l k|) *
+        |X_hat k j| := by
+  intro i j
+  obtain ⟨ΔA, hΔA_bound, hΔA_eq⟩ := hCol j
+  have hAX : ∑ k : Fin n, A i k * X_hat k j - (if i = j then (1 : ℝ) else 0) =
+      -(∑ k : Fin n, ΔA i k * X_hat k j) := by
+    have h := hΔA_eq i
+    have hsplit : ∑ k : Fin n, A i k * X_hat k j +
+        ∑ k : Fin n, ΔA i k * X_hat k j =
+        (if i = j then (1 : ℝ) else 0) := by
+      rw [← Finset.sum_add_distrib]
+      convert h using 1
+      apply Finset.sum_congr rfl; intro k _; ring
+    linarith
+  rw [hAX, abs_neg]
+  calc |∑ k : Fin n, ΔA i k * X_hat k j|
+      ≤ ∑ k : Fin n, |ΔA i k * X_hat k j| := Finset.abs_sum_le_sum_abs _ _
+    _ = ∑ k : Fin n, |ΔA i k| * |X_hat k j| := by
+        apply Finset.sum_congr rfl; intro k _; exact abs_mul _ _
+    _ ≤ ∑ k : Fin n, (c *
+          ∑ l : Fin n, |L_hat i l| * |U_hat l k|) * |X_hat k j| := by
+        apply Finset.sum_le_sum; intro k _
+        exact mul_le_mul_of_nonneg_right (hΔA_bound i k) (abs_nonneg _)
+    _ = c * ∑ k : Fin n,
+          (∑ l : Fin n, |L_hat i l| * |U_hat l k|) *
             |X_hat k j| := by
         rw [Finset.mul_sum]
         apply Finset.sum_congr rfl; intro k _; ring
@@ -860,6 +982,150 @@ theorem methodA_forward_error (n : ℕ) (fp : FPModel)
           |X_hat k₂ j|) := by
         rw [Finset.mul_sum]
         apply Finset.sum_congr rfl; intro k₁ _; ring
+
+/-- Method A forward error with an externally supplied residual coefficient
+`c`. -/
+theorem methodA_forward_error_of_residual_bound (n : ℕ)
+    (A A_inv L_hat U_hat X_hat : Fin n → Fin n → ℝ)
+    (c : ℝ)
+    (hInv : IsLeftInverse n A A_inv)
+    (hRes : ∀ i j : Fin n,
+      |∑ k : Fin n, A i k * X_hat k j - if i = j then 1 else 0| ≤
+      c * ∑ k : Fin n, (∑ l : Fin n, |L_hat i l| * |U_hat l k|) *
+        |X_hat k j|) :
+    ∀ i j : Fin n,
+      |X_hat i j - A_inv i j| ≤
+      c * ∑ k₁ : Fin n, |A_inv i k₁| *
+        (∑ k₂ : Fin n, (∑ l : Fin n, |L_hat k₁ l| * |U_hat l k₂|) *
+          |X_hat k₂ j|) := by
+  intro i j
+  have hDiff : X_hat i j - A_inv i j =
+      ∑ k₁ : Fin n, A_inv i k₁ *
+        (∑ k₂ : Fin n, A k₁ k₂ * X_hat k₂ j -
+          if k₁ = j then (1 : ℝ) else 0) := by
+    have hRHS_expand : ∑ k₁ : Fin n, A_inv i k₁ *
+        (∑ k₂ : Fin n, A k₁ k₂ * X_hat k₂ j -
+          if k₁ = j then (1 : ℝ) else 0) =
+        ∑ k₁ : Fin n, A_inv i k₁ * (∑ k₂ : Fin n, A k₁ k₂ * X_hat k₂ j) -
+        ∑ k₁ : Fin n, A_inv i k₁ * (if k₁ = j then (1 : ℝ) else 0) := by
+      rw [← Finset.sum_sub_distrib]
+      apply Finset.sum_congr rfl; intro k₁ _; ring
+    rw [hRHS_expand]
+    have hSecond : ∑ k₁ : Fin n, A_inv i k₁ *
+        (if k₁ = j then (1 : ℝ) else 0) = A_inv i j := by
+      simp [Finset.sum_ite_eq', Finset.mem_univ]
+    have hFirst : ∑ k₁ : Fin n, A_inv i k₁ *
+        (∑ k₂ : Fin n, A k₁ k₂ * X_hat k₂ j) = X_hat i j := by
+      simp_rw [Finset.mul_sum, ← mul_assoc]
+      rw [Finset.sum_comm]
+      simp_rw [← Finset.sum_mul]
+      have hInvA : ∀ k₂ : Fin n,
+          (∑ k₁ : Fin n, A_inv i k₁ * A k₁ k₂) = if i = k₂ then 1 else 0 :=
+        fun k₂ => hInv i k₂
+      simp_rw [hInvA]
+      simp [Finset.mem_univ]
+    rw [hFirst, hSecond]
+  rw [hDiff]
+  calc |∑ k₁ : Fin n, A_inv i k₁ *
+        (∑ k₂ : Fin n, A k₁ k₂ * X_hat k₂ j -
+          if k₁ = j then (1 : ℝ) else 0)|
+      ≤ ∑ k₁ : Fin n, |A_inv i k₁ *
+        (∑ k₂ : Fin n, A k₁ k₂ * X_hat k₂ j -
+          if k₁ = j then (1 : ℝ) else 0)| := Finset.abs_sum_le_sum_abs _ _
+    _ = ∑ k₁ : Fin n, |A_inv i k₁| *
+        |∑ k₂ : Fin n, A k₁ k₂ * X_hat k₂ j -
+          if k₁ = j then (1 : ℝ) else 0| := by
+        apply Finset.sum_congr rfl; intro k _; exact abs_mul _ _
+    _ ≤ ∑ k₁ : Fin n, |A_inv i k₁| *
+        (c * ∑ k₂ : Fin n,
+          (∑ l : Fin n, |L_hat k₁ l| * |U_hat l k₂|) *
+            |X_hat k₂ j|) := by
+        apply Finset.sum_le_sum; intro k₁ _
+        exact mul_le_mul_of_nonneg_left (hRes k₁ j) (abs_nonneg _)
+    _ = c * ∑ k₁ : Fin n, |A_inv i k₁| *
+        (∑ k₂ : Fin n, (∑ l : Fin n, |L_hat k₁ l| * |U_hat l k₂|) *
+          |X_hat k₂ j|) := by
+        rw [Finset.mul_sum]
+        apply Finset.sum_congr rfl; intro k₁ _; ring
+
+/-- Method A computed inverse entrywise forward-error certificate for the
+repository nonsingular inverse, with a visible scalar budget `eta`. -/
+theorem methodA_computed_inverse_entry_abs_sub_nonsingInv_le_of_lu_budget
+    (n : ℕ) (fp : FPModel)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    {eta : ℝ}
+    (hdet : Matrix.det (A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hL_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hn : gammaValid fp n)
+    (hBudget :
+      ∀ i j : Fin n,
+        (3 * gamma fp n + gamma fp n ^ 2) *
+            ∑ k₁ : Fin n,
+              |nonsingInv n A i k₁| *
+                (∑ k₂ : Fin n,
+                  (∑ l : Fin n, |L_hat k₁ l| * |U_hat l k₂|) *
+                    |methodAComputedInverse fp n L_hat U_hat k₂ j|) ≤ eta) :
+    ∀ i j : Fin n,
+      |nonsingInv n A i j -
+          methodAComputedInverse fp n L_hat U_hat i j| ≤ eta := by
+  intro i j
+  have hInv : IsInverse n A (nonsingInv n A) :=
+    isInverse_nonsingInv_of_det_ne_zero n A hdet
+  have hCol :=
+    methodA_column_backward_error_computed_inverse n fp A L_hat U_hat
+      hL_diag hU_diag hLU hn
+  have hRes :=
+    methodA_right_residual n fp A L_hat U_hat
+      (methodAComputedInverse fp n L_hat U_hat) hn hCol
+  have hFwd :=
+    methodA_forward_error n fp A (nonsingInv n A) L_hat U_hat
+      (methodAComputedInverse fp n L_hat U_hat) hInv.1 hn hRes i j
+  rw [abs_sub_comm]
+  exact le_trans hFwd (hBudget i j)
+
+/-- Method A computed inverse entrywise forward-error certificate with an
+exposed LU factorization coefficient `epsLU`.  This is the implementation-facing
+variant used when the LU factors are certified for a computed input matrix and
+that input error has already been transferred into the `LUBackwardError`
+coefficient. -/
+theorem methodA_computed_inverse_entry_abs_sub_nonsingInv_le_of_lu_factor_budget
+    (n : ℕ) (fp : FPModel)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    {epsLU eta : ℝ}
+    (hepsLU : 0 ≤ epsLU)
+    (hdet : Matrix.det (A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hL_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hLU : LUBackwardError n A L_hat U_hat epsLU)
+    (hn : gammaValid fp n)
+    (hBudget :
+      ∀ i j : Fin n,
+        (epsLU + 2 * gamma fp n + gamma fp n ^ 2) *
+            ∑ k₁ : Fin n,
+              |nonsingInv n A i k₁| *
+                (∑ k₂ : Fin n,
+                  (∑ l : Fin n, |L_hat k₁ l| * |U_hat l k₂|) *
+                    |methodAComputedInverse fp n L_hat U_hat k₂ j|) ≤ eta) :
+    ∀ i j : Fin n,
+      |nonsingInv n A i j -
+          methodAComputedInverse fp n L_hat U_hat i j| ≤ eta := by
+  intro i j
+  have hInv : IsInverse n A (nonsingInv n A) :=
+    isInverse_nonsingInv_of_det_ne_zero n A hdet
+  have hCol :=
+    methodA_column_backward_error_computed_inverse_factor_bound n fp A L_hat U_hat
+      hepsLU hL_diag hU_diag hLU hn
+  let c := epsLU + 2 * gamma fp n + gamma fp n ^ 2
+  have hRes :=
+    methodA_right_residual_of_column_bound n A L_hat U_hat
+      (methodAComputedInverse fp n L_hat U_hat) c hCol
+  have hFwd :=
+    methodA_forward_error_of_residual_bound n A (nonsingInv n A) L_hat U_hat
+      (methodAComputedInverse fp n L_hat U_hat) c hInv.1 hRes i j
+  rw [abs_sub_comm]
+  exact le_trans hFwd (hBudget i j)
 
 -- §13.3.2  Method B: compute U⁻¹ then solve XL̂ = X_U
 

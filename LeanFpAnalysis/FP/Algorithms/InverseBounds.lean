@@ -361,6 +361,314 @@ theorem triInv_row_sum_upperBound (n : ℕ) (U U_inv : Fin n → Fin n → ℝ)
         mul_le_mul_of_nonneg_left hV_sum (by positivity)
     _ = 2 ^ (n - 1 - i.val) * (1 / α) := by ring
 
+/-- **Higham Theorem 8.13, matrix ∞-norm form**.
+
+    Under the repository's diagonal-dominance hypothesis for an upper
+    triangular matrix, the row-sum theorem gives the usual
+    `‖U⁻¹‖∞ ≤ 2^(n-1) / min_i |u_ii|` estimate.  The explicit index `i0`
+    supplies the nonempty witness for the finite minimum. -/
+theorem triInv_infNorm_upperBound (n : ℕ) (U U_inv : Fin n → Fin n → ℝ)
+    (i0 : Fin n)
+    (hDD : IsDiagDominantUpper n U)
+    (hInv : IsInverse n U U_inv) :
+    infNorm U_inv ≤
+      2 ^ (n - 1) *
+        (1 / Finset.inf' Finset.univ ⟨i0, Finset.mem_univ i0⟩
+          (fun k => |U k k|)) := by
+  classical
+  have hU_diag : ∀ i : Fin n, U i i ≠ 0 := hDD.2.1
+  let α : ℝ :=
+    Finset.inf' Finset.univ ⟨i0, Finset.mem_univ i0⟩
+      (fun k : Fin n => |U k k|)
+  have hα_pos : 0 < α := by
+    rw [Finset.lt_inf'_iff]
+    intro k _
+    exact abs_pos.mpr (hU_diag k)
+  apply infNorm_le_of_row_sum_le
+  · intro i
+    have hrow := triInv_row_sum_upperBound n U U_inv hDD hInv i
+    have hmin_eq :
+        Finset.inf' Finset.univ ⟨i, Finset.mem_univ i⟩
+            (fun k : Fin n => |U k k|) = α := by
+      apply le_antisymm
+      · apply Finset.le_inf'
+        intro r hr
+        exact Finset.inf'_le (f := fun k : Fin n => |U k k|) hr
+      · unfold α
+        apply Finset.le_inf'
+        intro r hr
+        exact Finset.inf'_le (f := fun k : Fin n => |U k k|) hr
+    rw [hmin_eq] at hrow
+    have hpow :
+        (2 : ℝ) ^ (n - 1 - i.val) ≤ (2 : ℝ) ^ (n - 1) := by
+      exact pow_le_pow_right₀ (by norm_num) (Nat.sub_le (n - 1) i.val)
+    have hinv_nonneg : 0 ≤ 1 / α :=
+      div_nonneg zero_le_one (le_of_lt hα_pos)
+    calc
+      ∑ j : Fin n, |U_inv i j|
+          ≤ 2 ^ (n - 1 - i.val) * (1 / α) := hrow
+      _ ≤ 2 ^ (n - 1) * (1 / α) :=
+          mul_le_mul_of_nonneg_right hpow hinv_nonneg
+  · exact mul_nonneg (by positivity) (div_nonneg zero_le_one (le_of_lt hα_pos))
+
+/-- Squared budget form of `triInv_infNorm_upperBound`.
+
+    This is the form used by the QR bottleneck route: if the advertised
+    budget `K` dominates the Higham ∞-norm estimate squared, then it also
+    dominates `(n : ℝ) * ‖U⁻¹‖∞²`. -/
+theorem triInv_infNorm_sq_budget_of_diagDominantUpper (n : ℕ)
+    (U U_inv : Fin n → Fin n → ℝ)
+    (i0 : Fin n) (K : ℝ)
+    (hDD : IsDiagDominantUpper n U)
+    (hInv : IsInverse n U U_inv)
+    (hK :
+      (n : ℝ) *
+          (2 ^ (n - 1) *
+            (1 / Finset.inf' Finset.univ ⟨i0, Finset.mem_univ i0⟩
+          (fun k => |U k k|))) ^ 2 ≤ K) :
+    (n : ℝ) * infNorm U_inv ^ 2 ≤ K := by
+  classical
+  have hU_diag : ∀ i : Fin n, U i i ≠ 0 := hDD.2.1
+  let α : ℝ :=
+    Finset.inf' Finset.univ ⟨i0, Finset.mem_univ i0⟩
+      (fun k : Fin n => |U k k|)
+  let B : ℝ := 2 ^ (n - 1) * (1 / α)
+  have hα_pos : 0 < α := by
+    rw [Finset.lt_inf'_iff]
+    intro k _
+    exact abs_pos.mpr (hU_diag k)
+  have hB_nonneg : 0 ≤ B := by
+    exact mul_nonneg (by positivity) (div_nonneg zero_le_one (le_of_lt hα_pos))
+  have hnorm : infNorm U_inv ≤ B := by
+    simpa [B, α] using triInv_infNorm_upperBound n U U_inv i0 hDD hInv
+  have hsquare : infNorm U_inv ^ 2 ≤ B ^ 2 := by
+    exact sq_le_sq.mpr (by
+      simpa [abs_of_nonneg (infNorm_nonneg U_inv), abs_of_nonneg hB_nonneg]
+        using hnorm)
+  have hmul : (n : ℝ) * infNorm U_inv ^ 2 ≤ (n : ℝ) * B ^ 2 :=
+    mul_le_mul_of_nonneg_left hsquare (Nat.cast_nonneg n)
+  exact hmul.trans (by simpa [B, α] using hK)
+
+/-- Determinant-facing form of the diagonal-dominant triangular inverse
+    budget.  A nonzero determinant supplies the repository nonsingular inverse,
+    so callers do not need to pass an explicit inverse witness. -/
+theorem triInv_infNorm_sq_budget_of_diagDominantUpper_det_ne_zero (n : ℕ)
+    (U : Fin n → Fin n → ℝ)
+    (i0 : Fin n) (K : ℝ)
+    (hDD : IsDiagDominantUpper n U)
+    (hdet : Matrix.det (U : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hK :
+      (n : ℝ) *
+          (2 ^ (n - 1) *
+            (1 / Finset.inf' Finset.univ ⟨i0, Finset.mem_univ i0⟩
+          (fun k => |U k k|))) ^ 2 ≤ K) :
+    (n : ℝ) * infNorm (nonsingInv n U) ^ 2 ≤ K :=
+  triInv_infNorm_sq_budget_of_diagDominantUpper n U (nonsingInv n U)
+    i0 K hDD (isInverse_nonsingInv_of_det_ne_zero n U hdet) hK
+
+/-- The explicit squared inverse-∞ budget produced by Higham's
+    diagonal-dominant triangular inverse estimate. -/
+noncomputable def diagDominantUpperInvBudgetExpr (n : ℕ)
+    (U : Fin n → Fin n → ℝ) (i0 : Fin n) : ℝ :=
+  (n : ℝ) *
+    (2 ^ (n - 1) *
+      (1 / Finset.inf' Finset.univ ⟨i0, Finset.mem_univ i0⟩
+        (fun k : Fin n => |U k k|))) ^ 2
+
+/-- The explicit diagonal-dominant inverse budget is positive. -/
+theorem diagDominantUpperInvBudgetExpr_pos (n : ℕ)
+    (U : Fin n → Fin n → ℝ) (i0 : Fin n)
+    (hDD : IsDiagDominantUpper n U) :
+    0 < diagDominantUpperInvBudgetExpr n U i0 := by
+  classical
+  have hn_nat : 0 < n := lt_of_le_of_lt (Nat.zero_le i0.val) i0.isLt
+  have hn : (0 : ℝ) < n := by exact_mod_cast hn_nat
+  let α : ℝ :=
+    Finset.inf' Finset.univ ⟨i0, Finset.mem_univ i0⟩
+      (fun k : Fin n => |U k k|)
+  have hα : 0 < α := by
+    rw [Finset.lt_inf'_iff]
+    intro k _
+    exact abs_pos.mpr (hDD.2.1 k)
+  have hpow : 0 < (2 : ℝ) ^ (n - 1) := pow_pos (by norm_num) _
+  have hinv : 0 < 1 / α := one_div_pos.mpr hα
+  have hbudget : 0 <
+      2 ^ (n - 1) *
+        (1 / Finset.inf' Finset.univ ⟨i0, Finset.mem_univ i0⟩
+          (fun k : Fin n => |U k k|)) := by
+    simpa [α] using mul_pos hpow hinv
+  unfold diagDominantUpperInvBudgetExpr
+  exact mul_pos hn (sq_pos_of_pos hbudget)
+
+/-- Determinant-facing diagonal-dominant inverse budget with the concrete
+    auxiliary value `K = 2 * D`, where `D` is the displayed Higham budget. -/
+theorem triInv_infNorm_sq_budget_of_diagDominantUpper_det_ne_zero_twice_budget
+    (n : ℕ) (U : Fin n → Fin n → ℝ) (i0 : Fin n)
+    (hDD : IsDiagDominantUpper n U)
+    (hdet : Matrix.det (U : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    (n : ℝ) * infNorm (nonsingInv n U) ^ 2 ≤
+      2 * diagDominantUpperInvBudgetExpr n U i0 := by
+  classical
+  refine
+    triInv_infNorm_sq_budget_of_diagDominantUpper_det_ne_zero
+      n U i0 (2 * diagDominantUpperInvBudgetExpr n U i0)
+      hDD hdet ?_
+  have hD_nonneg :
+      0 ≤ diagDominantUpperInvBudgetExpr n U i0 :=
+    le_of_lt (diagDominantUpperInvBudgetExpr_pos n U i0 hDD)
+  have hle :
+      diagDominantUpperInvBudgetExpr n U i0 ≤
+        2 * diagDominantUpperInvBudgetExpr n U i0 := by
+    linarith
+  simpa [diagDominantUpperInvBudgetExpr] using hle
+
+/-- Product-form sufficient condition for the direct compact smallness
+    inequality used by the concrete dual-budget QR route. -/
+theorem mul_sq_lt_inv_two_mul_of_two_mul_mul_sq_lt_one
+    {m B D : ℝ} (hD : 0 < D)
+    (hsmall : 2 * D * (m * B ^ 2) < 1) :
+    m * B ^ 2 < 1 / (2 * D) := by
+  have hden : 0 < 2 * D := by nlinarith
+  rw [lt_div_iff₀ hden]
+  nlinarith [hsmall]
+
+/-- Monotone replacement for the product-form compact smallness condition.
+
+    If a nonnegative local compact budget is bounded by a larger nonnegative
+    computed-loop budget, then product smallness for the larger budget implies
+    product smallness for the local one. -/
+theorem two_mul_mul_sq_lt_one_of_nonneg_le
+    {D m b B : ℝ}
+    (hD : 0 ≤ D) (hm : 0 ≤ m) (hb : 0 ≤ b) (hbB : b ≤ B)
+    (hsmall : 2 * D * (m * B ^ 2) < 1) :
+    2 * D * (m * b ^ 2) < 1 := by
+  have hB : 0 ≤ B := le_trans hb hbB
+  have hsq : b ^ 2 ≤ B ^ 2 := by
+    exact sq_le_sq.mpr (by
+      simpa [abs_of_nonneg hb, abs_of_nonneg hB] using hbB)
+  have hmul : m * b ^ 2 ≤ m * B ^ 2 :=
+    mul_le_mul_of_nonneg_left hsq hm
+  have hprod : 2 * D * (m * b ^ 2) ≤ 2 * D * (m * B ^ 2) :=
+    mul_le_mul_of_nonneg_left hmul (by nlinarith)
+  exact lt_of_le_of_lt hprod hsmall
+
+/-- Positivity of the inverse budget alone does not imply the product-form
+    compact smallness condition. The missing QR hypothesis must include a
+    genuine bound on the compact update budget, not just `D > 0`. -/
+theorem not_forall_pos_implies_two_mul_mul_sq_lt_one :
+    ¬ (∀ D B : ℝ, 0 < D → 2 * D * ((1 : ℝ) * B ^ 2) < 1) := by
+  intro h
+  have hbad := h 1 1 (by norm_num)
+  norm_num at hbad
+
+/-- Diagonal dominance and the displayed Higham inverse budget still do not
+    imply the product-form compact smallness condition without a genuine bound
+    on the compact update budget.  Even the `1 x 1` identity block fails if the
+    compact budget is chosen as `B = 1`. -/
+theorem not_forall_diagDominantUpper_implies_two_mul_budget_expr_mul_sq_lt_one :
+    ¬ (∀ U : Fin 1 → Fin 1 → ℝ, IsDiagDominantUpper 1 U →
+        ∀ i0 : Fin 1,
+          2 * diagDominantUpperInvBudgetExpr 1 U i0 *
+              ((1 : ℝ) * (1 : ℝ) ^ 2) < 1) := by
+  intro h
+  let U : Fin 1 → Fin 1 → ℝ := fun _ _ => 1
+  have hDD : IsDiagDominantUpper 1 U := by
+    refine ⟨?_, ?_, ?_⟩
+    · intro i j hji
+      fin_cases i
+      fin_cases j
+      omega
+    · intro i
+      fin_cases i
+      norm_num [U]
+    · intro i j hij
+      fin_cases i
+      fin_cases j
+      omega
+  have hbad := h U hDD ⟨0, by norm_num⟩
+  norm_num [diagDominantUpperInvBudgetExpr, U] at hbad
+
+/-- Product compact smallness plus upper-triangular nonsingularity still does
+    not imply diagonal dominance.
+
+    The witness is the same `2 x 2` matrix `[[1,2],[0,1]]` from
+    `TriangularForwardBound.lean`.  Its leading diagonal entries make the
+    displayed diagonal-dominant inverse budget finite, and the compact budget
+    can be chosen small enough to satisfy the product inequality, but the block
+    is not diagonally dominant.  Thus the remaining QR bottleneck cannot merge
+    the product-smallness assumption into a proof of diagonal dominance. -/
+theorem not_forall_upper_tri_det_ne_zero_product_budget_implies_diagDominant :
+    ¬ (∀ (U : Fin 2 → Fin 2 → ℝ) (B : ℝ),
+      (∀ i j : Fin 2, j.val < i.val → U i j = 0) →
+      Matrix.det (U : Matrix (Fin 2) (Fin 2) ℝ) ≠ 0 →
+      0 < B →
+      2 * diagDominantUpperInvBudgetExpr 2 U ⟨0, by norm_num⟩ *
+          ((1 : ℝ) * B ^ 2) < 1 →
+      IsDiagDominantUpper 2 U) := by
+  intro h
+  have hdiagInf :
+      Finset.inf' Finset.univ
+          ⟨(⟨0, by norm_num⟩ : Fin 2), Finset.mem_univ _⟩
+          (fun k : Fin 2 => |diagDominanceCounterexample2 k k|) = 1 := by
+    apply Finset.inf'_eq_of_forall
+    intro k _
+    fin_cases k <;> norm_num [diagDominanceCounterexample2]
+  have hprod :
+      2 *
+          diagDominantUpperInvBudgetExpr 2 diagDominanceCounterexample2
+            ⟨0, by norm_num⟩ *
+        ((1 : ℝ) * ((1 : ℝ) / 8) ^ 2) < 1 := by
+    dsimp [diagDominantUpperInvBudgetExpr]
+    rw [hdiagInf]
+    norm_num
+  exact
+    diagDominanceCounterexample2_not_diagDominant
+      (h diagDominanceCounterexample2 ((1 : ℝ) / 8)
+        diagDominanceCounterexample2_upper
+        diagDominanceCounterexample2_det_ne_zero
+        (by norm_num)
+        hprod)
+
+/-- Upper-triangular nonsingularity plus a finite `κ∞` budget still does not
+    imply the product-form compact smallness condition.
+
+    The compact-update side condition cannot be recovered from conditioning
+    data alone: the same nonsingular triangular witness `[[1,2],[0,1]]`
+    satisfies a finite `κ∞` bound, but choosing compact budget `B = 1` makes
+    the displayed product inequality false. -/
+theorem not_forall_upper_tri_det_ne_zero_kappaInf_bound_implies_two_mul_budget_expr_mul_sq_lt_one :
+    ¬ (∀ (U : Fin 2 → Fin 2 → ℝ) (κ B : ℝ),
+      (∀ i j : Fin 2, j.val < i.val → U i j = 0) →
+      Matrix.det (U : Matrix (Fin 2) (Fin 2) ℝ) ≠ 0 →
+      kappaInf 2 (by norm_num : 0 < 2)
+        (U : Matrix (Fin 2) (Fin 2) ℝ)
+        (nonsingInv 2 (U : Matrix (Fin 2) (Fin 2) ℝ)) ≤ κ →
+      0 < B →
+      2 * diagDominantUpperInvBudgetExpr 2 U ⟨0, by norm_num⟩ *
+          ((1 : ℝ) * B ^ 2) < 1) := by
+  intro h
+  have hdiagInf :
+      Finset.inf' Finset.univ
+          ⟨(⟨0, by norm_num⟩ : Fin 2), Finset.mem_univ _⟩
+          (fun k : Fin 2 => |diagDominanceCounterexample2 k k|) = 1 := by
+    apply Finset.inf'_eq_of_forall
+    intro k _
+    fin_cases k <;> norm_num [diagDominanceCounterexample2]
+  let κ : ℝ :=
+    kappaInf 2 (by norm_num : 0 < 2)
+      (diagDominanceCounterexample2 : Matrix (Fin 2) (Fin 2) ℝ)
+      (nonsingInv 2
+        (diagDominanceCounterexample2 : Matrix (Fin 2) (Fin 2) ℝ))
+  have hbad :=
+    h diagDominanceCounterexample2 κ 1
+      diagDominanceCounterexample2_upper
+      diagDominanceCounterexample2_det_ne_zero
+      (by rfl)
+      (by norm_num)
+  dsimp [diagDominantUpperInvBudgetExpr] at hbad
+  rw [hdiagInf] at hbad
+  norm_num at hbad
+
 -- ============================================================
 -- Lower triangular inverse infrastructure
 -- ============================================================

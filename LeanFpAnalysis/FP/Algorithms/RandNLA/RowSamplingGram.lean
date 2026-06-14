@@ -55,12 +55,42 @@ noncomputable def rowSketchGram {steps n : ℕ}
     (B : Fin steps → Fin n → ℝ) : Fin n → Fin n → ℝ :=
   fun j k => ∑ t : Fin steps, B t j * B t k
 
+/-- Quadratic form of a row-sketch Gram matrix as a squared sketch norm. -/
+theorem vecNorm2Sq_rowSketch_linearCombination_eq_quadratic_rowSketchGram
+    {steps n : ℕ} (B : Fin steps → Fin n → ℝ) (y : Fin n → ℝ) :
+    vecNorm2Sq (fun t : Fin steps => ∑ j : Fin n, B t j * y j) =
+      ∑ j : Fin n, y j * matMulVec n (rowSketchGram B) y j := by
+  classical
+  unfold vecNorm2Sq matMulVec rowSketchGram
+  simp_rw [pow_two, Finset.sum_mul, Finset.mul_sum]
+  rw [Finset.sum_comm]
+  apply Finset.sum_congr rfl
+  intro j _
+  rw [Finset.sum_comm]
+  apply Finset.sum_congr rfl
+  intro k _
+  apply Finset.sum_congr rfl
+  intro t _
+  ring
+
 /-- Exact sampled Gram matrix `(ÃᵀÃ)` for an Algorithm 2 trace. -/
 noncomputable def rowSampleGram {m n steps : ℕ} (s : ℕ)
     (A : Fin m → Fin n → ℝ) (samples : RowTrace m steps) :
     Fin n → Fin n → ℝ :=
   fun j k => ∑ t : Fin steps,
     rowSampleSketch s A samples t j * rowSampleSketch s A samples t k
+
+/-- Quadratic form of an exact Algorithm 2 sampled Gram matrix. -/
+theorem vecNorm2Sq_rowSampleSketch_linearCombination_eq_quadratic_rowSampleGram
+    {m n steps : ℕ} (s : ℕ)
+    (A : Fin m → Fin n → ℝ) (samples : RowTrace m steps)
+    (y : Fin n → ℝ) :
+    vecNorm2Sq
+        (fun t : Fin steps => ∑ j : Fin n, rowSampleSketch s A samples t j * y j) =
+      ∑ j : Fin n, y j * matMulVec n (rowSampleGram s A samples) y j := by
+  simpa [rowSampleGram] using
+    vecNorm2Sq_rowSketch_linearCombination_eq_quadratic_rowSketchGram
+      (B := rowSampleSketch s A samples) y
 
 /-- Floating-point sampled Gram matrix formed from the rounded sampled sketch. -/
 noncomputable def fl_rowSampleGram (fp : FPModel) {m n steps : ℕ} (s : ℕ)
@@ -80,6 +110,26 @@ noncomputable def fl_rowSampleGramDot (fp : FPModel) {m n steps : ℕ} (s : ℕ)
     fl_dotProduct fp steps
       (fun t => fl_rowSampleSketch fp s A samples t j)
       (fun t => fl_rowSampleSketch fp s A samples t k)
+
+/-- Floating-point sampled Gram matrix formed from a sketch whose row-scale
+    denominators were first computed approximately. -/
+noncomputable def fl_rowSampleGramWithComputedDen (fp : FPModel)
+    {m n steps : ℕ} (A : Fin m → Fin n → ℝ)
+    (den : Fin m → ℝ) (samples : RowTrace m steps) :
+    Fin n → Fin n → ℝ :=
+  rowSketchGram (fl_rowSampleSketchWithComputedDen fp A den samples)
+
+/-- Fully floating-point sampled Gram matrix for the computed-denominator
+    Algorithm 2 path: compute denominators, round row scaling, then compute
+    Gram entries with floating-point dot products. -/
+noncomputable def fl_rowSampleGramDotWithComputedDen (fp : FPModel)
+    {m n steps : ℕ} (A : Fin m → Fin n → ℝ)
+    (den : Fin m → ℝ) (samples : RowTrace m steps) :
+    Fin n → Fin n → ℝ :=
+  fun j k =>
+    fl_dotProduct fp steps
+      (fun t => fl_rowSampleSketchWithComputedDen fp A den samples t j)
+      (fun t => fl_rowSampleSketchWithComputedDen fp A den samples t k)
 
 -- ============================================================
 -- Marginals of the independent row trace product law
@@ -581,6 +631,77 @@ noncomputable def rowOuterGramSample {m n : ℕ}
     (A : Fin m → Fin n → ℝ) (i : Fin m) (j k : Fin n) : ℝ :=
   (A i j * A i k) / rowSqNormProb A i
 
+/-- If a row has zero sampling probability, then its row outer-product
+    estimator is the zero matrix. -/
+theorem rowOuterGramSample_eq_zero_of_prob_zero {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (hden : 0 < rowSqNormProbDen A)
+    (i : Fin m) (hpzero : rowSqNormProb A i = 0) :
+    rowOuterGramSample A i = fun _j _k : Fin n => 0 := by
+  ext j k
+  have hrowzero : rowNormSq A i = 0 := by
+    unfold rowSqNormProb at hpzero
+    rcases (div_eq_zero_iff.mp hpzero) with hrow | hdenzero
+    · exact hrow
+    · exact False.elim (hden.ne' hdenzero)
+  have hij : A i j = 0 := (rowNormSq_eq_zero_iff A i).mp hrowzero j
+  have hik : A i k = 0 := (rowNormSq_eq_zero_iff A i).mp hrowzero k
+  simp [rowOuterGramSample, hpzero, hij, hik]
+
+/-- Quadratic form of one row outer-product estimator.  On positive-probability
+    rows it is the squared row/vector inner product divided by the sampling
+    probability. -/
+theorem finiteQuadraticForm_rowOuterGramSample_eq_sq_div {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (i : Fin m)
+    (hprob : 0 < rowSqNormProb A i) (x : Fin n → ℝ) :
+    finiteQuadraticForm (fun j k : Fin n => rowOuterGramSample A i j k) x =
+      (∑ j : Fin n, A i j * x j) ^ 2 / rowSqNormProb A i := by
+  classical
+  have hp_ne : rowSqNormProb A i ≠ 0 := ne_of_gt hprob
+  unfold finiteQuadraticForm finiteMatVec rowOuterGramSample
+  simp_rw [div_eq_mul_inv]
+  calc
+    ∑ j : Fin n,
+        x j *
+          (∑ k : Fin n, (A i j * A i k) * (rowSqNormProb A i)⁻¹ * x k)
+        =
+      ∑ j : Fin n,
+        x j * (A i j * (rowSqNormProb A i)⁻¹ *
+          ∑ k : Fin n, A i k * x k) := by
+          apply Finset.sum_congr rfl
+          intro j _
+          congr 1
+          rw [Finset.mul_sum]
+          apply Finset.sum_congr rfl
+          intro k _
+          ring
+    _ =
+      (∑ j : Fin n, A i j * x j) *
+        ((rowSqNormProb A i)⁻¹ * ∑ k : Fin n, A i k * x k) := by
+          rw [Finset.sum_mul]
+          apply Finset.sum_congr rfl
+          intro j _
+          ring
+    _ = (∑ j : Fin n, A i j * x j) ^ 2 *
+        (rowSqNormProb A i)⁻¹ := by ring
+    _ = (∑ j : Fin n, A i j * x j) ^ 2 / rowSqNormProb A i := by
+          rw [div_eq_mul_inv]
+
+/-- A one-step row outer-product estimator is positive semidefinite. -/
+theorem finitePSD_rowOuterGramSample {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (hden : 0 < rowSqNormProbDen A)
+    (i : Fin m) :
+    finitePSD (fun j k : Fin n => rowOuterGramSample A i j k) := by
+  classical
+  intro x
+  by_cases hpzero : rowSqNormProb A i = 0
+  · have hzero := rowOuterGramSample_eq_zero_of_prob_zero A hden i hpzero
+    simp [finiteQuadraticForm, finiteMatVec, hzero]
+  · have hp_nonneg : 0 ≤ rowSqNormProb A i := rowSqNormProb_nonneg A hden i
+    have hprob : 0 < rowSqNormProb A i :=
+      lt_of_le_of_ne hp_nonneg (Ne.symm hpzero)
+    rw [finiteQuadraticForm_rowOuterGramSample_eq_sq_div A i hprob x]
+    exact div_nonneg (sq_nonneg _) hp_nonneg
+
 /-- The probability weight cancels the `1 / pᵢ` in a row outer-product
     estimator. The zero-probability case is covered because `pᵢ = 0` implies
     row `i` is zero. -/
@@ -667,6 +788,34 @@ theorem rowSampleGram_eq_rowOuterGramSample_average {m n s : ℕ}
     _ = (∑ t : Fin s, rowOuterGramSample A (samples t) j k) / (s : ℝ) := by
           simp_rw [div_eq_mul_inv]
           rw [Finset.sum_mul]
+
+/-- The sampled Gram error against the identity is the average of the centered
+row outer-product estimators. -/
+theorem rowSampleGram_sub_finiteIdMatrix_eq_centered_rowOuterGramSample_average
+    {m n s : ℕ} (A : Fin m → Fin n → ℝ)
+    (hden : 0 < rowSqNormProbDen A) (hs : 0 < (s : ℝ))
+    (samples : RowTrace m s) (j k : Fin n) :
+    rowSampleGram s A samples j k - finiteIdMatrix j k =
+      (∑ t : Fin s,
+        (rowOuterGramSample A (samples t) j k - finiteIdMatrix j k)) /
+          (s : ℝ) := by
+  have hs_ne : (s : ℝ) ≠ 0 := ne_of_gt hs
+  rw [rowSampleGram_eq_rowOuterGramSample_average A hden hs samples j k]
+  calc
+    (∑ t : Fin s, rowOuterGramSample A (samples t) j k) / (s : ℝ) -
+        finiteIdMatrix j k =
+      ((∑ t : Fin s, rowOuterGramSample A (samples t) j k) -
+          (s : ℝ) * finiteIdMatrix j k) / (s : ℝ) := by
+        field_simp [hs_ne]
+    _ =
+      ((∑ t : Fin s, rowOuterGramSample A (samples t) j k) -
+          (∑ _t : Fin s, finiteIdMatrix j k)) / (s : ℝ) := by
+        simp
+    _ =
+      (∑ t : Fin s,
+        (rowOuterGramSample A (samples t) j k - finiteIdMatrix j k)) /
+          (s : ℝ) := by
+        rw [Finset.sum_sub_distrib]
 
 /-- Coordinate second-moment formula for the Algorithm 2 Gram estimator. -/
 theorem rowSqNormTraceProbability_expectationReal_rowSampleGram_entry_error_sq
@@ -1003,6 +1152,160 @@ theorem rowSampleGram_frob_error_bound_of_entrywise
     exact rowSampleGram_entry_error_bound_of_entrywise
       s A samples Bhat u hu hentry j k
 
+/-- Generic deterministic entrywise Gram perturbation from relative row-sketch
+    entry errors. If `Bhat` is componentwise within relative error `u` of an
+    exact sketch `B`, then each Gram entry changes by at most
+    `(2u + u²) ∑ₜ |B_{tj}| |B_{tk}|`. -/
+theorem rowSketchGram_entry_error_bound_of_entrywise
+    {steps n : ℕ} (B Bhat : Fin steps → Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u)
+    (hentry : ∀ t j, |Bhat t j - B t j| ≤ |B t j| * u)
+    (j k : Fin n) :
+    |rowSketchGram Bhat j k - rowSketchGram B j k| ≤
+      (2 * u + u ^ 2) *
+        ∑ t : Fin steps, |B t j| * |B t k| := by
+  classical
+  unfold rowSketchGram
+  rw [← Finset.sum_sub_distrib]
+  calc
+    |∑ t : Fin steps, (Bhat t j * Bhat t k - B t j * B t k)|
+        ≤ ∑ t : Fin steps,
+            |Bhat t j * Bhat t k - B t j * B t k| := by
+          exact Finset.abs_sum_le_sum_abs _ _
+    _ ≤ ∑ t : Fin steps,
+          (2 * u + u ^ 2) * (|B t j| * |B t k|) := by
+          apply Finset.sum_le_sum
+          intro t _
+          let bj := B t j
+          let bk := B t k
+          let ej := Bhat t j - bj
+          let ek := Bhat t k - bk
+          have hj : |ej| ≤ |bj| * u := hentry t j
+          have hk : |ek| ≤ |bk| * u := hentry t k
+          have hBj : Bhat t j = bj + ej := by
+            simp [ej, bj]
+          have hBk : Bhat t k = bk + ek := by
+            simp [ek, bk]
+          have hdecomp :
+              Bhat t j * Bhat t k - bj * bk =
+                ej * bk + bj * ek + ej * ek := by
+            rw [hBj, hBk]
+            ring
+          calc
+            |Bhat t j * Bhat t k - bj * bk|
+                = |ej * bk + bj * ek + ej * ek| := by rw [hdecomp]
+            _ ≤ |ej * bk| + |bj * ek| + |ej * ek| := by
+                exact abs_add_three _ _ _
+            _ = |ej| * |bk| + |bj| * |ek| + |ej| * |ek| := by
+                rw [abs_mul, abs_mul, abs_mul]
+            _ ≤ (|bj| * u) * |bk| + |bj| * (|bk| * u) +
+                  (|bj| * u) * (|bk| * u) := by
+                gcongr
+            _ = (2 * u + u ^ 2) * (|bj| * |bk|) := by ring
+    _ = (2 * u + u ^ 2) *
+          ∑ t : Fin steps, |B t j| * |B t k| := by
+          rw [Finset.mul_sum]
+
+/-- Generic Frobenius-norm Gram perturbation bound induced by componentwise
+    relative stability of an arbitrary row sketch. -/
+theorem rowSketchGram_frob_error_bound_of_entrywise
+    {steps n : ℕ} (B Bhat : Fin steps → Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u)
+    (hentry : ∀ t j, |Bhat t j - B t j| ≤ |B t j| * u) :
+    frobNorm
+      (fun j k => rowSketchGram Bhat j k - rowSketchGram B j k) ≤
+      frobNorm
+        (fun j k =>
+          (2 * u + u ^ 2) *
+            ∑ t : Fin steps, |B t j| * |B t k|) := by
+  classical
+  apply frobNorm_le_of_entry_abs_le
+  · intro j k
+    apply mul_nonneg
+    · nlinarith [hu, sq_nonneg u]
+    · apply Finset.sum_nonneg
+      intro t _
+      exact mul_nonneg (abs_nonneg _) (abs_nonneg _)
+  · intro j k
+    exact rowSketchGram_entry_error_bound_of_entrywise
+      B Bhat u hu hentry j k
+
+/-- Generic deterministic entrywise Gram perturbation from absolute row-sketch
+    entry errors.  If `Bhat` is within an absolute error matrix `E` of `B`,
+    then the Gram perturbation is bounded by the visible mixed exact/computed
+    row products. -/
+theorem rowSketchGram_entry_abs_error_bound_of_entrywise
+    {steps n : ℕ} (B Bhat : Fin steps → Fin n → ℝ)
+    (E : Fin steps → Fin n → ℝ)
+    (_hE_nonneg : ∀ (t : Fin steps) (j : Fin n), 0 ≤ E t j)
+    (hentry : ∀ (t : Fin steps) (j : Fin n),
+      |Bhat t j - B t j| ≤ E t j)
+    (j k : Fin n) :
+    |rowSketchGram Bhat j k - rowSketchGram B j k| ≤
+      ∑ t : Fin steps,
+        (E t j * |Bhat t k| + |B t j| * E t k) := by
+  classical
+  unfold rowSketchGram
+  rw [← Finset.sum_sub_distrib]
+  calc
+    |∑ t : Fin steps, (Bhat t j * Bhat t k - B t j * B t k)|
+        ≤ ∑ t : Fin steps,
+            |Bhat t j * Bhat t k - B t j * B t k| := by
+          exact Finset.abs_sum_le_sum_abs _ _
+    _ ≤ ∑ t : Fin steps,
+          (E t j * |Bhat t k| + |B t j| * E t k) := by
+          apply Finset.sum_le_sum
+          intro t _
+          let ej := Bhat t j - B t j
+          let ek := Bhat t k - B t k
+          have hj : |ej| ≤ E t j := hentry t j
+          have hk : |ek| ≤ E t k := hentry t k
+          have hBj : Bhat t j = B t j + ej := by
+            simp [ej]
+          have hBk : Bhat t k = B t k + ek := by
+            simp [ek]
+          have hdecomp :
+              Bhat t j * Bhat t k - B t j * B t k =
+                ej * Bhat t k + B t j * ek := by
+            rw [hBj, hBk]
+            ring
+          calc
+            |Bhat t j * Bhat t k - B t j * B t k|
+                = |ej * Bhat t k + B t j * ek| := by rw [hdecomp]
+            _ ≤ |ej * Bhat t k| + |B t j * ek| := abs_add_le _ _
+            _ = |ej| * |Bhat t k| + |B t j| * |ek| := by
+                rw [abs_mul, abs_mul]
+            _ ≤ E t j * |Bhat t k| + |B t j| * E t k := by
+                exact add_le_add
+                  (mul_le_mul_of_nonneg_right hj (abs_nonneg _))
+                  (mul_le_mul_of_nonneg_left hk (abs_nonneg _))
+
+/-- Frobenius-norm Gram perturbation bound induced by absolute entrywise
+    row-sketch errors. -/
+theorem rowSketchGram_frob_abs_error_bound_of_entrywise
+    {steps n : ℕ} (B Bhat : Fin steps → Fin n → ℝ)
+    (E : Fin steps → Fin n → ℝ)
+    (hE_nonneg : ∀ (t : Fin steps) (j : Fin n), 0 ≤ E t j)
+    (hentry : ∀ (t : Fin steps) (j : Fin n),
+      |Bhat t j - B t j| ≤ E t j) :
+    frobNorm
+      (fun j k => rowSketchGram Bhat j k - rowSketchGram B j k) ≤
+      frobNorm
+        (fun j k =>
+          ∑ t : Fin steps,
+            (E t j * |Bhat t k| + |B t j| * E t k)) := by
+  classical
+  apply frobNorm_le_of_entry_abs_le
+  · intro j k
+    apply Finset.sum_nonneg
+    intro t _
+    exact add_nonneg
+      (mul_nonneg (hE_nonneg t j) (abs_nonneg _))
+      (mul_nonneg (abs_nonneg _) (hE_nonneg t k))
+  · intro j k
+    exact rowSketchGram_entry_abs_error_bound_of_entrywise
+      B Bhat E hE_nonneg hentry j k
+
 /-- A componentwise relative perturbation bounds the absolute value of each
     perturbed sketch entry. -/
 theorem rowSketch_abs_perturbed_le
@@ -1057,6 +1360,286 @@ theorem rowSketch_abs_perturbed_mul_sum_le
             exact rowSketch_abs_perturbed_mul_le B Bhat u hu hentry t j k
     _ = (1 + u) ^ 2 * ∑ t : Fin steps, |B t j| * |B t k| := by
             rw [Finset.mul_sum]
+
+/-- An absolute entrywise perturbation bounds the absolute value of each
+    perturbed sketch entry. -/
+theorem rowSketch_abs_perturbed_le_of_abs_error
+    {steps n : ℕ} (B Bhat : Fin steps → Fin n → ℝ)
+    (E : Fin steps → Fin n → ℝ)
+    (_hE_nonneg : ∀ (t : Fin steps) (j : Fin n), 0 ≤ E t j)
+    (hentry : ∀ (t : Fin steps) (j : Fin n),
+      |Bhat t j - B t j| ≤ E t j)
+    (t : Fin steps) (j : Fin n) :
+    |Bhat t j| ≤ |B t j| + E t j := by
+  calc
+    |Bhat t j|
+        = |(Bhat t j - B t j) + B t j| := by
+            congr 1
+            ring
+    _ ≤ |Bhat t j - B t j| + |B t j| := abs_add_le _ _
+    _ ≤ E t j + |B t j| := by
+            exact add_le_add (hentry t j) le_rfl
+    _ = |B t j| + E t j := by ring
+
+/-- Product form of `rowSketch_abs_perturbed_le_of_abs_error`. -/
+theorem rowSketch_abs_perturbed_mul_le_of_abs_error
+    {steps n : ℕ} (B Bhat : Fin steps → Fin n → ℝ)
+    (E : Fin steps → Fin n → ℝ)
+    (hE_nonneg : ∀ (t : Fin steps) (j : Fin n), 0 ≤ E t j)
+    (hentry : ∀ (t : Fin steps) (j : Fin n),
+      |Bhat t j - B t j| ≤ E t j)
+    (t : Fin steps) (j k : Fin n) :
+    |Bhat t j| * |Bhat t k| ≤
+      (|B t j| + E t j) * (|B t k| + E t k) := by
+  have hj :=
+    rowSketch_abs_perturbed_le_of_abs_error
+      B Bhat E hE_nonneg hentry t j
+  have hk :=
+    rowSketch_abs_perturbed_le_of_abs_error
+      B Bhat E hE_nonneg hentry t k
+  have hright_nonneg : 0 ≤ |B t j| + E t j :=
+    add_nonneg (abs_nonneg _) (hE_nonneg t j)
+  exact mul_le_mul hj hk (abs_nonneg _) hright_nonneg
+
+/-- Sum form of `rowSketch_abs_perturbed_mul_le_of_abs_error`. -/
+theorem rowSketch_abs_perturbed_mul_sum_le_of_abs_error
+    {steps n : ℕ} (B Bhat : Fin steps → Fin n → ℝ)
+    (E : Fin steps → Fin n → ℝ)
+    (hE_nonneg : ∀ (t : Fin steps) (j : Fin n), 0 ≤ E t j)
+    (hentry : ∀ (t : Fin steps) (j : Fin n),
+      |Bhat t j - B t j| ≤ E t j)
+    (j k : Fin n) :
+    (∑ t : Fin steps, |Bhat t j| * |Bhat t k|) ≤
+      ∑ t : Fin steps,
+        (|B t j| + E t j) * (|B t k| + E t k) := by
+  apply Finset.sum_le_sum
+  intro t _
+  exact rowSketch_abs_perturbed_mul_le_of_abs_error
+    B Bhat E hE_nonneg hentry t j k
+
+/-- Absolute-entry Gram perturbation bound with no computed-entry term left in
+    the right-hand side. -/
+theorem rowSketchGram_entry_abs_error_bound_exact_of_entrywise
+    {steps n : ℕ} (B Bhat : Fin steps → Fin n → ℝ)
+    (E : Fin steps → Fin n → ℝ)
+    (hE_nonneg : ∀ (t : Fin steps) (j : Fin n), 0 ≤ E t j)
+    (hentry : ∀ (t : Fin steps) (j : Fin n),
+      |Bhat t j - B t j| ≤ E t j)
+    (j k : Fin n) :
+    |rowSketchGram Bhat j k - rowSketchGram B j k| ≤
+      ∑ t : Fin steps,
+        (E t j * |B t k| + |B t j| * E t k + E t j * E t k) := by
+  classical
+  unfold rowSketchGram
+  rw [← Finset.sum_sub_distrib]
+  calc
+    |∑ t : Fin steps, (Bhat t j * Bhat t k - B t j * B t k)|
+        ≤ ∑ t : Fin steps,
+            |Bhat t j * Bhat t k - B t j * B t k| := by
+          exact Finset.abs_sum_le_sum_abs _ _
+    _ ≤ ∑ t : Fin steps,
+          (E t j * |B t k| + |B t j| * E t k +
+            E t j * E t k) := by
+          apply Finset.sum_le_sum
+          intro t _
+          let ej := Bhat t j - B t j
+          let ek := Bhat t k - B t k
+          have hj : |ej| ≤ E t j := hentry t j
+          have hk : |ek| ≤ E t k := hentry t k
+          have hBj : Bhat t j = B t j + ej := by
+            simp [ej]
+          have hBk : Bhat t k = B t k + ek := by
+            simp [ek]
+          have hdecomp :
+              Bhat t j * Bhat t k - B t j * B t k =
+                ej * B t k + B t j * ek + ej * ek := by
+            rw [hBj, hBk]
+            ring
+          have h1 : |ej| * |B t k| ≤ E t j * |B t k| :=
+            mul_le_mul_of_nonneg_right hj (abs_nonneg _)
+          have h2 : |B t j| * |ek| ≤ |B t j| * E t k :=
+            mul_le_mul_of_nonneg_left hk (abs_nonneg _)
+          have h3 : |ej| * |ek| ≤ E t j * E t k :=
+            mul_le_mul hj hk (abs_nonneg _) (hE_nonneg t j)
+          calc
+            |Bhat t j * Bhat t k - B t j * B t k|
+                = |ej * B t k + B t j * ek + ej * ek| := by
+                    rw [hdecomp]
+            _ ≤ |ej * B t k| + |B t j * ek| + |ej * ek| := by
+                    exact abs_add_three _ _ _
+            _ = |ej| * |B t k| + |B t j| * |ek| +
+                  |ej| * |ek| := by
+                    rw [abs_mul, abs_mul, abs_mul]
+            _ ≤ E t j * |B t k| + |B t j| * E t k +
+                  E t j * E t k := by
+                    linarith
+
+/-- Frobenius-norm Gram perturbation bound from absolute entrywise sketch
+    errors, with a right-hand side depending only on the exact sketch and the
+    explicit absolute error matrix. -/
+theorem rowSketchGram_frob_abs_error_bound_exact_of_entrywise
+    {steps n : ℕ} (B Bhat : Fin steps → Fin n → ℝ)
+    (E : Fin steps → Fin n → ℝ)
+    (hE_nonneg : ∀ (t : Fin steps) (j : Fin n), 0 ≤ E t j)
+    (hentry : ∀ (t : Fin steps) (j : Fin n),
+      |Bhat t j - B t j| ≤ E t j) :
+    frobNorm
+      (fun j k => rowSketchGram Bhat j k - rowSketchGram B j k) ≤
+      frobNorm
+        (fun j k =>
+          ∑ t : Fin steps,
+            (E t j * |B t k| + |B t j| * E t k +
+              E t j * E t k)) := by
+  classical
+  apply frobNorm_le_of_entry_abs_le
+  · intro j k
+    apply Finset.sum_nonneg
+    intro t _
+    exact add_nonneg
+      (add_nonneg
+        (mul_nonneg (hE_nonneg t j) (abs_nonneg _))
+        (mul_nonneg (abs_nonneg _) (hE_nonneg t k)))
+      (mul_nonneg (hE_nonneg t j) (hE_nonneg t k))
+  · intro j k
+    exact rowSketchGram_entry_abs_error_bound_exact_of_entrywise
+      B Bhat E hE_nonneg hentry j k
+
+/-- Fully floating-point Gram of an already-computed row sketch: each entry is
+    evaluated with the repository floating-point dot-product algorithm. -/
+noncomputable def fl_rowSketchGramDot (fp : FPModel)
+    {steps n : ℕ} (Bhat : Fin steps → Fin n → ℝ) :
+    Fin n → Fin n → ℝ :=
+  fun j k =>
+    fl_dotProduct fp steps (fun t => Bhat t j) (fun t => Bhat t k)
+
+/-- Exact-only dot-product roundoff budget for a computed row sketch whose
+    entries are within the explicit absolute error matrix `E` of `B`. -/
+noncomputable def rowSketchGramDotRoundoffExactBudget
+    (fp : FPModel) {steps n : ℕ}
+    (B : Fin steps → Fin n → ℝ) (E : Fin steps → Fin n → ℝ) : ℝ :=
+  frobNorm
+    (fun j k : Fin n =>
+      gamma fp steps *
+        ∑ t : Fin steps,
+          (|B t j| + E t j) * (|B t k| + E t k))
+
+/-- Exact-only sketch-formation perturbation budget for a Gram matrix built
+    from a computed row sketch. -/
+noncomputable def rowSketchGramAbsPerturbExactBudget
+    {steps n : ℕ}
+    (B : Fin steps → Fin n → ℝ) (E : Fin steps → Fin n → ℝ) : ℝ :=
+  frobNorm
+    (fun j k : Fin n =>
+      ∑ t : Fin steps,
+        (E t j * |B t k| + |B t j| * E t k + E t j * E t k))
+
+/-- Total exact-only floating-point perturbation budget for the Gram of an
+    already-computed row sketch.  The first term charges rounded dot products;
+    the second charges the perturbation from exact sketch `B` to computed
+    sketch `Bhat` through its explicit entrywise radius `E`. -/
+noncomputable def rowSketchGramFullAbsFpExactBudget
+    (fp : FPModel) {steps n : ℕ}
+    (B : Fin steps → Fin n → ℝ) (E : Fin steps → Fin n → ℝ) : ℝ :=
+  rowSketchGramDotRoundoffExactBudget fp B E +
+    rowSketchGramAbsPerturbExactBudget B E
+
+/-- Dot-product roundoff bound for an already-computed row sketch, stated with
+    a right-hand side that depends only on the exact sketch and the explicit
+    absolute entrywise error matrix. -/
+theorem fl_rowSketchGramDot_roundoff_bound_of_abs_error
+    (fp : FPModel) {steps n : ℕ}
+    (B Bhat : Fin steps → Fin n → ℝ) (E : Fin steps → Fin n → ℝ)
+    (hγ : gammaValid fp steps)
+    (hE_nonneg : ∀ (t : Fin steps) (j : Fin n), 0 ≤ E t j)
+    (hentry : ∀ (t : Fin steps) (j : Fin n),
+      |Bhat t j - B t j| ≤ E t j) :
+    frobNorm
+      (fun j k =>
+        fl_rowSketchGramDot fp Bhat j k - rowSketchGram Bhat j k) ≤
+      rowSketchGramDotRoundoffExactBudget fp B E := by
+  classical
+  have hγ_nonneg : 0 ≤ gamma fp steps := gamma_nonneg fp hγ
+  apply frobNorm_le_of_entry_abs_le
+  · intro j k
+    apply mul_nonneg hγ_nonneg
+    apply Finset.sum_nonneg
+    intro t _
+    exact mul_nonneg
+      (add_nonneg (abs_nonneg _) (hE_nonneg t j))
+      (add_nonneg (abs_nonneg _) (hE_nonneg t k))
+  · intro j k
+    have hdot :=
+      dotProduct_error_bound fp steps
+        (fun t => Bhat t j) (fun t => Bhat t k) hγ
+    have hsum :=
+      rowSketch_abs_perturbed_mul_sum_le_of_abs_error
+        B Bhat E hE_nonneg hentry j k
+    calc
+      |fl_rowSketchGramDot fp Bhat j k - rowSketchGram Bhat j k|
+          ≤ gamma fp steps *
+              ∑ t : Fin steps, |Bhat t j| * |Bhat t k| := by
+              simpa [fl_rowSketchGramDot, rowSketchGram] using hdot
+      _ ≤ gamma fp steps *
+            ∑ t : Fin steps,
+              (|B t j| + E t j) * (|B t k| + E t k) := by
+              exact mul_le_mul_of_nonneg_left hsum hγ_nonneg
+
+/-- Fully floating-point Gram perturbation for an already-computed row sketch,
+    with every non-probability computation charged by an explicit exact-only
+    budget. -/
+theorem fl_rowSketchGramDot_abs_perturb_bound_exact
+    (fp : FPModel) {steps n : ℕ}
+    (B Bhat : Fin steps → Fin n → ℝ) (E : Fin steps → Fin n → ℝ)
+    (hγ : gammaValid fp steps)
+    (hE_nonneg : ∀ (t : Fin steps) (j : Fin n), 0 ≤ E t j)
+    (hentry : ∀ (t : Fin steps) (j : Fin n),
+      |Bhat t j - B t j| ≤ E t j) :
+    frobNorm
+      (fun j k =>
+        fl_rowSketchGramDot fp Bhat j k - rowSketchGram B j k) ≤
+      rowSketchGramFullAbsFpExactBudget fp B E := by
+  classical
+  have hdot :=
+    fl_rowSketchGramDot_roundoff_bound_of_abs_error
+      fp B Bhat E hγ hE_nonneg hentry
+  have hsketch :=
+    rowSketchGram_frob_abs_error_bound_exact_of_entrywise
+      B Bhat E hE_nonneg hentry
+  have hsplit :
+      (fun j k =>
+        fl_rowSketchGramDot fp Bhat j k - rowSketchGram B j k) =
+      (fun j k =>
+        (fl_rowSketchGramDot fp Bhat j k - rowSketchGram Bhat j k) +
+          (rowSketchGram Bhat j k - rowSketchGram B j k)) := by
+    funext j k
+    ring
+  have htri :=
+    frobNorm_add_le
+      (fun j k =>
+        fl_rowSketchGramDot fp Bhat j k - rowSketchGram Bhat j k)
+      (fun j k => rowSketchGram Bhat j k - rowSketchGram B j k)
+  calc
+    frobNorm
+      (fun j k =>
+        fl_rowSketchGramDot fp Bhat j k - rowSketchGram B j k)
+        =
+      frobNorm
+        (fun j k =>
+          (fl_rowSketchGramDot fp Bhat j k - rowSketchGram Bhat j k) +
+            (rowSketchGram Bhat j k - rowSketchGram B j k)) := by
+          rw [hsplit]
+    _ ≤
+        frobNorm
+          (fun j k =>
+            fl_rowSketchGramDot fp Bhat j k - rowSketchGram Bhat j k) +
+        frobNorm
+          (fun j k => rowSketchGram Bhat j k - rowSketchGram B j k) :=
+          htri
+    _ ≤ rowSketchGramDotRoundoffExactBudget fp B E +
+        rowSketchGramAbsPerturbExactBudget B E :=
+          add_le_add hdot hsketch
+    _ = rowSketchGramFullAbsFpExactBudget fp B E := by
+          rfl
 
 /-- Dot-product computation error for the Gram matrix, reusing the library's
     `dotProduct_error_bound`. The only local work here is translating the
@@ -1220,6 +1803,41 @@ noncomputable def rowSampleGramDotProductBudget (fp : FPModel)
     (fun _j _k : Fin n =>
       gamma fp s * (1 + fp.u) ^ 2 * rowSqNormProbDen A)
 
+/-- Closed form of the row-scaling perturbation budget, exposing the implicit
+    dependence on the number `n` of columns/Gram rows. -/
+theorem rowSampleGramFpPerturbBudget_eq_nat_mul (fp : FPModel)
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) :
+    rowSampleGramFpPerturbBudget fp A =
+      (n : ℝ) * ((2 * fp.u + fp.u ^ 2) * rowSqNormProbDen A) := by
+  have hC : 0 ≤ (2 * fp.u + fp.u ^ 2) * rowSqNormProbDen A := by
+    have hu : 0 ≤ 2 * fp.u + fp.u ^ 2 := by
+      nlinarith [fp.u_nonneg, sq_nonneg fp.u]
+    have hden : 0 ≤ rowSqNormProbDen A := by
+      unfold rowSqNormProbDen
+      exact frobNormSqRect_nonneg A
+    exact mul_nonneg hu hden
+  unfold rowSampleGramFpPerturbBudget
+  exact frobNorm_const hC
+
+/-- Closed form of the dot-product perturbation budget, exposing the implicit
+    dependence on the number `n` of columns/Gram rows. -/
+theorem rowSampleGramDotProductBudget_eq_nat_mul (fp : FPModel)
+    {m n : ℕ} {s : ℕ} (A : Fin m → Fin n → ℝ)
+    (hγ : gammaValid fp s) :
+    rowSampleGramDotProductBudget fp s A =
+      (n : ℝ) *
+        (gamma fp s * (1 + fp.u) ^ 2 * rowSqNormProbDen A) := by
+  have hC :
+      0 ≤ gamma fp s * (1 + fp.u) ^ 2 * rowSqNormProbDen A := by
+    have hleft : 0 ≤ gamma fp s * (1 + fp.u) ^ 2 :=
+      mul_nonneg (gamma_nonneg fp hγ) (sq_nonneg (1 + fp.u))
+    have hden : 0 ≤ rowSqNormProbDen A := by
+      unfold rowSqNormProbDen
+      exact frobNormSqRect_nonneg A
+    exact mul_nonneg hleft hden
+  unfold rowSampleGramDotProductBudget
+  exact frobNorm_const hC
+
 /-- The deterministic Gram perturbation matrix obtained from entrywise sampled
     sketch stability is bounded by the explicit worst-case budget. -/
 theorem rowSampleGram_perturb_budget_le_explicit (fp : FPModel)
@@ -1317,6 +1935,193 @@ theorem rowSampleGram_dot_product_budget_le_explicit (fp : FPModel)
 noncomputable def rowSampleGramFullFpPerturbBudget (fp : FPModel)
     {m n : ℕ} (s : ℕ) (A : Fin m → Fin n → ℝ) : ℝ :=
   rowSampleGramFpPerturbBudget fp A + rowSampleGramDotProductBudget fp s A
+
+/-- Row-scaling Gram perturbation budget for an arbitrary proved relative
+    sampled-sketch entry error `uEff`. -/
+noncomputable def rowSampleGramRelPerturbBudget {m n : ℕ}
+    (uEff : ℝ) (A : Fin m → Fin n → ℝ) : ℝ :=
+  frobNorm (fun _j _k : Fin n => (2 * uEff + uEff ^ 2) * rowSqNormProbDen A)
+
+/-- Dot-product perturbation budget when the already rounded sampled sketch is
+    within relative error `uEff` of the exact sampled sketch. -/
+noncomputable def rowSampleGramDotProductRelBudget (fp : FPModel)
+    {m n : ℕ} (s : ℕ) (uEff : ℝ) (A : Fin m → Fin n → ℝ) : ℝ :=
+  frobNorm
+    (fun _j _k : Fin n =>
+      gamma fp s * (1 + uEff) ^ 2 * rowSqNormProbDen A)
+
+/-- Fully computed-denominator Algorithm 2 Gram perturbation budget.  The
+    effective row error charges denominator computation and final rounded
+    division; the dot-product term additionally charges the computed Gram
+    entries. -/
+noncomputable def rowSampleGramComputedDenFullFpPerturbBudget (fp : FPModel)
+    {m n : ℕ} (s : ℕ) (A : Fin m → Fin n → ℝ)
+    (dhat : ComputedRowScaleDen fp s (rowSqNormProb A)) : ℝ :=
+  let uEff := rowScaleComputedDenEffectiveRelError fp (rowSqNormProb A) dhat
+  rowSampleGramRelPerturbBudget uEff A +
+    rowSampleGramDotProductRelBudget fp s uEff A
+
+/-- Scaling-only computed-denominator budget, used when the Gram matrix is an
+    exact mathematical object formed from the already rounded sketch. -/
+noncomputable def rowSampleGramComputedDenScalePerturbBudget (fp : FPModel)
+    {m n : ℕ} (s : ℕ) (A : Fin m → Fin n → ℝ)
+    (dhat : ComputedRowScaleDen fp s (rowSqNormProb A)) : ℝ :=
+  rowSampleGramRelPerturbBudget
+    (rowScaleComputedDenEffectiveRelError fp (rowSqNormProb A) dhat) A
+
+/-- The fully floating-point sampled-Gram perturbation budget is nonnegative. -/
+theorem rowSampleGramFullFpPerturbBudget_nonneg (fp : FPModel)
+    {m n : ℕ} (s : ℕ) (A : Fin m → Fin n → ℝ) :
+    0 ≤ rowSampleGramFullFpPerturbBudget fp s A := by
+  unfold rowSampleGramFullFpPerturbBudget rowSampleGramFpPerturbBudget
+    rowSampleGramDotProductBudget
+  exact add_nonneg (frobNorm_nonneg _) (frobNorm_nonneg _)
+
+theorem rowSampleGramRelPerturbBudget_nonneg {m n : ℕ}
+    (uEff : ℝ) (A : Fin m → Fin n → ℝ) :
+    0 ≤ rowSampleGramRelPerturbBudget (m := m) (n := n) uEff A := by
+  unfold rowSampleGramRelPerturbBudget
+  exact frobNorm_nonneg _
+
+theorem rowSampleGramDotProductRelBudget_nonneg (fp : FPModel)
+    {m n : ℕ} (s : ℕ) (uEff : ℝ) (A : Fin m → Fin n → ℝ) :
+    0 ≤ rowSampleGramDotProductRelBudget fp s uEff A := by
+  unfold rowSampleGramDotProductRelBudget
+  exact frobNorm_nonneg _
+
+theorem rowSampleGramComputedDenFullFpPerturbBudget_nonneg (fp : FPModel)
+    {m n : ℕ} (s : ℕ) (A : Fin m → Fin n → ℝ)
+    (dhat : ComputedRowScaleDen fp s (rowSqNormProb A)) :
+    0 ≤ rowSampleGramComputedDenFullFpPerturbBudget fp s A dhat := by
+  unfold rowSampleGramComputedDenFullFpPerturbBudget
+  exact add_nonneg (frobNorm_nonneg _) (frobNorm_nonneg _)
+
+/-- Closed form of the arbitrary-relative-error row-scaling budget. -/
+theorem rowSampleGramRelPerturbBudget_eq_nat_mul {m n : ℕ}
+    (uEff : ℝ) (A : Fin m → Fin n → ℝ)
+    (huEff : 0 ≤ uEff) :
+    rowSampleGramRelPerturbBudget (m := m) (n := n) uEff A =
+      (n : ℝ) * ((2 * uEff + uEff ^ 2) * rowSqNormProbDen A) := by
+  have hC : 0 ≤ (2 * uEff + uEff ^ 2) * rowSqNormProbDen A := by
+    have hu : 0 ≤ 2 * uEff + uEff ^ 2 := by
+      nlinarith [huEff, sq_nonneg uEff]
+    have hden : 0 ≤ rowSqNormProbDen A := by
+      unfold rowSqNormProbDen
+      exact frobNormSqRect_nonneg A
+    exact mul_nonneg hu hden
+  unfold rowSampleGramRelPerturbBudget
+  exact frobNorm_const hC
+
+/-- Closed form of the arbitrary-relative-error dot-product budget. -/
+theorem rowSampleGramDotProductRelBudget_eq_nat_mul (fp : FPModel)
+    {m n : ℕ} {s : ℕ} (uEff : ℝ) (A : Fin m → Fin n → ℝ)
+    (hγ : gammaValid fp s) :
+    rowSampleGramDotProductRelBudget fp s uEff A =
+      (n : ℝ) *
+        (gamma fp s * (1 + uEff) ^ 2 * rowSqNormProbDen A) := by
+  have hC :
+      0 ≤ gamma fp s * (1 + uEff) ^ 2 * rowSqNormProbDen A := by
+    have hleft : 0 ≤ gamma fp s * (1 + uEff) ^ 2 :=
+      mul_nonneg (gamma_nonneg fp hγ) (sq_nonneg (1 + uEff))
+    have hden : 0 ≤ rowSqNormProbDen A := by
+      unfold rowSqNormProbDen
+      exact frobNormSqRect_nonneg A
+    exact mul_nonneg hleft hden
+  unfold rowSampleGramDotProductRelBudget
+  exact frobNorm_const hC
+
+/-- The deterministic Gram perturbation matrix from a relative sampled-sketch
+    error `uEff` is bounded by the explicit arbitrary-relative-error budget. -/
+theorem rowSampleGram_rel_perturb_budget_le_explicit
+    {m n s : ℕ} (A : Fin m → Fin n → ℝ)
+    (hden : 0 < rowSqNormProbDen A) (hs : 0 < (s : ℝ))
+    (samples : RowTrace m s) (uEff : ℝ) (huEff : 0 ≤ uEff) :
+    frobNorm
+      (fun j k =>
+        (2 * uEff + uEff ^ 2) *
+          ∑ t : Fin s,
+            |rowSampleSketch s A samples t j| *
+              |rowSampleSketch s A samples t k|) ≤
+      rowSampleGramRelPerturbBudget uEff A := by
+  classical
+  let C : ℝ := 2 * uEff + uEff ^ 2
+  have hC_nonneg : 0 ≤ C := by
+    dsimp [C]
+    nlinarith [huEff, sq_nonneg uEff]
+  have hD_nonneg : 0 ≤ rowSqNormProbDen A := le_of_lt hden
+  unfold rowSampleGramRelPerturbBudget
+  apply frobNorm_le_of_entry_abs_le
+  · intro j k
+    exact mul_nonneg hC_nonneg hD_nonneg
+  · intro j k
+    have hsum_nonneg :
+        0 ≤ ∑ t : Fin s,
+          |rowSampleSketch s A samples t j| *
+            |rowSampleSketch s A samples t k| := by
+      apply Finset.sum_nonneg
+      intro t _
+      exact mul_nonneg (abs_nonneg _) (abs_nonneg _)
+    have hsum_le :=
+      rowSampleSketch_abs_mul_sum_le_den A hden hs samples j k
+    let S : ℝ :=
+      ∑ t : Fin s,
+        |rowSampleSketch s A samples t j| *
+          |rowSampleSketch s A samples t k|
+    calc
+      |(2 * uEff + uEff ^ 2) * S|
+          = C * S := by
+              simp [C, S, abs_of_nonneg (mul_nonneg hC_nonneg hsum_nonneg)]
+      _ ≤ C * rowSqNormProbDen A := by
+              exact mul_le_mul_of_nonneg_left (by simpa [S] using hsum_le) hC_nonneg
+      _ = (2 * uEff + uEff ^ 2) * rowSqNormProbDen A := by
+              simp [C]
+
+/-- The dot-product computation budget under entrywise relative row error
+    `uEff` is bounded by the explicit arbitrary-relative-error budget. -/
+theorem rowSampleGram_dot_product_rel_budget_le_explicit
+    (fp : FPModel) {m n s : ℕ} (A : Fin m → Fin n → ℝ)
+    (hden : 0 < rowSqNormProbDen A) (hs : 0 < (s : ℝ))
+    (hγ : gammaValid fp s) (samples : RowTrace m s)
+    (uEff : ℝ) :
+    frobNorm
+      (fun j k =>
+        gamma fp s * (1 + uEff) ^ 2 *
+          ∑ t : Fin s,
+            |rowSampleSketch s A samples t j| *
+              |rowSampleSketch s A samples t k|) ≤
+      rowSampleGramDotProductRelBudget fp s uEff A := by
+  classical
+  let C : ℝ := gamma fp s * (1 + uEff) ^ 2
+  have hC_nonneg : 0 ≤ C := by
+    dsimp [C]
+    exact mul_nonneg (gamma_nonneg fp hγ) (sq_nonneg (1 + uEff))
+  have hD_nonneg : 0 ≤ rowSqNormProbDen A := le_of_lt hden
+  unfold rowSampleGramDotProductRelBudget
+  apply frobNorm_le_of_entry_abs_le
+  · intro j k
+    exact mul_nonneg hC_nonneg hD_nonneg
+  · intro j k
+    have hsum_nonneg :
+        0 ≤ ∑ t : Fin s,
+          |rowSampleSketch s A samples t j| *
+            |rowSampleSketch s A samples t k| := by
+      apply Finset.sum_nonneg
+      intro t _
+      exact mul_nonneg (abs_nonneg _) (abs_nonneg _)
+    have hsum_le :=
+      rowSampleSketch_abs_mul_sum_le_den A hden hs samples j k
+    let S : ℝ :=
+      ∑ t : Fin s,
+        |rowSampleSketch s A samples t j| *
+          |rowSampleSketch s A samples t k|
+    calc
+      |gamma fp s * (1 + uEff) ^ 2 * S|
+          = C * S := by
+              simp [C, S, abs_of_nonneg (mul_nonneg hC_nonneg hsum_nonneg)]
+      _ ≤ C * rowSqNormProbDen A := by
+              exact mul_le_mul_of_nonneg_left (by simpa [S] using hsum_le) hC_nonneg
+      _ = gamma fp s * (1 + uEff) ^ 2 * rowSqNormProbDen A := by
+              simp [C]
 
 /-- Deterministic fully-floating-point Gram perturbation from entrywise sketch
     stability and the library dot-product bound. -/
@@ -1423,6 +2228,150 @@ theorem fl_rowSampleGramDot_perturb_bound_of_entrywise
           add_le_add hdot hscale
     _ = rowSampleGramFullFpPerturbBudget fp s A := by
           unfold rowSampleGramFullFpPerturbBudget
+          ring
+
+/-- Deterministic Gram perturbation for the computed-denominator Algorithm 2
+    path when the Gram matrix is formed exactly from the rounded sampled
+    sketch. -/
+theorem fl_rowSampleGramWithComputedDen_perturb_bound
+    (fp : FPModel) {m n s : ℕ} (A : Fin m → Fin n → ℝ)
+    (hden : 0 < rowSqNormProbDen A) (hs : 0 < (s : ℝ))
+    (dhat : ComputedRowScaleDen fp s (rowSqNormProb A))
+    (samples : RowTrace m s) (hgood : rowTracePositiveProb A samples) :
+    frobNorm
+      (fun j k =>
+        fl_rowSampleGramWithComputedDen fp A dhat.den samples j k -
+          rowSampleGram s A samples j k) ≤
+      rowSampleGramComputedDenScalePerturbBudget fp s A dhat := by
+  classical
+  let uEff : ℝ :=
+    rowScaleComputedDenEffectiveRelError fp (rowSqNormProb A) dhat
+  have huEff : 0 ≤ uEff :=
+    rowScaleComputedDenEffectiveRelError_nonneg fp (rowSqNormProb A) dhat
+  let Bhat : Fin s → Fin n → ℝ :=
+    fl_rowSampleSketchWithComputedDen fp A dhat.den samples
+  have hentry : ∀ t j,
+      |Bhat t j - rowSampleSketch s A samples t j| ≤
+        |rowSampleSketch s A samples t j| * uEff := by
+    intro t j
+    have hprob : 0 < rowSqNormProb A (samples t) := hgood t
+    have h :=
+      fl_rowSampleSketchWithComputedDen_total_error_bound_le_budget
+        fp A (rowSqNormProb A) dhat samples t j hs hprob
+    simpa [Bhat, rowSampleSketchWithProb, rowSampleSketch,
+      rowSampleIncrementWithProb, rowSampleIncrement,
+      rowSampleScaleDenWithProb, rowSampleScaleDen, uEff] using h
+  have hpoint :=
+    rowSampleGram_frob_error_bound_of_entrywise
+      s A samples Bhat uEff huEff hentry
+  have hbudget :=
+    rowSampleGram_rel_perturb_budget_le_explicit
+      A hden hs samples uEff huEff
+  have hpoint' :
+      frobNorm
+        (fun j k =>
+          rowSketchGram Bhat j k - rowSampleGram s A samples j k) ≤
+        rowSampleGramRelPerturbBudget uEff A :=
+    hpoint.trans hbudget
+  simpa [fl_rowSampleGramWithComputedDen, Bhat,
+    rowSampleGramComputedDenScalePerturbBudget, uEff] using hpoint'
+
+/-- Deterministic fully floating-point Gram perturbation for the
+    computed-denominator Algorithm 2 path. -/
+theorem fl_rowSampleGramDotWithComputedDen_perturb_bound
+    (fp : FPModel) {m n s : ℕ} (A : Fin m → Fin n → ℝ)
+    (hden : 0 < rowSqNormProbDen A) (hs : 0 < (s : ℝ))
+    (hγ : gammaValid fp s)
+    (dhat : ComputedRowScaleDen fp s (rowSqNormProb A))
+    (samples : RowTrace m s) (hgood : rowTracePositiveProb A samples) :
+    frobNorm
+      (fun j k =>
+        fl_rowSampleGramDotWithComputedDen fp A dhat.den samples j k -
+          rowSampleGram s A samples j k) ≤
+      rowSampleGramComputedDenFullFpPerturbBudget fp s A dhat := by
+  classical
+  let uEff : ℝ :=
+    rowScaleComputedDenEffectiveRelError fp (rowSqNormProb A) dhat
+  have huEff : 0 ≤ uEff :=
+    rowScaleComputedDenEffectiveRelError_nonneg fp (rowSqNormProb A) dhat
+  let B : Fin s → Fin n → ℝ := rowSampleSketch s A samples
+  let Bhat : Fin s → Fin n → ℝ :=
+    fl_rowSampleSketchWithComputedDen fp A dhat.den samples
+  have hentry : ∀ t j, |Bhat t j - B t j| ≤ |B t j| * uEff := by
+    intro t j
+    have hprob : 0 < rowSqNormProb A (samples t) := hgood t
+    have h :=
+      fl_rowSampleSketchWithComputedDen_total_error_bound_le_budget
+        fp A (rowSqNormProb A) dhat samples t j hs hprob
+    simpa [B, Bhat, rowSampleSketchWithProb, rowSampleSketch,
+      rowSampleIncrementWithProb, rowSampleIncrement,
+      rowSampleScaleDenWithProb, rowSampleScaleDen, uEff] using h
+  have hdot :
+      frobNorm
+        (fun j k =>
+          fl_dotProduct fp s (fun t => Bhat t j) (fun t => Bhat t k) -
+            rowSketchGram Bhat j k) ≤
+        rowSampleGramDotProductRelBudget fp s uEff A := by
+    have hlocal :=
+      rowSketchGram_dot_frob_error_bound_of_entrywise
+        fp B Bhat uEff huEff hγ hentry
+    have hbudget :=
+      rowSampleGram_dot_product_rel_budget_le_explicit
+        fp A hden hs hγ samples uEff
+    exact hlocal.trans hbudget
+  have hscale :
+      frobNorm
+        (fun j k =>
+          rowSketchGram Bhat j k - rowSampleGram s A samples j k) ≤
+        rowSampleGramRelPerturbBudget uEff A := by
+    have hpoint :=
+      rowSampleGram_frob_error_bound_of_entrywise
+        s A samples Bhat uEff huEff (by simpa [B] using hentry)
+    have hbudget :=
+      rowSampleGram_rel_perturb_budget_le_explicit
+        A hden hs samples uEff huEff
+    exact hpoint.trans hbudget
+  have hsplit :
+      (fun j k =>
+        fl_rowSampleGramDotWithComputedDen fp A dhat.den samples j k -
+          rowSampleGram s A samples j k) =
+      (fun j k =>
+        (fl_dotProduct fp s (fun t => Bhat t j) (fun t => Bhat t k) -
+          rowSketchGram Bhat j k) +
+        (rowSketchGram Bhat j k - rowSampleGram s A samples j k)) := by
+    funext j k
+    simp [fl_rowSampleGramDotWithComputedDen, Bhat]
+  have htri :=
+    frobNorm_add_le
+      (fun j k =>
+        fl_dotProduct fp s (fun t => Bhat t j) (fun t => Bhat t k) -
+          rowSketchGram Bhat j k)
+      (fun j k => rowSketchGram Bhat j k - rowSampleGram s A samples j k)
+  calc
+    frobNorm
+      (fun j k =>
+        fl_rowSampleGramDotWithComputedDen fp A dhat.den samples j k -
+          rowSampleGram s A samples j k)
+        = frobNorm
+          (fun j k =>
+            (fl_dotProduct fp s (fun t => Bhat t j) (fun t => Bhat t k) -
+              rowSketchGram Bhat j k) +
+            (rowSketchGram Bhat j k - rowSampleGram s A samples j k)) := by
+            rw [hsplit]
+    _ ≤
+        frobNorm
+          (fun j k =>
+            fl_dotProduct fp s (fun t => Bhat t j) (fun t => Bhat t k) -
+              rowSketchGram Bhat j k) +
+        frobNorm
+          (fun j k => rowSketchGram Bhat j k - rowSampleGram s A samples j k) :=
+          htri
+    _ ≤ rowSampleGramDotProductRelBudget fp s uEff A +
+        rowSampleGramRelPerturbBudget uEff A :=
+          add_le_add hdot hscale
+    _ = rowSampleGramComputedDenFullFpPerturbBudget fp s A dhat := by
+          unfold rowSampleGramComputedDenFullFpPerturbBudget
+          dsimp [uEff]
           ring
 
 -- ============================================================
@@ -2044,6 +2993,47 @@ theorem rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsil
       (by simpa [P, F] using hpertProb)
   simpa using h
 
+/-- Scaling-only floating-point high-probability equation (5).  This is the
+    model where Algorithm 2 forms the sampled-and-scaled rows in floating point,
+    but the Gram matrix is a mathematical object formed exactly from those
+    rounded rows.  Thus the dot-product budget is zero, and the only FP term is
+    the row-rescaling division budget. -/
+theorem rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_scaling_budget
+    (fp : FPModel) {m n s : ℕ} (A : Fin m → Fin n → ℝ)
+    (hden : 0 < rowSqNormProbDen A) (hs : 0 < (s : ℝ))
+    (ε : ℝ) (hε : 0 < ε) :
+    1 - 1 / ((s : ℝ) * ε ^ 2) ≤
+      (rowSqNormTraceProbability (steps := s) A hden).eventProb
+        {samples |
+          frobNorm
+            (fun j k => fl_rowSampleGram fp s A samples j k - rowGram A j k) ≤
+              ε * rowSqNormProbDen A +
+                (n : ℝ) * ((2 * fp.u + fp.u ^ 2) * rowSqNormProbDen A)} := by
+  have h :=
+    rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_explicit_budget
+      fp A hden hs ε hε
+  simpa [rowSampleGramFpPerturbBudget_eq_nat_mul fp A] using h
+
+/-- Scaling-only floating-point high-probability equation (5), written as the
+    `tau_dot = 0` specialization.  This is the practical model where Algorithm
+    2 computes the sampled-and-scaled rows in floating point, while the Gram
+    matrix is used only as an exact mathematical object in the analysis of that
+    rounded sketch. -/
+theorem rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_tau_dot_zero
+    (fp : FPModel) {m n s : ℕ} (A : Fin m → Fin n → ℝ)
+    (hden : 0 < rowSqNormProbDen A) (hs : 0 < (s : ℝ))
+    (ε : ℝ) (hε : 0 < ε) :
+    1 - 1 / ((s : ℝ) * ε ^ 2) ≤
+      (rowSqNormTraceProbability (steps := s) A hden).eventProb
+        {samples |
+          frobNorm
+            (fun j k => fl_rowSampleGram fp s A samples j k - rowGram A j k) ≤
+              ε * rowSqNormProbDen A +
+                ((n : ℝ) * ((2 * fp.u + fp.u ^ 2) * rowSqNormProbDen A) + 0)} := by
+  simpa using
+    rowSqNormTraceProbability_eventProb_fl_rowSampleGram_frob_error_le_epsilon_add_scaling_budget
+      fp A hden hs ε hε
+
 /-- Fully floating-point high-probability equation (5), reusing the library dot
     product theorem for the Gram computation. The deterministic FP budget has
     two modular pieces: row-rescaling division error and dot-product evaluation
@@ -2098,6 +3088,111 @@ theorem rowSqNormTraceProbability_eventProb_fl_rowSampleGramDot_frob_error_le_ep
     rowSqNormTraceProbability_eventProb_computedGram_frob_error_le_epsilon_add_tau
       A hden hs (fun samples => fl_rowSampleGramDot fp s A samples)
       ε (rowSampleGramFullFpPerturbBudget fp s A) 0 hε
+      (by simpa [P, F] using hpertProb)
+  simpa using h
+
+/-- High-probability equation (5) for the computed-denominator Algorithm 2
+    path, with exact Gram arithmetic after the rounded sketch.  The sampling
+    law is unchanged; the additive FP radius is the proved deterministic
+    computed-denominator row-scaling budget. -/
+theorem rowSqNormTraceProbability_eventProb_fl_rowSampleGramWithComputedDen_frob_error_le_epsilon_add_explicit_budget
+    (fp : FPModel) {m n s : ℕ} (A : Fin m → Fin n → ℝ)
+    (hden : 0 < rowSqNormProbDen A) (hs : 0 < (s : ℝ))
+    (dhat : ComputedRowScaleDen fp s (rowSqNormProb A))
+    (ε : ℝ) (hε : 0 < ε) :
+    1 - 1 / ((s : ℝ) * ε ^ 2) ≤
+      (rowSqNormTraceProbability (steps := s) A hden).eventProb
+        {samples |
+          frobNorm
+            (fun j k =>
+              fl_rowSampleGramWithComputedDen fp A dhat.den samples j k -
+                rowGram A j k) ≤
+              ε * rowSqNormProbDen A +
+                rowSampleGramComputedDenScalePerturbBudget fp s A dhat} := by
+  classical
+  let P := rowSqNormTraceProbability (steps := s) A hden
+  let Good : Set (RowTrace m s) := {samples | rowTracePositiveProb A samples}
+  let F : Set (RowTrace m s) :=
+    {samples |
+      frobNorm
+        (fun j k =>
+          fl_rowSampleGramWithComputedDen fp A dhat.den samples j k -
+            rowSampleGram s A samples j k) ≤
+        rowSampleGramComputedDenScalePerturbBudget fp s A dhat}
+  have hGoodProb : P.eventProb Good = 1 := by
+    simpa [P, Good] using
+      rowSqNormTraceProbability_eventProb_rowTracePositiveProb
+        (steps := s) A hden
+  have hGood_subset_F : Good ⊆ F := by
+    intro samples hgood
+    have hgood_pos : rowTracePositiveProb A samples := by
+      simpa [Good] using hgood
+    simpa [F] using
+      fl_rowSampleGramWithComputedDen_perturb_bound
+        fp A hden hs dhat samples hgood_pos
+  have hpertProb :
+      1 - (0 : ℝ) ≤ P.eventProb F := by
+    have hmono : P.eventProb Good ≤ P.eventProb F :=
+      FiniteProbability.eventProb_mono P hGood_subset_F
+    linarith
+  have h :=
+    rowSqNormTraceProbability_eventProb_computedGram_frob_error_le_epsilon_add_tau
+      A hden hs
+      (fun samples => fl_rowSampleGramWithComputedDen fp A dhat.den samples)
+      ε (rowSampleGramComputedDenScalePerturbBudget fp s A dhat) 0 hε
+      (by simpa [P, F] using hpertProb)
+  simpa using h
+
+/-- Fully floating-point high-probability equation (5) for the
+    computed-denominator Algorithm 2 path.  This charges denominator
+    computation, rounded row scaling, and floating-point dot products for the
+    Gram entries. -/
+theorem rowSqNormTraceProbability_eventProb_fl_rowSampleGramDotWithComputedDen_frob_error_le_epsilon_add_explicit_budget
+    (fp : FPModel) {m n s : ℕ} (A : Fin m → Fin n → ℝ)
+    (hden : 0 < rowSqNormProbDen A) (hs : 0 < (s : ℝ))
+    (hγ : gammaValid fp s)
+    (dhat : ComputedRowScaleDen fp s (rowSqNormProb A))
+    (ε : ℝ) (hε : 0 < ε) :
+    1 - 1 / ((s : ℝ) * ε ^ 2) ≤
+      (rowSqNormTraceProbability (steps := s) A hden).eventProb
+        {samples |
+          frobNorm
+            (fun j k =>
+              fl_rowSampleGramDotWithComputedDen fp A dhat.den samples j k -
+                rowGram A j k) ≤
+              ε * rowSqNormProbDen A +
+                rowSampleGramComputedDenFullFpPerturbBudget fp s A dhat} := by
+  classical
+  let P := rowSqNormTraceProbability (steps := s) A hden
+  let Good : Set (RowTrace m s) := {samples | rowTracePositiveProb A samples}
+  let F : Set (RowTrace m s) :=
+    {samples |
+      frobNorm
+        (fun j k =>
+          fl_rowSampleGramDotWithComputedDen fp A dhat.den samples j k -
+            rowSampleGram s A samples j k) ≤
+        rowSampleGramComputedDenFullFpPerturbBudget fp s A dhat}
+  have hGoodProb : P.eventProb Good = 1 := by
+    simpa [P, Good] using
+      rowSqNormTraceProbability_eventProb_rowTracePositiveProb
+        (steps := s) A hden
+  have hGood_subset_F : Good ⊆ F := by
+    intro samples hgood
+    have hgood_pos : rowTracePositiveProb A samples := by
+      simpa [Good] using hgood
+    simpa [F] using
+      fl_rowSampleGramDotWithComputedDen_perturb_bound
+        fp A hden hs hγ dhat samples hgood_pos
+  have hpertProb :
+      1 - (0 : ℝ) ≤ P.eventProb F := by
+    have hmono : P.eventProb Good ≤ P.eventProb F :=
+      FiniteProbability.eventProb_mono P hGood_subset_F
+    linarith
+  have h :=
+    rowSqNormTraceProbability_eventProb_computedGram_frob_error_le_epsilon_add_tau
+      A hden hs
+      (fun samples => fl_rowSampleGramDotWithComputedDen fp A dhat.den samples)
+      ε (rowSampleGramComputedDenFullFpPerturbBudget fp s A dhat) 0 hε
       (by simpa [P, F] using hpertProb)
   simpa using h
 

@@ -731,9 +731,226 @@ squared-magnitude product law for Algorithm 1 traces, proves the hit-count MGF
 bound from that law, and gives the exponentially sharper tail used in the
 tightest counter-level analysis.
 
-The current formalization does not yet prove matrix-level RandNLA accuracy
-results such as spectral-norm concentration, unbiasedness of the full sketch,
-or sample-complexity theorems.
+The current formalization does not yet prove source-uniform matrix-level
+RandNLA accuracy results such as the full CACM equation-(2) spectral-norm
+concentration theorem or its source-uniform sample-complexity theorem for
+arbitrarily small nonzero entries.  It does, however, include exact
+matrix-level obstruction theorems showing why the literal untruncated
+source-uniform route cannot hide the mass of very small entries.
+
+\section*{Literal spectral endpoint with an entry floor}
+
+The following result is the current readable literal-law matrix-level endpoint
+for Algorithm 1.  The sampling probabilities
+\[
+  p_{ij}=\frac{A_{ij}^2}{\|A\|_F^2}
+\]
+are exact mathematical laws.  The computed non-probability operations are the
+sampled-entry rescalings, the additions into the sketch, and the final rounded
+residual.
+
+\begin{theorem}[Literal Algorithm 1 with entry-floor support radius]
+Let \(A\in\R^{m\times n}\), \(s>0\), \(\|A\|_F^2>0\),
+\(0<\delta\le1\), and \(r>0\).  Let \(\alpha>0\) satisfy
+\[
+  A_{ij}\ne0\quad\Longrightarrow\quad \alpha\le |A_{ij}|
+  \qquad\text{for all }i,j .
+\]
+Define
+\[
+  q_\delta=\log\!\left(\frac{2(m+n)}{\delta}\right),
+  \qquad
+  W=\frac{\max\{m,n\}\|A\|_F^2}{s},
+\]
+and
+\[
+  H_\alpha(A)=
+    \|A\|_F+\frac{mn\,\|A\|_F^2}{\alpha}.
+\]
+If
+\[
+  q_\delta
+  \le
+  \frac{r^2}{2W+\frac23\,\frac{H_\alpha(A)}{s}\,r},
+\]
+then the exact literal Algorithm 1 sketch satisfies
+\[
+  \Prob\{\|A-\widetilde A\|_{2\to2}\le r\}\ge1-\delta .
+\]
+If \(\gamma_s\) and \(\gamma_{s+1}\) are valid for the floating-point model,
+then the rounded sketch satisfies
+\[
+  \Prob\!\left\{
+    \|A-\fl(\widetilde A)\|_{2\to2}
+    \le
+    r+\sqrt{mn}\,
+      \frac{mn\,\|A\|_F^2}{\alpha}\,
+      \gamma_{s+1}
+  \right\}
+  \ge1-\delta .
+\]
+Equivalently, the sample budget has order
+\[
+  s=
+  \Theta\!\left(
+    \frac{
+      (\max\{m,n\}\|A\|_F^2+H_\alpha(A)r)
+      \log((m+n)/\delta)}
+      {r^2}
+  \right),
+\]
+and the rounded radius has order
+\[
+  \Theta\!\left(
+    r+
+    \sqrt{mn}\,\frac{mn\,\|A\|_F^2}{\alpha}\,\gamma_{s+1}
+  \right).
+\]
+For fixed \(A,m,n,s,r,\alpha,\delta\), the floating-point additive term tends
+to zero as \(\gamma_{s+1}\to0\).  The dependence on \(\alpha\) is explicit;
+this theorem is literal and nonconditional, but not source-uniform over
+arbitrarily small nonzero entries.
+\end{theorem}
+
+\begin{leanref}
+Formalized as
+\[
+\begin{array}{l}
+  \lean{elementwiseLiteralContributionRadius_le_of_entry_abs_ge},\\
+  \lean{elementwiseLiteralResidualSupportRadius_le_of_entry_abs_ge},\\
+  \lean{smul_elementwiseLiteralContributionRadius_le_of_entry_abs_ge},\\
+  \lean{algorithm1LiteralBernsteinDenominatorBudget_of_entry_floor},\\
+  \lean{sqMagTraceProbability_eventProb_algorithm1ExactSpectralEvent}\\
+  \lean{_literalTraceResidual_ge_one_sub_delta_bernstein_denominator}\\
+  \lean{_entry_floor},\\
+  \lean{sqMagTraceProbability_eventProb_algorithm1FlSpectralRadius}\\
+  \lean{_literal_ge_one_sub_delta_bernstein_denominator_gamma}\\
+  \lean{_entry_floor}.
+\end{array}
+\]
+\end{leanref}
+
+\section*{Exact spectral obstruction for tiny entries}
+
+The following result is exact arithmetic only.  The probabilities are the
+canonical squared-magnitude product law, treated as exact mathematical input.
+No floating-point operation is computed in this theorem.
+
+\begin{theorem}[All-tiny trace obstruction]
+Let \(L\in\R\), define
+\[
+  \alpha=(|L|+2)^{-1},
+  \qquad
+  A_L=\begin{bmatrix}1&\alpha\end{bmatrix},
+  \qquad
+  p_{\rm tiny}=\frac{\alpha^2}{1+\alpha^2}.
+\]
+Let \(s\ge1\).  Consider the exact Algorithm 1 trace that samples the tiny
+entry at every one of the \(s\) steps, using denominator \(s\) in the exact
+rescaling.  This all-tiny trace has exact probability \(p_{\rm tiny}^{\,s}\)
+and is outside the exact spectral event
+\[
+  \|A_L-\widetilde A\|_{2\to2}\le L.
+\]
+Therefore the exact success probability itself obeys
+\[
+  \Prob\{\|A_L-\widetilde A\|_{2\to2}\le L\}
+  \le
+  1-p_{\rm tiny}^{\,s}
+  <
+  1.
+\]
+Consequently, any claimed lower bound
+\[
+  \Prob\{\|A_L-\widetilde A\|_{2\to2}\le L\}\ge1-\delta
+\]
+must satisfy
+\[
+  p_{\rm tiny}^{\,s}\le\delta.
+\]
+For \(\delta>0\), it must also satisfy
+\[
+  \frac{\log(1/\delta)}{\log(1/p_{\rm tiny})}\le s.
+\]
+Equivalently, if \(\delta<p_{\rm tiny}^{\,s}\), or if
+\[
+  s<\frac{\log(1/\delta)}{\log(1/p_{\rm tiny})},
+\]
+then the claimed \(1-\delta\) spectral-event lower bound cannot hold.
+
+There is also a concrete source-budget witness.  Set \(L=100\), \(s=1\),
+\(\delta=1/30000\), and
+\[
+  A=\begin{bmatrix}1&1/102\end{bmatrix}.
+\]
+For \(m=1\) and \(n=2\), let
+\[
+  C=2\max\{1,2\}+\frac{4\sqrt2}{3}\sqrt{2}.
+\]
+The rectangular source-style budget
+\[
+  4C\|A\|_F^2
+    \log\!\left(\frac{2(1+2)}{1/30000}\right)
+  \le
+  1\cdot 100^2
+\]
+holds in exact arithmetic, but the exact event lower bound
+\[
+  \Prob\{\|A-\widetilde A\|_{2\to2}\le100\}
+  \ge 1-\frac{1}{30000}
+\]
+is formally impossible under the literal squared-magnitude law.  Thus this
+source budget alone is not sufficient for the untruncated literal theorem on
+inputs with arbitrarily small nonzero entries.
+Writing \(\mathcal B(A)\) for the displayed rectangular source-style budget
+with \(A\) in place of the concrete witness, the formalization also proves the
+schema refutation
+\[
+  \neg\Big[
+    \forall A,
+    \operatorname{sqMagProbDen}(A)>0
+    \ \wedge\
+    \mathcal B(A)
+    \Longrightarrow
+    \Prob\{\|A-\widetilde A\|_{2\to2}\le100\}
+      \ge 1-\frac{1}{30000}
+  \Big].
+\]
+This is a universal failure of the budget-only implication at these fixed
+parameters, not merely a warning about the chosen witness notation.
+\end{theorem}
+
+\begin{leanref}
+Formalized as
+\[
+\begin{array}{l}
+  \lean{sqMagTraceProbability_algorithm1ExactSpectralEvent}\\
+  \lean{_all_tiny_smallEntry_delta_ge},\\
+  \lean{sqMagTraceProbability_algorithm1ExactSpectralEvent}\\
+  \lean{_all_tiny_smallEntry_sample_count_ge},\\
+  \lean{sqMagTraceProbability_not_algorithm1ExactSpectralEvent}\\
+  \lean{_all_tiny_smallEntry_of_delta_lt_pow},\\
+  \lean{sqMagTraceProbability_not_algorithm1ExactSpectralEvent}\\
+  \lean{_all_tiny_smallEntry_of_sample_count_lt},\\
+  \lean{sqMagTraceProbability_eventProb_algorithm1ExactSpectralEvent}\\
+  \lean{_all_tiny_smallEntry_le_one_sub_pow},\\
+  \lean{sqMagTraceProbability_eventProb_algorithm1ExactSpectralEvent}\\
+  \lean{_all_tiny_smallEntry_lt_one},\\
+  \lean{exists_delta_not_sqMagTraceProbability_algorithm1ExactSpectralEvent}\\
+  \lean{_all_tiny_smallEntry},\\
+  \lean{real_log_180000_le_18},\\
+  \lean{algorithm1RectSourceBudget_1_2_100_one_div_30000},\\
+  \lean{algorithm1SmallEntrySupportMatrix_100_small_prob_gt}\\
+  \lean{_one_div_30000},\\
+  \lean{algorithm1SmallEntrySupportMatrix_100_rect_source_budget}\\
+  \lean{_one_div_30000},\\
+  \lean{sqMagTraceProbability_not_algorithm1ExactSpectralEvent}\\
+  \lean{_rect_source_budget_witness},\\
+  \lean{not_forall_algorithm1ExactSpectralEvent}\\
+  \lean{_of_rect_source_budget_one_div_30000}.
+\end{array}
+\]
+\end{leanref}
 
 \section*{Lean artifact table}
 

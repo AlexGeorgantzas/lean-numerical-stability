@@ -334,6 +334,26 @@ noncomputable def hitCountPairwiseCenteredMoment (steps : ℕ) (p : ℝ) : ℝ :
     (steps : ℝ) * ((steps - 1 : ℕ) : ℝ) * (p * p)) -
     ((steps : ℝ) * p) ^ 2
 
+/-- The pairwise-independent hit-count centered second-moment expression is at
+    most its mean when the marginal probability is nonnegative. -/
+theorem hitCountPairwiseCenteredMoment_le_steps_mul
+    (steps : ℕ) (p : ℝ) (hp : 0 ≤ p) :
+    hitCountPairwiseCenteredMoment steps p ≤ (steps : ℝ) * p := by
+  have hsteps : 0 ≤ (steps : ℝ) := by exact_mod_cast Nat.zero_le steps
+  have hpred : ((steps - 1 : ℕ) : ℝ) ≤ (steps : ℝ) := by
+    exact_mod_cast Nat.sub_le steps 1
+  have hp2 : 0 ≤ p * p := mul_nonneg hp hp
+  have hmul1 :
+      (steps : ℝ) * ((steps - 1 : ℕ) : ℝ) ≤
+        (steps : ℝ) * (steps : ℝ) :=
+    mul_le_mul_of_nonneg_left hpred hsteps
+  have hmul :
+      (steps : ℝ) * ((steps - 1 : ℕ) : ℝ) * (p * p) ≤
+        (steps : ℝ) * (steps : ℝ) * (p * p) :=
+    mul_le_mul_of_nonneg_right hmul1 hp2
+  unfold hitCountPairwiseCenteredMoment
+  nlinarith [hmul]
+
 /-- Centered second moment of the hit counter around its mean `steps * p`, under
     pairwise independence of distinct hit indicators.  The expression is kept in
     a form that is valid without splitting off the `steps = 0` case. -/
@@ -552,6 +572,240 @@ theorem sqMagTraceProbMass_sum_eq_one {m n steps : ℕ}
   rw [← hright, ← hprod]
   exact hleft
 
+/-- Under the independent product trace law, a function of one sampled entry
+    has expectation equal to its one-step entry expectation. -/
+theorem sqMagTraceProbMass_marginal_one {m n steps : ℕ}
+    (A : Fin m → Fin n → ℝ) (hden : sqMagProbDen A ≠ 0)
+    (t0 : Fin steps) (f : ElementwiseSample m n → ℝ) :
+    (∑ samples : ElementwiseTrace m n steps,
+      sqMagTraceProbMass A samples * f (samples t0)) =
+      ∑ x : ElementwiseSample m n, sqMagProb A x.1 x.2 * f x := by
+  classical
+  have hprod :=
+    Finset.prod_univ_sum
+      (t := fun _ : Fin steps => (Finset.univ : Finset (ElementwiseSample m n)))
+      (f := fun t x =>
+        if t = t0 then sqMagProb A x.1 x.2 * f x
+        else sqMagProb A x.1 x.2)
+  have hleft :
+      (∏ t : Fin steps,
+        ∑ x ∈ (Finset.univ : Finset (ElementwiseSample m n)),
+          (if t = t0 then sqMagProb A x.1 x.2 * f x
+          else sqMagProb A x.1 x.2)) =
+        ∑ x : ElementwiseSample m n, sqMagProb A x.1 x.2 * f x := by
+    simp [sqMagProb_sum_samples_eq_one A hden]
+  have hright :
+      (∑ x ∈ Fintype.piFinset
+        (fun _ : Fin steps => (Finset.univ : Finset (ElementwiseSample m n))),
+        ∏ i, (if i = t0 then sqMagProb A (x i).1 (x i).2 * f (x i)
+          else sqMagProb A (x i).1 (x i).2))
+        = ∑ samples : ElementwiseTrace m n steps,
+          sqMagTraceProbMass A samples * f (samples t0) := by
+    simp [sqMagTraceProbMass, ElementwiseTrace]
+    apply Finset.sum_congr rfl
+    intro x _
+    have h1 := Finset.prod_eq_mul_prod_diff_singleton
+      (s := (Finset.univ : Finset (Fin steps))) t0
+      (fun i : Fin steps =>
+        if i = t0 then sqMagProb A (x i).1 (x i).2 * f (x i)
+        else sqMagProb A (x i).1 (x i).2)
+      (by intro h; simp at h)
+    have h2 := Finset.prod_eq_mul_prod_diff_singleton
+      (s := (Finset.univ : Finset (Fin steps))) t0
+      (fun i : Fin steps => sqMagProb A (x i).1 (x i).2)
+      (by intro h; simp at h)
+    simp at h1 h2
+    rw [h1, h2]
+    have herase :
+        (∏ x_1 ∈ Finset.univ \ {t0},
+          (if x_1 = t0 then sqMagProb A (x x_1).1 (x x_1).2 * f (x x_1)
+          else sqMagProb A (x x_1).1 (x x_1).2)) =
+        ∏ x_1 ∈ Finset.univ \ {t0}, sqMagProb A (x x_1).1 (x x_1).2 := by
+      apply Finset.prod_congr rfl
+      intro i hi
+      have hi_ne : i ≠ t0 := by
+        simp at hi
+        exact hi
+      simp [hi_ne]
+    rw [herase]
+    ring
+  rw [← hright, ← hprod]
+  exact hleft
+
+/-- Product-law pointwise factorization for two distinct elementwise trace
+    coordinates. -/
+private theorem sqMagTraceProbMass_two_point_factor
+    {m n steps : ℕ} (A : Fin m → Fin n → ℝ)
+    (t u : Fin steps) (htu : t ≠ u)
+    (f g : ElementwiseSample m n → ℝ)
+    (x : ElementwiseTrace m n steps) :
+    (∏ r : Fin steps,
+      if r = t then sqMagProb A (x r).1 (x r).2 * f (x r)
+      else if r = u then sqMagProb A (x r).1 (x r).2 * g (x r)
+      else sqMagProb A (x r).1 (x r).2) =
+    (∏ r : Fin steps, sqMagProb A (x r).1 (x r).2) *
+      f (x t) * g (x u) := by
+  classical
+  have hfactor : ∀ r : Fin steps,
+      (if r = t then sqMagProb A (x r).1 (x r).2 * f (x r)
+      else if r = u then sqMagProb A (x r).1 (x r).2 * g (x r)
+      else sqMagProb A (x r).1 (x r).2) =
+      sqMagProb A (x r).1 (x r).2 *
+        (if r = t then f (x r) else if r = u then g (x r) else 1) := by
+    intro r
+    by_cases hrt : r = t
+    · simp [hrt]
+    · by_cases hru : r = u
+      · simp [hru]
+      · simp [hrt, hru]
+  simp_rw [hfactor]
+  rw [Finset.prod_mul_distrib]
+  have hprod_t := Finset.prod_eq_mul_prod_diff_singleton
+    (s := (Finset.univ : Finset (Fin steps))) t
+    (fun r : Fin steps =>
+      if r = t then f (x r) else if r = u then g (x r) else 1)
+    (by intro h; simp at h)
+  simp at hprod_t
+  have hfac :
+      (∏ x_1 : Fin steps,
+        if x_1 = t then f (x x_1) else if x_1 = u then g (x x_1) else 1)
+      = f (x t) * g (x u) := by
+    rw [hprod_t]
+    have herase :
+        (∏ x_1 ∈ Finset.univ \ {t},
+          if x_1 = t then f (x x_1) else if x_1 = u then g (x x_1)
+          else 1) = g (x u) := by
+      have hprod_u := Finset.prod_eq_mul_prod_diff_singleton
+        (s := ((Finset.univ : Finset (Fin steps)).erase t)) u
+        (fun r : Fin steps =>
+          if r = t then f (x r) else if r = u then g (x r) else 1)
+        (by
+          intro hu_notin
+          have : u ∈ (Finset.univ : Finset (Fin steps)).erase t := by
+            simp [htu.symm]
+          exact False.elim (hu_notin this))
+      simp [htu.symm] at hprod_u
+      rw [Finset.sdiff_singleton_eq_erase]
+      rw [hprod_u]
+      have hrest :
+          (∏ x_1 ∈ (Finset.univ : Finset (Fin steps)).erase t \ {u},
+            if x_1 = t then f (x x_1) else if x_1 = u then g (x x_1)
+            else 1) = 1 := by
+        apply Finset.prod_eq_one
+        intro r hr
+        have hrt : r ≠ t := by
+          simp at hr
+          exact hr.1
+        have hru : r ≠ u := by
+          simp at hr
+          exact hr.2
+        simp [hrt, hru]
+      rw [hrest]
+      ring
+    rw [herase]
+  rw [hfac]
+  ring
+
+/-- Two distinct coordinates of the independent elementwise trace have product
+    expectation equal to the product of their one-step expectations. -/
+theorem sqMagTraceProbMass_marginal_two_ne {m n steps : ℕ}
+    (A : Fin m → Fin n → ℝ) (hden : sqMagProbDen A ≠ 0)
+    (t u : Fin steps) (htu : t ≠ u)
+    (f g : ElementwiseSample m n → ℝ) :
+    (∑ samples : ElementwiseTrace m n steps,
+      sqMagTraceProbMass A samples *
+        (f (samples t) * g (samples u))) =
+      (∑ x : ElementwiseSample m n, sqMagProb A x.1 x.2 * f x) *
+      (∑ x : ElementwiseSample m n, sqMagProb A x.1 x.2 * g x) := by
+  classical
+  have hprod :=
+    Finset.prod_univ_sum
+      (t := fun _ : Fin steps =>
+        (Finset.univ : Finset (ElementwiseSample m n)))
+      (f := fun r x =>
+        if r = t then sqMagProb A x.1 x.2 * f x
+        else if r = u then sqMagProb A x.1 x.2 * g x
+        else sqMagProb A x.1 x.2)
+  have hleft :
+      (∏ r : Fin steps,
+        ∑ x ∈ (Finset.univ : Finset (ElementwiseSample m n)),
+          (if r = t then sqMagProb A x.1 x.2 * f x
+          else if r = u then sqMagProb A x.1 x.2 * g x
+          else sqMagProb A x.1 x.2)) =
+      (∑ x : ElementwiseSample m n, sqMagProb A x.1 x.2 * f x) *
+      (∑ x : ElementwiseSample m n, sqMagProb A x.1 x.2 * g x) := by
+    simp [sqMagProb_sum_samples_eq_one A hden]
+    have hprod_t := Finset.prod_eq_mul_prod_diff_singleton
+      (s := (Finset.univ : Finset (Fin steps))) t
+      (fun r : Fin steps =>
+        if r = t then
+          ∑ x : ElementwiseSample m n, sqMagProb A x.1 x.2 * f x
+        else if r = u then
+          ∑ x : ElementwiseSample m n, sqMagProb A x.1 x.2 * g x
+        else 1)
+      (by intro h; simp at h)
+    simp at hprod_t
+    rw [hprod_t]
+    have herase :
+        (∏ x_1 ∈ Finset.univ \ {t},
+          if x_1 = t then
+            ∑ x : ElementwiseSample m n, sqMagProb A x.1 x.2 * f x
+          else if x_1 = u then
+            ∑ x : ElementwiseSample m n, sqMagProb A x.1 x.2 * g x
+          else 1) =
+          ∑ x : ElementwiseSample m n, sqMagProb A x.1 x.2 * g x := by
+      rw [Finset.sdiff_singleton_eq_erase]
+      have hprod_u := Finset.prod_eq_mul_prod_diff_singleton
+        (s := ((Finset.univ : Finset (Fin steps)).erase t)) u
+        (fun r : Fin steps =>
+          if r = t then
+            ∑ x : ElementwiseSample m n, sqMagProb A x.1 x.2 * f x
+          else if r = u then
+            ∑ x : ElementwiseSample m n, sqMagProb A x.1 x.2 * g x
+          else 1)
+        (by
+          intro hu_notin
+          have : u ∈ (Finset.univ : Finset (Fin steps)).erase t := by
+            simp [htu.symm]
+          exact False.elim (hu_notin this))
+      simp [htu.symm] at hprod_u
+      rw [hprod_u]
+      have hrest :
+          (∏ x_1 ∈ (Finset.univ : Finset (Fin steps)).erase t \ {u},
+            if x_1 = t then
+              ∑ x : ElementwiseSample m n, sqMagProb A x.1 x.2 * f x
+            else if x_1 = u then
+              ∑ x : ElementwiseSample m n, sqMagProb A x.1 x.2 * g x
+            else 1) = 1 := by
+        apply Finset.prod_eq_one
+        intro r hr
+        have hrt : r ≠ t := by
+          simp at hr
+          exact hr.1
+        have hru : r ≠ u := by
+          simp at hr
+          exact hr.2
+        simp [hrt, hru]
+      rw [hrest]
+      ring
+    rw [herase]
+  have hright :
+      (∑ x ∈ Fintype.piFinset
+        (fun _ : Fin steps => (Finset.univ : Finset (ElementwiseSample m n))),
+        ∏ r, (if r = t then sqMagProb A (x r).1 (x r).2 * f (x r)
+          else if r = u then sqMagProb A (x r).1 (x r).2 * g (x r)
+          else sqMagProb A (x r).1 (x r).2))
+        = ∑ samples : ElementwiseTrace m n steps,
+          sqMagTraceProbMass A samples *
+            (f (samples t) * g (samples u)) := by
+    simp [sqMagTraceProbMass, ElementwiseTrace]
+    apply Finset.sum_congr rfl
+    intro x _
+    simpa [mul_assoc] using
+      sqMagTraceProbMass_two_point_factor A t u htu f g x
+  rw [← hright, ← hprod]
+  exact hleft
+
 /-- The canonical finite probability space for Algorithm 1 traces with
     independent squared-magnitude samples at every step. -/
 noncomputable def sqMagTraceProbability {m n steps : ℕ}
@@ -560,6 +814,281 @@ noncomputable def sqMagTraceProbability {m n steps : ℕ}
   prob := sqMagTraceProbMass A
   prob_nonneg := sqMagTraceProbMass_nonneg A hden
   prob_sum := sqMagTraceProbMass_sum_eq_one A hden.ne'
+
+/-- Expectation form of `sqMagTraceProbMass_marginal_one` for the canonical
+    finite probability space.  This is the reusable product-law adapter for
+    lifting one-step calculations to any fixed trace coordinate. -/
+theorem sqMagTraceProbability_expectationReal_step_eq {m n steps : ℕ}
+    (A : Fin m → Fin n → ℝ) (hden : 0 < sqMagProbDen A)
+    (t0 : Fin steps) (f : ElementwiseSample m n → ℝ) :
+    (sqMagTraceProbability (steps := steps) A hden).expectationReal
+      (fun samples => f (samples t0)) =
+      ∑ x : ElementwiseSample m n, sqMagProb A x.1 x.2 * f x := by
+  simpa [FiniteProbability.expectationReal, sqMagTraceProbability] using
+    sqMagTraceProbMass_marginal_one A hden.ne' t0 f
+
+/-- Trace-support predicate for Algorithm 1: every sampled entry has positive
+    squared-magnitude probability.  Entries with zero probability carry zero
+    mass under the canonical product law, so this is the event on which all
+    sampled-entry divisions have nonzero denominators. -/
+def elementwiseTracePositiveProb {m n steps : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (samples : ElementwiseTrace m n steps) : Prop :=
+  ∀ t : Fin steps, 0 < sqMagProb A (samples t).1 (samples t).2
+
+theorem sqMagTraceProbMass_eq_zero_of_exists_prob_zero {m n steps : ℕ}
+    (A : Fin m → Fin n → ℝ) (samples : ElementwiseTrace m n steps)
+    (hzero :
+      ∃ t : Fin steps, sqMagProb A (samples t).1 (samples t).2 = 0) :
+    sqMagTraceProbMass A samples = 0 := by
+  classical
+  rcases hzero with ⟨t, ht⟩
+  unfold sqMagTraceProbMass
+  exact Finset.prod_eq_zero (Finset.mem_univ t) ht
+
+/-- The independent Algorithm 1 elementwise sampler assigns probability one to
+    traces whose sampled entries all have positive squared-magnitude
+    probability. -/
+theorem sqMagTraceProbability_eventProb_elementwiseTracePositiveProb
+    {m n steps : ℕ} (A : Fin m → Fin n → ℝ)
+    (hden : 0 < sqMagProbDen A) :
+    (sqMagTraceProbability (steps := steps) A hden).eventProb
+      {samples | elementwiseTracePositiveProb A samples} = 1 := by
+  classical
+  let P := sqMagTraceProbability (steps := steps) A hden
+  let Good : Set (ElementwiseTrace m n steps) :=
+    {samples | elementwiseTracePositiveProb A samples}
+  have hcompl_zero : P.eventProb Goodᶜ = 0 := by
+    unfold FiniteProbability.eventProb
+    apply Finset.sum_eq_zero
+    intro samples _
+    by_cases hbad : samples ∈ Goodᶜ
+    · have hnot_good : samples ∉ Good := by simpa using hbad
+      have hexists :
+          ∃ t : Fin steps,
+            sqMagProb A (samples t).1 (samples t).2 = 0 := by
+        by_contra hno
+        have hgood : samples ∈ Good := by
+          intro t
+          have hne : sqMagProb A (samples t).1 (samples t).2 ≠ 0 := by
+            intro hzero
+            exact hno ⟨t, hzero⟩
+          exact lt_of_le_of_ne
+            (sqMagProb_nonneg A hden (samples t).1 (samples t).2)
+            (Ne.symm hne)
+        exact hnot_good hgood
+      have hmass :=
+        sqMagTraceProbMass_eq_zero_of_exists_prob_zero A samples hexists
+      simp [P, Good, sqMagTraceProbability, hbad, hmass]
+    · simp [hbad]
+  have hsplit := P.eventProb_add_eventProb_compl Good
+  rw [hcompl_zero] at hsplit
+  linarith
+
+/-- In the canonical independent trace law, each step hits entry `(i, j)` with
+    probability `pᵢⱼ = sqMagProb A i j`. -/
+theorem sqMagTraceProbability_eventProb_sampleHits {m n steps : ℕ}
+    (A : Fin m → Fin n → ℝ) (hden : 0 < sqMagProbDen A)
+    (t : Fin steps) (i : Fin m) (j : Fin n) :
+    (sqMagTraceProbability (steps := steps) A hden).eventProb
+      {samples | sampleHits samples t i j} =
+      sqMagProb A i j := by
+  classical
+  let f : ElementwiseSample m n → ℝ :=
+    fun x => if x.1 = i ∧ x.2 = j then 1 else 0
+  have hmarg :=
+    sqMagTraceProbMass_marginal_one A hden.ne' t f
+  have hleft :
+      (sqMagTraceProbability (steps := steps) A hden).eventProb
+        {samples | sampleHits samples t i j} =
+        ∑ samples : ElementwiseTrace m n steps,
+          sqMagTraceProbMass A samples * f (samples t) := by
+    unfold FiniteProbability.eventProb sqMagTraceProbability f sampleHits
+    apply Finset.sum_congr rfl
+    intro samples _
+    by_cases h : (samples t).1 = i ∧ (samples t).2 = j <;> simp [h]
+  have hright :
+      (∑ x : ElementwiseSample m n, sqMagProb A x.1 x.2 * f x) =
+        sqMagProb A i j := by
+    rw [Finset.sum_eq_single (i, j)]
+    · simp [f]
+    · intro x _ hx
+      have hnot : ¬ (x.1 = i ∧ x.2 = j) := by
+        intro h
+        apply hx
+        ext <;> simp [h.1, h.2]
+      simp [f, hnot]
+    · intro hnot
+      simp at hnot
+  rw [hleft, hmarg, hright]
+
+/-- In the canonical independent trace law, two distinct steps hit the same
+    entry with product probability `pᵢⱼ^2`. -/
+theorem sqMagTraceProbability_eventProb_sampleHits_pair_ne {m n steps : ℕ}
+    (A : Fin m → Fin n → ℝ) (hden : 0 < sqMagProbDen A)
+    (t u : Fin steps) (htu : t ≠ u) (i : Fin m) (j : Fin n) :
+    (sqMagTraceProbability (steps := steps) A hden).eventProb
+      {samples | sampleHits samples t i j ∧ sampleHits samples u i j} =
+      sqMagProb A i j * sqMagProb A i j := by
+  classical
+  let f : ElementwiseSample m n → ℝ :=
+    fun x => if x.1 = i ∧ x.2 = j then 1 else 0
+  have hsingle :
+      (∑ x : ElementwiseSample m n, sqMagProb A x.1 x.2 * f x) =
+        sqMagProb A i j := by
+    rw [Finset.sum_eq_single (i, j)]
+    · simp [f]
+    · intro x _ hx
+      have hnot : ¬ (x.1 = i ∧ x.2 = j) := by
+        intro h
+        apply hx
+        ext <;> simp [h.1, h.2]
+      simp [f, hnot]
+    · intro hnot
+      simp at hnot
+  have hE :
+      (sqMagTraceProbability (steps := steps) A hden).expectationReal
+        (fun samples =>
+          hitIndicator samples t i j * hitIndicator samples u i j) =
+        sqMagProb A i j * sqMagProb A i j := by
+    unfold FiniteProbability.expectationReal sqMagTraceProbability
+    calc
+      ∑ samples : ElementwiseTrace m n steps,
+          sqMagTraceProbMass A samples *
+            (hitIndicator samples t i j * hitIndicator samples u i j)
+          = ∑ samples : ElementwiseTrace m n steps,
+              sqMagTraceProbMass A samples *
+                (f (samples t) * f (samples u)) := by
+              apply Finset.sum_congr rfl
+              intro samples _
+              unfold f hitIndicator sampleHits
+              by_cases ht : (samples t).1 = i ∧ (samples t).2 = j <;>
+                by_cases hu : (samples u).1 = i ∧ (samples u).2 = j <;>
+                  simp [ht, hu]
+      _ = (∑ x : ElementwiseSample m n, sqMagProb A x.1 x.2 * f x) *
+            (∑ x : ElementwiseSample m n, sqMagProb A x.1 x.2 * f x) :=
+              sqMagTraceProbMass_marginal_two_ne A hden.ne' t u htu f f
+      _ = sqMagProb A i j * sqMagProb A i j := by
+              rw [hsingle]
+  rw [expectationReal_hitIndicator_mul_eq_eventProb_inter
+    (sqMagTraceProbability (steps := steps) A hden)
+    (fun samples : ElementwiseTrace m n steps => samples) t u i j] at hE
+  exact hE
+
+/-- Expected hit count under the canonical independent Algorithm 1 trace law. -/
+theorem sqMagTraceProbability_expectationReal_hitCount_eq {m n steps : ℕ}
+    (A : Fin m → Fin n → ℝ) (hden : 0 < sqMagProbDen A)
+    (i : Fin m) (j : Fin n) :
+    (sqMagTraceProbability (steps := steps) A hden).expectationReal
+      (fun samples => (hitCount samples i j : ℝ)) =
+      (steps : ℝ) * sqMagProb A i j := by
+  exact expectationReal_hitCount_eq_steps_mul_hitProb
+    (sqMagTraceProbability (steps := steps) A hden)
+    (fun samples => samples) i j (sqMagProb A i j)
+    (fun t => sqMagTraceProbability_eventProb_sampleHits A hden t i j)
+
+/-- Nonzero-entry unbiasedness for the exact Algorithm 1 trace estimator under
+    the canonical independent squared-magnitude trace law.  The trace length
+    `steps` and the update denominator `s` are linked by `steps = s`. -/
+theorem sqMagTraceProbability_expectationReal_elementwiseTraceSketch_nonzero_entry
+    {m n steps : ℕ} (s : ℕ)
+    (A : Fin m → Fin n → ℝ) (hden : 0 < sqMagProbDen A)
+    (i : Fin m) (j : Fin n) (hsteps : steps = s)
+    (hs : (s : ℝ) ≠ 0) (hAij : A i j ≠ 0) :
+    (sqMagTraceProbability (steps := steps) A hden).expectationReal
+      (fun samples => elementwiseTraceSketch s A (fun _ _ => 0) samples i j) =
+      A i j := by
+  let P := sqMagTraceProbability (steps := steps) A hden
+  let c : ℝ := frobNormSqRect A / ((s : ℝ) * A i j)
+  have hpoint : ∀ samples : ElementwiseTrace m n steps,
+      elementwiseTraceSketch s A (fun _ _ => 0) samples i j =
+        (hitCount samples i j : ℝ) * c := by
+    intro samples
+    have h :=
+      elementwiseTraceSketch_sqMag_eq s A (fun _ _ => 0) samples i j hs hAij
+    simpa [c] using h
+  have hE :
+      P.expectationReal
+        (fun samples : ElementwiseTrace m n steps =>
+          elementwiseTraceSketch s A (fun _ _ => 0) samples i j) =
+        P.expectationReal
+          (fun samples : ElementwiseTrace m n steps =>
+            (hitCount samples i j : ℝ) * c) := by
+    apply Finset.sum_congr rfl
+    intro samples _
+    simp [hpoint samples]
+  have hhit :
+      P.expectationReal
+        (fun samples : ElementwiseTrace m n steps => (hitCount samples i j : ℝ)) =
+        (steps : ℝ) * sqMagProb A i j :=
+    sqMagTraceProbability_expectationReal_hitCount_eq A hden i j
+  have hconst :
+      P.expectationReal
+        (fun samples : ElementwiseTrace m n steps =>
+          (hitCount samples i j : ℝ) * c) =
+        ((steps : ℝ) * sqMagProb A i j) * c := by
+    rw [FiniteProbability.expectationReal_mul_const, hhit]
+  rw [hE, hconst]
+  have hF : frobNormSqRect A ≠ 0 := by
+    simpa [sqMagProbDen] using hden.ne'
+  unfold c sqMagProb sqMagProbDen
+  rw [hsteps]
+  field_simp [hs, hAij]
+
+/-- If the target entry is zero, the exact Algorithm 1 trace contribution at
+    that entry is identically zero, independently of the sampled trace. -/
+theorem elementwiseTraceSketch_zero_init_of_entry_eq_zero {m n steps : ℕ}
+    (s : ℕ) (A : Fin m → Fin n → ℝ)
+    (samples : ElementwiseTrace m n steps) (i : Fin m) (j : Fin n)
+    (hAij : A i j = 0) :
+    elementwiseTraceSketch s A (fun _ _ => 0) samples i j = 0 := by
+  classical
+  have hinc : elementwiseIncrement s A i j = 0 := by
+    simp [elementwiseIncrement, elementwiseIncrementWithProb, hAij]
+  simp [elementwiseTraceSketch, elementwiseTraceContribution, hinc]
+
+/-- Zero-entry unbiasedness for the exact Algorithm 1 trace estimator. -/
+theorem sqMagTraceProbability_expectationReal_elementwiseTraceSketch_zero_entry
+    {m n steps : ℕ} (s : ℕ)
+    (A : Fin m → Fin n → ℝ) (hden : 0 < sqMagProbDen A)
+    (i : Fin m) (j : Fin n) (hAij : A i j = 0) :
+    (sqMagTraceProbability (steps := steps) A hden).expectationReal
+      (fun samples => elementwiseTraceSketch s A (fun _ _ => 0) samples i j) =
+      A i j := by
+  classical
+  unfold FiniteProbability.expectationReal
+  simp [elementwiseTraceSketch_zero_init_of_entry_eq_zero s A, hAij]
+
+/-- Entrywise unbiasedness for the exact Algorithm 1 trace estimator under the
+    canonical independent squared-magnitude trace law.  The trace length
+    `steps` and the algorithm parameter `s` are linked by `steps = s`. -/
+theorem sqMagTraceProbability_expectationReal_elementwiseTraceSketch_entry
+    {m n steps : ℕ} (s : ℕ)
+    (A : Fin m → Fin n → ℝ) (hden : 0 < sqMagProbDen A)
+    (i : Fin m) (j : Fin n) (hsteps : steps = s)
+    (hs : (s : ℝ) ≠ 0) :
+    (sqMagTraceProbability (steps := steps) A hden).expectationReal
+      (fun samples => elementwiseTraceSketch s A (fun _ _ => 0) samples i j) =
+      A i j := by
+  by_cases hAij_zero : A i j = 0
+  · exact sqMagTraceProbability_expectationReal_elementwiseTraceSketch_zero_entry
+      s A hden i j hAij_zero
+  · exact sqMagTraceProbability_expectationReal_elementwiseTraceSketch_nonzero_entry
+      s A hden i j hsteps hs hAij_zero
+
+/-- Matrix form of Algorithm 1 unbiasedness for the exact trace estimator,
+    stated entrywise as an equality of matrices. -/
+theorem sqMagTraceProbability_expectationReal_elementwiseTraceSketch_matrix
+    {m n steps : ℕ} (s : ℕ)
+    (A : Fin m → Fin n → ℝ) (hden : 0 < sqMagProbDen A)
+    (hsteps : steps = s) (hs : (s : ℝ) ≠ 0) :
+    (fun i j =>
+      (sqMagTraceProbability (steps := steps) A hden).expectationReal
+        (fun samples => elementwiseTraceSketch s A (fun _ _ => 0) samples i j)) =
+      A := by
+  funext i j
+  exact sqMagTraceProbability_expectationReal_elementwiseTraceSketch_entry
+    s A hden i j hsteps hs
 
 /-- The one-step exponential moment for a single squared-magnitude sample. -/
 theorem sqMag_sampleHitIndicator_exp_sum {m n : ℕ}
@@ -607,6 +1136,363 @@ theorem sqMag_sampleHitIndicator_exp_sum {m n : ℕ}
               simp at hnot
     _ = 1 + sqMagProb A i j * (Real.exp lam - 1) := by
             simp [p]
+
+/-- Exponential of a trace-sum of an arbitrary one-step scalar function
+    factors into the product of one-step exponentials. -/
+theorem exp_sum_stepFunction_eq_prod {m n steps : ℕ}
+    (samples : ElementwiseTrace m n steps)
+    (f : ElementwiseSample m n → ℝ) (lam : ℝ) :
+    Real.exp (lam * (∑ t : Fin steps, f (samples t))) =
+      ∏ t : Fin steps, Real.exp (lam * f (samples t)) := by
+  classical
+  calc
+    Real.exp (lam * (∑ t : Fin steps, f (samples t)))
+        = Real.exp (∑ t : Fin steps, lam * f (samples t)) := by
+            rw [Finset.mul_sum]
+    _ = ∏ t : Fin steps, Real.exp (lam * f (samples t)) := by
+            simpa using
+              (Real.exp_sum (Finset.univ : Finset (Fin steps))
+                (fun t => lam * f (samples t)))
+
+/-- Product-law MGF factorization for an arbitrary one-step scalar statistic
+    under the canonical independent squared-magnitude trace distribution. -/
+theorem sqMagTraceProbMass_exp_sum_stepFunction_eq {m n steps : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (f : ElementwiseSample m n → ℝ) (lam : ℝ) :
+    (∑ samples : ElementwiseTrace m n steps,
+      sqMagTraceProbMass A samples *
+        Real.exp (lam * (∑ t : Fin steps, f (samples t)))) =
+      (∑ x : ElementwiseSample m n,
+        sqMagProb A x.1 x.2 * Real.exp (lam * f x)) ^ steps := by
+  classical
+  calc
+    (∑ samples : ElementwiseTrace m n steps,
+      sqMagTraceProbMass A samples *
+        Real.exp (lam * (∑ t : Fin steps, f (samples t))))
+        = ∑ samples : ElementwiseTrace m n steps,
+            ∏ t : Fin steps,
+              sqMagProb A (samples t).1 (samples t).2 *
+                Real.exp (lam * f (samples t)) := by
+            apply Finset.sum_congr rfl
+            intro samples _
+            rw [exp_sum_stepFunction_eq_prod samples f lam]
+            simp [sqMagTraceProbMass, Finset.prod_mul_distrib]
+    _ = ∏ t : Fin steps,
+          ∑ x : ElementwiseSample m n,
+            sqMagProb A x.1 x.2 * Real.exp (lam * f x) := by
+            have hprod :=
+              Finset.prod_univ_sum
+                (t := fun _ : Fin steps =>
+                  (Finset.univ : Finset (ElementwiseSample m n)))
+                (f := fun _ x =>
+                  sqMagProb A x.1 x.2 * Real.exp (lam * f x))
+            symm
+            simpa [ElementwiseTrace] using hprod
+    _ = (∑ x : ElementwiseSample m n,
+          sqMagProb A x.1 x.2 * Real.exp (lam * f x)) ^ steps := by
+            simp [Fintype.card_fin]
+
+/-- Expectation form of the product-law MGF factorization for an arbitrary
+    one-step scalar statistic. -/
+theorem sqMagTraceProbability_expectationReal_exp_sum_stepFunction_eq
+    {m n steps : ℕ} (A : Fin m → Fin n → ℝ)
+    (hden : 0 < sqMagProbDen A)
+    (f : ElementwiseSample m n → ℝ) (lam : ℝ) :
+    (sqMagTraceProbability (steps := steps) A hden).expectationReal
+      (fun samples =>
+        Real.exp (lam * (∑ t : Fin steps, f (samples t)))) =
+      (∑ x : ElementwiseSample m n,
+        sqMagProb A x.1 x.2 * Real.exp (lam * f x)) ^ steps := by
+  simpa [sqMagTraceProbability, FiniteProbability.expectationReal,
+    sqMagTraceProbMass] using
+    sqMagTraceProbMass_exp_sum_stepFunction_eq
+      (steps := steps) A f lam
+
+/-- Exponential-Markov upper tail for a trace-sum of an arbitrary one-step
+    scalar statistic, with the product-law MGF evaluated exactly. -/
+theorem sqMagTraceProbability_eventProb_sum_stepFunction_ge_le_exp_mul_mgf
+    {m n steps : ℕ} (A : Fin m → Fin n → ℝ)
+    (hden : 0 < sqMagProbDen A)
+    (f : ElementwiseSample m n → ℝ) {T lam : ℝ} (hlam : 0 < lam) :
+    (sqMagTraceProbability (steps := steps) A hden).eventProb
+      {samples |
+        T ≤ ∑ t : Fin steps, f (samples t)} ≤
+      Real.exp (-(lam * T)) *
+        (∑ x : ElementwiseSample m n,
+          sqMagProb A x.1 x.2 * Real.exp (lam * f x)) ^ steps := by
+  let P := sqMagTraceProbability (steps := steps) A hden
+  have hmarkov :=
+    FiniteProbability.eventProb_real_ge_le_exp_mul_mgf
+      P (fun samples => ∑ t : Fin steps, f (samples t)) (T := T)
+      (lam := lam) hlam
+  rw [sqMagTraceProbability_expectationReal_exp_sum_stepFunction_eq
+    A hden f lam] at hmarkov
+  simpa [P] using hmarkov
+
+/-- Lower-probability complement form of
+    `sqMagTraceProbability_eventProb_sum_stepFunction_ge_le_exp_mul_mgf`. -/
+theorem sqMagTraceProbability_eventProb_sum_stepFunction_le_ge_one_sub_exp_mul_mgf
+    {m n steps : ℕ} (A : Fin m → Fin n → ℝ)
+    (hden : 0 < sqMagProbDen A)
+    (f : ElementwiseSample m n → ℝ) {T lam : ℝ} (hlam : 0 < lam) :
+    1 - Real.exp (-(lam * T)) *
+        (∑ x : ElementwiseSample m n,
+          sqMagProb A x.1 x.2 * Real.exp (lam * f x)) ^ steps ≤
+      (sqMagTraceProbability (steps := steps) A hden).eventProb
+        {samples |
+          ∑ t : Fin steps, f (samples t) ≤ T} := by
+  let P := sqMagTraceProbability (steps := steps) A hden
+  have htail :=
+    FiniteProbability.eventProb_real_le_ge_one_sub_exp_mul_mgf
+      P (fun samples => ∑ t : Fin steps, f (samples t)) (T := T)
+      (lam := lam) hlam
+  rw [sqMagTraceProbability_expectationReal_exp_sum_stepFunction_eq
+    A hden f lam] at htail
+  simpa [P] using htail
+
+/-- Exponential-Markov upper tail for a trace-sum from a one-step scalar MGF
+    bound.  If `E exp(lam f(X)) <= exp(psi)` for one sampled entry, then the
+    independent trace sum has the expected `exp(s*psi - lam*T)` tail. -/
+theorem sqMagTraceProbability_eventProb_sum_stepFunction_ge_le_exp_of_one_step_mgf_bound
+    {m n steps : ℕ} (A : Fin m → Fin n → ℝ)
+    (hden : 0 < sqMagProbDen A)
+    (f : ElementwiseSample m n → ℝ) {T lam psi : ℝ} (hlam : 0 < lam)
+    (hmgf :
+      (∑ x : ElementwiseSample m n,
+        sqMagProb A x.1 x.2 * Real.exp (lam * f x)) ≤ Real.exp psi) :
+    (sqMagTraceProbability (steps := steps) A hden).eventProb
+      {samples |
+        T ≤ ∑ t : Fin steps, f (samples t)} ≤
+      Real.exp ((steps : ℝ) * psi - lam * T) := by
+  classical
+  let M : ℝ :=
+    ∑ x : ElementwiseSample m n,
+      sqMagProb A x.1 x.2 * Real.exp (lam * f x)
+  have hM_nonneg : 0 ≤ M := by
+    unfold M
+    exact Finset.sum_nonneg fun x _ =>
+      mul_nonneg (sqMagProb_nonneg A hden x.1 x.2)
+        (le_of_lt (Real.exp_pos _))
+  have htail :=
+    sqMagTraceProbability_eventProb_sum_stepFunction_ge_le_exp_mul_mgf
+      (steps := steps) A hden f (T := T) (lam := lam) hlam
+  have hpow : M ^ steps ≤ (Real.exp psi) ^ steps :=
+    pow_le_pow_left₀ hM_nonneg hmgf steps
+  have hmul :
+      Real.exp (-(lam * T)) * M ^ steps ≤
+        Real.exp (-(lam * T)) * (Real.exp psi) ^ steps :=
+    mul_le_mul_of_nonneg_left hpow (le_of_lt (Real.exp_pos _))
+  have hexp :
+      Real.exp (-(lam * T)) * (Real.exp psi) ^ steps =
+        Real.exp ((steps : ℝ) * psi - lam * T) := by
+    rw [← Real.exp_nat_mul]
+    rw [← Real.exp_add]
+    congr 1
+    ring
+  exact htail.trans (hmul.trans_eq hexp)
+
+/-- Complement form of the scalar trace-sum tail obtained from a one-step MGF
+    bound. -/
+theorem sqMagTraceProbability_eventProb_sum_stepFunction_le_ge_one_sub_exp_of_one_step_mgf_bound
+    {m n steps : ℕ} (A : Fin m → Fin n → ℝ)
+    (hden : 0 < sqMagProbDen A)
+    (f : ElementwiseSample m n → ℝ) {T lam psi : ℝ} (hlam : 0 < lam)
+    (hmgf :
+      (∑ x : ElementwiseSample m n,
+        sqMagProb A x.1 x.2 * Real.exp (lam * f x)) ≤ Real.exp psi) :
+    1 - Real.exp ((steps : ℝ) * psi - lam * T) ≤
+      (sqMagTraceProbability (steps := steps) A hden).eventProb
+        {samples |
+          ∑ t : Fin steps, f (samples t) ≤ T} := by
+  classical
+  let M : ℝ :=
+    ∑ x : ElementwiseSample m n,
+      sqMagProb A x.1 x.2 * Real.exp (lam * f x)
+  have hM_nonneg : 0 ≤ M := by
+    unfold M
+    exact Finset.sum_nonneg fun x _ =>
+      mul_nonneg (sqMagProb_nonneg A hden x.1 x.2)
+        (le_of_lt (Real.exp_pos _))
+  have htail :=
+    sqMagTraceProbability_eventProb_sum_stepFunction_le_ge_one_sub_exp_mul_mgf
+      (steps := steps) A hden f (T := T) (lam := lam) hlam
+  have hpow : M ^ steps ≤ (Real.exp psi) ^ steps :=
+    pow_le_pow_left₀ hM_nonneg hmgf steps
+  have hmul :
+      Real.exp (-(lam * T)) * M ^ steps ≤
+        Real.exp (-(lam * T)) * (Real.exp psi) ^ steps :=
+    mul_le_mul_of_nonneg_left hpow (le_of_lt (Real.exp_pos _))
+  have hexp :
+      Real.exp (-(lam * T)) * (Real.exp psi) ^ steps =
+        Real.exp ((steps : ℝ) * psi - lam * T) := by
+    rw [← Real.exp_nat_mul]
+    rw [← Real.exp_add]
+    congr 1
+    ring
+  linarith
+
+/-- Finite-family complement form of the product-law scalar MGF tail.
+
+This is the union-bound layer needed by finite-cover arguments: if each
+one-step statistic `f a` has a scalar MGF bound at parameter `lam a`, then all
+corresponding trace sums are below their thresholds simultaneously with the
+displayed probability.  This is still scalar MGF infrastructure, not a matrix
+Bernstein theorem. -/
+theorem sqMagTraceProbability_eventProb_forall_sum_stepFunction_le_ge_one_sub_sum_exp_of_one_step_mgf_bound
+    {m n steps : ℕ} {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (A : Fin m → Fin n → ℝ) (hden : 0 < sqMagProbDen A)
+    (f : ι → ElementwiseSample m n → ℝ)
+    (T psi lam : ι → ℝ) (hlam : ∀ a, 0 < lam a)
+    (hmgf : ∀ a,
+      (∑ x : ElementwiseSample m n,
+        sqMagProb A x.1 x.2 * Real.exp (lam a * f a x)) ≤
+        Real.exp (psi a)) :
+    1 - ∑ a : ι, Real.exp ((steps : ℝ) * psi a - lam a * T a) ≤
+      (sqMagTraceProbability (steps := steps) A hden).eventProb
+        {samples |
+          ∀ a : ι, ∑ t : Fin steps, f a (samples t) ≤ T a} := by
+  classical
+  let P := sqMagTraceProbability (steps := steps) A hden
+  let E : ι → Set (ElementwiseTrace m n steps) := fun a =>
+    {samples | ∑ t : Fin steps, f a (samples t) ≤ T a}
+  let δ : ι → ℝ := fun a =>
+    Real.exp ((steps : ℝ) * psi a - lam a * T a)
+  have hEach : ∀ a : ι, 1 - δ a ≤ P.eventProb (E a) := by
+    intro a
+    simpa [P, E, δ] using
+      sqMagTraceProbability_eventProb_sum_stepFunction_le_ge_one_sub_exp_of_one_step_mgf_bound
+        (steps := steps) A hden (f a) (T := T a) (lam := lam a)
+        (psi := psi a) (hlam a) (hmgf a)
+  have hAll :=
+    FiniteProbability.eventProb_forall_ge_one_sub_sum
+      P E δ hEach
+  have hset :
+      {samples : ElementwiseTrace m n steps |
+        ∀ a : ι, samples ∈ E a} =
+      {samples : ElementwiseTrace m n steps |
+        ∀ a : ι, ∑ t : Fin steps, f a (samples t) ≤ T a} := by
+    ext samples
+    simp [E]
+  simpa [P, E, δ, hset] using hAll
+
+/-- A pointwise upper bound on a one-step statistic gives a one-step scalar MGF
+    bound under the squared-magnitude sampling law. -/
+theorem sqMagProb_sum_exp_stepFunction_le_exp_of_forall_le
+    {m n : ℕ} (A : Fin m → Fin n → ℝ)
+    (hden : 0 < sqMagProbDen A)
+    (f : ElementwiseSample m n → ℝ) {lam B : ℝ} (hlam : 0 ≤ lam)
+    (hf : ∀ x : ElementwiseSample m n, f x ≤ B) :
+    (∑ x : ElementwiseSample m n,
+      sqMagProb A x.1 x.2 * Real.exp (lam * f x)) ≤
+      Real.exp (lam * B) := by
+  classical
+  calc
+    (∑ x : ElementwiseSample m n,
+      sqMagProb A x.1 x.2 * Real.exp (lam * f x))
+        ≤ ∑ x : ElementwiseSample m n,
+            sqMagProb A x.1 x.2 * Real.exp (lam * B) := by
+            apply Finset.sum_le_sum
+            intro x _
+            have harg : lam * f x ≤ lam * B :=
+              mul_le_mul_of_nonneg_left (hf x) hlam
+            exact mul_le_mul_of_nonneg_left
+              (Real.exp_le_exp.mpr harg)
+              (sqMagProb_nonneg A hden x.1 x.2)
+    _ = (∑ x : ElementwiseSample m n, sqMagProb A x.1 x.2) *
+          Real.exp (lam * B) := by
+            rw [Finset.sum_mul]
+    _ = Real.exp (lam * B) := by
+            rw [sqMagProb_sum_samples_eq_one A hden.ne']
+            ring
+
+/-- A support-aware pointwise upper bound on a one-step statistic gives a
+    one-step scalar MGF bound under the squared-magnitude sampling law.
+
+This variant is important for truncated sampling: samples with zero probability
+do not need to satisfy the pointwise bound, because their mass is zero in the
+one-step law. -/
+theorem sqMagProb_sum_exp_stepFunction_le_exp_of_support_forall_le
+    {m n : ℕ} (A : Fin m → Fin n → ℝ)
+    (hden : 0 < sqMagProbDen A)
+    (f : ElementwiseSample m n → ℝ) {lam B : ℝ} (hlam : 0 ≤ lam)
+    (hf : ∀ x : ElementwiseSample m n,
+      0 < sqMagProb A x.1 x.2 → f x ≤ B) :
+    (∑ x : ElementwiseSample m n,
+      sqMagProb A x.1 x.2 * Real.exp (lam * f x)) ≤
+      Real.exp (lam * B) := by
+  classical
+  calc
+    (∑ x : ElementwiseSample m n,
+      sqMagProb A x.1 x.2 * Real.exp (lam * f x))
+        ≤ ∑ x : ElementwiseSample m n,
+            sqMagProb A x.1 x.2 * Real.exp (lam * B) := by
+            apply Finset.sum_le_sum
+            intro x _
+            by_cases hpos : 0 < sqMagProb A x.1 x.2
+            · have harg : lam * f x ≤ lam * B :=
+                mul_le_mul_of_nonneg_left (hf x hpos) hlam
+              exact mul_le_mul_of_nonneg_left
+                (Real.exp_le_exp.mpr harg)
+                (sqMagProb_nonneg A hden x.1 x.2)
+            · have hzero : sqMagProb A x.1 x.2 = 0 :=
+                le_antisymm (le_of_not_gt hpos)
+                  (sqMagProb_nonneg A hden x.1 x.2)
+              simp [hzero]
+    _ = (∑ x : ElementwiseSample m n, sqMagProb A x.1 x.2) *
+          Real.exp (lam * B) := by
+            rw [Finset.sum_mul]
+    _ = Real.exp (lam * B) := by
+            rw [sqMagProb_sum_samples_eq_one A hden.ne']
+            ring
+
+/-- Finite-family scalar trace-sum tail from pointwise one-step bounds.
+
+This is weaker than a Bernstein/Hoeffding-type MGF estimate, but it is fully
+proved from the local squared-magnitude product law and is useful as a
+bookkeeping-free finite-test support theorem. -/
+theorem sqMagTraceProbability_eventProb_forall_sum_stepFunction_le_ge_one_sub_sum_exp_of_pointwise_bound
+    {m n steps : ℕ} {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (A : Fin m → Fin n → ℝ) (hden : 0 < sqMagProbDen A)
+    (f : ι → ElementwiseSample m n → ℝ)
+    (T B lam : ι → ℝ) (hlam : ∀ a, 0 < lam a)
+    (hbound : ∀ a x, f a x ≤ B a) :
+    1 - ∑ a : ι, Real.exp ((steps : ℝ) * (lam a * B a) - lam a * T a) ≤
+      (sqMagTraceProbability (steps := steps) A hden).eventProb
+        {samples |
+          ∀ a : ι, ∑ t : Fin steps, f a (samples t) ≤ T a} := by
+  classical
+  exact
+    sqMagTraceProbability_eventProb_forall_sum_stepFunction_le_ge_one_sub_sum_exp_of_one_step_mgf_bound
+      (steps := steps) A hden f T (fun a => lam a * B a) lam hlam
+      (by
+        intro a
+        exact sqMagProb_sum_exp_stepFunction_le_exp_of_forall_le
+          A hden (f a) (le_of_lt (hlam a)) (hbound a))
+
+/-- Finite-family scalar trace-sum tail from support-aware pointwise one-step
+    bounds.
+
+The pointwise hypothesis only needs to hold on one-step samples with positive
+squared-magnitude probability.  This avoids adding artificial hypotheses for
+zero-mass truncated samples. -/
+theorem sqMagTraceProbability_eventProb_forall_sum_stepFunction_le_ge_one_sub_sum_exp_of_support_pointwise_bound
+    {m n steps : ℕ} {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (A : Fin m → Fin n → ℝ) (hden : 0 < sqMagProbDen A)
+    (f : ι → ElementwiseSample m n → ℝ)
+    (T B lam : ι → ℝ) (hlam : ∀ a, 0 < lam a)
+    (hbound : ∀ a x, 0 < sqMagProb A x.1 x.2 → f a x ≤ B a) :
+    1 - ∑ a : ι, Real.exp ((steps : ℝ) * (lam a * B a) - lam a * T a) ≤
+      (sqMagTraceProbability (steps := steps) A hden).eventProb
+        {samples |
+          ∀ a : ι, ∑ t : Fin steps, f a (samples t) ≤ T a} := by
+  classical
+  exact
+    sqMagTraceProbability_eventProb_forall_sum_stepFunction_le_ge_one_sub_sum_exp_of_one_step_mgf_bound
+      (steps := steps) A hden f T (fun a => lam a * B a) lam hlam
+      (by
+        intro a
+        exact sqMagProb_sum_exp_stepFunction_le_exp_of_support_forall_le
+          A hden (f a) (le_of_lt (hlam a)) (hbound a))
 
 /-- The trace hit-count exponential is the product of the one-step
     exponential indicators. -/

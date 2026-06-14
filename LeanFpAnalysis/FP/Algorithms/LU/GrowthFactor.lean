@@ -13,6 +13,7 @@ import LeanFpAnalysis.FP.Model
 import LeanFpAnalysis.FP.Analysis.Rounding
 import LeanFpAnalysis.FP.Analysis.ForwardError
 import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
+import LeanFpAnalysis.FP.Analysis.PerturbationTheory
 import LeanFpAnalysis.FP.Algorithms.LU.GaussianElimination
 import LeanFpAnalysis.FP.Algorithms.LU.LUSolve
 
@@ -163,6 +164,60 @@ theorem wilkinson_normwise_infNorm_tight (fp : FPModel) (n : ℕ) (hn : 0 < n)
   refine ⟨ΔA, ?_, hΔA_eq⟩
   exact wilkinson_normwise_infNorm n hn L_hat U_hat ΔA
     (gamma fp (3 * n)) (gamma_nonneg fp hfp3n) hΔA_bound hL_bound
+
+/-- Higham §1.10.1 / §9.2, 2-by-2 GEPP residual bridge.
+
+For a 2-by-2 LU solve satisfying the partial-pivoting multiplier bound
+`|L_hat i j| ≤ 1`, the computed solution has scaled residual bounded by the
+Wilkinson perturbation radius converted to the repository's operator-2 residual
+surface.  This is the exact Lean form behind the Chapter 1 statement that the
+GEPP residual is of order unit roundoff for `n = 2`, before substituting a
+concrete growth/norm comparison for `||U_hat||∞ / ||A||₂`. -/
+theorem gepp2_relativeResidual2_le_wilkinson
+    (fp : FPModel)
+    (A L_hat U_hat : Fin 2 → Fin 2 → ℝ) (b : Fin 2 → ℝ)
+    (A_norm : ℝ)
+    (hApos : 0 < A_norm)
+    (hL_diag : ∀ i : Fin 2, L_hat i i ≠ 0)
+    (hU_diag : ∀ i : Fin 2, U_hat i i ≠ 0)
+    (hLU : LUBackwardError 2 A L_hat U_hat (gamma fp 2))
+    (hfp2 : gammaValid fp 2)
+    (hfp6 : gammaValid fp (3 * 2))
+    (hL_bound : ∀ i j : Fin 2, |L_hat i j| ≤ 1)
+    (hxhat :
+      vecNorm2 (fl_backSub fp 2 U_hat (fl_forwardSub fp 2 L_hat b)) ≠ 0) :
+    relativeResidual2 2 A
+      (fl_backSub fp 2 U_hat (fl_forwardSub fp 2 L_hat b)) b A_norm ≤
+      (Real.sqrt (2 : ℝ) *
+        (gamma fp (3 * 2) * (2 : ℝ) * infNorm U_hat)) / A_norm := by
+  let y_hat := fl_forwardSub fp 2 L_hat b
+  let x_hat := fl_backSub fp 2 U_hat y_hat
+  obtain ⟨ΔA, hΔA_inf, hΔA_solve⟩ :=
+    wilkinson_normwise_infNorm_tight fp 2 (by norm_num) A L_hat U_hat b
+      hL_diag hU_diag hLU hfp2 hfp6 hL_bound
+  let η : ℝ :=
+    (Real.sqrt (2 : ℝ) *
+      (gamma fp (3 * 2) * (2 : ℝ) * infNorm U_hat)) / A_norm
+  have hηA :
+      Real.sqrt (2 : ℝ) *
+        (gamma fp (3 * 2) * (2 : ℝ) * infNorm U_hat) =
+        η * A_norm := by
+    unfold η
+    field_simp [ne_of_gt hApos]
+  have hΔA_op : opNorm2Le ΔA (η * A_norm) := by
+    apply opNorm2Le_of_sqrt_two_infNorm_le
+    calc
+      Real.sqrt (2 : ℝ) * infNorm ΔA
+          ≤ Real.sqrt (2 : ℝ) *
+              (gamma fp (3 * 2) * (2 : ℝ) * infNorm U_hat) :=
+            mul_le_mul_of_nonneg_left (by simpa using hΔA_inf) (Real.sqrt_nonneg _)
+      _ = η * A_norm := hηA
+  have hback :
+      relativeMatrixOnlyBackwardError2Le 2 A x_hat b A_norm η :=
+    ⟨ΔA, hΔA_solve, hΔA_op⟩
+  simpa [x_hat, y_hat, η] using
+    relativeResidual2_le_of_relativeMatrixOnlyBackwardError2Le 2 A x_hat b
+      A_norm η hxhat hApos hback
 
 -- ============================================================
 -- §9.8  Diagonal dominance and growth bounds
