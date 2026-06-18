@@ -1,4 +1,0 @@
-interface:
-  display_name: "Lean Stability Formalizer"
-  short_description: "Lean proofs for stability, probability, computed quantities, and FP error"
-  default_prompt: "Use $lean-stability-formalizer to read the paper, extract each algorithm and analysis theorem, and audit every computed algorithm quantity before closing FP results: probabilities, normalizers, bases, singular vectors, projectors, preconditioners, transforms, sketches, solver inputs, and outputs. Search the local library first, then run front-loaded proof-source acquisition and a foundation feasibility gate before hard Lean work. Build theorem/not-proved/proof-source/bottleneck ledgers, formalize exact/probabilistic/floating-point results locally, and run repeated weak-component gates. If a requested paper-level row becomes a red bottleneck, freeze downstream work and count only listed dependency closures, route eliminations, or statement corrections as progress."

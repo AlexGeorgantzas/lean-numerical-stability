@@ -1661,6 +1661,26 @@ lemma frobNormRect_sq {m n : ℕ} (A : Fin m → Fin n → ℝ) :
   unfold frobNormRect
   rw [sq, Real.mul_self_sqrt (frobNormSqRect_nonneg A)]
 
+/-- Every rectangular entry is bounded in absolute value by the rectangular
+    Frobenius norm. -/
+theorem abs_entry_le_frobNormRect {m n : ℕ} (A : Fin m → Fin n → ℝ)
+    (i : Fin m) (j : Fin n) :
+    |A i j| ≤ frobNormRect A := by
+  have hrow : A i j ^ 2 ≤ ∑ k : Fin n, A i k ^ 2 :=
+    Finset.single_le_sum (fun k _ => sq_nonneg (A i k)) (Finset.mem_univ j)
+  have htotal :
+      (∑ k : Fin n, A i k ^ 2) ≤
+        ∑ r : Fin m, ∑ k : Fin n, A r k ^ 2 :=
+    Finset.single_le_sum
+      (fun r _ => Finset.sum_nonneg (fun k _ => sq_nonneg (A r k)))
+      (Finset.mem_univ i)
+  have hsq : |A i j| ^ 2 ≤ frobNormRect A ^ 2 := by
+    rw [frobNormRect_sq]
+    simpa [frobNormSqRect, sq_abs] using le_trans hrow htotal
+  have habs := (sq_le_sq).mp hsq
+  simpa [abs_of_nonneg (abs_nonneg _),
+    abs_of_nonneg (frobNormRect_nonneg A)] using habs
+
 /-- For square matrices, the rectangular Frobenius norm agrees with the
     existing square-matrix definition. -/
 theorem frobNormRect_eq_frobNorm {n : ℕ} (A : Fin n → Fin n → ℝ) :
@@ -2065,6 +2085,328 @@ lemma vecNorm2_abs {n : ℕ} (x : Fin n → ℝ) :
     vecNorm2 (fun i => |x i|) = vecNorm2 x := by
   unfold vecNorm2
   rw [vecNorm2Sq_abs]
+
+/-- Squared rectangular Frobenius norm of an outer product. -/
+theorem frobNormSqRect_outerProduct {m n : ℕ}
+    (x : Fin m → ℝ) (y : Fin n → ℝ) :
+    frobNormSqRect (fun i j => x i * y j) =
+      vecNorm2Sq x * vecNorm2Sq y := by
+  unfold frobNormSqRect vecNorm2Sq
+  simp_rw [show ∀ i : Fin m, ∀ j : Fin n,
+      (x i * y j) ^ 2 = x i ^ 2 * y j ^ 2 from fun i j => by ring]
+  calc
+    (∑ i : Fin m, ∑ j : Fin n, x i ^ 2 * y j ^ 2)
+        = ∑ i : Fin m, x i ^ 2 * ∑ j : Fin n, y j ^ 2 := by
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [Finset.mul_sum]
+    _ = (∑ i : Fin m, x i ^ 2) * (∑ j : Fin n, y j ^ 2) := by
+            rw [Finset.sum_mul]
+
+/-- Rectangular Frobenius norm of an outer product. -/
+theorem frobNormRect_outerProduct {m n : ℕ}
+    (x : Fin m → ℝ) (y : Fin n → ℝ) :
+    frobNormRect (fun i j => x i * y j) =
+      vecNorm2 x * vecNorm2 y := by
+  unfold frobNormRect vecNorm2
+  rw [frobNormSqRect_outerProduct]
+  rw [Real.sqrt_mul (vecNorm2Sq_nonneg x)]
+
+/-- The lower-right tail block of a square matrix has no larger squared
+    rectangular Frobenius norm than the full matrix. -/
+theorem frobNormSqRect_tail_le {n : ℕ}
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ) :
+    frobNormSqRect (fun i j : Fin n => A i.succ j.succ) ≤
+      frobNormSqRect A := by
+  unfold frobNormSqRect
+  rw [Fin.sum_univ_succ]
+  have hrow0_nonneg : 0 ≤ ∑ j : Fin (n + 1), A 0 j ^ 2 :=
+    Finset.sum_nonneg (fun j _ => sq_nonneg (A 0 j))
+  have htail :
+      (∑ i : Fin n, ∑ j : Fin n, A i.succ j.succ ^ 2) ≤
+        ∑ i : Fin n, ∑ j : Fin (n + 1), A i.succ j ^ 2 := by
+    apply Finset.sum_le_sum
+    intro i _
+    rw [Fin.sum_univ_succ]
+    linarith [sq_nonneg (A i.succ 0)]
+  linarith
+
+/-- The lower-right tail block of a square matrix has no larger rectangular
+    Frobenius norm than the full matrix. -/
+theorem frobNormRect_tail_le {n : ℕ}
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ) :
+    frobNormRect (fun i j : Fin n => A i.succ j.succ) ≤
+      frobNormRect A := by
+  unfold frobNormRect
+  exact Real.sqrt_le_sqrt (frobNormSqRect_tail_le A)
+
+/-- The initial top-left block of a square matrix has no larger squared
+    rectangular Frobenius norm than the full matrix. -/
+theorem frobNormSqRect_init_le {n : ℕ}
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ) :
+    frobNormSqRect (fun i j : Fin n => A i.castSucc j.castSucc) ≤
+      frobNormSqRect A := by
+  unfold frobNormSqRect
+  rw [Fin.sum_univ_castSucc]
+  have htop :
+      (∑ i : Fin n, ∑ j : Fin n, A i.castSucc j.castSucc ^ 2) ≤
+        ∑ i : Fin n, ∑ j : Fin (n + 1), A i.castSucc j ^ 2 := by
+    apply Finset.sum_le_sum
+    intro i _
+    rw [Fin.sum_univ_castSucc]
+    linarith [sq_nonneg (A i.castSucc (Fin.last n))]
+  have hlast_nonneg :
+      0 ≤ ∑ j : Fin (n + 1), A (Fin.last n) j ^ 2 :=
+    Finset.sum_nonneg (fun j _ => sq_nonneg (A (Fin.last n) j))
+  linarith
+
+/-- The initial top-left block of a square matrix has no larger rectangular
+    Frobenius norm than the full matrix. -/
+theorem frobNormRect_init_le {n : ℕ}
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ) :
+    frobNormRect (fun i j : Fin n => A i.castSucc j.castSucc) ≤
+      frobNormRect A := by
+  unfold frobNormRect
+  exact Real.sqrt_le_sqrt (frobNormSqRect_init_le A)
+
+/-- The first-column tail vector has squared Euclidean norm bounded by the
+    full squared rectangular Frobenius norm. -/
+theorem vecNorm2Sq_firstColumnTail_le_frobNormSqRect {n : ℕ}
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ) :
+    vecNorm2Sq (fun i : Fin n => A i.succ 0) ≤ frobNormSqRect A := by
+  unfold vecNorm2Sq frobNormSqRect
+  rw [Fin.sum_univ_succ]
+  have hrow0_nonneg : 0 ≤ ∑ j : Fin (n + 1), A 0 j ^ 2 :=
+    Finset.sum_nonneg (fun j _ => sq_nonneg (A 0 j))
+  have htail :
+      (∑ i : Fin n, A i.succ 0 ^ 2) ≤
+        ∑ i : Fin n, ∑ j : Fin (n + 1), A i.succ j ^ 2 := by
+    apply Finset.sum_le_sum
+    intro i _
+    exact
+      Finset.single_le_sum
+        (fun j _ => sq_nonneg (A i.succ j))
+        (Finset.mem_univ 0)
+  linarith
+
+/-- The first-column tail vector has Euclidean norm bounded by the full
+    rectangular Frobenius norm. -/
+theorem vecNorm2_firstColumnTail_le_frobNormRect {n : ℕ}
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ) :
+    vecNorm2 (fun i : Fin n => A i.succ 0) ≤ frobNormRect A := by
+  unfold vecNorm2 frobNormRect
+  exact Real.sqrt_le_sqrt (vecNorm2Sq_firstColumnTail_le_frobNormSqRect A)
+
+/-- The first-row tail vector has squared Euclidean norm bounded by the full
+    squared rectangular Frobenius norm. -/
+theorem vecNorm2Sq_firstRowTail_le_frobNormSqRect {n : ℕ}
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ) :
+    vecNorm2Sq (fun j : Fin n => A 0 j.succ) ≤ frobNormSqRect A := by
+  unfold vecNorm2Sq frobNormSqRect
+  rw [Fin.sum_univ_succ]
+  have htail_rows_nonneg :
+      0 ≤ ∑ i : Fin n, ∑ j : Fin (n + 1), A i.succ j ^ 2 :=
+    Finset.sum_nonneg
+      (fun i _ => Finset.sum_nonneg (fun j _ => sq_nonneg (A i.succ j)))
+  have hrow :
+      (∑ j : Fin n, A 0 j.succ ^ 2) ≤
+        ∑ j : Fin (n + 1), A 0 j ^ 2 := by
+    rw [Fin.sum_univ_succ]
+    linarith [sq_nonneg (A 0 0)]
+  linarith
+
+/-- The first-row tail vector has Euclidean norm bounded by the full
+    rectangular Frobenius norm. -/
+theorem vecNorm2_firstRowTail_le_frobNormRect {n : ℕ}
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ) :
+    vecNorm2 (fun j : Fin n => A 0 j.succ) ≤ frobNormRect A := by
+  unfold vecNorm2 frobNormRect
+  exact Real.sqrt_le_sqrt (vecNorm2Sq_firstRowTail_le_frobNormSqRect A)
+
+/-- The last-row initial vector has squared Euclidean norm bounded by the full
+    squared rectangular Frobenius norm. -/
+theorem vecNorm2Sq_lastRowInit_le_frobNormSqRect {n : ℕ}
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ) :
+    vecNorm2Sq (fun j : Fin n => A (Fin.last n) j.castSucc) ≤
+      frobNormSqRect A := by
+  unfold vecNorm2Sq frobNormSqRect
+  have hinit :
+      (∑ j : Fin n, A (Fin.last n) j.castSucc ^ 2) ≤
+        ∑ j : Fin (n + 1), A (Fin.last n) j ^ 2 := by
+    rw [Fin.sum_univ_castSucc]
+    linarith [sq_nonneg (A (Fin.last n) (Fin.last n))]
+  have hrow :
+      (∑ j : Fin (n + 1), A (Fin.last n) j ^ 2) ≤
+        ∑ i : Fin (n + 1), ∑ j : Fin (n + 1), A i j ^ 2 :=
+    Finset.single_le_sum
+      (fun i _ => Finset.sum_nonneg (fun j _ => sq_nonneg (A i j)))
+      (Finset.mem_univ (Fin.last n))
+  exact le_trans hinit hrow
+
+/-- The last-row initial vector has Euclidean norm bounded by the full
+    rectangular Frobenius norm. -/
+theorem vecNorm2_lastRowInit_le_frobNormRect {n : ℕ}
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ) :
+    vecNorm2 (fun j : Fin n => A (Fin.last n) j.castSucc) ≤
+      frobNormRect A := by
+  unfold vecNorm2 frobNormRect
+  exact Real.sqrt_le_sqrt (vecNorm2Sq_lastRowInit_le_frobNormSqRect A)
+
+/-- The last-column initial vector has squared Euclidean norm bounded by the
+    full squared rectangular Frobenius norm. -/
+theorem vecNorm2Sq_lastColumnInit_le_frobNormSqRect {n : ℕ}
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ) :
+    vecNorm2Sq (fun i : Fin n => A i.castSucc (Fin.last n)) ≤
+      frobNormSqRect A := by
+  unfold vecNorm2Sq frobNormSqRect
+  have hinit :
+      (∑ i : Fin n, A i.castSucc (Fin.last n) ^ 2) ≤
+        ∑ i : Fin (n + 1), A i (Fin.last n) ^ 2 := by
+    rw [Fin.sum_univ_castSucc]
+    linarith [sq_nonneg (A (Fin.last n) (Fin.last n))]
+  have hcol :
+      (∑ i : Fin (n + 1), A i (Fin.last n) ^ 2) ≤
+        ∑ i : Fin (n + 1), ∑ j : Fin (n + 1), A i j ^ 2 := by
+    apply Finset.sum_le_sum
+    intro i _
+    exact
+      Finset.single_le_sum
+        (fun j _ => sq_nonneg (A i j))
+        (Finset.mem_univ (Fin.last n))
+  exact le_trans hinit hcol
+
+/-- The last-column initial vector has Euclidean norm bounded by the full
+    rectangular Frobenius norm. -/
+theorem vecNorm2_lastColumnInit_le_frobNormRect {n : ℕ}
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ) :
+    vecNorm2 (fun i : Fin n => A i.castSucc (Fin.last n)) ≤
+      frobNormRect A := by
+  unfold vecNorm2 frobNormRect
+  exact Real.sqrt_le_sqrt (vecNorm2Sq_lastColumnInit_le_frobNormSqRect A)
+
+/-- Exact squared Frobenius block split when the first column below the
+    leading entry is zero. -/
+theorem frobNormSqRect_block_firstColumnTail_zero {n : ℕ}
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (hcol : ∀ i : Fin n, A i.succ 0 = 0) :
+    frobNormSqRect A =
+      A 0 0 ^ 2 + vecNorm2Sq (fun j : Fin n => A 0 j.succ) +
+        frobNormSqRect (fun i j : Fin n => A i.succ j.succ) := by
+  unfold frobNormSqRect vecNorm2Sq
+  rw [Fin.sum_univ_succ]
+  rw [Fin.sum_univ_succ]
+  have htail :
+      (∑ i : Fin n, ∑ j : Fin (n + 1), A i.succ j ^ 2) =
+        ∑ i : Fin n, ∑ j : Fin n, A i.succ j.succ ^ 2 := by
+    apply Finset.sum_congr rfl
+    intro i _
+    rw [Fin.sum_univ_succ]
+    simp [hcol i]
+  rw [htail]
+
+/-- Frobenius block triangle estimate when the first column below the leading
+    entry is zero. -/
+theorem frobNormRect_block_firstColumnTail_zero_le {n : ℕ}
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (hcol : ∀ i : Fin n, A i.succ 0 = 0) :
+    frobNormRect A ≤
+      |A 0 0| + vecNorm2 (fun j : Fin n => A 0 j.succ) +
+        frobNormRect (fun i j : Fin n => A i.succ j.succ) := by
+  let a : ℝ := |A 0 0|
+  let b : ℝ := vecNorm2 (fun j : Fin n => A 0 j.succ)
+  let c : ℝ := frobNormRect (fun i j : Fin n => A i.succ j.succ)
+  have ha : 0 ≤ a := abs_nonneg _
+  have hb : 0 ≤ b := vecNorm2_nonneg _
+  have hc : 0 ≤ c := frobNormRect_nonneg _
+  have hsum_nonneg : 0 ≤ a + b + c := by positivity
+  have hsq :
+      frobNormSqRect A ≤ (a + b + c) ^ 2 := by
+    have hblock := frobNormSqRect_block_firstColumnTail_zero A hcol
+    have hb_sq : b ^ 2 = vecNorm2Sq (fun j : Fin n => A 0 j.succ) := by
+      dsimp [b]
+      exact vecNorm2_sq _
+    have hc_sq :
+        c ^ 2 = frobNormSqRect (fun i j : Fin n => A i.succ j.succ) := by
+      dsimp [c]
+      exact frobNormRect_sq _
+    have ha_sq : a ^ 2 = A 0 0 ^ 2 := by
+      dsimp [a]
+      exact sq_abs (A 0 0)
+    rw [hblock, ← ha_sq, ← hb_sq, ← hc_sq]
+    nlinarith [ha, hb, hc]
+  change frobNormRect A ≤ a + b + c
+  unfold frobNormRect
+  rw [← Real.sqrt_sq hsum_nonneg]
+  exact Real.sqrt_le_sqrt hsq
+
+/-- Exact squared Frobenius block split when the last row before the final
+    entry is zero. -/
+theorem frobNormSqRect_block_lastRowInit_zero {n : ℕ}
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (hrow : ∀ j : Fin n, A (Fin.last n) j.castSucc = 0) :
+    frobNormSqRect A =
+      frobNormSqRect (fun i j : Fin n => A i.castSucc j.castSucc) +
+        vecNorm2Sq (fun i : Fin n => A i.castSucc (Fin.last n)) +
+        A (Fin.last n) (Fin.last n) ^ 2 := by
+  unfold frobNormSqRect vecNorm2Sq
+  rw [Fin.sum_univ_castSucc]
+  have htop :
+      (∑ i : Fin n, ∑ j : Fin (n + 1), A i.castSucc j ^ 2) =
+        (∑ i : Fin n, ∑ j : Fin n, A i.castSucc j.castSucc ^ 2) +
+          ∑ i : Fin n, A i.castSucc (Fin.last n) ^ 2 := by
+    calc
+      (∑ i : Fin n, ∑ j : Fin (n + 1), A i.castSucc j ^ 2)
+          = ∑ i : Fin n,
+              ((∑ j : Fin n, A i.castSucc j.castSucc ^ 2) +
+                A i.castSucc (Fin.last n) ^ 2) := by
+              apply Finset.sum_congr rfl
+              intro i _
+              rw [Fin.sum_univ_castSucc]
+      _ = (∑ i : Fin n, ∑ j : Fin n, A i.castSucc j.castSucc ^ 2) +
+            ∑ i : Fin n, A i.castSucc (Fin.last n) ^ 2 := by
+            rw [Finset.sum_add_distrib]
+  have hlast :
+      (∑ j : Fin (n + 1), A (Fin.last n) j ^ 2) =
+        A (Fin.last n) (Fin.last n) ^ 2 := by
+    rw [Fin.sum_univ_castSucc]
+    simp [hrow]
+  rw [htop, hlast]
+
+/-- Frobenius block triangle estimate when the last row before the final entry
+    is zero. -/
+theorem frobNormRect_block_lastRowInit_zero_le {n : ℕ}
+    (A : Fin (n + 1) → Fin (n + 1) → ℝ)
+    (hrow : ∀ j : Fin n, A (Fin.last n) j.castSucc = 0) :
+    frobNormRect A ≤
+      frobNormRect (fun i j : Fin n => A i.castSucc j.castSucc) +
+        vecNorm2 (fun i : Fin n => A i.castSucc (Fin.last n)) +
+        |A (Fin.last n) (Fin.last n)| := by
+  let a : ℝ := frobNormRect (fun i j : Fin n => A i.castSucc j.castSucc)
+  let b : ℝ := vecNorm2 (fun i : Fin n => A i.castSucc (Fin.last n))
+  let c : ℝ := |A (Fin.last n) (Fin.last n)|
+  have ha : 0 ≤ a := frobNormRect_nonneg _
+  have hb : 0 ≤ b := vecNorm2_nonneg _
+  have hc : 0 ≤ c := abs_nonneg _
+  have hsum_nonneg : 0 ≤ a + b + c := by positivity
+  have hsq : frobNormSqRect A ≤ (a + b + c) ^ 2 := by
+    have hblock := frobNormSqRect_block_lastRowInit_zero A hrow
+    have ha_sq :
+        a ^ 2 =
+          frobNormSqRect (fun i j : Fin n => A i.castSucc j.castSucc) := by
+      dsimp [a]
+      exact frobNormRect_sq _
+    have hb_sq :
+        b ^ 2 = vecNorm2Sq (fun i : Fin n => A i.castSucc (Fin.last n)) := by
+      dsimp [b]
+      exact vecNorm2_sq _
+    have hc_sq : c ^ 2 = A (Fin.last n) (Fin.last n) ^ 2 := by
+      dsimp [c]
+      exact sq_abs _
+    rw [hblock, ← ha_sq, ← hb_sq, ← hc_sq]
+    nlinarith [ha, hb, hc]
+  have hsqrt := Real.sqrt_le_sqrt hsq
+  rw [Real.sqrt_sq_eq_abs, abs_of_nonneg hsum_nonneg] at hsqrt
+  simpa [frobNormRect, a, b, c] using hsqrt
 
 /-- Rectangular Frobenius squared norm as the sum of squared column norms. -/
 theorem frobNormSqRect_eq_sum_vecNorm2Sq_cols {m n : ℕ}
@@ -2545,6 +2887,48 @@ noncomputable def finiteBasisVec {ι : Type*} [DecidableEq ι] (i : ι) :
 noncomputable def finiteTranspose {ι κ : Type*} (M : ι → κ → ℝ) :
     κ → ι → ℝ :=
   fun j i => M i j
+
+/-- Transposing a right inverse gives a left inverse of the transposed matrix. -/
+theorem isLeftInverse_finiteTranspose_of_isRightInverse {n : ℕ}
+    {T T_inv : Fin n → Fin n → ℝ}
+    (hInv : IsRightInverse n T T_inv) :
+    IsLeftInverse n (finiteTranspose T) (finiteTranspose T_inv) := by
+  intro i j
+  calc
+    ∑ k : Fin n, finiteTranspose T_inv i k * finiteTranspose T k j
+        = ∑ k : Fin n, T j k * T_inv k i := by
+            apply Finset.sum_congr rfl
+            intro k _
+            unfold finiteTranspose
+            ring
+    _ = (if j = i then 1 else 0) := hInv j i
+    _ = (if i = j then 1 else 0) := by
+            by_cases hij : i = j <;> simp [hij, eq_comm]
+
+/-- Transposing a left inverse gives a right inverse of the transposed matrix. -/
+theorem isRightInverse_finiteTranspose_of_isLeftInverse {n : ℕ}
+    {T T_inv : Fin n → Fin n → ℝ}
+    (hInv : IsLeftInverse n T T_inv) :
+    IsRightInverse n (finiteTranspose T) (finiteTranspose T_inv) := by
+  intro i j
+  calc
+    ∑ k : Fin n, finiteTranspose T i k * finiteTranspose T_inv k j
+        = ∑ k : Fin n, T_inv j k * T k i := by
+            apply Finset.sum_congr rfl
+            intro k _
+            unfold finiteTranspose
+            ring
+    _ = (if j = i then 1 else 0) := hInv j i
+    _ = (if i = j then 1 else 0) := by
+            by_cases hij : i = j <;> simp [hij, eq_comm]
+
+/-- Transposition preserves two-sided inverse witnesses. -/
+theorem isInverse_finiteTranspose {n : ℕ}
+    {T T_inv : Fin n → Fin n → ℝ}
+    (hInv : IsInverse n T T_inv) :
+    IsInverse n (finiteTranspose T) (finiteTranspose T_inv) :=
+  ⟨isLeftInverse_finiteTranspose_of_isRightInverse hInv.2,
+    isRightInverse_finiteTranspose_of_isLeftInverse hInv.1⟩
 
 /-- Generic finite trace. -/
 noncomputable def finiteTrace {ι : Type*} [Fintype ι]
@@ -4151,6 +4535,12 @@ theorem opNorm2Le_of_frobNorm_le {n : ℕ}
     _ ≤ c * vecNorm2 x :=
           mul_le_mul_of_nonneg_right hF (vecNorm2_nonneg x)
 
+/-- The Frobenius norm itself gives an operator-2 bound. -/
+theorem opNorm2Le_of_frobNorm_self {n : ℕ}
+    (M : Fin n → Fin n → ℝ) :
+    opNorm2Le M (frobNorm M) :=
+  opNorm2Le_of_frobNorm_le M le_rfl
+
 /-- A two-sided Loewner bound is stable under an additive perturbation whose
 Frobenius norm is at most `τ`; the radius increases by `τ`. -/
 theorem finiteLoewnerLe_two_sided_add_of_frobNorm_le {n : ℕ}
@@ -5209,6 +5599,23 @@ lemma IsOrthogonal.col_orthonormal {n : ℕ} {U : Fin n → Fin n → ℝ}
     ∑ k : Fin n, U k i * U k j = if i = j then 1 else 0 := by
   have := hU.1 i j; unfold matTranspose at this; exact this
 
+/-- Every column of an orthogonal matrix has Euclidean norm one. -/
+theorem IsOrthogonal.column_vecNorm2_eq_one {n : ℕ}
+    {U : Fin n → Fin n → ℝ} (hU : IsOrthogonal n U) (j : Fin n) :
+    vecNorm2 (fun i : Fin n => U i j) = 1 := by
+  unfold vecNorm2 vecNorm2Sq
+  have hcol : (∑ k : Fin n, U k j * U k j) = 1 := by
+    simpa using hU.col_orthonormal j j
+  have hsq : (∑ k : Fin n, U k j ^ 2) = 1 := by
+    simpa [pow_two] using hcol
+  rw [hsq, Real.sqrt_one]
+
+/-- Every column of an orthogonal matrix has Euclidean norm at most one. -/
+theorem IsOrthogonal.column_vecNorm2_le_one {n : ℕ}
+    {U : Fin n → Fin n → ℝ} (hU : IsOrthogonal n U) (j : Fin n) :
+    vecNorm2 (fun i : Fin n => U i j) ≤ 1 := by
+  exact le_of_eq (hU.column_vecNorm2_eq_one j)
+
 /-- For orthogonal U, rows are orthonormal: ∑_k U_ik U_jk = δ_ij. -/
 lemma IsOrthogonal.row_orthonormal {n : ℕ} {U : Fin n → Fin n → ℝ}
     (hU : IsOrthogonal n U) (i j : Fin n) :
@@ -5324,6 +5731,37 @@ theorem rectMatMulVec_rectMatMul {m n p : ℕ}
             apply Finset.sum_congr rfl
             intro j _
             ring
+
+/-- A matrix-level left inverse is also a left inverse for the associated
+    rectangular matrix-vector action. -/
+theorem rectMatMulVec_left_inverse_of_IsLeftInverse
+    {n : ℕ} {T T_inv : Fin n → Fin n → ℝ}
+    (hInv : IsLeftInverse n T T_inv) :
+    ∀ x : Fin n → ℝ, rectMatMulVec T_inv (rectMatMulVec T x) = x := by
+  intro x
+  ext i
+  unfold rectMatMulVec
+  calc
+    (∑ j : Fin n, T_inv i j * ∑ k : Fin n, T j k * x k)
+        = ∑ j : Fin n, ∑ k : Fin n, T_inv i j * (T j k * x k) := by
+            apply Finset.sum_congr rfl
+            intro j _
+            rw [Finset.mul_sum]
+    _ = ∑ k : Fin n, ∑ j : Fin n, T_inv i j * (T j k * x k) := by
+            rw [Finset.sum_comm]
+    _ = ∑ k : Fin n, (∑ j : Fin n, T_inv i j * T j k) * x k := by
+            apply Finset.sum_congr rfl
+            intro k _
+            rw [Finset.sum_mul]
+            apply Finset.sum_congr rfl
+            intro j _
+            ring
+    _ = ∑ k : Fin n, (if i = k then (1 : ℝ) else 0) * x k := by
+            apply Finset.sum_congr rfl
+            intro k _
+            rw [hInv i k]
+    _ = x i := by
+            simp
 
 /-- Rectangular operator-2 certificates compose over matrix multiplication. -/
 theorem rectOpNorm2Le_rectMatMul {m n p : ℕ}
@@ -5781,6 +6219,23 @@ theorem IsOrthogonal.transpose {n : ℕ} {U : Fin n → Fin n → ℝ}
   -- matTranspose (matTranspose U) = U definitionally at each entry,
   -- so IsLeftInverse for Uᵀ is IsRightInverse for U and vice versa.
   ⟨hU.right_inv, hU.left_inv⟩
+
+/-- An orthogonal matrix has operator 2-norm at most one. -/
+theorem IsOrthogonal.opNorm2Le_one {n : ℕ} {U : Fin n → Fin n → ℝ}
+    (hU : IsOrthogonal n U) : opNorm2Le U 1 := by
+  intro x
+  calc
+    vecNorm2 (matMulVec n U x) = vecNorm2 x :=
+      vecNorm2_orthogonal U x hU
+    _ ≤ 1 * vecNorm2 x := by simp
+
+/-- The transpose/inverse of an orthogonal matrix also has operator 2-norm at
+most one.  This is the symmetric-eigenbasis conditioning bridge used by the
+inverse-iteration route. -/
+theorem IsOrthogonal.transpose_opNorm2Le_one {n : ℕ}
+    {U : Fin n → Fin n → ℝ} (hU : IsOrthogonal n U) :
+    opNorm2Le (matTranspose U) 1 :=
+  hU.transpose.opNorm2Le_one
 
 /-- Product of orthogonal matrices is orthogonal.
 
