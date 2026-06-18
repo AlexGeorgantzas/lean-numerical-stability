@@ -362,6 +362,30 @@ the predecessor-square cascade. -/
 noncomputable def kahanAbsoluteIeeeDoubleOneBillionSeventyThreeMillionSevenHundredFortyOneThousandSevenHundredSixtyEightUlpsBelowOne : ℝ :=
   (1 : ℝ) - 1073741768 * (2 : ℝ) ^ (-53 : ℤ)
 
+/-- The two-billion-one-hundred-forty-seven-million-four-hundred-eighty-three-thousand-four-hundred-eighth
+IEEE-double below-one ulp below `1`, reached by the thirty-first rounded square
+in the predecessor-square cascade. -/
+noncomputable def kahanAbsoluteIeeeDoubleTwoBillionOneHundredFortySevenMillionFourHundredEightyThreeThousandFourHundredEightUlpsBelowOne : ℝ :=
+  (1 : ℝ) - 2147483408 * (2 : ℝ) ^ (-53 : ℤ)
+
+/-- The four-billion-two-hundred-ninety-four-million-nine-hundred-sixty-six-thousand-three-hundred-fourth
+IEEE-double below-one ulp below `1`, reached by the thirty-second rounded
+square in the predecessor-square cascade. -/
+noncomputable def kahanAbsoluteIeeeDoubleFourBillionTwoHundredNinetyFourMillionNineHundredSixtySixThousandThreeHundredFourUlpsBelowOne : ℝ :=
+  (1 : ℝ) - 4294966304 * (2 : ℝ) ^ (-53 : ℤ)
+
+/-- The eight-billion-five-hundred-eighty-nine-million-nine-hundred-thirty-thousand-five-hundred-sixtieth
+IEEE-double below-one ulp below `1`, reached by the thirty-third rounded square
+in the predecessor-square cascade. -/
+noncomputable def kahanAbsoluteIeeeDoubleEightBillionFiveHundredEightyNineMillionNineHundredThirtyThousandFiveHundredSixtyUlpsBelowOne : ℝ :=
+  (1 : ℝ) - 8589930560 * (2 : ℝ) ^ (-53 : ℤ)
+
+/-- The seventeen-billion-one-hundred-seventy-nine-million-eight-hundred-fifty-two-thousand-nine-hundred-twenty-eighth
+IEEE-double below-one ulp below `1`, reached by the thirty-fourth rounded square
+in the predecessor-square cascade. -/
+noncomputable def kahanAbsoluteIeeeDoubleSeventeenBillionOneHundredSeventyNineMillionEightHundredFiftyTwoThousandNineHundredTwentyEightUlpsBelowOne : ℝ :=
+  (1 : ℝ) - 17179852928 * (2 : ℝ) ^ (-53 : ℤ)
+
 private theorem kahanAbsoluteIeeeDouble_finiteSystem_one_sixteenth :
     FloatingPointFormat.ieeeDoubleFormat.finiteSystem (1 / 16 : ℝ) := by
   refine Or.inr (Or.inl ?_)
@@ -3591,6 +3615,430 @@ theorem kahanAbsoluteFiniteSquareSteps_ieeeDouble_predOne_thirty_succ (k : ℕ) 
   rw [show k + 30 = (k + 1) + 29 by omega]
   rw [kahanAbsoluteFiniteSquareSteps_ieeeDouble_predOne_twentyNine_succ (k + 1)]
   rw [kahanAbsoluteFiniteSquareSteps_ieeeDouble_fiveHundredThirtySixMillionEightHundredSeventyThousandNineHundredUlpsBelowOne_succ k]
+
+/-- The thirty-first rounded IEEE-double square in the predecessor-square cascade
+rounds the exact square of `1 - 1073741768 * 2^-53` to
+`1 - 2147483408 * 2^-53`. -/
+theorem kahanAbsoluteIeeeDouble_square_oneBillionSeventyThreeMillionSevenHundredFortyOneThousandSevenHundredSixtyEightUlpsBelowOne_eq_twoBillionOneHundredFortySevenMillionFourHundredEightyThreeThousandFourHundredEightUlpsBelowOne :
+    FloatingPointFormat.ieeeDoubleFormat.finiteRoundToEvenOp
+        BasicOp.mul kahanAbsoluteIeeeDoubleOneBillionSeventyThreeMillionSevenHundredFortyOneThousandSevenHundredSixtyEightUlpsBelowOne
+          kahanAbsoluteIeeeDoubleOneBillionSeventyThreeMillionSevenHundredFortyOneThousandSevenHundredSixtyEightUlpsBelowOne =
+      kahanAbsoluteIeeeDoubleTwoBillionOneHundredFortySevenMillionFourHundredEightyThreeThousandFourHundredEightUlpsBelowOne := by
+  let fmt := FloatingPointFormat.ieeeDoubleFormat
+  let a : ℝ := fmt.normalizedValue false (fmt.maxNormalMantissa - 2147483408) 0
+  let b : ℝ := fmt.normalizedValue false (fmt.maxNormalMantissa - 2147483407) 0
+  let x : ℝ := BasicOp.exact BasicOp.mul
+    kahanAbsoluteIeeeDoubleOneBillionSeventyThreeMillionSevenHundredFortyOneThousandSevenHundredSixtyEightUlpsBelowOne
+      kahanAbsoluteIeeeDoubleOneBillionSeventyThreeMillionSevenHundredFortyOneThousandSevenHundredSixtyEightUlpsBelowOne
+  have hm : fmt.normalizedMantissa (fmt.maxNormalMantissa - 2147483408) := by
+    norm_num [fmt, FloatingPointFormat.ieeeDoubleFormat,
+      FloatingPointFormat.normalizedMantissa, FloatingPointFormat.mantissaInRange,
+      FloatingPointFormat.minNormalMantissa, FloatingPointFormat.maxNormalMantissa]
+  have hmnext : fmt.normalizedMantissa ((fmt.maxNormalMantissa - 2147483408) + 1) := by
+    norm_num [fmt, FloatingPointFormat.ieeeDoubleFormat,
+      FloatingPointFormat.normalizedMantissa, FloatingPointFormat.mantissaInRange,
+      FloatingPointFormat.minNormalMantissa, FloatingPointFormat.maxNormalMantissa]
+  have hsame : fmt.sameExponentAdjacentNormalized a b := by
+    refine
+      ⟨false, fmt.maxNormalMantissa - 2147483408, (0 : ℤ), hm, hmnext,
+        Or.inl ⟨rfl, ?_⟩⟩
+    norm_num [b, fmt, FloatingPointFormat.ieeeDoubleFormat,
+      FloatingPointFormat.maxNormalMantissa]
+  have hadj : fmt.realOrderAdjacentNormalized a b :=
+    fmt.realOrderAdjacentNormalized_of_sameExponentAdjacentNormalized hsame
+  have ha_value : a = (1 : ℝ) - 2147483409 * (2 : ℝ) ^ (-53 : ℤ) := by
+    norm_num [a, fmt, FloatingPointFormat.ieeeDoubleFormat,
+      FloatingPointFormat.normalizedValue, FloatingPointFormat.signValue,
+      FloatingPointFormat.betaR, FloatingPointFormat.maxNormalMantissa, zpow_neg]
+  have hb_value : b =
+      kahanAbsoluteIeeeDoubleTwoBillionOneHundredFortySevenMillionFourHundredEightyThreeThousandFourHundredEightUlpsBelowOne := by
+    norm_num [b, fmt, FloatingPointFormat.ieeeDoubleFormat,
+      FloatingPointFormat.normalizedValue, FloatingPointFormat.signValue,
+      FloatingPointFormat.betaR, FloatingPointFormat.maxNormalMantissa,
+      kahanAbsoluteIeeeDoubleTwoBillionOneHundredFortySevenMillionFourHundredEightyThreeThousandFourHundredEightUlpsBelowOne,
+      zpow_neg]
+  have hx_value :
+      x = kahanAbsoluteIeeeDoubleOneBillionSeventyThreeMillionSevenHundredFortyOneThousandSevenHundredSixtyEightUlpsBelowOne ^ 2 := by
+    simp [x, BasicOp.exact, pow_two]
+  have hstrict : a < x ∧ x < b := by
+    rw [ha_value, hb_value, hx_value]
+    norm_num [kahanAbsoluteIeeeDoubleOneBillionSeventyThreeMillionSevenHundredFortyOneThousandSevenHundredSixtyEightUlpsBelowOne,
+      kahanAbsoluteIeeeDoubleTwoBillionOneHundredFortySevenMillionFourHundredEightyThreeThousandFourHundredEightUlpsBelowOne,
+      zpow_neg]
+  have hxrange : fmt.finiteNormalRange x := by
+    rw [FloatingPointFormat.finiteNormalRange]
+    have hxnonneg : 0 ≤ x := by
+      rw [hx_value]
+      exact sq_nonneg _
+    rw [abs_of_nonneg hxnonneg]
+    constructor
+    · rw [hx_value]
+      have hhalf :
+          (1 / 2 : ℝ) ≤
+            kahanAbsoluteIeeeDoubleOneBillionSeventyThreeMillionSevenHundredFortyOneThousandSevenHundredSixtyEightUlpsBelowOne ^ 2 := by
+        norm_num [kahanAbsoluteIeeeDoubleOneBillionSeventyThreeMillionSevenHundredFortyOneThousandSevenHundredSixtyEightUlpsBelowOne,
+          zpow_neg]
+      exact le_trans kahanAbsoluteIeeeDouble_minNormalMagnitude_le_half hhalf
+    · rw [hx_value]
+      have hle_one :
+          kahanAbsoluteIeeeDoubleOneBillionSeventyThreeMillionSevenHundredFortyOneThousandSevenHundredSixtyEightUlpsBelowOne ^ 2 ≤
+            1 := by
+        norm_num [kahanAbsoluteIeeeDoubleOneBillionSeventyThreeMillionSevenHundredFortyOneThousandSevenHundredSixtyEightUlpsBelowOne,
+          zpow_neg]
+      exact le_trans hle_one kahanAbsoluteIeeeDouble_one_le_maxFiniteMagnitude
+  have hpolicy : fmt.sourceRoundToEvenEvidence x (fmt.finiteRoundToEven x) :=
+    fmt.finiteRoundToEven_sourceRoundToEvenEvidence_of_finiteNormalRange hxrange
+  have hrightCloser : |x - b| < |x - a| := by
+    rw [ha_value, hb_value, hx_value]
+    norm_num [kahanAbsoluteIeeeDoubleOneBillionSeventyThreeMillionSevenHundredFortyOneThousandSevenHundredSixtyEightUlpsBelowOne,
+      kahanAbsoluteIeeeDoubleTwoBillionOneHundredFortySevenMillionFourHundredEightyThreeThousandFourHundredEightUlpsBelowOne,
+      zpow_neg]
+  have hround : fmt.finiteRoundToEven x = b :=
+    fmt.sourceRoundToEvenEvidence_eq_right_of_realOrderAdjacent_strict_between_right_closer
+      hpolicy hadj hstrict hrightCloser
+  simpa [FloatingPointFormat.finiteRoundToEvenOp, x, fmt, hb_value] using hround
+
+/-- Peeling one rounded square step from `1 - 1073741768 * 2^-53` rewrites the
+remaining IEEE-double square cascade to the cascade from
+`1 - 2147483408 * 2^-53`. -/
+theorem kahanAbsoluteFiniteSquareSteps_ieeeDouble_oneBillionSeventyThreeMillionSevenHundredFortyOneThousandSevenHundredSixtyEightUlpsBelowOne_succ
+    (k : ℕ) :
+    kahanAbsoluteFiniteSquareSteps FloatingPointFormat.ieeeDoubleFormat
+        (k + 1) kahanAbsoluteIeeeDoubleOneBillionSeventyThreeMillionSevenHundredFortyOneThousandSevenHundredSixtyEightUlpsBelowOne =
+      kahanAbsoluteFiniteSquareSteps FloatingPointFormat.ieeeDoubleFormat
+        k kahanAbsoluteIeeeDoubleTwoBillionOneHundredFortySevenMillionFourHundredEightyThreeThousandFourHundredEightUlpsBelowOne := by
+  simp [kahanAbsoluteFiniteSquareSteps,
+    kahanAbsoluteIeeeDouble_square_oneBillionSeventyThreeMillionSevenHundredFortyOneThousandSevenHundredSixtyEightUlpsBelowOne_eq_twoBillionOneHundredFortySevenMillionFourHundredEightyThreeThousandFourHundredEightUlpsBelowOne]
+
+/-- Peeling the first thirty-one rounded square steps from the predecessor of
+`1` rewrites the remaining IEEE-double square cascade to the cascade from
+`1 - 2147483408 * 2^-53`. -/
+theorem kahanAbsoluteFiniteSquareSteps_ieeeDouble_predOne_thirtyOne_succ (k : ℕ) :
+    kahanAbsoluteFiniteSquareSteps FloatingPointFormat.ieeeDoubleFormat
+        (k + 31) kahanAbsoluteIeeeDoublePredOne =
+      kahanAbsoluteFiniteSquareSteps FloatingPointFormat.ieeeDoubleFormat
+        k kahanAbsoluteIeeeDoubleTwoBillionOneHundredFortySevenMillionFourHundredEightyThreeThousandFourHundredEightUlpsBelowOne := by
+  rw [show k + 31 = (k + 1) + 30 by omega]
+  rw [kahanAbsoluteFiniteSquareSteps_ieeeDouble_predOne_thirty_succ (k + 1)]
+  rw [kahanAbsoluteFiniteSquareSteps_ieeeDouble_oneBillionSeventyThreeMillionSevenHundredFortyOneThousandSevenHundredSixtyEightUlpsBelowOne_succ k]
+
+/-- The thirty-second rounded IEEE-double square in the predecessor-square
+cascade rounds the exact square of `1 - 2147483408 * 2^-53` to
+`1 - 4294966304 * 2^-53`. -/
+theorem kahanAbsoluteIeeeDouble_square_twoBillionOneHundredFortySevenMillionFourHundredEightyThreeThousandFourHundredEightUlpsBelowOne_eq_fourBillionTwoHundredNinetyFourMillionNineHundredSixtySixThousandThreeHundredFourUlpsBelowOne :
+    FloatingPointFormat.ieeeDoubleFormat.finiteRoundToEvenOp
+        BasicOp.mul kahanAbsoluteIeeeDoubleTwoBillionOneHundredFortySevenMillionFourHundredEightyThreeThousandFourHundredEightUlpsBelowOne
+          kahanAbsoluteIeeeDoubleTwoBillionOneHundredFortySevenMillionFourHundredEightyThreeThousandFourHundredEightUlpsBelowOne =
+      kahanAbsoluteIeeeDoubleFourBillionTwoHundredNinetyFourMillionNineHundredSixtySixThousandThreeHundredFourUlpsBelowOne := by
+  let fmt := FloatingPointFormat.ieeeDoubleFormat
+  let a : ℝ := fmt.normalizedValue false (fmt.maxNormalMantissa - 4294966304) 0
+  let b : ℝ := fmt.normalizedValue false (fmt.maxNormalMantissa - 4294966303) 0
+  let x : ℝ := BasicOp.exact BasicOp.mul
+    kahanAbsoluteIeeeDoubleTwoBillionOneHundredFortySevenMillionFourHundredEightyThreeThousandFourHundredEightUlpsBelowOne
+      kahanAbsoluteIeeeDoubleTwoBillionOneHundredFortySevenMillionFourHundredEightyThreeThousandFourHundredEightUlpsBelowOne
+  have hm : fmt.normalizedMantissa (fmt.maxNormalMantissa - 4294966304) := by
+    norm_num [fmt, FloatingPointFormat.ieeeDoubleFormat,
+      FloatingPointFormat.normalizedMantissa, FloatingPointFormat.mantissaInRange,
+      FloatingPointFormat.minNormalMantissa, FloatingPointFormat.maxNormalMantissa]
+  have hmnext : fmt.normalizedMantissa ((fmt.maxNormalMantissa - 4294966304) + 1) := by
+    norm_num [fmt, FloatingPointFormat.ieeeDoubleFormat,
+      FloatingPointFormat.normalizedMantissa, FloatingPointFormat.mantissaInRange,
+      FloatingPointFormat.minNormalMantissa, FloatingPointFormat.maxNormalMantissa]
+  have hsame : fmt.sameExponentAdjacentNormalized a b := by
+    refine
+      ⟨false, fmt.maxNormalMantissa - 4294966304, (0 : ℤ), hm, hmnext,
+        Or.inl ⟨rfl, ?_⟩⟩
+    norm_num [b, fmt, FloatingPointFormat.ieeeDoubleFormat,
+      FloatingPointFormat.maxNormalMantissa]
+  have hadj : fmt.realOrderAdjacentNormalized a b :=
+    fmt.realOrderAdjacentNormalized_of_sameExponentAdjacentNormalized hsame
+  have ha_value : a = (1 : ℝ) - 4294966305 * (2 : ℝ) ^ (-53 : ℤ) := by
+    norm_num [a, fmt, FloatingPointFormat.ieeeDoubleFormat,
+      FloatingPointFormat.normalizedValue, FloatingPointFormat.signValue,
+      FloatingPointFormat.betaR, FloatingPointFormat.maxNormalMantissa, zpow_neg]
+  have hb_value : b =
+      kahanAbsoluteIeeeDoubleFourBillionTwoHundredNinetyFourMillionNineHundredSixtySixThousandThreeHundredFourUlpsBelowOne := by
+    norm_num [b, fmt, FloatingPointFormat.ieeeDoubleFormat,
+      FloatingPointFormat.normalizedValue, FloatingPointFormat.signValue,
+      FloatingPointFormat.betaR, FloatingPointFormat.maxNormalMantissa,
+      kahanAbsoluteIeeeDoubleFourBillionTwoHundredNinetyFourMillionNineHundredSixtySixThousandThreeHundredFourUlpsBelowOne,
+      zpow_neg]
+  have hx_value :
+      x = kahanAbsoluteIeeeDoubleTwoBillionOneHundredFortySevenMillionFourHundredEightyThreeThousandFourHundredEightUlpsBelowOne ^ 2 := by
+    simp [x, BasicOp.exact, pow_two]
+  have hstrict : a < x ∧ x < b := by
+    rw [ha_value, hb_value, hx_value]
+    norm_num [kahanAbsoluteIeeeDoubleTwoBillionOneHundredFortySevenMillionFourHundredEightyThreeThousandFourHundredEightUlpsBelowOne,
+      kahanAbsoluteIeeeDoubleFourBillionTwoHundredNinetyFourMillionNineHundredSixtySixThousandThreeHundredFourUlpsBelowOne,
+      zpow_neg]
+  have hxrange : fmt.finiteNormalRange x := by
+    rw [FloatingPointFormat.finiteNormalRange]
+    have hxnonneg : 0 ≤ x := by
+      rw [hx_value]
+      exact sq_nonneg _
+    rw [abs_of_nonneg hxnonneg]
+    constructor
+    · rw [hx_value]
+      have hhalf :
+          (1 / 2 : ℝ) ≤
+            kahanAbsoluteIeeeDoubleTwoBillionOneHundredFortySevenMillionFourHundredEightyThreeThousandFourHundredEightUlpsBelowOne ^ 2 := by
+        norm_num [kahanAbsoluteIeeeDoubleTwoBillionOneHundredFortySevenMillionFourHundredEightyThreeThousandFourHundredEightUlpsBelowOne,
+          zpow_neg]
+      exact le_trans kahanAbsoluteIeeeDouble_minNormalMagnitude_le_half hhalf
+    · rw [hx_value]
+      have hle_one :
+          kahanAbsoluteIeeeDoubleTwoBillionOneHundredFortySevenMillionFourHundredEightyThreeThousandFourHundredEightUlpsBelowOne ^ 2 ≤
+            1 := by
+        norm_num [kahanAbsoluteIeeeDoubleTwoBillionOneHundredFortySevenMillionFourHundredEightyThreeThousandFourHundredEightUlpsBelowOne,
+          zpow_neg]
+      exact le_trans hle_one kahanAbsoluteIeeeDouble_one_le_maxFiniteMagnitude
+  have hpolicy : fmt.sourceRoundToEvenEvidence x (fmt.finiteRoundToEven x) :=
+    fmt.finiteRoundToEven_sourceRoundToEvenEvidence_of_finiteNormalRange hxrange
+  have hrightCloser : |x - b| < |x - a| := by
+    rw [ha_value, hb_value, hx_value]
+    norm_num [kahanAbsoluteIeeeDoubleTwoBillionOneHundredFortySevenMillionFourHundredEightyThreeThousandFourHundredEightUlpsBelowOne,
+      kahanAbsoluteIeeeDoubleFourBillionTwoHundredNinetyFourMillionNineHundredSixtySixThousandThreeHundredFourUlpsBelowOne,
+      zpow_neg]
+  have hround : fmt.finiteRoundToEven x = b :=
+    fmt.sourceRoundToEvenEvidence_eq_right_of_realOrderAdjacent_strict_between_right_closer
+      hpolicy hadj hstrict hrightCloser
+  simpa [FloatingPointFormat.finiteRoundToEvenOp, x, fmt, hb_value] using hround
+
+/-- Peeling one rounded square step from `1 - 2147483408 * 2^-53` rewrites the
+remaining IEEE-double square cascade to the cascade from
+`1 - 4294966304 * 2^-53`. -/
+theorem kahanAbsoluteFiniteSquareSteps_ieeeDouble_twoBillionOneHundredFortySevenMillionFourHundredEightyThreeThousandFourHundredEightUlpsBelowOne_succ
+    (k : ℕ) :
+    kahanAbsoluteFiniteSquareSteps FloatingPointFormat.ieeeDoubleFormat
+        (k + 1) kahanAbsoluteIeeeDoubleTwoBillionOneHundredFortySevenMillionFourHundredEightyThreeThousandFourHundredEightUlpsBelowOne =
+      kahanAbsoluteFiniteSquareSteps FloatingPointFormat.ieeeDoubleFormat
+        k kahanAbsoluteIeeeDoubleFourBillionTwoHundredNinetyFourMillionNineHundredSixtySixThousandThreeHundredFourUlpsBelowOne := by
+  simp [kahanAbsoluteFiniteSquareSteps,
+    kahanAbsoluteIeeeDouble_square_twoBillionOneHundredFortySevenMillionFourHundredEightyThreeThousandFourHundredEightUlpsBelowOne_eq_fourBillionTwoHundredNinetyFourMillionNineHundredSixtySixThousandThreeHundredFourUlpsBelowOne]
+
+/-- Peeling the first thirty-two rounded square steps from the predecessor of
+`1` rewrites the remaining IEEE-double square cascade to the cascade from
+`1 - 4294966304 * 2^-53`. -/
+theorem kahanAbsoluteFiniteSquareSteps_ieeeDouble_predOne_thirtyTwo_succ (k : ℕ) :
+    kahanAbsoluteFiniteSquareSteps FloatingPointFormat.ieeeDoubleFormat
+        (k + 32) kahanAbsoluteIeeeDoublePredOne =
+      kahanAbsoluteFiniteSquareSteps FloatingPointFormat.ieeeDoubleFormat
+        k kahanAbsoluteIeeeDoubleFourBillionTwoHundredNinetyFourMillionNineHundredSixtySixThousandThreeHundredFourUlpsBelowOne := by
+  rw [show k + 32 = (k + 1) + 31 by omega]
+  rw [kahanAbsoluteFiniteSquareSteps_ieeeDouble_predOne_thirtyOne_succ (k + 1)]
+  rw [kahanAbsoluteFiniteSquareSteps_ieeeDouble_twoBillionOneHundredFortySevenMillionFourHundredEightyThreeThousandFourHundredEightUlpsBelowOne_succ k]
+
+/-- The thirty-third rounded IEEE-double square in the predecessor-square
+cascade rounds the exact square of `1 - 4294966304 * 2^-53` to
+`1 - 8589930560 * 2^-53`. -/
+theorem kahanAbsoluteIeeeDouble_square_fourBillionTwoHundredNinetyFourMillionNineHundredSixtySixThousandThreeHundredFourUlpsBelowOne_eq_eightBillionFiveHundredEightyNineMillionNineHundredThirtyThousandFiveHundredSixtyUlpsBelowOne :
+    FloatingPointFormat.ieeeDoubleFormat.finiteRoundToEvenOp
+        BasicOp.mul kahanAbsoluteIeeeDoubleFourBillionTwoHundredNinetyFourMillionNineHundredSixtySixThousandThreeHundredFourUlpsBelowOne
+          kahanAbsoluteIeeeDoubleFourBillionTwoHundredNinetyFourMillionNineHundredSixtySixThousandThreeHundredFourUlpsBelowOne =
+      kahanAbsoluteIeeeDoubleEightBillionFiveHundredEightyNineMillionNineHundredThirtyThousandFiveHundredSixtyUlpsBelowOne := by
+  let fmt := FloatingPointFormat.ieeeDoubleFormat
+  let a : ℝ := fmt.normalizedValue false (fmt.maxNormalMantissa - 8589930560) 0
+  let b : ℝ := fmt.normalizedValue false (fmt.maxNormalMantissa - 8589930559) 0
+  let x : ℝ := BasicOp.exact BasicOp.mul
+    kahanAbsoluteIeeeDoubleFourBillionTwoHundredNinetyFourMillionNineHundredSixtySixThousandThreeHundredFourUlpsBelowOne
+      kahanAbsoluteIeeeDoubleFourBillionTwoHundredNinetyFourMillionNineHundredSixtySixThousandThreeHundredFourUlpsBelowOne
+  have hm : fmt.normalizedMantissa (fmt.maxNormalMantissa - 8589930560) := by
+    norm_num [fmt, FloatingPointFormat.ieeeDoubleFormat,
+      FloatingPointFormat.normalizedMantissa, FloatingPointFormat.mantissaInRange,
+      FloatingPointFormat.minNormalMantissa, FloatingPointFormat.maxNormalMantissa]
+  have hmnext : fmt.normalizedMantissa ((fmt.maxNormalMantissa - 8589930560) + 1) := by
+    norm_num [fmt, FloatingPointFormat.ieeeDoubleFormat,
+      FloatingPointFormat.normalizedMantissa, FloatingPointFormat.mantissaInRange,
+      FloatingPointFormat.minNormalMantissa, FloatingPointFormat.maxNormalMantissa]
+  have hsame : fmt.sameExponentAdjacentNormalized a b := by
+    refine
+      ⟨false, fmt.maxNormalMantissa - 8589930560, (0 : ℤ), hm, hmnext,
+        Or.inl ⟨rfl, ?_⟩⟩
+    norm_num [b, fmt, FloatingPointFormat.ieeeDoubleFormat,
+      FloatingPointFormat.maxNormalMantissa]
+  have hadj : fmt.realOrderAdjacentNormalized a b :=
+    fmt.realOrderAdjacentNormalized_of_sameExponentAdjacentNormalized hsame
+  have ha_value : a = (1 : ℝ) - 8589930561 * (2 : ℝ) ^ (-53 : ℤ) := by
+    norm_num [a, fmt, FloatingPointFormat.ieeeDoubleFormat,
+      FloatingPointFormat.normalizedValue, FloatingPointFormat.signValue,
+      FloatingPointFormat.betaR, FloatingPointFormat.maxNormalMantissa, zpow_neg]
+  have hb_value : b =
+      kahanAbsoluteIeeeDoubleEightBillionFiveHundredEightyNineMillionNineHundredThirtyThousandFiveHundredSixtyUlpsBelowOne := by
+    norm_num [b, fmt, FloatingPointFormat.ieeeDoubleFormat,
+      FloatingPointFormat.normalizedValue, FloatingPointFormat.signValue,
+      FloatingPointFormat.betaR, FloatingPointFormat.maxNormalMantissa,
+      kahanAbsoluteIeeeDoubleEightBillionFiveHundredEightyNineMillionNineHundredThirtyThousandFiveHundredSixtyUlpsBelowOne,
+      zpow_neg]
+  have hx_value :
+      x = kahanAbsoluteIeeeDoubleFourBillionTwoHundredNinetyFourMillionNineHundredSixtySixThousandThreeHundredFourUlpsBelowOne ^ 2 := by
+    simp [x, BasicOp.exact, pow_two]
+  have hstrict : a < x ∧ x < b := by
+    rw [ha_value, hb_value, hx_value]
+    norm_num [kahanAbsoluteIeeeDoubleFourBillionTwoHundredNinetyFourMillionNineHundredSixtySixThousandThreeHundredFourUlpsBelowOne,
+      kahanAbsoluteIeeeDoubleEightBillionFiveHundredEightyNineMillionNineHundredThirtyThousandFiveHundredSixtyUlpsBelowOne,
+      zpow_neg]
+  have hxrange : fmt.finiteNormalRange x := by
+    rw [FloatingPointFormat.finiteNormalRange]
+    have hxnonneg : 0 ≤ x := by
+      rw [hx_value]
+      exact sq_nonneg _
+    rw [abs_of_nonneg hxnonneg]
+    constructor
+    · rw [hx_value]
+      have hhalf :
+          (1 / 2 : ℝ) ≤
+            kahanAbsoluteIeeeDoubleFourBillionTwoHundredNinetyFourMillionNineHundredSixtySixThousandThreeHundredFourUlpsBelowOne ^ 2 := by
+        norm_num [kahanAbsoluteIeeeDoubleFourBillionTwoHundredNinetyFourMillionNineHundredSixtySixThousandThreeHundredFourUlpsBelowOne,
+          zpow_neg]
+      exact le_trans kahanAbsoluteIeeeDouble_minNormalMagnitude_le_half hhalf
+    · rw [hx_value]
+      have hle_one :
+          kahanAbsoluteIeeeDoubleFourBillionTwoHundredNinetyFourMillionNineHundredSixtySixThousandThreeHundredFourUlpsBelowOne ^ 2 ≤
+            1 := by
+        norm_num [kahanAbsoluteIeeeDoubleFourBillionTwoHundredNinetyFourMillionNineHundredSixtySixThousandThreeHundredFourUlpsBelowOne,
+          zpow_neg]
+      exact le_trans hle_one kahanAbsoluteIeeeDouble_one_le_maxFiniteMagnitude
+  have hpolicy : fmt.sourceRoundToEvenEvidence x (fmt.finiteRoundToEven x) :=
+    fmt.finiteRoundToEven_sourceRoundToEvenEvidence_of_finiteNormalRange hxrange
+  have hrightCloser : |x - b| < |x - a| := by
+    rw [ha_value, hb_value, hx_value]
+    norm_num [kahanAbsoluteIeeeDoubleFourBillionTwoHundredNinetyFourMillionNineHundredSixtySixThousandThreeHundredFourUlpsBelowOne,
+      kahanAbsoluteIeeeDoubleEightBillionFiveHundredEightyNineMillionNineHundredThirtyThousandFiveHundredSixtyUlpsBelowOne,
+      zpow_neg]
+  have hround : fmt.finiteRoundToEven x = b :=
+    fmt.sourceRoundToEvenEvidence_eq_right_of_realOrderAdjacent_strict_between_right_closer
+      hpolicy hadj hstrict hrightCloser
+  simpa [FloatingPointFormat.finiteRoundToEvenOp, x, fmt, hb_value] using hround
+
+/-- Peeling one rounded square step from `1 - 4294966304 * 2^-53` rewrites the
+remaining IEEE-double square cascade to the cascade from
+`1 - 8589930560 * 2^-53`. -/
+theorem kahanAbsoluteFiniteSquareSteps_ieeeDouble_fourBillionTwoHundredNinetyFourMillionNineHundredSixtySixThousandThreeHundredFourUlpsBelowOne_succ
+    (k : ℕ) :
+    kahanAbsoluteFiniteSquareSteps FloatingPointFormat.ieeeDoubleFormat
+        (k + 1) kahanAbsoluteIeeeDoubleFourBillionTwoHundredNinetyFourMillionNineHundredSixtySixThousandThreeHundredFourUlpsBelowOne =
+      kahanAbsoluteFiniteSquareSteps FloatingPointFormat.ieeeDoubleFormat
+        k kahanAbsoluteIeeeDoubleEightBillionFiveHundredEightyNineMillionNineHundredThirtyThousandFiveHundredSixtyUlpsBelowOne := by
+  simp [kahanAbsoluteFiniteSquareSteps,
+    kahanAbsoluteIeeeDouble_square_fourBillionTwoHundredNinetyFourMillionNineHundredSixtySixThousandThreeHundredFourUlpsBelowOne_eq_eightBillionFiveHundredEightyNineMillionNineHundredThirtyThousandFiveHundredSixtyUlpsBelowOne]
+
+/-- Peeling the first thirty-three rounded square steps from the predecessor of
+`1` rewrites the remaining IEEE-double square cascade to the cascade from
+`1 - 8589930560 * 2^-53`. -/
+theorem kahanAbsoluteFiniteSquareSteps_ieeeDouble_predOne_thirtyThree_succ (k : ℕ) :
+    kahanAbsoluteFiniteSquareSteps FloatingPointFormat.ieeeDoubleFormat
+        (k + 33) kahanAbsoluteIeeeDoublePredOne =
+      kahanAbsoluteFiniteSquareSteps FloatingPointFormat.ieeeDoubleFormat
+        k kahanAbsoluteIeeeDoubleEightBillionFiveHundredEightyNineMillionNineHundredThirtyThousandFiveHundredSixtyUlpsBelowOne := by
+  rw [show k + 33 = (k + 1) + 32 by omega]
+  rw [kahanAbsoluteFiniteSquareSteps_ieeeDouble_predOne_thirtyTwo_succ (k + 1)]
+  rw [kahanAbsoluteFiniteSquareSteps_ieeeDouble_fourBillionTwoHundredNinetyFourMillionNineHundredSixtySixThousandThreeHundredFourUlpsBelowOne_succ k]
+
+/-- The thirty-fourth rounded IEEE-double square in the predecessor-square
+cascade rounds the exact square of `1 - 8589930560 * 2^-53` to
+`1 - 17179852928 * 2^-53`. -/
+theorem kahanAbsoluteIeeeDouble_square_eightBillionFiveHundredEightyNineMillionNineHundredThirtyThousandFiveHundredSixtyUlpsBelowOne_eq_seventeenBillionOneHundredSeventyNineMillionEightHundredFiftyTwoThousandNineHundredTwentyEightUlpsBelowOne :
+    FloatingPointFormat.ieeeDoubleFormat.finiteRoundToEvenOp
+        BasicOp.mul kahanAbsoluteIeeeDoubleEightBillionFiveHundredEightyNineMillionNineHundredThirtyThousandFiveHundredSixtyUlpsBelowOne
+          kahanAbsoluteIeeeDoubleEightBillionFiveHundredEightyNineMillionNineHundredThirtyThousandFiveHundredSixtyUlpsBelowOne =
+      kahanAbsoluteIeeeDoubleSeventeenBillionOneHundredSeventyNineMillionEightHundredFiftyTwoThousandNineHundredTwentyEightUlpsBelowOne := by
+  let fmt := FloatingPointFormat.ieeeDoubleFormat
+  let a : ℝ := fmt.normalizedValue false (fmt.maxNormalMantissa - 17179852928) 0
+  let b : ℝ := fmt.normalizedValue false (fmt.maxNormalMantissa - 17179852927) 0
+  let x : ℝ := BasicOp.exact BasicOp.mul
+    kahanAbsoluteIeeeDoubleEightBillionFiveHundredEightyNineMillionNineHundredThirtyThousandFiveHundredSixtyUlpsBelowOne
+      kahanAbsoluteIeeeDoubleEightBillionFiveHundredEightyNineMillionNineHundredThirtyThousandFiveHundredSixtyUlpsBelowOne
+  have hm : fmt.normalizedMantissa (fmt.maxNormalMantissa - 17179852928) := by
+    norm_num [fmt, FloatingPointFormat.ieeeDoubleFormat,
+      FloatingPointFormat.normalizedMantissa, FloatingPointFormat.mantissaInRange,
+      FloatingPointFormat.minNormalMantissa, FloatingPointFormat.maxNormalMantissa]
+  have hmnext : fmt.normalizedMantissa ((fmt.maxNormalMantissa - 17179852928) + 1) := by
+    norm_num [fmt, FloatingPointFormat.ieeeDoubleFormat,
+      FloatingPointFormat.normalizedMantissa, FloatingPointFormat.mantissaInRange,
+      FloatingPointFormat.minNormalMantissa, FloatingPointFormat.maxNormalMantissa]
+  have hsame : fmt.sameExponentAdjacentNormalized a b := by
+    refine
+      ⟨false, fmt.maxNormalMantissa - 17179852928, (0 : ℤ), hm, hmnext,
+        Or.inl ⟨rfl, ?_⟩⟩
+    norm_num [b, fmt, FloatingPointFormat.ieeeDoubleFormat,
+      FloatingPointFormat.maxNormalMantissa]
+  have hadj : fmt.realOrderAdjacentNormalized a b :=
+    fmt.realOrderAdjacentNormalized_of_sameExponentAdjacentNormalized hsame
+  have ha_value : a = (1 : ℝ) - 17179852929 * (2 : ℝ) ^ (-53 : ℤ) := by
+    norm_num [a, fmt, FloatingPointFormat.ieeeDoubleFormat,
+      FloatingPointFormat.normalizedValue, FloatingPointFormat.signValue,
+      FloatingPointFormat.betaR, FloatingPointFormat.maxNormalMantissa, zpow_neg]
+  have hb_value : b =
+      kahanAbsoluteIeeeDoubleSeventeenBillionOneHundredSeventyNineMillionEightHundredFiftyTwoThousandNineHundredTwentyEightUlpsBelowOne := by
+    norm_num [b, fmt, FloatingPointFormat.ieeeDoubleFormat,
+      FloatingPointFormat.normalizedValue, FloatingPointFormat.signValue,
+      FloatingPointFormat.betaR, FloatingPointFormat.maxNormalMantissa,
+      kahanAbsoluteIeeeDoubleSeventeenBillionOneHundredSeventyNineMillionEightHundredFiftyTwoThousandNineHundredTwentyEightUlpsBelowOne,
+      zpow_neg]
+  have hx_value :
+      x = kahanAbsoluteIeeeDoubleEightBillionFiveHundredEightyNineMillionNineHundredThirtyThousandFiveHundredSixtyUlpsBelowOne ^ 2 := by
+    simp [x, BasicOp.exact, pow_two]
+  have hstrict : a < x ∧ x < b := by
+    rw [ha_value, hb_value, hx_value]
+    norm_num [kahanAbsoluteIeeeDoubleEightBillionFiveHundredEightyNineMillionNineHundredThirtyThousandFiveHundredSixtyUlpsBelowOne,
+      kahanAbsoluteIeeeDoubleSeventeenBillionOneHundredSeventyNineMillionEightHundredFiftyTwoThousandNineHundredTwentyEightUlpsBelowOne,
+      zpow_neg]
+  have hxrange : fmt.finiteNormalRange x := by
+    rw [FloatingPointFormat.finiteNormalRange]
+    have hxnonneg : 0 ≤ x := by
+      rw [hx_value]
+      exact sq_nonneg _
+    rw [abs_of_nonneg hxnonneg]
+    constructor
+    · rw [hx_value]
+      have hhalf :
+          (1 / 2 : ℝ) ≤
+            kahanAbsoluteIeeeDoubleEightBillionFiveHundredEightyNineMillionNineHundredThirtyThousandFiveHundredSixtyUlpsBelowOne ^ 2 := by
+        norm_num [kahanAbsoluteIeeeDoubleEightBillionFiveHundredEightyNineMillionNineHundredThirtyThousandFiveHundredSixtyUlpsBelowOne,
+          zpow_neg]
+      exact le_trans kahanAbsoluteIeeeDouble_minNormalMagnitude_le_half hhalf
+    · rw [hx_value]
+      have hle_one :
+          kahanAbsoluteIeeeDoubleEightBillionFiveHundredEightyNineMillionNineHundredThirtyThousandFiveHundredSixtyUlpsBelowOne ^ 2 ≤
+            1 := by
+        norm_num [kahanAbsoluteIeeeDoubleEightBillionFiveHundredEightyNineMillionNineHundredThirtyThousandFiveHundredSixtyUlpsBelowOne,
+          zpow_neg]
+      exact le_trans hle_one kahanAbsoluteIeeeDouble_one_le_maxFiniteMagnitude
+  have hpolicy : fmt.sourceRoundToEvenEvidence x (fmt.finiteRoundToEven x) :=
+    fmt.finiteRoundToEven_sourceRoundToEvenEvidence_of_finiteNormalRange hxrange
+  have hrightCloser : |x - b| < |x - a| := by
+    rw [ha_value, hb_value, hx_value]
+    norm_num [kahanAbsoluteIeeeDoubleEightBillionFiveHundredEightyNineMillionNineHundredThirtyThousandFiveHundredSixtyUlpsBelowOne,
+      kahanAbsoluteIeeeDoubleSeventeenBillionOneHundredSeventyNineMillionEightHundredFiftyTwoThousandNineHundredTwentyEightUlpsBelowOne,
+      zpow_neg]
+  have hround : fmt.finiteRoundToEven x = b :=
+    fmt.sourceRoundToEvenEvidence_eq_right_of_realOrderAdjacent_strict_between_right_closer
+      hpolicy hadj hstrict hrightCloser
+  simpa [FloatingPointFormat.finiteRoundToEvenOp, x, fmt, hb_value] using hround
+
+/-- Peeling one rounded square step from `1 - 8589930560 * 2^-53` rewrites the
+remaining IEEE-double square cascade to the cascade from
+`1 - 17179852928 * 2^-53`. -/
+theorem kahanAbsoluteFiniteSquareSteps_ieeeDouble_eightBillionFiveHundredEightyNineMillionNineHundredThirtyThousandFiveHundredSixtyUlpsBelowOne_succ
+    (k : ℕ) :
+    kahanAbsoluteFiniteSquareSteps FloatingPointFormat.ieeeDoubleFormat
+        (k + 1) kahanAbsoluteIeeeDoubleEightBillionFiveHundredEightyNineMillionNineHundredThirtyThousandFiveHundredSixtyUlpsBelowOne =
+      kahanAbsoluteFiniteSquareSteps FloatingPointFormat.ieeeDoubleFormat
+        k kahanAbsoluteIeeeDoubleSeventeenBillionOneHundredSeventyNineMillionEightHundredFiftyTwoThousandNineHundredTwentyEightUlpsBelowOne := by
+  simp [kahanAbsoluteFiniteSquareSteps,
+    kahanAbsoluteIeeeDouble_square_eightBillionFiveHundredEightyNineMillionNineHundredThirtyThousandFiveHundredSixtyUlpsBelowOne_eq_seventeenBillionOneHundredSeventyNineMillionEightHundredFiftyTwoThousandNineHundredTwentyEightUlpsBelowOne]
+
+/-- Peeling the first thirty-four rounded square steps from the predecessor of
+`1` rewrites the remaining IEEE-double square cascade to the cascade from
+`1 - 17179852928 * 2^-53`. -/
+theorem kahanAbsoluteFiniteSquareSteps_ieeeDouble_predOne_thirtyFour_succ (k : ℕ) :
+    kahanAbsoluteFiniteSquareSteps FloatingPointFormat.ieeeDoubleFormat
+        (k + 34) kahanAbsoluteIeeeDoublePredOne =
+      kahanAbsoluteFiniteSquareSteps FloatingPointFormat.ieeeDoubleFormat
+        k kahanAbsoluteIeeeDoubleSeventeenBillionOneHundredSeventyNineMillionEightHundredFiftyTwoThousandNineHundredTwentyEightUlpsBelowOne := by
+  rw [show k + 34 = (k + 1) + 33 by omega]
+  rw [kahanAbsoluteFiniteSquareSteps_ieeeDouble_predOne_thirtyThree_succ (k + 1)]
+  rw [kahanAbsoluteFiniteSquareSteps_ieeeDouble_eightBillionFiveHundredEightyNineMillionNineHundredThirtyThousandFiveHundredSixtyUlpsBelowOne_succ k]
 
 /-- If the exact square of the current IEEE-double square phase is strictly
 below half the smallest subnormal magnitude, the finite round-to-even squaring

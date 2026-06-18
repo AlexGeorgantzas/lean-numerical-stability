@@ -1,7 +1,0 @@
-interface:
-  display_name: "Vershynin HDP Formalizer"
-  short_description: "Formalize one HDP chapter PDF in Lean."
-  default_prompt: "Use $vershynin-hdp-formalizer to formalize one uploaded Vershynin chapter PDF in Lean with local library search, front-loaded proof-source acquisition, a foundation feasibility gate before hard proof work, theorem/not-proved/proof-source/bottleneck ledgers, red-bottleneck dependency-only progress, docs, and validation."
-
-policy:
-  allow_implicit_invocation: true

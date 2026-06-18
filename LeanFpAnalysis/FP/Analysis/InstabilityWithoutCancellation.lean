@@ -22,8 +22,15 @@ open scoped BigOperators
 
 Higham Chapter 1, Section 1.12 gives examples showing that the absence of
 subtractive cancellation does not guarantee floating-point accuracy.  This file
-records exact real-arithmetic baselines for those examples; the machine-range
-and rounding analyses remain separate obligations.
+records exact real-arithmetic baselines and selected explicit finite-format
+replacement models.  Under-specified historical Fortran/calculator outputs are
+ledgered as empirical-source-output in the Chapter 1 audit rather than treated
+as required Lean theorem targets.
+
+Some reverse-summation definitions below retain the old D1 route names because
+they are useful optional repository-model certificates.  Under the current
+Chapter 1 gate they are archived support material, not active obligations to
+reconstruct the historical Fortran printout.
 -/
 
 /-! ## No-pivot LU example -/
@@ -1946,8 +1953,9 @@ noncomputable def inverseSquareSingleSixBeforePlateauAccumulator : ℝ :=
 
 /-- The binary32 accumulator value from which the proved range theorem carries
 the forward summation through `k = 2897, ..., 4090` to the six-before-plateau
-accumulator.  Proving that the actual Fortran prefix reaches this value at the
-end of the `k = 2896` step remains the early-prefix trace obligation. -/
+accumulator.  In the explicit repository model, the early-prefix question is
+whether the modeled accumulator reaches this value after the `k = 2896` step;
+the historical Fortran run itself is an empirical ledger row. -/
 noncomputable def inverseSquareSinglePrePlateauWindowStartAccumulator : ℝ :=
   FloatingPointFormat.ieeeSingleFormat.normalizedValue false 13795756 1
 
@@ -2064,8 +2072,9 @@ theorem inverseSquareSinglePrePlateauAccumulator_lt_plateau :
 accumulator, adding the displayed term `4096^{-2} = 2^{-24}` is an exact
 midpoint tie between two adjacent binary32 values, and nearest/even returns the
 same accumulator because its mantissa is even.  This closes the book's local
-"drops off the end" explanation; deriving the whole Fortran loop and the
-reverse-order numerical table is a separate operation-trace obligation. -/
+"drops off the end" explanation; deriving a whole explicit repository-model
+loop is optional model strengthening, while the historical run remains
+empirical-source-output. -/
 theorem inverseSquareSinglePlateau_add_4096_term_rounds_to_self :
     FloatingPointFormat.ieeeSingleFormat.finiteRoundToEvenOp BasicOp.add
         inverseSquareSinglePlateauAccumulator (inverseSquareTerm 4096) =
@@ -3278,67 +3287,6 @@ theorem inverseSquareTerm_nonneg (k : ℕ) : 0 ≤ inverseSquareTerm k := by
   · have hkpos : 0 < k := Nat.pos_of_ne_zero hk
     exact le_of_lt (inverseSquareTerm_pos_of_pos hkpos)
 
-/-- Nearest finite round-to-even addition by a nonnegative quantity cannot
-return a value below the finite left input.  This is a local monotonicity fact
-for the high-prefix reverse trace: the previous accumulator is itself a finite
-candidate for the exact sum. -/
-theorem FloatingPointFormat.finiteRoundToEvenOp_add_ge_left_of_finiteSystem_of_nonneg
-    {fmt : FloatingPointFormat} {s t : ℝ}
-    (hs : fmt.finiteSystem s) (ht : 0 ≤ t) :
-    s ≤ fmt.finiteRoundToEvenOp BasicOp.add s t := by
-  let x : ℝ := BasicOp.exact BasicOp.add s t
-  let y : ℝ := fmt.finiteRoundToEvenOp BasicOp.add s t
-  have hround : fmt.nearestRoundingToFinite x y := by
-    simpa [x, y] using
-      fmt.finiteRoundToEvenOp_nearestRoundingToFinite BasicOp.add s t
-  by_contra hnot
-  have hylt : y < s := lt_of_not_ge hnot
-  have hsx : s ≤ x := by
-    simp [x, BasicOp.exact]
-    exact ht
-  have hyx : y < x := lt_of_lt_of_le hylt hsx
-  have hnear := nearestRoundingIn_minimal hround hs
-  have hxy_nonneg : 0 ≤ x - y := by linarith
-  have hxs_nonneg : 0 ≤ x - s := by linarith
-  rw [abs_of_nonneg hxy_nonneg, abs_of_nonneg hxs_nonneg] at hnear
-  linarith
-
-/-- Nearest finite round-to-even addition by a nonnegative quantity has absolute
-rounding error no larger than that quantity, when the left input is finite. -/
-theorem FloatingPointFormat.finiteRoundToEvenOp_add_abs_error_le_right_of_finiteSystem_of_nonneg
-    {fmt : FloatingPointFormat} {s t : ℝ}
-    (hs : fmt.finiteSystem s) (ht : 0 ≤ t) :
-    |fmt.finiteRoundToEvenOp BasicOp.add s t - (s + t)| ≤ t := by
-  let x : ℝ := BasicOp.exact BasicOp.add s t
-  let y : ℝ := fmt.finiteRoundToEvenOp BasicOp.add s t
-  have hround : fmt.nearestRoundingToFinite x y := by
-    simpa [x, y] using
-      fmt.finiteRoundToEvenOp_nearestRoundingToFinite BasicOp.add s t
-  have hnear := nearestRoundingIn_minimal hround hs
-  have hxs : |x - s| = t := by
-    rw [abs_of_nonneg]
-    · simp [x, BasicOp.exact]
-    · simp [x, BasicOp.exact]
-      exact ht
-  have hxy : |x - y| ≤ t := by
-    simpa [hxs] using hnear
-  simpa [x, y, BasicOp.exact, abs_sub_comm] using hxy
-
-/-- Consequence of the one-step nearestness bound: a rounded nonnegative
-addition can increase a finite left input by at most twice the added quantity. -/
-theorem FloatingPointFormat.finiteRoundToEvenOp_add_le_left_add_two_mul_right_of_finiteSystem_of_nonneg
-    {fmt : FloatingPointFormat} {s t : ℝ}
-    (hs : fmt.finiteSystem s) (ht : 0 ≤ t) :
-    fmt.finiteRoundToEvenOp BasicOp.add s t ≤ s + 2 * t := by
-  have herr :=
-    fmt.finiteRoundToEvenOp_add_abs_error_le_right_of_finiteSystem_of_nonneg
-      hs ht
-  have hle_abs :
-      fmt.finiteRoundToEvenOp BasicOp.add s t - (s + t) ≤
-        |fmt.finiteRoundToEvenOp BasicOp.add s t - (s + t)| :=
-    le_abs_self _
-  linarith
-
 /-- One rounded inverse-square addition cannot decrease a finite IEEE-single
 state. -/
 theorem inverseSquareSingleForwardStep_ge_self_of_finiteSystem
@@ -3550,19 +3498,19 @@ noncomputable def inverseSquareSingleReversePrintedAccumulator : ℝ :=
   FloatingPointFormat.ieeeSingleFormat.normalizedValue false 13798707 (1 : ℤ)
 
 /-- Lower endpoint of the binary32 start window for the final `4096` reverse
-additions that round to Higham §1.12.3's printed reverse value. -/
+additions in the archived optional repository model. -/
 noncomputable def inverseSquareSingleReverseSuffixStartLower : ℝ :=
   FloatingPointFormat.ieeeSingleFormat.normalizedValue false 16773049 (-12 : ℤ)
 
 /-- Upper endpoint of the binary32 start window for the final `4096` reverse
-additions that round to Higham §1.12.3's printed reverse value. -/
+additions in the archived optional repository model. -/
 noncomputable def inverseSquareSingleReverseSuffixStartUpper : ℝ :=
   FloatingPointFormat.ieeeSingleFormat.normalizedValue false 8389596 (-11 : ℤ)
 
 /-- Tighter upper endpoint of the binary32 start window for the final `4096`
-reverse additions that round to Higham §1.12.3's printed reverse value.  This
-refines `inverseSquareSingleReverseSuffixStartUpper` by staying in the
-exponent-`-12` bin. -/
+reverse additions in the archived optional repository model.  This refines
+`inverseSquareSingleReverseSuffixStartUpper` by staying in the exponent-`-12`
+bin. -/
 noncomputable def inverseSquareSingleReverseSuffixStartUpperTight : ℝ :=
   FloatingPointFormat.ieeeSingleFormat.normalizedValue false 16777650 (-12 : ℤ)
 
@@ -3840,8 +3788,8 @@ theorem inverseSquareExactReverseTenPowNineHighPrefix_le_half_telescope :
   exact htel
 
 /-- The exact real mass of the source's high-index reverse prefix is above
-the lower endpoint of the final-suffix start window that leads to the printed
-reverse value. -/
+the lower endpoint of the final-suffix start window for the archived optional
+repository model. -/
 theorem inverseSquareExactReverseTenPowNineHighPrefix_ge_printedSuffixStartLower :
     inverseSquareSingleReverseSuffixStartLower ≤
       inverseSquareExactReverseAccumulatorFrom 0 (10 ^ 9) (10 ^ 9 - 4096) := by
@@ -3862,8 +3810,8 @@ theorem inverseSquareExactReverseTenPowNineHighPrefix_ge_printedSuffixStartLower
   exact le_trans hwindow htel
 
 /-- The exact real mass of the source's high-index reverse prefix is below
-the upper endpoint of the final-suffix start window that leads to the printed
-reverse value. -/
+the upper endpoint of the final-suffix start window for the archived optional
+repository model. -/
 theorem inverseSquareExactReverseTenPowNineHighPrefix_le_printedSuffixStartUpper :
     inverseSquareExactReverseAccumulatorFrom 0 (10 ^ 9) (10 ^ 9 - 4096) ≤
       inverseSquareSingleReverseSuffixStartUpper := by
@@ -3892,11 +3840,11 @@ theorem inverseSquareExactReverseTenPowNineHighPrefix_le_printedSuffixStartUpper
       zpow_neg]
   exact le_trans inverseSquareExactReverseTenPowNineHighPrefix_le_inv_4096 hwindow
 
-/-- Exact high-prefix start-window squeeze for the remaining reverse-order
-trace: the symbolic mass of the `10^9, ..., 4097` block lies inside the
-binary32 start window whose final 4096-term suffix rounds to Higham's printed
-reverse value.  The corresponding rounded high-prefix state is still the next
-operation-trace obligation. -/
+/-- Exact high-prefix start-window squeeze for the archived optional
+repository-model trace: the symbolic mass of the `10^9, ..., 4097` block lies
+inside the binary32 start window whose final 4096-term suffix reaches the
+displayed model accumulator.  The corresponding rounded high-prefix state is
+only optional explicit-model replay work. -/
 theorem inverseSquareExactReverseTenPowNineHighPrefix_mem_printedSuffixStartWindow :
     inverseSquareSingleReverseSuffixStartLower ≤
         inverseSquareExactReverseAccumulatorFrom 0 (10 ^ 9) (10 ^ 9 - 4096) ∧
@@ -3905,10 +3853,10 @@ theorem inverseSquareExactReverseTenPowNineHighPrefix_mem_printedSuffixStartWind
   ⟨inverseSquareExactReverseTenPowNineHighPrefix_ge_printedSuffixStartLower,
     inverseSquareExactReverseTenPowNineHighPrefix_le_printedSuffixStartUpper⟩
 
-/-- Exact high-prefix squeeze for the tighter final-suffix start window.  This
-is the non-enumerative interval target that replaces the earlier, deliberately
-looser upper endpoint when proving the printed reverse value by a whole-window
-suffix certificate. -/
+/-- Exact high-prefix squeeze for the tighter final-suffix start window in the
+archived optional repository model.  This is the non-enumerative interval target
+that replaces the earlier, deliberately looser upper endpoint for a
+whole-window suffix certificate. -/
 theorem inverseSquareExactReverseTenPowNineHighPrefix_mem_printedSuffixStartTightWindow :
     inverseSquareSingleReverseSuffixStartLower ≤
         inverseSquareExactReverseAccumulatorFrom 0 (10 ^ 9) (10 ^ 9 - 4096) ∧
@@ -4143,8 +4091,9 @@ theorem abs_sub_left_lt_abs_sub_right_of_le_of_left_closer
   rw [abs_of_nonneg hx_left_nonneg, abs_of_nonpos hx_right_nonpos]
   linarith
 
-/-- Exact companion to the rounded `8192` high-prefix split.  Future D1
-interval certificates can compare rounded and exact states blockwise. -/
+/-- Exact companion to the rounded `8192` high-prefix split.  Archived optional
+D1 interval certificates can compare rounded and exact states blockwise if an
+explicit repository-model replay is reopened. -/
 theorem inverseSquareExactReverseTenPowNineHighPrefix_split_8192 :
     inverseSquareExactReverseAccumulatorFrom 0 (10 ^ 9) (10 ^ 9 - 4096) =
       inverseSquareExactReverseAccumulatorFrom
@@ -5005,9 +4954,9 @@ theorem inverseSquareSingleReverseTenPowNineHighPrefixState_finiteSystem :
     (FloatingPointFormat.finiteSystem_zero FloatingPointFormat.ieeeSingleFormat)
     (10 ^ 9) (10 ^ 9 - 4096)
 
-/-- The actual rounded high-index prefix state in Higham §1.12.3's reverse-order
-run is nonnegative.  This is the first reusable invariant for the remaining D1
-high-prefix interval proof. -/
+/-- The actual rounded high-index prefix state in the archived repository-model
+reverse-order run is nonnegative.  This is a reusable invariant for the
+optional D1 high-prefix interval route, not an active Chapter 1 gate target. -/
 theorem inverseSquareSingleReverseTenPowNineHighPrefixState_nonneg :
     0 ≤ inverseSquareSingleReverseTenPowNineHighPrefixState := by
   unfold inverseSquareSingleReverseTenPowNineHighPrefixState
@@ -5372,8 +5321,9 @@ theorem inverseSquareSingleReverseTenPowNineHighPrefix_abs_error_le_stdErrorEnve
                 add_comm]
 
 /-- Final high-prefix specialization of the accumulated standard-model error
-envelope.  This is the direct D1 bridge left to sharpen: bounding this envelope
-by the candidate-window margin would close the high-prefix window target. -/
+envelope.  This is an archived optional D1 bridge: if the repository-model
+replay is explicitly reopened, comparing this envelope with the candidate-window
+margin is one possible high-prefix route. -/
 theorem inverseSquareSingleReverseTenPowNineHighPrefixState_abs_error_le_stdErrorEnvelope :
     |inverseSquareSingleReverseTenPowNineHighPrefixState -
         inverseSquareExactReverseAccumulatorFrom 0 (10 ^ 9) (10 ^ 9 - 4096)| ≤
@@ -5539,8 +5489,8 @@ Its usual hexadecimal IEEE encoding is `0x3f251a66`. -/
 noncomputable def inverseSquareSingleReverseAfter2Candidate : ℝ :=
   FloatingPointFormat.ieeeSingleFormat.normalizedValue false 10820198 (0 : ℤ)
 
-/-- The concrete high-prefix candidate lies in the suffix-start window that
-leads to Higham's printed reverse value. -/
+/-- The concrete high-prefix candidate lies in the repository-model
+suffix-start window that leads to the displayed reverse accumulator. -/
 theorem inverseSquareSingleReverseTenPowNineHighPrefixCandidate_mem_printedSuffixStartWindow :
     inverseSquareSingleReverseSuffixStartLower ≤
         inverseSquareSingleReverseTenPowNineHighPrefixCandidate ∧
@@ -5563,8 +5513,7 @@ theorem inverseSquareSingleReverseTenPowNineHighPrefixCandidate_mem_printedSuffi
       zpow_neg]
 
 /-- The concrete high-prefix candidate lies in the tighter suffix-start window
-that is small enough for the final suffix to target Higham's printed reverse
-value. -/
+used by the archived optional repository-model final suffix. -/
 theorem inverseSquareSingleReverseTenPowNineHighPrefixCandidate_mem_printedSuffixStartTightWindow :
     inverseSquareSingleReverseSuffixStartLower ≤
         inverseSquareSingleReverseTenPowNineHighPrefixCandidate ∧
@@ -7444,7 +7393,7 @@ theorem inverseSquareSingleReverseAfter3_add_2_term_rounds_to_after2 :
         zpow_neg]
 
 /-- Adding `1^{-2}` to the after-`2` state is exactly representable and lands
-on Higham's printed reverse accumulator. -/
+on the repository-model displayed reverse accumulator. -/
 theorem inverseSquareSingleReverseAfter2_add_1_term_rounds_to_printed :
     inverseSquareSingleForwardStep
         inverseSquareSingleReverseAfter2Candidate 1 =
@@ -7495,26 +7444,26 @@ theorem inverseSquareSingleReverseAfter2_add_1_term_rounds_to_printed :
         norm_num :
           (5410099 : ℝ) / 8388608 + 1 = (13798707 : ℝ) / 8388608)
 
-/-- The first remaining certificate for Higham §1.12.3's printed reverse
-value: the rounded high-index prefix state lies in the suffix-start window. -/
+/-- Archived optional certificate for the repository-model reverse route: the
+rounded high-index prefix state lies in the suffix-start window. -/
 def inverseSquareSingleReverseTenPowNineHighPrefixInPrintedSuffixWindow : Prop :=
   inverseSquareSingleReverseSuffixStartLower ≤
       inverseSquareSingleReverseTenPowNineHighPrefixState ∧
     inverseSquareSingleReverseTenPowNineHighPrefixState ≤
       inverseSquareSingleReverseSuffixStartUpper
 
-/-- Tighter form of the first remaining certificate for Higham §1.12.3's
-printed reverse value: the rounded high-index prefix state lies in the refined
-suffix-start window. -/
+/-- Tighter archived optional certificate for the repository-model reverse
+route: the rounded high-index prefix state lies in the refined suffix-start
+window. -/
 def inverseSquareSingleReverseTenPowNineHighPrefixInPrintedSuffixTightWindow : Prop :=
   inverseSquareSingleReverseSuffixStartLower ≤
       inverseSquareSingleReverseTenPowNineHighPrefixState ∧
     inverseSquareSingleReverseTenPowNineHighPrefixState ≤
       inverseSquareSingleReverseSuffixStartUpperTight
 
-/-- The second remaining certificate for Higham §1.12.3's printed reverse
-value: every start in the displayed suffix window maps, after the final
-`4096` reverse additions, to the printed binary32 accumulator. -/
+/-- Archived optional suffix certificate for the repository-model reverse route:
+every start in the displayed suffix window maps, after the final `4096` reverse
+additions, to the displayed model accumulator. -/
 def inverseSquareSingleReverseSuffixWindowMapsToPrinted : Prop :=
   ∀ start,
     inverseSquareSingleReverseSuffixStartLower ≤ start →
@@ -7522,10 +7471,10 @@ def inverseSquareSingleReverseSuffixWindowMapsToPrinted : Prop :=
         inverseSquareSingleReverseAccumulatorFrom start 4096 4096 =
           inverseSquareSingleReversePrintedAccumulator
 
-/-- Tighter-window form of the final suffix certificate.  This is the viable
-whole-window replacement for the earlier wider window: every start in the
-refined interval must map, after the final `4096` reverse additions, to the
-printed binary32 accumulator. -/
+/-- Tighter-window form of the archived optional suffix certificate.  This
+retains the whole-window replacement for the earlier wider window: every start
+in the refined interval maps, after the final `4096` reverse additions, to the
+displayed model accumulator. -/
 def inverseSquareSingleReverseTightSuffixWindowMapsToPrinted : Prop :=
   ∀ start,
     inverseSquareSingleReverseSuffixStartLower ≤ start →
@@ -7533,41 +7482,41 @@ def inverseSquareSingleReverseTightSuffixWindowMapsToPrinted : Prop :=
         inverseSquareSingleReverseAccumulatorFrom start 4096 4096 =
           inverseSquareSingleReversePrintedAccumulator
 
-/-- Concrete high-prefix equality certificate for the source's reverse-order
-run. -/
+/-- Archived optional concrete high-prefix equality certificate for the
+repository-model reverse-order run. -/
 def inverseSquareSingleReverseTenPowNineHighPrefixEqCandidate : Prop :=
   inverseSquareSingleReverseTenPowNineHighPrefixState =
     inverseSquareSingleReverseTenPowNineHighPrefixCandidate
 
-/-- Concrete suffix certificate from the observed high-prefix candidate to
-Higham's printed reverse value. -/
+/-- Archived optional concrete suffix certificate from the observed
+repository-model high-prefix candidate to the displayed model accumulator. -/
 def inverseSquareSingleReverseCandidateSuffixMapsToPrinted : Prop :=
   inverseSquareSingleReverseAccumulatorFrom
       inverseSquareSingleReverseTenPowNineHighPrefixCandidate 4096 4096 =
     inverseSquareSingleReversePrintedAccumulator
 
-/-- The remaining concrete suffix certificate after the exact `4096^{-2}`
+/-- Archived optional concrete suffix certificate after the exact `4096^{-2}`
 candidate step has been discharged. -/
 def inverseSquareSingleReverseAfter4096SuffixMapsToPrinted : Prop :=
   inverseSquareSingleReverseAccumulatorFrom
       inverseSquareSingleReverseAfter4096Candidate 4095 4095 =
     inverseSquareSingleReversePrintedAccumulator
 
-/-- The remaining concrete suffix certificate after the first two low-index
+/-- Archived optional concrete suffix certificate after the first two low-index
 candidate suffix steps have been discharged. -/
 def inverseSquareSingleReverseAfter4095SuffixMapsToPrinted : Prop :=
   inverseSquareSingleReverseAccumulatorFrom
       inverseSquareSingleReverseAfter4095Candidate 4094 4094 =
     inverseSquareSingleReversePrintedAccumulator
 
-/-- The remaining concrete suffix certificate after the first same-exponent
+/-- Archived optional concrete suffix certificate after the first same-exponent
 band `4094^{-2}, ..., 2049^{-2}` has been discharged. -/
 def inverseSquareSingleReverseBefore2048SuffixMapsToPrinted : Prop :=
   inverseSquareSingleReverseAccumulatorFrom
       inverseSquareSingleReverseBefore2048Candidate 2048 2048 =
     inverseSquareSingleReversePrintedAccumulator
 
-/-- The remaining concrete suffix certificate after the `2048^{-2}` boundary
+/-- Archived optional concrete suffix certificate after the `2048^{-2}` boundary
 step and the same-exponent band `2047^{-2}, ..., 1025^{-2}` have been
 discharged. -/
 def inverseSquareSingleReverseBefore1024SuffixMapsToPrinted : Prop :=
@@ -7575,7 +7524,7 @@ def inverseSquareSingleReverseBefore1024SuffixMapsToPrinted : Prop :=
       inverseSquareSingleReverseBefore1024Candidate 1024 1024 =
     inverseSquareSingleReversePrintedAccumulator
 
-/-- The remaining concrete suffix certificate after the `1024^{-2}` boundary
+/-- Archived optional concrete suffix certificate after the `1024^{-2}` boundary
 step and the same-exponent band `1023^{-2}, ..., 513^{-2}` have been
 discharged. -/
 def inverseSquareSingleReverseBefore512SuffixMapsToPrinted : Prop :=
@@ -7583,7 +7532,7 @@ def inverseSquareSingleReverseBefore512SuffixMapsToPrinted : Prop :=
       inverseSquareSingleReverseBefore512Candidate 512 512 =
     inverseSquareSingleReversePrintedAccumulator
 
-/-- The remaining concrete suffix certificate after the `512^{-2}` boundary
+/-- Archived optional concrete suffix certificate after the `512^{-2}` boundary
 step and the same-exponent band `511^{-2}, ..., 257^{-2}` have been
 discharged. -/
 def inverseSquareSingleReverseBefore256SuffixMapsToPrinted : Prop :=
@@ -7591,7 +7540,7 @@ def inverseSquareSingleReverseBefore256SuffixMapsToPrinted : Prop :=
       inverseSquareSingleReverseBefore256Candidate 256 256 =
     inverseSquareSingleReversePrintedAccumulator
 
-/-- The remaining concrete suffix certificate after the `256^{-2}` boundary
+/-- Archived optional concrete suffix certificate after the `256^{-2}` boundary
 step and the same-exponent band `255^{-2}, ..., 129^{-2}` have been
 discharged. -/
 def inverseSquareSingleReverseBefore128SuffixMapsToPrinted : Prop :=
@@ -7599,37 +7548,36 @@ def inverseSquareSingleReverseBefore128SuffixMapsToPrinted : Prop :=
       inverseSquareSingleReverseBefore128Candidate 128 128 =
     inverseSquareSingleReversePrintedAccumulator
 
-/-- The remaining concrete suffix certificate after the `128^{-2}` boundary
-step and the same-exponent band `127^{-2}, ..., 65^{-2}` have been
-discharged. -/
+/-- Archived optional concrete suffix certificate after the `128^{-2}` boundary
+step and the same-exponent band `127^{-2}, ..., 65^{-2}` has been discharged. -/
 def inverseSquareSingleReverseBefore64SuffixMapsToPrinted : Prop :=
   inverseSquareSingleReverseAccumulatorFrom
       inverseSquareSingleReverseBefore64Candidate 64 64 =
     inverseSquareSingleReversePrintedAccumulator
 
-/-- The remaining concrete suffix certificate after the `64^{-2}` boundary
-step and the same-exponent band `63^{-2}, ..., 33^{-2}` have been discharged. -/
+/-- Archived optional concrete suffix certificate after the `64^{-2}` boundary
+step and the same-exponent band `63^{-2}, ..., 33^{-2}` has been discharged. -/
 def inverseSquareSingleReverseBefore32SuffixMapsToPrinted : Prop :=
   inverseSquareSingleReverseAccumulatorFrom
       inverseSquareSingleReverseBefore32Candidate 32 32 =
     inverseSquareSingleReversePrintedAccumulator
 
-/-- The remaining concrete suffix certificate after the `32^{-2}` boundary
-step and the same-exponent band `31^{-2}, ..., 17^{-2}` have been discharged. -/
+/-- Archived optional concrete suffix certificate after the `32^{-2}` boundary
+step and the same-exponent band `31^{-2}, ..., 17^{-2}` has been discharged. -/
 def inverseSquareSingleReverseBefore16SuffixMapsToPrinted : Prop :=
   inverseSquareSingleReverseAccumulatorFrom
       inverseSquareSingleReverseBefore16Candidate 16 16 =
     inverseSquareSingleReversePrintedAccumulator
 
-/-- The remaining concrete suffix certificate after the `16^{-2}` boundary
-step and the same-exponent band `15^{-2}, ..., 9^{-2}` have been discharged. -/
+/-- Archived optional concrete suffix certificate after the `16^{-2}` boundary
+step and the same-exponent band `15^{-2}, ..., 9^{-2}` has been discharged. -/
 def inverseSquareSingleReverseBefore8SuffixMapsToPrinted : Prop :=
   inverseSquareSingleReverseAccumulatorFrom
       inverseSquareSingleReverseBefore8Candidate 8 8 =
     inverseSquareSingleReversePrintedAccumulator
 
-/-- The remaining concrete suffix certificate after the `8^{-2}` boundary step
-and the band `7^{-2}, 6^{-2}, 5^{-2}` have been discharged. -/
+/-- Archived optional concrete suffix certificate after the `8^{-2}` boundary
+step and the band `7^{-2}, 6^{-2}, 5^{-2}` has been discharged. -/
 def inverseSquareSingleReverseBefore4SuffixMapsToPrinted : Prop :=
   inverseSquareSingleReverseAccumulatorFrom
       inverseSquareSingleReverseBefore4Candidate 4 4 =
@@ -7731,8 +7679,8 @@ theorem inverseSquareSingleReverseAfter4096SuffixMapsToPrinted_of_after4095
   exact hsuffix
 
 /-- Closing the first same-exponent after-`4095` suffix band reduces the
-remaining concrete suffix certificate from `4094` additions to the boundary
-certificate beginning with `2048^{-2}`. -/
+archived optional concrete suffix certificate from `4094` additions to the
+boundary certificate beginning with `2048^{-2}`. -/
 theorem inverseSquareSingleReverseAfter4095SuffixMapsToPrinted_of_before2048
     (hsuffix : inverseSquareSingleReverseBefore2048SuffixMapsToPrinted) :
     inverseSquareSingleReverseAfter4095SuffixMapsToPrinted := by
@@ -7747,8 +7695,8 @@ theorem inverseSquareSingleReverseAfter4095SuffixMapsToPrinted_of_before2048
   exact hsuffix
 
 /-- Closing the `2048^{-2}` boundary step and the following same-exponent band
-reduces the remaining concrete suffix certificate from the before-`2048` state
-to the boundary certificate beginning with `1024^{-2}`. -/
+reduces the archived optional concrete suffix certificate from the
+before-`2048` state to the boundary certificate beginning with `1024^{-2}`. -/
 theorem inverseSquareSingleReverseBefore2048SuffixMapsToPrinted_of_before1024
     (hsuffix : inverseSquareSingleReverseBefore1024SuffixMapsToPrinted) :
     inverseSquareSingleReverseBefore2048SuffixMapsToPrinted := by
@@ -7778,8 +7726,8 @@ theorem inverseSquareSingleReverseBefore2048SuffixMapsToPrinted_of_before1024
   exact hsuffix
 
 /-- Closing the `1024^{-2}` exact boundary step and the following same-exponent
-band reduces the remaining concrete suffix certificate from the before-`1024`
-state to the boundary certificate beginning with `512^{-2}`. -/
+band reduces the archived optional concrete suffix certificate from the
+before-`1024` state to the boundary certificate beginning with `512^{-2}`. -/
 theorem inverseSquareSingleReverseBefore1024SuffixMapsToPrinted_of_before512
     (hsuffix : inverseSquareSingleReverseBefore512SuffixMapsToPrinted) :
     inverseSquareSingleReverseBefore1024SuffixMapsToPrinted := by
@@ -7809,8 +7757,9 @@ theorem inverseSquareSingleReverseBefore1024SuffixMapsToPrinted_of_before512
   exact hsuffix
 
 /-- Closing the `512^{-2}` midpoint boundary step and the following
-same-exponent band reduces the remaining concrete suffix certificate from the
-before-`512` state to the boundary certificate beginning with `256^{-2}`. -/
+same-exponent band reduces the archived optional concrete suffix certificate
+from the before-`512` state to the boundary certificate beginning with
+`256^{-2}`. -/
 theorem inverseSquareSingleReverseBefore512SuffixMapsToPrinted_of_before256
     (hsuffix : inverseSquareSingleReverseBefore256SuffixMapsToPrinted) :
     inverseSquareSingleReverseBefore512SuffixMapsToPrinted := by
@@ -7840,8 +7789,9 @@ theorem inverseSquareSingleReverseBefore512SuffixMapsToPrinted_of_before256
   exact hsuffix
 
 /-- Closing the `256^{-2}` midpoint boundary step and the following
-same-exponent band reduces the remaining concrete suffix certificate from the
-before-`256` state to the boundary certificate beginning with `128^{-2}`. -/
+same-exponent band reduces the archived optional concrete suffix certificate
+from the before-`256` state to the boundary certificate beginning with
+`128^{-2}`. -/
 theorem inverseSquareSingleReverseBefore256SuffixMapsToPrinted_of_before128
     (hsuffix : inverseSquareSingleReverseBefore128SuffixMapsToPrinted) :
     inverseSquareSingleReverseBefore256SuffixMapsToPrinted := by
@@ -7871,8 +7821,9 @@ theorem inverseSquareSingleReverseBefore256SuffixMapsToPrinted_of_before128
   exact hsuffix
 
 /-- Closing the `128^{-2}` midpoint boundary step and the following
-same-exponent band reduces the remaining concrete suffix certificate from the
-before-`128` state to the boundary certificate beginning with `64^{-2}`. -/
+same-exponent band reduces the archived optional concrete suffix certificate
+from the before-`128` state to the boundary certificate beginning with
+`64^{-2}`. -/
 theorem inverseSquareSingleReverseBefore128SuffixMapsToPrinted_of_before64
     (hsuffix : inverseSquareSingleReverseBefore64SuffixMapsToPrinted) :
     inverseSquareSingleReverseBefore128SuffixMapsToPrinted := by
@@ -7902,8 +7853,9 @@ theorem inverseSquareSingleReverseBefore128SuffixMapsToPrinted_of_before64
   exact hsuffix
 
 /-- Closing the `64^{-2}` midpoint boundary step and the following
-same-exponent band reduces the remaining concrete suffix certificate from the
-before-`64` state to the boundary certificate beginning with `32^{-2}`. -/
+same-exponent band reduces the archived optional concrete suffix certificate
+from the before-`64` state to the boundary certificate beginning with
+`32^{-2}`. -/
 theorem inverseSquareSingleReverseBefore64SuffixMapsToPrinted_of_before32
     (hsuffix : inverseSquareSingleReverseBefore32SuffixMapsToPrinted) :
     inverseSquareSingleReverseBefore64SuffixMapsToPrinted := by
@@ -7933,8 +7885,8 @@ theorem inverseSquareSingleReverseBefore64SuffixMapsToPrinted_of_before32
   exact hsuffix
 
 /-- Closing the `32^{-2}` exact boundary step and the following same-exponent
-band reduces the remaining concrete suffix certificate from the before-`32`
-state to the boundary certificate beginning with `16^{-2}`. -/
+band reduces the archived optional concrete suffix certificate from the
+before-`32` state to the boundary certificate beginning with `16^{-2}`. -/
 theorem inverseSquareSingleReverseBefore32SuffixMapsToPrinted_of_before16
     (hsuffix : inverseSquareSingleReverseBefore16SuffixMapsToPrinted) :
     inverseSquareSingleReverseBefore32SuffixMapsToPrinted := by
@@ -7964,8 +7916,9 @@ theorem inverseSquareSingleReverseBefore32SuffixMapsToPrinted_of_before16
   exact hsuffix
 
 /-- Closing the `16^{-2}` midpoint boundary step and the following
-same-exponent band reduces the remaining concrete suffix certificate from the
-before-`16` state to the boundary certificate beginning with `8^{-2}`. -/
+same-exponent band reduces the archived optional concrete suffix certificate
+from the before-`16` state to the boundary certificate beginning with
+`8^{-2}`. -/
 theorem inverseSquareSingleReverseBefore16SuffixMapsToPrinted_of_before8
     (hsuffix : inverseSquareSingleReverseBefore8SuffixMapsToPrinted) :
     inverseSquareSingleReverseBefore16SuffixMapsToPrinted := by
@@ -7995,8 +7948,8 @@ theorem inverseSquareSingleReverseBefore16SuffixMapsToPrinted_of_before8
   exact hsuffix
 
 /-- Closing the `8^{-2}` exact boundary step and the following same-exponent
-band reduces the remaining concrete suffix certificate from the before-`8`
-state to the final four explicit additions beginning with `4^{-2}`. -/
+band reduces the archived optional concrete suffix certificate from the
+before-`8` state to the final four explicit additions beginning with `4^{-2}`. -/
 theorem inverseSquareSingleReverseBefore8SuffixMapsToPrinted_of_before4
     (hsuffix : inverseSquareSingleReverseBefore4SuffixMapsToPrinted) :
     inverseSquareSingleReverseBefore8SuffixMapsToPrinted := by
@@ -8026,7 +7979,7 @@ theorem inverseSquareSingleReverseBefore8SuffixMapsToPrinted_of_before4
   exact hsuffix
 
 /-- The final four low-index reverse additions carry the before-`4` state to
-Higham's printed binary32 reverse accumulator. -/
+the displayed accumulator in the archived optional repository model. -/
 theorem inverseSquareSingleReverseBefore4SuffixMapsToPrinted_closed :
     inverseSquareSingleReverseBefore4SuffixMapsToPrinted := by
   change
@@ -8093,8 +8046,8 @@ theorem inverseSquareSingleReverseBefore32SuffixMapsToPrinted_closed :
       (inverseSquareSingleReverseBefore8SuffixMapsToPrinted_of_before4
         inverseSquareSingleReverseBefore4SuffixMapsToPrinted_closed))
 
-/-- The whole concrete candidate suffix trace from the named high-prefix
-candidate to Higham's printed reverse value is closed. -/
+/-- The whole concrete repository-model candidate suffix trace from the named
+high-prefix candidate to the displayed reverse accumulator is closed. -/
 theorem inverseSquareSingleReverseCandidateSuffixMapsToPrinted_closed :
     inverseSquareSingleReverseCandidateSuffixMapsToPrinted :=
   inverseSquareSingleReverseCandidateSuffixMapsToPrinted_of_after4096
@@ -8108,8 +8061,8 @@ theorem inverseSquareSingleReverseCandidateSuffixMapsToPrinted_closed :
                   (inverseSquareSingleReverseBefore64SuffixMapsToPrinted_of_before32
                     inverseSquareSingleReverseBefore32SuffixMapsToPrinted_closed))))))))
 
-/-- With the concrete suffix now closed, the reported reverse-order printed
-value is reduced solely to the remaining high-prefix equality certificate. -/
+/-- With the concrete suffix now closed, the archived optional repository-model
+displayed value is reduced solely to the high-prefix equality certificate. -/
 theorem inverseSquareSingleReverseAccumulator_ten_pow_nine_eq_printed_of_highPrefix_eq_candidate
     (hprefix : inverseSquareSingleReverseTenPowNineHighPrefixEqCandidate) :
     inverseSquareSingleReverseAccumulator (10 ^ 9) =
@@ -8117,11 +8070,11 @@ theorem inverseSquareSingleReverseAccumulator_ten_pow_nine_eq_printed_of_highPre
   inverseSquareSingleReverseAccumulator_ten_pow_nine_eq_printed_of_candidate_certificates
     hprefix inverseSquareSingleReverseCandidateSuffixMapsToPrinted_closed
 
-/-- Certificate-composition theorem for the remaining §1.12.3 reverse-order
-run.  Once the rounded high-index prefix is shown to land in the displayed
-start window and the final `4096`-term suffix is shown to map that whole window
-to Higham's printed binary32 value, the full `10^9`-term reverse accumulator
-equals the printed value. -/
+/-- Certificate-composition theorem for the archived optional §1.12.3
+repository-model reverse run.  Once the rounded high-index prefix is shown to
+land in the displayed start window and the final `4096`-term suffix is shown to
+map that whole window to the repository-model displayed accumulator, the full
+`10^9`-term reverse accumulator equals that displayed model value. -/
 theorem inverseSquareSingleReverseAccumulator_ten_pow_nine_eq_printed_of_window_certificates
     (hprefix :
       inverseSquareSingleReverseTenPowNineHighPrefixInPrintedSuffixWindow)
@@ -8133,10 +8086,10 @@ theorem inverseSquareSingleReverseAccumulator_ten_pow_nine_eq_printed_of_window_
     inverseSquareSingleReverseTenPowNineHighPrefixState
     hprefix.1 hprefix.2
 
-/-- Tighter-window certificate-composition theorem for the remaining §1.12.3
-reverse-order run.  This is the viable whole-window route: prove the rounded
-high-index prefix lies in the refined start window, then prove the final
-`4096`-term suffix maps that refined window to Higham's printed binary32 value. -/
+/-- Tighter-window certificate-composition theorem for the archived optional
+§1.12.3 repository-model reverse run.  This whole-window route proves the
+rounded high-index prefix lies in the refined start window and the final
+`4096`-term suffix maps that refined window to the displayed model value. -/
 theorem inverseSquareSingleReverseAccumulator_ten_pow_nine_eq_printed_of_tight_window_certificates
     (hprefix :
       inverseSquareSingleReverseTenPowNineHighPrefixInPrintedSuffixTightWindow)
@@ -8422,18 +8375,20 @@ noncomputable def inverseSquareSingleReverseHighPrefixCandidateWindowUpperSucc :
   FloatingPointFormat.ieeeSingleFormat.normalizedValue false
     (16774836 + 1025) (-12 : ℤ)
 
-/-- Concrete finite target for the remaining rounded high-prefix trace.  It is
-enough to place the computed high-prefix state within 1024 binary32 ulps of the
-observed high-prefix candidate. -/
+/-- Archived optional repository-model target for the rounded high-prefix
+trace.  It is enough to place the computed high-prefix state within 1024
+binary32 ulps of the observed high-prefix candidate, but this target no longer
+blocks the Chapter 1 gate for the historical Fortran printout. -/
 def inverseSquareSingleReverseTenPowNineHighPrefixInCandidateWindow : Prop :=
   inverseSquareSingleReverseHighPrefixCandidateWindowLower ≤
       inverseSquareSingleReverseTenPowNineHighPrefixState ∧
     inverseSquareSingleReverseTenPowNineHighPrefixState ≤
       inverseSquareSingleReverseHighPrefixCandidateWindowUpper
 
-/-- Precise remaining pre-binade start-window obligation for the D1
-high-prefix route: the rounded earlier block `10^9, ..., 8193` must enter the
-window that the closed `8192, ..., 4097` map consumes. -/
+/-- Archived optional pre-binade start-window target for the D1 high-prefix
+route: the rounded earlier block `10^9, ..., 8193` must enter the window that
+the closed `8192, ..., 4097` map consumes.  This is retained for a future
+explicit repository-model replay only. -/
 def inverseSquareSingleReverseTenPowNineHighPrefixBefore8192InStartWindow :
     Prop :=
   inverseSquareSingleReverseHighPrefixBefore8192WindowLower ≤
@@ -8473,6 +8428,166 @@ def inverseSquareSingleReverseTenPowNineHighPrefixBefore8192EqCandidate :
   inverseSquareSingleReverseAccumulatorFrom 0 (10 ^ 9) (10 ^ 9 - 8192) =
     inverseSquareSingleReverseTenPowNineHighPrefixBefore8192Candidate
 
+/-- The rounded earlier-block state is an IEEE-single finite-system value. -/
+theorem inverseSquareSingleReverseTenPowNineHighPrefixBefore8192State_finiteSystem :
+    FloatingPointFormat.ieeeSingleFormat.finiteSystem
+      (inverseSquareSingleReverseAccumulatorFrom 0 (10 ^ 9) (10 ^ 9 - 8192)) :=
+  inverseSquareSingleReverseAccumulatorFrom_finiteSystem_of_start
+    (FloatingPointFormat.finiteSystem_zero FloatingPointFormat.ieeeSingleFormat)
+    (10 ^ 9) (10 ^ 9 - 8192)
+
+/-- The finite predecessor immediately below the lower endpoint of the
+before-`8192` start window. -/
+noncomputable def inverseSquareSingleReverseHighPrefixBefore8192WindowLowerPred :
+    ℝ :=
+  FloatingPointFormat.ieeeSingleFormat.normalizedValue false
+    (16773455 - 1) (-13 : ℤ)
+
+/-- The finite successor immediately above the upper endpoint of the
+before-`8192` start window. -/
+noncomputable def inverseSquareSingleReverseHighPrefixBefore8192WindowUpperSucc :
+    ℝ :=
+  FloatingPointFormat.ieeeSingleFormat.normalizedValue false
+    (8388776 + 1) (-12 : ℤ)
+
+/-- Strict finite-cell guard for the rounded earlier-block state.  Since the
+state is finite, these two strict inequalities force membership in the closed
+before-`8192` start window. -/
+def inverseSquareSingleReverseTenPowNineHighPrefixBefore8192StartWindowCellGuard :
+    Prop :=
+  inverseSquareSingleReverseHighPrefixBefore8192WindowLowerPred <
+      inverseSquareSingleReverseAccumulatorFrom 0 (10 ^ 9) (10 ^ 9 - 8192) ∧
+    inverseSquareSingleReverseAccumulatorFrom 0 (10 ^ 9) (10 ^ 9 - 8192) <
+      inverseSquareSingleReverseHighPrefixBefore8192WindowUpperSucc
+
+/-- Equality with the observed before-`8192` candidate implies the strict
+finite-cell guard for the earlier-block start window. -/
+theorem inverseSquareSingleReverseTenPowNineHighPrefixBefore8192StartWindowCellGuard_of_eq_candidate
+    (hpre :
+      inverseSquareSingleReverseTenPowNineHighPrefixBefore8192EqCandidate) :
+    inverseSquareSingleReverseTenPowNineHighPrefixBefore8192StartWindowCellGuard := by
+  unfold inverseSquareSingleReverseTenPowNineHighPrefixBefore8192EqCandidate at hpre
+  unfold inverseSquareSingleReverseTenPowNineHighPrefixBefore8192StartWindowCellGuard
+  rw [hpre]
+  constructor <;>
+    norm_num [inverseSquareSingleReverseHighPrefixBefore8192WindowLowerPred,
+      inverseSquareSingleReverseHighPrefixBefore8192WindowUpperSucc,
+      inverseSquareSingleReverseTenPowNineHighPrefixBefore8192Candidate,
+      FloatingPointFormat.ieeeSingleFormat,
+      FloatingPointFormat.normalizedValue,
+      FloatingPointFormat.signValue,
+      FloatingPointFormat.betaR,
+      zpow_neg]
+
+/-- Finite-cell route for the remaining earlier-block start-window obligation:
+once the actual rounded `10^9, ..., 8193` state is strictly between the finite
+predecessor of the lower endpoint and the finite successor of the upper
+endpoint, finite-grid adjacency forces it into the closed start window consumed
+by the final high-prefix binade map. -/
+theorem inverseSquareSingleReverseTenPowNineHighPrefixBefore8192InStartWindow_of_cellGuard
+    (hguard :
+      inverseSquareSingleReverseTenPowNineHighPrefixBefore8192StartWindowCellGuard) :
+    inverseSquareSingleReverseTenPowNineHighPrefixBefore8192InStartWindow := by
+  let fmt := FloatingPointFormat.ieeeSingleFormat
+  have hfin :
+      fmt.finiteSystem
+        (inverseSquareSingleReverseAccumulatorFrom 0 (10 ^ 9) (10 ^ 9 - 8192)) := by
+    exact inverseSquareSingleReverseTenPowNineHighPrefixBefore8192State_finiteSystem
+  have hpredSystem :
+      fmt.normalizedSystem
+        inverseSquareSingleReverseHighPrefixBefore8192WindowLowerPred := by
+    refine ⟨false, 16773455 - 1, (-13 : ℤ), ?_, ?_, rfl⟩ <;>
+      norm_num [fmt, FloatingPointFormat.ieeeSingleFormat,
+        FloatingPointFormat.normalizedMantissa,
+        FloatingPointFormat.minNormalMantissa,
+        FloatingPointFormat.maxNormalMantissa,
+        FloatingPointFormat.mantissaInRange,
+        FloatingPointFormat.exponentInRange]
+  have hupperSystem :
+      fmt.normalizedSystem
+        inverseSquareSingleReverseHighPrefixBefore8192WindowUpper := by
+    refine ⟨false, 8388776, (-12 : ℤ), ?_, ?_, rfl⟩ <;>
+      norm_num [fmt, FloatingPointFormat.ieeeSingleFormat,
+        FloatingPointFormat.normalizedMantissa,
+        FloatingPointFormat.minNormalMantissa,
+        FloatingPointFormat.maxNormalMantissa,
+        FloatingPointFormat.mantissaInRange,
+        FloatingPointFormat.exponentInRange]
+  have hlowerAdj :
+      fmt.realOrderAdjacentNormalized
+        inverseSquareSingleReverseHighPrefixBefore8192WindowLowerPred
+        inverseSquareSingleReverseHighPrefixBefore8192WindowLower := by
+    refine fmt.realOrderAdjacentNormalized_of_sameExponentAdjacentNormalized ?_
+    refine ⟨false, 16773455 - 1, (-13 : ℤ), ?_, ?_, Or.inl ⟨rfl, ?_⟩⟩
+    · norm_num [fmt, FloatingPointFormat.ieeeSingleFormat,
+        FloatingPointFormat.normalizedMantissa,
+        FloatingPointFormat.minNormalMantissa,
+        FloatingPointFormat.maxNormalMantissa,
+        FloatingPointFormat.mantissaInRange]
+    · norm_num [fmt, FloatingPointFormat.ieeeSingleFormat,
+        FloatingPointFormat.normalizedMantissa,
+        FloatingPointFormat.minNormalMantissa,
+        FloatingPointFormat.maxNormalMantissa,
+        FloatingPointFormat.mantissaInRange]
+    · norm_num [inverseSquareSingleReverseHighPrefixBefore8192WindowLower,
+        fmt]
+  have hupperAdj :
+      fmt.realOrderAdjacentNormalized
+        inverseSquareSingleReverseHighPrefixBefore8192WindowUpper
+        inverseSquareSingleReverseHighPrefixBefore8192WindowUpperSucc := by
+    refine fmt.realOrderAdjacentNormalized_of_sameExponentAdjacentNormalized ?_
+    refine ⟨false, 8388776, (-12 : ℤ), ?_, ?_, Or.inl ⟨rfl, rfl⟩⟩
+    · norm_num [fmt, FloatingPointFormat.ieeeSingleFormat,
+        FloatingPointFormat.normalizedMantissa,
+        FloatingPointFormat.minNormalMantissa,
+        FloatingPointFormat.maxNormalMantissa,
+        FloatingPointFormat.mantissaInRange]
+    · norm_num [fmt, FloatingPointFormat.ieeeSingleFormat,
+        FloatingPointFormat.normalizedMantissa,
+        FloatingPointFormat.minNormalMantissa,
+        FloatingPointFormat.maxNormalMantissa,
+        FloatingPointFormat.mantissaInRange]
+  have hpred_pos :
+      0 < inverseSquareSingleReverseHighPrefixBefore8192WindowLowerPred := by
+    norm_num [inverseSquareSingleReverseHighPrefixBefore8192WindowLowerPred,
+      FloatingPointFormat.ieeeSingleFormat,
+      FloatingPointFormat.normalizedValue,
+      FloatingPointFormat.signValue,
+      FloatingPointFormat.betaR,
+      zpow_neg]
+  have hupper_pos :
+      0 < inverseSquareSingleReverseHighPrefixBefore8192WindowUpper := by
+    norm_num [inverseSquareSingleReverseHighPrefixBefore8192WindowUpper,
+      FloatingPointFormat.ieeeSingleFormat,
+      FloatingPointFormat.normalizedValue,
+      FloatingPointFormat.signValue,
+      FloatingPointFormat.betaR,
+      zpow_neg]
+  unfold inverseSquareSingleReverseTenPowNineHighPrefixBefore8192InStartWindow
+  constructor
+  · by_contra hnot
+    have hlt :
+        inverseSquareSingleReverseAccumulatorFrom 0 (10 ^ 9) (10 ^ 9 - 8192) <
+          inverseSquareSingleReverseHighPrefixBefore8192WindowLower :=
+      lt_of_not_ge hnot
+    have hle_pred :
+        inverseSquareSingleReverseAccumulatorFrom 0 (10 ^ 9) (10 ^ 9 - 8192) ≤
+          inverseSquareSingleReverseHighPrefixBefore8192WindowLowerPred :=
+      fmt.finiteSystem_lt_right_adjacent_le_left
+        hfin hpredSystem hlowerAdj hpred_pos hlt
+    exact not_lt_of_ge hle_pred hguard.1
+  · by_contra hnot
+    have hlt :
+        inverseSquareSingleReverseHighPrefixBefore8192WindowUpper <
+          inverseSquareSingleReverseAccumulatorFrom 0 (10 ^ 9) (10 ^ 9 - 8192) :=
+      lt_of_not_ge hnot
+    have hsucc_le :
+        inverseSquareSingleReverseHighPrefixBefore8192WindowUpperSucc ≤
+          inverseSquareSingleReverseAccumulatorFrom 0 (10 ^ 9) (10 ^ 9 - 8192) :=
+      fmt.right_adjacent_le_finiteSystem_of_left_lt
+        hfin hupperSystem hupperAdj hupper_pos hlt
+    exact not_lt_of_ge hsucc_le hguard.2
+
 /-- The concrete equality route closes the rounded earlier-block start-window
 obligation. -/
 theorem inverseSquareSingleReverseTenPowNineHighPrefixBefore8192InStartWindow_of_eq_candidate
@@ -8495,6 +8610,18 @@ theorem inverseSquareSingleReverseTenPowNineHighPrefixInCandidateWindow_of_befor
   exact inverseSquareSingleReverseHighBinade8192To4097WindowMapsToCandidate_closed
     (inverseSquareSingleReverseAccumulatorFrom 0 (10 ^ 9) (10 ^ 9 - 8192))
     hpre.1 hpre.2
+
+/-- Before-`8192` finite-cell route composed with the closed final high-prefix
+binade map: proving the strict predecessor/successor guard for the rounded
+earlier block is enough to place the full rounded high prefix in the candidate
+window. -/
+theorem inverseSquareSingleReverseTenPowNineHighPrefixInCandidateWindow_of_before8192StartWindowCellGuard
+    (hguard :
+      inverseSquareSingleReverseTenPowNineHighPrefixBefore8192StartWindowCellGuard) :
+    inverseSquareSingleReverseTenPowNineHighPrefixInCandidateWindow :=
+  inverseSquareSingleReverseTenPowNineHighPrefixInCandidateWindow_of_before8192StartWindow
+    (inverseSquareSingleReverseTenPowNineHighPrefixBefore8192InStartWindow_of_cellGuard
+      hguard)
 
 /-- Strict real-valued cell guard around the candidate window.  Because the
 rounded high-prefix state is already known to be an IEEE-single finite-system
@@ -8633,9 +8760,9 @@ theorem inverseSquareSingleReverseHighPrefixCandidateWindowMargin_nonneg :
   · exact sub_nonneg.mpr
       inverseSquareExactReverseTenPowNineHighPrefix_mem_candidateWindow.2
 
-/-- Absolute-error route for the remaining rounded high-prefix trace: if the
-rounded high-prefix state is within the exact candidate-window margin of the
-exact high-prefix mass, then it lies in the concrete candidate window. -/
+/-- Archived optional absolute-error route for the rounded high-prefix trace:
+if the rounded high-prefix state is within the exact candidate-window margin of
+the exact high-prefix mass, then it lies in the concrete candidate window. -/
 theorem inverseSquareSingleReverseTenPowNineHighPrefixInCandidateWindow_of_abs_error_le_candidateWindowMargin
     (herr :
       |inverseSquareSingleReverseTenPowNineHighPrefixState -
@@ -8863,16 +8990,19 @@ theorem inverseSquareSingleReverseHighPrefixCandidateWindowCellGuardMarginShifte
       FloatingPointFormat.betaR,
       zpow_neg])
 
-/-- Named D1 target for the reverse high-prefix trace: the rounded high-prefix
-state is within the explicit shifted candidate-window margin around the exact
-high-prefix mass. -/
+/-- Archived optional D1 target for the reverse high-prefix trace: the rounded
+high-prefix state is within the explicit shifted candidate-window margin around
+the exact high-prefix mass.  It is not an active Chapter 1 gate target for the
+under-specified historical printed decimal. -/
 def inverseSquareSingleReverseTenPowNineHighPrefixCandidateWindowMarginTarget : Prop :=
   |inverseSquareSingleReverseTenPowNineHighPrefixState -
     inverseSquareExactReverseAccumulatorFrom 0 (10 ^ 9) (10 ^ 9 - 4096)| ≤
     inverseSquareSingleReverseHighPrefixCandidateWindowMarginShiftedLowerBound
 
-/-- Named strict-cell D1 target: the rounded high-prefix state is within the
-larger predecessor/successor-cell margin around the exact high-prefix mass. -/
+/-- Archived optional strict-cell D1 target: the rounded high-prefix state is
+within the larger predecessor/successor-cell margin around the exact high-prefix
+mass.  This remains lookup material for a fully specified repository-model
+replay, not a historical-output obligation. -/
 def inverseSquareSingleReverseTenPowNineHighPrefixCandidateWindowCellGuardMarginTarget :
     Prop :=
   |inverseSquareSingleReverseTenPowNineHighPrefixState -
@@ -9005,9 +9135,9 @@ theorem inverseSquareSingleReverseTenPowNineHighPrefix_coarseAccumulatedStdError
     inverseSquareSingleReverseTenPowNineHighPrefixCandidateWindowMarginShiftedLowerBound_lt_coarseAccumulatedStdError
 
 /-- The observed high-prefix candidate is within the explicit shifted
-candidate-window margin around the exact high-prefix mass.  This checks that the
-remaining D1 error target is centered on the observed binary32 state, not merely
-on the wider suffix-start interval. -/
+candidate-window margin around the exact high-prefix mass.  This checks that
+the archived optional D1 error target is centered on the observed binary32
+state, not merely on the wider suffix-start interval. -/
 theorem inverseSquareSingleReverseTenPowNineHighPrefixCandidate_abs_error_le_candidateWindowMarginShiftedLowerBound :
     |inverseSquareSingleReverseTenPowNineHighPrefixCandidate -
       inverseSquareExactReverseAccumulatorFrom 0 (10 ^ 9) (10 ^ 9 - 4096)| ≤
@@ -9114,7 +9244,7 @@ theorem inverseSquareSingleReverseTenPowNineHighPrefixCandidateWindowCellGuardMa
     (inverseSquareSingleReverseTenPowNineHighPrefixCandidateWindowMarginTarget_of_eq_candidate
       hprefix)
 
-/-- Concrete absolute-error route for the remaining rounded high-prefix trace:
+/-- Archived optional absolute-error route for the rounded high-prefix trace:
 the shifted candidate-window margin target is enough to prove membership in the
 candidate window. -/
 theorem inverseSquareSingleReverseTenPowNineHighPrefixInCandidateWindow_of_abs_error_le_candidateWindowMarginShiftedLowerBound
@@ -9197,8 +9327,8 @@ theorem inverseSquareSingleReverseHighPrefixCandidateWindow_mem_printedSuffixSta
     exact le_trans hhi hwindow
 
 /-- Narrowed final-suffix certificate: every start in the concrete high-prefix
-candidate window maps, after the final `4096` reverse additions, to Higham's
-printed binary32 accumulator. -/
+candidate window maps, after the final `4096` reverse additions, to the
+displayed accumulator in the archived optional repository model. -/
 def inverseSquareSingleReverseCandidateWindowMapsToPrinted : Prop :=
   ∀ start,
     inverseSquareSingleReverseHighPrefixCandidateWindowLower ≤ start →
@@ -9524,9 +9654,9 @@ theorem inverseSquareSingleReverseCandidateWindow_round_4096_step_mem_after4096W
   simpa [inverseSquareSingleForwardStep, FloatingPointFormat.finiteRoundToEvenOp,
     BasicOp.exact, fmt] using hbounds
 
-/-- Post-first-step form of the remaining candidate-window suffix certificate:
-every start in the post-`4096` window maps, after the remaining `4095`
-low-index reverse additions, to Higham's printed accumulator. -/
+/-- Post-first-step form of the archived optional candidate-window suffix
+certificate: every start in the post-`4096` window maps, after the remaining
+`4095` low-index reverse additions, to the displayed model accumulator. -/
 def inverseSquareSingleReverseAfter4096WindowMapsToPrinted : Prop :=
   ∀ start,
     inverseSquareSingleReverseAfter4096CandidateWindowLower ≤ start →
@@ -16834,9 +16964,10 @@ theorem inverseSquareSingleReverseAfter4095WindowMapsToPrinted_of_before4Window
     (inverseSquareSingleReverseBefore2048WindowMapsToPrinted_of_before4Window
       hsuffix)
 
-/-- Candidate-window certificate-composition theorem for the remaining
+/-- Archived optional repository-model certificate-composition theorem for the
 reverse-order run.  This shrinks the suffix obligation from the whole refined
-suffix-start window to the concrete 1024-ulp high-prefix candidate window. -/
+suffix-start window to the concrete 1024-ulp high-prefix candidate window; the
+historical Fortran output remains an empirical ledger row. -/
 theorem inverseSquareSingleReverseAccumulator_ten_pow_nine_eq_printed_of_candidateWindow_certificates
     (hprefix : inverseSquareSingleReverseTenPowNineHighPrefixInCandidateWindow)
     (hsuffix : inverseSquareSingleReverseCandidateWindowMapsToPrinted) :
@@ -16975,14 +17106,15 @@ theorem inverseSquareSingleReverseBefore8WindowMapsToPrinted_closed :
   inverseSquareSingleReverseBefore8WindowMapsToPrinted_of_before4Window
     inverseSquareSingleReverseBefore4WindowMapsToPrinted_closed
 
-/-- Closed candidate-window suffix map for the final reverse-order run. -/
+/-- Closed candidate-window suffix map for the archived optional repository
+model, not an active historical-output target. -/
 theorem inverseSquareSingleReverseCandidateWindowMapsToPrinted_closed :
     inverseSquareSingleReverseCandidateWindowMapsToPrinted :=
   inverseSquareSingleReverseCandidateWindowMapsToPrinted_of_before4Window
     inverseSquareSingleReverseBefore4WindowMapsToPrinted_closed
 
-/-- If the rounded high prefix is in the concrete candidate window, the
-remaining candidate-window suffix route is now closed. -/
+/-- If the rounded high prefix is in the concrete candidate window, the archived
+optional repository-model suffix route is now closed. -/
 theorem inverseSquareSingleReverseAccumulator_ten_pow_nine_eq_printed_of_highPrefix_mem_candidateWindow_closed
     (hwin : inverseSquareSingleReverseTenPowNineHighPrefixInCandidateWindow) :
     inverseSquareSingleReverseAccumulator (10 ^ 9) =
@@ -16990,9 +17122,22 @@ theorem inverseSquareSingleReverseAccumulator_ten_pow_nine_eq_printed_of_highPre
   inverseSquareSingleReverseAccumulator_ten_pow_nine_eq_printed_of_candidateWindow_certificates
     hwin inverseSquareSingleReverseCandidateWindowMapsToPrinted_closed
 
-/-- Closed absolute-error route for the final reverse-order run: a single
-candidate-window margin certificate for the rounded high prefix now implies
-Higham's printed binary32 value. -/
+/-- Archived optional conditional route through the before-`8192` finite-cell
+bridge: once the rounded earlier block is proved to satisfy its strict
+start-window guard, the closed final-binade map and closed low-index suffix map
+yield the repository-model accumulator with Higham's displayed reverse decimal. -/
+theorem inverseSquareSingleReverseAccumulator_ten_pow_nine_eq_printed_of_before8192StartWindowCellGuard_closed
+    (hguard :
+      inverseSquareSingleReverseTenPowNineHighPrefixBefore8192StartWindowCellGuard) :
+    inverseSquareSingleReverseAccumulator (10 ^ 9) =
+      inverseSquareSingleReversePrintedAccumulator :=
+  inverseSquareSingleReverseAccumulator_ten_pow_nine_eq_printed_of_highPrefix_mem_candidateWindow_closed
+    (inverseSquareSingleReverseTenPowNineHighPrefixInCandidateWindow_of_before8192StartWindowCellGuard
+      hguard)
+
+/-- Archived optional absolute-error route for the repository model: a single
+candidate-window margin certificate for the rounded high prefix now implies the
+repository-model accumulator with Higham's displayed reverse decimal. -/
 theorem inverseSquareSingleReverseAccumulator_ten_pow_nine_eq_printed_of_highPrefix_abs_error_le_candidateWindowMarginShiftedLowerBound_closed
     (herr :
       |inverseSquareSingleReverseTenPowNineHighPrefixState -
@@ -17004,9 +17149,10 @@ theorem inverseSquareSingleReverseAccumulator_ten_pow_nine_eq_printed_of_highPre
     (inverseSquareSingleReverseTenPowNineHighPrefixInCandidateWindow_of_abs_error_le_candidateWindowMarginShiftedLowerBound
       herr)
 
-/-- Named-target version of the closed D1 route: proving the single high-prefix
-candidate-window margin target is now enough to obtain Higham's printed reverse
-accumulator. -/
+/-- Archived optional named-target version of the closed D1 route: if the
+repository-model replay is explicitly reopened, the single high-prefix
+candidate-window margin target is enough to obtain the displayed reverse
+accumulator in that explicit model. -/
 theorem inverseSquareSingleReverseAccumulator_ten_pow_nine_eq_printed_of_highPrefix_candidateWindowMarginTarget_closed
     (htarget :
       inverseSquareSingleReverseTenPowNineHighPrefixCandidateWindowMarginTarget) :
@@ -17015,9 +17161,10 @@ theorem inverseSquareSingleReverseAccumulator_ten_pow_nine_eq_printed_of_highPre
   inverseSquareSingleReverseAccumulator_ten_pow_nine_eq_printed_of_highPrefix_abs_error_le_candidateWindowMarginShiftedLowerBound_closed
     htarget
 
-/-- Closed finite-cell route for the final reverse-order run: proving the
-rounded high-prefix state lies strictly inside the predecessor/successor cell
-around the candidate window now implies Higham's printed reverse accumulator. -/
+/-- Archived optional finite-cell route for the repository-model reverse run:
+proving the rounded high-prefix state lies strictly inside the
+predecessor/successor cell around the candidate window implies the displayed
+reverse accumulator in that explicit model. -/
 theorem inverseSquareSingleReverseAccumulator_ten_pow_nine_eq_printed_of_highPrefix_candidateWindowCellGuard_closed
     (hguard :
       inverseSquareSingleReverseTenPowNineHighPrefixCandidateWindowCellGuard) :
@@ -17027,9 +17174,10 @@ theorem inverseSquareSingleReverseAccumulator_ten_pow_nine_eq_printed_of_highPre
     (inverseSquareSingleReverseTenPowNineHighPrefixInCandidateWindow_of_cellGuard
       hguard)
 
-/-- Closed strict finite-cell margin route for the final reverse-order run:
-proving the larger strict predecessor/successor-cell absolute-error target for
-the rounded high prefix now implies Higham's printed reverse accumulator. -/
+/-- Archived optional strict finite-cell margin route for the repository-model
+reverse run: proving the larger strict predecessor/successor-cell absolute-error
+target for the rounded high prefix implies the displayed reverse accumulator in
+that explicit model. -/
 theorem inverseSquareSingleReverseAccumulator_ten_pow_nine_eq_printed_of_highPrefix_cellGuardMarginTarget_closed
     (htarget :
       inverseSquareSingleReverseTenPowNineHighPrefixCandidateWindowCellGuardMarginTarget) :
@@ -17039,9 +17187,10 @@ theorem inverseSquareSingleReverseAccumulator_ten_pow_nine_eq_printed_of_highPre
     (inverseSquareSingleReverseTenPowNineHighPrefixCandidateWindowCellGuard_of_cellGuardMarginTarget
       htarget)
 
-/-- Closed standard-envelope route for the final reverse-order run: a sharp
+/-- Archived optional standard-envelope route for the repository model: a sharp
 bound on the accumulated high-prefix standard-model envelope against the
-candidate-window margin now implies Higham's printed binary32 reverse value. -/
+candidate-window margin now implies the repository-model accumulator with
+Higham's displayed reverse decimal. -/
 theorem inverseSquareSingleReverseAccumulator_ten_pow_nine_eq_printed_of_highPrefix_stdErrorEnvelope_le_candidateWindowMargin_closed
     (henv :
       inverseSquareSingleReverseTenPowNineHighPrefixStdErrorEnvelope
@@ -17053,9 +17202,10 @@ theorem inverseSquareSingleReverseAccumulator_ten_pow_nine_eq_printed_of_highPre
     (inverseSquareSingleReverseTenPowNineHighPrefixInCandidateWindow_of_stdErrorEnvelope_le_candidateWindowMargin
       henv)
 
-/-- Closed strict-cell standard-envelope route for the final reverse-order
-run: a sharp envelope bound against the larger predecessor/successor-cell
-margin now implies Higham's printed binary32 reverse value. -/
+/-- Archived optional strict-cell standard-envelope route for the repository
+model: a sharp envelope bound against the larger predecessor/successor-cell
+margin now implies the repository-model accumulator with Higham's displayed
+reverse decimal. -/
 theorem inverseSquareSingleReverseAccumulator_ten_pow_nine_eq_printed_of_highPrefix_stdErrorEnvelope_lt_cellGuardMargin_closed
     (henv :
       inverseSquareSingleReverseTenPowNineHighPrefixStdErrorEnvelope
@@ -17261,10 +17411,10 @@ theorem inverseSquareSingleReverseTenPowNineHighPrefixInPrintedSuffixTightWindow
     (inverseSquareSingleReverseTenPowNineHighPrefix_abs_error_le_shiftedMarginLowerBound_of_mem_candidateWindow
       hwin)
 
-/-- Reverse-order transfer theorem: after reducing the rounded high-index
-prefix to the exact high-index prefix, the whole `10^9` run equals Higham's
-printed binary32 value whenever the ordinary final-suffix window certificate is
-available. -/
+/-- Archived optional repository-model transfer theorem: after reducing the
+rounded high-index prefix to the exact high-index prefix, the whole `10^9` run
+equals the displayed reverse accumulator in that explicit model whenever the
+ordinary final-suffix window certificate is available. -/
 theorem inverseSquareSingleReverseAccumulator_ten_pow_nine_eq_printed_of_highPrefix_eq_exact
     (hprefix :
       inverseSquareSingleReverseTenPowNineHighPrefixState =
@@ -17277,7 +17427,8 @@ theorem inverseSquareSingleReverseAccumulator_ten_pow_nine_eq_printed_of_highPre
       hprefix)
     hsuffix
 
-/-- Tighter-window transfer theorem for the same reverse-order route. -/
+/-- Tighter-window transfer theorem for the same archived optional
+repository-model route. -/
 theorem inverseSquareSingleReverseAccumulator_ten_pow_nine_eq_printed_of_highPrefix_eq_exact_tight
     (hprefix :
       inverseSquareSingleReverseTenPowNineHighPrefixState =
@@ -17290,10 +17441,11 @@ theorem inverseSquareSingleReverseAccumulator_ten_pow_nine_eq_printed_of_highPre
       hprefix)
     hsuffix
 
-/-- Error-radius transfer theorem for the reverse-order route: if the rounded
-high-index prefix is within the explicit refined-window margin of the exact
-high-prefix mass, then the final `4096`-term tight-window suffix certificate
-implies Higham's printed binary32 reverse value. -/
+/-- Error-radius transfer theorem for the archived optional repository-model
+route: if the rounded high-index prefix is within the explicit refined-window
+margin of the exact high-prefix mass, then the final `4096`-term tight-window
+suffix certificate implies the displayed reverse accumulator in that explicit
+model. -/
 theorem inverseSquareSingleReverseAccumulator_ten_pow_nine_eq_printed_of_highPrefix_abs_error_le_margin
     (herr :
       |inverseSquareSingleReverseTenPowNineHighPrefixState -
@@ -17307,10 +17459,10 @@ theorem inverseSquareSingleReverseAccumulator_ten_pow_nine_eq_printed_of_highPre
       herr)
     hsuffix
 
-/-- Fully explicit lower-bound transfer theorem for the reverse-order route:
-an absolute-error bound by the rational telescoping slack lower bound, together
-with the tight suffix-window map, implies Higham's printed binary32 reverse
-value. -/
+/-- Fully explicit lower-bound transfer theorem for the archived optional
+repository-model route: an absolute-error bound by the rational telescoping
+slack lower bound, together with the tight suffix-window map, implies the
+displayed reverse accumulator in that explicit model. -/
 theorem inverseSquareSingleReverseAccumulator_ten_pow_nine_eq_printed_of_highPrefix_abs_error_le_marginLowerBound
     (herr :
       |inverseSquareSingleReverseTenPowNineHighPrefixState -
@@ -17324,9 +17476,10 @@ theorem inverseSquareSingleReverseAccumulator_ten_pow_nine_eq_printed_of_highPre
       herr)
     hsuffix
 
-/-- Shifted explicit lower-bound transfer theorem for the reverse-order route:
-an absolute-error bound by the stronger shifted rational slack, together with
-the tight suffix-window map, implies Higham's printed binary32 reverse value. -/
+/-- Shifted explicit lower-bound transfer theorem for the archived optional
+repository-model route: an absolute-error bound by the stronger shifted
+rational slack, together with the tight suffix-window map, implies the displayed
+reverse accumulator in that explicit model. -/
 theorem inverseSquareSingleReverseAccumulator_ten_pow_nine_eq_printed_of_highPrefix_abs_error_le_shiftedMarginLowerBound
     (herr :
       |inverseSquareSingleReverseTenPowNineHighPrefixState -
@@ -17340,9 +17493,10 @@ theorem inverseSquareSingleReverseAccumulator_ten_pow_nine_eq_printed_of_highPre
       herr)
     hsuffix
 
-/-- Candidate-window transfer theorem for the reverse-order route: once the
-rounded high-prefix state is placed inside the concrete 1024-ulp candidate
-window, the remaining final step is the existing tight suffix-window map. -/
+/-- Candidate-window transfer theorem for the archived optional repository-model
+route: once the rounded high-prefix state is placed inside the concrete
+1024-ulp candidate window, the remaining final step is the existing tight
+suffix-window map. -/
 theorem inverseSquareSingleReverseAccumulator_ten_pow_nine_eq_printed_of_highPrefix_mem_candidateWindow
     (hwin : inverseSquareSingleReverseTenPowNineHighPrefixInCandidateWindow)
     (hsuffix : inverseSquareSingleReverseTightSuffixWindowMapsToPrinted) :
@@ -17878,9 +18032,9 @@ theorem inverseSquareSingleForwardStep_normalizedValue_succ_of_index_range
 /-- Generic operation-trace bridge for a whole pre-plateau index window.  If
 the term indices stay in `2897 <= k < 4096` and the displayed mantissas remain
 adjacent normalized binary32 mantissas, then the rounded accumulator advances
-one ulp per step.  This is the induction surface needed for the full Fortran
-prefix trace; the missing work is to prove the concrete prefix invariant that
-supplies the starting mantissa. -/
+one ulp per step.  This is the induction surface for the repository's explicit
+binary32 prefix model, not a replay of the under-specified historical Fortran
+environment. -/
 theorem inverseSquareSingleForwardAccumulatorFrom_normalizedValue_of_index_window
     {m0 k0 n : ℕ}
     (hm : ∀ j, j < n →
@@ -18023,9 +18177,9 @@ theorem inverseSquareSingleForwardAccumulatorFrom_sixBeforePlateau_4091_of_le_5
 
 /-- Intermediate-value form of the 2897--4090 pre-plateau window.  For every
 prefix length within that window, starting from the pre-window accumulator
-advances exactly one mantissa per term.  This is the reusable spine for a
-future first-stagnation trace: the only missing input is that the early
-Fortran prefix reaches the pre-window accumulator after `k = 2896`. -/
+advances exactly one mantissa per term.  This is the reusable spine for a future
+first-stagnation trace: the only missing input is that the early repository-model
+prefix reaches the pre-window accumulator after `k = 2896`. -/
 theorem inverseSquareSingleForwardAccumulatorFrom_prePlateauWindowStart_2897_of_le_1194
     {n : ℕ} (hn : n ≤ 1194) :
     inverseSquareSingleForwardAccumulatorFrom
@@ -18797,8 +18951,8 @@ theorem inverseSquareSinglePlateau_add_positive_term_le_two_pow_neg_24_rounds_to
 /-- Once Higham §1.12.3's concrete single-precision running sum has reached the
 displayed plateau value, adding any later inverse-square term `1/k^2` with
 `k >= 4096` leaves the accumulator unchanged.  This proves the local tail
-stagnation mechanism; it still does not derive that the full Fortran loop first
-reaches this plateau at `k = 4096`. -/
+stagnation mechanism; by itself it does not derive that the repository-model
+loop first reaches this plateau at `k = 4096`. -/
 theorem inverseSquareSinglePlateau_add_term_rounds_to_self_of_ge_4096
     {k : ℕ} (hk : 4096 ≤ k) :
     FloatingPointFormat.ieeeSingleFormat.finiteRoundToEvenOp BasicOp.add

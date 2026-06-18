@@ -4,6 +4,7 @@ import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.BigOperators.Fin
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
+import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import LeanFpAnalysis.FP.Model
@@ -25,6 +26,31 @@ formalizes the Chapter 4 "heavy cancellation" phrase
 def HeavyCancellationAtLeast {ι : Type*} [Fintype ι]
     (v : ι → ℝ) (κ : ℝ) : Prop :=
   κ * |∑ i, v i| ≤ ∑ i, |v i|
+
+/-- Sign indicator used to distribute an additive summation residual across
+input components.  It is `+1` for nonnegative inputs and `-1` otherwise. -/
+noncomputable def summationAbsSign (x : ℝ) : ℝ :=
+  if 0 ≤ x then 1 else -1
+
+/-- The summation sign indicator converts multiplication into absolute value. -/
+lemma summationAbsSign_mul_eq_abs (x : ℝ) :
+    summationAbsSign x * x = |x| := by
+  unfold summationAbsSign
+  split_ifs with h
+  · simp [abs_of_nonneg h]
+  · push_neg at h
+    simp [abs_of_neg h]
+
+/-- Right-multiplication version of `summationAbsSign_mul_eq_abs`. -/
+lemma mul_summationAbsSign_eq_abs (x : ℝ) :
+    x * summationAbsSign x = |x| := by
+  rw [mul_comm, summationAbsSign_mul_eq_abs]
+
+/-- The summation sign indicator has unit absolute value. -/
+lemma abs_summationAbsSign (x : ℝ) :
+    |summationAbsSign x| = 1 := by
+  unfold summationAbsSign
+  split_ifs <;> simp
 
 /-- For a nonnegative finite family, the sum of absolute values is the ordinary
 sum. -/
@@ -132,6 +158,72 @@ theorem summationComponentwisePerturbation_abs_error_le {ι : Type*} [Fintype ι
       Finset.sum_le_sum (fun i _hi => hΔ i)
     _ = ε * ∑ i, |v i| := by
       rw [Finset.mul_sum]
+
+/-- Absorb an additive residual bound into componentwise summation
+coefficients.
+
+If `computed` is within `B` of a coefficient representation
+`sum_i v_i*(1+coeff_i)` and the input absolute-value sum is positive, then the
+residual can be distributed across the inputs by sign-aligned coefficient
+increments, giving an exact coefficient representation. -/
+theorem exists_summation_coefficients_of_abs_sub_sum_coeff_le
+    {ι : Type*} [Fintype ι] (v : ι → ℝ) (coeff : ι → ℝ)
+    {computed B : ℝ}
+    (hres : |computed - ∑ i, v i * (1 + coeff i)| ≤ B)
+    (hsumAbs : 0 < ∑ i, |v i|) :
+    ∃ μ : ι → ℝ,
+      (∀ i,
+        |μ i - coeff i| ≤ B / (∑ j, |v j|)) ∧
+      computed = ∑ i, v i * (1 + μ i) := by
+  let S : ℝ := ∑ i, |v i|
+  let base : ℝ := ∑ i, v i * (1 + coeff i)
+  let r : ℝ := computed - base
+  let ν : ι → ℝ := fun i => (r / S) * summationAbsSign (v i)
+  refine ⟨fun i => coeff i + ν i, ?_, ?_⟩
+  · intro i
+    have hSpos : 0 < S := by simpa [S] using hsumAbs
+    have hr : |r| ≤ B := by
+      simpa [r, base] using hres
+    have hdiv : |r| / S ≤ B / S :=
+      div_le_div_of_nonneg_right hr (le_of_lt hSpos)
+    calc
+      |coeff i + ν i - coeff i| = |ν i| := by ring_nf
+      _ = |r / S| * |summationAbsSign (v i)| := by
+          dsimp [ν]
+          rw [abs_mul]
+      _ = |r| / S := by
+          rw [abs_summationAbsSign, mul_one, abs_div,
+            abs_of_pos hSpos]
+      _ ≤ B / S := hdiv
+      _ = B / (∑ j, |v j|) := by rfl
+  · have hSpos : 0 < S := by simpa [S] using hsumAbs
+    have hsumν :
+        (∑ i, v i * ν i) = r := by
+      calc
+        (∑ i, v i * ν i)
+            = ∑ i, (r / S) * |v i| := by
+                apply Finset.sum_congr rfl
+                intro i _hi
+                dsimp [ν]
+                calc
+                  v i * (r / S * summationAbsSign (v i))
+                      = (r / S) * (summationAbsSign (v i) * v i) := by
+                          ring
+                  _ = (r / S) * |v i| := by
+                        rw [summationAbsSign_mul_eq_abs]
+        _ = (r / S) * S := by
+              rw [Finset.mul_sum]
+        _ = r := by
+              field_simp [hSpos.ne']
+    calc
+      computed = base + r := by simp [r, base]
+      _ = ∑ i, v i * (1 + coeff i) + ∑ i, v i * ν i := by
+            rw [hsumν]
+      _ = ∑ i, v i * (1 + (coeff i + ν i)) := by
+            rw [← Finset.sum_add_distrib]
+            apply Finset.sum_congr rfl
+            intro i _hi
+            ring
 
 /-- Dividing the preceding perturbation inequality by the nonzero exact sum
 gives the condition-number bound. -/

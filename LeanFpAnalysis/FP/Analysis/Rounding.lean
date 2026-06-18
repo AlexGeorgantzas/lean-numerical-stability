@@ -320,6 +320,40 @@ lemma prod_error_bound (fp : FPModel) (n : ℕ) (δ : Fin n → ℝ)
     · -- ∏ᵢ<n+1 (1+δᵢ) = (∏ᵢ<n (1+δᵢ.castSucc)) * (1+δₙ) = (1+θ') * (1+δₙ)
       rw [Fin.prod_univ_castSucc, hprod]; ring
 
+/-- Linearized nonnegative geometric product bound.
+
+If `c >= 0` and the accumulated product radius satisfies `n*c <= 1/2`, then
+`(1+c)^n - 1 <= 2*n*c`.  This is a convenient way to reuse Higham's product
+lemma for second-order factors such as `c = O(u^2)`. -/
+lemma one_add_pow_sub_one_le_two_mul_nat_mul_of_nat_mul_le_half
+    (n : ℕ) {c : ℝ} (hc0 : 0 ≤ c)
+    (hsmall : (n : ℝ) * c ≤ 1 / 2) :
+    (1 + c) ^ n - 1 ≤ 2 * ((n : ℝ) * c) := by
+  let fp := FPModel.exactWithUnitRoundoff c hc0
+  have hvalid : gammaValid fp n := by
+    unfold gammaValid
+    dsimp [fp, FPModel.exactWithUnitRoundoff]
+    linarith
+  have hδ : ∀ _i : Fin n, |c| ≤ fp.u := by
+    intro _i
+    dsimp [fp, FPModel.exactWithUnitRoundoff]
+    simp [abs_of_nonneg hc0]
+  obtain ⟨θ, hθ, hprod⟩ :=
+    prod_error_bound fp n (fun _i => c) hδ hvalid
+  have hprod' : (1 + c) ^ n = 1 + θ := by
+    simpa using hprod
+  have hθ_eq : (1 + c) ^ n - 1 = θ := by
+    linarith
+  have hγ :
+      gamma fp n ≤ 2 * ((n : ℝ) * c) := by
+    simpa [fp, FPModel.exactWithUnitRoundoff] using
+      gamma_le_two_mul_n_u_of_nu_le_half fp n hsmall
+  calc
+    (1 + c) ^ n - 1 = θ := hθ_eq
+    _ ≤ |θ| := le_abs_self θ
+    _ ≤ gamma fp n := hθ
+    _ ≤ 2 * ((n : ℝ) * c) := hγ
+
 -- ============================================================
 -- §3.4  Lemma 3.3 — γ arithmetic rules
 -- ============================================================

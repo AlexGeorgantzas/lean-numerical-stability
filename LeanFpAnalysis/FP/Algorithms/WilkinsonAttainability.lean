@@ -369,6 +369,133 @@ private theorem finiteRoundToEvenListSum_replicate_eq_fin_foldl
       rw [List.replicate_succ, List.foldl_cons, Fin.foldl_succ]
       exact finiteRoundToEvenListSum_replicate_eq_fin_foldl f x n (f start x)
 
+/-- Each displayed Wilkinson block value is finite in any base-2 `t`-digit
+format whose exponent range contains `0`.  This is the generic
+finite-representability part of Problem 4.2: for `j + 1 <= t`,
+`1 - 2^(j-t)` is the normalized value with exponent `0` and mantissa
+`2^t - 2^j`. -/
+theorem wilkinsonProblem42BlockValue_baseTwo_finiteSystem
+    (fmt : FloatingPointFormat) (t : ℕ)
+    (hbeta : fmt.beta = 2) (ht : fmt.t = t)
+    (he0 : fmt.exponentInRange (0 : ℤ))
+    {j : ℕ} (hj : j + 1 ≤ t) :
+    fmt.finiteSystem (wilkinsonProblem42BlockValue t j) := by
+  let m : ℕ := 2 ^ t - 2 ^ j
+  have hj_le_t : j ≤ t := by omega
+  have hj_le_pred : j ≤ t - 1 := by omega
+  have hm : fmt.normalizedMantissa m := by
+    constructor
+    · change fmt.beta ^ (fmt.t - 1) ≤ m
+      rw [hbeta, ht]
+      have hjpow : 2 ^ j ≤ 2 ^ (t - 1) :=
+        Nat.pow_le_pow_right (by norm_num : 0 < 2) hj_le_pred
+      have hpowt : 2 ^ t = 2 ^ (t - 1) + 2 ^ (t - 1) := by
+        calc
+          2 ^ t = 2 ^ ((t - 1) + 1) := by
+            exact congrArg (fun n : ℕ => 2 ^ n)
+              (by omega : t = (t - 1) + 1)
+          _ = 2 ^ (t - 1) * 2 := by
+            simpa using (Nat.pow_succ 2 (t - 1))
+          _ = 2 ^ (t - 1) + 2 ^ (t - 1) := by
+            omega
+      dsimp [m]
+      omega
+    · change m < fmt.beta ^ fmt.t
+      rw [hbeta, ht]
+      have hpos : 0 < 2 ^ j := pow_pos (by norm_num : 0 < 2) j
+      have hle : 2 ^ j ≤ 2 ^ t :=
+        Nat.pow_le_pow_right (by norm_num : 0 < 2) hj_le_t
+      dsimp [m]
+      omega
+  have hrepr :
+      wilkinsonProblem42BlockValue t j =
+        fmt.normalizedValue false m (0 : ℤ) := by
+    dsimp [wilkinsonProblem42BlockValue, m]
+    rw [show ((j : ℤ) - (t : ℤ)) = (j : ℤ) + (-(t : ℤ)) by ring]
+    rw [zpow_add₀ (by norm_num : (2 : ℝ) ≠ 0)]
+    rw [zpow_natCast]
+    simp [FloatingPointFormat.normalizedValue, FloatingPointFormat.signValue,
+      FloatingPointFormat.betaR, hbeta, ht]
+    rw [Nat.cast_sub]
+    · field_simp
+      norm_num [Nat.cast_pow]
+    · exact Nat.pow_le_pow_right (by norm_num : 0 < 2) hj_le_t
+  exact Or.inr (Or.inl ⟨false, m, (0 : ℤ), hm, he0, hrepr⟩)
+
+/-- The initial `1` in Wilkinson's Problem 4.2 family is finite in any base-2
+`t`-digit format whose exponent range contains `1`. -/
+theorem wilkinsonProblem42One_baseTwo_finiteSystem
+    (fmt : FloatingPointFormat) (t : ℕ)
+    (hbeta : fmt.beta = 2) (ht : fmt.t = t)
+    (he1 : fmt.exponentInRange (1 : ℤ)) :
+    fmt.finiteSystem (1 : ℝ) := by
+  let m : ℕ := 2 ^ (t - 1)
+  have htpos : 0 < t := by
+    rw [← ht]
+    exact fmt.t_pos
+  have hm : fmt.normalizedMantissa m := by
+    constructor
+    · change fmt.beta ^ (fmt.t - 1) ≤ m
+      rw [hbeta, ht]
+    · change m < fmt.beta ^ fmt.t
+      rw [hbeta, ht]
+      dsimp [m]
+      exact Nat.pow_lt_pow_right (by norm_num : 1 < 2) (by omega : t - 1 < t)
+  have hrepr :
+      (1 : ℝ) = fmt.normalizedValue false m (1 : ℤ) := by
+    dsimp [m]
+    simp [FloatingPointFormat.normalizedValue, FloatingPointFormat.signValue,
+      FloatingPointFormat.betaR, hbeta, ht]
+    rw [show ((1 : ℤ) - (t : ℤ)) = -(((t - 1 : ℕ) : ℤ)) by omega]
+    rw [zpow_neg]
+    rw [zpow_natCast]
+    field_simp [pow_ne_zero]
+  exact Or.inr (Or.inl ⟨false, m, (1 : ℤ), hm, he1, hrepr⟩)
+
+/-- Every entry in Wilkinson's generic base-2 Problem 4.2 source list is finite
+when exponents `0` and `1` are in range.  This closes the source-family
+representability side of the arbitrary-precision route; it does not yet prove
+the generic rounded recursive-summation trace. -/
+theorem wilkinsonProblem42Input_baseTwo_all_finiteSystem
+    (fmt : FloatingPointFormat) (t : ℕ)
+    (hbeta : fmt.beta = 2) (ht : fmt.t = t)
+    (he0 : fmt.exponentInRange (0 : ℤ))
+    (he1 : fmt.exponentInRange (1 : ℤ))
+    {r : ℕ} (hr : r ≤ t) :
+    ∀ x ∈ wilkinsonProblem42Input t r, fmt.finiteSystem x := by
+  induction r with
+  | zero =>
+      intro x hx
+      simp [wilkinsonProblem42Input] at hx
+      subst x
+      exact wilkinsonProblem42One_baseTwo_finiteSystem fmt t hbeta ht he1
+  | succ r ih =>
+      intro x hx
+      rw [wilkinsonProblem42Input_succ] at hx
+      rw [List.mem_append] at hx
+      rcases hx with hx | hx
+      · exact ih (by omega) x hx
+      · have hxval : x = wilkinsonProblem42BlockValue t r :=
+          (List.mem_replicate.mp hx).2
+        rw [hxval]
+        exact wilkinsonProblem42BlockValue_baseTwo_finiteSystem
+          fmt t hbeta ht he0 (j := r) (by omega)
+
+/-- Vector-shaped finite-system certificate for Wilkinson's generic base-2
+source family. -/
+theorem wilkinsonProblem42Vector_baseTwo_finiteSystem
+    (fmt : FloatingPointFormat) (t : ℕ)
+    (hbeta : fmt.beta = 2) (ht : fmt.t = t)
+    (he0 : fmt.exponentInRange (0 : ℤ))
+    (he1 : fmt.exponentInRange (1 : ℤ))
+    {r : ℕ} (hr : r ≤ t) (i : Fin (2 ^ r)) :
+    fmt.finiteSystem (wilkinsonProblem42Vector t r i) := by
+  have hall :=
+    wilkinsonProblem42Input_baseTwo_all_finiteSystem
+      fmt t hbeta ht he0 he1 (r := r) hr
+  unfold wilkinsonProblem42Vector
+  exact hall _ (List.get_mem _ _)
+
 /-- Each displayed IEEE-double Wilkinson block value is itself a finite
 representable value.  For `j <= 52`, `1 - 2^(j-53)` is the normalized value
 with exponent `0` and mantissa `2^53 - 2^j`. -/

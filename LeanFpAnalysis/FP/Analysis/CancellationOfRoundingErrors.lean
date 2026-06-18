@@ -28,8 +28,9 @@ Higham Chapter 1, Section 1.14.1 compares two algorithms for evaluating
 `(exp x - 1) / x`.  This file records the exact branch-level identity behind
 Algorithm 2, the local rounded algebra through equation (1.9), and reusable
 bridges for the source-shaped `3.5u` estimate.  Concrete exp/log routine
-contracts, guard-digit instantiation, and machine-specific Table 1.2 traces
-remain separate obligations.
+contracts and guard-digit instantiation are selected-model strengthening work;
+machine-specific Table 1.2 traces are empirical replay artifacts unless a
+full routine/display model is supplied.
 -/
 
 /-- Algorithm 1 from Higham §1.14.1, interpreted in exact real arithmetic. -/
