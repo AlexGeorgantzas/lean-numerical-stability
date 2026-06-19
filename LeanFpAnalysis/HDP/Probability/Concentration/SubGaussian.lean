@@ -648,6 +648,25 @@ theorem subGaussianNorm_add_le
     linarith
   exact hadd.trans hsum_lt.le
 
+/-- If the `ψ₂` norm is positive and finite through an admissible scale, then
+twice the norm is itself an admissible Orlicz scale. -/
+theorem subGaussianOrliczCondition_two_mul_norm
+    {X : Ω → ℝ} {μ : Measure Ω}
+    (hXm : AEMeasurable X μ)
+    (hXsg : IsSubGaussian X μ)
+    (hpos : 0 < subGaussianNorm X μ) :
+    subGaussianOrliczCondition X μ (2 * subGaussianNorm X μ) := by
+  let S : Set ℝ := {K : ℝ | subGaussianOrliczCondition X μ K}
+  have hSnonempty : S.Nonempty := by
+    rcases hXsg with ⟨K, hK⟩
+    exact ⟨K, hK⟩
+  obtain ⟨K, hK, hKlt⟩ := Real.lt_sInf_add_pos (s := S) hSnonempty hpos
+  have hKlt' : K < subGaussianNorm X μ + subGaussianNorm X μ := by
+    simpa [subGaussianNorm, S] using hKlt
+  have hKlt_two : K < 2 * subGaussianNorm X μ := by
+    nlinarith
+  exact subGaussianOrliczCondition_mono_scale hXm hK hKlt_two.le
+
 /-- If a sub-gaussian variable has `ψ₂` gauge zero, then every positive
 Orlicz scale is admissible. -/
 theorem subGaussianOrliczCondition_of_subGaussianNorm_eq_zero
@@ -798,6 +817,31 @@ theorem subGaussianNorm_eq_zero_iff_ae_eq_zero
     subGaussianNorm X μ = 0 ↔ X =ᵐ[μ] fun _ω => (0 : ℝ) :=
   ⟨ae_eq_zero_of_subGaussianNorm_eq_zero hXm hXsg,
     subGaussianNorm_eq_zero_of_ae_eq_zero⟩
+
+/-- Zero-aware norm-to-Orlicz bridge for the `ψ₂` gauge.  If
+`‖X‖_{ψ₂} ≤ K` with `K > 0`, then `2K` is an admissible Orlicz scale, even
+when the norm is zero. -/
+theorem subGaussianOrliczCondition_two_mul_of_norm_le
+    {X : Ω → ℝ} {μ : Measure Ω} [IsProbabilityMeasure μ] {K : ℝ}
+    (hXm : AEMeasurable X μ)
+    (hXsg : IsSubGaussian X μ)
+    (hKpos : 0 < K)
+    (hNormK : subGaussianNorm X μ ≤ K) :
+    subGaussianOrliczCondition X μ (2 * K) := by
+  by_cases hzero : subGaussianNorm X μ = 0
+  · exact
+      subGaussianOrliczCondition_of_subGaussianNorm_eq_zero
+        (μ := μ) (X := X) hXm hXsg hzero (by positivity)
+  · have hnorm_nonneg : 0 ≤ subGaussianNorm X μ :=
+      subGaussianNorm_nonneg X μ
+    have hnorm_pos : 0 < subGaussianNorm X μ :=
+      lt_of_le_of_ne hnorm_nonneg (Ne.symm hzero)
+    have htwo_norm :
+        subGaussianOrliczCondition X μ (2 * subGaussianNorm X μ) :=
+      subGaussianOrliczCondition_two_mul_norm hXm hXsg hnorm_pos
+    have hle : 2 * subGaussianNorm X μ ≤ 2 * K :=
+      mul_le_mul_of_nonneg_left hNormK (by norm_num)
+    exact subGaussianOrliczCondition_mono_scale hXm htwo_norm hle
 
 /-- Elementary estimate used in the proof of Proposition 2.5.2:
 for `y ≥ 0`, `y ≤ exp(y²)`. -/
@@ -1946,6 +1990,25 @@ theorem subGaussianMGFCondition_of_hasSubgaussianMGF
         mul_nonneg (sq_nonneg K) (sq_nonneg θ)
       nlinarith
 
+/-- The book's global MGF condition `E exp(θX) ≤ exp(K²θ²)` gives mathlib's
+`HasSubgaussianMGF` predicate with proxy `(sqrt 2 * K)^2`. -/
+theorem hasSubgaussianMGF_of_subGaussianMGFCondition
+    {X : Ω → ℝ} {K : ℝ}
+    (hX : subGaussianMGFCondition X μ K) :
+    HasSubgaussianMGF X (subgaussianProxy (Real.sqrt 2 * K)) μ := by
+  rcases hX with ⟨hKpos, hmgf⟩
+  refine ⟨fun θ => (hmgf θ).1, fun θ => ?_⟩
+  calc
+    mgf X μ θ ≤ Real.exp (K ^ 2 * θ ^ 2) := (hmgf θ).2
+    _ = Real.exp (((subgaussianProxy (Real.sqrt 2 * K) : ℝ≥0) : ℝ)
+          * θ ^ 2 / 2) := by
+      congr 1
+      rw [subgaussianProxy_coe]
+      have hsqrt_sq : Real.sqrt 2 ^ 2 = (2 : ℝ) :=
+        Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 2)
+      rw [mul_pow, hsqrt_sq]
+      ring
+
 /-- Mathlib's MGF-proxy predicate gives finite moments of all orders. This is
 the finite-moment content used on the way to HDP Proposition 2.5.2(ii). -/
 theorem memLp_of_hasSubgaussianMGF
@@ -2145,6 +2208,28 @@ theorem subGaussianTailCondition_of_subGaussianMGFCondition
     subGaussianTailCondition X μ (2 * K) :=
   ⟨mul_pos (by norm_num) hX.1,
     fun t ht => subGaussianMGFCondition_tail_le (K := K) hX ht⟩
+
+/-- A `HasSubgaussianMGF` proxy gives the book's moment-growth condition, with
+an explicit absolute-constant loss. -/
+theorem subGaussianMomentCondition_of_hasSubgaussianMGF
+    [IsProbabilityMeasure μ] {X : Ω → ℝ} {K : ℝ}
+    (hK : 0 < K)
+    (hX : HasSubgaussianMGF X (subgaussianProxy K) μ) :
+    subGaussianMomentCondition X μ (8 * K) := by
+  have hBookMGF :
+      subGaussianMGFCondition X μ K :=
+    subGaussianMGFCondition_of_hasSubgaussianMGF (μ := μ) (X := X) hK hX
+  have hTail :
+      subGaussianTailCondition X μ (2 * K) :=
+    subGaussianTailCondition_of_subGaussianMGFCondition
+      (μ := μ) (X := X) (K := K) hBookMGF
+  have hMom :
+      subGaussianMomentCondition X μ (4 * (2 * K)) :=
+    subGaussianMomentCondition_of_subGaussianTailCondition
+      (μ := μ) (X := X) (K := 2 * K)
+      hX.aestronglyMeasurable hTail
+  have hscale : 4 * (2 * K) = 8 * K := by ring
+  simpa [hscale] using hMom
 
 end MGFProperties
 
@@ -5254,6 +5339,467 @@ end FiniteMaxValue
 
 end Maxima
 
+section Centering
+
+/-- HDP equation (2.19): centering can only decrease the `L²` norm. -/
+theorem l2Norm_centered_le_l2Norm
+    {Ω : Type*} [MeasurableSpace Ω] {μ : Measure Ω} [IsProbabilityMeasure μ]
+    {X : Ω → ℝ}
+    (hXm : AEStronglyMeasurable X μ) :
+    l2Norm (fun ω => X ω - μ[X]) μ ≤ l2Norm X μ := by
+  unfold l2Norm
+  refine Real.sqrt_le_sqrt ?_
+  calc
+    μ[fun ω => (X ω - μ[X]) ^ 2]
+        = Var[X; μ] := by
+          rw [ProbabilityTheory.variance_eq_integral hXm.aemeasurable]
+    _ ≤ μ[X ^ 2] :=
+      ProbabilityTheory.variance_le_expectation_sq hXm
+    _ = μ[fun ω => X ω ^ 2] := by
+      rfl
+
+/-- Addition closure for sub-gaussian random variables in the `ψ₂` Orlicz
+sense. -/
+theorem isSubGaussian_add
+    {Ω : Type*} [MeasurableSpace Ω] {μ : Measure Ω} {X Y : Ω → ℝ}
+    (hXm : AEMeasurable X μ) (hYm : AEMeasurable Y μ)
+    (hXsg : IsSubGaussian X μ) (hYsg : IsSubGaussian Y μ) :
+    IsSubGaussian (fun ω => X ω + Y ω) μ := by
+  rcases hXsg with ⟨K, hK⟩
+  rcases hYsg with ⟨L, hL⟩
+  exact ⟨K + L, subGaussianOrliczCondition_add hXm hYm hK hL⟩
+
+/-- Constant random variables are sub-gaussian. -/
+theorem isSubGaussian_const
+    {Ω : Type*} [MeasurableSpace Ω] {μ : Measure Ω} [IsProbabilityMeasure μ]
+    (a : ℝ) :
+    IsSubGaussian (fun _ω : Ω => a) μ := by
+  by_cases ha : a = 0
+  · rw [ha]
+    exact isSubGaussian_of_subGaussianOrliczCondition
+      (subGaussianOrliczCondition_zero (μ := μ) (K := 1) (by norm_num))
+  · have hB : 0 < |a| := abs_pos.mpr ha
+    refine isSubGaussian_of_subGaussianOrliczCondition
+      (K := |a| / Real.sqrt (Real.log 2)) ?_
+    refine subGaussianOrliczCondition_of_ae_abs_le_scaled
+      (μ := μ) (X := fun _ω : Ω => a) (B := |a|)
+      (by fun_prop) hB ?_
+    exact Filter.Eventually.of_forall fun _ω => le_rfl
+
+/-- A constant random variable has `ψ₂` norm bounded by the bounded-variable
+scale from Example 2.5.8(c). -/
+theorem subGaussianNorm_const_le_abs_div_sqrt_log_two
+    {Ω : Type*} [MeasurableSpace Ω] {μ : Measure Ω} [IsProbabilityMeasure μ]
+    (a : ℝ) :
+    subGaussianNorm (fun _ω : Ω => a) μ ≤ |a| / Real.sqrt (Real.log 2) := by
+  by_cases ha : a = 0
+  · rw [ha]
+    simp [subGaussianNorm_zero]
+  · have hB : 0 < |a| := abs_pos.mpr ha
+    refine subGaussianNorm_le_of_ae_abs_le_scaled
+      (μ := μ) (X := fun _ω : Ω => a) (B := |a|)
+      (by fun_prop) hB ?_
+    exact Filter.Eventually.of_forall fun _ω => le_rfl
+
+/-- An admissible `ψ₂` Orlicz scale controls the absolute mean. This is the
+`p = 1` moment-growth consequence used in HDP Lemma 2.6.8. -/
+theorem abs_integral_le_two_mul_of_subGaussianOrliczCondition
+    {Ω : Type*} [MeasurableSpace Ω] {μ : Measure Ω} [IsProbabilityMeasure μ]
+    {X : Ω → ℝ} {K : ℝ}
+    (hXm : AEStronglyMeasurable X μ)
+    (hX : subGaussianOrliczCondition X μ K) :
+    |μ[X]| ≤ 2 * K := by
+  have hMom : subGaussianMomentCondition X μ (2 * K) :=
+    subGaussianMomentCondition_of_subGaussianOrliczCondition (μ := μ) hXm hX
+  have hp : (1 : ℝ) ≤ ((1 : ℝ≥0) : ℝ) := by norm_num
+  rcases hMom.2 1 hp with ⟨hmem, hle⟩
+  have h_rhs_toReal :
+      (ENNReal.ofReal (2 * K * Real.sqrt ((1 : ℝ≥0) : ℝ))).toReal = 2 * K := by
+    rw [ENNReal.toReal_ofReal]
+    · norm_num
+    · have hKpos : 0 < K := hX.1
+      positivity
+  have hlp_real : MeasureTheory.lpNorm X (1 : ℝ≥0∞) μ ≤ 2 * K := by
+    have hle_toReal := ENNReal.toReal_mono ENNReal.ofReal_ne_top hle
+    rw [MeasureTheory.toReal_eLpNorm hXm, h_rhs_toReal] at hle_toReal
+    simpa using hle_toReal
+  have hint_abs : μ[fun ω => |X ω|] ≤ 2 * K := by
+    have hlp_one := MeasureTheory.lpNorm_one_eq_integral_norm hXm
+    rw [hlp_one] at hlp_real
+    simpa [Real.norm_eq_abs] using hlp_real
+  exact abs_integral_le_integral_abs.trans hint_abs
+
+/-- The `ψ₂` norm controls the absolute mean. -/
+theorem abs_integral_le_two_mul_subGaussianNorm
+    {Ω : Type*} [MeasurableSpace Ω] {μ : Measure Ω} [IsProbabilityMeasure μ]
+    {X : Ω → ℝ}
+    (hXm : AEStronglyMeasurable X μ)
+    (hXsg : IsSubGaussian X μ) :
+    |μ[X]| ≤ 2 * subGaussianNorm X μ := by
+  let S : Set ℝ := {K : ℝ | subGaussianOrliczCondition X μ K}
+  have hXset : S.Nonempty := by
+    rcases hXsg with ⟨K, hK⟩
+    exact ⟨K, hK⟩
+  refine le_of_forall_gt_imp_ge_of_dense ?_
+  intro r hr
+  have hgap : 0 < r / 2 - subGaussianNorm X μ := by linarith
+  obtain ⟨K, hK, hKlt⟩ := Real.lt_sInf_add_pos (s := S) hXset hgap
+  have hK_cond : subGaussianOrliczCondition X μ K := hK
+  have hKlt' : K < subGaussianNorm X μ + (r / 2 - subGaussianNorm X μ) := by
+    change K < subGaussianNorm X μ + (r / 2 - subGaussianNorm X μ)
+    exact hKlt
+  have hKlt_half : K < r / 2 := by linarith
+  have hmeanK : |μ[X]| ≤ 2 * K :=
+    abs_integral_le_two_mul_of_subGaussianOrliczCondition hXm hK_cond
+  have h2Klt : 2 * K < r := by linarith
+  exact hmeanK.trans h2Klt.le
+
+/-- The explicit absolute constant used in the formalized form of HDP
+Lemma 2.6.8. -/
+def subGaussianCenteringConstant : ℝ :=
+  1 + 2 / Real.sqrt (Real.log 2)
+
+/-- The centering constant in Lemma 2.6.8 is positive. -/
+theorem subGaussianCenteringConstant_pos : 0 < subGaussianCenteringConstant := by
+  have hlog2_pos : 0 < Real.log 2 := by
+    rw [Real.log_pos_iff (by norm_num : (0 : ℝ) ≤ 2)]
+    norm_num
+  have hsqrt_pos : 0 < Real.sqrt (Real.log 2) := Real.sqrt_pos.2 hlog2_pos
+  unfold subGaussianCenteringConstant
+  positivity
+
+/-- HDP Lemma 2.6.8, norm estimate: centering preserves sub-gaussianity with
+an absolute constant. -/
+theorem subGaussianNorm_centered_le
+    {Ω : Type*} [MeasurableSpace Ω] {μ : Measure Ω} [IsProbabilityMeasure μ]
+    {X : Ω → ℝ}
+    (hXm : AEStronglyMeasurable X μ)
+    (hXsg : IsSubGaussian X μ) :
+    subGaussianNorm (fun ω => X ω - μ[X]) μ
+      ≤ subGaussianCenteringConstant * subGaussianNorm X μ := by
+  have hlog2_pos : 0 < Real.log 2 := by
+    rw [Real.log_pos_iff (by norm_num : (0 : ℝ) ≤ 2)]
+    norm_num
+  have hsqrt_pos : 0 < Real.sqrt (Real.log 2) := Real.sqrt_pos.2 hlog2_pos
+  let m : ℝ := μ[X]
+  let Y : Ω → ℝ := fun _ω => -m
+  have hconst_sg : IsSubGaussian Y μ := by
+    simpa [Y, m] using isSubGaussian_const (μ := μ) (-μ[X])
+  have hcenter_eq :
+      (fun ω => X ω - μ[X]) = fun ω => X ω + Y ω := by
+    funext ω
+    dsimp [Y, m]
+    ring
+  have hadd :
+      subGaussianNorm (fun ω => X ω + Y ω) μ
+        ≤ subGaussianNorm X μ + subGaussianNorm Y μ :=
+    subGaussianNorm_add_le (μ := μ)
+      (X := X) (Y := Y)
+      hXm.aemeasurable (by dsimp [Y]; fun_prop) hXsg hconst_sg
+  have hconst_bound :
+      subGaussianNorm Y μ
+        ≤ |μ[X]| / Real.sqrt (Real.log 2) := by
+    have h := subGaussianNorm_const_le_abs_div_sqrt_log_two
+      (μ := μ) (-μ[X])
+    simpa [Y, m] using h
+  have hmean_bound : |μ[X]| ≤ 2 * subGaussianNorm X μ :=
+    abs_integral_le_two_mul_subGaussianNorm hXm hXsg
+  have hmean_scaled :
+      |μ[X]| / Real.sqrt (Real.log 2)
+        ≤ (2 * subGaussianNorm X μ) / Real.sqrt (Real.log 2) :=
+    div_le_div_of_nonneg_right hmean_bound hsqrt_pos.le
+  rw [hcenter_eq]
+  calc
+    subGaussianNorm (fun ω => X ω + Y ω) μ
+        ≤ subGaussianNorm X μ + subGaussianNorm Y μ := hadd
+    _ ≤ subGaussianNorm X μ + |μ[X]| / Real.sqrt (Real.log 2) :=
+      add_le_add le_rfl hconst_bound
+    _ ≤ subGaussianNorm X μ
+        + (2 * subGaussianNorm X μ) / Real.sqrt (Real.log 2) :=
+      add_le_add le_rfl hmean_scaled
+    _ = subGaussianCenteringConstant * subGaussianNorm X μ := by
+      unfold subGaussianCenteringConstant
+      ring
+
+/-- HDP Lemma 2.6.8, predicate form: centering preserves sub-gaussianity. -/
+theorem isSubGaussian_centered
+    {Ω : Type*} [MeasurableSpace Ω] {μ : Measure Ω} [IsProbabilityMeasure μ]
+    {X : Ω → ℝ}
+    (hXm : AEMeasurable X μ)
+    (hXsg : IsSubGaussian X μ) :
+    IsSubGaussian (fun ω => X ω - μ[X]) μ := by
+  let m : ℝ := μ[X]
+  let Y : Ω → ℝ := fun _ω => -m
+  have hconst_sg : IsSubGaussian Y μ := by
+    simpa [Y, m] using isSubGaussian_const (μ := μ) (-μ[X])
+  have hcenter_eq :
+      (fun ω => X ω - μ[X]) = fun ω => X ω + Y ω := by
+    funext ω
+    dsimp [Y, m]
+    ring
+  rw [hcenter_eq]
+  exact isSubGaussian_add (μ := μ)
+    (X := X) (Y := Y) hXm (by dsimp [Y]; fun_prop) hXsg hconst_sg
+
+/-- The Bernoulli parameter used in the concrete HDP Exercise 2.6.9
+counterexample. -/
+theorem subGaussianCenteringCounterexampleProb_le_one :
+    (49 / 50 : ℝ≥0) ≤ 1 := by
+  rw [← NNReal.coe_le_coe]
+  norm_num
+
+/-- A two-point probability mass function for the HDP Exercise 2.6.9
+counterexample. -/
+def subGaussianCenteringCounterexamplePMF : PMF Bool :=
+  PMF.bernoulli (49 / 50 : ℝ≥0) subGaussianCenteringCounterexampleProb_le_one
+
+/-- The two-point probability space for the HDP Exercise 2.6.9
+counterexample. -/
+def subGaussianCenteringCounterexampleMeasure : Measure Bool :=
+  subGaussianCenteringCounterexamplePMF.toMeasure
+
+instance : IsProbabilityMeasure subGaussianCenteringCounterexampleMeasure := by
+  rw [subGaussianCenteringCounterexampleMeasure]
+  infer_instance
+
+/-- The random variable used in the HDP Exercise 2.6.9 counterexample. -/
+def subGaussianCenteringCounterexample (b : Bool) : ℝ :=
+  if b then (17 / 10 : ℝ) else (-24 / 5 : ℝ)
+
+/-- The two-point counterexample random variable is measurable. -/
+theorem subGaussianCenteringCounterexample_measurable :
+    Measurable subGaussianCenteringCounterexample := by
+  simpa [subGaussianCenteringCounterexample] using
+    (SimpleFunc.ofFinite subGaussianCenteringCounterexample).measurable
+
+/-- The two-point counterexample random variable is a.e.-measurable. -/
+theorem subGaussianCenteringCounterexample_aemeasurable :
+    AEMeasurable subGaussianCenteringCounterexample
+      subGaussianCenteringCounterexampleMeasure :=
+  subGaussianCenteringCounterexample_measurable.aemeasurable
+
+/-- The exact mean of the HDP Exercise 2.6.9 two-point variable. -/
+theorem subGaussianCenteringCounterexample_integral :
+    ∫ b, subGaussianCenteringCounterexample b
+        ∂subGaussianCenteringCounterexampleMeasure = (157 / 100 : ℝ) := by
+  rw [subGaussianCenteringCounterexampleMeasure,
+    subGaussianCenteringCounterexamplePMF, PMF.integral_eq_sum]
+  simp [subGaussianCenteringCounterexample, PMF.bernoulli_apply]
+  rw [NNReal.coe_sub subGaussianCenteringCounterexampleProb_le_one]
+  norm_num
+
+/-- A rational upper certificate for `exp`, used to make the two-point
+counterexample fully rigorous without decimal approximations. -/
+theorem real_exp_le_inv_one_sub_div_pow {x : ℝ} {n : ℕ} (hn : 0 < n)
+    (hx : x < n) :
+    Real.exp x ≤ ((1 - x / (n : ℝ)) ^ n)⁻¹ := by
+  have hnreal : 0 < (n : ℝ) := by exact_mod_cast hn
+  have hbase_pos : 0 < 1 - x / (n : ℝ) := by
+    rw [sub_pos]
+    exact (div_lt_one hnreal).2 hx
+  have hpow_pos : 0 < (1 - x / (n : ℝ)) ^ n :=
+    pow_pos hbase_pos n
+  have hle := Real.one_sub_div_pow_le_exp_neg (n := n) (t := x) hx.le
+  have hinv : 1 / Real.exp (-x) ≤ 1 / ((1 - x / (n : ℝ)) ^ n) := by
+    exact (one_div_le_one_div (Real.exp_pos _) hpow_pos).mpr hle
+  simpa [Real.exp_neg, one_div] using hinv
+
+theorem subGaussianCenteringCounterexample_complement :
+    (((1 : ℝ≥0) - (49 / 50 : ℝ≥0) : ℝ≥0) : ℝ) = (1 / 50 : ℝ) := by
+  rw [NNReal.coe_sub subGaussianCenteringCounterexampleProb_le_one]
+  norm_num
+
+/-- Exact expansion of the Orlicz integral for the uncentered two-point
+counterexample at scale `14 / 5`. -/
+theorem subGaussianCenteringCounterexample_exp_integral :
+    ∫ b, Real.exp
+        (subGaussianCenteringCounterexample b ^ 2 / (14 / 5 : ℝ) ^ 2)
+        ∂subGaussianCenteringCounterexampleMeasure =
+      (49 / 50 : ℝ) *
+          Real.exp ((17 / 10 : ℝ) ^ 2 / (14 / 5 : ℝ) ^ 2)
+        + (((1 : ℝ≥0) - (49 / 50 : ℝ≥0) : ℝ≥0) : ℝ) *
+          Real.exp ((-24 / 5 : ℝ) ^ 2 / (14 / 5 : ℝ) ^ 2) := by
+  rw [subGaussianCenteringCounterexampleMeasure,
+    subGaussianCenteringCounterexamplePMF, PMF.integral_eq_sum]
+  simp [subGaussianCenteringCounterexample, PMF.bernoulli_apply]
+
+/-- The uncentered variable has admissible `ψ₂` scale `14 / 5`. -/
+theorem subGaussianCenteringCounterexample_exp_integral_le_two :
+    ∫ b, Real.exp
+        (subGaussianCenteringCounterexample b ^ 2 / (14 / 5 : ℝ) ^ 2)
+        ∂subGaussianCenteringCounterexampleMeasure ≤ 2 := by
+  rw [subGaussianCenteringCounterexample_exp_integral,
+    subGaussianCenteringCounterexample_complement]
+  have h1 :
+      Real.exp ((17 / 10 : ℝ) ^ 2 / (14 / 5 : ℝ) ^ 2)
+        ≤ ((1 - (((17 / 10 : ℝ) ^ 2 / (14 / 5 : ℝ) ^ 2) / (20 : ℝ)))
+            ^ 20)⁻¹ :=
+    real_exp_le_inv_one_sub_div_pow (n := 20) (by norm_num) (by norm_num)
+  have h2 :
+      Real.exp ((-24 / 5 : ℝ) ^ 2 / (14 / 5 : ℝ) ^ 2)
+        ≤ ((1 - (((-24 / 5 : ℝ) ^ 2 / (14 / 5 : ℝ) ^ 2) / (20 : ℝ)))
+            ^ 20)⁻¹ :=
+    real_exp_le_inv_one_sub_div_pow (n := 20) (by norm_num) (by norm_num)
+  calc
+    (49 / 50 : ℝ) *
+          Real.exp ((17 / 10 : ℝ) ^ 2 / (14 / 5 : ℝ) ^ 2)
+        + (1 / 50 : ℝ) *
+          Real.exp ((-24 / 5 : ℝ) ^ 2 / (14 / 5 : ℝ) ^ 2)
+        ≤ (49 / 50 : ℝ) *
+            ((1 - (((17 / 10 : ℝ) ^ 2 / (14 / 5 : ℝ) ^ 2) / (20 : ℝ)))
+              ^ 20)⁻¹
+          + (1 / 50 : ℝ) *
+            ((1 - (((-24 / 5 : ℝ) ^ 2 / (14 / 5 : ℝ) ^ 2) / (20 : ℝ)))
+              ^ 20)⁻¹ := by
+          gcongr
+    _ ≤ 2 := by norm_num
+
+/-- The uncentered variable in Exercise 2.6.9 is sub-gaussian. -/
+theorem subGaussianCenteringCounterexample_orliczCondition :
+    subGaussianOrliczCondition subGaussianCenteringCounterexample
+      subGaussianCenteringCounterexampleMeasure (14 / 5) := by
+  refine ⟨by norm_num, ?_, subGaussianCenteringCounterexample_exp_integral_le_two⟩
+  rw [subGaussianCenteringCounterexampleMeasure]
+  simp
+
+/-- Upper bound for the uncentered `ψ₂` norm in the Exercise 2.6.9
+counterexample. -/
+theorem subGaussianCenteringCounterexample_norm_le :
+    subGaussianNorm subGaussianCenteringCounterexample
+      subGaussianCenteringCounterexampleMeasure ≤ (14 / 5 : ℝ) :=
+  subGaussianNorm_le_of_subGaussianOrliczCondition
+    subGaussianCenteringCounterexample_orliczCondition
+
+/-- Exact expansion of the centered Orlicz integral in the Exercise 2.6.9
+counterexample. -/
+theorem subGaussianCenteringCounterexample_centered_exp_integral {K : ℝ} :
+    ∫ b, Real.exp
+        ((subGaussianCenteringCounterexample b -
+            ∫ b, subGaussianCenteringCounterexample b
+              ∂subGaussianCenteringCounterexampleMeasure) ^ 2 / K ^ 2)
+        ∂subGaussianCenteringCounterexampleMeasure =
+      (49 / 50 : ℝ) * Real.exp (((13 / 100 : ℝ) ^ 2) / K ^ 2)
+        + (((1 : ℝ≥0) - (49 / 50 : ℝ≥0) : ℝ≥0) : ℝ) *
+            Real.exp (((-637 / 100 : ℝ) ^ 2) / K ^ 2) := by
+  rw [subGaussianCenteringCounterexample_integral]
+  rw [subGaussianCenteringCounterexampleMeasure,
+    subGaussianCenteringCounterexamplePMF, PMF.integral_eq_sum]
+  simp [subGaussianCenteringCounterexample, PMF.bernoulli_apply]
+  ring_nf
+
+theorem subGaussianCenteringCounterexample_rare_exp_lower {K : ℝ}
+    (hKpos : 0 < K) (hKlt : K < 29 / 10) :
+    (100 : ℝ) < Real.exp (((637 / 100 : ℝ) ^ 2) / K ^ 2) := by
+  have hqexp : (100 : ℝ) < Real.exp (405769 / 84100 : ℝ) := by
+    have hsum :
+        (100 : ℝ) <
+          ∑ i ∈ Finset.range 8,
+            ((405769 / 84100 : ℝ) ^ i / i.factorial) := by
+      norm_num
+    exact hsum.trans_le (Real.sum_le_exp_of_nonneg (by norm_num) 8)
+  have hKsq_pos : 0 < K ^ 2 := sq_pos_of_pos hKpos
+  have hBpos : 0 < (29 / 10 : ℝ) := by norm_num
+  have hKsq_lt : K ^ 2 < (29 / 10 : ℝ) ^ 2 := by
+    exact sq_lt_sq.mpr
+      (by simpa [abs_of_pos hKpos, abs_of_pos hBpos] using hKlt)
+  have hnum_pos : 0 < (637 / 100 : ℝ) ^ 2 := by norm_num
+  have hquot :
+      (405769 / 84100 : ℝ) < ((637 / 100 : ℝ) ^ 2) / K ^ 2 := by
+    have h := div_lt_div_of_pos_left hnum_pos hKsq_pos hKsq_lt
+    norm_num at h ⊢
+    exact h
+  exact hqexp.trans (Real.exp_lt_exp.mpr hquot)
+
+/-- Below scale `29 / 10`, the centered Orlicz integral of the Exercise 2.6.9
+counterexample is already larger than `2`. -/
+theorem subGaussianCenteringCounterexample_centered_exp_gt_two_of_lt {K : ℝ}
+    (hKpos : 0 < K) (hKlt : K < 29 / 10) :
+    2 <
+      ∫ b, Real.exp
+        ((subGaussianCenteringCounterexample b -
+            ∫ b, subGaussianCenteringCounterexample b
+              ∂subGaussianCenteringCounterexampleMeasure) ^ 2 / K ^ 2)
+        ∂subGaussianCenteringCounterexampleMeasure := by
+  rw [subGaussianCenteringCounterexample_centered_exp_integral]
+  have hrare :
+      (100 : ℝ) < Real.exp (((-637 / 100 : ℝ) ^ 2) / K ^ 2) := by
+    have hsquare :
+        ((-637 / 100 : ℝ) ^ 2) = ((637 / 100 : ℝ) ^ 2) := by
+      norm_num
+    simpa [hsquare] using
+      subGaussianCenteringCounterexample_rare_exp_lower hKpos hKlt
+  rw [subGaussianCenteringCounterexample_complement]
+  have hrare_weighted :
+      (2 : ℝ) < (1 / 50 : ℝ) *
+        Real.exp (((-637 / 100 : ℝ) ^ 2) / K ^ 2) := by
+    nlinarith
+  have hcommon_nonneg :
+      0 ≤ (49 / 50 : ℝ) *
+        Real.exp (((13 / 100 : ℝ) ^ 2) / K ^ 2) := by
+    positivity
+  nlinarith
+
+/-- Lower bound for the centered `ψ₂` norm in the Exercise 2.6.9
+counterexample. -/
+theorem subGaussianCenteringCounterexample_centered_norm_ge :
+    (29 / 10 : ℝ) ≤
+      subGaussianNorm
+        (fun b => subGaussianCenteringCounterexample b -
+          ∫ b, subGaussianCenteringCounterexample b
+            ∂subGaussianCenteringCounterexampleMeasure)
+        subGaussianCenteringCounterexampleMeasure := by
+  unfold subGaussianNorm
+  refine le_csInf ?hne ?hlower
+  · have hsg :
+        IsSubGaussian
+          (fun b => subGaussianCenteringCounterexample b -
+            ∫ b, subGaussianCenteringCounterexample b
+              ∂subGaussianCenteringCounterexampleMeasure)
+          subGaussianCenteringCounterexampleMeasure := by
+      exact isSubGaussian_centered
+        (μ := subGaussianCenteringCounterexampleMeasure)
+        (X := subGaussianCenteringCounterexample)
+        subGaussianCenteringCounterexample_aemeasurable
+        (isSubGaussian_of_subGaussianOrliczCondition
+          subGaussianCenteringCounterexample_orliczCondition)
+    rcases hsg with ⟨K, hK⟩
+    exact ⟨K, hK⟩
+  · intro K hK
+    by_contra hnot
+    have hKlt : K < 29 / 10 := lt_of_not_ge hnot
+    have hgt :=
+      subGaussianCenteringCounterexample_centered_exp_gt_two_of_lt hK.1 hKlt
+    exact not_lt_of_ge hK.2.2 hgt
+
+/-- HDP Exercise 2.6.9: centering does not satisfy the `ψ₂` norm inequality
+with constant `1`.  This explicit two-point sub-gaussian variable has
+strictly larger centered `ψ₂` norm. -/
+theorem subGaussianCentering_not_contracting_constant_one :
+    subGaussianNorm subGaussianCenteringCounterexample
+        subGaussianCenteringCounterexampleMeasure <
+      subGaussianNorm
+        (fun b => subGaussianCenteringCounterexample b -
+          ∫ b, subGaussianCenteringCounterexample b
+            ∂subGaussianCenteringCounterexampleMeasure)
+        subGaussianCenteringCounterexampleMeasure := by
+  have hlt : (14 / 5 : ℝ) < 29 / 10 := by norm_num
+  exact lt_of_le_of_lt subGaussianCenteringCounterexample_norm_le
+    (hlt.trans_le subGaussianCenteringCounterexample_centered_norm_ge)
+
+/-- Existential form of HDP Exercise 2.6.9. -/
+theorem exists_subGaussian_centering_not_contracting_constant_one :
+    ∃ μ : Measure Bool, IsProbabilityMeasure μ ∧ ∃ X : Bool → ℝ,
+      IsSubGaussian X μ ∧
+        subGaussianNorm X μ <
+          subGaussianNorm (fun b => X b - ∫ b, X b ∂μ) μ := by
+  refine ⟨subGaussianCenteringCounterexampleMeasure, inferInstance,
+    subGaussianCenteringCounterexample, ?_, ?_⟩
+  · exact isSubGaussian_of_subGaussianOrliczCondition
+      subGaussianCenteringCounterexample_orliczCondition
+  · exact subGaussianCentering_not_contracting_constant_one
+
+end Centering
+
 section Sums
 
 variable {Ω : Type*} [MeasurableSpace Ω] {μ : Measure Ω}
@@ -5379,6 +5925,967 @@ theorem general_hoeffding_weighted_uniform_proxy
       (μ := μ) (X := X) (c := fun _ => subgaussianProxy K)
       a hindep hX (t := t) ht
   simpa [weightedSubgaussianProxySum_uniform] using htail
+
+/-- A weighted finite sum of independent sub-gaussian variables is
+sub-gaussian with proxy `K²‖a‖₂²`. -/
+theorem hasSubgaussianMGF_weighted_sum_uniform_proxy
+    {X : ι → Ω → ℝ} (a : ι → ℝ) {K : ℝ}
+    (hindep : iIndepFun X μ)
+    (hX : ∀ i, HasSubgaussianMGF (X i) (subgaussianProxy K) μ) :
+    HasSubgaussianMGF (fun ω => ∑ i, a i * X i ω)
+      (subgaussianProxy (K * coeffL2Norm a)) μ := by
+  classical
+  let Y : ι → Ω → ℝ := fun i ω => a i * X i ω
+  let c : ι → ℝ≥0 := fun i => ⟨a i ^ 2, sq_nonneg (a i)⟩ * subgaussianProxy K
+  have hindepY : iIndepFun Y μ := by
+    simpa [Y, Function.comp_def] using
+      hindep.comp (fun i x => a i * x) (fun _ => by fun_prop)
+  have hY : ∀ i, HasSubgaussianMGF (Y i) (c i) μ := by
+    intro i
+    simpa [Y, c] using (hX i).const_mul (a i)
+  have hsum :
+      HasSubgaussianMGF (fun ω => ∑ i, Y i ω) (∑ i, c i) μ :=
+    hasSubgaussianMGF_sum_of_iIndepFun
+      (μ := μ) (X := Y) (c := c) hindepY hY
+  have hproxy : (∑ i, c i) = subgaussianProxy (K * coeffL2Norm a) := by
+    rw [← NNReal.coe_inj]
+    calc
+      (((∑ i, c i) : ℝ≥0) : ℝ)
+          = ∑ i, ((c i : ℝ≥0) : ℝ) := by
+        simp
+      _ = ∑ i, a i ^ 2 * K ^ 2 := by
+        refine Finset.sum_congr rfl ?_
+        intro i _hi
+        dsimp [c, subgaussianProxy]
+        change a i ^ 2 * K ^ 2 = a i ^ 2 * K ^ 2
+        rfl
+      _ = ∑ i, K ^ 2 * a i ^ 2 := by
+        exact Finset.sum_congr rfl fun i _ => by ring
+      _ = K ^ 2 * coeffL2NormSq a := by
+        simp [coeffL2NormSq, Finset.mul_sum]
+      _ = ((subgaussianProxy (K * coeffL2Norm a) : ℝ≥0) : ℝ) := by
+        rw [subgaussianProxy_coe, mul_pow, coeffL2Norm_sq]
+  rw [← hproxy]
+  convert hsum using 1
+
+/-- Moment-growth form for weighted independent sub-gaussian sums, away from
+the degenerate all-zero coefficient vector. -/
+theorem subGaussianMomentCondition_weighted_sum_uniform_proxy
+    [IsProbabilityMeasure μ]
+    {X : ι → Ω → ℝ} (a : ι → ℝ) {K : ℝ}
+    (hindep : iIndepFun X μ)
+    (hK : 0 < K)
+    (ha : 0 < coeffL2Norm a)
+    (hX : ∀ i, HasSubgaussianMGF (X i) (subgaussianProxy K) μ) :
+    subGaussianMomentCondition (fun ω => ∑ i, a i * X i ω) μ
+      (8 * K * coeffL2Norm a) := by
+  have hscale : 0 < K * coeffL2Norm a := mul_pos hK ha
+  have hsum :
+      HasSubgaussianMGF (fun ω => ∑ i, a i * X i ω)
+        (subgaussianProxy (K * coeffL2Norm a)) μ :=
+    hasSubgaussianMGF_weighted_sum_uniform_proxy
+      (μ := μ) (X := X) a hindep hX
+  have hMom :
+      subGaussianMomentCondition (fun ω => ∑ i, a i * X i ω) μ
+        (8 * (K * coeffL2Norm a)) :=
+    subGaussianMomentCondition_of_hasSubgaussianMGF
+      (μ := μ) (X := fun ω => ∑ i, a i * X i ω)
+      (K := K * coeffL2Norm a) hscale hsum
+  simpa [mul_assoc] using hMom
+
+/-- HDP Exercise 2.6.5, upper Khintchine estimate in the MGF-proxy form:
+for nonzero coefficient vectors, an independent weighted sum satisfies
+`‖∑ aᵢXᵢ‖_p ≤ C K √p ‖a‖₂` with the explicit absolute constant `C = 8`. -/
+theorem khintchine_subGaussian_upper_hasSubgaussianMGF_nonzero
+    [IsProbabilityMeasure μ]
+    {X : ι → Ω → ℝ} (a : ι → ℝ) {K : ℝ} {p : ℝ≥0}
+    (hindep : iIndepFun X μ)
+    (hK : 0 < K)
+    (ha : 0 < coeffL2Norm a)
+    (hX : ∀ i, HasSubgaussianMGF (X i) (subgaussianProxy K) μ)
+    (hp : 2 ≤ (p : ℝ)) :
+    eLpNorm (fun ω => ∑ i, a i * X i ω) (p : ℝ≥0∞) μ
+      ≤ ENNReal.ofReal (8 * K * Real.sqrt (p : ℝ) * coeffL2Norm a) := by
+  have hMom :
+      subGaussianMomentCondition (fun ω => ∑ i, a i * X i ω) μ
+        (8 * K * coeffL2Norm a) :=
+    subGaussianMomentCondition_weighted_sum_uniform_proxy
+      (μ := μ) (X := X) a hindep hK ha hX
+  have hp_one : 1 ≤ (p : ℝ) := by linarith
+  have h :=
+    (hMom.2 p hp_one).2
+  convert h using 2
+  ring
+
+/-- HDP Exercise 2.6.5, upper Khintchine estimate in the MGF-proxy form:
+an independent weighted sum satisfies
+`‖∑ aᵢXᵢ‖_p ≤ C K √p ‖a‖₂` with the explicit absolute constant `C = 8`.
+This version includes the degenerate all-zero coefficient vector. -/
+theorem khintchine_subGaussian_upper_hasSubgaussianMGF
+    [IsProbabilityMeasure μ]
+    {X : ι → Ω → ℝ} (a : ι → ℝ) {K : ℝ} {p : ℝ≥0}
+    (hindep : iIndepFun X μ)
+    (hK : 0 < K)
+    (hX : ∀ i, HasSubgaussianMGF (X i) (subgaussianProxy K) μ)
+    (hp : 2 ≤ (p : ℝ)) :
+    eLpNorm (fun ω => ∑ i, a i * X i ω) (p : ℝ≥0∞) μ
+      ≤ ENNReal.ofReal (8 * K * Real.sqrt (p : ℝ) * coeffL2Norm a) := by
+  by_cases ha0 : coeffL2Norm a = 0
+  · have hsumsq : coeffL2NormSq a = 0 := by
+      rw [← coeffL2Norm_sq, ha0]
+      norm_num
+    have hai : ∀ i, a i = 0 := by
+      intro i
+      have hterms :=
+        (Finset.sum_eq_zero_iff_of_nonneg
+          (s := (Finset.univ : Finset ι))
+          (f := fun i => a i ^ 2)
+          (fun i _hi => sq_nonneg (a i))).mp
+          (by simpa [coeffL2NormSq] using hsumsq)
+      exact sq_eq_zero_iff.mp (hterms i (Finset.mem_univ i))
+    have hsum_zero :
+        (fun ω => ∑ i, a i * X i ω) = fun _ω => (0 : ℝ) := by
+      funext ω
+      simp [hai]
+    rw [hsum_zero, ha0]
+    simp
+  · have ha_nonneg : 0 ≤ coeffL2Norm a := by
+      unfold coeffL2Norm
+      exact Real.sqrt_nonneg _
+    have ha_pos : 0 < coeffL2Norm a :=
+      lt_of_le_of_ne ha_nonneg (Ne.symm ha0)
+    exact khintchine_subGaussian_upper_hasSubgaussianMGF_nonzero
+      (μ := μ) (X := X) a hindep hK ha_pos hX hp
+
+/-- HDP Exercise 2.6.5, upper Khintchine estimate in the book-facing
+`ψ₂`-norm form.  If all centered summands satisfy `‖Xᵢ‖_{ψ₂} ≤ K`, then
+`‖∑ aᵢXᵢ‖_p ≤ C K sqrt(p) ‖a‖₂` with the explicit absolute constant
+`C = 16 sqrt 2`. -/
+theorem khintchine_subGaussian_upper_psi2Norm
+    [IsProbabilityMeasure μ]
+    {X : ι → Ω → ℝ} (a : ι → ℝ) {K : ℝ} {p : ℝ≥0}
+    (hindep : iIndepFun X μ)
+    (hXm : ∀ i, AEMeasurable (X i) μ)
+    (hXsg : ∀ i, IsSubGaussian (X i) μ)
+    (hmean : ∀ i, ∫ ω, X i ω ∂μ = 0)
+    (hKpos : 0 < K)
+    (hNormK : ∀ i, subGaussianNorm (X i) μ ≤ K)
+    (hp : 2 ≤ (p : ℝ)) :
+    eLpNorm (fun ω => ∑ i, a i * X i ω) (p : ℝ≥0∞) μ
+      ≤ ENNReal.ofReal (16 * Real.sqrt 2 * K * Real.sqrt (p : ℝ) * coeffL2Norm a) := by
+  have hOrlicz : ∀ i, subGaussianOrliczCondition (X i) μ (2 * K) := by
+    intro i
+    exact
+      subGaussianOrliczCondition_two_mul_of_norm_le
+        (μ := μ) (X := X i) (K := K) (hXm i) (hXsg i) hKpos (hNormK i)
+  have hHas :
+      ∀ i, HasSubgaussianMGF (X i) (subgaussianProxy (Real.sqrt 2 * (2 * K))) μ := by
+    intro i
+    have hMGF :
+        subGaussianMGFCondition (X i) μ (2 * K) :=
+      subGaussianMGFCondition_of_orliczCondition_of_integral_eq_zero
+        (μ := μ) (X := X i) (K := 2 * K) (hXm i) (hOrlicz i) (hmean i)
+    exact hasSubgaussianMGF_of_subGaussianMGFCondition (μ := μ) hMGF
+  have hscale_pos : 0 < Real.sqrt 2 * (2 * K) := by
+    exact mul_pos (Real.sqrt_pos.mpr (by norm_num : (0 : ℝ) < 2)) (by positivity)
+  have hupper :=
+    khintchine_subGaussian_upper_hasSubgaussianMGF
+      (μ := μ) (X := X) a (K := Real.sqrt 2 * (2 * K)) (p := p)
+      hindep hscale_pos hHas hp
+  calc
+    eLpNorm (fun ω => ∑ i, a i * X i ω) (p : ℝ≥0∞) μ
+        ≤ ENNReal.ofReal
+          (8 * (Real.sqrt 2 * (2 * K)) * Real.sqrt (p : ℝ) * coeffL2Norm a) :=
+      hupper
+    _ = ENNReal.ofReal
+          (16 * Real.sqrt 2 * K * Real.sqrt (p : ℝ) * coeffL2Norm a) := by
+      congr 1
+      ring
+
+/-- The repository's real `L²` wrapper agrees with mathlib's extended
+`eLpNorm` at exponent `2` for square-integrable real random variables. -/
+theorem l2Norm_eq_eLpNorm_two
+    {X : Ω → ℝ} (hX : MemLp X 2 μ) :
+    ENNReal.ofReal (l2Norm X μ) = eLpNorm X (2 : ℝ≥0∞) μ := by
+  rw [← MeasureTheory.ofReal_lpNorm hX]
+  congr 1
+  rw [MeasureTheory.lpNorm_eq_integral_norm_rpow_toReal (p := (2 : ℝ≥0∞))
+    (by norm_num) (by simp) hX.aestronglyMeasurable]
+  unfold l2Norm
+  simp [Real.sqrt_eq_rpow, sq_abs]
+
+/-- Exponent arithmetic for the `L¹`/`L²`/`L³` Khintchine extrapolation. -/
+lemma ennreal_two_mul_ofReal_half :
+    (2 : ℝ≥0∞) * ENNReal.ofReal (1 / 2 : ℝ) = 1 := by
+  rw [ENNReal.ofReal_eq_coe_nnreal (by norm_num : 0 ≤ (1 / 2 : ℝ))]
+  rw [← ENNReal.coe_ofNat, ← ENNReal.coe_mul]
+  congr 1
+  ext
+  norm_num [NNReal.coe_mul]
+
+/-- Exponent arithmetic for the `L¹`/`L²`/`L³` Khintchine extrapolation. -/
+lemma ennreal_two_mul_ofReal_three_halves :
+    (2 : ℝ≥0∞) * ENNReal.ofReal (3 / 2 : ℝ) = 3 := by
+  rw [ENNReal.ofReal_eq_coe_nnreal (by norm_num : 0 ≤ (3 / 2 : ℝ))]
+  rw [← ENNReal.coe_ofNat, ← ENNReal.coe_mul]
+  congr 1
+  ext
+  norm_num [NNReal.coe_mul]
+
+lemma norm_rpow_half_mul_three_halves (x : ℝ) :
+    ‖x‖ ^ ((1 / 2 : ℝ)) * ‖x‖ ^ ((3 / 2 : ℝ)) = ‖x‖ ^ (2 : ℝ) := by
+  by_cases hx : ‖x‖ = 0
+  · simp [hx]
+  · have hxpos : 0 < ‖x‖ := lt_of_le_of_ne (norm_nonneg x) (Ne.symm hx)
+    rw [← Real.rpow_add hxpos]
+    norm_num
+
+/-- The interpolation inequality used in HDP Exercise 2.6.6:
+`‖S‖₂² ≤ ‖S‖₁^(1/2) ‖S‖₃^(3/2)`. -/
+theorem eLpNorm_two_sq_le_one_half_mul_three_halves
+    {S : Ω → ℝ} (hS : AEStronglyMeasurable S μ) :
+    eLpNorm S (2 : ℝ≥0∞) μ ^ (2 : ℝ) ≤
+      eLpNorm S (1 : ℝ≥0∞) μ ^ ((1 / 2 : ℝ)) *
+        eLpNorm S (3 : ℝ≥0∞) μ ^ ((3 / 2 : ℝ)) := by
+  have hf : AEStronglyMeasurable (fun ω => ‖S ω‖ ^ ((1 / 2 : ℝ))) μ :=
+    (hS.norm.aemeasurable.pow_const (1 / 2 : ℝ)).aestronglyMeasurable
+  have hg : AEStronglyMeasurable (fun ω => ‖S ω‖ ^ ((3 / 2 : ℝ))) μ :=
+    (hS.norm.aemeasurable.pow_const (3 / 2 : ℝ)).aestronglyMeasurable
+  have hholder :=
+    MeasureTheory.eLpNorm_le_eLpNorm_mul_eLpNorm'_of_norm
+      (μ := μ)
+      (p := (2 : ℝ≥0∞)) (q := (2 : ℝ≥0∞)) (r := (1 : ℝ≥0∞))
+      (f := fun ω => ‖S ω‖ ^ ((1 / 2 : ℝ)))
+      (g := fun ω => ‖S ω‖ ^ ((3 / 2 : ℝ)))
+      (b := fun x y : ℝ => x * y) (c := (1 : ℝ≥0)) hf hg ?_
+  · rw [show (fun x => (fun x y : ℝ => x * y)
+          ((fun ω => ‖S ω‖ ^ ((1 / 2 : ℝ))) x)
+          ((fun ω => ‖S ω‖ ^ ((3 / 2 : ℝ))) x)) =
+        (fun ω => ‖S ω‖ ^ (2 : ℝ)) by
+        funext ω
+        change ‖S ω‖ ^ ((1 / 2 : ℝ)) * ‖S ω‖ ^ ((3 / 2 : ℝ)) =
+          ‖S ω‖ ^ (2 : ℝ)
+        exact norm_rpow_half_mul_three_halves (S ω)] at hholder
+    rw [MeasureTheory.eLpNorm_norm_rpow (μ := μ) (f := S)
+        (p := (1 : ℝ≥0∞)) (q := (2 : ℝ)) (by norm_num : 0 < (2 : ℝ))] at hholder
+    rw [show (1 : ℝ≥0∞) * ENNReal.ofReal (2 : ℝ) = (2 : ℝ≥0∞) by
+      rw [ENNReal.ofReal_eq_coe_nnreal (by norm_num : 0 ≤ (2 : ℝ))]
+      rw [one_mul]
+      rfl] at hholder
+    rw [MeasureTheory.eLpNorm_norm_rpow (μ := μ) (f := S)
+        (p := (2 : ℝ≥0∞)) (q := (1 / 2 : ℝ))
+        (by norm_num : 0 < (1 / 2 : ℝ))] at hholder
+    rw [ennreal_two_mul_ofReal_half] at hholder
+    rw [MeasureTheory.eLpNorm_norm_rpow (μ := μ) (f := S)
+        (p := (2 : ℝ≥0∞)) (q := (3 / 2 : ℝ))
+        (by norm_num : 0 < (3 / 2 : ℝ))] at hholder
+    rw [ennreal_two_mul_ofReal_three_halves] at hholder
+    simpa using hholder
+  · filter_upwards with ω
+    simp [Real.norm_eq_abs]
+
+/-- Real arithmetic behind the `L¹` Khintchine extrapolation. -/
+lemma khintchine_l1_real_lower {A B u : ℝ}
+    (hA : 0 < A) (hB : 0 < B) (hu : 0 ≤ u)
+    (h : A ^ 2 ≤ u ^ ((1 / 2 : ℝ)) * (B * A) ^ ((3 / 2 : ℝ))) :
+    A / B ^ 3 ≤ u := by
+  let C : ℝ := (B * A) ^ ((3 / 2 : ℝ))
+  have hBA : 0 < B * A := mul_pos hB hA
+  have hC : 0 < C := by
+    dsimp [C]
+    exact Real.rpow_pos_of_pos hBA (3 / 2 : ℝ)
+  have hdiv : A ^ 2 / C ≤ u ^ ((1 / 2 : ℝ)) := by
+    rw [div_le_iff₀ hC]
+    simpa [C, mul_comm, mul_left_comm, mul_assoc] using h
+  have hdiv_nonneg : 0 ≤ A ^ 2 / C := div_nonneg (sq_nonneg A) hC.le
+  have hsqrt_nonneg : 0 ≤ u ^ ((1 / 2 : ℝ)) := Real.rpow_nonneg hu _
+  have hsq := mul_le_mul hdiv hdiv hdiv_nonneg hsqrt_nonneg
+  have hright : u ^ ((1 / 2 : ℝ)) * u ^ ((1 / 2 : ℝ)) = u := by
+    simpa [Real.sqrt_eq_rpow, sq] using Real.sq_sqrt hu
+  have hC_sq : C ^ 2 = (B * A) ^ 3 := by
+    dsimp [C]
+    rw [← Real.rpow_natCast ((B * A) ^ ((3 / 2 : ℝ))) 2]
+    rw [← Real.rpow_mul hBA.le]
+    norm_num [Real.rpow_natCast]
+  have hleft : A / B ^ 3 = (A ^ 2 / C) * (A ^ 2 / C) := by
+    rw [show (A ^ 2 / C) * (A ^ 2 / C) = A ^ 4 / C ^ 2 by ring]
+    rw [hC_sq]
+    field_simp [hA.ne', hB.ne']
+  calc
+    A / B ^ 3 = (A ^ 2 / C) * (A ^ 2 / C) := hleft
+    _ ≤ u ^ ((1 / 2 : ℝ)) * u ^ ((1 / 2 : ℝ)) := hsq
+    _ = u := hright
+
+/-- Extended-real form of the `L¹` Khintchine extrapolation step. -/
+lemma khintchine_l1_lower_of_interpolation
+    {L1 L2 L3 : ℝ≥0∞} {A B : ℝ}
+    (hinterp : L2 ^ (2 : ℝ) ≤ L1 ^ ((1 / 2 : ℝ)) * L3 ^ ((3 / 2 : ℝ)))
+    (h2 : L2 = ENNReal.ofReal A)
+    (h3 : L3 ≤ ENNReal.ofReal (B * A))
+    (hL1top : L1 ≠ ∞)
+    (hA : 0 ≤ A) (hB : 0 < B) :
+    ENNReal.ofReal (A / B ^ 3) ≤ L1 := by
+  by_cases hAzero : A = 0
+  · subst A
+    simp
+  have hApos : 0 < A := lt_of_le_of_ne hA (Ne.symm hAzero)
+  have hBA_nonneg : 0 ≤ B * A := (mul_pos hB hApos).le
+  have hmain :
+      ENNReal.ofReal (A ^ 2) ≤
+        L1 ^ ((1 / 2 : ℝ)) * (ENNReal.ofReal (B * A)) ^ ((3 / 2 : ℝ)) := by
+    calc
+      ENNReal.ofReal (A ^ 2) = (ENNReal.ofReal A) ^ (2 : ℝ) := by
+        simpa [Real.rpow_natCast] using
+          (ENNReal.ofReal_rpow_of_nonneg hA (by norm_num : 0 ≤ (2 : ℝ))).symm
+      _ = L2 ^ (2 : ℝ) := by rw [h2]
+      _ ≤ L1 ^ ((1 / 2 : ℝ)) * L3 ^ ((3 / 2 : ℝ)) := hinterp
+      _ ≤ L1 ^ ((1 / 2 : ℝ)) * (ENNReal.ofReal (B * A)) ^ ((3 / 2 : ℝ)) := by
+        exact mul_le_mul_left'
+          (ENNReal.rpow_le_rpow h3 (by norm_num : 0 ≤ (3 / 2 : ℝ))) _
+  have hright_top :
+      L1 ^ ((1 / 2 : ℝ)) * (ENNReal.ofReal (B * A)) ^ ((3 / 2 : ℝ)) ≠ ∞ := by
+    exact ENNReal.mul_ne_top
+      (ENNReal.rpow_ne_top_of_nonneg (by norm_num : 0 ≤ (1 / 2 : ℝ)) hL1top)
+      (ENNReal.rpow_ne_top_of_nonneg (by norm_num : 0 ≤ (3 / 2 : ℝ))
+        ENNReal.ofReal_ne_top)
+  have hreal := (ENNReal.toReal_le_toReal ENNReal.ofReal_ne_top hright_top).2 hmain
+  have hreal' :
+      A ^ 2 ≤ L1.toReal ^ ((1 / 2 : ℝ)) * (B * A) ^ ((3 / 2 : ℝ)) := by
+    rw [ENNReal.toReal_ofReal (sq_nonneg A)] at hreal
+    rw [ENNReal.toReal_mul] at hreal
+    rw [← ENNReal.toReal_rpow] at hreal
+    rw [← ENNReal.toReal_rpow] at hreal
+    rw [ENNReal.toReal_ofReal hBA_nonneg] at hreal
+    exact hreal
+  have hlower_real : A / B ^ 3 ≤ L1.toReal :=
+    khintchine_l1_real_lower hApos hB ENNReal.toReal_nonneg hreal'
+  exact (ENNReal.ofReal_le_iff_le_toReal hL1top).2 hlower_real
+
+/-- Holder exponents for the low-`p` Khintchine interpolation:
+`1 / (3 - p) + 1 / ((3 - p) / (2 - p)) = 1`. -/
+lemma holderTriple_subGaussian_low_p {p : ℝ} (_hp0 : 0 < p) (hp2 : p < 2) :
+    ENNReal.HolderTriple (ENNReal.ofReal (3 - p))
+      (ENNReal.ofReal ((3 - p) / (2 - p))) (1 : ℝ≥0∞) := by
+  have hqpos : 0 < 3 - p := by linarith
+  have hdenpos : 0 < 2 - p := sub_pos.mpr hp2
+  have hrpos : 0 < (3 - p) / (2 - p) := div_pos hqpos hdenpos
+  refine ⟨?_⟩
+  have hreal : (3 - p)⁻¹ + ((3 - p) / (2 - p))⁻¹ = (1 : ℝ) := by
+    field_simp [sub_ne_zero.mpr (by linarith : 3 ≠ p),
+      sub_ne_zero.mpr (by linarith : 2 ≠ p)]
+    ring
+  rw [← ENNReal.ofReal_inv_of_pos hqpos]
+  rw [← ENNReal.ofReal_inv_of_pos hrpos]
+  rw [← ENNReal.ofReal_add (inv_nonneg.mpr hqpos.le) (inv_nonneg.mpr hrpos.le)]
+  rw [hreal]
+  norm_num [ENNReal.ofReal]
+
+lemma ennreal_low_p_left_exp {p : ℝ} (hp0 : 0 < p) (hp2 : p < 2) :
+    ENNReal.ofReal (3 - p) * ENNReal.ofReal (p / (3 - p)) =
+      ENNReal.ofReal p := by
+  have hqpos : 0 < 3 - p := by linarith
+  rw [← ENNReal.ofReal_mul hqpos.le]
+  congr 1
+  field_simp [hqpos.ne']
+
+lemma ennreal_low_p_right_exp {p : ℝ} (hp0 : 0 < p) (hp2 : p < 2) :
+    ENNReal.ofReal ((3 - p) / (2 - p)) *
+        ENNReal.ofReal (3 * (2 - p) / (3 - p)) = (3 : ℝ≥0∞) := by
+  have hqpos : 0 < 3 - p := by linarith
+  have hdenpos : 0 < 2 - p := sub_pos.mpr hp2
+  have hrnonneg : 0 ≤ (3 - p) / (2 - p) := (div_pos hqpos hdenpos).le
+  rw [← ENNReal.ofReal_mul hrnonneg]
+  have hreal :
+      (3 - p) / (2 - p) * (3 * (2 - p) / (3 - p)) = (3 : ℝ) := by
+    field_simp [hdenpos.ne', hqpos.ne']
+  rw [hreal]
+  norm_num [ENNReal.ofReal]
+
+lemma norm_rpow_low_p_mul {p x : ℝ} (hp0 : 0 < p) (hp2 : p < 2) :
+    ‖x‖ ^ (p / (3 - p)) * ‖x‖ ^ (3 * (2 - p) / (3 - p)) =
+      ‖x‖ ^ (2 : ℝ) := by
+  have hqpos : 0 < 3 - p := by linarith
+  have hdenpos : 0 < 2 - p := sub_pos.mpr hp2
+  have hleft_pos : 0 < p / (3 - p) := div_pos hp0 hqpos
+  have hright_pos : 0 < 3 * (2 - p) / (3 - p) :=
+    div_pos (mul_pos (by norm_num) hdenpos) hqpos
+  by_cases hx : ‖x‖ = 0
+  · rw [hx]
+    simp [hleft_pos.ne', hright_pos.ne']
+  · have hxpos : 0 < ‖x‖ := lt_of_le_of_ne (norm_nonneg x) (Ne.symm hx)
+    rw [← Real.rpow_add hxpos]
+    congr 1
+    field_simp [hqpos.ne']
+    ring_nf
+
+/-- The interpolation inequality used in HDP Exercise 2.6.7:
+`‖S‖₂² ≤ ‖S‖p^(p/(3-p)) ‖S‖₃^(3(2-p)/(3-p))`. -/
+theorem eLpNorm_two_sq_le_low_p_mul_three
+    {S : Ω → ℝ} {p : ℝ}
+    (hp0 : 0 < p) (hp2 : p < 2)
+    (hS : AEStronglyMeasurable S μ) :
+    eLpNorm S (2 : ℝ≥0∞) μ ^ (2 : ℝ) ≤
+      eLpNorm S (ENNReal.ofReal p) μ ^ (p / (3 - p)) *
+        eLpNorm S (3 : ℝ≥0∞) μ ^ (3 * (2 - p) / (3 - p)) := by
+  letI : ENNReal.HolderTriple (ENNReal.ofReal (3 - p))
+      (ENNReal.ofReal ((3 - p) / (2 - p))) (1 : ℝ≥0∞) :=
+    holderTriple_subGaussian_low_p hp0 hp2
+  have hf : AEStronglyMeasurable (fun ω => ‖S ω‖ ^ (p / (3 - p))) μ :=
+    (hS.norm.aemeasurable.pow_const (p / (3 - p))).aestronglyMeasurable
+  have hg :
+      AEStronglyMeasurable (fun ω => ‖S ω‖ ^ (3 * (2 - p) / (3 - p))) μ :=
+    (hS.norm.aemeasurable.pow_const (3 * (2 - p) / (3 - p))).aestronglyMeasurable
+  have hholder :=
+    MeasureTheory.eLpNorm_le_eLpNorm_mul_eLpNorm'_of_norm
+      (μ := μ)
+      (p := ENNReal.ofReal (3 - p))
+      (q := ENNReal.ofReal ((3 - p) / (2 - p)))
+      (r := (1 : ℝ≥0∞))
+      (f := fun ω => ‖S ω‖ ^ (p / (3 - p)))
+      (g := fun ω => ‖S ω‖ ^ (3 * (2 - p) / (3 - p)))
+      (b := fun x y : ℝ => x * y) (c := (1 : ℝ≥0)) hf hg ?_
+  · rw [show (fun x => (fun x y : ℝ => x * y)
+          ((fun ω => ‖S ω‖ ^ (p / (3 - p))) x)
+          ((fun ω => ‖S ω‖ ^ (3 * (2 - p) / (3 - p))) x)) =
+        (fun ω => ‖S ω‖ ^ (2 : ℝ)) by
+        funext ω
+        change ‖S ω‖ ^ (p / (3 - p)) *
+            ‖S ω‖ ^ (3 * (2 - p) / (3 - p)) = ‖S ω‖ ^ (2 : ℝ)
+        exact norm_rpow_low_p_mul hp0 hp2] at hholder
+    rw [MeasureTheory.eLpNorm_norm_rpow (μ := μ) (f := S)
+        (p := (1 : ℝ≥0∞)) (q := (2 : ℝ)) (by norm_num : 0 < (2 : ℝ))] at hholder
+    rw [show (1 : ℝ≥0∞) * ENNReal.ofReal (2 : ℝ) = (2 : ℝ≥0∞) by
+      rw [ENNReal.ofReal_eq_coe_nnreal (by norm_num : 0 ≤ (2 : ℝ))]
+      rw [one_mul]
+      rfl] at hholder
+    rw [MeasureTheory.eLpNorm_norm_rpow (μ := μ) (f := S)
+        (p := ENNReal.ofReal (3 - p)) (q := (p / (3 - p)))
+        (div_pos hp0 (by linarith : 0 < 3 - p))] at hholder
+    rw [ennreal_low_p_left_exp hp0 hp2] at hholder
+    rw [MeasureTheory.eLpNorm_norm_rpow (μ := μ) (f := S)
+        (p := ENNReal.ofReal ((3 - p) / (2 - p)))
+        (q := (3 * (2 - p) / (3 - p)))
+        (div_pos (mul_pos (by norm_num) (sub_pos.mpr hp2))
+          (by linarith : 0 < 3 - p))] at hholder
+    rw [ennreal_low_p_right_exp hp0 hp2] at hholder
+    simpa using hholder
+  · filter_upwards with ω
+    simp [Real.norm_eq_abs]
+
+lemma khintchine_rpow_extrapolate_left {A B α β : ℝ}
+    (hA : 0 < A) (hB : 0 < B)
+    (hα : 0 < α) (hsum : α + β = 2) :
+    (A ^ 2 / ((B * A) ^ β)) ^ α⁻¹ = A / B ^ (β / α) := by
+  have hBA : 0 < B * A := mul_pos hB hA
+  have hαne : α ≠ 0 := hα.ne'
+  have hsum' : 2 - β = α := by linarith
+  rw [Real.div_rpow (sq_nonneg A) (Real.rpow_nonneg hBA.le β)]
+  have hA2 : A ^ 2 = A ^ (2 : ℝ) := (Real.rpow_natCast A 2).symm
+  conv_lhs =>
+    arg 1
+    rw [hA2]
+    rw [← Real.rpow_mul hA.le]
+  conv_lhs =>
+    arg 2
+    rw [← Real.rpow_mul hBA.le]
+    rw [Real.mul_rpow hB.le hA.le]
+  calc
+    A ^ (2 * α⁻¹) / (B ^ (β * α⁻¹) * A ^ (β * α⁻¹))
+        = A ^ ((2 - β) * α⁻¹) / B ^ (β * α⁻¹) := by
+          calc
+            A ^ (2 * α⁻¹) / (B ^ (β * α⁻¹) * A ^ (β * α⁻¹))
+                = (A ^ (2 * α⁻¹) / A ^ (β * α⁻¹)) / B ^ (β * α⁻¹) := by
+                  have hAnz : A ^ (β * α⁻¹) ≠ 0 :=
+                    (Real.rpow_pos_of_pos hA _).ne'
+                  have hBnz : B ^ (β * α⁻¹) ≠ 0 :=
+                    (Real.rpow_pos_of_pos hB _).ne'
+                  field_simp [hAnz, hBnz]
+            _ = A ^ ((2 - β) * α⁻¹) / B ^ (β * α⁻¹) := by
+              rw [← Real.rpow_sub hA]
+              congr 2
+              ring
+    _ = A / B ^ (β / α) := by
+      have hexpA : (2 - β) * α⁻¹ = 1 := by
+        rw [hsum']
+        field_simp [hαne]
+      rw [hexpA, Real.rpow_one]
+      congr 1
+
+lemma khintchine_low_p_real_lower {A B u α β : ℝ}
+    (hA : 0 < A) (hB : 0 < B) (hu : 0 ≤ u)
+    (hα : 0 < α) (hβ : 0 < β) (hsum : α + β = 2)
+    (h : A ^ 2 ≤ u ^ α * (B * A) ^ β) :
+    A / B ^ (β / α) ≤ u := by
+  let C : ℝ := (B * A) ^ β
+  have hBA : 0 < B * A := mul_pos hB hA
+  have hC : 0 < C := by
+    dsimp [C]
+    exact Real.rpow_pos_of_pos hBA β
+  have hdiv : A ^ 2 / C ≤ u ^ α := by
+    rw [div_le_iff₀ hC]
+    simpa [C, mul_comm, mul_left_comm, mul_assoc] using h
+  have hdiv_nonneg : 0 ≤ A ^ 2 / C := div_nonneg (sq_nonneg A) hC.le
+  have hpow := Real.rpow_le_rpow hdiv_nonneg hdiv (inv_nonneg.mpr hα.le)
+  have hright : (u ^ α) ^ α⁻¹ = u := by
+    rw [← Real.rpow_mul hu]
+    have hmul : α * α⁻¹ = (1 : ℝ) := by field_simp [hα.ne']
+    rw [hmul, Real.rpow_one]
+  have hleft : (A ^ 2 / C) ^ α⁻¹ = A / B ^ (β / α) := by
+    dsimp [C]
+    exact khintchine_rpow_extrapolate_left hA hB hα hsum
+  calc
+    A / B ^ (β / α) = (A ^ 2 / C) ^ α⁻¹ := hleft.symm
+    _ ≤ (u ^ α) ^ α⁻¹ := hpow
+    _ = u := hright
+
+/-- Extended-real form of the low-`p` Khintchine extrapolation step. -/
+lemma khintchine_low_p_lower_of_interpolation
+    {Lp L2 L3 : ℝ≥0∞} {A B p : ℝ}
+    (hp0 : 0 < p) (hp2 : p < 2)
+    (hinterp :
+      L2 ^ (2 : ℝ) ≤ Lp ^ (p / (3 - p)) * L3 ^ (3 * (2 - p) / (3 - p)))
+    (h2 : L2 = ENNReal.ofReal A)
+    (h3 : L3 ≤ ENNReal.ofReal (B * A))
+    (hLptop : Lp ≠ ∞)
+    (hA : 0 ≤ A) (hB : 0 < B) :
+    ENNReal.ofReal (A / B ^ ((3 * (2 - p) / (3 - p)) / (p / (3 - p)))) ≤ Lp := by
+  let α : ℝ := p / (3 - p)
+  let β : ℝ := 3 * (2 - p) / (3 - p)
+  have hαpos : 0 < α := by
+    dsimp [α]
+    exact div_pos hp0 (by linarith : 0 < 3 - p)
+  have hβpos : 0 < β := by
+    dsimp [β]
+    exact div_pos (mul_pos (by norm_num) (sub_pos.mpr hp2)) (by linarith : 0 < 3 - p)
+  have hsum : α + β = 2 := by
+    dsimp [α, β]
+    have hq : 3 - p ≠ 0 := sub_ne_zero.mpr (by linarith : 3 ≠ p)
+    field_simp [hq]
+    ring
+  by_cases hAzero : A = 0
+  · subst A
+    simp
+  have hApos : 0 < A := lt_of_le_of_ne hA (Ne.symm hAzero)
+  have hBA_nonneg : 0 ≤ B * A := (mul_pos hB hApos).le
+  have hmain :
+      ENNReal.ofReal (A ^ 2) ≤ Lp ^ α * (ENNReal.ofReal (B * A)) ^ β := by
+    calc
+      ENNReal.ofReal (A ^ 2) = (ENNReal.ofReal A) ^ (2 : ℝ) := by
+        simpa [Real.rpow_natCast] using
+          (ENNReal.ofReal_rpow_of_nonneg hA (by norm_num : 0 ≤ (2 : ℝ))).symm
+      _ = L2 ^ (2 : ℝ) := by rw [h2]
+      _ ≤ Lp ^ α * L3 ^ β := by simpa [α, β] using hinterp
+      _ ≤ Lp ^ α * (ENNReal.ofReal (B * A)) ^ β := by
+        exact mul_le_mul_left' (ENNReal.rpow_le_rpow h3 hβpos.le) _
+  have hright_top : Lp ^ α * (ENNReal.ofReal (B * A)) ^ β ≠ ∞ := by
+    exact ENNReal.mul_ne_top
+      (ENNReal.rpow_ne_top_of_nonneg hαpos.le hLptop)
+      (ENNReal.rpow_ne_top_of_nonneg hβpos.le ENNReal.ofReal_ne_top)
+  have hreal := (ENNReal.toReal_le_toReal ENNReal.ofReal_ne_top hright_top).2 hmain
+  have hreal' : A ^ 2 ≤ Lp.toReal ^ α * (B * A) ^ β := by
+    rw [ENNReal.toReal_ofReal (sq_nonneg A)] at hreal
+    rw [ENNReal.toReal_mul] at hreal
+    rw [← ENNReal.toReal_rpow] at hreal
+    rw [← ENNReal.toReal_rpow] at hreal
+    rw [ENNReal.toReal_ofReal hBA_nonneg] at hreal
+    exact hreal
+  have hlower_real : A / B ^ (β / α) ≤ Lp.toReal :=
+    khintchine_low_p_real_lower hApos hB ENNReal.toReal_nonneg hαpos hβpos hsum hreal'
+  have : ENNReal.ofReal (A / B ^ (β / α)) ≤ Lp :=
+    (ENNReal.ofReal_le_iff_le_toReal hLptop).2 hlower_real
+  simpa [α, β] using this
+
+/-- Variance identity for weighted sums of independent mean-zero unit-variance
+variables.  This is the `L²` core of the lower Khintchine inequality. -/
+theorem weighted_sum_variance_unit_of_iIndepFun
+    {X : ι → Ω → ℝ} (a : ι → ℝ)
+    (hindep : iIndepFun X μ)
+    (hX2 : ∀ i, MemLp (X i) 2 μ)
+    (hvar : ∀ i, Var[X i; μ] = 1) :
+    Var[(fun ω => ∑ i, a i * X i ω); μ] = coeffL2NormSq a := by
+  classical
+  let Y : ι → Ω → ℝ := fun i ω => a i * X i ω
+  have hY2 : ∀ i, MemLp (Y i) 2 μ := by
+    intro i
+    simpa [Y] using (hX2 i).const_mul (a i)
+  have hindepY : iIndepFun Y μ := by
+    have hcomp :=
+      hindep.comp (fun i x => a i * x) (by
+        intro i
+        fun_prop)
+    simpa [Y, Function.comp_def] using hcomp
+  have hpairY : Pairwise (fun i j => Y i ⟂ᵢ[μ] Y j) := by
+    intro i j hij
+    exact hindepY.indepFun hij
+  have hvar_sum :
+      Var[(fun ω => ∑ i, Y i ω); μ] = ∑ i, Var[Y i; μ] :=
+    variance_sum_independent (μ := μ) (X := Y) hY2 hpairY
+  calc
+    Var[(fun ω => ∑ i, a i * X i ω); μ]
+        = Var[(fun ω => ∑ i, Y i ω); μ] := by simp [Y]
+    _ = ∑ i, Var[Y i; μ] := hvar_sum
+    _ = ∑ i, a i ^ 2 := by
+      refine Finset.sum_congr rfl ?_
+      intro i _hi
+      rw [ProbabilityTheory.variance_const_mul, hvar i]
+      ring
+    _ = coeffL2NormSq a := rfl
+
+/-- The exact `L²` norm of a weighted sum of independent mean-zero
+unit-variance variables. -/
+theorem khintchine_subGaussian_l2_unitVariance
+    [IsProbabilityMeasure μ]
+    {X : ι → Ω → ℝ} (a : ι → ℝ)
+    (hindep : iIndepFun X μ)
+    (hX2 : ∀ i, MemLp (X i) 2 μ)
+    (hmean : ∀ i, ∫ ω, X i ω ∂μ = 0)
+    (hvar : ∀ i, Var[X i; μ] = 1) :
+    eLpNorm (fun ω => ∑ i, a i * X i ω) (2 : ℝ≥0∞) μ =
+      ENNReal.ofReal (coeffL2Norm a) := by
+  classical
+  let Y : ι → Ω → ℝ := fun i ω => a i * X i ω
+  let S : Ω → ℝ := fun ω => ∑ i, Y i ω
+  have hY2 : ∀ i, MemLp (Y i) 2 μ := by
+    intro i
+    simpa [Y] using (hX2 i).const_mul (a i)
+  have hS2 : MemLp S 2 μ := by
+    simpa [S] using
+      (memLp_finset_sum (μ := μ) (p := (2 : ℝ≥0∞))
+        (s := (Finset.univ : Finset ι)) (f := fun i ω => Y i ω)
+        (fun i _ => hY2 i))
+  have hYint : ∀ i, Integrable (Y i) μ := fun i =>
+    (hY2 i).integrable (by norm_num : 1 ≤ (2 : ℝ≥0∞))
+  have hmeanY : ∀ i, ∫ ω, Y i ω ∂μ = 0 := by
+    intro i
+    simp [Y, integral_const_mul, hmean i]
+  have hmeanS : ∫ ω, S ω ∂μ = 0 := by
+    calc
+      ∫ ω, S ω ∂μ = ∑ i, ∫ ω, Y i ω ∂μ := by
+        dsimp [S]
+        rw [integral_finset_sum]
+        intro i _
+        exact hYint i
+      _ = 0 := by simp [hmeanY]
+  have hvar_sum : Var[S; μ] = coeffL2NormSq a := by
+    calc
+      Var[S; μ] = Var[(fun ω => ∑ i, a i * X i ω); μ] := by rfl
+      _ = coeffL2NormSq a :=
+        weighted_sum_variance_unit_of_iIndepFun
+          (μ := μ) (X := X) a hindep hX2 hvar
+  have hvar_integral : Var[S; μ] = ∫ ω, S ω ^ 2 ∂μ := by
+    simpa [hmeanS] using
+      ProbabilityTheory.variance_eq_integral (μ := μ) hS2.aemeasurable
+  have hl2 : l2Norm S μ = coeffL2Norm a := by
+    unfold l2Norm coeffL2Norm
+    rw [← hvar_integral, hvar_sum]
+  calc
+    eLpNorm (fun ω => ∑ i, a i * X i ω) (2 : ℝ≥0∞) μ
+        = eLpNorm S (2 : ℝ≥0∞) μ := rfl
+    _ = ENNReal.ofReal (l2Norm S μ) := by
+      exact (l2Norm_eq_eLpNorm_two (μ := μ) hS2).symm
+    _ = ENNReal.ofReal (coeffL2Norm a) := by rw [hl2]
+
+/-- HDP Exercise 2.6.5, lower Khintchine estimate.  The lower bound only
+uses the mean-zero, unit-variance, and independence assumptions: for `p ≥ 2`,
+`‖a‖₂ ≤ ‖∑ aᵢXᵢ‖_p`. -/
+theorem khintchine_subGaussian_lower_unitVariance
+    [IsProbabilityMeasure μ]
+    {X : ι → Ω → ℝ} (a : ι → ℝ) {p : ℝ≥0}
+    (hindep : iIndepFun X μ)
+    (hX2 : ∀ i, MemLp (X i) 2 μ)
+    (hmean : ∀ i, ∫ ω, X i ω ∂μ = 0)
+    (hvar : ∀ i, Var[X i; μ] = 1)
+    (hp : 2 ≤ (p : ℝ)) :
+    ENNReal.ofReal (coeffL2Norm a) ≤
+      eLpNorm (fun ω => ∑ i, a i * X i ω) (p : ℝ≥0∞) μ := by
+  classical
+  let Y : ι → Ω → ℝ := fun i ω => a i * X i ω
+  let S : Ω → ℝ := fun ω => ∑ i, Y i ω
+  have hY2 : ∀ i, MemLp (Y i) 2 μ := by
+    intro i
+    simpa [Y] using (hX2 i).const_mul (a i)
+  have hS2 : MemLp S 2 μ := by
+    simpa [S] using
+      (memLp_finset_sum (μ := μ) (p := (2 : ℝ≥0∞))
+        (s := (Finset.univ : Finset ι)) (f := fun i ω => Y i ω)
+        (fun i _ => hY2 i))
+  have hYint : ∀ i, Integrable (Y i) μ := fun i =>
+    (hY2 i).integrable (by norm_num : 1 ≤ (2 : ℝ≥0∞))
+  have hmeanY : ∀ i, ∫ ω, Y i ω ∂μ = 0 := by
+    intro i
+    simp [Y, integral_const_mul, hmean i]
+  have hmeanS : ∫ ω, S ω ∂μ = 0 := by
+    calc
+      ∫ ω, S ω ∂μ = ∑ i, ∫ ω, Y i ω ∂μ := by
+        dsimp [S]
+        rw [integral_finset_sum]
+        intro i _
+        exact hYint i
+      _ = 0 := by simp [hmeanY]
+  have hvar_sum : Var[S; μ] = coeffL2NormSq a := by
+    calc
+      Var[S; μ] = Var[(fun ω => ∑ i, a i * X i ω); μ] := by rfl
+      _ = coeffL2NormSq a :=
+        weighted_sum_variance_unit_of_iIndepFun
+          (μ := μ) (X := X) a hindep hX2 hvar
+  have hvar_integral : Var[S; μ] = ∫ ω, S ω ^ 2 ∂μ := by
+    simpa [hmeanS] using
+      ProbabilityTheory.variance_eq_integral (μ := μ) hS2.aemeasurable
+  have hl2 : l2Norm S μ = coeffL2Norm a := by
+    unfold l2Norm coeffL2Norm
+    rw [← hvar_integral, hvar_sum]
+  have hmono :
+      eLpNorm S (2 : ℝ≥0∞) μ ≤ eLpNorm S (p : ℝ≥0∞) μ := by
+    exact lpNorm_mono_exponent (μ := μ) (X := S)
+      (p := (2 : ℝ≥0∞)) (q := (p : ℝ≥0∞)) (by exact_mod_cast hp)
+      hS2.aestronglyMeasurable
+  calc
+    ENNReal.ofReal (coeffL2Norm a) = eLpNorm S (2 : ℝ≥0∞) μ := by
+      rw [← hl2]
+      exact l2Norm_eq_eLpNorm_two (μ := μ) hS2
+    _ ≤ eLpNorm S (p : ℝ≥0∞) μ := hmono
+    _ = eLpNorm (fun ω => ∑ i, a i * X i ω) (p : ℝ≥0∞) μ := rfl
+
+/-- HDP Exercise 2.6.6, upper `p = 1` Khintchine estimate.  Under the
+unit-variance normalization, `‖∑ aᵢXᵢ‖₁ ≤ ‖a‖₂`. -/
+theorem khintchine_subGaussian_l1_upper_unitVariance
+    [IsProbabilityMeasure μ]
+    {X : ι → Ω → ℝ} (a : ι → ℝ)
+    (hindep : iIndepFun X μ)
+    (hX2 : ∀ i, MemLp (X i) 2 μ)
+    (hmean : ∀ i, ∫ ω, X i ω ∂μ = 0)
+    (hvar : ∀ i, Var[X i; μ] = 1) :
+    eLpNorm (fun ω => ∑ i, a i * X i ω) (1 : ℝ≥0∞) μ ≤
+      ENNReal.ofReal (coeffL2Norm a) := by
+  classical
+  let Y : ι → Ω → ℝ := fun i ω => a i * X i ω
+  let S : Ω → ℝ := fun ω => ∑ i, Y i ω
+  have hY2 : ∀ i, MemLp (Y i) 2 μ := by
+    intro i
+    simpa [Y] using (hX2 i).const_mul (a i)
+  have hS2 : MemLp S 2 μ := by
+    simpa [S] using
+      (memLp_finset_sum (μ := μ) (p := (2 : ℝ≥0∞))
+        (s := (Finset.univ : Finset ι)) (f := fun i ω => Y i ω)
+        (fun i _ => hY2 i))
+  have hmono :
+      eLpNorm S (1 : ℝ≥0∞) μ ≤ eLpNorm S (2 : ℝ≥0∞) μ :=
+    lpNorm_mono_exponent (μ := μ) (X := S)
+      (p := (1 : ℝ≥0∞)) (q := (2 : ℝ≥0∞))
+      (by norm_num) hS2.aestronglyMeasurable
+  calc
+    eLpNorm (fun ω => ∑ i, a i * X i ω) (1 : ℝ≥0∞) μ
+        = eLpNorm S (1 : ℝ≥0∞) μ := rfl
+    _ ≤ eLpNorm S (2 : ℝ≥0∞) μ := hmono
+    _ = ENNReal.ofReal (coeffL2Norm a) := by
+      exact khintchine_subGaussian_l2_unitVariance
+        (μ := μ) (X := X) a hindep hX2 hmean hvar
+
+/-- HDP Exercise 2.6.6, lower `p = 1` Khintchine estimate.  The explicit
+constant is the extrapolation constant obtained from `L¹`, `L²`, and `L³`:
+`c(K) = (16 sqrt 2 K sqrt 3)⁻³`. -/
+theorem khintchine_subGaussian_l1_lower_unitVariance
+    [IsProbabilityMeasure μ]
+    {X : ι → Ω → ℝ} (a : ι → ℝ) {K : ℝ}
+    (hindep : iIndepFun X μ)
+    (hXm : ∀ i, AEMeasurable (X i) μ)
+    (hXsg : ∀ i, IsSubGaussian (X i) μ)
+    (hX2 : ∀ i, MemLp (X i) 2 μ)
+    (hmean : ∀ i, ∫ ω, X i ω ∂μ = 0)
+    (hvar : ∀ i, Var[X i; μ] = 1)
+    (hK : 0 < K)
+    (hKnorm : ∀ i, subGaussianNorm (X i) μ ≤ K) :
+    ENNReal.ofReal
+        (coeffL2Norm a / (16 * Real.sqrt 2 * K * Real.sqrt 3) ^ 3) ≤
+      eLpNorm (fun ω => ∑ i, a i * X i ω) (1 : ℝ≥0∞) μ := by
+  classical
+  let Y : ι → Ω → ℝ := fun i ω => a i * X i ω
+  let S : Ω → ℝ := fun ω => ∑ i, Y i ω
+  let A : ℝ := coeffL2Norm a
+  let B : ℝ := 16 * Real.sqrt 2 * K * Real.sqrt 3
+  have hY2 : ∀ i, MemLp (Y i) 2 μ := by
+    intro i
+    simpa [Y] using (hX2 i).const_mul (a i)
+  have hS2 : MemLp S 2 μ := by
+    simpa [S] using
+      (memLp_finset_sum (μ := μ) (p := (2 : ℝ≥0∞))
+        (s := (Finset.univ : Finset ι)) (f := fun i ω => Y i ω)
+        (fun i _ => hY2 i))
+  have hinterp :
+      eLpNorm S (2 : ℝ≥0∞) μ ^ (2 : ℝ) ≤
+        eLpNorm S (1 : ℝ≥0∞) μ ^ ((1 / 2 : ℝ)) *
+          eLpNorm S (3 : ℝ≥0∞) μ ^ ((3 / 2 : ℝ)) :=
+    eLpNorm_two_sq_le_one_half_mul_three_halves
+      (μ := μ) hS2.aestronglyMeasurable
+  have h2 :
+      eLpNorm S (2 : ℝ≥0∞) μ = ENNReal.ofReal A := by
+    dsimp [S, Y, A]
+    exact khintchine_subGaussian_l2_unitVariance
+      (μ := μ) (X := X) a hindep hX2 hmean hvar
+  have h3raw :
+      eLpNorm (fun ω => ∑ i, a i * X i ω) ((3 : ℝ≥0) : ℝ≥0∞) μ
+        ≤ ENNReal.ofReal
+          (16 * Real.sqrt 2 * K * Real.sqrt ((3 : ℝ≥0) : ℝ) * coeffL2Norm a) :=
+    khintchine_subGaussian_upper_psi2Norm
+      (μ := μ) (X := X) a (K := K) (p := (3 : ℝ≥0))
+      hindep hXm hXsg hmean hK hKnorm (by norm_num : 2 ≤ ((3 : ℝ≥0) : ℝ))
+  have h3 :
+      eLpNorm S (3 : ℝ≥0∞) μ ≤ ENNReal.ofReal (B * A) := by
+    dsimp [S, Y, A, B]
+    simpa [mul_assoc] using h3raw
+  have hL1top : eLpNorm S (1 : ℝ≥0∞) μ ≠ ∞ := by
+    have hmono :
+        eLpNorm S (1 : ℝ≥0∞) μ ≤ eLpNorm S (3 : ℝ≥0∞) μ :=
+      lpNorm_mono_exponent (μ := μ) (X := S)
+        (p := (1 : ℝ≥0∞)) (q := (3 : ℝ≥0∞))
+        (by norm_num) hS2.aestronglyMeasurable
+    exact ne_top_of_le_ne_top ENNReal.ofReal_ne_top (hmono.trans h3)
+  have hA_nonneg : 0 ≤ A := by
+    dsimp [A, coeffL2Norm]
+    exact Real.sqrt_nonneg _
+  have hB_pos : 0 < B := by
+    dsimp [B]
+    positivity
+  have hlow :
+      ENNReal.ofReal (A / B ^ 3) ≤ eLpNorm S (1 : ℝ≥0∞) μ :=
+    khintchine_l1_lower_of_interpolation
+      (L1 := eLpNorm S (1 : ℝ≥0∞) μ)
+      (L2 := eLpNorm S (2 : ℝ≥0∞) μ)
+      (L3 := eLpNorm S (3 : ℝ≥0∞) μ)
+      (A := A) (B := B) hinterp h2 h3 hL1top hA_nonneg hB_pos
+  simpa [S, Y, A, B] using hlow
+
+/-- HDP Exercise 2.6.7, upper Khintchine estimate for `0 < p < 2`.
+Under the unit-variance normalization, monotonicity gives
+`‖∑ aᵢXᵢ‖_p ≤ ‖a‖₂`. -/
+theorem khintchine_subGaussian_low_p_upper_unitVariance
+    [IsProbabilityMeasure μ]
+    {X : ι → Ω → ℝ} (a : ι → ℝ) {p : ℝ≥0}
+    (hindep : iIndepFun X μ)
+    (hX2 : ∀ i, MemLp (X i) 2 μ)
+    (hmean : ∀ i, ∫ ω, X i ω ∂μ = 0)
+    (hvar : ∀ i, Var[X i; μ] = 1)
+    (hp0 : 0 < (p : ℝ)) (hp2 : (p : ℝ) < 2) :
+    eLpNorm (fun ω => ∑ i, a i * X i ω) (p : ℝ≥0∞) μ ≤
+      ENNReal.ofReal (coeffL2Norm a) := by
+  classical
+  let Y : ι → Ω → ℝ := fun i ω => a i * X i ω
+  let S : Ω → ℝ := fun ω => ∑ i, Y i ω
+  have hY2 : ∀ i, MemLp (Y i) 2 μ := by
+    intro i
+    simpa [Y] using (hX2 i).const_mul (a i)
+  have hS2 : MemLp S 2 μ := by
+    simpa [S] using
+      (memLp_finset_sum (μ := μ) (p := (2 : ℝ≥0∞))
+        (s := (Finset.univ : Finset ι)) (f := fun i ω => Y i ω)
+        (fun i _ => hY2 i))
+  have hmono :
+      eLpNorm S (p : ℝ≥0∞) μ ≤ eLpNorm S (2 : ℝ≥0∞) μ :=
+    lpNorm_mono_exponent (μ := μ) (X := S)
+      (p := (p : ℝ≥0∞)) (q := (2 : ℝ≥0∞))
+      (by exact_mod_cast hp2.le) hS2.aestronglyMeasurable
+  calc
+    eLpNorm (fun ω => ∑ i, a i * X i ω) (p : ℝ≥0∞) μ
+        = eLpNorm S (p : ℝ≥0∞) μ := rfl
+    _ ≤ eLpNorm S (2 : ℝ≥0∞) μ := hmono
+    _ = ENNReal.ofReal (coeffL2Norm a) := by
+      exact khintchine_subGaussian_l2_unitVariance
+        (μ := μ) (X := X) a hindep hX2 hmean hvar
+
+/-- HDP Exercise 2.6.7, lower Khintchine estimate for `0 < p < 2`.
+The explicit constant is obtained by interpolating `L^p`, `L²`, and `L³`:
+`c(p,K) = (16 sqrt 2 K sqrt 3)^(-3(2-p)/p)`. -/
+theorem khintchine_subGaussian_low_p_lower_unitVariance
+    [IsProbabilityMeasure μ]
+    {X : ι → Ω → ℝ} (a : ι → ℝ) {K : ℝ} {p : ℝ≥0}
+    (hindep : iIndepFun X μ)
+    (hXm : ∀ i, AEMeasurable (X i) μ)
+    (hXsg : ∀ i, IsSubGaussian (X i) μ)
+    (hX2 : ∀ i, MemLp (X i) 2 μ)
+    (hmean : ∀ i, ∫ ω, X i ω ∂μ = 0)
+    (hvar : ∀ i, Var[X i; μ] = 1)
+    (hK : 0 < K)
+    (hKnorm : ∀ i, subGaussianNorm (X i) μ ≤ K)
+    (hp0 : 0 < (p : ℝ)) (hp2 : (p : ℝ) < 2) :
+    ENNReal.ofReal
+        (coeffL2Norm a /
+          (16 * Real.sqrt 2 * K * Real.sqrt 3) ^ (3 * (2 - (p : ℝ)) / (p : ℝ))) ≤
+      eLpNorm (fun ω => ∑ i, a i * X i ω) (p : ℝ≥0∞) μ := by
+  classical
+  let pr : ℝ := (p : ℝ)
+  let Y : ι → Ω → ℝ := fun i ω => a i * X i ω
+  let S : Ω → ℝ := fun ω => ∑ i, Y i ω
+  let A : ℝ := coeffL2Norm a
+  let B : ℝ := 16 * Real.sqrt 2 * K * Real.sqrt 3
+  have hpENN : ENNReal.ofReal pr = (p : ℝ≥0∞) := by
+    dsimp [pr]
+    exact ENNReal.ofReal_eq_coe_nnreal p.2
+  have hY2 : ∀ i, MemLp (Y i) 2 μ := by
+    intro i
+    simpa [Y] using (hX2 i).const_mul (a i)
+  have hS2 : MemLp S 2 μ := by
+    simpa [S] using
+      (memLp_finset_sum (μ := μ) (p := (2 : ℝ≥0∞))
+        (s := (Finset.univ : Finset ι)) (f := fun i ω => Y i ω)
+        (fun i _ => hY2 i))
+  have hinterp :
+      eLpNorm S (2 : ℝ≥0∞) μ ^ (2 : ℝ) ≤
+        eLpNorm S (ENNReal.ofReal pr) μ ^ (pr / (3 - pr)) *
+          eLpNorm S (3 : ℝ≥0∞) μ ^ (3 * (2 - pr) / (3 - pr)) :=
+    eLpNorm_two_sq_le_low_p_mul_three
+      (μ := μ) (p := pr) hp0 hp2 hS2.aestronglyMeasurable
+  have h2 :
+      eLpNorm S (2 : ℝ≥0∞) μ = ENNReal.ofReal A := by
+    dsimp [S, Y, A]
+    exact khintchine_subGaussian_l2_unitVariance
+      (μ := μ) (X := X) a hindep hX2 hmean hvar
+  have h3raw :
+      eLpNorm (fun ω => ∑ i, a i * X i ω) ((3 : ℝ≥0) : ℝ≥0∞) μ
+        ≤ ENNReal.ofReal
+          (16 * Real.sqrt 2 * K * Real.sqrt ((3 : ℝ≥0) : ℝ) * coeffL2Norm a) :=
+    khintchine_subGaussian_upper_psi2Norm
+      (μ := μ) (X := X) a (K := K) (p := (3 : ℝ≥0))
+      hindep hXm hXsg hmean hK hKnorm (by norm_num : 2 ≤ ((3 : ℝ≥0) : ℝ))
+  have h3 :
+      eLpNorm S (3 : ℝ≥0∞) μ ≤ ENNReal.ofReal (B * A) := by
+    dsimp [S, Y, A, B]
+    simpa [mul_assoc] using h3raw
+  have hLptop : eLpNorm S (ENNReal.ofReal pr) μ ≠ ∞ := by
+    have hp_le_three : ENNReal.ofReal pr ≤ (3 : ℝ≥0∞) := by
+      dsimp [pr]
+      rw [hpENN]
+      exact_mod_cast (by linarith : (p : ℝ) ≤ 3)
+    have hmono :
+        eLpNorm S (ENNReal.ofReal pr) μ ≤ eLpNorm S (3 : ℝ≥0∞) μ :=
+      lpNorm_mono_exponent (μ := μ) (X := S)
+        (p := ENNReal.ofReal pr) (q := (3 : ℝ≥0∞))
+        hp_le_three hS2.aestronglyMeasurable
+    exact ne_top_of_le_ne_top ENNReal.ofReal_ne_top (hmono.trans h3)
+  have hA_nonneg : 0 ≤ A := by
+    dsimp [A, coeffL2Norm]
+    exact Real.sqrt_nonneg _
+  have hB_pos : 0 < B := by
+    dsimp [B]
+    positivity
+  have hlow :
+      ENNReal.ofReal
+          (A / B ^ ((3 * (2 - pr) / (3 - pr)) / (pr / (3 - pr)))) ≤
+        eLpNorm S (ENNReal.ofReal pr) μ :=
+    khintchine_low_p_lower_of_interpolation
+      (Lp := eLpNorm S (ENNReal.ofReal pr) μ)
+      (L2 := eLpNorm S (2 : ℝ≥0∞) μ)
+      (L3 := eLpNorm S (3 : ℝ≥0∞) μ)
+      (A := A) (B := B) (p := pr)
+      hp0 hp2 hinterp h2 h3 hLptop hA_nonneg hB_pos
+  have hexp :
+      (3 * (2 - pr) / (3 - pr)) / (pr / (3 - pr)) =
+        3 * (2 - pr) / pr := by
+    have hq : 3 - pr ≠ 0 := sub_ne_zero.mpr (by dsimp [pr]; linarith : 3 ≠ (p : ℝ))
+    have hpne : pr ≠ 0 := by dsimp [pr]; exact ne_of_gt hp0
+    field_simp [hq, hpne]
+  rw [hexp] at hlow
+  rw [hpENN] at hlow
+  simpa [S, Y, A, B, pr] using hlow
 
 /-- HDP Exercise 2.6.4: the bounded-variable Hoeffding inequality is recovered
 as the bounded-specialization already formalized earlier in Chapter 2. -/

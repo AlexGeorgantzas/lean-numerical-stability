@@ -4,6 +4,8 @@ import LeanFpAnalysis.HDP.Probability.Concentration.Chernoff
 import LeanFpAnalysis.HDP.Probability.Concentration.RandomGraphs
 import LeanFpAnalysis.HDP.Probability.Concentration.Normal
 import LeanFpAnalysis.HDP.Probability.Concentration.SubGaussian
+import LeanFpAnalysis.HDP.Probability.Concentration.SubExponential
+import LeanFpAnalysis.HDP.Probability.Concentration.Bernstein
 import LeanFpAnalysis.HDP.Probability.Concentration.BerryEsseen
 import LeanFpAnalysis.HDP.Probability.Concentration.BerryEsseenSmoothing
 import LeanFpAnalysis.HDP.Probability.Concentration.Applications
