@@ -140,6 +140,11 @@ noncomputable def absMatrix (n : ℕ) (A : Fin n → Fin n → ℝ) :
     Fin n → Fin n → ℝ :=
   fun i j => |A i j|
 
+/-- Componentwise absolute value of a rectangular matrix. -/
+noncomputable def absMatrixRect {m n : ℕ} (A : Fin m → Fin n → ℝ) :
+    Fin m → Fin n → ℝ :=
+  fun i j => |A i j|
+
 /-- ∑ |f k * g k| = ∑ |f k| * |g k|.
     Eliminates the common `apply Finset.sum_congr rfl; intro k _; exact abs_mul _ _` pattern. -/
 lemma Finset.sum_abs_mul {n : ℕ} (f g : Fin n → ℝ) :
@@ -415,7 +420,7 @@ theorem matSeqProd_nonneg (n m : ℕ) (A : Fin m → Fin n → Fin n → ℝ)
 /-- Componentwise domination of a perturbed finite matrix product by the
 corresponding product of absolute-value matrices.
 
-This is the absolute-value half of Higham Lemma 3.7: if
+This is the absolute-value half of Higham Lemma 3.8: if
 `|ΔX_j| <= δ_j |X_j|` with `δ_j >= 0`, then the product of the perturbed
 factors is componentwise bounded by
 `prod_j (1 + δ_j) * prod_j |X_j|`. -/
@@ -511,7 +516,7 @@ theorem matSeqProd_abs_perturbed_le_scalar_abs (n m : ℕ)
                       matSeqProd n m tailAbs k j)
               ring
 
-/-- Higham Chapter 3, Lemma 3.7, finite-sequence componentwise form.
+/-- Higham Chapter 3, Lemma 3.8, finite-sequence componentwise form.
 
 If each factor in a matrix product is perturbed componentwise as
 `|ΔX_j| <= δ_j |X_j|` with `δ_j >= 0`, then the whole product satisfies
@@ -877,6 +882,129 @@ theorem matSeqProd_normwise_perturbation_bound (n m : ℕ)
         _ =
               (scalarSeqProd (m + 1) (fun r => 1 + δ r) - 1) *
                 scalarSeqProd (m + 1) (fun r => N (X r)) := by
+              simp [scalarSeqProd, tailScale, tailNorm]
+              ring
+
+/-- Higham Chapter 3, Lemma 3.7, mixed-norm finite-sequence form.
+
+This is the induction core behind the source's Frobenius/spectral variant:
+the error is measured by `NF`, the unperturbed factors are measured by `NS`,
+and the hypotheses expose exactly the mixed multiplication bounds needed for
+the proof.  Instantiating `NF` with Frobenius norm and `NS` with an operator-2
+certificate uses the norm inequality cited by the book from Problem 6.5. -/
+theorem matSeqProd_mixed_normwise_perturbation_bound (n m : ℕ)
+    (NF NS : (Fin n → Fin n → ℝ) → ℝ)
+    (hF_zero : NF (fun _ _ => 0) ≤ 0)
+    (hF_add : ∀ A B,
+      NF (fun i j => A i j + B i j) ≤ NF A + NF B)
+    (hF_mul_left : ∀ A B, NF (matMul n A B) ≤ NS A * NF B)
+    (hF_mul_right : ∀ A B, NF (matMul n A B) ≤ NF A * NS B)
+    (hS_nonneg : ∀ A, 0 ≤ NS A)
+    (hS_id : NS (idMatrix n) ≤ 1)
+    (hS_add : ∀ A B,
+      NS (fun i j => A i j + B i j) ≤ NS A + NS B)
+    (hS_mul : ∀ A B, NS (matMul n A B) ≤ NS A * NS B)
+    (X ΔX : Fin m → Fin n → Fin n → ℝ) (δ : Fin m → ℝ)
+    (hδ : ∀ r, 0 ≤ δ r)
+    (hΔF : ∀ r, NF (ΔX r) ≤ δ r * NS (X r))
+    (hΔS : ∀ r, NS (ΔX r) ≤ δ r * NS (X r)) :
+    NF (fun i j =>
+      matSeqProd n m (fun r i j => X r i j + ΔX r i j) i j -
+        matSeqProd n m X i j) ≤
+      (scalarSeqProd m (fun r => 1 + δ r) - 1) *
+        scalarSeqProd m (fun r => NS (X r)) := by
+  induction m with
+  | zero =>
+      simp [matSeqProd, scalarSeqProd]
+      exact hF_zero
+  | succ m ih =>
+      let tailX : Fin m → Fin n → Fin n → ℝ := fun r => X r.succ
+      let tailΔ : Fin m → Fin n → Fin n → ℝ := fun r => ΔX r.succ
+      let tailPert : Fin m → Fin n → Fin n → ℝ :=
+        fun r i j => X r.succ i j + ΔX r.succ i j
+      let tailScale : ℝ := scalarSeqProd m (fun r => 1 + δ r.succ)
+      let tailNorm : ℝ := scalarSeqProd m (fun r => NS (X r.succ))
+      have htail_size :
+          NS (matSeqProd n m tailPert) ≤ tailScale * tailNorm := by
+        simpa [tailX, tailΔ, tailPert, tailScale, tailNorm] using
+          matSeqProd_norm_perturbed_le_scalar n m NS hS_nonneg hS_id hS_add hS_mul
+            tailX tailΔ (fun r => δ r.succ) (fun r => hδ r.succ)
+            (fun r => hΔS r.succ)
+      have htail_err :
+          NF (fun i j => matSeqProd n m tailPert i j -
+            matSeqProd n m tailX i j) ≤ (tailScale - 1) * tailNorm := by
+        simpa [tailX, tailΔ, tailPert, tailScale, tailNorm] using
+          ih tailX tailΔ (fun r => δ r.succ) (fun r => hδ r.succ)
+            (fun r => hΔF r.succ) (fun r => hΔS r.succ)
+      have htailScale_one : 1 ≤ tailScale := by
+        exact one_le_scalarSeqProd m (fun r => 1 + δ r.succ)
+          (fun r => by linarith [hδ r.succ])
+      have htailScale_sub_nonneg : 0 ≤ tailScale - 1 := by linarith
+      have htailNorm_nonneg : 0 ≤ tailNorm := by
+        exact scalarSeqProd_nonneg m (fun r => NS (X r.succ))
+          (fun r => hS_nonneg (X r.succ))
+      have hdelta_head_nonneg : 0 ≤ δ 0 * NS (X 0) := by
+        exact mul_nonneg (hδ 0) (hS_nonneg (X 0))
+      have hsplit :
+          (fun i j =>
+            matSeqProd n (m + 1) (fun r i j => X r i j + ΔX r i j) i j -
+              matSeqProd n (m + 1) X i j) =
+          (fun i j =>
+            matMul n (ΔX 0) (matSeqProd n m tailPert) i j +
+              matMul n (X 0)
+                (fun a b => matSeqProd n m tailPert a b -
+                  matSeqProd n m tailX a b) i j) := by
+        ext i j
+        change
+          matMul n (fun i j => X 0 i j + ΔX 0 i j) (matSeqProd n m tailPert) i j -
+              matMul n (X 0) (matSeqProd n m tailX) i j =
+            matMul n (ΔX 0) (matSeqProd n m tailPert) i j +
+              matMul n (X 0)
+                (fun a b => matSeqProd n m tailPert a b -
+                  matSeqProd n m tailX a b) i j
+        unfold matMul
+        rw [← Finset.sum_sub_distrib]
+        rw [← Finset.sum_add_distrib]
+        apply Finset.sum_congr rfl
+        intro k _
+        ring
+      calc
+        NF (fun i j =>
+          matSeqProd n (m + 1) (fun r i j => X r i j + ΔX r i j) i j -
+            matSeqProd n (m + 1) X i j)
+            =
+              NF (fun i j =>
+                matMul n (ΔX 0) (matSeqProd n m tailPert) i j +
+                  matMul n (X 0)
+                    (fun a b => matSeqProd n m tailPert a b -
+                      matSeqProd n m tailX a b) i j) := by
+              rw [hsplit]
+        _ ≤
+              NF (matMul n (ΔX 0) (matSeqProd n m tailPert)) +
+                NF (matMul n (X 0)
+                  (fun a b => matSeqProd n m tailPert a b -
+                    matSeqProd n m tailX a b)) :=
+              hF_add _ _
+        _ ≤
+              NF (ΔX 0) * NS (matSeqProd n m tailPert) +
+                NS (X 0) *
+                  NF (fun a b => matSeqProd n m tailPert a b -
+                    matSeqProd n m tailX a b) := by
+              exact add_le_add (hF_mul_right _ _) (hF_mul_left _ _)
+        _ ≤
+              (δ 0 * NS (X 0)) * (tailScale * tailNorm) +
+                NS (X 0) * ((tailScale - 1) * tailNorm) := by
+              apply add_le_add
+              · calc
+                  NF (ΔX 0) * NS (matSeqProd n m tailPert)
+                      ≤ (δ 0 * NS (X 0)) * NS (matSeqProd n m tailPert) := by
+                        exact mul_le_mul_of_nonneg_right (hΔF 0) (hS_nonneg _)
+                  _ ≤ (δ 0 * NS (X 0)) * (tailScale * tailNorm) := by
+                        exact mul_le_mul_of_nonneg_left htail_size hdelta_head_nonneg
+              · exact mul_le_mul_of_nonneg_left htail_err (hS_nonneg (X 0))
+        _ =
+              (scalarSeqProd (m + 1) (fun r => 1 + δ r) - 1) *
+                scalarSeqProd (m + 1) (fun r => NS (X r)) := by
               simp [scalarSeqProd, tailScale, tailNorm]
               ring
 
@@ -4902,10 +5030,89 @@ theorem vecNorm2_rectMatMulVec_le_frobNormRect_mul {m n : ℕ}
   rw [← Real.sqrt_mul (frobNormSqRect_nonneg M)]
   exact Real.sqrt_le_sqrt (vecNorm2Sq_rectMatMulVec_le_frobNormSqRect_mul M x)
 
+/-- Triangle inequality for rectangular matrix-vector products:
+    `|(Ax)_i| <= ∑_j |A_ij| |x_j|`. -/
+theorem abs_rectMatMulVec_le {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (x : Fin n → ℝ) :
+    ∀ i : Fin m,
+      |rectMatMulVec A x i| ≤ ∑ j : Fin n, |A i j| * |x j| := by
+  intro i
+  unfold rectMatMulVec
+  calc
+    |∑ j : Fin n, A i j * x j|
+        ≤ ∑ j : Fin n, |A i j * x j| := Finset.abs_sum_le_sum_abs _ _
+    _ = ∑ j : Fin n, |A i j| * |x j| := by
+        apply Finset.sum_congr rfl
+        intro j _
+        exact abs_mul (A i j) (x j)
+
+/-- If `|A| <= B` entrywise, then `|Ax| <= B |x|` entrywise. -/
+theorem rectMatMulVec_abs_entry_le {m n : ℕ}
+    {A B : Fin m → Fin n → ℝ} (hAB : ∀ i j, |A i j| ≤ B i j)
+    (x : Fin n → ℝ) :
+    ∀ i : Fin m,
+      |rectMatMulVec A x i| ≤ rectMatMulVec B (fun j => |x j|) i := by
+  intro i
+  calc
+    |rectMatMulVec A x i|
+        ≤ ∑ j : Fin n, |A i j| * |x j| :=
+          abs_rectMatMulVec_le A x i
+    _ ≤ ∑ j : Fin n, B i j * |x j| := by
+          apply Finset.sum_le_sum
+          intro j _
+          exact mul_le_mul_of_nonneg_right (hAB i j) (abs_nonneg (x j))
+    _ = rectMatMulVec B (fun j => |x j|) i := rfl
+
 /-- Predicate form of a rectangular operator 2-norm bound:
     `||Mx||₂ ≤ c ||x||₂` for every vector `x`. -/
 def rectOpNorm2Le {m n : ℕ} (M : Fin m → Fin n → ℝ) (c : ℝ) : Prop :=
   ∀ x : Fin n → ℝ, vecNorm2 (rectMatMulVec M x) ≤ c * vecNorm2 x
+
+/-- Lemma 6.6(b), predicate form: componentwise domination `|A| <= B`
+    preserves any rectangular 2-operator upper bound. -/
+theorem rectOpNorm2Le_of_abs_entry_le {m n : ℕ}
+    {A B : Fin m → Fin n → ℝ} {c : ℝ}
+    (hAB : ∀ i j, |A i j| ≤ B i j) (hB : rectOpNorm2Le B c) :
+    rectOpNorm2Le A c := by
+  intro x
+  calc
+    vecNorm2 (rectMatMulVec A x)
+        ≤ vecNorm2 (rectMatMulVec B (fun j => |x j|)) :=
+          vecNorm2_le_of_abs_le (rectMatMulVec A x)
+            (rectMatMulVec B (fun j => |x j|))
+            (rectMatMulVec_abs_entry_le hAB x)
+    _ ≤ c * vecNorm2 (fun j => |x j|) := hB (fun j => |x j|)
+    _ = c * vecNorm2 x := by
+          rw [vecNorm2_abs]
+
+/-- Lemma 6.6(b), absolute-matrix variant using the local rectangular absolute
+    matrix notation. -/
+theorem rectOpNorm2Le_of_absMatrixRect_le {m n : ℕ}
+    {A B : Fin m → Fin n → ℝ} {c : ℝ}
+    (hAB : ∀ i j, absMatrixRect A i j ≤ B i j)
+    (hB : rectOpNorm2Le B c) :
+    rectOpNorm2Le A c :=
+  rectOpNorm2Le_of_abs_entry_le (A := A) (B := B)
+    (by simpa [absMatrixRect] using hAB) hB
+
+/-- Lemma 6.6(c), reduction step: if `|A| <= |B|`, then any rectangular
+    2-operator upper bound for `|B|` is also a bound for `A`. -/
+theorem rectOpNorm2Le_of_abs_entry_le_abs {m n : ℕ}
+    {A B : Fin m → Fin n → ℝ} {c : ℝ}
+    (hAB : ∀ i j, |A i j| ≤ |B i j|)
+    (hBabs : rectOpNorm2Le (absMatrixRect B) c) :
+    rectOpNorm2Le A c :=
+  rectOpNorm2Le_of_abs_entry_le (A := A) (B := absMatrixRect B)
+    (by simpa [absMatrixRect] using hAB) hBabs
+
+/-- Lemma 6.6(d), first inequality in predicate form: every rectangular
+    2-operator upper bound for `|A|` is also a bound for `A`. -/
+theorem rectOpNorm2Le_of_absMatrixRect_bound {m n : ℕ}
+    {A : Fin m → Fin n → ℝ} {c : ℝ}
+    (hAbsA : rectOpNorm2Le (absMatrixRect A) c) :
+    rectOpNorm2Le A c :=
+  rectOpNorm2Le_of_absMatrixRect_le (A := A) (B := absMatrixRect A)
+    (by intro i j; exact le_rfl) hAbsA
 
 /-- Monotonicity of rectangular operator-norm upper-bound predicates in the
 radius. -/

@@ -1,6 +1,6 @@
 -- Algorithms/SquareDifference.lean
 --
--- Higham Chapter 3, Problem 3.9.
+-- Higham Chapter 3, Problem 3.8.
 
 import Mathlib.Tactic.NormNum
 import Mathlib.Tactic.Ring
@@ -11,7 +11,7 @@ namespace LeanFpAnalysis.FP
 /-!
 # Difference of Squares
 
-Higham Chapter 3, Problem 3.9 asks which formula is more accurate for
+Higham Chapter 3, Problem 3.8 asks which formula is more accurate for
 computing `x^2 - y^2`: the direct subtraction of rounded squares or the
 factored form `(x+y)(x-y)`.  The local theorems expose the standard comparison:
 the direct route is bounded by a majorant proportional to `|x*x| + |y*y|`,
@@ -32,7 +32,7 @@ theorem squareDiff_factor_identity (x y : ℝ) :
     (x + y) * (x - y) = x ^ 2 - y ^ 2 := by
   ring
 
-/-- **Problem 3.9, direct route.**
+/-- **Problem 3.8, direct route.**
 
 The route `fl(fl(x*x) - fl(y*y))` has an absolute error bound proportional to
 `|x*x| + |y*y|`.  This is the cancellation-sensitive majorant. -/
@@ -43,7 +43,7 @@ theorem fl_squareDiff_direct_error_bound (fp : FPModel)
   simpa [fl_squareDiff_direct, pow_two] using
     fl_mul_sub_error_le_gamma2 fp hγ x y x y
 
-/-- **Problem 3.9, factored route, relative-error form.**
+/-- **Problem 3.8, factored route, relative-error form.**
 
 The route `fl(fl(x+y) * fl(x-y))` has the source-friendly form
 
@@ -87,7 +87,7 @@ theorem fl_squareDiff_factored_rel_error (fp : FPModel)
     _ = (x ^ 2 - y ^ 2) * (1 + θ3) := by
             rw [hθ3_eq]
 
-/-- **Problem 3.9, factored route, absolute-error form.** -/
+/-- **Problem 3.8, factored route, absolute-error form.** -/
 theorem fl_squareDiff_factored_error_bound (fp : FPModel)
     (hγ : gammaValid fp 3) (x y : ℝ) :
     |fl_squareDiff_factored fp x y - (x ^ 2 - y ^ 2)| ≤

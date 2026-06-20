@@ -12,7 +12,7 @@ open scoped BigOperators
 /-!
 # Log-of-product-of-exponentials summation
 
-This file formalizes Higham, Chapter 4, Problem 4.7:
+This file formalizes Higham, Chapter 4, Problem 4.8:
 
 `S_n = log (prod_i exp x_i)`.
 
@@ -23,7 +23,7 @@ hypothesis on the perturbed product; finite overflow/underflow behavior is
 outside the abstract real-valued `FPModel`.
 -/
 
-/-- Exact log-product expression proposed in Chapter 4, Problem 4.7. -/
+/-- Exact log-product expression proposed in Chapter 4, Problem 4.8. -/
 noncomputable def logExpProductExact (n : ℕ) (x : Fin n → ℝ) : ℝ :=
   Real.log (∏ i : Fin n, Real.exp (x i))
 
@@ -80,7 +80,7 @@ the product stage has relative error bounded by `gamma fp (n - 1)`, then the
 whole product has a single relative perturbation bounded by
 `gamma fp (n + (n - 1))`.
 
-This is the standard-model composition behind Problem 4.7 before the final
+This is the standard-model composition behind Problem 4.8 before the final
 `log` is applied. -/
 theorem logExpProduct_product_perturbation
     (fp : FPModel) {n : ℕ} (x : Fin n → ℝ) (δ : Fin n → ℝ)
@@ -149,7 +149,7 @@ theorem logExpProduct_final_relError_eq
       |Real.log (1 + θ) + η| / |∑ i : Fin n, x i| := by
   rw [relError, logExpProduct_final_abs_error_eq x θ η pHat result hθpos hp hlog]
 
-/-- Combined composition theorem for Problem 4.7.
+/-- Combined composition theorem for Problem 4.8.
 
 The conclusion returns the combined product perturbation.  When that
 perturbation keeps the logarithm input positive, the final error is exactly

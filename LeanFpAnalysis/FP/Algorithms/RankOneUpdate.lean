@@ -1,6 +1,6 @@
 -- Algorithms/RankOneUpdate.lean
 --
--- Higham Chapter 3, Lemma 3.8: floating-point rank-1 update.
+-- Higham Chapter 3, Lemma 3.9: floating-point rank-1 update.
 
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
@@ -15,7 +15,7 @@ open scoped BigOperators
 # Rank-One Update
 
 This file formalizes the componentwise and normwise error bounds from Higham
-Chapter 3, Lemma 3.8 for the update
+Chapter 3, Lemma 3.9 for the update
 
 `y = (I - a b^T) x = x - a * (b^T x)`.
 -/
@@ -37,7 +37,7 @@ noncomputable def rankOneUpdateAbsBudget (n : ℕ)
     (a b x : Fin n → ℝ) : Fin n → ℝ :=
   fun i => |x i| + |a i| * ∑ j : Fin n, |b j| * |x j|
 
-/-- Scalar gamma coefficient used in the proof of Lemma 3.8:
+/-- Scalar gamma coefficient used in the proof of Lemma 3.9:
 `gamma_n + u(1+gamma_n)` from the computed `a*(b^T x)` step, followed by one
 more subtraction rounding, is bounded by `gamma_{n+3}`. -/
 theorem rankOneUpdate_scalar_coeff_le_gamma (fp : FPModel) (n : ℕ)
@@ -91,13 +91,13 @@ theorem rankOneUpdate_scalar_coeff_le_gamma (fp : FPModel) (n : ℕ)
   exact le_trans hD_le_n2 hmono
 
 /-- The unit roundoff is bounded by the same final `gamma_{n+3}` coefficient
-used in Lemma 3.8. -/
+used in Lemma 3.9. -/
 theorem rankOneUpdate_u_le_gamma (fp : FPModel) (n : ℕ)
     (hγ : gammaValid fp (n + 3)) :
     fp.u ≤ gamma fp (n + 3) :=
   u_le_gamma fp (by omega) hγ
 
-/-- **Higham Chapter 3, Lemma 3.8, componentwise bound.**
+/-- **Higham Chapter 3, Lemma 3.9, componentwise bound.**
 
 For the concrete routine `fl(x - a(b^T x))`, implemented as a rounded dot
 product, rounded scalar-vector multiply, and componentwise rounded subtraction,
@@ -228,7 +228,7 @@ theorem fl_rankOneUpdate_componentwise_error_bound (fp : FPModel) (n : ℕ)
         simp [rankOneUpdateAbsBudget, S]
         ring
 
-/-- Norm of the source componentwise budget in Lemma 3.8. -/
+/-- Norm of the source componentwise budget in Lemma 3.9. -/
 theorem rankOneUpdateAbsBudget_norm2_le (n : ℕ)
     (a b x : Fin n → ℝ) :
     vecNorm2 (rankOneUpdateAbsBudget n a b x) ≤
@@ -260,7 +260,7 @@ theorem rankOneUpdateAbsBudget_norm2_le (n : ℕ)
             (mul_le_mul_of_nonneg_right hS_bound (vecNorm2_nonneg a))
     _ = (1 + vecNorm2 a * vecNorm2 b) * vecNorm2 x := by ring
 
-/-- **Higham Chapter 3, Lemma 3.8, Euclidean-norm corollary.** -/
+/-- **Higham Chapter 3, Lemma 3.9, Euclidean-norm corollary.** -/
 theorem fl_rankOneUpdate_error_bound_vecNorm2 (fp : FPModel) (n : ℕ)
     (a b x : Fin n → ℝ) (hγ : gammaValid fp (n + 3)) :
     vecNorm2 (fun i : Fin n =>

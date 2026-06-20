@@ -179,7 +179,7 @@ theorem dotProductLocalFactor_abs_sub_one_le_101 (n : ℕ) {u : ℝ}
     rw [hfactor]
     simpa using le_of_lt heta
 
-/-- **Small-`nu` dot-product forward bound** (Higham §3.4, equation (3.8)).
+/-- **Small-`nu` dot-product forward bound** (Higham §3.4, equation (3.9)).
 
 For the repository's non-strict `FPModel`, the result is stated with `<=`.
 The source's displayed strict inequality follows in the usual nondegenerate

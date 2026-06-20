@@ -13,7 +13,7 @@ open scoped BigOperators
 # Complex Backward-Error Analogues
 
 Higham Chapter 3, Problem 3.7 asks for complex analogues of the real
-backward-error results (3.4) and (3.10).  Section 3.6 explains the transfer
+backward-error results (3.4) and (3.11).  Section 3.6 explains the transfer
 principle: complex basic-operation errors have the same relative-error form as
 the real model, with constants adjusted appropriately.  This file formalizes
 the algebraic backward-error consequences of such a complex relative-error
@@ -97,7 +97,7 @@ def complexMatVecRelErrorRows (m n : ℕ)
   ∀ i : Fin m,
     complexDotProductRelErrorExpansion n (computed i) (A i) x gamma
 
-/-- **Problem 3.7, complex analogue of (3.10).**
+/-- **Problem 3.7, complex analogue of (3.11).**
 
 If every computed row dot product has a complex componentwise relative-error
 expansion with radius `gamma`, then the computed matrix-vector product is an

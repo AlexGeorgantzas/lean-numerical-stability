@@ -1,6 +1,6 @@
 -- Analysis/FusedMultiplyAdd.lean
 --
--- Finite single-rounding FMA surface for Higham Chapter 2, §2.9.
+-- Finite single-rounding FMA surface for Higham Chapter 2, §2.6.
 
 import LeanFpAnalysis.FP.Analysis.FloatingPointArithmetic
 
@@ -11,7 +11,7 @@ noncomputable section
 /-!
 # Fused Multiply-Add
 
-Higham Chapter 2, §2.9 notes that a fused multiply-add forms `x*y + z` as
+Higham Chapter 2, §2.6 notes that a fused multiply-add forms `x*y + z` as
 though it were a single floating-point operation, with one rounding at the end.
 This file records the finite real-valued theorem surface for that statement.
 It is not a full IEEE FMA semantics: exception flags, signed zeros, infinities,
@@ -91,6 +91,34 @@ theorem finiteRoundToEvenFMA_inverseRelErrorWitness_of_finiteNormalRange
       by simpa [finiteRoundToEvenFMA, fusedMultiplyAddExact] using hround,
       hδ,
       by simpa [finiteRoundToEvenFMA, fusedMultiplyAddExact] using hwit⟩
+
+/-- Higham Chapter 2, Problem 2.26 product-decomposition core: if the FMA
+correction `x*y - a` is exactly representable, then `a` plus the rounded FMA
+correction is exactly the real product `x*y`. -/
+theorem finiteRoundToEvenFMA_product_correction_add_eq_product_of_finiteSystem
+    {fmt : FloatingPointFormat} {x y a : ℝ}
+    (hcorr : fmt.finiteSystem (x * y - a)) :
+    a + fmt.finiteRoundToEvenFMA x y (-a) = x * y := by
+  have hcorr' : fmt.finiteSystem (fusedMultiplyAddExact x y (-a)) := by
+    simpa [fusedMultiplyAddExact, sub_eq_add_neg] using hcorr
+  rw [fmt.finiteRoundToEvenFMA_eq_exact_of_finiteSystem hcorr']
+  rw [fusedMultiplyAddExact]
+  ring
+
+/-- Source-shaped Problem 2.26 wrapper: take the high product to be the ordinary
+finite round-to-even product and the low correction to be a single FMA.  If the
+correction is representable, the two-term expansion is exact. -/
+theorem finiteRoundToEvenFMA_product_expansion_with_rounded_product
+    {fmt : FloatingPointFormat} {x y : ℝ}
+    (hcorr :
+      fmt.finiteSystem (x * y - fmt.finiteRoundToEvenOp BasicOp.mul x y)) :
+    fmt.finiteRoundToEvenOp BasicOp.mul x y +
+        fmt.finiteRoundToEvenFMA x y
+          (-(fmt.finiteRoundToEvenOp BasicOp.mul x y)) =
+      x * y := by
+  exact
+    fmt.finiteRoundToEvenFMA_product_correction_add_eq_product_of_finiteSystem
+      hcorr
 
 end FloatingPointFormat
 

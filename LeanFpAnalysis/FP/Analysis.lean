@@ -65,6 +65,7 @@ import LeanFpAnalysis.FP.Analysis.Monotonicity
 import LeanFpAnalysis.FP.Analysis.NearInteger
 import LeanFpAnalysis.FP.Analysis.Nonassociativity
 import LeanFpAnalysis.FP.Analysis.NonrandomRounding
+import LeanFpAnalysis.FP.Analysis.Norms
 import LeanFpAnalysis.FP.Analysis.Midpoint
 import LeanFpAnalysis.FP.Analysis.CStarMatrixBridge
 import LeanFpAnalysis.FP.Analysis.CStarMatrixTrace

@@ -1,6 +1,6 @@
 -- Algorithms/AitkenDenominator.lean
 --
--- Higham Chapter 4, Problem 4.6.
+-- Higham Chapter 4, Problem 4.7.
 
 import Mathlib.Tactic
 import LeanFpAnalysis.FP.Analysis.Rounding
@@ -10,7 +10,7 @@ namespace LeanFpAnalysis.FP
 /-!
 # Aitken Denominator Evaluation
 
-Higham Chapter 4, Problem 4.6 asks which algebraically equivalent expression
+Higham Chapter 4, Problem 4.7 asks which algebraically equivalent expression
 should be used to evaluate the denominator
 
 `x_{i+2} - 2*x_{i+1} + x_i`
@@ -295,7 +295,7 @@ theorem fl_aitkenDenominatorC_error_bound (fp : FPModel)
         simp [aitkenDenominatorCMajorant]
         ring
 
-/-- Formal answer to Problem 4.6: route (b) is the cancellation-aware
+/-- Formal answer to Problem 4.7: route (b) is the cancellation-aware
 denominator evaluation.  Its proved standard-model error bound is controlled
 by a majorant invariant under a common limiting offset, unlike the route (a)
 and route (c) majorants displayed above. -/

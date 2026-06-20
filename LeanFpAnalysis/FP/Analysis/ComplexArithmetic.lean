@@ -789,26 +789,26 @@ theorem fl_quotient_abs_error_le_gamma7_of_gamma3_absDen
     _ ≤ gamma fp 7 * B := mul_le_mul_of_nonneg_right hcoeff hB_nonneg
 
 /-- Denominator `fl(c*c + d*d)` used in the source complex-division formula
-(3.13c). -/
+(3.14c). -/
 noncomputable def fl_complexDivDen (fp : FPModel) (y : ℂ) : ℝ :=
   fp.fl_add (fp.fl_mul y.re y.re) (fp.fl_mul y.im y.im)
 
-/-- Real numerator `fl(a*c + b*d)` used in equation (3.13c). -/
+/-- Real numerator `fl(a*c + b*d)` used in equation (3.14c). -/
 noncomputable def fl_complexDivNumRe (fp : FPModel) (x y : ℂ) : ℝ :=
   fp.fl_add (fp.fl_mul x.re y.re) (fp.fl_mul x.im y.im)
 
-/-- Imaginary numerator `fl(b*c - a*d)` used in equation (3.13c). -/
+/-- Imaginary numerator `fl(b*c - a*d)` used in equation (3.14c). -/
 noncomputable def fl_complexDivNumIm (fp : FPModel) (x y : ℂ) : ℝ :=
   fp.fl_sub (fp.fl_mul x.im y.re) (fp.fl_mul x.re y.im)
 
 /-- Complex division as represented in the proof of Higham Chapter 3,
-Lemma 3.5: rounded real numerator and denominator subexpressions from (3.13c),
+Lemma 3.5: rounded real numerator and denominator subexpressions from (3.14c),
 followed by the displayed exact real quotients. -/
 noncomputable def fl_complexDiv (fp : FPModel) (x y : ℂ) : ℂ :=
   ⟨fl_complexDivNumRe fp x y / fl_complexDivDen fp y,
     fl_complexDivNumIm fp x y / fl_complexDivDen fp y⟩
 
-/-- Denominator error for the source complex-division formula (3.13c). -/
+/-- Denominator error for the source complex-division formula (3.14c). -/
 theorem fl_complexDivDen_error_le_gamma2 (fp : FPModel) (hγ : gammaValid fp 2)
     (y : ℂ) :
     |fl_complexDivDen fp y - Complex.normSq y| ≤
@@ -819,7 +819,7 @@ theorem fl_complexDivDen_error_le_gamma2 (fp : FPModel) (hγ : gammaValid fp 2)
     abs_mul, abs_of_nonneg (sq_nonneg y.re),
     abs_of_nonneg (sq_nonneg y.im)] using h
 
-/-- Real numerator error for the source complex-division formula (3.13c). -/
+/-- Real numerator error for the source complex-division formula (3.14c). -/
 theorem fl_complexDivNumRe_error_le_gamma2 (fp : FPModel)
     (hγ : gammaValid fp 2) (x y : ℂ) :
     |fl_complexDivNumRe fp x y - (x.re * y.re + x.im * y.im)| ≤
@@ -827,7 +827,7 @@ theorem fl_complexDivNumRe_error_le_gamma2 (fp : FPModel)
   simpa [fl_complexDivNumRe] using
     fl_mul_add_error_le_gamma2 fp hγ x.re x.im y.im y.re
 
-/-- Imaginary numerator error for the source complex-division formula (3.13c). -/
+/-- Imaginary numerator error for the source complex-division formula (3.14c). -/
 theorem fl_complexDivNumIm_error_le_gamma2 (fp : FPModel)
     (hγ : gammaValid fp 2) (x y : ℂ) :
     |fl_complexDivNumIm fp x y - (x.im * y.re - x.re * y.im)| ≤
@@ -1002,7 +1002,7 @@ theorem fl_complexDiv_error_bound (fp : FPModel)
     norm_div, mul_assoc] using habs
 
 /-- **Complex division error model** (Higham Chapter 3, Lemma 3.5, division
-case for the source formula (3.13c)).
+case for the source formula (3.14c)).
 
 The theorem follows the displayed proof of Lemma 3.5: real numerator and
 denominator subexpressions are rounded, and the displayed real quotients are
