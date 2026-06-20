@@ -225,6 +225,66 @@ theorem exists_summation_coefficients_of_abs_sub_sum_coeff_le
             intro i _hi
             ring
 
+/-- Distribute an additive residual across source summation coefficients.
+
+If `|r| <= C * sum_i |v_i|`, then `r` can be written exactly as
+`sum_i v_i * eta_i` with every `|eta_i| <= C`.  This is the source-coefficient
+converse to the usual triangle-inequality forward bound for summation. -/
+theorem exists_summation_source_coefficients_of_abs_le_mul_sum_abs
+    {ι : Type*} [Fintype ι] (v : ι → ℝ) {r C : ℝ}
+    (hC : 0 ≤ C) (hr : |r| ≤ C * ∑ i, |v i|) :
+    ∃ η : ι → ℝ,
+      (∀ i, |η i| ≤ C) ∧
+      r = ∑ i, v i * η i := by
+  let S : ℝ := ∑ i, |v i|
+  have hS_nonneg : 0 ≤ S := by
+    dsimp [S]
+    exact Finset.sum_nonneg (fun i _hi => abs_nonneg (v i))
+  rcases lt_or_eq_of_le hS_nonneg with hSpos | hSzero
+  · let η : ι → ℝ := fun i => (r / S) * summationAbsSign (v i)
+    refine ⟨η, ?_, ?_⟩
+    · intro i
+      have hdiv : |r| / S ≤ (C * S) / S :=
+        div_le_div_of_nonneg_right hr (le_of_lt hSpos)
+      have hcancel : (C * S) / S = C := by
+        field_simp [hSpos.ne']
+      calc
+        |η i| = |r| / S := by
+          dsimp [η]
+          rw [abs_mul, abs_summationAbsSign, mul_one, abs_div,
+            abs_of_pos hSpos]
+        _ ≤ (C * S) / S := hdiv
+        _ = C := hcancel
+    · have hsumη :
+          (∑ i, v i * η i) = r := by
+        calc
+          (∑ i, v i * η i)
+              = ∑ i, (r / S) * |v i| := by
+                  apply Finset.sum_congr rfl
+                  intro i _hi
+                  dsimp [η]
+                  calc
+                    v i * (r / S * summationAbsSign (v i))
+                        = (r / S) * (summationAbsSign (v i) * v i) := by
+                            ring
+                    _ = (r / S) * |v i| := by
+                          rw [summationAbsSign_mul_eq_abs]
+          _ = (r / S) * S := by
+                rw [Finset.mul_sum]
+          _ = r := by
+                field_simp [hSpos.ne']
+      exact hsumη.symm
+  · have habs_nonpos : |r| ≤ 0 := by
+      have hsum_zero : (∑ i, |v i|) = 0 := by
+        simpa [S] using hSzero.symm
+      simpa [hsum_zero] using hr
+    have hr0 : r = 0 := by
+      exact abs_eq_zero.mp (le_antisymm habs_nonpos (abs_nonneg r))
+    refine ⟨fun _ => 0, ?_, ?_⟩
+    · intro _i
+      simpa using hC
+    · simp [hr0]
+
 /-- Dividing the preceding perturbation inequality by the nonzero exact sum
 gives the condition-number bound. -/
 theorem summationComponentwisePerturbation_rel_error_le_condition {ι : Type*}

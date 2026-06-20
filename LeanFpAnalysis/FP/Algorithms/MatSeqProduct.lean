@@ -1,6 +1,6 @@
 -- Algorithms/MatSeqProduct.lean
 --
--- Higham Chapter 3, Problem 3.8.
+-- Higham Chapter 3, Problem 3.10.
 
 import Mathlib.Tactic
 import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
@@ -12,7 +12,7 @@ open scoped BigOperators
 /-!
 # Sequential Matrix-Product Error Accumulation
 
-Higham Chapter 3, Problem 3.8 asks for the standard first-order estimate
+Higham Chapter 3, Problem 3.10 asks for the standard first-order estimate
 
 `||A_1 ... A_k - fl(A_1 ... A_k)||_F <= (k n^2 u + O(u^2))
   ||A_1||_2 ... ||A_k||_2`.
@@ -51,7 +51,7 @@ noncomputable def matPrefixProdError (n : ℕ)
     Fin n → Fin n → ℝ :=
   fun i j => Phat k i j - matPrefixProd n k A i j
 
-/-- **Problem 3.8 accumulation theorem.**
+/-- **Problem 3.10 accumulation theorem.**
 
 Assume the computed prefix products satisfy
 
@@ -148,7 +148,7 @@ theorem matPrefixProd_error_bound_from_local_errors
               scalarPrefixProd (k + 1) alpha := by
               simp [scalarPrefixProd, Finset.sum_range_succ, add_comm]
 
-/-- Uniform-budget corollary of the Problem 3.8 accumulation theorem. -/
+/-- Uniform-budget corollary of the Problem 3.10 accumulation theorem. -/
 theorem matPrefixProd_error_bound_uniform
     (n : ℕ) (A Phat E : ℕ → Fin n → Fin n → ℝ)
     (beta : ℝ) (alpha : ℕ → ℝ)

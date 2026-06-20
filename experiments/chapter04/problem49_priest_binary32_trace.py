@@ -1,4 +1,4 @@
-"""Advisory binary32 replay for Higham Chapter 4, Problem 4.9.
+"""Advisory binary32 replay for Higham Chapter 4, Problem 4.10.
 
 This file is an experiment artifact, not a Lean theorem and not evidence for
 the historical Priest/Higham printed machine output.  It replays Algorithm 4.2
@@ -20,7 +20,7 @@ def f32(x: float) -> float:
     return struct.unpack(">f", struct.pack(">f", float(x)))[0]
 
 
-def priest_problem49_inputs(t: int = 24) -> list[float]:
+def priest_problem410_inputs(t: int = 24) -> list[float]:
     return [
         f32(2.0 ** (t + 1)),
         f32(2.0 ** (t + 1) - 2.0),
@@ -48,10 +48,10 @@ def kahan_trace_binary32(xs: list[float]) -> list[tuple[int, float, float, float
 
 
 def main() -> None:
-    xs = priest_problem49_inputs()
+    xs = priest_problem410_inputs()
     rows = kahan_trace_binary32(xs)
 
-    print("Advisory binary32 replay for Higham Chapter 4, Problem 4.9")
+    print("Advisory binary32 replay for Higham Chapter 4, Problem 4.10")
     print("This is an experiment artifact, not a proof.")
     print()
     print("i,x,temp,y,s,e")
@@ -66,7 +66,7 @@ def main() -> None:
     print(f"final_s={format(final_s, '.9g')}")
     print(f"final_e={format(final_e, '.9g')}")
     print(f"exact_sum={format(exact_sum, '.9g')}")
-    print("lean_formal_subclaim=problem49PriestInput_t24_first_sum_ieeeSingle_rounds_to_67108864")
+    print("lean_formal_subclaim=problem410PriestInput_t24_first_sum_ieeeSingle_rounds_to_67108864")
 
 
 if __name__ == "__main__":

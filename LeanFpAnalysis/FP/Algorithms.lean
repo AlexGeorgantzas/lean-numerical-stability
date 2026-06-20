@@ -23,6 +23,7 @@ import LeanFpAnalysis.FP.Algorithms.SquareDifference
 import LeanFpAnalysis.FP.Algorithms.AitkenDenominator
 import LeanFpAnalysis.FP.Algorithms.LogExpProduct
 import LeanFpAnalysis.FP.Algorithms.GridPoints
+import LeanFpAnalysis.FP.Algorithms.Horner
 import LeanFpAnalysis.FP.Algorithms.Norm2
 import LeanFpAnalysis.FP.Algorithms.OuterProduct
 import LeanFpAnalysis.FP.Algorithms.MatVec

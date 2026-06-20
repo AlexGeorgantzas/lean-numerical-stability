@@ -48,7 +48,7 @@ theorem matMul_error_bound (fp : FPModel) (m n p : ℕ)
 
 /-- **Matrix-matrix Frobenius forward-error majorant** (Higham §3.5, p. 78).
 
-    The componentwise matrix multiplication bound (3.12) implies the Frobenius
+    The componentwise matrix multiplication bound (3.13) implies the Frobenius
     norm bound against the nonnegative majorant `|A||B|`:
       `||fl(AB)-AB||_F <= gamma_n || |A||B| ||_F`.
 
@@ -96,7 +96,7 @@ theorem matMul_error_bound_frobNorm_majorant (fp : FPModel) (m n p : ℕ)
 
 /-- **Matrix-matrix operator-2 forward-error majorant** (Higham §3.5, p. 78).
 
-The componentwise product bound (3.12) also gives a vector-action 2-norm
+The componentwise product bound (3.13) also gives a vector-action 2-norm
 certificate.  If the nonnegative factors `|A|` and `|B|` have rectangular
 operator-2 certificates `alpha` and `beta`, then the forward error
 `E = fl(A*B)-A*B` satisfies
@@ -179,7 +179,7 @@ theorem matMul_error_bound_rectOpNorm2Le_majorant (fp : FPModel)
 
 /-- **Matrix-matrix 1-norm forward-error bound** (Higham §3.5, p. 78).
 
-    For square matrix multiplication, the componentwise bound (3.12) implies
+    For square matrix multiplication, the componentwise bound (3.13) implies
       `||fl(AB)-AB||_1 <= gamma_n ||A||_1 ||B||_1`. -/
 theorem matMul_error_bound_oneNorm (fp : FPModel) (n : ℕ)
     (A B : Fin n → Fin n → ℝ)
@@ -240,7 +240,7 @@ theorem matMul_error_bound_oneNorm (fp : FPModel) (n : ℕ)
 /-- **Rectangular matrix-matrix 1-norm forward-error bound**.
 
     For `A : Fin m -> Fin n -> ℝ` and `B : Fin n -> Fin p -> ℝ`, the
-    componentwise bound (3.12) implies
+    componentwise bound (3.13) implies
       `||fl(AB)-AB||_1 <= gamma_n ||A||_1 ||B||_1`,
     with rectangular maximum-column-sum norms. -/
 theorem matMul_error_bound_oneNormRect (fp : FPModel) (m n p : ℕ)
@@ -302,7 +302,7 @@ theorem matMul_error_bound_oneNormRect (fp : FPModel) (m n p : ℕ)
 
 /-- **Rectangular matrix-matrix infinity-norm forward-error bound**.
 
-    The same componentwise bound (3.12) also gives the maximum-row-sum
+    The same componentwise bound (3.13) also gives the maximum-row-sum
     induced-norm corollary
       `||fl(AB)-AB||_∞ <= gamma_n ||A||_∞ ||B||_∞`
     for compatible rectangular matrices. -/
@@ -363,7 +363,7 @@ theorem matMul_error_bound_infNormRect (fp : FPModel) (m n p : ℕ)
 
 /-- **Rectangular matrix-matrix Frobenius forward-error bound**.
 
-    For compatible rectangular matrices, the componentwise bound (3.12) and
+    For compatible rectangular matrices, the componentwise bound (3.13) and
     rectangular Frobenius submultiplicativity imply
       `||fl(AB)-AB||_F <= gamma_n ||A||_F ||B||_F`. -/
 theorem matMul_error_bound_frobNormRect (fp : FPModel) (m n p : ℕ)
@@ -421,7 +421,7 @@ theorem matMul_error_bound_frobNormRect (fp : FPModel) (m n p : ℕ)
 
 /-- **Matrix-matrix Frobenius forward-error bound** (Higham §3.5, p. 78).
 
-    For square matrix multiplication, the componentwise bound (3.12) implies
+    For square matrix multiplication, the componentwise bound (3.13) implies
       `||fl(AB)-AB||_F <= gamma_n ||A||_F ||B||_F`. -/
 theorem matMul_error_bound_frobNorm (fp : FPModel) (n : ℕ)
     (A B : Fin n → Fin n → ℝ)
@@ -822,7 +822,7 @@ noncomputable def matMulSharpDeltaB (u : ℝ)
   fun k s =>
     if s = j then signedMagnitudeForPivot u |B k j| (A i k) else 0
 
-/-- Higham, p. 78: the componentwise matrix-multiplication bound (3.12) is
+/-- Higham, p. 78: the componentwise matrix-multiplication bound (3.13) is
 sharp with respect to perturbations in `A`.
 
 For any entry `(i,j)` and any nonnegative perturbation radius `u`, there is a

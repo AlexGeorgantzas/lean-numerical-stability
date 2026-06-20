@@ -480,7 +480,7 @@ lemma prod_signed_error_bound (fp : FPModel) (n : ℕ) (δ : Fin n → ℝ)
       rw [show δ (Fin.last n) = δ_last from rfl, hfactor]
       exact heq
 
-/-- **Stewart relative-error counter** `<k>` (Higham §3.4, eq. (3.9)).
+/-- **Stewart relative-error counter** `<k>` (Higham §3.4, eq. (3.10)).
 
 The counter denotes a product of `k` local factors, each either `(1 + δᵢ)` or
 its reciprocal, with `|δᵢ| <= u`.  A true Boolean selector means that the

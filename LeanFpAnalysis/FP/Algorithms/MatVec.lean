@@ -141,7 +141,7 @@ theorem matVec_error_bound (fp : FPModel) (m n : ℕ)
 
 /-- **Matrix-vector infinity-norm forward error bound** (Higham §3.5, p. 77).
 
-    For a square matrix-vector product, the componentwise bound (3.11) implies
+    For a square matrix-vector product, the componentwise forward bound (3.12) implies
       `||fl(Ax) - Ax||_∞ <= gamma_n ||A||_∞ ||x||_∞`.
 
     The rectangular variants from the source remain separate norm adapter
@@ -179,7 +179,7 @@ theorem matVec_error_bound_infNorm (fp : FPModel) (n : ℕ)
 
 /-- **Rectangular matrix-vector infinity-norm forward error bound**.
 
-    For `A : Fin m -> Fin n -> ℝ`, the componentwise bound (3.11) implies
+    For `A : Fin m -> Fin n -> ℝ`, the componentwise forward bound (3.12) implies
       `||fl(Ax) - Ax||_∞ <= gamma_n ||A||_∞ ||x||_∞`,
     where `||A||_∞` is the rectangular maximum absolute row sum. -/
 theorem matVec_error_bound_infNormRect (fp : FPModel) (m n : ℕ)
@@ -216,7 +216,7 @@ theorem matVec_error_bound_infNormRect (fp : FPModel) (m n : ℕ)
 
 /-- **Matrix-vector 1-norm forward error bound** (Higham §3.5, p. 77).
 
-    For a square matrix-vector product, the componentwise bound (3.11) implies
+    For a square matrix-vector product, the componentwise forward bound (3.12) implies
       `||fl(Ax) - Ax||_1 <= gamma_n ||A||_1 ||x||_1`.
 
     The vector 1-norm is written explicitly as `sum_i |v_i|`; `oneNorm` is the
@@ -262,7 +262,7 @@ theorem matVec_error_bound_oneNorm (fp : FPModel) (n : ℕ)
 
 /-- **Rectangular matrix-vector 1-norm forward error bound**.
 
-    For `A : Fin m -> Fin n -> ℝ`, the componentwise bound (3.11) implies
+    For `A : Fin m -> Fin n -> ℝ`, the componentwise forward bound (3.12) implies
       `||fl(Ax) - Ax||_1 <= gamma_n ||A||_1 ||x||_1`,
     where `||A||_1` is the rectangular maximum absolute column sum and the
     vector 1-norms are written as explicit sums. -/
