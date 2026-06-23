@@ -3,3 +3,5 @@
 *.log
 *.out
 thesis/
+references/
+chapter_splitting/
