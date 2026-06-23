@@ -1386,6 +1386,191 @@ theorem frobNorm_panelFromTopAndTrailing_extract_le {m p : ℕ}
   rw [frobNorm_eq_sqrt_frobNormSq, frobNorm_eq_sqrt_frobNormSq]
   exact Real.sqrt_le_sqrt (frobNormSq_panelFromTopAndTrailing_extract_le A)
 
+/-- Frobenius norm of a single matrix column, represented as a one-column
+    matrix so that it reuses the Mathlib-backed `frobNorm` infrastructure. -/
+noncomputable def columnFrob {m p : ℕ} (A : Fin m → Fin p → ℝ)
+    (j : Fin p) : ℝ :=
+  frobNorm (fun i (_ : Fin 1) => A i j)
+
+/-- A column Frobenius norm is nonnegative. -/
+lemma columnFrob_nonneg {m p : ℕ} (A : Fin m → Fin p → ℝ) (j : Fin p) :
+    0 ≤ columnFrob A j := by
+  exact frobNorm_nonneg _
+
+/-- A matrix-vector residual in one column is bounded by the perturbation
+    matrix Frobenius norm times the original column norm. -/
+lemma columnFrob_matMulVec_le_frobNorm_mul_columnFrob {m p : ℕ}
+    (E A : Fin m → Fin p → ℝ) (Δ : Fin m → Fin m → ℝ) (j : Fin p)
+    (hE : ∀ i : Fin m, E i j = matMulVec m Δ (fun k => A k j) i) :
+    columnFrob E j ≤ frobNorm Δ * columnFrob A j := by
+  let B : Fin m → Fin 1 → ℝ := fun k (_ : Fin 1) => A k j
+  have hmat :
+      (fun i (_ : Fin 1) => E i j) =
+        matMulRect m m 1 Δ B := by
+    ext i u
+    have hEi := hE i
+    cases u
+    simpa [B, matMulRect, matMulVec] using hEi
+  unfold columnFrob
+  rw [hmat]
+  exact frobNorm_matMulRect_le Δ B
+
+/-- Columnwise residual consequence of a rectangular Householder panel step.
+
+    This keeps the per-column information from Higham Lemma 18.2 alive instead
+    of immediately aggregating it into one Frobenius residual. -/
+theorem ColumnwiseHouseholderStepErrorRect.exists_residual_matrix_columnFrob_bound
+    {m p : ℕ}
+    {P : Fin m → Fin m → ℝ} {A A_hat : Fin m → Fin p → ℝ} {c : ℝ}
+    (hstep : ColumnwiseHouseholderStepErrorRect m p P A A_hat c) :
+    ∃ E : Fin m → Fin p → ℝ,
+      (∀ (i : Fin m) (j : Fin p),
+        A_hat i j = matMulRect m m p P A i j + E i j) ∧
+      (∀ j : Fin p, columnFrob E j ≤ c * columnFrob A j) := by
+  obtain ⟨E, hEA, hcol⟩ := hstep.exists_residual_matrix
+  refine ⟨E, hEA, ?_⟩
+  intro j
+  obtain ⟨Δj, hΔj, hEj⟩ := hcol j
+  calc
+    columnFrob E j ≤ frobNorm Δj * columnFrob A j :=
+      columnFrob_matMulVec_le_frobNorm_mul_columnFrob E A Δj j hEj
+    _ ≤ c * columnFrob A j :=
+      mul_le_mul_of_nonneg_right hΔj (columnFrob_nonneg A j)
+
+/-- Reconstructing a panel from the same top row and trailing panel while
+    zeroing the first-column tail cannot increase any single-column Frobenius
+    norm. -/
+theorem columnFrob_panelFromTopAndTrailing_extract_le {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ) (j : Fin (p + 1)) :
+    columnFrob
+        (panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+          (trailingPanel A)) j ≤
+      columnFrob A j := by
+  unfold columnFrob
+  have h :=
+    frobNorm_le_const_mul_frobNorm_of_entrywise_abs_le
+      (fun i (_ : Fin 1) =>
+        panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+          (trailingPanel A) i j)
+      (fun i (_ : Fin 1) => A i j)
+      (c := 1) (by norm_num)
+      (by
+        intro i u
+        cases u
+        by_cases hi : i = 0
+        · subst i
+          by_cases hj : j = 0
+          · subst j
+            simp [panelFromTopAndTrailing, panelTopLeft]
+          · simp [panelFromTopAndTrailing, panelTopRowTail, hj]
+        · by_cases hj : j = 0
+          · subst j
+            simp [panelFromTopAndTrailing, hi]
+          · simp [panelFromTopAndTrailing, trailingPanel, hi, hj])
+  simpa using h
+
+/-- Each entry in a column is bounded by that column's Frobenius norm. -/
+lemma abs_entry_le_columnFrob {m p : ℕ} (A : Fin m → Fin p → ℝ)
+    (i : Fin m) (j : Fin p) :
+    |A i j| ≤ columnFrob A j := by
+  simpa [columnFrob] using
+    (abs_entry_le_frobNorm (fun i (_ : Fin 1) => A i j) i 0)
+
+/-- A column Frobenius norm is bounded by the column 1-norm. -/
+lemma columnFrob_le_abs_column_sum {m p : ℕ}
+    (A : Fin m → Fin p → ℝ) (j : Fin p) :
+    columnFrob A j ≤ ∑ i : Fin m, |A i j| := by
+  unfold columnFrob
+  rw [frobNorm_eq_sqrt_frobNormSq]
+  have hsum_nonneg : 0 ≤ ∑ i : Fin m, |A i j| :=
+    Finset.sum_nonneg fun i _ => abs_nonneg _
+  have hsq :
+      frobNormSq (fun i (_ : Fin 1) => A i j) ≤
+        (∑ i : Fin m, |A i j|) ^ 2 := by
+    unfold frobNormSq
+    simp [Finset.sum_const]
+    simpa [sq_abs] using
+      (Finset.sum_sq_le_sq_sum_of_nonneg
+        (s := Finset.univ) (f := fun i : Fin m => |A i j|)
+        (fun i _ => abs_nonneg (A i j)))
+  calc
+    Real.sqrt (frobNormSq (fun i (_ : Fin 1) => A i j))
+        ≤ Real.sqrt ((∑ i : Fin m, |A i j|) ^ 2) :=
+          Real.sqrt_le_sqrt hsq
+    _ = ∑ i : Fin m, |A i j| := by
+          rw [Real.sqrt_sq_eq_abs, abs_of_nonneg hsum_nonneg]
+
+/-- Column Frobenius triangle inequality. -/
+lemma columnFrob_add_le {m p : ℕ}
+    (A B : Fin m → Fin p → ℝ) (j : Fin p) :
+    columnFrob (fun i j => A i j + B i j) j ≤
+      columnFrob A j + columnFrob B j := by
+  change frobNorm (fun i (_ : Fin 1) => A i j + B i j) ≤
+    frobNorm (fun i (_ : Fin 1) => A i j) +
+      frobNorm (fun i (_ : Fin 1) => B i j)
+  exact norm_add_le
+    (Matrix.of (fun i (_ : Fin 1) => A i j) :
+      Matrix (Fin m) (Fin 1) ℝ)
+    (Matrix.of (fun i (_ : Fin 1) => B i j) :
+      Matrix (Fin m) (Fin 1) ℝ)
+
+/-- Orthogonal left multiplication preserves each column Frobenius norm. -/
+lemma columnFrob_orthogonal_left {m p : ℕ}
+    (U : Fin m → Fin m → ℝ) (A : Fin m → Fin p → ℝ)
+    (hU : IsOrthogonal m U) (j : Fin p) :
+    columnFrob (matMulRect m m p U A) j = columnFrob A j := by
+  let B : Fin m → Fin 1 → ℝ := fun i (_ : Fin 1) => A i j
+  have hmat :
+      (fun i (_ : Fin 1) => matMulRect m m p U A i j) =
+        matMulRect m m 1 U B := by
+    ext i u
+    cases u
+    simp [B, matMulRect]
+  unfold columnFrob
+  rw [hmat]
+  exact frobNorm_orthogonal_left_rect U B hU
+
+/-- Taking a trailing panel cannot increase the corresponding column
+    Frobenius norm. -/
+lemma columnFrob_trailingPanel_le {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ) (j : Fin p) :
+    columnFrob (trailingPanel A) j ≤ columnFrob A j.succ := by
+  unfold columnFrob
+  rw [frobNorm_eq_sqrt_frobNormSq, frobNorm_eq_sqrt_frobNormSq]
+  apply Real.sqrt_le_sqrt
+  unfold frobNormSq trailingPanel
+  rw [Fin.sum_univ_succ
+    (fun i : Fin (m + 1) => ∑ u : Fin 1, A i j.succ ^ 2)]
+  have htop : 0 ≤ ∑ u : Fin 1, A 0 j.succ ^ 2 :=
+    Finset.sum_nonneg fun u _ => sq_nonneg (A 0 j.succ)
+  linarith
+
+/-- The first column of an embedded trailing perturbation is zero. -/
+lemma columnFrob_panelTrailingPerturbation_zero {m p : ℕ}
+    (tail : Fin m → Fin p → ℝ) :
+    columnFrob (panelTrailingPerturbation tail) (0 : Fin (p + 1)) = 0 := by
+  rw [columnFrob]
+  rw [frobNorm_eq_zero_iff]
+  intro i u
+  cases u
+  refine Fin.cases ?_ ?_ i
+  · simp [panelTrailingPerturbation]
+  · intro i
+    simp [panelTrailingPerturbation]
+
+/-- Tail columns of an embedded trailing perturbation keep their column
+    Frobenius norms. -/
+lemma columnFrob_panelTrailingPerturbation_succ {m p : ℕ}
+    (tail : Fin m → Fin p → ℝ) (j : Fin p) :
+    columnFrob (panelTrailingPerturbation tail) j.succ =
+      columnFrob tail j := by
+  unfold columnFrob
+  rw [frobNorm_eq_sqrt_frobNormSq, frobNorm_eq_sqrt_frobNormSq]
+  congr 1
+  unfold frobNormSq panelTrailingPerturbation
+  rw [Fin.sum_univ_succ]
+  simp [panelFromTopAndTrailing]
+
 /-- One concrete Householder QR trailing-panel update.
 
     Given an `(m+1) × (p+1)` panel, construct the Householder reflector from
@@ -1408,92 +1593,12 @@ noncomputable def fl_householderTrailingPanelStep (fp : FPModel)
         (fl_householderNormalizedVector fp (Nat.succ_pos m)
           (panelFirstColumn (Nat.succ_pos p) A)) 1 A i.succ j.succ := rfl
 
-/-- Recursive rounded Householder QR panel algorithm returning the `R` panel.
-
-    In a nonempty panel, it computes the rounded first-column Householder
-    application, stores the computed top row, sets the completed first-column
-    tail to zero by construction, and recurses on the computed trailing panel.
-    This is the concrete loop that the later backward-error theorem must
-    connect to the residual-sequence analysis. -/
-noncomputable def fl_householderQRPanel_R (fp : FPModel) :
-    (m p : ℕ) → (Fin m → Fin p → ℝ) → Fin m → Fin p → ℝ
-  | 0, _, A => A
-  | Nat.succ _, 0, A => A
-  | m + 1, p + 1, A =>
-      let Astep : Fin (m + 1) → Fin (p + 1) → ℝ :=
-        fl_householderApplyMatrixRect fp (m + 1) (p + 1)
-          (fl_householderNormalizedVector fp (Nat.succ_pos m)
-            (panelFirstColumn (Nat.succ_pos p) A)) 1 A
-      panelFromTopAndTrailing
-        (panelTopLeft Astep)
-        (panelTopRowTail Astep)
-        (fl_householderQRPanel_R fp m p (trailingPanel Astep))
-
-@[simp] theorem fl_householderQRPanel_R_zero_rows (fp : FPModel)
-    {p : ℕ} (A : Fin 0 → Fin p → ℝ) :
-    fl_householderQRPanel_R fp 0 p A = A := rfl
-
-@[simp] theorem fl_householderQRPanel_R_zero_cols (fp : FPModel)
-    {m : ℕ} (A : Fin (m + 1) → Fin 0 → ℝ) :
-    fl_householderQRPanel_R fp (m + 1) 0 A = A := rfl
-
-@[simp] theorem fl_householderQRPanel_R_succ_succ (fp : FPModel)
-    {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ) :
-    fl_householderQRPanel_R fp (m + 1) (p + 1) A =
-      let Astep : Fin (m + 1) → Fin (p + 1) → ℝ :=
-        fl_householderApplyMatrixRect fp (m + 1) (p + 1)
-          (fl_householderNormalizedVector fp (Nat.succ_pos m)
-            (panelFirstColumn (Nat.succ_pos p) A)) 1 A
-      panelFromTopAndTrailing
-        (panelTopLeft Astep)
-        (panelTopRowTail Astep)
-        (fl_householderQRPanel_R fp m p (trailingPanel Astep)) := rfl
-
-/-- The recursive QR `R` algorithm stores the computed top-left entry from the
-    current rounded Householder panel step. -/
-theorem panelTopLeft_fl_householderQRPanel_R_succ_succ (fp : FPModel)
-    {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ) :
-    panelTopLeft (fl_householderQRPanel_R fp (m + 1) (p + 1) A) =
-      panelTopLeft
-        (fl_householderApplyMatrixRect fp (m + 1) (p + 1)
-          (fl_householderNormalizedVector fp (Nat.succ_pos m)
-            (panelFirstColumn (Nat.succ_pos p) A)) 1 A) := by
-  simp [fl_householderQRPanel_R]
-
-/-- The recursive QR `R` algorithm stores the computed top-row tail from the
-    current rounded Householder panel step. -/
-theorem panelTopRowTail_fl_householderQRPanel_R_succ_succ (fp : FPModel)
-    {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ) :
-    panelTopRowTail (fl_householderQRPanel_R fp (m + 1) (p + 1) A) =
-      panelTopRowTail
-        (fl_householderApplyMatrixRect fp (m + 1) (p + 1)
-          (fl_householderNormalizedVector fp (Nat.succ_pos m)
-            (panelFirstColumn (Nat.succ_pos p) A)) 1 A) := by
-  simp [fl_householderQRPanel_R]
-
-/-- The recursive QR `R` algorithm makes the completed first-column tail
-    structurally zero. -/
-theorem panelFirstColumnTailZero_fl_householderQRPanel_R_succ_succ
-    (fp : FPModel) {m p : ℕ}
-    (A : Fin (m + 1) → Fin (p + 1) → ℝ) :
-    panelFirstColumnTailZero
-      (fl_householderQRPanel_R fp (m + 1) (p + 1) A) := by
-  simp [fl_householderQRPanel_R]
-
-/-- The recursive QR `R` algorithm recurses exactly on the concrete rounded
-    trailing-panel step. -/
-theorem trailingPanel_fl_householderQRPanel_R_succ_succ (fp : FPModel)
-    {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ) :
-    trailingPanel (fl_householderQRPanel_R fp (m + 1) (p + 1) A) =
-      fl_householderQRPanel_R fp m p (fl_householderTrailingPanelStep fp A) := by
-  simp [fl_householderQRPanel_R, fl_householderTrailingPanelStep]
-
 /-- Zero-aware trailing-panel step for Householder QR.
 
     If the active first column is zero, the reflector is skipped and the next
     active panel is the exact trailing panel.  Otherwise this is the concrete
     rounded Householder trailing-panel step. -/
-noncomputable def fl_householderTrailingPanelStepSafe (fp : FPModel)
+noncomputable def fl_householderQRPanelNext (fp : FPModel)
     {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ) :
     Fin m → Fin p → ℝ :=
   if panelFirstColumn (Nat.succ_pos p) A = 0 then
@@ -1509,7 +1614,7 @@ noncomputable def fl_householderTrailingPanelStepSafe (fp : FPModel)
     zero active columns skip the reflector and recurse on the trailing panel.
     The original `fl_householderQRPanel_R` is preserved for compatibility with
     the nonzero-panel theorem. -/
-noncomputable def fl_householderQRPanel_R_safe (fp : FPModel) :
+noncomputable def fl_householderQRPanel_R (fp : FPModel) :
     (m p : ℕ) → (Fin m → Fin p → ℝ) → Fin m → Fin p → ℝ
   | 0, _, A => A
   | Nat.succ _, 0, A => A
@@ -1518,7 +1623,7 @@ noncomputable def fl_householderQRPanel_R_safe (fp : FPModel) :
         panelFromTopAndTrailing
           (panelTopLeft A)
           (panelTopRowTail A)
-          (fl_householderQRPanel_R_safe fp m p (trailingPanel A))
+          (fl_householderQRPanel_R fp m p (trailingPanel A))
       else
         let Astep : Fin (m + 1) → Fin (p + 1) → ℝ :=
           fl_householderApplyMatrixRect fp (m + 1) (p + 1)
@@ -1527,30 +1632,30 @@ noncomputable def fl_householderQRPanel_R_safe (fp : FPModel) :
         panelFromTopAndTrailing
           (panelTopLeft Astep)
           (panelTopRowTail Astep)
-          (fl_householderQRPanel_R_safe fp m p (trailingPanel Astep))
+          (fl_householderQRPanel_R fp m p (trailingPanel Astep))
 
-@[simp] theorem fl_householderQRPanel_R_safe_zero_rows (fp : FPModel)
+@[simp] theorem fl_householderQRPanel_R_zero_rows (fp : FPModel)
     {p : ℕ} (A : Fin 0 → Fin p → ℝ) :
-    fl_householderQRPanel_R_safe fp 0 p A = A := rfl
+    fl_householderQRPanel_R fp 0 p A = A := rfl
 
-@[simp] theorem fl_householderQRPanel_R_safe_zero_cols (fp : FPModel)
+@[simp] theorem fl_householderQRPanel_R_zero_cols (fp : FPModel)
     {m : ℕ} (A : Fin (m + 1) → Fin 0 → ℝ) :
-    fl_householderQRPanel_R_safe fp (m + 1) 0 A = A := rfl
+    fl_householderQRPanel_R fp (m + 1) 0 A = A := rfl
 
-@[simp] theorem fl_householderQRPanel_R_safe_succ_succ_zero (fp : FPModel)
+@[simp] theorem fl_householderQRPanel_R_succ_succ_zero (fp : FPModel)
     {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ)
     (hcol : panelFirstColumn (Nat.succ_pos p) A = 0) :
-    fl_householderQRPanel_R_safe fp (m + 1) (p + 1) A =
+    fl_householderQRPanel_R fp (m + 1) (p + 1) A =
       panelFromTopAndTrailing
         (panelTopLeft A)
         (panelTopRowTail A)
-        (fl_householderQRPanel_R_safe fp m p (trailingPanel A)) := by
-  simp [fl_householderQRPanel_R_safe, hcol]
+        (fl_householderQRPanel_R fp m p (trailingPanel A)) := by
+  simp [fl_householderQRPanel_R, hcol]
 
-@[simp] theorem fl_householderQRPanel_R_safe_succ_succ_nonzero (fp : FPModel)
+@[simp] theorem fl_householderQRPanel_R_succ_succ_nonzero (fp : FPModel)
     {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ)
     (hcol : panelFirstColumn (Nat.succ_pos p) A ≠ 0) :
-    fl_householderQRPanel_R_safe fp (m + 1) (p + 1) A =
+    fl_householderQRPanel_R fp (m + 1) (p + 1) A =
       let Astep : Fin (m + 1) → Fin (p + 1) → ℝ :=
         fl_householderApplyMatrixRect fp (m + 1) (p + 1)
           (fl_householderNormalizedVector fp (Nat.succ_pos m)
@@ -1558,31 +1663,25 @@ noncomputable def fl_householderQRPanel_R_safe (fp : FPModel) :
       panelFromTopAndTrailing
         (panelTopLeft Astep)
         (panelTopRowTail Astep)
-        (fl_householderQRPanel_R_safe fp m p (trailingPanel Astep)) := by
-  simp [fl_householderQRPanel_R_safe, hcol]
+        (fl_householderQRPanel_R fp m p (trailingPanel Astep)) := by
+  simp [fl_householderQRPanel_R, hcol]
 
 /-- The zero-aware recursive QR `R` algorithm makes the completed
     first-column tail structurally zero in every nonempty panel. -/
-theorem panelFirstColumnTailZero_fl_householderQRPanel_R_safe_succ_succ
+theorem panelFirstColumnTailZero_fl_householderQRPanel_R_succ_succ
     (fp : FPModel) {m p : ℕ}
     (A : Fin (m + 1) → Fin (p + 1) → ℝ) :
     panelFirstColumnTailZero
-      (fl_householderQRPanel_R_safe fp (m + 1) (p + 1) A) := by
+      (fl_householderQRPanel_R fp (m + 1) (p + 1) A) := by
   by_cases hcol : panelFirstColumn (Nat.succ_pos p) A = 0
-  · simp [fl_householderQRPanel_R_safe, hcol]
-  · simp [fl_householderQRPanel_R_safe, hcol]
-
-/-- Square specialization of the recursive rounded Householder QR `R`
-    algorithm. -/
-noncomputable def fl_householderQR_R (fp : FPModel) (n : ℕ)
-    (A : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
-  fl_householderQRPanel_R fp n n A
+  · simp [fl_householderQRPanel_R, hcol]
+  · simp [fl_householderQRPanel_R, hcol]
 
 /-- Square specialization of the zero-aware recursive rounded Householder QR
     `R` algorithm. -/
-noncomputable def fl_householderQR_R_safe (fp : FPModel) (n : ℕ)
+noncomputable def fl_householderQR_R (fp : FPModel) (n : ℕ)
     (A : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
-  fl_householderQRPanel_R_safe fp n n A
+  fl_householderQRPanel_R fp n n A
 
 /-- Exact orthogonal-factor witness associated with the zero-aware rounded
     Householder QR panel algorithm.
@@ -1590,16 +1689,16 @@ noncomputable def fl_householderQR_R_safe (fp : FPModel) (n : ℕ)
     This is not a separately rounded accumulated `Q_hat`.  It records the exact
     product of ideal Householder reflectors used in the backward-error
     representation for the same branch choices and rounded trailing panels as
-    `fl_householderQRPanel_R_safe`.  It is the first explicit `Q`-side object
+    `fl_householderQRPanel_R`.  It is the first explicit `Q`-side object
     needed before adding a public `(Q, R)` factorization API. -/
-noncomputable def fl_householderQRPanel_Q_safe (fp : FPModel) :
+noncomputable def fl_householderQRPanel_Q (fp : FPModel) :
     (m p : ℕ) → (Fin m → Fin p → ℝ) → Fin m → Fin m → ℝ
   | 0, _, _A => idMatrix 0
   | m + 1, 0, _A => idMatrix (m + 1)
   | m + 1, p + 1, A =>
       if _hcol : panelFirstColumn (Nat.succ_pos p) A = 0 then
         embedTrailingOne
-          (fl_householderQRPanel_Q_safe fp m p (trailingPanel A))
+          (fl_householderQRPanel_Q fp m p (trailingPanel A))
       else
         let P : Fin (m + 1) → Fin (m + 1) → ℝ :=
           householder (m + 1)
@@ -1613,30 +1712,30 @@ noncomputable def fl_householderQRPanel_Q_safe (fp : FPModel) :
             (fl_householderNormalizedVector fp (Nat.succ_pos m)
               (panelFirstColumn (Nat.succ_pos p) A)) 1 A
         let Qt : Fin m → Fin m → ℝ :=
-          fl_householderQRPanel_Q_safe fp m p (trailingPanel Astep)
+          fl_householderQRPanel_Q fp m p (trailingPanel Astep)
         matTranspose
           (matMul (m + 1) (embedTrailingOne (matTranspose Qt)) P)
 
-@[simp] theorem fl_householderQRPanel_Q_safe_zero_rows (fp : FPModel)
+@[simp] theorem fl_householderQRPanel_Q_zero_rows (fp : FPModel)
     {p : ℕ} (A : Fin 0 → Fin p → ℝ) :
-    fl_householderQRPanel_Q_safe fp 0 p A = idMatrix 0 := rfl
+    fl_householderQRPanel_Q fp 0 p A = idMatrix 0 := rfl
 
-@[simp] theorem fl_householderQRPanel_Q_safe_zero_cols (fp : FPModel)
+@[simp] theorem fl_householderQRPanel_Q_zero_cols (fp : FPModel)
     {m : ℕ} (A : Fin (m + 1) → Fin 0 → ℝ) :
-    fl_householderQRPanel_Q_safe fp (m + 1) 0 A = idMatrix (m + 1) := rfl
+    fl_householderQRPanel_Q fp (m + 1) 0 A = idMatrix (m + 1) := rfl
 
-@[simp] theorem fl_householderQRPanel_Q_safe_succ_succ_zero (fp : FPModel)
+@[simp] theorem fl_householderQRPanel_Q_succ_succ_zero (fp : FPModel)
     {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ)
     (hcol : panelFirstColumn (Nat.succ_pos p) A = 0) :
-    fl_householderQRPanel_Q_safe fp (m + 1) (p + 1) A =
+    fl_householderQRPanel_Q fp (m + 1) (p + 1) A =
       embedTrailingOne
-        (fl_householderQRPanel_Q_safe fp m p (trailingPanel A)) := by
-  simp [fl_householderQRPanel_Q_safe, hcol]
+        (fl_householderQRPanel_Q fp m p (trailingPanel A)) := by
+  simp [fl_householderQRPanel_Q, hcol]
 
-@[simp] theorem fl_householderQRPanel_Q_safe_succ_succ_nonzero (fp : FPModel)
+@[simp] theorem fl_householderQRPanel_Q_succ_succ_nonzero (fp : FPModel)
     {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ)
     (hcol : panelFirstColumn (Nat.succ_pos p) A ≠ 0) :
-    fl_householderQRPanel_Q_safe fp (m + 1) (p + 1) A =
+    fl_householderQRPanel_Q fp (m + 1) (p + 1) A =
       let P : Fin (m + 1) → Fin (m + 1) → ℝ :=
         householder (m + 1)
           (householderNormalizedVector (m + 1)
@@ -1649,16 +1748,16 @@ noncomputable def fl_householderQRPanel_Q_safe (fp : FPModel) :
           (fl_householderNormalizedVector fp (Nat.succ_pos m)
             (panelFirstColumn (Nat.succ_pos p) A)) 1 A
       let Qt : Fin m → Fin m → ℝ :=
-        fl_householderQRPanel_Q_safe fp m p (trailingPanel Astep)
+        fl_householderQRPanel_Q fp m p (trailingPanel Astep)
       matTranspose
         (matMul (m + 1) (embedTrailingOne (matTranspose Qt)) P) := by
-  simp [fl_householderQRPanel_Q_safe, hcol]
+  simp [fl_householderQRPanel_Q, hcol]
 
 /-- Square specialization of the explicit exact `Q` witness associated with
-    `fl_householderQR_R_safe`. -/
-noncomputable def fl_householderQR_Q_safe (fp : FPModel) (n : ℕ)
+    `fl_householderQR_R`. -/
+noncomputable def fl_householderQR_Q (fp : FPModel) (n : ℕ)
     (A : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
-  fl_householderQRPanel_Q_safe fp n n A
+  fl_householderQRPanel_Q fp n n A
 
 /-- Public paired object for the current Householder QR layer.
 
@@ -1668,21 +1767,21 @@ noncomputable def fl_householderQR_Q_safe (fp : FPModel) (n : ℕ)
     `(Q_hat, R_hat)` implementation: forming a separately rounded accumulated
     `Q_hat` is a later algorithmic layer. -/
 structure HouseholderQRWitness (n : ℕ) where
-  /-- Exact orthogonal witness generated from the safe QR branch choices. -/
+  /-- Exact orthogonal witness generated from the zero-aware QR branch choices. -/
   Q : Fin n → Fin n → ℝ
   /-- Concrete rounded zero-aware `R` output. -/
   R : Fin n → Fin n → ℝ
 
-/-- Paired exact-`Q` witness and rounded `R_safe` output for Householder QR. -/
-noncomputable def fl_householderQR_safe_witness (fp : FPModel) (n : ℕ)
+/-- Paired exact-`Q` witness and rounded `R` output for Householder QR. -/
+noncomputable def fl_householderQR_witness (fp : FPModel) (n : ℕ)
     (A : Fin n → Fin n → ℝ) : HouseholderQRWitness n :=
-  { Q := fl_householderQR_Q_safe fp n A
-    R := fl_householderQR_R_safe fp n A }
+  { Q := fl_householderQR_Q fp n A
+    R := fl_householderQR_R fp n A }
 
 /-- Rounded accumulated `Q_hat` for the zero-aware Householder QR panel loop.
 
     This is a concrete `fl_*` algorithmic object, unlike
-    `fl_householderQRPanel_Q_safe`, which is the exact orthogonal witness used
+    `fl_householderQRPanel_Q`, which is the exact orthogonal witness used
     in the backward-error proof.  In the nonzero branch, the same rounded
     Householder reflector that updates the active panel is applied columnwise
     to the embedded trailing `Q_hat` accumulator.
@@ -1690,63 +1789,63 @@ noncomputable def fl_householderQR_safe_witness (fp : FPModel) (n : ℕ)
     No stability or orthogonality theorem is claimed here yet.  The next proof
     milestone is a separate bridge showing that this rounded accumulation
     satisfies an appropriate perturbation contract. -/
-noncomputable def fl_householderQRPanel_Qhat_safe (fp : FPModel) :
+noncomputable def fl_householderQRPanel_Qhat (fp : FPModel) :
     (m p : ℕ) → (Fin m → Fin p → ℝ) → Fin m → Fin m → ℝ
   | 0, _, _A => idMatrix 0
   | m + 1, 0, _A => idMatrix (m + 1)
   | m + 1, p + 1, A =>
       if _hcol : panelFirstColumn (Nat.succ_pos p) A = 0 then
         embedTrailingOne
-          (fl_householderQRPanel_Qhat_safe fp m p (trailingPanel A))
+          (fl_householderQRPanel_Qhat fp m p (trailingPanel A))
       else
         let Astep : Fin (m + 1) → Fin (p + 1) → ℝ :=
           fl_householderApplyMatrixRect fp (m + 1) (p + 1)
             (fl_householderNormalizedVector fp (Nat.succ_pos m)
               (panelFirstColumn (Nat.succ_pos p) A)) 1 A
         let Qtail_hat : Fin m → Fin m → ℝ :=
-          fl_householderQRPanel_Qhat_safe fp m p (trailingPanel Astep)
+          fl_householderQRPanel_Qhat fp m p (trailingPanel Astep)
         fl_householderApplyMatrixRect fp (m + 1) (m + 1)
           (fl_householderNormalizedVector fp (Nat.succ_pos m)
             (panelFirstColumn (Nat.succ_pos p) A)) 1
           (embedTrailingOne Qtail_hat)
 
-@[simp] theorem fl_householderQRPanel_Qhat_safe_zero_rows (fp : FPModel)
+@[simp] theorem fl_householderQRPanel_Qhat_zero_rows (fp : FPModel)
     {p : ℕ} (A : Fin 0 → Fin p → ℝ) :
-    fl_householderQRPanel_Qhat_safe fp 0 p A = idMatrix 0 := rfl
+    fl_householderQRPanel_Qhat fp 0 p A = idMatrix 0 := rfl
 
-@[simp] theorem fl_householderQRPanel_Qhat_safe_zero_cols (fp : FPModel)
+@[simp] theorem fl_householderQRPanel_Qhat_zero_cols (fp : FPModel)
     {m : ℕ} (A : Fin (m + 1) → Fin 0 → ℝ) :
-    fl_householderQRPanel_Qhat_safe fp (m + 1) 0 A = idMatrix (m + 1) := rfl
+    fl_householderQRPanel_Qhat fp (m + 1) 0 A = idMatrix (m + 1) := rfl
 
-@[simp] theorem fl_householderQRPanel_Qhat_safe_succ_succ_zero (fp : FPModel)
+@[simp] theorem fl_householderQRPanel_Qhat_succ_succ_zero (fp : FPModel)
     {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ)
     (hcol : panelFirstColumn (Nat.succ_pos p) A = 0) :
-    fl_householderQRPanel_Qhat_safe fp (m + 1) (p + 1) A =
+    fl_householderQRPanel_Qhat fp (m + 1) (p + 1) A =
       embedTrailingOne
-        (fl_householderQRPanel_Qhat_safe fp m p (trailingPanel A)) := by
-  simp [fl_householderQRPanel_Qhat_safe, hcol]
+        (fl_householderQRPanel_Qhat fp m p (trailingPanel A)) := by
+  simp [fl_householderQRPanel_Qhat, hcol]
 
 /-- Residual form of one zero-column rounded `Q_hat` accumulator update.
 
-    When the active first column is zero, the safe QR loop skips the reflector.
+    When the active first column is zero, the zero-aware QR loop skips the reflector.
     The `Q_hat` accumulator is therefore just the embedded trailing accumulator,
     equivalently an identity transformation plus zero residual. -/
-theorem fl_householderQRPanel_Qhat_safe_succ_succ_zero_residual_bound
+theorem fl_householderQRPanel_Qhat_succ_succ_zero_residual_bound
     (fp : FPModel) {m p : ℕ}
     (A : Fin (m + 1) → Fin (p + 1) → ℝ)
     (hcol : panelFirstColumn (Nat.succ_pos p) A = 0) :
     let Qtail_hat : Fin m → Fin m → ℝ :=
-      fl_householderQRPanel_Qhat_safe fp m p (trailingPanel A)
+      fl_householderQRPanel_Qhat fp m p (trailingPanel A)
     ∃ E : Fin (m + 1) → Fin (m + 1) → ℝ,
       (∀ i j : Fin (m + 1),
-        fl_householderQRPanel_Qhat_safe fp (m + 1) (p + 1) A i j =
+        fl_householderQRPanel_Qhat fp (m + 1) (p + 1) A i j =
           matMulRect (m + 1) (m + 1) (m + 1)
             (idMatrix (m + 1)) (embedTrailingOne Qtail_hat) i j +
               E i j) ∧
       frobNorm E ≤ 0 * frobNorm (embedTrailingOne Qtail_hat) := by
   dsimp only
   let Qtail_hat : Fin m → Fin m → ℝ :=
-    fl_householderQRPanel_Qhat_safe fp m p (trailingPanel A)
+    fl_householderQRPanel_Qhat fp m p (trailingPanel A)
   let Z : Fin (m + 1) → Fin (m + 1) → ℝ := fun _ _ => 0
   refine ⟨Z, ?_, ?_⟩
   · intro i j
@@ -1755,7 +1854,7 @@ theorem fl_householderQRPanel_Qhat_safe_succ_succ_zero_residual_bound
           (idMatrix (m + 1)) (embedTrailingOne Qtail_hat) =
             embedTrailingOne Qtail_hat :=
       matMulRect_id_left (m + 1) (m + 1) (embedTrailingOne Qtail_hat)
-    rw [fl_householderQRPanel_Qhat_safe_succ_succ_zero fp A hcol,
+    rw [fl_householderQRPanel_Qhat_succ_succ_zero fp A hcol,
       congr_fun (congr_fun hid i) j]
     simp [Qtail_hat, Z]
   · have hZ : frobNorm Z = 0 := by
@@ -1765,22 +1864,22 @@ theorem fl_householderQRPanel_Qhat_safe_succ_succ_zero_residual_bound
     rw [hZ]
     simp
 
-@[simp] theorem fl_householderQRPanel_Qhat_safe_succ_succ_nonzero
+@[simp] theorem fl_householderQRPanel_Qhat_succ_succ_nonzero
     (fp : FPModel) {m p : ℕ}
     (A : Fin (m + 1) → Fin (p + 1) → ℝ)
     (hcol : panelFirstColumn (Nat.succ_pos p) A ≠ 0) :
-    fl_householderQRPanel_Qhat_safe fp (m + 1) (p + 1) A =
+    fl_householderQRPanel_Qhat fp (m + 1) (p + 1) A =
       let Astep : Fin (m + 1) → Fin (p + 1) → ℝ :=
         fl_householderApplyMatrixRect fp (m + 1) (p + 1)
           (fl_householderNormalizedVector fp (Nat.succ_pos m)
             (panelFirstColumn (Nat.succ_pos p) A)) 1 A
       let Qtail_hat : Fin m → Fin m → ℝ :=
-        fl_householderQRPanel_Qhat_safe fp m p (trailingPanel Astep)
+        fl_householderQRPanel_Qhat fp m p (trailingPanel Astep)
       fl_householderApplyMatrixRect fp (m + 1) (m + 1)
         (fl_householderNormalizedVector fp (Nat.succ_pos m)
           (panelFirstColumn (Nat.succ_pos p) A)) 1
         (embedTrailingOne Qtail_hat) := by
-  simp [fl_householderQRPanel_Qhat_safe, hcol]
+  simp [fl_householderQRPanel_Qhat, hcol]
 
 /-- One nonzero branch of the rounded `Q_hat` accumulator has the same
     concrete columnwise Householder matrix-step error as any rounded
@@ -1790,7 +1889,7 @@ theorem fl_householderQRPanel_Qhat_safe_succ_succ_zero_residual_bound
     accumulated `Q_hat` theorem still needs a separate recursive composition
     proof, but each nonzero update is already connected to the lower-level
     implementation-backed Householder application theorem. -/
-theorem fl_householderQRPanel_Qhat_safe_succ_succ_nonzero_step_error
+theorem fl_householderQRPanel_Qhat_succ_succ_nonzero_step_error
     (fp : FPModel) {m p : ℕ}
     (A : Fin (m + 1) → Fin (p + 1) → ℝ)
     (hcol : panelFirstColumn (Nat.succ_pos p) A ≠ 0)
@@ -1800,7 +1899,7 @@ theorem fl_householderQRPanel_Qhat_safe_succ_succ_nonzero_step_error
         (fl_householderNormalizedVector fp (Nat.succ_pos m)
           (panelFirstColumn (Nat.succ_pos p) A)) 1 A
     let Qtail_hat : Fin m → Fin m → ℝ :=
-      fl_householderQRPanel_Qhat_safe fp m p (trailingPanel Astep)
+      fl_householderQRPanel_Qhat fp m p (trailingPanel Astep)
     ColumnwiseHouseholderStepErrorRect (m + 1) (m + 1)
       (householder (m + 1)
         (householderNormalizedVector (m + 1)
@@ -1809,7 +1908,7 @@ theorem fl_householderQRPanel_Qhat_safe_succ_succ_nonzero_step_error
           (householderBetaFromScale (Nat.succ_pos m)
             (panelFirstColumn (Nat.succ_pos p) A))) 1)
       (embedTrailingOne Qtail_hat)
-      (fl_householderQRPanel_Qhat_safe fp (m + 1) (p + 1) A)
+      (fl_householderQRPanel_Qhat fp (m + 1) (p + 1) A)
       (householderConstructApplyBound fp (m + 1)) := by
   dsimp only
   let Astep : Fin (m + 1) → Fin (p + 1) → ℝ :=
@@ -1817,12 +1916,12 @@ theorem fl_householderQRPanel_Qhat_safe_succ_succ_nonzero_step_error
       (fl_householderNormalizedVector fp (Nat.succ_pos m)
         (panelFirstColumn (Nat.succ_pos p) A)) 1 A
   let Qtail_hat : Fin m → Fin m → ℝ :=
-    fl_householderQRPanel_Qhat_safe fp m p (trailingPanel Astep)
+    fl_householderQRPanel_Qhat fp m p (trailingPanel Astep)
   have hstep :=
     fl_householderConstructApply_matrix_step_error_rect fp
       (Nat.succ_pos m) (panelFirstColumn (Nat.succ_pos p) A)
       (embedTrailingOne Qtail_hat) hcol hvalid
-  simpa [fl_householderQRPanel_Qhat_safe, hcol, Astep, Qtail_hat,
+  simpa [fl_householderQRPanel_Qhat, hcol, Astep, Qtail_hat,
     householderConstructApplyBound] using hstep
 
 /-- Residual form of one nonzero rounded `Q_hat` accumulator update.
@@ -1832,7 +1931,7 @@ theorem fl_householderQRPanel_Qhat_safe_succ_succ_nonzero_step_error
     Householder application to the embedded trailing accumulator plus a single
     residual matrix whose Frobenius norm is bounded by the lower-level
     implementation-backed Householder coefficient. -/
-theorem fl_householderQRPanel_Qhat_safe_succ_succ_nonzero_residual_bound
+theorem fl_householderQRPanel_Qhat_succ_succ_nonzero_residual_bound
     (fp : FPModel) {m p : ℕ}
     (A : Fin (m + 1) → Fin (p + 1) → ℝ)
     (hcol : panelFirstColumn (Nat.succ_pos p) A ≠ 0)
@@ -1842,7 +1941,7 @@ theorem fl_householderQRPanel_Qhat_safe_succ_succ_nonzero_residual_bound
         (fl_householderNormalizedVector fp (Nat.succ_pos m)
           (panelFirstColumn (Nat.succ_pos p) A)) 1 A
     let Qtail_hat : Fin m → Fin m → ℝ :=
-      fl_householderQRPanel_Qhat_safe fp m p (trailingPanel Astep)
+      fl_householderQRPanel_Qhat fp m p (trailingPanel Astep)
     let P : Fin (m + 1) → Fin (m + 1) → ℝ :=
       householder (m + 1)
         (householderNormalizedVector (m + 1)
@@ -1852,7 +1951,7 @@ theorem fl_householderQRPanel_Qhat_safe_succ_succ_nonzero_residual_bound
             (panelFirstColumn (Nat.succ_pos p) A))) 1
     ∃ E : Fin (m + 1) → Fin (m + 1) → ℝ,
       (∀ i j : Fin (m + 1),
-        fl_householderQRPanel_Qhat_safe fp (m + 1) (p + 1) A i j =
+        fl_householderQRPanel_Qhat fp (m + 1) (p + 1) A i j =
           matMulRect (m + 1) (m + 1) (m + 1) P
             (embedTrailingOne Qtail_hat) i j + E i j) ∧
       frobNorm E ≤
@@ -1864,7 +1963,7 @@ theorem fl_householderQRPanel_Qhat_safe_succ_succ_nonzero_residual_bound
       (fl_householderNormalizedVector fp (Nat.succ_pos m)
         (panelFirstColumn (Nat.succ_pos p) A)) 1 A
   let Qtail_hat : Fin m → Fin m → ℝ :=
-    fl_householderQRPanel_Qhat_safe fp m p (trailingPanel Astep)
+    fl_householderQRPanel_Qhat fp m p (trailingPanel Astep)
   let P : Fin (m + 1) → Fin (m + 1) → ℝ :=
     householder (m + 1)
       (householderNormalizedVector (m + 1)
@@ -1875,20 +1974,20 @@ theorem fl_householderQRPanel_Qhat_safe_succ_succ_nonzero_residual_bound
   have hstep :
       ColumnwiseHouseholderStepErrorRect (m + 1) (m + 1) P
         (embedTrailingOne Qtail_hat)
-        (fl_householderQRPanel_Qhat_safe fp (m + 1) (p + 1) A)
+        (fl_householderQRPanel_Qhat fp (m + 1) (p + 1) A)
         (householderConstructApplyBound fp (m + 1)) := by
     simpa [P, Astep, Qtail_hat] using
-      fl_householderQRPanel_Qhat_safe_succ_succ_nonzero_step_error
+      fl_householderQRPanel_Qhat_succ_succ_nonzero_step_error
         fp A hcol hvalid
   exact hstep.exists_residual_matrix_bound
     (householderConstructApplyBound_nonneg fp (m + 1) hvalid)
 
-/-- Exact transformation used by one safe `Q_hat` accumulator step.
+/-- Exact transformation used by one zero-aware `Q_hat` accumulator step.
 
     The zero-column branch skips the reflector and uses the identity.  The
     nonzero branch uses the exact Householder reflector corresponding to the
     same active first column used by the rounded panel update. -/
-noncomputable def householderQRPanel_Qhat_stepP_safe {m p : ℕ}
+noncomputable def householderQRPanel_Qhat_stepP {m p : ℕ}
     (A : Fin (m + 1) → Fin (p + 1) → ℝ) :
     Fin (m + 1) → Fin (m + 1) → ℝ :=
   if panelFirstColumn (Nat.succ_pos p) A = 0 then
@@ -1901,125 +2000,125 @@ noncomputable def householderQRPanel_Qhat_stepP_safe {m p : ℕ}
         (householderBetaFromScale (Nat.succ_pos m)
           (panelFirstColumn (Nat.succ_pos p) A))) 1
 
-/-- Recursive tail accumulator used by one safe `Q_hat` step. -/
-noncomputable def fl_householderQRPanel_Qhat_tail_safe (fp : FPModel)
+/-- Recursive tail accumulator used by one zero-aware `Q_hat` step. -/
+noncomputable def fl_householderQRPanel_Qhat_tail (fp : FPModel)
     {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ) :
     Fin m → Fin m → ℝ :=
-  fl_householderQRPanel_Qhat_safe fp m p
-    (fl_householderTrailingPanelStepSafe fp A)
+  fl_householderQRPanel_Qhat fp m p
+    (fl_householderQRPanelNext fp A)
 
-/-- Local residual coefficient for one safe `Q_hat` accumulator step. -/
-noncomputable def householderQRPanel_Qhat_stepCoeff_safe (fp : FPModel)
+/-- Local residual coefficient for one zero-aware `Q_hat` accumulator step. -/
+noncomputable def householderQRPanel_Qhat_stepCoeff (fp : FPModel)
     {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ) : ℝ :=
   if panelFirstColumn (Nat.succ_pos p) A = 0 then
     0
   else
     householderConstructApplyBound fp (m + 1)
 
-/-- The local residual coefficient for one safe `Q_hat` step is nonnegative
+/-- The local residual coefficient for one zero-aware `Q_hat` step is nonnegative
     under the same gamma-validity condition used by the nonzero branch. -/
-theorem householderQRPanel_Qhat_stepCoeff_safe_nonneg (fp : FPModel)
+theorem householderQRPanel_Qhat_stepCoeff_nonneg (fp : FPModel)
     {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ)
     (hvalid : gammaValid fp (11 * (m + 1) + 23)) :
-    0 ≤ householderQRPanel_Qhat_stepCoeff_safe fp A := by
+    0 ≤ householderQRPanel_Qhat_stepCoeff fp A := by
   by_cases hcol : panelFirstColumn (Nat.succ_pos p) A = 0
-  · simp [householderQRPanel_Qhat_stepCoeff_safe, hcol]
-  · simpa [householderQRPanel_Qhat_stepCoeff_safe, hcol] using
+  · simp [householderQRPanel_Qhat_stepCoeff, hcol]
+  · simpa [householderQRPanel_Qhat_stepCoeff, hcol] using
       householderConstructApplyBound_nonneg fp (m + 1) hvalid
 
-/-- The exact transformation used by one safe `Q_hat` step is orthogonal. -/
-theorem householderQRPanel_Qhat_stepP_safe_orthogonal (fp : FPModel)
+/-- The exact transformation used by one zero-aware `Q_hat` step is orthogonal. -/
+theorem householderQRPanel_Qhat_stepP_orthogonal (fp : FPModel)
     {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ)
     (hvalid : gammaValid fp (11 * (m + 1) + 23)) :
-    IsOrthogonal (m + 1) (householderQRPanel_Qhat_stepP_safe A) := by
+    IsOrthogonal (m + 1) (householderQRPanel_Qhat_stepP A) := by
   by_cases hcol : panelFirstColumn (Nat.succ_pos p) A = 0
-  · simpa [householderQRPanel_Qhat_stepP_safe, hcol] using
+  · simpa [householderQRPanel_Qhat_stepP, hcol] using
       idMatrix_orthogonal (m + 1)
   · have hstep :=
-      fl_householderQRPanel_Qhat_safe_succ_succ_nonzero_step_error
+      fl_householderQRPanel_Qhat_succ_succ_nonzero_step_error
         fp A hcol hvalid
-    simpa [householderQRPanel_Qhat_stepP_safe, hcol] using hstep.orth
+    simpa [householderQRPanel_Qhat_stepP, hcol] using hstep.orth
 
-/-- Unified residual form for one safe rounded `Q_hat` accumulator step.
+/-- Unified residual form for one zero-aware rounded `Q_hat` accumulator step.
 
     This combines the zero-column skip branch and the nonzero rounded
     Householder branch into one theorem.  It is the interface intended for the
     future recursive accumulated-`Q_hat` analysis. -/
-theorem fl_householderQRPanel_Qhat_safe_succ_succ_residual_bound
+theorem fl_householderQRPanel_Qhat_succ_succ_residual_bound
     (fp : FPModel) {m p : ℕ}
     (A : Fin (m + 1) → Fin (p + 1) → ℝ)
     (hvalid : gammaValid fp (11 * (m + 1) + 23)) :
     ∃ E : Fin (m + 1) → Fin (m + 1) → ℝ,
       (∀ i j : Fin (m + 1),
-        fl_householderQRPanel_Qhat_safe fp (m + 1) (p + 1) A i j =
+        fl_householderQRPanel_Qhat fp (m + 1) (p + 1) A i j =
           matMulRect (m + 1) (m + 1) (m + 1)
-            (householderQRPanel_Qhat_stepP_safe A)
+            (householderQRPanel_Qhat_stepP A)
             (embedTrailingOne
-              (fl_householderQRPanel_Qhat_tail_safe fp A)) i j +
+              (fl_householderQRPanel_Qhat_tail fp A)) i j +
               E i j) ∧
       frobNorm E ≤
-        householderQRPanel_Qhat_stepCoeff_safe fp A *
+        householderQRPanel_Qhat_stepCoeff fp A *
           frobNorm
             (embedTrailingOne
-              (fl_householderQRPanel_Qhat_tail_safe fp A)) := by
+              (fl_householderQRPanel_Qhat_tail fp A)) := by
   by_cases hcol : panelFirstColumn (Nat.succ_pos p) A = 0
   · have hzero :=
-      fl_householderQRPanel_Qhat_safe_succ_succ_zero_residual_bound fp A hcol
-    simpa [householderQRPanel_Qhat_stepP_safe,
-      householderQRPanel_Qhat_stepCoeff_safe,
-      fl_householderQRPanel_Qhat_tail_safe,
-      fl_householderTrailingPanelStepSafe, hcol] using hzero
+      fl_householderQRPanel_Qhat_succ_succ_zero_residual_bound fp A hcol
+    simpa [householderQRPanel_Qhat_stepP,
+      householderQRPanel_Qhat_stepCoeff,
+      fl_householderQRPanel_Qhat_tail,
+      fl_householderQRPanelNext, hcol] using hzero
   · have hnonzero :=
-      fl_householderQRPanel_Qhat_safe_succ_succ_nonzero_residual_bound
+      fl_householderQRPanel_Qhat_succ_succ_nonzero_residual_bound
         fp A hcol hvalid
-    simpa [householderQRPanel_Qhat_stepP_safe,
-      householderQRPanel_Qhat_stepCoeff_safe,
-      fl_householderQRPanel_Qhat_tail_safe,
-      fl_householderTrailingPanelStepSafe, fl_householderTrailingPanelStep,
+    simpa [householderQRPanel_Qhat_stepP,
+      householderQRPanel_Qhat_stepCoeff,
+      fl_householderQRPanel_Qhat_tail,
+      fl_householderQRPanelNext, fl_householderTrailingPanelStep,
       hcol] using hnonzero
 
-/-- Complete local interface for one safe rounded `Q_hat` accumulator step:
+/-- Complete local interface for one zero-aware rounded `Q_hat` accumulator step:
     the exact step matrix is orthogonal, the local coefficient is
     nonnegative, and the rounded step has a bounded residual form. -/
-theorem fl_householderQRPanel_Qhat_safe_succ_succ_step_interface
+theorem fl_householderQRPanel_Qhat_succ_succ_step_interface
     (fp : FPModel) {m p : ℕ}
     (A : Fin (m + 1) → Fin (p + 1) → ℝ)
     (hvalid : gammaValid fp (11 * (m + 1) + 23)) :
-    IsOrthogonal (m + 1) (householderQRPanel_Qhat_stepP_safe A) ∧
-    0 ≤ householderQRPanel_Qhat_stepCoeff_safe fp A ∧
+    IsOrthogonal (m + 1) (householderQRPanel_Qhat_stepP A) ∧
+    0 ≤ householderQRPanel_Qhat_stepCoeff fp A ∧
     ∃ E : Fin (m + 1) → Fin (m + 1) → ℝ,
       (∀ i j : Fin (m + 1),
-        fl_householderQRPanel_Qhat_safe fp (m + 1) (p + 1) A i j =
+        fl_householderQRPanel_Qhat fp (m + 1) (p + 1) A i j =
           matMulRect (m + 1) (m + 1) (m + 1)
-            (householderQRPanel_Qhat_stepP_safe A)
+            (householderQRPanel_Qhat_stepP A)
             (embedTrailingOne
-              (fl_householderQRPanel_Qhat_tail_safe fp A)) i j +
+              (fl_householderQRPanel_Qhat_tail fp A)) i j +
               E i j) ∧
       frobNorm E ≤
-        householderQRPanel_Qhat_stepCoeff_safe fp A *
+        householderQRPanel_Qhat_stepCoeff fp A *
           frobNorm
             (embedTrailingOne
-              (fl_householderQRPanel_Qhat_tail_safe fp A)) := by
-  exact ⟨householderQRPanel_Qhat_stepP_safe_orthogonal fp A hvalid,
-    householderQRPanel_Qhat_stepCoeff_safe_nonneg fp A hvalid,
-    fl_householderQRPanel_Qhat_safe_succ_succ_residual_bound fp A hvalid⟩
+              (fl_householderQRPanel_Qhat_tail fp A)) := by
+  exact ⟨householderQRPanel_Qhat_stepP_orthogonal fp A hvalid,
+    householderQRPanel_Qhat_stepCoeff_nonneg fp A hvalid,
+    fl_householderQRPanel_Qhat_succ_succ_residual_bound fp A hvalid⟩
 
-/-- The exact `Q_safe` witness follows the same one-step orientation as the
+/-- The exact `Q` witness follows the same one-step orientation as the
     rounded `Q_hat` accumulator residual recurrence.
 
     In the nonzero branch this uses symmetry of the exact Householder
     reflector: `transpose (embed(Qtailᵀ) * P) = P * embed(Qtail)`. -/
-theorem fl_householderQRPanel_Q_safe_succ_succ_as_stepP_safe
+theorem fl_householderQRPanel_Q_succ_succ_as_stepP
     (fp : FPModel) {m p : ℕ}
     (A : Fin (m + 1) → Fin (p + 1) → ℝ) :
-    fl_householderQRPanel_Q_safe fp (m + 1) (p + 1) A =
-      matMul (m + 1) (householderQRPanel_Qhat_stepP_safe A)
+    fl_householderQRPanel_Q fp (m + 1) (p + 1) A =
+      matMul (m + 1) (householderQRPanel_Qhat_stepP A)
         (embedTrailingOne
-          (fl_householderQRPanel_Q_safe fp m p
-            (fl_householderTrailingPanelStepSafe fp A))) := by
+          (fl_householderQRPanel_Q fp m p
+            (fl_householderQRPanelNext fp A))) := by
   by_cases hcol : panelFirstColumn (Nat.succ_pos p) A = 0
-  · simp [fl_householderQRPanel_Q_safe, householderQRPanel_Qhat_stepP_safe,
-      fl_householderTrailingPanelStepSafe, hcol, matMul_id_left]
+  · simp [fl_householderQRPanel_Q, householderQRPanel_Qhat_stepP,
+      fl_householderQRPanelNext, hcol, matMul_id_left]
   · let P : Fin (m + 1) → Fin (m + 1) → ℝ :=
       householder (m + 1)
         (householderNormalizedVector (m + 1)
@@ -2032,7 +2131,7 @@ theorem fl_householderQRPanel_Q_safe_succ_succ_as_stepP_safe
         (fl_householderNormalizedVector fp (Nat.succ_pos m)
           (panelFirstColumn (Nat.succ_pos p) A)) 1 A
     let Qt : Fin m → Fin m → ℝ :=
-      fl_householderQRPanel_Q_safe fp m p (trailingPanel Astep)
+      fl_householderQRPanel_Q fp m p (trailingPanel Astep)
     have hP : matTranspose P = P := by
       simpa [P] using
         householder_symmetric (m + 1)
@@ -2042,27 +2141,27 @@ theorem fl_householderQRPanel_Q_safe_succ_succ_as_stepP_safe
             (householderBetaFromScale (Nat.succ_pos m)
               (panelFirstColumn (Nat.succ_pos p) A))) 1
     calc
-      fl_householderQRPanel_Q_safe fp (m + 1) (p + 1) A
+      fl_householderQRPanel_Q fp (m + 1) (p + 1) A
           = matTranspose
               (matMul (m + 1) (embedTrailingOne (matTranspose Qt)) P) := by
-              simp [fl_householderQRPanel_Q_safe, hcol, P, Astep, Qt]
+              simp [fl_householderQRPanel_Q, hcol, P, Astep, Qt]
       _ = matMul (m + 1) P (embedTrailingOne Qt) := by
               rw [matTranspose_matMul, hP, matTranspose_embedTrailingOne,
                 matTranspose_involutive]
       _ =
-          matMul (m + 1) (householderQRPanel_Qhat_stepP_safe A)
+          matMul (m + 1) (householderQRPanel_Qhat_stepP A)
             (embedTrailingOne
-              (fl_householderQRPanel_Q_safe fp m p
-                (fl_householderTrailingPanelStepSafe fp A))) := by
-              simp [householderQRPanel_Qhat_stepP_safe,
-                fl_householderTrailingPanelStepSafe,
+              (fl_householderQRPanel_Q fp m p
+                (fl_householderQRPanelNext fp A))) := by
+              simp [householderQRPanel_Qhat_stepP,
+                fl_householderQRPanelNext,
                 fl_householderTrailingPanelStep, hcol, P, Astep, Qt]
 
 /-- Raw recursive accumulated perturbation bound for the rounded `Q_hat`
     panel algorithm.
 
     This is intentionally branch-sensitive and not yet simplified to a compact
-    closed form.  Each safe step contributes its local residual coefficient
+    closed form.  Each zero-aware step contributes its local residual coefficient
     times the actual Frobenius norm of the embedded tail accumulator. -/
 noncomputable def householderQRPanel_QhatAccumBound (fp : FPModel) :
     (m p : ℕ) → (Fin m → Fin p → ℝ) → ℝ
@@ -2070,11 +2169,11 @@ noncomputable def householderQRPanel_QhatAccumBound (fp : FPModel) :
   | Nat.succ _, 0, _A => 0
   | m + 1, p + 1, A =>
       householderQRPanel_QhatAccumBound fp m p
-        (fl_householderTrailingPanelStepSafe fp A) +
-      householderQRPanel_Qhat_stepCoeff_safe fp A *
+        (fl_householderQRPanelNext fp A) +
+      householderQRPanel_Qhat_stepCoeff fp A *
         frobNorm
           (embedTrailingOne
-            (fl_householderQRPanel_Qhat_tail_safe fp A))
+            (fl_householderQRPanel_Qhat_tail fp A))
 
 @[simp] theorem householderQRPanel_QhatAccumBound_zero_rows
     (fp : FPModel) {p : ℕ} (A : Fin 0 → Fin p → ℝ) :
@@ -2098,9 +2197,9 @@ noncomputable def householderQRPanel_QhatClosedBound (fp : FPModel) :
   | m + 1, p + 1, A =>
       let ηtail :=
         householderQRPanel_QhatClosedBound fp m p
-          (fl_householderTrailingPanelStepSafe fp A)
+          (fl_householderQRPanelNext fp A)
       ηtail +
-        householderQRPanel_Qhat_stepCoeff_safe fp A *
+        householderQRPanel_Qhat_stepCoeff fp A *
           (Real.sqrt ((m + 1 : ℕ) : ℝ) + ηtail)
 
 @[simp] theorem householderQRPanel_QhatClosedBound_zero_rows
@@ -2261,21 +2360,21 @@ lemma householderConstructApplyBound_mono (fp : FPModel)
     gamma_mono fp (by omega) hvalid
   linarith
 
-/-- A safe `Q_hat` step coefficient is bounded by a uniform larger-dimension
+/-- A zero-aware `Q_hat` step coefficient is bounded by a uniform larger-dimension
     Householder coefficient. -/
-lemma householderQRPanel_Qhat_stepCoeff_safe_le_global
+lemma householderQRPanel_Qhat_stepCoeff_le_global
     (fp : FPModel) {m p N : ℕ}
     (A : Fin (m + 1) → Fin (p + 1) → ℝ)
     (hmN : m + 1 ≤ N)
     (hvalid : gammaValid fp (11 * N + 23)) :
-    householderQRPanel_Qhat_stepCoeff_safe fp A ≤
+    householderQRPanel_Qhat_stepCoeff fp A ≤
       householderConstructApplyBound fp N := by
   by_cases hcol : panelFirstColumn (Nat.succ_pos p) A = 0
   · have hnonneg :
         0 ≤ householderConstructApplyBound fp N :=
       householderConstructApplyBound_nonneg fp N hvalid
-    simpa [householderQRPanel_Qhat_stepCoeff_safe, hcol] using hnonneg
-  · simpa [householderQRPanel_Qhat_stepCoeff_safe, hcol] using
+    simpa [householderQRPanel_Qhat_stepCoeff, hcol] using hnonneg
+  · simpa [householderQRPanel_Qhat_stepCoeff, hcol] using
       householderConstructApplyBound_mono fp hmN hvalid
 
 /-- The branch-sensitive closed accumulated `Q_hat` bound is nonnegative under
@@ -2299,13 +2398,13 @@ theorem householderQRPanel_QhatClosedBound_nonneg_of_global_gammaValid
       | succ p =>
           have htail :
               0 ≤ householderQRPanel_QhatClosedBound fp m p
-                (fl_householderTrailingPanelStepSafe fp A) :=
-            ih p N (fl_householderTrailingPanelStepSafe fp A) (by omega) hvalid
+                (fl_householderQRPanelNext fp A) :=
+            ih p N (fl_householderQRPanelNext fp A) (by omega) hvalid
           have hstepValid : gammaValid fp (11 * (m + 1) + 23) :=
             gammaValid_mono fp (by omega) hvalid
           have hc :
-              0 ≤ householderQRPanel_Qhat_stepCoeff_safe fp A :=
-            householderQRPanel_Qhat_stepCoeff_safe_nonneg fp A hstepValid
+              0 ≤ householderQRPanel_Qhat_stepCoeff fp A :=
+            householderQRPanel_Qhat_stepCoeff_nonneg fp A hstepValid
           have hs : 0 ≤ Real.sqrt ((m : ℝ) + 1) :=
             Real.sqrt_nonneg _
           simp [householderQRPanel_QhatClosedBound]
@@ -2335,26 +2434,26 @@ theorem householderQRPanel_QhatClosedBound_le_uniform
       | succ p =>
           let η : ℝ :=
             householderQRPanel_QhatClosedBound fp m p
-              (fl_householderTrailingPanelStepSafe fp A)
+              (fl_householderQRPanelNext fp A)
           let U : ℝ := householderQR_QhatUniformClosedBound fp N m
-          let a : ℝ := householderQRPanel_Qhat_stepCoeff_safe fp A
+          let a : ℝ := householderQRPanel_Qhat_stepCoeff fp A
           let c : ℝ := householderConstructApplyBound fp N
           let s : ℝ := Real.sqrt ((m + 1 : ℕ) : ℝ)
           let B : ℝ := Real.sqrt (N : ℝ)
           have hηU : η ≤ U :=
-            ih p N (fl_householderTrailingPanelStepSafe fp A) (by omega) hvalid
+            ih p N (fl_householderQRPanelNext fp A) (by omega) hvalid
           have hη_nonneg : 0 ≤ η :=
             householderQRPanel_QhatClosedBound_nonneg_of_global_gammaValid
-              fp m p N (fl_householderTrailingPanelStepSafe fp A)
+              fp m p N (fl_householderQRPanelNext fp A)
               (by omega) hvalid
           have ha_nonneg : 0 ≤ a := by
             have hstepValid : gammaValid fp (11 * (m + 1) + 23) :=
               gammaValid_mono fp (by omega) hvalid
             simpa [a] using
-              householderQRPanel_Qhat_stepCoeff_safe_nonneg fp A hstepValid
+              householderQRPanel_Qhat_stepCoeff_nonneg fp A hstepValid
           have ha_le_c : a ≤ c := by
             simpa [a, c] using
-              householderQRPanel_Qhat_stepCoeff_safe_le_global fp A hmN hvalid
+              householderQRPanel_Qhat_stepCoeff_le_global fp A hmN hvalid
           have hc_nonneg : 0 ≤ c := by
             simpa [c] using householderConstructApplyBound_nonneg fp N hvalid
           have hs_le_B : s ≤ B := by
@@ -2433,7 +2532,7 @@ theorem HouseholderQRPanelQhatAccumError.embedTrailingOne_norm_le {m : ℕ}
 
     Unlike `HouseholderQRPanelQhatAccumError`, this does not hide the exact
     orthogonal factor existentially.  It states that a specific exact reference
-    factor, later `fl_householderQRPanel_Q_safe`, explains the computed
+    factor, later `fl_householderQRPanel_Q`, explains the computed
     `Q_hat` up to a bounded perturbation. -/
 structure HouseholderQRPanelQhatFixedAccumError (m : ℕ)
     (Q_ref Q_hat : Fin m → Fin m → ℝ) (η : ℝ) : Prop where
@@ -2687,9 +2786,81 @@ theorem HouseholderQRPanelQhatFixedAccumError.cons_closed {m : ℕ}
 
 /-- Square specialization of the rounded accumulated Householder QR `Q_hat`
     algorithm. -/
-noncomputable def fl_householderQR_Qhat_safe (fp : FPModel) (n : ℕ)
+noncomputable def fl_householderQR_Qhat (fp : FPModel) (n : ℕ)
     (A : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
-  fl_householderQRPanel_Qhat_safe fp n n A
+  fl_householderQRPanel_Qhat fp n n A
+
+/-- Public result object for a rectangular Householder QR panel.
+
+    `Q_exact` is the exact orthogonal witness that explains the backward-error
+    equation for the rounded `R` output.  `Q` is the separately rounded
+    accumulated factor.  These are deliberately separate fields: `Q_exact` is
+    the object proved orthogonal, while `Q` is the concrete rounded accumulator
+    proved to be close to `Q_exact`. -/
+structure HouseholderQRPanelResult (m p : ℕ) where
+  /-- Exact orthogonal witness for the panel backward-error equation. -/
+  Q_exact : Fin m → Fin m → ℝ
+  /-- Concrete rounded rectangular `R` output. -/
+  R : Fin m → Fin p → ℝ
+  /-- Rounded accumulated Householder factor. -/
+  Q : Fin m → Fin m → ℝ
+
+/-- Public result object for square Householder QR. -/
+abbrev HouseholderQRResult (n : ℕ) := HouseholderQRPanelResult n n
+
+/-- Canonical rectangular Householder QR API.
+
+    Prefer extracting fields from this object, e.g.
+    `(fl_householderQRPanel fp m p A).R`, rather than calling separate
+    projection helpers. -/
+noncomputable def fl_householderQRPanel (fp : FPModel)
+    (m p : ℕ) (A : Fin m → Fin p → ℝ) :
+    HouseholderQRPanelResult m p :=
+  { Q_exact := fl_householderQRPanel_Q fp m p A
+    R := fl_householderQRPanel_R fp m p A
+    Q := fl_householderQRPanel_Qhat fp m p A }
+
+/-- Canonical square Householder QR API.
+
+    Use `(fl_householderQR fp n A).R` for the rounded `R`,
+    `(fl_householderQR fp n A).Q_exact` for the exact orthogonal witness, and
+    `(fl_householderQR fp n A).Q` for the rounded accumulated factor. -/
+noncomputable def fl_householderQR (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) : HouseholderQRResult n :=
+  fl_householderQRPanel fp n n A
+
+@[simp] theorem fl_householderQRPanel_Q_exact_field (fp : FPModel)
+    (m p : ℕ) (A : Fin m → Fin p → ℝ) :
+    (fl_householderQRPanel fp m p A).Q_exact =
+      fl_householderQRPanel_Q fp m p A := rfl
+
+@[simp] theorem fl_householderQRPanel_R_field (fp : FPModel)
+    (m p : ℕ) (A : Fin m → Fin p → ℝ) :
+    (fl_householderQRPanel fp m p A).R =
+      fl_householderQRPanel_R fp m p A := rfl
+
+@[simp] theorem fl_householderQRPanel_Q_field (fp : FPModel)
+    (m p : ℕ) (A : Fin m → Fin p → ℝ) :
+    (fl_householderQRPanel fp m p A).Q =
+      fl_householderQRPanel_Qhat fp m p A := rfl
+
+@[simp] theorem fl_householderQR_Q_exact_field (fp : FPModel)
+    (n : ℕ) (A : Fin n → Fin n → ℝ) :
+    (fl_householderQR fp n A).Q_exact = fl_householderQR_Q fp n A := rfl
+
+@[simp] theorem fl_householderQR_R_field (fp : FPModel)
+    (n : ℕ) (A : Fin n → Fin n → ℝ) :
+    (fl_householderQR fp n A).R = fl_householderQR_R fp n A := rfl
+
+@[simp] theorem fl_householderQR_Q_field (fp : FPModel)
+    (n : ℕ) (A : Fin n → Fin n → ℝ) :
+    (fl_householderQR fp n A).Q = fl_householderQR_Qhat fp n A := rfl
+
+@[simp] theorem fl_householderQR_witness_eq_result (fp : FPModel)
+    (n : ℕ) (A : Fin n → Fin n → ℝ) :
+    fl_householderQR_witness fp n A =
+      { Q := (fl_householderQR fp n A).Q_exact
+        R := (fl_householderQR fp n A).R } := rfl
 
 /-- Public concrete computed-factor object for the current Householder QR
     implementation.
@@ -2719,54 +2890,56 @@ structure HouseholderQRPanelComputedFactors (m p : ℕ) where
 
 /-- Concrete rounded `(Q_hat, R_hat)` pair for the zero-aware Householder QR
     implementation. -/
-noncomputable def fl_householderQR_computed_safe (fp : FPModel) (n : ℕ)
+noncomputable def fl_householderQR_computed (fp : FPModel) (n : ℕ)
     (A : Fin n → Fin n → ℝ) : HouseholderQRComputedFactors n :=
-  { Q_hat := fl_householderQR_Qhat_safe fp n A
-    R_hat := fl_householderQR_R_safe fp n A }
+  { Q_hat := (fl_householderQR fp n A).Q
+    R_hat := (fl_householderQR fp n A).R }
 
-@[simp] theorem fl_householderQR_computed_safe_Q_hat (fp : FPModel) (n : ℕ)
+@[simp] theorem fl_householderQR_computed_Q_hat (fp : FPModel) (n : ℕ)
     (A : Fin n → Fin n → ℝ) :
-    (fl_householderQR_computed_safe fp n A).Q_hat =
-      fl_householderQR_Qhat_safe fp n A := rfl
+    (fl_householderQR_computed fp n A).Q_hat =
+      fl_householderQR_Qhat fp n A := rfl
 
-@[simp] theorem fl_householderQR_computed_safe_R_hat (fp : FPModel) (n : ℕ)
+@[simp] theorem fl_householderQR_computed_R_hat (fp : FPModel) (n : ℕ)
     (A : Fin n → Fin n → ℝ) :
-    (fl_householderQR_computed_safe fp n A).R_hat =
-      fl_householderQR_R_safe fp n A := rfl
+    (fl_householderQR_computed fp n A).R_hat =
+      fl_householderQR_R fp n A := rfl
 
 /-- Concrete rounded `(Q_hat, R_hat)` pair for the zero-aware rectangular
     Householder QR panel implementation. -/
-noncomputable def fl_householderQRPanel_computed_safe (fp : FPModel)
+noncomputable def fl_householderQRPanel_computed (fp : FPModel)
     (m p : ℕ) (A : Fin m → Fin p → ℝ) :
     HouseholderQRPanelComputedFactors m p :=
-  { Q_hat := fl_householderQRPanel_Qhat_safe fp m p A
-    R_hat := fl_householderQRPanel_R_safe fp m p A }
+  { Q_hat := (fl_householderQRPanel fp m p A).Q
+    R_hat := (fl_householderQRPanel fp m p A).R }
 
-@[simp] theorem fl_householderQRPanel_computed_safe_Q_hat (fp : FPModel)
+@[simp] theorem fl_householderQRPanel_computed_Q_hat (fp : FPModel)
     (m p : ℕ) (A : Fin m → Fin p → ℝ) :
-    (fl_householderQRPanel_computed_safe fp m p A).Q_hat =
-      fl_householderQRPanel_Qhat_safe fp m p A := rfl
+    (fl_householderQRPanel_computed fp m p A).Q_hat =
+      fl_householderQRPanel_Qhat fp m p A := rfl
 
-@[simp] theorem fl_householderQRPanel_computed_safe_R_hat (fp : FPModel)
+@[simp] theorem fl_householderQRPanel_computed_R_hat (fp : FPModel)
     (m p : ℕ) (A : Fin m → Fin p → ℝ) :
-    (fl_householderQRPanel_computed_safe fp m p A).R_hat =
-      fl_householderQRPanel_R_safe fp m p A := rfl
+    (fl_householderQRPanel_computed fp m p A).R_hat =
+      fl_householderQRPanel_R fp m p A := rfl
 
-/-- Recursive readiness predicate for the concrete Householder QR `R` panel
-    algorithm.
+/-- Readiness predicate for the zero-aware Householder QR panel algorithm.
 
-    Each nonempty active panel needs a nonzero first column and the gamma
-    validity condition required by the concrete first-column Householder
-    construction/application bridge.  The predicate then recurses on the
-    computed trailing panel used by `fl_householderQRPanel_R`. -/
+    Unlike `HouseholderQRPanelReady`, this predicate does not require every
+    active first column to be nonzero.  A zero active column is handled by an
+    exact skip branch; only the nonzero branch needs the gamma-validity
+    hypothesis required by the rounded Householder construction/application
+    theorem. -/
 def HouseholderQRPanelReady (fp : FPModel) :
     (m p : ℕ) → (Fin m → Fin p → ℝ) → Prop
   | 0, _, _ => True
   | Nat.succ _, 0, _ => True
   | m + 1, p + 1, A =>
-      panelFirstColumn (Nat.succ_pos p) A ≠ 0 ∧
-      gammaValid fp (11 * (m + 1) + 23) ∧
-      HouseholderQRPanelReady fp m p (fl_householderTrailingPanelStep fp A)
+      if panelFirstColumn (Nat.succ_pos p) A = 0 then
+        HouseholderQRPanelReady fp m p (trailingPanel A)
+      else
+        gammaValid fp (11 * (m + 1) + 23) ∧
+        HouseholderQRPanelReady fp m p (fl_householderTrailingPanelStep fp A)
 
 @[simp] theorem HouseholderQRPanelReady_zero_rows (fp : FPModel)
     {p : ℕ} (A : Fin 0 → Fin p → ℝ) :
@@ -2778,69 +2951,33 @@ def HouseholderQRPanelReady (fp : FPModel) :
     HouseholderQRPanelReady fp (m + 1) 0 A := by
   trivial
 
-@[simp] theorem HouseholderQRPanelReady_succ_succ (fp : FPModel)
-    {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ) :
-    HouseholderQRPanelReady fp (m + 1) (p + 1) A ↔
-      panelFirstColumn (Nat.succ_pos p) A ≠ 0 ∧
-      gammaValid fp (11 * (m + 1) + 23) ∧
-      HouseholderQRPanelReady fp m p (fl_householderTrailingPanelStep fp A) := by
-  rfl
-
-/-- Readiness predicate for the zero-aware Householder QR panel algorithm.
-
-    Unlike `HouseholderQRPanelReady`, this predicate does not require every
-    active first column to be nonzero.  A zero active column is handled by an
-    exact skip branch; only the nonzero branch needs the gamma-validity
-    hypothesis required by the rounded Householder construction/application
-    theorem. -/
-def HouseholderQRPanelSafeReady (fp : FPModel) :
-    (m p : ℕ) → (Fin m → Fin p → ℝ) → Prop
-  | 0, _, _ => True
-  | Nat.succ _, 0, _ => True
-  | m + 1, p + 1, A =>
-      if panelFirstColumn (Nat.succ_pos p) A = 0 then
-        HouseholderQRPanelSafeReady fp m p (trailingPanel A)
-      else
-        gammaValid fp (11 * (m + 1) + 23) ∧
-        HouseholderQRPanelSafeReady fp m p (fl_householderTrailingPanelStep fp A)
-
-@[simp] theorem HouseholderQRPanelSafeReady_zero_rows (fp : FPModel)
-    {p : ℕ} (A : Fin 0 → Fin p → ℝ) :
-    HouseholderQRPanelSafeReady fp 0 p A := by
-  trivial
-
-@[simp] theorem HouseholderQRPanelSafeReady_zero_cols (fp : FPModel)
-    {m : ℕ} (A : Fin (m + 1) → Fin 0 → ℝ) :
-    HouseholderQRPanelSafeReady fp (m + 1) 0 A := by
-  trivial
-
-@[simp] theorem HouseholderQRPanelSafeReady_succ_succ_zero (fp : FPModel)
+@[simp] theorem HouseholderQRPanelReady_succ_succ_zero (fp : FPModel)
     {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ)
     (hcol : panelFirstColumn (Nat.succ_pos p) A = 0) :
-    HouseholderQRPanelSafeReady fp (m + 1) (p + 1) A ↔
-      HouseholderQRPanelSafeReady fp m p (trailingPanel A) := by
-  simp [HouseholderQRPanelSafeReady, hcol]
+    HouseholderQRPanelReady fp (m + 1) (p + 1) A ↔
+      HouseholderQRPanelReady fp m p (trailingPanel A) := by
+  simp [HouseholderQRPanelReady, hcol]
 
-@[simp] theorem HouseholderQRPanelSafeReady_succ_succ_nonzero (fp : FPModel)
+@[simp] theorem HouseholderQRPanelReady_succ_succ_nonzero (fp : FPModel)
     {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ)
     (hcol : panelFirstColumn (Nat.succ_pos p) A ≠ 0) :
-    HouseholderQRPanelSafeReady fp (m + 1) (p + 1) A ↔
+    HouseholderQRPanelReady fp (m + 1) (p + 1) A ↔
       gammaValid fp (11 * (m + 1) + 23) ∧
-      HouseholderQRPanelSafeReady fp m p (fl_householderTrailingPanelStep fp A) := by
-  simp [HouseholderQRPanelSafeReady, hcol]
+      HouseholderQRPanelReady fp m p (fl_householderTrailingPanelStep fp A) := by
+  simp [HouseholderQRPanelReady, hcol]
 
 /-- Recursive accumulated perturbation theorem for the rounded `Q_hat` panel
     algorithm.
 
-    Under the same zero-aware readiness predicate used by `R_safe`, the
-    concrete rounded accumulator `fl_householderQRPanel_Qhat_safe` is an exact
+    Under the same zero-aware readiness predicate used by `R`, the
+    concrete rounded accumulator `fl_householderQRPanel_Qhat` is an exact
     orthogonal matrix plus a perturbation bounded by the raw recursive
     accumulator `householderQRPanel_QhatAccumBound`. -/
-theorem fl_householderQRPanel_Qhat_safe_accum_error (fp : FPModel) :
+theorem fl_householderQRPanel_Qhat_accum_error (fp : FPModel) :
     ∀ (m p : ℕ) (A : Fin m → Fin p → ℝ),
-      HouseholderQRPanelSafeReady fp m p A →
+      HouseholderQRPanelReady fp m p A →
       HouseholderQRPanelQhatAccumError m
-        (fl_householderQRPanel_Qhat_safe fp m p A)
+        (fl_householderQRPanel_Qhat fp m p A)
         (householderQRPanel_QhatAccumBound fp m p A) := by
   intro m
   induction m with
@@ -2863,7 +3000,7 @@ theorem fl_householderQRPanel_Qhat_safe_accum_error (fp : FPModel) :
           let Z : Fin (m + 1) → Fin (m + 1) → ℝ := fun _ _ => 0
           refine ⟨⟨idMatrix (m + 1), Z, idMatrix_orthogonal (m + 1), ?_, ?_⟩⟩
           · intro i j
-            simp [fl_householderQRPanel_Qhat_safe, Z]
+            simp [fl_householderQRPanel_Qhat, Z]
           · have hZ : frobNorm Z = 0 := by
               rw [frobNorm_eq_zero_iff]
               intro i j
@@ -2873,86 +3010,86 @@ theorem fl_householderQRPanel_Qhat_safe_accum_error (fp : FPModel) :
           intro A hready
           by_cases hcol : panelFirstColumn (Nat.succ_pos p) A = 0
           · have htailReady :
-                HouseholderQRPanelSafeReady fp m p (trailingPanel A) := by
-              simpa [HouseholderQRPanelSafeReady, hcol] using hready
+                HouseholderQRPanelReady fp m p (trailingPanel A) := by
+              simpa [HouseholderQRPanelReady, hcol] using hready
             have hTailBase :=
               ih p (trailingPanel A) htailReady
             have hTail :
                 HouseholderQRPanelQhatAccumError m
-                  (fl_householderQRPanel_Qhat_tail_safe fp A)
+                  (fl_householderQRPanel_Qhat_tail fp A)
                   (householderQRPanel_QhatAccumBound fp m p
-                    (fl_householderTrailingPanelStepSafe fp A)) := by
-              simpa [fl_householderQRPanel_Qhat_tail_safe,
-                fl_householderTrailingPanelStepSafe, hcol] using hTailBase
+                    (fl_householderQRPanelNext fp A)) := by
+              simpa [fl_householderQRPanel_Qhat_tail,
+                fl_householderQRPanelNext, hcol] using hTailBase
             have hStep :
                 ∃ E : Fin (m + 1) → Fin (m + 1) → ℝ,
                   (∀ i j : Fin (m + 1),
-                    fl_householderQRPanel_Qhat_safe fp (m + 1) (p + 1) A i j =
+                    fl_householderQRPanel_Qhat fp (m + 1) (p + 1) A i j =
                       matMulRect (m + 1) (m + 1) (m + 1)
-                        (householderQRPanel_Qhat_stepP_safe A)
+                        (householderQRPanel_Qhat_stepP A)
                         (embedTrailingOne
-                          (fl_householderQRPanel_Qhat_tail_safe fp A)) i j +
+                          (fl_householderQRPanel_Qhat_tail fp A)) i j +
                         E i j) ∧
                   frobNorm E ≤
-                    householderQRPanel_Qhat_stepCoeff_safe fp A *
+                    householderQRPanel_Qhat_stepCoeff fp A *
                       frobNorm
                         (embedTrailingOne
-                          (fl_householderQRPanel_Qhat_tail_safe fp A)) := by
-              simpa [householderQRPanel_Qhat_stepP_safe,
-                householderQRPanel_Qhat_stepCoeff_safe,
-                fl_householderQRPanel_Qhat_tail_safe,
-                fl_householderTrailingPanelStepSafe, hcol] using
-                fl_householderQRPanel_Qhat_safe_succ_succ_zero_residual_bound
+                          (fl_householderQRPanel_Qhat_tail fp A)) := by
+              simpa [householderQRPanel_Qhat_stepP,
+                householderQRPanel_Qhat_stepCoeff,
+                fl_householderQRPanel_Qhat_tail,
+                fl_householderQRPanelNext, hcol] using
+                fl_householderQRPanel_Qhat_succ_succ_zero_residual_bound
                   fp A hcol
             have hP :
-                IsOrthogonal (m + 1) (householderQRPanel_Qhat_stepP_safe A) := by
-              simpa [householderQRPanel_Qhat_stepP_safe, hcol] using
+                IsOrthogonal (m + 1) (householderQRPanel_Qhat_stepP A) := by
+              simpa [householderQRPanel_Qhat_stepP, hcol] using
                 idMatrix_orthogonal (m + 1)
             have hCons :=
               HouseholderQRPanelQhatAccumError.cons hTail
-                (householderQRPanel_Qhat_stepP_safe A)
-                (fl_householderQRPanel_Qhat_safe fp (m + 1) (p + 1) A)
-                (householderQRPanel_Qhat_stepCoeff_safe fp A) hP hStep
+                (householderQRPanel_Qhat_stepP A)
+                (fl_householderQRPanel_Qhat fp (m + 1) (p + 1) A)
+                (householderQRPanel_Qhat_stepCoeff fp A) hP hStep
             simpa [householderQRPanel_QhatAccumBound] using hCons
           · have hready' :
                 gammaValid fp (11 * (m + 1) + 23) ∧
-                HouseholderQRPanelSafeReady fp m p
+                HouseholderQRPanelReady fp m p
                   (fl_householderTrailingPanelStep fp A) := by
-              simpa [HouseholderQRPanelSafeReady, hcol] using hready
+              simpa [HouseholderQRPanelReady, hcol] using hready
             have hTailBase :=
               ih p (fl_householderTrailingPanelStep fp A) hready'.2
             have hTail :
                 HouseholderQRPanelQhatAccumError m
-                  (fl_householderQRPanel_Qhat_tail_safe fp A)
+                  (fl_householderQRPanel_Qhat_tail fp A)
                   (householderQRPanel_QhatAccumBound fp m p
-                    (fl_householderTrailingPanelStepSafe fp A)) := by
-              simpa [fl_householderQRPanel_Qhat_tail_safe,
-                fl_householderTrailingPanelStepSafe, hcol] using hTailBase
+                    (fl_householderQRPanelNext fp A)) := by
+              simpa [fl_householderQRPanel_Qhat_tail,
+                fl_householderQRPanelNext, hcol] using hTailBase
             have hStep :=
-              fl_householderQRPanel_Qhat_safe_succ_succ_residual_bound
+              fl_householderQRPanel_Qhat_succ_succ_residual_bound
                 fp A hready'.1
             have hP :=
-              householderQRPanel_Qhat_stepP_safe_orthogonal fp A hready'.1
+              householderQRPanel_Qhat_stepP_orthogonal fp A hready'.1
             have hCons :=
               HouseholderQRPanelQhatAccumError.cons hTail
-                (householderQRPanel_Qhat_stepP_safe A)
-                (fl_householderQRPanel_Qhat_safe fp (m + 1) (p + 1) A)
-                (householderQRPanel_Qhat_stepCoeff_safe fp A) hP hStep
+                (householderQRPanel_Qhat_stepP A)
+                (fl_householderQRPanel_Qhat fp (m + 1) (p + 1) A)
+                (householderQRPanel_Qhat_stepCoeff fp A) hP hStep
             simpa [householderQRPanel_QhatAccumBound] using hCons
 
 /-- Recursive accumulated perturbation theorem for the rounded `Q_hat` panel
     algorithm using the closed recursive bound.
 
-    Compared with `fl_householderQRPanel_Qhat_safe_accum_error`, this statement
+    Compared with `fl_householderQRPanel_Qhat_accum_error`, this statement
     removes the explicit dependence on the actual embedded tail accumulator norm
     from the bound.  Each step instead uses
     `sqrt (m + 1) + ηtail`, where `ηtail` is the already accumulated tail
     perturbation bound. -/
-theorem fl_householderQRPanel_Qhat_safe_closed_accum_error (fp : FPModel) :
+theorem fl_householderQRPanel_Qhat_closed_accum_error (fp : FPModel) :
     ∀ (m p : ℕ) (A : Fin m → Fin p → ℝ),
-      HouseholderQRPanelSafeReady fp m p A →
+      HouseholderQRPanelReady fp m p A →
       HouseholderQRPanelQhatAccumError m
-        (fl_householderQRPanel_Qhat_safe fp m p A)
+        (fl_householderQRPanel_Qhat fp m p A)
         (householderQRPanel_QhatClosedBound fp m p A) := by
   intro m
   induction m with
@@ -2975,7 +3112,7 @@ theorem fl_householderQRPanel_Qhat_safe_closed_accum_error (fp : FPModel) :
           let Z : Fin (m + 1) → Fin (m + 1) → ℝ := fun _ _ => 0
           refine ⟨⟨idMatrix (m + 1), Z, idMatrix_orthogonal (m + 1), ?_, ?_⟩⟩
           · intro i j
-            simp [fl_householderQRPanel_Qhat_safe, Z]
+            simp [fl_householderQRPanel_Qhat, Z]
           · have hZ : frobNorm Z = 0 := by
               rw [frobNorm_eq_zero_iff]
               intro i j
@@ -2985,91 +3122,91 @@ theorem fl_householderQRPanel_Qhat_safe_closed_accum_error (fp : FPModel) :
           intro A hready
           by_cases hcol : panelFirstColumn (Nat.succ_pos p) A = 0
           · have htailReady :
-                HouseholderQRPanelSafeReady fp m p (trailingPanel A) := by
-              simpa [HouseholderQRPanelSafeReady, hcol] using hready
+                HouseholderQRPanelReady fp m p (trailingPanel A) := by
+              simpa [HouseholderQRPanelReady, hcol] using hready
             have hTailBase :=
               ih p (trailingPanel A) htailReady
             have hTail :
                 HouseholderQRPanelQhatAccumError m
-                  (fl_householderQRPanel_Qhat_tail_safe fp A)
+                  (fl_householderQRPanel_Qhat_tail fp A)
                   (householderQRPanel_QhatClosedBound fp m p
-                    (fl_householderTrailingPanelStepSafe fp A)) := by
-              simpa [fl_householderQRPanel_Qhat_tail_safe,
-                fl_householderTrailingPanelStepSafe, hcol] using hTailBase
+                    (fl_householderQRPanelNext fp A)) := by
+              simpa [fl_householderQRPanel_Qhat_tail,
+                fl_householderQRPanelNext, hcol] using hTailBase
             have hStep :
                 ∃ E : Fin (m + 1) → Fin (m + 1) → ℝ,
                   (∀ i j : Fin (m + 1),
-                    fl_householderQRPanel_Qhat_safe fp (m + 1) (p + 1) A i j =
+                    fl_householderQRPanel_Qhat fp (m + 1) (p + 1) A i j =
                       matMulRect (m + 1) (m + 1) (m + 1)
-                        (householderQRPanel_Qhat_stepP_safe A)
+                        (householderQRPanel_Qhat_stepP A)
                         (embedTrailingOne
-                          (fl_householderQRPanel_Qhat_tail_safe fp A)) i j +
+                          (fl_householderQRPanel_Qhat_tail fp A)) i j +
                         E i j) ∧
                   frobNorm E ≤
-                    householderQRPanel_Qhat_stepCoeff_safe fp A *
+                    householderQRPanel_Qhat_stepCoeff fp A *
                       frobNorm
                         (embedTrailingOne
-                          (fl_householderQRPanel_Qhat_tail_safe fp A)) := by
-              simpa [householderQRPanel_Qhat_stepP_safe,
-                householderQRPanel_Qhat_stepCoeff_safe,
-                fl_householderQRPanel_Qhat_tail_safe,
-                fl_householderTrailingPanelStepSafe, hcol] using
-                fl_householderQRPanel_Qhat_safe_succ_succ_zero_residual_bound
+                          (fl_householderQRPanel_Qhat_tail fp A)) := by
+              simpa [householderQRPanel_Qhat_stepP,
+                householderQRPanel_Qhat_stepCoeff,
+                fl_householderQRPanel_Qhat_tail,
+                fl_householderQRPanelNext, hcol] using
+                fl_householderQRPanel_Qhat_succ_succ_zero_residual_bound
                   fp A hcol
             have hP :
-                IsOrthogonal (m + 1) (householderQRPanel_Qhat_stepP_safe A) := by
-              simpa [householderQRPanel_Qhat_stepP_safe, hcol] using
+                IsOrthogonal (m + 1) (householderQRPanel_Qhat_stepP A) := by
+              simpa [householderQRPanel_Qhat_stepP, hcol] using
                 idMatrix_orthogonal (m + 1)
-            have hc : 0 ≤ householderQRPanel_Qhat_stepCoeff_safe fp A := by
-              simp [householderQRPanel_Qhat_stepCoeff_safe, hcol]
+            have hc : 0 ≤ householderQRPanel_Qhat_stepCoeff fp A := by
+              simp [householderQRPanel_Qhat_stepCoeff, hcol]
             have hCons :=
               HouseholderQRPanelQhatAccumError.cons_closed hTail
-                (householderQRPanel_Qhat_stepP_safe A)
-                (fl_householderQRPanel_Qhat_safe fp (m + 1) (p + 1) A)
-                (householderQRPanel_Qhat_stepCoeff_safe fp A) hP hc hStep
+                (householderQRPanel_Qhat_stepP A)
+                (fl_householderQRPanel_Qhat fp (m + 1) (p + 1) A)
+                (householderQRPanel_Qhat_stepCoeff fp A) hP hc hStep
             simpa [householderQRPanel_QhatClosedBound] using hCons
           · have hready' :
                 gammaValid fp (11 * (m + 1) + 23) ∧
-                HouseholderQRPanelSafeReady fp m p
+                HouseholderQRPanelReady fp m p
                   (fl_householderTrailingPanelStep fp A) := by
-              simpa [HouseholderQRPanelSafeReady, hcol] using hready
+              simpa [HouseholderQRPanelReady, hcol] using hready
             have hTailBase :=
               ih p (fl_householderTrailingPanelStep fp A) hready'.2
             have hTail :
                 HouseholderQRPanelQhatAccumError m
-                  (fl_householderQRPanel_Qhat_tail_safe fp A)
+                  (fl_householderQRPanel_Qhat_tail fp A)
                   (householderQRPanel_QhatClosedBound fp m p
-                    (fl_householderTrailingPanelStepSafe fp A)) := by
-              simpa [fl_householderQRPanel_Qhat_tail_safe,
-                fl_householderTrailingPanelStepSafe, hcol] using hTailBase
+                    (fl_householderQRPanelNext fp A)) := by
+              simpa [fl_householderQRPanel_Qhat_tail,
+                fl_householderQRPanelNext, hcol] using hTailBase
             have hStep :=
-              fl_householderQRPanel_Qhat_safe_succ_succ_residual_bound
+              fl_householderQRPanel_Qhat_succ_succ_residual_bound
                 fp A hready'.1
             have hP :=
-              householderQRPanel_Qhat_stepP_safe_orthogonal fp A hready'.1
+              householderQRPanel_Qhat_stepP_orthogonal fp A hready'.1
             have hc :=
-              householderQRPanel_Qhat_stepCoeff_safe_nonneg fp A hready'.1
+              householderQRPanel_Qhat_stepCoeff_nonneg fp A hready'.1
             have hCons :=
               HouseholderQRPanelQhatAccumError.cons_closed hTail
-                (householderQRPanel_Qhat_stepP_safe A)
-                (fl_householderQRPanel_Qhat_safe fp (m + 1) (p + 1) A)
-                (householderQRPanel_Qhat_stepCoeff_safe fp A) hP hc hStep
+                (householderQRPanel_Qhat_stepP A)
+                (fl_householderQRPanel_Qhat fp (m + 1) (p + 1) A)
+                (householderQRPanel_Qhat_stepCoeff fp A) hP hc hStep
             simpa [householderQRPanel_QhatClosedBound] using hCons
 
 /-- Recursive accumulated perturbation theorem for the rounded `Q_hat` panel
-    algorithm with the exact reference factor fixed to `Q_safe`.
+    algorithm with the exact reference factor fixed to `Q`.
 
     This strengthens the existential accumulated theorem: the exact orthogonal
     matrix explaining the rounded `Q_hat` perturbation can be chosen to be the
-    same recursive `fl_householderQRPanel_Q_safe` witness used by the
+    same recursive `fl_householderQRPanel_Q` witness used by the
     Householder QR backward-error proof. -/
-theorem fl_householderQRPanel_Qhat_safe_fixed_Q_safe_closed_accum_error
+theorem fl_householderQRPanel_Qhat_fixed_Q_closed_accum_error
     (fp : FPModel) :
     ∀ (m p : ℕ) (A : Fin m → Fin p → ℝ),
-      HouseholderQRPanelSafeReady fp m p A →
+      HouseholderQRPanelReady fp m p A →
       HouseholderQRPanelQhatFixedAccumError m
-        (fl_householderQRPanel_Q_safe fp m p A)
-        (fl_householderQRPanel_Qhat_safe fp m p A)
+        (fl_householderQRPanel_Q fp m p A)
+        (fl_householderQRPanel_Qhat fp m p A)
         (householderQRPanel_QhatClosedBound fp m p A) := by
   intro m
   induction m with
@@ -3077,7 +3214,7 @@ theorem fl_householderQRPanel_Qhat_safe_fixed_Q_safe_closed_accum_error
       intro p A _hready
       let Z : Fin 0 → Fin 0 → ℝ := fun i _ => Fin.elim0 i
       refine ⟨?_, ⟨Z, ?_, ?_⟩⟩
-      · simpa [fl_householderQRPanel_Q_safe] using idMatrix_orthogonal 0
+      · simpa [fl_householderQRPanel_Q] using idMatrix_orthogonal 0
       · intro i
         exact Fin.elim0 i
       · have hZ : frobNorm Z = 0 := by
@@ -3092,11 +3229,11 @@ theorem fl_householderQRPanel_Qhat_safe_fixed_Q_safe_closed_accum_error
           intro A _hready
           let Z : Fin (m + 1) → Fin (m + 1) → ℝ := fun _ _ => 0
           refine ⟨?_, ⟨Z, ?_, ?_⟩⟩
-          · simpa [fl_householderQRPanel_Q_safe] using
+          · simpa [fl_householderQRPanel_Q] using
               idMatrix_orthogonal (m + 1)
           · intro i j
-            simp [fl_householderQRPanel_Q_safe,
-              fl_householderQRPanel_Qhat_safe, Z]
+            simp [fl_householderQRPanel_Q,
+              fl_householderQRPanel_Qhat, Z]
           · have hZ : frobNorm Z = 0 := by
               rw [frobNorm_eq_zero_iff]
               intro i j
@@ -3106,85 +3243,85 @@ theorem fl_householderQRPanel_Qhat_safe_fixed_Q_safe_closed_accum_error
           intro A hready
           by_cases hcol : panelFirstColumn (Nat.succ_pos p) A = 0
           · have htailReady :
-                HouseholderQRPanelSafeReady fp m p (trailingPanel A) := by
-              simpa [HouseholderQRPanelSafeReady, hcol] using hready
+                HouseholderQRPanelReady fp m p (trailingPanel A) := by
+              simpa [HouseholderQRPanelReady, hcol] using hready
             have hTailBase :=
               ih p (trailingPanel A) htailReady
             have hTail :
                 HouseholderQRPanelQhatFixedAccumError m
-                  (fl_householderQRPanel_Q_safe fp m p
-                    (fl_householderTrailingPanelStepSafe fp A))
-                  (fl_householderQRPanel_Qhat_tail_safe fp A)
+                  (fl_householderQRPanel_Q fp m p
+                    (fl_householderQRPanelNext fp A))
+                  (fl_householderQRPanel_Qhat_tail fp A)
                   (householderQRPanel_QhatClosedBound fp m p
-                    (fl_householderTrailingPanelStepSafe fp A)) := by
-              simpa [fl_householderQRPanel_Qhat_tail_safe,
-                fl_householderTrailingPanelStepSafe, hcol] using hTailBase
+                    (fl_householderQRPanelNext fp A)) := by
+              simpa [fl_householderQRPanel_Qhat_tail,
+                fl_householderQRPanelNext, hcol] using hTailBase
             have hStep :
                 ∃ E : Fin (m + 1) → Fin (m + 1) → ℝ,
                   (∀ i j : Fin (m + 1),
-                    fl_householderQRPanel_Qhat_safe fp (m + 1) (p + 1) A i j =
+                    fl_householderQRPanel_Qhat fp (m + 1) (p + 1) A i j =
                       matMulRect (m + 1) (m + 1) (m + 1)
-                        (householderQRPanel_Qhat_stepP_safe A)
+                        (householderQRPanel_Qhat_stepP A)
                         (embedTrailingOne
-                          (fl_householderQRPanel_Qhat_tail_safe fp A)) i j +
+                          (fl_householderQRPanel_Qhat_tail fp A)) i j +
                         E i j) ∧
                   frobNorm E ≤
-                    householderQRPanel_Qhat_stepCoeff_safe fp A *
+                    householderQRPanel_Qhat_stepCoeff fp A *
                       frobNorm
                         (embedTrailingOne
-                          (fl_householderQRPanel_Qhat_tail_safe fp A)) := by
-              simpa [householderQRPanel_Qhat_stepP_safe,
-                householderQRPanel_Qhat_stepCoeff_safe,
-                fl_householderQRPanel_Qhat_tail_safe,
-                fl_householderTrailingPanelStepSafe, hcol] using
-                fl_householderQRPanel_Qhat_safe_succ_succ_zero_residual_bound
+                          (fl_householderQRPanel_Qhat_tail fp A)) := by
+              simpa [householderQRPanel_Qhat_stepP,
+                householderQRPanel_Qhat_stepCoeff,
+                fl_householderQRPanel_Qhat_tail,
+                fl_householderQRPanelNext, hcol] using
+                fl_householderQRPanel_Qhat_succ_succ_zero_residual_bound
                   fp A hcol
             have hP :
-                IsOrthogonal (m + 1) (householderQRPanel_Qhat_stepP_safe A) := by
-              simpa [householderQRPanel_Qhat_stepP_safe, hcol] using
+                IsOrthogonal (m + 1) (householderQRPanel_Qhat_stepP A) := by
+              simpa [householderQRPanel_Qhat_stepP, hcol] using
                 idMatrix_orthogonal (m + 1)
-            have hc : 0 ≤ householderQRPanel_Qhat_stepCoeff_safe fp A := by
-              simp [householderQRPanel_Qhat_stepCoeff_safe, hcol]
+            have hc : 0 ≤ householderQRPanel_Qhat_stepCoeff fp A := by
+              simp [householderQRPanel_Qhat_stepCoeff, hcol]
             have hQref :=
-              fl_householderQRPanel_Q_safe_succ_succ_as_stepP_safe fp A
+              fl_householderQRPanel_Q_succ_succ_as_stepP fp A
             have hCons :=
               HouseholderQRPanelQhatFixedAccumError.cons_closed hTail
-                (householderQRPanel_Qhat_stepP_safe A)
-                (fl_householderQRPanel_Q_safe fp (m + 1) (p + 1) A)
-                (fl_householderQRPanel_Qhat_safe fp (m + 1) (p + 1) A)
-                (householderQRPanel_Qhat_stepCoeff_safe fp A) hP hc hQref hStep
+                (householderQRPanel_Qhat_stepP A)
+                (fl_householderQRPanel_Q fp (m + 1) (p + 1) A)
+                (fl_householderQRPanel_Qhat fp (m + 1) (p + 1) A)
+                (householderQRPanel_Qhat_stepCoeff fp A) hP hc hQref hStep
             simpa [householderQRPanel_QhatClosedBound] using hCons
           · have hready' :
                 gammaValid fp (11 * (m + 1) + 23) ∧
-                HouseholderQRPanelSafeReady fp m p
+                HouseholderQRPanelReady fp m p
                   (fl_householderTrailingPanelStep fp A) := by
-              simpa [HouseholderQRPanelSafeReady, hcol] using hready
+              simpa [HouseholderQRPanelReady, hcol] using hready
             have hTailBase :=
               ih p (fl_householderTrailingPanelStep fp A) hready'.2
             have hTail :
                 HouseholderQRPanelQhatFixedAccumError m
-                  (fl_householderQRPanel_Q_safe fp m p
-                    (fl_householderTrailingPanelStepSafe fp A))
-                  (fl_householderQRPanel_Qhat_tail_safe fp A)
+                  (fl_householderQRPanel_Q fp m p
+                    (fl_householderQRPanelNext fp A))
+                  (fl_householderQRPanel_Qhat_tail fp A)
                   (householderQRPanel_QhatClosedBound fp m p
-                    (fl_householderTrailingPanelStepSafe fp A)) := by
-              simpa [fl_householderQRPanel_Qhat_tail_safe,
-                fl_householderTrailingPanelStepSafe, hcol] using hTailBase
+                    (fl_householderQRPanelNext fp A)) := by
+              simpa [fl_householderQRPanel_Qhat_tail,
+                fl_householderQRPanelNext, hcol] using hTailBase
             have hStep :=
-              fl_householderQRPanel_Qhat_safe_succ_succ_residual_bound
+              fl_householderQRPanel_Qhat_succ_succ_residual_bound
                 fp A hready'.1
             have hP :=
-              householderQRPanel_Qhat_stepP_safe_orthogonal fp A hready'.1
+              householderQRPanel_Qhat_stepP_orthogonal fp A hready'.1
             have hc :=
-              householderQRPanel_Qhat_stepCoeff_safe_nonneg fp A hready'.1
+              householderQRPanel_Qhat_stepCoeff_nonneg fp A hready'.1
             have hQref :=
-              fl_householderQRPanel_Q_safe_succ_succ_as_stepP_safe fp A
+              fl_householderQRPanel_Q_succ_succ_as_stepP fp A
             have hCons :=
               HouseholderQRPanelQhatFixedAccumError.cons_closed hTail
-                (householderQRPanel_Qhat_stepP_safe A)
-                (fl_householderQRPanel_Q_safe fp (m + 1) (p + 1) A)
-                (fl_householderQRPanel_Qhat_safe fp (m + 1) (p + 1) A)
-                (householderQRPanel_Qhat_stepCoeff_safe fp A) hP hc hQref hStep
+                (householderQRPanel_Qhat_stepP A)
+                (fl_householderQRPanel_Q fp (m + 1) (p + 1) A)
+                (fl_householderQRPanel_Qhat fp (m + 1) (p + 1) A)
+                (householderQRPanel_Qhat_stepCoeff fp A) hP hc hQref hStep
             simpa [householderQRPanel_QhatClosedBound] using hCons
 
 /-- A single global gamma-validity hypothesis supplies all branch-local
@@ -3194,11 +3331,11 @@ theorem fl_householderQRPanel_Qhat_safe_fixed_Q_safe_closed_accum_error
     Zero active columns require no rounded reflector theorem.  Nonzero active
     columns use `gammaValid fp (11 * rows + 23)`, which follows by monotonicity
     from the global row bound. -/
-theorem HouseholderQRPanelSafeReady_of_global_gammaValid (fp : FPModel) :
+theorem HouseholderQRPanelReady_of_global_gammaValid (fp : FPModel) :
     ∀ (m p N : ℕ) (A : Fin m → Fin p → ℝ),
       m ≤ N →
       gammaValid fp (11 * N + 23) →
-      HouseholderQRPanelSafeReady fp m p A := by
+      HouseholderQRPanelReady fp m p A := by
   intro m
   induction m with
   | zero =>
@@ -3212,271 +3349,271 @@ theorem HouseholderQRPanelSafeReady_of_global_gammaValid (fp : FPModel) :
       | succ p =>
           by_cases hcol : panelFirstColumn (Nat.succ_pos p) A = 0
           · have htail :
-                HouseholderQRPanelSafeReady fp m p (trailingPanel A) :=
+                HouseholderQRPanelReady fp m p (trailingPanel A) :=
               ih p N (trailingPanel A) (by omega) hvalid
-            simpa [HouseholderQRPanelSafeReady, hcol] using htail
+            simpa [HouseholderQRPanelReady, hcol] using htail
           · have hstep : gammaValid fp (11 * (m + 1) + 23) :=
               gammaValid_mono fp (by omega) hvalid
             have htail :
-                HouseholderQRPanelSafeReady fp m p
+                HouseholderQRPanelReady fp m p
                   (fl_householderTrailingPanelStep fp A) :=
               ih p N (fl_householderTrailingPanelStep fp A) (by omega) hvalid
-            simpa [HouseholderQRPanelSafeReady, hcol] using ⟨hstep, htail⟩
+            simpa [HouseholderQRPanelReady, hcol] using ⟨hstep, htail⟩
 
 /-- Square specialization of
-    `HouseholderQRPanelSafeReady_of_global_gammaValid`. -/
-theorem HouseholderQRPanelSafeReady_square_of_global_gammaValid
+    `HouseholderQRPanelReady_of_global_gammaValid`. -/
+theorem HouseholderQRPanelReady_square_of_global_gammaValid
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hvalid : gammaValid fp (11 * n + 23)) :
-    HouseholderQRPanelSafeReady fp n n A :=
-  HouseholderQRPanelSafeReady_of_global_gammaValid fp n n n A
+    HouseholderQRPanelReady fp n n A :=
+  HouseholderQRPanelReady_of_global_gammaValid fp n n n A
     (le_refl n) hvalid
 
 /-- Square specialization of the accumulated perturbation theorem for the
     rounded `Q_hat` algorithm. -/
-theorem fl_householderQR_Qhat_safe_accum_error
+theorem fl_householderQR_Qhat_accum_error
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
-    (hready : HouseholderQRPanelSafeReady fp n n A) :
+    (hready : HouseholderQRPanelReady fp n n A) :
     HouseholderQRPanelQhatAccumError n
-      (fl_householderQR_Qhat_safe fp n A)
+      (fl_householderQR_Qhat fp n A)
       (householderQRPanel_QhatAccumBound fp n n A) := by
-  simpa [fl_householderQR_Qhat_safe] using
-    fl_householderQRPanel_Qhat_safe_accum_error fp n n A hready
+  simpa [fl_householderQR_Qhat] using
+    fl_householderQRPanel_Qhat_accum_error fp n n A hready
 
 /-- Global-gamma wrapper for the accumulated perturbation theorem for the
     rounded `Q_hat` algorithm. -/
-theorem fl_householderQR_Qhat_safe_accum_error_of_global_gammaValid
+theorem fl_householderQR_Qhat_accum_error_of_global_gammaValid
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hvalid : gammaValid fp (11 * n + 23)) :
     HouseholderQRPanelQhatAccumError n
-      (fl_householderQR_Qhat_safe fp n A)
+      (fl_householderQR_Qhat fp n A)
       (householderQRPanel_QhatAccumBound fp n n A) := by
-  exact fl_householderQR_Qhat_safe_accum_error fp n A
-    (HouseholderQRPanelSafeReady_square_of_global_gammaValid fp n A hvalid)
+  exact fl_householderQR_Qhat_accum_error fp n A
+    (HouseholderQRPanelReady_square_of_global_gammaValid fp n A hvalid)
 
 /-- The `Q_hat` field of the concrete computed-factor API is an exact
     orthogonal matrix plus a bounded accumulated perturbation. -/
-theorem fl_householderQR_computed_safe_Q_hat_accum_error_of_global_gammaValid
+theorem fl_householderQR_computed_Q_hat_accum_error_of_global_gammaValid
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hvalid : gammaValid fp (11 * n + 23)) :
     HouseholderQRPanelQhatAccumError n
-      (fl_householderQR_computed_safe fp n A).Q_hat
+      (fl_householderQR_computed fp n A).Q_hat
       (householderQRPanel_QhatAccumBound fp n n A) := by
-  simpa [fl_householderQR_computed_safe] using
-    fl_householderQR_Qhat_safe_accum_error_of_global_gammaValid fp n A hvalid
+  simpa [fl_householderQR_computed] using
+    fl_householderQR_Qhat_accum_error_of_global_gammaValid fp n A hvalid
 
 /-- Square specialization of the closed accumulated perturbation theorem for
     the rounded `Q_hat` algorithm. -/
-theorem fl_householderQR_Qhat_safe_closed_accum_error
+theorem fl_householderQR_Qhat_closed_accum_error
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
-    (hready : HouseholderQRPanelSafeReady fp n n A) :
+    (hready : HouseholderQRPanelReady fp n n A) :
     HouseholderQRPanelQhatAccumError n
-      (fl_householderQR_Qhat_safe fp n A)
+      (fl_householderQR_Qhat fp n A)
       (householderQRPanel_QhatClosedBound fp n n A) := by
-  simpa [fl_householderQR_Qhat_safe] using
-    fl_householderQRPanel_Qhat_safe_closed_accum_error fp n n A hready
+  simpa [fl_householderQR_Qhat] using
+    fl_householderQRPanel_Qhat_closed_accum_error fp n n A hready
 
 /-- Global-gamma wrapper for the closed accumulated perturbation theorem for
     the rounded `Q_hat` algorithm. -/
-theorem fl_householderQR_Qhat_safe_closed_accum_error_of_global_gammaValid
+theorem fl_householderQR_Qhat_closed_accum_error_of_global_gammaValid
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hvalid : gammaValid fp (11 * n + 23)) :
     HouseholderQRPanelQhatAccumError n
-      (fl_householderQR_Qhat_safe fp n A)
+      (fl_householderQR_Qhat fp n A)
       (householderQRPanel_QhatClosedBound fp n n A) := by
-  exact fl_householderQR_Qhat_safe_closed_accum_error fp n A
-    (HouseholderQRPanelSafeReady_square_of_global_gammaValid fp n A hvalid)
+  exact fl_householderQR_Qhat_closed_accum_error fp n A
+    (HouseholderQRPanelReady_square_of_global_gammaValid fp n A hvalid)
 
 /-- The `Q_hat` field of the concrete computed-factor API is an exact
     orthogonal matrix plus a perturbation bounded by the closed recursive
     accumulated `Q_hat` bound. -/
-theorem fl_householderQR_computed_safe_Q_hat_closed_accum_error_of_global_gammaValid
+theorem fl_householderQR_computed_Q_hat_closed_accum_error_of_global_gammaValid
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hvalid : gammaValid fp (11 * n + 23)) :
     HouseholderQRPanelQhatAccumError n
-      (fl_householderQR_computed_safe fp n A).Q_hat
+      (fl_householderQR_computed fp n A).Q_hat
       (householderQRPanel_QhatClosedBound fp n n A) := by
-  simpa [fl_householderQR_computed_safe] using
-    fl_householderQR_Qhat_safe_closed_accum_error_of_global_gammaValid
+  simpa [fl_householderQR_computed] using
+    fl_householderQR_Qhat_closed_accum_error_of_global_gammaValid
       fp n A hvalid
 
-/-- Square specialization of the fixed-`Q_safe` closed accumulated
+/-- Square specialization of the fixed-`Q` closed accumulated
     perturbation theorem for the rounded `Q_hat` algorithm. -/
-theorem fl_householderQR_Qhat_safe_fixed_Q_safe_closed_accum_error
+theorem fl_householderQR_Qhat_fixed_Q_closed_accum_error
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
-    (hready : HouseholderQRPanelSafeReady fp n n A) :
+    (hready : HouseholderQRPanelReady fp n n A) :
     HouseholderQRPanelQhatFixedAccumError n
-      (fl_householderQR_Q_safe fp n A)
-      (fl_householderQR_Qhat_safe fp n A)
+      (fl_householderQR_Q fp n A)
+      (fl_householderQR_Qhat fp n A)
       (householderQRPanel_QhatClosedBound fp n n A) := by
-  simpa [fl_householderQR_Q_safe, fl_householderQR_Qhat_safe] using
-    fl_householderQRPanel_Qhat_safe_fixed_Q_safe_closed_accum_error
+  simpa [fl_householderQR_Q, fl_householderQR_Qhat] using
+    fl_householderQRPanel_Qhat_fixed_Q_closed_accum_error
       fp n n A hready
 
-/-- Global-gamma wrapper for the fixed-`Q_safe` closed accumulated
+/-- Global-gamma wrapper for the fixed-`Q` closed accumulated
     perturbation theorem for the rounded `Q_hat` algorithm. -/
-theorem fl_householderQR_Qhat_safe_fixed_Q_safe_closed_accum_error_of_global_gammaValid
+theorem fl_householderQR_Qhat_fixed_Q_closed_accum_error_of_global_gammaValid
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hvalid : gammaValid fp (11 * n + 23)) :
     HouseholderQRPanelQhatFixedAccumError n
-      (fl_householderQR_Q_safe fp n A)
-      (fl_householderQR_Qhat_safe fp n A)
+      (fl_householderQR_Q fp n A)
+      (fl_householderQR_Qhat fp n A)
       (householderQRPanel_QhatClosedBound fp n n A) := by
-  exact fl_householderQR_Qhat_safe_fixed_Q_safe_closed_accum_error fp n A
-    (HouseholderQRPanelSafeReady_square_of_global_gammaValid fp n A hvalid)
+  exact fl_householderQR_Qhat_fixed_Q_closed_accum_error fp n A
+    (HouseholderQRPanelReady_square_of_global_gammaValid fp n A hvalid)
 
 /-- The `Q_hat` field of the concrete computed-factor API differs from the
-    exact `Q` field of the safe witness by a perturbation bounded by the closed
+    exact `Q` field of the exact witness by a perturbation bounded by the closed
     recursive accumulated `Q_hat` bound. -/
-theorem fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_closed_accum_error_of_global_gammaValid
+theorem fl_householderQR_computed_Q_hat_fixed_Q_closed_accum_error_of_global_gammaValid
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hvalid : gammaValid fp (11 * n + 23)) :
     HouseholderQRPanelQhatFixedAccumError n
-      (fl_householderQR_safe_witness fp n A).Q
-      (fl_householderQR_computed_safe fp n A).Q_hat
+      (fl_householderQR_witness fp n A).Q
+      (fl_householderQR_computed fp n A).Q_hat
       (householderQRPanel_QhatClosedBound fp n n A) := by
-  simpa [fl_householderQR_safe_witness, fl_householderQR_computed_safe] using
-    fl_householderQR_Qhat_safe_fixed_Q_safe_closed_accum_error_of_global_gammaValid
+  simpa [fl_householderQR_witness, fl_householderQR_computed] using
+    fl_householderQR_Qhat_fixed_Q_closed_accum_error_of_global_gammaValid
       fp n A hvalid
 
-/-- Panel theorem bounding the fixed-`Q_safe` accumulated `Q_hat` perturbation
+/-- Panel theorem bounding the fixed-`Q` accumulated `Q_hat` perturbation
     by the dimension-only uniform recursive bound. -/
-theorem fl_householderQRPanel_Qhat_safe_fixed_Q_safe_uniform_accum_error
+theorem fl_householderQRPanel_Qhat_fixed_Q_uniform_accum_error
     (fp : FPModel) (m p N : ℕ) (A : Fin m → Fin p → ℝ)
     (hmN : m ≤ N)
     (hvalid : gammaValid fp (11 * N + 23)) :
     HouseholderQRPanelQhatFixedAccumError m
-      (fl_householderQRPanel_Q_safe fp m p A)
-      (fl_householderQRPanel_Qhat_safe fp m p A)
+      (fl_householderQRPanel_Q fp m p A)
+      (fl_householderQRPanel_Qhat fp m p A)
       (householderQR_QhatUniformClosedBound fp N m) := by
   have hready :
-      HouseholderQRPanelSafeReady fp m p A :=
-    HouseholderQRPanelSafeReady_of_global_gammaValid fp m p N A hmN hvalid
+      HouseholderQRPanelReady fp m p A :=
+    HouseholderQRPanelReady_of_global_gammaValid fp m p N A hmN hvalid
   have hFixed :=
-    fl_householderQRPanel_Qhat_safe_fixed_Q_safe_closed_accum_error
+    fl_householderQRPanel_Qhat_fixed_Q_closed_accum_error
       fp m p A hready
   have hBound :=
     householderQRPanel_QhatClosedBound_le_uniform fp m p N A hmN hvalid
   exact hFixed.mono hBound
 
-/-- Panel/global wrapper for the fixed-`Q_safe` accumulated `Q_hat`
+/-- Panel/global wrapper for the fixed-`Q` accumulated `Q_hat`
     perturbation theorem with a simpler growth bound.
 
     This is the rectangular-panel counterpart of the square
-    `fl_householderQR_Qhat_safe_fixed_Q_safe_growth_accum_error_of_global_gammaValid`.
-    It bounds the concrete rounded accumulated `Q_hat` by the exact `Q_safe`
+    `fl_householderQR_Qhat_fixed_Q_growth_accum_error_of_global_gammaValid`.
+    It bounds the concrete rounded accumulated `Q_hat` by the exact `Q`
     witness using the ambient row bound `N`. -/
-theorem fl_householderQRPanel_Qhat_safe_fixed_Q_safe_growth_accum_error
+theorem fl_householderQRPanel_Qhat_fixed_Q_growth_accum_error
     (fp : FPModel) (m p N : ℕ) (A : Fin m → Fin p → ℝ)
     (hmN : m ≤ N)
     (hvalid : gammaValid fp (11 * N + 23)) :
     HouseholderQRPanelQhatFixedAccumError m
-      (fl_householderQRPanel_Q_safe fp m p A)
-      (fl_householderQRPanel_Qhat_safe fp m p A)
+      (fl_householderQRPanel_Q fp m p A)
+      (fl_householderQRPanel_Qhat fp m p A)
       ((m : ℝ) * householderConstructApplyBound fp N *
         (1 + householderConstructApplyBound fp N) ^ m *
         Real.sqrt (N : ℝ)) := by
   have hUniform :=
-    fl_householderQRPanel_Qhat_safe_fixed_Q_safe_uniform_accum_error
+    fl_householderQRPanel_Qhat_fixed_Q_uniform_accum_error
       fp m p N A hmN hvalid
   have hClosed :
       HouseholderQRPanelQhatFixedAccumError m
-        (fl_householderQRPanel_Q_safe fp m p A)
-        (fl_householderQRPanel_Qhat_safe fp m p A)
+        (fl_householderQRPanel_Q fp m p A)
+        (fl_householderQRPanel_Qhat fp m p A)
         (householderQR_QhatClosedFormBound fp N m) := by
     simpa [householderQR_QhatUniformClosedBound_eq_closedForm] using hUniform
   exact hClosed.mono
     (householderQR_QhatClosedFormBound_le_growth fp N m hvalid)
 
 /-- Square/global wrapper for the dimension-only uniform accumulated `Q_hat`
-    perturbation bound with fixed `Q_safe` reference. -/
-theorem fl_householderQR_Qhat_safe_fixed_Q_safe_uniform_accum_error_of_global_gammaValid
+    perturbation bound with fixed `Q` reference. -/
+theorem fl_householderQR_Qhat_fixed_Q_uniform_accum_error_of_global_gammaValid
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hvalid : gammaValid fp (11 * n + 23)) :
     HouseholderQRPanelQhatFixedAccumError n
-      (fl_householderQR_Q_safe fp n A)
-      (fl_householderQR_Qhat_safe fp n A)
+      (fl_householderQR_Q fp n A)
+      (fl_householderQR_Qhat fp n A)
       (householderQR_QhatUniformClosedBound fp n n) := by
-  simpa [fl_householderQR_Q_safe, fl_householderQR_Qhat_safe] using
-    fl_householderQRPanel_Qhat_safe_fixed_Q_safe_uniform_accum_error
+  simpa [fl_householderQR_Q, fl_householderQR_Qhat] using
+    fl_householderQRPanel_Qhat_fixed_Q_uniform_accum_error
       fp n n n A (le_refl n) hvalid
 
-/-- The computed-factor `Q_hat` field differs from the safe witness `Q` field
+/-- The computed-factor `Q_hat` field differs from the exact witness `Q` field
     by a perturbation bounded by the dimension-only uniform recursive bound. -/
-theorem fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_uniform_accum_error_of_global_gammaValid
+theorem fl_householderQR_computed_Q_hat_fixed_Q_uniform_accum_error_of_global_gammaValid
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hvalid : gammaValid fp (11 * n + 23)) :
     HouseholderQRPanelQhatFixedAccumError n
-      (fl_householderQR_safe_witness fp n A).Q
-      (fl_householderQR_computed_safe fp n A).Q_hat
+      (fl_householderQR_witness fp n A).Q
+      (fl_householderQR_computed fp n A).Q_hat
       (householderQR_QhatUniformClosedBound fp n n) := by
-  simpa [fl_householderQR_safe_witness, fl_householderQR_computed_safe] using
-    fl_householderQR_Qhat_safe_fixed_Q_safe_uniform_accum_error_of_global_gammaValid
+  simpa [fl_householderQR_witness, fl_householderQR_computed] using
+    fl_householderQR_Qhat_fixed_Q_uniform_accum_error_of_global_gammaValid
       fp n A hvalid
 
 /-- Square/global wrapper for the closed-form accumulated `Q_hat` perturbation
-    bound with fixed `Q_safe` reference. -/
-theorem fl_householderQR_Qhat_safe_fixed_Q_safe_closed_form_accum_error_of_global_gammaValid
+    bound with fixed `Q` reference. -/
+theorem fl_householderQR_Qhat_fixed_Q_closed_form_accum_error_of_global_gammaValid
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hvalid : gammaValid fp (11 * n + 23)) :
     HouseholderQRPanelQhatFixedAccumError n
-      (fl_householderQR_Q_safe fp n A)
-      (fl_householderQR_Qhat_safe fp n A)
+      (fl_householderQR_Q fp n A)
+      (fl_householderQR_Qhat fp n A)
       (householderQR_QhatClosedFormBound fp n n) := by
   have hUniform :=
-    fl_householderQR_Qhat_safe_fixed_Q_safe_uniform_accum_error_of_global_gammaValid
+    fl_householderQR_Qhat_fixed_Q_uniform_accum_error_of_global_gammaValid
       fp n A hvalid
   simpa [householderQR_QhatUniformClosedBound_eq_closedForm] using hUniform
 
-/-- The computed-factor `Q_hat` field differs from the safe witness `Q` field
+/-- The computed-factor `Q_hat` field differs from the exact witness `Q` field
     by a perturbation bounded by the closed-form accumulated `Q_hat` growth
     factor. -/
-theorem fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_closed_form_accum_error_of_global_gammaValid
+theorem fl_householderQR_computed_Q_hat_fixed_Q_closed_form_accum_error_of_global_gammaValid
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hvalid : gammaValid fp (11 * n + 23)) :
     HouseholderQRPanelQhatFixedAccumError n
-      (fl_householderQR_safe_witness fp n A).Q
-      (fl_householderQR_computed_safe fp n A).Q_hat
+      (fl_householderQR_witness fp n A).Q
+      (fl_householderQR_computed fp n A).Q_hat
       (householderQR_QhatClosedFormBound fp n n) := by
-  simpa [fl_householderQR_safe_witness, fl_householderQR_computed_safe] using
-    fl_householderQR_Qhat_safe_fixed_Q_safe_closed_form_accum_error_of_global_gammaValid
+  simpa [fl_householderQR_witness, fl_householderQR_computed] using
+    fl_householderQR_Qhat_fixed_Q_closed_form_accum_error_of_global_gammaValid
       fp n A hvalid
 
-/-- Global-gamma wrapper for the fixed-`Q_safe` accumulated `Q_hat`
+/-- Global-gamma wrapper for the fixed-`Q` accumulated `Q_hat`
     perturbation theorem with a simpler growth bound.
 
     This is a coarser corollary of the exact closed-form theorem:
     `((1+c)^n - 1) sqrt(n)` is bounded by
     `n*c*(1+c)^n*sqrt(n)`, where
     `c = householderConstructApplyBound fp n`. -/
-theorem fl_householderQR_Qhat_safe_fixed_Q_safe_growth_accum_error_of_global_gammaValid
+theorem fl_householderQR_Qhat_fixed_Q_growth_accum_error_of_global_gammaValid
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hvalid : gammaValid fp (11 * n + 23)) :
     HouseholderQRPanelQhatFixedAccumError n
-      (fl_householderQR_Q_safe fp n A)
-      (fl_householderQR_Qhat_safe fp n A)
+      (fl_householderQR_Q fp n A)
+      (fl_householderQR_Qhat fp n A)
       ((n : ℝ) * householderConstructApplyBound fp n *
         (1 + householderConstructApplyBound fp n) ^ n *
         Real.sqrt (n : ℝ)) := by
   have hClosed :=
-    fl_householderQR_Qhat_safe_fixed_Q_safe_closed_form_accum_error_of_global_gammaValid
+    fl_householderQR_Qhat_fixed_Q_closed_form_accum_error_of_global_gammaValid
       fp n A hvalid
   exact hClosed.mono
     (householderQR_QhatClosedFormBound_le_growth fp n n hvalid)
 
-/-- The computed-factor `Q_hat` field differs from the exact safe witness by
+/-- The computed-factor `Q_hat` field differs from the exact exact witness by
     the simpler growth accumulated `Q_hat` perturbation bound. -/
-theorem fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_growth_accum_error_of_global_gammaValid
+theorem fl_householderQR_computed_Q_hat_fixed_Q_growth_accum_error_of_global_gammaValid
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hvalid : gammaValid fp (11 * n + 23)) :
     HouseholderQRPanelQhatFixedAccumError n
-      (fl_householderQR_safe_witness fp n A).Q
-      (fl_householderQR_computed_safe fp n A).Q_hat
+      (fl_householderQR_witness fp n A).Q
+      (fl_householderQR_computed fp n A).Q_hat
       ((n : ℝ) * householderConstructApplyBound fp n *
         (1 + householderConstructApplyBound fp n) ^ n *
         Real.sqrt (n : ℝ)) := by
-  simpa [fl_householderQR_safe_witness, fl_householderQR_computed_safe] using
-    fl_householderQR_Qhat_safe_fixed_Q_safe_growth_accum_error_of_global_gammaValid
+  simpa [fl_householderQR_witness, fl_householderQR_computed] using
+    fl_householderQR_Qhat_fixed_Q_growth_accum_error_of_global_gammaValid
       fp n A hvalid
 
 /-- Active trailing-panel state for a Householder QR loop.
@@ -3484,7 +3621,7 @@ theorem fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_growth_accum_error_of_
     This state tracks only the active panel dimensions and entries.  It is a
     legacy loop scaffold for local step reasoning; the final implementation-
     backed `R` theorems below use the direct recursive panel algorithms
-    `fl_householderQRPanel_R` and `fl_householderQRPanel_R_safe`. -/
+    `fl_householderQRPanel_R` and `fl_householderQRPanel_R`. -/
 structure HouseholderPanelState where
   /-- Number of active panel rows. -/
   rows : ℕ
@@ -3650,41 +3787,41 @@ theorem fl_householder_first_column_panel_step_error (fp : FPModel)
     Householder QR panel algorithm is orthogonal.
 
     This proves the first `Q`-side bridge: the recursive object
-    `fl_householderQRPanel_Q_safe` is a genuine exact orthogonal matrix for the
-    same safe branch choices used by `fl_householderQRPanel_R_safe`. -/
-theorem fl_householderQRPanel_Q_safe_orthogonal (fp : FPModel) :
+    `fl_householderQRPanel_Q` is a genuine exact orthogonal matrix for the
+    same zero-aware branch choices used by `fl_householderQRPanel_R`. -/
+theorem fl_householderQRPanel_Q_orthogonal (fp : FPModel) :
     ∀ (m p : ℕ) (A : Fin m → Fin p → ℝ),
-      HouseholderQRPanelSafeReady fp m p A →
-      IsOrthogonal m (fl_householderQRPanel_Q_safe fp m p A) := by
+      HouseholderQRPanelReady fp m p A →
+      IsOrthogonal m (fl_householderQRPanel_Q fp m p A) := by
   intro m
   induction m with
   | zero =>
       intro p A _hready
-      simpa [fl_householderQRPanel_Q_safe] using idMatrix_orthogonal 0
+      simpa [fl_householderQRPanel_Q] using idMatrix_orthogonal 0
   | succ m ih =>
       intro p
       cases p with
       | zero =>
           intro A _hready
-          simpa [fl_householderQRPanel_Q_safe] using idMatrix_orthogonal (m + 1)
+          simpa [fl_householderQRPanel_Q] using idMatrix_orthogonal (m + 1)
       | succ p =>
           intro A hready
           by_cases hcol : panelFirstColumn (Nat.succ_pos p) A = 0
           · have htailReady :
-                HouseholderQRPanelSafeReady fp m p (trailingPanel A) := by
-              simpa [HouseholderQRPanelSafeReady, hcol] using hready
+                HouseholderQRPanelReady fp m p (trailingPanel A) := by
+              simpa [HouseholderQRPanelReady, hcol] using hready
             have hQt :
                 IsOrthogonal m
-                  (fl_householderQRPanel_Q_safe fp m p (trailingPanel A)) :=
+                  (fl_householderQRPanel_Q fp m p (trailingPanel A)) :=
               ih p (trailingPanel A) htailReady
-            simpa [fl_householderQRPanel_Q_safe, hcol] using
+            simpa [fl_householderQRPanel_Q, hcol] using
               embedTrailingOne_orthogonal
-                (fl_householderQRPanel_Q_safe fp m p (trailingPanel A)) hQt
+                (fl_householderQRPanel_Q fp m p (trailingPanel A)) hQt
           · have hready' :
                 gammaValid fp (11 * (m + 1) + 23) ∧
-                HouseholderQRPanelSafeReady fp m p
+                HouseholderQRPanelReady fp m p
                   (fl_householderTrailingPanelStep fp A) := by
-              simpa [HouseholderQRPanelSafeReady, hcol] using hready
+              simpa [HouseholderQRPanelReady, hcol] using hready
             let P : Fin (m + 1) → Fin (m + 1) → ℝ :=
               householder (m + 1)
                 (householderNormalizedVector (m + 1)
@@ -3697,9 +3834,9 @@ theorem fl_householderQRPanel_Q_safe_orthogonal (fp : FPModel) :
                 (fl_householderNormalizedVector fp (Nat.succ_pos m)
                   (panelFirstColumn (Nat.succ_pos p) A)) 1 A
             let Qt : Fin m → Fin m → ℝ :=
-              fl_householderQRPanel_Q_safe fp m p (trailingPanel Astep)
+              fl_householderQRPanel_Q fp m p (trailingPanel Astep)
             have htailReady' :
-                HouseholderQRPanelSafeReady fp m p (trailingPanel Astep) := by
+                HouseholderQRPanelReady fp m p (trailingPanel Astep) := by
               simpa [Astep, fl_householderTrailingPanelStep] using hready'.2
             have hQt : IsOrthogonal m Qt := by
               simpa [Qt] using ih p (trailingPanel Astep) htailReady'
@@ -3716,26 +3853,26 @@ theorem fl_householderQRPanel_Q_safe_orthogonal (fp : FPModel) :
                 IsOrthogonal (m + 1)
                   (matMul (m + 1) (embedTrailingOne (matTranspose Qt)) P) :=
               hEmb.mul hP
-            simpa [fl_householderQRPanel_Q_safe, hcol, P, Astep, Qt] using
+            simpa [fl_householderQRPanel_Q, hcol, P, Astep, Qt] using
               hM.transpose
 
 /-- Square specialization: the explicit exact `Q` witness associated with
-    `fl_householderQR_R_safe` is orthogonal. -/
-theorem fl_householderQR_Q_safe_orthogonal (fp : FPModel) (n : ℕ)
+    `fl_householderQR_R` is orthogonal. -/
+theorem fl_householderQR_Q_orthogonal (fp : FPModel) (n : ℕ)
     (A : Fin n → Fin n → ℝ)
-    (hready : HouseholderQRPanelSafeReady fp n n A) :
-    IsOrthogonal n (fl_householderQR_Q_safe fp n A) := by
-  simpa [fl_householderQR_Q_safe] using
-    fl_householderQRPanel_Q_safe_orthogonal fp n n A hready
+    (hready : HouseholderQRPanelReady fp n n A) :
+    IsOrthogonal n (fl_householderQR_Q fp n A) := by
+  simpa [fl_householderQR_Q] using
+    fl_householderQRPanel_Q_orthogonal fp n n A hready
 
 /-- Global-gamma wrapper for orthogonality of the explicit exact `Q` witness
     associated with the zero-aware Householder QR `R` algorithm. -/
-theorem fl_householderQR_Q_safe_orthogonal_of_global_gammaValid
+theorem fl_householderQR_Q_orthogonal_of_global_gammaValid
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hvalid : gammaValid fp (11 * n + 23)) :
-    IsOrthogonal n (fl_householderQR_Q_safe fp n A) := by
-  exact fl_householderQR_Q_safe_orthogonal fp n A
-    (HouseholderQRPanelSafeReady_square_of_global_gammaValid fp n A hvalid)
+    IsOrthogonal n (fl_householderQR_Q fp n A) := by
+  exact fl_householderQR_Q_orthogonal fp n A
+    (HouseholderQRPanelReady_square_of_global_gammaValid fp n A hvalid)
 
 /-- Exact first-column value after applying the constructed Householder
     reflector to a panel. -/
@@ -3906,6 +4043,98 @@ theorem fl_householder_first_column_panel_stored_residual_and_shape
       · intro j
         simpa [Rstep, Ahat, P, Estore, trailingPanel] using hrep i.succ j.succ
   · exact le_trans (frobNorm_panelFromTopAndTrailing_extract_le Efull) hEfull
+  · simp [Rstep]
+
+/-- Stored first-column Householder panel step with the per-column residual
+    bound retained.
+
+    This is the componentwise-strengthening of
+    `fl_householder_first_column_panel_stored_residual_and_shape`: it keeps the
+    columnwise information needed for Higham Theorem 18.4 instead of collapsing
+    the step to one Frobenius residual. -/
+theorem fl_householder_first_column_panel_stored_columnwise_residual_and_shape
+    (fp : FPModel) {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (hx : panelFirstColumn (Nat.succ_pos p) A ≠ 0)
+    (hvalid : gammaValid fp (11 * (m + 1) + 23)) :
+    let P : Fin (m + 1) → Fin (m + 1) → ℝ :=
+      householder (m + 1)
+        (householderNormalizedVector (m + 1)
+          (householderVector (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A))
+          (householderBetaFromScale (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A))) 1
+    let Ahat : Fin (m + 1) → Fin (p + 1) → ℝ :=
+      fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+        (fl_householderNormalizedVector fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A)) 1 A
+    let Rstep : Fin (m + 1) → Fin (p + 1) → ℝ :=
+      panelFromTopAndTrailing (panelTopLeft Ahat) (panelTopRowTail Ahat)
+        (trailingPanel Ahat)
+    ∃ E : Fin (m + 1) → Fin (p + 1) → ℝ,
+      (∀ i j,
+        Rstep i j =
+          matMulRect (m + 1) (m + 1) (p + 1) P A i j + E i j) ∧
+      frobNorm E ≤ householderConstructApplyBound fp (m + 1) * frobNorm A ∧
+      (∀ j, columnFrob E j ≤
+        householderConstructApplyBound fp (m + 1) * columnFrob A j) ∧
+      panelFirstColumnTailZero Rstep := by
+  intro P Ahat Rstep
+  have hstep :
+      ColumnwiseHouseholderStepErrorRect (m + 1) (p + 1) P A
+        (fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A)) 1 A)
+        (householderConstructApplyBound fp (m + 1)) := by
+    simpa [P] using
+      fl_householder_first_column_panel_step_error fp
+        (Nat.succ_pos m) (Nat.succ_pos p) A hx hvalid
+  obtain ⟨Efull, hrep, hEfullCols⟩ := hstep.exists_residual_matrix
+  have hc :
+      0 ≤ householderConstructApplyBound fp (m + 1) :=
+    householderConstructApplyBound_nonneg fp (m + 1) hvalid
+  have hEfullNorm :
+      frobNorm Efull ≤
+        householderConstructApplyBound fp (m + 1) * frobNorm A :=
+    frobNorm_columnwise_matMulVec_le_rect Efull A hc hEfullCols
+  have hEfullCol : ∀ j,
+      columnFrob Efull j ≤
+        householderConstructApplyBound fp (m + 1) * columnFrob A j := by
+    intro j
+    obtain ⟨Δj, hΔj, hEj⟩ := hEfullCols j
+    calc
+      columnFrob Efull j ≤ frobNorm Δj * columnFrob A j :=
+        columnFrob_matMulVec_le_frobNorm_mul_columnFrob Efull A Δj j hEj
+      _ ≤ householderConstructApplyBound fp (m + 1) * columnFrob A j :=
+        mul_le_mul_of_nonneg_right hΔj (columnFrob_nonneg A j)
+  have hzero :
+      panelFirstColumnTailZero
+        (matMulRect (m + 1) (m + 1) (p + 1) P A) := by
+    simpa [P] using householder_panel_exact_firstColumnTailZero A hx
+  let Estore : Fin (m + 1) → Fin (p + 1) → ℝ :=
+    panelFromTopAndTrailing (panelTopLeft Efull) (panelTopRowTail Efull)
+      (trailingPanel Efull)
+  refine ⟨Estore, ?_, ?_, ?_, ?_⟩
+  · intro i j
+    refine Fin.cases ?_ ?_ i
+    · refine Fin.cases ?_ ?_ j
+      · simpa [Rstep, Ahat, P, Estore, panelTopLeft] using hrep 0 0
+      · intro j
+        simpa [Rstep, Ahat, P, Estore, panelTopRowTail] using hrep 0 j.succ
+    · intro i
+      refine Fin.cases ?_ ?_ j
+      · have hPzero : matMulRect (m + 1) (m + 1) (p + 1) P A i.succ 0 = 0 := by
+          simpa [P, panelFirstColumnTailZero, panelFirstColumnTail] using hzero i
+        simp [Rstep, Estore, hPzero]
+      · intro j
+        simpa [Rstep, Ahat, P, Estore, trailingPanel] using hrep i.succ j.succ
+  · exact le_trans (frobNorm_panelFromTopAndTrailing_extract_le Efull) hEfullNorm
+  · intro j
+    calc
+      columnFrob Estore j ≤ columnFrob Efull j :=
+        columnFrob_panelFromTopAndTrailing_extract_le Efull j
+      _ ≤ householderConstructApplyBound fp (m + 1) * columnFrob A j :=
+        hEfullCol j
   · simp [Rstep]
 
 /-- Residual form of the concrete shrinking Householder QR panel step.
@@ -4115,9 +4344,9 @@ theorem IsUpperTrapezoidal_panelFromTopAndTrailing {m p : ℕ}
 
 /-- The zero-aware recursive rounded Householder QR panel algorithm returns an
     upper-trapezoidal rectangular `R` panel by construction. -/
-theorem fl_householderQRPanel_R_safe_upper_trapezoidal (fp : FPModel) :
+theorem fl_householderQRPanel_R_upper_trapezoidal (fp : FPModel) :
     ∀ (m p : ℕ) (A : Fin m → Fin p → ℝ),
-      IsUpperTrapezoidal m p (fl_householderQRPanel_R_safe fp m p A) := by
+      IsUpperTrapezoidal m p (fl_householderQRPanel_R fp m p A) := by
   intro m
   induction m with
   | zero =>
@@ -4134,35 +4363,35 @@ theorem fl_householderQRPanel_R_safe_upper_trapezoidal (fp : FPModel) :
           by_cases hcol : panelFirstColumn (Nat.succ_pos p) A = 0
           · have htail :
                 IsUpperTrapezoidal m p
-                  (fl_householderQRPanel_R_safe fp m p (trailingPanel A)) :=
+                  (fl_householderQRPanel_R fp m p (trailingPanel A)) :=
               ih p (trailingPanel A)
             have hmain :=
               IsUpperTrapezoidal_panelFromTopAndTrailing
                 (panelTopLeft A) (panelTopRowTail A)
-                (fl_householderQRPanel_R_safe fp m p (trailingPanel A)) htail
-            simpa [fl_householderQRPanel_R_safe, hcol] using hmain
+                (fl_householderQRPanel_R fp m p (trailingPanel A)) htail
+            simpa [fl_householderQRPanel_R, hcol] using hmain
           · let Astep : Fin (m + 1) → Fin (p + 1) → ℝ :=
               fl_householderApplyMatrixRect fp (m + 1) (p + 1)
                 (fl_householderNormalizedVector fp (Nat.succ_pos m)
                   (panelFirstColumn (Nat.succ_pos p) A)) 1 A
             have htail :
                 IsUpperTrapezoidal m p
-                  (fl_householderQRPanel_R_safe fp m p (trailingPanel Astep)) :=
+                  (fl_householderQRPanel_R fp m p (trailingPanel Astep)) :=
               ih p (trailingPanel Astep)
             have hmain :=
               IsUpperTrapezoidal_panelFromTopAndTrailing
                 (panelTopLeft Astep) (panelTopRowTail Astep)
-                (fl_householderQRPanel_R_safe fp m p (trailingPanel Astep)) htail
-            simpa [fl_householderQRPanel_R_safe, hcol, Astep] using hmain
+                (fl_householderQRPanel_R fp m p (trailingPanel Astep)) htail
+            simpa [fl_householderQRPanel_R, hcol, Astep] using hmain
 
 /-- Square specialization of the upper-trapezoidal panel theorem. -/
-theorem fl_householderQR_R_safe_upper_trapezoidal (fp : FPModel)
+theorem fl_householderQR_R_upper_trapezoidal (fp : FPModel)
     (n : ℕ) (A : Fin n → Fin n → ℝ) :
-    IsUpperTrapezoidal n n (fl_householderQR_R_safe fp n A) := by
-  simpa [fl_householderQR_R_safe] using
-    fl_householderQRPanel_R_safe_upper_trapezoidal fp n n A
+    IsUpperTrapezoidal n n (fl_householderQR_R fp n A) := by
+  simpa [fl_householderQR_R] using
+    fl_householderQRPanel_R_upper_trapezoidal fp n n A
 
-/-- The recursive rounded Householder QR `R` algorithm returns an
+/-- The zero-aware recursive rounded Householder QR `R` algorithm returns an
     upper-triangular matrix by construction. -/
 theorem fl_householderQR_R_upper (fp : FPModel) :
     ∀ (n : ℕ) (A : Fin n → Fin n → ℝ),
@@ -4174,40 +4403,16 @@ theorem fl_householderQR_R_upper (fp : FPModel) :
       exact Fin.elim0 i
   | succ n ih =>
       intro A
-      let Astep : Fin (n + 1) → Fin (n + 1) → ℝ :=
-        fl_householderApplyMatrixRect fp (n + 1) (n + 1)
-          (fl_householderNormalizedVector fp (Nat.succ_pos n)
-            (panelFirstColumn (Nat.succ_pos n) A)) 1 A
-      change IsUpperTriangular (n + 1)
-        (panelFromTopAndTrailing (panelTopLeft Astep) (panelTopRowTail Astep)
-          (fl_householderQRPanel_R fp n n (trailingPanel Astep)))
-      exact IsUpperTriangular_panelFromTopAndTrailing
-        (panelTopLeft Astep) (panelTopRowTail Astep)
-        (fl_householderQRPanel_R fp n n (trailingPanel Astep))
-        (by simpa [fl_householderQR_R] using ih (trailingPanel Astep))
-
-/-- The zero-aware recursive rounded Householder QR `R` algorithm returns an
-    upper-triangular matrix by construction. -/
-theorem fl_householderQR_R_safe_upper (fp : FPModel) :
-    ∀ (n : ℕ) (A : Fin n → Fin n → ℝ),
-      IsUpperTriangular n (fl_householderQR_R_safe fp n A) := by
-  intro n
-  induction n with
-  | zero =>
-      intro A i
-      exact Fin.elim0 i
-  | succ n ih =>
-      intro A
       by_cases hcol : panelFirstColumn (Nat.succ_pos n) A = 0
       · have htail :
             IsUpperTriangular n
-              (fl_householderQRPanel_R_safe fp n n (trailingPanel A)) := by
-          simpa [fl_householderQR_R_safe] using ih (trailingPanel A)
+              (fl_householderQRPanel_R fp n n (trailingPanel A)) := by
+          simpa [fl_householderQR_R] using ih (trailingPanel A)
         have hmain :=
           IsUpperTriangular_panelFromTopAndTrailing
             (panelTopLeft A) (panelTopRowTail A)
-            (fl_householderQRPanel_R_safe fp n n (trailingPanel A)) htail
-        simpa [fl_householderQR_R_safe, fl_householderQRPanel_R_safe, hcol]
+            (fl_householderQRPanel_R fp n n (trailingPanel A)) htail
+        simpa [fl_householderQR_R, fl_householderQRPanel_R, hcol]
           using hmain
       · let Astep : Fin (n + 1) → Fin (n + 1) → ℝ :=
           fl_householderApplyMatrixRect fp (n + 1) (n + 1)
@@ -4215,34 +4420,14 @@ theorem fl_householderQR_R_safe_upper (fp : FPModel) :
               (panelFirstColumn (Nat.succ_pos n) A)) 1 A
         have htail :
             IsUpperTriangular n
-              (fl_householderQRPanel_R_safe fp n n (trailingPanel Astep)) := by
-          simpa [fl_householderQR_R_safe] using ih (trailingPanel Astep)
+              (fl_householderQRPanel_R fp n n (trailingPanel Astep)) := by
+          simpa [fl_householderQR_R] using ih (trailingPanel Astep)
         have hmain :=
           IsUpperTriangular_panelFromTopAndTrailing
             (panelTopLeft Astep) (panelTopRowTail Astep)
-            (fl_householderQRPanel_R_safe fp n n (trailingPanel Astep)) htail
-        simpa [fl_householderQR_R_safe, fl_householderQRPanel_R_safe, hcol, Astep]
+            (fl_householderQRPanel_R fp n n (trailingPanel Astep)) htail
+        simpa [fl_householderQR_R, fl_householderQRPanel_R, hcol, Astep]
           using hmain
-
-/-- Recursive coefficient for the implementation-backed nonzero-panel
-    Householder QR panel backward-error theorem.
-
-    For a nonempty panel, the first concrete Householder panel step contributes
-    `c = householderConstructApplyBound fp (m+1)`.  The recursive tail bound is
-    then applied to a trailing panel whose norm is bounded by `(1+c)` times the
-    current panel norm. -/
-noncomputable def householderQRPanelBackwardCoeff (fp : FPModel) :
-    ℕ → ℕ → ℝ
-  | 0, _ => 0
-  | Nat.succ _, 0 => 0
-  | m + 1, p + 1 =>
-      let c := householderConstructApplyBound fp (m + 1)
-      c + householderQRPanelBackwardCoeff fp m p * (1 + c)
-
-/-- Square specialization of the recursive QR panel backward-error
-    coefficient. -/
-noncomputable def householderQRBackwardCoeff (fp : FPModel) (n : ℕ) : ℝ :=
-  householderQRPanelBackwardCoeff fp n n
 
 /-- Branch-dependent backward-error coefficient for the zero-aware Householder
     QR panel algorithm.
@@ -4251,73 +4436,31 @@ noncomputable def householderQRBackwardCoeff (fp : FPModel) (n : ℕ) : ℝ :=
     error and recurses directly on the exact trailing panel.  A nonzero active
     column uses the same concrete Householder construction/application bound as
     `householderQRPanelBackwardCoeff`. -/
-noncomputable def householderQRPanelBackwardCoeffSafe (fp : FPModel) :
+noncomputable def householderQRPanelBackwardCoeff (fp : FPModel) :
     (m p : ℕ) → (Fin m → Fin p → ℝ) → ℝ
   | 0, _, _ => 0
   | Nat.succ _, 0, _ => 0
   | m + 1, p + 1, A =>
       if panelFirstColumn (Nat.succ_pos p) A = 0 then
-        householderQRPanelBackwardCoeffSafe fp m p (trailingPanel A)
+        householderQRPanelBackwardCoeff fp m p (trailingPanel A)
       else
         let c := householderConstructApplyBound fp (m + 1)
-        c + householderQRPanelBackwardCoeffSafe fp m p
+        c + householderQRPanelBackwardCoeff fp m p
               (fl_householderTrailingPanelStep fp A) * (1 + c)
 
 /-- Square specialization of the zero-aware Householder QR backward-error
     coefficient. -/
-noncomputable def householderQRBackwardCoeffSafe (fp : FPModel) (n : ℕ)
+noncomputable def householderQRBackwardCoeff (fp : FPModel) (n : ℕ)
     (A : Fin n → Fin n → ℝ) : ℝ :=
-  householderQRPanelBackwardCoeffSafe fp n n A
+  householderQRPanelBackwardCoeff fp n n A
 
-/-- The zero-aware QR panel coefficient is nonnegative whenever the safe run
+/-- The zero-aware QR panel coefficient is nonnegative whenever the zero-aware run
     has the gamma hypotheses needed for every nonzero rounded reflector
     branch. -/
-theorem householderQRPanelBackwardCoeffSafe_nonneg (fp : FPModel) :
-    ∀ (m p : ℕ) (A : Fin m → Fin p → ℝ),
-      HouseholderQRPanelSafeReady fp m p A →
-      0 ≤ householderQRPanelBackwardCoeffSafe fp m p A := by
-  intro m
-  induction m with
-  | zero =>
-      intro p A _hready
-      simp [householderQRPanelBackwardCoeffSafe]
-  | succ m ih =>
-      intro p
-      cases p with
-      | zero =>
-          intro A _hready
-          simp [householderQRPanelBackwardCoeffSafe]
-      | succ p =>
-          intro A hready
-          by_cases hcol : panelFirstColumn (Nat.succ_pos p) A = 0
-          · have htail :
-                HouseholderQRPanelSafeReady fp m p (trailingPanel A) := by
-              simpa [HouseholderQRPanelSafeReady, hcol] using hready
-            simpa [householderQRPanelBackwardCoeffSafe, hcol] using
-              ih p (trailingPanel A) htail
-          · have hready' :
-                gammaValid fp (11 * (m + 1) + 23) ∧
-                HouseholderQRPanelSafeReady fp m p
-                  (fl_householderTrailingPanelStep fp A) := by
-              simpa [HouseholderQRPanelSafeReady, hcol] using hready
-            let c := householderConstructApplyBound fp (m + 1)
-            let α := householderQRPanelBackwardCoeffSafe fp m p
-              (fl_householderTrailingPanelStep fp A)
-            have hc : 0 ≤ c := by
-              simpa [c] using
-                householderConstructApplyBound_nonneg fp (m + 1) hready'.1
-            have hα : 0 ≤ α := by
-              simpa [α] using
-                ih p (fl_householderTrailingPanelStep fp A) hready'.2
-            simp [householderQRPanelBackwardCoeffSafe, hcol]
-            nlinarith
-
-/-- The recursive QR panel backward-error coefficient is nonnegative whenever
-    the concrete QR panel run is ready. -/
 theorem householderQRPanelBackwardCoeff_nonneg (fp : FPModel) :
     ∀ (m p : ℕ) (A : Fin m → Fin p → ℝ),
       HouseholderQRPanelReady fp m p A →
-      0 ≤ householderQRPanelBackwardCoeff fp m p := by
+      0 ≤ householderQRPanelBackwardCoeff fp m p A := by
   intro m
   induction m with
   | zero =>
@@ -4331,22 +4474,30 @@ theorem householderQRPanelBackwardCoeff_nonneg (fp : FPModel) :
           simp [householderQRPanelBackwardCoeff]
       | succ p =>
           intro A hready
-          have hxvalid :
-              panelFirstColumn (Nat.succ_pos p) A ≠ 0 ∧
-              gammaValid fp (11 * (m + 1) + 23) ∧
-              HouseholderQRPanelReady fp m p (fl_householderTrailingPanelStep fp A) := by
-            simpa using hready
-          let c := householderConstructApplyBound fp (m + 1)
-          let α := householderQRPanelBackwardCoeff fp m p
-          have hc : 0 ≤ c := by
-            simpa [c] using
-              householderConstructApplyBound_nonneg fp (m + 1) hxvalid.2.1
-          have hα : 0 ≤ α := by
-            simpa [α] using ih p (fl_householderTrailingPanelStep fp A) hxvalid.2.2
-          simp [householderQRPanelBackwardCoeff]
-          nlinarith
+          by_cases hcol : panelFirstColumn (Nat.succ_pos p) A = 0
+          · have htail :
+                HouseholderQRPanelReady fp m p (trailingPanel A) := by
+              simpa [HouseholderQRPanelReady, hcol] using hready
+            simpa [householderQRPanelBackwardCoeff, hcol] using
+              ih p (trailingPanel A) htail
+          · have hready' :
+                gammaValid fp (11 * (m + 1) + 23) ∧
+                HouseholderQRPanelReady fp m p
+                  (fl_householderTrailingPanelStep fp A) := by
+              simpa [HouseholderQRPanelReady, hcol] using hready
+            let c := householderConstructApplyBound fp (m + 1)
+            let α := householderQRPanelBackwardCoeff fp m p
+              (fl_householderTrailingPanelStep fp A)
+            have hc : 0 ≤ c := by
+              simpa [c] using
+                householderConstructApplyBound_nonneg fp (m + 1) hready'.1
+            have hα : 0 ≤ α := by
+              simpa [α] using
+                ih p (fl_householderTrailingPanelStep fp A) hready'.2
+            simp [householderQRPanelBackwardCoeff, hcol]
+            nlinarith
 
-/-- The branch-sensitive safe Householder QR panel coefficient is bounded by
+/-- The branch-sensitive zero-aware Householder QR panel coefficient is bounded by
     the uniform residual accumulation recurrence for a larger ambient
     dimension.
 
@@ -4354,19 +4505,19 @@ theorem householderQRPanelBackwardCoeff_nonneg (fp : FPModel) :
     no local floating-point update error, while nonzero branches use the
     concrete one-step Householder construction/application bound and recurse on
     the computed trailing panel. -/
-theorem householderQRPanelBackwardCoeffSafe_le_residualAccumBound_global
+theorem householderQRPanelBackwardCoeff_le_residualAccumBound_global
     (fp : FPModel) :
     ∀ (m p N : ℕ) (A : Fin m → Fin p → ℝ),
       m ≤ N →
       gammaValid fp (11 * N + 23) →
-      HouseholderQRPanelSafeReady fp m p A →
-      householderQRPanelBackwardCoeffSafe fp m p A ≤
+      HouseholderQRPanelReady fp m p A →
+      householderQRPanelBackwardCoeff fp m p A ≤
         residualAccumBound (householderConstructApplyBound fp N) m := by
   intro m
   induction m with
   | zero =>
       intro p N A _hmN _hvalid _hready
-      simp [householderQRPanelBackwardCoeffSafe, residualAccumBound]
+      simp [householderQRPanelBackwardCoeff, residualAccumBound]
   | succ m ih =>
       intro p N
       cases p with
@@ -4380,7 +4531,7 @@ theorem householderQRPanelBackwardCoeffSafe_le_residualAccumBound_global
                 (m + 1) :=
             residualAccumBound_nonneg
               (householderConstructApplyBound fp N) hC (m + 1)
-          simpa [householderQRPanelBackwardCoeffSafe] using hres
+          simpa [householderQRPanelBackwardCoeff] using hres
       | succ p =>
           intro A hmN hvalid hready
           let C := householderConstructApplyBound fp N
@@ -4391,10 +4542,10 @@ theorem householderQRPanelBackwardCoeffSafe_le_residualAccumBound_global
             residualAccumBound_nonneg C hC m
           by_cases hcol : panelFirstColumn (Nat.succ_pos p) A = 0
           · have htailReady :
-                HouseholderQRPanelSafeReady fp m p (trailingPanel A) := by
-              simpa [HouseholderQRPanelSafeReady, hcol] using hready
+                HouseholderQRPanelReady fp m p (trailingPanel A) := by
+              simpa [HouseholderQRPanelReady, hcol] using hready
             have htail :
-                householderQRPanelBackwardCoeffSafe fp m p (trailingPanel A) ≤
+                householderQRPanelBackwardCoeff fp m p (trailingPanel A) ≤
                   residualAccumBound C m := by
               simpa [C] using ih p N (trailingPanel A) (by omega) hvalid htailReady
             have hmono :
@@ -4402,19 +4553,19 @@ theorem householderQRPanelBackwardCoeffSafe_le_residualAccumBound_global
               simp [residualAccumBound]
               nlinarith
             calc
-              householderQRPanelBackwardCoeffSafe fp (m + 1) (p + 1) A
-                  = householderQRPanelBackwardCoeffSafe fp m p
+              householderQRPanelBackwardCoeff fp (m + 1) (p + 1) A
+                  = householderQRPanelBackwardCoeff fp m p
                       (trailingPanel A) := by
-                    simp [householderQRPanelBackwardCoeffSafe, hcol]
+                    simp [householderQRPanelBackwardCoeff, hcol]
               _ ≤ residualAccumBound C m := htail
               _ ≤ residualAccumBound C (m + 1) := hmono
           · have hready' :
                 gammaValid fp (11 * (m + 1) + 23) ∧
-                HouseholderQRPanelSafeReady fp m p
+                HouseholderQRPanelReady fp m p
                   (fl_householderTrailingPanelStep fp A) := by
-              simpa [HouseholderQRPanelSafeReady, hcol] using hready
+              simpa [HouseholderQRPanelReady, hcol] using hready
             let c := householderConstructApplyBound fp (m + 1)
-            let α := householderQRPanelBackwardCoeffSafe fp m p
+            let α := householderQRPanelBackwardCoeff fp m p
               (fl_householderTrailingPanelStep fp A)
             let R := residualAccumBound C m
             have hc_nonneg : 0 ≤ c := by
@@ -4422,7 +4573,7 @@ theorem householderQRPanelBackwardCoeffSafe_le_residualAccumBound_global
                 householderConstructApplyBound_nonneg fp (m + 1) hready'.1
             have hα_nonneg : 0 ≤ α := by
               simpa [α] using
-                householderQRPanelBackwardCoeffSafe_nonneg fp m p
+                householderQRPanelBackwardCoeff_nonneg fp m p
                   (fl_householderTrailingPanelStep fp A) hready'.2
             have hα_le : α ≤ R := by
               simpa [α, R, C] using
@@ -4437,40 +4588,40 @@ theorem householderQRPanelBackwardCoeffSafe_le_residualAccumBound_global
                 α * (1 + c) ≤ R * (1 + C) :=
               mul_le_mul hα_le hone_le hone_nonneg hR_nonneg
             calc
-              householderQRPanelBackwardCoeffSafe fp (m + 1) (p + 1) A
+              householderQRPanelBackwardCoeff fp (m + 1) (p + 1) A
                   = c + α * (1 + c) := by
-                    simp [householderQRPanelBackwardCoeffSafe, hcol, c, α]
+                    simp [householderQRPanelBackwardCoeff, hcol, c, α]
               _ ≤ C + R * (1 + C) := add_le_add hc_le_C hmul
               _ = residualAccumBound C (m + 1) := by
                     simp [residualAccumBound, R]
                     ring
 
 /-- Sharper rectangular version of
-    `householderQRPanelBackwardCoeffSafe_le_residualAccumBound_global`.
+    `householderQRPanelBackwardCoeff_le_residualAccumBound_global`.
 
     A rectangular panel performs at most `min m p` Householder stages because
     both the active row and column dimensions shrink at each recursive step.
     This is the step count that matches the tall rectangular QR theorem in
     Higham §18.3. -/
-theorem householderQRPanelBackwardCoeffSafe_le_residualAccumBound_min_global
+theorem householderQRPanelBackwardCoeff_le_residualAccumBound_min_global
     (fp : FPModel) :
     ∀ (m p N : ℕ) (A : Fin m → Fin p → ℝ),
       m ≤ N →
       gammaValid fp (11 * N + 23) →
-      HouseholderQRPanelSafeReady fp m p A →
-      householderQRPanelBackwardCoeffSafe fp m p A ≤
+      HouseholderQRPanelReady fp m p A →
+      householderQRPanelBackwardCoeff fp m p A ≤
         residualAccumBound (householderConstructApplyBound fp N) (Nat.min m p) := by
   intro m
   induction m with
   | zero =>
       intro p N A _hmN _hvalid _hready
-      simp [householderQRPanelBackwardCoeffSafe, residualAccumBound]
+      simp [householderQRPanelBackwardCoeff, residualAccumBound]
   | succ m ih =>
       intro p N
       cases p with
       | zero =>
           intro A _hmN _hvalid _hready
-          simp [householderQRPanelBackwardCoeffSafe, residualAccumBound]
+          simp [householderQRPanelBackwardCoeff, residualAccumBound]
       | succ p =>
           intro A hmN hvalid hready
           let C := householderConstructApplyBound fp N
@@ -4481,17 +4632,17 @@ theorem householderQRPanelBackwardCoeffSafe_le_residualAccumBound_min_global
             residualAccumBound_nonneg C hC (Nat.min m p)
           by_cases hcol : panelFirstColumn (Nat.succ_pos p) A = 0
           · have htailReady :
-                HouseholderQRPanelSafeReady fp m p (trailingPanel A) := by
-              simpa [HouseholderQRPanelSafeReady, hcol] using hready
+                HouseholderQRPanelReady fp m p (trailingPanel A) := by
+              simpa [HouseholderQRPanelReady, hcol] using hready
             have htail :
-                householderQRPanelBackwardCoeffSafe fp m p (trailingPanel A) ≤
+                householderQRPanelBackwardCoeff fp m p (trailingPanel A) ≤
                   residualAccumBound C (Nat.min m p) := by
               simpa [C] using ih p N (trailingPanel A) (by omega) hvalid htailReady
             calc
-              householderQRPanelBackwardCoeffSafe fp (m + 1) (p + 1) A
-                  = householderQRPanelBackwardCoeffSafe fp m p
+              householderQRPanelBackwardCoeff fp (m + 1) (p + 1) A
+                  = householderQRPanelBackwardCoeff fp m p
                       (trailingPanel A) := by
-                    simp [householderQRPanelBackwardCoeffSafe, hcol]
+                    simp [householderQRPanelBackwardCoeff, hcol]
               _ ≤ residualAccumBound C (Nat.min m p) := htail
               _ ≤ residualAccumBound C (Nat.min (m + 1) (p + 1)) := by
                     have hstep :
@@ -4501,11 +4652,11 @@ theorem householderQRPanelBackwardCoeffSafe_le_residualAccumBound_min_global
                     simpa [Nat.succ_min_succ] using hstep
           · have hready' :
                 gammaValid fp (11 * (m + 1) + 23) ∧
-                HouseholderQRPanelSafeReady fp m p
+                HouseholderQRPanelReady fp m p
                   (fl_householderTrailingPanelStep fp A) := by
-              simpa [HouseholderQRPanelSafeReady, hcol] using hready
+              simpa [HouseholderQRPanelReady, hcol] using hready
             let c := householderConstructApplyBound fp (m + 1)
-            let α := householderQRPanelBackwardCoeffSafe fp m p
+            let α := householderQRPanelBackwardCoeff fp m p
               (fl_householderTrailingPanelStep fp A)
             let R := residualAccumBound C (Nat.min m p)
             have hc_nonneg : 0 ≤ c := by
@@ -4513,7 +4664,7 @@ theorem householderQRPanelBackwardCoeffSafe_le_residualAccumBound_min_global
                 householderConstructApplyBound_nonneg fp (m + 1) hready'.1
             have hα_nonneg : 0 ≤ α := by
               simpa [α] using
-                householderQRPanelBackwardCoeffSafe_nonneg fp m p
+                householderQRPanelBackwardCoeff_nonneg fp m p
                   (fl_householderTrailingPanelStep fp A) hready'.2
             have hα_le : α ≤ R := by
               simpa [α, R, C] using
@@ -4528,9 +4679,9 @@ theorem householderQRPanelBackwardCoeffSafe_le_residualAccumBound_min_global
                 α * (1 + c) ≤ R * (1 + C) :=
               mul_le_mul hα_le hone_le hone_nonneg hR_nonneg
             calc
-              householderQRPanelBackwardCoeffSafe fp (m + 1) (p + 1) A
+              householderQRPanelBackwardCoeff fp (m + 1) (p + 1) A
                   = c + α * (1 + c) := by
-                    simp [householderQRPanelBackwardCoeffSafe, hcol, c, α]
+                    simp [householderQRPanelBackwardCoeff, hcol, c, α]
               _ ≤ C + R * (1 + C) := add_le_add hc_le_C hmul
               _ = residualAccumBound C (Nat.min (m + 1) (p + 1)) := by
                     rw [show Nat.min (m + 1) (p + 1) = Nat.min m p + 1 by
@@ -4540,14 +4691,14 @@ theorem householderQRPanelBackwardCoeffSafe_le_residualAccumBound_min_global
 
 /-- Square specialization of the uniform residual-accumulation bound for the
     implementation-backed zero-aware Householder QR coefficient. -/
-theorem householderQRBackwardCoeffSafe_le_residualAccumBound
+theorem householderQRBackwardCoeff_le_residualAccumBound
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hvalid : gammaValid fp (11 * n + 23)) :
-    householderQRBackwardCoeffSafe fp n A ≤
+    householderQRBackwardCoeff fp n A ≤
       residualAccumBound (householderConstructApplyBound fp n) n := by
-  exact householderQRPanelBackwardCoeffSafe_le_residualAccumBound_global
+  exact householderQRPanelBackwardCoeff_le_residualAccumBound_global
     fp n n n A (by rfl) hvalid
-    (HouseholderQRPanelSafeReady_square_of_global_gammaValid fp n A hvalid)
+    (HouseholderQRPanelReady_square_of_global_gammaValid fp n A hvalid)
 
 /-- Higham-style growth upper bound for the implementation-backed zero-aware
     Householder QR coefficient.
@@ -4556,19 +4707,19 @@ theorem householderQRBackwardCoeffSafe_le_residualAccumBound
     keep the concrete one-step coefficient
     `householderConstructApplyBound fp n` and the standard higher-order growth
     factor `(1+c)^n`. -/
-theorem householderQRBackwardCoeffSafe_le_highamGrowth
+theorem householderQRBackwardCoeff_le_highamGrowth
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hvalid : gammaValid fp (11 * n + 23)) :
-    householderQRBackwardCoeffSafe fp n A ≤
+    householderQRBackwardCoeff fp n A ≤
       (n : ℝ) * householderConstructApplyBound fp n *
         (1 + householderConstructApplyBound fp n) ^ n := by
   let C := householderConstructApplyBound fp n
   have hC : 0 ≤ C := by
     simpa [C] using householderConstructApplyBound_nonneg fp n hvalid
   have hcoeff :
-      householderQRBackwardCoeffSafe fp n A ≤ residualAccumBound C n := by
+      householderQRBackwardCoeff fp n A ≤ residualAccumBound C n := by
     simpa [C] using
-      householderQRBackwardCoeffSafe_le_residualAccumBound fp n A hvalid
+      householderQRBackwardCoeff_le_residualAccumBound fp n A hvalid
   have hgrowth :
       residualAccumBound C n ≤ (n : ℝ) * C * (1 + C) ^ n := by
     rw [residualAccumBound_eq_one_add_pow_sub_one]
@@ -4583,12 +4734,12 @@ theorem householderQRBackwardCoeffSafe_le_highamGrowth
     `n`-step residual recurrence into `gamma (n * householderConstructApplyGammaIndex n)`.
     The positivity hypothesis on `n` is the usual nonempty QR setting and lets
     the one-step validity follow from the larger accumulated validity. -/
-theorem householderQRBackwardCoeffSafe_le_gamma_higham
+theorem householderQRBackwardCoeff_le_gamma_higham
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hn : 0 < n)
     (hvalid :
       gammaValid fp (n * householderConstructApplyGammaIndex n)) :
-    householderQRBackwardCoeffSafe fp n A ≤
+    householderQRBackwardCoeff fp n A ≤
       gamma fp (n * householderConstructApplyGammaIndex n) := by
   let K := householderConstructApplyGammaIndex n
   have hK_le_nK : K ≤ n * K := by
@@ -4609,9 +4760,9 @@ theorem householderQRBackwardCoeffSafe_le_gamma_higham
       householderConstructApplyBound fp n ≤ gamma fp K := by
     simpa [K] using householderConstructApplyBound_le_gamma fp n hvalid_K
   have hcoeff :
-      householderQRBackwardCoeffSafe fp n A ≤
+      householderQRBackwardCoeff fp n A ≤
         residualAccumBound (householderConstructApplyBound fp n) n :=
-    householderQRBackwardCoeffSafe_le_residualAccumBound fp n A hvalid_base
+    householderQRBackwardCoeff_le_residualAccumBound fp n A hvalid_base
   have hmono :
       residualAccumBound (householderConstructApplyBound fp n) n ≤
         residualAccumBound (gamma fp K) n :=
@@ -4620,7 +4771,7 @@ theorem householderQRBackwardCoeffSafe_le_gamma_higham
       residualAccumBound (gamma fp K) n ≤ gamma fp (n * K) :=
     residualAccumBound_gamma_le_gamma_mul fp K n hvalid
   calc
-    householderQRBackwardCoeffSafe fp n A
+    householderQRBackwardCoeff fp n A
         ≤ residualAccumBound (householderConstructApplyBound fp n) n := hcoeff
     _ ≤ residualAccumBound (gamma fp K) n := hmono
     _ ≤ gamma fp (n * K) := hgamma
@@ -4633,14 +4784,14 @@ theorem householderQRBackwardCoeffSafe_le_gamma_higham
     The step count is `min m p`, and the one-step operation-count constant is
     computed from an ambient row bound `N`.  For a concrete `m × p` panel, use
     `N = m`; for a subpanel inside a larger proof, any `m ≤ N` is allowed. -/
-theorem householderQRPanelBackwardCoeffSafe_le_gamma_higham_rect
+theorem householderQRPanelBackwardCoeff_le_gamma_higham_rect
     (fp : FPModel) (m p N : ℕ) (A : Fin m → Fin p → ℝ)
     (hmN : m ≤ N)
     (hsteps : 0 < Nat.min m p)
     (hvalid :
       gammaValid fp (Nat.min m p * householderConstructApplyGammaIndex N))
-    (hready : HouseholderQRPanelSafeReady fp m p A) :
-    householderQRPanelBackwardCoeffSafe fp m p A ≤
+    (hready : HouseholderQRPanelReady fp m p A) :
+    householderQRPanelBackwardCoeff fp m p A ≤
       gamma fp (Nat.min m p * householderConstructApplyGammaIndex N) := by
   let s := Nat.min m p
   let K := householderConstructApplyGammaIndex N
@@ -4662,10 +4813,10 @@ theorem householderQRPanelBackwardCoeffSafe_le_gamma_higham_rect
       householderConstructApplyBound fp N ≤ gamma fp K := by
     simpa [K] using householderConstructApplyBound_le_gamma fp N hvalid_K
   have hcoeff :
-      householderQRPanelBackwardCoeffSafe fp m p A ≤
+      householderQRPanelBackwardCoeff fp m p A ≤
         residualAccumBound (householderConstructApplyBound fp N) s := by
     simpa [s] using
-      householderQRPanelBackwardCoeffSafe_le_residualAccumBound_min_global
+      householderQRPanelBackwardCoeff_le_residualAccumBound_min_global
         fp m p N A hmN hbase_valid hready
   have hmono :
       residualAccumBound (householderConstructApplyBound fp N) s ≤
@@ -4676,12 +4827,63 @@ theorem householderQRPanelBackwardCoeffSafe_le_gamma_higham_rect
     residualAccumBound_gamma_le_gamma_mul fp K s (by
       simpa [s, K] using hvalid)
   calc
-    householderQRPanelBackwardCoeffSafe fp m p A
+    householderQRPanelBackwardCoeff fp m p A
         ≤ residualAccumBound (householderConstructApplyBound fp N) s := hcoeff
     _ ≤ residualAccumBound (gamma fp K) s := hmono
     _ ≤ gamma fp (s * K) := hgamma
     _ = gamma fp (Nat.min m p * householderConstructApplyGammaIndex N) := by
         simp [s, K]
+
+-- ============================================================
+-- Source-facing componentwise shape for Higham Theorem 18.4
+-- ============================================================
+
+/-- Higham's convenient nonnegative matrix `G = m⁻¹ eeᵀ`.
+
+    For `0 < m`, this matrix has Frobenius norm one and
+    `(G * |A|)ᵢⱼ = m⁻¹ ∑ₖ |Aₖⱼ|`.  This is the `G` used to package the
+    componentwise part of Higham Theorem 18.4. -/
+noncomputable def highamHouseholderG (m : ℕ) : Fin m → Fin m → ℝ :=
+  fun _ _ => (m : ℝ)⁻¹
+
+/-- `highamHouseholderG` is entrywise nonnegative. -/
+lemma highamHouseholderG_nonneg {m : ℕ} (_hm : 0 < m) :
+    ∀ i j : Fin m, 0 ≤ highamHouseholderG m i j := by
+  intro i j
+  unfold highamHouseholderG
+  exact inv_nonneg.mpr (by exact_mod_cast Nat.zero_le m)
+
+/-- Multiplying `G = m⁻¹eeᵀ` by `|A|` returns the scaled column 1-norm. -/
+lemma highamHouseholderG_mul_abs_col {m p : ℕ}
+    (A : Fin m → Fin p → ℝ) (i : Fin m) (j : Fin p) :
+    matMulRect m m p (highamHouseholderG m)
+      (fun a b => |A a b|) i j =
+      (m : ℝ)⁻¹ * ∑ k : Fin m, |A k j| := by
+  unfold matMulRect highamHouseholderG
+  rw [← Finset.mul_sum]
+
+/-- For `0 < m`, `m * (G * |A|)` is exactly the column 1-norm. -/
+lemma card_mul_highamHouseholderG_mul_abs_col {m p : ℕ}
+    (hm : 0 < m) (A : Fin m → Fin p → ℝ) (i : Fin m) (j : Fin p) :
+    (m : ℝ) *
+        matMulRect m m p (highamHouseholderG m)
+          (fun a b => |A a b|) i j =
+      ∑ k : Fin m, |A k j| := by
+  rw [highamHouseholderG_mul_abs_col]
+  have hm_real : (m : ℝ) ≠ 0 := by exact_mod_cast (Nat.ne_of_gt hm)
+  field_simp [hm_real]
+
+/-- For `0 < m`, Higham's `G = m⁻¹eeᵀ` has Frobenius norm one. -/
+lemma highamHouseholderG_frobNorm {m : ℕ} (hm : 0 < m) :
+    frobNorm (highamHouseholderG m) = 1 := by
+  rw [frobNorm_eq_sqrt_frobNormSq]
+  have hm_real : (m : ℝ) ≠ 0 := by exact_mod_cast (Nat.ne_of_gt hm)
+  have hsumsq :
+      frobNormSq (highamHouseholderG m) = 1 := by
+    unfold frobNormSq highamHouseholderG
+    simp [Finset.sum_const, Finset.card_univ]
+    field_simp [hm_real]
+  rw [hsumsq, Real.sqrt_one]
 
 /-- **Theorem 18.4**: Householder QR factorization backward error (normwise).
 
@@ -4691,7 +4893,7 @@ theorem householderQRPanelBackwardCoeffSafe_le_gamma_higham_rect
     This is the final QR backward-error contract.  Some wrapper theorems below
     derive it from a supplied `OrthogonalSequenceBackwardError`, while
     `fl_householderQR_R_backward_error` and
-    `fl_householderQR_R_safe_backward_error` prove it from concrete rounded
+    `fl_householderQR_R_backward_error` prove it from concrete rounded
     Householder QR `R` algorithms. -/
 structure HouseholderQRBackwardError (n : ℕ) (A R_hat : Fin n → Fin n → ℝ)
     (c_bound : ℝ) : Prop where
@@ -4748,6 +4950,52 @@ structure StructuredHouseholderQRPanelExplicitBackwardError (m p : ℕ)
   backward :
     HouseholderQRPanelExplicitBackwardError m p A Q R_hat c_bound
 
+/-- Rectangular panel QR backward-error contract with the columnwise
+    perturbation information used in Higham Lemma 18.3 and Theorem 18.4.
+
+    The Frobenius bound is the normwise part.  The final field says every
+    perturbation column is controlled by the Euclidean norm of the
+    corresponding original column `A[:,j]`.  Entrywise Higham bounds are
+    derived from this column Frobenius statement. -/
+structure HouseholderQRPanelColumnwiseBackwardError (m p : ℕ)
+    (A : Fin m → Fin p → ℝ) (Q : Fin m → Fin m → ℝ)
+    (R_hat : Fin m → Fin p → ℝ) (c_norm c_col : ℝ) : Prop where
+  /-- The computed `R` panel has the rectangular upper-trapezoidal QR shape. -/
+  upper : IsUpperTrapezoidal m p R_hat
+  /-- The supplied exact `Q` is orthogonal. -/
+  orth : IsOrthogonal m Q
+  /-- The same perturbation satisfies the normwise and columnwise bounds. -/
+  result : ∃ ΔA : Fin m → Fin p → ℝ,
+    (∀ i j, R_hat i j =
+      matMulRect m m p (matTranspose Q)
+        (fun a b => A a b + ΔA a b) i j) ∧
+    frobNorm ΔA ≤ c_norm ∧
+    (∀ j, columnFrob ΔA j ≤ c_col * columnFrob A j)
+
+/-- Source-facing rectangular Householder QR backward-error contract with
+    Higham's componentwise `G |A|` term.
+
+    This mirrors the shape of Higham Theorem 18.4: `G` is nonnegative,
+    `‖G‖_F = 1`, and `|ΔA|` is bounded componentwise by a scalar multiple of
+    `G |A|`. -/
+structure StructuredHouseholderQRPanelHighamBackwardError (m p : ℕ)
+    (A : Fin m → Fin p → ℝ) (Q : Fin m → Fin m → ℝ)
+    (R_hat : Fin m → Fin p → ℝ) (c_norm c_comp : ℝ) : Prop where
+  /-- The computed `R` panel has the rectangular upper-trapezoidal QR shape. -/
+  upper : IsUpperTrapezoidal m p R_hat
+  /-- The supplied exact `Q` is orthogonal. -/
+  orth : IsOrthogonal m Q
+  /-- Higham-style perturbation witnesses and bounds. -/
+  result : ∃ (ΔA : Fin m → Fin p → ℝ) (G : Fin m → Fin m → ℝ),
+    (∀ i j, R_hat i j =
+      matMulRect m m p (matTranspose Q)
+        (fun a b => A a b + ΔA a b) i j) ∧
+    frobNorm ΔA ≤ c_norm ∧
+    (∀ i j, 0 ≤ G i j) ∧
+    frobNorm G = 1 ∧
+    (∀ i j, |ΔA i j| ≤
+      c_comp * matMulRect m m p G (fun a b => |A a b|) i j)
+
 /-- Forget the explicit `Q` witness and recover the existing existential panel
     contract. -/
 theorem HouseholderQRPanelExplicitBackwardError.to_backward_error {m p : ℕ}
@@ -4777,6 +5025,404 @@ theorem HouseholderQRPanelExplicitBackwardError.mono {m p : ℕ}
     HouseholderQRPanelExplicitBackwardError m p A Q R_hat c_bound' := by
   obtain ⟨ΔA, hrep, hΔA⟩ := h.result
   exact ⟨h.orth, ⟨ΔA, hrep, le_trans hΔA hc⟩⟩
+
+/-- Columnwise rectangular QR panel backward-error bounds are monotone in both
+    the normwise and columnwise advertised bounds. -/
+theorem HouseholderQRPanelColumnwiseBackwardError.mono {m p : ℕ}
+    {A : Fin m → Fin p → ℝ} {Q : Fin m → Fin m → ℝ}
+    {R_hat : Fin m → Fin p → ℝ}
+    {c_norm c_col c_norm' c_col' : ℝ}
+    (h : HouseholderQRPanelColumnwiseBackwardError m p A Q R_hat c_norm c_col)
+    (hnorm : c_norm ≤ c_norm') (hcolBound : c_col ≤ c_col') :
+    HouseholderQRPanelColumnwiseBackwardError m p A Q R_hat
+      c_norm' c_col' := by
+  obtain ⟨ΔA, hrep, hΔA, hΔcol⟩ := h.result
+  refine ⟨h.upper, h.orth, ⟨ΔA, hrep, le_trans hΔA hnorm, ?_⟩⟩
+  intro j
+  exact le_trans (hΔcol j)
+    (mul_le_mul_of_nonneg_right hcolBound (columnFrob_nonneg A j))
+
+/-- Convert the proof-facing columnwise QR panel contract into Higham's
+    printed componentwise `G |A|` form, using `G = m⁻¹eeᵀ`.
+
+    If the columnwise coefficient is `η`, the printed coefficient is
+    `m * η`, because `m * (m⁻¹eeᵀ)|A|` is the vector of column 1-norms. -/
+theorem HouseholderQRPanelColumnwiseBackwardError.to_higham
+    {m p : ℕ} {A : Fin m → Fin p → ℝ}
+    {Q : Fin m → Fin m → ℝ} {R_hat : Fin m → Fin p → ℝ}
+    {c_norm c_col : ℝ}
+    (h : HouseholderQRPanelColumnwiseBackwardError m p A Q R_hat c_norm c_col)
+    (hm : 0 < m) (hc_col : 0 ≤ c_col) :
+    StructuredHouseholderQRPanelHighamBackwardError m p A Q R_hat
+      c_norm ((m : ℝ) * c_col) := by
+  obtain ⟨ΔA, hrep, hnorm, hcol⟩ := h.result
+  refine ⟨h.upper, h.orth, ?_⟩
+  refine ⟨ΔA, highamHouseholderG m, hrep, hnorm,
+    highamHouseholderG_nonneg hm, highamHouseholderG_frobNorm hm, ?_⟩
+  intro i j
+  have hcol_l1 : columnFrob A j ≤ ∑ k : Fin m, |A k j| :=
+    columnFrob_le_abs_column_sum A j
+  have hG :
+      (m : ℝ) *
+          matMulRect m m p (highamHouseholderG m)
+            (fun a b => |A a b|) i j =
+        ∑ k : Fin m, |A k j| :=
+    card_mul_highamHouseholderG_mul_abs_col hm A i j
+  calc
+    |ΔA i j| ≤ columnFrob ΔA j := abs_entry_le_columnFrob ΔA i j
+    _ ≤ c_col * columnFrob A j := hcol j
+    _ ≤ c_col * (∑ k : Fin m, |A k j|) :=
+        mul_le_mul_of_nonneg_left hcol_l1 hc_col
+    _ = ((m : ℝ) * c_col) *
+          matMulRect m m p (highamHouseholderG m)
+            (fun a b => |A a b|) i j := by
+        rw [← hG]
+        ring
+
+/-- Empty-row panels satisfy the columnwise rectangular QR backward-error
+    target trivially. -/
+theorem householder_qr_panel_columnwise_backward_zero_rows (p : ℕ)
+    (A : Fin 0 → Fin p → ℝ) :
+    HouseholderQRPanelColumnwiseBackwardError 0 p A (idMatrix 0) A 0 0 := by
+  let Z : Fin 0 → Fin p → ℝ := fun _ _ => 0
+  refine ⟨?_, idMatrix_orthogonal 0, ⟨Z, ?_, ?_, ?_⟩⟩
+  · intro i
+    exact Fin.elim0 i
+  · intro i
+    exact Fin.elim0 i
+  · have hZ : frobNorm Z = 0 := by
+      rw [frobNorm_eq_zero_iff]
+      intro i
+      exact Fin.elim0 i
+    simp [Z, hZ]
+  · intro j
+    have hZcol : columnFrob Z j = 0 := by
+      rw [columnFrob, frobNorm_eq_zero_iff]
+      intro i
+      exact Fin.elim0 i
+    simp [Z, hZcol]
+
+/-- Empty-column panels satisfy the columnwise rectangular QR backward-error
+    target trivially. -/
+theorem householder_qr_panel_columnwise_backward_zero_cols (m : ℕ)
+    (A : Fin (m + 1) → Fin 0 → ℝ) :
+    HouseholderQRPanelColumnwiseBackwardError (m + 1) 0 A
+      (idMatrix (m + 1)) A 0 0 := by
+  let Z : Fin (m + 1) → Fin 0 → ℝ := fun _ _ => 0
+  refine ⟨?_, idMatrix_orthogonal (m + 1), ⟨Z, ?_, ?_, ?_⟩⟩
+  · intro i j
+    exact Fin.elim0 j
+  · intro i j
+    exact Fin.elim0 j
+  · have hZ : frobNorm Z = 0 := by
+      rw [frobNorm_eq_zero_iff]
+      intro i j
+      exact Fin.elim0 j
+    simp [Z, hZ]
+  · intro j
+    exact Fin.elim0 j
+
+/-- Algebraic skip step for the columnwise recursive QR panel proof.
+
+    If the active first column is zero, the rounded algorithm skips the
+    reflector and embeds the recursive trailing-panel proof exactly. -/
+theorem householder_qr_panel_columnwise_backward_skip_zero_column {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (Qt : Fin m → Fin m → ℝ)
+    (Rtail : Fin m → Fin p → ℝ)
+    (α : ℝ)
+    (hcol : panelFirstColumn (Nat.succ_pos p) A = 0)
+    (hTail :
+      HouseholderQRPanelColumnwiseBackwardError m p (trailingPanel A) Qt Rtail
+        (α * frobNorm (trailingPanel A)) α)
+    (hα : 0 ≤ α) :
+    HouseholderQRPanelColumnwiseBackwardError (m + 1) (p + 1) A
+      (embedTrailingOne Qt)
+      (panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A) Rtail)
+      (α * frobNorm A) α := by
+  obtain ⟨ΔT, hTailRep, hΔT, hΔTcol⟩ := hTail.result
+  let ΔA : Fin (m + 1) → Fin (p + 1) → ℝ :=
+    panelTrailingPerturbation ΔT
+  refine ⟨?_, ?_, ⟨ΔA, ?_, ?_, ?_⟩⟩
+  · exact IsUpperTrapezoidal_panelFromTopAndTrailing
+      (panelTopLeft A) (panelTopRowTail A) Rtail hTail.upper
+  · exact embedTrailingOne_orthogonal Qt hTail.orth
+  · have hLift :=
+      panelFromTopAndTrailing_lift_trailing_rep Qt
+        (panelTopLeft A) (panelTopRowTail A)
+        (trailingPanel A) Rtail ΔT hTailRep
+    have hAblocks :
+        panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+          (trailingPanel A) = A :=
+      panelFromTopAndTrailing_of_panelFirstColumn_eq_zero A hcol
+    have hInside :
+        (fun i j =>
+          panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+              (trailingPanel A) i j +
+            panelTrailingPerturbation ΔT i j) =
+          fun i j => A i j + ΔA i j := by
+      ext i j
+      rw [hAblocks]
+    intro i j
+    calc
+      panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A) Rtail i j
+          =
+        matMulRect (m + 1) (m + 1) (p + 1)
+          (embedTrailingOne (matTranspose Qt))
+          (fun i j =>
+            panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+                (trailingPanel A) i j +
+              panelTrailingPerturbation ΔT i j) i j := by
+            exact congrFun (congrFun hLift i) j
+      _ =
+        matMulRect (m + 1) (m + 1) (p + 1)
+          (matTranspose (embedTrailingOne Qt))
+          (fun i j => A i j + ΔA i j) i j := by
+            rw [matTranspose_embedTrailingOne, hInside]
+  · have hΔnorm : frobNorm ΔA = frobNorm ΔT := by
+      exact frobNorm_panelTrailingPerturbation ΔT
+    calc
+      frobNorm ΔA = frobNorm ΔT := hΔnorm
+      _ ≤ α * frobNorm (trailingPanel A) := hΔT
+      _ ≤ α * frobNorm A :=
+          mul_le_mul_of_nonneg_left (frobNorm_trailingPanel_le A) hα
+  · intro j
+    refine Fin.cases ?_ ?_ j
+    · rw [columnFrob_panelTrailingPerturbation_zero]
+      exact mul_nonneg hα (columnFrob_nonneg A 0)
+    · intro j
+      calc
+        columnFrob ΔA j.succ = columnFrob ΔT j :=
+          columnFrob_panelTrailingPerturbation_succ ΔT j
+        _ ≤ α * columnFrob (trailingPanel A) j := hΔTcol j
+        _ ≤ α * columnFrob A j.succ :=
+          mul_le_mul_of_nonneg_left (columnFrob_trailingPanel_le A j) hα
+
+/-- Algebraic cons step for the columnwise recursive QR panel proof.
+
+    This is the columnwise analogue of
+    `householder_qr_panel_explicit_backward_cons`.  It keeps the column
+    Frobenius perturbation estimates through the same exact algebra used by
+    the normwise recursive proof. -/
+theorem householder_qr_panel_columnwise_backward_cons {m p : ℕ}
+    (A S : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (P : Fin (m + 1) → Fin (m + 1) → ℝ)
+    (E : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (Qt : Fin m → Fin m → ℝ)
+    (Rtail : Fin m → Fin p → ℝ)
+    (c α : ℝ)
+    (hP : IsOrthogonal (m + 1) P)
+    (hSrep : ∀ i j,
+      S i j = matMulRect (m + 1) (m + 1) (p + 1) P A i j + E i j)
+    (hE : frobNorm E ≤ c * frobNorm A)
+    (hEcol : ∀ j, columnFrob E j ≤ c * columnFrob A j)
+    (hSzero : panelFirstColumnTailZero S)
+    (hTail :
+      HouseholderQRPanelColumnwiseBackwardError m p (trailingPanel S) Qt Rtail
+        (α * frobNorm (trailingPanel S)) α)
+    (hc : 0 ≤ c) (hα : 0 ≤ α) :
+    HouseholderQRPanelColumnwiseBackwardError (m + 1) (p + 1) A
+      (matTranspose (matMul (m + 1) (embedTrailingOne (matTranspose Qt)) P))
+      (panelFromTopAndTrailing (panelTopLeft S) (panelTopRowTail S) Rtail)
+      ((c + α * (1 + c)) * frobNorm A)
+      (c + α * (1 + c)) := by
+  obtain ⟨ΔT, hTailRep, hΔT, hΔTcol⟩ := hTail.result
+  let Δtail : Fin (m + 1) → Fin (p + 1) → ℝ :=
+    panelTrailingPerturbation ΔT
+  let Eta : Fin (m + 1) → Fin (p + 1) → ℝ :=
+    fun i j => E i j + Δtail i j
+  let ΔA : Fin (m + 1) → Fin (p + 1) → ℝ :=
+    matMulRect (m + 1) (m + 1) (p + 1) (matTranspose P) Eta
+  refine ⟨?_, ?_, ⟨ΔA, ?_, ?_, ?_⟩⟩
+  · exact IsUpperTrapezoidal_panelFromTopAndTrailing
+      (panelTopLeft S) (panelTopRowTail S) Rtail hTail.upper
+  · have hEmb : IsOrthogonal (m + 1) (embedTrailingOne (matTranspose Qt)) :=
+      embedTrailingOne_orthogonal (matTranspose Qt) hTail.orth.transpose
+    have hM :
+        IsOrthogonal (m + 1)
+          (matMul (m + 1) (embedTrailingOne (matTranspose Qt)) P) :=
+      hEmb.mul hP
+    exact hM.transpose
+  · have hLift :=
+      panelFromTopAndTrailing_lift_trailing_rep Qt
+        (panelTopLeft S) (panelTopRowTail S)
+        (trailingPanel S) Rtail ΔT hTailRep
+    have hSblocks :
+        panelFromTopAndTrailing (panelTopLeft S) (panelTopRowTail S)
+          (trailingPanel S) = S :=
+      panelFromTopAndTrailing_of_firstColumnTailZero S hSzero
+    have hInside :
+        (fun i j =>
+          panelFromTopAndTrailing (panelTopLeft S) (panelTopRowTail S)
+              (trailingPanel S) i j +
+            panelTrailingPerturbation ΔT i j) =
+          fun i j => S i j + Δtail i j := by
+      ext i j
+      rw [hSblocks]
+    have hPA_Eta :
+        (fun i j => S i j + Δtail i j) =
+          matMulRect (m + 1) (m + 1) (p + 1) P
+            (fun a b => A a b + ΔA a b) := by
+      ext i j
+      have hPPt :
+          matMul (m + 1) P (matTranspose P) = idMatrix (m + 1) := by
+        ext a b
+        exact hP.right_inv a b
+      have hPΔ :
+          matMulRect (m + 1) (m + 1) (p + 1) P ΔA = Eta := by
+        show matMulRect (m + 1) (m + 1) (p + 1) P
+            (matMulRect (m + 1) (m + 1) (p + 1) (matTranspose P) Eta) = Eta
+        rw [← matMulRect_assoc_square_left, hPPt, matMulRect_id_left]
+      calc
+        S i j + Δtail i j
+            = (matMulRect (m + 1) (m + 1) (p + 1) P A i j + E i j) +
+                Δtail i j := by rw [hSrep i j]
+        _ = matMulRect (m + 1) (m + 1) (p + 1) P A i j +
+              Eta i j := by
+            simp [Eta]
+            ring
+        _ = matMulRect (m + 1) (m + 1) (p + 1) P A i j +
+              matMulRect (m + 1) (m + 1) (p + 1) P ΔA i j := by
+            rw [hPΔ]
+        _ = matMulRect (m + 1) (m + 1) (p + 1) P
+              (fun a b => A a b + ΔA a b) i j := by
+            rw [← congr_fun
+              (congr_fun
+                (matMulRect_add_right (m + 1) (m + 1) (p + 1) P A ΔA) i) j]
+    intro i j
+    have hLift' :
+        panelFromTopAndTrailing (panelTopLeft S) (panelTopRowTail S) Rtail =
+          matMulRect (m + 1) (m + 1) (p + 1)
+            (embedTrailingOne (matTranspose Qt))
+            (fun i j => S i j + Δtail i j) := by
+      rw [hLift]
+      congr
+    rw [hLift']
+    show matMulRect (m + 1) (m + 1) (p + 1)
+        (embedTrailingOne (matTranspose Qt))
+        (fun i j => S i j + Δtail i j) i j =
+      matMulRect (m + 1) (m + 1) (p + 1)
+        (matTranspose
+          (matTranspose
+            (matMul (m + 1) (embedTrailingOne (matTranspose Qt)) P)))
+        (fun a b => A a b + ΔA a b) i j
+    rw [hPA_Eta]
+    show matMulRect (m + 1) (m + 1) (p + 1)
+        (embedTrailingOne (matTranspose Qt))
+        (matMulRect (m + 1) (m + 1) (p + 1) P
+          (fun a b => A a b + ΔA a b)) i j =
+      matMulRect (m + 1) (m + 1) (p + 1)
+        (matTranspose
+          (matTranspose
+            (matMul (m + 1) (embedTrailingOne (matTranspose Qt)) P)))
+        (fun a b => A a b + ΔA a b) i j
+    rw [← matMulRect_assoc_square_left]
+    simp [matTranspose_involutive]
+  · have hΔnorm :
+        frobNorm ΔA = frobNorm Eta := by
+      show frobNorm
+          (matMulRect (m + 1) (m + 1) (p + 1) (matTranspose P) Eta) =
+        frobNorm Eta
+      exact frobNorm_orthogonal_left_rect (matTranspose P) Eta hP.transpose
+    have hΔtailnorm : frobNorm Δtail = frobNorm ΔT := by
+      exact frobNorm_panelTrailingPerturbation ΔT
+    have hEta :
+        frobNorm Eta ≤ frobNorm E + frobNorm Δtail := by
+      show frobNorm (fun i j => E i j + Δtail i j) ≤
+        frobNorm E + frobNorm Δtail
+      exact norm_add_le
+        (Matrix.of E : Matrix (Fin (m + 1)) (Fin (p + 1)) ℝ)
+        (Matrix.of Δtail : Matrix (Fin (m + 1)) (Fin (p + 1)) ℝ)
+    have hSnorm :
+        frobNorm S ≤ (1 + c) * frobNorm A := by
+      have hSfun :
+          S = fun i j =>
+            matMulRect (m + 1) (m + 1) (p + 1) P A i j + E i j :=
+        funext fun i => funext fun j => hSrep i j
+      calc
+        frobNorm S
+            = frobNorm
+                (fun i j =>
+                  matMulRect (m + 1) (m + 1) (p + 1) P A i j + E i j) := by
+              rw [hSfun]
+        _ ≤ frobNorm (matMulRect (m + 1) (m + 1) (p + 1) P A) +
+              frobNorm E := by
+            exact norm_add_le
+              (Matrix.of
+                (matMulRect (m + 1) (m + 1) (p + 1) P A) :
+                  Matrix (Fin (m + 1)) (Fin (p + 1)) ℝ)
+              (Matrix.of E : Matrix (Fin (m + 1)) (Fin (p + 1)) ℝ)
+        _ = frobNorm A + frobNorm E := by
+            rw [frobNorm_orthogonal_left_rect P A hP]
+        _ ≤ frobNorm A + c * frobNorm A := by
+            exact add_le_add (le_refl (frobNorm A)) hE
+        _ = (1 + c) * frobNorm A := by ring
+    have hTnorm :
+        frobNorm (trailingPanel S) ≤ (1 + c) * frobNorm A :=
+      le_trans (frobNorm_trailingPanel_le S) hSnorm
+    have hΔTbound :
+        frobNorm ΔT ≤ α * ((1 + c) * frobNorm A) :=
+      le_trans hΔT (mul_le_mul_of_nonneg_left hTnorm hα)
+    calc
+      frobNorm ΔA
+          = frobNorm Eta := hΔnorm
+      _ ≤ frobNorm E + frobNorm Δtail := hEta
+      _ = frobNorm E + frobNorm ΔT := by rw [hΔtailnorm]
+      _ ≤ c * frobNorm A + α * ((1 + c) * frobNorm A) := by
+          exact add_le_add hE hΔTbound
+      _ = (c + α * (1 + c)) * frobNorm A := by ring
+  · intro j
+    have hΔcol :
+        columnFrob ΔA j = columnFrob Eta j := by
+      show columnFrob
+          (matMulRect (m + 1) (m + 1) (p + 1) (matTranspose P) Eta) j =
+        columnFrob Eta j
+      exact columnFrob_orthogonal_left (matTranspose P) Eta hP.transpose j
+    have hScol : ∀ jj : Fin (p + 1),
+        columnFrob S jj ≤ (1 + c) * columnFrob A jj := by
+      intro jj
+      have hSfun :
+          S = fun i j =>
+            matMulRect (m + 1) (m + 1) (p + 1) P A i j + E i j :=
+        funext fun i => funext fun j => hSrep i j
+      calc
+        columnFrob S jj =
+            columnFrob
+              (fun i j =>
+                matMulRect (m + 1) (m + 1) (p + 1) P A i j + E i j) jj := by
+              rw [hSfun]
+        _ ≤ columnFrob (matMulRect (m + 1) (m + 1) (p + 1) P A) jj +
+              columnFrob E jj :=
+            columnFrob_add_le
+              (matMulRect (m + 1) (m + 1) (p + 1) P A) E jj
+        _ = columnFrob A jj + columnFrob E jj := by
+            rw [columnFrob_orthogonal_left P A hP jj]
+        _ ≤ columnFrob A jj + c * columnFrob A jj :=
+            add_le_add (le_refl (columnFrob A jj)) (hEcol jj)
+        _ = (1 + c) * columnFrob A jj := by ring
+    have hΔtailcol :
+        columnFrob Δtail j ≤ α * ((1 + c) * columnFrob A j) := by
+      refine Fin.cases ?_ ?_ j
+      · rw [columnFrob_panelTrailingPerturbation_zero]
+        have h1c : 0 ≤ 1 + c := by linarith
+        exact mul_nonneg hα (mul_nonneg h1c (columnFrob_nonneg A 0))
+      · intro j
+        calc
+          columnFrob Δtail j.succ = columnFrob ΔT j :=
+            columnFrob_panelTrailingPerturbation_succ ΔT j
+          _ ≤ α * columnFrob (trailingPanel S) j := hΔTcol j
+          _ ≤ α * ((1 + c) * columnFrob A j.succ) := by
+              exact mul_le_mul_of_nonneg_left
+                (le_trans (columnFrob_trailingPanel_le S j) (hScol j.succ)) hα
+    calc
+      columnFrob ΔA j = columnFrob Eta j := hΔcol
+      _ ≤ columnFrob E j + columnFrob Δtail j := by
+          change columnFrob (fun i j => E i j + Δtail i j) j ≤
+            columnFrob E j + columnFrob Δtail j
+          exact columnFrob_add_le E Δtail j
+      _ ≤ c * columnFrob A j + α * ((1 + c) * columnFrob A j) :=
+          add_le_add (hEcol j) hΔtailcol
+      _ = (c + α * (1 + c)) * columnFrob A j := by ring
 
 /-- Square Householder QR backward-error contract with the orthogonal factor
     made explicit.
@@ -5325,19 +5971,20 @@ theorem householder_qr_panel_explicit_backward_cons {m p : ℕ}
           exact add_le_add hE hΔTbound
       _ = (c + α * (1 + c)) * frobNorm A := by ring
 
-/-- Implementation-backed recursive backward error theorem for the rounded
-    Householder QR `R` panel algorithm.
+/-- Implementation-backed recursive backward-error theorem for the
+    zero-aware rounded Householder QR `R` panel algorithm.
 
-    This is the main rectangular induction bridge for the concrete recursive
-    loop `fl_householderQRPanel_R`.  The square wrapper
-    `fl_householderQR_R_backward_error` converts it to the existing
-    `HouseholderQRBackwardError` contract. -/
+    This theorem removes the nonzero-active-column assumption from
+    `fl_householderQRPanel_R_backward_error`.  When the active first column is
+    zero, the algorithm skips the reflector and lifts the recursive trailing
+    proof exactly.  When the active first column is nonzero, it uses the
+    implementation-backed Householder construction/application bridge. -/
 theorem fl_householderQRPanel_R_backward_error (fp : FPModel) :
     ∀ (m p : ℕ) (A : Fin m → Fin p → ℝ),
       HouseholderQRPanelReady fp m p A →
       HouseholderQRPanelBackwardError m p A
         (fl_householderQRPanel_R fp m p A)
-        (householderQRPanelBackwardCoeff fp m p * frobNorm A) := by
+        (householderQRPanelBackwardCoeff fp m p A * frobNorm A) := by
   intro m
   induction m with
   | zero =>
@@ -5353,111 +6000,30 @@ theorem fl_householderQRPanel_R_backward_error (fp : FPModel) :
             householder_qr_panel_backward_zero_cols m A
       | succ p =>
           intro A hready
-          have hready' :
-              panelFirstColumn (Nat.succ_pos p) A ≠ 0 ∧
-              gammaValid fp (11 * (m + 1) + 23) ∧
-              HouseholderQRPanelReady fp m p (fl_householderTrailingPanelStep fp A) := by
-            simpa using hready
-          let P : Fin (m + 1) → Fin (m + 1) → ℝ :=
-            householder (m + 1)
-              (householderNormalizedVector (m + 1)
-                (householderVector (Nat.succ_pos m)
-                  (panelFirstColumn (Nat.succ_pos p) A))
-                (householderBetaFromScale (Nat.succ_pos m)
-                  (panelFirstColumn (Nat.succ_pos p) A))) 1
-          let Ahat : Fin (m + 1) → Fin (p + 1) → ℝ :=
-            fl_householderApplyMatrixRect fp (m + 1) (p + 1)
-              (fl_householderNormalizedVector fp (Nat.succ_pos m)
-                (panelFirstColumn (Nat.succ_pos p) A)) 1 A
-          let S : Fin (m + 1) → Fin (p + 1) → ℝ :=
-            panelFromTopAndTrailing (panelTopLeft Ahat) (panelTopRowTail Ahat)
-              (trailingPanel Ahat)
-          obtain ⟨E, hSrep, hE, hSzero⟩ :=
-            fl_householder_first_column_panel_stored_residual_and_shape fp A
-              hready'.1 hready'.2.1
-          have hPorth : IsOrthogonal (m + 1) P := by
-            have hstep :=
-              fl_householder_first_column_panel_step_error fp
-                (Nat.succ_pos m) (Nat.succ_pos p) A hready'.1 hready'.2.1
-            simpa [P, householderConstructApplyBound] using hstep.orth
-          have hStrailing :
-              trailingPanel S = fl_householderTrailingPanelStep fp A := by
-            simp [S, Ahat, fl_householderTrailingPanelStep]
-          have hTailRaw :=
-            ih p (fl_householderTrailingPanelStep fp A) hready'.2.2
-          have hTail :
-              HouseholderQRPanelBackwardError m p (trailingPanel S)
-                (fl_householderQRPanel_R fp m p (fl_householderTrailingPanelStep fp A))
-                (householderQRPanelBackwardCoeff fp m p *
-                  frobNorm (trailingPanel S)) := by
-            rw [hStrailing]
-            exact hTailRaw
-          have hα :
-              0 ≤ householderQRPanelBackwardCoeff fp m p :=
-            householderQRPanelBackwardCoeff_nonneg fp m p
-              (fl_householderTrailingPanelStep fp A) hready'.2.2
-          have hCons :=
-            householder_qr_panel_backward_cons A S P E
-              (fl_householderQRPanel_R fp m p (fl_householderTrailingPanelStep fp A))
-              (householderConstructApplyBound fp (m + 1))
-              (householderQRPanelBackwardCoeff fp m p)
-              hPorth hSrep hE hSzero hTail hα
-          simpa [fl_householderQRPanel_R, householderQRPanelBackwardCoeff,
-            S, Ahat, P, fl_householderTrailingPanelStep] using hCons
-
-/-- Implementation-backed recursive backward-error theorem for the
-    zero-aware rounded Householder QR `R` panel algorithm.
-
-    This theorem removes the nonzero-active-column assumption from
-    `fl_householderQRPanel_R_backward_error`.  When the active first column is
-    zero, the algorithm skips the reflector and lifts the recursive trailing
-    proof exactly.  When the active first column is nonzero, it uses the
-    implementation-backed Householder construction/application bridge. -/
-theorem fl_householderQRPanel_R_safe_backward_error (fp : FPModel) :
-    ∀ (m p : ℕ) (A : Fin m → Fin p → ℝ),
-      HouseholderQRPanelSafeReady fp m p A →
-      HouseholderQRPanelBackwardError m p A
-        (fl_householderQRPanel_R_safe fp m p A)
-        (householderQRPanelBackwardCoeffSafe fp m p A * frobNorm A) := by
-  intro m
-  induction m with
-  | zero =>
-      intro p A _hready
-      simpa [householderQRPanelBackwardCoeffSafe] using
-        householder_qr_panel_backward_zero_rows p A
-  | succ m ih =>
-      intro p
-      cases p with
-      | zero =>
-          intro A _hready
-          simpa [householderQRPanelBackwardCoeffSafe] using
-            householder_qr_panel_backward_zero_cols m A
-      | succ p =>
-          intro A hready
           by_cases hcol : panelFirstColumn (Nat.succ_pos p) A = 0
           · have htailReady :
-                HouseholderQRPanelSafeReady fp m p (trailingPanel A) := by
-              simpa [HouseholderQRPanelSafeReady, hcol] using hready
+                HouseholderQRPanelReady fp m p (trailingPanel A) := by
+              simpa [HouseholderQRPanelReady, hcol] using hready
             have hTailRaw :=
               ih p (trailingPanel A) htailReady
             have hα :
-                0 ≤ householderQRPanelBackwardCoeffSafe fp m p
+                0 ≤ householderQRPanelBackwardCoeff fp m p
                   (trailingPanel A) :=
-              householderQRPanelBackwardCoeffSafe_nonneg fp m p
+              householderQRPanelBackwardCoeff_nonneg fp m p
                 (trailingPanel A) htailReady
             have hSkip :=
               householder_qr_panel_backward_skip_zero_column A
-                (fl_householderQRPanel_R_safe fp m p (trailingPanel A))
-                (householderQRPanelBackwardCoeffSafe fp m p
+                (fl_householderQRPanel_R fp m p (trailingPanel A))
+                (householderQRPanelBackwardCoeff fp m p
                   (trailingPanel A))
                 hcol hTailRaw hα
-            simpa [fl_householderQRPanel_R_safe,
-              householderQRPanelBackwardCoeffSafe, hcol] using hSkip
+            simpa [fl_householderQRPanel_R,
+              householderQRPanelBackwardCoeff, hcol] using hSkip
           · have hready' :
                 gammaValid fp (11 * (m + 1) + 23) ∧
-                HouseholderQRPanelSafeReady fp m p
+                HouseholderQRPanelReady fp m p
                   (fl_householderTrailingPanelStep fp A) := by
-              simpa [HouseholderQRPanelSafeReady, hcol] using hready
+              simpa [HouseholderQRPanelReady, hcol] using hready
             let P : Fin (m + 1) → Fin (m + 1) → ℝ :=
               householder (m + 1)
                 (householderNormalizedVector (m + 1)
@@ -5487,28 +6053,28 @@ theorem fl_householderQRPanel_R_safe_backward_error (fp : FPModel) :
               ih p (fl_householderTrailingPanelStep fp A) hready'.2
             have hTail :
                 HouseholderQRPanelBackwardError m p (trailingPanel S)
-                  (fl_householderQRPanel_R_safe fp m p
+                  (fl_householderQRPanel_R fp m p
                     (fl_householderTrailingPanelStep fp A))
-                  (householderQRPanelBackwardCoeffSafe fp m p
+                  (householderQRPanelBackwardCoeff fp m p
                     (fl_householderTrailingPanelStep fp A) *
                     frobNorm (trailingPanel S)) := by
               rw [hStrailing]
               exact hTailRaw
             have hα :
-                0 ≤ householderQRPanelBackwardCoeffSafe fp m p
+                0 ≤ householderQRPanelBackwardCoeff fp m p
                   (fl_householderTrailingPanelStep fp A) :=
-              householderQRPanelBackwardCoeffSafe_nonneg fp m p
+              householderQRPanelBackwardCoeff_nonneg fp m p
                 (fl_householderTrailingPanelStep fp A) hready'.2
             have hCons :=
               householder_qr_panel_backward_cons A S P E
-                (fl_householderQRPanel_R_safe fp m p
+                (fl_householderQRPanel_R fp m p
                   (fl_householderTrailingPanelStep fp A))
                 (householderConstructApplyBound fp (m + 1))
-                (householderQRPanelBackwardCoeffSafe fp m p
+                (householderQRPanelBackwardCoeff fp m p
                   (fl_householderTrailingPanelStep fp A))
                 hPorth hSrep hE hSzero hTail hα
-            simpa [fl_householderQRPanel_R_safe,
-              householderQRPanelBackwardCoeffSafe, hcol,
+            simpa [fl_householderQRPanel_R,
+              householderQRPanelBackwardCoeff, hcol,
               S, Ahat, P, fl_householderTrailingPanelStep] using hCons
 
 /-- Implementation-backed recursive backward-error theorem for the zero-aware
@@ -5516,30 +6082,30 @@ theorem fl_householderQRPanel_R_safe_backward_error (fp : FPModel) :
     witness fixed.
 
     This is the explicit-`Q` strengthening of
-    `fl_householderQRPanel_R_safe_backward_error`: the perturbation equation is
-    proved for `fl_householderQRPanel_Q_safe`, not for an unnamed existential
+    `fl_householderQRPanel_R_backward_error`: the perturbation equation is
+    proved for `fl_householderQRPanel_Q`, not for an unnamed existential
     orthogonal matrix. -/
-theorem fl_householderQRPanel_R_safe_explicit_backward_error (fp : FPModel) :
+theorem fl_householderQRPanel_R_explicit_backward_error (fp : FPModel) :
     ∀ (m p : ℕ) (A : Fin m → Fin p → ℝ),
-      HouseholderQRPanelSafeReady fp m p A →
+      HouseholderQRPanelReady fp m p A →
       HouseholderQRPanelExplicitBackwardError m p A
-        (fl_householderQRPanel_Q_safe fp m p A)
-        (fl_householderQRPanel_R_safe fp m p A)
-        (householderQRPanelBackwardCoeffSafe fp m p A * frobNorm A) := by
+        (fl_householderQRPanel_Q fp m p A)
+        (fl_householderQRPanel_R fp m p A)
+        (householderQRPanelBackwardCoeff fp m p A * frobNorm A) := by
   intro m
   induction m with
   | zero =>
       intro p A _hready
       let Z : Fin 0 → Fin p → ℝ := fun _ _ => 0
       refine ⟨?_, ⟨Z, ?_, ?_⟩⟩
-      · simpa [fl_householderQRPanel_Q_safe] using idMatrix_orthogonal 0
+      · simpa [fl_householderQRPanel_Q] using idMatrix_orthogonal 0
       · intro i
         exact Fin.elim0 i
       · have hZ : frobNorm Z = 0 := by
           rw [frobNorm_eq_zero_iff]
           intro i
           exact Fin.elim0 i
-        simp [Z, hZ, householderQRPanelBackwardCoeffSafe]
+        simp [Z, hZ, householderQRPanelBackwardCoeff]
   | succ m ih =>
       intro p
       cases p with
@@ -5547,41 +6113,41 @@ theorem fl_householderQRPanel_R_safe_explicit_backward_error (fp : FPModel) :
           intro A _hready
           let Z : Fin (m + 1) → Fin 0 → ℝ := fun _ _ => 0
           refine ⟨?_, ⟨Z, ?_, ?_⟩⟩
-          · simpa [fl_householderQRPanel_Q_safe] using idMatrix_orthogonal (m + 1)
+          · simpa [fl_householderQRPanel_Q] using idMatrix_orthogonal (m + 1)
           · intro i j
             exact Fin.elim0 j
           · have hZ : frobNorm Z = 0 := by
               rw [frobNorm_eq_zero_iff]
               intro i j
               exact Fin.elim0 j
-            simp [Z, hZ, householderQRPanelBackwardCoeffSafe]
+            simp [Z, hZ, householderQRPanelBackwardCoeff]
       | succ p =>
           intro A hready
           by_cases hcol : panelFirstColumn (Nat.succ_pos p) A = 0
           · have htailReady :
-                HouseholderQRPanelSafeReady fp m p (trailingPanel A) := by
-              simpa [HouseholderQRPanelSafeReady, hcol] using hready
+                HouseholderQRPanelReady fp m p (trailingPanel A) := by
+              simpa [HouseholderQRPanelReady, hcol] using hready
             have hTailRaw :=
               ih p (trailingPanel A) htailReady
             have hα :
-                0 ≤ householderQRPanelBackwardCoeffSafe fp m p
+                0 ≤ householderQRPanelBackwardCoeff fp m p
                   (trailingPanel A) :=
-              householderQRPanelBackwardCoeffSafe_nonneg fp m p
+              householderQRPanelBackwardCoeff_nonneg fp m p
                 (trailingPanel A) htailReady
             have hSkip :=
               householder_qr_panel_explicit_backward_skip_zero_column A
-                (fl_householderQRPanel_Q_safe fp m p (trailingPanel A))
-                (fl_householderQRPanel_R_safe fp m p (trailingPanel A))
-                (householderQRPanelBackwardCoeffSafe fp m p
+                (fl_householderQRPanel_Q fp m p (trailingPanel A))
+                (fl_householderQRPanel_R fp m p (trailingPanel A))
+                (householderQRPanelBackwardCoeff fp m p
                   (trailingPanel A))
                 hcol hTailRaw hα
-            simpa [fl_householderQRPanel_R_safe, fl_householderQRPanel_Q_safe,
-              householderQRPanelBackwardCoeffSafe, hcol] using hSkip
+            simpa [fl_householderQRPanel_R, fl_householderQRPanel_Q,
+              householderQRPanelBackwardCoeff, hcol] using hSkip
           · have hready' :
                 gammaValid fp (11 * (m + 1) + 23) ∧
-                HouseholderQRPanelSafeReady fp m p
+                HouseholderQRPanelReady fp m p
                   (fl_householderTrailingPanelStep fp A) := by
-              simpa [HouseholderQRPanelSafeReady, hcol] using hready
+              simpa [HouseholderQRPanelReady, hcol] using hready
             let P : Fin (m + 1) → Fin (m + 1) → ℝ :=
               householder (m + 1)
                 (householderNormalizedVector (m + 1)
@@ -5611,50 +6177,167 @@ theorem fl_householderQRPanel_R_safe_explicit_backward_error (fp : FPModel) :
               ih p (fl_householderTrailingPanelStep fp A) hready'.2
             have hTail :
                 HouseholderQRPanelExplicitBackwardError m p (trailingPanel S)
-                  (fl_householderQRPanel_Q_safe fp m p
+                  (fl_householderQRPanel_Q fp m p
                     (fl_householderTrailingPanelStep fp A))
-                  (fl_householderQRPanel_R_safe fp m p
+                  (fl_householderQRPanel_R fp m p
                     (fl_householderTrailingPanelStep fp A))
-                  (householderQRPanelBackwardCoeffSafe fp m p
+                  (householderQRPanelBackwardCoeff fp m p
                     (fl_householderTrailingPanelStep fp A) *
                     frobNorm (trailingPanel S)) := by
               rw [hStrailing]
               exact hTailRaw
             have hα :
-                0 ≤ householderQRPanelBackwardCoeffSafe fp m p
+                0 ≤ householderQRPanelBackwardCoeff fp m p
                   (fl_householderTrailingPanelStep fp A) :=
-              householderQRPanelBackwardCoeffSafe_nonneg fp m p
+              householderQRPanelBackwardCoeff_nonneg fp m p
                 (fl_householderTrailingPanelStep fp A) hready'.2
             have hCons :=
               householder_qr_panel_explicit_backward_cons A S P E
-                (fl_householderQRPanel_Q_safe fp m p
+                (fl_householderQRPanel_Q fp m p
                   (fl_householderTrailingPanelStep fp A))
-                (fl_householderQRPanel_R_safe fp m p
+                (fl_householderQRPanel_R fp m p
                   (fl_householderTrailingPanelStep fp A))
                 (householderConstructApplyBound fp (m + 1))
-                (householderQRPanelBackwardCoeffSafe fp m p
+                (householderQRPanelBackwardCoeff fp m p
                   (fl_householderTrailingPanelStep fp A))
                 hPorth hSrep hE hSzero hTail hα
-            simpa [fl_householderQRPanel_R_safe, fl_householderQRPanel_Q_safe,
-              householderQRPanelBackwardCoeffSafe, hcol,
+            simpa [fl_householderQRPanel_R, fl_householderQRPanel_Q,
+              householderQRPanelBackwardCoeff, hcol,
+              S, Ahat, P, fl_householderTrailingPanelStep] using hCons
+
+/-- Implementation-backed recursive columnwise backward-error theorem for the
+    zero-aware rounded Householder QR `R` panel algorithm.
+
+    This strengthens `fl_householderQRPanel_R_explicit_backward_error`: the
+    same concrete rounded `R` algorithm and exact `Q` witness satisfy both the
+    normwise bound and the per-column perturbation bounds needed for the
+    componentwise part of Higham Theorem 18.4. -/
+theorem fl_householderQRPanel_R_columnwise_backward_error (fp : FPModel) :
+    ∀ (m p : ℕ) (A : Fin m → Fin p → ℝ),
+      HouseholderQRPanelReady fp m p A →
+      HouseholderQRPanelColumnwiseBackwardError m p A
+        (fl_householderQRPanel_Q fp m p A)
+        (fl_householderQRPanel_R fp m p A)
+        (householderQRPanelBackwardCoeff fp m p A * frobNorm A)
+        (householderQRPanelBackwardCoeff fp m p A) := by
+  intro m
+  induction m with
+  | zero =>
+      intro p A _hready
+      simpa [fl_householderQRPanel_Q, householderQRPanelBackwardCoeff] using
+        householder_qr_panel_columnwise_backward_zero_rows p A
+  | succ m ih =>
+      intro p
+      cases p with
+      | zero =>
+          intro A _hready
+          simpa [fl_householderQRPanel_Q, householderQRPanelBackwardCoeff] using
+            householder_qr_panel_columnwise_backward_zero_cols m A
+      | succ p =>
+          intro A hready
+          by_cases hcol : panelFirstColumn (Nat.succ_pos p) A = 0
+          · have htailReady :
+                HouseholderQRPanelReady fp m p (trailingPanel A) := by
+              simpa [HouseholderQRPanelReady, hcol] using hready
+            have hTailRaw :=
+              ih p (trailingPanel A) htailReady
+            have hα :
+                0 ≤ householderQRPanelBackwardCoeff fp m p
+                  (trailingPanel A) :=
+              householderQRPanelBackwardCoeff_nonneg fp m p
+                (trailingPanel A) htailReady
+            have hSkip :=
+              householder_qr_panel_columnwise_backward_skip_zero_column A
+                (fl_householderQRPanel_Q fp m p (trailingPanel A))
+                (fl_householderQRPanel_R fp m p (trailingPanel A))
+                (householderQRPanelBackwardCoeff fp m p
+                  (trailingPanel A))
+                hcol hTailRaw hα
+            simpa [fl_householderQRPanel_R, fl_householderQRPanel_Q,
+              householderQRPanelBackwardCoeff, hcol] using hSkip
+          · have hready' :
+                gammaValid fp (11 * (m + 1) + 23) ∧
+                HouseholderQRPanelReady fp m p
+                  (fl_householderTrailingPanelStep fp A) := by
+              simpa [HouseholderQRPanelReady, hcol] using hready
+            let P : Fin (m + 1) → Fin (m + 1) → ℝ :=
+              householder (m + 1)
+                (householderNormalizedVector (m + 1)
+                  (householderVector (Nat.succ_pos m)
+                    (panelFirstColumn (Nat.succ_pos p) A))
+                  (householderBetaFromScale (Nat.succ_pos m)
+                    (panelFirstColumn (Nat.succ_pos p) A))) 1
+            let Ahat : Fin (m + 1) → Fin (p + 1) → ℝ :=
+              fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+                (fl_householderNormalizedVector fp (Nat.succ_pos m)
+                  (panelFirstColumn (Nat.succ_pos p) A)) 1 A
+            let S : Fin (m + 1) → Fin (p + 1) → ℝ :=
+              panelFromTopAndTrailing (panelTopLeft Ahat) (panelTopRowTail Ahat)
+                (trailingPanel Ahat)
+            obtain ⟨E, hSrep, hE, hEcol, hSzero⟩ :=
+              fl_householder_first_column_panel_stored_columnwise_residual_and_shape
+                fp A hcol hready'.1
+            have hPorth : IsOrthogonal (m + 1) P := by
+              have hstep :=
+                fl_householder_first_column_panel_step_error fp
+                  (Nat.succ_pos m) (Nat.succ_pos p) A hcol hready'.1
+              simpa [P, householderConstructApplyBound] using hstep.orth
+            have hStrailing :
+                trailingPanel S = fl_householderTrailingPanelStep fp A := by
+              simp [S, Ahat, fl_householderTrailingPanelStep]
+            have hTailRaw :=
+              ih p (fl_householderTrailingPanelStep fp A) hready'.2
+            have hTail :
+                HouseholderQRPanelColumnwiseBackwardError m p (trailingPanel S)
+                  (fl_householderQRPanel_Q fp m p
+                    (fl_householderTrailingPanelStep fp A))
+                  (fl_householderQRPanel_R fp m p
+                    (fl_householderTrailingPanelStep fp A))
+                  (householderQRPanelBackwardCoeff fp m p
+                    (fl_householderTrailingPanelStep fp A) *
+                    frobNorm (trailingPanel S))
+                  (householderQRPanelBackwardCoeff fp m p
+                    (fl_householderTrailingPanelStep fp A)) := by
+              rw [hStrailing]
+              exact hTailRaw
+            have hc :
+                0 ≤ householderConstructApplyBound fp (m + 1) :=
+              householderConstructApplyBound_nonneg fp (m + 1) hready'.1
+            have hα :
+                0 ≤ householderQRPanelBackwardCoeff fp m p
+                  (fl_householderTrailingPanelStep fp A) :=
+              householderQRPanelBackwardCoeff_nonneg fp m p
+                (fl_householderTrailingPanelStep fp A) hready'.2
+            have hCons :=
+              householder_qr_panel_columnwise_backward_cons A S P E
+                (fl_householderQRPanel_Q fp m p
+                  (fl_householderTrailingPanelStep fp A))
+                (fl_householderQRPanel_R fp m p
+                  (fl_householderTrailingPanelStep fp A))
+                (householderConstructApplyBound fp (m + 1))
+                (householderQRPanelBackwardCoeff fp m p
+                  (fl_householderTrailingPanelStep fp A))
+                hPorth hSrep hE hEcol hSzero hTail hc hα
+            simpa [fl_householderQRPanel_R, fl_householderQRPanel_Q,
+              householderQRPanelBackwardCoeff, hcol,
               S, Ahat, P, fl_householderTrailingPanelStep] using hCons
 
 /-- Rectangular implementation-backed Householder QR panel theorem with the
     recursive coefficient absorbed into one Higham-style `gamma` term.
 
     This is the rectangular form closest to Higham Theorem 18.4.  The concrete
-    zero-aware rounded panel algorithm computes `R_safe`; the exact orthogonal
-    witness `Q_safe` is the product of the ideal reflectors associated with the
+    zero-aware rounded panel algorithm computes `R`; the exact orthogonal
+    witness `Q` is the product of the ideal reflectors associated with the
     rounded panel states; and the perturbation is bounded by one `gamma` with
     `min m p` stages and the ambient row-count operation constant. -/
-theorem fl_householderQRPanel_R_safe_explicit_backward_error_gammaHigham_of_global_gammaValid
+theorem fl_householderQRPanel_R_explicit_backward_error_gammaHigham_of_global_gammaValid
     (fp : FPModel) (m p : ℕ) (A : Fin m → Fin p → ℝ)
     (hsteps : 0 < Nat.min m p)
     (hvalid :
       gammaValid fp (Nat.min m p * householderConstructApplyGammaIndex m)) :
     HouseholderQRPanelExplicitBackwardError m p A
-      (fl_householderQRPanel_Q_safe fp m p A)
-      (fl_householderQRPanel_R_safe fp m p A)
+      (fl_householderQRPanel_Q fp m p A)
+      (fl_householderQRPanel_R fp m p A)
       (gamma fp (Nat.min m p * householderConstructApplyGammaIndex m) *
         frobNorm A) := by
   let s := Nat.min m p
@@ -5668,97 +6351,163 @@ theorem fl_householderQRPanel_R_safe_explicit_backward_error_gammaHigham_of_glob
   have hbase_valid : gammaValid fp (11 * m + 23) :=
     gammaValid_mono fp (le_trans hbase_le_K hK_le_sK) (by
       simpa [s, K] using hvalid)
-  have hready : HouseholderQRPanelSafeReady fp m p A :=
-    HouseholderQRPanelSafeReady_of_global_gammaValid fp m p m A
+  have hready : HouseholderQRPanelReady fp m p A :=
+    HouseholderQRPanelReady_of_global_gammaValid fp m p m A
       (le_refl m) hbase_valid
   have hraw :=
-    fl_householderQRPanel_R_safe_explicit_backward_error fp m p A hready
+    fl_householderQRPanel_R_explicit_backward_error fp m p A hready
   have hcoeff :
-      householderQRPanelBackwardCoeffSafe fp m p A ≤
+      householderQRPanelBackwardCoeff fp m p A ≤
         gamma fp (Nat.min m p * householderConstructApplyGammaIndex m) :=
-    householderQRPanelBackwardCoeffSafe_le_gamma_higham_rect
+    householderQRPanelBackwardCoeff_le_gamma_higham_rect
       fp m p m A (le_refl m) hsteps hvalid hready
   refine hraw.mono ?_
   exact mul_le_mul_of_nonneg_right hcoeff (frobNorm_nonneg A)
 
 /-- Existential-`Q` wrapper around the rectangular implementation-backed
     Householder QR panel theorem with a single Higham-style `gamma` bound. -/
-theorem fl_householderQRPanel_R_safe_backward_error_gammaHigham_of_global_gammaValid
+theorem fl_householderQRPanel_R_backward_error_gammaHigham_of_global_gammaValid
     (fp : FPModel) (m p : ℕ) (A : Fin m → Fin p → ℝ)
     (hsteps : 0 < Nat.min m p)
     (hvalid :
       gammaValid fp (Nat.min m p * householderConstructApplyGammaIndex m)) :
     HouseholderQRPanelBackwardError m p A
-      (fl_householderQRPanel_R_safe fp m p A)
+      (fl_householderQRPanel_R fp m p A)
       (gamma fp (Nat.min m p * householderConstructApplyGammaIndex m) *
         frobNorm A) :=
-  (fl_householderQRPanel_R_safe_explicit_backward_error_gammaHigham_of_global_gammaValid
+  (fl_householderQRPanel_R_explicit_backward_error_gammaHigham_of_global_gammaValid
     fp m p A hsteps hvalid).to_backward_error
 
+/-- Rectangular implementation-backed Householder QR panel theorem with both
+    normwise and columnwise perturbation bounds absorbed into one Higham-style
+    `gamma` term.
+
+    This is the implementation-backed bridge to the componentwise part of
+    Higham Theorem 18.4 before packaging the result as `G |A|`. -/
+theorem fl_householderQRPanel_R_columnwise_backward_error_gammaHigham_of_global_gammaValid
+    (fp : FPModel) (m p : ℕ) (A : Fin m → Fin p → ℝ)
+    (hsteps : 0 < Nat.min m p)
+    (hvalid :
+      gammaValid fp (Nat.min m p * householderConstructApplyGammaIndex m)) :
+    HouseholderQRPanelColumnwiseBackwardError m p A
+      (fl_householderQRPanel_Q fp m p A)
+      (fl_householderQRPanel_R fp m p A)
+      (gamma fp (Nat.min m p * householderConstructApplyGammaIndex m) *
+        frobNorm A)
+      (gamma fp (Nat.min m p * householderConstructApplyGammaIndex m)) := by
+  let s := Nat.min m p
+  let K := householderConstructApplyGammaIndex m
+  have hK_le_sK : K ≤ s * K := by
+    have hs1 : 1 ≤ s := Nat.succ_le_of_lt hsteps
+    simpa using Nat.mul_le_mul_right K hs1
+  have hbase_le_K : 11 * m + 23 ≤ K := by
+    dsimp [K, householderConstructApplyGammaIndex]
+    omega
+  have hbase_valid : gammaValid fp (11 * m + 23) :=
+    gammaValid_mono fp (le_trans hbase_le_K hK_le_sK) (by
+      simpa [s, K] using hvalid)
+  have hready : HouseholderQRPanelReady fp m p A :=
+    HouseholderQRPanelReady_of_global_gammaValid fp m p m A
+      (le_refl m) hbase_valid
+  have hraw :=
+    fl_householderQRPanel_R_columnwise_backward_error fp m p A hready
+  have hcoeff :
+      householderQRPanelBackwardCoeff fp m p A ≤
+        gamma fp (Nat.min m p * householderConstructApplyGammaIndex m) :=
+    householderQRPanelBackwardCoeff_le_gamma_higham_rect
+      fp m p m A (le_refl m) hsteps hvalid hready
+  refine hraw.mono ?_ hcoeff
+  exact mul_le_mul_of_nonneg_right hcoeff (frobNorm_nonneg A)
+
+/-- Source-facing rectangular implementation-backed Householder QR panel
+    theorem in the componentwise `G |A|` form of Higham Theorem 18.4.
+
+    The concrete zero-aware rounded panel algorithm computes `R`; the exact
+    witness `Q` is the product of the ideal reflectors associated with the
+    rounded panel states; and the perturbation satisfies both the normwise
+    Frobenius bound and the Higham-style componentwise bound. -/
+theorem fl_householderQRPanel_R_higham_backward_error_gammaHigham_of_global_gammaValid
+    (fp : FPModel) (m p : ℕ) (A : Fin m → Fin p → ℝ)
+    (hsteps : 0 < Nat.min m p)
+    (hvalid :
+      gammaValid fp (Nat.min m p * householderConstructApplyGammaIndex m)) :
+    StructuredHouseholderQRPanelHighamBackwardError m p A
+      (fl_householderQRPanel_Q fp m p A)
+      (fl_householderQRPanel_R fp m p A)
+      (gamma fp (Nat.min m p * householderConstructApplyGammaIndex m) *
+        frobNorm A)
+      ((m : ℝ) *
+        gamma fp (Nat.min m p * householderConstructApplyGammaIndex m)) := by
+  have hm : 0 < m :=
+    lt_of_lt_of_le hsteps (Nat.min_le_left m p)
+  exact
+    (fl_householderQRPanel_R_columnwise_backward_error_gammaHigham_of_global_gammaValid
+      fp m p A hsteps hvalid).to_higham hm (gamma_nonneg fp hvalid)
+
 /-- Structured rectangular implementation-backed Householder QR panel theorem:
-    the concrete zero-aware rounded `R_safe` panel is upper trapezoidal and
-    satisfies the explicit-`Q_safe` single-`gamma` backward-error bound. -/
-theorem fl_householderQRPanel_R_safe_structured_explicit_backward_error_gammaHigham_of_global_gammaValid
+    the concrete zero-aware rounded `R` panel is upper trapezoidal and
+    satisfies the explicit-`Q` single-`gamma` backward-error bound. -/
+theorem fl_householderQRPanel_R_structured_explicit_backward_error_gammaHigham_of_global_gammaValid
     (fp : FPModel) (m p : ℕ) (A : Fin m → Fin p → ℝ)
     (hsteps : 0 < Nat.min m p)
     (hvalid :
       gammaValid fp (Nat.min m p * householderConstructApplyGammaIndex m)) :
     StructuredHouseholderQRPanelExplicitBackwardError m p A
-      (fl_householderQRPanel_Q_safe fp m p A)
-      (fl_householderQRPanel_R_safe fp m p A)
+      (fl_householderQRPanel_Q fp m p A)
+      (fl_householderQRPanel_R fp m p A)
       (gamma fp (Nat.min m p * householderConstructApplyGammaIndex m) *
         frobNorm A) := by
   exact ⟨
-    fl_householderQRPanel_R_safe_upper_trapezoidal fp m p A,
-    fl_householderQRPanel_R_safe_explicit_backward_error_gammaHigham_of_global_gammaValid
+    fl_householderQRPanel_R_upper_trapezoidal fp m p A,
+    fl_householderQRPanel_R_explicit_backward_error_gammaHigham_of_global_gammaValid
       fp m p A hsteps hvalid⟩
 
 /-- Tall rectangular specialization of the explicit Householder QR panel
     theorem.  For an `m × p` panel with `p ≤ m` and `0 < p`, the stage count is
     exactly the number of columns `p`, matching the usual tall QR statement. -/
-theorem fl_householderQRPanel_R_safe_explicit_backward_error_tall_gammaHigham_of_global_gammaValid
+theorem fl_householderQRPanel_R_explicit_backward_error_tall_gammaHigham_of_global_gammaValid
     (fp : FPModel) (m p : ℕ) (A : Fin m → Fin p → ℝ)
     (hp : 0 < p) (hpm : p ≤ m)
     (hvalid : gammaValid fp (p * householderConstructApplyGammaIndex m)) :
     HouseholderQRPanelExplicitBackwardError m p A
-      (fl_householderQRPanel_Q_safe fp m p A)
-      (fl_householderQRPanel_R_safe fp m p A)
+      (fl_householderQRPanel_Q fp m p A)
+      (fl_householderQRPanel_R fp m p A)
       (gamma fp (p * householderConstructApplyGammaIndex m) * frobNorm A) := by
   have hsteps : 0 < Nat.min m p := by
     simpa [Nat.min_eq_right hpm] using hp
   have hmain :=
-    fl_householderQRPanel_R_safe_explicit_backward_error_gammaHigham_of_global_gammaValid
+    fl_householderQRPanel_R_explicit_backward_error_gammaHigham_of_global_gammaValid
       fp m p A hsteps (by simpa [Nat.min_eq_right hpm] using hvalid)
   simpa [Nat.min_eq_right hpm] using hmain
 
 /-- Existential-`Q` tall rectangular specialization of the Householder QR
     panel theorem with a single Higham-style `gamma` bound. -/
-theorem fl_householderQRPanel_R_safe_backward_error_tall_gammaHigham_of_global_gammaValid
+theorem fl_householderQRPanel_R_backward_error_tall_gammaHigham_of_global_gammaValid
     (fp : FPModel) (m p : ℕ) (A : Fin m → Fin p → ℝ)
     (hp : 0 < p) (hpm : p ≤ m)
     (hvalid : gammaValid fp (p * householderConstructApplyGammaIndex m)) :
     HouseholderQRPanelBackwardError m p A
-      (fl_householderQRPanel_R_safe fp m p A)
+      (fl_householderQRPanel_R fp m p A)
       (gamma fp (p * householderConstructApplyGammaIndex m) * frobNorm A) :=
-  (fl_householderQRPanel_R_safe_explicit_backward_error_tall_gammaHigham_of_global_gammaValid
+  (fl_householderQRPanel_R_explicit_backward_error_tall_gammaHigham_of_global_gammaValid
     fp m p A hp hpm hvalid).to_backward_error
 
 /-- Structured tall rectangular specialization of the Householder QR panel
     theorem.  This is the closest formal panel-level counterpart to Higham's
-    tall rectangular QR statement: `R_safe` is upper trapezoidal and the
-    explicit exact `Q_safe` witness realizes the single-`gamma` backward-error
+    tall rectangular QR statement: `R` is upper trapezoidal and the
+    explicit exact `Q` witness realizes the single-`gamma` backward-error
     equation. -/
-theorem fl_householderQRPanel_R_safe_structured_explicit_backward_error_tall_gammaHigham_of_global_gammaValid
+theorem fl_householderQRPanel_R_structured_explicit_backward_error_tall_gammaHigham_of_global_gammaValid
     (fp : FPModel) (m p : ℕ) (A : Fin m → Fin p → ℝ)
     (hp : 0 < p) (hpm : p ≤ m)
     (hvalid : gammaValid fp (p * householderConstructApplyGammaIndex m)) :
     StructuredHouseholderQRPanelExplicitBackwardError m p A
-      (fl_householderQRPanel_Q_safe fp m p A)
-      (fl_householderQRPanel_R_safe fp m p A)
+      (fl_householderQRPanel_Q fp m p A)
+      (fl_householderQRPanel_R fp m p A)
       (gamma fp (p * householderConstructApplyGammaIndex m) * frobNorm A) := by
   exact ⟨
-    fl_householderQRPanel_R_safe_upper_trapezoidal fp m p A,
-    fl_householderQRPanel_R_safe_explicit_backward_error_tall_gammaHigham_of_global_gammaValid
+    fl_householderQRPanel_R_upper_trapezoidal fp m p A,
+    fl_householderQRPanel_R_explicit_backward_error_tall_gammaHigham_of_global_gammaValid
       fp m p A hp hpm hvalid⟩
 
 /-- Convert the square rectangular-panel QR representation
@@ -5801,41 +6550,30 @@ theorem householder_qr_panel_explicit_backward_to_square {n : ℕ}
     exact hPanel.orth.right_inv a b
   rw [hRmat, ← matMul_assoc, hQQT, matMul_id_left]
 
-/-- Implementation-backed square backward-error theorem for the concrete
-    recursive rounded Householder QR `R` algorithm. -/
-theorem fl_householderQR_R_backward_error (fp : FPModel) (n : ℕ)
-    (A : Fin n → Fin n → ℝ)
-    (hready : HouseholderQRPanelReady fp n n A) :
-    HouseholderQRBackwardError n A (fl_householderQR_R fp n A)
-      (householderQRBackwardCoeff fp n * frobNorm A) := by
-  apply householder_qr_panel_backward_to_square
-  simpa [fl_householderQR_R, householderQRBackwardCoeff] using
-    fl_householderQRPanel_R_backward_error fp n n A hready
-
 /-- Implementation-backed square backward-error theorem for the zero-aware
     concrete recursive rounded Householder QR `R` algorithm.
 
     This is the preferred end-to-end `R` theorem: zero active columns are
     handled by exact skip branches, while nonzero active columns are analyzed
     through the concrete rounded Householder construction/application kernels. -/
-theorem fl_householderQR_R_safe_backward_error (fp : FPModel) (n : ℕ)
+theorem fl_householderQR_R_backward_error (fp : FPModel) (n : ℕ)
     (A : Fin n → Fin n → ℝ)
-    (hready : HouseholderQRPanelSafeReady fp n n A) :
-    HouseholderQRBackwardError n A (fl_householderQR_R_safe fp n A)
-      (householderQRBackwardCoeffSafe fp n A * frobNorm A) := by
+    (hready : HouseholderQRPanelReady fp n n A) :
+    HouseholderQRBackwardError n A (fl_householderQR_R fp n A)
+      (householderQRBackwardCoeff fp n A * frobNorm A) := by
   apply householder_qr_panel_backward_to_square
-  simpa [fl_householderQR_R_safe, householderQRBackwardCoeffSafe] using
-    fl_householderQRPanel_R_safe_backward_error fp n n A hready
+  simpa [fl_householderQR_R, householderQRBackwardCoeff] using
+    fl_householderQRPanel_R_backward_error fp n n A hready
 
 /-- Global-gamma wrapper for the implementation-backed zero-aware Householder
     QR `R` backward-error theorem. -/
-theorem fl_householderQR_R_safe_backward_error_of_global_gammaValid
+theorem fl_householderQR_R_backward_error_of_global_gammaValid
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hvalid : gammaValid fp (11 * n + 23)) :
-    HouseholderQRBackwardError n A (fl_householderQR_R_safe fp n A)
-      (householderQRBackwardCoeffSafe fp n A * frobNorm A) := by
-  exact fl_householderQR_R_safe_backward_error fp n A
-    (HouseholderQRPanelSafeReady_square_of_global_gammaValid fp n A hvalid)
+    HouseholderQRBackwardError n A (fl_householderQR_R fp n A)
+      (householderQRBackwardCoeff fp n A * frobNorm A) := by
+  exact fl_householderQR_R_backward_error fp n A
+    (HouseholderQRPanelReady_square_of_global_gammaValid fp n A hvalid)
 
 /-- Implementation-backed Householder QR `R` backward error with a
     Higham-style dimension-only growth bound.
@@ -5845,18 +6583,18 @@ theorem fl_householderQR_R_safe_backward_error_of_global_gammaValid
     `n*c*(1+c)^n*‖A‖_F`, where
     `c = householderConstructApplyBound fp n` is the concrete one-step
     Householder construction/application bound. -/
-theorem fl_householderQR_R_safe_backward_error_highamGrowth_of_global_gammaValid
+theorem fl_householderQR_R_backward_error_highamGrowth_of_global_gammaValid
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hvalid : gammaValid fp (11 * n + 23)) :
-    HouseholderQRBackwardError n A (fl_householderQR_R_safe fp n A)
+    HouseholderQRBackwardError n A (fl_householderQR_R fp n A)
       ((n : ℝ) * householderConstructApplyBound fp n *
         (1 + householderConstructApplyBound fp n) ^ n * frobNorm A) := by
   have hraw :=
-    fl_householderQR_R_safe_backward_error_of_global_gammaValid
+    fl_householderQR_R_backward_error_of_global_gammaValid
       fp n A hvalid
   refine hraw.mono ?_
   exact mul_le_mul_of_nonneg_right
-    (householderQRBackwardCoeffSafe_le_highamGrowth fp n A hvalid)
+    (householderQRBackwardCoeff_le_highamGrowth fp n A hvalid)
     (frobNorm_nonneg A)
 
 /-- Implementation-backed Householder QR `R` backward error with the recursive
@@ -5867,12 +6605,12 @@ theorem fl_householderQR_R_safe_backward_error_highamGrowth_of_global_gammaValid
     `gamma (n*K) * ‖A‖_F`, where
     `K = householderConstructApplyGammaIndex n` is a concrete formal choice of
     Higham's hidden `c*m` operation-count constant. -/
-theorem fl_householderQR_R_safe_backward_error_gammaHigham_of_global_gammaValid
+theorem fl_householderQR_R_backward_error_gammaHigham_of_global_gammaValid
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hn : 0 < n)
     (hvalid :
       gammaValid fp (n * householderConstructApplyGammaIndex n)) :
-    HouseholderQRBackwardError n A (fl_householderQR_R_safe fp n A)
+    HouseholderQRBackwardError n A (fl_householderQR_R fp n A)
       (gamma fp (n * householderConstructApplyGammaIndex n) * frobNorm A) := by
   let K := householderConstructApplyGammaIndex n
   have hK_le_nK : K ≤ n * K := by
@@ -5884,11 +6622,11 @@ theorem fl_householderQR_R_safe_backward_error_gammaHigham_of_global_gammaValid
   have hbase_valid : gammaValid fp (11 * n + 23) :=
     gammaValid_mono fp (le_trans hbase_le_K hK_le_nK) hvalid
   have hraw :=
-    fl_householderQR_R_safe_backward_error_of_global_gammaValid
+    fl_householderQR_R_backward_error_of_global_gammaValid
       fp n A hbase_valid
   refine hraw.mono ?_
   exact mul_le_mul_of_nonneg_right
-    (householderQRBackwardCoeffSafe_le_gamma_higham fp n A hn hvalid)
+    (householderQRBackwardCoeff_le_gamma_higham fp n A hn hvalid)
     (frobNorm_nonneg A)
 
 /-- QR backward-error contract including the structural fact that the computed
@@ -5897,7 +6635,7 @@ theorem fl_householderQR_R_safe_backward_error_gammaHigham_of_global_gammaValid
     The older `HouseholderQRBackwardError` is the normwise backward-error part
     only.  The concrete rounded QR loop proves this stronger packaged contract
     in `fl_householderQR_R_structured_backward_error` and the zero-aware
-    `fl_householderQR_R_safe_structured_backward_error`. -/
+    `fl_householderQR_R_structured_backward_error`. -/
 structure StructuredHouseholderQRBackwardError
     (n : ℕ) (A R_hat : Fin n → Fin n → ℝ) (c_bound : ℝ) : Prop where
   /-- Normwise Householder QR backward error. -/
@@ -5929,7 +6667,7 @@ theorem householder_qr_backward (n : ℕ) (_hn : 0 < n)
     concrete rounded QR result.  The concrete QR algorithms discharge the
     `hUpper` input separately in
     `fl_householderQR_R_structured_backward_error` and
-    `fl_householderQR_R_safe_structured_backward_error`. -/
+    `fl_householderQR_R_structured_backward_error`. -/
 theorem structured_householder_qr_backward (n : ℕ) (hn : 0 < n)
     (A R_hat : Fin n → Fin n → ℝ) (c : ℝ) (hc : 0 ≤ c)
     (hSeq : OrthogonalSequenceBackwardError n A R_hat n c)
@@ -5938,156 +6676,142 @@ theorem structured_householder_qr_backward (n : ℕ) (hn : 0 < n)
       (↑n * c * frobNorm A) := by
   exact ⟨householder_qr_backward n hn A R_hat c hc hSeq, hUpper⟩
 
-/-- Implementation-backed structured QR theorem for the concrete recursive
-    rounded Householder QR `R` algorithm.
+/-- Implementation-backed structured QR theorem for the zero-aware concrete
+    recursive rounded Householder QR `R` algorithm.
 
-    This theorem combines the recursive panel backward-error bridge with the
-    structural fact that `fl_householderQR_R` returns an upper-triangular
-    matrix by construction. -/
+    This theorem packages the preferred backward-error theorem with the
+    structural fact that the returned `R` matrix is upper triangular. -/
 theorem fl_householderQR_R_structured_backward_error (fp : FPModel) (n : ℕ)
     (A : Fin n → Fin n → ℝ)
     (hready : HouseholderQRPanelReady fp n n A) :
     StructuredHouseholderQRBackwardError n A (fl_householderQR_R fp n A)
-      (householderQRBackwardCoeff fp n * frobNorm A) := by
+      (householderQRBackwardCoeff fp n A * frobNorm A) := by
   exact ⟨fl_householderQR_R_backward_error fp n A hready,
     fl_householderQR_R_upper fp n A⟩
 
-/-- Implementation-backed structured QR theorem for the zero-aware concrete
-    recursive rounded Householder QR `R` algorithm.
-
-    This theorem packages the preferred safe backward-error theorem with the
-    structural fact that the returned `R` matrix is upper triangular. -/
-theorem fl_householderQR_R_safe_structured_backward_error (fp : FPModel) (n : ℕ)
-    (A : Fin n → Fin n → ℝ)
-    (hready : HouseholderQRPanelSafeReady fp n n A) :
-    StructuredHouseholderQRBackwardError n A (fl_householderQR_R_safe fp n A)
-      (householderQRBackwardCoeffSafe fp n A * frobNorm A) := by
-  exact ⟨fl_householderQR_R_safe_backward_error fp n A hready,
-    fl_householderQR_R_safe_upper fp n A⟩
-
 /-- Global-gamma wrapper for the implementation-backed structured zero-aware
     Householder QR theorem. -/
-theorem fl_householderQR_R_safe_structured_backward_error_of_global_gammaValid
+theorem fl_householderQR_R_structured_backward_error_of_global_gammaValid
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hvalid : gammaValid fp (11 * n + 23)) :
-    StructuredHouseholderQRBackwardError n A (fl_householderQR_R_safe fp n A)
-      (householderQRBackwardCoeffSafe fp n A * frobNorm A) := by
-  exact fl_householderQR_R_safe_structured_backward_error fp n A
-    (HouseholderQRPanelSafeReady_square_of_global_gammaValid fp n A hvalid)
+    StructuredHouseholderQRBackwardError n A (fl_householderQR_R fp n A)
+      (householderQRBackwardCoeff fp n A * frobNorm A) := by
+  exact fl_householderQR_R_structured_backward_error fp n A
+    (HouseholderQRPanelReady_square_of_global_gammaValid fp n A hvalid)
 
-/-- The `Q` field of the public safe Householder QR witness is orthogonal. -/
-theorem fl_householderQR_safe_witness_Q_orthogonal_of_global_gammaValid
+/-- The `Q` field of the public Householder QR witness is orthogonal. -/
+theorem fl_householderQR_witness_Q_orthogonal_of_global_gammaValid
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hvalid : gammaValid fp (11 * n + 23)) :
-    IsOrthogonal n (fl_householderQR_safe_witness fp n A).Q := by
-  simpa [fl_householderQR_safe_witness] using
-    fl_householderQR_Q_safe_orthogonal_of_global_gammaValid fp n A hvalid
+    IsOrthogonal n (fl_householderQR_witness fp n A).Q := by
+  simpa [fl_householderQR_witness] using
+    fl_householderQR_Q_orthogonal_of_global_gammaValid fp n A hvalid
 
-/-- The `R` field of the public safe Householder QR witness is upper
+/-- The `R` field of the public Householder QR witness is upper
     triangular. -/
-theorem fl_householderQR_safe_witness_R_upper
+theorem fl_householderQR_witness_R_upper
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ) :
-    IsUpperTriangular n (fl_householderQR_safe_witness fp n A).R := by
-  simpa [fl_householderQR_safe_witness] using
-    fl_householderQR_R_safe_upper fp n A
+    IsUpperTriangular n (fl_householderQR_witness fp n A).R := by
+  simpa [fl_householderQR_witness] using
+    fl_householderQR_R_upper fp n A
 
-/-- The `R` field of the public safe Householder QR witness satisfies the
+/-- The `R` field of the public Householder QR witness satisfies the
     implementation-backed structured backward-error theorem. -/
-theorem fl_householderQR_safe_witness_R_structured_backward_error_of_global_gammaValid
+theorem fl_householderQR_witness_R_structured_backward_error_of_global_gammaValid
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hvalid : gammaValid fp (11 * n + 23)) :
     StructuredHouseholderQRBackwardError n A
-      (fl_householderQR_safe_witness fp n A).R
-      (householderQRBackwardCoeffSafe fp n A * frobNorm A) := by
-  simpa [fl_householderQR_safe_witness] using
-    fl_householderQR_R_safe_structured_backward_error_of_global_gammaValid
+      (fl_householderQR_witness fp n A).R
+      (householderQRBackwardCoeff fp n A * frobNorm A) := by
+  simpa [fl_householderQR_witness] using
+    fl_householderQR_R_structured_backward_error_of_global_gammaValid
       fp n A hvalid
 
 /-- The `R_hat` field of the concrete computed-factor API is upper
-    triangular.  This is inherited from the zero-aware rounded `R_safe`
+    triangular.  This is inherited from the zero-aware rounded `R`
     algorithm; it does not claim any property of the rounded `Q_hat` field. -/
-theorem fl_householderQR_computed_safe_R_hat_upper
+theorem fl_householderQR_computed_R_hat_upper
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ) :
-    IsUpperTriangular n (fl_householderQR_computed_safe fp n A).R_hat := by
-  simpa [fl_householderQR_computed_safe] using
-    fl_householderQR_R_safe_upper fp n A
+    IsUpperTriangular n (fl_householderQR_computed fp n A).R_hat := by
+  simpa [fl_householderQR_computed] using
+    fl_householderQR_R_upper fp n A
 
 /-- The `R_hat` field of the concrete computed-factor API satisfies the same
-    implementation-backed structured backward-error theorem as `R_safe`.
+    implementation-backed structured backward-error theorem as `R`.
 
     The rounded `Q_hat` field is intentionally not used in this theorem; the
     QR backward-error statement is still expressed with the exact orthogonal
     witness from `HouseholderQRWitness`. -/
-theorem fl_householderQR_computed_safe_R_hat_structured_backward_error_of_global_gammaValid
+theorem fl_householderQR_computed_R_hat_structured_backward_error_of_global_gammaValid
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hvalid : gammaValid fp (11 * n + 23)) :
     StructuredHouseholderQRBackwardError n A
-      (fl_householderQR_computed_safe fp n A).R_hat
-      (householderQRBackwardCoeffSafe fp n A * frobNorm A) := by
-  simpa [fl_householderQR_computed_safe] using
-    fl_householderQR_R_safe_structured_backward_error_of_global_gammaValid
+      (fl_householderQR_computed fp n A).R_hat
+      (householderQRBackwardCoeff fp n A * frobNorm A) := by
+  simpa [fl_householderQR_computed] using
+    fl_householderQR_R_structured_backward_error_of_global_gammaValid
       fp n A hvalid
 
-/-- The public safe Householder QR witness satisfies the fixed-`Q` structured
+/-- The public Householder QR witness satisfies the fixed-`Q` structured
     backward-error contract.
 
     This ties the explicit `Q` field directly to the perturbation equation,
     rather than relying only on the existential `Q` inside
     `HouseholderQRBackwardError`. -/
-theorem fl_householderQR_safe_witness_explicit_backward_error_of_global_gammaValid
+theorem fl_householderQR_witness_explicit_backward_error_of_global_gammaValid
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hvalid : gammaValid fp (11 * n + 23)) :
     HouseholderQRExplicitBackwardError n A
-      (fl_householderQR_safe_witness fp n A).Q
-      (fl_householderQR_safe_witness fp n A).R
-      (householderQRBackwardCoeffSafe fp n A * frobNorm A) := by
+      (fl_householderQR_witness fp n A).Q
+      (fl_householderQR_witness fp n A).R
+      (householderQRBackwardCoeff fp n A * frobNorm A) := by
   have hPanel :
       HouseholderQRPanelExplicitBackwardError n n A
-        (fl_householderQR_Q_safe fp n A)
-        (fl_householderQR_R_safe fp n A)
-        (householderQRBackwardCoeffSafe fp n A * frobNorm A) := by
-    simpa [fl_householderQR_Q_safe, fl_householderQR_R_safe,
-      householderQRBackwardCoeffSafe] using
-      fl_householderQRPanel_R_safe_explicit_backward_error fp n n A
-        (HouseholderQRPanelSafeReady_square_of_global_gammaValid fp n A hvalid)
+        (fl_householderQR_Q fp n A)
+        (fl_householderQR_R fp n A)
+        (householderQRBackwardCoeff fp n A * frobNorm A) := by
+    simpa [fl_householderQR_Q, fl_householderQR_R,
+      householderQRBackwardCoeff] using
+      fl_householderQRPanel_R_explicit_backward_error fp n n A
+        (HouseholderQRPanelReady_square_of_global_gammaValid fp n A hvalid)
   have hExplicit :=
     householder_qr_panel_explicit_backward_to_square A
-      (fl_householderQR_Q_safe fp n A)
-      (fl_householderQR_R_safe fp n A)
-      (householderQRBackwardCoeffSafe fp n A * frobNorm A)
+      (fl_householderQR_Q fp n A)
+      (fl_householderQR_R fp n A)
+      (householderQRBackwardCoeff fp n A * frobNorm A)
       hPanel
-      (fl_householderQR_R_safe_upper fp n A)
-  simpa [fl_householderQR_safe_witness] using hExplicit
+      (fl_householderQR_R_upper fp n A)
+  simpa [fl_householderQR_witness] using hExplicit
 
 /-- Fixed-`Q` implementation-backed Householder QR theorem with the
     Higham-style dimension-only growth bound for the concrete rounded `R`
     output. -/
-theorem fl_householderQR_safe_witness_explicit_backward_error_highamGrowth_of_global_gammaValid
+theorem fl_householderQR_witness_explicit_backward_error_highamGrowth_of_global_gammaValid
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hvalid : gammaValid fp (11 * n + 23)) :
     HouseholderQRExplicitBackwardError n A
-      (fl_householderQR_safe_witness fp n A).Q
-      (fl_householderQR_safe_witness fp n A).R
+      (fl_householderQR_witness fp n A).Q
+      (fl_householderQR_witness fp n A).R
       ((n : ℝ) * householderConstructApplyBound fp n *
         (1 + householderConstructApplyBound fp n) ^ n * frobNorm A) := by
   have hraw :=
-    fl_householderQR_safe_witness_explicit_backward_error_of_global_gammaValid
+    fl_householderQR_witness_explicit_backward_error_of_global_gammaValid
       fp n A hvalid
   refine hraw.mono ?_
   exact mul_le_mul_of_nonneg_right
-    (householderQRBackwardCoeffSafe_le_highamGrowth fp n A hvalid)
+    (householderQRBackwardCoeff_le_highamGrowth fp n A hvalid)
     (frobNorm_nonneg A)
 
 /-- Fixed-`Q` implementation-backed Householder QR theorem with the bound
     absorbed into one Higham `gamma` term. -/
-theorem fl_householderQR_safe_witness_explicit_backward_error_gammaHigham_of_global_gammaValid
+theorem fl_householderQR_witness_explicit_backward_error_gammaHigham_of_global_gammaValid
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hn : 0 < n)
     (hvalid :
       gammaValid fp (n * householderConstructApplyGammaIndex n)) :
     HouseholderQRExplicitBackwardError n A
-      (fl_householderQR_safe_witness fp n A).Q
-      (fl_householderQR_safe_witness fp n A).R
+      (fl_householderQR_witness fp n A).Q
+      (fl_householderQR_witness fp n A).R
       (gamma fp (n * householderConstructApplyGammaIndex n) * frobNorm A) := by
   let K := householderConstructApplyGammaIndex n
   have hK_le_nK : K ≤ n * K := by
@@ -6099,37 +6823,37 @@ theorem fl_householderQR_safe_witness_explicit_backward_error_gammaHigham_of_glo
   have hbase_valid : gammaValid fp (11 * n + 23) :=
     gammaValid_mono fp (le_trans hbase_le_K hK_le_nK) hvalid
   have hraw :=
-    fl_householderQR_safe_witness_explicit_backward_error_of_global_gammaValid
+    fl_householderQR_witness_explicit_backward_error_of_global_gammaValid
       fp n A hbase_valid
   refine hraw.mono ?_
   exact mul_le_mul_of_nonneg_right
-    (householderQRBackwardCoeffSafe_le_gamma_higham fp n A hn hvalid)
+    (householderQRBackwardCoeff_le_gamma_higham fp n A hn hvalid)
     (frobNorm_nonneg A)
 
-/-- The safe computed `R` factor has Frobenius norm controlled by the input
+/-- The computed `R` factor has Frobenius norm controlled by the input
     matrix and the same single-gamma QR factorization coefficient.
 
     This is a derived consequence of the implementation-backed explicit
-    backward-error theorem for `R_safe`; it is useful when composing QR with
-    triangular solve, whose perturbation term contains `‖R_safe‖_F`. -/
-theorem fl_householderQR_R_safe_frobNorm_le_gammaHigham_of_global_gammaValid
+    backward-error theorem for `R`; it is useful when composing QR with
+    triangular solve, whose perturbation term contains `‖R‖_F`. -/
+theorem fl_householderQR_R_frobNorm_le_gammaHigham_of_global_gammaValid
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hn : 0 < n)
     (hvalid :
       gammaValid fp (n * householderConstructApplyGammaIndex n)) :
-    frobNorm (fl_householderQR_R_safe fp n A) ≤
+    frobNorm (fl_householderQR_R fp n A) ≤
       (1 + gamma fp (n * householderConstructApplyGammaIndex n)) *
         frobNorm A := by
   have hQR :=
-    fl_householderQR_safe_witness_explicit_backward_error_gammaHigham_of_global_gammaValid
+    fl_householderQR_witness_explicit_backward_error_gammaHigham_of_global_gammaValid
       fp n A hn hvalid
   have hnorm := hQR.frobNorm_R_hat_le
   calc
-    frobNorm (fl_householderQR_R_safe fp n A)
+    frobNorm (fl_householderQR_R fp n A)
         ≤ frobNorm A +
             gamma fp (n * householderConstructApplyGammaIndex n) *
               frobNorm A := by
-          simpa [fl_householderQR_safe_witness] using hnorm
+          simpa [fl_householderQR_witness] using hnorm
     _ = (1 + gamma fp (n * householderConstructApplyGammaIndex n)) *
           frobNorm A := by ring
 
@@ -6137,46 +6861,46 @@ theorem fl_householderQR_R_safe_frobNorm_le_gammaHigham_of_global_gammaValid
     Householder QR backward-error theorem.
 
     The `Q` used here is still the exact orthogonal witness from
-    `fl_householderQR_safe_witness`, not the rounded accumulated `Q_hat` field
-    from `fl_householderQR_computed_safe`. -/
-theorem fl_householderQR_computed_safe_R_hat_explicit_backward_error_of_global_gammaValid
+    `fl_householderQR_witness`, not the rounded accumulated `Q_hat` field
+    from `fl_householderQR_computed`. -/
+theorem fl_householderQR_computed_R_hat_explicit_backward_error_of_global_gammaValid
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hvalid : gammaValid fp (11 * n + 23)) :
     HouseholderQRExplicitBackwardError n A
-      (fl_householderQR_safe_witness fp n A).Q
-      (fl_householderQR_computed_safe fp n A).R_hat
-      (householderQRBackwardCoeffSafe fp n A * frobNorm A) := by
-  simpa [fl_householderQR_computed_safe] using
-    fl_householderQR_safe_witness_explicit_backward_error_of_global_gammaValid
+      (fl_householderQR_witness fp n A).Q
+      (fl_householderQR_computed fp n A).R_hat
+      (householderQRBackwardCoeff fp n A * frobNorm A) := by
+  simpa [fl_householderQR_computed] using
+    fl_householderQR_witness_explicit_backward_error_of_global_gammaValid
       fp n A hvalid
 
 /-- The computed-factor `R_hat` field satisfies the fixed exact-witness
     Householder QR theorem with the Higham-style dimension-only growth bound. -/
-theorem fl_householderQR_computed_safe_R_hat_explicit_backward_error_highamGrowth_of_global_gammaValid
+theorem fl_householderQR_computed_R_hat_explicit_backward_error_highamGrowth_of_global_gammaValid
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hvalid : gammaValid fp (11 * n + 23)) :
     HouseholderQRExplicitBackwardError n A
-      (fl_householderQR_safe_witness fp n A).Q
-      (fl_householderQR_computed_safe fp n A).R_hat
+      (fl_householderQR_witness fp n A).Q
+      (fl_householderQR_computed fp n A).R_hat
       ((n : ℝ) * householderConstructApplyBound fp n *
         (1 + householderConstructApplyBound fp n) ^ n * frobNorm A) := by
-  simpa [fl_householderQR_computed_safe] using
-    fl_householderQR_safe_witness_explicit_backward_error_highamGrowth_of_global_gammaValid
+  simpa [fl_householderQR_computed] using
+    fl_householderQR_witness_explicit_backward_error_highamGrowth_of_global_gammaValid
       fp n A hvalid
 
 /-- The computed-factor `R_hat` field satisfies the fixed exact-witness
     Householder QR theorem with one Higham `gamma` coefficient. -/
-theorem fl_householderQR_computed_safe_R_hat_explicit_backward_error_gammaHigham_of_global_gammaValid
+theorem fl_householderQR_computed_R_hat_explicit_backward_error_gammaHigham_of_global_gammaValid
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hn : 0 < n)
     (hvalid :
       gammaValid fp (n * householderConstructApplyGammaIndex n)) :
     HouseholderQRExplicitBackwardError n A
-      (fl_householderQR_safe_witness fp n A).Q
-      (fl_householderQR_computed_safe fp n A).R_hat
+      (fl_householderQR_witness fp n A).Q
+      (fl_householderQR_computed fp n A).R_hat
       (gamma fp (n * householderConstructApplyGammaIndex n) * frobNorm A) := by
-  simpa [fl_householderQR_computed_safe] using
-    fl_householderQR_safe_witness_explicit_backward_error_gammaHigham_of_global_gammaValid
+  simpa [fl_householderQR_computed] using
+    fl_householderQR_witness_explicit_backward_error_gammaHigham_of_global_gammaValid
       fp n A hn hvalid
 
 /-- Combined computed-factor contract for the current Householder QR API.
@@ -6216,18 +6940,18 @@ structure HouseholderQRPanelComputedFactorsExplicitError
     bound is absorbed into one Higham `gamma` term.
 
     This is the panel analogue of
-    `fl_householderQR_computed_safe_explicit_error_gammaHigham_of_global_gammaValid`.
+    `fl_householderQR_computed_explicit_error_gammaHigham_of_global_gammaValid`.
     It keeps the valid two-layer statement: the computed `R_hat` is explained
-    by the exact orthogonal `Q_safe`, and the rounded accumulated `Q_hat` is a
-    bounded perturbation of that same `Q_safe`. -/
-theorem fl_householderQRPanel_computed_safe_explicit_error_gammaHigham_of_global_gammaValid
+    by the exact orthogonal `Q`, and the rounded accumulated `Q_hat` is a
+    bounded perturbation of that same `Q`. -/
+theorem fl_householderQRPanel_computed_explicit_error_gammaHigham_of_global_gammaValid
     (fp : FPModel) (m p : ℕ) (A : Fin m → Fin p → ℝ)
     (hsteps : 0 < Nat.min m p)
     (hvalid :
       gammaValid fp (Nat.min m p * householderConstructApplyGammaIndex m)) :
     HouseholderQRPanelComputedFactorsExplicitError m p A
-      (fl_householderQRPanel_computed_safe fp m p A)
-      (fl_householderQRPanel_Q_safe fp m p A)
+      (fl_householderQRPanel_computed fp m p A)
+      (fl_householderQRPanel_Q fp m p A)
       (gamma fp (Nat.min m p * householderConstructApplyGammaIndex m) *
         frobNorm A)
       ((m : ℝ) * householderConstructApplyBound fp m *
@@ -6246,22 +6970,22 @@ theorem fl_householderQRPanel_computed_safe_explicit_error_gammaHigham_of_global
       simpa [s, K] using hvalid)
   exact ⟨
     by
-      simpa [fl_householderQRPanel_computed_safe] using
-        fl_householderQRPanel_R_safe_structured_explicit_backward_error_gammaHigham_of_global_gammaValid
+      simpa [fl_householderQRPanel_computed] using
+        fl_householderQRPanel_R_structured_explicit_backward_error_gammaHigham_of_global_gammaValid
           fp m p A hsteps hvalid,
     by
-      simpa [fl_householderQRPanel_computed_safe] using
-        fl_householderQRPanel_Qhat_safe_fixed_Q_safe_growth_accum_error
+      simpa [fl_householderQRPanel_computed] using
+        fl_householderQRPanel_Qhat_fixed_Q_growth_accum_error
           fp m p m A (le_refl m) hbase_valid⟩
 
 /-- Tall rectangular specialization of the computed-factor contract. -/
-theorem fl_householderQRPanel_computed_safe_explicit_error_tall_gammaHigham_of_global_gammaValid
+theorem fl_householderQRPanel_computed_explicit_error_tall_gammaHigham_of_global_gammaValid
     (fp : FPModel) (m p : ℕ) (A : Fin m → Fin p → ℝ)
     (hp : 0 < p) (hpm : p ≤ m)
     (hvalid : gammaValid fp (p * householderConstructApplyGammaIndex m)) :
     HouseholderQRPanelComputedFactorsExplicitError m p A
-      (fl_householderQRPanel_computed_safe fp m p A)
-      (fl_householderQRPanel_Q_safe fp m p A)
+      (fl_householderQRPanel_computed fp m p A)
+      (fl_householderQRPanel_Q fp m p A)
       (gamma fp (p * householderConstructApplyGammaIndex m) * frobNorm A)
       ((m : ℝ) * householderConstructApplyBound fp m *
         (1 + householderConstructApplyBound fp m) ^ m *
@@ -6269,7 +6993,7 @@ theorem fl_householderQRPanel_computed_safe_explicit_error_tall_gammaHigham_of_g
   have hsteps : 0 < Nat.min m p := by
     simpa [Nat.min_eq_right hpm] using hp
   have hmain :=
-    fl_householderQRPanel_computed_safe_explicit_error_gammaHigham_of_global_gammaValid
+    fl_householderQRPanel_computed_explicit_error_gammaHigham_of_global_gammaValid
       fp m p A hsteps (by simpa [Nat.min_eq_right hpm] using hvalid)
   simpa [Nat.min_eq_right hpm] using hmain
 
@@ -6368,19 +7092,19 @@ theorem HouseholderQRPanelComputedFactorsExplicitError.to_residual_error
 /-- Residual theorem for concrete tall rectangular computed Householder QR
     panel factors.  This directly uses the rounded product `Q_hat * R_hat`
     while preserving the caveat that `Q_hat` is not asserted to be orthogonal. -/
-theorem fl_householderQRPanel_computed_safe_residual_error_tall_gammaHigham_of_global_gammaValid
+theorem fl_householderQRPanel_computed_residual_error_tall_gammaHigham_of_global_gammaValid
     (fp : FPModel) (m p : ℕ) (A : Fin m → Fin p → ℝ)
     (hp : 0 < p) (hpm : p ≤ m)
     (hvalid : gammaValid fp (p * householderConstructApplyGammaIndex m)) :
     HouseholderQRPanelComputedFactorsResidualError m p A
-      (fl_householderQRPanel_computed_safe fp m p A)
+      (fl_householderQRPanel_computed fp m p A)
       ((gamma fp (p * householderConstructApplyGammaIndex m) * frobNorm A) +
         ((m : ℝ) * householderConstructApplyBound fp m *
           (1 + householderConstructApplyBound fp m) ^ m *
           Real.sqrt (m : ℝ)) *
-          frobNorm (fl_householderQRPanel_computed_safe fp m p A).R_hat) := by
+          frobNorm (fl_householderQRPanel_computed fp m p A).R_hat) := by
   exact
-    (fl_householderQRPanel_computed_safe_explicit_error_tall_gammaHigham_of_global_gammaValid
+    (fl_householderQRPanel_computed_explicit_error_tall_gammaHigham_of_global_gammaValid
       fp m p A hp hpm hvalid).to_residual_error
 
 /-- Residual contract for the concrete computed `(Q_hat, R_hat)` product.
@@ -6448,20 +7172,20 @@ theorem HouseholderQRComputedFactorsExplicitError.to_residual_error {n : ℕ}
     linarith
 
 /-- The concrete computed Householder QR factors satisfy the combined
-    exact-witness contract: `R_hat` is backward stable against the safe exact
+    exact-witness contract: `R_hat` is backward stable against the exact
     witness, and `Q_hat` is a bounded perturbation of that same witness. -/
-theorem fl_householderQR_computed_safe_explicit_error_of_global_gammaValid
+theorem fl_householderQR_computed_explicit_error_of_global_gammaValid
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hvalid : gammaValid fp (11 * n + 23)) :
     HouseholderQRComputedFactorsExplicitError n A
-      (fl_householderQR_computed_safe fp n A)
-      (fl_householderQR_safe_witness fp n A).Q
-      (householderQRBackwardCoeffSafe fp n A * frobNorm A)
+      (fl_householderQR_computed fp n A)
+      (fl_householderQR_witness fp n A).Q
+      (householderQRBackwardCoeff fp n A * frobNorm A)
       (householderQR_QhatClosedFormBound fp n n) := by
   exact ⟨
-    fl_householderQR_computed_safe_R_hat_explicit_backward_error_of_global_gammaValid
+    fl_householderQR_computed_R_hat_explicit_backward_error_of_global_gammaValid
       fp n A hvalid,
-    fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_closed_form_accum_error_of_global_gammaValid
+    fl_householderQR_computed_Q_hat_fixed_Q_closed_form_accum_error_of_global_gammaValid
       fp n A hvalid⟩
 
 /-- Combined computed-factor contract with source-facing growth bounds.
@@ -6476,21 +7200,21 @@ theorem fl_householderQR_computed_safe_explicit_error_of_global_gammaValid
 
     The theorem deliberately does not state that `Q_hat` is itself
     orthogonal; that is false for a general floating-point model. -/
-theorem fl_householderQR_computed_safe_explicit_error_highamGrowth_of_global_gammaValid
+theorem fl_householderQR_computed_explicit_error_highamGrowth_of_global_gammaValid
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hvalid : gammaValid fp (11 * n + 23)) :
     HouseholderQRComputedFactorsExplicitError n A
-      (fl_householderQR_computed_safe fp n A)
-      (fl_householderQR_safe_witness fp n A).Q
+      (fl_householderQR_computed fp n A)
+      (fl_householderQR_witness fp n A).Q
       ((n : ℝ) * householderConstructApplyBound fp n *
         (1 + householderConstructApplyBound fp n) ^ n * frobNorm A)
       ((n : ℝ) * householderConstructApplyBound fp n *
         (1 + householderConstructApplyBound fp n) ^ n *
         Real.sqrt (n : ℝ)) := by
   exact ⟨
-    fl_householderQR_computed_safe_R_hat_explicit_backward_error_highamGrowth_of_global_gammaValid
+    fl_householderQR_computed_R_hat_explicit_backward_error_highamGrowth_of_global_gammaValid
       fp n A hvalid,
-    fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_growth_accum_error_of_global_gammaValid
+    fl_householderQR_computed_Q_hat_fixed_Q_growth_accum_error_of_global_gammaValid
       fp n A hvalid⟩
 
 /-- Combined computed-factor contract where the `R_hat` backward-error bound is
@@ -6498,14 +7222,14 @@ theorem fl_householderQR_computed_safe_explicit_error_highamGrowth_of_global_gam
 
     The `Q_hat` field is still stated as a perturbation of the same exact
     orthogonal witness; it is not asserted to be exactly orthogonal. -/
-theorem fl_householderQR_computed_safe_explicit_error_gammaHigham_of_global_gammaValid
+theorem fl_householderQR_computed_explicit_error_gammaHigham_of_global_gammaValid
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hn : 0 < n)
     (hvalid :
       gammaValid fp (n * householderConstructApplyGammaIndex n)) :
     HouseholderQRComputedFactorsExplicitError n A
-      (fl_householderQR_computed_safe fp n A)
-      (fl_householderQR_safe_witness fp n A).Q
+      (fl_householderQR_computed fp n A)
+      (fl_householderQR_witness fp n A).Q
       (gamma fp (n * householderConstructApplyGammaIndex n) * frobNorm A)
       ((n : ℝ) * householderConstructApplyBound fp n *
         (1 + householderConstructApplyBound fp n) ^ n *
@@ -6520,9 +7244,9 @@ theorem fl_householderQR_computed_safe_explicit_error_gammaHigham_of_global_gamm
   have hbase_valid : gammaValid fp (11 * n + 23) :=
     gammaValid_mono fp (le_trans hbase_le_K hK_le_nK) hvalid
   exact ⟨
-    fl_householderQR_computed_safe_R_hat_explicit_backward_error_gammaHigham_of_global_gammaValid
+    fl_householderQR_computed_R_hat_explicit_backward_error_gammaHigham_of_global_gammaValid
       fp n A hn hvalid,
-    fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_growth_accum_error_of_global_gammaValid
+    fl_householderQR_computed_Q_hat_fixed_Q_growth_accum_error_of_global_gammaValid
       fp n A hbase_valid⟩
 
 /-- Residual theorem for the concrete computed Householder QR factors.
@@ -6530,37 +7254,79 @@ theorem fl_householderQR_computed_safe_explicit_error_gammaHigham_of_global_gamm
     This is the theorem that directly uses `Q_hat * R_hat`.  It is derived
     from the implementation-backed `R_hat` backward-error theorem and the
     implementation-backed accumulated-`Q_hat` perturbation theorem. -/
-theorem fl_householderQR_computed_safe_residual_error_highamGrowth_of_global_gammaValid
+theorem fl_householderQR_computed_residual_error_highamGrowth_of_global_gammaValid
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hvalid : gammaValid fp (11 * n + 23)) :
     HouseholderQRComputedFactorsResidualError n A
-      (fl_householderQR_computed_safe fp n A)
+      (fl_householderQR_computed fp n A)
       (((n : ℝ) * householderConstructApplyBound fp n *
           (1 + householderConstructApplyBound fp n) ^ n * frobNorm A) +
         ((n : ℝ) * householderConstructApplyBound fp n *
           (1 + householderConstructApplyBound fp n) ^ n *
           Real.sqrt (n : ℝ)) *
-          frobNorm (fl_householderQR_computed_safe fp n A).R_hat) := by
+          frobNorm (fl_householderQR_computed fp n A).R_hat) := by
   exact
-    (fl_householderQR_computed_safe_explicit_error_highamGrowth_of_global_gammaValid
+    (fl_householderQR_computed_explicit_error_highamGrowth_of_global_gammaValid
       fp n A hvalid).to_residual_error
 
 /-- Residual theorem for the concrete computed Householder QR factors with the
     `R_hat` backward-error part absorbed into one Higham `gamma` term. -/
-theorem fl_householderQR_computed_safe_residual_error_gammaHigham_of_global_gammaValid
+theorem fl_householderQR_computed_residual_error_gammaHigham_of_global_gammaValid
     (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
     (hn : 0 < n)
     (hvalid :
       gammaValid fp (n * householderConstructApplyGammaIndex n)) :
     HouseholderQRComputedFactorsResidualError n A
-      (fl_householderQR_computed_safe fp n A)
+      (fl_householderQR_computed fp n A)
       ((gamma fp (n * householderConstructApplyGammaIndex n) * frobNorm A) +
         ((n : ℝ) * householderConstructApplyBound fp n *
           (1 + householderConstructApplyBound fp n) ^ n *
           Real.sqrt (n : ℝ)) *
-          frobNorm (fl_householderQR_computed_safe fp n A).R_hat) := by
+          frobNorm (fl_householderQR_computed fp n A).R_hat) := by
   exact
-    (fl_householderQR_computed_safe_explicit_error_gammaHigham_of_global_gammaValid
+    (fl_householderQR_computed_explicit_error_gammaHigham_of_global_gammaValid
       fp n A hn hvalid).to_residual_error
+
+/-- Object-API version of `fl_householderQR_R_backward_error`.
+
+    Prefer this statement in new proofs: the rounded `R` output is extracted
+    from the canonical `fl_householderQR` result object. -/
+theorem fl_householderQR_backward_error (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (hready : HouseholderQRPanelReady fp n n A) :
+    HouseholderQRBackwardError n A (fl_householderQR fp n A).R
+      (householderQRBackwardCoeff fp n A * frobNorm A) := by
+  simpa using fl_householderQR_R_backward_error fp n A hready
+
+/-- Object-API version of
+    `fl_householderQR_R_backward_error_gammaHigham_of_global_gammaValid`. -/
+theorem fl_householderQR_backward_error_gammaHigham_of_global_gammaValid
+    (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex n)) :
+    HouseholderQRBackwardError n A (fl_householderQR fp n A).R
+      (gamma fp (n * householderConstructApplyGammaIndex n) * frobNorm A) := by
+  simpa using
+    fl_householderQR_R_backward_error_gammaHigham_of_global_gammaValid
+      fp n A hn hvalid
+
+/-- Object-API version of
+    `fl_householderQR_witness_explicit_backward_error_gammaHigham_of_global_gammaValid`.
+
+    The theorem states the Higham-style backward-error equation directly for
+    `(fl_householderQR fp n A).Q_exact` and `(fl_householderQR fp n A).R`. -/
+theorem fl_householderQR_explicit_backward_error_gammaHigham_of_global_gammaValid
+    (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex n)) :
+    HouseholderQRExplicitBackwardError n A
+      (fl_householderQR fp n A).Q_exact
+      (fl_householderQR fp n A).R
+      (gamma fp (n * householderConstructApplyGammaIndex n) * frobNorm A) := by
+  simpa using
+    fl_householderQR_witness_explicit_backward_error_gammaHigham_of_global_gammaValid
+      fp n A hn hvalid
 
 end LeanFpAnalysis.FP

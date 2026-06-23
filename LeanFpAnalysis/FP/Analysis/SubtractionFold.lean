@@ -78,6 +78,58 @@ lemma fl_sub_sum_error_init (fp : FPModel) (m : ℕ) (t : Fin m → ℝ) (s : �
       rw [hsum_rw]
       ring
 
+/-- Absolute residual form of `fl_sub_sum_error_init`.
+
+The rounded subtraction fold differs from the exact subtraction of the same
+rounded terms by at most `gamma fp m` times the absolute initial accumulator
+plus the absolute rounded terms. -/
+lemma fl_sub_sum_error_init_abs_residual_le (fp : FPModel) (m : ℕ)
+    (t : Fin m → ℝ) (s : ℝ) (hm : gammaValid fp m) :
+    |(s - ∑ i : Fin m, t i) -
+        Fin.foldl m (fun acc i => fp.fl_sub acc (t i)) s| ≤
+      gamma fp m * (|s| + ∑ i : Fin m, |t i|) := by
+  obtain ⟨Θ, θ, hΘ, hθ, hfold⟩ :=
+    fl_sub_sum_error_init fp m t s hm
+  have hγ : 0 ≤ gamma fp m := gamma_nonneg fp hm
+  have hres :
+      (s - ∑ i : Fin m, t i) -
+          Fin.foldl m (fun acc i => fp.fl_sub acc (t i)) s =
+        -(s * Θ) + ∑ i : Fin m, t i * θ i := by
+    have hsum_expand :
+        (∑ i : Fin m, t i * (1 + θ i)) =
+          (∑ i : Fin m, t i) + ∑ i : Fin m, t i * θ i := by
+      rw [← Finset.sum_add_distrib]
+      apply Finset.sum_congr rfl
+      intro i _
+      ring
+    rw [hfold]
+    rw [hsum_expand]
+    ring
+  calc
+    |(s - ∑ i : Fin m, t i) -
+        Fin.foldl m (fun acc i => fp.fl_sub acc (t i)) s|
+        = |-(s * Θ) + ∑ i : Fin m, t i * θ i| := by rw [hres]
+    _ ≤ |-(s * Θ)| + |∑ i : Fin m, t i * θ i| := abs_add_le _ _
+    _ ≤ |s| * |Θ| + ∑ i : Fin m, |t i| * |θ i| := by
+      refine add_le_add ?_ ?_
+      · rw [abs_neg, abs_mul]
+      · calc
+          |∑ i : Fin m, t i * θ i|
+              ≤ ∑ i : Fin m, |t i * θ i| :=
+                Finset.abs_sum_le_sum_abs _ _
+          _ = ∑ i : Fin m, |t i| * |θ i| := by
+                apply Finset.sum_congr rfl
+                intro i _
+                rw [abs_mul]
+    _ ≤ |s| * gamma fp m + ∑ i : Fin m, |t i| * gamma fp m := by
+      refine add_le_add ?_ ?_
+      · exact mul_le_mul_of_nonneg_left hΘ (abs_nonneg _)
+      · exact Finset.sum_le_sum (fun i _ =>
+          mul_le_mul_of_nonneg_left (hθ i) (abs_nonneg _))
+    _ = gamma fp m * (|s| + ∑ i : Fin m, |t i|) := by
+      rw [← Finset.sum_mul]
+      ring
+
 -- ============================================================
 -- Inverse product error bound
 -- ============================================================

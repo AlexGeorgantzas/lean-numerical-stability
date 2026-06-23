@@ -1,13 +1,17 @@
 -- Algorithms/PairwiseSum.lean
 
 import Mathlib.Data.Real.Basic
+import Mathlib.Data.Nat.Log
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.BigOperators.Fin
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
+import LeanFpAnalysis.FP.Analysis.Error
 import LeanFpAnalysis.FP.Model
+import LeanFpAnalysis.FP.Algorithms.SumTree
 import LeanFpAnalysis.FP.Analysis.Rounding
+import LeanFpAnalysis.FP.Analysis.Summation
 
 namespace LeanFpAnalysis.FP
 
@@ -205,5 +209,511 @@ theorem pairwiseSum_forward_error_bound (fp : FPModel) (r : ℕ) (v : Fin (2 ^ r
             mul_le_mul_of_nonneg_left (hη i) (abs_nonneg _)
     _ = gamma fp r * ∑ i : Fin (2 ^ r), |v i| := by
           rw [← Finset.sum_mul, mul_comm]
+
+/-- Pairwise summation has a relative-form forward bound for one-signed data. -/
+theorem pairwiseSum_forward_error_bound_oneSigned (fp : FPModel) (r : ℕ)
+    (v : Fin (2 ^ r) → ℝ) (hr : gammaValid fp r) (hv : OneSigned v) :
+    |fl_pairwiseSum fp r v - ∑ i : Fin (2 ^ r), v i| ≤
+      gamma fp r * |∑ i : Fin (2 ^ r), v i| := by
+  have hbound := pairwiseSum_forward_error_bound fp r v hr
+  simpa [sum_abs_eq_abs_sum_of_oneSigned v hv] using hbound
+
+/-- Pairwise summation relative-error corollary for one-signed data. -/
+theorem pairwiseSum_relError_le_gamma_of_oneSigned (fp : FPModel) (r : ℕ)
+    (v : Fin (2 ^ r) → ℝ) (hr : gammaValid fp r) (hv : OneSigned v)
+    (hsum : (∑ i : Fin (2 ^ r), v i) ≠ 0) :
+    relError (fl_pairwiseSum fp r v) (∑ i : Fin (2 ^ r), v i) ≤
+      gamma fp r := by
+  have hden : 0 < |∑ i : Fin (2 ^ r), v i| := abs_pos.mpr hsum
+  have hbound := pairwiseSum_forward_error_bound_oneSigned fp r v hr hv
+  unfold relError
+  rw [div_le_iff₀ hden]
+  exact hbound
+
+-- ============================================================
+-- Displayed six-term pairwise schedule
+-- ============================================================
+
+/-- The six-leaf pairwise summation tree displayed on p. 88 of Higham
+Chapter 4:
+`((x₁ + x₂) + (x₃ + x₄)) + (x₅ + x₆)`. -/
+def pairwiseSixTree : SumTree 6 :=
+  SumTree.node
+    (SumTree.node
+      (SumTree.node SumTree.leaf SumTree.leaf)
+      (SumTree.node SumTree.leaf SumTree.leaf))
+    (SumTree.node SumTree.leaf SumTree.leaf)
+
+/-- The displayed six-term pairwise schedule has three addition stages. -/
+lemma pairwiseSixTree_depth : pairwiseSixTree.depth = 3 := by
+  norm_num [pairwiseSixTree, SumTree.depth]
+
+/-- Floating-point evaluation of the six-term pairwise schedule displayed on
+p. 88 of Higham Chapter 4. -/
+noncomputable def fl_pairwiseSumSixDisplayed (fp : FPModel)
+    (v : Fin 6 → ℝ) : ℝ :=
+  pairwiseSixTree.eval fp v
+
+/-- The explicit parenthesization of the displayed six-term pairwise schedule. -/
+theorem fl_pairwiseSumSixDisplayed_eq (fp : FPModel) (v : Fin 6 → ℝ) :
+    fl_pairwiseSumSixDisplayed fp v =
+      fp.fl_add
+        (fp.fl_add
+          (fp.fl_add (v ⟨0, by norm_num⟩) (v ⟨1, by norm_num⟩))
+          (fp.fl_add (v ⟨2, by norm_num⟩) (v ⟨3, by norm_num⟩)))
+        (fp.fl_add (v ⟨4, by norm_num⟩) (v ⟨5, by norm_num⟩)) := by
+  norm_num [fl_pairwiseSumSixDisplayed, pairwiseSixTree, SumTree.eval]
+  congr 1
+
+/-- Backward-error bound for the displayed six-term pairwise schedule. -/
+theorem pairwiseSumSixDisplayed_backward_error (fp : FPModel)
+    (v : Fin 6 → ℝ) (hγ : gammaValid fp 3) :
+    ∃ η : Fin 6 → ℝ,
+      (∀ i, |η i| ≤ gamma fp 3) ∧
+      fl_pairwiseSumSixDisplayed fp v =
+        ∑ i : Fin 6, v i * (1 + η i) := by
+  have ht : gammaValid fp pairwiseSixTree.depth := by
+    simpa [pairwiseSixTree_depth] using hγ
+  obtain ⟨η, hη, hsum⟩ := SumTree.backward_error fp pairwiseSixTree ht v
+  rw [pairwiseSixTree_depth] at hη
+  exact ⟨η, hη, by simpa [fl_pairwiseSumSixDisplayed] using hsum⟩
+
+/-- Forward-error bound for the displayed six-term pairwise schedule. -/
+theorem pairwiseSumSixDisplayed_forward_error_bound (fp : FPModel)
+    (v : Fin 6 → ℝ) (hγ : gammaValid fp 3) :
+    |fl_pairwiseSumSixDisplayed fp v - ∑ i : Fin 6, v i| ≤
+      gamma fp 3 * ∑ i : Fin 6, |v i| := by
+  have ht : gammaValid fp pairwiseSixTree.depth := by
+    simpa [pairwiseSixTree_depth] using hγ
+  have hbound := SumTree.forward_error fp pairwiseSixTree ht v
+  simpa [fl_pairwiseSumSixDisplayed, pairwiseSixTree_depth] using hbound
+
+-- ============================================================
+-- Source-shaped arbitrary-length carry-forward pairwise summation
+-- ============================================================
+
+/-!
+Higham's p. 88 pairwise method first forms adjacent pair sums
+`y_i = x_{2i-1} + x_{2i}` and carries `x_n` forward unchanged when `n` is odd,
+then repeats that process recursively.  Equivalently, for `n > 1`, the final
+addition combines a perfectly balanced block of size
+`2^(ceil(log₂ n) - 1)` with the remaining carried tail.
+-/
+
+private def pairwiseCarryTreeAux : (n : ℕ) → SumTree (n + 1)
+  | 0 => SumTree.leaf
+  | n + 1 =>
+      let total := n + 2
+      let r := Nat.clog 2 total - 1
+      let p := 2 ^ r
+      let q := total - p
+      have hp_lt : p < total := by
+        simpa [p, r, total] using
+          Nat.pow_pred_clog_lt_self Nat.one_lt_two (by omega : 1 < n + 2)
+      have hq_pos : 0 < q := by
+        exact Nat.sub_pos_of_lt hp_lt
+      have hright : SumTree q :=
+        (Nat.sub_add_cancel hq_pos) ▸ pairwiseCarryTreeAux (q - 1)
+      have hsum : p + q = total := by
+        exact Nat.add_sub_of_le (le_of_lt hp_lt)
+      have hsum' : p + q = n + 1 + 1 := by
+        simpa [total, Nat.add_assoc] using hsum
+      hsum' ▸ SumTree.node (SumTree.balancedTree r) hright
+termination_by n => n
+decreasing_by
+  simp_wf
+  have hp_pos : 0 < 2 ^ (Nat.clog 2 (n + 2) - 1) := by
+    exact Nat.pow_pos (by omega : 0 < 2)
+  omega
+
+private lemma pairwiseCarryTreeAux_depth :
+    ∀ n : ℕ, (pairwiseCarryTreeAux n).depth = Nat.clog 2 (n + 1)
+  | 0 => by
+      simp [pairwiseCarryTreeAux, SumTree.depth]
+  | n + 1 => by
+      let total := n + 2
+      let r := Nat.clog 2 total - 1
+      let p := 2 ^ r
+      let q := total - p
+      have hp_lt : p < total := by
+        simpa [p, r, total] using
+          Nat.pow_pred_clog_lt_self Nat.one_lt_two (by omega : 1 < n + 2)
+      have hq_pos : 0 < q := by
+        exact Nat.sub_pos_of_lt hp_lt
+      have hright_depth :
+          (((Nat.sub_add_cancel hq_pos) ▸ pairwiseCarryTreeAux (q - 1))
+            : SumTree q).depth = Nat.clog 2 q := by
+        rw [SumTree.depth_cast]
+        simpa [Nat.sub_add_cancel hq_pos] using pairwiseCarryTreeAux_depth (q - 1)
+      have hq_le_pow : q ≤ 2 ^ r := by
+        have htotal_le : total ≤ 2 ^ Nat.clog 2 total := by
+          exact Nat.le_pow_clog Nat.one_lt_two total
+        have htwo_mul : 2 ^ Nat.clog 2 total = p + p := by
+          have hclog_pos : 0 < Nat.clog 2 total :=
+            Nat.clog_pos Nat.one_lt_two (by omega : 1 < total)
+          have hsucc : r + 1 = Nat.clog 2 total := by
+            simp [r, Nat.sub_add_cancel hclog_pos]
+          calc
+            2 ^ Nat.clog 2 total = 2 ^ (r + 1) := by rw [hsucc]
+            _ = p + p := by rw [pow_succ, Nat.mul_two]
+        have htotal_le' : total ≤ p + p := by
+          simpa [htwo_mul] using htotal_le
+        omega
+      have hright_le : Nat.clog 2 q ≤ r := by
+        exact Nat.clog_le_of_le_pow hq_le_pow
+      have hclog_pos : 0 < Nat.clog 2 total :=
+        Nat.clog_pos Nat.one_lt_two (by omega : 1 < total)
+      have hr_succ : r + 1 = Nat.clog 2 total := by
+        simp [r, Nat.sub_add_cancel hclog_pos]
+      rw [pairwiseCarryTreeAux.eq_2 n]
+      rw [SumTree.depth_cast]
+      simp only [SumTree.depth, SumTree.balancedTree_depth]
+      rw [SumTree.depth_cast]
+      have hq_pos_raw : 0 < n + 2 - 2 ^ (Nat.clog 2 (n + 2) - 1) := by
+        simpa [total, r, p, q] using hq_pos
+      rw [SumTree.depth_cast] at hright_depth
+      have hright_depth_raw :
+          (pairwiseCarryTreeAux
+            (n + 2 - 2 ^ (Nat.clog 2 (n + 2) - 1) - 1)).depth =
+              Nat.clog 2 (n + 2 - 2 ^ (Nat.clog 2 (n + 2) - 1)) := by
+        simpa [total, r, p, q, Nat.sub_add_cancel hq_pos_raw] using hright_depth
+      rw [hright_depth_raw]
+      have hright_le_raw :
+          Nat.clog 2 (n + 2 - 2 ^ (Nat.clog 2 (n + 2) - 1)) ≤
+            Nat.clog 2 (n + 2) - 1 := by
+        simpa [total, r, p, q] using hright_le
+      have hmax :
+          max (Nat.clog 2 (n + 2) - 1)
+              (Nat.clog 2 (n + 2 - 2 ^ (Nat.clog 2 (n + 2) - 1))) =
+            Nat.clog 2 (n + 2) - 1 :=
+        max_eq_left hright_le_raw
+      rw [hmax]
+      have hr_succ_raw :
+          Nat.clog 2 (n + 2) - 1 + 1 = Nat.clog 2 (n + 2) := by
+        simpa [total] using hr_succ
+      simpa [Nat.add_assoc] using hr_succ_raw
+termination_by n => n
+decreasing_by
+  simp_wf
+  have hp_pos : 0 < 2 ^ (Nat.clog 2 (n + 2) - 1) := by
+    exact Nat.pow_pos (by omega : 0 < 2)
+  omega
+
+/-- Source-shaped carry-forward pairwise summation tree for any nonempty
+input length.  For odd lengths, the final unpaired entry at each stage is
+carried into the next stage, matching Higham p. 88. -/
+def pairwiseCarryTree (n : ℕ) (h : 0 < n) : SumTree n :=
+  Nat.sub_add_cancel h ▸ pairwiseCarryTreeAux (n - 1)
+
+/-- The source-shaped carry-forward pairwise tree has exactly
+`ceil(log₂ n)` stages. -/
+lemma pairwiseCarryTree_depth (n : ℕ) (h : 0 < n) :
+    (pairwiseCarryTree n h).depth = Nat.clog 2 n := by
+  unfold pairwiseCarryTree
+  rw [SumTree.depth_cast]
+  simpa [Nat.sub_add_cancel h] using pairwiseCarryTreeAux_depth (n - 1)
+
+/-- Elementary growth fact used to compare the pairwise `ceil(log₂ n)` depth
+with the generic linear `n - 1` Algorithm 4.1 depth. -/
+lemma nat_le_two_pow_pred (n : ℕ) (hn : 0 < n) :
+    n ≤ 2 ^ (n - 1) := by
+  induction n with
+  | zero =>
+      omega
+  | succ n ih =>
+      cases n with
+      | zero =>
+          norm_num
+      | succ k =>
+          have hprev : k + 1 ≤ 2 ^ k := ih (by omega)
+          have hdouble : 2 * (k + 1) ≤ 2 * 2 ^ k :=
+            Nat.mul_le_mul_left 2 hprev
+          have hstep : k + 2 ≤ 2 * (k + 1) := by omega
+          have hpow : 2 * 2 ^ k = 2 ^ (k + 1) := by
+            rw [pow_succ']
+          rw [hpow] at hdouble
+          exact hstep.trans hdouble
+
+/-- The `ceil(log₂ n)` pairwise depth is no larger than the generic linear
+`n - 1` depth for nonempty inputs. -/
+lemma clog2_le_pred (n : ℕ) (hn : 0 < n) :
+    Nat.clog 2 n ≤ n - 1 :=
+  Nat.clog_le_of_le_pow (nat_le_two_pow_pred n hn)
+
+/-- Pairwise carry-tree depth is bounded by the source-uniform `n - 1` depth.
+This is the formal comparison behind the p. 99 advice that pairwise summation
+has logarithmic rather than linear worst-case error depth. -/
+theorem pairwiseCarryTree_depth_le_linear (n : ℕ) (hn : 0 < n) :
+    (pairwiseCarryTree n hn).depth ≤ n - 1 := by
+  rw [pairwiseCarryTree_depth n hn]
+  exact clog2_le_pred n hn
+
+/-- Source-shaped input-count relative-error corollary for power-of-two
+pairwise summation on one-signed data.
+
+The sharp pairwise theorem uses the logarithmic `gamma r` radius.  Under the
+displayed smallness condition `(r+1) * r * u <= 1`, this implies the coarser
+same-sign advice bound by the number of inputs, `(2^r) * u`. -/
+theorem pairwiseSum_relError_le_pow_two_mul_u_of_oneSigned (fp : FPModel)
+    (r : ℕ) (v : Fin (2 ^ r) → ℝ) (hvalid : gammaValid fp r)
+    (hsmall : (((r + 1 : ℕ) : ℝ) * ((r : ℝ) * fp.u)) ≤ 1)
+    (hv : OneSigned v) (hsum : (∑ i : Fin (2 ^ r), v i) ≠ 0) :
+    relError (fl_pairwiseSum fp r v) (∑ i : Fin (2 ^ r), v i) ≤
+      ((2 ^ r : ℕ) : ℝ) * fp.u := by
+  have hgamma :=
+    pairwiseSum_relError_le_gamma_of_oneSigned fp r v hvalid hv hsum
+  have hgamma_le_succ :
+      gamma fp r ≤ (((r + 1 : ℕ) : ℝ) * fp.u) := by
+    have hvalid' : gammaValid fp ((r + 1) - 1) := by
+      simpa using hvalid
+    have hsmall' :
+        (((r + 1 : ℕ) : ℝ) *
+            ((((r + 1) - 1 : ℕ) : ℝ) * fp.u)) ≤ 1 := by
+      simpa using hsmall
+    simpa using
+      gamma_pred_le_n_mul_u_of_n_mul_pred_u_le_one fp
+        (n := r + 1) (Nat.succ_pos r) hvalid' hsmall'
+  have hsucc_le_pow :
+      (((r + 1 : ℕ) : ℝ) * fp.u) ≤ ((2 ^ r : ℕ) : ℝ) * fp.u := by
+    have hnat : r + 1 ≤ 2 ^ r :=
+      nat_le_two_pow_pred (r + 1) (Nat.succ_pos r)
+    have hcast : ((r + 1 : ℕ) : ℝ) ≤ ((2 ^ r : ℕ) : ℝ) := by
+      exact_mod_cast hnat
+    exact mul_le_mul_of_nonneg_right hcast fp.u_nonneg
+  exact le_trans hgamma (le_trans hgamma_le_succ hsucc_le_pow)
+
+/-- Floating-point source-shaped carry-forward pairwise summation for any
+nonempty input length. -/
+noncomputable def fl_pairwiseCarrySum (fp : FPModel) (n : ℕ) (h : 0 < n)
+    (v : Fin n → ℝ) : ℝ :=
+  (pairwiseCarryTree n h).eval fp v
+
+/-- Backward-error bound for source-shaped carry-forward pairwise summation. -/
+theorem pairwiseCarrySum_backward_error (fp : FPModel) (n : ℕ) (hn : 0 < n)
+    (v : Fin n → ℝ) (hγ : gammaValid fp (Nat.clog 2 n)) :
+    ∃ η : Fin n → ℝ,
+      (∀ i, |η i| ≤ gamma fp (Nat.clog 2 n)) ∧
+      fl_pairwiseCarrySum fp n hn v =
+        ∑ i : Fin n, v i * (1 + η i) := by
+  have hd : (pairwiseCarryTree n hn).depth = Nat.clog 2 n :=
+    pairwiseCarryTree_depth n hn
+  have ht : gammaValid fp (pairwiseCarryTree n hn).depth := by
+    rw [hd]
+    exact hγ
+  obtain ⟨η, hη, hsum⟩ := SumTree.backward_error fp (pairwiseCarryTree n hn) ht v
+  rw [hd] at hη
+  exact ⟨η, hη, by simpa [fl_pairwiseCarrySum] using hsum⟩
+
+/-- Forward-error bound for source-shaped carry-forward pairwise summation. -/
+theorem pairwiseCarrySum_forward_error_bound (fp : FPModel) (n : ℕ)
+    (hn : 0 < n) (v : Fin n → ℝ) (hγ : gammaValid fp (Nat.clog 2 n)) :
+    |fl_pairwiseCarrySum fp n hn v - ∑ i : Fin n, v i| ≤
+      gamma fp (Nat.clog 2 n) * ∑ i : Fin n, |v i| := by
+  have hd : (pairwiseCarryTree n hn).depth = Nat.clog 2 n :=
+    pairwiseCarryTree_depth n hn
+  have ht : gammaValid fp (pairwiseCarryTree n hn).depth := by
+    rw [hd]
+    exact hγ
+  have hbound := SumTree.forward_error fp (pairwiseCarryTree n hn) ht v
+  simpa [fl_pairwiseCarrySum, hd] using hbound
+
+/-- Source-shaped carry-forward pairwise summation has a relative-form
+forward bound for one-signed data. -/
+theorem pairwiseCarrySum_forward_error_bound_oneSigned (fp : FPModel)
+    (n : ℕ) (hn : 0 < n) (v : Fin n → ℝ)
+    (hγ : gammaValid fp (Nat.clog 2 n)) (hv : OneSigned v) :
+    |fl_pairwiseCarrySum fp n hn v - ∑ i : Fin n, v i| ≤
+      gamma fp (Nat.clog 2 n) * |∑ i : Fin n, v i| := by
+  have hbound := pairwiseCarrySum_forward_error_bound fp n hn v hγ
+  simpa [sum_abs_eq_abs_sum_of_oneSigned v hv] using hbound
+
+/-- Relative-error corollary for source-shaped carry-forward pairwise
+summation on one-signed data. -/
+theorem pairwiseCarrySum_relError_le_gamma_of_oneSigned (fp : FPModel)
+    (n : ℕ) (hn : 0 < n) (v : Fin n → ℝ)
+    (hγ : gammaValid fp (Nat.clog 2 n)) (hv : OneSigned v)
+    (hsum : (∑ i : Fin n, v i) ≠ 0) :
+    relError (fl_pairwiseCarrySum fp n hn v) (∑ i : Fin n, v i) ≤
+      gamma fp (Nat.clog 2 n) := by
+  have hden : 0 < |∑ i : Fin n, v i| := abs_pos.mpr hsum
+  have hbound := pairwiseCarrySum_forward_error_bound_oneSigned fp n hn v hγ hv
+  unfold relError
+  rw [div_le_iff₀ hden]
+  exact hbound
+
+/-- Source-shaped `nu` corollary for carry-forward pairwise summation on
+one-signed data, using the generic Algorithm 4.1 tree surface. -/
+theorem pairwiseCarrySum_relError_le_n_mul_u_of_oneSigned (fp : FPModel)
+    (n : ℕ) (hn : 0 < n) (v : Fin n → ℝ)
+    (hvalid : gammaValid fp (n - 1))
+    (hsmall : (n : ℝ) * (((n - 1 : ℕ) : ℝ) * fp.u) ≤ 1)
+    (hv : OneSigned v) (hsum : (∑ i : Fin n, v i) ≠ 0) :
+    relError (fl_pairwiseCarrySum fp n hn v) (∑ i : Fin n, v i) ≤
+      (n : ℝ) * fp.u := by
+  simpa [fl_pairwiseCarrySum] using
+    SumTree.relError_le_n_mul_u_of_oneSigned fp (pairwiseCarryTree n hn) hn
+      hvalid hsmall v hv hsum
+
+-- ============================================================
+-- Arbitrary-length padded pairwise summation
+-- ============================================================
+
+/-- Pad a vector by zeros into a larger finite index type. -/
+noncomputable def scalarFinZeroPad (n m : ℕ) (x : Fin n → ℝ) : Fin m → ℝ :=
+  fun i => if h : i.val < n then x ⟨i.val, h⟩ else 0
+
+lemma sum_scalarFinZeroPad_eq {n m : ℕ} (h : n ≤ m) (f : Fin n → ℝ) :
+    (∑ i : Fin m, scalarFinZeroPad n m f i) = ∑ i : Fin n, f i := by
+  have hleft :
+      (∑ i : Fin m, scalarFinZeroPad n m f i) =
+        ∑ k ∈ Finset.range m,
+          if hi : k < m then scalarFinZeroPad n m f ⟨k, hi⟩ else 0 := by
+    simpa using
+      (Fin.sum_univ_eq_sum_range
+        (fun k => if hi : k < m then scalarFinZeroPad n m f ⟨k, hi⟩ else 0) m)
+  have hright :
+      (∑ i : Fin n, f i) =
+        ∑ k ∈ Finset.range n,
+          if hi : k < n then f ⟨k, hi⟩ else 0 := by
+    simpa using
+      (Fin.sum_univ_eq_sum_range
+        (fun k => if hi : k < n then f ⟨k, hi⟩ else 0) n)
+  rw [hleft, hright]
+  have hsplit :
+      (∑ k ∈ Finset.range n,
+        if hi : k < m then scalarFinZeroPad n m f ⟨k, hi⟩ else 0) =
+      (∑ k ∈ Finset.range m,
+        if hi : k < m then scalarFinZeroPad n m f ⟨k, hi⟩ else 0) := by
+    apply Finset.sum_subset
+    · intro k hk
+      exact Finset.mem_range.mpr (lt_of_lt_of_le (Finset.mem_range.mp hk) h)
+    · intro k hkm hkn
+      have hkm' : k < m := Finset.mem_range.mp hkm
+      have hkn' : ¬ k < n := by simpa [Finset.mem_range] using hkn
+      simp [scalarFinZeroPad, hkm', hkn']
+  rw [← hsplit]
+  apply Finset.sum_congr rfl
+  intro k hk
+  have hkn : k < n := Finset.mem_range.mp hk
+  have hkm : k < m := lt_of_lt_of_le hkn h
+  simp [scalarFinZeroPad, hkm, hkn]
+
+lemma sum_scalarFinZeroPad_abs_eq {n m : ℕ} (h : n ≤ m) (f : Fin n → ℝ) :
+    (∑ i : Fin m, |scalarFinZeroPad n m f i|) = ∑ i : Fin n, |f i| := by
+  have hterm :
+      ∀ i : Fin m,
+        |scalarFinZeroPad n m f i| = scalarFinZeroPad n m (fun j => |f j|) i := by
+    intro i
+    by_cases hi : i.val < n
+    · simp [scalarFinZeroPad, hi]
+    · simp [scalarFinZeroPad, hi]
+  calc
+    (∑ i : Fin m, |scalarFinZeroPad n m f i|) =
+        ∑ i : Fin m, scalarFinZeroPad n m (fun j => |f j|) i := by
+          apply Finset.sum_congr rfl
+          intro i _
+          exact hterm i
+    _ = ∑ i : Fin n, |f i| := sum_scalarFinZeroPad_eq h (fun j => |f j|)
+
+/-- Pairwise summation for arbitrary length by zero-padding to
+`2^(Nat.clog 2 n)`.
+
+This gives the scalar analogue of the padded pairwise dot-product route: pad
+the input list by exact zeros to the next power of two, then apply the balanced
+pairwise summation routine. -/
+noncomputable def fl_clog2PairwiseSum (fp : FPModel) (n : ℕ)
+    (v : Fin n → ℝ) : ℝ :=
+  let r := Nat.clog 2 n
+  fl_pairwiseSum fp r (scalarFinZeroPad n (2 ^ r) v)
+
+/-- Arbitrary-length padded pairwise summation backward error bound.
+
+`Nat.clog 2 n` is mathlib's natural-number ceiling logarithm: the least `r`
+with `n <= 2^r`.  The theorem is stated for the padded implementation, so it
+does not charge the zero padding as additional input error. -/
+theorem clog2PairwiseSum_backward_error (fp : FPModel) (n : ℕ) (v : Fin n → ℝ)
+    (hγ : gammaValid fp (Nat.clog 2 n)) :
+    ∃ η : Fin n → ℝ,
+      (∀ i, |η i| ≤ gamma fp (Nat.clog 2 n)) ∧
+      fl_clog2PairwiseSum fp n v = ∑ i : Fin n, v i * (1 + η i) := by
+  let r := Nat.clog 2 n
+  have hpad : n ≤ 2 ^ r := by
+    simpa [r] using Nat.le_pow_clog Nat.one_lt_two n
+  obtain ⟨ηPad, hηPad, hsum⟩ :=
+    pairwiseSum_backward_error fp r (scalarFinZeroPad n (2 ^ r) v)
+      (by simpa [r] using hγ)
+  let η : Fin n → ℝ := fun i => ηPad ⟨i.val, lt_of_lt_of_le i.isLt hpad⟩
+  refine ⟨η, ?_, ?_⟩
+  · intro i
+    exact hηPad ⟨i.val, lt_of_lt_of_le i.isLt hpad⟩
+  · have hsum_restrict :
+        (∑ i : Fin (2 ^ r), scalarFinZeroPad n (2 ^ r) v i * (1 + ηPad i)) =
+          ∑ i : Fin n, v i * (1 + η i) := by
+      have hterm :
+          ∀ i : Fin (2 ^ r),
+            scalarFinZeroPad n (2 ^ r) v i * (1 + ηPad i) =
+              scalarFinZeroPad n (2 ^ r) (fun j => v j * (1 + η j)) i := by
+        intro i
+        by_cases hi : i.val < n
+        · have hidx :
+            (⟨i.val, lt_of_lt_of_le hi hpad⟩ : Fin (2 ^ r)) = i := Fin.ext rfl
+          simp [scalarFinZeroPad, hi, η, hidx]
+        · simp [scalarFinZeroPad, hi]
+      calc
+        (∑ i : Fin (2 ^ r), scalarFinZeroPad n (2 ^ r) v i * (1 + ηPad i)) =
+            ∑ i : Fin (2 ^ r), scalarFinZeroPad n (2 ^ r)
+              (fun j => v j * (1 + η j)) i := by
+                apply Finset.sum_congr rfl
+                intro i _
+                exact hterm i
+        _ = ∑ i : Fin n, v i * (1 + η i) :=
+            sum_scalarFinZeroPad_eq hpad (fun j => v j * (1 + η j))
+    simpa [fl_clog2PairwiseSum, r, hsum_restrict] using hsum
+
+/-- Arbitrary-length padded pairwise summation forward error bound.
+
+This is the scalar `gamma_{ceil(log2 n)}` counterpart of Higham's pairwise
+summation bound, for the zero-padded balanced implementation. -/
+theorem clog2PairwiseSum_forward_error_bound (fp : FPModel) (n : ℕ)
+    (v : Fin n → ℝ) (hγ : gammaValid fp (Nat.clog 2 n)) :
+    |fl_clog2PairwiseSum fp n v - ∑ i : Fin n, v i| ≤
+      gamma fp (Nat.clog 2 n) * ∑ i : Fin n, |v i| := by
+  let r := Nat.clog 2 n
+  have hpad : n ≤ 2 ^ r := by
+    simpa [r] using Nat.le_pow_clog Nat.one_lt_two n
+  have hbound :=
+    pairwiseSum_forward_error_bound fp r (scalarFinZeroPad n (2 ^ r) v)
+      (by simpa [r] using hγ)
+  have hsum :
+      (∑ i : Fin (2 ^ r), scalarFinZeroPad n (2 ^ r) v i) =
+        ∑ i : Fin n, v i :=
+    sum_scalarFinZeroPad_eq hpad v
+  have habs :
+      (∑ i : Fin (2 ^ r), |scalarFinZeroPad n (2 ^ r) v i|) =
+        ∑ i : Fin n, |v i| :=
+    sum_scalarFinZeroPad_abs_eq hpad v
+  simpa [fl_clog2PairwiseSum, r, hsum, habs] using hbound
+
+/-- Arbitrary-length padded pairwise summation has a relative-form forward
+bound for one-signed data. -/
+theorem clog2PairwiseSum_forward_error_bound_oneSigned (fp : FPModel) (n : ℕ)
+    (v : Fin n → ℝ) (hγ : gammaValid fp (Nat.clog 2 n)) (hv : OneSigned v) :
+    |fl_clog2PairwiseSum fp n v - ∑ i : Fin n, v i| ≤
+      gamma fp (Nat.clog 2 n) * |∑ i : Fin n, v i| := by
+  have hbound := clog2PairwiseSum_forward_error_bound fp n v hγ
+  simpa [sum_abs_eq_abs_sum_of_oneSigned v hv] using hbound
+
+/-- Relative-error corollary for arbitrary-length padded pairwise summation on
+one-signed data. -/
+theorem clog2PairwiseSum_relError_le_gamma_of_oneSigned (fp : FPModel) (n : ℕ)
+    (v : Fin n → ℝ) (hγ : gammaValid fp (Nat.clog 2 n)) (hv : OneSigned v)
+    (hsum : (∑ i : Fin n, v i) ≠ 0) :
+    relError (fl_clog2PairwiseSum fp n v) (∑ i : Fin n, v i) ≤
+      gamma fp (Nat.clog 2 n) := by
+  have hden : 0 < |∑ i : Fin n, v i| := abs_pos.mpr hsum
+  have hbound := clog2PairwiseSum_forward_error_bound_oneSigned fp n v hγ hv
+  unfold relError
+  rw [div_le_iff₀ hden]
+  exact hbound
 
 end LeanFpAnalysis.FP

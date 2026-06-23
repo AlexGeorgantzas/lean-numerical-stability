@@ -58,6 +58,37 @@ structure LUBackwardError (n : ℕ) (A L_hat U_hat : Fin n → Fin n → ℝ)
     |∑ k : Fin n, L_hat i k * U_hat k j - A i j| ≤
       ε * ∑ k : Fin n, |L_hat i k| * |U_hat k j|
 
+/-- Transfer an LU backward-error certificate from a computed input matrix
+`A_hat` to an exact reference matrix `A` when the input perturbation is measured
+against the same componentwise `|L_hat||U_hat|` weights.  This is the narrow
+certificate used when an implementation factorizes a rounded matrix but the
+analysis is stated against the exact matrix. -/
+theorem LUBackwardError.of_input_abs_error_le_absLUProduct (n : ℕ)
+    (A A_hat L_hat U_hat : Fin n → Fin n → ℝ)
+    (ε μ : ℝ)
+    (hLU : LUBackwardError n A_hat L_hat U_hat ε)
+    (hInput :
+      ∀ i j : Fin n,
+        |A_hat i j - A i j| ≤
+          μ * ∑ k : Fin n, |L_hat i k| * |U_hat k j|) :
+    LUBackwardError n A L_hat U_hat (ε + μ) where
+  L_diag := hLU.L_diag
+  L_upper_zero := hLU.L_upper_zero
+  U_lower_zero := hLU.U_lower_zero
+  backward_bound := by
+    intro i j
+    let W := ∑ k : Fin n, |L_hat i k| * |U_hat k j|
+    calc
+      |∑ k : Fin n, L_hat i k * U_hat k j - A i j|
+          = |(∑ k : Fin n, L_hat i k * U_hat k j - A_hat i j) +
+              (A_hat i j - A i j)| := by ring_nf
+      _ ≤ |∑ k : Fin n, L_hat i k * U_hat k j - A_hat i j| +
+            |A_hat i j - A i j| :=
+          abs_add_le _ _
+      _ ≤ ε * W + μ * W :=
+          add_le_add (hLU.backward_bound i j) (hInput i j)
+      _ = (ε + μ) * W := by ring
+
 -- ============================================================
 -- §9.1  Permuted LU factorization (PA = LU)
 -- ============================================================
