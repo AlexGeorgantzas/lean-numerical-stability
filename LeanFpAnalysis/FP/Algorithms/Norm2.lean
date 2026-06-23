@@ -214,7 +214,7 @@ theorem fl_norm2_relative_error_sqrt_factor (fp : FPModel) (n : ℕ)
     This is an exact real-analysis lemma, not a floating-point assumption:
     for `theta ≥ 0`, `sqrt(1+theta) - 1 ≤ theta`; for `theta ≤ 0`,
     `1 - sqrt(1+theta) ≤ -theta`. -/
-theorem sqrt_one_add_sub_one_abs_le_abs {θ : ℝ} (hθ : -1 ≤ θ) :
+theorem sqrt_one_add_sub_one_abs_le_abs_of_neg_one_le {θ : ℝ} (hθ : -1 ≤ θ) :
     |Real.sqrt (1 + θ) - 1| ≤ |θ| := by
   by_cases hnonneg : 0 ≤ θ
   · have hroot_ge : 1 ≤ Real.sqrt (1 + θ) := by
@@ -257,7 +257,7 @@ theorem sqrt_one_add_mul_roundoff_gamma (fp : FPModel) (n : ℕ)
     linarith [neg_abs_le θ, hθ, hγ_lt]
   have hρ_bound : |ρ| ≤ gamma fp n := by
     unfold ρ
-    exact le_trans (sqrt_one_add_sub_one_abs_le_abs hθ_lower) hθ
+    exact le_trans (sqrt_one_add_sub_one_abs_le_abs_of_neg_one_le hθ_lower) hθ
   have hsqrt : Real.sqrt (1 + θ) = 1 + ρ := by
     unfold ρ
     ring
@@ -290,7 +290,7 @@ theorem sqrt_one_add_mul_relative_gamma (fp : FPModel) (j k : ℕ)
     linarith [neg_abs_le θj, hj, hγ_lt]
   have hρ_bound : |ρ| ≤ gamma fp j := by
     unfold ρ
-    exact le_trans (sqrt_one_add_sub_one_abs_le_abs hθ_lower) hj
+    exact le_trans (sqrt_one_add_sub_one_abs_le_abs_of_neg_one_le hθ_lower) hj
   have hsqrt : Real.sqrt (1 + θj) = 1 + ρ := by
     unfold ρ
     ring

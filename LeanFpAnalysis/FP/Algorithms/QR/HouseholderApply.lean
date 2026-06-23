@@ -370,13 +370,22 @@ theorem householderApply_sub_error_frob_bound (fp : FPModel) (n : ℕ)
     frobNorm (fun i j => idMatrix n i j * δsub i) ≤
       Real.sqrt ((n : ℝ) * fp.u ^ 2) := by
   let B : Fin n → Fin n → ℝ := fun i j => if i = j then fp.u else 0
-  apply frobNorm_le_of_entrywise_abs_le_sum_sq
-    (fun i j => idMatrix n i j * δsub i) B
-  · intro i j
+  have hB_nonneg : ∀ i j : Fin n, 0 ≤ B i j := by
+    intro i j
+    by_cases hij : i = j
+    · simp [B, hij, fp.u_nonneg]
+    · simp [B, hij]
+  have hentry :
+      ∀ i j : Fin n, |idMatrix n i j * δsub i| ≤ B i j := by
+    intro i j
     by_cases hij : i = j
     · simpa [B, idMatrix, hij] using hδsub i
     · simp [B, idMatrix, hij]
-  · calc
+  have hBnorm : frobNorm B = Real.sqrt ((n : ℝ) * fp.u ^ 2) := by
+    rw [frobNorm_eq_sqrt_frobNormSq]
+    congr 1
+    unfold frobNormSq
+    calc
       (∑ i : Fin n, ∑ j : Fin n, (B i j) ^ 2)
           = ∑ i : Fin n, fp.u ^ 2 := by
             apply Finset.sum_congr rfl
@@ -384,10 +393,12 @@ theorem householderApply_sub_error_frob_bound (fp : FPModel) (n : ℕ)
             simp [B, Finset.sum_ite_eq, Finset.mem_univ]
       _ = (n : ℝ) * fp.u ^ 2 := by
             simp
-      _ ≤ (Real.sqrt ((n : ℝ) * fp.u ^ 2)) ^ 2 := by
-            rw [Real.sq_sqrt]
-            exact mul_nonneg (Nat.cast_nonneg' n) (sq_nonneg fp.u)
-  · exact Real.sqrt_nonneg _
+  calc
+    frobNorm (fun i j => idMatrix n i j * δsub i)
+        ≤ frobNorm B :=
+          frobNorm_le_of_entry_abs_le
+            (fun i j => idMatrix n i j * δsub i) B hB_nonneg hentry
+    _ = Real.sqrt ((n : ℝ) * fp.u ^ 2) := hBnorm
 
 /-- Frobenius bound for the outer-product part of the normalized Householder
     application perturbation.  The normalization `∑ |v_i|² = 2` gives
@@ -410,9 +421,14 @@ theorem householderApply_outer_gamma_frob_bound (fp : FPModel) (n k : ℕ)
             rw [sq_abs]
       _ = 2 := hvnorm
   let B : Fin n → Fin n → ℝ := fun i j => γ * |v i| * |v j|
-  apply frobNorm_le_of_entrywise_abs_le_sum_sq
-    (fun i j => -v i * v j * θ i j) B
-  · intro i j
+  have hB_nonneg : ∀ i j : Fin n, 0 ≤ B i j := by
+    intro i j
+    exact mul_nonneg
+      (mul_nonneg hγ (abs_nonneg (v i)))
+      (abs_nonneg (v j))
+  have hentry :
+      ∀ i j : Fin n, |-v i * v j * θ i j| ≤ B i j := by
+    intro i j
     have hp : 0 ≤ |v i| * |v j| :=
       mul_nonneg (abs_nonneg _) (abs_nonneg _)
     calc
@@ -424,7 +440,9 @@ theorem householderApply_outer_gamma_frob_bound (fp : FPModel) (n k : ℕ)
       _ = B i j := by
             simp [B, γ]
             ring
-  · calc
+  have hBsq : frobNormSq B = (2 * γ) ^ 2 := by
+    unfold frobNormSq
+    calc
       (∑ i : Fin n, ∑ j : Fin n, (B i j) ^ 2)
           = ∑ i : Fin n,
               (γ ^ 2 * v i ^ 2 * (∑ j : Fin n, v j ^ 2)) := by
@@ -457,9 +475,17 @@ theorem householderApply_outer_gamma_frob_bound (fp : FPModel) (n k : ℕ)
       _ = (2 * γ) ^ 2 := by
             rw [hvnorm]
             ring
-      _ ≤ (2 * gamma fp k) ^ 2 := by
-            simp [γ]
-  · exact mul_nonneg (by norm_num) hγ
+  have hBnorm : frobNorm B = 2 * γ := by
+    rw [frobNorm_eq_sqrt_frobNormSq, hBsq]
+    rw [Real.sqrt_sq_eq_abs]
+    exact abs_of_nonneg (mul_nonneg (by norm_num) hγ)
+  calc
+    frobNorm (fun i j => -v i * v j * θ i j)
+        ≤ frobNorm B :=
+          frobNorm_le_of_entry_abs_le
+            (fun i j => -v i * v j * θ i j) B hB_nonneg hentry
+    _ = 2 * gamma fp k := by
+          simpa [γ] using hBnorm
 
 /-- Concrete Frobenius bound for the normalized Householder application
     perturbation matrix.

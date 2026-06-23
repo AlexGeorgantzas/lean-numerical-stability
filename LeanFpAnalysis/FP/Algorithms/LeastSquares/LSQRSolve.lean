@@ -18,7 +18,7 @@ import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
 import LeanFpAnalysis.FP.Analysis.PerturbationTheory
-import LeanFpAnalysis.FP.Algorithms.QR.HouseholderQR
+import LeanFpAnalysis.FP.Algorithms.QR.HouseholderQRSupport
 import LeanFpAnalysis.FP.Algorithms.TriangularSolve
 import LeanFpAnalysis.FP.Algorithms.InverseBounds
 
@@ -1230,7 +1230,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -1241,7 +1241,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -1266,7 +1266,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -1279,7 +1279,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -1369,7 +1369,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -1380,7 +1380,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -1405,7 +1405,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -1418,7 +1418,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -1429,7 +1429,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -1490,7 +1490,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -1501,7 +1501,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -1520,7 +1520,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -1533,7 +1533,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -1544,7 +1544,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -1617,7 +1617,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -1628,7 +1628,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -1651,7 +1651,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -1664,7 +1664,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -1675,7 +1675,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -1743,7 +1743,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -1754,7 +1754,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -1778,7 +1778,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -1791,7 +1791,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -1802,7 +1802,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -1857,7 +1857,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -1872,7 +1872,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -1912,7 +1912,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -1923,7 +1923,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -1946,7 +1946,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -1959,7 +1959,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -1971,7 +1971,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -2057,7 +2057,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -2068,7 +2068,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -2091,7 +2091,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -2104,7 +2104,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -2116,7 +2116,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -2152,7 +2152,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -2163,7 +2163,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
     let v :=
       householderTrailingActiveVector m p
         (fun a => A_hat k a ⟨k, hk⟩) (alpha k)
-    let beta := householderBeta m v
+    let beta := householderBetaSpec m v
     let budget :=
       householderCompactComponentBudget fp m v beta
         (fun a => A_hat k a ⟨k, hk⟩) p
@@ -2214,7 +2214,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -2225,7 +2225,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -2252,7 +2252,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -2265,7 +2265,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -2277,7 +2277,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -2316,7 +2316,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -2330,7 +2330,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
     let v :=
       householderTrailingActiveVector m p
         (fun a => A_hat k a ⟨k, hk⟩) (alpha k)
-    let beta := householderBeta m v
+    let beta := householderBetaSpec m v
     let budget :=
       householderCompactComponentBudget fp m v beta
         (fun a => A_hat k a ⟨k, hk⟩) p
@@ -2373,7 +2373,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -2384,7 +2384,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -2411,7 +2411,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -2424,7 +2424,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -2436,7 +2436,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -2510,7 +2510,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -2521,7 +2521,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -2547,7 +2547,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -2615,7 +2615,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -2626,7 +2626,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -2656,7 +2656,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -2669,7 +2669,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -2681,7 +2681,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -2760,7 +2760,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -2771,7 +2771,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -2801,7 +2801,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -2814,7 +2814,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -2826,7 +2826,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -2890,7 +2890,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -2901,7 +2901,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -2930,7 +2930,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -2991,7 +2991,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3002,7 +3002,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3030,7 +3030,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3043,7 +3043,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3055,7 +3055,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3112,7 +3112,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3123,7 +3123,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3151,7 +3151,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3164,7 +3164,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3176,7 +3176,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3219,7 +3219,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3230,7 +3230,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3257,7 +3257,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3317,7 +3317,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3328,7 +3328,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3357,7 +3357,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3370,7 +3370,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3382,7 +3382,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3438,7 +3438,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3449,7 +3449,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3478,7 +3478,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3491,7 +3491,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3503,7 +3503,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3545,7 +3545,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3556,7 +3556,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3584,7 +3584,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3646,7 +3646,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3657,7 +3657,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3689,7 +3689,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3734,7 +3734,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3745,7 +3745,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3775,7 +3775,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3820,7 +3820,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3831,7 +3831,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3862,7 +3862,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3910,7 +3910,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3921,7 +3921,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -3954,7 +3954,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -4015,7 +4015,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -4026,7 +4026,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -4057,7 +4057,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -4118,7 +4118,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -4129,7 +4129,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -4161,7 +4161,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -4223,7 +4223,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -4234,7 +4234,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -4270,7 +4270,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -4334,7 +4334,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -4345,7 +4345,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -4381,7 +4381,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -4447,7 +4447,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -4458,7 +4458,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -4495,7 +4495,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -4561,7 +4561,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -4572,7 +4572,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -4617,7 +4617,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -4672,7 +4672,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -4683,7 +4683,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -4725,7 +4725,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -4789,7 +4789,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -4800,7 +4800,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -4834,7 +4834,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -4847,7 +4847,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -4859,7 +4859,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -4931,7 +4931,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -4942,7 +4942,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -4985,7 +4985,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -4998,7 +4998,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -5010,7 +5010,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -5080,7 +5080,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -5091,7 +5091,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -5133,7 +5133,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -5146,7 +5146,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -5158,7 +5158,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -5231,7 +5231,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -5242,7 +5242,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -5289,7 +5289,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -5302,7 +5302,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -5314,7 +5314,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -5381,7 +5381,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -5392,7 +5392,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -5438,7 +5438,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -5451,7 +5451,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -5463,7 +5463,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -5552,7 +5552,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -5563,7 +5563,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -5607,7 +5607,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -5620,7 +5620,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -5632,7 +5632,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -5669,7 +5669,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
       0
   let βStep : ℕ → ℝ := fun k =>
     if hk : k < n then
-      householderBeta m
+      householderBetaSpec m
         (householderTrailingActiveVector m
           ⟨k, lt_of_lt_of_le hk hmn⟩
           (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
@@ -5763,7 +5763,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -5774,7 +5774,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -5819,7 +5819,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -5832,7 +5832,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -5844,7 +5844,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -5925,7 +5925,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -5936,7 +5936,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -5954,7 +5954,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -5989,7 +5989,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -6002,7 +6002,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -6014,7 +6014,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -6051,7 +6051,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
     let v :=
       householderTrailingActiveVector m p
         (fun a => A_hat k a ⟨k, hk⟩) (alpha k)
-    let beta := householderBeta m v
+    let beta := householderBetaSpec m v
     let budget :=
       householderCompactComponentBudget fp m v beta
         (fun a => A_hat k a ⟨k, hk⟩) p
@@ -6121,7 +6121,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -6132,7 +6132,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -6150,7 +6150,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -6185,7 +6185,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -6198,7 +6198,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -6210,7 +6210,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -6284,7 +6284,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -6295,7 +6295,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -6313,7 +6313,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -6347,7 +6347,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -6379,7 +6379,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
     let v :=
       householderTrailingActiveVector m p
         (fun a => A_hat k a ⟨k, hk⟩) (alpha k)
-    let beta := householderBeta m v
+    let beta := householderBetaSpec m v
     let budget :=
       householderCompactComponentBudget fp m v beta
         (fun a => A_hat k a ⟨k, hk⟩) p
@@ -6439,7 +6439,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -6450,7 +6450,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -6469,7 +6469,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -6502,7 +6502,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -6523,7 +6523,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -6538,7 +6538,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
     let v :=
       householderTrailingActiveVector m p
         (fun a => A_hat k a ⟨k, hk⟩) (alpha k)
-    let beta := householderBeta m v
+    let beta := householderBetaSpec m v
     let budget :=
       householderCompactComponentBudget fp m v beta
         (fun a => A_hat k a ⟨k, hk⟩) p
@@ -6586,7 +6586,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -6597,7 +6597,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -6616,7 +6616,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -6652,7 +6652,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -6705,7 +6705,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -6716,7 +6716,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -6756,7 +6756,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -6778,7 +6778,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
         ⟨k, lt_of_lt_of_le hk hmn⟩
         (fun a => A_hat k a ⟨k, hk⟩) (alpha k)
     else 0
-  let β : ℕ → ℝ := fun k => householderBeta m (v k)
+  let β : ℕ → ℝ := fun k => householderBetaSpec m (v k)
   have hStep : ∀ k, k < n →
       A_hat (k + 1) =
         fl_householderStoredPanelStep fp m n k (v k) (β k) (A_hat k) := by
@@ -6793,7 +6793,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -6814,7 +6814,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
         (householderTrailingActiveVector m
           ⟨k, lt_of_lt_of_le hk hmn⟩
           (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-        (householderBeta m
+        (householderBetaSpec m
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -6890,7 +6890,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -6901,7 +6901,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -6933,7 +6933,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -6987,7 +6987,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
         ⟨k, lt_of_lt_of_le hk hmn⟩
         (fun a => A_hat k a ⟨k, hk⟩) (alpha k)
     else 0
-  let β : ℕ → ℝ := fun k => householderBeta m (v k)
+  let β : ℕ → ℝ := fun k => householderBetaSpec m (v k)
   have hStep : ∀ k, k < n →
       A_hat (k + 1) =
         fl_householderStoredPanelStep fp m n k (v k) (β k) (A_hat k) := by
@@ -7107,7 +7107,7 @@ theorem exactHouseholderQRDiagDominanceCounterexample_step :
               (fun i =>
                 exactHouseholderQRDiagDominanceCounterexampleSeq k i ⟨k, hk⟩)
               (exactHouseholderQRDiagDominanceCounterexampleAlpha k))
-            (householderBeta 2
+            (householderBetaSpec 2
               (householderTrailingActiveVector 2
                 ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                 (fun i =>
@@ -7123,7 +7123,7 @@ theorem exactHouseholderQRDiagDominanceCounterexample_step :
         diagDominanceCounterexample2,
         exactHouseholderQRDiagDominanceCounterexampleAlpha,
         householderTrailingActiveVector, householderActiveVector,
-        householderTrailingPart, householderBeta, householder,
+        householderTrailingPart, householderBetaSpec, householder,
         matMulRectLeft, idMatrix]
   · ext i j
     fin_cases i <;> fin_cases j <;>
@@ -7132,7 +7132,7 @@ theorem exactHouseholderQRDiagDominanceCounterexample_step :
         exactHouseholderQRDiagDominanceCounterexampleA2,
         exactHouseholderQRDiagDominanceCounterexampleAlpha,
         householderTrailingActiveVector, householderActiveVector,
-        householderTrailingPart, householderBeta, householder,
+        householderTrailingPart, householderBetaSpec, householder,
         matMulRectLeft, idMatrix]
 
 /-- The counterexample scalars have the squared trailing-norm magnitude
@@ -7198,7 +7198,7 @@ theorem exactHouseholderQRDiagDominanceCounterexample_stored_step :
             (fun i =>
               exactHouseholderQRDiagDominanceCounterexampleSeq k i ⟨k, hk⟩)
             (exactHouseholderQRDiagDominanceCounterexampleAlpha k))
-          (householderBeta 2
+          (householderBetaSpec 2
             (householderTrailingActiveVector 2
               ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
               (fun i =>
@@ -7218,7 +7218,7 @@ theorem exactHouseholderQRDiagDominanceCounterexample_stored_step :
         fl_householderStoredPanelStep, fl_householderApplyCompactPanel,
         fl_householderApplyCompact, fl_dotProduct, Fin.foldl_succ,
         householderTrailingActiveVector, householderActiveVector,
-        householderTrailingPart, householderBeta]
+        householderTrailingPart, householderBetaSpec]
     all_goals ring_nf
   · ext i j
     fin_cases i <;> fin_cases j <;>
@@ -7231,7 +7231,7 @@ theorem exactHouseholderQRDiagDominanceCounterexample_stored_step :
         fl_householderStoredPanelStep, fl_householderApplyCompactPanel,
         fl_householderApplyCompact, fl_dotProduct, Fin.foldl_succ,
         householderTrailingActiveVector, householderActiveVector,
-        householderTrailingPart, householderBeta]
+        householderTrailingPart, householderBetaSpec]
     all_goals ring_nf
 
 /-- The counterexample scalars are exactly the signed Householder choices used
@@ -7287,7 +7287,7 @@ theorem not_forall_exact_trailing_householder_sequence_implies_diagDominant :
               (householderTrailingActiveVector 2
                 ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                 (fun i => A_hat k i ⟨k, hk⟩) (alpha k))
-              (householderBeta 2
+              (householderBetaSpec 2
                 (householderTrailingActiveVector 2
                   ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                   (fun i => A_hat k i ⟨k, hk⟩) (alpha k))))
@@ -7329,7 +7329,7 @@ theorem not_forall_signedAlphaDef_stored_trailing_sequence_actualU_sourceDen_imp
             (householderTrailingActiveVector 2
               ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
               (fun i => A_hat k i ⟨k, hk⟩) (alpha k))
-            (householderBeta 2
+            (householderBetaSpec 2
               (householderTrailingActiveVector 2
                 ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                 (fun i => A_hat k i ⟨k, hk⟩) (alpha k)))
@@ -7400,7 +7400,7 @@ theorem not_forall_signedAlphaDef_stored_trailing_sequence_actualU_sourceDen_imp
             (householderTrailingActiveVector 2
               ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
               (fun i => A_hat k i ⟨k, hk⟩) (alpha k))
-            (householderBeta 2
+            (householderBetaSpec 2
               (householderTrailingActiveVector 2
                 ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                 (fun i => A_hat k i ⟨k, hk⟩) (alpha k)))
@@ -7460,7 +7460,7 @@ theorem not_forall_exact_trailing_householder_sequence_implies_diagDominant_and_
               (householderTrailingActiveVector 2
                 ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                 (fun i => A_hat k i ⟨k, hk⟩) (alpha k))
-              (householderBeta 2
+              (householderBetaSpec 2
                 (householderTrailingActiveVector 2
                   ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                   (fun i => A_hat k i ⟨k, hk⟩) (alpha k))))
@@ -8099,7 +8099,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -8110,7 +8110,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -8148,7 +8148,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -8206,7 +8206,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -8217,7 +8217,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -8245,7 +8245,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -8342,7 +8342,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -8353,7 +8353,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -8386,7 +8386,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -8441,7 +8441,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -8452,7 +8452,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -8507,7 +8507,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
       (householderTrailingActiveVector m
         ⟨k, lt_of_lt_of_le hk hmn⟩
         (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-      (householderBeta m
+      (householderBetaSpec m
         (householderTrailingActiveVector m
           ⟨k, lt_of_lt_of_le hk hmn⟩
           (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -8530,7 +8530,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
         (householderTrailingActiveVector m
           ⟨k, lt_of_lt_of_le hk hmn⟩
           (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-        (householderBeta m
+        (householderBetaSpec m
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -8566,7 +8566,7 @@ theorem storedQRSignedStage_normSqBudget_of_leadingBlock_det_ne_zero_diagDominan
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -8596,7 +8596,7 @@ theorem storedQRSignedStage_normSqBudget_of_leadingBlock_det_ne_zero_diagDominan
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -8612,7 +8612,7 @@ theorem storedQRSignedStage_normSqBudget_of_leadingBlock_det_ne_zero_diagDominan
         ⟨k, lt_of_lt_of_le hk hmn⟩
         (fun a => A_hat k a ⟨k, hk⟩) (alpha k)
     else 0
-  let β : ℕ → ℝ := fun k => householderBeta m (v k)
+  let β : ℕ → ℝ := fun k => householderBetaSpec m (v k)
   have hStep : ∀ k, k < n →
       A_hat (k + 1) =
         fl_householderStoredPanelStep fp m n k (v k) (β k) (A_hat k) := by
@@ -8636,7 +8636,7 @@ theorem storedQRSignedStage_normSqBudget_of_leadingBlock_det_ne_zero_diagDominan
       (householderTrailingActiveVector m
         ⟨k, lt_of_lt_of_le hk hmn⟩
         (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-      (householderBeta m
+      (householderBetaSpec m
         (householderTrailingActiveVector m
           ⟨k, lt_of_lt_of_le hk hmn⟩
           (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -8685,7 +8685,7 @@ theorem storedQRSignedStage_normSqBudget_of_leadingBlock_det_ne_zero_diagDominan
         (householderTrailingActiveVector m
           ⟨k, lt_of_lt_of_le hk hmn⟩
           (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-        (householderBeta m
+        (householderBetaSpec m
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -8804,7 +8804,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_diag_offdia
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -8839,7 +8839,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_diag_offdia
     else 0
   let β : ℕ → ℝ := fun k =>
     if hk : k < n then
-      householderBeta m
+      householderBetaSpec m
         (householderTrailingActiveVector m
           ⟨k, lt_of_lt_of_le hk hmn⟩
           (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
@@ -8898,7 +8898,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_pivot_sqrtB
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -8916,7 +8916,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_pivot_sqrtB
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -8955,7 +8955,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_pivot_sqrtB
     let v :=
       householderTrailingActiveVector m p
         (fun a => A_hat k a ⟨k, hk⟩) (alpha k)
-    let beta := householderBeta m v
+    let beta := householderBetaSpec m v
     let budget :=
       householderCompactComponentBudget fp m v beta
         (fun a => A_hat k a ⟨k, hk⟩) p
@@ -9015,7 +9015,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -9033,7 +9033,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -9098,7 +9098,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -9117,7 +9117,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -9154,7 +9154,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -9169,7 +9169,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
     let v :=
       householderTrailingActiveVector m p
         (fun a => A_hat k a ⟨k, hk⟩) (alpha k)
-    let beta := householderBeta m v
+    let beta := householderBetaSpec m v
     let budget :=
       householderCompactComponentBudget fp m v beta
         (fun a => A_hat k a ⟨k, hk⟩) p
@@ -9209,7 +9209,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -9228,7 +9228,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -9292,7 +9292,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -9311,7 +9311,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -12629,7 +12629,7 @@ theorem not_forall_exact_trailing_householder_sequence_implies_rowMaxDiagDefectB
               (householderTrailingActiveVector 2
                 ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                 (fun i => A_hat k i ⟨k, hk⟩) (alpha k))
-              (householderBeta 2
+              (householderBetaSpec 2
                 (householderTrailingActiveVector 2
                   ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                   (fun i => A_hat k i ⟨k, hk⟩) (alpha k))))
@@ -12707,7 +12707,7 @@ theorem not_forall_exact_trailing_householder_sequence_implies_stageDiagLowerDef
               (householderTrailingActiveVector 2
                 ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                 (fun i => A_hat k i ⟨k, hk⟩) (alpha k))
-              (householderBeta 2
+              (householderBetaSpec 2
                 (householderTrailingActiveVector 2
                   ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                   (fun i => A_hat k i ⟨k, hk⟩) (alpha k))))
@@ -12806,7 +12806,7 @@ theorem not_forall_exact_trailing_householder_sequence_implies_stageRowMaxCompar
               (householderTrailingActiveVector 2
                 ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                 (fun i => A_hat k i ⟨k, hk⟩) (alpha k))
-              (householderBeta 2
+              (householderBetaSpec 2
                 (householderTrailingActiveVector 2
                   ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                   (fun i => A_hat k i ⟨k, hk⟩) (alpha k))))
@@ -12861,7 +12861,7 @@ theorem not_forall_signedAlphaDef_stored_trailing_sequence_actualU_sourceDen_imp
             (householderTrailingActiveVector 2
               ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
               (fun i => A_hat k i ⟨k, hk⟩) (alpha k))
-            (householderBeta 2
+            (householderBetaSpec 2
               (householderTrailingActiveVector 2
                 ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                 (fun i => A_hat k i ⟨k, hk⟩) (alpha k)))
@@ -12915,7 +12915,7 @@ theorem not_forall_signedAlphaDef_stored_trailing_sequence_actualU_sourceDen_non
             (householderTrailingActiveVector 2
               ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
               (fun i => A_hat k i ⟨k, hk⟩) (alpha k))
-            (householderBeta 2
+            (householderBetaSpec 2
               (householderTrailingActiveVector 2
                 ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                 (fun i => A_hat k i ⟨k, hk⟩) (alpha k)))
@@ -13018,7 +13018,7 @@ theorem storedDiagDominantComparisonCounterexample_stored_step :
             (fun i =>
               storedDiagDominantComparisonCounterexampleSeq k i ⟨k, hk⟩)
             (storedDiagDominantComparisonCounterexampleAlpha k))
-          (householderBeta 2
+          (householderBetaSpec 2
             (householderTrailingActiveVector 2
               ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
               (fun i =>
@@ -13038,7 +13038,7 @@ theorem storedDiagDominantComparisonCounterexample_stored_step :
         fl_householderStoredPanelStep, fl_householderApplyCompactPanel,
         fl_householderApplyCompact, fl_dotProduct, Fin.foldl_succ,
         householderTrailingActiveVector, householderActiveVector,
-        householderTrailingPart, householderBeta]
+        householderTrailingPart, householderBetaSpec]
     all_goals ring_nf
   · ext i j
     fin_cases i <;> fin_cases j <;>
@@ -13051,7 +13051,7 @@ theorem storedDiagDominantComparisonCounterexample_stored_step :
         fl_householderStoredPanelStep, fl_householderApplyCompactPanel,
         fl_householderApplyCompact, fl_dotProduct, Fin.foldl_succ,
         householderTrailingActiveVector, householderActiveVector,
-        householderTrailingPart, householderBeta]
+        householderTrailingPart, householderBetaSpec]
     all_goals ring_nf
 
 /-- The zero right-hand side follows the stored RHS recurrence for the
@@ -13066,7 +13066,7 @@ theorem storedDiagDominantComparisonCounterexample_rhs_step :
             (fun i =>
               storedDiagDominantComparisonCounterexampleSeq k i ⟨k, hk⟩)
             (storedDiagDominantComparisonCounterexampleAlpha k))
-          (householderBeta 2
+          (householderBetaSpec 2
             (householderTrailingActiveVector 2
               ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
               (fun i =>
@@ -13086,7 +13086,7 @@ theorem storedDiagDominantComparisonCounterexample_rhs_step :
       storedDiagDominantComparisonCounterexampleAlpha,
       fl_householderStoredRhsStep, fl_householderApplyCompact,
       fl_dotProduct, Fin.foldl_succ, householderTrailingActiveVector,
-      householderActiveVector, householderTrailingPart, householderBeta]
+      householderActiveVector, householderTrailingPart, householderBetaSpec]
 
 /-- The stored diagonally-dominant scalar-comparison witness uses the signed
     Householder alpha definition. -/
@@ -13342,7 +13342,7 @@ theorem not_forall_diagDominant_signedAlphaDef_stored_trailing_sequence_actualU_
             (householderTrailingActiveVector 2
               ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
               (fun i => A_hat k i ⟨k, hk⟩) (alpha k))
-            (householderBeta 2
+            (householderBetaSpec 2
               (householderTrailingActiveVector 2
                 ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                 (fun i => A_hat k i ⟨k, hk⟩) (alpha k)))
@@ -13408,7 +13408,7 @@ theorem not_forall_diagDominant_signedAlphaDef_stored_trailing_sequence_actualU_
             (householderTrailingActiveVector 2
               ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
               (fun i => A_hat k i ⟨k, hk⟩) (alpha k))
-            (householderBeta 2
+            (householderBetaSpec 2
               (householderTrailingActiveVector 2
                 ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                 (fun i => A_hat k i ⟨k, hk⟩) (alpha k)))
@@ -13475,7 +13475,7 @@ theorem not_forall_diagDominant_activeMaxPivot_signedAlphaDef_stored_trailing_se
             (householderTrailingActiveVector 2
               ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
               (fun i => A_hat k i ⟨k, hk⟩) (alpha k))
-            (householderBeta 2
+            (householderBetaSpec 2
               (householderTrailingActiveVector 2
                 ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                 (fun i => A_hat k i ⟨k, hk⟩) (alpha k)))
@@ -13583,7 +13583,7 @@ theorem StoredQRDisplayedRowBudgetControl.of_signed_stage_budgets_factor_of_norm
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -13602,7 +13602,7 @@ theorem StoredQRDisplayedRowBudgetControl.of_signed_stage_budgets_factor_of_norm
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -13681,7 +13681,7 @@ theorem StoredQRDisplayedRowBudgetControl.of_signed_stage_uniformBudget_factor_o
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -13700,7 +13700,7 @@ theorem StoredQRDisplayedRowBudgetControl.of_signed_stage_uniformBudget_factor_o
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -13775,7 +13775,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -13794,7 +13794,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -13855,7 +13855,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -13877,7 +13877,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -13974,7 +13974,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -13996,7 +13996,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -14094,7 +14094,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -14113,7 +14113,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -14221,7 +14221,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -14240,7 +14240,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -14349,7 +14349,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -14368,7 +14368,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -14452,7 +14452,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -14471,7 +14471,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -14558,7 +14558,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -14577,7 +14577,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -14658,7 +14658,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -14677,7 +14677,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -14765,7 +14765,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -14784,7 +14784,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -14886,7 +14886,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
                     (householderTrailingActiveVector m
                       ⟨t, lt_of_lt_of_le htn hmn⟩
                       (fun a => A_hat t a ⟨t, htn⟩) (alpha t))
-                    (householderBeta m
+                    (householderBetaSpec m
                       (householderTrailingActiveVector m
                         ⟨t, lt_of_lt_of_le htn hmn⟩
                         (fun a => A_hat t a ⟨t, htn⟩) (alpha t)))
@@ -14925,7 +14925,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -14944,7 +14944,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -15046,7 +15046,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
                     (householderTrailingActiveVector m
                       ⟨t, lt_of_lt_of_le htn hmn⟩
                       (fun a => A_hat t a ⟨t, htn⟩) (alpha t))
-                    (householderBeta m
+                    (householderBetaSpec m
                       (householderTrailingActiveVector m
                         ⟨t, lt_of_lt_of_le htn hmn⟩
                         (fun a => A_hat t a ⟨t, htn⟩) (alpha t)))
@@ -15089,7 +15089,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -15108,7 +15108,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -15231,7 +15231,7 @@ theorem storedQRSignedStage_active_block_bound_of_signed_stage_budget
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -15250,7 +15250,7 @@ theorem storedQRSignedStage_active_block_bound_of_signed_stage_budget
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -15328,7 +15328,7 @@ theorem storedQRSignedStage_active_block_bound_of_signed_stage_budget
                     (householderTrailingActiveVector m
                       ⟨s, lt_of_lt_of_le hsn hmn⟩
                       (fun a => A_hat s a ⟨s, hsn⟩) (alpha s))
-                    (householderBeta m
+                    (householderBetaSpec m
                       (householderTrailingActiveVector m
                         ⟨s, lt_of_lt_of_le hsn hmn⟩
                         (fun a => A_hat s a ⟨s, hsn⟩) (alpha s)))
@@ -15360,7 +15360,7 @@ theorem storedQRSignedStage_active_block_bound_of_signed_stage_budget
                     (householderTrailingActiveVector m
                       ⟨s, lt_of_lt_of_le hsn hmn⟩
                       (fun a => A_hat s a ⟨s, hsn⟩) (alpha s))
-                    (householderBeta m
+                    (householderBetaSpec m
                       (householderTrailingActiveVector m
                         ⟨s, lt_of_lt_of_le hsn hmn⟩
                         (fun a => A_hat s a ⟨s, hsn⟩) (alpha s)))
@@ -15420,7 +15420,7 @@ theorem storedQRSignedStage_prefix_row_bound_of_active_block_and_prefix_budget
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -15439,7 +15439,7 @@ theorem storedQRSignedStage_prefix_row_bound_of_active_block_and_prefix_budget
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -15495,7 +15495,7 @@ theorem storedQRSignedStage_prefix_row_bound_of_active_block_and_prefix_budget
                   (householderTrailingActiveVector m
                     ⟨t, lt_of_lt_of_le htn hmn⟩
                     (fun a => A_hat t a ⟨t, htn⟩) (alpha t))
-                  (householderBeta m
+                  (householderBetaSpec m
                     (householderTrailingActiveVector m
                       ⟨t, lt_of_lt_of_le htn hmn⟩
                       (fun a => A_hat t a ⟨t, htn⟩) (alpha t)))
@@ -15530,7 +15530,7 @@ theorem storedQRSignedStage_prefix_row_bound_of_active_block_and_prefix_budget
             (householderTrailingActiveVector m
               ⟨t, lt_of_lt_of_le htn hmn⟩
               (fun a => A_hat t a ⟨t, htn⟩) (alpha t))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨t, lt_of_lt_of_le htn hmn⟩
                 (fun a => A_hat t a ⟨t, htn⟩) (alpha t)))
@@ -15847,7 +15847,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -15866,7 +15866,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -15981,7 +15981,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -16000,7 +16000,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -16131,7 +16131,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -16150,7 +16150,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -16279,7 +16279,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -16298,7 +16298,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -16526,7 +16526,7 @@ theorem storedDiagDominantComparisonCounterexample_compactSequenceRelativeBudget
     householderTrailingActiveVector,
     householderActiveVector,
     householderTrailingPart,
-    householderBeta]
+    householderBetaSpec]
   simp [vecNorm2_zero]
 
 /-- The diagonally-dominant scalar-comparison witness satisfies the global
@@ -16564,7 +16564,7 @@ theorem not_forall_diagDominant_activeMaxPivot_product_signedAlphaDef_stored_tra
             (householderTrailingActiveVector 2
               ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
               (fun i => A_hat k i ⟨k, hk⟩) (alpha k))
-            (householderBeta 2
+            (householderBetaSpec 2
               (householderTrailingActiveVector 2
                 ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                 (fun i => A_hat k i ⟨k, hk⟩) (alpha k)))
@@ -16575,7 +16575,7 @@ theorem not_forall_diagDominant_activeMaxPivot_product_signedAlphaDef_stored_tra
             (householderTrailingActiveVector 2
               ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
               (fun i => A_hat k i ⟨k, hk⟩) (alpha k))
-            (householderBeta 2
+            (householderBetaSpec 2
               (householderTrailingActiveVector 2
                 ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                 (fun i => A_hat k i ⟨k, hk⟩) (alpha k)))
@@ -16661,7 +16661,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -16680,7 +16680,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -16734,7 +16734,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -16753,7 +16753,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -16805,7 +16805,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -16824,7 +16824,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -17201,7 +17201,7 @@ theorem not_forall_diagDominant_activeMaxPivot_finiteMaxSmallness_signedAlphaDef
             (householderTrailingActiveVector 2
               ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
               (fun i => A_hat k i ⟨k, hk⟩) (alpha k))
-            (householderBeta 2
+            (householderBetaSpec 2
               (householderTrailingActiveVector 2
                 ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                 (fun i => A_hat k i ⟨k, hk⟩) (alpha k)))
@@ -17212,7 +17212,7 @@ theorem not_forall_diagDominant_activeMaxPivot_finiteMaxSmallness_signedAlphaDef
             (householderTrailingActiveVector 2
               ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
               (fun i => A_hat k i ⟨k, hk⟩) (alpha k))
-            (householderBeta 2
+            (householderBetaSpec 2
               (householderTrailingActiveVector 2
                 ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                 (fun i => A_hat k i ⟨k, hk⟩) (alpha k)))
@@ -17322,7 +17322,7 @@ theorem storedDiagDominantComparisonCounterexample_globalCompactBudget_eq_zero :
       FPModel.exactWithUnitRoundoff, gamma,
       storedQRSignedStageVector, storedQRSignedStageBeta,
       householderTrailingActiveVector, householderActiveVector,
-      householderTrailingPart, householderBeta]
+      householderTrailingPart, householderBetaSpec]
 
 /-- In the two-row counterexample, the unified Cox--Higham active-row growth
     factor is bounded by `3`. -/
@@ -17475,7 +17475,7 @@ theorem not_forall_diagDominant_activeMaxPivot_globalCompactBudget_finiteMaxSmal
             (householderTrailingActiveVector 2
               ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
               (fun i => A_hat k i ⟨k, hk⟩) (alpha k))
-            (householderBeta 2
+            (householderBetaSpec 2
               (householderTrailingActiveVector 2
                 ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                 (fun i => A_hat k i ⟨k, hk⟩) (alpha k)))
@@ -17486,7 +17486,7 @@ theorem not_forall_diagDominant_activeMaxPivot_globalCompactBudget_finiteMaxSmal
             (householderTrailingActiveVector 2
               ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
               (fun i => A_hat k i ⟨k, hk⟩) (alpha k))
-            (householderBeta 2
+            (householderBetaSpec 2
               (householderTrailingActiveVector 2
                 ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                 (fun i => A_hat k i ⟨k, hk⟩) (alpha k)))
@@ -17575,7 +17575,7 @@ theorem not_forall_diagDominant_activeMaxPivot_globalCompactBudget_finiteMaxSmal
             (householderTrailingActiveVector 2
               ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
               (fun i => A_hat k i ⟨k, hk⟩) (alpha k))
-            (householderBeta 2
+            (householderBetaSpec 2
               (householderTrailingActiveVector 2
                 ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                 (fun i => A_hat k i ⟨k, hk⟩) (alpha k)))
@@ -17586,7 +17586,7 @@ theorem not_forall_diagDominant_activeMaxPivot_globalCompactBudget_finiteMaxSmal
             (householderTrailingActiveVector 2
               ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
               (fun i => A_hat k i ⟨k, hk⟩) (alpha k))
-            (householderBeta 2
+            (householderBetaSpec 2
               (householderTrailingActiveVector 2
                 ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                 (fun i => A_hat k i ⟨k, hk⟩) (alpha k)))
@@ -17677,7 +17677,7 @@ theorem not_forall_diagDominant_activeMaxPivot_leadingBlock_det_ne_zero_globalCo
             (householderTrailingActiveVector 2
               ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
               (fun i => A_hat k i ⟨k, hk⟩) (alpha k))
-            (householderBeta 2
+            (householderBetaSpec 2
               (householderTrailingActiveVector 2
                 ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                 (fun i => A_hat k i ⟨k, hk⟩) (alpha k)))
@@ -17688,7 +17688,7 @@ theorem not_forall_diagDominant_activeMaxPivot_leadingBlock_det_ne_zero_globalCo
             (householderTrailingActiveVector 2
               ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
               (fun i => A_hat k i ⟨k, hk⟩) (alpha k))
-            (householderBeta 2
+            (householderBetaSpec 2
               (householderTrailingActiveVector 2
                 ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                 (fun i => A_hat k i ⟨k, hk⟩) (alpha k)))
@@ -17931,7 +17931,7 @@ theorem storedDiagDominantComparisonCounterexample_compactComponentBudget_eq_zer
           ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
           (fun a => storedDiagDominantComparisonCounterexampleSeq k a ⟨k, hk⟩)
           (storedDiagDominantComparisonCounterexampleAlpha k))
-        (householderBeta 2
+        (householderBetaSpec 2
           (householderTrailingActiveVector 2
             ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
             (fun a => storedDiagDominantComparisonCounterexampleSeq k a ⟨k, hk⟩)
@@ -17948,7 +17948,7 @@ theorem storedDiagDominantComparisonCounterexample_compactComponentBudget_eq_zer
       storedDiagDominantComparisonCounterexampleA1,
       storedDiagDominantComparisonCounterexampleAlpha,
       householderTrailingActiveVector, householderActiveVector,
-      householderTrailingPart, householderBeta]
+      householderTrailingPart, householderBetaSpec]
 
 /-- Exact local `κ∞` budget for the diagonally-dominant
     scalar-comparison witness. -/
@@ -18036,7 +18036,7 @@ theorem storedDiagDominantComparisonCounterexample_dualBudget :
               ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
               (fun a => storedDiagDominantComparisonCounterexampleSeq k a ⟨k, hk⟩)
               (storedDiagDominantComparisonCounterexampleAlpha k))
-            (householderBeta 2
+            (householderBetaSpec 2
               (householderTrailingActiveVector 2
                 ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                 (fun a => storedDiagDominantComparisonCounterexampleSeq k a ⟨k, hk⟩)
@@ -18066,7 +18066,7 @@ theorem not_forall_diagDominant_activeMaxPivot_leadingBlock_det_ne_zero_kappaInf
             (householderTrailingActiveVector 2
               ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
               (fun i => A_hat k i ⟨k, hk⟩) (alpha k))
-            (householderBeta 2
+            (householderBetaSpec 2
               (householderTrailingActiveVector 2
                 ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                 (fun i => A_hat k i ⟨k, hk⟩) (alpha k)))
@@ -18077,7 +18077,7 @@ theorem not_forall_diagDominant_activeMaxPivot_leadingBlock_det_ne_zero_kappaInf
             (householderTrailingActiveVector 2
               ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
               (fun i => A_hat k i ⟨k, hk⟩) (alpha k))
-            (householderBeta 2
+            (householderBetaSpec 2
               (householderTrailingActiveVector 2
                 ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                 (fun i => A_hat k i ⟨k, hk⟩) (alpha k)))
@@ -18135,7 +18135,7 @@ theorem not_forall_diagDominant_activeMaxPivot_leadingBlock_det_ne_zero_kappaInf
               (householderTrailingActiveVector 2
                 ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-              (householderBeta 2
+              (householderBetaSpec 2
                 (householderTrailingActiveVector 2
                   ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                   (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -18211,7 +18211,7 @@ theorem not_forall_diagDominant_activeMaxPivot_leadingBlock_det_ne_zero_kappaInf
             (householderTrailingActiveVector 2
               ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
               (fun i => A_hat k i ⟨k, hk⟩) (alpha k))
-            (householderBeta 2
+            (householderBetaSpec 2
               (householderTrailingActiveVector 2
                 ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                 (fun i => A_hat k i ⟨k, hk⟩) (alpha k)))
@@ -18222,7 +18222,7 @@ theorem not_forall_diagDominant_activeMaxPivot_leadingBlock_det_ne_zero_kappaInf
             (householderTrailingActiveVector 2
               ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
               (fun i => A_hat k i ⟨k, hk⟩) (alpha k))
-            (householderBeta 2
+            (householderBetaSpec 2
               (householderTrailingActiveVector 2
                 ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                 (fun i => A_hat k i ⟨k, hk⟩) (alpha k)))
@@ -18280,7 +18280,7 @@ theorem not_forall_diagDominant_activeMaxPivot_leadingBlock_det_ne_zero_kappaInf
               (householderTrailingActiveVector 2
                 ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-              (householderBeta 2
+              (householderBetaSpec 2
                 (householderTrailingActiveVector 2
                   ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                   (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -18390,7 +18390,7 @@ theorem not_forall_diagDominant_activeMaxPivot_leadingBlock_det_ne_zero_kappaInf
             (householderTrailingActiveVector 2
               ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
               (fun i => A_hat k i ⟨k, hk⟩) (alpha k))
-            (householderBeta 2
+            (householderBetaSpec 2
               (householderTrailingActiveVector 2
                 ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                 (fun i => A_hat k i ⟨k, hk⟩) (alpha k)))
@@ -18401,7 +18401,7 @@ theorem not_forall_diagDominant_activeMaxPivot_leadingBlock_det_ne_zero_kappaInf
             (householderTrailingActiveVector 2
               ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
               (fun i => A_hat k i ⟨k, hk⟩) (alpha k))
-            (householderBeta 2
+            (householderBetaSpec 2
               (householderTrailingActiveVector 2
                 ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                 (fun i => A_hat k i ⟨k, hk⟩) (alpha k)))
@@ -18459,7 +18459,7 @@ theorem not_forall_diagDominant_activeMaxPivot_leadingBlock_det_ne_zero_kappaInf
               (householderTrailingActiveVector 2
                 ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-              (householderBeta 2
+              (householderBetaSpec 2
                 (householderTrailingActiveVector 2
                   ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩
                   (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -21279,7 +21279,7 @@ theorem storedQRPreviousColumnLowerZero_of_stored_trailing_householder_sequence
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -21293,7 +21293,7 @@ theorem storedQRPreviousColumnLowerZero_of_stored_trailing_householder_sequence
         ⟨k, lt_of_lt_of_le hk hmn⟩
         (fun a => A_hat k a ⟨k, hk⟩) (alpha k)
     else 0
-  let β : ℕ → ℝ := fun k => householderBeta m (v k)
+  let β : ℕ → ℝ := fun k => householderBetaSpec m (v k)
   have hStep : ∀ k, k < n →
       A_hat (k + 1) =
         fl_householderStoredPanelStep fp m n k (v k) (β k) (A_hat k) := by
@@ -21325,7 +21325,7 @@ theorem storedQRSourceDenominator_ne_zero_of_diagDominant_signedAlphaDef_stored_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -21849,7 +21849,7 @@ theorem not_forall_diagDominant_signedAlphaDef_stored_trailing_sequence_actualU_
             (householderTrailingActiveVector 1
               ⟨k, lt_of_lt_of_le hk (by norm_num : 1 ≤ 1)⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta 1
+            (householderBetaSpec 1
               (householderTrailingActiveVector 1
                 ⟨k, lt_of_lt_of_le hk (by norm_num : 1 ≤ 1)⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -21889,7 +21889,7 @@ theorem not_forall_diagDominant_signedAlphaDef_stored_trailing_sequence_actualU_
     fl_householderStoredPanelStep fp 1 1 0
       (householderTrailingActiveVector 1 ⟨0, by norm_num⟩
         (fun a => A0 a ⟨0, by norm_num⟩) (alpha 0))
-      (householderBeta 1
+      (householderBetaSpec 1
         (householderTrailingActiveVector 1 ⟨0, by norm_num⟩
           (fun a => A0 a ⟨0, by norm_num⟩) (alpha 0)))
       A0
@@ -21900,7 +21900,7 @@ theorem not_forall_diagDominant_signedAlphaDef_stored_trailing_sequence_actualU_
             (householderTrailingActiveVector 1
               ⟨k, lt_of_lt_of_le hk (by norm_num : 1 ≤ 1)⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta 1
+            (householderBetaSpec 1
               (householderTrailingActiveVector 1
                 ⟨k, lt_of_lt_of_le hk (by norm_num : 1 ≤ 1)⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -21968,7 +21968,7 @@ theorem storedQRSignedStage_normSqBudget_of_leadingBlock_det_ne_zero_kappaInf_se
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -22000,7 +22000,7 @@ theorem storedQRSignedStage_normSqBudget_of_leadingBlock_det_ne_zero_kappaInf_se
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -22013,7 +22013,7 @@ theorem storedQRSignedStage_normSqBudget_of_leadingBlock_det_ne_zero_kappaInf_se
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -22029,7 +22029,7 @@ theorem storedQRSignedStage_normSqBudget_of_leadingBlock_det_ne_zero_kappaInf_se
         ⟨k, lt_of_lt_of_le hk hmn⟩
         (fun a => A_hat k a ⟨k, hk⟩) (alpha k)
     else 0
-  let β : ℕ → ℝ := fun k => householderBeta m (v k)
+  let β : ℕ → ℝ := fun k => householderBetaSpec m (v k)
   have hStep : ∀ k, k < n →
       A_hat (k + 1) =
         fl_householderStoredPanelStep fp m n k (v k) (β k) (A_hat k) := by
@@ -22050,7 +22050,7 @@ theorem storedQRSignedStage_normSqBudget_of_leadingBlock_det_ne_zero_kappaInf_se
       (householderTrailingActiveVector m
         ⟨k, lt_of_lt_of_le hk hmn⟩
         (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-      (householderBeta m
+      (householderBetaSpec m
         (householderTrailingActiveVector m
           ⟨k, lt_of_lt_of_le hk hmn⟩
           (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -22113,7 +22113,7 @@ theorem StoredQRDisplayedRowBudgetControl.of_signed_stage_uniformBudget_globalCo
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -22132,7 +22132,7 @@ theorem StoredQRDisplayedRowBudgetControl.of_signed_stage_uniformBudget_globalCo
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -22257,7 +22257,7 @@ theorem StoredQRDisplayedRowBudgetControl.of_signed_stage_uniformBudget_globalCo
                 (householderTrailingActiveVector m
                   ⟨t, lt_of_lt_of_le htn hmn⟩
                   (fun a => A_hat t a ⟨t, htn⟩) (alpha t))
-                (householderBeta m
+                (householderBetaSpec m
                   (householderTrailingActiveVector m
                     ⟨t, lt_of_lt_of_le htn hmn⟩
                     (fun a => A_hat t a ⟨t, htn⟩) (alpha t)))
@@ -22301,7 +22301,7 @@ theorem StoredQRDisplayedRowBudgetControl.of_signed_stage_uniformBudget_globalCo
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -22341,7 +22341,7 @@ theorem StoredQRDisplayedRowBudgetControl.of_signed_stage_uniformBudget_globalCo
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -22377,7 +22377,7 @@ theorem StoredQRDisplayedRowBudgetControl.of_signed_stage_uniformBudget_globalCo
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-              (householderBeta m
+              (householderBetaSpec m
                 (householderTrailingActiveVector m
                   ⟨k, lt_of_lt_of_le hk hmn⟩
                   (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -22451,7 +22451,7 @@ theorem StoredQRDisplayedRowBudgetControl.of_signed_stage_uniformBudget_globalCo
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -22470,7 +22470,7 @@ theorem StoredQRDisplayedRowBudgetControl.of_signed_stage_uniformBudget_globalCo
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -22545,7 +22545,7 @@ theorem StoredQRDisplayedRowBudgetControl.of_signed_stage_uniformBudget_globalCo
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -22585,7 +22585,7 @@ theorem StoredQRDisplayedRowBudgetControl.of_signed_stage_uniformBudget_globalCo
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -22618,7 +22618,7 @@ theorem StoredQRDisplayedRowBudgetControl.of_signed_stage_uniformBudget_globalCo
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-              (householderBeta m
+              (householderBetaSpec m
                 (householderTrailingActiveVector m
                   ⟨k, lt_of_lt_of_le hk hmn⟩
                   (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -22657,7 +22657,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -22676,7 +22676,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -22731,7 +22731,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -22775,7 +22775,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -22813,7 +22813,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -22832,7 +22832,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -22882,7 +22882,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -22926,7 +22926,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -22969,7 +22969,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -22988,7 +22988,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -23063,7 +23063,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -23082,7 +23082,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -23198,7 +23198,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -23238,7 +23238,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -23304,7 +23304,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -23323,7 +23323,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -23387,7 +23387,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -23427,7 +23427,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -23487,7 +23487,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -23506,7 +23506,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -23566,7 +23566,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -23606,7 +23606,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -23667,7 +23667,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_diagDominan
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -23706,7 +23706,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_diagDominan
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -23778,7 +23778,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_diagDominan
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -23817,7 +23817,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_diagDominan
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -23883,7 +23883,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_diagDominan
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -23994,7 +23994,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_diagDominan
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -24071,7 +24071,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_diagDominan
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -24203,7 +24203,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_diagDominan
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -24334,7 +24334,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_diagDominan
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -24423,7 +24423,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_diagDominan
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -24506,7 +24506,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -24546,7 +24546,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -24607,7 +24607,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -24647,7 +24647,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -24707,7 +24707,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -24747,7 +24747,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -24802,7 +24802,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -24842,7 +24842,7 @@ theorem StoredQRSourceOffDiagonalControl.of_stored_trailing_sequence_leadingBloc
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -24932,7 +24932,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -24943,7 +24943,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -24996,7 +24996,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -25007,7 +25007,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -25062,7 +25062,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -25073,7 +25073,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -25117,7 +25117,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -25166,7 +25166,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -25177,7 +25177,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -25221,7 +25221,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -25276,7 +25276,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -25287,7 +25287,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -25361,7 +25361,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -25372,7 +25372,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -25443,7 +25443,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -25454,7 +25454,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -25538,7 +25538,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -25549,7 +25549,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -25648,7 +25648,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -25659,7 +25659,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -25746,7 +25746,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -25757,7 +25757,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -25841,7 +25841,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -25852,7 +25852,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -25929,7 +25929,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -25940,7 +25940,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -26015,7 +26015,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -26026,7 +26026,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -26094,7 +26094,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -26105,7 +26105,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -26177,7 +26177,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -26188,7 +26188,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -26257,7 +26257,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -26268,7 +26268,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -26339,7 +26339,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -26350,7 +26350,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -26437,7 +26437,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -26448,7 +26448,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -26525,7 +26525,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -26536,7 +26536,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -26609,7 +26609,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -26620,7 +26620,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -26638,7 +26638,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -26706,7 +26706,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -26717,7 +26717,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -26735,7 +26735,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -26807,7 +26807,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -26818,7 +26818,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -26837,7 +26837,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -26908,7 +26908,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -26919,7 +26919,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -26938,7 +26938,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -27013,7 +27013,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -27024,7 +27024,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -27043,7 +27043,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -27116,7 +27116,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -27127,7 +27127,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -27146,7 +27146,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -27214,7 +27214,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -27225,7 +27225,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -27244,7 +27244,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -27302,7 +27302,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -27313,7 +27313,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -27332,7 +27332,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -27393,7 +27393,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -27404,7 +27404,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -27423,7 +27423,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -27478,7 +27478,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -27489,7 +27489,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -27508,7 +27508,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -27567,7 +27567,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -27578,7 +27578,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -27618,7 +27618,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -27643,7 +27643,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-              (householderBeta m
+              (householderBetaSpec m
                 (householderTrailingActiveVector m
                   ⟨k, lt_of_lt_of_le hk hmn⟩
                   (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -27689,7 +27689,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -27703,7 +27703,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -27722,7 +27722,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -27822,7 +27822,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -27836,7 +27836,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -27855,7 +27855,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -27955,7 +27955,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -27966,7 +27966,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -27985,7 +27985,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -28088,7 +28088,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -28099,7 +28099,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -28118,7 +28118,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -28228,7 +28228,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -28239,7 +28239,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -28258,7 +28258,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -28352,7 +28352,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -28363,7 +28363,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -28382,7 +28382,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -28481,7 +28481,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -28492,7 +28492,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -28511,7 +28511,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -28601,7 +28601,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -28612,7 +28612,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -28631,7 +28631,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -28728,7 +28728,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -28739,7 +28739,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -28758,7 +28758,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -28858,7 +28858,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -28869,7 +28869,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -28888,7 +28888,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -28991,7 +28991,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -29002,7 +29002,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -29021,7 +29021,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -29126,7 +29126,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -29137,7 +29137,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -29156,7 +29156,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-              (householderBeta m
+              (householderBetaSpec m
                 (householderTrailingActiveVector m
                   ⟨k, lt_of_lt_of_le hk hmn⟩
                   (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -29278,7 +29278,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -29289,7 +29289,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -29308,7 +29308,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -29425,7 +29425,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -29436,7 +29436,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -29455,7 +29455,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -29548,7 +29548,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -29559,7 +29559,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -29578,7 +29578,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -29663,7 +29663,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -29674,7 +29674,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -29693,7 +29693,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -29770,7 +29770,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -29781,7 +29781,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -29800,7 +29800,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -29882,7 +29882,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -29893,7 +29893,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -29933,7 +29933,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -30010,7 +30010,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -30021,7 +30021,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -30040,7 +30040,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -30116,7 +30116,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -30127,7 +30127,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -30167,7 +30167,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -30241,7 +30241,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -30252,7 +30252,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -30292,7 +30292,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -30384,7 +30384,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -30395,7 +30395,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -30435,7 +30435,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -30504,7 +30504,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -30515,7 +30515,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -30554,7 +30554,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -30624,7 +30624,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -30635,7 +30635,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -30674,7 +30674,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -30750,7 +30750,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -30761,7 +30761,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -30843,7 +30843,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -30854,7 +30854,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -30939,7 +30939,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -30950,7 +30950,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -31051,7 +31051,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -31062,7 +31062,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -31162,7 +31162,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -31173,7 +31173,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -31264,7 +31264,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -31275,7 +31275,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -31315,7 +31315,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -31386,7 +31386,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -31397,7 +31397,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -31437,7 +31437,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -31509,7 +31509,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -31520,7 +31520,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -31560,7 +31560,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -31624,7 +31624,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -31635,7 +31635,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -31675,7 +31675,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -31749,7 +31749,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -31760,7 +31760,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -31800,7 +31800,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -31813,7 +31813,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -31825,7 +31825,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -31897,7 +31897,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -31908,7 +31908,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -31948,7 +31948,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -31961,7 +31961,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -31973,7 +31973,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-            (householderBeta m
+            (householderBetaSpec m
               (householderTrailingActiveVector m
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -32045,7 +32045,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -32056,7 +32056,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -32087,7 +32087,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -32100,7 +32100,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -32111,7 +32111,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -32156,7 +32156,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -32171,7 +32171,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -32213,7 +32213,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -32224,7 +32224,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -32254,7 +32254,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -32267,7 +32267,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
@@ -32278,7 +32278,7 @@ theorem LSQRSolveBackwardError.of_stored_trailing_householder_sequence_topBlock_
           (householderTrailingActiveVector m
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
-          (householderBeta m
+          (householderBetaSpec m
             (householderTrailingActiveVector m
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
