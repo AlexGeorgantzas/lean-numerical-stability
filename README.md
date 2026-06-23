@@ -40,32 +40,13 @@ Current build status: `lake build LeanFpAnalysis.FP` and full `lake build` pass;
 representative Slot 1 checks for Chapters 1-6 pass. The full
 `examples/LibraryLookup.lean` check currently needs a stale Stewart QR lookup
 refresh around lines 5442-5464, outside the selected Slot 1 rows.
-For the full-paper RandNLA proof-source plan, including the external primary
-literature chain for open concentration and structural results, see
-[`docs/RANDNLA_CACM_PROOF_SOURCE_LEDGER.md`](docs/RANDNLA_CACM_PROOF_SOURCE_LEDGER.md).
-For the Chapter 1 core audit, including the empirical-output scope decisions,
-see [`chapter_splitting/reports/split1_ch01_core_audit.md`](chapter_splitting/reports/split1_ch01_core_audit.md).
-For the Chapter 2 core audit and finite-format/IEEE/guard-digit classifications,
-see [`chapter_splitting/reports/split1_ch02_core_audit.md`](chapter_splitting/reports/split1_ch02_core_audit.md).
-The current Chapter 2 ledger treats Problem 2.10's "test the theorem on your
-computer" deliverable as empirical-source-output, while the non-empirical IEEE
-Table 2.2 work continues in the formal selector layer, including finite
-nonzero divided by zero and `0/0` invalid-operation precedence.
-For the Chapter 3 core audit, including Problems 3.1--3.12 and the
-Problem 3.11 empirical-source-output carve-out, see
-[`chapter_splitting/reports/split1_ch03_core_audit.md`](chapter_splitting/reports/split1_ch03_core_audit.md).
-For the Chapter 4 core audit, including Problems 4.1--4.10 and the
-Problem 4.10 research/experiment carve-out, see
-[`chapter_splitting/reports/split1_ch04_core_audit.md`](chapter_splitting/reports/split1_ch04_core_audit.md).
-The current Slot 1 audit records no selected Chapter 4 blocker; the
-compensated-summation bottleneck note is retained as route history in
-[`chapter_splitting/reports/split1_ch04_compensated_bottleneck.md`](chapter_splitting/reports/split1_ch04_compensated_bottleneck.md).
-For the Chapter 5 core audit, including polynomial evaluation and derivative
-Horner surfaces, see
-[`chapter_splitting/reports/split1_ch05_core_audit.md`](chapter_splitting/reports/split1_ch05_core_audit.md).
-For the Chapter 6 core audit, including norm interpolation, SVD, perturbation,
-and condition-number surfaces, see
-[`chapter_splitting/reports/split1_ch06_core_audit.md`](chapter_splitting/reports/split1_ch06_core_audit.md).
+Chapter 1-6 audit summary: Chapter 1 empirical-output rows remain
+experiment/model artifacts; Chapter 2 finite-format, IEEE, and guard-digit
+selector work is current; Chapter 3 covers Problems 3.1--3.12 with historical
+platform rows treated as empirical output; Chapter 4 records no selected
+blocker, with Problem 4.10 retained as research/experiment scope; Chapter 5
+covers polynomial evaluation and derivative Horner surfaces; Chapter 6 covers
+norm interpolation, SVD, perturbation, and condition-number surfaces.
 
 ### Core theory
 
@@ -3985,10 +3966,10 @@ refutes the universal source-budget-only implication at those fixed
 parameters for all exact inputs with positive squared-magnitude denominator.
 This is exact-law obstruction evidence, not a floating-point theorem and not a
 substitute for a genuine matrix-tail proof.
-The remaining full-paper blockers are tracked in
-`docs/RANDNLA_CACM_BOTTLENECK_LEDGER.md`, which names the exact theorem family,
-closed dependencies, open dependencies, and rejected routes. The
-spectral bridge now also proves that
+Remaining full-paper blocker context is described inline in the RandNLA sections
+below; checked declarations are indexed in
+[`docs/LIBRARY_LOOKUP.md`](docs/LIBRARY_LOOKUP.md). The spectral bridge now also
+proves that
 local PSD is equivalent to nonnegative Hermitian eigenvalues, and that
 `M <= L I` is equivalent to nonnegativity of the Hermitian eigenvalues of
 `L I - M`, with a named scalar-identity difference eigenvalue family for
@@ -4576,9 +4557,8 @@ open LeanFpAnalysis.FP
 #check highProbability_sqMagTraceStability_of_independent_chernoff_optimized_tail_budget
 ```
 
-For the theorem ledger and prose proof summary, see
-[`docs/RANDNLA_ALGORITHM1_STABILITY_LEDGER.md`](docs/RANDNLA_ALGORITHM1_STABILITY_LEDGER.md)
-and [`docs/Algorithm1_Stability_Proof_Summary.pdf`](docs/Algorithm1_Stability_Proof_Summary.pdf).
+The Algorithm 1 theorem surface is summarized by the checked declarations above
+and indexed in [`docs/LIBRARY_LOOKUP.md`](docs/LIBRARY_LOOKUP.md).
 
 Algorithm 2 row sampling is also formalized for the equation (4) distribution
 `p_i = ||A_i*||_2^2 / ||A||_F^2`. The row-sampling API proves the literal
@@ -4743,8 +4723,8 @@ form keeps the upper and lower Bennett denominators explicit:
 #check leverageTraceProbability_eventProb_fl_rowSampleGramDot_two_sided_finiteLoewnerLe_ge_one_sub_delta_of_sample_budget
 ```
 
-For the theorem and corollary summary in prose, see
-[`docs/Algorithm2_RowSampling_Stability_Proof_Summary.pdf`](docs/Algorithm2_RowSampling_Stability_Proof_Summary.pdf).
+The Algorithm 2 theorem and corollary surface is summarized by the checked
+declarations above and indexed in [`docs/LIBRARY_LOOKUP.md`](docs/LIBRARY_LOOKUP.md).
 
 ## RandNLA Algorithm 3
 
@@ -5960,20 +5940,11 @@ SRHT row-norm event rather than assumed globally.
 #check fl_preconditionElements_error_bound
 ```
 
-For a paper-level theorem and scope summary, see
-[`docs/RandNLA_CACM_Formalization_Summary.pdf`](docs/RandNLA_CACM_Formalization_Summary.pdf).
-The live theorem ledger for the full-paper extraction, theorem classifications,
-hypothesis classifications, random variables, events, and intended Lean names is
-[`docs/RANDNLA_CACM_THEOREM_LEDGER.md`](docs/RANDNLA_CACM_THEOREM_LEDGER.md).
-The open RandNLA accuracy backlog from the PDF, including the full-paper audit
-of application-level claims beyond Algorithms 1--3, is tracked separately in
-[`docs/RANDNLA_CACM_NOT_PROVED_LEDGER.md`](docs/RANDNLA_CACM_NOT_PROVED_LEDGER.md).
-The not-proved ledger is also the full-paper formalization gate: while any
-paper-level row remains open, the full-paper request is not reported as
-complete. For autonomous formalization runs, an open row is treated as the next
-proof target rather than as a stopping point; the loop continues from the
-highest-leverage open foundation unless the user asks for a status-only report
-or pause.
+Paper-level RandNLA scope is summarized in this README by the Algorithm 1--3
+sections and the later least-squares and low-rank sections, with shipped checked
+names indexed in [`docs/LIBRARY_LOOKUP.md`](docs/LIBRARY_LOOKUP.md). Historical
+external ledgers and PDF summaries are not part of the current repository; use
+the checked theorem surfaces here as the repository-visible source of truth.
 
 ## RandNLA Least-Squares Sketches
 
