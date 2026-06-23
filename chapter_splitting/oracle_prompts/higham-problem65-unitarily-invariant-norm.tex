@@ -1,0 +1,67 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb,mathtools}
+\begin{document}
+
+\section*{Higham Chapter 6 Problem 6.5: unitarily invariant norm blocker}
+
+I am formalizing Higham, \emph{Accuracy and Stability of Numerical
+Algorithms}, 2nd ed., Chapter 6, Problem 6.5.  The local Lean repository already
+has a checked complex Frobenius/operator-2 proof of
+\[
+  \|ABC\|_F \le \|A\|_2\,\|B\|_F\,\|C\|_2 .
+\]
+The remaining source sentence is the arbitrary unitarily invariant norm
+extension:
+\[
+  |||ABC||| \le \|A\|_2\,|||B|||\,\|C\|_2
+\]
+for every unitarily invariant matrix norm.
+
+\subsection*{Local formalization constraints}
+
+The local chapter file has:
+\begin{itemize}
+\item finite complex matrices as functions \texttt{Fin m -> Fin n -> Complex};
+\item matrix multiplication, adjoint, Frobenius norm, operator 2-norm;
+\item rectangular SVD/factorization and local singular values;
+\item no general majorization/Fan dominance API in Mathlib or the project.
+\end{itemize}
+
+Another project file already has a real rectangular
+\texttt{UnitaryInvariantRectNormLike} abstraction with orthogonal left/right
+invariance only.  It does \emph{not} prove the ideal inequalities.  A safe local
+API could be an ``operator ideal norm'' family with fields
+\[
+  |||LX||| \le \|L\|_2\,|||X|||,\qquad
+  |||XR||| \le |||X|||\,\|R\|_2,
+\]
+from which the triple product theorem is immediate.  But this does not prove
+that every unitarily invariant norm has those fields.
+
+\subsection*{Questions}
+
+\begin{enumerate}
+\item What is the shortest rigorous finite-dimensional proof that every
+unitarily invariant matrix norm satisfies
+\[
+  |||LX||| \le \|L\|_2\,|||X|||
+\]
+and the right-hand analogue?  Please give proof-assistant-sized lemmas, not just
+a citation.
+\item Is the standard route necessarily Fan dominance / weak majorization of
+singular values?  If so, list the exact intermediate theorems needed:
+singular-value inequality, monotonicity of unitarily invariant norms under weak
+majorization, symmetric gauge representation, etc.
+\item Is there a shorter proof using contraction dilation or polar/SVD
+factorization that avoids building a full majorization theory, especially in
+finite dimensions and for rectangular matrices?  If yes, spell out the required
+dimension-padding and norm-extension assumptions.
+\item For a Lean core pass, is it mathematically honest to close the source row
+with a theorem over an explicit ``unitarily invariant operator ideal norm''
+interface and record Fan dominance as the missing foundation for deriving the
+interface from bare unitary invariance?  Or would that still be hiding the main
+problem?
+\item Please separate theorem facts from suggested formalization shortcuts.
+\end{enumerate}
+
+\end{document}

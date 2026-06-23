@@ -1,0 +1,70 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb}
+\begin{document}
+
+\section*{Question: Higham Problem 6.1, equality in the $S/2$ matrix norm bound}
+
+This is a math-only proof-route request for formalization.  Please do not rely
+on repository files.  I need a rigorous theorem statement and proof plan,
+including caveats, for the equality case in the entrywise-sum/spectral-norm
+bound from Higham, Chapter 6, Problem 6.1.
+
+Definitions:
+\[
+  \|A\|_S=\sum_{i,j}|a_{ij}|,\qquad
+  \|A\|_2=\sigma_{\max}(A),\qquad r=\operatorname{rank}(A).
+\]
+The table bound I have formalized is
+\[
+  \|A\|_S \le \sqrt{mn\,r}\,\|A\|_2
+\]
+for an \(m\times n\) complex matrix \(A\).  It follows from
+\[
+  \|A\|_S \le \sqrt{mn}\,\|A\|_F,\qquad
+  \|A\|_F \le \sqrt{r}\,\|A\|_2.
+\]
+
+Higham Problem 6.1 then says, in the extracted text:
+\[
+\text{``Show that equality in } \|A\|_S \le \alpha_{S,2}\|A\|_2
+\text{ is attained for square real matrices \(A\) iff \(A\) is a scalar
+multiple of a Hadamard matrix, and for square complex matrices if }
+a_{rs}=\exp(2\pi i(r-1)(s-1)/n).''}
+\]
+
+Potential issue: with the rank-sensitive bound above, the all-ones matrix
+\(J=e e^T\) has rank \(1\) and seems to satisfy equality:
+\[
+  \|J\|_S=n^2,\quad r=1,\quad \|J\|_2=n,\quad
+  \sqrt{n^2\cdot 1}\,\|J\|_2=n^2,
+\]
+but \(J\) is not a Hadamard matrix for \(n>1\).  This suggests the source's
+``iff Hadamard'' may refer to the full-rank square case, or to a non-rank-
+sensitive constant, or it may need a caveat.
+
+Please answer:
+
+1. What is the mathematically correct equality characterization for
+   \[
+     \|A\|_S = \sqrt{mn\,\operatorname{rank}(A)}\,\|A\|_2
+   \]
+   over real or complex matrices?
+
+2. In the square real full-rank case, prove carefully that equality is
+   equivalent to \(A=cH\), where \(H\) is a real Hadamard matrix
+   (\(|H_{ij}|=1\) and \(H^T H=nI\)), allowing for the zero matrix caveat if
+   needed.
+
+3. Explain exactly where the equality conditions enter:
+   equality in Cauchy--Schwarz for \(\|A\|_S\le\sqrt{mn}\|A\|_F\), and equality
+   in \(\|A\|_F\le\sqrt{r}\|A\|_2\).
+
+4. Give a Lean-friendly proof route using only finite sums, singular values or
+   Gram matrix/operator-norm facts, and elementary equality cases.  I need
+   detailed rigorous steps, not code.
+
+5. State which source-facing theorem(s) should be formalized to avoid proving a
+   false claim: a general equality characterization, a nonzero full-rank square
+   real iff theorem, or a weaker forward/backward pair.
+
+\end{document}

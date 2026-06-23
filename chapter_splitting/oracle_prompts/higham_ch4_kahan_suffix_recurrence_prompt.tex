@@ -1,0 +1,103 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb}
+\begin{document}
+
+\section*{Higham Chapter 4 Kahan returned-sum coefficient blocker}
+
+I am formalizing Higham's Chapter 4 Kahan summation theorem in Lean.  Please
+answer as a mathematical proof adviser: give a rigorous, formalizable recurrence
+or explain precisely why the proposed route cannot prove the stated bound.  Do
+not rely on unstated floating-point folklore.
+
+\subsection*{Local model}
+
+One Kahan coefficient step for a prior source coefficient is represented by
+\[
+  s' = A s + B e,\qquad e' = C s + D e
+\]
+for homogeneous propagation, and the current input injection has coefficients
+\[
+  s_{\mathrm{src}} = B,\qquad e_{\mathrm{src}} = D.
+\]
+In paired coordinates \(T=s+e,\ E=e\), the homogeneous propagation is
+\[
+  T' = aT + rE,\qquad E'=cT + qE,
+\]
+where
+\[
+  a=A+C,\quad b=B+D,\quad r=(B+D)-(A+C),\quad c=C,\quad q=D-C.
+\]
+The returned stored-sum coefficient is \(s=T-E\).
+
+The Lean development already proves the following local bounds for every step,
+with unit roundoff \(u\) and \(0\le u\le 1\):
+\[
+  |a-1|\le 3u^2,\qquad |b-1|\le 2u+9u^2,
+\]
+\[
+  |c|\le u(1+u)^2,\qquad |q|\le u(1+u)^2(3+u),
+\]
+\[
+  |q+\delta_{\rm sub}|\le 7u^2,\qquad
+  |r-q-\delta_y|\le u^2,
+\]
+and therefore
+\[
+  |r+\delta_{\rm sub}-\delta_y|\le 8u^2.
+\]
+There is also an exact-subtraction special case \(\delta_{\rm sub}=0\) that
+already gives the desired source-shaped returned coefficient bound.  That is
+not enough for arbitrary Kahan summation.
+
+\subsection*{Known obstruction}
+
+GPT-5.5 Pro previously suggested, and Lean now proves, a concrete p=5
+round-to-even trace for inputs \((-22,-68,-248,8)\) returning \(s=-352\) while
+the exact sum is \(-330\).  Hence any source-weight representation needs
+\[
+  \max_i |\mu_i| \ge \frac{11}{173} > \frac1{16}=2u.
+\]
+Lean also proves the conditional result that any same-identity trace at scale
+\(p>26\) cannot satisfy a pure first-order \(2/p\) coefficient cap.  Therefore
+the correct target must include a genuine \(O(nu^2)\) term; do not try to prove
+a pure \(2u\) theorem.
+
+\subsection*{Target proof shape}
+
+For an input injected at step \(i\), define its paired source coefficient after
+the own step as
+\[
+  T_i=b_i,\qquad E_i=D_i,
+\]
+then propagate through suffix steps \(j=i+1,\dots,n\) by
+\[
+  T_{j}=a_jT_{j-1}+r_jE_{j-1},\qquad
+  E_j=c_jT_{j-1}+q_jE_{j-1}.
+\]
+The returned source coefficient is \(S_j=T_j-E_j\).
+
+The existing Lean bridge can finish Higham's equation (4.8) if we can prove a
+bound of the form
+\[
+  |S_n-1| \le 2u + C(n-i)u^2
+\]
+under explicit smallness assumptions such as \(nu\le 1/10\) or \(nu^2\le 1/2\),
+with a concrete loose constant \(C\).  A slightly weaker but source-shaped
+\(2u+Cnu^2\) theorem is fine.
+
+\subsection*{Question}
+
+Please provide one of the following:
+
+1. A detailed recurrence proof that bounds \( |S_n-1| \le 2u+C(n-i)u^2 \)
+   from the local facts above, including the invariant to track and every
+   algebraic cancellation needed.  Constants may be loose but must be explicit.
+2. A proof that these local facts are insufficient, with a small symbolic
+   counterexample recurrence showing why a first-order term remains.
+3. A corrected theorem with the missing hidden hypothesis stated explicitly.
+
+The answer should be usable to write Lean lemmas.  Please phrase inequalities
+in elementary real arithmetic, avoid asymptotic notation in the final bound,
+and identify the exact recurrence invariant.
+
+\end{document}

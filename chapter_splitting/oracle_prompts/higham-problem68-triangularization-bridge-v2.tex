@@ -1,0 +1,81 @@
+\section*{Higham Chapter 6, Problem 6.8: Lean Triangularization Bridge}
+
+I am formalizing Higham's finite-dimensional complex matrix exercise:
+
+\[
+\forall A\in\mathbb C^{n\times n},\ \forall \delta>0,\ \exists\hbox{ a
+consistent/subordinate matrix norm } \|\cdot\| \hbox{ such that }
+\|A\| \le \rho(A)+\delta .
+\]
+
+The analytic weighted-infinity part is already checked in Lean once an upper
+triangular coordinate model is supplied.  The existing checked theorem consumes
+the following data:
+
+\[
+T = P^{-1} A P,\qquad T\hbox{ upper triangular},\qquad
+\forall i,\ |T_{ii}|\le \rho ,
+\]
+
+and returns a subordinate matrix norm bounded by \(\rho+\delta\).  The remaining
+blocker is the algebraic bridge from an arbitrary complex matrix to such a
+triangular model, plus the diagonal-to-spectral-radius bound.
+
+Current mathlib facts I found locally:
+
+\begin{itemize}
+\item \texttt{Mathlib.LinearAlgebra.Eigenspace.Triangularizable} explicitly
+has TODO text saying triangularizable endomorphisms are not yet defined as a
+maximal invariant flag/basis theorem.
+\item It does have \texttt{Module.End.exists\_eigenvalue}: every nontrivial
+finite-dimensional endomorphism over an algebraically closed field has an
+eigenvalue.
+\item It has \texttt{Module.End.iSup\_maxGenEigenspace\_eq\_top} and
+\texttt{Module.End.genEigenspace\_restrict\_eq\_top}.
+\item \texttt{Mathlib.LinearAlgebra.Basis.Flag} has \texttt{Basis.flag},
+\texttt{flag\_le\_iff}, \texttt{flag\_succ}, \texttt{self\_mem\_flag},
+and \texttt{flag\_le\_ker\_coord}.
+\item Matrices use \texttt{Matrix.BlockTriangular id} for upper triangularity;
+\texttt{Matrix.charpoly\_of\_upperTriangular} exists.
+\item I did not find a ready-made declaration producing a basis whose
+\texttt{LinearMap.toMatrix b b f} is upper triangular.
+\end{itemize}
+
+Please give a Lean-friendly implementation plan for the smallest bridge:
+
+\[
+\exists b : \mathrm{Basis}\ (\mathrm{Fin}\ n)\ \mathbb C\ (\mathrm{Fin}\ n\to\mathbb C),
+\quad \mathrm{Matrix.BlockTriangular}\ \mathrm{id}\
+  (\mathrm{LinearMap.toMatrix}\ b\ b\ f),
+\]
+
+or an equivalent local predicate that is easier to prove and enough for the
+weighted-norm theorem.
+
+Specific questions:
+
+\begin{enumerate}
+\item If current mathlib has a hidden ready-made basis/flag theorem I missed,
+name the exact declaration(s).
+\item If not, propose the smallest induction proof over \(n\).  I want exact
+submodule/basis-extension lemmas to search for: how to choose an eigenvector,
+extend it to a basis, pass to the quotient or invariant complement/tail, and
+prove the resulting \texttt{toMatrix} is upper triangular.
+\item Is it easier to use generalized eigenspaces from
+\texttt{iSup\_maxGenEigenspace\_eq\_top}, or ordinary eigenvector induction?
+\item How should the diagonal entry be connected to an eigenvalue modulus for
+my local predicate
+\[
+\mathrm{ComplexVectorMapEigenvalueModulusSet}(T)
+ = \{\,|\lambda| : \exists x\ne0,\ T x=\lambda x\,\},
+\]
+so that a supplied maximum \(\rho\) gives \(|T_{ii}|\le\rho\)?
+\item Flag zero-dimensional and nonempty-dimensional caveats, and whether it is
+better to state the bridge as a new local structure containing the basis,
+upper-triangular matrix, diagonal eigenvalue witnesses, and similarity action
+rather than as a theorem immediately producing \(P^{-1}AP\).
+\end{enumerate}
+
+Please answer with concrete Lean theorem shapes and proof-route details.  Do
+not rely on unproved Schur/unitary triangularization; ordinary algebraic
+triangularization is enough.

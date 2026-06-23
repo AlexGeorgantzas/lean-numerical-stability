@@ -5813,6 +5813,25 @@ theorem rectOpNorm2Le_of_frobNormRect_le {m n : ℕ}
     _ ≤ c * vecNorm2 x :=
           mul_le_mul_of_nonneg_right hF (vecNorm2_nonneg x)
 
+/-- A Frobenius-norm bound for `A` also gives the rectangular operator-2
+    bound for its componentwise absolute value. -/
+theorem rectOpNorm2Le_absMatrixRect_of_frobNormRect_le {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) {c : ℝ}
+    (hF : frobNormRect A ≤ c) :
+    rectOpNorm2Le (absMatrixRect A) c := by
+  apply rectOpNorm2Le_of_frobNormRect_le
+  have hAbs : frobNormRect (absMatrixRect A) = frobNormRect A := by
+    simpa [absMatrixRect] using (frobNormRect_abs A)
+  rw [hAbs]
+  exact hF
+
+/-- The componentwise absolute value of a rectangular matrix has operator-2
+    norm bounded by the original matrix's Frobenius norm. -/
+theorem rectOpNorm2Le_absMatrixRect_frobNormRect {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) :
+    rectOpNorm2Le (absMatrixRect A) (frobNormRect A) :=
+  rectOpNorm2Le_absMatrixRect_of_frobNormRect_le A le_rfl
+
 /-- Adding a perturbation with Frobenius norm at most `τ` enlarges a rectangular
     operator-2 bound by at most `τ`. -/
 theorem rectOpNorm2Le_add_of_rectOpNorm2Le_of_frobNormRect_le {m n : ℕ}
@@ -6292,6 +6311,162 @@ theorem frobNorm_columnwise_matMulVec_le_rect {m p : ℕ}
     rw [show (c * frobNorm A) ^ 2 = c ^ 2 * frobNorm A ^ 2 from by ring,
       frobNorm_sq]]
   exact hsq
+/-- Squared form of Higham Problem 6.5's left spectral/Frobenius product
+bound in the repository's rectangular real API:
+`||A B||_F^2 <= a^2 ||B||_F^2` whenever `||A x||_2 <= a ||x||_2`. -/
+theorem frobNormSqRect_rectMatMul_le_sq_mul_of_rectOpNorm2Le {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin n → Fin p → ℝ)
+    {a : ℝ} (ha : 0 ≤ a) (hA : rectOpNorm2Le A a) :
+    frobNormSqRect (rectMatMul A B) ≤ a ^ 2 * frobNormSqRect B := by
+  unfold frobNormSqRect
+  calc
+    (∑ i : Fin m, ∑ j : Fin p, rectMatMul A B i j ^ 2)
+        = ∑ j : Fin p, ∑ i : Fin m, rectMatMul A B i j ^ 2 := by
+          rw [Finset.sum_comm]
+    _ ≤ ∑ j : Fin p, a ^ 2 * ∑ k : Fin n, B k j ^ 2 := by
+          apply Finset.sum_le_sum
+          intro j _
+          have hcol :
+              vecNorm2 (fun i : Fin m => rectMatMul A B i j) ≤
+                a * vecNorm2 (fun k : Fin n => B k j) := by
+            simpa [rectMatMul, rectMatMulVec] using
+              hA (fun k : Fin n => B k j)
+          have hright_nonneg :
+              0 ≤ a * vecNorm2 (fun k : Fin n => B k j) :=
+            mul_nonneg ha (vecNorm2_nonneg _)
+          have hsquare :
+              vecNorm2 (fun i : Fin m => rectMatMul A B i j) ^ 2 ≤
+                (a * vecNorm2 (fun k : Fin n => B k j)) ^ 2 := by
+            nlinarith [vecNorm2_nonneg
+              (fun i : Fin m => rectMatMul A B i j), hright_nonneg]
+          have hright :
+              (a * vecNorm2 (fun k : Fin n => B k j)) ^ 2 =
+                a ^ 2 * vecNorm2Sq (fun k : Fin n => B k j) := by
+            rw [show (a * vecNorm2 (fun k : Fin n => B k j)) ^ 2 =
+                a ^ 2 * vecNorm2 (fun k : Fin n => B k j) ^ 2 by ring,
+              vecNorm2_sq]
+          simpa [vecNorm2_sq, vecNorm2Sq, hright] using hsquare
+    _ = a ^ 2 * (∑ k : Fin n, ∑ j : Fin p, B k j ^ 2) := by
+          rw [Finset.sum_comm, Finset.mul_sum]
+
+/-- Higham Problem 6.5's left spectral/Frobenius product bound in norm form:
+`||A B||_F <= a ||B||_F` whenever `||A x||_2 <= a ||x||_2`. -/
+theorem frobNormRect_rectMatMul_le_mul_of_rectOpNorm2Le {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin n → Fin p → ℝ)
+    {a : ℝ} (ha : 0 ≤ a) (hA : rectOpNorm2Le A a) :
+    frobNormRect (rectMatMul A B) ≤ a * frobNormRect B := by
+  have hsq :
+      frobNormSqRect (rectMatMul A B) ≤ (a * frobNormRect B) ^ 2 := by
+    calc
+      frobNormSqRect (rectMatMul A B)
+          ≤ a ^ 2 * frobNormSqRect B :=
+            frobNormSqRect_rectMatMul_le_sq_mul_of_rectOpNorm2Le A B ha hA
+      _ = (a * frobNormRect B) ^ 2 := by
+          rw [show (a * frobNormRect B) ^ 2 =
+              a ^ 2 * frobNormRect B ^ 2 by ring, frobNormRect_sq]
+  have hsqrt := Real.sqrt_le_sqrt hsq
+  have hright_nonneg : 0 ≤ a * frobNormRect B :=
+    mul_nonneg ha (frobNormRect_nonneg B)
+  have hroot : Real.sqrt ((a * frobNormRect B) ^ 2) = a * frobNormRect B := by
+    rw [Real.sqrt_sq_eq_abs, abs_of_nonneg hright_nonneg]
+  change Real.sqrt (frobNormSqRect (rectMatMul A B)) ≤ a * frobNormRect B
+  rw [← hroot]
+  exact hsqrt
+
+/-- Squared form of Higham Problem 6.5's right spectral/Frobenius product
+bound: `||B C||_F^2 <= c^2 ||B||_F^2` whenever the transpose action of `C`
+has rectangular operator-2 bound `c`. -/
+theorem frobNormSqRect_rectMatMul_le_sq_mul_of_transpose_rectOpNorm2Le
+    {m n p : ℕ}
+    (B : Fin m → Fin n → ℝ) (C : Fin n → Fin p → ℝ)
+    {c : ℝ} (hc : 0 ≤ c) (hC : rectOpNorm2Le (finiteTranspose C) c) :
+    frobNormSqRect (rectMatMul B C) ≤ c ^ 2 * frobNormSqRect B := by
+  unfold frobNormSqRect
+  calc
+    (∑ i : Fin m, ∑ j : Fin p, rectMatMul B C i j ^ 2)
+        ≤ ∑ i : Fin m, c ^ 2 * ∑ k : Fin n, B i k ^ 2 := by
+          apply Finset.sum_le_sum
+          intro i _
+          have hrow :
+              vecNorm2 (fun j : Fin p => rectMatMul B C i j) ≤
+                c * vecNorm2 (fun k : Fin n => B i k) := by
+            have hrow_eq :
+                (fun j : Fin p => rectMatMul B C i j) =
+                  rectMatMulVec (finiteTranspose C) (fun k : Fin n => B i k) := by
+              ext j
+              unfold rectMatMul rectMatMulVec finiteTranspose
+              apply Finset.sum_congr rfl
+              intro k _
+              ring
+            simpa [hrow_eq] using hC (fun k : Fin n => B i k)
+          have hright_nonneg :
+              0 ≤ c * vecNorm2 (fun k : Fin n => B i k) :=
+            mul_nonneg hc (vecNorm2_nonneg _)
+          have hsquare :
+              vecNorm2 (fun j : Fin p => rectMatMul B C i j) ^ 2 ≤
+                (c * vecNorm2 (fun k : Fin n => B i k)) ^ 2 := by
+            nlinarith [vecNorm2_nonneg
+              (fun j : Fin p => rectMatMul B C i j), hright_nonneg]
+          have hright :
+              (c * vecNorm2 (fun k : Fin n => B i k)) ^ 2 =
+                c ^ 2 * vecNorm2Sq (fun k : Fin n => B i k) := by
+            rw [show (c * vecNorm2 (fun k : Fin n => B i k)) ^ 2 =
+                c ^ 2 * vecNorm2 (fun k : Fin n => B i k) ^ 2 by ring,
+              vecNorm2_sq]
+          simpa [vecNorm2_sq, vecNorm2Sq, hright] using hsquare
+    _ = c ^ 2 * (∑ i : Fin m, ∑ k : Fin n, B i k ^ 2) := by
+          rw [Finset.mul_sum]
+
+/-- Higham Problem 6.5's right spectral/Frobenius product bound in norm form:
+`||B C||_F <= ||B||_F c` whenever the transpose action of `C` has rectangular
+operator-2 bound `c`. -/
+theorem frobNormRect_rectMatMul_le_mul_of_transpose_rectOpNorm2Le
+    {m n p : ℕ}
+    (B : Fin m → Fin n → ℝ) (C : Fin n → Fin p → ℝ)
+    {c : ℝ} (hc : 0 ≤ c) (hC : rectOpNorm2Le (finiteTranspose C) c) :
+    frobNormRect (rectMatMul B C) ≤ frobNormRect B * c := by
+  have hsq :
+      frobNormSqRect (rectMatMul B C) ≤ (frobNormRect B * c) ^ 2 := by
+    calc
+      frobNormSqRect (rectMatMul B C)
+          ≤ c ^ 2 * frobNormSqRect B :=
+            frobNormSqRect_rectMatMul_le_sq_mul_of_transpose_rectOpNorm2Le
+              B C hc hC
+      _ = (frobNormRect B * c) ^ 2 := by
+          rw [show (frobNormRect B * c) ^ 2 =
+              c ^ 2 * frobNormRect B ^ 2 by ring, frobNormRect_sq]
+  have hsqrt := Real.sqrt_le_sqrt hsq
+  have hright_nonneg : 0 ≤ frobNormRect B * c :=
+    mul_nonneg (frobNormRect_nonneg B) hc
+  have hroot : Real.sqrt ((frobNormRect B * c) ^ 2) = frobNormRect B * c := by
+    rw [Real.sqrt_sq_eq_abs, abs_of_nonneg hright_nonneg]
+  change Real.sqrt (frobNormSqRect (rectMatMul B C)) ≤ frobNormRect B * c
+  rw [← hroot]
+  exact hsqrt
+
+/-- Higham Problem 6.5, local rectangular real API:
+`||A B C||_F <= a ||B||_F c` from operator-2 certificates for `A` and the
+transpose action of `C`. -/
+theorem frobNormRect_triple_rectMatMul_le_of_rectOpNorm2Le {m n p q : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin n → Fin p → ℝ)
+    (C : Fin p → Fin q → ℝ) {a c : ℝ}
+    (ha : 0 ≤ a) (hc : 0 ≤ c)
+    (hA : rectOpNorm2Le A a) (hC : rectOpNorm2Le (finiteTranspose C) c) :
+    frobNormRect (rectMatMul (rectMatMul A B) C) ≤ a * frobNormRect B * c := by
+  have hright :
+      frobNormRect (rectMatMul (rectMatMul A B) C) ≤
+        frobNormRect (rectMatMul A B) * c :=
+    frobNormRect_rectMatMul_le_mul_of_transpose_rectOpNorm2Le
+      (rectMatMul A B) C hc hC
+  have hleft :
+      frobNormRect (rectMatMul A B) ≤ a * frobNormRect B :=
+    frobNormRect_rectMatMul_le_mul_of_rectOpNorm2Le A B ha hA
+  calc
+    frobNormRect (rectMatMul (rectMatMul A B) C)
+        ≤ frobNormRect (rectMatMul A B) * c := hright
+    _ ≤ (a * frobNormRect B) * c :=
+        mul_le_mul_of_nonneg_right hleft hc
+    _ = a * frobNormRect B * c := by ring
 
 /-- Entrywise forward-error composition for a computed rectangular product.
 

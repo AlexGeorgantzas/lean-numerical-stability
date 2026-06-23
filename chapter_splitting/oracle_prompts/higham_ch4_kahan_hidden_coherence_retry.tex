@@ -1,0 +1,52 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb}
+\begin{document}
+
+Answer directly; do not give a plan.
+
+We need a Lean theorem route for Higham Chapter 4 Kahan summation.  The desired
+ordinary returned-source coefficient bound is \(2u+O(nu^2)\).
+
+Available per-step local facts for coefficients \(A,B,C,D\), with
+\[
+t_s=A+C,\quad t_x=B+D,\quad r=t_x-t_s,\quad c=D-C,
+\]
+are
+\[
+\begin{aligned}
+|t_s-1|&\le3u^2,& |t_x-1|&\le2u+9u^2,\\
+|C|&\le u(1+u)^2,& |c|&\le u(1+u)^2(3+u),\\
+|c+\delta_s|&\le7u^2,& |r-c-\delta_y|&\le u^2,\\
+|r+\delta_s-\delta_y|&\le8u^2,& |\delta_s|&\le u,\quad |\delta_y|\le u.
+\end{aligned}
+\]
+Returned coordinate after a step is
+\[
+R(T,E)=(A+C)T+(B+D)E-(CT+DE).
+\]
+
+These facts alone are insufficient.  The two symbolic steps
+\[
+(A,B,C,D,\delta_s,\delta_y)=(1,1+u,0,u+u^2,-u,u),
+\]
+\[
+(A,B,C,D,\delta_s,\delta_y)=(1+u,1+u,-u,-u,0,0)
+\]
+satisfy them, but a unit source injected at the first step and propagated
+through the second has returned coefficient \((1+u)^3\), hence error
+\(3u+3u^2+u^3\), violating \(2u+Ku^2\) for every fixed \(K\).
+
+Question: give exactly one of the following, with explicit constants:
+
+1. A missing coherence invariant from actual Kahan round-to-even traces that
+rules out this symbolic example and proves a \(2u+Cnu^2\) returned coefficient
+bound; or
+2. A corrected theorem surface with leading constant \(3\) or another constant,
+plus a recurrence proof skeleton; or
+3. A finite-format impossibility proof showing why the symbolic steps cannot
+come from actual round-to-even Kahan operations.
+
+State the theorem hypotheses and the proof recurrence in inequalities suitable
+for Lean.  If you cannot prove one, say which option is false and why.
+
+\end{document}

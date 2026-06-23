@@ -1,0 +1,113 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb}
+\begin{document}
+
+\section*{Lean-friendly proof request: Higham Ch. 6 Lemma 6.6 real rectangular variant}
+
+I am formalizing a matrix norm result from Higham Chapter 6 in Lean 4 / Mathlib.  Please give a rigorous, Lean-friendly proof plan, with intermediate lemmas and proof details, for bridging an existing complex SVD/operator-norm theorem back to an older real rectangular operator-bound API.
+
+\subsection*{Local real API}
+
+For a real rectangular matrix \(A : \mathrm{Fin}\ m \to \mathrm{Fin}\ n \to \mathbb{R}\), the repository has:
+\[
+  \operatorname{absMatrixRect}(A)_{ij} := |A_{ij}|.
+\]
+It has a real Euclidean vector norm \(\operatorname{vecNorm2}\) and rectangular multiplication \(\operatorname{rectMatMulVec}\).  The older real rectangular operator-bound predicate is:
+\[
+  \operatorname{rectOpNorm2Le}(M,c)
+  \quad:\!\!\iff\quad
+  \forall x : \mathrm{Fin}\ n \to \mathbb{R},\
+  \|\operatorname{rectMatMulVec}(M,x)\|_2 \le c\,\|x\|_2.
+\]
+Already proved in this real API:
+\[
+  \operatorname{rectOpNorm2Le}(|A|,\|A\|_F).
+\]
+This only gives a Frobenius cap.  The desired remaining variant is rank-sensitive.
+
+\subsection*{Local complex API already proved}
+
+For a complex matrix \(B : \mathrm{Fin}\ m \to \mathrm{Fin}\ n \to \mathbb{C}\), the repository has:
+\[
+  \operatorname{complexMatrixOp2}(B)
+\]
+as the Euclidean operator norm, \(\operatorname{complexAbsMatrix}(B)_{ij} = |B_{ij}|\) embedded in \(\mathbb{C}\), and
+\[
+  \operatorname{complexMatrixRank}(B) := \operatorname{Matrix.rank}(B).
+\]
+The following theorem is already proved for \(0<n\):
+\[
+  \operatorname{complexMatrixOp2}(|B|)
+  \le
+  \sqrt{\operatorname{rank}(B)}\,\operatorname{complexMatrixOp2}(B).
+\]
+There are also concrete \(p=2\) wrappers, but the clean route for this request is probably through \(\operatorname{complexMatrixOp2}\).
+
+\subsection*{Likely target theorem}
+
+Define the complexification of a real rectangular matrix by
+\[
+  A_\mathbb{C}(i,j) := (A_{ij} : \mathbb{C}),
+\]
+and define
+\[
+  \operatorname{realRectMatrixRank}(A)
+  := \operatorname{Matrix.rank}(A_\mathbb{C}).
+\]
+I want a theorem of the following form:
+\[
+\begin{aligned}
+&0<n,\quad 0\le c,\quad \operatorname{rectOpNorm2Le}(A,c)\\
+&\qquad\Longrightarrow
+\operatorname{rectOpNorm2Le}\bigl(|A|,\sqrt{\operatorname{realRectMatrixRank}(A)}\,c\bigr).
+\end{aligned}
+\]
+
+\subsection*{What I need from you}
+
+Please give a detailed proof plan suitable for Lean formalization.  In particular:
+
+\begin{enumerate}
+\item Prove, mathematically and with Lean-style helper statements, that a real rectangular bound on \(A\) implies the complex Euclidean operator norm bound
+\[
+  \operatorname{complexMatrixOp2}(A_\mathbb{C}) \le c.
+\]
+The key issue is that the real predicate only quantifies over real vectors, whereas the complex operator norm quantifies over complex vectors.  I expect the proof to split \(z=x+iy\) and use
+\[
+  \|A_\mathbb{C}z\|_2^2 = \|Ax\|_2^2+\|Ay\|_2^2
+  \le c^2(\|x\|_2^2+\|y\|_2^2).
+\]
+
+\item Prove the reverse bridge needed at the end: if
+\[
+  \operatorname{complexMatrixOp2}((|A|)_\mathbb{C}) \le C
+\]
+and \(0\le C\), then
+\[
+  \operatorname{rectOpNorm2Le}(|A|,C).
+\]
+This should follow by embedding a real vector \(x\) as a complex vector and comparing real and complex Euclidean norms.
+
+\item Prove the compatibility facts:
+\[
+  (|A|)_\mathbb{C} = |A_\mathbb{C}|,
+  \qquad
+  \operatorname{complexMatrixRank}(A_\mathbb{C})
+  = \operatorname{realRectMatrixRank}(A)
+\]
+where the second is probably by definition if we define real rank this way.
+
+\item Combine these with the existing complex theorem to get the target bound.  Please spell out all scalar monotonicity steps, especially why
+\[
+  \sqrt{r}\operatorname{complexMatrixOp2}(A_\mathbb{C})
+  \le
+  \sqrt{r}\,c
+\]
+is valid and why the final radius is nonnegative.
+
+\item Warn about any hidden assumptions.  For example: do we need \(0<n\), \(0<m\), \(0\le c\), or can some be derived?  Is defining real rank as complex rank mathematically acceptable for this bridge?
+\end{enumerate}
+
+Please do not rely on project files or book text.  I need a rigorous mathematical proof route and Lean-friendly lemma decomposition, not a polished essay.
+
+\end{document}

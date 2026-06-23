@@ -8,6 +8,7 @@ import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import LeanFpAnalysis.FP.Model
 import LeanFpAnalysis.FP.Analysis.Rounding
+import LeanFpAnalysis.FP.Analysis.FloatingPointArithmetic
 import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
 import LeanFpAnalysis.FP.Analysis.ForwardError
 import LeanFpAnalysis.FP.Algorithms.MatMul
@@ -4020,6 +4021,108 @@ theorem fl_hornerStep_forward_local_error_bound
             (mul_le_mul_of_nonneg_left hdeltaAdd (abs_nonneg _))
     _ = fp.u * (|x| * |y| + |fp.fl_mul x y + a|) := by
           ring
+
+/-- Algebraic Horner-step bridge used by Higham (5.4): a forward
+multiplication estimate plus an inverse addition estimate give the local
+source-shaped inverse Horner estimate. -/
+theorem hornerStep_abs_error_le_of_mul_forward_add_inverse
+    {u x y a m yr : ℝ}
+    (hmul : |m - x * y| ≤ u * |x * y|)
+    (hadd : |m + a - yr| ≤ u * |yr|) :
+    |yr - hornerStep x y a| ≤ u * (|x| * |y| + |yr|) := by
+  have hadd' : |yr - (m + a)| ≤ u * |yr| := by
+    simpa [abs_sub_comm] using hadd
+  have hsplit :
+      yr - hornerStep x y a = (yr - (m + a)) + (m - x * y) := by
+    unfold hornerStep
+    ring
+  have htri :
+      |yr - hornerStep x y a| ≤ |yr - (m + a)| + |m - x * y| := by
+    rw [hsplit]
+    exact abs_add_le _ _
+  calc
+    |yr - hornerStep x y a| ≤ |yr - (m + a)| + |m - x * y| := htri
+    _ ≤ u * |yr| + u * |x * y| := add_le_add hadd' hmul
+    _ = u * (|x| * |y| + |yr|) := by
+        rw [abs_mul]
+        ring
+
+/-- Additive-residual variant of the local Horner-step bridge.  This is the
+shape needed when underflow is modeled by absolute error terms instead of pure
+relative-error estimates. -/
+theorem hornerStep_abs_error_le_of_mul_add_error_bounds
+    {u x y a m yr τmul τadd : ℝ}
+    (hmul : |m - x * y| ≤ u * |x * y| + τmul)
+    (hadd : |m + a - yr| ≤ u * |yr| + τadd) :
+    |yr - hornerStep x y a| ≤
+      u * (|x| * |y| + |yr|) + τmul + τadd := by
+  have hadd' : |yr - (m + a)| ≤ u * |yr| + τadd := by
+    simpa [abs_sub_comm] using hadd
+  have hsplit :
+      yr - hornerStep x y a = (yr - (m + a)) + (m - x * y) := by
+    unfold hornerStep
+    ring
+  have htri :
+      |yr - hornerStep x y a| ≤ |yr - (m + a)| + |m - x * y| := by
+    rw [hsplit]
+    exact abs_add_le _ _
+  calc
+    |yr - hornerStep x y a| ≤ |yr - (m + a)| + |m - x * y| := htri
+    _ ≤ (u * |yr| + τadd) + (u * |x * y| + τmul) :=
+        add_le_add hadd' hmul
+    _ = u * (|x| * |y| + |yr|) + τmul + τadd := by
+        rw [abs_mul]
+        ring
+
+/-- Higham, 2nd ed., Chapter 5, equation (5.4), for the concrete finite
+round-to-even primitive-operation branch.
+
+The inverse local Horner estimate follows from the finite-normal branch of
+Higham's models (2.4) and (2.5): the multiplication result must be in finite
+normal range, and the exact addition input formed from the rounded product
+must also be in finite normal range. -/
+theorem finiteRoundToEvenOp_hornerStep_inverseLocalError_of_finiteNormalRange
+    {fmt : FloatingPointFormat} {x y a : ℝ}
+    (hmul : fmt.finiteNormalRange (x * y))
+    (hadd : fmt.finiteNormalRange
+      (fmt.finiteRoundToEvenOp BasicOp.mul x y + a)) :
+    |fmt.finiteRoundToEvenOp BasicOp.add
+        (fmt.finiteRoundToEvenOp BasicOp.mul x y) a -
+      hornerStep x y a| ≤
+    fmt.unitRoundoff *
+      (|x| * |y| +
+       |fmt.finiteRoundToEvenOp BasicOp.add
+          (fmt.finiteRoundToEvenOp BasicOp.mul x y) a|) := by
+  let m := fmt.finiteRoundToEvenOp BasicOp.mul x y
+  let yr := fmt.finiteRoundToEvenOp BasicOp.add m a
+  rcases
+    fmt.finiteRoundToEvenOp_standardModel_lt_of_finiteNormalRange
+      (op := BasicOp.mul) (x := x) (y := y) hmul with
+    ⟨δm, hδm_lt, hm_eq⟩
+  have hδm : |δm| ≤ fmt.unitRoundoff := le_of_lt hδm_lt
+  have hmul_abs : |m - x * y| ≤ fmt.unitRoundoff * |x * y| := by
+    have hdiff : m - x * y = (x * y) * δm := by
+      simp [m, hm_eq, BasicOp.exact]
+      ring
+    calc
+      |m - x * y| = |x * y| * |δm| := by rw [hdiff, abs_mul]
+      _ ≤ |x * y| * fmt.unitRoundoff :=
+          mul_le_mul_of_nonneg_left hδm (abs_nonneg _)
+      _ = fmt.unitRoundoff * |x * y| := by ring
+  have hadd_inv :
+      inverseRelErrorModel yr (m + a) fmt.unitRoundoff := by
+    rcases
+      fmt.finiteRoundToEvenOp_inverseRelErrorWitness_of_finiteNormalRange
+        (op := BasicOp.add) (x := m) (y := a) hadd with
+      ⟨δa, _hr, hδa, hwit⟩
+    exact ⟨δa, hδa, hwit⟩
+  have hadd_abs : |(m + a) - yr| ≤ fmt.unitRoundoff * |yr| :=
+    inverseRelErrorModel_abs_exact_sub_computed_le yr (m + a)
+      fmt.unitRoundoff hadd_inv
+  simpa [m, yr] using
+    hornerStep_abs_error_le_of_mul_forward_add_inverse
+      (u := fmt.unitRoundoff) (x := x) (y := y) (a := a)
+      (m := m) (yr := yr) hmul_abs hadd_abs
 
 /-- Higham, 2nd ed., Chapter 5, Section 5.1:
 rounded Horner evaluation from coefficients in descending order. -/

@@ -1,0 +1,101 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb}
+\begin{document}
+
+\section*{GPT-5.5 Pro retry: answer now, not a plan}
+
+Please solve the mathematical question below.  Do not respond with ``I will''
+or a plan.  Start with one of:
+
+\[
+\text{Conclusion: leading }2u\text{ can be restored, by invariant ...}
+\]
+or
+\[
+\text{Conclusion: leading }2u\text{ cannot be restored from these hypotheses; corrected leading constant is ...}
+\]
+
+Then provide explicit inequalities and proof steps.
+
+\subsection*{Kahan coefficient recurrence}
+
+For one coefficient step, stored coordinates propagate by
+\[
+  s' = A s + B e,\qquad e' = C s + D e.
+\]
+Paired coordinates are
+\[
+  z=s+e,\qquad q=e,
+\]
+with
+\[
+  z'=Tz+Rq,\qquad q'=Cz+Hq,
+\]
+where
+\[
+  T=A+C,\qquad B_T=B+D,\qquad R=B_T-T,\qquad H=D-C.
+\]
+The ordinary returned coefficient is \(r=z-q=s\), so
+\[
+  r'=z'-q'=A z+(B-A)q=A r+Bq.
+\]
+For a source coefficient injected at step \(i\),
+\[
+  z_0=B_i+D_i,\qquad q_0=D_i,\qquad r_0=B_i.
+\]
+
+\subsection*{Local facts already proved}
+
+For every actual Kahan coefficient step, with \(0\le u\le 1/64\), there exist
+\(\delta_{\rm sub},\delta_y\) satisfying
+\[
+  |\delta_{\rm sub}|\le u,\qquad |\delta_y|\le u,
+\]
+and
+\[
+\begin{aligned}
+  |T-1| &\le 3u^2,\\
+  |B_T-1| &\le 2u+9u^2,\\
+  |C| &\le u(1+u)^2,\\
+  |H| &\le u(1+u)^2(3+u),\\
+  |H+\delta_{\rm sub}| &\le 7u^2,\\
+  |R-H-\delta_y| &\le u^2,\\
+  |R+\delta_{\rm sub}-\delta_y| &\le 8u^2.
+\end{aligned}
+\]
+From these facts one can prove the paired/source-total bound
+\[
+  |z_m-1|\le 2u+(9+13m)u^2,\qquad |q_m|\le 3u
+\]
+for any actual suffix of length \(m\) with \(mu^2\le 1/16\).
+
+However, local facts alone do not imply
+\[
+  |r_m-1|\le 2u+K u^2
+\]
+with fixed \(K\): a symbolic two-step example satisfying these facts gives
+\[
+  r_m=(1+u)^3=1+3u+3u^2+u^3.
+\]
+Thus a leading-\(2u\) proof must use an extra actual-trace coherence property,
+not just the displayed local inequalities.
+
+\subsection*{Task}
+
+Answer rigorously:
+
+\begin{enumerate}
+\item Is there an actual Kahan-trace invariant relating \(q_j\), \(r_j\), and
+      the subsequent \(\delta_{\rm sub},\delta_y\) that restores
+      \(|r_m-1|\le 2u+O(mu^2)\)?
+\item If yes, state it as a local/suffix-friendly invariant and prove the
+      recurrence with explicit constants.
+\item If no, prove why a corrected theorem must have leading constant bigger
+      than \(2\), and say whether the best source-honest ordinary returned
+      bound from the known facts is leading \(3u\), \(5u\), or another value.
+\end{enumerate}
+
+Do not assume exact correction subtraction unless the theorem is explicitly
+conditional.  That exact-subtraction route is already handled separately.
+
+\end{document}

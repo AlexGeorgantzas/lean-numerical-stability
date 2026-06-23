@@ -1,0 +1,195 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb}
+\begin{document}
+
+\section*{Whole-problem audit: Higham Chapter 4 Eq. (4.8), Kahan summation}
+
+Please answer the whole mathematical problem, not only the most recent local
+lemma.  Start with a conclusion:
+
+\[
+\textbf{Conclusion: }\quad
+\begin{cases}
+\text{Higham's printed returned-sum claim is correct under hypothesis ...},\\
+\text{or Higham's printed returned-sum claim is missing hypothesis ...},\\
+\text{or the statement is false under the model described below.}
+\end{cases}
+\]
+
+Then give explicit inequalities/constants, proof steps, and any counterexample.
+Do not respond with a plan.
+
+\subsection*{Source claim}
+
+Higham, \emph{Accuracy and Stability of Numerical Algorithms}, 2nd ed.,
+Chapter 4, Section 4.3, Eq. (4.8), states for Kahan compensated summation
+roughly:
+\[
+  \widehat s_n=\sum_{i=1}^n x_i(1+\mu_i),\qquad
+  |\mu_i|\le 2u+O(nu^2).
+\]
+This is a source-facing theorem about the ordinary returned stored sum
+\(\widehat s_n=s_n\), not the compensated total \(s_n+e_n\).  The Lean
+formalization must choose explicit constants and hypotheses replacing the
+big-\(O\), and it must not assume exact correction subtraction unless that is
+listed as an extra conditional theorem.
+
+\subsection*{Algorithm/model}
+
+The Kahan step is modeled as
+\[
+\begin{aligned}
+  y &= \mathrm{fl}(x-e),\\
+  t &= \mathrm{fl}(s+y),\\
+  e'&= \mathrm{fl}((t-s)-y),\\
+  s'&=t.
+\end{aligned}
+\]
+The base abstract floating-point model supplies only relative-error witnesses
+for each rounded operation:
+\[
+  \mathrm{fl}(a\circ b)=(a\circ b)(1+\delta),\qquad |\delta|\le u,
+\]
+when the operation is modeled.  There is also a concrete finite round-to-even
+format layer, but exact correction subtraction is not automatic for arbitrary
+inputs.
+
+\subsection*{Coefficient recurrence}
+
+For one coefficient step, stored coordinates propagate by
+\[
+  s' = A s + B e,\qquad e' = C s + D e.
+\]
+Paired coordinates are
+\[
+  z=s+e,\qquad q=e,
+\]
+and
+\[
+  z'=Tz+Rq,\qquad q'=Cz+Hq,
+\]
+where
+\[
+  T=A+C,\qquad B_T=B+D,\qquad R=B_T-T,\qquad H=D-C.
+\]
+The ordinary returned coefficient is
+\[
+  r=z-q=s,
+\]
+so
+\[
+  r'=z'-q'=A z+(B-A)q=A r+Bq.
+\]
+For a source coefficient injected at step \(i\),
+\[
+  z_0=B_i+D_i,\qquad q_0=D_i,\qquad r_0=B_i.
+\]
+
+\subsection*{Local facts already formalized}
+
+For every actual Kahan coefficient step, with \(0\le u\le 1/64\), there exist
+roundoff deltas \(\delta_{\rm sub},\delta_y\) satisfying
+\[
+  |\delta_{\rm sub}|\le u,\qquad |\delta_y|\le u,
+\]
+and
+\[
+\begin{aligned}
+  |T-1| &\le 3u^2,\\
+  |B_T-1| &\le 2u+9u^2,\\
+  |C| &\le u(1+u)^2,\\
+  |H| &\le u(1+u)^2(3+u),\\
+  |H+\delta_{\rm sub}| &\le 7u^2,\\
+  |R-H-\delta_y| &\le u^2,\\
+  |R+\delta_{\rm sub}-\delta_y| &\le 8u^2.
+\end{aligned}
+\]
+From these facts, the Lean development proves the actual source-total
+coefficient theorem:
+for any actual suffix length \(m\) with \(m u^2\le 1/16\),
+\[
+  |z_m-1|\le 2u+(9+13m)u^2,\qquad |q_m|\le 3u.
+\]
+This is about \(z=s+e\), not yet about the returned \(r=s=z-q\).
+
+\subsection*{Formalized conditional positive results}
+
+\begin{enumerate}
+\item If every correction subtraction \((t-s)\) in the actual prefix trace is
+      exact, then the ordinary returned source coefficient theorem is proved:
+      \[
+        |r_i-1|\le 2u+O(mu^2).
+      \]
+\item Concrete finite hypotheses implying that exact-subtraction condition
+      have been formalized: direct finite correction subtraction, Sterbenz-like
+      assumptions, Ferguson-like assumptions, or FastTwoSum-style certificates.
+      These are conditional, not arbitrary-input results.
+\item The compensated-total returned theorem for \(s_n+e_n\) is proved
+      unconditionally under the abstract model with explicit constants.
+\item A conditional affine residual-budget theorem is proved: if the final
+      retained correction residual is bounded by \(C n u^2\sum_i |x_i|\), then
+      the ordinary returned source theorem follows.
+\end{enumerate}
+
+\subsection*{Formalized route eliminations / obstructions}
+
+\begin{enumerate}
+\item Bare abstract FPModel does not force the first Kahan step from
+      \(s=e=0\) to ingest a nonzero finite input exactly.
+\item A biased small-\(u\) abstract model satisfies the relative-error contract
+      but violates a fixed \(2u+Cu^2\) ordinary returned source cap for
+      \([1,0]\) when \(Cu\le 1/2\).
+\item Finite operands alone do not imply finite exact subtraction.
+\item Tail FastTwoSum order, tail inclusive Sterbenz, tail inclusive Ferguson,
+      and direct tail finite correction subtraction are false for arbitrary
+      input order.
+\item A concrete \(p=5\) binary finite round-to-even trace on four terms
+      returns an ordinary stored sum whose source weights cannot all be bounded
+      by the pure first-order radius \(2u=1/16\).  This does not by itself
+      refute \(2u+O(nu^2)\), but it warns against a pure \(2u\) theorem.
+\item The current input-only affine residual majorant cannot supply a fixed
+      second-order residual-budget theorem, even for one exact input.
+\item The local facts listed above alone cannot imply
+      \[
+        |r_m-1|\le 2u+K u^2
+      \]
+      with fixed \(K\): a symbolic two-step local-facts example gives
+      \[
+        r_m=(1+u)^3=1+3u+3u^2+u^3.
+      \]
+\end{enumerate}
+
+\subsection*{What I need from you}
+
+Please answer:
+
+\begin{enumerate}
+\item Is Higham Eq. (4.8), interpreted as an arbitrary-input ordinary returned
+      stored-sum theorem under only the standard relative-error Kahan model,
+      actually correct?
+\item If yes, what exact hidden invariant beyond the local facts above restores
+      \[
+        |r_i-1|\le 2u+O(nu^2)?
+      \]
+      State the invariant in suffix-friendly form and prove it with explicit
+      constants.
+\item If the theorem needs extra assumptions, identify the minimal missing
+      assumptions.  Are they exact correction subtraction, no-underflow/normal
+      range, Sterbenz/FastTwoSum order, a guard digit, \(\sum x_i\neq0\), input
+      ordering, or something else?
+\item If the statement is false under the model, give a minimal mathematical
+      counterexample or explain which already-listed obstruction is enough.
+\item If the honest theorem should be corrected, what is the best explicit
+      source-facing replacement: ordinary returned leading \(3u\)? leading
+      \(5u\)? a compensated-total theorem? a conditional exact-subtraction
+      theorem? Give explicit constants and proof route.
+\end{enumerate}
+
+Please distinguish carefully between:
+\[
+\text{ordinary returned }s_n,\qquad
+\text{compensated total }s_n+e_n,\qquad
+\text{conditional exact-subtraction theorem}.
+\]
+
+\end{document}

@@ -1,0 +1,63 @@
+\textbf{Task.}
+Give a Lean-friendly proof plan for a finite-dimensional, endpoint-unified
+Riesz-Thorin theorem for complex matrices.
+
+\textbf{Mathematical setting.}
+Let \(A : \mathbb C^n \to \mathbb C^m\) be a finite matrix.  For
+\(p \in [1,\infty]\), let \(\|x\|_p\) be the finite-dimensional complex
+\(\ell^p\) norm, and let
+\[
+  \|A\|_p = \sup_{x \ne 0} \frac{\|Ax\|_p}{\|x\|_p}.
+\]
+For \(p_0,p_1,r \in [1,\infty]\) and \(0 \le \theta \le 1\), assume
+\[
+  \frac1r = (1-\theta)\frac1{p_0}+\theta\frac1{p_1}
+\]
+with the usual convention \(1/\infty=0\).  Suppose
+\[
+  \|Ax\|_{p_0}\le M_0\|x\|_{p_0}, \qquad
+  \|Ax\|_{p_1}\le M_1\|x\|_{p_1}
+\]
+for all \(x\), with \(M_0,M_1\ge0\).  The desired conclusion is
+\[
+  \|Ax\|_r \le M_0^{1-\theta}M_1^\theta\|x\|_r
+\]
+and hence \(\|A\|_r \le M_0^{1-\theta}M_1^\theta\), including endpoint
+cases \(p_i=1,\infty\), \(r=1,\infty\), \(\theta=0,1\).
+
+\textbf{What is already locally proved.}
+The Lean development already has:
+\begin{itemize}
+  \item finite-real strict/interior Riesz-Thorin via Hadamard three-lines for
+        Holder-conjugate exponents \(1<p_i,r<\infty\);
+  \item endpoint reductions showing that \(\theta=0\) gives \(r=p_0\),
+        \(\theta=1\) gives \(r=p_1\), strict-interior \(r=1\) forces
+        \(p_0=p_1=1\), and strict-interior \(r=\infty\) forces
+        \(p_0=p_1=\infty\);
+  \item finite-real wrappers from interpolation data to matrix-bound and
+        least-value statements;
+  \item special source theorems for the \(1/\infty\) and \(1/2\) endpoint
+        rows from Higham equations (6.19)-(6.20).
+\end{itemize}
+
+\textbf{Question.}
+What is the cleanest mathematically rigorous case split for the fully
+endpoint-unified theorem over \(p_0,p_1,r\in[1,\infty]\)?  In particular:
+\begin{enumerate}
+  \item In the strict case \(0<\theta<1\) and \(1<r<\infty\), prove that any
+        endpoint \(p_0\) or \(p_1\) may still be handled by the three-lines
+        proof, or explain precisely which additional endpoint boundary lemma is
+        needed.
+  \item If \(p_0=1\) or \(p_1=\infty\) but \(1<r<\infty\), what dual exponent
+        and analytic family should be used so the proof remains valid without
+        an \(L^\infty\) dual norming vector?
+  \item Give a minimal theorem-dependency ordering suitable for Lean: algebraic
+        reciprocal-exponent lemmas first, endpoint-only reductions second,
+        one-sided endpoint Hadamard boundary lemmas third, and final wrapper.
+  \item Point out hidden assumptions around zero dimensions, zero matrix bounds,
+        and real powers \(0^0\).
+\end{enumerate}
+
+Please answer as a rigorous proof plan with exact cases, not as prose
+encouragement.  Do not assume unproved compactness or norm-attainment facts
+unless they are explicitly stated as a dependency.

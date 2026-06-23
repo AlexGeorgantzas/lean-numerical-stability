@@ -1,0 +1,77 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb}
+\begin{document}
+
+\section*{Higham Chapter 6, Problem 6.10: Lean-oriented proof route}
+
+I am formalizing a numerical linear algebra chapter in Lean.  Please give a
+rigorous, Lean-friendly proof plan for the following theorem, broken into small
+lemmas with exact algebraic identities and all side conditions.
+
+Let \(F\in\mathbb C^{n\times n}\), let
+\[
+  B=\begin{bmatrix} I & F\\ 0 & I\end{bmatrix},
+\]
+and let \(t=\|F\|_2\), the spectral/operator 2-norm.  Higham Problem 6.10 asks
+for the formula
+\[
+  \|B\|_2
+  =
+  \sqrt{\frac{2+t^2+t\sqrt{4+t^2}}{2}}.
+\]
+It also notes that when \(t=1\), this value is the golden ratio.
+
+\section*{Existing Lean-side objects}
+
+The local repository already has:
+
+\begin{itemize}
+\item complex matrices as finite matrices over \(\mathbb C\);
+\item a concrete complex operator norm \(\operatorname{op2}(A)=\|A\|_2\);
+\item a checked rectangular SVD package:
+  \(F=U\Sigma V^*\), with unitary coordinate changes and diagonal-or-zero
+  singular-value matrix;
+\item \(\operatorname{op2}(F)\) equals the largest singular value;
+\item unitary changes preserve the Euclidean/operator norm, or can be proved
+  from their vector-norm preservation;
+\item standard finite-dimensional Euclidean vector norm facts.
+\end{itemize}
+
+\section*{Requested output}
+
+Please do not give a high-level sketch only.  I need a proof route suitable for
+formalization.  In particular:
+
+\begin{enumerate}
+\item Show how to reduce \(B\) by unitary block diagonal factors to the case
+  \[
+    \begin{bmatrix} I & \Sigma\\ 0 & I\end{bmatrix}
+  \]
+  without changing the operator norm.
+\item For diagonal \(\Sigma=\operatorname{diag}(\sigma_i)\), show how the
+  squared norm reduces to the maximum over independent \(2\times2\) blocks
+  \[
+    D_\sigma=\begin{bmatrix}1&\sigma\\0&1\end{bmatrix}.
+  \]
+\item Compute the largest singular value of \(D_\sigma\).  Please give the
+  exact eigenvalues of \(D_\sigma^*D_\sigma\), prove which one is the largest
+  for \(\sigma\ge0\), and simplify it to
+  \[
+    \lambda_{\max}(\sigma)
+      =\frac{2+\sigma^2+\sigma\sqrt{4+\sigma^2}}{2}.
+  \]
+\item Prove monotonicity of
+  \[
+    g(\sigma)=\sqrt{\frac{2+\sigma^2+\sigma\sqrt{4+\sigma^2}}{2}}
+  \]
+  on \([0,\infty)\), preferably by an algebraic argument avoiding calculus if
+  possible.  This should justify replacing \(\max_i g(\sigma_i)\) by
+  \(g(\sigma_{\max})=g(\|F\|_2)\).
+\item Give a compact proof that \(g(1)=(1+\sqrt5)/2\).
+\end{enumerate}
+
+If there is a shorter route avoiding a full block-diagonal direct-sum theorem,
+please include it too, but make clear which lemmas would be easiest to prove in
+Lean.
+
+\end{document}

@@ -1,0 +1,92 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb}
+\begin{document}
+
+\section*{Higham Chapter 6, Problem 6.8: Lean-Friendly Proof Route}
+
+I am formalizing a source-facing version of the following standard theorem.
+For every complex square matrix \(A\) and every \(\delta>0\), there is a
+consistent/subordinate matrix norm, depending on \(A\) and \(\delta\), such
+that
+\[
+  \|A\| \le \rho(A)+\delta,
+\]
+where \(\rho(A)\) is the spectral radius.  Consequently, if \(\rho(A)<1\),
+there is a consistent/subordinate matrix norm for which \(\|A\|<1\).
+
+\section*{Local formalization surface}
+
+The local Lean development has the following source-facing concepts.
+
+\begin{itemize}
+\item \(C^n\) is represented as functions \(\mathrm{Fin}\ n \to \mathbb C\).
+\item A vector norm is a function \(\nu:C^n\to\mathbb R\) satisfying
+  nonnegativity, definiteness, complex homogeneity, and the triangle
+  inequality.
+\item A mixed subordinate upper bound is the predicate
+  \[
+    \forall x,\quad \nu(Tx)\le C\nu(x).
+  \]
+\item A mixed subordinate norm value is the least real \(C\) with that
+  bound.
+\item Already proved: any eigenvalue modulus, and hence any supplied maximum
+  eigenvalue modulus \(\rho\), is bounded above by any subordinate norm value
+  induced by the same vector norm.
+\item There is a generic existence theorem: once a vector norm \(\nu\) and a
+  checked bound \(\nu(Ax)\le C\nu(x)\) are available in nonzero dimension,
+  Lean can produce a least subordinate norm value \(c\le C\).
+\end{itemize}
+
+\section*{What I need}
+
+Please give a rigorous proof route optimized for Lean.
+
+I especially need advice on the smallest mathematically honest theorem to
+formalize first if the library does not expose a ready-made Schur/Jordan
+triangularization theorem.
+
+Candidate route:
+\begin{enumerate}
+\item Assume or construct a similarity transform putting \(A\) into upper
+  triangular form \(T=S^{-1}AS\), with diagonal entries \(\lambda_i\) and
+  \(|\lambda_i|\le\rho\).
+\item For a positive scale parameter \(r\), define a weighted sup norm in the
+  triangular coordinates, for example
+  \[
+    \nu_r(x)=\max_i r^i |(S^{-1}x)_i|
+  \]
+  or an equivalent convention.
+\item Show that the subordinate infinity norm of \(T\) after diagonal scaling
+  is bounded by
+  \[
+    \max_i |\lambda_i| + \max_i\sum_{j>i} |T_{ij}|\,r^{j-i}
+  \]
+  or by the corresponding row-sum formula.
+\item Use finiteness to choose \(r>0\) small enough that all off-diagonal row
+  sums are at most \(\delta\), giving \(\nu_r(Ax)\le(\rho+\delta)\nu_r(x)\).
+\item Then use the generic least-bound theorem to obtain a subordinate norm
+  value \(c\le\rho+\delta\).
+\item For the consequence, if \(\rho<1\), choose \(\delta=(1-\rho)/2\).
+\end{enumerate}
+
+\section*{Questions}
+
+\begin{enumerate}
+\item Is the candidate weighted-sup route correct as stated?  If not, fix the
+  scaling convention and inequality.
+\item What is the cleanest finite-dimensional real inequality for choosing the
+  scale parameter?  I want something easy to prove in Lean over finite
+  sums/maxima.
+\item If full triangularization is too large, what conditional theorem should
+  I formalize so it is a genuine dependency rather than a disguised restatement
+  of the target theorem?
+\item Which hidden assumptions should be explicit?  For example: \(0<n\),
+  \(\delta>0\), supplied maximum spectral modulus, invertibility of the change
+  of coordinates, diagonal entries bounded by \(\rho\), and strict positivity
+  of the scaling parameter.
+\item Please give theorem statements and a proof order in Lean-friendly
+  language, including the key algebraic identities needed to transfer the
+  triangular-coordinate norm back to the original matrix \(A\).
+\end{enumerate}
+
+\end{document}

@@ -1,0 +1,62 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb}
+\begin{document}
+
+\section*{Higham Chapter 6 Problem 6.12 proof route}
+
+I am formalizing this source claim in Lean/Mathlib:
+
+\[
+\text{If }A\in\mathbb C^{n\times n}\text{ is Hermitian positive definite, then }
+\|A\|_{\infty,1}
+= \max\{x^* A x : \|x\|_\infty = 1\}.
+\]
+
+Here
+\[
+\|A\|_{\infty,1}=\max_{\|u\|_\infty=1}\|Au\|_1,
+\]
+and in the local Lean API I have:
+
+\begin{itemize}
+\item finite complex vectors \(x:\mathrm{Fin}\ n\to\mathbb C\);
+\item \( \|x\|_\infty=\max_i |x_i|\) as `complexVecInfNorm`;
+\item \( \|x\|_1=\sum_i |x_i|\) as `complexVecOneNorm`;
+\item matrix-vector multiplication `complexMatrixVecMul`;
+\item mixed subordinate norm as a least admissible bound:
+  \(d\) is the \(\infty\to 1\) norm iff
+  \(\|A x\|_1\le d\|x\|_\infty\) for all \(x\), and \(d\) is least;
+\item Mathlib has `Matrix.PosDef`/`Matrix.PosSemidef`, `Matrix.IsHermitian`,
+  and the quadratic-form facts
+  `Matrix.PosSemidef.dotProduct_mulVec_nonneg`,
+  `Matrix.PosDef.dotProduct_mulVec_pos`,
+  with quadratic form
+  \(\sum_i \overline{x_i}(Ax)_i\).
+\end{itemize}
+
+Please give a rigorous, Lean-friendly proof route for the equality, including:
+
+\begin{enumerate}
+\item the exact upper-bound proof from
+  \(\|A u\|_1 = \max_{\|v\|_\infty=1} |\sum_i \overline{v_i}(Au)_i|\)
+  or a phase-vector variant;
+\item how to use the positive-definite/Hermitian assumption to prove
+  \[
+  |\langle v,Au\rangle| \le
+  \sqrt{\langle u,Au\rangle}\sqrt{\langle v,Av\rangle}
+  \]
+  in a way that is easiest to formalize from Mathlib's PSD quadratic form API;
+\item whether positive semidefinite is sufficient and positive definite is only
+  source wording;
+\item how to handle the unit condition \(\|x\|_\infty=1\) versus the ball
+  \(\|x\|_\infty\le 1\), including the zero-dimensional or zero-vector edge
+  cases;
+\item the cleanest local theorem surface if we do not yet want to prove
+  compact existence of the maximum, for example equality between a mixed norm
+  value and a supplied maximum predicate.
+\end{enumerate}
+
+Please do not assume the target equality as a hypothesis. I need the detailed
+mathematical proof steps, hidden hypotheses, and a Lean implementation order.
+
+\end{document}
