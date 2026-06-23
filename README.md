@@ -31,14 +31,20 @@ during gradual migration.
 
 ## What's covered
 
-The library formalizes reusable results and stability contracts from **Chapter 1**, selected **Chapter 2** model algebra, **Chapters 3, 4, 8, and 9** of Higham, plus selected higher-chapter interfaces used for compositional stability proofs. It also includes a RandNLA case study for the explicit meta-algorithms in Drineas and Mahoney's CACM survey, ["RandNLA: Randomized Numerical Linear Algebra"](https://dl.acm.org/doi/10.1145/2842602).
+The library formalizes reusable results and stability contracts from **Chapter 1**, selected **Chapter 2** model algebra, core **Chapters 3-6** results, **Chapters 8 and 9** of Higham, plus selected higher-chapter interfaces used for compositional stability proofs. It also includes a RandNLA case study for the explicit meta-algorithms in Drineas and Mahoney's CACM survey, ["RandNLA: Randomized Numerical Linear Algebra"](https://dl.acm.org/doi/10.1145/2842602).
 
 For a searchable map from stability-analysis goals to files, definitions, and
 theorem names, see [`docs/LIBRARY_LOOKUP.md`](docs/LIBRARY_LOOKUP.md).  For a
 Lean `#check` companion index, see [`examples/LibraryLookup.lean`](examples/LibraryLookup.lean).
+Current build status: `lake build LeanFpAnalysis.FP` and full `lake build` pass;
+representative Slot 1 checks for Chapters 1-6 pass. The full
+`examples/LibraryLookup.lean` check currently needs a stale Stewart QR lookup
+refresh around lines 5442-5464, outside the selected Slot 1 rows.
 For the full-paper RandNLA proof-source plan, including the external primary
 literature chain for open concentration and structural results, see
 [`docs/RANDNLA_CACM_PROOF_SOURCE_LEDGER.md`](docs/RANDNLA_CACM_PROOF_SOURCE_LEDGER.md).
+For the Chapter 1 core audit, including the empirical-output scope decisions,
+see [`chapter_splitting/reports/split1_ch01_core_audit.md`](chapter_splitting/reports/split1_ch01_core_audit.md).
 For the Chapter 2 core audit and finite-format/IEEE/guard-digit classifications,
 see [`chapter_splitting/reports/split1_ch02_core_audit.md`](chapter_splitting/reports/split1_ch02_core_audit.md).
 The current Chapter 2 ledger treats Problem 2.10's "test the theorem on your
@@ -51,8 +57,15 @@ Problem 3.11 empirical-source-output carve-out, see
 For the Chapter 4 core audit, including Problems 4.1--4.10 and the
 Problem 4.10 research/experiment carve-out, see
 [`chapter_splitting/reports/split1_ch04_core_audit.md`](chapter_splitting/reports/split1_ch04_core_audit.md).
-The active Chapter 4 compensated-summation bottleneck is tracked in
+The current Slot 1 audit records no selected Chapter 4 blocker; the
+compensated-summation bottleneck note is retained as route history in
 [`chapter_splitting/reports/split1_ch04_compensated_bottleneck.md`](chapter_splitting/reports/split1_ch04_compensated_bottleneck.md).
+For the Chapter 5 core audit, including polynomial evaluation and derivative
+Horner surfaces, see
+[`chapter_splitting/reports/split1_ch05_core_audit.md`](chapter_splitting/reports/split1_ch05_core_audit.md).
+For the Chapter 6 core audit, including norm interpolation, SVD, perturbation,
+and condition-number surfaces, see
+[`chapter_splitting/reports/split1_ch06_core_audit.md`](chapter_splitting/reports/split1_ch06_core_audit.md).
 
 ### Core theory
 
