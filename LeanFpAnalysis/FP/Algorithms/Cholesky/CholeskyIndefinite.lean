@@ -1,6 +1,6 @@
 -- Algorithms/Cholesky/CholeskyIndefinite.lean
 --
--- §10.4: Symmetric indefinite matrices and the diagonal pivoting method.
+-- Chapter 11: Symmetric indefinite and skew-symmetric systems.
 --
 -- Block LDL^T factorization: PAPT = LDLT where L is unit lower triangular
 -- and D is block diagonal with 1×1 or 2×2 blocks.
@@ -25,8 +25,26 @@ namespace LeanFpAnalysis.FP
 open scoped BigOperators
 
 -- ============================================================
--- §10.4  Block diagonal structure
+-- Chapter 11  Source predicates and block diagonal structure
 -- ============================================================
+
+/-- A symmetric tridiagonal matrix predicate, used by Aasen's method and by the
+    symmetric-tridiagonal specialization of block LDL^T. -/
+def IsSymTridiagonal (n : ℕ) (T : Fin n → Fin n → ℝ) : Prop :=
+  (∀ i j : Fin n, T i j = T j i) ∧
+  (∀ i j : Fin n, i.val + 1 < j.val ∨ j.val + 1 < i.val → T i j = 0)
+
+/-- A real skew-symmetric matrix predicate, `A^T = -A`. -/
+def IsSkewSymmetric (n : ℕ) (A : Fin n → Fin n → ℝ) : Prop :=
+  ∀ i j : Fin n, A i j = -A j i
+
+/-- A skew-symmetric matrix has zero diagonal. -/
+theorem skewSymmetric_diag_zero (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (hA : IsSkewSymmetric n A) :
+    ∀ i : Fin n, A i i = 0 := by
+  intro i
+  have h := hA i i
+  linarith
 
 /-- **Block diagonal predicate** for the D factor in block LDL^T.
 
@@ -40,11 +58,17 @@ def IsBlockDiag (n : ℕ) (D : Fin n → Fin n → ℝ) : Prop :=
   (∀ i j : Fin n, D i j = D j i) ∧
   (∀ i j : Fin n, i.val + 1 < j.val ∨ j.val + 1 < i.val → D i j = 0)
 
+/-- Skew block diagonal structure for Chapter 11, equation (11.16): diagonal
+    blocks are zero `1x1` blocks or skew `2x2` blocks. -/
+def IsSkewBlockDiag (n : ℕ) (D : Fin n → Fin n → ℝ) : Prop :=
+  IsSkewSymmetric n D ∧
+  (∀ i j : Fin n, i.val + 1 < j.val ∨ j.val + 1 < i.val → D i j = 0)
+
 -- ============================================================
--- §10.4  Block LDL^T specification
+-- Chapter 11  Block LDL^T and Aasen specifications
 -- ============================================================
 
-/-- **Block LDL^T factorization** (Higham §10.4).
+/-- **Block LDL^T factorization** (Higham Chapter 11).
 
     For a symmetric matrix A, the diagonal pivoting method computes:
       P A P^T = L D L^T
@@ -68,7 +92,44 @@ structure BlockLDLTSpec (n : ℕ) (A L D : Fin n → Fin n → ℝ)
   product_eq : ∀ i j : Fin n,
     ∑ k₁ : Fin n, ∑ k₂ : Fin n, L i k₁ * D k₁ k₂ * L j k₂ = A (σ i) (σ j)
 
-/-- **Block LDL^T backward error** (Higham §10.4).
+/-- **Aasen factorization** source specification:
+`P A P^T = L T L^T`, with `L` unit lower triangular, first column `e_1`,
+and `T` symmetric tridiagonal. -/
+structure AasenSpec (n : ℕ) (A L T : Fin n → Fin n → ℝ)
+    (σ : Fin n → Fin n) : Prop where
+  /-- σ is a permutation. -/
+  perm : IsPermutation n σ
+  /-- L is unit lower triangular. -/
+  L_diag : ∀ i : Fin n, L i i = 1
+  /-- L is lower triangular. -/
+  L_upper_zero : ∀ i j : Fin n, i.val < j.val → L i j = 0
+  /-- The first column of L is the first coordinate vector. -/
+  L_first_col : ∀ i j : Fin n, j.val = 0 → i.val ≠ 0 → L i j = 0
+  /-- T is symmetric tridiagonal. -/
+  T_tridiag : IsSymTridiagonal n T
+  /-- P A P^T = L T L^T. -/
+  product_eq : ∀ i j : Fin n,
+    ∑ k₁ : Fin n, ∑ k₂ : Fin n, L i k₁ * T k₁ k₂ * L j k₂ = A (σ i) (σ j)
+
+/-- Skew-symmetric block LDL^T factorization source specification for
+Chapter 11, equation (11.16). -/
+structure SkewBlockLDLTSpec (n : ℕ) (A L D : Fin n → Fin n → ℝ)
+    (σ : Fin n → Fin n) : Prop where
+  /-- The input is skew-symmetric. -/
+  skew_A : IsSkewSymmetric n A
+  /-- σ is a permutation. -/
+  perm : IsPermutation n σ
+  /-- L is unit lower triangular. -/
+  L_diag : ∀ i : Fin n, L i i = 1
+  /-- L is lower triangular. -/
+  L_upper_zero : ∀ i j : Fin n, i.val < j.val → L i j = 0
+  /-- D is skew block diagonal. -/
+  D_skew_block_diag : IsSkewBlockDiag n D
+  /-- P A P^T = L D L^T. -/
+  product_eq : ∀ i j : Fin n,
+    ∑ k₁ : Fin n, ∑ k₂ : Fin n, L i k₁ * D k₁ k₂ * L j k₂ = A (σ i) (σ j)
+
+/-- **Block LDL^T backward error** (Higham Chapter 11).
 
     The computed factors satisfy:
       |L̂ D̂ L̂^T − PAP^T| ≤ ε · |L̂| · |D̂| · |L̂^T|  componentwise -/
@@ -88,8 +149,56 @@ structure BlockLDLTBackwardError (n : ℕ) (A L_hat D_hat : Fin n → Fin n → 
       A (σ i) (σ j)| ≤
     ε * ∑ k₁ : Fin n, ∑ k₂ : Fin n, |L_hat i k₁| * |D_hat k₁ k₂| * |L_hat j k₂|
 
+/-- Pivot block size used by Chapter 11 algorithms. -/
+inductive PivotSize where
+  | one
+  | two
+  deriving DecidableEq, Repr
+
+/-- Algorithm 11.1 source decision predicate for the first Bunch-Parlett
+complete-pivoting step, expressed in terms of the printed scalar quantities
+`mu0` and `mu1`. -/
+def BunchParlettCompletePivotChoice (α μ0 μ1 : ℝ) (s : PivotSize) : Prop :=
+  match s with
+  | PivotSize.one => μ1 ≥ α * μ0
+  | PivotSize.two => μ1 < α * μ0
+
+/-- Branch labels for Algorithm 11.2. -/
+inductive BunchKaufmanCase where
+  | noAction
+  | case1
+  | case2
+  | case3
+  | case4
+  deriving DecidableEq, Repr
+
+/-- Algorithm 11.2 source decision predicate for the Bunch-Kaufman partial
+pivoting tests at the first stage. -/
+def BunchKaufmanPartialPivotCase
+    (α a11 arr ω1 ωr : ℝ) (branch : BunchKaufmanCase) : Prop :=
+  match branch with
+  | BunchKaufmanCase.noAction => ω1 = 0
+  | BunchKaufmanCase.case1 => ω1 ≠ 0 ∧ |a11| ≥ α * ω1
+  | BunchKaufmanCase.case2 =>
+      ω1 ≠ 0 ∧ |a11| < α * ω1 ∧ |a11| * ωr ≥ α * ω1 ^ 2
+  | BunchKaufmanCase.case3 =>
+      ω1 ≠ 0 ∧ |a11| < α * ω1 ∧ |a11| * ωr < α * ω1 ^ 2 ∧
+        |arr| ≥ α * ωr
+  | BunchKaufmanCase.case4 =>
+      ω1 ≠ 0 ∧ |a11| < α * ω1 ∧ |a11| * ωr < α * ω1 ^ 2 ∧
+        |arr| < α * ωr
+
+/-- Algorithm 11.5 source predicate for a successful symmetric rook-pivot
+first-stage decision.  The loop and search path are not modeled here; this
+records the printed local tests that certify the returned pivot size. -/
+def SymmetricRookFirstPivotChoice
+    (α a11 arr ω1 ωr : ℝ) (s : PivotSize) : Prop :=
+  (|a11| ≥ α * ω1 ∧ s = PivotSize.one) ∨
+  (|arr| ≥ α * ωr ∧ s = PivotSize.one) ∨
+  (ω1 = ωr ∧ s = PivotSize.two)
+
 -- ============================================================
--- §10.4.1  Complete pivoting (Bunch-Parlett)
+-- Chapter 11.1.1  Complete pivoting (Bunch-Parlett)
 -- ============================================================
 
 /-- **Bunch-Parlett pivoting parameter** α = (1 + √17)/8.
@@ -113,7 +222,7 @@ theorem bunch_parlett_alpha_root :
   field_simp
   nlinarith [h17]
 
-/-- **Abstract Bunch-Parlett growth-factor interface** (Higham §10.4.1).
+/-- **Abstract Bunch-Parlett growth-factor interface** (Higham §11.1.1).
 
     The diagonal pivoting method with complete pivoting has
     growth factor bounded by (1 + α⁻¹)^{n−1} where α = (1+√17)/8.
@@ -130,7 +239,7 @@ theorem bunch_parlett_growth_bound (n : ℕ) (_hn : 0 < n)
     ρ_n ≤ (1 + bunchParlettAlpha⁻¹) ^ (n - 1) :=
   hρ
 
-/-- **Abstract Bunch-Parlett L-factor bound interface** (Higham §10.4.1).
+/-- **Abstract Bunch-Parlett L-factor bound interface** (Higham §11.1.1).
 
     For the complete pivoting strategy, no element of CE⁻¹ (the
     multiplier block) exceeds max{1/α, 1/(1-α)} in absolute value.
@@ -145,10 +254,10 @@ theorem bunch_parlett_L_bound (n : ℕ)
   hL
 
 -- ============================================================
--- §10.4.2  Partial pivoting (Bunch-Kaufman)
+-- Chapter 11.1.2  Partial pivoting (Bunch-Kaufman)
 -- ============================================================
 
-/-- **Abstract Bunch-Kaufman stability interface** (Higham §10.4.2).
+/-- **Abstract Bunch-Kaufman stability interface** (Higham §11.1.2).
 
     Same α = (1+√17)/8 as complete pivoting, but requires only
     O(n²) comparisons (searches at most two columns per stage).
@@ -178,7 +287,7 @@ theorem bunch_kaufman_stability (n : ℕ)
   hstab
 
 /-- **Abstract Bunch-Kaufman solve backward-error interface**
-    (Higham §10.4, Higham [559, 1995]).
+    (Higham §11.1.2, Higham [559, 1995]).
 
     The computed solution to Ax = b via diagonal pivoting with
     partial pivoting satisfies:
@@ -188,7 +297,7 @@ theorem bunch_kaufman_stability (n : ℕ)
     the detailed solve analysis. -/
 theorem bunch_kaufman_solve_backward_error (n : ℕ) (fp : FPModel)
     (A L_hat D_hat : Fin n → Fin n → ℝ)
-    (σ : Fin n → Fin n) (b : Fin n → ℝ)
+    (σ : Fin n → Fin n) (b x_hat : Fin n → ℝ)
     (_hBLDLT : BlockLDLTBackwardError n A L_hat D_hat σ (gamma fp n))
     (ρ_n maxNorm_A : ℝ)
     -- Growth + stability bound
@@ -201,12 +310,47 @@ theorem bunch_kaufman_solve_backward_error (n : ℕ) (fp : FPModel)
       (∀ i j, |ΔA i j| ≤
         gamma fp n * 36 * ↑n * ρ_n * maxNorm_A) ∧
       (∀ i, ∑ j : Fin n, (A (σ i) (σ j) + ΔA i j) *
-        (fun _k => 0 : Fin n → ℝ) j = b (σ i))) :
+        x_hat j = b (σ i))) :
     ∃ ΔA : Fin n → Fin n → ℝ,
       (∀ i j, |ΔA i j| ≤
         gamma fp n * 36 * ↑n * ρ_n * maxNorm_A) ∧
       (∀ i, ∑ j : Fin n, (A (σ i) (σ j) + ΔA i j) *
-        (fun _k => 0 : Fin n → ℝ) j = b (σ i)) :=
+        x_hat j = b (σ i)) :=
   hsolve
+
+-- ============================================================
+-- Chapter 11.1.4  Tridiagonal symmetric matrices
+-- ============================================================
+
+/-- Bunch's symmetric-tridiagonal pivoting parameter from Algorithm 11.6,
+`alpha = (sqrt 5 - 1)/2`. -/
+noncomputable def bunchTridiagonalAlpha : ℝ := (Real.sqrt 5 - 1) / 2
+
+/-- The tridiagonal pivoting parameter satisfies `alpha^2 + alpha - 1 = 0`. -/
+theorem bunch_tridiagonal_alpha_root :
+    bunchTridiagonalAlpha ^ 2 + bunchTridiagonalAlpha - 1 = 0 := by
+  unfold bunchTridiagonalAlpha
+  have h5 : Real.sqrt 5 * Real.sqrt 5 = 5 :=
+    Real.mul_self_sqrt (by norm_num : (0 : ℝ) ≤ 5)
+  field_simp
+  nlinarith [h5]
+
+/-- Algorithm 11.6 source decision predicate for Bunch's tridiagonal pivot-size
+strategy. -/
+def BunchTridiagonalPivotChoice
+    (σ a11 a21 : ℝ) (s : PivotSize) : Prop :=
+  (σ * |a11| ≥ bunchTridiagonalAlpha * a21 ^ 2 ∧ s = PivotSize.one) ∨
+  (σ * |a11| < bunchTridiagonalAlpha * a21 ^ 2 ∧ s = PivotSize.two)
+
+-- ============================================================
+-- Chapter 11.3  Skew-symmetric block LDL^T
+-- ============================================================
+
+/-- Algorithm 11.9 source decision predicate for Bunch's skew-symmetric pivoting
+strategy at the first stage. -/
+def SkewBunchPivotChoice (firstColumnTailZero : Prop)
+    (pivotMagnitude : ℝ) (s : PivotSize) : Prop :=
+  (firstColumnTailZero ∧ s = PivotSize.one) ∨
+  (¬ firstColumnTailZero ∧ 0 < pivotMagnitude ∧ s = PivotSize.two)
 
 end LeanFpAnalysis.FP

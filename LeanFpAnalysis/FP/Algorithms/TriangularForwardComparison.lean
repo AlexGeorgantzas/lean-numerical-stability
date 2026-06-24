@@ -2,7 +2,8 @@
 --
 -- Higham §8.2–8.3: Forward error bounds via comparison matrices.
 --
--- Theorem 8.9: |x - x̂| ≤ γ(n) · M(T)⁻¹ · |T| · |x̂|  (componentwise)
+-- Comparison-matrix consequence: |x - x̂| ≤ γ(n) · M(T)⁻¹ · |T| · |x̂|
+-- (componentwise).
 -- Plus M-matrix utilities for lower triangular matrices.
 
 import Mathlib.Data.Real.Basic
@@ -23,7 +24,7 @@ namespace LeanFpAnalysis.FP
 open scoped BigOperators
 
 -- ============================================================
--- Theorem 8.9: Forward error via comparison matrix
+-- Comparison-matrix forward error via backward error
 -- ============================================================
 
 /-- Forward error for forward substitution via comparison matrix (Theorems 8.5 + 8.11).
@@ -35,7 +36,7 @@ open scoped BigOperators
     M(L)⁻¹ using Theorem 8.11 (|L⁻¹| ≤ M(L)⁻¹). The bound can be
     much tighter because M(L)⁻¹ ≥ |L⁻¹| with equality when L = M(L).
 
-    Note: This is NOT Higham's Theorem 8.9, which gives the tighter bound
+    Note: This is NOT Higham's Theorem 8.10, which gives the tighter bound
     |x - x̂| ≤ ((n²+n+1)u + O(u²)) M(T)⁻¹|b| via direct induction. -/
 theorem forwardSub_forward_error_comparison (fp : FPModel) (n : ℕ)
     (L L_inv M_inv : Fin n → Fin n → ℝ)
@@ -107,7 +108,7 @@ theorem mmatrix_inv_nonneg_lower (n : ℕ) (L L_inv : Fin n → Fin n → ℝ)
   exact lower_tri_mmatrix_inv_nonneg n L L_inv hLT hL_diag_pos hL_offdiag hInv.2 hInv_lt
 
 -- ============================================================
--- Theorem 8.9: Direct forward error via comparison matrix
+-- Theorem 8.10: Direct forward error via comparison matrix
 -- ============================================================
 
 /-- The error multiplier recurrence for Theorem 8.9.
@@ -251,7 +252,7 @@ lemma compMatrix_inv_row_eq (n : ℕ)
 
 set_option maxHeartbeats 800000
 
-/-- **Theorem 8.9** (Higham §8.2, pp. 158-159).
+/-- **Theorem 8.10** (Higham §8.2).
 
     The forward error for forward substitution, proved by direct component-wise
     induction (not via backward error), satisfies:

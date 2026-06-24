@@ -8,6 +8,7 @@
 import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
+import Mathlib.LinearAlgebra.Matrix.Block
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import Mathlib.Tactic.FieldSimp
@@ -37,6 +38,230 @@ structure LUFactSpec (n : ℕ) (A L : Fin n → Fin n → ℝ) (U : Fin n → Fi
   U_lower_zero : ∀ i j : Fin n, j.val < i.val → U i j = 0
   /-- A = L * U: the product recovers A exactly. -/
   product_eq : ∀ i j : Fin n, ∑ k : Fin n, L i k * U k j = A i j
+
+/-- For an exact LU certificate with unit lower triangular `L`, the determinant
+of `A` is the product of the pivots on the diagonal of `U`. -/
+theorem LUFactSpec.det_eq_prod_U_diag {n : ℕ}
+    {A L U : Fin n → Fin n → ℝ}
+    (hLU : LUFactSpec n A L U) :
+    Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) =
+      ∏ i : Fin n, U i i := by
+  classical
+  have hAeq : (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) =
+      (Matrix.of L : Matrix (Fin n) (Fin n) ℝ) *
+        (Matrix.of U : Matrix (Fin n) (Fin n) ℝ) := by
+    ext i j
+    simpa [Matrix.mul_apply] using (hLU.product_eq i j).symm
+  have hLtri : Matrix.BlockTriangular
+      (M := (Matrix.of L : Matrix (Fin n) (Fin n) ℝ)) OrderDual.toDual := by
+    intro i j hij
+    exact hLU.L_upper_zero i j (by simpa using hij)
+  have hUtri : Matrix.BlockTriangular
+      (M := (Matrix.of U : Matrix (Fin n) (Fin n) ℝ)) id := by
+    intro i j hij
+    exact hLU.U_lower_zero i j (by simpa using hij)
+  calc
+    Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ)
+        = Matrix.det ((Matrix.of L : Matrix (Fin n) (Fin n) ℝ) *
+            (Matrix.of U : Matrix (Fin n) (Fin n) ℝ)) := by rw [hAeq]
+    _ = Matrix.det (Matrix.of L : Matrix (Fin n) (Fin n) ℝ) *
+          Matrix.det (Matrix.of U : Matrix (Fin n) (Fin n) ℝ) := by
+          rw [Matrix.det_mul]
+    _ = (∏ i : Fin n, L i i) * (∏ i : Fin n, U i i) := by
+          rw [Matrix.det_of_lowerTriangular _ hLtri,
+            Matrix.det_of_upperTriangular hUtri]
+          simp [Matrix.of_apply]
+    _ = (∏ _i : Fin n, (1 : ℝ)) * (∏ i : Fin n, U i i) := by
+          congr 1
+          apply Finset.prod_congr rfl
+          intro i _
+          exact hLU.L_diag i
+    _ = ∏ i : Fin n, U i i := by simp
+
+/-- An exact LU certificate is nonsingular exactly when all pivots on the
+diagonal of `U` are nonzero. -/
+theorem LUFactSpec.det_ne_zero_iff_U_diag_ne_zero {n : ℕ}
+    {A L U : Fin n → Fin n → ℝ}
+    (hLU : LUFactSpec n A L U) :
+    Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0 ↔
+      ∀ i : Fin n, U i i ≠ 0 := by
+  rw [hLU.det_eq_prod_U_diag]
+  simpa using
+    (Finset.prod_ne_zero_iff :
+      (∏ i : Fin n, U i i) ≠ 0 ↔
+        ∀ i ∈ (Finset.univ : Finset (Fin n)), U i i ≠ 0)
+
+/-- First scalar Schur complement used by the exact no-pivot LU induction.
+For a matrix indexed by `Fin (m + 1)`, this removes row and column zero after
+eliminating with pivot `A 0 0`. -/
+noncomputable def luFirstSchurComplement {m : ℕ}
+    (A : Fin (m + 1) → Fin (m + 1) → ℝ) : Fin m → Fin m → ℝ :=
+  fun i j => A i.succ j.succ - A i.succ 0 * A 0 j.succ / A 0 0
+
+/-- Explicit lower factor for one exact no-pivot LU construction step. -/
+noncomputable def luFirstStepL {m : ℕ}
+    (A : Fin (m + 1) → Fin (m + 1) → ℝ)
+    (L₁ : Fin m → Fin m → ℝ) : Fin (m + 1) → Fin (m + 1) → ℝ :=
+  fun i j =>
+    if hi : i = 0 then
+      if _hj : j = 0 then 1 else 0
+    else
+      if hj : j = 0 then A i 0 / A 0 0 else L₁ (i.pred hi) (j.pred hj)
+
+/-- Explicit upper factor for one exact no-pivot LU construction step. -/
+noncomputable def luFirstStepU {m : ℕ}
+    (A : Fin (m + 1) → Fin (m + 1) → ℝ)
+    (U₁ : Fin m → Fin m → ℝ) : Fin (m + 1) → Fin (m + 1) → ℝ :=
+  fun i j =>
+    if hi : i = 0 then A 0 j
+    else
+      if hj : j = 0 then 0 else U₁ (i.pred hi) (j.pred hj)
+
+/-- One exact no-pivot LU construction step.
+
+If the leading pivot is nonzero and the first Schur complement already has an
+exact unit-lower/upper LU certificate, then the original matrix has an exact
+unit-lower/upper LU certificate.  This is the scalar analogue of the standard
+block LU step and is a reusable dependency for Higham Theorem 9.1's existence
+direction, with the factors exposed definitionally. -/
+theorem LUFactSpec.of_firstSchurComplement_explicit {m : ℕ}
+    {A : Fin (m + 1) → Fin (m + 1) → ℝ}
+    (hpivot : A 0 0 ≠ 0)
+    {L₁ U₁ : Fin m → Fin m → ℝ}
+    (hS : LUFactSpec m (luFirstSchurComplement A) L₁ U₁) :
+    LUFactSpec (m + 1) A (luFirstStepL A L₁) (luFirstStepU A U₁) := by
+  classical
+  let L : Fin (m + 1) → Fin (m + 1) → ℝ := luFirstStepL A L₁
+  let U : Fin (m + 1) → Fin (m + 1) → ℝ := luFirstStepU A U₁
+  change LUFactSpec (m + 1) A L U
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · intro i
+    by_cases hi : i = 0
+    · subst hi
+      simp [L, luFirstStepL]
+    · simp [L, luFirstStepL, hi, hS.L_diag]
+  · intro i j hij
+    by_cases hi : i = 0
+    · subst hi
+      have hj : j ≠ 0 := by
+        intro h
+        subst h
+        exact (Nat.lt_irrefl 0 hij).elim
+      simp [L, luFirstStepL, hj]
+    · have hj : j ≠ 0 := by
+        intro h
+        subst h
+        exact (Nat.not_lt_zero _ hij).elim
+      simp only [L, luFirstStepL, dif_neg hi, dif_neg hj]
+      exact hS.L_upper_zero (i.pred hi) (j.pred hj) (by
+        have hival := Fin.val_pred i hi
+        have hjval := Fin.val_pred j hj
+        have hi0 : i.val ≠ 0 := fun h => hi (Fin.ext h)
+        have hj0 : j.val ≠ 0 := fun h => hj (Fin.ext h)
+        omega)
+  · intro i j hij
+    by_cases hi : i = 0
+    · subst hi
+      exact (Nat.not_lt_zero _ hij).elim
+    · by_cases hj : j = 0
+      · subst hj
+        simp [U, luFirstStepU, hi]
+      · simp only [U, luFirstStepU, dif_neg hi, dif_neg hj]
+        exact hS.U_lower_zero (i.pred hi) (j.pred hj) (by
+          have hival := Fin.val_pred i hi
+          have hjval := Fin.val_pred j hj
+          have hi0 : i.val ≠ 0 := fun h => hi (Fin.ext h)
+          have hj0 : j.val ≠ 0 := fun h => hj (Fin.ext h)
+          omega)
+  · intro i j
+    rw [Fin.sum_univ_succ]
+    have hL0 : ∀ p : Fin (m + 1), L 0 p = if p = 0 then 1 else 0 := by
+      intro p
+      simp [L, luFirstStepL]
+    have hU0 : ∀ p : Fin (m + 1), U 0 p = A 0 p := by
+      intro p
+      simp [U, luFirstStepU]
+    have hL0s : ∀ k : Fin m, L 0 k.succ = 0 := by
+      intro k
+      rw [hL0]
+      simp [Fin.succ_ne_zero]
+    have hLs0 : ∀ k : Fin m, L k.succ 0 = A k.succ 0 / A 0 0 := by
+      intro k
+      simp [L, luFirstStepL, Fin.succ_ne_zero]
+    have hUs0 : ∀ k : Fin m, U k.succ 0 = 0 := by
+      intro k
+      simp [U, luFirstStepU, Fin.succ_ne_zero]
+    have hLss : ∀ p q : Fin m, L p.succ q.succ = L₁ p q := by
+      intro p q
+      simp [L, luFirstStepL, Fin.succ_ne_zero, Fin.pred_succ]
+    have hUss : ∀ p q : Fin m, U p.succ q.succ = U₁ p q := by
+      intro p q
+      simp [U, luFirstStepU, Fin.succ_ne_zero, Fin.pred_succ]
+    by_cases hi : i = 0 <;> by_cases hj : j = 0
+    · subst hi
+      subst hj
+      rw [hL0 0, hU0 0]
+      have hzero :
+          (∑ x : Fin m, L 0 x.succ * U x.succ 0) = 0 := by
+        simp [hL0s]
+      rw [hzero]
+      simp
+    · subst hi
+      rw [hL0 0, hU0 j]
+      have hzero :
+          (∑ x : Fin m, L 0 x.succ * U x.succ j) = 0 := by
+        simp [hL0s]
+      rw [hzero]
+      simp
+    · subst hj
+      rw [hU0 0]
+      have hzero :
+          (∑ x : Fin m, L i x.succ * U x.succ 0) = 0 := by
+        simp [hUs0]
+      have hLi0 : L i 0 = A i 0 / A 0 0 := by
+        have h := hLs0 (i.pred hi)
+        simpa [Fin.succ_pred i hi] using h
+      rw [hzero, hLi0]
+      field_simp [hpivot]
+      ring
+    · rw [hU0 j]
+      have hprod := hS.product_eq (i.pred hi) (j.pred hj)
+      have hsucc :
+          (∑ x : Fin m, L i x.succ * U x.succ j) =
+            ∑ x : Fin m, L₁ (i.pred hi) x * U₁ x (j.pred hj) := by
+        apply Finset.sum_congr rfl
+        intro x _
+        have hLix : L i x.succ = L₁ (i.pred hi) x := by
+          have h := hLss (i.pred hi) x
+          simpa [Fin.succ_pred i hi] using h
+        have hUxj : U x.succ j = U₁ x (j.pred hj) := by
+          have h := hUss x (j.pred hj)
+          simpa [Fin.succ_pred j hj] using h
+        rw [hLix, hUxj]
+      have hLi0 : L i 0 = A i 0 / A 0 0 := by
+        have h := hLs0 (i.pred hi)
+        simpa [Fin.succ_pred i hi] using h
+      rw [hLi0, hsucc, hprod]
+      simp only [luFirstSchurComplement, Fin.succ_pred]
+      field_simp [hpivot]
+      ring
+
+/-- One exact no-pivot LU construction step.
+
+If the leading pivot is nonzero and the first Schur complement already has an
+exact unit-lower/upper LU certificate, then the original matrix has an exact
+unit-lower/upper LU certificate.  This is the scalar analogue of the standard
+block LU step and is a reusable dependency for Higham Theorem 9.1's existence
+direction. -/
+theorem LUFactSpec.of_firstSchurComplement {m : ℕ}
+    {A : Fin (m + 1) → Fin (m + 1) → ℝ}
+    (hpivot : A 0 0 ≠ 0)
+    {L₁ U₁ : Fin m → Fin m → ℝ}
+    (hS : LUFactSpec m (luFirstSchurComplement A) L₁ U₁) :
+    ∃ L U : Fin (m + 1) → Fin (m + 1) → ℝ,
+      LUFactSpec (m + 1) A L U :=
+  ⟨luFirstStepL A L₁, luFirstStepU A U₁,
+    LUFactSpec.of_firstSchurComplement_explicit hpivot hS⟩
 
 /-- Specification of a *computed* LU factorization with backward error.
 

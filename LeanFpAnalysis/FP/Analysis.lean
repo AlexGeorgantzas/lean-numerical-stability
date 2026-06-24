@@ -73,3 +73,4 @@ import LeanFpAnalysis.FP.Analysis.OperatorLog
 import LeanFpAnalysis.FP.Analysis.LiebTrace
 import LeanFpAnalysis.FP.Analysis.MatrixConcentration
 import LeanFpAnalysis.FP.Analysis.PerturbationTheory
+import LeanFpAnalysis.FP.Analysis.HighamChapter7

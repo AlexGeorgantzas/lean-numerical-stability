@@ -383,9 +383,9 @@ theorem banded_growth_backward_error (n : ℕ)
     the growth factor satisfies:
       ρ_n ≤ 2^{2p-1} - (p-1) · 2^{p-2}
 
-    Special cases:
-    - p = 1 (tridiagonal): ρ ≤ 2
-    - p = 2 (pentadiagonal): ρ ≤ 5
+    The source-facing Chapter 9 wrapper records arithmetic for this scalar
+    expression separately. This theorem itself takes the growth constant as a
+    hypothesis and does not prove the banded GEPP growth theorem.
 
     This theorem takes the banded growth bound as a hypothesis
     and combines it with the tight LU solve backward error.
@@ -510,6 +510,115 @@ lemma entry_le_maxEntryNorm {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ)
       (Finset.univ_nonempty_iff.mpr ⟨⟨0, hn⟩⟩) (fun j => |A i j|))
       (Finset.mem_univ i)
 
+/-- Each entry is bounded by the matrix infinity norm. -/
+lemma entry_abs_le_infNorm {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (i j : Fin n) : |A i j| ≤ infNorm A := by
+  have hrow : |A i j| ≤ ∑ j' : Fin n, |A i j'| :=
+    Finset.single_le_sum (fun j' _ => abs_nonneg (A i j')) (Finset.mem_univ j)
+  exact le_trans hrow (row_sum_le_infNorm A i)
+
+/-- The max-entry norm is bounded by the matrix infinity norm. -/
+lemma maxEntryNorm_le_infNorm {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) :
+    maxEntryNorm hn A ≤ infNorm A := by
+  unfold maxEntryNorm
+  apply Finset.sup'_le
+  intro i _
+  apply Finset.sup'_le
+  intro j _
+  exact entry_abs_le_infNorm A i j
+
+/-- Max-entry norm monotonicity from componentwise absolute-value bounds. -/
+lemma maxEntryNorm_le_of_entry_abs_le {n : ℕ} (hn : 0 < n)
+    (A B : Fin n → Fin n → ℝ)
+    (hentry : ∀ i j : Fin n, |A i j| ≤ |B i j|) :
+    maxEntryNorm hn A ≤ maxEntryNorm hn B := by
+  unfold maxEntryNorm
+  apply Finset.sup'_le
+  intro i _
+  apply Finset.sup'_le
+  intro j _
+  exact le_trans (hentry i j) (entry_le_maxEntryNorm hn B i j)
+
+/-- Max-entry norm bound from a uniform entrywise bound. -/
+lemma maxEntryNorm_le_of_entry_le_bound {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) (M : ℝ)
+    (hentry : ∀ i j : Fin n, |A i j| ≤ M) :
+    maxEntryNorm hn A ≤ M := by
+  unfold maxEntryNorm
+  apply Finset.sup'_le
+  intro i _
+  apply Finset.sup'_le
+  intro j _
+  exact hentry i j
+
+/-- Max-entry norm monotonicity when every entry is bounded by another
+matrix's max-entry norm, possibly at different indices. -/
+lemma maxEntryNorm_le_of_entry_le_max {n : ℕ} (hn : 0 < n)
+    (A B : Fin n → Fin n → ℝ)
+    (hentry : ∀ i j : Fin n, |A i j| ≤ maxEntryNorm hn B) :
+    maxEntryNorm hn A ≤ maxEntryNorm hn B := by
+  exact maxEntryNorm_le_of_entry_le_bound hn A (maxEntryNorm hn B) hentry
+
+/-- The max-entry norm is invariant under matrix transposition. -/
+lemma maxEntryNorm_matTranspose {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) :
+    maxEntryNorm hn (matTranspose A) = maxEntryNorm hn A := by
+  apply le_antisymm
+  · let hne : (Finset.univ : Finset (Fin n)).Nonempty :=
+      Finset.univ_nonempty_iff.mpr ⟨⟨0, hn⟩⟩
+    change Finset.sup' Finset.univ hne
+        (fun i => Finset.sup' Finset.univ hne (fun j => |matTranspose A i j|)) ≤
+      maxEntryNorm hn A
+    apply Finset.sup'_le
+    intro i _
+    apply Finset.sup'_le
+    intro j _
+    simpa [matTranspose] using entry_le_maxEntryNorm hn A j i
+  · let hne : (Finset.univ : Finset (Fin n)).Nonempty :=
+      Finset.univ_nonempty_iff.mpr ⟨⟨0, hn⟩⟩
+    change Finset.sup' Finset.univ hne
+        (fun i => Finset.sup' Finset.univ hne (fun j => |A i j|)) ≤
+      maxEntryNorm hn (matTranspose A)
+    apply Finset.sup'_le
+    intro i _
+    apply Finset.sup'_le
+    intro j _
+    simpa [matTranspose] using entry_le_maxEntryNorm hn (matTranspose A) j i
+
+/-- Any square submatrix has max-entry norm bounded by the source matrix's
+max-entry norm. -/
+lemma maxEntryNorm_submatrix_le {n m : ℕ} (hn : 0 < n) (hm : 0 < m)
+    (A : Fin n → Fin n → ℝ) (rows cols : Fin m → Fin n) :
+    maxEntryNorm hm (fun i j : Fin m => A (rows i) (cols j)) ≤
+      maxEntryNorm hn A := by
+  let hne : (Finset.univ : Finset (Fin m)).Nonempty :=
+    Finset.univ_nonempty_iff.mpr ⟨⟨0, hm⟩⟩
+  change Finset.sup' Finset.univ hne
+      (fun i => Finset.sup' Finset.univ hne
+        (fun j => |A (rows i) (cols j)|)) ≤ maxEntryNorm hn A
+  apply Finset.sup'_le
+  intro i _
+  apply Finset.sup'_le
+  intro j _
+  exact entry_le_maxEntryNorm hn A (rows i) (cols j)
+
+/-- The matrix infinity norm is at most `n` times the max-entry norm. -/
+theorem infNorm_le_card_mul_maxEntryNorm {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) :
+    infNorm A ≤ (n : ℝ) * maxEntryNorm hn A := by
+  apply infNorm_le_of_row_sum_le
+  · intro i
+    calc
+      ∑ j : Fin n, |A i j|
+          ≤ ∑ _j : Fin n, maxEntryNorm hn A := by
+            apply Finset.sum_le_sum
+            intro j _
+            exact entry_le_maxEntryNorm hn A i j
+      _ = (n : ℝ) * maxEntryNorm hn A := by
+            simp [Finset.sum_const, Fintype.card_fin, nsmul_eq_mul]
+  · exact mul_nonneg (Nat.cast_nonneg' n) (maxEntryNorm_nonneg hn A)
+
 /-- **Growth factor (max-entry version)** (Higham §9.3, Definition 9.6).
 
     ρ = max_{i,j} |U_ij| / max_{i,j} |A_ij|
@@ -519,6 +628,279 @@ lemma entry_le_maxEntryNorm {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ)
 noncomputable def growthFactorEntry {n : ℕ} (hn : 0 < n)
     (A U_hat : Fin n → Fin n → ℝ) (_hA : 0 < maxEntryNorm hn A) : ℝ :=
   maxEntryNorm hn U_hat / maxEntryNorm hn A
+
+/-- Convert a uniform final-`U` entry bound into Higham's max-entry growth
+factor.  This is the generic adapter used by several Chapter 9 source-facing
+growth rows. -/
+theorem growthFactorEntry_le_of_entry_bound_factor {n : ℕ} (hn : 0 < n)
+    (A U : Fin n → Fin n → ℝ) (c : ℝ)
+    (hA : 0 < maxEntryNorm hn A)
+    (hEntry : ∀ i j : Fin n, |U i j| ≤ c * maxEntryNorm hn A) :
+    growthFactorEntry hn A U hA ≤ c := by
+  have hUmax : maxEntryNorm hn U ≤ c * maxEntryNorm hn A := by
+    unfold maxEntryNorm
+    apply Finset.sup'_le
+    intro i _
+    apply Finset.sup'_le
+    intro j _
+    exact hEntry i j
+  unfold growthFactorEntry
+  rwa [div_le_iff₀ hA]
+
+/-- Convert a max-entry growth-factor bound into the infinity-norm bridge used
+in Wilkinson's source-facing bound. -/
+theorem infNorm_le_card_mul_growthFactorEntry_bound {n : ℕ} (hn : 0 < n)
+    (A U_hat : Fin n → Fin n → ℝ) (ρ : ℝ)
+    (hA : 0 < maxEntryNorm hn A)
+    (hρ : 0 ≤ ρ)
+    (hGrowth : growthFactorEntry hn A U_hat hA ≤ ρ) :
+    infNorm U_hat ≤ (n : ℝ) * ρ * infNorm A := by
+  have hmax_growth :
+      maxEntryNorm hn U_hat ≤ ρ * maxEntryNorm hn A := by
+    unfold growthFactorEntry at hGrowth
+    rwa [div_le_iff₀ hA] at hGrowth
+  have hcard_nonneg : 0 ≤ (n : ℝ) := Nat.cast_nonneg' n
+  calc
+    infNorm U_hat ≤ (n : ℝ) * maxEntryNorm hn U_hat :=
+      infNorm_le_card_mul_maxEntryNorm hn U_hat
+    _ ≤ (n : ℝ) * (ρ * maxEntryNorm hn A) :=
+      mul_le_mul_of_nonneg_left hmax_growth hcard_nonneg
+    _ = (n : ℝ) * ρ * maxEntryNorm hn A := by ring
+    _ ≤ (n : ℝ) * ρ * infNorm A := by
+      exact mul_le_mul_of_nonneg_left (maxEntryNorm_le_infNorm hn A)
+        (mul_nonneg hcard_nonneg hρ)
+
+/-- Convert a componentwise `|L| |U| <= c |A|` bound into Higham's
+max-entry growth-factor bound for the final upper factor. -/
+theorem growthFactorEntry_le_of_absLU_componentwise {n : ℕ} (hn : 0 < n)
+    (A L U : Fin n → Fin n → ℝ) (c : ℝ)
+    (hc : 0 ≤ c)
+    (hAmax : 0 < maxEntryNorm hn A)
+    (hLdiag_abs : ∀ i : Fin n, |L i i| = 1)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L i k| * |U k j| ≤ c * |A i j|) :
+    growthFactorEntry hn A U hAmax ≤ c := by
+  have hUmax_le_Amax : maxEntryNorm hn U ≤ c * maxEntryNorm hn A := by
+    unfold maxEntryNorm
+    apply Finset.sup'_le
+    intro i _
+    apply Finset.sup'_le
+    intro j _
+    have hterm :
+        |L i i| * |U i j| ≤ ∑ k : Fin n, |L i k| * |U k j| :=
+      Finset.single_le_sum
+        (s := Finset.univ)
+        (f := fun k : Fin n => |L i k| * |U k j|)
+        (fun k _ => mul_nonneg (abs_nonneg _) (abs_nonneg _))
+        (Finset.mem_univ i)
+    have hU_le_absLU :
+        |U i j| ≤ ∑ k : Fin n, |L i k| * |U k j| := by
+      simpa [hLdiag_abs i] using hterm
+    have hAij_le : c * |A i j| ≤ c * maxEntryNorm hn A :=
+      mul_le_mul_of_nonneg_left (entry_le_maxEntryNorm hn A i j) hc
+    exact le_trans hU_le_absLU (le_trans (hAbsLU_le i j) hAij_le)
+  unfold growthFactorEntry
+  rw [div_le_iff₀ hAmax]
+  exact hUmax_le_Amax
+
+/-- **Problem 9.9**, exact-LU max-entry growth bound in source form.
+
+For an exact unit-lower/upper LU certificate `A = L U`, the max-entry growth
+factor of the final upper factor is bounded by
+`1 + n * || |L| |U| ||_∞ / ||A||_∞`.  The source problem states the same
+inequality for GE without pivoting; this theorem supplies the local algebraic
+bridge once the no-pivot trace has produced an exact LU certificate. -/
+theorem growthFactorEntry_le_one_add_card_mul_absLU_infNorm_div
+    {n : ℕ} (hn : 0 < n)
+    {A L U : Fin n → Fin n → ℝ}
+    (hLU : LUFactSpec n A L U)
+    (hAmax : 0 < maxEntryNorm hn A)
+    (hAinf : 0 < infNorm A) :
+    growthFactorEntry hn A U hAmax ≤
+      1 + (n : ℝ) *
+        infNorm (matMul n (absMatrix n L) (absMatrix n U)) / infNorm A := by
+  let W : Fin n → Fin n → ℝ := matMul n (absMatrix n L) (absMatrix n U)
+  have hW_nonneg : ∀ i j : Fin n, 0 ≤ W i j := by
+    intro i j
+    unfold W matMul absMatrix
+    exact Finset.sum_nonneg fun k _ => mul_nonneg (abs_nonneg _) (abs_nonneg _)
+  have hentry :
+      ∀ i j : Fin n, |U i j| ≤ maxEntryNorm hn A + infNorm W := by
+    intro i j
+    have hsplit :
+        (∑ k : Fin n, L i k * U k j) =
+          U i j + Finset.sum (Finset.univ.erase i) (fun k => L i k * U k j) := by
+      rw [← Finset.add_sum_erase _ (fun k : Fin n => L i k * U k j) (Finset.mem_univ i)]
+      rw [hLU.L_diag i]
+      ring
+    have hU_eq :
+        U i j =
+          A i j - Finset.sum (Finset.univ.erase i) (fun k => L i k * U k j) := by
+      rw [← hLU.product_eq i j, hsplit]
+      ring
+    calc
+      |U i j|
+          = |A i j - Finset.sum (Finset.univ.erase i) (fun k => L i k * U k j)| := by
+            rw [hU_eq]
+      _ ≤ |A i j| +
+            |Finset.sum (Finset.univ.erase i) (fun k => L i k * U k j)| := by
+            let S := Finset.sum (Finset.univ.erase i) (fun k => L i k * U k j)
+            change |A i j - S| ≤ |A i j| + |S|
+            simpa [sub_eq_add_neg, abs_neg] using abs_add_le (A i j) (-S)
+      _ ≤ maxEntryNorm hn A +
+            Finset.sum (Finset.univ.erase i) (fun k => |L i k| * |U k j|) := by
+        gcongr
+        · exact entry_le_maxEntryNorm hn A i j
+        · calc
+            |Finset.sum (Finset.univ.erase i) (fun k => L i k * U k j)|
+                ≤ Finset.sum (Finset.univ.erase i) (fun k => |L i k * U k j|) :=
+                  Finset.abs_sum_le_sum_abs _ _
+            _ = Finset.sum (Finset.univ.erase i) (fun k => |L i k| * |U k j|) := by
+              apply Finset.sum_congr rfl
+              intro k _
+              rw [abs_mul]
+      _ ≤ maxEntryNorm hn A + ∑ k : Fin n, |L i k| * |U k j| := by
+        have hsum :
+            Finset.sum (Finset.univ.erase i) (fun k : Fin n => |L i k| * |U k j|) ≤
+              ∑ k : Fin n, |L i k| * |U k j| :=
+          Finset.sum_le_sum_of_subset_of_nonneg
+            (f := fun k : Fin n => |L i k| * |U k j|)
+            (s := Finset.univ.erase i)
+            (t := Finset.univ)
+            (by intro x _; exact Finset.mem_univ x)
+            (by intro x _ _; exact mul_nonneg (abs_nonneg (L i x)) (abs_nonneg (U x j)))
+        exact add_le_add (le_refl _) hsum
+      _ = maxEntryNorm hn A + W i j := by
+        simp [W, matMul, absMatrix]
+      _ ≤ maxEntryNorm hn A + infNorm W := by
+        gcongr
+        have hWij_le_row : W i j ≤ ∑ j' : Fin n, |W i j'| := by
+          have hWij_abs : W i j = |W i j| := (abs_of_nonneg (hW_nonneg i j)).symm
+          rw [hWij_abs]
+          exact Finset.single_le_sum (fun j' _ => abs_nonneg (W i j')) (Finset.mem_univ j)
+        exact le_trans hWij_le_row (row_sum_le_infNorm W i)
+  have hmaxU :
+      maxEntryNorm hn U ≤ maxEntryNorm hn A + infNorm W := by
+    unfold maxEntryNorm
+    apply Finset.sup'_le
+    intro i _
+    apply Finset.sup'_le
+    intro j _
+    exact hentry i j
+  have hmaxU_div :
+      maxEntryNorm hn U / maxEntryNorm hn A ≤
+        (maxEntryNorm hn A + infNorm W) / maxEntryNorm hn A :=
+    div_le_div_of_nonneg_right hmaxU (le_of_lt hAmax)
+  have hdiv_bound :
+      (maxEntryNorm hn A + infNorm W) / maxEntryNorm hn A ≤
+        1 + (n : ℝ) * infNorm W / infNorm A := by
+    have hW_nonneg_norm : 0 ≤ infNorm W := infNorm_nonneg W
+    have hmax_ne : maxEntryNorm hn A ≠ 0 := ne_of_gt hAmax
+    have hdivW :
+        infNorm W / maxEntryNorm hn A ≤ (n : ℝ) * infNorm W / infNorm A := by
+      have hAinf_le : infNorm A ≤ (n : ℝ) * maxEntryNorm hn A :=
+        infNorm_le_card_mul_maxEntryNorm hn A
+      have hmul :
+          infNorm W * infNorm A ≤
+            infNorm W * ((n : ℝ) * maxEntryNorm hn A) :=
+        mul_le_mul_of_nonneg_left hAinf_le hW_nonneg_norm
+      rw [div_le_div_iff₀ hAmax hAinf]
+      calc
+        infNorm W * infNorm A
+            ≤ infNorm W * ((n : ℝ) * maxEntryNorm hn A) := hmul
+        _ = (n : ℝ) * infNorm W * maxEntryNorm hn A := by ring
+    calc
+      (maxEntryNorm hn A + infNorm W) / maxEntryNorm hn A
+          = 1 + infNorm W / maxEntryNorm hn A := by
+            field_simp [hmax_ne]
+      _ ≤ 1 + (n : ℝ) * infNorm W / infNorm A := by
+        gcongr
+  unfold growthFactorEntry
+  exact le_trans hmaxU_div hdiv_bound
+
+/-- **Theorem 9.8, `θ ≤ n` core estimate.**
+
+    If a row of `A * A_inv` has diagonal entry `1`, then
+    `1 ≤ n * maxEntry(A) * maxEntry(A_inv)`. This is the finite-dimensional
+    max-entry estimate used by Higham to prove `θ = (αβ)⁻¹ ≤ n`. -/
+theorem inverse_row_identity_le_card_mul_maxEntryNorm {n : ℕ} (hn : 0 < n)
+    (A A_inv : Fin n → Fin n → ℝ) (i : Fin n)
+    (hrow : ∑ j : Fin n, A i j * A_inv j i = 1) :
+    1 ≤ (n : ℝ) * maxEntryNorm hn A * maxEntryNorm hn A_inv := by
+  have h_abs :
+      |∑ j : Fin n, A i j * A_inv j i| ≤
+        ∑ j : Fin n, |A i j * A_inv j i| :=
+    Finset.abs_sum_le_sum_abs _ _
+  have h_terms : ∀ j : Fin n,
+      |A i j * A_inv j i| ≤ maxEntryNorm hn A * maxEntryNorm hn A_inv := by
+    intro j
+    rw [abs_mul]
+    exact mul_le_mul
+      (entry_le_maxEntryNorm hn A i j)
+      (entry_le_maxEntryNorm hn A_inv j i)
+      (abs_nonneg _)
+      (maxEntryNorm_nonneg hn A)
+  have h_sum :
+      ∑ j : Fin n, |A i j * A_inv j i| ≤
+        ∑ _j : Fin n, maxEntryNorm hn A * maxEntryNorm hn A_inv :=
+    Finset.sum_le_sum (fun j _ => h_terms j)
+  calc
+    1 = |∑ j : Fin n, A i j * A_inv j i| := by rw [hrow, abs_one]
+    _ ≤ ∑ j : Fin n, |A i j * A_inv j i| := h_abs
+    _ ≤ ∑ _j : Fin n, maxEntryNorm hn A * maxEntryNorm hn A_inv := h_sum
+    _ = (n : ℝ) * maxEntryNorm hn A * maxEntryNorm hn A_inv := by
+        simp [Finset.sum_const, Fintype.card_fin, nsmul_eq_mul, mul_assoc]
+
+/-- **Theorem 9.8, `θ ≤ n` in max-entry form.**
+
+    For `α = maxEntry(A)` and `β = maxEntry(A_inv)`, the inverse-row identity
+    gives `(αβ)⁻¹ ≤ n`. -/
+theorem theta_le_card_of_inverse_row_identity {n : ℕ} (hn : 0 < n)
+    (A A_inv : Fin n → Fin n → ℝ) (i : Fin n)
+    (hA : 0 < maxEntryNorm hn A)
+    (hAinv : 0 < maxEntryNorm hn A_inv)
+    (hrow : ∑ j : Fin n, A i j * A_inv j i = 1) :
+    1 / (maxEntryNorm hn A * maxEntryNorm hn A_inv) ≤ n := by
+  have hmain :=
+    inverse_row_identity_le_card_mul_maxEntryNorm hn A A_inv i hrow
+  have hprod : 0 < maxEntryNorm hn A * maxEntryNorm hn A_inv :=
+    mul_pos hA hAinv
+  rw [div_le_iff₀ hprod]
+  simpa [mul_assoc] using hmain
+
+/-- **Theorem 9.8, `ρ ≥ θ` max-entry bridge.**
+
+    If the final pivot gives an inverse-entry witness `|u|⁻¹ ≤ β`, and `u` is
+    bounded by the largest entry reached by elimination, then Higham's
+    max-entry growth factor satisfies `ρ ≥ (αβ)⁻¹`. -/
+theorem growthFactorEntry_ge_inverse_entry_theta {n : ℕ} (hn : 0 < n)
+    (A A_inv U : Fin n → Fin n → ℝ)
+    (hA : 0 < maxEntryNorm hn A)
+    (hAinv : 0 < maxEntryNorm hn A_inv)
+    (u : ℝ) (hu_pos : 0 < |u|)
+    (hu_entry : |u| ≤ maxEntryNorm hn U)
+    (hu_inv_le : |u|⁻¹ ≤ maxEntryNorm hn A_inv) :
+    1 / (maxEntryNorm hn A * maxEntryNorm hn A_inv) ≤
+      growthFactorEntry hn A U hA := by
+  have hbeta_inv_le_u :
+      (maxEntryNorm hn A_inv)⁻¹ ≤ |u| :=
+    inv_le_of_inv_le₀ hu_pos hu_inv_le
+  have hbeta_inv_le_U :
+      (maxEntryNorm hn A_inv)⁻¹ ≤ maxEntryNorm hn U :=
+    le_trans hbeta_inv_le_u hu_entry
+  have hdiv :
+      (maxEntryNorm hn A_inv)⁻¹ / maxEntryNorm hn A ≤
+        maxEntryNorm hn U / maxEntryNorm hn A :=
+    div_le_div_of_nonneg_right hbeta_inv_le_U (le_of_lt hA)
+  have htheta :
+      1 / (maxEntryNorm hn A * maxEntryNorm hn A_inv) =
+        (maxEntryNorm hn A_inv)⁻¹ / maxEntryNorm hn A := by
+    field_simp [ne_of_gt hA, ne_of_gt hAinv]
+  calc
+    1 / (maxEntryNorm hn A * maxEntryNorm hn A_inv)
+        = (maxEntryNorm hn A_inv)⁻¹ / maxEntryNorm hn A := htheta
+    _ ≤ maxEntryNorm hn U / maxEntryNorm hn A := hdiv
+    _ = growthFactorEntry hn A U hA := rfl
 
 /-- **Diagonal product bounded by max-entry norm** (core of Theorem 9.7).
 
