@@ -8140,3 +8140,453 @@ These compile, but should not be treated as fully derived stability results:
   updates to `docs/LIBRARY_LOOKUP.md`, `docs/CHAPTER13_BOTTLENECK_LEDGER.md`,
   `docs/CHAPTER13_SOURCE_INVENTORY.md`, and
   `docs/CHAPTER13_FORMALIZATION_REPORT.md`.
+
+- 2026-06-24 resume verification: Completed the pending audit for
+  `higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_source_table_of_det_ne_zero`.
+  Current-state checks passed: focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet public lookup
+  `/tmp/ch13_lookup_bdd_det_source_table.{out,err}` with empty stderr and the
+  theorem name present, touched Lean-file marker scan with no matches,
+  `git diff --check`, scratch cleanup for
+  `ScratchCh13BddDetSourceTableAxioms.lean`, and `#print axioms` with only
+  `propext`, `Classical.choice`, and `Quot.sound`.  Documentation was updated
+  in `docs/LIBRARY_LOOKUP.md`, `docs/CHAPTER13_BOTTLENECK_LEDGER.md`,
+  `docs/CHAPTER13_SOURCE_INVENTORY.md`, and
+  `docs/CHAPTER13_FORMALIZATION_REPORT.md`.  The wrapper removes the separate
+  positive-denominator proof artifact for the source-table package but does not
+  construct the source inverse-bound table or active reciprocal upper bounds.
+
+- 2026-06-24: Added and verified
+  `higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_source_table_of_diag_eq_of_det_ne_zero`.
+  This is the exact diagonal-update equality companion to the determinant
+  source-table package: it derives the positive `growthFactorEntry`
+  denominator from `det(blockMatrixFlatFin A) != 0` while keeping the exact
+  update recurrence, source inverse-bound table data, and active reciprocal
+  upper bounds explicit.  Verification passed: direct `BlockLU.lean`, focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet public lookup
+  `/tmp/ch13_lookup_diag_eq_det_source_table.{out,err}` rerun after object
+  refresh with empty stderr and the theorem name present, touched Lean-file
+  marker scan with no matches, `git diff --check`, scratch cleanup for
+  `ScratchCh13DiagEqDetSourceTableAxioms.lean`, and `#print axioms` with only
+  `propext`, `Classical.choice`, and `Quot.sound`.  Remaining red BDD blocker:
+  construct/instantiate the source inverse-bound table or prove the direct
+  active pivot-product/certificate bound.
+
+- 2026-06-24: Added and verified the Problem 13.4 uniform-flat lower-comparison
+  tail transport and product-witness package
+  `higham13_eq13_22_tail_chain_to_flat_budget_from_lower_comparison_matrix_stage_history_exact_kappa_of_det_ne_zero`
+  and the combined successor chain wrapper
+  `higham13_eq13_22_blockLUBudgetChain_succ_from_tail_local_chain_lower_comparison_flat_matrix_stage_history_exact_kappa_of_det_ne_zero`,
+  plus concrete witness wrappers
+  `higham13_eq13_22_exists_blockLUFact_succ_product_from_tail_local_chain_lower_comparison_flat_matrix_stage_history_exact_kappa_of_det_ne_zero`
+  and
+  `higham13_eq13_23_exists_blockLUFact_succ_product_from_tail_local_chain_lower_comparison_flat_matrix_stage_history_exact_kappa_of_det_ne_zero`.
+  These compose the existing direct lower-budget comparison route with the
+  first-split/uniform-flat budget bridges, so a tail-local exact-κ recursive
+  chain now feeds the uniform `blockMatrixFlatFin` determinant successor without
+  exposing first-split budgets, and packages concrete Eq.13.22/Eq.13.23
+  `BlockLUFactSpec` witnesses.  Verification passed: direct `BlockLU.lean`,
+  focused `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet public
+  lookup `/tmp/ch13_lookup_flat_tail_lower_comparison_products.{out,err}` with empty
+  stderr and all four names present, touched Lean-file marker scan with no matches,
+  `git diff --check`, scratch cleanup for
+  `ScratchCh13FlatTailLowerComparisonProductsAxioms.lean`, and `#print axioms` with only
+  `propext`, `Classical.choice`, and `Quot.sound`.  Remaining red Problem 13.4
+  blocker: prove the direct source lower-budget comparison, instantiate the
+  recursive source-tail chain at every Schur tail, and prove the Eq.13.23
+  `rho <= 2` source surface.
+
+- 2026-06-24 timeout checkpoint: Added the Problem 13.4 Schur-tail positivity
+  cleanup `det_ne_zero_blockMatrixFlatFin_blockSchur_of_first_split_invertible`
+  and
+  `maxEntryNorm_blockMatrixFlatFin_blockSchur_pos_of_first_split_invertible`,
+  plus the four `_of_schur_invertible` flat lower-comparison successor/product
+  wrappers.  These derive the positive flattened Schur-tail denominator from
+  first-split Schur-complement invertibility, removing the separate `hTailPos`
+  proof-artifact premise from the flat lower-comparison route.  Verification
+  passed: direct `BlockLU.lean`, focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, and quiet public lookup
+  `/tmp/ch13_lookup_schur_tail_pos.{out,err}` with empty stderr and all six
+  public names present.  The touched Lean/lookup marker scan and
+  `git diff --check` passed after the checkpoint docs.  On resume, the scratch
+  audit `ScratchCh13SchurTailPosAxioms.lean` was run and removed; `#print axioms`
+  for all six declarations reported only `propext`, `Classical.choice`, and
+  `Quot.sound`.  Remaining red Problem 13.4 blocker: direct source lower-budget
+  comparison, recursive source-tail chain instantiation, and final Eq.13.23
+  `rho <= 2` source proof.
+
+- 2026-06-24: Completed the urgent handoff target by adding and strengthening
+  the non-flat Schur-tail/full-positivity cleanup wrappers
+  `higham13_eq13_22_blockLUBudgetChain_succ_from_tail_local_chain_inverse_ratio_matrix_stage_history_exact_kappa_of_det_ne_zero_of_schur_invertible`,
+  `higham13_eq13_22_blockLUBudgetChain_succ_from_tail_local_chain_lower_comparison_matrix_stage_history_exact_kappa_of_det_ne_zero_of_schur_invertible`,
+  `higham13_eq13_22_exists_blockLUFact_succ_product_from_tail_local_chain_inverse_ratio_matrix_stage_history_exact_kappa_of_det_ne_zero_of_schur_invertible`,
+  `higham13_eq13_23_exists_blockLUFact_succ_product_from_tail_local_chain_inverse_ratio_matrix_stage_history_exact_kappa_of_det_ne_zero_of_schur_invertible`,
+  `higham13_eq13_22_exists_blockLUFact_succ_product_from_tail_local_chain_lower_comparison_matrix_stage_history_exact_kappa_of_det_ne_zero_of_schur_invertible`,
+  and
+  `higham13_eq13_23_exists_blockLUFact_succ_product_from_tail_local_chain_lower_comparison_matrix_stage_history_exact_kappa_of_det_ne_zero_of_schur_invertible`.
+  Each wrapper derives
+  `0 < maxEntryNorm (Nat.mul_pos (Nat.succ_pos m) hr)
+    (blockMatrixFlatFin (blockSchur Ablk (pivotInv 0)))`
+  from
+  `maxEntryNorm_blockMatrixFlatFin_blockSchur_pos_of_first_split_invertible hr Ablk pivotInv hpivot`
+  and derives the full positive denominator from determinant nonsingularity
+  before calling the existing non-flat `_of_det_ne_zero` theorem.  Verification
+  passed after strengthening: direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`,
+  focused `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_lookup_nonflat_schur_tail_pos.{out,err}` with empty stderr and all
+  six new public names present, touched Lean/lookup marker scan with no
+  matches, scratch cleanup for `ScratchCh13NonflatSchurTailPosAxioms.lean`, and
+  `#print axioms` with only `propext`, `Classical.choice`, and `Quot.sound`.
+  These wrappers remove the proof-artifact Schur-tail and full positive
+  denominator premises from the inverse-ratio and lower-comparison non-flat
+  determinant routes, but they do not prove the inverse-ratio comparison,
+  direct lower-budget comparison, recursive source-tail chain, or Eq.13.23
+  `rho <= 2` source theorem.
+
+- 2026-06-24 source-chain savepoint: Added
+  `Higham13Eq1322LowerComparisonSourceChain`,
+  `Higham13Eq1322LowerComparisonSourceChain.det_ne_zero`,
+  `Higham13Eq1322LowerComparisonSourceChain.to_blockLUBudgetChain`,
+  `Higham13Eq1322LowerComparisonSourceChain.exists_blockLUFact_eq13_22_product_exact_kappa`,
+  and
+  `Higham13Eq1322LowerComparisonSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa`.
+  The inductive certificate records the direct lower-budget route recursively:
+  the base carries one-block determinant nonsingularity and the successor
+  carries pivot identity, full determinant nonsingularity, dimension bounds,
+  the direct lower-budget comparison, and the tail certificate.  The lift
+  theorem constructs the ambient `Higham13BlockLUBudgetChain`; the product
+  wrappers package concrete Eq.13.22/Eq.13.23 `BlockLUFactSpec` witnesses.
+  Verification passed: direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_lookup_source_chain.{out,err}` with empty stderr and all five new
+  public names present, `git diff --check`, touched Lean/lookup marker scan,
+  scratch cleanup, and `#print axioms` with only `propext`,
+  `Classical.choice`, and `Quot.sound`.  Current modified files intentionally on disk
+  are `.codex/PROJECT_MEMORY.md`,
+  `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`,
+  `docs/CHAPTER13_BOTTLENECK_LEDGER.md`,
+  `docs/CHAPTER13_FORMALIZATION_REPORT.md`,
+  `docs/CHAPTER13_SOURCE_INVENTORY.md`, `docs/LIBRARY_LOOKUP.md`, and
+  `examples/LibraryLookup.lean`.  On resume, continue from the remaining
+  Problem 13.4 per-tail direct lower-budget comparison and Eq.13.23 `rho <= 2`
+  source surfaces rather than adding more chain-packaging wrappers.
+
+- 2026-06-24 docs-health savepoint after source-chain lift: corrected stale
+  Chapter 13 status language in `docs/CHAPTER13_SOURCE_INVENTORY.md`,
+  `docs/CHAPTER13_FORMALIZATION_REPORT.md`, `docs/CHAPTER13_BOTTLENECK_LEDGER.md`,
+  and `docs/LIBRARY_LOOKUP.md`.  The docs now consistently say that
+  `Higham13Eq1322LowerComparisonSourceChain` handles the recursive source-tail
+  lift from supplied determinant/pivot/dimension/direct-lower-comparison data,
+  while the active Problem 13.4 blockers are the per-tail direct
+  lower-budget/condition comparison and, for Eq.13.23, the final `rho <= 2`
+  theorem.  No new Lean declarations were added in this docs-health pass.
+
+- 2026-06-24 pivot-right-inverse route-rejection savepoint: added
+  `higham13_algorithm13_3_pivot_right_inverse_not_imply_diagLowerCert_pivot_bound`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  It proves by a one-block
+  scalar witness that exact active pivot right-inverse data alone does not
+  imply the concrete `diagLowerCert` pivot product bound required by the
+  Algorithm 13.3 column-BDD route; the source inverse-bound table/active
+  reciprocal upper bound remains a genuine open obligation.  Verification
+  passed: direct `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`,
+  focused `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_lookup_pivot_right_counterexample.{out,err}` with empty stderr and
+  the new public name present, scratch cleanup, and `#print axioms` with only
+  `propext`, `Classical.choice`, and `Quot.sound`.
+
+- 2026-06-24 timeout handoff savepoint: no new Lean declaration was started
+  after the pivot-right-inverse route-rejection savepoint.  The intentional
+  modified files on disk are `.codex/PROJECT_MEMORY.md`,
+  `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`,
+  `docs/CHAPTER13_BOTTLENECK_LEDGER.md`,
+  `docs/CHAPTER13_FORMALIZATION_REPORT.md`,
+  `docs/CHAPTER13_SOURCE_INVENTORY.md`, `docs/LIBRARY_LOOKUP.md`, and
+  `examples/LibraryLookup.lean`.  Resume from the selected-scope red
+  bottlenecks: Problem 13.4's per-tail direct lower-budget/condition
+  comparison feeding `Higham13Eq1322LowerComparisonSourceChain`, Eq.13.23's
+  source `rho <= 2`/active-stage theorem for matrix-product stages, Algorithm
+  13.3's source inverse-bound table or reciprocal diagonal certificate for
+  Theorems 13.7--13.8/Eq.13.21, and Theorem 13.6's cited Implementation 1
+  proof.  The next small Lean step identified but not begun was a matrix
+  max-entry route audit showing that generic dimension-free max-entry
+  submultiplicativity/triple-product estimates are false in general; this
+  should only be route-rejection evidence, not a source theorem closure.
+
+- 2026-06-24 matrix max-entry dimension-free shortcut audit: added
+  `maxEntryNorm_matrix_mul_dimension_free_counterexample` and
+  `maxEntryNorm_matrix_mul_mul_dimension_free_counterexample` in
+  `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  They use the all-ones
+  `2 x 2` matrix to prove that generic dimension-free binary and
+  triple-product max-entry estimates are false for ordinary matrix
+  multiplication.  This is route-rejection evidence for the matrix-product
+  Eq.13.23/`rho <= 2` red row: the remaining source-compatible proof must use
+  additional structure and cannot be replaced by a generic max-entry
+  submultiplicativity shortcut.  Verification passed: direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_lookup_maxentry_counterexamples.{out,err}` with empty stderr and
+  both new public names present, touched Lean/lookup marker scan, scratch
+  cleanup, and `#print axioms` with only `propext`, `Classical.choice`, and
+  `Quot.sound`.
+
+- 2026-06-24 Theorem 13.6 exact conditional Eq.13.16 wrapper: added
+  `higham13_theorem13_6_eq13_16_from_factor_solve_estimates` in
+  `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  It proves the exact scalar
+  pair of Eq.13.16-style factorization/solve inequalities and their max
+  aggregation from supplied factor/solve estimates whose constants are bounded
+  by a common `d_n`.  This is conditional scalar algebra only; it does not
+  prove the omitted Demmel--Higham--Schreiber [326] implementation estimates,
+  and `H13-Thm13.6` / `H13-Eq13.16` remain open in the source inventory and
+  proof-source ledger.  Verification passed: direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_lookup_eq1316_conditional.{out,err}` with empty stderr and the
+  new public name present, scratch cleanup, and `#print axioms` with only
+  `propext`, `Classical.choice`, and `Quot.sound`.
+
+- 2026-06-24 07:13 UTC timeout handoff savepoint: no new Lean declaration was
+  started after the Theorem 13.6 conditional Eq.13.16 wrapper.  The
+  intentional modified files on disk are `.codex/PROJECT_MEMORY.md`,
+  `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`,
+  `docs/CHAPTER13_BOTTLENECK_LEDGER.md`,
+  `docs/CHAPTER13_FORMALIZATION_REPORT.md`,
+  `docs/CHAPTER13_PROOF_SOURCE_LEDGER.md`,
+  `docs/CHAPTER13_SOURCE_INVENTORY.md`, `docs/LIBRARY_LOOKUP.md`, and
+  `examples/LibraryLookup.lean`.  The last inspected next step was a possible
+  inverse-ratio-to-`Higham13Eq1322LowerComparisonSourceChain` connector for
+  Problem 13.4; because existing inverse-ratio successor-chain/witness wrappers
+  already package that route, resume by adding such a connector only if it
+  proves a genuinely new source dependency.  Otherwise continue with the real
+  red obligations: per-tail direct lower-budget/condition comparison, Eq.13.23
+  source `rho <= 2` for matrix-product stages, Algorithm 13.3's source
+  inverse-bound/reciprocal certificate, and Theorem 13.6's cited
+  implementation estimates.
+
+- 2026-06-24 07:20 UTC timeout handoff savepoint: no Lean declaration or
+  library edit was started after the 07:13 UTC savepoint.  The skill file,
+  split-primary contract, chapter index, active bottleneck ledger, source
+  inventory, lookup index, and extracted Chapter 13 PDF text were rechecked.
+  The key source audit is that Eq.13.22 in the book uses a source-shaped
+  recursive lower-block budget with one local growth factor, then enlarges to
+  the fixed full ambient `n * rho_n^2 * kappa(A)` budget.  The existing
+  `Higham13Eq1322LowerComparisonSourceChain` direct-comparison route remains a
+  stronger exact-tail transport, not the scalar consequence of Problem 13.4
+  alone.  Resume by avoiding redundant inverse-ratio connector wrappers unless
+  they discharge a genuinely new source dependency.  A good next small Lean
+  step is the positive scalar bridge
+  `s * rhoTail * kappaTail <= n * rho^2 * kappa` from `s <= n`,
+  `rhoTail <= rho`, and `kappaTail <= rho * kappa`, paired with the existing
+  counterexample that rejects the stronger `rhoTail^2 * kappaTail` transport.
+  The remaining red obligations are unchanged: direct Problem 13.4
+  lower-budget/condition data, Eq.13.23 source `rho <= 2` for matrix-product
+  stages, Algorithm 13.3 source inverse-bound/reciprocal certificate, and the
+  cited Theorem 13.6 implementation estimates.
+
+- 2026-06-24 Problem 13.4 source-shaped scalar bridge: added
+  `higham13_stage_local_source_lblock_budget_le_of_problem13_4_bound` in
+  `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  It proves the positive
+  scalar step matching the book's Eq.13.22 derivation: from `s <= n`,
+  `rhoTail <= rho`, nonnegativity, and `kappaTail <= rho * kappa`, the
+  one-local-growth lower-block budget `s * rhoTail * kappaTail` is bounded by
+  the full ambient `n * rho^2 * kappa` budget.  This is deliberately distinct
+  from the already-rejected stronger exact-tail `rhoTail^2 * kappaTail`
+  transport, so it is a source-shaped dependency and not a full Problem 13.4
+  recursive closure.  Verification passed: direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_lookup_source_lblock_bridge.{out,err}` with empty stderr and the
+  new public name present, `git diff --check`, touched Lean/lookup marker scan,
+  scratch cleanup, and `#print axioms` with only `propext`,
+  `Classical.choice`, and `Quot.sound`.
+
+- 2026-06-24 Problem 13.4 source local lower-block product wrappers: added
+  `higham13_algorithm13_3_multiplier_bounds_from_source_lblock_budgets_exact_kappa`,
+  `higham13_eq13_22_matrix_stage_history_product_from_source_lblock_budgets_exact_kappa`,
+  and
+  `higham13_eq13_23_matrix_stage_history_product_from_source_lblock_budgets_exact_kappa`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  These compose the
+  positive source scalar bridge with the exact-κ matrix-stage product wrappers:
+  per-active-pair local lower-block estimates `r * rhoLocal * kappaLocal`,
+  together with `rhoLocal <= rhoFull` and
+  `kappaLocal <= rhoFull * kappaFull`, now produce the per-stage multiplier
+  hypotheses and the Eq.13.22/Eq.13.23 assembled product bounds.  They leave
+  the actual local lower-block estimate table, scalar comparison table, and
+  Eq.13.23 source `rho <= 2` theorem open.  Verification passed: direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_lookup_source_lblock_products.{out,err}` with empty stderr and all
+  three names present, `git diff --check`, touched Lean/lookup marker scan,
+  scratch cleanup, and `#print axioms` with only `propext`,
+  `Classical.choice`, and `Quot.sound`.
+
+- 2026-06-24 Problem 13.4 source local lower-block witness wrappers: added
+  `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_source_lblock_budgets_exact_kappa_of_pivot_right_inverse`
+  and
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_source_lblock_budgets_exact_kappa_of_pivot_right_inverse`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean` and added both names to
+  `examples/LibraryLookup.lean`.  These package the source-local lower-block
+  product route as concrete `BlockLUFactSpec` witnesses under exact pivot
+  right-inverse certificates, removing the black-box per-stage
+  multiplier-bound hypothesis from the pivot-right witness surface.  They
+  still leave the actual local lower-block estimate table, scalar comparison
+  table, and Eq.13.23 source `rho <= 2` theorem open.  Verification passed:
+  direct `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`,
+  focused `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_lookup_source_lblock_witness.{out,err}` with empty stderr and
+  both names present, `git diff --check`, touched Lean/lookup marker scan,
+  scratch cleanup, and `#print axioms` with only `propext`,
+  `Classical.choice`, and `Quot.sound`.
+
+- 2026-06-24 Problem 13.4 determinant/canonical-inverse source local
+  lower-block witness wrappers: added
+  `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_source_lblock_budgets_exact_kappa_of_pivot_right_inverse_of_det_ne_zero`
+  and
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_source_lblock_budgets_exact_kappa_of_pivot_right_inverse_of_det_ne_zero`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean` and added both names to
+  `examples/LibraryLookup.lean`.  These specialize the source-local
+  lower-block witness route to the canonical full inverse
+  `nonsingInv (m*r) (blockMatrixFlatFin Ablk)`, deriving the full positive
+  denominator and right-inverse certificate from
+  `det(blockMatrixFlatFin Ablk) != 0`.  They still leave the local
+  lower-block estimate table, scalar comparison table, and Eq.13.23 source
+  `rho <= 2` theorem open.  Verification passed: scratch compile, direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_lookup_source_lblock_det_witness.{out,err}` with empty stderr and
+  both names present, `git diff --check`, touched Lean/lookup marker scan,
+  scratch cleanup, and `#print axioms` with only `propext`,
+  `Classical.choice`, and `Quot.sound`.
+
+- 2026-06-24 Problem 13.4 determinant/canonical-inverse source local
+  lower-block product wrappers: added
+  `higham13_eq13_22_matrix_stage_history_product_from_source_lblock_budgets_exact_kappa_of_det_ne_zero`
+  and
+  `higham13_eq13_23_matrix_stage_history_product_from_source_lblock_budgets_exact_kappa_of_det_ne_zero`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean` and added both names to
+  `examples/LibraryLookup.lean`.  These are the product-bound analogues of the
+  determinant source-local witness wrappers: they use
+  `nonsingInv (m*r) (blockMatrixFlatFin Ablk)` and derive the full positive
+  denominator and right-inverse certificate from
+  `det(blockMatrixFlatFin Ablk) != 0` before applying the source-local
+  lower-block product route.  They still leave the local lower-block estimate
+  table, scalar comparison table, and Eq.13.23 source `rho <= 2` theorem open.
+  Verification passed: direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_lookup_source_lblock_det_product.{out,err}` with empty stderr and
+  both names present, `git diff --check`, touched Lean/lookup marker scan,
+  scratch cleanup, and `#print axioms` with only `propext`,
+  `Classical.choice`, and `Quot.sound`.
+
+- 2026-06-24 Problem 13.4 source local lower-block from canonical local
+  growth: added
+  `higham13_problem13_4_single_block_source_lblock_bound_from_local_growth`
+  and
+  `higham13_algorithm13_3_source_lblock_bound_from_stageLocalGrowth_le`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean` and added both names to
+  `examples/LibraryLookup.lean`.  The generic theorem keeps the direct
+  Problem 13.4 lower-left estimate in the one-growth-factor source shape
+  `r * rhoLocal * kappaLocal`; the Algorithm 13.3 specialization proves the
+  active multiplier estimate from the canonical stage-local growth matrix plus
+  local growth/κ budget domination.  This closes the local lower-block
+  estimate side of the source-shaped Eq.13.22/Eq.13.23 wrappers.  Remaining
+  source obligations are the local-to-full scalar comparisons and Eq.13.23
+  source `rho <= 2`.  Verification passed: scratch compile, direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_lookup_source_lblock_local_growth.{out,err}` with empty stderr and
+  both names present, `git diff --check`, touched Lean/lookup marker scan,
+  scratch cleanup, and `#print axioms` with only `propext`,
+  `Classical.choice`, and `Quot.sound`.
+
+- 2026-06-24 Problem 13.4 stage-local source scalar-comparison multiplier
+  adapter: added
+  `higham13_algorithm13_3_multiplier_bounds_from_stageLocalGrowth_source_comparisons_exact_kappa`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean` and added it to
+  `examples/LibraryLookup.lean`.  The theorem chooses the canonical local
+  growth/κ values for every active Algorithm 13.3 matrix-stage pair, applies
+  the local lower-block estimate, and uses the source scalar comparison table
+  (`rhoLocal <= rhoFull`, `kappaLocal <= rhoFull * kappaFull`) to derive the
+  exact per-stage multiplier hypothesis consumed by the assembled
+  Eq.13.22/Eq.13.23 product wrappers.  Remaining source obligations are the
+  scalar comparison table itself and Eq.13.23 source `rho <= 2`.  Verification
+  passed: scratch compile, direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_lookup_stage_local_source_comparisons.{out,err}` with empty
+  stderr and the name present, scratch cleanup, and `#print axioms` with only
+  `propext`, `Classical.choice`, and `Quot.sound`.
+
+- 2026-06-24 Problem 13.4 stage-local source-comparison product/witness
+  composition: added
+  `higham13_eq13_22_matrix_stage_history_product_from_stageLocalGrowth_source_comparisons_exact_kappa`,
+  `higham13_eq13_23_matrix_stage_history_product_from_stageLocalGrowth_source_comparisons_exact_kappa`,
+  `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_source_comparisons_exact_kappa_of_pivot_right_inverse`,
+  and
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_source_comparisons_exact_kappa_of_pivot_right_inverse`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean` and added them to
+  `examples/LibraryLookup.lean`.  These wrappers feed the canonical
+  stage-local-growth multiplier theorem directly into the Eq.13.22/Eq.13.23
+  product and concrete `BlockLUFactSpec` witness surfaces, so the canonical
+  source-comparison route no longer exposes the local lower-block estimate as
+  a separate hypothesis.  Remaining source obligations are still the
+  local-to-full scalar comparison table and Eq.13.23 source `rho <= 2`.
+
+- 2026-06-24 Problem 13.4 stage-local source-comparison determinant cleanup:
+  added
+  `higham13_eq13_22_matrix_stage_history_product_from_stageLocalGrowth_source_comparisons_exact_kappa_of_det_ne_zero`,
+  `higham13_eq13_23_matrix_stage_history_product_from_stageLocalGrowth_source_comparisons_exact_kappa_of_det_ne_zero`,
+  `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_source_comparisons_exact_kappa_of_pivot_right_inverse_of_det_ne_zero`,
+  and
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_source_comparisons_exact_kappa_of_pivot_right_inverse_of_det_ne_zero`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean` and added them to
+  `examples/LibraryLookup.lean`.  These determinant variants specialize the
+  canonical source-comparison route to
+  `nonsingInv (m*r) (blockMatrixFlatFin Ablk)`, derive the full
+  positive-denominator/right-inverse certificates from
+  `det(blockMatrixFlatFin Ablk) != 0`, and derive the local stage
+  positive-denominator table from the existing local invertibility table.
+  Verification used direct Lean, focused Lake build, quiet lookup
+  `/tmp/ch13_lookup_stageLocalGrowth_source_det_products.{out,err}`, and
+  `#print axioms`; only `propext`, `Classical.choice`, and `Quot.sound`
+  appeared.  Remaining source obligations are still the local-to-full scalar
+  comparison table and Eq.13.23 source `rho <= 2`.
+  Verification passed: direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_lookup_stageLocalGrowth_source_products.{out,err}` with empty
+  stderr and all four names present, `git diff --check`, Lean-only marker
+  scan, scratch cleanup, and `#print axioms` with only `propext`,
+  `Classical.choice`, and `Quot.sound`.
+
+- 2026-06-24 Problem 13.4 stage-local growth-factor comparison: added
+  `growthFactorEntry_le_of_growth_le_of_base_le` and
+  `higham13_algorithm13_3_stageLocalGrowthFactor_le_matrixStageHistoryGrowthFactor_of_base_le`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, plus lookup entries.  The
+  generic scalar lemma proves local `growthFactorEntry <=` global
+  `growthFactorEntry` from numerator domination and denominator/base
+  domination.  The Algorithm 13.3 specialization uses the already-proved
+  canonical local-growth domination to reduce the source `rhoLocal <= rhoFull`
+  row to the explicit denominator comparison
+  `||blockMatrixFlatFin Ablk||_max <= ||stageLocalFlatMatrix i j||_max`.
+  Verification passed: scratch compile, direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_lookup_growth_factor_comparison.{out,err}` with empty stderr and
+  both names present, scratch cleanup, and `#print axioms` with only
+  `propext`, `Classical.choice`, and `Quot.sound`.
+
+- 2026-06-24 Problem 13.4 stage-local denominator/base route rejection: added
+  `higham13_stage_local_base_comparison_counterexample` in
+  `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, plus a lookup entry.  The
+  theorem gives a `3 × 3` scalar-block example where the active local pair has
+  positive local denominator `1` but the flattened global input has max-entry
+  norm `100` outside that local `2 × 2` stage partition, so the generic
+  comparison `||A||_max <= ||A_local||_max` is false.  Verification passed:
+  scratch compile, direct `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`,
+  focused `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_lookup_stage_local_base_counterexample.{out,err}` with empty
+  stderr and the name present, scratch cleanup, and `#print axioms` with only
+  `propext`, `Classical.choice`, and `Quot.sound`.

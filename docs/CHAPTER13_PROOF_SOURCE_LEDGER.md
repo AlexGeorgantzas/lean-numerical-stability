@@ -12,9 +12,13 @@ replaced by an independently checked proof.
   Algorithm 13.3, Implementation 1, satisfy the two backward-error inequalities
   displayed in (13.16), up to first order in `u`.
 - Book proof status: omitted; the text cites Demmel--Higham--Schreiber [326].
-- Current Lean status: `block_lu_solve_backward_error` is a scalar aggregation
-  lemma from supplied factorization and solve error bounds. It is not a proof of
-  Theorem 13.6 because it assumes the algorithm-specific first-order estimates
+- Current Lean status: `block_lu_solve_backward_error` and
+  `higham13_theorem13_6_eq13_16_from_factor_solve_estimates` are scalar
+  aggregation lemmas from supplied factorization and solve error bounds, and
+  `block_lu_solve_backward_error_firstOrder` /
+  `higham13_theorem13_6_eq13_16_firstOrder_from_factor_solve_estimates`
+  provide the corresponding `FirstOrderLe` surfaces. They are not proofs of
+  Theorem 13.6 because they assume the algorithm-specific first-order estimates
   that the source theorem delegates to [326].
 - Current decision: keep scalar aggregation support, but leave
   `H13-Thm13.6` and `H13-Eq13.16` open in the inventory.
@@ -90,7 +94,28 @@ replaced by an independently checked proof.
   close that lower-right equality by construction for the one-step Schur-stage
   matrix.  The growth-factor lower-bound lemmas `growthFactorEntry_nonneg` and
   `growthFactorEntry_ge_one_of_maxEntryNorm_le` close the scalar fact `rho >= 1`
-  once the chosen growth matrix contains the initial max-entry norm.  The
+  once the chosen growth matrix contains the initial max-entry norm.  The scalar
+  comparison lemma `growthFactorEntry_le_of_growth_le_of_base_le` and its
+  Algorithm 13.3 specialization
+  `higham13_algorithm13_3_stageLocalGrowthFactor_le_matrixStageHistoryGrowthFactor_of_base_le`
+  reduce the source `rhoLocal <= rhoFull` row to the remaining denominator
+  comparison `||A||_max <= ||A_local||_max`, using the already-proved
+  stage-local growth numerator domination.  The route-rejection theorem
+  `higham13_stage_local_base_comparison_counterexample` shows that this
+  denominator comparison is false for arbitrary active stage-local pairs, so a
+  source-specific comparison or a different budget route is still required.  The
+  direct local lower-block theorem
+  `higham13_problem13_4_single_block_source_lblock_bound_from_local_growth`
+  keeps the one-growth-factor Problem 13.4 lower-left estimate in the source
+  form `r * rhoLocal * kappaLocal`, and
+  `higham13_algorithm13_3_source_lblock_bound_from_stageLocalGrowth_le`
+  specializes it to a matrix-stage Algorithm 13.3 multiplier using the
+  canonical local growth matrix and local budget domination hypotheses.  The
+  adapter
+  `higham13_algorithm13_3_multiplier_bounds_from_stageLocalGrowth_source_comparisons_exact_kappa`
+  then chooses those canonical local values for every active pair and uses the
+  source scalar comparisons to produce the exact assembled multiplier bound.
+  The
   general bridge
   `higham13_problem13_4_L21_eq13_22_premise_from_source_growthFactorEntry_exact_kappa`
   uses that fact to promote the lower-left bound to the Eq.13.22 lower-factor
