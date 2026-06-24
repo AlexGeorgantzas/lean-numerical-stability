@@ -1,6 +1,6 @@
 -- Algorithms/GridPoints.lean
 --
--- Higham Chapter 4, Problem 4.8.
+-- Higham Chapter 4, Problem 4.9.
 
 import Mathlib.Tactic
 import LeanFpAnalysis.FP.Analysis.Summation
@@ -12,7 +12,7 @@ open scoped BigOperators
 /-!
 # Equally Spaced Grid Points
 
-Higham Chapter 4, Problem 4.8 compares three ways to form grid points
+Higham Chapter 4, Problem 4.9 compares three ways to form grid points
 `x_i = a + i*h`, where `h = (b-a)/n` and `a`, `b` are floating-point values
 but `h` need not be.  The theorem surface separates two effects:
 

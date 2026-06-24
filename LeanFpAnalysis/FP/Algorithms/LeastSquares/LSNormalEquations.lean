@@ -22,6 +22,7 @@ import LeanFpAnalysis.FP.Model
 import LeanFpAnalysis.FP.Analysis.Rounding
 import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
 import LeanFpAnalysis.FP.Analysis.PerturbationTheory
+import LeanFpAnalysis.FP.Algorithms.MatMul
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskySpec
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskySolve
 
@@ -67,6 +68,40 @@ structure GramVecError (n : ℕ)
   eps_nonneg : 0 ≤ ε
   /-- Componentwise error bound: |ĉ_i − c_i| ≤ ε · (|Aᵀ||b|)_i. -/
   bound : ∀ i : Fin n, |c_hat i - c_exact i| ≤ ε * absATb i
+
+/-- Concrete bridge for the Gram product contract.
+
+    If `Ĉ` is computed by the existing rounded matrix multiplication kernel as
+    `fl(AᵀA)`, then it satisfies `GramProductError` with the standard
+    `γ(m)` componentwise bound. -/
+theorem gramProductError_from_fl_matMul (fp : FPModel) (m n : ℕ)
+    (A : Fin m → Fin n → ℝ) (hm : gammaValid fp m) :
+    GramProductError n
+      (fl_matMul fp n m n (fun i k => A k i) A)
+      (fun i j => ∑ k : Fin m, A k i * A k j)
+      (fun i j => ∑ k : Fin m, |A k i| * |A k j|)
+      (gamma fp m) := by
+  refine ⟨gamma_nonneg fp hm, ?_⟩
+  intro i j
+  simpa using
+    (matMul_error_bound fp n m n (fun i k => A k i) A hm i j)
+
+/-- Concrete bridge for the normal-equations right-hand-side contract.
+
+    If `ĉ` is computed by the existing rounded matrix-vector kernel as
+    `fl(Aᵀb)`, then it satisfies `GramVecError` with the standard `γ(m)`
+    componentwise bound. -/
+theorem gramVecError_from_fl_matVec (fp : FPModel) (m n : ℕ)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (hm : gammaValid fp m) :
+    GramVecError n
+      (fl_matVec fp n m (fun i k => A k i) b)
+      (fun i => ∑ k : Fin m, A k i * b k)
+      (fun i => ∑ k : Fin m, |A k i| * |b k|)
+      (gamma fp m) := by
+  refine ⟨gamma_nonneg fp hm, ?_⟩
+  intro i
+  simpa using
+    (matVec_error_bound fp n m (fun i k => A k i) b hm i)
 
 -- ============================================================
 -- §19.4  Normal equations overall backward error (eq 19.12)

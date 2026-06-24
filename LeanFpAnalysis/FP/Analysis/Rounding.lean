@@ -197,6 +197,20 @@ lemma u_le_gamma (fp : FPModel) {k : ℕ} (hk : 0 < k) (hval : gammaValid fp k) 
     nlinarith [mul_nonneg (mul_nonneg (by linarith : (0:ℝ) ≤ ↑k) fp.u_nonneg) fp.u_nonneg]
   linarith
 
+/-- The raw first-order quantity `n*u` is bounded by `gamma n`.
+
+    This is the same denominator-shrinking fact as `u_le_gamma`, but without
+    first dividing out the operation count. -/
+lemma n_mul_u_le_gamma (fp : FPModel) (n : ℕ) (hval : gammaValid fp n) :
+    (n : ℝ) * fp.u ≤ gamma fp n := by
+  unfold gamma
+  have hnu : (n : ℝ) * fp.u < 1 := hval
+  have hden : 0 < 1 - (n : ℝ) * fp.u := by linarith
+  have ha : 0 ≤ (n : ℝ) * fp.u :=
+    mul_nonneg (by exact_mod_cast n.zero_le) fp.u_nonneg
+  rw [le_div_iff₀ hden]
+  nlinarith [sq_nonneg ((n : ℝ) * fp.u)]
+
 /-- Cap `gamma fp n` by replacing the unit roundoff with a displayed upper cap.
 
 This is the monotonicity of `x ↦ n*x/(1-n*x)` on the validity interval,
@@ -480,7 +494,7 @@ lemma prod_signed_error_bound (fp : FPModel) (n : ℕ) (δ : Fin n → ℝ)
       rw [show δ (Fin.last n) = δ_last from rfl, hfactor]
       exact heq
 
-/-- **Stewart relative-error counter** `<k>` (Higham §3.4, eq. (3.9)).
+/-- **Stewart relative-error counter** `<k>` (Higham §3.4, eq. (3.10)).
 
 The counter denotes a product of `k` local factors, each either `(1 + δᵢ)` or
 its reciprocal, with `|δᵢ| <= u`.  A true Boolean selector means that the
@@ -626,6 +640,64 @@ lemma gamma_inv (fp : FPModel) (k : ℕ) (θk : ℝ)
   have hmul := mul_lt_mul_of_pos_right h hpos
   rw [hcancel] at hmul
   linarith
+
+/-- If a denominator has a `γ(k)` relative perturbation and the final division
+    contributes one primitive rounding error, then the combined factor is still
+    bounded by `γ(2k)` for `k ≥ 1`:
+
+    `(1/(1+θ_k)) * (1+δ) = 1+θ`, with `|θ| ≤ γ(2k)`.
+
+    This is the form needed by Higham Lemma 18.1 for the beta computation:
+    the reciprocal and the final rounded division are counted together. -/
+lemma gamma_inv_mul_roundoff (fp : FPModel) (k : ℕ) (θk δ : ℝ)
+    (hkpos : 0 < k)
+    (hk   : |θk| ≤ gamma fp k)
+    (hδ   : |δ| ≤ fp.u)
+    (hpos : (0 : ℝ) < 1 + θk)
+    (hval : gammaValid fp (2 * k)) :
+    ∃ θ : ℝ,
+      |θ| ≤ gamma fp (2 * k) ∧
+      (1 / (1 + θk)) * (1 + δ) = 1 + θ := by
+  refine ⟨(δ - θk) / (1 + θk), ?_, ?_⟩
+  · have h_abs_num : |δ - θk| ≤ fp.u + gamma fp k := by
+      have hδ_lower : -fp.u ≤ δ := by linarith [neg_abs_le δ, hδ]
+      have hδ_upper : δ ≤ fp.u := by linarith [le_abs_self δ, hδ]
+      have hθ_lower : -gamma fp k ≤ θk := by linarith [neg_abs_le θk, hk]
+      have hθ_upper : θk ≤ gamma fp k := by linarith [le_abs_self θk, hk]
+      rw [abs_le]
+      constructor
+      · linarith
+      · linarith
+    have hval_k : gammaValid fp k := gammaValid_mono fp (by omega) hval
+    have hγ2_nonneg : 0 ≤ gamma fp (2 * k) := gamma_nonneg fp hval
+    have hθ_lower : -gamma fp k ≤ θk := by
+      linarith [neg_abs_le θk, hk]
+    have h2ku : 2 * (↑k : ℝ) * fp.u < 1 := by
+      have h := hval
+      unfold gammaValid at h
+      push_cast at h
+      linarith
+    have hku : (↑k : ℝ) * fp.u < 1 := by linarith
+    have hdk : (0 : ℝ) < 1 - ↑k * fp.u := by linarith
+    have hd2k : (0 : ℝ) < 1 - 2 * ↑k * fp.u := by linarith
+    have h_id : gamma fp (2 * k) * (1 - gamma fp k) =
+        2 * gamma fp k := by
+      unfold gamma
+      push_cast
+      field_simp [hdk.ne', hd2k.ne']
+      ring
+    have hright : fp.u + gamma fp k ≤ gamma fp (2 * k) * (1 + θk) := by
+      calc
+        fp.u + gamma fp k ≤ 2 * gamma fp k := by
+          linarith [u_le_gamma fp hkpos hval_k]
+        _ = gamma fp (2 * k) * (1 - gamma fp k) := h_id.symm
+        _ ≤ gamma fp (2 * k) * (1 + θk) :=
+          mul_le_mul_of_nonneg_left (by linarith) hγ2_nonneg
+    rw [abs_div, abs_of_pos hpos]
+    rw [div_le_iff₀ hpos]
+    exact le_trans h_abs_num hright
+  · field_simp [hpos.ne']
+    ring
 
 /-- **γ division rule** (Higham §3.4, Lemma 3.3 part 3).
 

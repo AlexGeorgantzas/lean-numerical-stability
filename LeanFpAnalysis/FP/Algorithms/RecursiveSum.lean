@@ -226,6 +226,38 @@ theorem recursiveSum_forward_error_bound (fp : FPModel) (n : ℕ) (v : Fin n →
     _ = gamma fp (n - 1) * ∑ i : Fin n, |v i| := by
           rw [← Finset.sum_mul, mul_comm]
 
+/-- Absolute magnitude bound for recursive summation, obtained from the
+source-shaped backward-error representation. -/
+theorem recursiveSum_abs_le_one_add_gamma_mul_sum_abs
+    (fp : FPModel) (n : ℕ) (v : Fin n → ℝ)
+    (hn : gammaValid fp (n - 1)) :
+    |fl_recursiveSum fp n v| ≤
+      (1 + gamma fp (n - 1)) * ∑ i : Fin n, |v i| := by
+  obtain ⟨θ, hθ, hfold⟩ := recursiveSum_backward_error fp n v hn
+  rw [hfold]
+  calc
+    |∑ i : Fin n, v i * (1 + θ i)|
+        ≤ ∑ i : Fin n, |v i * (1 + θ i)| :=
+          Finset.abs_sum_le_sum_abs _ _
+    _ = ∑ i : Fin n, |v i| * |1 + θ i| := by
+      apply Finset.sum_congr rfl
+      intro i _hi
+      rw [abs_mul]
+    _ ≤ ∑ i : Fin n, |v i| * (1 + gamma fp (n - 1)) := by
+      apply Finset.sum_le_sum
+      intro i _hi
+      have hone :
+          |1 + θ i| ≤ 1 + gamma fp (n - 1) := by
+        calc
+          |1 + θ i| ≤ |(1 : ℝ)| + |θ i| := abs_add_le _ _
+          _ = 1 + |θ i| := by norm_num
+          _ ≤ 1 + gamma fp (n - 1) := by
+            linarith [hθ i]
+      exact mul_le_mul_of_nonneg_left hone (abs_nonneg _)
+    _ = (1 + gamma fp (n - 1)) * ∑ i : Fin n, |v i| := by
+      rw [← Finset.sum_mul]
+      ring
+
 /-- Higham Problem 4.3, source-shaped variable-`gamma` expansion for
 left-to-right recursive summation.
 
@@ -642,6 +674,174 @@ theorem recursiveSum_relError_le_n_mul_u_of_oneSigned (fp : FPModel) (n : ℕ)
     before rounding. This matches the `ŝₖ` quantities in Higham eq. (4.3). -/
 noncomputable def fl_partialSums (fp : FPModel) {n : ℕ} (v : Fin n → ℝ) : Fin n → ℝ :=
   fun i => fl_recursiveSum fp i.val (fun j => v ⟨j.val, Nat.lt_trans j.isLt i.isLt⟩) + v i
+
+/-- Reindex a prefix over `Fin k` as the corresponding filtered sum over
+`Fin n`. -/
+private lemma sum_fin_eq_sum_filter_lt {n k : ℕ} (hk : k ≤ n)
+    (f : Fin n → ℝ) :
+    (∑ t : Fin k, f ⟨t.val, by omega⟩) =
+      Finset.sum (Finset.filter (fun j : Fin n => j.val < k) Finset.univ) f := by
+  classical
+  have hinj : ∀ a : Fin k, a ∈ Finset.univ →
+      ∀ b : Fin k, b ∈ Finset.univ →
+      (⟨a.val, by omega⟩ : Fin n) = ⟨b.val, by omega⟩ → a = b :=
+    fun a _ b _ hab => Fin.ext (by simp only [Fin.mk.injEq] at hab; exact hab)
+  have himg : Finset.image (fun (t : Fin k) => (⟨t.val, by omega⟩ : Fin n))
+      Finset.univ = Finset.filter (fun j : Fin n => j.val < k) Finset.univ := by
+    ext j
+    simp only [Finset.mem_image, Finset.mem_univ, true_and, Finset.mem_filter]
+    constructor
+    · rintro ⟨t, rfl⟩
+      simp
+    · intro hj
+      exact ⟨⟨j.val, hj⟩, Fin.ext (by simp)⟩
+  rw [← himg, Finset.sum_image hinj]
+
+/-- A prefix absolute sum together with the current entry is bounded by the
+full input absolute sum. -/
+private lemma prefix_abs_sum_add_current_le_total_abs {n : ℕ}
+    (v : Fin n → ℝ) (i : Fin n) :
+    (∑ t : Fin i.val, |v ⟨t.val, Nat.lt_trans t.isLt i.isLt⟩|) +
+        |v i| ≤
+      ∑ j : Fin n, |v j| := by
+  classical
+  have hprefix :
+      (∑ t : Fin i.val, |v ⟨t.val, Nat.lt_trans t.isLt i.isLt⟩|) =
+        Finset.sum
+          (Finset.filter (fun j : Fin n => j.val < i.val) Finset.univ)
+          (fun j => |v j|) := by
+    simpa using
+      (sum_fin_eq_sum_filter_lt (n := n) (k := i.val)
+        (Nat.le_of_lt i.isLt) (fun j : Fin n => |v j|))
+  have hi_mem :
+      i ∈ Finset.filter (fun j : Fin n => j.val ≤ i.val) Finset.univ := by
+    simp
+  have herase :
+      (Finset.filter (fun j : Fin n => j.val ≤ i.val) Finset.univ).erase i =
+        Finset.filter (fun j : Fin n => j.val < i.val) Finset.univ := by
+    ext j
+    simp only [Finset.mem_erase, Finset.mem_filter, Finset.mem_univ, true_and]
+    constructor
+    · intro h
+      have hne : j.val ≠ i.val := by
+        intro hv
+        exact h.1 (Fin.ext hv)
+      exact Nat.lt_of_le_of_ne h.2 hne
+    · intro hlt
+      exact ⟨by
+        intro hji
+        have hv : j.val = i.val := by rw [hji]
+        omega, le_of_lt hlt⟩
+  have hfilter_decomp :
+      |v i| +
+          Finset.sum
+            (Finset.filter (fun j : Fin n => j.val < i.val) Finset.univ)
+            (fun j => |v j|) =
+        Finset.sum
+          (Finset.filter (fun j : Fin n => j.val ≤ i.val) Finset.univ)
+          (fun j => |v j|) := by
+    have hadd :=
+      (Finset.add_sum_erase
+        (Finset.filter (fun j : Fin n => j.val ≤ i.val) Finset.univ)
+        (fun j : Fin n => |v j|) hi_mem)
+    rw [herase] at hadd
+    exact hadd
+  have hfilter_le :
+      Finset.sum
+          (Finset.filter (fun j : Fin n => j.val ≤ i.val) Finset.univ)
+          (fun j => |v j|) ≤
+        ∑ j : Fin n, |v j| := by
+    exact
+      Finset.sum_le_sum_of_subset_of_nonneg
+        (Finset.filter_subset (fun j : Fin n => j.val ≤ i.val) Finset.univ)
+        (by
+          intro j _hj _hnot
+          exact abs_nonneg (v j))
+  rw [hprefix]
+  have hleft :
+      Finset.sum
+          (Finset.filter (fun j : Fin n => j.val < i.val) Finset.univ)
+          (fun j => |v j|) + |v i| =
+        Finset.sum
+          (Finset.filter (fun j : Fin n => j.val ≤ i.val) Finset.univ)
+          (fun j => |v j|) := by
+    linarith [hfilter_decomp]
+  rw [hleft]
+  exact hfilter_le
+
+/-- Each recursive-summation pre-rounding partial sum is bounded by the full
+input absolute sum, up to the uniform `(1 + gamma(n-1))` factor. -/
+theorem fl_partialSums_abs_le_one_add_gamma_mul_total_abs
+    (fp : FPModel) {n : ℕ} (v : Fin n → ℝ)
+    (hgamma : gammaValid fp (n - 1)) (i : Fin n) :
+    |fl_partialSums fp v i| ≤
+      (1 + gamma fp (n - 1)) * ∑ j : Fin n, |v j| := by
+  let pref : Fin i.val → ℝ :=
+    fun j => v ⟨j.val, Nat.lt_trans j.isLt i.isLt⟩
+  let prefixAbs : ℝ := ∑ j : Fin i.val, |pref j|
+  have hvalid_i : gammaValid fp (i.val - 1) :=
+    gammaValid_mono fp (by omega) hgamma
+  have hprefix_bound :
+      |fl_recursiveSum fp i.val pref| ≤
+        (1 + gamma fp (i.val - 1)) * prefixAbs := by
+    simpa [prefixAbs, pref] using
+      recursiveSum_abs_le_one_add_gamma_mul_sum_abs fp i.val pref hvalid_i
+  have hgamma_le : gamma fp (i.val - 1) ≤ gamma fp (n - 1) :=
+    gamma_mono fp (by omega) hgamma
+  have hprefixAbs_nonneg : 0 ≤ prefixAbs := by
+    exact Finset.sum_nonneg fun j _hj => abs_nonneg (pref j)
+  have hprefix_uniform :
+      |fl_recursiveSum fp i.val pref| ≤
+        (1 + gamma fp (n - 1)) * prefixAbs := by
+    exact le_trans hprefix_bound
+      (mul_le_mul_of_nonneg_right (by linarith) hprefixAbs_nonneg)
+  have hfactor_nonneg : 0 ≤ 1 + gamma fp (n - 1) := by
+    nlinarith [gamma_nonneg fp hgamma]
+  have hfactor_ge_one : 1 ≤ 1 + gamma fp (n - 1) := by
+    nlinarith [gamma_nonneg fp hgamma]
+  have hpartial :
+      |fl_partialSums fp v i| ≤
+        |fl_recursiveSum fp i.val pref| + |v i| := by
+    simpa [fl_partialSums, pref] using
+      abs_add_le (fl_recursiveSum fp i.val pref) (v i)
+  calc
+    |fl_partialSums fp v i|
+        ≤ |fl_recursiveSum fp i.val pref| + |v i| := hpartial
+    _ ≤ (1 + gamma fp (n - 1)) * prefixAbs + |v i| := by
+      exact add_le_add hprefix_uniform (le_refl |v i|)
+    _ ≤ (1 + gamma fp (n - 1)) * prefixAbs +
+          (1 + gamma fp (n - 1)) * |v i| := by
+      exact add_le_add (le_refl ((1 + gamma fp (n - 1)) * prefixAbs))
+        (by
+          simpa [one_mul] using
+            mul_le_mul_of_nonneg_right hfactor_ge_one (abs_nonneg (v i)))
+    _ = (1 + gamma fp (n - 1)) * (prefixAbs + |v i|) := by ring
+    _ ≤ (1 + gamma fp (n - 1)) * ∑ j : Fin n, |v j| := by
+      exact mul_le_mul_of_nonneg_left
+        (by
+          simpa [prefixAbs, pref] using
+            prefix_abs_sum_add_current_le_total_abs v i)
+        hfactor_nonneg
+
+/-- Summed version of `fl_partialSums_abs_le_one_add_gamma_mul_total_abs`. -/
+theorem fl_partialSums_abs_sum_le_n_mul_one_add_gamma_mul_sum_abs
+    (fp : FPModel) (n : ℕ) (v : Fin n → ℝ)
+    (hgamma : gammaValid fp (n - 1)) :
+    ∑ i : Fin n, |fl_partialSums fp v i| ≤
+      ((n : ℝ) * (1 + gamma fp (n - 1))) *
+        ∑ j : Fin n, |v j| := by
+  calc
+    ∑ i : Fin n, |fl_partialSums fp v i|
+        ≤ ∑ i : Fin n,
+            (1 + gamma fp (n - 1)) * ∑ j : Fin n, |v j| := by
+      apply Finset.sum_le_sum
+      intro i _hi
+      exact fl_partialSums_abs_le_one_add_gamma_mul_total_abs fp v hgamma i
+    _ = ((n : ℝ) * (1 + gamma fp (n - 1))) *
+          ∑ j : Fin n, |v j| := by
+      rw [Finset.sum_const]
+      simp [Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
+      ring
 
 /-- **Recursive summation running error bound** (Higham §4.2, equation 4.3).
 

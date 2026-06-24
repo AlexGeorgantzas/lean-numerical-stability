@@ -6432,6 +6432,18 @@ def fergusonExponentCondition
     fmt.normalizedExponentRepresentation (x - y) ez ∧
     ez < min ex ey
 
+/-- Source-shaped inclusive version of Higham Theorem 2.4's exponent side
+condition, matching the printed `e(x-y) <= min(e(x), e(y))`.  The older strict
+predicate above is kept for the digit-branch Ferguson proof, where the
+stronger hypothesis is used to expose the dropped leading guard digit. -/
+def fergusonExponentConditionLe
+    (fmt : FloatingPointFormat) (x y : ℝ) : Prop :=
+  ∃ ex ey ez : ℤ,
+    fmt.normalizedExponentRepresentation x ex ∧
+    fmt.normalizedExponentRepresentation y ey ∧
+    fmt.normalizedExponentRepresentation (x - y) ez ∧
+    ez ≤ min ex ey
+
 theorem fergusonExponentCondition_left_normalized
     {fmt : FloatingPointFormat} {x y : ℝ}
     (h : fmt.fergusonExponentCondition x y) :
@@ -6453,6 +6465,27 @@ theorem fergusonExponentCondition_sub_normalized
   rcases h with ⟨_ex, _ey, _ez, _hx, _hy, hz, _hcond⟩
   exact fmt.normalizedExponentRepresentation_normalizedSystem hz
 
+theorem fergusonExponentConditionLe_left_normalized
+    {fmt : FloatingPointFormat} {x y : ℝ}
+    (h : fmt.fergusonExponentConditionLe x y) :
+    fmt.normalizedSystem x := by
+  rcases h with ⟨_ex, _ey, _ez, hx, _hy, _hz, _hcond⟩
+  exact fmt.normalizedExponentRepresentation_normalizedSystem hx
+
+theorem fergusonExponentConditionLe_right_normalized
+    {fmt : FloatingPointFormat} {x y : ℝ}
+    (h : fmt.fergusonExponentConditionLe x y) :
+    fmt.normalizedSystem y := by
+  rcases h with ⟨_ex, _ey, _ez, _hx, hy, _hz, _hcond⟩
+  exact fmt.normalizedExponentRepresentation_normalizedSystem hy
+
+theorem fergusonExponentConditionLe_sub_normalized
+    {fmt : FloatingPointFormat} {x y : ℝ}
+    (h : fmt.fergusonExponentConditionLe x y) :
+    fmt.normalizedSystem (x - y) := by
+  rcases h with ⟨_ex, _ey, _ez, _hx, _hy, hz, _hcond⟩
+  exact fmt.normalizedExponentRepresentation_normalizedSystem hz
+
 /-- Guard-digit exact-subtraction model for Higham Theorem 2.4.  This is an
 interface, not yet a constructive digit algorithm: any subtraction routine
 satisfying it computes `x-y` exactly under the Ferguson exponent condition. -/
@@ -6470,6 +6503,11 @@ theorem guardDigitSubtractionModel_exact_of_fergusonCondition
 /-- Higham Theorem 2.5's Sterbenz ratio condition. -/
 def sterbenzRatioCondition (_fmt : FloatingPointFormat) (x y : ℝ) : Prop :=
   y / 2 < x ∧ x < 2 * y
+
+/-- Source-shaped inclusive version of Higham Theorem 2.5's Sterbenz ratio
+condition, matching the printed `y/2 <= x <= 2*y`. -/
+def sterbenzRatioConditionLe (_fmt : FloatingPointFormat) (x y : ℝ) : Prop :=
+  y / 2 ≤ x ∧ x ≤ 2 * y
 
 theorem sterbenzRatioCondition_y_pos
     {fmt : FloatingPointFormat} {x y : ℝ}
@@ -8109,6 +8147,20 @@ theorem neg_maxFiniteMagnitude_mem_finiteSystem
     (fmt : FloatingPointFormat) :
     fmt.finiteSystem (-fmt.maxFiniteMagnitude) :=
   Or.inr (Or.inl fmt.neg_maxFiniteMagnitude_mem_normalizedSystem)
+
+/-- Higham Chapter 2, Problem 2.17 core range fact: doubling the largest
+positive finite value lies in the source-facing overflow range.  The
+mode-specific IEEE value is supplied by `ieeeOverflowValue`. -/
+theorem problem2_17_two_mul_maxFiniteMagnitude_finiteOverflowRange
+    (fmt : FloatingPointFormat) :
+    fmt.finiteOverflowRange (2 * fmt.maxFiniteMagnitude) := by
+  have hmax_pos : 0 < fmt.maxFiniteMagnitude :=
+    lt_of_lt_of_le fmt.minNormalMagnitude_pos
+      fmt.minNormalMagnitude_le_maxFiniteMagnitude
+  have htwo_pos : 0 < 2 * fmt.maxFiniteMagnitude := by
+    linarith
+  rw [finiteOverflowRange, abs_of_pos htwo_pos]
+  linarith
 
 /-- The negative largest finite endpoint is in Higham's unbounded normalized
 system `G`. -/
@@ -11055,6 +11107,29 @@ theorem finiteSystem_sub_finiteSystem_of_sterbenzRatioCondition
       fmt.subnormalSystem_sub_finiteSystem_of_sterbenzRatioCondition
         hxsub hysub hsterbenz
 
+/-- Source-shaped inclusive Sterbenz finite-representability theorem.  The
+strict interior is the existing Sterbenz theorem; the two printed endpoints
+reduce to the already finite operands. -/
+theorem finiteSystem_sub_finiteSystem_of_sterbenzRatioConditionLe
+    {fmt : FloatingPointFormat} {x y : ℝ}
+    (hx : fmt.finiteSystem x)
+    (hy : fmt.finiteSystem y)
+    (hsterbenz : fmt.sterbenzRatioConditionLe x y) :
+    fmt.finiteSystem (x - y) := by
+  rcases lt_or_eq_of_le hsterbenz.1 with hlo | hlo_eq
+  · rcases lt_or_eq_of_le hsterbenz.2 with hhi | hhi_eq
+    · exact
+        fmt.finiteSystem_sub_finiteSystem_of_sterbenzRatioCondition
+          hx hy ⟨hlo, hhi⟩
+    · have hsub : x - y = y := by
+        linarith
+      rw [hsub]
+      exact hy
+  · have hsub : x - y = -x := by
+      linarith
+    rw [hsub]
+    exact fmt.finiteSystem_neg hx
+
 /-- The unshifted `emin` endpoint remains available as a constructor for the
 new shifted subnormal endpoint witness. -/
 theorem sameExponentSubnormalEndpointWitness_of_emin_natAbs_lt_minNormalMantissa
@@ -11768,6 +11843,119 @@ theorem finiteSystem_zero_or_finiteNormalRange_or_finiteUnderflowRange
   · exact Or.inl hzero
   · exact Or.inr (Or.inl (fmt.normalizedSystem_finiteNormalRange hnorm))
   · exact Or.inr (Or.inr (fmt.subnormalSystem_finiteUnderflowRange hsub))
+
+/-- The one-digit decimal audit format contains `9` as a finite value. -/
+theorem decimalSingleDigitFormat_finiteSystem_nine :
+    decimalSingleDigitFormat.finiteSystem (9 : ℝ) := by
+  exact Or.inr (Or.inl
+    (decimalSingleDigitFormat.normalizedExponentRepresentation_normalizedSystem
+      decimalSingleDigitFormat_normalizedExponentRepresentation_nine))
+
+/-- The one-digit decimal audit format does not contain `18`; it is above the
+largest finite magnitude. -/
+theorem decimalSingleDigitFormat_not_finiteSystem_eighteen :
+    ¬ decimalSingleDigitFormat.finiteSystem (18 : ℝ) := by
+  intro h
+  have hclass :=
+    decimalSingleDigitFormat.finiteSystem_zero_or_finiteNormalRange_or_finiteUnderflowRange h
+  rcases hclass with hzero | hnormal | hunder
+  · norm_num at hzero
+  · norm_num [finiteNormalRange, minNormalMagnitude, maxFiniteMagnitude,
+      decimalSingleDigitFormat, betaR] at hnormal
+    exact (by norm_num : ¬ (18 : ℝ) ≤ 9) hnormal
+  · norm_num [finiteUnderflowRange, minNormalMagnitude,
+      decimalSingleDigitFormat, betaR] at hunder
+
+/-- Finite representability of operands alone does not make exact subtraction
+finite representable.  The one-digit decimal audit format has finite operands
+`9` and `-9`, but their exact difference `18` is outside the finite system. -/
+theorem not_forall_finiteSystem_sub_finiteSystem :
+    ¬ (∀ (fmt : FloatingPointFormat) (x y : ℝ),
+        fmt.finiteSystem x → fmt.finiteSystem y →
+          fmt.finiteSystem (x - y)) := by
+  intro h
+  have h9 : decimalSingleDigitFormat.finiteSystem (9 : ℝ) :=
+    decimalSingleDigitFormat_finiteSystem_nine
+  have hneg9 : decimalSingleDigitFormat.finiteSystem (-9 : ℝ) := by
+    simpa using decimalSingleDigitFormat.finiteSystem_neg h9
+  have hbad := h decimalSingleDigitFormat (9 : ℝ) (-9 : ℝ) h9 hneg9
+  norm_num at hbad
+  exact decimalSingleDigitFormat_not_finiteSystem_eighteen hbad
+
+/-- A one-digit decimal audit format with exponent range `1..2`.
+
+It is useful for overflow-saturation counterexamples: `1` and `90` are finite,
+but the exact sum `91` rounds back to the maximum finite value `90`. -/
+def decimalSingleDigitTwoExponentFormat : FloatingPointFormat where
+  beta := 10
+  t := 1
+  emin := 1
+  emax := 2
+  beta_ge_two := by norm_num
+  t_pos := by norm_num
+  emin_le_emax := by norm_num
+
+/-- The two-exponent one-digit decimal audit format contains `1`. -/
+theorem decimalSingleDigitTwoExponentFormat_finiteSystem_one :
+    decimalSingleDigitTwoExponentFormat.finiteSystem (1 : ℝ) := by
+  exact Or.inr (Or.inl
+    (decimalSingleDigitTwoExponentFormat.normalizedExponentRepresentation_normalizedSystem
+      (show
+        decimalSingleDigitTwoExponentFormat.normalizedExponentRepresentation
+          (1 : ℝ) 1 from by
+        refine ⟨false, 1, ?_, ?_, ?_⟩
+        · norm_num [decimalSingleDigitTwoExponentFormat, normalizedMantissa,
+            mantissaInRange, minNormalMantissa]
+        · norm_num [decimalSingleDigitTwoExponentFormat, exponentInRange]
+        · norm_num [decimalSingleDigitTwoExponentFormat, normalizedValue,
+            signValue, betaR])))
+
+/-- The two-exponent one-digit decimal audit format contains `90`. -/
+theorem decimalSingleDigitTwoExponentFormat_finiteSystem_ninety :
+    decimalSingleDigitTwoExponentFormat.finiteSystem (90 : ℝ) := by
+  exact Or.inr (Or.inl
+    (decimalSingleDigitTwoExponentFormat.normalizedExponentRepresentation_normalizedSystem
+      (show
+        decimalSingleDigitTwoExponentFormat.normalizedExponentRepresentation
+          (90 : ℝ) 2 from by
+        refine ⟨false, 9, ?_, ?_, ?_⟩
+        · norm_num [decimalSingleDigitTwoExponentFormat, normalizedMantissa,
+            mantissaInRange, minNormalMantissa]
+        · norm_num [decimalSingleDigitTwoExponentFormat, exponentInRange]
+        · norm_num [decimalSingleDigitTwoExponentFormat, normalizedValue,
+            signValue, betaR])))
+
+/-- The two-exponent one-digit decimal audit format does not contain `89`. -/
+theorem decimalSingleDigitTwoExponentFormat_not_finiteSystem_eightynine :
+    ¬ decimalSingleDigitTwoExponentFormat.finiteSystem (89 : ℝ) := by
+  intro h
+  rcases h with hzero | hnorm | hsub
+  · norm_num at hzero
+  · rcases hnorm with ⟨negative, m, e, hm, he, hval⟩
+    norm_num [decimalSingleDigitTwoExponentFormat, exponentInRange] at he
+    have he_cases : e = 1 ∨ e = 2 := by omega
+    rcases he_cases with rfl | rfl
+    · cases negative <;>
+        norm_num [decimalSingleDigitTwoExponentFormat, normalizedMantissa,
+          mantissaInRange, minNormalMantissa, normalizedValue, signValue, betaR] at hm hval
+      all_goals
+        have hm_nonneg : (0 : ℝ) ≤ (m : ℝ) := by exact_mod_cast Nat.zero_le m
+        have hm_lt : (m : ℝ) < 10 := by exact_mod_cast hm.2
+        nlinarith
+    · cases negative
+      · norm_num [decimalSingleDigitTwoExponentFormat, normalizedMantissa,
+          mantissaInRange, minNormalMantissa, normalizedValue, signValue, betaR] at hm hval
+        have hval_nat : 89 = m * 10 := by
+          exact_mod_cast hval
+        omega
+      · norm_num [decimalSingleDigitTwoExponentFormat, normalizedMantissa,
+          mantissaInRange, minNormalMantissa, normalizedValue, signValue, betaR] at hm hval
+        have hm_nonneg : (0 : ℝ) ≤ (m : ℝ) := by exact_mod_cast Nat.zero_le m
+        nlinarith
+  · rcases hsub with ⟨negative, m, hm, hval⟩
+    norm_num [decimalSingleDigitTwoExponentFormat, subnormalMantissa,
+      minNormalMantissa] at hm
+    omega
 
 /-- Inside the finite system, the source-facing underflow range contains only
 zero and subnormal values. -/
@@ -27380,6 +27568,41 @@ theorem finiteRoundToEvenOp_nearestRoundingToFinite
   simpa [finiteRoundToEvenOp] using
     fmt.finiteRoundToEven_nearestRoundingToFinite (BasicOp.exact op x y)
 
+/-- Higham Problem 4.6 / Shewchuk: for correctly rounded addition, the local
+error is no larger than the smaller input magnitude.
+
+The proof is just nearest-rounding minimality: both operands are themselves
+finite representable candidates for the exact sum `a + b`, so the rounded
+result is at least as close to `a + b` as either candidate. -/
+theorem nearestRoundingToFinite_add_abs_error_le_min_of_finiteSystem
+    (fmt : FloatingPointFormat) {a b s : ℝ}
+    (ha : fmt.finiteSystem a) (hb : fmt.finiteSystem b)
+    (hround : fmt.nearestRoundingToFinite (a + b) s) :
+    |(a + b) - s| ≤ min |a| |b| := by
+  have hle_a_candidate : |(a + b) - s| ≤ |(a + b) - a| :=
+    nearestRoundingIn_minimal hround ha
+  have hle_b_candidate : |(a + b) - s| ≤ |(a + b) - b| :=
+    nearestRoundingIn_minimal hround hb
+  have hle_b : |(a + b) - s| ≤ |b| := by
+    have hdist : (a + b) - a = b := by ring
+    simpa [hdist] using hle_a_candidate
+  have hle_a : |(a + b) - s| ≤ |a| := by
+    have hdist : (a + b) - b = a := by ring
+    simpa [hdist] using hle_b_candidate
+  exact le_min hle_a hle_b
+
+/-- Higham Problem 4.6 / Shewchuk, specialized to the finite round-to-even
+addition selector. -/
+theorem finiteRoundToEvenOp_add_abs_error_le_min_of_finiteSystem
+    (fmt : FloatingPointFormat) {a b : ℝ}
+    (ha : fmt.finiteSystem a) (hb : fmt.finiteSystem b) :
+    |(a + b) - fmt.finiteRoundToEvenOp BasicOp.add a b| ≤ min |a| |b| := by
+  exact
+    fmt.nearestRoundingToFinite_add_abs_error_le_min_of_finiteSystem ha hb
+      (by
+        simpa [BasicOp.exact] using
+          fmt.finiteRoundToEvenOp_nearestRoundingToFinite BasicOp.add a b)
+
 /-- The finite round-to-even primitive-operation wrapper returns a finite
 representable value. -/
 theorem finiteRoundToEvenOp_finiteSystem
@@ -41225,6 +41448,21 @@ theorem finiteRoundToEvenOp_sub_finiteSystem_eq_exact_of_sterbenzRatioCondition
     (fmt.finiteRoundToEvenOp_eq_exact_of_finiteSystem
       (op := BasicOp.sub) (x := x) (y := y) hfin)
 
+/-- Source-shaped inclusive form of Higham Theorem 2.5 (Sterbenz) for the
+concrete finite round-to-even operation wrapper. -/
+theorem finiteRoundToEvenOp_sub_finiteSystem_eq_exact_of_sterbenzRatioConditionLe
+    {fmt : FloatingPointFormat} {x y : ℝ}
+    (hx : fmt.finiteSystem x)
+    (hy : fmt.finiteSystem y)
+    (hsterbenz : fmt.sterbenzRatioConditionLe x y) :
+    fmt.finiteRoundToEvenOp BasicOp.sub x y = x - y := by
+  have hfin : fmt.finiteSystem (x - y) :=
+    fmt.finiteSystem_sub_finiteSystem_of_sterbenzRatioConditionLe
+      hx hy hsterbenz
+  simpa [BasicOp.exact] using
+    (fmt.finiteRoundToEvenOp_eq_exact_of_finiteSystem
+      (op := BasicOp.sub) (x := x) (y := y) hfin)
+
 theorem finiteRoundToEvenOp_sub_eq_exact_of_guardDigitBranchSubtractionData
     {fmt : FloatingPointFormat} {x y : ℝ}
     (d : GuardDigitBranchSubtractionData fmt x y) :
@@ -41253,6 +41491,22 @@ theorem finiteRoundToEvenOp_sub_eq_exact_of_fergusonCondition
     (fmt.finiteRoundToEvenOp_eq_exact_of_finiteSystem
       (op := BasicOp.sub) (x := x) (y := y) hfin)
 
+/-- Source-shaped inclusive form of Higham Theorem 2.4 (Ferguson) for the
+concrete finite round-to-even operation wrapper. -/
+theorem finiteRoundToEvenOp_sub_eq_exact_of_fergusonConditionLe
+    {fmt : FloatingPointFormat} {x y : ℝ}
+    (hcond : fmt.fergusonExponentConditionLe x y) :
+    fmt.finiteRoundToEvenOp BasicOp.sub x y = x - y := by
+  have hfin :
+      fmt.finiteSystem (BasicOp.exact BasicOp.sub x y) := by
+    simpa [BasicOp.exact] using
+      (Or.inr (Or.inl
+        (fmt.fergusonExponentConditionLe_sub_normalized hcond)) :
+        fmt.finiteSystem (x - y))
+  simpa [BasicOp.exact] using
+    (fmt.finiteRoundToEvenOp_eq_exact_of_finiteSystem
+      (op := BasicOp.sub) (x := x) (y := y) hfin)
+
 /-- Ferguson's exponent condition places the exact subtraction result in the
 finite-normal range.  This is the source's "assuming `x-y` does not underflow
 or overflow" side condition, exposed in the finite-range vocabulary. -/
@@ -41262,6 +41516,15 @@ theorem fergusonExponentCondition_sub_finiteNormalRange
     fmt.finiteNormalRange (x - y) :=
   fmt.normalizedSystem_finiteNormalRange
     (fmt.fergusonExponentCondition_sub_normalized hcond)
+
+/-- The inclusive source-shaped Ferguson condition also places the exact
+subtraction result in the finite-normal range. -/
+theorem fergusonExponentConditionLe_sub_finiteNormalRange
+    {fmt : FloatingPointFormat} {x y : ℝ}
+    (hcond : fmt.fergusonExponentConditionLe x y) :
+    fmt.finiteNormalRange (x - y) :=
+  fmt.normalizedSystem_finiteNormalRange
+    (fmt.fergusonExponentConditionLe_sub_normalized hcond)
 
 /-- IEEE-facing nearest/even version of Ferguson exact subtraction.  Under the
 source-shaped Ferguson condition, the primitive subtraction wrapper takes the
@@ -41298,6 +41561,40 @@ theorem ieeeRoundToNearestEvenOpResult_sub_toReal?_of_fergusonCondition
     hcond]
   exact IeeeOperationResult.finiteNoFlags_toReal? _
 
+/-- IEEE-facing nearest/even version of the inclusive Ferguson exact
+subtraction theorem. -/
+theorem ieeeRoundToNearestEvenOpResult_sub_eq_finiteNoFlags_of_fergusonConditionLe
+    {fmt : FloatingPointFormat} {x y : ℝ}
+    (hcond : fmt.fergusonExponentConditionLe x y) :
+    fmt.ieeeRoundToNearestEvenOpResult BasicOp.sub x y =
+      IeeeOperationResult.finiteNoFlags (x - y) := by
+  have hnormal :
+      fmt.finiteNormalRange (BasicOp.exact BasicOp.sub x y) := by
+    simpa [BasicOp.exact] using
+      fmt.fergusonExponentConditionLe_sub_finiteNormalRange hcond
+  have hbranch :=
+    fmt.ieeeRoundToNearestEvenOpResult_eq_finiteNoFlags_of_finiteNormalRange
+      (op := BasicOp.sub) (x := x) (y := y) hnormal
+  rw [fmt.finiteRoundToEvenOp_sub_eq_exact_of_fergusonConditionLe hcond] at hbranch
+  exact hbranch
+
+theorem ieeeRoundToNearestEvenOpResult_sub_noFlags_of_fergusonConditionLe
+    {fmt : FloatingPointFormat} {x y : ℝ}
+    (hcond : fmt.fergusonExponentConditionLe x y) :
+    (fmt.ieeeRoundToNearestEvenOpResult BasicOp.sub x y).noFlags := by
+  rw [fmt.ieeeRoundToNearestEvenOpResult_sub_eq_finiteNoFlags_of_fergusonConditionLe
+    hcond]
+  exact IeeeOperationResult.finiteNoFlags_noFlags _
+
+theorem ieeeRoundToNearestEvenOpResult_sub_toReal?_of_fergusonConditionLe
+    {fmt : FloatingPointFormat} {x y : ℝ}
+    (hcond : fmt.fergusonExponentConditionLe x y) :
+    (fmt.ieeeRoundToNearestEvenOpResult BasicOp.sub x y).value.toReal? =
+      some (x - y) := by
+  rw [fmt.ieeeRoundToNearestEvenOpResult_sub_eq_finiteNoFlags_of_fergusonConditionLe
+    hcond]
+  exact IeeeOperationResult.finiteNoFlags_toReal? _
+
 /-- Finite round-to-even addition satisfies the left-add-zero law whenever the
 input is finite representable.  This is the concrete side condition needed for
 the `FPModel.fl_add_zero` law on the ordinary finite wrapper. -/
@@ -41316,6 +41613,32 @@ theorem finiteRoundToEvenOp_add_zero_right_of_finiteSystem
     fmt.finiteRoundToEvenOp BasicOp.add x 0 = x := by
   simpa [finiteRoundToEvenOp, BasicOp.exact] using
     fmt.finiteRoundToEven_eq_self_of_finiteSystem hx
+
+/-- In the two-exponent one-digit decimal audit format, `1 + 90` overflows the
+finite range and saturates to the maximum finite value `90`. -/
+theorem decimalSingleDigitTwoExponentFormat_round_add_one_ninety :
+    decimalSingleDigitTwoExponentFormat.finiteRoundToEvenOp BasicOp.add
+      (1 : ℝ) 90 = 90 := by
+  have hround :
+      decimalSingleDigitTwoExponentFormat.nearestRoundingToFinite
+        (BasicOp.exact BasicOp.add (1 : ℝ) 90)
+        (decimalSingleDigitTwoExponentFormat.finiteRoundToEvenOp
+          BasicOp.add (1 : ℝ) 90) := by
+    exact
+      decimalSingleDigitTwoExponentFormat.finiteRoundToEvenOp_nearestRoundingToFinite
+        BasicOp.add (1 : ℝ) 90
+  have hgt :
+      decimalSingleDigitTwoExponentFormat.maxFiniteMagnitude <
+        BasicOp.exact BasicOp.add (1 : ℝ) 90 := by
+    norm_num [decimalSingleDigitTwoExponentFormat, maxFiniteMagnitude, betaR,
+      BasicOp.exact]
+    change (90 : ℝ) < 91
+    norm_num
+  have hmax :=
+    nearestRoundingToFinite_eq_maxFiniteMagnitude_of_gt_maxFiniteMagnitude
+      hround hgt
+  norm_num [decimalSingleDigitTwoExponentFormat, maxFiniteMagnitude, betaR] at hmax
+  exact hmax
 
 /-- The local add roundoff error is finite when the left operand is zero and
 the right operand is finite. -/

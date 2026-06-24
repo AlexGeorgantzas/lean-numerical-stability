@@ -2,9 +2,10 @@
 --
 -- Higham §8.2–8.3: Forward error bounds via comparison matrices.
 --
--- Comparison-matrix consequence: |x - x̂| ≤ γ(n) · M(T)⁻¹ · |T| · |x̂|
--- (componentwise).
--- Plus M-matrix utilities for lower triangular matrices.
+-- Backward-error-derived comparison bound, direct Theorem 8.9 μ-bound,
+-- and M-matrix utilities for lower triangular matrices.
+-- Also includes the comparison-matrix consequence:
+-- |x - x̂| ≤ γ(n) · M(T)⁻¹ · |T| · |x̂| componentwise.
 
 import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
@@ -24,7 +25,7 @@ namespace LeanFpAnalysis.FP
 open scoped BigOperators
 
 -- ============================================================
--- Comparison-matrix forward error via backward error
+-- Backward-error-derived forward error via comparison matrix
 -- ============================================================
 
 /-- Forward error for forward substitution via comparison matrix (Theorems 8.5 + 8.11).
@@ -36,8 +37,10 @@ open scoped BigOperators
     M(L)⁻¹ using Theorem 8.11 (|L⁻¹| ≤ M(L)⁻¹). The bound can be
     much tighter because M(L)⁻¹ ≥ |L⁻¹| with equality when L = M(L).
 
-    Note: This is NOT Higham's Theorem 8.10, which gives the tighter bound
-    |x - x̂| ≤ ((n²+n+1)u + O(u²)) M(T)⁻¹|b| via direct induction. -/
+    This is a useful consequence of the backward-error theorem and comparison
+    matrix inverse bound. It is not Higham's direct Theorem 8.9, which is
+    formalized below as `forwardSub_forward_error_mu_bound` and gives the
+    tighter `M(T)⁻¹|b|` μ-bound by componentwise induction. -/
 theorem forwardSub_forward_error_comparison (fp : FPModel) (n : ℕ)
     (L L_inv M_inv : Fin n → Fin n → ℝ)
     (x b : Fin n → ℝ)

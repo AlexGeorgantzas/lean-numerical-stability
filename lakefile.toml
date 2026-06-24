@@ -1,6 +1,7 @@
 name = "LeanFpAnalysis"
 version = "0.1.0"
 defaultTargets = ["LeanFpAnalysis"]
+weakLeanArgs = ["-j", "1"]
 
 [[lean_lib]]
 name = "LeanFpAnalysis"

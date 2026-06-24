@@ -1271,3 +1271,382 @@ Source-facing Chapter 12 wrappers:
 Chapter 12 formalization status and source inventory:
 
 - `chapter_splitting/reports/chapter12_formalization_report.md`
+
+---
+
+# LeanFpAnalysis General Library Map
+
+This guide is a public map of the floating-point analysis library. It is meant
+for Lean users, documentation tools, and automated agents that need to discover
+which files and theorem names are relevant to a stability-analysis goal.
+
+It is not a proof-script guide: it maps library concepts and theorem names
+without giving task-specific scripts.
+
+## How To Import
+
+For exploratory work, start with:
+
+```lean
+import LeanFpAnalysis.FP
+open LeanFpAnalysis.FP
+```
+
+For a smaller import, use the file listed in the tables below.
+
+## Exact Algebra And Norm Policy
+
+Mathlib is the source of truth for exact dot products, matrix algebra, and
+norms.  Use Mathlib notation directly when the object already has a
+Mathlib-native type, for example `x ⬝ᵥ y`, `‖WithLp.toLp 2 x‖`, or `‖A‖` for
+`A : RMat m n` under the appropriate matrix norm scope.
+
+Some existing algorithm APIs still use function-shaped matrices
+`RMatFn m n := Fin m → Fin n → ℝ`.  For those legacy APIs, use compatibility
+wrappers such as `frobNorm` and `infNorm`.  These wrappers are bridges to
+Mathlib norms via `Matrix.of`; they are not independent norm definitions.
+
+New exact matrix-facing APIs should prefer `RMat m n := Matrix (Fin m) (Fin n)
+ℝ`, especially for rectangular algorithms such as QR and least squares.
+Existing `fl_*` algorithms may continue using `RMatFn` while the implementation
+layer is migrated gradually.
+
+## Goal-To-Theorem Lookup
+
+| Goal shape | Start with | Main definitions | Main theorem names | Notes |
+|---|---|---|---|---|
+| Floating-point model assumptions | `LeanFpAnalysis/FP/Model.lean` | `FPModel` | fields `model_add`, `model_sub`, `model_mul`, `model_div`, `model_sqrt` | Axiomatic Higham-style model; not IEEE-specific. Square root is modeled for nonnegative inputs. |
+| Accumulated rounding errors | `LeanFpAnalysis/FP/Analysis/Rounding.lean` | `gamma`, `gammaValid` | `gammaValid_mono`, `gamma_nonneg`, `gamma_mono`, `prod_error_bound`, `gamma_mul`, `gamma_inv`, `gamma_div`, `gamma_sum_le` | Most algorithm bounds require a `gammaValid fp k` hypothesis. |
+| Basic error and stability predicates | `LeanFpAnalysis/FP/Analysis/Error.lean`, `LeanFpAnalysis/FP/Analysis/Stability.lean` | `absError`, `relError`, `backwardErrorBounded`, `backwardErrorBoundedVec`, `relBackwardErrorBounded2`, `isRelComponentwiseBackwardStable` | `forward_from_backward` | General scalar/vector definitions used by low-level algorithm contracts. |
+| Sequential summation | `LeanFpAnalysis/FP/Analysis/Summation.lean` | accumulated sums through `Fin.foldl` | `fl_sum_error`, `fl_sum_error_init`, `fl_sum_error_tight` | Core input to dot-product proofs. |
+| Subtraction folds and inverse products | `LeanFpAnalysis/FP/Analysis/SubtractionFold.lean` | subtraction accumulation helpers | `fl_sub_sum_error_init`, `inv_prod_error_bound` | Used heavily by triangular substitution proofs. |
+| Dot product forward error | `LeanFpAnalysis/FP/Algorithms/DotProduct.lean` | `fl_dotProduct` | `dotProduct_error_bound` | Tight `gamma fp n` bound for the sequential dot product. |
+| Dot product backward error | `LeanFpAnalysis/FP/Algorithms/DotProduct.lean` | `fl_dotProduct` | `dotProduct_backward_error`, `dotProduct_backward_stable_x`, `dotProduct_backward_stable_y`, `dotProduct_isRelBackwardStable` | Componentwise relative perturbations of one input vector. |
+| Floating 2-norm | `LeanFpAnalysis/FP/Algorithms/Norm2.lean` | `fl_norm2Sq`, `fl_norm2` | `norm_toLp_two_eq_sqrt_dotProduct`, `dotProduct_self_nonneg_real`, `dotProduct_self_eq_zero_iff_real`, `dotProduct_self_pos_iff_real`, `fl_norm2Sq_backward_error`, `fl_norm2Sq_nonneg_of_gammaValid_two_mul`, `fl_norm2_unroll`, `fl_norm2_unroll_of_gammaValid_two_mul` | Exact facts use Mathlib `dotProduct` and `‖WithLp.toLp 2 x‖` directly; FP facts compute `xᵀx` by `fl_dotProduct`, then apply rounded `FPModel.fl_sqrt`. |
+| Matrix-vector product | `LeanFpAnalysis/FP/Algorithms/MatVec.lean` | `fl_matVec` | `matVec_backward_error`, `matVec_error_bound`, `matVec_row_isRelBackwardStable` | Built row-by-row from dot products. |
+| Matrix multiplication | `LeanFpAnalysis/FP/Algorithms/MatMul.lean` | `fl_matMul` | `matMul_error_bound`, `matMul_backward_error_col` | Backward theorem is columnwise; each column may use a different perturbation. |
+| Outer product | `LeanFpAnalysis/FP/Algorithms/OuterProduct.lean` | `fl_outerProduct` | `outerProduct_error_bound`, `outerProduct_backward_error` | Useful for rank-one update reasoning. |
+| Recursive, pairwise, and tree summation | `LeanFpAnalysis/FP/Algorithms/RecursiveSum.lean`, `PairwiseSum.lean`, `SumTree.lean` | recursive/tree sum algorithms | `recursiveSum_backward_error`, `recursiveSum_forward_error_bound`, `pairwiseSum_backward_error`, `pairwiseSum_forward_error_bound`, `backward_error`, `forward_error` | `SumTree.backward_error` and `SumTree.forward_error` are in the same namespace and have generic names. |
+| Forward substitution | `LeanFpAnalysis/FP/Algorithms/ForwardSub.lean` | `fl_forwardSub` | `forwardSub_backward_error`, `fl_forwardSub_satisfies_spec` | Lower-triangular solve. Requires nonzero diagonal and lower-triangular zero pattern. |
+| Back substitution | `LeanFpAnalysis/FP/Algorithms/TriangularSolve.lean` | `fl_backSub` | `backSub_backward_error`, `backSub_backward_error_perturbed`, `backSub_backward_error_dual`, `fl_backSub_satisfies_spec` | Upper-triangular solve. Requires nonzero diagonal and upper-triangular zero pattern. |
+| Combined triangular solve | `LeanFpAnalysis/FP/Algorithms/TriangularSolveCombined.lean` | `fl_forwardSub`, `fl_backSub` | `triangularSolve_backward_error` | Composes forward and back substitution. |
+| Triangular forward-error bounds | `LeanFpAnalysis/FP/Analysis/ForwardError.lean`, `Algorithms/TriangularForwardBound.lean`, `Algorithms/TriangularForwardComparison.lean` | inverse and comparison quantities | `backSub_forward_error`, `forwardSub_forward_error`, `backSub_forward_error_diagDom`, `forwardSub_forward_error_comparison`, `forwardSub_forward_error_mu_bound` | These convert backward-error statements into forward-error bounds under matrix assumptions. |
+| M-matrix forward substitution | `LeanFpAnalysis/FP/Algorithms/MMatrix.lean` | M-matrix predicates and comparison quantities | `forwardSub_nonneg`, `mmatrix_forwardSub_relative_error` | Proves the Corollary 8.10 relative-error statement in mu-form. |
+| Inverse and triangular inverse bounds | `LeanFpAnalysis/FP/Algorithms/InverseBounds.lean` | inverse and norm bounds | `theorem_8_11_first_ineq`, `theorem_8_11_upper_bound` | Higham chapter 8 inverse-bound infrastructure. |
+| LU factorization backward error | `LeanFpAnalysis/FP/Algorithms/LU/GaussianElimination.lean` | `LUBackwardError` | `lu_backward_error_perturbation`, `lu_backward_error_relative`, `lu_backward_error_gamma` | Specification of computed LU factors and perturbation bounds. |
+| LU solve backward error | `LeanFpAnalysis/FP/Algorithms/LU/LUSolve.lean` | `fl_forwardSub`, `fl_backSub`, `LUBackwardError` | `lu_solve_backward_error`, `lu_solve_backward_error_tight`, `lu_solve_backward_error_mixed` | Composes LU factorization with triangular solves. |
+| Structured LU bounds | `LeanFpAnalysis/FP/Algorithms/LU/GrowthFactor.lean`, `SpecialMatrices.lean`, `Tridiagonal.lean`, `Doolittle.lean`, `BlockLU.lean` | growth-factor and special-matrix specs | `diagDom_lu_solve_backward_stable`, `spd_lu_backward_error`, `mmatrix_lu_backward_stable`, `banded_lu_backward_error`, `doolittle_solve_backward_error`, `block_lu_solve_backward_error` | Some structured results are specification-level interfaces; inspect hypotheses. |
+| Cholesky factorization | `LeanFpAnalysis/FP/Algorithms/Cholesky/CholeskySpec.lean` | `CholeskyBackwardError` | `cholesky_backward_error_perturbation`, `cholesky_backward_error_relative`, `cholesky_spd_backward_stable` | Factorization contract for SPD-style analyses. |
+| Cholesky solve | `LeanFpAnalysis/FP/Algorithms/Cholesky/CholeskySolve.lean` | `fl_forwardSub`, `fl_backSub`, `CholeskyBackwardError` | `cholesky_solve_backward_error_expanded`, `cholesky_solve_backward_error`, `cholesky_solve_spd_backward_stable` | Composes Cholesky factorization with two triangular solves. |
+| QR factorization and QR solve | `LeanFpAnalysis/FP/Algorithms/QR/*.lean` | `householder`, `fl_householderApply`, `fl_householderQR_R`, `fl_householderQR_R_safe`, `fl_householderQR_Q_safe`, `fl_householderQR_safe_witness`, `fl_householderQR_rhs`, `fl_householderQR_rhs_safe`, `fl_householderQR_solve`, `fl_householderQR_solve_safe`, `givensRotation`, `givensC`, `givensS`, `fl_givensC`, `fl_givensS`, `fl_givensApply`, `fl_givensApplyMatrix`, `fl_givensApplyMatrixRect`, `fl_givensColumnStepMatrix`, `fl_givensColumnStepMatrixRect`, `GivensCoeffError`, `ColumnwiseGivensStepError`, `HouseholderQRWitness`, `HouseholderQRExplicitBackwardError`, `HouseholderQRBackwardError`, `HouseholderQRRhsPanelBackwardError`, `HouseholderQRPanelSolveBackwardError`, `GivensQRBackwardError`, `QRSolveBackwardError` | `HouseholderQRPanelSafeReady_square_of_global_gammaValid`, `fl_householderQR_Q_safe_orthogonal_of_global_gammaValid`, `fl_householderQR_safe_witness_Q_orthogonal_of_global_gammaValid`, `fl_householderQR_safe_witness_R_structured_backward_error_of_global_gammaValid`, `fl_householderQR_safe_witness_explicit_backward_error_of_global_gammaValid`, `fl_householderQR_R_safe_structured_backward_error_of_global_gammaValid`, `fl_householderQR_R_safe_structured_backward_error`, `fl_householderQR_R_safe_backward_error`, `fl_householderQR_R_structured_backward_error`, `fl_householderQR_rhs_safe_backward_error_of_global_gammaValid`, `fl_householderQR_rhs_safe_backward_error`, `fl_householderQR_solve_components_safe_backward_error_of_global_gammaValid`, `fl_householderQR_solve_components_safe_backward_error`, `fl_householderQR_solve_safe_backward_error_of_global_gammaValid`, `fl_householderQR_solve_safe_backward_error`, `fl_householderQRPanel_rhs_backward_error`, `fl_householderQR_rhs_backward_error`, `fl_householderQR_solve_components_backward_error`, `fl_householderQR_solve_backward_error`, `givensCoeff_norm_sq`, `givensCoeff_zero_second`, `givensRotation_constructed_orthogonal`, `fl_givensC_relative_error_conservative`, `fl_givensS_relative_error_conservative`, `fl_givensCoeffError_conservative`, `givensRotation_matMulVec_p`, `givensRotation_matMulVec_q`, `fl_givensApply_supplied_app_error`, `fl_givensApply_coeffError_app_error`, `fl_givensApply_computed_app_error_conservative`, `fl_givensApply_computed_matrix_step_error`, `fl_givensColumnStep_matrix_step_error`, `fl_givensApply_computed_matrix_step_error_rect`, `fl_givensColumnStep_matrix_step_error_rect`, `fl_givens_sequence_backward_error`, `fl_givens_sequence_backward_error_uniform`, `fl_givens_column_sequence_backward_error_uniform`, `fl_givens_panel_sequence_backward_error`, `fl_givens_panel_sequence_backward_error_uniform`, `fl_givens_column_panel_sequence_backward_error_uniform`, `householder_qr_backward`, `givens_qr_backward`, `qr_solve_backward_error_from_components`, `qr_solve_perturbation_bound` | Householder QR `R` has a zero-aware implementation-backed theorem: `fl_householderQR_R_safe_structured_backward_error` handles zero active columns by exact skip branches and nonzero columns by the concrete rounded Householder construction/application bridge. The `fl_householderQR_Q_safe` / `fl_householderQR_safe_witness` layer exposes the exact orthogonal `Q` witness associated with the safe rounded `R` run, and `fl_householderQR_safe_witness_explicit_backward_error_of_global_gammaValid` ties that `Q` directly to the perturbation equation; it is not yet a separately rounded accumulated `Q_hat`. QR solve now has a matching zero-aware path: `fl_householderQR_solve_safe_backward_error` combines safe QR, safe RHS-transform, and concrete back substitution. Prefer the `_of_global_gammaValid` wrappers when possible; they replace recursive safe-readiness hypotheses with one `gammaValid fp (11*n+23)` assumption. The remaining safe solve assumptions are `0 < n`, nonzero diagonal of computed `R_safe`, and global QR gamma validity. The older nonzero-panel theorems remain available for compatibility. Givens has exact and rounded coefficient kernels, conservative computed-coefficient vector and matrix-step bridges, current-matrix column-step sequence accumulation, and a uniform `gamma 8 * sqrt n` corollary; the sharper Higham Lemma 18.6/18.7 constants and the concrete annihilation schedule/triangular-shape proof for full Givens QR remain pending. |
+| Residual computation | `LeanFpAnalysis/FP/Algorithms/IterativeRefinement.lean` | `fl_residual`, `ResidualError` | `conventional_residual_error` | Bound for the computed residual `fl(b - A*x_hat)`. |
+| Iterative refinement | `LeanFpAnalysis/FP/Algorithms/IterativeRefinement.lean` | `SolverSpec`, `ResidualError` | `one_step_refinement_error_identity`, `one_step_residual_bound`, `one_step_backward_error_contraction`, `lu_refinement_backward_stable`, `refinement_forward_error_bound`, `thm_11_4_residual_bound` | Mixes exact algebra, solver specifications, and residual computation bounds. |
+| Stationary iteration | `LeanFpAnalysis/FP/Algorithms/StationaryIteration.lean` | iteration/residual helpers | `one_step_error`, `local_error_simplified`, `residual_eq_A_error`, `one_step_residual`, `normwise_forward_bound`, `main_forward_bound`, `normwise_one_step_residual_bound`, `normwise_residual_bound` | Useful for harder compositional stability analyses. |
+| Matrix algebra infrastructure | `LeanFpAnalysis/FP/Analysis/MatrixAlgebra.lean` | `RVec`, `RMat`, `RSqMat`, `RMatFn`, `frobNorm`, `infNorm`, matrix products, identities, inverses | `matMul_id_right`, `matMul_id_left`, `matMul_assoc`, `matMul_vec_eq`, `matMulVec_matMul`, `frobNorm_matMul_le`, `abs_entry_le_frobNorm`, `abs_matMulVec_le_card_bound_infNormVec`, `IsOrthogonal.abs_matMulVec_le_card_infNormVec`, `row_sum_le_infNorm` | Exact matrix reasoning. `frobNorm` and `infNorm` are compatibility wrappers over Mathlib norms for legacy function-shaped matrices. |
+| Perturbation theory | `LeanFpAnalysis/FP/Analysis/PerturbationTheory.lean` | residual and perturbation quantities | `forward_error_from_residual`, `componentwise_forward_error`, `forward_error_from_backward_error`, `componentwise_forward_error_exact`, `normwise_forward_error_exact` | Converts residual/backward-error hypotheses into forward-error conclusions. |
+
+Householder QR now has two distinct `Q`-side APIs.  Use
+`fl_householderQR_Q_safe` / `HouseholderQRWitness` when you need the exact
+orthogonal witness that appears in the proved backward-error equation.  Use
+`fl_householderQR_Qhat_safe` / `HouseholderQRComputedFactors` when you need the
+concrete rounded accumulated `Q_hat` object.
+`fl_householderQRPanel_Qhat_safe_succ_succ_nonzero_step_error` proves the
+one-step implementation-backed matrix-step error for each nonzero rounded
+`Q_hat` update,
+`fl_householderQRPanel_Qhat_safe_succ_succ_zero_residual_bound` records the
+zero-column skip branch as an identity update with zero residual, and
+`fl_householderQRPanel_Qhat_safe_succ_succ_nonzero_residual_bound` packages the
+nonzero update as an exact Householder application plus a bounded residual
+matrix.
+The computed-factor wrappers
+`fl_householderQR_computed_safe_R_hat_upper` and
+`fl_householderQR_computed_safe_R_hat_structured_backward_error_of_global_gammaValid`
+transfer the already-proved `R_safe` facts to the `R_hat` field;
+`fl_householderQR_computed_safe_R_hat_explicit_backward_error_of_global_gammaValid`
+does the same for the explicit exact-witness perturbation equation.  For a
+source-facing growth coefficient on the `R_hat` theorem, use
+`fl_householderQR_R_safe_backward_error_highamGrowth_of_global_gammaValid`,
+`fl_householderQR_safe_witness_explicit_backward_error_highamGrowth_of_global_gammaValid`,
+or
+`fl_householderQR_computed_safe_R_hat_explicit_backward_error_highamGrowth_of_global_gammaValid`.
+For the closest single-`gamma` counterpart to Higham Theorem 18.4, use
+`householderConstructApplyGammaIndex`,
+`householderConstructApplyBound_le_gamma`,
+`householderQRBackwardCoeffSafe_le_gamma_higham`,
+`fl_householderQR_R_safe_backward_error_gammaHigham_of_global_gammaValid`,
+`fl_householderQR_safe_witness_explicit_backward_error_gammaHigham_of_global_gammaValid`,
+or
+`fl_householderQR_computed_safe_R_hat_explicit_backward_error_gammaHigham_of_global_gammaValid`.
+These absorb the concrete recursive coefficient into
+`gamma fp (n * householderConstructApplyGammaIndex n)` under the corresponding
+`gammaValid` side condition.
+For rectangular panels, use
+`householderQRPanelBackwardCoeffSafe_le_gamma_higham_rect`,
+`fl_householderQRPanel_R_safe_upper_trapezoidal`,
+`fl_householderQRPanel_R_safe_explicit_backward_error_gammaHigham_of_global_gammaValid`,
+`fl_householderQRPanel_R_safe_structured_explicit_backward_error_gammaHigham_of_global_gammaValid`,
+or the tall specialization
+`fl_householderQRPanel_R_safe_structured_explicit_backward_error_tall_gammaHigham_of_global_gammaValid`.
+These are implementation-backed statements for the concrete zero-aware rounded
+panel `R_safe` algorithm with the exact orthogonal `Q_safe` witness, using
+`min m p` stages, or `p` stages in the tall `p ≤ m` case.  The structured
+versions also include the rectangular upper-trapezoidal shape of `R_safe`.
+For a rectangular computed-factor API, use
+`HouseholderQRPanelComputedFactors`,
+`fl_householderQRPanel_computed_safe`,
+`fl_householderQRPanel_Qhat_safe_fixed_Q_safe_growth_accum_error`, and
+`fl_householderQRPanel_computed_safe_explicit_error_tall_gammaHigham_of_global_gammaValid`.
+This packages the concrete panel `(Q_hat, R_hat)` output with the same honest
+two-layer interpretation used in the square API: `R_hat` is backward stable
+against exact `Q_safe`, while rounded `Q_hat` is a bounded perturbation of
+`Q_safe`, not an exactly orthogonal factor.
+For a direct theorem about the rectangular rounded product itself, use
+`fl_householderQRPanel_computed_safe_residual_error_tall_gammaHigham_of_global_gammaValid`;
+it proves a residual bound for `Q_hat * R_hat`.  The exact algebra helpers
+behind this theorem are `matMulRect_add_left` and `frobNorm_matMulRect_le`.
+`fl_householderQRPanel_Qhat_safe_accum_error`,
+`fl_householderQR_Qhat_safe_accum_error_of_global_gammaValid`, and
+`fl_householderQR_computed_safe_Q_hat_accum_error_of_global_gammaValid` prove
+that rounded accumulated `Q_hat` is an exact orthogonal matrix plus a bounded
+perturbation, using the raw recursive bound
+`householderQRPanel_QhatAccumBound`.  The cleaner wrappers
+`fl_householderQRPanel_Qhat_safe_closed_accum_error`,
+`fl_householderQR_Qhat_safe_closed_accum_error_of_global_gammaValid`, and
+`fl_householderQR_computed_safe_Q_hat_closed_accum_error_of_global_gammaValid`
+replace each embedded-tail `Q_hat` norm in that raw bound by
+`sqrt (m + 1) + ηtail`, using `householderQRPanel_QhatClosedBound`.
+`HouseholderQRPanelQhatFixedAccumError` and
+`fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_closed_accum_error_of_global_gammaValid`
+strengthen this again: the exact orthogonal factor explaining `Q_hat` is fixed
+to the `Q` field of `fl_householderQR_safe_witness`, not merely existential.
+`householderQR_QhatUniformClosedBound` and
+`fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_uniform_accum_error_of_global_gammaValid`
+replace the branch-sensitive recursive coefficients by a dimension-only
+recursive bound depending on `householderConstructApplyBound fp n` and
+`sqrt n`.  `householderQR_QhatClosedFormBound` solves that recurrence as
+`((1 + householderConstructApplyBound fp n)^n - 1) * sqrt n`, and
+`fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_closed_form_accum_error_of_global_gammaValid`
+exposes the resulting closed-form computed-`Q_hat` perturbation theorem.
+`fl_householderQR_computed_safe_explicit_error_of_global_gammaValid` packages
+this `Q_hat` theorem with the explicit exact-witness backward-error theorem
+for `R_hat`, making it the main theorem to cite for the current computed
+`(Q_hat, R_hat)` API.  Its growth-bound counterpart is
+`fl_householderQR_computed_safe_explicit_error_highamGrowth_of_global_gammaValid`.
+Its single-`gamma` `R_hat` counterpart is
+`fl_householderQR_computed_safe_explicit_error_gammaHigham_of_global_gammaValid`.
+For a direct theorem about the product of the rounded factors, use
+`fl_householderQR_computed_safe_residual_error_highamGrowth_of_global_gammaValid`;
+it proves a residual bound for `Q_hat * R_hat`, not exact orthogonality of
+`Q_hat`.  The corresponding residual theorem with a single-`gamma` `R_hat`
+term is
+`fl_householderQR_computed_safe_residual_error_gammaHigham_of_global_gammaValid`.
+For a simpler but coarser printed coefficient, use
+`householderQR_QhatClosedFormBound_le_growth`,
+`fl_householderQR_Qhat_safe_fixed_Q_safe_growth_accum_error_of_global_gammaValid`,
+or
+`fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_growth_accum_error_of_global_gammaValid`.
+These bound the exact closed form by
+`n*c*(1+c)^n*sqrt(n)`, where `c = householderConstructApplyBound fp n`.
+The branch-combined
+safe-step interface feeding the recursive theorem is:
+`householderQRPanel_Qhat_stepP_safe`,
+`fl_householderQRPanel_Qhat_tail_safe`,
+`householderQRPanel_Qhat_stepCoeff_safe`,
+`householderQRPanel_Qhat_stepCoeff_safe_nonneg`,
+`householderQRPanel_Qhat_stepP_safe_orthogonal`, and
+`fl_householderQRPanel_Qhat_safe_succ_succ_residual_bound`.  The bundled
+one-step theorem is
+`fl_householderQRPanel_Qhat_safe_succ_succ_step_interface`.  Exact embedding
+norm facts useful for this proof layer are `frobNormSq_embedTrailingOne`,
+`frobNorm_embedTrailingOne`, and
+`frobNorm_embedTrailingOne_of_orthogonal`.
+
+For QR solve component proofs where the exact orthogonal factor must be named,
+use `HouseholderQRRhsPanelExplicitBackwardError` and
+`HouseholderQRPanelSolveFixedBackwardError`.  The safe implementation-backed
+wrappers
+`fl_householderQR_rhs_safe_explicit_backward_error_of_global_gammaValid` and
+`fl_householderQR_solve_components_safe_fixed_Q_safe_backward_error_of_global_gammaValid`
+show that the concrete rounded RHS transform and simultaneous `(R_safe, c_hat)`
+solve components are explained by the same `fl_householderQR_Q_safe` witness.
+The final `QRSolveBackwardError` remains existential in `Q` because its public
+statement only exposes the solved system perturbation.
+For the source-facing final safe solve theorem, prefer
+`fl_householderQR_solve_safe_backward_error_gammaHigham_closedInputBounds_of_global_gammaValid`.
+It presents both solve-side printed bounds in terms of the original inputs:
+the matrix perturbation uses the single-gamma Householder QR coefficient plus
+the separate back-substitution coefficient after bounding
+`‖R_safe‖_F ≤ (1 + gamma_K) ‖A‖_F`, and the RHS perturbation uses the
+nonrecursive conservative growth expression from
+`householderQRRhsGrowthCoeff_le_closedGrowth`.  The reusable `R_safe` norm
+bridge is `fl_householderQR_R_safe_frobNorm_le_gammaHigham_of_global_gammaValid`,
+derived from `HouseholderQRExplicitBackwardError.frobNorm_R_hat_le`.
+The sibling theorem
+`fl_householderQR_solve_safe_backward_error_gammaHigham_rhsClosedGrowth_of_global_gammaValid`
+keeps the intermediate `‖R_safe‖_F` in the matrix perturbation bound.
+The sibling theorem
+`fl_householderQR_solve_safe_backward_error_gammaHigham_rhsGrowth_of_global_gammaValid`
+keeps the tighter recursive RHS growth coefficient
+`householderQRRhsGrowthCoeff fp n * infNormVec b`.
+The raw recursive version
+`fl_householderQR_solve_safe_backward_error_gammaHigham_of_global_gammaValid`
+keeps the raw recursive RHS perturbation expression.
+For the RHS perturbation side, the raw implementation-backed theorem still
+uses the recursive bound `householderQRRhsBackwardBoundSafe`, because that
+bound follows the actual computed intermediate right-hand sides.  To eliminate
+those intermediate vectors from estimates, use
+`householderQRRhsGrowthCoeff` together with
+`householderQRRhsBackwardBoundSafe_le_growthCoeff_of_global_gammaValid`, which
+proves
+`householderQRRhsBackwardBoundSafe fp n A b ≤ householderQRRhsGrowthCoeff fp n * infNormVec b`.
+The one-step ingredients are
+`fl_householder_first_column_rhs_step_infNormVec_le`,
+`vectorTail_fl_householder_first_column_rhs_step_infNormVec_le`, and the exact
+tail lemma `vectorTail_infNormVec_le`.
+
+## Main Dependency Chains
+
+The strongest internally derived results follow these chains:
+
+```text
+Model
+  -> Rounding
+  -> Summation
+  -> DotProduct
+  -> MatVec
+  -> MatMul
+
+Model
+  -> Rounding and SubtractionFold
+  -> ForwardSub / BackSub
+  -> TriangularSolveCombined
+  -> LU solve and Cholesky solve
+
+Model
+  -> DotProduct
+  -> Norm2
+  -> Householder construction/application
+  -> safe Householder QR and QR solve
+
+MatrixAlgebra + PerturbationTheory
+  -> forward-error and residual-based analyses
+
+MatVec + residual definitions
+  -> IterativeRefinement
+  -> StationaryIteration-style bounds
+```
+
+When a target statement looks like a new algorithm-level stability result,
+first identify whether it is:
+
+- a local kernel result, such as summation, dot product, matvec, matmul, or a
+  triangular solve;
+- a composition result, such as LU solve, Cholesky solve, residual computation,
+  or iterative refinement;
+- a perturbation conversion, where an existing backward/residual bound needs to
+  be converted into a forward-error bound.
+
+## Common Definitions
+
+| Name | Kind | Location | Meaning |
+|---|---|---|---|
+| `FPModel` | structure | `FP/Model.lean` | Unit roundoff and rounded operations with standard relative-error axioms. |
+| `gamma fp n` | definition | `Analysis/Rounding.lean` | Higham `gamma_n = n*u / (1 - n*u)`. |
+| `gammaValid fp n` | definition | `Analysis/Rounding.lean` | Side condition `(n : Real) * fp.u < 1`. |
+| `fl_dotProduct` | definition | `Algorithms/DotProduct.lean` | Sequential floating-point dot product. |
+| `fl_norm2` | definition | `Algorithms/Norm2.lean` | Floating-point Euclidean norm: `fl_sqrt (fl_dotProduct x x)`. |
+| `fl_matVec` | definition | `Algorithms/MatVec.lean` | Rowwise floating-point matrix-vector product. |
+| `fl_matMul` | definition | `Algorithms/MatMul.lean` | Columnwise matrix-matrix product via `fl_matVec`. |
+| `fl_forwardSub` | definition | `Algorithms/ForwardSub.lean` | Floating-point lower-triangular solve. |
+| `fl_backSub` | definition | `Algorithms/TriangularSolve.lean` | Floating-point upper-triangular solve. |
+| `fl_residual` | definition | `Algorithms/IterativeRefinement.lean` | Floating-point residual `fl(b - fl(A*x))`. |
+| `LUBackwardError` | structure | `Algorithms/LU/GaussianElimination.lean` | Backward-error contract for computed LU factors. |
+| `CholeskyBackwardError` | structure | `Algorithms/Cholesky/CholeskySpec.lean` | Backward-error contract for computed Cholesky factors. |
+| `HouseholderAppError` | structure | `Algorithms/QR/HouseholderSpec.lean` | Backward-error contract for applying a Householder reflector. |
+| `HouseholderQRRhsPanelBackwardError` | structure | `Algorithms/QR/QRSolve.lean` | Backward-error contract for the RHS transform in Householder QR solve. |
+| `HouseholderQRRhsPanelExplicitBackwardError` | structure | `Algorithms/QR/QRSolve.lean` | Fixed-orthogonal-witness RHS transform contract for Householder QR solve. |
+| `HouseholderQRPanelSolveBackwardError` | structure | `Algorithms/QR/QRSolve.lean` | Shared-orthogonal-factor contract for the QR `R` panel and RHS transform. |
+| `HouseholderQRPanelSolveFixedBackwardError` | structure | `Algorithms/QR/QRSolve.lean` | Fixed-orthogonal-witness shared contract for the QR `R` panel and RHS transform. |
+| `QRSolveBackwardError` | structure | `Algorithms/QR/QRSolve.lean` | Backward-error contract for QR-based solve. |
+| `SolverSpec` | structure | `Algorithms/IterativeRefinement.lean` | Abstract componentwise backward-stable solver. |
+| `ResidualError` | structure | `Algorithms/IterativeRefinement.lean` | Componentwise residual-computation error contract. |
+
+## Strong Results Versus Abstract Interfaces
+
+Many core files derive their results from the floating-point model and earlier
+library lemmas. Good examples are:
+
+- `dotProduct_error_bound`
+- `dotProduct_backward_error`
+- `norm_toLp_two_eq_sqrt_dotProduct`
+- `dotProduct_self_pos_iff_real`
+- `fl_norm2Sq_backward_error`
+- `fl_norm2Sq_nonneg_of_gammaValid_two_mul`
+- `fl_norm2_unroll`
+- `fl_norm2_unroll_of_gammaValid_two_mul`
+- `matVec_backward_error`
+- `matMul_error_bound`
+- `forwardSub_backward_error`
+- `backSub_backward_error`
+- `triangularSolve_backward_error`
+- `lu_solve_backward_error`
+- `cholesky_solve_backward_error`
+- `conventional_residual_error`
+
+Some high-level chapter files intentionally expose abstract/specification
+interfaces. They are useful when the missing local algorithm analysis is supplied
+as a hypothesis, but they should not be read as fully derived from `FPModel`
+alone. Inspect their hypotheses before using them as evidence of a completed
+floating-point analysis.
+
+Known abstract-interface areas include:
+
+- `Algorithms/GaussJordan.lean`
+- parts of `Algorithms/MatrixInversion.lean`
+- `Algorithms/Cholesky/CholeskyDemmel.lean`
+- `Algorithms/Cholesky/CholeskyIndefinite.lean`
+- `Algorithms/Cholesky/CholeskyNonsym.lean`
+- `Algorithms/Cholesky/CholeskyPSD.lean`
+- `Algorithms/Cholesky/CholeskyPerturbation.lean`
+- legacy transfer wrappers in `Algorithms/QR/HouseholderQR.lean`, such as
+  `householder_qr_backward`
+- `Algorithms/QR/GivensQR.lean`
+- `Algorithms/QR/QRSolve.lean`
+- `Algorithms/Sylvester/SylvesterPerturbation.lean`
+
+The safest way to classify a theorem is to inspect the statement. If a
+hypothesis already contains the algorithmic stability conclusion, the theorem is
+a transfer or packaging result rather than a complete local analysis.
+
+## Search Recipes
+
+Inside the repository:
+
+```bash
+rg "theorem .*backward_error" LeanFpAnalysis/FP
+rg "theorem .*error_bound" LeanFpAnalysis/FP
+rg "def fl_" LeanFpAnalysis/FP
+rg "structure .*Spec|structure .*Error" LeanFpAnalysis/FP
+```
+
+Inside Lean:
+
+```lean
+import LeanFpAnalysis.FP
+open LeanFpAnalysis.FP
+
+#check dotProduct_error_bound
+#check matVec_backward_error
+#check backSub_backward_error
+#check lu_solve_backward_error
+```
+
+When a theorem almost matches a goal, compare:
+
+- dimension order, such as `m n p` versus `n m`;
+- whether the theorem is componentwise, normwise, or residual-based;
+- whether the result is forward error or backward error;
+- whether the bound is `gamma fp n`, `gamma fp (n + 1)`, or an absorbed form;
+- whether the theorem perturbs one input, one row/column, or a whole matrix;
+- whether the theorem requires triangular zero-pattern assumptions, nonzero
+  diagonal assumptions, or an abstract factorization/solver specification.

@@ -3333,7 +3333,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -3344,7 +3344,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -3505,7 +3505,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -3516,7 +3516,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -3676,7 +3676,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -3687,7 +3687,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -3866,7 +3866,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -3877,7 +3877,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -4078,7 +4078,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -4089,7 +4089,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -4276,7 +4276,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -4287,7 +4287,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -4467,7 +4467,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -4478,7 +4478,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -4651,7 +4651,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -4662,7 +4662,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -4830,7 +4830,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -4841,7 +4841,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -5002,7 +5002,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -5013,7 +5013,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -5177,7 +5177,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -5188,7 +5188,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -5348,7 +5348,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -5359,7 +5359,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -5521,7 +5521,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -5532,7 +5532,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -5696,7 +5696,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -5707,7 +5707,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -5858,7 +5858,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -5869,7 +5869,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -5888,7 +5888,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-            (householderBeta s
+            (householderBetaSpec s
               (householderTrailingActiveVector s
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -6053,7 +6053,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -6064,7 +6064,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -6083,7 +6083,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-            (householderBeta s
+            (householderBetaSpec s
               (householderTrailingActiveVector s
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -6248,7 +6248,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -6259,7 +6259,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -6299,7 +6299,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-            (householderBeta s
+            (householderBetaSpec s
               (householderTrailingActiveVector s
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -6354,7 +6354,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-            (householderBeta s
+            (householderBetaSpec s
               (householderTrailingActiveVector s
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -6473,7 +6473,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -6484,7 +6484,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -6524,7 +6524,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-            (householderBeta s
+            (householderBetaSpec s
               (householderTrailingActiveVector s
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -6691,7 +6691,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -6702,7 +6702,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -6721,7 +6721,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-            (householderBeta s
+            (householderBetaSpec s
               (householderTrailingActiveVector s
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -6903,7 +6903,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -6914,7 +6914,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -6933,7 +6933,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-            (householderBeta s
+            (householderBetaSpec s
               (householderTrailingActiveVector s
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -7087,7 +7087,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -7098,7 +7098,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -7138,7 +7138,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-            (householderBeta s
+            (householderBetaSpec s
               (householderTrailingActiveVector s
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -7314,7 +7314,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -7325,7 +7325,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -7344,7 +7344,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-            (householderBeta s
+            (householderBetaSpec s
               (householderTrailingActiveVector s
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -7528,7 +7528,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -7539,7 +7539,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -7558,7 +7558,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-            (householderBeta s
+            (householderBetaSpec s
               (householderTrailingActiveVector s
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -7739,7 +7739,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -7750,7 +7750,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -7790,7 +7790,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-            (householderBeta s
+            (householderBetaSpec s
               (householderTrailingActiveVector s
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -7863,7 +7863,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-            (householderBeta s
+            (householderBetaSpec s
               (householderTrailingActiveVector s
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -7979,7 +7979,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -7990,7 +7990,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -8030,7 +8030,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-            (householderBeta s
+            (householderBetaSpec s
               (householderTrailingActiveVector s
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -8101,7 +8101,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-            (householderBeta s
+            (householderBetaSpec s
               (householderTrailingActiveVector s
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -8219,7 +8219,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -8230,7 +8230,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -8270,7 +8270,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-            (householderBeta s
+            (householderBetaSpec s
               (householderTrailingActiveVector s
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -8460,7 +8460,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -8471,7 +8471,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -8511,7 +8511,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-            (householderBeta s
+            (householderBetaSpec s
               (householderTrailingActiveVector s
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -8700,7 +8700,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -8711,7 +8711,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -8751,7 +8751,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-            (householderBeta s
+            (householderBetaSpec s
               (householderTrailingActiveVector s
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -8931,7 +8931,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -8942,7 +8942,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -8982,7 +8982,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-            (householderBeta s
+            (householderBetaSpec s
               (householderTrailingActiveVector s
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -9160,7 +9160,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -9171,7 +9171,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -9211,7 +9211,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-            (householderBeta s
+            (householderBetaSpec s
               (householderTrailingActiveVector s
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -9381,7 +9381,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -9392,7 +9392,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -9432,7 +9432,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-            (householderBeta s
+            (householderBetaSpec s
               (householderTrailingActiveVector s
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -9600,7 +9600,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -9611,7 +9611,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -9651,7 +9651,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-            (householderBeta s
+            (householderBetaSpec s
               (householderTrailingActiveVector s
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -9821,7 +9821,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -9832,7 +9832,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -9872,7 +9872,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-            (householderBeta s
+            (householderBetaSpec s
               (householderTrailingActiveVector s
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -10039,7 +10039,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -10050,7 +10050,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -10089,7 +10089,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-            (householderBeta s
+            (householderBetaSpec s
               (householderTrailingActiveVector s
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -10271,7 +10271,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -10282,7 +10282,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -10321,7 +10321,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-            (householderBeta s
+            (householderBetaSpec s
               (householderTrailingActiveVector s
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -10498,7 +10498,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -10509,7 +10509,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -10694,7 +10694,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -10705,7 +10705,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -10887,7 +10887,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -10898,7 +10898,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -11102,7 +11102,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -11113,7 +11113,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -11312,7 +11312,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -11323,7 +11323,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -11519,7 +11519,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -11530,7 +11530,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -11724,7 +11724,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -11735,7 +11735,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -11923,7 +11923,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -11934,7 +11934,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -12115,7 +12115,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -12126,7 +12126,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -12166,7 +12166,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-            (householderBeta s
+            (householderBetaSpec s
               (householderTrailingActiveVector s
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -12333,7 +12333,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -12344,7 +12344,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -12384,7 +12384,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-            (householderBeta s
+            (householderBetaSpec s
               (householderTrailingActiveVector s
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -12553,7 +12553,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -12564,7 +12564,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -12608,7 +12608,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-            (householderBeta s
+            (householderBetaSpec s
               (householderTrailingActiveVector s
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -12756,7 +12756,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -12767,7 +12767,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -12811,7 +12811,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-            (householderBeta s
+            (householderBetaSpec s
               (householderTrailingActiveVector s
                 ⟨k, lt_of_lt_of_le hk hmn⟩
                 (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -12963,7 +12963,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -12974,7 +12974,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -13148,7 +13148,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))
@@ -13159,7 +13159,7 @@ theorem leverageTraceProbability_eventProb_fl_rowSampleLSObjective_le_one_add_et
           (householderTrailingActiveVector s
             ⟨k, lt_of_lt_of_le hk hmn⟩
             (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k))
-          (householderBeta s
+          (householderBetaSpec s
             (householderTrailingActiveVector s
               ⟨k, lt_of_lt_of_le hk hmn⟩
               (fun a => A_hat samples k a ⟨k, hk⟩) (alpha samples k)))

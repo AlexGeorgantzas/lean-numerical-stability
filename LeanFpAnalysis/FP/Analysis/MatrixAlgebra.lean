@@ -140,6 +140,11 @@ noncomputable def absMatrix (n : ℕ) (A : Fin n → Fin n → ℝ) :
     Fin n → Fin n → ℝ :=
   fun i j => |A i j|
 
+/-- Componentwise absolute value of a rectangular matrix. -/
+noncomputable def absMatrixRect {m n : ℕ} (A : Fin m → Fin n → ℝ) :
+    Fin m → Fin n → ℝ :=
+  fun i j => |A i j|
+
 /-- ∑ |f k * g k| = ∑ |f k| * |g k|.
     Eliminates the common `apply Finset.sum_congr rfl; intro k _; exact abs_mul _ _` pattern. -/
 lemma Finset.sum_abs_mul {n : ℕ} (f g : Fin n → ℝ) :
@@ -415,7 +420,7 @@ theorem matSeqProd_nonneg (n m : ℕ) (A : Fin m → Fin n → Fin n → ℝ)
 /-- Componentwise domination of a perturbed finite matrix product by the
 corresponding product of absolute-value matrices.
 
-This is the absolute-value half of Higham Lemma 3.7: if
+This is the absolute-value half of Higham Lemma 3.8: if
 `|ΔX_j| <= δ_j |X_j|` with `δ_j >= 0`, then the product of the perturbed
 factors is componentwise bounded by
 `prod_j (1 + δ_j) * prod_j |X_j|`. -/
@@ -511,7 +516,7 @@ theorem matSeqProd_abs_perturbed_le_scalar_abs (n m : ℕ)
                       matSeqProd n m tailAbs k j)
               ring
 
-/-- Higham Chapter 3, Lemma 3.7, finite-sequence componentwise form.
+/-- Higham Chapter 3, Lemma 3.8, finite-sequence componentwise form.
 
 If each factor in a matrix product is perturbed componentwise as
 `|ΔX_j| <= δ_j |X_j|` with `δ_j >= 0`, then the whole product satisfies
@@ -877,6 +882,129 @@ theorem matSeqProd_normwise_perturbation_bound (n m : ℕ)
         _ =
               (scalarSeqProd (m + 1) (fun r => 1 + δ r) - 1) *
                 scalarSeqProd (m + 1) (fun r => N (X r)) := by
+              simp [scalarSeqProd, tailScale, tailNorm]
+              ring
+
+/-- Higham Chapter 3, Lemma 3.7, mixed-norm finite-sequence form.
+
+This is the induction core behind the source's Frobenius/spectral variant:
+the error is measured by `NF`, the unperturbed factors are measured by `NS`,
+and the hypotheses expose exactly the mixed multiplication bounds needed for
+the proof.  Instantiating `NF` with Frobenius norm and `NS` with an operator-2
+certificate uses the norm inequality cited by the book from Problem 6.5. -/
+theorem matSeqProd_mixed_normwise_perturbation_bound (n m : ℕ)
+    (NF NS : (Fin n → Fin n → ℝ) → ℝ)
+    (hF_zero : NF (fun _ _ => 0) ≤ 0)
+    (hF_add : ∀ A B,
+      NF (fun i j => A i j + B i j) ≤ NF A + NF B)
+    (hF_mul_left : ∀ A B, NF (matMul n A B) ≤ NS A * NF B)
+    (hF_mul_right : ∀ A B, NF (matMul n A B) ≤ NF A * NS B)
+    (hS_nonneg : ∀ A, 0 ≤ NS A)
+    (hS_id : NS (idMatrix n) ≤ 1)
+    (hS_add : ∀ A B,
+      NS (fun i j => A i j + B i j) ≤ NS A + NS B)
+    (hS_mul : ∀ A B, NS (matMul n A B) ≤ NS A * NS B)
+    (X ΔX : Fin m → Fin n → Fin n → ℝ) (δ : Fin m → ℝ)
+    (hδ : ∀ r, 0 ≤ δ r)
+    (hΔF : ∀ r, NF (ΔX r) ≤ δ r * NS (X r))
+    (hΔS : ∀ r, NS (ΔX r) ≤ δ r * NS (X r)) :
+    NF (fun i j =>
+      matSeqProd n m (fun r i j => X r i j + ΔX r i j) i j -
+        matSeqProd n m X i j) ≤
+      (scalarSeqProd m (fun r => 1 + δ r) - 1) *
+        scalarSeqProd m (fun r => NS (X r)) := by
+  induction m with
+  | zero =>
+      simp [matSeqProd, scalarSeqProd]
+      exact hF_zero
+  | succ m ih =>
+      let tailX : Fin m → Fin n → Fin n → ℝ := fun r => X r.succ
+      let tailΔ : Fin m → Fin n → Fin n → ℝ := fun r => ΔX r.succ
+      let tailPert : Fin m → Fin n → Fin n → ℝ :=
+        fun r i j => X r.succ i j + ΔX r.succ i j
+      let tailScale : ℝ := scalarSeqProd m (fun r => 1 + δ r.succ)
+      let tailNorm : ℝ := scalarSeqProd m (fun r => NS (X r.succ))
+      have htail_size :
+          NS (matSeqProd n m tailPert) ≤ tailScale * tailNorm := by
+        simpa [tailX, tailΔ, tailPert, tailScale, tailNorm] using
+          matSeqProd_norm_perturbed_le_scalar n m NS hS_nonneg hS_id hS_add hS_mul
+            tailX tailΔ (fun r => δ r.succ) (fun r => hδ r.succ)
+            (fun r => hΔS r.succ)
+      have htail_err :
+          NF (fun i j => matSeqProd n m tailPert i j -
+            matSeqProd n m tailX i j) ≤ (tailScale - 1) * tailNorm := by
+        simpa [tailX, tailΔ, tailPert, tailScale, tailNorm] using
+          ih tailX tailΔ (fun r => δ r.succ) (fun r => hδ r.succ)
+            (fun r => hΔF r.succ) (fun r => hΔS r.succ)
+      have htailScale_one : 1 ≤ tailScale := by
+        exact one_le_scalarSeqProd m (fun r => 1 + δ r.succ)
+          (fun r => by linarith [hδ r.succ])
+      have htailScale_sub_nonneg : 0 ≤ tailScale - 1 := by linarith
+      have htailNorm_nonneg : 0 ≤ tailNorm := by
+        exact scalarSeqProd_nonneg m (fun r => NS (X r.succ))
+          (fun r => hS_nonneg (X r.succ))
+      have hdelta_head_nonneg : 0 ≤ δ 0 * NS (X 0) := by
+        exact mul_nonneg (hδ 0) (hS_nonneg (X 0))
+      have hsplit :
+          (fun i j =>
+            matSeqProd n (m + 1) (fun r i j => X r i j + ΔX r i j) i j -
+              matSeqProd n (m + 1) X i j) =
+          (fun i j =>
+            matMul n (ΔX 0) (matSeqProd n m tailPert) i j +
+              matMul n (X 0)
+                (fun a b => matSeqProd n m tailPert a b -
+                  matSeqProd n m tailX a b) i j) := by
+        ext i j
+        change
+          matMul n (fun i j => X 0 i j + ΔX 0 i j) (matSeqProd n m tailPert) i j -
+              matMul n (X 0) (matSeqProd n m tailX) i j =
+            matMul n (ΔX 0) (matSeqProd n m tailPert) i j +
+              matMul n (X 0)
+                (fun a b => matSeqProd n m tailPert a b -
+                  matSeqProd n m tailX a b) i j
+        unfold matMul
+        rw [← Finset.sum_sub_distrib]
+        rw [← Finset.sum_add_distrib]
+        apply Finset.sum_congr rfl
+        intro k _
+        ring
+      calc
+        NF (fun i j =>
+          matSeqProd n (m + 1) (fun r i j => X r i j + ΔX r i j) i j -
+            matSeqProd n (m + 1) X i j)
+            =
+              NF (fun i j =>
+                matMul n (ΔX 0) (matSeqProd n m tailPert) i j +
+                  matMul n (X 0)
+                    (fun a b => matSeqProd n m tailPert a b -
+                      matSeqProd n m tailX a b) i j) := by
+              rw [hsplit]
+        _ ≤
+              NF (matMul n (ΔX 0) (matSeqProd n m tailPert)) +
+                NF (matMul n (X 0)
+                  (fun a b => matSeqProd n m tailPert a b -
+                    matSeqProd n m tailX a b)) :=
+              hF_add _ _
+        _ ≤
+              NF (ΔX 0) * NS (matSeqProd n m tailPert) +
+                NS (X 0) *
+                  NF (fun a b => matSeqProd n m tailPert a b -
+                    matSeqProd n m tailX a b) := by
+              exact add_le_add (hF_mul_right _ _) (hF_mul_left _ _)
+        _ ≤
+              (δ 0 * NS (X 0)) * (tailScale * tailNorm) +
+                NS (X 0) * ((tailScale - 1) * tailNorm) := by
+              apply add_le_add
+              · calc
+                  NF (ΔX 0) * NS (matSeqProd n m tailPert)
+                      ≤ (δ 0 * NS (X 0)) * NS (matSeqProd n m tailPert) := by
+                        exact mul_le_mul_of_nonneg_right (hΔF 0) (hS_nonneg _)
+                  _ ≤ (δ 0 * NS (X 0)) * (tailScale * tailNorm) := by
+                        exact mul_le_mul_of_nonneg_left htail_size hdelta_head_nonneg
+              · exact mul_le_mul_of_nonneg_left htail_err (hS_nonneg (X 0))
+        _ =
+              (scalarSeqProd (m + 1) (fun r => 1 + δ r) - 1) *
+                scalarSeqProd (m + 1) (fun r => NS (X r)) := by
               simp [scalarSeqProd, tailScale, tailNorm]
               ring
 
@@ -1341,6 +1469,18 @@ lemma frobNorm_sq {m n : ℕ} (A : RMatFn m n) :
   rw [frobNorm_eq_sqrt_frobNormSq]
   rw [sq, Real.mul_self_sqrt (frobNormSq_nonneg A)]
 
+/-- A squared Frobenius bound implies the corresponding Frobenius bound. -/
+lemma frobNorm_le_of_frobNormSq_le_sq {m n : ℕ}
+    (A : RMatFn m n) {c : ℝ} (hc : 0 ≤ c)
+    (h : frobNormSq A ≤ c ^ 2) :
+    frobNorm A ≤ c := by
+  calc
+    frobNorm A = Real.sqrt (frobNormSq A) := frobNorm_eq_sqrt_frobNormSq A
+    _ ≤ Real.sqrt (c ^ 2) := Real.sqrt_le_sqrt h
+    _ = c := by
+          rw [Real.sqrt_sq_eq_abs]
+          exact abs_of_nonneg hc
+
 /-- Every entry is bounded in absolute value by the Frobenius norm. -/
 theorem abs_entry_le_frobNorm {m n : ℕ} (A : RMatFn m n)
     (i : Fin m) (j : Fin n) :
@@ -1376,6 +1516,54 @@ theorem frobNorm_le_of_entry_abs_le {n : ℕ}
   have habs : |A i j| ≤ |B i j| := by
     simpa [abs_of_nonneg (hB_nonneg i j)] using h i j
   exact (sq_le_sq).mpr habs
+
+/-- A componentwise relative entry bound gives a Frobenius norm bound:
+    if `|Aᵢⱼ| ≤ c |Bᵢⱼ|` and `0 ≤ c`, then `‖A‖_F ≤ c ‖B‖_F`. -/
+lemma frobNorm_le_const_mul_frobNorm_of_entrywise_abs_le {m n : ℕ}
+    (A B : RMatFn m n) {c : ℝ} (hc : 0 ≤ c)
+    (hentry : ∀ i : Fin m, ∀ j : Fin n, |A i j| ≤ c * |B i j|) :
+    frobNorm A ≤ c * frobNorm B := by
+  have hsq : frobNormSq A ≤ (c * frobNorm B) ^ 2 := by
+    unfold frobNormSq
+    calc
+      (∑ i : Fin m, ∑ j : Fin n, A i j ^ 2)
+          = ∑ i : Fin m, ∑ j : Fin n, |A i j| ^ 2 := by
+            apply Finset.sum_congr rfl
+            intro i _
+            apply Finset.sum_congr rfl
+            intro j _
+            exact (sq_abs (A i j)).symm
+      _ ≤ ∑ i : Fin m, ∑ j : Fin n, (c * |B i j|) ^ 2 := by
+            apply Finset.sum_le_sum
+            intro i _
+            apply Finset.sum_le_sum
+            intro j _
+            have hrhs_nonneg : 0 ≤ c * |B i j| :=
+              mul_nonneg hc (abs_nonneg (B i j))
+            have habs : |(|A i j|)| ≤ |(c * |B i j|)| := by
+              simpa [abs_of_nonneg (abs_nonneg (A i j)),
+                abs_of_nonneg hrhs_nonneg] using hentry i j
+            exact (sq_le_sq).mpr habs
+      _ = c ^ 2 * frobNormSq B := by
+            unfold frobNormSq
+            simp_rw [show ∀ x : ℝ, (c * |x|) ^ 2 = c ^ 2 * x ^ 2 from by
+              intro x
+              rw [show (c * |x|) ^ 2 = c ^ 2 * |x| ^ 2 from by ring, sq_abs]]
+            rw [Finset.mul_sum]
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [Finset.mul_sum]
+      _ = (c * frobNorm B) ^ 2 := by
+            rw [show (c * frobNorm B) ^ 2 =
+                c ^ 2 * frobNorm B ^ 2 from by ring,
+              frobNorm_sq]
+  calc
+    frobNorm A
+        = Real.sqrt (frobNormSq A) := frobNorm_eq_sqrt_frobNormSq A
+    _ ≤ Real.sqrt ((c * frobNorm B) ^ 2) := Real.sqrt_le_sqrt hsq
+    _ = c * frobNorm B := by
+          rw [Real.sqrt_sq_eq_abs]
+          exact abs_of_nonneg (mul_nonneg hc (frobNorm_nonneg B))
 
 /-- ‖A‖_F = 0 iff A = 0. -/
 theorem frobNorm_eq_zero_iff {m n : ℕ} (A : RMatFn m n) :
@@ -4902,10 +5090,89 @@ theorem vecNorm2_rectMatMulVec_le_frobNormRect_mul {m n : ℕ}
   rw [← Real.sqrt_mul (frobNormSqRect_nonneg M)]
   exact Real.sqrt_le_sqrt (vecNorm2Sq_rectMatMulVec_le_frobNormSqRect_mul M x)
 
+/-- Triangle inequality for rectangular matrix-vector products:
+    `|(Ax)_i| <= ∑_j |A_ij| |x_j|`. -/
+theorem abs_rectMatMulVec_le {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (x : Fin n → ℝ) :
+    ∀ i : Fin m,
+      |rectMatMulVec A x i| ≤ ∑ j : Fin n, |A i j| * |x j| := by
+  intro i
+  unfold rectMatMulVec
+  calc
+    |∑ j : Fin n, A i j * x j|
+        ≤ ∑ j : Fin n, |A i j * x j| := Finset.abs_sum_le_sum_abs _ _
+    _ = ∑ j : Fin n, |A i j| * |x j| := by
+        apply Finset.sum_congr rfl
+        intro j _
+        exact abs_mul (A i j) (x j)
+
+/-- If `|A| <= B` entrywise, then `|Ax| <= B |x|` entrywise. -/
+theorem rectMatMulVec_abs_entry_le {m n : ℕ}
+    {A B : Fin m → Fin n → ℝ} (hAB : ∀ i j, |A i j| ≤ B i j)
+    (x : Fin n → ℝ) :
+    ∀ i : Fin m,
+      |rectMatMulVec A x i| ≤ rectMatMulVec B (fun j => |x j|) i := by
+  intro i
+  calc
+    |rectMatMulVec A x i|
+        ≤ ∑ j : Fin n, |A i j| * |x j| :=
+          abs_rectMatMulVec_le A x i
+    _ ≤ ∑ j : Fin n, B i j * |x j| := by
+          apply Finset.sum_le_sum
+          intro j _
+          exact mul_le_mul_of_nonneg_right (hAB i j) (abs_nonneg (x j))
+    _ = rectMatMulVec B (fun j => |x j|) i := rfl
+
 /-- Predicate form of a rectangular operator 2-norm bound:
     `||Mx||₂ ≤ c ||x||₂` for every vector `x`. -/
 def rectOpNorm2Le {m n : ℕ} (M : Fin m → Fin n → ℝ) (c : ℝ) : Prop :=
   ∀ x : Fin n → ℝ, vecNorm2 (rectMatMulVec M x) ≤ c * vecNorm2 x
+
+/-- Lemma 6.6(b), predicate form: componentwise domination `|A| <= B`
+    preserves any rectangular 2-operator upper bound. -/
+theorem rectOpNorm2Le_of_abs_entry_le {m n : ℕ}
+    {A B : Fin m → Fin n → ℝ} {c : ℝ}
+    (hAB : ∀ i j, |A i j| ≤ B i j) (hB : rectOpNorm2Le B c) :
+    rectOpNorm2Le A c := by
+  intro x
+  calc
+    vecNorm2 (rectMatMulVec A x)
+        ≤ vecNorm2 (rectMatMulVec B (fun j => |x j|)) :=
+          vecNorm2_le_of_abs_le (rectMatMulVec A x)
+            (rectMatMulVec B (fun j => |x j|))
+            (rectMatMulVec_abs_entry_le hAB x)
+    _ ≤ c * vecNorm2 (fun j => |x j|) := hB (fun j => |x j|)
+    _ = c * vecNorm2 x := by
+          rw [vecNorm2_abs]
+
+/-- Lemma 6.6(b), absolute-matrix variant using the local rectangular absolute
+    matrix notation. -/
+theorem rectOpNorm2Le_of_absMatrixRect_le {m n : ℕ}
+    {A B : Fin m → Fin n → ℝ} {c : ℝ}
+    (hAB : ∀ i j, absMatrixRect A i j ≤ B i j)
+    (hB : rectOpNorm2Le B c) :
+    rectOpNorm2Le A c :=
+  rectOpNorm2Le_of_abs_entry_le (A := A) (B := B)
+    (by simpa [absMatrixRect] using hAB) hB
+
+/-- Lemma 6.6(c), reduction step: if `|A| <= |B|`, then any rectangular
+    2-operator upper bound for `|B|` is also a bound for `A`. -/
+theorem rectOpNorm2Le_of_abs_entry_le_abs {m n : ℕ}
+    {A B : Fin m → Fin n → ℝ} {c : ℝ}
+    (hAB : ∀ i j, |A i j| ≤ |B i j|)
+    (hBabs : rectOpNorm2Le (absMatrixRect B) c) :
+    rectOpNorm2Le A c :=
+  rectOpNorm2Le_of_abs_entry_le (A := A) (B := absMatrixRect B)
+    (by simpa [absMatrixRect] using hAB) hBabs
+
+/-- Lemma 6.6(d), first inequality in predicate form: every rectangular
+    2-operator upper bound for `|A|` is also a bound for `A`. -/
+theorem rectOpNorm2Le_of_absMatrixRect_bound {m n : ℕ}
+    {A : Fin m → Fin n → ℝ} {c : ℝ}
+    (hAbsA : rectOpNorm2Le (absMatrixRect A) c) :
+    rectOpNorm2Le A c :=
+  rectOpNorm2Le_of_absMatrixRect_le (A := A) (B := absMatrixRect A)
+    (by intro i j; exact le_rfl) hAbsA
 
 /-- Monotonicity of rectangular operator-norm upper-bound predicates in the
 radius. -/
@@ -5546,6 +5813,25 @@ theorem rectOpNorm2Le_of_frobNormRect_le {m n : ℕ}
     _ ≤ c * vecNorm2 x :=
           mul_le_mul_of_nonneg_right hF (vecNorm2_nonneg x)
 
+/-- A Frobenius-norm bound for `A` also gives the rectangular operator-2
+    bound for its componentwise absolute value. -/
+theorem rectOpNorm2Le_absMatrixRect_of_frobNormRect_le {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) {c : ℝ}
+    (hF : frobNormRect A ≤ c) :
+    rectOpNorm2Le (absMatrixRect A) c := by
+  apply rectOpNorm2Le_of_frobNormRect_le
+  have hAbs : frobNormRect (absMatrixRect A) = frobNormRect A := by
+    simpa [absMatrixRect] using (frobNormRect_abs A)
+  rw [hAbs]
+  exact hF
+
+/-- The componentwise absolute value of a rectangular matrix has operator-2
+    norm bounded by the original matrix's Frobenius norm. -/
+theorem rectOpNorm2Le_absMatrixRect_frobNormRect {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) :
+    rectOpNorm2Le (absMatrixRect A) (frobNormRect A) :=
+  rectOpNorm2Le_absMatrixRect_of_frobNormRect_le A le_rfl
+
 /-- Adding a perturbation with Frobenius norm at most `τ` enlarges a rectangular
     operator-2 bound by at most `τ`. -/
 theorem rectOpNorm2Le_add_of_rectOpNorm2Le_of_frobNormRect_le {m n : ℕ}
@@ -5632,6 +5918,11 @@ theorem IsOrthogonal.id (n : ℕ) : IsOrthogonal n (idMatrix n) := by
     unfold matTranspose idMatrix
     simp [Finset.mem_univ]
 
+/-- The identity matrix is orthogonal, under the historical theorem-search
+    name used by QR files. -/
+theorem idMatrix_orthogonal (n : ℕ) : IsOrthogonal n (idMatrix n) :=
+  IsOrthogonal.id n
+
 /-- A diagonal matrix with diagonal entries of square one is orthogonal.
 
 This is the deterministic matrix-algebra piece behind randomized sign
@@ -5707,6 +5998,77 @@ def matMulRectLeft {m n : ℕ} (U : Fin m → Fin m → ℝ)
 def rectMatMul {m n p : ℕ} (A : Fin m → Fin n → ℝ)
     (B : Fin n → Fin p → ℝ) : Fin m → Fin p → ℝ :=
   fun i j => ∑ k : Fin n, A i k * B k j
+
+/-- Explicit-arity rectangular matrix product:
+    `(AB)ᵢⱼ = ∑ₖ Aᵢₖ Bₖⱼ`.
+
+    This is exact algebra, not a floating-point algorithm.  It is the legacy
+    QR-facing name for `rectMatMul` when dimensions are useful as explicit
+    arguments. -/
+noncomputable def matMulRect (m n p : ℕ)
+    (A : Fin m → Fin n → ℝ) (B : Fin n → Fin p → ℝ) :
+    Fin m → Fin p → ℝ :=
+  fun i j => ∑ k : Fin n, A i k * B k j
+
+/-- The explicit-arity rectangular product agrees with the implicit-arity
+    rectangular product. -/
+theorem matMulRect_eq_rectMatMul (m n p : ℕ)
+    (A : Fin m → Fin n → ℝ) (B : Fin n → Fin p → ℝ) :
+    matMulRect m n p A B = rectMatMul A B := by
+  rfl
+
+/-- Left multiplication by identity for rectangular matrices. -/
+theorem matMulRect_id_left (m p : ℕ) (A : Fin m → Fin p → ℝ) :
+    matMulRect m m p (idMatrix m) A = A := by
+  ext i j
+  unfold matMulRect idMatrix
+  simp [Finset.sum_ite_eq, Finset.mem_univ]
+
+/-- Right distributivity for rectangular multiplication:
+    `A*(B+C) = A*B + A*C`. -/
+theorem matMulRect_add_right (m n p : ℕ)
+    (A : Fin m → Fin n → ℝ)
+    (B C : Fin n → Fin p → ℝ) :
+    matMulRect m n p A (fun a b => B a b + C a b) =
+      fun i j => matMulRect m n p A B i j +
+        matMulRect m n p A C i j := by
+  ext i j
+  unfold matMulRect
+  rw [← Finset.sum_add_distrib]
+  apply Finset.sum_congr rfl
+  intro k _
+  ring
+
+/-- Left distributivity for rectangular multiplication:
+    `(A+B)*C = A*C + B*C`. -/
+theorem matMulRect_add_left (m n p : ℕ)
+    (A B : Fin m → Fin n → ℝ)
+    (C : Fin n → Fin p → ℝ) :
+    matMulRect m n p (fun a b => A a b + B a b) C =
+      fun i j => matMulRect m n p A C i j +
+        matMulRect m n p B C i j := by
+  ext i j
+  unfold matMulRect
+  rw [← Finset.sum_add_distrib]
+  apply Finset.sum_congr rfl
+  intro k _
+  ring
+
+/-- Associativity for a square left product acting on a rectangular panel:
+    `(AB)C = A(BC)`. -/
+theorem matMulRect_assoc_square_left (m p : ℕ)
+    (A B : Fin m → Fin m → ℝ) (C : Fin m → Fin p → ℝ) :
+    matMulRect m m p (matMul m A B) C =
+      matMulRect m m p A (matMulRect m m p B C) := by
+  ext i j
+  unfold matMulRect matMul
+  simp_rw [Finset.sum_mul, Finset.mul_sum]
+  rw [Finset.sum_comm]
+  apply Finset.sum_congr rfl
+  intro k _
+  apply Finset.sum_congr rfl
+  intro l _
+  ring
 
 /-- Rectangular products act associatively on vectors. -/
 theorem rectMatMulVec_rectMatMul {m n p : ℕ}
@@ -5793,6 +6155,318 @@ theorem frobNormRect_rectMatMul_le {m n p : ℕ}
   intro j
   simpa [rectMatMul, rectMatMulVec] using
     (vecNorm2_rectMatMulVec_le_frobNormRect_mul A (fun k : Fin n => B k j))
+
+/-- Frobenius submultiplicativity for a square matrix acting on a rectangular
+    matrix, stated with the legacy explicit-arity product `matMulRect`. -/
+theorem frobNorm_matMulRect_le {m p : ℕ}
+    (A : Fin m → Fin m → ℝ) (B : Fin m → Fin p → ℝ) :
+    frobNorm (matMulRect m m p A B) ≤ frobNorm A * frobNorm B := by
+  have h := frobNormRect_rectMatMul_le A B
+  simpa [matMulRect, frobNormRect_eq_frobNormFn] using h
+
+/-- Matrix-vector product squared-sum bound using the Frobenius norm:
+    `∑ᵢ ((Ax)_i)^2 ≤ ‖A‖²_F * ∑ⱼ x_j^2`.
+
+    This is the columnwise form needed when aggregating backward errors whose
+    perturbation matrix may depend on the output column. -/
+theorem matMulVec_sum_sq_le_frobNormSq_mul_sum_sq {n : ℕ}
+    (A : Fin n → Fin n → ℝ) (x : Fin n → ℝ) :
+    (∑ i : Fin n, matMulVec n A x i ^ 2) ≤
+      frobNormSq A * (∑ k : Fin n, x k ^ 2) := by
+  unfold matMulVec frobNormSq
+  calc
+    (∑ i : Fin n, (∑ j : Fin n, A i j * x j) ^ 2)
+        ≤ ∑ i : Fin n,
+            (∑ j : Fin n, A i j ^ 2) * (∑ j : Fin n, x j ^ 2) := by
+          apply Finset.sum_le_sum
+          intro i _
+          exact Finset.sum_mul_sq_le_sq_mul_sq Finset.univ
+            (fun j => A i j) (fun j => x j)
+    _ = (∑ i : Fin n, ∑ j : Fin n, A i j ^ 2) *
+          (∑ k : Fin n, x k ^ 2) := by
+        rw [Finset.sum_mul]
+
+/-- Squared Frobenius aggregation for column-dependent matrix-vector residuals.
+
+    If every residual column has the form `E[:,j] = Δ_j * A[:,j]` and each
+    `‖Δ_j‖_F ≤ c`, then `‖E‖²_F ≤ c² ‖A‖²_F`. -/
+theorem frobNormSq_columnwise_matMulVec_le {n : ℕ}
+    (E A : Fin n → Fin n → ℝ) {c : ℝ} (hc : 0 ≤ c)
+    (hcol : ∀ j : Fin n, ∃ Δj : Fin n → Fin n → ℝ,
+      frobNorm Δj ≤ c ∧
+      ∀ i : Fin n, E i j = matMulVec n Δj (fun k => A k j) i) :
+    frobNormSq E ≤ c ^ 2 * frobNormSq A := by
+  unfold frobNormSq
+  rw [Finset.sum_comm]
+  calc
+    (∑ j : Fin n, ∑ i : Fin n, E i j ^ 2)
+        ≤ ∑ j : Fin n, c ^ 2 * (∑ k : Fin n, A k j ^ 2) := by
+          apply Finset.sum_le_sum
+          intro j _
+          obtain ⟨Δj, hΔj, hE⟩ := hcol j
+          have hΔsq : frobNormSq Δj ≤ c ^ 2 := by
+            have habs : |frobNorm Δj| ≤ |c| := by
+              simpa [abs_of_nonneg (frobNorm_nonneg Δj), abs_of_nonneg hc]
+                using hΔj
+            have hs : frobNorm Δj ^ 2 ≤ c ^ 2 := (sq_le_sq).2 habs
+            rwa [frobNorm_sq] at hs
+          have hcolsq :
+              (∑ i : Fin n, E i j ^ 2) =
+                ∑ i : Fin n, matMulVec n Δj (fun k => A k j) i ^ 2 := by
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [hE i]
+          rw [hcolsq]
+          calc
+            (∑ i : Fin n, matMulVec n Δj (fun k => A k j) i ^ 2)
+                ≤ frobNormSq Δj * (∑ k : Fin n, A k j ^ 2) :=
+                  matMulVec_sum_sq_le_frobNormSq_mul_sum_sq Δj
+                    (fun k => A k j)
+            _ ≤ c ^ 2 * (∑ k : Fin n, A k j ^ 2) := by
+                apply mul_le_mul_of_nonneg_right hΔsq
+                exact Finset.sum_nonneg fun k _ => sq_nonneg (A k j)
+    _ = c ^ 2 * (∑ j : Fin n, ∑ k : Fin n, A k j ^ 2) := by
+        rw [Finset.mul_sum]
+    _ = c ^ 2 * (∑ k : Fin n, ∑ j : Fin n, A k j ^ 2) := by
+        rw [Finset.sum_comm]
+
+/-- Frobenius aggregation for column-dependent matrix-vector residuals.
+
+    If every residual column has the form `E[:,j] = Δ_j * A[:,j]` and each
+    `‖Δ_j‖_F ≤ c`, then `‖E‖_F ≤ c ‖A‖_F`. -/
+theorem frobNorm_columnwise_matMulVec_le {n : ℕ}
+    (E A : Fin n → Fin n → ℝ) {c : ℝ} (hc : 0 ≤ c)
+    (hcol : ∀ j : Fin n, ∃ Δj : Fin n → Fin n → ℝ,
+      frobNorm Δj ≤ c ∧
+      ∀ i : Fin n, E i j = matMulVec n Δj (fun k => A k j) i) :
+    frobNorm E ≤ c * frobNorm A := by
+  have hsq := frobNormSq_columnwise_matMulVec_le E A hc hcol
+  apply frobNorm_le_of_frobNormSq_le_sq E
+    (mul_nonneg hc (frobNorm_nonneg A))
+  rw [show (c * frobNorm A) ^ 2 = c ^ 2 * frobNormSq A from by
+    rw [show (c * frobNorm A) ^ 2 = c ^ 2 * frobNorm A ^ 2 from by ring,
+      frobNorm_sq]]
+  exact hsq
+
+/-- Rectangular squared Frobenius aggregation for column-dependent residuals.
+
+    If every residual column of an `m × p` panel has the form
+    `E[:,j] = Δ_j * A[:,j]` and each `‖Δ_j‖_F ≤ c`, then
+    `‖E‖²_F ≤ c² ‖A‖²_F`. -/
+theorem frobNormSq_columnwise_matMulVec_le_rect {m p : ℕ}
+    (E A : Fin m → Fin p → ℝ) {c : ℝ} (hc : 0 ≤ c)
+    (hcol : ∀ j : Fin p, ∃ Δj : Fin m → Fin m → ℝ,
+      frobNorm Δj ≤ c ∧
+      ∀ i : Fin m, E i j = matMulVec m Δj (fun k => A k j) i) :
+    frobNormSq E ≤ c ^ 2 * frobNormSq A := by
+  unfold frobNormSq
+  rw [Finset.sum_comm]
+  calc
+    (∑ j : Fin p, ∑ i : Fin m, E i j ^ 2)
+        ≤ ∑ j : Fin p, c ^ 2 * (∑ k : Fin m, A k j ^ 2) := by
+          apply Finset.sum_le_sum
+          intro j _
+          obtain ⟨Δj, hΔj, hE⟩ := hcol j
+          have hΔsq : frobNormSq Δj ≤ c ^ 2 := by
+            have habs : |frobNorm Δj| ≤ |c| := by
+              simpa [abs_of_nonneg (frobNorm_nonneg Δj), abs_of_nonneg hc]
+                using hΔj
+            have hs : frobNorm Δj ^ 2 ≤ c ^ 2 := (sq_le_sq).2 habs
+            rwa [frobNorm_sq] at hs
+          have hcolsq :
+              (∑ i : Fin m, E i j ^ 2) =
+                ∑ i : Fin m, matMulVec m Δj (fun k => A k j) i ^ 2 := by
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [hE i]
+          rw [hcolsq]
+          calc
+            (∑ i : Fin m, matMulVec m Δj (fun k => A k j) i ^ 2)
+                ≤ frobNormSq Δj * (∑ k : Fin m, A k j ^ 2) :=
+                  matMulVec_sum_sq_le_frobNormSq_mul_sum_sq Δj
+                    (fun k => A k j)
+            _ ≤ c ^ 2 * (∑ k : Fin m, A k j ^ 2) := by
+                apply mul_le_mul_of_nonneg_right hΔsq
+                exact Finset.sum_nonneg fun k _ => sq_nonneg (A k j)
+    _ = c ^ 2 * (∑ j : Fin p, ∑ k : Fin m, A k j ^ 2) := by
+        rw [Finset.mul_sum]
+    _ = c ^ 2 * (∑ k : Fin m, ∑ j : Fin p, A k j ^ 2) := by
+        rw [Finset.sum_comm]
+
+/-- Rectangular Frobenius aggregation for column-dependent residuals.
+
+    If every residual column of an `m × p` panel has the form
+    `E[:,j] = Δ_j * A[:,j]` and each `‖Δ_j‖_F ≤ c`, then
+    `‖E‖_F ≤ c ‖A‖_F`. -/
+theorem frobNorm_columnwise_matMulVec_le_rect {m p : ℕ}
+    (E A : Fin m → Fin p → ℝ) {c : ℝ} (hc : 0 ≤ c)
+    (hcol : ∀ j : Fin p, ∃ Δj : Fin m → Fin m → ℝ,
+      frobNorm Δj ≤ c ∧
+      ∀ i : Fin m, E i j = matMulVec m Δj (fun k => A k j) i) :
+    frobNorm E ≤ c * frobNorm A := by
+  have hsq := frobNormSq_columnwise_matMulVec_le_rect E A hc hcol
+  apply frobNorm_le_of_frobNormSq_le_sq E
+    (mul_nonneg hc (frobNorm_nonneg A))
+  rw [show (c * frobNorm A) ^ 2 = c ^ 2 * frobNormSq A from by
+    rw [show (c * frobNorm A) ^ 2 = c ^ 2 * frobNorm A ^ 2 from by ring,
+      frobNorm_sq]]
+  exact hsq
+/-- Squared form of Higham Problem 6.5's left spectral/Frobenius product
+bound in the repository's rectangular real API:
+`||A B||_F^2 <= a^2 ||B||_F^2` whenever `||A x||_2 <= a ||x||_2`. -/
+theorem frobNormSqRect_rectMatMul_le_sq_mul_of_rectOpNorm2Le {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin n → Fin p → ℝ)
+    {a : ℝ} (ha : 0 ≤ a) (hA : rectOpNorm2Le A a) :
+    frobNormSqRect (rectMatMul A B) ≤ a ^ 2 * frobNormSqRect B := by
+  unfold frobNormSqRect
+  calc
+    (∑ i : Fin m, ∑ j : Fin p, rectMatMul A B i j ^ 2)
+        = ∑ j : Fin p, ∑ i : Fin m, rectMatMul A B i j ^ 2 := by
+          rw [Finset.sum_comm]
+    _ ≤ ∑ j : Fin p, a ^ 2 * ∑ k : Fin n, B k j ^ 2 := by
+          apply Finset.sum_le_sum
+          intro j _
+          have hcol :
+              vecNorm2 (fun i : Fin m => rectMatMul A B i j) ≤
+                a * vecNorm2 (fun k : Fin n => B k j) := by
+            simpa [rectMatMul, rectMatMulVec] using
+              hA (fun k : Fin n => B k j)
+          have hright_nonneg :
+              0 ≤ a * vecNorm2 (fun k : Fin n => B k j) :=
+            mul_nonneg ha (vecNorm2_nonneg _)
+          have hsquare :
+              vecNorm2 (fun i : Fin m => rectMatMul A B i j) ^ 2 ≤
+                (a * vecNorm2 (fun k : Fin n => B k j)) ^ 2 := by
+            nlinarith [vecNorm2_nonneg
+              (fun i : Fin m => rectMatMul A B i j), hright_nonneg]
+          have hright :
+              (a * vecNorm2 (fun k : Fin n => B k j)) ^ 2 =
+                a ^ 2 * vecNorm2Sq (fun k : Fin n => B k j) := by
+            rw [show (a * vecNorm2 (fun k : Fin n => B k j)) ^ 2 =
+                a ^ 2 * vecNorm2 (fun k : Fin n => B k j) ^ 2 by ring,
+              vecNorm2_sq]
+          simpa [vecNorm2_sq, vecNorm2Sq, hright] using hsquare
+    _ = a ^ 2 * (∑ k : Fin n, ∑ j : Fin p, B k j ^ 2) := by
+          rw [Finset.sum_comm, Finset.mul_sum]
+
+/-- Higham Problem 6.5's left spectral/Frobenius product bound in norm form:
+`||A B||_F <= a ||B||_F` whenever `||A x||_2 <= a ||x||_2`. -/
+theorem frobNormRect_rectMatMul_le_mul_of_rectOpNorm2Le {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin n → Fin p → ℝ)
+    {a : ℝ} (ha : 0 ≤ a) (hA : rectOpNorm2Le A a) :
+    frobNormRect (rectMatMul A B) ≤ a * frobNormRect B := by
+  have hsq :
+      frobNormSqRect (rectMatMul A B) ≤ (a * frobNormRect B) ^ 2 := by
+    calc
+      frobNormSqRect (rectMatMul A B)
+          ≤ a ^ 2 * frobNormSqRect B :=
+            frobNormSqRect_rectMatMul_le_sq_mul_of_rectOpNorm2Le A B ha hA
+      _ = (a * frobNormRect B) ^ 2 := by
+          rw [show (a * frobNormRect B) ^ 2 =
+              a ^ 2 * frobNormRect B ^ 2 by ring, frobNormRect_sq]
+  have hsqrt := Real.sqrt_le_sqrt hsq
+  have hright_nonneg : 0 ≤ a * frobNormRect B :=
+    mul_nonneg ha (frobNormRect_nonneg B)
+  have hroot : Real.sqrt ((a * frobNormRect B) ^ 2) = a * frobNormRect B := by
+    rw [Real.sqrt_sq_eq_abs, abs_of_nonneg hright_nonneg]
+  change Real.sqrt (frobNormSqRect (rectMatMul A B)) ≤ a * frobNormRect B
+  rw [← hroot]
+  exact hsqrt
+
+/-- Squared form of Higham Problem 6.5's right spectral/Frobenius product
+bound: `||B C||_F^2 <= c^2 ||B||_F^2` whenever the transpose action of `C`
+has rectangular operator-2 bound `c`. -/
+theorem frobNormSqRect_rectMatMul_le_sq_mul_of_transpose_rectOpNorm2Le
+    {m n p : ℕ}
+    (B : Fin m → Fin n → ℝ) (C : Fin n → Fin p → ℝ)
+    {c : ℝ} (hc : 0 ≤ c) (hC : rectOpNorm2Le (finiteTranspose C) c) :
+    frobNormSqRect (rectMatMul B C) ≤ c ^ 2 * frobNormSqRect B := by
+  unfold frobNormSqRect
+  calc
+    (∑ i : Fin m, ∑ j : Fin p, rectMatMul B C i j ^ 2)
+        ≤ ∑ i : Fin m, c ^ 2 * ∑ k : Fin n, B i k ^ 2 := by
+          apply Finset.sum_le_sum
+          intro i _
+          have hrow :
+              vecNorm2 (fun j : Fin p => rectMatMul B C i j) ≤
+                c * vecNorm2 (fun k : Fin n => B i k) := by
+            have hrow_eq :
+                (fun j : Fin p => rectMatMul B C i j) =
+                  rectMatMulVec (finiteTranspose C) (fun k : Fin n => B i k) := by
+              ext j
+              unfold rectMatMul rectMatMulVec finiteTranspose
+              apply Finset.sum_congr rfl
+              intro k _
+              ring
+            simpa [hrow_eq] using hC (fun k : Fin n => B i k)
+          have hright_nonneg :
+              0 ≤ c * vecNorm2 (fun k : Fin n => B i k) :=
+            mul_nonneg hc (vecNorm2_nonneg _)
+          have hsquare :
+              vecNorm2 (fun j : Fin p => rectMatMul B C i j) ^ 2 ≤
+                (c * vecNorm2 (fun k : Fin n => B i k)) ^ 2 := by
+            nlinarith [vecNorm2_nonneg
+              (fun j : Fin p => rectMatMul B C i j), hright_nonneg]
+          have hright :
+              (c * vecNorm2 (fun k : Fin n => B i k)) ^ 2 =
+                c ^ 2 * vecNorm2Sq (fun k : Fin n => B i k) := by
+            rw [show (c * vecNorm2 (fun k : Fin n => B i k)) ^ 2 =
+                c ^ 2 * vecNorm2 (fun k : Fin n => B i k) ^ 2 by ring,
+              vecNorm2_sq]
+          simpa [vecNorm2_sq, vecNorm2Sq, hright] using hsquare
+    _ = c ^ 2 * (∑ i : Fin m, ∑ k : Fin n, B i k ^ 2) := by
+          rw [Finset.mul_sum]
+
+/-- Higham Problem 6.5's right spectral/Frobenius product bound in norm form:
+`||B C||_F <= ||B||_F c` whenever the transpose action of `C` has rectangular
+operator-2 bound `c`. -/
+theorem frobNormRect_rectMatMul_le_mul_of_transpose_rectOpNorm2Le
+    {m n p : ℕ}
+    (B : Fin m → Fin n → ℝ) (C : Fin n → Fin p → ℝ)
+    {c : ℝ} (hc : 0 ≤ c) (hC : rectOpNorm2Le (finiteTranspose C) c) :
+    frobNormRect (rectMatMul B C) ≤ frobNormRect B * c := by
+  have hsq :
+      frobNormSqRect (rectMatMul B C) ≤ (frobNormRect B * c) ^ 2 := by
+    calc
+      frobNormSqRect (rectMatMul B C)
+          ≤ c ^ 2 * frobNormSqRect B :=
+            frobNormSqRect_rectMatMul_le_sq_mul_of_transpose_rectOpNorm2Le
+              B C hc hC
+      _ = (frobNormRect B * c) ^ 2 := by
+          rw [show (frobNormRect B * c) ^ 2 =
+              c ^ 2 * frobNormRect B ^ 2 by ring, frobNormRect_sq]
+  have hsqrt := Real.sqrt_le_sqrt hsq
+  have hright_nonneg : 0 ≤ frobNormRect B * c :=
+    mul_nonneg (frobNormRect_nonneg B) hc
+  have hroot : Real.sqrt ((frobNormRect B * c) ^ 2) = frobNormRect B * c := by
+    rw [Real.sqrt_sq_eq_abs, abs_of_nonneg hright_nonneg]
+  change Real.sqrt (frobNormSqRect (rectMatMul B C)) ≤ frobNormRect B * c
+  rw [← hroot]
+  exact hsqrt
+
+/-- Higham Problem 6.5, local rectangular real API:
+`||A B C||_F <= a ||B||_F c` from operator-2 certificates for `A` and the
+transpose action of `C`. -/
+theorem frobNormRect_triple_rectMatMul_le_of_rectOpNorm2Le {m n p q : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin n → Fin p → ℝ)
+    (C : Fin p → Fin q → ℝ) {a c : ℝ}
+    (ha : 0 ≤ a) (hc : 0 ≤ c)
+    (hA : rectOpNorm2Le A a) (hC : rectOpNorm2Le (finiteTranspose C) c) :
+    frobNormRect (rectMatMul (rectMatMul A B) C) ≤ a * frobNormRect B * c := by
+  have hright :
+      frobNormRect (rectMatMul (rectMatMul A B) C) ≤
+        frobNormRect (rectMatMul A B) * c :=
+    frobNormRect_rectMatMul_le_mul_of_transpose_rectOpNorm2Le
+      (rectMatMul A B) C hc hC
+  have hleft :
+      frobNormRect (rectMatMul A B) ≤ a * frobNormRect B :=
+    frobNormRect_rectMatMul_le_mul_of_rectOpNorm2Le A B ha hA
+  calc
+    frobNormRect (rectMatMul (rectMatMul A B) C)
+        ≤ frobNormRect (rectMatMul A B) * c := hright
+    _ ≤ (a * frobNormRect B) * c :=
+        mul_le_mul_of_nonneg_right hleft hc
+    _ = a * frobNormRect B * c := by ring
 
 /-- Entrywise forward-error composition for a computed rectangular product.
 
@@ -5977,6 +6651,25 @@ theorem frobNormRect_orthogonal_left {m n : ℕ}
     frobNormRect (matMulRectLeft U A) = frobNormRect A := by
   unfold frobNormRect
   rw [frobNormSqRect_orthogonal_left U A hU]
+
+/-- The squared Frobenius norm is invariant under left multiplication by an
+    orthogonal square matrix on a rectangular panel, stated using the
+    explicit-arity rectangular product used by QR. -/
+theorem frobNormSq_orthogonal_left_rect {m p : ℕ}
+    (U : Fin m → Fin m → ℝ) (A : Fin m → Fin p → ℝ)
+    (hU : IsOrthogonal m U) :
+    frobNormSq (matMulRect m m p U A) = frobNormSq A := by
+  simpa [frobNormSq, frobNormSqRect, matMulRect, matMulRectLeft] using
+    (frobNormSqRect_orthogonal_left U A hU)
+
+/-- `‖UA‖_F = ‖A‖_F` for rectangular panels when `U` is orthogonal, stated
+    using the explicit-arity rectangular product used by QR. -/
+theorem frobNorm_orthogonal_left_rect {m p : ℕ}
+    (U : Fin m → Fin m → ℝ) (A : Fin m → Fin p → ℝ)
+    (hU : IsOrthogonal m U) :
+    frobNorm (matMulRect m m p U A) = frobNorm A := by
+  rw [frobNorm_eq_sqrt_frobNormSq, frobNorm_eq_sqrt_frobNormSq,
+    frobNormSq_orthogonal_left_rect U A hU]
 
 /-- The squared rectangular Frobenius norm is invariant under right
     multiplication by an orthogonal square matrix. -/
@@ -6210,6 +6903,28 @@ theorem frobNorm_orthogonal_right {n : ℕ} (A V : Fin n → Fin n → ℝ)
     frobNorm (matMul n A V) = frobNorm A := by
   rw [frobNorm_eq_sqrt_frobNormSq, frobNorm_eq_sqrt_frobNormSq,
     frobNormSq_orthogonal_right A V hV]
+
+/-- Squared Frobenius norm of the identity matrix is the dimension. -/
+theorem frobNormSq_idMatrix (n : ℕ) :
+    frobNormSq (idMatrix n) = (n : ℝ) := by
+  unfold frobNormSq idMatrix
+  simp [Finset.sum_ite_eq, Finset.mem_univ]
+
+/-- Squared Frobenius norm of an orthogonal matrix is the dimension. -/
+theorem IsOrthogonal.frobNormSq_eq_card {n : ℕ} {U : Fin n → Fin n → ℝ}
+    (hU : IsOrthogonal n U) :
+    frobNormSq U = (n : ℝ) := by
+  calc
+    frobNormSq U = frobNormSq (matMul n U (idMatrix n)) := by
+      rw [matMul_id_right]
+    _ = frobNormSq (idMatrix n) := frobNormSq_orthogonal_left U (idMatrix n) hU
+    _ = (n : ℝ) := frobNormSq_idMatrix n
+
+/-- Frobenius norm of an orthogonal matrix is `sqrt n`. -/
+theorem IsOrthogonal.frobNorm_eq_sqrt_card {n : ℕ} {U : Fin n → Fin n → ℝ}
+    (hU : IsOrthogonal n U) :
+    frobNorm U = Real.sqrt (n : ℝ) := by
+  rw [frobNorm_eq_sqrt_frobNormSq, hU.frobNormSq_eq_card]
 
 /-- Transpose of orthogonal matrix is orthogonal.
 
@@ -6458,6 +7173,89 @@ theorem abs_matMulVec_le (n : ℕ) (A : Fin n → Fin n → ℝ) (x : Fin n → 
       ≤ ∑ j : Fin n, |A i j * x j| := Finset.abs_sum_le_sum_abs _ _
     _ = ∑ j : Fin n, |A i j| * |x j| := by
         congr 1; ext j; exact abs_mul (A i j) (x j)
+
+/-- Every entry of a real orthogonal matrix has absolute value at most `1`.
+    This is a crude but useful componentwise consequence of row
+    orthonormality. -/
+lemma IsOrthogonal.abs_entry_le_one {n : ℕ} {U : Fin n → Fin n → ℝ}
+    (hU : IsOrthogonal n U) (i j : Fin n) :
+    |U i j| ≤ 1 := by
+  have hentry_row : U i j ^ 2 ≤ ∑ k : Fin n, U i k ^ 2 := by
+    exact Finset.single_le_sum (fun k _ => sq_nonneg (U i k))
+      (Finset.mem_univ j)
+  have hrow : (∑ k : Fin n, U i k ^ 2) = 1 := by
+    simpa [sq] using hU.row_orthonormal i i
+  have hsq : U i j ^ 2 ≤ 1 := by
+    rwa [hrow] at hentry_row
+  calc |U i j|
+      = Real.sqrt (U i j ^ 2) := by rw [Real.sqrt_sq_eq_abs]
+    _ ≤ Real.sqrt 1 := Real.sqrt_le_sqrt hsq
+    _ = 1 := by norm_num
+
+/-- Componentwise bound for applying an orthogonal matrix:
+    `|(Ux)_i| ≤ n ‖x‖∞`.  The factor is intentionally crude and follows only
+    from `|Uᵢⱼ| ≤ 1`; sharper norm conversions can be added where needed. -/
+theorem IsOrthogonal.abs_matMulVec_le_card_infNormVec {n : ℕ}
+    {U : Fin n → Fin n → ℝ} (hU : IsOrthogonal n U)
+    (x : Fin n → ℝ) (i : Fin n) :
+    |matMulVec n U x i| ≤ (n : ℝ) * infNormVec x := by
+  have hterm : ∀ j : Fin n,
+      |U i j| * |x j| ≤ 1 * infNormVec x := by
+    intro j
+    exact mul_le_mul (hU.abs_entry_le_one i j)
+      (abs_le_infNormVec x j) (abs_nonneg _) zero_le_one
+  calc |matMulVec n U x i|
+      ≤ ∑ j : Fin n, |U i j| * |x j| :=
+          abs_matMulVec_le n U x i
+    _ ≤ ∑ _j : Fin n, 1 * infNormVec x :=
+          Finset.sum_le_sum (fun j _ => hterm j)
+    _ = (n : ℝ) * infNormVec x := by
+        simp [Finset.card_univ]
+
+/-- Infinity-norm version of `IsOrthogonal.abs_matMulVec_le_card_infNormVec`. -/
+theorem IsOrthogonal.infNormVec_matMulVec_le_card {n : ℕ}
+    {U : Fin n → Fin n → ℝ} (hU : IsOrthogonal n U)
+    (x : Fin n → ℝ) :
+    infNormVec (matMulVec n U x) ≤ (n : ℝ) * infNormVec x := by
+  apply infNormVec_le_of_abs_le
+  · intro i
+    exact hU.abs_matMulVec_le_card_infNormVec x i
+  · exact mul_nonneg (by positivity) (infNormVec_nonneg x)
+
+/-- Componentwise matrix-vector bound from Frobenius and vector ∞-norm:
+    `|(Ax)_i| ≤ n ‖A‖_F ‖x‖∞`.  This intentionally uses a simple
+    dimension-explicit bound for stability-contract plumbing; sharper
+    norm-specific bounds can be added where needed. -/
+theorem abs_matMulVec_le_card_frobNorm_infNormVec {n : ℕ}
+    (A : Fin n → Fin n → ℝ) (x : Fin n → ℝ) (i : Fin n) :
+    |matMulVec n A x i| ≤ (n : ℝ) * frobNorm A * infNormVec x := by
+  have hterm : ∀ j : Fin n,
+      |A i j| * |x j| ≤ frobNorm A * infNormVec x := by
+    intro j
+    exact mul_le_mul (abs_entry_le_frobNorm A i j)
+      (abs_le_infNormVec x j) (abs_nonneg _) (frobNorm_nonneg A)
+  calc |matMulVec n A x i|
+      ≤ ∑ j : Fin n, |A i j| * |x j| :=
+          abs_matMulVec_le n A x i
+    _ ≤ ∑ _j : Fin n, frobNorm A * infNormVec x :=
+          Finset.sum_le_sum (fun j _ => hterm j)
+    _ = (n : ℝ) * frobNorm A * infNormVec x := by
+        simp [Finset.card_univ]
+        ring
+
+/-- Componentwise matrix-vector bound when the matrix has a known Frobenius
+    norm bound: if `‖A‖_F ≤ c`, then `|(Ax)_i| ≤ n c ‖x‖∞`. -/
+theorem abs_matMulVec_le_card_bound_infNormVec {n : ℕ}
+    (A : Fin n → Fin n → ℝ) (x : Fin n → ℝ) {c : ℝ}
+    (_hc : 0 ≤ c) (hA : frobNorm A ≤ c) (i : Fin n) :
+    |matMulVec n A x i| ≤ (n : ℝ) * c * infNormVec x := by
+  have hscale : (n : ℝ) * frobNorm A ≤ (n : ℝ) * c :=
+    mul_le_mul_of_nonneg_left hA (by positivity)
+  have hprod :
+      (n : ℝ) * frobNorm A * infNormVec x ≤
+        (n : ℝ) * c * infNormVec x :=
+    mul_le_mul_of_nonneg_right hscale (infNormVec_nonneg x)
+  exact le_trans (abs_matMulVec_le_card_frobNorm_infNormVec A x i) hprod
 
 /-- **‖Av‖∞ ≤ ‖A‖∞ · ‖v‖∞**: submultiplicativity for matrix-vector product. -/
 theorem infNormVec_matMulVec_le {n : ℕ} (_hn : 0 < n)

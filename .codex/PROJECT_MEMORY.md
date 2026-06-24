@@ -61,7 +61,8 @@ end-to-end stability rebuild is tagged as
   `forward_from_backward`.
 - `Analysis/Rounding.lean`: `gamma`, `gammaValid`, gamma monotonicity and
   arithmetic, `prod_error_bound`, `gamma_mul`, `gamma_inv`, `gamma_div`,
-  absorption lemmas such as `three_gamma_plus_sq_le_gamma`.
+  `gamma_inv_mul_roundoff`, and absorption lemmas such as
+  `three_gamma_plus_sq_le_gamma`.
 - `Analysis/Summation.lean`: `fl_sum_error`, `fl_sum_error_init`,
   `fl_sum_error_tight`.
 - `Analysis/SubtractionFold.lean`: subtraction-fold and inverse-product
@@ -411,8 +412,882 @@ These compile, but should not be treated as fully derived stability results:
   the active branch.  They were useful prototypes, but the user decided the
   rebuild should not move into Householder-specific kernels before auditing the
   lower-level foundation chain.
-- Current next step is the bottom-up audit/cleanup beginning with `DotProduct`
-  and its exact-specification bridge to Mathlib `dotProduct`.
+- Historical early-rebuild next step was the bottom-up audit/cleanup beginning
+  with `DotProduct` and its exact-specification bridge to Mathlib
+  `dotProduct`; that phase has since been used as the template for the QR
+  rebuild.
+- Rebuild standard clarified with the dot-product/QR contrast.  `DotProduct.lean`
+  is the positive template: it defines a concrete rounded algorithm
+  `fl_dotProduct` from `FPModel` primitives and proves
+  `dotProduct_backward_error` from that definition using summation and gamma
+  lemmas.  At the start of the rebuild, QR was not at that standard:
+  `householder_qr_backward` consumed an assumed
+  `OrthogonalSequenceBackwardError`, and `HouseholderAppError` was only a
+  specification.  The current Householder QR safe `R`, safe RHS, safe solve,
+  and computed `(Q_hat, R_hat)` layers now have concrete implementation-backed
+  bridge theorems; the old sequence-level theorem remains as a reusable
+  transfer theorem, not the main implementation-backed result.
+- Whole-library repass aim: keep contracts/specification structures as useful
+  modular interfaces, but add implementation-backed bridge theorems wherever a
+  public algorithmic stability result currently depends only on a supplied
+  contract.  The desired chain is `FPModel` primitives -> concrete `fl_*`
+  algorithm -> theorem that the algorithm satisfies its contract -> final
+  stability theorem.  Avoid claiming end-to-end stability for modules that stop
+  before the bridge theorem.
+- A local Codex skill for this workflow was created at
+  `~/.codex/skills/lean-fp-stability-audit/SKILL.md`.  Use it when auditing or
+  rebuilding modules for implementation-backed stability proofs.
+- Skill/source policy: always compare the proof boundary against the original
+  source, not just the current Lean file.  If Higham or another source proves a
+  lower-level bound, the rebuild should formalize that bound rather than treating
+  it as a permanent assumption in a higher-level theorem.  QR/Householder in
+  Higham Chapter 18 is the motivating example.
+- Internal rebuild planning files were created under ignored `thesis/`:
+  `thesis/IMPLEMENTATION_BACKED_AUDIT.md` records the current module-by-module
+  classification, and `thesis/REPASS_LEDGER.md` records the phased checklist for
+  the repass.  Future work should use these with the
+  `lean-fp-stability-audit` skill.
+- Treat `thesis/REPASS_LEDGER.md` as living documentation.  Update it whenever
+  a higher-level proof reveals a missing lower-level rounded operation, bridge
+  theorem, source reference, or dependency not visible in the initial audit.
+- Phase 1 foundation audit completed on 2026-06-01.  Targeted `lake env lean`
+  passed for `FP/Model.lean`, `Analysis/Rounding.lean`, `Analysis/Error.lean`,
+  `Analysis/Summation.lean`, `Analysis/SubtractionFold.lean`,
+  `Analysis/Stability.lean`, and `Analysis/MatrixAlgebra.lean`.  Only narrow
+  documentation edits were made: `fl_add_zero` is explicitly an extra exactness
+  hypothesis, and `gammaValid` is described as model-parametric rather than
+  IEEE-specific.
+- Phase 2 scalar/vector audit completed on 2026-06-01.  Targeted `lake env lean`
+  passed for `RecursiveSum.lean`, `PairwiseSum.lean`, `SumTree.lean`,
+  `DotProduct.lean`, `OuterProduct.lean`, and `Norm2.lean`.  `DotProduct` is the
+  positive implementation-backed template.  `OuterProduct` documentation was
+  corrected to stress that its perturbation theorem is row-wise and not a global
+  backward-stability result, matching Higham's discussion after equation (3.6).
+  `Norm2` is implementation-backed as a kernel.  Later Phase 5 work added the
+  Householder-specific norm bridges needed for Chapter 18 reflector
+  construction.
+- Phase 3 basic matrix-kernel audit completed on 2026-06-01.  Targeted
+  `lake env lean` passed for `MatVec.lean`, `MatMul.lean`, and
+  `LeastSquares/LSNormalEquations.lean`.  Added concrete bridge theorems
+  `gramProductError_from_fl_matMul` and `gramVecError_from_fl_matVec`, so the
+  normal-equations Gram product/vector contracts can now be proved from
+  `fl_matMul` and `fl_matVec`.  Cholesky remains the contract-level dependency
+  in normal equations.
+- Phase 4 triangular-solve audit completed on 2026-06-01.  `TriangularSolve` and
+  `ForwardSub` are implementation-backed: the concrete recursive rounded
+  algorithms prove `fl_backSub_satisfies_spec` and
+  `fl_forwardSub_satisfies_spec`, then the backward-error theorems consume those
+  proved row-spec bridges.  `TriangularSolveCombined` only composes those proved
+  results.  The derived forward-error/comparison/M-matrix theorems take exact
+  inverse, exact-solution, diagonal-dominance, M-matrix, and `gammaValid`
+  hypotheses; these are mathematical problem assumptions, not missing rounded
+  algorithm contracts.  `TriangularForwardComparison` was relabelled so the
+  backward-error-derived comparison bound is not confused with Higham's direct
+  Theorem 8.9 μ-bound (`forwardSub_forward_error_mu_bound`).
+- Phase 5 low-level QR rebuild started on 2026-06-01.  Added
+  `Algorithms/QR/HouseholderReflector.lean` with concrete rounded kernels
+  `fl_householderScale`, `fl_householderVector`, and `fl_householderBeta`.
+  Source alignment matters here: Higham Lemma 18.1 computes
+  `s = sign(x_0)||x||_2`, `v_0 = fl_add x_0 s_hat`, and
+  `beta_hat = fl_div 1 (fl_mul s_hat v_hat_0)`.  The dot-product beta path
+  `2/fl_dotProduct(v,v)` is an alternate algorithm and should not be used to
+  claim Higham's `γ_{4n+8}` bound.  Applying `sign(x_0)` is exact in Higham's
+  operation count, so `fl_householderScale` is an exact sign change of
+  `fl_norm2`, not a rounded multiplication.  The current kernels follow the source order.
+  Their unroll lemmas reduce the construction to existing `fl_norm2`,
+  `fp.model_add`, `fp.model_mul`, and `fp.model_div` layers.
+  Added `Algorithms/QR/HouseholderApply.lean` with concrete rounded
+  `fl_householderApply`, modeling `b - beta * v * (v^T b)` and unrolling it into
+  dot-product, multiplication, and subtraction errors.  Lemma 18.1 is now
+  implementation-backed by later bridge theorems; Lemma 18.2 application
+  stability remains the next missing bridge.
+- Phase 5 source boundary update on 2026-06-02: inspecting `References/Chapter18.pdf`
+  page images confirmed that Higham Lemma 18.2 assumes the normalized reflector
+  perturbation model from equation (18.3) before deriving the application error
+  `y_hat = (P + ΔP)b`.  Added `HouseholderVectorError` to
+  `HouseholderSpec.lean` to represent that intermediate contract explicitly, and
+  added `householder_matMulVec_eq` in `HouseholderApply.lean` to connect the
+  exact reflector matrix with the closed-form expression
+  `b - beta * v * (v^T b)`.  Do not add a vacuous theorem that proves
+  `HouseholderAppError` by manufacturing an arbitrary post-hoc `ΔP`; the real
+  bridge is `fl_householderVector -> HouseholderVectorError`, followed by
+  `fl_householderApply + HouseholderVectorError -> HouseholderAppError`.
+- Phase 5 exact-form update on 2026-06-02: added exact Householder construction
+  definitions `householderScale`, `householderAlpha`, `householderVector`,
+  `householderBeta`, and `householderBetaFromScale`, plus
+  `householderBeta_mul_norm_sq`.  Added normalized-form support
+  `householderNormalizedVector`, `householder_normalizedVector_eq`, and
+  `householderNormalizedVector_norm_sq`.  This proves the algebraic bridge
+  between the library's unnormalized `I - beta v v^T` reflector and Higham's
+  normalized `I - v v^T` equation (18.3) form.  Later bridge theorems prove the
+  rounded construction satisfies the normalized-vector perturbation model.
+- Also added `householder_exact_orthogonal`: exact `householderVector` together
+  with exact `householderBeta` produces an orthogonal reflector whenever
+  `v^T v` is nonzero.  Later rounded proofs should compare the computed
+  construction against this exact reflector rather than re-proving exact
+  orthogonality algebra.
+- Added `fl_householderVector_tail_eq_householderVector`, proving the
+  implementation-backed exact-copy part of Higham Lemma 18.1: all non-first
+  components of the rounded Householder vector agree with the exact vector.
+- Added `HouseholderConstructionError`, the explicit Higham Lemma 18.1 contract:
+  tail equality, first-component relative error bounded by `γ_{n+2}`, and beta
+  relative error bounded by `γ_{4n+8}`.  Also added exact source-alignment
+  lemmas `householderScale_mul_self`,
+  `householderVector_norm_sq_eq_two_scale_mul`, and
+  `householderBetaFromScale_eq_householderBeta`, connecting the source beta
+  formula `1/(s*v_0)` with the reflector beta formula `2/(v^T v)`.
+- Added Householder-facing norm bridges in `Norm2.lean`:
+  `weighted_sum_relative_error_nonneg`, `fl_norm2Sq_relative_error`, and
+  `fl_norm2_relative_error_sqrt_factor`.  These prove the source step
+  `fl(x^T x) = (1+θ_n)x^T x` and expose
+  `fl(||x||_2) = sqrt(x^T x) * sqrt(1+θ_n) * (1+δ)`.
+  Added the exact square-root perturbation lemma
+  `sqrt_one_add_sub_one_abs_le_abs`, the gamma bridge
+  `sqrt_one_add_mul_roundoff_gamma`, and the source-style norm theorem
+  `fl_norm2_relative_error`, so the rounded norm now has
+  `fl_norm2 x = ||x||_2 * (1+θ_{n+1})` from the concrete `fl_norm2`
+  implementation.
+- Added `householderVector_zero_abs_eq`, proving the exact no-cancellation fact
+  `|x_0+s| = |x_0| + |s|`, and
+  `fl_householderScale_relative_error_sqrt_factor`, which composes the new
+  `fl_norm2` bridge with exact sign application.  Added
+  `fl_householderScale_relative_error` and
+  `fl_householderVector_zero_relative_error`, proving the
+  first-component `γ_{n+2}` part of Higham Lemma 18.1 for nonzero inputs from
+  the concrete rounded Householder vector implementation.
+- Added `gamma_inv_mul_roundoff` in `Rounding.lean` so a reciprocal of a
+  `γ_k`-perturbed denominator plus the final division rounding can be bounded
+  by `γ_{2k}`.  This preserves Higham's beta constant rather than weakening it
+  by one extra gamma index.
+- Added `fl_householderBeta_denominator_relative_error`,
+  `fl_householderBeta_relative_error`, and `fl_householderConstructionError`.
+  For nonzero inputs, the concrete rounded Householder construction now
+  satisfies the full `HouseholderConstructionError` contract matching Higham
+  Lemma 18.1: exact tail copy, first-component `γ_{n+2}` perturbation, and
+  beta `γ_{4n+8}` perturbation.
+- Added `sqrt_one_add_mul_relative_gamma` in `Norm2.lean` and the normalized
+  Householder construction bridges `householderVectorError_from_construction`
+  and `fl_householderVectorError`.  For nonzero inputs and a stronger
+  `gammaValid fp (8*n+16)` side condition, the concrete rounded construction
+  now satisfies Higham equation (18.3) after algebraic normalization, with
+  explicit bound `γ_{5n+10}` as a concrete instance of Higham's generic
+  `γ_{cm}`.
+- Added `householderApplyRoundedMatrix`,
+  `householderApplyDeltaMatrix`, `fl_householderApply_matrix_unroll`, and
+  `fl_householderApply_appError_of_matrix_bound`.  These prove that the
+  concrete rounded Householder application is multiplication by a matrix
+  determined by the primitive rounding errors, and they isolate the exact
+  remaining Lemma 18.2 obligation: prove a Frobenius norm bound for that
+  concrete delta matrix from `HouseholderVectorError` and the primitive error
+  bounds.  This is not yet the full Lemma 18.2 stability theorem.
+- Added exact norm helpers in `MatrixAlgebra.lean` turning entrywise absolute
+  bounds into Frobenius bounds, plus `HouseholderVectorError` consequences in
+  `HouseholderSpec.lean`: sum-of-squares for the normalized vector, a
+  componentwise magnitude bound for the computed vector, and relative factors
+  `v_hat_i = v_i(1+alpha_i)`.  Added `HouseholderApply` factorization and
+  entrywise gamma theorems for the normalized application delta.  The current
+  next gap is now the final Frobenius summation estimate that turns these
+  entrywise gamma facts into a concrete `HouseholderAppError` bound.
+- Completed the normalized one-reflector Householder application bridge:
+  `householderApply_sub_error_frob_bound`,
+  `householderApply_outer_gamma_frob_bound`,
+  `householderApplyDeltaMatrix_normalized_frob_bound`, and
+  `fl_householderApply_normalized_appError`.  This proves that if equation
+  (18.3) is supplied for a normalized computed vector, then the concrete
+  rounded `fl_householderApply fp n v_hat 1 b` satisfies `HouseholderAppError`.
+  The bound is currently the raw expression
+  `sqrt(n*u^2) + 2*gamma(2a+n+3)`, not yet collapsed into Higham's generic
+  `gamma_cm` notation.
+- Added `Algorithms/QR/HouseholderOneStep.lean` with
+  `fl_householderConstructApply_appError`, combining the concrete construction
+  bridge `fl_householderVectorError` with
+  `fl_householderApply_normalized_appError`.  For nonzero input vectors and
+  `gammaValid fp (11*n+23)`, concrete construction plus concrete application
+  now satisfies `HouseholderAppError` for one reflector, again with the raw
+  bound `sqrt(n*u^2) + 2*gamma(11*n+23)`.
+- Added `Algorithms/QR/HouseholderMatrixStep.lean` with
+  `fl_householderApplyMatrix`, `ColumnwiseHouseholderStepError`, and
+  `fl_householderConstructApply_matrix_step_error`.  This lifts the concrete
+  one-vector reflector result to a concrete matrix-column step: each output
+  column of `fl_householderApplyMatrix` satisfies `HouseholderAppError` with a
+  column-dependent perturbation matrix.  This is intentionally weaker than the
+  existing `orthogonal_sequence_one_step` hypothesis, which uses one global
+  `ΔP` for the whole matrix step; Higham's Lemma 18.3 proof is columnwise, so
+  the next QR bridge must aggregate column-dependent perturbations rather than
+  silently forcing them into a global perturbation.
+- Added exact columnwise Frobenius aggregation lemmas in `MatrixAlgebra.lean`:
+  `matMulVec_sum_sq_le_frobNormSq_mul_sum_sq`,
+  `frobNormSq_columnwise_matMulVec_le`, and
+  `frobNorm_columnwise_matMulVec_le`.  `HouseholderMatrixStep.lean` now exposes
+  `ColumnwiseHouseholderStepError.exists_residual_matrix_bound`, proving that a
+  columnwise Householder step has a single residual matrix `E` with
+  `A_hat = P*A + E` and `‖E‖_F ≤ c*‖A‖_F`.  The next gap is turning repeated
+  residual steps into the final `Qᵀ(A+ΔA)`/QR backward-error statement.
+- Added residual-form sequence one-step theorems in `HouseholderQR.lean`:
+  `orthogonal_sequence_one_step_of_residual` and
+  `orthogonal_sequence_one_step_of_columnwise_error`.  These advance the
+  sequence invariant from `A_hat = Qᵀ(A+ΔA)` through a step
+  `A_next = P*A_hat + E` with `‖E‖_F ≤ c‖A_hat‖_F`, and the columnwise version
+  consumes `ColumnwiseHouseholderStepError` directly.  This avoids the stronger
+  old assumption that one global `ΔP` explains a whole matrix step.  The
+  remaining QR gap is the repeated-step induction/loop model and the final
+  connection to `HouseholderQRBackwardError`.
+- Added `idMatrix_orthogonal` in `MatrixAlgebra.lean` and the conservative
+  repeated residual theorem `residual_orthogonal_sequence_backward_error` in
+  `HouseholderQR.lean`.  If each step has
+  `A_{k+1} = P_k*A_k + E_k`, each `P_k` is orthogonal, and
+  `‖E_k‖_F ≤ c‖A_k‖_F`, the theorem proves
+  `A_r = Qᵀ(A_0+ΔA)` with
+  `‖ΔA‖_F ≤ residualAccumBound c r * ‖A_0‖_F`.  This keeps higher-order terms
+  via a recurrence instead of forcing the first-order `r*c` simplification.
+  The next QR gap is a concrete Householder QR loop/sequence feeding these
+  hypotheses, plus a sourced gamma-collapse lemma if the public theorem should
+  recover Higham's `r*c`/`γ_cm` style bound.
+- Added `columnwise_householder_sequence_backward_error`,
+  `householderConstructApplyBound`, `householderConstructApplyBound_nonneg`,
+  and `fl_householder_sequence_backward_error`.  The last theorem proves that
+  any matrix sequence updated by repeated concrete
+  `fl_householderApplyMatrix` steps, with reflectors concretely constructed
+  from nonzero `xseq k`, satisfies the residual orthogonal-sequence
+  backward-error theorem.  This is still not full QR factorization because the
+  theorem does not yet define/select the QR trailing-column vectors or prove
+  triangularization; it is the implementation-backed repeated-reflector bridge
+  needed before that final QR loop theorem.
+- Added rectangular panel infrastructure for Householder QR trailing updates:
+  `matMulRect` in `MatrixAlgebra.lean`,
+  `frobNormSq_columnwise_matMulVec_le_rect`,
+  `frobNorm_columnwise_matMulVec_le_rect`,
+  `fl_householderApplyMatrixRect`,
+  `ColumnwiseHouseholderStepErrorRect`, and
+  `fl_householderConstructApply_matrix_step_error_rect`.  A square
+  Householder reflector can now be applied to an `m × p` panel, and the
+  concrete rounded panel update has a columnwise backward-error contract plus a
+  single residual matrix bound `‖E‖_F ≤ c‖A‖_F`.  This is needed before the
+  real QR loop can operate on trailing rectangular panels instead of only
+  square full matrices.
+- Added exact rectangular orthogonal algebra:
+  `matMulRect_id_left`, `matMulRect_add_right`,
+  `matMulRect_assoc_square_left`, `frobNormSq_orthogonal_left_rect`, and
+  `frobNorm_orthogonal_left_rect`.  Added rectangular residual sequence
+  theorems in `HouseholderQR.lean`:
+  `orthogonal_sequence_one_step_of_residual_rect`,
+  `residual_orthogonal_sequence_backward_error_rect`,
+  `columnwise_householder_panel_sequence_backward_error`, and
+  `fl_householder_panel_sequence_backward_error`.  Repeated concrete
+  Householder panel updates now satisfy a rectangular backward-error sequence
+  theorem.  Remaining QR work: define the actual trailing-panel loop and prove
+  it supplies these panel update hypotheses and triangularization.
+- Added `panelFirstColumn` and
+  `fl_householder_first_column_panel_step_error`.  This specializes the
+  rectangular panel bridge to the first-column choice used by a Householder QR
+  panel step.  It is the first link from arbitrary supplied construction
+  vectors toward an actual QR loop, but it still does not define recursive
+  trailing panels or prove triangularization.
+- Added `fl_householder_first_column_panel_sequence_backward_error`, which
+  repeats the first-column panel choice over a fixed rectangular panel shape.
+  This removes the arbitrary `xseq` layer for fixed panels.  Remaining QR work
+  is still the dependent trailing-panel loop with shrinking dimensions and the
+  triangularization/package proof.
+- Added exact trailing-panel indexing infrastructure in `HouseholderQR.lean`:
+  `panelDropFirstRow`, `panelDropFirstCol`, and `trailingPanel`, plus the
+  concrete rounded shrinking step `fl_householderTrailingPanelStep`.  This
+  models one QR move from an `(m+1) × (p+1)` panel to its updated trailing
+  `m × p` panel.  This is still an indexing/algorithm-definition layer; the
+  next proof gap is an induction over these dependent shrinking panel shapes
+  and the exact triangularization property.
+- Added `frobNormSq_trailingPanel_le`, `frobNorm_trailingPanel_le`, and
+  `fl_householderTrailingPanelStep_residual`.  The concrete one-step shrinking
+  QR panel update now has a residual representation inherited from the full
+  first-column Householder panel step.  Remaining QR work: dependent induction
+  across changing dimensions, exact zeroing/triangularization, and packaging
+  into the final `HouseholderQRBackwardError`.
+- Added exact Householder zeroing lemmas in `HouseholderOneStep.lean`:
+  `householderVector_dot_original_eq_scale_mul_zero`,
+  `householder_constructed_matMulVec_first`, and
+  `householder_constructed_matMulVec_tail_zero`.  These prove the exact
+  triangularization kernel for one constructed reflector:
+  the source column is mapped to `-s e_0`, so all tail components are zero.
+  This is exact algebra, not yet a rounded triangularization theorem for the
+  full QR loop.
+- Added panel-level exact triangularization bridges in `HouseholderQR.lean`:
+  `householder_first_column_panel_exact_first` and
+  `householder_first_column_panel_exact_tail_zero`.  These lift the exact
+  one-vector zeroing theorem to the first column of a rectangular panel after
+  applying the constructed exact reflector.  The next QR gap is to combine this
+  exact zeroing fact with the rounded residual theorem in the shrinking-panel
+  induction.
+- Added panel decomposition infrastructure in `HouseholderQR.lean`:
+  `panelTopLeft`, `panelTopRowTail`, `panelFirstColumnTail`, and
+  `panelFirstColumnTailZero`.  Added exact bridges
+  `householder_panel_exact_topLeft` and
+  `householder_panel_exact_firstColumnTailZero`, so the one-step exact
+  triangularization result is now stated in the panel shape that the future QR
+  loop will consume.
+- Added `fl_householder_first_column_panel_step_residual_and_shape`, which
+  packages one concrete rounded first-column Householder panel update with:
+  a residual matrix bound for the computed full-panel update, the exact
+  top-left value of the underlying reflector step, and exact first-column tail
+  zeroing.  This is the one-step implementation-backed panel bridge; remaining
+  QR work is the dependent induction over shrinking panels and final packaging.
+- Added `IsUpperTriangular` and
+  `StructuredHouseholderQRBackwardError` in `HouseholderQR.lean`.  The original
+  `HouseholderQRBackwardError` remains the normwise backward-error contract
+  only; the structured contract explicitly includes the `R_hat` upper-triangular
+  shape requirement.  `structured_householder_qr_backward` is only a packaging
+  theorem from the old backward-error theorem plus a supplied triangularity
+  proof; the rebuild still has to prove triangularity from the concrete rounded
+  QR loop.
+- Added `HouseholderPanelState`, `householderPanelStateStep`, and
+  `householderPanelStateIterate` as the first dependent-loop substrate for
+  Householder QR.  The state tracks the active trailing panel and the concrete
+  step shrinks nonempty panels using `fl_householderTrailingPanelStep`.  It does
+  not yet store the accumulated `Q` or completed `R` rows, so it is not a full
+  QR algorithm definition yet.
+- Added `householderPanelStateStep_nonempty_residual_and_shape`, the state-level
+  one-step bridge.  For a nonempty active panel, the concrete state transition
+  has a residual representation for the next active panel and reuses the exact
+  top-left/first-column-tail-zero facts for the underlying reflector step.
+  Remaining QR work: induction over `householderPanelStateIterate`, plus a
+  richer state that records accumulated `Q` and completed `R` structure.
+- Added `HouseholderPanelStepReady` and `HouseholderPanelRunReady`, plus
+  `householderPanelRunReady_head` and `householderPanelRunReady_tail`.  These
+  predicates record the per-step nonzero-column and gamma-validity hypotheses
+  needed to use the implementation-backed one-step panel bridge during an
+  induction over `householderPanelStateIterate`.
+- Added `householderPanelStateStep_nonempty_residual_and_shape_of_ready`, so the
+  state-level one-step bridge can consume `HouseholderPanelStepReady` directly
+  instead of unpacking nonzero-column and gamma-validity hypotheses at every
+  future induction site.
+- Added `householderPanelRunReady_succ_iff`, splitting a ready run of length
+  `r+1` into a ready current step and a ready tail after
+  `householderPanelStateStep`.  This is the intended induction shape for future
+  repeated active-panel proofs.
+- Added `householderPanelStepReady_nonempty_of_global_gammaValid`, allowing a
+  global `gammaValid fp (11*N+23)` assumption for an original row dimension to
+  satisfy the current active panel's smaller per-step gamma condition.
+- Added `embedTrailingOne` in `HouseholderQR.lean`, embedding an active-panel
+  square matrix as the lower-right block of a matrix with leading scalar
+  identity.  This is the exact algebraic bridge needed before a trailing-panel
+  Householder reflector can be composed as a full-size QR transformation.
+- Added exact embedding algebra for `embedTrailingOne`: transpose commutation,
+  multiplication commutation, identity preservation, and orthogonality
+  preservation.  This means an orthogonal active-panel reflector can now be
+  lifted to a full-size orthogonal transformation.
+- Added rectangular panel action lemmas for `embedTrailingOne`: left
+  multiplication leaves the top row unchanged and the trailing panel becomes
+  the smaller `matMulRect` action on the old trailing panel.  These lemmas
+  connect full-size embedded transformations with active-panel updates.
+- Added `panelFromTopAndTrailing`, exact QR bookkeeping that reconstructs a
+  nonempty panel from the computed top row and trailing panel while setting the
+  first-column tail to zero.  This supports an implementation-backed `R_hat`
+  algorithm whose upper-triangular shape is by construction, not by assuming
+  rounded operations produce exact zeros.  A recursive triangularity lemma for
+  this constructor is also available.
+- Added `fl_householderQRPanel_R` and square alias `fl_householderQR_R`, the
+  first recursive rounded Householder QR loop that returns an `R` panel.  It
+  applies the concrete rounded first-column reflector, stores the computed top
+  row, zeroes the completed first-column tail by construction, and recurses on
+  the computed trailing panel.  Proved `fl_householderQR_R_upper`; backward
+  error for this recursive loop is still pending.
+- Added projection lemmas for `fl_householderQRPanel_R`: the top-left entry
+  and top-row tail are the values computed by the current rounded panel step,
+  the completed first-column tail is structurally zero, and the trailing panel
+  is exactly the recursive output on `fl_householderTrailingPanelStep`.
+- Added the stored first-column panel residual bridge:
+  `fl_householder_first_column_panel_stored_residual_and_shape`.  It proves
+  that after the rounded first-column panel step, replacing the completed
+  first-column tail by structural zeros preserves the same residual bound,
+  because the exact Householder application has zero tail there and the
+  Frobenius norm cannot increase when that residual slice is zeroed.
+- Added `panelTrailingPerturbation` and its Frobenius norm equality, plus
+  `panelFromTopAndTrailing_lift_trailing_rep`.  These exact algebra lemmas
+  lift a tail backward representation into the full panel using
+  `embedTrailingOne`, which is the block-composition step needed for the
+  recursive QR backward-error induction.
+- Added `HouseholderQRPanelReady`, a recursive readiness predicate for the
+  concrete `fl_householderQRPanel_R` loop.  Each nonempty panel requires a
+  nonzero current first column, the matching gamma-validity condition, and
+  readiness of the concrete trailing-panel step.
+- Added `householderQRPanelBackwardCoeff` and square alias
+  `householderQRBackwardCoeff`, the recursive coefficient intended for the
+  future implementation-backed QR backward-error induction.
+- Added `HouseholderQRPanelBackwardError`, the rectangular induction target for
+  the recursive QR implementation, plus trivial empty-row and empty-column base
+  cases.  This target records `R_hat = Qᵀ(A + ΔA)` for rectangular panels; the
+  square wrapper still needs to convert it to the existing
+  `HouseholderQRBackwardError` form.
+- Proved `householder_qr_panel_backward_cons`, the generic recursive cons
+  theorem: a stored one-step residual bound for the current panel plus a
+  rectangular QR backward-error proof for the trailing panel yields a full-panel
+  backward-error proof.  This composes the tail proof with `embedTrailingOne`
+  and uses the coefficient update `c + α*(1+c)`.
+- Proved `fl_householderQRPanel_R_backward_error`, the implementation-backed
+  recursive backward-error theorem for the concrete rounded
+  `fl_householderQRPanel_R` loop under `HouseholderQRPanelReady`.  This closes
+  the rectangular/panel-level bridge from concrete QR recursion to
+  `HouseholderQRPanelBackwardError`; the remaining QR work is the square wrapper
+  into `HouseholderQRBackwardError`/`StructuredHouseholderQRBackwardError`.
+- Proved the square wrappers:
+  `householder_qr_panel_backward_to_square`,
+  `fl_householderQR_R_backward_error`, and
+  `fl_householderQR_R_structured_backward_error`.  The concrete recursive
+  Householder QR `R` algorithm now satisfies the existing structured QR
+  backward-error contract, with the explicit `HouseholderQRPanelReady`
+  assumptions and recursive coefficient `householderQRBackwardCoeff`.
+- In `QR/QRSolve.lean`, added `qr_solve_backward_error_from_components`, which
+  packages the existing QR-factorization, `Qᵀb`, and back-substitution component
+  equations plus perturbation bounds into `QRSolveBackwardError`.  This fixes
+  the algebraic packaging gap for Higham Theorem 18.5, but it is still not a
+  concrete `fl_qr_solve` implementation-backed theorem.
+- Added concrete QR-solve objects in `QR/QRSolve.lean`:
+  `fl_householderQRPanel_rhs`, square alias `fl_householderQR_rhs`, and
+  `fl_householderQR_solve`.  The RHS recursion applies the same rounded
+  Householder reflectors chosen from the active `A` panel to `b`, then the solve
+  definition calls `fl_backSub` on `fl_householderQR_R` and the transformed RHS.
+- Added RHS one-step residual bridge in `QR/QRSolve.lean`:
+  `HouseholderAppError.exists_residual_vector`,
+  `fl_householder_first_column_rhs_step_error`, and
+  `fl_householder_first_column_rhs_step_residual`.  These expose the computed
+  RHS update as `P*b + e` with `e = ΔP*b`, using the same panel-selected
+  Householder reflector as the QR factorization step.
+- Added exact componentwise support in `MatrixAlgebra.lean`:
+  `abs_entry_le_frobNorm`, `abs_matMulVec_le_card_frobNorm_infNormVec`,
+  `abs_matMulVec_le_card_bound_infNormVec`, and orthogonal transport bounds
+  `IsOrthogonal.abs_entry_le_one`,
+  `IsOrthogonal.abs_matMulVec_le_card_infNormVec`, and
+  `IsOrthogonal.infNormVec_matMulVec_le_card`.  These are crude but proved
+  exact bounds needed to track QR-solve residual vectors without introducing
+  a new assumption.
+- Added `HouseholderAppError.exists_residual_vector_bound` and
+  `fl_householder_first_column_rhs_step_residual_bound` in `QR/QRSolve.lean`.
+  The concrete first-column RHS Householder step now has an explicit
+  componentwise residual bound
+  `(m+1) * householderConstructApplyBound fp (m+1) * infNormVec b`.
+  Added `HouseholderQRRhsPanelBackwardError`,
+  `householderQRRhsPanelBackwardBound`,
+  `householder_qr_rhs_panel_backward_cons`,
+  `fl_householderQRPanel_rhs_backward_error`, and
+  `fl_householderQR_rhs_backward_error`.  The concrete RHS reflector recursion
+  is now implementation-backed under `HouseholderQRPanelReady`, with a
+  recursive componentwise perturbation bound.
+- Added the simultaneous shared-orthogonal-factor bridge
+  `HouseholderQRPanelSolveBackwardError`,
+  `householder_qr_panel_solve_backward_cons`,
+  `fl_householderQRPanel_solve_components_backward_error`, and
+  `fl_householderQR_solve_components_backward_error`.  This closes the
+  common-`Q` gap between the concrete `R` proof and concrete RHS proof.
+- Added `fl_householderQR_solve_backward_error`, the implementation-backed
+  theorem for the concrete Householder QR solve.  It combines the shared-`Q`
+  QR/RHS component theorem with `backSub_backward_error`.  Side assumptions are
+  explicit: `HouseholderQRPanelReady`, nonzero diagonal of the computed
+  `fl_householderQR_R`, `0 < n`, and `gammaValid fp n`.  The matrix bound is
+  `householderQRBackwardCoeff fp n * ‖A‖_F +
+  gamma fp n * ‖fl_householderQR_R fp n A‖_F`; the RHS bound is
+  `householderQRRhsBackwardBound fp n A b`.
+- Began the Givens rebuild in `QR/GivensSpec.lean`.  Added concrete
+  `fl_givensApply`, which applies supplied exact `c,s` parameters by two
+  rounded multiplications plus rounded add/sub on the affected components and
+  copies all other components exactly.  Added exact unroll lemmas for the
+  computed and exact `p`, `q`, and unaffected components.  Added
+  `fl_givensApply_supplied_app_error`, proving the concrete supplied-parameter
+  kernel satisfies `GivensAppError` with the conservative bound
+  `gamma fp 2 * ‖givensRotation n p q c s‖_F`.  This is implementation-backed
+  for exact supplied `c,s`; rounded rotation-parameter construction and the
+  full `fl_givens_qr` loop are still pending.
+- Added exact Givens coefficient construction from Higham (18.14):
+  `givensDenom`, `givensC`, and `givensS`, plus exact facts
+  `givensCoeff_norm_sq`, `givensCoeff_zero_second`,
+  `givensCoeff_first_component`, and `givensRotation_constructed_orthogonal`.
+  Added rounded coefficient kernels `fl_givensDenom`, `fl_givensC`, and
+  `fl_givensS`, with the denominator deliberately routed through the existing
+  `fl_norm2` kernel.  Added conservative implementation-backed coefficient
+  bridges `fl_givensC_relative_error_conservative` and
+  `fl_givensS_relative_error_conservative`, proving `gamma fp 6` relative
+  error bounds from `fl_norm2` plus rounded division.  Added the
+  `GivensCoeffError` wrapper and `fl_givensCoeffError_conservative` so later
+  Givens application/sequence proofs can consume coefficient contracts without
+  unpacking both scalar theorems manually.  The sharper Higham Lemma 18.6
+  target `ĉ = c(1+θ₄)` and `ŝ = s(1+θ'₄)` is still pending.
+- Added `fl_givensApply_coeffError_app_error` and
+  `fl_givensApply_computed_app_error_conservative`.  These close the concrete
+  Givens coefficient-plus-application path: coefficients are computed by
+  `fl_givensC`/`fl_givensS` and then used by `fl_givensApply`, producing a
+  `GivensAppError` for the exact constructed rotation.  The bound is the
+  conservative `gamma fp 8 * ‖G‖_F`, obtained by combining the current
+  `gamma fp 6` coefficient bridge with two rounded operations in the
+  application.  This is implementation-backed but not the sharp Higham Lemma
+  18.7 constant `sqrt 2 * gamma_6`.
+- Added `QR/GivensMatrixStep.lean`, defining `fl_givensApplyMatrix` and
+  `fl_givensApplyMatrixRect` plus square/rectangular `ColumnwiseGivensStepError`
+  contracts.  Proved `fl_givensApply_computed_matrix_step_error` and its
+  rectangular version from the concrete computed-coefficient vector bridge, then
+  proved residual matrix aggregation lemmas.  Added
+  `fl_givens_sequence_backward_error` and
+  `fl_givens_panel_sequence_backward_error` in `GivensQR.lean`, which accumulate
+  any supplied concrete sequence of computed Givens updates via the existing
+  residual orthogonal sequence theorem under an explicit uniform per-step bound.
+  The remaining gap for full Givens QR is choosing/formalizing the annihilation
+  schedule and proving the produced sequence has the QR triangular shape and a
+  source-clean uniform bound.
+- Added exact Frobenius facts in `MatrixAlgebra.lean`:
+  `frobNormSq_idMatrix`, `IsOrthogonal.frobNormSq_eq_card`, and
+  `IsOrthogonal.frobNorm_eq_sqrt_card`.  These reuse existing exact Frobenius
+  invariance under orthogonal multiplication and show `‖U‖_F = sqrt n` for
+  orthogonal `n × n` matrices.  Added uniform Givens sequence corollaries
+  `fl_givens_sequence_backward_error_uniform` and
+  `fl_givens_panel_sequence_backward_error_uniform`, discharging the earlier
+  explicit per-step norm-bound assumption with `gamma fp 8 * sqrt n`.
+- Added concrete current-matrix Givens column steps:
+  `fl_givensColumnStepMatrix` and `fl_givensColumnStepMatrixRect`, with bridge
+  theorems `fl_givensColumnStep_matrix_step_error` and the rectangular variant.
+  Added sequence corollaries
+  `fl_givens_column_sequence_backward_error_uniform` and
+  `fl_givens_column_panel_sequence_backward_error_uniform`, where each rotation
+  coefficient is computed from the evolving matrix entries
+  `(Aseq k (pseq k) (colseq k), Aseq k (qseq k) (colseq k))`.  The remaining
+  full-Givens-QR gap is now specifically the annihilation schedule, nonzero
+  guards for the selected pivots, and the final upper-triangular shape proof.
+- Added exact vector embedding algebra for the QR RHS recursion:
+  `vectorTrailingPerturbation`, `embedTrailingOne_matMulVec_top`,
+  `vectorTail_embedTrailingOne_matMulVec`, and
+  `vectorFromTopTail_lift_trailing_rep`.  These are the vector analogues of the
+  panel block-lift lemmas and prepare the recursive RHS backward-error proof.
+- Returned to Householder QR before continuing Givens.  Added the zero-column
+  skip infrastructure in `QR/HouseholderQR.lean`:
+  `panelFirstColumnTailZero_of_panelFirstColumn_eq_zero`,
+  `panelFromTopAndTrailing_of_panelFirstColumn_eq_zero`, and
+  `householder_qr_panel_backward_skip_zero_column`.  These prove that if an
+  active panel's first column is already zero, the QR loop can skip the
+  reflector exactly and lift the recursive trailing-panel backward-error proof
+  to the full panel with an embedded leading identity.
+- Added zero-aware Householder QR `R` definitions:
+  `fl_householderTrailingPanelStepSafe`, `fl_householderQRPanel_R_safe`, and
+  square alias `fl_householderQR_R_safe`.  Added
+  `HouseholderQRPanelSafeReady`, which removes the old "all active first
+  columns are nonzero" requirement; gamma validity is required only on
+  nonzero branches where a rounded reflector is actually computed.
+- Added branch-dependent coefficient
+  `householderQRPanelBackwardCoeffSafe` and proved
+  `fl_householderQRPanel_R_safe_backward_error`,
+  `fl_householderQR_R_safe_backward_error`, and
+  `fl_householderQR_R_safe_structured_backward_error`.  The preferred
+  Householder QR `R` theorem is now implementation-backed for zero and nonzero
+  active columns.  Remaining QR-solve work: propagate the safe QR/RHS recursion
+  through `QRSolve.lean`; the current solve theorem still uses the older
+  nonzero-panel `fl_householderQR_R` path and requires nonzero diagonal of the
+  computed `R`.
+- Propagated the zero-aware Householder recursion through `QR/QRSolve.lean`.
+  Added `fl_householderQRPanel_rhs_safe`, `fl_householderQR_rhs_safe`, and
+  `fl_householderQR_solve_safe`, plus the branch-dependent RHS bound
+  `householderQRRhsPanelBackwardBoundSafe`.  Added exact RHS and shared-`Q`
+  skip theorems:
+  `householder_qr_rhs_panel_backward_skip_zero_column` and
+  `householder_qr_panel_solve_backward_skip_zero_column`.
+- Proved the safe RHS and solve bridge theorems:
+  `fl_householderQRPanel_rhs_safe_backward_error`,
+  `fl_householderQR_rhs_safe_backward_error`,
+  `fl_householderQRPanel_solve_components_safe_backward_error`,
+  `fl_householderQR_solve_components_safe_backward_error`, and
+  `fl_householderQR_solve_safe_backward_error`.  Householder QR solve now has
+  an implementation-backed zero-aware path.  Remaining assumptions are the
+  inherent back-substitution side conditions: `0 < n`, nonzero diagonal of the
+  computed `fl_householderQR_R_safe fp n A`, and `gammaValid fp n`.
+- Simplified the public safe Householder QR API by deriving recursive
+  `HouseholderQRPanelSafeReady` from a single global gamma assumption.  Added
+  `HouseholderQRPanelSafeReady_of_global_gammaValid`,
+  `HouseholderQRPanelSafeReady_square_of_global_gammaValid`, and global-gamma
+  wrappers for safe `R`, structured `R`, RHS, shared QR/RHS components, and
+  solve:
+  `fl_householderQR_R_safe_backward_error_of_global_gammaValid`,
+  `fl_householderQR_R_safe_structured_backward_error_of_global_gammaValid`,
+  `fl_householderQR_rhs_safe_backward_error_of_global_gammaValid`,
+  `fl_householderQR_solve_components_safe_backward_error_of_global_gammaValid`,
+  and `fl_householderQR_solve_safe_backward_error_of_global_gammaValid`.  The
+  preferred safe solve theorem now asks for `0 < n`, global
+  `gammaValid fp (11*n+23)`, and nonzero diagonal of computed `R_safe`; the
+  back-substitution `gammaValid fp n` condition is derived internally.
+- Supersession note: older historical bullets in this memory file that describe
+  Householder QR `R` or Householder QR solve as pending are now superseded by
+  the zero-aware implementation-backed theorems above.  The remaining
+  Householder QR limitations are narrower: the safe solve still assumes
+  nonsingularity via a nonzero diagonal condition for the computed `R_safe`, and
+  it does not yet build or return an explicit accumulated `Q` matrix as part of
+  the algorithm output.
+- Interpretation note: an existential exact orthogonal `Q` in
+  `HouseholderQRBackwardError` is acceptable for the Higham-style QR
+  backward-error theorem.  The implementation-backed part is the concrete
+  rounded `R_safe` algorithm and its bridge to the backward-error contract.
+  Returning a separately computed floating-point `Q` would be a distinct future
+  API, not a prerequisite for the current `R` or QR-solve stability claims.
+- Started the explicit `Q` layer for Householder QR without claiming a rounded
+  accumulated `Q_hat`.  Added `fl_householderQRPanel_Q_safe`,
+  `fl_householderQR_Q_safe`, and `HouseholderQRWitness` /
+  `fl_householderQR_safe_witness`.  These expose the exact orthogonal witness
+  generated from the same safe branch choices and rounded trailing panels as
+  `fl_householderQR_R_safe`.  Proved
+  `fl_householderQRPanel_Q_safe_orthogonal`,
+  `fl_householderQR_Q_safe_orthogonal_of_global_gammaValid`, and witness
+  wrappers for `Q` orthogonality, `R` upper-triangularity, and the existing
+  structured `R` backward-error theorem.
+- Completed the next explicit-`Q` milestone.  Added
+  `HouseholderQRPanelExplicitBackwardError` and
+  `HouseholderQRExplicitBackwardError`, plus explicit skip/cons algebra,
+  `fl_householderQRPanel_R_safe_explicit_backward_error`, and
+  `fl_householderQR_safe_witness_explicit_backward_error_of_global_gammaValid`.
+  The public safe witness now satisfies a fixed-`Q` perturbation equation:
+  its `Q` field is the orthogonal factor used in `Q * R = A + ΔA`, with the
+  same branch-dependent `householderQRBackwardCoeffSafe` bound.  This is still
+  an exact `Q` witness, not a rounded accumulated `Q_hat`.
+- Started the concrete rounded `Q_hat` API for Householder QR.  Added
+  `fl_householderQRPanel_Qhat_safe`, `fl_householderQR_Qhat_safe`,
+  `HouseholderQRComputedFactors`, and `fl_householderQR_computed_safe`.
+  The nonzero recursive branch applies the same rounded Householder reflector
+  used for the panel update to the embedded trailing `Q_hat` accumulator via
+  `fl_householderApplyMatrixRect`; zero branches embed the trailing accumulator
+  exactly.  No orthogonality or backward-error theorem is claimed for `Q_hat`
+  yet.  The next proof layer is a rounded-accumulation bridge relating this
+  computed `Q_hat` to the exact witness or to an explicit perturbation model.
+- Added the first `Q_hat` bridge theorem:
+  `fl_householderQRPanel_Qhat_safe_succ_succ_nonzero_step_error`.  For each
+  nonzero active panel, the rounded `Q_hat` accumulator update satisfies the
+  existing implementation-backed rectangular Householder matrix-step error via
+  `fl_householderConstructApply_matrix_step_error_rect`.  This is still a
+  one-step theorem; the accumulated recursive `Q_hat` stability theorem is not
+  proved yet.
+- Added `fl_householderQRPanel_Qhat_safe_succ_succ_nonzero_residual_bound`,
+  the residual-matrix form of one nonzero rounded `Q_hat` update.  It exposes
+  `Qhat_next = P * embedTrailingOne(Qtail_hat) + E` with
+  `‖E‖_F ≤ householderConstructApplyBound fp (m+1) *
+  ‖embedTrailingOne Qtail_hat‖_F`, using the existing rectangular residual
+  aggregation theorem.
+- Added `fl_householderQRPanel_Qhat_safe_succ_succ_zero_residual_bound`, which
+  records the safe zero-column skip branch as an identity transformation on the
+  embedded trailing `Q_hat` accumulator with zero residual.  Future recursive
+  `Q_hat` accumulation proofs now have residual lemmas for both branch cases.
+- Added computed-factor `R_hat` wrappers:
+  `fl_householderQR_computed_safe_R_hat_upper` and
+  `fl_householderQR_computed_safe_R_hat_structured_backward_error_of_global_gammaValid`.
+  These reuse the proved `R_safe` facts through the `HouseholderQRComputedFactors`
+  API and deliberately do not assert any full stability property of `Q_hat`.
+- Added
+  `fl_householderQR_computed_safe_R_hat_explicit_backward_error_of_global_gammaValid`,
+  which gives the computed-factor `R_hat` field the explicit exact-witness
+  perturbation equation already proved for `fl_householderQR_safe_witness`.
+  The witness `Q` remains exact; this is not a theorem about the rounded
+  accumulated `Q_hat`.
+- Added a branch-combined safe-step interface for future recursive `Q_hat`
+  proofs: `householderQRPanel_Qhat_stepP_safe`,
+  `fl_householderQRPanel_Qhat_tail_safe`,
+  `householderQRPanel_Qhat_stepCoeff_safe`,
+  `householderQRPanel_Qhat_stepP_safe_orthogonal`, and
+  `fl_householderQRPanel_Qhat_safe_succ_succ_residual_bound`.  This packages
+  zero and nonzero safe branches into one residual theorem of the form
+  `Qhat_current = P_step * embedTrailingOne(Qhat_tail) + E` with the
+  branch-appropriate coefficient.
+- Added `householderQRPanel_Qhat_stepCoeff_safe_nonneg` and the bundled
+  `fl_householderQRPanel_Qhat_safe_succ_succ_step_interface`, which packages
+  exact-step orthogonality, coefficient nonnegativity, and residual form for
+  one safe `Q_hat` step.  Future recursive proofs should use this theorem as
+  the local step interface.
+- Added exact embedding norm facts for the next accumulated-`Q_hat` proof:
+  `frobNormSq_embedTrailingOne`, `frobNorm_embedTrailingOne`, and
+  `frobNorm_embedTrailingOne_of_orthogonal`.  These make explicit that
+  embedding a trailing block adds exactly the leading identity contribution to
+  the Frobenius square.
+- Added the first recursive accumulated `Q_hat` perturbation theorem.  The raw
+  recursive bound is `householderQRPanel_QhatAccumBound`, the contract shape is
+  `HouseholderQRPanelQhatAccumError`, and the algebraic one-step extension is
+  `HouseholderQRPanelQhatAccumError.cons`.  The main panel theorem
+  `fl_householderQRPanel_Qhat_safe_accum_error` and its square/global wrappers
+  `fl_householderQR_Qhat_safe_accum_error_of_global_gammaValid` and
+  `fl_householderQR_computed_safe_Q_hat_accum_error_of_global_gammaValid` prove
+  that the concrete rounded accumulated `Q_hat` is an exact orthogonal matrix
+  plus a bounded perturbation.  This closed the raw recursive perturbation
+  layer; later bullets record the closed-form simplification and comparison
+  with `fl_householderQR_Q_safe`.
+- Added a cleaner recursive accumulated `Q_hat` bound,
+  `householderQRPanel_QhatClosedBound`.  The helper
+  `HouseholderQRPanelQhatAccumError.embedTrailingOne_norm_le` bounds the
+  embedded tail accumulator norm by `sqrt (m + 1) + ηtail`, and
+  `HouseholderQRPanelQhatAccumError.cons_closed` threads this through one
+  Householder step.  The panel theorem
+  `fl_householderQRPanel_Qhat_safe_closed_accum_error` and global wrappers
+  `fl_householderQR_Qhat_safe_closed_accum_error_of_global_gammaValid` and
+  `fl_householderQR_computed_safe_Q_hat_closed_accum_error_of_global_gammaValid`
+  expose the resulting computed-`Q_hat` perturbation theorem.  This is still
+  recursive and branch-sensitive; the next polishing steps were a compact
+  closed-form growth estimate and comparison with the exact `Q_safe` witness.
+- Fixed the exact reference factor in the computed-`Q_hat` perturbation theorem
+  to the existing `Q_safe` witness.  The step-orientation lemma
+  `fl_householderQRPanel_Q_safe_succ_succ_as_stepP_safe` uses Householder
+  symmetry to show that `Q_safe` follows the same `P * embed(Qtail)` orientation
+  as the rounded `Q_hat` residual recurrence.  The new fixed-reference contract
+  `HouseholderQRPanelQhatFixedAccumError` and the recursive theorem
+  `fl_householderQRPanel_Qhat_safe_fixed_Q_safe_closed_accum_error` prove that
+  `fl_householderQRPanel_Qhat_safe = fl_householderQRPanel_Q_safe + ΔQ` with the
+  closed recursive bound.  The public wrapper
+  `fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_closed_accum_error_of_global_gammaValid`
+  states this for `(fl_householderQR_computed_safe fp n A).Q_hat` against the
+  `Q` field of `fl_householderQR_safe_witness`.  Later bullets record the
+  compact closed-form growth estimate and its coarser citation-friendly bound.
+- Added the dimension-only uniform recursive computed-`Q_hat` bound
+  `householderQR_QhatUniformClosedBound`.  Supporting lemmas prove
+  `householderConstructApplyBound_mono`,
+  `householderQRPanel_Qhat_stepCoeff_safe_le_global`,
+  nonnegativity of the branch-sensitive closed bound, and
+  `householderQRPanel_QhatClosedBound_le_uniform`.  The public theorem
+  `fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_uniform_accum_error_of_global_gammaValid`
+  now states that the computed `Q_hat` differs from the exact safe witness `Q`
+  by a perturbation bounded by a dimension-only recurrence using
+  `householderConstructApplyBound fp n` and `sqrt n`.  The next step is to
+  solve or upper-bound this recurrence by a compact closed-form expression.
+- Solved the uniform computed-`Q_hat` recurrence exactly.  The local derived
+  bound `householderQR_QhatClosedFormBound fp n k` is
+  `((1 + householderConstructApplyBound fp n)^k - 1) * sqrt n`, and
+  `householderQR_QhatUniformClosedBound_eq_closedForm` proves the recursive and
+  closed forms are equal.  The public theorem
+  `fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_closed_form_accum_error_of_global_gammaValid`
+  now states `Q_hat = Q_safe + ΔQ` with this closed-form bound.  Remaining
+  QR-side polish is optional coefficient simplification/weakening into a more
+  conventional printed Higham-style constant, not the recurrence solution.
+- Added `HouseholderQRComputedFactorsExplicitError` and the public theorem
+  `fl_householderQR_computed_safe_explicit_error_of_global_gammaValid`, which
+  packages the current computed `(Q_hat, R_hat)` API honestly: `R_hat` satisfies
+  the explicit exact-witness backward-error theorem, and `Q_hat` is the same
+  exact witness plus a perturbation bounded by `householderQR_QhatClosedFormBound`.
+  This is the main theorem to cite for the current computed Householder QR
+  factor pair.
+- Tightened the QR-solve component layer with fixed exact witnesses.  In
+  `QR/QRSolve.lean`, added `HouseholderQRRhsPanelExplicitBackwardError`,
+  `HouseholderQRPanelSolveFixedBackwardError`, explicit RHS base/cons/skip
+  lemmas, and
+  `fl_householderQR_rhs_safe_explicit_backward_error_of_global_gammaValid`.
+  The theorem
+  `fl_householderQR_solve_components_safe_fixed_Q_safe_backward_error_of_global_gammaValid`
+  now packages the concrete safe `R` panel and safe RHS transform with the same
+  explicit `fl_householderQR_Q_safe` witness.  The final
+  `QRSolveBackwardError` remains existential in `Q` because its public solved
+  system statement does not expose the factor.
+- The proof of `fl_householderQR_solve_safe_backward_error` now consumes
+  `fl_householderQR_solve_components_safe_fixed_Q_safe_backward_error`
+  directly, so the final safe solve theorem is proved through the fixed
+  `Q_safe` component bridge even though its public statement hides `Q`.
+- Added a simpler growth corollary for the computed `Q_hat` perturbation
+  theorem.  `householderQR_QhatClosedFormBound_le_growth` proves
+  `((1+c)^k - 1) sqrt(N) ≤ k*c*(1+c)^k*sqrt(N)` for
+  `c = householderConstructApplyBound fp N`, and the public wrappers
+  `fl_householderQR_Qhat_safe_fixed_Q_safe_growth_accum_error_of_global_gammaValid`
+  and
+  `fl_householderQR_computed_safe_Q_hat_fixed_Q_safe_growth_accum_error_of_global_gammaValid`
+  expose that coarser but easier-to-cite bound.  The sharper closed-form theorem
+  remains the canonical result.
+- Added source-facing growth wrappers for the implementation-backed
+  Householder QR `R_hat` theorem:
+  `householderQRBackwardCoeffSafe_le_highamGrowth`,
+  `fl_householderQR_R_safe_backward_error_highamGrowth_of_global_gammaValid`,
+  `fl_householderQR_safe_witness_explicit_backward_error_highamGrowth_of_global_gammaValid`,
+  and
+  `fl_householderQR_computed_safe_R_hat_explicit_backward_error_highamGrowth_of_global_gammaValid`.
+  These prove the concrete safe rounded `R` algorithm satisfies a
+  dimension-only bound `n*c*(1+c)^n*‖A‖_F`, with
+  `c = householderConstructApplyBound fp n`, by first bounding the
+  branch-sensitive implementation coefficient by `residualAccumBound` and then
+  solving/bounding that recurrence.
+- Added `HouseholderQRComputedFactorsResidualError` and
+  `fl_householderQR_computed_safe_residual_error_highamGrowth_of_global_gammaValid`.
+  This is the theorem that directly uses the concrete product
+  `Q_hat * R_hat`: it proves a residual bound for the rounded factors by
+  combining the exact-witness `R_hat` backward error with the bounded
+  perturbation `Q_hat = Q_safe + ΔQ`.  It deliberately does not assert that
+  `Q_hat` is orthogonal.  Higham Theorem 18.4 uses an exact orthogonal product
+  of Householder reflectors; a separately rounded accumulated `Q_hat` is only
+  near that exact factor under the general `FPModel`.
+- Added single-`gamma` Householder QR wrappers.  `Rounding.lean` now has
+  `n_mul_u_le_gamma`, and `HouseholderQR.lean` has
+  `residualAccumBound_mono`,
+  `residualAccumBound_gamma_le_gamma_mul`,
+  `householderConstructApplyGammaIndex`,
+  `householderConstructApplyBound_le_gamma`, and
+  `householderQRBackwardCoeffSafe_le_gamma_higham`.  The public theorem
+  `fl_householderQR_computed_safe_R_hat_explicit_backward_error_gammaHigham_of_global_gammaValid`
+  states the implementation-backed computed `R_hat` theorem with bound
+  `gamma fp (n * householderConstructApplyGammaIndex n) * ‖A‖_F`.  The paired
+  computed-factor and residual wrappers are
+  `fl_householderQR_computed_safe_explicit_error_gammaHigham_of_global_gammaValid`
+  and
+  `fl_householderQR_computed_safe_residual_error_gammaHigham_of_global_gammaValid`.
+  This is the closest formal counterpart to Higham Theorem 18.4's hidden
+  `n γ_cm` notation while keeping the operation count explicit.
+- Added rectangular single-`gamma` Householder QR panel wrappers.  The sharper
+  bound `householderQRPanelBackwardCoeffSafe_le_residualAccumBound_min_global`
+  counts at most `min m p` recursive panel stages, and
+  `householderQRPanelBackwardCoeffSafe_le_gamma_higham_rect` absorbs that
+  rectangular recurrence into one gamma term.  The public theorem
+  `fl_householderQRPanel_R_safe_explicit_backward_error_gammaHigham_of_global_gammaValid`
+  states that the concrete zero-aware rounded rectangular `R_safe` panel and
+  exact orthogonal `Q_safe` witness satisfy
+  `‖ΔA‖_F ≤ gamma fp (min m p * householderConstructApplyGammaIndex m) * ‖A‖_F`.
+  The tall specialization
+  `fl_householderQRPanel_R_safe_explicit_backward_error_tall_gammaHigham_of_global_gammaValid`
+  rewrites the stage count to the number of columns when `p ≤ m` and `0 < p`.
+  This aligns the implementation-backed panel theorem more closely with
+  Higham's rectangular Householder QR statement.
+- Added rectangular `R_safe` shape packaging for Householder QR.  The predicate
+  `IsUpperTrapezoidal m p R` generalizes the square `IsUpperTriangular`
+  condition, and `fl_householderQRPanel_R_safe_upper_trapezoidal` proves that
+  the concrete zero-aware recursive panel algorithm returns an upper
+  trapezoidal `R` panel by construction.  The structured theorem
+  `fl_householderQRPanel_R_safe_structured_explicit_backward_error_tall_gammaHigham_of_global_gammaValid`
+  packages this shape fact with the tall rectangular explicit-`Q_safe`
+  single-gamma backward-error theorem.
+- Added rectangular computed-factor packaging.  `HouseholderQRPanelComputedFactors`
+  and `fl_householderQRPanel_computed_safe` expose the panel-level concrete
+  `(Q_hat, R_hat)` object.  The theorem
+  `fl_householderQRPanel_computed_safe_explicit_error_tall_gammaHigham_of_global_gammaValid`
+  packages the structured tall rectangular `R_hat` theorem with the
+  fixed-reference `Q_hat = Q_safe + ΔQ` perturbation theorem.  As in the square
+  computed-factor API, it deliberately does not claim that rounded `Q_hat` is
+  exactly orthogonal.
+- Added exact rectangular matrix algebra needed for computed-factor residuals:
+  `matMulRect_add_left` and `frobNorm_matMulRect_le`.  The theorem
+  `fl_householderQRPanel_computed_safe_residual_error_tall_gammaHigham_of_global_gammaValid`
+  now directly states a residual bound for the concrete tall rectangular
+  product `Q_hat * R_hat`, derived from the rectangular computed-factor
+  explicit-error package.
+- Added a source-facing single-gamma wrapper for the safe concrete Householder
+  QR solve.  `QRSolveBackwardError.mono` supports bound weakening, and
+  `fl_householderQR_solve_safe_backward_error_gammaHigham_of_global_gammaValid`
+  replaces the recursive QR coefficient in the final solve theorem by
+  `gamma fp (n * householderConstructApplyGammaIndex n) * ‖A‖_F`.  The
+  back-substitution contribution `gamma fp n * ‖R_safe‖_F` remains separate
+  because it belongs to the triangular solve stage.
+- Added the first closed-form bridge for the safe Householder QR RHS bound in
+  `QR/QRSolve.lean`.  `vectorTail_infNormVec_le` is exact indexing algebra;
+  `fl_householder_first_column_rhs_step_infNormVec_le` and
+  `vectorTail_fl_householder_first_column_rhs_step_infNormVec_le` derive
+  one-step RHS norm growth from the concrete `fl_householderApply` bridge.
+  The dimension-only coefficient `householderQRRhsGrowthCoeff` then controls
+  the raw recursive RHS perturbation bound via
+  `householderQRRhsBackwardBoundSafe_le_growthCoeff_of_global_gammaValid`.
+  The final wrapper
+  `fl_householderQR_solve_safe_backward_error_gammaHigham_rhsGrowth_of_global_gammaValid`
+  now presents the matrix perturbation bound with the single-gamma QR
+  factorization coefficient plus the separate triangular-solve term, and the
+  RHS perturbation bound as `householderQRRhsGrowthCoeff fp n * ‖b‖∞`.
+  The theorem `householderQRRhsGrowthCoeff_le_closedGrowth` gives a conservative
+  nonrecursive growth bound for that RHS coefficient, and
+  `fl_householderQR_solve_safe_backward_error_gammaHigham_rhsClosedGrowth_of_global_gammaValid`
+  packages it into the final solve contract.  This closed RHS expression is a
+  local derived citation bound, not a sharp Higham constant.
+- Added `HouseholderQRExplicitBackwardError.frobNorm_R_hat_le` and
+  `fl_householderQR_R_safe_frobNorm_le_gammaHigham_of_global_gammaValid` in
+  `QR/HouseholderQR.lean`, proving that the computed safe `R` factor satisfies
+  `‖R_safe‖_F ≤ (1 + gamma_K) ‖A‖_F` from the explicit QR backward-error
+  theorem.  The solve wrapper
+  `fl_householderQR_solve_safe_backward_error_gammaHigham_closedInputBounds_of_global_gammaValid`
+  now presents both final solve bounds in terms of the original inputs `A` and
+  `b`, while keeping QR factorization and back-substitution contributions
+  visibly separated in the matrix coefficient.
 
 ## 2026-05-22 RandNLA Algorithm 1 Work
 
