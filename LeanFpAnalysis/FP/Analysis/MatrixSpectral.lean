@@ -424,6 +424,37 @@ theorem finiteLoewnerLe_smul_id_of_finiteHermitianEigenvalues_le
   exact Matrix_posSemidef_sub.to_finiteLoewnerLe
     M (fun i j => L * finiteIdMatrix i j) hpsd
 
+/-- A symmetric positive-semidefinite finite matrix whose Hermitian
+    eigenvalues are bounded above by `L` has finite operator-2 norm at most
+    `L`.
+
+    This packages the spectral upper-bound route through the repository's
+    Loewner-to-operator bridge. -/
+theorem finiteOpNorm2Le_of_finitePSD_of_finiteHermitianEigenvalues_le
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (M : ι → ι → ℝ) {L : ℝ}
+    (hL : 0 ≤ L)
+    (hM : IsSymmetricFiniteMatrix M)
+    (hPSD : finitePSD M)
+    (hEig : ∀ a : ι, finiteHermitianEigenvalues M hM a ≤ L) :
+    finiteOpNorm2Le M L :=
+  finiteOpNorm2Le_of_finitePSD_of_finiteLoewnerLe_smul_id
+    M hL hM hPSD
+    (finiteLoewnerLe_smul_id_of_finiteHermitianEigenvalues_le M hM hEig)
+
+/-- Square-matrix `Fin n` wrapper for
+    `finiteOpNorm2Le_of_finitePSD_of_finiteHermitianEigenvalues_le`. -/
+theorem opNorm2Le_of_finitePSD_of_finiteHermitianEigenvalues_le
+    {n : ℕ} (M : Fin n → Fin n → ℝ) {L : ℝ}
+    (hL : 0 ≤ L)
+    (hM : IsSymmetricFiniteMatrix M)
+    (hPSD : finitePSD M)
+    (hEig : ∀ a : Fin n, finiteHermitianEigenvalues M hM a ≤ L) :
+    opNorm2Le M L :=
+  opNorm2Le_of_finiteOpNorm2Le M
+    (finiteOpNorm2Le_of_finitePSD_of_finiteHermitianEigenvalues_le
+      M hL hM hPSD hEig)
+
 /-- A scalar-identity Loewner upper bound gives the corresponding
     trace-exponential scalar bound.  This is the deterministic final step that
     converts a future matrix-CGF Loewner estimate into a scalar trace-MGF

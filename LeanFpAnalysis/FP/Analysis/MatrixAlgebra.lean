@@ -18,6 +18,7 @@
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Real.Sqrt
 import Mathlib.Analysis.Matrix.Normed
+import Mathlib.Analysis.CStarAlgebra.Matrix
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.BigOperators.Ring.Finset
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
@@ -162,6 +163,58 @@ def IsRightInverse (n : ℕ) (T T_inv : Fin n → Fin n → ℝ) : Prop :=
 def IsInverse (n : ℕ) (T T_inv : Fin n → Fin n → ℝ) : Prop :=
   IsLeftInverse n T T_inv ∧ IsRightInverse n T T_inv
 
+/-- A right inverse of a finite square real matrix is also a left inverse.
+
+This is the repository predicate form of Mathlib's Dedekind-finiteness theorem
+for square matrices. -/
+theorem isLeftInverse_of_isRightInverse {n : ℕ}
+    (T T_inv : Matrix (Fin n) (Fin n) ℝ)
+    (hRight : IsRightInverse n T T_inv) :
+    IsLeftInverse n T T_inv := by
+  let TM : Matrix (Fin n) (Fin n) ℝ := T
+  let TinvM : Matrix (Fin n) (Fin n) ℝ := T_inv
+  have hmul : TM * TinvM = 1 := by
+    ext i j
+    simpa [TM, TinvM, Matrix.mul_apply] using hRight i j
+  have hcomm : TinvM * TM = 1 := by
+    simpa [TM, TinvM] using (mul_eq_one_comm.mp hmul)
+  intro i j
+  have hentry :=
+    congrArg (fun M : Matrix (Fin n) (Fin n) ℝ => M i j) hcomm
+  simpa [TM, TinvM, Matrix.mul_apply] using hentry
+
+/-- If a square matrix inverse candidate is Mathlib's `⅟`, it is a right
+inverse in the repository predicate form. -/
+theorem isRightInverse_of_eq_invOf {n : ℕ}
+    (T T_inv : Matrix (Fin n) (Fin n) ℝ) [Invertible T]
+    (hInv : T_inv = ⅟T) :
+    IsRightInverse n T T_inv := by
+  intro i j
+  have hmul : T * T_inv = 1 := by
+    rw [hInv]
+    exact mul_invOf_self T
+  have hentry :=
+    congrArg (fun M : Matrix (Fin n) (Fin n) ℝ => M i j) hmul
+  simpa [Matrix.mul_apply] using hentry
+
+/-- A right inverse of a nonempty square matrix is nonzero in the ambient
+    function norm. -/
+theorem norm_ne_zero_of_isRightInverse {n : ℕ} (hn : 0 < n)
+    {T T_inv : Fin n → Fin n → ℝ}
+    (hRight : IsRightInverse n T T_inv) :
+    ‖T_inv‖ ≠ 0 := by
+  classical
+  intro hnorm
+  have hzero : T_inv = 0 := norm_eq_zero.mp hnorm
+  let i0 : Fin n := ⟨0, hn⟩
+  have hentry := hRight i0 i0
+  have hsum_zero : (∑ k : Fin n, T i0 k * T_inv k i0) = 0 := by
+    simp [hzero]
+  have hone : (if i0 = i0 then (1 : ℝ) else 0) = 1 := by
+    simp
+  rw [hsum_zero, hone] at hentry
+  norm_num at hentry
+
 /-- The Mathlib nonsingular inverse, exposed in the repository's legacy
     function-shaped matrix representation. -/
 noncomputable def nonsingInv (n : ℕ) (T : Fin n → Fin n → ℝ) :
@@ -253,6 +306,24 @@ theorem isInverse_nonsingInv_of_det_ne_zero (n : ℕ)
     (hdet : Matrix.det (T : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
     IsInverse n T (nonsingInv n T) :=
   isInverse_nonsingInv_of_det_isUnit n T (isUnit_iff_ne_zero.mpr hdet)
+
+/-- The repository `nonsingInv` agrees with any right inverse. -/
+theorem nonsingInv_eq_of_isRightInverse {n : ℕ}
+    (T Tinv : Fin n → Fin n → ℝ)
+    (hRight : IsRightInverse n T Tinv) :
+    nonsingInv n T = Tinv := by
+  ext i j
+  let TM : Matrix (Fin n) (Fin n) ℝ := T
+  let TinvM : Matrix (Fin n) (Fin n) ℝ := Tinv
+  have hmat : TM * TinvM = 1 := by
+    ext i j
+    simpa [TM, TinvM, Matrix.mul_apply] using hRight i j
+  have h :=
+    congrArg (fun M : Matrix (Fin n) (Fin n) ℝ => M i j)
+      (Matrix.inv_eq_right_inv
+        (A := TM) (B := TinvM) hmat)
+  unfold nonsingInv
+  simpa [TM, TinvM] using h
 
 /-- A finite upper-triangular real matrix with nonzero diagonal has nonzero
     determinant.  The triangular shape uses the repository convention
@@ -2883,6 +2954,13 @@ noncomputable def finiteBasisVec {ι : Type*} [DecidableEq ι] (i : ι) :
     ι → ℝ :=
   fun j => if j = i then 1 else 0
 
+/-- A generic finite standard basis vector has Euclidean norm one. -/
+lemma finiteVecNorm2_finiteBasisVec {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (i : ι) :
+    finiteVecNorm2 (finiteBasisVec i) = 1 := by
+  unfold finiteVecNorm2 finiteVecNorm2Sq finiteBasisVec
+  simp [Finset.sum_ite_eq', Finset.mem_univ]
+
 /-- Generic finite transpose. -/
 noncomputable def finiteTranspose {ι κ : Type*} (M : ι → κ → ℝ) :
     κ → ι → ℝ :=
@@ -3111,6 +3189,71 @@ def finiteOpNorm2Le {ι : Type*} [Fintype ι]
     (M : ι → ι → ℝ) (c : ℝ) : Prop :=
   ∀ x : ι → ℝ, finiteVecNorm2 (finiteMatVec M x) ≤ c * finiteVecNorm2 x
 
+/-- Reindexing a finite vector along an equivalence preserves its Euclidean norm. -/
+theorem finiteVecNorm2_reindex_equiv {ι κ : Type*} [Fintype ι] [Fintype κ]
+    (e : ι ≃ κ) (x : κ → ℝ) :
+    finiteVecNorm2 (fun i : ι => x (e i)) = finiteVecNorm2 x := by
+  unfold finiteVecNorm2 finiteVecNorm2Sq
+  congr 1
+  exact
+    Fintype.sum_equiv e
+      (fun i : ι => x (e i) ^ 2)
+      (fun k : κ => x k ^ 2)
+      (fun _ => rfl)
+
+/-- Matrix-vector multiplication commutes with simultaneous row/column
+    reindexing by an equivalence. -/
+theorem finiteMatVec_reindex_equiv {ι κ : Type*} [Fintype ι] [Fintype κ]
+    (e : ι ≃ κ) (M : κ → κ → ℝ) (x : ι → ℝ) :
+    finiteMatVec (fun i j : ι => M (e i) (e j)) x =
+      fun i : ι => finiteMatVec M (fun k : κ => x (e.symm k)) (e i) := by
+  ext i
+  unfold finiteMatVec
+  exact
+    Fintype.sum_equiv e
+      (fun j : ι => M (e i) (e j) * x j)
+      (fun k : κ => M (e i) k * x (e.symm k))
+      (fun j => by simp)
+
+/-- A finite vector-action operator-2 bound is invariant under simultaneous
+    row/column reindexing by an equivalence. -/
+theorem finiteOpNorm2Le_reindex_equiv {ι κ : Type*} [Fintype ι] [Fintype κ]
+    (e : ι ≃ κ) (M : κ → κ → ℝ) {c : ℝ}
+    (hM : finiteOpNorm2Le M c) :
+    finiteOpNorm2Le (fun i j : ι => M (e i) (e j)) c := by
+  intro x
+  let y : κ → ℝ := fun k => x (e.symm k)
+  have hmat :
+      finiteMatVec (fun i j : ι => M (e i) (e j)) x =
+        fun i : ι => finiteMatVec M y (e i) := by
+    simpa [y] using finiteMatVec_reindex_equiv e M x
+  have hynorm : finiteVecNorm2 y = finiteVecNorm2 x := by
+    simpa [y] using finiteVecNorm2_reindex_equiv e.symm x
+  calc
+    finiteVecNorm2 (finiteMatVec (fun i j : ι => M (e i) (e j)) x)
+        = finiteVecNorm2 (fun i : ι => finiteMatVec M y (e i)) := by
+            rw [hmat]
+    _ = finiteVecNorm2 (finiteMatVec M y) :=
+            finiteVecNorm2_reindex_equiv e (finiteMatVec M y)
+    _ ≤ c * finiteVecNorm2 y := hM y
+    _ = c * finiteVecNorm2 x := by
+            rw [hynorm]
+
+/-- On a nonempty finite index type, any vector-action operator-2 radius is
+    nonnegative. -/
+theorem finiteOpNorm2Le_radius_nonneg {ι : Type*} [Fintype ι] [Nonempty ι]
+    (M : ι → ι → ℝ) {c : ℝ}
+    (hM : finiteOpNorm2Le M c) :
+    0 ≤ c := by
+  classical
+  let i0 : ι := Classical.choice (inferInstance : Nonempty ι)
+  let e : ι → ℝ := finiteBasisVec i0
+  have he : finiteVecNorm2 e = 1 := finiteVecNorm2_finiteBasisVec i0
+  have hbound := hM e
+  have hright : 0 ≤ c * finiteVecNorm2 e :=
+    le_trans (finiteVecNorm2_nonneg (finiteMatVec M e)) hbound
+  simpa [he] using hright
+
 /-- A squared Frobenius bound implies the finite vector-action operator-2
     predicate. -/
 theorem finiteOpNorm2Le_of_finiteFrobNormSq_le_sq
@@ -3146,6 +3289,19 @@ noncomputable def finiteQuadraticForm {ι : Type*} [Fintype ι]
     (M : ι → ι → ℝ) (x : ι → ℝ) : ℝ :=
   ∑ i : ι, x i * finiteMatVec M x i
 
+/-- Expanded double-sum form of the repository finite quadratic form. -/
+theorem finiteQuadraticForm_eq_sum_sum {ι : Type*} [Fintype ι]
+    (M : ι → ι → ℝ) (x : ι → ℝ) :
+    finiteQuadraticForm M x =
+      ∑ i : ι, ∑ j : ι, x i * M i j * x j := by
+  unfold finiteQuadraticForm finiteMatVec
+  apply Finset.sum_congr rfl
+  intro i _
+  rw [Finset.mul_sum]
+  apply Finset.sum_congr rfl
+  intro j _
+  ring
+
 /-- Positive-semidefinite predicate in quadratic-form form. -/
 def finitePSD {ι : Type*} [Fintype ι] (M : ι → ι → ℝ) : Prop :=
   ∀ x : ι → ℝ, 0 ≤ finiteQuadraticForm M x
@@ -3169,6 +3325,37 @@ theorem finiteLoewnerLe_trans {ι : Type*} [Fintype ι]
     finiteLoewnerLe M K := by
   intro x
   exact (hMN x).trans (hNK x)
+
+/-- Quadratic forms are invariant under simultaneous row/column reindexing by
+    an equivalence. -/
+theorem finiteQuadraticForm_reindex_equiv {ι κ : Type*}
+    [Fintype ι] [Fintype κ]
+    (e : ι ≃ κ) (M : κ → κ → ℝ) (x : ι → ℝ) :
+    finiteQuadraticForm (fun i j : ι => M (e i) (e j)) x =
+      finiteQuadraticForm M (fun k : κ => x (e.symm k)) := by
+  unfold finiteQuadraticForm
+  rw [finiteMatVec_reindex_equiv e M x]
+  exact
+    Fintype.sum_equiv e
+      (fun i : ι =>
+        x i * finiteMatVec M (fun k : κ => x (e.symm k)) (e i))
+      (fun k : κ =>
+        x (e.symm k) * finiteMatVec M (fun l : κ => x (e.symm l)) k)
+      (fun i => by simp)
+
+/-- Finite Loewner inequalities are invariant under simultaneous row/column
+    reindexing by an equivalence. -/
+theorem finiteLoewnerLe_reindex_equiv {ι κ : Type*}
+    [Fintype ι] [Fintype κ]
+    (e : ι ≃ κ) {M N : κ → κ → ℝ}
+    (hMN : finiteLoewnerLe M N) :
+    finiteLoewnerLe
+      (fun i j : ι => M (e i) (e j))
+      (fun i j : ι => N (e i) (e j)) := by
+  intro x
+  rw [finiteQuadraticForm_reindex_equiv e M x,
+    finiteQuadraticForm_reindex_equiv e N x]
+  exact hMN (fun k : κ => x (e.symm k))
 
 /-- Positive semidefiniteness is Loewner nonnegativity. -/
 theorem finitePSD_iff_zero_loewnerLe {ι : Type*} [Fintype ι]
@@ -3856,6 +4043,204 @@ theorem finiteVecInnerProduct_finiteMatVec_left_eq_right_of_symmetric
               rw [hM i j]
             rw [hvec]
 
+/-- Cauchy-Schwarz inequality for the quadratic form of a symmetric
+    positive-semidefinite finite matrix. -/
+theorem finitePSD_cauchy_schwarz
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (M : ι → ι → ℝ)
+    (hPSD : finitePSD M)
+    (hSym : IsSymmetricFiniteMatrix M)
+    (x y : ι → ℝ) :
+    (∑ i : ι, x i * finiteMatVec M y i) ^ 2 ≤
+      finiteQuadraticForm M x * finiteQuadraticForm M y := by
+  let B : LinearMap.BilinForm ℝ (ι → ℝ) :=
+    Matrix.toLinearMap₂' ℝ (M : Matrix ι ι ℝ)
+  have hs : ∀ z : ι → ℝ, 0 ≤ B z z := by
+    intro z
+    have hz := hPSD z
+    simpa [B, finiteQuadraticForm, finiteMatVec,
+      Matrix.toLinearMap₂'_apply', dotProduct, Matrix.mulVec] using hz
+  have hB : B.IsSymm := by
+    refine ⟨?_⟩
+    intro u v
+    simp only [RingHom.id_apply, B, Matrix.toLinearMap₂'_apply',
+      dotProduct, Matrix.mulVec]
+    calc
+      (∑ i : ι, u i * finiteMatVec M v i)
+          = ∑ i : ι, finiteMatVec M u i * v i :=
+              finiteVecInnerProduct_finiteMatVec_left_eq_right_of_symmetric
+                M hSym u v
+      _ = ∑ i : ι, v i * finiteMatVec M u i := by
+            apply Finset.sum_congr rfl
+            intro i _
+            ring
+  have hcs := LinearMap.BilinForm.apply_sq_le_of_symm B hs hB x y
+  simpa [B, finiteQuadraticForm, finiteMatVec,
+    Matrix.toLinearMap₂'_apply', dotProduct, Matrix.mulVec] using hcs
+
+/-- A scalar lower Loewner bound on a matrix gives a scalar upper Loewner bound
+    on any right-inverse candidate.
+
+    If `alpha I <= M` with `alpha > 0` and `M * Minv = I`, then
+    `Minv <= alpha⁻¹ I` in quadratic-form Loewner order.  The proof uses
+    `y = Minv x`, the identity `M y = x`, ordinary Cauchy-Schwarz for
+    `xᵀ y`, and the lower bound `alpha ||y||² <= yᵀ M y`. -/
+theorem finiteLoewnerLe_right_inverse_upper_of_smul_id_le
+    {n : ℕ} (M Minv : Fin n → Fin n → ℝ) {alpha : ℝ}
+    (halpha : 0 < alpha)
+    (hLower : finiteLoewnerLe
+      (fun i j : Fin n => alpha * finiteIdMatrix i j) M)
+    (hRight : IsRightInverse n M Minv) :
+    finiteLoewnerLe Minv
+      (fun i j : Fin n => alpha⁻¹ * finiteIdMatrix i j) := by
+  intro x
+  let y : Fin n → ℝ := finiteMatVec Minv x
+  let q : ℝ := finiteQuadraticForm M y
+  let xsq : ℝ := finiteVecNorm2Sq x
+  let ysq : ℝ := finiteVecNorm2Sq y
+  have hMM : finiteMatMul M Minv = finiteIdMatrix := by
+    ext i j
+    exact hRight i j
+  have hMy : finiteMatVec M y = x := by
+    calc
+      finiteMatVec M y = finiteMatVec M (finiteMatVec Minv x) := rfl
+      _ = finiteMatVec (finiteMatMul M Minv) x := by
+          rw [finiteMatVec_finiteMatMul]
+      _ = finiteMatVec finiteIdMatrix x := by
+          rw [hMM]
+      _ = x := finiteMatVec_finiteIdMatrix x
+  have hq_eq :
+      finiteQuadraticForm Minv x = q := by
+    unfold q y finiteQuadraticForm
+    rw [hMy]
+    apply Finset.sum_congr rfl
+    intro i _
+    ring
+  have hLower_y : alpha * ysq ≤ q := by
+    have h := hLower y
+    simpa [q, ysq, finiteQuadraticForm_smul_finiteIdMatrix] using h
+  have hq_nonneg : 0 ≤ q := by
+    exact le_trans
+      (mul_nonneg (le_of_lt halpha) (finiteVecNorm2Sq_nonneg y)) hLower_y
+  have hcs :
+      q ^ 2 ≤ xsq * ysq := by
+    have hsum :
+        q = ∑ i : Fin n, x i * y i := by
+      unfold q finiteQuadraticForm
+      rw [hMy]
+      apply Finset.sum_congr rfl
+      intro i _
+      ring
+    rw [hsum]
+    simpa [xsq, ysq, finiteVecNorm2Sq, pow_two] using
+      Finset.sum_mul_sq_le_sq_mul_sq
+        (s := Finset.univ) (f := fun i : Fin n => x i) (g := fun i => y i)
+  have hq_le : q ≤ alpha⁻¹ * xsq := by
+    by_cases hysq_zero : ysq = 0
+    · have hq_sq_nonpos : q ^ 2 ≤ 0 := by
+        simpa [hysq_zero] using hcs
+      have hq_zero : q = 0 := by
+        have hq_sq_nonneg : 0 ≤ q ^ 2 := sq_nonneg q
+        have hq_sq_eq : q ^ 2 = 0 := le_antisymm hq_sq_nonpos hq_sq_nonneg
+        exact sq_eq_zero_iff.mp hq_sq_eq
+      rw [hq_zero]
+      exact mul_nonneg (inv_nonneg.mpr (le_of_lt halpha))
+        (finiteVecNorm2Sq_nonneg x)
+    · have hysq_pos : 0 < ysq := lt_of_le_of_ne
+        (finiteVecNorm2Sq_nonneg y) (Ne.symm hysq_zero)
+      have hmul_lower : alpha * ysq * q ≤ q ^ 2 := by
+        calc
+          alpha * ysq * q ≤ q * q :=
+            mul_le_mul_of_nonneg_right hLower_y hq_nonneg
+          _ = q ^ 2 := by ring
+      have hmul :
+          (alpha * q) * ysq ≤ xsq * ysq := by
+        nlinarith
+      have halpha_q_le : alpha * q ≤ xsq :=
+        le_of_mul_le_mul_right hmul hysq_pos
+      have hdiv : q ≤ xsq / alpha := by
+        exact (le_div_iff₀ halpha).mpr (by
+          simpa [mul_comm] using halpha_q_le)
+      have hdiv_eq : xsq / alpha = alpha⁻¹ * xsq := by
+        rw [div_eq_inv_mul]
+      simpa [hdiv_eq] using hdiv
+  rw [hq_eq, finiteQuadraticForm_smul_finiteIdMatrix]
+  exact hq_le
+
+/-- An operator-2 certificate for a right inverse of a symmetric PSD matrix gives
+    the corresponding scalar lower Loewner bound for the matrix itself.
+
+    If `M * Minv = I`, `M` is symmetric positive semidefinite, and
+    `||Minv||₂ <= c` with `c > 0`, then `c⁻¹ I <= M`.  This is the
+    inverse-norm half of the Chapter 13 Lemma 13.9 condition-number route. -/
+theorem finiteLoewnerLe_smul_id_le_of_right_inverse_finiteOpNorm2Le
+    {n : ℕ} (M Minv : Fin n → Fin n → ℝ) {c : ℝ}
+    (hc : 0 < c)
+    (hPSD : finitePSD M)
+    (hSym : IsSymmetricFiniteMatrix M)
+    (hRight : IsRightInverse n M Minv)
+    (hMinv : finiteOpNorm2Le Minv c) :
+    finiteLoewnerLe (fun i j : Fin n => c⁻¹ * finiteIdMatrix i j) M := by
+  intro x
+  let y : Fin n → ℝ := finiteMatVec Minv x
+  let q : ℝ := finiteQuadraticForm M x
+  let qy : ℝ := finiteQuadraticForm M y
+  let xsq : ℝ := finiteVecNorm2Sq x
+  have hMM : finiteMatMul M Minv = finiteIdMatrix := by
+    ext i j
+    exact hRight i j
+  have hMy : finiteMatVec M y = x := by
+    calc
+      finiteMatVec M y = finiteMatVec M (finiteMatVec Minv x) := rfl
+      _ = finiteMatVec (finiteMatMul M Minv) x := by
+          rw [finiteMatVec_finiteMatMul]
+      _ = finiteMatVec finiteIdMatrix x := by
+          rw [hMM]
+      _ = x := finiteMatVec_finiteIdMatrix x
+  have hxy_eq :
+      (∑ i : Fin n, x i * finiteMatVec M y i) = xsq := by
+    rw [hMy]
+    simp [xsq, finiteVecNorm2Sq, pow_two]
+  have hcs :
+      xsq ^ 2 ≤ q * qy := by
+    have h := finitePSD_cauchy_schwarz M hPSD hSym x y
+    rw [hxy_eq] at h
+    simpa [q, qy] using h
+  have hq_nonneg : 0 ≤ q := hPSD x
+  have hq_y_eq_inner :
+      qy = ∑ i : Fin n, y i * x i := by
+    unfold qy finiteQuadraticForm
+    rw [hMy]
+  have hqy_le : qy ≤ c * xsq := by
+    calc
+      qy = ∑ i : Fin n, y i * x i := hq_y_eq_inner
+      _ ≤ |∑ i : Fin n, y i * x i| := le_abs_self _
+      _ ≤ finiteVecNorm2 y * finiteVecNorm2 x :=
+          abs_finiteVecInnerProduct_le_finiteVecNorm2_mul y x
+      _ ≤ (c * finiteVecNorm2 x) * finiteVecNorm2 x :=
+          mul_le_mul_of_nonneg_right (hMinv x) (finiteVecNorm2_nonneg x)
+      _ = c * xsq := by
+          unfold xsq
+          rw [← finiteVecNorm2_sq]
+          ring
+  rw [finiteQuadraticForm_smul_finiteIdMatrix]
+  by_cases hxsq_zero : xsq = 0
+  · simpa [q, xsq, hxsq_zero] using hq_nonneg
+  · have hxsq_pos : 0 < xsq :=
+      lt_of_le_of_ne (finiteVecNorm2Sq_nonneg x) (Ne.symm hxsq_zero)
+    have hprod : xsq ^ 2 ≤ q * (c * xsq) :=
+      hcs.trans (mul_le_mul_of_nonneg_left hqy_le hq_nonneg)
+    have hmul : xsq ≤ q * c := by
+      have hmul' : xsq * xsq ≤ (q * c) * xsq := by
+        nlinarith
+      exact le_of_mul_le_mul_right hmul' hxsq_pos
+    have hinv_nonneg : 0 ≤ c⁻¹ := inv_nonneg.mpr (le_of_lt hc)
+    calc
+      c⁻¹ * xsq ≤ c⁻¹ * (q * c) :=
+        mul_le_mul_of_nonneg_left hmul hinv_nonneg
+      _ = q := by
+        field_simp [ne_of_gt hc]
+
 /-- The quadratic form of `M * M` for a symmetric finite matrix is the
     squared norm of `Mx`. -/
 theorem finiteQuadraticForm_finiteMatMul_self_of_symmetric
@@ -3871,6 +4256,113 @@ theorem finiteQuadraticForm_finiteMatMul_self_of_symmetric
   apply Finset.sum_congr rfl
   intro i _
   ring
+
+/-- A symmetric positive-semidefinite finite matrix whose Loewner order is at
+    most `c I` has squared vector action bounded by `c^2 ||x||₂²`.
+
+    This is the finite-dimensional PSD/Loewner-to-operator bridge used by the
+    Chapter 13 Lemma 13.9 principal-inverse certificate route. -/
+theorem finiteVecNorm2Sq_finiteMatVec_le_of_finitePSD_of_finiteLoewnerLe_smul_id
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (M : ι → ι → ℝ) {c : ℝ}
+    (hSym : IsSymmetricFiniteMatrix M)
+    (hPSD : finitePSD M)
+    (hLe : finiteLoewnerLe M (fun i j => c * finiteIdMatrix i j))
+    (x : ι → ℝ) :
+    finiteVecNorm2Sq (finiteMatVec M x) ≤ c ^ 2 * finiteVecNorm2Sq x := by
+  let y : ι → ℝ := finiteMatVec M x
+  let z : ℝ := finiteVecNorm2Sq y
+  have hleft_eq :
+      (∑ i : ι, x i * finiteMatVec M y i) = z := by
+    have h :=
+      finiteQuadraticForm_finiteMatMul_self_of_symmetric M hSym x
+    unfold finiteQuadraticForm at h
+    rw [finiteMatVec_finiteMatMul] at h
+    simpa [y, z] using h
+  have hcs :=
+    finitePSD_cauchy_schwarz M hPSD hSym x y
+  have hcs_z :
+      z ^ 2 ≤ finiteQuadraticForm M x * finiteQuadraticForm M y := by
+    simpa [hleft_eq] using hcs
+  have hx_le :
+      finiteQuadraticForm M x ≤ c * finiteVecNorm2Sq x := by
+    have hx := hLe x
+    simpa [finiteQuadraticForm_smul_finiteIdMatrix] using hx
+  have hy_le :
+      finiteQuadraticForm M y ≤ c * z := by
+    have hy := hLe y
+    simpa [finiteQuadraticForm_smul_finiteIdMatrix, z] using hy
+  have hprod :
+      finiteQuadraticForm M x * finiteQuadraticForm M y ≤
+        (c * finiteVecNorm2Sq x) * (c * z) := by
+    nlinarith [hx_le, hy_le, hPSD x, hPSD y,
+      finiteVecNorm2Sq_nonneg x, finiteVecNorm2Sq_nonneg y]
+  have hzsq :
+      z ^ 2 ≤ c ^ 2 * finiteVecNorm2Sq x * z := by
+    calc
+      z ^ 2 ≤ finiteQuadraticForm M x * finiteQuadraticForm M y := hcs_z
+      _ ≤ (c * finiteVecNorm2Sq x) * (c * z) := hprod
+      _ = c ^ 2 * finiteVecNorm2Sq x * z := by ring
+  by_cases hz0 : z = 0
+  · have hzero : finiteVecNorm2Sq (finiteMatVec M x) = 0 := by
+      simpa [y, z] using hz0
+    rw [hzero]
+    exact mul_nonneg (sq_nonneg c) (finiteVecNorm2Sq_nonneg x)
+  · have hzpos : 0 < z :=
+      lt_of_le_of_ne (finiteVecNorm2Sq_nonneg y) (Ne.symm hz0)
+    have hmul :
+        z * z ≤ (c ^ 2 * finiteVecNorm2Sq x) * z := by
+      simpa [pow_two, mul_assoc] using hzsq
+    have hz_le : z ≤ c ^ 2 * finiteVecNorm2Sq x :=
+      (mul_le_mul_iff_of_pos_right hzpos).mp hmul
+    simpa [z] using hz_le
+
+/-- A symmetric positive-semidefinite finite matrix bounded above by `c I` in
+    Loewner order has finite operator-2 norm at most `c`. -/
+theorem finiteOpNorm2Le_of_finitePSD_of_finiteLoewnerLe_smul_id
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (M : ι → ι → ℝ) {c : ℝ}
+    (hc : 0 ≤ c)
+    (hSym : IsSymmetricFiniteMatrix M)
+    (hPSD : finitePSD M)
+    (hLe : finiteLoewnerLe M (fun i j => c * finiteIdMatrix i j)) :
+    finiteOpNorm2Le M c := by
+  intro x
+  have hsq :=
+    finiteVecNorm2Sq_finiteMatVec_le_of_finitePSD_of_finiteLoewnerLe_smul_id
+      M hSym hPSD hLe x
+  have hright :
+      (c * finiteVecNorm2 x) ^ 2 = c ^ 2 * finiteVecNorm2Sq x := by
+    rw [show (c * finiteVecNorm2 x) ^ 2 =
+        c ^ 2 * finiteVecNorm2 x ^ 2 from by ring,
+      finiteVecNorm2_sq]
+  have hsq_norm :
+      finiteVecNorm2 (finiteMatVec M x) ^ 2 ≤
+        (c * finiteVecNorm2 x) ^ 2 := by
+    rw [finiteVecNorm2_sq, hright]
+    exact hsq
+  have hleft_nonneg : 0 ≤ finiteVecNorm2 (finiteMatVec M x) :=
+    finiteVecNorm2_nonneg (finiteMatVec M x)
+  have hright_nonneg : 0 ≤ c * finiteVecNorm2 x :=
+    mul_nonneg hc (finiteVecNorm2_nonneg x)
+  have habs := (sq_le_sq).mp hsq_norm
+  simpa [abs_of_nonneg hleft_nonneg, abs_of_nonneg hright_nonneg] using habs
+
+/-- A symmetric PSD finite matrix inherits an operator-2 certificate from a
+    Loewner-larger matrix with that certificate. -/
+theorem finiteOpNorm2Le_of_finitePSD_of_finiteLoewnerLe_of_finiteOpNorm2Le
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (M N : ι → ι → ℝ) {c : ℝ}
+    (hc : 0 ≤ c)
+    (hSym : IsSymmetricFiniteMatrix M)
+    (hPSD : finitePSD M)
+    (hMN : finiteLoewnerLe M N)
+    (hN : finiteOpNorm2Le N c) :
+    finiteOpNorm2Le M c :=
+  finiteOpNorm2Le_of_finitePSD_of_finiteLoewnerLe_smul_id
+    M hc hSym hPSD
+    (finiteLoewnerLe_trans hMN
+      (finiteLoewnerLe_smul_id_of_finiteOpNorm2Le N hN))
 
 /-- A symmetric idempotent finite matrix is nonexpansive in the Euclidean
 norm.  This is the finite-dimensional orthogonal-projector contraction used by
@@ -4096,6 +4588,234 @@ lemma finiteVecNorm2_sumInrVec {α β : Type*} [Fintype α] [Fintype β]
     finiteVecNorm2 (sumInrVec (α := α) y) = finiteVecNorm2 y := by
   unfold finiteVecNorm2
   rw [finiteVecNorm2Sq_sumInrVec]
+
+/-- Restricting a sum-indexed vector to the left component cannot increase its
+    Euclidean norm. -/
+lemma finiteVecNorm2_sumInl_restrict_le {α β : Type*} [Fintype α] [Fintype β]
+    (z : α ⊕ β → ℝ) :
+    finiteVecNorm2 (fun a : α => z (Sum.inl a)) ≤ finiteVecNorm2 z := by
+  unfold finiteVecNorm2 finiteVecNorm2Sq
+  apply Real.sqrt_le_sqrt
+  rw [Fintype.sum_sum_type]
+  exact le_add_of_nonneg_right
+    (Finset.sum_nonneg fun b _hb => sq_nonneg (z (Sum.inr b)))
+
+/-- Restricting a sum-indexed vector to the right component cannot increase its
+    Euclidean norm. -/
+lemma finiteVecNorm2_sumInr_restrict_le {α β : Type*} [Fintype α] [Fintype β]
+    (z : α ⊕ β → ℝ) :
+    finiteVecNorm2 (fun b : β => z (Sum.inr b)) ≤ finiteVecNorm2 z := by
+  unfold finiteVecNorm2 finiteVecNorm2Sq
+  apply Real.sqrt_le_sqrt
+  rw [Fintype.sum_sum_type]
+  exact le_add_of_nonneg_left
+    (Finset.sum_nonneg fun a _ha => sq_nonneg (z (Sum.inl a)))
+
+/-- An upper-left principal block of a sum-indexed matrix inherits a
+    vector-action operator-2 bound from the full matrix. -/
+theorem finiteOpNorm2Le_sumInl_principal
+    {α β : Type*} [Fintype α] [Fintype β]
+    (M : α ⊕ β → α ⊕ β → ℝ) {c : ℝ}
+    (hM : finiteOpNorm2Le M c) :
+    finiteOpNorm2Le (fun i j : α => M (Sum.inl i) (Sum.inl j)) c := by
+  intro x
+  let z : α ⊕ β → ℝ := sumInlVec (β := β) x
+  calc
+    finiteVecNorm2 (finiteMatVec (fun i j : α => M (Sum.inl i) (Sum.inl j)) x)
+        =
+      finiteVecNorm2 (fun i : α => finiteMatVec M z (Sum.inl i)) := by
+        congr 1
+        ext i
+        unfold finiteMatVec z sumInlVec
+        rw [Fintype.sum_sum_type]
+        simp
+    _ ≤ finiteVecNorm2 (finiteMatVec M z) :=
+        finiteVecNorm2_sumInl_restrict_le (finiteMatVec M z)
+    _ ≤ c * finiteVecNorm2 z := hM z
+    _ = c * finiteVecNorm2 x := by
+        rw [finiteVecNorm2_sumInlVec]
+
+/-- A lower-right principal block of a sum-indexed matrix inherits a
+    vector-action operator-2 bound from the full matrix. -/
+theorem finiteOpNorm2Le_sumInr_principal
+    {α β : Type*} [Fintype α] [Fintype β]
+    (M : α ⊕ β → α ⊕ β → ℝ) {c : ℝ}
+    (hM : finiteOpNorm2Le M c) :
+    finiteOpNorm2Le (fun i j : β => M (Sum.inr i) (Sum.inr j)) c := by
+  intro y
+  let z : α ⊕ β → ℝ := sumInrVec (α := α) y
+  calc
+    finiteVecNorm2 (finiteMatVec (fun i j : β => M (Sum.inr i) (Sum.inr j)) y)
+        =
+      finiteVecNorm2 (fun i : β => finiteMatVec M z (Sum.inr i)) := by
+        congr 1
+        ext i
+        unfold finiteMatVec z sumInrVec
+        rw [Fintype.sum_sum_type]
+        simp
+    _ ≤ finiteVecNorm2 (finiteMatVec M z) :=
+        finiteVecNorm2_sumInr_restrict_le (finiteMatVec M z)
+    _ ≤ c * finiteVecNorm2 z := hM z
+    _ = c * finiteVecNorm2 y := by
+        rw [finiteVecNorm2_sumInrVec]
+
+/-- The quadratic form of an upper-left principal block is the full quadratic
+    form tested on the left sum embedding. -/
+theorem finiteQuadraticForm_sumInl_principal
+    {α β : Type*} [Fintype α] [Fintype β]
+    (M : α ⊕ β → α ⊕ β → ℝ) (x : α → ℝ) :
+    finiteQuadraticForm (fun i j : α => M (Sum.inl i) (Sum.inl j)) x =
+      finiteQuadraticForm M (sumInlVec (β := β) x) := by
+  unfold finiteQuadraticForm finiteMatVec sumInlVec
+  rw [Fintype.sum_sum_type]
+  simp
+
+/-- The quadratic form of a lower-right principal block is the full quadratic
+    form tested on the right sum embedding. -/
+theorem finiteQuadraticForm_sumInr_principal
+    {α β : Type*} [Fintype α] [Fintype β]
+    (M : α ⊕ β → α ⊕ β → ℝ) (y : β → ℝ) :
+    finiteQuadraticForm (fun i j : β => M (Sum.inr i) (Sum.inr j)) y =
+      finiteQuadraticForm M (sumInrVec (α := α) y) := by
+  unfold finiteQuadraticForm finiteMatVec sumInrVec
+  rw [Fintype.sum_sum_type]
+  simp
+
+/-- An upper-left principal block inherits a finite Loewner inequality from the
+    full sum-indexed matrix. -/
+theorem finiteLoewnerLe_sumInl_principal
+    {α β : Type*} [Fintype α] [Fintype β]
+    (M N : α ⊕ β → α ⊕ β → ℝ)
+    (hMN : finiteLoewnerLe M N) :
+    finiteLoewnerLe
+      (fun i j : α => M (Sum.inl i) (Sum.inl j))
+      (fun i j : α => N (Sum.inl i) (Sum.inl j)) := by
+  intro x
+  rw [finiteQuadraticForm_sumInl_principal M x,
+    finiteQuadraticForm_sumInl_principal N x]
+  exact hMN (sumInlVec (β := β) x)
+
+/-- A lower-right principal block inherits a finite Loewner inequality from the
+    full sum-indexed matrix. -/
+theorem finiteLoewnerLe_sumInr_principal
+    {α β : Type*} [Fintype α] [Fintype β]
+    (M N : α ⊕ β → α ⊕ β → ℝ)
+    (hMN : finiteLoewnerLe M N) :
+    finiteLoewnerLe
+      (fun i j : β => M (Sum.inr i) (Sum.inr j))
+      (fun i j : β => N (Sum.inr i) (Sum.inr j)) := by
+  intro y
+  rw [finiteQuadraticForm_sumInr_principal M y,
+    finiteQuadraticForm_sumInr_principal N y]
+  exact hMN (sumInrVec (α := α) y)
+
+/-- The upper-left principal block of a scalar identity matrix is the scalar
+    identity matrix of the upper-left index type. -/
+theorem smul_finiteIdMatrix_sumInl_principal
+    {α β : Type*} [DecidableEq α] [DecidableEq β] (a : ℝ) :
+    (fun i j : α =>
+        a * (finiteIdMatrix : α ⊕ β → α ⊕ β → ℝ) (Sum.inl i) (Sum.inl j)) =
+      fun i j : α => a * finiteIdMatrix i j := by
+  ext i j
+  by_cases hij : i = j
+  · subst hij
+    simp [finiteIdMatrix]
+  · simp [finiteIdMatrix, hij]
+
+/-- The lower-right principal block of a scalar identity matrix is the scalar
+    identity matrix of the lower-right index type. -/
+theorem smul_finiteIdMatrix_sumInr_principal
+    {α β : Type*} [DecidableEq α] [DecidableEq β] (a : ℝ) :
+    (fun i j : β =>
+        a * (finiteIdMatrix : α ⊕ β → α ⊕ β → ℝ) (Sum.inr i) (Sum.inr j)) =
+      fun i j : β => a * finiteIdMatrix i j := by
+  ext i j
+  by_cases hij : i = j
+  · subst hij
+    simp [finiteIdMatrix]
+  · simp [finiteIdMatrix, hij]
+
+/-- An upper-left principal block inherits a scalar lower Loewner bound from
+    the full sum-indexed matrix. -/
+theorem finiteLoewnerLe_smul_id_sumInl_principal
+    {α β : Type*} [Fintype α] [Fintype β] [DecidableEq α] [DecidableEq β]
+    (M : α ⊕ β → α ⊕ β → ℝ) {a : ℝ}
+    (hLower : finiteLoewnerLe
+      (fun i j : α ⊕ β => a * finiteIdMatrix i j) M) :
+    finiteLoewnerLe
+      (fun i j : α => a * finiteIdMatrix i j)
+      (fun i j : α => M (Sum.inl i) (Sum.inl j)) := by
+  simpa [smul_finiteIdMatrix_sumInl_principal] using
+    finiteLoewnerLe_sumInl_principal
+      (fun i j : α ⊕ β => a * finiteIdMatrix i j) M hLower
+
+/-- A lower-right principal block inherits a scalar lower Loewner bound from
+    the full sum-indexed matrix. -/
+theorem finiteLoewnerLe_smul_id_sumInr_principal
+    {α β : Type*} [Fintype α] [Fintype β] [DecidableEq α] [DecidableEq β]
+    (M : α ⊕ β → α ⊕ β → ℝ) {a : ℝ}
+    (hLower : finiteLoewnerLe
+      (fun i j : α ⊕ β => a * finiteIdMatrix i j) M) :
+    finiteLoewnerLe
+      (fun i j : β => a * finiteIdMatrix i j)
+      (fun i j : β => M (Sum.inr i) (Sum.inr j)) := by
+  simpa [smul_finiteIdMatrix_sumInr_principal] using
+    finiteLoewnerLe_sumInr_principal
+      (fun i j : α ⊕ β => a * finiteIdMatrix i j) M hLower
+
+/-- An upper-right off-diagonal block of a sum-indexed matrix inherits a
+    rectangular vector-action operator-2 bound from the full matrix. -/
+theorem finiteOpNorm2Le_sumInl_sumInr_rect
+    {α β : Type*} [Fintype α] [Fintype β]
+    (M : α ⊕ β → α ⊕ β → ℝ) {c : ℝ}
+    (hM : finiteOpNorm2Le M c) :
+    ∀ y : β → ℝ,
+      finiteVecNorm2 (finiteMatVec (fun i j => M (Sum.inl i) (Sum.inr j)) y)
+        ≤ c * finiteVecNorm2 y := by
+  intro y
+  let z : α ⊕ β → ℝ := sumInrVec (α := α) y
+  calc
+    finiteVecNorm2
+        (finiteMatVec (fun i j => M (Sum.inl i) (Sum.inr j)) y)
+        =
+      finiteVecNorm2 (fun i : α => finiteMatVec M z (Sum.inl i)) := by
+        congr 1
+        ext i
+        unfold finiteMatVec z sumInrVec
+        rw [Fintype.sum_sum_type]
+        simp
+    _ ≤ finiteVecNorm2 (finiteMatVec M z) :=
+        finiteVecNorm2_sumInl_restrict_le (finiteMatVec M z)
+    _ ≤ c * finiteVecNorm2 z := hM z
+    _ = c * finiteVecNorm2 y := by
+        rw [finiteVecNorm2_sumInrVec]
+
+/-- A lower-left off-diagonal block of a sum-indexed matrix inherits a
+    rectangular vector-action operator-2 bound from the full matrix. -/
+theorem finiteOpNorm2Le_sumInr_sumInl_rect
+    {α β : Type*} [Fintype α] [Fintype β]
+    (M : α ⊕ β → α ⊕ β → ℝ) {c : ℝ}
+    (hM : finiteOpNorm2Le M c) :
+    ∀ x : α → ℝ,
+      finiteVecNorm2 (finiteMatVec (fun i j => M (Sum.inr i) (Sum.inl j)) x)
+        ≤ c * finiteVecNorm2 x := by
+  intro x
+  let z : α ⊕ β → ℝ := sumInlVec (β := β) x
+  calc
+    finiteVecNorm2
+        (finiteMatVec (fun i j => M (Sum.inr i) (Sum.inl j)) x)
+        =
+      finiteVecNorm2 (fun i : β => finiteMatVec M z (Sum.inr i)) := by
+        congr 1
+        ext i
+        unfold finiteMatVec z sumInlVec
+        rw [Fintype.sum_sum_type]
+        simp
+    _ ≤ finiteVecNorm2 (finiteMatVec M z) :=
+        finiteVecNorm2_sumInr_restrict_le (finiteMatVec M z)
+    _ ≤ c * finiteVecNorm2 z := hM z
+    _ = c * finiteVecNorm2 x := by
+        rw [finiteVecNorm2_sumInlVec]
 
 /-- The squared norm of a paired sum vector is the sum of squared norms. -/
 lemma finiteVecNorm2Sq_sumBothVec {α β : Type*} [Fintype α] [Fintype β]
@@ -4507,6 +5227,267 @@ capturing the standard vector-action meaning of `||M||₂ ≤ c`. -/
 def opNorm2Le {n : ℕ} (M : Fin n → Fin n → ℝ) (c : ℝ) : Prop :=
   ∀ x : Fin n → ℝ, vecNorm2 (matMulVec n M x) ≤ c * vecNorm2 x
 
+section ExactOperatorNorm
+
+open scoped Matrix.Norms.L2Operator
+
+/-- Exact source-facing matrix 2-norm, routed through mathlib's l2 operator
+    norm on finite matrices.
+
+    The definition pins the l2 operator norm explicitly because `Matrix` is
+    reducible to a function type, and the repository also uses function-space
+    norms elsewhere. -/
+noncomputable def opNorm2 {n : ℕ} (M : Fin n → Fin n → ℝ) : ℝ :=
+  @norm (Matrix (Fin n) (Fin n) ℝ)
+    Matrix.instL2OpNormedAddCommGroup.toNorm
+    (M : Matrix (Fin n) (Fin n) ℝ)
+
+/-- The exact source-facing 2-norm is nonnegative. -/
+theorem opNorm2_nonneg {n : ℕ} (M : Fin n → Fin n → ℝ) :
+    0 ≤ opNorm2 M := by
+  unfold opNorm2
+  rw [Matrix.l2_opNorm_def]
+  exact norm_nonneg _
+
+/-- Mathlib's exact l2 operator norm gives the repository's vector-action
+    operator-2 certificate. -/
+theorem opNorm2Le_opNorm2 {n : ℕ}
+    (M : Fin n → Fin n → ℝ) :
+    opNorm2Le M (opNorm2 M) := by
+  intro x
+  have h :=
+    Matrix.l2_opNorm_mulVec
+      (A := (M : Matrix (Fin n) (Fin n) ℝ))
+      (x := WithLp.toLp 2 x)
+  have hxnorm : ‖WithLp.toLp 2 x‖ = vecNorm2 x := by
+    unfold vecNorm2 vecNorm2Sq
+    rw [EuclideanSpace.norm_eq]
+    simp [Real.norm_eq_abs, sq_abs]
+  have hynorm :
+      ‖WithLp.toLp 2
+          (Matrix.mulVec (M : Matrix (Fin n) (Fin n) ℝ) x)‖ =
+        vecNorm2 (matMulVec n M x) := by
+    unfold vecNorm2 vecNorm2Sq matMulVec
+    rw [EuclideanSpace.norm_eq]
+    simp [Matrix.mulVec, dotProduct, Real.norm_eq_abs, sq_abs]
+  simpa [opNorm2, opNorm2Le, matMulVec, hynorm, hxnorm] using h
+
+set_option maxHeartbeats 1000000 in
+/-- A repository vector-action operator-2 certificate bounds the exact
+    source-facing `opNorm2`.
+
+    This is the converse bridge to `opNorm2Le_opNorm2`: it lets certificate
+    proofs feed source statements written with the exact l2 operator norm. -/
+theorem opNorm2_le_of_opNorm2Le {n : ℕ}
+    (M : Fin n → Fin n → ℝ) {c : ℝ}
+    (hc : 0 ≤ c) (hM : opNorm2Le M c) :
+    opNorm2 M ≤ c := by
+  unfold opNorm2
+  rw [Matrix.l2_opNorm_def]
+  refine ContinuousLinearMap.opNorm_le_bound _ hc ?_
+  intro x
+  let y : Fin n → ℝ := WithLp.ofLp x
+  have hxnorm : ‖x‖ = vecNorm2 y := by
+    unfold vecNorm2 vecNorm2Sq y
+    rw [EuclideanSpace.norm_eq]
+    simp [Real.norm_eq_abs, sq_abs]
+  have hynorm :
+      ‖((Matrix.toEuclideanLin ≪≫ₗ LinearMap.toContinuousLinearMap)
+          ((M : Matrix (Fin n) (Fin n) ℝ))) x‖ =
+        vecNorm2 (matMulVec n M y) := by
+    unfold vecNorm2 vecNorm2Sq matMulVec y
+    rw [EuclideanSpace.norm_eq]
+    simp [Matrix.toLpLin_apply, Matrix.mulVec, dotProduct,
+      Real.norm_eq_abs, sq_abs]
+  calc
+    ‖((Matrix.toEuclideanLin ≪≫ₗ LinearMap.toContinuousLinearMap)
+          ((M : Matrix (Fin n) (Fin n) ℝ))) x‖
+        = vecNorm2 (matMulVec n M y) := hynorm
+    _ ≤ c * vecNorm2 y := hM y
+    _ = c * ‖x‖ := by rw [hxnorm]
+
+/-- If `Minv` is a right inverse for some square matrix on a nonempty finite
+    domain, then its exact l2 operator norm is strictly positive.
+
+    The explicit index form is useful when a source theorem has a nonempty
+    leading block and the full block's nonemptiness is obtained by embedding
+    that index. -/
+theorem opNorm2_pos_of_right_inverse_at {n : ℕ}
+    (j0 : Fin n)
+    (M Minv : Fin n → Fin n → ℝ)
+    (hRight : IsRightInverse n M Minv) :
+    0 < opNorm2 Minv := by
+  classical
+  by_contra hnot
+  have hzero : opNorm2 Minv = 0 := by
+    exact le_antisymm (not_lt.mp hnot) (opNorm2_nonneg Minv)
+  let e : Fin n → ℝ := finiteBasisVec j0
+  have hbound := opNorm2Le_opNorm2 Minv e
+  have hMinv_e_norm_le_zero : vecNorm2 (matMulVec n Minv e) ≤ 0 := by
+    simpa [hzero, e] using hbound
+  have hMinv_e_norm_zero : vecNorm2 (matMulVec n Minv e) = 0 :=
+    le_antisymm hMinv_e_norm_le_zero (vecNorm2_nonneg _)
+  have hMinv_e_zero : ∀ i, matMulVec n Minv e i = 0 :=
+    (vecNorm2_eq_zero_iff _).mp hMinv_e_norm_zero
+  have hcol_zero : ∀ k, Minv k j0 = 0 := by
+    intro k
+    have hk := hMinv_e_zero k
+    have hcol : matMulVec n Minv e k = Minv k j0 := by
+      unfold matMulVec e finiteBasisVec
+      simp [Finset.sum_ite_eq', Finset.mem_univ]
+    simpa [hcol] using hk
+  have hright_diag : (∑ k : Fin n, M j0 k * Minv k j0) = 1 := by
+    simpa using hRight j0 j0
+  have hsum_zero : (∑ k : Fin n, M j0 k * Minv k j0) = 0 := by
+    simp [hcol_zero]
+  have hbad : (1 : ℝ) = 0 := by
+    rw [← hright_diag, hsum_zero]
+  norm_num at hbad
+
+/-- If `Minv` is a right inverse for some square matrix on a nonempty finite
+    domain, then its exact l2 operator norm is strictly positive. -/
+theorem opNorm2_pos_of_right_inverse {n : ℕ} [Nonempty (Fin n)]
+    (M Minv : Fin n → Fin n → ℝ)
+    (hRight : IsRightInverse n M Minv) :
+    0 < opNorm2 Minv := by
+  classical
+  exact opNorm2_pos_of_right_inverse_at
+    (Classical.choice (inferInstance : Nonempty (Fin n))) M Minv hRight
+
+/-- Source-facing 2-norm condition number product for a matrix and a chosen
+    inverse candidate. -/
+noncomputable def kappa2 {n : ℕ}
+    (A Ainv : Fin n → Fin n → ℝ) : ℝ :=
+  opNorm2 A * opNorm2 Ainv
+
+/-- Exact `κ₂` monotonicity from vector-action operator-2 certificates for a
+    matrix and an inverse candidate. -/
+theorem kappa2_le_of_opNorm2Le_bounds {n : ℕ}
+    (S Sinv A Ainv : Fin n → Fin n → ℝ)
+    (hS : opNorm2Le S (opNorm2 A))
+    (hSinv : opNorm2Le Sinv (opNorm2 Ainv)) :
+    kappa2 S Sinv ≤ kappa2 A Ainv := by
+  unfold kappa2
+  exact mul_le_mul
+    (opNorm2_le_of_opNorm2Le S (opNorm2_nonneg A) hS)
+    (opNorm2_le_of_opNorm2Le Sinv (opNorm2_nonneg Ainv) hSinv)
+    (opNorm2_nonneg Sinv)
+    (opNorm2_nonneg A)
+
+/-- Exact `κ₂` monotonicity from operator-2 certificates when the Schur
+    complement and full matrix live on different finite dimensions. -/
+theorem kappa2_le_of_opNorm2Le_bounds_general {m n : ℕ}
+    (S Sinv : Fin m → Fin m → ℝ)
+    (A Ainv : Fin n → Fin n → ℝ)
+    (hS : opNorm2Le S (opNorm2 A))
+    (hSinv : opNorm2Le Sinv (opNorm2 Ainv)) :
+    kappa2 S Sinv ≤ kappa2 A Ainv := by
+  unfold kappa2
+  exact mul_le_mul
+    (opNorm2_le_of_opNorm2Le S (opNorm2_nonneg A) hS)
+    (opNorm2_le_of_opNorm2Le Sinv (opNorm2_nonneg Ainv) hSinv)
+    (opNorm2_nonneg Sinv)
+    (opNorm2_nonneg A)
+
+end ExactOperatorNorm
+
+/-- The generic finite-type operator-2 predicate specializes to the repository's
+    `Fin n` operator-2 predicate. -/
+theorem opNorm2Le_of_finiteOpNorm2Le {n : ℕ}
+    (M : Fin n → Fin n → ℝ) {c : ℝ}
+    (hM : finiteOpNorm2Le M c) :
+    opNorm2Le M c := by
+  intro x
+  simpa [opNorm2Le, finiteOpNorm2Le, matMulVec, finiteMatVec,
+    finiteVecNorm2_fin] using hM x
+
+/-- The repository's `Fin n` operator-2 predicate can be used as the generic
+    finite-type operator-2 predicate. -/
+theorem finiteOpNorm2Le_of_opNorm2Le {n : ℕ}
+    (M : Fin n → Fin n → ℝ) {c : ℝ}
+    (hM : opNorm2Le M c) :
+    finiteOpNorm2Le M c := by
+  intro x
+  simpa [opNorm2Le, finiteOpNorm2Le, matMulVec, finiteMatVec,
+    finiteVecNorm2_fin] using hM x
+
+/-- A generic finite-type operator-2 certificate bounds the exact source-facing
+    `opNorm2` on `Fin n`. -/
+theorem opNorm2_le_of_finiteOpNorm2Le {n : ℕ}
+    (M : Fin n → Fin n → ℝ) {c : ℝ}
+    (hc : 0 ≤ c) (hM : finiteOpNorm2Le M c) :
+    opNorm2 M ≤ c :=
+  opNorm2_le_of_opNorm2Le M hc (opNorm2Le_of_finiteOpNorm2Le M hM)
+
+/-- Reindexing a source `Fin n` matrix by an equivalence and taking Mathlib's
+    constructive inverse gives an operator-2 certificate bounded by the exact
+    norm of the source-facing repository nonsingular inverse.
+
+    This bridge lets block-matrix inverse formulas written with `⅟` feed
+    source theorems whose condition number uses `nonsingInv`. -/
+theorem finiteOpNorm2Le_invOf_reindex_equiv_nonsingInv
+    {n : ℕ} {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (e : ι ≃ Fin n) (A : Fin n → Fin n → ℝ)
+    (M : Matrix ι ι ℝ) [Invertible M]
+    (hM : M = fun i j : ι => A (e i) (e j)) :
+    finiteOpNorm2Le
+      (fun i j : ι => (⅟M) i j)
+      (opNorm2 (nonsingInv n A)) := by
+  classical
+  have hbase :
+      finiteOpNorm2Le
+        (fun i j : ι => nonsingInv n A (e i) (e j))
+        (opNorm2 (nonsingInv n A)) :=
+    finiteOpNorm2Le_reindex_equiv e (nonsingInv n A)
+      (finiteOpNorm2Le_of_opNorm2Le (nonsingInv n A)
+        (opNorm2Le_opNorm2 (nonsingInv n A)))
+  have hinv :
+      (fun i j : ι => (⅟M) i j) =
+        (fun i j : ι => nonsingInv n A (e i) (e j)) := by
+    ext i j
+    have h1 : ⅟M = M⁻¹ :=
+      Matrix.invOf_eq_nonsing_inv M
+    have h2 :
+        M⁻¹ =
+          (((A : Matrix (Fin n) (Fin n) ℝ)⁻¹ :
+            Matrix (Fin n) (Fin n) ℝ).submatrix e e) := by
+      rw [hM]
+      exact Matrix.inv_submatrix_equiv (A : Matrix (Fin n) (Fin n) ℝ) e e
+    calc
+      (⅟M) i j = M⁻¹ i j := by rw [h1]
+      _ =
+          (((A : Matrix (Fin n) (Fin n) ℝ)⁻¹ :
+            Matrix (Fin n) (Fin n) ℝ) (e i) (e j)) := by
+        rw [h2]
+        rfl
+      _ = nonsingInv n A (e i) (e j) := by
+        unfold nonsingInv
+        rfl
+  simpa [hinv] using hbase
+
+/-- A repository `Fin n` operator-2 certificate gives the corresponding
+    scalar-identity Loewner upper bound. -/
+theorem finiteLoewnerLe_smul_id_of_opNorm2Le {n : ℕ}
+    (M : Fin n → Fin n → ℝ) {c : ℝ}
+    (hM : opNorm2Le M c) :
+    finiteLoewnerLe M (fun i j : Fin n => c * finiteIdMatrix i j) :=
+  finiteLoewnerLe_smul_id_of_finiteOpNorm2Le M
+    (finiteOpNorm2Le_of_opNorm2Le M hM)
+
+/-- A repository `Fin n` operator-2 certificate for a right inverse of a
+    symmetric PSD matrix gives the scalar lower Loewner certificate for the
+    original matrix. -/
+theorem finiteLoewnerLe_smul_id_le_of_right_inverse_opNorm2Le {n : ℕ}
+    (M Minv : Fin n → Fin n → ℝ) {c : ℝ}
+    (hc : 0 < c)
+    (hPSD : finitePSD M)
+    (hSym : IsSymmetricFiniteMatrix M)
+    (hRight : IsRightInverse n M Minv)
+    (hMinv : opNorm2Le Minv c) :
+    finiteLoewnerLe (fun i j : Fin n => c⁻¹ * finiteIdMatrix i j) M :=
+  finiteLoewnerLe_smul_id_le_of_right_inverse_finiteOpNorm2Le
+    M Minv hc hPSD hSym hRight (finiteOpNorm2Le_of_opNorm2Le Minv hMinv)
+
 /-- An operator-2 bound controls the quadratic form `xᵀMx`. -/
 theorem abs_vecInnerProduct_matMulVec_le_of_opNorm2Le {n : ℕ}
     (M : Fin n → Fin n → ℝ) {c : ℝ} (hM : opNorm2Le M c)
@@ -4906,6 +5887,84 @@ theorem vecNorm2_rectMatMulVec_le_frobNormRect_mul {m n : ℕ}
     `||Mx||₂ ≤ c ||x||₂` for every vector `x`. -/
 def rectOpNorm2Le {m n : ℕ} (M : Fin m → Fin n → ℝ) (c : ℝ) : Prop :=
   ∀ x : Fin n → ℝ, vecNorm2 (rectMatMulVec M x) ≤ c * vecNorm2 x
+
+/-- A square finite-index operator-2 certificate can be read as a rectangular
+    operator-2 certificate. -/
+theorem rectOpNorm2Le_of_finiteOpNorm2Le {n : ℕ}
+    (M : Fin n → Fin n → ℝ) {c : ℝ}
+    (hM : finiteOpNorm2Le M c) :
+    rectOpNorm2Le M c := by
+  intro x
+  simpa [rectMatMulVec, finiteMatVec, finiteVecNorm2_fin] using hM x
+
+/-- Finite-index upper-right block specialization of
+    `finiteOpNorm2Le_sumInl_sumInr_rect`. -/
+theorem rectOpNorm2Le_sumInl_sumInr_of_finiteOpNorm2Le {r s : ℕ}
+    (M : Fin r ⊕ Fin s → Fin r ⊕ Fin s → ℝ) {c : ℝ}
+    (hM : finiteOpNorm2Le M c) :
+    rectOpNorm2Le (fun i j => M (Sum.inl i) (Sum.inr j)) c := by
+  intro y
+  simpa [rectMatMulVec, finiteMatVec, finiteVecNorm2_fin] using
+    finiteOpNorm2Le_sumInl_sumInr_rect M hM y
+
+/-- Finite-index lower-left block specialization of
+    `finiteOpNorm2Le_sumInr_sumInl_rect`. -/
+theorem rectOpNorm2Le_sumInr_sumInl_of_finiteOpNorm2Le {r s : ℕ}
+    (M : Fin r ⊕ Fin s → Fin r ⊕ Fin s → ℝ) {c : ℝ}
+    (hM : finiteOpNorm2Le M c) :
+    rectOpNorm2Le (fun i j => M (Sum.inr i) (Sum.inl j)) c := by
+  intro x
+  simpa [rectMatMulVec, finiteMatVec, finiteVecNorm2_fin] using
+    finiteOpNorm2Le_sumInr_sumInl_rect M hM x
+
+/-- A finite standard basis vector, viewed as a `Fin n` vector, has Euclidean
+    norm one. -/
+lemma vecNorm2_finiteBasisVec {n : ℕ} (i : Fin n) :
+    vecNorm2 (finiteBasisVec i) = 1 := by
+  simpa [finiteVecNorm2_fin] using (finiteVecNorm2_finiteBasisVec i)
+
+/-- On a nonempty finite domain, any rectangular vector-action operator-2
+    radius is nonnegative. -/
+theorem rectOpNorm2Le_radius_nonneg {m n : ℕ} [Nonempty (Fin n)]
+    (M : Fin m → Fin n → ℝ) {c : ℝ}
+    (hM : rectOpNorm2Le M c) :
+    0 ≤ c := by
+  classical
+  let j0 : Fin n := Classical.choice (inferInstance : Nonempty (Fin n))
+  let e : Fin n → ℝ := finiteBasisVec j0
+  have he : vecNorm2 e = 1 := by
+    simpa [e] using (vecNorm2_finiteBasisVec j0)
+  have hright : 0 ≤ c * vecNorm2 e :=
+    le_trans (vecNorm2_nonneg (rectMatMulVec M e)) (hM e)
+  simpa [he] using hright
+
+/-- On a nonempty finite domain, any square vector-action operator-2 radius is
+    nonnegative. -/
+theorem opNorm2Le_radius_nonneg {n : ℕ} [Nonempty (Fin n)]
+    (M : Fin n → Fin n → ℝ) {c : ℝ}
+    (hM : opNorm2Le M c) :
+    0 ≤ c := by
+  classical
+  let j0 : Fin n := Classical.choice (inferInstance : Nonempty (Fin n))
+  let e : Fin n → ℝ := finiteBasisVec j0
+  have he : vecNorm2 e = 1 := by
+    simpa [e] using (vecNorm2_finiteBasisVec j0)
+  have hright : 0 ≤ c * vecNorm2 e :=
+    le_trans (vecNorm2_nonneg (matMulVec n M e)) (hM e)
+  simpa [he] using hright
+
+/-- A squared vector-action bound gives the corresponding rectangular
+    operator-2 certificate with square-root radius. -/
+theorem rectOpNorm2Le_sqrt_of_vecNorm2Sq_le {m n : ℕ}
+    (M : Fin m → Fin n → ℝ) {L : ℝ}
+    (hL : 0 ≤ L)
+    (hSq : ∀ x : Fin n → ℝ,
+      vecNorm2Sq (rectMatMulVec M x) ≤ L * vecNorm2Sq x) :
+    rectOpNorm2Le M (Real.sqrt L) := by
+  intro x
+  unfold vecNorm2
+  rw [← Real.sqrt_mul hL]
+  exact Real.sqrt_le_sqrt (hSq x)
 
 /-- Monotonicity of rectangular operator-norm upper-bound predicates in the
 radius. -/
@@ -5707,6 +6766,194 @@ def matMulRectLeft {m n : ℕ} (U : Fin m → Fin m → ℝ)
 def rectMatMul {m n p : ℕ} (A : Fin m → Fin n → ℝ)
     (B : Fin n → Fin p → ℝ) : Fin m → Fin p → ℝ :=
   fun i j => ∑ k : Fin n, A i k * B k j
+
+/-- A rectangular Gram product `M Mᵀ` is symmetric. -/
+theorem rectMatMul_self_transpose_symmetric {m n : ℕ}
+    (M : Fin m → Fin n → ℝ) :
+    IsSymmetricFiniteMatrix (rectMatMul M (finiteTranspose M)) := by
+  intro i j
+  unfold rectMatMul finiteTranspose
+  apply Finset.sum_congr rfl
+  intro k _
+  ring
+
+/-- The quadratic form of `M Mᵀ` is the squared norm of `Mᵀ x`. -/
+theorem finiteQuadraticForm_rectMatMul_self_transpose_eq_sum_sq
+    {m n : ℕ} (M : Fin m → Fin n → ℝ) (x : Fin m → ℝ) :
+    finiteQuadraticForm (rectMatMul M (finiteTranspose M)) x =
+      ∑ k : Fin n, (∑ i : Fin m, M i k * x i) ^ 2 := by
+  classical
+  unfold finiteQuadraticForm finiteMatVec rectMatMul finiteTranspose
+  calc
+    ∑ a : Fin m,
+        x a *
+          ∑ b : Fin m,
+            (∑ k : Fin n, M a k * M b k) * x b
+        =
+          ∑ a : Fin m, ∑ b : Fin m, ∑ k : Fin n,
+            (M a k * x a) * (M b k * x b) := by
+            apply Finset.sum_congr rfl
+            intro a _
+            rw [Finset.mul_sum]
+            apply Finset.sum_congr rfl
+            intro b _
+            rw [Finset.sum_mul]
+            rw [Finset.mul_sum]
+            apply Finset.sum_congr rfl
+            intro k _
+            ring
+    _ =
+          ∑ b : Fin m, ∑ a : Fin m, ∑ k : Fin n,
+            (M a k * x a) * (M b k * x b) := by
+            rw [Finset.sum_comm]
+    _ =
+          ∑ b : Fin m, ∑ k : Fin n, ∑ a : Fin m,
+            (M a k * x a) * (M b k * x b) := by
+            apply Finset.sum_congr rfl
+            intro b _
+            rw [Finset.sum_comm]
+    _ =
+          ∑ k : Fin n, ∑ b : Fin m, ∑ a : Fin m,
+            (M a k * x a) * (M b k * x b) := by
+            rw [Finset.sum_comm]
+    _ =
+          ∑ k : Fin n, ∑ a : Fin m, ∑ b : Fin m,
+            (M a k * x a) * (M b k * x b) := by
+            apply Finset.sum_congr rfl
+            intro k _
+            rw [Finset.sum_comm]
+    _ =
+          ∑ k : Fin n,
+            (∑ a : Fin m, M a k * x a) *
+              (∑ b : Fin m, M b k * x b) := by
+            apply Finset.sum_congr rfl
+            intro k _
+            rw [Finset.sum_mul]
+            apply Finset.sum_congr rfl
+            intro a _
+            rw [Finset.mul_sum]
+    _ =
+          ∑ k : Fin n, (∑ i : Fin m, M i k * x i) ^ 2 := by
+            apply Finset.sum_congr rfl
+            intro k _
+            ring
+
+/-- A rectangular Gram product `M Mᵀ` is positive semidefinite. -/
+theorem finitePSD_rectMatMul_self_transpose {m n : ℕ}
+    (M : Fin m → Fin n → ℝ) :
+    finitePSD (rectMatMul M (finiteTranspose M)) := by
+  intro x
+  rw [finiteQuadraticForm_rectMatMul_self_transpose_eq_sum_sq M x]
+  exact Finset.sum_nonneg fun k _ => sq_nonneg _
+
+/-- Symmetry transported across equality with a rectangular Gram product. -/
+theorem IsSymmetricFiniteMatrix_of_eq_rectMatMul_self_transpose
+    {m n : ℕ} {A : Fin m → Fin m → ℝ}
+    (M : Fin m → Fin n → ℝ)
+    (hA : A = rectMatMul M (finiteTranspose M)) :
+    IsSymmetricFiniteMatrix A := by
+  rw [hA]
+  exact rectMatMul_self_transpose_symmetric M
+
+/-- Positive semidefiniteness transported across equality with a rectangular
+    Gram product. -/
+theorem finitePSD_of_eq_rectMatMul_self_transpose
+    {m n : ℕ} {A : Fin m → Fin m → ℝ}
+    (M : Fin m → Fin n → ℝ)
+    (hA : A = rectMatMul M (finiteTranspose M)) :
+    finitePSD A := by
+  rw [hA]
+  exact finitePSD_rectMatMul_self_transpose M
+
+/-- Rectangular matrix multiplication is associative. -/
+theorem rectMatMul_assoc {m n p q : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (B : Fin n → Fin p → ℝ)
+    (C : Fin p → Fin q → ℝ) :
+    rectMatMul (rectMatMul A B) C =
+      rectMatMul A (rectMatMul B C) := by
+  ext i l
+  unfold rectMatMul
+  simp_rw [Finset.sum_mul, Finset.mul_sum]
+  rw [Finset.sum_comm]
+  apply Finset.sum_congr rfl
+  intro j _
+  apply Finset.sum_congr rfl
+  intro k _
+  ring
+
+/-- Right identity for rectangular matrix multiplication. -/
+theorem rectMatMul_id_right {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) :
+    rectMatMul A (idMatrix n) = A := by
+  ext i j
+  unfold rectMatMul idMatrix
+  simp [Finset.sum_ite_eq', Finset.mem_univ]
+
+/-- Left identity for rectangular matrix multiplication. -/
+theorem rectMatMul_id_left {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) :
+    rectMatMul (idMatrix m) A = A := by
+  ext i j
+  unfold rectMatMul idMatrix
+  simp [Finset.sum_ite_eq, Finset.mem_univ]
+
+/-- If `Rinv` is a two-sided inverse of `R`, then
+    `Rinv Rinvᵀ` is a right inverse of the Gram matrix `RᵀR`. -/
+theorem IsRightInverse_rectMatMul_transpose_self_of_IsInverse
+    {n : ℕ} {R Rinv : Fin n → Fin n → ℝ}
+    (hInv : IsInverse n R Rinv) :
+    IsRightInverse n
+      (rectMatMul (finiteTranspose R) R)
+      (rectMatMul Rinv (finiteTranspose Rinv)) := by
+  have hRRinv : rectMatMul R Rinv = idMatrix n := by
+    ext i j
+    exact hInv.2 i j
+  have hRinvR : rectMatMul Rinv R = idMatrix n := by
+    ext i j
+    exact hInv.1 i j
+  have hLast : rectMatMul (finiteTranspose R) (finiteTranspose Rinv) =
+      idMatrix n := by
+    ext i j
+    unfold rectMatMul finiteTranspose idMatrix
+    have h := hInv.1 j i
+    simpa [eq_comm, mul_comm] using h
+  intro i j
+  have hprod :
+      rectMatMul
+          (rectMatMul (finiteTranspose R) R)
+          (rectMatMul Rinv (finiteTranspose Rinv)) =
+        idMatrix n := by
+    calc
+      rectMatMul
+          (rectMatMul (finiteTranspose R) R)
+          (rectMatMul Rinv (finiteTranspose Rinv))
+          = rectMatMul (finiteTranspose R)
+              (rectMatMul R (rectMatMul Rinv (finiteTranspose Rinv))) := by
+              rw [rectMatMul_assoc]
+      _ = rectMatMul (finiteTranspose R)
+            (rectMatMul (rectMatMul R Rinv) (finiteTranspose Rinv)) := by
+              rw [rectMatMul_assoc]
+      _ = rectMatMul (finiteTranspose R)
+            (rectMatMul (idMatrix n) (finiteTranspose Rinv)) := by
+              rw [hRRinv]
+      _ = rectMatMul (finiteTranspose R) (finiteTranspose Rinv) := by
+              rw [rectMatMul_id_left]
+      _ = idMatrix n := hLast
+  have hij := congrFun (congrFun hprod i) j
+  simpa [idMatrix] using hij
+
+/-- The repository nonsingular inverse of `RᵀR` is `R⁻¹R⁻ᵀ` when `Rinv` is a
+    two-sided inverse of `R`. -/
+theorem nonsingInv_rectMatMul_transpose_self_of_IsInverse
+    {n : ℕ} {R Rinv : Fin n → Fin n → ℝ}
+    (hInv : IsInverse n R Rinv) :
+    nonsingInv n (rectMatMul (finiteTranspose R) R) =
+      rectMatMul Rinv (finiteTranspose Rinv) :=
+  nonsingInv_eq_of_isRightInverse
+    (rectMatMul (finiteTranspose R) R)
+    (rectMatMul Rinv (finiteTranspose Rinv))
+    (IsRightInverse_rectMatMul_transpose_self_of_IsInverse hInv)
 
 /-- Rectangular products act associatively on vectors. -/
 theorem rectMatMulVec_rectMatMul {m n p : ℕ}
