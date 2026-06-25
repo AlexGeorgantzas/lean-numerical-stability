@@ -5528,6 +5528,102 @@ theorem storedQRCompactStepRelativeBudget_le_mul_add_normBudgetCoeff
     storedQRCompactStepNormBudgetCoeff, v, β,
     storedQRSignedStageVector, storedQRSignedStageBeta, k.isLt] using hpanel
 
+/-- Operation-count comparison for one deterministic stored QR compact-step
+    budget.
+
+    If the current signed Householder stage has a nonzero source denominator
+    and the displayed operation index `stepOps` dominates
+    `31 * (n + 1) * m`, then the computed one-step panel relative budget is
+    bounded by `gamma fp stepOps`.  This packages the explicit compact
+    Householder coefficient estimate into the source-facing one-step gamma
+    comparison consumed by the least-squares QR theorem. -/
+theorem storedQRCompactStepRelativeBudget_le_gamma_of_source_den_ne_zero_operation_count
+    {m n stepOps : ℕ} (hmn : n ≤ m)
+    (fp : FPModel)
+    (A_hat : ℕ → Fin m → Fin n → ℝ)
+    (b_hat : ℕ → Fin m → ℝ)
+    (alpha : ℕ → ℝ)
+    (hm : gammaValid fp m)
+    (hγstep : gammaValid fp stepOps)
+    (hstepOps : 31 * (n + 1) * m ≤ stepOps)
+    (k : Fin n)
+    (hden :
+      (∑ i : Fin m,
+        householderTrailingActiveVector m
+            ⟨k.val, lt_of_lt_of_le k.isLt hmn⟩
+            (fun a => A_hat k.val a k) (alpha k.val) i *
+          householderTrailingActiveVector m
+            ⟨k.val, lt_of_lt_of_le k.isLt hmn⟩
+            (fun a => A_hat k.val a k) (alpha k.val) i) ≠ 0) :
+    storedQRCompactStepRelativeBudget hmn fp A_hat b_hat alpha k ≤
+      gamma fp stepOps := by
+  have hn_pos : 0 < n := lt_of_le_of_lt (Nat.zero_le k.val) k.isLt
+  have hm_pos : 0 < m := lt_of_lt_of_le hn_pos hmn
+  have hfactorNat : 2 ≤ 31 * (n + 1) := by omega
+  have h2m_le_index : 2 * m ≤ (31 * (n + 1)) * m :=
+    Nat.mul_le_mul_right m hfactorNat
+  have hindex_eq : (31 * (n + 1)) * m = 31 * (n + 1) * m := by rfl
+  have h2m_le_stepOps : 2 * m ≤ stepOps := by
+    exact le_trans (by simpa [hindex_eq] using h2m_le_index) hstepOps
+  have hvalid2m : gammaValid fp (2 * m) :=
+    gammaValid_mono fp h2m_le_stepOps hγstep
+  have hfactor :
+      householderCompactNormBudgetCoeffFactor fp m ≤ 15 * gamma fp m :=
+    householderCompactNormBudgetCoeffFactor_le_fifteen_gamma
+      fp m hm_pos hvalid2m
+  have hm_from_step : gammaValid fp m :=
+    gammaValid_mono fp (by omega) hvalid2m
+  have hu_le_gamma : fp.u ≤ gamma fp m :=
+    u_le_gamma fp hm_pos hm_from_step
+  have hcoeff :
+      storedQRCompactStepNormBudgetCoeff hmn fp A_hat alpha k ≤
+        fp.u + 2 * householderCompactNormBudgetCoeffFactor fp m := by
+    exact
+      storedQRCompactStepNormBudgetCoeff_le_of_den_ne_zero
+        hmn fp A_hat alpha hm k
+        (by simpa [storedQRSignedStageVector, k.isLt] using hden)
+  have hcoeff_gamma :
+      storedQRCompactStepNormBudgetCoeff hmn fp A_hat alpha k ≤
+        31 * gamma fp m := by
+    nlinarith [hcoeff, hfactor, hu_le_gamma]
+  have hstep_local :
+      storedQRCompactStepRelativeBudget hmn fp A_hat b_hat alpha k ≤
+        (n : ℝ) * storedQRCompactStepNormBudgetCoeff hmn fp A_hat alpha k +
+          storedQRCompactStepNormBudgetCoeff hmn fp A_hat alpha k :=
+    storedQRCompactStepRelativeBudget_le_mul_add_normBudgetCoeff
+      hmn fp A_hat b_hat alpha hm k
+  have hstep_gamma_m :
+      storedQRCompactStepRelativeBudget hmn fp A_hat b_hat alpha k ≤
+        ((31 * (n + 1) : ℕ) : ℝ) * gamma fp m := by
+    have hn_nonneg : 0 ≤ (n : ℝ) := Nat.cast_nonneg n
+    have hcap1 :
+        (n : ℝ) * storedQRCompactStepNormBudgetCoeff hmn fp A_hat alpha k ≤
+          (n : ℝ) * (31 * gamma fp m) :=
+      mul_le_mul_of_nonneg_left hcoeff_gamma hn_nonneg
+    have hcap2 :
+        (n : ℝ) * storedQRCompactStepNormBudgetCoeff hmn fp A_hat alpha k +
+            storedQRCompactStepNormBudgetCoeff hmn fp A_hat alpha k ≤
+          (n : ℝ) * (31 * gamma fp m) + 31 * gamma fp m :=
+      add_le_add hcap1 hcoeff_gamma
+    have hcap3 :
+        (n : ℝ) * (31 * gamma fp m) + 31 * gamma fp m =
+          ((31 * (n + 1) : ℕ) : ℝ) * gamma fp m := by
+      norm_num
+      ring
+    exact hstep_local.trans (hcap2.trans_eq hcap3)
+  have hi : 1 ≤ 31 * (n + 1) := by omega
+  have hvalid_index : gammaValid fp ((31 * (n + 1)) * m) := by
+    apply gammaValid_mono fp ?_ hγstep
+    simpa [hindex_eq] using hstepOps
+  have hgamma_index :
+      ((31 * (n + 1) : ℕ) : ℝ) * gamma fp m ≤
+        gamma fp ((31 * (n + 1)) * m) :=
+    gamma_nsmul_le fp (31 * (n + 1)) m hi hvalid_index
+  have hindex_le_step :
+      gamma fp ((31 * (n + 1)) * m) ≤ gamma fp stepOps :=
+    gamma_mono fp (by simpa [hindex_eq] using hstepOps) hγstep
+  exact hstep_gamma_m.trans (hgamma_index.trans hindex_le_step)
+
 /-- A single deterministic compact-update relative budget for the whole stored
     QR loop, obtained by summing the one-step relative budgets. -/
 noncomputable def storedQRCompactSequenceRelativeBudget

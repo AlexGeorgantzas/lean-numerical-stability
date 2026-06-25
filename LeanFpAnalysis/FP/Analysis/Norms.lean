@@ -822,6 +822,71 @@ theorem complexVecLpNorm_ofReal_monotone {n : ℕ} {p : ℝ} (hp : 1 ≤ p) :
     (complexVecLpNorm_isComplexVectorNorm (n := n) (ENNReal.ofReal p))).mp
       (fun x => complexVecLpNorm_ofReal_abs_eq (lt_of_lt_of_le zero_lt_one hp) x)
 
+/-- Embed a real source vector into the complex-vector norm infrastructure. -/
+noncomputable def realVecToComplex {n : ℕ} (x : Fin n → ℝ) : CVec n :=
+  fun i => (x i : ℂ)
+
+/-- Real-vector specialization of the monotonicity consequence of an absolute
+    complex vector norm. -/
+lemma realVecToComplex_norm_le_of_abs_le {n : ℕ} {ν : CVec n → ℝ}
+    (hν : IsComplexVectorNorm ν) (habs : IsAbsoluteComplexVectorNorm ν)
+    {x y : Fin n → ℝ} (hy : ∀ i, 0 ≤ y i)
+    (hxy : ∀ i, |x i| ≤ y i) :
+    ν (realVecToComplex x) ≤ ν (realVecToComplex y) := by
+  have hmono : IsMonotoneComplexVectorNorm ν :=
+    (monotone_iff_absolute_complexVectorNorm hν).mpr habs
+  apply hmono
+  intro i
+  simpa [realVecToComplex, Real.norm_eq_abs, abs_of_nonneg (hy i)] using hxy i
+
+/-- Homogeneity for a nonnegative real scalar after embedding real vectors into
+    `CVec`. -/
+lemma realVecToComplex_norm_smul_nonneg {n : ℕ} {ν : CVec n → ℝ}
+    (hν : IsComplexVectorNorm ν) (a : ℝ) (ha : 0 ≤ a)
+    (x : Fin n → ℝ) :
+    ν (realVecToComplex (fun i => a * x i)) =
+      a * ν (realVecToComplex x) := by
+  have h := hν.smul (a : ℂ) (realVecToComplex x)
+  calc
+    ν (realVecToComplex (fun i => a * x i))
+        = ν (complexVecSMul (a : ℂ) (realVecToComplex x)) := by
+            congr 1
+            ext i
+            simp [realVecToComplex, complexVecSMul]
+    _ = ‖(a : ℂ)‖ * ν (realVecToComplex x) := h
+    _ = a * ν (realVecToComplex x) := by
+            rw [Complex.norm_of_nonneg ha]
+
+/-- Negating an embedded real vector does not change any complex vector norm. -/
+lemma realVecToComplex_norm_neg {n : ℕ} {ν : CVec n → ℝ}
+    (hν : IsComplexVectorNorm ν) (x : Fin n → ℝ) :
+    ν (realVecToComplex (fun i => -x i)) =
+      ν (realVecToComplex x) := by
+  have h := hν.smul (-1 : ℂ) (realVecToComplex x)
+  calc
+    ν (realVecToComplex (fun i => -x i))
+        = ν (complexVecSMul (-1 : ℂ) (realVecToComplex x)) := by
+            congr 1
+            ext i
+            simp [realVecToComplex, complexVecSMul]
+    _ = ‖(-1 : ℂ)‖ * ν (realVecToComplex x) := h
+    _ = ν (realVecToComplex x) := by
+            norm_num
+
+/-- Triangle inequality after embedding real vectors into `CVec`. -/
+lemma realVecToComplex_norm_add_le {n : ℕ} {ν : CVec n → ℝ}
+    (hν : IsComplexVectorNorm ν) (x y : Fin n → ℝ) :
+    ν (realVecToComplex (fun i => x i + y i)) ≤
+      ν (realVecToComplex x) + ν (realVecToComplex y) := by
+  have h := hν.add_le (realVecToComplex x) (realVecToComplex y)
+  calc
+    ν (realVecToComplex (fun i => x i + y i))
+        = ν (complexVecAdd (realVecToComplex x) (realVecToComplex y)) := by
+            congr 1
+            ext i
+            simp [realVecToComplex, complexVecAdd]
+    _ ≤ ν (realVecToComplex x) + ν (realVecToComplex y) := h
+
 -- ============================================================
 -- Mixed subordinate norm foundation
 -- ============================================================

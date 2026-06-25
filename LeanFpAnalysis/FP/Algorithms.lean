@@ -78,6 +78,7 @@ import LeanFpAnalysis.FP.Algorithms.QR.QRSolve
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSPerturbation
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSQRSolve
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSNormalEquations
+import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSE
 import LeanFpAnalysis.FP.Algorithms.Underdetermined.UnderdeterminedSpec
 import LeanFpAnalysis.FP.Algorithms.Underdetermined.UnderdeterminedSolve
 import LeanFpAnalysis.FP.Algorithms.FastMatMul

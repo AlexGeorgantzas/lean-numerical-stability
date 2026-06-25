@@ -1224,6 +1224,27 @@ lemma infNormVec_le_of_abs_le {n : ℕ} (v : Fin n → ℝ) {c : ℝ}
   intro i
   simpa using h i
 
+/-- A nonempty finite real vector has a component attaining the repository
+    infinity norm. -/
+theorem infNormVec_exists_abs_eq {n : ℕ} (hn : 0 < n)
+    (v : Fin n → ℝ) :
+    ∃ j : Fin n, infNormVec v = |v j| := by
+  have hne : (Finset.univ : Finset (Fin n)).Nonempty :=
+    Finset.univ_nonempty_iff.mpr ⟨⟨0, hn⟩⟩
+  obtain ⟨j, _hj, hjmax⟩ :=
+    Finset.exists_max_image Finset.univ (fun j : Fin n => |v j|) hne
+  refine ⟨j, le_antisymm ?_ (abs_le_infNormVec v j)⟩
+  exact infNormVec_le_of_abs_le v
+    (fun i => hjmax i (Finset.mem_univ i)) (abs_nonneg (v j))
+
+/-- A nonempty finite real vector has a component whose absolute value
+    dominates the repository infinity norm. -/
+theorem infNormVec_exists_le_abs {n : ℕ} (hn : 0 < n)
+    (v : Fin n → ℝ) :
+    ∃ j : Fin n, infNormVec v ≤ |v j| := by
+  obtain ⟨j, hj⟩ := infNormVec_exists_abs_eq hn v
+  exact ⟨j, le_of_eq hj⟩
+
 /-- A column-wise proof gives a 1-norm bound. -/
 lemma oneNorm_le_of_col_sum_le {n : ℕ} (A : Fin n → Fin n → ℝ) {c : ℝ}
     (hcols : ∀ j : Fin n, ∑ i : Fin n, |A i j| ≤ c) (hc : 0 ≤ c) :

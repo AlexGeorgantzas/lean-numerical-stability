@@ -1226,6 +1226,115 @@ noncomputable def householderQRRhsPanelGrowthCoeff (fp : FPModel) :
 noncomputable def householderQRRhsGrowthCoeff (fp : FPModel) (n : ℕ) : ℝ :=
   householderQRRhsPanelGrowthCoeff fp n n
 
+/-- Nonrecursive conservative coefficient controlling the panel QR RHS growth
+    coefficient.
+
+    For an `m`-row, `p`-reflector panel, this freezes every recursive step at
+    the original row dimension `m` and the original one-step Householder
+    construction/application coefficient.  It is intentionally conservative and
+    is not Higham's sharp hidden constant. -/
+noncomputable def householderQRRhsPanelClosedGrowthCoeff
+    (fp : FPModel) (m p : ℕ) : ℝ :=
+  (p : ℝ) * ((m : ℝ) ^ 2 * householderConstructApplyBound fp m) *
+    (1 + (m : ℝ) ^ 2 *
+      (1 + householderConstructApplyBound fp m)) ^ p
+
+/-- Gamma-only nonrecursive conservative coefficient controlling the panel QR
+    RHS growth coefficient.
+
+    This is the source-facing version of
+    `householderQRRhsPanelClosedGrowthCoeff`: the concrete one-step
+    construction/application coefficient is replaced by its proved Higham
+    gamma cap `gamma fp (householderConstructApplyGammaIndex m)`.  It is still a
+    conservative implementation-derived coefficient, not Higham's printed
+    `n * gamma` RHS constant. -/
+noncomputable def householderQRRhsPanelGammaClosedGrowthCoeff
+    (fp : FPModel) (m p : ℕ) : ℝ :=
+  let K : ℕ := householderConstructApplyGammaIndex m
+  (p : ℝ) * ((m : ℝ) ^ 2 * gamma fp K) *
+    (1 + (m : ℝ) ^ 2 * (1 + gamma fp K)) ^ p
+
+/-- A conservative single-`gamma` index for the panel QR RHS closed-growth
+    coefficient.
+
+    The factor `(1 + 2*m^2)^p` bounds the closed-growth power once
+    `gamma fp (householderConstructApplyGammaIndex m) < 1`.  The whole natural
+    multiplier is then absorbed by Higham's `i * gamma_k <= gamma_{i*k}` rule.
+    This is intentionally much larger than the printed Theorem 20.4 RHS
+    constant; it is a source-facing single-gamma envelope for the verified
+    implementation coefficient. -/
+def householderQRRhsPanelGammaClosedGrowthIndex (m p : ℕ) : ℕ :=
+  (p * m ^ 2 * (1 + 2 * m ^ 2) ^ p) *
+    householderConstructApplyGammaIndex m
+
+/-- The dimension-only factor by which the conservative single-gamma RHS
+    index exceeds the printed panel radius `p * householderConstructApplyGammaIndex m`.
+
+    For Theorem 20.4 this specializes to
+    `(n+k)^2 * (1 + 2*(n+k)^2)^n`. -/
+def householderQRRhsPanelGammaClosedGrowthFactor (m p : ℕ) : ℕ :=
+  m ^ 2 * (1 + 2 * m ^ 2) ^ p
+
+/-- Factorization of the conservative single-gamma RHS index into the printed
+    base panel radius and the extra dimension-only closed-growth factor. -/
+theorem householderQRRhsPanelGammaClosedGrowthIndex_eq_factor_mul_printedIndex
+    (m p : ℕ) :
+    householderQRRhsPanelGammaClosedGrowthIndex m p =
+      householderQRRhsPanelGammaClosedGrowthFactor m p *
+        (p * householderConstructApplyGammaIndex m) := by
+  simp [householderQRRhsPanelGammaClosedGrowthIndex,
+    householderQRRhsPanelGammaClosedGrowthFactor, Nat.mul_assoc,
+    Nat.mul_left_comm]
+
+/-- The extra closed-growth factor is positive for a nonempty panel row
+    dimension. -/
+theorem householderQRRhsPanelGammaClosedGrowthFactor_pos {m p : ℕ}
+    (hm : 0 < m) :
+    0 < householderQRRhsPanelGammaClosedGrowthFactor m p := by
+  unfold householderQRRhsPanelGammaClosedGrowthFactor
+  exact Nat.mul_pos (Nat.pow_pos hm)
+    (Nat.pow_pos (by omega : 0 < 1 + 2 * m ^ 2))
+
+/-- Under the standard half-radius guard, the conservative single-gamma RHS
+    index is bounded by an explicit dimension-only multiple of the printed
+    panel gamma radius.
+
+    This does not prove Higham's printed coefficient: the extra factor
+    `2 * householderQRRhsPanelGammaClosedGrowthFactor m p` remains visible. -/
+theorem householderQRRhsPanelGammaClosedGrowthIndex_gamma_le_factor_printedGamma
+    (fp : FPModel) (m p : ℕ) (hm : 0 < m)
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex m p : ℝ) * fp.u ≤
+        1 / 2)) :
+    gamma fp (householderQRRhsPanelGammaClosedGrowthIndex m p) ≤
+      (2 : ℝ) * (householderQRRhsPanelGammaClosedGrowthFactor m p : ℝ) *
+        gamma fp (p * householderConstructApplyGammaIndex m) := by
+  let F : ℕ := householderQRRhsPanelGammaClosedGrowthFactor m p
+  let Kp : ℕ := p * householderConstructApplyGammaIndex m
+  have hidx_eq :
+      householderQRRhsPanelGammaClosedGrowthIndex m p = F * Kp := by
+    simpa [F, Kp] using
+      householderQRRhsPanelGammaClosedGrowthIndex_eq_factor_mul_printedIndex
+        m p
+  have hvalid_idx :
+      gammaValid fp (householderQRRhsPanelGammaClosedGrowthIndex m p) := by
+    unfold gammaValid
+    exact lt_of_le_of_lt hhalf (by norm_num)
+  have hF_pos : 0 < F := by
+    simpa [F] using householderQRRhsPanelGammaClosedGrowthFactor_pos
+      (m := m) (p := p) hm
+  have hKp_le_idx : Kp ≤ householderQRRhsPanelGammaClosedGrowthIndex m p := by
+    rw [hidx_eq]
+    exact Nat.le_mul_of_pos_left Kp hF_pos
+  have hvalid_Kp : gammaValid fp Kp :=
+    gammaValid_mono fp hKp_le_idx hvalid_idx
+  have hhalf_FKp : ((F * Kp : ℕ) : ℝ) * fp.u ≤ 1 / 2 := by
+    simpa [hidx_eq] using hhalf
+  have hgamma :=
+    gamma_mul_index_le_two_mul_nat_mul_gamma fp F Kp hhalf_FKp
+      hvalid_Kp
+  simpa [F, Kp, hidx_eq, Nat.mul_assoc] using hgamma
+
 /-- The dimension-only QR RHS growth coefficient is nonnegative under the
     same global one-step gamma-validity condition used for the active panel. -/
 theorem householderQRRhsPanelGrowthCoeff_nonneg (fp : FPModel) :
@@ -1272,6 +1381,234 @@ theorem householderQRRhsGrowthCoeff_nonneg (fp : FPModel) (n : ℕ)
     0 ≤ householderQRRhsGrowthCoeff fp n := by
   simpa [householderQRRhsGrowthCoeff] using
     householderQRRhsPanelGrowthCoeff_nonneg fp n n hvalid
+
+/-- The nonrecursive panel RHS growth coefficient is nonnegative. -/
+theorem householderQRRhsPanelClosedGrowthCoeff_nonneg (fp : FPModel)
+    (m p : ℕ) (hvalid : gammaValid fp (11 * m + 23)) :
+    0 ≤ householderQRRhsPanelClosedGrowthCoeff fp m p := by
+  have hC : 0 ≤ householderConstructApplyBound fp m :=
+    householderConstructApplyBound_nonneg fp m hvalid
+  have hbase :
+      0 ≤ 1 + (m : ℝ) ^ 2 *
+        (1 + householderConstructApplyBound fp m) := by
+    exact add_nonneg zero_le_one
+      (mul_nonneg (sq_nonneg (m : ℝ)) (by linarith))
+  unfold householderQRRhsPanelClosedGrowthCoeff
+  exact mul_nonneg
+    (mul_nonneg (Nat.cast_nonneg p)
+      (mul_nonneg (sq_nonneg (m : ℝ)) hC))
+    (pow_nonneg hbase p)
+
+/-- The gamma-only nonrecursive panel RHS growth coefficient is nonnegative. -/
+theorem householderQRRhsPanelGammaClosedGrowthCoeff_nonneg (fp : FPModel)
+    (m p : ℕ)
+    (hvalid : gammaValid fp (householderConstructApplyGammaIndex m)) :
+    0 ≤ householderQRRhsPanelGammaClosedGrowthCoeff fp m p := by
+  let K : ℕ := householderConstructApplyGammaIndex m
+  have hG : 0 ≤ gamma fp K := by
+    simpa [K] using gamma_nonneg fp hvalid
+  have hbase :
+      0 ≤ 1 + (m : ℝ) ^ 2 * (1 + gamma fp K) := by
+    exact add_nonneg zero_le_one
+      (mul_nonneg (sq_nonneg (m : ℝ)) (by linarith))
+  unfold householderQRRhsPanelGammaClosedGrowthCoeff
+  exact mul_nonneg
+    (mul_nonneg (Nat.cast_nonneg p)
+      (mul_nonneg (sq_nonneg (m : ℝ)) hG))
+    (pow_nonneg hbase p)
+
+/-- The concrete closed panel RHS growth coefficient is controlled by the
+    gamma-only closed coefficient. -/
+theorem householderQRRhsPanelClosedGrowthCoeff_le_gammaClosedGrowth
+    (fp : FPModel) (m p : ℕ)
+    (hvalid : gammaValid fp (householderConstructApplyGammaIndex m)) :
+    householderQRRhsPanelClosedGrowthCoeff fp m p ≤
+      householderQRRhsPanelGammaClosedGrowthCoeff fp m p := by
+  let K : ℕ := householderConstructApplyGammaIndex m
+  let C : ℝ := householderConstructApplyBound fp m
+  let G : ℝ := gamma fp K
+  let M2 : ℝ := (m : ℝ) ^ 2
+  let BC : ℝ := 1 + M2 * (1 + C)
+  let BG : ℝ := 1 + M2 * (1 + G)
+  have hbase_le_K : 11 * m + 23 ≤ K := by
+    dsimp [K, householderConstructApplyGammaIndex]
+    omega
+  have hbase_valid : gammaValid fp (11 * m + 23) :=
+    gammaValid_mono fp hbase_le_K (by simpa [K] using hvalid)
+  have hC : 0 ≤ C := by
+    simpa [C] using householderConstructApplyBound_nonneg fp m hbase_valid
+  have hG : 0 ≤ G := by
+    simpa [G, K] using gamma_nonneg fp hvalid
+  have hC_le_G : C ≤ G := by
+    simpa [C, G, K] using householderConstructApplyBound_le_gamma fp m hvalid
+  have hM2 : 0 ≤ M2 := by
+    dsimp [M2]
+    exact sq_nonneg (m : ℝ)
+  have hfactor :
+      M2 * C ≤ M2 * G :=
+    mul_le_mul_of_nonneg_left hC_le_G hM2
+  have hBC : 0 ≤ BC := by
+    dsimp [BC]
+    exact add_nonneg zero_le_one (mul_nonneg hM2 (by linarith))
+  have hBC_le_BG : BC ≤ BG := by
+    have h1 : 1 + C ≤ 1 + G := by linarith
+    have hprod : M2 * (1 + C) ≤ M2 * (1 + G) :=
+      mul_le_mul_of_nonneg_left h1 hM2
+    dsimp [BC, BG]
+    linarith
+  have hpow : BC ^ p ≤ BG ^ p :=
+    pow_le_pow_left₀ hBC hBC_le_BG p
+  have hinner :
+      (M2 * C) * BC ^ p ≤ (M2 * G) * BG ^ p :=
+    mul_le_mul hfactor hpow (pow_nonneg hBC p) (mul_nonneg hM2 hG)
+  have hp : 0 ≤ (p : ℝ) := Nat.cast_nonneg p
+  calc
+    householderQRRhsPanelClosedGrowthCoeff fp m p
+        = (p : ℝ) * ((M2 * C) * BC ^ p) := by
+            simp [householderQRRhsPanelClosedGrowthCoeff, C, M2, BC]
+            ring
+    _ ≤ (p : ℝ) * ((M2 * G) * BG ^ p) :=
+        mul_le_mul_of_nonneg_left hinner hp
+    _ = householderQRRhsPanelGammaClosedGrowthCoeff fp m p := by
+        simp [householderQRRhsPanelGammaClosedGrowthCoeff, G, M2, BG, K]
+        ring
+
+/-- The gamma-only closed panel RHS coefficient is controlled by one explicit
+    accumulated Higham `gamma` index.
+
+    This is a conservative absorption theorem: it first bounds the extra
+    growth power by `(1 + 2*m^2)^p`, then uses `gamma_nsmul_le` to absorb the
+    resulting natural multiplier into a single `gamma`.  It does not prove
+    Higham's printed `n * gamma` RHS constant. -/
+theorem householderQRRhsPanelGammaClosedGrowthCoeff_le_gammaIndex
+    (fp : FPModel) (m p : ℕ)
+    (hvalid :
+      gammaValid fp (householderQRRhsPanelGammaClosedGrowthIndex m p)) :
+    householderQRRhsPanelGammaClosedGrowthCoeff fp m p ≤
+      gamma fp (householderQRRhsPanelGammaClosedGrowthIndex m p) := by
+  cases p with
+  | zero =>
+      simp [householderQRRhsPanelGammaClosedGrowthCoeff,
+        householderQRRhsPanelGammaClosedGrowthIndex, gamma]
+  | succ p =>
+      cases m with
+      | zero =>
+          simp [householderQRRhsPanelGammaClosedGrowthCoeff,
+            householderQRRhsPanelGammaClosedGrowthIndex, gamma]
+      | succ m =>
+          let rows : ℕ := m + 1
+          let cols : ℕ := p + 1
+          let K : ℕ := householderConstructApplyGammaIndex rows
+          let I : ℕ := cols * rows ^ 2 * (1 + 2 * rows ^ 2) ^ cols
+          let G : ℝ := gamma fp K
+          let M2 : ℝ := (rows : ℝ) ^ 2
+          let B : ℝ := 1 + 2 * M2
+          have hrows_pos : 0 < rows := by
+            dsimp [rows]
+            omega
+          have hrows_sq_pos : 0 < rows ^ 2 := Nat.pow_pos hrows_pos
+          have hvalid_index : gammaValid fp (I * K) := by
+            simpa [householderQRRhsPanelGammaClosedGrowthIndex, rows, cols,
+              I, K] using hvalid
+          have hbase_ge_two : 2 ≤ 1 + 2 * rows ^ 2 := by
+            omega
+          have hpow_ge_two : 2 ≤ (1 + 2 * rows ^ 2) ^ cols := by
+            exact le_trans hbase_ge_two
+              (Nat.le_self_pow (by dsimp [cols]; omega)
+                (1 + 2 * rows ^ 2))
+          have hleft_pos : 0 < cols * rows ^ 2 := by
+            exact Nat.mul_pos (by dsimp [cols]; omega)
+              hrows_sq_pos
+          have hI_ge_two : 2 ≤ I := by
+            exact le_trans hpow_ge_two
+              (by
+                dsimp [I]
+                exact Nat.le_mul_of_pos_left
+                  ((1 + 2 * rows ^ 2) ^ cols) hleft_pos)
+          have hvalid2K : gammaValid fp (2 * K) :=
+            gammaValid_mono fp (Nat.mul_le_mul_right K hI_ge_two)
+              hvalid_index
+          have hvalidK : gammaValid fp K :=
+            gammaValid_mono fp
+              (Nat.le_mul_of_pos_left K (by omega : 0 < 2)) hvalid2K
+          have hG_nonneg : 0 ≤ G := by
+            simpa [G] using gamma_nonneg fp hvalidK
+          have hG_le_one : G ≤ 1 := by
+            exact le_of_lt (by simpa [G] using gamma_lt_one fp K hvalid2K)
+          have hM2_nonneg : 0 ≤ M2 := by
+            dsimp [M2]
+            exact sq_nonneg (rows : ℝ)
+          have hbase_nonneg :
+              0 ≤ 1 + M2 * (1 + G) := by
+            exact add_nonneg zero_le_one
+              (mul_nonneg hM2_nonneg (by linarith))
+          have hbase_le :
+              1 + M2 * (1 + G) ≤ B := by
+            dsimp [B]
+            nlinarith
+          have hpow_le :
+              (1 + M2 * (1 + G)) ^ cols ≤ B ^ cols :=
+            pow_le_pow_left₀ hbase_nonneg hbase_le cols
+          have hscale_nonneg : 0 ≤ (cols : ℝ) * M2 := by
+            exact mul_nonneg (Nat.cast_nonneg cols) hM2_nonneg
+          have hcoeff_le :
+              householderQRRhsPanelGammaClosedGrowthCoeff fp rows cols ≤
+                ((cols : ℝ) * M2 * B ^ cols) * G := by
+            calc
+              householderQRRhsPanelGammaClosedGrowthCoeff fp rows cols
+                  = ((cols : ℝ) * M2 *
+                      (1 + M2 * (1 + G)) ^ cols) * G := by
+                    simp [householderQRRhsPanelGammaClosedGrowthCoeff,
+                      rows, cols, K, G, M2]
+                    ring
+              _ ≤ ((cols : ℝ) * M2 * B ^ cols) * G := by
+                    exact mul_le_mul_of_nonneg_right
+                      (mul_le_mul_of_nonneg_left hpow_le hscale_nonneg)
+                      hG_nonneg
+          have hI_cast :
+              (I : ℝ) = (cols : ℝ) * M2 * B ^ cols := by
+            dsimp [I, M2, B]
+            norm_num [Nat.cast_mul, Nat.cast_pow, Nat.cast_add]
+          have hI_pos : 0 < I :=
+            lt_of_lt_of_le (by omega : 0 < 2) hI_ge_two
+          have hgamma_absorb : (I : ℝ) * G ≤ gamma fp (I * K) := by
+            simpa [G] using
+              gamma_nsmul_le fp I K (Nat.succ_le_of_lt hI_pos)
+                hvalid_index
+          calc
+            householderQRRhsPanelGammaClosedGrowthCoeff fp rows cols
+                ≤ ((cols : ℝ) * M2 * B ^ cols) * G := hcoeff_le
+            _ = (I : ℝ) * G := by rw [hI_cast]
+            _ ≤ gamma fp (I * K) := hgamma_absorb
+            _ = gamma fp
+                (householderQRRhsPanelGammaClosedGrowthIndex rows cols) := by
+                  simp [householderQRRhsPanelGammaClosedGrowthIndex, I, K,
+                    rows, cols]
+
+/-- The gamma-only closed RHS coefficient is bounded by an explicit
+    dimension-only factor times the printed panel gamma radius under a standard
+    half-radius guard on the conservative index.
+
+    This is a sharper source-facing view of the conservative single-gamma
+    theorem: it exposes the remaining gap as the factor
+    `2 * householderQRRhsPanelGammaClosedGrowthFactor m p`, instead of hiding
+    it inside `gamma fp (householderQRRhsPanelGammaClosedGrowthIndex m p)`. -/
+theorem householderQRRhsPanelGammaClosedGrowthCoeff_le_factorPrintedGamma
+    (fp : FPModel) (m p : ℕ) (hm : 0 < m)
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex m p : ℝ) * fp.u ≤
+        1 / 2)) :
+    householderQRRhsPanelGammaClosedGrowthCoeff fp m p ≤
+      (2 : ℝ) * (householderQRRhsPanelGammaClosedGrowthFactor m p : ℝ) *
+        gamma fp (p * householderConstructApplyGammaIndex m) := by
+  have hvalid :
+      gammaValid fp (householderQRRhsPanelGammaClosedGrowthIndex m p) := by
+    unfold gammaValid
+    exact lt_of_le_of_lt hhalf (by norm_num)
+  exact le_trans
+    (householderQRRhsPanelGammaClosedGrowthCoeff_le_gammaIndex fp m p hvalid)
+    (householderQRRhsPanelGammaClosedGrowthIndex_gamma_le_factor_printedGamma
+      fp m p hm hhalf)
 
 /-- Conservative closed growth bound for the square QR RHS growth
     coefficient.
@@ -1426,6 +1763,157 @@ theorem householderQRRhsGrowthCoeff_le_closedGrowth
               (1 + ((n + 1 : ℕ) : ℝ) ^ 2 *
                 (1 + householderConstructApplyBound fp (n + 1))) ^ (n + 1) := by
             simp [A, B, C, sR]
+
+/-- Conservative closed growth bound for the panel QR RHS growth coefficient.
+
+    This is the tall-panel analogue of
+    `householderQRRhsGrowthCoeff_le_closedGrowth`: the decreasing recursive
+    dimensions are dominated by the original row dimension `m`, while the
+    exponent counts only the number of panel reflector columns `p`. -/
+theorem householderQRRhsPanelGrowthCoeff_le_closedGrowth
+    (fp : FPModel) :
+    ∀ (m p : ℕ), p ≤ m → gammaValid fp (11 * m + 23) →
+      householderQRRhsPanelGrowthCoeff fp m p ≤
+        householderQRRhsPanelClosedGrowthCoeff fp m p := by
+  intro m
+  induction m with
+  | zero =>
+      intro p hp _hvalid
+      have hp0 : p = 0 := Nat.eq_zero_of_le_zero hp
+      simp [hp0, householderQRRhsPanelGrowthCoeff,
+        householderQRRhsPanelClosedGrowthCoeff]
+  | succ m ih =>
+      intro p hp hvalid
+      cases p with
+      | zero =>
+          simp [householderQRRhsPanelGrowthCoeff,
+            householderQRRhsPanelClosedGrowthCoeff]
+      | succ p =>
+          have hp_tail : p ≤ m := Nat.succ_le_succ_iff.mp hp
+          let sR : ℝ := (m + 1 : ℝ)
+          let C : ℝ := householderConstructApplyBound fp (m + 1)
+          let A : ℝ := 1 + sR ^ 2 * (1 + C)
+          let B : ℝ := sR ^ 2 * C
+          let tail : ℝ := householderQRRhsPanelGrowthCoeff fp m p
+          have hvalid_tail : gammaValid fp (11 * m + 23) :=
+            gammaValid_mono fp (by omega) hvalid
+          have hC : 0 ≤ C := by
+            simpa [C] using
+              householderConstructApplyBound_nonneg fp (m + 1) hvalid
+          have hCt : 0 ≤ householderConstructApplyBound fp m :=
+            householderConstructApplyBound_nonneg fp m hvalid_tail
+          have hCt_le_C :
+              householderConstructApplyBound fp m ≤ C := by
+            simpa [C] using
+              householderConstructApplyBound_mono fp (Nat.le_succ m) hvalid
+          have hA_ge_one : 1 ≤ A := by
+            dsimp [A]
+            nlinarith [sq_nonneg sR, hC]
+          have hA_nonneg : 0 ≤ A := by linarith
+          have hB_nonneg : 0 ≤ B := by
+            dsimp [B]
+            exact mul_nonneg (sq_nonneg sR) hC
+          have htail_nonneg : 0 ≤ tail := by
+            simpa [tail] using
+              householderQRRhsPanelGrowthCoeff_nonneg fp m p hvalid_tail
+          have hm_sq_le :
+              (m : ℝ) ^ 2 ≤ sR ^ 2 := by
+            have hm_le_s : (m : ℝ) ≤ sR := by
+              dsimp [sR]
+              norm_num [Nat.cast_add, Nat.cast_one]
+            nlinarith [sq_nonneg (m : ℝ), sq_nonneg sR]
+          have hBt_le_B :
+              (m : ℝ) ^ 2 * householderConstructApplyBound fp m ≤ B := by
+            dsimp [B]
+            exact mul_le_mul hm_sq_le hCt_le_C hCt (sq_nonneg sR)
+          have hAt_le_A :
+              1 + (m : ℝ) ^ 2 *
+                  (1 + householderConstructApplyBound fp m) ≤ A := by
+            have h1_le : 1 + householderConstructApplyBound fp m ≤ 1 + C := by
+              linarith
+            have h1_nonneg : 0 ≤ 1 + householderConstructApplyBound fp m := by
+              linarith
+            have hprod :
+                (m : ℝ) ^ 2 * (1 + householderConstructApplyBound fp m) ≤
+                  sR ^ 2 * (1 + C) :=
+              mul_le_mul hm_sq_le h1_le h1_nonneg (sq_nonneg sR)
+            dsimp [A]
+            linarith
+          have hAt_nonneg :
+              0 ≤ 1 + (m : ℝ) ^ 2 *
+                  (1 + householderConstructApplyBound fp m) := by
+            exact add_nonneg zero_le_one
+              (mul_nonneg (sq_nonneg (m : ℝ)) (by linarith))
+          have hpow :
+              (1 + (m : ℝ) ^ 2 *
+                  (1 + householderConstructApplyBound fp m)) ^ p ≤
+                A ^ p :=
+            pow_le_pow_left₀ hAt_nonneg hAt_le_A p
+          have htail_to_global :
+              tail ≤ (p : ℝ) * B * A ^ p := by
+            have hIH := ih p hp_tail hvalid_tail
+            have hprod :
+                ((m : ℝ) ^ 2 * householderConstructApplyBound fp m) *
+                    (1 + (m : ℝ) ^ 2 *
+                      (1 + householderConstructApplyBound fp m)) ^ p ≤
+                  B * A ^ p :=
+              mul_le_mul hBt_le_B hpow
+                (pow_nonneg hAt_nonneg p) hB_nonneg
+            have hscaled :
+                (p : ℝ) *
+                    (((m : ℝ) ^ 2 * householderConstructApplyBound fp m) *
+                      (1 + (m : ℝ) ^ 2 *
+                        (1 + householderConstructApplyBound fp m)) ^ p) ≤
+                  (p : ℝ) * (B * A ^ p) :=
+              mul_le_mul_of_nonneg_left hprod (Nat.cast_nonneg p)
+            calc
+              tail
+                  ≤ householderQRRhsPanelClosedGrowthCoeff fp m p := hIH
+              _ = (p : ℝ) *
+                    (((m : ℝ) ^ 2 * householderConstructApplyBound fp m) *
+                      (1 + (m : ℝ) ^ 2 *
+                        (1 + householderConstructApplyBound fp m)) ^ p) := by
+                  unfold householderQRRhsPanelClosedGrowthCoeff
+                  ring
+              _ ≤ (p : ℝ) * (B * A ^ p) := hscaled
+              _ = (p : ℝ) * B * A ^ p := by ring
+          have hrec :
+              householderQRRhsPanelGrowthCoeff fp (m + 1) (p + 1) =
+                B + tail * A := by
+            simp [householderQRRhsPanelGrowthCoeff, tail, B, A, C, sR]
+            ring
+          have hpow_ge_one : 1 ≤ A ^ (p + 1) := by
+            have hbase : (1 : ℝ) ^ (p + 1) ≤ A ^ (p + 1) :=
+              pow_le_pow_left₀ zero_le_one hA_ge_one (p + 1)
+            simpa using hbase
+          have hB_le_Bpow : B ≤ B * A ^ (p + 1) := by
+            calc
+              B = B * 1 := by ring
+              _ ≤ B * A ^ (p + 1) :=
+                  mul_le_mul_of_nonneg_left hpow_ge_one hB_nonneg
+          calc
+            householderQRRhsPanelGrowthCoeff fp (m + 1) (p + 1)
+                = B + tail * A := hrec
+            _ ≤ B + ((p : ℝ) * B * A ^ p) * A := by
+                have hmul :
+                    tail * A ≤ ((p : ℝ) * B * A ^ p) * A :=
+                  mul_le_mul_of_nonneg_right htail_to_global hA_nonneg
+                exact add_le_add (le_refl B) hmul
+            _ = B + (p : ℝ) * B * A ^ (p + 1) := by
+                rw [pow_succ]
+                ring
+            _ ≤ ((p + 1 : ℕ) : ℝ) * B * A ^ (p + 1) := by
+                calc
+                  B + (p : ℝ) * B * A ^ (p + 1)
+                      ≤ B * A ^ (p + 1) +
+                          (p : ℝ) * B * A ^ (p + 1) := by
+                        exact add_le_add hB_le_Bpow (le_refl _)
+                  _ = (((p : ℝ) + 1) * B * A ^ (p + 1)) := by ring
+                  _ = ((p + 1 : ℕ) : ℝ) * B * A ^ (p + 1) := by
+                        norm_num [Nat.cast_add, Nat.cast_one]
+            _ = householderQRRhsPanelClosedGrowthCoeff fp (m + 1) (p + 1) := by
+                unfold householderQRRhsPanelClosedGrowthCoeff
+                simp [A, B, C, sR]
 
 /-- The zero-aware recursive QR RHS perturbation bound is nonnegative whenever
     the zero-aware panel run has the required gamma hypotheses on nonzero branches. -/
@@ -1811,6 +2299,132 @@ theorem householderQRRhsPanelBackwardBound_le_growthCoeff
             simpa [householderQRRhsPanelBackwardBound,
               householderQRRhsPanelGrowthCoeff, hcol, tailCoeff, C, nR,
               bstep, cstep, Nat.cast_add, Nat.cast_one] using hmain
+
+/-- The implementation-backed panel QR RHS perturbation bound is controlled by
+    the nonrecursive closed growth coefficient. -/
+theorem householderQRRhsPanelBackwardBound_le_closedGrowth
+    (fp : FPModel) (m p : ℕ)
+    (A : Fin m → Fin p → ℝ) (b : Fin m → ℝ)
+    (hp : p ≤ m)
+    (hvalid : gammaValid fp (11 * m + 23))
+    (hready : HouseholderQRPanelReady fp m p A) :
+    householderQRRhsPanelBackwardBound fp m p A b ≤
+      householderQRRhsPanelClosedGrowthCoeff fp m p * infNormVec b := by
+  exact le_trans
+    (householderQRRhsPanelBackwardBound_le_growthCoeff fp
+      m p A b hvalid hready)
+    (mul_le_mul_of_nonneg_right
+      (householderQRRhsPanelGrowthCoeff_le_closedGrowth fp m p hp hvalid)
+      (infNormVec_nonneg b))
+
+/-- The implementation-backed panel QR RHS perturbation bound is controlled by
+    the gamma-only nonrecursive closed growth coefficient. -/
+theorem householderQRRhsPanelBackwardBound_le_gammaClosedGrowth
+    (fp : FPModel) (m p : ℕ)
+    (A : Fin m → Fin p → ℝ) (b : Fin m → ℝ)
+    (hp : p ≤ m)
+    (hvalid : gammaValid fp (householderConstructApplyGammaIndex m))
+    (hready : HouseholderQRPanelReady fp m p A) :
+    householderQRRhsPanelBackwardBound fp m p A b ≤
+      householderQRRhsPanelGammaClosedGrowthCoeff fp m p * infNormVec b := by
+  have hbase_le_K : 11 * m + 23 ≤ householderConstructApplyGammaIndex m := by
+    dsimp [householderConstructApplyGammaIndex]
+    omega
+  have hbase_valid : gammaValid fp (11 * m + 23) :=
+    gammaValid_mono fp hbase_le_K hvalid
+  exact le_trans
+    (householderQRRhsPanelBackwardBound_le_closedGrowth fp
+      m p A b hp hbase_valid hready)
+    (mul_le_mul_of_nonneg_right
+      (householderQRRhsPanelClosedGrowthCoeff_le_gammaClosedGrowth
+        fp m p hvalid)
+      (infNormVec_nonneg b))
+
+/-- The implementation-backed panel QR RHS perturbation bound is controlled by
+    a single accumulated Higham `gamma` index.
+
+    The index is conservative and dimension-only; this is an implementation
+    envelope for the verified RHS recursion, not Higham's printed Theorem 20.4
+    RHS constant. -/
+theorem householderQRRhsPanelBackwardBound_le_gammaClosedGrowthIndex
+    (fp : FPModel) (m p : ℕ)
+    (A : Fin m → Fin p → ℝ) (b : Fin m → ℝ)
+    (hp : p ≤ m)
+    (hvalid :
+      gammaValid fp (householderQRRhsPanelGammaClosedGrowthIndex m p))
+    (hready : HouseholderQRPanelReady fp m p A) :
+    householderQRRhsPanelBackwardBound fp m p A b ≤
+      gamma fp (householderQRRhsPanelGammaClosedGrowthIndex m p) *
+        infNormVec b := by
+  cases p with
+  | zero =>
+      cases m with
+      | zero =>
+          simp [householderQRRhsPanelBackwardBound,
+            householderQRRhsPanelGammaClosedGrowthIndex, gamma]
+      | succ m =>
+          simp [householderQRRhsPanelBackwardBound,
+            householderQRRhsPanelGammaClosedGrowthIndex, gamma]
+  | succ p =>
+      cases m with
+      | zero =>
+          omega
+      | succ m =>
+          let rows : ℕ := m + 1
+          let cols : ℕ := p + 1
+          let K : ℕ := householderConstructApplyGammaIndex rows
+          let I : ℕ := cols * rows ^ 2 * (1 + 2 * rows ^ 2) ^ cols
+          have hvalid_index : gammaValid fp (I * K) := by
+            simpa [householderQRRhsPanelGammaClosedGrowthIndex, rows, cols,
+              I, K] using hvalid
+          have hI_pos : 0 < I := by
+            dsimp [I, rows, cols]
+            positivity
+          have hK_le_index : K ≤ I * K :=
+            Nat.le_mul_of_pos_left K hI_pos
+          have hvalidK : gammaValid fp K :=
+            gammaValid_mono fp hK_le_index hvalid_index
+          exact le_trans
+            (householderQRRhsPanelBackwardBound_le_gammaClosedGrowth fp
+              rows cols A b hp hvalidK hready)
+            (mul_le_mul_of_nonneg_right
+              (by
+                simpa [householderQRRhsPanelGammaClosedGrowthIndex, rows,
+                  cols, I, K] using
+                  householderQRRhsPanelGammaClosedGrowthCoeff_le_gammaIndex
+                    fp rows cols hvalid_index)
+              (infNormVec_nonneg b))
+
+/-- The implementation-backed panel QR RHS perturbation bound is controlled by
+    an explicit factor times the printed panel gamma radius under a standard
+    half-radius guard on the conservative index.
+
+    This still does not prove Higham's printed Theorem 20.4 RHS constant: the
+    extra factor `2 * householderQRRhsPanelGammaClosedGrowthFactor m p`
+    remains visible. -/
+theorem householderQRRhsPanelBackwardBound_le_gammaClosedGrowthFactor
+    (fp : FPModel) (m p : ℕ)
+    (A : Fin m → Fin p → ℝ) (b : Fin m → ℝ)
+    (hp : p ≤ m) (hm : 0 < m)
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex m p : ℝ) * fp.u ≤
+        1 / 2))
+    (hready : HouseholderQRPanelReady fp m p A) :
+    householderQRRhsPanelBackwardBound fp m p A b ≤
+      ((2 : ℝ) * (householderQRRhsPanelGammaClosedGrowthFactor m p : ℝ) *
+        gamma fp (p * householderConstructApplyGammaIndex m)) *
+        infNormVec b := by
+  have hvalid :
+      gammaValid fp (householderQRRhsPanelGammaClosedGrowthIndex m p) := by
+    unfold gammaValid
+    exact lt_of_le_of_lt hhalf (by norm_num)
+  exact le_trans
+    (householderQRRhsPanelBackwardBound_le_gammaClosedGrowthIndex fp
+      m p A b hp hvalid hready)
+    (mul_le_mul_of_nonneg_right
+      (householderQRRhsPanelGammaClosedGrowthIndex_gamma_le_factor_printedGamma
+        fp m p hm hhalf)
+      (infNormVec_nonneg b))
 
 /-- Square specialization of
     `householderQRRhsPanelBackwardBound_le_growthCoeff`. -/
