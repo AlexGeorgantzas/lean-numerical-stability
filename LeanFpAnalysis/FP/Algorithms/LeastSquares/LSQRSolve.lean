@@ -908,6 +908,42 @@ theorem lsScaledAugmentedMatrix_zero_mulVec_eq_reindexed_rectSelfAdjointDilation
     rw [finiteMatVec_rectSelfAdjointDilation_sumBothVec]
     simp [sumBothVec]
 
+/-- Higham, 2nd ed., Chapter 20, equation (20.17): the Rayleigh form of the
+    zero-scaled augmented matrix `C(0)` on the source-indexed vector `[r; x]`
+    is `2 * rᵀ A x`. This is the `Fin (m+n)` counterpart of the repository's
+    self-adjoint-dilation quadratic-form identity used by the later
+    (20.18)-(20.19) spectral route. -/
+theorem lsScaledAugmentedMatrix_zero_quadraticForm_append_eq
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) (r : Fin m → ℝ) (x : Fin n → ℝ) :
+    finiteQuadraticForm (lsScaledAugmentedMatrix 0 A) (Fin.append r x) =
+      2 * ∑ i : Fin m, r i * rectMatMulVec A x i := by
+  classical
+  have hswap :
+      (∑ j : Fin n, x j * ∑ i : Fin m, A i j * r i) =
+        ∑ i : Fin m, r i * ∑ j : Fin n, A i j * x j := by
+    calc
+      (∑ j : Fin n, x j * ∑ i : Fin m, A i j * r i)
+          = ∑ j : Fin n, ∑ i : Fin m, x j * (A i j * r i) := by
+              apply Finset.sum_congr rfl
+              intro j _
+              rw [Finset.mul_sum]
+      _ = ∑ i : Fin m, ∑ j : Fin n, x j * (A i j * r i) := by
+              rw [Finset.sum_comm]
+      _ = ∑ i : Fin m, r i * ∑ j : Fin n, A i j * x j := by
+              apply Finset.sum_congr rfl
+              intro i _
+              rw [Finset.mul_sum]
+              apply Finset.sum_congr rfl
+              intro j _
+              ring
+  unfold finiteQuadraticForm
+  rw [show finiteMatVec (lsScaledAugmentedMatrix 0 A) (Fin.append r x) =
+      rectMatMulVec (lsScaledAugmentedMatrix 0 A) (Fin.append r x) by rfl]
+  rw [lsScaledAugmentedMatrix_mulVec]
+  rw [Fin.sum_univ_add]
+  simp [Fin.append_left, Fin.append_right, rectMatMulVec, hswap]
+  ring
+
 /-- The component equations for the scaled augmented system are exactly the
     block matrix-vector equation using `C(alpha)` from (20.17). -/
 theorem LSScaledAugmentedSystem.iff_scaledAugmentedMatrix_mulVec {m n : ℕ}
