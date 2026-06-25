@@ -1510,6 +1510,53 @@ theorem lseWeightedMinimizer_constraintResidual_normSq_le_feasibleObjective_div_
   exact lseConstraintResidual_normSq_le_of_weightedObjective_le
     hmu A b B d x_mu hobj
 
+/-- Sequence-level constraint-residual convergence for the method of weighting
+    after (20.26).  If the inverse squared weights tend to zero and each
+    `x_mu i` is an exact minimizer of the weighted unconstrained problem, then
+    the squared equality-constraint residual tends to zero.  This proves only
+    feasibility convergence, not convergence to the LSE minimizer itself. -/
+theorem lseWeightedMinimizer_constraintResidual_normSq_tendsto_zero_of_inv_mu_sq
+    {ι : Type*} {l : Filter ι} {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ)
+    (mu : ι → ℝ) (x_mu : ι → Fin n → ℝ) (y : Fin n → ℝ)
+    (hmu : ∀ i, mu i ≠ 0)
+    (hmin : ∀ i, IsLeastSquaresMinimizer
+      (lseWeightedMatrix (mu i) A B) (lseWeightedRhs (mu i) b d) (x_mu i))
+    (hyfeas : LSEFeasible B d y)
+    (hInvSq : Filter.Tendsto (fun i => (mu i ^ 2)⁻¹) l (nhds 0)) :
+    Filter.Tendsto
+      (fun i => vecNorm2Sq (lseConstraintResidual B d (x_mu i))) l (nhds 0) := by
+  have hboundlim :
+      Filter.Tendsto (fun i => lsObjective A b y / mu i ^ 2) l (nhds 0) := by
+    simpa [div_eq_mul_inv] using hInvSq.const_mul (lsObjective A b y)
+  refine squeeze_zero ?hnonneg ?hupper hboundlim
+  · intro i
+    exact vecNorm2Sq_nonneg (lseConstraintResidual B d (x_mu i))
+  · intro i
+    exact lseWeightedMinimizer_constraintResidual_normSq_le_feasibleObjective_div_mu_sq
+      (hmu i) A b B d (x_mu i) y (hmin i) hyfeas
+
+/-- Norm form of the sequence-level feasibility convergence for the weighted
+    method after (20.26).  This remains a constraint-residual theorem only; it
+    does not identify the limit of the weighted minimizers. -/
+theorem lseWeightedMinimizer_constraintResidual_norm_tendsto_zero_of_inv_mu_sq
+    {ι : Type*} {l : Filter ι} {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ)
+    (mu : ι → ℝ) (x_mu : ι → Fin n → ℝ) (y : Fin n → ℝ)
+    (hmu : ∀ i, mu i ≠ 0)
+    (hmin : ∀ i, IsLeastSquaresMinimizer
+      (lseWeightedMatrix (mu i) A B) (lseWeightedRhs (mu i) b d) (x_mu i))
+    (hyfeas : LSEFeasible B d y)
+    (hInvSq : Filter.Tendsto (fun i => (mu i ^ 2)⁻¹) l (nhds 0)) :
+    Filter.Tendsto
+      (fun i => vecNorm2 (lseConstraintResidual B d (x_mu i))) l (nhds 0) := by
+  have hsq :=
+    lseWeightedMinimizer_constraintResidual_normSq_tendsto_zero_of_inv_mu_sq
+      A b B d mu x_mu y hmu hmin hyfeas hInvSq
+  simpa [vecNorm2] using Real.continuous_sqrt.tendsto 0 |>.comp hsq
+
 private theorem lsResidual_gqrAQBlock {r p q : ℕ}
     (L11 : Fin r → Fin p → ℝ)
     (L21 : Fin q → Fin p → ℝ)
