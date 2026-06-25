@@ -807,6 +807,38 @@ theorem lsScaledAugmentedMatrix_symmetric {m n : ℕ} (alpha : ℝ)
     · intro j
       simp [lsScaledAugmentedMatrix, Fin.append_right]
 
+/-- Higham, 2nd ed., Chapter 20, equation (20.17): at `alpha = 0`, the
+    scaled augmented matrix is the `finSumFinEquiv` reindexing of the standard
+    self-adjoint dilation `[[0, A], [A^T, 0]]`. -/
+theorem lsScaledAugmentedMatrix_zero_eq_reindexed_rectSelfAdjointDilation
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) :
+    lsScaledAugmentedMatrix 0 A =
+      fun p q : Fin (m + n) =>
+        rectSelfAdjointDilation A (finSumFinEquiv.symm p) (finSumFinEquiv.symm q) := by
+  ext p q
+  refine Fin.addCases (motive := fun p : Fin (m + n) =>
+    lsScaledAugmentedMatrix 0 A p q =
+      rectSelfAdjointDilation A (finSumFinEquiv.symm p) (finSumFinEquiv.symm q))
+    ?topRow ?bottomRow p
+  · intro i
+    refine Fin.addCases (motive := fun q : Fin (m + n) =>
+      lsScaledAugmentedMatrix 0 A (Fin.castAdd n i) q =
+        rectSelfAdjointDilation A (finSumFinEquiv.symm (Fin.castAdd n i))
+          (finSumFinEquiv.symm q)) ?topLeft ?topRight q
+    · intro j
+      simp [lsScaledAugmentedMatrix, rectSelfAdjointDilation, idMatrix]
+    · intro j
+      simp [lsScaledAugmentedMatrix, rectSelfAdjointDilation]
+  · intro i
+    refine Fin.addCases (motive := fun q : Fin (m + n) =>
+      lsScaledAugmentedMatrix 0 A (Fin.natAdd m i) q =
+        rectSelfAdjointDilation A (finSumFinEquiv.symm (Fin.natAdd m i))
+          (finSumFinEquiv.symm q)) ?bottomLeft ?bottomRight q
+    · intro j
+      simp [lsScaledAugmentedMatrix, rectSelfAdjointDilation]
+    · intro j
+      simp [lsScaledAugmentedMatrix, rectSelfAdjointDilation]
+
 /-- Component form of the scaled augmented system with coefficient matrix
     `C(alpha)` from equation (20.17). -/
 def LSScaledAugmentedSystem {m n : ℕ} (alpha : ℝ)
