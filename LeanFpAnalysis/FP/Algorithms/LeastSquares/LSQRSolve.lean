@@ -3723,6 +3723,64 @@ noncomputable def lsNormwiseBackwardErrorEtaF {m n : ℕ} (theta : ℝ)
     (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) : ℝ :=
   sInf (lsNormwiseBackwardErrorValuesF theta A b y)
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.5: the scalar
+    `mu = theta^2 ||y||_2^2 / (1 + theta^2 ||y||_2^2)` used in the
+    Walden--Karlson--Sun formula and its alternative form (20.21). -/
+noncomputable def lsNormwiseBackwardErrorMu {n : ℕ} (theta : ℝ)
+    (y : Fin n → ℝ) : ℝ :=
+  theta ^ 2 * vecNorm2Sq y / (1 + theta ^ 2 * vecNorm2Sq y)
+
+/-- The denominator in the source scalar `mu` from Theorem 20.5 is positive. -/
+theorem lsNormwiseBackwardErrorMu_den_pos {n : ℕ} (theta : ℝ)
+    (y : Fin n → ℝ) :
+    0 < 1 + theta ^ 2 * vecNorm2Sq y := by
+  have hterm : 0 ≤ theta ^ 2 * vecNorm2Sq y :=
+    mul_nonneg (sq_nonneg theta) (vecNorm2Sq_nonneg y)
+  linarith
+
+/-- The scalar `mu` in Theorem 20.5 is nonnegative. -/
+theorem lsNormwiseBackwardErrorMu_nonneg {n : ℕ} (theta : ℝ)
+    (y : Fin n → ℝ) :
+    0 ≤ lsNormwiseBackwardErrorMu theta y := by
+  unfold lsNormwiseBackwardErrorMu
+  exact div_nonneg
+    (mul_nonneg (sq_nonneg theta) (vecNorm2Sq_nonneg y))
+    (le_of_lt (lsNormwiseBackwardErrorMu_den_pos theta y))
+
+/-- The scalar `mu` in Theorem 20.5 is strictly below one. -/
+theorem lsNormwiseBackwardErrorMu_lt_one {n : ℕ} (theta : ℝ)
+    (y : Fin n → ℝ) :
+    lsNormwiseBackwardErrorMu theta y < 1 := by
+  unfold lsNormwiseBackwardErrorMu
+  have hden : 0 < 1 + theta ^ 2 * vecNorm2Sq y :=
+    lsNormwiseBackwardErrorMu_den_pos theta y
+  rw [div_lt_iff₀ hden]
+  nlinarith
+
+/-- The scalar `mu` in Theorem 20.5 lies in `[0,1]`. -/
+theorem lsNormwiseBackwardErrorMu_le_one {n : ℕ} (theta : ℝ)
+    (y : Fin n → ℝ) :
+    lsNormwiseBackwardErrorMu theta y ≤ 1 :=
+  le_of_lt (lsNormwiseBackwardErrorMu_lt_one theta y)
+
+/-- Higham, 2nd ed., Chapter 20, equation (20.21): the source scalar
+    `phi = sqrt(mu) ||r||_2 / ||y||_2` used in the alternative normwise
+    backward-error formula.  This definition only records the scalar appearing
+    in the source formula; the singular-value minimization theorem remains a
+    separate open spectral row. -/
+noncomputable def lsNormwiseBackwardErrorPhi {m n : ℕ} (theta : ℝ)
+    (r : Fin m → ℝ) (y : Fin n → ℝ) : ℝ :=
+  Real.sqrt (lsNormwiseBackwardErrorMu theta y) * vecNorm2 r / vecNorm2 y
+
+/-- The source scalar `phi` from (20.21) is nonnegative. -/
+theorem lsNormwiseBackwardErrorPhi_nonneg {m n : ℕ} (theta : ℝ)
+    (r : Fin m → ℝ) (y : Fin n → ℝ) :
+    0 ≤ lsNormwiseBackwardErrorPhi theta r y := by
+  unfold lsNormwiseBackwardErrorPhi
+  exact div_nonneg
+    (mul_nonneg (Real.sqrt_nonneg _) (vecNorm2_nonneg r))
+    (vecNorm2_nonneg y)
+
 /-- The Frobenius cost in (20.20) is nonnegative. -/
 theorem lsNormwiseBackwardErrorCostF_nonneg {m n : ℕ} (theta : ℝ)
     (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ) :
@@ -4660,6 +4718,31 @@ noncomputable def lsLemma20_6ProjectorComplement {m : ℕ} (s : Fin m → ℝ) :
     Fin m → Fin m → ℝ :=
   fun i j => idMatrix m i j - lsLemma20_6Projector s i j
 
+/-- Higham, 2nd ed., Chapter 20, equation (20.21): source-facing model of
+    `r r^+` in the nonzero-residual case, represented as the rank-one
+    projector `r r^T / ||r||_2^2`.  This is a transparent alias for the
+    rank-one projector already used in Lemma 20.6. -/
+noncomputable abbrev lsResidualPseudoinverseProjector {m : ℕ}
+    (r : Fin m → ℝ) : Fin m → Fin m → ℝ :=
+  lsLemma20_6Projector r
+
+/-- Higham, 2nd ed., Chapter 20, equation (20.21): source-facing model of
+    `I - r r^+` in the nonzero-residual case. -/
+noncomputable abbrev lsResidualComplementProjector {m : ℕ}
+    (r : Fin m → ℝ) : Fin m → Fin m → ℝ :=
+  lsLemma20_6ProjectorComplement r
+
+/-- Entry form of the source projector `r r^+` from (20.21). -/
+theorem lsResidualPseudoinverseProjector_apply {m : ℕ}
+    (r : Fin m → ℝ) (i j : Fin m) :
+    lsResidualPseudoinverseProjector r i j = r i * r j / vecNorm2Sq r := rfl
+
+/-- Entry form of the source complement `I - r r^+` from (20.21). -/
+theorem lsResidualComplementProjector_apply {m : ℕ}
+    (r : Fin m → ℝ) (i j : Fin m) :
+    lsResidualComplementProjector r i j =
+      idMatrix m i j - r i * r j / vecNorm2Sq r := rfl
+
 /-- The projector `P = ss^T/(s^Ts)` in Lemma 20.6 is symmetric. -/
 theorem lsLemma20_6Projector_symmetric {m : ℕ} (s : Fin m → ℝ)
     (i j : Fin m) :
@@ -5086,6 +5169,138 @@ theorem lsLemma20_6ProjectorComplement_vecNorm2Sq_le {m : ℕ}
   rw [hnorm]
   linarith
 
+/-- The source projector `r r^+` from (20.21) is symmetric. -/
+theorem lsResidualPseudoinverseProjector_symmetric {m : ℕ}
+    (r : Fin m → ℝ) (i j : Fin m) :
+    lsResidualPseudoinverseProjector r i j =
+      lsResidualPseudoinverseProjector r j i := by
+  simpa [lsResidualPseudoinverseProjector] using
+    lsLemma20_6Projector_symmetric r i j
+
+/-- The source complement `I - r r^+` from (20.21) is symmetric. -/
+theorem lsResidualComplementProjector_symmetric {m : ℕ}
+    (r : Fin m → ℝ) (i j : Fin m) :
+    lsResidualComplementProjector r i j =
+      lsResidualComplementProjector r j i := by
+  simpa [lsResidualComplementProjector] using
+    lsLemma20_6ProjectorComplement_symmetric r i j
+
+/-- The source projector `r r^+` from (20.21) is idempotent when `r` is
+    nonzero, expressed through the nonzero denominator `||r||_2^2`. -/
+theorem lsResidualPseudoinverseProjector_idempotent {m : ℕ}
+    (r : Fin m → ℝ) (hrsq : vecNorm2Sq r ≠ 0) :
+    matMul m (lsResidualPseudoinverseProjector r)
+        (lsResidualPseudoinverseProjector r) =
+      lsResidualPseudoinverseProjector r := by
+  simpa [lsResidualPseudoinverseProjector] using
+    lsLemma20_6Projector_idempotent r hrsq
+
+/-- The source complement `I - r r^+` from (20.21) is idempotent when `r` is
+    nonzero, expressed through the nonzero denominator `||r||_2^2`. -/
+theorem lsResidualComplementProjector_idempotent {m : ℕ}
+    (r : Fin m → ℝ) (hrsq : vecNorm2Sq r ≠ 0) :
+    matMul m (lsResidualComplementProjector r)
+        (lsResidualComplementProjector r) =
+      lsResidualComplementProjector r := by
+  simpa [lsResidualComplementProjector] using
+    lsLemma20_6ProjectorComplement_idempotent r hrsq
+
+/-- The source projector `r r^+` fixes the residual vector `r`. -/
+theorem lsResidualPseudoinverseProjector_mulVec_residual {m : ℕ}
+    (r : Fin m → ℝ) (hrsq : vecNorm2Sq r ≠ 0) :
+    matMulVec m (lsResidualPseudoinverseProjector r) r = r := by
+  ext i
+  simpa [lsResidualPseudoinverseProjector, matMulVec] using
+    lsLemma20_6Projector_apply_self r hrsq i
+
+/-- The source complement `I - r r^+` annihilates the residual vector `r`. -/
+theorem lsResidualComplementProjector_mulVec_residual {m : ℕ}
+    (r : Fin m → ℝ) (hrsq : vecNorm2Sq r ≠ 0) :
+    matMulVec m (lsResidualComplementProjector r) r = 0 := by
+  ext i
+  have hrow := lsLemma20_6Projector_sub_id_apply_self r hrsq i
+  have hcomp :
+      ∑ j : Fin m, (idMatrix m i j - lsLemma20_6Projector r i j) * r j = 0 := by
+    calc
+      (∑ j : Fin m, (idMatrix m i j - lsLemma20_6Projector r i j) * r j)
+          = -∑ j : Fin m, (lsLemma20_6Projector r i j - idMatrix m i j) * r j := by
+            rw [← Finset.sum_neg_distrib]
+            apply Finset.sum_congr rfl
+            intro j _
+            ring
+      _ = 0 := by
+            rw [hrow]
+            ring
+  simpa [lsResidualComplementProjector, lsLemma20_6ProjectorComplement, matMulVec]
+    using hcomp
+
+/-- Higham, 2nd ed., Chapter 20, equation (20.21): the displayed block matrix
+    `[ A   phi (I - r r^+) ]` used in the alternative Walden--Karlson--Sun
+    formula.  This definition records the exact block shape and projector
+    algebra only; it does not assert the missing singular-value equality. -/
+noncomputable def lsNormwiseBackwardErrorFormulaMatrix {m n : ℕ}
+    (theta : ℝ) (A : Fin m → Fin n → ℝ) (r : Fin m → ℝ)
+    (y : Fin n → ℝ) : Fin m → Fin (n + m) → ℝ :=
+  fun i =>
+    Fin.append (A i)
+      (fun j : Fin m =>
+        lsNormwiseBackwardErrorPhi theta r y *
+          lsResidualComplementProjector r i j)
+
+@[simp]
+theorem lsNormwiseBackwardErrorFormulaMatrix_left {m n : ℕ}
+    (theta : ℝ) (A : Fin m → Fin n → ℝ) (r : Fin m → ℝ)
+    (y : Fin n → ℝ) (i : Fin m) (j : Fin n) :
+    lsNormwiseBackwardErrorFormulaMatrix theta A r y i (Fin.castAdd m j) =
+      A i j := by
+  simp [lsNormwiseBackwardErrorFormulaMatrix, Fin.append_left]
+
+@[simp]
+theorem lsNormwiseBackwardErrorFormulaMatrix_right {m n : ℕ}
+    (theta : ℝ) (A : Fin m → Fin n → ℝ) (r : Fin m → ℝ)
+    (y : Fin n → ℝ) (i : Fin m) (j : Fin m) :
+    lsNormwiseBackwardErrorFormulaMatrix theta A r y i (Fin.natAdd n j) =
+      lsNormwiseBackwardErrorPhi theta r y *
+        lsResidualComplementProjector r i j := by
+  simp [lsNormwiseBackwardErrorFormulaMatrix, Fin.append_right]
+
+/-- The appended projector block in (20.21) annihilates the residual direction:
+    `[ A   phi(I - r r^+) ] [0; r] = 0` for nonzero residual `r`. -/
+theorem lsNormwiseBackwardErrorFormulaMatrix_right_residual_mulVec_eq_zero
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ) (r : Fin m → ℝ)
+    (y : Fin n → ℝ) (hrsq : vecNorm2Sq r ≠ 0) :
+    rectMatMulVec (lsNormwiseBackwardErrorFormulaMatrix theta A r y)
+        (Fin.append (0 : Fin n → ℝ) r) =
+      0 := by
+  ext i
+  unfold rectMatMulVec
+  rw [Fin.sum_univ_add]
+  have hcomp := congrFun (lsResidualComplementProjector_mulVec_residual r hrsq) i
+  have hcomp_sum :
+      ∑ j : Fin m, lsResidualComplementProjector r i j * r j = 0 := by
+    simpa [matMulVec] using hcomp
+  calc
+    (∑ j : Fin n,
+          lsNormwiseBackwardErrorFormulaMatrix theta A r y i (Fin.castAdd m j) *
+            Fin.append (0 : Fin n → ℝ) r (Fin.castAdd m j)) +
+        ∑ j : Fin m,
+          lsNormwiseBackwardErrorFormulaMatrix theta A r y i (Fin.natAdd n j) *
+            Fin.append (0 : Fin n → ℝ) r (Fin.natAdd n j)
+        =
+        0 +
+          ∑ j : Fin m,
+            (lsNormwiseBackwardErrorPhi theta r y *
+                lsResidualComplementProjector r i j) * r j := by
+          simp [Fin.append_left, Fin.append_right]
+    _ =
+        lsNormwiseBackwardErrorPhi theta r y *
+          ∑ j : Fin m, lsResidualComplementProjector r i j * r j := by
+          rw [Finset.mul_sum]
+          ring_nf
+    _ = 0 := by
+          rw [hcomp_sum]
+          ring
+
 /-- Transposed version of `(P - I)s = 0` for the symmetric rank-one projector
     in Lemma 20.6. -/
 theorem lsLemma20_6Projector_transpose_sub_id_apply_self {m : ℕ}
@@ -5110,6 +5325,14 @@ theorem lsLemma20_6ProjectorComplement_transpose_apply_self {m : ℕ}
     _ = 0 := by
           rw [hrow]
           ring
+
+/-- Transposed action of the source complement from (20.21):
+    `r^T(I - r r^+) = 0`. -/
+theorem lsResidualComplementProjector_transpose_mul_residual {m : ℕ}
+    (r : Fin m → ℝ) (hrsq : vecNorm2Sq r ≠ 0) (k : Fin m) :
+    ∑ i : Fin m, lsResidualComplementProjector r i k * r i = 0 := by
+  simpa [lsResidualComplementProjector] using
+    lsLemma20_6ProjectorComplement_transpose_apply_self r hrsq k
 
 /-- The `I-P` and `P` row-projected panels in equation (20.22) are orthogonal
     in the Frobenius inner product. -/
