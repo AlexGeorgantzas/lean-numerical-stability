@@ -5809,6 +5809,124 @@ theorem lsNormwiseBackwardErrorFormulaMatrixSigmaMin_le
     lsNormwiseBackwardErrorFormulaMatrixRowSingularValue_le
       theta A r y hcA hA hrsq (Fin.last m)
 
+/-- Full right-hand side of Higham, 2nd ed., Chapter 20, equation (20.21):
+    `min {phi, sigma_min [A  phi(I - r r^+)]}` for a supplied residual `r`.
+    This records the printed outer minimum separately from the row-side
+    `sigma_min` wrapper; it is not the proof that the expression equals
+    `eta_F(y)`. -/
+noncomputable def lsNormwiseBackwardErrorFormulaValue
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ) : ℝ :=
+  min (lsNormwiseBackwardErrorPhi theta r y)
+    (lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y)
+
+/-- Source-data form of the (20.21) right-hand side, with Higham's residual
+    convention `r = b - A y`. -/
+noncomputable def lsNormwiseBackwardErrorFormulaRHS
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ) : ℝ :=
+  lsNormwiseBackwardErrorFormulaValue theta A (lsResidualHigham A b y) y
+
+theorem lsNormwiseBackwardErrorFormulaValue_nonneg
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ) :
+    0 ≤ lsNormwiseBackwardErrorFormulaValue theta A r y := by
+  rw [lsNormwiseBackwardErrorFormulaValue]
+  exact le_min (lsNormwiseBackwardErrorPhi_nonneg theta r y)
+    (lsNormwiseBackwardErrorFormulaMatrixSigmaMin_nonneg theta A r y)
+
+theorem lsNormwiseBackwardErrorFormulaValue_le_phi
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ) :
+    lsNormwiseBackwardErrorFormulaValue theta A r y ≤
+      lsNormwiseBackwardErrorPhi theta r y := by
+  rw [lsNormwiseBackwardErrorFormulaValue]
+  exact min_le_left _ _
+
+theorem lsNormwiseBackwardErrorFormulaValue_le_sigmaMin
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ) :
+    lsNormwiseBackwardErrorFormulaValue theta A r y ≤
+      lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y := by
+  rw [lsNormwiseBackwardErrorFormulaValue]
+  exact min_le_right _ _
+
+theorem lsNormwiseBackwardErrorFormulaRHS_nonneg
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ) :
+    0 ≤ lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  simpa [lsNormwiseBackwardErrorFormulaRHS] using
+    lsNormwiseBackwardErrorFormulaValue_nonneg theta A
+      (lsResidualHigham A b y) y
+
+/-- Lower-bound handoff for the alternative formula (20.21): once every
+    feasible perturbation in (20.20) is known to have cost at least the printed
+    right-hand side, the right-hand side is below the infimum model `eta_F`.
+    The spectral proof of that lower bound remains the open Walden--Karlson--Sun
+    step. -/
+theorem lsNormwiseBackwardErrorFormulaRHS_le_etaF_of_forall_feasible_cost_ge
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (hlower :
+      ∀ (DeltaA : Fin (m + 1) → Fin n → ℝ) (Deltab : Fin (m + 1) → ℝ),
+        LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab →
+          lsNormwiseBackwardErrorFormulaRHS theta A b y ≤
+            lsNormwiseBackwardErrorCostF theta DeltaA Deltab) :
+    lsNormwiseBackwardErrorFormulaRHS theta A b y ≤
+      lsNormwiseBackwardErrorEtaF theta A b y := by
+  unfold lsNormwiseBackwardErrorEtaF
+  apply le_csInf (lsNormwiseBackwardErrorValuesF.nonempty theta A b y)
+  intro eta heta
+  rcases heta with ⟨DeltaA, Deltab, hfeas, heta_eq⟩
+  rw [heta_eq]
+  exact hlower DeltaA Deltab hfeas
+
+/-- Attainment handoff for the alternative formula (20.21): a feasible
+    perturbation whose weighted cost is the printed right-hand side gives the
+    reverse inequality `eta_F(y) <=` that right-hand side. -/
+theorem lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_exists_feasible_cost_eq
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (hatt :
+      ∃ (DeltaA : Fin (m + 1) → Fin n → ℝ) (Deltab : Fin (m + 1) → ℝ),
+        LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+          lsNormwiseBackwardErrorCostF theta DeltaA Deltab =
+            lsNormwiseBackwardErrorFormulaRHS theta A b y) :
+    lsNormwiseBackwardErrorEtaF theta A b y ≤
+      lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  rcases hatt with ⟨DeltaA, Deltab, hfeas, hcost⟩
+  calc
+    lsNormwiseBackwardErrorEtaF theta A b y ≤
+        lsNormwiseBackwardErrorCostF theta DeltaA Deltab :=
+      lsNormwiseBackwardErrorEtaF_le_costF_of_feasible
+        theta A b y DeltaA Deltab hfeas
+    _ = lsNormwiseBackwardErrorFormulaRHS theta A b y := hcost
+
+/-- Certificate form of the missing equality in equation (20.21).  The theorem
+    isolates the two obligations left for the Walden--Karlson--Sun proof:
+    all feasible perturbations must be bounded below by the printed formula
+    right-hand side, and one feasible perturbation must attain that value. -/
+theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_of_formula_certificate
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (hlower :
+      ∀ (DeltaA : Fin (m + 1) → Fin n → ℝ) (Deltab : Fin (m + 1) → ℝ),
+        LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab →
+          lsNormwiseBackwardErrorFormulaRHS theta A b y ≤
+            lsNormwiseBackwardErrorCostF theta DeltaA Deltab)
+    (hatt :
+      ∃ (DeltaA : Fin (m + 1) → Fin n → ℝ) (Deltab : Fin (m + 1) → ℝ),
+        LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+          lsNormwiseBackwardErrorCostF theta DeltaA Deltab =
+            lsNormwiseBackwardErrorFormulaRHS theta A b y) :
+    lsNormwiseBackwardErrorEtaF theta A b y =
+      lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  exact le_antisymm
+    (lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_exists_feasible_cost_eq
+      theta A b y hatt)
+    (lsNormwiseBackwardErrorFormulaRHS_le_etaF_of_forall_feasible_cost_ge
+      theta A b y hlower)
+
 /-- Transposed version of `(P - I)s = 0` for the symmetric rank-one projector
     in Lemma 20.6. -/
 theorem lsLemma20_6Projector_transpose_sub_id_apply_self {m : ℕ}
