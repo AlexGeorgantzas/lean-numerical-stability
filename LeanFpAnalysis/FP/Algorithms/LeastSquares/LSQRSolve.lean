@@ -4859,6 +4859,101 @@ theorem lsNormwiseBackwardErrorCostF_eq_sqrt_sq_sum {m n : ℕ} (theta : ℝ)
   rw [lsNormwiseBackwardErrorCostF, frobNormRect,
     lsNormwiseBackwardErrorWeightedMatrix_frobNormSqRect]
 
+/-- Matrix-only specialization of the weighted cost in (20.20): when
+    `Delta b = 0`, the finite-`theta` cost is exactly `||DeltaA||_F`.  This is
+    the finite-cost algebra behind the source convention that the
+    `theta = infinity` case forbids right-hand-side perturbations. -/
+theorem lsNormwiseBackwardErrorCostF_eq_frobNormRect_of_deltab_zero
+    {m n : ℕ} (theta : ℝ) (DeltaA : Fin m → Fin n → ℝ) :
+    lsNormwiseBackwardErrorCostF theta DeltaA (0 : Fin m → ℝ) =
+      frobNormRect DeltaA := by
+  rw [lsNormwiseBackwardErrorCostF_eq_sqrt_sq_sum]
+  simp [vecNorm2Sq, frobNormRect]
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.5 discussion and Problem 20.8:
+    attainable costs for the `theta = infinity` convention, modeled as
+    matrix-only perturbations with `Delta b = 0`. -/
+noncomputable def lsNormwiseBackwardErrorMatrixOnlyValuesF
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (y : Fin n → ℝ) : Set ℝ :=
+  {eta | ∃ DeltaA : Fin m → Fin n → ℝ,
+    LSNormwiseBackwardErrorFeasible A b y DeltaA (0 : Fin m → ℝ) ∧
+      eta = frobNormRect DeltaA}
+
+/-- Infimum model for the matrix-only (`theta = infinity`) normwise
+    least-squares backward error.  Problem 20.8 evaluates this model at
+    `y = 0`; the general Walden--Karlson--Sun formula remains a separate
+    spectral theorem. -/
+noncomputable def lsNormwiseBackwardErrorMatrixOnlyEtaF
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (y : Fin n → ℝ) : ℝ :=
+  sInf (lsNormwiseBackwardErrorMatrixOnlyValuesF A b y)
+
+theorem lsNormwiseBackwardErrorMatrixOnlyValuesF.mem_of_feasible
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (y : Fin n → ℝ) (DeltaA : Fin m → Fin n → ℝ)
+    (hfeas :
+      LSNormwiseBackwardErrorFeasible A b y DeltaA (0 : Fin m → ℝ)) :
+    frobNormRect DeltaA ∈
+      lsNormwiseBackwardErrorMatrixOnlyValuesF A b y := by
+  exact ⟨DeltaA, hfeas, rfl⟩
+
+theorem lsNormwiseBackwardErrorMatrixOnlyValuesF.nonempty {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    (lsNormwiseBackwardErrorMatrixOnlyValuesF A b y).Nonempty := by
+  refine ⟨frobNormRect (fun i j => -A i j), ?_⟩
+  apply lsNormwiseBackwardErrorMatrixOnlyValuesF.mem_of_feasible
+  intro z
+  simp [lsObjective, lsResidual, rectMatMulVec, vecNorm2Sq]
+
+theorem lsNormwiseBackwardErrorMatrixOnlyValuesF.bddBelow {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    BddBelow (lsNormwiseBackwardErrorMatrixOnlyValuesF A b y) := by
+  refine ⟨0, ?_⟩
+  intro eta heta
+  rcases heta with ⟨DeltaA, _hfeas, rfl⟩
+  exact frobNormRect_nonneg DeltaA
+
+theorem lsNormwiseBackwardErrorMatrixOnlyEtaF_nonneg {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    0 ≤ lsNormwiseBackwardErrorMatrixOnlyEtaF A b y := by
+  unfold lsNormwiseBackwardErrorMatrixOnlyEtaF
+  apply Real.sInf_nonneg
+  intro eta heta
+  rcases heta with ⟨DeltaA, _hfeas, rfl⟩
+  exact frobNormRect_nonneg DeltaA
+
+theorem lsNormwiseBackwardErrorMatrixOnlyEtaF_le_of_mem {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    {eta : ℝ}
+    (heta : eta ∈ lsNormwiseBackwardErrorMatrixOnlyValuesF A b y) :
+    lsNormwiseBackwardErrorMatrixOnlyEtaF A b y ≤ eta := by
+  unfold lsNormwiseBackwardErrorMatrixOnlyEtaF
+  exact csInf_le
+    (lsNormwiseBackwardErrorMatrixOnlyValuesF.bddBelow A b y) heta
+
+/-- Rank-one matrix-only perturbation used in Higham, 2nd ed., Chapter 20,
+    Problem 20.8.  For nonzero `b`, this is the minimum-Frobenius perturbation
+    making `y = 0` an exact least-squares minimizer when `Delta b = 0`. -/
+noncomputable def lsProblem20_8MatrixOnlyDeltaA {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) : Fin m → Fin n → ℝ :=
+  fun i j => (-(vecNorm2Sq b)⁻¹ * b i) * rectLSRhs A b j
+
+private theorem vecNorm2_pos_of_ne_zero_lsq {m : ℕ} {b : Fin m → ℝ}
+    (hb : b ≠ 0) : 0 < vecNorm2 b := by
+  have hbne : vecNorm2 b ≠ 0 := by
+    intro hnorm
+    apply hb
+    ext i
+    exact (vecNorm2_eq_zero_iff b).mp hnorm i
+  exact lt_of_le_of_ne' (vecNorm2_nonneg b) hbne
+
+private theorem vecNorm2Sq_pos_of_ne_zero_lsq {m : ℕ} {b : Fin m → ℝ}
+    (hb : b ≠ 0) : 0 < vecNorm2Sq b := by
+  have hbpos := vecNorm2_pos_of_ne_zero_lsq hb
+  rw [← vecNorm2_sq]
+  exact sq_pos_of_pos hbpos
+
 /-- Continuity of the weighted Frobenius perturbation cost from (20.20) as a
     function of the perturbation pair.  Together with feasible-graph closedness
     and the entrywise bounded-sublevel lemmas, this is a local ingredient for
@@ -11055,6 +11150,279 @@ theorem LSAugmentedSystem.isLeastSquaresMinimizer_of_zero_rhs {m n : ℕ}
     simpa [← hr] using h
   exact (RectLSNormalEquations.iff_isLeastSquaresMinimizer A b x).mp
     ((LSAugmentedSystem.iff_rectLSNormalEquations_zero_rhs A b x).mp haug)
+
+private theorem lsProblem20_8MatrixOnlyDeltaA_transpose_rhs
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) {b : Fin m → ℝ}
+    (hb : b ≠ 0) :
+    ∀ j : Fin n,
+      ∑ i : Fin m,
+        (A i j + lsProblem20_8MatrixOnlyDeltaA A b i j) * b i = 0 := by
+  intro j
+  have hden_pos : 0 < vecNorm2Sq b := vecNorm2Sq_pos_of_ne_zero_lsq hb
+  have hden_ne : vecNorm2Sq b ≠ 0 := ne_of_gt hden_pos
+  have hdelta :
+      ∑ i : Fin m, lsProblem20_8MatrixOnlyDeltaA A b i j * b i =
+        -rectLSRhs A b j := by
+    unfold lsProblem20_8MatrixOnlyDeltaA rectLSRhs
+    let rhs : ℝ := ∑ i : Fin m, A i j * b i
+    have hsum :
+        (∑ i : Fin m, ((-(vecNorm2Sq b)⁻¹ * b i) * rhs) * b i) =
+          (-(vecNorm2Sq b)⁻¹ * rhs) * vecNorm2Sq b := by
+      unfold vecNorm2Sq
+      calc
+        ∑ i : Fin m,
+            ((-(∑ k : Fin m, b k ^ 2)⁻¹ * b i) * rhs) * b i =
+            ∑ i : Fin m,
+              (-(∑ k : Fin m, b k ^ 2)⁻¹ * rhs) * b i ^ 2 := by
+              apply Finset.sum_congr rfl
+              intro i _
+              ring
+        _ = (-(∑ k : Fin m, b k ^ 2)⁻¹ * rhs) *
+              ∑ i : Fin m, b i ^ 2 := by
+              exact (Finset.mul_sum (s := (Finset.univ : Finset (Fin m)))
+                (f := fun i : Fin m => b i ^ 2)
+                (a := (-(∑ k : Fin m, b k ^ 2)⁻¹ * rhs))).symm
+    change (∑ i : Fin m, ((-(vecNorm2Sq b)⁻¹ * b i) * rhs) * b i) = -rhs
+    rw [hsum]
+    field_simp [hden_ne]
+  calc
+    ∑ i : Fin m,
+        (A i j + lsProblem20_8MatrixOnlyDeltaA A b i j) * b i =
+        ∑ i : Fin m, A i j * b i +
+          ∑ i : Fin m, lsProblem20_8MatrixOnlyDeltaA A b i j * b i := by
+          simp_rw [add_mul]
+          rw [Finset.sum_add_distrib]
+    _ = 0 := by
+          rw [hdelta]
+          unfold rectLSRhs
+          ring
+
+/-- Problem 20.8 attainment: the rank-one perturbation
+    `lsProblem20_8MatrixOnlyDeltaA` makes `y = 0` an exact least-squares
+    minimizer when `Delta b = 0`. -/
+theorem lsProblem20_8MatrixOnlyDeltaA_feasible
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) {b : Fin m → ℝ} (hb : b ≠ 0) :
+    LSNormwiseBackwardErrorFeasible A b (0 : Fin n → ℝ)
+      (lsProblem20_8MatrixOnlyDeltaA A b) (0 : Fin m → ℝ) := by
+  have hNE :
+      RectLSNormalEquations
+        (fun i j => A i j + lsProblem20_8MatrixOnlyDeltaA A b i j)
+        b (0 : Fin n → ℝ) := by
+    intro j
+    unfold matMulVec rectLSRhs
+    simp [lsProblem20_8MatrixOnlyDeltaA_transpose_rhs A hb j]
+  simpa [LSNormwiseBackwardErrorFeasible] using hNE.isLeastSquaresMinimizer
+
+/-- Frobenius norm of the rank-one perturbation in Problem 20.8. -/
+theorem lsProblem20_8MatrixOnlyDeltaA_frobNormRect
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) {b : Fin m → ℝ} (hb : b ≠ 0) :
+    frobNormRect (lsProblem20_8MatrixOnlyDeltaA A b) =
+      vecNorm2 (rectLSRhs A b) / vecNorm2 b := by
+  have hbpos : 0 < vecNorm2 b := vecNorm2_pos_of_ne_zero_lsq hb
+  have hden_pos : 0 < vecNorm2Sq b := vecNorm2Sq_pos_of_ne_zero_lsq hb
+  have hnorm_scaled :
+      vecNorm2 (fun i : Fin m => -(vecNorm2Sq b)⁻¹ * b i) =
+        (vecNorm2 b)⁻¹ := by
+    rw [vecNorm2_smul]
+    have habs : |-(vecNorm2Sq b)⁻¹| = (vecNorm2Sq b)⁻¹ := by
+      rw [abs_neg]
+      exact abs_of_pos (inv_pos.mpr hden_pos)
+    rw [habs]
+    have hb_sq : vecNorm2Sq b = vecNorm2 b ^ 2 := (vecNorm2_sq b).symm
+    rw [hb_sq]
+    field_simp [ne_of_gt hbpos]
+  unfold lsProblem20_8MatrixOnlyDeltaA
+  rw [frobNormRect_outerProduct]
+  rw [hnorm_scaled]
+  field_simp [ne_of_gt hbpos]
+
+/-- Problem 20.8 lower bound for the `theta = infinity` matrix-only model at
+    `y = 0`: every feasible matrix perturbation with `Delta b = 0` has
+    Frobenius norm at least `||A^T b||₂ / ||b||₂`. -/
+theorem lsProblem20_8MatrixOnly_lower_bound
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) {b : Fin m → ℝ} (hb : b ≠ 0)
+    (DeltaA : Fin m → Fin n → ℝ)
+    (hfeas :
+      LSNormwiseBackwardErrorFeasible A b (0 : Fin n → ℝ)
+        DeltaA (0 : Fin m → ℝ)) :
+    vecNorm2 (rectLSRhs A b) / vecNorm2 b ≤ frobNormRect DeltaA := by
+  have hbpos : 0 < vecNorm2 b := vecNorm2_pos_of_ne_zero_lsq hb
+  have hmin :
+      IsLeastSquaresMinimizer (fun i j => A i j + DeltaA i j) b
+        (0 : Fin n → ℝ) := by
+    simpa [LSNormwiseBackwardErrorFeasible] using hfeas
+  have hNE :
+      RectLSNormalEquations (fun i j => A i j + DeltaA i j)
+        b (0 : Fin n → ℝ) :=
+    hmin.rectLSNormalEquations
+  have hsum_zero : ∀ j : Fin n,
+      ∑ i : Fin m, (A i j + DeltaA i j) * b i = 0 := by
+    intro j
+    have hj := hNE j
+    unfold matMulVec rectLSRhs at hj
+    simpa using hj.symm
+  have hdelta : ∀ j : Fin n,
+      ∑ i : Fin m, DeltaA i j * b i = -rectLSRhs A b j := by
+    intro j
+    have hj := hsum_zero j
+    unfold rectLSRhs
+    calc
+      ∑ i : Fin m, DeltaA i j * b i =
+          (∑ i : Fin m, (A i j + DeltaA i j) * b i) -
+            ∑ i : Fin m, A i j * b i := by
+            simp_rw [add_mul]
+            rw [Finset.sum_add_distrib]
+            ring
+      _ = -∑ i : Fin m, A i j * b i := by
+            rw [hj]
+            ring
+  have hcoord : ∀ j : Fin n,
+      |rectLSRhs A b j| ≤
+        vecNorm2 (fun i : Fin m => DeltaA i j) * vecNorm2 b := by
+    intro j
+    have hcs :=
+      abs_vecInnerProduct_le_vecNorm2_mul
+        (fun i : Fin m => DeltaA i j) b
+    rw [hdelta j] at hcs
+    simpa [abs_neg] using hcs
+  have hsqs :
+      vecNorm2Sq (rectLSRhs A b) ≤
+        (frobNormRect DeltaA * vecNorm2 b) ^ 2 := by
+    calc
+      vecNorm2Sq (rectLSRhs A b)
+          = ∑ j : Fin n, (rectLSRhs A b j) ^ 2 := rfl
+      _ ≤ ∑ j : Fin n,
+            (vecNorm2 (fun i : Fin m => DeltaA i j) * vecNorm2 b) ^ 2 := by
+            apply Finset.sum_le_sum
+            intro j _
+            have hright_nonneg :
+                0 ≤ vecNorm2 (fun i : Fin m => DeltaA i j) * vecNorm2 b :=
+              mul_nonneg (vecNorm2_nonneg _) (le_of_lt hbpos)
+            have habs :
+                |rectLSRhs A b j| ≤
+                  |vecNorm2 (fun i : Fin m => DeltaA i j) * vecNorm2 b| := by
+              simpa [abs_of_nonneg hright_nonneg] using hcoord j
+            exact (sq_le_sq).mpr habs
+      _ = vecNorm2 b ^ 2 *
+            ∑ j : Fin n, vecNorm2Sq (fun i : Fin m => DeltaA i j) := by
+            calc
+              ∑ j : Fin n,
+                  (vecNorm2 (fun i : Fin m => DeltaA i j) * vecNorm2 b) ^ 2 =
+                  ∑ j : Fin n,
+                    vecNorm2 b ^ 2 *
+                      vecNorm2Sq (fun i : Fin m => DeltaA i j) := by
+                    apply Finset.sum_congr rfl
+                    intro j _
+                    calc
+                      (vecNorm2 (fun i : Fin m => DeltaA i j) * vecNorm2 b) ^ 2 =
+                          vecNorm2 (fun i : Fin m => DeltaA i j) ^ 2 *
+                            vecNorm2 b ^ 2 := by
+                            ring
+                      _ = vecNorm2Sq (fun i : Fin m => DeltaA i j) *
+                            vecNorm2Sq b := by
+                            rw [vecNorm2_sq, vecNorm2_sq]
+                      _ = vecNorm2Sq b *
+                            vecNorm2Sq (fun i : Fin m => DeltaA i j) := by
+                            ring
+                      _ = vecNorm2 b ^ 2 *
+                            vecNorm2Sq (fun i : Fin m => DeltaA i j) := by
+                            rw [vecNorm2_sq b]
+              _ = vecNorm2 b ^ 2 *
+                    ∑ j : Fin n, vecNorm2Sq (fun i : Fin m => DeltaA i j) := by
+                    rw [Finset.mul_sum]
+      _ = (frobNormRect DeltaA * vecNorm2 b) ^ 2 := by
+            rw [← frobNormSqRect_eq_sum_vecNorm2Sq_cols DeltaA,
+              ← frobNormRect_sq DeltaA]
+            ring
+  have hnorm_sq :
+      vecNorm2 (rectLSRhs A b) ^ 2 ≤
+        (frobNormRect DeltaA * vecNorm2 b) ^ 2 := by
+    simpa [vecNorm2_sq] using hsqs
+  have hprod_nonneg :
+      0 ≤ frobNormRect DeltaA * vecNorm2 b :=
+    mul_nonneg (frobNormRect_nonneg DeltaA) (le_of_lt hbpos)
+  have hnorm_le :
+      vecNorm2 (rectLSRhs A b) ≤ frobNormRect DeltaA * vecNorm2 b := by
+    have habs := (sq_le_sq).mp hnorm_sq
+    simpa [abs_of_nonneg (vecNorm2_nonneg _), abs_of_nonneg hprod_nonneg] using habs
+  rw [div_le_iff₀ hbpos]
+  exact hnorm_le
+
+/-- Problem 20.8 exact evaluation for nonzero `b`: in the matrix-only
+    `theta = infinity` model with `Delta b = 0`, the backward error at
+    `y = 0` is `||A^T b||₂ / ||b||₂`. -/
+theorem lsProblem20_8MatrixOnlyEtaF_zero_eq
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) {b : Fin m → ℝ} (hb : b ≠ 0) :
+    lsNormwiseBackwardErrorMatrixOnlyEtaF A b (0 : Fin n → ℝ) =
+      vecNorm2 (rectLSRhs A b) / vecNorm2 b := by
+  apply le_antisymm
+  · have hmem :
+        frobNormRect (lsProblem20_8MatrixOnlyDeltaA A b) ∈
+          lsNormwiseBackwardErrorMatrixOnlyValuesF A b (0 : Fin n → ℝ) :=
+      lsNormwiseBackwardErrorMatrixOnlyValuesF.mem_of_feasible
+        A b (0 : Fin n → ℝ) (lsProblem20_8MatrixOnlyDeltaA A b)
+        (lsProblem20_8MatrixOnlyDeltaA_feasible A hb)
+    calc
+      lsNormwiseBackwardErrorMatrixOnlyEtaF A b (0 : Fin n → ℝ)
+          ≤ frobNormRect (lsProblem20_8MatrixOnlyDeltaA A b) :=
+            lsNormwiseBackwardErrorMatrixOnlyEtaF_le_of_mem A b
+              (0 : Fin n → ℝ) hmem
+      _ = vecNorm2 (rectLSRhs A b) / vecNorm2 b :=
+            lsProblem20_8MatrixOnlyDeltaA_frobNormRect A hb
+  · unfold lsNormwiseBackwardErrorMatrixOnlyEtaF
+    apply le_csInf
+      (lsNormwiseBackwardErrorMatrixOnlyValuesF.nonempty A b
+        (0 : Fin n → ℝ))
+    intro eta heta
+    rcases heta with ⟨DeltaA, hfeas, heta_eq⟩
+    rw [heta_eq]
+    exact lsProblem20_8MatrixOnly_lower_bound A hb DeltaA hfeas
+
+/-- Degenerate branch of Problem 20.8: if `b = 0`, then no matrix perturbation
+    is needed to make `y = 0` an exact least-squares minimizer. -/
+theorem lsProblem20_8MatrixOnlyEtaF_zero_eq_zero_of_b_eq_zero
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) {b : Fin m → ℝ} (hb : b = 0) :
+    lsNormwiseBackwardErrorMatrixOnlyEtaF A b (0 : Fin n → ℝ) = 0 := by
+  subst b
+  apply le_antisymm
+  · have hfeas :
+        LSNormwiseBackwardErrorFeasible A (0 : Fin m → ℝ) (0 : Fin n → ℝ)
+          (0 : Fin m → Fin n → ℝ) (0 : Fin m → ℝ) := by
+      change IsLeastSquaresMinimizer
+        (fun i j => A i j + (0 : Fin m → Fin n → ℝ) i j)
+        (fun i => (0 : Fin m → ℝ) i + (0 : Fin m → ℝ) i)
+        (0 : Fin n → ℝ)
+      intro z
+      have hnonneg : 0 ≤ vecNorm2Sq (rectMatMulVec A z) :=
+        vecNorm2Sq_nonneg (rectMatMulVec A z)
+      calc
+        lsObjective
+            (fun i j => A i j + (0 : Fin m → Fin n → ℝ) i j)
+            (fun i => (0 : Fin m → ℝ) i + (0 : Fin m → ℝ) i)
+            (0 : Fin n → ℝ) = 0 := by
+            simp [lsObjective, lsResidual, rectMatMulVec, vecNorm2Sq]
+        _ ≤ vecNorm2Sq (rectMatMulVec A z) := hnonneg
+        _ = lsObjective
+            (fun i j => A i j + (0 : Fin m → Fin n → ℝ) i j)
+            (fun i => (0 : Fin m → ℝ) i + (0 : Fin m → ℝ) i)
+            z := by
+            unfold lsObjective
+            apply congrArg vecNorm2Sq
+            ext i
+            simp [lsResidual, rectMatMulVec]
+    have hmem :
+        frobNormRect (0 : Fin m → Fin n → ℝ) ∈
+          lsNormwiseBackwardErrorMatrixOnlyValuesF A (0 : Fin m → ℝ)
+            (0 : Fin n → ℝ) :=
+      lsNormwiseBackwardErrorMatrixOnlyValuesF.mem_of_feasible
+        A (0 : Fin m → ℝ) (0 : Fin n → ℝ)
+        (0 : Fin m → Fin n → ℝ) hfeas
+    have hzero : frobNormRect (0 : Fin m → Fin n → ℝ) = 0 := by
+      simp [frobNormRect, frobNormSqRect]
+    exact (lsNormwiseBackwardErrorMatrixOnlyEtaF_le_of_mem
+      A (0 : Fin m → ℝ) (0 : Fin n → ℝ) hmem).trans_eq hzero
+  · exact lsNormwiseBackwardErrorMatrixOnlyEtaF_nonneg
+      A (0 : Fin m → ℝ) (0 : Fin n → ℝ)
 
 /-- Least-squares-minimizer form of the constructive part of Lemma 20.6. -/
 theorem LSAsymmetricPerturbedAugmentedSystem.exists_isLeastSquaresMinimizer
