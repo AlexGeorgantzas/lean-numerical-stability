@@ -944,6 +944,114 @@ theorem lsScaledAugmentedMatrix_zero_quadraticForm_append_eq
   simp [Fin.append_left, Fin.append_right, rectMatMulVec, hswap]
   ring
 
+/-- Higham, 2nd ed., Chapter 20, equations (20.17)-(20.19): the Rayleigh
+    form of the zero-scaled source matrix `C(0)` on an arbitrary
+    source-indexed vector is the Rayleigh form of the repository
+    self-adjoint dilation under the `finSumFinEquiv` split. -/
+theorem lsScaledAugmentedMatrix_zero_quadraticForm_eq_reindexed_rectSelfAdjointDilation
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) (z : Fin (m + n) → ℝ) :
+    finiteQuadraticForm (lsScaledAugmentedMatrix 0 A) z =
+      finiteQuadraticForm (rectSelfAdjointDilation A)
+        (sumBothVec (fun i : Fin m => z (Fin.castAdd n i))
+          (fun j : Fin n => z (Fin.natAdd m j))) := by
+  classical
+  let r : Fin m → ℝ := fun i => z (Fin.castAdd n i)
+  let x : Fin n → ℝ := fun j => z (Fin.natAdd m j)
+  have hz : z = Fin.append r x := by
+    ext p
+    refine Fin.addCases
+      (motive := fun p : Fin (m + n) => z p = Fin.append r x p)
+      ?left ?right p
+    · intro i
+      simp [r, Fin.append_left]
+    · intro j
+      simp [x, Fin.append_right]
+  calc
+    finiteQuadraticForm (lsScaledAugmentedMatrix 0 A) z
+        = finiteQuadraticForm (lsScaledAugmentedMatrix 0 A) (Fin.append r x) := by
+            rw [hz]
+    _ = 2 * ∑ i : Fin m, r i * rectMatMulVec A x i :=
+        lsScaledAugmentedMatrix_zero_quadraticForm_append_eq A r x
+    _ = finiteQuadraticForm (rectSelfAdjointDilation A) (sumBothVec r x) := by
+        rw [finiteQuadraticForm_rectSelfAdjointDilation_sumBothVec]
+    _ = finiteQuadraticForm (rectSelfAdjointDilation A)
+          (sumBothVec (fun i : Fin m => z (Fin.castAdd n i))
+            (fun j : Fin n => z (Fin.natAdd m j))) := by rfl
+
+/-- Higham, 2nd ed., Chapter 20, equations (20.17)-(20.19): a rectangular
+    operator-2 bound for `A` gives the source-indexed Loewner upper bound
+    `C(0) <= L I`. This is a quadratic-form control bridge for the later
+    spectral route, not the full eigenvalue multiplicity theorem. -/
+theorem lsScaledAugmentedMatrix_zero_finiteLoewnerLe_scalar_id_of_rectOpNorm2Le
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) {L : ℝ}
+    (hL : 0 ≤ L) (hA : rectOpNorm2Le A L) :
+    finiteLoewnerLe (lsScaledAugmentedMatrix 0 A)
+      (fun p q : Fin (m + n) => L * finiteIdMatrix p q) := by
+  classical
+  intro z
+  let r : Fin m → ℝ := fun i => z (Fin.castAdd n i)
+  let x : Fin n → ℝ := fun j => z (Fin.natAdd m j)
+  let w : Fin m ⊕ Fin n → ℝ := sumBothVec r x
+  have hnorm_sq : finiteVecNorm2Sq z = finiteVecNorm2Sq w := by
+    unfold finiteVecNorm2Sq w r x sumBothVec
+    rw [Fin.sum_univ_add, Fintype.sum_sum_type]
+    simp
+  have hq_id :
+      finiteQuadraticForm (fun p q : Fin (m + n) => L * finiteIdMatrix p q) z =
+        finiteQuadraticForm (fun a b : Fin m ⊕ Fin n => L * finiteIdMatrix a b) w := by
+    rw [finiteQuadraticForm_smul_finiteIdMatrix,
+      finiteQuadraticForm_smul_finiteIdMatrix, hnorm_sq]
+  calc
+    finiteQuadraticForm (lsScaledAugmentedMatrix 0 A) z
+        = finiteQuadraticForm (rectSelfAdjointDilation A) w := by
+            simpa [w, r, x] using
+              lsScaledAugmentedMatrix_zero_quadraticForm_eq_reindexed_rectSelfAdjointDilation A z
+    _ ≤ finiteQuadraticForm (fun a b : Fin m ⊕ Fin n => L * finiteIdMatrix a b) w :=
+        finiteLoewnerLe_rectSelfAdjointDilation_of_rectOpNorm2Le A hL hA w
+    _ = finiteQuadraticForm (fun p q : Fin (m + n) => L * finiteIdMatrix p q) z :=
+        hq_id.symm
+
+/-- Higham, 2nd ed., Chapter 20, equations (20.17)-(20.19): a rectangular
+    operator-2 bound for `A` also gives the lower Loewner side for the
+    zero-scaled source matrix, written as `-C(0) <= L I`. -/
+theorem lsScaledAugmentedMatrix_zero_neg_finiteLoewnerLe_scalar_id_of_rectOpNorm2Le
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) {L : ℝ}
+    (hL : 0 ≤ L) (hA : rectOpNorm2Le A L) :
+    finiteLoewnerLe (fun p q : Fin (m + n) => -lsScaledAugmentedMatrix 0 A p q)
+      (fun p q : Fin (m + n) => L * finiteIdMatrix p q) := by
+  classical
+  intro z
+  let r : Fin m → ℝ := fun i => z (Fin.castAdd n i)
+  let x : Fin n → ℝ := fun j => z (Fin.natAdd m j)
+  let w : Fin m ⊕ Fin n → ℝ := sumBothVec r x
+  have hnorm_sq : finiteVecNorm2Sq z = finiteVecNorm2Sq w := by
+    unfold finiteVecNorm2Sq w r x sumBothVec
+    rw [Fin.sum_univ_add, Fintype.sum_sum_type]
+    simp
+  have hq_id :
+      finiteQuadraticForm (fun p q : Fin (m + n) => L * finiteIdMatrix p q) z =
+        finiteQuadraticForm (fun a b : Fin m ⊕ Fin n => L * finiteIdMatrix a b) w := by
+    rw [finiteQuadraticForm_smul_finiteIdMatrix,
+      finiteQuadraticForm_smul_finiteIdMatrix, hnorm_sq]
+  have hq_neg :
+      finiteQuadraticForm
+          (fun p q : Fin (m + n) => -lsScaledAugmentedMatrix 0 A p q) z =
+        finiteQuadraticForm
+          (fun a b : Fin m ⊕ Fin n => -rectSelfAdjointDilation A a b) w := by
+    rw [finiteQuadraticForm_neg, finiteQuadraticForm_neg]
+    congr 1
+    simpa [w, r, x] using
+      lsScaledAugmentedMatrix_zero_quadraticForm_eq_reindexed_rectSelfAdjointDilation A z
+  calc
+    finiteQuadraticForm
+        (fun p q : Fin (m + n) => -lsScaledAugmentedMatrix 0 A p q) z
+        = finiteQuadraticForm
+            (fun a b : Fin m ⊕ Fin n => -rectSelfAdjointDilation A a b) w := hq_neg
+    _ ≤ finiteQuadraticForm (fun a b : Fin m ⊕ Fin n => L * finiteIdMatrix a b) w :=
+        finiteLoewnerLe_neg_rectSelfAdjointDilation_of_rectOpNorm2Le A hL hA w
+    _ = finiteQuadraticForm (fun p q : Fin (m + n) => L * finiteIdMatrix p q) z :=
+        hq_id.symm
+
 /-- Higham, 2nd ed., Chapter 20, equations (20.17)-(20.19): any finite
     operator-2 upper bound for the repository self-adjoint dilation transfers
     to the source-indexed zero-scaled augmented matrix `C(0)`. This is an
