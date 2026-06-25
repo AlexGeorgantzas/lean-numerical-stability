@@ -944,6 +944,67 @@ theorem lsScaledAugmentedMatrix_zero_quadraticForm_append_eq
   simp [Fin.append_left, Fin.append_right, rectMatMulVec, hswap]
   ring
 
+/-- Higham, 2nd ed., Chapter 20, equations (20.17)-(20.19): any finite
+    operator-2 upper bound for the repository self-adjoint dilation transfers
+    to the source-indexed zero-scaled augmented matrix `C(0)`. This is an
+    operator-bound bridge, not the full spectral multiplicity or
+    condition-number formula. -/
+theorem lsScaledAugmentedMatrix_zero_finiteOpNorm2Le_of_rectSelfAdjointDilation
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) {L : ℝ}
+    (hD : finiteOpNorm2Le (rectSelfAdjointDilation A) L) :
+    finiteOpNorm2Le (lsScaledAugmentedMatrix 0 A) L := by
+  classical
+  intro z
+  let r : Fin m → ℝ := fun i => z (Fin.castAdd n i)
+  let x : Fin n → ℝ := fun j => z (Fin.natAdd m j)
+  have hz : z = Fin.append r x := by
+    ext p
+    refine Fin.addCases
+      (motive := fun p : Fin (m + n) => z p = Fin.append r x p)
+      ?left ?right p
+    · intro i
+      simp [r, Fin.append_left]
+    · intro j
+      simp [x, Fin.append_right]
+  have hnorm_z_sq :
+      finiteVecNorm2Sq z = finiteVecNorm2Sq (sumBothVec r x) := by
+    rw [hz]
+    unfold finiteVecNorm2Sq sumBothVec
+    rw [Fin.sum_univ_add, Fintype.sum_sum_type]
+    simp [Fin.append_left, Fin.append_right]
+  have hnorm_z : finiteVecNorm2 z = finiteVecNorm2 (sumBothVec r x) := by
+    unfold finiteVecNorm2
+    rw [hnorm_z_sq]
+  have haction_sq :
+      finiteVecNorm2Sq (finiteMatVec (lsScaledAugmentedMatrix 0 A) z) =
+        finiteVecNorm2Sq
+          (finiteMatVec (rectSelfAdjointDilation A) (sumBothVec r x)) := by
+    rw [hz]
+    unfold finiteVecNorm2Sq
+    rw [show finiteMatVec (lsScaledAugmentedMatrix 0 A) (Fin.append r x) =
+        rectMatMulVec (lsScaledAugmentedMatrix 0 A) (Fin.append r x) by rfl]
+    rw [lsScaledAugmentedMatrix_zero_mulVec_eq_reindexed_rectSelfAdjointDilation_sumBothVec]
+    exact Fintype.sum_equiv finSumFinEquiv.symm
+      (fun p : Fin (m + n) =>
+        (finiteMatVec (rectSelfAdjointDilation A) (sumBothVec r x)
+          (finSumFinEquiv.symm p)) ^ 2)
+      (fun q : Fin m ⊕ Fin n =>
+        (finiteMatVec (rectSelfAdjointDilation A) (sumBothVec r x) q) ^ 2)
+      (by intro p; rfl)
+  have haction :
+      finiteVecNorm2 (finiteMatVec (lsScaledAugmentedMatrix 0 A) z) =
+        finiteVecNorm2
+          (finiteMatVec (rectSelfAdjointDilation A) (sumBothVec r x)) := by
+    unfold finiteVecNorm2
+    rw [haction_sq]
+  calc
+    finiteVecNorm2 (finiteMatVec (lsScaledAugmentedMatrix 0 A) z)
+        =
+          finiteVecNorm2
+            (finiteMatVec (rectSelfAdjointDilation A) (sumBothVec r x)) := haction
+    _ ≤ L * finiteVecNorm2 (sumBothVec r x) := hD (sumBothVec r x)
+    _ = L * finiteVecNorm2 z := by rw [hnorm_z]
+
 /-- The component equations for the scaled augmented system are exactly the
     block matrix-vector equation using `C(alpha)` from (20.17). -/
 theorem LSScaledAugmentedSystem.iff_scaledAugmentedMatrix_mulVec {m n : ℕ}
