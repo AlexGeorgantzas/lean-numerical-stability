@@ -5478,6 +5478,148 @@ theorem lsNormwiseBackwardErrorFormulaMatrix_rectOpNorm2Le {m n : ℕ}
           add_le_add hleft hright
     _ = (cA + phi) * vecNorm2 z := by ring
 
+/-- Local row-side singular values for a real rectangular matrix.  For a wide
+    matrix this indexes the singular values of the row-side Gram operator
+    `A A^T`, avoiding the automatic trailing zero singular values of `A^T A`. -/
+noncomputable def lsRealRectRowSingularValue {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (i : Fin m) : ℝ :=
+  complexMatrixSingularValue (realRectToCMatrix (finiteTranspose A)) i
+
+theorem lsRealRectRowSingularValue_nonneg {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (i : Fin m) :
+    0 ≤ lsRealRectRowSingularValue A i := by
+  simpa [lsRealRectRowSingularValue] using
+    complexMatrixSingularValue_nonneg
+      (realRectToCMatrix (finiteTranspose A)) i
+
+theorem lsRealRectRowSingularValue_antitone {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) :
+    Antitone (lsRealRectRowSingularValue A) := by
+  simpa [lsRealRectRowSingularValue] using
+    complexMatrixSingularValue_antitone
+      (realRectToCMatrix (finiteTranspose A))
+
+/-- Any rectangular operator-2 certificate bounds every row-side singular value.
+    This is the local bridge from the repository's predicate-style operator
+    bounds to the singular-value language used in (20.21). -/
+theorem lsRealRectRowSingularValue_le_of_rectOpNorm2Le {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) {c : ℝ} (hc : 0 ≤ c)
+    (hA : rectOpNorm2Le A c) (i : Fin m) :
+    lsRealRectRowSingularValue A i ≤ c := by
+  have hT : rectOpNorm2Le (finiteTranspose A) c :=
+    rectOpNorm2Le_finiteTranspose_of_rectOpNorm2Le A hc hA
+  have hOp :
+      complexMatrixOp2 (realRectToCMatrix (finiteTranspose A)) ≤ c :=
+    complexMatrixOp2_realRectToCMatrix_le_of_rectOpNorm2Le
+      (finiteTranspose A) hc hT
+  exact
+    (complexMatrixSingularValue_le_complexMatrixOp2
+      (realRectToCMatrix (finiteTranspose A)) i).trans hOp
+
+/-- Row-side `sigma_min` for a real rectangular matrix with a nonempty row
+    dimension, using the last sorted row-side singular value. -/
+noncomputable def lsRealRectSigmaMinRow {m n : ℕ}
+    (A : Fin (m + 1) → Fin n → ℝ) : ℝ :=
+  lsRealRectRowSingularValue A (Fin.last m)
+
+theorem lsRealRectSigmaMinRow_nonneg {m n : ℕ}
+    (A : Fin (m + 1) → Fin n → ℝ) :
+    0 ≤ lsRealRectSigmaMinRow A := by
+  simpa [lsRealRectSigmaMinRow] using
+    lsRealRectRowSingularValue_nonneg A (Fin.last m)
+
+theorem lsRealRectSigmaMinRow_le_rowSingularValue {m n : ℕ}
+    (A : Fin (m + 1) → Fin n → ℝ) (i : Fin (m + 1)) :
+    lsRealRectSigmaMinRow A ≤ lsRealRectRowSingularValue A i := by
+  have hanti := lsRealRectRowSingularValue_antitone A
+  simpa [lsRealRectSigmaMinRow] using hanti (Fin.le_last i)
+
+theorem lsRealRectSigmaMinRow_le_of_rectOpNorm2Le {m n : ℕ}
+    (A : Fin (m + 1) → Fin n → ℝ) {c : ℝ} (hc : 0 ≤ c)
+    (hA : rectOpNorm2Le A c) :
+    lsRealRectSigmaMinRow A ≤ c := by
+  simpa [lsRealRectSigmaMinRow] using
+    lsRealRectRowSingularValue_le_of_rectOpNorm2Le A hc hA (Fin.last m)
+
+/-- Row-side singular values of the source block
+    `[ A   phi(I - r r^+) ]` from equation (20.21). -/
+noncomputable def lsNormwiseBackwardErrorFormulaMatrixRowSingularValue
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ) (r : Fin m → ℝ)
+    (y : Fin n → ℝ) (i : Fin m) : ℝ :=
+  lsRealRectRowSingularValue
+    (lsNormwiseBackwardErrorFormulaMatrix theta A r y) i
+
+theorem lsNormwiseBackwardErrorFormulaMatrixRowSingularValue_nonneg
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ) (r : Fin m → ℝ)
+    (y : Fin n → ℝ) (i : Fin m) :
+    0 ≤
+      lsNormwiseBackwardErrorFormulaMatrixRowSingularValue theta A r y i := by
+  simpa [lsNormwiseBackwardErrorFormulaMatrixRowSingularValue] using
+    lsRealRectRowSingularValue_nonneg
+      (lsNormwiseBackwardErrorFormulaMatrix theta A r y) i
+
+/-- Row-side `sigma_min` for the nonempty-row source block in equation (20.21).
+    This is a local singular-value API layer only; it does not assert the
+    Walden--Karlson--Sun minimization formula. -/
+noncomputable def lsNormwiseBackwardErrorFormulaMatrixSigmaMin
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ) : ℝ :=
+  lsRealRectSigmaMinRow
+    (lsNormwiseBackwardErrorFormulaMatrix theta A r y)
+
+theorem lsNormwiseBackwardErrorFormulaMatrixSigmaMin_nonneg
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ) :
+    0 ≤ lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y := by
+  simpa [lsNormwiseBackwardErrorFormulaMatrixSigmaMin] using
+    lsRealRectSigmaMinRow_nonneg
+      (lsNormwiseBackwardErrorFormulaMatrix theta A r y)
+
+theorem lsNormwiseBackwardErrorFormulaMatrixSigmaMin_le_rowSingularValue
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ) (i : Fin (m + 1)) :
+    lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y ≤
+      lsNormwiseBackwardErrorFormulaMatrixRowSingularValue theta A r y i := by
+  simpa [lsNormwiseBackwardErrorFormulaMatrixSigmaMin,
+    lsNormwiseBackwardErrorFormulaMatrixRowSingularValue] using
+    lsRealRectSigmaMinRow_le_rowSingularValue
+      (lsNormwiseBackwardErrorFormulaMatrix theta A r y) i
+
+/-- Every row-side singular value of the source block in (20.21) is bounded by
+    the conservative operator-2 certificate `cA + phi`. -/
+theorem lsNormwiseBackwardErrorFormulaMatrixRowSingularValue_le
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ) (r : Fin m → ℝ)
+    (y : Fin n → ℝ) {cA : ℝ} (hcA : 0 ≤ cA)
+    (hA : rectOpNorm2Le A cA) (hrsq : vecNorm2Sq r ≠ 0) (i : Fin m) :
+    lsNormwiseBackwardErrorFormulaMatrixRowSingularValue theta A r y i ≤
+      cA + lsNormwiseBackwardErrorPhi theta r y := by
+  have hphi : 0 ≤ lsNormwiseBackwardErrorPhi theta r y :=
+    lsNormwiseBackwardErrorPhi_nonneg theta r y
+  have hblock :
+      rectOpNorm2Le (lsNormwiseBackwardErrorFormulaMatrix theta A r y)
+        (cA + lsNormwiseBackwardErrorPhi theta r y) :=
+    lsNormwiseBackwardErrorFormulaMatrix_rectOpNorm2Le
+      theta A r y hcA hA hrsq
+  exact
+    lsRealRectRowSingularValue_le_of_rectOpNorm2Le
+      (lsNormwiseBackwardErrorFormulaMatrix theta A r y)
+      (add_nonneg hcA hphi) hblock i
+
+/-- The local row-side `sigma_min` of the source block in (20.21) inherits the
+    same conservative upper bound.  This is not the printed equality for
+    `eta_F(y)`. -/
+theorem lsNormwiseBackwardErrorFormulaMatrixSigmaMin_le
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ) {cA : ℝ} (hcA : 0 ≤ cA)
+    (hA : rectOpNorm2Le A cA) (hrsq : vecNorm2Sq r ≠ 0) :
+    lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y ≤
+      cA + lsNormwiseBackwardErrorPhi theta r y := by
+  simpa [lsNormwiseBackwardErrorFormulaMatrixSigmaMin,
+    lsNormwiseBackwardErrorFormulaMatrixRowSingularValue,
+    lsRealRectSigmaMinRow] using
+    lsNormwiseBackwardErrorFormulaMatrixRowSingularValue_le
+      theta A r y hcA hA hrsq (Fin.last m)
+
 /-- Transposed version of `(P - I)s = 0` for the symmetric rank-one projector
     in Lemma 20.6. -/
 theorem lsLemma20_6Projector_transpose_sub_id_apply_self {m : ℕ}
