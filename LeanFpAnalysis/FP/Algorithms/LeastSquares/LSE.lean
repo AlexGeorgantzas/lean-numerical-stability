@@ -1657,6 +1657,47 @@ theorem lseWeightedMinimizer_tendsto_isLSEMinimizer_of_constraintResidual_tendst
       lseWeightedMinimizer_objective_le_feasibleObjective
         (mu i) A b B d (x_mu i) y (hmin i) hyfeas)
 
+/-- Limiting theorem for the method of weighting after (20.26).  If exact
+    minimizers of the weighted problems have a convergent branch, the weights
+    satisfy `(mu^2)^{-1} -> 0`, and the constrained problem has a feasible
+    comparator, then the branch limit is an exact LSE minimizer.  This still
+    assumes existence/convergence of the exact weighted-minimizer branch; it is
+    not a finite-precision stability theorem. -/
+theorem lseWeightedMinimizer_tendsto_isLSEMinimizer_of_inv_mu_sq
+    {ι : Type*} {l : Filter ι} [l.NeBot] {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ)
+    (mu : ι → ℝ) (x_mu : ι → Fin n → ℝ) (x y : Fin n → ℝ)
+    (hlim : Filter.Tendsto x_mu l (nhds x))
+    (hmu : ∀ i, mu i ≠ 0)
+    (hmin : ∀ i, IsLeastSquaresMinimizer
+      (lseWeightedMatrix (mu i) A B) (lseWeightedRhs (mu i) b d) (x_mu i))
+    (hyfeas : LSEFeasible B d y)
+    (hInvSq : Filter.Tendsto (fun i => (mu i ^ 2)⁻¹) l (nhds 0)) :
+    IsLSEMinimizer A b B d x := by
+  have hnorm :
+      Filter.Tendsto
+        (fun i => vecNorm2 (lseConstraintResidual B d (x_mu i))) l (nhds 0) :=
+    lseWeightedMinimizer_constraintResidual_norm_tendsto_zero_of_inv_mu_sq
+      A b B d mu x_mu y hmu hmin hyfeas hInvSq
+  have hres :
+      Filter.Tendsto (fun i => lseConstraintResidual B d (x_mu i)) l (nhds 0) := by
+    rw [tendsto_pi_nhds]
+    intro r
+    have habs :
+        Filter.Tendsto
+          (fun i => |lseConstraintResidual B d (x_mu i) r|) l (nhds 0) := by
+      refine squeeze_zero ?hnonneg ?hupper hnorm
+      · intro i
+        exact abs_nonneg _
+      · intro i
+        exact abs_coord_le_vecNorm2 (lseConstraintResidual B d (x_mu i)) r
+    exact (tendsto_zero_iff_abs_tendsto_zero (f := fun i =>
+      lseConstraintResidual B d (x_mu i) r)).2 habs
+  exact
+    lseWeightedMinimizer_tendsto_isLSEMinimizer_of_constraintResidual_tendsto_zero
+      A b B d mu x_mu x hlim hres hmin
+
 private theorem lsResidual_gqrAQBlock {r p q : ℕ}
     (L11 : Fin r → Fin p → ℝ)
     (L21 : Fin q → Fin p → ℝ)
