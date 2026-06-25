@@ -3970,6 +3970,73 @@ theorem lsNormwiseBackwardErrorEtaF_le_costF_of_feasible {m n : ℕ} (theta : �
     (lsNormwiseBackwardErrorValuesF.mem_of_feasible theta A b y
       DeltaA Deltab hfeas)
 
+/-- Minimum-attainment handoff for Higham's normwise backward error (20.20).
+    If a feasible perturbation has no larger cost than every other feasible
+    perturbation, then the infimum model `eta_F(y)` equals its cost.  This is
+    only an exact bridge for a future attainment proof, not the missing
+    Walden--Karlson--Sun formula (20.21). -/
+theorem lsNormwiseBackwardErrorEtaF_eq_costF_of_feasible_minimizer
+    {m n : ℕ} (theta : ℝ)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (hfeas : LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab)
+    (hmin : ∀ (DeltaA' : Fin m → Fin n → ℝ) (Deltab' : Fin m → ℝ),
+      LSNormwiseBackwardErrorFeasible A b y DeltaA' Deltab' →
+        lsNormwiseBackwardErrorCostF theta DeltaA Deltab ≤
+          lsNormwiseBackwardErrorCostF theta DeltaA' Deltab') :
+    lsNormwiseBackwardErrorEtaF theta A b y =
+      lsNormwiseBackwardErrorCostF theta DeltaA Deltab := by
+  apply le_antisymm
+  · exact lsNormwiseBackwardErrorEtaF_le_costF_of_feasible
+      theta A b y DeltaA Deltab hfeas
+  · unfold lsNormwiseBackwardErrorEtaF
+    apply le_csInf (lsNormwiseBackwardErrorValuesF.nonempty theta A b y)
+    intro eta heta
+    rcases heta with ⟨DeltaA', Deltab', hfeas', heta_eq⟩
+    rw [heta_eq]
+    exact hmin DeltaA' Deltab' hfeas'
+
+/-- Exact-attainment consequence for (20.20): once a cost-minimizing feasible
+    perturbation is supplied, `eta_F(y)` itself belongs to the attainable-cost
+    set.  The existence of such a minimizer remains the open compactness/SVD
+    foundation for Theorem 20.5. -/
+theorem lsNormwiseBackwardErrorEtaF_mem_valuesF_of_exists_feasible_minimizer
+    {m n : ℕ} (theta : ℝ)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    (hatt :
+      ∃ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+        LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+          ∀ (DeltaA' : Fin m → Fin n → ℝ) (Deltab' : Fin m → ℝ),
+            LSNormwiseBackwardErrorFeasible A b y DeltaA' Deltab' →
+              lsNormwiseBackwardErrorCostF theta DeltaA Deltab ≤
+                lsNormwiseBackwardErrorCostF theta DeltaA' Deltab') :
+    lsNormwiseBackwardErrorEtaF theta A b y ∈
+      lsNormwiseBackwardErrorValuesF theta A b y := by
+  rcases hatt with ⟨DeltaA, Deltab, hfeas, hmin⟩
+  refine ⟨DeltaA, Deltab, hfeas, ?_⟩
+  exact lsNormwiseBackwardErrorEtaF_eq_costF_of_feasible_minimizer
+    theta A b y DeltaA Deltab hfeas hmin
+
+/-- Exact perturbation witness form of the (20.20) attainment handoff. -/
+theorem lsNormwiseBackwardErrorEtaF_exists_feasible_cost_eq_of_exists_feasible_minimizer
+    {m n : ℕ} (theta : ℝ)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    (hatt :
+      ∃ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+        LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+          ∀ (DeltaA' : Fin m → Fin n → ℝ) (Deltab' : Fin m → ℝ),
+            LSNormwiseBackwardErrorFeasible A b y DeltaA' Deltab' →
+              lsNormwiseBackwardErrorCostF theta DeltaA Deltab ≤
+                lsNormwiseBackwardErrorCostF theta DeltaA' Deltab') :
+    ∃ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+      LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+        lsNormwiseBackwardErrorCostF theta DeltaA Deltab =
+          lsNormwiseBackwardErrorEtaF theta A b y := by
+  rcases hatt with ⟨DeltaA, Deltab, hfeas, hmin⟩
+  refine ⟨DeltaA, Deltab, hfeas, ?_⟩
+  exact (lsNormwiseBackwardErrorEtaF_eq_costF_of_feasible_minimizer
+    theta A b y DeltaA Deltab hfeas hmin).symm
+
 /-- Monotonicity of the (20.20) infimum model in the source weight: increasing
     a nonnegative `theta` cannot decrease the best attainable weighted
     Frobenius perturbation cost. -/
