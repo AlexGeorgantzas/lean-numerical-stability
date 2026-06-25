@@ -5534,6 +5534,41 @@ theorem lsRealRectSigmaMinRow_le_rowSingularValue {m n : ℕ}
   have hanti := lsRealRectRowSingularValue_antitone A
   simpa [lsRealRectSigmaMinRow] using hanti (Fin.le_last i)
 
+/-- Positive row-side `sigma_min` forces every row-side singular value to be
+    positive. -/
+theorem lsRealRectRowSingularValue_pos_of_sigmaMinRow_pos {m n : ℕ}
+    (A : Fin (m + 1) → Fin n → ℝ) (hσ : 0 < lsRealRectSigmaMinRow A)
+    (i : Fin (m + 1)) :
+    0 < lsRealRectRowSingularValue A i :=
+  lt_of_lt_of_le hσ (lsRealRectSigmaMinRow_le_rowSingularValue A i)
+
+/-- Positivity of the row-side `sigma_min` is equivalent to positivity of all
+    row-side singular values. -/
+theorem lsRealRectSigmaMinRow_pos_iff_forall_rowSingularValue_pos {m n : ℕ}
+    (A : Fin (m + 1) → Fin n → ℝ) :
+    0 < lsRealRectSigmaMinRow A ↔
+      ∀ i : Fin (m + 1), 0 < lsRealRectRowSingularValue A i := by
+  constructor
+  · intro hσ i
+    exact lsRealRectRowSingularValue_pos_of_sigmaMinRow_pos A hσ i
+  · intro h
+    simpa [lsRealRectSigmaMinRow] using h (Fin.last m)
+
+/-- The row-side `sigma_min` vanishes exactly when some row-side singular value
+    vanishes. -/
+theorem lsRealRectSigmaMinRow_eq_zero_iff_exists_rowSingularValue_eq_zero
+    {m n : ℕ} (A : Fin (m + 1) → Fin n → ℝ) :
+    lsRealRectSigmaMinRow A = 0 ↔
+      ∃ i : Fin (m + 1), lsRealRectRowSingularValue A i = 0 := by
+  constructor
+  · intro hσ
+    exact ⟨Fin.last m, by simpa [lsRealRectSigmaMinRow] using hσ⟩
+  · rintro ⟨i, hi⟩
+    have hle := lsRealRectSigmaMinRow_le_rowSingularValue A i
+    have hnonneg := lsRealRectSigmaMinRow_nonneg A
+    rw [hi] at hle
+    exact le_antisymm hle hnonneg
+
 theorem lsRealRectSigmaMinRow_le_of_rectOpNorm2Le {m n : ℕ}
     (A : Fin (m + 1) → Fin n → ℝ) {c : ℝ} (hc : 0 ≤ c)
     (hA : rectOpNorm2Le A c) :
@@ -5584,6 +5619,42 @@ theorem lsNormwiseBackwardErrorFormulaMatrixSigmaMin_le_rowSingularValue
     lsNormwiseBackwardErrorFormulaMatrixRowSingularValue] using
     lsRealRectSigmaMinRow_le_rowSingularValue
       (lsNormwiseBackwardErrorFormulaMatrix theta A r y) i
+
+/-- Positive source-block `sigma_min` forces every row-side singular value of
+    the (20.21) block to be positive. -/
+theorem lsNormwiseBackwardErrorFormulaMatrixRowSingularValue_pos_of_sigmaMin_pos
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (hσ : 0 < lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y)
+    (i : Fin (m + 1)) :
+    0 < lsNormwiseBackwardErrorFormulaMatrixRowSingularValue theta A r y i := by
+  exact lt_of_lt_of_le hσ
+    (lsNormwiseBackwardErrorFormulaMatrixSigmaMin_le_rowSingularValue
+      theta A r y i)
+
+/-- Source-block positivity form for the row-side `sigma_min` in (20.21). -/
+theorem lsNormwiseBackwardErrorFormulaMatrixSigmaMin_pos_iff_forall_rowSingularValue_pos
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ) :
+    0 < lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y ↔
+      ∀ i : Fin (m + 1),
+        0 < lsNormwiseBackwardErrorFormulaMatrixRowSingularValue theta A r y i := by
+  simpa [lsNormwiseBackwardErrorFormulaMatrixSigmaMin,
+    lsNormwiseBackwardErrorFormulaMatrixRowSingularValue] using
+    lsRealRectSigmaMinRow_pos_iff_forall_rowSingularValue_pos
+      (lsNormwiseBackwardErrorFormulaMatrix theta A r y)
+
+/-- Source-block zero form for the row-side `sigma_min` in (20.21). -/
+theorem lsNormwiseBackwardErrorFormulaMatrixSigmaMin_eq_zero_iff_exists_rowSingularValue_eq_zero
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ) :
+    lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y = 0 ↔
+      ∃ i : Fin (m + 1),
+        lsNormwiseBackwardErrorFormulaMatrixRowSingularValue theta A r y i = 0 := by
+  simpa [lsNormwiseBackwardErrorFormulaMatrixSigmaMin,
+    lsNormwiseBackwardErrorFormulaMatrixRowSingularValue] using
+    lsRealRectSigmaMinRow_eq_zero_iff_exists_rowSingularValue_eq_zero
+      (lsNormwiseBackwardErrorFormulaMatrix theta A r y)
 
 /-- Every row-side singular value of the source block in (20.21) is bounded by
     the conservative operator-2 certificate `cA + phi`. -/
