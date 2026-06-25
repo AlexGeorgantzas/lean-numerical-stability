@@ -883,6 +883,31 @@ theorem lsScaledAugmentedMatrix_mulVec {m n : ℕ} (alpha : ℝ)
     rw [Fin.append_right, Fin.append_right, Fin.sum_univ_add]
     simp [Fin.append_left, Fin.append_right]
 
+/-- Higham, 2nd ed., Chapter 20, equation (20.17): at `alpha = 0`, the
+    scaled augmented matrix-vector action is the `finSumFinEquiv` reindexing
+    of the self-adjoint-dilation action on the paired vector `(r,x)`. -/
+theorem lsScaledAugmentedMatrix_zero_mulVec_eq_reindexed_rectSelfAdjointDilation_sumBothVec
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) (r : Fin m → ℝ) (x : Fin n → ℝ) :
+    rectMatMulVec (lsScaledAugmentedMatrix 0 A) (Fin.append r x) =
+      fun p : Fin (m + n) =>
+        finiteMatVec (rectSelfAdjointDilation A) (sumBothVec r x)
+          (finSumFinEquiv.symm p) := by
+  ext p
+  rw [lsScaledAugmentedMatrix_mulVec]
+  refine Fin.addCases
+    (motive := fun p : Fin (m + n) =>
+      Fin.append
+          (fun i : Fin m => 0 * r i + rectMatMulVec A x i)
+          (fun j : Fin n => ∑ i : Fin m, A i j * r i) p =
+        finiteMatVec (rectSelfAdjointDilation A) (sumBothVec r x)
+          (finSumFinEquiv.symm p)) ?left ?right p
+  · intro i
+    rw [finiteMatVec_rectSelfAdjointDilation_sumBothVec]
+    simp [sumBothVec]
+  · intro j
+    rw [finiteMatVec_rectSelfAdjointDilation_sumBothVec]
+    simp [sumBothVec]
+
 /-- The component equations for the scaled augmented system are exactly the
     block matrix-vector equation using `C(alpha)` from (20.17). -/
 theorem LSScaledAugmentedSystem.iff_scaledAugmentedMatrix_mulVec {m n : ℕ}
