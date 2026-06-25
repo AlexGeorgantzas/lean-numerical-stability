@@ -1495,6 +1495,23 @@ theorem lseWeightedMinimizer_objective_le_lseMinimizer {m n p : ℕ}
   lseWeightedMinimizer_objective_le_feasibleObjective
     mu A b B d x_mu y hmin hymin.1
 
+private theorem continuous_lseConstraintResidual_apply {n p : ℕ}
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ) (r : Fin p) :
+    Continuous (fun x : Fin n → ℝ => lseConstraintResidual B d x r) := by
+  unfold lseConstraintResidual rectMatMulVec
+  exact (continuous_finset_sum _ (fun j _ =>
+    continuous_const.mul (continuous_apply j))).sub continuous_const
+
+private theorem continuous_lsObjective {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) :
+    Continuous (fun x : Fin n → ℝ => lsObjective A b x) := by
+  unfold lsObjective vecNorm2Sq
+  exact continuous_finset_sum _ (fun i _ => (((by
+    unfold lsResidual rectMatMulVec
+    exact (continuous_finset_sum _ (fun j _ =>
+      continuous_const.mul (continuous_apply j))).sub continuous_const) :
+      Continuous (fun x : Fin n → ℝ => lsResidual A b x i)).pow 2))
+
 /-- If a candidate for the weighted problem (20.26) has objective at most `R`,
     then its squared equality-constraint residual is at most `R / mu^2`.
     This is a finite-weight approximation bound, not the source's limiting
@@ -1600,6 +1617,45 @@ theorem lseWeightedMinimizer_constraintResidual_norm_tendsto_zero_of_inv_mu_sq
     lseWeightedMinimizer_constraintResidual_normSq_tendsto_zero_of_inv_mu_sq
       A b B d mu x_mu y hmu hmin hyfeas hInvSq
   simpa [vecNorm2] using Real.continuous_sqrt.tendsto 0 |>.comp hsq
+
+/-- Conditional limiting handoff for the method of weighting after (20.26).
+    If exact weighted minimizers have a convergent branch and their constraint
+    residuals converge to zero, then the branch limit is an exact LSE
+    minimizer.  This supplies the optimization-closure step, while still
+    assuming the existence/convergence of the branch and residual convergence. -/
+theorem lseWeightedMinimizer_tendsto_isLSEMinimizer_of_constraintResidual_tendsto_zero
+    {ι : Type*} {l : Filter ι} [l.NeBot] {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ)
+    (mu : ι → ℝ) (x_mu : ι → Fin n → ℝ) (x : Fin n → ℝ)
+    (hlim : Filter.Tendsto x_mu l (nhds x))
+    (hres :
+      Filter.Tendsto (fun i => lseConstraintResidual B d (x_mu i)) l (nhds 0))
+    (hmin : ∀ i, IsLeastSquaresMinimizer
+      (lseWeightedMatrix (mu i) A B) (lseWeightedRhs (mu i) b d) (x_mu i)) :
+    IsLSEMinimizer A b B d x := by
+  refine ⟨?hfeas, ?hopt⟩
+  · intro r
+    have hres_x :
+        Filter.Tendsto (fun i => lseConstraintResidual B d (x_mu i) r) l
+          (nhds (lseConstraintResidual B d x r)) :=
+      (continuous_lseConstraintResidual_apply B d r).tendsto x |>.comp hlim
+    have hres_zero :
+        Filter.Tendsto (fun i => lseConstraintResidual B d (x_mu i) r) l
+          (nhds 0) :=
+      (continuous_apply r).tendsto (0 : Fin p → ℝ) |>.comp hres
+    have hzero : lseConstraintResidual B d x r = 0 :=
+      tendsto_nhds_unique hres_x hres_zero
+    unfold lseConstraintResidual at hzero
+    linarith
+  · intro y hyfeas
+    have hobj_lim :
+        Filter.Tendsto (fun i => lsObjective A b (x_mu i)) l
+          (nhds (lsObjective A b x)) :=
+      (continuous_lsObjective A b).tendsto x |>.comp hlim
+    exact le_of_tendsto' hobj_lim (fun i =>
+      lseWeightedMinimizer_objective_le_feasibleObjective
+        (mu i) A b B d (x_mu i) y (hmin i) hyfeas)
 
 private theorem lsResidual_gqrAQBlock {r p q : ℕ}
     (L11 : Fin r → Fin p → ℝ)
