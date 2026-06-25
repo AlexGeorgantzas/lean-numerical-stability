@@ -7048,6 +7048,37 @@ theorem lsNormwiseBackwardErrorFormulaValue_eq_zero_iff
       rw [hsigma]
       exact min_eq_right (lsNormwiseBackwardErrorPhi_nonneg theta r y)
 
+/-- Source-data positivity characterization for the printed right-hand side
+    in (20.21): after substituting Higham's residual `r = b - A y`, the outer
+    `min {phi, sigma_min}` is positive exactly when both displayed branches are
+    positive. -/
+theorem lsNormwiseBackwardErrorFormulaRHS_pos_iff
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ) :
+    0 < lsNormwiseBackwardErrorFormulaRHS theta A b y ↔
+      0 < lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y ∧
+        0 < lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+          (lsResidualHigham A b y) y := by
+  simpa [lsNormwiseBackwardErrorFormulaRHS] using
+    (lsNormwiseBackwardErrorFormulaValue_pos_iff
+      (theta := theta) (A := A) (r := lsResidualHigham A b y) (y := y))
+
+/-- Source-data zero characterization for the printed right-hand side in
+    (20.21): after substituting Higham's residual `r = b - A y`, the outer
+    `min {phi, sigma_min}` vanishes exactly when one displayed branch
+    vanishes.  This is branch anatomy only; it is not the missing
+    Walden--Karlson--Sun equality proof with `eta_F(y)`. -/
+theorem lsNormwiseBackwardErrorFormulaRHS_eq_zero_iff
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ) :
+    lsNormwiseBackwardErrorFormulaRHS theta A b y = 0 ↔
+      lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y = 0 ∨
+        lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+          (lsResidualHigham A b y) y = 0 := by
+  simpa [lsNormwiseBackwardErrorFormulaRHS] using
+    (lsNormwiseBackwardErrorFormulaValue_eq_zero_iff
+      (theta := theta) (A := A) (r := lsResidualHigham A b y) (y := y))
+
 /-- Zero-residual branch of the printed right-hand side in (20.21): if
     `r = b - A y` vanishes, then the displayed `min {phi, sigma_min}` value is
     zero.  This is a source-faithful degenerate branch, not the spectral proof
