@@ -3924,6 +3924,36 @@ theorem lsNormwiseBackwardErrorValuesF.bddBelow {m n : ℕ} (theta : ℝ)
   rcases heta with ⟨DeltaA, Deltab, _hfeas, rfl⟩
   exact lsNormwiseBackwardErrorCostF_nonneg theta DeltaA Deltab
 
+/-- Every attainable cost in the (20.20) value set is nonnegative.  This
+    localizes bounded value sublevels before the later compactness/closedness
+    argument for minimum-attainment. -/
+theorem lsNormwiseBackwardErrorValuesF.nonneg_of_mem {m n : ℕ} (theta : ℝ)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    {eta : ℝ} (heta : eta ∈ lsNormwiseBackwardErrorValuesF theta A b y) :
+    0 ≤ eta := by
+  rcases heta with ⟨DeltaA, Deltab, _hfeas, rfl⟩
+  exact lsNormwiseBackwardErrorCostF_nonneg theta DeltaA Deltab
+
+/-- A bounded attainable value for (20.20) lies in the compact interval shape
+    `[0, R]`.  This is only a localization lemma for the future compactness
+    proof; it does not prove the attainable-cost set is closed. -/
+theorem lsNormwiseBackwardErrorValuesF.mem_Icc_of_mem_le {m n : ℕ} (theta : ℝ)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    {eta R : ℝ} (heta : eta ∈ lsNormwiseBackwardErrorValuesF theta A b y)
+    (heta_le : eta ≤ R) :
+    eta ∈ Set.Icc 0 R :=
+  ⟨lsNormwiseBackwardErrorValuesF.nonneg_of_mem theta A b y heta, heta_le⟩
+
+/-- Bounded sublevels of the (20.20) attainable-cost set are contained in
+    `[0, R]`.  This packages the order-theoretic part of the eventual
+    finite-dimensional compactness argument. -/
+theorem lsNormwiseBackwardErrorValuesF.sublevel_subset_Icc {m n : ℕ} (theta : ℝ)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) (R : ℝ) :
+    lsNormwiseBackwardErrorValuesF theta A b y ∩ Set.Iic R ⊆ Set.Icc 0 R := by
+  intro eta heta
+  exact lsNormwiseBackwardErrorValuesF.mem_Icc_of_mem_le theta A b y
+    heta.1 heta.2
+
 /-- The (20.20) infimum model `eta_F(y)` is nonnegative. -/
 theorem lsNormwiseBackwardErrorEtaF_nonneg {m n : ℕ} (theta : ℝ)
     (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
@@ -4297,6 +4327,23 @@ theorem lsNormwiseBackwardErrorValuesF.exists_feasible_entry_bounds_of_mem_le
       (lsNormwiseBackwardErrorCostF_deltab_entry_abs_le_cost_div_theta
         htheta DeltaA Deltab i).trans
         (div_le_div_of_nonneg_right hcost_le_R (le_of_lt htheta))
+
+/-- Sublevel form of the bounded-entry witness for (20.20): a value in the
+    finite-radius attainable-cost sublevel has a feasible perturbation witness
+    with all entries bounded by the corresponding finite radii. -/
+theorem lsNormwiseBackwardErrorValuesF.exists_feasible_entry_bounds_of_mem_sublevel
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    {eta R : ℝ}
+    (heta : eta ∈ lsNormwiseBackwardErrorValuesF theta A b y ∩ Set.Iic R) :
+    ∃ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+      LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+        lsNormwiseBackwardErrorCostF theta DeltaA Deltab = eta ∧
+        (∀ i j, |DeltaA i j| ≤ R) ∧
+        (∀ i, |Deltab i| ≤ R / theta) := by
+  exact
+    lsNormwiseBackwardErrorValuesF.exists_feasible_entry_bounds_of_mem_le
+      htheta A b y heta.1 heta.2
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.6: augmented system with
     different perturbations in the primal and transposed blocks. -/
