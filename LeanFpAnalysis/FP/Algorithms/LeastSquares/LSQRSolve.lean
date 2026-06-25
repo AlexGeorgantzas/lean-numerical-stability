@@ -4037,6 +4037,48 @@ theorem lsNormwiseBackwardErrorEtaF_exists_feasible_cost_eq_of_exists_feasible_m
   exact (lsNormwiseBackwardErrorEtaF_eq_costF_of_feasible_minimizer
     theta A b y DeltaA Deltab hfeas hmin).symm
 
+/-- Closed-value-set bridge for Higham's normwise backward error (20.20).
+    If the attainable weighted-cost set is closed, then the infimum model
+    `eta_F(y)` is an actual least element of that set.  This is a compactness
+    bridge for the later minimizer-existence proof, not the Walden--Karlson--Sun
+    formula (20.21). -/
+theorem lsNormwiseBackwardErrorEtaF_isLeast_valuesF_of_isClosed_valuesF
+    {m n : ℕ} (theta : ℝ)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    (hclosed : IsClosed (lsNormwiseBackwardErrorValuesF theta A b y)) :
+    IsLeast (lsNormwiseBackwardErrorValuesF theta A b y)
+      (lsNormwiseBackwardErrorEtaF theta A b y) := by
+  unfold lsNormwiseBackwardErrorEtaF
+  exact hclosed.isLeast_csInf
+    (lsNormwiseBackwardErrorValuesF.nonempty theta A b y)
+    (lsNormwiseBackwardErrorValuesF.bddBelow theta A b y)
+
+/-- Closed-value-set attainment for (20.20): closedness of the attainable-cost
+    set upgrades the infimum model `eta_F(y)` to an attainable value. -/
+theorem lsNormwiseBackwardErrorEtaF_mem_valuesF_of_isClosed_valuesF
+    {m n : ℕ} (theta : ℝ)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    (hclosed : IsClosed (lsNormwiseBackwardErrorValuesF theta A b y)) :
+    lsNormwiseBackwardErrorEtaF theta A b y ∈
+      lsNormwiseBackwardErrorValuesF theta A b y :=
+  (lsNormwiseBackwardErrorEtaF_isLeast_valuesF_of_isClosed_valuesF
+    theta A b y hclosed).1
+
+/-- Feasible-witness form of the closed-value-set bridge for (20.20).  The
+    remaining selected-scope work is proving the closedness/minimizer foundation
+    and then the spectral formula (20.21). -/
+theorem lsNormwiseBackwardErrorEtaF_exists_feasible_cost_eq_of_isClosed_valuesF
+    {m n : ℕ} (theta : ℝ)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    (hclosed : IsClosed (lsNormwiseBackwardErrorValuesF theta A b y)) :
+    ∃ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+      LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+        lsNormwiseBackwardErrorCostF theta DeltaA Deltab =
+          lsNormwiseBackwardErrorEtaF theta A b y := by
+  rcases lsNormwiseBackwardErrorEtaF_mem_valuesF_of_isClosed_valuesF
+      theta A b y hclosed with ⟨DeltaA, Deltab, hfeas, heta_eq⟩
+  exact ⟨DeltaA, Deltab, hfeas, heta_eq.symm⟩
+
 /-- Monotonicity of the (20.20) infimum model in the source weight: increasing
     a nonnegative `theta` cannot decrease the best attainable weighted
     Frobenius perturbation cost. -/
