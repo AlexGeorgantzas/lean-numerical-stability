@@ -3810,6 +3810,39 @@ theorem lsNormwiseBackwardErrorDeltab_norm_le_cost_div_theta {m n : ℕ}
     lsNormwiseBackwardErrorCostF_weighted_deltab_le
       (le_of_lt htheta) DeltaA Deltab
 
+/-- Coercivity component for (20.20): the weighted Frobenius perturbation cost
+    controls every entry of the matrix perturbation. -/
+theorem lsNormwiseBackwardErrorCostF_deltaA_entry_abs_le {m n : ℕ} (theta : ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (i : Fin m) (j : Fin n) :
+    |DeltaA i j| ≤ lsNormwiseBackwardErrorCostF theta DeltaA Deltab :=
+  (abs_entry_le_frobNormRect DeltaA i j).trans
+    (lsNormwiseBackwardErrorCostF_deltaA_le theta DeltaA Deltab)
+
+/-- Coercivity component for (20.20): for nonnegative `theta`, the weighted
+    Frobenius perturbation cost controls each weighted right-hand-side entry. -/
+theorem lsNormwiseBackwardErrorCostF_weighted_deltab_entry_abs_le
+    {m n : ℕ} {theta : ℝ} (htheta : 0 ≤ theta)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ) (i : Fin m) :
+    theta * |Deltab i| ≤
+      lsNormwiseBackwardErrorCostF theta DeltaA Deltab := by
+  exact
+    (mul_le_mul_of_nonneg_left (abs_coord_le_vecNorm2 Deltab i) htheta).trans
+      (lsNormwiseBackwardErrorCostF_weighted_deltab_le htheta DeltaA Deltab)
+
+/-- Positive-`theta` pointwise form of the right-hand-side coercivity bound:
+    each `Delta b` entry is controlled by the weighted Frobenius cost divided
+    by `theta`. -/
+theorem lsNormwiseBackwardErrorCostF_deltab_entry_abs_le_cost_div_theta
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ) (i : Fin m) :
+    |Deltab i| ≤
+      lsNormwiseBackwardErrorCostF theta DeltaA Deltab / theta := by
+  rw [le_div_iff₀ htheta]
+  simpa [mul_comm] using
+    lsNormwiseBackwardErrorCostF_weighted_deltab_entry_abs_le
+      (le_of_lt htheta) DeltaA Deltab i
+
 /-- Expanded square-root form of the Frobenius cost
     `||[DeltaA, theta Delta b]||_F` in (20.20). -/
 theorem lsNormwiseBackwardErrorCostF_eq_sqrt_sq_sum {m n : ℕ} (theta : ℝ)
@@ -4194,6 +4227,46 @@ theorem lsNormwiseBackwardErrorEtaF_exists_feasible_deltab_norm_lt_add_eps_div_t
   refine ⟨DeltaA, Deltab, hfeas, heta_le, hcost_lt, ?_⟩
   rw [lt_div_iff₀ htheta]
   simpa [mul_comm] using htheta_norm_lt
+
+/-- Pointwise coercivity form of the (20.20) infimum model: for positive
+    finite `theta`, every tolerance admits a feasible perturbation whose cost
+    is within that tolerance of `eta_F(y)` and whose individual entries are
+    bounded by the same finite radius.  This is a compactness/coercivity
+    ingredient for proving minimum-attainment, not the spectral formula
+    (20.21). -/
+theorem lsNormwiseBackwardErrorEtaF_exists_feasible_entry_bounds_lt_add_eps
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    {eps : ℝ} (heps : 0 < eps) :
+    ∃ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+      LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+        lsNormwiseBackwardErrorEtaF theta A b y ≤
+          lsNormwiseBackwardErrorCostF theta DeltaA Deltab ∧
+        lsNormwiseBackwardErrorCostF theta DeltaA Deltab <
+          lsNormwiseBackwardErrorEtaF theta A b y + eps ∧
+        (∀ i j, |DeltaA i j| <
+          lsNormwiseBackwardErrorEtaF theta A b y + eps) ∧
+        (∀ i, |Deltab i| <
+          (lsNormwiseBackwardErrorEtaF theta A b y + eps) / theta) := by
+  rcases lsNormwiseBackwardErrorEtaF_exists_feasible_cost_lt_add_eps
+      theta A b y heps with ⟨DeltaA, Deltab, hfeas, heta_le, hcost_lt⟩
+  refine ⟨DeltaA, Deltab, hfeas, heta_le, hcost_lt, ?_, ?_⟩
+  · intro i j
+    exact lt_of_le_of_lt
+      (lsNormwiseBackwardErrorCostF_deltaA_entry_abs_le theta DeltaA Deltab i j)
+      hcost_lt
+  · intro i
+    have hweighted :
+        theta * |Deltab i| ≤
+          lsNormwiseBackwardErrorCostF theta DeltaA Deltab :=
+      lsNormwiseBackwardErrorCostF_weighted_deltab_entry_abs_le
+        (le_of_lt htheta) DeltaA Deltab i
+    have htheta_abs_lt :
+        theta * |Deltab i| <
+          lsNormwiseBackwardErrorEtaF theta A b y + eps :=
+      lt_of_le_of_lt hweighted hcost_lt
+    rw [lt_div_iff₀ htheta]
+    simpa [mul_comm] using htheta_abs_lt
 
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.6: augmented system with
     different perturbations in the primal and transposed blocks. -/
