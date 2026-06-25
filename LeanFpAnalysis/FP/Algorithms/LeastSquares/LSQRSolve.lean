@@ -5301,6 +5301,183 @@ theorem lsNormwiseBackwardErrorFormulaMatrix_right_residual_mulVec_eq_zero
           rw [hcomp_sum]
           ring
 
+/-- Splitting a finite vector into two coordinate blocks preserves squared
+    Euclidean norm additively. -/
+theorem lsVecNorm2Sq_append {n m : ℕ}
+    (x : Fin n → ℝ) (z : Fin m → ℝ) :
+    vecNorm2Sq (Fin.append x z) = vecNorm2Sq x + vecNorm2Sq z := by
+  unfold vecNorm2Sq
+  rw [Fin.sum_univ_add]
+  simp [Fin.append_left, Fin.append_right]
+
+/-- The left coordinate block of an appended vector has no larger Euclidean
+    norm than the whole vector. -/
+theorem lsVecNorm2_left_le_append {n m : ℕ}
+    (x : Fin n → ℝ) (z : Fin m → ℝ) :
+    vecNorm2 x ≤ vecNorm2 (Fin.append x z) := by
+  unfold vecNorm2
+  apply Real.sqrt_le_sqrt
+  rw [lsVecNorm2Sq_append]
+  have hz := vecNorm2Sq_nonneg z
+  linarith
+
+/-- The right coordinate block of an appended vector has no larger Euclidean
+    norm than the whole vector. -/
+theorem lsVecNorm2_right_le_append {n m : ℕ}
+    (x : Fin n → ℝ) (z : Fin m → ℝ) :
+    vecNorm2 z ≤ vecNorm2 (Fin.append x z) := by
+  unfold vecNorm2
+  apply Real.sqrt_le_sqrt
+  rw [lsVecNorm2Sq_append]
+  have hx := vecNorm2Sq_nonneg x
+  linarith
+
+/-- The first `n` coordinates of a vector over `Fin (n+m)` have no larger
+    Euclidean norm than the whole vector. -/
+theorem lsVecNorm2_left_le_of_sum_coords {n m : ℕ}
+    (z : Fin (n + m) → ℝ) :
+    vecNorm2 (fun j : Fin n => z (Fin.castAdd m j)) ≤ vecNorm2 z := by
+  let x : Fin n → ℝ := fun j => z (Fin.castAdd m j)
+  let w : Fin m → ℝ := fun j => z (Fin.natAdd n j)
+  have hle := lsVecNorm2_left_le_append x w
+  have hz : Fin.append x w = z := by
+    ext k
+    refine Fin.addCases
+      (motive := fun k : Fin (n + m) => Fin.append x w k = z k)
+      ?left ?right k
+    · intro i
+      simp [x, w, Fin.append_left]
+    · intro i
+      simp [x, w, Fin.append_right]
+  simpa [x, w, hz] using hle
+
+/-- The last `m` coordinates of a vector over `Fin (n+m)` have no larger
+    Euclidean norm than the whole vector. -/
+theorem lsVecNorm2_right_le_of_sum_coords {n m : ℕ}
+    (z : Fin (n + m) → ℝ) :
+    vecNorm2 (fun j : Fin m => z (Fin.natAdd n j)) ≤ vecNorm2 z := by
+  let x : Fin n → ℝ := fun j => z (Fin.castAdd m j)
+  let w : Fin m → ℝ := fun j => z (Fin.natAdd n j)
+  have hle := lsVecNorm2_right_le_append x w
+  have hz : Fin.append x w = z := by
+    ext k
+    refine Fin.addCases
+      (motive := fun k : Fin (n + m) => Fin.append x w k = z k)
+      ?left ?right k
+    · intro i
+      simp [x, w, Fin.append_left]
+    · intro i
+      simp [x, w, Fin.append_right]
+  simpa [x, w, hz] using hle
+
+/-- Matrix-vector action of the source block
+    `[ A   phi(I - r r^+) ]` from equation (20.21), split across the two
+    coordinate blocks of the input vector. -/
+theorem lsNormwiseBackwardErrorFormulaMatrix_mulVec {m n : ℕ}
+    (theta : ℝ) (A : Fin m → Fin n → ℝ) (r : Fin m → ℝ)
+    (y : Fin n → ℝ) (z : Fin (n + m) → ℝ) :
+    rectMatMulVec (lsNormwiseBackwardErrorFormulaMatrix theta A r y) z =
+      fun i : Fin m =>
+        rectMatMulVec A (fun j : Fin n => z (Fin.castAdd m j)) i +
+          lsNormwiseBackwardErrorPhi theta r y *
+            matMulVec m (lsResidualComplementProjector r)
+              (fun j : Fin m => z (Fin.natAdd n j)) i := by
+  ext i
+  unfold rectMatMulVec matMulVec
+  rw [Fin.sum_univ_add]
+  have hright :
+      (∑ j : Fin m,
+          (lsNormwiseBackwardErrorPhi theta r y *
+              lsResidualComplementProjector r i j) *
+            z (Fin.natAdd n j)) =
+        lsNormwiseBackwardErrorPhi theta r y *
+          ∑ j : Fin m,
+            lsResidualComplementProjector r i j * z (Fin.natAdd n j) := by
+    rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl
+    intro j _
+    ring
+  simp [lsNormwiseBackwardErrorFormulaMatrix, Fin.append_left,
+    Fin.append_right, hright]
+
+/-- The source complement `I - r r^+` from (20.21) has rectangular
+    operator-2 norm at most one when the residual direction is nonzero. -/
+theorem lsResidualComplementProjector_rectOpNorm2Le_one {m : ℕ}
+    (r : Fin m → ℝ) (hrsq : vecNorm2Sq r ≠ 0) :
+    rectOpNorm2Le (lsResidualComplementProjector r) 1 := by
+  intro x
+  have hsq :
+      vecNorm2Sq (rectMatMulVec (lsResidualComplementProjector r) x) ≤
+        vecNorm2Sq x := by
+    simpa [rectMatMulVec, matMulVec, lsResidualComplementProjector] using
+    lsLemma20_6ProjectorComplement_vecNorm2Sq_le r hrsq x
+  simpa [vecNorm2] using Real.sqrt_le_sqrt hsq
+
+/-- Conservative operator-2 upper bound for the source block
+    `[ A   phi(I - r r^+) ]` in (20.21).  This is a preparatory spectral
+    bound, not the missing singular-value minimum formula. -/
+theorem lsNormwiseBackwardErrorFormulaMatrix_rectOpNorm2Le {m n : ℕ}
+    (theta : ℝ) (A : Fin m → Fin n → ℝ) (r : Fin m → ℝ)
+    (y : Fin n → ℝ) {cA : ℝ} (hcA : 0 ≤ cA)
+    (hA : rectOpNorm2Le A cA) (hrsq : vecNorm2Sq r ≠ 0) :
+    rectOpNorm2Le (lsNormwiseBackwardErrorFormulaMatrix theta A r y)
+      (cA + lsNormwiseBackwardErrorPhi theta r y) := by
+  intro z
+  let phi : ℝ := lsNormwiseBackwardErrorPhi theta r y
+  let x : Fin n → ℝ := fun j => z (Fin.castAdd m j)
+  let w : Fin m → ℝ := fun j => z (Fin.natAdd n j)
+  have hphi : 0 ≤ phi := by
+    simpa [phi] using lsNormwiseBackwardErrorPhi_nonneg theta r y
+  have hC : rectOpNorm2Le (lsResidualComplementProjector r) 1 :=
+    lsResidualComplementProjector_rectOpNorm2Le_one r hrsq
+  have hleft :
+      vecNorm2 (rectMatMulVec A x) ≤ cA * vecNorm2 z := by
+    calc
+      vecNorm2 (rectMatMulVec A x) ≤ cA * vecNorm2 x := hA x
+      _ ≤ cA * vecNorm2 z :=
+            mul_le_mul_of_nonneg_left
+              (by simpa [x] using lsVecNorm2_left_le_of_sum_coords z) hcA
+  have hCw :
+      vecNorm2 (matMulVec m (lsResidualComplementProjector r) w) ≤
+        vecNorm2 w := by
+    simpa [rectMatMulVec, matMulVec] using hC w
+  have hright :
+      vecNorm2
+          (fun i : Fin m =>
+            phi * matMulVec m (lsResidualComplementProjector r) w i) ≤
+        phi * vecNorm2 z := by
+    calc
+      vecNorm2
+          (fun i : Fin m =>
+            phi * matMulVec m (lsResidualComplementProjector r) w i)
+          = phi * vecNorm2
+              (matMulVec m (lsResidualComplementProjector r) w) := by
+              rw [vecNorm2_smul, abs_of_nonneg hphi]
+      _ ≤ phi * vecNorm2 w := mul_le_mul_of_nonneg_left hCw hphi
+      _ ≤ phi * vecNorm2 z :=
+            mul_le_mul_of_nonneg_left
+              (by simpa [w] using lsVecNorm2_right_le_of_sum_coords z) hphi
+  rw [lsNormwiseBackwardErrorFormulaMatrix_mulVec]
+  change
+    vecNorm2
+        (fun i : Fin m =>
+          rectMatMulVec A x i +
+            phi * matMulVec m (lsResidualComplementProjector r) w i) ≤
+      (cA + phi) * vecNorm2 z
+  calc
+    vecNorm2
+        (fun i : Fin m =>
+          rectMatMulVec A x i +
+            phi * matMulVec m (lsResidualComplementProjector r) w i)
+        ≤ vecNorm2 (rectMatMulVec A x) +
+            vecNorm2
+              (fun i : Fin m =>
+                phi * matMulVec m (lsResidualComplementProjector r) w i) :=
+          vecNorm2_add_le _ _
+    _ ≤ cA * vecNorm2 z + phi * vecNorm2 z :=
+          add_le_add hleft hright
+    _ = (cA + phi) * vecNorm2 z := by ring
+
 /-- Transposed version of `(P - I)s = 0` for the symmetric rank-one projector
     in Lemma 20.6. -/
 theorem lsLemma20_6Projector_transpose_sub_id_apply_self {m : ℕ}
