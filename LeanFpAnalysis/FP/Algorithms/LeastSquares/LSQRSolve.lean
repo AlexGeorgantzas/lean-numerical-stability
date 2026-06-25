@@ -5724,6 +5724,72 @@ noncomputable def lsRealRectRowRank {m n : ℕ}
     (A : Fin m → Fin n → ℝ) : ℕ :=
   complexMatrixRank (realRectToCMatrix (finiteTranspose A))
 
+private theorem realVecToEuclidean_ne_zero_of_vecNorm2Sq_ne_zero {m : ℕ}
+    {v : Fin m → ℝ} (hv : vecNorm2Sq v ≠ 0) :
+    realVecToEuclidean v ≠ 0 := by
+  intro hvzero
+  have hnorm : vecNorm2 v = 0 := by
+    have hnormE : ‖realVecToEuclidean v‖ = 0 := by
+      simp [hvzero]
+    simpa [realVecToEuclidean_norm] using hnormE
+  have hsq : vecNorm2Sq v = 0 := by
+    rw [← vecNorm2_sq, hnorm]
+    norm_num
+  exact hv hsq
+
+private theorem complexMatrixRank_ne_card_of_euclideanLin_ker_nonzero
+    {m n : ℕ} (A : CMatrix m n) {x : EuclideanSpace ℂ (Fin n)}
+    (hxker : complexMatrixEuclideanLin A x = 0) (hxne : x ≠ 0) :
+    complexMatrixRank A ≠ n := by
+  intro hrank
+  let T : EuclideanSpace ℂ (Fin n) →ₗ[ℂ] EuclideanSpace ℂ (Fin m) :=
+    complexMatrixEuclideanLin A
+  have hrange :
+      Module.finrank ℂ (LinearMap.range T) = n := by
+    simpa [T, complexMatrixRank_eq_finrank_range_euclideanLin A] using hrank
+  have hdomain :
+      Module.finrank ℂ (EuclideanSpace ℂ (Fin n)) = n :=
+    finrank_euclideanSpace_fin (𝕜 := ℂ) (n := n)
+  have hsum :
+      Module.finrank ℂ (LinearMap.range T) +
+          Module.finrank ℂ (LinearMap.ker T) =
+        Module.finrank ℂ (EuclideanSpace ℂ (Fin n)) :=
+    LinearMap.finrank_range_add_finrank_ker T
+  have hker_finrank :
+      Module.finrank ℂ (LinearMap.ker T) = 0 := by
+    omega
+  have hker_bot : LinearMap.ker T = ⊥ := by
+    exact (Submodule.finrank_eq_zero).mp hker_finrank
+  have hxmem : x ∈ LinearMap.ker T := by
+    simpa [T, LinearMap.mem_ker] using hxker
+  have hxzero : x = 0 := by
+    have hxbot : x ∈ (⊥ : Submodule ℂ (EuclideanSpace ℂ (Fin n))) := by
+      simpa [hker_bot] using hxmem
+    simpa using hxbot
+  exact hxne hxzero
+
+/-- A nonzero vector annihilating every column of a real rectangular matrix
+    rules out full row rank of the row-side complexified transpose. -/
+theorem lsRealRectRowRank_ne_card_of_leftNull {m n : ℕ}
+    (A : Fin (m + 1) → Fin n → ℝ) (v : Fin (m + 1) → ℝ)
+    (hv : vecNorm2Sq v ≠ 0)
+    (hleft : ∀ k : Fin n, ∑ i : Fin (m + 1), A i k * v i = 0) :
+    lsRealRectRowRank A ≠ m + 1 := by
+  have hTzero : rectMatMulVec (finiteTranspose A) v = 0 := by
+    ext k
+    simpa [rectMatMulVec, finiteTranspose] using hleft k
+  have hker :
+      complexMatrixEuclideanLin (realRectToCMatrix (finiteTranspose A))
+          (realVecToEuclidean v) = 0 := by
+    apply norm_eq_zero.mp
+    rw [realRectToCMatrix_euclideanLin_realVecToEuclidean_norm, hTzero]
+    exact vecNorm2_zero
+  have hvne : realVecToEuclidean v ≠ 0 :=
+    realVecToEuclidean_ne_zero_of_vecNorm2Sq_ne_zero hv
+  simpa [lsRealRectRowRank] using
+    complexMatrixRank_ne_card_of_euclideanLin_ker_nonzero
+      (realRectToCMatrix (finiteTranspose A)) hker hvne
+
 /-- The row rank is the number of nonzero row-side singular values. -/
 theorem lsRealRectRowRank_eq_card_nonzero_rowSingularValue {m n : ℕ}
     (A : Fin m → Fin n → ℝ) :
@@ -5849,6 +5915,20 @@ theorem lsRealRectSigmaMinRow_pos_iff_rowRank_eq_card {m n : ℕ}
   constructor
   · exact lsRealRectRowRank_eq_card_of_sigmaMinRow_pos A
   · exact lsRealRectSigmaMinRow_pos_of_rowRank_eq_card A
+
+/-- A nonzero left-null certificate forces the row-side `sigma_min` of a real
+    rectangular matrix to vanish. -/
+theorem lsRealRectSigmaMinRow_eq_zero_of_leftNull {m n : ℕ}
+    (A : Fin (m + 1) → Fin n → ℝ) (v : Fin (m + 1) → ℝ)
+    (hv : vecNorm2Sq v ≠ 0)
+    (hleft : ∀ k : Fin n, ∑ i : Fin (m + 1), A i k * v i = 0) :
+    lsRealRectSigmaMinRow A = 0 := by
+  by_contra hne
+  have hpos : 0 < lsRealRectSigmaMinRow A :=
+    lt_of_le_of_ne' (lsRealRectSigmaMinRow_nonneg A) hne
+  have hrank : lsRealRectRowRank A = m + 1 :=
+    (lsRealRectSigmaMinRow_pos_iff_rowRank_eq_card A).mp hpos
+  exact (lsRealRectRowRank_ne_card_of_leftNull A v hv hleft) hrank
 
 theorem lsRealRectSigmaMinRow_le_of_rectOpNorm2Le {m n : ℕ}
     (A : Fin (m + 1) → Fin n → ℝ) {c : ℝ} (hc : 0 ≤ c)
@@ -5991,6 +6071,34 @@ theorem lsNormwiseBackwardErrorFormulaMatrixSigmaMin_pos_iff_rowRank_eq_card
     lsNormwiseBackwardErrorFormulaMatrixSigmaMin] using
     lsRealRectSigmaMinRow_pos_iff_rowRank_eq_card
       (lsNormwiseBackwardErrorFormulaMatrix theta A r y)
+
+/-- A nonzero left-null vector for the source block in (20.21) rules out full
+    row rank of `[A phi(I-r r^+)]`. -/
+theorem lsNormwiseBackwardErrorFormulaMatrixRowRank_ne_card_of_leftNull
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (hrsq : vecNorm2Sq r ≠ 0)
+    (hleft : ∀ k : Fin (n + (m + 1)),
+      ∑ i : Fin (m + 1),
+        lsNormwiseBackwardErrorFormulaMatrix theta A r y i k * r i = 0) :
+    lsNormwiseBackwardErrorFormulaMatrixRowRank theta A r y ≠ m + 1 := by
+  simpa [lsNormwiseBackwardErrorFormulaMatrixRowRank] using
+    lsRealRectRowRank_ne_card_of_leftNull
+      (lsNormwiseBackwardErrorFormulaMatrix theta A r y) r hrsq hleft
+
+/-- A nonzero left-null vector for the source block in (20.21) forces its
+    row-side `sigma_min` branch to vanish. -/
+theorem lsNormwiseBackwardErrorFormulaMatrixSigmaMin_eq_zero_of_leftNull
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (hrsq : vecNorm2Sq r ≠ 0)
+    (hleft : ∀ k : Fin (n + (m + 1)),
+      ∑ i : Fin (m + 1),
+        lsNormwiseBackwardErrorFormulaMatrix theta A r y i k * r i = 0) :
+    lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y = 0 := by
+  simpa [lsNormwiseBackwardErrorFormulaMatrixSigmaMin] using
+    lsRealRectSigmaMinRow_eq_zero_of_leftNull
+      (lsNormwiseBackwardErrorFormulaMatrix theta A r y) r hrsq hleft
 
 /-- Every row-side singular value of the source block in (20.21) is bounded by
     the conservative operator-2 certificate `cA + phi`. -/
@@ -9993,6 +10101,68 @@ theorem lsNormwiseBackwardErrorFormulaMatrix_residual_leftNull_of_isLeastSquares
   simpa [r] using
     lsNormwiseBackwardErrorFormulaMatrix_residual_leftNull_of_column_orthogonal
       theta A r y horth hrsq
+
+/-- Exact-minimizer, nonzero-residual specialization of the (20.21)
+    source-block row-side singular-value branch: the residual left-null
+    certificate forces `sigma_min [A phi(I-r r^+)] = 0`. -/
+theorem lsNormwiseBackwardErrorFormulaMatrixSigmaMin_eq_zero_of_isLeastSquaresMinimizer
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (hmin : IsLeastSquaresMinimizer A b y)
+    (hrsq : vecNorm2Sq (lsResidualHigham A b y) ≠ 0) :
+    lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+      (lsResidualHigham A b y) y = 0 := by
+  exact
+    lsNormwiseBackwardErrorFormulaMatrixSigmaMin_eq_zero_of_leftNull
+      theta A (lsResidualHigham A b y) y hrsq
+      (lsNormwiseBackwardErrorFormulaMatrix_residual_leftNull_of_isLeastSquaresMinimizer
+        theta A b y hmin hrsq)
+
+/-- Exact-minimizer, nonzero-residual branch of the printed right-hand side in
+    (20.21): the source block has zero row-side `sigma_min`, so the displayed
+    outer minimum is zero. -/
+theorem lsNormwiseBackwardErrorFormulaRHS_eq_zero_of_isLeastSquaresMinimizer_nonzero_residual
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (hmin : IsLeastSquaresMinimizer A b y)
+    (hrsq : vecNorm2Sq (lsResidualHigham A b y) ≠ 0) :
+    lsNormwiseBackwardErrorFormulaRHS theta A b y = 0 := by
+  unfold lsNormwiseBackwardErrorFormulaRHS
+  exact
+    (lsNormwiseBackwardErrorFormulaValue_eq_zero_iff
+      theta A (lsResidualHigham A b y) y).mpr
+      (Or.inr
+        (lsNormwiseBackwardErrorFormulaMatrixSigmaMin_eq_zero_of_isLeastSquaresMinimizer
+          theta A b y hmin hrsq))
+
+/-- Exact least-squares minimizers close both residual branches of (20.20)-
+    (20.21): `eta_F(y)` and the printed WKS right-hand side are both zero,
+    hence equal.  This does not prove the general WKS lower-bound/attainment
+    theorem for non-minimizers. -/
+theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_of_isLeastSquaresMinimizer
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (hmin : IsLeastSquaresMinimizer A b y) :
+    lsNormwiseBackwardErrorEtaF theta A b y =
+      lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  by_cases hrsq : vecNorm2Sq (lsResidualHigham A b y) = 0
+  · have hnorm : vecNorm2 (lsResidualHigham A b y) = 0 := by
+      simp [vecNorm2, hrsq]
+    have hres : lsResidualHigham A b y = 0 := by
+      ext i
+      exact (vecNorm2_eq_zero_iff (lsResidualHigham A b y)).mp hnorm i
+    exact
+      lsNormwiseBackwardErrorEtaF_eq_formulaRHS_of_lsResidualHigham_eq_zero
+        theta A b y hres
+  · have heta :
+        lsNormwiseBackwardErrorEtaF theta A b y = 0 :=
+      lsNormwiseBackwardErrorEtaF_eq_zero_of_isLeastSquaresMinimizer
+        theta A b y hmin
+    have hrhs :
+        lsNormwiseBackwardErrorFormulaRHS theta A b y = 0 :=
+      lsNormwiseBackwardErrorFormulaRHS_eq_zero_of_isLeastSquaresMinimizer_nonzero_residual
+        theta A b y hmin hrsq
+    rw [heta, hrhs]
 
 /-- Any zero-right-hand-side augmented least-squares system gives an exact
     least-squares minimizer, even if the residual vector is supplied abstractly. -/
