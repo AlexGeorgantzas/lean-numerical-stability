@@ -4288,6 +4288,199 @@ theorem lsScaledAugmentedMatrix_singularPair_plus_minus_leftNull_coefficients_eq
     exact (mul_eq_zero.mp hi).resolve_left hc
   exact ⟨hcPlus, hcMinus, hcAlpha⟩
 
+/-- Source-normalized linear-combination certificate for the two singular-pair
+    branches in (20.18).  This is the same independence content as
+    `lsScaledAugmentedMatrix_singularPair_plus_minus_coefficients_eq_zero`,
+    but stated for the printed vectors `[u; (sigma / lambda_\pm) v]`. -/
+theorem lsScaledAugmentedMatrix_singularPair_plus_minus_normalized_coefficients_eq_zero
+    {m n : ℕ} {alpha sigma cPlus cMinus : ℝ}
+    {A : Fin m → Fin n → ℝ} {u : Fin m → ℝ} {v : Fin n → ℝ}
+    (hATu : (fun j : Fin n => ∑ i : Fin m, A i j * u i) =
+      fun j => sigma * v j)
+    (halpha : 0 ≤ alpha) (hsigma : sigma ≠ 0) (hv : v ≠ 0)
+    (hcomb :
+      (fun k : Fin (m + n) =>
+        cPlus *
+            Fin.append u
+              (fun j =>
+                (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j) k +
+          cMinus *
+            Fin.append u
+              (fun j =>
+                (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j) k) =
+        0) :
+    cPlus = 0 ∧ cMinus = 0 := by
+  have hplus_ne :
+      lsScaledAugmentedEigenvaluePlus alpha sigma ≠ 0 :=
+    lsScaledAugmentedEigenvaluePlus_ne_zero_of_sigma_ne_zero
+      (alpha := alpha) (sigma := sigma) halpha hsigma
+  have hminus_ne :
+      lsScaledAugmentedEigenvalueMinus alpha sigma ≠ 0 :=
+    lsScaledAugmentedEigenvalueMinus_ne_zero_of_sigma_ne_zero
+      (alpha := alpha) (sigma := sigma) halpha hsigma
+  have hcombScaled :
+      (fun k : Fin (m + n) =>
+        (cPlus / lsScaledAugmentedEigenvaluePlus alpha sigma) *
+            Fin.append
+              (fun i => lsScaledAugmentedEigenvaluePlus alpha sigma * u i)
+              (fun j => sigma * v j) k +
+          (cMinus / lsScaledAugmentedEigenvalueMinus alpha sigma) *
+            Fin.append
+              (fun i => lsScaledAugmentedEigenvalueMinus alpha sigma * u i)
+              (fun j => sigma * v j) k) = 0 := by
+    ext k
+    refine Fin.addCases
+      (motive := fun k : Fin (m + n) =>
+        (cPlus / lsScaledAugmentedEigenvaluePlus alpha sigma) *
+            Fin.append
+              (fun i => lsScaledAugmentedEigenvaluePlus alpha sigma * u i)
+              (fun j => sigma * v j) k +
+          (cMinus / lsScaledAugmentedEigenvalueMinus alpha sigma) *
+            Fin.append
+              (fun i => lsScaledAugmentedEigenvalueMinus alpha sigma * u i)
+              (fun j => sigma * v j) k = 0) ?top ?bottom k
+    · intro i
+      have htop := congrFun hcomb (Fin.castAdd n i)
+      have hplus :
+          (cPlus / lsScaledAugmentedEigenvaluePlus alpha sigma) *
+              (lsScaledAugmentedEigenvaluePlus alpha sigma * u i) =
+            cPlus * u i := by
+        field_simp [hplus_ne]
+      have hminus :
+          (cMinus / lsScaledAugmentedEigenvalueMinus alpha sigma) *
+              (lsScaledAugmentedEigenvalueMinus alpha sigma * u i) =
+            cMinus * u i := by
+        field_simp [hminus_ne]
+      simpa [Fin.append_left, hplus, hminus] using htop
+    · intro j
+      have hright := congrFun hcomb (Fin.natAdd m j)
+      have hplus :
+          (cPlus / lsScaledAugmentedEigenvaluePlus alpha sigma) *
+              (sigma * v j) =
+            cPlus *
+              ((sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j) := by
+        ring
+      have hminus :
+          (cMinus / lsScaledAugmentedEigenvalueMinus alpha sigma) *
+              (sigma * v j) =
+            cMinus *
+              ((sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j) := by
+        ring
+      simpa [Fin.append_right, hplus, hminus] using hright
+  rcases
+    lsScaledAugmentedMatrix_singularPair_plus_minus_coefficients_eq_zero
+      (hATu := hATu) halpha hsigma hv hcombScaled with
+    ⟨hplusCoeff, hminusCoeff⟩
+  have hcPlus : cPlus = 0 := by
+    have hmul := congrArg
+      (fun t => t * lsScaledAugmentedEigenvaluePlus alpha sigma) hplusCoeff
+    field_simp [hplus_ne] at hmul
+    simpa using hmul
+  have hcMinus : cMinus = 0 := by
+    have hmul := congrArg
+      (fun t => t * lsScaledAugmentedEigenvalueMinus alpha sigma) hminusCoeff
+    field_simp [hminus_ne] at hmul
+    simpa using hmul
+  exact ⟨hcPlus, hcMinus⟩
+
+/-- Source-normalized linear-combination certificate separating the two printed
+    singular-pair branches from a nonzero left-nullspace branch in (20.18).
+    This is local independence infrastructure only; it does not assert a global
+    eigenbasis or the source multiplicity count. -/
+theorem lsScaledAugmentedMatrix_singularPair_plus_minus_leftNull_normalized_coefficients_eq_zero
+    {m n : ℕ} {alpha sigma cPlus cMinus cAlpha : ℝ}
+    {A : Fin m → Fin n → ℝ} {u w : Fin m → ℝ} {v : Fin n → ℝ}
+    (hATu : (fun j : Fin n => ∑ i : Fin m, A i j * u i) =
+      fun j => sigma * v j)
+    (hATw : ∀ j : Fin n, ∑ i : Fin m, A i j * w i = 0)
+    (halpha : 0 ≤ alpha) (hsigma : sigma ≠ 0) (hv : v ≠ 0) (hw : w ≠ 0)
+    (hcomb :
+      (fun k : Fin (m + n) =>
+        cPlus *
+            Fin.append u
+              (fun j =>
+                (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j) k +
+          cMinus *
+            Fin.append u
+              (fun j =>
+                (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j) k +
+          cAlpha * Fin.append w (0 : Fin n → ℝ) k) = 0) :
+    cPlus = 0 ∧ cMinus = 0 ∧ cAlpha = 0 := by
+  have hplus_ne :
+      lsScaledAugmentedEigenvaluePlus alpha sigma ≠ 0 :=
+    lsScaledAugmentedEigenvaluePlus_ne_zero_of_sigma_ne_zero
+      (alpha := alpha) (sigma := sigma) halpha hsigma
+  have hminus_ne :
+      lsScaledAugmentedEigenvalueMinus alpha sigma ≠ 0 :=
+    lsScaledAugmentedEigenvalueMinus_ne_zero_of_sigma_ne_zero
+      (alpha := alpha) (sigma := sigma) halpha hsigma
+  have hcombScaled :
+      (fun k : Fin (m + n) =>
+        (cPlus / lsScaledAugmentedEigenvaluePlus alpha sigma) *
+            Fin.append
+              (fun i => lsScaledAugmentedEigenvaluePlus alpha sigma * u i)
+              (fun j => sigma * v j) k +
+          (cMinus / lsScaledAugmentedEigenvalueMinus alpha sigma) *
+            Fin.append
+              (fun i => lsScaledAugmentedEigenvalueMinus alpha sigma * u i)
+              (fun j => sigma * v j) k +
+          cAlpha * Fin.append w (0 : Fin n → ℝ) k) = 0 := by
+    ext k
+    refine Fin.addCases
+      (motive := fun k : Fin (m + n) =>
+        (cPlus / lsScaledAugmentedEigenvaluePlus alpha sigma) *
+            Fin.append
+              (fun i => lsScaledAugmentedEigenvaluePlus alpha sigma * u i)
+              (fun j => sigma * v j) k +
+          (cMinus / lsScaledAugmentedEigenvalueMinus alpha sigma) *
+            Fin.append
+              (fun i => lsScaledAugmentedEigenvalueMinus alpha sigma * u i)
+              (fun j => sigma * v j) k +
+          cAlpha * Fin.append w (0 : Fin n → ℝ) k = 0) ?top ?bottom k
+    · intro i
+      have htop := congrFun hcomb (Fin.castAdd n i)
+      have hplus :
+          (cPlus / lsScaledAugmentedEigenvaluePlus alpha sigma) *
+              (lsScaledAugmentedEigenvaluePlus alpha sigma * u i) =
+            cPlus * u i := by
+        field_simp [hplus_ne]
+      have hminus :
+          (cMinus / lsScaledAugmentedEigenvalueMinus alpha sigma) *
+              (lsScaledAugmentedEigenvalueMinus alpha sigma * u i) =
+            cMinus * u i := by
+        field_simp [hminus_ne]
+      simpa [Fin.append_left, hplus, hminus] using htop
+    · intro j
+      have hright := congrFun hcomb (Fin.natAdd m j)
+      have hplus :
+          (cPlus / lsScaledAugmentedEigenvaluePlus alpha sigma) *
+              (sigma * v j) =
+            cPlus *
+              ((sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j) := by
+        ring
+      have hminus :
+          (cMinus / lsScaledAugmentedEigenvalueMinus alpha sigma) *
+              (sigma * v j) =
+            cMinus *
+              ((sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j) := by
+        ring
+      simpa [Fin.append_right, hplus, hminus] using hright
+  rcases
+    lsScaledAugmentedMatrix_singularPair_plus_minus_leftNull_coefficients_eq_zero
+      (hATu := hATu) hATw halpha hsigma hv hw hcombScaled with
+    ⟨hplusCoeff, hminusCoeff, hcAlpha⟩
+  have hcPlus : cPlus = 0 := by
+    have hmul := congrArg
+      (fun t => t * lsScaledAugmentedEigenvaluePlus alpha sigma) hplusCoeff
+    field_simp [hplus_ne] at hmul
+    simpa using hmul
+  have hcMinus : cMinus = 0 := by
+    have hmul := congrArg
+      (fun t => t * lsScaledAugmentedEigenvalueMinus alpha sigma) hminusCoeff
+    field_simp [hminus_ne] at hmul
+    simpa using hmul
+  exact ⟨hcPlus, hcMinus, hcAlpha⟩
+
 /-- The remaining `alpha` eigenvalue action in (20.18): any vector in the left
     nullspace of `A` gives `[u; 0]` scaled by `alpha` under `C(alpha)`. The
     source multiplicity `m - n` requires a separate rank/nullity basis theorem,
