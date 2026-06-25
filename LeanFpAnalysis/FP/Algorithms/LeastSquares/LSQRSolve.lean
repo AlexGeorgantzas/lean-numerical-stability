@@ -3752,6 +3752,78 @@ theorem lsScaledAugmentedMatrix_singularPair_eigenvector_of_quadratic {m n : ℕ
     simp [Fin.append_right, hmul]
     ring
 
+/-- Source-normalized block-action certificate behind (20.18): if `lambda` is a
+    nonzero root of the displayed quadratic, then the equivalent vector
+    `[u; (sigma / lambda) v]` is scaled by `lambda` under `C(alpha)`.
+
+    This is the printed eigenvector normalization used by the later
+    multiplicity and condition-number routes; it is still local eigenvector
+    algebra, not a global spectral decomposition. -/
+theorem lsScaledAugmentedMatrix_singularPair_normalized_eigenvector_of_quadratic
+    {m n : ℕ}
+    (alpha sigma lambda : ℝ) (A : Fin m → Fin n → ℝ)
+    (u : Fin m → ℝ) (v : Fin n → ℝ)
+    (hAv : rectMatMulVec A v = fun i => sigma * u i)
+    (hATu : (fun j : Fin n => ∑ i : Fin m, A i j * u i) =
+      fun j => sigma * v j)
+    (hlambda : lambda ≠ 0)
+    (hquad : lambda ^ 2 - alpha * lambda - sigma ^ 2 = 0) :
+    rectMatMulVec (lsScaledAugmentedMatrix alpha A)
+        (Fin.append u (fun j => (sigma / lambda) * v j)) =
+      fun k => lambda * Fin.append u (fun j => (sigma / lambda) * v j) k := by
+  rw [lsScaledAugmentedMatrix_mulVec]
+  have hscalar : alpha + sigma ^ 2 / lambda = lambda := by
+    field_simp [hlambda]
+    nlinarith
+  ext k
+  refine Fin.addCases
+    (motive := fun k : Fin (m + n) =>
+      Fin.append
+          (fun i : Fin m => alpha * u i +
+            rectMatMulVec A (fun j : Fin n => (sigma / lambda) * v j) i)
+          (fun j : Fin n => ∑ i : Fin m, A i j * u i) k =
+        lambda * Fin.append u (fun j => (sigma / lambda) * v j) k)
+    ?left ?right k
+  · intro i
+    have hmul :
+        rectMatMulVec A (fun j : Fin n => (sigma / lambda) * v j) i =
+          (sigma ^ 2 / lambda) * u i := by
+      unfold rectMatMulVec at *
+      calc
+        ∑ j : Fin n, A i j * ((sigma / lambda) * v j)
+            = (sigma / lambda) * ∑ j : Fin n, A i j * v j := by
+                rw [Finset.mul_sum]
+                apply Finset.sum_congr rfl
+                intro j _
+                ring
+        _ = (sigma / lambda) * (sigma * u i) := by
+                rw [congrFun hAv i]
+        _ = (sigma ^ 2 / lambda) * u i := by ring
+    simp [Fin.append_left, hmul]
+    calc
+      alpha * u i + sigma ^ 2 / lambda * u i =
+          (alpha + sigma ^ 2 / lambda) * u i := by ring
+      _ = lambda * u i := by rw [hscalar]
+  · intro j
+    have hmul : (∑ i : Fin m, A i j * u i) = sigma * v j :=
+      congrFun hATu j
+    simp [Fin.append_right, hmul]
+    field_simp [hlambda]
+
+/-- The source-normalized singular-pair vector `[u; (sigma / lambda) v]` is
+    nonzero when `sigma`, `lambda`, and the right singular vector are nonzero. -/
+theorem lsScaledAugmentedMatrix_singularPair_normalized_vector_ne_zero {m n : ℕ}
+    (sigma lambda : ℝ) (u : Fin m → ℝ) (v : Fin n → ℝ)
+    (hsigma : sigma ≠ 0) (hlambda : lambda ≠ 0) (hv : v ≠ 0) :
+    Fin.append u (fun j => (sigma / lambda) * v j) ≠ 0 := by
+  intro hzero
+  apply hv
+  ext j
+  have hright := congrFun hzero (Fin.natAdd m j)
+  have hmul : (sigma / lambda) * v j = 0 := by
+    simpa [Fin.append_right] using hright
+  exact (mul_eq_zero.mp hmul).resolve_left (div_ne_zero hsigma hlambda)
+
 /-- The positive branch in (20.18) gives the corresponding singular-pair
     block-action certificate for `C(alpha)`. -/
 theorem lsScaledAugmentedMatrix_singularPair_plus_eigenvector {m n : ℕ}
@@ -3770,6 +3842,28 @@ theorem lsScaledAugmentedMatrix_singularPair_plus_eigenvector {m n : ℕ}
           (fun j => sigma * v j) k :=
   lsScaledAugmentedMatrix_singularPair_eigenvector_of_quadratic
     alpha sigma (lsScaledAugmentedEigenvaluePlus alpha sigma) A u v hAv hATu
+    (lsScaledAugmentedEigenvaluePlus_quadratic alpha sigma)
+
+/-- The positive branch in (20.18) in source-normalized eigenvector form:
+    `[u; (sigma / lambda_+) v]` is scaled by `lambda_+` under `C(alpha)`. -/
+theorem lsScaledAugmentedMatrix_singularPair_plus_normalized_eigenvector
+    {m n : ℕ}
+    (alpha sigma : ℝ) (A : Fin m → Fin n → ℝ)
+    (u : Fin m → ℝ) (v : Fin n → ℝ)
+    (hAv : rectMatMulVec A v = fun i => sigma * u i)
+    (hATu : (fun j : Fin n => ∑ i : Fin m, A i j * u i) =
+      fun j => sigma * v j)
+    (halpha : 0 ≤ alpha) (hsigma : sigma ≠ 0) :
+    rectMatMulVec (lsScaledAugmentedMatrix alpha A)
+        (Fin.append u
+          (fun j => (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j)) =
+      fun k => lsScaledAugmentedEigenvaluePlus alpha sigma *
+        Fin.append u
+          (fun j => (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j) k :=
+  lsScaledAugmentedMatrix_singularPair_normalized_eigenvector_of_quadratic
+    alpha sigma (lsScaledAugmentedEigenvaluePlus alpha sigma) A u v hAv hATu
+    (lsScaledAugmentedEigenvaluePlus_ne_zero_of_sigma_ne_zero
+      (alpha := alpha) (sigma := sigma) halpha hsigma)
     (lsScaledAugmentedEigenvaluePlus_quadratic alpha sigma)
 
 /-- The positive-branch vector used in (20.18)'s singular-pair certificate is
@@ -3814,6 +3908,35 @@ theorem lsScaledAugmentedMatrix_singularPair_plus_eigenpair {m n : ℕ}
       lsScaledAugmentedMatrix_singularPair_plus_vector_ne_zero
         alpha sigma u v hsigma hv⟩
 
+/-- Packaged positive-branch source-normalized eigenpair certificate for
+    (20.18): the singular pair gives the normalized block-action identity and a
+    nonzero normalized block vector. -/
+theorem lsScaledAugmentedMatrix_singularPair_plus_normalized_eigenpair
+    {m n : ℕ}
+    (alpha sigma : ℝ) (A : Fin m → Fin n → ℝ)
+    (u : Fin m → ℝ) (v : Fin n → ℝ)
+    (hAv : rectMatMulVec A v = fun i => sigma * u i)
+    (hATu : (fun j : Fin n => ∑ i : Fin m, A i j * u i) =
+      fun j => sigma * v j)
+    (halpha : 0 ≤ alpha) (hsigma : sigma ≠ 0) (hv : v ≠ 0) :
+    (rectMatMulVec (lsScaledAugmentedMatrix alpha A)
+        (Fin.append u
+          (fun j => (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j)) =
+      fun k => lsScaledAugmentedEigenvaluePlus alpha sigma *
+        Fin.append u
+          (fun j => (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j) k) ∧
+      Fin.append u
+        (fun j => (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j) ≠ 0 := by
+  have hlambda :=
+    lsScaledAugmentedEigenvaluePlus_ne_zero_of_sigma_ne_zero
+      (alpha := alpha) (sigma := sigma) halpha hsigma
+  exact
+    ⟨lsScaledAugmentedMatrix_singularPair_plus_normalized_eigenvector
+        alpha sigma A u v hAv hATu halpha hsigma,
+      lsScaledAugmentedMatrix_singularPair_normalized_vector_ne_zero
+        sigma (lsScaledAugmentedEigenvaluePlus alpha sigma) u v
+        hsigma hlambda hv⟩
+
 /-- The negative branch in (20.18) gives the corresponding singular-pair
     block-action certificate for `C(alpha)`. -/
 theorem lsScaledAugmentedMatrix_singularPair_minus_eigenvector {m n : ℕ}
@@ -3832,6 +3955,28 @@ theorem lsScaledAugmentedMatrix_singularPair_minus_eigenvector {m n : ℕ}
           (fun j => sigma * v j) k :=
   lsScaledAugmentedMatrix_singularPair_eigenvector_of_quadratic
     alpha sigma (lsScaledAugmentedEigenvalueMinus alpha sigma) A u v hAv hATu
+    (lsScaledAugmentedEigenvalueMinus_quadratic alpha sigma)
+
+/-- The negative branch in (20.18) in source-normalized eigenvector form:
+    `[u; (sigma / lambda_-) v]` is scaled by `lambda_-` under `C(alpha)`. -/
+theorem lsScaledAugmentedMatrix_singularPair_minus_normalized_eigenvector
+    {m n : ℕ}
+    (alpha sigma : ℝ) (A : Fin m → Fin n → ℝ)
+    (u : Fin m → ℝ) (v : Fin n → ℝ)
+    (hAv : rectMatMulVec A v = fun i => sigma * u i)
+    (hATu : (fun j : Fin n => ∑ i : Fin m, A i j * u i) =
+      fun j => sigma * v j)
+    (halpha : 0 ≤ alpha) (hsigma : sigma ≠ 0) :
+    rectMatMulVec (lsScaledAugmentedMatrix alpha A)
+        (Fin.append u
+          (fun j => (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j)) =
+      fun k => lsScaledAugmentedEigenvalueMinus alpha sigma *
+        Fin.append u
+          (fun j => (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j) k :=
+  lsScaledAugmentedMatrix_singularPair_normalized_eigenvector_of_quadratic
+    alpha sigma (lsScaledAugmentedEigenvalueMinus alpha sigma) A u v hAv hATu
+    (lsScaledAugmentedEigenvalueMinus_ne_zero_of_sigma_ne_zero
+      (alpha := alpha) (sigma := sigma) halpha hsigma)
     (lsScaledAugmentedEigenvalueMinus_quadratic alpha sigma)
 
 /-- The negative-branch vector used in (20.18)'s singular-pair certificate is
@@ -3875,6 +4020,35 @@ theorem lsScaledAugmentedMatrix_singularPair_minus_eigenpair {m n : ℕ}
         alpha sigma A u v hAv hATu,
       lsScaledAugmentedMatrix_singularPair_minus_vector_ne_zero
         alpha sigma u v hsigma hv⟩
+
+/-- Packaged negative-branch source-normalized eigenpair certificate for
+    (20.18): the singular pair gives the normalized block-action identity and a
+    nonzero normalized block vector. -/
+theorem lsScaledAugmentedMatrix_singularPair_minus_normalized_eigenpair
+    {m n : ℕ}
+    (alpha sigma : ℝ) (A : Fin m → Fin n → ℝ)
+    (u : Fin m → ℝ) (v : Fin n → ℝ)
+    (hAv : rectMatMulVec A v = fun i => sigma * u i)
+    (hATu : (fun j : Fin n => ∑ i : Fin m, A i j * u i) =
+      fun j => sigma * v j)
+    (halpha : 0 ≤ alpha) (hsigma : sigma ≠ 0) (hv : v ≠ 0) :
+    (rectMatMulVec (lsScaledAugmentedMatrix alpha A)
+        (Fin.append u
+          (fun j => (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j)) =
+      fun k => lsScaledAugmentedEigenvalueMinus alpha sigma *
+        Fin.append u
+          (fun j => (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j) k) ∧
+      Fin.append u
+        (fun j => (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j) ≠ 0 := by
+  have hlambda :=
+    lsScaledAugmentedEigenvalueMinus_ne_zero_of_sigma_ne_zero
+      (alpha := alpha) (sigma := sigma) halpha hsigma
+  exact
+    ⟨lsScaledAugmentedMatrix_singularPair_minus_normalized_eigenvector
+        alpha sigma A u v hAv hATu halpha hsigma,
+      lsScaledAugmentedMatrix_singularPair_normalized_vector_ne_zero
+        sigma (lsScaledAugmentedEigenvalueMinus alpha sigma) u v
+        hsigma hlambda hv⟩
 
 /-- In a nonzero singular-pair certificate for (20.18), the left singular-vector
     side is nonzero whenever the right singular-vector side is nonzero. -/
