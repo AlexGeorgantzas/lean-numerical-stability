@@ -776,6 +776,37 @@ noncomputable def lsScaledAugmentedMatrix {m n : ℕ} (alpha : ℝ)
     (fun i : Fin m => Fin.append (fun j : Fin m => alpha * idMatrix m i j) (A i))
     (fun j : Fin n => Fin.append (fun i : Fin m => A i j) (fun _ : Fin n => 0))
 
+/-- Higham, 2nd ed., Chapter 20, equation (20.17): the scaled augmented
+    coefficient matrix `C(alpha) = [[alpha I, A], [A^T, 0]]` is symmetric. -/
+theorem lsScaledAugmentedMatrix_symmetric {m n : ℕ} (alpha : ℝ)
+    (A : Fin m → Fin n → ℝ) :
+    IsSymmetricFiniteMatrix (lsScaledAugmentedMatrix alpha A) := by
+  intro p q
+  refine Fin.addCases (motive := fun p : Fin (m + n) =>
+    lsScaledAugmentedMatrix alpha A p q =
+      lsScaledAugmentedMatrix alpha A q p) ?topRow ?bottomRow p
+  · intro i
+    refine Fin.addCases (motive := fun q : Fin (m + n) =>
+      lsScaledAugmentedMatrix alpha A (Fin.castAdd n i) q =
+        lsScaledAugmentedMatrix alpha A q (Fin.castAdd n i)) ?topLeft ?topRight q
+    · intro j
+      unfold lsScaledAugmentedMatrix
+      by_cases hij : i = j
+      · subst j
+        simp [Fin.append_left, idMatrix]
+      · have hji : j ≠ i := fun h => hij h.symm
+        simp [Fin.append_left, idMatrix, hij, hji]
+    · intro j
+      simp [lsScaledAugmentedMatrix, Fin.append_left, Fin.append_right]
+  · intro i
+    refine Fin.addCases (motive := fun q : Fin (m + n) =>
+      lsScaledAugmentedMatrix alpha A (Fin.natAdd m i) q =
+        lsScaledAugmentedMatrix alpha A q (Fin.natAdd m i)) ?bottomLeft ?bottomRight q
+    · intro j
+      simp [lsScaledAugmentedMatrix, Fin.append_left, Fin.append_right]
+    · intro j
+      simp [lsScaledAugmentedMatrix, Fin.append_right]
+
 /-- Component form of the scaled augmented system with coefficient matrix
     `C(alpha)` from equation (20.17). -/
 def LSScaledAugmentedSystem {m n : ℕ} (alpha : ℝ)
