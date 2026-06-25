@@ -10949,6 +10949,28 @@ theorem lsNormwiseBackwardErrorFormulaRHS_eq_zero_of_isLeastSquaresMinimizer_non
         (lsNormwiseBackwardErrorFormulaMatrixSigmaMin_eq_zero_of_isLeastSquaresMinimizer
           theta A b y hmin hrsq))
 
+/-- Exact least-squares minimizers close the printed right-hand side in
+    (20.21): the zero-residual branch kills `phi`, while the nonzero-residual
+    branch gives a left-null vector for the source block and hence zero
+    row-side `sigma_min`. -/
+theorem lsNormwiseBackwardErrorFormulaRHS_eq_zero_of_isLeastSquaresMinimizer
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (hmin : IsLeastSquaresMinimizer A b y) :
+    lsNormwiseBackwardErrorFormulaRHS theta A b y = 0 := by
+  by_cases hrsq : vecNorm2Sq (lsResidualHigham A b y) = 0
+  · have hnorm : vecNorm2 (lsResidualHigham A b y) = 0 := by
+      simp [vecNorm2, hrsq]
+    have hres : lsResidualHigham A b y = 0 := by
+      ext i
+      exact (vecNorm2_eq_zero_iff (lsResidualHigham A b y)).mp hnorm i
+    exact
+      lsNormwiseBackwardErrorFormulaRHS_eq_zero_of_lsResidualHigham_eq_zero
+        theta A b y hres
+  · exact
+      lsNormwiseBackwardErrorFormulaRHS_eq_zero_of_isLeastSquaresMinimizer_nonzero_residual
+        theta A b y hmin hrsq
+
 /-- Exact least-squares minimizers close both residual branches of (20.20)-
     (20.21): `eta_F(y)` and the printed WKS right-hand side are both zero,
     hence equal.  This does not prove the general WKS lower-bound/attainment
@@ -10959,24 +10981,33 @@ theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_of_isLeastSquaresMinimizer
     (hmin : IsLeastSquaresMinimizer A b y) :
     lsNormwiseBackwardErrorEtaF theta A b y =
       lsNormwiseBackwardErrorFormulaRHS theta A b y := by
-  by_cases hrsq : vecNorm2Sq (lsResidualHigham A b y) = 0
-  · have hnorm : vecNorm2 (lsResidualHigham A b y) = 0 := by
-      simp [vecNorm2, hrsq]
-    have hres : lsResidualHigham A b y = 0 := by
-      ext i
-      exact (vecNorm2_eq_zero_iff (lsResidualHigham A b y)).mp hnorm i
-    exact
-      lsNormwiseBackwardErrorEtaF_eq_formulaRHS_of_lsResidualHigham_eq_zero
-        theta A b y hres
-  · have heta :
-        lsNormwiseBackwardErrorEtaF theta A b y = 0 :=
-      lsNormwiseBackwardErrorEtaF_eq_zero_of_isLeastSquaresMinimizer
-        theta A b y hmin
-    have hrhs :
-        lsNormwiseBackwardErrorFormulaRHS theta A b y = 0 :=
-      lsNormwiseBackwardErrorFormulaRHS_eq_zero_of_isLeastSquaresMinimizer_nonzero_residual
-        theta A b y hmin hrsq
-    rw [heta, hrhs]
+  have heta :
+      lsNormwiseBackwardErrorEtaF theta A b y = 0 :=
+    lsNormwiseBackwardErrorEtaF_eq_zero_of_isLeastSquaresMinimizer
+      theta A b y hmin
+  have hrhs :
+      lsNormwiseBackwardErrorFormulaRHS theta A b y = 0 :=
+    lsNormwiseBackwardErrorFormulaRHS_eq_zero_of_isLeastSquaresMinimizer
+      theta A b y hmin
+  rw [heta, hrhs]
+
+/-- Positive finite-`theta` zero-error consistency for (20.20)-(20.21): if the
+    normwise backward-error infimum vanishes, the printed WKS right-hand side
+    also vanishes.  The converse still requires the open spectral formula for
+    non-minimizer degeneracies. -/
+theorem lsNormwiseBackwardErrorFormulaRHS_eq_zero_of_etaF_eq_zero_of_positive_theta
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    (y : Fin n → ℝ)
+    (heta : lsNormwiseBackwardErrorEtaF theta A b y = 0) :
+    lsNormwiseBackwardErrorFormulaRHS theta A b y = 0 := by
+  have hmin :
+      IsLeastSquaresMinimizer A b y :=
+    (lsNormwiseBackwardErrorEtaF_eq_zero_iff_isLeastSquaresMinimizer_of_positive_theta
+      htheta A b y).mp heta
+  exact
+    lsNormwiseBackwardErrorFormulaRHS_eq_zero_of_isLeastSquaresMinimizer
+      theta A b y hmin
 
 /-- Any zero-right-hand-side augmented least-squares system gives an exact
     least-squares minimizer, even if the residual vector is supplied abstractly. -/
