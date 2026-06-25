@@ -5438,6 +5438,87 @@ theorem lsNormwiseBackwardErrorFormulaMatrix_right_residual_mulVec_eq_zero
           rw [hcomp_sum]
           ring
 
+/-- If the residual direction is orthogonal to each data column, then the
+    `A`-panel of the source block `[A  phi(I-r r^+)]` has zero transposed
+    action on that residual direction. -/
+theorem lsNormwiseBackwardErrorFormulaMatrix_left_residual_col_sum_eq_zero
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ) (r : Fin m → ℝ)
+    (y : Fin n → ℝ)
+    (horth : ∀ j : Fin n, ∑ i : Fin m, A i j * r i = 0)
+    (j : Fin n) :
+    ∑ i : Fin m,
+        lsNormwiseBackwardErrorFormulaMatrix theta A r y i (Fin.castAdd m j) * r i =
+      0 := by
+  calc
+    (∑ i : Fin m,
+        lsNormwiseBackwardErrorFormulaMatrix theta A r y i (Fin.castAdd m j) * r i)
+        = ∑ i : Fin m, A i j * r i := by
+          apply Finset.sum_congr rfl
+          intro i _
+          simp [lsNormwiseBackwardErrorFormulaMatrix, Fin.append_left]
+    _ = 0 := horth j
+
+/-- The projector panel of `[A  phi(I-r r^+)]` has zero transposed action on
+    the residual direction `r` when that direction is nonzero. -/
+theorem lsNormwiseBackwardErrorFormulaMatrix_right_residual_col_sum_eq_zero
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ) (r : Fin m → ℝ)
+    (y : Fin n → ℝ) (hrsq : vecNorm2Sq r ≠ 0) (j : Fin m) :
+    ∑ i : Fin m,
+        lsNormwiseBackwardErrorFormulaMatrix theta A r y i (Fin.natAdd n j) * r i =
+      0 := by
+  let phi : ℝ := lsNormwiseBackwardErrorPhi theta r y
+  have hrow := congrFun (lsResidualComplementProjector_mulVec_residual r hrsq) j
+  have hproj : ∑ i : Fin m, lsResidualComplementProjector r i j * r i = 0 := by
+    calc
+      (∑ i : Fin m, lsResidualComplementProjector r i j * r i)
+          = ∑ i : Fin m, lsResidualComplementProjector r j i * r i := by
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [lsResidualComplementProjector_symmetric]
+      _ = 0 := by
+            simpa [matMulVec] using hrow
+  calc
+    (∑ i : Fin m,
+        lsNormwiseBackwardErrorFormulaMatrix theta A r y i (Fin.natAdd n j) * r i)
+        = ∑ i : Fin m, (phi * lsResidualComplementProjector r i j) * r i := by
+          apply Finset.sum_congr rfl
+          intro i _
+          simp [phi, lsNormwiseBackwardErrorFormulaMatrix, Fin.append_right]
+    _ = phi * ∑ i : Fin m, lsResidualComplementProjector r i j * r i := by
+          rw [Finset.mul_sum]
+          apply Finset.sum_congr rfl
+          intro i _
+          ring
+    _ = 0 := by
+          rw [hproj]
+          ring
+
+/-- Left-null certificate for the source block in Higham, 2nd ed., Chapter 20,
+    equation (20.21): if the supplied residual is orthogonal to the columns of
+    `A` and is nonzero, then `r^T [A  phi(I-r r^+)] = 0`.  This is a source
+    block dependency for the nonzero-residual WKS branch, not the missing
+    singular-value minimization theorem. -/
+theorem lsNormwiseBackwardErrorFormulaMatrix_residual_leftNull_of_column_orthogonal
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ) (r : Fin m → ℝ)
+    (y : Fin n → ℝ)
+    (horth : ∀ j : Fin n, ∑ i : Fin m, A i j * r i = 0)
+    (hrsq : vecNorm2Sq r ≠ 0) :
+    ∀ k : Fin (n + m),
+      ∑ i : Fin m, lsNormwiseBackwardErrorFormulaMatrix theta A r y i k * r i = 0 := by
+  intro k
+  refine Fin.addCases
+    (motive := fun k : Fin (n + m) =>
+      ∑ i : Fin m, lsNormwiseBackwardErrorFormulaMatrix theta A r y i k * r i = 0)
+    ?left ?right k
+  · intro j
+    exact
+      lsNormwiseBackwardErrorFormulaMatrix_left_residual_col_sum_eq_zero
+        theta A r y horth j
+  · intro j
+    exact
+      lsNormwiseBackwardErrorFormulaMatrix_right_residual_col_sum_eq_zero
+        theta A r y hrsq j
+
 /-- Splitting a finite vector into two coordinate blocks preserves squared
     Euclidean norm additively. -/
 theorem lsVecNorm2Sq_append {n m : ℕ}
@@ -9885,6 +9966,33 @@ theorem RectLSNormalEquations.iff_isLeastSquaresMinimizer {m n : ℕ}
     exact h.isLeastSquaresMinimizer
   · intro h
     exact h.rectLSNormalEquations
+
+/-- Exact-minimizer specialization of the nonzero-residual left-null
+    certificate for (20.21).  If `y` is a least-squares minimizer, then
+    Problem 20.1 gives orthogonality of Higham's residual `b - A y` to the data
+    columns; a nonzero residual therefore annihilates the full WKS source block
+    `[A  phi(I-r r^+)]` from the left. -/
+theorem lsNormwiseBackwardErrorFormulaMatrix_residual_leftNull_of_isLeastSquaresMinimizer
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (hmin : IsLeastSquaresMinimizer A b y)
+    (hrsq : vecNorm2Sq (lsResidualHigham A b y) ≠ 0) :
+    ∀ k : Fin (n + (m + 1)),
+      ∑ i : Fin (m + 1),
+        lsNormwiseBackwardErrorFormulaMatrix theta A (lsResidualHigham A b y) y i k *
+          lsResidualHigham A b y i = 0 := by
+  let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+  have hNE : RectLSNormalEquations A b y :=
+    hmin.rectLSNormalEquations
+  have horth : ∀ j : Fin n, ∑ i : Fin (m + 1), A i j * r i = 0 := by
+    intro j
+    dsimp [r]
+    rw [lsResidualHigham_column_sum_eq_neg A b y j]
+    rw [hNE.residual_orthogonal j]
+    ring
+  simpa [r] using
+    lsNormwiseBackwardErrorFormulaMatrix_residual_leftNull_of_column_orthogonal
+      theta A r y horth hrsq
 
 /-- Any zero-right-hand-side augmented least-squares system gives an exact
     least-squares minimizer, even if the residual vector is supplied abstractly. -/
