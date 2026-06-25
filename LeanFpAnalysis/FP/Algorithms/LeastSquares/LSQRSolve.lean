@@ -5499,6 +5499,41 @@ theorem lsRealRectRowSingularValue_antitone {m n : ℕ}
     complexMatrixSingularValue_antitone
       (realRectToCMatrix (finiteTranspose A))
 
+/-- Row rank for a real rectangular matrix, measured as the complex rank of
+    the transposed row-side operator.  This is the rank notion naturally paired
+    with `lsRealRectRowSingularValue`. -/
+noncomputable def lsRealRectRowRank {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) : ℕ :=
+  complexMatrixRank (realRectToCMatrix (finiteTranspose A))
+
+/-- The row rank is the number of nonzero row-side singular values. -/
+theorem lsRealRectRowRank_eq_card_nonzero_rowSingularValue {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) :
+    lsRealRectRowRank A =
+      Fintype.card {i : Fin m // lsRealRectRowSingularValue A i ≠ 0} := by
+  simpa [lsRealRectRowRank, lsRealRectRowSingularValue] using
+    complexMatrixRank_eq_card_nonzero_singularValue
+      (realRectToCMatrix (finiteTranspose A))
+
+/-- If every row-side singular value is nonzero, the row rank is full. -/
+theorem lsRealRectRowRank_eq_card_of_forall_rowSingularValue_ne_zero
+    {m n : ℕ} (A : Fin m → Fin n → ℝ)
+    (h : ∀ i : Fin m, lsRealRectRowSingularValue A i ≠ 0) :
+    lsRealRectRowRank A = m := by
+  rw [lsRealRectRowRank_eq_card_nonzero_rowSingularValue]
+  classical
+  simp [Fintype.card_subtype, h]
+
+/-- Full row rank makes every row-side singular value nonzero. -/
+theorem lsRealRectRowSingularValue_ne_zero_of_rowRank_eq_card {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (hrank : lsRealRectRowRank A = m)
+    (i : Fin m) :
+    lsRealRectRowSingularValue A i ≠ 0 := by
+  have h := complexMatrixSingularValue_ne_zero_of_rank_eq_card
+    (realRectToCMatrix (finiteTranspose A))
+    (by simpa [lsRealRectRowRank] using hrank)
+  simpa [lsRealRectRowSingularValue] using h i
+
 /-- Any rectangular operator-2 certificate bounds every row-side singular value.
     This is the local bridge from the repository's predicate-style operator
     bounds to the singular-value language used in (20.21). -/
@@ -5568,6 +5603,34 @@ theorem lsRealRectSigmaMinRow_eq_zero_iff_exists_rowSingularValue_eq_zero
     have hnonneg := lsRealRectSigmaMinRow_nonneg A
     rw [hi] at hle
     exact le_antisymm hle hnonneg
+
+/-- Positive row-side `sigma_min` gives full row rank. -/
+theorem lsRealRectRowRank_eq_card_of_sigmaMinRow_pos {m n : ℕ}
+    (A : Fin (m + 1) → Fin n → ℝ) (hσ : 0 < lsRealRectSigmaMinRow A) :
+    lsRealRectRowRank A = m + 1 :=
+  lsRealRectRowRank_eq_card_of_forall_rowSingularValue_ne_zero A
+    (fun i => ne_of_gt
+      (lsRealRectRowSingularValue_pos_of_sigmaMinRow_pos A hσ i))
+
+/-- Full row rank makes the row-side `sigma_min` positive. -/
+theorem lsRealRectSigmaMinRow_pos_of_rowRank_eq_card {m n : ℕ}
+    (A : Fin (m + 1) → Fin n → ℝ)
+    (hrank : lsRealRectRowRank A = m + 1) :
+    0 < lsRealRectSigmaMinRow A := by
+  have hne : lsRealRectSigmaMinRow A ≠ 0 := by
+    simpa [lsRealRectSigmaMinRow] using
+      lsRealRectRowSingularValue_ne_zero_of_rowRank_eq_card
+        A hrank (Fin.last m)
+  exact lt_of_le_of_ne' (lsRealRectSigmaMinRow_nonneg A) hne
+
+/-- For a nonempty row dimension, positive row-side `sigma_min` is equivalent
+    to full row rank. -/
+theorem lsRealRectSigmaMinRow_pos_iff_rowRank_eq_card {m n : ℕ}
+    (A : Fin (m + 1) → Fin n → ℝ) :
+    0 < lsRealRectSigmaMinRow A ↔ lsRealRectRowRank A = m + 1 := by
+  constructor
+  · exact lsRealRectRowRank_eq_card_of_sigmaMinRow_pos A
+  · exact lsRealRectSigmaMinRow_pos_of_rowRank_eq_card A
 
 theorem lsRealRectSigmaMinRow_le_of_rectOpNorm2Le {m n : ℕ}
     (A : Fin (m + 1) → Fin n → ℝ) {c : ℝ} (hc : 0 ≤ c)
@@ -5654,6 +5717,61 @@ theorem lsNormwiseBackwardErrorFormulaMatrixSigmaMin_eq_zero_iff_exists_rowSingu
   simpa [lsNormwiseBackwardErrorFormulaMatrixSigmaMin,
     lsNormwiseBackwardErrorFormulaMatrixRowSingularValue] using
     lsRealRectSigmaMinRow_eq_zero_iff_exists_rowSingularValue_eq_zero
+      (lsNormwiseBackwardErrorFormulaMatrix theta A r y)
+
+/-- Row rank of the source block `[A phi(I-r r^+)]` from (20.21). -/
+noncomputable def lsNormwiseBackwardErrorFormulaMatrixRowRank
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ) (r : Fin m → ℝ)
+    (y : Fin n → ℝ) : ℕ :=
+  lsRealRectRowRank
+    (lsNormwiseBackwardErrorFormulaMatrix theta A r y)
+
+/-- The source-block row rank is the number of nonzero row-side singular
+    values. -/
+theorem lsNormwiseBackwardErrorFormulaMatrixRowRank_eq_card_nonzero_rowSingularValue
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ) (r : Fin m → ℝ)
+    (y : Fin n → ℝ) :
+    lsNormwiseBackwardErrorFormulaMatrixRowRank theta A r y =
+      Fintype.card {i : Fin m //
+        lsNormwiseBackwardErrorFormulaMatrixRowSingularValue theta A r y i ≠ 0} := by
+  simpa [lsNormwiseBackwardErrorFormulaMatrixRowRank,
+    lsNormwiseBackwardErrorFormulaMatrixRowSingularValue] using
+    lsRealRectRowRank_eq_card_nonzero_rowSingularValue
+      (lsNormwiseBackwardErrorFormulaMatrix theta A r y)
+
+/-- Positive source-block `sigma_min` gives full row rank for the (20.21)
+    formula matrix. -/
+theorem lsNormwiseBackwardErrorFormulaMatrixRowRank_eq_card_of_sigmaMin_pos
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (hσ : 0 < lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y) :
+    lsNormwiseBackwardErrorFormulaMatrixRowRank theta A r y = m + 1 := by
+  simpa [lsNormwiseBackwardErrorFormulaMatrixRowRank,
+    lsNormwiseBackwardErrorFormulaMatrixSigmaMin] using
+    lsRealRectRowRank_eq_card_of_sigmaMinRow_pos
+      (lsNormwiseBackwardErrorFormulaMatrix theta A r y) hσ
+
+/-- Full row rank of the (20.21) formula matrix makes its row-side
+    `sigma_min` positive. -/
+theorem lsNormwiseBackwardErrorFormulaMatrixSigmaMin_pos_of_rowRank_eq_card
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (hrank : lsNormwiseBackwardErrorFormulaMatrixRowRank theta A r y = m + 1) :
+    0 < lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y := by
+  simpa [lsNormwiseBackwardErrorFormulaMatrixRowRank,
+    lsNormwiseBackwardErrorFormulaMatrixSigmaMin] using
+    lsRealRectSigmaMinRow_pos_of_rowRank_eq_card
+      (lsNormwiseBackwardErrorFormulaMatrix theta A r y) hrank
+
+/-- Source-block row-rank form for the row-side `sigma_min` in (20.21). -/
+theorem lsNormwiseBackwardErrorFormulaMatrixSigmaMin_pos_iff_rowRank_eq_card
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ) :
+    0 < lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y ↔
+      lsNormwiseBackwardErrorFormulaMatrixRowRank theta A r y = m + 1 := by
+  simpa [lsNormwiseBackwardErrorFormulaMatrixRowRank,
+    lsNormwiseBackwardErrorFormulaMatrixSigmaMin] using
+    lsRealRectSigmaMinRow_pos_iff_rowRank_eq_card
       (lsNormwiseBackwardErrorFormulaMatrix theta A r y)
 
 /-- Every row-side singular value of the source block in (20.21) is bounded by
