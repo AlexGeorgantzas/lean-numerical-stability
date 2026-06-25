@@ -4298,6 +4298,39 @@ theorem lsNormwiseBackwardErrorEtaF_exists_feasible_entry_bounds_lt_add_eps
     rw [lt_div_iff₀ htheta]
     simpa [mul_comm] using htheta_abs_lt
 
+/-- Radius form of the epsilon-near coercivity result for (20.20): every
+    radius strictly above the infimum model `eta_F(y)` contains an actual
+    feasible perturbation cost, and for positive finite `theta` the witness has
+    entrywise perturbation bounds by that radius.  This is still a
+    compactness ingredient, not minimum-attainment or the spectral formula
+    (20.21). -/
+theorem lsNormwiseBackwardErrorEtaF_exists_feasible_entry_bounds_lt_radius
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    {R : ℝ} (hR : lsNormwiseBackwardErrorEtaF theta A b y < R) :
+    ∃ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+      LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+        lsNormwiseBackwardErrorEtaF theta A b y ≤
+          lsNormwiseBackwardErrorCostF theta DeltaA Deltab ∧
+        lsNormwiseBackwardErrorCostF theta DeltaA Deltab < R ∧
+        (∀ i j, |DeltaA i j| < R) ∧
+        (∀ i, |Deltab i| < R / theta) := by
+  have heps : 0 < R - lsNormwiseBackwardErrorEtaF theta A b y :=
+    sub_pos.mpr hR
+  rcases lsNormwiseBackwardErrorEtaF_exists_feasible_entry_bounds_lt_add_eps
+      htheta A b y heps with
+    ⟨DeltaA, Deltab, hfeas, heta_le, hcost_lt, hDeltaA, hDeltab⟩
+  have htarget :
+      lsNormwiseBackwardErrorEtaF theta A b y +
+          (R - lsNormwiseBackwardErrorEtaF theta A b y) = R := by
+    ring
+  refine ⟨DeltaA, Deltab, hfeas, heta_le, ?_, ?_, ?_⟩
+  · simpa [htarget] using hcost_lt
+  · intro i j
+    simpa [htarget] using hDeltaA i j
+  · intro i
+    simpa [htarget] using hDeltab i
+
 /-- Bounded-sublevel coercivity for the (20.20) attainable-cost set: for positive
     finite `theta`, any attainable cost below a radius `R` has a feasible
     perturbation witness whose individual matrix and right-hand-side entries are
