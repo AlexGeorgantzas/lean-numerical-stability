@@ -3234,6 +3234,59 @@ theorem lsScaledAugmentedBalancedBranchRatio_bounds_of_alpha_eq_div_sqrt_two
         (alpha := alpha) (sigmaMin := sigmaMin) (sigmaMax := sigmaMax)
         hsigmaMin_pos halpha hsigmaMax
 
+/-- Scalar witness for the final comparison in (20.19): with scaling
+    `alpha = sigmaMax`, the extremal branch ratio is strictly larger than
+    `(sigmaMax / sigmaMin)^2`.  This is the source-facing scalar certificate
+    behind the statement that some scaled augmented systems can be worse than
+    `kappa_2(A)^2`, before the global spectral/multiplicity theorem connects
+    these branches to the matrix condition number of `C(alpha)`. -/
+theorem lsScaledAugmentedBranchRatio_gt_sigma_ratio_sq_of_alpha_eq_sigmaMax
+    {alpha sigmaMin sigmaMax : ℝ} (hsigmaMin_pos : 0 < sigmaMin)
+    (hsigmaMax : sigmaMin ≤ sigmaMax) (halpha : alpha = sigmaMax) :
+    (sigmaMax / sigmaMin) ^ 2 <
+      lsScaledAugmentedEigenvaluePlus alpha sigmaMax /
+        |lsScaledAugmentedEigenvalueMinus alpha sigmaMin| := by
+  let Pmin := lsScaledAugmentedEigenvaluePlus alpha sigmaMin
+  let Pmax := lsScaledAugmentedEigenvaluePlus alpha sigmaMax
+  let Dmin := |lsScaledAugmentedEigenvalueMinus alpha sigmaMin|
+  have hsigmaMax_pos : 0 < sigmaMax := lt_of_lt_of_le hsigmaMin_pos hsigmaMax
+  have halpha_nonneg : 0 ≤ alpha := by
+    rw [halpha]
+    exact le_of_lt hsigmaMax_pos
+  have hPmin_gt : sigmaMax < Pmin := by
+    change sigmaMax < lsScaledAugmentedEigenvaluePlus alpha sigmaMin
+    rw [← halpha]
+    exact lsScaledAugmentedEigenvaluePlus_gt_alpha_of_sigma_ne_zero
+      (alpha := alpha) (sigma := sigmaMin) halpha_nonneg (ne_of_gt hsigmaMin_pos)
+  have hPmax_ge : sigmaMax ≤ Pmax :=
+    lsScaledAugmentedEigenvaluePlus_ge_sigma
+      (alpha := alpha) (sigma := sigmaMax) halpha_nonneg (le_of_lt hsigmaMax_pos)
+  have hPmax_pos : 0 < Pmax := lt_of_lt_of_le hsigmaMax_pos hPmax_ge
+  have hprod_gt : sigmaMax * sigmaMax < Pmin * Pmax :=
+    mul_lt_mul_of_nonneg_of_pos hPmin_gt hPmax_ge
+      (le_of_lt hsigmaMax_pos) hPmax_pos
+  have hprod_min : Pmin * Dmin = sigmaMin ^ 2 :=
+    lsScaledAugmentedEigenvaluePlus_mul_abs_minus
+      (alpha := alpha) (sigma := sigmaMin) halpha_nonneg
+  have hDmin_pos : 0 < Dmin := by
+    exact abs_pos.mpr
+      (lsScaledAugmentedEigenvalueMinus_ne_zero_of_sigma_ne_zero
+        (alpha := alpha) (sigma := sigmaMin) halpha_nonneg (ne_of_gt hsigmaMin_pos))
+  have hDmin_ne : Dmin ≠ 0 := ne_of_gt hDmin_pos
+  have hsigmaMin_ne : sigmaMin ≠ 0 := ne_of_gt hsigmaMin_pos
+  have hsigmaMin_sq_pos : 0 < sigmaMin ^ 2 := sq_pos_of_ne_zero hsigmaMin_ne
+  have hsigmaMin_sq_ne : sigmaMin ^ 2 ≠ 0 := ne_of_gt hsigmaMin_sq_pos
+  have hsq_div : (sigmaMax / sigmaMin) ^ 2 =
+      sigmaMax * sigmaMax / sigmaMin ^ 2 := by
+    field_simp [hsigmaMin_ne]
+  have hratio_eq : Pmax / Dmin = (Pmin * Pmax) / sigmaMin ^ 2 := by
+    have hPmin_ne : Pmin ≠ 0 :=
+      ne_of_gt (lt_trans hsigmaMax_pos hPmin_gt)
+    field_simp [hDmin_ne, hsigmaMin_sq_ne, hPmin_ne]
+    nlinarith [hprod_min]
+  rw [hsq_div, hratio_eq]
+  exact div_lt_div_of_pos_right hprod_gt hsigmaMin_sq_pos
+
 /-- Block-action certificate behind (20.18): if `u,v` are a singular-vector
     pair for singular value `sigma` and `lambda` satisfies the displayed
     quadratic, then `[lambda u; sigma v]` is scaled by `lambda` under
