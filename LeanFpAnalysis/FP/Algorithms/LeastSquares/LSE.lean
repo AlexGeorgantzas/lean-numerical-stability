@@ -1451,6 +1451,50 @@ theorem lseWeightedConstraintPenalty_le_objective {m n p : ℕ}
     exact vecNorm2Sq_nonneg (lsResidual A b x)
   linarith
 
+/-- Objective domination for exact minimizers of the weighted formulation
+    (20.26): the unweighted least-squares objective at a weighted minimizer is
+    no larger than at any feasible constrained comparator.  This is a
+    finite-weight algebraic consequence of the penalty formulation, not a
+    convergence theorem for `mu -> infinity`. -/
+theorem lseWeightedMinimizer_objective_le_feasibleObjective {m n p : ℕ}
+    (mu : ℝ) (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ)
+    (x_mu y : Fin n → ℝ)
+    (hmin : IsLeastSquaresMinimizer
+      (lseWeightedMatrix mu A B) (lseWeightedRhs mu b d) x_mu)
+    (hyfeas : LSEFeasible B d y) :
+    lsObjective A b x_mu ≤ lsObjective A b y := by
+  have hweighted :
+      lsObjective A b x_mu +
+          mu ^ 2 * vecNorm2Sq (lseConstraintResidual B d x_mu) ≤
+        lsObjective A b y := by
+    calc
+      lsObjective A b x_mu +
+          mu ^ 2 * vecNorm2Sq (lseConstraintResidual B d x_mu) =
+          lsObjective (lseWeightedMatrix mu A B) (lseWeightedRhs mu b d) x_mu :=
+        (lseWeightedObjective_eq mu A b B d x_mu).symm
+      _ ≤ lsObjective (lseWeightedMatrix mu A B) (lseWeightedRhs mu b d) y :=
+        hmin y
+      _ = lsObjective A b y :=
+        lseWeightedObjective_eq_of_feasible mu A b B d y hyfeas
+  have hpen_nonneg :
+      0 ≤ mu ^ 2 * vecNorm2Sq (lseConstraintResidual B d x_mu) :=
+    mul_nonneg (sq_nonneg mu) (vecNorm2Sq_nonneg (lseConstraintResidual B d x_mu))
+  linarith
+
+/-- Specialization of the finite-weight objective domination to an actual LSE
+    minimizer used as comparator. -/
+theorem lseWeightedMinimizer_objective_le_lseMinimizer {m n p : ℕ}
+    (mu : ℝ) (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ)
+    (x_mu y : Fin n → ℝ)
+    (hmin : IsLeastSquaresMinimizer
+      (lseWeightedMatrix mu A B) (lseWeightedRhs mu b d) x_mu)
+    (hymin : IsLSEMinimizer A b B d y) :
+    lsObjective A b x_mu ≤ lsObjective A b y :=
+  lseWeightedMinimizer_objective_le_feasibleObjective
+    mu A b B d x_mu y hmin hymin.1
+
 /-- If a candidate for the weighted problem (20.26) has objective at most `R`,
     then its squared equality-constraint residual is at most `R / mu^2`.
     This is a finite-weight approximation bound, not the source's limiting
