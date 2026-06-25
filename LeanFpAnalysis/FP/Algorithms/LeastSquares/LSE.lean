@@ -2970,6 +2970,30 @@ theorem IsLSEMinimizer.eq_of_nullIntersectionTrivial {m n p : ℕ}
   dsimp [v] at hvj
   linarith
 
+/-- Unique-solution form of the limiting weighting theorem after (20.26).
+    Under the local uniqueness condition from (20.24), any supplied convergent
+    exact weighted-minimizer branch whose weights satisfy `(mu^2)^{-1} -> 0`
+    converges to the unique LSE minimizer.  This identifies the limit of an
+    already convergent branch; it does not prove that such a branch exists. -/
+theorem lseWeightedMinimizer_tendsto_unique_lseMinimizer_of_inv_mu_sq
+    {ι : Type*} {l : Filter ι} [l.NeBot] {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ)
+    (mu : ι → ℝ) (x_mu : ι → Fin n → ℝ) (x y : Fin n → ℝ)
+    (hlim : Filter.Tendsto x_mu l (nhds x))
+    (hmu : ∀ i, mu i ≠ 0)
+    (hmin : ∀ i, IsLeastSquaresMinimizer
+      (lseWeightedMatrix (mu i) A B) (lseWeightedRhs (mu i) b d) (x_mu i))
+    (hy : IsLSEMinimizer A b B d y)
+    (hnull : LSENullIntersectionTrivial A B)
+    (hInvSq : Filter.Tendsto (fun i => (mu i ^ 2)⁻¹) l (nhds 0)) :
+    Filter.Tendsto x_mu l (nhds y) := by
+  have hx : IsLSEMinimizer A b B d x :=
+    lseWeightedMinimizer_tendsto_isLSEMinimizer_of_inv_mu_sq
+      A b B d mu x_mu x y hlim hmu hmin hy.1 hInvSq
+  have hxy : x = y := IsLSEMinimizer.eq_of_nullIntersectionTrivial hnull hx hy
+  simpa [hxy] using hlim
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, exact supplied-GQR
     uniqueness consequence under the local assumptions (20.24).
 
