@@ -479,6 +479,32 @@ theorem lsResidualHigham_eq_neg_lsResidual {m n : ℕ}
   unfold lsResidualHigham lsResidual
   ring
 
+/-- A zero Higham-signed residual is an exact solution of the data equations,
+    hence an exact least-squares minimizer.  This is the zero-residual branch
+    used by the normwise backward-error formula (20.20)-(20.21). -/
+theorem IsLeastSquaresMinimizer.of_lsResidualHigham_eq_zero {m n : ℕ}
+    {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ} {x : Fin n → ℝ}
+    (hres : lsResidualHigham A b x = 0) :
+    IsLeastSquaresMinimizer A b x := by
+  intro y
+  have hres0 : lsResidual A b x = 0 := by
+    ext i
+    change lsResidual A b x i = (0 : ℝ)
+    have hi : lsResidualHigham A b x i = 0 := by
+      simpa using congrFun hres i
+    unfold lsResidualHigham at hi
+    unfold lsResidual
+    linarith
+  have hx_obj : lsObjective A b x = 0 := by
+    unfold lsObjective
+    rw [hres0]
+    unfold vecNorm2Sq
+    simp
+  have hy_nonneg : 0 ≤ lsObjective A b y := by
+    unfold lsObjective
+    exact vecNorm2Sq_nonneg (lsResidual A b y)
+  linarith
+
 private theorem lsResidualHigham_column_sum_eq_neg {m n : ℕ}
     (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (x : Fin n → ℝ)
     (j : Fin n) :
@@ -3834,6 +3860,18 @@ theorem lsNormwiseBackwardErrorPhi_nonneg {m n : ℕ} (theta : ℝ)
     (mul_nonneg (Real.sqrt_nonneg _) (vecNorm2_nonneg r))
     (vecNorm2_nonneg y)
 
+/-- If the residual vector in the displayed right-hand side of (20.21) is zero,
+    then the scalar branch `phi` is zero. -/
+theorem lsNormwiseBackwardErrorPhi_eq_zero_of_residual_eq_zero {m n : ℕ}
+    (theta : ℝ) {r : Fin m → ℝ} (y : Fin n → ℝ) (hr : r = 0) :
+    lsNormwiseBackwardErrorPhi theta r y = 0 := by
+  subst r
+  unfold lsNormwiseBackwardErrorPhi
+  have hzero : vecNorm2 (0 : Fin m → ℝ) = 0 := by
+    simpa using (vecNorm2_zero (n := m))
+  rw [hzero]
+  ring
+
 /-- The Frobenius cost in (20.20) is nonnegative. -/
 theorem lsNormwiseBackwardErrorCostF_nonneg {m n : ℕ} (theta : ℝ)
     (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ) :
@@ -6006,6 +6044,46 @@ theorem lsNormwiseBackwardErrorFormulaValue_eq_zero_iff
     · unfold lsNormwiseBackwardErrorFormulaValue
       rw [hsigma]
       exact min_eq_right (lsNormwiseBackwardErrorPhi_nonneg theta r y)
+
+/-- Zero-residual branch of the printed right-hand side in (20.21): if
+    `r = b - A y` vanishes, then the displayed `min {phi, sigma_min}` value is
+    zero.  This is a source-faithful degenerate branch, not the spectral proof
+    of the general Walden--Karlson--Sun formula. -/
+theorem lsNormwiseBackwardErrorFormulaRHS_eq_zero_of_lsResidualHigham_eq_zero
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (hres : lsResidualHigham A b y = 0) :
+    lsNormwiseBackwardErrorFormulaRHS theta A b y = 0 := by
+  unfold lsNormwiseBackwardErrorFormulaRHS
+  exact
+    (lsNormwiseBackwardErrorFormulaValue_eq_zero_iff
+      theta A (lsResidualHigham A b y) y).mpr
+      (Or.inl
+        (lsNormwiseBackwardErrorPhi_eq_zero_of_residual_eq_zero
+          theta y hres))
+
+/-- Exact zero-residual branch of (20.20)-(20.21): when `b - A y = 0`, the
+    normwise backward-error infimum and the printed formula right-hand side both
+    vanish, so they agree without invoking the missing spectral lower-bound and
+    attaining-perturbation theorem. -/
+theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_of_lsResidualHigham_eq_zero
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (hres : lsResidualHigham A b y = 0) :
+    lsNormwiseBackwardErrorEtaF theta A b y =
+      lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  have hmin :
+      IsLeastSquaresMinimizer A b y :=
+    IsLeastSquaresMinimizer.of_lsResidualHigham_eq_zero hres
+  have heta :
+      lsNormwiseBackwardErrorEtaF theta A b y = 0 :=
+    lsNormwiseBackwardErrorEtaF_eq_zero_of_isLeastSquaresMinimizer
+      theta A b y hmin
+  have hrhs :
+      lsNormwiseBackwardErrorFormulaRHS theta A b y = 0 :=
+    lsNormwiseBackwardErrorFormulaRHS_eq_zero_of_lsResidualHigham_eq_zero
+      theta A b y hres
+  rw [heta, hrhs]
 
 /-- Lower-bound handoff for the alternative formula (20.21): once every
     feasible perturbation in (20.20) is known to have cost at least the printed
