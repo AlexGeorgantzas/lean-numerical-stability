@@ -4283,6 +4283,112 @@ theorem lsNormwiseBackwardErrorEtaF_exists_feasible_cost_eq_of_isClosed_valuesF
       theta A b y hclosed with ⟨DeltaA, Deltab, hfeas, heta_eq⟩
   exact ⟨DeltaA, Deltab, hfeas, heta_eq.symm⟩
 
+/-- Minimum-attainment for the finite positive-`theta` normwise backward-error
+    model (20.20).  The proof localizes the global infimum to one bounded
+    attainable sublevel, uses compact-image closedness of that sublevel, and
+    then identifies the bounded and global infima.  This proves existence of a
+    source minimum for positive finite `theta`; it does not prove the
+    Walden--Karlson--Sun SVD formula (20.21). -/
+theorem lsNormwiseBackwardErrorEtaF_isLeast_valuesF_of_positive_theta
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    IsLeast (lsNormwiseBackwardErrorValuesF theta A b y)
+      (lsNormwiseBackwardErrorEtaF theta A b y) := by
+  let values := lsNormwiseBackwardErrorValuesF theta A b y
+  let eta0 := lsNormwiseBackwardErrorEtaF theta A b y
+  rcases lsNormwiseBackwardErrorValuesF.nonempty theta A b y with ⟨R, hRmem⟩
+  have hRnonneg : 0 ≤ R :=
+    lsNormwiseBackwardErrorValuesF.nonneg_of_mem theta A b y hRmem
+  let boundedValues : Set ℝ := values ∩ Set.Iic R
+  have hclosed : IsClosed boundedValues := by
+    simpa [values, boundedValues] using
+      lsNormwiseBackwardErrorValuesF.sublevel_isClosed
+        (m := m) (n := n) htheta hRnonneg A b y
+  have hnonempty : boundedValues.Nonempty := ⟨R, hRmem, by simp⟩
+  have hbdd : BddBelow boundedValues := by
+    refine ⟨0, ?_⟩
+    intro eta heta
+    exact lsNormwiseBackwardErrorValuesF.nonneg_of_mem theta A b y
+      (by simpa [values, boundedValues] using heta.1)
+  have hsubset : boundedValues ⊆ values := by
+    intro eta heta
+    exact heta.1
+  have hinf_ge : sInf values ≤ sInf boundedValues := by
+    exact le_csInf hnonempty fun eta heta =>
+      csInf_le (lsNormwiseBackwardErrorValuesF.bddBelow theta A b y)
+        (hsubset heta)
+  have hinf_le : sInf boundedValues ≤ sInf values := by
+    refine le_of_forall_pos_le_add ?_
+    intro eps heps
+    by_cases hcase : sInf values + eps < R
+    · rcases exists_lt_of_csInf_lt
+        (lsNormwiseBackwardErrorValuesF.nonempty theta A b y)
+        (lt_add_of_pos_right (sInf values) heps) with ⟨eta, heta, heta_lt⟩
+      have heta_bounded : eta ∈ boundedValues := by
+        refine ⟨by simpa [values] using heta, ?_⟩
+        exact le_of_lt (lt_trans heta_lt hcase)
+      exact (csInf_le hbdd heta_bounded).trans (le_of_lt heta_lt)
+    · have htarget : R ≤ sInf values + eps := le_of_not_gt hcase
+      exact (csInf_le hbdd ⟨hRmem, by simp⟩).trans htarget
+  have hinf_eq : sInf boundedValues = sInf values := le_antisymm hinf_le hinf_ge
+  have hleast_bounded : IsLeast boundedValues (sInf boundedValues) :=
+    hclosed.isLeast_csInf hnonempty hbdd
+  have heta_mem_bounded : eta0 ∈ boundedValues := by
+    have hmem : sInf boundedValues ∈ boundedValues := hleast_bounded.1
+    simpa [eta0, lsNormwiseBackwardErrorEtaF, values, hinf_eq] using hmem
+  refine ⟨?_, ?_⟩
+  · exact hsubset heta_mem_bounded
+  · intro eta heta
+    simpa [eta0] using
+      lsNormwiseBackwardErrorEtaF_le_of_mem theta A b y
+        (by simpa [values] using heta)
+
+/-- Positive finite-`theta` attainment for (20.20): the infimum model
+    `eta_F(y)` itself is an attainable weighted perturbation cost.  This is the
+    minimum-existence part of Theorem 20.5's setup, before the formula (20.21). -/
+theorem lsNormwiseBackwardErrorEtaF_mem_valuesF_of_positive_theta
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    lsNormwiseBackwardErrorEtaF theta A b y ∈
+      lsNormwiseBackwardErrorValuesF theta A b y :=
+  (lsNormwiseBackwardErrorEtaF_isLeast_valuesF_of_positive_theta
+    htheta A b y).1
+
+/-- Positive finite-`theta` feasible minimizer existence for (20.20): there is
+    a feasible perturbation pair whose weighted Frobenius cost is no larger
+    than the cost of any other feasible perturbation.  This is still prior to
+    the Walden--Karlson--Sun formula (20.21). -/
+theorem lsNormwiseBackwardErrorEtaF_exists_feasible_minimizer_of_positive_theta
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    ∃ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+      LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+        ∀ (DeltaA' : Fin m → Fin n → ℝ) (Deltab' : Fin m → ℝ),
+          LSNormwiseBackwardErrorFeasible A b y DeltaA' Deltab' →
+            lsNormwiseBackwardErrorCostF theta DeltaA Deltab ≤
+              lsNormwiseBackwardErrorCostF theta DeltaA' Deltab' := by
+  rcases lsNormwiseBackwardErrorEtaF_mem_valuesF_of_positive_theta
+      htheta A b y with ⟨DeltaA, Deltab, hfeas, heta_eq⟩
+  refine ⟨DeltaA, Deltab, hfeas, ?_⟩
+  intro DeltaA' Deltab' hfeas'
+  rw [← heta_eq]
+  exact lsNormwiseBackwardErrorEtaF_le_costF_of_feasible
+    theta A b y DeltaA' Deltab' hfeas'
+
+/-- Positive finite-`theta` witness form of minimum-attainment for (20.20):
+    there is a feasible perturbation pair whose cost is exactly `eta_F(y)`.
+    The spectral expression (20.21) remains a separate theorem. -/
+theorem lsNormwiseBackwardErrorEtaF_exists_feasible_cost_eq_of_positive_theta
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    ∃ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+      LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+        lsNormwiseBackwardErrorCostF theta DeltaA Deltab =
+          lsNormwiseBackwardErrorEtaF theta A b y := by
+  rcases lsNormwiseBackwardErrorEtaF_mem_valuesF_of_positive_theta
+      htheta A b y with ⟨DeltaA, Deltab, hfeas, heta_eq⟩
+  exact ⟨DeltaA, Deltab, hfeas, heta_eq.symm⟩
+
 /-- Monotonicity of the (20.20) infimum model in the source weight: increasing
     a nonnegative `theta` cannot decrease the best attainable weighted
     Frobenius perturbation cost. -/
