@@ -3662,6 +3662,50 @@ def LSNormwiseBackwardErrorFeasible {m n : ℕ}
     (fun i j => A i j + DeltaA i j)
     (fun i => b i + Deltab i) y
 
+/-- Feasible-graph closedness for the (20.20) perturbation predicate: for
+    fixed source data and candidate `y`, the perturbation pairs for which `y`
+    is an exact least-squares minimizer form a closed set.  This is the
+    finite-dimensional closed-graph ingredient for the later compactness proof;
+    it does not prove the attainable-cost value set is closed or that the
+    infimum is attained. -/
+theorem LSNormwiseBackwardErrorFeasible.isClosed_set {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    IsClosed {p : (Fin m → Fin n → ℝ) × (Fin m → ℝ) |
+      LSNormwiseBackwardErrorFeasible A b y p.1 p.2} := by
+  rw [show {p : (Fin m → Fin n → ℝ) × (Fin m → ℝ) |
+      LSNormwiseBackwardErrorFeasible A b y p.1 p.2} =
+        ⋂ z : Fin n → ℝ,
+          {p : (Fin m → Fin n → ℝ) × (Fin m → ℝ) |
+            lsObjective (fun i j => A i j + p.1 i j)
+                (fun i => b i + p.2 i) y ≤
+              lsObjective (fun i j => A i j + p.1 i j)
+                (fun i => b i + p.2 i) z} by
+    ext p
+    simp [LSNormwiseBackwardErrorFeasible, IsLeastSquaresMinimizer]]
+  exact isClosed_iInter fun z =>
+    isClosed_le (by
+      unfold lsObjective lsResidual vecNorm2Sq rectMatMulVec
+      fun_prop)
+      (by
+        unfold lsObjective lsResidual vecNorm2Sq rectMatMulVec
+        fun_prop)
+
+/-- Limit-closed form of `LSNormwiseBackwardErrorFeasible.isClosed_set`: a
+    convergent net of feasible perturbation pairs has a feasible perturbation
+    pair as its limit.  This is intended for the later compactness/subsequence
+    route toward minimum-attainment in (20.20). -/
+theorem LSNormwiseBackwardErrorFeasible.of_tendsto_pair
+    {ι : Type*} {l : Filter ι} [l.NeBot] {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    (pseq : ι → (Fin m → Fin n → ℝ) × (Fin m → ℝ))
+    (p : (Fin m → Fin n → ℝ) × (Fin m → ℝ))
+    (hfeas : Filter.Eventually
+      (fun k => LSNormwiseBackwardErrorFeasible A b y (pseq k).1 (pseq k).2) l)
+    (hp : Filter.Tendsto pseq l (nhds p)) :
+    LSNormwiseBackwardErrorFeasible A b y p.1 p.2 := by
+  exact (LSNormwiseBackwardErrorFeasible.isClosed_set A b y).mem_of_tendsto
+    hp hfeas
+
 /-- The set of attainable costs in Higham's normwise backward error
     definition (20.20).  The source writes a minimum; this exact model records
     the corresponding set, leaving minimum-attainment and the SVD formula
@@ -3851,6 +3895,20 @@ theorem lsNormwiseBackwardErrorCostF_eq_sqrt_sq_sum {m n : ℕ} (theta : ℝ)
       Real.sqrt (frobNormSqRect DeltaA + theta ^ 2 * vecNorm2Sq Deltab) := by
   rw [lsNormwiseBackwardErrorCostF, frobNormRect,
     lsNormwiseBackwardErrorWeightedMatrix_frobNormSqRect]
+
+/-- Continuity of the weighted Frobenius perturbation cost from (20.20) as a
+    function of the perturbation pair.  Together with feasible-graph closedness
+    and the entrywise bounded-sublevel lemmas, this is a local ingredient for
+    the later finite-dimensional compactness/minimum-attainment argument. -/
+theorem lsNormwiseBackwardErrorCostF_continuous_pair {m n : ℕ} (theta : ℝ) :
+    Continuous fun p : (Fin m → Fin n → ℝ) × (Fin m → ℝ) =>
+      lsNormwiseBackwardErrorCostF theta p.1 p.2 := by
+  have hcont : Continuous fun p : (Fin m → Fin n → ℝ) × (Fin m → ℝ) =>
+      Real.sqrt (frobNormSqRect p.1 + theta ^ 2 * vecNorm2Sq p.2) := by
+    apply Real.continuous_sqrt.comp
+    unfold frobNormSqRect vecNorm2Sq
+    fun_prop
+  simpa [lsNormwiseBackwardErrorCostF_eq_sqrt_sq_sum] using hcont
 
 /-- Any feasible perturbation contributes its cost to the value set used in
     the `eta_F` model for (20.20). -/
