@@ -1435,6 +1435,81 @@ theorem lseWeightedObjective_eq_of_feasible {m n p : ℕ}
   rw [hzero]
   simp [vecNorm2Sq]
 
+/-- Coercivity of the weighted formulation (20.26): the weighted
+    unconstrained objective dominates the penalty term
+    `mu^2 * ||B x - d||_2^2`.  This is the algebraic reason large weights
+    force approximate satisfaction of the equality constraint, but it is not
+    the full limiting theorem. -/
+theorem lseWeightedConstraintPenalty_le_objective {m n p : ℕ}
+    (mu : ℝ) (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ) (x : Fin n → ℝ) :
+    mu ^ 2 * vecNorm2Sq (lseConstraintResidual B d x) ≤
+      lsObjective (lseWeightedMatrix mu A B) (lseWeightedRhs mu b d) x := by
+  rw [lseWeightedObjective_eq]
+  have hls : 0 ≤ lsObjective A b x := by
+    unfold lsObjective
+    exact vecNorm2Sq_nonneg (lsResidual A b x)
+  linarith
+
+/-- If a candidate for the weighted problem (20.26) has objective at most `R`,
+    then its squared equality-constraint residual is at most `R / mu^2`.
+    This is a finite-weight approximation bound, not the source's limiting
+    statement as `mu -> infinity`. -/
+theorem lseConstraintResidual_normSq_le_of_weightedObjective_le {m n p : ℕ}
+    {mu R : ℝ} (hmu : mu ≠ 0)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ) (x : Fin n → ℝ)
+    (hobj :
+      lsObjective (lseWeightedMatrix mu A B) (lseWeightedRhs mu b d) x ≤ R) :
+    vecNorm2Sq (lseConstraintResidual B d x) ≤ R / mu ^ 2 := by
+  have hpen :
+      mu ^ 2 * vecNorm2Sq (lseConstraintResidual B d x) ≤ R :=
+    (lseWeightedConstraintPenalty_le_objective
+      mu A b B d x).trans hobj
+  have hmu_sq_pos : 0 < mu ^ 2 := sq_pos_of_ne_zero hmu
+  exact (le_div_iff₀ hmu_sq_pos).2 (by
+    simpa [mul_comm, mul_left_comm, mul_assoc] using hpen)
+
+/-- Norm form of the finite-weight constraint control for (20.26). -/
+theorem lseConstraintResidual_norm_le_sqrt_div_of_weightedObjective_le
+    {m n p : ℕ} {mu R : ℝ} (hmu : mu ≠ 0)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ) (x : Fin n → ℝ)
+    (hobj :
+      lsObjective (lseWeightedMatrix mu A B) (lseWeightedRhs mu b d) x ≤ R) :
+    vecNorm2 (lseConstraintResidual B d x) ≤ Real.sqrt (R / mu ^ 2) := by
+  have hsq :=
+    lseConstraintResidual_normSq_le_of_weightedObjective_le
+      hmu A b B d x hobj
+  simpa [vecNorm2] using Real.sqrt_le_sqrt hsq
+
+/-- Weighted-minimizer consequence for the method of weighting after (20.26):
+    if `x_mu` minimizes the weighted unconstrained problem, then any feasible
+    constrained point `y` bounds the squared constraint residual of `x_mu` by
+    `||A y - b||_2^2 / mu^2`.  This is still finite-weight control, not the
+    full `mu -> infinity` convergence theorem. -/
+theorem lseWeightedMinimizer_constraintResidual_normSq_le_feasibleObjective_div_mu_sq
+    {m n p : ℕ} {mu : ℝ} (hmu : mu ≠ 0)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (B : Fin p → Fin n → ℝ) (d : Fin p → ℝ)
+    (x_mu y : Fin n → ℝ)
+    (hmin : IsLeastSquaresMinimizer
+      (lseWeightedMatrix mu A B) (lseWeightedRhs mu b d) x_mu)
+    (hyfeas : LSEFeasible B d y) :
+    vecNorm2Sq (lseConstraintResidual B d x_mu) ≤
+      lsObjective A b y / mu ^ 2 := by
+  have hobj :
+      lsObjective (lseWeightedMatrix mu A B) (lseWeightedRhs mu b d) x_mu ≤
+        lsObjective A b y := by
+    calc
+      lsObjective (lseWeightedMatrix mu A B) (lseWeightedRhs mu b d) x_mu ≤
+          lsObjective (lseWeightedMatrix mu A B) (lseWeightedRhs mu b d) y :=
+        hmin y
+      _ = lsObjective A b y :=
+        lseWeightedObjective_eq_of_feasible mu A b B d y hyfeas
+  exact lseConstraintResidual_normSq_le_of_weightedObjective_le
+    hmu A b B d x_mu hobj
+
 private theorem lsResidual_gqrAQBlock {r p q : ℕ}
     (L11 : Fin r → Fin p → ℝ)
     (L21 : Fin q → Fin p → ℝ)
