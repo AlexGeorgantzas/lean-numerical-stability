@@ -4268,6 +4268,36 @@ theorem lsNormwiseBackwardErrorEtaF_exists_feasible_entry_bounds_lt_add_eps
     rw [lt_div_iff₀ htheta]
     simpa [mul_comm] using htheta_abs_lt
 
+/-- Bounded-sublevel coercivity for the (20.20) attainable-cost set: for positive
+    finite `theta`, any attainable cost below a radius `R` has a feasible
+    perturbation witness whose individual matrix and right-hand-side entries are
+    bounded by the corresponding finite radii. This is a compactness ingredient,
+    not the closedness proof or the spectral formula (20.21). -/
+theorem lsNormwiseBackwardErrorValuesF.exists_feasible_entry_bounds_of_mem_le
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    {eta R : ℝ} (heta : eta ∈ lsNormwiseBackwardErrorValuesF theta A b y)
+    (heta_le : eta ≤ R) :
+    ∃ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+      LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+        lsNormwiseBackwardErrorCostF theta DeltaA Deltab = eta ∧
+        (∀ i j, |DeltaA i j| ≤ R) ∧
+        (∀ i, |Deltab i| ≤ R / theta) := by
+  rcases heta with ⟨DeltaA, Deltab, hfeas, heta_eq⟩
+  have hcost_le_R :
+      lsNormwiseBackwardErrorCostF theta DeltaA Deltab ≤ R := by
+    simpa [heta_eq] using heta_le
+  refine ⟨DeltaA, Deltab, hfeas, heta_eq.symm, ?_, ?_⟩
+  · intro i j
+    exact
+      (lsNormwiseBackwardErrorCostF_deltaA_entry_abs_le
+        theta DeltaA Deltab i j).trans hcost_le_R
+  · intro i
+    exact
+      (lsNormwiseBackwardErrorCostF_deltab_entry_abs_le_cost_div_theta
+        htheta DeltaA Deltab i).trans
+        (div_le_div_of_nonneg_right hcost_le_R (le_of_lt htheta))
+
 /-- Higham, 2nd ed., Chapter 20, Lemma 20.6: augmented system with
     different perturbations in the primal and transposed blocks. -/
 def LSAsymmetricPerturbedAugmentedSystem {m n : ℕ}
