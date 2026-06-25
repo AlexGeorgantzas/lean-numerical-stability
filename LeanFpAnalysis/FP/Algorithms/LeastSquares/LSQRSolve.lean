@@ -4500,6 +4500,52 @@ theorem lsNormwiseBackwardErrorEtaF_exists_feasible_cost_eq_of_positive_theta
       htheta A b y with ⟨DeltaA, Deltab, hfeas, heta_eq⟩
   exact ⟨DeltaA, Deltab, hfeas, heta_eq.symm⟩
 
+/-- Finite positive-`theta` zero-backward-error characterization for (20.20):
+    after minimum-attainment is available, `eta_F(y) = 0` exactly when `y` is
+    already an exact least-squares minimizer for the unperturbed data.  This is
+    a consistency bridge for the normwise backward-error model, not the
+    Walden--Karlson--Sun formula (20.21). -/
+theorem lsNormwiseBackwardErrorEtaF_eq_zero_iff_isLeastSquaresMinimizer_of_positive_theta
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    lsNormwiseBackwardErrorEtaF theta A b y = 0 ↔
+      IsLeastSquaresMinimizer A b y := by
+  constructor
+  · intro heta
+    have hmem :=
+      lsNormwiseBackwardErrorEtaF_mem_valuesF_of_positive_theta htheta A b y
+    have hzero_mem : (0 : ℝ) ∈
+        lsNormwiseBackwardErrorValuesF theta A b y := by
+      simpa [heta] using hmem
+    exact
+      (lsNormwiseBackwardErrorValuesF.zero_mem_iff_isLeastSquaresMinimizer
+        (m := m) (n := n) (theta := theta) (ne_of_gt htheta) A b y).mp hzero_mem
+  · intro hmin
+    exact lsNormwiseBackwardErrorEtaF_eq_zero_of_isLeastSquaresMinimizer
+      theta A b y hmin
+
+/-- Finite positive-`theta` positive-backward-error characterization for
+    (20.20): `eta_F(y)` is strictly positive exactly when `y` is not an exact
+    least-squares minimizer of the original data. -/
+theorem lsNormwiseBackwardErrorEtaF_pos_iff_not_isLeastSquaresMinimizer_of_positive_theta
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    0 < lsNormwiseBackwardErrorEtaF theta A b y ↔
+      ¬ IsLeastSquaresMinimizer A b y := by
+  constructor
+  · intro hpos hmin
+    have hzero := lsNormwiseBackwardErrorEtaF_eq_zero_of_isLeastSquaresMinimizer
+      theta A b y hmin
+    linarith
+  · intro hnot
+    have hnonneg := lsNormwiseBackwardErrorEtaF_nonneg theta A b y
+    have hne : lsNormwiseBackwardErrorEtaF theta A b y ≠ 0 := by
+      intro hzero
+      exact hnot
+        ((lsNormwiseBackwardErrorEtaF_eq_zero_iff_isLeastSquaresMinimizer_of_positive_theta
+          htheta A b y).mp hzero)
+    exact lt_of_le_of_ne' hnonneg hne
+
 /-- Monotonicity of the (20.20) infimum model in the source weight: increasing
     a nonnegative `theta` cannot decrease the best attainable weighted
     Frobenius perturbation cost. -/
@@ -5911,6 +5957,55 @@ theorem lsNormwiseBackwardErrorFormulaRHS_nonneg
   simpa [lsNormwiseBackwardErrorFormulaRHS] using
     lsNormwiseBackwardErrorFormulaValue_nonneg theta A
       (lsResidualHigham A b y) y
+
+/-- Positivity characterization for the printed right-hand side in (20.21):
+    the outer minimum `min {phi, sigma_min}` is positive exactly when both
+    displayed nonnegative branches are positive. -/
+theorem lsNormwiseBackwardErrorFormulaValue_pos_iff
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ) :
+    0 < lsNormwiseBackwardErrorFormulaValue theta A r y ↔
+      0 < lsNormwiseBackwardErrorPhi theta r y ∧
+        0 < lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y := by
+  simp [lsNormwiseBackwardErrorFormulaValue]
+
+/-- Zero characterization for the printed right-hand side in (20.21): since
+    both displayed branches are nonnegative, `min {phi, sigma_min}` vanishes
+    exactly when at least one branch vanishes. -/
+theorem lsNormwiseBackwardErrorFormulaValue_eq_zero_iff
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ) :
+    lsNormwiseBackwardErrorFormulaValue theta A r y = 0 ↔
+      lsNormwiseBackwardErrorPhi theta r y = 0 ∨
+        lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y = 0 := by
+  constructor
+  · intro hzero
+    by_cases hphi : lsNormwiseBackwardErrorPhi theta r y = 0
+    · exact Or.inl hphi
+    · by_cases hsigma :
+          lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y = 0
+      · exact Or.inr hsigma
+      · exfalso
+        have hphi_pos : 0 < lsNormwiseBackwardErrorPhi theta r y :=
+          lt_of_le_of_ne' (lsNormwiseBackwardErrorPhi_nonneg theta r y) hphi
+        have hsigma_pos :
+            0 < lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y :=
+          lt_of_le_of_ne'
+            (lsNormwiseBackwardErrorFormulaMatrixSigmaMin_nonneg theta A r y)
+            hsigma
+        have hpos : 0 < lsNormwiseBackwardErrorFormulaValue theta A r y :=
+          (lsNormwiseBackwardErrorFormulaValue_pos_iff theta A r y).mpr
+            ⟨hphi_pos, hsigma_pos⟩
+        linarith
+  · intro h
+    rcases h with hphi | hsigma
+    · unfold lsNormwiseBackwardErrorFormulaValue
+      rw [hphi]
+      exact min_eq_left
+        (lsNormwiseBackwardErrorFormulaMatrixSigmaMin_nonneg theta A r y)
+    · unfold lsNormwiseBackwardErrorFormulaValue
+      rw [hsigma]
+      exact min_eq_right (lsNormwiseBackwardErrorPhi_nonneg theta r y)
 
 /-- Lower-bound handoff for the alternative formula (20.21): once every
     feasible perturbation in (20.20) is known to have cost at least the printed
