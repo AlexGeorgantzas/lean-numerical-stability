@@ -3910,6 +3910,89 @@ theorem lsNormwiseBackwardErrorCostF_continuous_pair {m n : ℕ} (theta : ℝ) :
     fun_prop
   simpa [lsNormwiseBackwardErrorCostF_eq_sqrt_sq_sum] using hcont
 
+/-- Compactness of a bounded feasible perturbation-pair sublevel for the
+    normwise backward-error model (20.20), for positive finite `theta`.  This
+    combines feasible-graph closedness, cost continuity, and the entrywise
+    Frobenius coercivity bounds; it is still only a compactness ingredient, not
+    the source minimum-attainment theorem or formula (20.21). -/
+theorem LSNormwiseBackwardErrorFeasible.cost_sublevel_isCompact
+    {m n : ℕ} {theta R : ℝ} (htheta : 0 < theta) (hR : 0 ≤ R)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    IsCompact {p : (Fin m → Fin n → ℝ) × (Fin m → ℝ) |
+      LSNormwiseBackwardErrorFeasible A b y p.1 p.2 ∧
+        lsNormwiseBackwardErrorCostF theta p.1 p.2 ≤ R} := by
+  rw [Metric.isCompact_iff_isClosed_bounded]
+  constructor
+  · have hfeas : IsClosed {p : (Fin m → Fin n → ℝ) × (Fin m → ℝ) |
+        LSNormwiseBackwardErrorFeasible A b y p.1 p.2} :=
+      LSNormwiseBackwardErrorFeasible.isClosed_set A b y
+    have hcost : IsClosed {p : (Fin m → Fin n → ℝ) × (Fin m → ℝ) |
+        lsNormwiseBackwardErrorCostF theta p.1 p.2 ≤ R} := by
+      exact isClosed_le (lsNormwiseBackwardErrorCostF_continuous_pair theta)
+        continuous_const
+    simpa [Set.setOf_and] using hfeas.inter hcost
+  · rw [isBounded_iff_forall_norm_le]
+    refine ⟨max R (R / theta), ?_⟩
+    intro p hp
+    rw [norm_prod_le_iff]
+    constructor
+    · have hA : ‖p.1‖ ≤ R := by
+        rw [pi_norm_le_iff_of_nonneg hR]
+        intro i
+        rw [pi_norm_le_iff_of_nonneg hR]
+        intro j
+        simpa [Real.norm_eq_abs] using
+          (lsNormwiseBackwardErrorCostF_deltaA_entry_abs_le
+            theta p.1 p.2 i j).trans hp.2
+      exact hA.trans (le_max_left R (R / theta))
+    · have hdiv_nonneg : 0 ≤ R / theta := div_nonneg hR (le_of_lt htheta)
+      have hb : ‖p.2‖ ≤ R / theta := by
+        rw [pi_norm_le_iff_of_nonneg hdiv_nonneg]
+        intro i
+        have hentry :=
+          lsNormwiseBackwardErrorCostF_deltab_entry_abs_le_cost_div_theta
+            (m := m) (n := n) htheta p.1 p.2 i
+        have hcost_div :
+            lsNormwiseBackwardErrorCostF theta p.1 p.2 / theta ≤ R / theta := by
+          exact div_le_div_of_nonneg_right hp.2 (le_of_lt htheta)
+        simpa [Real.norm_eq_abs] using hentry.trans hcost_div
+      exact hb.trans (le_max_right R (R / theta))
+
+/-- Closedness of bounded attainable-cost sublevels for the normwise backward
+    error value set (20.20), for positive finite `theta`.  This is the image of
+    the compact feasible perturbation-pair sublevel under the continuous cost
+    map.  It does not prove global value-set closedness, minimum-attainment, or
+    the Walden--Karlson--Sun formula (20.21). -/
+theorem lsNormwiseBackwardErrorValuesF.sublevel_isClosed
+    {m n : ℕ} {theta R : ℝ} (htheta : 0 < theta) (hR : 0 ≤ R)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    IsClosed (lsNormwiseBackwardErrorValuesF theta A b y ∩ Set.Iic R) := by
+  let cost : ((Fin m → Fin n → ℝ) × (Fin m → ℝ)) → ℝ :=
+    fun p => lsNormwiseBackwardErrorCostF theta p.1 p.2
+  let feasibleSub : Set ((Fin m → Fin n → ℝ) × (Fin m → ℝ)) :=
+    {p | LSNormwiseBackwardErrorFeasible A b y p.1 p.2 ∧ cost p ≤ R}
+  have hcompact : IsCompact feasibleSub :=
+    LSNormwiseBackwardErrorFeasible.cost_sublevel_isCompact
+      (m := m) (n := n) htheta hR A b y
+  have himage :
+      cost '' feasibleSub =
+        lsNormwiseBackwardErrorValuesF theta A b y ∩ Set.Iic R := by
+    ext eta
+    constructor
+    · rintro ⟨p, hp, rfl⟩
+      exact ⟨⟨p.1, p.2, hp.1, rfl⟩, hp.2⟩
+    · rintro ⟨heta, heta_le⟩
+      rcases heta with ⟨DeltaA, Deltab, hfeas, heta_eq⟩
+      refine ⟨(DeltaA, Deltab), ?_, ?_⟩
+      · exact ⟨hfeas, by simpa [cost, heta_eq] using heta_le⟩
+      · simp [cost, heta_eq]
+  have hcompact_image : IsCompact (cost '' feasibleSub) := by
+    exact hcompact.image (by
+      simpa [cost] using
+        lsNormwiseBackwardErrorCostF_continuous_pair (m := m) (n := n) theta)
+  rw [himage] at hcompact_image
+  exact hcompact_image.isClosed
+
 /-- Any feasible perturbation contributes its cost to the value set used in
     the `eta_F` model for (20.20). -/
 theorem lsNormwiseBackwardErrorValuesF.mem_of_feasible {m n : ℕ} (theta : ℝ)
