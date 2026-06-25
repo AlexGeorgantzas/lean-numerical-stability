@@ -456,6 +456,40 @@ theorem givensRotation_matMulVec_other (n : ℕ) (p q i : Fin n)
         rw [giv_row_other n p q c s i j hip hiq]]
   simp [Finset.sum_ite_eq, Finset.mem_univ]
 
+/-- If the two affected entries are both zero, an exact Givens application
+    leaves the vector unchanged. -/
+theorem givensRotation_matMulVec_pair_zero (n : ℕ) (p q : Fin n)
+    (c s : ℝ) (x : Fin n → ℝ) (hpq : p ≠ q)
+    (hxp : x p = 0) (hxq : x q = 0) :
+    ∀ i : Fin n, matMulVec n (givensRotation n p q c s) x i = x i := by
+  intro i
+  by_cases hip : i = p
+  · subst i
+    rw [givensRotation_matMulVec_p n p q c s x hpq, hxp, hxq]
+    ring
+  · by_cases hiq : i = q
+    · subst i
+      rw [givensRotation_matMulVec_q n p q c s x hpq, hxp, hxq]
+      ring
+    · exact givensRotation_matMulVec_other n p q i c s x hip hiq
+
+/-- The exact Givens rotation constructed from entries `x p` and `x q` zeros
+    the `q` component. -/
+theorem givensRotation_constructed_matMulVec_q_zero (n : ℕ) (p q : Fin n)
+    (xi xj : ℝ) (x : Fin n → ℝ) (hpq : p ≠ q)
+    (hxp : x p = xi) (hxq : x q = xj) :
+    matMulVec n
+      (givensRotation n p q (givensC xi xj) (givensS xi xj)) x q = 0 := by
+  calc
+    matMulVec n
+        (givensRotation n p q (givensC xi xj) (givensS xi xj)) x q
+        = givensC xi xj * x q - givensS xi xj * x p := by
+          rw [givensRotation_matMulVec_q n p q
+            (givensC xi xj) (givensS xi xj) x hpq]
+    _ = givensC xi xj * xj - givensS xi xj * xi := by rw [hxp, hxq]
+    _ = -givensS xi xj * xi + givensC xi xj * xj := by ring
+    _ = 0 := givensCoeff_zero_second xi xj
+
 /-- G(p,q,c,s) is orthogonal when c² + s² = 1 and p ≠ q.
 
     Proof: GᵀG and GGᵀ both equal I. For each (i,j), the sum ∑_k G_{ki}G_{kj}
@@ -638,6 +672,50 @@ structure GivensAppError (n : ℕ) (G : Fin n → Fin n → ℝ)
   pert : ∃ ΔG : Fin n → Fin n → ℝ,
     frobNorm ΔG ≤ c ∧
     ∀ i, y_hat i = matMulVec n (fun a b => G a b + ΔG a b) x i
+
+/-- A matrix perturbation is supported only on rows/columns `p` and `q`. -/
+def PairBlockSupported {n : ℕ} (p q : Fin n)
+    (E : Fin n → Fin n → ℝ) : Prop :=
+  ∀ i j,
+    ((Not (i = p) ∧ Not (i = q)) ∨ (Not (j = p) ∧ Not (j = q))) →
+      E i j = 0
+
+/-- A pair-supported perturbation has zero rows outside the active pair. -/
+theorem PairBlockSupported.row_zero {n : ℕ} {p q : Fin n}
+    {E : Fin n → Fin n → ℝ} (hE : PairBlockSupported p q E)
+    {i : Fin n} (hip : i ≠ p) (hiq : i ≠ q) :
+    ∀ j : Fin n, E i j = 0 := by
+  intro j
+  exact hE i j (Or.inl ⟨hip, hiq⟩)
+
+/-- A pair-supported perturbation has zero columns outside the active pair. -/
+theorem PairBlockSupported.col_zero {n : ℕ} {p q : Fin n}
+    {E : Fin n → Fin n → ℝ} (hE : PairBlockSupported p q E)
+    {j : Fin n} (hjp : j ≠ p) (hjq : j ≠ q) :
+    ∀ i : Fin n, E i j = 0 := by
+  intro i
+  exact hE i j (Or.inr ⟨hjp, hjq⟩)
+
+/-- Sparse form of `GivensAppError`, retaining the support of the local
+    perturbation produced by one Givens application. -/
+structure SparseGivensAppError (n : ℕ) (p q : Fin n)
+    (G : Fin n → Fin n → ℝ) (x y_hat : Fin n → ℝ) (c : ℝ) : Prop where
+  /-- G is orthogonal. -/
+  orth : IsOrthogonal n G
+  /-- The perturbation is norm-bounded and supported on the selected row pair. -/
+  pert : ∃ ΔG : Fin n → Fin n → ℝ,
+    frobNorm ΔG ≤ c ∧
+    PairBlockSupported p q ΔG ∧
+    ∀ i, y_hat i = matMulVec n (fun a b => G a b + ΔG a b) x i
+
+/-- Forget the support information from a sparse Givens application error. -/
+theorem SparseGivensAppError.to_app_error {n : ℕ} {p q : Fin n}
+    {G : Fin n → Fin n → ℝ} {x y_hat : Fin n → ℝ} {c : ℝ}
+    (h : SparseGivensAppError n p q G x y_hat c) :
+    GivensAppError n G x y_hat c := by
+  refine ⟨h.orth, ?_⟩
+  obtain ⟨ΔG, hΔG, _hsupp, hrepr⟩ := h.pert
+  exact ⟨ΔG, hΔG, hrepr⟩
 
 /-- Concrete supplied-parameter Givens application satisfies a conservative
     backward-error contract.
@@ -864,25 +942,26 @@ theorem fl_givensApply_supplied_app_error (fp : FPModel) (n : ℕ)
             intro j _
             simp [hΔrow j]
 
-/-- Conservative coefficient-plus-application Givens bridge.
+/-- Sparse conservative coefficient-plus-application Givens bridge.
 
     This theorem combines a coefficient relative-error contract with the
     concrete `fl_givensApply` kernel.  If the supplied rounded coefficients
     satisfy `c_hat = c(1+θ)` and `s_hat = s(1+θ')` with coefficient errors
     bounded by `gamma fp 6`, then the rounded application is a backward
     perturbation of the exact orthogonal rotation with a conservative
-    `gamma fp 8` entrywise/Frobenius bound.
+    `gamma fp 8` entrywise/Frobenius bound.  The perturbation is also recorded
+    as supported on the two rows/columns touched by the Givens rotation.
 
     This is implementation-backed once paired with
     `fl_givensCoeffError_conservative`; the constant is intentionally not
     advertised as Higham's sharper Lemma 18.7 `sqrt 2 * gamma_6` bound. -/
-theorem fl_givensApply_coeffError_app_error (fp : FPModel) (n : ℕ)
+theorem fl_givensApply_coeffError_sparse_app_error (fp : FPModel) (n : ℕ)
     (p q : Fin n) (c s c_hat s_hat μ : ℝ) (x : Fin n → ℝ)
     (hpq : p ≠ q) (hcs : c ^ 2 + s ^ 2 = 1)
     (hμ : μ ≤ gamma fp 6)
     (hcoeff : GivensCoeffError c s c_hat s_hat μ)
     (hvalid : gammaValid fp 8) :
-    GivensAppError n (givensRotation n p q c s) x
+    SparseGivensAppError n p q (givensRotation n p q c s) x
       (fl_givensApply fp n p q c_hat s_hat x)
       (gamma fp 8 * frobNorm (givensRotation n p q c s)) := by
   obtain ⟨εc, hεc, hc_hat⟩ := hcoeff.c_rel
@@ -983,7 +1062,7 @@ theorem fl_givensApply_coeffError_app_error (fp : FPModel) (n : ℕ)
               rw [hθcq_eq, hθsq_eq]
       _ = c * (1 + θcq) * x q - s * (1 + θsq) * x p := by ring
   refine ⟨givensRotation_orthogonal n p q c s hpq hcs, ?_⟩
-  refine ⟨ΔG, ?_, ?_⟩
+  refine ⟨ΔG, ?_, ?_, ?_⟩
   · apply frobNorm_le_const_mul_frobNorm_of_entrywise_abs_le
     · exact hγ8_nonneg
     · intro i j
@@ -1027,6 +1106,10 @@ theorem fl_givensApply_coeffError_app_error (fp : FPModel) (n : ℕ)
         · have hΔ : ΔG i j = 0 := by simp [ΔG, hip, hiq]
           rw [hΔ, abs_zero]
           exact mul_nonneg hγ8_nonneg (abs_nonneg _)
+  · intro i j hsupp
+    rcases hsupp with hrow | hcol
+    · simp [ΔG, hrow.1, hrow.2]
+    · simp [ΔG, hcol.1, hcol.2]
   · intro i
     by_cases hip : i = p
     · subst i
@@ -1109,6 +1192,47 @@ theorem fl_givensApply_coeffError_app_error (fp : FPModel) (n : ℕ)
             intro j _
             simp [hΔrow j]
 
+/-- Conservative coefficient-plus-application Givens bridge.
+
+    This is the support-forgetting version of
+    `fl_givensApply_coeffError_sparse_app_error`. -/
+theorem fl_givensApply_coeffError_app_error (fp : FPModel) (n : ℕ)
+    (p q : Fin n) (c s c_hat s_hat μ : ℝ) (x : Fin n → ℝ)
+    (hpq : p ≠ q) (hcs : c ^ 2 + s ^ 2 = 1)
+    (hμ : μ ≤ gamma fp 6)
+    (hcoeff : GivensCoeffError c s c_hat s_hat μ)
+    (hvalid : gammaValid fp 8) :
+    GivensAppError n (givensRotation n p q c s) x
+      (fl_givensApply fp n p q c_hat s_hat x)
+      (gamma fp 8 * frobNorm (givensRotation n p q c s)) := by
+  exact (fl_givensApply_coeffError_sparse_app_error fp n p q
+    c s c_hat s_hat μ x hpq hcs hμ hcoeff hvalid).to_app_error
+
+/-- Concrete computed-coefficient Givens application bridge with support
+    retained.
+
+    This is the current implementation-backed version of the coefficient
+    construction plus application path: coefficients are produced by
+    `fl_givensC`/`fl_givensS`, then applied by `fl_givensApply`. -/
+theorem fl_givensApply_computed_sparse_app_error_conservative
+    (fp : FPModel) (n : ℕ)
+    (p q : Fin n) (xi xj : ℝ) (x : Fin n → ℝ)
+    (hpq : p ≠ q) (h : xi ^ 2 + xj ^ 2 ≠ 0)
+    (hvalid : gammaValid fp 8) :
+    SparseGivensAppError n p q
+      (givensRotation n p q (givensC xi xj) (givensS xi xj)) x
+      (fl_givensApply fp n p q
+        (fl_givensC fp xi xj) (fl_givensS fp xi xj) x)
+      (gamma fp 8 *
+        frobNorm (givensRotation n p q (givensC xi xj) (givensS xi xj))) := by
+  have hcoeff :=
+    fl_givensCoeffError_conservative fp xi xj h
+      (gammaValid_mono fp (by omega) hvalid)
+  exact fl_givensApply_coeffError_sparse_app_error fp n p q
+    (givensC xi xj) (givensS xi xj)
+    (fl_givensC fp xi xj) (fl_givensS fp xi xj) (gamma fp 6) x
+    hpq (givensCoeff_norm_sq xi xj h) (le_rfl) hcoeff hvalid
+
 /-- Concrete computed-coefficient Givens application bridge.
 
     This is the current implementation-backed version of the coefficient
@@ -1127,12 +1251,7 @@ theorem fl_givensApply_computed_app_error_conservative (fp : FPModel) (n : ℕ)
         (fl_givensC fp xi xj) (fl_givensS fp xi xj) x)
       (gamma fp 8 *
         frobNorm (givensRotation n p q (givensC xi xj) (givensS xi xj))) := by
-  have hcoeff :=
-    fl_givensCoeffError_conservative fp xi xj h
-      (gammaValid_mono fp (by omega) hvalid)
-  exact fl_givensApply_coeffError_app_error fp n p q
-    (givensC xi xj) (givensS xi xj)
-    (fl_givensC fp xi xj) (fl_givensS fp xi xj) (gamma fp 6) x
-    hpq (givensCoeff_norm_sq xi xj h) (le_rfl) hcoeff hvalid
+  exact (fl_givensApply_computed_sparse_app_error_conservative fp n p q
+    xi xj x hpq h hvalid).to_app_error
 
 end LeanFpAnalysis.FP
