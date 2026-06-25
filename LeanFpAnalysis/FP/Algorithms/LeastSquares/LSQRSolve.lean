@@ -3786,6 +3786,34 @@ theorem lsScaledAugmentedMatrix_singularPair_plus_vector_ne_zero {m n : ℕ}
   have hright := congrFun hzero (Fin.natAdd m j)
   simpa [Fin.append_right, hsigma] using hright
 
+/-- Packaged positive-branch eigenpair certificate for (20.18): the singular
+    pair gives both the block-action identity for `C(alpha)` and a nonzero
+    block vector.  This is still local eigenvector algebra, not a global
+    multiplicity theorem. -/
+theorem lsScaledAugmentedMatrix_singularPair_plus_eigenpair {m n : ℕ}
+    (alpha sigma : ℝ) (A : Fin m → Fin n → ℝ)
+    (u : Fin m → ℝ) (v : Fin n → ℝ)
+    (hAv : rectMatMulVec A v = fun i => sigma * u i)
+    (hATu : (fun j : Fin n => ∑ i : Fin m, A i j * u i) =
+      fun j => sigma * v j)
+    (hsigma : sigma ≠ 0) (hv : v ≠ 0) :
+    (rectMatMulVec (lsScaledAugmentedMatrix alpha A)
+        (Fin.append
+          (fun i => lsScaledAugmentedEigenvaluePlus alpha sigma * u i)
+          (fun j => sigma * v j)) =
+      fun k => lsScaledAugmentedEigenvaluePlus alpha sigma *
+        Fin.append
+          (fun i => lsScaledAugmentedEigenvaluePlus alpha sigma * u i)
+          (fun j => sigma * v j) k) ∧
+      Fin.append
+        (fun i => lsScaledAugmentedEigenvaluePlus alpha sigma * u i)
+        (fun j => sigma * v j) ≠ 0 := by
+  exact
+    ⟨lsScaledAugmentedMatrix_singularPair_plus_eigenvector
+        alpha sigma A u v hAv hATu,
+      lsScaledAugmentedMatrix_singularPair_plus_vector_ne_zero
+        alpha sigma u v hsigma hv⟩
+
 /-- The negative branch in (20.18) gives the corresponding singular-pair
     block-action certificate for `C(alpha)`. -/
 theorem lsScaledAugmentedMatrix_singularPair_minus_eigenvector {m n : ℕ}
@@ -3819,6 +3847,34 @@ theorem lsScaledAugmentedMatrix_singularPair_minus_vector_ne_zero {m n : ℕ}
   ext j
   have hright := congrFun hzero (Fin.natAdd m j)
   simpa [Fin.append_right, hsigma] using hright
+
+/-- Packaged negative-branch eigenpair certificate for (20.18): the singular
+    pair gives both the block-action identity for `C(alpha)` and a nonzero
+    block vector.  This is still local eigenvector algebra, not a global
+    multiplicity theorem. -/
+theorem lsScaledAugmentedMatrix_singularPair_minus_eigenpair {m n : ℕ}
+    (alpha sigma : ℝ) (A : Fin m → Fin n → ℝ)
+    (u : Fin m → ℝ) (v : Fin n → ℝ)
+    (hAv : rectMatMulVec A v = fun i => sigma * u i)
+    (hATu : (fun j : Fin n => ∑ i : Fin m, A i j * u i) =
+      fun j => sigma * v j)
+    (hsigma : sigma ≠ 0) (hv : v ≠ 0) :
+    (rectMatMulVec (lsScaledAugmentedMatrix alpha A)
+        (Fin.append
+          (fun i => lsScaledAugmentedEigenvalueMinus alpha sigma * u i)
+          (fun j => sigma * v j)) =
+      fun k => lsScaledAugmentedEigenvalueMinus alpha sigma *
+        Fin.append
+          (fun i => lsScaledAugmentedEigenvalueMinus alpha sigma * u i)
+          (fun j => sigma * v j) k) ∧
+      Fin.append
+        (fun i => lsScaledAugmentedEigenvalueMinus alpha sigma * u i)
+        (fun j => sigma * v j) ≠ 0 := by
+  exact
+    ⟨lsScaledAugmentedMatrix_singularPair_minus_eigenvector
+        alpha sigma A u v hAv hATu,
+      lsScaledAugmentedMatrix_singularPair_minus_vector_ne_zero
+        alpha sigma u v hsigma hv⟩
 
 /-- In a nonzero singular-pair certificate for (20.18), the left singular-vector
     side is nonzero whenever the right singular-vector side is nonzero. -/
@@ -4092,6 +4148,21 @@ theorem lsScaledAugmentedMatrix_leftNull_vector_ne_zero {m n : ℕ}
   ext i
   have hleft := congrFun hzero (Fin.castAdd n i)
   simpa [Fin.append_left] using hleft
+
+/-- Packaged left-nullspace eigenpair certificate for the `alpha` branch in
+    (20.18): a nonzero left-null vector gives both the block-action identity
+    for `C(alpha)` and a nonzero block vector. -/
+theorem lsScaledAugmentedMatrix_leftNull_eigenpair {m n : ℕ} (alpha : ℝ)
+    (A : Fin m → Fin n → ℝ) (u : Fin m → ℝ)
+    (hATu : ∀ j : Fin n, ∑ i : Fin m, A i j * u i = 0)
+    (hu : u ≠ 0) :
+    (rectMatMulVec (lsScaledAugmentedMatrix alpha A)
+        (Fin.append u (0 : Fin n → ℝ)) =
+      fun k => alpha * Fin.append u (0 : Fin n → ℝ) k) ∧
+      Fin.append u (0 : Fin n → ℝ) ≠ 0 := by
+  exact
+    ⟨lsScaledAugmentedMatrix_leftNull_eigenvector alpha A u hATu,
+      lsScaledAugmentedMatrix_leftNull_vector_ne_zero u hu⟩
 
 /-- Higham, 2nd ed., Chapter 20, equation (20.20): the weighted perturbation
     block `[DeltaA, theta Delta b]` used in the Frobenius normwise
