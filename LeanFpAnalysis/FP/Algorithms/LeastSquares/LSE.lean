@@ -2534,6 +2534,37 @@ theorem GeneralizedQRFactorization.nullIntersectionTrivial_iff_l22_kernel_trivia
     exact (h.nullIntersectionTrivial_iff_l22_injective hS_inj).2 hL22_inj
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
+    for supplied GQR data, the local conditions (20.24) are equivalent to
+    trivial kernels of the displayed triangular blocks `S` and `L22`.
+
+    This is the kernel-form version of the source sentence that the
+    assumptions (20.24) are equivalent to nonsingularity of `S` and `L22`.
+    It assumes supplied GQR data and does not construct the factors. -/
+theorem GeneralizedQRFactorization.conditions20_24_iff_s_l22_kernel_trivial
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B) :
+    (LSEFullRowRank B ∧ LSENullIntersectionTrivial A B) ↔
+      (∀ y1 : Fin p → ℝ, rectMatMulVec h.S y1 = 0 → y1 = 0) ∧
+        (∀ y2 : Fin q → ℝ, rectMatMulVec h.L22 y2 = 0 → y2 = 0) := by
+  constructor
+  · rintro ⟨hB, hnull⟩
+    have hS_bij : Function.Bijective (rectMatMulVec h.S) :=
+      (h.s_bijective_iff_lseFullRowRank).2 hB
+    exact
+      ⟨(h.lseFullRowRank_iff_s_kernel_trivial).1 hB,
+        (h.nullIntersectionTrivial_iff_l22_kernel_trivial hS_bij.1).1 hnull⟩
+  · rintro ⟨hS_kernel, hL22_kernel⟩
+    have hB : LSEFullRowRank B :=
+      (h.lseFullRowRank_iff_s_kernel_trivial).2 hS_kernel
+    have hS_bij : Function.Bijective (rectMatMulVec h.S) :=
+      (h.s_bijective_iff_lseFullRowRank).2 hB
+    have hnull : LSENullIntersectionTrivial A B :=
+      (h.nullIntersectionTrivial_iff_l22_kernel_trivial hS_bij.1).2 hL22_kernel
+    exact ⟨hB, hnull⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
     once the GQR constraint block `S` is nonsingular, the local
     null-intersection condition is equivalent to nonsingularity of the
     lower-triangular `L22` block, expressed as nonzero diagonal entries.
