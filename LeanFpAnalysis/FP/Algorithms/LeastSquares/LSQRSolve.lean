@@ -11428,6 +11428,52 @@ theorem lsNormwiseBackwardErrorFormulaRHS_pos_iff_etaF_pos_of_theta_pos_of_y_ne_
       (lsNormwiseBackwardErrorFormulaRHS_pos_iff_not_isLeastSquaresMinimizer_and_sigmaMin_pos_of_theta_pos_of_y_ne_zero
         htheta A b hy).mpr ⟨hnot, hsigma⟩
 
+/-- Source-facing full-row-rank version of the nondegenerate zero bridge for
+    (20.20)-(20.21): if the row-side block `[A phi(I-r r^+)]` has full row
+    rank, then its `sigma_min` branch is positive, so the printed WKS right-hand
+    side vanishes exactly when `eta_F(y)` vanishes.  This is still only the
+    nondegenerate branch, not the full WKS spectral formula. -/
+theorem lsNormwiseBackwardErrorFormulaRHS_eq_zero_iff_etaF_eq_zero_of_theta_pos_of_y_ne_zero_of_formulaMatrixRowRank_eq_card
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hrank :
+      lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+        (lsResidualHigham A b y) y = m + 1) :
+    lsNormwiseBackwardErrorFormulaRHS theta A b y = 0 ↔
+      lsNormwiseBackwardErrorEtaF theta A b y = 0 := by
+  have hsigma :
+      0 < lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+        (lsResidualHigham A b y) y :=
+    (lsNormwiseBackwardErrorFormulaMatrixSigmaMin_pos_iff_rowRank_eq_card
+      theta A (lsResidualHigham A b y) y).mpr hrank
+  exact
+    lsNormwiseBackwardErrorFormulaRHS_eq_zero_iff_etaF_eq_zero_of_theta_pos_of_y_ne_zero_of_sigmaMin_pos
+      htheta A b hy hsigma
+
+/-- Source-facing full-row-rank version of the nondegenerate positivity bridge
+    for (20.20)-(20.21): if `[A phi(I-r r^+)]` has full row rank, then
+    positivity of the printed WKS right-hand side is equivalent to positivity of
+    `eta_F(y)`.  This leaves the degenerate row-rank-deficient branch open for
+    the later spectral lower/attainment theorem. -/
+theorem lsNormwiseBackwardErrorFormulaRHS_pos_iff_etaF_pos_of_theta_pos_of_y_ne_zero_of_formulaMatrixRowRank_eq_card
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hrank :
+      lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+        (lsResidualHigham A b y) y = m + 1) :
+    0 < lsNormwiseBackwardErrorFormulaRHS theta A b y ↔
+      0 < lsNormwiseBackwardErrorEtaF theta A b y := by
+  have hsigma :
+      0 < lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+        (lsResidualHigham A b y) y :=
+    (lsNormwiseBackwardErrorFormulaMatrixSigmaMin_pos_iff_rowRank_eq_card
+      theta A (lsResidualHigham A b y) y).mpr hrank
+  exact
+    lsNormwiseBackwardErrorFormulaRHS_pos_iff_etaF_pos_of_theta_pos_of_y_ne_zero_of_sigmaMin_pos
+      htheta A b hy hsigma
+
 /-- Any zero-right-hand-side augmented least-squares system gives an exact
     least-squares minimizer, even if the residual vector is supplied abstractly. -/
 theorem LSAugmentedSystem.isLeastSquaresMinimizer_of_zero_rhs {m n : ℕ}
