@@ -2697,6 +2697,34 @@ theorem GeneralizedQRFactorization.exists_isLSEMinimizer_of_conditions20_24
   exact h.exists_isLSEMinimizer_of_triangular_nonsingular
     hdiag.1 hdiag.2
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, exact supplied-GQR solve
+    consequence stated at the kernel nonsingularity surface after (20.28).
+
+    If the supplied triangular blocks `S` and `L22` have trivial kernels, the
+    triangular GQR method has exact solution variables `y1`, `y2` and the
+    recovered vector `Q [y1; y2]` is an LSE minimizer.  This is supplied-factor
+    algebra only; it does not construct the GQR factors. -/
+theorem GeneralizedQRFactorization.exists_isLSEMinimizer_of_s_l22_kernel_trivial
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    {b : Fin (r + q) → ℝ} {d : Fin p → ℝ}
+    (hS_kernel : ∀ y1 : Fin p → ℝ, rectMatMulVec h.S y1 = 0 → y1 = 0)
+    (hL22_kernel : ∀ y2 : Fin q → ℝ, rectMatMulVec h.L22 y2 = 0 → y2 = 0) :
+    ∃ y1 : Fin p → ℝ, ∃ y2 : Fin q → ℝ,
+      rectMatMulVec h.S y1 = d ∧
+      rectMatMulVec h.L22 y2 =
+        (fun i : Fin q =>
+          matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i) -
+            rectMatMulVec h.L21 y1 i) ∧
+      IsLSEMinimizer A b B d
+        (matMulVec (p + q) h.Q (Fin.append y1 y2)) := by
+  have hcond : LSEFullRowRank B ∧ LSENullIntersectionTrivial A B :=
+    (h.conditions20_24_iff_s_l22_kernel_trivial).2
+      ⟨hS_kernel, hL22_kernel⟩
+  exact h.exists_isLSEMinimizer_of_conditions20_24 hcond.1 hcond.2
+
 /-- Direct LSE minimizer existence from supplied GQR data and the local
     assumptions (20.24).
 
