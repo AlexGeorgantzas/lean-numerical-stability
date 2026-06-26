@@ -11670,6 +11670,47 @@ theorem lsNormwiseBackwardErrorFormulaRHS_pos_iff_etaF_pos_of_theta_pos_of_y_ne_
     lsNormwiseBackwardErrorFormulaRHS_pos_iff_etaF_pos_of_theta_pos_of_y_ne_zero_of_sigmaMin_pos
       htheta A b hy hsigma
 
+/-- Full-left-panel version of the nondegenerate zero bridge for
+    (20.20)-(20.21): if the original data matrix `A` has full row rank, then
+    the source block `[A phi(I-r r^+)]` has full row rank, so printed-RHS zero
+    is equivalent to zero normwise backward error.  This is still a branch
+    result, not the full WKS spectral formula. -/
+theorem lsNormwiseBackwardErrorFormulaRHS_eq_zero_iff_etaF_eq_zero_of_theta_pos_of_y_ne_zero_of_left_panel_rowRank_eq_card
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hA : lsRealRectRowRank A = m + 1) :
+    lsNormwiseBackwardErrorFormulaRHS theta A b y = 0 ↔
+      lsNormwiseBackwardErrorEtaF theta A b y = 0 := by
+  have hrank :
+      lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+        (lsResidualHigham A b y) y = m + 1 :=
+    lsNormwiseBackwardErrorFormulaMatrixRowRank_eq_card_of_left_panel_rowRank_eq_card
+      theta A (lsResidualHigham A b y) y hA
+  exact
+    lsNormwiseBackwardErrorFormulaRHS_eq_zero_iff_etaF_eq_zero_of_theta_pos_of_y_ne_zero_of_formulaMatrixRowRank_eq_card
+      htheta A b hy hrank
+
+/-- Full-left-panel version of the nondegenerate positivity bridge for
+    (20.20)-(20.21): if the original data matrix `A` has full row rank, then
+    the printed WKS right-hand side is positive exactly when `eta_F(y)` is
+    positive.  This packages the full-row-rank data-matrix branch only. -/
+theorem lsNormwiseBackwardErrorFormulaRHS_pos_iff_etaF_pos_of_theta_pos_of_y_ne_zero_of_left_panel_rowRank_eq_card
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hA : lsRealRectRowRank A = m + 1) :
+    0 < lsNormwiseBackwardErrorFormulaRHS theta A b y ↔
+      0 < lsNormwiseBackwardErrorEtaF theta A b y := by
+  have hrank :
+      lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+        (lsResidualHigham A b y) y = m + 1 :=
+    lsNormwiseBackwardErrorFormulaMatrixRowRank_eq_card_of_left_panel_rowRank_eq_card
+      theta A (lsResidualHigham A b y) y hA
+  exact
+    lsNormwiseBackwardErrorFormulaRHS_pos_iff_etaF_pos_of_theta_pos_of_y_ne_zero_of_formulaMatrixRowRank_eq_card
+      htheta A b hy hrank
+
 /-- Row-rank-deficient source-block branch for the printed WKS right-hand side:
     if `[A phi(I-r r^+)]` is not full row rank, then the row-side
     `sigma_min` branch is zero, so the printed RHS in (20.21) is zero. -/
