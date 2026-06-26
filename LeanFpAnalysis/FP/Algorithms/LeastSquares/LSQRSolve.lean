@@ -4737,6 +4737,61 @@ theorem lsScaledAugmentedMatrix_leftNull_eigenpair {m n : ℕ} (alpha : ℝ)
     ⟨lsScaledAugmentedMatrix_leftNull_eigenvector alpha A u hATu,
       lsScaledAugmentedMatrix_leftNull_vector_ne_zero u hu⟩
 
+/-- Dot product of two appended real vectors, split over the source row and
+    column blocks used in the scaled augmented matrix `C(alpha)`. -/
+theorem finAppend_sum_mul_eq {m n : ℕ}
+    (x y : Fin m → ℝ) (z w : Fin n → ℝ) :
+    (∑ k : Fin (m + n), Fin.append x z k * Fin.append y w k) =
+      (∑ i : Fin m, x i * y i) + (∑ j : Fin n, z j * w j) := by
+  rw [Fin.sum_univ_add]
+  simp [Fin.append_left, Fin.append_right]
+
+/-- Dot product of source-normalized appended branch vectors, with arbitrary
+    right-block scale factors.  This is the algebraic reduction used when
+    building an orthogonal basis from singular-vector data in (20.18). -/
+theorem finAppend_sum_mul_smul_eq {m n : ℕ}
+    (u w : Fin m → ℝ) (v z : Fin n → ℝ) (beta gamma : ℝ) :
+    (∑ k : Fin (m + n),
+      Fin.append u (fun j => beta * v j) k *
+        Fin.append w (fun j => gamma * z j) k) =
+      (∑ i : Fin m, u i * w i) +
+        beta * gamma * (∑ j : Fin n, v j * z j) := by
+  rw [finAppend_sum_mul_eq]
+  have hright :
+      (∑ j : Fin n, (beta * v j) * (gamma * z j)) =
+        beta * gamma * (∑ j : Fin n, v j * z j) := by
+    rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl
+    intro j _
+    ring
+  rw [hright]
+
+/-- Source-facing dot-product expansion for the normalized singular-pair
+    branch vectors in Björck's eigenvalue formula (20.18).  It reduces
+    orthogonality of appended branch vectors to the dot products of their
+    left and right singular-vector components. -/
+theorem lsScaledAugmentedMatrix_singularPair_normalized_dot_eq {m n : ℕ}
+    (u w : Fin m → ℝ) (v z : Fin n → ℝ) (beta gamma : ℝ) :
+    (∑ k : Fin (m + n),
+      Fin.append u (fun j => beta * v j) k *
+        Fin.append w (fun j => gamma * z j) k) =
+      (∑ i : Fin m, u i * w i) +
+        beta * gamma * (∑ j : Fin n, v j * z j) :=
+  finAppend_sum_mul_smul_eq u w v z beta gamma
+
+/-- If both component singular-vector dot products vanish, then the
+    corresponding source-normalized appended branch vectors in (20.18) are
+    orthogonal. -/
+theorem lsScaledAugmentedMatrix_singularPair_normalized_dot_eq_zero_of_orthogonal
+    {m n : ℕ} (u w : Fin m → ℝ) (v z : Fin n → ℝ) (beta gamma : ℝ)
+    (hleft : (∑ i : Fin m, u i * w i) = 0)
+    (hright : (∑ j : Fin n, v j * z j) = 0) :
+    (∑ k : Fin (m + n),
+      Fin.append u (fun j => beta * v j) k *
+        Fin.append w (fun j => gamma * z j) k) = 0 := by
+  rw [lsScaledAugmentedMatrix_singularPair_normalized_dot_eq, hleft, hright]
+  ring
+
 /-- Orthogonality of the two source-normalized singular-pair branches in
     Björck's eigenvalue formula (20.18).  This is a source-facing spectral
     decomposition dependency: it proves the printed `lambda_+` and `lambda_-`
