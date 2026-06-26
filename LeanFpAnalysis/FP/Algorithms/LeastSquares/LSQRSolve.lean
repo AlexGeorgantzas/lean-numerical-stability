@@ -11359,6 +11359,75 @@ theorem lsNormwiseBackwardErrorFormulaRHS_pos_iff_not_isLeastSquaresMinimizer_an
       (lsNormwiseBackwardErrorFormulaRHS_pos_iff_sigmaMin_pos_of_not_isLeastSquaresMinimizer
         htheta A b hy h.1).mpr h.2
 
+/-- Nondegenerate finite-positive-`theta` zero bridge for (20.20)-(20.21):
+    if the row-side `sigma_min [A phi(I-r r^+)]` branch is positive, then
+    the printed WKS right-hand side vanishes exactly when `eta_F(y)` vanishes.
+    This avoids the open degenerate `sigma_min = 0` branch and does not prove
+    the general WKS spectral equality. -/
+theorem lsNormwiseBackwardErrorFormulaRHS_eq_zero_iff_etaF_eq_zero_of_theta_pos_of_y_ne_zero_of_sigmaMin_pos
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hsigma :
+      0 < lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+        (lsResidualHigham A b y) y) :
+    lsNormwiseBackwardErrorFormulaRHS theta A b y = 0 ↔
+      lsNormwiseBackwardErrorEtaF theta A b y = 0 := by
+  constructor
+  · intro hrhs
+    have hsplit :
+        IsLeastSquaresMinimizer A b y ∨
+          lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+            (lsResidualHigham A b y) y = 0 :=
+      (lsNormwiseBackwardErrorFormulaRHS_eq_zero_iff_isLeastSquaresMinimizer_or_sigmaMin_eq_zero_of_theta_pos_of_y_ne_zero
+        htheta A b hy).mp hrhs
+    have hmin : IsLeastSquaresMinimizer A b y := by
+      rcases hsplit with hmin | hsigma_zero
+      · exact hmin
+      · exact False.elim ((ne_of_gt hsigma) hsigma_zero)
+    exact
+      (lsNormwiseBackwardErrorEtaF_eq_zero_iff_isLeastSquaresMinimizer_of_positive_theta
+        htheta A b y).mpr hmin
+  · intro heta
+    have hmin :
+        IsLeastSquaresMinimizer A b y :=
+      (lsNormwiseBackwardErrorEtaF_eq_zero_iff_isLeastSquaresMinimizer_of_positive_theta
+        htheta A b y).mp heta
+    exact
+      lsNormwiseBackwardErrorFormulaRHS_eq_zero_of_isLeastSquaresMinimizer
+        theta A b y hmin
+
+/-- Nondegenerate finite-positive-`theta` positive bridge for (20.20)-(20.21):
+    if the row-side `sigma_min [A phi(I-r r^+)]` branch is positive, then
+    positivity of the printed WKS right-hand side is equivalent to positivity
+    of `eta_F(y)`.  This is only the nondegenerate branch. -/
+theorem lsNormwiseBackwardErrorFormulaRHS_pos_iff_etaF_pos_of_theta_pos_of_y_ne_zero_of_sigmaMin_pos
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hsigma :
+      0 < lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+        (lsResidualHigham A b y) y) :
+    0 < lsNormwiseBackwardErrorFormulaRHS theta A b y ↔
+      0 < lsNormwiseBackwardErrorEtaF theta A b y := by
+  constructor
+  · intro hrhs
+    have hnot :
+        ¬ IsLeastSquaresMinimizer A b y :=
+      ((lsNormwiseBackwardErrorFormulaRHS_pos_iff_not_isLeastSquaresMinimizer_and_sigmaMin_pos_of_theta_pos_of_y_ne_zero
+        htheta A b hy).mp hrhs).1
+    exact
+      (lsNormwiseBackwardErrorEtaF_pos_iff_not_isLeastSquaresMinimizer_of_positive_theta
+        htheta A b y).mpr hnot
+  · intro heta_pos
+    have hnot :
+        ¬ IsLeastSquaresMinimizer A b y :=
+      (lsNormwiseBackwardErrorEtaF_pos_iff_not_isLeastSquaresMinimizer_of_positive_theta
+        htheta A b y).mp heta_pos
+    exact
+      (lsNormwiseBackwardErrorFormulaRHS_pos_iff_not_isLeastSquaresMinimizer_and_sigmaMin_pos_of_theta_pos_of_y_ne_zero
+        htheta A b hy).mpr ⟨hnot, hsigma⟩
+
 /-- Any zero-right-hand-side augmented least-squares system gives an exact
     least-squares minimizer, even if the residual vector is supplied abstractly. -/
 theorem LSAugmentedSystem.isLeastSquaresMinimizer_of_zero_rhs {m n : ℕ}
