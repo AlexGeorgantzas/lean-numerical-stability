@@ -761,6 +761,33 @@ theorem gqrAQTallBlockAssoc_mulVec {k p q : ℕ}
   · intro i
     simp [rectMatMulVec, gqrAQTallBlockAssoc]
 
+/-- Higham, 2nd ed., Chapter 20, equation (20.28), associated-row tall-case
+    shape for `U^T A Q = [0; L]` in the row association used by (20.27).
+
+    This records the exact displayed block shape once the transformed matrix is
+    supplied. It does not construct the orthogonal factors. -/
+structure GQRAQTallAssocCase (k p q : ℕ)
+    (M : Fin ((k + p) + q) → Fin (p + q) → ℝ) where
+  /-- Lower-triangular square block `L`. -/
+  L : Fin (p + q) → Fin (p + q) → ℝ
+  /-- Source triangularity condition on `L`. -/
+  lowerL : IsLowerTriangular L
+  /-- Source block identity `M = [0; L]` with associated rows. -/
+  aq_eq : M = gqrAQTallBlockAssoc (k := k) L
+
+/-- Vector-action form of a supplied associated-row tall (20.28) shape. -/
+theorem GQRAQTallAssocCase.mulVec_eq {k p q : ℕ}
+    {M : Fin ((k + p) + q) → Fin (p + q) → ℝ}
+    (h : GQRAQTallAssocCase k p q M) (y : Fin (p + q) → ℝ) :
+    rectMatMulVec M y =
+      Fin.append
+        (Fin.append (0 : Fin k → ℝ)
+          (fun i : Fin p => rectMatMulVec h.L y (Fin.castAdd q i)))
+        (fun i : Fin q => rectMatMulVec h.L y (Fin.natAdd p i)) := by
+  rcases h with ⟨L, _lowerL, hM⟩
+  subst M
+  simpa using gqrAQTallBlockAssoc_mulVec (k := k) L y
+
 /-- Tall (20.28)-to-(20.27) extraction: the `L11` block induced by a supplied
     `[0; L]` shape. Its leading `k` rows vanish and its trailing `p` rows are
     the first `p` columns of `L`. -/
@@ -958,6 +985,34 @@ theorem gqrAQWideBlockAssoc_mulVec {k r q : ℕ}
         rectMatMulVec X y0 i + rectMatMulVec L (Fin.append y1 y2) i := by
   ext i
   simp [rectMatMulVec, gqrAQWideBlockAssoc, Fin.sum_univ_add, add_assoc]
+
+/-- Higham, 2nd ed., Chapter 20, equation (20.28), associated-column wide-case
+    shape for `U^T A Q = [X L]` in the column association used by (20.27).
+
+    This records the exact displayed block shape once the transformed matrix is
+    supplied. It does not construct the orthogonal factors. -/
+structure GQRAQWideAssocCase (k r q : ℕ)
+    (M : Fin (r + q) → Fin ((k + r) + q) → ℝ) where
+  /-- Leading block `X`. -/
+  X : Fin (r + q) → Fin k → ℝ
+  /-- Lower-triangular square block `L`. -/
+  L : Fin (r + q) → Fin (r + q) → ℝ
+  /-- Source triangularity condition on `L`. -/
+  lowerL : IsLowerTriangular L
+  /-- Source block identity `M = [X L]` with associated columns. -/
+  aq_eq : M = gqrAQWideBlockAssoc X L
+
+/-- Vector-action form of a supplied associated-column wide (20.28) shape. -/
+theorem GQRAQWideAssocCase.mulVec_eq {k r q : ℕ}
+    {M : Fin (r + q) → Fin ((k + r) + q) → ℝ}
+    (h : GQRAQWideAssocCase k r q M)
+    (y0 : Fin k → ℝ) (y1 : Fin r → ℝ) (y2 : Fin q → ℝ) :
+    rectMatMulVec M (Fin.append (Fin.append y0 y1) y2) =
+      fun i : Fin (r + q) =>
+        rectMatMulVec h.X y0 i + rectMatMulVec h.L (Fin.append y1 y2) i := by
+  rcases h with ⟨X, L, _lowerL, hM⟩
+  subst M
+  simpa using gqrAQWideBlockAssoc_mulVec X L y0 y1 y2
 
 /-- Wide (20.28)-to-(20.27) extraction: the `L11` block induced by a supplied
     `[X L]` shape. Its first `k` columns come from `X`, and its trailing `r`
@@ -1353,6 +1408,34 @@ theorem GeneralizedQRFactorization.exists_of_tall_qr_shapes {k p q : ℕ}
     rfl, rfl, rfl, rfl⟩
   rw [hAQ, ← hAQBlock]
 
+/-- Associated-row tall-case construction wrapper for Higham, 2nd ed.,
+    Theorem 20.9.
+
+    This consumes a supplied associated-row (20.28) shape record for
+    `Uᵀ(AQ) = [0; L]` and packages the corresponding (20.27) generalized-QR
+    data. It still does not construct the QR factorization of `Bᵀ` or the
+    orthogonal factor `U`. -/
+theorem GeneralizedQRFactorization.exists_of_tall_qr_assoc_case {k p q : ℕ}
+    {A : Fin ((k + p) + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (U : Fin ((k + p) + q) → Fin ((k + p) + q) → ℝ)
+    (R : Fin p → Fin p → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hU : IsOrthogonal ((k + p) + q) U)
+    (hqrB : matMulRectLeft (matTranspose Q)
+        (fun j : Fin (p + q) => fun i : Fin p => B i j) =
+      lsQRTallBlock (k := q) R)
+    (hR : IsUpperTriangular p R)
+    (hCase : GQRAQTallAssocCase k p q
+      (matMulRectLeft (matTranspose U)
+        (matMulRect ((k + p) + q) (p + q) (p + q) A Q))) :
+    ∃ h : GeneralizedQRFactorization (k + p) p q A B,
+      h.Q = Q ∧ h.U = U ∧ h.S = matTranspose R ∧
+        h.L22 = gqrAQTallL22FromEq20_28 hCase.L := by
+  exact GeneralizedQRFactorization.exists_of_tall_qr_shapes
+    Q U R hCase.L hQ hU hqrB hR hCase.aq_eq hCase.lowerL
+
 /-- Wide-case construction wrapper for Higham, 2nd ed., Theorem 20.9.
 
     Given the exact QR-derived constraint identity for `Bᵀ`, a supplied
@@ -1407,6 +1490,34 @@ theorem GeneralizedQRFactorization.exists_of_wide_qr_shapes {k r q : ℕ}
       lowerS := isLowerTriangular_matTranspose_of_isUpperTriangular hR },
     rfl, rfl, rfl, rfl⟩
   rw [hAQ, ← hAQBlock]
+
+/-- Associated-column wide-case construction wrapper for Higham, 2nd ed.,
+    Theorem 20.9.
+
+    This consumes a supplied associated-column (20.28) shape record for
+    `Uᵀ(AQ) = [X L]` and packages the corresponding (20.27) generalized-QR
+    data. It still does not construct the QR factorization of `Bᵀ` or the
+    orthogonal factor `U`. -/
+theorem GeneralizedQRFactorization.exists_of_wide_qr_assoc_case {k r q : ℕ}
+    {A : Fin (r + q) → Fin ((k + r) + q) → ℝ}
+    {B : Fin (k + r) → Fin ((k + r) + q) → ℝ}
+    (Q : Fin ((k + r) + q) → Fin ((k + r) + q) → ℝ)
+    (U : Fin (r + q) → Fin (r + q) → ℝ)
+    (R : Fin (k + r) → Fin (k + r) → ℝ)
+    (hQ : IsOrthogonal ((k + r) + q) Q)
+    (hU : IsOrthogonal (r + q) U)
+    (hqrB : matMulRectLeft (matTranspose Q)
+        (fun j : Fin ((k + r) + q) => fun i : Fin (k + r) => B i j) =
+      lsQRTallBlock (k := q) R)
+    (hR : IsUpperTriangular (k + r) R)
+    (hCase : GQRAQWideAssocCase k r q
+      (matMulRectLeft (matTranspose U)
+        (matMulRect (r + q) ((k + r) + q) ((k + r) + q) A Q))) :
+    ∃ h : GeneralizedQRFactorization r (k + r) q A B,
+      h.Q = Q ∧ h.U = U ∧ h.S = matTranspose R ∧
+        h.L22 = gqrAQWideL22FromEq20_28 hCase.L := by
+  exact GeneralizedQRFactorization.exists_of_wide_qr_shapes
+    Q U R hCase.X hCase.L hQ hU hqrB hR hCase.aq_eq hCase.lowerL
 
 /-- Higham, 2nd ed., Chapter 20, equations (20.27)-(20.28), tall case:
     a supplied `GeneralizedQRFactorization` connects the reconstructed
