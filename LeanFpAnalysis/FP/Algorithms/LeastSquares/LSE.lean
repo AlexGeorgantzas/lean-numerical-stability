@@ -911,6 +911,123 @@ noncomputable def gqrAQWideBlockAssoc {k r q : ℕ}
       (Fin.append (X i) (fun j : Fin r => L i (Fin.castAdd q j)))
       (fun j : Fin q => L i (Fin.natAdd r j))
 
+/-- Wide (20.28)-to-(20.27) extraction: the `L11` block induced by a supplied
+    `[X L]` shape. Its first `k` columns come from `X`, and its trailing `r`
+    columns come from the leading columns of `L`. -/
+noncomputable def gqrAQWideL11FromEq20_28 {k r q : ℕ}
+    (X : Fin (r + q) → Fin k → ℝ)
+    (L : Fin (r + q) → Fin (r + q) → ℝ) :
+    Fin r → Fin (k + r) → ℝ :=
+  fun i : Fin r =>
+    Fin.append
+      (X (Fin.castAdd q i))
+      (fun j : Fin r => L (Fin.castAdd q i) (Fin.castAdd q j))
+
+/-- Wide (20.28)-to-(20.27) extraction: the `L21` block induced by a supplied
+    `[X L]` shape. -/
+noncomputable def gqrAQWideL21FromEq20_28 {k r q : ℕ}
+    (X : Fin (r + q) → Fin k → ℝ)
+    (L : Fin (r + q) → Fin (r + q) → ℝ) :
+    Fin q → Fin (k + r) → ℝ :=
+  fun i : Fin q =>
+    Fin.append
+      (X (Fin.natAdd r i))
+      (fun j : Fin r => L (Fin.natAdd r i) (Fin.castAdd q j))
+
+/-- Wide (20.28)-to-(20.27) extraction: the trailing `L22` block induced by a
+    supplied `[X L]` shape. -/
+noncomputable def gqrAQWideL22FromEq20_28 {r q : ℕ}
+    (L : Fin (r + q) → Fin (r + q) → ℝ) :
+    Fin q → Fin q → ℝ :=
+  fun i : Fin q => fun j : Fin q => L (Fin.natAdd r i) (Fin.natAdd r j)
+
+/-- The trailing `L22` block extracted from a lower-triangular wide-case
+    (20.28) block is lower triangular. -/
+theorem gqrAQWideL22FromEq20_28_lowerTriangular {r q : ℕ}
+    {L : Fin (r + q) → Fin (r + q) → ℝ}
+    (hL : IsLowerTriangular L) :
+    IsLowerTriangular (gqrAQWideL22FromEq20_28 L) := by
+  intro i j hij
+  unfold gqrAQWideL22FromEq20_28
+  exact hL (Fin.natAdd r i) (Fin.natAdd r j) (by simpa using hij)
+
+/-- Wide-case reverse block packaging: extracting `L11`, `L21`, and `L22`
+    from a supplied (20.28) `[X L]` shape gives the (20.27) `UᵀAQ` block.
+
+    Lower-triangularity of `L` supplies the top-right zero block in (20.27).
+    This is the algebraic direction needed by the construction route in
+    Theorem 20.9 after an orthogonal `U` has been supplied with
+    `Uᵀ(AQ) = [X L]`. It does not construct `U`. -/
+theorem gqrAQBlock_eq_wideBlockAssoc_of_eq20_28 {k r q : ℕ}
+    (X : Fin (r + q) → Fin k → ℝ)
+    (L : Fin (r + q) → Fin (r + q) → ℝ)
+    (hL : IsLowerTriangular L) :
+    gqrAQBlock
+        (gqrAQWideL11FromEq20_28 X L)
+        (gqrAQWideL21FromEq20_28 X L)
+        (gqrAQWideL22FromEq20_28 L) =
+      gqrAQWideBlockAssoc X L := by
+  ext i j
+  refine Fin.addCases
+    (motive := fun i : Fin (r + q) =>
+      gqrAQBlock
+          (gqrAQWideL11FromEq20_28 X L)
+          (gqrAQWideL21FromEq20_28 X L)
+          (gqrAQWideL22FromEq20_28 L) i j =
+        gqrAQWideBlockAssoc X L i j)
+    ?topRows ?bottomRows i
+  · intro i
+    refine Fin.addCases
+      (motive := fun j : Fin ((k + r) + q) =>
+        gqrAQBlock
+            (gqrAQWideL11FromEq20_28 X L)
+            (gqrAQWideL21FromEq20_28 X L)
+            (gqrAQWideL22FromEq20_28 L) (Fin.castAdd q i) j =
+          gqrAQWideBlockAssoc X L (Fin.castAdd q i) j)
+      ?topLeftCols ?topRightCols j
+    · intro j
+      refine Fin.addCases
+        (motive := fun j : Fin (k + r) =>
+          gqrAQBlock
+              (gqrAQWideL11FromEq20_28 X L)
+              (gqrAQWideL21FromEq20_28 X L)
+              (gqrAQWideL22FromEq20_28 L) (Fin.castAdd q i) (Fin.castAdd q j) =
+            gqrAQWideBlockAssoc X L (Fin.castAdd q i) (Fin.castAdd q j))
+        (fun j => by
+          simp [gqrAQBlock, gqrAQWideBlockAssoc, gqrAQWideL11FromEq20_28])
+        (fun j => by
+          simp [gqrAQBlock, gqrAQWideBlockAssoc, gqrAQWideL11FromEq20_28])
+        j
+    · intro j
+      have hij : (Fin.castAdd q i).val < (Fin.natAdd r j).val :=
+        Nat.lt_of_lt_of_le i.isLt (Nat.le_add_right r j.val)
+      have hzero := hL (Fin.castAdd q i) (Fin.natAdd r j) hij
+      simp [gqrAQBlock, gqrAQWideBlockAssoc, hzero]
+  · intro i
+    refine Fin.addCases
+      (motive := fun j : Fin ((k + r) + q) =>
+        gqrAQBlock
+            (gqrAQWideL11FromEq20_28 X L)
+            (gqrAQWideL21FromEq20_28 X L)
+            (gqrAQWideL22FromEq20_28 L) (Fin.natAdd r i) j =
+          gqrAQWideBlockAssoc X L (Fin.natAdd r i) j)
+      ?bottomLeftCols ?bottomRightCols j
+    · intro j
+      refine Fin.addCases
+        (motive := fun j : Fin (k + r) =>
+          gqrAQBlock
+              (gqrAQWideL11FromEq20_28 X L)
+              (gqrAQWideL21FromEq20_28 X L)
+              (gqrAQWideL22FromEq20_28 L) (Fin.natAdd r i) (Fin.castAdd q j) =
+            gqrAQWideBlockAssoc X L (Fin.natAdd r i) (Fin.castAdd q j))
+        (fun j => by
+          simp [gqrAQBlock, gqrAQWideBlockAssoc, gqrAQWideL21FromEq20_28])
+        (fun j => by
+          simp [gqrAQBlock, gqrAQWideBlockAssoc, gqrAQWideL21FromEq20_28])
+        j
+    · intro j
+      simp [gqrAQBlock, gqrAQWideBlockAssoc, gqrAQWideL22FromEq20_28]
+
 /-- Matrix form of the wide (20.27)-to-(20.28) reconstruction. If the
 reconstructed trailing block is lower triangular, then the raw (20.27) matrix is
 the associated-column `[X L]` block from (20.28). -/
@@ -1184,6 +1301,61 @@ theorem GeneralizedQRFactorization.exists_of_tall_qr_shapes {k p q : ℕ}
       aq_eq := ?_
       bq_eq := hBBlock
       lowerL22 := gqrAQTallL22FromEq20_28_lowerTriangular hL
+      lowerS := isLowerTriangular_matTranspose_of_isUpperTriangular hR },
+    rfl, rfl, rfl, rfl⟩
+  rw [hAQ, ← hAQBlock]
+
+/-- Wide-case construction wrapper for Higham, 2nd ed., Theorem 20.9.
+
+    Given the exact QR-derived constraint identity for `Bᵀ`, a supplied
+    orthogonal `U` putting `AQ` into the wide (20.28) shape `[X L]`, and
+    lower-triangularity of the trailing square `L`, this packages the
+    corresponding (20.27) generalized-QR data. This is still a supplied-factor
+    bridge: it does not construct the QR factorization of `Bᵀ` or the
+    Householder product `U`. -/
+theorem GeneralizedQRFactorization.exists_of_wide_qr_shapes {k r q : ℕ}
+    {A : Fin (r + q) → Fin ((k + r) + q) → ℝ}
+    {B : Fin (k + r) → Fin ((k + r) + q) → ℝ}
+    (Q : Fin ((k + r) + q) → Fin ((k + r) + q) → ℝ)
+    (U : Fin (r + q) → Fin (r + q) → ℝ)
+    (R : Fin (k + r) → Fin (k + r) → ℝ)
+    (X : Fin (r + q) → Fin k → ℝ)
+    (L : Fin (r + q) → Fin (r + q) → ℝ)
+    (hQ : IsOrthogonal ((k + r) + q) Q)
+    (hU : IsOrthogonal (r + q) U)
+    (hqrB : matMulRectLeft (matTranspose Q)
+        (fun j : Fin ((k + r) + q) => fun i : Fin (k + r) => B i j) =
+      lsQRTallBlock (k := q) R)
+    (hR : IsUpperTriangular (k + r) R)
+    (hAQ : matMulRectLeft (matTranspose U)
+        (matMulRect (r + q) ((k + r) + q) ((k + r) + q) A Q) =
+      gqrAQWideBlockAssoc X L)
+    (hL : IsLowerTriangular L) :
+    ∃ h : GeneralizedQRFactorization r (k + r) q A B,
+      h.Q = Q ∧ h.U = U ∧ h.S = matTranspose R ∧
+        h.L22 = gqrAQWideL22FromEq20_28 L := by
+  let L11 := gqrAQWideL11FromEq20_28 X L
+  let L21 := gqrAQWideL21FromEq20_28 X L
+  let L22 := gqrAQWideL22FromEq20_28 L
+  have hAQBlock : gqrAQBlock L11 L21 L22 = gqrAQWideBlockAssoc X L := by
+    simpa [L11, L21, L22] using gqrAQBlock_eq_wideBlockAssoc_of_eq20_28
+      X L hL
+  have hBBlock :
+      matMulRect (k + r) ((k + r) + q) ((k + r) + q) B Q =
+        gqrBQBlock (matTranspose R) :=
+    gqrBQBlock_eq_of_transpose_tall_qr B Q R hqrB
+  refine ⟨
+    { Q := Q
+      U := U
+      L11 := L11
+      L21 := L21
+      L22 := L22
+      S := matTranspose R
+      orthQ := hQ
+      orthU := hU
+      aq_eq := ?_
+      bq_eq := hBBlock
+      lowerL22 := gqrAQWideL22FromEq20_28_lowerTriangular hL
       lowerS := isLowerTriangular_matTranspose_of_isUpperTriangular hR },
     rfl, rfl, rfl, rfl⟩
   rw [hAQ, ← hAQBlock]
