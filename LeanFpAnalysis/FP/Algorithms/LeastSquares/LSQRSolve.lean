@@ -4792,6 +4792,92 @@ theorem lsScaledAugmentedMatrix_singularPair_normalized_dot_eq_zero_of_orthogona
   rw [lsScaledAugmentedMatrix_singularPair_normalized_dot_eq, hleft, hright]
   ring
 
+/-- Squared Euclidean norm of a source-normalized appended branch vector in
+    (20.18), reduced to the squared norms of its left and right singular-vector
+    components. -/
+theorem lsScaledAugmentedMatrix_singularPair_normalized_vecNorm2Sq_eq
+    {m n : ℕ} (u : Fin m → ℝ) (v : Fin n → ℝ) (beta : ℝ) :
+    vecNorm2Sq (Fin.append u (fun j => beta * v j)) =
+      vecNorm2Sq u + beta ^ 2 * vecNorm2Sq v := by
+  unfold vecNorm2Sq
+  simp only [pow_two]
+  rw [lsScaledAugmentedMatrix_singularPair_normalized_dot_eq]
+
+/-- Positive-branch squared Euclidean norm formula for the printed
+    source-normalized singular-pair vector in (20.18). -/
+theorem lsScaledAugmentedMatrix_singularPair_plus_normalized_vecNorm2Sq_eq
+    {m n : ℕ} {alpha sigma : ℝ}
+    (u : Fin m → ℝ) (v : Fin n → ℝ) :
+    vecNorm2Sq
+        (Fin.append u
+          (fun j => (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j)) =
+      vecNorm2Sq u +
+        (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) ^ 2 * vecNorm2Sq v :=
+  lsScaledAugmentedMatrix_singularPair_normalized_vecNorm2Sq_eq u v
+    (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma)
+
+/-- Negative-branch squared Euclidean norm formula for the printed
+    source-normalized singular-pair vector in (20.18). -/
+theorem lsScaledAugmentedMatrix_singularPair_minus_normalized_vecNorm2Sq_eq
+    {m n : ℕ} {alpha sigma : ℝ}
+    (u : Fin m → ℝ) (v : Fin n → ℝ) :
+    vecNorm2Sq
+        (Fin.append u
+          (fun j => (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j)) =
+      vecNorm2Sq u +
+        (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) ^ 2 * vecNorm2Sq v :=
+  lsScaledAugmentedMatrix_singularPair_normalized_vecNorm2Sq_eq u v
+    (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma)
+
+/-- If both singular-vector components are unit in squared Euclidean norm, then
+    the positive printed branch vector in (20.18) has squared norm
+    `1 + (sigma/lambda_+)^2`. -/
+theorem
+    lsScaledAugmentedMatrix_singularPair_plus_normalized_vecNorm2Sq_eq_one_add_sq_of_unit_components
+    {m n : ℕ} {alpha sigma : ℝ}
+    (u : Fin m → ℝ) (v : Fin n → ℝ)
+    (hu : vecNorm2Sq u = 1) (hv : vecNorm2Sq v = 1) :
+    vecNorm2Sq
+        (Fin.append u
+          (fun j => (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j)) =
+      1 + (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) ^ 2 := by
+  rw [lsScaledAugmentedMatrix_singularPair_plus_normalized_vecNorm2Sq_eq,
+    hu, hv]
+  ring
+
+/-- If both singular-vector components are unit in squared Euclidean norm, then
+    the negative printed branch vector in (20.18) has squared norm
+    `1 + (sigma/lambda_-)^2`. -/
+theorem
+    lsScaledAugmentedMatrix_singularPair_minus_normalized_vecNorm2Sq_eq_one_add_sq_of_unit_components
+    {m n : ℕ} {alpha sigma : ℝ}
+    (u : Fin m → ℝ) (v : Fin n → ℝ)
+    (hu : vecNorm2Sq u = 1) (hv : vecNorm2Sq v = 1) :
+    vecNorm2Sq
+        (Fin.append u
+          (fun j => (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j)) =
+      1 + (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) ^ 2 := by
+  rw [lsScaledAugmentedMatrix_singularPair_minus_normalized_vecNorm2Sq_eq,
+    hu, hv]
+  ring
+
+/-- Squared Euclidean norm of a left-nullspace branch vector `[u;0]` in the
+    `alpha` eigenspace of (20.18). -/
+theorem lsScaledAugmentedMatrix_leftNull_vecNorm2Sq_eq {m n : ℕ}
+    (u : Fin m → ℝ) :
+    vecNorm2Sq (Fin.append u (0 : Fin n → ℝ)) = vecNorm2Sq u := by
+  unfold vecNorm2Sq
+  simp only [pow_two]
+  rw [finAppend_sum_mul_eq]
+  simp
+
+/-- A unit left-nullspace component gives a unit `[u;0]` branch vector in the
+    `alpha` eigenspace of (20.18). -/
+theorem lsScaledAugmentedMatrix_leftNull_vecNorm2Sq_eq_one_of_unit_component
+    {m n : ℕ} (u : Fin m → ℝ) (hu : vecNorm2Sq u = 1) :
+    vecNorm2Sq (Fin.append u (0 : Fin n → ℝ)) = 1 := by
+  rw [lsScaledAugmentedMatrix_leftNull_vecNorm2Sq_eq, hu]
+
 /-- Same-branch positive/positive dot-product expansion for the source-normalized
     singular-pair vectors in (20.18), allowing different singular values and
     different left/right singular-vector components. -/
