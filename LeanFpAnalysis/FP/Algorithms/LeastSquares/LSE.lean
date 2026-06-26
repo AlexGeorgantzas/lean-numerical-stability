@@ -2429,6 +2429,75 @@ theorem GeneralizedQRFactorization.nullIntersectionTrivial_iff_l22_injective
     rw [← hv_recover, hy_zero]
     exact matMulVec_zero h.Q
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
+    assuming the GQR constraint block `S` is nonsingular, the condition
+    `null(A) ∩ null(B) = {0}` is equivalent to the displayed `L22` block
+    having trivial kernel.
+
+    This names the source proof step `AQ₂ = U₂ L22` in kernel form, under
+    supplied GQR data.  It is not a GQR existence theorem. -/
+theorem GeneralizedQRFactorization.nullIntersectionTrivial_iff_l22_kernel_trivial
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (hS_inj : Function.Injective (rectMatMulVec h.S)) :
+    LSENullIntersectionTrivial A B ↔
+      ∀ y2 : Fin q → ℝ, rectMatMulVec h.L22 y2 = 0 → y2 = 0 := by
+  constructor
+  · intro hnull y2 hy2
+    have hL22_inj : Function.Injective (rectMatMulVec h.L22) :=
+      (h.nullIntersectionTrivial_iff_l22_injective hS_inj).1 hnull
+    apply hL22_inj
+    rw [hy2, rectMatMulVec_zero]
+  · intro hker
+    have hL22_inj : Function.Injective (rectMatMulVec h.L22) := by
+      intro y2 z2 hyz
+      let w : Fin q → ℝ := fun i => y2 i - z2 i
+      have hLw : rectMatMulVec h.L22 w = 0 := by
+        ext i
+        have hi := congrFun hyz i
+        have hsub := congrFun (rectMatMulVec_sub h.L22 y2 z2) i
+        dsimp [w]
+        rw [hsub, hi]
+        ring
+      have hw : w = 0 := hker w hLw
+      ext i
+      have hwi := congrFun hw i
+      dsimp [w] at hwi
+      linarith
+    exact (h.nullIntersectionTrivial_iff_l22_injective hS_inj).2 hL22_inj
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
+    once the GQR constraint block `S` is nonsingular, the local
+    null-intersection condition is equivalent to nonsingularity of the
+    lower-triangular `L22` block, expressed as nonzero diagonal entries.
+
+    This is the conditional form of the source sentence before the combined
+    `(20.24)`-to-`S`/`L22` equivalence below. -/
+theorem GeneralizedQRFactorization.nullIntersectionTrivial_iff_l22_diag_ne_zero_of_s_diag_ne_zero
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (hS_diag : ∀ i : Fin p, h.S i i ≠ 0) :
+    LSENullIntersectionTrivial A B ↔
+      ∀ i : Fin q, h.L22 i i ≠ 0 := by
+  have hS_bij : Function.Bijective (rectMatMulVec h.S) :=
+    (h.s_bijective_iff_diag_ne_zero).2 hS_diag
+  have hS_inj : Function.Injective (rectMatMulVec h.S) := hS_bij.1
+  constructor
+  · intro hnull
+    have hL22_inj : Function.Injective (rectMatMulVec h.L22) :=
+      (h.nullIntersectionTrivial_iff_l22_injective hS_inj).1 hnull
+    exact rectMatMulVec_diag_ne_zero_of_lowerTriangular_injective
+      h.lowerL22 hL22_inj
+  · intro hL22_diag
+    have hL22_bij : Function.Bijective (rectMatMulVec h.L22) :=
+      (h.l22_bijective_iff_diag_ne_zero).2 hL22_diag
+    exact (h.nullIntersectionTrivial_iff_l22_injective hS_inj).2
+      hL22_bij.1
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, sentence after (20.28):
     for supplied GQR data, the local conditions (20.24) are equivalent to
     nonsingularity of the lower-triangular blocks `S` and `L22`.
