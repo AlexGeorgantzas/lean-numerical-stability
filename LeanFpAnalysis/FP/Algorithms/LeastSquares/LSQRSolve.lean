@@ -374,9 +374,9 @@ private theorem rectLSNormalEquations_residual_sum_eq_diff {m n : ℕ}
                   intro i _
                   ring
 
-/-- Higham, 2nd ed., Chapter 20, Problem 20.1 geometric form:
-    the rectangular normal equations are equivalent to the residual being
-    orthogonal to every column of `A`. -/
+/-- The rectangular normal equations are equivalent to the residual being
+    orthogonal to every column of `A`; used to connect the augmented systems in
+    (20.3)-(20.4) with exact least-squares minimizers. -/
 theorem RectLSNormalEquations.iff_residual_orthogonal {m n : ℕ}
     (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (x : Fin n → ℝ) :
     RectLSNormalEquations A b x ↔
@@ -395,16 +395,15 @@ theorem RectLSNormalEquations.iff_residual_orthogonal {m n : ℕ}
       exact h j
     exact sub_eq_zero.mp hdiff
 
-/-- Higham, 2nd ed., Chapter 20, Problem 20.1: normal-equation solutions have
-    residuals orthogonal to the data columns. -/
+/-- Normal-equation solutions have residuals orthogonal to the data columns. -/
 theorem RectLSNormalEquations.residual_orthogonal {m n : ℕ}
     {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ} {x : Fin n → ℝ}
     (h : RectLSNormalEquations A b x) :
     ∀ j : Fin n, ∑ i : Fin m, A i j * lsResidual A b x i = 0 :=
   (RectLSNormalEquations.iff_residual_orthogonal A b x).mp h
 
-/-- Higham, 2nd ed., Chapter 20, Problem 20.1: a residual orthogonal to every
-    data column satisfies the rectangular normal equations. -/
+/-- A residual orthogonal to every data column satisfies the rectangular normal
+    equations. -/
 theorem RectLSNormalEquations.of_residual_orthogonal {m n : ℕ}
     {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ} {x : Fin n → ℝ}
     (h : ∀ j : Fin n, ∑ i : Fin m, A i j * lsResidual A b x i = 0) :
@@ -6106,75 +6105,6 @@ theorem lsNormwiseBackwardErrorCostF_eq_frobNormRect_of_deltab_zero
       frobNormRect DeltaA := by
   rw [lsNormwiseBackwardErrorCostF_eq_sqrt_sq_sum]
   simp [vecNorm2Sq, frobNormRect]
-
-/-- Higham, 2nd ed., Chapter 20, Theorem 20.5 discussion and Problem 20.8:
-    attainable costs for the `theta = infinity` convention, modeled as
-    matrix-only perturbations with `Delta b = 0`. -/
-noncomputable def lsNormwiseBackwardErrorMatrixOnlyValuesF
-    {m n : ℕ} (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
-    (y : Fin n → ℝ) : Set ℝ :=
-  {eta | ∃ DeltaA : Fin m → Fin n → ℝ,
-    LSNormwiseBackwardErrorFeasible A b y DeltaA (0 : Fin m → ℝ) ∧
-      eta = frobNormRect DeltaA}
-
-/-- Infimum model for the matrix-only (`theta = infinity`) normwise
-    least-squares backward error.  Problem 20.8 evaluates this model at
-    `y = 0`; the general Walden--Karlson--Sun formula remains a separate
-    spectral theorem. -/
-noncomputable def lsNormwiseBackwardErrorMatrixOnlyEtaF
-    {m n : ℕ} (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
-    (y : Fin n → ℝ) : ℝ :=
-  sInf (lsNormwiseBackwardErrorMatrixOnlyValuesF A b y)
-
-theorem lsNormwiseBackwardErrorMatrixOnlyValuesF.mem_of_feasible
-    {m n : ℕ} (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
-    (y : Fin n → ℝ) (DeltaA : Fin m → Fin n → ℝ)
-    (hfeas :
-      LSNormwiseBackwardErrorFeasible A b y DeltaA (0 : Fin m → ℝ)) :
-    frobNormRect DeltaA ∈
-      lsNormwiseBackwardErrorMatrixOnlyValuesF A b y := by
-  exact ⟨DeltaA, hfeas, rfl⟩
-
-theorem lsNormwiseBackwardErrorMatrixOnlyValuesF.nonempty {m n : ℕ}
-    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
-    (lsNormwiseBackwardErrorMatrixOnlyValuesF A b y).Nonempty := by
-  refine ⟨frobNormRect (fun i j => -A i j), ?_⟩
-  apply lsNormwiseBackwardErrorMatrixOnlyValuesF.mem_of_feasible
-  intro z
-  simp [lsObjective, lsResidual, rectMatMulVec, vecNorm2Sq]
-
-theorem lsNormwiseBackwardErrorMatrixOnlyValuesF.bddBelow {m n : ℕ}
-    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
-    BddBelow (lsNormwiseBackwardErrorMatrixOnlyValuesF A b y) := by
-  refine ⟨0, ?_⟩
-  intro eta heta
-  rcases heta with ⟨DeltaA, _hfeas, rfl⟩
-  exact frobNormRect_nonneg DeltaA
-
-theorem lsNormwiseBackwardErrorMatrixOnlyEtaF_nonneg {m n : ℕ}
-    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
-    0 ≤ lsNormwiseBackwardErrorMatrixOnlyEtaF A b y := by
-  unfold lsNormwiseBackwardErrorMatrixOnlyEtaF
-  apply Real.sInf_nonneg
-  intro eta heta
-  rcases heta with ⟨DeltaA, _hfeas, rfl⟩
-  exact frobNormRect_nonneg DeltaA
-
-theorem lsNormwiseBackwardErrorMatrixOnlyEtaF_le_of_mem {m n : ℕ}
-    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
-    {eta : ℝ}
-    (heta : eta ∈ lsNormwiseBackwardErrorMatrixOnlyValuesF A b y) :
-    lsNormwiseBackwardErrorMatrixOnlyEtaF A b y ≤ eta := by
-  unfold lsNormwiseBackwardErrorMatrixOnlyEtaF
-  exact csInf_le
-    (lsNormwiseBackwardErrorMatrixOnlyValuesF.bddBelow A b y) heta
-
-/-- Rank-one matrix-only perturbation used in Higham, 2nd ed., Chapter 20,
-    Problem 20.8.  For nonzero `b`, this is the minimum-Frobenius perturbation
-    making `y = 0` an exact least-squares minimizer when `Delta b = 0`. -/
-noncomputable def lsProblem20_8MatrixOnlyDeltaA {m n : ℕ}
-    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) : Fin m → Fin n → ℝ :=
-  fun i j => (-(vecNorm2Sq b)⁻¹ * b i) * rectLSRhs A b j
 
 private theorem vecNorm2_pos_of_ne_zero_lsq {m : ℕ} {b : Fin m → ℝ}
     (hb : b ≠ 0) : 0 < vecNorm2 b := by
@@ -12391,8 +12321,8 @@ private theorem linear_term_eq_zero_of_quadratic_nonneg
   rw [hcalc] at ht
   linarith
 
-/-- Higham, 2nd ed., Chapter 20, Problem 20.1: the rectangular normal equations
-    characterize an exact minimizer of the squared least-squares objective. -/
+/-- The rectangular normal equations characterize an exact minimizer of the
+    squared least-squares objective. -/
 theorem RectLSNormalEquations.isLeastSquaresMinimizer {m n : ℕ}
     {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ} {x : Fin n → ℝ}
     (h : RectLSNormalEquations A b x) :
@@ -12418,8 +12348,8 @@ theorem RectLSNormalEquations.isLeastSquaresMinimizer {m n : ℕ}
     vecNorm2Sq_nonneg (rectMatMulVec A d)
   nlinarith
 
-/-- Higham, 2nd ed., Chapter 20, Problem 20.1: every exact minimizer of the
-    squared least-squares objective satisfies the rectangular normal equations. -/
+/-- Every exact minimizer of the squared least-squares objective satisfies the
+    rectangular normal equations. -/
 theorem IsLeastSquaresMinimizer.rectLSNormalEquations {m n : ℕ}
     {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ} {x : Fin n → ℝ}
     (hmin : IsLeastSquaresMinimizer A b x) :
@@ -12449,8 +12379,8 @@ theorem IsLeastSquaresMinimizer.rectLSNormalEquations {m n : ℕ}
     nlinarith
   exact linear_term_eq_zero_of_quadratic_nonneg ha hquad
 
-/-- Higham, 2nd ed., Chapter 20, Problem 20.1: exact minimizers of
-    `||A x - b||₂²` are exactly the solutions of the normal equations. -/
+/-- Exact minimizers of `||A x - b||₂²` are exactly the solutions of the normal
+    equations. -/
 theorem RectLSNormalEquations.iff_isLeastSquaresMinimizer {m n : ℕ}
     (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (x : Fin n → ℝ) :
     RectLSNormalEquations A b x ↔ IsLeastSquaresMinimizer A b x := by
@@ -12462,8 +12392,8 @@ theorem RectLSNormalEquations.iff_isLeastSquaresMinimizer {m n : ℕ}
 
 /-- Exact-minimizer specialization of the nonzero-residual left-null
     certificate for (20.21).  If `y` is a least-squares minimizer, then
-    Problem 20.1 gives orthogonality of Higham's residual `b - A y` to the data
-    columns; a nonzero residual therefore annihilates the full WKS source block
+    normal-equation orthogonality of Higham's residual `b - A y` to the data
+    columns makes a nonzero residual annihilate the full WKS source block
     `[A  phi(I-r r^+)]` from the left. -/
 theorem lsNormwiseBackwardErrorFormulaMatrix_residual_leftNull_of_isLeastSquaresMinimizer
     {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
@@ -13240,279 +13170,6 @@ theorem LSAugmentedSystem.isLeastSquaresMinimizer_of_zero_rhs {m n : ℕ}
   exact (RectLSNormalEquations.iff_isLeastSquaresMinimizer A b x).mp
     ((LSAugmentedSystem.iff_rectLSNormalEquations_zero_rhs A b x).mp haug)
 
-private theorem lsProblem20_8MatrixOnlyDeltaA_transpose_rhs
-    {m n : ℕ} (A : Fin m → Fin n → ℝ) {b : Fin m → ℝ}
-    (hb : b ≠ 0) :
-    ∀ j : Fin n,
-      ∑ i : Fin m,
-        (A i j + lsProblem20_8MatrixOnlyDeltaA A b i j) * b i = 0 := by
-  intro j
-  have hden_pos : 0 < vecNorm2Sq b := vecNorm2Sq_pos_of_ne_zero_lsq hb
-  have hden_ne : vecNorm2Sq b ≠ 0 := ne_of_gt hden_pos
-  have hdelta :
-      ∑ i : Fin m, lsProblem20_8MatrixOnlyDeltaA A b i j * b i =
-        -rectLSRhs A b j := by
-    unfold lsProblem20_8MatrixOnlyDeltaA rectLSRhs
-    let rhs : ℝ := ∑ i : Fin m, A i j * b i
-    have hsum :
-        (∑ i : Fin m, ((-(vecNorm2Sq b)⁻¹ * b i) * rhs) * b i) =
-          (-(vecNorm2Sq b)⁻¹ * rhs) * vecNorm2Sq b := by
-      unfold vecNorm2Sq
-      calc
-        ∑ i : Fin m,
-            ((-(∑ k : Fin m, b k ^ 2)⁻¹ * b i) * rhs) * b i =
-            ∑ i : Fin m,
-              (-(∑ k : Fin m, b k ^ 2)⁻¹ * rhs) * b i ^ 2 := by
-              apply Finset.sum_congr rfl
-              intro i _
-              ring
-        _ = (-(∑ k : Fin m, b k ^ 2)⁻¹ * rhs) *
-              ∑ i : Fin m, b i ^ 2 := by
-              exact (Finset.mul_sum (s := (Finset.univ : Finset (Fin m)))
-                (f := fun i : Fin m => b i ^ 2)
-                (a := (-(∑ k : Fin m, b k ^ 2)⁻¹ * rhs))).symm
-    change (∑ i : Fin m, ((-(vecNorm2Sq b)⁻¹ * b i) * rhs) * b i) = -rhs
-    rw [hsum]
-    field_simp [hden_ne]
-  calc
-    ∑ i : Fin m,
-        (A i j + lsProblem20_8MatrixOnlyDeltaA A b i j) * b i =
-        ∑ i : Fin m, A i j * b i +
-          ∑ i : Fin m, lsProblem20_8MatrixOnlyDeltaA A b i j * b i := by
-          simp_rw [add_mul]
-          rw [Finset.sum_add_distrib]
-    _ = 0 := by
-          rw [hdelta]
-          unfold rectLSRhs
-          ring
-
-/-- Problem 20.8 attainment: the rank-one perturbation
-    `lsProblem20_8MatrixOnlyDeltaA` makes `y = 0` an exact least-squares
-    minimizer when `Delta b = 0`. -/
-theorem lsProblem20_8MatrixOnlyDeltaA_feasible
-    {m n : ℕ} (A : Fin m → Fin n → ℝ) {b : Fin m → ℝ} (hb : b ≠ 0) :
-    LSNormwiseBackwardErrorFeasible A b (0 : Fin n → ℝ)
-      (lsProblem20_8MatrixOnlyDeltaA A b) (0 : Fin m → ℝ) := by
-  have hNE :
-      RectLSNormalEquations
-        (fun i j => A i j + lsProblem20_8MatrixOnlyDeltaA A b i j)
-        b (0 : Fin n → ℝ) := by
-    intro j
-    unfold matMulVec rectLSRhs
-    simp [lsProblem20_8MatrixOnlyDeltaA_transpose_rhs A hb j]
-  simpa [LSNormwiseBackwardErrorFeasible] using hNE.isLeastSquaresMinimizer
-
-/-- Frobenius norm of the rank-one perturbation in Problem 20.8. -/
-theorem lsProblem20_8MatrixOnlyDeltaA_frobNormRect
-    {m n : ℕ} (A : Fin m → Fin n → ℝ) {b : Fin m → ℝ} (hb : b ≠ 0) :
-    frobNormRect (lsProblem20_8MatrixOnlyDeltaA A b) =
-      vecNorm2 (rectLSRhs A b) / vecNorm2 b := by
-  have hbpos : 0 < vecNorm2 b := vecNorm2_pos_of_ne_zero_lsq hb
-  have hden_pos : 0 < vecNorm2Sq b := vecNorm2Sq_pos_of_ne_zero_lsq hb
-  have hnorm_scaled :
-      vecNorm2 (fun i : Fin m => -(vecNorm2Sq b)⁻¹ * b i) =
-        (vecNorm2 b)⁻¹ := by
-    rw [vecNorm2_smul]
-    have habs : |-(vecNorm2Sq b)⁻¹| = (vecNorm2Sq b)⁻¹ := by
-      rw [abs_neg]
-      exact abs_of_pos (inv_pos.mpr hden_pos)
-    rw [habs]
-    have hb_sq : vecNorm2Sq b = vecNorm2 b ^ 2 := (vecNorm2_sq b).symm
-    rw [hb_sq]
-    field_simp [ne_of_gt hbpos]
-  unfold lsProblem20_8MatrixOnlyDeltaA
-  rw [frobNormRect_outerProduct]
-  rw [hnorm_scaled]
-  field_simp [ne_of_gt hbpos]
-
-/-- Problem 20.8 lower bound for the `theta = infinity` matrix-only model at
-    `y = 0`: every feasible matrix perturbation with `Delta b = 0` has
-    Frobenius norm at least `||A^T b||₂ / ||b||₂`. -/
-theorem lsProblem20_8MatrixOnly_lower_bound
-    {m n : ℕ} (A : Fin m → Fin n → ℝ) {b : Fin m → ℝ} (hb : b ≠ 0)
-    (DeltaA : Fin m → Fin n → ℝ)
-    (hfeas :
-      LSNormwiseBackwardErrorFeasible A b (0 : Fin n → ℝ)
-        DeltaA (0 : Fin m → ℝ)) :
-    vecNorm2 (rectLSRhs A b) / vecNorm2 b ≤ frobNormRect DeltaA := by
-  have hbpos : 0 < vecNorm2 b := vecNorm2_pos_of_ne_zero_lsq hb
-  have hmin :
-      IsLeastSquaresMinimizer (fun i j => A i j + DeltaA i j) b
-        (0 : Fin n → ℝ) := by
-    simpa [LSNormwiseBackwardErrorFeasible] using hfeas
-  have hNE :
-      RectLSNormalEquations (fun i j => A i j + DeltaA i j)
-        b (0 : Fin n → ℝ) :=
-    hmin.rectLSNormalEquations
-  have hsum_zero : ∀ j : Fin n,
-      ∑ i : Fin m, (A i j + DeltaA i j) * b i = 0 := by
-    intro j
-    have hj := hNE j
-    unfold matMulVec rectLSRhs at hj
-    simpa using hj.symm
-  have hdelta : ∀ j : Fin n,
-      ∑ i : Fin m, DeltaA i j * b i = -rectLSRhs A b j := by
-    intro j
-    have hj := hsum_zero j
-    unfold rectLSRhs
-    calc
-      ∑ i : Fin m, DeltaA i j * b i =
-          (∑ i : Fin m, (A i j + DeltaA i j) * b i) -
-            ∑ i : Fin m, A i j * b i := by
-            simp_rw [add_mul]
-            rw [Finset.sum_add_distrib]
-            ring
-      _ = -∑ i : Fin m, A i j * b i := by
-            rw [hj]
-            ring
-  have hcoord : ∀ j : Fin n,
-      |rectLSRhs A b j| ≤
-        vecNorm2 (fun i : Fin m => DeltaA i j) * vecNorm2 b := by
-    intro j
-    have hcs :=
-      abs_vecInnerProduct_le_vecNorm2_mul
-        (fun i : Fin m => DeltaA i j) b
-    rw [hdelta j] at hcs
-    simpa [abs_neg] using hcs
-  have hsqs :
-      vecNorm2Sq (rectLSRhs A b) ≤
-        (frobNormRect DeltaA * vecNorm2 b) ^ 2 := by
-    calc
-      vecNorm2Sq (rectLSRhs A b)
-          = ∑ j : Fin n, (rectLSRhs A b j) ^ 2 := rfl
-      _ ≤ ∑ j : Fin n,
-            (vecNorm2 (fun i : Fin m => DeltaA i j) * vecNorm2 b) ^ 2 := by
-            apply Finset.sum_le_sum
-            intro j _
-            have hright_nonneg :
-                0 ≤ vecNorm2 (fun i : Fin m => DeltaA i j) * vecNorm2 b :=
-              mul_nonneg (vecNorm2_nonneg _) (le_of_lt hbpos)
-            have habs :
-                |rectLSRhs A b j| ≤
-                  |vecNorm2 (fun i : Fin m => DeltaA i j) * vecNorm2 b| := by
-              simpa [abs_of_nonneg hright_nonneg] using hcoord j
-            exact (sq_le_sq).mpr habs
-      _ = vecNorm2 b ^ 2 *
-            ∑ j : Fin n, vecNorm2Sq (fun i : Fin m => DeltaA i j) := by
-            calc
-              ∑ j : Fin n,
-                  (vecNorm2 (fun i : Fin m => DeltaA i j) * vecNorm2 b) ^ 2 =
-                  ∑ j : Fin n,
-                    vecNorm2 b ^ 2 *
-                      vecNorm2Sq (fun i : Fin m => DeltaA i j) := by
-                    apply Finset.sum_congr rfl
-                    intro j _
-                    calc
-                      (vecNorm2 (fun i : Fin m => DeltaA i j) * vecNorm2 b) ^ 2 =
-                          vecNorm2 (fun i : Fin m => DeltaA i j) ^ 2 *
-                            vecNorm2 b ^ 2 := by
-                            ring
-                      _ = vecNorm2Sq (fun i : Fin m => DeltaA i j) *
-                            vecNorm2Sq b := by
-                            rw [vecNorm2_sq, vecNorm2_sq]
-                      _ = vecNorm2Sq b *
-                            vecNorm2Sq (fun i : Fin m => DeltaA i j) := by
-                            ring
-                      _ = vecNorm2 b ^ 2 *
-                            vecNorm2Sq (fun i : Fin m => DeltaA i j) := by
-                            rw [vecNorm2_sq b]
-              _ = vecNorm2 b ^ 2 *
-                    ∑ j : Fin n, vecNorm2Sq (fun i : Fin m => DeltaA i j) := by
-                    rw [Finset.mul_sum]
-      _ = (frobNormRect DeltaA * vecNorm2 b) ^ 2 := by
-            rw [← frobNormSqRect_eq_sum_vecNorm2Sq_cols DeltaA,
-              ← frobNormRect_sq DeltaA]
-            ring
-  have hnorm_sq :
-      vecNorm2 (rectLSRhs A b) ^ 2 ≤
-        (frobNormRect DeltaA * vecNorm2 b) ^ 2 := by
-    simpa [vecNorm2_sq] using hsqs
-  have hprod_nonneg :
-      0 ≤ frobNormRect DeltaA * vecNorm2 b :=
-    mul_nonneg (frobNormRect_nonneg DeltaA) (le_of_lt hbpos)
-  have hnorm_le :
-      vecNorm2 (rectLSRhs A b) ≤ frobNormRect DeltaA * vecNorm2 b := by
-    have habs := (sq_le_sq).mp hnorm_sq
-    simpa [abs_of_nonneg (vecNorm2_nonneg _), abs_of_nonneg hprod_nonneg] using habs
-  rw [div_le_iff₀ hbpos]
-  exact hnorm_le
-
-/-- Problem 20.8 exact evaluation for nonzero `b`: in the matrix-only
-    `theta = infinity` model with `Delta b = 0`, the backward error at
-    `y = 0` is `||A^T b||₂ / ||b||₂`. -/
-theorem lsProblem20_8MatrixOnlyEtaF_zero_eq
-    {m n : ℕ} (A : Fin m → Fin n → ℝ) {b : Fin m → ℝ} (hb : b ≠ 0) :
-    lsNormwiseBackwardErrorMatrixOnlyEtaF A b (0 : Fin n → ℝ) =
-      vecNorm2 (rectLSRhs A b) / vecNorm2 b := by
-  apply le_antisymm
-  · have hmem :
-        frobNormRect (lsProblem20_8MatrixOnlyDeltaA A b) ∈
-          lsNormwiseBackwardErrorMatrixOnlyValuesF A b (0 : Fin n → ℝ) :=
-      lsNormwiseBackwardErrorMatrixOnlyValuesF.mem_of_feasible
-        A b (0 : Fin n → ℝ) (lsProblem20_8MatrixOnlyDeltaA A b)
-        (lsProblem20_8MatrixOnlyDeltaA_feasible A hb)
-    calc
-      lsNormwiseBackwardErrorMatrixOnlyEtaF A b (0 : Fin n → ℝ)
-          ≤ frobNormRect (lsProblem20_8MatrixOnlyDeltaA A b) :=
-            lsNormwiseBackwardErrorMatrixOnlyEtaF_le_of_mem A b
-              (0 : Fin n → ℝ) hmem
-      _ = vecNorm2 (rectLSRhs A b) / vecNorm2 b :=
-            lsProblem20_8MatrixOnlyDeltaA_frobNormRect A hb
-  · unfold lsNormwiseBackwardErrorMatrixOnlyEtaF
-    apply le_csInf
-      (lsNormwiseBackwardErrorMatrixOnlyValuesF.nonempty A b
-        (0 : Fin n → ℝ))
-    intro eta heta
-    rcases heta with ⟨DeltaA, hfeas, heta_eq⟩
-    rw [heta_eq]
-    exact lsProblem20_8MatrixOnly_lower_bound A hb DeltaA hfeas
-
-/-- Degenerate branch of Problem 20.8: if `b = 0`, then no matrix perturbation
-    is needed to make `y = 0` an exact least-squares minimizer. -/
-theorem lsProblem20_8MatrixOnlyEtaF_zero_eq_zero_of_b_eq_zero
-    {m n : ℕ} (A : Fin m → Fin n → ℝ) {b : Fin m → ℝ} (hb : b = 0) :
-    lsNormwiseBackwardErrorMatrixOnlyEtaF A b (0 : Fin n → ℝ) = 0 := by
-  subst b
-  apply le_antisymm
-  · have hfeas :
-        LSNormwiseBackwardErrorFeasible A (0 : Fin m → ℝ) (0 : Fin n → ℝ)
-          (0 : Fin m → Fin n → ℝ) (0 : Fin m → ℝ) := by
-      change IsLeastSquaresMinimizer
-        (fun i j => A i j + (0 : Fin m → Fin n → ℝ) i j)
-        (fun i => (0 : Fin m → ℝ) i + (0 : Fin m → ℝ) i)
-        (0 : Fin n → ℝ)
-      intro z
-      have hnonneg : 0 ≤ vecNorm2Sq (rectMatMulVec A z) :=
-        vecNorm2Sq_nonneg (rectMatMulVec A z)
-      calc
-        lsObjective
-            (fun i j => A i j + (0 : Fin m → Fin n → ℝ) i j)
-            (fun i => (0 : Fin m → ℝ) i + (0 : Fin m → ℝ) i)
-            (0 : Fin n → ℝ) = 0 := by
-            simp [lsObjective, lsResidual, rectMatMulVec, vecNorm2Sq]
-        _ ≤ vecNorm2Sq (rectMatMulVec A z) := hnonneg
-        _ = lsObjective
-            (fun i j => A i j + (0 : Fin m → Fin n → ℝ) i j)
-            (fun i => (0 : Fin m → ℝ) i + (0 : Fin m → ℝ) i)
-            z := by
-            unfold lsObjective
-            apply congrArg vecNorm2Sq
-            ext i
-            simp [lsResidual, rectMatMulVec]
-    have hmem :
-        frobNormRect (0 : Fin m → Fin n → ℝ) ∈
-          lsNormwiseBackwardErrorMatrixOnlyValuesF A (0 : Fin m → ℝ)
-            (0 : Fin n → ℝ) :=
-      lsNormwiseBackwardErrorMatrixOnlyValuesF.mem_of_feasible
-        A (0 : Fin m → ℝ) (0 : Fin n → ℝ)
-        (0 : Fin m → Fin n → ℝ) hfeas
-    have hzero : frobNormRect (0 : Fin m → Fin n → ℝ) = 0 := by
-      simp [frobNormRect, frobNormSqRect]
-    exact (lsNormwiseBackwardErrorMatrixOnlyEtaF_le_of_mem
-      A (0 : Fin m → ℝ) (0 : Fin n → ℝ) hmem).trans_eq hzero
-  · exact lsNormwiseBackwardErrorMatrixOnlyEtaF_nonneg
-      A (0 : Fin m → ℝ) (0 : Fin n → ℝ)
-
 /-- Least-squares-minimizer form of the constructive part of Lemma 20.6. -/
 theorem LSAsymmetricPerturbedAugmentedSystem.exists_isLeastSquaresMinimizer
     {m n : ℕ} (A DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
@@ -13543,7 +13200,7 @@ theorem LSPerturbedAugmentedSystem.of_isLeastSquaresMinimizer {m n : ℕ}
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.2, source-facing least-squares
     minimizer form.  The residuals are the printed `r = b - A*x` and
-    `s = b + Delta b - (A + Delta A)*y`; Problem 20.1 supplies the bridge from
+    `s = b + Delta b - (A + Delta A)*y`; normal-equation orthogonality bridges
     exact minimizers to the augmented systems used in (20.3)-(20.4). -/
 theorem theorem20_2_relative_bounds_of_minimizers_full_column_rank
     {m n : ℕ}
@@ -13675,7 +13332,7 @@ theorem theorem20_2_relative_bounds_of_minimizers_full_column_rank_of_componentw
     residual and solution perturbation bounds.
 
     The residuals are the printed `r = b - A*x` and
-    `s = b + Delta b - (A + Delta A)*y`; Problem 20.1 supplies the bridge from
+    `s = b + Delta b - (A + Delta A)*y`; normal-equation orthogonality bridges
     exact minimizers to the augmented systems used in (20.3)-(20.4). -/
 theorem theorem20_2_eq20_7_8_abs_le_of_minimizers_full_column_rank_of_componentwise_perturbation
     {m n : ℕ}
