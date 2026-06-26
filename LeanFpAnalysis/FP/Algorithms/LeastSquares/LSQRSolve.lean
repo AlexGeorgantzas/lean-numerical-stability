@@ -4878,6 +4878,46 @@ theorem lsScaledAugmentedMatrix_leftNull_vecNorm2Sq_eq_one_of_unit_component
     vecNorm2Sq (Fin.append u (0 : Fin n → ℝ)) = 1 := by
   rw [lsScaledAugmentedMatrix_leftNull_vecNorm2Sq_eq, hu]
 
+/-- Unit component data make the positive printed branch vector in (20.18)
+    nonzero in squared Euclidean norm. -/
+theorem
+    lsScaledAugmentedMatrix_singularPair_plus_normalized_vecNorm2Sq_pos_of_unit_components
+    {m n : ℕ} {alpha sigma : ℝ}
+    (u : Fin m → ℝ) (v : Fin n → ℝ)
+    (hu : vecNorm2Sq u = 1) (hv : vecNorm2Sq v = 1) :
+    0 <
+      vecNorm2Sq
+        (Fin.append u
+          (fun j => (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j)) := by
+  rw [
+    lsScaledAugmentedMatrix_singularPair_plus_normalized_vecNorm2Sq_eq_one_add_sq_of_unit_components
+      u v hu hv]
+  nlinarith [sq_nonneg (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma)]
+
+/-- Unit component data make the negative printed branch vector in (20.18)
+    nonzero in squared Euclidean norm. -/
+theorem
+    lsScaledAugmentedMatrix_singularPair_minus_normalized_vecNorm2Sq_pos_of_unit_components
+    {m n : ℕ} {alpha sigma : ℝ}
+    (u : Fin m → ℝ) (v : Fin n → ℝ)
+    (hu : vecNorm2Sq u = 1) (hv : vecNorm2Sq v = 1) :
+    0 <
+      vecNorm2Sq
+        (Fin.append u
+          (fun j => (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j)) := by
+  rw [
+    lsScaledAugmentedMatrix_singularPair_minus_normalized_vecNorm2Sq_eq_one_add_sq_of_unit_components
+      u v hu hv]
+  nlinarith [sq_nonneg (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma)]
+
+/-- A unit left-nullspace component makes the `[u;0]` branch in (20.18)
+    nonzero in squared Euclidean norm. -/
+theorem lsScaledAugmentedMatrix_leftNull_vecNorm2Sq_pos_of_unit_component
+    {m n : ℕ} (u : Fin m → ℝ) (hu : vecNorm2Sq u = 1) :
+    0 < vecNorm2Sq (Fin.append u (0 : Fin n → ℝ)) := by
+  rw [lsScaledAugmentedMatrix_leftNull_vecNorm2Sq_eq_one_of_unit_component u hu]
+  norm_num
+
 /-- Same-branch positive/positive dot-product expansion for the source-normalized
     singular-pair vectors in (20.18), allowing different singular values and
     different left/right singular-vector components. -/
