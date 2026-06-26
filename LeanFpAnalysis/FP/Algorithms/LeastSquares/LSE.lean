@@ -1877,6 +1877,107 @@ private theorem finAppend_left_right {p q : ℕ}
   · intro i
     simp [Fin.append_right]
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof:
+    under the supplied GQR block identity `BQ = [S 0]`, injectivity of `S`
+    identifies the nullspace of `B` with the `Q₂` coordinate range.
+
+    This is the formal version of the source step
+    `null(B) = range(Q₂)` after `S` is nonsingular.  It still assumes supplied
+    GQR data and does not construct the orthogonal factors. -/
+theorem GeneralizedQRFactorization.null_B_iff_exists_Q2_coord
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (hS_inj : Function.Injective (rectMatMulVec h.S))
+    (x : Fin (p + q) → ℝ) :
+    rectMatMulVec B x = 0 ↔
+      ∃ y2 : Fin q → ℝ,
+        x = matMulVec (p + q) h.Q (Fin.append (0 : Fin p → ℝ) y2) := by
+  constructor
+  · intro hBx
+    let y : Fin (p + q) → ℝ := matMulVec (p + q) (matTranspose h.Q) x
+    let y1 : Fin p → ℝ := fun i => y (Fin.castAdd q i)
+    let y2 : Fin q → ℝ := fun i => y (Fin.natAdd p i)
+    have hy_append : Fin.append y1 y2 = y := by
+      simpa [y1, y2] using finAppend_left_right (p := p) (q := q) y
+    have hx_recover :
+        matMulVec (p + q) h.Q (Fin.append y1 y2) = x := by
+      rw [hy_append]
+      exact matMulVec_orthogonal_mul_transpose h.orthQ x
+    have hSy1 : rectMatMulVec h.S y1 = 0 := by
+      have hc := h.constraint_eq y1 y2
+      rw [hx_recover] at hc
+      rw [hBx] at hc
+      exact hc.symm
+    have hy1_zero : y1 = 0 := by
+      apply hS_inj
+      rw [hSy1, rectMatMulVec_zero]
+    refine ⟨y2, ?_⟩
+    rw [← hx_recover, hy1_zero]
+  · rintro ⟨y2, rfl⟩
+    have hc := h.constraint_eq (0 : Fin p → ℝ) y2
+    rw [hc]
+    exact rectMatMulVec_zero h.S
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof:
+    on the `Q₂` coordinate range, the equation `A x = 0` is equivalent to
+    `L22 y₂ = 0`.
+
+    This names the exact algebra behind the source statement
+    `AQ₂ = U₂ L22`, which is used to relate
+    `null(A) ∩ null(B) = {0}` to nonsingularity of `L22`. -/
+theorem GeneralizedQRFactorization.A_Q2_zero_iff_L22_zero
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (y2 : Fin q → ℝ) :
+    rectMatMulVec A
+        (matMulVec (p + q) h.Q (Fin.append (0 : Fin p → ℝ) y2)) = 0 ↔
+      rectMatMulVec h.L22 y2 = 0 := by
+  constructor
+  · intro hAy
+    have htrans :=
+      h.transformed_A_zero_of_A_zero
+        (y := Fin.append (0 : Fin p → ℝ) y2) hAy
+    have hblock := h.transformed_A_mulVec_eq_block (0 : Fin p → ℝ) y2
+    rw [htrans] at hblock
+    ext i
+    have hi := congrFun hblock (Fin.natAdd r i)
+    have hi0 :
+        (0 : Fin (r + q) → ℝ) (Fin.natAdd r i) =
+          rectMatMulVec h.L21 (0 : Fin p → ℝ) i +
+            rectMatMulVec h.L22 y2 i := by
+      simpa [Fin.append_right] using hi
+    have hleft : rectMatMulVec h.L21 (0 : Fin p → ℝ) i = 0 := by
+      simp [rectMatMulVec]
+    have hzero : 0 = rectMatMulVec h.L22 y2 i := by
+      simpa [hleft] using hi0
+    exact hzero.symm
+  · intro hL22
+    have hblock :
+        rectMatMulVec
+          (matMulRectLeft (matTranspose h.U)
+            (matMulRect (r + q) (p + q) (p + q) A h.Q))
+          (Fin.append (0 : Fin p → ℝ) y2) = 0 := by
+      rw [h.transformed_A_mulVec_eq_block (0 : Fin p → ℝ) y2]
+      ext i
+      refine Fin.addCases
+        (motive := fun i : Fin (r + q) =>
+          Fin.append (rectMatMulVec h.L11 (0 : Fin p → ℝ))
+            (fun i : Fin q =>
+              rectMatMulVec h.L21 (0 : Fin p → ℝ) i +
+                rectMatMulVec h.L22 y2 i) i =
+            (0 : Fin (r + q) → ℝ) i)
+        ?left ?right i
+      · intro i
+        simp [Fin.append_left, rectMatMulVec]
+      · intro i
+        have hi := congrFun hL22 i
+        simpa [Fin.append_right, rectMatMulVec] using hi
+    exact h.A_zero_of_transformed_A_zero hblock
+
 /-- Exact GQR method handoff for (20.27):
     if the transformed block vector `[y1; y2]` minimizes the transformed
     least-squares objective among all transformed feasible blocks
