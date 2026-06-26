@@ -807,6 +807,90 @@ theorem lsScaledAugmentedMatrix_symmetric {m n : ℕ} (alpha : ℝ)
     · intro j
       simp [lsScaledAugmentedMatrix, Fin.append_right]
 
+/-- Real symmetric-matrix orthogonality for distinct eigenvalues, stated in the
+    repository's finite-matrix/vector-action language.  This is spectral
+    infrastructure for equation (20.18): once two vectors are eigenvectors of
+    the same symmetric matrix for different eigenvalues, their Euclidean dot
+    product is zero. -/
+theorem isSymmetricFiniteMatrix_eigenvectors_sum_mul_eq_zero {n : ℕ}
+    {M : Fin n → Fin n → ℝ} (hM : IsSymmetricFiniteMatrix M)
+    {lambda mu : ℝ} {x y : Fin n → ℝ}
+    (hx : rectMatMulVec M x = fun i => lambda * x i)
+    (hy : rectMatMulVec M y = fun i => mu * y i)
+    (hlambda_mu : lambda ≠ mu) :
+    (∑ i : Fin n, x i * y i) = 0 := by
+  have hleft_eval :
+      (∑ i : Fin n, rectMatMulVec M x i * y i) =
+        lambda * ∑ i : Fin n, x i * y i := by
+    calc
+      (∑ i : Fin n, rectMatMulVec M x i * y i) =
+          ∑ i : Fin n, (lambda * x i) * y i := by
+            rw [hx]
+      _ = ∑ i : Fin n, lambda * (x i * y i) := by
+            apply Finset.sum_congr rfl
+            intro i _
+            ring
+      _ = lambda * ∑ i : Fin n, x i * y i := by
+            rw [Finset.mul_sum]
+  have hright_eval :
+      (∑ i : Fin n, x i * rectMatMulVec M y i) =
+        mu * ∑ i : Fin n, x i * y i := by
+    calc
+      (∑ i : Fin n, x i * rectMatMulVec M y i) =
+          ∑ i : Fin n, x i * (mu * y i) := by
+            rw [hy]
+      _ = ∑ i : Fin n, mu * (x i * y i) := by
+            apply Finset.sum_congr rfl
+            intro i _
+            ring
+      _ = mu * ∑ i : Fin n, x i * y i := by
+            rw [Finset.mul_sum]
+  have htranspose :
+      (∑ i : Fin n, rectMatMulVec M x i * y i) =
+        ∑ j : Fin n, x j * rectMatMulVec M y j := by
+    unfold rectMatMulVec
+    calc
+      (∑ i : Fin n, (∑ j : Fin n, M i j * x j) * y i) =
+          ∑ i : Fin n, ∑ j : Fin n, (M i j * x j) * y i := by
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [Finset.sum_mul]
+      _ = ∑ j : Fin n, ∑ i : Fin n, (M i j * x j) * y i := by
+            rw [Finset.sum_comm]
+      _ = ∑ j : Fin n, ∑ i : Fin n, x j * (M j i * y i) := by
+            apply Finset.sum_congr rfl
+            intro j _
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [hM i j]
+            ring
+      _ = ∑ j : Fin n, x j * ∑ i : Fin n, M j i * y i := by
+            apply Finset.sum_congr rfl
+            intro j _
+            rw [Finset.mul_sum]
+  have hscalar :
+      lambda * (∑ i : Fin n, x i * y i) =
+        mu * (∑ i : Fin n, x i * y i) := by
+    rw [← hleft_eval, htranspose, hright_eval]
+  have hprod :
+      (lambda - mu) * (∑ i : Fin n, x i * y i) = 0 := by
+    nlinarith
+  exact (mul_eq_zero.mp hprod).resolve_left (sub_ne_zero.mpr hlambda_mu)
+
+/-- Specialization of the symmetric-eigenvector orthogonality lemma to the
+    scaled augmented matrix `C(alpha)` from (20.17). -/
+theorem lsScaledAugmentedMatrix_eigenvectors_sum_mul_eq_zero {m n : ℕ}
+    {alpha lambda mu : ℝ} (A : Fin m → Fin n → ℝ)
+    {x y : Fin (m + n) → ℝ}
+    (hx : rectMatMulVec (lsScaledAugmentedMatrix alpha A) x =
+      fun i => lambda * x i)
+    (hy : rectMatMulVec (lsScaledAugmentedMatrix alpha A) y =
+      fun i => mu * y i)
+    (hlambda_mu : lambda ≠ mu) :
+    (∑ i : Fin (m + n), x i * y i) = 0 :=
+  isSymmetricFiniteMatrix_eigenvectors_sum_mul_eq_zero
+    (lsScaledAugmentedMatrix_symmetric alpha A) hx hy hlambda_mu
+
 /-- Higham, 2nd ed., Chapter 20, equation (20.17): at `alpha = 0`, the
     scaled augmented matrix is the `finSumFinEquiv` reindexing of the standard
     self-adjoint dilation `[[0, A], [A^T, 0]]`. -/
@@ -4530,6 +4614,105 @@ theorem lsScaledAugmentedMatrix_leftNull_eigenpair {m n : ℕ} (alpha : ℝ)
   exact
     ⟨lsScaledAugmentedMatrix_leftNull_eigenvector alpha A u hATu,
       lsScaledAugmentedMatrix_leftNull_vector_ne_zero u hu⟩
+
+/-- Orthogonality of the two source-normalized singular-pair branches in
+    Björck's eigenvalue formula (20.18).  This is a source-facing spectral
+    decomposition dependency: it proves the printed `lambda_+` and `lambda_-`
+    vectors are orthogonal, but it still does not assert global multiplicities
+    or completeness of the eigenbasis. -/
+theorem lsScaledAugmentedMatrix_singularPair_plus_minus_normalized_dot_eq_zero
+    {m n : ℕ}
+    {alpha sigma : ℝ} (A : Fin m → Fin n → ℝ)
+    (u : Fin m → ℝ) (v : Fin n → ℝ)
+    (hAv : rectMatMulVec A v = fun i => sigma * u i)
+    (hATu : (fun j : Fin n => ∑ i : Fin m, A i j * u i) =
+      fun j => sigma * v j)
+    (halpha : 0 ≤ alpha) (hsigma : sigma ≠ 0) :
+    (∑ k : Fin (m + n),
+      Fin.append u
+          (fun j =>
+            (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j) k *
+        Fin.append u
+          (fun j =>
+            (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j) k) = 0 := by
+  exact
+    lsScaledAugmentedMatrix_eigenvectors_sum_mul_eq_zero
+      (alpha := alpha) (lambda := lsScaledAugmentedEigenvaluePlus alpha sigma)
+      (mu := lsScaledAugmentedEigenvalueMinus alpha sigma) A
+      (x := Fin.append u
+        (fun j =>
+          (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j))
+      (y := Fin.append u
+        (fun j =>
+          (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j))
+      (lsScaledAugmentedMatrix_singularPair_plus_normalized_eigenvector
+        alpha sigma A u v hAv hATu halpha hsigma)
+      (lsScaledAugmentedMatrix_singularPair_minus_normalized_eigenvector
+        alpha sigma A u v hAv hATu halpha hsigma)
+      (lsScaledAugmentedEigenvaluePlus_ne_minus_of_sigma_ne_zero
+        (alpha := alpha) (sigma := sigma) halpha hsigma)
+
+/-- Orthogonality of the source-normalized positive singular-pair branch in
+    (20.18) against the left-nullspace `alpha` branch. -/
+theorem lsScaledAugmentedMatrix_singularPair_plus_leftNull_normalized_dot_eq_zero
+    {m n : ℕ}
+    {alpha sigma : ℝ} (A : Fin m → Fin n → ℝ)
+    (u w : Fin m → ℝ) (v : Fin n → ℝ)
+    (hAv : rectMatMulVec A v = fun i => sigma * u i)
+    (hATu : (fun j : Fin n => ∑ i : Fin m, A i j * u i) =
+      fun j => sigma * v j)
+    (hATw : ∀ j : Fin n, ∑ i : Fin m, A i j * w i = 0)
+    (halpha : 0 ≤ alpha) (hsigma : sigma ≠ 0) :
+    (∑ k : Fin (m + n),
+      Fin.append u
+          (fun j =>
+            (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j) k *
+        Fin.append w (0 : Fin n → ℝ) k) = 0 := by
+  exact
+    lsScaledAugmentedMatrix_eigenvectors_sum_mul_eq_zero
+      (alpha := alpha) (lambda := lsScaledAugmentedEigenvaluePlus alpha sigma)
+      (mu := alpha) A
+      (x := Fin.append u
+        (fun j =>
+          (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j))
+      (y := Fin.append w (0 : Fin n → ℝ))
+      (lsScaledAugmentedMatrix_singularPair_plus_normalized_eigenvector
+        alpha sigma A u v hAv hATu halpha hsigma)
+      (lsScaledAugmentedMatrix_leftNull_eigenvector alpha A w hATw)
+      (ne_of_gt
+        (lsScaledAugmentedEigenvaluePlus_gt_alpha_of_sigma_ne_zero
+          (alpha := alpha) (sigma := sigma) halpha hsigma))
+
+/-- Orthogonality of the source-normalized negative singular-pair branch in
+    (20.18) against the left-nullspace `alpha` branch. -/
+theorem lsScaledAugmentedMatrix_singularPair_minus_leftNull_normalized_dot_eq_zero
+    {m n : ℕ}
+    {alpha sigma : ℝ} (A : Fin m → Fin n → ℝ)
+    (u w : Fin m → ℝ) (v : Fin n → ℝ)
+    (hAv : rectMatMulVec A v = fun i => sigma * u i)
+    (hATu : (fun j : Fin n => ∑ i : Fin m, A i j * u i) =
+      fun j => sigma * v j)
+    (hATw : ∀ j : Fin n, ∑ i : Fin m, A i j * w i = 0)
+    (halpha : 0 ≤ alpha) (hsigma : sigma ≠ 0) :
+    (∑ k : Fin (m + n),
+      Fin.append u
+          (fun j =>
+            (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j) k *
+        Fin.append w (0 : Fin n → ℝ) k) = 0 := by
+  exact
+    lsScaledAugmentedMatrix_eigenvectors_sum_mul_eq_zero
+      (alpha := alpha) (lambda := lsScaledAugmentedEigenvalueMinus alpha sigma)
+      (mu := alpha) A
+      (x := Fin.append u
+        (fun j =>
+          (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j))
+      (y := Fin.append w (0 : Fin n → ℝ))
+      (lsScaledAugmentedMatrix_singularPair_minus_normalized_eigenvector
+        alpha sigma A u v hAv hATu halpha hsigma)
+      (lsScaledAugmentedMatrix_leftNull_eigenvector alpha A w hATw)
+      (ne_of_lt
+        (lsScaledAugmentedEigenvalueMinus_lt_alpha_of_sigma_ne_zero
+          (alpha := alpha) (sigma := sigma) halpha hsigma))
 
 /-- Higham, 2nd ed., Chapter 20, equation (20.20): the weighted perturbation
     block `[DeltaA, theta Delta b]` used in the Frobenius normwise
