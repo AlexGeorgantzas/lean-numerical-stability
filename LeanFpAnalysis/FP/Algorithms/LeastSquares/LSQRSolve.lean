@@ -11155,6 +11155,80 @@ theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_of_etaF_eq_zero_of_positive_th
     lsNormwiseBackwardErrorEtaF_eq_formulaRHS_of_isLeastSquaresMinimizer
       theta A b y hmin
 
+/-- The source scalar `mu` in Theorem 20.5 is positive for positive finite
+    `theta` and a nonzero candidate vector `y`. -/
+theorem lsNormwiseBackwardErrorMu_pos_of_theta_pos_of_y_ne_zero
+    {n : ℕ} {theta : ℝ} (htheta : 0 < theta) {y : Fin n → ℝ}
+    (hy : y ≠ 0) :
+    0 < lsNormwiseBackwardErrorMu theta y := by
+  unfold lsNormwiseBackwardErrorMu
+  exact div_pos
+    (mul_pos (sq_pos_of_pos htheta) (vecNorm2Sq_pos_of_ne_zero_lsq hy))
+    (lsNormwiseBackwardErrorMu_den_pos theta y)
+
+/-- Nondegenerate scalar branch of (20.21): for positive finite `theta` and
+    nonzero `y`, the displayed `phi` scalar vanishes exactly when the residual
+    vector vanishes. -/
+theorem lsNormwiseBackwardErrorPhi_eq_zero_iff_residual_eq_zero_of_theta_pos_of_y_ne_zero
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    {r : Fin m → ℝ} {y : Fin n → ℝ} (hy : y ≠ 0) :
+    lsNormwiseBackwardErrorPhi theta r y = 0 ↔ r = 0 := by
+  constructor
+  · intro hphi
+    have hmu_pos :
+        0 < lsNormwiseBackwardErrorMu theta y :=
+      lsNormwiseBackwardErrorMu_pos_of_theta_pos_of_y_ne_zero htheta hy
+    have hsqrt_pos :
+        0 < Real.sqrt (lsNormwiseBackwardErrorMu theta y) :=
+      Real.sqrt_pos.2 hmu_pos
+    have hy_norm_pos : 0 < vecNorm2 y := vecNorm2_pos_of_ne_zero_lsq hy
+    have hy_norm_ne : vecNorm2 y ≠ 0 := ne_of_gt hy_norm_pos
+    unfold lsNormwiseBackwardErrorPhi at hphi
+    field_simp [hy_norm_ne] at hphi
+    have hphi_zero :
+        Real.sqrt (lsNormwiseBackwardErrorMu theta y) * vecNorm2 r = 0 := by
+      simpa using hphi
+    have hr_norm : vecNorm2 r = 0 :=
+      (mul_eq_zero.mp hphi_zero).resolve_left (ne_of_gt hsqrt_pos)
+    ext i
+    exact (vecNorm2_eq_zero_iff r).mp hr_norm i
+  · intro hr
+    exact lsNormwiseBackwardErrorPhi_eq_zero_of_residual_eq_zero theta y hr
+
+/-- Nondegenerate converse-zero branch for (20.20)-(20.21): if the printed
+    right-hand side is zero, `theta > 0`, `y ≠ 0`, and the row-side
+    `sigma_min [A phi(I-r r^+)]` branch is positive, then the zero must come
+    from `phi = 0`; hence the residual is zero and `eta_F(y)` equals the
+    printed right-hand side.  The remaining converse case is the degenerate
+    `sigma_min = 0` branch. -/
+theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_of_formulaRHS_eq_zero_of_sigmaMin_pos
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hrhs : lsNormwiseBackwardErrorFormulaRHS theta A b y = 0)
+    (hsigma :
+      0 < lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+        (lsResidualHigham A b y) y) :
+    lsNormwiseBackwardErrorEtaF theta A b y =
+      lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  have hbranches :
+      lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y = 0 ∨
+        lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+          (lsResidualHigham A b y) y = 0 :=
+    (lsNormwiseBackwardErrorFormulaRHS_eq_zero_iff theta A b y).mp hrhs
+  have hphi :
+      lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y = 0 := by
+    rcases hbranches with hphi | hsigma_zero
+    · exact hphi
+    · exact False.elim ((ne_of_gt hsigma) hsigma_zero)
+  have hres :
+      lsResidualHigham A b y = 0 :=
+    (lsNormwiseBackwardErrorPhi_eq_zero_iff_residual_eq_zero_of_theta_pos_of_y_ne_zero
+      htheta hy).mp hphi
+  exact
+    lsNormwiseBackwardErrorEtaF_eq_formulaRHS_of_lsResidualHigham_eq_zero
+      theta A b y hres
+
 /-- Any zero-right-hand-side augmented least-squares system gives an exact
     least-squares minimizer, even if the residual vector is supplied abstractly. -/
 theorem LSAugmentedSystem.isLeastSquaresMinimizer_of_zero_rhs {m n : ℕ}
