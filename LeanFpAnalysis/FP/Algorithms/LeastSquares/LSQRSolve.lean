@@ -6981,6 +6981,30 @@ theorem lsNormwiseBackwardErrorFormulaMatrixSigmaMin_pos_iff_rowRank_eq_card
     lsRealRectSigmaMinRow_pos_iff_rowRank_eq_card
       (lsNormwiseBackwardErrorFormulaMatrix theta A r y)
 
+/-- Row-rank-deficient form for the zero row-side `sigma_min` branch in
+    (20.21). -/
+theorem lsNormwiseBackwardErrorFormulaMatrixSigmaMin_eq_zero_iff_rowRank_ne_card
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ) :
+    lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y = 0 ↔
+      lsNormwiseBackwardErrorFormulaMatrixRowRank theta A r y ≠ m + 1 := by
+  constructor
+  · intro hσ hrank
+    have hσpos :
+        0 < lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y :=
+      (lsNormwiseBackwardErrorFormulaMatrixSigmaMin_pos_iff_rowRank_eq_card
+        theta A r y).mpr hrank
+    exact (ne_of_gt hσpos) hσ
+  · intro hrank
+    have hnotpos :
+        ¬ 0 < lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y := by
+      intro hσpos
+      exact hrank
+        ((lsNormwiseBackwardErrorFormulaMatrixSigmaMin_pos_iff_rowRank_eq_card
+          theta A r y).mp hσpos)
+    exact le_antisymm (le_of_not_gt hnotpos)
+      (lsNormwiseBackwardErrorFormulaMatrixSigmaMin_nonneg theta A r y)
+
 /-- A nonzero left-null vector for the source block in (20.21) rules out full
     row rank of `[A phi(I-r r^+)]`. -/
 theorem lsNormwiseBackwardErrorFormulaMatrixRowRank_ne_card_of_leftNull
@@ -11473,6 +11497,126 @@ theorem lsNormwiseBackwardErrorFormulaRHS_pos_iff_etaF_pos_of_theta_pos_of_y_ne_
   exact
     lsNormwiseBackwardErrorFormulaRHS_pos_iff_etaF_pos_of_theta_pos_of_y_ne_zero_of_sigmaMin_pos
       htheta A b hy hsigma
+
+/-- Row-rank-deficient source-block branch for the printed WKS right-hand side:
+    if `[A phi(I-r r^+)]` is not full row rank, then the row-side
+    `sigma_min` branch is zero, so the printed RHS in (20.21) is zero. -/
+theorem lsNormwiseBackwardErrorFormulaRHS_eq_zero_of_formulaMatrixRowRank_ne_card
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (hrank :
+      lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+        (lsResidualHigham A b y) y ≠ m + 1) :
+    lsNormwiseBackwardErrorFormulaRHS theta A b y = 0 := by
+  have hsigma :
+      lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+        (lsResidualHigham A b y) y = 0 :=
+    (lsNormwiseBackwardErrorFormulaMatrixSigmaMin_eq_zero_iff_rowRank_ne_card
+      theta A (lsResidualHigham A b y) y).mpr hrank
+  exact
+    (lsNormwiseBackwardErrorFormulaRHS_eq_zero_iff theta A b y).mpr
+      (Or.inr hsigma)
+
+/-- Non-minimizer row-rank-deficient zero classification for (20.20)-(20.21):
+    after excluding the exact-minimizer branch, the printed RHS vanishes exactly
+    when `[A phi(I-r r^+)]` is not full row rank. -/
+theorem lsNormwiseBackwardErrorFormulaRHS_eq_zero_iff_formulaMatrixRowRank_ne_card_of_not_isLeastSquaresMinimizer
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hnot : ¬ IsLeastSquaresMinimizer A b y) :
+    lsNormwiseBackwardErrorFormulaRHS theta A b y = 0 ↔
+      lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+        (lsResidualHigham A b y) y ≠ m + 1 := by
+  exact
+    (lsNormwiseBackwardErrorFormulaRHS_eq_zero_iff_sigmaMin_eq_zero_of_not_isLeastSquaresMinimizer
+      htheta A b hy hnot).trans
+      (lsNormwiseBackwardErrorFormulaMatrixSigmaMin_eq_zero_iff_rowRank_ne_card
+        theta A (lsResidualHigham A b y) y)
+
+/-- Non-minimizer full-row-rank positivity classification for (20.20)-(20.21):
+    after excluding the exact-minimizer branch, the printed RHS is positive
+    exactly when `[A phi(I-r r^+)]` has full row rank. -/
+theorem lsNormwiseBackwardErrorFormulaRHS_pos_iff_formulaMatrixRowRank_eq_card_of_not_isLeastSquaresMinimizer
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hnot : ¬ IsLeastSquaresMinimizer A b y) :
+    0 < lsNormwiseBackwardErrorFormulaRHS theta A b y ↔
+      lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+        (lsResidualHigham A b y) y = m + 1 := by
+  exact
+    (lsNormwiseBackwardErrorFormulaRHS_pos_iff_sigmaMin_pos_of_not_isLeastSquaresMinimizer
+      htheta A b hy hnot).trans
+      (lsNormwiseBackwardErrorFormulaMatrixSigmaMin_pos_iff_rowRank_eq_card
+        theta A (lsResidualHigham A b y) y)
+
+/-- Global finite-positive-`theta` row-rank zero-branch decomposition for
+    (20.20)-(20.21): when `y` is nonzero, the printed RHS is zero exactly when
+    `y` is an exact least-squares minimizer or the source block
+    `[A phi(I-r r^+)]` is row-rank deficient. -/
+theorem lsNormwiseBackwardErrorFormulaRHS_eq_zero_iff_isLeastSquaresMinimizer_or_formulaMatrixRowRank_ne_card_of_theta_pos_of_y_ne_zero
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0) :
+    lsNormwiseBackwardErrorFormulaRHS theta A b y = 0 ↔
+      IsLeastSquaresMinimizer A b y ∨
+        lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+          (lsResidualHigham A b y) y ≠ m + 1 := by
+  constructor
+  · intro hrhs
+    have hsplit :
+        IsLeastSquaresMinimizer A b y ∨
+          lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+            (lsResidualHigham A b y) y = 0 :=
+      (lsNormwiseBackwardErrorFormulaRHS_eq_zero_iff_isLeastSquaresMinimizer_or_sigmaMin_eq_zero_of_theta_pos_of_y_ne_zero
+        htheta A b hy).mp hrhs
+    rcases hsplit with hmin | hsigma
+    · exact Or.inl hmin
+    · exact Or.inr
+        ((lsNormwiseBackwardErrorFormulaMatrixSigmaMin_eq_zero_iff_rowRank_ne_card
+          theta A (lsResidualHigham A b y) y).mp hsigma)
+  · intro h
+    rcases h with hmin | hrank
+    · exact
+        lsNormwiseBackwardErrorFormulaRHS_eq_zero_of_isLeastSquaresMinimizer
+          theta A b y hmin
+    · exact
+        lsNormwiseBackwardErrorFormulaRHS_eq_zero_of_formulaMatrixRowRank_ne_card
+          theta A b y hrank
+
+/-- Global finite-positive-`theta` row-rank positivity decomposition for
+    (20.20)-(20.21): when `y` is nonzero, the printed RHS is positive exactly
+    when `y` is not an exact least-squares minimizer and
+    `[A phi(I-r r^+)]` has full row rank. -/
+theorem lsNormwiseBackwardErrorFormulaRHS_pos_iff_not_isLeastSquaresMinimizer_and_formulaMatrixRowRank_eq_card_of_theta_pos_of_y_ne_zero
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0) :
+    0 < lsNormwiseBackwardErrorFormulaRHS theta A b y ↔
+      ¬ IsLeastSquaresMinimizer A b y ∧
+        lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+          (lsResidualHigham A b y) y = m + 1 := by
+  constructor
+  · intro hrhs
+    have hsplit :
+        ¬ IsLeastSquaresMinimizer A b y ∧
+          0 < lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+            (lsResidualHigham A b y) y :=
+      (lsNormwiseBackwardErrorFormulaRHS_pos_iff_not_isLeastSquaresMinimizer_and_sigmaMin_pos_of_theta_pos_of_y_ne_zero
+        htheta A b hy).mp hrhs
+    exact ⟨hsplit.1,
+      (lsNormwiseBackwardErrorFormulaMatrixSigmaMin_pos_iff_rowRank_eq_card
+        theta A (lsResidualHigham A b y) y).mp hsplit.2⟩
+  · intro h
+    have hsigma :
+        0 < lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+          (lsResidualHigham A b y) y :=
+      (lsNormwiseBackwardErrorFormulaMatrixSigmaMin_pos_iff_rowRank_eq_card
+        theta A (lsResidualHigham A b y) y).mpr h.2
+    exact
+      (lsNormwiseBackwardErrorFormulaRHS_pos_iff_not_isLeastSquaresMinimizer_and_sigmaMin_pos_of_theta_pos_of_y_ne_zero
+        htheta A b hy).mpr ⟨h.1, hsigma⟩
 
 /-- Any zero-right-hand-side augmented least-squares system gives an exact
     least-squares minimizer, even if the residual vector is supplied abstractly. -/
