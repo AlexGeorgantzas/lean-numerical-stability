@@ -3338,6 +3338,28 @@ theorem GeneralizedQRFactorization.exists_unique_lse_minimizer_of_conditions20_2
   exact IsLSEMinimizer.eq_of_nullIntersectionTrivial hnull hy hx
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9:
+    supplied-GQR uniqueness consequence stated at the kernel nonsingularity
+    surface after (20.28).
+
+    If the supplied triangular `S` and `L22` blocks have trivial kernels, then
+    the exact GQR method has a unique equality-constrained least-squares
+    minimizer.  This remains supplied-factor algebra; it does not construct the
+    GQR factors. -/
+theorem GeneralizedQRFactorization.exists_unique_lse_minimizer_of_s_l22_kernel_trivial
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    {b : Fin (r + q) → ℝ} {d : Fin p → ℝ}
+    (hS_kernel : ∀ y1 : Fin p → ℝ, rectMatMulVec h.S y1 = 0 → y1 = 0)
+    (hL22_kernel : ∀ y2 : Fin q → ℝ, rectMatMulVec h.L22 y2 = 0 → y2 = 0) :
+    ∃! x : Fin (p + q) → ℝ, IsLSEMinimizer A b B d x := by
+  have hcond : LSEFullRowRank B ∧ LSENullIntersectionTrivial A B :=
+    (h.conditions20_24_iff_s_l22_kernel_trivial).2
+      ⟨hS_kernel, hL22_kernel⟩
+  exact h.exists_unique_lse_minimizer_of_conditions20_24 hcond.1 hcond.2
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9:
     supplied-GQR uniqueness consequence stated at the triangular nonsingularity
     surface after (20.28).
 
@@ -3582,6 +3604,24 @@ theorem GeneralizedQRFactorization.exists_unique_lseKKTPrimal_of_conditions20_24
   exact (exists_unique_lseKKTPrimal_iff_exists_unique_isLSEMinimizer
     (A := A) (b := b) (B := B) (d := d)).2
     (h.exists_unique_lse_minimizer_of_conditions20_24 hB hnull)
+
+/-- Theorem 20.9 plus Problem 20.10 at the supplied kernel nonsingularity
+    surface: trivial kernels of `S` and `L22` imply a unique KKT primal
+    variable for the exact LSE problem. -/
+theorem GeneralizedQRFactorization.exists_unique_lseKKTPrimal_of_s_l22_kernel_trivial
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    {b : Fin (r + q) → ℝ} {d : Fin p → ℝ}
+    (hS_kernel : ∀ y1 : Fin p → ℝ, rectMatMulVec h.S y1 = 0 → y1 = 0)
+    (hL22_kernel : ∀ y2 : Fin q → ℝ, rectMatMulVec h.L22 y2 = 0 → y2 = 0) :
+    ∃! x : Fin (p + q) → ℝ,
+      ∃ lambda : Fin p → ℝ, LSEKKTSystem A b B d x lambda := by
+  exact (exists_unique_lseKKTPrimal_iff_exists_unique_isLSEMinimizer
+    (A := A) (b := b) (B := B) (d := d)).2
+    (h.exists_unique_lse_minimizer_of_s_l22_kernel_trivial
+      hS_kernel hL22_kernel)
 
 /-- Theorem 20.9 plus Problem 20.10 at the supplied triangular nonsingularity
     surface: nonzero diagonals of `S` and `L22` imply a unique KKT primal
