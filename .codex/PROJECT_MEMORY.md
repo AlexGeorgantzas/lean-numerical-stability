@@ -17,8 +17,8 @@ end-to-end stability rebuild is tagged as
 - On 2026-06-19, split-3 Chapter 13 formalization was started from
   `References/1.9780898718027.ch13.pdf`.
 - The governing skill is `.codex/skills/higham-chapter-formalization/SKILL.md`.
-- Source inventory: `docs/CHAPTER13_SOURCE_INVENTORY.md`.
-- Working report: `docs/CHAPTER13_FORMALIZATION_REPORT.md`.
+- Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
+- Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
 - Existing `BlockLU.lean` was already Chapter-13-shaped but mislabeled as
   Chapter 12. Its labels were corrected to Higham Chapter 13, and it now exposes
@@ -6256,7 +6256,7 @@ These compile, but should not be treated as fully derived stability results:
   Focused `BlockLU` Lean/build, lookup, axiom audit, `git diff --check`,
   placeholder scan, and temp cleanup passed.
 
-- 2026-06-21: Created `docs/CHAPTER13_BOTTLENECK_LEDGER.md` for the repeated
+- 2026-06-21: Created `docs/chapter13/CHAPTER13_BOTTLENECK_LEDGER.md` for the repeated
   selected-scope Chapter 13 blockers required by the Higham skill's red
   bottleneck protocol.  The ledger records exact next Lean dependencies for
   the Algorithm 13.3 active pivot product/certificate route, Problem 13.4's
@@ -8137,9 +8137,9 @@ These compile, but should not be treated as fully derived stability results:
   and focused `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU` both passed.
   Still pending after resume: quiet public lookup rerun, `#print axioms`, marker
   scan, `git diff --check`, scratch cleanup if an axiom scratch is created, and
-  updates to `docs/LIBRARY_LOOKUP.md`, `docs/CHAPTER13_BOTTLENECK_LEDGER.md`,
-  `docs/CHAPTER13_SOURCE_INVENTORY.md`, and
-  `docs/CHAPTER13_FORMALIZATION_REPORT.md`.
+  updates to `docs/LIBRARY_LOOKUP.md`, `docs/chapter13/CHAPTER13_BOTTLENECK_LEDGER.md`,
+  `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`, and
+  `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 
 - 2026-06-24 resume verification: Completed the pending audit for
   `higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_source_table_of_det_ne_zero`.
@@ -8150,9 +8150,9 @@ These compile, but should not be treated as fully derived stability results:
   `git diff --check`, scratch cleanup for
   `ScratchCh13BddDetSourceTableAxioms.lean`, and `#print axioms` with only
   `propext`, `Classical.choice`, and `Quot.sound`.  Documentation was updated
-  in `docs/LIBRARY_LOOKUP.md`, `docs/CHAPTER13_BOTTLENECK_LEDGER.md`,
-  `docs/CHAPTER13_SOURCE_INVENTORY.md`, and
-  `docs/CHAPTER13_FORMALIZATION_REPORT.md`.  The wrapper removes the separate
+  in `docs/LIBRARY_LOOKUP.md`, `docs/chapter13/CHAPTER13_BOTTLENECK_LEDGER.md`,
+  `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`, and
+  `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.  The wrapper removes the separate
   positive-denominator proof artifact for the source-table package but does not
   construct the source inverse-bound table or active reciprocal upper bounds.
 
@@ -8266,16 +8266,16 @@ These compile, but should not be treated as fully derived stability results:
   `Classical.choice`, and `Quot.sound`.  Current modified files intentionally on disk
   are `.codex/PROJECT_MEMORY.md`,
   `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`,
-  `docs/CHAPTER13_BOTTLENECK_LEDGER.md`,
-  `docs/CHAPTER13_FORMALIZATION_REPORT.md`,
-  `docs/CHAPTER13_SOURCE_INVENTORY.md`, `docs/LIBRARY_LOOKUP.md`, and
+  `docs/chapter13/CHAPTER13_BOTTLENECK_LEDGER.md`,
+  `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`,
+  `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`, `docs/LIBRARY_LOOKUP.md`, and
   `examples/LibraryLookup.lean`.  On resume, continue from the remaining
   Problem 13.4 per-tail direct lower-budget comparison and Eq.13.23 `rho <= 2`
   source surfaces rather than adding more chain-packaging wrappers.
 
 - 2026-06-24 docs-health savepoint after source-chain lift: corrected stale
-  Chapter 13 status language in `docs/CHAPTER13_SOURCE_INVENTORY.md`,
-  `docs/CHAPTER13_FORMALIZATION_REPORT.md`, `docs/CHAPTER13_BOTTLENECK_LEDGER.md`,
+  Chapter 13 status language in `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`,
+  `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`, `docs/chapter13/CHAPTER13_BOTTLENECK_LEDGER.md`,
   and `docs/LIBRARY_LOOKUP.md`.  The docs now consistently say that
   `Higham13Eq1322LowerComparisonSourceChain` handles the recursive source-tail
   lift from supplied determinant/pivot/dimension/direct-lower-comparison data,
@@ -8300,9 +8300,9 @@ These compile, but should not be treated as fully derived stability results:
   after the pivot-right-inverse route-rejection savepoint.  The intentional
   modified files on disk are `.codex/PROJECT_MEMORY.md`,
   `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`,
-  `docs/CHAPTER13_BOTTLENECK_LEDGER.md`,
-  `docs/CHAPTER13_FORMALIZATION_REPORT.md`,
-  `docs/CHAPTER13_SOURCE_INVENTORY.md`, `docs/LIBRARY_LOOKUP.md`, and
+  `docs/chapter13/CHAPTER13_BOTTLENECK_LEDGER.md`,
+  `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`,
+  `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`, `docs/LIBRARY_LOOKUP.md`, and
   `examples/LibraryLookup.lean`.  Resume from the selected-scope red
   bottlenecks: Problem 13.4's per-tail direct lower-budget/condition
   comparison feeding `Higham13Eq1322LowerComparisonSourceChain`, Eq.13.23's
@@ -8350,10 +8350,10 @@ These compile, but should not be treated as fully derived stability results:
   started after the Theorem 13.6 conditional Eq.13.16 wrapper.  The
   intentional modified files on disk are `.codex/PROJECT_MEMORY.md`,
   `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`,
-  `docs/CHAPTER13_BOTTLENECK_LEDGER.md`,
-  `docs/CHAPTER13_FORMALIZATION_REPORT.md`,
-  `docs/CHAPTER13_PROOF_SOURCE_LEDGER.md`,
-  `docs/CHAPTER13_SOURCE_INVENTORY.md`, `docs/LIBRARY_LOOKUP.md`, and
+  `docs/chapter13/CHAPTER13_BOTTLENECK_LEDGER.md`,
+  `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`,
+  `docs/chapter13/CHAPTER13_PROOF_SOURCE_LEDGER.md`,
+  `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`, `docs/LIBRARY_LOOKUP.md`, and
   `examples/LibraryLookup.lean`.  The last inspected next step was a possible
   inverse-ratio-to-`Higham13Eq1322LowerComparisonSourceChain` connector for
   Problem 13.4; because existing inverse-ratio successor-chain/witness wrappers
