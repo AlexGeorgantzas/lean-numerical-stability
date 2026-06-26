@@ -3529,6 +3529,28 @@ theorem lsScaledAugmentedEigenvalue_branch_extreme_bounds_of_sigma_bounds
         (alpha := alpha) (sigma := sigmaMin) (tau := sigma)
         halpha hsigmaMin hmin
 
+/-- Strict scalar extremal branch bounds for (20.18)-(20.19): any singular
+    value strictly between `sigmaMin` and `sigmaMax` has positive branch
+    strictly below the `sigmaMax` branch, and its negative-branch magnitude
+    strictly above the `sigmaMin` branch. -/
+theorem lsScaledAugmentedEigenvalue_branch_strict_extreme_bounds_of_sigma_bounds
+    {alpha sigmaMin sigma sigmaMax : ℝ} (halpha : 0 ≤ alpha)
+    (hsigmaMin : 0 ≤ sigmaMin) (hmin : sigmaMin < sigma)
+    (hmax : sigma < sigmaMax) :
+    lsScaledAugmentedEigenvaluePlus alpha sigma <
+        lsScaledAugmentedEigenvaluePlus alpha sigmaMax ∧
+      |lsScaledAugmentedEigenvalueMinus alpha sigmaMin| <
+        |lsScaledAugmentedEigenvalueMinus alpha sigma| := by
+  have hsigma : 0 ≤ sigma := le_trans hsigmaMin (le_of_lt hmin)
+  constructor
+  · exact
+      lsScaledAugmentedEigenvaluePlus_strictMono_sigma_nonneg
+        (alpha := alpha) (sigma := sigma) (tau := sigmaMax) hsigma hmax
+  · exact
+      lsScaledAugmentedEigenvalueMinus_abs_strictMono_sigma_nonneg
+        (alpha := alpha) (sigma := sigmaMin) (tau := sigma)
+        halpha hsigmaMin hmin
+
 /-- For the source scaling range `alpha >= 0`, the positive branch in (20.18)
     dominates the magnitude of the negative branch. -/
 theorem lsScaledAugmentedEigenvalueMinus_abs_le_plus {alpha sigma : ℝ}
@@ -3607,6 +3629,58 @@ theorem lsScaledAugmentedEigenvalue_branch_ratio_le_extreme_of_sigma_bounds
           |lsScaledAugmentedEigenvalueMinus alpha sigmaMin| := by
     exact div_le_div_of_nonneg_left hplusMax_nonneg hden_min_pos hext.2
   exact le_trans hfirst hsecond
+
+/-- Strict scalar branch-ratio envelope for (20.18)-(20.19): an interior
+    singular value has branch ratio strictly below the ratio formed from the
+    largest positive branch and the smallest negative-branch magnitude.  This
+    is the strict version needed when later spectral multiplicity arguments
+    identify the extremal condition-number branches. -/
+theorem lsScaledAugmentedEigenvalue_branch_ratio_lt_extreme_of_strict_sigma_bounds
+    {alpha sigmaMin sigma sigmaMax : ℝ} (halpha : 0 ≤ alpha)
+    (hsigmaMin_pos : 0 < sigmaMin) (hmin : sigmaMin < sigma)
+    (hmax : sigma < sigmaMax) :
+    lsScaledAugmentedEigenvaluePlus alpha sigma /
+        |lsScaledAugmentedEigenvalueMinus alpha sigma| <
+      lsScaledAugmentedEigenvaluePlus alpha sigmaMax /
+        |lsScaledAugmentedEigenvalueMinus alpha sigmaMin| := by
+  have hsigma_pos : 0 < sigma := lt_trans hsigmaMin_pos hmin
+  have hsigma : 0 ≤ sigma := le_of_lt hsigma_pos
+  have hsigmaMax_pos : 0 < sigmaMax := lt_trans hsigma_pos hmax
+  have hplus_lt :
+      lsScaledAugmentedEigenvaluePlus alpha sigma <
+        lsScaledAugmentedEigenvaluePlus alpha sigmaMax :=
+    lsScaledAugmentedEigenvaluePlus_strictMono_sigma_nonneg
+      (alpha := alpha) (sigma := sigma) (tau := sigmaMax) hsigma hmax
+  have hminus_lt :
+      |lsScaledAugmentedEigenvalueMinus alpha sigmaMin| <
+        |lsScaledAugmentedEigenvalueMinus alpha sigma| :=
+    lsScaledAugmentedEigenvalueMinus_abs_strictMono_sigma_nonneg
+      (alpha := alpha) (sigma := sigmaMin) (tau := sigma)
+      halpha (le_of_lt hsigmaMin_pos) hmin
+  have hden_sigma_pos : 0 < |lsScaledAugmentedEigenvalueMinus alpha sigma| := by
+    exact abs_pos.mpr
+      (lsScaledAugmentedEigenvalueMinus_ne_zero_of_sigma_ne_zero
+        (alpha := alpha) (sigma := sigma) halpha (ne_of_gt hsigma_pos))
+  have hden_min_pos : 0 < |lsScaledAugmentedEigenvalueMinus alpha sigmaMin| := by
+    exact abs_pos.mpr
+      (lsScaledAugmentedEigenvalueMinus_ne_zero_of_sigma_ne_zero
+        (alpha := alpha) (sigma := sigmaMin) halpha (ne_of_gt hsigmaMin_pos))
+  have hPmax_pos : 0 < lsScaledAugmentedEigenvaluePlus alpha sigmaMax :=
+    lsScaledAugmentedEigenvaluePlus_pos_of_sigma_ne_zero
+      (alpha := alpha) (sigma := sigmaMax) halpha (ne_of_gt hsigmaMax_pos)
+  have hfirst :
+      lsScaledAugmentedEigenvaluePlus alpha sigma /
+          |lsScaledAugmentedEigenvalueMinus alpha sigma| <
+        lsScaledAugmentedEigenvaluePlus alpha sigmaMax /
+          |lsScaledAugmentedEigenvalueMinus alpha sigma| :=
+    div_lt_div_of_pos_right hplus_lt hden_sigma_pos
+  have hsecond :
+      lsScaledAugmentedEigenvaluePlus alpha sigmaMax /
+          |lsScaledAugmentedEigenvalueMinus alpha sigma| <
+        lsScaledAugmentedEigenvaluePlus alpha sigmaMax /
+          |lsScaledAugmentedEigenvalueMinus alpha sigmaMin| :=
+    div_lt_div_of_pos_left hPmax_pos hden_min_pos hminus_lt
+  exact lt_trans hfirst hsecond
 
 /-- Scalar branch-ratio form of the achieved upper bound in (20.19).  It is the
     exact denominator/numerator estimate behind the source choice
