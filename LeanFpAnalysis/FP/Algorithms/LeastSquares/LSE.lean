@@ -2294,6 +2294,71 @@ theorem GeneralizedQRFactorization.s_bijective_iff_lseFullRowRank
       simpa [lseConstraintLinearMap] using hlinInj
     exact ⟨hinj, hsurj⟩
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
+    for supplied GQR data, `B` has full row rank iff the displayed
+    lower-triangular constraint block `S` has trivial kernel.
+
+    This is the source proof sentence "B has full rank if and only if S is
+    nonsingular" in kernel form.  It does not construct the GQR factors. -/
+theorem GeneralizedQRFactorization.lseFullRowRank_iff_s_kernel_trivial
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B) :
+    LSEFullRowRank B ↔
+      ∀ y1 : Fin p → ℝ, rectMatMulVec h.S y1 = 0 → y1 = 0 := by
+  constructor
+  · intro hB y1 hy1
+    have hS_bij : Function.Bijective (rectMatMulVec h.S) :=
+      (h.s_bijective_iff_lseFullRowRank).2 hB
+    apply hS_bij.1
+    rw [hy1, rectMatMulVec_zero]
+  · intro hker
+    have hS_inj : Function.Injective (rectMatMulVec h.S) := by
+      intro y1 z1 hyz
+      let w : Fin p → ℝ := fun i => y1 i - z1 i
+      have hSw : rectMatMulVec h.S w = 0 := by
+        ext i
+        have hi := congrFun hyz i
+        have hsub := congrFun (rectMatMulVec_sub h.S y1 z1) i
+        dsimp [w]
+        rw [hsub, hi]
+        ring
+      have hw : w = 0 := hker w hSw
+      ext i
+      have hwi := congrFun hw i
+      dsimp [w] at hwi
+      linarith
+    have hS_diag : ∀ i : Fin p, h.S i i ≠ 0 :=
+      rectMatMulVec_diag_ne_zero_of_lowerTriangular_injective
+        h.lowerS hS_inj
+    have hS_bij : Function.Bijective (rectMatMulVec h.S) :=
+      (h.s_bijective_iff_diag_ne_zero).2 hS_diag
+    exact (h.s_bijective_iff_lseFullRowRank).1 hS_bij
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
+    for supplied GQR data, `B` has full row rank iff the lower-triangular
+    constraint block `S` has nonzero diagonal entries.
+
+    This is the source proof sentence "B has full rank if and only if S is
+    nonsingular" in triangular diagonal form. -/
+theorem GeneralizedQRFactorization.lseFullRowRank_iff_s_diag_ne_zero
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B) :
+    LSEFullRowRank B ↔
+      ∀ i : Fin p, h.S i i ≠ 0 := by
+  constructor
+  · intro hB
+    have hS_bij : Function.Bijective (rectMatMulVec h.S) :=
+      (h.s_bijective_iff_lseFullRowRank).2 hB
+    exact (h.s_bijective_iff_diag_ne_zero).1 hS_bij
+  · intro hS_diag
+    have hS_bij : Function.Bijective (rectMatMulVec h.S) :=
+      (h.s_bijective_iff_diag_ne_zero).2 hS_diag
+    exact (h.s_bijective_iff_lseFullRowRank).1 hS_bij
+
 /-- Supplied-GQR equivalence for the second condition in (20.24):
     once the constraint block `S` is injective, the null-intersection
     condition `null(A) ∩ null(B) = {0}` is equivalent to injectivity of the
