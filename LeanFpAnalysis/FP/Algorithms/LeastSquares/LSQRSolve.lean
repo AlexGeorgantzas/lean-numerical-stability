@@ -4977,6 +4977,24 @@ theorem
   exact Real.sqrt_pos.mpr
     (lsScaledAugmentedMatrix_leftNull_vecNorm2Sq_pos_of_unit_component u hu)
 
+/-- Rescaling two real vectors by the inverse of their Euclidean norms preserves
+    a zero Euclidean dot product. -/
+theorem vecNorm2_inv_smul_dot_eq_zero_of_dot_eq_zero {n : ℕ}
+    (x y : Fin n → ℝ)
+    (hxy : (∑ i : Fin n, x i * y i) = 0) :
+    (∑ i : Fin n,
+      ((vecNorm2 x)⁻¹ * x i) * ((vecNorm2 y)⁻¹ * y i)) = 0 := by
+  calc
+    (∑ i : Fin n,
+      ((vecNorm2 x)⁻¹ * x i) * ((vecNorm2 y)⁻¹ * y i))
+        = (vecNorm2 x)⁻¹ * (vecNorm2 y)⁻¹ *
+            (∑ i : Fin n, x i * y i) := by
+          rw [Finset.mul_sum]
+          apply Finset.sum_congr rfl
+          intro i _
+          ring
+    _ = 0 := by rw [hxy, mul_zero]
+
 /-- Same-branch positive/positive dot-product expansion for the source-normalized
     singular-pair vectors in (20.18), allowing different singular values and
     different left/right singular-vector components. -/
@@ -5163,6 +5181,148 @@ theorem lsScaledAugmentedMatrix_leftNull_leftNull_dot_eq_zero_of_left_orthogonal
       Fin.append u (0 : Fin n → ℝ) k *
         Fin.append w (0 : Fin n → ℝ) k) = 0 := by
   rw [lsScaledAugmentedMatrix_leftNull_leftNull_dot_eq, hleft]
+
+/-- Component orthogonality is preserved after inverse-2-norm rescaling of two
+    positive source-normalized branch vectors from (20.18). -/
+theorem
+    lsScaledAugmentedMatrix_singularPair_plus_plus_normalized_rescaled_dot_eq_zero_of_component_orthogonal
+    {m n : ℕ} {alpha sigma tau : ℝ}
+    (u w : Fin m → ℝ) (v z : Fin n → ℝ)
+    (hleft : (∑ i : Fin m, u i * w i) = 0)
+    (hright : (∑ j : Fin n, v j * z j) = 0) :
+    (∑ k : Fin (m + n),
+      ((vecNorm2
+          (Fin.append u
+            (fun j =>
+              (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j)))⁻¹ *
+        Fin.append u
+          (fun j => (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j) k) *
+      ((vecNorm2
+          (Fin.append w
+            (fun j =>
+              (tau / lsScaledAugmentedEigenvaluePlus alpha tau) * z j)))⁻¹ *
+        Fin.append w
+          (fun j => (tau / lsScaledAugmentedEigenvaluePlus alpha tau) * z j) k)) =
+      0 := by
+  apply vecNorm2_inv_smul_dot_eq_zero_of_dot_eq_zero
+  exact
+    lsScaledAugmentedMatrix_singularPair_plus_plus_normalized_dot_eq_zero_of_component_orthogonal
+      u w v z hleft hright
+
+/-- Component orthogonality is preserved after inverse-2-norm rescaling of a
+    positive and a negative source-normalized branch vector from (20.18). -/
+theorem
+    lsScaledAugmentedMatrix_singularPair_plus_minus_normalized_rescaled_dot_eq_zero_of_component_orthogonal
+    {m n : ℕ} {alpha sigma tau : ℝ}
+    (u w : Fin m → ℝ) (v z : Fin n → ℝ)
+    (hleft : (∑ i : Fin m, u i * w i) = 0)
+    (hright : (∑ j : Fin n, v j * z j) = 0) :
+    (∑ k : Fin (m + n),
+      ((vecNorm2
+          (Fin.append u
+            (fun j =>
+              (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j)))⁻¹ *
+        Fin.append u
+          (fun j => (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j) k) *
+      ((vecNorm2
+          (Fin.append w
+            (fun j =>
+              (tau / lsScaledAugmentedEigenvalueMinus alpha tau) * z j)))⁻¹ *
+        Fin.append w
+          (fun j => (tau / lsScaledAugmentedEigenvalueMinus alpha tau) * z j) k)) =
+      0 := by
+  apply vecNorm2_inv_smul_dot_eq_zero_of_dot_eq_zero
+  exact
+    lsScaledAugmentedMatrix_singularPair_plus_minus_normalized_dot_eq_zero_of_component_orthogonal
+      u w v z hleft hright
+
+/-- Component orthogonality is preserved after inverse-2-norm rescaling of two
+    negative source-normalized branch vectors from (20.18). -/
+theorem
+    lsScaledAugmentedMatrix_singularPair_minus_minus_normalized_rescaled_dot_eq_zero_of_component_orthogonal
+    {m n : ℕ} {alpha sigma tau : ℝ}
+    (u w : Fin m → ℝ) (v z : Fin n → ℝ)
+    (hleft : (∑ i : Fin m, u i * w i) = 0)
+    (hright : (∑ j : Fin n, v j * z j) = 0) :
+    (∑ k : Fin (m + n),
+      ((vecNorm2
+          (Fin.append u
+            (fun j =>
+              (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j)))⁻¹ *
+        Fin.append u
+          (fun j => (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j) k) *
+      ((vecNorm2
+          (Fin.append w
+            (fun j =>
+              (tau / lsScaledAugmentedEigenvalueMinus alpha tau) * z j)))⁻¹ *
+        Fin.append w
+          (fun j => (tau / lsScaledAugmentedEigenvalueMinus alpha tau) * z j) k)) =
+      0 := by
+  apply vecNorm2_inv_smul_dot_eq_zero_of_dot_eq_zero
+  exact
+    lsScaledAugmentedMatrix_singularPair_minus_minus_normalized_dot_eq_zero_of_component_orthogonal
+      u w v z hleft hright
+
+/-- Left-component orthogonality is preserved after inverse-2-norm rescaling of
+    a positive source-normalized branch vector and a left-null branch vector. -/
+theorem
+    lsScaledAugmentedMatrix_singularPair_plus_leftNull_normalized_rescaled_dot_eq_zero_of_left_orthogonal
+    {m n : ℕ} {alpha sigma : ℝ}
+    (u w : Fin m → ℝ) (v : Fin n → ℝ)
+    (hleft : (∑ i : Fin m, u i * w i) = 0) :
+    (∑ k : Fin (m + n),
+      ((vecNorm2
+          (Fin.append u
+            (fun j =>
+              (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j)))⁻¹ *
+        Fin.append u
+          (fun j => (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j) k) *
+      ((vecNorm2 (Fin.append w (0 : Fin n → ℝ)))⁻¹ *
+        Fin.append w (0 : Fin n → ℝ) k)) =
+      0 := by
+  apply vecNorm2_inv_smul_dot_eq_zero_of_dot_eq_zero
+  exact
+    lsScaledAugmentedMatrix_singularPair_plus_leftNull_normalized_dot_eq_zero_of_left_orthogonal
+      u w v hleft
+
+/-- Left-component orthogonality is preserved after inverse-2-norm rescaling of
+    a negative source-normalized branch vector and a left-null branch vector. -/
+theorem
+    lsScaledAugmentedMatrix_singularPair_minus_leftNull_normalized_rescaled_dot_eq_zero_of_left_orthogonal
+    {m n : ℕ} {alpha sigma : ℝ}
+    (u w : Fin m → ℝ) (v : Fin n → ℝ)
+    (hleft : (∑ i : Fin m, u i * w i) = 0) :
+    (∑ k : Fin (m + n),
+      ((vecNorm2
+          (Fin.append u
+            (fun j =>
+              (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j)))⁻¹ *
+        Fin.append u
+          (fun j => (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j) k) *
+      ((vecNorm2 (Fin.append w (0 : Fin n → ℝ)))⁻¹ *
+        Fin.append w (0 : Fin n → ℝ) k)) =
+      0 := by
+  apply vecNorm2_inv_smul_dot_eq_zero_of_dot_eq_zero
+  exact
+    lsScaledAugmentedMatrix_singularPair_minus_leftNull_normalized_dot_eq_zero_of_left_orthogonal
+      u w v hleft
+
+/-- Left-component orthogonality is preserved after inverse-2-norm rescaling of
+    two left-null branch vectors `[u;0]` and `[w;0]` from (20.18). -/
+theorem
+    lsScaledAugmentedMatrix_leftNull_leftNull_rescaled_dot_eq_zero_of_left_orthogonal
+    {m n : ℕ} (u w : Fin m → ℝ)
+    (hleft : (∑ i : Fin m, u i * w i) = 0) :
+    (∑ k : Fin (m + n),
+      ((vecNorm2 (Fin.append u (0 : Fin n → ℝ)))⁻¹ *
+        Fin.append u (0 : Fin n → ℝ) k) *
+      ((vecNorm2 (Fin.append w (0 : Fin n → ℝ)))⁻¹ *
+        Fin.append w (0 : Fin n → ℝ) k)) =
+      0 := by
+  apply vecNorm2_inv_smul_dot_eq_zero_of_dot_eq_zero
+  exact
+    lsScaledAugmentedMatrix_leftNull_leftNull_dot_eq_zero_of_left_orthogonal
+      u w hleft
 
 /-- Orthogonality of the two source-normalized singular-pair branches in
     Björck's eigenvalue formula (20.18).  This is a source-facing spectral
