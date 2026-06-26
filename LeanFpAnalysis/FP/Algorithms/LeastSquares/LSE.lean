@@ -378,6 +378,69 @@ theorem gqrBQBlock_mulVec {p q : ℕ}
   rw [Fin.sum_univ_add]
   simp [Fin.append_left, Fin.append_right]
 
+/-- The transpose of a square upper-triangular QR block is lower triangular.
+
+    This is the first triangularity bridge in Higham's Chapter 20 construction
+    of the generalized QR factorization in Theorem 20.9: a QR factorization of
+    `Bᵀ` supplies an upper-triangular `R`, whose transpose becomes the lower
+    triangular `S` in `B Q = [S 0]`. -/
+theorem isLowerTriangular_matTranspose_of_isUpperTriangular {n : ℕ}
+    {R : Fin n → Fin n → ℝ}
+    (hR : IsUpperTriangular n R) :
+    IsLowerTriangular (matTranspose R) := by
+  intro i j hij
+  unfold matTranspose
+  exact hR j i hij
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction step:
+    a supplied tall QR factorization of `Bᵀ` yields the constraint block
+    identity `B Q = [Rᵀ 0]` in the GQR display (20.27).
+
+    The hypothesis is the exact transformed QR block
+    `Qᵀ Bᵀ = [R;0]`.  Taking transposes entrywise gives the source GQR
+    constraint block with `S = Rᵀ`.  This is still supplied exact algebra: it
+    does not construct the QR factorization itself. -/
+theorem gqrBQBlock_eq_of_transpose_tall_qr {p q : ℕ}
+    (B : Fin p → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (R : Fin p → Fin p → ℝ)
+    (hqr : matMulRectLeft (matTranspose Q)
+        (fun j : Fin (p + q) => fun i : Fin p => B i j) =
+      lsQRTallBlock (k := q) R) :
+    matMulRect p (p + q) (p + q) B Q = gqrBQBlock (matTranspose R) := by
+  ext i j
+  refine Fin.addCases
+    (motive := fun j : Fin (p + q) =>
+      matMulRect p (p + q) (p + q) B Q i j =
+        gqrBQBlock (matTranspose R) i j)
+    ?left ?right j
+  · intro j
+    have hentry := congrFun (congrFun hqr (Fin.castAdd q j)) i
+    unfold matMulRectLeft matTranspose lsQRTallBlock at hentry
+    unfold matMulRect gqrBQBlock matTranspose
+    rw [Fin.append_left] at hentry
+    rw [Fin.append_left]
+    calc
+      (∑ k : Fin (p + q), B i k * Q k (Fin.castAdd q j))
+          = ∑ k : Fin (p + q), Q k (Fin.castAdd q j) * B i k := by
+              apply Finset.sum_congr rfl
+              intro k _
+              ring
+      _ = R j i := hentry
+  · intro j
+    have hentry := congrFun (congrFun hqr (Fin.natAdd p j)) i
+    unfold matMulRectLeft matTranspose lsQRTallBlock at hentry
+    unfold matMulRect gqrBQBlock matTranspose
+    rw [Fin.append_right] at hentry
+    rw [Fin.append_right]
+    calc
+      (∑ k : Fin (p + q), B i k * Q k (Fin.natAdd p j))
+          = ∑ k : Fin (p + q), Q k (Fin.natAdd p j) * B i k := by
+              apply Finset.sum_congr rfl
+              intro k _
+              ring
+      _ = 0 := hentry
+
 /-- Matrix-vector multiplication by the `U^T A Q` block in (20.27). -/
 theorem gqrAQBlock_mulVec {r p q : ℕ}
     (L11 : Fin r → Fin p → ℝ)
