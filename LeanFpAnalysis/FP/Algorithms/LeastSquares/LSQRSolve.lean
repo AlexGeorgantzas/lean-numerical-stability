@@ -11135,6 +11135,26 @@ theorem lsNormwiseBackwardErrorFormulaRHS_eq_zero_of_etaF_eq_zero_of_positive_th
     lsNormwiseBackwardErrorFormulaRHS_eq_zero_of_isLeastSquaresMinimizer
       theta A b y hmin
 
+/-- Positive finite-`theta` zero-error equality branch for (20.20)-(20.21):
+    if the normwise backward-error infimum vanishes, then `y` is already an
+    exact least-squares minimizer, so the printed WKS right-hand side also
+    agrees with `eta_F(y)`.  This is only the zero-error branch, not the
+    general Walden--Karlson--Sun spectral formula for non-minimizers. -/
+theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_of_etaF_eq_zero_of_positive_theta
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    (y : Fin n → ℝ)
+    (heta : lsNormwiseBackwardErrorEtaF theta A b y = 0) :
+    lsNormwiseBackwardErrorEtaF theta A b y =
+      lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  have hmin :
+      IsLeastSquaresMinimizer A b y :=
+    (lsNormwiseBackwardErrorEtaF_eq_zero_iff_isLeastSquaresMinimizer_of_positive_theta
+      htheta A b y).mp heta
+  exact
+    lsNormwiseBackwardErrorEtaF_eq_formulaRHS_of_isLeastSquaresMinimizer
+      theta A b y hmin
+
 /-- Any zero-right-hand-side augmented least-squares system gives an exact
     least-squares minimizer, even if the residual vector is supplied abstractly. -/
 theorem LSAugmentedSystem.isLeastSquaresMinimizer_of_zero_rhs {m n : ℕ}
