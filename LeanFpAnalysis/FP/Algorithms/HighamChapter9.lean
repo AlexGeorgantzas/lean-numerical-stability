@@ -1364,6 +1364,63 @@ theorem higham9_2_permutedLUBackwardError_to_LUBackwardError {n : ℕ}
     intro i j
     simpa [higham9_2_rowPermutedMatrix] using hLU.backward_bound i j
 
+/-- **Equation (9.2a)**, row permutations preserve Higham's max-entry norm. -/
+theorem higham9_2_rowPermutedMatrix_maxEntryNorm {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) {sigma : Fin n → Fin n}
+    (hsigma : IsPermutation n sigma) :
+    maxEntryNorm hn (higham9_2_rowPermutedMatrix A sigma) = maxEntryNorm hn A := by
+  classical
+  let eSigma : Fin n ≃ Fin n := Equiv.ofBijective sigma hsigma
+  apply le_antisymm
+  · let hne : (Finset.univ : Finset (Fin n)).Nonempty :=
+      Finset.univ_nonempty_iff.mpr ⟨⟨0, hn⟩⟩
+    change Finset.sup' Finset.univ hne
+        (fun i => Finset.sup' Finset.univ hne
+          (fun j => |higham9_2_rowPermutedMatrix A sigma i j|)) ≤
+      maxEntryNorm hn A
+    apply Finset.sup'_le
+    intro i _
+    apply Finset.sup'_le
+    intro j _
+    simpa [higham9_2_rowPermutedMatrix] using
+      entry_le_maxEntryNorm hn A (sigma i) j
+  · let hne : (Finset.univ : Finset (Fin n)).Nonempty :=
+      Finset.univ_nonempty_iff.mpr ⟨⟨0, hn⟩⟩
+    change Finset.sup' Finset.univ hne
+        (fun i => Finset.sup' Finset.univ hne (fun j => |A i j|)) ≤
+      maxEntryNorm hn (higham9_2_rowPermutedMatrix A sigma)
+    apply Finset.sup'_le
+    intro i _
+    apply Finset.sup'_le
+    intro j _
+    have hsigma_symm : sigma (eSigma.symm i) = i := by
+      change eSigma (eSigma.symm i) = i
+      exact Equiv.apply_symm_apply eSigma i
+    simpa [higham9_2_rowPermutedMatrix, hsigma_symm] using
+      entry_le_maxEntryNorm hn (higham9_2_rowPermutedMatrix A sigma)
+        (eSigma.symm i) j
+
+/-- **Equation (9.2a)**, row permutations preserve the matrix infinity norm. -/
+theorem higham9_2_rowPermutedMatrix_infNorm {n : ℕ}
+    (A : Fin n → Fin n → ℝ) {sigma : Fin n → Fin n}
+    (hsigma : IsPermutation n sigma) :
+    infNorm (higham9_2_rowPermutedMatrix A sigma) = infNorm A := by
+  classical
+  let eSigma : Fin n ≃ Fin n := Equiv.ofBijective sigma hsigma
+  apply le_antisymm
+  · apply infNorm_le_of_row_sum_le
+    · intro i
+      simpa [higham9_2_rowPermutedMatrix] using row_sum_le_infNorm A (sigma i)
+    · exact infNorm_nonneg A
+  · apply infNorm_le_of_row_sum_le
+    · intro i
+      have hsigma_symm : sigma (eSigma.symm i) = i := by
+        change eSigma (eSigma.symm i) = i
+        exact Equiv.apply_symm_apply eSigma i
+      simpa [higham9_2_rowPermutedMatrix, hsigma_symm] using
+        row_sum_le_infNorm (higham9_2_rowPermutedMatrix A sigma) (eSigma.symm i)
+    · exact infNorm_nonneg (higham9_2_rowPermutedMatrix A sigma)
+
 /-- **Equation (9.1)**, determinant-pivot product for an exact LU
 certificate: if `A = L U` with unit lower triangular `L` and upper triangular
 `U`, then `det(A)` is the product of the diagonal pivots of `U`.  Theorem 9.1's
@@ -1585,6 +1642,102 @@ def higham9_2_rowColPermutedMatrix {n : ℕ}
     (A : Fin n → Fin n → ℝ) (sigma tau : Fin n → Fin n) :
     Fin n → Fin n → ℝ :=
   higham9_2_rowPermutedMatrix (higham9_2_colPermutedMatrix A tau) sigma
+
+/-- **Equation (9.2b)**, column permutations preserve Higham's max-entry norm. -/
+theorem higham9_2_colPermutedMatrix_maxEntryNorm {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) {tau : Fin n → Fin n}
+    (htau : IsPermutation n tau) :
+    maxEntryNorm hn (higham9_2_colPermutedMatrix A tau) = maxEntryNorm hn A := by
+  classical
+  let eTau : Fin n ≃ Fin n := Equiv.ofBijective tau htau
+  apply le_antisymm
+  · let hne : (Finset.univ : Finset (Fin n)).Nonempty :=
+      Finset.univ_nonempty_iff.mpr ⟨⟨0, hn⟩⟩
+    change Finset.sup' Finset.univ hne
+        (fun i => Finset.sup' Finset.univ hne
+          (fun j => |higham9_2_colPermutedMatrix A tau i j|)) ≤
+      maxEntryNorm hn A
+    apply Finset.sup'_le
+    intro i _
+    apply Finset.sup'_le
+    intro j _
+    simpa [higham9_2_colPermutedMatrix] using
+      entry_le_maxEntryNorm hn A i (tau j)
+  · let hne : (Finset.univ : Finset (Fin n)).Nonempty :=
+      Finset.univ_nonempty_iff.mpr ⟨⟨0, hn⟩⟩
+    change Finset.sup' Finset.univ hne
+        (fun i => Finset.sup' Finset.univ hne (fun j => |A i j|)) ≤
+      maxEntryNorm hn (higham9_2_colPermutedMatrix A tau)
+    apply Finset.sup'_le
+    intro i _
+    apply Finset.sup'_le
+    intro j _
+    have htau_symm : tau (eTau.symm j) = j := by
+      change eTau (eTau.symm j) = j
+      exact Equiv.apply_symm_apply eTau j
+    simpa [higham9_2_colPermutedMatrix, htau_symm] using
+      entry_le_maxEntryNorm hn (higham9_2_colPermutedMatrix A tau)
+        i (eTau.symm j)
+
+/-- **Equation (9.2b)**, column permutations preserve the matrix infinity norm. -/
+theorem higham9_2_colPermutedMatrix_infNorm {n : ℕ}
+    (A : Fin n → Fin n → ℝ) {tau : Fin n → Fin n}
+    (htau : IsPermutation n tau) :
+    infNorm (higham9_2_colPermutedMatrix A tau) = infNorm A := by
+  classical
+  let eTau : Fin n ≃ Fin n := Equiv.ofBijective tau htau
+  apply le_antisymm
+  · apply infNorm_le_of_row_sum_le
+    · intro i
+      have hrow :
+          (∑ j : Fin n, |higham9_2_colPermutedMatrix A tau i j|) =
+            ∑ j : Fin n, |A i j| := by
+        simpa [higham9_2_colPermutedMatrix, eTau] using
+          (Equiv.sum_comp eTau (fun j : Fin n => |A i j|))
+      rw [hrow]
+      exact row_sum_le_infNorm A i
+    · exact infNorm_nonneg A
+  · apply infNorm_le_of_row_sum_le
+    · intro i
+      have hrow :
+          (∑ j : Fin n, |higham9_2_colPermutedMatrix A tau i j|) =
+            ∑ j : Fin n, |A i j| := by
+        simpa [higham9_2_colPermutedMatrix, eTau] using
+          (Equiv.sum_comp eTau (fun j : Fin n => |A i j|))
+      rw [← hrow]
+      exact row_sum_le_infNorm (higham9_2_colPermutedMatrix A tau) i
+    · exact infNorm_nonneg (higham9_2_colPermutedMatrix A tau)
+
+/-- **Equation (9.2b)**, row/column permutations preserve Higham's
+max-entry norm. -/
+theorem higham9_2_rowColPermutedMatrix_maxEntryNorm {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) {sigma tau : Fin n → Fin n}
+    (hsigma : IsPermutation n sigma) (htau : IsPermutation n tau) :
+    maxEntryNorm hn (higham9_2_rowColPermutedMatrix A sigma tau) =
+      maxEntryNorm hn A := by
+  calc
+    maxEntryNorm hn (higham9_2_rowColPermutedMatrix A sigma tau) =
+        maxEntryNorm hn (higham9_2_colPermutedMatrix A tau) := by
+          simpa [higham9_2_rowColPermutedMatrix] using
+            higham9_2_rowPermutedMatrix_maxEntryNorm hn
+              (higham9_2_colPermutedMatrix A tau) hsigma
+    _ = maxEntryNorm hn A :=
+        higham9_2_colPermutedMatrix_maxEntryNorm hn A htau
+
+/-- **Equation (9.2b)**, row/column permutations preserve the matrix
+infinity norm. -/
+theorem higham9_2_rowColPermutedMatrix_infNorm {n : ℕ}
+    (A : Fin n → Fin n → ℝ) {sigma tau : Fin n → Fin n}
+    (hsigma : IsPermutation n sigma) (htau : IsPermutation n tau) :
+    infNorm (higham9_2_rowColPermutedMatrix A sigma tau) = infNorm A := by
+  calc
+    infNorm (higham9_2_rowColPermutedMatrix A sigma tau) =
+        infNorm (higham9_2_colPermutedMatrix A tau) := by
+          simpa [higham9_2_rowColPermutedMatrix] using
+            higham9_2_rowPermutedMatrix_infNorm
+              (higham9_2_colPermutedMatrix A tau) hsigma
+    _ = infNorm A :=
+        higham9_2_colPermutedMatrix_infNorm A htau
 
 /-- **Equation (9.2b)**, the first-pivot row/column swaps preserve the
 max-entry norm. -/
@@ -2619,6 +2772,100 @@ theorem higham9_5_wilkinson_source_bound_of_PartialPivotGEPPUTrace
     (higham9_7_PartialPivotGEPPUTrace_growthFactorEntry_le_pow_two
       hn_pos A U_hat hAmax htrace)
     hL_diag hU_diag hLU hn hn3 hL_bound
+
+/-- **Theorem 9.5 / equation (9.10)**, row-pivoted GEPP certificate form.
+
+If a supplied row-pivoted backward-error certificate computes the same `U_hat`
+as an explicit recursive partial-pivoting trace, then Wilkinson's normwise
+source bound applies to the original system after permuting the right-hand side.
+The theorem deliberately keeps the GEPP trace, pivoted certificate, nonzero
+pivots, and multiplier bound as visible hypotheses; it does not construct them
+from a concrete floating-point implementation. -/
+theorem higham9_5_wilkinson_source_bound_of_PermutedPartialPivotGEPPUTrace
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (sigma : Fin n → Fin n)
+    (b : Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn_pos A)
+    (htrace : higham9_7_PartialPivotGEPPUTrace n A U_hat)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hLU : higham9_2_PermutedLUBackwardError n A L_hat U_hat sigma (gamma fp n))
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hL_bound : ∀ i j : Fin n, |L_hat i j| ≤ 1) :
+    let bP : Fin n → ℝ := fun i => b (sigma i)
+    let y_hat := fl_forwardSub fp n L_hat bP
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (infNorm ΔA ≤
+        (↑n) ^ 2 * gamma fp (3 * n) *
+          (2 : ℝ) ^ (n - 1) * infNorm A) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  classical
+  let bP : Fin n → ℝ := fun i => b (sigma i)
+  let Aperm : Fin n → Fin n → ℝ := higham9_2_rowPermutedMatrix A sigma
+  have hApermmax : 0 < maxEntryNorm hn_pos Aperm := by
+    simpa [Aperm, higham9_2_rowPermutedMatrix_maxEntryNorm hn_pos A hLU.perm]
+      using hAmax
+  have hgrowth :
+      growthFactorEntry hn_pos Aperm U_hat hApermmax ≤
+        (2 : ℝ) ^ (n - 1) := by
+    have htrace_growth :
+        growthFactorEntry hn_pos A U_hat hAmax ≤ (2 : ℝ) ^ (n - 1) :=
+      higham9_7_PartialPivotGEPPUTrace_growthFactorEntry_le_pow_two
+        hn_pos A U_hat hAmax htrace
+    unfold growthFactorEntry at htrace_growth ⊢
+    simpa [Aperm, higham9_2_rowPermutedMatrix_maxEntryNorm hn_pos A hLU.perm]
+      using htrace_growth
+  have hL_diag : ∀ i : Fin n, L_hat i i ≠ 0 := by
+    intro i
+    rw [hLU.L_diag i]
+    norm_num
+  obtain ⟨ΔPA, hΔPA_bound, hΔPA_eq⟩ :=
+    higham9_5_wilkinson_source_bound_of_entry_growth fp n hn_pos Aperm
+      L_hat U_hat bP ((2 : ℝ) ^ (n - 1)) hApermmax
+      (pow_nonneg (by norm_num : (0 : ℝ) ≤ 2) (n - 1))
+      hgrowth hL_diag hU_diag
+      (higham9_2_permutedLUBackwardError_to_LUBackwardError hLU) hn hn3 hL_bound
+  let eSigma : Fin n ≃ Fin n := Equiv.ofBijective sigma hLU.perm
+  let ΔA : Fin n → Fin n → ℝ := fun i j => ΔPA (eSigma.symm i) j
+  refine ⟨ΔA, ?_, ?_⟩
+  · have hrow_eq :
+        higham9_2_rowPermutedMatrix ΔA sigma = ΔPA := by
+      funext i j
+      have hsigma_left : eSigma.symm (sigma i) = i := by
+        change eSigma.symm (eSigma i) = i
+        exact Equiv.symm_apply_apply eSigma i
+      simp [ΔA, higham9_2_rowPermutedMatrix, hsigma_left]
+    have hΔnorm : infNorm ΔA = infNorm ΔPA := by
+      have hpermΔ := higham9_2_rowPermutedMatrix_infNorm ΔA hLU.perm
+      rw [hrow_eq] at hpermΔ
+      exact hpermΔ.symm
+    have hAperm_inf : infNorm Aperm = infNorm A := by
+      simpa [Aperm] using higham9_2_rowPermutedMatrix_infNorm A hLU.perm
+    calc
+      infNorm ΔA = infNorm ΔPA := hΔnorm
+      _ ≤ (↑n) ^ 2 * gamma fp (3 * n) *
+            (2 : ℝ) ^ (n - 1) * infNorm Aperm := hΔPA_bound
+      _ = (↑n) ^ 2 * gamma fp (3 * n) *
+            (2 : ℝ) ^ (n - 1) * infNorm A := by
+          rw [hAperm_inf]
+  · intro i
+    have hrow := hΔPA_eq (eSigma.symm i)
+    have hsigma_symm : sigma (eSigma.symm i) = i := by
+      change eSigma (eSigma.symm i) = i
+      exact Equiv.apply_symm_apply eSigma i
+    calc
+      ∑ j : Fin n, (A i j + ΔA i j) *
+          (fl_backSub fp n U_hat (fl_forwardSub fp n L_hat bP)) j
+          = ∑ j : Fin n, (Aperm (eSigma.symm i) j + ΔPA (eSigma.symm i) j) *
+              (fl_backSub fp n U_hat (fl_forwardSub fp n L_hat bP)) j := by
+            apply Finset.sum_congr rfl
+            intro j _
+            simp [Aperm, higham9_2_rowPermutedMatrix, ΔA, hsigma_symm]
+      _ = bP (eSigma.symm i) := hrow
+      _ = b i := by simp [bP, hsigma_symm]
 
 /-- **Theorem 9.8**, product lower-bound form:
 `1 ≤ ρ^n α^n β^n`, with max-entry norms for `α` and `β`. -/
@@ -9736,13 +9983,153 @@ theorem higham9_9_diagDom_lu_solve_backward_stable_tight (fp : FPModel) (n : ℕ
   diagDom_lu_solve_backward_stable_tight fp n A L_hat U_hat b
     hL_diag hU_diag hLU hn hn3 hGrowth
 
-/-- **Equation (9.17)** / Lemma-8.8 style diagonal-dominance growth
-hypothesis, exposed as a reusable predicate for Chapter 9 wrappers. -/
+/-- **Equation (9.17)** / corrected Lemma-8.8 route, exposed as a reusable
+source-facing predicate for Chapter 9 wrappers. -/
 def higham9_17_rowDiagDom_absLU_bound (n : ℕ)
     (A L_hat U_hat : Fin n → Fin n → ℝ) : Prop :=
-  ∀ i j : Fin n,
-    ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤
-      (2 * (n : ℝ) - 1) * |A i j|
+  infNorm (matMul n (absMatrix n L_hat) (absMatrix n U_hat)) ≤
+    (2 * (n : ℝ) - 1) * infNorm A
+
+/-- **Equation (9.17)**, exact-LU algebraic bridge to the Skeel condition of
+the final upper factor.
+
+If `A = L U` and `U_inv` is an exact inverse of `U`, then
+`‖|L||U|‖∞ ≤ condSkeel(U) ‖A‖∞`.  This is the local Chapter 9 algebra behind
+the source step `|L||U| = |A U⁻¹| |U| ≤ |A||U⁻¹||U|`. -/
+theorem higham9_17_absLU_infNorm_le_condSkeel_of_LUFactSpec {n : ℕ}
+    (hn : 0 < n)
+    (A L U U_inv : Fin n → Fin n → ℝ)
+    (hLU : LUFactSpec n A L U)
+    (hUInv : IsInverse n U U_inv) :
+    infNorm (matMul n (absMatrix n L) (absMatrix n U)) ≤
+      condSkeel n hn U U_inv * infNorm A := by
+  let W : Fin n → Fin n → ℝ := matMul n (absMatrix n L) (absMatrix n U)
+  let κrow : Fin n → ℝ :=
+    fun s => ∑ k : Fin n, |U_inv s k| * (∑ j : Fin n, |U k j|)
+  have hprod : matMul n L U = A := by
+    ext i j
+    exact hLU.product_eq i j
+  have hUright : matMul n U U_inv = idMatrix n := by
+    ext i j
+    exact hUInv.2 i j
+  have hAUinv : matMul n A U_inv = L := by
+    calc
+      matMul n A U_inv = matMul n (matMul n L U) U_inv := by rw [hprod]
+      _ = matMul n L (matMul n U U_inv) := matMul_assoc n L U U_inv
+      _ = matMul n L (idMatrix n) := by rw [hUright]
+      _ = L := matMul_id_right n L
+  have hL_entry : ∀ i k : Fin n, L i k = ∑ s : Fin n, A i s * U_inv s k := by
+    intro i k
+    simpa [matMul] using (congrFun (congrFun hAUinv i) k).symm
+  have hκrow_le : ∀ s : Fin n, κrow s ≤ condSkeel n hn U U_inv := by
+    intro s
+    unfold κrow condSkeel
+    exact Finset.le_sup'
+      (fun i => ∑ k : Fin n, |U_inv i k| * (∑ j : Fin n, |U k j|))
+      (Finset.mem_univ s)
+  have hcond_nonneg : 0 ≤ condSkeel n hn U U_inv := by
+    let i0 : Fin n := ⟨0, hn⟩
+    have hrow0_nonneg :
+        0 ≤ ∑ k : Fin n, |U_inv i0 k| * (∑ j : Fin n, |U k j|) := by
+      apply Finset.sum_nonneg
+      intro k _
+      exact mul_nonneg (abs_nonneg _) (Finset.sum_nonneg (fun j _ => abs_nonneg _))
+    exact le_trans hrow0_nonneg (hκrow_le i0)
+  have hW_nonneg : ∀ i j : Fin n, 0 ≤ W i j := by
+    intro i j
+    unfold W matMul absMatrix
+    exact Finset.sum_nonneg (fun k _ => mul_nonneg (abs_nonneg _) (abs_nonneg _))
+  apply infNorm_le_of_row_sum_le
+  · intro i
+    calc
+      ∑ j : Fin n, |W i j| = ∑ j : Fin n, W i j := by
+        apply Finset.sum_congr rfl
+        intro j _
+        rw [abs_of_nonneg (hW_nonneg i j)]
+      _ = ∑ j : Fin n, ∑ k : Fin n, |L i k| * |U k j| := by
+        simp [W, matMul, absMatrix]
+      _ ≤ ∑ j : Fin n, ∑ k : Fin n,
+            (∑ s : Fin n, |A i s| * |U_inv s k|) * |U k j| := by
+          apply Finset.sum_le_sum
+          intro j _
+          apply Finset.sum_le_sum
+          intro k _
+          have hLik :
+              |L i k| ≤ ∑ s : Fin n, |A i s| * |U_inv s k| := by
+            rw [hL_entry i k]
+            calc
+              |∑ s : Fin n, A i s * U_inv s k|
+                  ≤ ∑ s : Fin n, |A i s * U_inv s k| :=
+                    Finset.abs_sum_le_sum_abs _ _
+              _ = ∑ s : Fin n, |A i s| * |U_inv s k| := by
+                    apply Finset.sum_congr rfl
+                    intro s _
+                    rw [abs_mul]
+          exact mul_le_mul_of_nonneg_right hLik (abs_nonneg _)
+      _ = ∑ k : Fin n,
+            (∑ s : Fin n, |A i s| * |U_inv s k|) * (∑ j : Fin n, |U k j|) := by
+          rw [Finset.sum_comm]
+          apply Finset.sum_congr rfl
+          intro k _
+          rw [← Finset.mul_sum]
+      _ = ∑ k : Fin n, ∑ s : Fin n,
+            (|A i s| * |U_inv s k|) * (∑ j : Fin n, |U k j|) := by
+          apply Finset.sum_congr rfl
+          intro k _
+          rw [Finset.sum_mul]
+      _ = ∑ s : Fin n, ∑ k : Fin n,
+            |A i s| * (|U_inv s k| * (∑ j : Fin n, |U k j|)) := by
+          rw [Finset.sum_comm]
+          apply Finset.sum_congr rfl
+          intro s _
+          apply Finset.sum_congr rfl
+          intro k _
+          ring
+      _ = ∑ s : Fin n, |A i s| * κrow s := by
+          unfold κrow
+          apply Finset.sum_congr rfl
+          intro s _
+          rw [← Finset.mul_sum]
+      _ ≤ ∑ s : Fin n, |A i s| * condSkeel n hn U U_inv := by
+          apply Finset.sum_le_sum
+          intro s _
+          exact mul_le_mul_of_nonneg_left (hκrow_le s) (abs_nonneg _)
+      _ = (∑ s : Fin n, |A i s|) * condSkeel n hn U U_inv := by
+          rw [Finset.sum_mul]
+      _ ≤ infNorm A * condSkeel n hn U U_inv := by
+          exact mul_le_mul_of_nonneg_right (row_sum_le_infNorm A i) hcond_nonneg
+      _ = condSkeel n hn U U_inv * infNorm A := by ring
+  · exact mul_nonneg hcond_nonneg (infNorm_nonneg A)
+
+/-- **Equation (9.17)**, source-facing norm bound from the corrected
+Chapter-8 Lemma-8.8 hypothesis on the final upper factor.
+
+If `A = L U` and the exact upper factor `U` satisfies the corrected strict-upper
+row-sum dominance condition from Lemma 8.8, then
+`‖|L||U|‖∞ ≤ (2n - 1) ‖A‖∞`. -/
+theorem higham9_17_rowDiagDom_absLU_bound_of_LUFactSpec {n : ℕ}
+    (hn : 0 < n)
+    (A L U : Fin n → Fin n → ℝ)
+    (hLU : LUFactSpec n A L U)
+    (hURow : higham8_8_rowDiagDominantUpper n U) :
+    higham9_17_rowDiagDom_absLU_bound n A L U := by
+  have hURow' := hURow
+  rcases hURow with ⟨hUT, hUdiag, _⟩
+  have hdetU :
+      Matrix.det (U : Matrix (Fin n) (Fin n) ℝ) ≠ 0 :=
+    det_ne_zero_of_upper_triangular_diag_ne_zero n U hUT hUdiag
+  let U_inv : Fin n → Fin n → ℝ := nonsingInv n U
+  have hUInv : IsInverse n U U_inv :=
+    isInverse_nonsingInv_of_det_ne_zero n U hdetU
+  calc
+    infNorm (matMul n (absMatrix n L) (absMatrix n U))
+        ≤ condSkeel n hn U U_inv * infNorm A :=
+      higham9_17_absLU_infNorm_le_condSkeel_of_LUFactSpec
+        hn A L U U_inv hLU hUInv
+    _ ≤ (2 * (n : ℝ) - 1) * infNorm A := by
+      exact mul_le_mul_of_nonneg_right
+        (higham8_8_rowDiagDominantUpper_condSkeel_bound n hn U U_inv hURow' hUInv)
+        (infNorm_nonneg A)
 
 /-- **Theorem 9.9**, source side condition: for a row diagonally dominant
 matrix, a zero diagonal entry forces the whole row to be zero. -/
@@ -15020,6 +15407,28 @@ theorem higham9_completePivotingCertificateGrowth_le_sup {n : ℕ}
     r ≤ higham9_completePivotingCertificateGrowthSup n := by
   exact le_csSup hBdd hr
 
+/-- **Problem 9.11**, the certificate-level complete-pivoting value set
+contains the flattened sine-block lower-bound value. -/
+theorem higham9_11_completePivotingCertificateGrowthValues_exists_ge_succ
+    {n : ℕ} (hn : 0 < n) :
+    ∃ r ∈ higham9_completePivotingCertificateGrowthValues (2 * n),
+      (n : ℝ) + 1 ≤ r := by
+  obtain ⟨r, hr, hle⟩ :=
+    higham9_11_sineBlockCompletePivotingGrowthSet_exists_ge_succ hn
+  let B : Fin (2 * n) → Fin (2 * n) → ℝ :=
+    higham9_11_flattenTwoBlock hn
+      (higham9_11_blockMatrix (higham9_12_sineMatrix n))
+  have hBpos : 0 < maxEntryNorm (by omega : 0 < 2 * n) B := by
+    dsimp [B]
+    rw [higham9_11_flatten_blockMatrix_maxEntryNorm_eq hn]
+    exact higham9_12_sineMatrix_maxEntryNorm_pos hn
+  refine ⟨r, ?_, hle⟩
+  rcases hr with ⟨L, U, sigma, tau, hLU, hr_eq⟩
+  refine ⟨by omega, B, hBpos, ?_⟩
+  refine ⟨L, U, sigma, tau, ?_⟩
+  refine ⟨by simpa [B] using hLU, ?_⟩
+  rw [hr_eq]
+
 /-- **Problem 9.11**, source-shaped lower-bound consequence for the
 certificate-level `g(2n)` surface.
 
@@ -15032,23 +15441,9 @@ theorem higham9_11_completePivotingCertificateGrowthSup_ge_succ
       BddAbove (higham9_completePivotingCertificateGrowthValues (2 * n))) :
     (n : ℝ) + 1 ≤ higham9_completePivotingCertificateGrowthSup (2 * n) := by
   obtain ⟨r, hr, hle⟩ :=
-    higham9_11_sineBlockCompletePivotingGrowthSet_exists_ge_succ hn
-  let B : Fin (2 * n) → Fin (2 * n) → ℝ :=
-    higham9_11_flattenTwoBlock hn
-      (higham9_11_blockMatrix (higham9_12_sineMatrix n))
-  have hBpos : 0 < maxEntryNorm (by omega : 0 < 2 * n) B := by
-    dsimp [B]
-    rw [higham9_11_flatten_blockMatrix_maxEntryNorm_eq hn]
-    exact higham9_12_sineMatrix_maxEntryNorm_pos hn
-  have hrGlobal :
-      r ∈ higham9_completePivotingCertificateGrowthValues (2 * n) := by
-    rcases hr with ⟨L, U, sigma, tau, hLU, hr_eq⟩
-    refine ⟨by omega, B, hBpos, ?_⟩
-    refine ⟨L, U, sigma, tau, ?_⟩
-    refine ⟨by simpa [B] using hLU, ?_⟩
-    rw [hr_eq]
+    higham9_11_completePivotingCertificateGrowthValues_exists_ge_succ hn
   exact le_trans hle
-    (higham9_completePivotingCertificateGrowth_le_sup hBdd hrGlobal)
+    (higham9_completePivotingCertificateGrowth_le_sup hBdd hr)
 
 /-- **Theorem 9.8 / complete-pivoting `U` trace**, a recursive exact
 complete-pivoting trace that exposes the final upper-factor rows.  Each step
@@ -15444,6 +15839,147 @@ theorem higham9_8_exists_CompletePivotGECPUTrace_upper_zero_of_det_ne_zero
   obtain ⟨U, hU⟩ :=
     higham9_8_exists_CompletePivotGECPUTrace_of_det_ne_zero (A := A) hdet
   exact ⟨U, hU, higham9_8_CompletePivotGECPUTrace_upper_zero hU⟩
+
+/-- **Problem 9.11 / equation (9.15)**, the trace-level complete-pivoting
+growth-value family is nonempty in every positive dimension. -/
+theorem higham9_completePivotingUTraceGrowthValues_nonempty {n : ℕ}
+    (hn : 0 < n) :
+    (higham9_completePivotingUTraceGrowthValues n).Nonempty := by
+  let A : Fin n → Fin n → ℝ := higham9_7_wilkinsonGrowthMatrix (n := n)
+  have hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0 := by
+    exact higham9_7_PartialPivotNoInterchangeTrace_det_ne_zero
+      (by
+        simpa [A] using higham9_7_wilkinsonGrowth_noInterchangeTrace n)
+  let hApos : 0 < maxEntryNorm hn A :=
+    by simpa [A] using higham9_7_wilkinsonGrowthMatrix_maxEntryNorm_pos hn
+  obtain ⟨U, htrace⟩ :=
+    higham9_8_exists_CompletePivotGECPUTrace_of_det_ne_zero (A := A) hdet
+  refine ⟨growthFactorEntry hn A U hApos, ?_⟩
+  exact ⟨hn, A, U, hApos, htrace, rfl⟩
+
+/-- **Problem 9.11 / equation (9.15)**, elementary source-shaped supremum
+upper bound for recursive complete-pivoting `U` traces. -/
+theorem higham9_8_completePivotingUTraceGrowthSup_le_pow_two {n : ℕ}
+    (hn : 0 < n) :
+    higham9_completePivotingUTraceGrowthSup n ≤ (2 : ℝ) ^ (n - 1) := by
+  apply csSup_le (higham9_completePivotingUTraceGrowthValues_nonempty hn)
+  intro r hr
+  rcases hr with ⟨hn', A, U, hApos, htrace, rfl⟩
+  exact higham9_8_CompletePivotGECPUTrace_growthFactorEntry_le_pow_two
+    hn' A U hApos htrace
+
+/-- **Theorem 9.4 / Theorem 9.5**, complete-pivoted explicit-certificate
+normwise source bound.
+
+If a supplied `P A Q` backward-error certificate computes the same `U_hat` as
+an explicit complete-pivoting `U` trace, then the elementary complete-pivoting
+trace bound gives Wilkinson's normwise source bound over the original matrix
+norm.  The theorem keeps the complete-pivoting trace, backward-error
+certificate, nonzero pivots, and multiplier bound as visible hypotheses; it
+does not prove Wilkinson's sharper complete-pivoting product bound. -/
+theorem higham9_5_wilkinson_source_bound_of_CompletePivotGECPUTrace
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (sigma tau : Fin n → Fin n)
+    (b : Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn_pos A)
+    (htrace : higham9_8_CompletePivotGECPUTrace n A U_hat)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hLU :
+      higham9_2_CompletePermutedLUBackwardError n A L_hat U_hat sigma tau
+        (gamma fp n))
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hL_bound : ∀ i j : Fin n, |L_hat i j| ≤ 1) :
+    let bP : Fin n → ℝ := fun i => b (sigma i)
+    let y_hat := fl_forwardSub fp n L_hat bP
+    let z_hat := fl_backSub fp n U_hat y_hat
+    let x_hat : Fin n → ℝ :=
+      fun j => z_hat ((Equiv.ofBijective tau hLU.1).symm j)
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (infNorm ΔA ≤
+        (↑n) ^ 2 * gamma fp (3 * n) *
+          (2 : ℝ) ^ (n - 1) * infNorm A) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  classical
+  let bP : Fin n → ℝ := fun i => b (sigma i)
+  let B : Fin n → Fin n → ℝ := higham9_2_rowColPermutedMatrix A sigma tau
+  have hBmax : 0 < maxEntryNorm hn_pos B := by
+    simpa [B, higham9_2_rowColPermutedMatrix_maxEntryNorm hn_pos A hLU.2.perm hLU.1]
+      using hAmax
+  have hgrowth :
+      growthFactorEntry hn_pos B U_hat hBmax ≤
+        (2 : ℝ) ^ (n - 1) := by
+    have htrace_growth :
+        growthFactorEntry hn_pos A U_hat hAmax ≤ (2 : ℝ) ^ (n - 1) :=
+      higham9_8_CompletePivotGECPUTrace_growthFactorEntry_le_pow_two
+        hn_pos A U_hat hAmax htrace
+    unfold growthFactorEntry at htrace_growth ⊢
+    simpa [B, higham9_2_rowColPermutedMatrix_maxEntryNorm hn_pos A hLU.2.perm hLU.1]
+      using htrace_growth
+  have hL_diag : ∀ i : Fin n, L_hat i i ≠ 0 := by
+    intro i
+    rw [hLU.2.L_diag i]
+    norm_num
+  obtain ⟨ΔB, hΔB_bound, hΔB_eq⟩ :=
+    higham9_5_wilkinson_source_bound_of_entry_growth fp n hn_pos B
+      L_hat U_hat bP ((2 : ℝ) ^ (n - 1)) hBmax
+      (pow_nonneg (by norm_num : (0 : ℝ) ≤ 2) (n - 1))
+      hgrowth hL_diag hU_diag
+      (higham9_2_completePermutedLUBackwardError_to_LUBackwardError hLU)
+      hn hn3 hL_bound
+  let eSigma : Fin n ≃ Fin n := Equiv.ofBijective sigma hLU.2.perm
+  let eTau : Fin n ≃ Fin n := Equiv.ofBijective tau hLU.1
+  let z_hat := fl_backSub fp n U_hat (fl_forwardSub fp n L_hat bP)
+  let x_hat : Fin n → ℝ := fun j => z_hat (eTau.symm j)
+  let ΔA : Fin n → Fin n → ℝ := fun i j => ΔB (eSigma.symm i) (eTau.symm j)
+  refine ⟨ΔA, ?_, ?_⟩
+  · have hperm_eq :
+        higham9_2_rowColPermutedMatrix ΔA sigma tau = ΔB := by
+      funext i j
+      have hsigma_left : eSigma.symm (sigma i) = i := by
+        change eSigma.symm (eSigma i) = i
+        exact Equiv.symm_apply_apply eSigma i
+      have htau_left : eTau.symm (tau j) = j := by
+        change eTau.symm (eTau j) = j
+        exact Equiv.symm_apply_apply eTau j
+      simp [ΔA, higham9_2_rowColPermutedMatrix, higham9_2_rowPermutedMatrix,
+        higham9_2_colPermutedMatrix, hsigma_left, htau_left]
+    have hΔnorm : infNorm ΔA = infNorm ΔB := by
+      have hpermΔ :=
+        higham9_2_rowColPermutedMatrix_infNorm ΔA hLU.2.perm hLU.1
+      rw [hperm_eq] at hpermΔ
+      exact hpermΔ.symm
+    have hB_inf : infNorm B = infNorm A := by
+      simpa [B] using
+        higham9_2_rowColPermutedMatrix_infNorm A hLU.2.perm hLU.1
+    calc
+      infNorm ΔA = infNorm ΔB := hΔnorm
+      _ ≤ (↑n) ^ 2 * gamma fp (3 * n) *
+            (2 : ℝ) ^ (n - 1) * infNorm B := hΔB_bound
+      _ = (↑n) ^ 2 * gamma fp (3 * n) *
+            (2 : ℝ) ^ (n - 1) * infNorm A := by
+          rw [hB_inf]
+  · intro i
+    have hrow := hΔB_eq (eSigma.symm i)
+    have hsigma_symm : sigma (eSigma.symm i) = i := by
+      change eSigma (eSigma.symm i) = i
+      exact Equiv.apply_symm_apply eSigma i
+    let f : Fin n → ℝ := fun j => (A i j + ΔA i j) * x_hat j
+    calc
+      ∑ j : Fin n, (A i j + ΔA i j) * x_hat j
+          = ∑ j : Fin n, f (eTau j) := by
+              simpa [f] using (Equiv.sum_comp eTau f).symm
+      _ = ∑ j : Fin n, (B (eSigma.symm i) j + ΔB (eSigma.symm i) j) *
+            z_hat j := by
+          apply Finset.sum_congr rfl
+          intro j _
+          simp [f, B, higham9_2_rowColPermutedMatrix,
+            higham9_2_rowPermutedMatrix, higham9_2_colPermutedMatrix,
+            ΔA, x_hat, z_hat, eTau, hsigma_symm]
+      _ = bP (eSigma.symm i) := hrow
+      _ = b i := by simp [bP, hsigma_symm]
 
 /-- **Theorem 9.8 / equation (9.13) complex support**, a recursive exact
 complete-pivoting trace over complex matrices. -/
@@ -16222,6 +16758,75 @@ theorem higham9_16_exists_RookPivotGEUTrace_growthFactorEntry_le_pow_two_of_det_
   exact ⟨U, hU,
     higham9_16_RookPivotGEUTrace_growthFactorEntry_le_pow_two hn A U hAmax hU⟩
 
+/-- **Equation (9.16) / rook-pivoting trace growth family**, trace-level
+rook-pivoting growth values in dimension `n`.
+
+This set ranges over the recursive rook-pivoting `U` traces formalized above.
+It records the elementary trace-growth surface; Foster's sharper product bound
+remains a separate theorem. -/
+def higham9_16_rookPivotingUTraceGrowthValues (n : ℕ) : Set ℝ :=
+  { r | ∃ hn : 0 < n,
+      ∃ A U : Fin n → Fin n → ℝ,
+      ∃ hApos : 0 < maxEntryNorm hn A,
+        higham9_16_RookPivotGEUTrace n A U ∧
+          r = growthFactorEntry hn A U hApos }
+
+/-- **Equation (9.16) / rook-pivoting trace growth family**, trace-level
+rook-pivoting growth supremum. -/
+noncomputable def higham9_16_rookPivotingUTraceGrowthSup (n : ℕ) : ℝ :=
+  sSup (higham9_16_rookPivotingUTraceGrowthValues n)
+
+/-- **Equation (9.16) / rook-pivoting trace growth family**, every trace-level
+rook-pivoting growth value satisfies the elementary `2^(n-1)` bound. -/
+theorem higham9_16_rookPivotingUTraceGrowthValues_le_pow_two {n : ℕ} {r : ℝ}
+    (hr : r ∈ higham9_16_rookPivotingUTraceGrowthValues n) :
+    r ≤ (2 : ℝ) ^ (n - 1) := by
+  rcases hr with ⟨hn, A, U, hApos, htrace, rfl⟩
+  exact higham9_16_RookPivotGEUTrace_growthFactorEntry_le_pow_two
+    hn A U hApos htrace
+
+/-- **Equation (9.16) / rook-pivoting trace growth family**, the trace-level
+rook-pivoting growth values are bounded above by the elementary `2^(n-1)`
+bound. -/
+theorem higham9_16_rookPivotingUTraceGrowthValues_bddAbove (n : ℕ) :
+    BddAbove (higham9_16_rookPivotingUTraceGrowthValues n) := by
+  refine ⟨(2 : ℝ) ^ (n - 1), ?_⟩
+  intro r hr
+  exact higham9_16_rookPivotingUTraceGrowthValues_le_pow_two (n := n) hr
+
+/-- **Equation (9.16) / rook-pivoting trace growth family**, every trace-level
+rook-pivoting growth value is bounded by the trace-level supremum. -/
+theorem higham9_16_rookPivotingUTraceGrowth_le_sup {n : ℕ} {r : ℝ}
+    (hr : r ∈ higham9_16_rookPivotingUTraceGrowthValues n) :
+    r ≤ higham9_16_rookPivotingUTraceGrowthSup n := by
+  exact le_csSup (higham9_16_rookPivotingUTraceGrowthValues_bddAbove n) hr
+
+/-- **Equation (9.16) / rook-pivoting trace growth family**, the trace-level
+rook-pivoting growth-value family is nonempty in every positive dimension. -/
+theorem higham9_16_rookPivotingUTraceGrowthValues_nonempty {n : ℕ}
+    (hn : 0 < n) :
+    (higham9_16_rookPivotingUTraceGrowthValues n).Nonempty := by
+  let A : Fin n → Fin n → ℝ := higham9_7_wilkinsonGrowthMatrix (n := n)
+  have hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0 := by
+    exact higham9_7_PartialPivotNoInterchangeTrace_det_ne_zero
+      (by
+        simpa [A] using higham9_7_wilkinsonGrowth_noInterchangeTrace n)
+  let hApos : 0 < maxEntryNorm hn A :=
+    by simpa [A] using higham9_7_wilkinsonGrowthMatrix_maxEntryNorm_pos hn
+  obtain ⟨U, htrace⟩ :=
+    higham9_16_exists_RookPivotGEUTrace_of_det_ne_zero (A := A) hdet
+  refine ⟨growthFactorEntry hn A U hApos, ?_⟩
+  exact ⟨hn, A, U, hApos, htrace, rfl⟩
+
+/-- **Equation (9.16) / rook-pivoting trace growth family**, elementary
+source-shaped supremum upper bound for recursive rook-pivoting `U` traces. -/
+theorem higham9_16_rookPivotingUTraceGrowthSup_le_pow_two {n : ℕ}
+    (hn : 0 < n) :
+    higham9_16_rookPivotingUTraceGrowthSup n ≤ (2 : ℝ) ^ (n - 1) := by
+  apply csSup_le (higham9_16_rookPivotingUTraceGrowthValues_nonempty hn)
+  intro r hr
+  exact higham9_16_rookPivotingUTraceGrowthValues_le_pow_two hr
+
 /-- **Theorem 9.7 / GEPP trace support**, every nonsingular real matrix admits
 an explicit recursive partial-pivoting upper-factor trace. -/
 theorem higham9_7_exists_PartialPivotGEPPUTrace_of_det_ne_zero :
@@ -16490,6 +17095,97 @@ theorem higham9_10_exists_HessenbergGEPPUTrace_growthFactorEntry_le_card_of_det_
     ⟨U, hU,
       higham9_10_HessenbergGEPPUTrace_growthFactorEntry_le_card hn A U hA hU⟩
 
+/-- **Theorem 9.10 / upper-Hessenberg GEPP trace growth family**, trace-level
+upper-Hessenberg GEPP growth values in dimension `n`.
+
+This set ranges over recursive GEPP `U` traces started from nonsingular
+upper-Hessenberg source matrices. -/
+def higham9_10_hessenbergGEPPUTraceGrowthValues (n : ℕ) : Set ℝ :=
+  { r | ∃ hn : 0 < n,
+      ∃ A U : Fin n → Fin n → ℝ,
+      ∃ hApos : 0 < maxEntryNorm hn A,
+        IsUpperHessenberg n A ∧
+          higham9_10_HessenbergGEPPUTrace (maxEntryNorm hn A) 1 n A U ∧
+            r = growthFactorEntry hn A U hApos }
+
+/-- **Theorem 9.10 / upper-Hessenberg GEPP trace growth family**, trace-level
+upper-Hessenberg GEPP growth supremum. -/
+noncomputable def higham9_10_hessenbergGEPPUTraceGrowthSup (n : ℕ) : ℝ :=
+  sSup (higham9_10_hessenbergGEPPUTraceGrowthValues n)
+
+/-- **Theorem 9.10 / upper-Hessenberg GEPP trace growth family**, every
+trace-level upper-Hessenberg GEPP growth value satisfies Wilkinson's `n`
+bound. -/
+theorem higham9_10_hessenbergGEPPUTraceGrowthValues_le_card {n : ℕ} {r : ℝ}
+    (hr : r ∈ higham9_10_hessenbergGEPPUTraceGrowthValues n) :
+    r ≤ (n : ℝ) := by
+  rcases hr with ⟨hn, A, U, hApos, _hH, htrace, rfl⟩
+  exact higham9_10_HessenbergGEPPUTrace_growthFactorEntry_le_card
+    hn A U hApos htrace
+
+/-- **Theorem 9.10 / upper-Hessenberg GEPP trace growth family**, the
+trace-level upper-Hessenberg GEPP growth values are bounded above by `n`. -/
+theorem higham9_10_hessenbergGEPPUTraceGrowthValues_bddAbove (n : ℕ) :
+    BddAbove (higham9_10_hessenbergGEPPUTraceGrowthValues n) := by
+  refine ⟨(n : ℝ), ?_⟩
+  intro r hr
+  exact higham9_10_hessenbergGEPPUTraceGrowthValues_le_card hr
+
+/-- **Theorem 9.10 / upper-Hessenberg GEPP trace growth family**, every
+trace-level upper-Hessenberg GEPP growth value is bounded by the trace-level
+supremum. -/
+theorem higham9_10_hessenbergGEPPUTraceGrowth_le_sup {n : ℕ} {r : ℝ}
+    (hr : r ∈ higham9_10_hessenbergGEPPUTraceGrowthValues n) :
+    r ≤ higham9_10_hessenbergGEPPUTraceGrowthSup n := by
+  exact le_csSup
+    (higham9_10_hessenbergGEPPUTraceGrowthValues_bddAbove n) hr
+
+/-- **Theorem 9.10 / upper-Hessenberg GEPP trace growth family**, the
+trace-level upper-Hessenberg GEPP growth-value family is nonempty in every
+positive dimension. -/
+theorem higham9_10_hessenbergGEPPUTraceGrowthValues_nonempty {n : ℕ}
+    (hn : 0 < n) :
+    (higham9_10_hessenbergGEPPUTraceGrowthValues n).Nonempty := by
+  let A : Fin n → Fin n → ℝ := fun i j => if i = j then 1 else 0
+  have hH : IsUpperHessenberg n A := by
+    intro i j hij
+    have hne : i ≠ j := by
+      intro h
+      subst i
+      omega
+    simp [A, hne]
+  have hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0 := by
+    have hmat : (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) = 1 := by
+      ext i j
+      by_cases hij : i = j
+      · subst i
+        simp [A]
+      · simp [A, hij]
+    rw [hmat, Matrix.det_one]
+    norm_num
+  have hApos : 0 < maxEntryNorm hn A := by
+    have hentry : |A (⟨0, hn⟩ : Fin n) ⟨0, hn⟩| = 1 := by
+      simp [A]
+    have hle :=
+      entry_le_maxEntryNorm hn A (⟨0, hn⟩ : Fin n) ⟨0, hn⟩
+    have hone : (1 : ℝ) ≤ maxEntryNorm hn A := by
+      simpa [hentry] using hle
+    exact lt_of_lt_of_le zero_lt_one hone
+  obtain ⟨U, htrace⟩ :=
+    higham9_10_exists_HessenbergGEPPUTrace_of_det_ne_zero hn A hH hdet
+  refine ⟨growthFactorEntry hn A U hApos, ?_⟩
+  exact ⟨hn, A, U, hApos, hH, htrace, rfl⟩
+
+/-- **Theorem 9.10 / upper-Hessenberg GEPP trace growth family**, source-shaped
+supremum form of Wilkinson's exact upper-Hessenberg GEPP growth bound for
+recursive `U` traces. -/
+theorem higham9_10_hessenbergGEPPUTraceGrowthSup_le_card {n : ℕ}
+    (hn : 0 < n) :
+    higham9_10_hessenbergGEPPUTraceGrowthSup n ≤ (n : ℝ) := by
+  apply csSup_le (higham9_10_hessenbergGEPPUTraceGrowthValues_nonempty hn)
+  intro r hr
+  exact higham9_10_hessenbergGEPPUTraceGrowthValues_le_card hr
+
 /-- **Theorem 9.9**, column diagonally dominant nonsingular matrices have an
 exact no-pivot LU factorization whose unit-lower factor has entries bounded by
 one in absolute value.  This closes the source local claim that column diagonal
@@ -16567,6 +17263,130 @@ theorem higham9_9_colDiagDominant_lu_exists_unique_unit_lower_of_det_ne_zero {n 
   intro L₁ U₁ L₂ U₂ hLU₁ hLU₂
   exact higham9_1_lu_unique_of_pivots_ne_zero hLU₁ hLU₂
     ((higham9_1_det_ne_zero_iff_pivots_ne_zero hLU₁).mp hdet)
+
+/-- **Theorem 9.13**, source-facing exact-LU existence and componentwise
+growth package for nonsingular column-diagonally-dominant tridiagonal
+matrices.  The no-pivot LU existence theorem supplies exact factors with
+unit-bounded lower entries; the tridiagonal growth theorem then gives
+`|L||U| <= 3|A|` for those factors. -/
+theorem higham9_13_colDiagDom_exists_LUFactSpec_growth_bound_3 {n : ℕ}
+    (A : Fin n → Fin n → ℝ)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hA_tridiag : IsTridiagonal n A)
+    (hColDom : IsDiagDominant n A) :
+    ∃ L U : Fin n → Fin n → ℝ,
+      LUFactSpec n A L U ∧
+      (∀ i j : Fin n, |L i j| ≤ 1) ∧
+      (∀ i j : Fin n,
+        ∑ k : Fin n, |L i k| * |U k j| ≤ 3 * |A i j|) := by
+  obtain ⟨L, U, hLU, hL_bound⟩ :=
+    higham9_9_colDiagDominant_lu_exists_unit_lower_of_det_ne_zero
+      n A hColDom hdetA
+  refine ⟨L, U, hLU, hL_bound, ?_⟩
+  exact higham9_13_colDiagDom_tridiag_growth_bound_3_of_LUFactSpec
+    A L U hLU hdetA hA_tridiag hColDom
+
+/-- **Theorem 9.13**, source-facing exact-LU existence and max-entry growth
+package for nonsingular column-diagonally-dominant tridiagonal matrices.  This
+is the existential form of the source `rho <= 3` conclusion for the exact
+no-pivot LU factors produced from column diagonal dominance. -/
+theorem higham9_13_colDiagDom_exists_LUFactSpec_growthFactorEntry_le_three
+    {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hA_tridiag : IsTridiagonal n A)
+    (hColDom : IsDiagDominant n A)
+    (hAmax : 0 < maxEntryNorm hn A) :
+    ∃ L U : Fin n → Fin n → ℝ,
+      LUFactSpec n A L U ∧
+      (∀ i j : Fin n, |L i j| ≤ 1) ∧
+      (∀ i j : Fin n,
+        ∑ k : Fin n, |L i k| * |U k j| ≤ 3 * |A i j|) ∧
+      growthFactorEntry hn A U hAmax ≤ 3 := by
+  obtain ⟨L, U, hLU, hL_bound, hGrowth⟩ :=
+    higham9_13_colDiagDom_exists_LUFactSpec_growth_bound_3
+      A hdetA hA_tridiag hColDom
+  refine ⟨L, U, hLU, hL_bound, hGrowth, ?_⟩
+  exact higham9_13_colDiagDom_growthFactorEntry_le_three_of_LUFactSpec
+    hn A L U hLU hdetA hA_tridiag hColDom hAmax
+
+/-- **Theorem 9.13**, source-facing row-dominant transpose exact-LU and
+componentwise growth package.
+
+For a nonsingular row-diagonally-dominant tridiagonal source matrix `A`, the
+transposed problem `Aᵀ` is column-diagonally dominant and tridiagonal.  The
+column-dominant exact no-pivot LU package therefore supplies exact factors of
+`Aᵀ` with `|L_T||U_T| <= 3|Aᵀ|`.  This theorem deliberately constructs factors
+for `Aᵀ`; it is not a direct exact-LU existence theorem for `A` itself. -/
+theorem higham9_13_rowDiagDom_transpose_exists_LUFactSpec_growth_bound_3
+    {n : ℕ}
+    (A : Fin n → Fin n → ℝ)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hA_tridiag : IsTridiagonal n A)
+    (hRowDom : IsRowDiagDominant n A) :
+    ∃ L_T U_T : Fin n → Fin n → ℝ,
+      LUFactSpec n (matTranspose A) L_T U_T ∧
+      (∀ i j : Fin n, |L_T i j| ≤ 1) ∧
+      (∀ i j : Fin n,
+        ∑ k : Fin n, |L_T i k| * |U_T k j| ≤
+          3 * |matTranspose A i j|) := by
+  have hdetT :
+      Matrix.det
+        (Matrix.of (matTranspose A) : Matrix (Fin n) (Fin n) ℝ) ≠ 0 := by
+    have hmat :
+        (Matrix.of (matTranspose A) : Matrix (Fin n) (Fin n) ℝ) =
+          (Matrix.of A : Matrix (Fin n) (Fin n) ℝ).transpose := by
+      ext i j
+      rfl
+    intro hzero
+    apply hdetA
+    rw [← Matrix.det_transpose (Matrix.of A : Matrix (Fin n) (Fin n) ℝ)]
+    rw [← hmat]
+    exact hzero
+  exact higham9_13_colDiagDom_exists_LUFactSpec_growth_bound_3
+    (matTranspose A) hdetT
+    ((higham9_13_tridiagonal_transpose_iff A).2 hA_tridiag)
+    ((higham9_9_colDiagDominant_transpose_iff_rowDiagDominant A).2 hRowDom)
+
+/-- **Theorem 9.13**, source-facing row-dominant transpose exact-LU and
+max-entry growth package.
+
+This is the existential `rho <= 3` form for the exact no-pivot LU factors of
+`Aᵀ` obtained from a nonsingular row-diagonally-dominant tridiagonal source
+matrix `A`.  The denominator positivity is stated over `A` and normalized by
+`maxEntryNorm Aᵀ = maxEntryNorm A`. -/
+theorem higham9_13_rowDiagDom_transpose_exists_LUFactSpec_growthFactorEntry_le_three
+    {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hA_tridiag : IsTridiagonal n A)
+    (hRowDom : IsRowDiagDominant n A)
+    (hAmax : 0 < maxEntryNorm hn A) :
+    ∃ L_T U_T : Fin n → Fin n → ℝ,
+      LUFactSpec n (matTranspose A) L_T U_T ∧
+      (∀ i j : Fin n, |L_T i j| ≤ 1) ∧
+      (∀ i j : Fin n,
+        ∑ k : Fin n, |L_T i k| * |U_T k j| ≤
+          3 * |matTranspose A i j|) ∧
+      growthFactorEntry hn (matTranspose A) U_T
+        (by simpa [maxEntryNorm_matTranspose hn A] using hAmax) ≤ 3 := by
+  have hdetT :
+      Matrix.det
+        (Matrix.of (matTranspose A) : Matrix (Fin n) (Fin n) ℝ) ≠ 0 := by
+    have hmat :
+        (Matrix.of (matTranspose A) : Matrix (Fin n) (Fin n) ℝ) =
+          (Matrix.of A : Matrix (Fin n) (Fin n) ℝ).transpose := by
+      ext i j
+      rfl
+    intro hzero
+    apply hdetA
+    rw [← Matrix.det_transpose (Matrix.of A : Matrix (Fin n) (Fin n) ℝ)]
+    rw [← hmat]
+    exact hzero
+  exact higham9_13_colDiagDom_exists_LUFactSpec_growthFactorEntry_le_three
+    hn (matTranspose A) hdetT
+    ((higham9_13_tridiagonal_transpose_iff A).2 hA_tridiag)
+    ((higham9_9_colDiagDominant_transpose_iff_rowDiagDominant A).2 hRowDom)
+    (by simpa [maxEntryNorm_matTranspose hn A] using hAmax)
 
 /-- **Theorem 9.1 support**, Schur-complement inheritance of nonsingular
 leading principal blocks.  If all nonempty leading principal blocks of `A` are
@@ -18543,6 +19363,47 @@ theorem higham9_6_growthFactorEntry_and_noPivotReducedGrowthFactor_le_one_of_tot
     ⟨L, U, hLU, hL_nn, hU_nn, hGrowth,
       higham_problem9_9_noPivotReducedGrowthFactor_le_one_of_nonnegative_LU
         hn hLU hL_nn hU_nn hAmax⟩
+
+/-- **Theorem 9.12(b/c)**, total-nonnegative special-class existence
+package.  Problem 9.6 supplies exact no-pivot LU factors with nonnegative
+entries; Theorem 9.12's nonnegative-LU specialization then gives
+`|L||U| = |A|` componentwise. -/
+theorem higham9_12_totalNonnegative_exists_LUFactSpec_optimal_growth
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ L U : Fin n → Fin n → ℝ,
+      LUFactSpec n A L U ∧
+        (∀ i j : Fin n, 0 ≤ L i j) ∧
+        (∀ i j : Fin n, 0 ≤ U i j) ∧
+        (∀ i j : Fin n,
+          ∑ k : Fin n, |L i k| * |U k j| = |A i j|) := by
+  obtain ⟨L, U, hLU, hL_nn, hU_nn⟩ :=
+    higham9_6_lu_exists_nonnegative_of_totalNonnegative_det_ne_zero hTN hdetA
+  exact
+    ⟨L, U, hLU, hL_nn, hU_nn,
+      higham9_12_nonneg_lu_optimal_growth n A L U ⟨hLU, hL_nn, hU_nn⟩⟩
+
+/-- **Theorem 9.12(b/c)**, total-nonnegative special-class max-entry growth
+package.  A nonsingular totally nonnegative source matrix admits exact
+no-pivot LU factors with `L >= 0`, `U >= 0`, and Higham max-entry growth
+factor at most one. -/
+theorem higham9_12_totalNonnegative_exists_LUFactSpec_growthFactorEntry_le_one
+    {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hAmax : 0 < maxEntryNorm hn A) :
+    ∃ L U : Fin n → Fin n → ℝ,
+      LUFactSpec n A L U ∧
+        (∀ i j : Fin n, 0 ≤ L i j) ∧
+        (∀ i j : Fin n, 0 ≤ U i j) ∧
+        growthFactorEntry hn A U hAmax ≤ 1 := by
+  obtain ⟨L, U, hLU, hL_nn, hU_nn⟩ :=
+    higham9_6_lu_exists_nonnegative_of_totalNonnegative_det_ne_zero hTN hdetA
+  exact
+    ⟨L, U, hLU, hL_nn, hU_nn,
+      higham9_12_nonneg_lu_growthFactorEntry_le_one hn A L U hAmax
+        ⟨hLU, hL_nn, hU_nn⟩⟩
 
 /-- **Problem 9.6**, the Appendix A route made explicit: if the source-cited
 determinant inequalities supply positive proper leading principal blocks for a

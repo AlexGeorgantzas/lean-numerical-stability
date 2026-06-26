@@ -1,6 +1,6 @@
 # Split 2 Chapters 7-12 Unifying Proof-Completion Report
 
-Date: 2026-06-22.
+Date: 2026-06-25; latest audit update: 2026-06-26.
 Mode: unified-proof-completion.
 Split: 2.
 Previous split: Split 1.
@@ -9,13 +9,13 @@ Previous split: Split 1.
 
 Sources audited:
 
-- Chapter PDFs: `References/1.9780898718027.ch7.pdf` through
-  `References/1.9780898718027.ch12.pdf`.
-- Appendix A: `References/1.9780898718027.appa.pdf`, problem solutions for
-  7.x through 12.x.
-- Split planning: `chapter_splitting/HIGHAM_PARALLEL_FORMALIZATION_BLUEPRINT.md`,
-  `chapter_splitting/split_primary_contracts.md`, and
-  `chapter_splitting/chapter_index.md`.
+- Chapter PDFs: `/home/mymel/flare-bundle/higham-split/sources/chapter-pdfs/1.9780898718027.ch7.pdf`
+  through `/home/mymel/flare-bundle/higham-split/sources/chapter-pdfs/1.9780898718027.ch12.pdf`.
+- Appendix A: `/home/mymel/flare-bundle/higham-split/sources/chapter-pdfs/1.9780898718027.appa.pdf`,
+  problem solutions for 7.x through 12.x.
+- Split planning: `/home/mymel/flare-bundle/higham-split/planning/HIGHAM_PARALLEL_FORMALIZATION_BLUEPRINT.md`,
+  `/home/mymel/flare-bundle/higham-split/planning/split_primary_contracts.md`,
+  and `/home/mymel/flare-bundle/higham-split/planning/chapter_index.md`.
 - Existing reports:
   `chapter_splitting/reports/chapter7_formalization_report.md` through
   `chapter_splitting/reports/chapter12_formalization_report.md`.
@@ -29,12 +29,1018 @@ added. Later chapters appear only as deferred destinations where the Chapter
 
 Split 2 is not fully formalized. The unifying pass found and closed additional
 local Chapter 9 bridges, but the selected-scope gate still fails because
-Chapter 9 has local `PROVE-NOW-SPLIT` work remaining. Other non-closed rows in
-Chapters 7, 8, 10, 11, and 12 are already classified as
-`WAIT-PREVIOUS-SPLIT`, `DEFER-LATER-SPLIT`, `DEFER-LATER-CHAPTER`, or `SKIP`
-in the chapter reports.
+Chapters 7-12 have current `PROVE-NOW-SPLIT` proof/API targets, valid
+later-split/later-chapter deferrals, and valid skips. After the 2026-06-24
+integrated-Split-1 re-audit, no live Split 2 row is left incomplete merely
+because it used to point at Split 1; integrated Split 1 declarations are treated
+as available dependencies, and any missing source surface is recorded as current
+Split 2 proof/API work or concrete integration/API follow-up.
+
+2026-06-25 Chapter 7 Theorem 7.5 `p = 2` global-rescaling normalization
+update: the live Chapter 7 report now records
+`ch7Op2RightScaledCond_global_scale`,
+`ch7Op2RightScaledCond_mem_set_global_scale`,
+`ch7Op2LeftScaledCond_global_scale`, and
+`ch7Op2LeftScaledCond_mem_set_global_scale`.  These prove that the explicit
+Euclidean condition products for `(7.18)` and `(7.19)` are unchanged when a
+reciprocal diagonal pair is globally normalized by `D ↦ tD`,
+`D⁻¹ ↦ t⁻¹D⁻¹`.  This closes a local compact-slice/minimizer-existence
+dependency, but not the remaining source `min` attainment theorem itself.
+
+2026-06-25 Chapter 7 Theorem 7.5 `p = 2` absolute-sum-one normalization
+update: the live Chapter 7 report now also records
+`ch7_sum_abs_pos_of_reciprocal`,
+`ch7Op2RightScaledCond_sum_abs_normalized_witness`, and
+`ch7Op2LeftScaledCond_sum_abs_normalized_witness`.  These prove that any
+reciprocal right or left `p = 2` diagonal-scaling witness on a nonempty index
+type can be globally rescaled to the slice `∑ |d_i| = 1` while preserving the
+Euclidean condition product and the reciprocal inverse-side witness.  This is
+another local compact-slice dependency for Theorem 7.5 minimizer existence, not
+a claim that the source `min` theorem is closed.
+
+2026-06-25 Chapter 7 Theorem 7.5 `p = 2` normalized value-set equality
+update: the live Chapter 7 report now also records
+`ch7Op2RightScaledCondNormalizedSet`,
+`ch7Op2RightScaledCondSet_eq_sum_abs_normalized`,
+`ch7Op2LeftScaledCondNormalizedSet`, and
+`ch7Op2LeftScaledCondSet_eq_sum_abs_normalized`.  These prove that, on
+ nonempty right/left scaling index types, the unrestricted reciprocal Euclidean
+condition-product value sets for `(7.18)` and `(7.19)` are exactly their
+`∑ |d_i| = 1` normalized slices.  This closes the set-level compact-slice
+reduction for the p=2 minimizer path; the remaining source `min` theorem still
+requires proving actual attainment/leastness on that normalized set.
+
+2026-06-25 Chapter 7 Theorem 7.5 `p = 2` normalized least-certificate transfer
+update: the live Chapter 7 report now records
+`ch7Op2RightScaledCondSet_isLeast_iff_sum_abs_normalized`,
+`theorem7_5_p2_column_equilibration_le_sqrt_card_min_right_scalings_of_normalized`,
+`theorem7_5_p2_column_equilibration_le_sqrt_card_min_right_scalings_of_rect_left_inverse_of_normalized`,
+`ch7Op2LeftScaledCondSet_isLeast_iff_sum_abs_normalized`,
+`theorem7_5_p2_row_equilibration_le_sqrt_card_min_left_scalings_of_normalized`,
+`theorem7_5_p2_row_equilibration_le_sqrt_card_min_left_scalings_of_rect_right_inverse_of_normalized`,
+`theorem7_5_p2_column_equilibration_exists_penrose_min_normalized_imp_of_matrix_rank_eq_width`,
+and
+`theorem7_5_p2_row_equilibration_exists_penrose_min_normalized_imp_of_matrix_rank_eq_height`.
+These prove that normalized-slice `IsLeast` certificates transfer back to the
+unrestricted right/left p=2 value sets and feed both the one-sided-inverse
+source-`min` wrappers and the printed-rank normal-equations Moore-Penrose
+wrappers.  This closes certificate plumbing for the compact-slice path; it
+does not prove the normalized slice has a least value, so the remaining
+Theorem 7.5 gap is still actual general/non-endpoint minimizer existence.
+
+2026-06-26 Chapter 7 Theorem 7.5 `p = 2` reciprocal-domain continuity and
+coercivity update: the live Chapter 7 report now records
+`continuous_complexMatrixOp2`, the right/left reciprocal normalized image sets
+and equality/`IsLeast` transfers, reciprocal condition-product continuity,
+operator-2 lower bounds from scaled column/row norms, finite positive
+lower-bound helpers, and normalized sublevel inverse-coordinate estimates
+`ch7Op2RightScaledCond_reciprocal_normalized_inv_abs_le_of_le` and
+`ch7Op2LeftScaledCond_reciprocal_normalized_inv_abs_le_of_le`. These close the
+main local analytic dependencies for the normalized p=2 minimizer path at that
+stage.  Later p=2 compact-sublevel/`IsLeast` extraction closed the p=2 source
+`min` route, leaving only the finite-real general-`p` source-min extraction
+described below.
+
+2026-06-26 Chapter 7 Theorem 7.5 finite-real `p` coercivity/compact-core
+update: the live Chapter 7 report now records the right/left finite-real
+non-endpoint reciprocal lower bounds, inverse-coordinate coercivity estimates,
+and compact reciprocal cores
+`ch7LpRightScaledCondReciprocalCompactCoreOfReal` and
+`ch7LpLeftScaledCondReciprocalCompactCoreOfReal`, plus the row-dual lower-bound
+helpers needed for the left-scaling route.  This closes the finite-real `Lp`
+coercivity/compact-core dependency layer without supplied certificates or
+duplicating Split 1 foundations.  The remaining finite-real source `min` work
+is continuity of the `complexMatrixLpNormOfReal` condition-product maps,
+closed compact sublevels inside these compact cores, and `exists_isLeast`
+transfer back to the normalized and unrestricted value sets.  The current
+search found max-form and least-bound APIs for `complexMatrixLpNormOfReal`, but
+no continuity or Lipschitz theorem for the chosen matrix `Lp` norm as a function
+of matrix entries; the p=2 route relies instead on
+`complexMatrixLpNormOfReal_two_eq_complexMatrixOp2` plus
+`continuous_complexMatrixOp2`.
+
+2026-06-25 Chapter 7 Theorem 7.5 literal row-infinity source-audit update:
+the live Chapter 7 report now records
+`theorem7_5_literal_printed_row_inf_scale_counterexample`, an exact Lean
+counterexample showing that the printed row-scale notation in Theorem 7.5
+cannot be read literally at `p = ∞` as reciprocal maximum-entry row scaling.
+The counterexample matrix has row max-entry norm one in every row, so the
+literal scale is the identity and gives condition product `40/9`; a reciprocal
+alternative row scale gives `31/9`.  This closes the row-scale reconciliation
+as a source-audit/corrected-model decision: the formal row route is the already
+proved conjugate-row/row-`1` route from the source transpose proof.  The
+remaining Theorem 7.5 gap is actual general/non-endpoint minimizer existence,
+not a previous-Split-1 dependency.
+
+2026-06-25 Chapter 7 Theorem 7.5 Moore-Penrose construction continuation: the
+printed-rank pseudoinverse construction subrow is now closed for both
+full-column and full-row rank.  The new normal-equations declarations construct
+`A⁺ = (AᵀA)⁻¹Aᵀ` or `A⁺ = Aᵀ(AAᵀ)⁻¹`, prove the one-sided inverse and
+projection-symmetry witness, package all four Penrose equations/symmetry
+conditions, and attach the endpoint or `sInf` scaling conclusion to the same
+constructed `A⁺`.  The public entry points are
+`theorem7_5_exists_rect_left_inverse_symmetric_range_of_matrix_rank_eq_width`,
+`theorem7_5_exists_rect_right_inverse_symmetric_domain_of_matrix_rank_eq_height`,
+`theorem7_5_exists_rect_penrose_equations_of_matrix_rank_eq_width`,
+`theorem7_5_exists_rect_penrose_equations_of_matrix_rank_eq_height`,
+`theorem7_5_lp_column_equilibration_exists_penrose_of_matrix_rank_eq_width`,
+`theorem7_5_lp_dual_row_equilibration_exists_penrose_of_matrix_rank_eq_height`,
+`theorem7_5_p2_column_equilibration_exists_penrose_of_matrix_rank_eq_width`,
+`theorem7_5_p2_row_equilibration_exists_penrose_of_matrix_rank_eq_height`,
+`theorem7_5_p1_column_equilibration_exists_penrose_of_matrix_rank_eq_width`,
+and `theorem7_5_pinf_row_equilibration_exists_penrose_of_matrix_rank_eq_height`.
+The same continuation now also closes the same-`A⁺` conditional source-`min`
+wrappers
+`theorem7_5_p2_column_equilibration_exists_penrose_min_imp_of_matrix_rank_eq_width`,
+`theorem7_5_lp_column_equilibration_exists_penrose_min_imp_of_matrix_rank_eq_width`,
+`theorem7_5_lp_dual_row_equilibration_exists_penrose_min_imp_of_matrix_rank_eq_height`,
+and
+`theorem7_5_p2_row_equilibration_exists_penrose_min_imp_of_matrix_rank_eq_height`:
+each theorem returns the constructed Moore-Penrose candidate and applies the
+existing source-`min` inequality for any supplied `IsLeast` certificate.
+Older historical notes saying the Moore-Penrose construction or
+Penrose-equation witnesses are still missing are superseded by this note.  The
+remaining Theorem 7.5 blocker is actual general/non-endpoint minimizer
+existence; the printed row-scale source audit is closed by
+`theorem7_5_literal_printed_row_inf_scale_counterexample`.  This is not a
+previous-Split-1 dependency.
+
+2026-06-25 Chapter 7 Mathlib spectral-radius bridge continuation: the prior
+Bauer spectrum-interface row has been pushed from Mathlib
+`spectrum (Matrix.toLin' ...)` modulus `sSup = ρ` to Mathlib's
+Banach-algebra `spectralRadius` representation.  New declarations
+`toLin_spectralRadius_eq_of_spectrum_modulusSet_isGreatest`,
+`toLin_spectralRadius_toReal_eq_of_spectrum_modulusSet_isGreatest`,
+`complexMatrix_toLin_spectralRadius_eq_of_isMaxComplexMatrixEigenvalueModulus`,
+`ch7_toLin_spectralRadius_eq_of_isComplexEigenvalueRadius`,
+`ch7_toLin_spectralRadius_toReal_eq_of_isComplexEigenvalueRadius`,
+`problem7_10a_product_toLin_spectralRadius_eq_of_positive_eigenvector`,
+`problem7_10b_abs_product_toLin_spectralRadius_eq_of_positive_eigenvector`,
+and
+`problem7_10a_scaled_product_toLin_spectralRadius_eq_of_positive_eigenvector`
+prove `spectralRadius ℂ (Matrix.toLin' ...) = ENNReal.ofReal ρ` under the
+same supplied positive Perron-vector certificates already used by the Bauer
+product, absolute-product, and scaled-product spectrum-modulus wrappers.  The
+remaining Chapter 7 Bauer blockers are now Perron-Frobenius eigenpair
+existence from irreducibility and compatible common scaling for the full
+Problem 7.10(e) op-2 row; older historical mentions of an open
+Banach-algebra `spectralRadius` value-representation bridge are superseded by
+this note.
+
+2026-06-25 Chapter 7 Bauer scaled-product spectral continuation: Problem
+7.10(a)'s positive reciprocal two-sided scaled Bauer product now has local
+finite eigenvalue-radius, greatest-eigenvalue-modulus, and real `sSup = ρ`
+wrappers under the supplied positive Perron-vector certificate.  The new
+declarations
+`problem7_10a_scaled_product_isComplexEigenvalueRadius_of_positive_eigenvector`,
+`problem7_10a_scaled_product_complexEigenvalueModulusSet_isGreatest_of_positive_eigenvector`,
+and
+`problem7_10a_scaled_product_complexEigenvalueModulusSet_sSup_eq_of_positive_eigenvector`
+prove that every positive reciprocal scaling preserves the attained local
+complex-eigenvalue radius of the Bauer product.  This is genuine current Split
+2 proof work over the integrated finite matrix/order APIs; it still does not
+prove Perron-Frobenius eigenpair existence from irreducibility or identify the
+local finite-eigenvalue supremum with Mathlib's Banach-algebra
+`spectralRadius`.
+
+2026-06-25 Chapter 7 Bauer spectrum-interface continuation: the local Chapter
+7 finite eigenvalue-modulus carrier is now identified with the generic Split 1
+`ComplexMatrixEigenvalueModulusSet` and with moduli of Mathlib
+`spectrum (Matrix.toLin' ...)` elements via
+`complexMatrixEigenvalueModulusSet_eq_toLin_spectrum_modulusSet`.
+Source-facing Problem 7.10 wrappers export the positive-Perron-vector
+certificate to `IsMaxComplexMatrixEigenvalueModulus`, reuse the integrated
+Split 1 norm-existence theorem to obtain values `≤ ρ + δ`, and prove Mathlib
+spectrum-modulus `sSup = ρ` for the unscaled, absolute-value, and scaled Bauer
+products.  Later continuations close the conditional Banach-algebra
+`spectralRadius` value representation under supplied positive or nonzero
+nonnegative Perron-vector certificates.  The remaining spectral blocker is PF
+eigenpair existence from irreducibility plus compatible common scaling for the
+full Problem 7.10(e) op-2 row.
+
+2026-06-25 Chapter 7 continuation: Problem 7.10(e)'s op-2 two-sided scaling
+value-set infrastructure was strengthened by
+`ch7TwoSidedScaledOp2KappaSet_bddBelow` and
+`ch7TwoSidedScaledOp2KappaSet_sInf_nonneg`, and the existing conditional Bauer
+`sInf` upper-bound theorem now reuses the bounded-below lemma. Older rows that
+summarize the Problem 7.10(e) fixed-scaling 2-norm/conditional `sInf` package
+should be read as including this op-2 value-set lower-bound infrastructure; the
+full item-by-item Chapter 7 ledger is
+`chapter_splitting/reports/chapter7_formalization_report.md`.
+
+2026-06-25 Chapter 7 continuation: the scaling value-set nonnegative-infimum
+infrastructure was also closed for the p=2 left-scaling, symmetric two-sided
+op-2, Bauer infinity-product, scaled-`κ∞`, and scaled-`κ₁` value sets by
+`ch7Op2LeftScaledCondSet_sInf_nonneg`,
+`ch7SymmetricOp2ScaledCondSet_sInf_nonneg`,
+`ch7TwoSidedScaledInfCondSet_sInf_nonneg`,
+`ch7TwoSidedScaledInfKappaSet_sInf_nonneg`, and
+`ch7TwoSidedScaledOneKappaSet_sInf_nonneg`. These are genuine lower-bound
+lemmas over existing nonempty value sets and do not assert the remaining
+Moore-Penrose/minimum or Perron-Frobenius/spectral-radius source claims.
+
+2026-06-25 Chapter 7 Bauer/PF continuation: the strict positive-eigenvalue
+side condition used by the existing Problem 7.10(d) irreducible `Cx > 0`
+transfer is now derivable from a positive `BC` entry and the supplied positive
+`BC` eigenvector certificate by
+`ch7_perronScalar_pos_of_nonneg_eigenvector_entry_pos` and
+`problem7_10d_Cx_pos_of_irreducible_CB_of_positive_BC_entry`.  This is still a
+certificate-level dependency: the full source Bauer theorem remains open for
+Perron-Frobenius positive-vector existence from irreducibility, spectral-radius
+identification, and compatible common scaling at the source spectral-radius
+value.
+
+2026-06-25 Chapter 7 Bauer/PF continuation update: the same Problem 7.10(d)
+strict-eigenvalue side condition is now derivable from the source irreducibility
+hypothesis on `BC`, not just from an explicit positive entry.  The new
+declarations `ch7_perronScalar_pos_of_nonneg_irreducible_eigenvector`,
+`problem7_10d_Cx_pos_of_irreducible_BC_CB`, and
+`problem7_10d_abs_inverse_Cx_pos_of_irreducible_products` prove the
+irreducible-product `Cx > 0` transfer and the `B = |A|`, `C = |A⁻¹|`
+specialization under a supplied positive Perron-vector certificate.  This still
+does not prove Perron-Frobenius existence, spectral-radius identification, or
+the compatible common scaling needed for the full Bauer minimum.
+
+2026-06-25 Chapter 7 Bauer/PF continuation update: the Problem 7.10(d)
+irreducible-product positivity bridge is now reused by Problem 7.10(b)'s
+scaled-`κ∞` canonical and exact value-set surfaces.  The new declarations
+`problem7_10b_irreducible_products_canonical_scaled_infKappa_eq_perron` and
+`problem7_10b_irreducible_products_scaledInfKappaSet_sInf_eq_perron` discharge
+the former explicit `|A⁻¹|x > 0` side condition from irreducibility of both
+`|A||A⁻¹|` and `|A⁻¹||A|`, while still requiring the supplied positive
+Perron-vector certificate.  This is local current-split progress; it is not a
+replacement for Perron-Frobenius existence or spectral-radius identification.
+
+2026-06-25 Chapter 7 nonzero-nonnegative Bauer continuation update: the
+positive-vector certificate in the source-irreducible Problem 7.10(a)/(b)
+wrappers is now weakened to a supplied nonzero nonnegative eigenpair.  The new
+lemmas `ch7_perronScalar_nonneg_of_nonzero_nonneg_eigenvector`,
+`ch7_perronScalar_pos_of_nonzero_nonneg_irreducible_eigenvector`, and
+`ch7_nonzero_nonneg_irreducible_right_eigenvector_pos` prove `ρ >= 0`,
+`ρ > 0`, and `x > 0` from nonnegative irreducibility and the nonzero
+nonnegative eigenpair.  The new wrappers
+`problem7_10a_irreducible_products_canonical_scaled_infCond_eq_perron_of_nonzero_nonneg_eigenvector`,
+`problem7_10a_irreducible_products_scaledInfCondSet_sInf_eq_perron_of_nonzero_nonneg_eigenvector`,
+`problem7_10b_irreducible_products_canonical_scaled_infKappa_eq_perron_of_nonzero_nonneg_eigenvector`,
+and
+`problem7_10b_irreducible_products_scaledInfKappaSet_sInf_eq_perron_of_nonzero_nonneg_eigenvector`
+reuse that positivity bridge to close the certificate-level Bauer lower-bound,
+canonical, and exact `sInf = ρ` surfaces.  The remaining Chapter 7 Bauer gap is
+therefore Perron-Frobenius eigenpair existence, spectral-radius identification,
+and compatible common-scaling existence, not positivity propagation from a
+supplied nonnegative eigenpair.
+
+2026-06-25 Chapter 7 one-norm transpose Bauer continuation update: the
+Problem 7.10(e) transpose branch now has the same source-shaped
+nonzero-nonnegative eigenpair reduction.  The new declarations
+`problem7_10e_irreducible_transpose_products_canonical_scaled_oneCond_eq_perron_of_nonzero_nonneg_eigenvector`,
+`problem7_10e_irreducible_transpose_products_canonical_scaled_oneKappa_eq_perron_of_nonzero_nonneg_eigenvector`,
+and
+`problem7_10e_irreducible_transpose_products_scaledOneKappaSet_sInf_eq_perron_of_nonzero_nonneg_eigenvector`
+derive `y > 0` and `|A⁻¹|ᵀy > 0` from irreducibility of the transpose
+products and a supplied nonzero nonnegative transpose-side eigenpair, then
+reuse the existing positive-certificate one-norm canonical and exact
+ `sInf = ρ` wrappers.  The remaining Bauer blocker is still PF eigenpair
+existence, spectral-radius identification, and compatible common-scaling
+existence for the full operator-2 statement.
+
+2026-06-25 Chapter 7 one-norm original-product Bauer continuation update: the
+Problem 7.10(e) one-norm branch now derives its transpose-product
+irreducibility side conditions from the source products `BC` and `CB`.  The
+new adapter lemmas `ch7_matrix_of_matTranspose`,
+`ch7_irreducible_matTranspose`, and
+`ch7_irreducible_transpose_product_of_irreducible_product` identify the
+repository transpose with Mathlib transpose, use
+`Matrix.IsIrreducible.transpose`, and rewrite `(BC)ᵀ = CᵀBᵀ`.  The new
+source-shaped wrappers
+`problem7_10e_irreducible_products_canonical_scaled_oneCond_eq_perron_of_nonzero_nonneg_eigenvector`,
+`problem7_10e_irreducible_products_canonical_scaled_oneKappa_eq_perron_of_nonzero_nonneg_eigenvector`,
+and
+`problem7_10e_irreducible_products_scaledOneKappaSet_sInf_eq_perron_of_nonzero_nonneg_eigenvector`
+reuse the existing transpose-certificate one-norm package without assuming
+transpose-product irreducibility separately.  Verification passed: targeted
+Chapter 7 build, lookup, axiom probe, focused placeholder scan,
+`git diff --check`, source re-audit, and full `timeout 600s lake build`
+(3502 jobs, only pre-existing QR/Givens/FastMatMul warnings).  The remaining
+Bauer blocker is unchanged: PF eigenpair existence, spectral-radius
+identification, and compatible common-scaling existence.
+
+2026-06-25 Chapter 7 Bauer minimum-attainment continuation update: the
+Problem 7.10(a)/(b)/(e) certificate-level value-set wrappers now include
+genuine `IsLeast` surfaces, not only `sInf = ρ` equalities.  New declarations
+include `problem7_10a_scaledInfCondSet_isLeast_perron_of_positive_eigenvector`,
+`problem7_10a_irreducible_products_scaledInfCondSet_isLeast_perron_of_nonzero_nonneg_eigenvector`,
+`problem7_10b_scaledInfKappaSet_isLeast_perron_of_abs_inverse_positive_eigenvector`,
+`problem7_10b_irreducible_products_scaledInfKappaSet_isLeast_perron_of_nonzero_nonneg_eigenvector`,
+`problem7_10e_scaledOneKappaSet_isLeast_perron_of_abs_inverse_transpose_positive_eigenvector`,
+and
+`problem7_10e_irreducible_products_scaledOneKappaSet_isLeast_perron_of_nonzero_nonneg_eigenvector`.
+Positive-entry and irreducible-product variants are exposed in the lookup docs.
+The remaining Bauer blocker is unchanged: PF eigenpair existence,
+spectral-radius identification, and compatible common-scaling existence.
+
+2026-06-25 Chapter 7 Theorem 7.5 rank-side continuation update: the
+nonzero-column/nonzero-row hypotheses in the explicit-`Aplus` van der Sluis
+wrappers are now discharged from source-shaped rectangular one-sided inverse
+witnesses.  The new positivity lemmas
+`ch7RectColumnLpNormOfReal_pos_of_rect_left_inverse`,
+`ch7RectColumnNorm2_pos_of_rect_left_inverse`,
+`ch7RectColumnNorm1_pos_of_rect_left_inverse`,
+`ch7RectRowDualLpNormOfReal_pos_of_rect_right_inverse`,
+`ch7RectRowNorm2_pos_of_rect_right_inverse`, and
+`ch7RectRowNorm1_pos_of_rect_right_inverse` prove that zero row/column norm
+would contradict the diagonal entry of `Aplus A = I` or `A Aplus = I`.  The
+new source-shaped wrappers
+`theorem7_5_lp_column_equilibration_le_card_rpow_sInf_right_scalings_of_rect_left_inverse`,
+`theorem7_5_p2_column_equilibration_le_sqrt_card_sInf_right_scalings_of_rect_left_inverse`,
+`theorem7_5_p1_column_equilibration_isLeast_right_scalings_of_rect_left_inverse`,
+`theorem7_5_lp_dual_row_equilibration_le_card_rpow_sInf_left_scalings_of_rect_right_inverse`,
+`theorem7_5_p2_row_equilibration_le_sqrt_card_sInf_left_scalings_of_rect_right_inverse`,
+and
+`theorem7_5_pinf_row_equilibration_isLeast_left_scalings_of_rect_right_inverse`
+reuse the already-proved p-norm scaling theorems without asserting a
+Moore-Penrose construction.  A follow-up in the same continuation now proves
+the linear-map rank-form bridge: `ch7RectMatMulVecLinearMap` packages
+`x ↦ A*x` as a linear map, `ch7_exists_rect_left_inverse_of_rectMatMulVec_injective`
+extracts a concrete `Aplus A = I` matrix from injectivity, and
+`ch7_exists_rect_right_inverse_of_rectMatMulVec_surjective` extracts a concrete
+`A Aplus = I` matrix from surjectivity.  The existential wrappers
+`theorem7_5_lp_column_equilibration_exists_left_inverse_of_rectMatMulVec_injective`,
+`theorem7_5_p2_column_equilibration_exists_left_inverse_of_rectMatMulVec_injective`,
+`theorem7_5_p1_column_equilibration_exists_left_inverse_of_rectMatMulVec_injective`,
+`theorem7_5_lp_dual_row_equilibration_exists_right_inverse_of_rectMatMulVec_surjective`,
+`theorem7_5_p2_row_equilibration_exists_right_inverse_of_rectMatMulVec_surjective`,
+and
+`theorem7_5_pinf_row_equilibration_exists_right_inverse_of_rectMatMulVec_surjective`
+instantiate the existing explicit-`Aplus` specializations from those proved
+rank witnesses.  This continuation now also closes the printed real Matrix-rank
+side-condition bridge: `ch7_rectMatMulVec_injective_of_matrix_rank_eq_width`
+and `ch7_rectMatMulVec_surjective_of_matrix_rank_eq_height` use Mathlib
+`Matrix.rank` and rank-nullity to turn `(Matrix.of A).rank = n/m` into
+injectivity/surjectivity, and six `..._matrix_rank_eq_width/height` wrappers
+instantiate the already proved explicit-`Aplus` column/row specializations
+under the printed rank hypotheses.  Later normal-equations and row-scale audit
+continuations close the Moore-Penrose/projection and printed-row-scale audit
+items; the remaining Theorem 7.5 gap is actual general/non-endpoint
+minimizer-existence, not a rank-side positivity, rank-form, or printed-rank
+bridge gap.
+
+2026-06-25 Chapter 7 Theorem 7.5 conditional source-minimum continuation
+update: the non-endpoint explicit-`Aplus` `sInf` wrappers now have proved
+source-`min` adapters under supplied `IsLeast` certificates.  New declarations
+include
+`theorem7_5_p2_column_equilibration_le_sqrt_card_min_right_scalings`,
+`theorem7_5_p2_column_equilibration_le_sqrt_card_min_right_scalings_of_rect_left_inverse`,
+`theorem7_5_lp_column_equilibration_le_card_rpow_min_right_scalings`,
+`theorem7_5_lp_column_equilibration_le_card_rpow_min_right_scalings_of_rect_left_inverse`,
+`theorem7_5_lp_dual_row_equilibration_le_card_rpow_min_left_scalings`,
+`theorem7_5_lp_dual_row_equilibration_le_card_rpow_min_left_scalings_of_rect_right_inverse`,
+`theorem7_5_p2_row_equilibration_le_sqrt_card_min_left_scalings`, and
+`theorem7_5_p2_row_equilibration_le_sqrt_card_min_left_scalings_of_rect_right_inverse`.
+These use Mathlib's `IsLeast.csInf_eq` to rewrite the already proved `sInf`
+bounds and do not assert minimizer existence or a Moore-Penrose construction.
+Later normal-equations and row-scale audit continuations close the
+Moore-Penrose construction/Penrose-symmetry and printed-row-scale audit items,
+so the remaining Theorem 7.5 gap is proof that the general/non-endpoint value
+sets attain the source minima.
+
+2026-06-25 Chapter 7 Theorem 7.5 projection-orthogonality continuation
+update: the explicit one-sided-inverse projection package now includes
+range/domain fixing, residual orthogonality, and squared-norm
+best-approximation inequalities, not only idempotence and operator-2
+nonexpansiveness.  New reusable declarations include
+`finiteMatVec_projection_residual_eq_zero_of_idempotent`,
+`finiteVecInnerProduct_projection_residual_range_eq_zero`,
+`finiteVecNorm2Sq_add_of_inner_eq_zero`,
+`finiteVecNorm2Sq_projection_residual_le_residual_to_range_of_symmetric_idempotent`,
+`finiteVecNorm2_projection_residual_le_residual_to_range_of_symmetric_idempotent`,
+`rectMatMulVec_idMatrix`,
+`rectMatMulVec_rangeProjection_apply_range_of_left_inverse`,
+`rectMatMulVec_domainProjection_apply_range_of_right_inverse`,
+`rectMatMulVec_rangeProjection_residual_orthogonal_range_of_symmetric_left_inverse`,
+and
+`rectMatMulVec_domainProjection_residual_orthogonal_range_of_symmetric_right_inverse`,
+plus
+`rectMatMulVec_rangeProjection_residual_normSq_le_range_residual_of_symmetric_left_inverse`
+and
+`rectMatMulVec_domainProjection_residual_normSq_le_range_residual_of_symmetric_right_inverse`,
+with norm-form consequences
+`rectMatMulVec_rangeProjection_residual_norm_le_range_residual_of_symmetric_left_inverse`
+and
+`rectMatMulVec_domainProjection_residual_norm_le_range_residual_of_symmetric_right_inverse`.
+New source-facing wrappers are
+`theorem7_5_rect_left_inverse_range_projection_fixes_range`,
+`theorem7_5_rect_right_inverse_domain_projection_fixes_range`,
+`theorem7_5_rect_left_inverse_symmetric_range_projection_residual_orthogonal_range`,
+and
+`theorem7_5_rect_right_inverse_symmetric_domain_projection_residual_orthogonal_range`,
+plus
+`theorem7_5_rect_left_inverse_symmetric_range_projection_residual_normSq_le_range_residual`
+and
+`theorem7_5_rect_right_inverse_symmetric_domain_projection_residual_normSq_le_range_residual`,
+plus norm-form wrappers
+`theorem7_5_rect_left_inverse_symmetric_range_projection_residual_norm_le_range_residual`
+and
+`theorem7_5_rect_right_inverse_symmetric_domain_projection_residual_norm_le_range_residual`.
+This closes a genuine local projection-geometry dependency for the
+Moore-Penrose route, while still not constructing a Moore-Penrose inverse or
+deriving the Penrose symmetry conditions.
+
+2026-06-25 Chapter 7 Theorem 7.5 projection-minimizer continuation update:
+the explicit one-sided-inverse projection package now also has set-level
+least-value wrappers:
+`theorem7_5_rect_left_inverse_symmetric_range_projection_residual_normSq_isLeast`,
+`theorem7_5_rect_right_inverse_symmetric_domain_projection_residual_normSq_isLeast`,
+`theorem7_5_rect_left_inverse_symmetric_range_projection_residual_norm_isLeast`,
+and
+`theorem7_5_rect_right_inverse_symmetric_domain_projection_residual_norm_isLeast`.
+These close the local projection-minimizer dependency for supplied symmetric
+one-sided inverses.  They still do not construct a Moore-Penrose inverse, prove
+the Penrose equations from the printed rank hypotheses, reconcile the printed
+row-scale notation, or prove attainment of the remaining general/non-endpoint
+diagonal-scaling value sets.
+
+2026-06-25 Chapter 7 Theorem 7.5 Penrose rank-min continuation update: the
+endpoint least-element, non-endpoint `sInf`, and conditional source-`min`
+surfaces now have ten source-rank adapters under the first Penrose equation
+`AA⁺A=A` and the printed Matrix-rank hypotheses.  The new declarations are the
+`theorem7_5_*_of_penrose1_matrix_rank_eq_width/height` wrappers listed in the
+live Chapter 7 report.  Each proof derives `Aplus A = I` or `A Aplus = I` from
+the already proved Penrose1/rank bridge, then reuses the existing endpoint,
+`sInf`, or conditional `IsLeast` scaling theorem.  This closes the
+Penrose1-plus-rank route into the existing Theorem 7.5 value-set surfaces, but
+still does not construct the Moore-Penrose inverse, prove the first Penrose
+equation/projection-symmetry witnesses for that construction, reconcile the
+printed row-scale notation, or prove non-endpoint minimizer existence.
+
+2026-06-25 Chapter 7 API re-audit: direct current-branch searches found the
+integrated rectangular SVD surface in `Norms.lean`, including
+`exists_complexMatrixSVDUnitary_diagonal_eq`,
+`exists_complexMatrixSVDUnitary_diagonal_eq_with_entry_formula`, and
+`exists_isComplexMatrixSVD`.  The current projection-minimizer continuation
+adds conditional wrappers for supplied symmetric one-sided inverses, and the
+Penrose rank-min continuation adds wrappers from first Penrose equation plus
+printed Matrix rank into the closed value-set surfaces.  The same searches did
+not find a Moore-Penrose/pseudoinverse construction API deriving the first
+Penrose equation and projection-symmetry witnesses from the printed rank
+hypotheses, a declaration proving general minimizer existence for the remaining
+printed source `min` statements in the repository value-set model, or a
+Perron-Frobenius existence theorem
+deriving the required positive eigenvector/eigenvalue and spectral-radius
+identity from nonnegative irreducibility.  These are recorded as current
+Chapter 7 Split 2 proof/API gaps, not unresolved Split 1 dependencies.
+
+Latest Chapter 7 SVD/spectral re-audit update: the live Chapter 7 report and
+lookup now include the Problem 7.10(a) scaled-product local spectral wrappers
+and the generic/Mathlib spectrum-interface wrappers listed in the result
+section above.  Older summary rows that mention only unscaled Bauer product
+local eigenvalue-modulus `sSup` wrappers should be read as including the
+positive-reciprocal scaled-product variants, generic Split 1 maximum-modulus
+export, integrated norm-existence reuse, and Mathlib spectrum-modulus `sSup`
+wrappers.  The remaining Bauer blockers are narrowed to Perron-Frobenius
+eigenpair existence, Banach-algebra `spectralRadius` value representation
+beyond the closed spectrum-modulus bridge, and compatible common scaling for
+the full source theorem.
+
+2026-06-26 Chapter 7 Bauer lower-bound update: the live Chapter 7 report and
+lookup now include positive-subeigenvector lower-bound wrappers for Problem
+7.10(a), Problem 7.10(b)'s `kappa_infty` branch, and Problem 7.10(e)'s
+transpose `kappa_1` branch.  New source-facing declarations include
+`problem7_10a_irreducible_product_scaledInfCondSet_sInf_ge_spectralRadius`,
+`problem7_10b_irreducible_abs_product_scaledInfKappaSet_sInf_ge_spectralRadius`,
+and
+`problem7_10e_irreducible_abs_transpose_product_scaledOneKappaSet_sInf_ge_spectralRadius`.
+These close the universal `rho <= sInf` half from the already proved positive
+spectral-radius subeigenvectors.  They do not close the source equality,
+canonical attaining scaling, or common op-2 Bauer scaling; the remaining
+blocker is still the Perron-Frobenius upgrade to a positive real eigenvector
+equation plus compatible scalings, with no unresolved Split 1 dependency.
+
+2026-06-26 Chapter 7 Bauer op-2 closure update: the live Chapter 7 report and
+lookup now include the compatible left/right Perron-vector Schur scaling proof
+for Problem 7.10(e)'s two-norm upper bound.  New declarations include
+`ch7_opNorm2Le_of_schur_bounds`,
+`ch7_bauer_left_scaled_opNorm2Le_of_left_right_vectors`,
+`ch7_bauer_right_scaled_opNorm2Le_of_left_right_vectors`,
+`problem7_10e_scaled_op2Kappa_le_perron_of_abs_left_right_vectors`,
+`problem7_10e_twoSidedScaledOp2Kappa_sInf_le_perron_of_abs_left_right_vectors`,
+and
+`problem7_10e_irreducible_products_twoSidedScaledOp2KappaSet_sInf_le_spectralRadius`.
+These supersede older Chapter 7 summary rows that listed Perron-Frobenius
+eigenpair equality or compatible common Bauer op-2 scaling as open: the
+repository now derives the required right Perron data from `|A||A^{-1}|`, left
+data from `|A|^T|A^{-1}|^T`, aligns their spectral-radius scalars using the
+closed transpose/product spectral-radius equalities, and proves
+`sInf kappa_2 <= rho(|A||A^{-1}|)`.  The remaining broader Chapter 7 caveat is
+the already tracked finite-real Theorem 7.5 general-`p` actual source-min
+extraction, not a Bauer or Split 1 dependency.
+
+## 2026-06-24 Kimon Main Wait Re-Audit
+
+The branch was re-audited after integration of Kimon `origin/main` through
+`e7269ce`, with Split 1 norm/condition infrastructure visible through
+`LeanFpAnalysis.FP.Analysis.Norms`, `LeanFpAnalysis.FP.Analysis.Stability`,
+`docs/LIBRARY_LOOKUP.md`, and `examples/LibraryLookup.lean`. The old
+old Split 1-gate rows are no longer described as lacking an imported norm layer when
+the imported API is present. Kimon's integrated Split 1 APIs are treated as
+available dependencies across Chapters 7-12; remaining selected rows are current
+Split 2 source-wrapper/API/proof targets, concrete integration/API follow-ups,
+valid later-split/later-chapter deferrals, or skips.
+
+Theorem-design entries before future implementation:
+
+| Source row | Old status | Re-audit result | Existing declaration/import | Intended Lean target | Dependencies | Next action |
+| --- | --- | --- | --- | --- | --- | --- |
+| Chapter 7 generic norm rows: Theorems 7.1, 7.2, 7.4 and related equations/problems | Former Split 1-gate label | Reclassified to current Split 2 work; Kimon supplies complex `p`-norm and mixed-subordinate APIs, but the Chapter 7 source rows still need real componentwise/generic norm, dual norm, and diagonal-scaling wrappers | `IsComplexVectorNorm`; `IsMixedSubordinateNormValue`; `complexVecLpNorm`; `complexMatrixLpNormOfReal`; closed infinity-norm wrappers such as `rigal_gaches` and `normwise_forward_error_exact_relative_infNorm` | Real/complex norm-preservation adapters and arbitrary-norm source wrappers for the already closed infinity-norm specializations | Integrated Split 1 norm APIs plus current Chapter 7 source wrappers | Prove or expose the wrappers in Split 2; do not leave an external Split 1 blocker |
+| Chapter 7 SVD/spectral rows: Theorems 7.5-7.6 and 7.8 plus dependent problems | Former Split 1-gate label | Reclassified to current Split 2 work or concrete integration/API follow-up; the live Chapter 7 report is authoritative.  Integrated branch rank/SVD/Frobenius carriers have been reused; Theorem 7.5 now has the normal-equations Moore-Penrose construction, Penrose-equation witnesses, endpoint/`sInf` wrappers, p=2 and finite-real source `min` attainment wrappers, finite-real normalized-certificate transfer, finite-real reciprocal coercivity/compact-core proofs, and a formal source-audit counterexample to the literal printed row-`∞` max-entry scaling.  Problem 7.5 is closed by the SVD-coordinate perturbation theorem.  Problem 7.10 now has Bauer algebraic lower-bound/attainment wrappers, inverse transport, absolute-value/scaled `κ∞`, one-norm transpose, `CB(Cx)`, source-shaped irreducibility/strict-positivity transfer, positive spectral-radius subeigenvector construction and Perron eigenvector equality from irreducibility, `rho <= sInf` lower-bound wrappers, exact one-/infinity-norm `sInf` equalities, fixed op-2 interpolation, compatible left/right Schur scaling, Mathlib spectrum-modulus `sSup`, and Mathlib `spectralRadius` wrappers.  No selected Chapter 7 source row remains open in the live Chapter 7 report. | `complexMatrixRank`; `complexMatrixRank_eq_card_nonzero_singularValue`; `exists_complexMatrixSVDUnitary_diagonal_eq`; `complexMatrixFrobenius`; Problem 7.5, Theorem 7.5, Problem 7.10, and Problem 7.15 declarations listed in the live Chapter 7 report | No remaining Chapter 7 Split 2 proof target in the live report | Integrated Split 1 rank/SVD/Frobenius/spectral carriers plus current Chapter 7 wrappers; no previous-split blocker remains for the closed declarations | No Chapter 7 integration/API follow-up remains; keep source-modeling and skip notes visible |
+| Chapter 7 Corollary 7.6 Cholesky-factor source-scale row | Former Split 1-gate label through Theorem 7.5/SVD scaling | Closed in the repository's explicit inverse-Gram and `sInf` model; no minimizer-attainment theorem is asserted | `ch7SymmetricDiagEquilibratingScale2`; `ch7SymmetricDiagEquilibratingInvScale2`; `corollary7_6_cholesky_diag_eq_column_norm_sq`; `corollary7_6_cholesky_diag_invScale_eq_column_norm`; `corollary7_6_cholesky_diag_scale_eq_column_equilibrating`; `corollary7_6_cholesky_column_norm_pos`; `corollary7_6_cholesky_factor_column_equilibrated`; `corollary7_6_cholesky_factor_op2Le_sqrt_card`; `corollary7_6_cholesky_factor_column_scaling_le_sqrt_card_sInf_right_scalings`; `ch7SymmetricOp2ScaledCond`; `ch7SymmetricOp2ScaledCondSet`; `ch7SymmetricOp2ScaledCond_mem_set`; `ch7SymmetricOp2ScaledCondSet_nonempty`; `ch7SymmetricOp2ScaledCond_nonneg`; `ch7SymmetricOp2ScaledCondSet_bddBelow`; `ch7CholeskyInverseGram`; `corollary7_6_cholesky_scaled_gram_eq`; `corollary7_6_cholesky_scaled_inverse_gram_eq`; `corollary7_6_cholesky_scaled_cond_eq_factor_cond_sq`; `ch7Op2RightScaledCondSet_sInf_nonneg`; `corollary7_6_cholesky_scaled_cond_le_card_sInf_right_scalings_sq`; `corollary7_6_cholesky_right_sInf_sq_le_symmetric_sInf`; `corollary7_6_cholesky_scaled_cond_le_card_sInf_symmetric_scalings`; `corollary7_6_cholesky_inverse_gram_isInverse`; `corollary7_6_cholesky_scaled_inverse_gram_isInverse` | No open Corollary 7.6 proof target in the `sInf` model | Integrated Split 1 norm/SVD APIs plus current Chapter 7 p=2 value-set wrapper and generic two-sided inverse transport were reused; no Split 1 foundation was duplicated | Keep the no-attainment modeling note visible; no selected Chapter 7 work remains open in the live report |
+| Chapter 8 norm/condition rows: Lemma 8.8, Lemma 8.9, Theorems 8.12/8.14, equation (8.2), Problems 8.2-8.7 | `PROVE-NOW-SPLIT` | Lemma 8.8, Lemma 8.9, Theorem 8.12, Theorem 8.14, and Problem 8.7 are now closed in source-facing norm form, and the downstream Chapter 9 equation (9.17) wrapper now consumes the corrected Lemma 8.8 route. Remaining open work is the narrower problem-specific Chapter 8 condition-number packaging, not the Theorem 8.12/8.14 chain surfaces themselves. | `higham8_rowDominantUpperSource`; `higham8_8_rowDiagDominantUpper`; `higham8_8_rowDiagDominantUpper_condSkeel_bound`; `higham8_9_comparisonMatrix_condAtSolution_eq`; `higham8_9_upperTriangular_condAtSolution_le_comparison_eq`; `higham8_9_lowerTriangular_condAtSolution_le_comparison_eq`; `higham8_12_abs_inv_le_comparison_inv`; `higham8_12_comparisonInv_le_WInv`; `higham8_12_WInv_le_ZInvFormula`; `higham8_12_infNorm_chain`; `higham8_12_oneNorm_chain`; `higham8_12_opNorm2_chain`; `higham8_12_absolute_norm_vector_chain`; `higham8_14_oneNorm_lowerBound`; `higham8_14_oneNorm_upperBound`; `higham8_14_opNorm2_lowerBound`; `higham8_14_opNorm2_upperBound`; `higham8_14_infNorm_lowerBound`; `higham8_14_infNorm_upperBound`; `higham8_14_full_norm_chain`; `higham8_7_rowDiagMargin`; `higham8_7_scaledRowDiagMargin`; `higham8_7_scaledStrictRowDiagDominant_invInfNorm_le`; `higham8_7_strictRowDiagDominant_invInfNorm_le`; `higham8_7_comparisonInverseOnes_infNorm_ge_inverseInfNorm`; `higham9_17_absLU_infNorm_le_condSkeel_of_LUFactSpec`; `higham9_17_rowDiagDom_absLU_bound_of_LUFactSpec`; `IsMixedConditionNumberProductValue`; `complexMatrixLpNormOfReal_*conditionNumber*` | The remaining condition/problem wrappers for equation (8.2) and Problems 8.3/8.6 | Integrated `Norms`, real-to-complex adapters, `W/Z` source surfaces, triangular inverse algebra, Chapter 7 `condSkeel`, the now-closed absolute-/`∞/1/2` norm-chain layer, and the new strict-row-dominance inverse-norm layer | Reuse the closed wrappers in the remaining Chapter 8 condition-number/problem rows |
+| Chapter 8 arbitrary-order/fan-in rows: Lemma 8.4, full Theorem 8.5, equations (8.12)-(8.20) | `PROVE-NOW-SPLIT` | Still open as current Split 2 proof/API work or concrete integration/API follow-up; available gamma infrastructure exists, but no arbitrary expression-order scalar rounding or matrix fan-in product rounding theorem was found in the current branch | fixed-order `higham8_5_backSub_backward_error`; `higham8_5_forwardSub_backward_error`; `gammaValid` | Shared expression-order and fan-in product theorem surfaces | Integrated rounding/gamma APIs plus the still-missing expression-order/fan-in surfaces | Prove or expose the expression-order and fan-in theorem surfaces without duplicating incompatible rounding algebra |
+| Chapter 10 full Cholesky/LDL and spectral rows | `PROVE-NOW-SPLIT` | Still open as current Split 2 proof/API work; exact Cholesky/LDLT and selected counterexamples are closed, but full floating-point Cholesky, square-root rounding, spectral/eigen, rank/SVD, and Schur perturbation statements need source wrappers over shared infrastructure | Chapter 10 exact wrappers; `gammaValid`; integrated norm APIs | Source full FP Cholesky and perturbation wrappers consuming shared gamma/norm/spectral APIs | sqrt rounding, FP product/gamma integration, spectral/SVD/Schur foundations | Build concrete `fl_cholesky` certificate theorem and source wrappers over shared norm/rank/eigen APIs |
+| Chapter 11 stability/growth/eigen/inertia rows | `PROVE-NOW-SPLIT` | Still open as current Split 2 proof/API work; exact appendix examples are closed, but main stability/growth statements need FP/gamma/norm/spectral and pivot-trace adapters | Chapter 11 exact wrappers; integrated `Norms`; existing Ch9 trace surfaces | Source stability/growth wrappers connected to shared norm and pivot-trace APIs | FP rounding, norm/condition, eigen/inertia, and growth trace infrastructure | Prove the rounded block-LDLT/growth wrappers and expose any missing exact spectral interfaces |
+| Chapter 12 norm/inverse/refinement rows: equations (12.3)-(12.5), (12.20)-(12.21), selected problems | `PROVE-NOW-SPLIT` | Still open as current Split 2 proof/API work; abstract residual/refinement skeletons are closed, but source inverse/norm/Neumann and refinement constants need adapters to the shared norm and stability APIs | `normwiseBackwardErrorBoundedVec`; `normwiseConditionNumberBoundedVec`; Chapter 12 residual wrappers | Source normwise iterative-refinement and inverse perturbation wrappers | Shared norm/condition/stability APIs plus real matrix residual adapters | Prove the nonnegative Neumann/resolvent and source inverse-perturbation wrappers; keep underspecified `f` rows skipped unless exacted |
+
+Progress snapshot after the re-audit:
+
+| Chapter | Mode | Inventory % | Statement % | Dependency % | Proof % | Verification/report % | Estimated overall % | Open selected rows | Main blocker | Confidence |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |
+| 7 | integrated-Split-1 proof/API re-audit | 100 | 100 | 100 | 100 | 100 | 100 | 0 | The live Chapter 7 report closes the Moore-Penrose construction/projection package, row-scale source audit, endpoint/`sInf` scaling wrappers, finite-real source-min extraction, Problem 7.5 SVD perturbation bound, Perron-Frobenius eigenvector equality, Theorem 7.8 / Problem 7.10 one-/infinity-norm Bauer equalities, and Problem 7.10(e)'s compatible Schur-scaling op-2 upper bound. No selected Chapter 7 source row remains open. | High |
+| 8 | integrated-Split-1 proof/API re-audit | 100 | 98 | 93 | 95 | 100 | 95 | ~17 | Expression/fan-in rounding plus remaining `(8.2)` / Problems 8.3, 8.6 and Kahan/SVD wrappers | Medium |
+| 9 | Integrated selected proof pass + complete/rook/Hessenberg supremum endpoints + certificate witness + pivoted/complete-pivoted Wilkinson adapters + full permutation norm endpoint + column-/row-transpose tridiagonal exact-LU packages + total-nonnegative Theorem 9.12 source-existence package | 100 | 96 | 94 | 94 | 95 | 95 | Wilkinson (9.14), Foster product bound (9.16), banded Bohte proof-source row, computed GEPP certificate link, remaining direct row-dominant `A`/general tridiagonal executable/special-class coverage | Hard source growth proofs and executable trace/certificate integration | Medium-high |
+| 10 | integrated-Split-1 proof/API re-audit | 100 | 70 | 62 | 54 | 74 | 67 | Full FP Cholesky, sqrt/gamma/norm, spectral/rank/SVD/Schur rows | Concrete `fl_cholesky` trace plus shared FP/sqrt/spectral wrappers | Medium |
+| 11 | integrated-Split-1 proof/API re-audit | 100 | 68 | 60 | 52 | 72 | 65 | Stability/growth/eigen/inertia and pivoting rows | Pivot traces plus shared FP/norm/spectral/growth APIs | Medium |
+| 12 | integrated-Split-1 proof/API re-audit | 100 | 70 | 62 | 56 | 72 | 67 | Norm/inverse/Neumann/refinement constants and deferred later-split rows | Inverse/Neumann/asymptotic wrappers plus precise `f` choice for Theorem 12.4 | Medium |
+
+2026-06-25 Chapter 7 Theorem 7.5 conjugate-row update: the live Chapter 7
+report supersedes older unified-report summaries that listed only the `p = 1`,
+`p = 2`, and `p = infinity` explicit-`Aplus` branches.  Equation `(7.19)` now
+also has a finite-real `p` proof-route specialization using a conjugate row
+norm: for `p.HolderConjugate q`, reciprocal `q`-row scaling, and an explicit
+left inverse `Aplus`, the new declarations
+`eq_7_19_matrixLpNormOfReal_dual_row_equilibrated`,
+`eq_7_19_matrixLpNormOfReal_dual_row_inverseSide_bound`,
+`theorem7_5_lp_dual_row_equilibration_le_card_rpow_left_scaling`, and
+`theorem7_5_lp_dual_row_equilibration_le_card_rpow_sInf_left_scalings` prove
+the pairwise and `sInf` left-scaling condition-product bounds.  This is genuine
+finite-real `Lp` proof work over integrated Split 1 norm APIs; it does not
+assert Moore-Penrose existence/projection, source `min` attainment, or resolve
+the printed-source row-scale reconciliation, because the rendered PDF prints
+`D_R := diag(||A(i,:)||_p)^{-1}` while the proof route invokes the conjugate
+identity `kappa_p(D A) = kappa_q(A^T D)`.
+
+2026-06-25 Chapter 7 Theorem 7.5 endpoint minimum update: the live Chapter 7
+report supersedes older unified-report summaries that described the `p = 1`
+and `p = infinity` endpoint branches only as `sInf` wrappers.  The new
+declarations `theorem7_5_p1_column_equilibration_isLeast_right_scalings` and
+`theorem7_5_pinf_row_equilibration_isLeast_left_scalings` prove genuine
+least-element/attainment witnesses for the reciprocal diagonal-scaling value
+sets in the explicit-`Aplus` endpoint models.  The remaining Theorem 7.5 gap is
+the full Moore-Penrose/projection/general-`p` source theorem plus remaining
+general/non-endpoint source `min` packaging.
+
+2026-06-25 Chapter 7 finite-real `p` value-set update: the live Chapter 7
+report now also records zero lower-bound infrastructure for the finite-real
+`p` right- and left-scaling value sets.  The new declarations
+`ch7LpRightScaledCondSetOfReal_bddBelow`,
+`ch7LpRightScaledCondSetOfReal_sInf_nonneg`,
+`ch7LpLeftScaledCondSetOfReal_bddBelow`, and
+`ch7LpLeftScaledCondSetOfReal_sInf_nonneg` match the existing operator-2
+value-set API and support the `(7.18)`/`(7.19)` `sInf` models.  They do not
+claim the full Moore-Penrose/general-`p` source minimum theorem.
+
+2026-06-25 Chapter 7 Bauer update: the live Chapter 7 report supersedes older
+phrases that described the Problem 7.10(c)-(d) gap as only "beyond the
+algebraic `CB(Cx)` transfer."  The current branch now proves both the
+`CB(Cx)` eigenvector algebra and the irreducible-matrix positivity propagation
+needed to infer `Cx > 0` from irreducible `CB`, nonnegative `C`, positive `ρ`,
+and a supplied positive `BC` eigenvector certificate; the positive `ρ`
+hypothesis is now itself proved from a positive `BC` entry and the supplied
+positive `BC` eigenvector certificate.  The remaining Bauer gap
+is Perron-Frobenius existence of the required eigenvector/eigenvalue from
+irreducibility, spectral-radius identification, and compatible common scaling
+at the source spectral-radius value.
 
 New Lean material closed by this unifying pass:
+
+2026-06-24 continuation note: Chapter 7 now has explicit computed-residual
+wrappers for equations (7.30) and (7.31):
+`eq_7_30_conventional_residual_error`,
+`ch7ComputedResidualSafetyTerm`,
+`ch7ComputedResidualImage`,
+`eq_7_31_componentwise_bound`, and
+`eq_7_31_relative_infNorm_bound`. This closes the dense practical
+computed-residual error chain directly on the integrated branch. Problem 7.13
+is no longer classified as an external Split 1 blocker.
+
+2026-06-24 continuation note: Problem 7.13 is now also closed by the
+support-compressed sparse residual package
+`ch7SparseResidual`,
+`ch7SparseComputedResidualSafetyTerm`,
+`ch7SparseComputedResidualImage`,
+`problem7_13_sparse_residual_error`,
+`problem7_13_componentwise_bound`, and
+`problem7_13_relative_infNorm_bound`. This proves the Appendix A.12 row-wise
+`γ_(w_i+1)` budget by compressing each row to its structural support rather
+than reusing the dense `γ_(n+1)` `fl_matVec` model.
+
+2026-06-24 continuation note: Chapter 7 equation (7.12) is now closed for the
+Skeel infinity-norm source specialization by
+`ch7CondEFGlobalInf`,
+`ch7SkeelGlobalCondInf`,
+`ch7SkeelCondAtSolutionInf_le_condSkeel`, and
+`eq_7_12_skeel_global_conditionNumber_eq_condSkeel`. The adjacent source prose
+that the `f = |b| = |Ax|` componentwise-data condition differs from
+`cond(A,x)` by at most a factor `2` is closed by
+`ch7ComponentwiseDataCondAtSolutionInf`,
+`ch7SkeelCondAtSolutionInf_le_componentwiseDataCondAtSolutionInf`, and
+`ch7ComponentwiseDataCondAtSolutionInf_le_two_mul_skeelCondAtSolutionInf`.
+
+2026-06-24 continuation note: Chapter 7 Appendix A.3 and equations (7.15)-(7.16)
+now have the positive-row-scaling package
+`ch7RowScale`,
+`ch7InverseRowScale`,
+`ch7RowsEquilibratedInf`,
+`ch7_condSkeel_rowScale_eq`,
+`ch7_condSkeel_eq_kappaInf_of_rowsEquilibratedInf`,
+`problem7_3_rowEquilibrated_scaling_condition_eq`,
+`problem7_3_rowEquilibrated_lower_bound`, and
+`eq_7_16_rowEquilibrated_bounds`, plus the positive-row-scaling infimum theorem
+`eq_7_15_positive_rowScaling_sInf_eq_condSkeel_of_right_inverse`. This proves
+the row-scaling invariance of `cond(A)`, `cond(B)=κ∞(B)` when `|B|e=e`, and
+`κ∞(A)/κ∞(D_R) ≤ cond(A) ≤ κ∞(A)` for a positive row-equilibrating diagonal
+scaling. The source minimum is modeled as `sInf` over positive diagonal row
+scalings, with `D_R` constructed from reciprocal row one-norms under a
+right-inverse certificate.
+
+2026-06-24 continuation note: Chapter 7 Problem 7.6(a)-(b) is now closed for
+the row-wise and columnwise relative-data infinity-norm models. Part (a) uses
+`E = |A| e e^T`, `f = |b| = |Ax|` by `ch7RowwiseRelativeToleranceMatrix`,
+`ch7RowwiseDataCondAtSolutionInf`,
+`ch7_rowwiseDataForwardBound_lower`,
+`ch7_rowwiseDataForwardBound_upper`, and
+`problem7_6a_rowwise_data_condition_bounds`. Part (b) uses
+`E = e e^T |A|`, `f = ‖b‖₁ e = ‖Ax‖₁ e` by
+`ch7ColumnwiseRelativeToleranceMatrix`,
+`ch7AbsMatrixAbsVecOneNorm`,
+`ch7ColumnwiseDataCondAtSolutionInf`,
+`ch7_columnwiseDataForwardBound_lower`,
+ `ch7_columnwiseDataForwardBound_upper`, and
+`problem7_6b_columnwise_data_condition_bounds`.
+
+2026-06-25 continuation note: Chapter 7 Theorem 7.5 / equation `(7.19)` now
+also has the `p = 2` row-equilibration analogue in the explicit-`Aplus`
+condition-product model. New declarations include
+`ch7RectRightScale_rectOpNorm2Le_of_abs_le`, `ch7RectRowNorm2`,
+`ch7RowEquilibratingScale2Rect`, `eq_7_19_rectOpNorm2Le_row_equilibrated`,
+`ch7Op2LeftScaledCond`, `ch7Op2LeftScaledCondSet`,
+`eq_7_19_op2_inverseSide_bound`,
+`theorem7_5_p2_row_equilibration_le_sqrt_card_left_scaling`, and
+`theorem7_5_p2_row_equilibration_le_sqrt_card_sInf_left_scalings`. This closes
+the p=2 left-scaling pairwise and `sInf` specialization of `(7.19)` without
+asserting the still-open full Moore-Penrose construction or general-`p`
+diagonal-minimization theorem.
+
+2026-06-25 continuation note: Chapter 7 Theorem 7.5 / equation `(7.19)` now
+also has the finite-real `p` conjugate-row proof-route specialization in the
+explicit-`Aplus` condition-product model.  New declarations include
+`ch7RectRowDualLpNormOfReal`, `ch7RowDualEquilibratingScaleLpOfReal`,
+`ch7RectRowDualLpNormOfReal_leftScale`,
+`ch7RectRowDualLpNormOfReal_leftScale_equilibrating`,
+`eq_7_19_matrixLpNormOfReal_dual_row_equilibrated`,
+`eq_7_19_matrixLpNormOfReal_dual_row_inverseSide_bound`,
+`ch7LpLeftScaledCondOfReal`, `ch7LpLeftScaledCondSetOfReal`,
+`theorem7_5_lp_dual_row_equilibration_le_card_rpow_left_scaling`, and
+`theorem7_5_lp_dual_row_equilibration_le_card_rpow_sInf_left_scalings`.  The
+proof uses a reciprocal row scale measured in the Holder-conjugate row norm,
+matching the source proof's transpose identity; the full printed row-scale
+statement, Moore-Penrose/projection theorem, and source `min`/attainment
+packaging remain current Chapter 7 targets.
+
+2026-06-25 continuation note: Chapter 7 equations `(7.20)`-`(7.21)` now have
+finite-real `p` lower/upper column-bound and column-equilibrated proofs in the
+local least matrix `p`-norm API.
+New declarations are `ch7RectColumnLpNormOfReal`,
+`ch7RectColumnLpNormOfReal_nonneg`,
+`eq_7_20_column_lpNorm_le_matrixLpNormOfReal`,
+`ch7_complexVecLpNorm_realRect_matVec_le_sum_column_lpNorm`, and
+`eq_7_20_matrixLpNormOfReal_le_card_rpow_mul_column_bound`, plus
+`ch7ColumnEquilibratingScaleLpOfReal`,
+`ch7RectColumnLpNormOfReal_rightScale`,
+`ch7RectColumnLpNormOfReal_rightScale_equilibrating`, and
+`eq_7_21_matrixLpNormOfReal_column_equilibrated`. This closes the source
+dependency `max_j ‖A(:,j)‖_p ≤ ‖A‖_p ≤ n^(1-1/p) max_j ‖A(:,j)‖_p` in bound
+form for `1 <= p < ∞`, and the derived reciprocal-equilibration bound
+`‖A D_C‖_p <= n^(1-1/p)` under positive source column norms; it does not assert
+the still-open Moore-Penrose construction or full diagonal-minimization theorem.
+
+2026-06-25 continuation note: Chapter 7 Problem 7.10(b)/(d) now has the
+positive-entry product irreducibility adapter
+`ch7_matrix_isPrimitive_of_pos_entries`,
+`ch7_matrix_isIrreducible_of_pos_entries`,
+`ch7_matMul_pos_of_pos`,
+`ch7_bauer_positive_products_irreducible`, and
+`problem7_10b_positive_abs_entries_products_irreducible`. This proves that
+positive Bauer factors have irreducible products in Mathlib's matrix
+connectivity API, and that positive `|A|`, `|A⁻¹|` imply irreducibility of
+ both `|A||A⁻¹|` and `|A⁻¹||A|`. It does not assert the missing
+Perron-Frobenius positive-vector theorem from irreducibility or spectral-radius
+identification.
+
+2026-06-25 continuation note: Chapter 7 Problem 7.10(c)/(e) now has the
+`CB(Cx)` eigenvector algebra and fixed-scaling 2-norm/`sInf` package
+`ch7_bauer_Cx_eigenvector_CB`,
+`ch7_complexMatrixOneNorm_realRectToCMatrix_le_oneNorm`,
+`ch7_complexMatrixInfNorm_realRectToCMatrix_le_infNorm`,
+`problem7_10e_complexMatrixOp2_realRectToCMatrix_le_sqrt_one_mul_inf`,
+`ch7TwoSidedScaledOp2Kappa`,
+`problem7_10e_scaled_op2Kappa_le_sqrt_oneKappa_mul_infKappa`, and
+`problem7_10e_scaled_op2Kappa_le_of_one_inf_bounds`, plus
+`ch7TwoSidedScaledOp2Kappa_mem_set`,
+`ch7TwoSidedScaledOp2KappaSet_bddBelow`,
+`ch7TwoSidedScaledOp2KappaSet_sInf_nonneg`, and
+`problem7_10e_twoSidedScaledOp2Kappa_sInf_le_of_one_inf_bounds`. This
+specializes the integrated complex finite `p`-norm interpolation theorem to
+`p = 2`, proves that any fixed reciprocal two-sided scaling with both `κ₁` and
+`κ∞` products bounded by nonnegative `ρ` also has `κ₂ <= ρ`, and packages that
+as `sInf <= ρ` for any supplied admissible common scaling. The op-2 value-set
+lower-bound and nonnegative-infimum facts are now reusable declarations rather
+than inline proof fragments. The full source
+`inf κ₂ <= ρ(|A||A⁻¹|)` statement still needs Perron-Frobenius/spectral-radius
+work proving that the compatible common scaling exists at the source spectral
+radius.
+
+2026-06-25 continuation note: Chapter 7 Problem 7.10(a)/(b)/(e) now also has
+certificate-level exact `sInf = rho` wrappers for the positive reciprocal
+infinity-norm Bauer value set, the scaled-`kappaInf` value set, and the
+one-norm scaled-`kappa_1` transpose value set under explicit positive
+Perron-vector certificates.  New declarations include
+`problem7_10a_scaledInfCondSet_sInf_eq_perron_of_positive_eigenvector`,
+`problem7_10b_scaledInfKappaSet_sInf_eq_perron_of_abs_inverse_positive_eigenvector`,
+and
+`problem7_10e_scaledOneKappaSet_sInf_eq_perron_of_abs_inverse_transpose_positive_eigenvector`.
+The remaining Bauer gap is Perron-Frobenius positive-vector existence from
+irreducibility, spectral-radius identification, and compatible common scaling
+existence at the source spectral-radius value.
+
+2026-06-25 continuation note: Chapter 7 Problem 7.10(d) now also has the
+irreducible eigenvector positivity transfer
+`ch7_matrix_mulVec_eq_matMulVec`,
+`ch7_matrix_pow_mulVec_eigen`,
+`ch7_nonneg_irreducible_right_eigenvector_pos`, and
+`problem7_10d_Cx_pos_of_irreducible_CB`.  This proves that a nonzero
+nonnegative right eigenvector of a nonnegative irreducible matrix with positive
+eigenvalue is strictly positive, and applies it to the Bauer vector `Cx` once
+`x > 0`, `BCx = ρx`, `C >= 0`, `CB` irreducible, and `ρ > 0` are supplied.
+It is not a Perron-Frobenius existence theorem and does not identify `ρ` with
+the spectral radius.
+
+2026-06-25 continuation note: the later source-shaped wrapper
+`ch7_perronScalar_pos_of_nonneg_irreducible_eigenvector` derives `ρ > 0` from a
+positive eigenvector and irreducible nonnegative `BC` by using Mathlib's
+positive-power characterization of irreducibility.  The Bauer wrappers
+`problem7_10d_Cx_pos_of_irreducible_BC_CB` and
+`problem7_10d_abs_inverse_Cx_pos_of_irreducible_products` then remove the
+ad hoc positive-entry side condition from the local Problem 7.10(d) transfer.
+
+2026-06-25 continuation note: Chapter 7 Problem 7.15 now has the reciprocal
+two-sided scaling-invariance algebra for `A ∘ A^{-T}` by
+`ch7HadamardProduct`, `ch7_matTranspose_twoSidedScale`,
+`ch7HadamardProduct_twoSidedScale_transpose_inverse_eq`, and
+`problem7_15_twoSidedScale_hadamard_transpose_inverse_invariant`. This proves
+`(D1AD2) ∘ (D2^{-1}A_invD1^{-1})^T = A ∘ A_inv^T` for reciprocal diagonal
+pairs. A follow-up closed the transpose/operator-2 certificate side condition
+for the inverse-scaled partner by `opNorm2Le_transpose` and
+`problem7_15_transpose_inverse_partner_opNorm2Le`. This pass also closes the
+Horn-Johnson operator-2 Hadamard certificate by `opNorm2Le_hadamard` and the
+source-facing wrappers `problem7_15_hornJohnson_hadamard_opNorm2Le` and
+`problem7_15_scaled_inverse_hadamard_opNorm2Le`. A follow-up now closes the
+exact op-2 source infimum package with
+`problem7_15_twoSidedScaledOp2Kappa_sInf_ge_hadamard_op2` and records
+conditional attainability with
+`problem7_15_twoSidedScaledOp2Kappa_sInf_eq_hadamard_op2_of_attaining_scaling`
+and the least-value wrapper
+`problem7_15_twoSidedScaledOp2Kappa_isLeast_hadamard_op2_of_attaining_scaling`.
+A further diagonal-attainability continuation closes Appendix A.7.15's
+diagonal equality sentence for every nonsingular diagonal matrix by scaling with
+`diag(|a_i|^{-1})`, proving the scaled factors are orthogonal sign-diagonal
+matrices, and recording `problem7_15_diagonal_twoSidedScaledOp2Kappa_sInf_eq_one`
+plus `problem7_15_diagonal_twoSidedScaledOp2Kappa_isLeast_one`.
+
+2026-06-24 continuation note: Chapter 7 Problem 7.9 now has the finite
+first-order componentwise scalar-output formula
+`problem7_9_linearized_componentwise_functional_formula`, with supporting
+declarations `ch7LinearFunctional`, `ch7Problem79AdjointWeight`,
+`ch7Problem79FirstOrderChange`, `ch7Problem79ComponentwiseSensitivity`,
+`ch7Problem79LinearizedCond`, `ch7Problem79LinearizedRelativeChange`,
+`ch7Problem79AttainingDeltaA`, and `ch7Problem79AttainingDeltaB`. This proves
+the upper bound for every first-order perturbation satisfying
+`|ΔA| ≤ εE`, `|Δb| ≤ εf`, and constructs a sign perturbation attaining the
+linearized numerator. A follow-up closes the finite `χ ≥ 1` specialization
+when `E = |A|` or `f = |b|` through
+`problem7_9_linearized_componentwise_functional_ge_one_of_abs_matrix` and
+`problem7_9_linearized_componentwise_functional_ge_one_of_abs_rhs`. The
+finite first-order normwise formula is now closed by
+`problem7_9_linearized_normwise_functional_formula`, using the repository's
+`opNorm2Le` certificate surface and a rank-one attaining perturbation. A later
+2026-06-25 continuation also closes the positive-radius first-order packages
+and the exact nonlinear componentwise source-radius wrapper by
+`problem7_9_componentwise_exact_radiusSup_tendsto_linearized` and
+`problem7_9_componentwise_exact_condition_of_positive_radii`, using the local
+inverse candidate and a proved quadratic scalar-output remainder. A later
+2026-06-25 continuation closes the exact nonlinear normwise source-radius
+wrapper by `problem7_9_normwise_exact_radiusSup_tendsto_linearized` and
+`problem7_9_normwise_exact_condition_of_positive_radii`, using a proved
+`opNorm2Le`-to-envelope adapter plus a normwise quadratic squeeze.
+
+2026-06-24 continuation note: Chapter 7 Problem 7.11 now has the Appendix A.11
+first-order inverse componentwise finite-max package
+`ch7InverseLinearizedEntry`,
+`ch7InverseCompSensitivityEntry`,
+`ch7InverseCompSensitivityRatio`,
+`ch7InverseComponentwiseLinearizedCond`,
+`ch7InverseLinearizedRelativeChangeMax`,
+`ch7Problem711AttainingDelta`,
+`problem7_11_linearized_inverse_componentwise_upper_and_sign_attainment`, and
+`problem7_11_linearized_inverse_componentwise_formula`. This proves the
+linearized max formula over `|ΔA| ≤ εE` for nonnegative `E` and nonzero inverse
+entries, including the source sign perturbation `ΔA = εD₁ED₂` at a maximizing
+entry. The nonlinear/asymptotic `lim sup` bridge for `µ'_E(A)` remains current
+Split 2 work and is not hidden as a theorem-equivalent assumption.
+
+2026-06-24 continuation note: Chapter 7 Problem 7.11 also now has the exact
+inverse perturbation first-order/remainder identity
+`problem7_11_exact_inverse_firstOrder_remainder_identity`, with
+`ch7InverseQuadraticRemainderEntry` exposing the quadratic term
+`A⁻¹ΔAA⁻¹ΔA(A + ΔA)⁻¹`.  This closes the algebraic bridge from exact inverse
+perturbations to the first-order/remainder decomposition; the remaining
+`µ'_E(A)` work is the asymptotic `lim sup` wrapper controlling that remainder.
+
+2026-06-24 continuation note: Chapter 7 Problem 7.11 now also has the finite
+quadratic-remainder upper-envelope package
+`ch7InverseQuadraticRemainderEntry_abs_le`,
+`ch7InverseExactRelativeChangeMax`,
+`ch7InverseQuadraticRemainderRelativeMax`,
+`problem7_11_exact_inverse_relative_entry_le_linearized_plus_quadratic`, and
+`problem7_11_exact_inverse_relative_change_max_le_condition_plus_quadratic`.
+This proves the finite exact bound
+`max |(A + ΔA)⁻¹ - A⁻¹|/|A⁻¹| ≤ ε µ'_lin + ε² R`; at that point, the
+source-facing asymptotic wrapper showing the quadratic envelope vanishes in the
+`lim sup` formula was still pending and is now superseded by the 2026-06-25
+radius-sup closure.
+
+2026-06-24 continuation note: Chapter 7 Problem 7.11 now also has the
+finite-radius bounded-remainder reduction
+`ch7InverseQuadraticRemainderRelativeMax_nonneg` and
+`problem7_11_exact_inverse_relative_change_max_le_condition_plus_radius_bound`.
+This proves `R ≥ 0` and the exact finite-radius estimate
+`max |(A + ΔA)⁻¹ - A⁻¹|/|A⁻¹| ≤ ε(µ'_lin + δC)` under explicit assumptions
+`ε ≤ δ` and `R ≤ C`.  At that point, the source `lim sup` row was still
+pending the local boundedness/asymptotic wrapper; no nonlinear limit theorem
+was assumed, and the later 2026-06-25 radius-sup closure supersedes that gap.
+
+2026-06-24 continuation note: Chapter 7 Problem 7.11 now also has the
+conditional asymptotic vanishing dependency
+`problem7_11_quadratic_remainder_relative_scaled_tendsto_zero_of_eventually_bounded`.
+This proves `εR → 0` from `ε → 0`, `0 ≤ C`, and eventual boundedness
+`|R| ≤ C`; proving that boundedness for `(A + ΔA)⁻¹` inside a small source
+perturbation radius remains the open `lim sup` bridge.
+
+2026-06-24 continuation note: Chapter 7 Problem 7.11 now also has the finite
+lower-envelope package
+`problem7_11_exact_inverse_relative_entry_ge_linearized_minus_quadratic`,
+`problem7_11_exact_inverse_relative_change_max_ge_linearized_entry_minus_quadratic`,
+and
+`problem7_11_exact_inverse_relative_change_max_ge_condition_minus_quadratic_of_linearized_attainer`.
+This proves the selected-entry lower route
+`εµ'_lin - ε²R ≤ max |(A + ΔA)⁻¹ - A⁻¹|/|A⁻¹|` whenever the selected
+linearized entry attains `εµ'_lin`; the source `lim sup` row still needs the
+exact inverse family/local boundedness/witness packaging.
+
+2026-06-24 continuation note: Chapter 7 Problem 7.11 now also packages the
+lower route with an actual admissible perturbation in
+`problem7_11_exists_exact_inverse_relative_change_max_lower_witness`.  The
+theorem chooses the Appendix A.11 sign perturbation, then a finite entry
+attaining its linearized maximum, and proves the exact lower envelope for every
+certified right inverse of `A + ΔA`.
+
+2026-06-24 continuation note: Chapter 7 Problem 7.11 now also has the
+exact-to-linearized asymptotic bridge
+`problem7_11_exact_inverse_relative_change_max_div_tendsto_linearized_of_quadratic_bound`,
+after adding the finite two-sided max envelopes
+`problem7_11_exact_inverse_relative_change_max_le_linearized_max_plus_quadratic`
+and
+`problem7_11_exact_inverse_relative_change_max_ge_linearized_max_minus_quadratic`.
+
+2026-06-24 continuation note: Chapter 7 Problem 7.11 now also discharges the
+bounded quadratic-remainder hypothesis from eventual entrywise boundedness of
+the certified perturbed inverses via
+`ch7InverseQuadraticRemainderRelativeMaxEntryBound`,
+`ch7InverseQuadraticRemainderRelativeMax_abs_le_of_entry_bound`, and
+`problem7_11_exact_inverse_relative_change_max_div_tendsto_linearized_of_eventually_entry_bound`.
+The bridge proves exact relative-change quotient convergence from linearized
+quotient convergence under explicit eventual positivity, admissibility,
+right-inverse, and bounded quadratic-coefficient hypotheses.  The remaining
+source row is the local inverse-family existence/boundedness and `lim sup`
+packaging needed to discharge those eventual hypotheses, not a missing Split 1
+dependency.
+
+2026-06-25 continuation note: Chapter 7 Problem 7.11 now also discharges the
+eventual entrywise inverse-bound premise from an eventual matrix infinity-norm
+bound via `ch7_abs_entry_le_infNorm`,
+`ch7InverseQuadraticRemainderRelativeMax_le_of_infNorm_bound`,
+`ch7InverseQuadraticRemainderRelativeMax_abs_le_of_infNorm_bound`, and
+`problem7_11_exact_inverse_relative_change_max_div_tendsto_linearized_of_eventually_infNorm_bound`.
+At that point the open work still included the local inverse-family/boundedness
+route and the final `lim sup` packaging; the subsequent 2026-06-25 continuation
+below closes the local inverse-family and boundedness piece.
+
+2026-06-25 continuation note: Chapter 7 Problem 7.11 now also constructs the
+local inverse family for admissible componentwise perturbations.  The new
+package proves `I + A⁻¹ΔA` nonsingular under an `∞`-norm contraction,
+constructs `(I + A⁻¹ΔA)⁻¹ A⁻¹`, proves it is a right inverse of `A + ΔA`,
+bounds its infinity norm, derives eventual half-contraction from
+`|ΔA| ≤ εE` and `ε → 0`, and closes the exact-to-linearized quotient bridge
+for that constructed family through
+`problem7_11_exact_inverse_relative_change_max_div_tendsto_linearized_of_componentwise_tendsto_zero`.
+The then-remaining source row was the final `lim sup`/supremum packaging that
+connects this constructed-family bridge and the finite first-order formula to
+Higham's printed nonlinear condition number.
+
+2026-06-25 continuation note: Chapter 7 Problem 7.11 now also closes that
+source-radius `sSup`/`lim sup` packaging for the modeled componentwise setting.
+The new declarations `Ch7InverseComponentwiseRadiusSet`,
+`ch7InverseComponentwiseRadiusSup`, `IsCh7InverseComponentwiseRadiusLimitValue`,
+`IsCh7InverseComponentwiseCondValue`,
+`ch7InverseComponentwiseRadiusSet_value_le`,
+`exists_ch7InverseComponentwiseRadiusSet_lower_witness`,
+`problem7_11_inverse_componentwise_radiusSup_tendsto_linearized`, and
+`problem7_11_inverse_componentwise_condition_of_positive_radii` prove upper
+and lower envelopes for the exact source-radius feasible set and squeeze the
+shrinking-radius supremum to the finite linearized condition value.
+
+2026-06-24 continuation note: Theorem 9.10 now also has the
+upper-Hessenberg GEPP trace growth-value/supremum endpoint
+`higham9_10_hessenbergGEPPUTraceGrowthValues`,
+`higham9_10_hessenbergGEPPUTraceGrowthSup`,
+`higham9_10_hessenbergGEPPUTraceGrowthValues_le_card`,
+`higham9_10_hessenbergGEPPUTraceGrowthValues_bddAbove`,
+`higham9_10_hessenbergGEPPUTraceGrowth_le_sup`,
+`higham9_10_hessenbergGEPPUTraceGrowthValues_nonempty`, and
+`higham9_10_hessenbergGEPPUTraceGrowthSup_le_card`. This closes the
+source-facing trace-family value-set/supremum navigation endpoint for the
+existing real exact nonsingular upper-Hessenberg trace theorem; it does not
+close the remaining complex/fully algorithmic Hessenberg coverage or the sharp
+Wilkinson/Foster product-bound rows.
+
+2026-06-24 continuation note: Theorem 9.5 now also has the row-pivoted
+GEPP/Wilkinson adapter
+`higham9_5_wilkinson_source_bound_of_PermutedPartialPivotGEPPUTrace`, supported
+by row-permutation norm-preservation lemmas
+`higham9_2_rowPermutedMatrix_maxEntryNorm` and
+`higham9_2_rowPermutedMatrix_infNorm`.  This closes the source-facing
+normwise bound once an explicit GEPP `U` trace and pivoted backward-error
+certificate are supplied; it does not construct those objects from a computed
+GEPP run, so the computed GEPP certificate link remains open.
+
+2026-06-24 continuation note: Equations (9.2a)--(9.2b) now also have full
+column and row/column permutation norm-preservation wrappers
+`higham9_2_colPermutedMatrix_maxEntryNorm`,
+`higham9_2_colPermutedMatrix_infNorm`,
+`higham9_2_rowColPermutedMatrix_maxEntryNorm`, and
+`higham9_2_rowColPermutedMatrix_infNorm`.  This closes the reusable
+permutation-norm bookkeeping endpoint for complete-pivoting `PAQ` certificate
+surfaces; it does not prove Wilkinson's sharp complete-pivoting product bound
+or Foster's rook-pivoting product bound.
+
+2026-06-24 continuation note: Theorem 9.5 now also has the complete-pivoted
+explicit-certificate source wrapper
+`higham9_5_wilkinson_source_bound_of_CompletePivotGECPUTrace`. It combines a
+visible complete-pivoting `U` trace, a visible `PAQ` backward-error
+certificate, and the full row/column norm-preservation lemmas to unpermute the
+perturbation and state the normwise source bound over the original matrix norm.
+This does not prove Wilkinson's sharp complete-pivoting product bound or the
+computed GEPP trace/certificate link.
+
+2026-06-24 continuation note: Theorem 9.13 now also has the column-dominant
+tridiagonal exact-LU/growth existence wrappers
+`higham9_13_colDiagDom_exists_LUFactSpec_growth_bound_3` and
+`higham9_13_colDiagDom_exists_LUFactSpec_growthFactorEntry_le_three`. These
+combine the existing no-pivot LU existence theorem for nonsingular
+column-diagonally-dominant matrices with the tridiagonal componentwise and
+max-entry growth wrappers, closing that source exact-LU packaging endpoint.
+They do not claim row-dominant/general special-class existence or a rounded
+executable trace.
+
+2026-06-24 continuation note: Theorem 9.13 now also has the row-dominant
+transpose exact-LU/growth existence wrappers
+`higham9_13_rowDiagDom_transpose_exists_LUFactSpec_growth_bound_3` and
+`higham9_13_rowDiagDom_transpose_exists_LUFactSpec_growthFactorEntry_le_three`.
+These combine transpose determinant invariance, the row/column
+diagonal-dominance and tridiagonal transpose adapters, max-entry transpose
+invariance, and the column-dominant exact-LU/growth package to produce exact
+factors for `Aᵀ` from row-dominant source data on `A`.  They do not claim
+direct row-dominant exact-LU existence for factors of `A`, general
+special-class existence, or a rounded executable trace.
 
 | Source item | Lean declaration(s) | File | Status |
 | --- | --- | --- | --- |
@@ -42,26 +1048,27 @@ New Lean material closed by this unifying pass:
 | Chapter 9, Section 9.1 immediate multiplier and active-entry ratio bounds | `higham9_1_partialPivot_multiplier_abs_le_one`, `higham9_1_completePivot_column_multiplier_abs_le_one`, `higham9_1_completePivot_active_entry_ratio_abs_le_one`, `higham9_1_rookPivot_column_multiplier_abs_le_one`, `higham9_1_rookPivot_row_multiplier_abs_le_one` | same | CLOSED |
 | Chapter 9, Section 9.1 / equation (9.2b) complete-pivoting first-step nonsingularity support | `higham9_1_exists_entry_ne_zero_of_det_ne_zero`, `higham9_1_exists_first_completePivotChoice_pivot_ne_zero_of_det_ne_zero`, `higham9_2_firstPivotRowColSwap_det_ne_zero`, `higham9_1_firstCompletePivotSchurComplement_det_ne_zero_of_det_ne_zero` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for the dependency that a nonsingular positive-dimensional real source matrix admits a nonzero first complete pivot, the first row/column pivot swaps preserve nonsingularity, and the first Schur complement remains nonsingular; this supports the recursive complete-pivoting `U` trace but does not itself close the complete-pivoting growth theorem |
 | Chapter 9, Theorem 9.8 recursive complete-pivoting `U` trace support | `higham9_8_CompletePivotGECPUTrace`, `higham9_8_CompletePivotGECPUTrace_upper_zero`, `higham9_8_exists_CompletePivotGECPUTrace_of_det_ne_zero`, `higham9_8_exists_CompletePivotGECPUTrace_upper_zero_of_det_ne_zero` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for the dependency that every nonsingular real input admits an explicit recursive complete-pivoting upper-factor trace with upper-triangular exposed `U`; this is trace infrastructure and does not itself prove Wilkinson's complete-pivoting growth bound |
-| Chapter 9, Theorem 9.8 / Problem 9.11 complete-pivoting trace growth boundedness | `higham9_2_rowColPermutedMatrix_firstPivotRowSwap_maxEntryNorm`, `higham9_1_completePivot_rowColPermuted_partialPivotChoice_zero`, `higham9_8_completePivot_firstSchurComplement_maxEntryNorm_le_two`, `higham9_8_CompletePivotGECPUTrace_entry_abs_le_pow_two`, `higham9_8_CompletePivotGECPUTrace_growthFactorEntry_le_pow_two`, `higham9_completePivotingUTraceGrowthValues`, `higham9_completePivotingUTraceGrowthSup`, `higham9_completePivotingUTraceGrowthValues_bddAbove`, `higham9_completePivotingUTraceGrowth_le_sup` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for the trace-level boundedness dependency: first row/column pivot swaps preserve max-entry norm, a first complete-pivot Schur complement has max-entry norm at most twice the source, every recursive complete-pivoting `U` trace satisfies `rho <= 2^(n-1)`, and the trace-level `g(n)` value set is bounded above. This does not prove Wilkinson's sharper product bound (9.14). |
+| Chapter 9, Theorem 9.8 / Problem 9.11 complete-pivoting trace growth boundedness | `higham9_2_rowColPermutedMatrix_firstPivotRowSwap_maxEntryNorm`, `higham9_1_completePivot_rowColPermuted_partialPivotChoice_zero`, `higham9_8_completePivot_firstSchurComplement_maxEntryNorm_le_two`, `higham9_8_CompletePivotGECPUTrace_entry_abs_le_pow_two`, `higham9_8_CompletePivotGECPUTrace_growthFactorEntry_le_pow_two`, `higham9_completePivotingUTraceGrowthValues`, `higham9_completePivotingUTraceGrowthSup`, `higham9_completePivotingUTraceGrowthValues_bddAbove`, `higham9_completePivotingUTraceGrowth_le_sup`, `higham9_completePivotingUTraceGrowthValues_nonempty`, `higham9_8_completePivotingUTraceGrowthSup_le_pow_two` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for the trace-level boundedness dependency: first row/column pivot swaps preserve max-entry norm, a first complete-pivot Schur complement has max-entry norm at most twice the source, every recursive complete-pivoting `U` trace satisfies `rho <= 2^(n-1)`, and the trace-level `g(n)` value set is bounded above, nonempty in every positive dimension, and has elementary supremum bound `g(n) <= 2^(n-1)`. This does not prove Wilkinson's sharper product bound (9.14). |
 | Chapter 9, Problem 9.11 trace-level complete-pivoting `g(2n)` lower bound | `maxEntryNorm_le_of_entry_le_bound`, `maxEntryNorm_le_of_entry_le_max`, `higham9_8_CompletePivotGECPUTrace_exists_CompletePermutedLUFactSpec_maxEntryNorm_le`, `higham9_8_CompletePivotGECPUTrace_growth_factor_ge_theta_real`, `higham9_11_exists_completePivotingUTrace_sine_block_growth_ge_succ`, `higham9_11_completePivotingUTraceGrowthValues_exists_ge_succ`, `higham9_11_completePivotingUTraceGrowthSup_ge_succ` | `LeanFpAnalysis/FP/Algorithms/LU/GrowthFactor.lean`, `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for the source-shaped trace-level lower bound `n + 1 <= g(2n)`: every recursive complete-pivoting `U` trace yields a cumulative `PAQ = LU` certificate whose certificate `U` has no larger max-entry norm than the trace `U`; the final-pivot inverse-entry lower bound transfers to the trace surface; and the flattened sine block contributes a trace-level growth value at least `n + 1`. |
 | Chapter 9, Theorem 9.8 cumulative real complete-pivoting `PAQ = LU` and `theta <= rho` existence bridge | `higham9_8_extendTrailingPerm`, `higham9_8_extendTrailingPerm_isPermutation`, `higham9_8_luFirstSchurComplement_trailingPerm`, `higham9_8_exists_CompletePermutedLUFactSpec_of_det_ne_zero`, `higham9_8_exists_completePivoting_growth_factor_ge_theta_real` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for constructing cumulative row/column permutations from the recursive complete-pivot choices and producing an exact real `PAQ = LU` certificate for every nonsingular real input; the resulting existential bridge proves the real max-entry `theta <= growthFactorEntry` consequence. This does not prove Wilkinson's complete-pivoting upper bound or the bounded source `g(n)` family. |
 | Chapter 9, equation (9.16) recursive rook-pivoting `U` trace support and elementary trace growth | `higham9_16_RookPivotGEUTrace`, `higham9_16_RookPivotGEUTrace_upper_zero`, `higham9_16_rookPivot_firstSchurComplement_entry_abs_le_two`, `higham9_16_rookPivot_firstSchurComplement_maxEntryNorm_le_two`, `higham9_16_RookPivotGEUTrace_entry_abs_le_pow_two`, `higham9_16_RookPivotGEUTrace_growthFactorEntry_le_pow_two`, `higham9_16_exists_RookPivotGEUTrace_of_det_ne_zero`, `higham9_16_exists_RookPivotGEUTrace_upper_zero_of_det_ne_zero`, `higham9_16_exists_RookPivotGEUTrace_growthFactorEntry_le_pow_two_of_det_ne_zero` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for the dependency that every nonsingular real input admits an explicit recursive rook-pivoting upper-factor trace with upper-triangular exposed `U`; the construction uses complete-pivot maxima as valid rook pivots and Schur-complement determinant inheritance, the trace satisfies the elementary cumulative bound `rho <= 2^(n-1)`, and the nonsingular source-facing existential growth theorem is packaged under the standard positive max-entry side condition. This does not prove Foster's sharper rook-pivoting product bound. |
+| Chapter 9, equation (9.16) rook-pivoting trace growth-value endpoint | `higham9_16_rookPivotingUTraceGrowthValues`, `higham9_16_rookPivotingUTraceGrowthSup`, `higham9_16_rookPivotingUTraceGrowthValues_le_pow_two`, `higham9_16_rookPivotingUTraceGrowthValues_bddAbove`, `higham9_16_rookPivotingUTraceGrowth_le_sup`, `higham9_16_rookPivotingUTraceGrowthValues_nonempty`, `higham9_16_rookPivotingUTraceGrowthSup_le_pow_two` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for the trace-level value set, supremum, direct elementary value upper bound, boundedness proof, `le_sup` adapter, positive-dimensional nonemptiness, and source-shaped supremum upper bound for recursive rook-pivoting traces; Foster's sharper product bound remains open. |
 | Chapter 9, Problem 9.14 pre-pivoted GEPP no-interchange LU side | `higham_problem9_14_PrePivotedGEPP`, `higham9_7_PartialPivotNoInterchangeTrace_reindex_time`, `higham9_7_PartialPivotNoInterchangeTrace_exists_LUFactSpec`, `higham9_7_PartialPivotNoInterchangeTrace_exists_LUFactSpec_pivots_ne_zero`, `higham9_7_PartialPivotNoInterchangeTrace_det_ne_zero`, `higham_problem9_14_PrePivotedGEPP_exists_LUFactSpec`, `higham_problem9_14_PrePivotedGEPP_det_ne_zero`, `higham_problem9_14_PrePivotedGEPP_lu_unique`, `higham_problem9_14_PrePivotedGEPP_exists_unique_LUFactSpec`, `higham_problem9_14_PrePivotedGEPP_firstSchurComplement` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for the dependency that a source pre-pivoted/no-interchange GEPP trace yields exact no-pivot LU factors with nonzero pivots, nonsingularity, ordinary exact-LU uniqueness for `A`, stage-counter reindexing, and the recursive handoff that the first Schur complement is again pre-pivoted; this does not itself prove the §9.9 row-reversal or pairwise-pivoting trace equivalence |
 | Chapter 9, Theorem 9.7 first partial-pivoting Schur-complement growth step, arbitrary GEPP `U` trace upper bound, recurrence, displayed Wilkinson witness, and trace-level growth family | `higham9_7_firstPivotRowSwap`, `higham9_7_partialPivot_firstSchurComplement_entry_abs_le_two`, `higham9_7_partialPivot_firstSchurComplement_maxEntryNorm_le_two`, `higham9_7_partialPivot_stageMax_le_pow_two`, `higham9_7_partialPivot_growthFactorEntry_le_pow_two_of_stage_bounds`, `higham9_7_PartialPivotGEPPUTrace`, `higham9_7_PartialPivotGEPPUTrace_upper_zero`, `higham9_7_PartialPivotGEPPUTrace_entry_abs_le_pow_two`, `higham9_7_PartialPivotGEPPUTrace_growthFactorEntry_le_pow_two`, `higham9_7_exists_PartialPivotGEPPUTrace_of_det_ne_zero`, `higham9_7_exists_PartialPivotGEPPUTrace_growthFactorEntry_le_pow_two_of_det_ne_zero`, `higham9_7_wilkinsonGrowthMatrix`, `higham9_7_wilkinsonGrowthL`, `higham9_7_wilkinsonGrowthU`, `higham9_7_wilkinsonGrowthStageU`, `higham9_7_wilkinsonGrowthStageU_one`, `higham9_7_wilkinsonGrowthStageMatrix`, `higham9_7_wilkinsonGrowthStageMatrix_one`, `higham9_7_wilkinsonGrowthStage_partialPivotChoice_zero`, `higham9_7_wilkinsonGrowthStage_firstSchurComplement`, `higham9_7_wilkinsonGrowthStage_pow_firstSchurComplement`, `higham9_7_PartialPivotNoInterchangeTrace`, `higham9_7_wilkinsonGrowthStage_partialPivotChoice_zero_succ`, `higham9_7_wilkinsonGrowthStage_pivot_zero_ne_zero`, `higham9_7_wilkinsonGrowthStage_pow_firstSchurComplement_succ`, `higham9_7_wilkinsonGrowthStage_noInterchangeTrace`, `higham9_7_wilkinsonGrowth_noInterchangeTrace`, `higham9_7_wilkinsonGrowthStage_maxEntryNorm_eq_pow`, `higham9_7_wilkinsonGrowthStage_lu`, `higham9_7_wilkinsonGrowthStageU_maxEntryNorm_eq_scale_pow`, `higham9_7_wilkinsonGrowthStage_growthFactorEntry_eq_pow`, `higham9_7_wilkinsonGrowth_lu`, `higham9_7_wilkinsonGrowthMatrix_maxEntryNorm_eq_one`, `higham9_7_wilkinsonGrowthU_maxEntryNorm_eq_pow`, `higham9_7_wilkinsonGrowth_growthFactorEntry_eq_pow`, `higham9_7_wilkinsonGrowth_attains_partialPivoting_bound`, `higham9_7_partialPivoting_growth_bound_and_attainment`, `higham9_partialPivotingUTraceGrowthValues`, `higham9_partialPivotingUTraceGrowthSup`, `higham9_partialPivotingUTraceGrowthValues_bddAbove`, `higham9_partialPivotingUTraceGrowth_le_sup`, `higham9_partialPivotingUTraceGrowthValues_nonempty`, `higham9_7_partialPivotingUTraceGrowthSup_le_pow_two` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for the one-step source inequality behind partial-pivoting max-entry doubling, for the explicit-stage recurrence yielding `growthFactorEntry <= 2^(n-1)`, for the arbitrary nonsingular recursive partial-pivoting `U` trace and its source-facing exact growth bound `rho_n^p <= 2^(n-1)`, for the trace-level partial-pivoting growth-value family, boundedness, nonemptiness, supremum adapter, and source-shaped supremum theorem `sup rho_n^p <= 2^(n-1)`, for the displayed Wilkinson matrix family's exact LU certificate, no-interchange partial-pivoting trace, and exact max-entry growth `2^(n-1)`, and for the scaled active-stage no-pivot Schur-complement doubling, exact scaled LU/upper-factor certificates, and max-entry/growth support; the final package combines the nonsingular upper bound and Wilkinson attainability, while the computed GEPP/certificate connection remains separately open |
 | Chapter 9, equation (9.1) determinant-pivot product for exact LU | `LUFactSpec.det_eq_prod_U_diag`, `LUFactSpec.det_ne_zero_iff_U_diag_ne_zero`, `higham9_1_det_eq_pivot_product`, `higham9_1_det_ne_zero_iff_pivots_ne_zero` | `LeanFpAnalysis/FP/Algorithms/LU/GaussianElimination.lean`, `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for the determinant/product identity and nonzero-pivot iff consequence once an exact LU certificate is supplied |
 | Chapter 9, Theorem 9.1 / Problems 9.1-9.2 leading-principal determinant-pivot support, first Schur-complement LU construction step, proper Schur determinant inheritance, exact LU existence/uniqueness iff, and Problem 9.1 converse | `higham9_1_firstSchurComplement`, `higham9_1_lu_exists_of_firstSchurComplement`, `higham9_1_firstSchurComplement_properLeadingPrincipalBlock_det_ne_zero`, `higham9_1_lu_exists_of_properLeadingPrincipalBlock_det_ne_zero`, `higham9_1_leadingPrincipalBlock_det_eq_pivot_product`, `higham9_1_leadingPrincipalBlock_det_ne_zero_iff_pivots_ne_zero`, `higham9_1_lu_unique_of_proper_pivots_ne_zero`, `higham9_1_lu_unique_of_properLeadingPrincipalBlock_det_ne_zero`, `higham9_1_lu_exists_and_unique_of_properLeadingPrincipalBlock_det_ne_zero`, `higham9_1_lu_nonunique_of_zero_proper_pivot`, `higham_problem9_1_properLeadingPrincipalBlock_det_ne_zero_of_unique_lu`, `higham9_1_lu_exists_unique_iff_properLeadingPrincipalBlock_det_ne_zero` | `LeanFpAnalysis/FP/Algorithms/LU/GaussianElimination.lean`, `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for Higham's source condition `A(1:k,1:k)` nonsingular for `k = 1 : n-1`, including existence, uniqueness, and the singular unique-LU converse via a lower-shear nonuniqueness theorem |
-| Chapter 9, equations (9.2a)--(9.2b) and Theorem 9.3 permuted LU certificate adapters | `higham9_2_rowPermutedMatrix`, `higham9_2_PermutedLUFactSpec`, `higham9_2_permutedLUFactSpec_to_LUFactSpec`, `higham9_2_PermutedLUBackwardError`, `higham9_2_permutedLUBackwardError_to_LUBackwardError`, `higham9_3_permuted_lu_backward_error_gamma`, `higham9_2_colPermutedMatrix`, `higham9_2_rowColPermutedMatrix`, `higham9_2_CompletePermutedLUFactSpec`, `higham9_2_completePermutedLUFactSpec_to_LUFactSpec`, `higham9_2_CompletePermutedLUBackwardError`, `higham9_2_completePermutedLUBackwardError_to_LUBackwardError`, `higham9_3_complete_permuted_lu_backward_error_gamma` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for converting explicit `PA = LU`, `PAQ = LU`, and pivoted/complete-pivoted backward-error certificates into ordinary LU certificates on the corresponding permuted source matrix; pivot-trace construction remains open |
+| Chapter 9, equations (9.2a)--(9.2b) and Theorem 9.3 permuted LU certificate adapters | `higham9_2_rowPermutedMatrix`, `higham9_2_rowPermutedMatrix_maxEntryNorm`, `higham9_2_rowPermutedMatrix_infNorm`, `higham9_2_colPermutedMatrix`, `higham9_2_colPermutedMatrix_maxEntryNorm`, `higham9_2_colPermutedMatrix_infNorm`, `higham9_2_rowColPermutedMatrix`, `higham9_2_rowColPermutedMatrix_maxEntryNorm`, `higham9_2_rowColPermutedMatrix_infNorm`, `higham9_2_PermutedLUFactSpec`, `higham9_2_permutedLUFactSpec_to_LUFactSpec`, `higham9_2_PermutedLUBackwardError`, `higham9_2_permutedLUBackwardError_to_LUBackwardError`, `higham9_3_permuted_lu_backward_error_gamma`, `higham9_2_CompletePermutedLUFactSpec`, `higham9_2_completePermutedLUFactSpec_to_LUFactSpec`, `higham9_2_CompletePermutedLUBackwardError`, `higham9_2_completePermutedLUBackwardError_to_LUBackwardError`, `higham9_3_complete_permuted_lu_backward_error_gamma` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for converting explicit `PA = LU`, `PAQ = LU`, and pivoted/complete-pivoted backward-error certificates into ordinary LU certificates on the corresponding permuted source matrix, and for preserving max-entry and infinity norms under source row, column, and row/column permutations; pivot-trace construction remains open |
 | Chapter 9, equations (9.2a)--(9.2b) determinant-pivot consequences for explicit permuted LU certificates | `higham9_2_permutedLUFactSpec_det_eq_pivot_product`, `higham9_2_permutedLUFactSpec_det_ne_zero_iff_pivots_ne_zero`, `higham9_2_completePermutedLUFactSpec_det_eq_pivot_product`, `higham9_2_completePermutedLUFactSpec_det_ne_zero_iff_pivots_ne_zero` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for `PA` and `PAQ` after explicit permuted LU certificates are supplied; pivot-trace construction remains open |
 | Chapter 9, Algorithm 9.2 dense square Doolittle executable-loop handoff | `higham9_2_DoolittleDenseLoopCertificate`, `higham9_2_DoolittleDenseLoopAbsBudgetCertificate`, `higham9_2_denseLoopCertificate_to_DoolittleLU`, `higham9_2_absBudgetCertificate_to_DoolittleLU`, `higham9_2_absBudgetCertificate_of_literal_doolittle_exact_target_gaps`, `higham9_3_denseLoopCertificate_backward_error`, `higham9_3_absBudgetCertificate_backward_error` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for the source-facing handoff from dense square literal-loop certificates with visible residual-compression, absolute-budget dominance fields, or explicit exact-target gap hypotheses to the compact `DoolittleLU` certificate and Theorem 9.3 backward-error surface; full rectangular executable trace remains open |
 | Chapter 9, Algorithm 9.2 exact rectangular identities (9.3)--(9.5), exact-LU recurrence converse, and printed leading flop polynomial | `higham9_2_rectDoolittleU_source_identity`, `higham9_2_rectDoolittleL_source_identity`, `higham9_2_rectDoolittleUUpdate_eq_of_LUFactSpec`, `higham9_2_rectDoolittleLUpdate_eq_of_LUFactSpec`, `higham9_5_rectGEReducedEntry_succ_of_lt`, `higham9_5_rectGEReducedEntry_eq_DoolittleUUpdate`, `higham9_5_rectGEReducedEntry_eq_DoolittleLUpdate_mul_pivot`, `higham9_2_doolittleSourceFlopPolynomial_eq`, and helper definitions | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for the exact rectangular upper/lower update identities, the square exact-LU converse recurrences, no-pivot reduced-entry identity, and rational leading-cost polynomial; full executable rectangular loop remains open |
 | Chapter 9, Lemma 9.6 reduced-stage absolute-product source constant | `higham9_5_rectPrefixRange_full_eq_matMul`, `higham9_5_rectGEReducedEntry_full_eq_zero_of_LUFactSpec`, `higham9_6_rankOne_abs_le_reduced_add_succ`, `higham9_6_absLU_infNorm_le_of_reduced_stage_pair_rows`, `higham9_6_absLU_infNorm_le_two_card_mul_of_reduced_stage_row_bounds`, `higham9_6_sum_stage_pair_eq_endpoints_add_two_range`, `higham9_6_absLU_infNorm_le_source_constant_of_reduced_entry_growth`, `higham9_6_absLU_infNorm_le_source_constant_of_noPivotReducedGrowthFactor` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for full-prefix/terminal-residual/stage rank-one/stage-pair row-sum/uniform row-budget/exact source-counting bridges and the printed `1 + 2(n^2-n)rho_n` constant using the no-pivot reduced growth factor |
-| Chapter 9, Theorem 9.5 max-entry growth to infinity-norm bridge and equation (9.10) explicit-trace specialization | `entry_abs_le_infNorm`, `maxEntryNorm_le_infNorm`, `infNorm_le_card_mul_maxEntryNorm`, `infNorm_le_card_mul_growthFactorEntry_bound`, `higham9_5_wilkinson_source_bound_of_entry_growth`, `higham9_5_wilkinson_source_bound_of_PartialPivotGEPPUTrace` | `LeanFpAnalysis/FP/Algorithms/LU/GrowthFactor.lean`, `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for the bridge and for the explicit partial-pivoting `U`-trace specialization; full computed GEPP/backward-error certificate connection remains open |
+| Chapter 9, Theorem 9.5 max-entry growth to infinity-norm bridge and explicit-trace/certificate specializations | `entry_abs_le_infNorm`, `maxEntryNorm_le_infNorm`, `infNorm_le_card_mul_maxEntryNorm`, `infNorm_le_card_mul_growthFactorEntry_bound`, `higham9_5_wilkinson_source_bound_of_entry_growth`, `higham9_5_wilkinson_source_bound_of_PartialPivotGEPPUTrace`, `higham9_5_wilkinson_source_bound_of_PermutedPartialPivotGEPPUTrace`, `higham9_5_wilkinson_source_bound_of_CompletePivotGECPUTrace` | `LeanFpAnalysis/FP/Algorithms/LU/GrowthFactor.lean`, `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for the bridge, for the explicit partial-pivoting `U`-trace specialization, for the row-pivoted source-system specialization that unpermutes row perturbations while preserving the original matrix norm, and for the complete-pivoted explicit `PAQ` certificate specialization that unpermutes both rows and columns. Full computed GEPP/backward-error certificate construction and the sharp complete-pivoting product theorem remain open |
 | Chapter 9, Problem 9.9 exact no-pivot reduced-matrix and exact-LU growth bounds | `higham_problem9_9_noPivotReducedEntryMax`, `higham_problem9_9_noPivotReducedGrowthFactor`, `higham_problem9_9_noPivotReducedEntryMax_le_maxEntryNorm_add_absLU_infNorm`, `higham_problem9_9_noPivotReducedGrowthFactor_le_one_add_card_mul_absLU_infNorm_div`, `growthFactorEntry_le_one_add_card_mul_absLU_infNorm_div`, `higham_problem9_9_growthFactorEntry_le_one_add_card_mul_absLU_infNorm_div` | `LeanFpAnalysis/FP/Algorithms/LU/GrowthFactor.lean`, `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for the source inequality `rho_n <= 1 + n * || |L||U| ||_inf / ||A||_inf`, with `rho_n` formalized over the exact equation (9.5) no-pivot reduced matrices, and for the final-`U` exact-LU specialization |
 | Chapter 9, Theorem 9.10 upper-Hessenberg GEPP trace-to-growth theorem and factorization/solve backward-error consequences | `higham9_7_firstPivotRowSwap_involutive`, `higham9_7_firstPivotRowSwap_isPermutation`, `higham9_7_firstPivotRowSwap_det_ne_zero`, `higham9_10_hessenberg_firstColumn_nonzero_row_le_one`, `higham9_10_exists_first_active_column_nonzero_of_det_ne_zero`, `higham9_10_exists_first_partialPivotChoice_pivot_ne_zero_of_det_ne_zero`, `higham9_10_hessenberg_firstPivotRowSwap_tail`, `higham9_10_hessenberg_firstSchurComplement_tail_rows_eq_original`, `higham9_10_hessenberg_firstSchurComplement_isUpperHessenberg`, `higham9_10_firstSchurComplement_det_ne_zero_of_det_ne_zero`, `higham9_10_hessenberg_firstSchurComplement_row_bound`, `higham9_10_HessenbergStageBound`, `higham9_10_hessenberg_firstSchurComplement_stageBound`, `higham9_10_HessenbergStageBound_one_of_maxEntryNorm`, `higham9_10_HessenbergGEPPTrace`, `higham9_10_HessenbergGEPPTrace_upperHessenberg_and_stageBound`, `higham9_10_HessenbergGEPPTrace_isUpperHessenberg`, `higham9_10_HessenbergGEPPTrace_stageBound`, `higham9_10_HessenbergGEPPTrace_stage_pos`, `higham9_10_HessenbergGEPPUTrace`, `higham9_10_HessenbergGEPPUTrace_upper_zero`, `higham9_10_HessenbergGEPPUTrace_row_bound`, `higham9_10_exists_HessenbergGEPPTrace_terminal`, `higham9_10_exists_HessenbergGEPPTrace_terminal_of_det_ne_zero`, `higham9_10_hessenberg_growthFactorEntry_le_card_of_row_bounds`, `higham9_10_exists_HessenbergGEPPUTrace_of_trace_det_ne_zero`, `higham9_10_exists_HessenbergGEPPUTrace_of_det_ne_zero`, `higham9_10_HessenbergGEPPUTrace_growthFactorEntry_le_card`, `higham9_10_exists_HessenbergGEPPUTrace_growthFactorEntry_le_card_of_det_ne_zero`, `higham9_10_hessenberg_growth_backward_error`, `higham9_10_hessenberg_lu_solve_backward_stable_tight` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for the first-stage Hessenberg GEPP facts, the source stage invariant, explicit recursive trace preservation, terminal trace existence, the exposed upper-factor `U` trace, upper-triangularity of that `U`, the row-indexed bound `|U i j| <= (k+i)M`, source-facing existence of a nonsingular upper-Hessenberg GEPP `U` trace, and the resulting max-entry growth theorem `rho_n^p <= n` for that explicit nonsingular exact-arithmetic trace. The solve/backward-error wrappers remain conditional on the separate componentwise growth hypothesis used by the repository's LU backward-error surface. |
 | Chapter 9, Problem 9.11 block-doubling algebra, `g(n)` supremum adapter, and equation (9.12) sine-matrix finite-sum/inverse/theta support | `higham9_11_flatBlockIndex`, `higham9_11_flatInnerIndex`, `higham9_11_flattenTwoBlock`, `higham9_11_flatIndexOfBlock`, `higham9_11_flatBlockIndex_flatIndexOfBlock`, `higham9_11_flatInnerIndex_flatIndexOfBlock`, `higham9_11_flattenTwoBlock_entry_flatIndexOfBlock`, `higham9_11_flattenTwoBlock_maxEntryNorm_eq_blockMaxNorm`, `higham9_11_blockInverseCandidate_left`, `higham9_11_blockInverseCandidate_right`, `higham9_11_alpha_block_eq`, `higham9_11_flatten_blockMatrix_maxEntryNorm_eq`, `higham9_11_beta_blockInv_eq`, `higham9_11_flatten_blockInverseCandidate_maxEntryNorm_eq`, `higham9_11_theta_block_eq_two_theta`, `higham9_11_sine_block_theta_candidate_ge_succ`, `higham9_11_complete_pivoting_lower_bound_from_sine_block_theta`, `higham9_11_complete_pivoting_lower_bound_consequence`, `higham9_11_complete_pivoting_lower_bound_consequence_le`, `higham9_completePivotGrowthSet`, `higham9_completePivotGrowthSup`, `higham9_completePivotGrowth_le_sup`, `higham9_11_complete_pivoting_lower_bound_from_witness`, `higham9_11_complete_pivoting_lower_bound_from_witness_le`, `higham9_11_complete_pivoting_lower_bound_from_flattened_sine_block`, `higham9_11_complete_pivoting_lower_bound_from_flattened_sine_block_maxEntry`, `higham9_12_sineMatrix`, `higham9_12_sineMatrix_symm`, `higham9_12_sineMatrix_entry_abs_le_scale`, `higham9_12_sineMatrix_maxEntryNorm_le_scale`, `higham9_12_sineMatrix_zero_zero_pos`, `higham9_12_sineMatrix_maxEntryNorm_pos`, `higham9_12_cos_sum_even`, `higham9_12_cos_sum_odd`, `higham9_12_cos_sum_pos_lt_two_mul`, `higham9_12_cos_sum_eq_of_mod_two_eq`, `higham9_12_sine_product_sum`, `higham9_12_sineMatrix_mul_self`, `higham9_12_sineMatrix_inverse_formula`, `higham9_12_theta_ge_half_succ_of_maxEntryNorm_le_scale`, `higham9_12_two_theta_ge_succ_of_maxEntryNorm_le_scale`, `higham9_12_sineMatrix_theta_candidate_ge_half_succ`, `higham9_12_sineMatrix_two_theta_candidate_ge_succ` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for the block inverse, `alpha`, `beta`, `theta`, block-doubled sine theta bridge, visible-witness, flattened sine-block, and flattened max-entry lower-bound bridges, arithmetic, equality- and inequality-form bounded-family supremum steps, source sine-matrix definition, symmetry, scale bounds, positive `(0,0)` entry, positive max-entry norm, finite cosine/sine orthogonality sums, self-inverse formula, and sine-witness theta instantiation; the trace-level `g(2n)` lower-bound consequence is closed by the dedicated row above. |
 | Chapter 9, Problem 9.11 concrete flattened sine-block complete-pivoting witness | `higham9_11_flatIndexOfBlock_flatBlockIndex_flatInnerIndex`, `higham9_11_flatBlockInner_eq_iff`, `higham9_11_flatBlockEquiv`, `higham9_11_flattenTwoBlock_matMul_entry`, `higham9_11_flattenTwoBlock_right_inverse`, `higham9_det_ne_zero_of_isRightInverse`, `higham9_11_exists_completePivoting_sine_block_growth_ge_succ` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for transporting the displayed block right inverse to the flattened `Fin (2*n)` matrix, deriving determinant nonzero from the right inverse, and instantiating the cumulative real complete-pivoting theorem to produce a genuine `P B Q = L U` certificate with `growthFactorEntry(B,U) >= n + 1`. The trace-level `g(2n)` lower bound is closed by the dedicated row above; Wilkinson's sharp upper-bound theorem remains separate. |
 | Chapter 9, Problem 9.11 fixed sine-block complete-pivoting growth-value bridge | `higham9_11_sineBlockCompletePivotingGrowthSet`, `higham9_11_sineBlockCompletePivotingGrowthSet_exists_ge_succ`, `higham9_11_sineBlockCompletePivotingGrowth_upper_bound_ge_succ` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for the fixed-matrix set of actual exact complete-pivoting certificate growth values: it contains a value at least `n + 1`, so every upper bound for that fixed set is at least `n + 1`. The trace-level `g(2n)` lower bound is closed by the dedicated row above; Wilkinson's sharp upper-bound theorem remains separate. |
-| Chapter 9, Problem 9.11 certificate-level `g(n)` surface and sine-block lower bound | `higham9_completePivotingCertificateGrowthSet`, `higham9_completePivotingCertificateGrowthValues`, `higham9_completePivotingCertificateGrowthSup`, `higham9_completePivotingCertificateGrowth_le_sup`, `higham9_11_completePivotingCertificateGrowthSup_ge_succ` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for a non-arbitrary complete-pivoting growth-value family: values are generated by explicit exact `PAQ = LU` certificates, and the flattened sine block gives `n + 1 <= g(2n)` for this certificate-level supremum under the remaining boundedness hypothesis. The remaining source blocker is Wilkinson's complete-pivoting boundedness/upper-bound proof. |
+| Chapter 9, Problem 9.11 certificate-level `g(n)` surface and sine-block lower bound | `higham9_completePivotingCertificateGrowthSet`, `higham9_completePivotingCertificateGrowthValues`, `higham9_completePivotingCertificateGrowthSup`, `higham9_completePivotingCertificateGrowth_le_sup`, `higham9_11_completePivotingCertificateGrowthValues_exists_ge_succ`, `higham9_11_completePivotingCertificateGrowthSup_ge_succ` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for a non-arbitrary complete-pivoting growth-value family: values are generated by explicit exact `PAQ = LU` certificates, the flattened sine block contributes a global certificate-level value at least `n + 1`, and the flattened sine block gives `n + 1 <= g(2n)` for this certificate-level supremum under the remaining boundedness hypothesis. The remaining source blocker is Wilkinson's complete-pivoting boundedness/upper-bound proof. |
 | Chapter 9, equation (9.13) complex Fourier/Vandermonde matrix definition, full Gram support, inverse formula, complex `theta <= n`, theta witness, and conditional growth bridge | `higham9_13_fourierVandermonde`, `higham9_13_fourierVandermonde_symm`, `higham9_13_fourierVandermonde_firstRow`, `higham9_13_fourierVandermonde_firstCol`, `higham9_13_fourierVandermonde_norm`, `higham9_13_fourierVandermonde_conj_mul_self`, `higham9_13_fourierVandermonde_column_norm_sq`, `higham9_13_fourierVandermonde_row_norm_sq`, `higham9_13_fourierRoot_pow_card`, `higham9_13_fourierRoot_ne_one`, `higham9_13_fourierRoot_geometric_sum_zero`, `higham9_13_fourierVandermonde_conj_mul_eq_pow_of_col_lt`, `higham9_13_fourierVandermonde_column_orthogonal_of_lt`, `higham9_13_fourierVandermonde_column_orthogonal`, `higham9_13_fourierVandermonde_column_gram`, `higham9_13_fourierVandermonde_row_orthogonal`, `higham9_13_fourierVandermonde_row_gram`, `higham9_13_fourierVandermondeScaledAdjoint`, `higham9_13_scaledAdjoint_mul_fourierVandermonde`, `higham9_13_fourierVandermonde_mul_scaledAdjoint`, `higham9_13_fourierVandermonde_inverse_formula`, `higham9_13_complexMaxEntryNorm`, `higham9_13_entry_norm_le_complexMaxEntryNorm`, `higham9_13_inverse_row_identity_le_card_mul_complexMaxEntryNorm`, `higham9_8_theta_le_card_complex`, `higham9_13_fourierVandermonde_complexMaxEntryNorm_eq_one`, `higham9_13_fourierVandermondeScaledAdjoint_norm`, `higham9_13_fourierVandermondeScaledAdjoint_complexMaxEntryNorm_eq_inv`, `higham9_13_fourierVandermonde_theta_eq_card`, `higham9_13_complexGrowthFactorEntry`, `higham9_8_complexGrowthFactorEntry_ge_inverse_entry_theta`, `higham9_13_fourierVandermonde_complexGrowthFactorEntry_ge_card` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for the source roots-of-unity matrix definition, symmetry, first row/column identities, unit-circle entry norm, roots-of-unity cancellation, full row/column Gram identities, entrywise `V_n^{-1} = n^{-1}V_nᴴ` two-sided inverse formula, the general complex max-entry `theta <= n` row-identity estimate, the complex max-entry `theta(V_n)=n` witness, and the conditional complex max-entry growth bridge; the complete complex certificate-level instantiation and construction are closed in the next row |
 | Chapter 9, Theorem 9.8 / equation (9.13) complex complete-pivoting trace/certificate construction and final-pivot bridge | `higham9_8_ComplexIsRightInverse`, `higham9_8_ComplexIsLeftInverse`, `higham9_2_complexRowColPermutedMatrix`, `higham9_8_complexFiniteTranspose`, `higham9_8_ComplexLUFactSpec`, `higham9_8_ComplexCompletePermutedLUFactSpec`, `higham9_13_complexMaxEntryNorm_nonneg`, `higham9_13_complexMaxEntryNorm_le_of_entry_le_bound`, `higham9_13_complexMaxEntryNorm_le_of_entry_le_max`, `higham9_8_complexCompletePivotChoice`, `higham9_8_exists_complexCompletePivotChoice`, `higham9_8_complexCompletePivotChoice_pivot_ne_zero_of_exists`, `higham9_8_complex_exists_entry_ne_zero_of_det_ne_zero`, `higham9_8_exists_first_complexCompletePivotChoice_pivot_ne_zero_of_det_ne_zero`, `higham9_8_complexFirstSchurComplement`, `higham9_8_complexLUFirstStepL`, `higham9_8_complexLUFirstStepU`, `higham9_8_complexLUFactSpec_of_firstSchurComplement_explicit`, `higham9_8_complex_firstPivotRowColSwap_det_ne_zero`, `higham9_8_complexFirstSchurComplement_det_ne_zero`, `higham9_2_complexRowColPermutedMatrix_comp`, `higham9_8_complexFirstSchurComplement_trailingPerm`, `higham9_8_exists_ComplexCompletePermutedLUFactSpec_of_det_ne_zero`, `higham9_8_complex_det_ne_zero_of_isRightInverse`, `higham9_13_exists_fourierVandermonde_complexCompletePermutedLUFactSpec_growth_ge_card`, `higham9_8_ComplexCompletePivotGECPUTrace`, `higham9_8_ComplexCompletePivotGECPUTrace_upper_zero`, `higham9_8_exists_ComplexCompletePivotGECPUTrace_of_det_ne_zero`, `higham9_8_exists_ComplexCompletePivotGECPUTrace_upper_zero_of_det_ne_zero`, `higham9_8_ComplexCompletePivotGECPUTrace_exists_ComplexCompletePermutedLUFactSpec_complexMaxEntryNorm_le`, `higham9_13_fourierVandermonde_complexGrowthFactorEntry_ge_card_of_ComplexCompletePivotGECPUTrace`, `higham9_13_exists_fourierVandermonde_ComplexCompletePivotGECPUTrace_growth_ge_card`, and the earlier final-pivot declarations ending in `higham9_13_fourierVandermonde_complexGrowthFactorEntry_ge_card_of_completePermutedLUFactSpec` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for complex recursive complete-pivoting trace existence, complex cumulative `PAQ = LU` certificate construction from nonsingularity, complex determinant nonzero from the visible Fourier/Vandermonde right inverse, the trace-to-certificate max-entry transfer, and both certificate-level and trace-level Fourier/Vandermonde growth theorems `n <= rho`. |
 | Chapter 9, equations (9.14) and (9.16) complete-/rook-pivoting scalar upper-bound RHS surfaces | `higham9_14_completePivotWilkinsonProduct`, `higham9_14_completePivotWilkinsonBound`, `higham9_14_completePivotWilkinsonProduct_nonneg`, `higham9_14_completePivotWilkinsonProduct_pos`, `higham9_14_completePivotWilkinsonBound_nonneg`, `higham9_14_completePivotWilkinsonBound_pos`, `higham9_16_rookPivotFosterBound`, `higham9_16_rookPivotFosterBound_nonneg`, `higham9_16_rookPivotFosterBound_pos` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for the displayed scalar RHS definitions and nonnegativity/positivity only; the Wilkinson complete-pivoting upper-bound theorem and Foster rook-pivoting upper-bound theorem remain open Split-2 work, while the recursive complete- and rook-pivoting `U` trace support is recorded separately |
@@ -83,16 +1090,16 @@ New Lean material closed by this unifying pass:
 | Chapter 9, Problem 9.14 row-reversal permutation and pairwise-pivot surface | `higham_problem9_14_rowReversal`, `higham_problem9_14_rowReversal_involutive`, `higham_problem9_14_rowReversal_isPermutation`, `higham_problem9_14_rowReversal_zero_eq_last`, `higham_problem9_14_rowReversal_last_eq_zero`, `higham_problem9_14_rowReversedMatrix`, `higham_problem9_14_rowReversedMatrix_involutive`, `higham_problem9_14_rowReversedMatrix_det_ne_zero`, `higham_problem9_14_rowReversedMatrix_firstColumn_partialPivotChoice_last`, `higham_problem9_14_PrePivotedGEPP_rowReversedMatrix_firstColumn_pivot`, `higham_problem9_14_adjacentRows`, `higham_problem9_14_pairRowSwap`, `higham_problem9_14_pairRowSwap_left`, `higham_problem9_14_pairRowSwap_right`, `higham_problem9_14_pairRowSwap_involutive`, `higham_problem9_14_pairRowSwap_isPermutation`, `higham_problem9_14_pairRowSwap_det_ne_zero`, `higham_problem9_14_pairPivotChoice`, `higham_problem9_14_exists_pairPivotChoice`, `higham_problem9_14_pairPivotRow`, `higham_problem9_14_pairPivotRow_choice`, `higham_problem9_14_pairPivotRow_eq_right_of_abs_le`, `higham_problem9_14_pairPivotRow_eq_left_of_abs_gt`, `higham_problem9_14_pairPivotRow_eq_right_of_firstColumn_partialPivotChoice`, `higham_problem9_14_PrePivotedGEPP_rowReversedMatrix_pairPivotRow_last`, `higham_problem9_14_pairPivotToLeftSwap`, `higham_problem9_14_pairPivotToLeftSwap_left`, `higham_problem9_14_pairPivotToLeftSwap_isPermutation`, `higham_problem9_14_pairPivotToLeftMatrix`, `higham_problem9_14_pairPivotToLeftMatrix_left`, `higham_problem9_14_pairPivotToLeftMatrix_det_ne_zero`, `higham_problem9_14_pairPivotChoice_multiplier_abs_le_one`, `higham_problem9_14_pairPivotChoice_left_multiplier_abs_le_one`, `higham_problem9_14_pairPivotChoice_right_multiplier_abs_le_one`, `higham_problem9_14_pairPivotRow_left_multiplier_abs_le_one`, `higham_problem9_14_pairPivotRow_right_multiplier_abs_le_one`, `higham_problem9_14_pairEliminateRow`, `higham_problem9_14_pairEliminateRow_target`, `higham_problem9_14_pairEliminateRow_of_ne`, `higham_problem9_14_pairEliminateRow_pivot`, `higham_problem9_14_pairEliminateRow_target_active_eq_zero`, `higham_problem9_14_pairEliminateRow_eq_updateRow_add_smul`, `higham_problem9_14_pairEliminateRow_det_eq`, `higham_problem9_14_pairEliminateRow_det_ne_zero`, `higham_problem9_14_pairPivotEliminateToLeft`, `higham_problem9_14_pairPivotEliminateToLeft_target`, `higham_problem9_14_pairPivotEliminateToLeft_of_ne`, `higham_problem9_14_pairPivotEliminateToLeft_pivot`, `higham_problem9_14_pairPivotEliminateToLeft_multiplier_abs_le_one`, `higham_problem9_14_pairPivotEliminateToLeft_left`, `higham_problem9_14_pairPivotEliminateToLeft_target_active_eq_zero`, `higham_problem9_14_pairPivotEliminateToLeft_det_ne_zero`, `higham_problem9_14_rowReversedMatrix_pairPivotEliminateToLeft_det_ne_zero`, `higham_problem9_14_PrePivotedGEPP_rowReversedMatrix_pairPivotEliminateToLeft_pivot_row`, `higham_problem9_14_PrePivotedGEPP_rowReversedMatrix_pairPivotEliminateToLeft_target_row`, `higham_problem9_14_PrePivotedGEPP_rowReversedMatrix_pairPivotEliminateToLeft_target_abs_le_two`, `higham_problem9_14_PrePivotedGEPP_rowReversedMatrix_pairPivotEliminateToLeft_maxEntryNorm_le_two`, `higham_problem9_14_PrePivotedGEPP_rowReversedMatrix_pairPivotEliminateToLeft_growthFactorEntry_le_two`, `higham_problem9_14_PrePivotedGEPP_rowReversedMatrix_pairPivotEliminateToLeft_target_active_eq_zero`, `higham_problem9_14_PrePivotedGEPP_rowReversedMatrix_pairPivotEliminateToLeft_multiplier_abs_le_one`, `higham_problem9_14_PrePivotedGEPP_rowReversedMatrix_pairPivotEliminateToLeft_normalized_multiplier_abs_le_one`, `higham_problem9_14_rowReversedMatrix_maxEntryNorm`, `higham_problem9_14_rowReversedMatrix_maxEntryNorm_pos`, `higham_problem9_14_rowReversedMatrix_growthFactorEntry_eq` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for the source `Π = I(n:-1:1,:)` row-reversal model, `Π(ΠA)=A`, bijectivity/permutation and endpoint status, preservation of nonsingularity under `ΠA`, max-entry-norm preservation, the corresponding growth-factor denominator bridge, the first-column fact that pre-pivoting of `A` makes the last row of `ΠA` a valid nonzero first partial pivot, the adjacent-row predicate and determinant-preserving pair row-swap primitive, both existential and deterministic natural two-row pairwise pivot choices, selector tie-breaking/first-column-last-row consequences, pivot-to-left permutation/nonsingularity support, and unit-bounded multipliers, and the exact pairwise row-operation primitive plus one-step pivot-and-eliminate wrapper with row-shape facts, row-reversed determinant preservation, unit multiplier bound, and pre-pivoted row-reversal first-column pivot-row/target-row/target-bound/max-entry/growth-quotient specialization that zeros the target active-column entry while preserving determinant/nonsingularity for distinct pivot and target rows; the recursive pairwise branch is closed by the certificate rows above |
 | Chapter 9, Theorem 9.9 / Theorem 9.13 row-column orientation adapters | `higham9_9_colDiagDominant_transpose_iff_rowDiagDominant`, `higham9_9_rowDiagDominant_transpose_iff_colDiagDominant`, `higham9_13_tridiagonal_transpose_iff` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for real-transpose row/column diagonal-dominance and tridiagonal orientation; remaining general diagonal-dominance growth work is recorded under Theorem 9.9, while direct row-dominant tridiagonal certificate growth is recorded under Theorem 9.13 |
 | Chapter 9, Theorem 9.11 Bohte scalar formula support | `higham9_11_bohteBound`, `higham9_11_bohteBound_tridiagonal`, `higham9_11_bohteBound_pentadiagonal_formula`, `higham9_11_bohteBound_bandwidth_four_formula`, `higham9_11_bohteBound_nonneg`, `higham9_11_bohte_banded_solve_tight` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED only for recording the printed scalar expression `2^(2p-1) - (p-1)2^(p-2)`, proving its nonnegativity, proving the unambiguous tridiagonal `p = 1` arithmetic value `2`, recording the formal-expression `p = 2` value `7`, recording the source `p = 4` example value `116`, and specializing the conditional solve wrapper to the Bohte constant; the full banded GEPP growth theorem and attainability remain open |
-| Chapter 9, Theorem 9.13 tridiagonal structural componentwise and max-entry growth consequences | `growthFactorEntry_le_of_absLU_componentwise`, `maxEntryNorm_matTranspose`, `LUFactSpec.isTridiagLU_of_tridiagonal`, `tridiag_colDom_L_entries_bounded`, `tridiag_rowDom_growth_bound_3`, `higham9_13_tridiag_growth_bound_3_of_LUFactSpec`, `higham9_13_growthFactorEntry_le_three_of_LUFactSpec`, `higham9_13_colDiagDom_L_entries_bounded_of_LUFactSpec`, `higham9_13_colDiagDom_tridiag_growth_bound_3_of_LUFactSpec`, `higham9_13_colDiagDom_growthFactorEntry_le_three_of_LUFactSpec`, `higham9_13_rowDiagDom_tridiag_growth_bound_3_of_LUFactSpec`, `higham9_13_rowDiagDom_growthFactorEntry_le_three_of_LUFactSpec`, `higham9_13_tridiag_growthFactorEntry_le_three`, `higham9_13_rowDiagDom_transpose_tridiag_growth_bound_3`, `higham9_13_rowDiagDom_transpose_growthFactorEntry_le_three`, `higham9_13_rowDiagDom_transpose_growthFactorEntry_le_three_of_Amax`, `higham9_13_rowDiagDom_tridiag_growth_bound_3`, `higham9_13_rowDiagDom_growthFactorEntry_le_three` | `LeanFpAnalysis/FP/Algorithms/LU/GrowthFactor.lean`, `LeanFpAnalysis/FP/Algorithms/LU/TridiagonalRecurrence.lean`, `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for applying the local column-dominant tridiagonal growth theorem to explicit bidiagonal LU certificates, deriving bidiagonal LU structure from exact `LUFactSpec` plus source tridiagonality and nonzero pivots, deriving the column-dominant multiplier bound from column diagonal dominance, proving the direct row-dominant componentwise bound for both explicit bidiagonal LU and ordinary exact-LU certificates of `A`, deriving Higham max-entry growth `rho <= 3`, transporting componentwise and max-entry conclusions to `Aᵀ`, and normalizing the transposed denominator with `maxEntryNorm Aᵀ = maxEntryNorm A`; remaining work is source exact-LU existence and executable algorithmic trace coverage |
+| Chapter 9, Theorem 9.13 tridiagonal structural componentwise and max-entry growth consequences | `growthFactorEntry_le_of_absLU_componentwise`, `maxEntryNorm_matTranspose`, `LUFactSpec.isTridiagLU_of_tridiagonal`, `tridiag_colDom_L_entries_bounded`, `tridiag_rowDom_growth_bound_3`, `higham9_13_tridiag_growth_bound_3_of_LUFactSpec`, `higham9_13_growthFactorEntry_le_three_of_LUFactSpec`, `higham9_13_colDiagDom_L_entries_bounded_of_LUFactSpec`, `higham9_13_colDiagDom_tridiag_growth_bound_3_of_LUFactSpec`, `higham9_13_colDiagDom_growthFactorEntry_le_three_of_LUFactSpec`, `higham9_13_colDiagDom_exists_LUFactSpec_growth_bound_3`, `higham9_13_colDiagDom_exists_LUFactSpec_growthFactorEntry_le_three`, `higham9_13_rowDiagDom_transpose_exists_LUFactSpec_growth_bound_3`, `higham9_13_rowDiagDom_transpose_exists_LUFactSpec_growthFactorEntry_le_three`, `higham9_13_rowDiagDom_tridiag_growth_bound_3_of_LUFactSpec`, `higham9_13_rowDiagDom_growthFactorEntry_le_three_of_LUFactSpec`, `higham9_13_tridiag_growthFactorEntry_le_three`, `higham9_13_rowDiagDom_transpose_tridiag_growth_bound_3`, `higham9_13_rowDiagDom_transpose_growthFactorEntry_le_three`, `higham9_13_rowDiagDom_transpose_growthFactorEntry_le_three_of_Amax`, `higham9_13_rowDiagDom_tridiag_growth_bound_3`, `higham9_13_rowDiagDom_growthFactorEntry_le_three` | `LeanFpAnalysis/FP/Algorithms/LU/GrowthFactor.lean`, `LeanFpAnalysis/FP/Algorithms/LU/TridiagonalRecurrence.lean`, `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for applying the local column-dominant tridiagonal growth theorem to explicit bidiagonal LU certificates, deriving bidiagonal LU structure from exact `LUFactSpec` plus source tridiagonality and nonzero pivots, deriving the column-dominant multiplier bound from column diagonal dominance, packaging exact no-pivot LU existence with column-dominant componentwise and max-entry growth, packaging the row-dominant transpose exact-LU/growth endpoint for factors of `Aᵀ`, proving the direct row-dominant componentwise bound for both explicit bidiagonal LU and ordinary exact-LU certificates of `A`, deriving Higham max-entry growth `rho <= 3`, transporting componentwise and max-entry conclusions to `Aᵀ`, and normalizing the transposed denominator with `maxEntryNorm Aᵀ = maxEntryNorm A`; remaining work is direct row-dominant exact-LU existence for `A`, general special-class exact-LU existence not already covered by explicit `LUFactSpec`/recurrence hypotheses, and executable algorithmic trace coverage |
 | Chapter 9, Theorem 9.13 source-data tridiagonal builder growth surface | `tridiag_L_lower_bidiag`, `tridiag_U_upper_bidiag`, `tridiag_matrices_isTridiagLU`, `tridiag_L_matrix_entries_bounded`, `tridiag_prevIndex`, `TridiagExactLURecurrence`, `tridiag_exact_product_of_recurrence`, `higham9_19_TridiagExactLURecurrence`, `higham9_19_tridiag_prevIndex`, `higham9_19_tridiag_exact_product_of_recurrence`, `higham9_13_tridiag_builder_growth_bound_3`, `higham9_13_tridiag_builder_growthFactorEntry_le_three`, `higham9_13_rowDiagDom_tridiag_builder_growth_bound_3`, `higham9_13_rowDiagDom_tridiag_builder_growthFactorEntry_le_three`, `higham9_13_tridiag_builder_growth_bound_3_of_recurrence`, `higham9_13_tridiag_builder_growthFactorEntry_le_three_of_recurrence`, `higham9_13_rowDiagDom_tridiag_builder_growth_bound_3_of_recurrence`, `higham9_13_rowDiagDom_tridiag_builder_growthFactorEntry_le_three_of_recurrence` | `LeanFpAnalysis/FP/Algorithms/LU/TridiagonalRecurrence.lean`, `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for certifying the explicit tridiagonal `L`/`U` builders as `IsTridiagLU`, deriving builder `L` entry bounds from stored multiplier bounds, proving the exact equation-(9.19) recurrence-to-product theorem, and instantiating the column- and row-dominant Theorem 9.13 growth wrappers over source `TridiagData`; exact-recurrence and dominance hypotheses remain explicit, and the rounded algorithmic trace is not claimed |
-| Chapter 9, Theorem 9.12 special-class max-entry growth consequence | `tridiag_spd_shape_absLU_eq_absA`, `higham9_12_spd_tridiag_absLU_eq_of_positive_DLT`, `higham9_12_spd_tridiag_lu_backward_error_of_positive_DLT`, `higham9_growthFactorEntry_le_one_of_absLU_le_absA`, `higham9_12_spd_tridiag_growthFactorEntry_le_one`, `higham9_12_spd_tridiag_builder_absLU_eq_of_positive_DLT`, `higham9_12_spd_tridiag_builder_growthFactorEntry_le_one`, `higham9_12_spd_tridiag_builder_lu_backward_error_of_positive_DLT`, `higham9_12_spd_tridiag_builder_absLU_eq_of_recurrence`, `higham9_12_spd_tridiag_builder_growthFactorEntry_le_one_of_recurrence`, `higham9_12_spd_tridiag_builder_lu_backward_error_of_recurrence`, `higham9_12_nonneg_lu_growthFactorEntry_le_one`, `higham9_12_mmatrix_lu_growthFactorEntry_le_one`, `higham9_12_sign_equiv_growthFactorEntry_le_one` | `LeanFpAnalysis/FP/Algorithms/LU/TridiagonalRecurrence.lean`, `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for the SPD positive-`D L^T` algebraic core `|L||U| = |LU| = |A|` under an explicit tridiagonal LU certificate, its builder and equation-(9.19) exact-recurrence forms, its backward-error handoffs, and the max-entry growth consequence `rho <= 1`; also closed for converting optimal componentwise growth and unit lower diagonal into Higham max-entry growth factor `rho <= 1`, with nonnegative-LU, M-matrix, and sign-equivalent specializations. Full source existence/class coverage remains open in the Chapter 9 inventory. |
+| Chapter 9, Theorem 9.12 special-class max-entry growth consequence | `tridiag_spd_shape_absLU_eq_absA`, `higham9_12_spd_tridiag_absLU_eq_of_positive_DLT`, `higham9_12_spd_tridiag_lu_backward_error_of_positive_DLT`, `higham9_growthFactorEntry_le_one_of_absLU_le_absA`, `higham9_12_spd_tridiag_growthFactorEntry_le_one`, `higham9_12_spd_tridiag_builder_absLU_eq_of_positive_DLT`, `higham9_12_spd_tridiag_builder_growthFactorEntry_le_one`, `higham9_12_spd_tridiag_builder_lu_backward_error_of_positive_DLT`, `higham9_12_spd_tridiag_builder_absLU_eq_of_recurrence`, `higham9_12_spd_tridiag_builder_growthFactorEntry_le_one_of_recurrence`, `higham9_12_spd_tridiag_builder_lu_backward_error_of_recurrence`, `higham9_12_nonneg_lu_growthFactorEntry_le_one`, `higham9_12_mmatrix_lu_growthFactorEntry_le_one`, `higham9_12_sign_equiv_growthFactorEntry_le_one`, `higham9_12_totalNonnegative_exists_LUFactSpec_optimal_growth`, `higham9_12_totalNonnegative_exists_LUFactSpec_growthFactorEntry_le_one` | `LeanFpAnalysis/FP/Algorithms/LU/TridiagonalRecurrence.lean`, `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for the SPD positive-`D L^T` algebraic core `|L||U| = |LU| = |A|` under an explicit tridiagonal LU certificate, its builder and equation-(9.19) exact-recurrence forms, its backward-error handoffs, and the max-entry growth consequence `rho <= 1`; also closed for converting optimal componentwise growth and unit lower diagonal into Higham max-entry growth factor `rho <= 1`, with nonnegative-LU, M-matrix, sign-equivalent, and total-nonnegative/nonsingular source-existence specializations. Remaining source existence/class coverage outside total nonnegativity and visible factor/certificate hypotheses remains open in the Chapter 9 inventory. |
 | Chapter 9, Problem 9.2 finite-exception shifted-matrix LU theorem | `higham9_2_danger_shift_count_bound`, `higham9_2_charpolyDangerSet`, `higham9_2_mem_charpolyDangerSet_iff_isRoot`, `higham9_2_mem_charpolyDangerSet_iff_det_shift_eq_zero`, `higham9_2_charpolyDangerSet_card_le`, `higham9_2_charpoly_danger_shift_count_bound`, `higham9_2_leadingPrincipalBlock`, `higham9_2_leadingBlockDangerSet`, `higham9_2_shiftedLeadingBlock`, `higham9_2_mem_leadingBlockDangerSet_iff_det_shift_eq_zero`, `higham9_2_shiftedLeadingBlock_det_ne_zero_of_not_mem_danger_union`, `higham9_2_leadingBlockDangerSet_card_le`, `higham9_2_leadingBlockDangerSet_count_bound`, `higham9_2_shiftedMatrix`, `higham9_2_shiftedMatrixDangerSet`, `higham9_2_shiftedMatrixDangerSet_card_le`, `higham9_2_shiftedMatrix_properLeadingPrincipalBlock_det_ne_zero_of_not_mem_danger`, `higham9_2_shiftedMatrix_lu_exists_unique_of_not_mem_danger`, `higham_problem9_2_shiftedMatrix_lu_exists_unique_except_card_bound` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for the Appendix A `1 + 2 + ... + (n-1)` count, the characteristic-polynomial root/determinant-shift cardinality bridge, the concrete source union over leading principal blocks, the nonzero determinant consequence for shifts outside that union, and the final theorem that outside at most `n(n-1)/2` shifts `sigma I - A` has a unique exact no-pivot LU factorization |
 | Chapter 9, Problem 9.6 principal-block positivity, recursive nonnegative LU construction, and growth endpoints | `higham9_6_trailingPrincipalBlock`, `higham9_6_totalNonnegative_leadingPrincipalBlock_det_nonneg`, `higham9_6_totalNonnegative_trailingPrincipalBlock_det_nonneg`, `higham9_6_totalNonnegative_det_nonneg`, `higham9_6_totalNonnegative_det_pos_of_det_ne_zero`, `higham9_6_principalBlock_determinantal_inequality_of_det_eq_zero`, `higham9_6_principalBlock_determinantal_inequality_zero`, `higham9_6_principalBlock_determinantal_inequality_full`, `higham9_6_principalBlock_determinantal_inequality_fin_two`, `higham9_6_middle_entry_pos_of_fin_three_totalNonnegative_det_pos`, `higham9_6_principalBlock_determinantal_inequality_fin_three_one_of_middle_pos`, `higham9_6_principalBlock_determinantal_inequality_fin_three_one`, `higham9_6_principalBlock_determinantal_inequality_fin_three_two_of_middle_pos`, `higham9_6_principalBlock_determinantal_inequality_fin_three_two`, `higham9_6_topLeft_pos_of_totalNonnegative_det_ne_zero`, `higham9_6_leadingPrincipalBlock_det_pos_of_totalNonnegative_det_ne_zero`, `higham9_6_principalBlock_dets_pos_of_determinantal_inequality`, `higham9_6_leadingPrincipalBlock_det_pos_of_determinantal_inequality`, `luFirstStepL`, `luFirstStepU`, `LUFactSpec.of_firstSchurComplement_explicit`, `higham9_6_luFirstStepL_nonneg`, `higham9_6_luFirstStepU_nonneg`, `higham9_6_lu_exists_nonnegative_of_totalNonnegative_and_leadingPrincipalBlock_pos`, `higham9_6_lu_exists_nonnegative_of_totalNonnegative_and_properLeadingPrincipalBlock_pos`, `higham9_6_lu_exists_nonnegative_of_totalNonnegative_det_ne_zero`, `higham9_6_nonnegativeLU_growthFactorEntry_le_one`, `higham9_6_growthFactorEntry_le_one_of_totalNonnegative_and_properLeadingPrincipalBlock_pos`, `higham9_6_growthFactorEntry_le_one_of_totalNonnegative_det_ne_zero`, `higham9_6_growthFactorEntry_and_noPivotReducedGrowthFactor_le_one_of_totalNonnegative_det_ne_zero`, `higham9_6_growthFactorEntry_le_one_of_totalNonnegative_and_principalBlock_inequalities`, `higham9_6_growthFactorEntry_le_one_of_totalNonnegative_det_ne_zero_and_principalBlock_inequalities`, `higham9_5_rectPrefixRange_nonneg_of_nonnegative_factors`, `higham9_5_rectPrefixRange_le_full_of_nonnegative_factors`, `higham9_6_reducedEntry_abs_le_maxEntryNorm_of_nonnegative_LU`, `higham_problem9_9_noPivotReducedGrowthFactor_le_one_of_nonnegative_LU`, `higham9_6_growthFactorEntry_and_noPivotReducedGrowthFactor_le_one_of_totalNonnegative_and_principalBlock_inequalities`, `higham9_6_growthFactorEntry_and_noPivotReducedGrowthFactor_le_one_of_totalNonnegative_det_ne_zero_and_principalBlock_inequalities` | `LeanFpAnalysis/FP/Algorithms/LU/GaussianElimination.lean`, `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | CLOSED for deriving `det A > 0` from total nonnegativity plus nonsingularity, proving the singular `det A = 0` branch, the `p = 0`/`p = n` boundary cases, and the `2 by 2`, `p = 1` base case plus both `3 by 3` interior cases (`p = 1` and `p = 2`) of the principal-block determinant inequality, proving first-pivot positivity and all nonempty leading principal determinants positive by Schur-complement induction, constructing exact nonnegative no-pivot LU factors directly from the source hypotheses, and proving both final-`U` max-entry growth and reduced-matrix no-pivot growth `rho_n <= 1` with the arbitrary-p Koteljanskii/Fischer comparison closed by `higham9_6_principalBlock_determinantal_inequality_of_totalNonnegative` |
 
 ## Unified Inventory
 
 Classification values are exactly `CLOSED`, `PROVE-NOW-SPLIT`,
-`WAIT-PREVIOUS-SPLIT`, `DEFER-LATER-SPLIT`, `DEFER-LATER-CHAPTER`, and `SKIP`.
+`DEFER-LATER-SPLIT`, `DEFER-LATER-CHAPTER`, and `SKIP`.
 Every non-closed row below states the previous-split dependency status. The
 chapter reports named in the final section contain the expanded statement text,
 source-page notes, and Appendix details for each row.
@@ -101,74 +1108,108 @@ source-page notes, and Appendix details for each row.
 
 | Source item | Classification | Previous-split dependency | Lean declaration or blocker |
 | --- | --- | --- | --- |
-| Theorem 7.1 | CLOSED for infinity-norm row-sum surface; WAIT-PREVIOUS-SPLIT for arbitrary norm | Direct Split 1 gate for generic/subordinate norms | `rigal_gaches`; full arbitrary-norm statement waits for Split 1 norm/dual-norm foundations |
-| Theorem 7.2 | CLOSED for componentwise/infinity-norm specialization; WAIT-PREVIOUS-SPLIT for arbitrary norm | Direct | `normwise_forward_error_exact_relative_infNorm` |
-| Theorem 7.3 | CLOSED | No previous-split dependency | `oettli_prager` |
-| Theorem 7.4 | CLOSED for infinity-norm relative version; WAIT-PREVIOUS-SPLIT for absolute-norm source statement | Direct | `componentwise_forward_error_exact_relative_infNorm`, `ch7CondEFAtSolutionInf` |
-| Theorem 7.5 | WAIT-PREVIOUS-SPLIT | Direct | Pseudoinverse, rank, SVD, diagonal minimization |
-| Corollary 7.6 | WAIT-PREVIOUS-SPLIT | Direct | Theorem 7.5 plus SPD/2-norm scaling |
-| Theorem 7.7 | WAIT-PREVIOUS-SPLIT | Direct | Diagonal minimization over nonsingular diagonal matrices and Frobenius/inverse-column tools |
-| Theorem 7.8 | WAIT-PREVIOUS-SPLIT | Direct | Perron-Frobenius and spectral-radius machinery |
-| Lemma 7.9 | CLOSED for infinity-norm practical bound and equality case | No previous-split dependency | `lemma7_9_componentwise_bound`, `lemma7_9_relative_infNorm_bound`, `lemma7_9_exact_for_residual_multiple` |
-| Equations 7.1-7.4, 7.7-7.11, 7.13-7.14, 7.27-7.29, 7.33 | CLOSED for the repository surfaces recorded in the Chapter 7 report | No unresolved previous-split blocker for the closed specializations | Source-facing Chapter 7 declarations in `HighamChapter7.lean` |
-| Equations 7.5, 7.12, 7.15-7.16, 7.18-7.26, 7.30-7.31 | WAIT-PREVIOUS-SPLIT | Direct or indirect Split 1 norm, SVD, spectral, scaling, or rounding gates | See Chapter 7 report |
-| Equations 7.17, 7.32 | DEFER-LATER-CHAPTER | No direct previous-split dependency recorded | Kahan/scaling and calculus perturbation destinations within later prerequisite blocks |
-| Equation 7.6 | SKIP | No previous-split dependency | MATLAB/numerical illustration |
-| Problems 7.1, 7.2 infinity-norm surface, 7.7 local comparison, 7.8 | CLOSED | No unresolved previous-split blocker for the closed surfaces | Problem 7.1 resolvent, Problem 7.2 sandwich, Problem 7.7 comparison, Problem 7.8 Frobenius declarations |
-| Problems 7.3-7.6, 7.9-7.11, 7.13, 7.15 | WAIT-PREVIOUS-SPLIT | Direct or indirect Split 1 gates | Scaling, SVD, spectral, row-count rounding, or generic norm blockers |
-| Problems 7.12, 7.14 | DEFER-LATER-SPLIT | No direct previous-split dependency for the deferral | QR/Householder/SPD integration; probability/distribution infrastructure |
+| Theorem 7.1 | CLOSED for the source-facing arbitrary subordinate-norm wrapper and the earlier infinity-norm surface | Yes, direct integrated Split 1 dependency reused through current-branch wrappers; not an unresolved wait | `rigal_gaches`, `theorem7_1_subordinate`, `eq_7_3_subordinate_attaining_perturbations` |
+| Theorem 7.2 | CLOSED for the source-facing arbitrary subordinate-norm wrapper and the earlier componentwise/infinity-norm specialization | Yes, direct integrated Split 1 dependency reused through current-branch wrappers; not an unresolved wait | `normwise_forward_error_exact_relative_infNorm`, `theorem7_2_subordinate_forward_error_bound`, `eq_7_5_subordinate_conditionNumber_of_positive_radii` |
+| Theorem 7.3 | CLOSED | No integrated previous-split blocker | `oettli_prager` |
+| Theorem 7.4 | CLOSED for both the earlier infinity-norm relative version and the source-facing arbitrary absolute-norm wrapper | Yes, direct integrated Split 1 dependency reused through current-branch wrappers; not an unresolved wait | `componentwise_forward_error_exact_relative_infNorm`, `ch7CondEFAtSolutionInf`, `theorem7_4_absolute_forward_error_bound` |
+| Theorem 7.5 | PROVE-NOW-SPLIT, with finite-real `p` `(7.20)`-`(7.21)` dependencies, finite-real normalized/certificate plumbing, finite-real reciprocal compact-core/coercivity layers, p=2 source `min`, `p = 1` pairwise/`sInf` column-scaling, and `p = ∞` pairwise/`sInf` row-scaling explicit-`Aplus` subpieces closed | Yes, direct integrated Split 1 dependency reused; not an unresolved wait | Integrated rank/SVD/Frobenius carriers are available, including `complexMatrixRank_eq_card_nonzero_singularValue` and `exists_complexMatrixSVDUnitary_diagonal_eq`; the finite-real `p` lower/upper bound-form and column-equilibrated dependencies behind `(7.20)`-`(7.21)` are closed by `ch7RectColumnLpNormOfReal`, `eq_7_20_column_lpNorm_le_matrixLpNormOfReal`, `ch7_complexVecLpNorm_realRect_matVec_le_sum_column_lpNorm`, `eq_7_20_matrixLpNormOfReal_le_card_rpow_mul_column_bound`, `ch7ColumnEquilibratingScaleLpOfReal`, `ch7RectColumnLpNormOfReal_rightScale`, `ch7RectColumnLpNormOfReal_rightScale_equilibrating`, and `eq_7_21_matrixLpNormOfReal_column_equilibrated`; finite-real right/left normalized value-set and compact-core layers are closed by the `ch7LpRightScaledCond...OfReal` and `ch7LpLeftScaledCond...OfReal` declarations listed in the live Chapter 7 report, including `ch7LpRightScaledCondReciprocalCompactCoreOfReal` and `ch7LpLeftScaledCondReciprocalCompactCoreOfReal`; the `p = 2` source-min route is closed by the right/left compact-sublevel and `...Set_exists_isLeast` declarations plus `theorem7_5_p2_column_equilibration_exists_min_right_scalings_of_rect_left_inverse` and `theorem7_5_p2_row_equilibration_exists_min_left_scalings_of_rect_right_inverse`; endpoint and `sInf` wrappers remain closed as previously reported.  The remaining finite-real general-`p` actual source `min` needs continuity of the `complexMatrixLpNormOfReal` condition-product maps, closed compact sublevels inside the compact cores, `exists_isLeast`, and transfer back to normalized/unrestricted value sets |
+| Corollary 7.6 | CLOSED in the repository's explicit inverse-Gram and `sInf` model; no minimizer-attainment theorem is asserted | Yes, direct integrated Split 1 dependency reused; not an unresolved wait through Theorem 7.5/rank-SVD/scaling APIs | `ch7SymmetricDiagEquilibratingScale2`, `ch7SymmetricDiagEquilibratingInvScale2`, `corollary7_6_cholesky_diag_eq_column_norm_sq`, `corollary7_6_cholesky_diag_invScale_eq_column_norm`, `corollary7_6_cholesky_diag_scale_eq_column_equilibrating`, `corollary7_6_cholesky_column_norm_pos`, `corollary7_6_cholesky_factor_column_equilibrated`, `corollary7_6_cholesky_factor_op2Le_sqrt_card`, `corollary7_6_cholesky_factor_column_scaling_le_sqrt_card_sInf_right_scalings`, `ch7SymmetricOp2ScaledCond`, `ch7SymmetricOp2ScaledCondSet`, `ch7SymmetricOp2ScaledCond_mem_set`, `ch7SymmetricOp2ScaledCondSet_nonempty`, `ch7SymmetricOp2ScaledCond_nonneg`, `ch7SymmetricOp2ScaledCondSet_bddBelow`, `ch7CholeskyInverseGram`, `corollary7_6_cholesky_scaled_gram_eq`, `corollary7_6_cholesky_scaled_inverse_gram_eq`, `corollary7_6_cholesky_scaled_cond_eq_factor_cond_sq`, `ch7Op2RightScaledCondSet_sInf_nonneg`, `corollary7_6_cholesky_scaled_cond_le_card_sInf_right_scalings_sq`, `corollary7_6_cholesky_right_sInf_sq_le_symmetric_sInf`, `corollary7_6_cholesky_scaled_cond_le_card_sInf_symmetric_scalings`, `corollary7_6_cholesky_inverse_gram_isInverse`, and `corollary7_6_cholesky_scaled_inverse_gram_isInverse` prove that the source SPD scale `D* = diag(a_jj^{-1/2})` is the p=2 column-equilibrating scale for a Cholesky factor `R`, instantiate the closed Theorem 7.5 p=2 `sInf` wrapper for `R`, prove the inverse-side witness for `DAD`, prove the corresponding operator-2 product-square bridge, derive the explicit `n * (sInf factor-values)^2` bound, and transfer that factor infimum square to the two-sided SPD scaling infimum. The final theorem proves `κ₂(D*AD*) <= n * sInf {κ₂(DAD)}` over reciprocal diagonal two-sided scalings |
+| Theorem 7.7 | CLOSED | Yes, direct integrated Split 1/repository dependency reused; not an unresolved wait | `theorem7_7_stewart_sun_frobenius_scaling_of_left_inverse` closes the Stewart-Sun Frobenius right-scaling lower bound and canonical minimizer, with nonzero norm side conditions derived from `IsLeftInverse` |
+| Theorem 7.8 | PROVE-NOW-SPLIT; `CLOSED` for the Problem 7.10(a) algebraic lower-bound/attainment core and exact `sInf = ρ` wrapper, Problem 7.10(b) inverse-transport plus `B = |A|`, `C = |A⁻¹|` absolute-value scaled-`κ∞` instantiation and exact `sInf = ρ` wrapper under an explicit positive Perron-vector certificate, the positive-entry product irreducibility adapter, Problem 7.10(c)'s `CB(Cx)` eigenvector algebra, and Problem 7.10(e)'s one-norm exact `sInf = ρ`/fixed-scaling 2-norm/op-2 lower-bound/conditional `sInf` packaging | Yes, direct integrated Split 1 dependency; not an unresolved wait through spectral-radius infrastructure; not an unresolved wait | `problem7_10a_scaled_infCond_ge_perron_of_positive_eigenvector`, `problem7_10a_canonical_scaled_infCond_eq_perron_of_positive_eigenvector`, `problem7_10a_positive_entries_canonical_scaled_infCond_eq_perron`, and `problem7_10a_scaledInfCondSet_sInf_eq_perron_of_positive_eigenvector` close the two-sided Bauer diagonal-scaling algebra and exact value-set `sInf = ρ` wrapper under the explicit positive Perron-vector certificate; `ch7TwoSidedScale_isInverse` proves the inverse-scaled partner is a genuine inverse of the scaled matrix, `ch7TwoSidedScaledInfKappa_eq_kappaInf_of_inverse` identifies the scaled product with repository `kappaInf`, and `ch7TwoSidedScaledInfKappa_eq_abs_scaledInfCond`, `problem7_10b_scaled_infKappa_ge_perron_of_abs_inverse_positive_eigenvector`, `problem7_10b_canonical_scaled_infKappa_eq_perron_of_abs_inverse_positive_eigenvector`, and `problem7_10b_scaledInfKappaSet_sInf_eq_perron_of_abs_inverse_positive_eigenvector` close the source `|A|`, `|A⁻¹|` reduction and scaled-`κ∞` exact `sInf = ρ` wrapper under the same certificate; `ch7_matrix_isPrimitive_of_pos_entries`, `ch7_matrix_isIrreducible_of_pos_entries`, `ch7_matMul_pos_of_pos`, `ch7_bauer_positive_products_irreducible`, and `problem7_10b_positive_abs_entries_products_irreducible` close the positive-entry-to-irreducibility side condition; `ch7_bauer_Cx_eigenvector_CB` closes the source `CB(Cx)` eigenvector algebra; `problem7_10e_scaledOneKappaSet_sInf_eq_perron_of_abs_inverse_transpose_positive_eigenvector`, `problem7_10e_scaled_op2Kappa_le_of_one_inf_bounds`, `ch7TwoSidedScaledOp2Kappa_mem_set`, `ch7TwoSidedScaledOp2KappaSet_bddBelow`, `ch7TwoSidedScaledOp2KappaSet_sInf_nonneg`, and `problem7_10e_twoSidedScaledOp2Kappa_sInf_le_of_one_inf_bounds` close the one-norm exact `sInf = ρ` wrapper and conditional 2-norm/`sInf` packaging from supplied certificate/common-scaling data. Full Theorem 7.8 still needs Perron-Frobenius positive-vector existence from irreducibility, spectral-radius identification, and proof that such a compatible scaling exists at the source spectral-radius value |
+| Theorem 7.8 / Problem 7.10(a) scaled-product local spectral wrappers | CLOSED for the positive reciprocal two-sided scaled-product local finite eigenvalue-radius, greatest-value, and `sSup = ρ` surfaces under a supplied positive Perron-vector certificate | Yes, direct integrated Split 1 finite matrix/order APIs reused; not an unresolved wait | `problem7_10a_scaled_product_isComplexEigenvalueRadius_of_positive_eigenvector`, `problem7_10a_scaled_product_complexEigenvalueModulusSet_isGreatest_of_positive_eigenvector`, and `problem7_10a_scaled_product_complexEigenvalueModulusSet_sSup_eq_of_positive_eigenvector` transport the Bauer product positive eigenvector certificate through any positive reciprocal scaling, prove nonnegativity of the scaled factors entrywise, and reuse the local complex-eigenvalue-radius-to-`IsGreatest`/`sSup` bridge. This still does not prove PF eigenpair existence from irreducibility or Mathlib `spectralRadius` identification |
+| Lemma 7.9 | CLOSED for infinity-norm practical bound and equality case | No integrated previous-split blocker | `lemma7_9_componentwise_bound`, `lemma7_9_relative_infNorm_bound`, `lemma7_9_exact_for_residual_multiple` |
+| Equations 7.1-7.5, 7.7-7.16, 7.27-7.31, 7.33 | CLOSED for the repository surfaces recorded in the Chapter 7 report | No unresolved integrated Split 1 blocker for the closed specializations | Source-facing Chapter 7 declarations in `HighamChapter7.lean`, including `eq_7_5_subordinate_conditionNumber_of_positive_radii`, `eq_7_12_skeel_global_conditionNumber_eq_condSkeel`, `eq_7_15_positive_rowScaling_sInf_eq_condSkeel_of_right_inverse`, `eq_7_16_rowEquilibrated_bounds`, `eq_7_30_conventional_residual_error`, and `eq_7_31_relative_infNorm_bound` |
+| Equations 7.18-7.25 | PROVE-NOW-SPLIT, with finite-real `p` `(7.20)`-`(7.21)` dependencies closed, `(7.18)` closed for the `p = 1` and `p = 2` pairwise/`sInf` explicit-`Aplus` specializations, `(7.19)` closed for the `p = ∞` pairwise/`sInf` explicit-`Aplus` specialization, `(7.23)` closed in the explicit inverse-Gram `sInf` model, `(7.24)` closed for the positive-Perron-certificate Bauer algebraic core, exact `sInf = ρ` wrappers for Problem 7.10(a)/(b)/(e) one-norm, inverse-transport plus `B = |A|`, `C = |A⁻¹|` absolute-value scaled-`κ∞` instantiation, positive-entry product irreducibility, `CB(Cx)` eigenvector algebra, one-norm transpose-certificate branch, fixed-scaling 2-norm interpolation step, and conditional `sInf` upper-bound packaging, and `(7.25)` closed for the componentwise source-radius `sSup` model | Direct or indirect integrated Split 1 norm, SVD, spectral, or scaling dependencies may be reused; not unresolved waits | Equations `(7.20)`-`(7.21)` now have finite-real `p` lower/upper column-bound and column-equilibrated proofs by `ch7RectColumnLpNormOfReal`, `eq_7_20_column_lpNorm_le_matrixLpNormOfReal`, `ch7_complexVecLpNorm_realRect_matVec_le_sum_column_lpNorm`, `eq_7_20_matrixLpNormOfReal_le_card_rpow_mul_column_bound`, `ch7ColumnEquilibratingScaleLpOfReal`, `ch7RectColumnLpNormOfReal_rightScale`, `ch7RectColumnLpNormOfReal_rightScale_equilibrating`, and `eq_7_21_matrixLpNormOfReal_column_equilibrated`; equations `(7.20)`-`(7.21)` also have the `p = 2` operator-certificate/Frobenius column-equilibration dependency closed by `eq_7_20_column_norm_le_of_rectOpNorm2Le`, `eq_7_20_rectOpNorm2Le_of_column_bound`, and `eq_7_21_rectOpNorm2Le_column_equilibrated`; the `p = 2` `(7.22)` inverse-side operator-2 route, pairwise column-scaling condition-product inequality, and `sInf` value-set wrapper are closed by `ch7_vecNorm2_mul_le_of_abs_le`, `ch7RectLeftScale_rectOpNorm2Le_of_abs_le`, `ch7Op2RightScaledCond`, `ch7Op2RightScaledCondSet`, `eq_7_22_op2_inverseSide_bound`, `theorem7_5_p2_column_equilibration_le_sqrt_card_right_scaling`, and `theorem7_5_p2_column_equilibration_le_sqrt_card_sInf_right_scalings`; `(7.23)` is closed by `corollary7_6_cholesky_factor_column_scaling_le_sqrt_card_sInf_right_scalings`, `corollary7_6_cholesky_inverse_gram_isInverse`, `corollary7_6_cholesky_scaled_inverse_gram_isInverse`, `corollary7_6_cholesky_scaled_cond_eq_factor_cond_sq`, `ch7Op2RightScaledCondSet_sInf_nonneg`, `corollary7_6_cholesky_scaled_cond_le_card_sInf_right_scalings_sq`, `ch7SymmetricOp2ScaledCondSet`, `corollary7_6_cholesky_right_sInf_sq_le_symmetric_sInf`, and `corollary7_6_cholesky_scaled_cond_le_card_sInf_symmetric_scalings`; the `p = 1` `(7.21)`/`(7.22)` algebraic route, pairwise column-scaling bound, and exact `sInf` wrapper are closed by `ch7OneNormRightScaledCondSet`, `eq_7_21_oneNormRect_column_equilibrated`, `eq_7_22_oneNormRect_inverseSide_bound`, `theorem7_5_p1_column_equilibration_le_right_scaling`, and `theorem7_5_p1_column_equilibration_sInf_eq_right_scalings`; the `p = ∞` `(7.19)` algebraic route, pairwise row-scaling bound, and exact `sInf` wrapper are closed by `ch7InfNormLeftScaledCondSet`, `eq_7_19_infNormRect_row_equilibrated`, `eq_7_19_infNormRect_inverseSide_bound`, `theorem7_5_pinf_row_equilibration_le_left_scaling`, and `theorem7_5_pinf_row_equilibration_sInf_eq_left_scalings`; `(7.24)` is closed for the positive-Perron-certificate algebraic core by `problem7_10a_positive_entries_canonical_scaled_infCond_eq_perron`, for the Problem 7.10(a) exact `sInf = ρ` wrapper by `problem7_10a_positive_entries_scaledInfCondSet_sInf_eq_perron`, for the `CB(Cx)` algebra by `ch7_bauer_Cx_eigenvector_CB`, for the inverse-transport by `ch7TwoSidedScale_isInverse` and `ch7TwoSidedScaledInfKappa_eq_kappaInf_of_inverse`, for the `|A|`, `|A⁻¹|` scaled-`κ∞` instantiation and exact `sInf = ρ` wrapper by `problem7_10b_positive_abs_entries_canonical_scaled_infKappa_eq_perron` and `problem7_10b_positive_abs_entries_scaledInfKappaSet_sInf_eq_perron`, for positive-entry product irreducibility by `problem7_10b_positive_abs_entries_products_irreducible`, for the one-norm transpose branch and exact scaled-`κ₁` `sInf = ρ` wrapper by `problem7_10e_positive_abs_entries_canonical_scaled_oneKappa_eq_perron_of_transpose` and `problem7_10e_positive_abs_entries_scaledOneKappaSet_sInf_eq_perron_of_transpose`, and for fixed-scaling 2-norm/conditional `sInf` packaging by `problem7_10e_scaled_op2Kappa_le_of_one_inf_bounds`, `ch7TwoSidedScaledOp2Kappa_mem_set`, and `problem7_10e_twoSidedScaledOp2Kappa_sInf_le_of_one_inf_bounds`; remaining full SVD/scaling, Perron-Frobenius positive-vector existence from irreducibility, spectral-radius identification, Bauer variants (c)-(d) beyond the algebraic `CB(Cx)` transfer, and proof that the compatible Bauer scaling exists at the source spectral-radius value remain current proof/API targets; equation `(7.25)` has the finite/exact/local-inverse proof chain plus the source-radius feasible set and shrinking-radius supremum limit closed by `problem7_11_linearized_inverse_componentwise_formula`, `problem7_11_exact_inverse_firstOrder_remainder_identity`, `problem7_11_exact_inverse_relative_change_max_div_tendsto_linearized_of_componentwise_tendsto_zero`, `Ch7InverseComponentwiseRadiusSet`, `ch7InverseComponentwiseRadiusSup`, `ch7InverseComponentwiseRadiusSet_value_le`, `exists_ch7InverseComponentwiseRadiusSet_lower_witness`, `problem7_11_inverse_componentwise_radiusSup_tendsto_linearized`, and `problem7_11_inverse_componentwise_condition_of_positive_radii`; equation `(7.26)` is closed separately by `eq_7_26_relative_distance_to_singularity_eq_inv_condition_number` |
+| Equation 7.24 scaled-product local spectral continuation | CLOSED for the positive reciprocal two-sided scaled-product finite eigenvalue-radius, `IsGreatest`, and real `sSup = ρ` wrappers under the supplied positive Perron-vector certificate | Yes, direct integrated Split 1 finite matrix/order APIs reused; not an unresolved wait | `problem7_10a_scaled_product_isComplexEigenvalueRadius_of_positive_eigenvector`, `problem7_10a_scaled_product_complexEigenvalueModulusSet_isGreatest_of_positive_eigenvector`, and `problem7_10a_scaled_product_complexEigenvalueModulusSet_sSup_eq_of_positive_eigenvector`; remaining full `(7.24)` source work is PF existence plus Mathlib `spectralRadius` identification |
+| Equations 7.17, 7.32 | DEFER-LATER-CHAPTER | No direct integrated Split 1 dependency recorded | Kahan/scaling and calculus perturbation destinations within later prerequisite blocks |
+| Equation 7.6 | SKIP | No integrated previous-split blocker | MATLAB/numerical illustration |
+| Problems 7.1, 7.2 infinity-norm surface, 7.7 local comparison, 7.8 | CLOSED | No unresolved integrated Split 1 blocker for the closed surfaces | Problem 7.1 resolvent, Problem 7.2 sandwich, Problem 7.7 comparison, Problem 7.8 Frobenius declarations |
+| Problem 7.3 | CLOSED for the positive-row-scaling/infinity-norm formulation | Direct integrated infinity-norm/diagonal scaling APIs reused; not an unresolved wait | `problem7_3_rowEquilibrated_scaling_condition_eq`, `eq_7_15_positive_rowScaling_sInf_eq_condSkeel_of_right_inverse`, and `eq_7_16_rowEquilibrated_bounds` |
+
+Latest Chapter 7 Bauer spectral-invariance update: Problem 7.10(e)'s source
+facts `rho(A^T)=rho(A)` and `rho(AB)=rho(BA)` are now closed for the
+Mathlib `spectralRadius (Matrix.toLin' ...)` model and for the concrete
+absolute-value products used by the one-norm Bauer branch.  The new declarations
+are `ch7_toLin_spectrum_transpose_iff`, `ch7_toLin_spectrum_mul_comm_iff`,
+`ch7_toLin_spectralRadius_transpose_eq`,
+`ch7_toLin_spectralRadius_mul_comm_eq`,
+`ch7_toLin_spectralRadius_realRectToCMatrix_matTranspose_eq`,
+`problem7_10e_abs_transpose_product_toLin_spectralRadius_eq_reverse_abs_product`,
+`problem7_10e_abs_products_toLin_spectralRadius_mul_comm_eq`, and
+`problem7_10e_abs_transpose_product_toLin_spectralRadius_eq_abs_product`.
+This is a closed current-Split-2/Mathlib adapter row with no unresolved
+previous-split dependency.  Full Theorem 7.8 / Problem 7.10 remains open only
+for Perron-Frobenius positive-eigenpair existence from irreducibility and the
+compatible common Bauer scaling needed for the source op-2 theorem.
+| Problem 7.4 | CLOSED for the unit-diagonal symmetric PSD scaled-factor form | Direct integrated finite quadratic-form and condition-number APIs reused; not an unresolved wait | `problem7_4_abs_entry_le_one_of_finitePSD_diag_one`, `problem7_4_unitDiagonal_entryBound_condition_bounds`, and `problem7_4_unitDiagonal_finitePSD_condition_bounds` prove `cond(H) ≤ κ∞(H) ≤ n cond(H)` from finite PSD/unit diagonal hypotheses |
+| Problem 7.9 finite first-order componentwise and normwise scalar-output formulas, `χ ≥ 1` lower-bound specializations, first-order radius packages, and exact nonlinear componentwise and normwise source-radius wrappers | CLOSED | Direct integrated finite-summation sign helper, matrix-vector inverse API, Euclidean Cauchy/operator-2 API, rank-one perturbation API, infinity-norm APIs, and the current Chapter 7 local inverse candidate reused; not an unresolved wait | `problem7_9_linearized_componentwise_functional_formula` closes the finite upper bound and sign-attaining lower witness for `|c^T A⁻¹(Δb - ΔA x)| / |c^T x|` under nonnegative `E,f` and nonzero `c^T x`; `problem7_9_linearized_componentwise_functional_ge_one_of_abs_matrix` and `problem7_9_linearized_componentwise_functional_ge_one_of_abs_rhs` close the finite source lower-bound specializations; `problem7_9_linearized_normwise_functional_formula` closes the finite first-order normwise upper bound and attaining rank-one witness over `opNorm2Le` constraints; `problem7_9_componentwise_exact_radiusSup_tendsto_linearized` and `problem7_9_componentwise_exact_condition_of_positive_radii` close the exact nonlinear componentwise source-radius `sSup` model by a proved quadratic-remainder squeeze; `problem7_9_normwise_exact_radiusSup_tendsto_linearized` and `problem7_9_normwise_exact_condition_of_positive_radii` close the exact nonlinear normwise source-radius `sSup` model by a proved `opNorm2Le`-to-envelope adapter and quadratic squeeze |
+| Problem 7.5, Problem 7.10, Problem 7.15 | PROVE-NOW-SPLIT, with Problem 7.10(a)'s two-sided Bauer algebraic lower-bound/attainment core, Problem 7.10(b)'s inverse-transport plus absolute-value scaled-`κ∞` instantiation, positive-entry product irreducibility, Problem 7.10(c)'s `CB(Cx)` eigenvector algebra, Problem 7.10(e)'s one-norm transpose, fixed-scaling 2-norm interpolation, and conditional `sInf` upper-bound packaging, and Problem 7.15's reciprocal scaling invariance of `A ∘ A^{-T}`, inverse-partner transpose/operator-2 certificate side condition, Horn-Johnson operator-2 certificate, scaled inverse-partner bound, exact op-2 `sInf` lower-bound package, and conditional attainability certificate closed under explicit certificates where applicable | Direct or indirect integrated Split 1 norm/SVD/spectral dependencies may be reused; not unresolved waits | Scaling, SVD, Perron-Frobenius positive-vector existence from irreducibility, spectral-radius identification, Bauer variants (c)-(d) beyond the algebraic `CB(Cx)` transfer, and proof that the compatible common Bauer scaling exists at the source spectral-radius value remain current Split 2 proof/API work; Problem 7.10(a)'s algebraic core is closed by `ch7TwoSidedScale`, `ch7TwoSidedScaledInfCond`, `ch7_infNorm_ge_of_nonneg_right_eigenvector`, `problem7_10a_scaled_infCond_ge_perron_of_positive_eigenvector`, `problem7_10a_canonical_scaled_infCond_eq_perron_of_positive_eigenvector`, and `problem7_10a_positive_entries_canonical_scaled_infCond_eq_perron`; Problem 7.10(c)'s algebra is closed by `ch7_bauer_Cx_eigenvector_CB`; Problem 7.10(b)'s inverse transport and source absolute-value reduction are closed by `ch7TwoSidedScale_absMatrix_eq`, `ch7_infNorm_twoSidedScale_absMatrix_eq`, `ch7TwoSidedScale_isInverse`, `ch7TwoSidedScaledInfKappa_eq_kappaInf_of_inverse`, `ch7TwoSidedScaledInfKappa_eq_abs_scaledInfCond`, `problem7_10b_scaled_infKappa_ge_perron_of_abs_inverse_positive_eigenvector`, `problem7_10b_canonical_scaled_infKappa_eq_perron_of_abs_inverse_positive_eigenvector`, and `problem7_10b_positive_abs_entries_canonical_scaled_infKappa_eq_perron`; the positive-entry irreducibility side condition is closed by `ch7_matrix_isPrimitive_of_pos_entries`, `ch7_matrix_isIrreducible_of_pos_entries`, `ch7_matMul_pos_of_pos`, `ch7_bauer_positive_products_irreducible`, and `problem7_10b_positive_abs_entries_products_irreducible`; Problem 7.10(e)'s one-norm branch is closed by `problem7_10e_positive_abs_entries_canonical_scaled_oneKappa_eq_perron_of_transpose`, and its fixed-scaling 2-norm/conditional `sInf` packaging is closed by `problem7_10e_scaled_op2Kappa_le_of_one_inf_bounds`, `ch7TwoSidedScaledOp2Kappa_mem_set`, and `problem7_10e_twoSidedScaledOp2Kappa_sInf_le_of_one_inf_bounds`; Problem 7.15's scaling algebra is closed by `ch7HadamardProduct`, `ch7_matTranspose_twoSidedScale`, `ch7HadamardProduct_twoSidedScale_transpose_inverse_eq`, and `problem7_15_twoSidedScale_hadamard_transpose_inverse_invariant`, the inverse-partner transpose/operator-2 certificate is closed by `opNorm2Le_transpose` and `problem7_15_transpose_inverse_partner_opNorm2Le`, and the Horn-Johnson route is closed by `frobNormRect_diagMatrix`, `vecNorm2_diagonal_le_frobNormRect`, `matMulVec_hadamard_eq_diag_rectMatMul_diag_transpose`, `opNorm2Le_hadamard`, `problem7_15_hornJohnson_hadamard_opNorm2Le`, and `problem7_15_scaled_inverse_hadamard_opNorm2Le`; the exact op-2 lower-bound package is closed by `ch7TwoSidedScaledOp2KappaSet`, `problem7_15_hadamard_op2_le_twoSidedScaledOp2Kappa_mem`, `problem7_15_twoSidedScaledOp2Kappa_sInf_ge_hadamard_op2`, `problem7_15_twoSidedScaledOp2Kappa_sInf_ge_hadamard_op2_of_inverse`, and the conditional attainability theorems `problem7_15_twoSidedScaledOp2Kappa_sInf_eq_hadamard_op2_of_mem` and `problem7_15_twoSidedScaledOp2Kappa_sInf_eq_hadamard_op2_of_attaining_scaling`; Problem 7.4 is closed for the unit-diagonal symmetric PSD scaled-factor form, Problem 7.9's finite first-order componentwise/normwise formulas, `χ ≥ 1` lower-bound specializations, first-order radius packages, and exact nonlinear componentwise and normwise source-radius wrappers are closed, and Problem 7.11 including its nonlinear source-radius `sSup`/`lim sup` wrapper is closed for the modeled componentwise setting |
+| Problem 7.10(a) scaled-product local spectral continuation | CLOSED for the positive reciprocal two-sided scaled-product finite eigenvalue-radius, greatest-value, and `sSup = ρ` wrappers under a supplied positive Perron-vector certificate | Yes, direct integrated Split 1 finite matrix/order APIs reused; not an unresolved wait | `problem7_10a_scaled_product_isComplexEigenvalueRadius_of_positive_eigenvector`, `problem7_10a_scaled_product_complexEigenvalueModulusSet_isGreatest_of_positive_eigenvector`, and `problem7_10a_scaled_product_complexEigenvalueModulusSet_sSup_eq_of_positive_eigenvector`; remaining Problem 7.10 source work is unchanged: PF eigenpair existence, spectral-radius identification, and compatible common scaling for the full global theorem |
+| Problem 7.6(a)-(b) | CLOSED | Direct integrated Split 1/repository norm dependency reused; not an unresolved wait | `problem7_6a_rowwise_data_condition_bounds` and `problem7_6b_columnwise_data_condition_bounds` close the row-wise and columnwise relative-data condition-number comparisons |
+| Problem 7.11 Appendix A.11 first-order inverse componentwise formula, exact inverse perturbation identity, finite exact upper/lower envelopes, finite lower witness, finite-radius reduction, conditional asymptotic vanishing, exact-to-linearized quotient bridge, entrywise-/infinity-norm inverse-bound discharges, constructed local inverse-family bridge, and nonlinear source-radius `sSup` wrapper | CLOSED | Direct integrated finite-summation sign helper reused for the linearized max formula; no unresolved previous-split blocker for the exact algebraic identity, quadratic envelopes, lower-witness package, finite-radius reduction, conditional `εR → 0` dependency, exact quotient convergence bridge, entrywise-/infinity-norm bounded inverse adapters, constructed local inverse-family bridge, or source-radius supremum wrapper | The finite/exact/local-inverse chain is closed by the `problem7_11_linearized_inverse_componentwise_*`, `problem7_11_exact_inverse_*`, `ch7InverseQuadraticRemainder*`, `ch7MatAddId`, `ch7Problem711PerturbedInverseCandidate`, and `problem7_11_exact_inverse_relative_change_max_div_tendsto_linearized_of_componentwise_tendsto_zero` family; the final source-radius supremum wrapper is closed by `Ch7InverseComponentwiseRadiusSet`, `ch7InverseComponentwiseRadiusSup`, `IsCh7InverseComponentwiseRadiusLimitValue`, `IsCh7InverseComponentwiseCondValue`, `ch7InverseComponentwiseRadiusSet_value_le`, `exists_ch7InverseComponentwiseRadiusSet_lower_witness`, `problem7_11_inverse_componentwise_radiusSup_tendsto_linearized`, and `problem7_11_inverse_componentwise_condition_of_positive_radii` |
+| Problem 7.13 | CLOSED | No integrated previous-split blocker after the integrated re-audit | `ch7SparseResidual`, `ch7SparseComputedResidualSafetyTerm`, `ch7SparseComputedResidualImage`, `problem7_13_sparse_residual_error`, `problem7_13_componentwise_bound`, and `problem7_13_relative_infNorm_bound` close the Appendix A.12 sparse row-support residual model with row-wise `γ_(w_i+1)` factors |
+| Problems 7.12, 7.14 | DEFER-LATER-SPLIT | No direct integrated Split 1 dependency for the deferral | QR/Householder/SPD integration; probability/distribution infrastructure |
 
 ### Chapter 8
 
 | Source item | Classification | Previous-split dependency | Lean declaration or blocker |
 | --- | --- | --- | --- |
 | Algorithm 8.1, Lemma 8.2, Theorem 8.3 | CLOSED | Uses available Split 1 rounding/gamma infrastructure, no unresolved blocker | `higham8_1_backSub`, `higham8_2_backSub_row_tight`, `higham8_3_backSub_backward_error` |
-| Lemma 8.4, full Theorem 8.5 arbitrary ordering | WAIT-PREVIOUS-SPLIT | Direct | Split 1 expression-order/product rounding infrastructure |
+| Lemma 8.4, full Theorem 8.5 arbitrary ordering | PROVE-NOW-SPLIT | Direct | Split 1 expression-order/product rounding infrastructure |
 | Theorem 8.5 fixed forward/back substitution specializations | CLOSED | Uses available Split 1 gamma, no unresolved blocker | `higham8_5_backSub_backward_error`, `higham8_5_forwardSub_backward_error` |
-| Lemma 8.6, Theorem 8.7, Theorem 8.10, Corollary 8.11 | CLOSED | No unresolved previous-split blocker; gamma infrastructure available where used | `higham8_6_inv_abs_mul_bound_diagDom`, `higham8_7_backSub_forward_error_diagDom`, `higham8_10_forwardSub_forward_error_mu_bound`, `higham8_11_mmatrix_forwardSub_relative_error` |
-| Lemmas 8.8-8.9, Theorems 8.12 and 8.14 full source statements | WAIT-PREVIOUS-SPLIT | Direct or indirect Split 1 norm/condition/SVD gate | Full norm and condition-number APIs not redefined locally |
-| Algorithm 8.13 | CLOSED | No previous-split dependency | `higham8_13_y`, `higham8_13_comparison_inverse_row_recurrence`, `higham8_13_inverse_bound_from_comparison` |
-| Equations 8.1, 8.3-8.8 and infinity-norm endpoints of 8.9 | CLOSED | No unresolved previous-split blocker | Chapter 8 wrappers and comparison-matrix definitions |
-| Equations 8.2, 8.9 full chain, 8.11-8.20 | WAIT-PREVIOUS-SPLIT | Direct or indirect Split 1 norm/SVD/product-rounding gates | See Chapter 8 report |
-| Equation 8.10 | DEFER-LATER-SPLIT | No direct previous-split dependency; later block also uses norm infrastructure | QR column-pivoting material |
-| Problems 8.8(a) constructive branch | CLOSED | No previous-split dependency | `higham8_8_rankOne_singular_update` |
-| Problems 8.1-8.7, 8.8 converse, 8.8(b), 8.9 | WAIT-PREVIOUS-SPLIT | Direct or indirect Split 1 gates | Rounding, norm, condition, determinant/rank, or SVD blockers |
-| Problem 8.10 and cost/asymptotic prose | SKIP | No previous-split dependency | Underspecified algorithm family or cost prose |
+| Lemma 8.6, Theorem 8.7, Theorem 8.10, Corollary 8.11 | CLOSED | No unresolved integrated Split 1 blocker; gamma infrastructure available where used | `higham8_6_inv_abs_mul_bound_diagDom`, `higham8_7_backSub_forward_error_diagDom`, `higham8_10_forwardSub_forward_error_mu_bound`, `higham8_11_mmatrix_forwardSub_relative_error` |
+| Lemma 8.8 corrected row and Lemma 8.9 source infinity-norm comparison wrapper | CLOSED | Direct Split 1 norm/condition gate now discharged locally | `higham8_8_rowDiagDominantUpper_condSkeel_bound`, `higham8_9_upperTriangular_condAtSolution_le_comparison_eq`, `higham8_9_lowerTriangular_condAtSolution_le_comparison_eq` |
+| Theorems 8.12 and 8.14 full source statements | CLOSED | Direct or indirect Split 1 norm/condition/SVD gates now discharged locally | `higham8_12_absolute_norm_vector_chain`, `higham8_14_full_norm_chain` |
+| Algorithm 8.13 | CLOSED | No integrated previous-split blocker | `higham8_13_y`, `higham8_13_comparison_inverse_row_recurrence`, `higham8_13_inverse_bound_from_comparison` |
+| Problem 8.7 strict row-diagonal-dominance inverse norm bounds | CLOSED | Direct Split 1 norm/condition gate now discharged locally | `higham8_7_strictRowDiagDominant_invInfNorm_le`, `higham8_7_scaledStrictRowDiagDominant_invInfNorm_le`, `higham8_7_comparisonInverseOnes_infNorm_ge_inverseInfNorm` |
+| Equations 8.1, 8.3-8.9 except 8.2 | CLOSED | No unresolved integrated Split 1 blocker | Chapter 8 wrappers, comparison-matrix definitions, and `higham8_14_full_norm_chain` |
+| Equations 8.2, 8.11-8.20 | PROVE-NOW-SPLIT | Direct or indirect Split 1 norm/SVD/product-rounding gates | See Chapter 8 report |
+| Equation 8.10 | DEFER-LATER-SPLIT | No direct integrated Split 1 dependency; later block also uses norm infrastructure | QR column-pivoting material |
+| Problem 8.8(a) singular rank-one perturbation iff and best-place criterion | CLOSED | No integrated previous-split blocker | `higham8_8_rankOne_singular_update`, `higham8_8_rankOne_singular_update_iff`, `higham8_8_bestRankOneSingularUpdate_exists` |
+| Problems 8.1, 8.3, 8.6, 8.9 | PROVE-NOW-SPLIT | Direct or indirect Split 1 gates | Rounding, norm, condition, or SVD blockers |
+| Problem 8.10 and cost/asymptotic prose | SKIP | No integrated previous-split blocker | Underspecified algorithm family or cost prose |
+
+Latest Chapter 8 verification refresh (2026-06-26): `lake env lean
+LeanFpAnalysis/FP/Algorithms/HighamChapter8.lean` passed, focused
+`lake build LeanFpAnalysis.FP.Algorithms.HighamChapter8` passed with `3031`
+jobs, `lake env lean examples/LibraryLookup.lean` passed and exposes
+`higham8_12_absolute_norm_vector_chain` and `higham8_14_full_norm_chain`, and
+`git diff --check` passed.
 
 ### Chapter 9
 
 | Source item | Classification | Previous-split dependency | Lean declaration or blocker |
 | --- | --- | --- | --- |
-| Theorem 9.1 and Problem 9.1 | CLOSED | No previous-split dependency | Equation 9.1 full-matrix and leading-principal-block determinant-pivot products, the first Schur-complement LU construction step, proper Schur-complement leading-minor inheritance, exact-LU recurrence converse, exact LU existence/uniqueness from Higham's proper leading-minor condition, the lower-shear nonuniqueness converse, and the final iff theorem are closed by the `higham9_1_*` and `higham_problem9_1_*` theorem family |
-| Equation 9.1 | CLOSED | No previous-split dependency | `higham9_1_det_eq_pivot_product`, `higham9_1_det_ne_zero_iff_pivots_ne_zero`, `higham9_1_leadingPrincipalBlock_det_eq_pivot_product`, and `higham9_1_leadingPrincipalBlock_det_ne_zero_iff_pivots_ne_zero` |
-| Problem 9.2 finite-exception shifted-matrix LU theorem | CLOSED | No previous-split dependency | `higham9_2_shiftedMatrix`, `higham9_2_shiftedMatrixDangerSet`, `higham9_2_shiftedMatrixDangerSet_card_le`, `higham9_2_shiftedMatrix_properLeadingPrincipalBlock_det_ne_zero_of_not_mem_danger`, `higham9_2_shiftedMatrix_lu_exists_unique_of_not_mem_danger`, and `higham_problem9_2_shiftedMatrix_lu_exists_unique_except_card_bound`, reusing the closed Theorem 9.1 proper-leading-minor LU criterion |
-| Algorithm 9.2 executable surface | PROVE-NOW-SPLIT | No previous-split dependency | Square dense-loop certificates now bridge to `DoolittleLU` and Theorem 9.3, and exact-target gap hypotheses now derive the source-facing absolute-budget certificate; row-permuted `PA` and row-column-permuted `PAQ` certificate adapters exist for pivoted/complete-pivoted backward-error certificates; exact rectangular identities (9.3)--(9.5), exact-LU recurrence converse, and the printed rational leading flop polynomial are recorded; full executable rectangular loop and pivot traces remain open |
-| Equations 9.3-9.5 | CLOSED | No previous-split dependency | `higham9_2_rectDoolittleU_source_identity`, `higham9_2_rectDoolittleL_source_identity`, `higham9_2_rectDoolittleUUpdate_eq_of_LUFactSpec`, `higham9_2_rectDoolittleLUpdate_eq_of_LUFactSpec`, `higham9_5_rectGEReducedEntry_succ_of_lt`, `higham9_5_rectGEReducedEntry_eq_DoolittleUUpdate`, and `higham9_5_rectGEReducedEntry_eq_DoolittleLUpdate_mul_pivot` |
-| Theorem 9.3 certificate form, equation 9.6 | CLOSED | Available Split 1 gamma is used; no unresolved previous-split blocker for certificate | `higham9_3_doolittle_backward_error`, `higham9_3_denseLoopCertificate_backward_error`, `higham9_3_absBudgetCertificate_backward_error`, `higham9_3_lu_backward_error_gamma`, `higham9_3_permuted_lu_backward_error_gamma`, and `higham9_3_complete_permuted_lu_backward_error_gamma` |
-| Theorem 9.3 full arbitrary GE/pivoted surface | PROVE-NOW-SPLIT | No previous-split dependency for the remaining pivot/rectangular LU gap | Certificate forms and the permuted `PA`/`PAQ` adapters are closed; full route waits on Split 2 pivot traces and rectangular LU |
+| Theorem 9.1 and Problem 9.1 | CLOSED | No integrated previous-split blocker | Equation 9.1 full-matrix and leading-principal-block determinant-pivot products, the first Schur-complement LU construction step, proper Schur-complement leading-minor inheritance, exact-LU recurrence converse, exact LU existence/uniqueness from Higham's proper leading-minor condition, the lower-shear nonuniqueness converse, and the final iff theorem are closed by the `higham9_1_*` and `higham_problem9_1_*` theorem family |
+| Equation 9.1 | CLOSED | No integrated previous-split blocker | `higham9_1_det_eq_pivot_product`, `higham9_1_det_ne_zero_iff_pivots_ne_zero`, `higham9_1_leadingPrincipalBlock_det_eq_pivot_product`, and `higham9_1_leadingPrincipalBlock_det_ne_zero_iff_pivots_ne_zero` |
+| Problem 9.2 finite-exception shifted-matrix LU theorem | CLOSED | No integrated previous-split blocker | `higham9_2_shiftedMatrix`, `higham9_2_shiftedMatrixDangerSet`, `higham9_2_shiftedMatrixDangerSet_card_le`, `higham9_2_shiftedMatrix_properLeadingPrincipalBlock_det_ne_zero_of_not_mem_danger`, `higham9_2_shiftedMatrix_lu_exists_unique_of_not_mem_danger`, and `higham_problem9_2_shiftedMatrix_lu_exists_unique_except_card_bound`, reusing the closed Theorem 9.1 proper-leading-minor LU criterion |
+| Algorithm 9.2 executable surface | PROVE-NOW-SPLIT | No integrated previous-split blocker | Square dense-loop certificates now bridge to `DoolittleLU` and Theorem 9.3, and exact-target gap hypotheses now derive the source-facing absolute-budget certificate; row-permuted `PA` and row-column-permuted `PAQ` certificate adapters exist for pivoted/complete-pivoted backward-error certificates; exact rectangular identities (9.3)--(9.5), exact-LU recurrence converse, and the printed rational leading flop polynomial are recorded; full executable rectangular loop and pivot traces remain open |
+| Equations 9.3-9.5 | CLOSED | No integrated previous-split blocker | `higham9_2_rectDoolittleU_source_identity`, `higham9_2_rectDoolittleL_source_identity`, `higham9_2_rectDoolittleUUpdate_eq_of_LUFactSpec`, `higham9_2_rectDoolittleLUpdate_eq_of_LUFactSpec`, `higham9_5_rectGEReducedEntry_succ_of_lt`, `higham9_5_rectGEReducedEntry_eq_DoolittleUUpdate`, and `higham9_5_rectGEReducedEntry_eq_DoolittleLUpdate_mul_pivot` |
+| Theorem 9.3 certificate form, equation 9.6 | CLOSED | Available Split 1 gamma is used; no unresolved integrated Split 1 blocker for certificate | `higham9_3_doolittle_backward_error`, `higham9_3_denseLoopCertificate_backward_error`, `higham9_3_absBudgetCertificate_backward_error`, `higham9_3_lu_backward_error_gamma`, `higham9_3_permuted_lu_backward_error_gamma`, and `higham9_3_complete_permuted_lu_backward_error_gamma` |
+| Theorem 9.3 full arbitrary GE/pivoted surface | PROVE-NOW-SPLIT | No integrated previous-split blocker for the remaining pivot/rectangular LU gap | Certificate forms and the permuted `PA`/`PAQ` adapters are closed; full route depends on Split 2 pivot traces and rectangular LU |
 | Theorem 9.4, equation 9.7 | CLOSED | Direct reliance on available Split 1 gamma; no unresolved blocker | `higham9_4_lu_solve_backward_error` |
-| Theorem 9.5, equation 9.10 | PROVE-NOW-SPLIT for computed GEPP certificate connection; CLOSED for exact trace-growth-family surface | Available Split 1 gamma used for closed certificate part; no unresolved previous-split blocker for the exact trace-growth-family surface | `higham9_5_wilkinson_normwise_infNorm_tight`, `higham9_5_wilkinson_source_bound_of_growth_bridge`, `higham9_5_wilkinson_source_bound_of_entry_growth`, and `higham9_5_wilkinson_source_bound_of_PartialPivotGEPPUTrace` are closed; the explicit trace wrapper derives the source-shaped `2^(n-1)` factor from `higham9_7_PartialPivotGEPPUTrace_growthFactorEntry_le_pow_two`. The trace-level partial-pivoting value family, boundedness, nonemptiness, supremum adapter, and source-shaped supremum upper-bound form are closed by `higham9_partialPivotingUTraceGrowthValues`, `higham9_partialPivotingUTraceGrowthSup`, `higham9_partialPivotingUTraceGrowthValues_bddAbove`, `higham9_partialPivotingUTraceGrowth_le_sup`, `higham9_partialPivotingUTraceGrowthValues_nonempty`, and `higham9_7_partialPivotingUTraceGrowthSup_le_pow_two`. The remaining local gap is connecting the computed GEPP/backward-error factors to the explicit trace and certificate surfaces without assuming the algorithmic result. |
-| Lemma 9.6 | CLOSED | No previous-split dependency | Reduced-stage full-prefix, terminal-residual, rank-one, row-sum-to-infinity, uniform stage-row accumulation, exact source counting, and the printed `1 + 2(n^2-n)rho_n` constant are closed by `higham9_5_rectPrefixRange_full_eq_matMul`, `higham9_5_rectGEReducedEntry_full_eq_zero_of_LUFactSpec`, `higham9_6_rankOne_abs_le_reduced_add_succ`, `higham9_6_absLU_infNorm_le_of_reduced_stage_pair_rows`, `higham9_6_absLU_infNorm_le_two_card_mul_of_reduced_stage_row_bounds`, `higham9_6_sum_stage_pair_eq_endpoints_add_two_range`, `higham9_6_absLU_infNorm_le_source_constant_of_reduced_entry_growth`, and `higham9_6_absLU_infNorm_le_source_constant_of_noPivotReducedGrowthFactor` |
-| Problem 9.9 exact no-pivot reduced-matrix and final-`U` growth bounds | CLOSED | No previous-split dependency | `higham_problem9_9_noPivotReducedGrowthFactor_le_one_add_card_mul_absLU_infNorm_div` and `higham_problem9_9_growthFactorEntry_le_one_add_card_mul_absLU_infNorm_div` |
-| Theorem 9.7 | CLOSED | No previous-split dependency | The first-step partial-pivoting row swap and Schur-complement max-entry doubling inequality are closed by `higham9_7_firstPivotRowSwap`, `higham9_7_partialPivot_firstSchurComplement_entry_abs_le_two`, and `higham9_7_partialPivot_firstSchurComplement_maxEntryNorm_le_two`; the explicit-stage recurrence to `growthFactorEntry <= 2^(n-1)` is closed by `higham9_7_partialPivot_stageMax_le_pow_two` and `higham9_7_partialPivot_growthFactorEntry_le_pow_two_of_stage_bounds`; the arbitrary nonsingular recursive partial-pivoting `U` trace and source-facing exact growth upper bound are closed by `higham9_7_PartialPivotGEPPUTrace`, `higham9_7_PartialPivotGEPPUTrace_entry_abs_le_pow_two`, `higham9_7_PartialPivotGEPPUTrace_growthFactorEntry_le_pow_two`, `higham9_7_exists_PartialPivotGEPPUTrace_of_det_ne_zero`, and `higham9_7_exists_PartialPivotGEPPUTrace_growthFactorEntry_le_pow_two_of_det_ne_zero`; the trace-level source growth-value family and supremum upper-bound form are closed by `higham9_partialPivotingUTraceGrowthValues`, `higham9_partialPivotingUTraceGrowthSup`, `higham9_partialPivotingUTraceGrowthValues_bddAbove`, `higham9_partialPivotingUTraceGrowth_le_sup`, `higham9_partialPivotingUTraceGrowthValues_nonempty`, and `higham9_7_partialPivotingUTraceGrowthSup_le_pow_two`; the displayed Wilkinson matrix family's exact LU certificate, source max-entry norm `1`, upper-factor max-entry norm `2^(n-1)`, exact growth `2^(n-1)`, and no-interchange partial-pivoting trace are closed; `higham9_7_wilkinsonGrowth_attains_partialPivoting_bound`, `higham9_7_partialPivoting_growth_bound_and_attainment`, and `higham9_7_partialPivotingUTraceGrowthSup_le_pow_two` package the selected real exact-arithmetic upper-bound, attainability, and trace-family supremum statement. |
-| Theorem 9.8, equations 9.11-9.13 | PROVE-NOW-SPLIT for the broader complete-pivoting theorem family; CLOSED for the real/complex `theta <= rho` construction rows | No previous-split dependency for remaining gap | Real max-entry subclaims, the unpermuted exact-LU final-pivot/inverse-entry growth bridge, explicit complete-permuted `P A Q = L U` inverse-entry instantiation for equation (9.11), cumulative real complete-pivoting `PAQ = LU` existence theorem, real complete-pivoting existential `theta <= rho` bridge, recursive complete-pivoting `U` trace existence/upper-triangularity layer, trace-level Problem 9.11 `g(2n)` lower-bound theorem, complex max-entry `theta <= n` row-identity estimate, equation (9.12)'s sine-matrix definition/symmetry/scale/positivity/finite-sum orthogonality/self-inverse/theta support, equation (9.13)'s Fourier/Vandermonde definition/unit-circle/full Gram/scaled-adjoint inverse support, explicit complex `PAQ = LU` certificate-level final-pivot bridge, full complex recursive trace construction, full complex cumulative certificate construction, complex trace-to-certificate max-entry transfer, and the Fourier/Vandermonde trace-level `n <= rho` existence theorem are closed; the remaining complete-pivoting-family gap is the separate sharp Wilkinson product upper bound (9.14). |
-| Theorem 9.9 full row/column diagonal-dominance growth theorem `rho_n <= 2` | DEFER-LATER-CHAPTER | No previous-split dependency; later-Chapter-13 dependency | The source proof explicitly cites Theorems 13.7 and 13.8 for block diagonally dominant matrices. Local Theorem 9.9 support is closed: nonsingular diagonal-entry side condition, off-diagonal and first-ratio support, column-dominant first-column multiplier-sum, first Schur-complement preservation/max-entry/off-diagonal/nonsingularity support, exact no-pivot LU existence/uniqueness with unit-bounded lower multipliers, row/column dominance transpose adapters, and the final scalar endpoint adapter from `|U i j| <= 2 * maxEntryNorm A` to `rho_n <= 2`. |
-| Theorems 9.10-9.11, equations 9.14-9.16 | PROVE-NOW-SPLIT | No previous-split dependency | Conditional wrappers, first-stage pivot predicates, the Theorem 9.10 first-step nonsingularity, one-stage-invariant, initial-stage, explicit-trace-induction, terminal-trace Hessenberg GEPP support, exposed upper-factor `U` trace, row-indexed `U` bound, and source-facing nonsingular exact GEPP growth theorem (`higham9_10_exists_HessenbergGEPPUTrace_growthFactorEntry_le_card_of_det_ne_zero`) are closed; the recursive complete-pivoting `U` trace support, cumulative real `PAQ = LU` certificate layer, and elementary trace-level `rho <= 2^(n-1)` complete-pivoting boundedness are closed by `higham9_8_CompletePivotGECPUTrace`, `higham9_8_CompletePivotGECPUTrace_upper_zero`, `higham9_8_exists_CompletePivotGECPUTrace_of_det_ne_zero`, `higham9_8_exists_CompletePivotGECPUTrace_upper_zero_of_det_ne_zero`, `higham9_8_exists_CompletePermutedLUFactSpec_of_det_ne_zero`, `higham9_8_CompletePivotGECPUTrace_growthFactorEntry_le_pow_two`, and `higham9_completePivotingUTraceGrowthValues_bddAbove`; recursive rook-pivoting `U` trace support and elementary trace-level `rho <= 2^(n-1)` boundedness are closed by `higham9_16_RookPivotGEUTrace`, `higham9_16_RookPivotGEUTrace_upper_zero`, `higham9_16_rookPivot_firstSchurComplement_entry_abs_le_two`, `higham9_16_rookPivot_firstSchurComplement_maxEntryNorm_le_two`, `higham9_16_RookPivotGEUTrace_entry_abs_le_pow_two`, `higham9_16_RookPivotGEUTrace_growthFactorEntry_le_pow_two`, `higham9_16_exists_RookPivotGEUTrace_of_det_ne_zero`, and `higham9_16_exists_RookPivotGEUTrace_upper_zero_of_det_ne_zero`; Theorem 9.11 Bohte scalar-expression/arithmetic/nonnegativity/conditional-solve support and the equations (9.14)/(9.16) displayed scalar upper-bound RHS definitions with scalar nonnegativity/positivity exist. The source proof of Theorem 9.11 is citation-only to Bohte [146, 1975], so the full banded growth proof and attainability are tracked as an open external proof-source route; Wilkinson's sharp complete-pivoting product bound/source `g(n)` connection for (9.14) and Foster's sharper rook-pivoting product bound for (9.16) remain open local Split 2 work. |
-| Equation 9.17 | WAIT-PREVIOUS-SPLIT | Yes, indirect previous-split dependency through Chapter 8 Lemma 8.8 | Source-shaped predicate `higham9_17_rowDiagDom_absLU_bound` exists, but the source proof invokes Lemma 8.8, whose full Chapter 8 source statement is directly gated by Split 1 norm/condition-number foundations |
-| Equations 9.18-9.19 | CLOSED | No previous-split dependency | `higham9_18_TridiagData`, `higham9_18_tridiag_to_matrix`, `higham9_18_tridiag_to_matrix_isTridiagonal`, `higham9_19_tridiag_lu`, `higham9_19_TridiagExactLURecurrence`, `higham9_19_tridiag_prevIndex`, and `higham9_19_tridiag_exact_product_of_recurrence`; the exact-arithmetic recurrence branch now proves the builder product equals the source tridiagonal matrix |
-| Theorems 9.12-9.14, equations 9.20-9.22 | PROVE-NOW-SPLIT | Available Split 1 gamma used for closed tridiagonal subclaims | Tridiagonal transpose adapter, column-dominant and direct row-dominant componentwise growth wrappers, exact-`LUFactSpec` to bidiagonal structural handoff, exact recurrence-to-product builder wrappers, column-dominant multiplier bound, ordinary exact-LU and exact-recurrence column- and row-dominant `rho <= 3` wrappers, generic componentwise-to-max-entry growth bridge, structural `rho <= 3` max-entry consequences, row-dominant transpose structural componentwise/max-entry wrappers, structural tridiagonal growth-to-absorbed-bound wrappers for column and row dominance, optimal-growth-to-`rho <= 1` max-entry consequence, exact `f(u)`/`h(u)` source scalars, coefficient aggregation, and denominator-cleared source-shaped `h(u)` adapter exist; remaining gaps are special-class algorithmic coverage, source perturbation hypotheses, rounded tridiagonal recurrence trace construction, and structural-certificate-to-trace construction |
-| Theorem 9.15, equations 9.23, 9.26-9.27 | WAIT-PREVIOUS-SPLIT | Direct Split 1 norm, condition, Holder, spectral-radius, and Frobenius gates | Algebraic perturbation identity closed; full normwise/spectral statement blocked |
+| Theorem 9.5, equation 9.10 | PROVE-NOW-SPLIT for computed GEPP certificate connection; CLOSED for exact trace-growth-family and explicit pivoted/complete-pivoted certificate surfaces | Available Split 1 gamma used for closed certificate part; no unresolved integrated Split 1 blocker for the exact trace-growth-family or explicit pivoted/complete-pivoted certificate surfaces | `higham9_5_wilkinson_normwise_infNorm_tight`, `higham9_5_wilkinson_source_bound_of_growth_bridge`, `higham9_5_wilkinson_source_bound_of_entry_growth`, `higham9_5_wilkinson_source_bound_of_PartialPivotGEPPUTrace`, `higham9_5_wilkinson_source_bound_of_PermutedPartialPivotGEPPUTrace`, and `higham9_5_wilkinson_source_bound_of_CompletePivotGECPUTrace` are closed; the explicit trace wrappers derive the source-shaped `2^(n-1)` factor from the partial- and complete-pivoting trace growth theorems, the row-pivoted wrapper preserves the original matrix norm after unpermuting row perturbations, and the complete-pivoted wrapper preserves the original matrix norm after unpermuting both rows and columns. The trace-level partial-pivoting value family, boundedness, nonemptiness, supremum adapter, and source-shaped supremum upper-bound form are closed by `higham9_partialPivotingUTraceGrowthValues`, `higham9_partialPivotingUTraceGrowthSup`, `higham9_partialPivotingUTraceGrowthValues_bddAbove`, `higham9_partialPivotingUTraceGrowth_le_sup`, `higham9_partialPivotingUTraceGrowthValues_nonempty`, and `higham9_7_partialPivotingUTraceGrowthSup_le_pow_two`. The remaining local gap is constructing the computed GEPP/backward-error factors and connecting them to the explicit trace and certificate surfaces without assuming the algorithmic result. |
+| Lemma 9.6 | CLOSED | No integrated previous-split blocker | Reduced-stage full-prefix, terminal-residual, rank-one, row-sum-to-infinity, uniform stage-row accumulation, exact source counting, and the printed `1 + 2(n^2-n)rho_n` constant are closed by `higham9_5_rectPrefixRange_full_eq_matMul`, `higham9_5_rectGEReducedEntry_full_eq_zero_of_LUFactSpec`, `higham9_6_rankOne_abs_le_reduced_add_succ`, `higham9_6_absLU_infNorm_le_of_reduced_stage_pair_rows`, `higham9_6_absLU_infNorm_le_two_card_mul_of_reduced_stage_row_bounds`, `higham9_6_sum_stage_pair_eq_endpoints_add_two_range`, `higham9_6_absLU_infNorm_le_source_constant_of_reduced_entry_growth`, and `higham9_6_absLU_infNorm_le_source_constant_of_noPivotReducedGrowthFactor` |
+| Problem 9.9 exact no-pivot reduced-matrix and final-`U` growth bounds | CLOSED | No integrated previous-split blocker | `higham_problem9_9_noPivotReducedGrowthFactor_le_one_add_card_mul_absLU_infNorm_div` and `higham_problem9_9_growthFactorEntry_le_one_add_card_mul_absLU_infNorm_div` |
+| Theorem 9.7 | CLOSED | No integrated previous-split blocker | The first-step partial-pivoting row swap and Schur-complement max-entry doubling inequality are closed by `higham9_7_firstPivotRowSwap`, `higham9_7_partialPivot_firstSchurComplement_entry_abs_le_two`, and `higham9_7_partialPivot_firstSchurComplement_maxEntryNorm_le_two`; the explicit-stage recurrence to `growthFactorEntry <= 2^(n-1)` is closed by `higham9_7_partialPivot_stageMax_le_pow_two` and `higham9_7_partialPivot_growthFactorEntry_le_pow_two_of_stage_bounds`; the arbitrary nonsingular recursive partial-pivoting `U` trace and source-facing exact growth upper bound are closed by `higham9_7_PartialPivotGEPPUTrace`, `higham9_7_PartialPivotGEPPUTrace_entry_abs_le_pow_two`, `higham9_7_PartialPivotGEPPUTrace_growthFactorEntry_le_pow_two`, `higham9_7_exists_PartialPivotGEPPUTrace_of_det_ne_zero`, and `higham9_7_exists_PartialPivotGEPPUTrace_growthFactorEntry_le_pow_two_of_det_ne_zero`; the trace-level source growth-value family and supremum upper-bound form are closed by `higham9_partialPivotingUTraceGrowthValues`, `higham9_partialPivotingUTraceGrowthSup`, `higham9_partialPivotingUTraceGrowthValues_bddAbove`, `higham9_partialPivotingUTraceGrowth_le_sup`, `higham9_partialPivotingUTraceGrowthValues_nonempty`, and `higham9_7_partialPivotingUTraceGrowthSup_le_pow_two`; the displayed Wilkinson matrix family's exact LU certificate, source max-entry norm `1`, upper-factor max-entry norm `2^(n-1)`, exact growth `2^(n-1)`, and no-interchange partial-pivoting trace are closed; `higham9_7_wilkinsonGrowth_attains_partialPivoting_bound`, `higham9_7_partialPivoting_growth_bound_and_attainment`, and `higham9_7_partialPivotingUTraceGrowthSup_le_pow_two` package the selected real exact-arithmetic upper-bound, attainability, and trace-family supremum statement. |
+| Theorem 9.8, equations 9.11-9.13 | PROVE-NOW-SPLIT for the broader complete-pivoting theorem family; CLOSED for the real/complex `theta <= rho` construction rows | No integrated previous-split blocker for remaining gap | Real max-entry subclaims, the unpermuted exact-LU final-pivot/inverse-entry growth bridge, explicit complete-permuted `P A Q = L U` inverse-entry instantiation for equation (9.11), cumulative real complete-pivoting `PAQ = LU` existence theorem, real complete-pivoting existential `theta <= rho` bridge, recursive complete-pivoting `U` trace existence/upper-triangularity layer, trace-level nonempty/supremum upper-bound endpoint, trace-level Problem 9.11 `g(2n)` lower-bound theorem, complex max-entry `theta <= n` row-identity estimate, equation (9.12)'s sine-matrix definition/symmetry/scale/positivity/finite-sum orthogonality/self-inverse/theta support, equation (9.13)'s Fourier/Vandermonde definition/unit-circle/full Gram/scaled-adjoint inverse support, explicit complex `PAQ = LU` certificate-level final-pivot bridge, full complex recursive trace construction, full complex cumulative certificate construction, complex trace-to-certificate max-entry transfer, and the Fourier/Vandermonde trace-level `n <= rho` existence theorem are closed; the remaining complete-pivoting-family gap is the separate sharp Wilkinson product upper bound (9.14). |
+| Theorem 9.9 full row/column diagonal-dominance growth theorem `rho_n <= 2` | DEFER-LATER-CHAPTER | No integrated previous-split blocker; later-Chapter-13 dependency | The source proof explicitly cites Theorems 13.7 and 13.8 for block diagonally dominant matrices. Local Theorem 9.9 support is closed: nonsingular diagonal-entry side condition, off-diagonal and first-ratio support, column-dominant first-column multiplier-sum, first Schur-complement preservation/max-entry/off-diagonal/nonsingularity support, exact no-pivot LU existence/uniqueness with unit-bounded lower multipliers, row/column dominance transpose adapters, and the final scalar endpoint adapter from `|U i j| <= 2 * maxEntryNorm A` to `rho_n <= 2`. |
+| Theorems 9.10-9.11, equations 9.14-9.16 | PROVE-NOW-SPLIT | No integrated previous-split blocker | Conditional wrappers, first-stage pivot predicates, the Theorem 9.10 first-step nonsingularity, one-stage-invariant, initial-stage, explicit-trace-induction, terminal-trace Hessenberg GEPP support, exposed upper-factor `U` trace, row-indexed `U` bound, and source-facing nonsingular exact GEPP growth theorem (`higham9_10_exists_HessenbergGEPPUTrace_growthFactorEntry_le_card_of_det_ne_zero`) are closed; the recursive complete-pivoting `U` trace support, cumulative real `PAQ = LU` certificate layer, elementary trace-level `rho <= 2^(n-1)` complete-pivoting boundedness, and source-shaped complete-pivoting trace supremum endpoint are closed by `higham9_8_CompletePivotGECPUTrace`, `higham9_8_CompletePivotGECPUTrace_upper_zero`, `higham9_8_exists_CompletePivotGECPUTrace_of_det_ne_zero`, `higham9_8_exists_CompletePivotGECPUTrace_upper_zero_of_det_ne_zero`, `higham9_8_exists_CompletePermutedLUFactSpec_of_det_ne_zero`, `higham9_8_CompletePivotGECPUTrace_growthFactorEntry_le_pow_two`, `higham9_completePivotingUTraceGrowthValues_bddAbove`, `higham9_completePivotingUTraceGrowthValues_nonempty`, and `higham9_8_completePivotingUTraceGrowthSup_le_pow_two`; recursive rook-pivoting `U` trace support and elementary trace-level `rho <= 2^(n-1)` boundedness/value-set/supremum support are closed by `higham9_16_RookPivotGEUTrace`, `higham9_16_RookPivotGEUTrace_upper_zero`, `higham9_16_rookPivot_firstSchurComplement_entry_abs_le_two`, `higham9_16_rookPivot_firstSchurComplement_maxEntryNorm_le_two`, `higham9_16_RookPivotGEUTrace_entry_abs_le_pow_two`, `higham9_16_RookPivotGEUTrace_growthFactorEntry_le_pow_two`, `higham9_16_exists_RookPivotGEUTrace_of_det_ne_zero`, `higham9_16_exists_RookPivotGEUTrace_upper_zero_of_det_ne_zero`, and the `higham9_16_rookPivotingUTraceGrowth*` declarations; Theorem 9.11 Bohte scalar-expression/arithmetic/nonnegativity/conditional-solve support and the equations (9.14)/(9.16) displayed scalar upper-bound RHS definitions with scalar nonnegativity/positivity exist. The source proof of Theorem 9.11 is citation-only to Bohte [146, 1975], so the full banded growth proof and attainability are tracked as an open external proof-source route; Wilkinson's sharp complete-pivoting product bound for (9.14) and Foster's sharper rook-pivoting product bound for (9.16) remain open local Split 2 work. |
+| Equation 9.17 | CLOSED | Yes, indirect integrated Split 1 dependency reused through Chapter 8 Lemma 8.8 | Closed by the source-faithful norm predicate `higham9_17_rowDiagDom_absLU_bound`, the exact-LU-to-`condSkeel` bridge `higham9_17_absLU_infNorm_le_condSkeel_of_LUFactSpec`, and the row-diagonal-dominance wrapper `higham9_17_rowDiagDom_absLU_bound_of_LUFactSpec`, which reuse `higham8_8_rowDiagDominantUpper_condSkeel_bound` rather than duplicating the Chapter 8 norm theorem locally |
+| Equations 9.18-9.19 | CLOSED | No integrated previous-split blocker | `higham9_18_TridiagData`, `higham9_18_tridiag_to_matrix`, `higham9_18_tridiag_to_matrix_isTridiagonal`, `higham9_19_tridiag_lu`, `higham9_19_TridiagExactLURecurrence`, `higham9_19_tridiag_prevIndex`, and `higham9_19_tridiag_exact_product_of_recurrence`; the exact-arithmetic recurrence branch now proves the builder product equals the source tridiagonal matrix |
+| Theorems 9.12-9.14, equations 9.20-9.22 | PROVE-NOW-SPLIT | Available Split 1 gamma used for closed tridiagonal subclaims | Tridiagonal transpose adapter, column-dominant and direct row-dominant componentwise growth wrappers, exact-`LUFactSpec` to bidiagonal structural handoff, exact recurrence-to-product builder wrappers, column-dominant multiplier bound, ordinary exact-LU and exact-recurrence column- and row-dominant `rho <= 3` wrappers, generic componentwise-to-max-entry growth bridge, structural `rho <= 3` max-entry consequences, row-dominant transpose structural componentwise/max-entry wrappers, total-nonnegative/nonsingular Theorem 9.12 exact-LU/optimal-growth/`rho <= 1` source-existence package, structural tridiagonal growth-to-absorbed-bound wrappers for column and row dominance, optimal-growth-to-`rho <= 1` max-entry consequence, exact `f(u)`/`h(u)` source scalars, coefficient aggregation, and denominator-cleared source-shaped `h(u)` adapter exist; remaining gaps are special-class algorithmic coverage outside total nonnegativity or visible factor/certificate hypotheses, source perturbation hypotheses, rounded tridiagonal recurrence trace construction, and structural-certificate-to-trace construction |
+| Theorem 9.15, equations 9.23, 9.26-9.27 | PROVE-NOW-SPLIT | Direct Split 1 norm, condition, Holder, spectral-radius, and Frobenius gates | Algebraic perturbation identity closed; full normwise/spectral statement blocked |
 | Equations 9.8-9.9, 9.24-9.25 | CLOSED | Equation 9.9 uses available Split 1 gamma; others local | Nonnegative-factor/solve, scaling, and implicit-row-scaling declarations |
-| Problems 9.5 and 9.7 | CLOSED | No previous-split dependency | Exact 2 by 2 counterexample and submatrix counts |
-| Problem 9.11 block algebra, bounded-family `g(n)` supremum subclaims, and equation (9.12) sine-matrix finite-sum/inverse/theta support | CLOSED | No previous-split dependency | `higham9_11_flatBlockIndex`, `higham9_11_flatInnerIndex`, `higham9_11_flattenTwoBlock`, `higham9_11_flatIndexOfBlock`, `higham9_11_flatBlockIndex_flatIndexOfBlock`, `higham9_11_flatInnerIndex_flatIndexOfBlock`, `higham9_11_flattenTwoBlock_entry_flatIndexOfBlock`, `higham9_11_flattenTwoBlock_maxEntryNorm_eq_blockMaxNorm`, `higham9_11_blockInverseCandidate_left`, `higham9_11_blockInverseCandidate_right`, `higham9_11_alpha_block_eq`, `higham9_11_flatten_blockMatrix_maxEntryNorm_eq`, `higham9_11_beta_blockInv_eq`, `higham9_11_flatten_blockInverseCandidate_maxEntryNorm_eq`, `higham9_11_theta_block_eq_two_theta`, `higham9_11_sine_block_theta_candidate_ge_succ`, `higham9_11_complete_pivoting_lower_bound_from_sine_block_theta`, `higham9_completePivotGrowthSup`, `higham9_completePivotGrowth_le_sup`, `higham9_11_complete_pivoting_lower_bound_from_witness`, `higham9_11_complete_pivoting_lower_bound_from_witness_le`, `higham9_11_complete_pivoting_lower_bound_consequence_le`, `higham9_11_complete_pivoting_lower_bound_from_flattened_sine_block`, `higham9_11_complete_pivoting_lower_bound_from_flattened_sine_block_maxEntry`, `higham9_12_sineMatrix`, `higham9_12_sineMatrix_symm`, `higham9_12_sineMatrix_entry_abs_le_scale`, `higham9_12_sineMatrix_maxEntryNorm_le_scale`, `higham9_12_sineMatrix_zero_zero_pos`, `higham9_12_sineMatrix_maxEntryNorm_pos`, `higham9_12_cos_sum_even`, `higham9_12_cos_sum_odd`, `higham9_12_sine_product_sum`, `higham9_12_sineMatrix_inverse_formula`, `higham9_12_theta_ge_half_succ_of_maxEntryNorm_le_scale`, `higham9_12_two_theta_ge_succ_of_maxEntryNorm_le_scale`, `higham9_12_sineMatrix_theta_candidate_ge_half_succ`, `higham9_12_sineMatrix_two_theta_candidate_ge_succ` |
-| Problem 9.11 concrete flattened sine-block complete-pivoting witness | CLOSED | No previous-split dependency | `higham9_11_flatIndexOfBlock_flatBlockIndex_flatInnerIndex`, `higham9_11_flatBlockInner_eq_iff`, `higham9_11_flatBlockEquiv`, `higham9_11_flattenTwoBlock_matMul_entry`, `higham9_11_flattenTwoBlock_right_inverse`, `higham9_det_ne_zero_of_isRightInverse`, and `higham9_11_exists_completePivoting_sine_block_growth_ge_succ`; the trace-level source `g(2n)` lower-bound theorem is closed by `higham9_11_completePivotingUTraceGrowthSup_ge_succ`, while Wilkinson's sharp product upper-bound theorem remains separate equation (9.14) work. |
-| Problem 9.11 complete-pivoting lower-bound specialization | CLOSED | No previous-split dependency | The trace-level complete-pivoting growth-value set is bounded by `higham9_completePivotingUTraceGrowthValues_bddAbove`, the closed sine-block witness supplies a cumulative exact `PAQ = LU` complete-pivoting certificate with growth at least `n + 1`, the trace-to-certificate max-entry bridge is closed by `higham9_8_CompletePivotGECPUTrace_exists_CompletePermutedLUFactSpec_maxEntryNorm_le`, and the source-shaped trace-level lower bound is closed by `higham9_11_completePivotingUTraceGrowthSup_ge_succ`. |
-| Problem 9.13 threshold-pivoting sparse-column growth bound | CLOSED | No previous-split dependency | `higham9_13_threshold_update_abs_bound`, `higham9_13_column_growth_by_modification_count`, `higham9_13_growthFactorEntry_bound_from_column_modifications` |
-| Problem 9.8 | CLOSED | No previous-split dependency | Checkerboard sign-matrix, printed `J*A*J` product bridge, checkerboard inverse transport including the source-oriented swapped inverse direction, Schur-complement/top-left and selected-minor Jacobi identities with and without complementary-minor nonsingularity, conditional principal inverse-minor nonnegativity, arbitrary selected-minor nonsingular-complement nonnegativity with local permutation signs discharged, the full selected-minor nonnegativity theorem `higham9_8_checkerboardConjugate_nonsingInv_minor_nonneg`, cofactor-level entrywise checkerboard sign pattern for `nonsingInv`, empty-, `1 by 1`, codimension-one, full-determinant, and full-order inverse-minor wrappers, all-minor determinant scaling, adjugate inverse identity, absolute-minor preservation, LU adapter support, and the total-nonnegative-checkerboard route to nonnegative factors are closed |
-| Problem 9.14 | CLOSED | No previous-split dependency | Full selected exact-arithmetic Problem 9.14 scope is closed. Branch (a), the first §9.9 method on the original pre-pivoted matrix `A`, is closed by `higham_problem9_14_RecursiveFirstMethodTrace_of_PrePivotedGEPP`, `higham_problem9_14_exists_RecursiveFirstMethodLUFactSpec_of_PrePivotedGEPP`, and `higham_problem9_14_RecursiveFirstMethodLUFactSpec_same_as_PrePivotedGEPP`. Branch (b), pairwise pivoting with natural multiplier-bounded pivoting on `ΠA`, is closed by `higham_problem9_14_RecursivePairwiseBubbleTrace_of_PrePivotedGEPP`, `higham_problem9_14_exists_RecursivePairwiseLUFactSpec_of_PrePivotedGEPP`, and `higham_problem9_14_RecursivePairwiseLUFactSpec_same_as_PrePivotedGEPP`. The shared GEPP/no-interchange exact LU side is closed by `higham_problem9_14_PrePivotedGEPP_exists_unique_LUFactSpec` and `higham_problem9_14_PrePivotedGEPP_lu_unique`; exact-LU uniqueness provides the same `L,U` bridge. |
-| Problem 9.3 | WAIT-PREVIOUS-SPLIT | Direct | Split 1 field-of-values/norm foundation |
-| Problem 9.10 | CLOSED | No previous-split dependency | `higham_problem9_10_rankOne_blunder_solution`, `higham_problem9_10_rankOne_blunder_error`, and `higham_problem9_10_multiplier_blunder_error` prove the source rank-one multiplier-blunder formula directly from the left-inverse equation, so the prior Chapter 26 Sherman-Morrison deferral is no longer needed |
-| Problems 9.15-9.18, historical/empirical prose | SKIP | No previous-split dependency | Research, empirical, or software-description material |
+| Problems 9.5 and 9.7 | CLOSED | No integrated previous-split blocker | Exact 2 by 2 counterexample and submatrix counts |
+| Problem 9.11 block algebra, bounded-family `g(n)` supremum subclaims, and equation (9.12) sine-matrix finite-sum/inverse/theta support | CLOSED | No integrated previous-split blocker | `higham9_11_flatBlockIndex`, `higham9_11_flatInnerIndex`, `higham9_11_flattenTwoBlock`, `higham9_11_flatIndexOfBlock`, `higham9_11_flatBlockIndex_flatIndexOfBlock`, `higham9_11_flatInnerIndex_flatIndexOfBlock`, `higham9_11_flattenTwoBlock_entry_flatIndexOfBlock`, `higham9_11_flattenTwoBlock_maxEntryNorm_eq_blockMaxNorm`, `higham9_11_blockInverseCandidate_left`, `higham9_11_blockInverseCandidate_right`, `higham9_11_alpha_block_eq`, `higham9_11_flatten_blockMatrix_maxEntryNorm_eq`, `higham9_11_beta_blockInv_eq`, `higham9_11_flatten_blockInverseCandidate_maxEntryNorm_eq`, `higham9_11_theta_block_eq_two_theta`, `higham9_11_sine_block_theta_candidate_ge_succ`, `higham9_11_complete_pivoting_lower_bound_from_sine_block_theta`, `higham9_completePivotGrowthSup`, `higham9_completePivotGrowth_le_sup`, `higham9_11_complete_pivoting_lower_bound_from_witness`, `higham9_11_complete_pivoting_lower_bound_from_witness_le`, `higham9_11_complete_pivoting_lower_bound_consequence_le`, `higham9_11_complete_pivoting_lower_bound_from_flattened_sine_block`, `higham9_11_complete_pivoting_lower_bound_from_flattened_sine_block_maxEntry`, `higham9_12_sineMatrix`, `higham9_12_sineMatrix_symm`, `higham9_12_sineMatrix_entry_abs_le_scale`, `higham9_12_sineMatrix_maxEntryNorm_le_scale`, `higham9_12_sineMatrix_zero_zero_pos`, `higham9_12_sineMatrix_maxEntryNorm_pos`, `higham9_12_cos_sum_even`, `higham9_12_cos_sum_odd`, `higham9_12_sine_product_sum`, `higham9_12_sineMatrix_inverse_formula`, `higham9_12_theta_ge_half_succ_of_maxEntryNorm_le_scale`, `higham9_12_two_theta_ge_succ_of_maxEntryNorm_le_scale`, `higham9_12_sineMatrix_theta_candidate_ge_half_succ`, `higham9_12_sineMatrix_two_theta_candidate_ge_succ` |
+| Problem 9.11 concrete flattened sine-block complete-pivoting witness | CLOSED | No integrated previous-split blocker | `higham9_11_flatIndexOfBlock_flatBlockIndex_flatInnerIndex`, `higham9_11_flatBlockInner_eq_iff`, `higham9_11_flatBlockEquiv`, `higham9_11_flattenTwoBlock_matMul_entry`, `higham9_11_flattenTwoBlock_right_inverse`, `higham9_det_ne_zero_of_isRightInverse`, and `higham9_11_exists_completePivoting_sine_block_growth_ge_succ`; the trace-level source `g(2n)` lower-bound theorem is closed by `higham9_11_completePivotingUTraceGrowthSup_ge_succ`, while Wilkinson's sharp product upper-bound theorem remains separate equation (9.14) work. |
+| Problem 9.11 complete-pivoting lower-bound specialization | CLOSED | No integrated previous-split blocker | The trace-level complete-pivoting growth-value set is bounded by `higham9_completePivotingUTraceGrowthValues_bddAbove`, the closed sine-block witness supplies a cumulative exact `PAQ = LU` complete-pivoting certificate with growth at least `n + 1`, the trace-to-certificate max-entry bridge is closed by `higham9_8_CompletePivotGECPUTrace_exists_CompletePermutedLUFactSpec_maxEntryNorm_le`, and the source-shaped trace-level lower bound is closed by `higham9_11_completePivotingUTraceGrowthSup_ge_succ`. |
+| Problem 9.13 threshold-pivoting sparse-column growth bound | CLOSED | No integrated previous-split blocker | `higham9_13_threshold_update_abs_bound`, `higham9_13_column_growth_by_modification_count`, `higham9_13_growthFactorEntry_bound_from_column_modifications` |
+| Problem 9.8 | CLOSED | No integrated previous-split blocker | Checkerboard sign-matrix, printed `J*A*J` product bridge, checkerboard inverse transport including the source-oriented swapped inverse direction, Schur-complement/top-left and selected-minor Jacobi identities with and without complementary-minor nonsingularity, conditional principal inverse-minor nonnegativity, arbitrary selected-minor nonsingular-complement nonnegativity with local permutation signs discharged, the full selected-minor nonnegativity theorem `higham9_8_checkerboardConjugate_nonsingInv_minor_nonneg`, cofactor-level entrywise checkerboard sign pattern for `nonsingInv`, empty-, `1 by 1`, codimension-one, full-determinant, and full-order inverse-minor wrappers, all-minor determinant scaling, adjugate inverse identity, absolute-minor preservation, LU adapter support, and the total-nonnegative-checkerboard route to nonnegative factors are closed |
+| Problem 9.14 | CLOSED | No integrated previous-split blocker | Full selected exact-arithmetic Problem 9.14 scope is closed. Branch (a), the first §9.9 method on the original pre-pivoted matrix `A`, is closed by `higham_problem9_14_RecursiveFirstMethodTrace_of_PrePivotedGEPP`, `higham_problem9_14_exists_RecursiveFirstMethodLUFactSpec_of_PrePivotedGEPP`, and `higham_problem9_14_RecursiveFirstMethodLUFactSpec_same_as_PrePivotedGEPP`. Branch (b), pairwise pivoting with natural multiplier-bounded pivoting on `ΠA`, is closed by `higham_problem9_14_RecursivePairwiseBubbleTrace_of_PrePivotedGEPP`, `higham_problem9_14_exists_RecursivePairwiseLUFactSpec_of_PrePivotedGEPP`, and `higham_problem9_14_RecursivePairwiseLUFactSpec_same_as_PrePivotedGEPP`. The shared GEPP/no-interchange exact LU side is closed by `higham_problem9_14_PrePivotedGEPP_exists_unique_LUFactSpec` and `higham_problem9_14_PrePivotedGEPP_lu_unique`; exact-LU uniqueness provides the same `L,U` bridge. |
+| Problem 9.3 | PROVE-NOW-SPLIT | Direct | Split 1 field-of-values/norm foundation |
+| Problem 9.10 | CLOSED | No integrated previous-split blocker | `higham_problem9_10_rankOne_blunder_solution`, `higham_problem9_10_rankOne_blunder_error`, and `higham_problem9_10_multiplier_blunder_error` prove the source rank-one multiplier-blunder formula directly from the left-inverse equation, so the prior Chapter 26 Sherman-Morrison deferral is no longer needed |
+| Problems 9.15-9.18, historical/empirical prose | SKIP | No integrated previous-split blocker | Research, empirical, or software-description material |
 | Rank-revealing LU prose in Section 9.12 | DEFER-LATER-SPLIT | Later deferred block also has Split 1 norm/SVD gates | Belongs with later rank-revealing factorization work |
 
 #### Chapter 9 Proof-Source Bottlenecks
@@ -214,50 +1255,55 @@ target is closed by `higham9_8_selectionComplementEquiv_perm_sign`. Problem
 
 | Source item | Classification | Previous-split dependency | Lean declaration or blocker |
 | --- | --- | --- | --- |
-| Theorem 10.1 and equations 10.1-10.3 | CLOSED | No previous-split dependency | `higham10_1_cholesky_existence`, `higham10_1_cholesky_uniqueness` |
-| Section 10.1 Cholesky `A = L D L^T` rewrite | CLOSED | No previous-split dependency | `higham10_1_choleskyLDLTLower`, `higham10_1_choleskyLDLTDiagonal`, `higham10_1_cholesky_to_ldlt` |
-| Algorithm 10.2 and Theorems 10.3-10.4 | WAIT-PREVIOUS-SPLIT | Direct Split 1 rounding/gamma/sqrt gate | Certificate consequences exist; concrete `fl_cholesky` generation open |
-| Theorems 10.5-10.8 | WAIT-PREVIOUS-SPLIT | Direct or indirect Split 1 norm/eigenvalue/condition/gamma gates | Interfaces only |
-| Theorem 10.9(a) | CLOSED | No previous-split dependency | `higham10_9_psd_cholesky_existence` |
-| Theorem 10.9(b), Lemmas 10.10-10.13, Theorem 10.14 | WAIT-PREVIOUS-SPLIT | Direct or indirect Split 1 rank/SVD/norm/asymptotic/eigenvalue gates | Interfaces/predicates only |
-| Equations 10.4-10.11, 10.13, 10.16-10.25, 10.29 | WAIT-PREVIOUS-SPLIT | Direct or indirect Split 1 gates | See Chapter 10 report |
-| Equations 10.12, 10.14-10.15, 10.26-10.28 criteria, 10.30 class definition | CLOSED for exact definitions/criteria | No unresolved previous-split blocker for the recorded surfaces | `higham10_12_outerProductResidual`, `higham10_14_schurComplement`, stopping criteria, class definitions |
-| Problems 10.1, 10.4, 10.8 witness | CLOSED | No previous-split dependency | SPD max-entry, exact unpivoted GE growth, and concrete non-PSD witness |
-| Problems 10.3, 10.5-10.7, 10.8 general criterion, 10.9, 10.11 | WAIT-PREVIOUS-SPLIT | Direct or indirect Split 1 gates | Rounding, rank/SVD, norm, complex/Hermitian, or Schur/rank blockers |
-| Problems 10.2, 10.10, 10.12; software/empirical prose | SKIP | No previous-split dependency | Computational recipe, explanatory diagnosis, or research prompt |
+| Theorem 10.1 and equations 10.1-10.3 | CLOSED | No integrated previous-split blocker | `higham10_1_cholesky_existence`, `higham10_1_cholesky_uniqueness` |
+| Section 10.1 Cholesky `A = L D L^T` rewrite | CLOSED | No integrated previous-split blocker | `higham10_1_choleskyLDLTLower`, `higham10_1_choleskyLDLTDiagonal`, `higham10_1_cholesky_to_ldlt` |
+| Algorithm 10.2 and Theorems 10.3-10.4 | PROVE-NOW-SPLIT | Direct Split 1 rounding/gamma/sqrt gate | Certificate consequences exist; concrete `fl_cholesky` generation open |
+| Theorems 10.5-10.8 | PROVE-NOW-SPLIT | Direct or indirect Split 1 norm/eigenvalue/condition/gamma gates | Interfaces only |
+| Theorem 10.9(a) | CLOSED | No integrated previous-split blocker | `higham10_9_psd_cholesky_existence` |
+| Theorem 10.9(b), Lemmas 10.10-10.13, Theorem 10.14 | PROVE-NOW-SPLIT | Direct or indirect Split 1 rank/SVD/norm/asymptotic/eigenvalue gates | Interfaces/predicates only |
+| Equations 10.4-10.11, 10.13, 10.16-10.25, 10.29 | PROVE-NOW-SPLIT | Direct or indirect Split 1 gates | See Chapter 10 report |
+| Equations 10.12, 10.14-10.15, 10.26-10.28 criteria, 10.30 class definition | CLOSED for exact definitions/criteria | No unresolved integrated Split 1 blocker for the recorded surfaces | `higham10_12_outerProductResidual`, `higham10_14_schurComplement`, stopping criteria, class definitions |
+| Problems 10.1, 10.4, 10.8 witness | CLOSED | No integrated previous-split blocker | SPD max-entry, exact unpivoted GE growth, and concrete non-PSD witness |
+| Problems 10.3, 10.5-10.7, 10.8 general criterion, 10.9, 10.11 | PROVE-NOW-SPLIT | Direct or indirect Split 1 gates | Rounding, rank/SVD, norm, complex/Hermitian, or Schur/rank blockers |
+| Problems 10.2, 10.10, 10.12; software/empirical prose | SKIP | No integrated previous-split blocker | Computational recipe, explanatory diagnosis, or research prompt |
 
 ### Chapter 11
 
 | Source item | Classification | Previous-split dependency | Lean declaration or blocker |
 | --- | --- | --- | --- |
-| Block LDLT specs, equations 11.1-11.4, 11.6, 11.8, 11.10-11.16 exact/spec rows | CLOSED | No previous-split dependency | `higham11_1_BlockLDLTSpec`, Schur/Aasen/skew specs, exact examples |
-| Algorithms 11.1, 11.2, 11.5, 11.6, 11.9 first-stage decision predicates | CLOSED | No previous-split dependency | Bunch-Parlett, Bunch-Kaufman, rook, tridiagonal, and skew pivot predicates |
-| Intro eigenvalue/inertia prose, footnote inertia, skew spectral rows | WAIT-PREVIOUS-SPLIT | Direct Split 1 spectral/eigenvalue/inertia gate | Spectral foundation not duplicated locally |
-| Growth/stability rows for Theorems 11.3, 11.4, 11.7, 11.8 and equations 11.5, 11.7, 11.9 | WAIT-PREVIOUS-SPLIT | Direct or indirect Split 1 FP/gamma/norm/growth gates | Interfaces only; rounded pivot loops and growth traces open |
-| Problems 11.1, 11.2 determinant/inverse subclaims, 11.3, 11.4 no-2-by-2 SPD pivot subclaim, 11.7 SPD no-interchange algebra, 11.8, 11.9(a), 11.9(c) | CLOSED | No unresolved previous-split blocker | New and reused Chapter 11 exact proofs |
-| Problems 11.2 inertia subclaim, 11.4 full outcome, 11.5, 11.7 growth subclaim, 11.9(b) | WAIT-PREVIOUS-SPLIT | Direct or indirect Split 1 spectral, FP, norm, determinant/rank, or LU-existence gates | Not redefined locally |
-| Problems 11.6, 11.10, historical/software/empirical prose | SKIP | No previous-split dependency | Cost-model/benchmark, research, or expository material |
+| Block LDLT specs, equations 11.1-11.4, 11.6, 11.8, 11.10-11.16 exact/spec rows | CLOSED | No integrated previous-split blocker | `higham11_1_BlockLDLTSpec`, Schur/Aasen/skew specs, exact examples |
+| Algorithms 11.1, 11.2, 11.5, 11.6, 11.9 first-stage decision predicates | CLOSED | No integrated previous-split blocker | Bunch-Parlett, Bunch-Kaufman, rook, tridiagonal, and skew pivot predicates |
+| Intro eigenvalue/inertia prose, footnote inertia, skew spectral rows | PROVE-NOW-SPLIT | Direct Split 1 spectral/eigenvalue/inertia gate | Spectral foundation not duplicated locally |
+| Growth/stability rows for Theorems 11.3, 11.4, 11.7, 11.8 and equations 11.5, 11.7, 11.9 | PROVE-NOW-SPLIT | Direct or indirect Split 1 FP/gamma/norm/growth gates | Interfaces only; rounded pivot loops and growth traces open |
+| Problems 11.1, 11.2 determinant/inverse subclaims, 11.3, 11.4 no-2-by-2 SPD pivot subclaim, 11.7 SPD no-interchange algebra, 11.8, 11.9(a), 11.9(c) | CLOSED | No unresolved integrated Split 1 blocker | New and reused Chapter 11 exact proofs |
+| Problems 11.2 inertia subclaim, 11.4 full outcome, 11.5, 11.7 growth subclaim, 11.9(b) | PROVE-NOW-SPLIT | Direct or indirect Split 1 spectral, FP, norm, determinant/rank, or LU-existence gates | Not redefined locally |
+| Problems 11.6, 11.10, historical/software/empirical prose | SKIP | No integrated previous-split blocker | Cost-model/benchmark, research, or expository material |
 
 ### Chapter 12
 
 | Source item | Classification | Previous-split dependency | Lean declaration or blocker |
 | --- | --- | --- | --- |
-| Abstract refinement steps, equations 12.1-12.2, 12.7-12.8, 12.11-12.14, 12.17-12.19 exact variants, scaling sigma definition | CLOSED | No previous-split dependency | `higham12_*` one-step, residual, update, and coefficient declarations |
-| Equation 12.6 | CLOSED | No previous-split dependency; uses available Chapter 9/Split 2 result | Reuses `higham9_4_lu_solve_backward_error` shape |
+| Abstract refinement steps, equations 12.1-12.2, 12.7-12.8, 12.11-12.14, 12.17-12.19 exact variants, scaling sigma definition | CLOSED | No integrated previous-split blocker | `higham12_*` one-step, residual, update, and coefficient declarations |
+| Equation 12.6 | CLOSED | No integrated previous-split blocker; uses available Chapter 9/Split 2 result | Reuses `higham9_4_lu_solve_backward_error` shape |
 | Equation 12.9 | CLOSED | Direct reliance on available Split 1 gamma/matvec result | `higham12_9_conventional_residual_error` |
-| Theorem 12.3 exact core and equation 12.14 | CLOSED for exact non-asymptotic bound; SKIP for `q=O(u)` prose | No previous-split dependency for exact bound | `higham12_3_exact_one_step_residual_bound`, `higham12_14_residual_identity`, `higham12_14_residual_bound` |
+| Theorem 12.3 exact core and equation 12.14 | CLOSED for exact non-asymptotic bound; SKIP for `q=O(u)` prose | No integrated previous-split blocker for exact bound | `higham12_3_exact_one_step_residual_bound`, `higham12_14_residual_identity`, `higham12_14_residual_bound` |
 | Theorem 12.4 conditional conclusion and equation 12.22 exact consequence | CLOSED for explicit dominance hypothesis | Full source condition has indirect Split 1 inverse/norm/Neumann gate | `higham12_4_conditional_two_gamma_bound` |
-| Equations 12.3-12.5, 12.15, 12.20-12.21, full Theorem 12.4 sufficient condition | WAIT-PREVIOUS-SPLIT | Direct or indirect Split 1 inverse/norm/Neumann/asymptotic gates | Resolver/product forms closed only as conditional subclaims |
+| Equations 12.3-12.5, 12.15, 12.20-12.21, full Theorem 12.4 sufficient condition | PROVE-NOW-SPLIT | Direct or indirect Split 1 inverse/norm/Neumann/asymptotic gates | Resolver/product forms closed only as conditional subclaims |
 | Full Theorems 12.1-12.2, equation 12.10 asymptotic part, equation 12.16, Problem 12.2, tables, empirical/prose rows | SKIP | Some rows would acquire indirect Split 1 gates if made precise | Approximate/asymptotic/empirical or underspecified source wording |
-| Problem 12.1 | CLOSED | No previous-split dependency | `higham12_problem_12_1_square` with recorded square-compatible modeling correction |
-| Problem 12.4 | DEFER-LATER-SPLIT | No previous-split dependency; direct later-split dependency | Destination Split 3 / Chapter 13 fast multiplication equation |
-| Problems 12.3 and 12.5 | SKIP | No previous-split dependency | Empirical investigation and explicit research problem |
+| Problem 12.1 | CLOSED | No integrated previous-split blocker | `higham12_problem_12_1_square` with recorded square-compatible modeling correction |
+| Problem 12.4 | DEFER-LATER-SPLIT | No integrated previous-split blocker; direct later-split dependency | Destination Split 3 / Chapter 13 fast multiplication equation |
+| Problems 12.3 and 12.5 | SKIP | No integrated previous-split blocker | Empirical investigation and explicit research problem |
 
 ## 1. Formalized End-To-End Without Unresolved Previous-Split Blocking
 
 | Chapter/source item | Lean declaration(s) | File path | Newly proved or reused | Genuine proof confirmation |
 | --- | --- | --- | --- | --- |
-| Chapter 7 closed infinity/componentwise perturbation rows, Lemma 7.9, Problems 7.1, 7.2, 7.7, 7.8 | Chapter 7 declarations listed in `chapter7_formalization_report.md` | `LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | Reused and newly proved in earlier Split 2 passes | Genuine row-sum, Oettli-Prager, Rigal-Gaches, resolvent, residual, and Frobenius proofs; full arbitrary-norm rows remain visible as blockers |
+| Chapter 7 closed infinity/componentwise perturbation rows, Lemma 7.9, Problems 7.1, 7.2, 7.4, 7.6, 7.7, 7.8, equations `(7.20)`-`(7.21)` `p = 2` dependency, Theorem 7.5 `p = 1` pairwise/`sInf` column-scaling specialization, Theorem 7.5 `p = 2` pairwise/`sInf` column-scaling condition-product specialization, Theorem 7.5 `p = ∞` pairwise/`sInf` row-scaling specialization, Theorem 7.7, Problem 7.9 finite first-order/lower-bound/normwise rows plus exact componentwise and normwise source-radius `sSup`, Problem 7.10(a)-(c) Bauer algebraic, inverse-transport, absolute-value core, positive-entry irreducibility adapter, one-norm transpose branch, fixed-scaling 2-norm interpolation step, and conditional `sInf` upper-bound packaging, Problem 7.11 finite/exact/asymptotic-bridge, inverse-bound, local-inverse-family, and source-radius `sSup` rows, and equation (7.26) | Chapter 7 declarations listed in `chapter7_formalization_report.md`, including `problem7_4_unitDiagonal_finitePSD_condition_bounds`, `eq_7_20_rectOpNorm2Le_of_column_bound`, `eq_7_21_rectOpNorm2Le_column_equilibrated`, `ch7OneNormRightScaledCondSet`, `eq_7_21_oneNormRect_column_equilibrated`, `eq_7_22_oneNormRect_inverseSide_bound`, `theorem7_5_p1_column_equilibration_le_right_scaling`, `theorem7_5_p1_column_equilibration_sInf_eq_right_scalings`, `ch7Op2RightScaledCondSet`, `theorem7_5_p2_column_equilibration_le_sqrt_card_sInf_right_scalings`, `ch7InfNormLeftScaledCondSet`, `eq_7_19_infNormRect_row_equilibrated`, `eq_7_19_infNormRect_inverseSide_bound`, `theorem7_5_pinf_row_equilibration_le_left_scaling`, `theorem7_5_pinf_row_equilibration_sInf_eq_left_scalings`, `problem7_6a_rowwise_data_condition_bounds`, `problem7_6b_columnwise_data_condition_bounds`, `theorem7_7_stewart_sun_frobenius_scaling_of_left_inverse`, `problem7_10a_scaled_infCond_ge_perron_of_positive_eigenvector`, `ch7_bauer_Cx_eigenvector_CB`, `problem7_10a_canonical_scaled_infCond_eq_perron_of_positive_eigenvector`, `problem7_10a_positive_entries_canonical_scaled_infCond_eq_perron`, `ch7TwoSidedScale_isInverse`, `ch7TwoSidedScaledInfKappa_eq_kappaInf_of_inverse`, `ch7TwoSidedScaledInfKappa_eq_abs_scaledInfCond`, `problem7_10b_scaled_infKappa_ge_perron_of_abs_inverse_positive_eigenvector`, `problem7_10b_canonical_scaled_infKappa_eq_perron_of_abs_inverse_positive_eigenvector`, `problem7_10b_positive_abs_entries_canonical_scaled_infKappa_eq_perron`, `ch7_matrix_isPrimitive_of_pos_entries`, `ch7_matrix_isIrreducible_of_pos_entries`, `ch7_matMul_pos_of_pos`, `ch7_bauer_positive_products_irreducible`, `problem7_10b_positive_abs_entries_products_irreducible`, `problem7_10e_positive_abs_entries_canonical_scaled_oneKappa_eq_perron_of_transpose`, `problem7_10e_complexMatrixOp2_realRectToCMatrix_le_sqrt_one_mul_inf`, `problem7_10e_scaled_op2Kappa_le_sqrt_oneKappa_mul_infKappa`, `problem7_10e_scaled_op2Kappa_le_of_one_inf_bounds`, `ch7TwoSidedScaledOp2Kappa_mem_set`, `problem7_10e_twoSidedScaledOp2Kappa_sInf_le_of_one_inf_bounds`, `problem7_9_linearized_componentwise_functional_formula`, `problem7_9_linearized_componentwise_functional_ge_one_of_abs_matrix`, `problem7_9_linearized_componentwise_functional_ge_one_of_abs_rhs`, `problem7_9_linearized_normwise_functional_formula`, `problem7_9_componentwise_exact_radiusSup_tendsto_linearized`, `problem7_9_componentwise_exact_condition_of_positive_radii`, `problem7_9_normwise_exact_radiusSup_tendsto_linearized`, `problem7_9_normwise_exact_condition_of_positive_radii`, `problem7_11_linearized_inverse_componentwise_formula`, `problem7_11_exact_inverse_firstOrder_remainder_identity`, `problem7_11_exact_inverse_relative_change_max_div_tendsto_linearized_of_componentwise_tendsto_zero`, `Ch7InverseComponentwiseRadiusSet`, `ch7InverseComponentwiseRadiusSup`, `ch7InverseComponentwiseRadiusSet_value_le`, `exists_ch7InverseComponentwiseRadiusSet_lower_witness`, `problem7_11_inverse_componentwise_radiusSup_tendsto_linearized`, and `problem7_11_inverse_componentwise_condition_of_positive_radii` | `LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | Reused and newly proved in earlier Split 2 passes and this continuation | Genuine row-sum, Oettli-Prager, Rigal-Gaches, resolvent, residual, finite-PSD/unit-diagonal, Frobenius/cardinality column-equilibration, finite one-norm column scaling and inverse-side diagonal algebra plus exact specialized `sInf` packaging, finite operator-2 column scaling plus `sqrt(n)` specialized `sInf` packaging, finite infinity-norm row scaling and inverse-side diagonal algebra plus exact specialized `sInf` packaging, Stewart-Sun diagonal scaling, Bauer two-sided diagonal scaling algebra under a positive Perron certificate, Bauer inverse-scaled inverse transport to repository `kappaInf`, Bauer absolute-value scaled-`κ∞` reduction for `B = |A|`, `C = |A⁻¹|`, positive-entry product irreducibility through Mathlib primitive/irreducible matrices, `CB(Cx)` eigenvector algebra, one-norm transpose Bauer reduction, fixed-scaling 2-norm interpolation and conditional `sInf` upper-bound packaging through integrated complex `p`-norm APIs and existing op-2 value-set infrastructure, relative-data, scalar-output sign-attainment/lower-bound/normwise first-order, scalar-output exact componentwise and normwise perturbed-solution/remainder/radius-sup squeeze, inverse finite sign-attainment, exact inverse perturbation/remainder, finite quadratic upper/lower-envelope, lower-witness perturbation, finite-radius bounded-remainder, conditional asymptotic-vanishing, exact-to-linearized squeeze bridge, entrywise/infinity-norm bounded-inverse adapters, constructed local inverse-family proof, source-radius supremum squeeze proof, and integrated relative singular-distance/condition-number proofs; remaining blockers are full SVD/Moore-Penrose/projection/general-`p` minimization, Perron-Frobenius positive-vector existence from irreducibility, spectral-radius identification, Bauer variants (c)-(d) beyond the algebraic `CB(Cx)` transfer, and proof that the compatible common Bauer scaling exists at the source spectral-radius value |
+| Chapter 7 Theorem 7.5 explicit-`Aplus` `sInf` wrappers for `p = 1`, `p = 2`, and `p = ∞` | `ch7OneNormRightScaledCondSet`, `theorem7_5_p1_column_equilibration_sInf_eq_right_scalings`, `ch7Op2RightScaledCondSet`, `ch7Op2RightScaledCondSet_nonempty`, `ch7Op2RightScaledCondSet_bddBelow`, `theorem7_5_p2_column_equilibration_le_sqrt_card_sInf_right_scalings`, `ch7InfNormLeftScaledCondSet`, `theorem7_5_pinf_row_equilibration_sInf_eq_left_scalings` | `LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | Newly proved in this continuation | Genuine `sInf` packaging over reciprocal diagonal scaling value sets: the p=1 and p=∞ equilibrating values are proved to equal the infimum of the specialized explicit condition-product sets, and the p=2 pairwise theorem is lifted to `κ₂(AD_C) <= sqrt(n) * sInf` using nonemptiness, lower-boundedness, and `le_csInf`. This does not assert Moore-Penrose existence, projection properties, or the full general-`p` source theorem |
+| Chapter 7 Theorem 7.5 / equation `(7.19)`, finite-real conjugate-row `p` proof-route specialization | `ch7RectRowDualLpNormOfReal`, `ch7RectRowDualLpNormOfReal_nonneg`, `ch7RowDualEquilibratingScaleLpOfReal`, `ch7RectRowDualLpNormOfReal_leftScale`, `ch7RectRowDualLpNormOfReal_leftScale_equilibrating`, `eq_7_19_matrixLpNormOfReal_dual_row_equilibrated`, `eq_7_19_matrixLpNormOfReal_dual_row_inverseSide_bound`, `ch7LpLeftScaledCondOfReal`, `ch7LpLeftScaledCondSetOfReal`, `ch7LpLeftScaledCondOfReal_nonneg`, `ch7LpLeftScaledCondOfReal_mem_set`, `ch7LpLeftScaledCondSetOfReal_nonempty`, `theorem7_5_lp_dual_row_equilibration_le_card_rpow_left_scaling`, `theorem7_5_lp_dual_row_equilibration_le_card_rpow_sInf_left_scalings` | `LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | Newly proved in this continuation | Genuine finite-real `Lp` proof: the row-equilibrating scale is measured in the Holder-conjugate row norm, the source transpose identity gives the `(7.19)` proof route, the explicit inverse side is bounded for `Aplus D^{-1}`, and the pairwise theorem is lifted to `sInf` over reciprocal left-scalings.  The proof deliberately does not assert Moore-Penrose existence/projection, source `min` attainment, or the printed `p`-row-scale statement until that source-facing reconciliation is packaged. |
+| Chapter 7 Theorem 7.5 finite-real `p` explicit-`Aplus` `(7.18)`/`(7.22)` wrapper | `complexMatrixLpNormOfReal_mul_le`, `ch7_complexVecLpNormOfReal_diagScale_le_of_norm_le`, `eq_7_22_matrixLpNormOfReal_inverseSide_bound`, `ch7LpRightScaledCondOfReal`, `ch7LpRightScaledCondSetOfReal`, `theorem7_5_lp_column_equilibration_le_card_rpow_right_scaling`, `theorem7_5_lp_column_equilibration_le_card_rpow_sInf_right_scalings` | `LeanFpAnalysis/FP/Analysis/Norms.lean`; `LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | Newly proved in this continuation | Genuine finite-real `Lp` proof: subordinate composition gives the reusable matrix `p`-norm multiplication wrapper, coordinatewise monotonicity gives the diagonal multiplier bound, `(7.20)` for `AD` and the reciprocal diagonal relation prove `(7.22)`, and the pairwise inequality is packaged as an `sInf` bound over reciprocal right-scalings. This still keeps Moore-Penrose existence/projection and source minimizer attainment out of the theorem surface |
+| Chapter 7 Corollary 7.6 / equation (7.23), explicit inverse-Gram `sInf` model | `ch7SymmetricDiagEquilibratingScale2`, `ch7SymmetricDiagEquilibratingInvScale2`, `corollary7_6_cholesky_diag_eq_column_norm_sq`, `corollary7_6_cholesky_diag_invScale_eq_column_norm`, `corollary7_6_cholesky_diag_scale_eq_column_equilibrating`, `corollary7_6_cholesky_column_norm_pos`, `corollary7_6_cholesky_factor_column_equilibrated`, `corollary7_6_cholesky_factor_op2Le_sqrt_card`, `corollary7_6_cholesky_factor_column_scaling_le_sqrt_card_sInf_right_scalings`, `ch7SymmetricOp2ScaledCond`, `ch7SymmetricOp2ScaledCondSet`, `ch7SymmetricOp2ScaledCond_mem_set`, `ch7SymmetricOp2ScaledCondSet_nonempty`, `ch7SymmetricOp2ScaledCond_nonneg`, `ch7SymmetricOp2ScaledCondSet_bddBelow`, `ch7CholeskyInverseGram`, `corollary7_6_cholesky_scaled_gram_eq`, `corollary7_6_cholesky_scaled_inverse_gram_eq`, `corollary7_6_cholesky_scaled_cond_eq_factor_cond_sq`, `ch7Op2RightScaledCondSet_sInf_nonneg`, `corollary7_6_cholesky_scaled_cond_le_card_sInf_right_scalings_sq`, `corollary7_6_cholesky_right_sInf_sq_le_symmetric_sInf`, `corollary7_6_cholesky_scaled_cond_le_card_sInf_symmetric_scalings`, `corollary7_6_cholesky_inverse_gram_isInverse`, `corollary7_6_cholesky_scaled_inverse_gram_isInverse` | `LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | Newly proved in this continuation | Genuine Lean proof: the Gram diagonal identity gives `a_jj = ‖R(:,j)‖₂²`, positivity identifies `sqrt(a_jj)` with `‖R(:,j)‖₂`, the source scale `D* = diag(a_jj^{-1/2})` is proved equal to the column-equilibrating scale for `R`, and the closed p=2 Theorem 7.5 `sInf` wrapper is instantiated for the Cholesky factor. The inverse-side proof shows `Rinv Rinvᵀ` inverts `RᵀR` and transports that certificate to `DAD`; the operator-2 bridge proves the scaled SPD condition product equals the square of the Cholesky-factor product; the squared factor-infimum theorem combines these with nonnegative `sInf` arithmetic; and the new symmetric value-set transfer proves the final `κ₂(D*AD*) <= n * sInf {κ₂(DAD)}` statement without assuming the Corollary 7.6 conclusion or asserting minimizer attainment |
+| Chapter 7 Problem 7.15 reciprocal scaling invariance of `A ∘ A^{-T}`, Horn-Johnson operator-2 certificate, scaled inverse-partner bound, and nonsingular diagonal attainability | `ch7HadamardProduct`, `ch7_matTranspose_twoSidedScale`, `ch7HadamardProduct_twoSidedScale_transpose_inverse_eq`, `problem7_15_twoSidedScale_hadamard_transpose_inverse_invariant`, `opNorm2Le_transpose`, `problem7_15_transpose_inverse_partner_opNorm2Le`, `frobNormRect_diagMatrix`, `vecNorm2_diagonal_le_frobNormRect`, `matMulVec_hadamard_eq_diag_rectMatMul_diag_transpose`, `opNorm2Le_hadamard`, `problem7_15_hornJohnson_hadamard_opNorm2Le`, `problem7_15_scaled_inverse_hadamard_opNorm2Le`, `problem7_15_complexMatrixOp2_realRectToCMatrix_orthogonal_eq_one`, `problem7_15_diagonal_hadamard_op2_eq_one`, `problem7_15_diagonal_attaining_scaling_eq_hadamard_op2`, `problem7_15_diagonal_twoSidedScaledOp2Kappa_sInf_eq_one`, `problem7_15_diagonal_twoSidedScaledOp2Kappa_isLeast_one` | `LeanFpAnalysis/FP/Analysis/HighamChapter7.lean`, `LeanFpAnalysis/FP/Analysis/MatrixAlgebra.lean` | Newly proved in this continuation | Genuine Lean proof that compatible reciprocal two-sided diagonal scalings preserve the Hadamard product with the transpose inverse, that the real Euclidean operator-2 certificate is preserved by transpose for the inverse-scaled partner, and that the Horn-Johnson Schur-product operator-2 certificate follows from diagonal compression plus the Frobenius triple-product bound. The exact op-2 `sInf` lower-bound packaging is closed, and Appendix A.7.15's nonsingular diagonal equality case is closed by positive absolute-value scaling to orthogonal sign-diagonal factors |
 | Chapter 8 closed triangular solve/comparison rows and Problem 8.8(a) | Chapter 8 declarations listed in `chapter8_formalization_report.md` | `LeanFpAnalysis/FP/Algorithms/HighamChapter8.lean` and supporting triangular modules | Reused and newly proved in earlier Split 2 passes | Genuine fixed-order triangular solve, comparison-matrix, M-matrix, recurrence, and rank-one singular update proofs |
 | Chapter 9 Section 9.1 first-stage pivot predicates and multiplier bounds | `higham9_1_partialPivotChoice`, `higham9_1_completePivotChoice`, `higham9_1_rookPivotChoice`, `higham9_1_partialPivot_multiplier_abs_le_one`, `higham9_1_completePivot_column_multiplier_abs_le_one`, `higham9_1_completePivot_active_entry_ratio_abs_le_one`, `higham9_1_rookPivot_column_multiplier_abs_le_one`, `higham9_1_rookPivot_row_multiplier_abs_le_one` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | Newly proved in this unifying pass and this continuation | Maximality plus nonzero pivot denominator proves the multiplier and active-entry ratio inequalities directly |
 | Chapter 9 Section 9.1 finite active-set pivot-choice existence | `higham9_1_exists_partialPivotChoice`, `higham9_1_exists_completePivotChoice`, `higham9_1_rookPivotChoice_of_completePivotChoice`, `higham9_1_exists_rookPivotChoice` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | Newly proved in this continuation | Finite maxima over the active column/submatrix produce partial and complete pivot choices; complete-pivot maxima imply accepted rook pivots. This is not a full pivot-trace construction |
@@ -266,19 +1312,20 @@ target is closed by `higham9_8_selectionComplementEquiv_perm_sign`. Problem
 | Chapter 9 equation (9.1) determinant-pivot product for exact LU | `LUFactSpec.det_eq_prod_U_diag`, `LUFactSpec.det_ne_zero_iff_U_diag_ne_zero`, `higham9_1_det_eq_pivot_product`, `higham9_1_det_ne_zero_iff_pivots_ne_zero` | `LeanFpAnalysis/FP/Algorithms/LU/GaussianElimination.lean`, `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | Newly proved in this continuation | Mathlib determinant multiplicativity and triangular determinant formulas prove `det(A) = prod_i u_ii` from the repository `LUFactSpec`; no LU existence theorem is assumed |
 | Chapter 9 Theorem 9.1 / Problems 9.1-9.2 leading-principal determinant-pivot support, first Schur-complement LU construction step, proper Schur determinant inheritance, exact LU existence/uniqueness iff, and Problem 9.1 converse | `higham9_1_firstSchurComplement`, `higham9_1_lu_exists_of_firstSchurComplement`, `higham9_1_firstSchurComplement_properLeadingPrincipalBlock_det_ne_zero`, `higham9_1_lu_exists_of_properLeadingPrincipalBlock_det_ne_zero`, `higham9_1_leadingPrincipalBlock_det_eq_pivot_product`, `higham9_1_leadingPrincipalBlock_det_ne_zero_iff_pivots_ne_zero`, `higham9_1_lu_unique_of_proper_pivots_ne_zero`, `higham9_1_lu_unique_of_properLeadingPrincipalBlock_det_ne_zero`, `higham9_1_lu_exists_and_unique_of_properLeadingPrincipalBlock_det_ne_zero`, `higham9_1_lu_nonunique_of_zero_proper_pivot`, `higham_problem9_1_properLeadingPrincipalBlock_det_ne_zero_of_unique_lu`, `higham9_1_lu_exists_unique_iff_properLeadingPrincipalBlock_det_ne_zero` | `LeanFpAnalysis/FP/Algorithms/LU/GaussianElimination.lean`, `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | Source-strength Schur determinant inheritance, determinant-integrated exact-LU existence/uniqueness, and singular unique-LU converse newly proved in this continuation; earlier exact-certificate determinant support reused | The one-step theorem constructs explicit full `L,U` from a nonzero pivot and an exact LU certificate for the first Schur complement; the proper determinant inheritance theorem proves the Schur complement recursively has nonzero proper leading principal determinants; induction gives exact LU existence from Higham's `k = 1 : n-1` hypotheses; uniqueness proceeds from proper nonzero pivots and triangularity in the final column; the converse uses a lower-shear construction showing a zero proper pivot yields a distinct exact LU certificate |
 | Chapter 9 Problem 9.2 finite-exception shifted-matrix LU theorem | `higham9_2_shiftedMatrix`, `higham9_2_shiftedMatrixDangerSet`, `higham9_2_shiftedMatrixDangerSet_card_le`, `higham9_2_shiftedMatrix_properLeadingPrincipalBlock_det_ne_zero_of_not_mem_danger`, `higham9_2_shiftedMatrix_lu_exists_unique_of_not_mem_danger`, `higham_problem9_2_shiftedMatrix_lu_exists_unique_except_card_bound` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | Newly proved in this continuation | The danger set is the finite union of characteristic-polynomial danger sets for proper leading blocks, its cardinality is bounded by `n(n-1)/2`, avoiding it proves every proper shifted leading determinant is nonzero, and the closed Theorem 9.1 proper-leading-minor criterion supplies unique exact no-pivot LU for `sigma I - A`; no Split 1 result or hidden LU certificate is assumed |
-| Chapter 9 equations (9.2a)--(9.2b) and Theorem 9.3 permuted LU certificate adapters | `higham9_2_rowPermutedMatrix`, `higham9_2_PermutedLUFactSpec`, `higham9_2_permutedLUFactSpec_to_LUFactSpec`, `higham9_2_PermutedLUBackwardError`, `higham9_2_permutedLUBackwardError_to_LUBackwardError`, `higham9_3_permuted_lu_backward_error_gamma`, `higham9_2_colPermutedMatrix`, `higham9_2_rowColPermutedMatrix`, `higham9_2_CompletePermutedLUFactSpec`, `higham9_2_completePermutedLUFactSpec_to_LUFactSpec`, `higham9_2_CompletePermutedLUBackwardError`, `higham9_2_completePermutedLUBackwardError_to_LUBackwardError`, `higham9_3_complete_permuted_lu_backward_error_gamma` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | Newly proved in this continuation | Models the source `PA` entries as `A (sigma i) j` and `PAQ` entries as `A (sigma i) (tau j)`, converts explicit permuted LU and backward-error certificates to the existing unpermuted LU APIs for the corresponding permuted matrix, and applies the compiled `gamma_n` perturbation theorem; no pivot or complete-pivoting trace is assumed |
+| Chapter 9 equations (9.2a)--(9.2b) and Theorem 9.3 permuted LU certificate adapters | `higham9_2_rowPermutedMatrix`, `higham9_2_rowPermutedMatrix_maxEntryNorm`, `higham9_2_rowPermutedMatrix_infNorm`, `higham9_2_colPermutedMatrix`, `higham9_2_colPermutedMatrix_maxEntryNorm`, `higham9_2_colPermutedMatrix_infNorm`, `higham9_2_rowColPermutedMatrix`, `higham9_2_rowColPermutedMatrix_maxEntryNorm`, `higham9_2_rowColPermutedMatrix_infNorm`, `higham9_2_PermutedLUFactSpec`, `higham9_2_permutedLUFactSpec_to_LUFactSpec`, `higham9_2_PermutedLUBackwardError`, `higham9_2_permutedLUBackwardError_to_LUBackwardError`, `higham9_3_permuted_lu_backward_error_gamma`, `higham9_2_CompletePermutedLUFactSpec`, `higham9_2_completePermutedLUFactSpec_to_LUFactSpec`, `higham9_2_CompletePermutedLUBackwardError`, `higham9_2_completePermutedLUBackwardError_to_LUBackwardError`, `higham9_3_complete_permuted_lu_backward_error_gamma` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | Newly proved in this continuation and extended by the pivoted Wilkinson adapter and full permutation norm continuations | Models the source `PA` entries as `A (sigma i) j` and `PAQ` entries as `A (sigma i) (tau j)`, converts explicit permuted LU and backward-error certificates to the existing unpermuted LU APIs for the corresponding permuted matrix, applies the compiled `gamma_n` perturbation theorem, and preserves max-entry/infinity norms under row, column, and row/column permutations; no pivot or complete-pivoting trace is assumed |
 | Chapter 9 equations (9.2a)--(9.2b) determinant-pivot consequences for explicit permuted LU certificates | `higham9_2_permutedLUFactSpec_det_eq_pivot_product`, `higham9_2_permutedLUFactSpec_det_ne_zero_iff_pivots_ne_zero`, `higham9_2_completePermutedLUFactSpec_det_eq_pivot_product`, `higham9_2_completePermutedLUFactSpec_det_ne_zero_iff_pivots_ne_zero` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | Newly proved in this continuation | Reuses the permuted-certificate adapters to view `PA` and `PAQ` as ordinary exact LU certificates, then applies the existing determinant-pivot theorem and nonzero-pivot consequence; no pivot or complete-pivoting trace is assumed |
 | Chapter 9 Algorithm 9.2 dense square executable-loop handoff and Theorem 9.3 backward-error bridge | `higham9_2_DoolittleDenseLoopCertificate`, `higham9_2_DoolittleDenseLoopAbsBudgetCertificate`, `higham9_2_denseLoopCertificate_to_DoolittleLU`, `higham9_2_absBudgetCertificate_to_DoolittleLU`, `higham9_2_absBudgetCertificate_of_literal_doolittle_exact_target_gaps`, `higham9_3_denseLoopCertificate_backward_error`, `higham9_3_absBudgetCertificate_backward_error` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | Newly added Chapter 9 wrappers reusing the compiled LU/Doolittle proof chain; the exact-target gap handoff was added in this continuation | The literal dense-loop and absolute-budget certificates expose their compression/dominance obligations as fields; the exact-target theorem derives the absolute-budget certificate from visible gap hypotheses, then the chain genuinely feeds `DoolittleLU` and `doolittle_backward_error`; the wrapper does not assume Theorem 9.3 as a free hypothesis |
 | Chapter 9 Algorithm 9.2 equations 9.3-9.5, rectangular exact Doolittle updates, exact-LU recurrence converse, and reduced-entry identity | `higham9_2_rectDoolittleU_source_identity`, `higham9_2_rectDoolittleL_source_identity`, `higham9_2_rectDoolittleUUpdate_eq_of_LUFactSpec`, `higham9_2_rectDoolittleLUpdate_eq_of_LUFactSpec`, `higham9_5_rectGEReducedEntry_succ_of_lt`, `higham9_5_rectGEReducedEntry_eq_DoolittleUUpdate`, and `higham9_5_rectGEReducedEntry_eq_DoolittleLUpdate_mul_pivot` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | Newly proved in this unifying pass continuation; exact-LU recurrence converse newly proved in this continuation | Exact algebra over rectangular `Fin m -> Fin n` matrices proves the displayed Doolittle upper/lower update identities and the no-pivot reduced-entry identity under `n <= m` and explicit nonzero pivot hypotheses where division is used. The converse theorems decompose an exact `LUFactSpec` product by triangularity to prove the square factors satisfy the Doolittle upper and lower recurrences. |
 | Chapter 9 Lemma 9.6 reduced-stage absolute-product source constant | `higham9_5_rectPrefixRange_full_eq_matMul`, `higham9_5_rectGEReducedEntry_full_eq_zero_of_LUFactSpec`, `higham9_6_rankOne_abs_le_reduced_add_succ`, `higham9_6_absLU_infNorm_le_of_reduced_stage_pair_rows`, `higham9_6_absLU_infNorm_le_two_card_mul_of_reduced_stage_row_bounds`, `higham9_6_sum_stage_pair_eq_endpoints_add_two_range`, `higham9_6_absLU_infNorm_le_source_constant_of_reduced_entry_growth`, `higham9_6_absLU_infNorm_le_source_constant_of_noPivotReducedGrowthFactor` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | Newly proved in this continuation | Proves the local equation (9.5) full-prefix/terminal-residual/rank-one stage algebra, the stage-pair row-sum to infinity-norm bridge, uniform reduced-stage row-budget accumulation, exact source endpoint/intermediate-stage counting, and the printed `1 + 2(n^2-n)rho_n` constant from the no-pivot reduced growth factor |
-| Chapter 9 Theorem 9.5 max-entry bridge and equation (9.10) explicit-trace specialization | `entry_abs_le_infNorm`, `maxEntryNorm_le_infNorm`, `infNorm_le_card_mul_maxEntryNorm`, `infNorm_le_card_mul_growthFactorEntry_bound`, `higham9_5_wilkinson_source_bound_of_entry_growth`, `higham9_5_wilkinson_source_bound_of_PartialPivotGEPPUTrace` | `LeanFpAnalysis/FP/Algorithms/LU/GrowthFactor.lean`, `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | Bridge newly proved in this unifying pass; explicit-trace specialization newly added in this continuation | Finite row-sum/max-entry inequalities convert a source growth-factor bound into the needed infinity-norm bridge; the explicit trace wrapper instantiates that growth from the proved partial-pivoting `U` trace while leaving the computed GEPP/certificate connection visible |
+| Chapter 9 Theorem 9.5 max-entry bridge and explicit-trace/certificate specializations | `entry_abs_le_infNorm`, `maxEntryNorm_le_infNorm`, `infNorm_le_card_mul_maxEntryNorm`, `infNorm_le_card_mul_growthFactorEntry_bound`, `higham9_5_wilkinson_source_bound_of_entry_growth`, `higham9_5_wilkinson_source_bound_of_PartialPivotGEPPUTrace`, `higham9_5_wilkinson_source_bound_of_PermutedPartialPivotGEPPUTrace`, `higham9_5_wilkinson_source_bound_of_CompletePivotGECPUTrace` | `LeanFpAnalysis/FP/Algorithms/LU/GrowthFactor.lean`, `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | Bridge newly proved in this unifying pass; explicit-trace, row-pivoted, and complete-pivoted certificate specializations newly added in these continuations | Finite row-sum/max-entry inequalities convert a source growth-factor bound into the needed infinity-norm bridge; the explicit trace wrappers instantiate that growth from the proved partial- and complete-pivoting `U` traces, the row-pivoted wrapper unpermutes row perturbations, and the complete-pivoted wrapper unpermutes row and column perturbations while preserving the original matrix norm and leaving the computed GEPP/certificate construction visible |
 | Chapter 9 Problem 9.9 exact no-pivot reduced-matrix and final-`U` growth bounds | `higham_problem9_9_noPivotReducedEntryMax`, `higham_problem9_9_noPivotReducedGrowthFactor`, `higham_problem9_9_noPivotReducedEntryMax_le_maxEntryNorm_add_absLU_infNorm`, `higham_problem9_9_noPivotReducedGrowthFactor_le_one_add_card_mul_absLU_infNorm_div`, `growthFactorEntry_le_one_add_card_mul_absLU_infNorm_div`, `higham_problem9_9_growthFactorEntry_le_one_add_card_mul_absLU_infNorm_div` | `LeanFpAnalysis/FP/Algorithms/LU/GrowthFactor.lean`, `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | The reduced-matrix growth-factor theorem is newly proved in this continuation; the final-`U` exact-LU theorem was newly proved in the prior continuation | Bounds each equation (9.5) reduced entry by `maxEntry(A) + || |L||U| ||_inf`, takes the stage maximum, divides by `maxEntry(A)`, and converts to the source infinity-norm denominator; the final-`U` theorem isolates a unit-lower LU row and uses the same norm bridge |
 | Chapter 9 Theorem 9.8 equation (9.11) exact-LU final-pivot witness and cumulative real complete-pivoting certificate | `higham9_8_finalPivot_mul_inverse_entry_eq_one`, `higham9_8_finalPivot_inverse_entry_abs_inv_le_maxEntryNorm`, `higham9_8_growth_factor_ge_theta_of_lu_right_inverse`, `higham9_2_rowColPermutedMatrix_right_inverse`, `higham9_8_finalPivot_mul_inverse_entry_eq_one_of_completePermutedLUFactSpec`, `higham9_8_finalPivot_inverse_entry_abs_inv_le_maxEntryNorm_of_completePermutedLUFactSpec`, `higham9_8_growth_factor_ge_theta_of_completePermutedLUFactSpec_right_inverse`, `higham9_8_luFirstSchurComplement_trailingPerm`, `higham9_8_exists_CompletePermutedLUFactSpec_of_det_ne_zero`, `higham9_8_exists_completePivoting_growth_factor_ge_theta_real` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | Newly proved in this continuation | From `A = L U` or explicit `P A Q = L U` and `A A_inv = I`, matrix associativity and permutation reindexing reduce to triangular inverse shape/diagonal lemmas, isolating the final pivot inverse-entry witness and closing the certificate-level `rho >= theta` bridge. The new cumulative construction lifts trailing complete-pivot permutations through Schur complements to produce a real `PAQ = LU` certificate for every nonsingular real input; Wilkinson's upper-bound theorem and bounded source `g(n)` family remain open. |
 | Chapter 9 Theorem 9.8 / equation (9.13) complex complete-pivoting certificate and trace-level final-pivot bridge | `higham9_8_ComplexIsRightInverse`, `higham9_8_ComplexIsLeftInverse`, `higham9_2_complexRowColPermutedMatrix`, `higham9_8_complexFiniteTranspose`, `higham9_8_ComplexLUFactSpec`, `higham9_8_ComplexCompletePermutedLUFactSpec`, `higham9_8_complexCompletePermutedLUFactSpec_to_LUFactSpec`, `higham9_2_complexRowColPermutedMatrix_right_inverse`, `higham9_8_complex_isLeftInverse_finiteTranspose_of_isRightInverse`, `higham9_8_complex_inv_upper_tri`, `higham9_8_complex_inv_diag_entry`, `higham9_8_complex_finalPivot_mul_inverse_entry_eq_one`, `higham9_8_complex_finalPivot_mul_inverse_entry_eq_one_of_completePermutedLUFactSpec`, `higham9_13_fourierVandermonde_complexGrowthFactorEntry_ge_card_of_completePermutedLUFactSpec`, `higham9_8_ComplexCompletePivotGECPUTrace_exists_ComplexCompletePermutedLUFactSpec_complexMaxEntryNorm_le`, `higham9_13_fourierVandermonde_complexGrowthFactorEntry_ge_card_of_ComplexCompletePivotGECPUTrace`, and `higham9_13_exists_fourierVandermonde_ComplexCompletePivotGECPUTrace_growth_ge_card` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | Newly proved in this continuation | Provides the complex certificate analogue of the real final-pivot bridge, instantiates the Fourier/Vandermonde row to prove `n <= rho` for any explicit complex complete-pivoting certificate, proves the complex trace-to-certificate max-entry transfer, and closes the strict trace-level Fourier/Vandermonde growth theorem. |
 | Chapter 9 Theorem 9.8 recursive complete-pivoting `U` trace support | `higham9_8_CompletePivotGECPUTrace`, `higham9_8_CompletePivotGECPUTrace_upper_zero`, `higham9_8_exists_CompletePivotGECPUTrace_of_det_ne_zero`, `higham9_8_exists_CompletePivotGECPUTrace_upper_zero_of_det_ne_zero` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | Newly proved in this continuation | Defines the recursive exact complete-pivoting upper-factor trace, proves its exposed `U` is upper triangular, and constructs the trace for every nonsingular real input by first complete-pivot selection and Schur-complement determinant inheritance. This does not assume or prove Wilkinson's complete-pivoting growth bound. |
-| Chapter 9 Theorem 9.8 / Problem 9.11 complete-pivoting trace growth boundedness | `higham9_2_rowColPermutedMatrix_firstPivotRowSwap_maxEntryNorm`, `higham9_1_completePivot_rowColPermuted_partialPivotChoice_zero`, `higham9_8_completePivot_firstSchurComplement_maxEntryNorm_le_two`, `higham9_8_CompletePivotGECPUTrace_entry_abs_le_pow_two`, `higham9_8_CompletePivotGECPUTrace_growthFactorEntry_le_pow_two`, `higham9_completePivotingUTraceGrowthValues`, `higham9_completePivotingUTraceGrowthSup`, `higham9_completePivotingUTraceGrowthValues_bddAbove`, `higham9_completePivotingUTraceGrowth_le_sup` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | Newly proved in this continuation | Proves the local elementary trace-level boundedness dependency: row/column first-pivot swaps preserve max-entry norm, the first complete-pivot Schur complement has max-entry norm at most twice the source, every recursive complete-pivoting `U` trace satisfies `rho <= 2^(n-1)`, and the trace-level complete-pivoting growth-value set is bounded above. This does not prove Wilkinson's sharper product bound (9.14). |
+| Chapter 9 Theorem 9.8 / Problem 9.11 complete-pivoting trace growth boundedness | `higham9_2_rowColPermutedMatrix_firstPivotRowSwap_maxEntryNorm`, `higham9_1_completePivot_rowColPermuted_partialPivotChoice_zero`, `higham9_8_completePivot_firstSchurComplement_maxEntryNorm_le_two`, `higham9_8_CompletePivotGECPUTrace_entry_abs_le_pow_two`, `higham9_8_CompletePivotGECPUTrace_growthFactorEntry_le_pow_two`, `higham9_completePivotingUTraceGrowthValues`, `higham9_completePivotingUTraceGrowthSup`, `higham9_completePivotingUTraceGrowthValues_bddAbove`, `higham9_completePivotingUTraceGrowth_le_sup`, `higham9_completePivotingUTraceGrowthValues_nonempty`, `higham9_8_completePivotingUTraceGrowthSup_le_pow_two` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | Newly proved and extended in this continuation | Proves the local elementary trace-level boundedness dependency: row/column first-pivot swaps preserve max-entry norm, the first complete-pivot Schur complement has max-entry norm at most twice the source, every recursive complete-pivoting `U` trace satisfies `rho <= 2^(n-1)`, and the trace-level complete-pivoting growth-value set is bounded above, nonempty in every positive dimension, and has source-shaped supremum bound `g(n) <= 2^(n-1)`. This does not prove Wilkinson's sharper product bound (9.14). |
 | Chapter 9 Problem 9.11 trace-level complete-pivoting `g(2n)` lower bound | `maxEntryNorm_le_of_entry_le_bound`, `maxEntryNorm_le_of_entry_le_max`, `higham9_8_CompletePivotGECPUTrace_exists_CompletePermutedLUFactSpec_maxEntryNorm_le`, `higham9_8_CompletePivotGECPUTrace_growth_factor_ge_theta_real`, `higham9_11_exists_completePivotingUTrace_sine_block_growth_ge_succ`, `higham9_11_completePivotingUTraceGrowthValues_exists_ge_succ`, `higham9_11_completePivotingUTraceGrowthSup_ge_succ` | `LeanFpAnalysis/FP/Algorithms/LU/GrowthFactor.lean`, `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | Newly proved in this continuation | Proves the source-shaped trace-level lower bound `n + 1 <= g(2n)` by converting recursive complete-pivoting traces to cumulative certificates with no larger certificate max-entry norm, transferring the final-pivot inverse-entry bound to traces, and instantiating the flattened sine-block witness. |
 | Chapter 9 equation (9.16) recursive rook-pivoting `U` trace support and elementary trace growth | `higham9_16_RookPivotGEUTrace`, `higham9_16_RookPivotGEUTrace_upper_zero`, `higham9_16_rookPivot_firstSchurComplement_entry_abs_le_two`, `higham9_16_rookPivot_firstSchurComplement_maxEntryNorm_le_two`, `higham9_16_RookPivotGEUTrace_entry_abs_le_pow_two`, `higham9_16_RookPivotGEUTrace_growthFactorEntry_le_pow_two`, `higham9_16_exists_RookPivotGEUTrace_of_det_ne_zero`, `higham9_16_exists_RookPivotGEUTrace_upper_zero_of_det_ne_zero`, `higham9_16_exists_RookPivotGEUTrace_growthFactorEntry_le_pow_two_of_det_ne_zero` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | Newly proved in this continuation | Defines the recursive exact rook-pivoting upper-factor trace, proves its exposed `U` is upper triangular, constructs the trace for every nonsingular real input by using complete-pivot maxima as valid rook pivots and applying row/column first-pivot Schur-complement determinant inheritance, proves the elementary trace-level bound `rho <= 2^(n-1)`, and packages the nonsingular source-facing existential growth theorem under the standard positive max-entry side condition. This does not assume or prove Foster's sharper rook-pivoting growth bound. |
+| Chapter 9 equation (9.16) rook-pivoting trace growth-value endpoint | `higham9_16_rookPivotingUTraceGrowthValues`, `higham9_16_rookPivotingUTraceGrowthSup`, `higham9_16_rookPivotingUTraceGrowthValues_le_pow_two`, `higham9_16_rookPivotingUTraceGrowthValues_bddAbove`, `higham9_16_rookPivotingUTraceGrowth_le_sup`, `higham9_16_rookPivotingUTraceGrowthValues_nonempty`, `higham9_16_rookPivotingUTraceGrowthSup_le_pow_two` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | Newly proved and extended in this continuation | Adds the trace-level rook-pivoting growth-value set, supremum, direct elementary value upper-bound theorem, boundedness proof, `le_sup` adapter, positive-dimensional nonemptiness, and source-shaped supremum upper-bound theorem for recursive rook-pivoting traces. This closes the navigation endpoint but does not prove Foster's sharper product-bound theorem. |
 | Chapter 9 Problem 9.8 checkerboard inverse total-nonnegativity theorem | `higham9_8_det_inv_topLeft_fromBlocks_mul_det_eq_det_D`, `higham9_8_det_inv_selected_mul_det_reindexed_eq_det_complement`, `higham9_8_checkerboardConjugate_nonsingInv_minor_nonneg` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | Newly proved in this continuation, reusing earlier local 9.8 sign/reindexing support and Problem 9.6 total-nonnegativity facts | The block determinant proof derives Jacobi's selected-minor identity without a complementary-minor nonsingularity hypothesis, then selected/complement sign cancellation and total-nonnegative complementary minors prove every square minor of `J A^{-1} J` is nonnegative for nonsingular totally nonnegative `A`; no external Jacobi theorem is assumed. |
 | Chapter 9 Problem 9.10 single multiplier blunder error formula | `higham_problem9_10_rankOneBasis`, `higham_problem9_10_multiplierBlunderAlpha`, `higham_problem9_10_rankOneBasis_mulVec`, `higham_problem9_10_rankOnePerturbed_mulVec`, `higham_problem9_10_apply_left_inverse_of_matMulVec_eq`, `higham_problem9_10_matMulVec_scaledBasis`, `higham_problem9_10_rankOne_blunder_solution`, `higham_problem9_10_rankOne_blunder_error`, `higham_problem9_10_multiplier_blunder_error` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | Newly proved in this continuation | Models the single incorrect multiplier as `A - alpha e_i e_j^T`, applies the available left inverse of `A` to the difference equation, solves the one scalar denominator equation, and obtains the source `x - xhat` formula. This is a direct proof of the Sherman-Morrison specialization, not a later-chapter assumption. |
 | Chapter 9 Problem 9.4 row- and complete-pivoted LU solve analogues | `higham_problem9_4_permuted_lu_solve_backward_error`, `higham_problem9_4_complete_permuted_lu_solve_backward_error` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | Newly proved in this continuation | Applies the existing Theorem 9.4 LU-solve theorem to `P A` or `P A Q`, then unpermutes the perturbation rows/columns and, for complete pivoting, returns the original-order solution vector. This is genuine adapter proof over available Split 1 gamma/triangular-solve infrastructure. |
@@ -292,9 +1339,9 @@ target is closed by `higham9_8_selectionComplementEquiv_perm_sign`. Problem
 | Chapter 9 Theorem 9.9 diagonal-dominance off-diagonal and first-ratio bounds | `higham9_9_rowDiagDominant_offdiag_abs_le_diag`, `higham9_9_colDiagDominant_offdiag_abs_le_diag`, `higham9_9_rowDiagDominant_entry_ratio_abs_le_one`, `higham9_9_colDiagDominant_entry_ratio_abs_le_one`, `higham9_9_rowDiagDominant_entry_ratio_abs_le_one_of_det_ne_zero`, `higham9_9_colDiagDominant_entry_ratio_abs_le_one_of_det_ne_zero` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | Newly proved in this continuation | Finite nonnegative-sum comparison proves each off-diagonal entry is bounded by the corresponding row or column diagonal entry; division by the nonzero diagonal gives the visible unit first-ratio bound. |
 | Chapter 9 Theorem 9.9 column-dominant exact no-pivot LU support | `higham9_9_colDiagDominant_first_column_multiplier_sum_le_one`, `higham9_9_colDiagDominant_first_column_multiplier_sum_except_le`, `higham9_9_colDiagDominant_firstSchurComplement`, `higham9_9_colDiagDominant_firstSchurComplement_maxEntryNorm_le_two`, `higham9_9_colDiagDominant_firstSchurComplement_offdiag_le_maxEntryNorm`, `higham9_9_colDiagDominant_firstSchurComplement_det_ne_zero`, `higham9_9_colDiagDominant_lu_exists_unit_lower_of_det_ne_zero`, `higham9_9_colDiagDominant_lu_exists_unique_unit_lower_of_det_ne_zero` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | Newly proved in this continuation; the off-diagonal max-entry invariant was added in this continuation | Finite column-dominance sums bound the first no-pivot multiplier column, split off one selected trailing multiplier, preserve column diagonal dominance under the first Schur complement, bound the first Schur complement's max-entry norm by `2 * maxEntryNorm A`, bound its off-diagonal trailing entries by the original `maxEntryNorm A`, transfer nonsingularity by the Schur determinant identity, and recursively construct exact no-pivot LU factors whose lower entries are unit-bounded; exact-LU uniqueness follows from the determinant-pivot product. |
 | Chapter 9 Theorem 9.9 diagonal-dominance growth-factor endpoint adapter | `growthFactorEntry_le_of_entry_bound_factor`, `higham9_9_growthFactorEntry_le_two_of_upper_entry_bound` | `LeanFpAnalysis/FP/Algorithms/LU/GrowthFactor.lean`, `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | Newly proved in this continuation | Generic max-entry growth algebra converts an entrywise final-upper bound `|U i j| <= c * maxEntryNorm A` into `growthFactorEntry <= c`; the source-facing wrapper instantiates `c = 2` for Theorem 9.9. |
-| Chapter 9 Theorem 9.13 structural componentwise and max-entry `rho <= 3` consequences | `growthFactorEntry_le_of_absLU_componentwise`, `maxEntryNorm_matTranspose`, `LUFactSpec.isTridiagLU_of_tridiagonal`, `tridiag_colDom_L_entries_bounded`, `tridiag_rowDom_growth_bound_3`, `higham9_13_tridiag_growth_bound_3_of_LUFactSpec`, `higham9_13_growthFactorEntry_le_three_of_LUFactSpec`, `higham9_13_colDiagDom_L_entries_bounded_of_LUFactSpec`, `higham9_13_colDiagDom_tridiag_growth_bound_3_of_LUFactSpec`, `higham9_13_colDiagDom_growthFactorEntry_le_three_of_LUFactSpec`, `higham9_13_rowDiagDom_tridiag_growth_bound_3_of_LUFactSpec`, `higham9_13_rowDiagDom_growthFactorEntry_le_three_of_LUFactSpec`, `higham9_13_tridiag_growthFactorEntry_le_three`, `higham9_13_rowDiagDom_transpose_tridiag_growth_bound_3`, `higham9_13_rowDiagDom_transpose_growthFactorEntry_le_three`, `higham9_13_rowDiagDom_transpose_growthFactorEntry_le_three_of_Amax`, `higham9_13_rowDiagDom_tridiag_growth_bound_3`, `higham9_13_rowDiagDom_growthFactorEntry_le_three` | `LeanFpAnalysis/FP/Algorithms/LU/GrowthFactor.lean`, `LeanFpAnalysis/FP/Algorithms/LU/TridiagonalRecurrence.lean`, `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | Newly proved across this continuation and the exact-LU/multiplier handoff updates | Proves that any componentwise `|L||U| <= c|A|` bound with unit lower diagonal implies Higham max-entry growth `rho <= c`, instantiates `c = 3` using the local column-dominant tridiagonal theorem, proves the direct row-dominant componentwise theorem by induction on the tridiagonal recurrence, proves that exact `LUFactSpec` factors of a tridiagonal matrix inherit lower/upper bidiagonal structure from nonzero pivots, proves the column-dominant multiplier bound from column diagonal dominance, and provides source-facing exact-LU wrappers without a separate multiplier hypothesis. |
+| Chapter 9 Theorem 9.13 structural componentwise and max-entry `rho <= 3` consequences | `growthFactorEntry_le_of_absLU_componentwise`, `maxEntryNorm_matTranspose`, `LUFactSpec.isTridiagLU_of_tridiagonal`, `tridiag_colDom_L_entries_bounded`, `tridiag_rowDom_growth_bound_3`, `higham9_13_tridiag_growth_bound_3_of_LUFactSpec`, `higham9_13_growthFactorEntry_le_three_of_LUFactSpec`, `higham9_13_colDiagDom_L_entries_bounded_of_LUFactSpec`, `higham9_13_colDiagDom_tridiag_growth_bound_3_of_LUFactSpec`, `higham9_13_colDiagDom_growthFactorEntry_le_three_of_LUFactSpec`, `higham9_13_colDiagDom_exists_LUFactSpec_growth_bound_3`, `higham9_13_colDiagDom_exists_LUFactSpec_growthFactorEntry_le_three`, `higham9_13_rowDiagDom_transpose_exists_LUFactSpec_growth_bound_3`, `higham9_13_rowDiagDom_transpose_exists_LUFactSpec_growthFactorEntry_le_three`, `higham9_13_rowDiagDom_tridiag_growth_bound_3_of_LUFactSpec`, `higham9_13_rowDiagDom_growthFactorEntry_le_three_of_LUFactSpec`, `higham9_13_tridiag_growthFactorEntry_le_three`, `higham9_13_rowDiagDom_transpose_tridiag_growth_bound_3`, `higham9_13_rowDiagDom_transpose_growthFactorEntry_le_three`, `higham9_13_rowDiagDom_transpose_growthFactorEntry_le_three_of_Amax`, `higham9_13_rowDiagDom_tridiag_growth_bound_3`, `higham9_13_rowDiagDom_growthFactorEntry_le_three` | `LeanFpAnalysis/FP/Algorithms/LU/GrowthFactor.lean`, `LeanFpAnalysis/FP/Algorithms/LU/TridiagonalRecurrence.lean`, `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | Newly proved across this continuation and the exact-LU/multiplier handoff updates | Proves that any componentwise `|L||U| <= c|A|` bound with unit lower diagonal implies Higham max-entry growth `rho <= c`, instantiates `c = 3` using the local column-dominant tridiagonal theorem, proves the direct row-dominant componentwise theorem by induction on the tridiagonal recurrence, proves that exact `LUFactSpec` factors of a tridiagonal matrix inherit lower/upper bidiagonal structure from nonzero pivots, proves the column-dominant multiplier bound from column diagonal dominance, and provides source-facing exact-LU wrappers without a separate multiplier hypothesis, including the row-dominant transpose existential package for exact factors of `Aᵀ`. |
 | Chapter 9 Theorem 9.13 source-data tridiagonal builder growth surface | `tridiag_L_lower_bidiag`, `tridiag_U_upper_bidiag`, `tridiag_matrices_isTridiagLU`, `tridiag_L_matrix_entries_bounded`, `tridiag_prevIndex`, `TridiagExactLURecurrence`, `tridiag_exact_product_of_recurrence`, `higham9_19_tridiag_exact_product_of_recurrence`, `higham9_13_tridiag_builder_growth_bound_3`, `higham9_13_tridiag_builder_growthFactorEntry_le_three`, `higham9_13_rowDiagDom_tridiag_builder_growth_bound_3`, `higham9_13_rowDiagDom_tridiag_builder_growthFactorEntry_le_three`, `higham9_13_tridiag_builder_growth_bound_3_of_recurrence`, `higham9_13_tridiag_builder_growthFactorEntry_le_three_of_recurrence`, `higham9_13_rowDiagDom_tridiag_builder_growth_bound_3_of_recurrence`, `higham9_13_rowDiagDom_tridiag_builder_growthFactorEntry_le_three_of_recurrence` | `LeanFpAnalysis/FP/Algorithms/LU/TridiagonalRecurrence.lean`, `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | Newly proved in this continuation | Certifies the source-data tridiagonal matrix builders as bidiagonal LU factors, proves exact recurrence-to-product for equation (9.19), and instantiates the Theorem 9.13 componentwise/max-entry growth surfaces without hiding exact-recurrence or dominance assumptions. |
-| Chapter 9 Theorem 9.12 optimal-growth max-entry consequence and SPD positive-`D L^T` algebraic core | `tridiag_spd_shape_absLU_eq_absA`, `higham9_12_spd_tridiag_absLU_eq_of_positive_DLT`, `higham9_12_spd_tridiag_growthFactorEntry_le_one`, `higham9_12_spd_tridiag_lu_backward_error_of_positive_DLT`, `higham9_12_spd_tridiag_builder_absLU_eq_of_positive_DLT`, `higham9_12_spd_tridiag_builder_growthFactorEntry_le_one`, `higham9_12_spd_tridiag_builder_lu_backward_error_of_positive_DLT`, `higham9_12_spd_tridiag_builder_absLU_eq_of_recurrence`, `higham9_12_spd_tridiag_builder_growthFactorEntry_le_one_of_recurrence`, `higham9_12_spd_tridiag_builder_lu_backward_error_of_recurrence`, `higham9_growthFactorEntry_le_one_of_absLU_le_absA`, `higham9_12_nonneg_lu_growthFactorEntry_le_one`, `higham9_12_mmatrix_lu_growthFactorEntry_le_one`, `higham9_12_sign_equiv_growthFactorEntry_le_one` | `LeanFpAnalysis/FP/Algorithms/LU/TridiagonalRecurrence.lean`; `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | Newly extended in this continuation | Proves Higham's SPD "middle equality" step for tridiagonal bidiagonal LU factors satisfying `U = D L^T` with `D > 0`, yielding `|L||U| = |A|`, the corresponding `rho <= 1` growth consequence, and the SPD backward-error handoff under explicit certificate hypotheses; the explicit `TridiagData` builder and equation-(9.19) exact-recurrence variants discharge the structural and exact-product certificates from local builder facts. Also proves that a unit-lower factor and an optimal componentwise `|L||U| <= |A|` bound force every final `U` entry to be bounded by `maxEntryNorm A`, hence Higham's max-entry growth factor is at most one; the nonnegative-LU specialization reuses `nonneg_lu_optimal_growth`, the M-matrix specialization reuses `mmatrix_lu_optimal_growth`, and the sign-equivalent specialization reuses `sign_equiv_optimal_growth` |
+| Chapter 9 Theorem 9.12 optimal-growth max-entry consequence and SPD positive-`D L^T` algebraic core | `tridiag_spd_shape_absLU_eq_absA`, `higham9_12_spd_tridiag_absLU_eq_of_positive_DLT`, `higham9_12_spd_tridiag_growthFactorEntry_le_one`, `higham9_12_spd_tridiag_lu_backward_error_of_positive_DLT`, `higham9_12_spd_tridiag_builder_absLU_eq_of_positive_DLT`, `higham9_12_spd_tridiag_builder_growthFactorEntry_le_one`, `higham9_12_spd_tridiag_builder_lu_backward_error_of_positive_DLT`, `higham9_12_spd_tridiag_builder_absLU_eq_of_recurrence`, `higham9_12_spd_tridiag_builder_growthFactorEntry_le_one_of_recurrence`, `higham9_12_spd_tridiag_builder_lu_backward_error_of_recurrence`, `higham9_growthFactorEntry_le_one_of_absLU_le_absA`, `higham9_12_nonneg_lu_growthFactorEntry_le_one`, `higham9_12_mmatrix_lu_growthFactorEntry_le_one`, `higham9_12_sign_equiv_growthFactorEntry_le_one`, `higham9_12_totalNonnegative_exists_LUFactSpec_optimal_growth`, `higham9_12_totalNonnegative_exists_LUFactSpec_growthFactorEntry_le_one` | `LeanFpAnalysis/FP/Algorithms/LU/TridiagonalRecurrence.lean`; `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | Newly extended in this continuation | Proves Higham's SPD "middle equality" step for tridiagonal bidiagonal LU factors satisfying `U = D L^T` with `D > 0`, yielding `|L||U| = |A|`, the corresponding `rho <= 1` growth consequence, and the SPD backward-error handoff under explicit certificate hypotheses; the explicit `TridiagData` builder and equation-(9.19) exact-recurrence variants discharge the structural and exact-product certificates from local builder facts. Also proves that a unit-lower factor and an optimal componentwise `|L||U| <= |A|` bound force every final `U` entry to be bounded by `maxEntryNorm A`, hence Higham's max-entry growth factor is at most one; the nonnegative-LU specialization reuses `nonneg_lu_optimal_growth`, the M-matrix specialization reuses `mmatrix_lu_optimal_growth`, the sign-equivalent specialization reuses `sign_equiv_optimal_growth`, and the total-nonnegative/nonsingular source-existence wrappers reuse Problem 9.6 to produce exact nonnegative LU factors plus optimal componentwise growth and `rho <= 1` |
 | Chapter 9 Theorem 9.14 source scalar `f(u)`/`h(u)` aggregation | `higham9_14_f`, `higham9_14_h`, `higham9_14_h_eq_f_div`, `higham9_14_f_nonneg`, `higham9_14_h_mul_one_sub_eq_f`, `higham9_14_source_f_bound`, `higham9_14_source_h_bound_of_absLUhat_bound`, `higham9_14_source_h_bound_of_absLUhat_mul_one_sub_bound` | `LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | Newly proved in this continuation | The source polynomial `f(u)` is recorded, nonnegativity is proved for `0 <= u`, `lu_solve_backward_error_mixed` proves that the source coefficients `u`, `u`, and `2u+u^2` aggregate to the printed `f(u)`, and the source-shaped denominator-cleared comparison `(1-u)|Lhat||Uhat| <= |A|` yields the same conditional `h(u)` bound |
 | Chapter 10 exact Cholesky/PSD, Section 10.1 Cholesky-to-LDLT rewrite, Problems 10.1/10.4/10.8 witness, nonsymmetric-positive-definite equivalence | Chapter 10 declarations listed in `chapter10_formalization_report.md`, including `higham10_1_choleskyLDLTLower`, `higham10_1_choleskyLDLTDiagonal`, and `higham10_1_cholesky_to_ldlt` | `LeanFpAnalysis/FP/Algorithms/HighamChapter10.lean` and Cholesky modules | Reused and newly proved in earlier Split 2 passes plus this continuation | Genuine exact SPD/PSD/Schur-complement/max-entry/concrete counterexample proofs; the LDLT rewrite constructs concrete unit-lower and diagonal factors from an exact Cholesky certificate and proves the `BlockLDLTSpec` product identity |
 | Chapter 11 exact LDLT/Aasen/skew specs and closed Appendix algebra | Chapter 11 declarations listed in `chapter11_formalization_report.md` | `LeanFpAnalysis/FP/Algorithms/HighamChapter11.lean` | Reused and newly proved in earlier Split 2 passes | Genuine finite matrix, determinant, inverse, SPD-minor, block-kernel, and signed-block proofs |
@@ -307,36 +1354,44 @@ target is closed by `higham9_8_selectionComplementEquiv_perm_sign`. Problem
 | Chapter 8 fixed-order triangular solve backward/forward error rows | `higham8_2_backSub_row_tight`, `higham8_3_backSub_backward_error`, `higham8_5_*`, `higham8_7_*`, `higham8_10_*`, `higham8_11_*` | `HighamChapter8.lean` and triangular modules | Split 1 `H02.rounding_model` and `H03.gamma_theta` | Direct | Imported compiled repository infrastructure, not an unproved local hypothesis |
 | Chapter 9 Theorems 9.3-9.5 certificate forms, equation 9.9, Theorem 9.10 conditional solve form, and Theorem 9.14 absorbed tridiagonal forms | `higham9_3_*`, `higham9_4_lu_solve_backward_error`, `higham9_5_*`, `higham9_9_*`, `higham9_10_hessenberg_lu_solve_backward_stable_tight`, `higham9_14_tridiag_diagDom_fu_bound_tight`, `higham9_14_tridiag_diagDom_fu_bound_from_structural_growth`, `higham9_14_tridiag_rowDiagDom_fu_bound_from_structural_growth`, `higham9_14_tridiag_colDiagDom_fu_bound_from_recurrence`, `higham9_14_tridiag_rowDiagDom_fu_bound_from_recurrence`, `higham9_14_tridiag_colDiagDom_fu_bound_from_LUFactSpec`, `higham9_14_tridiag_rowDiagDom_fu_bound_from_LUFactSpec` | `HighamChapter9.lean` | Split 1 gamma/roundoff algebra | Direct | Available and compiled; the Theorem 9.10 solve wrapper uses the repository LU solve backward-error surface and therefore remains Split-1-gamma-reliant, while the exact Hessenberg GEPP `U`-trace growth theorem itself is local and recorded in Table 1. The structural/exact-recurrence/exact-`LUFactSpec` Theorem 9.14 wrappers supply the growth hypothesis from local column- and row-dominant Theorem 9.13 tridiagonal theorems under explicit structural, exact-recurrence, or ordinary exact-LU assumptions, while source `f(u)`/`h(u)` aggregation and remaining all-class gaps are classified separately. |
 | Chapter 9 Theorem 9.14 source-data builder absorbed tridiagonal forms | `higham9_14_tridiag_colDiagDom_fu_bound_from_builders`, `higham9_14_tridiag_rowDiagDom_fu_bound_from_builders`, `higham9_14_tridiag_colDiagDom_fu_bound_from_recurrence`, `higham9_14_tridiag_rowDiagDom_fu_bound_from_recurrence` | `HighamChapter9.lean` | Split 1 gamma/roundoff algebra plus local Theorem 9.13 builder growth wrappers and exact-recurrence product theorem | Direct for gamma; local for builder growth | Available and compiled; the builder structure, exact recurrence-to-product theorem, and growth discharge are genuine Lean proofs, while perturbation certificates remain visible hypotheses |
-| Chapter 10 certificate consequences for Theorems 10.3-10.4 | `higham10_3_cholesky_backward_error`, `higham10_4_cholesky_solve_backward_error` | `HighamChapter10.lean` | Split 1 gamma/roundoff and triangular solve infrastructure | Direct | Available where the certificate is assumed; concrete certificate generation remains WAIT-PREVIOUS-SPLIT |
+| Chapter 10 certificate consequences for Theorems 10.3-10.4 | `higham10_3_cholesky_backward_error`, `higham10_4_cholesky_solve_backward_error` | `HighamChapter10.lean` | Split 1 gamma/roundoff and triangular solve infrastructure | Direct | Available where the certificate is assumed; concrete certificate generation remains PROVE-NOW-SPLIT |
 | Chapter 12 equation 12.9 conventional residual | `higham12_9_conventional_residual_error` | `HighamChapter12.lean` | Split 1 gamma/matvec residual infrastructure | Direct | Available compiled result, not an unresolved blocker |
 
-## 3. Not Formalized Because Of Previous-Split Dependency
+## 3. Current Split 2 Proof/API Targets After Previous-Split Re-Audit
 
-| Chapter/source family | Direct or indirect previous-split dependency | Previous split | Contract family or missing result | Why not reprove locally | Next expected upstream theorem/interface |
+No row in this section is being left incomplete merely because it depends on
+Split 1. The listed targets may reuse integrated Split 1 foundation directly or
+indirectly, but the remaining work is a current Split 2 source-wrapper/proof
+target or a concrete integration/API follow-up.
+
+| Chapter/source family | Direct or indirect integrated Split 1 dependency | Integrated declaration/interface reused when found | Missing source-facing result | Why not duplicate locally | Next Split 2 target or integration follow-up |
 | --- | --- | --- | --- | --- | --- |
-| Chapter 7 arbitrary norm, scaling, SVD, spectral, residual-rounding, and probability rows | Direct or indirect | Split 1 | Generic norms, subordinate/absolute norms, SVD/pseudoinverse/rank, Perron-Frobenius/spectral radius, computed residual rounding, probability APIs | Foundational APIs must be shared across splits | Shared norm/SVD/spectral/rounding/probability theorem surfaces |
-| Chapter 8 arbitrary evaluation order, comparison/norm chains, Kahan/SVD, fan-in, and most Appendix rows | Direct or indirect | Split 1 | Expression-tree/product rounding, no-guard rounding, norms/condition numbers, SVD, fan-in product rounding | Chapter 8 should consume shared rounding/norm contracts | General gamma/theta expression-order and norm/condition interfaces |
-| Chapter 9 Theorem 9.15, equations 9.23/9.26/9.27, Problem 9.3 | Direct | Split 1 | Norm/condition/spectral-radius/Frobenius/Holder/field-of-values foundations | These are Chapter 6/Split 1 norm-spectral foundations | Shared sensitivity, Holder, field-of-values, and spectral/norm interfaces |
-| Chapter 9 equation 9.17 | Indirect | Split 1 | Chapter 8 Lemma 8.8 row-dominant triangular inverse/norm bound, itself directly gated by Split 1 norm/condition foundations | The Chapter 9 source derives (9.17) by invoking Lemma 8.8; it should not be reproved locally in Split 2 | Upstream full Lemma 8.8 theorem/interface over the shared norm API |
-| Chapter 10 concrete Cholesky rounding, norm/spectral perturbation, rank-pivoting, Schur perturbation, PSD backward-error rows | Direct or indirect | Split 1 | Rounding/gamma/sqrt, operator norms, eigenvalues, SVD/rank/nullspace/minors, asymptotic inverse perturbation | Avoid duplicate Cholesky-only norm/rank/spectral APIs | Concrete `fl_cholesky` certificate theorem and shared norm/rank/eigen APIs |
-| Chapter 11 inertia/eigenvalue, block-LDLT stability/growth, skew spectral/growth, and related problem rows | Direct or indirect | Split 1 | Spectral/inertia, FP/gamma, norm/growth, determinant/rank/LU existence foundations | Stability and spectral APIs must be common | Inertia/eigen theorem surface and rounded block-LDLT/growth APIs |
-| Chapter 12 inverse perturbation, Neumann/resolvent, full recurrence, and full Theorem 12.4 sufficient condition | Direct or indirect | Split 1 | H06 inverse/norm/Neumann/asymptotic infrastructure | Iterative-refinement inverse bounds should use shared matrix-norm foundation | Nonnegative Neumann inverse/resolvent and exact inverse perturbation theorem |
+| Chapter 7 generic norm rows: Theorems 7.1, 7.2, 7.4 and related equations/problems | Direct | `IsComplexVectorNorm`, `IsMixedSubordinateNormValue`, `complexVecLpNorm`, `complexMatrixLpNormOfReal`, closed infinity-norm wrappers | Real/complex norm-preservation adapters, dual norm adapters, arbitrary-norm wrappers for the closed infinity-norm specializations | Norm foundations are integrated shared APIs; Chapter 7 should add only source-shaped wrappers | Prove arbitrary/generic norm wrappers or record exact API mismatch |
+| Chapter 7 SVD/spectral rows: Theorems 7.5-7.6 and 7.8 plus dependent problems | Direct or indirect | `complexMatrixRank`, `complexMatrixRank_eq_card_nonzero_singularValue`, `exists_complexMatrixSVDUnitary_diagonal_eq`, `complexMatrixFrobenius`; equations `(7.20)`-`(7.21)` now reuse `vecNorm2`, `frobNormRect`, `rectOpNorm2Le`, and `rectOpNorm2Le_of_frobNormRect_le`; the finite-real `p` explicit-`Aplus` `(7.18)`/`(7.22)` wrapper reuses `complexVecLpNorm_ofReal_monotone`, `complexMatrixLpNormOfReal`, and `complexMatrixLpNormOfReal_mul_le`; the p=2 source-min route now has compact-sublevel and least-value extraction; the finite-real `p` route now has normalized value-set transfer and reciprocal compact-core/coercivity layers; Problem 7.10 rows reuse the Bauer algebraic, inverse-transport, positive-entry irreducibility, one-norm transpose, op-2 interpolation, spectrum-modulus, and Mathlib `spectralRadius` wrappers listed in the live Chapter 7 report | Finite-real general-`p` continuity/closed-sublevel/`IsLeast` minimizer extraction for Theorem 7.5; Perron-Frobenius positive-vector/eigenvalue existence from irreducibility; and proof that compatible common Bauer scaling exists at the source spectral-radius value for Problem 7.10(e) | Rank/SVD/Frobenius/spectral foundations are integrated shared APIs; closed Chapter 7 declarations are thin source wrappers over existing norm/diagonal/matrix/Mathlib APIs and should not be duplicated | Prove a reusable `complexMatrixLpNormOfReal` continuity or compact-max API, then the finite-real reciprocal sublevel/least extraction; separately prove or expose the PF/common-scaling theorem for Bauer |
+| Chapter 7 Corollary 7.6 Cholesky-factor `D*` and two-sided `sInf` transfer | Direct | `vecNorm2`, `ch7RectColumnNorm2`, `ch7ColumnEquilibratingScale2`, `eq_7_21_rectOpNorm2Le_column_equilibrated`, `theorem7_5_p2_column_equilibration_le_sqrt_card_sInf_right_scalings`, `complexMatrixOp2_adjoint_mul_self_eq_sq`, `complexMatrixOp2_realRectToCMatrix_transpose_mul_self_eq_sq`, `ch7TwoSidedScale_isInverse`, `ch7SymmetricDiagEquilibratingScale2`, `ch7SymmetricDiagEquilibratingInvScale2`, `ch7SymmetricOp2ScaledCondSet`, `corollary7_6_cholesky_factor_column_scaling_le_sqrt_card_sInf_right_scalings`, `ch7Op2RightScaledCondSet_sInf_nonneg`, `corollary7_6_cholesky_scaled_cond_eq_factor_cond_sq`, `corollary7_6_cholesky_scaled_cond_le_card_sInf_right_scalings_sq`, `corollary7_6_cholesky_right_sInf_sq_le_symmetric_sInf`, `corollary7_6_cholesky_scaled_cond_le_card_sInf_symmetric_scalings`, and `corollary7_6_cholesky_scaled_inverse_gram_isInverse` | Closed in the repository explicit inverse-Gram `sInf` model | Norm/SVD foundations, p=2 value-set wrappers, op-2 Gram helpers, and generic two-sided inverse transport are integrated or already proved; no Split 1 wait remains | No follow-up for Corollary 7.6 except the documented modeling boundary that no minimizer-attainment theorem is asserted |
+| Chapter 7 Theorem 7.5 explicit-`Aplus` row/column scaling value-set wrappers | Direct | `complexVecLpNorm_ofReal_monotone`, `complexMatrixLpNormOfReal`, `complexMatrixLpNormOfReal_mul_le`, `rectOpNorm2Le`, `rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le`, `complexMatrixOp2_realRectToCMatrix_le_of_rectOpNorm2Le`, `complexMatrixOp2`, `realRectToCMatrix`, `oneNormRect`, `infNormRect`, finite row/column-sum APIs, `Set`, `BddBelow`, `csInf_le`, and `le_csInf`, plus the already closed `(7.19)`-`(7.22)` row/column-equilibration pairwise theorems.  The finite-real conjugate-row branch also reuses integrated `HolderConjugate`/finite `Lp` norm APIs through `eq_7_19_matrixLpNormOfReal_dual_row_equilibrated` and `eq_7_19_matrixLpNormOfReal_dual_row_inverseSide_bound` | None for the finite-real `p` column explicit-`Aplus` route, finite-real conjugate-row `(7.19)` proof-route, and p=1, p=2, and p=∞ explicit-`Aplus` pairwise/`sInf` routes; full Moore-Penrose/projection, printed row-scale reconciliation, and source `min`/attainment wrappers still open | These are source-shaped current Split 2 wrappers over integrated norm/order APIs, not duplicate Split 1 foundations | Closed by `theorem7_5_lp_column_equilibration_le_card_rpow_sInf_right_scalings`, `theorem7_5_lp_dual_row_equilibration_le_card_rpow_sInf_left_scalings`, `ch7OneNormRightScaledCondSet`, `theorem7_5_p1_column_equilibration_sInf_eq_right_scalings`, `ch7Op2RightScaledCondSet`, `theorem7_5_p2_column_equilibration_le_sqrt_card_sInf_right_scalings`, `ch7InfNormLeftScaledCondSet`, and `theorem7_5_pinf_row_equilibration_sInf_eq_left_scalings` |
+| Chapter 7 Problem 7.15 Hadamard lower-bound row | Direct | Integrated finite matrix transpose, two-sided scaling, Cauchy, Frobenius, diagonal compression, real orthogonality/sign-diagonal, and real Euclidean operator-certificate surfaces: `matTranspose`, `ch7TwoSidedScale`, `opNorm2Le`, `opNorm2Le_transpose`, `frobNormRect`, `diagMatrix`, `IsOrthogonal.diagMatrix_of_sq_eq_one`, `rectMatMul`, `frobNormRect_triple_rectMatMul_le_of_rectOpNorm2Le`, `ch7HadamardProduct`, `ch7_matTranspose_twoSidedScale`, `ch7HadamardProduct_twoSidedScale_transpose_inverse_eq`, `problem7_15_twoSidedScale_hadamard_transpose_inverse_invariant`, `problem7_15_transpose_inverse_partner_opNorm2Le`, `opNorm2Le_hadamard`, `problem7_15_hornJohnson_hadamard_opNorm2Le`, `problem7_15_scaled_inverse_hadamard_opNorm2Le`, and `problem7_15_diagonal_twoSidedScaledOp2Kappa_sInf_eq_one` | None for Problem 7.15 after this pass | The Horn-Johnson operator-2 certificate and the nonsingular diagonal equality/least-value case are now proved theorems, not assumptions. No unresolved previous-split interface remains for Problem 7.15 | Closed by `problem7_15_twoSidedScaledOp2Kappa_sInf_ge_hadamard_op2`, the conditional attainability wrappers, `problem7_15_diagonal_twoSidedScaledOp2Kappa_sInf_eq_one`, and `problem7_15_diagonal_twoSidedScaledOp2Kappa_isLeast_one` |
+| Chapter 8 arbitrary evaluation order, remaining condition/problem wrappers, Kahan/SVD, fan-in, and most Appendix rows | Direct or indirect | `gammaValid`, fixed-order `higham8_5_*`, `IsMixedConditionNumberProductValue`, `complexMatrixLpNormOfReal`, comparison-matrix endpoints, `higham8_12_absolute_norm_vector_chain`, `higham8_14_full_norm_chain`, and the closed downstream Chapter 9 wrapper `higham9_17_rowDiagDom_absLU_bound_of_LUFactSpec` | Expression-order/product rounding, remaining condition/problem wrappers, SVD/Kahan source adapters, fan-in product rounding | Rounding/norm foundations are shared; Chapter 8 should not define incompatible local replacements | Prove the remaining Chapter 8 condition/problem wrappers and the expression/fan-in theorem surfaces |
+| Chapter 9 Theorem 9.15, equations 9.23/9.26/9.27, Problem 9.3 | Direct or indirect | Available gamma/norm/spectral carriers; equation 9.17 is now closed by `higham9_17_absLU_infNorm_le_condSkeel_of_LUFactSpec` and `higham9_17_rowDiagDom_absLU_bound_of_LUFactSpec` reusing `higham8_8_rowDiagDominantUpper_condSkeel_bound` | Source wrappers for norm/condition/spectral-radius/Frobenius/Holder/field-of-values statements | These are shared norm-spectral interfaces, not local duplicate foundations | Prove the remaining source wrappers for Theorem 9.15, equations (9.23)/(9.26)/(9.27), and Problem 9.3 |
+| Chapter 10 concrete Cholesky rounding, norm/spectral perturbation, rank-pivoting, Schur perturbation, PSD backward-error rows | Direct or indirect | Chapter 10 exact wrappers, `gammaValid`, integrated norm/rank/SVD-style APIs where available | Concrete `fl_cholesky` trace/certificate theorem, sqrt-rounding/gamma wrappers, source spectral/rank/Schur perturbation wrappers | Shared rounding/norm/rank/spectral APIs should be reused rather than forked | Prove concrete `fl_cholesky` certificate theorem and expose missing shared norm/rank/eigen wrappers |
+| Chapter 11 inertia/eigenvalue, block-LDLT stability/growth, skew spectral/growth, and related problem rows | Direct or indirect | Chapter 11 exact wrappers, integrated norm APIs, existing Chapter 9 trace surfaces, `higham11_problem_11_2_inertiaFormula` | Rounded block-LDLT and diagonal-pivoting growth/stability wrappers, plus exact spectral/inertia handoffs where not surfaced | Stability/spectral APIs must stay common across chapters | Prove the rounded block-LDLT/growth wrappers and add thin spectral/inertia adapters only where the integrated API already supports them |
+| Chapter 12 inverse perturbation, Neumann/resolvent, full recurrence, and full Theorem 12.4 sufficient condition | Direct or indirect | `normwiseBackwardErrorBoundedVec`, `normwiseConditionNumberBoundedVec`, residual/refinement wrappers, Problem 12.1 skewness theorem | Nonnegative Neumann inverse/resolvent theorem, exact inverse perturbation wrapper, full `G_i/g_i` recurrence, exact `M5`/sigma route if `f` is chosen | Iterative-refinement inverse bounds should instantiate shared matrix-norm theory, not local placeholders | Prove Neumann/resolvent and inverse-perturbation wrappers; keep approximate `f` rows skipped until exacted |
 
 ## 4. Not Formalized For Another Reason
 
 | Chapter/source item | Classification | Previous-split dependency status | Exact reason | Destination |
 | --- | --- | --- | --- | --- |
-| Chapter 7 equations 7.17/7.32; Problems 7.12/7.14 | DEFER-LATER-CHAPTER or DEFER-LATER-SPLIT | No direct previous-split dependency recorded | Scaling/Kahan/calculus or probability infrastructure belongs to a later prerequisite block | Later chapter/split as recorded in Chapter 7 report |
-| Chapter 7 equation 7.6 | SKIP | No previous-split dependency | MATLAB/numerical illustration | none |
-| Chapter 8 equation 8.10 | DEFER-LATER-SPLIT | No direct previous-split dependency; later block also uses norm infrastructure | QR column-pivoting material | Later QR/factorization split |
-| Chapter 8 Problem 8.10 and cost/asymptotic prose | SKIP | No previous-split dependency | Underspecified algorithm family or pure cost prose | none |
-| Chapter 9 Theorem 9.9 full row/column diagonal-dominance growth theorem `rho_n <= 2` | DEFER-LATER-CHAPTER | No previous-split dependency; later-Chapter-13 dependency | The source proof explicitly cites Theorems 13.7 and 13.8 for block diagonally dominant matrices, and this prompt excludes Chapter 13/14 implementation/report/lookup additions. Local Theorem 9.9 side-condition, no-pivot LU, multiplier, Schur support, and endpoint-adapter declarations remain closed. | Chapter 13, Theorems 13.7 and 13.8 |
+| Chapter 7 equations 7.17/7.32; Problems 7.12/7.14 | DEFER-LATER-CHAPTER or DEFER-LATER-SPLIT | No direct integrated Split 1 dependency recorded | Scaling/Kahan/calculus or probability infrastructure belongs to a later prerequisite block | Later chapter/split as recorded in Chapter 7 report |
+| Chapter 7 equation 7.6 | SKIP | No integrated previous-split blocker | MATLAB/numerical illustration | none |
+| Chapter 8 equation 8.10 | DEFER-LATER-SPLIT | No direct integrated Split 1 dependency; later block also uses norm infrastructure | QR column-pivoting material | Later QR/factorization split |
+| Chapter 8 Problem 8.10 and cost/asymptotic prose | SKIP | No integrated previous-split blocker | Underspecified algorithm family or pure cost prose | none |
+| Chapter 9 Theorem 9.9 full row/column diagonal-dominance growth theorem `rho_n <= 2` | DEFER-LATER-CHAPTER | No integrated previous-split blocker; later-Chapter-13 dependency | The source proof explicitly cites Theorems 13.7 and 13.8 for block diagonally dominant matrices, and this prompt excludes Chapter 13/14 implementation/report/lookup additions. Local Theorem 9.9 side-condition, no-pivot LU, multiplier, Schur support, and endpoint-adapter declarations remain closed. | Chapter 13, Theorems 13.7 and 13.8 |
 | Chapter 9 Section 9.12 rank-revealing LU prose | DEFER-LATER-SPLIT | Later deferred block also has Split 1 norm/SVD gates | Not assigned as Split 2 primary/equation/problem theorem; belongs with later rank-revealing factorization work | Later rank-revealing split |
-| Chapter 9 Problems 9.15-9.18 and empirical/historical/software prose | SKIP | No previous-split dependency | Research/open-ended, empirical, or software-description material | none |
-| Chapter 10 Problems 10.2, 10.10, 10.12 and empirical/software prose | SKIP | No previous-split dependency | Computational recipe, explanatory diagnosis, research prompt, or software prose | none |
-| Chapter 11 Problems 11.6/11.10 and comparison/empirical/software prose | SKIP | No previous-split dependency | Cost-model/benchmark, research, or expository material | none |
+| Chapter 9 Problems 9.15-9.18 and empirical/historical/software prose | SKIP | No integrated previous-split blocker | Research/open-ended, empirical, or software-description material | none |
+| Chapter 10 Problems 10.2, 10.10, 10.12 and empirical/software prose | SKIP | No integrated previous-split blocker | Computational recipe, explanatory diagnosis, research prompt, or software prose | none |
+| Chapter 11 Problems 11.6/11.10 and comparison/empirical/software prose | SKIP | No integrated previous-split blocker | Cost-model/benchmark, research, or expository material | none |
 | Chapter 12 Theorems 12.1-12.2 full source forms, equation 12.10 asymptotic part, equation 12.16, Problem 12.2, tables/prose, Problems 12.3/12.5 | SKIP | Some exacted versions would acquire indirect Split 1 gates, but primary reason is underspecified/asymptotic/empirical/research wording | Approximate, `O(u)`, empirical, or research statement | none |
-| Chapter 12 Problem 12.4 | DEFER-LATER-SPLIT | No previous-split dependency; direct later-split dependency | Depends on a fast-multiplication error equation outside Split 2 | Split 3 / Chapter 13 |
+| Chapter 12 Problem 12.4 | DEFER-LATER-SPLIT | No integrated previous-split blocker; direct later-split dependency | Depends on a fast-multiplication error equation outside Split 2 | Split 3 / Chapter 13 |
 
 ## 5. Cross-Chapter Closure Audit
 
@@ -347,17 +1402,20 @@ target is closed by `higham9_8_selectionComplementEquiv_perm_sign`. Problem
 | Chapter 9 Algorithm 9.2 dense square and permuted certificate handoffs | PROVE-NOW-SPLIT | CLOSED for dense square certificate-to-`DoolittleLU`, exact-target-gap-to-absolute-budget certificate, dense square certificate-to-Theorem 9.3, and explicit `PA`/`PAQ` pivoted-backward-error certificate adapters; PROVE-NOW-SPLIT remains for the rectangular executable trace and pivot-trace construction | Reused current same-split `LU/Doolittle.lean` dense-loop certificates and the existing `PermutedLU*` certificate structures instead of adding parallel assumptions; no later chapter dependency was needed | `higham9_2_denseLoopCertificate_to_DoolittleLU`, `higham9_2_absBudgetCertificate_to_DoolittleLU`, `higham9_2_absBudgetCertificate_of_literal_doolittle_exact_target_gaps`, `higham9_3_denseLoopCertificate_backward_error`, `higham9_3_absBudgetCertificate_backward_error`, `higham9_2_rowPermutedMatrix`, `higham9_2_permutedLUFactSpec_to_LUFactSpec`, `higham9_2_permutedLUBackwardError_to_LUBackwardError`, `higham9_3_permuted_lu_backward_error_gamma`, `higham9_2_rowColPermutedMatrix`, `higham9_2_completePermutedLUFactSpec_to_LUFactSpec`, `higham9_2_completePermutedLUBackwardError_to_LUBackwardError`, `higham9_3_complete_permuted_lu_backward_error_gamma`; blocker is extending this to the source rectangular loop and proving the pivoted traces produce the certificates |
 | Chapter 9 equations (9.3)--(9.5), rectangular Doolittle update/reduced-entry identities, exact-LU recurrence converse, and printed Algorithm 9.2 leading flop polynomial | PROVE-NOW-SPLIT | CLOSED for the exact rectangular source identities, square exact-LU recurrence converse, and rational source cost polynomial; Algorithm 9.2 remains PROVE-NOW-SPLIT for the executable rectangular loop | Ruled out any need for later chapters; the identities, converse recurrences, and cost polynomial are local algebra over the existing matrix model | `higham9_2_rectDoolittleU_source_identity`, `higham9_2_rectDoolittleL_source_identity`, `higham9_2_rectDoolittleUUpdate_eq_of_LUFactSpec`, `higham9_2_rectDoolittleLUpdate_eq_of_LUFactSpec`, `higham9_5_rectGEReducedEntry_succ_of_lt`, `higham9_5_rectGEReducedEntry_eq_DoolittleUUpdate`, `higham9_5_rectGEReducedEntry_eq_DoolittleLUpdate_mul_pivot`, and `higham9_2_doolittleSourceFlopPolynomial_eq`; exact integer flop accounting is recorded as SKIP-cost-model |
 | Chapter 9 Problem 9.2 finite-union and shifted-matrix LU theorem | PROVE-NOW-SPLIT | CLOSED | The union-count and charpoly-cardinality dependencies are pure finite-set/polynomial/matrix-charpoly facts and do not require later chapters; the final shifted-matrix theorem uses the now-closed Theorem 9.1 proper-leading-principal LU criterion and does not assume a Split 1 foundation | `higham9_2_danger_shift_count_bound`, `higham9_2_charpolyDangerSet_card_le`, `higham9_2_charpoly_danger_shift_count_bound`, `higham9_2_leadingBlockDangerSet_count_bound`, `higham9_2_shiftedLeadingBlock_det_ne_zero_of_not_mem_danger_union`, `higham9_2_shiftedMatrixDangerSet_card_le`, `higham9_2_shiftedMatrix_properLeadingPrincipalBlock_det_ne_zero_of_not_mem_danger`, `higham9_2_shiftedMatrix_lu_exists_unique_of_not_mem_danger`, and `higham_problem9_2_shiftedMatrix_lu_exists_unique_except_card_bound` |
-| Chapter 9 Theorem 9.5 source growth bridge | PROVE-NOW-SPLIT | CLOSED for max-entry-to-infinity bridge, explicit partial-pivoting `U`-trace specialization, and exact trace-level partial-pivoting growth-family supremum upper-bound surface; PROVE-NOW-SPLIT remains for computed GEPP/certificate connection | Reused local Chapter 9 growth-factor definitions, matrix infinity-norm APIs, the now-closed partial-pivoting `U` trace, and Mathlib `sSup` bounded-set API; no unresolved Split 1 blocker for the remaining local gap | `infNorm_le_card_mul_growthFactorEntry_bound`, `higham9_5_wilkinson_source_bound_of_entry_growth`, `higham9_5_wilkinson_source_bound_of_PartialPivotGEPPUTrace`, `higham9_partialPivotingUTraceGrowthValues`, `higham9_partialPivotingUTraceGrowthSup`, `higham9_partialPivotingUTraceGrowthValues_bddAbove`, `higham9_partialPivotingUTraceGrowth_le_sup`, `higham9_partialPivotingUTraceGrowthValues_nonempty`, and `higham9_7_partialPivotingUTraceGrowthSup_le_pow_two`; blocker is connecting the computed GEPP/backward-error factors to the explicit trace and certificate surfaces |
-| Chapter 9 equation (9.17) row-diagonal-dominance `|| |L||U| ||_inf` bound | PROVE-NOW-SPLIT | WAIT-PREVIOUS-SPLIT | Cross-check against Chapter 8 shows the source proof invokes Lemma 8.8, whose full source theorem is directly gated by Split 1 norm/condition-number foundations | `higham9_17_rowDiagDom_absLU_bound` remains only a predicate; next upstream unblocker is the full Chapter 8 Lemma 8.8 interface over shared norms |
+| Chapter 9 Theorem 9.5 source growth bridge | PROVE-NOW-SPLIT | CLOSED for max-entry-to-infinity bridge, explicit partial-pivoting `U`-trace specialization, row-pivoted and complete-pivoted explicit-certificate specializations, and exact trace-level partial-pivoting growth-family supremum upper-bound surface; PROVE-NOW-SPLIT remains for computed GEPP/certificate construction | Reused local Chapter 9 growth-factor definitions, matrix infinity-norm APIs, row/column permutation norm-preservation lemmas, the now-closed partial- and complete-pivoting `U` traces, and Mathlib `sSup` bounded-set API; no unresolved Split 1 blocker for the remaining local gap | `infNorm_le_card_mul_growthFactorEntry_bound`, `higham9_5_wilkinson_source_bound_of_entry_growth`, `higham9_5_wilkinson_source_bound_of_PartialPivotGEPPUTrace`, `higham9_5_wilkinson_source_bound_of_PermutedPartialPivotGEPPUTrace`, `higham9_5_wilkinson_source_bound_of_CompletePivotGECPUTrace`, `higham9_partialPivotingUTraceGrowthValues`, `higham9_partialPivotingUTraceGrowthSup`, `higham9_partialPivotingUTraceGrowthValues_bddAbove`, `higham9_partialPivotingUTraceGrowth_le_sup`, `higham9_partialPivotingUTraceGrowthValues_nonempty`, and `higham9_7_partialPivotingUTraceGrowthSup_le_pow_two`; blocker is constructing and connecting the computed GEPP/backward-error factors to the explicit trace and certificate surfaces |
+| Chapter 9 equation (9.17) row-diagonal-dominance `|| |L||U| ||_inf` bound | PROVE-NOW-SPLIT | CLOSED | Cross-check against Chapter 8 showed the source proof invokes Lemma 8.8; that route is now discharged by the corrected Chapter 8 `condSkeel` theorem and the exact-LU algebraic bridge | `higham9_17_rowDiagDom_absLU_bound` is now the source-faithful norm predicate, and `higham9_17_absLU_infNorm_le_condSkeel_of_LUFactSpec` plus `higham9_17_rowDiagDom_absLU_bound_of_LUFactSpec` close the row by combining exact `LUFactSpec` algebra with `higham8_8_rowDiagDominantUpper_condSkeel_bound` |
 | Chapter 9 Problem 9.11 block-doubling row | PROVE-NOW-SPLIT | CLOSED for block inverse, `alpha`/`beta`/`theta` algebra, block-doubled sine theta bridge, visible-witness, flattened sine-block, flattened max-entry lower-bound bridges, equality- and inequality-form bounded-family `g(2n)` supremum adapters, equation (9.12) sine-matrix definition/symmetry/scale/positivity/finite-sum orthogonality/self-inverse/theta support, trace-to-certificate max-entry bridge, trace-level sine-block growth witness, and source-shaped trace-level `g(2n)` lower bound | Reused same-split Chapter 12 `blockMatProd`/`blockMaxNorm` API and Mathlib `sSup` API instead of duplicating local machinery; source equation (9.12) is now represented directly, with the `|sin| <= 1` scale bound, positive max-entry support, finite roots-of-unity/cosine-sum parity support, sine orthogonality, self-inverse formula, theta arithmetic, flattened two-block witness and max-entry-norm surface, recursive complete-pivoting trace bridge, and trace supremum lower bound closed | `higham9_11_flatBlockIndex`, `higham9_11_flatInnerIndex`, `higham9_11_flattenTwoBlock`, `higham9_11_flatIndexOfBlock`, `higham9_11_flatBlockIndex_flatIndexOfBlock`, `higham9_11_flatInnerIndex_flatIndexOfBlock`, `higham9_11_flattenTwoBlock_entry_flatIndexOfBlock`, `higham9_11_flattenTwoBlock_maxEntryNorm_eq_blockMaxNorm`, `higham9_11_blockInverseCandidate_left`, `higham9_11_blockInverseCandidate_right`, `higham9_11_alpha_block_eq`, `higham9_11_flatten_blockMatrix_maxEntryNorm_eq`, `higham9_11_beta_blockInv_eq`, `higham9_11_flatten_blockInverseCandidate_maxEntryNorm_eq`, `higham9_11_theta_block_eq_two_theta`, `higham9_11_sine_block_theta_candidate_ge_succ`, `higham9_11_complete_pivoting_lower_bound_from_sine_block_theta`, `higham9_completePivotGrowth_le_sup`, `higham9_11_complete_pivoting_lower_bound_from_witness`, `higham9_11_complete_pivoting_lower_bound_from_witness_le`, `higham9_11_complete_pivoting_lower_bound_consequence_le`, `higham9_11_complete_pivoting_lower_bound_from_flattened_sine_block`, `higham9_11_complete_pivoting_lower_bound_from_flattened_sine_block_maxEntry`, `higham9_12_sineMatrix`, `higham9_12_sineMatrix_symm`, `higham9_12_sineMatrix_entry_abs_le_scale`, `higham9_12_sineMatrix_maxEntryNorm_le_scale`, `higham9_12_sineMatrix_zero_zero_pos`, `higham9_12_sineMatrix_maxEntryNorm_pos`, `higham9_12_cos_sum_even`, `higham9_12_cos_sum_odd`, `higham9_12_sine_product_sum`, `higham9_12_sineMatrix_inverse_formula`, `higham9_12_theta_ge_half_succ_of_maxEntryNorm_le_scale`, `higham9_12_two_theta_ge_succ_of_maxEntryNorm_le_scale`, `higham9_12_sineMatrix_theta_candidate_ge_half_succ`, `higham9_12_sineMatrix_two_theta_candidate_ge_succ`, `higham9_8_CompletePivotGECPUTrace_exists_CompletePermutedLUFactSpec_maxEntryNorm_le`, `higham9_11_exists_completePivotingUTrace_sine_block_growth_ge_succ`, and `higham9_11_completePivotingUTraceGrowthSup_ge_succ` |
 | Chapter 9 equation (9.13) Fourier/Vandermonde inverse, theta, growth bridge, and complex complete-pivoting construction | PROVE-NOW-SPLIT | CLOSED for roots-of-unity cancellation, full row/column Gram support, the scaled-adjoint two-sided inverse formula, the general complex max-entry `theta <= n` row-identity estimate, the complex max-entry `theta(V_n)=n` witness, the complex growth-factor definition, the conditional `n <= rho` bridge, the explicit complex `PAQ = LU` certificate-level final-pivot instantiation, the full complex recursive trace construction, the full complex cumulative certificate construction, the complex trace-to-certificate max-entry transfer, and the Fourier/Vandermonde trace-level existence theorem | No later chapter or Split 1 dependency was needed. The construction uses local complex complete-pivot choices, row/column swap determinant preservation, the first Schur-complement determinant identity, recursive first-step LU construction, the complex max-entry monotonicity helpers, and the existing Fourier/Vandermonde inverse formula. | `higham9_13_fourierRoot_pow_card`, `higham9_13_fourierRoot_ne_one`, `higham9_13_fourierRoot_geometric_sum_zero`, `higham9_13_fourierVandermonde_column_orthogonal`, `higham9_13_fourierVandermonde_column_gram`, `higham9_13_fourierVandermonde_row_orthogonal`, `higham9_13_fourierVandermonde_row_gram`, `higham9_13_fourierVandermondeScaledAdjoint`, `higham9_13_scaledAdjoint_mul_fourierVandermonde`, `higham9_13_fourierVandermonde_mul_scaledAdjoint`, `higham9_13_fourierVandermonde_inverse_formula`, `higham9_13_complexMaxEntryNorm`, `higham9_13_entry_norm_le_complexMaxEntryNorm`, `higham9_13_complexMaxEntryNorm_nonneg`, `higham9_13_complexMaxEntryNorm_le_of_entry_le_bound`, `higham9_13_complexMaxEntryNorm_le_of_entry_le_max`, `higham9_13_inverse_row_identity_le_card_mul_complexMaxEntryNorm`, `higham9_8_theta_le_card_complex`, `higham9_13_fourierVandermonde_complexMaxEntryNorm_eq_one`, `higham9_13_fourierVandermondeScaledAdjoint_complexMaxEntryNorm_eq_inv`, `higham9_13_fourierVandermonde_theta_eq_card`, `higham9_13_complexGrowthFactorEntry`, `higham9_8_complexGrowthFactorEntry_ge_inverse_entry_theta`, `higham9_13_fourierVandermonde_complexGrowthFactorEntry_ge_card`, `higham9_8_ComplexCompletePermutedLUFactSpec`, `higham9_8_complex_finalPivot_mul_inverse_entry_eq_one_of_completePermutedLUFactSpec`, `higham9_13_fourierVandermonde_complexGrowthFactorEntry_ge_card_of_completePermutedLUFactSpec`, `higham9_8_exists_ComplexCompletePermutedLUFactSpec_of_det_ne_zero`, `higham9_13_exists_fourierVandermonde_complexCompletePermutedLUFactSpec_growth_ge_card`, `higham9_8_exists_ComplexCompletePivotGECPUTrace_of_det_ne_zero`, `higham9_8_ComplexCompletePivotGECPUTrace_exists_ComplexCompletePermutedLUFactSpec_complexMaxEntryNorm_le`, `higham9_13_fourierVandermonde_complexGrowthFactorEntry_ge_card_of_ComplexCompletePivotGECPUTrace`, and `higham9_13_exists_fourierVandermonde_ComplexCompletePivotGECPUTrace_growth_ge_card` |
 | Chapter 9 Problem 9.13 threshold-pivoting row | PROVE-NOW-SPLIT | CLOSED | No later chapter dependency was needed; source Appendix A supplies a local modification-count proof | `higham9_13_threshold_update_abs_bound`, `higham9_13_column_growth_by_modification_count`, `higham9_13_growthFactorEntry_bound_from_column_modifications` |
 | Chapter 9 Problem 9.10 multiplier-blunder row | DEFER-LATER-CHAPTER | CLOSED | The previous Chapter 26 Sherman-Morrison dependency was ruled out as unnecessary: the required rank-one update formula is provable locally from the visible left-inverse equation and scalar denominator side condition | `higham_problem9_10_rankOne_blunder_solution`, `higham_problem9_10_rankOne_blunder_error`, `higham_problem9_10_multiplier_blunder_error` |
-| Chapter 9 Theorem 9.9 full row/column diagonal-dominance growth theorem | PROVE-NOW-SPLIT after local-support work | DEFER-LATER-CHAPTER for the full `rho_n <= 2` proof; CLOSED for local no-pivot LU/multiplier/endpoint support | Rechecking the source PDF shows the proof of the full growth theorem is explicitly by later Theorems 13.7 and 13.8, which this prompt excludes from implementation/report/lookup additions; equation (9.17) remains separately WAIT-PREVIOUS-SPLIT through Chapter 8 Lemma 8.8 | Local support closed by `higham9_9_colDiagDominant_transpose_iff_rowDiagDominant`, `higham9_9_rowDiagDominant_transpose_iff_colDiagDominant`, `higham9_9_rowDiagDominant_offdiag_abs_le_diag`, `higham9_9_colDiagDominant_offdiag_abs_le_diag`, the four entry-ratio lemmas, `higham9_9_colDiagDominant_first_column_multiplier_sum_le_one`, `higham9_9_colDiagDominant_first_column_multiplier_sum_except_le`, `higham9_9_colDiagDominant_firstSchurComplement`, `higham9_9_colDiagDominant_firstSchurComplement_maxEntryNorm_le_two`, `higham9_9_colDiagDominant_firstSchurComplement_offdiag_le_maxEntryNorm`, `higham9_9_colDiagDominant_firstSchurComplement_det_ne_zero`, `higham9_9_colDiagDominant_lu_exists_unit_lower_of_det_ne_zero`, `higham9_9_colDiagDominant_lu_exists_unique_unit_lower_of_det_ne_zero`, `growthFactorEntry_le_of_entry_bound_factor`, and `higham9_9_growthFactorEntry_le_two_of_upper_entry_bound`; destination is Chapter 13 Theorems 13.7/13.8 |
+| Chapter 9 Theorem 9.9 full row/column diagonal-dominance growth theorem | PROVE-NOW-SPLIT after local-support work | DEFER-LATER-CHAPTER for the full `rho_n <= 2` proof; CLOSED for local no-pivot LU/multiplier/endpoint support | Rechecking the source PDF shows the proof of the full growth theorem is explicitly by later Theorems 13.7 and 13.8, which this prompt excludes from implementation/report/lookup additions; equation (9.17) is now closed separately via Chapter 8 Lemma 8.8 | Local support closed by `higham9_9_colDiagDominant_transpose_iff_rowDiagDominant`, `higham9_9_rowDiagDominant_transpose_iff_colDiagDominant`, `higham9_9_rowDiagDominant_offdiag_abs_le_diag`, `higham9_9_colDiagDominant_offdiag_abs_le_diag`, the four entry-ratio lemmas, `higham9_9_colDiagDominant_first_column_multiplier_sum_le_one`, `higham9_9_colDiagDominant_first_column_multiplier_sum_except_le`, `higham9_9_colDiagDominant_firstSchurComplement`, `higham9_9_colDiagDominant_firstSchurComplement_maxEntryNorm_le_two`, `higham9_9_colDiagDominant_firstSchurComplement_offdiag_le_maxEntryNorm`, `higham9_9_colDiagDominant_firstSchurComplement_det_ne_zero`, `higham9_9_colDiagDominant_lu_exists_unit_lower_of_det_ne_zero`, `higham9_9_colDiagDominant_lu_exists_unique_unit_lower_of_det_ne_zero`, `growthFactorEntry_le_of_entry_bound_factor`, and `higham9_9_growthFactorEntry_le_two_of_upper_entry_bound`; destination is Chapter 13 Theorems 13.7/13.8 |
 | Chapter 10 Problem 10.4 to Chapter 11 Problems 11.4/11.7 | Previously cross-chapter dependency | Confirmed CLOSED dependency | Chapter 11 reuses Chapter 10 SPD principal-minor facts; no new proof needed | `higham10_problem_10_1_two_by_two_minor_pos` used by Chapter 11 proofs |
 | Chapter 12 equation 12.6 | Previously same-split dependency on Chapter 9 | Confirmed CLOSED for contract shape | Rechecked available Chapter 9 solve backward-error wrapper | `higham9_4_lu_solve_backward_error` route remains available |
-| Chapter 7-8 rows marked `WAIT-PREVIOUS-SPLIT` | Potential stale blockers | Confirmed unchanged | No Chapter 9-12 result supplies generic norm/SVD/spectral/rounding foundations | Direct Split 1 blocker families remain recorded |
-| Chapter 9 tridiagonal row/column orientation and max-entry growth | PROVE-NOW-SPLIT dependency | CLOSED for transpose preservation, max-entry-norm transpose invariance, direct row-dominant structural growth for explicit bidiagonal LU certificates of `A`, exact-`LUFactSpec` to bidiagonal-structure handoff, column-dominant multiplier bound, ordinary exact-LU column- and row-dominant source wrappers, the row-dominant transposed structural growth wrapper, and the max-entry `rho <= 3` consequences; PROVE-NOW-SPLIT remains for source exact-LU existence and executable trace side conditions | No later chapter dependency was needed; this combines finite-index structure under transpose, local reuse of the column-dominant tridiagonal growth theorem, a direct row-dominant tridiagonal recurrence proof, a generic componentwise-to-max-entry growth bridge, `maxEntryNorm Aᵀ = maxEntryNorm A`, exact-LU structural induction, and column-dominant multiplier induction | `higham9_13_tridiagonal_transpose_iff`, `maxEntryNorm_matTranspose`, `growthFactorEntry_le_of_absLU_componentwise`, `LUFactSpec.isTridiagLU_of_tridiagonal`, `tridiag_colDom_L_entries_bounded`, `tridiag_rowDom_growth_bound_3`, `higham9_13_tridiag_growth_bound_3_of_LUFactSpec`, `higham9_13_growthFactorEntry_le_three_of_LUFactSpec`, `higham9_13_colDiagDom_L_entries_bounded_of_LUFactSpec`, `higham9_13_colDiagDom_tridiag_growth_bound_3_of_LUFactSpec`, `higham9_13_colDiagDom_growthFactorEntry_le_three_of_LUFactSpec`, `higham9_13_rowDiagDom_tridiag_growth_bound_3_of_LUFactSpec`, `higham9_13_rowDiagDom_growthFactorEntry_le_three_of_LUFactSpec`, `higham9_13_tridiag_growthFactorEntry_le_three`, `higham9_13_rowDiagDom_transpose_tridiag_growth_bound_3`, `higham9_13_rowDiagDom_transpose_growthFactorEntry_le_three`, `higham9_13_rowDiagDom_transpose_growthFactorEntry_le_three_of_Amax`, `higham9_13_rowDiagDom_tridiag_growth_bound_3`, `higham9_13_rowDiagDom_growthFactorEntry_le_three`; blocker remains source exact-LU existence plus source trace construction |
+| Chapter 7 rows formerly marked Split 1-gated | Potential stale blockers | Reclassified as current Split 2 proof/API work, concrete integration/API follow-up, valid deferral, or skip; Theorem 7.5's endpoint/`sInf`, Moore-Penrose, row-scale source-audit, p=2 source-min, finite-real normalized transfer, and finite-real compact-core/coercivity layers are closed; Theorem 7.7 and the conditional Bauer/Problem 7.10 certificate-level wrappers are closed as listed in the live Chapter 7 report | Integrated Split 1 norm/rank/SVD/Frobenius/spectral carriers are available on the current branch; remaining Chapter 7 gaps are finite-real general-`p` continuity/closed-sublevel/`IsLeast` minimizer extraction and Bauer Perron-Frobenius/common-scaling existence | See the live Chapter 7 report |
+| Chapter 7 Corollary 7.6 Cholesky-factor `D*` and two-sided `sInf` transfer | Potential stale blocker | Reclassified as current Split 2 proof work and closed in the explicit inverse-Gram `sInf` model by `corollary7_6_cholesky_factor_column_scaling_le_sqrt_card_sInf_right_scalings`, the inverse-side certificate by `corollary7_6_cholesky_scaled_inverse_gram_isInverse`, the product-square bridge by `corollary7_6_cholesky_scaled_cond_eq_factor_cond_sq`, the squared factor-infimum inequality by `corollary7_6_cholesky_scaled_cond_le_card_sInf_right_scalings_sq`, and the final transfer by `corollary7_6_cholesky_scaled_cond_le_card_sInf_symmetric_scalings` | Integrated norm/rank/SVD foundations, op-2 Gram helpers, the p=2 Theorem 7.5 value-set wrapper, and generic two-sided inverse transport are available; no unresolved Split 1 wait remains | See the live Chapter 7 report; no minimizer-attainment theorem is asserted |
+| Chapter 7 Problem 7.15 Hadamard lower-bound row | Potential stale blocker | Reclassified as current Split 2 proof/API work; reciprocal scaling invariance of `A ∘ A^{-T}` is closed by `problem7_15_twoSidedScale_hadamard_transpose_inverse_invariant`, the inverse-partner transpose norm certificate is closed by `problem7_15_transpose_inverse_partner_opNorm2Le`, the Horn-Johnson operator-2 certificate is closed by `opNorm2Le_hadamard`, and the scaled inverse-partner consequence is closed by `problem7_15_scaled_inverse_hadamard_opNorm2Le` | Integrated finite matrix transpose/scaling, Frobenius, and operator-certificate surfaces are available; the exact op-2 `sInf` lower-bound and conditional attainability package is closed; no unresolved Split 1 wait remains | See the live Chapter 7 report |
+| Chapter 8 rows marked `PROVE-NOW-SPLIT` | Potential stale blockers | Re-audited as current Split 2 proof/API targets | Integrated Split 1 norm/condition/gamma APIs are available; remaining Chapter 8 gaps are source-shaped wrappers such as the row-dominant/condition-number surfaces, expression-order rounding, and fan-in product rounding | See the live Chapter 8 report for exact targets |
+| Chapter 9 tridiagonal row/column orientation and max-entry growth | PROVE-NOW-SPLIT dependency | CLOSED for transpose preservation, max-entry-norm transpose invariance, direct row-dominant structural growth for explicit bidiagonal LU certificates of `A`, exact-`LUFactSpec` to bidiagonal-structure handoff, column-dominant multiplier bound, ordinary exact-LU column- and row-dominant source wrappers, column-dominant existential exact-LU/growth packaging, row-dominant transpose existential exact-LU/growth packaging for factors of `Aᵀ`, the row-dominant transposed structural growth wrapper, and the max-entry `rho <= 3` consequences; PROVE-NOW-SPLIT remains for direct row-dominant source exact-LU existence for `A`, general special-class source exact-LU existence, and executable trace side conditions | No later chapter dependency was needed; this combines finite-index structure under transpose, local reuse of the column-dominant tridiagonal growth theorem, determinant invariance under transpose, a direct row-dominant tridiagonal recurrence proof, a generic componentwise-to-max-entry growth bridge, `maxEntryNorm Aᵀ = maxEntryNorm A`, exact-LU structural induction, column-dominant multiplier induction, and the no-pivot LU existence theorem for nonsingular column-diagonally-dominant matrices | `higham9_13_tridiagonal_transpose_iff`, `maxEntryNorm_matTranspose`, `growthFactorEntry_le_of_absLU_componentwise`, `LUFactSpec.isTridiagLU_of_tridiagonal`, `tridiag_colDom_L_entries_bounded`, `tridiag_rowDom_growth_bound_3`, `higham9_13_tridiag_growth_bound_3_of_LUFactSpec`, `higham9_13_growthFactorEntry_le_three_of_LUFactSpec`, `higham9_13_colDiagDom_L_entries_bounded_of_LUFactSpec`, `higham9_13_colDiagDom_tridiag_growth_bound_3_of_LUFactSpec`, `higham9_13_colDiagDom_growthFactorEntry_le_three_of_LUFactSpec`, `higham9_13_colDiagDom_exists_LUFactSpec_growth_bound_3`, `higham9_13_colDiagDom_exists_LUFactSpec_growthFactorEntry_le_three`, `higham9_13_rowDiagDom_transpose_exists_LUFactSpec_growth_bound_3`, `higham9_13_rowDiagDom_transpose_exists_LUFactSpec_growthFactorEntry_le_three`, `higham9_13_rowDiagDom_tridiag_growth_bound_3_of_LUFactSpec`, `higham9_13_rowDiagDom_growthFactorEntry_le_three_of_LUFactSpec`, `higham9_13_tridiag_growthFactorEntry_le_three`, `higham9_13_rowDiagDom_transpose_tridiag_growth_bound_3`, `higham9_13_rowDiagDom_transpose_growthFactorEntry_le_three`, `higham9_13_rowDiagDom_transpose_growthFactorEntry_le_three_of_Amax`, `higham9_13_rowDiagDom_tridiag_growth_bound_3`, `higham9_13_rowDiagDom_growthFactorEntry_le_three`; blocker remains direct row-dominant source exact-LU existence for factors of `A`, general special-class source existence, and source trace construction |
 | Chapter 10 Section 10.1 Cholesky `A = L D L^T` rewrite | DEFER-LATER-SPLIT | CLOSED | Chapter 11's block-LDLT specification was now available inside the Chapter 7-12 audit, but the closure is not a bare spec reuse: Chapter 10 constructs `L` and `D` from an exact Cholesky factor and proves the product identity locally | `higham10_1_choleskyLDLTLower`, `higham10_1_choleskyLDLTDiagonal`, `higham10_1_cholesky_to_ldlt` |
 | Chapter 12 Problem 12.4 | Deferred outside Chapters 7-12 | Confirmed DEFER-LATER-SPLIT | Destination is later split fast-multiplication error theorem; no Chapter 7-12 result closes it | Destination Split 3 / Chapter 13 only, with no implementation artifact added |
 
@@ -1529,6 +2587,12 @@ Final verification for the 2026-06-21 unifying pass:
 | `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter9` | PASS, 2992 jobs, after adding the certificate-level Problem 9.11 `g(n)` growth surface and sine-block lower-bound theorem |
 | `lake env lean --tstack=65536 examples/LibraryLookup.lean` | PASS after adding lookup checks for the certificate-level Problem 9.11 `g(n)` declarations |
 | `lake env lean TmpSplit2Ch9CertificateGrowthAxioms.lean` | PASS before removing the temporary axiom-check file; `higham9_completePivotingCertificateGrowthSet`, `higham9_completePivotingCertificateGrowthValues`, `higham9_completePivotingCertificateGrowthSup`, `higham9_completePivotingCertificateGrowth_le_sup`, and `higham9_11_completePivotingCertificateGrowthSup_ge_succ` report only `propext`, `Classical.choice`, and `Quot.sound` |
+| `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | PASS after adding `higham9_11_completePivotingCertificateGrowthValues_exists_ge_succ` and refactoring the certificate-level supremum lower-bound theorem through it |
+| `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter9` | PASS, 2992 jobs, after adding the certificate-level complete-pivoting value-set witness |
+| `lake env lean --tstack=65536 examples/LibraryLookup.lean` | PASS after adding the lookup check for `higham9_11_completePivotingCertificateGrowthValues_exists_ge_succ` |
+| `lake env lean --stdin` with `#print axioms` for `higham9_11_completePivotingCertificateGrowthValues_exists_ge_succ` and `higham9_11_completePivotingCertificateGrowthSup_ge_succ` | PASS; both report only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused implementation/lookup placeholder/local-placeholder and Chapter 13/14 scans | PASS after the certificate-level complete-pivoting value-set witness; implementation and lookup scans had no `sorry`, `admit`, `axiom`, `unsafe`, `opaque`, `TODO`, `FIXME`, placeholder, `False.elim`, `Classical.choice`, or Chapter 13/14 implementation/lookup artifacts |
+| `lake build` | PASS, 3498 jobs, after the certificate-level complete-pivoting value-set witness; warnings only in pre-existing QR/Givens and FastMatMul modules |
 | `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter9` | PASS, 2992 jobs, after adding the Chapter 9 Problem 9.14 generic right-dominant pairwise elimination step lemmas |
 | `lake env lean --tstack=65536 examples/LibraryLookup.lean` | PASS after adding lookup checks for the four Chapter 9 Problem 9.14 generic right-dominant pairwise elimination step lemmas |
 | `lake env lean --stdin` with `#print axioms` for `higham_problem9_14_pairPivotEliminateToLeft_left_eq_right_of_abs_le`, `higham_problem9_14_pairPivotEliminateToLeft_target_eq_left_sub_right`, `higham_problem9_14_pairPivotEliminateToLeft_target_active_eq_zero_of_abs_le`, and `higham_problem9_14_pairPivotEliminateToLeft_target_abs_le_two_of_abs_le` | PASS; each reports only `propext`, `Classical.choice`, and `Quot.sound` |
@@ -1616,12 +2680,79 @@ Final verification for the 2026-06-21 unifying pass:
 | `lake env lean --tstack=65536 examples/LibraryLookup.lean > /tmp/split2_lookup_after_ch9_p911_trace_g.out 2>&1` | PASS after adding lookup checks for the Problem 9.11 trace-level lower-bound declarations; redirected output has 72894 lines |
 | `lake env lean --stdin` with `#print axioms` for the two max-entry helper declarations and five Problem 9.11 trace-level bridge/lower-bound declarations | PASS; all seven report only `propext`, `Classical.choice`, and `Quot.sound` |
 | focused implementation/lookup placeholder/local-placeholder/temp-file, stale Problem 9.11 blocker, and Chapter 13/14 added-line scans | PASS after the Problem 9.11 trace-level lower-bound report/log update; implementation and lookup scans had no `sorry`, `admit`, `axiom`, `unsafe`, `opaque`, `TODO`, `FIXME`, placeholder, `False.elim`, or temporary axiom/probe files, stale Problem 9.11 trace-bridge blockers remain only in historical log context that points to the new closure, and no Chapter 13/14 implementation/lookup artifacts were added |
+| `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | PASS after adding the Problem 9.11 complete-pivoting trace supremum endpoint |
+| `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter9` | PASS, 2992 jobs, after adding the Problem 9.11 complete-pivoting trace supremum endpoint |
+| `lake env lean --tstack=65536 examples/LibraryLookup.lean` | PASS after adding lookup checks for `higham9_completePivotingUTraceGrowthValues_nonempty` and `higham9_8_completePivotingUTraceGrowthSup_le_pow_two` |
+| focused implementation/lookup placeholder/local-placeholder and Chapter 13/14 scans | PASS after the complete-pivoting trace supremum endpoint update; implementation and lookup scans had no `sorry`, `admit`, `axiom`, `unsafe`, `opaque`, `TODO`, `FIXME`, placeholder, `False.elim`, `Classical.choice`, or Chapter 13/14 implementation/lookup artifacts |
+| `lake env lean --stdin` with `#print axioms` for the two new complete-pivoting trace supremum endpoint declarations | PASS; both report only `propext`, `Classical.choice`, and `Quot.sound` |
+| `lake build` | PASS, 3498 jobs, after the complete-pivoting trace supremum endpoint update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | PASS after adding the equation (9.16) rook-pivoting trace supremum endpoint |
+| `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter9` | PASS, 2992 jobs, after adding the equation (9.16) rook-pivoting trace supremum endpoint |
+| `lake env lean --tstack=65536 examples/LibraryLookup.lean` | PASS after adding lookup checks for `higham9_16_rookPivotingUTraceGrowthValues_nonempty` and `higham9_16_rookPivotingUTraceGrowthSup_le_pow_two` |
+| focused implementation/lookup placeholder/local-placeholder and Chapter 13/14 scans | PASS after the rook-pivoting trace supremum endpoint update; implementation and lookup scans had no `sorry`, `admit`, `axiom`, `unsafe`, `opaque`, `TODO`, `FIXME`, placeholder, `False.elim`, `Classical.choice`, or Chapter 13/14 implementation/lookup artifacts |
+| `lake env lean --stdin` with `#print axioms` for the two new rook-pivoting trace supremum endpoint declarations | PASS; both report only `propext`, `Classical.choice`, and `Quot.sound` |
+| `lake build` | PASS, 3498 jobs, after the rook-pivoting trace supremum endpoint update; warnings only in pre-existing QR/Givens and FastMatMul modules |
 | `git diff --check` | PASS after the Problem 9.11 trace-level lower-bound code/lookup/report/log update |
 | `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter9` | PASS, 2992 jobs, after adding the Theorem 9.7 partial-pivoting trace-growth-family supremum declarations |
 | `lake env lean --tstack=65536 examples/LibraryLookup.lean > /tmp/split2_lookup_after_ch9_partial_growth_sup.out 2>&1` | PASS after adding lookup checks for the Theorem 9.7 partial-pivoting trace-growth-family declarations; redirected output has 72904 lines |
 | `lake env lean --stdin` with qualified `#print axioms` for the six Theorem 9.7 partial-pivoting trace-growth-family declarations | PASS; each reports only `propext`, `Classical.choice`, and `Quot.sound` |
 | focused implementation/lookup placeholder/local-placeholder/temp-file and Chapter 13/14 added-line scans | PASS after the Theorem 9.7 trace-growth-family supremum update; implementation and lookup scans had no `sorry`, `admit`, `axiom`, `unsafe`, `opaque`, `TODO`, `FIXME`, placeholder, `False.elim`, or temporary axiom/probe files, and no Chapter 13/14 implementation/report/lookup artifacts were added |
 | `git diff --check` | PASS after the Theorem 9.7 trace-growth-family supremum code/lookup/report update |
+| `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | PASS after adding the Theorem 9.10 upper-Hessenberg GEPP trace growth-value/supremum endpoint |
+| `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter9` | PASS, 2992 jobs, after refreshing the compiled module artifact for the Theorem 9.10 Hessenberg endpoint |
+| `lake env lean --tstack=65536 examples/LibraryLookup.lean` | PASS after adding lookup checks for the seven Theorem 9.10 Hessenberg trace growth-value/supremum declarations |
+| `lake env lean --stdin` with `#print axioms` for the five theorem declarations in the Theorem 9.10 Hessenberg trace growth-value/supremum endpoint | PASS; all five report only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused implementation/lookup placeholder/local-placeholder/temp-file and Chapter 13/14 scans | PASS after the Theorem 9.10 Hessenberg endpoint update; implementation and lookup scans had no `sorry`, `admit`, `axiom`, `unsafe`, `opaque`, `TODO`, `FIXME`, placeholder, `False.elim`, or temporary axiom/probe files, and no Chapter 13/14 implementation/lookup artifacts were added |
+| `git diff --check` | PASS after the Theorem 9.10 Hessenberg endpoint code/lookup/report update |
+| `lake build` | PASS, 3498 jobs, after the Theorem 9.10 Hessenberg endpoint update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | PASS after adding the row-pivoted Theorem 9.5 GEPP/Wilkinson adapter and row-permutation norm lemmas |
+| `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter9` | PASS, 2992 jobs, after adding the row-pivoted Theorem 9.5 GEPP/Wilkinson adapter and refreshing compiled artifacts |
+| `lake env lean --tstack=65536 examples/LibraryLookup.lean > /tmp/split2_lookup_after_ch9_pivoted_wilkinson.out 2>&1` | PASS after adding lookup checks for `higham9_2_rowPermutedMatrix_maxEntryNorm`, `higham9_2_rowPermutedMatrix_infNorm`, and `higham9_5_wilkinson_source_bound_of_PermutedPartialPivotGEPPUTrace`; redirected output has 260 lines |
+| `lake env lean --stdin` with `#print axioms` for the three row-pivoted Theorem 9.5 adapter declarations | PASS; all three report only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused implementation/lookup placeholder/local-placeholder/temp-file and Chapter 13/14 scans | PASS after the row-pivoted Theorem 9.5 adapter update; implementation and lookup scans had no `sorry`, `admit`, `axiom`, `unsafe`, `opaque`, `TODO`, `FIXME`, `False.elim`, `Classical.choice`, or temporary axiom/probe files, and no Chapter 13/14 implementation/lookup artifacts were added |
+| `git diff --check` | PASS after the row-pivoted Theorem 9.5 adapter code/lookup/report update |
+| `lake build` | PASS, 3498 jobs, after the row-pivoted Theorem 9.5 adapter update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | PASS after adding the full row/column permutation norm-preservation endpoint |
+| `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter9` | PASS, 2992 jobs, after rebuilding the full permutation norm-preservation endpoint |
+| `lake env lean --tstack=65536 examples/LibraryLookup.lean` | PASS after adding lookup checks for the four full permutation norm-preservation declarations |
+| `lake env lean --stdin` with fully qualified `#print axioms` for the four full permutation norm-preservation declarations | PASS; all four report only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused implementation/lookup placeholder/local-placeholder/temp-file scans | PASS after the full permutation norm-preservation endpoint update; implementation and lookup scans had no `sorry`, `admit`, `axiom`, `unsafe`, `opaque`, `TODO`, `FIXME`, `False.elim`, `Classical.choice`, or temporary axiom/probe files |
+| `git diff --check` | PASS after the full permutation norm-preservation code/lookup/report update |
+| `lake build` | PASS, 3498 jobs, after the full permutation norm-preservation endpoint update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | PASS after adding the complete-pivoted explicit-certificate normwise wrapper |
+| `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter9` | PASS, 2992 jobs, after rebuilding the complete-pivoted explicit-certificate normwise wrapper |
+| `lake env lean --tstack=65536 examples/LibraryLookup.lean` | PASS after adding the lookup check for `higham9_5_wilkinson_source_bound_of_CompletePivotGECPUTrace` |
+| `lake env lean --stdin` with fully qualified `#print axioms` for `higham9_5_wilkinson_source_bound_of_CompletePivotGECPUTrace` | PASS; reports only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused implementation/lookup placeholder/local-placeholder/temp-file scans | PASS after the complete-pivoted explicit-certificate normwise wrapper update; implementation and lookup scans had no `sorry`, `admit`, `axiom`, `unsafe`, `opaque`, `TODO`, `FIXME`, `False.elim`, `Classical.choice`, or temporary axiom/probe files |
+| `git diff --check` | PASS after the complete-pivoted explicit-certificate code/lookup/report update |
+| `lake build` | PASS, 3498 jobs, after the complete-pivoted explicit-certificate normwise wrapper update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+
+`#print axioms` for the Theorem 9.10 upper-Hessenberg GEPP trace
+growth-value/supremum endpoint theorem declarations
+`higham9_10_hessenbergGEPPUTraceGrowthValues_le_card`,
+`higham9_10_hessenbergGEPPUTraceGrowthValues_bddAbove`,
+`higham9_10_hessenbergGEPPUTraceGrowth_le_sup`,
+`higham9_10_hessenbergGEPPUTraceGrowthValues_nonempty`, and
+`higham9_10_hessenbergGEPPUTraceGrowthSup_le_card` reported only `propext`,
+`Classical.choice`, and `Quot.sound`.
+
+`#print axioms` for the row-pivoted Theorem 9.5 GEPP/Wilkinson adapter
+declarations `higham9_2_rowPermutedMatrix_maxEntryNorm`,
+`higham9_2_rowPermutedMatrix_infNorm`, and
+`higham9_5_wilkinson_source_bound_of_PermutedPartialPivotGEPPUTrace` reported
+only `propext`, `Classical.choice`, and `Quot.sound`.
+
+`#print axioms` for the full row/column permutation norm-preservation
+declarations `higham9_2_colPermutedMatrix_maxEntryNorm`,
+`higham9_2_colPermutedMatrix_infNorm`,
+`higham9_2_rowColPermutedMatrix_maxEntryNorm`, and
+`higham9_2_rowColPermutedMatrix_infNorm` reported only `propext`,
+`Classical.choice`, and `Quot.sound`.
+
+`#print axioms` for the complete-pivoted Theorem 9.5 explicit-certificate
+normwise wrapper
+`higham9_5_wilkinson_source_bound_of_CompletePivotGECPUTrace` reported only
+`propext`, `Classical.choice`, and `Quot.sound`.
 
 `#print axioms` for the new pivot multiplier lemmas, the complete-pivoting
 first-step nonsingularity support declarations
@@ -1729,8 +2860,9 @@ equation (9.1) exact-LU
 determinant-pivot product declarations and the Problem 9.9 exact-LU and
 exact no-pivot reduced-matrix growth declarations, plus the Lemma 9.6
 reduced-stage absolute-product, row-budget, and source-constant declarations,
-and the Theorem 9.12 SPD positive-`D L^T`, nonnegative-LU, M-matrix, and
-sign-equivalent max-entry growth-factor consequences, and the Chapter 10
+and the Theorem 9.12 SPD positive-`D L^T`, nonnegative-LU, M-matrix,
+sign-equivalent, and total-nonnegative source-existence max-entry
+growth-factor consequences, and the Chapter 10
 Section 10.1 Cholesky-to-LDLT bridge
 `higham10_1_cholesky_to_ldlt`, and the equation (9.13) full Gram support
 theorems `higham9_13_fourierVandermonde_conj_mul_self`,
@@ -1880,6 +3012,360 @@ first-step Hessenberg GEPP trace declarations
 axioms beyond the standard repository surface: `propext`, `Classical.choice`,
 and `Quot.sound`.
 
+Additional verification for this continuation:
+
+| Command | Result |
+| --- | --- |
+| `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | PASS after adding the Problem 7.11 exact inverse perturbation first-order/remainder identity |
+| `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` | PASS, 3009 jobs, after adding the Problem 7.11 exact inverse perturbation identity |
+| `lake env lean examples/LibraryLookup.lean` | PASS after adding lookup checks for `ch7InverseQuadraticRemainderEntry` and `problem7_11_exact_inverse_firstOrder_remainder_identity` |
+| `lake env lean /tmp/ch7_problem711_exact_axioms.lean` | PASS; `ch7_inversePerturbation_decomposition` and `problem7_11_exact_inverse_firstOrder_remainder_identity` report only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused Chapter 7 implementation/lookup placeholder, stale-wait, and repo-diff placeholder scans | PASS; implementation/lookup scans had no `sorry`, `admit`, `axiom`, or `unsafe`, stale waits appeared only in historical report command strings, and repo-diff placeholder hits were report command/axiom-summary text only |
+| `git diff --check` over the touched Lean repository files | PASS after the Chapter 7 exact inverse perturbation identity code/lookup/report update |
+| `timeout 180s lake build` | PASS, 3498 jobs, after the Chapter 7 exact inverse perturbation identity update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | PASS after adding the Problem 7.11 finite quadratic-remainder upper envelope |
+| `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` | PASS, 3009 jobs, after adding the Problem 7.11 finite quadratic-remainder upper envelope |
+| `lake env lean examples/LibraryLookup.lean` | PASS after adding lookup checks for `ch7InverseQuadraticRemainderEntry_abs_le` and `problem7_11_exact_inverse_relative_change_max_le_condition_plus_quadratic` |
+| `lake env lean /tmp/ch7_problem711_remainder_axioms.lean` | PASS; `ch7InverseQuadraticRemainderEntry_abs_le` and `problem7_11_exact_inverse_relative_change_max_le_condition_plus_quadratic` report only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused Chapter 7 implementation/lookup/report placeholder, stale-wait, and repo-diff placeholder scans | PASS after the finite quadratic-remainder upper-envelope update; implementation/lookup scans had no `sorry`, `admit`, `axiom`, or `unsafe`, stale waits appeared only in historical report command strings, and repo-diff placeholder hits were report command/axiom-summary text only |
+| `git diff --check` over the touched Lean repository files | PASS after the Chapter 7 finite quadratic-remainder upper-envelope code/lookup/report update |
+| `timeout 180s lake build` | PASS, 3498 jobs, after the Chapter 7 finite quadratic-remainder upper-envelope update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | PASS after adding the Problem 7.11 finite-radius, lower-envelope/lower-witness, and conditional asymptotic updates |
+| `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` | PASS, 3009 jobs, after adding the Problem 7.11 finite-radius, lower-envelope/lower-witness, and conditional asymptotic updates |
+| `lake env lean examples/LibraryLookup.lean` | PASS after adding lookup checks for the Problem 7.11 finite-radius, lower-envelope/lower-witness, and conditional asymptotic declarations |
+| `lake env lean /tmp/ch7_problem711_radius_axioms.lean` | PASS; `ch7InverseQuadraticRemainderRelativeMax_nonneg`, `problem7_11_exact_inverse_relative_change_max_le_condition_plus_radius_bound`, `problem7_11_quadratic_remainder_relative_scaled_tendsto_zero_of_eventually_bounded`, `problem7_11_exact_inverse_relative_entry_ge_linearized_minus_quadratic`, `problem7_11_exact_inverse_relative_change_max_ge_linearized_entry_minus_quadratic`, `problem7_11_exact_inverse_relative_change_max_ge_condition_minus_quadratic_of_linearized_attainer`, and `problem7_11_exists_exact_inverse_relative_change_max_lower_witness` report only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused Chapter 7 implementation/lookup/report placeholder, stale-wait, and repo-diff placeholder scans | PASS after the finite-radius, lower-envelope/lower-witness, and conditional asymptotic updates; implementation/lookup scans had no `sorry`, `admit`, `axiom`, or `unsafe`, stale waits appeared only in historical report command strings, and repo-diff placeholder hits were report command/axiom-summary text only |
+| `git diff --check` over the touched Lean repository files | PASS after the Chapter 7 finite-radius, lower-envelope/lower-witness, and conditional asymptotic code/lookup/report update |
+| `/home/mymel/flare-bundle/dev-logs/CURRENT.md` direct whitespace/conflict-marker scans | PASS; the FLARE dev-log directory is not a git repository, so `git diff --check` is not applicable there |
+| `timeout 180s lake build` | PASS, 3498 jobs, after the Chapter 7 finite-radius, lower-envelope/lower-witness, and conditional asymptotic update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | PASS after adding the Problem 7.9 finite scalar-output formula |
+| `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` | PASS, 3009 jobs, after adding the Problem 7.9 finite scalar-output formula |
+| `lake env lean examples/LibraryLookup.lean` | PASS after adding lookup checks for the Problem 7.9 finite scalar-output declarations |
+| `lake env lean /tmp/ch7_problem79_axioms.lean` | PASS; `ch7Problem79_firstOrder_abs_le`, `ch7Problem79_linearizedRelativeChange_le`, `ch7Problem79_attaining_firstOrder_eq`, and `problem7_9_linearized_componentwise_functional_formula` report only `propext`, `Classical.choice`, and `Quot.sound` |
+| `timeout 180s lake build` | PASS, 3498 jobs, after the Chapter 7 Problem 7.9 finite scalar-output update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | PASS after adding the Problem 7.9 finite `χ >= 1` lower-bound specializations |
+| `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` | PASS, 3009 jobs, after adding the Problem 7.9 finite `χ >= 1` lower-bound specializations |
+| `lake env lean examples/LibraryLookup.lean` | PASS after rebuilding the Chapter 7 target to refresh the olean containing the Problem 7.9 lower-bound declarations; an earlier pre-rebuild lookup run failed only from stale olean state |
+| `lake env lean /tmp/ch7_problem79_axioms.lean` | PASS; the existing Problem 7.9 finite scalar-output declarations plus `ch7Problem79_linearFunctional_eq_adjointWeight_mul_Ax`, `ch7Problem79ComponentwiseSensitivity_ge_abs_functional_of_abs_matrix`, `ch7Problem79ComponentwiseSensitivity_ge_abs_functional_of_abs_rhs`, `problem7_9_linearized_componentwise_functional_ge_one_of_abs_matrix`, and `problem7_9_linearized_componentwise_functional_ge_one_of_abs_rhs` report only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused Chapter 7 implementation/lookup/report placeholder, stale-wait, and repo-diff placeholder scans | PASS after the Problem 7.9 finite lower-bound update; implementation/lookup scans had no `sorry`, `admit`, `axiom`, or `unsafe`, and stale-wait scans over implementation/lookup files had no matches |
+| `git diff --check` over the touched Lean repository files | PASS after the Problem 7.9 finite lower-bound code/lookup/report update |
+| `/home/mymel/flare-bundle/dev-logs/CURRENT.md` direct whitespace/conflict-marker scans | PASS after the Problem 7.9 finite lower-bound dev-log update; the FLARE dev-log directory is not a git repository, so `git diff --check` is not applicable there |
+| `timeout 180s lake build` | PASS, 3498 jobs, after the Chapter 7 Problem 7.9 finite lower-bound update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | PASS after adding the Problem 7.9 finite normwise scalar-output formula |
+| `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` | PASS, 3009 jobs, after adding the Problem 7.9 finite normwise scalar-output formula |
+| `lake env lean examples/LibraryLookup.lean` | PASS after adding lookup checks for the Problem 7.9 finite normwise declarations |
+| `lake env lean /tmp/ch7_problem79_axioms.lean` | PASS; the existing Problem 7.9 declarations plus `ch7Problem79_normwise_firstOrder_abs_le`, `ch7Problem79_normwiseLinearizedRelativeChange_le`, `ch7Problem79_normwiseAttainingDeltaA_bound`, `ch7Problem79_normwiseAttainingDeltaB_bound`, `ch7Problem79_normwise_attaining_firstOrder_eq`, and `problem7_9_linearized_normwise_functional_formula` report only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused Chapter 7 implementation/lookup/report placeholder, stale-wait, and repo-diff placeholder scans | PASS after the Problem 7.9 finite normwise update; implementation/lookup scans had no `sorry`, `admit`, `axiom`, or `unsafe`, and stale-wait scans over implementation/lookup files had no matches |
+| `git diff --check` over the touched Lean repository files | PASS after the Problem 7.9 finite normwise code/lookup/report update |
+| `timeout 180s lake build` | PASS, 3498 jobs, after the Chapter 7 Problem 7.9 finite normwise update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | PASS after adding the Problem 7.9 first-order radius packages and exact nonlinear componentwise source-radius wrapper |
+| `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` | PASS, 3009 jobs, after rebuilding the Chapter 7 target containing the Problem 7.9 exact componentwise wrapper |
+| `lake env lean examples/LibraryLookup.lean` | PASS after adding lookup checks for the Problem 7.9 first-order radius and exact componentwise declarations |
+| `lake env lean /tmp/ch7_problem79_exact_axioms.lean` | PASS; the new Problem 7.9 first-order radius and exact componentwise source-radius declarations report only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused Chapter 7 implementation/lookup/report placeholder, stale-wait, and repo-diff placeholder scans | PASS after the Problem 7.9 exact componentwise update; implementation/lookup scans had no `sorry`, `admit`, `axiom`, `unsafe`, or stale wait labels |
+| `git diff --check` over the touched Lean repository files and direct whitespace/conflict-marker scans over the touched FLARE dev logs | PASS after the Problem 7.9 exact componentwise code/lookup/report/dev-log update |
+| `timeout 180s lake build` | PASS, 3498 jobs, after the Chapter 7 Problem 7.9 exact componentwise update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | PASS after adding the equation (7.26) relative singular-distance/condition-number wrapper |
+| `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` | PASS, 3009 jobs, after rebuilding the Chapter 7 target containing equation (7.26) |
+| `lake env lean examples/LibraryLookup.lean` | PASS after adding the lookup check for `eq_7_26_relative_distance_to_singularity_eq_inv_condition_number`; an earlier pre-rebuild lookup run failed only from stale olean state |
+| `lake env lean /tmp/ch7_eq726_axioms.lean` | PASS; `eq_7_26_relative_distance_to_singularity_eq_inv_condition_number` reports only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused Chapter 7 implementation/lookup/report placeholder, stale-wait, and repo-diff placeholder scans | PASS after the equation (7.26) update; implementation/lookup scans had no `sorry`, `admit`, `axiom`, or `unsafe`, stale waits appeared only in historical report command strings, and repo-diff placeholder hits were report command/axiom-summary text only |
+| `git diff --check` over the touched Lean repository files | PASS after the equation (7.26) code/lookup/report update |
+| `/home/mymel/flare-bundle/dev-logs/CURRENT.md` direct whitespace/conflict-marker scans | PASS after the equation (7.26) dev-log update; the FLARE dev-log directory is not a git repository, so `git diff --check` is not applicable there |
+| `timeout 180s lake build` | PASS, 3498 jobs, after the Chapter 7 equation (7.26) update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | PASS after adding the Theorem 7.7 Stewart-Sun Frobenius scaling package |
+| `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` | PASS, 3009 jobs, after rebuilding the Chapter 7 target containing Theorem 7.7 |
+| `lake env lean examples/LibraryLookup.lean` | PASS after adding lookup checks for the Theorem 7.7 declarations |
+| `lake env lean /tmp/ch7_theorem77_axioms.lean` | PASS; `theorem7_7_frobenius_right_scaling_lower_bound`, `theorem7_7_stewart_sun_frobenius_scaling`, and `theorem7_7_stewart_sun_frobenius_scaling_of_left_inverse` report only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused Chapter 7 implementation/lookup placeholder and stale-wait scans | PASS after the Theorem 7.7 update; implementation/lookup scans had no `sorry`, `admit`, `axiom`, `unsafe`, `TODO`, `WAIT-PREVIOUS-SPLIT`, or `WAIT-SPLIT1` matches |
+| `git diff --check` over the touched Lean repository files | PASS after the Theorem 7.7 code/lookup/report update |
+| `/home/mymel/flare-bundle/dev-logs/CURRENT.md` direct scan over the new Chapter 7 log span | PASS after the Theorem 7.7 dev-log update; no literal tabs or conflict markers in the newly added lines, and whole-file trailing-whitespace scan was clean |
+| `timeout 180s lake build` | PASS, 3498 jobs, after the Chapter 7 Theorem 7.7 update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | PASS after adding the equations `(7.20)`-`(7.21)` Euclidean column-equilibration dependency |
+| `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` | PASS, 3009 jobs, after rebuilding the Chapter 7 target containing the `(7.20)`-`(7.21)` dependency |
+| `lake env lean examples/LibraryLookup.lean` | PASS after adding lookup checks for the `(7.20)`-`(7.21)` dependency declarations |
+| `lake env lean /tmp/ch7_eq720_eq721_axioms.lean` | PASS; `eq_7_20_column_norm_le_of_rectOpNorm2Le`, `eq_7_20_rectOpNorm2Le_of_column_bound`, and `eq_7_21_rectOpNorm2Le_column_equilibrated` report only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused Chapter 7 implementation/lookup/report placeholder and stale-wait scans | PASS after the `(7.20)`-`(7.21)` dependency update; implementation/lookup scans had no `sorry`, `admit`, `axiom`, `unsafe`, `TODO`, `WAIT-PREVIOUS-SPLIT`, or `WAIT-SPLIT1` matches |
+| `git diff --check` over the touched Lean repository files | PASS after the `(7.20)`-`(7.21)` code/lookup/report update |
+| `/home/mymel/flare-bundle/dev-logs/CURRENT.md` direct scan over the new Chapter 7 log span | PASS after the `(7.20)`-`(7.21)` dev-log update; no literal tabs or conflict markers in the newly added lines, and whole-file trailing-whitespace scan was clean |
+| `timeout 180s lake build` | PASS, 3498 jobs, after the Chapter 7 `(7.20)`-`(7.21)` dependency update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | PASS after adding the finite-real `p` equations `(7.20)`-`(7.21)` lower/upper column-bound and column-equilibrated dependencies |
+| `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` | PASS, 3020 jobs, after rebuilding the Chapter 7 target containing the finite-real `p` equations `(7.20)`-`(7.21)` dependencies |
+| `lake env lean examples/LibraryLookup.lean > /tmp/ch7_eq721_finitep_lookup.out 2>&1` | PASS after adding lookup checks for the finite-real `p` equations `(7.20)`-`(7.21)` declarations |
+| `lake env lean --stdin` with `#print axioms` for finite-real `p` equations `(7.20)`-`(7.21)` declarations | PASS; `ch7RectColumnLpNormOfReal_nonneg`, `eq_7_20_column_lpNorm_le_matrixLpNormOfReal`, `ch7_complexVecLpNorm_realRect_matVec_le_sum_column_lpNorm`, `eq_7_20_matrixLpNormOfReal_le_card_rpow_mul_column_bound`, `ch7RectColumnLpNormOfReal_rightScale`, `ch7RectColumnLpNormOfReal_rightScale_equilibrating`, and `eq_7_21_matrixLpNormOfReal_column_equilibrated` report only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused Chapter 7 implementation/lookup placeholder and stale-wait scans | PASS after the finite-real `p` equations `(7.20)`-`(7.21)` update; implementation/lookup scans had no `sorry`, `admit`, `axiom`, `unsafe`, `opaque`, `TODO`, `FIXME`, `WAIT-PREVIOUS-SPLIT`, `WAIT-SPLIT1`, `WAIT-SPLIT`, or local placeholder matches |
+| `git diff --check` | PASS after the finite-real `p` equations `(7.20)`-`(7.21)` code/lookup/report update |
+| `timeout 600s lake build` | PASS, 3502 jobs, after the finite-real `p` equations `(7.20)`-`(7.21)` update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Analysis/Norms.lean` | PASS after adding `complexMatrixLpNormOfReal_mul_le` |
+| `lake build LeanFpAnalysis.FP.Analysis.Norms` | PASS, 2911 jobs, after rebuilding the finite-real matrix `p`-norm multiplication wrapper |
+| `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | PASS after adding the finite-real `p` explicit-`Aplus` `(7.18)`/`(7.22)` wrapper |
+| `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` | PASS, 3020 jobs, after rebuilding the Chapter 7 target containing the finite-real `p` explicit-`Aplus` wrapper |
+| `lake env lean examples/LibraryLookup.lean > /tmp/ch7_finitep_lookup.out 2>&1` | PASS after rebuilding stale `Norms`/Chapter 7 oleans and adding lookup checks for the finite-real `p` wrapper declarations |
+| `lake env lean --stdin` with `#print axioms` for finite-real `p` `(7.18)`/`(7.22)` declarations | PASS; `complexMatrixLpNormOfReal_mul_le`, `ch7_complexVecLpNormOfReal_diagScale_le_of_norm_le`, `eq_7_22_matrixLpNormOfReal_inverseSide_bound`, `theorem7_5_lp_column_equilibration_le_card_rpow_right_scaling`, and `theorem7_5_lp_column_equilibration_le_card_rpow_sInf_right_scalings` report only `propext`, `Classical.choice`, and `Quot.sound` |
+| strict implementation/lookup placeholder, stale-label, conflict-marker, trailing-whitespace, and diff scans | PASS after the finite-real `p` explicit-`Aplus` wrapper update; a broad prose scan matched only an old `Norms.lean` doc-comment phrase `admit an actual`, not a placeholder |
+| `timeout 600s lake build` | PASS, 3502 jobs, after the finite-real `p` explicit-`Aplus` wrapper update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | PASS after adding the Problem 7.11 exact-to-linearized asymptotic bridge |
+| `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` | PASS, 3009 jobs, after rebuilding the Chapter 7 target containing the Problem 7.11 exact-to-linearized asymptotic bridge |
+| `lake env lean examples/LibraryLookup.lean` | PASS after adding lookup checks for the Problem 7.11 finite two-sided max envelopes and exact-to-linearized bridge |
+| `lake env lean /tmp/ch7_problem711_asymptotic_bridge_axioms.lean` | PASS; `problem7_11_exact_inverse_relative_change_max_le_linearized_max_plus_quadratic`, `problem7_11_exact_inverse_relative_change_max_ge_linearized_max_minus_quadratic`, and `problem7_11_exact_inverse_relative_change_max_div_tendsto_linearized_of_quadratic_bound` report only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused Chapter 7 implementation/lookup/report placeholder and stale-wait scans | PASS after the Problem 7.11 exact-to-linearized bridge update; implementation/lookup scans had no `sorry`, `admit`, `axiom`, `unsafe`, `TODO`, `WAIT-PREVIOUS-SPLIT`, or `WAIT-SPLIT1` matches |
+| `git diff --check` over the touched Lean repository files | PASS after the Problem 7.11 exact-to-linearized bridge code/lookup/report update |
+| `/home/mymel/flare-bundle/dev-logs/CURRENT.md` direct scan over the new Chapter 7 log span | PASS after the Problem 7.11 exact-to-linearized bridge dev-log update; no literal tabs or conflict markers in the newly added lines, and whole-file trailing-whitespace scan was clean |
+| `timeout 180s lake build` | PASS, 3498 jobs, after the Problem 7.11 exact-to-linearized bridge update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | PASS after adding the Problem 7.11 entrywise inverse-bound bridge |
+| `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` | PASS, 3009 jobs, after adding the Problem 7.11 entrywise inverse-bound bridge |
+| `lake env lean examples/LibraryLookup.lean` | PASS after adding lookup checks for the Problem 7.11 entrywise inverse-bound bridge |
+| `lake env lean /tmp/ch7_problem711_entry_bound_axioms.lean` | PASS; `ch7InverseQuadraticRemainderRelativeMaxEntryBound_nonneg`, `ch7InverseQuadraticRemainderRelativeMax_abs_le_of_entry_bound`, and `problem7_11_exact_inverse_relative_change_max_div_tendsto_linearized_of_eventually_entry_bound` report only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused Chapter 7 implementation/lookup/report placeholder and stale-wait scans | PASS after the Problem 7.11 entrywise inverse-bound bridge update; implementation/lookup scans had no `sorry`, `admit`, `axiom`, `unsafe`, `opaque`, `TODO`, `WAIT-PREVIOUS-SPLIT`, or `WAIT-SPLIT1` matches |
+| `git diff --check` over the touched Lean repository files | PASS after the Problem 7.11 entrywise inverse-bound bridge code/lookup/report update |
+| `timeout 180s lake build` | PASS, 3498 jobs, after the Problem 7.11 entrywise inverse-bound bridge update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | PASS after adding the Problem 7.4 unit-diagonal symmetric PSD scaled-factor condition-bound package |
+| `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` | PASS, 3009 jobs, after adding the Problem 7.4 PSD scaled-factor package |
+| `lake env lean examples/LibraryLookup.lean` | PASS after adding lookup checks for the Problem 7.4 PSD scaled-factor declarations |
+| `lake env lean /tmp/ch7_problem74_axioms.lean` | PASS; `problem7_4_abs_entry_le_one_of_finitePSD_diag_one`, `problem7_4_unitDiagonal_entryBound_condition_bounds`, and `problem7_4_unitDiagonal_finitePSD_condition_bounds` report only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused Chapter 7 implementation/lookup/report placeholder and stale-wait scans | PASS after the Problem 7.4 PSD scaled-factor update; implementation/lookup scans had no `sorry`, `admit`, `axiom`, `unsafe`, `opaque`, `TODO`, `WAIT-PREVIOUS-SPLIT`, or `WAIT-SPLIT1` matches |
+| `git diff --check` over the touched Lean repository files | PASS after the Problem 7.4 PSD scaled-factor code/lookup/report update |
+| `timeout 180s lake build` | PASS, 3498 jobs, after the Problem 7.4 PSD scaled-factor update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | PASS after adding the Theorem 9.13 row-dominant transpose exact-LU/growth package |
+| `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter9` | PASS, 2992 jobs, after adding the Theorem 9.13 row-dominant transpose exact-LU/growth package |
+| `lake env lean --tstack=65536 examples/LibraryLookup.lean` | PASS after adding lookup checks for the Theorem 9.13 row-dominant transpose exact-LU/growth declarations |
+| `lake env lean --stdin` with `#print axioms` for `higham9_13_rowDiagDom_transpose_exists_LUFactSpec_growth_bound_3` and `higham9_13_rowDiagDom_transpose_exists_LUFactSpec_growthFactorEntry_le_three` | PASS; both report only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused implementation/lookup placeholder/local-placeholder/temp-file scans and Chapter 13/14 code/lookup diff scan | PASS after the row-dominant transpose exact-LU/growth update; no matches and no temporary axiom/probe files remain |
+| `git diff --check` | PASS after the row-dominant transpose exact-LU/growth code/lookup/report update |
+| `lake build` | PASS, 3498 jobs, after the row-dominant transpose exact-LU/growth update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| Theorem 9.13 row-dominant transpose exact-LU/growth existential package (`higham9_13_rowDiagDom_transpose_exists_LUFactSpec_growth_bound_3`, `higham9_13_rowDiagDom_transpose_exists_LUFactSpec_growthFactorEntry_le_three`) | `propext`, `Classical.choice`, `Quot.sound` |
+| `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter9` | PASS, 2992 jobs, after adding the Theorem 9.12 total-nonnegative exact-LU/growth package |
+| `lake env lean --tstack=65536 examples/LibraryLookup.lean > /tmp/split2_lookup_after_ch9_total_nonnegative_912.out 2>&1` | PASS after adding lookup checks for the Theorem 9.12 total-nonnegative exact-LU/growth declarations; redirected output has 317 lines |
+| `lake env lean --stdin` with `#print axioms` for `higham9_12_totalNonnegative_exists_LUFactSpec_optimal_growth` and `higham9_12_totalNonnegative_exists_LUFactSpec_growthFactorEntry_le_one` | PASS; both report only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused implementation/lookup placeholder/local-placeholder/temp-file scans and Chapter 13/14 code/lookup scan | PASS after the Theorem 9.12 total-nonnegative exact-LU/growth update; no matches and no temporary axiom/probe files remain |
+| `git diff --check` | PASS after the Theorem 9.12 total-nonnegative exact-LU/growth code/lookup/report/log update |
+| `lake build` | PASS, 3498 jobs, after the Theorem 9.12 total-nonnegative exact-LU/growth update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| Theorem 9.12 total-nonnegative exact-LU/growth existential package (`higham9_12_totalNonnegative_exists_LUFactSpec_optimal_growth`, `higham9_12_totalNonnegative_exists_LUFactSpec_growthFactorEntry_le_one`) | `propext`, `Classical.choice`, `Quot.sound` |
+| `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | PASS after adding the Chapter 7 Problem 7.10(e) fixed-scaling 2-norm interpolation package |
+| `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` | PASS, 3020 jobs, after rebuilding the Chapter 7 target containing the Problem 7.10(e) fixed-scaling 2-norm interpolation package |
+| `lake env lean examples/LibraryLookup.lean` | PASS after rebuilding the Chapter 7 target; an earlier lookup run failed only because the fresh `HighamChapter7.olean` was not yet present |
+| `lake env lean /tmp/ch7_bauer10e_op2_axioms.lean` | PASS; `ch7_complexMatrixOneNorm_realRectToCMatrix_le_oneNorm`, `ch7_complexMatrixInfNorm_realRectToCMatrix_le_infNorm`, `problem7_10e_complexMatrixOp2_realRectToCMatrix_le_sqrt_one_mul_inf`, `problem7_10e_scaled_op2Kappa_le_sqrt_oneKappa_mul_infKappa`, and `problem7_10e_scaled_op2Kappa_le_of_one_inf_bounds` report only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused Chapter 7 implementation/lookup/report placeholder, stale-wait, conflict-marker, and repo-diff scans | PASS after the Problem 7.10(e) fixed-scaling 2-norm update; implementation/lookup scans had no `sorry`, `admit`, `axiom`, `unsafe`, `opaque`, `TODO`, `WAIT-PREVIOUS-SPLIT`, or `WAIT-SPLIT1` matches |
+| direct trailing-whitespace and conflict-marker scans over the touched FLARE dev logs | PASS for `CURRENT.md`, `INDEX.md`, and `2026-06-25-chapter7-bauer-2norm-interpolation.md`; the FLARE dev-log directory is not a git repository, so `git diff --check` is not applicable there |
+| `git diff --check` over the touched Lean repository files | PASS after the Chapter 7 Problem 7.10(e) fixed-scaling 2-norm code/lookup/report update |
+| `timeout 600s lake build` | PASS, 3502 jobs, after the Chapter 7 Problem 7.10(e) fixed-scaling 2-norm update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | PASS after adding the Chapter 7 Problem 7.10(e) op-2 value-set lower-bound infrastructure |
+| `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` | PASS, 3020 jobs, after rebuilding the Chapter 7 target containing `ch7TwoSidedScaledOp2KappaSet_bddBelow` and `ch7TwoSidedScaledOp2KappaSet_sInf_nonneg` |
+| `lake env lean examples/LibraryLookup.lean` | PASS after adding lookup checks for the op-2 value-set lower-bound declarations |
+| `lake env lean --stdin` with fully qualified `#print axioms` for `ch7TwoSidedScaledOp2KappaSet_bddBelow` and `ch7TwoSidedScaledOp2KappaSet_sInf_nonneg` | PASS; both report only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused Chapter 7 implementation/lookup placeholder and stale-wait scan | PASS after the op-2 value-set lower-bound update; implementation/lookup scans had no `sorry`, `admit`, `axiom`, `unsafe`, `opaque`, `TODO`, `FIXME`, `WAIT-PREVIOUS-SPLIT`, `WAIT-SPLIT1`, `WAIT-SPLIT`, `False.elim`, or local placeholder matches |
+| `timeout 600s lake build` | PASS, 3502 jobs, after the Chapter 7 Problem 7.10(e) op-2 value-set lower-bound update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | PASS after adding the Chapter 7 reusable scaling value-set nonnegative-infimum infrastructure |
+| `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` | PASS, 3020 jobs, after rebuilding the Chapter 7 target containing `ch7Op2LeftScaledCondSet_sInf_nonneg`, `ch7SymmetricOp2ScaledCondSet_sInf_nonneg`, `ch7TwoSidedScaledInfCondSet_sInf_nonneg`, `ch7TwoSidedScaledInfKappaSet_sInf_nonneg`, and `ch7TwoSidedScaledOneKappaSet_sInf_nonneg` |
+| `lake env lean examples/LibraryLookup.lean` | PASS after adding lookup checks for the reusable scaling value-set nonnegative-infimum declarations |
+| `lake env lean --stdin` with fully qualified `#print axioms` for the five reusable scaling value-set nonnegative-infimum declarations | PASS; each reports only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused implementation/lookup placeholder and stale-wait scans plus anchored conflict-marker scans | PASS after the reusable scaling value-set nonnegative-infimum update; implementation/lookup scans had no `sorry`, `admit`, `axiom`, `unsafe`, `opaque`, `TODO`, `FIXME`, `WAIT-PREVIOUS-SPLIT`, `WAIT-SPLIT1`, `WAIT-SPLIT`, `False.elim`, or local placeholder matches |
+| `git diff --check` over the touched Lean repository files | PASS after the reusable scaling value-set nonnegative-infimum code/lookup/report update |
+| `timeout 600s lake build` | PASS, 3502 jobs, after the reusable scaling value-set nonnegative-infimum update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | PASS after adding the Chapter 7 Problem 7.10(c)/(e) `CB(Cx)` algebra and conditional positive-scaling `sInf` upper-bound package |
+| `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` | PASS, 3020 jobs, after rebuilding the Chapter 7 target containing the Problem 7.10(c)/(e) `sInf` package |
+| `lake env lean examples/LibraryLookup.lean` | PASS after rebuilding the Chapter 7 target containing the new lookup declarations |
+| `lake env lean /tmp/ch7_bauer10e_sinf_axioms.lean` | PASS; `ch7_bauer_Cx_eigenvector_CB`, `ch7TwoSidedScaledOp2Kappa_mem_set`, and `problem7_10e_twoSidedScaledOp2Kappa_sInf_le_of_one_inf_bounds` report only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused Chapter 7 implementation/lookup/report placeholder, stale-wait, conflict-marker, and repo-diff scans | PASS after the Problem 7.10(c)/(e) `sInf` package; implementation/lookup scans had no `sorry`, `admit`, `axiom`, `unsafe`, `opaque`, `TODO`, `WAIT-PREVIOUS-SPLIT`, or `WAIT-SPLIT1` matches |
+| direct trailing-whitespace and conflict-marker scans over the touched FLARE dev logs | PASS for `CURRENT.md`, `INDEX.md`, and `2026-06-25-chapter7-bauer-op2-sinf.md` |
+| `git diff --check` over the touched Lean repository files | PASS after the Chapter 7 Problem 7.10(c)/(e) code/lookup/report update |
+| `timeout 600s lake build` | PASS, 3502 jobs, after the Chapter 7 Problem 7.10(c)/(e) update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | PASS after adding the Chapter 7 Problem 7.10(d) irreducible eigenvector positivity transfer |
+| `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` | PASS, 3020 jobs, after rebuilding the Chapter 7 target containing the irreducible positivity transfer |
+| `lake env lean examples/LibraryLookup.lean` | PASS after adding lookup checks for the new irreducibility/Mathlib-power bridge declarations |
+| `lake env lean --stdin` with `#print axioms` for `ch7_matrix_mulVec_eq_matMulVec`, `ch7_matrix_pow_mulVec_eigen`, `ch7_nonneg_irreducible_right_eigenvector_pos`, and `problem7_10d_Cx_pos_of_irreducible_CB` | PASS; each reports only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused Chapter 7 implementation/lookup placeholder and repo-diff scans | PASS after the Problem 7.10(d) irreducible-positivity update; implementation/lookup scans had no `sorry`, `admit`, `axiom`, `unsafe`, `opaque`, `TODO`, `FIXME`, stale wait labels, `placeholder`, or `False.elim` matches |
+| `git diff --check` over the touched Lean repository files | PASS after the Chapter 7 Problem 7.10(d) code/lookup/report update |
+| `timeout 600s lake build` | PASS, 3502 jobs, after the Chapter 7 Problem 7.10(d) update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | PASS after adding the Chapter 7 Problem 7.10(d) source-shaped irreducible-product `Cx > 0` transfer |
+| `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` | PASS, 3020 jobs, after rebuilding the Chapter 7 target containing `ch7_perronScalar_pos_of_nonneg_irreducible_eigenvector`, `problem7_10d_Cx_pos_of_irreducible_BC_CB`, and `problem7_10d_abs_inverse_Cx_pos_of_irreducible_products` |
+| `lake env lean examples/LibraryLookup.lean` | PASS after adding lookup checks for the new source-shaped Problem 7.10(d) declarations |
+| `lake env lean --stdin` with `#print axioms` for the source-shaped Problem 7.10(d) declarations | PASS; `ch7_perronScalar_pos_of_nonneg_irreducible_eigenvector`, `problem7_10d_Cx_pos_of_irreducible_BC_CB`, and `problem7_10d_abs_inverse_Cx_pos_of_irreducible_products` report only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused Chapter 7 implementation/lookup placeholder and stale-label scans plus `pdftotext` source re-audit | PASS after the source-shaped Problem 7.10(d) update; implementation/lookup scans had no `sorry`, `admit`, `axiom`, `unsafe`, `opaque`, `TODO`, `FIXME`, stale wait labels, `placeholder`, or `False.elim` matches; report-inclusive scans matched only historical scan prose |
+| `git diff --check` over the touched Lean repository files | PASS after the Chapter 7 source-shaped Problem 7.10(d) code/lookup/report update |
+| `timeout 600s lake build` | PASS, 3502 jobs, after the Chapter 7 source-shaped Problem 7.10(d) update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | PASS after adding the Chapter 7 Problem 7.10(b) irreducible-products scaled-`κ∞` canonical and `sInf = rho` wrappers |
+| `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` | PASS, 3020 jobs, after rebuilding the Chapter 7 target containing `problem7_10b_irreducible_products_canonical_scaled_infKappa_eq_perron` and `problem7_10b_irreducible_products_scaledInfKappaSet_sInf_eq_perron` |
+| redirected `lake env lean examples/LibraryLookup.lean` | PASS after adding lookup checks for the Problem 7.10(b) irreducible-products scaled-`κ∞` wrappers; an unredirected run emitted a very large `#check` stream and exited nonzero at the tool/output layer, while the redirected rerun passed with status `0` |
+| `lake env lean --stdin` with `#print axioms` for the Problem 7.10(b) irreducible-products scaled-`κ∞` wrappers | PASS; both new declarations report only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused Chapter 7 implementation/lookup placeholder/stale-label scans, conflict-marker scan, `pdftotext` source re-audit, and `git diff --check` | PASS after the Problem 7.10(b) irreducible-products wrapper update; implementation/lookup scans had no `sorry`, `admit`, `axiom`, `unsafe`, `opaque`, `TODO`, `FIXME`, stale wait labels, `placeholder`, or `False.elim` matches |
+| `timeout 600s lake build` | PASS, 3502 jobs, after the Chapter 7 Problem 7.10(b) irreducible-products wrapper update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | PASS after adding the Chapter 7 Problem 7.10(a)/(b)/(e) certificate-level `sInf = rho` equality wrappers |
+| `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` | PASS, 3020 jobs, after rebuilding the Chapter 7 target containing the Bauer `sInf = rho` wrappers |
+| redirected `lake env lean examples/LibraryLookup.lean` | PASS after adding lookup checks for the Bauer `sInf = rho` wrappers; an unredirected run overflowed tool output, not Lean checking |
+| `lake env lean --stdin` with `#print axioms` for the six Bauer `sInf = rho` wrapper theorems | PASS; all report only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused Chapter 7 implementation/lookup placeholder and repo-diff scans | PASS after the Bauer `sInf = rho` wrapper update; implementation/lookup scans had no `sorry`, `admit`, `axiom`, `unsafe`, `opaque`, or `placeholder` matches |
+| `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | PASS after adding the Chapter 7 Problem 7.10(a)/(b)/(e) certificate-level `IsLeast` minimum-attainment wrappers |
+| `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` | PASS, 3020 jobs, after rebuilding the Chapter 7 target containing the Bauer `IsLeast` wrappers |
+| redirected `lake env lean examples/LibraryLookup.lean` | PASS after adding lookup checks for the Bauer `IsLeast` wrappers; the first pre-rebuild lookup run failed only because the fresh `.olean` did not yet contain the new declarations |
+| `lake env lean --stdin` with `#print axioms` for representative Bauer `IsLeast` wrapper theorems | PASS; all report only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused Chapter 7 implementation/lookup placeholder and hygiene scans | PASS after the Bauer `IsLeast` wrapper update; implementation/lookup scans had no `sorry`, `admit`, `axiom`, `unsafe`, `opaque`, stale wait labels, `TODO`, `FIXME`, `False.elim`, `by sorry`, or local placeholder matches, and conflict/trailing-whitespace scans found no matches |
+| `git diff --check` over touched Chapter 7 Lean, lookup, and report files | PASS after the Bauer `IsLeast` wrapper update |
+| `timeout 600s lake build` | PASS, 3502 jobs, after the Bauer `IsLeast` wrapper update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | PASS after adding the Chapter 7 Theorem 7.5 `p = 2` pairwise column-scaling condition-product specialization |
+| `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` | PASS, 3020 jobs, after rebuilding the Chapter 7 target containing the new p=2 condition-product declarations |
+| `lake env lean examples/LibraryLookup.lean` | PASS after adding lookup checks for the p=2 condition-product declarations |
+| `lake env lean --stdin` with `#print axioms` for `ch7_vecNorm2_mul_le_of_abs_le`, `ch7RectLeftScale_rectOpNorm2Le_of_abs_le`, `ch7Op2RightScaledCond`, `eq_7_22_op2_inverseSide_bound`, and `theorem7_5_p2_column_equilibration_le_sqrt_card_right_scaling` | PASS; each reports only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused Chapter 7 implementation/lookup/report placeholder, stale-wait, conflict-marker, and repo-diff scans | PASS after the Theorem 7.5 p=2 condition-product update; implementation/lookup scans had no `sorry`, `admit`, `axiom`, `unsafe`, `opaque`, `TODO`, `WAIT-PREVIOUS-SPLIT`, or `WAIT-SPLIT1` matches |
+| `git diff --check` over the touched Lean repository files | PASS after the Chapter 7 Theorem 7.5 p=2 code/lookup/report update |
+| `timeout 600s lake build` | PASS, 3502 jobs, after the Chapter 7 Theorem 7.5 p=2 update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | PASS after adding the Chapter 7 Theorem 7.5 explicit-`Aplus` `sInf` wrappers for `p = 1`, `p = 2`, and `p = ∞` |
+| `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` | PASS, 3020 jobs, after rebuilding the Chapter 7 target containing the new Theorem 7.5 `sInf` wrappers |
+| `lake env lean examples/LibraryLookup.lean` | PASS after adding lookup checks for the Theorem 7.5 `sInf` wrapper declarations |
+| `lake env lean --stdin` with `#print axioms` for `ch7OneNormRightScaledCondSet`, `theorem7_5_p1_column_equilibration_sInf_eq_right_scalings`, `ch7Op2RightScaledCondSet`, `ch7Op2RightScaledCondSet_nonempty`, `theorem7_5_p2_column_equilibration_le_sqrt_card_sInf_right_scalings`, `ch7InfNormLeftScaledCondSet`, and `theorem7_5_pinf_row_equilibration_sInf_eq_left_scalings` | PASS; each reports only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused Chapter 7 implementation/lookup/report placeholder, stale-label, conflict-marker, and repo-diff scans | PASS after the Theorem 7.5 `sInf` wrapper update; implementation/lookup scans had no `sorry`, `admit`, `axiom`, `unsafe`, `opaque`, `TODO`, `WAIT-PREVIOUS-SPLIT`, `WAIT-SPLIT1`, `WAIT-SPLIT`, or `placeholder` matches |
+| `git diff --check` over the touched Lean repository files | PASS after the Chapter 7 Theorem 7.5 `sInf` code/lookup/report update |
+| `timeout 600s lake build` | PASS, 3502 jobs, after the Chapter 7 Theorem 7.5 `sInf` wrapper update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | PASS after adding the Chapter 7 Theorem 7.5 `p = 2` row-scaling declarations |
+| `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` | PASS, 3020 jobs, after rebuilding the Chapter 7 target containing the new p=2 row-scaling declarations |
+| redirected `lake env lean examples/LibraryLookup.lean` | PASS after adding lookup checks for the p=2 row-scaling declarations |
+| `lake env lean TmpCh7P2RowAxioms.lean` | PASS before deleting the temporary axiom-check file; `ch7RectRightScale_rectOpNorm2Le_of_abs_le`, `eq_7_19_rectOpNorm2Le_row_equilibrated`, `eq_7_19_op2_inverseSide_bound`, `theorem7_5_p2_row_equilibration_le_sqrt_card_left_scaling`, and `theorem7_5_p2_row_equilibration_le_sqrt_card_sInf_left_scalings` report only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused Chapter 7 implementation/lookup placeholder and repo-diff scans | PASS after the Theorem 7.5 p=2 row-scaling update; implementation/lookup scans had no `sorry`, `admit`, `axiom`, `unsafe`, `opaque`, `TODO`, `FIXME`, or `placeholder` matches |
+| direct trailing-whitespace and conflict-marker scans over the touched FLARE dev logs | PASS for `CURRENT.md`, `INDEX.md`, and `2026-06-25-chapter7-theorem7-5-p2-row-scaling.md` |
+| `timeout 600s lake build` | PASS, 3502 jobs, after the Chapter 7 Theorem 7.5 p=2 row-scaling update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | PASS after adding the Chapter 7 Theorem 7.5 finite-real conjugate-row `(7.19)` declarations |
+| `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` | PASS, 3020 jobs, after rebuilding the Chapter 7 target containing the finite-real conjugate-row `(7.19)` declarations |
+| `lake env lean examples/LibraryLookup.lean` | PASS after adding lookup checks for the finite-real conjugate-row `(7.19)` declarations |
+| `lake env lean --stdin` with `#print axioms` for `eq_7_19_matrixLpNormOfReal_dual_row_equilibrated`, `eq_7_19_matrixLpNormOfReal_dual_row_inverseSide_bound`, `theorem7_5_lp_dual_row_equilibration_le_card_rpow_left_scaling`, and `theorem7_5_lp_dual_row_equilibration_le_card_rpow_sInf_left_scalings` | PASS; each reports only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused Chapter 7 implementation/lookup placeholder, stale-label, and diff scans | PASS after the finite-real conjugate-row `(7.19)` update; implementation/lookup scans had no `sorry`, `admit`, `axiom`, `unsafe`, `TODO`, `FIXME`, `WAIT-PREVIOUS-SPLIT`, `WAIT-SPLIT1`, `WAIT-SPLIT`, or local `placeholder` matches |
+| `git diff --check` over the touched Lean repository files | PASS after the Chapter 7 Theorem 7.5 conjugate-row code/lookup/report update |
+| `timeout 600s lake build` | PASS, 3502 jobs, after the Chapter 7 Theorem 7.5 conjugate-row update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | PASS after adding the Chapter 7 Theorem 7.5 conditional source-`min` adapters for the finite-real and `p = 2` non-endpoint explicit-`Aplus` value sets |
+| `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` | PASS, 3020 jobs, after rebuilding the Chapter 7 target containing the conditional source-`min` adapters |
+| redirected `lake env lean --tstack=65536 examples/LibraryLookup.lean` | PASS after adding lookup checks for the conditional source-`min` adapters; the first pre-rebuild lookup failed only because the fresh `.olean` did not yet contain the new declarations |
+| `lake env lean --stdin` with `#print axioms` for representative conditional source-`min` adapters | PASS; all probed declarations report only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused Chapter 7 implementation/lookup placeholder and hygiene scans | PASS after the conditional source-`min` adapter update; implementation/lookup scans had no `sorry`, `admit`, `axiom`, `unsafe`, `opaque`, stale wait labels, `TODO`, `FIXME`, `False.elim`, `by sorry`, or local placeholder matches, and conflict/trailing-whitespace scans found no matches |
+| `git diff --check` over touched Chapter 7 Lean, lookup, and report files | PASS after the conditional source-`min` adapter update |
+| `pdftotext -layout` Theorem 7.5 source re-audit | PASS; equations `(7.18)` and `(7.19)` are source-`min` statements, and the new Lean adapters are correctly documented as conditional on supplied `IsLeast` certificates rather than as general minimizer-existence proofs |
+| `timeout 600s lake build` | PASS, 3502 jobs, after the conditional source-`min` adapter update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | PASS after adding the Chapter 7 Theorem 7.5 Penrose1-plus-Matrix-rank endpoint, `sInf`, and conditional source-`min` adapters |
+| `lake env lean --tstack=65536 examples/LibraryLookup.lean` | PASS after adding lookup checks for the ten Penrose rank-min adapters |
+| `lake env lean /tmp/ch7_penrose_rank_min_axioms.lean` | PASS; all ten Penrose rank-min adapters report only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused Chapter 7 implementation/lookup placeholder and hygiene scans | PASS after the Penrose rank-min adapter update; implementation/lookup scans had no `sorry`, `admit`, `axiom`, `unsafe`, `opaque`, stale wait labels, `TODO`, `FIXME`, `False.elim`, `by sorry`, or local placeholder matches, and conflict/trailing-whitespace scans found no matches |
+| `pdftotext -layout` Theorem 7.5 source re-audit | PASS; the source states pseudo-inverse `A+`, printed `rank(A)=n/m`, and source `min` inequalities `(7.18)`/`(7.19)`, so the new adapters are correctly documented as Penrose1-plus-rank wrappers over existing value-set surfaces rather than as Moore-Penrose construction or minimizer-existence proofs |
+| `timeout 600s lake build` | PASS, 3502 jobs, after the Penrose rank-min adapter update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Analysis/MatrixAlgebra.lean` | PASS after adding the Theorem 7.5 reusable rectangular projection-dependency lemmas |
+| `lake build LeanFpAnalysis.FP.Analysis.MatrixAlgebra` | PASS, 2412 jobs, after adding the residual projection-geometry and best-approximation lemmas |
+| `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | PASS after adding the Theorem 7.5 source-facing algebraic/symmetric projection-dependency wrappers |
+| `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` | PASS, 3020 jobs, after rebuilding the Chapter 7 target containing the new projection-dependency wrappers |
+| `lake env lean --tstack=65536 examples/LibraryLookup.lean` | PASS after adding lookup checks for the projection-dependency declarations |
+| `lake env lean --stdin` with `#print axioms` for the projection-dependency/projection-geometry declarations | PASS for 21 new residual-geometry and source-facing declarations; each reports only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused implementation/lookup placeholder, diff, conflict-marker, and trailing-whitespace scans | PASS after the projection-geometry update; implementation/lookup scans had no `sorry`, `admit`, `axiom`, `unsafe`, `opaque`, stale wait labels, `TODO`, `FIXME`, `placeholder`, or `by sorry` matches.  Focused scans still show pre-existing `False.elim` occurrences in `MatrixAlgebra.lean` at lines 2085, 5460, 6951, and 6981, and a broad added-line diff scan matched report prose plus two earlier Problem 7.15 Hadamard-support `False.elim` lines, not the new projection declarations |
+| `pdftotext -layout` Theorem 7.5 source re-audit | PASS after the projection-geometry update; the source still uses pseudo-inverse `A+` and `min` over diagonal scalings, so the new Lean declarations are correctly recorded as projection dependencies for range/domain fixing, residual orthogonality, and best approximation rather than as full Moore-Penrose existence or minimizer-existence proofs |
+| `timeout 600s lake build` | PASS, 3502 jobs, after the projection-geometry update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | PASS after adding the Corollary 7.6 Cholesky-factor `D*` source-scale dependency declarations |
+| `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` | PASS, 3020 jobs, after rebuilding the Chapter 7 target containing the new Corollary 7.6 declarations |
+| `lake env lean examples/LibraryLookup.lean` | PASS after adding lookup checks for the Corollary 7.6 Cholesky-factor declarations |
+| `lake env lean --stdin` with `#print axioms` for the seven new `corollary7_6_cholesky_*` theorems | PASS; each reports only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused Chapter 7 implementation/lookup placeholder and stale-label scans | PASS after the Corollary 7.6 update; implementation/lookup scans had no `sorry`, `admit`, `axiom`, `unsafe`, `opaque`, `TODO`, `WAIT-PREVIOUS-SPLIT`, `WAIT-SPLIT1`, `WAIT-SPLIT`, `placeholder`, or `False.elim` matches |
+| `git diff --check` over the touched Lean repository files | PASS after the Chapter 7 Corollary 7.6 code/lookup/report update |
+| `timeout 600s lake build` | PASS, 3502 jobs, after the Chapter 7 Corollary 7.6 update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Analysis/Norms.lean` | PASS after adding the complex op-2 Gram and real complexification helper lemmas |
+| `lake build LeanFpAnalysis.FP.Analysis.Norms` | PASS, 2911 jobs, after refreshing the Norms `.olean` artifacts for the new helper lemmas |
+| `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | PASS after adding the Corollary 7.6 inverse-Gram/product-square bridge declarations |
+| `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` | PASS, 3020 jobs, after rebuilding the Chapter 7 target containing the inverse-Gram/product-square bridge declarations |
+| `lake env lean examples/LibraryLookup.lean` | PASS after adding lookup checks for the new Corollary 7.6 and Norms helper declarations |
+| `lake env lean --stdin` with `#print axioms` for `complexMatrixOp2_adjoint_mul_self_eq_sq`, `complexMatrixOp2_mul_adjoint_self_eq_sq`, `complexMatrixOp2_realRectToCMatrix_transpose_mul_self_eq_sq`, `complexMatrixOp2_realRectToCMatrix_mul_transpose_self_eq_sq`, `corollary7_6_cholesky_scaled_cond_eq_factor_cond_sq`, `corollary7_6_cholesky_inverse_gram_isInverse`, and `corollary7_6_cholesky_scaled_inverse_gram_isInverse` | PASS; each reports only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused Chapter 7/Norms implementation/lookup/report placeholder and stale-label scans | PASS after the Corollary 7.6 inverse-Gram/product-square update; no leading `sorry`, `admit`, `axiom`, `unsafe`, or `opaque`; broad matches were only historical report command strings, axiom-summary prose, and pre-existing `False.elim` uses in `Norms.lean`, not the new declarations |
+| `git diff --check` over the touched Lean repository files | PASS after the Corollary 7.6 inverse-Gram/product-square code/lookup/report update |
+| `timeout 600s lake build` | PASS, 3502 jobs, after the Corollary 7.6 inverse-Gram/product-square update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | PASS after adding the Corollary 7.6 squared factor-infimum theorem |
+| `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` | PASS, 3020 jobs, after rebuilding the Chapter 7 target containing the squared factor-infimum theorem |
+| `lake env lean examples/LibraryLookup.lean` | PASS after adding lookup checks for `ch7Op2RightScaledCondSet_sInf_nonneg` and `corollary7_6_cholesky_scaled_cond_le_card_sInf_right_scalings_sq` |
+| `lake env lean --stdin` with fully qualified `#print axioms` for `LeanFpAnalysis.FP.ch7Op2RightScaledCondSet_sInf_nonneg` and `LeanFpAnalysis.FP.corollary7_6_cholesky_scaled_cond_le_card_sInf_right_scalings_sq` | PASS; each reports only `propext`, `Classical.choice`, and `Quot.sound`. An earlier unqualified stdin command failed only because it did not open the `LeanFpAnalysis.FP` namespace |
+| focused Chapter 7 implementation/lookup/report placeholder and stale-label scans | PASS after the Corollary 7.6 squared factor-infimum update; implementation/lookup scans had no `sorry`, `admit`, `axiom`, `unsafe`, `opaque`, `TODO`, `WAIT-PREVIOUS-SPLIT`, `WAIT-SPLIT1`, `WAIT-SPLIT`, `placeholder`, or `False.elim` matches; the only leading-placeholder scan hit was report prose beginning with `axiom-summary` |
+| `git diff --check` over the touched Lean repository files | PASS after the Corollary 7.6 squared factor-infimum code/lookup/report update |
+| `timeout 600s lake build` | PASS, 3502 jobs, after the Corollary 7.6 squared factor-infimum update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` | PASS after adding the Corollary 7.6 symmetric two-sided `sInf` value-set transfer |
+| `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` | PASS, 3020 jobs, after rebuilding the Chapter 7 target containing the symmetric `sInf` transfer |
+| redirected `lake env lean examples/LibraryLookup.lean` | PASS after adding lookup checks for `ch7SymmetricOp2ScaledCondSet`, `corollary7_6_cholesky_right_sInf_sq_le_symmetric_sInf`, and `corollary7_6_cholesky_scaled_cond_le_card_sInf_symmetric_scalings`; an unredirected run returned nonzero only because the tool output was too large |
+| `lake env lean --stdin` with `#print axioms` for `ch7SymmetricOp2ScaledCondSet_nonempty`, `ch7SymmetricOp2ScaledCondSet_bddBelow`, `corollary7_6_cholesky_right_sInf_sq_le_symmetric_sInf`, and `corollary7_6_cholesky_scaled_cond_le_card_sInf_symmetric_scalings` | PASS; each reports only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused Chapter 7 implementation/lookup placeholder and stale-label scans plus focused report stale-Corollary-blocker scan | PASS after the Corollary 7.6 symmetric `sInf` transfer; implementation/lookup scans had no `sorry`, `admit`, `axiom`, `unsafe`, `opaque`, `TODO`, stale wait labels, `placeholder`, or `False.elim` matches, and report scan had no stale Corollary 7.6 global-transfer blocker text |
+| `git diff --check` over the touched Lean repository files | PASS after the Corollary 7.6 symmetric `sInf` transfer code/lookup/report update |
+| `timeout 600s lake build` | PASS, 3502 jobs, after the Corollary 7.6 symmetric `sInf` transfer update; warnings only in pre-existing QR/Givens and FastMatMul modules |
+| Chapter 7 Theorem 7.5 same-`A⁺` conditional source-`min` continuation verification | PASS: `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean`, `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` (`3020` jobs), `lake env lean --tstack=65536 examples/LibraryLookup.lean` after rebuilding the target, `lake env lean --stdin` `#print axioms`, `pdftotext -layout` source re-audit, focused implementation/lookup placeholder scans, anchored conflict/trailing-whitespace scans, `git diff --check`, and `timeout 600s lake build` (`3502` jobs) all passed; the first lookup attempt before the target rebuild failed only because the fresh declarations were not yet in the `.olean` |
+| Chapter 7 Theorem 7.5 same-`A⁺` conditional source-`min` `#print axioms` | PASS for `theorem7_5_p2_column_equilibration_exists_penrose_min_imp_of_matrix_rank_eq_width`, `theorem7_5_lp_column_equilibration_exists_penrose_min_imp_of_matrix_rank_eq_width`, `theorem7_5_lp_dual_row_equilibration_exists_penrose_min_imp_of_matrix_rank_eq_height`, and `theorem7_5_p2_row_equilibration_exists_penrose_min_imp_of_matrix_rank_eq_height`; each reports only `propext`, `Classical.choice`, and `Quot.sound` |
+| Chapter 7 Problem 7.10 nonzero-nonnegative irreducible `spectralRadius` continuation verification | PASS: `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean`, `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` (`3020` jobs), `lake env lean --tstack=65536 examples/LibraryLookup.lean`, namespace-aware `lake env lean --stdin` `#print axioms`, focused implementation/lookup placeholder scan, conflict/trailing-whitespace scans, `git diff --check`, `pdftotext -layout` source re-audit of Theorem 7.8 / Problem 7.10, and `timeout 600s lake build` (`3502` jobs) all passed; full build warnings were only the pre-existing QR/Givens/FastMatMul warnings |
+| Chapter 7 Problem 7.10 nonzero-nonnegative irreducible `spectralRadius` `#print axioms` | PASS for `problem7_10a_product_toLin_spectralRadius_eq_of_irreducible_nonzero_nonneg_eigenvector`, `problem7_10b_abs_product_toLin_spectralRadius_eq_of_irreducible_nonzero_nonneg_eigenvector`, `problem7_10a_scaled_product_toLin_spectralRadius_eq_of_irreducible_nonzero_nonneg_eigenvector`, and `problem7_10e_abs_transpose_product_toLin_spectralRadius_eq_of_irreducible_nonzero_nonneg_eigenvector`; each reports only `propext`, `Classical.choice`, and `Quot.sound` |
+| Chapter 7 Theorem 7.5 reciprocal-domain/coercivity continuation verification | PASS: `lake env lean LeanFpAnalysis/FP/Analysis/Norms.lean`, `lake build LeanFpAnalysis.FP.Analysis.Norms`, `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean`, `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` (`3020` jobs), `lake env lean --tstack=65536 examples/LibraryLookup.lean`, namespace-aware `lake env lean --stdin` `#print axioms`, focused placeholder/stale-label scans, conflict/trailing-whitespace scans, `git diff --check`, `pdftotext -layout` source re-audit of Theorem 7.5, and `timeout 600s lake build` (`3502` jobs) all passed; full build warnings were only the pre-existing QR/Givens/FastMatMul warnings |
+| Chapter 7 Theorem 7.5 reciprocal-domain/coercivity `#print axioms` | PASS for `continuous_complexMatrixOp2`, the right/left reciprocal normalized equality and `IsLeast` transfer theorems, `continuousOn_ch7Op2RightScaledCond_reciprocal`, `continuousOn_ch7Op2LeftScaledCond_reciprocal`, and the right/left normalized lower-exists and inverse-coordinate sublevel bounds; each reports only `propext`, `Classical.choice`, and `Quot.sound` |
+
+For the Chapter 7 Theorem 7.5 explicit-`Aplus` continuation specifically, no
+orphan classes or vacuous definitions are used: `ch7OneNormRightScaledCondSet`,
+`ch7Op2RightScaledCondSet`, and `ch7InfNormLeftScaledCondSet` are source-shaped
+value sets over reciprocal diagonal scalings for existing condition-product
+factors, and the new theorems prove exact p=1/p=∞ infimum attainment and the
+p=2 `sqrt(n) * sInf` wrapper from the previously proved pairwise inequalities.
+
+For the Chapter 7 Theorem 7.5 same-`A⁺` conditional source-`min` continuation,
+no orphan classes or vacuous definitions are used: the new declarations are
+theorem compositions over the proved normal-equations Moore-Penrose candidate,
+the existing Penrose-equation package, and existing `IsLeast` conditional
+source-`min` inequalities.  They do not introduce new value-set definitions,
+certificate fields, or minimizer-existence assumptions.
+
+For the Chapter 7 Theorem 7.5 reciprocal-domain/coercivity continuation, no
+orphan classes or vacuous definitions are used.  The new reciprocal normalized
+sets eliminate the explicit inverse diagonal using proved pointwise reciprocal
+uniqueness, and the continuity/lower-bound/sublevel declarations are ordinary
+theorems over existing value-set and norm definitions; they do not assert
+minimizer existence as an assumption.
+
+For the Chapter 7 finite-real `p` equations `(7.20)`-`(7.21)` continuation
+specifically, no orphan classes or vacuous definitions are used:
+`ch7RectColumnLpNormOfReal` is the source column `p`-norm bridge over the
+existing finite complex `Lp` norm, and the new theorems prove lower and upper
+matrix-norm bounds plus the reciprocal column-equilibrated bound from the
+existing local least-bound matrix `p`-norm API.
+
+For the Chapter 7 Corollary 7.6 inverse-Gram/product-square continuation
+specifically, no orphan classes or vacuous definitions are used:
+`ch7SymmetricOp2ScaledCond` and `ch7CholeskyInverseGram` model the source
+condition product and Cholesky inverse-side Gram candidate, and the new
+`corollary7_6_cholesky_*` declarations prove Gram scaling, inverse transport,
+and operator-2 product-square facts from explicit hypotheses.
+
+For this Chapter 7 continuation specifically, no orphan classes or vacuous
+definitions are used: `ch7_bauer_Cx_eigenvector_CB` is a finite algebra lemma,
+`ch7TwoSidedScaledOp2Kappa_mem_set` is a proved membership wrapper for the
+existing op-2 value set, and
+`problem7_10e_twoSidedScaledOp2Kappa_sInf_le_of_one_inf_bounds` is a proved
+`csInf_le` consequence of the fixed-scaling interpolation theorem.
+
+For the Chapter 7 Problem 7.10(d) irreducible-positivity continuation
+specifically, no orphan classes or vacuous definitions are used:
+`ch7_matrix_mulVec_eq_matMulVec` and `ch7_matrix_pow_mulVec_eigen` are bridge
+lemmas between the repository function-shaped matrix API and Mathlib matrix
+powers, `ch7_nonneg_irreducible_right_eigenvector_pos` is a proved positivity
+propagation theorem over Mathlib's irreducibility API, and
+`problem7_10d_Cx_pos_of_irreducible_CB` is the Bauer specialization under an
+explicit eigenvector/eigenvalue certificate.
+
+For the later Chapter 7 Problem 7.10(d) source-shaped irreducible-product
+continuation, no orphan classes or vacuous definitions are used:
+`ch7_perronScalar_pos_of_nonneg_irreducible_eigenvector` is a proved
+positive-eigenvalue lemma over Mathlib irreducibility and matrix powers, and
+`problem7_10d_Cx_pos_of_irreducible_BC_CB` plus
+`problem7_10d_abs_inverse_Cx_pos_of_irreducible_products` are theorem wrappers
+that discharge the old `ρ > 0` side condition from source irreducibility of the
+two products.
+
+For the latest Chapter 7 Problem 7.10(b) irreducible-products continuation, no
+orphan classes or vacuous definitions are used:
+`problem7_10b_irreducible_products_canonical_scaled_infKappa_eq_perron` and
+`problem7_10b_irreducible_products_scaledInfKappaSet_sInf_eq_perron` are proved
+theorem compositions.  They reuse
+`problem7_10d_abs_inverse_Cx_pos_of_irreducible_products` to discharge the
+`|A⁻¹|x > 0` side condition before invoking the existing canonical and
+`sInf = ρ` scaled-`κ∞` Bauer theorems.
+
+For the Chapter 7 Bauer minimum-attainment continuation, no orphan classes or
+vacuous definitions are used: the new `IsLeast` declarations are theorem
+wrappers over existing positive reciprocal value sets, with membership supplied
+by the canonical source scaling and lower bounds supplied by already proved
+Bauer inequalities.  They do not encode PF existence, spectral-radius
+identification, or compatible common-scaling existence as hypotheses.
+
 No orphan classes or vacuous definitions are used by the new declarations: the
 new definitions model source pivot choices, the Problem 9.14 pre-pivoted GEPP
 source-facing alias and row-reversal permutation surface, Algorithm 9.2's printed
@@ -1915,10 +3401,241 @@ Chapter 13/14 scan over the public lookup files and touched Chapter 9/10 files
 found no artifacts; report mentions of Chapter 13 are only allowed deferred
 destinations for Chapter 12 Problem 12.4 and related audit notes.
 
+Chapter 7 Theorem 7.5 `p = 2` minimizer-extraction update: the explicit
+operator-2 right and left reciprocal value sets now have compact-core and
+compact-sublevel proofs, least-value extraction on the normalized reciprocal
+sets, transfers back to the normalized/unrestricted value sets, and
+source-facing existential `min` wrappers under explicit one-sided inverse
+hypotheses.  The closed declarations include
+`ch7Op2RightScaledCondReciprocalNormalizedSet_exists_isLeast`,
+`ch7Op2RightScaledCondSet_exists_isLeast`,
+`theorem7_5_p2_column_equilibration_exists_min_right_scalings_of_rect_left_inverse`,
+`ch7Op2LeftScaledCondReciprocalNormalizedSet_exists_isLeast`,
+`ch7Op2LeftScaledCondSet_exists_isLeast`, and
+`theorem7_5_p2_row_equilibration_exists_min_left_scalings_of_rect_right_inverse`.
+This supersedes the older split-summary wording that the `p = 2`
+compact-sublevel/`IsLeast` extraction was still open.  The remaining
+Theorem 7.5 source-min work is the general finite-real `p` non-endpoint
+attainment API; it is a current Split 2 compactness/continuity follow-up, not
+a previous-split dependency.  The Chapter 7 report contains the detailed row.
+
+Chapter 7 Theorem 7.5 finite-real `p` normalization update: the general
+finite-real non-endpoint right/left value-set layer now has proved global
+rescaling invariance, absolute-sum-one normalization, normalized value-set
+equality, reciprocal one-diagonal representation, and normalized `IsLeast`
+transfer wrappers.  The new declarations include
+`ch7_complexMatrixLpNormOfReal_smul`,
+`ch7LpRightScaledCondSetOfReal_eq_sum_abs_normalized`,
+`ch7LpRightScaledCondSetOfReal_isLeast_iff_sum_abs_normalized`,
+`ch7LpRightScaledCondNormalizedSetOfReal_eq_reciprocal_normalized`,
+`theorem7_5_lp_column_equilibration_le_card_rpow_min_right_scalings_of_normalized`,
+`theorem7_5_lp_column_equilibration_le_card_rpow_min_right_scalings_of_rect_left_inverse_of_normalized`,
+and the corresponding left-scaling declarations
+`ch7LpLeftScaledCondSetOfReal_eq_sum_abs_normalized`,
+`ch7LpLeftScaledCondSetOfReal_isLeast_iff_sum_abs_normalized`,
+`ch7LpLeftScaledCondNormalizedSetOfReal_eq_reciprocal_normalized`,
+`theorem7_5_lp_dual_row_equilibration_le_card_rpow_min_left_scalings_of_normalized`,
+and
+`theorem7_5_lp_dual_row_equilibration_le_card_rpow_min_left_scalings_of_rect_right_inverse_of_normalized`.
+This closes finite-real `p` normalization/certificate plumbing by proof.  It
+does not close finite-real `p` minimizer attainment; the remaining current Split
+2 target is the compactness/continuity/minimizer-extraction analogue of the
+closed `p = 2` path for `complexMatrixLpNormOfReal` products on normalized
+reciprocal slices.  No previous-split dependency is exposed.
+
+Chapter 7 Theorem 7.5 finite-real `p` minimizer-completion update: the
+remaining compactness/continuity/minimizer-extraction route for general
+finite-real `p` is now closed.  `Norms.lean` exports
+`continuous_complexMatrixLpNorm` and `continuous_complexMatrixLpNormOfReal`.
+The Chapter 7 right-scaling path adds reciprocal continuity, compact sublevel
+closedness/compactness, normalized and unrestricted `exists_isLeast`
+extraction, and source-facing explicit-left-inverse wrappers:
+`continuousOn_ch7LpRightScaledCondOfReal_reciprocal`,
+`isCompact_ch7LpRightScaledCondReciprocalCompactSublevelOfReal`,
+`ch7LpRightScaledCondSetOfReal_exists_isLeast`, and
+`theorem7_5_lp_column_equilibration_exists_min_right_scalings_of_rect_left_inverse`.
+The left-scaling conjugate-row path adds the analogous declarations
+`continuousOn_ch7LpLeftScaledCondOfReal_reciprocal`,
+`isCompact_ch7LpLeftScaledCondReciprocalCompactSublevelOfReal`,
+`ch7LpLeftScaledCondSetOfReal_exists_isLeast`, and
+`theorem7_5_lp_dual_row_equilibration_exists_min_left_scalings_of_rect_right_inverse`.
+The printed rank/Moore-Penrose packaging is also upgraded from conditional
+`min_imp` wrappers to actual source-min wrappers for `p = 2` and finite-real
+general `p`, including
+`theorem7_5_lp_column_equilibration_exists_penrose_min_of_matrix_rank_eq_width`
+and
+`theorem7_5_lp_dual_row_equilibration_exists_penrose_min_of_matrix_rank_eq_height`.
+This supersedes older split-summary wording that finite-real `p` source-min
+attainment was open.  The only remaining Chapter 7 selected source-facing
+blocker is Theorem 7.8 / Problem 7.10 full Bauer closure: current searches of
+the repository, lookup files, and Mathlib found no Perron-Frobenius theorem
+producing the required positive eigenpair from irreducibility and no compatible
+common-scaling theorem for the op-2 branch.  No previous-split dependency is
+unresolved.
+
+Chapter 7 Problem 7.10 finite spectral-radius eigenpair update: the finite
+complex spectral-radius attainment layer is now closed for the Bauer products.
+The new declarations
+`ch7_toLin_exists_spectralRadius_attaining_eigenpair`,
+`problem7_10a_product_toLin_exists_spectralRadius_attaining_eigenpair`,
+`problem7_10b_abs_product_toLin_exists_spectralRadius_attaining_eigenpair`,
+and
+`problem7_10e_abs_transpose_product_toLin_exists_spectralRadius_attaining_eigenpair`
+prove that the Mathlib algebraic `spectralRadius` of the relevant finite
+complex matrix endomorphism is attained by a nonzero complex eigenpair and
+expose the source-product wrappers in `complexMatrixVecMul` notation.  This
+supersedes older split-summary wording that spectral-radius identification was
+open in general.  The remaining Bauer blocker is narrower: prove or expose a
+Perron-Frobenius theorem that supplies a positive real Perron vector from the
+source irreducibility hypotheses, and prove the compatible common op-2 Bauer
+scaling at the source spectral-radius value.
+
+Chapter 7 Problem 7.10 nonnegative subeigenvector update: the elementary
+absolute-value bridge from a complex spectral-radius-attaining eigenpair to a
+real nonzero nonnegative subeigenvector is now closed.  The new declarations
+`ch7_abs_complex_eigenvector_subeigenvector_of_nonneg_matrix` and
+`ch7_exists_spectralRadius_attaining_nonneg_subeigenvector` prove that for a
+nonnegative real matrix, componentwise moduli of a nonzero complex eigenvector
+give `x >= 0`, `x != 0`, and `||mu|| x <= A x`.  The source product wrappers
+`problem7_10a_product_exists_spectralRadius_attaining_nonneg_subeigenvector`,
+`problem7_10b_abs_product_exists_spectralRadius_attaining_nonneg_subeigenvector`,
+and
+`problem7_10e_abs_transpose_product_exists_spectralRadius_attaining_nonneg_subeigenvector`
+expose this result for `BC`, `|A||A^-1|`, and `|A|^T |A^-1|^T`.  This narrows
+the remaining Bauer blocker further: the repository still needs the
+Perron-Frobenius upgrade from irreducibility to a positive real Perron
+eigenvector and the compatible common op-2 Bauer scaling theorem.  No
+previous-split dependency is unresolved.
+
+Chapter 7 Problem 7.10 irreducible support-propagation update: the
+power-reachability dependency behind the Perron-Frobenius route is now exposed
+as a reusable theorem.  The new declaration
+`ch7_irreducible_pow_mulVec_pos_of_nonzero_nonneg` proves that a nonnegative
+irreducible matrix sends any nonzero nonnegative vector to a vector with
+positive `i`th coordinate after some positive matrix power, for every
+coordinate `i`.  The existing supplied-eigenpair positivity theorem
+`ch7_nonneg_irreducible_right_eigenvector_pos` now reuses this lemma.  This is
+not Perron-Frobenius eigenvector existence; the remaining Bauer blocker is
+still the upgrade from irreducibility to a positive real Perron eigenvector and
+the compatible common op-2 Bauer scaling theorem.  No previous-split dependency
+is unresolved.
+
+Chapter 7 Problem 7.10 irreducible finite power-sum update: two additional
+Perron-Frobenius route dependencies are now closed.  The new declarations
+`ch7_matrix_pow_mulVec_nonneg_of_nonneg`,
+`ch7_exists_irreducible_pow_sum_pos`, and
+`ch7_exists_irreducible_pow_sum_mulVec_pos_of_nonzero_nonneg` prove that
+powers of a nonnegative matrix preserve nonnegative vectors, that an
+irreducible nonnegative matrix has a finite sum of positive powers with every
+matrix entry strictly positive, and that the corresponding finite powered
+iterate sum sends every nonzero nonnegative vector to a strictly positive
+vector.  A compact math-only whole-problem packet for the remaining
+Perron-Frobenius blocker was prepared at
+`chapter_splitting/proof_packets/ch7_bauer_pf_whole_problem_2026-06-26.tex`;
+the attempted external GPT-5.5 Pro Oracle call was rejected by the approval
+layer as an external export of project-derived content, so no advisory result
+was received.  The remaining Bauer blocker is still source-facing PF eigenpair
+existence from irreducibility plus compatible common op-2 Bauer scaling; no
+previous-split dependency is unresolved.
+
+Chapter 7 Problem 7.10 subeigenvector iteration update: the order-theoretic
+iteration layer below the remaining Perron-Frobenius gate is now closed.  The
+new declarations `ch7_matrix_mulVec_mono_of_nonneg`,
+`ch7_matrix_pow_mulVec_subeigen_le_of_nonneg`,
+`ch7_pow_sum_mulVec_subeigen_le_of_nonneg`, and
+`ch7_exists_irreducible_pow_sum_mulVec_pos_and_subeigen_le` prove
+componentwise monotonicity of nonnegative matrix-vector multiplication,
+iteration of `lam*x <= A*x` through powers, finite-sum iteration, and the
+combined irreducible nonzero nonnegative subeigenvector finite-power
+certificate.  This further narrows the remaining Bauer blocker but does not
+prove Perron-Frobenius eigenpair existence or the compatible common op-2
+scaling theorem.  A current-branch/Mathlib search still finds only supplied
+positive-eigenvector wrappers, not an existence theorem from
+`Matrix.IsIrreducible`; no previous-split dependency is unresolved.
+
+Chapter 7 Problem 7.10 positive subeigenvector upgrade update: the next local
+Perron-Frobenius route dependency is now closed.  The new declarations
+`ch7_matrix_pow_mulVec_subeigen_step_of_nonneg` and
+`ch7_exists_positive_subeigenvector_of_irreducible_nonzero_nonneg_subeigen`
+prove that a nonzero nonnegative subeigenvector for a nonnegative irreducible
+matrix can be converted, by summing finite positive powered iterates, into a
+strictly positive subeigenvector with the same subeigenvalue.  This is still
+below the source Perron-Frobenius theorem: it does not prove an eigenvector
+equation, spectral-radius equality, or compatible common op-2 Bauer scaling.
+No previous-split dependency is unresolved.  Verification passed: targeted
+Chapter 7 Lean check, `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7`
+(`3024` jobs), lookup check, full `timeout 600s lake build` (`3506` jobs; only
+pre-existing QR/Givens/FastMatMul warnings), focused placeholder scan, source
+re-audit, `#print axioms`, and `git diff --check`.
+
+Chapter 7 Problem 7.10 positive spectral-radius subeigenvector update: the
+source-product Perron-Frobenius route now reaches strictly positive
+subeigenvectors at the spectral-radius-attaining scalar.  The new declarations
+`ch7_exists_spectralRadius_attaining_positive_subeigenvector`,
+`problem7_10a_product_exists_spectralRadius_attaining_positive_subeigenvector`,
+`problem7_10b_abs_product_exists_spectralRadius_attaining_positive_subeigenvector`,
+and
+`problem7_10e_abs_transpose_product_exists_spectralRadius_attaining_positive_subeigenvector`
+combine complex spectral-radius eigenpair attainment, absolute-value
+nonnegative subeigenvectors, irreducible finite powered-iterate sums, and the
+positive subeigenvector upgrade.  This still does not prove the real Perron
+eigenvector equality or compatible common op-2 Bauer scaling.  No previous-split
+dependency is unresolved.  Verification passed: targeted Chapter 7 Lean check,
+`lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` (`3024` jobs), lookup
+check, full `timeout 600s lake build` (`3506` jobs; only pre-existing
+QR/Givens/FastMatMul warnings), focused placeholder scan, source re-audit,
+`#print axioms`, and `git diff --check`.
+
+Chapter 7 Problem 7.10 strict Collatz propagation update: the live Chapter 7
+report and lookup now include
+`ch7_exists_stronger_positive_subeigenvector_of_strict_subeigen` and
+`ch7_positive_subeigenvector_eigen_or_exists_stronger`.  These close the local
+strict-defect propagation step: a strictly positive subeigenvector with any
+strict coordinate defect yields `eps > 0` and a strictly positive vector for
+the stronger subeigenvalue `lam + eps`; equivalently, every strictly positive
+subeigenvector is either already an eigenvector or admits such a stronger
+certificate.  This narrows the remaining Bauer/PF blocker but does not prove
+the spectral-radius lower/no-stronger-positive-subeigenvalue contradiction,
+positive real Perron eigenvector equation, canonical attaining scalings, or
+compatible common op-2 Bauer scaling.  No previous-split dependency is
+unresolved.  Verification passed: focused Chapter 7 Lean check,
+`lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` (`3024` jobs), lookup
+check, full `timeout 600s lake build` (`3506` jobs; only pre-existing
+QR/Givens/FastMatMul warnings), focused placeholder scan, source re-audit,
+`#print axioms`, and `git diff --check`.
+
+Chapter 7 Problem 7.10 Perron eigenvector and Bauer `sInf` equality update:
+the live Chapter 7 report and lookup now include the finite-dimensional
+Gelfand/spectral-radius lower-bound layer
+`ch7_matrix_spectralRadius_ge_of_positive_right_subeigenvector`,
+`ch7_toLin_spectralRadius_ge_of_positive_right_subeigenvector`, and
+`ch7_exists_spectralRadius_attaining_positive_eigenvector`.  These close the
+previously open PF equality gate by ruling out a stronger positive
+subeigenvalue at the spectral-radius scalar.  The product/`kappa_infty`/
+transpose-`kappa_1` Bauer equality wrappers
+`problem7_10a_irreducible_products_scaledInfCondSet_sInf_eq_spectralRadius`,
+`problem7_10b_irreducible_products_scaledInfKappaSet_sInf_eq_spectralRadius`,
+and `problem7_10e_irreducible_products_scaledOneKappaSet_sInf_eq_spectralRadius`
+are also closed.  Source re-audit confirms Theorem 7.8 is the now-closed
+infinity-norm equality, not the later op-2 statement.  The remaining selected
+Bauer row is Problem 7.10(e)'s 2-norm infimum upper bound.  The new proved
+bridges `problem7_10e_scaled_op2Kappa_le_of_one_inf_product_bound` and
+`problem7_10e_twoSidedScaledOp2Kappa_sInf_le_of_one_inf_product_bound` reduce
+that row to producing one admissible common scaling with
+`kappa_1 * kappa_infty <= rho^2`; it is current Split 2 work, not a Split 1
+dependency.
+Verification passed: targeted Chapter 7 build (`3025` jobs), lookup check
+after the fresh target rebuild, full `timeout 600s lake build` (`3507` jobs;
+only pre-existing QR/Givens/FastMatMul warnings), focused
+implementation/lookup hygiene scan, scratch/probe-file cleanup check,
+`git diff --check`, source re-audit, and `#print axioms` for the final-facing
+PF/equality and product-bound op-2 declarations with only `propext`,
+`Classical.choice`, and `Quot.sound`.
+
 ## Updated Paths
 
 - Unified report:
-  `chapter_splitting/reports/split2_chapters7_12_unifying_pass_report.md`.
+`chapter_splitting/reports/split2_chapters7_12_unifying_pass_report.md`.
 - Chapter reports:
   `chapter_splitting/reports/chapter7_formalization_report.md`,
   `chapter_splitting/reports/chapter8_formalization_report.md`,
@@ -1927,3 +3644,47 @@ destinations for Chapter 12 Problem 12.4 and related audit notes.
   `chapter_splitting/reports/chapter11_formalization_report.md`,
   `chapter_splitting/reports/chapter12_formalization_report.md`.
 - Lookup surfaces: `docs/LIBRARY_LOOKUP.md`, `examples/LibraryLookup.lean`.
+
+## 2026-06-26 Chapter 7 final selected-row closure
+
+This update supersedes older Chapter 7 rows that still described Problem 7.5,
+finite-real Theorem 7.5 minimizer extraction, or Bauer common-scaling as open.
+The selected Chapter 7 Split 2 inventory now has no open source rows and no
+unresolved previous-split blockers.
+
+### Quantitative progress snapshot
+
+| Chapter | Mode | Inventory % | Statement % | Dependency % | Proof % | Verification/report % | Estimated overall % | Open selected rows | Main blocker | Confidence |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
+| 7 | proof-completion | 100 | 100 | 100 | 100 | 100 | 100 | 0 | None for selected Chapter 7 Split 2 rows. | High |
+
+### Newly closed final row
+
+Problem 7.5 is closed in `LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` by
+the SVD-coordinate declarations
+`problem7_5_projection_norm_le_sigmaTail_mul_norm`,
+`problem7_5_sigmaMin_mul_norm_le_image_norm`,
+`problem7_5_norm_le_inv_sigmaMin_mul_image_norm`,
+`problem7_5_svd_projection_relative_error_bound`, and
+`problem7_5_svd_projection_relative_error_bound_source_indices`.  The proof
+uses the integrated repository SVD API (`complexMatrixSingularValue`,
+`complexMatrixLeftSingularVector`, `complexMatrixGramEigenvectorBasis`, and
+`complexMatrixSVDFinDiagonalCoordinateMatrix_mulVec_repr`) and proves the two
+source estimates from Appendix A before the relative-error algebra step.  This
+is genuine Lean proof work, not a certificate theorem or theorem-equivalent
+assumption.
+
+The Chapter 7 report records the full final inventory.  It also marks the
+finite-real Theorem 7.5 source-min rows and the Theorem 7.8/Problem 7.10 Bauer
+rows as closed by the existing current-branch declarations, superseding earlier
+historical rows that listed them as blockers.
+
+### Verification and hygiene
+
+- `lake env lean LeanFpAnalysis/FP/Analysis/HighamChapter7.lean` passed after the Problem 7.5 insertion.
+- `lake build LeanFpAnalysis.FP.Analysis.HighamChapter7` passed with `3025` jobs.
+- `lake env lean --tstack=65536 examples/LibraryLookup.lean` passed after the lookup updates.
+- `timeout 600s lake build` passed after the final report/log updates with `3507` jobs and only pre-existing QR/Givens/FastMatMul linter warnings outside Chapter 7.
+- `git diff --check` passed after the final report/log updates.
+- Focused placeholder scan over the Chapter 7 implementation, lookup doc, and lookup example found no `sorry`, `admit`, `axiom`, `unsafe`, `opaque`, `False.elim`, `placeholder`, stale `WAIT-*`, `TODO`, or `FIXME` matches.
+- `#print axioms` for the final-facing Problem 7.5 theorems reports only `propext`, `Classical.choice`, and `Quot.sound`.

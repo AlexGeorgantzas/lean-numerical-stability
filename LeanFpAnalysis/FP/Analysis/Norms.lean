@@ -69,6 +69,12 @@ lemma complexAbsVec_norm_apply {n : ℕ} (x : CVec n) (i : Fin n) :
   simp [complexAbsVec]
 
 @[simp]
+lemma complexAbsVec_idem {n : ℕ} (x : CVec n) :
+    complexAbsVec (complexAbsVec x) = complexAbsVec x := by
+  ext i
+  simp [complexAbsVec]
+
+@[simp]
 lemma complexConjVec_involutive {n : ℕ} (x : CVec n) :
     complexConjVec (complexConjVec x) = x := by
   ext i
@@ -2674,6 +2680,31 @@ theorem exists_dualFunctionalNormValue_one_of_unit_vector
   obtain ⟨φ, hφ⟩ := NormedCVec.exists_normingFunctionalAt_of_unit_vector hν hx
   exact ⟨φ, isDualFunctionalNormValue_one_of_normingFunctionalAt hx hφ, hφ.value⟩
 
+/-- Hahn-Banach produces a unit dual functional that attains the norm of any
+    positive-norm vector in an abstract source-facing complex vector norm. -/
+theorem exists_dualFunctionalNormValue_one_of_pos_vector
+    {n : ℕ} {ν : CVec n → ℝ} (hν : IsComplexVectorNorm ν)
+    {y : CVec n} (hy : 0 < ν y) :
+    ∃ φ : CVec n → ℂ, IsDualFunctionalNormValue ν φ 1 ∧
+      φ y = (ν y : ℂ) := by
+  let u : CVec n := complexVecSMul (((ν y)⁻¹ : ℝ) : ℂ) y
+  have hu : ν u = 1 := by
+    dsimp [u]
+    rw [hν.smul, Complex.norm_of_nonneg (inv_nonneg.mpr (le_of_lt hy))]
+    field_simp [ne_of_gt hy]
+  obtain ⟨φ, hφ, hφu⟩ := exists_dualFunctionalNormValue_one_of_unit_vector hν hu
+  refine ⟨φ, hφ, ?_⟩
+  have hy_repr : y = complexVecSMul ((ν y : ℝ) : ℂ) u := by
+    ext i
+    simp [u, complexVecSMul]
+    field_simp [ne_of_gt hy]
+  have hy_eval : φ y = φ (complexVecSMul ((ν y : ℝ) : ℂ) u) := by
+    exact congrArg φ hy_repr
+  calc
+    φ y = φ (complexVecSMul ((ν y : ℝ) : ℂ) u) := hy_eval
+    _ = (((ν y : ℝ) : ℂ)) * φ u := hφ.linear.map_smul (((ν y : ℝ) : ℂ)) u
+    _ = (ν y : ℂ) := by rw [hφu, mul_one]
+
 /-- A continuous linear map on a finite-dimensional complex normed space
     attains its operator norm on the unit sphere whenever its norm is positive. -/
 theorem exists_unit_vector_norm_apply_eq_opNorm_finiteDimensional
@@ -2983,6 +3014,37 @@ lemma complexAbsMatrix_norm_apply {m n : ℕ} (A : CMatrix m n)
     (i : Fin m) (j : Fin n) :
     ‖complexAbsMatrix A i j‖ = ‖A i j‖ := by
   simp [complexAbsMatrix]
+
+lemma complexMatrixVecMul_absMatrix_absVec_apply
+    {m n : ℕ} (A : CMatrix m n) (x : CVec n) (i : Fin m) :
+    complexMatrixVecMul (complexAbsMatrix A) (complexAbsVec x) i =
+      ((Finset.univ.sum (fun j : Fin n => ‖A i j‖ * ‖x j‖) : ℝ) : ℂ) := by
+  unfold complexMatrixVecMul complexAbsMatrix complexAbsVec
+  rw [Complex.ofReal_sum]
+  apply Finset.sum_congr rfl
+  intro j _hj
+  rw [Complex.ofReal_mul]
+
+@[simp]
+lemma complexMatrixVecMul_absMatrix_absVec_norm_apply
+    {m n : ℕ} (A : CMatrix m n) (x : CVec n) (i : Fin m) :
+    ‖complexMatrixVecMul (complexAbsMatrix A) (complexAbsVec x) i‖ =
+      Finset.univ.sum (fun j : Fin n => ‖A i j‖ * ‖x j‖) := by
+  rw [complexMatrixVecMul_absMatrix_absVec_apply]
+  exact Complex.norm_of_nonneg
+    (Finset.sum_nonneg fun j _hj => mul_nonneg (norm_nonneg _) (norm_nonneg _))
+
+@[simp]
+lemma complexAbsVec_complexMatrixVecMul_absMatrix_absVec
+    {m n : ℕ} (A : CMatrix m n) (x : CVec n) :
+    complexAbsVec (complexMatrixVecMul (complexAbsMatrix A) (complexAbsVec x)) =
+      complexMatrixVecMul (complexAbsMatrix A) (complexAbsVec x) := by
+  ext i
+  have hsum_nonneg :
+      0 ≤ Finset.univ.sum (fun j : Fin n => ‖A i j‖ * ‖x j‖) :=
+    Finset.sum_nonneg fun j _hj => mul_nonneg (norm_nonneg _) (norm_nonneg _)
+  rw [complexAbsVec, complexMatrixVecMul_absMatrix_absVec_apply]
+  rw [Complex.norm_of_nonneg hsum_nonneg]
 
 /-- Entrywise absolute matrix-vector domination: `|A x| <= |A| |x|`.
     This is the finite-dimensional inequality used in Appendix A for
@@ -4364,6 +4426,113 @@ def ComplexMatrixEigenvalueModulusSet {n : ℕ}
 def IsMaxComplexMatrixEigenvalueModulus {n : ℕ}
     (A : CMatrix n n) (ρ : ℝ) : Prop :=
   IsMaxComplexVectorMapEigenvalueModulus (complexMatrixVecMul A) ρ
+
+/-- The generic finite complex-matrix eigenvalue-modulus carrier is exactly
+the moduli of Mathlib spectrum elements for the corresponding `toLin'`
+endomorphism. -/
+theorem complexMatrixEigenvalueModulusSet_eq_toLin_spectrum_modulusSet
+    {n : ℕ} (A : CMatrix n n) :
+    ComplexMatrixEigenvalueModulusSet A =
+      {r : ℝ | ∃ lam : ℂ,
+        lam ∈ spectrum ℂ
+          (Matrix.toLin' (show Matrix (Fin n) (Fin n) ℂ from A)) ∧
+        r = ‖lam‖} := by
+  ext r
+  constructor
+  · intro hr
+    rcases hr with ⟨lam, x, hx_ne, hx_eig, rfl⟩
+    let M : Matrix (Fin n) (Fin n) ℂ := A
+    have happly : Matrix.toLin' M x = lam • x := by
+      ext i
+      have hi := congrFun hx_eig i
+      simpa [M, complexMatrixVecMul, complexVecSMul, Matrix.toLin'_apply,
+        Matrix.mulVec, dotProduct] using hi
+    have hx_vec :
+        Module.End.HasEigenvector (Matrix.toLin' M) lam x := by
+      rw [Module.End.hasEigenvector_iff]
+      constructor
+      · rwa [Module.End.mem_eigenspace_iff]
+      · exact hx_ne
+    have hlam :
+        Module.End.HasEigenvalue (Matrix.toLin' M) lam :=
+      Module.End.hasEigenvalue_of_hasEigenvector hx_vec
+    exact ⟨lam, by simpa [M] using Module.End.HasEigenvalue.mem_spectrum hlam, rfl⟩
+  · intro hr
+    rcases hr with ⟨lam, hspec, rfl⟩
+    let M : Matrix (Fin n) (Fin n) ℂ := A
+    have hlam :
+        Module.End.HasEigenvalue (Matrix.toLin' M) lam :=
+      Module.End.HasEigenvalue.of_mem_spectrum (by simpa [M] using hspec)
+    rcases Module.End.HasEigenvalue.exists_hasEigenvector hlam with ⟨x, hx⟩
+    have hx_ne : x ≠ 0 := (Module.End.hasEigenvector_iff.mp hx).2
+    refine ⟨lam, x, hx_ne, ?_, rfl⟩
+    have happly := Module.End.HasEigenvector.apply_eq_smul hx
+    rw [Matrix.toLin'_apply] at happly
+    ext i
+    have hi := congrFun happly i
+    simpa [M, complexMatrixVecMul, complexVecSMul, Matrix.mulVec, dotProduct]
+      using hi
+
+/-- If the Mathlib spectrum-modulus carrier for a concrete complex matrix has
+    greatest real value `ρ`, then Mathlib's Banach-algebra `spectralRadius`
+    of the corresponding `toLin'` endomorphism is exactly `ENNReal.ofReal ρ`.
+    This is the reusable bridge between the source-facing real spectral radius
+    and Mathlib's `ℝ≥0∞` spectral-radius API. -/
+theorem toLin_spectralRadius_eq_of_spectrum_modulusSet_isGreatest
+    {n : ℕ} (A : CMatrix n n) {ρ : ℝ}
+    (hgreatest : IsGreatest
+      {r : ℝ | ∃ lam : ℂ,
+        lam ∈ spectrum ℂ
+          (Matrix.toLin' (show Matrix (Fin n) (Fin n) ℂ from A)) ∧
+        r = ‖lam‖} ρ) :
+    spectralRadius ℂ
+      (Matrix.toLin' (show Matrix (Fin n) (Fin n) ℂ from A)) =
+      ENNReal.ofReal ρ := by
+  unfold spectralRadius
+  apply le_antisymm
+  · apply iSup₂_le
+    intro lam hlam
+    have hle_real : ‖lam‖ ≤ ρ := by
+      exact hgreatest.2 ⟨lam, hlam, rfl⟩
+    calc
+      (nnnorm lam : ENNReal) = ENNReal.ofReal (‖lam‖) := by
+        simp [ENNReal.ofReal]
+      _ ≤ ENNReal.ofReal ρ := ENNReal.ofReal_le_ofReal hle_real
+  · rcases hgreatest.1 with ⟨lam, hlam, hρ⟩
+    rw [hρ]
+    rw [show ENNReal.ofReal (‖lam‖) = (nnnorm lam : ENNReal) by
+      simp [ENNReal.ofReal]]
+    exact le_iSup₂ (α := ENNReal) lam hlam
+
+/-- Real-valued form of
+    `toLin_spectralRadius_eq_of_spectrum_modulusSet_isGreatest`. -/
+theorem toLin_spectralRadius_toReal_eq_of_spectrum_modulusSet_isGreatest
+    {n : ℕ} (A : CMatrix n n) {ρ : ℝ}
+    (hgreatest : IsGreatest
+      {r : ℝ | ∃ lam : ℂ,
+        lam ∈ spectrum ℂ
+          (Matrix.toLin' (show Matrix (Fin n) (Fin n) ℂ from A)) ∧
+        r = ‖lam‖} ρ) :
+    (spectralRadius ℂ
+      (Matrix.toLin' (show Matrix (Fin n) (Fin n) ℂ from A))).toReal = ρ := by
+  have hρ_nonneg : 0 ≤ ρ := by
+    rcases hgreatest.1 with ⟨lam, _hlam, hρ⟩
+    rw [hρ]
+    exact norm_nonneg lam
+  rw [toLin_spectralRadius_eq_of_spectrum_modulusSet_isGreatest A hgreatest,
+    ENNReal.toReal_ofReal hρ_nonneg]
+
+/-- A maximum complex-matrix eigenvalue-modulus certificate identifies the
+    Mathlib `spectralRadius` of the matrix's `toLin'` endomorphism. -/
+theorem complexMatrix_toLin_spectralRadius_eq_of_isMaxComplexMatrixEigenvalueModulus
+    {n : ℕ} {A : CMatrix n n} {ρ : ℝ}
+    (hρ : IsMaxComplexMatrixEigenvalueModulus A ρ) :
+    spectralRadius ℂ
+      (Matrix.toLin' (show Matrix (Fin n) (Fin n) ℂ from A)) =
+      ENNReal.ofReal ρ := by
+  have hgreatest : IsGreatest (ComplexMatrixEigenvalueModulusSet A) ρ := hρ
+  rw [complexMatrixEigenvalueModulusSet_eq_toLin_spectrum_modulusSet A] at hgreatest
+  exact toLin_spectralRadius_eq_of_spectrum_modulusSet_isGreatest A hgreatest
 
 /-- Eigenvalue-modulus witnesses are invariant when a concrete matrix is
     replaced by its coordinate matrix in an arbitrary basis. -/
@@ -8089,6 +8258,106 @@ theorem complexMatrixLpNorm_eq_of_isComplexMatrixLpNormValue
       (m := m) (n := n) hn p A)
     hA
 
+/-- The concrete source-facing matrix `p`-norm is continuous in the matrix
+    entries.  The proof identifies the chosen least subordinate bound with the
+    operator norm of the matrix as a continuous linear map between the matching
+    finite-dimensional `L^p` normed vector spaces. -/
+theorem continuous_complexMatrixLpNorm
+    {m n : ℕ} (hn : 0 < n) (p : ℝ≥0∞) [Fact (1 ≤ p)] :
+    Continuous (fun A : CMatrix m n => complexMatrixLpNorm hn p A) := by
+  let νn : CVec n → ℝ := complexVecLpNorm (n := n) p
+  let νm : CVec m → ℝ := complexVecLpNorm (n := m) p
+  have hνn : IsComplexVectorNorm νn := by
+    simpa [νn] using complexVecLpNorm_isComplexVectorNorm (n := n) p
+  have hνm : IsComplexVectorNorm νm := by
+    simpa [νm] using complexVecLpNorm_isComplexVectorNorm (n := m) p
+  letI : NormedAddCommGroup (NormedCVec n νn) := NormedCVec.normedAddCommGroup hνn
+  letI : NormedAddCommGroup (NormedCVec m νm) := NormedCVec.normedAddCommGroup hνm
+  letI : Module ℂ (NormedCVec n νn) := (NormedCVec.equiv n νn).module ℂ
+  letI : Module ℂ (NormedCVec m νm) := (NormedCVec.equiv m νm).module ℂ
+  letI : NormedSpace ℂ (NormedCVec n νn) :=
+    NormedSpace.ofCore (𝕜 := ℂ) (NormedCVec.normedSpaceCore hνn)
+  letI : NormedSpace ℂ (NormedCVec m νm) :=
+    NormedSpace.ofCore (𝕜 := ℂ) (NormedCVec.normedSpaceCore hνm)
+  let Lmat : CMatrix m n →ₗ[ℂ] (NormedCVec n νn →L[ℂ] NormedCVec m νm) :=
+    { toFun := fun A =>
+        let L0 : NormedCVec n νn →ₗ[ℂ] NormedCVec m νm :=
+          { toFun := fun x => ⟨complexMatrixVecMul A x.val⟩
+            map_add' := by
+              intro x y
+              apply NormedCVec.ext
+              ext i
+              change (∑ j : Fin n, A i j * (x.val j + y.val j)) =
+                (∑ j : Fin n, A i j * x.val j) +
+                  ∑ j : Fin n, A i j * y.val j
+              rw [← Finset.sum_add_distrib]
+              refine Finset.sum_congr rfl ?_
+              intro j _hj
+              ring
+            map_smul' := by
+              intro a x
+              apply NormedCVec.ext
+              ext i
+              change (∑ j : Fin n, A i j * (a * x.val j)) =
+                a * ∑ j : Fin n, A i j * x.val j
+              rw [Finset.mul_sum]
+              refine Finset.sum_congr rfl ?_
+              intro j _hj
+              ring }
+        L0.mkContinuous (complexMatrixLpColumnSumNorm p A) (by
+          intro x
+          change complexVecLpNorm p (complexMatrixVecMul A x.val) ≤
+            complexMatrixLpColumnSumNorm p A * complexVecLpNorm p x.val
+          exact complexMatrixLpColumnSumNorm_mixedSubordinateMatrixBound p A x.val)
+      map_add' := by
+        intro A B
+        apply ContinuousLinearMap.ext
+        intro x
+        apply NormedCVec.ext
+        ext i
+        change (∑ j : Fin n, (A i j + B i j) * x.val j) =
+          (∑ j : Fin n, A i j * x.val j) +
+            ∑ j : Fin n, B i j * x.val j
+        rw [← Finset.sum_add_distrib]
+        refine Finset.sum_congr rfl ?_
+        intro j _hj
+        ring
+      map_smul' := by
+        intro a A
+        apply ContinuousLinearMap.ext
+        intro x
+        apply NormedCVec.ext
+        ext i
+        change (∑ j : Fin n, (a * A i j) * x.val j) =
+          a * ∑ j : Fin n, A i j * x.val j
+        rw [Finset.mul_sum]
+        refine Finset.sum_congr rfl ?_
+        intro j _hj
+        ring }
+  have hLcont : Continuous fun A : CMatrix m n => Lmat A :=
+    LinearMap.continuous_of_finiteDimensional Lmat
+  have hOpValue : ∀ A : CMatrix m n, IsComplexMatrixLpNormValue p A ‖Lmat A‖ := by
+    intro A
+    dsimp [IsComplexMatrixLpNormValue, IsMixedSubordinateMatrixNormValue,
+      IsMixedSubordinateNormValue]
+    refine ⟨?_, ?_⟩
+    · intro x
+      have h := (Lmat A).le_opNorm (⟨x⟩ : NormedCVec n νn)
+      simpa [Lmat, NormedCVec.norm_eq, νn, νm] using h
+    · intro d hd
+      have hd_nonneg : 0 ≤ d := by
+        exact mixedSubordinateBound_nonneg_of_nonempty hn hνn hνm hd
+      apply ContinuousLinearMap.opNorm_le_bound (Lmat A) hd_nonneg
+      intro x
+      have hdx := hd x.val
+      simpa [Lmat, NormedCVec.norm_eq, νn, νm] using hdx
+  have hEq : (fun A : CMatrix m n => complexMatrixLpNorm hn p A) =
+      fun A : CMatrix m n => ‖Lmat A‖ := by
+    funext A
+    exact complexMatrixLpNorm_eq_of_isComplexMatrixLpNormValue hn p (hOpValue A)
+  rw [hEq]
+  exact hLcont.norm
+
 /-- Finite real-exponent wrapper for the concrete matrix `p`-norm value. -/
 theorem complexMatrixLpNorm_ofReal_isComplexMatrixLpNormValue
     {m n : ℕ} (hn : 0 < n) {p : ℝ} (hp : 1 ≤ p)
@@ -8124,6 +8393,17 @@ theorem complexMatrixLpNormOfReal_isComplexMatrixLpNormValue
   simpa [complexMatrixLpNormOfReal] using
     complexMatrixLpNorm_ofReal_isComplexMatrixLpNormValue
       (m := m) (n := n) hn hp A
+
+/-- Finite real-exponent matrix `p`-norms are continuous in the matrix
+    entries. -/
+theorem continuous_complexMatrixLpNormOfReal
+    {m n : ℕ} (hn : 0 < n) (p : ℝ) (hp : 1 ≤ p) :
+    Continuous (fun A : CMatrix m n => complexMatrixLpNormOfReal hn p hp A) := by
+  haveI hpFact : Fact (1 ≤ ENNReal.ofReal p) := ⟨by
+    rw [ENNReal.one_le_ofReal]
+    exact hp⟩
+  simpa [complexMatrixLpNormOfReal] using
+    (continuous_complexMatrixLpNorm (m := m) (n := n) hn (ENNReal.ofReal p))
 
 /-- Finite real-exponent version of
     `complexMatrixLpNorm_eq_of_isComplexMatrixLpNormValue`. -/
@@ -8166,6 +8446,53 @@ theorem hasComplexMatrixLpBound_of_complexMatrixLpNormValue_ofReal
     rw [ENNReal.one_le_ofReal]
     exact hp⟩
   exact hasComplexMatrixLpBound_of_complexMatrixLpNormValue_nonempty hn hA
+
+/-- Finite real-exponent matrix `p`-norms are submultiplicative for compatible
+    matrix products. -/
+theorem complexMatrixLpNormOfReal_mul_le
+    {l m n : ℕ} (hm : 0 < m) (hn : 0 < n)
+    {p : ℝ} (hp : 1 ≤ p) (A : CMatrix l m) (B : CMatrix m n) :
+    complexMatrixLpNormOfReal hn p hp (complexMatrixMul A B) ≤
+      complexMatrixLpNormOfReal hm p hp A *
+        complexMatrixLpNormOfReal hn p hp B := by
+  let q : ℝ≥0∞ := ENNReal.ofReal p
+  let a : ℝ := complexMatrixLpNormOfReal hm p hp A
+  let b : ℝ := complexMatrixLpNormOfReal hn p hp B
+  have hAvalue : IsComplexMatrixLpNormValue q A a := by
+    simpa [q, a] using
+      complexMatrixLpNormOfReal_isComplexMatrixLpNormValue
+        (m := l) (n := m) hm p hp A
+  have hBvalue : IsComplexMatrixLpNormValue q B b := by
+    simpa [q, b] using
+      complexMatrixLpNormOfReal_isComplexMatrixLpNormValue
+        (m := m) (n := n) hn p hp B
+  have hProdValue : IsComplexMatrixLpNormValue q (complexMatrixMul A B)
+      (complexMatrixLpNormOfReal hn p hp (complexMatrixMul A B)) := by
+    simpa [q] using
+      complexMatrixLpNormOfReal_isComplexMatrixLpNormValue
+        (m := l) (n := n) hn p hp (complexMatrixMul A B)
+  have hAbound : HasComplexMatrixLpBound q A a := by
+    simpa [q, a] using
+      hasComplexMatrixLpBound_of_complexMatrixLpNormValue_ofReal
+        (m := l) (n := m) hm hp hAvalue
+  have hBbound : HasComplexMatrixLpBound q B b := by
+    simpa [q, b] using
+      hasComplexMatrixLpBound_of_complexMatrixLpNormValue_ofReal
+        (m := m) (n := n) hn hp hBvalue
+  have hProdBound : HasComplexMatrixLpBound q (complexMatrixMul A B) (a * b) := by
+    refine ⟨mul_nonneg hAbound.1 hBbound.1, ?_⟩
+    intro x
+    calc
+      complexVecLpNorm q (complexMatrixVecMul (complexMatrixMul A B) x)
+          = complexVecLpNorm q (complexMatrixVecMul A (complexMatrixVecMul B x)) := by
+            rw [complexMatrixVecMul_mul]
+      _ ≤ a * complexVecLpNorm q (complexMatrixVecMul B x) :=
+            hAbound.2 (complexMatrixVecMul B x)
+      _ ≤ a * (b * complexVecLpNorm q x) :=
+            mul_le_mul_of_nonneg_left (hBbound.2 x) hAbound.1
+      _ = (a * b) * complexVecLpNorm q x := by ring
+  simpa [q, a, b] using
+    isComplexMatrixLpNormValue_le_of_hasComplexMatrixLpBound hProdValue hProdBound
 
 /-- Concrete chosen matrix-norm endpoint wrapper for `theta = 0`: the
     interpolated `r`-norm is bounded by the left endpoint bound. -/
@@ -11215,6 +11542,19 @@ theorem complexMatrixOp2_eq_norm_euclideanLin {m n : ℕ} (A : CMatrix m n) :
       ‖(complexMatrixEuclideanLin A).toContinuousLinearMap‖ := by
   simp [complexMatrixOp2, complexMatrixEuclideanLin]
 
+/-- The source-facing complex matrix operator `2`-norm is continuous as a
+function of the matrix entries. -/
+theorem continuous_complexMatrixOp2 {m n : ℕ} :
+    Continuous (fun A : CMatrix m n => complexMatrixOp2 A) := by
+  let L : CMatrix m n →ₗ[ℂ]
+      (EuclideanSpace ℂ (Fin n) →L[ℂ] EuclideanSpace ℂ (Fin m)) :=
+    (Matrix.toEuclideanLin (𝕜 := ℂ) (m := Fin m) (n := Fin n) ≪≫ₗ
+      LinearMap.toContinuousLinearMap).toLinearMap
+  have hL : Continuous fun A : CMatrix m n => L A :=
+    LinearMap.continuous_of_finiteDimensional L
+  have hnorm : Continuous fun A : CMatrix m n => ‖L A‖ := hL.norm
+  simpa [L, complexMatrixOp2_eq_norm_euclideanLin, complexMatrixEuclideanLin] using hnorm
+
 theorem complexMatrixOp2_smul {m n : ℕ} (a : ℂ) (A : CMatrix m n) :
     complexMatrixOp2 ((a • A : Matrix (Fin m) (Fin n) ℂ) : CMatrix m n) =
       ‖a‖ * complexMatrixOp2 A := by
@@ -11264,6 +11604,51 @@ theorem complexMatrixOp2_adjoint_eq {m n : ℕ} (A : CMatrix m n) :
   rw [← Matrix.l2_opNorm_def (complexCMatrixAsMatrix A)]
   simpa [complexCMatrixAsMatrix, complexMatrixAdjoint, complexMatrixTranspose, complexConjMatrix]
     using (Matrix.l2_opNorm_conjTranspose (A := complexCMatrixAsMatrix A))
+
+/-- The concrete Euclidean linear map of `A†A` is the Gram operator associated
+    with `A`. -/
+theorem complexMatrixEuclideanLin_adjoint_mul_self {m n : ℕ} (A : CMatrix m n) :
+    complexMatrixEuclideanLin (complexMatrixMul (complexMatrixAdjoint A) A) =
+      complexMatrixGramLin A := by
+  let b := complexEuclideanBasisFin n
+  rw [← Matrix.toLin_toMatrix b b
+    (complexMatrixEuclideanLin (complexMatrixMul (complexMatrixAdjoint A) A))]
+  rw [← Matrix.toLin_toMatrix b b (complexMatrixGramLin A)]
+  congr 1
+  rw [complexMatrixEuclideanLin_toMatrix, complexMatrixGramLin_toMatrix]
+  ext i j
+  simp [complexCMatrixAsMatrix, complexMatrixAdjoint, complexMatrixTranspose,
+    complexConjMatrix, complexMatrixMul, Matrix.mul_apply]
+
+/-- Operator-2 norm of a concrete Gram matrix: `‖A†A‖₂ = ‖A‖₂²`. -/
+theorem complexMatrixOp2_adjoint_mul_self_eq_sq {m n : ℕ} (A : CMatrix m n) :
+    complexMatrixOp2 (complexMatrixMul (complexMatrixAdjoint A) A) =
+      complexMatrixOp2 A ^ 2 := by
+  have hlin := complexMatrixEuclideanLin_adjoint_mul_self A
+  rw [complexMatrixOp2_eq_norm_euclideanLin]
+  rw [hlin]
+  rw [complexMatrixGramLin_toContinuousLinearMap]
+  rw [ContinuousLinearMap.norm_adjoint_comp_self]
+  rw [← complexMatrixOp2_eq_norm_euclideanLin A]
+  ring
+
+/-- Operator-2 norm of the right Gram product: `‖AA†‖₂ = ‖A‖₂²`. -/
+theorem complexMatrixOp2_mul_adjoint_self_eq_sq {m n : ℕ} (A : CMatrix m n) :
+    complexMatrixOp2 (complexMatrixMul A (complexMatrixAdjoint A)) =
+      complexMatrixOp2 A ^ 2 := by
+  calc
+    complexMatrixOp2 (complexMatrixMul A (complexMatrixAdjoint A)) =
+        complexMatrixOp2
+          (complexMatrixAdjoint (complexMatrixMul A (complexMatrixAdjoint A))) := by
+          rw [complexMatrixOp2_adjoint_eq]
+    _ = complexMatrixOp2
+          (complexMatrixMul (complexMatrixAdjoint (complexMatrixAdjoint A))
+            (complexMatrixAdjoint A)) := by
+          rw [complexMatrixAdjoint_mul]
+    _ = complexMatrixOp2 (complexMatrixAdjoint A) ^ 2 := by
+          rw [complexMatrixOp2_adjoint_mul_self_eq_sq]
+    _ = complexMatrixOp2 A ^ 2 := by
+          rw [complexMatrixOp2_adjoint_eq]
 
 /-- A square complex matrix with `A†A = n I` has Euclidean operator norm at
     most `sqrt n`. -/
@@ -14778,6 +15163,42 @@ noncomputable def realRectToCMatrix {m n : Nat}
     (A : Fin m -> Fin n -> Real) : CMatrix m n :=
   fun i j => (A i j : Complex)
 
+/-- Complexification commutes with the repository's real finite transpose. -/
+theorem realRectToCMatrix_matTranspose {n : Nat}
+    (A : Fin n -> Fin n -> Real) :
+    realRectToCMatrix (matTranspose A) =
+      complexMatrixAdjoint (realRectToCMatrix A) := by
+  ext i j
+  simp [realRectToCMatrix, matTranspose, complexMatrixAdjoint,
+    complexMatrixTranspose, complexConjMatrix]
+
+/-- Complexification commutes with the repository's real square matrix
+    multiplication. -/
+theorem realRectToCMatrix_matMul {n : Nat}
+    (A B : Fin n -> Fin n -> Real) :
+    realRectToCMatrix (matMul n A B) =
+      complexMatrixMul (realRectToCMatrix A) (realRectToCMatrix B) := by
+  ext i j
+  simp [realRectToCMatrix, matMul, complexMatrixMul]
+
+/-- Real square Gram matrices satisfy `‖AᵀA‖₂ = ‖A‖₂²` after
+    complexification. -/
+theorem complexMatrixOp2_realRectToCMatrix_transpose_mul_self_eq_sq {n : Nat}
+    (A : Fin n -> Fin n -> Real) :
+    complexMatrixOp2 (realRectToCMatrix (matMul n (matTranspose A) A)) =
+      complexMatrixOp2 (realRectToCMatrix A) ^ 2 := by
+  rw [realRectToCMatrix_matMul, realRectToCMatrix_matTranspose]
+  exact complexMatrixOp2_adjoint_mul_self_eq_sq (realRectToCMatrix A)
+
+/-- Real square right-Gram matrices satisfy `‖AAᵀ‖₂ = ‖A‖₂²` after
+    complexification. -/
+theorem complexMatrixOp2_realRectToCMatrix_mul_transpose_self_eq_sq {n : Nat}
+    (A : Fin n -> Fin n -> Real) :
+    complexMatrixOp2 (realRectToCMatrix (matMul n A (matTranspose A))) =
+      complexMatrixOp2 (realRectToCMatrix A) ^ 2 := by
+  rw [realRectToCMatrix_matMul, realRectToCMatrix_matTranspose]
+  exact complexMatrixOp2_mul_adjoint_self_eq_sq (realRectToCMatrix A)
+
 /-- A nonnegative real number has the same norm after embedding into `Complex`. -/
 lemma complexNorm_ofReal_of_nonneg {a : Real} (ha : 0 <= a) :
     ‖((a : Real) : Complex)‖ = a := by
@@ -15594,6 +16015,26 @@ theorem rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le {m n : Nat}
           rw [realVecToEuclidean_norm]
     _ <= c * vecNorm2 x := by
           exact mul_le_mul_of_nonneg_right hOp (vecNorm2_nonneg x)
+
+/-- A square real operator-bound certificate bounds the exact Euclidean
+    operator norm of its complexification. -/
+theorem complexMatrixOp2_realRectToCMatrix_le_of_opNorm2Le {n : Nat}
+    (A : Fin n -> Fin n -> Real) {c : Real}
+    (hc : 0 <= c) (hA : opNorm2Le A c) :
+    complexMatrixOp2 (realRectToCMatrix A) <= c :=
+  complexMatrixOp2_realRectToCMatrix_le_of_rectOpNorm2Le A hc
+    (opNorm2Le_to_rectOpNorm2Le hA)
+
+/-- The exact Euclidean operator norm of a square real matrix's
+    complexification is itself an admissible real operator-bound certificate. -/
+theorem opNorm2Le_complexMatrixOp2_realRectToCMatrix {n : Nat}
+    (A : Fin n -> Fin n -> Real) :
+    opNorm2Le A (complexMatrixOp2 (realRectToCMatrix A)) := by
+  have hrect :
+      rectOpNorm2Le A (complexMatrixOp2 (realRectToCMatrix A)) :=
+    rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le A le_rfl
+  intro x
+  simpa [opNorm2Le, rectOpNorm2Le, matMulVec, rectMatMulVec] using hrect x
 
 theorem realRectToCMatrix_absMatrixRect {m n : Nat}
     (A : Fin m -> Fin n -> Real) :

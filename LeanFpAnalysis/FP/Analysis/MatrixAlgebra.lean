@@ -4115,6 +4115,110 @@ theorem finiteVecNorm2Sq_finiteMatVec_le_of_symmetric_idempotent
       finiteVecNorm2_nonneg x]
   simpa [finiteVecNorm2_sq] using hsquare
 
+/-- The residual `x - P x` is annihilated by an idempotent finite matrix. -/
+theorem finiteMatVec_projection_residual_eq_zero_of_idempotent
+    {ι : Type*} [Fintype ι] (P : ι → ι → ℝ)
+    (hIdem : ∀ i j, finiteMatMul P P i j = P i j)
+    (x : ι → ℝ) :
+    finiteMatVec P (fun i => x i - finiteMatVec P x i) =
+      fun _i => 0 := by
+  have hPP : finiteMatMul P P = P := by
+    funext i j
+    exact hIdem i j
+  have hcomp : finiteMatVec P (finiteMatVec P x) = finiteMatVec P x := by
+    rw [← finiteMatVec_finiteMatMul P P x, hPP]
+  ext i
+  rw [finiteMatVec_sub]
+  simp [hcomp]
+
+/-- For a symmetric idempotent finite matrix, the residual `x - P x` is
+orthogonal to every vector in the range of `P`. -/
+theorem finiteVecInnerProduct_projection_residual_range_eq_zero
+    {ι : Type*} [Fintype ι] (P : ι → ι → ℝ)
+    (hSym : IsSymmetricFiniteMatrix P)
+    (hIdem : ∀ i j, finiteMatMul P P i j = P i j)
+    (x y : ι → ℝ) :
+    (∑ i : ι, (x i - finiteMatVec P x i) * finiteMatVec P y i) = 0 := by
+  have hmove :=
+    finiteVecInnerProduct_finiteMatVec_left_eq_right_of_symmetric
+      P hSym (fun i => x i - finiteMatVec P x i) y
+  have hzero :=
+    finiteMatVec_projection_residual_eq_zero_of_idempotent P hIdem x
+  calc
+    (∑ i : ι, (x i - finiteMatVec P x i) * finiteMatVec P y i)
+        = ∑ i : ι,
+            finiteMatVec P (fun i => x i - finiteMatVec P x i) i * y i :=
+          hmove
+    _ = 0 := by
+          simp [hzero]
+
+/-- Pythagorean identity for finite squared Euclidean norms when the cross
+inner product is zero. -/
+theorem finiteVecNorm2Sq_add_of_inner_eq_zero
+    {ι : Type*} [Fintype ι] (x y : ι → ℝ)
+    (hxy : (∑ i : ι, x i * y i) = 0) :
+    finiteVecNorm2Sq (fun i => x i + y i) =
+      finiteVecNorm2Sq x + finiteVecNorm2Sq y := by
+  unfold finiteVecNorm2Sq
+  calc
+    (∑ i : ι, (x i + y i) ^ 2)
+        = ∑ i : ι, (x i ^ 2 + 2 * (x i * y i) + y i ^ 2) := by
+            apply Finset.sum_congr rfl
+            intro i _
+            ring
+    _ = (∑ i : ι, x i ^ 2) + 2 * (∑ i : ι, x i * y i) +
+          ∑ i : ι, y i ^ 2 := by
+            simp [Finset.sum_add_distrib, Finset.mul_sum]
+    _ = (∑ i : ι, x i ^ 2) + ∑ i : ι, y i ^ 2 := by
+            rw [hxy]
+            ring
+
+/-- A symmetric idempotent finite matrix gives the squared-norm
+best-approximation inequality against every vector in its range. -/
+theorem finiteVecNorm2Sq_projection_residual_le_residual_to_range_of_symmetric_idempotent
+    {ι : Type*} [Fintype ι] (P : ι → ι → ℝ)
+    (hSym : IsSymmetricFiniteMatrix P)
+    (hIdem : ∀ i j, finiteMatMul P P i j = P i j)
+    (x z : ι → ℝ) :
+    finiteVecNorm2Sq (fun i => x i - finiteMatVec P x i) ≤
+      finiteVecNorm2Sq (fun i => x i - finiteMatVec P z i) := by
+  let r : ι → ℝ := fun i => x i - finiteMatVec P x i
+  let w : ι → ℝ := fun i => finiteMatVec P x i - finiteMatVec P z i
+  have hw_range : w = finiteMatVec P (fun i => x i - z i) := by
+    ext i
+    simp [w, finiteMatVec_sub]
+  have horth : (∑ i : ι, r i * w i) = 0 := by
+    have h :=
+      finiteVecInnerProduct_projection_residual_range_eq_zero
+        P hSym hIdem x (fun i => x i - z i)
+    simpa [r, hw_range] using h
+  have hdecomp :
+      (fun i => x i - finiteMatVec P z i) =
+        fun i => r i + w i := by
+    ext i
+    simp [r, w]
+  have hpyth :
+      finiteVecNorm2Sq (fun i => x i - finiteMatVec P z i) =
+        finiteVecNorm2Sq r + finiteVecNorm2Sq w := by
+    rw [hdecomp]
+    exact finiteVecNorm2Sq_add_of_inner_eq_zero r w horth
+  rw [hpyth]
+  exact le_add_of_nonneg_right (finiteVecNorm2Sq_nonneg w)
+
+/-- Norm form of the finite symmetric-idempotent best-approximation
+inequality. -/
+theorem finiteVecNorm2_projection_residual_le_residual_to_range_of_symmetric_idempotent
+    {ι : Type*} [Fintype ι] (P : ι → ι → ℝ)
+    (hSym : IsSymmetricFiniteMatrix P)
+    (hIdem : ∀ i j, finiteMatMul P P i j = P i j)
+    (x z : ι → ℝ) :
+    finiteVecNorm2 (fun i => x i - finiteMatVec P x i) ≤
+      finiteVecNorm2 (fun i => x i - finiteMatVec P z i) := by
+  unfold finiteVecNorm2
+  exact Real.sqrt_le_sqrt
+    (finiteVecNorm2Sq_projection_residual_le_residual_to_range_of_symmetric_idempotent
+      P hSym hIdem x z)
+
 /-- The square of a symmetric finite matrix is symmetric. -/
 theorem finiteMatMul_self_symmetric_of_symmetric
     {ι : Type*} [Fintype ι] (M : ι → ι → ℝ)
@@ -4728,6 +4832,75 @@ theorem opNorm2Le_of_frobNorm_self {n : ℕ}
     (M : Fin n → Fin n → ℝ) :
     opNorm2Le M (frobNorm M) :=
   opNorm2Le_of_frobNorm_le M le_rfl
+
+/-- The real Euclidean operator-2 certificate is invariant under transpose. -/
+theorem opNorm2Le_transpose {n : ℕ}
+    (M : Fin n → Fin n → ℝ) {c : ℝ}
+    (hc : 0 ≤ c) (hM : opNorm2Le M c) :
+    opNorm2Le (matTranspose M) c := by
+  intro x
+  let z : Fin n → ℝ := matMulVec n (matTranspose M) x
+  change vecNorm2 z ≤ c * vecNorm2 x
+  by_cases hz_zero : z = 0
+  · have hz_point : ∀ i : Fin n, z i = 0 := by
+      intro i
+      rw [hz_zero]
+      rfl
+    rw [(vecNorm2_eq_zero_iff z).2 hz_point]
+    exact mul_nonneg hc (vecNorm2_nonneg x)
+  have hz_norm_ne : vecNorm2 z ≠ 0 := by
+    intro hz
+    exact hz_zero (funext ((vecNorm2_eq_zero_iff z).mp hz))
+  have hz_pos : 0 < vecNorm2 z :=
+    lt_of_le_of_ne (vecNorm2_nonneg z) (Ne.symm hz_norm_ne)
+  have hinner_symm :
+      (∑ j : Fin n, x j * matMulVec n M z j) =
+        ∑ i : Fin n, z i * z i := by
+    unfold matMulVec
+    calc
+      (∑ j : Fin n, x j * ∑ i : Fin n, M j i * z i)
+          = ∑ j : Fin n, ∑ i : Fin n, x j * (M j i * z i) := by
+              apply Finset.sum_congr rfl
+              intro j _hj
+              rw [Finset.mul_sum]
+      _ = ∑ i : Fin n, ∑ j : Fin n, x j * (M j i * z i) := by
+              rw [Finset.sum_comm]
+      _ = ∑ i : Fin n, z i * ∑ j : Fin n, M j i * x j := by
+              apply Finset.sum_congr rfl
+              intro i _hi
+              rw [Finset.mul_sum]
+              apply Finset.sum_congr rfl
+              intro j _hj
+              ring
+      _ = ∑ i : Fin n, z i * z i := by
+              apply Finset.sum_congr rfl
+              intro i _hi
+              simp [z, matMulVec, matTranspose]
+  have hinner :
+      vecNorm2Sq z = ∑ j : Fin n, x j * matMulVec n M z j := by
+    rw [hinner_symm]
+    unfold vecNorm2Sq
+    apply Finset.sum_congr rfl
+    intro i _hi
+    ring
+  have hsq_bound :
+      vecNorm2Sq z ≤ vecNorm2 x * vecNorm2 (matMulVec n M z) := by
+    calc
+      vecNorm2Sq z
+          = ∑ j : Fin n, x j * matMulVec n M z j := hinner
+      _ ≤ |∑ j : Fin n, x j * matMulVec n M z j| := le_abs_self _
+      _ ≤ vecNorm2 x * vecNorm2 (matMulVec n M z) :=
+            abs_vecInnerProduct_le_vecNorm2_mul x (matMulVec n M z)
+  have hsq :
+      vecNorm2 z * vecNorm2 z ≤ (c * vecNorm2 x) * vecNorm2 z := by
+    calc
+      vecNorm2 z * vecNorm2 z = vecNorm2Sq z := by
+          rw [← pow_two, vecNorm2_sq]
+      _ ≤ vecNorm2 x * vecNorm2 (matMulVec n M z) := hsq_bound
+      _ ≤ vecNorm2 x * (c * vecNorm2 z) :=
+          mul_le_mul_of_nonneg_left (hM z) (vecNorm2_nonneg x)
+      _ = (c * vecNorm2 x) * vecNorm2 z := by ring
+  nlinarith [hsq, hz_pos]
 
 /-- A two-sided Loewner bound is stable under an additive perturbation whose
 Frobenius norm is at most `τ`; the radius increases by `τ`. -/
@@ -6017,6 +6190,111 @@ theorem matMulRect_eq_rectMatMul (m n p : ℕ)
     matMulRect m n p A B = rectMatMul A B := by
   rfl
 
+/-- Left multiplication by identity for implicit rectangular multiplication. -/
+theorem rectMatMul_id_left {m p : ℕ} (A : Fin m → Fin p → ℝ) :
+    rectMatMul (idMatrix m) A = A := by
+  ext i j
+  unfold rectMatMul idMatrix
+  simp [Finset.mem_univ]
+
+/-- Right multiplication by identity for implicit rectangular multiplication. -/
+theorem rectMatMul_id_right {m n : ℕ} (A : Fin m → Fin n → ℝ) :
+    rectMatMul A (idMatrix n) = A := by
+  ext i j
+  unfold rectMatMul idMatrix
+  simp [Finset.mem_univ]
+
+/-- Associativity for compatible rectangular products. -/
+theorem rectMatMul_assoc {m n p q : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin n → Fin p → ℝ)
+    (C : Fin p → Fin q → ℝ) :
+    rectMatMul (rectMatMul A B) C = rectMatMul A (rectMatMul B C) := by
+  ext i j
+  unfold rectMatMul
+  simp_rw [Finset.sum_mul, Finset.mul_sum]
+  rw [Finset.sum_comm]
+  apply Finset.sum_congr rfl
+  intro k _
+  apply Finset.sum_congr rfl
+  intro l _
+  ring
+
+/-- A rectangular left inverse `A⁺A = I` makes `AA⁺` an algebraic projection. -/
+theorem rectMatMul_rangeProjection_idempotent_of_left_inverse {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (Aplus : Fin n → Fin m → ℝ)
+    (hleft : rectMatMul Aplus A = idMatrix n) :
+    rectMatMul (rectMatMul A Aplus) (rectMatMul A Aplus) =
+      rectMatMul A Aplus := by
+  calc
+    rectMatMul (rectMatMul A Aplus) (rectMatMul A Aplus)
+        = rectMatMul A (rectMatMul Aplus (rectMatMul A Aplus)) :=
+            rectMatMul_assoc A Aplus (rectMatMul A Aplus)
+    _ = rectMatMul A (rectMatMul (rectMatMul Aplus A) Aplus) :=
+            congrArg (rectMatMul A) (rectMatMul_assoc Aplus A Aplus).symm
+    _ = rectMatMul A (rectMatMul (idMatrix n) Aplus) := by
+            rw [hleft]
+    _ = rectMatMul A Aplus := by
+            rw [rectMatMul_id_left]
+
+/-- A rectangular right inverse `AA⁺ = I` makes `A⁺A` an algebraic projection. -/
+theorem rectMatMul_domainProjection_idempotent_of_right_inverse {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (Aplus : Fin n → Fin m → ℝ)
+    (hright : rectMatMul A Aplus = idMatrix m) :
+    rectMatMul (rectMatMul Aplus A) (rectMatMul Aplus A) =
+      rectMatMul Aplus A := by
+  calc
+    rectMatMul (rectMatMul Aplus A) (rectMatMul Aplus A)
+        = rectMatMul Aplus (rectMatMul A (rectMatMul Aplus A)) :=
+            rectMatMul_assoc Aplus A (rectMatMul Aplus A)
+    _ = rectMatMul Aplus (rectMatMul (rectMatMul A Aplus) A) :=
+            congrArg (rectMatMul Aplus) (rectMatMul_assoc A Aplus A).symm
+    _ = rectMatMul Aplus (rectMatMul (idMatrix m) A) := by
+            rw [hright]
+    _ = rectMatMul Aplus A := by
+            rw [rectMatMul_id_left]
+
+/-- A symmetric range-side algebraic projection from a rectangular left
+inverse is nonexpansive in the Euclidean operator norm. -/
+theorem rectOpNorm2Le_rangeProjection_of_symmetric_left_inverse {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (Aplus : Fin n → Fin m → ℝ)
+    (hleft : rectMatMul Aplus A = idMatrix n)
+    (hSym : IsSymmetricFiniteMatrix (rectMatMul A Aplus)) :
+    rectOpNorm2Le (rectMatMul A Aplus) 1 := by
+  intro x
+  have hIdemEq :=
+    rectMatMul_rangeProjection_idempotent_of_left_inverse A Aplus hleft
+  have hIdem :
+      ∀ i j : Fin m,
+        finiteMatMul (rectMatMul A Aplus) (rectMatMul A Aplus) i j =
+          rectMatMul A Aplus i j := by
+    intro i j
+    simpa [finiteMatMul, rectMatMul] using congrFun (congrFun hIdemEq i) j
+  have h :=
+    finiteVecNorm2_finiteMatVec_le_of_symmetric_idempotent
+      (rectMatMul A Aplus) hSym hIdem x
+  simpa [finiteVecNorm2_fin, finiteMatVec, rectMatMulVec] using h
+
+/-- A symmetric domain-side algebraic projection from a rectangular right
+inverse is nonexpansive in the Euclidean operator norm. -/
+theorem rectOpNorm2Le_domainProjection_of_symmetric_right_inverse {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (Aplus : Fin n → Fin m → ℝ)
+    (hright : rectMatMul A Aplus = idMatrix m)
+    (hSym : IsSymmetricFiniteMatrix (rectMatMul Aplus A)) :
+    rectOpNorm2Le (rectMatMul Aplus A) 1 := by
+  intro x
+  have hIdemEq :=
+    rectMatMul_domainProjection_idempotent_of_right_inverse A Aplus hright
+  have hIdem :
+      ∀ i j : Fin n,
+        finiteMatMul (rectMatMul Aplus A) (rectMatMul Aplus A) i j =
+          rectMatMul Aplus A i j := by
+    intro i j
+    simpa [finiteMatMul, rectMatMul] using congrFun (congrFun hIdemEq i) j
+  have h :=
+    finiteVecNorm2_finiteMatVec_le_of_symmetric_idempotent
+      (rectMatMul Aplus A) hSym hIdem x
+  simpa [finiteVecNorm2_fin, finiteMatVec, rectMatMulVec] using h
+
 /-- Left multiplication by identity for rectangular matrices. -/
 theorem matMulRect_id_left (m p : ℕ) (A : Fin m → Fin p → ℝ) :
     matMulRect m m p (idMatrix m) A = A := by
@@ -6093,6 +6371,194 @@ theorem rectMatMulVec_rectMatMul {m n p : ℕ}
             apply Finset.sum_congr rfl
             intro j _
             ring
+
+/-- The identity matrix acts as identity on rectangular matrix-vector
+multiplication. -/
+theorem rectMatMulVec_idMatrix {n : ℕ} (x : Fin n → ℝ) :
+    rectMatMulVec (idMatrix n) x = x := by
+  ext i
+  unfold rectMatMulVec idMatrix
+  simp [Finset.mem_univ]
+
+/-- A rectangular left inverse `A⁺A = I` makes the range projection `AA⁺`
+fix every vector in the range of `A`. -/
+theorem rectMatMulVec_rangeProjection_apply_range_of_left_inverse
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (Aplus : Fin n → Fin m → ℝ)
+    (hleft : rectMatMul Aplus A = idMatrix n)
+    (x : Fin n → ℝ) :
+    rectMatMulVec (rectMatMul A Aplus) (rectMatMulVec A x) =
+      rectMatMulVec A x := by
+  rw [rectMatMulVec_rectMatMul]
+  rw [← rectMatMulVec_rectMatMul Aplus A x]
+  rw [hleft]
+  rw [rectMatMulVec_idMatrix]
+
+/-- A rectangular right inverse `AA⁺ = I` makes the domain projection `A⁺A`
+fix every vector in the range of `A⁺`. -/
+theorem rectMatMulVec_domainProjection_apply_range_of_right_inverse
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (Aplus : Fin n → Fin m → ℝ)
+    (hright : rectMatMul A Aplus = idMatrix m)
+    (y : Fin m → ℝ) :
+    rectMatMulVec (rectMatMul Aplus A) (rectMatMulVec Aplus y) =
+      rectMatMulVec Aplus y := by
+  rw [rectMatMulVec_rectMatMul]
+  rw [← rectMatMulVec_rectMatMul A Aplus y]
+  rw [hright]
+  rw [rectMatMulVec_idMatrix]
+
+/-- A symmetric range projection from a rectangular left inverse has residuals
+orthogonal to the range of `A`. -/
+theorem rectMatMulVec_rangeProjection_residual_orthogonal_range_of_symmetric_left_inverse
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (Aplus : Fin n → Fin m → ℝ)
+    (hleft : rectMatMul Aplus A = idMatrix n)
+    (hSym : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (y : Fin m → ℝ) (x : Fin n → ℝ) :
+    (∑ i : Fin m,
+      (y i - rectMatMulVec (rectMatMul A Aplus) y i) *
+        rectMatMulVec A x i) = 0 := by
+  let P : Fin m → Fin m → ℝ := rectMatMul A Aplus
+  have hIdemEq :
+      rectMatMul P P = P := by
+    simpa [P] using
+      rectMatMul_rangeProjection_idempotent_of_left_inverse A Aplus hleft
+  have hIdem :
+      ∀ i j : Fin m, finiteMatMul P P i j = P i j := by
+    intro i j
+    simpa [finiteMatMul, rectMatMul] using congrFun (congrFun hIdemEq i) j
+  have horth :=
+    finiteVecInnerProduct_projection_residual_range_eq_zero
+      P (by simpa [P] using hSym) hIdem y (rectMatMulVec A x)
+  have hfix :
+      finiteMatVec P (rectMatMulVec A x) = rectMatMulVec A x := by
+    simpa [P, finiteMatVec, rectMatMulVec] using
+      rectMatMulVec_rangeProjection_apply_range_of_left_inverse A Aplus hleft x
+  rw [hfix] at horth
+  simpa [P, finiteMatVec, rectMatMulVec] using horth
+
+/-- A symmetric domain projection from a rectangular right inverse has
+residuals orthogonal to the range of `A⁺`. -/
+theorem rectMatMulVec_domainProjection_residual_orthogonal_range_of_symmetric_right_inverse
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (Aplus : Fin n → Fin m → ℝ)
+    (hright : rectMatMul A Aplus = idMatrix m)
+    (hSym : IsSymmetricFiniteMatrix (rectMatMul Aplus A))
+    (x : Fin n → ℝ) (y : Fin m → ℝ) :
+    (∑ j : Fin n,
+      (x j - rectMatMulVec (rectMatMul Aplus A) x j) *
+        rectMatMulVec Aplus y j) = 0 := by
+  let P : Fin n → Fin n → ℝ := rectMatMul Aplus A
+  have hIdemEq :
+      rectMatMul P P = P := by
+    simpa [P] using
+      rectMatMul_domainProjection_idempotent_of_right_inverse A Aplus hright
+  have hIdem :
+      ∀ i j : Fin n, finiteMatMul P P i j = P i j := by
+    intro i j
+    simpa [finiteMatMul, rectMatMul] using congrFun (congrFun hIdemEq i) j
+  have horth :=
+    finiteVecInnerProduct_projection_residual_range_eq_zero
+      P (by simpa [P] using hSym) hIdem x (rectMatMulVec Aplus y)
+  have hfix :
+      finiteMatVec P (rectMatMulVec Aplus y) = rectMatMulVec Aplus y := by
+    simpa [P, finiteMatVec, rectMatMulVec] using
+      rectMatMulVec_domainProjection_apply_range_of_right_inverse A Aplus hright y
+  rw [hfix] at horth
+  simpa [P, finiteMatVec, rectMatMulVec] using horth
+
+/-- A symmetric range projection from a rectangular left inverse gives the
+squared Euclidean best-approximation inequality against every vector in the
+range of `A`. -/
+theorem rectMatMulVec_rangeProjection_residual_normSq_le_range_residual_of_symmetric_left_inverse
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (Aplus : Fin n → Fin m → ℝ)
+    (hleft : rectMatMul Aplus A = idMatrix n)
+    (hSym : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (y : Fin m → ℝ) (x : Fin n → ℝ) :
+    vecNorm2Sq (fun i : Fin m =>
+      y i - rectMatMulVec (rectMatMul A Aplus) y i) ≤
+      vecNorm2Sq (fun i : Fin m => y i - rectMatMulVec A x i) := by
+  let P : Fin m → Fin m → ℝ := rectMatMul A Aplus
+  have hIdemEq :
+      rectMatMul P P = P := by
+    simpa [P] using
+      rectMatMul_rangeProjection_idempotent_of_left_inverse A Aplus hleft
+  have hIdem :
+      ∀ i j : Fin m, finiteMatMul P P i j = P i j := by
+    intro i j
+    simpa [finiteMatMul, rectMatMul] using congrFun (congrFun hIdemEq i) j
+  have hbest :=
+    finiteVecNorm2Sq_projection_residual_le_residual_to_range_of_symmetric_idempotent
+      P (by simpa [P] using hSym) hIdem y (rectMatMulVec A x)
+  have hfix :
+      finiteMatVec P (rectMatMulVec A x) = rectMatMulVec A x := by
+    simpa [P, finiteMatVec, rectMatMulVec] using
+      rectMatMulVec_rangeProjection_apply_range_of_left_inverse A Aplus hleft x
+  rw [hfix] at hbest
+  simpa [P, finiteMatVec, rectMatMulVec, finiteVecNorm2Sq_fin] using hbest
+
+/-- A symmetric domain projection from a rectangular right inverse gives the
+squared Euclidean best-approximation inequality against every vector in the
+range of `A⁺`. -/
+theorem rectMatMulVec_domainProjection_residual_normSq_le_range_residual_of_symmetric_right_inverse
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (Aplus : Fin n → Fin m → ℝ)
+    (hright : rectMatMul A Aplus = idMatrix m)
+    (hSym : IsSymmetricFiniteMatrix (rectMatMul Aplus A))
+    (x : Fin n → ℝ) (y : Fin m → ℝ) :
+    vecNorm2Sq (fun j : Fin n =>
+      x j - rectMatMulVec (rectMatMul Aplus A) x j) ≤
+      vecNorm2Sq (fun j : Fin n => x j - rectMatMulVec Aplus y j) := by
+  let P : Fin n → Fin n → ℝ := rectMatMul Aplus A
+  have hIdemEq :
+      rectMatMul P P = P := by
+    simpa [P] using
+      rectMatMul_domainProjection_idempotent_of_right_inverse A Aplus hright
+  have hIdem :
+      ∀ i j : Fin n, finiteMatMul P P i j = P i j := by
+    intro i j
+    simpa [finiteMatMul, rectMatMul] using congrFun (congrFun hIdemEq i) j
+  have hbest :=
+    finiteVecNorm2Sq_projection_residual_le_residual_to_range_of_symmetric_idempotent
+      P (by simpa [P] using hSym) hIdem x (rectMatMulVec Aplus y)
+  have hfix :
+      finiteMatVec P (rectMatMulVec Aplus y) = rectMatMulVec Aplus y := by
+    simpa [P, finiteMatVec, rectMatMulVec] using
+      rectMatMulVec_domainProjection_apply_range_of_right_inverse A Aplus hright y
+  rw [hfix] at hbest
+  simpa [P, finiteMatVec, rectMatMulVec, finiteVecNorm2Sq_fin] using hbest
+
+/-- Norm form of the range-projection best-approximation inequality. -/
+theorem rectMatMulVec_rangeProjection_residual_norm_le_range_residual_of_symmetric_left_inverse
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (Aplus : Fin n → Fin m → ℝ)
+    (hleft : rectMatMul Aplus A = idMatrix n)
+    (hSym : IsSymmetricFiniteMatrix (rectMatMul A Aplus))
+    (y : Fin m → ℝ) (x : Fin n → ℝ) :
+    vecNorm2 (fun i : Fin m =>
+      y i - rectMatMulVec (rectMatMul A Aplus) y i) ≤
+      vecNorm2 (fun i : Fin m => y i - rectMatMulVec A x i) := by
+  unfold vecNorm2
+  exact Real.sqrt_le_sqrt
+    (rectMatMulVec_rangeProjection_residual_normSq_le_range_residual_of_symmetric_left_inverse
+      A Aplus hleft hSym y x)
+
+/-- Norm form of the domain-projection best-approximation inequality. -/
+theorem rectMatMulVec_domainProjection_residual_norm_le_range_residual_of_symmetric_right_inverse
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (Aplus : Fin n → Fin m → ℝ)
+    (hright : rectMatMul A Aplus = idMatrix m)
+    (hSym : IsSymmetricFiniteMatrix (rectMatMul Aplus A))
+    (x : Fin n → ℝ) (y : Fin m → ℝ) :
+    vecNorm2 (fun j : Fin n =>
+      x j - rectMatMulVec (rectMatMul Aplus A) x j) ≤
+      vecNorm2 (fun j : Fin n => x j - rectMatMulVec Aplus y j) := by
+  unfold vecNorm2
+  exact Real.sqrt_le_sqrt
+    (rectMatMulVec_domainProjection_residual_normSq_le_range_residual_of_symmetric_right_inverse
+      A Aplus hright hSym x y)
 
 /-- A matrix-level left inverse is also a left inverse for the associated
     rectangular matrix-vector action. -/
@@ -6467,6 +6933,86 @@ theorem frobNormRect_triple_rectMatMul_le_of_rectOpNorm2Le {m n p q : ℕ}
     _ ≤ (a * frobNormRect B) * c :=
         mul_le_mul_of_nonneg_right hleft hc
     _ = a * frobNormRect B * c := by ring
+
+/-- The Frobenius norm of a diagonal matrix is the Euclidean norm of its
+diagonal. -/
+theorem frobNormRect_diagMatrix {n : ℕ} (x : Fin n → ℝ) :
+    frobNormRect (diagMatrix x) = vecNorm2 x := by
+  unfold frobNormRect vecNorm2 frobNormSqRect vecNorm2Sq diagMatrix
+  congr 1
+  apply Finset.sum_congr rfl
+  intro i _hi
+  rw [Finset.sum_eq_single i]
+  · simp
+  · intro j _hj hji
+    have hij : i ≠ j := fun h => hji h.symm
+    simp [hij]
+  · intro hnot
+    exact False.elim (hnot (Finset.mem_univ i))
+
+/-- The Euclidean norm of the diagonal of a square matrix is bounded by its
+Frobenius norm. -/
+theorem vecNorm2_diagonal_le_frobNormRect {n : ℕ}
+    (M : Fin n → Fin n → ℝ) :
+    vecNorm2 (fun i : Fin n => M i i) ≤ frobNormRect M := by
+  unfold vecNorm2 frobNormRect
+  apply Real.sqrt_le_sqrt
+  unfold vecNorm2Sq frobNormSqRect
+  apply Finset.sum_le_sum
+  intro i _hi
+  exact Finset.single_le_sum (fun j _ => sq_nonneg (M i j)) (Finset.mem_univ i)
+
+/-- Diagonal compression identity behind the Schur-product operator bound:
+`(A ∘ B)x` is the diagonal of `A * diag(x) * Bᵀ`. -/
+theorem matMulVec_hadamard_eq_diag_rectMatMul_diag_transpose {n : ℕ}
+    (A B : Fin n → Fin n → ℝ) (x : Fin n → ℝ) :
+    matMulVec n (fun i j => A i j * B i j) x =
+      fun i => rectMatMul (rectMatMul A (diagMatrix x)) (matTranspose B) i i := by
+  ext i
+  unfold matMulVec rectMatMul matTranspose diagMatrix
+  apply Finset.sum_congr rfl
+  intro j _hj
+  rw [Finset.sum_eq_single j]
+  · simp only [if_true]
+    ring
+  · intro k _hk hkj
+    simp [hkj]
+  · intro hnot
+    exact False.elim (hnot (Finset.mem_univ j))
+
+/-- Horn-Johnson Schur-product operator-2 inequality in certificate form:
+if `||A||₂ ≤ a` and `||B||₂ ≤ b`, then `||A ∘ B||₂ ≤ ab`. -/
+theorem opNorm2Le_hadamard {n : ℕ}
+    (A B : Fin n → Fin n → ℝ) {a b : ℝ}
+    (ha : 0 ≤ a) (hb : 0 ≤ b)
+    (hA : opNorm2Le A a) (hB : opNorm2Le B b) :
+    opNorm2Le (fun i j => A i j * B i j) (a * b) := by
+  intro x
+  have hArect : rectOpNorm2Le A a := by
+    intro y
+    simpa [rectOpNorm2Le, opNorm2Le, rectMatMulVec, matMulVec] using hA y
+  have hBt_rect : rectOpNorm2Le (finiteTranspose (matTranspose B)) b := by
+    intro y
+    simpa [rectOpNorm2Le, opNorm2Le, finiteTranspose, rectMatMulVec, matMulVec,
+      matTranspose] using hB y
+  have htriple :
+      frobNormRect (rectMatMul (rectMatMul A (diagMatrix x)) (matTranspose B))
+        ≤ a * frobNormRect (diagMatrix x) * b :=
+    frobNormRect_triple_rectMatMul_le_of_rectOpNorm2Le
+      A (diagMatrix x) (matTranspose B) ha hb hArect hBt_rect
+  calc
+    vecNorm2 (matMulVec n (fun i j => A i j * B i j) x)
+        = vecNorm2
+            (fun i =>
+              rectMatMul (rectMatMul A (diagMatrix x)) (matTranspose B) i i) := by
+          rw [matMulVec_hadamard_eq_diag_rectMatMul_diag_transpose]
+    _ ≤ frobNormRect
+          (rectMatMul (rectMatMul A (diagMatrix x)) (matTranspose B)) :=
+        vecNorm2_diagonal_le_frobNormRect _
+    _ ≤ a * frobNormRect (diagMatrix x) * b := htriple
+    _ = (a * b) * vecNorm2 x := by
+        rw [frobNormRect_diagMatrix]
+        ring
 
 /-- Entrywise forward-error composition for a computed rectangular product.
 

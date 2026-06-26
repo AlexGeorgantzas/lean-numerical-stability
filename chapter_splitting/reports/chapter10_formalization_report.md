@@ -9,19 +9,19 @@
 - Mode: proof-completion, core selected scope.
 - Parallel split: Split 2.
 - Planning documents consulted: `HIGHAM_PARALLEL_FORMALIZATION_BLUEPRINT.md`, Split 2 section of `split_primary_contracts.md`, and Chapter 10/AppA rows of `chapter_index.md`.
-- Selected-scope gate: FAIL for the full source chapter because full floating-point Cholesky, spectral/norm perturbation, rank-pivoting, and several Appendix rows wait on Split 1 foundation families. The local `PROVE-NOW-SPLIT` rows identified in this pass are closed below.
+- Selected-scope gate: FAIL for the full source chapter because full floating-point Cholesky, spectral/norm perturbation, rank-pivoting, and several Appendix rows remain current Split 2 proof/API targets over integrated Split 1 foundation families. The local `PROVE-NOW-SPLIT` rows identified in this pass are closed below.
 
 ## Completed Selected Targets
 
 | Source label | Lean declaration | File | Theorem surface | Notes |
 | --- | --- | --- | --- | --- |
-| Theorem 10.1 | `higham10_1_cholesky_existence`, `higham10_1_cholesky_uniqueness` | `LeanFpAnalysis/FP/Algorithms/HighamChapter10.lean` | Exact SPD Cholesky existence/uniqueness via `CholeskyFactSpec` | Reused genuine exact proof chain from `CholeskySpec`; no unresolved previous-split blocker. |
-| Section 10.1 Cholesky `A = L D L^T` rewrite | `higham10_1_choleskyLDLTLower`, `higham10_1_choleskyLDLTDiagonal`, `higham10_1_cholesky_to_ldlt` | `LeanFpAnalysis/FP/Algorithms/HighamChapter10.lean` | Any exact upper Cholesky certificate induces a unit-lower `L` and diagonal `D` satisfying the existing block-LDLT spec with identity permutation | Newly proved in the Split 2 unifying continuation; no previous-split dependency. |
-| Problem 10.1 | `higham10_spd_diag_pos`, `higham10_problem_10_1_two_by_two_minor_pos`, `higham10_problem_10_1_abs_offdiag_lt_sqrt_diag_mul`, `higham10_problem_10_1_abs_entry_le_largest_diag`, `higham10_problem_10_1_maxEntryNorm_eq_largest_diag` | `LeanFpAnalysis/FP/Algorithms/HighamChapter10.lean` | SPD diagonal positivity, strict off-diagonal bound, and max-entry-on-diagonal conclusion | Newly proved in this pass; no previous-split dependency. |
-| Problem 10.4 | `spd_schur_complement_isSymPosDef`, `higham10_problem_10_4_first_ge_reduced_submatrix_spd`, `higham10_problem_10_4_first_ge_entry_abs_le_initial_max`, `higham10_problem_10_4_first_ge_maxEntryNorm_le`, `higham10_problem_10_4_unpivotedGEGrowthBounded`, `higham10_problem_10_4_unpivoted_ge_positive_pivots_and_growth` | `Cholesky/CholeskySpec.lean`, `HighamChapter10.lean` | Exact SPD GE Schur step is SPD; every unpivoted GE pivot is positive; nonempty Schur-stage max-entry norms do not increase, giving growth factor at most `1` | Newly proved/exposed in this pass; no previous-split dependency. |
-| Theorem 10.9(a) | `higham10_9_psd_cholesky_existence` | `HighamChapter10.lean` | Exact PSD Cholesky existence `A = R^T R` with nonnegative diagonal | Reused genuine exact proof chain from `CholeskyPSD`; no unresolved previous-split blocker. |
+| Theorem 10.1 | `higham10_1_cholesky_existence`, `higham10_1_cholesky_uniqueness` | `LeanFpAnalysis/FP/Algorithms/HighamChapter10.lean` | Exact SPD Cholesky existence/uniqueness via `CholeskyFactSpec` | Reused genuine exact proof chain from `CholeskySpec`; no unresolved integrated Split 1 blocker. |
+| Section 10.1 Cholesky `A = L D L^T` rewrite | `higham10_1_choleskyLDLTLower`, `higham10_1_choleskyLDLTDiagonal`, `higham10_1_cholesky_to_ldlt` | `LeanFpAnalysis/FP/Algorithms/HighamChapter10.lean` | Any exact upper Cholesky certificate induces a unit-lower `L` and diagonal `D` satisfying the existing block-LDLT spec with identity permutation | Newly proved in the Split 2 unifying continuation; no integrated previous-split blocker. |
+| Problem 10.1 | `higham10_spd_diag_pos`, `higham10_problem_10_1_two_by_two_minor_pos`, `higham10_problem_10_1_abs_offdiag_lt_sqrt_diag_mul`, `higham10_problem_10_1_abs_entry_le_largest_diag`, `higham10_problem_10_1_maxEntryNorm_eq_largest_diag` | `LeanFpAnalysis/FP/Algorithms/HighamChapter10.lean` | SPD diagonal positivity, strict off-diagonal bound, and max-entry-on-diagonal conclusion | Newly proved in this pass; no integrated previous-split blocker. |
+| Problem 10.4 | `spd_schur_complement_isSymPosDef`, `higham10_problem_10_4_first_ge_reduced_submatrix_spd`, `higham10_problem_10_4_first_ge_entry_abs_le_initial_max`, `higham10_problem_10_4_first_ge_maxEntryNorm_le`, `higham10_problem_10_4_unpivotedGEGrowthBounded`, `higham10_problem_10_4_unpivoted_ge_positive_pivots_and_growth` | `Cholesky/CholeskySpec.lean`, `HighamChapter10.lean` | Exact SPD GE Schur step is SPD; every unpivoted GE pivot is positive; nonempty Schur-stage max-entry norms do not increase, giving growth factor at most `1` | Newly proved/exposed in this pass; no integrated previous-split blocker. |
+| Theorem 10.9(a) | `higham10_9_psd_cholesky_existence` | `HighamChapter10.lean` | Exact PSD Cholesky existence `A = R^T R` with nonnegative diagonal | Reused genuine exact proof chain from `CholeskyPSD`; no unresolved integrated Split 1 blocker. |
 | Problem 10.8 witness | `higham10_problem_10_8_counterexample`, `higham10_problem_10_8_leading_minors_nonnegative`, `higham10_problem_10_8_counterexample_symmetric`, `higham10_problem_10_8_counterexample_not_psd` | `HighamChapter10.lean` | Concrete symmetric `2 x 2` witness with nonnegative leading determinant formulas but not PSD | Newly proved in this pass; the general principal-minor criterion is not closed. |
-| Section 10.4 equivalence | `higham10_29_symmetric_skew_decomposition`, `higham10_29_nonsymPosDef_iff_symPartSPD` | `HighamChapter10.lean` | Decomposition into symmetric/skew parts and equivalence with SPD symmetric part | Reused genuine exact proof chain from `CholeskyNonsym`; no unresolved previous-split blocker. |
+| Section 10.4 equivalence | `higham10_29_symmetric_skew_decomposition`, `higham10_29_nonsymPosDef_iff_symPartSPD` | `HighamChapter10.lean` | Decomposition into symmetric/skew parts and equivalence with SPD symmetric part | Reused genuine exact proof chain from `CholeskyNonsym`; no unresolved integrated Split 1 blocker. |
 
 ## Reused From Repository or Mathlib
 
@@ -54,87 +54,87 @@
 
 | ID | Source item | Classification | Previous-split dependency | Exact blocker or closure | Lean artifact/status |
 | --- | --- | --- | --- | --- | --- |
-| P10-T10.1 | Theorem 10.1, exact SPD Cholesky | CLOSED | No previous-split dependency | Closed exact proof | `higham10_1_cholesky_existence`, `higham10_1_cholesky_uniqueness` |
-| P10-A10.2 | Algorithm 10.2, concrete Cholesky loop and flop count | WAIT-PREVIOUS-SPLIT | Yes, direct previous-split dependency | Split 1 `H02.rounding_model`, `H03.gamma_theta`, sqrt-operation rounding and theta product model; exact loop/cost modeling should not be redefined locally | Certificate predicate `higham10_2_CholeskyBackwardError`; concrete `fl_cholesky` path open |
-| P10-T10.3 | Theorem 10.3, computed-factor backward error | WAIT-PREVIOUS-SPLIT | Yes, direct previous-split dependency | Needs Algorithm 10.2 certificate generation from Split 1 rounding/gamma foundations; do not assume the certificate as the source theorem | Certificate consequence `higham10_3_cholesky_backward_error` closed |
-| P10-T10.4 | Theorem 10.4, Cholesky solve backward error | WAIT-PREVIOUS-SPLIT | Yes, direct previous-split dependency | Needs concrete factorization certificate plus Split 1 gamma absorption; triangular-solve side is available | Certificate consequence `higham10_4_cholesky_solve_backward_error` closed |
-| P10-T10.5 | Theorem 10.5, Demmel `d d^T` bound | WAIT-PREVIOUS-SPLIT | Yes, indirect previous-split dependency | Depends on full Theorem 10.3 concrete Cholesky backward-error route and Split 1 norm/gamma foundations | Interface `higham10_5_demmel_bound`; full diagonal source derivation open |
-| P10-T10.6 | Theorem 10.6, scaled forward error | WAIT-PREVIOUS-SPLIT | Yes, indirect previous-split dependency | Uses van der Sluis/condition-number scaling from Chapter 7 whose proof is gated by Split 1 `H06.svd` and condition-number tools, plus concrete Cholesky error | Interface `higham10_6_scaled_forward_error`; `higham10_9_vanDerSluisScalingBound` predicate |
-| P10-T10.7 | Theorem 10.7, success/failure thresholds | WAIT-PREVIOUS-SPLIT | Yes, direct previous-split dependency | Needs Split 1 `H06.svd`/eigenvalue/interlacing/operator-norm tools and Split 1 rounding/gamma route for concrete stages | Sign consequences `higham10_7_success_condition`, `higham10_7_failure_condition` closed only as interfaces |
-| P10-T10.8 | Theorem 10.8, Sun perturbation bounds | WAIT-PREVIOUS-SPLIT | Yes, direct previous-split dependency | Needs operator 2-norm/spectral/condition-number perturbation infrastructure from Split 1 `H06`; source proof is citation-only | Interfaces `higham10_8_sun_normwise_perturbation`, `higham10_8_sun_componentwise_perturbation` |
-| P10-T10.9a | Theorem 10.9(a), PSD Cholesky existence | CLOSED | No previous-split dependency | Closed exact proof by local induction | `higham10_9_psd_cholesky_existence` |
-| P10-T10.9b | Theorem 10.9(b), rank-r pivoted PSD Cholesky | WAIT-PREVIOUS-SPLIT | Yes, direct previous-split dependency | Needs rank/nullspace/minor/SVD-backed rank display and pivot trace API from Split 1 `H06.svd`/rank foundations; should not be replaced by a local rank API | Full-rank SPD specialization `higham10_9_spd_pivoted_cholesky_full_rank`; rank-r source row open |
-| P10-L10.10 | Lemma 10.10, Schur-complement perturbation | WAIT-PREVIOUS-SPLIT | Yes, direct previous-split dependency | Needs Split 1 norm/asymptotic inverse-perturbation infrastructure for the `O(||E||^2)` estimate | Interface `higham10_10_schur_complement_perturbation` |
-| P10-L10.11 | Lemma 10.11, no-tie pivot perturbation | WAIT-PREVIOUS-SPLIT | Yes, indirect previous-split dependency | Depends on Lemma 10.10's perturbation estimate plus formal pivot sequence/no-tie continuity | No closed theorem |
-| P10-L10.12 | Lemma 10.12, `||A11^{-1} A12||` bound | WAIT-PREVIOUS-SPLIT | Yes, direct previous-split dependency | Needs Split 1 `H06` operator 2-norm, square-root, and Schur-complement norm tools | Interface `higham10_12_w_norm_bound_from_cond` |
-| P10-L10.13 | Lemma 10.13, complete-pivoting `W` bound and sharp family | WAIT-PREVIOUS-SPLIT | Yes, direct previous-split dependency | Needs Split 1 norm/rank foundations plus complete-pivoting trace; do not reprove a parallel norm API locally | Predicate/interface `higham10_13_completePivotingInequality`, `higham10_13_complete_pivoting_w_bound` |
-| P10-T10.14 | Theorem 10.14, PSD Cholesky backward error | WAIT-PREVIOUS-SPLIT | Yes, direct and indirect previous-split dependency | Direct: Split 1 gamma/norm/eigenvalue; indirect: Theorems 10.7, Lemma 10.10, rank-r pivoted Cholesky | Interface `higham10_14_psd_cholesky_backward_error` |
+| P10-T10.1 | Theorem 10.1, exact SPD Cholesky | CLOSED | No integrated previous-split blocker | Closed exact proof | `higham10_1_cholesky_existence`, `higham10_1_cholesky_uniqueness` |
+| P10-A10.2 | Algorithm 10.2, concrete Cholesky loop and flop count | PROVE-NOW-SPLIT2 | Yes, direct integrated Split 1 dependency; not an unresolved wait | Split 1 `H02.rounding_model`, `H03.gamma_theta`, sqrt-operation rounding and theta product model; exact loop/cost modeling should not be redefined locally | Certificate predicate `higham10_2_CholeskyBackwardError`; concrete `fl_cholesky` path open |
+| P10-T10.3 | Theorem 10.3, computed-factor backward error | PROVE-NOW-SPLIT2 | Yes, direct integrated Split 1 dependency; not an unresolved wait | Needs Algorithm 10.2 certificate generation from Split 1 rounding/gamma foundations; do not assume the certificate as the source theorem | Certificate consequence `higham10_3_cholesky_backward_error` closed |
+| P10-T10.4 | Theorem 10.4, Cholesky solve backward error | PROVE-NOW-SPLIT2 | Yes, direct integrated Split 1 dependency; not an unresolved wait | Needs concrete factorization certificate plus Split 1 gamma absorption; triangular-solve side is available | Certificate consequence `higham10_4_cholesky_solve_backward_error` closed |
+| P10-T10.5 | Theorem 10.5, Demmel `d d^T` bound | PROVE-NOW-SPLIT2 | Yes, indirect integrated Split 1 dependency; not an unresolved wait | Depends on full Theorem 10.3 concrete Cholesky backward-error route and Split 1 norm/gamma foundations | Interface `higham10_5_demmel_bound`; full diagonal source derivation open |
+| P10-T10.6 | Theorem 10.6, scaled forward error | PROVE-NOW-SPLIT2 | Yes, indirect integrated Split 1 dependency; not an unresolved wait | Uses van der Sluis/condition-number scaling from Chapter 7, now a current wrapper/API target over integrated `H06.svd` and condition-number tools, plus concrete Cholesky error | Interface `higham10_6_scaled_forward_error`; `higham10_9_vanDerSluisScalingBound` predicate |
+| P10-T10.7 | Theorem 10.7, success/failure thresholds | PROVE-NOW-SPLIT2 | Yes, direct integrated Split 1 dependency; not an unresolved wait | Needs Split 1 `H06.svd`/eigenvalue/interlacing/operator-norm tools and Split 1 rounding/gamma route for concrete stages | Sign consequences `higham10_7_success_condition`, `higham10_7_failure_condition` closed only as interfaces |
+| P10-T10.8 | Theorem 10.8, Sun perturbation bounds | PROVE-NOW-SPLIT2 | Yes, direct integrated Split 1 dependency; not an unresolved wait | Needs operator 2-norm/spectral/condition-number perturbation infrastructure from Split 1 `H06`; source proof is citation-only | Interfaces `higham10_8_sun_normwise_perturbation`, `higham10_8_sun_componentwise_perturbation` |
+| P10-T10.9a | Theorem 10.9(a), PSD Cholesky existence | CLOSED | No integrated previous-split blocker | Closed exact proof by local induction | `higham10_9_psd_cholesky_existence` |
+| P10-T10.9b | Theorem 10.9(b), rank-r pivoted PSD Cholesky | PROVE-NOW-SPLIT2 | Yes, direct integrated Split 1 dependency; not an unresolved wait | Needs rank/nullspace/minor/SVD-backed rank display and pivot trace API from Split 1 `H06.svd`/rank foundations; should not be replaced by a local rank API | Full-rank SPD specialization `higham10_9_spd_pivoted_cholesky_full_rank`; rank-r source row open |
+| P10-L10.10 | Lemma 10.10, Schur-complement perturbation | PROVE-NOW-SPLIT2 | Yes, direct integrated Split 1 dependency; not an unresolved wait | Needs Split 1 norm/asymptotic inverse-perturbation infrastructure for the `O(||E||^2)` estimate | Interface `higham10_10_schur_complement_perturbation` |
+| P10-L10.11 | Lemma 10.11, no-tie pivot perturbation | PROVE-NOW-SPLIT2 | Yes, indirect integrated Split 1 dependency; not an unresolved wait | Depends on Lemma 10.10's perturbation estimate plus formal pivot sequence/no-tie continuity | No closed theorem |
+| P10-L10.12 | Lemma 10.12, `||A11^{-1} A12||` bound | PROVE-NOW-SPLIT2 | Yes, direct integrated Split 1 dependency; not an unresolved wait | Needs Split 1 `H06` operator 2-norm, square-root, and Schur-complement norm tools | Interface `higham10_12_w_norm_bound_from_cond` |
+| P10-L10.13 | Lemma 10.13, complete-pivoting `W` bound and sharp family | PROVE-NOW-SPLIT2 | Yes, direct integrated Split 1 dependency; not an unresolved wait | Needs Split 1 norm/rank foundations plus complete-pivoting trace; do not reprove a parallel norm API locally | Predicate/interface `higham10_13_completePivotingInequality`, `higham10_13_complete_pivoting_w_bound` |
+| P10-T10.14 | Theorem 10.14, PSD Cholesky backward error | PROVE-NOW-SPLIT2 | Yes, direct and indirect integrated Split 1 dependency; not an unresolved wait | Direct: Split 1 gamma/norm/eigenvalue; indirect: Theorems 10.7, Lemma 10.10, rank-r pivoted Cholesky | Interface `higham10_14_psd_cholesky_backward_error` |
 
 ### Numbered Equations
 
 | Equation | Classification | Previous-split dependency | Lean artifact/status |
 | --- | --- | --- | --- |
-| (10.1) | CLOSED | No previous-split dependency | Covered by exact `CholeskyFactSpec` product surface in Theorem 10.1 |
-| (10.2) | CLOSED | No previous-split dependency | Covered by exact Cholesky construction; not exported separately |
-| (10.3) | CLOSED | No previous-split dependency | Covered by exact Cholesky construction; not exported separately |
-| (10.4) | WAIT-PREVIOUS-SPLIT | Yes, direct previous-split dependency: Split 1 `H03.gamma_theta`, `H03.inner_product_bounds` and sqrt rounding | Certificate predicate only |
-| (10.5) | WAIT-PREVIOUS-SPLIT | Yes, direct previous-split dependency: Algorithm 10.2 certificate generation from Split 1 rounding/gamma | Certificate consequence `higham10_3_cholesky_backward_error` closed |
-| (10.6) | WAIT-PREVIOUS-SPLIT | Yes, direct previous-split dependency: concrete Cholesky plus triangular solve gamma absorption | Certificate consequence `higham10_4_cholesky_solve_backward_error` closed |
-| (10.7) | WAIT-PREVIOUS-SPLIT | Yes, direct previous-split dependency: Split 1 `H06.norms`, operator 2-norm and gamma simplification | Existing normwise theorem has different hypotheses; source row open |
-| (10.8) | WAIT-PREVIOUS-SPLIT | Yes, indirect previous-split dependency through full Theorem 10.3 and norm foundations | Interface `higham10_5_demmel_bound` |
-| (10.9) | WAIT-PREVIOUS-SPLIT | Yes, indirect previous-split dependency through Chapter 7 van der Sluis row gated by Split 1 `H06.svd` | Predicate `higham10_9_vanDerSluisScalingBound` |
-| (10.10) | WAIT-PREVIOUS-SPLIT | Yes, indirect previous-split dependency through (10.9) and full Cholesky error | Interface `higham10_6_scaled_forward_error` |
-| (10.11) | WAIT-PREVIOUS-SPLIT | Yes, direct previous-split dependency: Split 1 rank/SVD foundations for rank-r PSD display | Predicate `higham10_9_PivotedCholeskySpec`; SPD full-rank specialization closed |
-| (10.12) | CLOSED | No previous-split dependency | Definition `higham10_12_outerProductResidual` |
-| (10.13) | WAIT-PREVIOUS-SPLIT | Yes, direct previous-split dependency: Split 1 norm/rank tools plus pivot trace | Predicate `higham10_13_completePivotingInequality` |
-| (10.14) | CLOSED | No previous-split dependency | Definition `higham10_14_schurComplement` |
-| (10.15) | CLOSED | No previous-split dependency | Definition `higham10_14_schurComplement` |
-| (10.16) | WAIT-PREVIOUS-SPLIT | Yes, direct previous-split dependency: Split 1 norm/asymptotic inverse perturbation | Interface `higham10_10_schur_complement_perturbation` |
-| (10.17) | WAIT-PREVIOUS-SPLIT | Yes, indirect previous-split dependency through Lemma 10.10 and pivot continuity | No closed theorem |
-| (10.18) | WAIT-PREVIOUS-SPLIT | Yes, direct previous-split dependency: Split 1 operator norm and block identity matrix norm tools | Source example not encoded |
-| (10.19) | WAIT-PREVIOUS-SPLIT | Yes, direct previous-split dependency: Split 1 norm/rank plus complete-pivoting trace | Interface `higham10_13_complete_pivoting_w_bound` |
-| (10.20) | WAIT-PREVIOUS-SPLIT | Yes, direct previous-split dependency: Split 1 norm/rank and Kahan-family sharpness machinery | No closed theorem |
-| (10.21) | WAIT-PREVIOUS-SPLIT | Yes, direct previous-split dependency: Split 1 eigenvalue/minimum-eigenvalue foundations | Not represented in final theorem surface |
-| (10.22) | WAIT-PREVIOUS-SPLIT | Yes, direct and indirect previous-split dependency: Split 1 gamma/norm plus Theorem 10.7/Lemma 10.10 | Interface `higham10_14_psd_cholesky_backward_error` |
-| (10.23) | WAIT-PREVIOUS-SPLIT | Yes, indirect previous-split dependency through full PSD algorithm trace | No separate theorem |
-| (10.24) | WAIT-PREVIOUS-SPLIT | Yes, direct previous-split dependency: Split 1 gamma/norm and rank estimates | No separate theorem |
-| (10.25) | WAIT-PREVIOUS-SPLIT | Yes, direct previous-split dependency: Split 1 gamma/norm estimates | No separate theorem |
-| (10.26) | CLOSED | No previous-split dependency | Predicate `higham10_26_nonpositivePivotCriterion` |
-| (10.27) | CLOSED | No previous-split dependency for criterion; reliability proof waits on previous rows | Predicates `higham10_27_residualStopCriterion`, `higham10_27_nonpositiveDiagonalCriterion`; abstract bound wrapper |
-| (10.28) | CLOSED for criterion | No previous-split dependency for criterion; condition-number bound uses upstream norm tools | Predicate `higham10_28_relativeDiagonalStopCriterion`; bound not closed |
-| (10.29) | WAIT-PREVIOUS-SPLIT | Yes, direct previous-split dependency: Split 1 Frobenius/operator norm and condition-number infrastructure plus LU growth proof | Decomposition/equivalence closed; growth bound interface only |
-| (10.30) | CLOSED | No previous-split dependency for the displayed class definition | Definition `higham10_30_complexPositiveDefiniteForm`; cited growth theorem skipped/deferred below |
+| (10.1) | CLOSED | No integrated previous-split blocker | Covered by exact `CholeskyFactSpec` product surface in Theorem 10.1 |
+| (10.2) | CLOSED | No integrated previous-split blocker | Covered by exact Cholesky construction; not exported separately |
+| (10.3) | CLOSED | No integrated previous-split blocker | Covered by exact Cholesky construction; not exported separately |
+| (10.4) | PROVE-NOW-SPLIT2 | Yes, direct integrated Split 1 dependency; not an unresolved wait: Split 1 `H03.gamma_theta`, `H03.inner_product_bounds` and sqrt rounding | Certificate predicate only |
+| (10.5) | PROVE-NOW-SPLIT2 | Yes, direct integrated Split 1 dependency; not an unresolved wait: Algorithm 10.2 certificate generation from Split 1 rounding/gamma | Certificate consequence `higham10_3_cholesky_backward_error` closed |
+| (10.6) | PROVE-NOW-SPLIT2 | Yes, direct integrated Split 1 dependency; not an unresolved wait: concrete Cholesky plus triangular solve gamma absorption | Certificate consequence `higham10_4_cholesky_solve_backward_error` closed |
+| (10.7) | PROVE-NOW-SPLIT2 | Yes, direct integrated Split 1 dependency; not an unresolved wait: Split 1 `H06.norms`, operator 2-norm and gamma simplification | Existing normwise theorem has different hypotheses; source row open |
+| (10.8) | PROVE-NOW-SPLIT2 | Yes, indirect integrated Split 1 dependency; not an unresolved wait through full Theorem 10.3 and norm foundations | Interface `higham10_5_demmel_bound` |
+| (10.9) | PROVE-NOW-SPLIT2 | Yes, indirect integrated Split 1 dependency; not an unresolved wait through the Chapter 7 van der Sluis wrapper target over integrated `H06.svd` | Predicate `higham10_9_vanDerSluisScalingBound` |
+| (10.10) | PROVE-NOW-SPLIT2 | Yes, indirect integrated Split 1 dependency; not an unresolved wait through (10.9) and full Cholesky error | Interface `higham10_6_scaled_forward_error` |
+| (10.11) | PROVE-NOW-SPLIT2 | Yes, direct integrated Split 1 dependency; not an unresolved wait: Split 1 rank/SVD foundations for rank-r PSD display | Predicate `higham10_9_PivotedCholeskySpec`; SPD full-rank specialization closed |
+| (10.12) | CLOSED | No integrated previous-split blocker | Definition `higham10_12_outerProductResidual` |
+| (10.13) | PROVE-NOW-SPLIT2 | Yes, direct integrated Split 1 dependency; not an unresolved wait: Split 1 norm/rank tools plus pivot trace | Predicate `higham10_13_completePivotingInequality` |
+| (10.14) | CLOSED | No integrated previous-split blocker | Definition `higham10_14_schurComplement` |
+| (10.15) | CLOSED | No integrated previous-split blocker | Definition `higham10_14_schurComplement` |
+| (10.16) | PROVE-NOW-SPLIT2 | Yes, direct integrated Split 1 dependency; not an unresolved wait: Split 1 norm/asymptotic inverse perturbation | Interface `higham10_10_schur_complement_perturbation` |
+| (10.17) | PROVE-NOW-SPLIT2 | Yes, indirect integrated Split 1 dependency; not an unresolved wait through Lemma 10.10 and pivot continuity | No closed theorem |
+| (10.18) | PROVE-NOW-SPLIT2 | Yes, direct integrated Split 1 dependency; not an unresolved wait: Split 1 operator norm and block identity matrix norm tools | Source example not encoded |
+| (10.19) | PROVE-NOW-SPLIT2 | Yes, direct integrated Split 1 dependency; not an unresolved wait: Split 1 norm/rank plus complete-pivoting trace | Interface `higham10_13_complete_pivoting_w_bound` |
+| (10.20) | PROVE-NOW-SPLIT2 | Yes, direct integrated Split 1 dependency; not an unresolved wait: Split 1 norm/rank and Kahan-family sharpness machinery | No closed theorem |
+| (10.21) | PROVE-NOW-SPLIT2 | Yes, direct integrated Split 1 dependency; not an unresolved wait: Split 1 eigenvalue/minimum-eigenvalue foundations | Not represented in final theorem surface |
+| (10.22) | PROVE-NOW-SPLIT2 | Yes, direct and indirect integrated Split 1 dependency; not an unresolved wait: Split 1 gamma/norm plus Theorem 10.7/Lemma 10.10 | Interface `higham10_14_psd_cholesky_backward_error` |
+| (10.23) | PROVE-NOW-SPLIT2 | Yes, indirect integrated Split 1 dependency; not an unresolved wait through full PSD algorithm trace | No separate theorem |
+| (10.24) | PROVE-NOW-SPLIT2 | Yes, direct integrated Split 1 dependency; not an unresolved wait: Split 1 gamma/norm and rank estimates | No separate theorem |
+| (10.25) | PROVE-NOW-SPLIT2 | Yes, direct integrated Split 1 dependency; not an unresolved wait: Split 1 gamma/norm estimates | No separate theorem |
+| (10.26) | CLOSED | No integrated previous-split blocker | Predicate `higham10_26_nonpositivePivotCriterion` |
+| (10.27) | CLOSED | No integrated previous-split blocker for criterion; reliability proof depends on previous rows | Predicates `higham10_27_residualStopCriterion`, `higham10_27_nonpositiveDiagonalCriterion`; abstract bound wrapper |
+| (10.28) | CLOSED for criterion | No integrated previous-split blocker for criterion; condition-number bound uses upstream norm tools | Predicate `higham10_28_relativeDiagonalStopCriterion`; bound not closed |
+| (10.29) | PROVE-NOW-SPLIT2 | Yes, direct integrated Split 1 dependency; not an unresolved wait: Split 1 Frobenius/operator norm and condition-number infrastructure plus LU growth proof | Decomposition/equivalence closed; growth bound interface only |
+| (10.30) | CLOSED | No integrated previous-split blocker for the displayed class definition | Definition `higham10_30_complexPositiveDefiniteForm`; cited growth theorem skipped/deferred below |
 
 ### Problems and Appendix A
 
 | Problem | Classification | Previous-split dependency | Exact reason/status |
 | --- | --- | --- | --- |
-| 10.1 | CLOSED | No previous-split dependency | Newly proved off-diagonal bound and max-entry consequence. |
-| 10.2 | SKIP | No previous-split dependency | Computational recipe for evaluating `x^T A^{-1} x`; no selected theorem beyond nonnegativity of a square sum. |
-| 10.3 | WAIT-PREVIOUS-SPLIT | Yes, direct previous-split dependency: Split 1 `H02.rounding_model`, `H03.gamma_theta` and square-root rounding | Arbitrary-order product/sqrt recurrence not locally available. |
-| 10.4(a) | CLOSED | No previous-split dependency | Newly exposed first-stage Schur complement SPD theorem. |
-| 10.4(b) | CLOSED | No previous-split dependency | Newly proved recursive exact unpivoted-GE invariant: each SPD Schur stage has positive pivot and nonincreasing max-entry norm. |
-| 10.5 | WAIT-PREVIOUS-SPLIT | Yes, indirect previous-split dependency through full Theorem 10.5/(10.6) and Split 1 norm/gamma | Max-entry norm target now has Problem 10.1 diagonal max bridge; full backward-error result remains open. |
-| 10.6 | WAIT-PREVIOUS-SPLIT | Yes, direct previous-split dependency: Split 1 rank/nullspace/SVD foundations | Nullspace basis proof not closed. |
-| 10.7 | WAIT-PREVIOUS-SPLIT | Yes, direct previous-split dependency: Split 1 norm/rank and complete-pivoting trace | Predicate for (10.13) exists; proof open. |
-| 10.8 | CLOSED for witness; WAIT-PREVIOUS-SPLIT for general criterion | Witness: no previous-split dependency. Criterion: direct Split 1 determinant/minor/rank foundations | Concrete counterexample closed; principal-minor iff PSD theorem not closed. |
-| 10.9 | WAIT-PREVIOUS-SPLIT | Yes, indirect previous-split dependency through Schur-complement/rank infrastructure | Negative-curvature direction needs block/rank/Schur complement APIs. |
-| 10.10 | SKIP | No previous-split dependency | Explanatory diagnosis of invalid continuity argument; no independent theorem selected beyond Theorem 10.14 blocker. |
-| 10.11 | WAIT-PREVIOUS-SPLIT | Yes, direct previous-split dependency: complex Hermitian positive-definite and Schur-complement foundations | Complex/Hermitian Schur complement theorem not locally available. |
-| 10.12 | SKIP | No previous-split dependency | Research problem; no determinate theorem statement. |
+| 10.1 | CLOSED | No integrated previous-split blocker | Newly proved off-diagonal bound and max-entry consequence. |
+| 10.2 | SKIP | No integrated previous-split blocker | Computational recipe for evaluating `x^T A^{-1} x`; no selected theorem beyond nonnegativity of a square sum. |
+| 10.3 | PROVE-NOW-SPLIT2 | Yes, direct integrated Split 1 dependency; not an unresolved wait: Split 1 `H02.rounding_model`, `H03.gamma_theta` and square-root rounding | Arbitrary-order product/sqrt recurrence not locally available. |
+| 10.4(a) | CLOSED | No integrated previous-split blocker | Newly exposed first-stage Schur complement SPD theorem. |
+| 10.4(b) | CLOSED | No integrated previous-split blocker | Newly proved recursive exact unpivoted-GE invariant: each SPD Schur stage has positive pivot and nonincreasing max-entry norm. |
+| 10.5 | PROVE-NOW-SPLIT2 | Yes, indirect integrated Split 1 dependency; not an unresolved wait through full Theorem 10.5/(10.6) and Split 1 norm/gamma | Max-entry norm target now has Problem 10.1 diagonal max bridge; full backward-error result remains open. |
+| 10.6 | PROVE-NOW-SPLIT2 | Yes, direct integrated Split 1 dependency; not an unresolved wait: Split 1 rank/nullspace/SVD foundations | Nullspace basis proof not closed. |
+| 10.7 | PROVE-NOW-SPLIT2 | Yes, direct integrated Split 1 dependency; not an unresolved wait: Split 1 norm/rank and complete-pivoting trace | Predicate for (10.13) exists; proof open. |
+| 10.8 | CLOSED for witness; PROVE-NOW-SPLIT2 for general criterion | Witness: no integrated previous-split blocker. Criterion: direct Split 1 determinant/minor/rank foundations | Concrete counterexample closed; principal-minor iff PSD theorem not closed. |
+| 10.9 | PROVE-NOW-SPLIT2 | Yes, indirect integrated Split 1 dependency; not an unresolved wait through Schur-complement/rank infrastructure | Negative-curvature direction needs block/rank/Schur complement APIs. |
+| 10.10 | SKIP | No integrated previous-split blocker | Explanatory diagnosis of invalid continuity argument; no independent theorem selected beyond Theorem 10.14 blocker. |
+| 10.11 | PROVE-NOW-SPLIT2 | Yes, direct integrated Split 1 dependency; not an unresolved wait: complex Hermitian positive-definite and Schur-complement foundations | Complex/Hermitian Schur complement theorem not locally available. |
+| 10.12 | SKIP | No integrated previous-split blocker | Research problem; no determinate theorem statement. |
 
 ### Additional Precise Prose, Algorithms, and Empirical Rows
 
 | Source location | Summary | Classification | Previous-split dependency | Reason/status |
 | --- | --- | --- | --- | --- |
-| Section 10.1 prose | `A = L D L^T` rewrite of Cholesky | CLOSED | No previous-split dependency | `higham10_1_cholesky_to_ldlt` constructs the unit-lower factor and diagonal factor from any exact Cholesky certificate and proves the existing `BlockLDLTSpec` product with identity permutation. |
+| Section 10.1 prose | `A = L D L^T` rewrite of Cholesky | CLOSED | No integrated previous-split blocker | `higham10_1_cholesky_to_ldlt` constructs the unit-lower factor and diagonal factor from any exact Cholesky certificate and proves the existing `BlockLDLTSpec` product with identity permutation. |
 | Section 10.1 prose | Solve `Ax=b` via `R^T y=b`, `Rx=y` | CLOSED for certificate solve form | Uses already available triangular solve results | `higham10_4_cholesky_solve_backward_error`. |
-| Section 10.1.1 prose | Growth factor for GE is exactly 1 | CLOSED | No previous-split dependency | Closed as the recursive exact SPD Schur-stage max-entry nonincrease theorem `higham10_problem_10_4_unpivoted_ge_positive_pivots_and_growth`. |
-| Section 10.3 prose | Complete pivoting equivalent to GE complete pivoting because PSD largest element lies on diagonal | CLOSED for largest-element ingredient; WAIT for pivoting equivalence | Pivoting equivalence has indirect previous-split dependency through pivot trace | Problem 10.1 closes largest-entry ingredient. |
-| Section 10.3.2 prose | LINPACK/xCHDC stopping effectiveness and `||W||` usually small | SKIP | No previous-split dependency | Empirical/practical-experience statements; no formal theorem selected. |
-| Section 10.4 prose | Matrices with positive definite symmetric part have nonsingular leading principal submatrices and positive pivots | WAIT-PREVIOUS-SPLIT | Yes, direct previous-split dependency through determinant/minor and exact LU pivot foundations | Equivalence with SPD symmetric part is closed; pivot theorem open. |
+| Section 10.1.1 prose | Growth factor for GE is exactly 1 | CLOSED | No integrated previous-split blocker | Closed as the recursive exact SPD Schur-stage max-entry nonincrease theorem `higham10_problem_10_4_unpivoted_ge_positive_pivots_and_growth`. |
+| Section 10.3 prose | Complete pivoting equivalent to GE complete pivoting because PSD largest element lies on diagonal | CLOSED for largest-element ingredient; PROVE-NOW-SPLIT2 for pivoting equivalence | Pivoting equivalence has direct or indirect integrated Split 1 dependency through pivot trace | Problem 10.1 closes largest-entry ingredient. |
+| Section 10.3.2 prose | LINPACK/xCHDC stopping effectiveness and `||W||` usually small | SKIP | No integrated previous-split blocker | Empirical/practical-experience statements; no formal theorem selected. |
+| Section 10.4 prose | Matrices with positive definite symmetric part have nonsingular leading principal submatrices and positive pivots | PROVE-NOW-SPLIT2 | Yes, direct integrated Split 1 dependency; not an unresolved wait through determinant/minor and exact LU pivot foundations | Equivalence with SPD symmetric part is closed; pivot theorem open. |
 | Section 10.4 prose | Complex matrices `B+iC` have growth factor `< 3` | SKIP | Later deferred block also has Split 1 norm/complex gates | Citation-only lengthy external theorem in notes, not a Split 2 core target in this pass. |
-| Notes, references, LAPACK | Historical notes, software routines, implementation descriptions | SKIP | No previous-split dependency | Editorial/software-description material; no executable LAPACK semantics selected. |
+| Notes, references, LAPACK | Historical notes, software routines, implementation descriptions | SKIP | No integrated previous-split blocker | Editorial/software-description material; no executable LAPACK semantics selected. |
 
 ## Not-Proved Ledger
 
@@ -169,9 +169,9 @@ No new external proof-source acquisition was performed in this pass. The Chapter
 | Problem 10.1 off-diagonal/max-entry chain | Source-facing theorem and finite-sum algebra | Lean type checked; compared against Appendix A proof; axiom check reports only standard Lean/mathlib foundations. |
 | Problem 10.4 exact GE growth chain | Reuses private exact Schur-complement proof, then proves local max-entry nonincrease and recursive positive-pivot invariant | Lean type checked; source statement is exact GE/no-row-exchange growth, not floating-point Cholesky rounding. |
 | Problem 10.8 witness | Fixed counterexample and classification row | Lean type checked; compared against Appendix A example. |
-| Certificate rows for Theorems 10.3-10.8/10.14 | Hypotheses contain missing analysis | Marked WAIT/partial; not counted as full source closure. |
+| Certificate rows for Theorems 10.3-10.8/10.14 | Hypotheses contain missing analysis | Marked partial/current proof work; not counted as full source closure. |
 
-Active bottleneck: full source-level floating-point Cholesky remains blocked by Split 1 rounding/gamma/sqrt and norm/eigenvalue foundations plus a concrete `fl_cholesky` trace. Downstream theorem polishing is frozen until those listed foundations are available or formalized in the owning split.
+Active bottleneck: full source-level floating-point Cholesky remains open on current proof/API work over integrated rounding/gamma/sqrt and norm/eigenvalue foundations plus a concrete `fl_cholesky` trace. Downstream theorem polishing is frozen until those listed foundations are exposed in source-facing form or proved locally in the appropriate module.
 
 ## Verification
 
