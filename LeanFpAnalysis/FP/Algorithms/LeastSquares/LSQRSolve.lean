@@ -11618,6 +11618,77 @@ theorem lsNormwiseBackwardErrorFormulaRHS_pos_iff_not_isLeastSquaresMinimizer_an
       (lsNormwiseBackwardErrorFormulaRHS_pos_iff_not_isLeastSquaresMinimizer_and_sigmaMin_pos_of_theta_pos_of_y_ne_zero
         htheta A b hy).mpr ⟨h.1, hsigma⟩
 
+/-- Finite-positive-`theta` zero split for (20.20)-(20.21) in `eta_F`/rank
+    form: when `y` is nonzero, the printed WKS right-hand side vanishes exactly
+    when `eta_F(y)` vanishes or the source block `[A phi(I-r r^+)]` is row-rank
+    deficient. -/
+theorem lsNormwiseBackwardErrorFormulaRHS_eq_zero_iff_etaF_eq_zero_or_formulaMatrixRowRank_ne_card_of_theta_pos_of_y_ne_zero
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0) :
+    lsNormwiseBackwardErrorFormulaRHS theta A b y = 0 ↔
+      lsNormwiseBackwardErrorEtaF theta A b y = 0 ∨
+        lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+          (lsResidualHigham A b y) y ≠ m + 1 := by
+  constructor
+  · intro hrhs
+    have hsplit :
+        IsLeastSquaresMinimizer A b y ∨
+          lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+            (lsResidualHigham A b y) y ≠ m + 1 :=
+      (lsNormwiseBackwardErrorFormulaRHS_eq_zero_iff_isLeastSquaresMinimizer_or_formulaMatrixRowRank_ne_card_of_theta_pos_of_y_ne_zero
+        htheta A b hy).mp hrhs
+    rcases hsplit with hmin | hrank
+    · exact Or.inl
+        ((lsNormwiseBackwardErrorEtaF_eq_zero_iff_isLeastSquaresMinimizer_of_positive_theta
+          htheta A b y).mpr hmin)
+    · exact Or.inr hrank
+  · intro h
+    rcases h with heta | hrank
+    · have hmin :
+          IsLeastSquaresMinimizer A b y :=
+        (lsNormwiseBackwardErrorEtaF_eq_zero_iff_isLeastSquaresMinimizer_of_positive_theta
+          htheta A b y).mp heta
+      exact
+        lsNormwiseBackwardErrorFormulaRHS_eq_zero_of_isLeastSquaresMinimizer
+          theta A b y hmin
+    · exact
+        lsNormwiseBackwardErrorFormulaRHS_eq_zero_of_formulaMatrixRowRank_ne_card
+          theta A b y hrank
+
+/-- Finite-positive-`theta` positivity split for (20.20)-(20.21) in
+    `eta_F`/rank form: when `y` is nonzero, the printed WKS right-hand side is
+    positive exactly when `eta_F(y)` is positive and `[A phi(I-r r^+)]` has full
+    row rank. -/
+theorem lsNormwiseBackwardErrorFormulaRHS_pos_iff_etaF_pos_and_formulaMatrixRowRank_eq_card_of_theta_pos_of_y_ne_zero
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0) :
+    0 < lsNormwiseBackwardErrorFormulaRHS theta A b y ↔
+      0 < lsNormwiseBackwardErrorEtaF theta A b y ∧
+        lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+          (lsResidualHigham A b y) y = m + 1 := by
+  constructor
+  · intro hrhs
+    have hsplit :
+        ¬ IsLeastSquaresMinimizer A b y ∧
+          lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+            (lsResidualHigham A b y) y = m + 1 :=
+      (lsNormwiseBackwardErrorFormulaRHS_pos_iff_not_isLeastSquaresMinimizer_and_formulaMatrixRowRank_eq_card_of_theta_pos_of_y_ne_zero
+        htheta A b hy).mp hrhs
+    exact ⟨
+      (lsNormwiseBackwardErrorEtaF_pos_iff_not_isLeastSquaresMinimizer_of_positive_theta
+        htheta A b y).mpr hsplit.1,
+      hsplit.2⟩
+  · intro h
+    have hnot :
+        ¬ IsLeastSquaresMinimizer A b y :=
+      (lsNormwiseBackwardErrorEtaF_pos_iff_not_isLeastSquaresMinimizer_of_positive_theta
+        htheta A b y).mp h.1
+    exact
+      (lsNormwiseBackwardErrorFormulaRHS_pos_iff_not_isLeastSquaresMinimizer_and_formulaMatrixRowRank_eq_card_of_theta_pos_of_y_ne_zero
+        htheta A b hy).mpr ⟨hnot, h.2⟩
+
 /-- Any zero-right-hand-side augmented least-squares system gives an exact
     least-squares minimizer, even if the residual vector is supplied abstractly. -/
 theorem LSAugmentedSystem.isLeastSquaresMinimizer_of_zero_rhs {m n : ℕ}
