@@ -6,13 +6,6 @@ This file is a human-readable companion to `examples/LibraryLookup.lean`.
 
 Primary module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`
 
-Source inventory and status:
-
-- `docs/CHAPTER13_SOURCE_INVENTORY.md`
-- `docs/CHAPTER13_FORMALIZATION_REPORT.md`
-- `docs/CHAPTER13_PROOF_SOURCE_LEDGER.md`
-- `docs/CHAPTER13_BOTTLENECK_LEDGER.md`
-
 Current reusable declarations:
 
 | Topic | Declarations |
@@ -256,6 +249,3 @@ and
 use this table adapter so the final witness surface no longer needs an explicit
 local positivity hypothesis.  The hard inverse/condition ratio itself remains
 open.
-The repeated
-selected-scope blockers and their next concrete dependency theorems are tracked
-in `docs/CHAPTER13_BOTTLENECK_LEDGER.md`.
