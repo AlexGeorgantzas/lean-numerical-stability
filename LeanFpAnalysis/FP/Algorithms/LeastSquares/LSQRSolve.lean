@@ -5423,6 +5423,89 @@ theorem lsScaledAugmentedMatrix_singularPair_minus_leftNull_normalized_dot_eq_ze
         (lsScaledAugmentedEigenvalueMinus_lt_alpha_of_sigma_ne_zero
           (alpha := alpha) (sigma := sigma) halpha hsigma))
 
+/-- Orthogonality of the two source-normalized singular-pair branches in
+    (20.18) is preserved after inverse-2-norm rescaling. -/
+theorem lsScaledAugmentedMatrix_singularPair_plus_minus_normalized_rescaled_dot_eq_zero
+    {m n : ℕ}
+    {alpha sigma : ℝ} (A : Fin m → Fin n → ℝ)
+    (u : Fin m → ℝ) (v : Fin n → ℝ)
+    (hAv : rectMatMulVec A v = fun i => sigma * u i)
+    (hATu : (fun j : Fin n => ∑ i : Fin m, A i j * u i) =
+      fun j => sigma * v j)
+    (halpha : 0 ≤ alpha) (hsigma : sigma ≠ 0) :
+    (∑ k : Fin (m + n),
+      ((vecNorm2
+          (Fin.append u
+            (fun j =>
+              (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j)))⁻¹ *
+        Fin.append u
+          (fun j => (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j) k) *
+      ((vecNorm2
+          (Fin.append u
+            (fun j =>
+              (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j)))⁻¹ *
+        Fin.append u
+          (fun j => (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j) k)) =
+      0 := by
+  apply vecNorm2_inv_smul_dot_eq_zero_of_dot_eq_zero
+  exact
+    lsScaledAugmentedMatrix_singularPair_plus_minus_normalized_dot_eq_zero
+      A u v hAv hATu halpha hsigma
+
+/-- Orthogonality of the source-normalized positive singular-pair branch and
+    the left-nullspace branch in (20.18) is preserved after inverse-2-norm
+    rescaling. -/
+theorem lsScaledAugmentedMatrix_singularPair_plus_leftNull_normalized_rescaled_dot_eq_zero
+    {m n : ℕ}
+    {alpha sigma : ℝ} (A : Fin m → Fin n → ℝ)
+    (u w : Fin m → ℝ) (v : Fin n → ℝ)
+    (hAv : rectMatMulVec A v = fun i => sigma * u i)
+    (hATu : (fun j : Fin n => ∑ i : Fin m, A i j * u i) =
+      fun j => sigma * v j)
+    (hATw : ∀ j : Fin n, ∑ i : Fin m, A i j * w i = 0)
+    (halpha : 0 ≤ alpha) (hsigma : sigma ≠ 0) :
+    (∑ k : Fin (m + n),
+      ((vecNorm2
+          (Fin.append u
+            (fun j =>
+              (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j)))⁻¹ *
+        Fin.append u
+          (fun j => (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j) k) *
+      ((vecNorm2 (Fin.append w (0 : Fin n → ℝ)))⁻¹ *
+        Fin.append w (0 : Fin n → ℝ) k)) =
+      0 := by
+  apply vecNorm2_inv_smul_dot_eq_zero_of_dot_eq_zero
+  exact
+    lsScaledAugmentedMatrix_singularPair_plus_leftNull_normalized_dot_eq_zero
+      A u w v hAv hATu hATw halpha hsigma
+
+/-- Orthogonality of the source-normalized negative singular-pair branch and
+    the left-nullspace branch in (20.18) is preserved after inverse-2-norm
+    rescaling. -/
+theorem lsScaledAugmentedMatrix_singularPair_minus_leftNull_normalized_rescaled_dot_eq_zero
+    {m n : ℕ}
+    {alpha sigma : ℝ} (A : Fin m → Fin n → ℝ)
+    (u w : Fin m → ℝ) (v : Fin n → ℝ)
+    (hAv : rectMatMulVec A v = fun i => sigma * u i)
+    (hATu : (fun j : Fin n => ∑ i : Fin m, A i j * u i) =
+      fun j => sigma * v j)
+    (hATw : ∀ j : Fin n, ∑ i : Fin m, A i j * w i = 0)
+    (halpha : 0 ≤ alpha) (hsigma : sigma ≠ 0) :
+    (∑ k : Fin (m + n),
+      ((vecNorm2
+          (Fin.append u
+            (fun j =>
+              (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j)))⁻¹ *
+        Fin.append u
+          (fun j => (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j) k) *
+      ((vecNorm2 (Fin.append w (0 : Fin n → ℝ)))⁻¹ *
+        Fin.append w (0 : Fin n → ℝ) k)) =
+      0 := by
+  apply vecNorm2_inv_smul_dot_eq_zero_of_dot_eq_zero
+  exact
+    lsScaledAugmentedMatrix_singularPair_minus_leftNull_normalized_dot_eq_zero
+      A u w v hAv hATu hATw halpha hsigma
+
 /-- Higham, 2nd ed., Chapter 20, equation (20.20): the weighted perturbation
     block `[DeltaA, theta Delta b]` used in the Frobenius normwise
     least-squares backward error. -/
