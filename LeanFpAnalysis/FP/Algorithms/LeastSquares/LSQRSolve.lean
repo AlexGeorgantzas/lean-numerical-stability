@@ -7432,6 +7432,18 @@ theorem lsNormwiseBackwardErrorFormulaRHS_le_etaF_of_forall_feasible_cost_ge
   rw [heta_eq]
   exact hlower DeltaA Deltab hfeas
 
+/-- Zero-branch lower-bound side of the alternative formula (20.21): whenever
+    the printed right-hand side is zero, the inequality `RHS <= eta_F(y)` is
+    immediate from nonnegativity of the (20.20) infimum model. -/
+theorem lsNormwiseBackwardErrorFormulaRHS_le_etaF_of_formulaRHS_eq_zero
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (hrhs : lsNormwiseBackwardErrorFormulaRHS theta A b y = 0) :
+    lsNormwiseBackwardErrorFormulaRHS theta A b y ≤
+      lsNormwiseBackwardErrorEtaF theta A b y := by
+  rw [hrhs]
+  exact lsNormwiseBackwardErrorEtaF_nonneg theta A b y
+
 /-- Attainment handoff for the alternative formula (20.21): a feasible
     perturbation whose weighted cost is the printed right-hand side gives the
     reverse inequality `eta_F(y) <=` that right-hand side. -/
@@ -11293,6 +11305,21 @@ theorem lsNormwiseBackwardErrorFormulaRHS_eq_zero_of_isLeastSquaresMinimizer
       lsNormwiseBackwardErrorFormulaRHS_eq_zero_of_isLeastSquaresMinimizer_nonzero_residual
         theta A b y hmin hrsq
 
+/-- Exact-minimizer lower-bound side of (20.21): on this zero branch the
+    printed right-hand side is zero, so it is below `eta_F(y)`.  The equality
+    branch is proved separately. -/
+theorem lsNormwiseBackwardErrorFormulaRHS_le_etaF_of_isLeastSquaresMinimizer
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (hmin : IsLeastSquaresMinimizer A b y) :
+    lsNormwiseBackwardErrorFormulaRHS theta A b y ≤
+      lsNormwiseBackwardErrorEtaF theta A b y := by
+  exact
+    lsNormwiseBackwardErrorFormulaRHS_le_etaF_of_formulaRHS_eq_zero
+      theta A b y
+      (lsNormwiseBackwardErrorFormulaRHS_eq_zero_of_isLeastSquaresMinimizer
+        theta A b y hmin)
+
 /-- Exact least-squares minimizers close both residual branches of (20.20)-
     (20.21): `eta_F(y)` and the printed WKS right-hand side are both zero,
     hence equal.  This does not prove the general WKS lower-bound/attainment
@@ -11770,6 +11797,23 @@ theorem lsNormwiseBackwardErrorFormulaRHS_eq_zero_of_formulaMatrixRowRank_ne_car
   exact
     (lsNormwiseBackwardErrorFormulaRHS_eq_zero_iff theta A b y).mpr
       (Or.inr hsigma)
+
+/-- Row-rank-deficient lower-bound side of (20.21): if the source block
+    `[A phi(I-r r^+)]` is row-rank deficient, the printed RHS is zero and hence
+    below the nonnegative infimum model `eta_F(y)`. -/
+theorem lsNormwiseBackwardErrorFormulaRHS_le_etaF_of_formulaMatrixRowRank_ne_card
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (hrank :
+      lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+        (lsResidualHigham A b y) y ≠ m + 1) :
+    lsNormwiseBackwardErrorFormulaRHS theta A b y ≤
+      lsNormwiseBackwardErrorEtaF theta A b y := by
+  exact
+    lsNormwiseBackwardErrorFormulaRHS_le_etaF_of_formulaRHS_eq_zero
+      theta A b y
+      (lsNormwiseBackwardErrorFormulaRHS_eq_zero_of_formulaMatrixRowRank_ne_card
+        theta A b y hrank)
 
 /-- Non-minimizer row-rank-deficient zero classification for (20.20)-(20.21):
     after excluding the exact-minimizer branch, the printed RHS vanishes exactly
