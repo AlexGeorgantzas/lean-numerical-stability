@@ -6677,6 +6677,35 @@ private theorem complexMatrixRank_ne_card_of_euclideanLin_ker_nonzero
     simpa using hxbot
   exact hxne hxzero
 
+private theorem complexMatrixRank_eq_card_of_euclideanLin_ker_eq_bot
+    {m n : ℕ} (A : CMatrix m n)
+    (hker : LinearMap.ker (complexMatrixEuclideanLin A) = ⊥) :
+    complexMatrixRank A = n := by
+  let T : EuclideanSpace ℂ (Fin n) →ₗ[ℂ] EuclideanSpace ℂ (Fin m) :=
+    complexMatrixEuclideanLin A
+  have hsum :
+      Module.finrank ℂ (LinearMap.range T) +
+          Module.finrank ℂ (LinearMap.ker T) =
+        Module.finrank ℂ (EuclideanSpace ℂ (Fin n)) :=
+    LinearMap.finrank_range_add_finrank_ker T
+  have hker0 : Module.finrank ℂ (LinearMap.ker T) = 0 := by
+    change Module.finrank ℂ (LinearMap.ker (complexMatrixEuclideanLin A)) = 0
+    simp [hker]
+  have hdomain : Module.finrank ℂ (EuclideanSpace ℂ (Fin n)) = n :=
+    finrank_euclideanSpace_fin (𝕜 := ℂ) (n := n)
+  have hrange : Module.finrank ℂ (LinearMap.range T) = n := by
+    omega
+  simpa [T, complexMatrixRank_eq_finrank_range_euclideanLin A] using hrange
+
+private theorem complexMatrixEuclideanLin_ker_eq_bot_of_rank_eq_card
+    {m n : ℕ} (A : CMatrix m n)
+    (hrank : complexMatrixRank A = n) :
+    LinearMap.ker (complexMatrixEuclideanLin A) = ⊥ := by
+  rw [LinearMap.ker_eq_bot']
+  intro z hz
+  by_contra hz_ne
+  exact complexMatrixRank_ne_card_of_euclideanLin_ker_nonzero A hz hz_ne hrank
+
 /-- A nonzero vector annihilating every column of a real rectangular matrix
     rules out full row rank of the row-side complexified transpose. -/
 theorem lsRealRectRowRank_ne_card_of_leftNull {m n : ℕ}
@@ -6698,6 +6727,19 @@ theorem lsRealRectRowRank_ne_card_of_leftNull {m n : ℕ}
   simpa [lsRealRectRowRank] using
     complexMatrixRank_ne_card_of_euclideanLin_ker_nonzero
       (realRectToCMatrix (finiteTranspose A)) hker hvne
+
+/-- Full row rank eliminates every real left-null vector.  This is the converse
+    kernel-trivial form paired with `lsRealRectRowRank_ne_card_of_leftNull`. -/
+theorem lsRealRectRowRank_leftNull_eq_zero_of_rowRank_eq_card {m n : ℕ}
+    (A : Fin (m + 1) → Fin n → ℝ)
+    (hrank : lsRealRectRowRank A = m + 1)
+    {v : Fin (m + 1) → ℝ}
+    (hleft : ∀ k : Fin n, ∑ i : Fin (m + 1), A i k * v i = 0) :
+    v = 0 := by
+  by_contra hvne
+  have hv : vecNorm2Sq v ≠ 0 :=
+    ne_of_gt (vecNorm2Sq_pos_of_ne_zero_lsq hvne)
+  exact (lsRealRectRowRank_ne_card_of_leftNull A v hv hleft) hrank
 
 /-- The row rank is the number of nonzero row-side singular values. -/
 theorem lsRealRectRowRank_eq_card_nonzero_rowSingularValue {m n : ℕ}
@@ -6945,6 +6987,136 @@ theorem lsNormwiseBackwardErrorFormulaMatrixRowRank_eq_card_nonzero_rowSingularV
     lsNormwiseBackwardErrorFormulaMatrixRowSingularValue] using
     lsRealRectRowRank_eq_card_nonzero_rowSingularValue
       (lsNormwiseBackwardErrorFormulaMatrix theta A r y)
+
+private theorem
+    realRectToCMatrix_finiteTranspose_formulaMatrix_left_panel_kernel
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    {z : EuclideanSpace ℂ (Fin (m + 1))}
+    (hz :
+      complexMatrixEuclideanLin
+        (realRectToCMatrix
+          (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y))) z =
+        0) :
+    complexMatrixEuclideanLin (realRectToCMatrix (finiteTranspose A)) z = 0 := by
+  apply norm_eq_zero.mp
+  have hz_norm :
+      ‖complexMatrixEuclideanLin
+          (realRectToCMatrix
+            (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y))) z‖ =
+        0 := by
+    simp [hz]
+  have hz_sq :
+      ‖complexMatrixEuclideanLin
+          (realRectToCMatrix
+            (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y))) z‖ ^ 2 =
+        0 := by
+    rw [hz_norm]
+    norm_num
+  have hnorm_formula := realRectToCMatrix_euclideanLin_norm_sq
+    (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y)) z
+  have hsum_zero :
+      vecNorm2 (rectMatMulVec
+          (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y))
+          (euclideanReVec z)) ^ 2 +
+        vecNorm2 (rectMatMulVec
+          (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y))
+          (euclideanImVec z)) ^ 2 = 0 := by
+    simpa [hz_sq] using hnorm_formula.symm
+  have hre_zero :
+      vecNorm2 (rectMatMulVec
+          (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y))
+          (euclideanReVec z)) = 0 := by
+    have hre_sq_zero :
+        vecNorm2 (rectMatMulVec
+            (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y))
+            (euclideanReVec z)) ^ 2 = 0 := by
+      have hnonneg_re :
+          0 ≤ vecNorm2 (rectMatMulVec
+              (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y))
+              (euclideanReVec z)) ^ 2 := sq_nonneg _
+      have hnonneg_im :
+          0 ≤ vecNorm2 (rectMatMulVec
+              (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y))
+              (euclideanImVec z)) ^ 2 := sq_nonneg _
+      nlinarith
+    exact sq_eq_zero_iff.mp hre_sq_zero
+  have him_zero :
+      vecNorm2 (rectMatMulVec
+          (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y))
+          (euclideanImVec z)) = 0 := by
+    have him_sq_zero :
+        vecNorm2 (rectMatMulVec
+            (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y))
+            (euclideanImVec z)) ^ 2 = 0 := by
+      have hnonneg_re :
+          0 ≤ vecNorm2 (rectMatMulVec
+              (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y))
+              (euclideanReVec z)) ^ 2 := sq_nonneg _
+      have hnonneg_im :
+          0 ≤ vecNorm2 (rectMatMulVec
+              (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y))
+              (euclideanImVec z)) ^ 2 := sq_nonneg _
+      nlinarith
+    exact sq_eq_zero_iff.mp him_sq_zero
+  have hre_formula_entries :
+      ∀ j : Fin (n + (m + 1)),
+        rectMatMulVec
+          (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y))
+          (euclideanReVec z) j = 0 :=
+    (vecNorm2_eq_zero_iff _).mp hre_zero
+  have him_formula_entries :
+      ∀ j : Fin (n + (m + 1)),
+        rectMatMulVec
+          (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y))
+          (euclideanImVec z) j = 0 :=
+    (vecNorm2_eq_zero_iff _).mp him_zero
+  have hre_A_zero : rectMatMulVec (finiteTranspose A) (euclideanReVec z) = 0 := by
+    ext j
+    have h := hre_formula_entries (Fin.castAdd (m + 1) j)
+    simpa [rectMatMulVec, finiteTranspose, lsNormwiseBackwardErrorFormulaMatrix,
+      Fin.append_left] using h
+  have him_A_zero : rectMatMulVec (finiteTranspose A) (euclideanImVec z) = 0 := by
+    ext j
+    have h := him_formula_entries (Fin.castAdd (m + 1) j)
+    simpa [rectMatMulVec, finiteTranspose, lsNormwiseBackwardErrorFormulaMatrix,
+      Fin.append_left] using h
+  have hnorm_A := realRectToCMatrix_euclideanLin_norm_sq (finiteTranspose A) z
+  have hA_sq :
+      ‖complexMatrixEuclideanLin (realRectToCMatrix (finiteTranspose A)) z‖ ^ 2 =
+        0 := by
+    rw [hnorm_A, hre_A_zero, him_A_zero]
+    have hzero_norm : vecNorm2 (0 : Fin n → ℝ) = 0 := by
+      simpa using (vecNorm2_zero (n := n))
+    rw [hzero_norm]
+    norm_num
+  exact sq_eq_zero_iff.mp hA_sq
+
+/-- Full row rank of the left `A` panel forces full row rank of the source
+    block `[A  phi(I-r r^+)]` in (20.21).  Thus the appended projector panel
+    cannot create a row-rank deficiency when the original data matrix already
+    has full row rank. -/
+theorem lsNormwiseBackwardErrorFormulaMatrixRowRank_eq_card_of_left_panel_rowRank_eq_card
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (hA : lsRealRectRowRank A = m + 1) :
+    lsNormwiseBackwardErrorFormulaMatrixRowRank theta A r y = m + 1 := by
+  let MA := realRectToCMatrix (finiteTranspose A)
+  let MF := realRectToCMatrix
+    (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y))
+  have hkerA : LinearMap.ker (complexMatrixEuclideanLin MA) = ⊥ :=
+    complexMatrixEuclideanLin_ker_eq_bot_of_rank_eq_card MA
+      (by simpa [MA, lsRealRectRowRank] using hA)
+  have hkerF : LinearMap.ker (complexMatrixEuclideanLin MF) = ⊥ := by
+    rw [LinearMap.ker_eq_bot']
+    intro z hz
+    have hzA : complexMatrixEuclideanLin MA z = 0 := by
+      simpa [MA, MF] using
+        realRectToCMatrix_finiteTranspose_formulaMatrix_left_panel_kernel
+          theta A r y (z := z) (by simpa [MF] using hz)
+    exact (LinearMap.ker_eq_bot'.mp hkerA) z hzA
+  simpa [lsNormwiseBackwardErrorFormulaMatrixRowRank, MF] using
+    complexMatrixRank_eq_card_of_euclideanLin_ker_eq_bot MF hkerF
 
 /-- Positive source-block `sigma_min` gives full row rank for the (20.21)
     formula matrix. -/
