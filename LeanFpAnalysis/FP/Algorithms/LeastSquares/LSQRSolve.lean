@@ -4918,6 +4918,65 @@ theorem lsScaledAugmentedMatrix_leftNull_vecNorm2Sq_pos_of_unit_component
   rw [lsScaledAugmentedMatrix_leftNull_vecNorm2Sq_eq_one_of_unit_component u hu]
   norm_num
 
+/-- Self-normalizing the positive printed branch vector in (20.18) gives unit
+    Euclidean norm, once the component singular vectors have unit squared norm. -/
+theorem
+    lsScaledAugmentedMatrix_singularPair_plus_normalized_rescaled_vecNorm2_eq_one_of_unit_components
+    {m n : ℕ} {alpha sigma : ℝ}
+    (u : Fin m → ℝ) (v : Fin n → ℝ)
+    (hu : vecNorm2Sq u = 1) (hv : vecNorm2Sq v = 1) :
+    vecNorm2
+        (fun k : Fin (m + n) =>
+          (vecNorm2
+              (Fin.append u
+                (fun j =>
+                  (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j)))⁻¹ *
+            Fin.append u
+              (fun j => (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j) k) =
+      1 := by
+  apply vecNorm2_inv_smul_self_of_pos
+  unfold vecNorm2
+  exact Real.sqrt_pos.mpr
+    (lsScaledAugmentedMatrix_singularPair_plus_normalized_vecNorm2Sq_pos_of_unit_components
+      u v hu hv)
+
+/-- Self-normalizing the negative printed branch vector in (20.18) gives unit
+    Euclidean norm, once the component singular vectors have unit squared norm. -/
+theorem
+    lsScaledAugmentedMatrix_singularPair_minus_normalized_rescaled_vecNorm2_eq_one_of_unit_components
+    {m n : ℕ} {alpha sigma : ℝ}
+    (u : Fin m → ℝ) (v : Fin n → ℝ)
+    (hu : vecNorm2Sq u = 1) (hv : vecNorm2Sq v = 1) :
+    vecNorm2
+        (fun k : Fin (m + n) =>
+          (vecNorm2
+              (Fin.append u
+                (fun j =>
+                  (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j)))⁻¹ *
+            Fin.append u
+              (fun j => (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j) k) =
+      1 := by
+  apply vecNorm2_inv_smul_self_of_pos
+  unfold vecNorm2
+  exact Real.sqrt_pos.mpr
+    (lsScaledAugmentedMatrix_singularPair_minus_normalized_vecNorm2Sq_pos_of_unit_components
+      u v hu hv)
+
+/-- Self-normalizing a left-nullspace branch vector `[u;0]` in (20.18) gives
+    unit Euclidean norm when the left component has unit squared norm. -/
+theorem
+    lsScaledAugmentedMatrix_leftNull_rescaled_vecNorm2_eq_one_of_unit_component
+    {m n : ℕ} (u : Fin m → ℝ) (hu : vecNorm2Sq u = 1) :
+    vecNorm2
+        (fun k : Fin (m + n) =>
+          (vecNorm2 (Fin.append u (0 : Fin n → ℝ)))⁻¹ *
+            Fin.append u (0 : Fin n → ℝ) k) =
+      1 := by
+  apply vecNorm2_inv_smul_self_of_pos
+  unfold vecNorm2
+  exact Real.sqrt_pos.mpr
+    (lsScaledAugmentedMatrix_leftNull_vecNorm2Sq_pos_of_unit_component u hu)
+
 /-- Same-branch positive/positive dot-product expansion for the source-normalized
     singular-pair vectors in (20.18), allowing different singular values and
     different left/right singular-vector components. -/
