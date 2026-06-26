@@ -725,6 +725,42 @@ noncomputable def gqrAQTallBlockAssoc {k p q : ℕ}
       (fun i : Fin p => fun j => L (Fin.castAdd q i) j))
     (fun i : Fin q => fun j => L (Fin.natAdd p i) j)
 
+/-- Vector-action form of the associated-row tall (20.28) block `[0; L]`,
+    matching the row association used by (20.27). -/
+theorem gqrAQTallBlockAssoc_mulVec {k p q : ℕ}
+    (L : Fin (p + q) → Fin (p + q) → ℝ)
+    (y : Fin (p + q) → ℝ) :
+    rectMatMulVec (gqrAQTallBlockAssoc (k := k) L) y =
+      Fin.append
+        (Fin.append (0 : Fin k → ℝ)
+          (fun i : Fin p => rectMatMulVec L y (Fin.castAdd q i)))
+        (fun i : Fin q => rectMatMulVec L y (Fin.natAdd p i)) := by
+  ext i
+  refine Fin.addCases
+    (motive := fun i : Fin ((k + p) + q) =>
+      rectMatMulVec (gqrAQTallBlockAssoc (k := k) L) y i =
+        Fin.append
+          (Fin.append (0 : Fin k → ℝ)
+            (fun i : Fin p => rectMatMulVec L y (Fin.castAdd q i)))
+          (fun i : Fin q => rectMatMulVec L y (Fin.natAdd p i)) i)
+    ?topRows ?bottomRows i
+  · intro i
+    refine Fin.addCases
+      (motive := fun i : Fin (k + p) =>
+        rectMatMulVec (gqrAQTallBlockAssoc (k := k) L) y (Fin.castAdd q i) =
+          Fin.append
+            (Fin.append (0 : Fin k → ℝ)
+              (fun i : Fin p => rectMatMulVec L y (Fin.castAdd q i)))
+            (fun i : Fin q => rectMatMulVec L y (Fin.natAdd p i))
+            (Fin.castAdd q i))
+      ?zeroRows ?middleRows i
+    · intro i
+      simp [rectMatMulVec, gqrAQTallBlockAssoc]
+    · intro i
+      simp [rectMatMulVec, gqrAQTallBlockAssoc]
+  · intro i
+    simp [rectMatMulVec, gqrAQTallBlockAssoc]
+
 /-- Tall (20.28)-to-(20.27) extraction: the `L11` block induced by a supplied
     `[0; L]` shape. Its leading `k` rows vanish and its trailing `p` rows are
     the first `p` columns of `L`. -/
@@ -910,6 +946,18 @@ noncomputable def gqrAQWideBlockAssoc {k r q : ℕ}
     Fin.append
       (Fin.append (X i) (fun j : Fin r => L i (Fin.castAdd q j)))
       (fun j : Fin q => L i (Fin.natAdd r j))
+
+/-- Vector-action form of the associated-column wide (20.28) block `[X L]`,
+    matching the column association used by (20.27). -/
+theorem gqrAQWideBlockAssoc_mulVec {k r q : ℕ}
+    (X : Fin (r + q) → Fin k → ℝ)
+    (L : Fin (r + q) → Fin (r + q) → ℝ)
+    (y0 : Fin k → ℝ) (y1 : Fin r → ℝ) (y2 : Fin q → ℝ) :
+    rectMatMulVec (gqrAQWideBlockAssoc X L) (Fin.append (Fin.append y0 y1) y2) =
+      fun i : Fin (r + q) =>
+        rectMatMulVec X y0 i + rectMatMulVec L (Fin.append y1 y2) i := by
+  ext i
+  simp [rectMatMulVec, gqrAQWideBlockAssoc, Fin.sum_univ_add, add_assoc]
 
 /-- Wide (20.28)-to-(20.27) extraction: the `L11` block induced by a supplied
     `[X L]` shape. Its first `k` columns come from `X`, and its trailing `r`
