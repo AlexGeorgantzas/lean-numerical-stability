@@ -11229,6 +11229,82 @@ theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_of_formulaRHS_eq_zero_of_sigma
     lsNormwiseBackwardErrorEtaF_eq_formulaRHS_of_lsResidualHigham_eq_zero
       theta A b y hres
 
+/-- Non-minimizer scalar branch of (20.21): for positive finite `theta` and
+    nonzero `y`, the displayed `phi` scalar is positive whenever `y` is not an
+    exact least-squares minimizer. -/
+theorem lsNormwiseBackwardErrorPhi_pos_of_not_isLeastSquaresMinimizer_of_theta_pos_of_y_ne_zero
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hnot : ¬ IsLeastSquaresMinimizer A b y) :
+    0 < lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y := by
+  have hnonneg :
+      0 ≤ lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y :=
+    lsNormwiseBackwardErrorPhi_nonneg theta (lsResidualHigham A b y) y
+  have hne :
+      lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y ≠ 0 := by
+    intro hphi
+    have hres :
+        lsResidualHigham A b y = 0 :=
+      (lsNormwiseBackwardErrorPhi_eq_zero_iff_residual_eq_zero_of_theta_pos_of_y_ne_zero
+        htheta hy).mp hphi
+    exact hnot (IsLeastSquaresMinimizer.of_lsResidualHigham_eq_zero hres)
+  exact lt_of_le_of_ne hnonneg (Ne.symm hne)
+
+/-- Non-minimizer zero-case classification for (20.20)-(20.21): after excluding
+    the exact-minimizer branch, a zero printed RHS is equivalent to the
+    degenerate row-side `sigma_min [A phi(I-r r^+)] = 0` branch. -/
+theorem lsNormwiseBackwardErrorFormulaRHS_eq_zero_iff_sigmaMin_eq_zero_of_not_isLeastSquaresMinimizer
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hnot : ¬ IsLeastSquaresMinimizer A b y) :
+    lsNormwiseBackwardErrorFormulaRHS theta A b y = 0 ↔
+      lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+        (lsResidualHigham A b y) y = 0 := by
+  constructor
+  · intro hrhs
+    have hbranches :
+        lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y = 0 ∨
+          lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+            (lsResidualHigham A b y) y = 0 :=
+      (lsNormwiseBackwardErrorFormulaRHS_eq_zero_iff theta A b y).mp hrhs
+    rcases hbranches with hphi | hsigma
+    · have hres :
+          lsResidualHigham A b y = 0 :=
+        (lsNormwiseBackwardErrorPhi_eq_zero_iff_residual_eq_zero_of_theta_pos_of_y_ne_zero
+          htheta hy).mp hphi
+      exact False.elim (hnot (IsLeastSquaresMinimizer.of_lsResidualHigham_eq_zero hres))
+    · exact hsigma
+  · intro hsigma
+    exact
+      (lsNormwiseBackwardErrorFormulaRHS_eq_zero_iff theta A b y).mpr
+        (Or.inr hsigma)
+
+/-- Non-minimizer positive-case classification for (20.20)-(20.21): for
+    positive finite `theta` and nonzero `y`, once `y` is not an exact
+    least-squares minimizer, positivity of the printed RHS is equivalent to
+    positivity of the row-side `sigma_min [A phi(I-r r^+)]` branch. -/
+theorem lsNormwiseBackwardErrorFormulaRHS_pos_iff_sigmaMin_pos_of_not_isLeastSquaresMinimizer
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hnot : ¬ IsLeastSquaresMinimizer A b y) :
+    0 < lsNormwiseBackwardErrorFormulaRHS theta A b y ↔
+      0 < lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+        (lsResidualHigham A b y) y := by
+  have hphi_pos :
+      0 < lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y :=
+    lsNormwiseBackwardErrorPhi_pos_of_not_isLeastSquaresMinimizer_of_theta_pos_of_y_ne_zero
+      htheta A b hy hnot
+  constructor
+  · intro hrhs
+    exact ((lsNormwiseBackwardErrorFormulaRHS_pos_iff theta A b y).mp hrhs).2
+  · intro hsigma
+    exact
+      (lsNormwiseBackwardErrorFormulaRHS_pos_iff theta A b y).mpr
+        ⟨hphi_pos, hsigma⟩
+
 /-- Any zero-right-hand-side augmented least-squares system gives an exact
     least-squares minimizer, even if the residual vector is supplied abstractly. -/
 theorem LSAugmentedSystem.isLeastSquaresMinimizer_of_zero_rhs {m n : ℕ}
