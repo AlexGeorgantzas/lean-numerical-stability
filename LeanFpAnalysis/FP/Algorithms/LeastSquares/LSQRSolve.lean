@@ -4792,6 +4792,193 @@ theorem lsScaledAugmentedMatrix_singularPair_normalized_dot_eq_zero_of_orthogona
   rw [lsScaledAugmentedMatrix_singularPair_normalized_dot_eq, hleft, hright]
   ring
 
+/-- Same-branch positive/positive dot-product expansion for the source-normalized
+    singular-pair vectors in (20.18), allowing different singular values and
+    different left/right singular-vector components. -/
+theorem lsScaledAugmentedMatrix_singularPair_plus_plus_normalized_dot_eq
+    {m n : ℕ} {alpha sigma tau : ℝ}
+    (u w : Fin m → ℝ) (v z : Fin n → ℝ) :
+    (∑ k : Fin (m + n),
+      Fin.append u
+          (fun j => (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j) k *
+        Fin.append w
+          (fun j => (tau / lsScaledAugmentedEigenvaluePlus alpha tau) * z j) k) =
+      (∑ i : Fin m, u i * w i) +
+        (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) *
+          (tau / lsScaledAugmentedEigenvaluePlus alpha tau) *
+            (∑ j : Fin n, v j * z j) :=
+  lsScaledAugmentedMatrix_singularPair_normalized_dot_eq u w v z
+    (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma)
+    (tau / lsScaledAugmentedEigenvaluePlus alpha tau)
+
+/-- Component-orthogonality corollary of
+    `lsScaledAugmentedMatrix_singularPair_plus_plus_normalized_dot_eq`.  This is
+    the same-eigenvalue multiplicity case needed by a later complete orthogonal
+    singular-vector basis for (20.18). -/
+theorem
+    lsScaledAugmentedMatrix_singularPair_plus_plus_normalized_dot_eq_zero_of_component_orthogonal
+    {m n : ℕ} {alpha sigma tau : ℝ}
+    (u w : Fin m → ℝ) (v z : Fin n → ℝ)
+    (hleft : (∑ i : Fin m, u i * w i) = 0)
+    (hright : (∑ j : Fin n, v j * z j) = 0) :
+    (∑ k : Fin (m + n),
+      Fin.append u
+          (fun j => (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j) k *
+        Fin.append w
+          (fun j => (tau / lsScaledAugmentedEigenvaluePlus alpha tau) * z j) k) = 0 := by
+  rw [lsScaledAugmentedMatrix_singularPair_plus_plus_normalized_dot_eq,
+    hleft, hright]
+  ring
+
+/-- Mixed positive/negative dot-product expansion for source-normalized
+    singular-pair vectors in (20.18), allowing different singular values and
+    different left/right singular-vector components. -/
+theorem lsScaledAugmentedMatrix_singularPair_plus_minus_normalized_dot_eq
+    {m n : ℕ} {alpha sigma tau : ℝ}
+    (u w : Fin m → ℝ) (v z : Fin n → ℝ) :
+    (∑ k : Fin (m + n),
+      Fin.append u
+          (fun j => (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j) k *
+        Fin.append w
+          (fun j => (tau / lsScaledAugmentedEigenvalueMinus alpha tau) * z j) k) =
+      (∑ i : Fin m, u i * w i) +
+        (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) *
+          (tau / lsScaledAugmentedEigenvalueMinus alpha tau) *
+            (∑ j : Fin n, v j * z j) :=
+  lsScaledAugmentedMatrix_singularPair_normalized_dot_eq u w v z
+    (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma)
+    (tau / lsScaledAugmentedEigenvalueMinus alpha tau)
+
+/-- Component-orthogonality corollary of
+    `lsScaledAugmentedMatrix_singularPair_plus_minus_normalized_dot_eq`. -/
+theorem
+    lsScaledAugmentedMatrix_singularPair_plus_minus_normalized_dot_eq_zero_of_component_orthogonal
+    {m n : ℕ} {alpha sigma tau : ℝ}
+    (u w : Fin m → ℝ) (v z : Fin n → ℝ)
+    (hleft : (∑ i : Fin m, u i * w i) = 0)
+    (hright : (∑ j : Fin n, v j * z j) = 0) :
+    (∑ k : Fin (m + n),
+      Fin.append u
+          (fun j => (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j) k *
+        Fin.append w
+          (fun j => (tau / lsScaledAugmentedEigenvalueMinus alpha tau) * z j) k) = 0 := by
+  rw [lsScaledAugmentedMatrix_singularPair_plus_minus_normalized_dot_eq,
+    hleft, hright]
+  ring
+
+/-- Same-branch negative/negative dot-product expansion for source-normalized
+    singular-pair vectors in (20.18), allowing different singular values and
+    different left/right singular-vector components. -/
+theorem lsScaledAugmentedMatrix_singularPair_minus_minus_normalized_dot_eq
+    {m n : ℕ} {alpha sigma tau : ℝ}
+    (u w : Fin m → ℝ) (v z : Fin n → ℝ) :
+    (∑ k : Fin (m + n),
+      Fin.append u
+          (fun j => (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j) k *
+        Fin.append w
+          (fun j => (tau / lsScaledAugmentedEigenvalueMinus alpha tau) * z j) k) =
+      (∑ i : Fin m, u i * w i) +
+        (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) *
+          (tau / lsScaledAugmentedEigenvalueMinus alpha tau) *
+            (∑ j : Fin n, v j * z j) :=
+  lsScaledAugmentedMatrix_singularPair_normalized_dot_eq u w v z
+    (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma)
+    (tau / lsScaledAugmentedEigenvalueMinus alpha tau)
+
+/-- Component-orthogonality corollary of
+    `lsScaledAugmentedMatrix_singularPair_minus_minus_normalized_dot_eq`.  This
+    handles negative-branch eigenspace multiplicities in the later (20.18)
+    complete-basis route. -/
+theorem
+    lsScaledAugmentedMatrix_singularPair_minus_minus_normalized_dot_eq_zero_of_component_orthogonal
+    {m n : ℕ} {alpha sigma tau : ℝ}
+    (u w : Fin m → ℝ) (v z : Fin n → ℝ)
+    (hleft : (∑ i : Fin m, u i * w i) = 0)
+    (hright : (∑ j : Fin n, v j * z j) = 0) :
+    (∑ k : Fin (m + n),
+      Fin.append u
+          (fun j => (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j) k *
+        Fin.append w
+          (fun j => (tau / lsScaledAugmentedEigenvalueMinus alpha tau) * z j) k) = 0 := by
+  rw [lsScaledAugmentedMatrix_singularPair_minus_minus_normalized_dot_eq,
+    hleft, hright]
+  ring
+
+/-- Dot-product expansion between a positive source-normalized branch vector
+    and a left-nullspace branch vector `[w;0]` in (20.18). -/
+theorem lsScaledAugmentedMatrix_singularPair_plus_leftNull_normalized_dot_eq
+    {m n : ℕ} {alpha sigma : ℝ}
+    (u w : Fin m → ℝ) (v : Fin n → ℝ) :
+    (∑ k : Fin (m + n),
+      Fin.append u
+          (fun j => (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j) k *
+        Fin.append w (0 : Fin n → ℝ) k) =
+      (∑ i : Fin m, u i * w i) := by
+  rw [finAppend_sum_mul_eq]
+  simp
+
+/-- Component-orthogonality corollary for a positive source-normalized branch
+    vector and a left-nullspace branch vector in (20.18). -/
+theorem
+    lsScaledAugmentedMatrix_singularPair_plus_leftNull_normalized_dot_eq_zero_of_left_orthogonal
+    {m n : ℕ} {alpha sigma : ℝ}
+    (u w : Fin m → ℝ) (v : Fin n → ℝ)
+    (hleft : (∑ i : Fin m, u i * w i) = 0) :
+    (∑ k : Fin (m + n),
+      Fin.append u
+          (fun j => (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j) k *
+        Fin.append w (0 : Fin n → ℝ) k) = 0 := by
+  rw [lsScaledAugmentedMatrix_singularPair_plus_leftNull_normalized_dot_eq,
+    hleft]
+
+/-- Dot-product expansion between a negative source-normalized branch vector
+    and a left-nullspace branch vector `[w;0]` in (20.18). -/
+theorem lsScaledAugmentedMatrix_singularPair_minus_leftNull_normalized_dot_eq
+    {m n : ℕ} {alpha sigma : ℝ}
+    (u w : Fin m → ℝ) (v : Fin n → ℝ) :
+    (∑ k : Fin (m + n),
+      Fin.append u
+          (fun j => (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j) k *
+        Fin.append w (0 : Fin n → ℝ) k) =
+      (∑ i : Fin m, u i * w i) := by
+  rw [finAppend_sum_mul_eq]
+  simp
+
+/-- Component-orthogonality corollary for a negative source-normalized branch
+    vector and a left-nullspace branch vector in (20.18). -/
+theorem
+    lsScaledAugmentedMatrix_singularPair_minus_leftNull_normalized_dot_eq_zero_of_left_orthogonal
+    {m n : ℕ} {alpha sigma : ℝ}
+    (u w : Fin m → ℝ) (v : Fin n → ℝ)
+    (hleft : (∑ i : Fin m, u i * w i) = 0) :
+    (∑ k : Fin (m + n),
+      Fin.append u
+          (fun j => (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j) k *
+        Fin.append w (0 : Fin n → ℝ) k) = 0 := by
+  rw [lsScaledAugmentedMatrix_singularPair_minus_leftNull_normalized_dot_eq,
+    hleft]
+
+/-- Dot-product expansion for two left-nullspace branch vectors `[u;0]` and
+    `[w;0]` in the `alpha` eigenspace of (20.18). -/
+theorem lsScaledAugmentedMatrix_leftNull_leftNull_dot_eq {m n : ℕ}
+    (u w : Fin m → ℝ) :
+    (∑ k : Fin (m + n),
+      Fin.append u (0 : Fin n → ℝ) k *
+        Fin.append w (0 : Fin n → ℝ) k) =
+      (∑ i : Fin m, u i * w i) := by
+  rw [finAppend_sum_mul_eq]
+  simp
+
+/-- Component-orthogonality corollary for two left-nullspace branch vectors in
+    the `alpha` eigenspace of (20.18). -/
+theorem lsScaledAugmentedMatrix_leftNull_leftNull_dot_eq_zero_of_left_orthogonal
+    {m n : ℕ} (u w : Fin m → ℝ)
+    (hleft : (∑ i : Fin m, u i * w i) = 0) :
+    (∑ k : Fin (m + n),
+      Fin.append u (0 : Fin n → ℝ) k *
+        Fin.append w (0 : Fin n → ℝ) k) = 0 := by
+  rw [lsScaledAugmentedMatrix_leftNull_leftNull_dot_eq, hleft]
+
 /-- Orthogonality of the two source-normalized singular-pair branches in
     Björck's eigenvalue formula (20.18).  This is a source-facing spectral
     decomposition dependency: it proves the printed `lambda_+` and `lambda_-`
