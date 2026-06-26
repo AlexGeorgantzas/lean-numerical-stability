@@ -11305,6 +11305,60 @@ theorem lsNormwiseBackwardErrorFormulaRHS_pos_iff_sigmaMin_pos_of_not_isLeastSqu
       (lsNormwiseBackwardErrorFormulaRHS_pos_iff theta A b y).mpr
         ⟨hphi_pos, hsigma⟩
 
+/-- Global finite-positive-`theta` zero-branch decomposition for (20.20)-(20.21):
+    when `y` is nonzero, the printed WKS right-hand side is zero exactly when
+    either `y` is already an exact least-squares minimizer or the row-side
+    `sigma_min [A phi(I-r r^+)]` branch is degenerate.  This isolates the
+    remaining non-minimizer obstruction; it is not the general WKS spectral
+    equality proof. -/
+theorem lsNormwiseBackwardErrorFormulaRHS_eq_zero_iff_isLeastSquaresMinimizer_or_sigmaMin_eq_zero_of_theta_pos_of_y_ne_zero
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0) :
+    lsNormwiseBackwardErrorFormulaRHS theta A b y = 0 ↔
+      IsLeastSquaresMinimizer A b y ∨
+        lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+          (lsResidualHigham A b y) y = 0 := by
+  constructor
+  · intro hrhs
+    by_cases hmin : IsLeastSquaresMinimizer A b y
+    · exact Or.inl hmin
+    · exact Or.inr
+        ((lsNormwiseBackwardErrorFormulaRHS_eq_zero_iff_sigmaMin_eq_zero_of_not_isLeastSquaresMinimizer
+          htheta A b hy hmin).mp hrhs)
+  · intro h
+    rcases h with hmin | hsigma
+    · exact
+        lsNormwiseBackwardErrorFormulaRHS_eq_zero_of_isLeastSquaresMinimizer
+          theta A b y hmin
+    · exact
+        (lsNormwiseBackwardErrorFormulaRHS_eq_zero_iff theta A b y).mpr
+          (Or.inr hsigma)
+
+/-- Global finite-positive-`theta` positive-branch decomposition for
+    (20.20)-(20.21): when `y` is nonzero, the printed WKS right-hand side is
+    positive exactly when `y` is not an exact least-squares minimizer and the
+    row-side `sigma_min [A phi(I-r r^+)]` branch is positive. -/
+theorem lsNormwiseBackwardErrorFormulaRHS_pos_iff_not_isLeastSquaresMinimizer_and_sigmaMin_pos_of_theta_pos_of_y_ne_zero
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0) :
+    0 < lsNormwiseBackwardErrorFormulaRHS theta A b y ↔
+      ¬ IsLeastSquaresMinimizer A b y ∧
+        0 < lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+          (lsResidualHigham A b y) y := by
+  constructor
+  · intro hrhs
+    refine ⟨?_, ((lsNormwiseBackwardErrorFormulaRHS_pos_iff theta A b y).mp hrhs).2⟩
+    intro hmin
+    exact (ne_of_gt hrhs)
+      (lsNormwiseBackwardErrorFormulaRHS_eq_zero_of_isLeastSquaresMinimizer
+        theta A b y hmin)
+  · intro h
+    exact
+      (lsNormwiseBackwardErrorFormulaRHS_pos_iff_sigmaMin_pos_of_not_isLeastSquaresMinimizer
+        htheta A b hy h.1).mpr h.2
+
 /-- Any zero-right-hand-side augmented least-squares system gives an exact
     least-squares minimizer, even if the residual vector is supplied abstractly. -/
 theorem LSAugmentedSystem.isLeastSquaresMinimizer_of_zero_rhs {m n : ℕ}
