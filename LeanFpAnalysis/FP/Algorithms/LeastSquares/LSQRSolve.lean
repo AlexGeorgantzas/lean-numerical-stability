@@ -5415,6 +5415,117 @@ theorem lsScaledAugmentedMatrix_leftNull_rescaled_eigenvector {m n : ℕ}
   apply rectMatMulVec_vecNorm2_inv_smul_eigenvector
   exact lsScaledAugmentedMatrix_leftNull_eigenvector alpha A u hATu
 
+/-- A unit positive branch in (20.18), packaged with both its rescaled
+    eigenvector equation for `C(alpha)` and unit Euclidean norm.  This is
+    orthonormal-basis infrastructure only; it does not assert completeness or
+    the global multiplicity count. -/
+theorem
+    lsScaledAugmentedMatrix_singularPair_plus_normalized_rescaled_unit_eigenpair_of_unit_components
+    {m n : ℕ} {alpha sigma : ℝ} (A : Fin m → Fin n → ℝ)
+    (u : Fin m → ℝ) (v : Fin n → ℝ)
+    (hAv : rectMatMulVec A v = fun i => sigma * u i)
+    (hATu : (fun j : Fin n => ∑ i : Fin m, A i j * u i) =
+      fun j => sigma * v j)
+    (halpha : 0 ≤ alpha) (hsigma : sigma ≠ 0)
+    (hu : vecNorm2Sq u = 1) (hv : vecNorm2Sq v = 1) :
+    (rectMatMulVec (lsScaledAugmentedMatrix alpha A)
+        (fun k : Fin (m + n) =>
+          (vecNorm2
+              (Fin.append u
+                (fun j =>
+                  (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j)))⁻¹ *
+            Fin.append u
+              (fun j => (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j) k) =
+      fun k => lsScaledAugmentedEigenvaluePlus alpha sigma *
+        ((vecNorm2
+            (Fin.append u
+              (fun j =>
+                (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j)))⁻¹ *
+          Fin.append u
+            (fun j => (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j) k)) ∧
+      vecNorm2
+        (fun k : Fin (m + n) =>
+          (vecNorm2
+              (Fin.append u
+                (fun j =>
+                  (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j)))⁻¹ *
+            Fin.append u
+              (fun j => (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j) k) =
+        1 := by
+  exact
+    ⟨lsScaledAugmentedMatrix_singularPair_plus_normalized_rescaled_eigenvector
+        A u v hAv hATu halpha hsigma,
+      lsScaledAugmentedMatrix_singularPair_plus_normalized_rescaled_vecNorm2_eq_one_of_unit_components
+        u v hu hv⟩
+
+/-- A unit negative branch in (20.18), packaged with both its rescaled
+    eigenvector equation for `C(alpha)` and unit Euclidean norm.  This is
+    orthonormal-basis infrastructure only; it does not assert completeness or
+    the global multiplicity count. -/
+theorem
+    lsScaledAugmentedMatrix_singularPair_minus_normalized_rescaled_unit_eigenpair_of_unit_components
+    {m n : ℕ} {alpha sigma : ℝ} (A : Fin m → Fin n → ℝ)
+    (u : Fin m → ℝ) (v : Fin n → ℝ)
+    (hAv : rectMatMulVec A v = fun i => sigma * u i)
+    (hATu : (fun j : Fin n => ∑ i : Fin m, A i j * u i) =
+      fun j => sigma * v j)
+    (halpha : 0 ≤ alpha) (hsigma : sigma ≠ 0)
+    (hu : vecNorm2Sq u = 1) (hv : vecNorm2Sq v = 1) :
+    (rectMatMulVec (lsScaledAugmentedMatrix alpha A)
+        (fun k : Fin (m + n) =>
+          (vecNorm2
+              (Fin.append u
+                (fun j =>
+                  (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j)))⁻¹ *
+            Fin.append u
+              (fun j => (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j) k) =
+      fun k => lsScaledAugmentedEigenvalueMinus alpha sigma *
+        ((vecNorm2
+            (Fin.append u
+              (fun j =>
+                (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j)))⁻¹ *
+          Fin.append u
+            (fun j => (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j) k)) ∧
+      vecNorm2
+        (fun k : Fin (m + n) =>
+          (vecNorm2
+              (Fin.append u
+                (fun j =>
+                  (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j)))⁻¹ *
+            Fin.append u
+              (fun j => (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j) k) =
+        1 := by
+  exact
+    ⟨lsScaledAugmentedMatrix_singularPair_minus_normalized_rescaled_eigenvector
+        A u v hAv hATu halpha hsigma,
+      lsScaledAugmentedMatrix_singularPair_minus_normalized_rescaled_vecNorm2_eq_one_of_unit_components
+        u v hu hv⟩
+
+/-- A unit left-null branch in (20.18), packaged with both its rescaled
+    eigenvector equation for `C(alpha)` and unit Euclidean norm.  This is
+    orthonormal-basis infrastructure only; it does not assert completeness or
+    the global multiplicity count. -/
+theorem lsScaledAugmentedMatrix_leftNull_rescaled_unit_eigenpair_of_unit_component
+    {m n : ℕ} (alpha : ℝ) (A : Fin m → Fin n → ℝ) (u : Fin m → ℝ)
+    (hATu : ∀ j : Fin n, ∑ i : Fin m, A i j * u i = 0)
+    (hu : vecNorm2Sq u = 1) :
+    (rectMatMulVec (lsScaledAugmentedMatrix alpha A)
+        (fun k : Fin (m + n) =>
+          (vecNorm2 (Fin.append u (0 : Fin n → ℝ)))⁻¹ *
+            Fin.append u (0 : Fin n → ℝ) k) =
+      fun k => alpha *
+        ((vecNorm2 (Fin.append u (0 : Fin n → ℝ)))⁻¹ *
+          Fin.append u (0 : Fin n → ℝ) k)) ∧
+      vecNorm2
+        (fun k : Fin (m + n) =>
+          (vecNorm2 (Fin.append u (0 : Fin n → ℝ)))⁻¹ *
+            Fin.append u (0 : Fin n → ℝ) k) =
+        1 := by
+  exact
+    ⟨lsScaledAugmentedMatrix_leftNull_rescaled_eigenvector alpha A u hATu,
+      lsScaledAugmentedMatrix_leftNull_rescaled_vecNorm2_eq_one_of_unit_component
+        u hu⟩
+
 /-- Orthogonality of the two source-normalized singular-pair branches in
     Björck's eigenvalue formula (20.18).  This is a source-facing spectral
     decomposition dependency: it proves the printed `lambda_+` and `lambda_-`
