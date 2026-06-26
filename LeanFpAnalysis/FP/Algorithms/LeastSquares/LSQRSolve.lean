@@ -5526,6 +5526,66 @@ theorem lsScaledAugmentedMatrix_leftNull_rescaled_unit_eigenpair_of_unit_compone
       lsScaledAugmentedMatrix_leftNull_rescaled_vecNorm2_eq_one_of_unit_component
         u hu⟩
 
+/-- A Euclidean unit vector is nonzero. -/
+theorem vecNorm2_eq_one_ne_zero {n : ℕ} {x : Fin n → ℝ}
+    (hx : vecNorm2 x = 1) : x ≠ 0 := by
+  intro hzero
+  have hnorm : vecNorm2 x = 0 := by
+    simpa [hzero] using (vecNorm2_zero (n := n))
+  linarith
+
+/-- The inverse-2-norm rescaled positive branch vector in (20.18) is nonzero
+    under unit component data. -/
+theorem
+    lsScaledAugmentedMatrix_singularPair_plus_normalized_rescaled_vector_ne_zero_of_unit_components
+    {m n : ℕ} {alpha sigma : ℝ}
+    (u : Fin m → ℝ) (v : Fin n → ℝ)
+    (hu : vecNorm2Sq u = 1) (hv : vecNorm2Sq v = 1) :
+    (fun k : Fin (m + n) =>
+      (vecNorm2
+          (Fin.append u
+            (fun j =>
+              (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j)))⁻¹ *
+        Fin.append u
+          (fun j => (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j) k) ≠
+      0 := by
+  apply vecNorm2_eq_one_ne_zero
+  exact
+    lsScaledAugmentedMatrix_singularPair_plus_normalized_rescaled_vecNorm2_eq_one_of_unit_components
+      u v hu hv
+
+/-- The inverse-2-norm rescaled negative branch vector in (20.18) is nonzero
+    under unit component data. -/
+theorem
+    lsScaledAugmentedMatrix_singularPair_minus_normalized_rescaled_vector_ne_zero_of_unit_components
+    {m n : ℕ} {alpha sigma : ℝ}
+    (u : Fin m → ℝ) (v : Fin n → ℝ)
+    (hu : vecNorm2Sq u = 1) (hv : vecNorm2Sq v = 1) :
+    (fun k : Fin (m + n) =>
+      (vecNorm2
+          (Fin.append u
+            (fun j =>
+              (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j)))⁻¹ *
+        Fin.append u
+          (fun j => (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j) k) ≠
+      0 := by
+  apply vecNorm2_eq_one_ne_zero
+  exact
+    lsScaledAugmentedMatrix_singularPair_minus_normalized_rescaled_vecNorm2_eq_one_of_unit_components
+      u v hu hv
+
+/-- The inverse-2-norm rescaled left-null branch vector in (20.18) is nonzero
+    under unit left-component data. -/
+theorem lsScaledAugmentedMatrix_leftNull_rescaled_vector_ne_zero_of_unit_component
+    {m n : ℕ} (u : Fin m → ℝ) (hu : vecNorm2Sq u = 1) :
+    (fun k : Fin (m + n) =>
+      (vecNorm2 (Fin.append u (0 : Fin n → ℝ)))⁻¹ *
+        Fin.append u (0 : Fin n → ℝ) k) ≠ 0 := by
+  apply vecNorm2_eq_one_ne_zero
+  exact
+    lsScaledAugmentedMatrix_leftNull_rescaled_vecNorm2_eq_one_of_unit_component
+      u hu
+
 /-- Orthogonality of the two source-normalized singular-pair branches in
     Björck's eigenvalue formula (20.18).  This is a source-facing spectral
     decomposition dependency: it proves the printed `lambda_+` and `lambda_-`
