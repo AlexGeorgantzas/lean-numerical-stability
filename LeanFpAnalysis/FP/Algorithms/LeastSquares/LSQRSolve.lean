@@ -3434,6 +3434,27 @@ theorem lsScaledAugmentedEigenvaluePlus_mono_sigma_nonneg {alpha sigma tau : ℝ
   unfold lsScaledAugmentedEigenvaluePlus
   linarith
 
+/-- Strict monotonicity in the nonnegative singular value for the positive
+    branch in (20.18).  This strengthens the scalar ordering infrastructure
+    used to select extremal branches in the later (20.19) condition-number
+    bridge. -/
+theorem lsScaledAugmentedEigenvaluePlus_strictMono_sigma_nonneg
+    {alpha sigma tau : ℝ} (hsigma : 0 ≤ sigma) (hsig_lt : sigma < tau) :
+    lsScaledAugmentedEigenvaluePlus alpha sigma <
+      lsScaledAugmentedEigenvaluePlus alpha tau := by
+  have hsq : sigma ^ 2 < tau ^ 2 := by
+    have hprod : 0 < (tau - sigma) * (tau + sigma) := by
+      exact mul_pos (sub_pos.mpr hsig_lt)
+        (add_pos_of_pos_of_nonneg (lt_of_le_of_lt hsigma hsig_lt) hsigma)
+    nlinarith [hprod]
+  have hrad_nonneg : 0 ≤ alpha ^ 2 / 4 + sigma ^ 2 := by positivity
+  have hrad : alpha ^ 2 / 4 + sigma ^ 2 <
+      alpha ^ 2 / 4 + tau ^ 2 := by
+    nlinarith
+  have hsqrt := Real.sqrt_lt_sqrt hrad_nonneg hrad
+  unfold lsScaledAugmentedEigenvaluePlus
+  linarith
+
 /-- Monotonicity in the nonnegative singular value for the magnitude of the
     negative branch in (20.18).  This is scalar infrastructure for selecting the
     smallest negative-branch magnitude from the smallest singular value in
@@ -3451,6 +3472,33 @@ theorem lsScaledAugmentedEigenvalueMinus_abs_mono_sigma_nonneg
   have hrad : alpha ^ 2 / 4 + sigma ^ 2 ≤ alpha ^ 2 / 4 + tau ^ 2 := by
     nlinarith
   have hsqrt := Real.sqrt_le_sqrt hrad
+  have hminus_sigma :=
+    lsScaledAugmentedEigenvalueMinus_nonpos (alpha := alpha) (sigma := sigma) halpha
+  have hminus_tau :=
+    lsScaledAugmentedEigenvalueMinus_nonpos (alpha := alpha) (sigma := tau) halpha
+  rw [abs_of_nonpos hminus_sigma, abs_of_nonpos hminus_tau]
+  unfold lsScaledAugmentedEigenvalueMinus
+  linarith
+
+/-- Strict monotonicity in the nonnegative singular value for the magnitude of
+    the negative branch in (20.18).  This is the strict counterpart of
+    `lsScaledAugmentedEigenvalueMinus_abs_mono_sigma_nonneg` for the later
+    extremal branch and multiplicity analysis in (20.19). -/
+theorem lsScaledAugmentedEigenvalueMinus_abs_strictMono_sigma_nonneg
+    {alpha sigma tau : ℝ} (halpha : 0 ≤ alpha)
+    (hsigma : 0 ≤ sigma) (hsig_lt : sigma < tau) :
+    |lsScaledAugmentedEigenvalueMinus alpha sigma| <
+      |lsScaledAugmentedEigenvalueMinus alpha tau| := by
+  have hsq : sigma ^ 2 < tau ^ 2 := by
+    have hprod : 0 < (tau - sigma) * (tau + sigma) := by
+      exact mul_pos (sub_pos.mpr hsig_lt)
+        (add_pos_of_pos_of_nonneg (lt_of_le_of_lt hsigma hsig_lt) hsigma)
+    nlinarith [hprod]
+  have hrad_nonneg : 0 ≤ alpha ^ 2 / 4 + sigma ^ 2 := by positivity
+  have hrad : alpha ^ 2 / 4 + sigma ^ 2 <
+      alpha ^ 2 / 4 + tau ^ 2 := by
+    nlinarith
+  have hsqrt := Real.sqrt_lt_sqrt hrad_nonneg hrad
   have hminus_sigma :=
     lsScaledAugmentedEigenvalueMinus_nonpos (alpha := alpha) (sigma := sigma) halpha
   have hminus_tau :=
