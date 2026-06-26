@@ -4995,6 +4995,22 @@ theorem vecNorm2_inv_smul_dot_eq_zero_of_dot_eq_zero {n : ℕ}
           ring
     _ = 0 := by rw [hxy, mul_zero]
 
+/-- Rescaling a real eigenvector by the inverse of its Euclidean norm preserves
+    the same eigenvector equation. -/
+theorem rectMatMulVec_vecNorm2_inv_smul_eigenvector {n : ℕ}
+    (M : Fin n → Fin n → ℝ) (lambda : ℝ) (x : Fin n → ℝ)
+    (hx : rectMatMulVec M x = fun i => lambda * x i) :
+    rectMatMulVec M (fun i => (vecNorm2 x)⁻¹ * x i) =
+      fun i => lambda * ((vecNorm2 x)⁻¹ * x i) := by
+  calc
+    rectMatMulVec M (fun i => (vecNorm2 x)⁻¹ * x i)
+        = fun i => (vecNorm2 x)⁻¹ * rectMatMulVec M x i := by
+          exact rectMatMulVec_smul M (vecNorm2 x)⁻¹ x
+    _ = fun i => lambda * ((vecNorm2 x)⁻¹ * x i) := by
+          ext i
+          rw [congrFun hx i]
+          ring
+
 /-- Same-branch positive/positive dot-product expansion for the source-normalized
     singular-pair vectors in (20.18), allowing different singular values and
     different left/right singular-vector components. -/
@@ -5323,6 +5339,81 @@ theorem
   exact
     lsScaledAugmentedMatrix_leftNull_leftNull_dot_eq_zero_of_left_orthogonal
       u w hleft
+
+/-- The inverse-2-norm rescaled positive branch vector in (20.18) remains an
+    eigenvector of `C(alpha)` with eigenvalue `lambda_+`. -/
+theorem lsScaledAugmentedMatrix_singularPair_plus_normalized_rescaled_eigenvector
+    {m n : ℕ}
+    {alpha sigma : ℝ} (A : Fin m → Fin n → ℝ)
+    (u : Fin m → ℝ) (v : Fin n → ℝ)
+    (hAv : rectMatMulVec A v = fun i => sigma * u i)
+    (hATu : (fun j : Fin n => ∑ i : Fin m, A i j * u i) =
+      fun j => sigma * v j)
+    (halpha : 0 ≤ alpha) (hsigma : sigma ≠ 0) :
+    rectMatMulVec (lsScaledAugmentedMatrix alpha A)
+        (fun k : Fin (m + n) =>
+          (vecNorm2
+              (Fin.append u
+                (fun j =>
+                  (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j)))⁻¹ *
+            Fin.append u
+              (fun j => (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j) k) =
+      fun k => lsScaledAugmentedEigenvaluePlus alpha sigma *
+        ((vecNorm2
+            (Fin.append u
+              (fun j =>
+                (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j)))⁻¹ *
+          Fin.append u
+            (fun j => (sigma / lsScaledAugmentedEigenvaluePlus alpha sigma) * v j) k) := by
+  apply rectMatMulVec_vecNorm2_inv_smul_eigenvector
+  exact
+    lsScaledAugmentedMatrix_singularPair_plus_normalized_eigenvector
+      alpha sigma A u v hAv hATu halpha hsigma
+
+/-- The inverse-2-norm rescaled negative branch vector in (20.18) remains an
+    eigenvector of `C(alpha)` with eigenvalue `lambda_-`. -/
+theorem lsScaledAugmentedMatrix_singularPair_minus_normalized_rescaled_eigenvector
+    {m n : ℕ}
+    {alpha sigma : ℝ} (A : Fin m → Fin n → ℝ)
+    (u : Fin m → ℝ) (v : Fin n → ℝ)
+    (hAv : rectMatMulVec A v = fun i => sigma * u i)
+    (hATu : (fun j : Fin n => ∑ i : Fin m, A i j * u i) =
+      fun j => sigma * v j)
+    (halpha : 0 ≤ alpha) (hsigma : sigma ≠ 0) :
+    rectMatMulVec (lsScaledAugmentedMatrix alpha A)
+        (fun k : Fin (m + n) =>
+          (vecNorm2
+              (Fin.append u
+                (fun j =>
+                  (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j)))⁻¹ *
+            Fin.append u
+              (fun j => (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j) k) =
+      fun k => lsScaledAugmentedEigenvalueMinus alpha sigma *
+        ((vecNorm2
+            (Fin.append u
+              (fun j =>
+                (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j)))⁻¹ *
+          Fin.append u
+            (fun j => (sigma / lsScaledAugmentedEigenvalueMinus alpha sigma) * v j) k) := by
+  apply rectMatMulVec_vecNorm2_inv_smul_eigenvector
+  exact
+    lsScaledAugmentedMatrix_singularPair_minus_normalized_eigenvector
+      alpha sigma A u v hAv hATu halpha hsigma
+
+/-- The inverse-2-norm rescaled left-nullspace branch vector `[u;0]` in (20.18)
+    remains an eigenvector of `C(alpha)` with eigenvalue `alpha`. -/
+theorem lsScaledAugmentedMatrix_leftNull_rescaled_eigenvector {m n : ℕ}
+    (alpha : ℝ) (A : Fin m → Fin n → ℝ) (u : Fin m → ℝ)
+    (hATu : ∀ j : Fin n, ∑ i : Fin m, A i j * u i = 0) :
+    rectMatMulVec (lsScaledAugmentedMatrix alpha A)
+        (fun k : Fin (m + n) =>
+          (vecNorm2 (Fin.append u (0 : Fin n → ℝ)))⁻¹ *
+            Fin.append u (0 : Fin n → ℝ) k) =
+      fun k => alpha *
+        ((vecNorm2 (Fin.append u (0 : Fin n → ℝ)))⁻¹ *
+          Fin.append u (0 : Fin n → ℝ) k) := by
+  apply rectMatMulVec_vecNorm2_inv_smul_eigenvector
+  exact lsScaledAugmentedMatrix_leftNull_eigenvector alpha A u hATu
 
 /-- Orthogonality of the two source-normalized singular-pair branches in
     Björck's eigenvalue formula (20.18).  This is a source-facing spectral
