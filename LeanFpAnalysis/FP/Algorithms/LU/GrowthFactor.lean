@@ -520,6 +520,31 @@ noncomputable def growthFactorEntry {n : ℕ} (hn : 0 < n)
     (A U_hat : Fin n → Fin n → ℝ) (_hA : 0 < maxEntryNorm hn A) : ℝ :=
   maxEntryNorm hn U_hat / maxEntryNorm hn A
 
+/-- The max-entry growth factor is nonnegative. -/
+lemma growthFactorEntry_nonneg {n : ℕ} (hn : 0 < n)
+    (A U_hat : Fin n → Fin n → ℝ) (hA : 0 < maxEntryNorm hn A) :
+    0 ≤ growthFactorEntry hn A U_hat hA := by
+  unfold growthFactorEntry
+  exact div_nonneg (maxEntryNorm_nonneg hn U_hat) (le_of_lt hA)
+
+/-- If the growth-factor matrix contains the initial max-entry norm, then the
+    max-entry growth factor is at least one. -/
+lemma growthFactorEntry_ge_one_of_maxEntryNorm_le {n : ℕ} (hn : 0 < n)
+    (A U_hat : Fin n → Fin n → ℝ) (hA : 0 < maxEntryNorm hn A)
+    (hA_le_U : maxEntryNorm hn A ≤ maxEntryNorm hn U_hat) :
+    1 ≤ growthFactorEntry hn A U_hat hA := by
+  unfold growthFactorEntry
+  exact (le_div_iff₀ hA).mpr (by simpa using hA_le_U)
+
+/-- If the growth matrix is bounded by `c` times the initial max-entry norm,
+    then the max-entry growth factor is at most `c`. -/
+lemma growthFactorEntry_le_of_maxEntryNorm_le_mul {n : ℕ} (hn : 0 < n)
+    (A U_hat : Fin n → Fin n → ℝ) (hA : 0 < maxEntryNorm hn A) {c : ℝ}
+    (hU_le : maxEntryNorm hn U_hat ≤ c * maxEntryNorm hn A) :
+    growthFactorEntry hn A U_hat hA ≤ c := by
+  unfold growthFactorEntry
+  exact (div_le_iff₀ hA).mpr (by simpa [mul_comm] using hU_le)
+
 /-- **Diagonal product bounded by max-entry norm** (core of Theorem 9.7).
 
     For any matrix U: ∏_k |U_kk| ≤ maxEntry(U)^n.
