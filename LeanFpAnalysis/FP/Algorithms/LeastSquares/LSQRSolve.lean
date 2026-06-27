@@ -4454,6 +4454,97 @@ theorem lsScaledAugmentedMatrix_singularPair_plus_minus_abs_ratio_le_opNorm_mul_
     mul_le_mul hplus hminusInv hrecip_nonneg hL_nonneg
   simpa [div_eq_mul_inv] using hprod
 
+/-- Source-facing condition-number bridge for (20.18)-(20.19): a witnessed
+    positive branch divided by the magnitude of a witnessed negative branch is
+    bounded by the repository `κ₂` product for `C(alpha)` and an explicit
+    two-sided inverse candidate.  This still leaves the global spectral
+    multiplicity/extremal-eigenvalue proof open. -/
+theorem lsScaledAugmentedMatrix_singularPair_plus_minus_abs_ratio_le_kappa2
+    {m n : ℕ} {alpha sigmaPlus sigmaMinus : ℝ}
+    {A : Fin m → Fin n → ℝ}
+    {Cinv : Fin (m + n) → Fin (m + n) → ℝ}
+    {uPlus uMinus : Fin m → ℝ} {vPlus vMinus : Fin n → ℝ}
+    (hInv : IsInverse (m + n) (lsScaledAugmentedMatrix alpha A) Cinv)
+    (hAvPlus : rectMatMulVec A vPlus = fun i => sigmaPlus * uPlus i)
+    (hATuPlus : (fun j : Fin n => ∑ i : Fin m, A i j * uPlus i) =
+      fun j => sigmaPlus * vPlus j)
+    (hAvMinus : rectMatMulVec A vMinus = fun i => sigmaMinus * uMinus i)
+    (hATuMinus : (fun j : Fin n => ∑ i : Fin m, A i j * uMinus i) =
+      fun j => sigmaMinus * vMinus j)
+    (halpha : 0 ≤ alpha)
+    (hsigmaPlus : sigmaPlus ≠ 0) (hvPlus : vPlus ≠ 0)
+    (hsigmaMinus : sigmaMinus ≠ 0) (hvMinus : vMinus ≠ 0) :
+    |lsScaledAugmentedEigenvaluePlus alpha sigmaPlus| /
+        |lsScaledAugmentedEigenvalueMinus alpha sigmaMinus| ≤
+      kappa2 (lsScaledAugmentedMatrix alpha A) Cinv := by
+  have hC :
+      finiteOpNorm2Le (lsScaledAugmentedMatrix alpha A)
+        (opNorm2 (lsScaledAugmentedMatrix alpha A)) :=
+    finiteOpNorm2Le_of_opNorm2Le (lsScaledAugmentedMatrix alpha A)
+      (opNorm2Le_opNorm2 (lsScaledAugmentedMatrix alpha A))
+  have hCinv : finiteOpNorm2Le Cinv (opNorm2 Cinv) :=
+    finiteOpNorm2Le_of_opNorm2Le Cinv (opNorm2Le_opNorm2 Cinv)
+  simpa [kappa2] using
+    lsScaledAugmentedMatrix_singularPair_plus_minus_abs_ratio_le_opNorm_mul_inverseOpNorm
+      (hC := hC) (hCinv := hCinv) (hLeft := hInv.1)
+      (hAvPlus := hAvPlus) (hATuPlus := hATuPlus)
+      (hAvMinus := hAvMinus) (hATuMinus := hATuMinus)
+      halpha hsigmaPlus hvPlus hsigmaMinus hvMinus
+
+/-- Balanced-scaling lower half of the (20.19) condition-number route: under
+    `alpha = sigmaMin / sqrt 2`, witnessed extremal singular-pair branches give
+    the source scalar lower bound `sqrt 2 * sigmaMax/sigmaMin` below the
+    repository `κ₂` product for `C(alpha)` and an explicit inverse candidate.
+    This combines the scalar branch-ratio lower bound with the local `κ₂`
+    eigenpair bridge; it does not prove the complete eigenvalue list or that the
+    supplied pairs are a full singular-vector basis. -/
+theorem lsScaledAugmentedMatrix_singularPair_balanced_sigma_ratio_le_kappa2_of_alpha_eq_div_sqrt_two
+    {m n : ℕ} {alpha sigmaMin sigmaMax : ℝ}
+    {A : Fin m → Fin n → ℝ}
+    {Cinv : Fin (m + n) → Fin (m + n) → ℝ}
+    {uMax uMin : Fin m → ℝ} {vMax vMin : Fin n → ℝ}
+    (hInv : IsInverse (m + n) (lsScaledAugmentedMatrix alpha A) Cinv)
+    (hAvMax : rectMatMulVec A vMax = fun i => sigmaMax * uMax i)
+    (hATuMax : (fun j : Fin n => ∑ i : Fin m, A i j * uMax i) =
+      fun j => sigmaMax * vMax j)
+    (hAvMin : rectMatMulVec A vMin = fun i => sigmaMin * uMin i)
+    (hATuMin : (fun j : Fin n => ∑ i : Fin m, A i j * uMin i) =
+      fun j => sigmaMin * vMin j)
+    (hsigmaMin_pos : 0 < sigmaMin) (hsigmaMin_le_max : sigmaMin ≤ sigmaMax)
+    (halpha : alpha = sigmaMin / Real.sqrt 2)
+    (hvMax : vMax ≠ 0) (hvMin : vMin ≠ 0) :
+    Real.sqrt 2 * (sigmaMax / sigmaMin) ≤
+      kappa2 (lsScaledAugmentedMatrix alpha A) Cinv := by
+  have hsigmaMax_pos : 0 < sigmaMax :=
+    lt_of_lt_of_le hsigmaMin_pos hsigmaMin_le_max
+  have hsigmaMax_nonneg : 0 ≤ sigmaMax := le_of_lt hsigmaMax_pos
+  have halpha_nonneg : 0 ≤ alpha := by
+    rw [halpha]
+    positivity
+  have hscalar :
+      Real.sqrt 2 * (sigmaMax / sigmaMin) ≤
+        lsScaledAugmentedEigenvaluePlus alpha sigmaMax /
+          |lsScaledAugmentedEigenvalueMinus alpha sigmaMin| :=
+    lsScaledAugmentedBalancedBranchRatio_ge_sqrt_two_sigma_ratio_of_alpha_eq_div_sqrt_two
+      (alpha := alpha) (sigmaMin := sigmaMin) (sigmaMax := sigmaMax)
+      hsigmaMin_pos hsigmaMax_nonneg halpha
+  have hkappa :
+      |lsScaledAugmentedEigenvaluePlus alpha sigmaMax| /
+          |lsScaledAugmentedEigenvalueMinus alpha sigmaMin| ≤
+        kappa2 (lsScaledAugmentedMatrix alpha A) Cinv :=
+    lsScaledAugmentedMatrix_singularPair_plus_minus_abs_ratio_le_kappa2
+      (hInv := hInv)
+      (hAvPlus := hAvMax) (hATuPlus := hATuMax)
+      (hAvMinus := hAvMin) (hATuMinus := hATuMin)
+      halpha_nonneg (ne_of_gt hsigmaMax_pos) hvMax
+      (ne_of_gt hsigmaMin_pos) hvMin
+  have hplus_nonneg :
+      0 ≤ lsScaledAugmentedEigenvaluePlus alpha sigmaMax :=
+    lsScaledAugmentedEigenvaluePlus_nonneg
+      (alpha := alpha) (sigma := sigmaMax) halpha_nonneg
+  rw [abs_of_nonneg hplus_nonneg] at hkappa
+  exact le_trans hscalar hkappa
+
 /-- In a nonzero singular-pair certificate for (20.18), the left singular-vector
     side is nonzero whenever the right singular-vector side is nonzero. -/
 theorem lsScaledAugmentedMatrix_singularPair_left_vector_ne_zero {m n : ℕ}
