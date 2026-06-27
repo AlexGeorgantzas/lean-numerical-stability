@@ -4578,6 +4578,87 @@ theorem lsScaledAugmentedMatrix_opNorm2_le_of_orthogonal_diagonalization
     (lsScaledAugmentedMatrix_finiteOpNorm2Le_of_orthogonal_diagonalization
       hdiag hQ hL hd)
 
+/-- Equations (20.18)-(20.19) `κ₂` upper-bound handoff: supplied orthogonal
+    diagonalizations for `C(alpha)` and for an explicit inverse candidate,
+    together with uniform bounds on the displayed eigenvalue magnitudes, give a
+    source-facing `κ₂ C(alpha) Cinv <= L * D` product bound.  This still leaves
+    the construction of those diagonalizations and the inverse candidate open. -/
+theorem lsScaledAugmentedMatrix_kappa2_le_mul_of_orthogonal_diagonalizations
+    {m n : ℕ} {alpha L D : ℝ} {A : Fin m → Fin n → ℝ}
+    {Cinv Q Qinv : Fin (m + n) → Fin (m + n) → ℝ}
+    {d dinv : Fin (m + n) → ℝ}
+    (hdiag : lsScaledAugmentedMatrix alpha A =
+      finiteMatMul Q (finiteMatMul (finiteDiagonal d) (matTranspose Q)))
+    (hdiagInv : Cinv =
+      finiteMatMul Qinv (finiteMatMul (finiteDiagonal dinv) (matTranspose Qinv)))
+    (hQ : IsOrthogonal (m + n) Q) (hQinv : IsOrthogonal (m + n) Qinv)
+    (hL : 0 ≤ L) (hd : ∀ i : Fin (m + n), |d i| ≤ L)
+    (hD : 0 ≤ D) (hdinv : ∀ i : Fin (m + n), |dinv i| ≤ D) :
+    kappa2 (lsScaledAugmentedMatrix alpha A) Cinv ≤ L * D :=
+  kappa2_le_mul_of_isOrthogonal_diagonalizations
+    hdiag hdiagInv hQ hQinv hL hd hD hdinv
+
+/-- Balanced-scaling upper half of the (20.19) condition-number route.  If
+    `alpha = sigmaMin / sqrt 2`, `C(alpha)` and an inverse candidate have
+    supplied orthogonal diagonalizations whose diagonal magnitudes are bounded
+    by the source extremal branches, then `κ₂ C(alpha) Cinv` is bounded by
+    `2 * sigmaMax / sigmaMin`.
+
+    This is a spectral-certificate theorem: it does not construct the complete
+    eigenbasis, prove that the diagonal list is exactly the (20.18) branch list,
+    or identify the supplied inverse candidate. -/
+theorem lsScaledAugmentedMatrix_kappa2_le_two_sigma_ratio_of_balanced_orthogonal_diagonalizations
+    {m n : ℕ} {alpha sigmaMin sigmaMax : ℝ} {A : Fin m → Fin n → ℝ}
+    {Cinv Q Qinv : Fin (m + n) → Fin (m + n) → ℝ}
+    {d dinv : Fin (m + n) → ℝ}
+    (hdiag : lsScaledAugmentedMatrix alpha A =
+      finiteMatMul Q (finiteMatMul (finiteDiagonal d) (matTranspose Q)))
+    (hdiagInv : Cinv =
+      finiteMatMul Qinv (finiteMatMul (finiteDiagonal dinv) (matTranspose Qinv)))
+    (hQ : IsOrthogonal (m + n) Q) (hQinv : IsOrthogonal (m + n) Qinv)
+    (hd : ∀ i : Fin (m + n),
+      |d i| ≤ lsScaledAugmentedEigenvaluePlus alpha sigmaMax)
+    (hdinv : ∀ i : Fin (m + n),
+      |dinv i| ≤ |lsScaledAugmentedEigenvalueMinus alpha sigmaMin|⁻¹)
+    (hsigmaMin_pos : 0 < sigmaMin) (hsigmaMin_le_max : sigmaMin ≤ sigmaMax)
+    (halpha : alpha = sigmaMin / Real.sqrt 2) :
+    kappa2 (lsScaledAugmentedMatrix alpha A) Cinv ≤
+      2 * (sigmaMax / sigmaMin) := by
+  have hsigmaMax_pos : 0 < sigmaMax :=
+    lt_of_lt_of_le hsigmaMin_pos hsigmaMin_le_max
+  have halpha_nonneg : 0 ≤ alpha := by
+    rw [halpha]
+    positivity
+  have hL_nonneg :
+      0 ≤ lsScaledAugmentedEigenvaluePlus alpha sigmaMax :=
+    lsScaledAugmentedEigenvaluePlus_nonneg
+      (alpha := alpha) (sigma := sigmaMax) halpha_nonneg
+  have hD_nonneg :
+      0 ≤ |lsScaledAugmentedEigenvalueMinus alpha sigmaMin|⁻¹ :=
+    inv_nonneg.mpr (abs_nonneg _)
+  have hkappa :
+      kappa2 (lsScaledAugmentedMatrix alpha A) Cinv ≤
+        lsScaledAugmentedEigenvaluePlus alpha sigmaMax *
+          |lsScaledAugmentedEigenvalueMinus alpha sigmaMin|⁻¹ :=
+    lsScaledAugmentedMatrix_kappa2_le_mul_of_orthogonal_diagonalizations
+      (hdiag := hdiag) (hdiagInv := hdiagInv)
+      (hQ := hQ) (hQinv := hQinv)
+      (hL := hL_nonneg) (hd := hd)
+      (hD := hD_nonneg) (hdinv := hdinv)
+  have hkappa_ratio :
+      kappa2 (lsScaledAugmentedMatrix alpha A) Cinv ≤
+        lsScaledAugmentedEigenvaluePlus alpha sigmaMax /
+          |lsScaledAugmentedEigenvalueMinus alpha sigmaMin| := by
+    simpa [div_eq_mul_inv] using hkappa
+  have hscalar :
+      lsScaledAugmentedEigenvaluePlus alpha sigmaMax /
+          |lsScaledAugmentedEigenvalueMinus alpha sigmaMin| ≤
+        2 * (sigmaMax / sigmaMin) :=
+    lsScaledAugmentedBalancedBranchRatio_le_two_sigma_ratio_of_alpha_eq_div_sqrt_two
+      (alpha := alpha) (sigmaMin := sigmaMin) (sigmaMax := sigmaMax)
+      hsigmaMin_pos halpha hsigmaMin_le_max
+  exact le_trans hkappa_ratio hscalar
+
 /-- In a nonzero singular-pair certificate for (20.18), the left singular-vector
     side is nonzero whenever the right singular-vector side is nonzero. -/
 theorem lsScaledAugmentedMatrix_singularPair_left_vector_ne_zero {m n : ℕ}

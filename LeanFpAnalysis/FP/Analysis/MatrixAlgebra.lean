@@ -8380,6 +8380,38 @@ theorem finiteOpNorm2Le_of_isOrthogonal_diagonalization {n : ℕ}
     _ ≤ L * finiteVecNorm2 y := hdiag
     _ = L * finiteVecNorm2 x := by rw [hQt_norm]
 
+/-- Orthogonal diagonalization gives an exact source-facing `opNorm2` bound
+    from a uniform bound on the diagonal eigenvalue magnitudes. -/
+theorem opNorm2_le_of_isOrthogonal_diagonalization {n : ℕ}
+    {M Q : Fin n → Fin n → ℝ} {d : Fin n → ℝ} {L : ℝ}
+    (hM : M = finiteMatMul Q (finiteMatMul (finiteDiagonal d) (matTranspose Q)))
+    (hQ : IsOrthogonal n Q) (hL : 0 ≤ L)
+    (hd : ∀ i : Fin n, |d i| ≤ L) :
+    opNorm2 M ≤ L :=
+  opNorm2_le_of_finiteOpNorm2Le M hL
+    (finiteOpNorm2Le_of_isOrthogonal_diagonalization hM hQ hL hd)
+
+/-- Two orthogonal diagonalizations with bounded diagonal magnitudes give a
+    source-facing `κ₂` product bound.  This is useful when a spectral proof
+    supplies one decomposition for a matrix and one for an explicit inverse
+    candidate. -/
+theorem kappa2_le_mul_of_isOrthogonal_diagonalizations {n : ℕ}
+    {M Minv Q Qinv : Fin n → Fin n → ℝ}
+    {d dinv : Fin n → ℝ} {L D : ℝ}
+    (hM : M = finiteMatMul Q (finiteMatMul (finiteDiagonal d) (matTranspose Q)))
+    (hMinv : Minv =
+      finiteMatMul Qinv (finiteMatMul (finiteDiagonal dinv) (matTranspose Qinv)))
+    (hQ : IsOrthogonal n Q) (hQinv : IsOrthogonal n Qinv)
+    (hL : 0 ≤ L) (hd : ∀ i : Fin n, |d i| ≤ L)
+    (hD : 0 ≤ D) (hdinv : ∀ i : Fin n, |dinv i| ≤ D) :
+    kappa2 M Minv ≤ L * D := by
+  have hMnorm : opNorm2 M ≤ L :=
+    opNorm2_le_of_isOrthogonal_diagonalization hM hQ hL hd
+  have hMinvNorm : opNorm2 Minv ≤ D :=
+    opNorm2_le_of_isOrthogonal_diagonalization hMinv hQinv hD hdinv
+  unfold kappa2
+  exact mul_le_mul hMnorm hMinvNorm (opNorm2_nonneg Minv) hL
+
 /-- Product of orthogonal matrices is orthogonal.
 
     Proof: (UV)ᵀ(UV) = VᵀUᵀUV = VᵀV = I and
