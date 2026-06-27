@@ -3859,6 +3859,26 @@ theorem exists_unique_isLSEMinimizer_iff_lseStackedFullColumnRank_of_exists
     (A := A) (b := b) (B := B) (d := d) hex).trans
     (LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B)
 
+/-- Higham, 2nd ed., Chapter 20, equation (20.24), direct stacked-rank
+    uniqueness consequence:
+    the local full-column-rank condition for `[A^T, B^T]^T`, represented by
+    injectivity of `[A; B]`, makes any two exact LSE minimizers equal.
+
+    This is the source uniqueness statement at the stacked-matrix surface.  It
+    does not prove full-row-rank consistency or GQR factor construction. -/
+theorem IsLSEMinimizer.eq_of_lseStackedFullColumnRank
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ}
+    {B : Fin p → Fin n → ℝ} {d : Fin p → ℝ}
+    {x y : Fin n → ℝ}
+    (hstack : LSEStackedFullColumnRank A B)
+    (hx : IsLSEMinimizer A b B d x)
+    (hy : IsLSEMinimizer A b B d y) :
+    x = y :=
+  IsLSEMinimizer.eq_of_nullIntersectionTrivial
+    ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
+    hx hy
+
 /-- Unique-solution form of the limiting weighting theorem after (20.26).
     Under the local uniqueness condition from (20.24), any supplied convergent
     exact weighted-minimizer branch whose weights satisfy `(mu^2)^{-1} -> 0`
@@ -3931,6 +3951,25 @@ theorem GeneralizedQRFactorization.exists_unique_lse_minimizer_of_conditions20_2
   refine ⟨x, hx, ?_⟩
   intro y hy
   exact IsLSEMinimizer.eq_of_nullIntersectionTrivial hnull hy hx
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, supplied-GQR uniqueness
+    consequence in the source stacked-rank wording.
+
+    Supplied GQR data and local full-row-rank consistency give existence, while
+    full column rank of `[A^T, B^T]^T`, represented as injectivity of `[A; B]`,
+    gives uniqueness.  This is still supplied-factor exact algebra; it does not
+    construct the GQR factors or prove computed GQR stability. -/
+theorem GeneralizedQRFactorization.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    {b : Fin (r + q) → ℝ} {d : Fin p → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃! x : Fin (p + q) → ℝ, IsLSEMinimizer A b B d x :=
+  h.exists_unique_lse_minimizer_of_conditions20_24 hB
+    ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9:
     supplied-GQR uniqueness consequence stated at the kernel nonsingularity
