@@ -4545,6 +4545,39 @@ theorem lsScaledAugmentedMatrix_singularPair_balanced_sigma_ratio_le_kappa2_of_a
   rw [abs_of_nonneg hplus_nonneg] at hkappa
   exact le_trans hscalar hkappa
 
+/-- Higham, 2nd ed., Chapter 20, Section 20.5, equations (20.18)-(20.19):
+    spectral upper-bound bridge for the scaled augmented matrix `C(alpha)`.
+    If a complete orthogonal diagonalization of `C(alpha)` is supplied and all
+    displayed eigenvalue magnitudes are bounded by `L`, then `C(alpha)` has
+    finite operator-2 norm at most `L`.  This is the reusable upper-bound half
+    needed by the full condition-number formula; it does not construct the
+    eigenbasis or prove multiplicities. -/
+theorem lsScaledAugmentedMatrix_finiteOpNorm2Le_of_orthogonal_diagonalization
+    {m n : ℕ} {alpha L : ℝ} {A : Fin m → Fin n → ℝ}
+    {Q : Fin (m + n) → Fin (m + n) → ℝ} {d : Fin (m + n) → ℝ}
+    (hdiag : lsScaledAugmentedMatrix alpha A =
+      finiteMatMul Q (finiteMatMul (finiteDiagonal d) (matTranspose Q)))
+    (hQ : IsOrthogonal (m + n) Q) (hL : 0 ≤ L)
+    (hd : ∀ i : Fin (m + n), |d i| ≤ L) :
+    finiteOpNorm2Le (lsScaledAugmentedMatrix alpha A) L :=
+  finiteOpNorm2Le_of_isOrthogonal_diagonalization hdiag hQ hL hd
+
+/-- `opNorm2` corollary of
+    `lsScaledAugmentedMatrix_finiteOpNorm2Le_of_orthogonal_diagonalization`.
+    This is the source-facing norm side required before (20.19)'s upper
+    condition-number inequality can be instantiated. -/
+theorem lsScaledAugmentedMatrix_opNorm2_le_of_orthogonal_diagonalization
+    {m n : ℕ} {alpha L : ℝ} {A : Fin m → Fin n → ℝ}
+    {Q : Fin (m + n) → Fin (m + n) → ℝ} {d : Fin (m + n) → ℝ}
+    (hdiag : lsScaledAugmentedMatrix alpha A =
+      finiteMatMul Q (finiteMatMul (finiteDiagonal d) (matTranspose Q)))
+    (hQ : IsOrthogonal (m + n) Q) (hL : 0 ≤ L)
+    (hd : ∀ i : Fin (m + n), |d i| ≤ L) :
+    opNorm2 (lsScaledAugmentedMatrix alpha A) ≤ L :=
+  opNorm2_le_of_finiteOpNorm2Le (lsScaledAugmentedMatrix alpha A) hL
+    (lsScaledAugmentedMatrix_finiteOpNorm2Le_of_orthogonal_diagonalization
+      hdiag hQ hL hd)
+
 /-- In a nonzero singular-pair certificate for (20.18), the left singular-vector
     side is nonzero whenever the right singular-vector side is nonzero. -/
 theorem lsScaledAugmentedMatrix_singularPair_left_vector_ne_zero {m n : ℕ}

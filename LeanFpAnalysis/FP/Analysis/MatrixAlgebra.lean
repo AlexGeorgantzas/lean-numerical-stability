@@ -3339,6 +3339,14 @@ theorem finiteMatVec_finiteIdMatrix {ι : Type*} [Fintype ι]
   unfold finiteMatVec finiteIdMatrix
   simp [Finset.sum_ite_eq, Finset.mem_univ]
 
+/-- The generic finite diagonal matrix acts by componentwise scaling. -/
+theorem finiteMatVec_finiteDiagonal {ι : Type*} [Fintype ι]
+    [DecidableEq ι] (d x : ι → ℝ) :
+    finiteMatVec (finiteDiagonal d) x = fun i => d i * x i := by
+  ext i
+  unfold finiteMatVec finiteDiagonal
+  simp [Finset.sum_ite_eq, Finset.mem_univ]
+
 /-- Multiplying a finite matrix by a standard basis vector selects a column. -/
 theorem finiteMatVec_finiteBasisVec {ι : Type*} [Fintype ι]
     [DecidableEq ι] (M : ι → ι → ℝ) (j : ι) :
@@ -3397,6 +3405,44 @@ theorem finiteVecNorm2Sq_finiteMatVec_le_finiteFrobNormSq_mul
 def finiteOpNorm2Le {ι : Type*} [Fintype ι]
     (M : ι → ι → ℝ) (c : ℝ) : Prop :=
   ∀ x : ι → ℝ, finiteVecNorm2 (finiteMatVec M x) ≤ c * finiteVecNorm2 x
+
+/-- A finite diagonal matrix has operator-2 norm bounded by any nonnegative
+    bound on the magnitudes of its diagonal entries. -/
+theorem finiteOpNorm2Le_finiteDiagonal {ι : Type*} [Fintype ι]
+    [DecidableEq ι] {d : ι → ℝ} {L : ℝ}
+    (hL : 0 ≤ L) (hd : ∀ i : ι, |d i| ≤ L) :
+    finiteOpNorm2Le (finiteDiagonal d) L := by
+  intro x
+  have hsquare :
+      finiteVecNorm2 (finiteMatVec (finiteDiagonal d) x) ^ 2 ≤
+        (L * finiteVecNorm2 x) ^ 2 := by
+    rw [finiteVecNorm2_sq, finiteMatVec_finiteDiagonal]
+    calc
+      finiteVecNorm2Sq (fun i : ι => d i * x i)
+          = ∑ i : ι, d i ^ 2 * x i ^ 2 := by
+              unfold finiteVecNorm2Sq
+              apply Finset.sum_congr rfl
+              intro i _
+              ring
+      _ ≤ ∑ i : ι, L ^ 2 * x i ^ 2 := by
+              apply Finset.sum_le_sum
+              intro i _
+              have hdi_sq : d i ^ 2 ≤ L ^ 2 :=
+                (sq_le_sq).mpr (by simpa [abs_of_nonneg hL] using hd i)
+              exact mul_le_mul_of_nonneg_right hdi_sq (sq_nonneg (x i))
+      _ = L ^ 2 * finiteVecNorm2Sq x := by
+              unfold finiteVecNorm2Sq
+              rw [Finset.mul_sum]
+      _ = (L * finiteVecNorm2 x) ^ 2 := by
+              rw [show (L * finiteVecNorm2 x) ^ 2 =
+                  L ^ 2 * finiteVecNorm2 x ^ 2 by ring,
+                finiteVecNorm2_sq]
+  have hleft_nonneg : 0 ≤ finiteVecNorm2 (finiteMatVec (finiteDiagonal d) x) :=
+    finiteVecNorm2_nonneg (finiteMatVec (finiteDiagonal d) x)
+  have hright_nonneg : 0 ≤ L * finiteVecNorm2 x :=
+    mul_nonneg hL (finiteVecNorm2_nonneg x)
+  have habs := (sq_le_sq).mp hsquare
+  simpa [abs_of_nonneg hleft_nonneg, abs_of_nonneg hright_nonneg] using habs
 
 /-- Any finite vector-action operator-2 bound dominates the magnitude of every
     witnessed real eigenvalue.  This is the generic norm/eigenpair bridge used
@@ -8290,6 +8336,49 @@ theorem IsOrthogonal.transpose_opNorm2Le_one {n : ℕ}
     {U : Fin n → Fin n → ℝ} (hU : IsOrthogonal n U) :
     opNorm2Le (matTranspose U) 1 :=
   hU.transpose.opNorm2Le_one
+
+/-- The generic finite-vector norm is invariant under multiplication by an
+    orthogonal `Fin n` matrix. -/
+theorem finiteVecNorm2_finiteMatVec_orthogonal {n : ℕ}
+    (U : Fin n → Fin n → ℝ) (x : Fin n → ℝ)
+    (hU : IsOrthogonal n U) :
+    finiteVecNorm2 (finiteMatVec U x) = finiteVecNorm2 x := by
+  simpa [finiteVecNorm2_fin, matMulVec, finiteMatVec] using
+    vecNorm2_orthogonal U x hU
+
+/-- Orthogonal diagonalization gives a finite operator-2 bound from a uniform
+    bound on the diagonal eigenvalue magnitudes.  This is the reusable spectral
+    upper-bound bridge used when a source proof supplies a complete orthogonal
+    eigenbasis. -/
+theorem finiteOpNorm2Le_of_isOrthogonal_diagonalization {n : ℕ}
+    {M Q : Fin n → Fin n → ℝ} {d : Fin n → ℝ} {L : ℝ}
+    (hM : M = finiteMatMul Q (finiteMatMul (finiteDiagonal d) (matTranspose Q)))
+    (hQ : IsOrthogonal n Q) (hL : 0 ≤ L)
+    (hd : ∀ i : Fin n, |d i| ≤ L) :
+    finiteOpNorm2Le M L := by
+  subst M
+  intro x
+  let y : Fin n → ℝ := finiteMatVec (matTranspose Q) x
+  have hdiag : finiteVecNorm2 (finiteMatVec (finiteDiagonal d) y) ≤
+      L * finiteVecNorm2 y :=
+    finiteOpNorm2Le_finiteDiagonal hL hd y
+  have hQt_norm : finiteVecNorm2 y = finiteVecNorm2 x := by
+    simpa [y] using
+      finiteVecNorm2_finiteMatVec_orthogonal (matTranspose Q) x hQ.transpose
+  calc
+    finiteVecNorm2
+        (finiteMatVec
+          (finiteMatMul Q (finiteMatMul (finiteDiagonal d) (matTranspose Q))) x)
+        = finiteVecNorm2
+            (finiteMatVec Q
+              (finiteMatVec (finiteDiagonal d) y)) := by
+            rw [finiteMatVec_finiteMatMul,
+              finiteMatVec_finiteMatMul]
+    _ = finiteVecNorm2 (finiteMatVec (finiteDiagonal d) y) :=
+            finiteVecNorm2_finiteMatVec_orthogonal Q
+              (finiteMatVec (finiteDiagonal d) y) hQ
+    _ ≤ L * finiteVecNorm2 y := hdiag
+    _ = L * finiteVecNorm2 x := by rw [hQt_norm]
 
 /-- Product of orthogonal matrices is orthogonal.
 
