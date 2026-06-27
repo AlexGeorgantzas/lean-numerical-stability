@@ -13258,6 +13258,22 @@ theorem RectLSNormalEquations.iff_isLeastSquaresMinimizer {m n : ℕ}
   · intro h
     exact h.rectLSNormalEquations
 
+/-- Perturbed-data expansion of Higham's signed residual:
+    `(b + Delta b) - (A + Delta A)y = (b - A y) + Delta b - Delta A y`. -/
+theorem lsResidualHigham_perturbed_eq {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ) :
+    lsResidualHigham
+        (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y =
+      fun i => lsResidualHigham A b y i + Deltab i -
+        rectMatMulVec DeltaA y i := by
+  ext i
+  unfold lsResidualHigham rectMatMulVec
+  simp_rw [add_mul]
+  rw [Finset.sum_add_distrib]
+  ring
+
 /-- Higham, 2nd ed., Chapter 20, equations (20.20)-(20.21):
     feasibility for the normwise backward-error problem is equivalent to the
     perturbed rectangular normal equations for the same candidate `y`.  This is
@@ -13350,6 +13366,31 @@ theorem LSNormwiseBackwardErrorFeasible.iff_perturbed_higham_residual_orthogonal
             (fun i => b i + Deltab i) y i = 0 := by
       simpa [hneg] using h j
     exact neg_eq_zero.mp hsum
+
+/-- Source-data expansion of the WKS feasibility condition: a perturbation pair
+    is feasible for (20.20) exactly when the columns of `A + Delta A` are
+    orthogonal to `(b - A y) + Delta b - Delta A y`. -/
+theorem LSNormwiseBackwardErrorFeasible.iff_source_higham_residual_orthogonal
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ) :
+    LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab ↔
+      ∀ j : Fin n,
+        ∑ i : Fin m, (A i j + DeltaA i j) *
+          (lsResidualHigham A b y i + Deltab i -
+            rectMatMulVec DeltaA y i) = 0 := by
+  constructor
+  · intro h j
+    have horth :=
+      (LSNormwiseBackwardErrorFeasible.iff_perturbed_higham_residual_orthogonal
+        A b y DeltaA Deltab).mp h j
+    simpa [lsResidualHigham_perturbed_eq] using horth
+  · intro h
+    apply
+      (LSNormwiseBackwardErrorFeasible.iff_perturbed_higham_residual_orthogonal
+        A b y DeltaA Deltab).mpr
+    intro j
+    have hj := h j
+    simpa [lsResidualHigham_perturbed_eq] using hj
 
 /-- Exact-minimizer specialization of the nonzero-residual left-null
     certificate for (20.21).  If `y` is a least-squares minimizer, then
