@@ -4854,4 +4854,102 @@ theorem GeneralizedQRFactorization.exists_lse_minimizer_of_wide_qr_assoc_case_fu
     ⟨x, hx, _huniq⟩
   exact ⟨x, hx⟩
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, tall associated (20.28)
+    supplied-shape exact method package:
+    supplied exact `Bᵀ` QR data, supplied associated-row shape data for
+    `Uᵀ A Q = [0; L]`, full row rank of `B`, and full column rank of `[A; B]`
+    yield supplied GQR data, unique exact triangular solve coordinates, and a
+    unique exact equality-constrained least-squares minimizer.
+
+    This combines the supplied-shape construction, coordinate uniqueness, and
+    minimizer uniqueness surfaces. It still does not construct `Q`, construct
+    `U`, prove the associated shape record from actual QR factors, or prove
+    computed GQR stability. -/
+theorem GeneralizedQRFactorization.exists_unique_method_solution_of_tall_qr_assoc_case_fullRowRank_stackedFullColumnRank
+    {k p q : ℕ}
+    {A : Fin ((k + p) + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (U : Fin ((k + p) + q) → Fin ((k + p) + q) → ℝ)
+    (R : Fin p → Fin p → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hU : IsOrthogonal ((k + p) + q) U)
+    (hqrB : matMulRectLeft (matTranspose Q)
+        (fun j : Fin (p + q) => fun i : Fin p => B i j) =
+      lsQRTallBlock (k := q) R)
+    (hR : IsUpperTriangular p R)
+    (hCase : GQRAQTallAssocCase k p q
+      (matMulRectLeft (matTranspose U)
+        (matMulRect ((k + p) + q) (p + q) (p + q) A Q)))
+    {b : Fin ((k + p) + q) → ℝ} {d : Fin p → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ h : GeneralizedQRFactorization (k + p) p q A B,
+      h.Q = Q ∧ h.U = U ∧ h.S = matTranspose R ∧
+        h.L22 = gqrAQTallL22FromEq20_28 hCase.L ∧
+      (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+        rectMatMulVec h.S yz.1 = d ∧
+        rectMatMulVec h.L22 yz.2 =
+          (fun i : Fin q =>
+            matMulVec ((k + p) + q) (matTranspose h.U) b (Fin.natAdd (k + p) i) -
+              rectMatMulVec h.L21 yz.1 i) ∧
+        IsLSEMinimizer A b B d
+          (matMulVec (p + q) h.Q (Fin.append yz.1 yz.2))) ∧
+      (∃! x : Fin (p + q) → ℝ, IsLSEMinimizer A b B d x) := by
+  rcases GeneralizedQRFactorization.exists_of_tall_qr_assoc_case
+      (A := A) (B := B) Q U R hQ hU hqrB hR hCase with
+    ⟨h, hQeq, hUeq, hSeq, hL22eq⟩
+  refine ⟨h, hQeq, hUeq, hSeq, hL22eq, ?_, ?_⟩
+  · exact h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack
+  · exact h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, wide associated (20.28)
+    supplied-shape exact method package:
+    supplied exact `Bᵀ` QR data, supplied associated-column shape data for
+    `Uᵀ A Q = [X L]`, full row rank of `B`, and full column rank of `[A; B]`
+    yield supplied GQR data, unique exact triangular solve coordinates, and a
+    unique exact equality-constrained least-squares minimizer.
+
+    This combines the supplied-shape construction, coordinate uniqueness, and
+    minimizer uniqueness surfaces. It still does not construct `Q`, construct
+    `U`, prove the associated shape record from actual QR factors, or prove
+    computed GQR stability. -/
+theorem GeneralizedQRFactorization.exists_unique_method_solution_of_wide_qr_assoc_case_fullRowRank_stackedFullColumnRank
+    {k r q : ℕ}
+    {A : Fin (r + q) → Fin ((k + r) + q) → ℝ}
+    {B : Fin (k + r) → Fin ((k + r) + q) → ℝ}
+    (Q : Fin ((k + r) + q) → Fin ((k + r) + q) → ℝ)
+    (U : Fin (r + q) → Fin (r + q) → ℝ)
+    (R : Fin (k + r) → Fin (k + r) → ℝ)
+    (hQ : IsOrthogonal ((k + r) + q) Q)
+    (hU : IsOrthogonal (r + q) U)
+    (hqrB : matMulRectLeft (matTranspose Q)
+        (fun j : Fin ((k + r) + q) => fun i : Fin (k + r) => B i j) =
+      lsQRTallBlock (k := q) R)
+    (hR : IsUpperTriangular (k + r) R)
+    (hCase : GQRAQWideAssocCase k r q
+      (matMulRectLeft (matTranspose U)
+        (matMulRect (r + q) ((k + r) + q) ((k + r) + q) A Q)))
+    {b : Fin (r + q) → ℝ} {d : Fin (k + r) → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ h : GeneralizedQRFactorization r (k + r) q A B,
+      h.Q = Q ∧ h.U = U ∧ h.S = matTranspose R ∧
+        h.L22 = gqrAQWideL22FromEq20_28 hCase.L ∧
+      (∃! yz : (Fin (k + r) → ℝ) × (Fin q → ℝ),
+        rectMatMulVec h.S yz.1 = d ∧
+        rectMatMulVec h.L22 yz.2 =
+          (fun i : Fin q =>
+            matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i) -
+              rectMatMulVec h.L21 yz.1 i) ∧
+        IsLSEMinimizer A b B d
+          (matMulVec ((k + r) + q) h.Q (Fin.append yz.1 yz.2))) ∧
+      (∃! x : Fin ((k + r) + q) → ℝ, IsLSEMinimizer A b B d x) := by
+  rcases GeneralizedQRFactorization.exists_of_wide_qr_assoc_case
+      (A := A) (B := B) Q U R hQ hU hqrB hR hCase with
+    ⟨h, hQeq, hUeq, hSeq, hL22eq⟩
+  refine ⟨h, hQeq, hUeq, hSeq, hL22eq, ?_, ?_⟩
+  · exact h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack
+  · exact h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack
+
 end LeanFpAnalysis.FP
