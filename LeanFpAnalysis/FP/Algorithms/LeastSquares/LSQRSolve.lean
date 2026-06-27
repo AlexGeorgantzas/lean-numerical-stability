@@ -13154,6 +13154,85 @@ theorem lsNormwiseBackwardErrorFormulaRHS_pos_iff_etaF_pos_and_formulaMatrixRowR
       (lsNormwiseBackwardErrorFormulaRHS_pos_iff_not_isLeastSquaresMinimizer_and_formulaMatrixRowRank_eq_card_of_theta_pos_of_y_ne_zero
         htheta A b hy).mpr ⟨hnot, h.2⟩
 
+/-- Positive-branch certificate form of the Walden--Karlson--Sun formula
+    (20.21): for positive finite `theta`, nonzero `y`, and full row rank of
+    the source block `[A phi(I-r r^+)]`, a supplied WKS lower-bound certificate
+    together with a supplied attaining perturbation proves the printed formula
+    and also records that both sides are positive.
+
+    The theorem deliberately leaves the two WKS proof obligations visible as
+    hypotheses: all feasible perturbations are bounded below by the printed
+    right-hand side, and one feasible perturbation attains it. -/
+theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_formula_certificate
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hnot : ¬ IsLeastSquaresMinimizer A b y)
+    (hrank :
+      lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+        (lsResidualHigham A b y) y = m + 1)
+    (hlower :
+      ∀ (DeltaA : Fin (m + 1) → Fin n → ℝ) (Deltab : Fin (m + 1) → ℝ),
+        LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab →
+          lsNormwiseBackwardErrorFormulaRHS theta A b y ≤
+            lsNormwiseBackwardErrorCostF theta DeltaA Deltab)
+    (hatt :
+      ∃ (DeltaA : Fin (m + 1) → Fin n → ℝ) (Deltab : Fin (m + 1) → ℝ),
+        LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+          lsNormwiseBackwardErrorCostF theta DeltaA Deltab =
+            lsNormwiseBackwardErrorFormulaRHS theta A b y) :
+    lsNormwiseBackwardErrorEtaF theta A b y =
+        lsNormwiseBackwardErrorFormulaRHS theta A b y ∧
+      0 < lsNormwiseBackwardErrorEtaF theta A b y ∧
+      0 < lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  have heq :
+      lsNormwiseBackwardErrorEtaF theta A b y =
+        lsNormwiseBackwardErrorFormulaRHS theta A b y :=
+    lsNormwiseBackwardErrorEtaF_eq_formulaRHS_of_formula_certificate
+      theta A b y hlower hatt
+  have hrhs_pos :
+      0 < lsNormwiseBackwardErrorFormulaRHS theta A b y :=
+    (lsNormwiseBackwardErrorFormulaRHS_pos_iff_not_isLeastSquaresMinimizer_and_formulaMatrixRowRank_eq_card_of_theta_pos_of_y_ne_zero
+      htheta A b hy).mpr ⟨hnot, hrank⟩
+  have heta_pos :
+      0 < lsNormwiseBackwardErrorEtaF theta A b y := by
+    rw [heq]
+    exact hrhs_pos
+  exact ⟨heq, heta_pos, hrhs_pos⟩
+
+/-- Full-left-panel version of the positive-branch WKS certificate handoff:
+    if the original data matrix `A` has full row rank, the WKS source block
+    `[A phi(I-r r^+)]` has full row rank, so the same lower-bound and
+    attainment certificates prove the positive equality in (20.21). -/
+theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_left_panel_positive_formula_certificate
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hA : lsRealRectRowRank A = m + 1)
+    (hnot : ¬ IsLeastSquaresMinimizer A b y)
+    (hlower :
+      ∀ (DeltaA : Fin (m + 1) → Fin n → ℝ) (Deltab : Fin (m + 1) → ℝ),
+        LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab →
+          lsNormwiseBackwardErrorFormulaRHS theta A b y ≤
+            lsNormwiseBackwardErrorCostF theta DeltaA Deltab)
+    (hatt :
+      ∃ (DeltaA : Fin (m + 1) → Fin n → ℝ) (Deltab : Fin (m + 1) → ℝ),
+        LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+          lsNormwiseBackwardErrorCostF theta DeltaA Deltab =
+            lsNormwiseBackwardErrorFormulaRHS theta A b y) :
+    lsNormwiseBackwardErrorEtaF theta A b y =
+        lsNormwiseBackwardErrorFormulaRHS theta A b y ∧
+      0 < lsNormwiseBackwardErrorEtaF theta A b y ∧
+      0 < lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  have hrank :
+      lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+        (lsResidualHigham A b y) y = m + 1 :=
+    lsNormwiseBackwardErrorFormulaMatrixRowRank_eq_card_of_left_panel_rowRank_eq_card
+      theta A (lsResidualHigham A b y) y hA
+  exact
+    lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_formula_certificate
+      htheta A b hy hnot hrank hlower hatt
+
 /-- Any zero-right-hand-side augmented least-squares system gives an exact
     least-squares minimizer, even if the residual vector is supplied abstractly. -/
 theorem LSAugmentedSystem.isLeastSquaresMinimizer_of_zero_rhs {m n : ℕ}
