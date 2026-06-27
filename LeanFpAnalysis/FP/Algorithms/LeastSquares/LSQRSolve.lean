@@ -6970,6 +6970,132 @@ private theorem vecNorm2Sq_pos_of_ne_zero_lsq {m : ℕ} {b : Fin m → ℝ}
   rw [← vecNorm2_sq]
   exact sq_pos_of_pos hbpos
 
+/-- The weighted perturbation block in (20.20) applied to the vector
+    `[theta y; -1]` produces `theta * (DeltaA y - Delta b)`.  This is the
+    Cauchy--Schwarz witness behind the exact-residual branch of the WKS
+    lower-bound proof. -/
+theorem lsNormwiseBackwardErrorWeightedMatrix_mulVec_phi_witness {m n : ℕ}
+    (theta : ℝ) (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (y : Fin n → ℝ) :
+    rectMatMulVec (lsNormwiseBackwardErrorWeightedMatrix theta DeltaA Deltab)
+        (Fin.append (fun j : Fin n => theta * y j) (fun _ : Fin 1 => -1)) =
+      fun i : Fin m => theta * (rectMatMulVec DeltaA y i - Deltab i) := by
+  ext i
+  unfold rectMatMulVec
+  rw [Fin.sum_univ_add]
+  simp [lsNormwiseBackwardErrorWeightedMatrix, Fin.append_left,
+    Fin.append_right]
+  change
+    (∑ x : Fin n, DeltaA i x * (theta * y x)) + -(theta * Deltab i) =
+      theta * ((∑ j : Fin n, DeltaA i j * y j) - Deltab i)
+  calc
+    (∑ x : Fin n, DeltaA i x * (theta * y x)) + -(theta * Deltab i)
+        = theta * (∑ x : Fin n, DeltaA i x * y x) - theta * Deltab i := by
+          congr 1
+          calc
+            ∑ x : Fin n, DeltaA i x * (theta * y x) =
+                ∑ x : Fin n, theta * (DeltaA i x * y x) := by
+                  apply Finset.sum_congr rfl
+                  intro x _
+                  ring
+            _ = theta * (∑ x : Fin n, DeltaA i x * y x) := by
+                  rw [Finset.mul_sum]
+    _ = theta * ((∑ j : Fin n, DeltaA i j * y j) - Deltab i) := by
+          ring
+
+/-- Euclidean norm of the WKS exact-residual witness vector `[theta y; -1]`. -/
+theorem lsNormwiseBackwardErrorWeightedWitness_vecNorm2 {n : ℕ}
+    (theta : ℝ) (y : Fin n → ℝ) :
+    vecNorm2
+        (Fin.append (fun j : Fin n => theta * y j) (fun _ : Fin 1 => -1)) =
+      Real.sqrt (1 + theta ^ 2 * vecNorm2Sq y) := by
+  unfold vecNorm2 vecNorm2Sq
+  congr 1
+  rw [Fin.sum_univ_add]
+  simp [Fin.append_left, Fin.append_right]
+  rw [Finset.mul_sum]
+  ring_nf
+
+/-- Positive-`y` simplification of the scalar branch
+    `phi = sqrt(mu) ||r|| / ||y||` from (20.21). -/
+theorem lsNormwiseBackwardErrorPhi_eq_theta_mul_norm_div_sqrt_den
+    {m n : ℕ} {theta : ℝ} (htheta : 0 ≤ theta)
+    {y : Fin n → ℝ} (hy : y ≠ 0) (r : Fin m → ℝ) :
+    lsNormwiseBackwardErrorPhi theta r y =
+      theta * vecNorm2 r /
+        Real.sqrt (1 + theta ^ 2 * vecNorm2Sq y) := by
+  let den : ℝ := 1 + theta ^ 2 * vecNorm2Sq y
+  have hden_pos : 0 < den := by
+    simpa [den] using lsNormwiseBackwardErrorMu_den_pos theta y
+  have hsqrt_pos : 0 < Real.sqrt den := Real.sqrt_pos.mpr hden_pos
+  have hy_norm_pos : 0 < vecNorm2 y := vecNorm2_pos_of_ne_zero_lsq hy
+  have hsqrt_mu :
+      Real.sqrt (lsNormwiseBackwardErrorMu theta y) =
+        theta * vecNorm2 y / Real.sqrt den := by
+    have hden_sq_pos : 0 < 1 + theta ^ 2 * vecNorm2 y ^ 2 := by
+      simpa [den, ← vecNorm2_sq y] using hden_pos
+    have hsq :
+        lsNormwiseBackwardErrorMu theta y =
+          (theta * vecNorm2 y / Real.sqrt den) ^ 2 := by
+      unfold lsNormwiseBackwardErrorMu den
+      rw [← vecNorm2_sq y, div_pow, mul_pow,
+        Real.sq_sqrt (le_of_lt hden_sq_pos)]
+    rw [hsq, Real.sqrt_sq_eq_abs]
+    have hnonneg : 0 ≤ theta * vecNorm2 y / Real.sqrt den :=
+      div_nonneg (mul_nonneg htheta (vecNorm2_nonneg y))
+        (le_of_lt hsqrt_pos)
+    exact abs_of_nonneg hnonneg
+  unfold lsNormwiseBackwardErrorPhi
+  rw [hsqrt_mu]
+  calc
+    (theta * vecNorm2 y / Real.sqrt den) * vecNorm2 r / vecNorm2 y =
+        theta * vecNorm2 r / Real.sqrt den := by
+          field_simp [ne_of_gt hy_norm_pos]
+    _ = theta * vecNorm2 r /
+        Real.sqrt (1 + theta ^ 2 * vecNorm2Sq y) := by
+          simp [den]
+
+/-- Exact-residual lower-bound branch for (20.21): if the source residual is
+    represented as `DeltaA y - Delta b`, then the scalar branch `phi` is no
+    larger than the weighted perturbation cost from (20.20). -/
+theorem lsNormwiseBackwardErrorPhi_le_costF_of_residual_eq_deltaA_y_sub_deltab
+    {m n : ℕ} {theta : ℝ} (htheta : 0 ≤ theta)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (r : Fin m → ℝ) (DeltaA : Fin m → Fin n → ℝ)
+    (Deltab : Fin m → ℝ)
+    (hr : r = fun i : Fin m => rectMatMulVec DeltaA y i - Deltab i) :
+    lsNormwiseBackwardErrorPhi theta r y ≤
+      lsNormwiseBackwardErrorCostF theta DeltaA Deltab := by
+  let w : Fin (n + 1) → ℝ :=
+    Fin.append (fun j : Fin n => theta * y j) (fun _ : Fin 1 => -1)
+  let W : Fin m → Fin (n + 1) → ℝ :=
+    lsNormwiseBackwardErrorWeightedMatrix theta DeltaA Deltab
+  have hWw :
+      rectMatMulVec W w = fun i : Fin m => theta * r i := by
+    rw [show W = lsNormwiseBackwardErrorWeightedMatrix theta DeltaA Deltab by rfl]
+    rw [show w =
+        Fin.append (fun j : Fin n => theta * y j) (fun _ : Fin 1 => -1) by rfl]
+    rw [lsNormwiseBackwardErrorWeightedMatrix_mulVec_phi_witness]
+    ext i
+    rw [hr]
+  have hw :
+      vecNorm2 w = Real.sqrt (1 + theta ^ 2 * vecNorm2Sq y) := by
+    simpa [w] using lsNormwiseBackwardErrorWeightedWitness_vecNorm2 theta y
+  have hbound :=
+    vecNorm2_rectMatMulVec_le_frobNormRect_mul W w
+  have hscaled :
+      theta * vecNorm2 r ≤
+        lsNormwiseBackwardErrorCostF theta DeltaA Deltab *
+          Real.sqrt (1 + theta ^ 2 * vecNorm2Sq y) := by
+    simpa [W, w, hWw, hw, lsNormwiseBackwardErrorCostF, vecNorm2_smul,
+      abs_of_nonneg htheta] using hbound
+  have hsqrt_pos :
+      0 < Real.sqrt (1 + theta ^ 2 * vecNorm2Sq y) := by
+    exact Real.sqrt_pos.mpr (lsNormwiseBackwardErrorMu_den_pos theta y)
+  rw [lsNormwiseBackwardErrorPhi_eq_theta_mul_norm_div_sqrt_den
+    htheta hy r]
+  exact (div_le_iff₀ hsqrt_pos).mpr hscaled
+
 /-- Continuity of the weighted Frobenius perturbation cost from (20.20) as a
     function of the perturbation pair.  Together with feasible-graph closedness
     and the entrywise bounded-sublevel lemmas, this is a local ingredient for
@@ -9425,6 +9551,33 @@ theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_of_lsResidualHigham_eq_zero
     lsNormwiseBackwardErrorFormulaRHS_eq_zero_of_lsResidualHigham_eq_zero
       theta A b y hres
   rw [heta, hrhs]
+
+/-- Exact-residual branch of the WKS lower-bound side: if a perturbation makes
+    the expanded residual `p = (b-Ay) + Delta b - Delta A y` vanish, then its
+    weighted cost is at least the printed right-hand side in (20.21).  This
+    closes the `p = 0` branch of the lower-bound route; the nonzero branch
+    still requires the row-side spectral inequality for the source block. -/
+theorem lsNormwiseBackwardErrorFormulaRHS_le_costF_of_source_residual_eq_deltaA_y_sub_deltab
+    {m n : ℕ} {theta : ℝ} (htheta : 0 ≤ theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (DeltaA : Fin (m + 1) → Fin n → ℝ)
+    (Deltab : Fin (m + 1) → ℝ)
+    (hres :
+      lsResidualHigham A b y =
+        fun i : Fin (m + 1) => rectMatMulVec DeltaA y i - Deltab i) :
+    lsNormwiseBackwardErrorFormulaRHS theta A b y ≤
+      lsNormwiseBackwardErrorCostF theta DeltaA Deltab := by
+  calc
+    lsNormwiseBackwardErrorFormulaRHS theta A b y =
+        lsNormwiseBackwardErrorFormulaValue theta A (lsResidualHigham A b y) y := by
+          rfl
+    _ ≤ lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y :=
+        lsNormwiseBackwardErrorFormulaValue_le_phi theta A
+          (lsResidualHigham A b y) y
+    _ ≤ lsNormwiseBackwardErrorCostF theta DeltaA Deltab :=
+        lsNormwiseBackwardErrorPhi_le_costF_of_residual_eq_deltaA_y_sub_deltab
+          htheta hy (lsResidualHigham A b y) DeltaA Deltab hres
 
 /-- Lower-bound handoff for the alternative formula (20.21): once every
     feasible perturbation in (20.20) is known to have cost at least the printed
