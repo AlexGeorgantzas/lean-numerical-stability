@@ -3896,6 +3896,94 @@ theorem GeneralizedQRFactorization.exists_unique_lse_minimizer_of_s_l22_bijectiv
   exact h.exists_unique_lse_minimizer_of_triangular_nonsingular
     hdiag.1 hdiag.2
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, tall supplied-shape
+    nonsingular-block case:
+    a supplied exact QR identity for `Bᵀ`, a supplied associated-row
+    (20.28) shape `Uᵀ A Q = [0; L]`, and nonzero diagonals of the QR block
+    `R` and the trailing `L22` block imply a unique exact equality-constrained
+    least-squares minimizer.
+
+    This composes the supplied-shape GQR construction with the supplied-GQR
+    triangular nonsingularity theorem. It still does not construct the QR/GQR
+    factors or prove floating-point GQR stability. -/
+theorem GeneralizedQRFactorization.exists_unique_lse_minimizer_of_tall_qr_assoc_case_diag_ne_zero
+    {k p q : ℕ}
+    {A : Fin ((k + p) + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (U : Fin ((k + p) + q) → Fin ((k + p) + q) → ℝ)
+    (R : Fin p → Fin p → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hU : IsOrthogonal ((k + p) + q) U)
+    (hqrB : matMulRectLeft (matTranspose Q)
+        (fun j : Fin (p + q) => fun i : Fin p => B i j) =
+      lsQRTallBlock (k := q) R)
+    (hR : IsUpperTriangular p R)
+    (hRdiag : ∀ i : Fin p, R i i ≠ 0)
+    (hCase : GQRAQTallAssocCase k p q
+      (matMulRectLeft (matTranspose U)
+        (matMulRect ((k + p) + q) (p + q) (p + q) A Q)))
+    (hLdiag : ∀ i : Fin q,
+      hCase.L (Fin.natAdd p i) (Fin.natAdd p i) ≠ 0)
+    {b : Fin ((k + p) + q) → ℝ} {d : Fin p → ℝ} :
+    ∃! x : Fin (p + q) → ℝ, IsLSEMinimizer A b B d x := by
+  rcases GeneralizedQRFactorization.exists_of_tall_qr_assoc_case
+      (A := A) (B := B) Q U R hQ hU hqrB hR hCase with
+    ⟨h, _hQ, _hU, hS, hL22⟩
+  exact h.exists_unique_lse_minimizer_of_triangular_nonsingular
+    (by
+      intro i
+      rw [hS]
+      simpa [matTranspose] using hRdiag i)
+    (by
+      intro i
+      rw [hL22]
+      simpa [gqrAQTallL22FromEq20_28] using hLdiag i)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, wide supplied-shape
+    nonsingular-block case:
+    a supplied exact QR identity for `Bᵀ`, a supplied associated-column
+    (20.28) shape `Uᵀ A Q = [X L]`, and nonzero diagonals of the QR block
+    `R` and the trailing `L22` block imply a unique exact equality-constrained
+    least-squares minimizer.
+
+    This composes the supplied-shape GQR construction with the supplied-GQR
+    triangular nonsingularity theorem. It still does not construct the QR/GQR
+    factors or prove floating-point GQR stability. -/
+theorem GeneralizedQRFactorization.exists_unique_lse_minimizer_of_wide_qr_assoc_case_diag_ne_zero
+    {k r q : ℕ}
+    {A : Fin (r + q) → Fin ((k + r) + q) → ℝ}
+    {B : Fin (k + r) → Fin ((k + r) + q) → ℝ}
+    (Q : Fin ((k + r) + q) → Fin ((k + r) + q) → ℝ)
+    (U : Fin (r + q) → Fin (r + q) → ℝ)
+    (R : Fin (k + r) → Fin (k + r) → ℝ)
+    (hQ : IsOrthogonal ((k + r) + q) Q)
+    (hU : IsOrthogonal (r + q) U)
+    (hqrB : matMulRectLeft (matTranspose Q)
+        (fun j : Fin ((k + r) + q) => fun i : Fin (k + r) => B i j) =
+      lsQRTallBlock (k := q) R)
+    (hR : IsUpperTriangular (k + r) R)
+    (hRdiag : ∀ i : Fin (k + r), R i i ≠ 0)
+    (hCase : GQRAQWideAssocCase k r q
+      (matMulRectLeft (matTranspose U)
+        (matMulRect (r + q) ((k + r) + q) ((k + r) + q) A Q)))
+    (hLdiag : ∀ i : Fin q,
+      hCase.L (Fin.natAdd r i) (Fin.natAdd r i) ≠ 0)
+    {b : Fin (r + q) → ℝ} {d : Fin (k + r) → ℝ} :
+    ∃! x : Fin ((k + r) + q) → ℝ, IsLSEMinimizer A b B d x := by
+  rcases GeneralizedQRFactorization.exists_of_wide_qr_assoc_case
+      (A := A) (B := B) Q U R hQ hU hqrB hR hCase with
+    ⟨h, _hQ, _hU, hS, hL22⟩
+  exact h.exists_unique_lse_minimizer_of_triangular_nonsingular
+    (by
+      intro i
+      rw [hS]
+      simpa [matTranspose] using hRdiag i)
+    (by
+      intro i
+      rw [hL22]
+      simpa [gqrAQWideL22FromEq20_28] using hLdiag i)
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, tall supplied-shape case:
     a supplied exact QR identity for `Bᵀ`, a supplied associated-row
     (20.28) shape `Uᵀ A Q = [0; L]`, and the local assumptions (20.24)
