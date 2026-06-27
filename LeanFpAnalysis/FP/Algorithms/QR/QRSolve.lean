@@ -1345,6 +1345,50 @@ theorem two_mul_householderQRRhsPanelGammaClosedGrowthFactor_not_le_panel_steps
       (householderQRRhsPanelGammaClosedGrowthFactor m p) (by norm_num)
   exact Nat.not_le_of_gt (lt_of_lt_of_le hfactor_lt hfactor_le_two)
 
+/-- The accumulated conservative RHS gamma index is strictly larger than the
+    printed panel gamma radius whenever the row dimension and panel step count
+    are nonzero.
+
+    This is the index-level version of the factor obstruction: the current
+    concrete RHS recursion cannot identify
+    `householderQRRhsPanelGammaClosedGrowthIndex m p` with the printed
+    `p * householderConstructApplyGammaIndex m` radius. -/
+theorem householderQRRhsPanelGammaClosedGrowthIndex_gt_printedIndex
+    {m p : ℕ} (hm : 0 < m) (hp : 0 < p) :
+    p * householderConstructApplyGammaIndex m <
+      householderQRRhsPanelGammaClosedGrowthIndex m p := by
+  let F : ℕ := householderQRRhsPanelGammaClosedGrowthFactor m p
+  let Kp : ℕ := p * householderConstructApplyGammaIndex m
+  have hF_gt_p : p < F := by
+    simpa [F] using
+      householderQRRhsPanelGammaClosedGrowthFactor_gt_panel_steps
+        (m := m) (p := p) hm
+  have hF_gt_one : 1 < F :=
+    lt_of_le_of_lt (Nat.succ_le_of_lt hp) hF_gt_p
+  have hK_pos : 0 < householderConstructApplyGammaIndex m := by
+    dsimp [householderConstructApplyGammaIndex]
+    omega
+  have hKp_pos : 0 < Kp := by
+    exact Nat.mul_pos hp hK_pos
+  have hmul : Kp < F * Kp := by
+    simpa using Nat.mul_lt_mul_of_pos_right hF_gt_one hKp_pos
+  have hidx :
+      householderQRRhsPanelGammaClosedGrowthIndex m p = F * Kp := by
+    simpa [F, Kp] using
+      householderQRRhsPanelGammaClosedGrowthIndex_eq_factor_mul_printedIndex
+        m p
+  simpa [Kp, hidx]
+    using hmul
+
+/-- Negated index-level comparison for the failed printed-radius route. -/
+theorem householderQRRhsPanelGammaClosedGrowthIndex_not_le_printedIndex
+    {m p : ℕ} (hm : 0 < m) (hp : 0 < p) :
+    ¬ householderQRRhsPanelGammaClosedGrowthIndex m p ≤
+      p * householderConstructApplyGammaIndex m := by
+  exact Nat.not_le_of_gt
+    (householderQRRhsPanelGammaClosedGrowthIndex_gt_printedIndex
+      (m := m) (p := p) hm hp)
+
 /-- Under the standard half-radius guard, the conservative single-gamma RHS
     index is bounded by an explicit dimension-only multiple of the printed
     panel gamma radius.
