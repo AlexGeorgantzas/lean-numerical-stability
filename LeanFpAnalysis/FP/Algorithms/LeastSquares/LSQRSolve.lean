@@ -13615,6 +13615,38 @@ theorem LSNormwiseBackwardErrorFeasible.formulaMatrix_transpose_source_residual_
             lsNormwiseBackwardErrorFormulaMatrix, Fin.append_left]
     _ = -∑ i : Fin (m + 1), DeltaA i j * p i := hleft
 
+/-- Frobenius upper bound for the left perturbation block in the WKS
+    source-block transpose action. -/
+theorem LSNormwiseBackwardErrorFeasible.formulaMatrix_transpose_source_residual_left_vecNorm2_le
+    {m n : ℕ} (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (DeltaA : Fin (m + 1) → Fin n → ℝ)
+    (Deltab : Fin (m + 1) → ℝ) :
+    vecNorm2
+        (fun j : Fin n =>
+          -∑ i : Fin (m + 1), DeltaA i j *
+            (lsResidualHigham A b y i + Deltab i -
+              rectMatMulVec DeltaA y i)) ≤
+      frobNormRect DeltaA *
+        vecNorm2
+          (fun i : Fin (m + 1) =>
+            lsResidualHigham A b y i + Deltab i -
+              rectMatMulVec DeltaA y i) := by
+  let p : Fin (m + 1) → ℝ :=
+    fun i => lsResidualHigham A b y i + Deltab i - rectMatMulVec DeltaA y i
+  have hbound :=
+    vecNorm2_rectMatMulVec_finiteTranspose_le_frobNormRect_mul DeltaA p
+  have hleft :
+      (fun j : Fin n => -∑ i : Fin (m + 1), DeltaA i j * p i) =
+        fun j : Fin n => -rectMatMulVec (finiteTranspose DeltaA) p j := by
+    ext j
+    simp [rectMatMulVec, finiteTranspose]
+  change
+    vecNorm2 (fun j : Fin n => -∑ i : Fin (m + 1), DeltaA i j * p i) ≤
+      frobNormRect DeltaA * vecNorm2 p
+  rw [hleft, vecNorm2_neg]
+  exact hbound
+
 /-- Right projector block of the transposed WKS source matrix on a source-form
     perturbed residual.  Since `(I-r r^+)^T r = 0`, the right block sees only
     the perturbation residual `Delta b - Delta A y`. -/

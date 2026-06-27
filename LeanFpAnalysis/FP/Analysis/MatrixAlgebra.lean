@@ -3175,6 +3175,20 @@ noncomputable def finiteTranspose {ι κ : Type*} (M : ι → κ → ℝ) :
     κ → ι → ℝ :=
   fun j i => M i j
 
+/-- Rectangular squared Frobenius norm is invariant under finite transpose. -/
+theorem frobNormSqRect_finiteTranspose {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) :
+    frobNormSqRect (finiteTranspose A) = frobNormSqRect A := by
+  unfold frobNormSqRect finiteTranspose
+  rw [Finset.sum_comm]
+
+/-- Rectangular Frobenius norm is invariant under finite transpose. -/
+theorem frobNormRect_finiteTranspose {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) :
+    frobNormRect (finiteTranspose A) = frobNormRect A := by
+  unfold frobNormRect
+  rw [frobNormSqRect_finiteTranspose]
+
 /-- Transposing a right inverse gives a left inverse of the transposed matrix. -/
 theorem isLeftInverse_finiteTranspose_of_isRightInverse {n : ℕ}
     {T T_inv : Fin n → Fin n → ℝ}
@@ -6287,6 +6301,15 @@ theorem vecNorm2_rectMatMulVec_le_frobNormRect_mul {m n : ℕ}
   unfold vecNorm2 frobNormRect
   rw [← Real.sqrt_mul (frobNormSqRect_nonneg M)]
   exact Real.sqrt_le_sqrt (vecNorm2Sq_rectMatMulVec_le_frobNormSqRect_mul M x)
+
+/-- Matrix-vector multiplication by a finite transpose is bounded by the
+    original rectangular Frobenius norm. -/
+theorem vecNorm2_rectMatMulVec_finiteTranspose_le_frobNormRect_mul {m n : ℕ}
+    (M : Fin m → Fin n → ℝ) (x : Fin m → ℝ) :
+    vecNorm2 (rectMatMulVec (finiteTranspose M) x) ≤
+      frobNormRect M * vecNorm2 x := by
+  simpa [frobNormRect_finiteTranspose] using
+    (vecNorm2_rectMatMulVec_le_frobNormRect_mul (finiteTranspose M) x)
 
 /-- Triangle inequality for rectangular matrix-vector products:
     `|(Ax)_i| <= ∑_j |A_ij| |x_j|`. -/
