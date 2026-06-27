@@ -12,6 +12,812 @@ end-to-end stability rebuild is tagged as
 `main-stable-before-end-to-end-20260527` at
 `d5c0fa90c69c36f794f176c96f2dd4d293bb5aa3`.
 
+## Current Chapter 13 Work
+
+- On 2026-06-19, split-3 Chapter 13 formalization was started from
+  `References/1.9780898718027.ch13.pdf`.
+- The governing skill is `.codex/skills/higham-chapter-formalization/SKILL.md`.
+- Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
+- Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
+- Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- Existing `BlockLU.lean` was already Chapter-13-shaped but mislabeled as
+  Chapter 12. Its labels were corrected to Higham Chapter 13, and it now exposes
+  source-facing first-order bound vocabulary for equations (13.4)--(13.6) and
+  (13.14)--(13.15), gamma forms and the row/transpose bridge for equation
+  (13.17), block-count recurrences for Theorem 13.5, exact Matrix adapters for
+  equations (13.1)--(13.3), the Algorithm 13.1 Schur-complement prose form,
+  the §13.1 block-LU-to-standard-LU product bridge
+  `higham13_block_lu_to_standard_lu_product`, exact output-check theorems for
+  Algorithms 13.1/13.3/13.4, exact partition-display wrappers
+  `higham13_eq13_20_partition` and `higham13_eq13_26_partition`, scalar
+  consequences for equations (13.22) and (13.25), the Eq.13.19 norm-comparison
+  package `BlockNormComparison13_19`, the Eq.13.18 one-step Schur-column
+  proof-chain declarations `higham13_eq13_18_min_lower_bound`,
+  `higham13_eq13_18_scalar_column_chain`, and
+  `higham13_eq13_18_schur_column_dominance`, the row one-step inheritance theorem
+  `block_diag_dom_schur_inherit_row`, the Theorem 13.8 one-step `2 * max`
+  block-bound corollary `higham13_theorem13_8_one_step_block_bound`, the
+  Theorem 13.8 active-stage induction layer
+  `SchurStageActiveColumnStep13_8` /
+  `higham13_theorem13_8_active_column_bound_of_steps` /
+  `higham13_theorem13_8_active_stage_block_bound` /
+  `higham13_theorem13_8_active_stage_block_bound_of_steps`, the staged Theorem
+  13.8 column-invariant wrapper `SchurStageColumnBound13_8` /
+  `higham13_theorem13_8_stage_block_bound`, the SPD-section symmetric partition
+  wrapper `higham13_spd_symmetric_partition_isSymm`, the SPD Schur
+  positive-definiteness dependencies `higham13_spd_leadingBlock_posDef` /
+  `higham13_spd_schurComplement_posDef` /
+  `higham13_spd_schurComplement_posDef_of_full` /
+  `higham13_spd_schurComplement_source_posDef`, the
+  flat-SPD block-LU existence route `blockMatrixFlat` /
+  `leadingBlockPrefix13_2_posDef_flat_of_posDef_flat` /
+  `LeadingPrincipalBlockNonsingular13_2.of_posDef_flat` /
+  `BlockLUFactSpec.existsUnique_of_posDef_flat`, the row block diagonal
+  dominance large-`L` scalar-block family
+  `higham13_rowdom_largeL_arbitrarily_large`, the Problem 13.1 block-tridiagonal
+  local norm-bound theorems `higham13_problem13_1_column_step_bounds` and
+  `higham13_problem13_1_row_step_bounds`, the exact scalar-block Problem 13.2
+  incomparability witnesses `higham13_problem13_2_incomparability`, the
+  exact scalar-block Problem 13.3 counterexample
+  `higham13_problem13_3_counterexample`, the Problem 13.5 point-column
+  inverse-action theorem `higham13_problem13_5_oneNormRect_bound`, and exact
+  Matrix/Schur-complement adapters for Problems 13.7--13.9.
+- Theorem 13.7 leading-prefix dominance inheritance is now closed as a genuine
+  dependency: `leadingBlockPrefixIndex13_7`, `leadingBlockPrefixNorm13_7`,
+  `leadingBlockPrefixInvDiagBound13_7`,
+  `isBlockDiagDomCol_leadingBlockPrefix13_7`, and
+  `isBlockDiagDomRow_leadingBlockPrefix13_7` prove that row/column block
+  diagonal dominance restricts to every leading block prefix under nonnegative
+  block norms.  This supports the eventual Theorem 13.2 nonsingularity route
+  but does not close full Theorem 13.7; the concrete one-sided active
+  diagonal-lower certificate or equivalent pivot product bound, diagonal-update
+  equality facts, and the BDD-to-nonsingularity theorem remain open.
+- Theorem 13.5 has scalar recurrence infrastructure:
+  `partitioned_lu_backward_error_step` proves the one-step max aggregation from
+  per-block source inequalities, while `higham13_theorem13_5_recurrence_step`
+  instantiates that aggregation with the actual `blockErrorDelta`/`blockErrorTheta`
+  recurrences. `higham13_theorem13_5_recurrence_step_firstOrder` lifts the same
+  recurrence step to explicit `FirstOrderLe`/`+ O(u^2)` witnesses.
+  `blockErrorTheta_le_cubic_of_quadratic_constants`,
+  `higham13_theta_isBigO_cubic_of_quadratic_constants`, and
+  `higham13_theta_conventional_isBigO_cubic` close the p.250 recurrence-only
+  conventional `θ(n,r)=O(n^3)` consequence using Mathlib `IsBigO` with the
+  shifted cubic `(n+1)^3`. This still does not close the full computed-matrix
+  theorem or instantiate the individual matrix proof-step equations
+  (13.8)--(13.13).
+- Theorem 13.5 model specs now include exact matrix residual fields:
+  `MatMulFirstOrderSpec` for (13.4), `TriangularSolveFirstOrderSpec` for the
+  left-solve form of (13.5), `RightTriangularSolveFirstOrderSpec` for the
+  right/transpose solve orientation used in (13.9), `LocalLUFirstOrderSpec` for
+  (13.6), `SubtractionFirstOrderSpec` for (13.10), and
+  `PartitionedLUFirstOrderSpec` for the recursive induction hypothesis
+  (13.12a)--(13.12b). Source-facing wrappers
+  `higham13_eq13_4_from_matmul_spec`, `higham13_eq13_5_from_triangular_solve_spec`,
+  `higham13_eq13_6_from_local_lu_spec`, `higham13_eq13_8_from_triangular_solve_spec`,
+  `higham13_eq13_9_from_right_triangular_solve_spec`, and
+  `higham13_eq13_10_from_subtraction_spec`, and
+  `higham13_eq13_12_from_induction_spec` unpack the exact residual equations and
+  first-order bounds. They are model/spec wrappers, not concrete BLAS proofs.
+- The p.248 conventional constants row is now closed at the concrete kernel
+  scope in `BlockLU.lean`. `higham13_conventional_matmul_spec_c1_maxEntry`
+  uses `fl_matMul`, the existing componentwise `gamma fp n` error bound, the
+  rectangular entrywise norm `maxEntryNormRect`, and
+  `gamma_eq_linear_plus_quadratic_remainder` to prove the source constant
+  `c1(m,n,p) = n^2` for Eq.13.4. For Eq.13.5,
+  `higham13_conventional_backSub_spec_c2_maxEntry` and
+  `higham13_conventional_forwardSub_spec_c2_maxEntry` instantiate the generic
+  bridge `higham13_triangular_solve_c2_maxEntry_from_componentwise_backward`
+  with the existing `backSub_backward_error` and `forwardSub_backward_error`
+  kernels to prove `c2(m,p) = m^2` for columnwise upper/lower triangular
+  substitution in the left-solve residual form `T Xhat = B + DeltaB`.
+- The Eq.13.11 trailing Schur proof step now has local infrastructure:
+  `higham13_eq13_11a_subtraction_error` proves the exact additive identity from
+  the computed product/subtraction equations, and
+  `higham13_eq13_11b_trailing_schur_error_firstOrder` proves the scalar
+  first-order norm bound with an explicit second-order witness.
+  `higham13_eq13_11_from_matmul_subtraction_specs` now combines those two
+  pieces directly from the product model (13.4) and subtraction model (13.10),
+  retaining the explicit norm aggregation hypotheses for `ΔS` and `Ĉ`.
+  `higham13_eq13_13_trailing_block_identity` proves the exact additive trailing
+  block identity, and `higham13_eq13_13_trailing_block_error_firstOrder` combines
+  the local `ΔS` and expanded recursive `ΔŜ` bounds into the displayed
+  trailing-block scalar first-order bound.
+  `higham13_eq13_13_from_matmul_subtraction_induction_specs` now combines the
+  Eq.13.11 product/subtraction spec bridge with the recursive induction spec to
+  produce the exact trailing-block residual and scalar first-order bound under
+  the still-explicit norm aggregation and expanded induction-bound hypotheses.
+  These are still proof-step lemmas, not a closure of the full Theorem 13.5
+  computed-matrix path.
+- `higham13_theorem13_5_block_residual_identity` proves the exact assembled
+  block residual identity `Lhat * Uhat = A + DeltaA` from the four block residual
+  equations (13.6), (13.8), (13.9), and (13.13). It is exact algebra; the global
+  norm bound and recursive computed-factor theorem remain separate obligations.
+  `higham13_theorem13_5_block_residual_identity_from_specs` instantiates the
+  first three residual equations directly from `LocalLUFirstOrderSpec`,
+  `TriangularSolveFirstOrderSpec`, and `RightTriangularSolveFirstOrderSpec`.
+- `higham13_theorem13_5_residual_and_recurrence_from_specs` packages the two
+  currently formalized Theorem 13.5 proof-step halves: it proves both the exact
+  assembled block residual identity and the scalar `FirstOrderLe` recurrence
+  conclusion from global-norm-majorant local specs plus an explicit
+  trailing-block first-order premise. It remains an integration proof step, not
+  the full computed partitioned-LU theorem.
+- `higham13_theorem13_5_partitioned_step_spec_from_specs` repackages the same
+  proof as the next `PartitionedLUFirstOrderSpec` over the assembled
+  `Matrix.fromBlocks` factors. It is the spec-shaped induction step and still
+  leaves the actual computed factor sequence/global norm instantiation open.
+- Theorem 13.6 model specs now include exact residual fields for the two source
+  assumptions: `BlockSolveFirstOrderSpec` for (13.14) and
+  `DiagonalBlockSolveFirstOrderSpec` for (13.15). Wrappers
+  `higham13_eq13_14_from_block_solve_spec` and
+  `higham13_eq13_15_from_diagonal_block_solve_spec` unpack the residual equations
+  and first-order bounds. They are model/spec wrappers; the cited
+  Demmel--Higham--Schreiber theorem remains open.
+- Algorithm 13.3 implementation paths now have local source-facing specs:
+  `Algorithm13_3Implementation1LocalSpec` packages the Implementation 1 path
+  through Eq.13.14 and Eq.13.15, with
+  `higham13_algorithm13_3_implementation1_eq13_14_15_from_spec` unpacking both
+  source equations. `Algorithm13_3Implementation2ExplicitInverseSpec` and
+  `higham13_algorithm13_3_implementation2_explicit_inverse_equations` record
+  the explicit-inverse multiplication path. The p.251 scalar condition-number
+  multiplier consequence is
+  `higham13_algorithm13_3_implementation2_eq13_16_firstOrder_multiplier`: from
+  supplied factorization/solve `FirstOrderLe` bounds whose first-order terms
+  are already multiplied by a common `kappaMax` corresponding to
+  `max_i kappa(Uhat_ii)`, it derives the combined (13.16) bound with that same
+  multiplier. It does not prove the concrete exact-inverse local conditioned
+  bounds from an inverse computation.
+- `block_lu_solve_backward_error_firstOrder` is the explicit `FirstOrderLe`
+  version of the existing Theorem 13.6 scalar max-bound adapter. It aggregates
+  supplied factorization and solve first-order bounds, but it is not the omitted
+  implementation-facing Theorem 13.6 proof.
+- Problem 13.6 has an exact single-right-hand-side perturbation construction:
+  `higham13_problem13_6_residualRankOneDelta` defines the rank-one matrix
+  that maps a nonzero component of `xhat` to a supplied solve residual,
+  `higham13_problem13_6_residualRankOneDelta_mulVec` proves that action, and
+  `higham13_problem13_6_single_rhs_backward_error_identity` /
+  `higham13_problem13_6_single_rhs_backward_error_exists` assemble
+  `(A + DeltaA) *ᵥ xhat = b` from `Lhat * Uhat = A + DeltaFact` and
+  `(Lhat * Uhat) *ᵥ xhat = b + rsolve`, under the necessary condition that
+  `xhat` has a nonzero component. The Frobenius-norm route reuses
+  `residualRankOnePerturbation`: `higham13_problem13_6_residualRankOnePerturbation_frobNorm`,
+  `higham13_problem13_6_single_rhs_backward_error_frobenius_identity`,
+  `higham13_problem13_6_residualRankOnePerturbation_frobNorm_firstOrder`, and
+  `higham13_problem13_6_single_rhs_backward_error_frobenius_firstOrder` prove
+  the exact single-RHS backward equation and first-order Frobenius aggregation
+  from supplied factorization and triangular-solve residual budgets.
+  `higham13_problem13_6_residualRankOnePerturbation_opNorm2Le` and
+  `higham13_problem13_6_residualRankOnePerturbation_opNorm2Le_firstOrder` give
+  the corresponding operator 2-norm certificate and first-order operator-bound
+  bridge for the same residual correction. The fully implementation-facing
+  triangular-solve residual proof remains open.
+- Validation note for the Problem 13.6 single-RHS operator-norm bridge: focused
+  Lean, focused `BlockLU` build, and lookup with `lake env lean -s 65536
+  examples/LibraryLookup.lean` passed after adding
+  `higham13_problem13_6_residualRankOnePerturbation_opNorm2Le` and
+  `higham13_problem13_6_residualRankOnePerturbation_opNorm2Le_firstOrder`.
+  The first axiom-audit attempt raced the rebuild and failed on a temporarily
+  missing `BlockLU.olean`; rerunning after the build passed. `#print axioms`
+  for both declarations reports only standard Mathlib axioms `propext`,
+  `Classical.choice`, and `Quot.sound`; `/tmp/Ch13Problem136OpNormAxioms.lean`
+  was removed, `git diff --check` passed, and the placeholder scan over
+  `BlockLU.lean`/`LibraryLookup.lean` returned no matches.
+- Problem 13.6 has a multiple-right-hand-side residual proof step:
+  `higham13_problem13_6_multiple_rhs_residual_identity` proves
+  `A * Xhat - B = Rsolve - DeltaA * Xhat` from `Lhat * Uhat = A + DeltaA`
+  and `(Lhat * Uhat) * Xhat = B + Rsolve`, and
+  `higham13_problem13_6_multiple_rhs_residual_firstOrder` derives the displayed
+  scalar `FirstOrderLe` residual bound from factorization and multiple-RHS
+  triangular-solve residual budgets.
+- The block-LU-to-standard-LU bridge proves the exact product identity after
+  factoring each diagonal block of the block upper factor. It intentionally does
+  not close Theorem 13.2 or prove the lower/upper triangular shape of the refined
+  factors.
+- Theorem 13.2 is now closed for the uniform-block model by
+  `BlockLUFactSpec.existsUnique_iff_leadingPrincipalBlockNonsingular13_2`.
+  The forward direction is
+  `BlockLUFactSpec.existsUnique_of_leadingPrincipalBlockNonsingular13_2`.
+  The converse uses `first_block_inverse_of_isUnit_det` to turn determinant
+  nonsingularity into explicit inverse data,
+  `BlockLUFactSpec.first_block_inverse_of_existsUnique` to prove first-pivot
+  nonsingularity from exists-unique block LU by a left-kernel shear
+  contradiction, `BlockLUFactSpec.schurTail_existsUnique_of_existsUnique_of_first_block_inverse`
+  to pass uniqueness to the Schur tail, and
+  `LeadingPrincipalBlockNonsingular13_2.of_existsUnique` for the induction.
+  Supporting source adapters include `LeadingPrincipalBlockNonsingular13_2`,
+  `leadingBlockPrefix13_2`, `BlockMatrixNonsingular`,
+  `BlockMatrixTwoSidedInverse`,
+  `LeadingPrincipalBlockNonsingular13_2.first_block_inverse`,
+  `leadingBlockPrefix13_2_blockSchur`,
+  `blockSchur_nonsingular_of_nonsingular_of_first_block_inverse`,
+  `blockMatrixNonsingular_of_first_block_inverse_of_blockSchur_nonsingular`,
+  `LeadingPrincipalBlockNonsingular13_2.schur`,
+  `BlockLUFactSpec.existsUnique_one`, `blockLUOneStepL`, `blockLUOneStepU`,
+  `block_lu_one_step_explicit`, `block_lu_one_step`,
+  `BlockLUFactSpec.firstRow_eq`,
+  `BlockLUFactSpec.firstColumnBelow_eq_of_right_inverse`,
+  `BlockLUFactSpec.of_leadingBlockPrefix13_2`,
+  `BlockLUFactSpec.schurTailFactSpec_of_right_inverse`,
+  `BlockLUFactSpec.eq_of_schurTail_unique_of_right_inverse`, and
+  `BlockLUFactSpec.existsUnique_step_of_schurTail_existsUnique`.
+- The Chapter 13 norm convention row is closed at the current block API level by
+  `higham13_norm_convention_blockMaxNorm_eq_entrywise_sup`,
+  `block_entry_abs_le_blockMaxNorm`, `blockMaxNorm_le_of_entry_abs_le`, and
+  `higham13_block_norm_eq_maxEntryNorm`. These prove the exact
+  block-index/within-block entrywise max-norm convention and identify the
+  ambient Pi norm on each `Fin r -> Fin r -> R` block with the same max-entry
+  norm used by the concrete Algorithm 13.3 stage tables; no quotient-based flat
+  `Fin (m*r)` API has been introduced.
+- The Eq.13.20/Eq.13.26 wrappers close only the source partition displays via
+  `Matrix.fromBlocks`; the Problem 13.4 norm and condition-number inequalities
+  remain open.
+- The Eq.13.19 declarations record the source norm-comparison assumption
+  `max_ij ||Aij|| <= ||A|| <= sum_ij ||Aij||`; they do not claim that an
+  arbitrary chosen norm satisfies it.
+- The Eq.13.18 declarations close the source one-step column proof chain under
+  explicit subordinate-norm/min hypotheses: `higham13_eq13_18_scalar_column_chain`
+  proves the displayed scalar inequalities from (13.17),
+  `higham13_eq13_18_min_lower_bound` proves the reverse-triangle min step, and
+  `higham13_eq13_18_schur_column_dominance` combines them. They do not close
+  the row case, Schur-stage induction, nonsingularity argument, or full
+  Theorem 13.7.
+- `block_diag_dom_schur_inherit_row` proves the row-wise one-step analogue of
+  `block_diag_dom_schur_inherit` by applying the column theorem to transposed
+  block-norm and Schur-norm tables. The active-stage induction layer is now
+  represented by `SchurStageActiveColumnDom13_7`,
+  `SchurStageActiveColumnDomStep13_7`,
+  `higham13_theorem13_7_active_column_dominance_of_steps`,
+  `SchurStageActiveRowDom13_7`, `SchurStageActiveRowDomStep13_7`, and
+  `higham13_theorem13_7_active_row_dominance_of_steps`: from initial
+  row/column BDD and a one-step active inheritance rule, all active stages
+  inherit the same dominance form. The actual instantiation of the one-step
+  active premises from Algorithm 13.3's Schur-complement relation and the
+  nonsingularity/block-LU existence part remain open.
+- The Theorem 13.8 declaration
+  `higham13_theorem13_8_one_step_block_bound` proves the one-step Schur
+  complement `2 * max` block bound from the existing one-step column-sum theorem
+  and diagonal-dominance column-sum lemma. The active-stage induction layer
+  `activeBlockIndices13_8`, `SchurStageActiveColumnStep13_8`,
+  `SchurStageActiveColumnBound13_8`,
+  `higham13_theorem13_8_active_column_bound_of_steps`, and
+  `higham13_theorem13_8_active_stage_block_bound` proves the source-shaped
+  induction from one-step active-column inequalities to the active block
+  `2 * max` bound for `k <= i,j`; the wrapper
+  `higham13_theorem13_8_active_stage_block_bound_of_steps` combines those two
+  steps directly from `hInit` and `hStep`. The active-column-only layer
+  `SchurStageActiveColumnStepOnActive13_8`,
+  `SchurStageActiveColumnBoundOnActive13_8`,
+  `higham13_theorem13_8_active_column_bound_on_active_of_steps`,
+  `higham13_theorem13_8_active_stage_block_bound_on_active`,
+  `higham13_theorem13_8_active_stage_block_bound_on_active_of_steps`,
+  `SchurStageActiveLocalSchurBound13_8`,
+  `higham13_theorem13_8_active_tail_pivot_sum_le_of_column_dominance`,
+  `higham13_theorem13_8_active_column_step_on_active_of_local_schur_bound`, and
+  `higham13_theorem13_8_active_stage_block_bound_of_local_schur_bound` proves
+  the source-relevant active-column step from local Schur norm estimates plus
+  active column dominance, so the direct `hStep` obligation is no longer needed
+  for active columns. The exact-update layer
+  `SchurStageActiveExactUpdate13_8`,
+  `SchurStageActivePivotInvReciprocal13_7`,
+  `SchurStageActivePivotInvReciprocal13_7.of_mul_eq_one`,
+  `SchurStageActiveDiagLowerUpdate13_7`,
+  `SchurStageActiveDiagLowerUpdate13_7.of_eq`,
+  `higham13_theorem13_7_pivot_inverse_bound_of_reciprocal`,
+  `higham13_theorem13_8_active_local_schur_bound_of_exact_update`,
+  `higham13_theorem13_7_active_column_dom_step_of_exact_update`,
+  `higham13_theorem13_7_active_column_dom_step_of_exact_update_reciprocal`,
+  `higham13_theorem13_7_active_column_dominance_of_exact_update`,
+  `higham13_theorem13_7_active_column_dominance_of_exact_update_reciprocal`,
+  `higham13_theorem13_8_active_stage_block_bound_of_exact_update`, and
+  `higham13_theorem13_8_active_stage_block_bound_of_exact_update_reciprocal`
+  derives the local Schur norm estimate and active column-dominance induction
+  from the exact Schur update relation plus the named diagonal Schur
+  lower-bound update predicate; `SchurStageActiveDiagLowerUpdate13_7.of_eq`
+  converts an exact diagonal-certificate equality into that inequality. The
+  concrete active Algorithm 13.3 stage sequence is now supplied by
+  `higham13_algorithm13_3_schurStageBlock`, whose exact update relation is
+  `higham13_algorithm13_3_schurStageBlock_exact_update`; the associated norm
+  tables `higham13_algorithm13_3_schurStageNorm` and
+  `higham13_algorithm13_3_pivotInvNorm` instantiate the local Schur estimate in
+  `higham13_algorithm13_3_schurStage_local_schur_bound`.
+  `higham13_algorithm13_3_active_column_dom_step_of_reciprocal`,
+  `higham13_algorithm13_3_active_column_dominance_of_reciprocal`,
+  `higham13_algorithm13_3_active_stage_block_bound_of_reciprocal`, and
+  `higham13_algorithm13_3_eq13_21_blockMaxNorm_bound_of_reciprocal_zero_lower`
+  thread that concrete stage sequence through the Theorem 13.7 dominance,
+  Theorem 13.8 active growth, and Eq.13.21 zero-lower max-norm bridges while
+  keeping diagonal update, reciprocal pivot data, upper-`U` stage equality, and
+  growth-factor premises visible. The source-shaped adapters
+  `higham13_algorithm13_3_pivot_reciprocal_of_mul_eq_one`,
+  `higham13_algorithm13_3_active_diag_lower_update_of_eq`,
+  `higham13_algorithm13_3_active_column_dom_step_of_pivot_mul_diag_eq`,
+  `higham13_algorithm13_3_active_column_dominance_of_pivot_mul_diag_eq`,
+  `higham13_algorithm13_3_active_stage_block_bound_of_pivot_mul_diag_eq`, and
+  `higham13_algorithm13_3_eq13_21_blockMaxNorm_bound_of_pivot_mul_diag_eq`
+  turn those remaining predicate obligations into concrete pivot-product and
+  diagonal-update equality facts. The upper-`U`/stage bridge
+  `higham13_algorithm13_3_upper_block_bound_of_eq_stage` derives the named
+  `SchurStageUpperBlockBound13_21` predicate from exact upper-block stage
+  equality, using `higham13_block_norm_eq_maxEntryNorm` to align the ambient Pi
+  norm with the chapter max-entry norm, and
+  `higham13_algorithm13_3_eq13_21_blockMaxNorm_bound_of_pivot_mul_diag_eq_upper_eq`
+  threads that bridge into the concrete Eq.13.21 source-shaped wrapper. The
+  source-assembled upper factor is now represented by
+  `higham13_algorithm13_3_upperFromStages`: its proofs
+  `higham13_algorithm13_3_upperFromStages_eq_stage`,
+  `higham13_algorithm13_3_upperFromStages_lower_zero`, and
+  `higham13_algorithm13_3_upperFromStages_upper_block_bound` close the exact
+  upper-stage equality, strict-lower zero shape, and upper-stage norm predicate
+  for this concrete `U`; the wrapper
+  `higham13_algorithm13_3_upperFromStages_eq13_21_blockMaxNorm_bound_of_pivot_mul_diag_eq`
+  specializes Eq.13.21 to that assembled upper factor. The concrete diagonal
+  lower-bound certificate `higham13_algorithm13_3_diagLowerCert`, with
+  `higham13_algorithm13_3_diagLowerCert_zero`,
+  `higham13_algorithm13_3_diagLowerCert_eq`, and
+  `higham13_algorithm13_3_diagLowerCert_update`, follows the source recurrence
+  and discharges the diagonal-update equality path; the wrapper
+  `higham13_algorithm13_3_upperFromStages_eq13_21_blockMaxNorm_bound_of_diagLowerCert`
+  specializes Eq.13.21 to both the assembled upper factor and this certificate.
+  The column-BDD specialization
+  `higham13_algorithm13_3_upperFromStages_eq13_21_blockMaxNorm_bound_of_column_bdd`
+  instantiates the input max-norm majorant with `blockMaxNorm hm hr A` and the
+  initial block-norm table with `maxEntryNorm hr (A i j)`. The reciprocal
+  variant
+  `higham13_algorithm13_3_upperFromStages_eq13_21_blockMaxNorm_bound_of_column_bdd_reciprocal`
+  is now the preferred source-facing route because it assumes the pivot
+  condition as `SchurStageActivePivotInvReciprocal13_7` directly. The
+  product-form route remains available:
+  `SchurStageActivePivotInvReciprocal13_7.of_mul_eq_one` derives the reciprocal
+  certificate from nonzero product-form pivot data, and
+  `SchurStageActivePivotInvReciprocal13_7.of_active_mul_eq_one` derives the
+  same certificate from the active product identity alone, with nonzero active
+  pivot-inverse norms following from that identity. The source-shaped concrete
+  wrappers
+  `higham13_algorithm13_3_active_column_dom_step_of_pivot_mul_diag_eq_active_mul_eq_one`,
+  `higham13_algorithm13_3_active_column_dominance_of_pivot_mul_diag_eq_active_mul_eq_one`,
+  `higham13_algorithm13_3_active_stage_block_bound_of_pivot_mul_diag_eq_active_mul_eq_one`,
+  `higham13_algorithm13_3_eq13_21_blockMaxNorm_bound_of_pivot_mul_diag_eq_active_mul_eq_one`,
+  `higham13_algorithm13_3_eq13_21_blockMaxNorm_bound_of_pivot_mul_diag_eq_upper_eq_active_mul_eq_one`,
+  and
+  `higham13_algorithm13_3_upperFromStages_eq13_21_blockMaxNorm_bound_of_pivot_mul_diag_eq_active_mul_eq_one`
+  thread that active-product route through the concrete Theorem 13.7,
+  Theorem 13.8, and Eq.13.21 pivot-product/diagonal-equality wrappers without a
+  separate nonzero pivot-inverse norm premise. The same active-product fact now
+  also feeds the weaker certificate interfaces through
+  `SchurStageActivePivotInvDiagLower13_7.of_active_mul_eq_one`,
+  `higham13_algorithm13_3_diagLowerCert_diag_lower_of_active_mul_eq_one`, and
+  `higham13_algorithm13_3_diagLowerCert_pivot_bound_of_active_mul_eq_one`.
+  Conversely, `SchurStageActivePivotInvDiagLower13_7.of_pivot_bound` and
+  `higham13_algorithm13_3_diagLowerCert_diag_lower_of_pivot_bound` convert a
+  positive direct product bound into the one-sided certificate, so future
+  progress on either pivot route can feed the other interface.
+  The direct-bound wrappers
+  `higham13_algorithm13_3_active_column_dom_step_of_pivot_bound`,
+  `higham13_algorithm13_3_active_column_dominance_of_pivot_bound`,
+  `higham13_algorithm13_3_active_stage_block_bound_of_pivot_bound`,
+  `higham13_algorithm13_3_eq13_21_blockMaxNorm_bound_of_pivot_bound`,
+  `higham13_algorithm13_3_eq13_21_blockMaxNorm_bound_of_pivot_bound_upper_eq`,
+  `higham13_algorithm13_3_upperFromStages_eq13_21_blockMaxNorm_bound_of_pivot_bound`,
+  `higham13_algorithm13_3_upperFromStages_eq13_21_blockMaxNorm_bound_of_diagLowerCert_pivot_bound`,
+  and
+  `higham13_algorithm13_3_upperFromStages_eq13_21_blockMaxNorm_bound_of_column_bdd_pivot_bound`
+  give the weaker source-shaped route from the scalar bound
+  `||pivotInv_k|| * gamma_k <= 1`. The one-sided diagonal-lower bridge
+  `SchurStageActivePivotInvDiagLower13_7`,
+  `higham13_theorem13_7_pivot_inverse_bound_of_diag_lower`,
+  `higham13_algorithm13_3_diagLowerCert_pivot_bound_of_diag_lower`,
+  `higham13_algorithm13_3_upperFromStages_eq13_21_blockMaxNorm_bound_of_diagLowerCert_diag_lower`,
+  and
+  `higham13_algorithm13_3_upperFromStages_eq13_21_blockMaxNorm_bound_of_column_bdd_diag_lower`
+  derives that scalar product bound from the source-shaped certificate
+  `gamma_k <= ||pivotInv_k||^-1`; `SchurStageActivePivotInvDiagLower13_7.of_reciprocal`
+  records that a reciprocal certificate is sufficient for this weaker
+  one-sided route. The staged wrapper
+  `higham13_theorem13_8_stage_block_bound` proves the final `2 * max` conclusion
+  from `SchurStageColumnBound13_8`; for the column-BDD `2*||A||` Eq.13.21
+  route, only that concrete one-sided active diagonal-lower certificate, or an
+  equivalent active pivot product bound, remains open for
+  `higham13_algorithm13_3_diagLowerCert`. The broader general growth-factor/
+  Problem 13.4 route remains open separately.
+- Validation note for the Algorithm 13.3 Implementation 2 scalar multiplier:
+  focused Lean, focused `BlockLU` build, and logged lookup with
+  `lake env lean -s 65536 examples/LibraryLookup.lean` passed after adding
+  `higham13_algorithm13_3_implementation2_eq13_16_firstOrder_multiplier`.
+  The first lookup attempt raced the rebuild and failed because `BlockLU.olean`
+  did not yet exist; rerunning after the focused build passed. `#print axioms`
+  for the new declaration reports only standard Mathlib axioms `propext`,
+  `Classical.choice`, and `Quot.sound`; temporary scratch file
+  `ScratchCh13Implementation2MultiplierAxioms.lean` was removed.
+- Validation note for the Table 13.1 generic bridge: focused Lean, focused
+  `BlockLU` build, and logged lookup with
+  `lake env lean -s 65536 examples/LibraryLookup.lean` passed after adding
+  `higham13_table13_1_backward_error_from_product_bound`. `#print axioms` for
+  the new declaration reports only standard Mathlib axioms `propext`,
+  `Classical.choice`, and `Quot.sound`; temporary scratch file
+  `ScratchCh13TableAxioms.lean` was removed.
+- Validation note for the Table 13.1 row corollaries: focused Lean, focused
+  `BlockLU` build, and `lake env lean -s 65536 examples/LibraryLookup.lean`
+  passed after adding `higham13_table13_1_col_bdd_backward_error`,
+  `higham13_table13_1_point_col_bdd_backward_error`,
+  `higham13_table13_1_point_row_backward_error_from_growth`, and
+  `higham13_table13_1_spd_backward_error`. `#print axioms` for the four
+  declarations reports only standard Mathlib axioms `propext`,
+  `Classical.choice`, and `Quot.sound`; `/tmp/Ch13TableRowsAxioms.lean` was
+  removed, `git diff --check` passed, and the placeholder scan over `BlockLU`
+  plus `LibraryLookup.lean` returned no matches.
+- Validation note for the SPD block-LU existence route: focused Lean, focused
+  `BlockLU` build, and logged lookup with
+  `lake env lean -s 65536 examples/LibraryLookup.lean` passed after adding the
+  flat determinant/SPD block-nonsingularity bridges and
+  `BlockLUFactSpec.existsUnique_of_posDef_flat`. `#print axioms` for
+  `blockMatrixNonsingular_of_flat_inverse`,
+  `blockMatrixNonsingular_of_isUnit_det_flat`,
+  `blockMatrixNonsingular_of_posDef_flat`,
+  `matrix_posDef_submatrix_of_injective`,
+  `leadingBlockPrefix13_2_posDef_flat_of_posDef_flat`,
+  `LeadingPrincipalBlockNonsingular13_2.of_posDef_flat`, and
+  `BlockLUFactSpec.existsUnique_of_posDef_flat` reports only standard Mathlib
+  axioms `propext`, `Classical.choice`, and `Quot.sound`; temporary scratch
+  file `ScratchCh13SpdExistenceAxioms.lean` was removed.
+- Validation note for the SPD Schur positive-definiteness dependency: focused
+  Lean, focused `BlockLU` build, and `lake env lean -s 65536
+  examples/LibraryLookup.lean` passed after adding
+  `higham13_spd_leadingBlock_posDef`, `higham13_spd_schurComplement_posDef`,
+  `higham13_spd_schurComplement_posDef_of_full`, and
+  `higham13_spd_schurComplement_source_posDef`. The first lookup attempt raced
+  an earlier rebuild and failed only because the `BlockLU.olean` file was not
+  present yet; rerunning after the build passed. `#print axioms` for the four
+  declarations
+  reports only standard Mathlib axioms `propext`, `Classical.choice`, and
+  `Quot.sound`; temporary scratch files `ScratchCh13SchurPosDef.lean` and
+  `ScratchCh13SchurPosDefAxioms.lean`, then `ScratchCh13LeadingSpd.lean` and
+  `ScratchCh13LeadingSpdAxioms.lean`, then
+  `ScratchCh13SpdSourceDisplay.lean` and
+  `ScratchCh13SpdSourceDisplayAxioms.lean`, were removed.
+- Validation note for the concrete Algorithm 13.3 active stage sequence:
+  focused Lean, focused `BlockLU` build, and `lake env lean -s 65536
+  examples/LibraryLookup.lean` passed after adding the stage block table,
+  norm tables, exact-update theorem, and local Schur estimate. Axiom audits for
+  the new public stage declarations report only standard Mathlib axioms
+  (`propext`, `Classical.choice`, `Quot.sound`; exact update only needs
+  `propext`), and the temporary `ScratchCh13Stage*` files were removed.
+- Validation note for the concrete Algorithm 13.3 active bridge wrappers:
+  focused Lean, focused `BlockLU` build, and `lake env lean -s 65536
+  examples/LibraryLookup.lean` passed after adding the four
+  `higham13_algorithm13_3_*_of_reciprocal`/Eq.13.21 wrappers. `#print axioms`
+  for all four reports only standard Mathlib axioms `propext`,
+  `Classical.choice`, and `Quot.sound`.
+- Validation note for the concrete Algorithm 13.3 source-shaped pivot/diagonal
+  certificate wrappers: focused Lean, focused `BlockLU` build, and logged
+  lookup with `lake env lean -s 65536 examples/LibraryLookup.lean` passed.
+  `#print axioms` for the six new wrappers reports only standard Mathlib
+  axioms `propext`, `Classical.choice`, and `Quot.sound`.
+- Validation note for the concrete Algorithm 13.3 upper-`U`/stage equality
+  bridge: focused Lean, focused `BlockLU` build, and logged lookup with
+  `lake env lean -s 65536 examples/LibraryLookup.lean` passed after adding
+  `higham13_block_norm_eq_maxEntryNorm`,
+  `higham13_algorithm13_3_upper_block_bound_of_eq_stage`, and
+  `higham13_algorithm13_3_eq13_21_blockMaxNorm_bound_of_pivot_mul_diag_eq_upper_eq`.
+  `#print axioms` for those three declarations reports only standard Mathlib
+  axioms `propext`, `Classical.choice`, and `Quot.sound`; temporary scratch
+  files from this pass were removed.
+- Validation note for the concrete Algorithm 13.3 assembled upper factor:
+  focused Lean, focused `BlockLU` build, and logged lookup with
+  `lake env lean -s 65536 examples/LibraryLookup.lean` passed after adding
+  `higham13_algorithm13_3_upperFromStages`,
+  `higham13_algorithm13_3_upperFromStages_eq_stage`,
+  `higham13_algorithm13_3_upperFromStages_lower_zero`,
+  `higham13_algorithm13_3_upperFromStages_upper_block_bound`, and
+  `higham13_algorithm13_3_upperFromStages_eq13_21_blockMaxNorm_bound_of_pivot_mul_diag_eq`.
+  `#print axioms` for the four public proof declarations reports only standard
+  Mathlib axioms `propext`, `Classical.choice`, and `Quot.sound`; temporary
+  scratch file `ScratchCh13UpperFromStagesAxioms.lean` was removed.
+- Validation note for the concrete Algorithm 13.3 diagonal certificate:
+  focused Lean, focused `BlockLU` build, and logged lookup with
+  `lake env lean -s 65536 examples/LibraryLookup.lean` passed after adding
+  `higham13_algorithm13_3_diagLowerCert`,
+  `higham13_algorithm13_3_diagLowerCert_zero`,
+  `higham13_algorithm13_3_diagLowerCert_eq`,
+  `higham13_algorithm13_3_diagLowerCert_update`, and
+  `higham13_algorithm13_3_upperFromStages_eq13_21_blockMaxNorm_bound_of_diagLowerCert`.
+  `#print axioms` for the four public proof declarations reports only standard
+  Mathlib axioms `propext`, `Classical.choice`, and `Quot.sound`; temporary
+  scratch file `ScratchCh13DiagCertAxioms.lean` was removed.
+- Validation note for the concrete Algorithm 13.3 column-BDD max-norm
+  specialization: focused Lean, focused `BlockLU` build, and logged lookup with
+  `lake env lean -s 65536 examples/LibraryLookup.lean` passed after adding
+  `higham13_algorithm13_3_upperFromStages_eq13_21_blockMaxNorm_bound_of_column_bdd`.
+  `#print axioms` for that declaration reports only standard Mathlib axioms
+  `propext`, `Classical.choice`, and `Quot.sound`; temporary scratch file
+  `ScratchCh13ColumnBddAxioms.lean` was removed.
+- Validation note for the concrete Algorithm 13.3 column-BDD reciprocal
+  specialization: focused Lean, focused `BlockLU` build, and logged lookup with
+  `lake env lean -s 65536 examples/LibraryLookup.lean` passed after adding
+  `higham13_algorithm13_3_upperFromStages_eq13_21_blockMaxNorm_bound_of_column_bdd_reciprocal`.
+  `#print axioms` for that declaration reports only standard Mathlib axioms
+  `propext`, `Classical.choice`, and `Quot.sound`; temporary scratch file
+  `ScratchCh13ColumnBddRecipAxioms.lean` was removed.
+- Validation note for the concrete Algorithm 13.3 active-product pivot route:
+  focused Lean, focused `BlockLU` build, and lookup with
+  `lake env lean -s 65536 examples/LibraryLookup.lean` passed after adding
+  `SchurStageActivePivotInvReciprocal13_7.of_active_mul_eq_one`,
+  `higham13_algorithm13_3_pivot_reciprocal_of_active_mul_eq_one`,
+  `higham13_algorithm13_3_upperFromStages_eq13_21_blockMaxNorm_bound_of_diagLowerCert_active_mul_eq_one`,
+  and
+  `higham13_algorithm13_3_upperFromStages_eq13_21_blockMaxNorm_bound_of_column_bdd_active_mul_eq_one`.
+  `#print axioms` for those four declarations reports only standard Mathlib
+  axioms `propext`, `Classical.choice`, and `Quot.sound`; temporary scratch
+  file `ScratchCh13ActiveMulPivotAxioms.lean` was removed, `git diff --check`
+  passed, and the placeholder scan over `BlockLU.lean`/`LibraryLookup.lean`
+  returned no matches.
+- Validation note for the active-product no-separate-nonzero wrappers: focused
+  Lean, focused `BlockLU` build, and lookup with
+  `lake env lean -s 65536 examples/LibraryLookup.lean` passed after adding
+  `higham13_algorithm13_3_active_column_dom_step_of_pivot_mul_diag_eq_active_mul_eq_one`,
+  `higham13_algorithm13_3_active_column_dominance_of_pivot_mul_diag_eq_active_mul_eq_one`,
+  `higham13_algorithm13_3_active_stage_block_bound_of_pivot_mul_diag_eq_active_mul_eq_one`,
+  `higham13_algorithm13_3_eq13_21_blockMaxNorm_bound_of_pivot_mul_diag_eq_active_mul_eq_one`,
+  `higham13_algorithm13_3_eq13_21_blockMaxNorm_bound_of_pivot_mul_diag_eq_upper_eq_active_mul_eq_one`,
+  and
+  `higham13_algorithm13_3_upperFromStages_eq13_21_blockMaxNorm_bound_of_pivot_mul_diag_eq_active_mul_eq_one`.
+  `#print axioms` for those six declarations reports only standard Mathlib
+  axioms `propext`, `Classical.choice`, and `Quot.sound`; temporary file
+  `/tmp/Ch13ActiveProductWrapperAxioms.lean` was removed, `git diff --check`
+  passed, and the placeholder scan over `BlockLU.lean`/`LibraryLookup.lean`
+  returned no matches.
+- Validation note for the direct pivot-bound wrappers: focused `BlockLU` build
+  and lookup with `lake env lean -s 65536 examples/LibraryLookup.lean` passed
+  from the current tree after adding
+  `higham13_algorithm13_3_active_column_dom_step_of_pivot_bound`,
+  `higham13_algorithm13_3_active_column_dominance_of_pivot_bound`,
+  `higham13_algorithm13_3_active_stage_block_bound_of_pivot_bound`,
+  `higham13_algorithm13_3_eq13_21_blockMaxNorm_bound_of_pivot_bound`,
+  `higham13_algorithm13_3_eq13_21_blockMaxNorm_bound_of_pivot_bound_upper_eq`,
+  `higham13_algorithm13_3_upperFromStages_eq13_21_blockMaxNorm_bound_of_pivot_bound`,
+  `higham13_algorithm13_3_upperFromStages_eq13_21_blockMaxNorm_bound_of_diagLowerCert_pivot_bound`,
+  and
+  `higham13_algorithm13_3_upperFromStages_eq13_21_blockMaxNorm_bound_of_column_bdd_pivot_bound`.
+  `#print axioms` for those eight declarations reports only standard Mathlib
+  axioms `propext`, `Classical.choice`, and `Quot.sound`; temporary file
+  `/tmp/Ch13PivotBoundAxioms.lean` was removed, `git diff --check` passed, and
+  the placeholder scan over `BlockLU.lean`/`LibraryLookup.lean` returned no
+  matches.
+- Validation note for the one-sided diagonal-lower route: focused Lean,
+  focused `BlockLU` build, and lookup with
+  `lake env lean -s 65536 examples/LibraryLookup.lean` passed after adding
+  `SchurStageActivePivotInvDiagLower13_7`,
+  `higham13_theorem13_7_pivot_inverse_bound_of_diag_lower`,
+  `higham13_algorithm13_3_diagLowerCert_pivot_bound_of_diag_lower`,
+  `higham13_algorithm13_3_upperFromStages_eq13_21_blockMaxNorm_bound_of_diagLowerCert_diag_lower`,
+  and
+  `higham13_algorithm13_3_upperFromStages_eq13_21_blockMaxNorm_bound_of_column_bdd_diag_lower`.
+  `#print axioms` for the four theorem declarations reports only standard
+  Mathlib axioms `propext`, `Classical.choice`, and `Quot.sound`; temporary file
+  `/tmp/Ch13DiagLowerAxioms.lean` was removed, `git diff --check` passed, and
+  the placeholder scan over `BlockLU.lean`/`LibraryLookup.lean` returned no
+  matches.
+- Current continuation note for the concrete `diagLowerCert` active route:
+  `higham13_algorithm13_3_active_column_dominance_of_diagLowerCert_pivot_bound`,
+  `higham13_algorithm13_3_active_column_dominance_of_diagLowerCert_diag_lower`,
+  `higham13_algorithm13_3_active_stage_block_bound_of_diagLowerCert_pivot_bound`,
+  `higham13_algorithm13_3_active_stage_block_bound_of_diagLowerCert_diag_lower`,
+  `higham13_algorithm13_3_active_column_dominance_of_column_bdd_diag_lower`,
+  and
+  `higham13_algorithm13_3_active_stage_block_bound_of_column_bdd_diag_lower`
+  discharge the concrete initial-certificate and diagonal-update recurrence
+  plumbing and feed the direct or one-sided pivot certificate into Algorithm
+  13.3 active dominance and Theorem 13.8 active-stage growth. They do not prove
+  the still-open concrete one-sided pivot certificate/product fact.
+  Validation for this route: `lake env lean
+  LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, and `lake env lean -s 65536
+  examples/LibraryLookup.lean` passed. `#print axioms` for the six route
+  declarations reports only standard Mathlib axioms `propext`,
+  `Classical.choice`, and `Quot.sound`; `/tmp/Ch13DiagLowerActiveRouteAxioms.lean`
+  was removed, `git diff --check` passed, and the placeholder scan over
+  `MatrixAlgebra.lean`, `BlockLU.lean`, and `LibraryLookup.lean` returned no
+  matches.
+- The p.253--254 column block diagonal-dominance stability consequences are
+  represented by exact scalar product theorems:
+  `higham13_col_bdd_stability_bound` proves `||L||||U|| <= m^3 ||A||` from
+  `||L|| <= m` and `||U|| <= m^2 ||A||`,
+  `higham13_col_bdd_oneNorm_stability_bound` proves the `2m ||A||_1`
+  refinement from the corresponding source-derived one-norm premises, and
+  `higham13_col_bdd_infNorm_stability_bound` proves the `2m^2 ||A||_inf`
+  refinement. These close only the scalar consequences; deriving the premises
+  from the full Theorem 13.7/13.8 Schur-stage machinery remains open.
+- Eq.13.23 now has the exact scalar bridge
+  `higham13_eq13_23_point_row_from_growth`: from the Eq.13.22 source premises
+  `||L|| <= n rho_n^2 kappa(A)`, `||U|| <= rho_n ||A||`, nonnegative
+  `||A||`, and `rho_n <= 2`, it proves
+  `||L||||U|| <= 8 n kappa(A) ||A||`. It does not close the Problem 13.4 or
+  Eq.13.21 premises needed to derive those inequalities from point row
+  dominance.
+- Table 13.1 has the generic scalar bridge
+  `higham13_table13_1_backward_error_from_product_bound`: from a Theorem 13.6
+  style first-order backward-error premise
+  `FirstOrderLe u (c_n*u*(||A|| + ||L||||U||)) err` and a product bound
+  `||L||||U|| <= tableValue*||A||`, it derives the exact visible leading term
+  `FirstOrderLe u (c_n*u*((1+tableValue)*||A||)) err`. The row corollaries
+  `higham13_table13_1_col_bdd_backward_error`,
+  `higham13_table13_1_point_col_bdd_backward_error`,
+  `higham13_table13_1_point_row_backward_error_from_growth`, and
+  `higham13_table13_1_spd_backward_error` instantiate this for column
+  block-BDD, point column-BDD, point row-BDD via Eq.13.23, and SPD/Eq.13.24
+  from their displayed product premises. Full class-specific premise derivation
+  and the implementation-facing Theorem 13.6 path remain separate obligations.
+- Eq.13.21 has the finite max-norm theorem
+  `higham13_eq13_21_blockMaxNorm_bound`: if every block of `U` satisfies
+  `maxEntryNorm U_ij <= rho_n ||A||`, then the chapter's `blockMaxNorm` of
+  `U` satisfies `||U|| <= rho_n ||A||`. The upper-`U`/Schur-stage premise is
+  now named by `SchurStageUpperBlockBound13_21`, and
+  `SchurStageUpperBlockBound13_21.of_eq_stageBlock` derives it when each upper
+  block `U_ij` is exactly the corresponding Schur-stage block and `stageNorm`
+  is the chapter entrywise max norm. The bridge
+  `higham13_eq13_21_blockMaxNorm_bound_of_active_stage` derives the `rho_n = 2`
+  column-BDD max-norm conclusion from the active Theorem 13.8 wrapper, assuming
+  `SchurStageUpperBlockBound13_21` and strict lower blocks are zero at the norm
+  level. The bridge
+  `higham13_eq13_21_blockMaxNorm_bound_of_local_schur_bound` uses the new local
+  Schur/active-dominance route instead of a direct active-step premise.
+  `higham13_eq13_21_blockMaxNorm_bound_of_exact_update` goes one level closer
+  to the source by deriving those local/dominance inputs from exact Schur update
+  plus named diagonal-update/pivot premises, and
+  `higham13_eq13_21_blockMaxNorm_bound_of_exact_update_reciprocal` derives the
+  pivot product premise from the reciprocal pivot certificate.
+  `higham13_eq13_21_blockMaxNorm_bound_of_exact_update_reciprocal_zero_lower`
+  additionally discharges the strict lower-`U` norm premise from actual
+  `zeroBlock` equalities using `maxEntryNorm_zeroBlock` and
+  `maxEntryNorm_le_zero_of_eq_zeroBlock`. The concrete active Schur-stage
+  update sequence is now available, and
+  `higham13_algorithm13_3_upper_block_bound_of_eq_stage` plus
+  `higham13_algorithm13_3_eq13_21_blockMaxNorm_bound_of_pivot_mul_diag_eq_upper_eq`
+  convert exact upper-block stage equality into the concrete Eq.13.21 wrapper.
+  `higham13_algorithm13_3_upperFromStages` now supplies the assembled upper
+  factor whose upper-stage equality and strict-lower zero shape are proved by
+  construction, and its Eq.13.21 wrapper removes those obligations for that
+  source object. `higham13_algorithm13_3_diagLowerCert` supplies the concrete
+  source-recurrence diagonal lower-bound certificate and removes the diagonal
+  update equality premise from the assembled-upper Eq.13.21 route. The
+  column-BDD specialization now also removes the generic max-norm majorant
+  premise for the `2*||A||` route, and the reciprocal variant exposes the
+  pivot condition in the source-facing form. The active-product variant removes
+  the separate nonzero pivot-inverse norm premise by deriving it from the active
+  product identity. The direct pivot-bound variant now avoids requiring that
+  equality and leaves only the scalar product bound for this diagonal
+  certificate open for the `2*||A||` route; reciprocal pivot data and the
+  general growth-factor definition remain open for the broader Eq.13.21/Problem
+  13.4 route.
+- The p.254 row block diagonal dominance example is closed in scalar-block form:
+  `higham13_rowdom_largeL_A eps = [[eps,0],[1/2,1]]`,
+  `higham13_rowdom_largeL_reconstructs` proves the displayed `LU` identity for
+  `eps ≠ 0`, and `higham13_rowdom_largeL_arbitrarily_large` proves the
+  subdiagonal `L` entry can exceed any nonnegative threshold.
+- Problem 13.1's displayed local norm inequalities are represented by
+  `higham13_problem13_1_column_step_bounds` and
+  `higham13_problem13_1_row_step_bounds`. These are scalar norm-level
+  consequences of bidiagonal block-LU subordinate-norm estimates plus inherited
+  column/row block diagonal dominance. They do not close the final qualitative
+  stability deduction, which still depends on the full Theorem 13.6 path.
+- Problem 13.2 is closed by explicit 4-by-4 scalar witnesses grouped into
+  2-by-2 blocks. `higham13_problem13_2_incomparability` packages the four
+  directions: column/1-norm point diagonal dominance does not imply
+  block-column dominance, block-column dominance does not imply point column
+  dominance, row/infinity-norm point diagonal dominance does not imply
+  block-row dominance, and block-row dominance does not imply point row
+  dominance.
+- The SPD partition wrapper closes the symmetric `Matrix.fromBlocks` display
+  `[[A11,A21ᵀ],[A21,A22]]`. The SPD block-LU existence prose is also closed at
+  the uniform-block model level: `Matrix.PosDef (blockMatrixFlat A)` implies
+  every leading block prefix is flat positive definite by
+  `leadingBlockPrefix13_2_posDef_flat_of_posDef_flat`, hence block-nonsingular
+  by `LeadingPrincipalBlockNonsingular13_2.of_posDef_flat`, and
+  `BlockLUFactSpec.existsUnique_of_posDef_flat` applies Theorem 13.2 to produce
+  a unique block LU factorization. `higham13_spd_leadingBlock_posDef` and
+  `higham13_spd_schurComplement_source_posDef` close the leading-block and
+  Schur-complement positive-definiteness dependencies for the Hermitian block
+  form and the book's real source display used in Lemma 13.10. Lemma 13.9 is
+  closed by the exact source-facing 2-norm/canonical-inverse theorem, and
+  Lemma 13.10 is now closed by
+  `higham13_lemma13_10_schur_kappa_bound_of_spd`.
+- Problem 13.3 is closed by the scalar-block witness `[[1,-1],[-1,1]]`: it is
+  symmetric, has positive diagonal, satisfies `IsBlockDiagDomRow` for block-norm
+  table `|Aᵢⱼ|` and diagonal inverse reciprocal `1`, and is not `IsSymPosDef`
+  because `(1,1)` has quadratic form zero.
+- Problem 13.5 is closed in local block-partition form by
+  `higham13_problem13_5_oneNormRect_bound`: point column diagonal dominance on
+  the leading block columns, encoded by `higham13_problem13_5_columnOff` plus
+  `higham13_problem13_5_trailingCol`, and an explicit right inverse
+  `A11 * A11_inv = I` imply `oneNormRect (rectMatMul A21 A11_inv) <= 1`.
+- Do not treat the conditional adapters
+  `higham13_lemma13_9_conditional_bound` and
+  `higham13_lemma13_10_conditional_bound` as the completed proofs of Lemmas
+  13.9 and 13.10. The inventory points to the exact closure theorems instead.
+- Lemma 13.9 now also has a genuine Cholesky product-route foundation:
+  `higham13_lemma13_9_cholesky_route_transpose_rectOpNorm2Le` proves the
+  operator-2 certificate for `R12^T R11^{-T}` from operator-2 certificates for
+  `R12` and `R11^{-1}` plus the product majorant
+  `||R12||_2 ||R11^{-1}||_2 <= sqrt(kappa_2(A))`, and
+  `higham13_lemma13_9_cholesky_route_transpose_rectOpNorm2Le_of_eq` transfers
+  it across the source identity `A21 A11^{-1} = R12^T R11^{-T}`. The source
+  identity itself is now closed by `higham13_lemma13_9_cholesky_block_identity`
+  from the Cholesky block equations, `A11^{-1} = R11^{-1} R11^{-T}`, and
+  `R11 * R11^{-1} = I`; the needed generic algebra is
+  `rectMatMul_assoc`, `rectMatMul_id_right`, and `rectMatMul_id_left` in
+  `MatrixAlgebra.lean`. The scalar product majorant is now reduced by
+  `higham13_lemma13_9_product_majorant_from_square_bounds` to squared
+  Cholesky norm bounds and `||A||_2 ||A^{-1}||_2 <= kappa_2(A)`, with
+  `higham13_lemma13_9_cholesky_route_rectOpNorm2Le_from_block_eqs` combining
+  that scalar bridge with the exact block equations.
+  `vecNorm2_finiteBasisVec`, `rectOpNorm2Le_radius_nonneg`, and
+  `higham13_lemma13_9_cholesky_route_transpose_rectOpNorm2Le_of_rect_operator_bounds`
+  remove the separate `0 <= ||R12||_2` and `0 <= ||R11^{-1}||_2`
+  assumptions from the product route on nonempty rectangular domains.
+  `higham13_lemma13_9_cholesky_route_transpose_rectOpNorm2Le_from_square_bounds_of_rect_operator_bounds`
+  and
+  `higham13_lemma13_9_cholesky_route_transpose_rectOpNorm2Le_of_eq_from_square_bounds_of_rect_operator_bounds`
+  push that cleanup through the squared-bound and equality-instantiated
+  squared-bound routes.
+  `higham13_lemma13_9_cholesky_route_rectOpNorm2Le_from_block_eqs_of_rect_operator_bounds`
+  applies the cleaned equality route after the exact Cholesky block identity,
+  so the source block-equation certificate no longer exposes the two
+  rectangular radius nonnegativity assumptions on nonempty dimensions.
+  `rectOpNorm2Le_sqrt_of_vecNorm2Sq_le` now converts a quadratic square-action
+  inequality into a rectangular operator-2 certificate, and
+  `higham13_lemma13_9_R12_rectOpNorm2Le_of_A22_cholesky_block` proves the
+  `R12` Cholesky square-bound certificate from
+  `A22 = R12^T R12 + R22^T R22` plus an `opNorm2Le A22 ||A||_2` premise.
+  The principal-block inheritance side is now closed by
+  `finiteOpNorm2Le_sumInr_principal`, `opNorm2Le_of_finiteOpNorm2Le`,
+  `higham13_lemma13_9_A22_opNorm2Le_of_full_block`,
+  `higham13_lemma13_9_A22_opNorm2Le_of_full_block_eq`, and
+  `higham13_lemma13_9_R12_rectOpNorm2Le_of_full_cholesky_block`, which feed a
+  full block operator-2 certificate into the `R12` Cholesky square-bound route.
+  The matching inverse-principal branch is now closed by
+  `finiteOpNorm2Le_sumInl_principal`,
+  `higham13_lemma13_9_A11inv_opNorm2Le_of_full_inverse_block`,
+  `higham13_lemma13_9_A11inv_opNorm2Le_of_full_inverse_block_eq`,
+  `higham13_lemma13_9_R11inv_rectOpNorm2Le_of_A11inv_cholesky_block`, and
+  `higham13_lemma13_9_R11inv_rectOpNorm2Le_of_full_inverse_cholesky_block`.
+  `higham13_lemma13_9_cholesky_route_rectOpNorm2Le_from_full_operator_bounds`
+  assembles the exact Cholesky block identity, both square-bound branches, and
+  `||A||_2 ||A^{-1}||_2 <= kappa_2(A)` into the desired operator certificate.
+  `finiteVecNorm2_finiteBasisVec` and `finiteOpNorm2Le_radius_nonneg` now
+  prove nonnegativity of any finite vector-action operator radius on a
+  nonempty index type, and
+  `higham13_lemma13_9_cholesky_route_rectOpNorm2Le_from_nonempty_full_operator_bounds`
+  uses them to remove the separate `0 <= ||A||_2` and
+  `0 <= ||A^{-1}||_2` assumptions from the full-operator route when the block
+  dimension is nonempty.
+  `higham13_lemma13_9_cholesky_route_rectOpNorm2Le_from_nonempty_full_operator_bounds_kappa_product`
+  removes the separate condition-number majorant when `kappa_2(A)` is
+  represented directly by `||A||_2 ||A^{-1}||_2`.
+  The source row is still not fully closed because the bare SPD hypothesis has
+  not yet been connected to all of those Cholesky/final norm-condition
+  certificates. Focused
+  Lean/build/lookup, placeholder scan, `git diff --check`, and `#print axioms`
+  for the route theorems, rectangular product lemmas, block identity,
+  square-bound route wrappers, `R12` bridge, `A22` principal-block bridge,
+  `R11inv` inverse-principal bridge, full-operator assembly theorem, and the
+  nonempty full-operator wrapper and product wrapper were clean with only
+  standard Mathlib axioms.
+- Eq.13.24 now has the source-shaped scalar product theorem
+  `higham13_eq13_24_spd_scalar_bound`, proving
+  `||L||_2 ||U||_2 <= sqrt(m) * (1 + m * sqrt(kappa_2(A))) * ||A||_2`
+  from explicit `||L||_2 <= 1 + m * sqrt(kappa_2(A))` and
+  `||U||_2 <= sqrt(m) * ||A||_2` premises. Lemmas 13.9 and 13.10 now supply
+  the SPD condition-number ingredients; the proof of the remaining source
+  product premises, especially the `U` norm bound and the full Theorem 13.6
+  implementation-facing path, remains open.
+- SPD Eq.13.24/Eq.13.25 scalar surfaces were tightened after audit:
+  `spd_backward_error_bound` no longer carries the former vacuous
+  backward-error hypothesis, and the SPD scalar wrappers no longer carry unused
+  nonnegativity hypotheses. Focused Lean, focused `BlockLU` build,
+  `lake env lean -s 65536 examples/LibraryLookup.lean`, `git diff --check`,
+  placeholder scan, and `#print axioms` for `block_lu_stability_spd`,
+  `higham13_eq13_24_spd_scalar_bound`, `spd_backward_error_bound`, and
+  `spd_backward_error_bound_higham_13_25` were clean; only standard Mathlib
+  axioms `propext`, `Classical.choice`, and `Quot.sound` appear.
+
 ## Build State
 
 - `lake build` succeeds with Lean toolchain `leanprover/lean4:v4.29.0-rc3`.
@@ -6204,3 +7010,2458 @@ These compile, but should not be treated as fully derived stability results:
   non-probability SVD/singular-vector/projector/Gram/inverse/sketch/product
   routine certificates.  Sampling probabilities and laws remain exact
   mathematical inputs.
+
+- 2026-06-21: Chapter 13 Problem 13.4 now has two validated certificate
+  bridges in `BlockLU.lean`:
+  `higham13_problem13_4_A21A11inv_rectOpNorm2Le_from_growth_certificates`
+  proves the lower-left solve product bound from growth-factor,
+  principal-inverse, and condition-product operator certificates, and
+  `higham13_problem13_4_schur_kappa_bound_from_operator_certificates` proves
+  the Schur condition-product scalar bound from `S`, `S^{-1}`, and
+  `A`/`A^{-1}` operator certificates.  Focused Lean, focused BlockLU build,
+  lookup, axiom audit, `git diff --check`, placeholder scan, and temp cleanup
+  passed.  These are non-vacuous product-propagation dependencies, not a full
+  closure of Problem 13.4: deriving the source operator certificates from
+  growth-factor/Schur-complement hypotheses remains open, and Lemma 13.10 plus
+  Eq.13.22/Eq.13.23 premise derivations still depend on that source route.
+
+- 2026-06-21: Extended the Chapter 13 Problem 13.4 foundation with genuine
+  off-diagonal block operator inheritance.  `MatrixAlgebra.lean` now has
+  `finiteOpNorm2Le_sumInl_sumInr_rect`,
+  `finiteOpNorm2Le_sumInr_sumInl_rect`,
+  `rectOpNorm2Le_of_finiteOpNorm2Le`, and the two Fin-specialized
+  rectangular wrappers.  `BlockLU.lean` now proves
+  `higham13_problem13_4_A21_rectOpNorm2Le_of_full_operator_bound` and
+  `higham13_problem13_4_A21A11inv_rectOpNorm2Le_from_full_A_certificate`,
+  so the `A21` side of Problem 13.4 is derived from a full `A` operator
+  certificate plus `rho >= 1` while the inverse-principal-block obligation
+  remains visible.  It also has a special full-inverse-block route
+  `higham13_problem13_4_A21A11inv_rectOpNorm2Le_from_full_block_certificates`
+  when the supplied `A11inv` is explicitly the upper-left block of a full
+  inverse certificate; this is not the general source proof of
+  `A11^{-1}`.  Focused MatrixAlgebra Lean/build, focused BlockLU Lean/build,
+  lookup, axiom audit, `git diff --check`, placeholder scan, and temp cleanup
+  passed.  Remaining Problem 13.4 source work: derive the general
+  inverse-principal-block and Schur-complement operator certificates, then
+  feed Lemma 13.10 and Eq.13.22/Eq.13.23 premise derivations.
+
+- 2026-06-21: Audited the Chapter 13 PDF text for Problem 13.4 with
+  Ghostscript extraction.  The exercise on p.258 explicitly defines
+  `||A|| := max_ij |a_ij|`.  The existing operator-certificate declarations
+  were therefore recorded as auxiliary infrastructure, not exact source
+  closure.  The source-aligned route must use max-entry-norm proof steps or a
+  constant-preserving bridge from the source max-entry growth/condition
+  hypotheses to the operator-certificate surface.
+
+- 2026-06-21: Added the source-aligned max-entry product-propagation step for
+  Chapter 13 Problem 13.4.  `BlockLU.lean` now has
+  `maxEntryNormRect_rectMatMul_le`,
+  `higham13_problem13_4_A21A11inv_maxEntryNormRect_from_growth_certificates`,
+  and
+  `higham13_problem13_4_A21A11inv_maxEntryNormRect_from_entrywise_A21_bound`.
+  These prove `||A21 A11^{-1}||_max <= n rho_n kappa(A)` once the growth,
+  inverse-principal-block, dimension, and condition-product certificates are
+  supplied.  The selected source row remains open because those certificates
+  and the Schur condition bound are not yet derived from the source
+  growth-factor/Schur hypotheses.
+
+- 2026-06-21: Added the max-entry `A21` inheritance bridge for Chapter 13
+  Problem 13.4.  `higham13_problem13_4_A21_maxEntryNormRect_of_full_entry_bound`
+  derives `||A21||_max <= rho ||A||` from a full partitioned-matrix entrywise
+  bound and `rho >= 1`, and
+  `higham13_problem13_4_A21A11inv_maxEntryNormRect_from_full_entry_bound`
+  feeds that into the source max-entry product bridge.  Remaining exact source
+  work for Problem 13.4: derive the max-entry inverse-principal-block
+  certificate for `A11^{-1}` and the Schur-complement norm/inverse
+  certificates from the growth-factor/Schur hypotheses.
+
+- 2026-06-21: Added the source-aligned max-entry Schur condition bridge for
+  Chapter 13 Problem 13.4.  `BlockLU.lean` now has
+  `higham13_problem13_4_schur_kappa_maxEntryNormRect_from_certificates` and
+  `higham13_problem13_4_schur_kappa_maxEntryNormRect_from_entrywise_schur_bound`,
+  proving `kappa(S) <= rho_n kappa(A)` at the source max-entry norm once the
+  Schur entrywise-growth, Schur-inverse, and condition-product certificates
+  are supplied.  The exact source row remains open because the max-entry
+  inverse-principal-block certificate for `A11^{-1}` and the Schur-inverse
+  certificate `||S^{-1}|| <= ||A^{-1}||` still need to be connected to the
+  source growth-factor/Schur hypotheses.
+
+- 2026-06-21: Added the Problem 13.4 lower-right full-inverse inheritance
+  bridge for the Schur condition route.  `BlockLU.lean` now has
+  `higham13_problem13_4_Sinv_maxEntryNormRect_of_full_inverse_entry_bound`
+  and
+  `higham13_problem13_4_schur_kappa_maxEntryNormRect_from_full_inverse_entry_bound`,
+  so the max-entry `S^{-1}` certificate follows once `S^{-1}` is identified
+  with the lower-right block of a full inverse and the full inverse has the
+  source entrywise `||A^{-1}||` bound.
+
+- 2026-06-21: Added the Problem 13.4 block-inverse Schur certificate bridge.
+  `BlockLU.lean` now has
+  `higham13_problem13_4_Sinv_eq_full_inverse_lower_right_of_block_inverse`
+  and
+  `higham13_problem13_4_schur_kappa_maxEntryNormRect_from_block_inverse`,
+  reusing `higham13_problem13_8_block_inverse` to identify `S^{-1}` with the
+  lower-right block of the full inverse and then feeding that identity into the
+  source max-entry Schur condition-product theorem.  Remaining exact Problem
+  13.4 work: derive the max-entry inverse-principal-block certificate for
+  `A11^{-1}` from the source hypotheses.
+
+- 2026-06-21: Added the Problem 13.4 max-entry upper-left full-inverse-block
+  certificate branch.  `BlockLU.lean` now has
+  `higham13_problem13_4_A11inv_maxEntryNormRect_of_full_inverse_entry_bound`
+  and
+  `higham13_problem13_4_A21A11inv_maxEntryNormRect_from_full_block_entry_bound`.
+  These prove the lower-left max-entry solve bridge when a supplied `A11inv`
+  is explicitly the upper-left block of a supplied full inverse certificate.
+  This is a genuine proved inheritance branch but not the general source proof
+  for the displayed `A11^{-1}`.  Focused `BlockLU` Lean/build, lookup rerun,
+  axiom audit, `git diff --check`, placeholder scan, and temp cleanup passed.
+  Remaining exact Problem 13.4 work: derive the max-entry inverse-principal
+  certificate for the displayed `A11^{-1}` from the GE/growth-factor source
+  hypotheses or prove the lower-left solve bound by a direct GE route.
+
+- 2026-06-21: Added the missing scalar Table 13.1 arbitrary-matrix and block
+  row-BDD row wrappers.  `BlockLU.lean` now has
+  `higham13_table13_1_arbitrary_backward_error_from_growth` and
+  `higham13_table13_1_block_row_bdd_backward_error_from_growth`, both deriving
+  the table-style first-order backward-error bound from explicit Eq.13.22
+  product premises and a Theorem 13.6-style first-order error premise.  The
+  wrappers keep the Eq.13.22 dimension factor visible instead of absorbing it
+  into `c_n`; they do not close the Problem 13.4/Eq.13.21 premise derivations.
+  Focused `BlockLU` Lean/build, lookup, axiom audit, `git diff --check`,
+  placeholder scan, and temp cleanup passed.
+
+- 2026-06-21: Created `docs/chapter13/CHAPTER13_BOTTLENECK_LEDGER.md` for the repeated
+  selected-scope Chapter 13 blockers required by the Higham skill's red
+  bottleneck protocol.  The ledger records exact next Lean dependencies for
+  the Algorithm 13.3 active pivot product/certificate route, Problem 13.4's
+  max-entry inverse-principal-block certificate, Theorem 13.6's cited
+  Implementation 1 proof, Lemma 13.9's SPD-to-Cholesky/operator certificate
+  instantiation, and Lemma 13.10's SPD Schur condition-number comparison.
+  The report and human library lookup now point to this ledger.
+
+- 2026-06-21: Advanced the Lemma 13.9 Cholesky/SPD bottleneck by proving the
+  sum-indexed Cholesky block-equation extraction.  `BlockLU.lean` now has
+  `higham13_lemma13_9_cholesky_block_equations_of_sum_product`, deriving the
+  source `A22 = R12^T R12 + R22^T R22` and `A21 = R12^T R11` equations from
+  a full `A = R^T R` product certificate and the block form of `R`, plus
+  `higham13_lemma13_9_cholesky_route_rectOpNorm2Le_from_sum_cholesky_product`,
+  which feeds those extracted equations into the existing full-operator
+  Lemma 13.9 route.  A follow-up in the same pass added
+  `higham13_lemma13_9_sum_product_of_equiv_product`,
+  `higham13_lemma13_9_cholesky_block_equations_of_equiv_product`, and
+  `higham13_lemma13_9_cholesky_route_rectOpNorm2Le_from_equiv_cholesky_product`,
+  so a finite Cholesky product certificate indexed on another finite type can
+  be pulled back through an equivalence to the block partition.  This closes a
+  proof-artifact assumption but not the bare SPD source theorem; the remaining
+  route is to derive the Cholesky block-form data and pulled-back full/full
+  inverse operator certificates from the repository SPD/Cholesky surface.
+
+- 2026-06-21: Advanced the Lemma 13.9 SPD/Cholesky bottleneck again by
+  importing `LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskySpec` into
+  `BlockLU.lean` and adding a `CholeskyFactSpec` bridge:
+  `higham13_lemma13_9_cholesky_lower_left_zero_of_order_equiv`,
+  `higham13_lemma13_9_cholesky_block_equations_of_cholesky_fact_equiv`,
+  `higham13_lemma13_9_cholesky_block_equations_exists_of_spd_equiv`, and
+  `higham13_lemma13_9_cholesky_route_rectOpNorm2Le_from_cholesky_fact_equiv`.
+  These prove that an order-compatible block equivalence turns repository
+  Cholesky upper-triangularity plus `A = R^T R` into the source lower-left zero
+  block and the `A22`/`A21` equations; SPD existence supplies such a Cholesky
+  factor.  Lemma 13.9 remains open only at the certificate-instantiation level:
+  derive/select the full `A`/`A^{-1}` operator certificates and the
+  `A11^{-1} = R11^{-1} R11^{-T}` certificate from the SPD/inverse surface, then
+  instantiate `higham13_lemma13_9_cholesky_route_rectOpNorm2Le_from_cholesky_fact_equiv`.
+
+- 2026-06-21: Specialized the Lemma 13.9 `CholeskyFactSpec` bridge to the
+  standard source block ordering `finSumFinEquiv : Fin r ⊕ Fin s ≃ Fin (r+s)`.
+  New declarations:
+  `higham13_lemma13_9_finSumFinEquiv_leading_lt_trailing`,
+  `higham13_lemma13_9_cholesky_block_equations_of_cholesky_fact_fin_sum`,
+  `higham13_lemma13_9_cholesky_block_equations_exists_of_spd_fin_sum`, and
+  `higham13_lemma13_9_cholesky_route_rectOpNorm2Le_from_cholesky_fact_fin_sum`.
+  These discharge the arbitrary order side condition for the source-shaped
+  `Fin (r+s)` partition.  The remaining Lemma 13.9 blocker is now only the
+  full `A`/`A^{-1}` and `A11^{-1}` operator-certificate instantiation needed
+  by the standard route.
+
+- 2026-06-21: Closed the Lemma 13.9 pulled-back operator-certificate
+  reindexing dependency.  `MatrixAlgebra.lean` now has
+  `finiteVecNorm2_reindex_equiv`, `finiteMatVec_reindex_equiv`, and
+  `finiteOpNorm2Le_reindex_equiv`, proving finite Euclidean norms,
+  matrix-vector products, and vector-action operator-2 certificates are
+  invariant under simultaneous row/column equivalence reindexing.  `BlockLU.lean`
+  now imports `LeanFpAnalysis.FP.Analysis.MatrixAlgebra` directly and has
+  `higham13_lemma13_9_cholesky_route_rectOpNorm2Le_from_cholesky_fact_fin_sum_full_operator`,
+  which feeds ordinary full `Fin (r+s)` certificates for `A` and `A^{-1}` into
+  the standard `finSumFinEquiv` Cholesky route.  Verification passed:
+  direct Lean checks for `MatrixAlgebra.lean` and `BlockLU.lean`, focused builds
+  for both modules, `lake env lean -s 65536 examples/LibraryLookup.lean`, axiom
+  audit with only standard Mathlib axioms, `git diff --check`, placeholder scan,
+  and scratch cleanup.  Lemma 13.9 remains open at the true source certificate
+  surface: derive/select the full `A`/`A^{-1}` operator certificates and prove
+  the `A11^{-1} = R11^{-1} R11^{-T}` Cholesky-principal-inverse certificate
+  from SPD/inverse data.
+
+- 2026-06-21: Closed the follow-on Lemma 13.9 repository-operator predicate
+  adapter.  `MatrixAlgebra.lean` now has `finiteOpNorm2Le_of_opNorm2Le`, the
+  converse bridge to the earlier `opNorm2Le_of_finiteOpNorm2Le`, and
+  `BlockLU.lean` now has
+  `higham13_lemma13_9_cholesky_route_rectOpNorm2Le_from_cholesky_fact_fin_sum_opNorm2`.
+  The standard source-order Cholesky route can now consume ordinary full
+  `opNorm2Le` certificates for `A` and `A^{-1}` directly.  Verification passed:
+  direct Lean checks for `MatrixAlgebra.lean` and `BlockLU.lean`, focused builds
+  for `LeanFpAnalysis.FP.Analysis.MatrixAlgebra` and
+  `LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, `lake env lean -s 65536
+  examples/LibraryLookup.lean`, axiom audit with only standard Mathlib axioms,
+  `git diff --check`, placeholder scan, and scratch cleanup.  Lemma 13.9 is
+  still open at the mathematical source certificate surface: derive/select the
+  full `A`/`A^{-1}` operator-norm certificates and prove the `A11^{-1}`
+  Cholesky-principal-inverse certificate from SPD/inverse data.
+
+- 2026-06-21: Closed the source-aligned Lemma 13.9 principal-inverse route
+  adapter.  `MatrixAlgebra.lean` now has `opNorm2Le_radius_nonneg`, the
+  ordinary square-operator analogue of the earlier finite-radius helper, and
+  `BlockLU.lean` now has
+  `higham13_lemma13_9_cholesky_route_rectOpNorm2Le_from_cholesky_fact_fin_sum_principal_inverse`.
+  This wrapper feeds the standard `Fin (r+s)` Cholesky route with an
+  operator-2 certificate for the actual leading-principal inverse `A11^{-1}`
+  and the source identity `A11^{-1} = R11^{-1} R11^{-T}`; it deliberately does
+  not treat `A11^{-1}` as the upper-left block of the full inverse.  Verification
+  passed: direct Lean checks for `MatrixAlgebra.lean` and `BlockLU.lean`,
+  focused builds for `LeanFpAnalysis.FP.Analysis.MatrixAlgebra` and
+  `LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, `lake env lean -s 65536
+  examples/LibraryLookup.lean`, axiom audit with only standard Mathlib axioms,
+  `git diff --check`, placeholder scan, and scratch cleanup.  Lemma 13.9
+  remains open at deriving the full `A` and actual leading-principal inverse
+  operator certificates from the bare SPD source surface.
+
+- 2026-06-21: Closed the Lemma 13.9 `R11 =` leading Cholesky block
+  nonsingular-inverse bridge.  `BlockLU.lean` now has
+  `higham13_lemma13_9_R11_nonsingInv_right_inverse_of_cholesky_fact_fin_sum`,
+  which derives `IsRightInverse r R11 (nonsingInv r R11)` from
+  `CholeskyFactSpec` upper-triangularity and positive diagonal, and
+  `higham13_lemma13_9_cholesky_route_rectOpNorm2Le_from_cholesky_fact_fin_sum_principal_inverse_nonsingInv`,
+  which instantiates the principal-inverse route with `R11inv = nonsingInv r
+  R11`.  Verification passed: `lake env lean
+  LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, `lake env lean -s 65536
+  examples/LibraryLookup.lean`, axiom audit with only standard Mathlib axioms,
+  `git diff --check`, placeholder scan, and scratch cleanup.  Lemma 13.9
+  remains open only at deriving/selecting the full `A` operator certificate and
+  actual leading-principal inverse operator certificate from the bare SPD
+  source surface.
+
+- 2026-06-21: Closed the Lemma 13.9 PSD/Loewner-to-operator bridge for the
+  actual leading-principal inverse route.  `MatrixAlgebra.lean` now has
+  `finitePSD_cauchy_schwarz`,
+  `finiteVecNorm2Sq_finiteMatVec_le_of_finitePSD_of_finiteLoewnerLe_smul_id`,
+  and `finiteOpNorm2Le_of_finitePSD_of_finiteLoewnerLe_smul_id`, proving that
+  a symmetric PSD finite matrix bounded by `c I` in Loewner order has
+  operator-2 norm at most `c`.  `BlockLU.lean` now has
+  `higham13_lemma13_9_principal_inverse_operator_certificate_from_loewner` and
+  `higham13_lemma13_9_cholesky_route_rectOpNorm2Le_from_cholesky_fact_fin_sum_principal_inverse_loewner`,
+  which feed that certificate into the existing `nonsingInv` Cholesky route.
+  Verification passed: direct Lean checks for `MatrixAlgebra.lean` and
+  `BlockLU.lean`, focused builds for `LeanFpAnalysis.FP.Analysis.MatrixAlgebra`
+  and `LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, `lake env lean -s 65536
+  examples/LibraryLookup.lean`, axiom audit with only standard Mathlib axioms,
+  `git diff --check`, placeholder scan, and scratch cleanup.  Lemma 13.9
+  remains open at deriving/selecting the full `A` operator certificate and the
+  actual leading-principal inverse PSD/Loewner upper certificate from the bare
+  SPD source surface.
+
+- 2026-06-21: Closed the Lemma 13.9 full-SPD side of the Loewner certificate
+  route.  `MatrixAlgebra.lean` now has `finiteQuadraticForm_eq_sum_sum`;
+  `BlockLU.lean` now has `isSymPosDef_to_IsSymmetricFiniteMatrix`,
+  `finitePSD_of_isSymPosDef`,
+  `higham13_lemma13_9_full_operator_certificate_from_spd_loewner`, and
+  `higham13_lemma13_9_cholesky_route_rectOpNorm2Le_from_cholesky_fact_fin_sum_spd_and_principal_inverse_loewner`.
+  These discharge the full-matrix symmetry/PSD hypotheses from the repository
+  `IsSymPosDef` predicate and feed the full `A` side into the existing
+  Cholesky route from a scalar-identity Loewner upper certificate.  Verification
+  passed: direct Lean checks for `MatrixAlgebra.lean` and `BlockLU.lean`,
+  focused builds for `LeanFpAnalysis.FP.Analysis.MatrixAlgebra` and
+  `LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, `lake env lean -s 65536
+  examples/LibraryLookup.lean`, axiom audit with only standard Mathlib axioms,
+  `git diff --check`, placeholder scan, and scratch cleanup.  Lemma 13.9
+  remains open at deriving the scalar-identity Loewner upper certificates,
+  especially for the actual leading-principal inverse, from the bare SPD source
+  surface.
+
+- 2026-06-21: Closed the Lemma 13.9 principal-inverse Gram certificate side of
+  the Loewner route.  `MatrixAlgebra.lean` now has
+  `rectMatMul_self_transpose_symmetric`,
+  `finiteQuadraticForm_rectMatMul_self_transpose_eq_sum_sq`,
+  `finitePSD_rectMatMul_self_transpose`,
+  `IsSymmetricFiniteMatrix_of_eq_rectMatMul_self_transpose`, and
+  `finitePSD_of_eq_rectMatMul_self_transpose`, proving that a rectangular Gram
+  product `M M^T` is symmetric PSD and transporting those facts across an
+  equality.  `BlockLU.lean` now has
+  `higham13_lemma13_9_cholesky_route_rectOpNorm2Le_from_cholesky_fact_fin_sum_spd_and_principal_inverse_loewner_upper`,
+  which uses the identity `A11inv = R11inv R11inv^T` to discharge the actual
+  leading-principal inverse symmetry/PSD obligations.  Verification passed:
+  direct Lean checks for `MatrixAlgebra.lean` and `BlockLU.lean`, focused build
+  for `LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, `lake env lean -s 65536
+  examples/LibraryLookup.lean`, and axiom audit with only standard Mathlib
+  axioms.  Lemma 13.9 remains open at deriving the scalar-identity Loewner
+  upper certificates for full `A` and the actual leading-principal inverse from
+  the bare SPD source surface.
+
+- 2026-06-21: Advanced the Lemma 13.9 certificate route from raw Loewner upper
+  hypotheses to spectral upper certificates.  `MatrixSpectral.lean` now has
+  `finiteOpNorm2Le_of_finitePSD_of_finiteHermitianEigenvalues_le` and
+  `opNorm2Le_of_finitePSD_of_finiteHermitianEigenvalues_le`, packaging
+  symmetric PSD plus pointwise Hermitian eigenvalue upper bounds into operator-2
+  certificates.  `BlockLU.lean` now imports `MatrixSpectral` and has
+  `higham13_lemma13_9_cholesky_route_rectOpNorm2Le_from_cholesky_fact_fin_sum_spd_and_principal_inverse_eigenvalue_upper`,
+  which feeds full-`A` and actual-principal-inverse eigenvalue upper bounds into
+  the standard source-order Cholesky route.  Verification passed: direct Lean
+  checks for `MatrixSpectral.lean` and `BlockLU.lean`, focused builds for
+  `LeanFpAnalysis.FP.Analysis.MatrixSpectral` and
+  `LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, `lake env lean -s 65536
+  examples/LibraryLookup.lean`, and axiom audit with only standard Mathlib
+  axioms.  Lemma 13.9 remains open at proving the source norm/eigenvalue upper
+  certificates for full `A` and the actual leading-principal inverse, matching
+  the book's `||.||_2`/`κ_2(A)` surface.
+
+- 2026-06-21: Advanced Lemma 13.9 again by proving the lower/upper Loewner
+  route for the actual leading-principal inverse.  `MatrixAlgebra.lean` now has
+  finite Loewner/quadratic-form reindexing, principal-block inheritance for
+  Loewner bounds and scalar identities, a right-inverse Loewner upper theorem
+  `finiteLoewnerLe_right_inverse_upper_of_smul_id_le`, and
+  `IsRightInverse_rectMatMul_transpose_self_of_IsInverse`.  `BlockLU.lean` now
+  has the leading-block Cholesky extraction lemmas,
+  `higham13_lemma13_9_R11_nonsingInv_inverse_of_cholesky_fact_fin_sum`,
+  `higham13_lemma13_9_principal_inverse_loewner_upper_of_full_lower`, and
+  `higham13_lemma13_9_cholesky_route_rectOpNorm2Le_from_cholesky_fact_fin_sum_spd_lower_upper`.
+  These derive `A11^{-1} <= alpha^{-1} I` from the full lower bound
+  `alpha I <= A` and feed full bounds `alpha I <= A <= normA I` to the
+  Cholesky route with radius `sqrt(normA * alpha^{-1})`.  Verification passed:
+  direct Lean checks/builds for `MatrixAlgebra.lean` and `BlockLU.lean`,
+  `lake env lean -s 65536 examples/LibraryLookup.lean`, focused placeholder
+  scan, `git diff --check`, and axiom audit with only standard Mathlib axioms.
+  Lemma 13.9 remains open at source-identifying/proving the full certificates
+  `A <= ||A||_2 I` and `(1 / ||A^{-1}||_2) I <= A`, plus the final
+  condition-number presentation.
+
+- 2026-06-21: Narrowed the Lemma 13.9 lower/upper route by eliminating the
+  explicit full upper Loewner hypothesis when an ordinary repository
+  `opNorm2Le A normA` certificate is available.  `MatrixAlgebra.lean` now has
+  `finiteLoewnerLe_smul_id_of_opNorm2Le`; `BlockLU.lean` now has
+  `higham13_lemma13_9_cholesky_route_rectOpNorm2Le_from_cholesky_fact_fin_sum_spd_lower_opNorm2_upper`.
+  Verification passed: direct Lean checks for `MatrixAlgebra.lean` and
+  `BlockLU.lean` after rebuilding `MatrixAlgebra`, focused build for
+  `LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, `lake env lean -s 65536
+  examples/LibraryLookup.lean`, placeholder scan, `git diff --check`, and
+  axiom audit with only standard Mathlib axioms.  At this checkpoint Lemma 13.9
+  still awaited the lower certificate `(1 / ||A^{-1}||_2) I <= A` and the final
+  `sqrt(kappa_2(A))` presentation.
+
+- 2026-06-21: Closed the Lemma 13.9 lower-certificate dependency in
+  certificate form.  `MatrixAlgebra.lean` now has
+  `finiteLoewnerLe_smul_id_le_of_right_inverse_finiteOpNorm2Le` and
+  `finiteLoewnerLe_smul_id_le_of_right_inverse_opNorm2Le`, proving
+  `(normAinv)^{-1} I <= A` from SPD symmetry/PSD, `A * Ainv = I`, and
+  `opNorm2Le Ainv normAinv`.  `BlockLU.lean` now has
+  `higham13_lemma13_9_cholesky_route_rectOpNorm2Le_from_cholesky_fact_fin_sum_spd_opNorm2_inverse`,
+  combining `opNorm2Le A normA`, `opNorm2Le Ainv normAinv`, and the standard
+  Cholesky route to prove the radius `sqrt(normA * normAinv)`.  Verification
+  passed: direct Lean checks for `MatrixAlgebra.lean` and `BlockLU.lean`,
+  focused builds for `LeanFpAnalysis.FP.Analysis.MatrixAlgebra` and
+  `LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, `lake env lean -s 65536
+  examples/LibraryLookup.lean`, placeholder scan, `git diff --check`, and
+  axiom audit with only standard Mathlib axioms.  At this checkpoint Lemma 13.9
+  still awaited the exact source 2-norm/condition-number presentation
+  `sqrt(kappa_2(A))`, not the inverse-norm lower Loewner certificate.
+
+- 2026-06-21: Closed the Lemma 13.9 exact norm/condition-number surface.
+  `MatrixAlgebra.lean` now has exact `opNorm2` pinned to Mathlib's finite l2
+  operator norm, `opNorm2_nonneg`, `opNorm2Le_opNorm2`,
+  `opNorm2_pos_of_right_inverse_at`, `opNorm2_pos_of_right_inverse`, and
+  `kappa2`.  `BlockLU.lean` now has
+  `higham13_lemma13_9_cholesky_route_rectOpNorm2Le_from_cholesky_fact_fin_sum_spd_kappa2`
+  and the stronger
+  `higham13_lemma13_9_cholesky_route_rectOpNorm2Le_from_cholesky_fact_fin_sum_spd_kappa2_of_right_inverse`,
+  which proves the Lemma 13.9 Cholesky-route radius `sqrt(kappa2 A Ainv)` and
+  derives `0 < opNorm2 Ainv` from the right-inverse certificate.  Verification
+  passed: direct Lean checks for `MatrixAlgebra.lean` and `BlockLU.lean`,
+  focused builds for `LeanFpAnalysis.FP.Analysis.MatrixAlgebra` and
+  `LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, `lake env lean -s 65536
+  examples/LibraryLookup.lean`, placeholder scan, `git diff --check`, scratch
+  cleanup, and axiom audit with only standard Mathlib axioms.  At this checkpoint
+  Lemma 13.9 still awaited bare-source instantiation: choosing/proving the
+  canonical inverse/right-inverse and Cholesky certificate from SPD, or keeping
+  those assumptions explicit without claiming full source closure.  The later
+  source-facing closure checkpoint below supersedes this open status.
+
+- 2026-06-21: Closed the Lemma 13.9 canonical inverse dependency.  `BlockLU.lean`
+  now has `isSymPosDef_to_matrix_posDef`, `isSymPosDef_det_ne_zero`, and
+  `isRightInverse_nonsingInv_of_isSymPosDef`, deriving the canonical repository
+  `nonsingInv` right-inverse certificate from the source SPD predicate via
+  Mathlib positive-definite determinant positivity.  The new wrapper
+  `higham13_lemma13_9_cholesky_route_rectOpNorm2Le_from_cholesky_fact_fin_sum_spd_kappa2_nonsingInv`
+  proves the Lemma 13.9 route with radius
+  `sqrt(kappa2 A (nonsingInv (r+s) A))`, removing the arbitrary `Ainv` and
+  right-inverse hypotheses.  Verification passed: direct Lean check and focused
+  build for `BlockLU.lean`, `lake env lean -s 65536 examples/LibraryLookup.lean`,
+  placeholder scan, `git diff --check`, scratch cleanup, and axiom audit with
+  only standard Mathlib axioms.  At this checkpoint Lemma 13.9 still awaited
+  packaging the Cholesky factor/block identity and displayed
+  `A11inv = R11^{-1}R11^{-T}` from the bare SPD source surface.  The later
+  source-facing closure checkpoint below supersedes this open status.
+
+- 2026-06-21: Closed Lemma 13.9 in the source-facing exact
+  2-norm/canonical-inverse form.  `MatrixAlgebra.lean` now has
+  `nonsingInv_eq_of_isRightInverse` and
+  `nonsingInv_rectMatMul_transpose_self_of_IsInverse`; `BlockLU.lean` now has
+  `higham13_lemma13_9_exists_cholesky_route_rectOpNorm2Le_from_spd_kappa2_nonsingInv`,
+  `higham13_lemma13_9_leading_nonsingInv_eq_cholesky_fact_fin_sum`, and
+  `higham13_lemma13_9_cholesky_route_rectOpNorm2Le_from_spd_leading_nonsingInv_kappa2`.
+  The final theorem chooses a Cholesky factor from SPD, identifies the leading
+  principal inverse with `R11^{-1} R11^{-T}`, uses the canonical full inverse
+  `nonsingInv (r+s) A`, and proves the Lemma 13.9 bound with radius
+  `sqrt (kappa2 A (nonsingInv _ A))`.  Verification passed: direct Lean checks
+  and focused builds for `MatrixAlgebra.lean` and `BlockLU.lean`,
+  `lake env lean -s 65536 examples/LibraryLookup.lean`, placeholder scan,
+  `git diff --check`, scratch cleanup, and axiom audit with only standard
+  Mathlib axioms.  The Lemma 13.9 bottleneck is closed; the active SPD-section
+  blocker is now Lemma 13.10.
+
+- 2026-06-21: Advanced the Lemma 13.10 SPD Schur-complement route without
+  closing the final source theorem.  `MatrixAlgebra.lean` now has the exact
+  norm converse bridges `opNorm2_le_of_opNorm2Le` and
+  `opNorm2_le_of_finiteOpNorm2Le`, the product bridge
+  `kappa2_le_of_opNorm2Le_bounds`, and the reusable Loewner/operator adapter
+  `finiteOpNorm2Le_of_finitePSD_of_finiteLoewnerLe_of_finiteOpNorm2Le`.
+  `BlockLU.lean` now has
+  `higham13_spd_schurComplement_source_loewnerLe_A22`,
+  `higham13_spd_schurComplement_source_loewnerLe_A22_of_full`,
+  `higham13_lemma13_10_schur_opNorm2Le_of_full_operator_bound`, and
+  `higham13_problem13_4_Sinv_finiteOpNorm2Le_from_block_inverse`.  These prove
+  the source Loewner bound `S <= A22`, the finite operator certificate
+  `||S||_2 <= ||A||_2`, and the block-inverse finite operator certificate
+  `||S^{-1}||_2 <= ||A^{-1}||_2`.  Verification passed: direct Lean checks for
+  `MatrixAlgebra.lean` and `BlockLU.lean`, focused builds for both modules,
+  `lake env lean -s 65536 examples/LibraryLookup.lean`, placeholder scan over
+  `MatrixAlgebra.lean`, `BlockLU.lean`, and `LibraryLookup.lean`,
+  `git diff --check`, and axiom audit with only standard Mathlib axioms.
+
+- 2026-06-21: Threaded the Algorithm 13.3 right-inverse/reciprocal bridge into
+  the concrete column-BDD active route.  New `BlockLU.lean` wrappers:
+  `higham13_algorithm13_3_diagLowerCert_pivot_bound_of_pivot_right_inverse_reciprocal`,
+  `higham13_algorithm13_3_active_column_dominance_of_column_bdd_pivot_right_inverse_reciprocal`,
+  `higham13_algorithm13_3_active_stage_block_bound_of_column_bdd_pivot_right_inverse_reciprocal`,
+  and
+  `higham13_algorithm13_3_upperFromStages_eq13_21_blockMaxNorm_bound_of_column_bdd_pivot_right_inverse_reciprocal`.
+  These derive the direct pivot product bound, active column dominance,
+  active-stage `2*max` growth, and Eq.13.21 assembled-upper bound from actual
+  active pivot right-inverse data plus the concrete reciprocal certificate.
+  At that checkpoint the concrete reciprocal certificate for `diagLowerCert`
+  remained the open active-pivot source obligation; the later source-table
+  bridge narrows this to instantiating the source inverse-bound table or proving
+  the direct active product bound.  Verification passed: direct `BlockLU.lean`
+  check, focused `LeanFpAnalysis.FP.Algorithms.LU.BlockLU` build,
+  `lake env lean -s 65536 examples/LibraryLookup.lean`, placeholder scan over
+  `MatrixAlgebra.lean`, `BlockLU.lean`, and `LibraryLookup.lean`,
+  `git diff --check`, and axiom audit with only standard Mathlib axioms.
+  At that pass, the next Lemma 13.10 target was the exact source theorem
+  `higham13_lemma13_10_schur_kappa_bound_of_spd`, aligning these finite
+  certificates with the `Fin (r+s)` source block extraction, canonical
+  `nonsingInv` choices, and exact `kappa2` surface without a target-equivalent
+  hypothesis.
+
+- 2026-06-21: Advanced the Lemma 13.10 inverse-certificate route one step
+  closer to the exact source surface.  `MatrixAlgebra.lean` now has
+  `finiteOpNorm2Le_invOf_reindex_equiv_nonsingInv`, which turns a Mathlib
+  `⅟` inverse of an equivalently reindexed source matrix into a finite
+  operator certificate bounded by `opNorm2 (nonsingInv n A)`.  `BlockLU.lean`
+  now has
+  `higham13_problem13_4_Sinv_finiteOpNorm2Le_from_source_block_inverse`,
+  which applies that bridge to the Schur complement lower-right inverse block
+  after `finSumFinEquiv` source block identification.  Verification passed:
+  direct Lean checks for `MatrixAlgebra.lean` and `BlockLU.lean`, focused
+  builds for `LeanFpAnalysis.FP.Analysis.MatrixAlgebra` and
+  `LeanFpAnalysis.FP.Algorithms.LU.BlockLU`,
+  `lake env lean -s 65536 examples/LibraryLookup.lean`, placeholder scan over
+  `MatrixAlgebra.lean`, `BlockLU.lean`, and `LibraryLookup.lean`,
+  `git diff --check`, and axiom audit with only standard Mathlib axioms.
+  Remaining
+  Lemma 13.10 work: discharge SPD-derived constructive invertibility of the
+  leading block/Schur complement/full reindexed block, identify `⅟S` with the
+  Schur `nonsingInv`, and compose the exact `kappa2` product.
+
+- 2026-06-21: Closed the Chapter 13 Lemma 13.10 SPD Schur-complement
+  condition-number theorem.  `MatrixAlgebra.lean` now has
+  `kappa2_le_of_opNorm2Le_bounds_general`, the mixed-dimension exact
+  `kappa2` monotonicity bridge.  `BlockLU.lean` now has
+  `higham13_problem13_4_Sinv_finiteOpNorm2Le_from_source_posDef_block_inverse`,
+  `higham13_lemma13_10_schur_kappa_bound_of_source_posDef_block`, and the
+  source-facing final theorem
+  `higham13_lemma13_10_schur_kappa_bound_of_spd`.  The final theorem assumes
+  only `IsSymPosDef (r+s) A` plus `[Nonempty (Fin s)]` as the nonempty trailing
+  Schur-complement domain condition, forms the standard `finSumFinEquiv`
+  source blocks, and proves
+  `kappa2 S (nonsingInv s S) <= kappa2 A (nonsingInv (r+s) A)`.  Verification
+  passed: direct Lean checks for `MatrixAlgebra.lean` and `BlockLU.lean`,
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`,
+  `lake env lean -s 65536 examples/LibraryLookup.lean`, placeholder scan over
+  `MatrixAlgebra.lean`, `BlockLU.lean`, and `LibraryLookup.lean`,
+  `git diff --check`, and `#print axioms` for the closure chain with only
+  standard Mathlib axioms.  The SPD-section Lemma 13.10 bottleneck is closed;
+  Problem 13.4 remains open separately in the source max-entry norm.
+
+- 2026-06-21: Advanced the Algorithm 13.3 active pivot route by closing the
+  nonzero-norm/product step from actual inverse data.  `MatrixAlgebra.lean` now
+  has `norm_ne_zero_of_isRightInverse`, proving that a right inverse on a
+  nonempty square block is nonzero in the ambient function norm.  `BlockLU.lean`
+  now has
+  `higham13_algorithm13_3_diagLowerCert_active_mul_eq_one_of_pivot_right_inverse_reciprocal`,
+  which turns active Schur-stage pivot right-inverse data plus the concrete
+  reciprocal diagonal certificate for `diagLowerCert` into the active product
+  identity `gamma_k * ||pivotInv_k|| = 1`.  This does not close Theorem 13.7,
+  Theorem 13.8, or Eq.13.21 by itself: the reciprocal/direct certificate for
+  the concrete `diagLowerCert` remains the active Algorithm 13.3 bottleneck.
+  Verification passed: direct Lean checks for `MatrixAlgebra.lean` and
+  `BlockLU.lean`, focused build for
+  `LeanFpAnalysis.FP.Algorithms.LU.BlockLU`,
+  `lake env lean -s 65536 examples/LibraryLookup.lean`, placeholder scan over
+  `MatrixAlgebra.lean`, `BlockLU.lean`, and `LibraryLookup.lean`,
+  `git diff --check`, and axiom audit with only standard Mathlib axioms.
+
+- 2026-06-21: Continued the Chapter 13 red-bottleneck pass after the context
+  handoff.  The Algorithm 13.3 active-pivot route was sharpened by inspecting
+  the existing Theorem 13.2/leading-prefix nonsingularity declarations
+  (`BlockLUFactSpec.existsUnique_of_leadingPrincipalBlockNonsingular13_2`,
+  `LeadingPrincipalBlockNonsingular13_2.first_block_inverse`,
+  `LeadingPrincipalBlockNonsingular13_2.schur`) against the concrete
+  `higham13_algorithm13_3_schurStageBlock`; the missing theorem remains a
+  link from the arbitrary active `pivotInv` sequence to the recursive first
+  block inverses or a direct product bound for
+  `higham13_algorithm13_3_diagLowerCert`.  Problem 13.4 now has four
+  source-object max-entry bridges:
+  `higham13_problem13_4_A11inv_maxEntryNormRect_from_entrywise_bound`,
+  `higham13_problem13_4_A21A11inv_maxEntryNormRect_from_displayed_inverse_entry_bound`,
+  `higham13_problem13_4_Sinv_maxEntryNormRect_from_entrywise_bound`, and
+  `higham13_problem13_4_schur_kappa_maxEntryNormRect_from_entrywise_inverse_bound`.
+  These let displayed entrywise certificates for the actual `A11^{-1}` and
+  `S^{-1}` feed the lower-left solve and Schur condition-product bounds
+  without routing through full-inverse block equalities.  The full source
+  Problem 13.4 row remains open until those displayed entrywise inverse
+  certificates are derived from the source growth/condition hypotheses.
+  Verification passed for this pass: direct `BlockLU.lean`, focused
+  `LeanFpAnalysis.FP.Algorithms.LU.BlockLU` build,
+  `lake env lean -s 65536 examples/LibraryLookup.lean`, placeholder scan over
+  `BlockLU.lean` and `LibraryLookup.lean`, `git diff --check`, scratch-file
+  cleanup, and `#print axioms` for the four new declarations with only
+  standard Mathlib axioms.
+
+- 2026-06-21: Advanced the Chapter 13 Problem 13.4 source max-entry route past
+  the old displayed-inverse-entry certificate blocker.  `BlockLU.lean` now has
+  `higham13_problem13_4_A21A11inv_maxEntryNormRect_from_block_inverse_growth`,
+  proving the first displayed Problem 13.4 inequality from the block-inverse
+  identity `A21 A11^{-1} = -S (A^{-1})21`, Schur-growth entries, full-inverse
+  max-entry entries, the dimension bound `s <= n`, and the condition-product
+  certificate.  It also has
+  `higham13_problem13_4_maxEntry_bounds_from_block_inverse_growth`, pairing
+  that lower-left bound with the existing Schur lower-right block-inverse
+  condition-product theorem.  Verification passed: direct `BlockLU.lean`,
+  focused `LeanFpAnalysis.FP.Algorithms.LU.BlockLU` build,
+  `lake env lean -s 65536 examples/LibraryLookup.lean`, placeholder scan over
+  `BlockLU.lean`, `LibraryLookup.lean`, and the temporary axiom file,
+  `git diff --check`, scratch-file cleanup, and `#print axioms` for the two new
+  declarations with only standard Mathlib axioms.  The selected Problem 13.4
+  row remained open at that checkpoint for instantiating the explicit
+  Schur-growth, full-inverse max-entry, dimension, and condition-product
+  certificates from the formal GE growth-factor/max-entry condition-number
+  surfaces and then threading the result into Eq.13.22/Eq.13.23.  A later
+  checkpoint instantiates the full-inverse max-entry certificate from source
+  block identification and `nonsingInv`.
+
+- 2026-06-21: Narrowed the Chapter 13 Problem 13.4 source bridge further by
+  instantiating the full-inverse max-entry certificate from source block
+  identification.  `BlockLU.lean` now has
+  `maxEntryNormRect_invOf_reindex_equiv_nonsingInv_entry_bound`, the max-entry
+  analogue of the existing operator-2 inverse/reindex bridge, and
+  `higham13_problem13_4_maxEntry_bounds_from_source_block_inverse_growth`,
+  which feeds `nonsingInv (r+s) A` into the paired block-inverse Problem 13.4
+  theorem.  Verification passed: direct `BlockLU.lean`, focused
+  `LeanFpAnalysis.FP.Algorithms.LU.BlockLU` build,
+  `lake env lean -s 65536 examples/LibraryLookup.lean`, placeholder scan over
+  `BlockLU.lean`, `LibraryLookup.lean`, and the temporary axiom file,
+  `git diff --check`, scratch-file cleanup, and `#print axioms` for the two new
+  declarations with only standard Mathlib axioms.  Remaining Problem 13.4 work
+  is now Schur-growth and condition-product instantiation from the formal GE
+  growth-factor/max-entry condition-number surfaces, followed by
+  Eq.13.22/Eq.13.23 integration.
+
+- 2026-06-21: Narrowed the same Problem 13.4 route again by adding
+  `higham13_problem13_4_maxEntry_bounds_from_source_block_inverse_growth_exact_kappa`
+  to `BlockLU.lean`.  This wrapper chooses the source max-entry condition
+  number as the exact product
+  `||A||_max * ||nonsingInv (r+s) A||_max`, so the paired Problem 13.4
+  source-indexed bounds now require only the Schur-growth entry certificate
+  (plus block identifications, dimensions, and invertibility).  Lookup,
+  inventory, bottleneck, and proof-source docs were updated accordingly; the
+  focused `BlockLU.lean` check, focused `LeanFpAnalysis.FP.Algorithms.LU.BlockLU`
+  build, fresh executable lookup, production Lean-file placeholder scan,
+  `git diff --check`, scratch-file cleanup, and `#print axioms` all passed
+  (only standard Mathlib axioms).  The first axiom/lookup attempts raced the
+  rebuild and saw stale object files, then passed after the rebuild.  The
+  remaining Problem 13.4 work is Schur-growth instantiation from the formal GE
+  growth-factor surface and Eq.13.22/Eq.13.23 integration.
+
+- 2026-06-21: Added the norm-level Schur-growth surface
+  `higham13_problem13_4_maxEntry_bounds_from_source_schur_growth_exact_kappa`
+  to `BlockLU.lean`.  It takes the book-shaped premise
+  `||S||_max <= rho * ||A||_max`, derives the entrywise Schur-growth
+  certificate using `entry_le_maxEntryNormRect`, and feeds the exact-κ
+  source block-inverse route.  This closes the entrywise/norm-level mismatch
+  in the active Problem 13.4 row; what remains is proving that norm-level
+  Schur-growth premise from formal GE growth-factor data and then threading
+  the resulting bounds into Eq.13.22/Eq.13.23.  Lookup/report/inventory/
+  bottleneck/proof-source docs were updated.  Verification passed: direct
+  `BlockLU.lean`, focused `LeanFpAnalysis.FP.Algorithms.LU.BlockLU` build,
+  fresh executable lookup, production Lean-file placeholder scan,
+  `git diff --check`, scratch-file cleanup, and `#print axioms` with only
+  standard Mathlib axioms.  The first axiom/lookup attempts raced the rebuild
+  and then passed after the rebuild.
+
+- 2026-06-21: Added and audited the formal `growthFactorEntry` specialization
+  of the active Problem 13.4 max-entry route.  `BlockLU.lean` now has
+  `maxEntryNormRect_eq_maxEntryNorm`,
+  `maxEntryNormRect_le_growthFactorEntry_mul_of_le_maxEntryNorm`, and
+  `higham13_problem13_4_maxEntry_bounds_from_source_growthFactorEntry_exact_kappa`.
+  This instantiates `rho` as `growthFactorEntry hN A U hApos` and leaves the
+  source row narrowed to the concrete GE/stage inclusion `||S||_max <=
+  ||U||_max`, followed by Eq.13.22/Eq.13.23 integration.  Verification passed:
+  focused `LeanFpAnalysis.FP.Algorithms.LU.BlockLU` build, fresh executable
+  lookup, placeholder scan over `BlockLU.lean`, `LibraryLookup.lean`, and the
+  temporary axiom file, `git diff --check`, scratch-file cleanup, and
+  `#print axioms` for the three declarations with only standard Mathlib axioms.
+
+- 2026-06-21: Added the Schur-submatrix growth-factor bridge for Problem 13.4.
+  `BlockLU.lean` now has `maxEntryNormRect_le_maxEntryNorm_of_reindex_eq` and
+  `higham13_problem13_4_maxEntry_bounds_from_source_growthFactorEntry_exact_kappa_of_schur_submatrix`.
+  This replaces the remaining direct `||S||_max <= ||U||_max` premise by the
+  concrete entrywise equality saying the displayed Schur complement is the
+  lower-right block of the formal growth-factor matrix/stage.  That local
+  equality is now closed by the subsequent one-step Schur-stage matrix theorem;
+  the selected row remains open for global/recursive growth-factor and
+  Eq.13.22/Eq.13.23 integration.  Verification passed: direct `BlockLU.lean`, focused
+  `LeanFpAnalysis.FP.Algorithms.LU.BlockLU` build, fresh executable lookup,
+  placeholder scan over `BlockLU.lean`, `LibraryLookup.lean`, and the temporary
+  axiom file, `git diff --check`, scratch-file cleanup, and `#print axioms`
+  for the two declarations with only standard Mathlib axioms.  The first
+  axiom/lookup attempts raced the rebuild and then passed after the rebuild.
+
+- 2026-06-21: Added the concrete local Schur-stage growth-matrix closure for
+  Problem 13.4.  `BlockLU.lean` now has
+  `higham13_problem13_4_schurStageMatrix`,
+  `higham13_problem13_4_schurStageMatrix_lower_right`, and
+  `higham13_problem13_4_maxEntry_bounds_from_source_schurStageMatrix_exact_kappa`.
+  This instantiates the lower-right Schur/growth-block equality by construction
+  for the one-step Schur-stage matrix and proves both Problem 13.4 inequalities
+  with `rho = growthFactorEntry` for that local stage.  The selected row remains
+  open only for connecting this local stage object to the recursive/global GE
+  growth-factor surface and threading the result into Eq.13.22/Eq.13.23.
+  Verification passed: direct `BlockLU.lean`, focused
+  `LeanFpAnalysis.FP.Algorithms.LU.BlockLU` build, fresh executable lookup,
+  placeholder scan over `BlockLU.lean`, `LibraryLookup.lean`, and the temporary
+  axiom file, `git diff --check`, scratch-file cleanup, and `#print axioms` for
+  the two theorem declarations with only standard Mathlib axioms.
+
+- 2026-06-21: Added the Algorithm 13.3 source-table diagonal-lower bridge.
+  `BlockLU.lean` now has
+  `higham13_algorithm13_3_diagLowerCert_active_le_of_diag_update` and
+  `higham13_algorithm13_3_diagLowerCert_diag_lower_of_source_table`.  These
+  close the bookkeeping from any source inverse-bound table satisfying the
+  Eq.13.18 active diagonal update inequality, initial lower bound, and active
+  reciprocal upper bounds to the concrete `diagLowerCert` one-sided pivot
+  certificate.  The Algorithm 13.3 red row is now narrowed to instantiating that
+  source inverse-bound table from actual nonsingular Schur-stage pivots, or
+  proving the direct active product bound for the concrete pivots.  Verification
+  passed before this checkpoint: direct `BlockLU.lean`, focused
+  `LeanFpAnalysis.FP.Algorithms.LU.BlockLU` build, fresh executable lookup,
+  placeholder scan over `BlockLU.lean`, `LibraryLookup.lean`, and the temporary
+  scratch/axiom files, `git diff --check`, scratch-file cleanup, and
+  `#print axioms` for both theorem declarations with only standard Mathlib
+  axioms.
+
+- 2026-06-22: Added the local Problem 13.4 -> Eq.13.22 lower-factor premise
+  bridge.  `GrowthFactor.lean` now has `growthFactorEntry_nonneg` and
+  `growthFactorEntry_ge_one_of_maxEntryNorm_le`; `BlockLU.lean` now has
+  `higham13_problem13_4_L21_eq13_22_premise_from_source_schurStageMatrix_exact_kappa`.
+  The bridge reuses the local one-step Schur-stage Problem 13.4 theorem and
+  proves the scalar promotion from `n rho kappa(A)` to `n rho^2 kappa(A)` once
+  the chosen stage growth matrix also contains the initial max-entry norm.
+  This closes the local algebraic Eq.13.22 lower-factor premise step; it does
+  not close the global recursive GE growth-factor inclusion, the Eq.13.21
+  upper-factor premise, or the full Eq.13.22/Eq.13.23 source integration.
+  Verification passed: direct `GrowthFactor.lean`, focused
+  `LeanFpAnalysis.FP.Algorithms.LU.GrowthFactor` build, direct `BlockLU.lean`,
+  focused `LeanFpAnalysis.FP.Algorithms.LU.BlockLU` build, fresh executable
+  lookup, placeholder scan over `GrowthFactor.lean`, `BlockLU.lean`, and
+  `LibraryLookup.lean`, `git diff --check`, scratch-file cleanup, and
+  `#print axioms` for all three declarations with only standard Mathlib axioms.
+
+- 2026-06-22: Generalized the local Problem 13.4 -> Eq.13.22 lower-factor
+  bridge to an arbitrary source growth matrix.  `BlockLU.lean` now has
+  `higham13_problem13_4_L21_eq13_22_premise_from_source_growthFactorEntry_exact_kappa`,
+  and the previous local Schur-stage theorem
+  `higham13_problem13_4_L21_eq13_22_premise_from_source_schurStageMatrix_exact_kappa`
+  now reuses it.  The general theorem proves the `n rho^2 kappa(A)` lower-left
+  Eq.13.22 premise from two explicit growth-object containments:
+  `maxEntryNorm A <= maxEntryNorm U` and `maxEntryNormRect S <= maxEntryNorm U`.
+  This is the source-facing shape needed for a recursive GE growth object; the
+  remaining Problem 13.4/Eq.13.22 work is to instantiate those containments
+  from that object and combine with the Eq.13.21 upper-factor premise.
+  Verification passed: direct `BlockLU.lean`, focused
+  `LeanFpAnalysis.FP.Algorithms.LU.BlockLU` build, fresh executable lookup,
+  placeholder scan over `GrowthFactor.lean`, `BlockLU.lean`, and
+  `LibraryLookup.lean`, `git diff --check`, scratch-file cleanup, and
+  `#print axioms` for the general/local bridge pair with only standard Mathlib
+  axioms.
+
+- 2026-06-22: Added the local Eq.13.22/Eq.13.23 common-growth product bridge for
+  Problem 13.4.  `BlockLU.lean` now has
+  `maxEntryNorm_le_growthFactorEntry_mul_of_le_maxEntryNorm`,
+  `higham13_eq13_22_local_product_from_source_growthFactorEntry_exact_kappa`,
+  and `higham13_eq13_23_local_product_from_source_growthFactorEntry_exact_kappa`.
+  These combine the source lower-left bound with an Eq.13.21-style upper-factor
+  containment under one explicit max-entry growth object; the Eq.13.23 version
+  additionally uses the source-side hypothesis `rho_n <= 2`.  The row remains
+  open for instantiating the recursive GE growth object and lifting the local
+  product to the full recursive `L`/`U` factors; the containment work was later
+  narrowed first to a finite local history envelope and then to the dominated
+  history-envelope checkpoint below.
+  Verification passed:
+  direct `BlockLU.lean`, focused `LeanFpAnalysis.FP.Algorithms.LU.BlockLU`
+  build, fresh executable lookup after rebuilding the module, placeholder scan
+  over touched Lean files and temporary axiom file, `git diff --check`,
+  scratch-file cleanup, and `#print axioms` for all three new declarations with
+  only standard Mathlib axioms.
+
+- 2026-06-22: Added the block-upper version of the local Eq.13.22/Eq.13.23
+  common-growth product bridge for Problem 13.4.  `BlockLU.lean` now has
+  `blockMaxNorm_le_maxEntryNorm_of_reindex_eq`,
+  `blockMaxNorm_le_growthFactorEntry_mul_of_le_maxEntryNorm`,
+  `higham13_eq13_22_local_block_product_from_source_growthFactorEntry_exact_kappa`,
+  and
+  `higham13_eq13_23_local_block_product_from_source_growthFactorEntry_exact_kappa`.
+  These convert an entrywise embedding of a block upper factor into the common
+  max-entry growth-object containment and then combine it with the already
+  proved local Problem 13.4 lower-block premise.  The row remains open for a
+  genuine recursive/global GE growth object containing the initial matrix, the
+  Schur complement, and the block upper factor, followed by a lift from the
+  local product to full recursive `L`/`U` factors.  Verification passed: direct
+  `BlockLU.lean`, focused `LeanFpAnalysis.FP.Algorithms.LU.BlockLU` build,
+  fresh executable lookup, scratch-file cleanup, and `#print axioms` for all
+  four new declarations with only standard Mathlib axioms.
+
+- 2026-06-22: Added the finite local growth-history envelope for Chapter 13
+  Problem 13.4.  `BlockLU.lean` now has `maxEntryNorm_const_nonneg`,
+  `higham13_problem13_4_localGrowthEnvelope`, containment theorems for the
+  initial matrix, current Schur complement, and block upper factor, and the
+  wrappers
+  `higham13_eq13_22_local_block_product_from_history_envelope_exact_kappa` /
+  `higham13_eq13_23_local_block_product_from_history_envelope_exact_kappa`.
+  This removes the explicit local common-containment hypotheses by using an
+  honest finite max-entry history object; it does not claim the recursive GE
+  history theorem.  Remaining Problem 13.4 work is to identify or dominate this
+  local envelope by the recursive/global GE growth surface and then lift the
+  local product to the full recursive `L`/`U` factors.  Verification passed:
+  direct `BlockLU.lean`, focused `LeanFpAnalysis.FP.Algorithms.LU.BlockLU`
+  build, executable lookup, scratch-file cleanup, and `#print axioms` for the
+  new theorem layer with only standard Mathlib axioms.
+
+- 2026-06-22: Added the dominated history-envelope adapters for Chapter 13
+  Problem 13.4.  `BlockLU.lean` now has
+  `higham13_eq13_22_local_block_product_from_dominated_history_envelope_exact_kappa`
+  and
+  `higham13_eq13_23_local_block_product_from_dominated_history_envelope_exact_kappa`.
+  These wrap the finite local history envelope under one domination hypothesis
+  `maxEntryNorm localGrowthEnvelope <= maxEntryNorm G` for the chosen growth
+  matrix, so the next real selected-scope theorem is the recursive GE history
+  domination result, followed by the full recursive `L`/`U` lift.  Verification
+  passed for direct `BlockLU.lean`, the focused BlockLU build, executable
+  lookup, scratch-file cleanup, and `#print axioms` for the two dominated
+  adapters with only standard Mathlib axioms.
+
+- 2026-06-22: Added a finite Algorithm 13.3 stage-history growth object for
+  the Chapter 13 Problem 13.4 route.  `BlockLU.lean` now has
+  `higham13_algorithm13_3_stageHistoryBound`,
+  `higham13_algorithm13_3_stageHistoryGrowthMatrix`, and containment lemmas for
+  the input block table, each recorded Schur stage, and
+  `higham13_algorithm13_3_upperFromStages`.  This gives the recursive growth
+  route a genuine finite block-stage history object, packaged as a constant
+  max-entry growth matrix.  It does not yet prove the flattened/tail
+  identification needed to show that `higham13_problem13_4_localGrowthEnvelope`
+  is dominated by this history; that is the next meaningful Problem 13.4
+  dependency before the full-factor lift.  Verification passed for direct
+  `BlockLU.lean`, the focused BlockLU build, executable lookup, scratch-file
+  cleanup, and `#print axioms` for the stage-history theorem layer with only
+  standard Mathlib axioms.
+
+- 2026-06-22: Added the Problem 13.4 local-envelope domination bridge to the
+  Algorithm 13.3 stage-history route.  `BlockLU.lean` now has
+  `higham13_problem13_4_localGrowthEnvelope_le_of_bounds`, the universal
+  max-entry domination property of the finite local envelope, and
+  `higham13_problem13_4_localGrowthEnvelope_le_stageHistoryGrowthMatrix_of_initial_schur`,
+  which specializes that property to `higham13_algorithm13_3_stageHistoryGrowthMatrix`.
+  The specialization discharges the assembled-upper-factor containment via
+  `higham13_algorithm13_3_stageHistoryGrowthMatrix_contains_upperFromStages`;
+  the remaining local Problem 13.4 dependency is exactly the flattened
+  initial-matrix and flattened Schur-complement containment facts for the
+  relevant stage/tail, before composing the dominated-envelope product adapters
+  and lifting to the full recursive factors.  Verification passed for direct
+  `BlockLU.lean`, the focused BlockLU build, executable lookup, scratch-file
+  cleanup, and `#print axioms` for the two bridge declarations with only
+  standard Mathlib axioms.
+
+- 2026-06-22: Added the Problem 13.4 flat/stage-history containment bridge.
+  `BlockLU.lean` now has `blockMatrixFlatFin`, which reindexes a uniform block
+  matrix through `finProdFinEquiv` to a standard `Fin (m*r)` square matrix, plus
+  `maxEntryNorm_blockMatrixFlatFin_eq_blockMaxNorm`, proving that this
+  reindexing preserves the Chapter 13 max-entry norm.  The stage-history route
+  now also has
+  `higham13_algorithm13_3_stageHistoryGrowthMatrix_contains_flat_initial`,
+  `higham13_algorithm13_3_stageHistoryGrowthMatrix_contains_stage_submatrix`,
+  and
+  `higham13_problem13_4_localGrowthEnvelope_le_stageHistoryGrowthMatrix_of_flat_initial_stage_submatrix`.
+  These close the flat-initial max-norm side and the generic recorded-stage
+  scalar-submatrix side of the local-envelope domination step.  The remaining
+  local Problem 13.4 dependency is the concrete tail-index equality identifying
+  the local Schur complement with the relevant Algorithm 13.3 recorded stage
+  submatrix, before composing the dominated-envelope Eq.13.22/Eq.13.23 adapters
+  and lifting to full recursive factors.  Verification passed for direct
+  `BlockLU.lean`, the focused BlockLU build, executable lookup, scratch-file
+  cleanup, `git diff --check`, marker scan, and `#print axioms` for the new
+  theorem layer with only standard Mathlib axioms.
+
+- 2026-06-22: Added the packaged flat stage-tail containment layer for Chapter
+  13 Problem 13.4.  `BlockLU.lean` now has
+  `higham13_algorithm13_3_schurStageTailBlock`,
+  `higham13_algorithm13_3_stageHistoryGrowthMatrix_contains_flat_stage_tail`,
+  and
+  `higham13_problem13_4_localGrowthEnvelope_le_stageHistoryGrowthMatrix_of_flat_initial_flat_stage_tail`.
+  These specialize the flat/stage-history containment machinery to a named
+  flattened block tail of a recorded Algorithm 13.3 Schur stage, so the next
+  source-specific obligation is the equality between the recursive local Schur
+  complement and that packaged stage tail, followed by the global/full-factor
+  Eq.13.22/Eq.13.23 lift.  Verification passed for direct `BlockLU.lean`, the
+  focused BlockLU build, executable lookup, scratch-file cleanup,
+  `git diff --check`, marker scan, and `#print axioms` for the two exported
+  bridge declarations with only standard Mathlib axioms.
+
+- 2026-06-22: Added a source-faithful matrix-product Schur-stage tail bridge
+  for Chapter 13 Problem 13.4.  `BlockLU.lean` now has
+  `higham13_algorithm13_3_schurStageMatrixBlock` and
+  `higham13_algorithm13_3_schurStageMatrixBlock_one_tail_eq_blockSchur`; the
+  latter proves that the first active tail of the matrix-product Algorithm
+  13.3 stage table is exactly `blockSchur A A11_inv` when `pivotInv 0 =
+  A11_inv`.  This avoids treating the source block Schur complement as a
+  pointwise function-product update.  Remaining Problem 13.4 growth work is to
+  put this matrix-product stage tail under the finite stage-history/local
+  envelope domination route, then perform the recursive/full-factor
+  Eq.13.22/Eq.13.23 lift.  Verification passed for direct `BlockLU.lean`, the
+  focused BlockLU build, executable lookup after rebuild, scratch-file cleanup,
+  `git diff --check`, marker scan, and `#print axioms` for both declarations
+  with only standard Mathlib axioms.
+
+- 2026-06-22: Added the source-faithful matrix-product stage-history/local
+  envelope bridge for Chapter 13 Problem 13.4.  `BlockLU.lean` now has
+  `higham13_algorithm13_3_upperFromMatrixStages`,
+  `higham13_algorithm13_3_matrixStageHistoryBound`,
+  `higham13_algorithm13_3_matrixStageHistoryGrowthMatrix`,
+  `higham13_algorithm13_3_schurStageMatrixTailBlock`,
+  `higham13_algorithm13_3_matrixStageHistoryGrowthMatrix_contains_flat_stage_tail`,
+  `higham13_problem13_4_localGrowthEnvelope_le_matrixStageHistoryGrowthMatrix_of_flat_initial_flat_stage_tail`,
+  and
+  `higham13_problem13_4_localGrowthEnvelope_le_matrixStageHistoryGrowthMatrix_of_blockSchur_first_tail`.
+  This closes the local source Schur-complement domination route using genuine
+  matrix multiplication: `blockMatrixFlatFin (blockSchur A A11_inv)` is now
+  contained in a matrix-product finite stage-history growth matrix when
+  `pivotInv 0 = A11_inv`.  Remaining Problem 13.4/Eq.13.22/Eq.13.23 work is
+  the recursive/global lift from the local envelope/product bridges to full
+  recursive `L` and `U` factors.  Verification passed for direct
+  `BlockLU.lean`, focused BlockLU build, quiet executable lookup after rebuild,
+  scratch-file cleanup, `git diff --check`, marker scan, and `#print axioms`
+  for the matrix-history theorem layer with only standard Mathlib axioms.
+
+- 2026-06-22: Added the first-split matrix-stage local Eq.13.22/Eq.13.23
+  product bridge for Chapter 13 Problem 13.4.  `BlockLU.lean` now has
+  `blockMatrixFirstSplitFlat`, `blockMatrixFirstSplitA11`,
+  `blockMatrixFirstSplitA12`, `blockMatrixFirstSplitA21`,
+  `blockMatrixFirstSplitA22`,
+  `blockMatrixFirstSplit_schur_eq_blockMatrixFlatFin_blockSchur`,
+  `higham13_problem13_4_localGrowthEnvelope_le_matrixStageHistoryGrowthMatrix_of_blockSchur_first_split`,
+  `higham13_problem13_4_localGrowthEnvelope_le_matrixStageHistoryGrowthMatrix_of_blockSchur_first_split_of_hN`,
+  `higham13_eq13_22_local_block_product_from_matrix_stage_history_first_split_exact_kappa`,
+  and
+  `higham13_eq13_23_local_block_product_from_matrix_stage_history_first_split_exact_kappa`.
+  This aligns the source first pivot block with the local `r + m*r` split,
+  proves the scalar Schur complement is the flattened `blockSchur`, and
+  instantiates the local Eq.13.22/Eq.13.23 block-product bounds against the
+  matrix-product Algorithm 13.3 history.  Remaining Problem
+  13.4/Eq.13.22/Eq.13.23 work is the recursive/global full-factor lift.
+  Verification passed for direct `BlockLU.lean`, focused BlockLU build,
+  executable lookup after rebuild, scratch-file cleanup, `git diff --check`,
+  marker scan, and `#print axioms` for the first-split theorem layer with only
+  standard Mathlib axioms.
+
+- 2026-06-22: Added the first recursive/full-factor norm-lift dependencies for
+  Chapter 13 Problem 13.4:
+  `blockLUOneStepL_blockMaxNorm_le_of_firstSplit_tail`,
+  `blockLUOneStepU_blockMaxNorm_le_of_firstRow_tail`, and
+  `blockLUOneStep_blockMaxNorm_product_le_of_firstSplit_tail`.  They prove
+  that the explicit one-step lower/upper factors, and then their product, are
+  bounded in block max norm by common constants when the first-split lower-left
+  block / first block row and recursive Schur-tail factors are bounded.  These
+  are real dependencies for the full recursive Eq.13.22/Eq.13.23 lift; the
+  recursive induction theorem remains open.  Verification passed for direct
+  `BlockLU.lean`, focused BlockLU build, quiet executable lookup,
+  scratch-file cleanup, and `#print axioms` for the one-step norm-lift
+  theorems with only standard Mathlib axioms.
+
+- 2026-06-22: Added the Algorithm 13.3 matrix-stage lower-factor surface for
+  the Chapter 13 Problem 13.4 full-factor route:
+  `higham13_algorithm13_3_lowerFromMatrixStages` and
+  `higham13_algorithm13_3_lowerFromMatrixStages_blockMaxNorm_bound`, then added
+  the full assembled product wrapper
+  `higham13_algorithm13_3_matrixStages_LU_product_bound`.  The lower factor
+  uses identity diagonal blocks, zero strict upper blocks, and below the
+  diagonal uses the source multiplier block `A_ij^(j) * pivotInv j` from the
+  matrix-product Schur-stage table.  The norm theorem lifts per-stage
+  multiplier bounds plus `1 <= C` to a block max-norm bound for the assembled
+  lower factor; the product theorem combines that with any assembled-upper
+  bound.  Verification passed for direct `BlockLU.lean`, focused BlockLU build,
+  quiet executable lookup, scratch-file cleanup, and `#print axioms` with only
+  standard Mathlib axioms.
+
+- 2026-06-22: Added conditional full assembled matrix-stage Eq.13.22/Eq.13.23
+  wrappers for the Chapter 13 Problem 13.4 route:
+  `higham13_eq13_22_matrix_stage_product_from_multiplier_bounds` and
+  `higham13_eq13_23_matrix_stage_product_from_multiplier_bounds`.  These use
+  `higham13_algorithm13_3_lowerFromMatrixStages` and
+  `higham13_algorithm13_3_upperFromMatrixStages` as the full factor surfaces,
+  combine per-stage lower multiplier bounds with the assembled-upper
+  `growthFactorEntry` containment, and produce the source-shaped
+  `nρ^3κ(A)||A||` / `8nκ(A)||A||` products.  They intentionally keep the
+  per-stage multiplier bounds, `1 <= nρ^2κ(A)`, and `ρ <= 2` (for Eq.13.23)
+  explicit.  Verification passed for direct `BlockLU.lean`, focused BlockLU
+  build, quiet executable lookup, scratch-file cleanup, and `#print axioms`
+  with only standard Mathlib axioms.
+
+- 2026-06-22: Added matrix-stage-history specializations of the assembled
+  Chapter 13 Problem 13.4 Eq.13.22/Eq.13.23 wrappers:
+  `higham13_eq13_22_matrix_stage_history_product_from_multiplier_bounds` and
+  `higham13_eq13_23_matrix_stage_history_product_from_multiplier_bounds`.
+  These choose `higham13_algorithm13_3_matrixStageHistoryGrowthMatrix` as the
+  growth object and discharge the assembled-upper containment using
+  `higham13_algorithm13_3_matrixStageHistoryGrowthMatrix_contains_upperFromMatrixStages`.
+  Remaining obligations are now the per-stage lower multiplier bounds, the
+  lower-diagonal nonvacuity inequality `1 <= nρ^2κ(A)`, and the point-row
+  `ρ <= 2` hypothesis for Eq.13.23.  Verification passed for direct
+  `BlockLU.lean`, focused BlockLU build, quiet executable lookup,
+  scratch-file cleanup, and `#print axioms` with only standard Mathlib axioms.
+
+- 2026-06-22: Closed the Eq.13.22 lower diagonal nonvacuity side condition for
+  the Chapter 13 matrix-stage route.  `BlockLU.lean` now has
+  `one_le_dim_mul_maxEntryNormRect_mul_of_isRightInverse`, proving
+  `1 <= N ||A||_max ||Ainv||_max` from a right inverse by comparing `A*Ainv`
+  with the identity, and
+  `higham13_eq13_22_lower_diagonal_budget_from_right_inverse_growth`, promoting
+  this to `1 <= nρ^2κ(A)` when the finite growth object contains the initial
+  matrix and `(N : ℝ) <= n`.  Focused BlockLU build, quiet executable lookup,
+  scratch-file cleanup, and `#print axioms` passed with only standard Mathlib
+  axioms.  Remaining matrix-stage Eq.13.22/Eq.13.23 work is the per-stage lower
+  multiplier bounds, plus the source point-row `ρ <= 2` hypothesis for
+  Eq.13.23.
+
+- 2026-06-22: Added exact-κ matrix-stage-history wrappers
+  `higham13_eq13_22_matrix_stage_history_product_from_multiplier_bounds_exact_kappa`
+  and
+  `higham13_eq13_23_matrix_stage_history_product_from_multiplier_bounds_exact_kappa`.
+  They specialize the assembled Algorithm 13.3 stage-history product bounds to
+  `A0 = blockMatrixFlatFin Ablk`, use exact max-entry
+  `κ(A) = ||A||_max ||A^{-1}||_max`, and discharge the lower diagonal budget
+  with the new right-inverse nonvacuity theorem plus finite history containment
+  of the flattened input.  Direct `BlockLU.lean`, focused BlockLU build, quiet
+  lookup, scratch-file cleanup, and `#print axioms` passed with only standard
+  Mathlib axioms.  The remaining exact-κ matrix-stage obligation is now the
+  per-stage lower multiplier bound; Eq.13.23 additionally still needs the
+  source point-row `ρ <= 2` hypothesis.
+
+- 2026-06-22: Added
+  `higham13_problem13_4_single_block_multiplier_bound_from_local_growth_budget`.
+  It views an individual stage multiplier as the lower-left `A21*A11^{-1}`
+  product of a local `2 × 2` block partition, applies the existing source
+  Problem 13.4 max-entry lower-left bridge, and compares the local `ρ²κ` budget
+  with an explicit ambient budget `C`.  Direct BlockLU check, focused BlockLU
+  build, quiet lookup, scratch cleanup, and `#print axioms` passed with only
+  standard Mathlib axioms.  This closes the multiplier extraction adapter but
+  leaves the recursive Schur-condition/stage-budget comparison as the next
+  concrete theorem.
+
+- 2026-06-22: Added
+  `higham13_algorithm13_3_stage_multiplier_bound_from_local_growth_budget`,
+  the Algorithm 13.3 specialization of the single-block multiplier adapter for
+  one active pair `j < i`.  It uses the concrete stage blocks `(j,j)`, `(j,i)`,
+  `(i,j)`, `(i,i)` and the supplied `pivotInv j`.  Direct BlockLU check,
+  focused BlockLU build, quiet lookup, scratch cleanup, and `#print axioms`
+  passed with only standard Mathlib axioms.  Next concrete theorem remains the
+  uniform recursive/stage-local budget comparison that feeds this adapter for
+  every active lower multiplier.
+
+- 2026-06-22: Added `matrix_invOf_eq_of_isRightInverse`, converting
+  `IsRightInverse r A P` for a square real matrix into `P = ⅟A`.  Focused
+  BlockLU build, quiet lookup, scratch cleanup, and `#print axioms` passed with
+  only standard Mathlib axioms.  This removes a bookkeeping side condition in
+  the stage multiplier route when exact pivot right-inverse data is available.
+
+- 2026-06-22: Added the Eq.13.23 matrix-stage `rho <= 2` bridge for the
+  Chapter 13 matrix-stage route.  `GrowthFactor.lean` now has
+  `growthFactorEntry_le_of_maxEntryNorm_le_mul`, and `BlockLU.lean` now has
+  `higham13_algorithm13_3_matrixStageBlock_bound_of_active_bound`,
+  `higham13_algorithm13_3_matrixStage_blockMaxNorm_bound_of_active_bound`,
+  `higham13_algorithm13_3_matrixStageHistoryBound_le_of_stage_bound`,
+  `higham13_algorithm13_3_matrixStageHistoryGrowthMatrix_le_of_active_bound`,
+  `higham13_algorithm13_3_matrixStageHistoryGrowthMatrix_le_two_of_active_stage_bound`,
+  and
+  `higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_active_stage_bound`.
+  These prove that active-stage max-entry bounds
+  `||stage_ij||_max <= 2 ||A||_max` for every active matrix-product Schur-stage
+  block imply the formal finite-history `growthFactorEntry <= 2` hypothesis
+  needed by the exact-kappa Eq.13.23 wrapper.  Verification passed for direct
+  GrowthFactor and BlockLU checks, focused GrowthFactor and BlockLU builds,
+  quiet executable lookup, `git diff --check`, touched-file marker scan, and
+  `#print axioms` with only standard Mathlib axioms.  Remaining matrix-stage
+  work is proving the active-stage max-entry theorem and the per-stage lower
+  multiplier budget comparison.
+
+- 2026-06-22: Composed the Eq.13.23 matrix-stage `rho <= 2` bridge with the
+  exact-kappa assembled product theorem.  `BlockLU.lean` now has
+  `higham13_eq13_23_matrix_stage_history_product_from_multiplier_bounds_exact_kappa_of_active_stage_bound`,
+  which proves the exact-kappa matrix-stage Eq.13.23 product bound from the
+  per-stage multiplier budget hypothesis and active-stage max-entry
+  `2 ||A||` bounds, without a separate public `rho <= 2` argument.  Direct
+  BlockLU check, focused BlockLU build, quiet executable lookup, scratch-file
+  cleanup, `git diff --check`, touched-file marker scan, and `#print axioms`
+  passed with only standard Mathlib axioms.  Remaining work is still the
+  active-stage max-entry proof itself and the per-stage lower multiplier
+  budget comparison.
+
+- 2026-06-22: Added the stage-local budget composition layer for the Chapter 13
+  Eq.13.23 matrix-stage route.  `BlockLU.lean` now has
+  `higham13_algorithm13_3_stageLocalBlockMatrix`,
+  `higham13_algorithm13_3_stageLocalFlatMatrix`,
+  `higham13_algorithm13_3_stageLocalSchurOfInv`, and
+  `higham13_eq13_23_matrix_stage_history_product_from_stage_local_budgets_exact_kappa_of_active_stage_bound`.
+  The wrapper applies the existing single-stage Problem 13.4 multiplier
+  adapter at every active pair and feeds the resulting lower-factor bounds,
+  together with active-stage `rho <= 2`, into the exact-kappa Eq.13.23
+  matrix-stage product theorem.  Direct BlockLU check, focused BlockLU build,
+  quiet executable lookup, scratch cleanup, `git diff --check`, touched-file
+  marker scan, and `#print axioms` passed with only standard Mathlib axioms.
+  Remaining work is proving the active-stage max-entry theorem and the
+  local-to-global budget comparisons for those active `2 x 2` stage partitions.
+
+- 2026-06-22: Added the Eq.13.22 companion to the Chapter 13 stage-local budget
+  composition layer.  `BlockLU.lean` now has
+  `higham13_eq13_22_matrix_stage_history_product_from_stage_local_budgets_exact_kappa`,
+  which feeds the same active-pair local Problem 13.4 budget data into the
+  exact-kappa Eq.13.22 matrix-stage product theorem, without the Eq.13.23
+  active-stage `rho <= 2` side condition.  Quiet executable lookup, scratch
+  cleanup, `git diff --check`, touched-file marker scan, and `#print axioms`
+  passed with only standard Mathlib axioms.  Remaining work is the local-to-global
+  budget comparison for active `2 x 2` stage partitions, plus the Eq.13.23
+  active-stage max-entry proof and recursive/global factor lift.
+
+- 2026-06-22: Added the canonical stage-local growth layer for the Chapter 13
+  matrix-stage Eq.13.22/Eq.13.23 route.  `BlockLU.lean` now has
+  `higham13_algorithm13_3_stageLocalSchurOfPivot`,
+  `higham13_algorithm13_3_stageLocalSchurOfPivot_eq_stageLocalSchurOfInv`,
+  `higham13_algorithm13_3_stageLocalGrowthMatrix`, its initial/Schur containment
+  lemmas, and
+  `higham13_eq13_22_matrix_stage_history_product_from_stage_local_growth_budgets_exact_kappa`,
+  `higham13_eq13_23_matrix_stage_history_product_from_stage_local_growth_budgets_exact_kappa_of_active_stage_bound`.
+  Direct BlockLU check, focused BlockLU build, quiet executable lookup, scratch
+  cleanup, `git diff --check`, touched-file marker scan, and `#print axioms`
+  passed with only standard Mathlib axioms.  This removes local containment
+  hypotheses from the stage-local wrappers; the remaining budget blocker is the
+  local-to-global comparison for this canonical local growth matrix.  Important
+  guardrail: do not reuse the older pointwise column-BDD active-stage theorem
+  for the matrix-product stage route; Lean exposed that bridge as mixing
+  pointwise block multiplication with true `Matrix` multiplication.
+
+- 2026-06-22: Added the stage-local growth domination layer for the Chapter 13
+  matrix-stage budget route.  `BlockLU.lean` now has
+  `higham13_algorithm13_3_stageLocalSchurOfPivot_eq_next_diag`,
+  `higham13_algorithm13_3_stageLocalFlatMatrix_le_matrixStageHistoryGrowthMatrix`,
+  `higham13_algorithm13_3_stageLocalSchurOfPivot_le_matrixStageHistoryGrowthMatrix`,
+  `higham13_algorithm13_3_stageLocalGrowthMatrix_maxEntryNorm`, and
+  `higham13_algorithm13_3_stageLocalGrowthMatrix_le_matrixStageHistoryGrowthMatrix`.
+  Direct BlockLU check, focused BlockLU build, quiet executable lookup, scratch
+  cleanup, `git diff --check`, touched-file marker scan, and `#print axioms`
+  passed with only standard Mathlib axioms.  This closes the max-entry
+  stage-history containment part of the active-pair local-to-global budget
+  comparison.  Remaining budget work is the inverse/condition-number comparison
+  between the local `2 x 2` stage flat matrix and the ambient flattened source
+  matrix, plus the Eq.13.23 active-stage max-entry theorem and recursive/global
+  factor lift.
+
+- 2026-06-22: Added the stage-local inverse-ratio budget adapter for the
+  Chapter 13 matrix-stage Eq.13.22/Eq.13.23 route.  `BlockLU.lean` now has
+  `growthFactorEntry_sq_kappa_budget_le_of_growth_le_inv_ratio`,
+  `higham13_eq13_22_matrix_stage_history_product_from_stage_local_growth_inverse_ratio_exact_kappa`,
+  and
+  `higham13_eq13_23_matrix_stage_history_product_from_stage_local_growth_inverse_ratio_exact_kappa_of_active_stage_bound`.
+  These derive the per-active-pair local `rho^2 kappa` budget from the already
+  proved local-growth domination plus an explicit cross-multiplied inverse-norm
+  ratio between the local `2 x 2` stage flat matrix and the ambient flattened
+  source matrix.  Direct BlockLU check, focused BlockLU build, executable lookup,
+  scratch cleanup, `git diff --check`, touched-file marker scan, and
+  `#print axioms` passed with only standard Mathlib axioms.  Remaining work is
+  proving that inverse/condition-number ratio, the Eq.13.23 active-stage
+  max-entry theorem, and the recursive/global full-factor lift.
+
+- 2026-06-22: Added the first-split lower-left matrix-stage bridge for Chapter
+  13 Problem 13.4 / Eq.13.22:
+  `higham13_problem13_4_L21_eq13_22_premise_from_matrix_stage_history_first_split_exact_kappa`.
+  It instantiates the existing source `growthFactorEntry` lower-left bridge
+  with `blockMatrixFirstSplitFlat Ablk` and the matrix-product Algorithm 13.3
+  stage-history growth matrix, proving the first-split
+  `||A21*A11^{-1}||_max <= n rho^2 kappa(A)` premise from already proved
+  initial/stage-tail containment and the first-split Schur flattening equality.
+  Verification passed for direct `BlockLU.lean`, focused BlockLU build, quiet
+  executable lookup after rebuilding the module cache, scratch-file cleanup,
+  and `#print axioms` with only standard Mathlib axioms.
+
+  Two important guardrails were recorded during this pass.  Do not instantiate
+  the older abstract active-stage theorem with true `Matrix` blocks to close
+  the matrix-product active-stage max-entry row: the elementwise matrix norm
+  matches the source max-entry norm but lacks a true matrix-multiplication
+  `SeminormedRing`, while the operator-norm matrix ring has the wrong norm for
+  the source theorem.  Also, the inverse-ratio hypothesis in the stage-local
+  budget adapter is still open; it compares local/global inverse-to-input norm
+  ratios and is stronger than a plain local inverse-norm containment.  The next
+  concrete target should be the recursive/full-factor lift, likely starting
+  from `blockLUOneStep_blockMaxNorm_product_le_of_firstSplit_tail` plus a
+  first-row/source-growth containment bridge.
+
+- 2026-06-22: Added the source-facing one-step Eq.13.22 product lift
+  `higham13_eq13_22_blockLUOneStep_product_from_matrix_stage_history_first_split_tail_exact_kappa`.
+  The theorem uses `pivotInv 0` on the one-step lower factor, with `hpivot`
+  tying it to the first block inverse.  It derives the first-split lower-left
+  budget from
+  `higham13_problem13_4_L21_eq13_22_premise_from_matrix_stage_history_first_split_exact_kappa`,
+  derives the first block-row upper budget from matrix-stage initial-history
+  containment, and packages these with recursive Schur-tail `L_S`/`U_S`
+  hypotheses through `blockLUOneStep_blockMaxNorm_product_le_of_firstSplit_tail`.
+  Direct `BlockLU.lean`, focused BlockLU build, quiet executable lookup, and
+  `#print axioms` passed with only standard Mathlib axioms.  The next concrete
+  Eq.13.22 target is the recursive induction theorem that supplies the tail
+  hypotheses at every Schur level and identifies the final recursive factors;
+  Eq.13.23 still needs either an analogous one-step point-row specialization or
+  composition from the eventual Eq.13.22 recursive theorem plus the `rho <= 2`
+  bridge.
+
+- 2026-06-22: Added the source-facing one-step Eq.13.22 witness lift
+  `higham13_eq13_22_exists_blockLUOneStep_fact_product_from_matrix_stage_history_first_split_tail_exact_kappa`.
+  It combines the one-step product bound with `block_lu_one_step_explicit`:
+  from a Schur-tail `BlockLUFactSpec` and the recursive tail norm hypotheses,
+  it constructs explicit full one-step `L` and `U` factors, proves
+  `BlockLUFactSpec (m+1) r Ablk L U`, and proves the same
+  `n*rho^3*kappa(A)*||A||` product bound.  The first-pivot left-inverse
+  identity is derived locally from `invOf_mul_self` and `hpivot`, not assumed.
+  Direct `BlockLU.lean`, focused BlockLU build, quiet executable lookup, scratch
+  cleanup, and `#print axioms` passed with only standard Mathlib axioms.  The
+  first axiom-audit attempt used an unqualified name outside the
+  `LeanFpAnalysis.FP` namespace; the qualified rerun passed.  Next Eq.13.22
+  target remains the recursive induction theorem over Schur tails, now using
+  the witness theorem rather than only the product-only theorem.
+
+- 2026-06-22: Added the source-facing one-step Eq.13.23 product and witness
+  lifts
+  `higham13_eq13_23_blockLUOneStep_product_from_matrix_stage_history_first_split_tail_exact_kappa`
+  and
+  `higham13_eq13_23_exists_blockLUOneStep_fact_product_from_matrix_stage_history_first_split_tail_exact_kappa`.
+  The product theorem composes the one-step Eq.13.22 product bound with the
+  source-side `rho <= 2` hypothesis to get the explicit
+  `8*n*kappa(A)*||A||` bound for `blockLUOneStepL/U`.  The witness theorem
+  combines this product bound with `block_lu_one_step_explicit`, producing
+  concrete full one-step factors and a `BlockLUFactSpec` under the same
+  Schur-tail factorization and norm hypotheses.  Direct `BlockLU.lean`,
+  focused BlockLU build, quiet executable lookup, scratch cleanup, and
+  `#print axioms` passed with only standard Mathlib axioms.  This closes the
+  one-step Eq.13.23 analogue; the remaining selected-scope work is still the
+  recursive induction over Schur tails plus the source proof of final
+  `rho <= 2` where Eq.13.23 uses it.
+
+- 2026-06-22: Added the source-facing one-step Eq.13.22 separate-budget and
+  separate-budget witness lifts
+  `higham13_eq13_22_blockLUOneStep_norms_from_matrix_stage_history_first_split_tail_exact_kappa`
+  and
+  `higham13_eq13_22_exists_blockLUOneStep_fact_norms_from_matrix_stage_history_first_split_tail_exact_kappa`.
+  These preserve the two recursive budgets separately for the explicit
+  `blockLUOneStepL/U` factors:
+  `||L|| <= n*rho^2*kappa(A)` and `||U|| <= rho*||A||`.  The witness theorem
+  combines those bounds with `block_lu_one_step_explicit` and a Schur-tail
+  `BlockLUFactSpec`, so it is the intended induction-strength hook for the
+  full recursive Eq.13.22 theorem.  Direct `BlockLU.lean`, focused BlockLU
+  build, quiet executable lookup, scratch cleanup, and `#print axioms` passed
+  with only standard Mathlib axioms.  Next target: a recursive theorem that
+  supplies the Schur-tail `BlockLUFactSpec` plus separate tail bounds at every
+  level and identifies the final recursive `L`/`U` factors.
+
+- 2026-06-22: Added the one-block base cases for the Problem 13.4 /
+  Eq.13.22-Eq.13.23 recursive full-factor route:
+  `higham13_eq13_22_exists_blockLUFact_one_norms_from_matrix_stage_history_exact_kappa`,
+  `higham13_eq13_22_exists_blockLUFact_one_product_from_matrix_stage_history_exact_kappa`,
+  and
+  `higham13_eq13_23_exists_blockLUFact_one_product_from_matrix_stage_history_exact_kappa`.
+  These construct the base factors `L = I`, `U = A`, prove `BlockLUFactSpec`,
+  preserve the separate Eq.13.22 lower/upper budgets, and derive the
+  Eq.13.22/Eq.13.23 product bounds from the matrix-stage history growth object
+  plus the exact right-inverse nonvacuity lemma.  Direct `BlockLU.lean`,
+  focused BlockLU build, standalone quiet lookup rerun, scratch cleanup, and
+  `#print axioms` passed with only standard Mathlib axioms.  Next target:
+  combine this base with
+  `higham13_eq13_22_exists_blockLUOneStep_fact_norms_from_matrix_stage_history_first_split_tail_exact_kappa`
+  in a recursive theorem over Schur tails.
+
+- 2026-06-22: Added the existential-tail successor wrapper
+  `higham13_eq13_22_exists_blockLUFact_succ_norms_from_tail_witness_matrix_stage_history_exact_kappa`.
+  It turns an existential strict-Schur-tail `BlockLUFactSpec` with separate
+  Eq.13.22 lower/upper budgets into a successor-size full-factor witness by
+  applying the separate-budget one-step theorem.  Direct `BlockLU.lean`,
+  focused BlockLU build, standalone quiet lookup, scratch cleanup, and
+  `#print axioms` passed with only standard Mathlib axioms.  The next target is
+  no longer the abstract successor surface; it is the genuinely recursive
+  theorem that supplies compatible strict-tail witnesses from the one-block
+  base case across all Schur tails.
+
+- 2026-06-23: Added the Eq.13.22 existential-tail product successor wrapper
+  `higham13_eq13_22_exists_blockLUFact_succ_product_from_tail_witness_matrix_stage_history_exact_kappa`.
+  It packages the Eq.13.22 one-step product witness behind the same existential
+  strict-Schur-tail separate-budget witness, yielding the source
+  `n*rho^3*kappa(A)*||A||` product bound for successor factors.  Direct
+  `BlockLU.lean`, focused BlockLU build, standalone quiet lookup, scratch
+  cleanup, and `#print axioms` passed with only standard Mathlib axioms.  The
+  remaining Eq.13.22 target is the genuine recursive theorem that supplies
+  compatible strict-tail witnesses from the one-block base case.
+
+- 2026-06-23: Added the Eq.13.23 existential-tail successor wrapper
+  `higham13_eq13_23_exists_blockLUFact_succ_product_from_tail_witness_matrix_stage_history_exact_kappa`.
+  It packages the Eq.13.23 one-step witness behind the same existential
+  strict-Schur-tail separate-budget witness used by the Eq.13.22 successor
+  theorem, while keeping the source-side `rho <= 2` assumption explicit.
+  Direct `BlockLU.lean`, focused BlockLU build, standalone quiet lookup, scratch
+  cleanup, and `#print axioms` passed with only standard Mathlib axioms.  The
+  remaining recursive/full-factor target is unchanged: supply compatible
+  strict-tail witnesses from the one-block base case, and for Eq.13.23 prove
+  the source `rho <= 2` premise at the final surface.
+
+- 2026-06-23: Added the Chapter 13 ambient-budget recursive chain
+  `Higham13BlockLUBudgetChain`,
+  `Higham13BlockLUBudgetChain.exists_blockLUFact_norms`,
+  `Higham13BlockLUBudgetChain.lowerBudget_nonneg`, and
+  `Higham13BlockLUBudgetChain.exists_blockLUFact_product`.  The chain records
+  the base case and successor Schur-step budget obligations under fixed ambient
+  lower/upper budgets `C_L` and `C_U`; the norm theorem proves concrete
+  `BlockLUFactSpec` factors satisfying those budgets from such a chain, and the
+  product theorem packages the `C_L*C_U` product bound without adding a separate
+  lower-budget nonnegativity hypothesis.  A follow-up pass added
+  `Higham13BlockLUBudgetChain.exists_blockLUFact_eq13_22_product` and
+  `Higham13BlockLUBudgetChain.exists_blockLUFact_eq13_23_product`, specializing
+  the chain to the displayed Eq.13.22 source budgets and, with `rho <= 2`, the
+  Eq.13.23 point-row bound.  Direct `BlockLU.lean`, focused BlockLU build,
+  standalone lookup, scratch cleanup, and `#print axioms` passed with only
+  standard Mathlib axioms.  This closes the structural recursion, product
+  packaging, and source-shaped product wrappers from compatible budgets to
+  factors, but does not instantiate the source Eq.13.22/Eq.13.23 budget chain;
+  next work is proving the chain from Problem 13.4/growth/condition data and
+  adding the final Eq.13.23 `rho <= 2` source surface.
+
+- 2026-06-23: Added assembled Algorithm 13.3 matrix-stage shape and witness
+  adapters:
+  `higham13_algorithm13_3_upperFromMatrixStages_eq_of_le`,
+  `higham13_algorithm13_3_upperFromMatrixStages_lower_zero`,
+  `higham13_algorithm13_3_upperFromMatrixStages_first_row`,
+  `higham13_algorithm13_3_lowerFromMatrixStages_eq_of_lt`,
+  `higham13_algorithm13_3_lowerFromMatrixStages_diag`,
+  `higham13_algorithm13_3_lowerFromMatrixStages_upper_zero`,
+  `higham13_algorithm13_3_lowerFromMatrixStages_first_column`,
+  `higham13_algorithm13_3_matrixStages_blockLUFactSpec_of_product_eq`,
+  `higham13_algorithm13_3_matrixStages_exists_blockLUFact_product_bound`,
+  `higham13_eq13_22_exists_blockLUFact_matrix_stage_product_from_multiplier_bounds`,
+  and
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_product_from_multiplier_bounds`,
+  plus exact-κ history companions
+  `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_multiplier_bounds_exact_kappa`
+  and
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_multiplier_bounds_exact_kappa`.
+  The shape lemmas discharge the concrete lower/upper triangular obligations
+  and record the first-row/first-column source entries for
+  `higham13_algorithm13_3_lowerFromMatrixStages` and
+  `higham13_algorithm13_3_upperFromMatrixStages`; the witness adapters add
+  `BlockLUFactSpec` to the existing product bounds once the actual assembled
+  product equality is supplied.  Direct `BlockLU.lean`, focused BlockLU build,
+  quiet lookup, scratch cleanup, and `#print axioms` passed with only standard
+  Mathlib axioms.  This does not prove assembled Algorithm 13.3 reconstruction;
+  that product equality is now the explicit remaining matrix-stage
+  reconstruction obligation, alongside the per-stage multiplier-budget and
+  Eq.13.23 `rho <= 2` obligations.
+
+- 2026-06-23: Added the matrix-stage pivot right-inverse bridge for Algorithm
+  13.3.  `MatrixAlgebra.lean` now has the generic finite-square theorem
+  `isLeftInverse_of_isRightInverse`, and `BlockLU.lean` now has
+  `higham13_algorithm13_3_pivot_left_inverse_of_pivot_right_inverse`,
+  `higham13_algorithm13_3_matrixStages_blockLUFactSpec_of_pivot_right_inverse`,
+  `higham13_algorithm13_3_matrixStages_product_eq_of_pivot_right_inverse`,
+  `higham13_algorithm13_3_matrixStages_exists_blockLUFact_product_bound_of_pivot_right_inverse`,
+  the general Eq.13.22/Eq.13.23 pivot-right witness wrappers, and exact-κ
+  stage-history pivot-right witness wrappers.  Direct `MatrixAlgebra.lean`,
+  focused `MatrixAlgebra` build, direct `BlockLU.lean`, focused BlockLU build,
+  quiet lookup, scratch cleanup, and `#print axioms` passed with only standard
+  Mathlib axioms.  This removes the orientation mismatch for source pivot
+  certificates: exact right-inverse data now feeds both `pivotInv = ⅟pivot` and
+  the matrix-stage reconstruction/product witness route.  Remaining source
+  obligations are still the per-stage multiplier budgets, the local
+  inverse/condition-number comparison, and the Eq.13.23 active-stage
+  `rho <= 2` theorem.
+
+- 2026-06-23: Added the converse `⅟` pivot bridge and inverse-ratio witness
+  packaging.  `MatrixAlgebra.lean` now has `isRightInverse_of_eq_invOf`, and
+  `BlockLU.lean` now has
+  `higham13_algorithm13_3_pivot_right_inverse_of_pivotInv_eq_invOf`,
+  `higham13_algorithm13_3_matrixStages_blockLUFactSpec_of_pivotInv_eq_invOf`,
+  `higham13_algorithm13_3_matrixStages_product_eq_of_pivotInv_eq_invOf`,
+  `higham13_algorithm13_3_matrixStages_exists_blockLUFact_product_bound_of_pivotInv_eq_invOf`,
+  plus the Eq.13.22/Eq.13.23 inverse-ratio witness wrappers
+  `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_stage_local_growth_inverse_ratio_exact_kappa_of_pivot_right_inverse`
+  and
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stage_local_growth_inverse_ratio_exact_kappa_of_active_stage_bound_of_pivot_right_inverse`.
+  Direct `MatrixAlgebra.lean`, focused `MatrixAlgebra` build, direct
+  `BlockLU.lean`, focused BlockLU build, quiet lookup, scratch cleanup, and
+  `#print axioms` passed with only standard Mathlib axioms.  This packages
+  existing inverse-ratio product bounds as existential `BlockLUFactSpec`
+  witnesses under a pivot-right table and lets `pivotInv = ⅟pivot` data feed
+  that table; the inverse-ratio theorem and active-stage proof remain open.
+
+- 2026-06-23: Added the matrix-product active-stage local-Schur bridge for
+  Eq.13.23.  `BlockLU.lean` now has
+  `higham13_algorithm13_3_matrix_active_stage_bound_of_local_schur_bound` and
+  `higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_local_schur_bound`.
+  Direct `BlockLU.lean`, focused BlockLU build, quiet lookup, scratch cleanup,
+  and `#print axioms` passed with only standard Mathlib axioms.  This avoids
+  the rejected normed-ring shortcut for true matrix products by using the
+  explicit max-entry stage table: active column dominance plus a local Schur
+  max-entry estimate now imply the active-stage `2‖A‖` bound and the
+  matrix-stage `rho <= 2` bridge.  The active dominance/local-Schur
+  instantiation, inverse-ratio comparison, and per-stage multiplier budgets
+  remain open.
+
+- 2026-06-23: Reduced the matrix-product local-Schur estimate itself to an
+  explicit product-bound obligation.  `BlockLU.lean` now has
+  `maxEntryNorm_sub_le` and
+  `higham13_algorithm13_3_matrix_active_local_schur_bound_of_product_bound`.
+  Quiet lookup and `#print axioms` passed with only standard Mathlib axioms,
+  and `ScratchCh13MatrixLocalSchur.lean` /
+  `ScratchCh13MatrixLocalSchurAxioms.lean` were removed.  The Eq.13.23
+  `rho <= 2` route now needs active column dominance plus the concrete
+  triple-product max-entry bound for true matrix products, rather than an
+  opaque local-Schur hypothesis.
+
+- 2026-06-23: Closed the local positive-denominator side condition for the
+  matrix-stage inverse-ratio route.  `BlockLU.lean` now has
+  `maxEntryNorm_pos_of_invertible`,
+  `higham13_algorithm13_3_stageLocalFlatMatrix_pos_of_invertible`, and
+  `higham13_algorithm13_3_stageLocalFlatMatrix_pos_of_invertible_table`.
+  The witness wrappers
+  `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_stage_local_growth_inverse_ratio_exact_kappa_of_pivot_right_inverse_of_local_invertible`
+  and
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stage_local_growth_inverse_ratio_exact_kappa_of_active_stage_bound_of_pivot_right_inverse_of_local_invertible`
+  expose that reduction at the `BlockLUFactSpec` surface.
+  Direct `BlockLU.lean`, focused BlockLU build, quiet lookup, scratch cleanup,
+  and `#print axioms` passed with only standard Mathlib axioms after rebuilding
+  a stale import cache.  The inverse/condition-number ratio remains the real
+  local-to-global budget blocker.
+
+- 2026-06-23: Added the true matrix-product max-entry dimension-factor
+  boundary for the Chapter 13 active-stage local-Schur route.  `BlockLU.lean`
+  now has `maxEntryNorm_matrix_mul_le_dim`,
+  `maxEntryNorm_matrix_mul_mul_le_dim_sq`, and
+  `higham13_algorithm13_3_matrix_active_local_schur_bound_with_dim_factor`.
+  Direct `BlockLU.lean`, focused BlockLU build, quiet lookup after rebuilding a
+  stale import cache, scratch cleanup, and `#print axioms` passed with only
+  standard Mathlib axioms.  This proves the exact matrix-product local-Schur
+  estimate in the entrywise max norm with the explicit `(r : ℝ)^2` factor; it
+  does not close the source-strength `rho <= 2` theorem, which still needs an
+  active-column/source-compatible structured local-Schur argument.
+
+- 2026-06-23: Composed the Chapter 13 matrix-product dimension-factor local
+  Schur estimate through the active-stage and finite-history growth-factor
+  layers.  `BlockLU.lean` now has
+  `higham13_algorithm13_3_matrix_active_stage_bound_with_dim_factor` and
+  `higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_with_dim_factor`.
+  Direct `BlockLU.lean`, focused BlockLU build, quiet lookup
+  (`/tmp/ch13_lookup_dim_comp.err` empty, output contains both names),
+  `git diff --check`, touched-file marker scan, scratch cleanup, and
+  `#print axioms` passed with only standard Mathlib axioms.  This proves the
+  finite-history `rho <= 2` consequence under the strengthened
+  `((r : ℝ)^2 * ||pivotInv k||_max) * stageInvDiagBound k k <= 1` pivot budget;
+  it still is not the source-strength dimension-free route.
+
+- 2026-06-23: Added
+  `higham13_eq13_23_matrix_stage_history_product_from_multiplier_bounds_exact_kappa_with_dim_factor`.
+  This composes the dimension-aware `rho <= 2` bridge with the exact-κ
+  matrix-stage Eq.13.23 product theorem under the same strengthened
+  `(r : ℝ)^2` pivot budget and the existing per-stage lower-multiplier
+  hypotheses.  Direct `BlockLU.lean`, focused BlockLU build, quiet lookup
+  (`/tmp/ch13_lookup_dim_product.err` empty, output contains the name),
+  `git diff --check`, touched-file marker scan, scratch cleanup, and
+  `#print axioms` passed with only standard Mathlib axioms.  Source-strength
+  dimension-free active-stage and per-stage multiplier budget obligations remain
+  open.
+
+- 2026-06-23: Added the matrix-product diagonal-update composition layer for
+  the dimension-aware active-stage route.  `BlockLU.lean` now has
+  `higham13_algorithm13_3_matrix_active_column_dominance_of_local_schur_bound`,
+  `higham13_algorithm13_3_matrix_active_column_dominance_of_product_bound`,
+  `higham13_algorithm13_3_matrix_active_column_dominance_with_dim_factor`,
+  `higham13_algorithm13_3_matrix_active_stage_bound_of_local_schur_diag_update`,
+  `higham13_algorithm13_3_matrix_active_stage_bound_with_dim_factor_of_diag_update`,
+  `higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_with_dim_factor_of_diag_update`,
+  and
+  `higham13_eq13_23_matrix_stage_history_product_from_multiplier_bounds_exact_kappa_with_dim_factor_of_diag_update`.
+  These reduce the raw matrix-stage active-dominance premise to the source
+  Theorem 13.7-style `SchurStageActiveDiagLowerUpdate13_7` certificate plus
+  the strengthened `((r : ℝ)^2 * ||pivotInv k||_max) * stageInvDiagBound k k <= 1`
+  pivot budget, then thread it through active-stage, finite-history `rho <= 2`,
+  and exact-κ Eq.13.23 product wrappers.  Direct `BlockLU.lean`, focused
+  BlockLU build, quiet lookup (`/tmp/ch13_lookup_diag_update.err` empty and
+  output contains the new names), `git diff --check`, touched-file marker scan,
+  scratch cleanup, and `#print axioms` passed with only standard Mathlib
+  axioms.  The source-strength dimension-free structured product/local-Schur
+  proof, the stage-local inverse/condition-number ratio, and per-stage
+  multiplier budgets remain open.
+
+- 2026-06-23: Added the source-strength conditional product-bound composition
+  layer for the matrix-stage Eq.13.23 route.  `BlockLU.lean` now has
+  `higham13_algorithm13_3_matrix_active_stage_bound_of_product_bound_diag_update`,
+  `higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_product_bound_diag_update`,
+  and
+  `higham13_eq13_23_matrix_stage_history_product_from_multiplier_bounds_exact_kappa_of_product_bound_diag_update`.
+  These compose an explicit dimension-free triple-product max-entry hypothesis
+  plus the Theorem 13.7-style diagonal lower-update certificate through the
+  active-stage, finite-history `rho <= 2`, and exact-κ Eq.13.23 product
+  wrappers, without using the `(r : ℝ)^2` generic matrix-product fallback.
+  Direct `BlockLU.lean`, focused BlockLU build, quiet lookup
+  (`/tmp/ch13_lookup_product_diag.err` empty and output contains all three
+  names), `git diff --check`, touched-file marker scan, scratch cleanup, and
+  `#print axioms` passed with only standard Mathlib axioms.  The structured
+  source proof of that dimension-free triple-product premise, the
+  stage-local inverse/condition-number ratio, and the per-stage multiplier
+  budgets remain open.
+
+- 2026-06-23: Added the stage-local inverse-ratio diagonal-update composition
+  layer for Eq.13.23.  `BlockLU.lean` now has
+  `higham13_eq13_23_matrix_stage_history_product_from_stage_local_growth_inverse_ratio_exact_kappa_of_product_bound_diag_update`,
+  `higham13_eq13_23_matrix_stage_history_product_from_stage_local_growth_inverse_ratio_exact_kappa_with_dim_factor_of_diag_update`,
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stage_local_growth_inverse_ratio_exact_kappa_of_product_bound_diag_update_of_pivot_right_inverse`,
+  and
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stage_local_growth_inverse_ratio_exact_kappa_with_dim_factor_of_diag_update_of_pivot_right_inverse`.
+  These compose the explicit inverse-ratio route with the source-conditional
+  product-bound/diagonal-update active-stage theorem and the dimension-aware
+  diagonal-update theorem, then package both as concrete `BlockLUFactSpec`
+  witnesses under exact pivot right-inverse data.  Direct `BlockLU.lean`,
+  focused BlockLU build, quiet lookup
+  (`/tmp/ch13_lookup_inverse_ratio_diag.err` empty and output contains all four
+  names), `git diff --check`, touched-file marker scan, scratch cleanup, and
+  `#print axioms` passed with only standard Mathlib axioms.  The
+  inverse/condition-number ratio, structured dimension-free triple-product
+  estimate, and per-stage multiplier budgets remain open.
+
+- 2026-06-23: Added the stage-local budget witness-packaging pair
+  `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_stage_local_budgets_exact_kappa_of_pivot_right_inverse`
+  and
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stage_local_budgets_exact_kappa_of_active_stage_bound_of_pivot_right_inverse`.
+  These package the local Problem 13.4 budget product wrappers as concrete
+  `BlockLUFactSpec` witnesses under exact pivot right-inverse data; Eq.13.23
+  still keeps active-stage `rho <= 2` data explicit.  Direct `BlockLU.lean`,
+  focused BlockLU build, quiet lookup
+  (`/tmp/ch13_lookup_stage_local_budget_witness.err` empty and output contains
+  both names), `git diff --check`, touched-file marker scan, scratch cleanup,
+  and `#print axioms` passed with only standard Mathlib axioms.  The first
+  lookup/axiom attempt raced the old compiled module before the focused build;
+  reruns passed after rebuild.  The local budget table and Eq.13.23 active-stage
+  theorem remain open.
+
+- 2026-06-23: Added local-invertible cleanup variants for the stage-local
+  budget witnesses:
+  `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_stage_local_budgets_exact_kappa_of_pivot_right_inverse_of_local_invertible`
+  and
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stage_local_budgets_exact_kappa_of_active_stage_bound_of_pivot_right_inverse_of_local_invertible`.
+  They derive the local `growthFactorEntry` positive denominator from
+  `higham13_algorithm13_3_stageLocalFlatMatrix_pos_of_invertible_table`, so
+  the witness surface no longer needs a separate local positivity table.
+  Direct `BlockLU.lean`, focused BlockLU build, quiet lookup
+  (`/tmp/ch13_lookup_stage_local_budget_local_inv.err` empty and output
+  contains both names), `git diff --check`, touched-file marker scan, scratch
+  cleanup, and `#print axioms` passed with only standard Mathlib axioms.  The
+  first lookup/axiom attempt raced the old compiled module before the focused
+  build; reruns passed after rebuild.  The local budget inequalities and
+  Eq.13.23 active-stage theorem remain open.
+
+- 2026-06-23: Added exact-κ source specializations of the ambient-budget
+  recursive chain:
+  `Higham13BlockLUBudgetChain.exists_blockLUFact_eq13_22_product_exact_kappa`
+  and
+  `Higham13BlockLUBudgetChain.exists_blockLUFact_eq13_23_product_exact_kappa`.
+  They package the already-proved chain-to-product route with
+  `rho = growthFactorEntry hN A0 G hApos`,
+  `kappa(A) = ||A0||_max * ||Ainv||_max`, and
+  `normA = ||A0||_max`; Eq.13.23 still requires `rho <= 2`.
+  Direct `BlockLU.lean`, focused BlockLU build, quiet lookup
+  (`/tmp/ch13_lookup_budget_chain_exact_kappa.err` empty and output contains
+  both names), `git diff --check`, touched-file marker scan, scratch cleanup,
+  and `#print axioms` passed with only standard Mathlib axioms.  The source
+  chain instantiation from Problem 13.4/growth/condition data remains open.
+
+- 2026-06-23: Added exact-κ constructor instantiations for the
+  ambient-budget recursive chain:
+  `higham13_eq13_22_blockLUBudgetChain_one_from_matrix_stage_history_exact_kappa`
+  and
+  `higham13_eq13_22_blockLUBudgetChain_succ_from_matrix_stage_history_first_split_exact_kappa`.
+  The first proves the base `Higham13BlockLUBudgetChain` case from the
+  matrix-stage source input, and the second proves the first-split successor
+  constructor from the source lower-left/first-row matrix-stage history data
+  plus a supplied recursive tail chain.  Direct `BlockLU.lean`, focused
+  BlockLU build, quiet lookup
+  (`/tmp/ch13_lookup_budget_chain_constructors.err` empty and output contains
+  both names), `git diff --check`, touched-file marker scan, scratch cleanup,
+  and `#print axioms` passed with only standard Mathlib axioms.  The recursive
+  tail-chain instantiation from Problem 13.4/growth/condition data, and the
+  Eq.13.23 `rho <= 2` source surface, remain open.
+
+- 2026-06-23: Added tail-chain successor product witnesses for the exact-κ
+  ambient-budget route:
+  `higham13_eq13_22_exists_blockLUFact_succ_product_from_tail_chain_matrix_stage_history_exact_kappa`
+  and
+  `higham13_eq13_23_exists_blockLUFact_succ_product_from_tail_chain_matrix_stage_history_exact_kappa`.
+  These compose the first-split exact-κ chain constructor with the
+  chain-to-product packagers to produce concrete `BlockLUFactSpec` witnesses
+  from a supplied recursive Schur-tail chain; Eq.13.23 additionally requires
+  the full first-split `rho <= 2` hypothesis.  Direct `BlockLU.lean`, focused
+  BlockLU build, quiet lookup (`/tmp/ch13_lookup_tail_chain_witness.err`
+  empty and output contains both names), `git diff --check`, touched-file
+  marker scan, scratch cleanup, and `#print axioms` passed with only standard
+  Mathlib axioms.  The recursive tail-chain source proof and Eq.13.23
+  source-strength `rho <= 2` theorem remain open.
+
+- 2026-06-23: Added `Higham13BlockLUBudgetChain.mono`, the monotonicity
+  theorem for the Chapter 13 ambient-budget recursive chain.  It transports a
+  compiled Schur-tail chain from smaller lower/upper budgets to larger ambient
+  budgets, which is the structural bridge needed before tail-local Problem
+  13.4 budgets can feed the full Eq.13.22/Eq.13.23 constants.  Direct
+  `BlockLU.lean` passed immediately after the edit.  Lookup/report/source
+  inventory/bottleneck docs were updated.  The remaining source work is still
+  proving the recursive tail chain from Problem 13.4/growth/condition scalar
+  comparisons and, for Eq.13.23, the source-strength `rho <= 2` theorem.
+
+- 2026-06-23: Added the shifted Schur-tail matrix-stage history comparison
+  lemmas
+  `higham13_algorithm13_3_matrixStageHistoryBound_tail_le` and
+  `higham13_algorithm13_3_matrixStageHistoryGrowthMatrix_tail_le`.  They prove
+  that the recursive tail's finite matrix-stage history/growth object is
+  max-entry dominated by the full matrix-stage history, closing the
+  upper-growth comparison needed when transporting a tail-local recursive
+  budget chain to the full ambient source budgets.  Direct `BlockLU.lean`,
+  focused BlockLU build, quiet lookup
+  (`/tmp/ch13_lookup_tail_history.err` empty and output contains both names),
+  `git diff --check`, touched-file marker scan, scratch cleanup, and
+  `#print axioms` passed with only standard Mathlib axioms.  The recursive
+  tail-chain construction still needs the source scalar lower/condition
+  comparisons and, for Eq.13.23, the source-strength `rho <= 2` theorem.
+
+- 2026-06-23: Added `growthFactorEntry_mul_maxEntryNormRect_eq_maxEntryNorm`
+  and
+  `higham13_eq13_22_tail_upper_budget_le_full_matrix_stage_history_exact_kappa`.
+  The first rewrites the exact source upper budget
+  `growthFactorEntry * ||A||_max` as the max-entry norm of the chosen growth
+  matrix; the second combines that identity with the shifted Schur-tail
+  history comparison to prove the exact upper-budget inequality
+  `rho_tail * ||S||_max <= rho_full * ||A||_max` for the recursive tail versus
+  the full matrix-stage history.  Direct `BlockLU.lean` passed immediately
+  after the edit.  Focused BlockLU build, quiet lookup
+  (`/tmp/ch13_lookup_tail_upper_budget.err` empty and output contains both
+  names), `git diff --check`, touched-file marker scan, scratch cleanup, and
+  `#print axioms` passed with only standard Mathlib axioms.  The remaining
+  recursive-chain work is the source scalar lower/condition comparison and,
+  for Eq.13.23, the source-strength `rho <= 2` theorem.
+
+- 2026-06-23: Added
+  `higham13_eq13_22_tail_chain_to_full_budget_from_lower_comparison_matrix_stage_history_exact_kappa`.
+  It transports a recursive Schur-tail `Higham13BlockLUBudgetChain` proved
+  under the tail's exact matrix-stage constants to the full ambient exact-κ
+  constants by applying `Higham13BlockLUBudgetChain.mono`; the upper comparison
+  is discharged internally by
+  `higham13_eq13_22_tail_upper_budget_le_full_matrix_stage_history_exact_kappa`,
+  so the theorem exposes only the lower/condition scalar comparison as a
+  remaining transport hypothesis.  Direct `BlockLU.lean` passed immediately
+  after the edit.  Focused BlockLU build, quiet lookup
+  (`/tmp/ch13_lookup_tail_chain_transport.err` empty and output contains the
+  theorem name), `git diff --check`, touched-file marker scan, scratch cleanup,
+  and `#print axioms` passed with only standard Mathlib axioms.  The lower/
+  condition scalar comparison, recursive tail-chain construction, and Eq.13.23
+  source-strength `rho <= 2` theorem remain open.
+
+- 2026-06-23: Added
+  `higham13_eq13_22_tail_lower_budget_le_full_from_inverse_ratio_matrix_stage_history_exact_kappa`.
+  It composes the shifted Schur-tail matrix-stage history domination with
+  `growthFactorEntry_sq_kappa_budget_le_of_growth_le_inv_ratio`, proving the
+  exact tail-to-full lower-budget comparison from a single cross-multiplied
+  inverse-ratio/condition hypothesis.  This narrows the recursive tail-chain
+  transport work to proving that source inverse-ratio comparison and building
+  the recursive local tail chain; the upper comparison is already closed.
+  Direct `BlockLU.lean` passed immediately after moving the theorem below its
+  scalar dependency.  Focused BlockLU build, quiet lookup
+  (`/tmp/ch13_lookup_tail_lower_budget.err` empty and output contains the
+  theorem name), `git diff --check`, touched-file marker scan, scratch cleanup,
+  and `#print axioms` passed with only standard Mathlib axioms.  The remaining
+  recursive work is proving the source inverse-ratio comparison, building the
+  recursive local tail chain, and, for Eq.13.23, proving the source-strength
+  `rho <= 2` theorem.
+
+- 2026-06-23: Added
+  `higham13_eq13_22_tail_chain_to_full_budget_from_inverse_ratio_matrix_stage_history_exact_kappa`,
+  composing the lower-budget inverse-ratio theorem with
+  `higham13_eq13_22_tail_chain_to_full_budget_from_lower_comparison_matrix_stage_history_exact_kappa`.
+  A recursive proof can now provide a tail-local budget chain plus the explicit
+  inverse-ratio/condition comparison and immediately obtain the same tail chain
+  under the full ambient exact-κ budgets; the upper-growth comparison is
+  internal.  Direct `BlockLU.lean`, focused BlockLU build, quiet lookup
+  (`/tmp/ch13_lookup_tail_chain_inv_ratio_transport.err` empty and output
+  contains the theorem name), `git diff --check`, touched-file marker scan,
+  scratch cleanup, and `#print axioms` passed with only standard Mathlib
+  axioms.  The remaining recursive work is proving the source inverse-ratio
+  comparison, building the recursive local tail chain, and, for Eq.13.23,
+  proving the source-strength `rho <= 2` theorem.
+
+- 2026-06-23: Added
+  `higham13_eq13_22_blockLUBudgetChain_succ_from_tail_local_chain_inverse_ratio_matrix_stage_history_exact_kappa`.
+  This composes the tail-local-to-full budget transport from
+  `higham13_eq13_22_tail_chain_to_full_budget_from_inverse_ratio_matrix_stage_history_exact_kappa`
+  with
+  `higham13_eq13_22_blockLUBudgetChain_succ_from_matrix_stage_history_first_split_exact_kappa`,
+  so a recursive tail-local chain plus the explicit source inverse-ratio/
+  condition comparison now yields the successor full-budget chain directly.
+  Direct `BlockLU.lean`, focused BlockLU build, quiet lookup
+  (`/tmp/ch13_lookup_succ_tail_local_inv_ratio.err` empty and output contains
+  the theorem name), `git diff --check`, touched-file marker scan, scratch
+  cleanup, and `#print axioms` passed with only standard Mathlib axioms.
+  The remaining recursive work is proving the source inverse-ratio comparison,
+  building the recursive local tail chain, and, for Eq.13.23, proving the
+  source-strength `rho <= 2` theorem.
+
+- 2026-06-23: Added
+  `higham13_eq13_22_exists_blockLUFact_succ_product_from_tail_local_chain_inverse_ratio_matrix_stage_history_exact_kappa`
+  and
+  `higham13_eq13_23_exists_blockLUFact_succ_product_from_tail_local_chain_inverse_ratio_matrix_stage_history_exact_kappa`.
+  These compose the tail-local inverse-ratio successor-chain theorem with the
+  exact-κ Eq.13.22/Eq.13.23 product packagers, producing concrete
+  `BlockLUFactSpec` witnesses from a tail-local recursive chain plus the
+  explicit inverse-ratio/condition comparison.  Direct `BlockLU.lean`, focused
+  BlockLU build, quiet lookup
+  (`/tmp/ch13_lookup_succ_tail_local_product_witnesses.err` empty and output
+  contains both theorem names), `git diff --check`, touched-file marker scan,
+  scratch cleanup, and `#print axioms` passed with only standard Mathlib
+  axioms.  The remaining recursive work is proving the source inverse-ratio
+  comparison, building the recursive local tail chain, and, for Eq.13.23,
+  proving the source-strength `rho <= 2` theorem.
+
+- 2026-06-23: Added
+  `higham13_inverse_ratio_one_sided_containment_counterexample` and
+  `higham13_inverse_ratio_not_implied_by_one_sided_containment`.  These are
+  audit theorems, not source closures: the scalar values `A = 100`, `S = 1`,
+  `Ainv = 1`, and `Sinv = 1` satisfy one-sided norm/inverse-norm containment
+  but fail the cross-multiplied inverse-ratio comparison required by the
+  recursive Eq.13.22/Eq.13.23 budget transport.  Direct `BlockLU.lean`,
+  focused BlockLU build, and lookup passed after refreshing the compiled
+  `BlockLU` module.  The inverse-ratio route therefore cannot be closed from
+  ordinary local inverse containment; any proof must supply a genuinely
+  stronger source comparison, or the work should continue through the
+  source block-inverse/per-stage multiplier route.
+
+- 2026-06-23: Added the direct lower-comparison recursive wrappers
+  `higham13_eq13_22_blockLUBudgetChain_succ_from_tail_local_chain_lower_comparison_matrix_stage_history_exact_kappa`,
+  `higham13_eq13_22_exists_blockLUFact_succ_product_from_tail_local_chain_lower_comparison_matrix_stage_history_exact_kappa`,
+  and
+  `higham13_eq13_23_exists_blockLUFact_succ_product_from_tail_local_chain_lower_comparison_matrix_stage_history_exact_kappa`.
+  These route a supplied lower-budget comparison through the already-proved
+  tail upper-budget comparison, first-split successor constructor, and
+  Eq.13.22/Eq.13.23 product packagers.  Verification passed: direct
+  `BlockLU.lean`, focused BlockLU build, quiet lookup
+  `/tmp/ch13_lookup_lower_comparison.{out,err}`, touched-file marker scan,
+  `git diff --check`, scratch cleanup, and `#print axioms` with only
+  `propext`, `Classical.choice`, and `Quot.sound`.  This does not prove the
+  source lower-budget comparison, recursive tail-local chain, or Eq.13.23
+  `rho <= 2`; it gives the source block-inverse route a direct landing point
+  without reusing the rejected ordinary-containment-to-inverse-ratio shortcut.
+
+- 2026-06-23: Added canonical stage-local growth direct-budget witness wrappers
+  `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_stage_local_growth_budgets_exact_kappa_of_pivot_right_inverse`
+  and
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stage_local_growth_budgets_exact_kappa_of_active_stage_bound_of_pivot_right_inverse`.
+  They package the existing canonical stage-local growth direct-budget product
+  theorems as concrete `BlockLUFactSpec` witnesses under exact pivot
+  right-inverse data, without passing through the inverse-ratio specialization.
+  Verification passed: direct `BlockLU.lean`, focused BlockLU build, quiet
+  lookup `/tmp/ch13_lookup_stage_local_growth_direct_witness.{out,err}`,
+  touched-file marker scan, `git diff --check`, scratch cleanup, and
+  `#print axioms` with only `propext`, `Classical.choice`, and `Quot.sound`.
+  The remaining source obligations are the local-to-global budget table and,
+  for Eq.13.23, the active-stage max-entry bound.
+
+- 2026-06-23: Added local-invertible variants for the canonical stage-local
+  direct-budget witness route:
+  `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_stage_local_growth_budgets_exact_kappa_of_pivot_right_inverse_of_local_invertible`
+  and
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stage_local_growth_budgets_exact_kappa_of_active_stage_bound_of_pivot_right_inverse_of_local_invertible`.
+  These derive the local `growthFactorEntry` positive denominator from the
+  local full-stage invertibility table before packaging the direct-budget
+  canonical-growth product route as concrete `BlockLUFactSpec` witnesses.
+  Verification passed: focused BlockLU build, quiet lookup
+  `/tmp/ch13_lookup_stage_local_growth_direct_localinv.{out,err}`,
+  touched-file marker scan, `git diff --check`, scratch cleanup, and
+  `#print axioms` with only `propext`, `Classical.choice`, and `Quot.sound`.
+
+- 2026-06-23: Added Problem 13.4 lower-budget shortcut audit theorems
+  `higham13_stage_local_budget_from_problem13_4_scalar_counterexample` and
+  `higham13_stage_local_budget_not_implied_by_problem13_4_bound`.  They show
+  that even with equal scalar dimensions, `rhoTail <= rho` and the
+  Problem13.4-shaped condition comparison `kappaTail <= rho * kappa` do not
+  imply the exact `rho^2 kappa` lower-budget transport needed by the recursive
+  Eq.13.22/Eq.13.23 adapters.  Verification passed: direct `BlockLU.lean`,
+  focused BlockLU build, refreshed quiet lookup
+  `/tmp/ch13_lookup_problem134_budget_shortcut.{out,err}`, touched-file marker
+  scan, `git diff --check`, scratch cleanup, and `#print axioms` with only
+  `propext`, `Classical.choice`, and `Quot.sound`.  This is route-rejection
+  evidence only; the source lower-budget comparison/direct budget table remains
+  open.
+
+- 2026-06-23: The Chapter 13 Theorem 13.6 proof-source ledger now records a
+  bibliographic acquisition checkpoint for the cited Demmel--Higham--Schreiber
+  source: likely J. W. Demmel, N. J. Higham, and R. S. Schreiber, "Stability of
+  block LU factorization", Numerical Linear Algebra with Applications 2 (1995),
+  173--190, doi:10.1002/nla.1680020208.  The breadcrumb came from
+  Lindquist--Luszczek--Dongarra, arXiv:2509.07305, which cites this as the
+  previous Demmel et al. block-LU perturbation analysis.  This is not a Lean
+  closure; `H13-Thm13.6`/`H13-Eq13.16` remain open until that primary proof is
+  reconstructed or replaced by local first-order factor/solve estimates.
+
+- 2026-06-23: Added Algorithm 13.3 source-table downstream adapters:
+  `higham13_algorithm13_3_diagLowerCert_pivot_bound_of_source_table`,
+  `higham13_algorithm13_3_active_column_dominance_of_column_bdd_source_table`,
+  `higham13_algorithm13_3_active_stage_block_bound_of_column_bdd_source_table`,
+  and
+  `higham13_algorithm13_3_upperFromStages_eq13_21_blockMaxNorm_bound_of_column_bdd_source_table`.
+  These compose a supplied source inverse-bound table/active reciprocal upper
+  bound into the direct pivot-product, active column-dominance/growth, and
+  Eq.13.21 assembled-upper column-BDD interfaces.  Verification passed: direct
+  `BlockLU.lean`, focused BlockLU build, quiet lookup
+  `/tmp/ch13_lookup_source_table_wrappers.{out,err}`, touched-file marker
+  scan, `git diff --check`, scratch cleanup, and `#print axioms` with only
+  `propext`, `Classical.choice`, and `Quot.sound`.  This does not close the
+  red Algorithm 13.3 blocker; the source table itself or a direct active
+  product bound remains to be proved.
+
+- 2026-06-23: Added the Algorithm 13.3 function-block finite stage-history
+  `rho <= 2` bridge:
+  `higham13_algorithm13_3_stageBlock_bound_of_active_bound`,
+  `higham13_algorithm13_3_stage_blockMaxNorm_bound_of_active_bound`,
+  `higham13_algorithm13_3_stageHistoryBound_le_of_stage_bound`,
+  `higham13_algorithm13_3_stageHistoryGrowthMatrix_le_of_active_bound`,
+  `higham13_algorithm13_3_stageHistoryGrowthMatrix_le_two_of_active_stage_bound`,
+  `higham13_algorithm13_3_stageHistoryGrowthFactor_le_two_of_active_stage_bound`,
+  and
+  `higham13_algorithm13_3_stageHistoryGrowthFactor_le_two_of_column_bdd_source_table`.
+  These transport a supplied active-stage `2 * blockMaxNorm` bound, including
+  the source-table column-BDD route, into `growthFactorEntry <= 2` for the
+  finite function-block history object.  Verification passed: direct
+  `BlockLU.lean`, focused BlockLU build, quiet lookup
+  `/tmp/ch13_lookup_function_stage_history.{out,err}`, scratch cleanup, and
+  `#print axioms` with only `propext`, `Classical.choice`, and `Quot.sound`.
+  This does not construct the source inverse-bound table or prove the true
+  matrix-product dimension-free active-stage theorem.
+
+- 2026-06-23: Added source-table package wrappers
+  `higham13_algorithm13_3_stageHistoryGrowthMatrix_le_two_of_column_bdd_source_table`
+  and
+  `higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_source_table`.
+  They expose the Algorithm 13.3 source-table route as a single public surface:
+  the same supplied source inverse-bound table gives the Eq.13.21 assembled
+  upper-factor bound and the finite function-block `rho <= 2` consequence.
+  Verification passed: direct `BlockLU.lean`, focused BlockLU build, quiet
+  lookup `/tmp/ch13_lookup_source_table_package.{out,err}`, touched-file marker
+  scan, `git diff --check`, scratch cleanup, and `#print axioms` with only
+  `propext`, `Classical.choice`, and `Quot.sound`.  The source inverse-bound
+  table itself and the true matrix-product dimension-free active-stage theorem
+  remain open.
+
+- 2026-06-23: Added the exact diagonal-update equality entry point
+  `higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_source_table_of_diag_eq`.
+  It feeds initial-table equality and the displayed active diagonal-update
+  recurrence into the paired source-table package, leaving only the active
+  reciprocal upper bounds/source table as the analytic obligation.
+  Verification passed: direct `BlockLU.lean`, focused BlockLU build, quiet
+  lookup `/tmp/ch13_lookup_source_table_diag_eq_package.{out,err}`,
+  touched-file marker scan, `git diff --check`, scratch cleanup, and
+  `#print axioms` with only `propext`, `Classical.choice`, and `Quot.sound`.
+
+- 2026-06-23: Added right-inverse/reciprocal finite-history package wrappers
+  `higham13_algorithm13_3_stageHistoryGrowthMatrix_le_two_of_column_bdd_pivot_right_inverse_reciprocal`,
+  `higham13_algorithm13_3_stageHistoryGrowthFactor_le_two_of_column_bdd_pivot_right_inverse_reciprocal`,
+  and
+  `higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_pivot_right_inverse_reciprocal`.
+  These carry exact active pivot right-inverse data plus the reciprocal
+  diagonal certificate through the Eq.13.21 assembled-upper bound and finite
+  function-block `rho <= 2` bridge.  Verification passed: direct
+  `BlockLU.lean`, focused BlockLU build, quiet lookup
+  `/tmp/ch13_lookup_right_inverse_finite_history_package.{out,err}`,
+  touched-file marker scan, `git diff --check`, scratch cleanup, and
+  `#print axioms` with only `propext`, `Classical.choice`, and `Quot.sound`.
+  The reciprocal diagonal certificate itself remains open.
+
+- 2026-06-23: Added the structured Problem 13.4 inverse-ratio route-rejection
+  theorem `higham13_inverse_ratio_principal_tail_counterexample`.  It uses the
+  diagonal full matrix `diag(100,1,1)`, its diagonal right inverse, and the
+  lower-right principal `2 x 2` tail to show that right-inverse certificates,
+  actual principal-tail/full-inverse block identities, and one-sided max-entry
+  containments still do not imply the cross-multiplied inverse-ratio comparison
+  needed by the recursive Eq.13.22/Eq.13.23 lower-budget transport.  This is
+  route-rejection evidence only: the source lower-budget comparison still
+  requires a direct source proof or a genuinely stronger inverse/condition
+  argument.
+
+- 2026-06-23: Added the direct one-sided-certificate finite-history package
+  for Algorithm 13.3:
+  `higham13_algorithm13_3_stageHistoryGrowthMatrix_le_two_of_column_bdd_diag_lower`,
+  `higham13_algorithm13_3_stageHistoryGrowthFactor_le_two_of_column_bdd_diag_lower`,
+  and
+  `higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_diag_lower`.
+  These carry a concrete `diagLowerCert` one-sided certificate directly through
+  Theorem 13.8's finite function-block history norm bound, the
+  `growthFactorEntry <= 2` consequence, and the paired Eq.13.21/finite-history
+  wrapper.  Verification passed: direct `BlockLU.lean`, focused BlockLU build,
+  public lookup, touched-file marker scan, `git diff --check`, scratch cleanup,
+  and `#print axioms` with only `propext`, `Classical.choice`, and
+  `Quot.sound`.  The wrapper layer is closed; the red Algorithm 13.3 blocker
+  remains the source inverse-bound table/active reciprocal upper bound or an
+  equivalent direct concrete pivot certificate.
+
+- 2026-06-23: Added determinant-nonzero exact-κ wrappers for the Problem 13.4
+  recursive Eq.13.22/Eq.13.23 route.  New public declarations include
+  `higham13_blockMatrixFirstSplitFlat_nonsingInv_rightInverse_of_det_ne_zero`,
+  `higham13_eq13_22_blockLUBudgetChain_succ_from_matrix_stage_history_first_split_exact_kappa_of_det_ne_zero`,
+  tail-local inverse-ratio/lower-comparison successor-chain `_of_det_ne_zero`
+  wrappers, and the Eq.13.22/Eq.13.23 tail-chain and tail-local product-witness
+  `_of_det_ne_zero` wrappers.  These derive the `nonsingInv` right-inverse
+  certificate from `det A != 0`, keeping the exact constants unchanged while
+  removing an auxiliary proof-artifact hypothesis from the source-facing
+  surface.  Verification passed: direct `BlockLU.lean`, focused BlockLU build,
+  rebuilt public lookup, scratch cleanup, and `#print axioms` with only
+  `propext`, `Classical.choice`, and `Quot.sound`.  The red Problem 13.4
+  blocker remains the recursive tail-chain construction, source lower-budget
+  comparison, and final Eq.13.23 `rho <= 2` source proof.
+
+- 2026-06-23: Added the base-case determinant interface for the Problem 13.4
+  exact-κ chain: `maxEntryNorm_pos_of_det_ne_zero` and
+  `higham13_eq13_22_blockLUBudgetChain_one_from_matrix_stage_history_exact_kappa_of_det_ne_zero`.
+  Determinant nonsingularity now supplies both the positive
+  `growthFactorEntry` denominator and the `nonsingInv` right-inverse
+  certificate for the one-block chain base case.  Verification passed: direct
+  `BlockLU.lean`, focused BlockLU build, rebuilt public lookup, scratch cleanup,
+  and `#print axioms` with only `propext`, `Classical.choice`, and
+  `Quot.sound`.
+
+- 2026-06-23: Added first-split/uniform-flat max-entry norm representation
+  bridges for Problem 13.4:
+  `blockMaxNorm_le_maxEntryNorm_blockMatrixFirstSplitFlat`,
+  `maxEntryNorm_blockMatrixFirstSplitFlat_eq_blockMaxNorm`, and
+  `maxEntryNorm_blockMatrixFirstSplitFlat_eq_blockMatrixFlatFin`.  These prove
+  that the source first-split flattening and the uniform block flattening have
+  the same Chapter 13 max-entry norm.  Verification passed: direct
+  `BlockLU.lean`, focused BlockLU build, rebuilt public lookup, scratch cleanup,
+  and `#print axioms` with only `propext`, `Classical.choice`, and
+  `Quot.sound`.  The inverse/nonsingInv transport across this reindexing
+  remains separate before a fully uniform recursive-chain data predicate can
+  replace the current successor-wrapper surface.
+
+- 2026-06-23: Closed the inverse side of the first-split/uniform-flat
+  representation bridge for Problem 13.4.  New declarations
+  `blockMatrixFirstSplitToFlatProductEquiv`,
+  `blockMatrixFirstSplitToFlatFinEquiv`,
+  `blockMatrixFirstSplitFlat_eq_blockMatrixFlatFin_reindex`,
+  `maxEntryNormRect_nonsingInv_blockMatrixFirstSplitFlat_le_blockMatrixFlatFin`,
+  `maxEntryNormRect_kappa_blockMatrixFirstSplitFlat_le_blockMatrixFlatFin`, and
+  `maxEntryNormRect_kappa_blockMatrixFirstSplitFlat_le_blockMatrixFlatFin_of_det_ne_zero`
+  transport the first-split canonical-inverse norm and exact max-entry
+  condition product to the uniform flat representation.  This removes the
+  representation mismatch only; the recursive Schur-tail lower-budget/source
+  comparison remains open.
+
+- 2026-06-23: Added determinant-nonzero canonical-inverse wrappers for the
+  Problem 13.4 canonical stage-local growth direct-budget route:
+  `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_stage_local_growth_budgets_exact_kappa_of_pivot_right_inverse_of_det_ne_zero`
+  and
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stage_local_growth_budgets_exact_kappa_of_active_stage_bound_of_pivot_right_inverse_of_det_ne_zero`.
+  These specialize the ambient exact-κ object to `nonsingInv (m*r)
+  (blockMatrixFlatFin Ablk)` and derive the full-matrix positive denominator
+  and right-inverse certificate from `det(blockMatrixFlatFin Ablk) != 0`.
+  The local-to-global stage budget table and Eq.13.23 active-stage bound remain
+  open.
+
+- 2026-06-24: Extended the Problem 13.4 first-split/uniform-flat
+  representation bridge from max-entry/inverse transport to determinant,
+  growth-factor, and complete Eq.13.22 budget transport.  New declarations:
+  `det_blockMatrixFirstSplitFlat_eq_blockMatrixFlatFin`,
+  `det_ne_zero_blockMatrixFirstSplitFlat_of_blockMatrixFlatFin`,
+  `growthFactorEntry_blockMatrixFirstSplitFlat_eq_blockMatrixFlatFin`,
+  `higham13_eq13_22_firstSplit_lower_budget_le_flat_matrix_stage_history_exact_kappa`,
+  and
+  `higham13_eq13_22_firstSplit_upper_budget_eq_flat_matrix_stage_history_exact_kappa`.
+  These remove the first-split representation artifact from the exact-κ
+  Eq.13.22 lower/upper source-budget surface by transporting it to the uniform
+  flat source matrix.  Verification passed: direct `BlockLU.lean`, focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet public lookup
+  rerun after object refresh, touched Lean-file marker scan, `git diff
+  --check`, scratch cleanup, and `#print axioms` with only `propext`,
+  `Classical.choice`, and `Quot.sound`.  Remaining red Problem 13.4 blocker:
+  source lower-budget/direct budget comparisons for recursive Schur tails,
+  recursive chain instantiation for every tail, and the final Eq.13.23
+  `rho <= 2` source proof.
+
+- 2026-06-24: Added
+  `higham13_eq13_22_blockLUBudgetChain_succ_from_flat_matrix_stage_history_exact_kappa_of_det_ne_zero`.
+  This is the uniform-flat determinant-nonzero exact-κ successor constructor for
+  the Problem 13.4 recursive chain: from `det(blockMatrixFlatFin Ablk) != 0`
+  and a supplied recursive Schur-tail `Higham13BlockLUBudgetChain` already
+  stated under the uniform `blockMatrixFlatFin` Eq.13.22 budgets, it builds the
+  successor chain under those same uniform budgets.  The proof uses the
+  first-split local lower-left theorem internally and then applies the new
+  first-split-to-flat lower-budget bridge, so the first-split representation
+  artifact is no longer exposed on this successor surface.  Verification passed:
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused `lake
+  build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet public lookup
+  `/tmp/ch13_lookup_flat_succ.{out,err}` after the focused build, touched
+  Lean-file marker scan, `git diff --check`, scratch cleanup, and `#print
+  axioms` with only `propext`, `Classical.choice`, and `Quot.sound`.  The first
+  unredirected lookup attempt exited nonzero while/noisily around the rebuild;
+  the quiet rerun had empty stderr and found the theorem name.  Remaining red
+  Problem 13.4 blocker: prove/instantiate the recursive Schur-tail chain from
+  source lower-budget/direct condition data, and separately prove the final
+  Eq.13.23 `rho <= 2` source surface.
+
+- 2026-06-24: Added uniform-flat concrete successor product witnesses
+  `higham13_eq13_22_exists_blockLUFact_succ_product_from_flat_tail_chain_matrix_stage_history_exact_kappa_of_det_ne_zero`
+  and
+  `higham13_eq13_23_exists_blockLUFact_succ_product_from_flat_tail_chain_matrix_stage_history_exact_kappa_of_det_ne_zero`.
+  These compose the uniform-flat determinant successor chain with the exact-κ
+  chain-to-product packagers, so a supplied recursive Schur-tail chain under
+  the same `blockMatrixFlatFin Ablk` budgets now yields concrete
+  `BlockLUFactSpec` witnesses and Eq.13.22/Eq.13.23 product bounds without
+  exposing the first-split representation.  Verification passed: direct
+  `BlockLU.lean`, focused `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`,
+  quiet public lookup `/tmp/ch13_lookup_flat_product.{out,err}` with empty
+  stderr and both new names present, touched Lean-file marker scan, `git diff
+  --check`, scratch cleanup, and `#print axioms` with only `propext`,
+  `Classical.choice`, and `Quot.sound`.  Remaining red Problem 13.4 blocker:
+  prove/instantiate the recursive Schur-tail chain from source lower-budget or
+  direct condition data, prove the source lower-budget comparison itself, and
+  prove the final Eq.13.23 `rho <= 2` surface.
+
+- 2026-06-24: Added determinant-nonzero one-block witness wrappers
+  `higham13_eq13_22_exists_blockLUFact_one_norms_from_matrix_stage_history_exact_kappa_of_det_ne_zero`,
+  `higham13_eq13_22_exists_blockLUFact_one_product_from_matrix_stage_history_exact_kappa_of_det_ne_zero`,
+  and
+  `higham13_eq13_23_exists_blockLUFact_one_product_from_matrix_stage_history_exact_kappa_of_det_ne_zero`.
+  These are the concrete `BlockLUFactSpec` companions to the determinant
+  base-chain wrapper: `det(blockMatrixFlatFin Ablk) != 0` now supplies both the
+  positive `growthFactorEntry` denominator and the canonical `nonsingInv`
+  right-inverse certificate for the base separate-budget/product witnesses.
+  Verification passed: direct `BlockLU.lean`, focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet public lookup
+  `/tmp/ch13_lookup_det_base_witness.{out,err}` with empty stderr and all three
+  names present, touched Lean-file marker scan, `git diff --check`, scratch
+  cleanup, and `#print axioms` with only `propext`, `Classical.choice`, and
+  `Quot.sound`.  Remaining red Problem 13.4 blocker: recursive Schur-tail chain
+  instantiation, the source lower-budget/condition comparison, and the final
+  Eq.13.23 `rho <= 2` source proof.
+
+- 2026-06-24 timeout checkpoint: Added
+  `higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_source_table_of_det_ne_zero`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean` and added its
+  `#check` to `examples/LibraryLookup.lean`.  This is the determinant-nonzero
+  wrapper for the Algorithm 13.3 column-BDD source-table package: it derives
+  the positive `growthFactorEntry` denominator from
+  `det(blockMatrixFlatFin A) != 0`, while still leaving the source inverse-bound
+  table, diagonal-update data, and active reciprocal upper bounds as explicit
+  hypotheses.  Direct `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`
+  and focused `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU` both passed.
+  Still pending after resume: quiet public lookup rerun, `#print axioms`, marker
+  scan, `git diff --check`, scratch cleanup if an axiom scratch is created, and
+  updates to `docs/LIBRARY_LOOKUP.md`, `docs/chapter13/CHAPTER13_BOTTLENECK_LEDGER.md`,
+  `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`, and
+  `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
+
+- 2026-06-24 resume verification: Completed the pending audit for
+  `higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_source_table_of_det_ne_zero`.
+  Current-state checks passed: focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet public lookup
+  `/tmp/ch13_lookup_bdd_det_source_table.{out,err}` with empty stderr and the
+  theorem name present, touched Lean-file marker scan with no matches,
+  `git diff --check`, scratch cleanup for
+  `ScratchCh13BddDetSourceTableAxioms.lean`, and `#print axioms` with only
+  `propext`, `Classical.choice`, and `Quot.sound`.  Documentation was updated
+  in `docs/LIBRARY_LOOKUP.md`, `docs/chapter13/CHAPTER13_BOTTLENECK_LEDGER.md`,
+  `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`, and
+  `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.  The wrapper removes the separate
+  positive-denominator proof artifact for the source-table package but does not
+  construct the source inverse-bound table or active reciprocal upper bounds.
+
+- 2026-06-24: Added and verified
+  `higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_source_table_of_diag_eq_of_det_ne_zero`.
+  This is the exact diagonal-update equality companion to the determinant
+  source-table package: it derives the positive `growthFactorEntry`
+  denominator from `det(blockMatrixFlatFin A) != 0` while keeping the exact
+  update recurrence, source inverse-bound table data, and active reciprocal
+  upper bounds explicit.  Verification passed: direct `BlockLU.lean`, focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet public lookup
+  `/tmp/ch13_lookup_diag_eq_det_source_table.{out,err}` rerun after object
+  refresh with empty stderr and the theorem name present, touched Lean-file
+  marker scan with no matches, `git diff --check`, scratch cleanup for
+  `ScratchCh13DiagEqDetSourceTableAxioms.lean`, and `#print axioms` with only
+  `propext`, `Classical.choice`, and `Quot.sound`.  Remaining red BDD blocker:
+  construct/instantiate the source inverse-bound table or prove the direct
+  active pivot-product/certificate bound.
+
+- 2026-06-24: Added and verified the Problem 13.4 uniform-flat lower-comparison
+  tail transport and product-witness package
+  `higham13_eq13_22_tail_chain_to_flat_budget_from_lower_comparison_matrix_stage_history_exact_kappa_of_det_ne_zero`
+  and the combined successor chain wrapper
+  `higham13_eq13_22_blockLUBudgetChain_succ_from_tail_local_chain_lower_comparison_flat_matrix_stage_history_exact_kappa_of_det_ne_zero`,
+  plus concrete witness wrappers
+  `higham13_eq13_22_exists_blockLUFact_succ_product_from_tail_local_chain_lower_comparison_flat_matrix_stage_history_exact_kappa_of_det_ne_zero`
+  and
+  `higham13_eq13_23_exists_blockLUFact_succ_product_from_tail_local_chain_lower_comparison_flat_matrix_stage_history_exact_kappa_of_det_ne_zero`.
+  These compose the existing direct lower-budget comparison route with the
+  first-split/uniform-flat budget bridges, so a tail-local exact-κ recursive
+  chain now feeds the uniform `blockMatrixFlatFin` determinant successor without
+  exposing first-split budgets, and packages concrete Eq.13.22/Eq.13.23
+  `BlockLUFactSpec` witnesses.  Verification passed: direct `BlockLU.lean`,
+  focused `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet public
+  lookup `/tmp/ch13_lookup_flat_tail_lower_comparison_products.{out,err}` with empty
+  stderr and all four names present, touched Lean-file marker scan with no matches,
+  `git diff --check`, scratch cleanup for
+  `ScratchCh13FlatTailLowerComparisonProductsAxioms.lean`, and `#print axioms` with only
+  `propext`, `Classical.choice`, and `Quot.sound`.  Remaining red Problem 13.4
+  blocker: prove the direct source lower-budget comparison, instantiate the
+  recursive source-tail chain at every Schur tail, and prove the Eq.13.23
+  `rho <= 2` source surface.
+
+- 2026-06-24 timeout checkpoint: Added the Problem 13.4 Schur-tail positivity
+  cleanup `det_ne_zero_blockMatrixFlatFin_blockSchur_of_first_split_invertible`
+  and
+  `maxEntryNorm_blockMatrixFlatFin_blockSchur_pos_of_first_split_invertible`,
+  plus the four `_of_schur_invertible` flat lower-comparison successor/product
+  wrappers.  These derive the positive flattened Schur-tail denominator from
+  first-split Schur-complement invertibility, removing the separate `hTailPos`
+  proof-artifact premise from the flat lower-comparison route.  Verification
+  passed: direct `BlockLU.lean`, focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, and quiet public lookup
+  `/tmp/ch13_lookup_schur_tail_pos.{out,err}` with empty stderr and all six
+  public names present.  The touched Lean/lookup marker scan and
+  `git diff --check` passed after the checkpoint docs.  On resume, the scratch
+  audit `ScratchCh13SchurTailPosAxioms.lean` was run and removed; `#print axioms`
+  for all six declarations reported only `propext`, `Classical.choice`, and
+  `Quot.sound`.  Remaining red Problem 13.4 blocker: direct source lower-budget
+  comparison, recursive source-tail chain instantiation, and final Eq.13.23
+  `rho <= 2` source proof.
+
+- 2026-06-24: Completed the urgent handoff target by adding and strengthening
+  the non-flat Schur-tail/full-positivity cleanup wrappers
+  `higham13_eq13_22_blockLUBudgetChain_succ_from_tail_local_chain_inverse_ratio_matrix_stage_history_exact_kappa_of_det_ne_zero_of_schur_invertible`,
+  `higham13_eq13_22_blockLUBudgetChain_succ_from_tail_local_chain_lower_comparison_matrix_stage_history_exact_kappa_of_det_ne_zero_of_schur_invertible`,
+  `higham13_eq13_22_exists_blockLUFact_succ_product_from_tail_local_chain_inverse_ratio_matrix_stage_history_exact_kappa_of_det_ne_zero_of_schur_invertible`,
+  `higham13_eq13_23_exists_blockLUFact_succ_product_from_tail_local_chain_inverse_ratio_matrix_stage_history_exact_kappa_of_det_ne_zero_of_schur_invertible`,
+  `higham13_eq13_22_exists_blockLUFact_succ_product_from_tail_local_chain_lower_comparison_matrix_stage_history_exact_kappa_of_det_ne_zero_of_schur_invertible`,
+  and
+  `higham13_eq13_23_exists_blockLUFact_succ_product_from_tail_local_chain_lower_comparison_matrix_stage_history_exact_kappa_of_det_ne_zero_of_schur_invertible`.
+  Each wrapper derives
+  `0 < maxEntryNorm (Nat.mul_pos (Nat.succ_pos m) hr)
+    (blockMatrixFlatFin (blockSchur Ablk (pivotInv 0)))`
+  from
+  `maxEntryNorm_blockMatrixFlatFin_blockSchur_pos_of_first_split_invertible hr Ablk pivotInv hpivot`
+  and derives the full positive denominator from determinant nonsingularity
+  before calling the existing non-flat `_of_det_ne_zero` theorem.  Verification
+  passed after strengthening: direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`,
+  focused `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_lookup_nonflat_schur_tail_pos.{out,err}` with empty stderr and all
+  six new public names present, touched Lean/lookup marker scan with no
+  matches, scratch cleanup for `ScratchCh13NonflatSchurTailPosAxioms.lean`, and
+  `#print axioms` with only `propext`, `Classical.choice`, and `Quot.sound`.
+  These wrappers remove the proof-artifact Schur-tail and full positive
+  denominator premises from the inverse-ratio and lower-comparison non-flat
+  determinant routes, but they do not prove the inverse-ratio comparison,
+  direct lower-budget comparison, recursive source-tail chain, or Eq.13.23
+  `rho <= 2` source theorem.
+
+- 2026-06-24 source-chain savepoint: Added
+  `Higham13Eq1322LowerComparisonSourceChain`,
+  `Higham13Eq1322LowerComparisonSourceChain.det_ne_zero`,
+  `Higham13Eq1322LowerComparisonSourceChain.to_blockLUBudgetChain`,
+  `Higham13Eq1322LowerComparisonSourceChain.exists_blockLUFact_eq13_22_product_exact_kappa`,
+  and
+  `Higham13Eq1322LowerComparisonSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa`.
+  The inductive certificate records the direct lower-budget route recursively:
+  the base carries one-block determinant nonsingularity and the successor
+  carries pivot identity, full determinant nonsingularity, dimension bounds,
+  the direct lower-budget comparison, and the tail certificate.  The lift
+  theorem constructs the ambient `Higham13BlockLUBudgetChain`; the product
+  wrappers package concrete Eq.13.22/Eq.13.23 `BlockLUFactSpec` witnesses.
+  Verification passed: direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_lookup_source_chain.{out,err}` with empty stderr and all five new
+  public names present, `git diff --check`, touched Lean/lookup marker scan,
+  scratch cleanup, and `#print axioms` with only `propext`,
+  `Classical.choice`, and `Quot.sound`.  Current modified files intentionally on disk
+  are `.codex/PROJECT_MEMORY.md`,
+  `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`,
+  `docs/chapter13/CHAPTER13_BOTTLENECK_LEDGER.md`,
+  `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`,
+  `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`, `docs/LIBRARY_LOOKUP.md`, and
+  `examples/LibraryLookup.lean`.  On resume, continue from the remaining
+  Problem 13.4 per-tail direct lower-budget comparison and Eq.13.23 `rho <= 2`
+  source surfaces rather than adding more chain-packaging wrappers.
+
+- 2026-06-24 docs-health savepoint after source-chain lift: corrected stale
+  Chapter 13 status language in `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`,
+  `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`, `docs/chapter13/CHAPTER13_BOTTLENECK_LEDGER.md`,
+  and `docs/LIBRARY_LOOKUP.md`.  The docs now consistently say that
+  `Higham13Eq1322LowerComparisonSourceChain` handles the recursive source-tail
+  lift from supplied determinant/pivot/dimension/direct-lower-comparison data,
+  while the active Problem 13.4 blockers are the per-tail direct
+  lower-budget/condition comparison and, for Eq.13.23, the final `rho <= 2`
+  theorem.  No new Lean declarations were added in this docs-health pass.
+
+- 2026-06-24 pivot-right-inverse route-rejection savepoint: added
+  `higham13_algorithm13_3_pivot_right_inverse_not_imply_diagLowerCert_pivot_bound`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  It proves by a one-block
+  scalar witness that exact active pivot right-inverse data alone does not
+  imply the concrete `diagLowerCert` pivot product bound required by the
+  Algorithm 13.3 column-BDD route; the source inverse-bound table/active
+  reciprocal upper bound remains a genuine open obligation.  Verification
+  passed: direct `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`,
+  focused `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_lookup_pivot_right_counterexample.{out,err}` with empty stderr and
+  the new public name present, scratch cleanup, and `#print axioms` with only
+  `propext`, `Classical.choice`, and `Quot.sound`.
+
+- 2026-06-24 timeout handoff savepoint: no new Lean declaration was started
+  after the pivot-right-inverse route-rejection savepoint.  The intentional
+  modified files on disk are `.codex/PROJECT_MEMORY.md`,
+  `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`,
+  `docs/chapter13/CHAPTER13_BOTTLENECK_LEDGER.md`,
+  `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`,
+  `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`, `docs/LIBRARY_LOOKUP.md`, and
+  `examples/LibraryLookup.lean`.  Resume from the selected-scope red
+  bottlenecks: Problem 13.4's per-tail direct lower-budget/condition
+  comparison feeding `Higham13Eq1322LowerComparisonSourceChain`, Eq.13.23's
+  source `rho <= 2`/active-stage theorem for matrix-product stages, Algorithm
+  13.3's source inverse-bound table or reciprocal diagonal certificate for
+  Theorems 13.7--13.8/Eq.13.21, and Theorem 13.6's cited Implementation 1
+  proof.  The next small Lean step identified but not begun was a matrix
+  max-entry route audit showing that generic dimension-free max-entry
+  submultiplicativity/triple-product estimates are false in general; this
+  should only be route-rejection evidence, not a source theorem closure.
+
+- 2026-06-24 matrix max-entry dimension-free shortcut audit: added
+  `maxEntryNorm_matrix_mul_dimension_free_counterexample` and
+  `maxEntryNorm_matrix_mul_mul_dimension_free_counterexample` in
+  `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  They use the all-ones
+  `2 x 2` matrix to prove that generic dimension-free binary and
+  triple-product max-entry estimates are false for ordinary matrix
+  multiplication.  This is route-rejection evidence for the matrix-product
+  Eq.13.23/`rho <= 2` red row: the remaining source-compatible proof must use
+  additional structure and cannot be replaced by a generic max-entry
+  submultiplicativity shortcut.  Verification passed: direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_lookup_maxentry_counterexamples.{out,err}` with empty stderr and
+  both new public names present, touched Lean/lookup marker scan, scratch
+  cleanup, and `#print axioms` with only `propext`, `Classical.choice`, and
+  `Quot.sound`.
+
+- 2026-06-24 Theorem 13.6 exact conditional Eq.13.16 wrapper: added
+  `higham13_theorem13_6_eq13_16_from_factor_solve_estimates` in
+  `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  It proves the exact scalar
+  pair of Eq.13.16-style factorization/solve inequalities and their max
+  aggregation from supplied factor/solve estimates whose constants are bounded
+  by a common `d_n`.  This is conditional scalar algebra only; it does not
+  prove the omitted Demmel--Higham--Schreiber [326] implementation estimates,
+  and `H13-Thm13.6` / `H13-Eq13.16` remain open in the source inventory and
+  proof-source ledger.  Verification passed: direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_lookup_eq1316_conditional.{out,err}` with empty stderr and the
+  new public name present, scratch cleanup, and `#print axioms` with only
+  `propext`, `Classical.choice`, and `Quot.sound`.
+
+- 2026-06-24 07:13 UTC timeout handoff savepoint: no new Lean declaration was
+  started after the Theorem 13.6 conditional Eq.13.16 wrapper.  The
+  intentional modified files on disk are `.codex/PROJECT_MEMORY.md`,
+  `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`,
+  `docs/chapter13/CHAPTER13_BOTTLENECK_LEDGER.md`,
+  `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`,
+  `docs/chapter13/CHAPTER13_PROOF_SOURCE_LEDGER.md`,
+  `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`, `docs/LIBRARY_LOOKUP.md`, and
+  `examples/LibraryLookup.lean`.  The last inspected next step was a possible
+  inverse-ratio-to-`Higham13Eq1322LowerComparisonSourceChain` connector for
+  Problem 13.4; because existing inverse-ratio successor-chain/witness wrappers
+  already package that route, resume by adding such a connector only if it
+  proves a genuinely new source dependency.  Otherwise continue with the real
+  red obligations: per-tail direct lower-budget/condition comparison, Eq.13.23
+  source `rho <= 2` for matrix-product stages, Algorithm 13.3's source
+  inverse-bound/reciprocal certificate, and Theorem 13.6's cited
+  implementation estimates.
+
+- 2026-06-24 07:20 UTC timeout handoff savepoint: no Lean declaration or
+  library edit was started after the 07:13 UTC savepoint.  The skill file,
+  split-primary contract, chapter index, active bottleneck ledger, source
+  inventory, lookup index, and extracted Chapter 13 PDF text were rechecked.
+  The key source audit is that Eq.13.22 in the book uses a source-shaped
+  recursive lower-block budget with one local growth factor, then enlarges to
+  the fixed full ambient `n * rho_n^2 * kappa(A)` budget.  The existing
+  `Higham13Eq1322LowerComparisonSourceChain` direct-comparison route remains a
+  stronger exact-tail transport, not the scalar consequence of Problem 13.4
+  alone.  Resume by avoiding redundant inverse-ratio connector wrappers unless
+  they discharge a genuinely new source dependency.  A good next small Lean
+  step is the positive scalar bridge
+  `s * rhoTail * kappaTail <= n * rho^2 * kappa` from `s <= n`,
+  `rhoTail <= rho`, and `kappaTail <= rho * kappa`, paired with the existing
+  counterexample that rejects the stronger `rhoTail^2 * kappaTail` transport.
+  The remaining red obligations are unchanged: direct Problem 13.4
+  lower-budget/condition data, Eq.13.23 source `rho <= 2` for matrix-product
+  stages, Algorithm 13.3 source inverse-bound/reciprocal certificate, and the
+  cited Theorem 13.6 implementation estimates.
+
+- 2026-06-24 Problem 13.4 source-shaped scalar bridge: added
+  `higham13_stage_local_source_lblock_budget_le_of_problem13_4_bound` in
+  `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  It proves the positive
+  scalar step matching the book's Eq.13.22 derivation: from `s <= n`,
+  `rhoTail <= rho`, nonnegativity, and `kappaTail <= rho * kappa`, the
+  one-local-growth lower-block budget `s * rhoTail * kappaTail` is bounded by
+  the full ambient `n * rho^2 * kappa` budget.  This is deliberately distinct
+  from the already-rejected stronger exact-tail `rhoTail^2 * kappaTail`
+  transport, so it is a source-shaped dependency and not a full Problem 13.4
+  recursive closure.  Verification passed: direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_lookup_source_lblock_bridge.{out,err}` with empty stderr and the
+  new public name present, `git diff --check`, touched Lean/lookup marker scan,
+  scratch cleanup, and `#print axioms` with only `propext`,
+  `Classical.choice`, and `Quot.sound`.
+
+- 2026-06-24 Problem 13.4 source local lower-block product wrappers: added
+  `higham13_algorithm13_3_multiplier_bounds_from_source_lblock_budgets_exact_kappa`,
+  `higham13_eq13_22_matrix_stage_history_product_from_source_lblock_budgets_exact_kappa`,
+  and
+  `higham13_eq13_23_matrix_stage_history_product_from_source_lblock_budgets_exact_kappa`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  These compose the
+  positive source scalar bridge with the exact-κ matrix-stage product wrappers:
+  per-active-pair local lower-block estimates `r * rhoLocal * kappaLocal`,
+  together with `rhoLocal <= rhoFull` and
+  `kappaLocal <= rhoFull * kappaFull`, now produce the per-stage multiplier
+  hypotheses and the Eq.13.22/Eq.13.23 assembled product bounds.  They leave
+  the actual local lower-block estimate table, scalar comparison table, and
+  Eq.13.23 source `rho <= 2` theorem open.  Verification passed: direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_lookup_source_lblock_products.{out,err}` with empty stderr and all
+  three names present, `git diff --check`, touched Lean/lookup marker scan,
+  scratch cleanup, and `#print axioms` with only `propext`,
+  `Classical.choice`, and `Quot.sound`.
+
+- 2026-06-24 Problem 13.4 source local lower-block witness wrappers: added
+  `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_source_lblock_budgets_exact_kappa_of_pivot_right_inverse`
+  and
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_source_lblock_budgets_exact_kappa_of_pivot_right_inverse`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean` and added both names to
+  `examples/LibraryLookup.lean`.  These package the source-local lower-block
+  product route as concrete `BlockLUFactSpec` witnesses under exact pivot
+  right-inverse certificates, removing the black-box per-stage
+  multiplier-bound hypothesis from the pivot-right witness surface.  They
+  still leave the actual local lower-block estimate table, scalar comparison
+  table, and Eq.13.23 source `rho <= 2` theorem open.  Verification passed:
+  direct `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`,
+  focused `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_lookup_source_lblock_witness.{out,err}` with empty stderr and
+  both names present, `git diff --check`, touched Lean/lookup marker scan,
+  scratch cleanup, and `#print axioms` with only `propext`,
+  `Classical.choice`, and `Quot.sound`.
+
+- 2026-06-24 Problem 13.4 determinant/canonical-inverse source local
+  lower-block witness wrappers: added
+  `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_source_lblock_budgets_exact_kappa_of_pivot_right_inverse_of_det_ne_zero`
+  and
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_source_lblock_budgets_exact_kappa_of_pivot_right_inverse_of_det_ne_zero`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean` and added both names to
+  `examples/LibraryLookup.lean`.  These specialize the source-local
+  lower-block witness route to the canonical full inverse
+  `nonsingInv (m*r) (blockMatrixFlatFin Ablk)`, deriving the full positive
+  denominator and right-inverse certificate from
+  `det(blockMatrixFlatFin Ablk) != 0`.  They still leave the local
+  lower-block estimate table, scalar comparison table, and Eq.13.23 source
+  `rho <= 2` theorem open.  Verification passed: scratch compile, direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_lookup_source_lblock_det_witness.{out,err}` with empty stderr and
+  both names present, `git diff --check`, touched Lean/lookup marker scan,
+  scratch cleanup, and `#print axioms` with only `propext`,
+  `Classical.choice`, and `Quot.sound`.
+
+- 2026-06-24 Problem 13.4 determinant/canonical-inverse source local
+  lower-block product wrappers: added
+  `higham13_eq13_22_matrix_stage_history_product_from_source_lblock_budgets_exact_kappa_of_det_ne_zero`
+  and
+  `higham13_eq13_23_matrix_stage_history_product_from_source_lblock_budgets_exact_kappa_of_det_ne_zero`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean` and added both names to
+  `examples/LibraryLookup.lean`.  These are the product-bound analogues of the
+  determinant source-local witness wrappers: they use
+  `nonsingInv (m*r) (blockMatrixFlatFin Ablk)` and derive the full positive
+  denominator and right-inverse certificate from
+  `det(blockMatrixFlatFin Ablk) != 0` before applying the source-local
+  lower-block product route.  They still leave the local lower-block estimate
+  table, scalar comparison table, and Eq.13.23 source `rho <= 2` theorem open.
+  Verification passed: direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_lookup_source_lblock_det_product.{out,err}` with empty stderr and
+  both names present, `git diff --check`, touched Lean/lookup marker scan,
+  scratch cleanup, and `#print axioms` with only `propext`,
+  `Classical.choice`, and `Quot.sound`.
+
+- 2026-06-24 Problem 13.4 source local lower-block from canonical local
+  growth: added
+  `higham13_problem13_4_single_block_source_lblock_bound_from_local_growth`
+  and
+  `higham13_algorithm13_3_source_lblock_bound_from_stageLocalGrowth_le`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean` and added both names to
+  `examples/LibraryLookup.lean`.  The generic theorem keeps the direct
+  Problem 13.4 lower-left estimate in the one-growth-factor source shape
+  `r * rhoLocal * kappaLocal`; the Algorithm 13.3 specialization proves the
+  active multiplier estimate from the canonical stage-local growth matrix plus
+  local growth/κ budget domination.  This closes the local lower-block
+  estimate side of the source-shaped Eq.13.22/Eq.13.23 wrappers.  Remaining
+  source obligations are the local-to-full scalar comparisons and Eq.13.23
+  source `rho <= 2`.  Verification passed: scratch compile, direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_lookup_source_lblock_local_growth.{out,err}` with empty stderr and
+  both names present, `git diff --check`, touched Lean/lookup marker scan,
+  scratch cleanup, and `#print axioms` with only `propext`,
+  `Classical.choice`, and `Quot.sound`.
+
+- 2026-06-24 Problem 13.4 stage-local source scalar-comparison multiplier
+  adapter: added
+  `higham13_algorithm13_3_multiplier_bounds_from_stageLocalGrowth_source_comparisons_exact_kappa`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean` and added it to
+  `examples/LibraryLookup.lean`.  The theorem chooses the canonical local
+  growth/κ values for every active Algorithm 13.3 matrix-stage pair, applies
+  the local lower-block estimate, and uses the source scalar comparison table
+  (`rhoLocal <= rhoFull`, `kappaLocal <= rhoFull * kappaFull`) to derive the
+  exact per-stage multiplier hypothesis consumed by the assembled
+  Eq.13.22/Eq.13.23 product wrappers.  Remaining source obligations are the
+  scalar comparison table itself and Eq.13.23 source `rho <= 2`.  Verification
+  passed: scratch compile, direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_lookup_stage_local_source_comparisons.{out,err}` with empty
+  stderr and the name present, scratch cleanup, and `#print axioms` with only
+  `propext`, `Classical.choice`, and `Quot.sound`.
+
+- 2026-06-24 Problem 13.4 stage-local source-comparison product/witness
+  composition: added
+  `higham13_eq13_22_matrix_stage_history_product_from_stageLocalGrowth_source_comparisons_exact_kappa`,
+  `higham13_eq13_23_matrix_stage_history_product_from_stageLocalGrowth_source_comparisons_exact_kappa`,
+  `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_source_comparisons_exact_kappa_of_pivot_right_inverse`,
+  and
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_source_comparisons_exact_kappa_of_pivot_right_inverse`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean` and added them to
+  `examples/LibraryLookup.lean`.  These wrappers feed the canonical
+  stage-local-growth multiplier theorem directly into the Eq.13.22/Eq.13.23
+  product and concrete `BlockLUFactSpec` witness surfaces, so the canonical
+  source-comparison route no longer exposes the local lower-block estimate as
+  a separate hypothesis.  Remaining source obligations are still the
+  local-to-full scalar comparison table and Eq.13.23 source `rho <= 2`.
+
+- 2026-06-24 Problem 13.4 stage-local source-comparison determinant cleanup:
+  added
+  `higham13_eq13_22_matrix_stage_history_product_from_stageLocalGrowth_source_comparisons_exact_kappa_of_det_ne_zero`,
+  `higham13_eq13_23_matrix_stage_history_product_from_stageLocalGrowth_source_comparisons_exact_kappa_of_det_ne_zero`,
+  `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_source_comparisons_exact_kappa_of_pivot_right_inverse_of_det_ne_zero`,
+  and
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_source_comparisons_exact_kappa_of_pivot_right_inverse_of_det_ne_zero`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean` and added them to
+  `examples/LibraryLookup.lean`.  These determinant variants specialize the
+  canonical source-comparison route to
+  `nonsingInv (m*r) (blockMatrixFlatFin Ablk)`, derive the full
+  positive-denominator/right-inverse certificates from
+  `det(blockMatrixFlatFin Ablk) != 0`, and derive the local stage
+  positive-denominator table from the existing local invertibility table.
+  Verification used direct Lean, focused Lake build, quiet lookup
+  `/tmp/ch13_lookup_stageLocalGrowth_source_det_products.{out,err}`, and
+  `#print axioms`; only `propext`, `Classical.choice`, and `Quot.sound`
+  appeared.  Remaining source obligations are still the local-to-full scalar
+  comparison table and Eq.13.23 source `rho <= 2`.
+  Verification passed: direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_lookup_stageLocalGrowth_source_products.{out,err}` with empty
+  stderr and all four names present, `git diff --check`, Lean-only marker
+  scan, scratch cleanup, and `#print axioms` with only `propext`,
+  `Classical.choice`, and `Quot.sound`.
+
+- 2026-06-24 Problem 13.4 stage-local growth-factor comparison: added
+  `growthFactorEntry_le_of_growth_le_of_base_le` and
+  `higham13_algorithm13_3_stageLocalGrowthFactor_le_matrixStageHistoryGrowthFactor_of_base_le`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, plus lookup entries.  The
+  generic scalar lemma proves local `growthFactorEntry <=` global
+  `growthFactorEntry` from numerator domination and denominator/base
+  domination.  The Algorithm 13.3 specialization uses the already-proved
+  canonical local-growth domination to reduce the source `rhoLocal <= rhoFull`
+  row to the explicit denominator comparison
+  `||blockMatrixFlatFin Ablk||_max <= ||stageLocalFlatMatrix i j||_max`.
+  Verification passed: scratch compile, direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_lookup_growth_factor_comparison.{out,err}` with empty stderr and
+  both names present, scratch cleanup, and `#print axioms` with only
+  `propext`, `Classical.choice`, and `Quot.sound`.
+
+- 2026-06-24 Problem 13.4 stage-local denominator/base route rejection: added
+  `higham13_stage_local_base_comparison_counterexample` in
+  `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, plus a lookup entry.  The
+  theorem gives a `3 × 3` scalar-block example where the active local pair has
+  positive local denominator `1` but the flattened global input has max-entry
+  norm `100` outside that local `2 × 2` stage partition, so the generic
+  comparison `||A||_max <= ||A_local||_max` is false.  Verification passed:
+  scratch compile, direct `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`,
+  focused `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_lookup_stage_local_base_counterexample.{out,err}` with empty
+  stderr and the name present, scratch cleanup, and `#print axioms` with only
+  `propext`, `Classical.choice`, and `Quot.sound`.
