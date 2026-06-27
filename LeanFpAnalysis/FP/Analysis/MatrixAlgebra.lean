@@ -3419,6 +3419,56 @@ theorem finiteOpNorm2Le_abs_eigenvalue_le {ι : Type*} [Fintype ι]
     simpa [heig, finiteVecNorm2_smul] using hbound
   exact le_of_mul_le_mul_right hbound' hxnorm_pos
 
+/-- If a finite square matrix has a left inverse and a witnessed nonzero
+    eigenvalue, then any finite operator-2 bound for that inverse dominates the
+    reciprocal magnitude of the eigenvalue.  This is the inverse-norm half of
+    the finite eigenpair condition-number bridge. -/
+theorem finiteOpNorm2Le_inverse_abs_recip_eigenvalue_le_of_isLeftInverse
+    {n : ℕ} {M Minv : Fin n → Fin n → ℝ} {lambda c : ℝ} {x : Fin n → ℝ}
+    (hMinv : finiteOpNorm2Le Minv c)
+    (hLeft : IsLeftInverse n M Minv)
+    (hlambda : lambda ≠ 0) (hx : x ≠ 0)
+    (heig : finiteMatVec M x = fun i => lambda * x i) :
+    |lambda|⁻¹ ≤ c := by
+  have hMinvM : finiteMatMul Minv M = finiteIdMatrix := by
+    ext i j
+    simpa [finiteMatMul, finiteIdMatrix] using hLeft i j
+  have hleft_action : finiteMatVec Minv (finiteMatVec M x) = x := by
+    calc
+      finiteMatVec Minv (finiteMatVec M x)
+          = finiteMatVec (finiteMatMul Minv M) x := by
+              exact (finiteMatVec_finiteMatMul Minv M x).symm
+      _ = finiteMatVec finiteIdMatrix x := by rw [hMinvM]
+      _ = x := finiteMatVec_finiteIdMatrix x
+  have hleft_scaled : finiteMatVec Minv (fun i => lambda * x i) = x := by
+    simpa [heig] using hleft_action
+  have hscale :
+      finiteMatVec Minv (fun i => lambda * x i) =
+        fun i => lambda * finiteMatVec Minv x i := by
+    ext i
+    unfold finiteMatVec
+    rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl
+    intro j _
+    ring
+  have hlambda_action :
+      (fun i => lambda * finiteMatVec Minv x i) = x :=
+    hscale.symm.trans hleft_scaled
+  have hrecip_eig :
+      finiteMatVec Minv x = fun i => lambda⁻¹ * x i := by
+    ext i
+    have hi := congrFun hlambda_action i
+    calc
+      finiteMatVec Minv x i =
+          lambda⁻¹ * (lambda * finiteMatVec Minv x i) := by
+            rw [← mul_assoc, inv_mul_cancel₀ hlambda, one_mul]
+      _ = lambda⁻¹ * x i := by rw [hi]
+  have hbound :=
+    finiteOpNorm2Le_abs_eigenvalue_le
+      (M := Minv) (lambda := lambda⁻¹) (c := c) (x := x)
+      hMinv hx hrecip_eig
+  simpa [abs_inv] using hbound
+
 /-- Reindexing a finite vector along an equivalence preserves its Euclidean norm. -/
 theorem finiteVecNorm2_reindex_equiv {ι κ : Type*} [Fintype ι] [Fintype κ]
     (e : ι ≃ κ) (x : κ → ℝ) :

@@ -4335,6 +4335,125 @@ theorem lsScaledAugmentedMatrix_singularPair_minus_abs_eigenvalue_le_of_finiteOp
       (lambda := lsScaledAugmentedEigenvalueMinus alpha sigma)
       (c := L) (x := z) hC heig_rect.2 heig
 
+/-- Inverse-operator-norm lower-bound certificate for the positive branch in
+    (20.18): any finite operator-2 bound for a left-inverse candidate of
+    `C(alpha)` must dominate the reciprocal magnitude of a witnessed
+    positive-branch eigenvalue.  This is the inverse-norm side of the
+    condition-number bridge for (20.19), not a proof of global invertibility or
+    spectral multiplicity. -/
+theorem lsScaledAugmentedMatrix_singularPair_plus_abs_recip_eigenvalue_le_of_inverse_finiteOpNorm2Le
+    {m n : ℕ} {alpha sigma D : ℝ} {A : Fin m → Fin n → ℝ}
+    {Cinv : Fin (m + n) → Fin (m + n) → ℝ}
+    {u : Fin m → ℝ} {v : Fin n → ℝ}
+    (hCinv : finiteOpNorm2Le Cinv D)
+    (hLeft : IsLeftInverse (m + n) (lsScaledAugmentedMatrix alpha A) Cinv)
+    (hAv : rectMatMulVec A v = fun i => sigma * u i)
+    (hATu : (fun j : Fin n => ∑ i : Fin m, A i j * u i) =
+      fun j => sigma * v j)
+    (halpha : 0 ≤ alpha) (hsigma : sigma ≠ 0) (hv : v ≠ 0) :
+    |lsScaledAugmentedEigenvaluePlus alpha sigma|⁻¹ ≤ D := by
+  let z : Fin (m + n) → ℝ :=
+    Fin.append
+      (fun i => lsScaledAugmentedEigenvaluePlus alpha sigma * u i)
+      (fun j => sigma * v j)
+  have heig_rect :=
+    lsScaledAugmentedMatrix_singularPair_plus_eigenpair
+      alpha sigma A u v hAv hATu hsigma hv
+  have heig :
+      finiteMatVec (lsScaledAugmentedMatrix alpha A) z =
+        fun k => lsScaledAugmentedEigenvaluePlus alpha sigma * z k := by
+    simpa [z, finiteMatVec, rectMatMulVec] using heig_rect.1
+  exact
+    finiteOpNorm2Le_inverse_abs_recip_eigenvalue_le_of_isLeftInverse
+      (M := lsScaledAugmentedMatrix alpha A) (Minv := Cinv)
+      (lambda := lsScaledAugmentedEigenvaluePlus alpha sigma)
+      (c := D) (x := z) hCinv hLeft
+      (lsScaledAugmentedEigenvaluePlus_ne_zero_of_sigma_ne_zero
+        (alpha := alpha) (sigma := sigma) halpha hsigma)
+      heig_rect.2 heig
+
+/-- Inverse-operator-norm lower-bound certificate for the negative branch in
+    (20.18): any finite operator-2 bound for a left-inverse candidate of
+    `C(alpha)` must dominate the reciprocal magnitude of a witnessed
+    negative-branch eigenvalue. -/
+theorem lsScaledAugmentedMatrix_singularPair_minus_abs_recip_eigenvalue_le_of_inverse_finiteOpNorm2Le
+    {m n : ℕ} {alpha sigma D : ℝ} {A : Fin m → Fin n → ℝ}
+    {Cinv : Fin (m + n) → Fin (m + n) → ℝ}
+    {u : Fin m → ℝ} {v : Fin n → ℝ}
+    (hCinv : finiteOpNorm2Le Cinv D)
+    (hLeft : IsLeftInverse (m + n) (lsScaledAugmentedMatrix alpha A) Cinv)
+    (hAv : rectMatMulVec A v = fun i => sigma * u i)
+    (hATu : (fun j : Fin n => ∑ i : Fin m, A i j * u i) =
+      fun j => sigma * v j)
+    (halpha : 0 ≤ alpha) (hsigma : sigma ≠ 0) (hv : v ≠ 0) :
+    |lsScaledAugmentedEigenvalueMinus alpha sigma|⁻¹ ≤ D := by
+  let z : Fin (m + n) → ℝ :=
+    Fin.append
+      (fun i => lsScaledAugmentedEigenvalueMinus alpha sigma * u i)
+      (fun j => sigma * v j)
+  have heig_rect :=
+    lsScaledAugmentedMatrix_singularPair_minus_eigenpair
+      alpha sigma A u v hAv hATu hsigma hv
+  have heig :
+      finiteMatVec (lsScaledAugmentedMatrix alpha A) z =
+        fun k => lsScaledAugmentedEigenvalueMinus alpha sigma * z k := by
+    simpa [z, finiteMatVec, rectMatMulVec] using heig_rect.1
+  exact
+    finiteOpNorm2Le_inverse_abs_recip_eigenvalue_le_of_isLeftInverse
+      (M := lsScaledAugmentedMatrix alpha A) (Minv := Cinv)
+      (lambda := lsScaledAugmentedEigenvalueMinus alpha sigma)
+      (c := D) (x := z) hCinv hLeft
+      (lsScaledAugmentedEigenvalueMinus_ne_zero_of_sigma_ne_zero
+        (alpha := alpha) (sigma := sigma) halpha hsigma)
+      heig_rect.2 heig
+
+/-- Condition-number product bridge for the two scalar branches in
+    (20.18)-(20.19): an operator-2 bound for `C(alpha)` and an operator-2 bound
+    for an explicit left-inverse candidate bound the ratio of a witnessed
+    positive branch to the magnitude of a witnessed negative branch.  The
+    remaining spectral work is to prove that the selected branches are the
+    global extremal eigenvalues of `C(alpha)`. -/
+theorem lsScaledAugmentedMatrix_singularPair_plus_minus_abs_ratio_le_opNorm_mul_inverseOpNorm
+    {m n : ℕ} {alpha sigmaPlus sigmaMinus L D : ℝ}
+    {A : Fin m → Fin n → ℝ}
+    {Cinv : Fin (m + n) → Fin (m + n) → ℝ}
+    {uPlus uMinus : Fin m → ℝ} {vPlus vMinus : Fin n → ℝ}
+    (hC : finiteOpNorm2Le (lsScaledAugmentedMatrix alpha A) L)
+    (hCinv : finiteOpNorm2Le Cinv D)
+    (hLeft : IsLeftInverse (m + n) (lsScaledAugmentedMatrix alpha A) Cinv)
+    (hAvPlus : rectMatMulVec A vPlus = fun i => sigmaPlus * uPlus i)
+    (hATuPlus : (fun j : Fin n => ∑ i : Fin m, A i j * uPlus i) =
+      fun j => sigmaPlus * vPlus j)
+    (hAvMinus : rectMatMulVec A vMinus = fun i => sigmaMinus * uMinus i)
+    (hATuMinus : (fun j : Fin n => ∑ i : Fin m, A i j * uMinus i) =
+      fun j => sigmaMinus * vMinus j)
+    (halpha : 0 ≤ alpha)
+    (hsigmaPlus : sigmaPlus ≠ 0) (hvPlus : vPlus ≠ 0)
+    (hsigmaMinus : sigmaMinus ≠ 0) (hvMinus : vMinus ≠ 0) :
+    |lsScaledAugmentedEigenvaluePlus alpha sigmaPlus| /
+        |lsScaledAugmentedEigenvalueMinus alpha sigmaMinus| ≤ L * D := by
+  have hplus :
+      |lsScaledAugmentedEigenvaluePlus alpha sigmaPlus| ≤ L :=
+    lsScaledAugmentedMatrix_singularPair_plus_abs_eigenvalue_le_of_finiteOpNorm2Le
+      (hC := hC) (hAv := hAvPlus) (hATu := hATuPlus)
+      hsigmaPlus hvPlus
+  have hminusInv :
+      |lsScaledAugmentedEigenvalueMinus alpha sigmaMinus|⁻¹ ≤ D :=
+    lsScaledAugmentedMatrix_singularPair_minus_abs_recip_eigenvalue_le_of_inverse_finiteOpNorm2Le
+      (hCinv := hCinv) (hLeft := hLeft)
+      (hAv := hAvMinus) (hATu := hATuMinus)
+      halpha hsigmaMinus hvMinus
+  have hL_nonneg : 0 ≤ L :=
+    le_trans (abs_nonneg _) hplus
+  have hrecip_nonneg :
+      0 ≤ |lsScaledAugmentedEigenvalueMinus alpha sigmaMinus|⁻¹ :=
+    inv_nonneg.mpr (abs_nonneg _)
+  have hprod :
+      |lsScaledAugmentedEigenvaluePlus alpha sigmaPlus| *
+          |lsScaledAugmentedEigenvalueMinus alpha sigmaMinus|⁻¹ ≤ L * D :=
+    mul_le_mul hplus hminusInv hrecip_nonneg hL_nonneg
+  simpa [div_eq_mul_inv] using hprod
+
 /-- In a nonzero singular-pair certificate for (20.18), the left singular-vector
     side is nonzero whenever the right singular-vector side is nonzero. -/
 theorem lsScaledAugmentedMatrix_singularPair_left_vector_ne_zero {m n : ℕ}
