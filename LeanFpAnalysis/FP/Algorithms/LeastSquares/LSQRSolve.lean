@@ -13392,6 +13392,141 @@ theorem LSNormwiseBackwardErrorFeasible.iff_source_higham_residual_orthogonal
     have hj := h j
     simpa [lsResidualHigham_perturbed_eq] using hj
 
+/-- Left block of the transposed WKS source matrix on a feasible perturbed
+    residual.  Under (20.20) feasibility, the `A^T` part of
+    `[A phi(I-r r^+)]^T p` is exactly cancelled by `DeltaA^T p`, where
+    `p = (b - A y) + Delta b - Delta A y`. -/
+theorem LSNormwiseBackwardErrorFeasible.formulaMatrix_transpose_source_residual_left
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (DeltaA : Fin (m + 1) → Fin n → ℝ)
+    (Deltab : Fin (m + 1) → ℝ)
+    (hfeas : LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab)
+    (j : Fin n) :
+    rectMatMulVec
+        (finiteTranspose
+          (lsNormwiseBackwardErrorFormulaMatrix theta A
+            (lsResidualHigham A b y) y))
+        (fun i => lsResidualHigham A b y i + Deltab i -
+          rectMatMulVec DeltaA y i)
+        (Fin.castAdd (m + 1) j) =
+      -∑ i : Fin (m + 1), DeltaA i j *
+        (lsResidualHigham A b y i + Deltab i - rectMatMulVec DeltaA y i) := by
+  let p : Fin (m + 1) → ℝ :=
+    fun i => lsResidualHigham A b y i + Deltab i - rectMatMulVec DeltaA y i
+  have horth :
+      ∑ i : Fin (m + 1), (A i j + DeltaA i j) * p i = 0 :=
+    (LSNormwiseBackwardErrorFeasible.iff_source_higham_residual_orthogonal
+      A b y DeltaA Deltab).mp hfeas j
+  have hsplit :
+      (∑ i : Fin (m + 1), A i j * p i) +
+        ∑ i : Fin (m + 1), DeltaA i j * p i = 0 := by
+    simpa [p, add_mul, Finset.sum_add_distrib] using horth
+  have hleft :
+      ∑ i : Fin (m + 1), A i j * p i =
+        -∑ i : Fin (m + 1), DeltaA i j * p i := by
+    linarith
+  calc
+    rectMatMulVec
+        (finiteTranspose
+          (lsNormwiseBackwardErrorFormulaMatrix theta A
+            (lsResidualHigham A b y) y))
+        p (Fin.castAdd (m + 1) j)
+        = ∑ i : Fin (m + 1), A i j * p i := by
+          simp [rectMatMulVec, finiteTranspose,
+            lsNormwiseBackwardErrorFormulaMatrix, Fin.append_left]
+    _ = -∑ i : Fin (m + 1), DeltaA i j * p i := hleft
+
+/-- Right projector block of the transposed WKS source matrix on a source-form
+    perturbed residual.  Since `(I-r r^+)^T r = 0`, the right block sees only
+    the perturbation residual `Delta b - Delta A y`. -/
+theorem lsNormwiseBackwardErrorFormulaMatrix_transpose_source_residual_right
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (DeltaA : Fin (m + 1) → Fin n → ℝ)
+    (Deltab : Fin (m + 1) → ℝ)
+    (hrsq : vecNorm2Sq (lsResidualHigham A b y) ≠ 0)
+    (k : Fin (m + 1)) :
+    rectMatMulVec
+        (finiteTranspose
+          (lsNormwiseBackwardErrorFormulaMatrix theta A
+            (lsResidualHigham A b y) y))
+        (fun i => lsResidualHigham A b y i + Deltab i -
+          rectMatMulVec DeltaA y i)
+        (Fin.natAdd n k) =
+      lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y *
+        ∑ i : Fin (m + 1),
+          lsResidualComplementProjector (lsResidualHigham A b y) i k *
+            (Deltab i - rectMatMulVec DeltaA y i) := by
+  have hres :
+      ∑ i : Fin (m + 1),
+        lsResidualComplementProjector (lsResidualHigham A b y) i k *
+          lsResidualHigham A b y i = 0 :=
+    lsResidualComplementProjector_transpose_mul_residual
+      (lsResidualHigham A b y) hrsq k
+  calc
+    rectMatMulVec
+        (finiteTranspose
+          (lsNormwiseBackwardErrorFormulaMatrix theta A
+            (lsResidualHigham A b y) y))
+        (fun i => lsResidualHigham A b y i + Deltab i -
+          rectMatMulVec DeltaA y i)
+        (Fin.natAdd n k)
+        = ∑ i : Fin (m + 1),
+            (lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y *
+                lsResidualComplementProjector (lsResidualHigham A b y) i k) *
+              (lsResidualHigham A b y i + Deltab i -
+                rectMatMulVec DeltaA y i) := by
+          simp [rectMatMulVec, finiteTranspose,
+            lsNormwiseBackwardErrorFormulaMatrix, Fin.append_right]
+    _ = lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y *
+        (∑ i : Fin (m + 1),
+            lsResidualComplementProjector (lsResidualHigham A b y) i k *
+              lsResidualHigham A b y i +
+          ∑ i : Fin (m + 1),
+            lsResidualComplementProjector (lsResidualHigham A b y) i k *
+              (Deltab i - rectMatMulVec DeltaA y i)) := by
+          calc
+            (∑ i : Fin (m + 1),
+                lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y *
+                    lsResidualComplementProjector (lsResidualHigham A b y) i k *
+                  (lsResidualHigham A b y i + Deltab i -
+                    rectMatMulVec DeltaA y i))
+                =
+              ∑ i : Fin (m + 1),
+                lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y *
+                  (lsResidualComplementProjector (lsResidualHigham A b y) i k *
+                    (lsResidualHigham A b y i + Deltab i -
+                      rectMatMulVec DeltaA y i)) := by
+                apply Finset.sum_congr rfl
+                intro i _
+                ring
+            _ =
+              lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y *
+                ∑ i : Fin (m + 1),
+                  lsResidualComplementProjector (lsResidualHigham A b y) i k *
+                    (lsResidualHigham A b y i + Deltab i -
+                      rectMatMulVec DeltaA y i) := by
+                rw [Finset.mul_sum]
+            _ = lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y *
+                (∑ i : Fin (m + 1),
+                    lsResidualComplementProjector (lsResidualHigham A b y) i k *
+                      lsResidualHigham A b y i +
+                  ∑ i : Fin (m + 1),
+                    lsResidualComplementProjector (lsResidualHigham A b y) i k *
+                      (Deltab i - rectMatMulVec DeltaA y i)) := by
+                congr 1
+                rw [← Finset.sum_add_distrib]
+                apply Finset.sum_congr rfl
+                intro i _
+                ring
+    _ = lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y *
+        ∑ i : Fin (m + 1),
+          lsResidualComplementProjector (lsResidualHigham A b y) i k *
+            (Deltab i - rectMatMulVec DeltaA y i) := by
+          rw [hres]
+          ring
+
 /-- Exact-minimizer specialization of the nonzero-residual left-null
     certificate for (20.21).  If `y` is a least-squares minimizer, then
     normal-equation orthogonality of Higham's residual `b - A y` to the data
