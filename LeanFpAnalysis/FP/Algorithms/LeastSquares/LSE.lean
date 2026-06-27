@@ -3840,6 +3840,25 @@ theorem exists_unique_isLSEMinimizer_iff_nullIntersectionTrivial_of_exists
     intro y hy
     exact IsLSEMinimizer.eq_of_nullIntersectionTrivial hnull hy hx
 
+/-- Higham, 2nd ed., Chapter 20, equation (20.24), stacked-rank uniqueness
+    bridge:
+    once an equality-constrained least-squares minimizer exists, uniqueness is
+    equivalent to the local full-column-rank condition for `[A^T, B^T]^T`,
+    represented here as injectivity of the vertical stack `[A; B]`.
+
+    This is the source full-column-rank wording combined with the exact
+    null-intersection uniqueness bridge. -/
+theorem exists_unique_isLSEMinimizer_iff_lseStackedFullColumnRank_of_exists
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ}
+    {B : Fin p → Fin n → ℝ} {d : Fin p → ℝ}
+    (hex : ∃ x : Fin n → ℝ, IsLSEMinimizer A b B d x) :
+    (∃! x : Fin n → ℝ, IsLSEMinimizer A b B d x) ↔
+      LSEStackedFullColumnRank A B :=
+  (exists_unique_isLSEMinimizer_iff_nullIntersectionTrivial_of_exists
+    (A := A) (b := b) (B := B) (d := d) hex).trans
+    (LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B)
+
 /-- Unique-solution form of the limiting weighting theorem after (20.26).
     Under the local uniqueness condition from (20.24), any supplied convergent
     exact weighted-minimizer branch whose weights satisfy `(mu^2)^{-1} -> 0`
