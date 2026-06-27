@@ -13258,6 +13258,99 @@ theorem RectLSNormalEquations.iff_isLeastSquaresMinimizer {m n : ℕ}
   · intro h
     exact h.rectLSNormalEquations
 
+/-- Higham, 2nd ed., Chapter 20, equations (20.20)-(20.21):
+    feasibility for the normwise backward-error problem is equivalent to the
+    perturbed rectangular normal equations for the same candidate `y`.  This is
+    the local least-squares-consistency characterization used by the WKS route. -/
+theorem LSNormwiseBackwardErrorFeasible.iff_rectLSNormalEquations {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ) :
+    LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab ↔
+      RectLSNormalEquations
+        (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y := by
+  simpa [LSNormwiseBackwardErrorFeasible] using
+    (RectLSNormalEquations.iff_isLeastSquaresMinimizer
+      (fun i j => A i j + DeltaA i j)
+      (fun i => b i + Deltab i) y).symm
+
+/-- Residual-orthogonality form of
+    `LSNormwiseBackwardErrorFeasible.iff_rectLSNormalEquations`. -/
+theorem LSNormwiseBackwardErrorFeasible.iff_perturbed_residual_orthogonal
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ) :
+    LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab ↔
+      ∀ j : Fin n,
+        ∑ i : Fin m, (A i j + DeltaA i j) *
+          lsResidual
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i) y i = 0 := by
+  exact
+    (LSNormwiseBackwardErrorFeasible.iff_rectLSNormalEquations
+      A b y DeltaA Deltab).trans
+      (RectLSNormalEquations.iff_residual_orthogonal
+        (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y)
+
+/-- Higham-signed residual-orthogonality form of normwise backward-error
+    feasibility.  This rewrites the consistency characterization using the
+    chapter's residual convention `r = b - A y`. -/
+theorem LSNormwiseBackwardErrorFeasible.iff_perturbed_higham_residual_orthogonal
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ) :
+    LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab ↔
+      ∀ j : Fin n,
+        ∑ i : Fin m, (A i j + DeltaA i j) *
+          lsResidualHigham
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i) y i = 0 := by
+  constructor
+  · intro h j
+    have horth :
+        ∑ i : Fin m, (A i j + DeltaA i j) *
+          lsResidual
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i) y i = 0 :=
+      (LSNormwiseBackwardErrorFeasible.iff_perturbed_residual_orthogonal
+        A b y DeltaA Deltab).mp h j
+    calc
+      ∑ i : Fin m, (A i j + DeltaA i j) *
+          lsResidualHigham
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i) y i
+          = -∑ i : Fin m, (A i j + DeltaA i j) *
+              lsResidual
+                (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i) y i := by
+            exact lsResidualHigham_column_sum_eq_neg
+              (fun i j => A i j + DeltaA i j)
+              (fun i => b i + Deltab i) y j
+      _ = 0 := by rw [horth, neg_zero]
+  · intro h
+    apply
+      (LSNormwiseBackwardErrorFeasible.iff_perturbed_residual_orthogonal
+        A b y DeltaA Deltab).mpr
+    intro j
+    have hneg :
+        ∑ i : Fin m, (A i j + DeltaA i j) *
+          lsResidualHigham
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i) y i =
+          -∑ i : Fin m, (A i j + DeltaA i j) *
+            lsResidual
+              (fun i j => A i j + DeltaA i j)
+              (fun i => b i + Deltab i) y i :=
+      lsResidualHigham_column_sum_eq_neg
+        (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i) y j
+    have hsum :
+        -∑ i : Fin m, (A i j + DeltaA i j) *
+          lsResidual
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i) y i = 0 := by
+      simpa [hneg] using h j
+    exact neg_eq_zero.mp hsum
+
 /-- Exact-minimizer specialization of the nonzero-residual left-null
     certificate for (20.21).  If `y` is a least-squares minimizer, then
     normal-equation orthogonality of Higham's residual `b - A y` to the data
