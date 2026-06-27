@@ -3759,6 +3759,87 @@ theorem IsLSEMinimizer.eq_of_nullIntersectionTrivial {m n p : ℕ}
   dsimp [v] at hvj
   linarith
 
+/-- Higham, 2nd ed., Chapter 20, equation (20.24), uniqueness bridge:
+    once an equality-constrained least-squares minimizer exists, uniqueness is
+    equivalent to the null-intersection condition `null(A) ∩ null(B) = {0}`.
+
+    The reverse implication is the source uniqueness guarantee.  The forward
+    implication records the exact finite-dimensional necessity proof: a common
+    null vector can be added to any minimizer without changing feasibility or
+    objective value. -/
+theorem exists_unique_isLSEMinimizer_iff_nullIntersectionTrivial_of_exists
+    {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ}
+    {B : Fin p → Fin n → ℝ} {d : Fin p → ℝ}
+    (hex : ∃ x : Fin n → ℝ, IsLSEMinimizer A b B d x) :
+    (∃! x : Fin n → ℝ, IsLSEMinimizer A b B d x) ↔
+      LSENullIntersectionTrivial A B := by
+  constructor
+  · intro huniq
+    rcases huniq with ⟨x, hx, hunique⟩
+    intro v hAv hBv
+    let y : Fin n → ℝ := fun j => x j + v j
+    have hy_feas : LSEFeasible B d y := by
+      intro i
+      have hvi : rectMatMulVec B v i = 0 := by
+        simpa using congrFun hBv i
+      dsimp [y]
+      rw [congrFun (rectMatMulVec_add B x v) i, hx.1 i, hvi]
+      ring
+    have hcross :
+        (∑ j : Fin n,
+          v j * (∑ i : Fin m, A i j * lsResidual A b x i)) = 0 := by
+      calc
+        (∑ j : Fin n,
+          v j * (∑ i : Fin m, A i j * lsResidual A b x i))
+            = ∑ j : Fin n, ∑ i : Fin m,
+                v j * (A i j * lsResidual A b x i) := by
+              apply Finset.sum_congr rfl
+              intro j _
+              rw [Finset.mul_sum]
+        _ = ∑ i : Fin m, ∑ j : Fin n,
+                v j * (A i j * lsResidual A b x i) := by
+              rw [Finset.sum_comm]
+        _ = ∑ i : Fin m,
+                lsResidual A b x i * rectMatMulVec A v i := by
+              apply Finset.sum_congr rfl
+              intro i _
+              unfold rectMatMulVec
+              rw [Finset.mul_sum]
+              apply Finset.sum_congr rfl
+              intro j _
+              ring
+        _ = 0 := by
+              apply Finset.sum_eq_zero
+              intro i _
+              have hAvi : rectMatMulVec A v i = 0 := by
+                simpa using congrFun hAv i
+              rw [hAvi]
+              ring
+    have hAv_sq : vecNorm2Sq (rectMatMulVec A v) = 0 := by
+      rw [hAv]
+      simp [vecNorm2Sq]
+    have hobj_y : lsObjective A b y = lsObjective A b x := by
+      dsimp [y]
+      rw [lsObjective_add_direction_eq A b x v, hcross, hAv_sq]
+      ring
+    have hy : IsLSEMinimizer A b B d y := by
+      refine ⟨hy_feas, ?_⟩
+      intro z hz
+      rw [hobj_y]
+      exact hx.2 z hz
+    have hyx : y = x := hunique y hy
+    ext j
+    change v j = 0
+    have hj := congrFun hyx j
+    dsimp [y] at hj
+    linarith
+  · intro hnull
+    rcases hex with ⟨x, hx⟩
+    refine ⟨x, hx, ?_⟩
+    intro y hy
+    exact IsLSEMinimizer.eq_of_nullIntersectionTrivial hnull hy hx
+
 /-- Unique-solution form of the limiting weighting theorem after (20.26).
     Under the local uniqueness condition from (20.24), any supplied convergent
     exact weighted-minimizer branch whose weights satisfy `(mu^2)^{-1} -> 0`
