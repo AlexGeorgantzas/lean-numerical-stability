@@ -4949,6 +4949,100 @@ theorem lsScaledAugmentedMatrix_kappa2_le_two_sigma_ratio_of_balanced_branch_ort
       (hdiag := hdiag) (hQ := hQ) (hd := hdUpper) (hdinv := hdRecip)
       hsigmaMin_pos hsigmaMin_le_max halpha
 
+/-- Branch-classified balanced lower half of (20.19).  Combining a supplied
+    branch-classified orthogonal diagonalization with supplied extremal
+    singular-pair witnesses gives the lower source certificate
+    `sqrt 2 * sigmaMax/sigmaMin <= κ₂ C(alpha) Cinv` for the same
+    reciprocal-diagonal inverse candidate used by the upper bound. -/
+theorem lsScaledAugmentedMatrix_singularPair_balanced_sigma_ratio_le_kappa2_of_balanced_branch_orthogonal_diagonalization
+    {m n : ℕ} {alpha sigmaMin sigmaMax : ℝ}
+    {A : Fin m → Fin n → ℝ}
+    {Q : Fin (m + n) → Fin (m + n) → ℝ} {d : Fin (m + n) → ℝ}
+    {uMax uMin : Fin m → ℝ} {vMax vMin : Fin n → ℝ}
+    (hdiag : lsScaledAugmentedMatrix alpha A =
+      finiteMatMul Q (finiteMatMul (finiteDiagonal d) (matTranspose Q)))
+    (hQ : IsOrthogonal (m + n) Q)
+    (hAvMax : rectMatMulVec A vMax = fun i => sigmaMax * uMax i)
+    (hATuMax : (fun j : Fin n => ∑ i : Fin m, A i j * uMax i) =
+      fun j => sigmaMax * vMax j)
+    (hAvMin : rectMatMulVec A vMin = fun i => sigmaMin * uMin i)
+    (hATuMin : (fun j : Fin n => ∑ i : Fin m, A i j * uMin i) =
+      fun j => sigmaMin * vMin j)
+    (hsigmaMin_pos : 0 < sigmaMin)
+    (hsigmaMin_le_max : sigmaMin ≤ sigmaMax)
+    (halpha : alpha = sigmaMin / Real.sqrt 2)
+    (hvMax : vMax ≠ 0) (hvMin : vMin ≠ 0)
+    (hd : ∀ i : Fin (m + n),
+      d i = alpha ∨
+        ∃ sigma : ℝ, sigmaMin ≤ sigma ∧ sigma ≤ sigmaMax ∧
+          (d i = lsScaledAugmentedEigenvaluePlus alpha sigma ∨
+            d i = lsScaledAugmentedEigenvalueMinus alpha sigma)) :
+    Real.sqrt 2 * (sigmaMax / sigmaMin) ≤
+      kappa2 (lsScaledAugmentedMatrix alpha A)
+        (finiteMatMul Q
+          (finiteMatMul (finiteDiagonal fun i => (d i)⁻¹) (matTranspose Q))) := by
+  have hInv :
+      IsInverse (m + n) (lsScaledAugmentedMatrix alpha A)
+        (finiteMatMul Q
+          (finiteMatMul (finiteDiagonal fun i => (d i)⁻¹) (matTranspose Q))) :=
+    lsScaledAugmentedMatrix_isInverse_of_balanced_branch_orthogonal_diagonalization
+      (hdiag := hdiag) (hQ := hQ) hsigmaMin_pos halpha hd
+  exact
+    lsScaledAugmentedMatrix_singularPair_balanced_sigma_ratio_le_kappa2_of_alpha_eq_div_sqrt_two
+      (hInv := hInv)
+      (hAvMax := hAvMax) (hATuMax := hATuMax)
+      (hAvMin := hAvMin) (hATuMin := hATuMin)
+      hsigmaMin_pos hsigmaMin_le_max halpha hvMax hvMin
+
+/-- Two-sided branch-classified balanced (20.19) condition-number certificate.
+    A supplied branch-classified orthogonal diagonalization gives the
+    reciprocal-diagonal inverse candidate and the upper bound; supplied
+    extremal singular-pair witnesses give the lower branch-ratio bound.  The
+    complete eigenbasis, multiplicity, branch-exhaustiveness, and extremality
+    proofs remain separate obligations. -/
+theorem lsScaledAugmentedMatrix_kappa2_bounds_of_balanced_branch_orthogonal_diagonalization_and_singular_pairs
+    {m n : ℕ} {alpha sigmaMin sigmaMax : ℝ}
+    {A : Fin m → Fin n → ℝ}
+    {Q : Fin (m + n) → Fin (m + n) → ℝ} {d : Fin (m + n) → ℝ}
+    {uMax uMin : Fin m → ℝ} {vMax vMin : Fin n → ℝ}
+    (hdiag : lsScaledAugmentedMatrix alpha A =
+      finiteMatMul Q (finiteMatMul (finiteDiagonal d) (matTranspose Q)))
+    (hQ : IsOrthogonal (m + n) Q)
+    (hAvMax : rectMatMulVec A vMax = fun i => sigmaMax * uMax i)
+    (hATuMax : (fun j : Fin n => ∑ i : Fin m, A i j * uMax i) =
+      fun j => sigmaMax * vMax j)
+    (hAvMin : rectMatMulVec A vMin = fun i => sigmaMin * uMin i)
+    (hATuMin : (fun j : Fin n => ∑ i : Fin m, A i j * uMin i) =
+      fun j => sigmaMin * vMin j)
+    (hsigmaMin_pos : 0 < sigmaMin)
+    (hsigmaMin_le_max : sigmaMin ≤ sigmaMax)
+    (halpha : alpha = sigmaMin / Real.sqrt 2)
+    (hvMax : vMax ≠ 0) (hvMin : vMin ≠ 0)
+    (hd : ∀ i : Fin (m + n),
+      d i = alpha ∨
+        ∃ sigma : ℝ, sigmaMin ≤ sigma ∧ sigma ≤ sigmaMax ∧
+          (d i = lsScaledAugmentedEigenvaluePlus alpha sigma ∨
+            d i = lsScaledAugmentedEigenvalueMinus alpha sigma)) :
+    Real.sqrt 2 * (sigmaMax / sigmaMin) ≤
+        kappa2 (lsScaledAugmentedMatrix alpha A)
+          (finiteMatMul Q
+            (finiteMatMul (finiteDiagonal fun i => (d i)⁻¹) (matTranspose Q))) ∧
+      kappa2 (lsScaledAugmentedMatrix alpha A)
+          (finiteMatMul Q
+            (finiteMatMul (finiteDiagonal fun i => (d i)⁻¹) (matTranspose Q))) ≤
+        2 * (sigmaMax / sigmaMin) := by
+  constructor
+  · exact
+      lsScaledAugmentedMatrix_singularPair_balanced_sigma_ratio_le_kappa2_of_balanced_branch_orthogonal_diagonalization
+        (hdiag := hdiag) (hQ := hQ)
+        (hAvMax := hAvMax) (hATuMax := hATuMax)
+        (hAvMin := hAvMin) (hATuMin := hATuMin)
+        hsigmaMin_pos hsigmaMin_le_max halpha hvMax hvMin hd
+  · exact
+      lsScaledAugmentedMatrix_kappa2_le_two_sigma_ratio_of_balanced_branch_orthogonal_diagonalization
+        (hdiag := hdiag) (hQ := hQ)
+        hsigmaMin_pos hsigmaMin_le_max halpha hd
+
 /-- Balanced-scaling upper half of the (20.19) condition-number route.  If
     `alpha = sigmaMin / sqrt 2`, `C(alpha)` and an inverse candidate have
     supplied orthogonal diagonalizations whose diagonal magnitudes are bounded
