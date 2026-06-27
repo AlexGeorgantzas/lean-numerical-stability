@@ -1295,6 +1295,56 @@ theorem householderQRRhsPanelGammaClosedGrowthFactor_pos {m p : ℕ}
   exact Nat.mul_pos (Nat.pow_pos hm)
     (Nat.pow_pos (by omega : 0 < 1 + 2 * m ^ 2))
 
+/-- The conservative closed-growth factor is already larger than the printed
+    panel step count for every nonempty row dimension.
+
+    Thus the route `householderQRRhsPanelGammaClosedGrowthFactor m p <= p`
+    cannot close the Theorem 20.4 printed `p * gamma` coefficient under the
+    current concrete RHS recursion. -/
+theorem householderQRRhsPanelGammaClosedGrowthFactor_gt_panel_steps {m p : ℕ}
+    (hm : 0 < m) :
+    p < householderQRRhsPanelGammaClosedGrowthFactor m p := by
+  unfold householderQRRhsPanelGammaClosedGrowthFactor
+  have hm_sq_pos : 0 < m ^ 2 := Nat.pow_pos hm
+  have hbase_gt : 1 < 1 + 2 * m ^ 2 := by omega
+  have hp_lt_pow : p < (1 + 2 * m ^ 2) ^ p :=
+    Nat.lt_pow_self hbase_gt
+  have hpow_le_factor :
+      (1 + 2 * m ^ 2) ^ p ≤
+        m ^ 2 * (1 + 2 * m ^ 2) ^ p :=
+    Nat.le_mul_of_pos_left ((1 + 2 * m ^ 2) ^ p) hm_sq_pos
+  exact lt_of_lt_of_le hp_lt_pow hpow_le_factor
+
+/-- Negated form of
+    `householderQRRhsPanelGammaClosedGrowthFactor_gt_panel_steps`, matching the
+    failed comparison route in the Chapter 20 Theorem 20.4 ledger. -/
+theorem householderQRRhsPanelGammaClosedGrowthFactor_not_le_panel_steps
+    {m p : ℕ} (hm : 0 < m) :
+    ¬ householderQRRhsPanelGammaClosedGrowthFactor m p ≤ p := by
+  exact Nat.not_le_of_gt
+    (householderQRRhsPanelGammaClosedGrowthFactor_gt_panel_steps
+      (m := m) (p := p) hm)
+
+/-- The visible `2 * factor` coefficient is also strictly larger than the
+    printed panel step count under the current conservative RHS model. -/
+theorem two_mul_householderQRRhsPanelGammaClosedGrowthFactor_not_le_panel_steps
+    {m p : ℕ} (hm : 0 < m) :
+    ¬ 2 * householderQRRhsPanelGammaClosedGrowthFactor m p ≤ p := by
+  have hfactor_lt :
+      p < householderQRRhsPanelGammaClosedGrowthFactor m p :=
+    householderQRRhsPanelGammaClosedGrowthFactor_gt_panel_steps
+      (m := m) (p := p) hm
+  have hfactor_pos :
+      0 < householderQRRhsPanelGammaClosedGrowthFactor m p :=
+    householderQRRhsPanelGammaClosedGrowthFactor_pos
+      (m := m) (p := p) hm
+  have hfactor_le_two :
+      householderQRRhsPanelGammaClosedGrowthFactor m p ≤
+        2 * householderQRRhsPanelGammaClosedGrowthFactor m p :=
+    Nat.le_mul_of_pos_left
+      (householderQRRhsPanelGammaClosedGrowthFactor m p) (by norm_num)
+  exact Nat.not_le_of_gt (lt_of_lt_of_le hfactor_lt hfactor_le_two)
+
 /-- Under the standard half-radius guard, the conservative single-gamma RHS
     index is bounded by an explicit dimension-only multiple of the printed
     panel gamma radius.
