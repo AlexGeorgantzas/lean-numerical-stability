@@ -13527,6 +13527,106 @@ theorem lsNormwiseBackwardErrorFormulaMatrix_transpose_source_residual_right
           rw [hres]
           ring
 
+/-- Vector form of the transposed WKS source-block action on the expanded
+    perturbed residual.  This combines the left feasibility cancellation with
+    the right projector cancellation and is the squared-norm input for the
+    row-side spectral lower-bound route behind (20.21). -/
+theorem LSNormwiseBackwardErrorFeasible.formulaMatrix_transpose_source_residual_eq
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (DeltaA : Fin (m + 1) → Fin n → ℝ)
+    (Deltab : Fin (m + 1) → ℝ)
+    (hfeas : LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab)
+    (hrsq : vecNorm2Sq (lsResidualHigham A b y) ≠ 0) :
+    rectMatMulVec
+        (finiteTranspose
+          (lsNormwiseBackwardErrorFormulaMatrix theta A
+            (lsResidualHigham A b y) y))
+        (fun i => lsResidualHigham A b y i + Deltab i -
+          rectMatMulVec DeltaA y i) =
+      Fin.append
+        (fun j : Fin n =>
+          -∑ i : Fin (m + 1), DeltaA i j *
+            (lsResidualHigham A b y i + Deltab i -
+              rectMatMulVec DeltaA y i))
+        (fun k : Fin (m + 1) =>
+          lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y *
+            ∑ i : Fin (m + 1),
+              lsResidualComplementProjector (lsResidualHigham A b y) i k *
+                (Deltab i - rectMatMulVec DeltaA y i)) := by
+  ext q
+  refine Fin.addCases
+    (motive := fun q : Fin (n + (m + 1)) =>
+      rectMatMulVec
+          (finiteTranspose
+            (lsNormwiseBackwardErrorFormulaMatrix theta A
+              (lsResidualHigham A b y) y))
+          (fun i => lsResidualHigham A b y i + Deltab i -
+            rectMatMulVec DeltaA y i) q =
+        Fin.append
+          (fun j : Fin n =>
+            -∑ i : Fin (m + 1), DeltaA i j *
+              (lsResidualHigham A b y i + Deltab i -
+                rectMatMulVec DeltaA y i))
+          (fun k : Fin (m + 1) =>
+            lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y *
+              ∑ i : Fin (m + 1),
+                lsResidualComplementProjector (lsResidualHigham A b y) i k *
+                  (Deltab i - rectMatMulVec DeltaA y i)) q)
+    ?left ?right q
+  · intro j
+    simpa [Fin.append_left] using
+      LSNormwiseBackwardErrorFeasible.formulaMatrix_transpose_source_residual_left
+        theta A b y DeltaA Deltab hfeas j
+  · intro k
+    simpa [Fin.append_right] using
+      lsNormwiseBackwardErrorFormulaMatrix_transpose_source_residual_right
+        theta A b y DeltaA Deltab hrsq k
+
+/-- Squared-norm split for the transposed WKS source-block action on the
+    expanded perturbed residual.  The left summand is the `DeltaA^T p` part
+    forced by (20.20) feasibility; the right summand is the projected
+    `Delta b - Delta A y` part. -/
+theorem LSNormwiseBackwardErrorFeasible.formulaMatrix_transpose_source_residual_vecNorm2Sq_eq
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (DeltaA : Fin (m + 1) → Fin n → ℝ)
+    (Deltab : Fin (m + 1) → ℝ)
+    (hfeas : LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab)
+    (hrsq : vecNorm2Sq (lsResidualHigham A b y) ≠ 0) :
+    vecNorm2Sq
+        (rectMatMulVec
+          (finiteTranspose
+            (lsNormwiseBackwardErrorFormulaMatrix theta A
+              (lsResidualHigham A b y) y))
+          (fun i => lsResidualHigham A b y i + Deltab i -
+            rectMatMulVec DeltaA y i)) =
+      vecNorm2Sq
+        (fun j : Fin n =>
+          -∑ i : Fin (m + 1), DeltaA i j *
+            (lsResidualHigham A b y i + Deltab i -
+              rectMatMulVec DeltaA y i)) +
+        vecNorm2Sq
+          (fun k : Fin (m + 1) =>
+            lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y *
+              ∑ i : Fin (m + 1),
+                lsResidualComplementProjector (lsResidualHigham A b y) i k *
+                  (Deltab i - rectMatMulVec DeltaA y i)) := by
+  rw [
+    LSNormwiseBackwardErrorFeasible.formulaMatrix_transpose_source_residual_eq
+      theta A b y DeltaA Deltab hfeas hrsq]
+  exact
+    lsVecNorm2Sq_append
+      (fun j : Fin n =>
+        -∑ i : Fin (m + 1), DeltaA i j *
+          (lsResidualHigham A b y i + Deltab i -
+            rectMatMulVec DeltaA y i))
+      (fun k : Fin (m + 1) =>
+        lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y *
+          ∑ i : Fin (m + 1),
+            lsResidualComplementProjector (lsResidualHigham A b y) i k *
+              (Deltab i - rectMatMulVec DeltaA y i))
+
 /-- Exact-minimizer specialization of the nonzero-residual left-null
     certificate for (20.21).  If `y` is a least-squares minimizer, then
     normal-equation orthogonality of Higham's residual `b - A y` to the data
