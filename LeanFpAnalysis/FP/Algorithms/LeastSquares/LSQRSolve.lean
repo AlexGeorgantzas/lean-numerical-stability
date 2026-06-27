@@ -4255,6 +4255,86 @@ theorem lsScaledAugmentedMatrix_singularPair_minus_normalized_eigenpair
         sigma (lsScaledAugmentedEigenvalueMinus alpha sigma) u v
         hsigma hlambda hv⟩
 
+/-- Operator-norm lower-bound certificate for the positive branch in (20.18):
+    any finite operator-2 bound for `C(alpha)` must dominate the magnitude of
+    a witnessed positive-branch eigenvalue.  This is a norm/eigenpair bridge
+    toward the condition-number formula (20.19), not a global spectral
+    decomposition. -/
+theorem lsScaledAugmentedMatrix_singularPair_plus_abs_eigenvalue_le_of_finiteOpNorm2Le
+    {m n : ℕ} {alpha sigma L : ℝ} {A : Fin m → Fin n → ℝ}
+    {u : Fin m → ℝ} {v : Fin n → ℝ}
+    (hC : finiteOpNorm2Le (lsScaledAugmentedMatrix alpha A) L)
+    (hAv : rectMatMulVec A v = fun i => sigma * u i)
+    (hATu : (fun j : Fin n => ∑ i : Fin m, A i j * u i) =
+      fun j => sigma * v j)
+    (hsigma : sigma ≠ 0) (hv : v ≠ 0) :
+    |lsScaledAugmentedEigenvaluePlus alpha sigma| ≤ L := by
+  let z : Fin (m + n) → ℝ :=
+    Fin.append
+      (fun i => lsScaledAugmentedEigenvaluePlus alpha sigma * u i)
+      (fun j => sigma * v j)
+  have heig_rect :=
+    lsScaledAugmentedMatrix_singularPair_plus_eigenpair
+      alpha sigma A u v hAv hATu hsigma hv
+  have heig :
+      finiteMatVec (lsScaledAugmentedMatrix alpha A) z =
+        fun k => lsScaledAugmentedEigenvaluePlus alpha sigma * z k := by
+    simpa [z, finiteMatVec, rectMatMulVec] using heig_rect.1
+  exact
+    finiteOpNorm2Le_abs_eigenvalue_le
+      (M := lsScaledAugmentedMatrix alpha A)
+      (lambda := lsScaledAugmentedEigenvaluePlus alpha sigma)
+      (c := L) (x := z) hC heig_rect.2 heig
+
+/-- Non-absolute source form of the positive-branch operator-norm lower-bound
+    certificate for (20.18)-(20.19). -/
+theorem lsScaledAugmentedMatrix_singularPair_plus_eigenvalue_le_of_finiteOpNorm2Le
+    {m n : ℕ} {alpha sigma L : ℝ} {A : Fin m → Fin n → ℝ}
+    {u : Fin m → ℝ} {v : Fin n → ℝ}
+    (hC : finiteOpNorm2Le (lsScaledAugmentedMatrix alpha A) L)
+    (hAv : rectMatMulVec A v = fun i => sigma * u i)
+    (hATu : (fun j : Fin n => ∑ i : Fin m, A i j * u i) =
+      fun j => sigma * v j)
+    (halpha : 0 ≤ alpha) (hsigma : sigma ≠ 0) (hv : v ≠ 0) :
+    lsScaledAugmentedEigenvaluePlus alpha sigma ≤ L := by
+  have h :=
+    lsScaledAugmentedMatrix_singularPair_plus_abs_eigenvalue_le_of_finiteOpNorm2Le
+      (hC := hC) (hAv := hAv) (hATu := hATu) hsigma hv
+  rwa [abs_of_nonneg
+    (lsScaledAugmentedEigenvaluePlus_nonneg
+      (alpha := alpha) (sigma := sigma) halpha)] at h
+
+/-- Operator-norm lower-bound certificate for the negative branch in (20.18):
+    any finite operator-2 bound for `C(alpha)` must dominate the magnitude of
+    a witnessed negative-branch eigenvalue.  This is a norm/eigenpair bridge
+    toward the condition-number formula (20.19), not a global spectral
+    decomposition. -/
+theorem lsScaledAugmentedMatrix_singularPair_minus_abs_eigenvalue_le_of_finiteOpNorm2Le
+    {m n : ℕ} {alpha sigma L : ℝ} {A : Fin m → Fin n → ℝ}
+    {u : Fin m → ℝ} {v : Fin n → ℝ}
+    (hC : finiteOpNorm2Le (lsScaledAugmentedMatrix alpha A) L)
+    (hAv : rectMatMulVec A v = fun i => sigma * u i)
+    (hATu : (fun j : Fin n => ∑ i : Fin m, A i j * u i) =
+      fun j => sigma * v j)
+    (hsigma : sigma ≠ 0) (hv : v ≠ 0) :
+    |lsScaledAugmentedEigenvalueMinus alpha sigma| ≤ L := by
+  let z : Fin (m + n) → ℝ :=
+    Fin.append
+      (fun i => lsScaledAugmentedEigenvalueMinus alpha sigma * u i)
+      (fun j => sigma * v j)
+  have heig_rect :=
+    lsScaledAugmentedMatrix_singularPair_minus_eigenpair
+      alpha sigma A u v hAv hATu hsigma hv
+  have heig :
+      finiteMatVec (lsScaledAugmentedMatrix alpha A) z =
+        fun k => lsScaledAugmentedEigenvalueMinus alpha sigma * z k := by
+    simpa [z, finiteMatVec, rectMatMulVec] using heig_rect.1
+  exact
+    finiteOpNorm2Le_abs_eigenvalue_le
+      (M := lsScaledAugmentedMatrix alpha A)
+      (lambda := lsScaledAugmentedEigenvalueMinus alpha sigma)
+      (c := L) (x := z) hC heig_rect.2 heig
+
 /-- In a nonzero singular-pair certificate for (20.18), the left singular-vector
     side is nonzero whenever the right singular-vector side is nonzero. -/
 theorem lsScaledAugmentedMatrix_singularPair_left_vector_ne_zero {m n : ℕ}

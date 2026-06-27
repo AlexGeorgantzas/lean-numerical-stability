@@ -3398,6 +3398,27 @@ def finiteOpNorm2Le {ι : Type*} [Fintype ι]
     (M : ι → ι → ℝ) (c : ℝ) : Prop :=
   ∀ x : ι → ℝ, finiteVecNorm2 (finiteMatVec M x) ≤ c * finiteVecNorm2 x
 
+/-- Any finite vector-action operator-2 bound dominates the magnitude of every
+    witnessed real eigenvalue.  This is the generic norm/eigenpair bridge used
+    by later spectral condition-number arguments. -/
+theorem finiteOpNorm2Le_abs_eigenvalue_le {ι : Type*} [Fintype ι]
+    {M : ι → ι → ℝ} {lambda c : ℝ} {x : ι → ℝ}
+    (hM : finiteOpNorm2Le M c) (hx : x ≠ 0)
+    (heig : finiteMatVec M x = fun i => lambda * x i) :
+    |lambda| ≤ c := by
+  have hxnorm_ne : finiteVecNorm2 x ≠ 0 := by
+    intro hzero
+    apply hx
+    ext i
+    exact (finiteVecNorm2_eq_zero_iff x).mp hzero i
+  have hxnorm_pos : 0 < finiteVecNorm2 x :=
+    lt_of_le_of_ne (finiteVecNorm2_nonneg x) (Ne.symm hxnorm_ne)
+  have hbound := hM x
+  have hbound' :
+      |lambda| * finiteVecNorm2 x ≤ c * finiteVecNorm2 x := by
+    simpa [heig, finiteVecNorm2_smul] using hbound
+  exact le_of_mul_le_mul_right hbound' hxnorm_pos
+
 /-- Reindexing a finite vector along an equivalence preserves its Euclidean norm. -/
 theorem finiteVecNorm2_reindex_equiv {ι κ : Type*} [Fintype ι] [Fintype κ]
     (e : ι ≃ κ) (x : κ → ℝ) :
