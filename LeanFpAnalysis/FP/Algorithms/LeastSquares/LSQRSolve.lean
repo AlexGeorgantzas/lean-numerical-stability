@@ -3973,6 +3973,64 @@ theorem lsScaledAugmentedDiagonalBranch_recip_abs_le_of_alpha_eq_div_sqrt_two
   rw [abs_inv]
   exact inv_anti₀ hmin_abs_pos (hle i)
 
+/-- Diagonal-entry upper-magnitude adapter for the (20.18)-(20.19) spectral
+    route.  Under the balanced choice `alpha = sigmaMin / sqrt 2`, every
+    supplied diagonal entry classified as either the left-nullspace branch
+    `alpha` or one of the two displayed singular-value branches has magnitude
+    at most the largest positive-branch value. -/
+theorem lsScaledAugmentedDiagonalBranch_abs_le_max_of_alpha_eq_div_sqrt_two
+    {ι : Sort*} {alpha sigmaMin sigmaMax : ℝ} {d : ι → ℝ}
+    (hsigmaMin_pos : 0 < sigmaMin)
+    (hsigmaMin_le_max : sigmaMin ≤ sigmaMax)
+    (halpha : alpha = sigmaMin / Real.sqrt 2)
+    (hd : ∀ i : ι,
+      d i = alpha ∨
+        ∃ sigma : ℝ, sigmaMin ≤ sigma ∧ sigma ≤ sigmaMax ∧
+          (d i = lsScaledAugmentedEigenvaluePlus alpha sigma ∨
+            d i = lsScaledAugmentedEigenvalueMinus alpha sigma)) :
+    ∀ i : ι, |d i| ≤ lsScaledAugmentedEigenvaluePlus alpha sigmaMax := by
+  have hsqrt2_pos : 0 < Real.sqrt 2 := Real.sqrt_pos.2 (by norm_num)
+  have hsqrt2_ne : Real.sqrt 2 ≠ 0 := ne_of_gt hsqrt2_pos
+  have halpha_pos : 0 < alpha := by
+    rw [halpha]
+    positivity
+  have halpha_nonneg : 0 ≤ alpha := le_of_lt halpha_pos
+  have hsigmaMin_nonneg : 0 ≤ sigmaMin := le_of_lt hsigmaMin_pos
+  have hsigmaMin_eq : sigmaMin = Real.sqrt 2 * alpha := by
+    rw [halpha]
+    field_simp [hsqrt2_ne]
+  have hmin_abs :
+      |lsScaledAugmentedEigenvalueMinus alpha sigmaMin| = alpha :=
+    lsScaledAugmentedEigenvalueMinus_abs_eq_alpha_of_sigma_eq_sqrt_two_mul
+      (alpha := alpha) (sigma := sigmaMin) halpha_nonneg hsigmaMin_eq
+  have hboundsMin :=
+    lsScaledAugmentedEigenvalue_branch_abs_extreme_bounds_of_sigma_bounds
+      (alpha := alpha) (sigmaMin := sigmaMin) (sigma := sigmaMin)
+      (sigmaMax := sigmaMax) halpha_nonneg hsigmaMin_nonneg le_rfl
+      hsigmaMin_le_max
+  have halpha_le_max :
+      alpha ≤ lsScaledAugmentedEigenvaluePlus alpha sigmaMax := by
+    calc
+      alpha = |lsScaledAugmentedEigenvalueMinus alpha sigmaMin| := hmin_abs.symm
+      _ ≤ lsScaledAugmentedEigenvaluePlus alpha sigmaMax := hboundsMin.2.2
+  intro i
+  rcases hd i with hAlpha | ⟨sigma, hmin, hmax, hbranch⟩
+  · rw [hAlpha, abs_of_pos halpha_pos]
+    exact halpha_le_max
+  · have hbounds :=
+      lsScaledAugmentedEigenvalue_branch_abs_extreme_bounds_of_sigma_bounds
+        (alpha := alpha) (sigmaMin := sigmaMin) (sigma := sigma)
+        (sigmaMax := sigmaMax) halpha_nonneg hsigmaMin_nonneg hmin hmax
+    rcases hbranch with hPlus | hMinus
+    · have hplus_nonneg :
+          0 ≤ lsScaledAugmentedEigenvaluePlus alpha sigma :=
+        lsScaledAugmentedEigenvaluePlus_nonneg
+          (alpha := alpha) (sigma := sigma) halpha_nonneg
+      rw [hPlus, abs_of_nonneg hplus_nonneg]
+      exact hbounds.2.1
+    · rw [hMinus]
+      exact hbounds.2.2
+
 /-- Scalar witness for the final comparison in (20.19): with scaling
     `alpha = sigmaMax`, the extremal branch ratio is strictly larger than
     `(sigmaMax / sigmaMin)^2`.  This is the source-facing scalar certificate
@@ -4822,6 +4880,74 @@ theorem lsScaledAugmentedMatrix_kappa2_le_two_sigma_ratio_of_balanced_orthogonal
       (alpha := alpha) (sigmaMin := sigmaMin) (sigmaMax := sigmaMax)
       hsigmaMin_pos halpha hsigmaMin_le_max
   exact le_trans hkappa_ratio hscalar
+
+/-- Branch-classified version of the (20.18)-(20.19) inverse-candidate
+    handoff.  Once the supplied complete orthogonal diagonalization lists only
+    the left-nullspace branch `alpha` and the displayed plus/minus branches
+    over `[sigmaMin, sigmaMax]`, the balanced scalar certificates prove the
+    reciprocal diagonal in the same eigenbasis is a two-sided inverse. -/
+theorem lsScaledAugmentedMatrix_isInverse_of_balanced_branch_orthogonal_diagonalization
+    {m n : ℕ} {alpha sigmaMin sigmaMax : ℝ} {A : Fin m → Fin n → ℝ}
+    {Q : Fin (m + n) → Fin (m + n) → ℝ} {d : Fin (m + n) → ℝ}
+    (hdiag : lsScaledAugmentedMatrix alpha A =
+      finiteMatMul Q (finiteMatMul (finiteDiagonal d) (matTranspose Q)))
+    (hQ : IsOrthogonal (m + n) Q)
+    (hsigmaMin_pos : 0 < sigmaMin)
+    (halpha : alpha = sigmaMin / Real.sqrt 2)
+    (hd : ∀ i : Fin (m + n),
+      d i = alpha ∨
+        ∃ sigma : ℝ, sigmaMin ≤ sigma ∧ sigma ≤ sigmaMax ∧
+          (d i = lsScaledAugmentedEigenvaluePlus alpha sigma ∨
+            d i = lsScaledAugmentedEigenvalueMinus alpha sigma)) :
+    IsInverse (m + n) (lsScaledAugmentedMatrix alpha A)
+      (finiteMatMul Q
+        (finiteMatMul (finiteDiagonal fun i => (d i)⁻¹) (matTranspose Q))) :=
+  lsScaledAugmentedMatrix_isInverse_of_orthogonal_diagonalization
+    (hdiag := hdiag) (hQ := hQ)
+    (hd :=
+      lsScaledAugmentedDiagonalBranch_ne_zero_of_alpha_eq_div_sqrt_two
+        (alpha := alpha) (sigmaMin := sigmaMin) (sigmaMax := sigmaMax)
+        (d := d) hsigmaMin_pos halpha hd)
+
+/-- Branch-classified balanced upper half of (20.19).  This packages the
+    diagonal upper bound, reciprocal lower-branch bound, and reciprocal-diagonal
+    inverse candidate behind a single branch-list hypothesis.  It still leaves
+    open the construction of the complete eigenbasis and proof that the printed
+    branch list exhausts the spectrum with multiplicities. -/
+theorem lsScaledAugmentedMatrix_kappa2_le_two_sigma_ratio_of_balanced_branch_orthogonal_diagonalization
+    {m n : ℕ} {alpha sigmaMin sigmaMax : ℝ} {A : Fin m → Fin n → ℝ}
+    {Q : Fin (m + n) → Fin (m + n) → ℝ} {d : Fin (m + n) → ℝ}
+    (hdiag : lsScaledAugmentedMatrix alpha A =
+      finiteMatMul Q (finiteMatMul (finiteDiagonal d) (matTranspose Q)))
+    (hQ : IsOrthogonal (m + n) Q)
+    (hsigmaMin_pos : 0 < sigmaMin)
+    (hsigmaMin_le_max : sigmaMin ≤ sigmaMax)
+    (halpha : alpha = sigmaMin / Real.sqrt 2)
+    (hd : ∀ i : Fin (m + n),
+      d i = alpha ∨
+        ∃ sigma : ℝ, sigmaMin ≤ sigma ∧ sigma ≤ sigmaMax ∧
+          (d i = lsScaledAugmentedEigenvaluePlus alpha sigma ∨
+            d i = lsScaledAugmentedEigenvalueMinus alpha sigma)) :
+    kappa2 (lsScaledAugmentedMatrix alpha A)
+      (finiteMatMul Q
+        (finiteMatMul (finiteDiagonal fun i => (d i)⁻¹) (matTranspose Q))) ≤
+      2 * (sigmaMax / sigmaMin) := by
+  have hdUpper :
+      ∀ i : Fin (m + n),
+        |d i| ≤ lsScaledAugmentedEigenvaluePlus alpha sigmaMax :=
+    lsScaledAugmentedDiagonalBranch_abs_le_max_of_alpha_eq_div_sqrt_two
+      (alpha := alpha) (sigmaMin := sigmaMin) (sigmaMax := sigmaMax)
+      (d := d) hsigmaMin_pos hsigmaMin_le_max halpha hd
+  have hdRecip :
+      ∀ i : Fin (m + n),
+        |(d i)⁻¹| ≤ |lsScaledAugmentedEigenvalueMinus alpha sigmaMin|⁻¹ :=
+    lsScaledAugmentedDiagonalBranch_recip_abs_le_of_alpha_eq_div_sqrt_two
+      (alpha := alpha) (sigmaMin := sigmaMin) (sigmaMax := sigmaMax)
+      (d := d) hsigmaMin_pos halpha hd
+  exact
+    lsScaledAugmentedMatrix_kappa2_le_two_sigma_ratio_of_balanced_orthogonal_diagonalization_inverse_candidate
+      (hdiag := hdiag) (hQ := hQ) (hd := hdUpper) (hdinv := hdRecip)
+      hsigmaMin_pos hsigmaMin_le_max halpha
 
 /-- Balanced-scaling upper half of the (20.19) condition-number route.  If
     `alpha = sigmaMin / sqrt 2`, `C(alpha)` and an inverse candidate have
