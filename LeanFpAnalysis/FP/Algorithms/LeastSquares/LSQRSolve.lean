@@ -9481,6 +9481,25 @@ theorem lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_exists_feasible_cost_eq
         theta A b y DeltaA Deltab hfeas
     _ = lsNormwiseBackwardErrorFormulaRHS theta A b y := hcost
 
+/-- Upper-bound handoff for the alternative formula (20.21): it is enough to
+    exhibit a feasible perturbation whose weighted cost is bounded by the
+    printed right-hand side.  This is the inequality form of the WKS
+    constructive side; it avoids requiring the future source proof to package
+    an exact attaining perturbation when an upper-bound construction suffices. -/
+theorem lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_exists_feasible_cost_le
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (hupper :
+      ∃ (DeltaA : Fin (m + 1) → Fin n → ℝ) (Deltab : Fin (m + 1) → ℝ),
+        LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+          lsNormwiseBackwardErrorCostF theta DeltaA Deltab ≤
+            lsNormwiseBackwardErrorFormulaRHS theta A b y) :
+    lsNormwiseBackwardErrorEtaF theta A b y ≤
+      lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  rcases hupper with ⟨DeltaA, Deltab, hfeas, hcost⟩
+  exact (lsNormwiseBackwardErrorEtaF_le_costF_of_feasible
+    theta A b y DeltaA Deltab hfeas).trans hcost
+
 /-- Certificate form of the missing equality in equation (20.21).  The theorem
     isolates the two obligations left for the Walden--Karlson--Sun proof:
     all feasible perturbations must be bounded below by the printed formula
@@ -14002,6 +14021,54 @@ theorem lsNormwiseBackwardErrorFormulaRHS_pos_iff_etaF_pos_and_formulaMatrixRowR
     exact
       (lsNormwiseBackwardErrorFormulaRHS_pos_iff_not_isLeastSquaresMinimizer_and_formulaMatrixRowRank_eq_card_of_theta_pos_of_y_ne_zero
         htheta A b hy).mpr ⟨hnot, h.2⟩
+
+/-- Positive-branch inequality-certificate form of the
+    Walden--Karlson--Sun formula (20.21): for positive finite `theta`,
+    nonzero `y`, and full row rank of the source block
+    `[A phi(I-r r^+)]`, the final equality follows from the two inequality
+    obligations `formulaRHS <= eta_F(y)` and `eta_F(y) <= formulaRHS`.
+
+    This is the route surface for the remaining WKS proof split.  It replaces
+    the stronger exact-attainment certificate with the upper inequality that
+    the constructive side actually needs to prove. -/
+theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_inequality_certificate
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hnot : ¬ IsLeastSquaresMinimizer A b y)
+    (hrank :
+      lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+        (lsResidualHigham A b y) y = m + 1)
+    (hlower :
+      ∀ (DeltaA : Fin (m + 1) → Fin n → ℝ) (Deltab : Fin (m + 1) → ℝ),
+        LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab →
+          lsNormwiseBackwardErrorFormulaRHS theta A b y ≤
+            lsNormwiseBackwardErrorCostF theta DeltaA Deltab)
+    (hupper :
+      lsNormwiseBackwardErrorEtaF theta A b y ≤
+        lsNormwiseBackwardErrorFormulaRHS theta A b y) :
+    lsNormwiseBackwardErrorEtaF theta A b y =
+        lsNormwiseBackwardErrorFormulaRHS theta A b y ∧
+      0 < lsNormwiseBackwardErrorEtaF theta A b y ∧
+      0 < lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  have hlower_eta :
+      lsNormwiseBackwardErrorFormulaRHS theta A b y ≤
+        lsNormwiseBackwardErrorEtaF theta A b y :=
+    lsNormwiseBackwardErrorFormulaRHS_le_etaF_of_forall_feasible_cost_ge
+      theta A b y hlower
+  have heq :
+      lsNormwiseBackwardErrorEtaF theta A b y =
+        lsNormwiseBackwardErrorFormulaRHS theta A b y :=
+    le_antisymm hupper hlower_eta
+  have hrhs_pos :
+      0 < lsNormwiseBackwardErrorFormulaRHS theta A b y :=
+    (lsNormwiseBackwardErrorFormulaRHS_pos_iff_not_isLeastSquaresMinimizer_and_formulaMatrixRowRank_eq_card_of_theta_pos_of_y_ne_zero
+      htheta A b hy).mpr ⟨hnot, hrank⟩
+  have heta_pos :
+      0 < lsNormwiseBackwardErrorEtaF theta A b y := by
+    rw [heq]
+    exact hrhs_pos
+  exact ⟨heq, heta_pos, hrhs_pos⟩
 
 /-- Positive-branch certificate form of the Walden--Karlson--Sun formula
     (20.21): for positive finite `theta`, nonzero `y`, and full row rank of
