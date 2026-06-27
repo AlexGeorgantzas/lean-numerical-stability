@@ -4598,6 +4598,99 @@ theorem lsScaledAugmentedMatrix_kappa2_le_mul_of_orthogonal_diagonalizations
   kappa2_le_mul_of_isOrthogonal_diagonalizations
     hdiag hdiagInv hQ hQinv hL hd hD hdinv
 
+/-- Equations (20.18)-(20.19) inverse-candidate handoff: once a complete
+    orthogonal diagonalization of `C(alpha)` has nonzero diagonal entries, the
+    reciprocal diagonal in the same orthogonal basis is a two-sided inverse.
+    This closes the algebraic inverse-candidate step, while still leaving the
+    construction of the complete eigenbasis and multiplicity proof open. -/
+theorem lsScaledAugmentedMatrix_isInverse_of_orthogonal_diagonalization
+    {m n : ℕ} {alpha : ℝ} {A : Fin m → Fin n → ℝ}
+    {Q : Fin (m + n) → Fin (m + n) → ℝ} {d : Fin (m + n) → ℝ}
+    (hdiag : lsScaledAugmentedMatrix alpha A =
+      finiteMatMul Q (finiteMatMul (finiteDiagonal d) (matTranspose Q)))
+    (hQ : IsOrthogonal (m + n) Q)
+    (hd : ∀ i : Fin (m + n), d i ≠ 0) :
+    IsInverse (m + n) (lsScaledAugmentedMatrix alpha A)
+      (finiteMatMul Q
+        (finiteMatMul (finiteDiagonal fun i => (d i)⁻¹) (matTranspose Q))) :=
+  isInverse_of_isOrthogonal_diagonalization hdiag hQ hd
+
+/-- One-diagonalization version of the (20.18)-(20.19) `κ₂` upper-bound
+    handoff: if `C(alpha)` is orthogonally diagonalized and the reciprocal
+    diagonal entries are bounded by `D`, then the reciprocal-diagonal inverse
+    candidate satisfies `κ₂ C(alpha) Cinv <= L * D`. -/
+theorem lsScaledAugmentedMatrix_kappa2_le_mul_of_orthogonal_diagonalization_inverse_candidate
+    {m n : ℕ} {alpha L D : ℝ} {A : Fin m → Fin n → ℝ}
+    {Q : Fin (m + n) → Fin (m + n) → ℝ} {d : Fin (m + n) → ℝ}
+    (hdiag : lsScaledAugmentedMatrix alpha A =
+      finiteMatMul Q (finiteMatMul (finiteDiagonal d) (matTranspose Q)))
+    (hQ : IsOrthogonal (m + n) Q)
+    (hL : 0 ≤ L) (hd : ∀ i : Fin (m + n), |d i| ≤ L)
+    (hD : 0 ≤ D) (hdinv : ∀ i : Fin (m + n), |(d i)⁻¹| ≤ D) :
+    kappa2 (lsScaledAugmentedMatrix alpha A)
+      (finiteMatMul Q
+        (finiteMatMul (finiteDiagonal fun i => (d i)⁻¹) (matTranspose Q))) ≤
+      L * D :=
+  kappa2_le_mul_of_isOrthogonal_diagonalization_inverse_candidate
+    hdiag hQ hL hd hD hdinv
+
+/-- Balanced-scaling upper half of the (20.19) condition-number route, with
+    the inverse candidate fixed to the reciprocal diagonal in the same
+    orthogonal eigenbasis as `C(alpha)`.  This removes the previous need for a
+    separately supplied inverse diagonalization; it still assumes the complete
+    diagonalization and diagonal magnitude bounds. -/
+theorem lsScaledAugmentedMatrix_kappa2_le_two_sigma_ratio_of_balanced_orthogonal_diagonalization_inverse_candidate
+    {m n : ℕ} {alpha sigmaMin sigmaMax : ℝ} {A : Fin m → Fin n → ℝ}
+    {Q : Fin (m + n) → Fin (m + n) → ℝ} {d : Fin (m + n) → ℝ}
+    (hdiag : lsScaledAugmentedMatrix alpha A =
+      finiteMatMul Q (finiteMatMul (finiteDiagonal d) (matTranspose Q)))
+    (hQ : IsOrthogonal (m + n) Q)
+    (hd : ∀ i : Fin (m + n),
+      |d i| ≤ lsScaledAugmentedEigenvaluePlus alpha sigmaMax)
+    (hdinv : ∀ i : Fin (m + n),
+      |(d i)⁻¹| ≤ |lsScaledAugmentedEigenvalueMinus alpha sigmaMin|⁻¹)
+    (hsigmaMin_pos : 0 < sigmaMin) (hsigmaMin_le_max : sigmaMin ≤ sigmaMax)
+    (halpha : alpha = sigmaMin / Real.sqrt 2) :
+    kappa2 (lsScaledAugmentedMatrix alpha A)
+      (finiteMatMul Q
+        (finiteMatMul (finiteDiagonal fun i => (d i)⁻¹) (matTranspose Q))) ≤
+      2 * (sigmaMax / sigmaMin) := by
+  have halpha_nonneg : 0 ≤ alpha := by
+    rw [halpha]
+    positivity
+  have hL_nonneg :
+      0 ≤ lsScaledAugmentedEigenvaluePlus alpha sigmaMax :=
+    lsScaledAugmentedEigenvaluePlus_nonneg
+      (alpha := alpha) (sigma := sigmaMax) halpha_nonneg
+  have hD_nonneg :
+      0 ≤ |lsScaledAugmentedEigenvalueMinus alpha sigmaMin|⁻¹ :=
+    inv_nonneg.mpr (abs_nonneg _)
+  have hkappa :
+      kappa2 (lsScaledAugmentedMatrix alpha A)
+          (finiteMatMul Q
+            (finiteMatMul (finiteDiagonal fun i => (d i)⁻¹) (matTranspose Q))) ≤
+        lsScaledAugmentedEigenvaluePlus alpha sigmaMax *
+          |lsScaledAugmentedEigenvalueMinus alpha sigmaMin|⁻¹ :=
+    lsScaledAugmentedMatrix_kappa2_le_mul_of_orthogonal_diagonalization_inverse_candidate
+      (hdiag := hdiag) (hQ := hQ)
+      (hL := hL_nonneg) (hd := hd)
+      (hD := hD_nonneg) (hdinv := hdinv)
+  have hkappa_ratio :
+      kappa2 (lsScaledAugmentedMatrix alpha A)
+          (finiteMatMul Q
+            (finiteMatMul (finiteDiagonal fun i => (d i)⁻¹) (matTranspose Q))) ≤
+        lsScaledAugmentedEigenvaluePlus alpha sigmaMax /
+          |lsScaledAugmentedEigenvalueMinus alpha sigmaMin| := by
+    simpa [div_eq_mul_inv] using hkappa
+  have hscalar :
+      lsScaledAugmentedEigenvaluePlus alpha sigmaMax /
+          |lsScaledAugmentedEigenvalueMinus alpha sigmaMin| ≤
+        2 * (sigmaMax / sigmaMin) :=
+    lsScaledAugmentedBalancedBranchRatio_le_two_sigma_ratio_of_alpha_eq_div_sqrt_two
+      (alpha := alpha) (sigmaMin := sigmaMin) (sigmaMax := sigmaMax)
+      hsigmaMin_pos halpha hsigmaMin_le_max
+  exact le_trans hkappa_ratio hscalar
+
 /-- Balanced-scaling upper half of the (20.19) condition-number route.  If
     `alpha = sigmaMin / sqrt 2`, `C(alpha)` and an inverse candidate have
     supplied orthogonal diagonalizations whose diagonal magnitudes are bounded
