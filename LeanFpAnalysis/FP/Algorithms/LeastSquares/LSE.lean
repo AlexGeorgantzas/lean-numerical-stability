@@ -3896,6 +3896,119 @@ theorem GeneralizedQRFactorization.exists_unique_lse_minimizer_of_s_l22_bijectiv
   exact h.exists_unique_lse_minimizer_of_triangular_nonsingular
     hdiag.1 hdiag.2
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, tall associated (20.28)
+    supplied-shape nonsingularity equivalence:
+    under a supplied exact QR identity for `Bᵀ` and a supplied associated-row
+    shape `Uᵀ A Q = [0; L]`, the local assumptions (20.24) are equivalent to
+    nonzero diagonals of the displayed QR block `R` and the trailing `L22`
+    block extracted from `L`.
+
+    This is the source proof sentence after (20.28) at the displayed-block
+    surface. It still assumes the QR identity and associated shape record; it
+    does not construct the QR/GQR factors or prove computed GQR stability. -/
+theorem GeneralizedQRFactorization.tall_qr_assoc_case_conditions20_24_iff_diag_ne_zero
+    {k p q : ℕ}
+    {A : Fin ((k + p) + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (U : Fin ((k + p) + q) → Fin ((k + p) + q) → ℝ)
+    (R : Fin p → Fin p → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hU : IsOrthogonal ((k + p) + q) U)
+    (hqrB : matMulRectLeft (matTranspose Q)
+        (fun j : Fin (p + q) => fun i : Fin p => B i j) =
+      lsQRTallBlock (k := q) R)
+    (hR : IsUpperTriangular p R)
+    (hCase : GQRAQTallAssocCase k p q
+      (matMulRectLeft (matTranspose U)
+        (matMulRect ((k + p) + q) (p + q) (p + q) A Q))) :
+    (LSEFullRowRank B ∧ LSENullIntersectionTrivial A B) ↔
+      (∀ i : Fin p, R i i ≠ 0) ∧
+        (∀ i : Fin q, hCase.L (Fin.natAdd p i) (Fin.natAdd p i) ≠ 0) := by
+  rcases GeneralizedQRFactorization.exists_of_tall_qr_assoc_case
+      (A := A) (B := B) Q U R hQ hU hqrB hR hCase with
+    ⟨h, _hQ, _hU, hS, hL22⟩
+  constructor
+  · intro hcond
+    have hdiag :
+        (∀ i : Fin p, h.S i i ≠ 0) ∧
+          (∀ i : Fin q, h.L22 i i ≠ 0) :=
+      (h.conditions20_24_iff_s_l22_diag_ne_zero).1 hcond
+    constructor
+    · intro i
+      have hi := hdiag.1 i
+      rw [hS] at hi
+      simpa [matTranspose] using hi
+    · intro i
+      have hi := hdiag.2 i
+      rw [hL22] at hi
+      simpa [gqrAQTallL22FromEq20_28] using hi
+  · rintro ⟨hRdiag, hLdiag⟩
+    refine (h.conditions20_24_iff_s_l22_diag_ne_zero).2 ⟨?_, ?_⟩
+    · intro i
+      rw [hS]
+      simpa [matTranspose] using hRdiag i
+    · intro i
+      rw [hL22]
+      simpa [gqrAQTallL22FromEq20_28] using hLdiag i
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, wide associated (20.28)
+    supplied-shape nonsingularity equivalence:
+    under a supplied exact QR identity for `Bᵀ` and a supplied
+    associated-column shape `Uᵀ A Q = [X L]`, the local assumptions (20.24)
+    are equivalent to nonzero diagonals of the displayed QR block `R` and the
+    trailing `L22` block extracted from `L`.
+
+    This is the wide counterpart of
+    `GeneralizedQRFactorization.tall_qr_assoc_case_conditions20_24_iff_diag_ne_zero`.
+    It remains supplied-factor algebra and does not construct the QR/GQR
+    factors or prove computed GQR stability. -/
+theorem GeneralizedQRFactorization.wide_qr_assoc_case_conditions20_24_iff_diag_ne_zero
+    {k r q : ℕ}
+    {A : Fin (r + q) → Fin ((k + r) + q) → ℝ}
+    {B : Fin (k + r) → Fin ((k + r) + q) → ℝ}
+    (Q : Fin ((k + r) + q) → Fin ((k + r) + q) → ℝ)
+    (U : Fin (r + q) → Fin (r + q) → ℝ)
+    (R : Fin (k + r) → Fin (k + r) → ℝ)
+    (hQ : IsOrthogonal ((k + r) + q) Q)
+    (hU : IsOrthogonal (r + q) U)
+    (hqrB : matMulRectLeft (matTranspose Q)
+        (fun j : Fin ((k + r) + q) => fun i : Fin (k + r) => B i j) =
+      lsQRTallBlock (k := q) R)
+    (hR : IsUpperTriangular (k + r) R)
+    (hCase : GQRAQWideAssocCase k r q
+      (matMulRectLeft (matTranspose U)
+        (matMulRect (r + q) ((k + r) + q) ((k + r) + q) A Q))) :
+    (LSEFullRowRank B ∧ LSENullIntersectionTrivial A B) ↔
+      (∀ i : Fin (k + r), R i i ≠ 0) ∧
+        (∀ i : Fin q, hCase.L (Fin.natAdd r i) (Fin.natAdd r i) ≠ 0) := by
+  rcases GeneralizedQRFactorization.exists_of_wide_qr_assoc_case
+      (A := A) (B := B) Q U R hQ hU hqrB hR hCase with
+    ⟨h, _hQ, _hU, hS, hL22⟩
+  constructor
+  · intro hcond
+    have hdiag :
+        (∀ i : Fin (k + r), h.S i i ≠ 0) ∧
+          (∀ i : Fin q, h.L22 i i ≠ 0) :=
+      (h.conditions20_24_iff_s_l22_diag_ne_zero).1 hcond
+    constructor
+    · intro i
+      have hi := hdiag.1 i
+      rw [hS] at hi
+      simpa [matTranspose] using hi
+    · intro i
+      have hi := hdiag.2 i
+      rw [hL22] at hi
+      simpa [gqrAQWideL22FromEq20_28] using hi
+  · rintro ⟨hRdiag, hLdiag⟩
+    refine (h.conditions20_24_iff_s_l22_diag_ne_zero).2 ⟨?_, ?_⟩
+    · intro i
+      rw [hS]
+      simpa [matTranspose] using hRdiag i
+    · intro i
+      rw [hL22]
+      simpa [gqrAQWideL22FromEq20_28] using hLdiag i
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, tall supplied-shape
     nonsingular-block case:
     a supplied exact QR identity for `Bᵀ`, a supplied associated-row
