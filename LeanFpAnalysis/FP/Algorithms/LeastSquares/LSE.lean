@@ -4148,6 +4148,90 @@ theorem GeneralizedQRFactorization.wide_qr_assoc_case_conditions20_24_iff_diag_n
       rw [hL22]
       simpa [gqrAQWideL22FromEq20_28] using hLdiag i
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, tall associated (20.28)
+    supplied-shape source-rank nonsingularity equivalence:
+    under supplied exact QR and associated-row shape data, full row rank of
+    `B` together with full column rank of the local vertical stack `[A; B]` is
+    equivalent to nonzero diagonals of the displayed QR block `R` and the
+    trailing `L22` block extracted from `L`.
+
+    This is the stacked-rank version of
+    `GeneralizedQRFactorization.tall_qr_assoc_case_conditions20_24_iff_diag_ne_zero`.
+    It remains supplied-factor algebra and does not construct QR/GQR factors or
+    prove computed GQR stability. -/
+theorem GeneralizedQRFactorization.tall_qr_assoc_case_fullRowRank_stackedFullColumnRank_iff_diag_ne_zero
+    {k p q : ℕ}
+    {A : Fin ((k + p) + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (U : Fin ((k + p) + q) → Fin ((k + p) + q) → ℝ)
+    (R : Fin p → Fin p → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hU : IsOrthogonal ((k + p) + q) U)
+    (hqrB : matMulRectLeft (matTranspose Q)
+        (fun j : Fin (p + q) => fun i : Fin p => B i j) =
+      lsQRTallBlock (k := q) R)
+    (hR : IsUpperTriangular p R)
+    (hCase : GQRAQTallAssocCase k p q
+      (matMulRectLeft (matTranspose U)
+        (matMulRect ((k + p) + q) (p + q) (p + q) A Q))) :
+    (LSEFullRowRank B ∧ LSEStackedFullColumnRank A B) ↔
+      (∀ i : Fin p, R i i ≠ 0) ∧
+        (∀ i : Fin q, hCase.L (Fin.natAdd p i) (Fin.natAdd p i) ≠ 0) := by
+  constructor
+  · rintro ⟨hB, hstack⟩
+    exact (GeneralizedQRFactorization.tall_qr_assoc_case_conditions20_24_iff_diag_ne_zero
+      (A := A) (B := B) Q U R hQ hU hqrB hR hCase).1
+      ⟨hB, (LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack⟩
+  · intro hdiag
+    have hcond :=
+      (GeneralizedQRFactorization.tall_qr_assoc_case_conditions20_24_iff_diag_ne_zero
+        (A := A) (B := B) Q U R hQ hU hqrB hR hCase).2 hdiag
+    exact ⟨hcond.1,
+      (LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).1 hcond.2⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, wide associated (20.28)
+    supplied-shape source-rank nonsingularity equivalence:
+    under supplied exact QR and associated-column shape data, full row rank of
+    `B` together with full column rank of the local vertical stack `[A; B]` is
+    equivalent to nonzero diagonals of the displayed QR block `R` and the
+    trailing `L22` block extracted from `L`.
+
+    This is the stacked-rank version of
+    `GeneralizedQRFactorization.wide_qr_assoc_case_conditions20_24_iff_diag_ne_zero`.
+    It remains supplied-factor algebra and does not construct QR/GQR factors or
+    prove computed GQR stability. -/
+theorem GeneralizedQRFactorization.wide_qr_assoc_case_fullRowRank_stackedFullColumnRank_iff_diag_ne_zero
+    {k r q : ℕ}
+    {A : Fin (r + q) → Fin ((k + r) + q) → ℝ}
+    {B : Fin (k + r) → Fin ((k + r) + q) → ℝ}
+    (Q : Fin ((k + r) + q) → Fin ((k + r) + q) → ℝ)
+    (U : Fin (r + q) → Fin (r + q) → ℝ)
+    (R : Fin (k + r) → Fin (k + r) → ℝ)
+    (hQ : IsOrthogonal ((k + r) + q) Q)
+    (hU : IsOrthogonal (r + q) U)
+    (hqrB : matMulRectLeft (matTranspose Q)
+        (fun j : Fin ((k + r) + q) => fun i : Fin (k + r) => B i j) =
+      lsQRTallBlock (k := q) R)
+    (hR : IsUpperTriangular (k + r) R)
+    (hCase : GQRAQWideAssocCase k r q
+      (matMulRectLeft (matTranspose U)
+        (matMulRect (r + q) ((k + r) + q) ((k + r) + q) A Q))) :
+    (LSEFullRowRank B ∧ LSEStackedFullColumnRank A B) ↔
+      (∀ i : Fin (k + r), R i i ≠ 0) ∧
+        (∀ i : Fin q, hCase.L (Fin.natAdd r i) (Fin.natAdd r i) ≠ 0) := by
+  constructor
+  · rintro ⟨hB, hstack⟩
+    exact (GeneralizedQRFactorization.wide_qr_assoc_case_conditions20_24_iff_diag_ne_zero
+      (A := A) (B := B) Q U R hQ hU hqrB hR hCase).1
+      ⟨hB, (LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack⟩
+  · intro hdiag
+    have hcond :=
+      (GeneralizedQRFactorization.wide_qr_assoc_case_conditions20_24_iff_diag_ne_zero
+        (A := A) (B := B) Q U R hQ hU hqrB hR hCase).2 hdiag
+    exact ⟨hcond.1,
+      (LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).1 hcond.2⟩
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, tall supplied-shape
     nonsingular-block case:
     a supplied exact QR identity for `Bᵀ`, a supplied associated-row
