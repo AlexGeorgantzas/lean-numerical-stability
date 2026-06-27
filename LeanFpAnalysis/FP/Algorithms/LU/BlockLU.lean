@@ -18366,6 +18366,16 @@ theorem higham13_problem13_3_counterexample_row_block_diag_dom :
   fin_cases i <;>
     norm_num [higham13_problem13_3_counterexample_matrix]
 
+/-- The same Problem 13.3 witness is singular.  This is a small source-audit
+    check for Theorem 13.7: nonstrict block diagonal dominance with positive
+    scalar diagonal blocks does not by itself supply the nonsingularity
+    hypothesis used by the block-LU existence theorem. -/
+theorem higham13_problem13_3_counterexample_singular :
+    Matrix.det (higham13_problem13_3_counterexample_matrix :
+      Matrix (Fin 2) (Fin 2) ℝ) = 0 := by
+  rw [Matrix.det_fin_two]
+  simp [higham13_problem13_3_counterexample_matrix]
+
 /-- **Problem 13.3**: the counterexample is not positive definite.  The vector
     `(1,1)` is nonzero and has quadratic form zero. -/
 theorem higham13_problem13_3_counterexample_not_spd :

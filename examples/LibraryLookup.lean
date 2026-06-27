@@ -15930,6 +15930,7 @@ It intentionally contains no task-specific proof scripts.
 #check higham13_problem13_3_counterexample_symmetric
 #check higham13_problem13_3_counterexample_positive_diagonal
 #check higham13_problem13_3_counterexample_row_block_diag_dom
+#check higham13_problem13_3_counterexample_singular
 #check higham13_problem13_3_counterexample_not_spd
 #check higham13_problem13_3_counterexample
 #check higham13_inverse_ratio_one_sided_containment_counterexample
