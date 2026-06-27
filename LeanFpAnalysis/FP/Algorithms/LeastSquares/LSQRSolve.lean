@@ -3841,6 +3841,138 @@ theorem lsScaledAugmentedBalancedBranchRatio_bounds_of_alpha_eq_div_sqrt_two
         (alpha := alpha) (sigmaMin := sigmaMin) (sigmaMax := sigmaMax)
         hsigmaMin_pos halpha hsigmaMax
 
+/-- Diagonal-entry lower-magnitude adapter for the (20.18)-(20.19) spectral
+    route.  Under the balanced choice `alpha = sigmaMin / sqrt 2`, every
+    supplied diagonal entry classified as either the left-nullspace branch
+    `alpha` or one of the two displayed singular-value branches has magnitude at
+    least the smallest negative-branch magnitude.  This is the branch-list
+    certificate needed before the reciprocal-diagonal inverse candidate can be
+    instantiated. -/
+theorem lsScaledAugmentedDiagonalBranch_abs_min_le_of_alpha_eq_div_sqrt_two
+    {ι : Sort*} {alpha sigmaMin sigmaMax : ℝ} {d : ι → ℝ}
+    (hsigmaMin_pos : 0 < sigmaMin)
+    (halpha : alpha = sigmaMin / Real.sqrt 2)
+    (hd : ∀ i : ι,
+      d i = alpha ∨
+        ∃ sigma : ℝ, sigmaMin ≤ sigma ∧ sigma ≤ sigmaMax ∧
+          (d i = lsScaledAugmentedEigenvaluePlus alpha sigma ∨
+            d i = lsScaledAugmentedEigenvalueMinus alpha sigma)) :
+    ∀ i : ι, |lsScaledAugmentedEigenvalueMinus alpha sigmaMin| ≤ |d i| := by
+  have hsqrt2_pos : 0 < Real.sqrt 2 := Real.sqrt_pos.2 (by norm_num)
+  have hsqrt2_ne : Real.sqrt 2 ≠ 0 := ne_of_gt hsqrt2_pos
+  have halpha_pos : 0 < alpha := by
+    rw [halpha]
+    positivity
+  have halpha_nonneg : 0 ≤ alpha := le_of_lt halpha_pos
+  have hsigmaMin_nonneg : 0 ≤ sigmaMin := le_of_lt hsigmaMin_pos
+  have hsigmaMin_eq : sigmaMin = Real.sqrt 2 * alpha := by
+    rw [halpha]
+    field_simp [hsqrt2_ne]
+  have hmin_abs :
+      |lsScaledAugmentedEigenvalueMinus alpha sigmaMin| = alpha :=
+    lsScaledAugmentedEigenvalueMinus_abs_eq_alpha_of_sigma_eq_sqrt_two_mul
+      (alpha := alpha) (sigma := sigmaMin) halpha_nonneg hsigmaMin_eq
+  intro i
+  rcases hd i with hAlpha | ⟨sigma, hmin, hmax, hbranch⟩
+  · rw [hAlpha, hmin_abs, abs_of_pos halpha_pos]
+  · rcases hbranch with hPlus | hMinus
+    · have hbounds :=
+        lsScaledAugmentedEigenvalue_branch_abs_extreme_bounds_of_sigma_bounds
+          (alpha := alpha) (sigmaMin := sigmaMin) (sigma := sigma)
+          (sigmaMax := sigmaMax) halpha_nonneg hsigmaMin_nonneg hmin hmax
+      have hplus_nonneg :
+          0 ≤ lsScaledAugmentedEigenvaluePlus alpha sigma :=
+        lsScaledAugmentedEigenvaluePlus_nonneg
+          (alpha := alpha) (sigma := sigma) halpha_nonneg
+      rw [hPlus, abs_of_nonneg hplus_nonneg]
+      exact hbounds.1
+    · have hminus :=
+        lsScaledAugmentedEigenvalueMinus_abs_mono_sigma_nonneg
+          (alpha := alpha) (sigma := sigmaMin) (tau := sigma)
+          halpha_nonneg hsigmaMin_nonneg hmin
+      rw [hMinus]
+      exact hminus
+
+/-- Nonzero diagonal-entry corollary of
+    `lsScaledAugmentedDiagonalBranch_abs_min_le_of_alpha_eq_div_sqrt_two`.
+    Once the later (20.18) eigenbasis proof classifies the diagonal list into
+    the displayed branch shapes, the balanced branch formulas supply the
+    nonzero certificates required by the reciprocal-diagonal inverse theorem. -/
+theorem lsScaledAugmentedDiagonalBranch_ne_zero_of_alpha_eq_div_sqrt_two
+    {ι : Sort*} {alpha sigmaMin sigmaMax : ℝ} {d : ι → ℝ}
+    (hsigmaMin_pos : 0 < sigmaMin)
+    (halpha : alpha = sigmaMin / Real.sqrt 2)
+    (hd : ∀ i : ι,
+      d i = alpha ∨
+        ∃ sigma : ℝ, sigmaMin ≤ sigma ∧ sigma ≤ sigmaMax ∧
+          (d i = lsScaledAugmentedEigenvaluePlus alpha sigma ∨
+            d i = lsScaledAugmentedEigenvalueMinus alpha sigma)) :
+    ∀ i : ι, d i ≠ 0 := by
+  have hsqrt2_pos : 0 < Real.sqrt 2 := Real.sqrt_pos.2 (by norm_num)
+  have hsqrt2_ne : Real.sqrt 2 ≠ 0 := ne_of_gt hsqrt2_pos
+  have halpha_pos : 0 < alpha := by
+    rw [halpha]
+    positivity
+  have halpha_nonneg : 0 ≤ alpha := le_of_lt halpha_pos
+  have hsigmaMin_eq : sigmaMin = Real.sqrt 2 * alpha := by
+    rw [halpha]
+    field_simp [hsqrt2_ne]
+  have hmin_abs :
+      |lsScaledAugmentedEigenvalueMinus alpha sigmaMin| = alpha :=
+    lsScaledAugmentedEigenvalueMinus_abs_eq_alpha_of_sigma_eq_sqrt_two_mul
+      (alpha := alpha) (sigma := sigmaMin) halpha_nonneg hsigmaMin_eq
+  have hmin_abs_pos :
+      0 < |lsScaledAugmentedEigenvalueMinus alpha sigmaMin| := by
+    rw [hmin_abs]
+    exact halpha_pos
+  have hle :=
+    lsScaledAugmentedDiagonalBranch_abs_min_le_of_alpha_eq_div_sqrt_two
+      (alpha := alpha) (sigmaMin := sigmaMin) (sigmaMax := sigmaMax)
+      (d := d) hsigmaMin_pos halpha hd
+  intro i hzero
+  have hpos : 0 < |d i| := lt_of_lt_of_le hmin_abs_pos (hle i)
+  rw [hzero, abs_zero] at hpos
+  exact (lt_irrefl (0 : ℝ)) hpos
+
+/-- Reciprocal diagonal-entry bound for the balanced (20.19) inverse-candidate
+    route.  If a supplied diagonal list is classified by the source branch
+    formulas, then every reciprocal diagonal magnitude is bounded by the
+    reciprocal of the smallest negative-branch magnitude. -/
+theorem lsScaledAugmentedDiagonalBranch_recip_abs_le_of_alpha_eq_div_sqrt_two
+    {ι : Sort*} {alpha sigmaMin sigmaMax : ℝ} {d : ι → ℝ}
+    (hsigmaMin_pos : 0 < sigmaMin)
+    (halpha : alpha = sigmaMin / Real.sqrt 2)
+    (hd : ∀ i : ι,
+      d i = alpha ∨
+        ∃ sigma : ℝ, sigmaMin ≤ sigma ∧ sigma ≤ sigmaMax ∧
+          (d i = lsScaledAugmentedEigenvaluePlus alpha sigma ∨
+            d i = lsScaledAugmentedEigenvalueMinus alpha sigma)) :
+    ∀ i : ι, |(d i)⁻¹| ≤ |lsScaledAugmentedEigenvalueMinus alpha sigmaMin|⁻¹ := by
+  have hsqrt2_pos : 0 < Real.sqrt 2 := Real.sqrt_pos.2 (by norm_num)
+  have hsqrt2_ne : Real.sqrt 2 ≠ 0 := ne_of_gt hsqrt2_pos
+  have halpha_pos : 0 < alpha := by
+    rw [halpha]
+    positivity
+  have halpha_nonneg : 0 ≤ alpha := le_of_lt halpha_pos
+  have hsigmaMin_eq : sigmaMin = Real.sqrt 2 * alpha := by
+    rw [halpha]
+    field_simp [hsqrt2_ne]
+  have hmin_abs :
+      |lsScaledAugmentedEigenvalueMinus alpha sigmaMin| = alpha :=
+    lsScaledAugmentedEigenvalueMinus_abs_eq_alpha_of_sigma_eq_sqrt_two_mul
+      (alpha := alpha) (sigma := sigmaMin) halpha_nonneg hsigmaMin_eq
+  have hmin_abs_pos :
+      0 < |lsScaledAugmentedEigenvalueMinus alpha sigmaMin| := by
+    rw [hmin_abs]
+    exact halpha_pos
+  have hle :=
+    lsScaledAugmentedDiagonalBranch_abs_min_le_of_alpha_eq_div_sqrt_two
+      (alpha := alpha) (sigmaMin := sigmaMin) (sigmaMax := sigmaMax)
+      (d := d) hsigmaMin_pos halpha hd
+  intro i
+  rw [abs_inv]
+  exact inv_anti₀ hmin_abs_pos (hle i)
+
 /-- Scalar witness for the final comparison in (20.19): with scaling
     `alpha = sigmaMax`, the extremal branch ratio is strictly larger than
     `(sigmaMax / sigmaMin)^2`.  This is the source-facing scalar certificate
