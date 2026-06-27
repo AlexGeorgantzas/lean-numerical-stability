@@ -3896,4 +3896,72 @@ theorem GeneralizedQRFactorization.exists_unique_lse_minimizer_of_s_l22_bijectiv
   exact h.exists_unique_lse_minimizer_of_triangular_nonsingular
     hdiag.1 hdiag.2
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, tall supplied-shape case:
+    a supplied exact QR identity for `Bᵀ`, a supplied associated-row
+    (20.28) shape `Uᵀ A Q = [0; L]`, and the local assumptions (20.24)
+    imply existence and uniqueness of the exact equality-constrained
+    least-squares minimizer.
+
+    This composes the supplied-shape GQR construction with the supplied-GQR
+    uniqueness theorem. It still does not construct the QR/GQR factors or prove
+    floating-point GQR stability. -/
+theorem GeneralizedQRFactorization.exists_unique_lse_minimizer_of_tall_qr_assoc_case_conditions20_24
+    {k p q : ℕ}
+    {A : Fin ((k + p) + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (U : Fin ((k + p) + q) → Fin ((k + p) + q) → ℝ)
+    (R : Fin p → Fin p → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hU : IsOrthogonal ((k + p) + q) U)
+    (hqrB : matMulRectLeft (matTranspose Q)
+        (fun j : Fin (p + q) => fun i : Fin p => B i j) =
+      lsQRTallBlock (k := q) R)
+    (hR : IsUpperTriangular p R)
+    (hCase : GQRAQTallAssocCase k p q
+      (matMulRectLeft (matTranspose U)
+        (matMulRect ((k + p) + q) (p + q) (p + q) A Q)))
+    {b : Fin ((k + p) + q) → ℝ} {d : Fin p → ℝ}
+    (hB : LSEFullRowRank B)
+    (hnull : LSENullIntersectionTrivial A B) :
+    ∃! x : Fin (p + q) → ℝ, IsLSEMinimizer A b B d x := by
+  rcases GeneralizedQRFactorization.exists_of_tall_qr_assoc_case
+      (A := A) (B := B) Q U R hQ hU hqrB hR hCase with
+    ⟨h, _hQ, _hU, _hS, _hL22⟩
+  exact h.exists_unique_lse_minimizer_of_conditions20_24 hB hnull
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, wide supplied-shape case:
+    a supplied exact QR identity for `Bᵀ`, a supplied associated-column
+    (20.28) shape `Uᵀ A Q = [X L]`, and the local assumptions (20.24)
+    imply existence and uniqueness of the exact equality-constrained
+    least-squares minimizer.
+
+    This composes the supplied-shape GQR construction with the supplied-GQR
+    uniqueness theorem. It still does not construct the QR/GQR factors or prove
+    floating-point GQR stability. -/
+theorem GeneralizedQRFactorization.exists_unique_lse_minimizer_of_wide_qr_assoc_case_conditions20_24
+    {k r q : ℕ}
+    {A : Fin (r + q) → Fin ((k + r) + q) → ℝ}
+    {B : Fin (k + r) → Fin ((k + r) + q) → ℝ}
+    (Q : Fin ((k + r) + q) → Fin ((k + r) + q) → ℝ)
+    (U : Fin (r + q) → Fin (r + q) → ℝ)
+    (R : Fin (k + r) → Fin (k + r) → ℝ)
+    (hQ : IsOrthogonal ((k + r) + q) Q)
+    (hU : IsOrthogonal (r + q) U)
+    (hqrB : matMulRectLeft (matTranspose Q)
+        (fun j : Fin ((k + r) + q) => fun i : Fin (k + r) => B i j) =
+      lsQRTallBlock (k := q) R)
+    (hR : IsUpperTriangular (k + r) R)
+    (hCase : GQRAQWideAssocCase k r q
+      (matMulRectLeft (matTranspose U)
+        (matMulRect (r + q) ((k + r) + q) ((k + r) + q) A Q)))
+    {b : Fin (r + q) → ℝ} {d : Fin (k + r) → ℝ}
+    (hB : LSEFullRowRank B)
+    (hnull : LSENullIntersectionTrivial A B) :
+    ∃! x : Fin ((k + r) + q) → ℝ, IsLSEMinimizer A b B d x := by
+  rcases GeneralizedQRFactorization.exists_of_wide_qr_assoc_case
+      (A := A) (B := B) Q U R hQ hU hqrB hR hCase with
+    ⟨h, _hQ, _hU, _hS, _hL22⟩
+  exact h.exists_unique_lse_minimizer_of_conditions20_24 hB hnull
+
 end LeanFpAnalysis.FP
