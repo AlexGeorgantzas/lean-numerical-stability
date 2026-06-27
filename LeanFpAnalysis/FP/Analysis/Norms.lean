@@ -9577,6 +9577,113 @@ theorem complexMatrixSingularValue_antitone {m n : ℕ}
   intro i j hij
   exact Real.sqrt_le_sqrt (complexMatrixGramEigenvalues_antitone A hij)
 
+private theorem complex_re_star_mul_ofReal_mul (lam : ℝ) (c : ℂ) :
+    RCLike.re (star c * ((lam : ℂ) * c)) = lam * ‖c‖ ^ 2 := by
+  have hmul : star c * ((lam : ℂ) * c) =
+      ((lam * ‖c‖ ^ 2 : ℝ) : ℂ) := by
+    have hcc : star c * c = ((‖c‖ ^ 2 : ℝ) : ℂ) := by
+      simpa [RCLike.star_def] using (RCLike.conj_mul c)
+    calc
+      star c * ((lam : ℂ) * c) = (lam : ℂ) * (star c * c) := by ring
+      _ = (lam : ℂ) * ((‖c‖ ^ 2 : ℝ) : ℂ) := by rw [hcc]
+      _ = ((lam * ‖c‖ ^ 2 : ℝ) : ℂ) := by simp
+  calc
+    RCLike.re (star c * ((lam : ℂ) * c)) =
+        RCLike.re (((lam * ‖c‖ ^ 2 : ℝ) : ℂ)) := by
+          exact congrArg Complex.re hmul
+    _ = lam * ‖c‖ ^ 2 := by
+          change (((lam * ‖c‖ ^ 2 : ℝ) : ℂ).re) = lam * ‖c‖ ^ 2
+          rw [Complex.ofReal_re]
+
+theorem complexMatrixGramLin_re_inner_eq_sum_gramEigenvalues_mul_repr_norm_sq
+    {m n : ℕ} (A : CMatrix m n) (x : EuclideanSpace ℂ (Fin n)) :
+    RCLike.re (inner ℂ x (complexMatrixGramLin A x)) =
+      ∑ i : Fin n, complexMatrixGramEigenvalues A i *
+        ‖(complexMatrixGramEigenvectorBasis A).repr x i‖ ^ 2 := by
+  let b := complexMatrixGramEigenvectorBasis A
+  have hdiag : ∀ i : Fin n, b.repr (complexMatrixGramLin A x) i =
+      (complexMatrixGramEigenvalues A i : ℂ) * b.repr x i := by
+    intro i
+    simpa [b, complexMatrixGramEigenvalues, complexMatrixGramEigenvectorBasis] using
+      (LinearMap.IsSymmetric.eigenvectorBasis_apply_self_apply
+        (complexMatrixGramLin_isSymmetric A)
+        (finrank_euclideanSpace_fin (𝕜 := ℂ) (n := n)) x i)
+  have hinner := OrthonormalBasis.sum_inner_mul_inner b x
+    (complexMatrixGramLin A x)
+  rw [← hinner]
+  rw [map_sum]
+  apply Finset.sum_congr rfl
+  intro i _hi
+  have hbG :
+      inner ℂ (b i) (complexMatrixGramLin A x) =
+        b.repr (complexMatrixGramLin A x) i := by
+    rw [OrthonormalBasis.repr_apply_apply]
+  have hxb : inner ℂ x (b i) = star (b.repr x i) := by
+    rw [OrthonormalBasis.repr_apply_apply]
+    exact (inner_conj_symm (𝕜 := ℂ) x (b i)).symm
+  rw [hbG, hxb, hdiag i]
+  exact complex_re_star_mul_ofReal_mul
+    (complexMatrixGramEigenvalues A i) (b.repr x i)
+
+theorem complexMatrixEuclideanLin_norm_sq_eq_sum_gramEigenvalues_mul_repr_norm_sq
+    {m n : ℕ} (A : CMatrix m n) (x : EuclideanSpace ℂ (Fin n)) :
+    ‖complexMatrixEuclideanLin A x‖ ^ 2 =
+      ∑ i : Fin n, complexMatrixGramEigenvalues A i *
+        ‖(complexMatrixGramEigenvectorBasis A).repr x i‖ ^ 2 := by
+  calc
+    ‖complexMatrixEuclideanLin A x‖ ^ 2 =
+        RCLike.re (inner ℂ (complexMatrixEuclideanLin A x)
+          (complexMatrixEuclideanLin A x)) := by
+          rw [inner_self_eq_norm_sq]
+    _ = RCLike.re (inner ℂ x
+          ((LinearMap.adjoint (complexMatrixEuclideanLin A))
+            (complexMatrixEuclideanLin A x))) := by
+          rw [LinearMap.adjoint_inner_right]
+    _ = RCLike.re (inner ℂ x (complexMatrixGramLin A x)) := rfl
+    _ = ∑ i : Fin n, complexMatrixGramEigenvalues A i *
+        ‖(complexMatrixGramEigenvectorBasis A).repr x i‖ ^ 2 :=
+          complexMatrixGramLin_re_inner_eq_sum_gramEigenvalues_mul_repr_norm_sq A x
+
+theorem complexMatrixSingularValue_last_mul_norm_le_norm_euclideanLin
+    {m k : ℕ} (A : CMatrix m (k + 1))
+    (x : EuclideanSpace ℂ (Fin (k + 1))) :
+    complexMatrixSingularValue A (Fin.last k) * ‖x‖ ≤
+      ‖complexMatrixEuclideanLin A x‖ := by
+  let b := complexMatrixGramEigenvectorBasis A
+  have hnorm_repr :
+      (∑ i : Fin (k + 1), ‖b.repr x i‖ ^ 2) = ‖x‖ ^ 2 := by
+    simpa [b, OrthonormalBasis.repr_apply_apply] using
+      (OrthonormalBasis.sum_sq_norm_inner_right b x)
+  have hlast_le : ∀ i : Fin (k + 1),
+      complexMatrixGramEigenvalues A (Fin.last k) ≤
+        complexMatrixGramEigenvalues A i := by
+    intro i
+    exact complexMatrixGramEigenvalues_antitone A (Fin.le_last i)
+  have hsq : (complexMatrixSingularValue A (Fin.last k) * ‖x‖) ^ 2 ≤
+      ‖complexMatrixEuclideanLin A x‖ ^ 2 := by
+    rw [mul_pow, complexMatrixSingularValue_sq]
+    calc
+      complexMatrixGramEigenvalues A (Fin.last k) * ‖x‖ ^ 2 =
+          complexMatrixGramEigenvalues A (Fin.last k) *
+            (∑ i : Fin (k + 1), ‖b.repr x i‖ ^ 2) := by
+            rw [hnorm_repr]
+      _ = ∑ i : Fin (k + 1),
+          complexMatrixGramEigenvalues A (Fin.last k) *
+            ‖b.repr x i‖ ^ 2 := by
+            rw [Finset.mul_sum]
+      _ ≤ ∑ i : Fin (k + 1),
+          complexMatrixGramEigenvalues A i * ‖b.repr x i‖ ^ 2 := by
+            apply Finset.sum_le_sum
+            intro i _hi
+            exact mul_le_mul_of_nonneg_right (hlast_le i) (sq_nonneg _)
+      _ = ‖complexMatrixEuclideanLin A x‖ ^ 2 := by
+            rw [complexMatrixEuclideanLin_norm_sq_eq_sum_gramEigenvalues_mul_repr_norm_sq]
+  exact
+    (sq_le_sq₀
+      (mul_nonneg (complexMatrixSingularValue_nonneg A (Fin.last k))
+        (norm_nonneg x))
+      (norm_nonneg (complexMatrixEuclideanLin A x))).mp hsq
+
 /-- Applying the Euclidean linear-map bridge to a coordinate basis vector
     extracts the corresponding column of the source-facing matrix. -/
 theorem complexMatrixEuclideanLin_basisFun {m n : ℕ}

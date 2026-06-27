@@ -9030,6 +9030,18 @@ theorem lsRealRectSigmaMinRow_le_of_rectOpNorm2Le {m n : ℕ}
   simpa [lsRealRectSigmaMinRow] using
     lsRealRectRowSingularValue_le_of_rectOpNorm2Le A hc hA (Fin.last m)
 
+/-- Row-side singular-value lower bound for a real rectangular matrix. -/
+theorem lsRealRectSigmaMinRow_mul_vecNorm2_le_transpose_mulVec {m n : ℕ}
+    (A : Fin (m + 1) → Fin n → ℝ) (x : Fin (m + 1) → ℝ) :
+    lsRealRectSigmaMinRow A * vecNorm2 x ≤
+      vecNorm2 (rectMatMulVec (finiteTranspose A) x) := by
+  have h :=
+    complexMatrixSingularValue_last_mul_norm_le_norm_euclideanLin
+      (realRectToCMatrix (finiteTranspose A)) (realVecToEuclidean x)
+  simpa [lsRealRectSigmaMinRow, lsRealRectRowSingularValue,
+    realVecToEuclidean_norm,
+    realRectToCMatrix_euclideanLin_realVecToEuclidean_norm] using h
+
 /-- Row-side singular values of the source block
     `[ A   phi(I - r r^+) ]` from equation (20.21). -/
 noncomputable def lsNormwiseBackwardErrorFormulaMatrixRowSingularValue
@@ -9055,6 +9067,19 @@ noncomputable def lsNormwiseBackwardErrorFormulaMatrixSigmaMin
     (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ) : ℝ :=
   lsRealRectSigmaMinRow
     (lsNormwiseBackwardErrorFormulaMatrix theta A r y)
+
+/-- Source-block row-side singular-value lower bound for (20.21). -/
+theorem lsNormwiseBackwardErrorFormulaMatrixSigmaMin_mul_vecNorm2_le_transpose_mulVec
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (p : Fin (m + 1) → ℝ) :
+    lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y * vecNorm2 p ≤
+      vecNorm2
+        (rectMatMulVec
+          (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y)) p) := by
+  simpa [lsNormwiseBackwardErrorFormulaMatrixSigmaMin] using
+    lsRealRectSigmaMinRow_mul_vecNorm2_le_transpose_mulVec
+      (lsNormwiseBackwardErrorFormulaMatrix theta A r y) p
 
 theorem lsNormwiseBackwardErrorFormulaMatrixSigmaMin_nonneg
     {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
@@ -13779,6 +13804,56 @@ theorem LSNormwiseBackwardErrorFeasible.formulaMatrix_transpose_source_residual_
           ∑ i : Fin (m + 1),
             lsResidualComplementProjector (lsResidualHigham A b y) i k *
               (Deltab i - rectMatMulVec DeltaA y i))
+
+/-- Row-side spectral lower bound for the WKS source block on the expanded
+    feasible residual. -/
+theorem LSNormwiseBackwardErrorFeasible.formulaMatrixSigmaMin_mul_source_residual_vecNorm2_le
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (DeltaA : Fin (m + 1) → Fin n → ℝ)
+    (Deltab : Fin (m + 1) → ℝ)
+    (hfeas : LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab)
+    (hrsq : vecNorm2Sq (lsResidualHigham A b y) ≠ 0) :
+    lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+        (lsResidualHigham A b y) y *
+      vecNorm2
+        (fun i : Fin (m + 1) =>
+          lsResidualHigham A b y i + Deltab i - rectMatMulVec DeltaA y i) ≤
+      vecNorm2
+        (Fin.append
+          (fun j : Fin n =>
+            -∑ i : Fin (m + 1), DeltaA i j *
+              (lsResidualHigham A b y i + Deltab i -
+                rectMatMulVec DeltaA y i))
+          (fun k : Fin (m + 1) =>
+            lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y *
+              ∑ i : Fin (m + 1),
+                lsResidualComplementProjector (lsResidualHigham A b y) i k *
+                  (Deltab i - rectMatMulVec DeltaA y i))) := by
+  let p : Fin (m + 1) → ℝ :=
+    fun i => lsResidualHigham A b y i + Deltab i - rectMatMulVec DeltaA y i
+  have hspec :=
+    lsNormwiseBackwardErrorFormulaMatrixSigmaMin_mul_vecNorm2_le_transpose_mulVec
+      theta A (lsResidualHigham A b y) y p
+  have haction :=
+    LSNormwiseBackwardErrorFeasible.formulaMatrix_transpose_source_residual_eq
+      theta A b y DeltaA Deltab hfeas hrsq
+  change
+    lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+        (lsResidualHigham A b y) y * vecNorm2 p ≤
+      vecNorm2
+        (Fin.append
+          (fun j : Fin n =>
+            -∑ i : Fin (m + 1), DeltaA i j *
+              (lsResidualHigham A b y i + Deltab i -
+                rectMatMulVec DeltaA y i))
+          (fun k : Fin (m + 1) =>
+            lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y *
+              ∑ i : Fin (m + 1),
+                lsResidualComplementProjector (lsResidualHigham A b y) i k *
+                  (Deltab i - rectMatMulVec DeltaA y i)))
+  rw [← haction]
+  exact hspec
 
 /-- Exact-minimizer specialization of the nonzero-residual left-null
     certificate for (20.21).  If `y` is a least-squares minimizer, then
