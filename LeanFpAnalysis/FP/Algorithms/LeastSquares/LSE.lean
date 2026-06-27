@@ -3212,6 +3212,83 @@ theorem GeneralizedQRFactorization.conditions20_24_iff_s_l22_bijective
         (h.l22_bijective_iff_diag_ne_zero).1 hbij.2⟩
     exact (h.conditions20_24_iff_s_l22_diag_ne_zero).2 hdiag
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
+    for supplied GQR data, full row rank of `B` and full column rank of the
+    local vertical stack `[A; B]` are equivalent to trivial kernels of the
+    displayed triangular blocks `S` and `L22`.
+
+    This is the source stacked-rank version of
+    `GeneralizedQRFactorization.conditions20_24_iff_s_l22_kernel_trivial`.
+    It assumes supplied GQR data and does not construct the factors. -/
+theorem GeneralizedQRFactorization.fullRowRank_stackedFullColumnRank_iff_s_l22_kernel_trivial
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B) :
+    (LSEFullRowRank B ∧ LSEStackedFullColumnRank A B) ↔
+      (∀ y1 : Fin p → ℝ, rectMatMulVec h.S y1 = 0 → y1 = 0) ∧
+        (∀ y2 : Fin q → ℝ, rectMatMulVec h.L22 y2 = 0 → y2 = 0) := by
+  constructor
+  · rintro ⟨hB, hstack⟩
+    exact (h.conditions20_24_iff_s_l22_kernel_trivial).1
+      ⟨hB, (LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack⟩
+  · intro hker
+    have hcond : LSEFullRowRank B ∧ LSENullIntersectionTrivial A B :=
+      (h.conditions20_24_iff_s_l22_kernel_trivial).2 hker
+    exact ⟨hcond.1,
+      (LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).1 hcond.2⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, sentence after (20.28):
+    for supplied GQR data, full row rank of `B` and full column rank of the
+    local vertical stack `[A; B]` are equivalent to nonzero diagonals of the
+    lower-triangular blocks `S` and `L22`.
+
+    This is the source stacked-rank version of
+    `GeneralizedQRFactorization.conditions20_24_iff_s_l22_diag_ne_zero`.
+    It assumes supplied GQR data and does not construct the factors. -/
+theorem GeneralizedQRFactorization.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B) :
+    (LSEFullRowRank B ∧ LSEStackedFullColumnRank A B) ↔
+      (∀ i : Fin p, h.S i i ≠ 0) ∧
+        (∀ i : Fin q, h.L22 i i ≠ 0) := by
+  constructor
+  · rintro ⟨hB, hstack⟩
+    exact (h.conditions20_24_iff_s_l22_diag_ne_zero).1
+      ⟨hB, (LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack⟩
+  · intro hdiag
+    have hcond : LSEFullRowRank B ∧ LSENullIntersectionTrivial A B :=
+      (h.conditions20_24_iff_s_l22_diag_ne_zero).2 hdiag
+    exact ⟨hcond.1,
+      (LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).1 hcond.2⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, sentence after (20.28):
+    the same supplied-GQR stacked-rank equivalence as
+    `fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero`, but with
+    nonsingularity stated as bijectivity of the triangular solve maps for `S`
+    and `L22`.
+
+    This remains supplied-factor algebra, not the GQR existence proof. -/
+theorem GeneralizedQRFactorization.fullRowRank_stackedFullColumnRank_iff_s_l22_bijective
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B) :
+    (LSEFullRowRank B ∧ LSEStackedFullColumnRank A B) ↔
+      Function.Bijective (rectMatMulVec h.S) ∧
+        Function.Bijective (rectMatMulVec h.L22) := by
+  constructor
+  · rintro ⟨hB, hstack⟩
+    exact (h.conditions20_24_iff_s_l22_bijective).1
+      ⟨hB, (LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack⟩
+  · intro hbij
+    have hcond : LSEFullRowRank B ∧ LSENullIntersectionTrivial A B :=
+      (h.conditions20_24_iff_s_l22_bijective).2 hbij
+    exact ⟨hcond.1,
+      (LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).1 hcond.2⟩
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, exact supplied-GQR solve
     consequence under the local assumptions (20.24).
 
@@ -3288,6 +3365,52 @@ theorem GeneralizedQRFactorization.exists_lse_minimizer_of_conditions20_24
     (hnull : LSENullIntersectionTrivial A B) :
     ∃ x : Fin (p + q) → ℝ, IsLSEMinimizer A b B d x := by
   rcases h.exists_isLSEMinimizer_of_conditions20_24 hB hnull with
+    ⟨y1, y2, _hS, _hL22, hmin⟩
+  exact ⟨matMulVec (p + q) h.Q (Fin.append y1 y2), hmin⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, exact supplied-GQR solve
+    consequence under the source rank assumptions: full row rank of `B` and
+    full column rank of the local vertical stack `[A; B]`.
+
+    This is the stacked-rank version of
+    `GeneralizedQRFactorization.exists_isLSEMinimizer_of_conditions20_24`.
+    It still assumes supplied GQR data and does not construct the factors. -/
+theorem GeneralizedQRFactorization.exists_isLSEMinimizer_of_fullRowRank_stackedFullColumnRank
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    {b : Fin (r + q) → ℝ} {d : Fin p → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ y1 : Fin p → ℝ, ∃ y2 : Fin q → ℝ,
+      rectMatMulVec h.S y1 = d ∧
+      rectMatMulVec h.L22 y2 =
+        (fun i : Fin q =>
+          matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i) -
+            rectMatMulVec h.L21 y1 i) ∧
+      IsLSEMinimizer A b B d
+        (matMulVec (p + q) h.Q (Fin.append y1 y2)) :=
+  h.exists_isLSEMinimizer_of_conditions20_24 hB
+    ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
+
+/-- Direct LSE minimizer existence from supplied GQR data and the source rank
+    assumptions: full row rank of `B` and full column rank of the local vertical
+    stack `[A; B]`.
+
+    This is the existence-only corollary of
+    `GeneralizedQRFactorization.exists_isLSEMinimizer_of_fullRowRank_stackedFullColumnRank`.
+    It still assumes supplied GQR data and does not construct the factors. -/
+theorem GeneralizedQRFactorization.exists_lse_minimizer_of_fullRowRank_stackedFullColumnRank
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    {b : Fin (r + q) → ℝ} {d : Fin p → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ x : Fin (p + q) → ℝ, IsLSEMinimizer A b B d x := by
+  rcases h.exists_isLSEMinimizer_of_fullRowRank_stackedFullColumnRank hB hstack with
     ⟨y1, y2, _hS, _hL22, hmin⟩
   exact ⟨matMulVec (p + q) h.Q (Fin.append y1 y2), hmin⟩
 
