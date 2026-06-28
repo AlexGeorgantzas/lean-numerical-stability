@@ -9337,6 +9337,101 @@ theorem
       hWorth hVorth hCdiag hSdiag hTdiag hs hcs hnorm hcol heta12
       hrho hbudget
 
+/-- Source-nonbreakdown form of the chapter-facing Theorem 19.13 assembly.
+
+The diagonal-nonzero hypothesis is stated directly on the extracted `R11`
+block. The CS/polar repair witness and the fallback `nonsingInv` operator
+certificate are selected internally; the remaining visible obligation is the
+Frobenius-inverse budget that will eventually be replaced by the sharper
+source condition-number estimate. -/
+theorem mgs_qr_bounds_of_R11_diag_ne_zero
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {c2 kappaA higherOrder : Real}
+    (hdiag :
+      forall i : Fin n,
+        Ne (householder_paddedFinInput_R11 fp A i i) 0)
+    (hbudget :
+      2 *
+          (((Theorem19_4.gamma_tilde fp (n + m) n * frobNormRect A) +
+                2 *
+                  (Theorem19_4.gamma_tilde fp (n + m) n *
+                    frobNormRect A)) *
+              frobNorm (nonsingInv n (householder_paddedFinInput_R11 fp A))) +
+            (((Theorem19_4.gamma_tilde fp (n + m) n * frobNormRect A) +
+                  2 *
+                    (Theorem19_4.gamma_tilde fp (n + m) n *
+                      frobNormRect A)) *
+                frobNorm
+                  (nonsingInv n (householder_paddedFinInput_R11 fp A))) ^ 2 <=
+        c2 * fp.u * kappaA + higherOrder) :
+    MGSQRBounds m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (householder_paddedFinInput_R11 fp A)
+      (2 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      c2
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u (frobNormRect A) kappaA higherOrder := by
+  exact
+    mgs_qr_bounds_of_householder_upper_diag_csPolarRepair_of_householder_stacked_double_residual_coefficient_budget_frobInv_of_small_unit_roundoff
+      (fp := fp) (m := m) (n := n) A hn hnm hsmall
+      (eta1 := Theorem19_4.gamma_tilde fp (n + m) n * frobNormRect A)
+      (c2 := c2) (kappaA := kappaA) (higherOrder := higherOrder)
+      (by
+        intro i
+        simpa [householder_paddedFinInput_R11] using hdiag i)
+      (le_rfl)
+      (by
+        simpa [householder_paddedFinInput_R11] using hbudget)
+
+/-- Compact-budget version of `mgs_qr_bounds_of_R11_diag_ne_zero`.
+
+This records the current concrete residual combination as `3 * gamma_tilde *
+||A||_F`, leaving only the source inverse/condition estimate as the remaining
+budget refinement. -/
+theorem mgs_qr_bounds_of_R11_diag_ne_zero_compact_budget
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {c2 kappaA higherOrder : Real}
+    (hdiag :
+      forall i : Fin n,
+        Ne (householder_paddedFinInput_R11 fp A i i) 0)
+    (hbudget :
+      2 *
+          ((3 * (Theorem19_4.gamma_tilde fp (n + m) n * frobNormRect A)) *
+              frobNorm (nonsingInv n (householder_paddedFinInput_R11 fp A))) +
+            ((3 *
+                  (Theorem19_4.gamma_tilde fp (n + m) n *
+                    frobNormRect A)) *
+                frobNorm
+                  (nonsingInv n (householder_paddedFinInput_R11 fp A))) ^ 2 <=
+        c2 * fp.u * kappaA + higherOrder) :
+    MGSQRBounds m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (householder_paddedFinInput_R11 fp A)
+      (2 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      c2
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u (frobNormRect A) kappaA higherOrder := by
+  refine
+    mgs_qr_bounds_of_R11_diag_ne_zero
+      (fp := fp) (m := m) (n := n) A hn hnm hsmall
+      (c2 := c2) (kappaA := kappaA) (higherOrder := higherOrder)
+      hdiag ?_
+  ring_nf at hbudget
+  ring_nf
+  exact hbudget
+
 /-- Chapter-facing Theorem 19.13 assembly currently proved for the concrete
 padded Householder route.
 
