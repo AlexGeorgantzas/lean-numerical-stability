@@ -2,6 +2,7 @@ import LeanFpAnalysis.FP.Algorithms.QR.GivensQR
 import LeanFpAnalysis.FP.Algorithms.QR.GramSchmidt
 import LeanFpAnalysis.FP.Algorithms.QR.GramSchmidtPolar
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderQR
+import LeanFpAnalysis.FP.Algorithms.QR.HouseholderQRSupport
 
 open LeanFpAnalysis.FP
 
@@ -2606,6 +2607,68 @@ theorem householder_paddedFinInput_R11_zero_input_diag_zero
     panelTopLeft
   ]
   cases mgsPaddedRowFromFin (m := 1) (n := 1) (0 : Fin (1 + 1)) <;> rfl
+
+/-- Source-facing nonbreakdown route for the stored Householder QR loop.
+Nonsingular local leading blocks, the stored lower-zero invariant, the source
+sign convention, and a per-pivot square-root component budget imply that the
+final top-block diagonal is nonzero.  This is the leading-minor route that the
+concrete `R11` handoff can later instantiate. -/
+theorem storedTrailingPanel_R_diag_ne_zero_of_leading_block_det_ne_zero_sqrt_budget
+    {m n : Nat}
+    (fp : FPModel) (hmn : n ≤ m)
+    (A_hat : Nat → Fin m → Fin n → Real)
+    (alpha : Nat → Real)
+    (hm : gammaValid fp m)
+    (hStep : ∀ k (hk : k < n),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
+          (A_hat k))
+    (halpha : ∀ k (hk : k < n),
+      alpha k * alpha k =
+        householderTrailingNorm2Sq m
+          ⟨k, lt_of_lt_of_le hk hmn⟩
+          (fun i => A_hat k i ⟨k, hk⟩))
+    (hdetPrev : ∀ k (hk : k < n),
+      Matrix.det
+        (qrPreviousLeadingBlockTranspose (A_hat k)
+          (le_trans (Nat.le_of_lt hk) hmn) hk :
+          Matrix (Fin k) (Fin k) Real) ≠ 0)
+    (hdetLead : ∀ k (hk : k < n),
+      Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (le_trans (Nat.succ_le_of_lt hk) hmn) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real) ≠ 0)
+    (hlowerPrev : ∀ k (hk : k < n) (i : Fin m) (j : Fin k),
+      k ≤ i.val → A_hat k i (qrPreviousColumn n k hk j) = 0)
+    (hsign : ∀ k (hk : k < n),
+      alpha k * A_hat k ⟨k, lt_of_lt_of_le hk hmn⟩ ⟨k, hk⟩ ≤ 0)
+    (hbudgetSqrt : ∀ k (hk : k < n),
+      householderCompactComponentBudget fp m
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
+          (fun a => A_hat k a ⟨k, hk⟩)
+          ⟨k, lt_of_lt_of_le hk hmn⟩ <
+        Real.sqrt
+          (householderTrailingNorm2Sq m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun i => A_hat k i ⟨k, hk⟩))) :
+    ∀ i : Fin n, A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ i ≠ 0 := by
+  exact
+    fl_householderStoredTrailingPanel_sequence_diag_nonzero_of_leading_block_det_ne_zero_sqrt_budget
+      fp hmn A_hat alpha hm hStep halpha hdetPrev hdetLead hlowerPrev
+      hsign hbudgetSqrt
 
 theorem paddedEconomyR_upper_trapezoidal {m n : Nat}
     (R : Fin (n + m) -> Fin n -> Real)
