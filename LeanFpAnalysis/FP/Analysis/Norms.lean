@@ -10298,6 +10298,56 @@ theorem complexMatrixSingularValue_eq_norm_euclideanLin_gramEigenvectorBasis
     ← complexMatrixEuclideanLin_norm_sq_gramEigenvectorBasis A i]
   exact Real.sqrt_sq (norm_nonneg _)
 
+/-- The Gram eigenvector attached to a displayed singular value attains that
+    singular value in the Euclidean operator action. -/
+theorem complexMatrixSingularValue_mul_norm_gramEigenvectorBasis_eq_norm_euclideanLin
+    {m n : ℕ} (A : CMatrix m n) (i : Fin n) :
+    complexMatrixSingularValue A i * ‖complexMatrixGramEigenvectorBasis A i‖ =
+      ‖complexMatrixEuclideanLin A (complexMatrixGramEigenvectorBasis A i)‖ := by
+  rw [complexMatrixGramEigenvectorBasis_norm]
+  simpa using complexMatrixSingularValue_eq_norm_euclideanLin_gramEigenvectorBasis A i
+
+/-- Every displayed singular value has a nonzero Gram-eigenvector witness
+    attaining it. -/
+theorem complexMatrixSingularValue_exists_attaining_vector
+    {m n : ℕ} (A : CMatrix m n) (i : Fin n) :
+    ∃ x : EuclideanSpace ℂ (Fin n), x ≠ 0 ∧
+      complexMatrixSingularValue A i * ‖x‖ =
+        ‖complexMatrixEuclideanLin A x‖ := by
+  refine ⟨complexMatrixGramEigenvectorBasis A i, ?_, ?_⟩
+  · intro hx
+    have hnorm := complexMatrixGramEigenvectorBasis_norm A i
+    rw [hx, norm_zero] at hnorm
+    norm_num at hnorm
+  · exact
+      complexMatrixSingularValue_mul_norm_gramEigenvectorBasis_eq_norm_euclideanLin
+        A i
+
+/-- Squared-norm version of the Gram-eigenvector singular-value attainment
+    certificate. -/
+theorem complexMatrixSingularValue_exists_attaining_vector_sq
+    {m n : ℕ} (A : CMatrix m n) (i : Fin n) :
+    ∃ x : EuclideanSpace ℂ (Fin n), x ≠ 0 ∧
+      ‖complexMatrixEuclideanLin A x‖ ^ 2 =
+        (complexMatrixSingularValue A i) ^ 2 * ‖x‖ ^ 2 := by
+  refine ⟨complexMatrixGramEigenvectorBasis A i, ?_, ?_⟩
+  · intro hx
+    have hnorm := complexMatrixGramEigenvectorBasis_norm A i
+    rw [hx, norm_zero] at hnorm
+    norm_num at hnorm
+  · have hattain :=
+      complexMatrixSingularValue_mul_norm_gramEigenvectorBasis_eq_norm_euclideanLin
+        A i
+    calc
+      ‖complexMatrixEuclideanLin A (complexMatrixGramEigenvectorBasis A i)‖ ^ 2 =
+          (complexMatrixSingularValue A i *
+            ‖complexMatrixGramEigenvectorBasis A i‖) ^ 2 := by
+            rw [hattain]
+      _ =
+          (complexMatrixSingularValue A i) ^ 2 *
+            ‖complexMatrixGramEigenvectorBasis A i‖ ^ 2 := by
+            ring
+
 /-- Inner products of the images `A v_i` of the sorted Gram eigenvector basis.
     This is the local SVD bridge showing that these images are orthogonal and
     have squared norms given by the Gram eigenvalues. -/
