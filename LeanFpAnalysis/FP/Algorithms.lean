@@ -75,6 +75,7 @@ import LeanFpAnalysis.FP.Algorithms.QR.GivensMatrixStep
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderQR
 import LeanFpAnalysis.FP.Algorithms.QR.GivensQR
 import LeanFpAnalysis.FP.Algorithms.QR.GramSchmidt
+import LeanFpAnalysis.FP.Algorithms.QR.GramSchmidtPolar
 import LeanFpAnalysis.FP.Algorithms.QR.QRSolve
 import LeanFpAnalysis.FP.Algorithms.QR.Higham19
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSPerturbation

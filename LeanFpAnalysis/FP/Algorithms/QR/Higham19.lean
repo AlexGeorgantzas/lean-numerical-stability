@@ -1,5 +1,6 @@
 import LeanFpAnalysis.FP.Algorithms.QR.GivensQR
 import LeanFpAnalysis.FP.Algorithms.QR.GramSchmidt
+import LeanFpAnalysis.FP.Algorithms.QR.GramSchmidtPolar
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderQR
 
 open LeanFpAnalysis.FP
@@ -229,6 +230,18 @@ abbrev Problem1912PolarFactorData (m n : Nat)
     (P21 : Fin m -> Fin n -> Real) : Type :=
   MGSProblem1912PolarFactorData m n P11 P21
 
+/-- Full-positive right-Gram polar isometry for the lower block in Problem
+19.12. -/
+abbrev Problem1912RightGramPolarQFull {m n : Nat}
+    (P21 : Fin m -> Fin n -> Real) : Fin m -> Fin n -> Real :=
+  rectRightGramPolarQFull P21
+
+/-- Full-positive right-Gram polar positive factor for the lower block in
+Problem 19.12. -/
+abbrev Problem1912RightGramPolarH {m n : Nat}
+    (P21 : Fin m -> Fin n -> Real) : Fin n -> Fin n -> Real :=
+  rectRightGramPolarH P21
+
 /-- Corrected source-shaped input for the remaining Problem 19.12 CS/polar
 existence theorem: tallness plus the block-column Gram identity. -/
 abbrev Problem1912CSPolarInput (m n : Nat)
@@ -327,6 +340,79 @@ theorem problem1912_correctionMapData_of_polarAlgebra {m n : Nat}
   exact
     LeanFpAnalysis.FP.mgsProblem1912_correctionMapData_of_polarAlgebra
       hP21 hF hTP hQorth hFbound
+
+/-- Chapter-labeled orthonormality of the full-positive right-Gram polar
+isometry for the lower block. -/
+theorem problem1912_rightGramPolarQFull_orthonormal_of_pos {m n : Nat}
+    (P21 : Fin m -> Fin n -> Real)
+    (hpos : forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a) :
+    GramSchmidtOrthonormalColumns
+      (Problem1912RightGramPolarQFull P21) := by
+  exact rectRightGramPolarQFull_orthonormal_of_pos P21 hpos
+
+/-- Chapter-labeled full-positive right-Gram polar factorization of the lower
+block. -/
+theorem problem1912_rightGramPolarQFull_mul_polarH_of_pos {m n : Nat}
+    (P21 : Fin m -> Fin n -> Real)
+    (hpos : forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a) :
+    matMulRect m n n (Problem1912RightGramPolarQFull P21)
+        (Problem1912RightGramPolarH P21) =
+      P21 := by
+  exact rectRightGramPolarQFull_mul_polarH_of_pos P21 hpos
+
+/-- Chapter-labeled full-positive right-Gram polar payload constructor.  The
+bridge `T * P11 = I - H` and contraction bound are the remaining explicit
+obligations. -/
+def problem1912_polarFactorData_of_fullPositiveRightGram
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    {T : Fin n -> Fin n -> Real}
+    (hpos : forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a)
+    (hTP :
+      matMul n T P11 =
+        fun i j => idMatrix n i j - Problem1912RightGramPolarH P21 i j)
+    (hT : opNorm2Le T 1) :
+    Problem1912PolarFactorData m n P11 P21 :=
+  LeanFpAnalysis.FP.mgsProblem1912_polarFactorData_of_fullPositive_rightGram
+    hpos hTP hT
+
+/-- Full-positive right-Gram polar factors plus the remaining bridge produce
+chapter-facing pure Problem 19.12 correction-map data. -/
+theorem problem1912_correctionMapData_exists_of_fullPositiveRightGram
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    {T : Fin n -> Fin n -> Real}
+    (hpos : forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a)
+    (hTP :
+      matMul n T P11 =
+        fun i j => idMatrix n i j - Problem1912RightGramPolarH P21 i j)
+    (hT : opNorm2Le T 1) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      Problem1912CorrectionMapData m n P11 P21 Q F := by
+  exact
+    LeanFpAnalysis.FP.mgsProblem1912_correctionMapData_exists_of_fullPositive_rightGram
+      hpos hTP hT
+
+/-- Full-positive right-Gram polar factors plus the remaining bridge produce
+chapter-facing additive Problem 19.12 witnesses. -/
+theorem problem1912_add_factor_exists_of_fullPositiveRightGram
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    {T : Fin n -> Fin n -> Real}
+    (hpos : forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a)
+    (hTP :
+      matMul n T P11 =
+        fun i j => idMatrix n i j - Problem1912RightGramPolarH P21 i j)
+    (hT : opNorm2Le T 1) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      (Q = fun i j => P21 i j + matMulRect m n n F P11 i j) /\
+        GramSchmidtOrthonormalColumns Q /\
+        rectOpNorm2Le F 1 := by
+  exact
+    LeanFpAnalysis.FP.mgsProblem1912_add_factor_exists_of_fullPositive_rightGram
+      hpos hTP hT
 
 /-- Chapter-labeled conversion from a polar-factor payload to pure Problem
 19.12 correction-map data. -/
