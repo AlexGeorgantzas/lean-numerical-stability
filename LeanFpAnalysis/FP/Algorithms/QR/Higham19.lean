@@ -2225,6 +2225,13 @@ abbrev paddedEconomyR {m n : Nat}
     Fin n -> Fin n -> Real :=
   mgsPaddedEconomyR R
 
+/-- The extracted `R11` block from the padded Householder QR computation used
+in the Theorem 19.13 MGS handoff. -/
+abbrev householder_paddedFinInput_R11 (fp : FPModel) {m n : Nat}
+    (A : Fin m -> Fin n -> Real) : Fin n -> Fin n -> Real :=
+  paddedEconomyR
+    (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))
+
 theorem paddedEconomyR_upper_trapezoidal {m n : Nat}
     (R : Fin (n + m) -> Fin n -> Real)
     (hR : IsUpperTrapezoidal (n + m) n R) :
@@ -9329,6 +9336,60 @@ theorem
       fp A hn hsmall hdiag hresidual hRinv hP11 hP21 hQcs hF hUorth
       hWorth hVorth hCdiag hSdiag hTdiag hs hcs hnorm hcol heta12
       hrho hbudget
+
+/-- Chapter-facing Theorem 19.13 assembly currently proved for the concrete
+padded Householder route.
+
+The CS/polar repair witness and the `nonsingInv` operator certificate are
+constructed internally. The remaining source-strength obligations are explicit:
+the actual extracted `R11` block must be nonsingular, and the final
+Frobenius-inverse budget must match the advertised condition-number term. -/
+theorem mgs_qr_bounds
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {c2 kappaA higherOrder : Real}
+    (hdet :
+      Ne
+        (Matrix.det
+          (householder_paddedFinInput_R11 fp A :
+            Matrix (Fin n) (Fin n) Real))
+        0)
+    (hbudget :
+      2 *
+          (((Theorem19_4.gamma_tilde fp (n + m) n * frobNormRect A) +
+                2 *
+                  (Theorem19_4.gamma_tilde fp (n + m) n *
+                    frobNormRect A)) *
+              frobNorm (nonsingInv n (householder_paddedFinInput_R11 fp A))) +
+            (((Theorem19_4.gamma_tilde fp (n + m) n * frobNormRect A) +
+                  2 *
+                    (Theorem19_4.gamma_tilde fp (n + m) n *
+                      frobNormRect A)) *
+                frobNorm
+                  (nonsingInv n (householder_paddedFinInput_R11 fp A))) ^ 2 <=
+        c2 * fp.u * kappaA + higherOrder) :
+    MGSQRBounds m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (householder_paddedFinInput_R11 fp A)
+      (2 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      c2
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u (frobNormRect A) kappaA higherOrder := by
+  exact
+    mgs_qr_bounds_of_householder_det_ne_zero_csPolarRepair_of_householder_stacked_double_residual_coefficient_budget_frobInv_of_small_unit_roundoff
+      (fp := fp) (m := m) (n := n) A hn hnm hsmall
+      (eta1 := Theorem19_4.gamma_tilde fp (n + m) n * frobNormRect A)
+      (c2 := c2) (kappaA := kappaA) (higherOrder := higherOrder)
+      (by
+        simpa [householder_paddedFinInput_R11] using hdet)
+      (le_rfl)
+      (by
+        simpa [householder_paddedFinInput_R11] using hbudget)
 
 end Theorem19_13
 
