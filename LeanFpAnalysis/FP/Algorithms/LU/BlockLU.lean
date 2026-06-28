@@ -14447,6 +14447,52 @@ theorem
       rw [hReciprocal k hk])
 
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
+    determinant-nonzero reciprocal source-table package for Eq.13.21 and the
+    finite function-block `rho <= 2` consequence.
+
+    This is the reciprocal-table analogue of
+    `higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_source_table_of_det_ne_zero`:
+    it derives the positive growth-factor denominator from
+    `det (blockMatrixFlatFin A) != 0`, while the source inverse-bound table and
+    its Eq.13.18 diagonal-update data remain explicit. -/
+theorem
+    higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_source_table_reciprocal_of_det_ne_zero
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → (Fin r → Fin r → ℝ))
+    (pivotInv : ℕ → (Fin r → Fin r → ℝ))
+    (invDiagBound : Fin m → ℝ)
+    (stageInvDiagBound : ℕ → Fin m → ℝ)
+    (hdet :
+      Matrix.det (blockMatrixFlatFin A :
+        Matrix (Fin (m * r)) (Fin (m * r)) ℝ) ≠ 0)
+    (hDom : IsBlockDiagDomCol m
+      (fun i j : Fin m => maxEntryNorm hr (A i j)) invDiagBound)
+    (hDiagBound : ∀ j : Fin m,
+      invDiagBound j ≤ maxEntryNorm hr (A j j))
+    (hInit : ∀ j : Fin m, invDiagBound j ≤ stageInvDiagBound 0 j)
+    (hDiagUpdate : SchurStageActiveDiagLowerUpdate13_7
+      (higham13_algorithm13_3_schurStageNorm A pivotInv)
+      stageInvDiagBound
+      (higham13_algorithm13_3_pivotInvNorm pivotInv))
+    (hReciprocal : SchurStageActivePivotInvReciprocal13_7
+      stageInvDiagBound (higham13_algorithm13_3_pivotInvNorm pivotInv)) :
+    blockMaxNorm hm hr (higham13_algorithm13_3_upperFromStages A pivotInv) ≤
+        2 * blockMaxNorm hm hr A ∧
+      growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+          (higham13_algorithm13_3_stageHistoryGrowthMatrix
+            (Nat.mul_pos hm hr) hm hr A pivotInv)
+          (maxEntryNorm_pos_of_det_ne_zero
+            (Nat.mul_pos hm hr) (blockMatrixFlatFin A) hdet) ≤
+        2 := by
+  let hN : 0 < m * r := Nat.mul_pos hm hr
+  let hApos : 0 < maxEntryNorm hN (blockMatrixFlatFin A) :=
+    maxEntryNorm_pos_of_det_ne_zero hN (blockMatrixFlatFin A) hdet
+  simpa [hN, hApos] using
+    higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_source_table_reciprocal
+      hm hr A pivotInv hApos invDiagBound stageInvDiagBound hDom hDiagBound
+      hInit hDiagUpdate hReciprocal
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
     determinant-nonzero source-table package for Eq.13.21 and the finite
     function-block `rho <= 2` consequence.
 
