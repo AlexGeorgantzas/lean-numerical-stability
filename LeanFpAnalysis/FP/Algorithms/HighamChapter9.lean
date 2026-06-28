@@ -21515,6 +21515,65 @@ theorem higham9_15_normwise_source_bound_of_G_split_init_min_factor_bound_opNorm
     higham9_15_frobenius_relative_assembly_of_inverse_normalized_bounds_opNorm_of_inverse_identities
       L U Linv Uinv ΔL ΔU hLright hUleft hX hY
 
+/-- **Theorem 9.15 support**, source relative bound for the `I + G` split
+from a principal-block linearized step hypothesis.
+
+This exposes the exact recursive boundary needed by the Barrlund--Sun
+Schur-induction route, without routing the caller through a min-factor
+hypothesis. -/
+theorem higham9_15_normwise_source_bound_of_G_split_init_linear_step_opNorm_of_inverse_identities
+    {n : ℕ}
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hLright : rectMatMul L Linv = idMatrix (n + 1))
+    (hUleft : rectMatMul Uinv U = idMatrix (n + 1))
+    (hfact :
+      (1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) +
+          (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) +
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) +
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul ΔU Uinv)))
+    (hXtri :
+      ∀ i j : Fin (n + 1), i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin (n + 1), j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hGlt : opNorm2 (higham9_27_GMatrix Linv ΔA Uinv) < 1)
+    (hlinear :
+      max (frobNormRect (higham9_15_initBlock (rectMatMul Linv ΔL)))
+          (frobNormRect (higham9_15_initBlock (rectMatMul ΔU Uinv))) ≤
+        frobNormRect (higham9_15_initBlock (higham9_27_GMatrix Linv ΔA Uinv)) +
+          opNorm2 (higham9_15_initBlock (higham9_27_GMatrix Linv ΔA Uinv)) *
+            max (frobNormRect (higham9_15_initBlock (rectMatMul Linv ΔL)))
+              (frobNormRect (higham9_15_initBlock (rectMatMul ΔU Uinv)))) :
+    max (frobNormRect ΔL / opNorm2 L) (frobNormRect ΔU / opNorm2 U) ≤
+      frobNormRect (higham9_27_GMatrix Linv ΔA Uinv) /
+          (1 - opNorm2 (higham9_27_GMatrix Linv ΔA Uinv)) +
+        2 * frobNormRect
+          ((show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              higham9_27_GMatrix Linv ΔA Uinv) -
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul Linv ΔL) *
+              (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+                rectMatMul ΔU Uinv)) := by
+  let G : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    higham9_27_GMatrix Linv ΔA Uinv
+  let X : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    rectMatMul Linv ΔL
+  let Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    rectMatMul ΔU Uinv
+  let t : ℝ := frobNormRect G / (1 - opNorm2 G) + 2 * frobNormRect (G - X * Y)
+  have hmax : max (frobNormRect X) (frobNormRect Y) ≤ t :=
+    higham9_15_normalized_G_max_frobNormRect_le_ratio_add_two_residual_of_init_linear_step
+      G X Y hfact hXtri hYtri hGlt hlinear
+  have hX : frobNormRect X ≤ t := (le_max_left _ _).trans hmax
+  have hY : frobNormRect Y ≤ t := (le_max_right _ _).trans hmax
+  simpa [G, X, Y, t] using
+    higham9_15_frobenius_relative_assembly_of_inverse_normalized_bounds_opNorm_of_inverse_identities
+      L U Linv Uinv ΔL ΔU hLright hUleft hX hY
+
 /-- **Theorem 9.15 support**, product-smallness source relative bound for the
 `I + G` split from a principal-block min-factor hypothesis.
 
@@ -23582,6 +23641,62 @@ theorem higham9_15_normwise_source_bound_of_Gtilde_split_init_min_factor_bound_o
   have hmax : max (frobNormRect X) (frobNormRect Y) ≤ t :=
     higham9_15_normalized_Gtilde_max_frobNormRect_le_ratio_add_two_residual_of_init_min_factor_bound
       G X Y hfact hXtri hYtri hGlt hmin
+  have hX : frobNormRect X ≤ t := (le_max_left _ _).trans hmax
+  have hY : frobNormRect Y ≤ t := (le_max_right _ _).trans hmax
+  simpa [G, X, Y, t] using
+    higham9_15_frobenius_relative_assembly_of_inverse_normalized_bounds_opNorm_of_inverse_identities
+      Lhat Uhat LhatInv UhatInv ΔL ΔU hLright hUleft hX hY
+
+/-- **Theorem 9.15 support**, source relative bound for the `I - Gtilde`
+split from a principal-block linearized step hypothesis. -/
+theorem higham9_15_normwise_source_bound_of_Gtilde_split_init_linear_step_opNorm_of_inverse_identities
+    {n : ℕ}
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU :
+      Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix (n + 1))
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix (n + 1))
+    (hfact :
+      (1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) -
+          (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) -
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) -
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul ΔU UhatInv)))
+    (hXtri :
+      ∀ i j : Fin (n + 1), i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin (n + 1), j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hGlt : opNorm2 (higham9_27_GMatrix LhatInv ΔA UhatInv) < 1)
+    (hlinear :
+      max (frobNormRect (higham9_15_initBlock (rectMatMul LhatInv ΔL)))
+          (frobNormRect (higham9_15_initBlock (rectMatMul ΔU UhatInv))) ≤
+        frobNormRect (higham9_15_initBlock (higham9_27_GMatrix LhatInv ΔA UhatInv)) +
+          opNorm2 (higham9_15_initBlock (higham9_27_GMatrix LhatInv ΔA UhatInv)) *
+            max (frobNormRect (higham9_15_initBlock (rectMatMul LhatInv ΔL)))
+              (frobNormRect (higham9_15_initBlock (rectMatMul ΔU UhatInv)))) :
+    max (frobNormRect ΔL / opNorm2 Lhat) (frobNormRect ΔU / opNorm2 Uhat) ≤
+      frobNormRect (higham9_27_GMatrix LhatInv ΔA UhatInv) /
+          (1 - opNorm2 (higham9_27_GMatrix LhatInv ΔA UhatInv)) +
+        2 * frobNormRect
+          ((show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              higham9_27_GMatrix LhatInv ΔA UhatInv) +
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul LhatInv ΔL) *
+              (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+                rectMatMul ΔU UhatInv)) := by
+  let G : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    higham9_27_GMatrix LhatInv ΔA UhatInv
+  let X : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    rectMatMul LhatInv ΔL
+  let Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    rectMatMul ΔU UhatInv
+  let t : ℝ := frobNormRect G / (1 - opNorm2 G) + 2 * frobNormRect (G + X * Y)
+  have hmax : max (frobNormRect X) (frobNormRect Y) ≤ t :=
+    higham9_15_normalized_Gtilde_max_frobNormRect_le_ratio_add_two_residual_of_init_linear_step
+      G X Y hfact hXtri hYtri hGlt hlinear
   have hX : frobNormRect X ≤ t := (le_max_left _ _).trans hmax
   have hY : frobNormRect Y ≤ t := (le_max_right _ _).trans hmax
   simpa [G, X, Y, t] using

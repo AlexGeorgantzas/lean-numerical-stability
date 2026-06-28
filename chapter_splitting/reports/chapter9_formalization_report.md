@@ -4386,6 +4386,29 @@ nonzero-residual Barrlund--Sun theorem remains open.
 | `lake env lean --stdin` with fully qualified `#print axioms` for the two residual handoff declarations | PASS; both report only `propext`, `Classical.choice`, and `Quot.sound` |
 | focused implementation/lookup placeholder scans | PASS after the residual-handoff update; implementation, docs, and lookup scans had no matches |
 
+## 2026-06-28 Theorem 9.15 Source Linear-Step Residual Handoffs
+
+Added source-facing split wrappers that consume the principal-block linearized
+step directly:
+
+- `higham9_15_normwise_source_bound_of_G_split_init_linear_step_opNorm_of_inverse_identities`
+- `higham9_15_normwise_source_bound_of_Gtilde_split_init_linear_step_opNorm_of_inverse_identities`
+
+These wrappers lift the normalized residual handoffs to the printed
+operator-denominator source surface under explicit inverse identities.  They
+expose the exact recursive Schur-induction boundary as a linearized-step
+hypothesis and avoid routing source callers through the older min-factor
+interface.  They do not prove the remaining nonzero-residual Barrlund--Sun
+Schur-induction/spectral-radius theorem.
+
+| Command | Result |
+| --- | --- |
+| `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | PASS after adding the two source linear-step residual handoffs |
+| `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter9` | PASS, 3045 jobs, after refreshing the Chapter 9 module for the source linear-step residual handoffs |
+| `lake env lean --tstack=65536 examples/LibraryLookup.lean > /tmp/ch9_lookup_915_init_linear_step_source.out 2>&1` | PASS after adding lookup checks for the two declarations; redirected output has 79310 lines |
+| `lake env lean --stdin` with fully qualified `#print axioms` for the two source linear-step declarations | PASS; both report only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused implementation/lookup placeholder/local-placeholder/temp-file scans plus repo-local `git diff --check` | PASS after the source linear-step update; implementation, docs, and lookup scans had no matches, no temporary axiom/probe files remain, and whitespace diff check passed |
+
 No new `sorry`, `admit`, `axiom`, `unsafe`, or `opaque` appears in the touched Lean
 files. Earlier default-stack lookup runs hit the unrelated pre-Chapter-9 IEEE
 stack limit; the unifying pass verified the full lookup file with
@@ -4396,14 +4419,20 @@ file.
 
 - Local branch: `main`.
 - Latest remote base integrated before this recovery milestone: `origin/main`
-  at `5d681d2`.
+  at `74351c1` after the second pull-before-push fetch; the earlier conflict
+  recovery merged `origin/main` at `5d681d2`.
 - Merge/conflict resolution: local `main` merged `origin/main` in merge commit
-  `be66eb4`; the pre-merge dirty state was reapplied from
-  `stash@{0}` and resolved conservatively, preserving both Split 2 work and
-  newer upstream lookup/report rows while removing duplicate conflict artifacts.
-- Milestone subject planned for the resolved state:
+  `be66eb4`; a later clean pull-before-push merge integrated `origin/main` at
+  `74351c1` into local merge commit `cf03c8c`.  The pre-merge dirty state was
+  reapplied from `stash@{0}` and resolved conservatively, preserving both Split
+  2 work and newer upstream lookup/report rows while removing duplicate
+  conflict artifacts.
+- Milestone subject committed for the resolved sync state:
   `Split 2: recover ch09 proof-completion milestone after sync`.
-- Push status: pending pull-before-push verification.
+- Push status: blocked by GitHub HTTPS credentials in this environment.  The
+  command `git push origin main` failed with
+  `fatal: could not read Username for 'https://github.com': No such device or address`;
+  no `credential.helper` is configured and `gh` is not installed.
 
 ## Documentation
 
