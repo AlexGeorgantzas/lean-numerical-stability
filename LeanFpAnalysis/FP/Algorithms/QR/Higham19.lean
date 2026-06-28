@@ -2947,6 +2947,56 @@ theorem qrPanel_R_one_col_eq_firstStoredPanelStep_of_first_leadingBlock_det_ne_z
   exact panelFromTopAndTrailing_of_firstColumnTailZero S
     (panelFirstColumnTailZero_firstStoredPanelStep fp v 1 A)
 
+/-- Two-column terminal recurrence for the determinant-specialized
+recursive/stored `R` bridge.
+
+After the determinant-selected first stored step, the trailing recursive call is
+a one-column panel.  Under the corresponding determinant condition for that
+trailing panel, the one-column bridge collapses the trailing recursion to the
+next first stored step on the trailing panel.  This keeps the remaining
+shrinking-panel work focused on lifting the trailing stored step back into the
+full stored loop and identifying later-pivot reflector data. -/
+theorem trailingPanel_qrPanel_R_two_col_eq_firstStoredPanelStep_of_leadingBlock_det_ne_zero
+    (fp : FPModel) {m : Nat}
+    (A : Fin (m + 2) -> Fin 2 -> Real)
+    (hdetFirst :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le (m + 1)))
+          (Nat.succ_pos 1) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hdetTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+              (panelFirstColumn (Nat.succ_pos 1) A)
+           let S0 := fl_householderStoredPanelStep fp (m + 2) 2 0 v0 1 A
+           trailingPanel S0)
+          (Nat.succ_le_succ (Nat.zero_le m))
+          (Nat.succ_pos 0) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0) :
+    trailingPanel (fl_householderQRPanel_R fp (m + 2) 2 A) =
+      (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+          (panelFirstColumn (Nat.succ_pos 1) A)
+       let S0 := fl_householderStoredPanelStep fp (m + 2) 2 0 v0 1 A
+       let v1 := fl_householderNormalizedVector fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos 0) (trailingPanel S0))
+       fl_householderStoredPanelStep fp (m + 1) 1 0 v1 1 (trailingPanel S0)) := by
+  let v0 : Fin (m + 2) -> Real :=
+    fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+      (panelFirstColumn (Nat.succ_pos 1) A)
+  let S0 : Fin (m + 2) -> Fin 2 -> Real :=
+    fl_householderStoredPanelStep fp (m + 2) 2 0 v0 1 A
+  have htrail := trailingPanel_qrPanel_R_eq_qrPanel_R_firstStoredPanelStep_of_first_leadingBlock_det_ne_zero
+    (fp := fp) (m := m + 1) (p := 1) A hdetFirst
+  dsimp [v0, S0] at htrail
+  dsimp [v0, S0]
+  rw [htrail]
+  exact qrPanel_R_one_col_eq_firstStoredPanelStep_of_first_leadingBlock_det_ne_zero
+    fp (trailingPanel S0) hdetTail
+
 /-- Source-facing nonbreakdown route for the stored Householder QR loop.
 Nonsingular local leading blocks, the stored lower-zero invariant, the source
 sign convention, and a per-pivot square-root component budget imply that the
