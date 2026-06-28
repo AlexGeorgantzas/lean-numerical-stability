@@ -552,6 +552,40 @@ theorem problem1912_add_factor_exists_of_csPolarInput_fullPositiveRightGram
     mgsProblem1912_add_factor_exists_of_csPolarInput_fullPositive_rightGram
       hinput hpos
 
+/-- Chapter-facing branch router for the closed zero-top-Gram and
+full-positive right-Gram polar cases of Problem 19.12. -/
+theorem problem1912_correctionMapData_exists_of_csPolarInput_zeroOrFullPositiveRightGram
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hcase :
+      rectangularGram P11 = (fun _ _ => 0) \/
+        forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      Problem1912CorrectionMapData m n P11 P21 Q F := by
+  exact
+    mgsProblem1912_correctionMapData_exists_of_csPolarInput_zero_or_fullPositive_rightGram
+      hinput hcase
+
+/-- Chapter-facing additive branch router for the closed zero-top-Gram and
+full-positive right-Gram polar cases of Problem 19.12. -/
+theorem problem1912_add_factor_exists_of_csPolarInput_zeroOrFullPositiveRightGram
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hcase :
+      rectangularGram P11 = (fun _ _ => 0) \/
+        forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      (Q = fun i j => P21 i j + matMulRect m n n F P11 i j) /\
+        GramSchmidtOrthonormalColumns Q /\
+        rectOpNorm2Le F 1 := by
+  exact
+    mgsProblem1912_add_factor_exists_of_csPolarInput_zero_or_fullPositive_rightGram
+      hinput hcase
+
 /-- Chapter-labeled conversion from a polar-factor payload to pure Problem
 19.12 correction-map data. -/
 theorem problem1912_polarFactorData_to_correctionMapData {m n : Nat}

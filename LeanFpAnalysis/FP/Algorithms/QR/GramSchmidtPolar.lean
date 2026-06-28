@@ -706,6 +706,54 @@ theorem mgsProblem1912_add_factor_exists_of_csPolarInput_fullPositive_rightGram
       (mgsProblem1912_polarFactorData_of_csPolarInput_fullPositive_rightGram
         hinput hpos)
 
+/-- The two currently closed CS/polar branches for Problem 19.12: either the
+top Gram vanishes, giving the zero-correction branch, or the lower right-Gram
+singular values are all positive, giving the full-positive polar branch. -/
+theorem mgsProblem1912_correctionMapData_exists_of_csPolarInput_zero_or_fullPositive_rightGram
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : MGSProblem1912CSPolarInput m n P11 P21)
+    (hcase :
+      rectangularGram P11 = (fun _ _ => 0) \/
+        forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      MGSProblem1912CorrectionMapData m n P11 P21 Q F := by
+  cases hcase with
+  | inl htop =>
+      exact
+        mgsProblem1912_correctionMapData_exists_of_csPolarInput_top_gram_zero
+          hinput htop
+  | inr hpos =>
+      exact
+        mgsProblem1912_correctionMapData_exists_of_csPolarInput_fullPositive_rightGram
+          hinput hpos
+
+/-- Additive-witness form of the closed zero/full-positive CS/polar branch
+router for Problem 19.12.  The remaining general proof obligation is precisely
+the rank-deficient mixed-singular-value branch not covered by this disjunction. -/
+theorem mgsProblem1912_add_factor_exists_of_csPolarInput_zero_or_fullPositive_rightGram
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : MGSProblem1912CSPolarInput m n P11 P21)
+    (hcase :
+      rectangularGram P11 = (fun _ _ => 0) \/
+        forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      (Q = fun i j => P21 i j + matMulRect m n n F P11 i j) /\
+        GramSchmidtOrthonormalColumns Q /\
+        rectOpNorm2Le F 1 := by
+  cases hcase with
+  | inl htop =>
+      exact
+        mgsProblem1912_add_factor_exists_of_csPolarInput_top_gram_zero
+          hinput htop
+  | inr hpos =>
+      exact
+        mgsProblem1912_add_factor_exists_of_csPolarInput_fullPositive_rightGram
+          hinput hpos
+
 end
 
 end LeanFpAnalysis.FP
