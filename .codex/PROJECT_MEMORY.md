@@ -9511,3 +9511,23 @@ These compile, but should not be treated as fully derived stability results:
   the name present, `git diff --check`, Lean-only placeholder scan, scratch
   cleanup, and `#print axioms` with only `propext`, `Classical.choice`, and
   `Quot.sound`.
+
+- 2026-06-28 Problem 13.4 canonical stage-local Eq.13.23 witness composition:
+  added
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_source_comparisons_exact_kappa_of_product_bound_diag_update_of_pivot_right_inverse`
+  and
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_source_comparisons_exact_kappa_of_pivot_right_inverse_of_det_ne_zero_of_product_bound_diag_update`.
+  These are the concrete `BlockLUFactSpec` witness counterparts of the
+  product-only connector above. They package exact Algorithm 13.3 factors under
+  exact pivot right-inverse certificates, remove the raw Eq.13.23
+  `growthFactorEntry <= 2` premise by using the product-bound/diagonal-update
+  route, and in the determinant variant derive the canonical full inverse and
+  full positive denominator from `det(blockMatrixFlatFin Ablk) != 0`.
+  Remaining source obligations are still the local-to-full scalar comparison
+  table and active BDD product/update data. Verification passed: direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_lookup_stage_local_witness_product_update.{out,err}` with empty
+  stderr and both names present, `git diff --check`, Lean-only placeholder
+  scan, scratch cleanup, and `#print axioms` with only `propext`,
+  `Classical.choice`, and `Quot.sound`.
