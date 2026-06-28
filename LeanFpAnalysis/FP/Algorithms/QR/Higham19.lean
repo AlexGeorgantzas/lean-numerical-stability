@@ -3057,6 +3057,59 @@ theorem qrPanel_R_two_col_eq_firstStoredPanelStep_trailingStoredStep_of_leadingB
     panelFromTopAndTrailing (panelTopLeft S0) (panelTopRowTail S0) S1
   rw [hone]
 
+/-- Multiplication by zero is exact in the abstract `FPModel`.
+
+The relative-error law alone is enough here because the exact product is zero.
+This small support fact is needed when lifting a trailing compact Householder
+dot product through a zero-prefixed full reflector. -/
+theorem fl_mul_zero_left (fp : FPModel) (x : Real) :
+    fp.fl_mul 0 x = 0 := by
+  exact Exists.elim (fp.model_mul 0 x) (fun d hd =>
+    And.elim (fun _hle hmul => by
+      rw [hmul]
+      ring) hd)
+
+/-- Zero-prefix dot-product lift for compact Householder support.
+
+Adding one leading component whose left factor is zero does not change the
+sequential floating-point dot product: the first rounded product is zero and
+the following addition from zero is exact by the `FPModel` law
+`fl_add 0 x = x`. -/
+theorem fl_dotProduct_zero_cons (fp : FPModel) {m : Nat}
+    (v b : Fin (m + 1) -> Real) (b0 : Real) :
+    fl_dotProduct fp (m + 2) (Fin.cases 0 v) (Fin.cases b0 b) =
+      fl_dotProduct fp (m + 1) v b := by
+  simp [fl_dotProduct, Fin.foldl_succ, fl_mul_zero_left, fp.fl_add_zero]
+
+/-- Trailing-panel lift for a full stored step with a zero-prefixed reflector.
+
+This is the first concrete bridge from the terminal recursive/stored panel
+equalities back toward the full stored loop: the trailing panel of a pivot-1
+stored step with reflector `0 :: v` is exactly the pivot-0 stored step on the
+trailing panel. -/
+theorem trailingPanel_storedPanelStep_succ_zeroPrefix_eq_storedPanelStep_trailingPanel
+    (fp : FPModel) {m : Nat}
+    (v : Fin (m + 1) -> Real) (beta : Real)
+    (A : Fin (m + 2) -> Fin 2 -> Real) :
+    trailingPanel
+        (fl_householderStoredPanelStep fp (m + 2) 2 1 (Fin.cases 0 v) beta A) =
+      fl_householderStoredPanelStep fp (m + 1) 1 0 v beta (trailingPanel A) := by
+  ext i j
+  fin_cases j
+  cases i using Fin.cases with
+  | zero =>
+      simp [trailingPanel, fl_householderStoredPanelStep,
+        fl_householderApplyCompactPanel, fl_householderApplyCompact]
+      have hdot :
+          fl_dotProduct fp (m + 2) (fun i => Fin.cases 0 v i) (fun a => A a 1) =
+            fl_dotProduct fp (m + 1) v (fun a => A a.succ 1) := by
+        simpa using fl_dotProduct_zero_cons fp
+          (v := v) (b := fun a => A a.succ 1) (b0 := A 0 1)
+      rw [hdot]
+      rfl
+  | succ i =>
+      simp [trailingPanel, fl_householderStoredPanelStep]
+
 /-- Source-facing nonbreakdown route for the stored Householder QR loop.
 Nonsingular local leading blocks, the stored lower-zero invariant, the source
 sign convention, and a per-pivot square-root component budget imply that the
