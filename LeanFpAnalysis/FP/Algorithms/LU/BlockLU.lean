@@ -12090,6 +12090,35 @@ theorem higham13_algorithm13_3_diagLowerCert_diag_lower_of_source_table
       invDiagBound A pivotInv stageInvDiagBound hInit hDiagUpdate k ⟨k, hk⟩ le_rfl)
     (hActiveUpper k hk)
 
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7:
+    reciprocal-equality source-table form of the concrete one-sided active
+    pivot certificate for `diagLowerCert`.
+
+    This removes the one-sided active-upper proof artifact when the source
+    inverse-bound table is presented in the natural equality form
+    `d(k,k) = ‖pivotInv_k‖⁻¹`.  Constructing that source table and proving its
+    Eq.13.18 diagonal update remain the mathematical obligations. -/
+theorem higham13_algorithm13_3_diagLowerCert_diag_lower_of_source_table_reciprocal
+    {m r : ℕ}
+    (invDiagBound : Fin m → ℝ)
+    (A : Fin m → Fin m → (Fin r → Fin r → ℝ))
+    (pivotInv : ℕ → (Fin r → Fin r → ℝ))
+    (stageInvDiagBound : ℕ → Fin m → ℝ)
+    (hInit : ∀ j : Fin m, invDiagBound j ≤ stageInvDiagBound 0 j)
+    (hDiagUpdate : SchurStageActiveDiagLowerUpdate13_7
+      (higham13_algorithm13_3_schurStageNorm A pivotInv)
+      stageInvDiagBound
+      (higham13_algorithm13_3_pivotInvNorm pivotInv))
+    (hReciprocal : SchurStageActivePivotInvReciprocal13_7
+      stageInvDiagBound (higham13_algorithm13_3_pivotInvNorm pivotInv)) :
+    SchurStageActivePivotInvDiagLower13_7
+      (higham13_algorithm13_3_diagLowerCert invDiagBound A pivotInv)
+      (higham13_algorithm13_3_pivotInvNorm pivotInv) :=
+  higham13_algorithm13_3_diagLowerCert_diag_lower_of_source_table
+    invDiagBound A pivotInv stageInvDiagBound hInit hDiagUpdate
+    (fun k hk => by
+      rw [hReciprocal k hk])
+
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and Theorem 13.7:
     if the supplied active pivot inverse is certified as a right inverse of
     the active Schur-stage pivot block, then the source reciprocal diagonal
@@ -12222,6 +12251,35 @@ theorem higham13_algorithm13_3_diagLowerCert_pivot_bound_of_source_table
     invDiagBound A pivotInv
     (higham13_algorithm13_3_diagLowerCert_diag_lower_of_source_table
       invDiagBound A pivotInv stageInvDiagBound hInit hDiagUpdate hActiveUpper)
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and Theorem 13.7:
+    reciprocal-equality source-table form of the direct scalar pivot product
+    bound for the concrete diagonal lower certificate.
+
+    This is the same source-table route as
+    `higham13_algorithm13_3_diagLowerCert_pivot_bound_of_source_table`, but the
+    active reciprocal upper bounds are discharged from the equality predicate
+    matching the book's inverse-norm table. -/
+theorem higham13_algorithm13_3_diagLowerCert_pivot_bound_of_source_table_reciprocal
+    {m r : ℕ}
+    (invDiagBound : Fin m → ℝ)
+    (A : Fin m → Fin m → (Fin r → Fin r → ℝ))
+    (pivotInv : ℕ → (Fin r → Fin r → ℝ))
+    (stageInvDiagBound : ℕ → Fin m → ℝ)
+    (hInit : ∀ j : Fin m, invDiagBound j ≤ stageInvDiagBound 0 j)
+    (hDiagUpdate : SchurStageActiveDiagLowerUpdate13_7
+      (higham13_algorithm13_3_schurStageNorm A pivotInv)
+      stageInvDiagBound
+      (higham13_algorithm13_3_pivotInvNorm pivotInv))
+    (hReciprocal : SchurStageActivePivotInvReciprocal13_7
+      stageInvDiagBound (higham13_algorithm13_3_pivotInvNorm pivotInv)) :
+    ∀ k : ℕ, ∀ hk : k < m,
+      higham13_algorithm13_3_pivotInvNorm pivotInv k *
+        higham13_algorithm13_3_diagLowerCert invDiagBound A pivotInv k ⟨k, hk⟩ ≤ 1 :=
+  higham13_algorithm13_3_diagLowerCert_pivot_bound_of_diag_lower
+    invDiagBound A pivotInv
+    (higham13_algorithm13_3_diagLowerCert_diag_lower_of_source_table_reciprocal
+      invDiagBound A pivotInv stageInvDiagBound hInit hDiagUpdate hReciprocal)
 
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and Theorem 13.7:
     active column dominance for the concrete Schur-stage table from the
@@ -14309,6 +14367,45 @@ theorem
       hInit hDiagUpdate hActiveUpper⟩
 
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
+    reciprocal-equality source-table package for Eq.13.21's assembled
+    upper-factor bound and the finite function-block `rho <= 2` consequence.
+
+    The source proof naturally identifies the active source-table entries with
+    reciprocal pivot-inverse norms.  This wrapper uses that equality to
+    discharge the one-sided active-upper premise of the general source-table
+    package; proving the table and its Eq.13.18 update remains open. -/
+theorem
+    higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_source_table_reciprocal
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → (Fin r → Fin r → ℝ))
+    (pivotInv : ℕ → (Fin r → Fin r → ℝ))
+    (hApos : 0 < maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin A))
+    (invDiagBound : Fin m → ℝ)
+    (stageInvDiagBound : ℕ → Fin m → ℝ)
+    (hDom : IsBlockDiagDomCol m
+      (fun i j : Fin m => maxEntryNorm hr (A i j)) invDiagBound)
+    (hDiagBound : ∀ j : Fin m,
+      invDiagBound j ≤ maxEntryNorm hr (A j j))
+    (hInit : ∀ j : Fin m, invDiagBound j ≤ stageInvDiagBound 0 j)
+    (hDiagUpdate : SchurStageActiveDiagLowerUpdate13_7
+      (higham13_algorithm13_3_schurStageNorm A pivotInv)
+      stageInvDiagBound
+      (higham13_algorithm13_3_pivotInvNorm pivotInv))
+    (hReciprocal : SchurStageActivePivotInvReciprocal13_7
+      stageInvDiagBound (higham13_algorithm13_3_pivotInvNorm pivotInv)) :
+    blockMaxNorm hm hr (higham13_algorithm13_3_upperFromStages A pivotInv) ≤
+        2 * blockMaxNorm hm hr A ∧
+      growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+          (higham13_algorithm13_3_stageHistoryGrowthMatrix
+            (Nat.mul_pos hm hr) hm hr A pivotInv) hApos ≤
+        2 :=
+  higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_source_table
+    hm hr A pivotInv hApos invDiagBound stageInvDiagBound hDom hDiagBound
+    hInit hDiagUpdate
+    (fun k hk => by
+      rw [hReciprocal k hk])
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
     determinant-nonzero source-table package for Eq.13.21 and the finite
     function-block `rho <= 2` consequence.
 
@@ -14447,6 +14544,96 @@ theorem
     (higham13_algorithm13_3_active_diag_lower_update_of_eq
       A pivotInv stageInvDiagBound hDiagEq)
     hActiveUpper
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
+    exact diagonal-update equality plus reciprocal source-table form of the
+    paired Eq.13.21/finite-history package.
+
+    This is the book-shaped source-table surface: the initial source table and
+    the active Eq.13.18 recurrence are given by equality, and the active pivot
+    entries are reciprocal pivot-inverse norms.  The construction of that
+    source table remains the open analytic step. -/
+theorem
+    higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_source_table_of_diag_eq_reciprocal
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → (Fin r → Fin r → ℝ))
+    (pivotInv : ℕ → (Fin r → Fin r → ℝ))
+    (hApos : 0 < maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin A))
+    (invDiagBound : Fin m → ℝ)
+    (stageInvDiagBound : ℕ → Fin m → ℝ)
+    (hDom : IsBlockDiagDomCol m
+      (fun i j : Fin m => maxEntryNorm hr (A i j)) invDiagBound)
+    (hDiagBound : ∀ j : Fin m,
+      invDiagBound j ≤ maxEntryNorm hr (A j j))
+    (hInitEq : ∀ j : Fin m, stageInvDiagBound 0 j = invDiagBound j)
+    (hDiagEq : ∀ k : ℕ, ∀ hk : k < m, ∀ j : Fin m,
+      k + 1 ≤ j.val →
+        stageInvDiagBound (k + 1) j =
+          stageInvDiagBound k j -
+            higham13_algorithm13_3_schurStageNorm A pivotInv k j ⟨k, hk⟩ *
+              higham13_algorithm13_3_pivotInvNorm pivotInv k *
+              higham13_algorithm13_3_schurStageNorm A pivotInv k ⟨k, hk⟩ j)
+    (hReciprocal : SchurStageActivePivotInvReciprocal13_7
+      stageInvDiagBound (higham13_algorithm13_3_pivotInvNorm pivotInv)) :
+    blockMaxNorm hm hr (higham13_algorithm13_3_upperFromStages A pivotInv) ≤
+        2 * blockMaxNorm hm hr A ∧
+      growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+          (higham13_algorithm13_3_stageHistoryGrowthMatrix
+            (Nat.mul_pos hm hr) hm hr A pivotInv) hApos ≤
+        2 :=
+  higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_source_table_reciprocal
+    hm hr A pivotInv hApos invDiagBound stageInvDiagBound hDom hDiagBound
+    (by
+      intro j
+      rw [hInitEq j])
+    (higham13_algorithm13_3_active_diag_lower_update_of_eq
+      A pivotInv stageInvDiagBound hDiagEq)
+    hReciprocal
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
+    determinant-nonzero exact-update reciprocal source-table package.
+
+    This combines the book-shaped exact-update/reciprocal source-table surface
+    with determinant-derived positivity for the growth-factor denominator. -/
+theorem
+    higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_source_table_of_diag_eq_reciprocal_of_det_ne_zero
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → (Fin r → Fin r → ℝ))
+    (pivotInv : ℕ → (Fin r → Fin r → ℝ))
+    (invDiagBound : Fin m → ℝ)
+    (stageInvDiagBound : ℕ → Fin m → ℝ)
+    (hdet :
+      Matrix.det (blockMatrixFlatFin A :
+        Matrix (Fin (m * r)) (Fin (m * r)) ℝ) ≠ 0)
+    (hDom : IsBlockDiagDomCol m
+      (fun i j : Fin m => maxEntryNorm hr (A i j)) invDiagBound)
+    (hDiagBound : ∀ j : Fin m,
+      invDiagBound j ≤ maxEntryNorm hr (A j j))
+    (hInitEq : ∀ j : Fin m, stageInvDiagBound 0 j = invDiagBound j)
+    (hDiagEq : ∀ k : ℕ, ∀ hk : k < m, ∀ j : Fin m,
+      k + 1 ≤ j.val →
+        stageInvDiagBound (k + 1) j =
+          stageInvDiagBound k j -
+            higham13_algorithm13_3_schurStageNorm A pivotInv k j ⟨k, hk⟩ *
+              higham13_algorithm13_3_pivotInvNorm pivotInv k *
+              higham13_algorithm13_3_schurStageNorm A pivotInv k ⟨k, hk⟩ j)
+    (hReciprocal : SchurStageActivePivotInvReciprocal13_7
+      stageInvDiagBound (higham13_algorithm13_3_pivotInvNorm pivotInv)) :
+    blockMaxNorm hm hr (higham13_algorithm13_3_upperFromStages A pivotInv) ≤
+        2 * blockMaxNorm hm hr A ∧
+      growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+          (higham13_algorithm13_3_stageHistoryGrowthMatrix
+            (Nat.mul_pos hm hr) hm hr A pivotInv)
+          (maxEntryNorm_pos_of_det_ne_zero
+            (Nat.mul_pos hm hr) (blockMatrixFlatFin A) hdet) ≤
+        2 := by
+  let hN : 0 < m * r := Nat.mul_pos hm hr
+  let hApos : 0 < maxEntryNorm hN (blockMatrixFlatFin A) :=
+    maxEntryNorm_pos_of_det_ne_zero hN (blockMatrixFlatFin A) hdet
+  simpa [hN, hApos] using
+    higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_source_table_of_diag_eq_reciprocal
+      hm hr A pivotInv hApos invDiagBound stageInvDiagBound hDom hDiagBound
+      hInitEq hDiagEq hReciprocal
 
 /-- Upper block factor assembled from the matrix-product Algorithm 13.3
     Schur stages. -/
