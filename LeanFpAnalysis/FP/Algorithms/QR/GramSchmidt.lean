@@ -2695,6 +2695,32 @@ theorem rectangularGram_symmetric {m n : Nat}
   intro k _
   ring
 
+/-- A rectangular Gram matrix vanishes exactly when the rectangular matrix
+itself vanishes. -/
+theorem rectangularGram_eq_zero_iff {m n : Nat}
+    (Q : Fin m -> Fin n -> Real) :
+    rectangularGram Q = (fun _ _ => 0) <-> Q = fun _ _ => 0 := by
+  constructor
+  case mp =>
+    intro hgram
+    ext i j
+    have hdiag : rectangularGram Q j j = 0 := by
+      simpa using congrFun (congrFun hgram j) j
+    have hsum :
+        (Finset.univ.sum fun r : Fin m => Q r j ^ 2) = 0 := by
+      simpa [rectangularGram, finiteTranspose, matMulRect, pow_two] using
+        hdiag
+    have hterms :=
+      (Finset.sum_eq_zero_iff_of_nonneg
+        (s := (Finset.univ : Finset (Fin m)))
+        (f := fun r : Fin m => Q r j ^ 2)
+        (by intro r _; exact sq_nonneg (Q r j))).mp hsum
+    exact sq_eq_zero_iff.mp (hterms i (Finset.mem_univ i))
+  case mpr =>
+    intro hQ
+    ext i j
+    simp [rectangularGram, finiteTranspose, matMulRect, hQ]
+
 /-- If two block-column Gram matrices add to the identity, the left block is a
 unit rectangular contraction. -/
 theorem rectOpNorm2Le_one_left_of_rectangularGram_add_eq_id
@@ -3539,6 +3565,153 @@ theorem mgsProblem1912_correctionMapData_of_add_factor {m n : Nat}
   rw [hq]
   ring
 
+/-- Polar-factor algebra behind Higham Problem 19.12.
+
+If the lower block has a polar-style factorization `P21 = Q * H`, and a
+contractive bridge `T` satisfies `T * P11 = I - H`, then the correction map
+`F = Q * T` has the required factor identity `F * P11 = Q - P21`. -/
+theorem mgsProblem1912_polarAlgebra_correction_factor {m n : Nat}
+    {P11 H T : Fin n -> Fin n -> Real}
+    {P21 Q F : Fin m -> Fin n -> Real}
+    (hP21 : P21 = matMulRect m n n Q H)
+    (hF : F = matMulRect m n n Q T)
+    (hTP : matMul n T P11 = fun i j => idMatrix n i j - H i j) :
+    matMulRect m n n F P11 = fun i j => Q i j - P21 i j := by
+  calc
+    matMulRect m n n F P11
+        = matMulRect m n n (matMulRect m n n Q T) P11 := by
+          rw [hF]
+    _ = matMulRect m n n Q (matMul n T P11) := by
+          rw [matMulRect_assoc_square_right]
+    _ = matMulRect m n n Q
+        (fun i j => idMatrix n i j - H i j) := by
+          rw [hTP]
+    _ = fun i j =>
+        matMulRect m n n Q (idMatrix n) i j -
+          matMulRect m n n Q H i j := by
+          rw [matMulRect_sub_right]
+    _ = fun i j => Q i j - P21 i j := by
+          rw [matMulRect_id_right, <- hP21]
+
+/-- Build pure Problem 19.12 correction-map data from a polar-style algebraic
+payload.
+
+This is a non-diagonal alternative to the existing CS adapter: a future polar
+existence theorem may supply `P21 = Q*H`, `T*P11 = I-H`, orthonormal columns of
+`Q`, and the contraction bound for `F`. -/
+theorem mgsProblem1912_correctionMapData_of_polarAlgebra {m n : Nat}
+    {P11 H T : Fin n -> Fin n -> Real}
+    {P21 Q F : Fin m -> Fin n -> Real}
+    (hP21 : P21 = matMulRect m n n Q H)
+    (hF : F = matMulRect m n n Q T)
+    (hTP : matMul n T P11 = fun i j => idMatrix n i j - H i j)
+    (hQorth : GramSchmidtOrthonormalColumns Q)
+    (hFbound : rectOpNorm2Le F 1) :
+    MGSProblem1912CorrectionMapData m n P11 P21 Q F := by
+  refine
+    { orthonormal := hQorth
+      correction_factor := ?_
+      map_bound := hFbound }
+  exact mgsProblem1912_polarAlgebra_correction_factor hP21 hF hTP
+
+/-- Source-shaped polar-factor payload for the remaining Problem 19.12
+existence step.
+
+The open CS/polar theorem may target this data instead of diagonal CS factors:
+`P21 = Q*H`, `Q` has orthonormal columns, `T*P11 = I-H`, and `T` is a
+contraction. The checked algebra below then constructs the actual correction
+map `F = Q*T`. -/
+structure MGSProblem1912PolarFactorData (m n : Nat)
+    (P11 : Fin n -> Fin n -> Real)
+    (P21 : Fin m -> Fin n -> Real) where
+  q : Fin m -> Fin n -> Real
+  hMat : Fin n -> Fin n -> Real
+  tMat : Fin n -> Fin n -> Real
+  bottom_factor : P21 = matMulRect m n n q hMat
+  bridge_factor :
+    matMul n tMat P11 = fun i j => idMatrix n i j - hMat i j
+  q_orth : GramSchmidtOrthonormalColumns q
+  t_bound : opNorm2Le tMat 1
+
+/-- A polar-factor payload gives the pure Problem 19.12 correction-map data
+with correction map `F = Q*T`. -/
+theorem MGSProblem1912PolarFactorData.to_correctionMapData {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hpolar : MGSProblem1912PolarFactorData m n P11 P21) :
+    MGSProblem1912CorrectionMapData m n P11 P21 hpolar.q
+      (matMulRect m n n hpolar.q hpolar.tMat) := by
+  exact
+    mgsProblem1912_correctionMapData_of_polarAlgebra
+      hpolar.bottom_factor rfl hpolar.bridge_factor hpolar.q_orth
+      (GramSchmidtOrthonormalColumns.rectOpNorm2Le_matMulRect_square_right
+        hpolar.q_orth hpolar.t_bound)
+
+/-- Additive orientation supplied by a polar-factor payload. -/
+theorem MGSProblem1912PolarFactorData.add_factor_eq {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hpolar : MGSProblem1912PolarFactorData m n P11 P21) :
+    hpolar.q =
+      fun i j =>
+        P21 i j +
+          matMulRect m n n (matMulRect m n n hpolar.q hpolar.tMat)
+            P11 i j := by
+  exact MGSProblem1912CorrectionMapData.add_factor_eq
+    hpolar.to_correctionMapData
+
+/-- Existential pure correction-map data from a polar-factor payload. -/
+theorem mgsProblem1912_correctionMapData_exists_of_polarFactorData
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hpolar : MGSProblem1912PolarFactorData m n P11 P21) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      MGSProblem1912CorrectionMapData m n P11 P21 Q F := by
+  exact Exists.intro hpolar.q
+    (Exists.intro (matMulRect m n n hpolar.q hpolar.tMat)
+      hpolar.to_correctionMapData)
+
+/-- Existential additive Problem 19.12 witnesses from a polar-factor payload. -/
+theorem mgsProblem1912_add_factor_exists_of_polarFactorData
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hpolar : MGSProblem1912PolarFactorData m n P11 P21) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      (Q = fun i j => P21 i j + matMulRect m n n F P11 i j) /\
+        GramSchmidtOrthonormalColumns Q /\
+        rectOpNorm2Le F 1 := by
+  refine Exists.intro hpolar.q
+    (Exists.intro (matMulRect m n n hpolar.q hpolar.tMat) ?_)
+  exact
+    And.intro hpolar.add_factor_eq
+      (And.intro hpolar.q_orth hpolar.to_correctionMapData.map_bound)
+
+/-- Nonempty polar-factor payloads provide pure correction-map data. -/
+theorem mgsProblem1912_correctionMapData_exists_of_polarFactorData_nonempty
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hpolar : Nonempty (MGSProblem1912PolarFactorData m n P11 P21)) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      MGSProblem1912CorrectionMapData m n P11 P21 Q F := by
+  cases hpolar with
+  | intro hpolar =>
+      exact mgsProblem1912_correctionMapData_exists_of_polarFactorData hpolar
+
+/-- Nonempty polar-factor payloads provide additive Problem 19.12 witnesses. -/
+theorem mgsProblem1912_add_factor_exists_of_polarFactorData_nonempty
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hpolar : Nonempty (MGSProblem1912PolarFactorData m n P11 P21)) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      (Q = fun i j => P21 i j + matMulRect m n n F P11 i j) /\
+        GramSchmidtOrthonormalColumns Q /\
+        rectOpNorm2Le F 1 := by
+  cases hpolar with
+  | intro hpolar =>
+      exact mgsProblem1912_add_factor_exists_of_polarFactorData hpolar
+
 /-- Source-shaped correction map from Higham Problem 19.12 after choosing the
 common right factor `R` and the top perturbation block.
 
@@ -4142,6 +4315,73 @@ theorem mgsProblem1912_add_factor_exists_of_csDiagonalFactorData_nonempty
   | intro hcs =>
       exact mgsProblem1912_add_factor_exists_of_csDiagonalFactorData hcs
 
+/-- If the lower block in Problem 19.12 already has orthonormal columns, the
+zero correction map is enough.  This closes the degenerate CS/polar branch
+where the top block contributes no Gram defect. -/
+theorem mgsProblem1912_correctionMapData_of_bottom_orthonormal {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hP21 : GramSchmidtOrthonormalColumns P21) :
+    MGSProblem1912CorrectionMapData m n P11 P21 P21 (fun _ _ => 0) := by
+  have hQadd :
+      P21 =
+        fun i j =>
+          P21 i j +
+            matMulRect m n n (fun (_ : Fin m) (_ : Fin n) => (0 : Real))
+              P11 i j := by
+    ext i j
+    simp [matMulRect]
+  have hFbound :
+      rectOpNorm2Le (fun (_ : Fin m) (_ : Fin n) => (0 : Real)) 1 := by
+    intro x
+    have hzero :
+        rectMatMulVec (fun (_ : Fin m) (_ : Fin n) => (0 : Real)) x =
+          fun _ : Fin m => 0 := by
+      ext i
+      simp [rectMatMulVec]
+    rw [hzero]
+    have hnorm_zero : vecNorm2 (fun _ : Fin m => (0 : Real)) = 0 := by
+      simp [vecNorm2, vecNorm2Sq]
+    rw [hnorm_zero]
+    simpa using vecNorm2_nonneg x
+  exact mgsProblem1912_correctionMapData_of_add_factor
+    hQadd hP21 hFbound
+
+/-- Existence form of the zero-correction branch for Problem 19.12. -/
+theorem mgsProblem1912_correctionMapData_exists_of_bottom_orthonormal
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hP21 : GramSchmidtOrthonormalColumns P21) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      MGSProblem1912CorrectionMapData m n P11 P21 Q F := by
+  let F0 : Fin m -> Fin n -> Real := fun _ _ => 0
+  have hdata :
+      MGSProblem1912CorrectionMapData m n P11 P21 P21 F0 :=
+    mgsProblem1912_correctionMapData_of_bottom_orthonormal
+      (P11 := P11) (P21 := P21) hP21
+  exact
+    Exists.intro P21 (Exists.intro F0 hdata)
+
+/-- Additive-witness form of the zero-correction branch for Problem 19.12. -/
+theorem mgsProblem1912_add_factor_exists_of_bottom_orthonormal {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hP21 : GramSchmidtOrthonormalColumns P21) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      (Q = fun i j => P21 i j + matMulRect m n n F P11 i j) /\
+        GramSchmidtOrthonormalColumns Q /\
+        rectOpNorm2Le F 1 := by
+  let F0 : Fin m -> Fin n -> Real := fun _ _ => 0
+  have hdata :
+      MGSProblem1912CorrectionMapData m n P11 P21 P21 F0 :=
+    mgsProblem1912_correctionMapData_of_bottom_orthonormal
+      (P11 := P11) (P21 := P21) hP21
+  exact
+    Exists.intro P21
+      (Exists.intro F0
+        (And.intro hdata.add_factor_eq
+          (And.intro hP21 hdata.map_bound)))
+
 /-- Sanity check for the future CS/polar existence target: the block-column
 Gram identity alone cannot imply the additive Problem 19.12 witnesses without
 a tall/full-column-rank side condition.  For `m = 0`, `n = 1`, taking
@@ -4284,6 +4524,101 @@ theorem MGSProblem1912CSPolarInput.grams_commute {m n : Nat}
     matMul n (rectangularGram P11) (rectangularGram P21) =
       matMul n (rectangularGram P21) (rectangularGram P11) := by
   exact rectangularGram_commute_of_add_eq_id hinput.gram_sum
+
+/-- If the top CS/polar block is zero, the corrected input says the bottom
+block is already orthonormal. -/
+theorem MGSProblem1912CSPolarInput.bottom_orthonormal_of_top_zero {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : MGSProblem1912CSPolarInput m n P11 P21)
+    (hP11zero : P11 = fun _ _ => 0) :
+    GramSchmidtOrthonormalColumns P21 := by
+  intro i j
+  have hsum := congrFun (congrFun hinput.gram_sum i) j
+  rw [hP11zero] at hsum
+  simpa [rectangularGram, finiteTranspose, matMulRect] using hsum
+
+/-- If the top CS/polar block has zero Gram matrix, the corrected input says
+the bottom block is already orthonormal. -/
+theorem MGSProblem1912CSPolarInput.bottom_orthonormal_of_top_gram_zero
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : MGSProblem1912CSPolarInput m n P11 P21)
+    (hP11gram : rectangularGram P11 = fun _ _ => 0) :
+    GramSchmidtOrthonormalColumns P21 := by
+  intro i j
+  have hsum := congrFun (congrFun hinput.gram_sum i) j
+  rw [hP11gram] at hsum
+  simpa using hsum
+
+/-- A zero top Gram matrix in the corrected CS/polar input means the top block
+itself is zero. -/
+theorem MGSProblem1912CSPolarInput.top_zero_of_top_gram_zero {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (_hinput : MGSProblem1912CSPolarInput m n P11 P21)
+    (hP11gram : rectangularGram P11 = fun _ _ => 0) :
+    P11 = fun _ _ => 0 := by
+  exact (rectangularGram_eq_zero_iff P11).mp hP11gram
+
+/-- Degenerate CS/polar correction-data existence: if the top block is zero,
+the zero correction map repairs the already-orthonormal bottom block. -/
+theorem mgsProblem1912_correctionMapData_exists_of_csPolarInput_top_zero
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : MGSProblem1912CSPolarInput m n P11 P21)
+    (hP11zero : P11 = fun _ _ => 0) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      MGSProblem1912CorrectionMapData m n P11 P21 Q F := by
+  exact
+    mgsProblem1912_correctionMapData_exists_of_bottom_orthonormal
+      (hinput.bottom_orthonormal_of_top_zero hP11zero)
+
+/-- Degenerate CS/polar additive-witness existence: if the top block is zero,
+the full Problem 19.12 additive target follows with zero correction map. -/
+theorem mgsProblem1912_add_factor_exists_of_csPolarInput_top_zero
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : MGSProblem1912CSPolarInput m n P11 P21)
+    (hP11zero : P11 = fun _ _ => 0) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      (Q = fun i j => P21 i j + matMulRect m n n F P11 i j) /\
+        GramSchmidtOrthonormalColumns Q /\
+        rectOpNorm2Le F 1 := by
+  exact
+    mgsProblem1912_add_factor_exists_of_bottom_orthonormal
+      (hinput.bottom_orthonormal_of_top_zero hP11zero)
+
+/-- Degenerate CS/polar correction-data existence from a zero top Gram matrix.
+This is the same zero-correction branch stated at the Gram level used by the
+block-column identity. -/
+theorem mgsProblem1912_correctionMapData_exists_of_csPolarInput_top_gram_zero
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : MGSProblem1912CSPolarInput m n P11 P21)
+    (hP11gram : rectangularGram P11 = fun _ _ => 0) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      MGSProblem1912CorrectionMapData m n P11 P21 Q F := by
+  exact
+    mgsProblem1912_correctionMapData_exists_of_bottom_orthonormal
+      (hinput.bottom_orthonormal_of_top_gram_zero hP11gram)
+
+/-- Degenerate CS/polar additive-witness existence from a zero top Gram
+matrix. -/
+theorem mgsProblem1912_add_factor_exists_of_csPolarInput_top_gram_zero
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : MGSProblem1912CSPolarInput m n P11 P21)
+    (hP11gram : rectangularGram P11 = fun _ _ => 0) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      (Q = fun i j => P21 i j + matMulRect m n n F P11 i j) /\
+        GramSchmidtOrthonormalColumns Q /\
+        rectOpNorm2Le F 1 := by
+  exact
+    mgsProblem1912_add_factor_exists_of_bottom_orthonormal
+      (hinput.bottom_orthonormal_of_top_gram_zero hP11gram)
 
 /-- The packaged diagonal CS factor data proves the top block is a
 contraction. -/

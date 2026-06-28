@@ -1,8 +1,14 @@
 /.lake
+/.venv/
+/.agents/
+/.codex/skills/
+/chapter_splitting/
+/docs/chapter13/
+/scratch/
 *.aux
 *.log
 *.out
 thesis/
 references/
 References/
-chapter_splitting/
+/scripts/

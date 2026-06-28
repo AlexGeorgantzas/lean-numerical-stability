@@ -1,0 +1,981 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{array}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{longtable}
+\usepackage{listings}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  urlcolor=blue!60!black
+}
+
+\lstdefinelanguage{Lean}{
+  keywords={theorem,lemma,def,abbrev,structure,where,by,have,show,exact,
+    refine,obtain,let,fun,if,then,else,match,with,forall,exists,Prop,Type},
+  sensitive=true,
+  comment=[l]{--},
+  morecomment=[s]{/-}{-/},
+  morestring=[b]"
+}
+
+\lstset{
+  language=Lean,
+  basicstyle=\ttfamily\small,
+  columns=fullflexible,
+  breaklines=true,
+  keepspaces=true,
+  frame=single,
+  framerule=0.3pt,
+  backgroundcolor=\color{black!3}
+}
+
+\newcommand{\LeanTODO}[1]{%
+  \begin{quote}
+  \ttfamily\small\raggedright #1
+  \end{quote}
+}
+
+\newcommand{\BenchHead}[1]{%
+  \medskip\noindent\textbf{#1}\par\noindent
+}
+
+\newcommand{\BenchSubhead}[1]{%
+  \smallskip\noindent\textit{#1}\par\noindent
+}
+
+\newcommand{\Exercise}[7]{%
+  \subsection{#1}
+  \begin{description}[style=nextline,leftmargin=3.8cm,font=\normalfont\bfseries]
+    \item[Tier] #2
+    \item[Theme] #3
+    \item[Exercise prompt] #4
+    \item[Benchmark intent] #5
+    \item[Expected dependencies] #6
+    \item[Notes] #7
+  \end{description}
+
+  \BenchHead{Layer 1: natural-language discovery run}
+  This run measures whether the model can turn the exercise prompt into a useful
+  Lean theorem and proof.
+
+  \BenchSubhead{Condition A setup}
+  Exercise prompt plus only the neutral Lean scaffold needed to state the task:
+  basic types, notation, and algorithm definitions if required.  No
+  LeanFpAnalysis imports, source ledger, stability bounds, proof lemmas, or
+  proof logic.
+
+  \BenchSubhead{Condition A generated theorem and proof}
+  \LeanTODO{-- TODO: paste model output from natural-language Condition A run}
+
+  \BenchSubhead{Condition C setup}
+  Same exercise prompt, but with LeanFpAnalysis imports, source-oriented library
+  documentation, and available project context.
+
+  \BenchSubhead{Condition C generated theorem and proof}
+  \LeanTODO{-- TODO: paste model output from natural-language Condition C run}
+
+  \BenchSubhead{Discovery assessment}
+  TODO: record whether the two generated Lean statements prove the same
+  mathematical theorem, whether either statement is too weak or has hidden
+  assumptions, and whether the result is eligible for the fixed-theorem run.
+
+  \BenchHead{Layer 2: fixed Lean theorem run}
+  This run measures proof assistance only.  The canonical theorem below must be
+  frozen before either condition is run.
+
+  \BenchSubhead{Canonical Lean theorem statement}
+  \LeanTODO{-- TODO: theorem or lemma statement used verbatim in both fixed-theorem conditions}
+
+  \BenchSubhead{Minimal statement context}
+  \LeanTODO{-- TODO: neutral stubs/imports needed to state the theorem; no bounds or proof lemmas}
+
+  \BenchSubhead{Condition A proof}
+  \LeanTODO{-- TODO: generated proof from fixed Lean theorem with minimal statement scaffold}
+
+  \BenchSubhead{Condition C library context}
+  \LeanTODO{-- TODO: LeanFpAnalysis imports/docs/lemmas made visible for Condition C}
+
+  \BenchSubhead{Condition C proof}
+  \LeanTODO{-- TODO: generated proof from the exact same fixed Lean theorem with library context}
+
+  \BenchSubhead{Fixed-theorem assessment}
+  TODO: record success or failure, proof length, wall time, use of source-matched
+  library lemmas, hidden assumptions, remaining \texttt{sorry}s, and whether the
+  proof is implementation-backed or contract-transfer.
+
+  \BenchSubhead{Natural-language explanation of accepted proof}
+  TODO.
+}
+
+\title{Higham Exercise Benchmark Candidates}
+\author{LeanFpAnalysis Benchmarking}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Purpose}
+
+This document collects candidate exercises for the LeanFpAnalysis benchmark.
+It is a benchmark ledger, not a source-coverage ledger.
+
+The benchmark goal is to test whether access to the LeanFpAnalysis library
+makes formalizing floating-point stability-analysis tasks faster and more
+reliable than working from a minimal statement scaffold.  Preferred exercises ask for
+perturbation bounds, backward-error bounds, forward-error bounds, residual
+bounds, condition numbers, or algorithmic stability statements.  We avoid
+tasks that are only lookup, empirical exploration, or exact algebra unless
+they directly support a stability bound.
+
+Long verbatim exercise statements are intentionally not copied here.  Each
+entry records the exercise number, a source-faithful prompt paraphrase with
+the essential equations or bound target, and placeholders for the Lean task
+statement and generated proofs.
+
+The early-chapter numbering follows the user-curated exercise list.  In a few
+places the local PDF extraction differs slightly from the screenshot numbering;
+the prompt text identifies the intended exercise content.
+
+\section{Benchmark Design}
+
+\begin{description}[style=nextline,leftmargin=3.2cm,font=\normalfont\bfseries]
+  \item[Condition A] Minimal statement scaffold.  This includes only what is
+  needed to state the exercise in Lean in the same form as Condition C: basic
+  types, notation, local structures, and possibly concrete algorithm definitions.
+  It must not include stability bounds, source-derived proof lemmas, or proof
+  logic.
+  \item[Condition C] The same task file and the same neutral statement scaffold,
+  plus the LeanFpAnalysis library context and documentation.
+\end{description}
+
+Each exercise is evaluated in two layers.
+
+\paragraph{Layer 1: natural-language discovery}
+Both conditions receive the exercise prompt and, if needed, the same neutral
+statement scaffold.  Condition A has no stability-library help, while Condition
+C sees the LeanFpAnalysis library and documentation.  This tests whether library
+context helps the model choose a good Lean formalization and prove it.  The
+result is inherently noisy because the two runs may choose different theorem
+statements.
+
+\paragraph{Layer 2: fixed Lean theorem}
+A canonical Lean theorem statement is prepared and frozen before benchmarking.
+Both conditions receive exactly this theorem.  Condition A receives the minimal
+statement scaffold only; Condition C receives the same theorem and scaffold plus
+LeanFpAnalysis context.  This is the primary benchmark because it tests proof
+support without theorem-selection drift.
+
+For both layers, paste the generated proof under the corresponding condition.
+For Layer 1, also record whether the generated Lean statements are genuinely
+the same mathematical claim.  For Layer 2, the theorem statement must be byte-for-byte
+identical across conditions.
+
+\section{Code Block Convention}
+
+Use Lean listings for task statements and proofs:
+
+\begin{lstlisting}
+theorem example_task : True := by
+  trivial
+\end{lstlisting}
+
+\section{Current Library Coverage Notes}
+
+\begin{itemize}
+  \item Rounded \texttt{exp}, rounded \texttt{log}, and \texttt{log1p} models are
+  not yet a settled part of the library.  Exercises that need these operations
+  should remain in the benchmark: they can show whether the model can introduce
+  adequate local stubs, whether a proof exposes a real library extension need,
+  or whether the current library context is insufficient.  If a run scopes such
+  a task to exact algebra, that scoping must be recorded explicitly in the
+  assessment rather than treated as the original task.
+\end{itemize}
+
+\section{Candidate Index}
+
+\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.07\textwidth}
+                  >{\raggedright\arraybackslash}p{0.09\textwidth}
+                  >{\raggedright\arraybackslash}p{0.08\textwidth}
+                  >{\raggedright\arraybackslash}p{0.19\textwidth}
+                  >{\raggedright\arraybackslash}p{0.37\textwidth}}
+\toprule
+Chapter & Exercise & Tier & Theme & Benchmark intent \\
+\midrule
+\endfirsthead
+\toprule
+Chapter & Exercise & Tier & Theme & Benchmark intent \\
+\midrule
+\endhead
+1 & 1.9 & Best & Forward and backward error & Cramer's rule for 2 by 2 systems; derive forward and residual bounds. \\
+1 & 1.10 & Good & Forward error & Two-pass sample variance error bound. \\
+1 & 1.7 & Good & Condition number & Componentwise and normwise condition numbers for sample variance. \\
+1 & 1.5 & Maybe & Accurate reformulation & Large-\(n\) computation of \((1+1/n)^n\); useful probe for rounded log/exp support. \\
+3 & 3.5 & Best & Backward error & Matrix multiplication backward error with perturbation in either factor. \\
+3 & 3.2 & Good & Gamma bound & Sharpened product-error gamma bound under special hypotheses. \\
+3 & 3.8 & Good & Matrix product forward error & Bound for product of a sequence of matrices. \\
+3 & 3.12 & Good & Quadrature error & Floating-point summation and function evaluation error bound for quadrature. \\
+3 & 3.7 & Maybe & Complex backward error & Complex analogues of real backward-error results. \\
+4 & 4.3 & Best & Summation forward error & Refined recursive-summation error representation and ordering bound. \\
+4 & 4.7 & Maybe & Stability comparison & Analyze summation via \(\log(\prod_i \exp x_i)\); useful probe for rounded exp/log support. \\
+4 & 4.8 & Maybe & Grid generation error & Compare recurrence and direct formulas for equally spaced grid points. \\
+5 & 5.2 & Best & Polynomial evaluation error & Error analysis of beginner polynomial evaluation. \\
+5 & 5.3 & Best & Horner-style error bound & Error bound for even/odd splitting with Horner on each part. \\
+5 & 5.6 & Best & Polynomial backward/forward error & Bound for computed polynomial from Horner-like evaluation. \\
+5 & 5.5 & Good & Product-form evaluation & Error analysis for root-product evaluation of a polynomial. \\
+7 & 7.2 & Good & Residual-to-forward error & Relate residual, forward error, and condition number for linear systems. \\
+7 & 7.7 & Good & Backward error comparison & Compare backward-error quantities under perturbed right-hand sides. \\
+8 & 8.3 & Best & Triangular solve forward error & Bound components of triangular solve under unit upper triangular assumptions. \\
+8 & 8.4 & Best & Componentwise conditioning & Bound triangular M-matrix solve condition measure. \\
+8 & 8.7 & Maybe & Diagonal dominance bound & Use diagonal dominance to bound inverse norms; use scoped part only. \\
+9 & 9.6 & Good & Growth factor & Totally nonnegative matrices and growth factor one. \\
+9 & 9.8 & Good & LU backward structure & Inverse totally nonnegative case and absolute LU factorization. \\
+9 & 9.9 & Good & Growth factor bound & Bound GE growth factor without pivoting using \(\lvert L\rvert\lvert U\rvert\). \\
+9 & 9.13 & Good & Threshold pivoting & Growth-factor bound for sparse threshold pivoting. \\
+9 & 9.14 & Maybe & Pivoting equivalence & Pre-pivoted GEPP equivalences; mostly structural. \\
+19 & 19.2 & Best & Orthogonality error & Bound \(\widehat P^T\widehat P-I\) for a computed Householder reflector. \\
+19 & 19.6 & Best & Householder update error & Derive one-stage Householder QR update error and row-scaling interpretation. \\
+19 & 19.10 & Good & Gram-Schmidt instability & Analyze orthogonality of CGS and MGS on a small Lauchli-type matrix. \\
+19 & 19.12 & Good & Backward-error structure & Convert block perturbation data into a QR backward-error statement. \\
+20 & 20.2 & Best & Least-squares backward stability & Prove or scope-formalize Householder QR LS backward-stability theorem. \\
+20 & 20.5 & Best & MGS LS backward stability & Analogue of the QR LS backward-stability result for MGS. \\
+20 & 20.6 & Best & Residual error & Bound difference between true and computed LS residual norms for normal equations. \\
+20 & 20.8 & Good & LS backward error & Special case of LS backward-error formula when the right-hand side is unperturbed. \\
+20 & 20.9 & Good & Stable formula & Derive cancellation-resistant formula for normwise LS backward error. \\
+20 & 20.11 & Good & First-order approximation & Show LSE condition expression reduces to unconstrained LS first-order form. \\
+22 & 22.8 & Best & Bidiagonal inverse perturbation & Derive exact inverse perturbation formula and componentwise bound. \\
+22 & 22.11 & Best & Structured condition number & Derive structured condition number for primal Vandermonde systems. \\
+22 & 22.3 & Good & Algorithm stability & Scoped residual or forward-error task for Vandermonde inverse algorithm. \\
+22 & 22.7 & Good & Conditioning & Condition bounds for Chebyshev-Vandermonde matrices at special nodes. \\
+23 & 23.6 & Best & Fast matrix multiply error & Prove 3M plus Strassen normwise error bound. \\
+24 & 24.1 & Best & FFT convolution error & Bound DFT convolution rounding error and integer recovery condition. \\
+25 & 25.1 & Good & Perturbed iteration stability & Error floor for contraction iteration with bounded perturbations. \\
+27 & 27.5 & Good & Robust norm computation & Correctness and stability properties of scaled 2-norm algorithm. \\
+27 & 27.6 & Good & Robust Pythagorean sum & Halley/pythag iteration, convergence, and robustness properties. \\
+\bottomrule
+\end{longtable}
+\normalsize
+
+\section{Exercise Workspaces}
+
+\Exercise{Ch01 Ex. 1.9 -- Cramer's Rule Stability}
+{Best}
+{Forward and residual error}
+{For a \(2\) by \(2\) system \(Ax=b\), Cramer's rule forms
+\[
+d=a_{11}a_{22}-a_{21}a_{12},\quad
+x_1=(b_1a_{22}-b_2a_{12})/d,\quad
+x_2=(a_{11}b_2-a_{21}b_1)/d .
+\]
+Assuming \(d\) is exact, show that the computed \(\widehat x\) satisfies
+\[
+\frac{\lVert x-\widehat x\rVert_\infty}{\lVert x\rVert_\infty}
+\le \gamma_3\,\operatorname{cond}(A,x),\qquad
+\lVert b-A\widehat x\rVert_\infty
+\le \gamma_3\,\operatorname{cond}(A^{-1})\lVert b\rVert_\infty ,
+\]
+with the componentwise condition quantities defined using
+\(\lvert A^{-1}\rvert\lvert A\rvert\lvert x\rvert\).}
+{Derive forward and residual bounds from the stated operation model.}
+{Floating-point product/sum error; small linear-system perturbation bounds.}
+{Good first benchmark because the task is small but not a lookup.}
+
+\Exercise{Ch01 Ex. 1.10 -- Two-Pass Sample Variance}
+{Good}
+{Forward error}
+{For the two-pass sample variance formula \(V(x)\), prove that the computed
+quantity \(\widehat V=\operatorname{fl}(V(x))\) obeys
+\[
+\frac{\lvert V-\widehat V\rvert}{V}\le (n+3)u+O(u^2).
+\]
+The point is that the leading term should not depend on the sample-variance
+condition numbers from Ex. 1.7.}
+{Show the relative error is bounded by a linear term in \(n u\) plus higher-order terms.}
+{Summation error; dot/product error; variance definitions.}
+{More valuable after sample-variance and summation APIs are settled.}
+
+\Exercise{Ch01 Ex. 1.7 -- Sample Variance Condition Numbers}
+{Good}
+{Condition number}
+{For sample variance \(V(x)\), define a componentwise condition number using
+\(\lvert \Delta x_i\rvert\le \epsilon\lvert x_i\rvert\) and show
+\[
+\kappa_C
+=\frac{2\sum_i\lvert x_i-\bar x\rvert\lvert x_i\rvert}
+{(n-1)V(x)} .
+\]
+For the normwise perturbation set \(\lVert\Delta x\rVert_2\le
+\epsilon\lVert x\rVert_2\), show
+\[
+\kappa_N=\frac{2\lVert x\rVert_2}{\sqrt{(n-1)V(x)}}
+=2\left(1+\frac{n}{n-1}\frac{\bar x^2}{V(x)}\right)^{1/2}
+\ge \kappa_C .
+\]}
+{Formalize the condition-number formulas and comparison.}
+{Exact calculus or first-order perturbation framework; variance definitions.}
+{Useful companion to Ch01 Ex. 1.10.}
+
+\Exercise{Ch01 Ex. 1.5 -- Accurate Large-n Power}
+{Maybe}
+{Accurate reformulation}
+{First obtain an accurate method for \(\log(1+x)\) for all \(x>-1\), including
+small \(\lvert x\rvert\), assuming the library log has relative error at most
+\(u\).  Then use
+\[
+(1+1/n)^n=\exp(n\log(1+1/n))
+\]
+to compute \((1+1/n)^n\) accurately for large \(n\).}
+{Test whether the run introduces adequate rounded log/exp stubs or exposes a
+library extension need.}
+{Rounded log/exp models; possible local \texttt{log1p} specification.}
+{Keep in the benchmark as a coverage probe.  If a run proves only an exact
+algebra variant, record that explicitly as a scoped result.}
+
+\Exercise{Ch03 Ex. 3.5 -- Matrix Multiplication Backward Error}
+{Best}
+{Backward error}
+{For nonsingular \(A,B\in\mathbb R^{n\times n}\), show that the computed product
+can be written as
+\[
+\operatorname{fl}(AB)=(A+\Delta A)B,\qquad
+\lvert\Delta A\rvert\le \gamma_n\lvert A\rvert\lvert B\rvert\lvert B^{-1}\rvert .
+\]
+Also derive the corresponding backward-error representation in which \(B\) is
+perturbed instead of \(A\).}
+{Prove a componentwise or normwise backward-error statement for matrix multiplication.}
+{Dot-product backward error; matrix-vector or matrix-matrix composition.}
+{Excellent core benchmark.}
+
+\Exercise{Ch03 Ex. 3.2 -- Sharpened Product Gamma Bound}
+{Good}
+{Gamma bound}
+{In Lemma 3.1, specialize to the case \(\rho_i\equiv 1\).  Prove the sharper
+product-error estimate
+\[
+\lvert\theta_n\rvert\le \frac{nu}{1-\frac12nu},\qquad nu<2 .
+\]}
+{Prove the strengthened gamma inequality.}
+{Gamma algebra and product-of-errors lemmas.}
+{Calibration task for gamma infrastructure.}
+
+\Exercise{Ch03 Ex. 3.8 -- Matrix Sequence Product Error}
+{Good}
+{Matrix product forward error}
+{For \(A_1,\ldots,A_k\in\mathbb R^{n\times n}\), bound the forward error in
+the computed matrix product by proving a statement of the form
+\[
+\lVert A_1\cdots A_k-\operatorname{fl}(A_1\cdots A_k)\rVert_F
+\le (kn^2u+O(u^2))\lVert A_1\rVert_2\cdots\lVert A_k\rVert_2 .
+\]}
+{Show a Frobenius or normwise error bound for a finite matrix product.}
+{Matrix multiplication error and norm composition.}
+{Good if scoped to fixed product length or a clean recursive product definition.}
+
+\Exercise{Ch03 Ex. 3.12 -- Quadrature Rule Error}
+{Good}
+{Quadrature error}
+{For a quadrature rule
+\[
+I(f)=\int_a^b f(x)\,dx \approx J(f)=\sum_{i=1}^n w_i f(x_i),
+\]
+assume \(w_i,x_i\) are floating-point data, the weighted sum is evaluated
+left-to-right, and
+\(\operatorname{fl}(f(x_i))=f(x_i)(1+\eta_i)\), \(\lvert\eta_i\rvert\le\eta\).
+Derive and interpret a bound for
+\(\lvert I(f)-\widehat J(f)\rvert\), where
+\(\widehat J(f)=\operatorname{fl}(J(f))\).}
+{Derive and interpret a bound for \(\lvert I(f)-\widehat J(f)\rvert\).}
+{Summation bounds; weighted sum bounds.}
+{Good applied stability task.}
+
+\Exercise{Ch03 Ex. 3.7 -- Complex Backward Error Analogues}
+{Maybe}
+{Complex backward error}
+{Give complex analogues of the real backward-error results for inner products
+and matrix-vector products, replacing transposes by conjugate transposes where
+appropriate and using complex modulus in the componentwise bounds.}
+{Prove one specific complex dot-product or matrix-vector backward-error analogue.}
+{Complex absolute values; real/complex transfer lemmas.}
+{Avoid using it as a broad prose task.}
+
+\Exercise{Ch04 Ex. 4.3 -- Recursive Summation Refined Bound}
+{Best}
+{Summation forward error}
+{Let \(S_n=\sum_{i=1}^n x_i\) be computed by natural-order recursive summation.
+Show the refined representation
+\[
+\widehat S_n=(x_1+x_2)(1+\theta_{n-1})
++\sum_{i=3}^n x_i(1+\theta_{n-i+1}),\qquad
+\lvert\theta_k\rvert\le\gamma_k=\frac{ku}{1-ku}.
+\]
+Deduce
+\[
+\lvert \widehat S_n-S_n\rvert
+\le (\lvert x_1\rvert+\lvert x_2\rvert)\gamma_{n-1}
++\sum_{i=3}^n \lvert x_i\rvert\gamma_{n-i+1},
+\]
+and determine the ordering of the \(x_i\) that minimizes this bound.}
+{Prove the displayed weighted gamma bound and ordering consequence.}
+{Recursive summation backward error and gamma monotonicity.}
+{Strong because the proof is stability-specific and not just algebra.}
+
+\Exercise{Ch04 Ex. 4.7 -- Log-Exp Summation}
+{Maybe}
+{Stability comparison}
+{Analyze the accuracy of computing a sum through the identity
+\[
+S_n=\log\left(\prod_{i=1}^n e^{x_i}\right).
+\]
+The intended task is to compare this with direct summation and expose the
+rounding-error risks introduced by rounded \(\exp\), product accumulation, and
+rounded \(\log\).}
+{Test whether the run can model rounded exp/log plus product accumulation, or
+identify the missing operation model cleanly.}
+{Rounded exp/log models; product error.}
+{Keep in the benchmark as a coverage probe.  If a run proves only an exact
+algebra variant, record that explicitly as a scoped result.}
+
+\Exercise{Ch04 Ex. 4.8 -- Grid Point Formation}
+{Maybe}
+{Grid generation error}
+{For equally spaced points on \([a,b]\),
+\[
+x_i=a+ih,\qquad h=(b-a)/n,\qquad i=0,\ldots,n,
+\]
+compare the accuracy of forming \(x_i\) by repeated addition
+\(x_i=x_{i-1}+h\), by the direct formula \(a+ih\), and by the convex
+combination \(a(1-i/n)+(i/n)b\).  Assume \(a,b\) are floating-point numbers
+but \(h\) need not be.}
+{Prove one scoped error comparison.}
+{Rounded addition/multiplication and simple recurrences.}
+{Keep the task narrow.}
+
+\Exercise{Ch05 Ex. 5.2 -- Beginner Polynomial Evaluation}
+{Best}
+{Polynomial evaluation error}
+{For \(p(x)=a_0+a_1x+\cdots+a_nx^n\), analyze the direct evaluator
+\[
+q:=a_0,\quad y:=1,\quad
+\text{for }i=1:n\text{ do } y:=xy,\ q:=q+a_i y .
+\]
+Derive a rounding-error bound for the returned \(q\).}
+{Prove a coefficientwise or normwise error bound.}
+{Product recurrence; summation error; polynomial definitions.}
+{Good contrast with Horner tasks.}
+
+\Exercise{Ch05 Ex. 5.3 -- Even/Odd Polynomial Splitting}
+{Best}
+{Horner-style error bound}
+{Let \(p(x)=a_0+a_1x+\cdots+a_nx^n\) with \(n=2m\).  Write
+\[
+p(x)=a_0+a_2y+\cdots+a_{2m}y^m
++x(a_1+a_3y+\cdots+a_{2m-1}y^{m-1}),\qquad y=x^2 .
+\]
+Obtain an error bound for \(\operatorname{fl}(p(x))\) when each part is evaluated
+by Horner's rule and the final combination is rounded.}
+{Derive an error bound for the split evaluation.}
+{Horner backward error; product error; polynomial splitting.}
+{Strong because it composes existing stability lemmas.}
+
+\Exercise{Ch05 Ex. 5.6 -- Computed Polynomial Bound}
+{Best}
+{Polynomial backward/forward error}
+{For the polynomial \(P_3\) in the surrounding chapter, prove that the computed
+polynomial \(\widehat P_3\) produced by Horner's method satisfies
+\[
+\lVert P_3-\widehat P_3\rVert
+\le n(m+1)u\,\widetilde p_3(\lVert X\rVert)+O(u^2),
+\qquad
+\widetilde p_3(x)=\sum_k \lVert A_k\rVert x^k ,
+\]
+for the \(1\)-norm or \(\infty\)-norm.}
+{Formalize the norm bound involving a nonnegative majorant polynomial.}
+{Horner coefficientwise backward error and norm bounds.}
+{Strong higher-level Horner benchmark.}
+
+\Exercise{Ch05 Ex. 5.5 -- Root Product Evaluation}
+{Good}
+{Product-form evaluation}
+{If \(p(x)=\sum_{i=0}^n a_ix^i\) has roots \(x_1,\ldots,x_n\), evaluate it by
+the product form
+\[
+p(x)=a_n\prod_{i=1}^n(x-x_i).
+\]
+Give a rounding-error analysis for this product evaluation.}
+{Derive a product-form backward or forward error bound.}
+{Product rounding lemmas.}
+{Good if roots and polynomial product form are already available.}
+
+\Exercise{Ch07 Ex. 7.2 -- Residual and Forward Error}
+{Good}
+{Residual-to-forward error}
+{Let \(Ax=b\), \(A\in\mathbb R^{n\times n}\), and let \(y\) be any approximate
+solution with residual \(r=b-Ay\).  For any subordinate matrix norm, prove
+\[
+\frac{\lVert r\rVert}{\lVert A\rVert\lVert x\rVert}
+\le
+\frac{\lVert x-y\rVert}{\lVert x\rVert}
+\le
+\kappa(A)\frac{\lVert r\rVert}{\lVert A\rVert\lVert x\rVert}.
+\]
+Interpret the bound.}
+{Prove the two-sided residual/forward-error inequality.}
+{Normed matrix-vector inequalities and inverse bounds.}
+{Good foundational perturbation task.}
+
+\Exercise{Ch07 Ex. 7.7 -- Backward Error Comparison}
+{Good}
+{Backward error comparison}
+{For the normwise and componentwise backward-error measures from the chapter,
+prove the comparison inequalities
+\[
+\omega_{\lvert A\rvert,\lvert b\rvert}(y)
+\le \omega_{\lvert A\rvert,0}(y)
+\le \frac{2\omega_{\lvert A\rvert,\lvert b\rvert}(y)}
+{1-\omega_{\lvert A\rvert,\lvert b\rvert}(y)}
+\]
+and
+\[
+\eta_{A,b}(y)\le \eta_{A,0}(y)
+\le \frac{2\eta_{A,b}(y)}{1-\eta_{A,b}(y)} .
+\]}
+{Derive the displayed comparison inequalities.}
+{Backward-error definitions and algebraic manipulation of bounds.}
+{Useful for library-level error-measure definitions.}
+
+\Exercise{Ch08 Ex. 8.3 -- Triangular Solve Component Bound}
+{Best}
+{Triangular solve forward error}
+{Let \(U\in\mathbb R^{n\times n}\) be unit upper triangular with
+\(\lvert u_{ij}\rvert\le 1\) for \(j>i\).  Using the triangular-solve theorem,
+show that the computed substitution solution \(\widehat x\) to \(Ux=b\) satisfies
+\[
+\lvert x_i-\widehat x_i\rvert
+\le 2^{\,n-i}\bigl((n^2+n+1)u+O(u^2)\bigr)\lVert b\rVert_\infty .
+\]
+Compare this with the result obtained from the more general triangular-solve
+bound.}
+{Prove the componentwise bound for unit upper triangular systems with bounded off-diagonals.}
+{Triangular solve backward/forward bounds.}
+{Strong direct stability task.}
+
+\Exercise{Ch08 Ex. 8.4 -- Triangular M-Matrix Conditioning}
+{Best}
+{Componentwise conditioning}
+{Let \(T\in\mathbb R^{n\times n}\) be triangular, assume \(T=M(T)\), and suppose
+\(Tx=b\ge 0\).  Prove
+\[
+\lvert T^{-1}\rvert\lvert T\rvert\lvert x\rvert\le (2n-1)\lvert x\rvert,
+\]
+and hence \(\operatorname{cond}(T,x)\le 2n-1\).}
+{Formalize the bound \(\operatorname{cond}(T,x)\le 2n-1\) under the stated hypotheses.}
+{Triangular comparison and M-matrix inverse bounds.}
+{Strong if the M-matrix definitions are stable.}
+
+\Exercise{Ch08 Ex. 8.7 -- Diagonal Dominance Inverse Bound}
+{Maybe}
+{Diagonal dominance bound}
+{For a strictly row diagonally dominant matrix satisfying
+\[
+\alpha_i=\lvert a_{ii}\rvert-\sum_{j\ne i}\lvert a_{ij}\rvert>0,
+\]
+prove
+\[
+\lVert A^{-1}\rVert_\infty\le \frac{1}{\min_i\alpha_i}.
+\]
+Optionally extend this to the scaled case \(AD\) with positive diagonal
+\(D=\operatorname{diag}(d_i)\), giving
+\(\lVert A^{-1}\rVert_\infty\le \lVert D\rVert_\infty/\min_i\beta_i\).}
+{Use only a scoped subpart, preferably the inverse-norm bound.}
+{Matrix norm and diagonal dominance lemmas.}
+{More exact matrix analysis than floating-point stability.}
+
+\Exercise{Ch09 Ex. 9.6 -- Totally Nonnegative Growth Factor}
+{Good}
+{Growth factor}
+{If \(A\in\mathbb R^{n\times n}\) is nonsingular and totally nonnegative, show
+that it has an LU factorization \(A=LU\) with \(L\ge 0\) and \(U\ge 0\).  Using
+the determinant inequality for totally nonnegative matrices, deduce that Gaussian
+elimination without pivoting has growth factor \(\rho_n=1\).}
+{Formalize the growth-factor consequence.}
+{LU factorization; total nonnegativity; determinant inequalities.}
+{Specialized but relevant to GE stability.}
+
+\Exercise{Ch09 Ex. 9.8 -- Absolute LU Factorization}
+{Good}
+{LU backward structure}
+{If \(A\in\mathbb R^{n\times n}\) is nonsingular and \(A^{-1}\) is totally
+nonnegative, show that \(A\) has an LU factorization \(A=LU\) satisfying
+\[
+\lvert A\rvert=\lvert L\rvert\lvert U\rvert .
+\]}
+{Derive the LU absolute-value relation and stability implication.}
+{LU exact algebra and sign-structure lemmas.}
+{Good support for growth-factor and stability reasoning.}
+
+\Exercise{Ch09 Ex. 9.9 -- GE Growth Bound Without Pivoting}
+{Good}
+{Growth factor bound}
+{For Gaussian elimination without pivoting, prove the growth-factor estimate
+\[
+\rho_n\le 1+\frac{n\lVert \lvert L\rvert\lvert U\rvert\rVert_\infty}
+{\lVert A\rVert_\infty}.
+\]}
+{Prove the growth-factor inequality.}
+{GE/LU definitions and max-norm inequalities.}
+{Good compact task if growth factor is already defined.}
+
+\Exercise{Ch09 Ex. 9.13 -- Threshold Pivoting Growth Bound}
+{Good}
+{Threshold pivoting}
+{In sparse Gaussian elimination with threshold pivoting, a pivot in column \(k\)
+is chosen so that
+\[
+\lvert a^{(k)}_{ik}\rvert\ge \tau\max_{m\ge k}\lvert a^{(k)}_{mk}\rvert,\qquad
+\tau\in(0,1].
+\]
+Show that
+\[
+\max_i\lvert a^{(k)}_{ij}\rvert
+\le (1+\tau^{-1})^{\mu_j}\max_i\lvert a_{ij}\rvert,
+\]
+where \(\mu_j\) is the number of nonzeros in the \(j\)th column of \(U\), and
+deduce a growth-factor bound.}
+{Prove the per-column growth recurrence and resulting growth-factor bound.}
+{Sparse column counts; threshold pivoting definitions; growth-factor algebra.}
+{Good later benchmark; definitions may need local setup.}
+
+\Exercise{Ch09 Ex. 9.14 -- Pre-Pivoted GEPP Equivalence}
+{Maybe}
+{Pivoting equivalence}
+{Let \(A\) be pre-pivoted for GEPP, meaning GEPP performs no row interchanges
+on \(A\).  Show GEPP computes the same LU factorization as the first pivoting
+method from the chapter and as pairwise pivoting applied to \(\Pi A\), where
+\(\Pi\) is the row-reversal permutation, using the natural strategy that keeps
+multipliers bounded by \(1\).}
+{Use only if scoped to a stability consequence.}
+{Permutation matrices and GEPP definitions.}
+{Mostly structural, so lower priority.}
+
+\Exercise{Ch19 Ex. 19.2 -- Computed Householder Orthogonality}
+{Best}
+{Orthogonality error}
+{Let \(\widehat P=I-\widehat\beta\,\widehat v\,\widehat v^T\), where
+\(\widehat\beta\) and \(\widehat v\) are the computed Householder quantities from
+Lemma 19.1.  Derive a bound for
+\[
+\lVert \widehat P^T\widehat P-I\rVert_2 .
+\]}
+{Prove a bound for \(\widehat P^T\widehat P-I\) using the computed beta/vector error model.}
+{Householder reflector definitions and norm inequalities.}
+{Very good QR benchmark.}
+
+\Exercise{Ch19 Ex. 19.6 -- Householder QR One-Step Error}
+{Best}
+{Householder update error}
+{In Householder QR, prove the vector-size bound for the \(k\)th Householder
+vector,
+\[
+\sqrt2\,\lVert a_k^{(k)}(k:m)\rVert_2
+\le \lVert v_k\rVert_2
+\le 2\lVert a_k^{(k)}(k:m)\rVert_2 .
+\]
+Then, for \(j>k\), analyze the computed update
+\(\widehat a_j^{(k+1)}=\operatorname{fl}(\widehat P_k\widehat a_j^{(k)})\),
+where \(\widehat P_k=I-\beta_k\widehat v_k\widehat v_k^T\) and
+\(\lvert\Delta v_k\rvert\le\widetilde\gamma_{m-k}\lvert v_k\rvert\).  Show
+\[
+\widehat a_j^{(k+1)}=P_k\widehat a_j^{(k)}+f_j^{(k)},
+\]
+with the leading zero pattern in \(f_j^{(k)}\) and the displayed componentwise
+bound involving \(u\lvert\widehat a_j^{(k)}\rvert\) and
+\(\widetilde\gamma_{m-k}\lvert v_k\rvert\).}
+{Prove the residual form and componentwise/normwise bound for a panel update.}
+{Householder vector bounds; reflector application error.}
+{Excellent because it composes several QR facts.}
+
+\Exercise{Ch19 Ex. 19.10 -- CGS/MGS Orthogonality Example}
+{Good}
+{Gram-Schmidt instability}
+{For the Lauchli-type matrix
+\[
+A=\begin{bmatrix}
+1&1&1\\
+\epsilon&0&0\\
+0&\epsilon&0\\
+0&0&\epsilon
+\end{bmatrix},
+\]
+assuming \(\operatorname{fl}(1+\epsilon^2)=1\), evaluate the \(Q\) matrices
+produced by classical Gram-Schmidt and modified Gram-Schmidt, and assess their
+orthonormality.}
+{Formalize the computed \(Q\) matrices under a rounding assumption and bound orthogonality loss.}
+{Gram-Schmidt algorithm definitions.}
+{Good as an example task, but less general than 19.6.}
+
+\Exercise{Ch19 Ex. 19.12 -- QR Backward-Error Structure}
+{Good}
+{Backward-error structure}
+{Assume matrices satisfy
+\[
+\begin{bmatrix}A+\Delta A_1\\ \Delta A_2\end{bmatrix}
+=
+\begin{bmatrix}P_{11}\\ P_{21}\end{bmatrix}R,\qquad
+P_{11}^TP_{11}+P_{21}^TP_{21}=I,
+\]
+with \(P_{11},P_{21}\) having at least as many rows as columns.  Show that
+there exists an orthonormal \(Q\) such that
+\[
+A+\Delta A=QR,\qquad
+\Delta A=F\Delta A_1+\Delta A_2,\qquad \lVert F\rVert_2\le 1 .
+\]}
+{Prove existence of an orthonormal factor and a combined data perturbation.}
+{CS decomposition or a scoped substitute; polar/orthogonal factor facts.}
+{Powerful but may require heavier exact linear algebra.}
+
+\Exercise{Ch20 Ex. 20.2 -- Householder QR Least-Squares Backward Stability}
+{Best}
+{Least-squares backward stability}
+{Prove the Householder QR least-squares stability theorem: if \(A\in
+\mathbb R^{m\times n}\), \(m\ge n\), has full rank and
+\(\min_x\lVert b-Ax\rVert_2\) is solved by Householder QR, then the computed
+\(\widehat x\) is the exact least-squares solution to
+\[
+\min_x \lVert (b+\Delta b)-(A+\Delta A)x\rVert_2,
+\]
+with columnwise and right-hand-side bounds
+\[
+\lVert\Delta a_j\rVert_2\le \widetilde\gamma_{mn}\lVert a_j\rVert_2,\qquad
+\lVert\Delta b\rVert_2\le \widetilde\gamma_{mn}\lVert b\rVert_2 .
+\]}
+{Show the computed LS solution exactly solves a perturbed LS problem with columnwise/RHS perturbation bounds.}
+{Householder QR backward error; triangular solve backward error; LS normal-equation equivalence.}
+{One of the best benchmark tasks.}
+
+\Exercise{Ch20 Ex. 20.5 -- MGS Least-Squares Backward Stability}
+{Best}
+{MGS LS backward stability}
+{For the modified Gram-Schmidt least-squares method applied as described in the
+chapter, prove an analogue of the Householder QR theorem: the computed
+\(\widehat x\) is the exact solution of a nearby least-squares problem, with
+normwise or columnwise perturbation bounds of the same qualitative form as in
+Theorem 20.3.}
+{Formalize the MGS LS backward-stability result under a scoped MGS model.}
+{MGS QR model; LS backward-error definitions.}
+{Good if MGS algorithm support exists or is supplied in the task.}
+
+\Exercise{Ch20 Ex. 20.6 -- Normal Equations Residual Error}
+{Best}
+{Residual error}
+{For \(\min_x\lVert b-Ax\rVert_2\), let \(\widehat x\) be the solution computed by
+the normal-equations method, let \(x\) be the exact solution, and define
+\(\widehat r=b-A\widehat x\), \(r=b-Ax\).  Using the preceding normal-equations
+error bounds, prove a first-order estimate of the form
+\[
+\lvert r^Tr-\widehat r^T\widehat r\rvert
+\le c_{m,n}u\,\lVert x-\widehat x\rVert_2\lVert A\rVert_2
+\bigl(\lVert A\rVert_2\lVert\widehat x\rVert_2+\lVert b\rVert_2\bigr)
++O(u^2).
+\]}
+{Derive a bound for \(\lvert r^T r-\widehat r^T\widehat r\rvert\).}
+{Normal-equations backward error and residual algebra.}
+{Strong because it is not just a direct theorem restatement.}
+
+\Exercise{Ch20 Ex. 20.8 -- LS Backward Error with Fixed Right-Hand Side}
+{Good}
+{LS backward error}
+{For the normwise least-squares backward error \(\eta_F(y)\) of Theorem 20.5,
+evaluate the limiting case \(\theta=\infty\), i.e. the case \(\Delta b\equiv 0\)
+where only \(A\) may be perturbed.}
+{Derive the specialized expression or bound.}
+{LS backward-error formula and singular-value/eigenvalue facts.}
+{Good if the full formula has already been formalized.}
+
+\Exercise{Ch20 Ex. 20.9 -- Stable LS Backward-Error Formula}
+{Good}
+{Stable formula}
+{Prove the stable formula for the least-squares backward error:
+\[
+\eta_F(y)=\min\left\{\phi,\,
+\sigma_{\min}\bigl([\,A\ \ \phi(I-rr^+)\,]\bigr)\right\},
+\qquad
+\phi=\sqrt{\mu}\,\frac{\lVert r\rVert_2}{\lVert y\rVert_2},
+\]
+where \(r=b-Ay\), \(\mu=\theta^2\lVert y\rVert_2^2/(1+\theta^2\lVert y\rVert_2^2)\),
+and \(r^+\) denotes the pseudoinverse of \(r\) viewed as a vector.}
+{Prove equivalence of the alternative formula to the original backward-error expression.}
+{Singular-value formulas and projection residual algebra.}
+{Good but may be exact-linear-algebra heavy.}
+
+\Exercise{Ch20 Ex. 20.11 -- LSE First-Order Reduction}
+{Good}
+{First-order approximation}
+{For the equality-constrained least-squares perturbation bound, specialize the
+general formula to the unconstrained problem \(B=0\), \(d=0\).  Show that the
+bound reduces, to first order, to the standard unconstrained least-squares
+condition estimate.}
+{Formalize the reduction under the unconstrained specialization.}
+{First-order perturbation framework and LS definitions.}
+{Useful if LSE definitions are available.}
+
+\Exercise{Ch22 Ex. 22.8 -- Bidiagonal Inverse Perturbation}
+{Best}
+{Bidiagonal inverse perturbation}
+{Let \(U\in\mathbb R^{n\times n}\) be upper bidiagonal and let
+\(\Delta u_{ij}=\delta_{ij}u_{ij}\).  Derive the entrywise formula for
+\((U+\Delta U)^{-1}-U^{-1}\) in terms of the diagonal and superdiagonal
+\(\delta\)'s.  Then apply it to the perturbed bidiagonal factors \(U_k+\Delta U_k\)
+from the Vandermonde analysis to prove a bound of the form
+\[
+(U_k+\Delta U_k)^{-1}=U_k^{-1}+F_k,\qquad
+\lvert F_k\rvert\le \frac{(n+1)u}{1-(n+1)u}\lvert U_k^{-1}\rvert .
+\]}
+{Prove the exact formula and deduce the displayed bound.}
+{Bidiagonal inverse formulas; product perturbation bounds.}
+{Excellent structured-matrix stability task.}
+
+\Exercise{Ch22 Ex. 22.11 -- Structured Vandermonde Condition Number}
+{Best}
+{Structured condition number}
+{For the primal Vandermonde system \(Vx=b\), where
+\(V=V(\alpha_0,\ldots,\alpha_n)\), define a structured condition number by
+allowing relative perturbations \(\lvert\Delta\alpha_i\rvert\le
+\epsilon\lvert\alpha_i\rvert\).  Show
+\[
+\operatorname{cond}(V)
+=\frac{\lVert \lvert V^{-1}\operatorname{diag}(0,1,\ldots,n)V\rvert
+\lvert x\rvert\rVert_\infty}{\lVert x\rVert_\infty},
+\]
+and derive the corresponding condition number for the dual system \(V^Ta=f\).}
+{Formalize the first-order condition number formula for the primal system and optionally the dual analogue.}
+{Vandermonde matrices; derivative of powers; componentwise perturbation.}
+{Strong, but likely needs local Vandermonde definitions.}
+
+\Exercise{Ch22 Ex. 22.3 -- Vandermonde Inverse Algorithm Stability}
+{Good}
+{Algorithm stability}
+{For the Vandermonde inverse algorithm and its modified version, evaluate
+left and right residuals of the computed inverses and compare them with GEPP.
+As a scoped formal task, prove the deterministic sign/cancellation claim: the
+algorithm performs subtractions of like-signed numbers, and use that fact to state
+the resulting stability implication.}
+{Use a scoped deterministic residual or subtraction-sign result, not the research subpart.}
+{Vandermonde inverse algorithm definitions.}
+{Avoid empirical or open-ended wording.}
+
+\Exercise{Ch22 Ex. 22.7 -- Chebyshev-Vandermonde Conditioning}
+{Good}
+{Conditioning}
+{For the Chebyshev-Vandermonde-like matrix
+\(T=T(\alpha_0,\ldots,\alpha_n)\), prove the condition estimates
+\[
+\kappa_2(T)=\sqrt2
+\quad\text{for}\quad
+\alpha_i=\cos((i+\tfrac12)\pi/(n+1)),
+\]
+and
+\[
+\kappa_2(T)\le 2
+\quad\text{for}\quad
+\alpha_i=\cos(i\pi/n).
+\]}
+{Prove one of the two condition-number bounds.}
+{Chebyshev polynomial identities and discrete orthogonality.}
+{More exact approximation theory than FP stability, but condition-focused.}
+
+\Exercise{Ch23 Ex. 23.6 -- 3M plus Strassen Error Bound}
+{Best}
+{Fast matrix multiply error}
+{Combine the complex \(3M\) multiplication formula with Strassen multiplication
+for the real products.  Prove the normwise error bound described after
+Section 23.2.4: the computed complex product satisfies the Strassen bound
+analogous to
+\[
+\lVert C-\widehat C\rVert
+\le \left[\left(\frac n{n_0}\right)^{\log_2 12}(n_0^2+5n_0)-5n\right]
+u\,\lVert A\rVert\lVert B\rVert+O(u^2),
+\]
+but with the extra constant multiplier and additive constant introduced by the
+\(3M\) combination.}
+{Derive the Strassen-style bound with the extra constants from the 3M combination.}
+{Strassen normwise bound; 3M component formulas; complex matrix norms.}
+{Excellent for showing normwise versus componentwise stability.}
+
+\Exercise{Ch24 Ex. 24.1 -- FFT Convolution Integer Recovery}
+{Best}
+{FFT convolution error}
+{For integer vectors \(x,y\), form the convolution coefficients \(z_k\) by padding
+with zeros and using
+\[
+z=F_n^{-1}\bigl((F_nx)\cdot(F_ny)\bigr),
+\]
+where the dot denotes componentwise multiplication.  Derive a bound on
+\(z-\widehat z\) for the FFT-based computation and give a sufficient condition
+under which componentwise nearest-integer rounding of \(\widehat z\) recovers
+the exact integer vector \(z\).}
+{Prove that nearest-integer recovery is exact under a sufficient error bound.}
+{DFT matrix norm/error model; componentwise multiplication error; inverse transform bound.}
+{Strong but may require FFT/DFT local setup.}
+
+\Exercise{Ch25 Ex. 25.1 -- Perturbed Contraction Iteration}
+{Good}
+{Perturbed iteration stability}
+{Consider
+\[
+x_{k+1}=G(x_k)+e_k,\qquad \lVert e_k\rVert\le\alpha,
+\]
+where \(G:\mathbb R^n\to\mathbb R^n\) satisfies
+\[
+\lVert G(x)-a\rVert\le \beta\lVert x-a\rVert,\qquad 0<\beta<1.
+\]
+Show the ball of radius \(\alpha/(1-\beta)\) about \(a\) is invariant, that
+outside this ball the distance to \(a\) strictly decreases, and that every
+accumulation point lies in the ball.}
+{Prove the invariant ball and accumulation-point bound.}
+{Norm contraction algebra and recurrence bounds.}
+{Good nonlinear stability task, less FP-specific.}
+
+\Exercise{Ch27 Ex. 27.5 -- Robust Scaled 2-Norm}
+{Good}
+{Robust norm computation}
+{Analyze the scaled BLAS \(x\)NRM2 algorithm for \(\lVert x\rVert_2\).  It keeps
+\(t\) as the current scale and \(s\) as the scaled sum of squares, updating by
+\[
+\text{if }\lvert x_i\rvert>t:
+\quad s:=1+s(t/x_i)^2,\ t:=\lvert x_i\rvert,
+\qquad
+\text{else } s:=s+(x_i/t)^2,
+\]
+and returns \(t\sqrt{s}\).  Prove the invariant establishing correctness and
+state the robustness properties regarding overflow and underflow.}
+{Formalize the invariant relating the scale and accumulated sum to \(\lVert x\rVert_2\).}
+{Norm-square algebra; overflow/underflow-free exact model if included.}
+{Good algorithmic task, but not central matrix stability.}
+
+\Exercise{Ch27 Ex. 27.6 -- Pythagorean Sum Iteration}
+{Good}
+{Robust Pythagorean sum}
+{For \(0<y_0\le x_0\), let \(p=\sqrt{x_0^2+y_0^2}\).  Show that Halley's method
+applied to \(f(x)=x^2-p^2\) gives
+\[
+x_{n+1}=x_n\left(1+2\frac{p^2-x_n^2}{p^2+3x_n^2}\right),
+\]
+that \(x_n\le x_{n+1}\le p\), and, with \(y_n=\sqrt{p^2-x_n^2}\), derive the
+scaled recurrence implemented by the pythag algorithm.  Also prove the cubic
+error identity
+\[
+p-x_{n+1}=\frac{(p-x_n)^3}{p^2+3x_n^2}.
+\]}
+{Prove monotone/cubic convergence and the scaled recurrence.}
+{Scalar iteration algebra and norm2/sqrt support.}
+{Good robust-arithmetic task; keep the floating-point robustness claim scoped.}
+
+\end{document}
