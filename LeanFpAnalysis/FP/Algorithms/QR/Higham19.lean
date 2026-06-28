@@ -2708,6 +2708,55 @@ theorem qrPanel_R_nonzero_eq_firstStoredPanelStep
     panelTopRowTail_panelFromTopAndTrailing,
     trailingPanel_panelFromTopAndTrailing]
 
+/-- Top-left projection of the nonzero recursive/stored bridge.
+
+This is the first scalar component needed by the later `R11` induction: the
+top-left entry produced by the nonzero recursive QR branch is exactly the
+top-left entry of the first stored step with the same normalized reflector
+data. -/
+theorem panelTopLeft_qrPanel_R_nonzero_eq_firstStoredPanelStep
+    (fp : FPModel) {m p : Nat}
+    (A : Fin (m + 1) -> Fin (p + 1) -> Real)
+    (hcol : Ne (panelFirstColumn (Nat.succ_pos p) A) 0) :
+    panelTopLeft (fl_householderQRPanel_R fp (m + 1) (p + 1) A) =
+      (let v := fl_householderNormalizedVector fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A)
+       let S := fl_householderStoredPanelStep fp (m + 1) (p + 1) 0 v 1 A
+       panelTopLeft S) := by
+  rw [qrPanel_R_nonzero_eq_firstStoredPanelStep fp A hcol]
+  rfl
+
+/-- Top-row-tail projection of the nonzero recursive/stored bridge. -/
+theorem panelTopRowTail_qrPanel_R_nonzero_eq_firstStoredPanelStep
+    (fp : FPModel) {m p : Nat}
+    (A : Fin (m + 1) -> Fin (p + 1) -> Real)
+    (hcol : Ne (panelFirstColumn (Nat.succ_pos p) A) 0) :
+    panelTopRowTail (fl_householderQRPanel_R fp (m + 1) (p + 1) A) =
+      (let v := fl_householderNormalizedVector fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A)
+       let S := fl_householderStoredPanelStep fp (m + 1) (p + 1) 0 v 1 A
+       panelTopRowTail S) := by
+  rw [qrPanel_R_nonzero_eq_firstStoredPanelStep fp A hcol]
+  rfl
+
+/-- Trailing-panel projection of the nonzero recursive/stored bridge.
+
+After a nonzero first pivot, the trailing panel of the recursive QR `R` output
+is the recursive QR `R` output on the trailing panel of the corresponding first
+stored step.  This is the named recurrence component needed to lift the
+recursive/stored `R11` equality through shrinking panels. -/
+theorem trailingPanel_qrPanel_R_nonzero_eq_qrPanel_R_firstStoredPanelStep
+    (fp : FPModel) {m p : Nat}
+    (A : Fin (m + 1) -> Fin (p + 1) -> Real)
+    (hcol : Ne (panelFirstColumn (Nat.succ_pos p) A) 0) :
+    trailingPanel (fl_householderQRPanel_R fp (m + 1) (p + 1) A) =
+      (let v := fl_householderNormalizedVector fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A)
+       let S := fl_householderStoredPanelStep fp (m + 1) (p + 1) 0 v 1 A
+       fl_householderQRPanel_R fp m p (trailingPanel S)) := by
+  rw [qrPanel_R_nonzero_eq_firstStoredPanelStep fp A hcol]
+  rfl
+
 /-- Source-facing nonbreakdown route for the stored Householder QR loop.
 Nonsingular local leading blocks, the stored lower-zero invariant, the source
 sign convention, and a per-pivot square-root component budget imply that the
