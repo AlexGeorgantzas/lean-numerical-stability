@@ -684,6 +684,134 @@ theorem problem1912_add_factor_exists_of_csDiagonalFactorData_nonempty
     LeanFpAnalysis.FP.mgsProblem1912_add_factor_exists_of_csDiagonalFactorData_nonempty
       hcs
 
+/-- Chapter-facing zero-correction branch: if the lower block already has
+orthonormal columns, it provides the repaired factor with zero correction. -/
+theorem problem1912_correctionMapData_exists_of_bottom_orthonormal
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hP21 : GramSchmidtOrthonormalColumns P21) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      Problem1912CorrectionMapData m n P11 P21 Q F := by
+  exact
+    LeanFpAnalysis.FP.mgsProblem1912_correctionMapData_exists_of_bottom_orthonormal
+      hP21
+
+/-- Chapter-facing additive form of the zero-correction branch. -/
+theorem problem1912_add_factor_exists_of_bottom_orthonormal {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hP21 : GramSchmidtOrthonormalColumns P21) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      (Q = fun i j => P21 i j + matMulRect m n n F P11 i j) /\
+        GramSchmidtOrthonormalColumns Q /\
+        rectOpNorm2Le F 1 := by
+  exact
+    LeanFpAnalysis.FP.mgsProblem1912_add_factor_exists_of_bottom_orthonormal
+      hP21
+
+/-- Chapter-facing degenerate CS/polar reduction: if the top block is zero,
+the corrected CS/polar input makes the lower block orthonormal. -/
+theorem problem1912_csPolarInput_bottom_orthonormal_of_top_zero
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hP11zero : P11 = fun _ _ => 0) :
+    GramSchmidtOrthonormalColumns P21 := by
+  exact
+    LeanFpAnalysis.FP.MGSProblem1912CSPolarInput.bottom_orthonormal_of_top_zero
+      hinput hP11zero
+
+/-- Chapter-facing degenerate CS/polar reduction: if the top Gram matrix is
+zero, the corrected CS/polar input makes the lower block orthonormal. -/
+theorem problem1912_csPolarInput_bottom_orthonormal_of_top_gram_zero
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hP11gram : rectangularGram P11 = fun _ _ => 0) :
+    GramSchmidtOrthonormalColumns P21 := by
+  exact
+    LeanFpAnalysis.FP.MGSProblem1912CSPolarInput.bottom_orthonormal_of_top_gram_zero
+      hinput hP11gram
+
+/-- Chapter-facing zero-Gram equivalence for rectangular blocks. -/
+theorem problem1912_rectangularGram_eq_zero_iff {m n : Nat}
+    (Q : Fin m -> Fin n -> Real) :
+    rectangularGram Q = (fun _ _ => 0) <-> Q = fun _ _ => 0 := by
+  exact LeanFpAnalysis.FP.rectangularGram_eq_zero_iff Q
+
+/-- Chapter-facing degenerate CS/polar reduction: a zero top Gram matrix means
+the top block itself is zero. -/
+theorem problem1912_csPolarInput_top_zero_of_top_gram_zero
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hP11gram : rectangularGram P11 = fun _ _ => 0) :
+    P11 = fun _ _ => 0 := by
+  exact
+    LeanFpAnalysis.FP.MGSProblem1912CSPolarInput.top_zero_of_top_gram_zero
+      hinput hP11gram
+
+/-- Chapter-facing correction-data existence for the zero-top-block CS/polar
+branch. -/
+theorem problem1912_correctionMapData_exists_of_csPolarInput_top_zero
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hP11zero : P11 = fun _ _ => 0) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      Problem1912CorrectionMapData m n P11 P21 Q F := by
+  exact
+    LeanFpAnalysis.FP.mgsProblem1912_correctionMapData_exists_of_csPolarInput_top_zero
+      hinput hP11zero
+
+/-- Chapter-facing additive-witness existence for the zero-top-block CS/polar
+branch. -/
+theorem problem1912_add_factor_exists_of_csPolarInput_top_zero
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hP11zero : P11 = fun _ _ => 0) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      (Q = fun i j => P21 i j + matMulRect m n n F P11 i j) /\
+        GramSchmidtOrthonormalColumns Q /\
+        rectOpNorm2Le F 1 := by
+  exact
+    LeanFpAnalysis.FP.mgsProblem1912_add_factor_exists_of_csPolarInput_top_zero
+      hinput hP11zero
+
+/-- Chapter-facing correction-data existence for the zero-top-Gram CS/polar
+branch. -/
+theorem problem1912_correctionMapData_exists_of_csPolarInput_top_gram_zero
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hP11gram : rectangularGram P11 = fun _ _ => 0) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      Problem1912CorrectionMapData m n P11 P21 Q F := by
+  exact
+    LeanFpAnalysis.FP.mgsProblem1912_correctionMapData_exists_of_csPolarInput_top_gram_zero
+      hinput hP11gram
+
+/-- Chapter-facing additive-witness existence for the zero-top-Gram CS/polar
+branch. -/
+theorem problem1912_add_factor_exists_of_csPolarInput_top_gram_zero
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hP11gram : rectangularGram P11 = fun _ _ => 0) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      (Q = fun i j => P21 i j + matMulRect m n n F P11 i j) /\
+        GramSchmidtOrthonormalColumns Q /\
+        rectOpNorm2Le F 1 := by
+  exact
+    LeanFpAnalysis.FP.mgsProblem1912_add_factor_exists_of_csPolarInput_top_gram_zero
+      hinput hP11gram
+
 /-- Chapter-facing sanity check for the remaining CS/polar target: the
 block-column Gram identity alone is not a dimension-free source of additive
 Problem 19.12 witnesses.  The final existence theorem must retain the source
