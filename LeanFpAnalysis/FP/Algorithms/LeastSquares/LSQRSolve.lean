@@ -8556,6 +8556,50 @@ theorem lsLemma20_6ProjectorComplement_vecNorm2Sq_eq_sub {m : ℕ}
     _ = vecNorm2Sq v - (∑ k : Fin m, s k * v k) ^ 2 / vecNorm2Sq s := by
           simp [D, dot, vecNorm2Sq]
 
+/-- Symmetric area identity for complement projections: the squared area of the
+    parallelogram spanned by `r` and `p` can be measured by projecting either
+    vector away from the other. -/
+theorem lsLemma20_6ProjectorComplement_area_identity {m : ℕ}
+    (r p : Fin m → ℝ) (hrsq : vecNorm2Sq r ≠ 0)
+    (hpsq : vecNorm2Sq p ≠ 0) :
+    vecNorm2Sq r *
+        vecNorm2Sq (matMulVec m (lsLemma20_6ProjectorComplement r) p) =
+      vecNorm2Sq p *
+        vecNorm2Sq (matMulVec m (lsLemma20_6ProjectorComplement p) r) := by
+  let R : ℝ := vecNorm2Sq r
+  let P : ℝ := vecNorm2Sq p
+  let dot : ℝ := ∑ i : Fin m, r i * p i
+  have hR : R ≠ 0 := by
+    simpa [R] using hrsq
+  have hP : P ≠ 0 := by
+    simpa [P] using hpsq
+  have hdot_comm : (∑ i : Fin m, p i * r i) = dot := by
+    simp [dot, mul_comm]
+  have hQr :
+      vecNorm2Sq (matMulVec m (lsLemma20_6ProjectorComplement r) p) =
+        P - dot ^ 2 / R := by
+    simpa [R, P, dot] using
+      lsLemma20_6ProjectorComplement_vecNorm2Sq_eq_sub r hrsq p
+  have hQp :
+      vecNorm2Sq (matMulVec m (lsLemma20_6ProjectorComplement p) r) =
+        R - dot ^ 2 / P := by
+    simpa [R, P, dot, hdot_comm] using
+      lsLemma20_6ProjectorComplement_vecNorm2Sq_eq_sub p hpsq r
+  calc
+    vecNorm2Sq r *
+        vecNorm2Sq (matMulVec m (lsLemma20_6ProjectorComplement r) p)
+        = R * (P - dot ^ 2 / R) := by
+          simp [R, hQr]
+    _ = R * P - dot ^ 2 := by
+          field_simp [hR]
+    _ = P * R - dot ^ 2 := by
+          ring
+    _ = P * (R - dot ^ 2 / P) := by
+          field_simp [hP]
+    _ = vecNorm2Sq p *
+        vecNorm2Sq (matMulVec m (lsLemma20_6ProjectorComplement p) r) := by
+          simp [P, hQp]
+
 /-- The complementary projector `I-P` from equation (20.22) is a vector
     2-norm contraction. -/
 theorem lsLemma20_6ProjectorComplement_vecNorm2Sq_le {m : ℕ}
