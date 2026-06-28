@@ -112,6 +112,235 @@ theorem givens_mul_fixed_of_zero_pair {n : Nat}
   ext i
   exact givensRotation_matMulVec_pair_zero n p q c s x hpq hxp hxq i
 
+/-- Complex matrix-vector action for a real square matrix.  This is kept local
+to Problem 19.1 so the complex Givens eigenvalue statement can be recorded
+without changing the repository's real `matMulVec` API. -/
+noncomputable def complexMatMulVec (n : Nat)
+    (A : Fin n -> Fin n -> Real) (x : Fin n -> Complex) :
+    Fin n -> Complex :=
+  fun i =>
+    (Finset.univ : Finset (Fin n)).sum
+      (fun j => (A i j : Complex) * x j)
+
+/-- A nonzero complex right-eigenvector/eigenvalue relation for the legacy real
+matrix representation used in the QR files. -/
+def IsComplexRightEigenpair (n : Nat) (A : Fin n -> Fin n -> Real)
+    (lambda : Complex) (x : Fin n -> Complex) : Prop :=
+  (Exists fun i : Fin n => Ne (x i) 0) /\
+    forall i : Fin n, complexMatMulVec n A x i = lambda * x i
+
+private theorem complex_sum_two_point {n : Nat} (p q : Fin n) (a b : Complex)
+    (x : Fin n -> Complex) (hpq : Not (p = q)) :
+    ((Finset.univ : Finset (Fin n)).sum
+        (fun j => (if j = p then a else if j = q then b else 0) * x j)) =
+      a * x p + b * x q := by
+  let f : Fin n -> Complex := fun j =>
+    (if j = p then a else if j = q then b else 0) * x j
+  have hp : Membership.mem (Finset.univ : Finset (Fin n)) p :=
+    Finset.mem_univ p
+  have hq : Membership.mem ((Finset.univ : Finset (Fin n)).erase p) q :=
+    Finset.mem_erase.mpr
+      (And.intro (fun h => hpq h.symm) (Finset.mem_univ q))
+  have hqp : Not (q = p) := fun h => hpq h.symm
+  have hrest :
+      (((Finset.univ : Finset (Fin n)).erase p).erase q).sum f = 0 := by
+    apply Finset.sum_eq_zero
+    intro j hj
+    simp only [Finset.mem_erase, Finset.mem_univ, and_true] at hj
+    have hjq : Not (j = q) := hj.1
+    have hjp : Not (j = p) := hj.2
+    simp [hjp, hjq]
+  calc
+    ((Finset.univ : Finset (Fin n)).sum
+        (fun j => (if j = p then a else if j = q then b else 0) * x j))
+        = (Finset.univ : Finset (Fin n)).sum f := rfl
+    _ = f p + f q +
+          (((Finset.univ : Finset (Fin n)).erase p).erase q).sum f := by
+        rw [(Finset.add_sum_erase (Finset.univ : Finset (Fin n)) f hp).symm]
+        rw [(Finset.add_sum_erase
+          ((Finset.univ : Finset (Fin n)).erase p) f hq).symm]
+        ring
+    _ = a * x p + b * x q := by
+        rw [hrest]
+        simp [f, hqp]
+
+/-- Complex `p`-component of applying an exact real Givens rotation. -/
+theorem complexMatMulVec_givens_p {n : Nat}
+    (p q : Fin n) (c s : Real) (x : Fin n -> Complex)
+    (hpq : Not (p = q)) :
+    complexMatMulVec n (givensRotation n p q c s) x p =
+      (c : Complex) * x p + (s : Complex) * x q := by
+  have hqp : Not (q = p) := fun h => hpq h.symm
+  unfold complexMatMulVec
+  calc
+    ((Finset.univ : Finset (Fin n)).sum
+        (fun j => (givensRotation n p q c s p j : Complex) * x j))
+        = ((Finset.univ : Finset (Fin n)).sum
+          (fun j =>
+            (if j = p then (c : Complex)
+             else if j = q then (s : Complex) else 0) * x j)) := by
+            apply Finset.sum_congr rfl
+            intro j _
+            unfold givensRotation
+            by_cases hjp : j = p
+            case pos =>
+              simp [hjp]
+            case neg =>
+              have hpj : Not (p = j) := fun h => hjp h.symm
+              by_cases hjq : j = q
+              case pos =>
+                simp [hjq, hpq, hqp]
+              case neg =>
+                simp [hjp, hpj, hjq, hpq]
+    _ = (c : Complex) * x p + (s : Complex) * x q := by
+        exact complex_sum_two_point p q (c : Complex) (s : Complex) x hpq
+
+/-- Complex `q`-component of applying an exact real Givens rotation. -/
+theorem complexMatMulVec_givens_q {n : Nat}
+    (p q : Fin n) (c s : Real) (x : Fin n -> Complex)
+    (hpq : Not (p = q)) :
+    complexMatMulVec n (givensRotation n p q c s) x q =
+      (c : Complex) * x q - (s : Complex) * x p := by
+  have hqp : Not (q = p) := fun h => hpq h.symm
+  unfold complexMatMulVec
+  calc
+    ((Finset.univ : Finset (Fin n)).sum
+        (fun j => (givensRotation n p q c s q j : Complex) * x j))
+        = ((Finset.univ : Finset (Fin n)).sum
+          (fun j =>
+            (if j = p then (-(s : Complex))
+             else if j = q then (c : Complex) else 0) * x j)) := by
+            apply Finset.sum_congr rfl
+            intro j _
+            unfold givensRotation
+            by_cases hjp : j = p
+            case pos =>
+              simp [hjp, hpq, hqp]
+            case neg =>
+              by_cases hjq : j = q
+              case pos =>
+                simp [hjq, hqp]
+              case neg =>
+                have hqj : Not (q = j) := fun h => hjq h.symm
+                simp [hjp, hjq, hqj, hqp]
+    _ = (-(s : Complex)) * x p + (c : Complex) * x q := by
+        exact complex_sum_two_point p q (-(s : Complex)) (c : Complex) x hpq
+    _ = (c : Complex) * x q - (s : Complex) * x p := by
+        ring
+
+/-- Unaffected complex components of an exact real Givens application are
+copied. -/
+theorem complexMatMulVec_givens_other {n : Nat}
+    (p q i : Fin n) (c s : Real) (x : Fin n -> Complex)
+    (hip : Not (i = p)) (hiq : Not (i = q)) :
+    complexMatMulVec n (givensRotation n p q c s) x i = x i := by
+  unfold complexMatMulVec
+  have hrow :
+      ((Finset.univ : Finset (Fin n)).sum
+        (fun j => (givensRotation n p q c s i j : Complex) * x j)) =
+      ((Finset.univ : Finset (Fin n)).sum
+        (fun j => (if i = j then (1 : Complex) else 0) * x j)) := by
+    apply Finset.sum_congr rfl
+    intro j _
+    unfold givensRotation
+    by_cases hij : i = j
+    case pos =>
+      subst j
+      simp [hip, hiq]
+    case neg =>
+      simp [hij, hip, hiq]
+  rw [hrow]
+  simp [Finset.sum_ite_eq, Finset.mem_univ]
+
+/-- The Givens active-plane complex eigenvalue `c + i*s`. -/
+noncomputable def givensComplexEigenvaluePlus (c s : Real) : Complex :=
+  (c : Complex) + (s : Complex) * Complex.I
+
+/-- The Givens active-plane complex eigenvalue `c - i*s`. -/
+noncomputable def givensComplexEigenvalueMinus (c s : Real) : Complex :=
+  (c : Complex) - (s : Complex) * Complex.I
+
+/-- Complex eigenvector supported on the Givens active plane for `c + i*s`. -/
+noncomputable def givensComplexEigenvectorPlus {n : Nat}
+    (p q : Fin n) : Fin n -> Complex :=
+  fun i => if i = p then 1 else if i = q then Complex.I else 0
+
+/-- Complex eigenvector supported on the Givens active plane for `c - i*s`. -/
+noncomputable def givensComplexEigenvectorMinus {n : Nat}
+    (p q : Fin n) : Fin n -> Complex :=
+  fun i => if i = p then 1 else if i = q then -Complex.I else 0
+
+/-- Problem 19.1 Givens complex eigendirection for `c + i*s`. -/
+theorem givens_complex_eigenpair_plus {n : Nat}
+    (p q : Fin n) (c s : Real) (hpq : Not (p = q)) :
+    IsComplexRightEigenpair n (givensRotation n p q c s)
+      (givensComplexEigenvaluePlus c s)
+      (givensComplexEigenvectorPlus p q) := by
+  unfold IsComplexRightEigenpair
+  constructor
+  case left =>
+    exact Exists.intro p (by simp [givensComplexEigenvectorPlus])
+  case right =>
+    have hqp : Not (q = p) := fun h => hpq h.symm
+    intro i
+    by_cases hip : i = p
+    case pos =>
+      subst i
+      rw [complexMatMulVec_givens_p p q c s
+        (givensComplexEigenvectorPlus p q) hpq]
+      simp [givensComplexEigenvectorPlus, givensComplexEigenvaluePlus, hqp]
+    case neg =>
+      by_cases hiq : i = q
+      case pos =>
+        subst i
+        rw [complexMatMulVec_givens_q p q c s
+          (givensComplexEigenvectorPlus p q) hpq]
+        simp [givensComplexEigenvectorPlus, givensComplexEigenvaluePlus, hqp]
+        apply Complex.ext <;>
+          simp [Complex.mul_re, Complex.mul_im, Complex.add_re,
+            Complex.add_im, Complex.sub_re, Complex.sub_im,
+            Complex.ofReal_re, Complex.ofReal_im, Complex.I_re, Complex.I_im]
+      case neg =>
+        rw [complexMatMulVec_givens_other p q i c s
+          (givensComplexEigenvectorPlus p q) hip hiq]
+        simp [givensComplexEigenvectorPlus, hip, hiq]
+
+/-- Problem 19.1 Givens complex eigendirection for `c - i*s`. -/
+theorem givens_complex_eigenpair_minus {n : Nat}
+    (p q : Fin n) (c s : Real) (hpq : Not (p = q)) :
+    IsComplexRightEigenpair n (givensRotation n p q c s)
+      (givensComplexEigenvalueMinus c s)
+      (givensComplexEigenvectorMinus p q) := by
+  unfold IsComplexRightEigenpair
+  constructor
+  case left =>
+    exact Exists.intro p (by simp [givensComplexEigenvectorMinus])
+  case right =>
+    have hqp : Not (q = p) := fun h => hpq h.symm
+    intro i
+    by_cases hip : i = p
+    case pos =>
+      subst i
+      rw [complexMatMulVec_givens_p p q c s
+        (givensComplexEigenvectorMinus p q) hpq]
+      simp [givensComplexEigenvectorMinus, givensComplexEigenvalueMinus, hqp]
+      ring
+    case neg =>
+      by_cases hiq : i = q
+      case pos =>
+        subst i
+        rw [complexMatMulVec_givens_q p q c s
+          (givensComplexEigenvectorMinus p q) hpq]
+        simp [givensComplexEigenvectorMinus, givensComplexEigenvalueMinus, hqp]
+        apply Complex.ext <;>
+          simp [Complex.mul_re, Complex.mul_im, Complex.sub_re,
+            Complex.sub_im, Complex.neg_re, Complex.neg_im,
+            Complex.ofReal_re, Complex.ofReal_im, Complex.I_re, Complex.I_im]
+      case neg =>
+        rw [complexMatMulVec_givens_other p q i c s
+          (givensComplexEigenvectorMinus p q) hip hiq]
+        simp [givensComplexEigenvectorMinus, hip, hiq]
+
 end Problem19_1
 
 namespace Algorithm19_11
