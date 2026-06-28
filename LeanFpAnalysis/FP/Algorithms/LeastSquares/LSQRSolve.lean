@@ -14400,6 +14400,79 @@ theorem LSNormwiseBackwardErrorFeasible.formulaMatrixSigmaMin_mul_source_residua
         theta A b y DeltaA Deltab hfeas hrsq
   exact hspec_sq.trans hupper
 
+/-- Conditional handoff for the nonzero-expanded-residual WKS lower-bound route.
+    Once the sharp coupled squared estimate converts the two perturbation blocks
+    from `formulaMatrixSigmaMin_mul_source_residual_vecNorm2_sq_le` into
+    `cost_F^2 * ||p||_2^2`, the printed right-hand side in (20.21) is bounded by
+    the weighted perturbation cost from (20.20). -/
+theorem lsNormwiseBackwardErrorFormulaRHS_le_costF_of_coupled_sq_bound
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (DeltaA : Fin (m + 1) → Fin n → ℝ)
+    (Deltab : Fin (m + 1) → ℝ)
+    (hfeas : LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab)
+    (hrsq : vecNorm2Sq (lsResidualHigham A b y) ≠ 0)
+    (hpne :
+      (fun i : Fin (m + 1) =>
+        lsResidualHigham A b y i + Deltab i - rectMatMulVec DeltaA y i) ≠ 0)
+    (hcoupled :
+      let p : Fin (m + 1) → ℝ :=
+        fun i => lsResidualHigham A b y i + Deltab i - rectMatMulVec DeltaA y i
+      let q : Fin (m + 1) → ℝ := fun i => Deltab i - rectMatMulVec DeltaA y i
+      frobNormSqRect DeltaA * vecNorm2Sq p +
+        (lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y) ^ 2 *
+          vecNorm2Sq q ≤
+        (lsNormwiseBackwardErrorCostF theta DeltaA Deltab) ^ 2 * vecNorm2Sq p) :
+    lsNormwiseBackwardErrorFormulaRHS theta A b y ≤
+      lsNormwiseBackwardErrorCostF theta DeltaA Deltab := by
+  let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+  let p : Fin (m + 1) → ℝ :=
+    fun i => lsResidualHigham A b y i + Deltab i - rectMatMulVec DeltaA y i
+  let q : Fin (m + 1) → ℝ := fun i => Deltab i - rectMatMulVec DeltaA y i
+  let sigma : ℝ := lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y
+  let cost : ℝ := lsNormwiseBackwardErrorCostF theta DeltaA Deltab
+  have hspectral :
+      (sigma * vecNorm2 p) ^ 2 ≤
+        frobNormSqRect DeltaA * vecNorm2Sq p +
+          (lsNormwiseBackwardErrorPhi theta r y) ^ 2 * vecNorm2Sq q := by
+    simpa [r, p, q, sigma] using
+      LSNormwiseBackwardErrorFeasible.formulaMatrixSigmaMin_mul_source_residual_vecNorm2_sq_le
+        theta A b y DeltaA Deltab hfeas hrsq
+  have hcoupled' :
+      frobNormSqRect DeltaA * vecNorm2Sq p +
+          (lsNormwiseBackwardErrorPhi theta r y) ^ 2 * vecNorm2Sq q ≤
+        cost ^ 2 * vecNorm2Sq p := by
+    simpa [r, p, q, cost] using hcoupled
+  have hsq :
+      (sigma * vecNorm2 p) ^ 2 ≤ (cost * vecNorm2 p) ^ 2 := by
+    have hmain := hspectral.trans hcoupled'
+    have hcost :
+        cost ^ 2 * vecNorm2Sq p = (cost * vecNorm2 p) ^ 2 := by
+      rw [← vecNorm2_sq p]
+      ring
+    simpa [hcost] using hmain
+  have hp_pos : 0 < vecNorm2 p := by
+    exact vecNorm2_pos_of_ne_zero_lsq (by simpa [p] using hpne)
+  have hsigma_nonneg : 0 ≤ sigma := by
+    simpa [sigma, r] using
+      lsNormwiseBackwardErrorFormulaMatrixSigmaMin_nonneg theta A r y
+  have hleft_nonneg : 0 ≤ sigma * vecNorm2 p :=
+    mul_nonneg hsigma_nonneg (vecNorm2_nonneg p)
+  have hcost_nonneg : 0 ≤ cost := by
+    simpa [cost] using lsNormwiseBackwardErrorCostF_nonneg theta DeltaA Deltab
+  have hright_nonneg : 0 ≤ cost * vecNorm2 p :=
+    mul_nonneg hcost_nonneg (vecNorm2_nonneg p)
+  have hprod : sigma * vecNorm2 p ≤ cost * vecNorm2 p := by
+    have habs := (sq_le_sq).mp hsq
+    simpa [abs_of_nonneg hleft_nonneg, abs_of_nonneg hright_nonneg] using habs
+  have hsigma_le_cost : sigma ≤ cost :=
+    le_of_mul_le_mul_right hprod hp_pos
+  have hrhs_le_sigma :
+      lsNormwiseBackwardErrorFormulaRHS theta A b y ≤ sigma := by
+    simpa [lsNormwiseBackwardErrorFormulaRHS, r, sigma] using
+      lsNormwiseBackwardErrorFormulaValue_le_sigmaMin theta A r y
+  exact hrhs_le_sigma.trans hsigma_le_cost
+
 /-- Upper bound for the full transposed WKS source-block action on the
     expanded feasible residual.  This combines the left Frobenius estimate for
     `DeltaA^T p` with the right projector-contraction estimate, exposing the
