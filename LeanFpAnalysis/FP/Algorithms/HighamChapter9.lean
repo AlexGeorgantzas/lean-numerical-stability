@@ -21575,6 +21575,78 @@ theorem higham9_15_normwise_source_bound_of_G_split_init_linear_step_opNorm_of_i
       L U Linv Uinv ΔL ΔU hLright hUleft hX hY
 
 /-- **Theorem 9.15 support**, product-smallness source relative bound for the
+`I + G` split from a principal-block linearized step hypothesis.
+
+The source product condition supplies `||L⁻¹ ΔA U⁻¹||₂ < 1` and converts the
+exact `G` ratio to Higham's product denominator; the explicit residual term is
+the remaining nonlinear Schur-induction gap. -/
+theorem higham9_15_normwise_source_bound_of_G_split_init_linear_step_opNorm_of_inverse_identities_product_lt
+    {n : ℕ}
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    {linv2 dA2 uinv2 : ℝ}
+    (hLright : rectMatMul L Linv = idMatrix (n + 1))
+    (hUleft : rectMatMul Uinv U = idMatrix (n + 1))
+    (hfact :
+      (1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) +
+          (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) +
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) +
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul ΔU Uinv)))
+    (hXtri :
+      ∀ i j : Fin (n + 1), i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin (n + 1), j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hlinear :
+      max (frobNormRect (higham9_15_initBlock (rectMatMul Linv ΔL)))
+          (frobNormRect (higham9_15_initBlock (rectMatMul ΔU Uinv))) ≤
+        frobNormRect (higham9_15_initBlock (higham9_27_GMatrix Linv ΔA Uinv)) +
+          opNorm2 (higham9_15_initBlock (higham9_27_GMatrix Linv ΔA Uinv)) *
+            max (frobNormRect (higham9_15_initBlock (rectMatMul Linv ΔL)))
+              (frobNormRect (higham9_15_initBlock (rectMatMul ΔU Uinv))))
+    (hlinv2 : 0 ≤ linv2) (hdA2 : 0 ≤ dA2) (huinv2 : 0 ≤ uinv2)
+    (hLinv : opNorm2Le Linv linv2)
+    (hΔA : opNorm2Le ΔA dA2)
+    (hUinv : opNorm2Le Uinv uinv2)
+    (heta : linv2 * dA2 * uinv2 < 1) :
+    max (frobNormRect ΔL / opNorm2 L) (frobNormRect ΔU / opNorm2 U) ≤
+      (linv2 * frobNormRect ΔA * uinv2) / (1 - linv2 * dA2 * uinv2) +
+        2 * frobNormRect
+          ((show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              higham9_27_GMatrix Linv ΔA Uinv) -
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul Linv ΔL) *
+              (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+                rectMatMul ΔU Uinv)) := by
+  let G : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    higham9_27_GMatrix Linv ΔA Uinv
+  let X : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    rectMatMul Linv ΔL
+  let Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    rectMatMul ΔU Uinv
+  have hGlt : opNorm2 G < 1 := by
+    simpa [G] using
+      higham9_27_GMatrix_opNorm2_lt_one_of_product_lt_one
+        Linv ΔA Uinv hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+  have hsource :
+      max (frobNormRect ΔL / opNorm2 L) (frobNormRect ΔU / opNorm2 U) ≤
+        frobNormRect G / (1 - opNorm2 G) +
+          2 * frobNormRect (G - X * Y) := by
+    simpa [G, X, Y] using
+      higham9_15_normwise_source_bound_of_G_split_init_linear_step_opNorm_of_inverse_identities
+        L U Linv Uinv ΔA ΔL ΔU hLright hUleft hfact
+        hXtri hYtri hGlt hlinear
+  have hratio :=
+    higham9_27_GMatrix_ratio_le_product_ratio
+      Linv ΔA Uinv hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+  exact hsource.trans (by
+    simpa [G, X, Y, add_comm] using
+      add_le_add_right hratio (2 * frobNormRect (G - X * Y)))
+
+/-- **Theorem 9.15 support**, product-smallness source relative bound for the
 `I + G` split from a principal-block min-factor hypothesis.
 
 The source product condition supplies `||L⁻¹ ΔA U⁻¹||₂ < 1` and converts the
@@ -22154,6 +22226,55 @@ theorem higham9_15_normwise_source_bound_of_G_split_init_linear_step_opNorm_of_s
     (higham9_15_rectMatMul_right_inverse_of_matrix_left_inverse L Linv hLleft)
     (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse U Uinv hUright)
     hfact hXtri hYtri hGlt hlinear
+
+/-- **Theorem 9.15 support**, product-smallness source-oriented inverse-identity
+form of the `I + G` split linear-step residual handoff. -/
+theorem higham9_15_normwise_source_bound_of_G_split_init_linear_step_opNorm_of_source_inverse_identities_product_lt
+    {n : ℕ}
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    {linv2 dA2 uinv2 : ℝ}
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hfact :
+      (1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) +
+          (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) +
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) +
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul ΔU Uinv)))
+    (hXtri :
+      ∀ i j : Fin (n + 1), i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin (n + 1), j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hlinear :
+      max (frobNormRect (higham9_15_initBlock (rectMatMul Linv ΔL)))
+          (frobNormRect (higham9_15_initBlock (rectMatMul ΔU Uinv))) ≤
+        frobNormRect (higham9_15_initBlock (higham9_27_GMatrix Linv ΔA Uinv)) +
+          opNorm2 (higham9_15_initBlock (higham9_27_GMatrix Linv ΔA Uinv)) *
+            max (frobNormRect (higham9_15_initBlock (rectMatMul Linv ΔL)))
+              (frobNormRect (higham9_15_initBlock (rectMatMul ΔU Uinv))))
+    (hlinv2 : 0 ≤ linv2) (hdA2 : 0 ≤ dA2) (huinv2 : 0 ≤ uinv2)
+    (hLinv : opNorm2Le Linv linv2)
+    (hΔA : opNorm2Le ΔA dA2)
+    (hUinv : opNorm2Le Uinv uinv2)
+    (heta : linv2 * dA2 * uinv2 < 1) :
+    max (frobNormRect ΔL / opNorm2 L) (frobNormRect ΔU / opNorm2 U) ≤
+      (linv2 * frobNormRect ΔA * uinv2) / (1 - linv2 * dA2 * uinv2) +
+        2 * frobNormRect
+          ((show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              higham9_27_GMatrix Linv ΔA Uinv) -
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul Linv ΔL) *
+              (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+                rectMatMul ΔU Uinv)) :=
+  higham9_15_normwise_source_bound_of_G_split_init_linear_step_opNorm_of_inverse_identities_product_lt
+    L U Linv Uinv ΔA ΔL ΔU
+    (higham9_15_rectMatMul_right_inverse_of_matrix_left_inverse L Linv hLleft)
+    (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse U Uinv hUright)
+    hfact hXtri hYtri hlinear hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
 
 /-- **Theorem 9.15 support**, product-smallness source-oriented inverse-identity
 form of the `I + G` residual handoff. -/
@@ -22969,6 +23090,68 @@ theorem higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNor
       L U Linv Uinv ΔA ΔL ΔU hLrightRect hUleftRect hfact
       hXtri hYtri hGlt hlinear
 
+/-- **Theorem 9.15 support**, product-smallness factorization-level
+`I + G` residual handoff from a principal-block linearized step hypothesis. -/
+theorem higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_of_matrix_inverse_identities_product_lt
+    {n : ℕ}
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    {linv2 dA2 uinv2 : ℝ}
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hLright : L * Linv = 1)
+    (hUright : U * Uinv = 1)
+    (hUleft : Uinv * U = 1)
+    (hXtri :
+      ∀ i j : Fin (n + 1), i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin (n + 1), j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hlinear :
+      max (frobNormRect (higham9_15_initBlock (rectMatMul Linv ΔL)))
+          (frobNormRect (higham9_15_initBlock (rectMatMul ΔU Uinv))) ≤
+        frobNormRect (higham9_15_initBlock (higham9_27_GMatrix Linv ΔA Uinv)) +
+          opNorm2 (higham9_15_initBlock (higham9_27_GMatrix Linv ΔA Uinv)) *
+            max (frobNormRect (higham9_15_initBlock (rectMatMul Linv ΔL)))
+              (frobNormRect (higham9_15_initBlock (rectMatMul ΔU Uinv))))
+    (hlinv2 : 0 ≤ linv2) (hdA2 : 0 ≤ dA2) (huinv2 : 0 ≤ uinv2)
+    (hLinv : opNorm2Le Linv linv2)
+    (hΔA : opNorm2Le ΔA dA2)
+    (hUinv : opNorm2Le Uinv uinv2)
+    (heta : linv2 * dA2 * uinv2 < 1) :
+    max (frobNormRect ΔL / opNorm2 L) (frobNormRect ΔU / opNorm2 U) ≤
+      (linv2 * frobNormRect ΔA * uinv2) / (1 - linv2 * dA2 * uinv2) +
+        2 * frobNormRect
+          ((show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              higham9_27_GMatrix Linv ΔA Uinv) -
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul Linv ΔL) *
+              (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+                rectMatMul ΔU Uinv)) := by
+  let G : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    higham9_27_GMatrix Linv ΔA Uinv
+  let X : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    rectMatMul Linv ΔL
+  let Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    rectMatMul ΔU Uinv
+  have hGlt : opNorm2 G < 1 := by
+    simpa [G] using
+      higham9_27_GMatrix_opNorm2_lt_one_of_product_lt_one
+        Linv ΔA Uinv hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+  have hsource :
+      max (frobNormRect ΔL / opNorm2 L) (frobNormRect ΔU / opNorm2 U) ≤
+        frobNormRect G / (1 - opNorm2 G) +
+          2 * frobNormRect (G - X * Y) := by
+    simpa [G, X, Y] using
+      higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_of_matrix_inverse_identities
+        A L U Linv Uinv ΔA ΔL ΔU hLU hPert hLleft hLright
+        hUright hUleft hXtri hYtri hGlt hlinear
+  have hratio :=
+    higham9_27_GMatrix_ratio_le_product_ratio
+      Linv ΔA Uinv hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+  exact hsource.trans (by
+    simpa [G, X, Y, add_comm] using
+      add_le_add_right hratio (2 * frobNormRect (G - X * Y)))
+
 /-- **Theorem 9.15 support**, product-smallness source-facing residual handoff
 from the original factorization equations and a principal-block min-factor
 hypothesis. -/
@@ -23103,6 +23286,48 @@ theorem higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNor
     hUright
     (higham9_15_matrix_left_inverse_of_matrix_right_inverse U Uinv hUright)
     hXtri hYtri hGlt hlinear
+
+/-- **Theorem 9.15 support**, product-smallness source-oriented inverse-identity
+form of the factorization-level `I + G` linear-step residual handoff. -/
+theorem higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_product_lt
+    {n : ℕ}
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    {linv2 dA2 uinv2 : ℝ}
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hXtri :
+      ∀ i j : Fin (n + 1), i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin (n + 1), j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hlinear :
+      max (frobNormRect (higham9_15_initBlock (rectMatMul Linv ΔL)))
+          (frobNormRect (higham9_15_initBlock (rectMatMul ΔU Uinv))) ≤
+        frobNormRect (higham9_15_initBlock (higham9_27_GMatrix Linv ΔA Uinv)) +
+          opNorm2 (higham9_15_initBlock (higham9_27_GMatrix Linv ΔA Uinv)) *
+            max (frobNormRect (higham9_15_initBlock (rectMatMul Linv ΔL)))
+              (frobNormRect (higham9_15_initBlock (rectMatMul ΔU Uinv))))
+    (hlinv2 : 0 ≤ linv2) (hdA2 : 0 ≤ dA2) (huinv2 : 0 ≤ uinv2)
+    (hLinv : opNorm2Le Linv linv2)
+    (hΔA : opNorm2Le ΔA dA2)
+    (hUinv : opNorm2Le Uinv uinv2)
+    (heta : linv2 * dA2 * uinv2 < 1) :
+    max (frobNormRect ΔL / opNorm2 L) (frobNormRect ΔU / opNorm2 U) ≤
+      (linv2 * frobNormRect ΔA * uinv2) / (1 - linv2 * dA2 * uinv2) +
+        2 * frobNormRect
+          ((show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              higham9_27_GMatrix Linv ΔA Uinv) -
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul Linv ΔL) *
+              (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+                rectMatMul ΔU Uinv)) :=
+  higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_of_matrix_inverse_identities_product_lt
+    A L U Linv Uinv ΔA ΔL ΔU hLU hPert hLleft
+    (higham9_15_matrix_right_inverse_of_matrix_left_inverse L Linv hLleft)
+    hUright
+    (higham9_15_matrix_left_inverse_of_matrix_right_inverse U Uinv hUright)
+    hXtri hYtri hlinear hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
 
 /-- **Theorem 9.15 support**, product-smallness source-oriented inverse-identity
 form of the factorization-level `I + G` principal-block residual handoff. -/
@@ -23847,6 +24072,75 @@ theorem higham9_15_normwise_source_bound_of_Gtilde_split_init_linear_step_opNorm
       Lhat Uhat LhatInv UhatInv ΔL ΔU hLright hUleft hX hY
 
 /-- **Theorem 9.15 support**, product-smallness source relative bound for the
+`I - Gtilde` split from a principal-block linearized step hypothesis. -/
+theorem higham9_15_normwise_source_bound_of_Gtilde_split_init_linear_step_opNorm_of_inverse_identities_product_lt
+    {n : ℕ}
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU :
+      Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    {linv2 dA2 uinv2 : ℝ}
+    (hLright : rectMatMul Lhat LhatInv = idMatrix (n + 1))
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix (n + 1))
+    (hfact :
+      (1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) -
+          (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) -
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) -
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul ΔU UhatInv)))
+    (hXtri :
+      ∀ i j : Fin (n + 1), i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin (n + 1), j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hlinear :
+      max (frobNormRect (higham9_15_initBlock (rectMatMul LhatInv ΔL)))
+          (frobNormRect (higham9_15_initBlock (rectMatMul ΔU UhatInv))) ≤
+        frobNormRect (higham9_15_initBlock (higham9_27_GMatrix LhatInv ΔA UhatInv)) +
+          opNorm2 (higham9_15_initBlock (higham9_27_GMatrix LhatInv ΔA UhatInv)) *
+            max (frobNormRect (higham9_15_initBlock (rectMatMul LhatInv ΔL)))
+              (frobNormRect (higham9_15_initBlock (rectMatMul ΔU UhatInv))))
+    (hlinv2 : 0 ≤ linv2) (hdA2 : 0 ≤ dA2) (huinv2 : 0 ≤ uinv2)
+    (hLinv : opNorm2Le LhatInv linv2)
+    (hΔA : opNorm2Le ΔA dA2)
+    (hUinv : opNorm2Le UhatInv uinv2)
+    (heta : linv2 * dA2 * uinv2 < 1) :
+    max (frobNormRect ΔL / opNorm2 Lhat) (frobNormRect ΔU / opNorm2 Uhat) ≤
+      (linv2 * frobNormRect ΔA * uinv2) / (1 - linv2 * dA2 * uinv2) +
+        2 * frobNormRect
+          ((show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              higham9_27_GMatrix LhatInv ΔA UhatInv) +
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul LhatInv ΔL) *
+              (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+                rectMatMul ΔU UhatInv)) := by
+  let G : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    higham9_27_GMatrix LhatInv ΔA UhatInv
+  let X : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    rectMatMul LhatInv ΔL
+  let Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    rectMatMul ΔU UhatInv
+  have hGlt : opNorm2 G < 1 := by
+    simpa [G] using
+      higham9_27_GMatrix_opNorm2_lt_one_of_product_lt_one
+        LhatInv ΔA UhatInv hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+  have hsource :
+      max (frobNormRect ΔL / opNorm2 Lhat) (frobNormRect ΔU / opNorm2 Uhat) ≤
+        frobNormRect G / (1 - opNorm2 G) +
+          2 * frobNormRect (G + X * Y) := by
+    simpa [G, X, Y] using
+      higham9_15_normwise_source_bound_of_Gtilde_split_init_linear_step_opNorm_of_inverse_identities
+        Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU
+        hLright hUleft hfact hXtri hYtri hGlt hlinear
+  have hratio :=
+    higham9_27_GMatrix_ratio_le_product_ratio
+      LhatInv ΔA UhatInv hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+  exact hsource.trans (by
+    simpa [G, X, Y, add_comm] using
+      add_le_add_right hratio (2 * frobNormRect (G + X * Y)))
+
+/-- **Theorem 9.15 support**, product-smallness source relative bound for the
 `I - Gtilde` split from a principal-block min-factor hypothesis. -/
 theorem higham9_15_normwise_source_bound_of_Gtilde_split_init_min_factor_bound_opNorm_of_inverse_identities_product_lt
     {n : ℕ}
@@ -24332,6 +24626,58 @@ theorem higham9_15_normwise_source_bound_of_Gtilde_split_init_linear_step_opNorm
     (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse
       Uhat UhatInv hUright)
     hfact hXtri hYtri hGlt hlinear
+
+/-- **Theorem 9.15 support**, product-smallness source-oriented inverse-identity
+form of the `I - Gtilde` split linear-step residual handoff. -/
+theorem higham9_15_normwise_source_bound_of_Gtilde_split_init_linear_step_opNorm_of_source_inverse_identities_product_lt
+    {n : ℕ}
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU :
+      Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    {linv2 dA2 uinv2 : ℝ}
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hfact :
+      (1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) -
+          (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) -
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) -
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul ΔU UhatInv)))
+    (hXtri :
+      ∀ i j : Fin (n + 1), i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin (n + 1), j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hlinear :
+      max (frobNormRect (higham9_15_initBlock (rectMatMul LhatInv ΔL)))
+          (frobNormRect (higham9_15_initBlock (rectMatMul ΔU UhatInv))) ≤
+        frobNormRect (higham9_15_initBlock (higham9_27_GMatrix LhatInv ΔA UhatInv)) +
+          opNorm2 (higham9_15_initBlock (higham9_27_GMatrix LhatInv ΔA UhatInv)) *
+            max (frobNormRect (higham9_15_initBlock (rectMatMul LhatInv ΔL)))
+              (frobNormRect (higham9_15_initBlock (rectMatMul ΔU UhatInv))))
+    (hlinv2 : 0 ≤ linv2) (hdA2 : 0 ≤ dA2) (huinv2 : 0 ≤ uinv2)
+    (hLinv : opNorm2Le LhatInv linv2)
+    (hΔA : opNorm2Le ΔA dA2)
+    (hUinv : opNorm2Le UhatInv uinv2)
+    (heta : linv2 * dA2 * uinv2 < 1) :
+    max (frobNormRect ΔL / opNorm2 Lhat) (frobNormRect ΔU / opNorm2 Uhat) ≤
+      (linv2 * frobNormRect ΔA * uinv2) / (1 - linv2 * dA2 * uinv2) +
+        2 * frobNormRect
+          ((show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              higham9_27_GMatrix LhatInv ΔA UhatInv) +
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul LhatInv ΔL) *
+              (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+                rectMatMul ΔU UhatInv)) :=
+  higham9_15_normwise_source_bound_of_Gtilde_split_init_linear_step_opNorm_of_inverse_identities_product_lt
+    Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU
+    (higham9_15_rectMatMul_right_inverse_of_matrix_left_inverse
+      Lhat LhatInv hLleft)
+    (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse
+      Uhat UhatInv hUright)
+    hfact hXtri hYtri hlinear hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
 
 /-- **Theorem 9.15 support**, product-smallness source-oriented inverse-identity
 form of the `I - Gtilde` residual handoff. -/
@@ -25114,6 +25460,70 @@ theorem higham9_15_normwise_source_bound_of_factorization_Gtilde_init_linear_ste
       Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hLrightRect hUleftRect hfact
       hXtri hYtri hGlt hlinear
 
+/-- **Theorem 9.15 support**, product-smallness factorization-level
+`I - Gtilde` residual handoff from a principal-block linearized step
+hypothesis. -/
+theorem higham9_15_normwise_source_bound_of_factorization_Gtilde_init_linear_step_opNorm_of_matrix_inverse_identities_product_lt
+    {n : ℕ}
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU :
+      Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    {linv2 dA2 uinv2 : ℝ}
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hLright : Lhat * LhatInv = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hUleft : UhatInv * Uhat = 1)
+    (hXtri :
+      ∀ i j : Fin (n + 1), i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin (n + 1), j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hlinear :
+      max (frobNormRect (higham9_15_initBlock (rectMatMul LhatInv ΔL)))
+          (frobNormRect (higham9_15_initBlock (rectMatMul ΔU UhatInv))) ≤
+        frobNormRect (higham9_15_initBlock (higham9_27_GMatrix LhatInv ΔA UhatInv)) +
+          opNorm2 (higham9_15_initBlock (higham9_27_GMatrix LhatInv ΔA UhatInv)) *
+            max (frobNormRect (higham9_15_initBlock (rectMatMul LhatInv ΔL)))
+              (frobNormRect (higham9_15_initBlock (rectMatMul ΔU UhatInv))))
+    (hlinv2 : 0 ≤ linv2) (hdA2 : 0 ≤ dA2) (huinv2 : 0 ≤ uinv2)
+    (hLinv : opNorm2Le LhatInv linv2)
+    (hΔA : opNorm2Le ΔA dA2)
+    (hUinv : opNorm2Le UhatInv uinv2)
+    (heta : linv2 * dA2 * uinv2 < 1) :
+    max (frobNormRect ΔL / opNorm2 Lhat) (frobNormRect ΔU / opNorm2 Uhat) ≤
+      (linv2 * frobNormRect ΔA * uinv2) / (1 - linv2 * dA2 * uinv2) +
+        2 * frobNormRect
+          ((show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              higham9_27_GMatrix LhatInv ΔA UhatInv) +
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul LhatInv ΔL) *
+              (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+                rectMatMul ΔU UhatInv)) := by
+  let G : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    higham9_27_GMatrix LhatInv ΔA UhatInv
+  let X : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    rectMatMul LhatInv ΔL
+  let Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    rectMatMul ΔU UhatInv
+  have hGlt : opNorm2 G < 1 := by
+    simpa [G] using
+      higham9_27_GMatrix_opNorm2_lt_one_of_product_lt_one
+        LhatInv ΔA UhatInv hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+  have hsource :
+      max (frobNormRect ΔL / opNorm2 Lhat) (frobNormRect ΔU / opNorm2 Uhat) ≤
+        frobNormRect G / (1 - opNorm2 G) +
+          2 * frobNormRect (G + X * Y) := by
+    simpa [G, X, Y] using
+      higham9_15_normwise_source_bound_of_factorization_Gtilde_init_linear_step_opNorm_of_matrix_inverse_identities
+        A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hA hPert hLleft hLright
+        hUright hUleft hXtri hYtri hGlt hlinear
+  have hratio :=
+    higham9_27_GMatrix_ratio_le_product_ratio
+      LhatInv ΔA UhatInv hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+  exact hsource.trans (by
+    simpa [G, X, Y, add_comm] using
+      add_le_add_right hratio (2 * frobNormRect (G + X * Y)))
+
 /-- **Theorem 9.15 support**, product-smallness source-facing `Gtilde`
 residual handoff from the original signed factorization equations. -/
 theorem higham9_15_normwise_source_bound_of_factorization_Gtilde_init_min_factor_bound_opNorm_of_matrix_inverse_identities_product_lt
@@ -25254,6 +25664,51 @@ theorem higham9_15_normwise_source_bound_of_factorization_Gtilde_init_linear_ste
     (higham9_15_matrix_left_inverse_of_matrix_right_inverse
       Uhat UhatInv hUright)
     hXtri hYtri hGlt hlinear
+
+/-- **Theorem 9.15 support**, product-smallness source-oriented inverse-identity
+form of the factorization-level `I - Gtilde` linear-step residual handoff. -/
+theorem higham9_15_normwise_source_bound_of_factorization_Gtilde_init_linear_step_opNorm_product_lt
+    {n : ℕ}
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU :
+      Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    {linv2 dA2 uinv2 : ℝ}
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hXtri :
+      ∀ i j : Fin (n + 1), i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin (n + 1), j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hlinear :
+      max (frobNormRect (higham9_15_initBlock (rectMatMul LhatInv ΔL)))
+          (frobNormRect (higham9_15_initBlock (rectMatMul ΔU UhatInv))) ≤
+        frobNormRect (higham9_15_initBlock (higham9_27_GMatrix LhatInv ΔA UhatInv)) +
+          opNorm2 (higham9_15_initBlock (higham9_27_GMatrix LhatInv ΔA UhatInv)) *
+            max (frobNormRect (higham9_15_initBlock (rectMatMul LhatInv ΔL)))
+              (frobNormRect (higham9_15_initBlock (rectMatMul ΔU UhatInv))))
+    (hlinv2 : 0 ≤ linv2) (hdA2 : 0 ≤ dA2) (huinv2 : 0 ≤ uinv2)
+    (hLinv : opNorm2Le LhatInv linv2)
+    (hΔA : opNorm2Le ΔA dA2)
+    (hUinv : opNorm2Le UhatInv uinv2)
+    (heta : linv2 * dA2 * uinv2 < 1) :
+    max (frobNormRect ΔL / opNorm2 Lhat) (frobNormRect ΔU / opNorm2 Uhat) ≤
+      (linv2 * frobNormRect ΔA * uinv2) / (1 - linv2 * dA2 * uinv2) +
+        2 * frobNormRect
+          ((show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              higham9_27_GMatrix LhatInv ΔA UhatInv) +
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul LhatInv ΔL) *
+              (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+                rectMatMul ΔU UhatInv)) :=
+  higham9_15_normwise_source_bound_of_factorization_Gtilde_init_linear_step_opNorm_of_matrix_inverse_identities_product_lt
+    A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hA hPert hLleft
+    (higham9_15_matrix_right_inverse_of_matrix_left_inverse
+      Lhat LhatInv hLleft)
+    hUright
+    (higham9_15_matrix_left_inverse_of_matrix_right_inverse
+      Uhat UhatInv hUright)
+    hXtri hYtri hlinear hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
 
 /-- **Theorem 9.15 support**, product-smallness source-oriented inverse-identity
 form of the factorization-level `I - Gtilde` principal-block residual handoff. -/
