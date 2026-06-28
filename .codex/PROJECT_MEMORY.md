@@ -9654,3 +9654,28 @@ These compile, but should not be treated as fully derived stability results:
   for the printed BDD theorem, but not the theorem itself: the concrete
   subordinate block action, Schur perturbation estimate, max-entry Eq.13.21
   integration, and BDD nonsingularity/block-LU existence surface remain open.
+
+- 2026-06-28 Algorithm 13.3 BDD generic Schur-composition perturbation
+  dependency: added `continuousLinearMap_triple_norm_le` and
+  `continuousLinearMap_triple_norm_le_of_unit` in `MatrixAlgebra.lean`, plus
+  `SchurStageActiveDiagLowerUpdate13_7.of_continuousLinearMap_schur_composition`
+  in `BlockLU.lean`.  The new adapter instantiates the Eq.13.18 generic
+  lower-norm table's perturbation hypothesis when the Schur correction is the
+  composed continuous-linear block action `A_jk A_kk^{-1} A_kj`, with block
+  norms interpreted as Mathlib operator norms.  This removes the standalone
+  arbitrary-norm Schur perturbation-estimate gap; the printed BDD row still
+  needs the concrete active block actions/inverse certificates to be connected
+  to Algorithm 13.3, plus the entrywise max-norm Eq.13.21 route and
+  BDD nonsingularity/block-LU existence integration.
+
+- 2026-06-28 Algorithm 13.3 BDD CLM source-table integration bridge:
+  added
+  `higham13_algorithm13_3_diagLowerCert_diag_lower_of_continuousLinearMap_source_table`
+  in `BlockLU.lean`.  It packages the generic continuous-linear lower-norm
+  table, Schur-composition update, and two-sided active pivot inverse into the
+  existing concrete `diagLowerCert` one-sided pivot certificate, assuming the
+  CLM operator norms agree with the Algorithm 13.3 stage norm and pivot-inverse
+  norm tables and the initial source lower table dominates the initial
+  `invDiagBound`.  This narrows the printed BDD row to constructing/aligning
+  the actual active block CLMs and inverse certificates, then composing with
+  the existing Eq.13.21 and BDD nonsingularity wrappers.
