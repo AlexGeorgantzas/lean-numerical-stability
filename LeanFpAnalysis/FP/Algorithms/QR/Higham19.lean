@@ -3065,6 +3065,22 @@ structure HouseholderQRBackwardError (m n : Nat)
     (forall i j, A i j + dA i j = matMulRect m m n Q R_hat i j) /\
     (forall j, columnFrob dA j <= c * columnFrob A j)
 
+/-- Componentwise `G |A|` form of the Higham 19.4 Householder QR backward
+error, with the printed orientation `A + dA = Q * R_hat`. -/
+structure HouseholderQRComponentwiseBackwardError (m n : Nat)
+    (A : Fin m -> Fin n -> Real) (Q : Fin m -> Fin m -> Real)
+    (R_hat : Fin m -> Fin n -> Real) (c_norm c_comp : Real) : Prop where
+  upper : IsUpperTrapezoidal m n R_hat
+  orth : IsOrthogonal m Q
+  result : Exists fun dA : Fin m -> Fin n -> Real =>
+    Exists fun G : Fin m -> Fin m -> Real =>
+      (forall i j, A i j + dA i j = matMulRect m m n Q R_hat i j) /\
+      frobNorm dA <= c_norm /\
+      (forall i j, 0 <= G i j) /\
+      frobNorm G = 1 /\
+      (forall i j, |dA i j| <=
+        c_comp * matMulRect m m n G (fun a b => |A a b|) i j)
+
 /-- Convert the repository's panel representation `R = Q^T (A + dA)` into
 the printed Higham 19.4 equation `A + dA = Q R`. -/
 theorem of_panel_columnwise {m n : Nat}
@@ -3106,6 +3122,48 @@ theorem of_panel_columnwise {m n : Nat}
           _ = matMulRect m m n Q R_hat i j := by
                 rw [<- hRmat]
 
+/-- Convert the proof-facing componentwise panel representation
+`R = Q^T (A + dA)` into the printed Higham 19.4 orientation
+`A + dA = Q R`. -/
+theorem of_panel_componentwise {m n : Nat}
+    {A : Fin m -> Fin n -> Real} {Q : Fin m -> Fin m -> Real}
+    {R_hat : Fin m -> Fin n -> Real} {c_norm c_comp : Real}
+    (h : StructuredHouseholderQRPanelHighamBackwardError
+      m n A Q R_hat c_norm c_comp) :
+    HouseholderQRComponentwiseBackwardError
+      m n A Q R_hat c_norm c_comp := by
+  rcases h.result with ⟨dA, G, hR, hNorm, hGnonneg, hGfrob, hComp⟩
+  refine { upper := h.upper, orth := h.orth, result := ?_ }
+  refine Exists.intro dA ?_
+  refine Exists.intro G ?_
+  refine And.intro ?_ ?_
+  · intro i j
+    have hRmat :
+        R_hat =
+          matMulRect m m n (matTranspose Q)
+            (fun a b => A a b + dA a b) := by
+      ext a b
+      exact hR a b
+    have hQQT : matMul m Q (matTranspose Q) = idMatrix m := by
+      ext a b
+      exact h.orth.right_inv a b
+    calc
+      A i j + dA i j =
+          matMulRect m m n (idMatrix m)
+            (fun a b => A a b + dA a b) i j := by
+            rw [matMulRect_id_left]
+      _ = matMulRect m m n (matMul m Q (matTranspose Q))
+            (fun a b => A a b + dA a b) i j := by
+            rw [hQQT]
+      _ = matMulRect m m n Q
+            (matMulRect m m n (matTranspose Q)
+              (fun a b => A a b + dA a b)) i j := by
+            rw [matMulRect_assoc_square_left]
+      _ = matMulRect m m n Q R_hat i j := by
+            rw [<- hRmat]
+  · exact And.intro hNorm
+      (And.intro hGnonneg (And.intro hGfrob hComp))
+
 /-- Higham, Theorem 19.4: Householder QR backward error for a tall rectangular
 matrix, stated with the public Split 3B source-facing name.
 
@@ -3135,6 +3193,77 @@ theorem householder_qr_backward_error
       fp m n A hsteps (by
         simpa [Nat.min_eq_right hnm] using hvalid)
   simpa [gamma_tilde, Nat.min_eq_right hnm] using of_panel_columnwise hpanel
+
+/-- Equation `(19.11)`/Theorem 19.4 columnwise backward-error form, using the
+public source-facing theorem name. -/
+theorem eq19_11_columnwise_backward_error
+    (fp : FPModel) (m n : Nat) (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n) (hnm : n <= m)
+    (hvalid : gammaValid fp (n * householderConstructApplyGammaIndex m)) :
+    HouseholderQRBackwardError m n A
+      (fl_householderQRPanel_Q fp m n A)
+      (fl_householderQRPanel_R fp m n A)
+      (gamma_tilde fp m n) :=
+  householder_qr_backward_error fp m n A hn hnm hvalid
+
+/-- Higham, Theorem 19.4 componentwise `G |A|` form for the concrete
+Householder QR panel path.
+
+This is the source-facing equation `(19.12)` shape: the same exact orthogonal
+`Q` and computed `R_hat` give `A + dA = Q * R_hat`, with a nonnegative
+Frobenius-unit matrix `G` controlling `|dA|` componentwise. -/
+theorem householder_qr_componentwise_backward_error
+    (fp : FPModel) (m n : Nat) (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n) (hnm : n <= m)
+    (hvalid : gammaValid fp (n * householderConstructApplyGammaIndex m)) :
+    HouseholderQRComponentwiseBackwardError m n A
+      (fl_householderQRPanel_Q fp m n A)
+      (fl_householderQRPanel_R fp m n A)
+      (gamma_tilde fp m n * frobNorm A)
+      ((m : Real) * gamma_tilde fp m n) := by
+  have hm : 0 < m := Nat.lt_of_lt_of_le hn hnm
+  have hsteps : 0 < Nat.min m n := by
+    simpa [Nat.min_eq_right hnm] using hn
+  have hvalid_min :
+      gammaValid fp (Nat.min m n * householderConstructApplyGammaIndex m) := by
+    simpa [Nat.min_eq_right hnm] using hvalid
+  have hgamma_nonneg :
+      0 <= gamma fp (Nat.min m n * householderConstructApplyGammaIndex m) :=
+    gamma_nonneg fp hvalid_min
+  have hpanel :
+      HouseholderQRPanelColumnwiseBackwardError m n A
+        (fl_householderQRPanel_Q fp m n A)
+        (fl_householderQRPanel_R fp m n A)
+        (gamma fp (Nat.min m n * householderConstructApplyGammaIndex m) *
+          frobNorm A)
+        (gamma fp (Nat.min m n * householderConstructApplyGammaIndex m)) :=
+    fl_householderQRPanel_R_columnwise_backward_error_gammaHigham_of_global_gammaValid
+      fp m n A hsteps hvalid_min
+  have hhigham :
+      StructuredHouseholderQRPanelHighamBackwardError m n A
+        (fl_householderQRPanel_Q fp m n A)
+        (fl_householderQRPanel_R fp m n A)
+        (gamma fp (Nat.min m n * householderConstructApplyGammaIndex m) *
+          frobNorm A)
+        ((m : Real) *
+          gamma fp (Nat.min m n * householderConstructApplyGammaIndex m)) :=
+    HouseholderQRPanelColumnwiseBackwardError.to_higham
+      hpanel hm hgamma_nonneg
+  simpa [gamma_tilde, Nat.min_eq_right hnm] using
+    of_panel_componentwise hhigham
+
+/-- Equation `(19.12)` componentwise backward-error form, exposed as a
+source-labeled wrapper around the componentwise Theorem 19.4 surface. -/
+theorem eq19_12_componentwise_backward_error
+    (fp : FPModel) (m n : Nat) (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n) (hnm : n <= m)
+    (hvalid : gammaValid fp (n * householderConstructApplyGammaIndex m)) :
+    HouseholderQRComponentwiseBackwardError m n A
+      (fl_householderQRPanel_Q fp m n A)
+      (fl_householderQRPanel_R fp m n A)
+      (gamma_tilde fp m n * frobNorm A)
+      ((m : Real) * gamma_tilde fp m n) :=
+  householder_qr_componentwise_backward_error fp m n A hn hnm hvalid
 
 end Theorem19_4
 
