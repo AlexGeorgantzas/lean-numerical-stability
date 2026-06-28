@@ -14748,6 +14748,89 @@ theorem LSNormwiseBackwardErrorFeasible.formulaMatrixSigmaMin_mul_source_residua
                 lsResidualHigham A b y i + Deltab i -
                   rectMatMulVec DeltaA y i)) := hsplit
 
+/-- Corrected conditional handoff for the nonzero-expanded-residual WKS
+    lower-bound route.  Once the exact projector squared estimate for
+    `DeltaA^T p` and `phi * (I-r r^+)p` is proved, the printed right-hand side
+    in (20.21) is bounded by the weighted perturbation cost from (20.20). -/
+theorem lsNormwiseBackwardErrorFormulaRHS_le_costF_of_exact_projector_sq_bound
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (DeltaA : Fin (m + 1) → Fin n → ℝ)
+    (Deltab : Fin (m + 1) → ℝ)
+    (hfeas : LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab)
+    (hrsq : vecNorm2Sq (lsResidualHigham A b y) ≠ 0)
+    (hpne :
+      (fun i : Fin (m + 1) =>
+        lsResidualHigham A b y i + Deltab i - rectMatMulVec DeltaA y i) ≠ 0)
+    (hexact :
+      let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+      let p : Fin (m + 1) → ℝ :=
+        fun i => lsResidualHigham A b y i + Deltab i - rectMatMulVec DeltaA y i
+      vecNorm2Sq
+        (fun j : Fin n =>
+          -∑ i : Fin (m + 1), DeltaA i j * p i) +
+        (lsNormwiseBackwardErrorPhi theta r y) ^ 2 *
+          vecNorm2Sq
+            (matMulVec (m + 1) (lsResidualComplementProjector r) p) ≤
+        (lsNormwiseBackwardErrorCostF theta DeltaA Deltab) ^ 2 *
+          vecNorm2Sq p) :
+    lsNormwiseBackwardErrorFormulaRHS theta A b y ≤
+      lsNormwiseBackwardErrorCostF theta DeltaA Deltab := by
+  let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+  let p : Fin (m + 1) → ℝ :=
+    fun i => lsResidualHigham A b y i + Deltab i - rectMatMulVec DeltaA y i
+  let sigma : ℝ := lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y
+  let cost : ℝ := lsNormwiseBackwardErrorCostF theta DeltaA Deltab
+  have hspectral :
+      (sigma * vecNorm2 p) ^ 2 ≤
+        vecNorm2Sq
+          (fun j : Fin n =>
+            -∑ i : Fin (m + 1), DeltaA i j * p i) +
+          (lsNormwiseBackwardErrorPhi theta r y) ^ 2 *
+            vecNorm2Sq
+              (matMulVec (m + 1) (lsResidualComplementProjector r) p) := by
+    simpa [r, p, sigma] using
+      LSNormwiseBackwardErrorFeasible.formulaMatrixSigmaMin_mul_source_residual_vecNorm2_sq_le_exact
+        theta A b y DeltaA Deltab hfeas hrsq
+  have hexact' :
+      vecNorm2Sq
+          (fun j : Fin n =>
+            -∑ i : Fin (m + 1), DeltaA i j * p i) +
+          (lsNormwiseBackwardErrorPhi theta r y) ^ 2 *
+            vecNorm2Sq
+              (matMulVec (m + 1) (lsResidualComplementProjector r) p) ≤
+        cost ^ 2 * vecNorm2Sq p := by
+    simpa [r, p, cost] using hexact
+  have hsq :
+      (sigma * vecNorm2 p) ^ 2 ≤ (cost * vecNorm2 p) ^ 2 := by
+    have hmain := hspectral.trans hexact'
+    have hcost :
+        cost ^ 2 * vecNorm2Sq p = (cost * vecNorm2 p) ^ 2 := by
+      rw [← vecNorm2_sq p]
+      ring
+    simpa [hcost] using hmain
+  have hp_pos : 0 < vecNorm2 p := by
+    exact vecNorm2_pos_of_ne_zero_lsq (by simpa [p] using hpne)
+  have hsigma_nonneg : 0 ≤ sigma := by
+    simpa [sigma, r] using
+      lsNormwiseBackwardErrorFormulaMatrixSigmaMin_nonneg theta A r y
+  have hleft_nonneg : 0 ≤ sigma * vecNorm2 p :=
+    mul_nonneg hsigma_nonneg (vecNorm2_nonneg p)
+  have hcost_nonneg : 0 ≤ cost := by
+    simpa [cost] using lsNormwiseBackwardErrorCostF_nonneg theta DeltaA Deltab
+  have hright_nonneg : 0 ≤ cost * vecNorm2 p :=
+    mul_nonneg hcost_nonneg (vecNorm2_nonneg p)
+  have hprod : sigma * vecNorm2 p ≤ cost * vecNorm2 p := by
+    have habs := (sq_le_sq).mp hsq
+    simpa [abs_of_nonneg hleft_nonneg, abs_of_nonneg hright_nonneg] using habs
+  have hsigma_le_cost : sigma ≤ cost :=
+    le_of_mul_le_mul_right hprod hp_pos
+  have hrhs_le_sigma :
+      lsNormwiseBackwardErrorFormulaRHS theta A b y ≤ sigma := by
+    simpa [lsNormwiseBackwardErrorFormulaRHS, r, sigma] using
+      lsNormwiseBackwardErrorFormulaValue_le_sigmaMin theta A r y
+  exact hrhs_le_sigma.trans hsigma_le_cost
+
 /-- Conditional handoff for the nonzero-expanded-residual WKS lower-bound route.
     Once the sharp coupled squared estimate converts the two perturbation blocks
     from `formulaMatrixSigmaMin_mul_source_residual_vecNorm2_sq_le` into
