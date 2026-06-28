@@ -2627,6 +2627,44 @@ theorem storedPanelStep_eq_applyMatrixRect_of_active_not_below
   fl_householderStoredPanelStep_eq_applyMatrixRect_of_active_not_below
     fp m n k v beta A i j hactive hnotBelowPivot
 
+/-- First-pivot storage bridge for the recursive/stored `R11` handoff.
+
+One local rounded rectangular Householder update, followed by the recursive QR
+storage convention that zeroes the first-column tail and keeps the top row, is
+exactly the stored-panel update at pivot column zero with the same reflector
+data.  Instantiating `v` with the normalized first-column reflector and
+`beta = 1` gives the structural first-step bridge for the nonzero branch of
+`fl_householderQRPanel_R`; the remaining handoff work is to iterate this bridge
+through shrinking panels and identify the active reflector data. -/
+theorem firstStoredPanelStep_eq_panelFromTopAndTrailing_applyMatrixRect
+    (fp : FPModel) {m p : Nat}
+    (v : Fin (m + 1) -> Real) (beta : Real)
+    (A : Fin (m + 1) -> Fin (p + 1) -> Real) :
+    (let Astep := fl_householderApplyMatrixRect fp (m + 1) (p + 1) v beta A
+     panelFromTopAndTrailing (panelTopLeft Astep) (panelTopRowTail Astep)
+       (trailingPanel Astep)) =
+    fl_householderStoredPanelStep fp (m + 1) (p + 1) 0 v beta A := by
+  ext i j
+  cases i using Fin.cases with
+  | zero =>
+      cases j using Fin.cases with
+      | zero =>
+          simp [fl_householderStoredPanelStep, fl_householderApplyCompactPanel,
+            fl_householderApplyMatrixRect, fl_householderApplyCompact,
+            fl_householderApply, panelFromTopAndTrailing, panelTopLeft]
+      | succ jtail =>
+          simp [fl_householderStoredPanelStep, fl_householderApplyCompactPanel,
+            fl_householderApplyMatrixRect, fl_householderApplyCompact,
+            fl_householderApply, panelFromTopAndTrailing, panelTopRowTail]
+  | succ itail =>
+      cases j using Fin.cases with
+      | zero =>
+          simp [fl_householderStoredPanelStep, panelFromTopAndTrailing]
+      | succ jtail =>
+          simp [fl_householderStoredPanelStep, fl_householderApplyCompactPanel,
+            fl_householderApplyMatrixRect, fl_householderApplyCompact,
+            fl_householderApply, panelFromTopAndTrailing, trailingPanel]
+
 /-- Source-facing nonbreakdown route for the stored Householder QR loop.
 Nonsingular local leading blocks, the stored lower-zero invariant, the source
 sign convention, and a per-pivot square-root component budget imply that the
