@@ -2,12 +2,347 @@ import LeanFpAnalysis.FP.Algorithms.QR.GivensQR
 import LeanFpAnalysis.FP.Algorithms.QR.GramSchmidt
 import LeanFpAnalysis.FP.Algorithms.QR.GramSchmidtPolar
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderQR
+import LeanFpAnalysis.FP.Algorithms.QR.HouseholderQRSupport
 
 open LeanFpAnalysis.FP
 
 namespace H19
 
 noncomputable section
+
+namespace Problem19_1
+
+/-- Problem 19.1 Householder eigendirection: with the usual normalization
+`beta * (v^T v) = 2`, the Householder reflector sends its defining vector to
+`-v`.  This records the `-1` eigendirection in the repository's matrix-vector
+API. -/
+theorem householder_mul_defining_vector_neg {n : Nat}
+    (v : Fin n -> Real) (beta : Real)
+    (hbeta :
+      beta * ((Finset.univ : Finset (Fin n)).sum (fun k => v k * v k)) =
+        2) :
+    matMulVec n (householder n v beta) v = (fun i => -v i) := by
+  ext i
+  unfold matMulVec householder idMatrix
+  have hterm : forall j : Fin n,
+      ((if i = j then 1 else 0) - beta * v i * v j) * v j =
+        (if i = j then 1 else 0) * v j -
+          (beta * v i) * (v j * v j) := by
+    intro j
+    ring
+  calc
+    ((Finset.univ : Finset (Fin n)).sum
+        (fun j => ((if i = j then 1 else 0) - beta * v i * v j) * v j))
+        =
+          ((Finset.univ : Finset (Fin n)).sum
+            (fun j => (if i = j then 1 else 0) * v j)) -
+            beta * v i *
+              ((Finset.univ : Finset (Fin n)).sum (fun j => v j * v j)) := by
+            simp_rw [hterm]
+            rw [Finset.sum_sub_distrib]
+            congr 1
+            rw [Finset.mul_sum]
+    _ = v i - beta * v i *
+          ((Finset.univ : Finset (Fin n)).sum (fun j => v j * v j)) := by
+          simp [Finset.sum_ite_eq, Finset.mem_univ]
+    _ = v i -
+          (beta *
+            ((Finset.univ : Finset (Fin n)).sum (fun j => v j * v j))) *
+            v i := by
+          ring
+    _ = -v i := by
+          rw [hbeta]
+          ring
+
+/-- Problem 19.1 Householder fixed subspace: vectors orthogonal to the defining
+Householder vector are fixed by the reflector.  Together with
+`householder_mul_defining_vector_neg`, this exposes the usual `+1` and `-1`
+eigendirections without adding a new eigenvalue API. -/
+theorem householder_mul_orthogonal_vector {n : Nat}
+    (v x : Fin n -> Real) (beta : Real)
+    (horth :
+      ((Finset.univ : Finset (Fin n)).sum (fun j => v j * x j)) = 0) :
+    matMulVec n (householder n v beta) x = x := by
+  ext i
+  unfold matMulVec householder idMatrix
+  have hterm : forall j : Fin n,
+      ((if i = j then 1 else 0) - beta * v i * v j) * x j =
+        (if i = j then 1 else 0) * x j -
+          (beta * v i) * (v j * x j) := by
+    intro j
+    ring
+  calc
+    ((Finset.univ : Finset (Fin n)).sum
+        (fun j => ((if i = j then 1 else 0) - beta * v i * v j) * x j))
+        =
+          ((Finset.univ : Finset (Fin n)).sum
+            (fun j => (if i = j then 1 else 0) * x j)) -
+            beta * v i *
+              ((Finset.univ : Finset (Fin n)).sum (fun j => v j * x j)) := by
+            simp_rw [hterm]
+            rw [Finset.sum_sub_distrib]
+            congr 1
+            rw [Finset.mul_sum]
+    _ = x i - beta * v i *
+          ((Finset.univ : Finset (Fin n)).sum (fun j => v j * x j)) := by
+          simp [Finset.sum_ite_eq, Finset.mem_univ]
+    _ = x i := by
+          rw [horth]
+          ring
+
+/-- Problem 19.1 Givens active-plane action: the two rotated coordinates follow
+the standard real two-by-two rotation formula.  This records the real part of
+the Givens eigenvalue/fixed-plane calculation in the repository's
+matrix-vector API. -/
+theorem givens_active_plane_action {n : Nat}
+    (p q : Fin n) (c s : Real) (x : Fin n -> Real)
+    (hpq : Not (p = q)) :
+    matMulVec n (givensRotation n p q c s) x p = c * x p + s * x q /\
+    matMulVec n (givensRotation n p q c s) x q = c * x q - s * x p := by
+  exact And.intro
+    (givensRotation_matMulVec_p n p q c s x hpq)
+    (givensRotation_matMulVec_q n p q c s x hpq)
+
+/-- Problem 19.1 Givens fixed subspace: if a vector has zero entries in the two
+rotated coordinates, then the exact Givens rotation fixes it.  This records the
+real `+1` fixed-plane contribution of a Givens rotation. -/
+theorem givens_mul_fixed_of_zero_pair {n : Nat}
+    (p q : Fin n) (c s : Real) (x : Fin n -> Real)
+    (hpq : Not (p = q)) (hxp : x p = 0) (hxq : x q = 0) :
+    matMulVec n (givensRotation n p q c s) x = x := by
+  ext i
+  exact givensRotation_matMulVec_pair_zero n p q c s x hpq hxp hxq i
+
+/-- Complex matrix-vector action for a real square matrix.  This is kept local
+to Problem 19.1 so the complex Givens eigenvalue statement can be recorded
+without changing the repository's real `matMulVec` API. -/
+noncomputable def complexMatMulVec (n : Nat)
+    (A : Fin n -> Fin n -> Real) (x : Fin n -> Complex) :
+    Fin n -> Complex :=
+  fun i =>
+    (Finset.univ : Finset (Fin n)).sum
+      (fun j => (A i j : Complex) * x j)
+
+/-- A nonzero complex right-eigenvector/eigenvalue relation for the legacy real
+matrix representation used in the QR files. -/
+def IsComplexRightEigenpair (n : Nat) (A : Fin n -> Fin n -> Real)
+    (lambda : Complex) (x : Fin n -> Complex) : Prop :=
+  (Exists fun i : Fin n => Ne (x i) 0) /\
+    forall i : Fin n, complexMatMulVec n A x i = lambda * x i
+
+private theorem complex_sum_two_point {n : Nat} (p q : Fin n) (a b : Complex)
+    (x : Fin n -> Complex) (hpq : Not (p = q)) :
+    ((Finset.univ : Finset (Fin n)).sum
+        (fun j => (if j = p then a else if j = q then b else 0) * x j)) =
+      a * x p + b * x q := by
+  let f : Fin n -> Complex := fun j =>
+    (if j = p then a else if j = q then b else 0) * x j
+  have hp : Membership.mem (Finset.univ : Finset (Fin n)) p :=
+    Finset.mem_univ p
+  have hq : Membership.mem ((Finset.univ : Finset (Fin n)).erase p) q :=
+    Finset.mem_erase.mpr
+      (And.intro (fun h => hpq h.symm) (Finset.mem_univ q))
+  have hqp : Not (q = p) := fun h => hpq h.symm
+  have hrest :
+      (((Finset.univ : Finset (Fin n)).erase p).erase q).sum f = 0 := by
+    apply Finset.sum_eq_zero
+    intro j hj
+    simp only [Finset.mem_erase, Finset.mem_univ, and_true] at hj
+    have hjq : Not (j = q) := hj.1
+    have hjp : Not (j = p) := hj.2
+    simp [hjp, hjq]
+  calc
+    ((Finset.univ : Finset (Fin n)).sum
+        (fun j => (if j = p then a else if j = q then b else 0) * x j))
+        = (Finset.univ : Finset (Fin n)).sum f := rfl
+    _ = f p + f q +
+          (((Finset.univ : Finset (Fin n)).erase p).erase q).sum f := by
+        rw [(Finset.add_sum_erase (Finset.univ : Finset (Fin n)) f hp).symm]
+        rw [(Finset.add_sum_erase
+          ((Finset.univ : Finset (Fin n)).erase p) f hq).symm]
+        ring
+    _ = a * x p + b * x q := by
+        rw [hrest]
+        simp [f, hqp]
+
+/-- Complex `p`-component of applying an exact real Givens rotation. -/
+theorem complexMatMulVec_givens_p {n : Nat}
+    (p q : Fin n) (c s : Real) (x : Fin n -> Complex)
+    (hpq : Not (p = q)) :
+    complexMatMulVec n (givensRotation n p q c s) x p =
+      (c : Complex) * x p + (s : Complex) * x q := by
+  have hqp : Not (q = p) := fun h => hpq h.symm
+  unfold complexMatMulVec
+  calc
+    ((Finset.univ : Finset (Fin n)).sum
+        (fun j => (givensRotation n p q c s p j : Complex) * x j))
+        = ((Finset.univ : Finset (Fin n)).sum
+          (fun j =>
+            (if j = p then (c : Complex)
+             else if j = q then (s : Complex) else 0) * x j)) := by
+            apply Finset.sum_congr rfl
+            intro j _
+            unfold givensRotation
+            by_cases hjp : j = p
+            case pos =>
+              simp [hjp]
+            case neg =>
+              have hpj : Not (p = j) := fun h => hjp h.symm
+              by_cases hjq : j = q
+              case pos =>
+                simp [hjq, hpq, hqp]
+              case neg =>
+                simp [hjp, hpj, hjq, hpq]
+    _ = (c : Complex) * x p + (s : Complex) * x q := by
+        exact complex_sum_two_point p q (c : Complex) (s : Complex) x hpq
+
+/-- Complex `q`-component of applying an exact real Givens rotation. -/
+theorem complexMatMulVec_givens_q {n : Nat}
+    (p q : Fin n) (c s : Real) (x : Fin n -> Complex)
+    (hpq : Not (p = q)) :
+    complexMatMulVec n (givensRotation n p q c s) x q =
+      (c : Complex) * x q - (s : Complex) * x p := by
+  have hqp : Not (q = p) := fun h => hpq h.symm
+  unfold complexMatMulVec
+  calc
+    ((Finset.univ : Finset (Fin n)).sum
+        (fun j => (givensRotation n p q c s q j : Complex) * x j))
+        = ((Finset.univ : Finset (Fin n)).sum
+          (fun j =>
+            (if j = p then (-(s : Complex))
+             else if j = q then (c : Complex) else 0) * x j)) := by
+            apply Finset.sum_congr rfl
+            intro j _
+            unfold givensRotation
+            by_cases hjp : j = p
+            case pos =>
+              simp [hjp, hpq, hqp]
+            case neg =>
+              by_cases hjq : j = q
+              case pos =>
+                simp [hjq, hqp]
+              case neg =>
+                have hqj : Not (q = j) := fun h => hjq h.symm
+                simp [hjp, hjq, hqj, hqp]
+    _ = (-(s : Complex)) * x p + (c : Complex) * x q := by
+        exact complex_sum_two_point p q (-(s : Complex)) (c : Complex) x hpq
+    _ = (c : Complex) * x q - (s : Complex) * x p := by
+        ring
+
+/-- Unaffected complex components of an exact real Givens application are
+copied. -/
+theorem complexMatMulVec_givens_other {n : Nat}
+    (p q i : Fin n) (c s : Real) (x : Fin n -> Complex)
+    (hip : Not (i = p)) (hiq : Not (i = q)) :
+    complexMatMulVec n (givensRotation n p q c s) x i = x i := by
+  unfold complexMatMulVec
+  have hrow :
+      ((Finset.univ : Finset (Fin n)).sum
+        (fun j => (givensRotation n p q c s i j : Complex) * x j)) =
+      ((Finset.univ : Finset (Fin n)).sum
+        (fun j => (if i = j then (1 : Complex) else 0) * x j)) := by
+    apply Finset.sum_congr rfl
+    intro j _
+    unfold givensRotation
+    by_cases hij : i = j
+    case pos =>
+      subst j
+      simp [hip, hiq]
+    case neg =>
+      simp [hij, hip, hiq]
+  rw [hrow]
+  simp [Finset.sum_ite_eq, Finset.mem_univ]
+
+/-- The Givens active-plane complex eigenvalue `c + i*s`. -/
+noncomputable def givensComplexEigenvaluePlus (c s : Real) : Complex :=
+  (c : Complex) + (s : Complex) * Complex.I
+
+/-- The Givens active-plane complex eigenvalue `c - i*s`. -/
+noncomputable def givensComplexEigenvalueMinus (c s : Real) : Complex :=
+  (c : Complex) - (s : Complex) * Complex.I
+
+/-- Complex eigenvector supported on the Givens active plane for `c + i*s`. -/
+noncomputable def givensComplexEigenvectorPlus {n : Nat}
+    (p q : Fin n) : Fin n -> Complex :=
+  fun i => if i = p then 1 else if i = q then Complex.I else 0
+
+/-- Complex eigenvector supported on the Givens active plane for `c - i*s`. -/
+noncomputable def givensComplexEigenvectorMinus {n : Nat}
+    (p q : Fin n) : Fin n -> Complex :=
+  fun i => if i = p then 1 else if i = q then -Complex.I else 0
+
+/-- Problem 19.1 Givens complex eigendirection for `c + i*s`. -/
+theorem givens_complex_eigenpair_plus {n : Nat}
+    (p q : Fin n) (c s : Real) (hpq : Not (p = q)) :
+    IsComplexRightEigenpair n (givensRotation n p q c s)
+      (givensComplexEigenvaluePlus c s)
+      (givensComplexEigenvectorPlus p q) := by
+  unfold IsComplexRightEigenpair
+  constructor
+  case left =>
+    exact Exists.intro p (by simp [givensComplexEigenvectorPlus])
+  case right =>
+    have hqp : Not (q = p) := fun h => hpq h.symm
+    intro i
+    by_cases hip : i = p
+    case pos =>
+      subst i
+      rw [complexMatMulVec_givens_p p q c s
+        (givensComplexEigenvectorPlus p q) hpq]
+      simp [givensComplexEigenvectorPlus, givensComplexEigenvaluePlus, hqp]
+    case neg =>
+      by_cases hiq : i = q
+      case pos =>
+        subst i
+        rw [complexMatMulVec_givens_q p q c s
+          (givensComplexEigenvectorPlus p q) hpq]
+        simp [givensComplexEigenvectorPlus, givensComplexEigenvaluePlus, hqp]
+        apply Complex.ext <;>
+          simp [Complex.mul_re, Complex.mul_im, Complex.add_re,
+            Complex.add_im, Complex.sub_re, Complex.sub_im,
+            Complex.ofReal_re, Complex.ofReal_im, Complex.I_re, Complex.I_im]
+      case neg =>
+        rw [complexMatMulVec_givens_other p q i c s
+          (givensComplexEigenvectorPlus p q) hip hiq]
+        simp [givensComplexEigenvectorPlus, hip, hiq]
+
+/-- Problem 19.1 Givens complex eigendirection for `c - i*s`. -/
+theorem givens_complex_eigenpair_minus {n : Nat}
+    (p q : Fin n) (c s : Real) (hpq : Not (p = q)) :
+    IsComplexRightEigenpair n (givensRotation n p q c s)
+      (givensComplexEigenvalueMinus c s)
+      (givensComplexEigenvectorMinus p q) := by
+  unfold IsComplexRightEigenpair
+  constructor
+  case left =>
+    exact Exists.intro p (by simp [givensComplexEigenvectorMinus])
+  case right =>
+    have hqp : Not (q = p) := fun h => hpq h.symm
+    intro i
+    by_cases hip : i = p
+    case pos =>
+      subst i
+      rw [complexMatMulVec_givens_p p q c s
+        (givensComplexEigenvectorMinus p q) hpq]
+      simp [givensComplexEigenvectorMinus, givensComplexEigenvalueMinus, hqp]
+      ring
+    case neg =>
+      by_cases hiq : i = q
+      case pos =>
+        subst i
+        rw [complexMatMulVec_givens_q p q c s
+          (givensComplexEigenvectorMinus p q) hpq]
+        simp [givensComplexEigenvectorMinus, givensComplexEigenvalueMinus, hqp]
+        apply Complex.ext <;>
+          simp [Complex.mul_re, Complex.mul_im, Complex.sub_re,
+            Complex.sub_im, Complex.neg_re, Complex.neg_im,
+            Complex.ofReal_re, Complex.ofReal_im, Complex.I_re, Complex.I_im]
+      case neg =>
+        rw [complexMatMulVec_givens_other p q i c s
+          (givensComplexEigenvectorMinus p q) hip hiq]
+        simp [givensComplexEigenvectorMinus, hip, hiq]
+
+end Problem19_1
 
 namespace Algorithm19_11
 
@@ -2232,6 +2567,169 @@ abbrev householder_paddedFinInput_R11 (fp : FPModel) {m n : Nat}
   paddedEconomyR
     (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))
 
+/-- Hidden-hypothesis audit for the Theorem 19.13 Householder handoff: in
+the smallest tall padded case, a zero source matrix has a zero extracted
+`R11` diagonal.  Thus the later nonbreakdown wrappers cannot be discharged
+from dimensions and roundoff-smallness alone; they need source rank,
+condition, or pivot information. -/
+theorem householder_paddedFinInput_R11_zero_input_diag_zero
+    (fp : FPModel) :
+    householder_paddedFinInput_R11
+      (m := 1) (n := 1) fp (fun _ _ => (0 : Real))
+      (0 : Fin 1) (0 : Fin 1) = 0 := by
+  have hcol :
+      panelFirstColumn (m := 1 + 1) (p := 0 + 1) (by norm_num)
+        (mgsPaddedFinInput (m := 1) (n := 1) (fun _ _ => (0 : Real))) =
+        (fun _ => 0) := by
+    funext i
+    unfold panelFirstColumn mgsPaddedFinInput mgsPaddedRowsToFin mgsPaddedInput
+    cases mgsPaddedRowFromFin (m := 1) (n := 1) i <;> rfl
+  have hzeroFun : (fun _ : Fin (1 + 1) => (0 : Real)) = 0 := by
+    funext i
+    rfl
+  simp only [
+    householder_paddedFinInput_R11,
+    paddedEconomyR,
+    paddedFinInput,
+    fl_householderQRPanel_R,
+    hcol,
+    hzeroFun
+  ]
+  simp [
+    mgsPaddedEconomyR,
+    mgsPaddedTopBlock,
+    mgsPaddedRowsFromFin,
+    mgsPaddedRowToFin,
+    mgsPaddedFinInput,
+    mgsPaddedRowsToFin,
+    mgsPaddedInput,
+    panelFromTopAndTrailing,
+    panelTopLeft
+  ]
+  cases mgsPaddedRowFromFin (m := 1) (n := 1) (0 : Fin (1 + 1)) <;> rfl
+
+/-- Source-facing nonbreakdown route for the stored Householder QR loop.
+Nonsingular local leading blocks, the stored lower-zero invariant, the source
+sign convention, and a per-pivot square-root component budget imply that the
+final top-block diagonal is nonzero.  This is the leading-minor route that the
+concrete `R11` handoff can later instantiate. -/
+theorem storedTrailingPanel_R_diag_ne_zero_of_leading_block_det_ne_zero_sqrt_budget
+    {m n : Nat}
+    (fp : FPModel) (hmn : n ≤ m)
+    (A_hat : Nat → Fin m → Fin n → Real)
+    (alpha : Nat → Real)
+    (hm : gammaValid fp m)
+    (hStep : ∀ k (hk : k < n),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
+          (A_hat k))
+    (halpha : ∀ k (hk : k < n),
+      alpha k * alpha k =
+        householderTrailingNorm2Sq m
+          ⟨k, lt_of_lt_of_le hk hmn⟩
+          (fun i => A_hat k i ⟨k, hk⟩))
+    (hdetPrev : ∀ k (hk : k < n),
+      Matrix.det
+        (qrPreviousLeadingBlockTranspose (A_hat k)
+          (le_trans (Nat.le_of_lt hk) hmn) hk :
+          Matrix (Fin k) (Fin k) Real) ≠ 0)
+    (hdetLead : ∀ k (hk : k < n),
+      Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (le_trans (Nat.succ_le_of_lt hk) hmn) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real) ≠ 0)
+    (hlowerPrev : ∀ k (hk : k < n) (i : Fin m) (j : Fin k),
+      k ≤ i.val → A_hat k i (qrPreviousColumn n k hk j) = 0)
+    (hsign : ∀ k (hk : k < n),
+      alpha k * A_hat k ⟨k, lt_of_lt_of_le hk hmn⟩ ⟨k, hk⟩ ≤ 0)
+    (hbudgetSqrt : ∀ k (hk : k < n),
+      householderCompactComponentBudget fp m
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
+          (fun a => A_hat k a ⟨k, hk⟩)
+          ⟨k, lt_of_lt_of_le hk hmn⟩ <
+        Real.sqrt
+          (householderTrailingNorm2Sq m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun i => A_hat k i ⟨k, hk⟩))) :
+    ∀ i : Fin n, A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ i ≠ 0 := by
+  exact
+    fl_householderStoredTrailingPanel_sequence_diag_nonzero_of_leading_block_det_ne_zero_sqrt_budget
+      fp hmn A_hat alpha hm hStep halpha hdetPrev hdetLead hlowerPrev
+      hsign hbudgetSqrt
+
+/-- Sequence-budget form of the stored Householder nonbreakdown route.
+The deterministic summed compact-update budget controls each active pivot
+component budget, so a per-pivot sequence-budget margin is enough to feed the
+leading-minor square-root nonbreakdown theorem. -/
+theorem storedTrailingPanel_R_diag_ne_zero_of_leading_block_det_ne_zero_sequence_budget
+    {m n : Nat}
+    (fp : FPModel) (hmn : n ≤ m)
+    (A_hat : Nat → Fin m → Fin n → Real)
+    (b_hat : Nat → Fin m → Real)
+    (alpha : Nat → Real)
+    (hm : gammaValid fp m)
+    (hStep : ∀ k (hk : k < n),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
+          (A_hat k))
+    (halpha : ∀ k (hk : k < n),
+      alpha k * alpha k =
+        householderTrailingNorm2Sq m
+          ⟨k, lt_of_lt_of_le hk hmn⟩
+          (fun i => A_hat k i ⟨k, hk⟩))
+    (hdetPrev : ∀ k (hk : k < n),
+      Matrix.det
+        (qrPreviousLeadingBlockTranspose (A_hat k)
+          (le_trans (Nat.le_of_lt hk) hmn) hk :
+          Matrix (Fin k) (Fin k) Real) ≠ 0)
+    (hdetLead : ∀ k (hk : k < n),
+      Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (le_trans (Nat.succ_le_of_lt hk) hmn) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real) ≠ 0)
+    (hlowerPrev : ∀ k (hk : k < n) (i : Fin m) (j : Fin k),
+      k ≤ i.val → A_hat k i (qrPreviousColumn n k hk j) = 0)
+    (hsign : ∀ k (hk : k < n),
+      alpha k * A_hat k ⟨k, lt_of_lt_of_le hk hmn⟩ ⟨k, hk⟩ ≤ 0)
+    (hsequenceBudget : ∀ k (hk : k < n),
+      storedQRCompactSequenceRelativeBudget hmn fp A_hat b_hat alpha *
+          vecNorm2 (fun i : Fin m => A_hat k i ⟨k, hk⟩) <
+        Real.sqrt
+          (householderTrailingNorm2Sq m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun i => A_hat k i ⟨k, hk⟩))) :
+    ∀ i : Fin n, A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ i ≠ 0 := by
+  refine
+    storedTrailingPanel_R_diag_ne_zero_of_leading_block_det_ne_zero_sqrt_budget
+      fp hmn A_hat alpha hm hStep halpha hdetPrev hdetLead hlowerPrev
+      hsign ?_
+  intro k hk
+  exact
+    lt_of_le_of_lt
+      (storedQRCompactPivotBudget_le_sequence_column_norm
+        hmn fp A_hat b_hat alpha hm k hk)
+      (hsequenceBudget k hk)
+
 theorem paddedEconomyR_upper_trapezoidal {m n : Nat}
     (R : Fin (n + m) -> Fin n -> Real)
     (hR : IsUpperTrapezoidal (n + m) n R) :
@@ -2731,6 +3229,22 @@ structure HouseholderQRBackwardError (m n : Nat)
     (forall i j, A i j + dA i j = matMulRect m m n Q R_hat i j) /\
     (forall j, columnFrob dA j <= c * columnFrob A j)
 
+/-- Componentwise `G |A|` form of the Higham 19.4 Householder QR backward
+error, with the printed orientation `A + dA = Q * R_hat`. -/
+structure HouseholderQRComponentwiseBackwardError (m n : Nat)
+    (A : Fin m -> Fin n -> Real) (Q : Fin m -> Fin m -> Real)
+    (R_hat : Fin m -> Fin n -> Real) (c_norm c_comp : Real) : Prop where
+  upper : IsUpperTrapezoidal m n R_hat
+  orth : IsOrthogonal m Q
+  result : Exists fun dA : Fin m -> Fin n -> Real =>
+    Exists fun G : Fin m -> Fin m -> Real =>
+      (forall i j, A i j + dA i j = matMulRect m m n Q R_hat i j) /\
+      frobNorm dA <= c_norm /\
+      (forall i j, 0 <= G i j) /\
+      frobNorm G = 1 /\
+      (forall i j, |dA i j| <=
+        c_comp * matMulRect m m n G (fun a b => |A a b|) i j)
+
 /-- Convert the repository's panel representation `R = Q^T (A + dA)` into
 the printed Higham 19.4 equation `A + dA = Q R`. -/
 theorem of_panel_columnwise {m n : Nat}
@@ -2772,6 +3286,48 @@ theorem of_panel_columnwise {m n : Nat}
           _ = matMulRect m m n Q R_hat i j := by
                 rw [<- hRmat]
 
+/-- Convert the proof-facing componentwise panel representation
+`R = Q^T (A + dA)` into the printed Higham 19.4 orientation
+`A + dA = Q R`. -/
+theorem of_panel_componentwise {m n : Nat}
+    {A : Fin m -> Fin n -> Real} {Q : Fin m -> Fin m -> Real}
+    {R_hat : Fin m -> Fin n -> Real} {c_norm c_comp : Real}
+    (h : StructuredHouseholderQRPanelHighamBackwardError
+      m n A Q R_hat c_norm c_comp) :
+    HouseholderQRComponentwiseBackwardError
+      m n A Q R_hat c_norm c_comp := by
+  rcases h.result with ⟨dA, G, hR, hNorm, hGnonneg, hGfrob, hComp⟩
+  refine { upper := h.upper, orth := h.orth, result := ?_ }
+  refine Exists.intro dA ?_
+  refine Exists.intro G ?_
+  refine And.intro ?_ ?_
+  · intro i j
+    have hRmat :
+        R_hat =
+          matMulRect m m n (matTranspose Q)
+            (fun a b => A a b + dA a b) := by
+      ext a b
+      exact hR a b
+    have hQQT : matMul m Q (matTranspose Q) = idMatrix m := by
+      ext a b
+      exact h.orth.right_inv a b
+    calc
+      A i j + dA i j =
+          matMulRect m m n (idMatrix m)
+            (fun a b => A a b + dA a b) i j := by
+            rw [matMulRect_id_left]
+      _ = matMulRect m m n (matMul m Q (matTranspose Q))
+            (fun a b => A a b + dA a b) i j := by
+            rw [hQQT]
+      _ = matMulRect m m n Q
+            (matMulRect m m n (matTranspose Q)
+              (fun a b => A a b + dA a b)) i j := by
+            rw [matMulRect_assoc_square_left]
+      _ = matMulRect m m n Q R_hat i j := by
+            rw [<- hRmat]
+  · exact And.intro hNorm
+      (And.intro hGnonneg (And.intro hGfrob hComp))
+
 /-- Higham, Theorem 19.4: Householder QR backward error for a tall rectangular
 matrix, stated with the public Split 3B source-facing name.
 
@@ -2801,6 +3357,77 @@ theorem householder_qr_backward_error
       fp m n A hsteps (by
         simpa [Nat.min_eq_right hnm] using hvalid)
   simpa [gamma_tilde, Nat.min_eq_right hnm] using of_panel_columnwise hpanel
+
+/-- Equation `(19.11)`/Theorem 19.4 columnwise backward-error form, using the
+public source-facing theorem name. -/
+theorem eq19_11_columnwise_backward_error
+    (fp : FPModel) (m n : Nat) (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n) (hnm : n <= m)
+    (hvalid : gammaValid fp (n * householderConstructApplyGammaIndex m)) :
+    HouseholderQRBackwardError m n A
+      (fl_householderQRPanel_Q fp m n A)
+      (fl_householderQRPanel_R fp m n A)
+      (gamma_tilde fp m n) :=
+  householder_qr_backward_error fp m n A hn hnm hvalid
+
+/-- Higham, Theorem 19.4 componentwise `G |A|` form for the concrete
+Householder QR panel path.
+
+This is the source-facing equation `(19.12)` shape: the same exact orthogonal
+`Q` and computed `R_hat` give `A + dA = Q * R_hat`, with a nonnegative
+Frobenius-unit matrix `G` controlling `|dA|` componentwise. -/
+theorem householder_qr_componentwise_backward_error
+    (fp : FPModel) (m n : Nat) (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n) (hnm : n <= m)
+    (hvalid : gammaValid fp (n * householderConstructApplyGammaIndex m)) :
+    HouseholderQRComponentwiseBackwardError m n A
+      (fl_householderQRPanel_Q fp m n A)
+      (fl_householderQRPanel_R fp m n A)
+      (gamma_tilde fp m n * frobNorm A)
+      ((m : Real) * gamma_tilde fp m n) := by
+  have hm : 0 < m := Nat.lt_of_lt_of_le hn hnm
+  have hsteps : 0 < Nat.min m n := by
+    simpa [Nat.min_eq_right hnm] using hn
+  have hvalid_min :
+      gammaValid fp (Nat.min m n * householderConstructApplyGammaIndex m) := by
+    simpa [Nat.min_eq_right hnm] using hvalid
+  have hgamma_nonneg :
+      0 <= gamma fp (Nat.min m n * householderConstructApplyGammaIndex m) :=
+    gamma_nonneg fp hvalid_min
+  have hpanel :
+      HouseholderQRPanelColumnwiseBackwardError m n A
+        (fl_householderQRPanel_Q fp m n A)
+        (fl_householderQRPanel_R fp m n A)
+        (gamma fp (Nat.min m n * householderConstructApplyGammaIndex m) *
+          frobNorm A)
+        (gamma fp (Nat.min m n * householderConstructApplyGammaIndex m)) :=
+    fl_householderQRPanel_R_columnwise_backward_error_gammaHigham_of_global_gammaValid
+      fp m n A hsteps hvalid_min
+  have hhigham :
+      StructuredHouseholderQRPanelHighamBackwardError m n A
+        (fl_householderQRPanel_Q fp m n A)
+        (fl_householderQRPanel_R fp m n A)
+        (gamma fp (Nat.min m n * householderConstructApplyGammaIndex m) *
+          frobNorm A)
+        ((m : Real) *
+          gamma fp (Nat.min m n * householderConstructApplyGammaIndex m)) :=
+    HouseholderQRPanelColumnwiseBackwardError.to_higham
+      hpanel hm hgamma_nonneg
+  simpa [gamma_tilde, Nat.min_eq_right hnm] using
+    of_panel_componentwise hhigham
+
+/-- Equation `(19.12)` componentwise backward-error form, exposed as a
+source-labeled wrapper around the componentwise Theorem 19.4 surface. -/
+theorem eq19_12_componentwise_backward_error
+    (fp : FPModel) (m n : Nat) (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n) (hnm : n <= m)
+    (hvalid : gammaValid fp (n * householderConstructApplyGammaIndex m)) :
+    HouseholderQRComponentwiseBackwardError m n A
+      (fl_householderQRPanel_Q fp m n A)
+      (fl_householderQRPanel_R fp m n A)
+      (gamma_tilde fp m n * frobNorm A)
+      ((m : Real) * gamma_tilde fp m n) :=
+  householder_qr_componentwise_backward_error fp m n A hn hnm hvalid
 
 end Theorem19_4
 
@@ -3642,6 +4269,55 @@ theorem householder_paddedFinInput_R11_diag_ne_zero_of_det_ne_zero
             diag_ne_zero_of_upper_triangular_det_ne_zero n R11 hupper hdetR
           intro i
           simpa [R11] using hdiag i
+
+/-- The concrete padded Householder `R11` block is upper triangular, so its
+determinant-nonzero and pointwise nonzero-diagonal nonbreakdown surfaces are
+equivalent. -/
+theorem householder_paddedFinInput_R11_det_ne_zero_iff_diag_ne_zero
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + m))) :
+    Ne
+      (Matrix.det
+        (householder_paddedFinInput_R11 fp A :
+          Matrix (Fin n) (Fin n) Real))
+      0 <->
+      forall i : Fin n,
+        Ne (householder_paddedFinInput_R11 fp A i i) 0 := by
+  constructor
+  · intro hdet i
+    have hdet_expanded :
+        Ne
+          (Matrix.det
+          (paddedEconomyR
+            (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)) :
+              Matrix (Fin n) (Fin n) Real))
+          0 := by
+      simpa [householder_paddedFinInput_R11] using hdet
+    simpa [householder_paddedFinInput_R11] using
+      householder_paddedFinInput_R11_diag_ne_zero_of_det_ne_zero
+        fp A hn hvalid hdet_expanded i
+  · intro hdiag
+    have hdiag_expanded :
+        forall i : Fin n,
+          Ne
+            (paddedEconomyR
+              (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))
+              i i)
+            0 := by
+      intro i
+      simpa [householder_paddedFinInput_R11] using hdiag i
+    have hdet_expanded :
+        Ne
+          (Matrix.det
+          (paddedEconomyR
+            (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)) :
+              Matrix (Fin n) (Fin n) Real))
+          0 :=
+      householder_paddedFinInput_R11_det_ne_zero_of_diag_ne_zero
+        fp A hn hvalid hdiag_expanded
+    simpa [householder_paddedFinInput_R11] using hdet_expanded
 
 /-- Fallback rectangular operator certificate for the repository inverse.
 
@@ -9539,6 +10215,542 @@ theorem mgs_qr_bounds_of_R11_diag_ne_zero_compact_inverse_budget
   ring_nf
   exact hbudget
 
+/-- Scalar budget bridge for the compact inverse-budget route.
+
+The source sensitivity estimate is expected to bound the product
+`||A||_F * rho` by the advertised conditioning quantity.  This lemma turns that
+product estimate into the exact `2*delta + delta^2` budget used by the checked
+common-`R` orthogonality-loss proof. -/
+theorem compact_inverse_budget_of_condition_budget
+    {gamma normA rho kappaA budget : Real}
+    (hgamma : 0 <= gamma)
+    (hnormA : 0 <= normA)
+    (hrho : 0 <= rho)
+    (hcondition : normA * rho <= kappaA)
+    (hbudget :
+      2 * ((3 * gamma) * kappaA) + ((3 * gamma) * kappaA) ^ 2 <= budget) :
+    2 * ((3 * (gamma * normA)) * rho) +
+        ((3 * (gamma * normA)) * rho) ^ 2 <= budget := by
+  let delta : Real := (3 * (gamma * normA)) * rho
+  let sourceRadius : Real := (3 * gamma) * kappaA
+  have hthree_gamma : 0 <= 3 * gamma := by nlinarith
+  have hdelta_nonneg : 0 <= delta := by
+    have hgn : 0 <= gamma * normA := mul_nonneg hgamma hnormA
+    have hleft : 0 <= 3 * (gamma * normA) := by nlinarith
+    simpa [delta] using mul_nonneg hleft hrho
+  have hdelta_le : delta <= sourceRadius := by
+    have hprod :
+        (3 * gamma) * (normA * rho) <= (3 * gamma) * kappaA := by
+      exact mul_le_mul_of_nonneg_left hcondition hthree_gamma
+    dsimp [delta, sourceRadius]
+    nlinarith
+  have hmono :
+      2 * delta + delta ^ 2 <= 2 * sourceRadius + sourceRadius ^ 2 := by
+    have hsq : delta ^ 2 <= sourceRadius ^ 2 := by
+      nlinarith [sq_nonneg (sourceRadius - delta)]
+    nlinarith
+  exact hmono.trans hbudget
+
+/-- Source-condition-budget version of the chapter-facing Theorem 19.13 route.
+
+This exposes the remaining QR sensitivity estimate in the same product shape as
+the printed condition-number discussion: a bound for
+`||A||_F * ||R11^{-1}||` feeds the compact inverse-budget wrapper, while the
+final scalar budget carries the printed constants and higher-order term. -/
+theorem mgs_qr_bounds_of_R11_diag_ne_zero_compact_condition_budget
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {rho c2 kappaA higherOrder : Real}
+    (hdiag :
+      forall i : Fin n,
+        Ne (householder_paddedFinInput_R11 fp A i i) 0)
+    (hRinv :
+      rectOpNorm2Le
+        (nonsingInv n (householder_paddedFinInput_R11 fp A))
+        rho)
+    (hrho : 0 <= rho)
+    (hcondition : frobNormRect A * rho <= kappaA)
+    (hbudget :
+      2 * ((3 * Theorem19_4.gamma_tilde fp (n + m) n) * kappaA) +
+          ((3 * Theorem19_4.gamma_tilde fp (n + m) n) * kappaA) ^ 2 <=
+        c2 * fp.u * kappaA + higherOrder) :
+    MGSQRBounds m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (householder_paddedFinInput_R11 fp A)
+      (2 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      c2
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u (frobNormRect A) kappaA higherOrder := by
+  refine
+    mgs_qr_bounds_of_R11_diag_ne_zero_compact_inverse_budget
+      (fp := fp) (m := m) (n := n) A hn hnm hsmall
+      (rho := rho) (c2 := c2)
+      (kappaA := kappaA) (higherOrder := higherOrder)
+      hdiag hRinv hrho ?_
+  have hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + m)) := by
+    unfold gammaValid
+    have hhalf_lt_one : (1 / 2 : Real) < 1 := by norm_num
+    exact lt_of_le_of_lt hsmall hhalf_lt_one
+  exact
+    compact_inverse_budget_of_condition_budget
+      (gamma := Theorem19_4.gamma_tilde fp (n + m) n)
+      (normA := frobNormRect A) (rho := rho)
+      (kappaA := kappaA)
+      (budget := c2 * fp.u * kappaA + higherOrder)
+      (Theorem19_4.gamma_tilde_nonneg fp hvalid)
+      (frobNormRect_nonneg A)
+      hrho hcondition hbudget
+
+/-- Determinant-nonzero version of
+`mgs_qr_bounds_of_R11_diag_ne_zero_compact_condition_budget`.
+
+The full padded Householder block data already gives the extracted `R11`
+upper-trapezoidal shape, so a determinant certificate supplies the
+source-style nonzero diagonal required by the compact condition-budget route. -/
+theorem mgs_qr_bounds_of_R11_det_ne_zero_compact_condition_budget
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {rho c2 kappaA higherOrder : Real}
+    (hdet :
+      Ne
+        (Matrix.det
+        (householder_paddedFinInput_R11 fp A :
+          Matrix (Fin n) (Fin n) Real))
+        0)
+    (hRinv :
+      rectOpNorm2Le
+        (nonsingInv n (householder_paddedFinInput_R11 fp A))
+        rho)
+    (hrho : 0 <= rho)
+    (hcondition : frobNormRect A * rho <= kappaA)
+    (hbudget :
+      2 * ((3 * Theorem19_4.gamma_tilde fp (n + m) n) * kappaA) +
+          ((3 * Theorem19_4.gamma_tilde fp (n + m) n) * kappaA) ^ 2 <=
+        c2 * fp.u * kappaA + higherOrder) :
+    MGSQRBounds m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (householder_paddedFinInput_R11 fp A)
+      (2 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      c2
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u (frobNormRect A) kappaA higherOrder := by
+  have hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + m)) := by
+    unfold gammaValid
+    have hhalf_lt_one : (1 / 2 : Real) < 1 := by norm_num
+    exact lt_of_le_of_lt hsmall hhalf_lt_one
+  have hdet_expanded :
+      Ne
+        (Matrix.det
+        (paddedEconomyR
+          (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)) :
+            Matrix (Fin n) (Fin n) Real))
+        0 := by
+    simpa [householder_paddedFinInput_R11] using hdet
+  have hdiag :
+      forall i : Fin n,
+        Ne (householder_paddedFinInput_R11 fp A i i) 0 := by
+    intro i
+    simpa [householder_paddedFinInput_R11] using
+      householder_paddedFinInput_R11_diag_ne_zero_of_det_ne_zero
+        fp A hn hvalid hdet_expanded i
+  exact
+    mgs_qr_bounds_of_R11_diag_ne_zero_compact_condition_budget
+      (fp := fp) (m := m) (n := n) A hn hnm hsmall
+      (rho := rho) (c2 := c2)
+      (kappaA := kappaA) (higherOrder := higherOrder)
+      hdiag hRinv hrho hcondition hbudget
+
+/-- Scalar final-radius bridge for the compact source-condition route.
+
+The linear part is discharged from a coefficient bound
+`gamma <= c1*u` and a printed-style constant inequality `6*c1 <= c2`;
+the quadratic part is recorded as the higher-order contribution. -/
+theorem compact_condition_radius_budget_of_coefficient_budget
+    {gamma u kappaA c1 c2 higherOrder : Real}
+    (hu : 0 <= u)
+    (hkappa : 0 <= kappaA)
+    (hgamma_le : gamma <= c1 * u)
+    (hc2 : 6 * c1 <= c2)
+    (hquad : ((3 * gamma) * kappaA) ^ 2 <= higherOrder) :
+    2 * ((3 * gamma) * kappaA) + ((3 * gamma) * kappaA) ^ 2 <=
+      c2 * u * kappaA + higherOrder := by
+  have hlinear_coeff : 6 * gamma <= 6 * (c1 * u) := by
+    exact mul_le_mul_of_nonneg_left hgamma_le (by norm_num : (0 : Real) <= 6)
+  have hlinear1 : (6 * gamma) * kappaA <= (6 * (c1 * u)) * kappaA := by
+    exact mul_le_mul_of_nonneg_right hlinear_coeff hkappa
+  have hu_kappa : 0 <= u * kappaA := mul_nonneg hu hkappa
+  have hlinear2 : (6 * c1) * (u * kappaA) <= c2 * (u * kappaA) := by
+    exact mul_le_mul_of_nonneg_right hc2 hu_kappa
+  have hlinear : 2 * ((3 * gamma) * kappaA) <= c2 * u * kappaA := by
+    nlinarith
+  nlinarith
+
+/-- Determinant-nonzero compact condition route with the final radius budget
+split into the source-style linear coefficient and a quadratic higher-order
+term.
+
+This removes the monolithic final scalar-budget hypothesis from
+`mgs_qr_bounds_of_R11_det_ne_zero_compact_condition_budget`; the remaining
+assumptions are the source condition estimate, the coefficient bound for
+`gamma_tilde`, and the explicit quadratic higher-order allowance. -/
+theorem mgs_qr_bounds_of_R11_det_ne_zero_compact_condition_radius_budget
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {rho c1 c2 kappaA higherOrder : Real}
+    (hdet :
+      Ne
+        (Matrix.det
+        (householder_paddedFinInput_R11 fp A :
+          Matrix (Fin n) (Fin n) Real))
+        0)
+    (hRinv :
+      rectOpNorm2Le
+        (nonsingInv n (householder_paddedFinInput_R11 fp A))
+        rho)
+    (hrho : 0 <= rho)
+    (hcondition : frobNormRect A * rho <= kappaA)
+    (hkappaA : 0 <= kappaA)
+    (hgamma_coeff :
+      Theorem19_4.gamma_tilde fp (n + m) n <= c1 * fp.u)
+    (hc2 : 6 * c1 <= c2)
+    (hhigher :
+      ((3 * Theorem19_4.gamma_tilde fp (n + m) n) * kappaA) ^ 2 <=
+        higherOrder) :
+    MGSQRBounds m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (householder_paddedFinInput_R11 fp A)
+      (2 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      c2
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u (frobNormRect A) kappaA higherOrder := by
+  refine
+    mgs_qr_bounds_of_R11_det_ne_zero_compact_condition_budget
+      (fp := fp) (m := m) (n := n) A hn hnm hsmall
+      (rho := rho) (c2 := c2)
+      (kappaA := kappaA) (higherOrder := higherOrder)
+      hdet hRinv hrho hcondition ?_
+  exact
+    compact_condition_radius_budget_of_coefficient_budget
+      (gamma := Theorem19_4.gamma_tilde fp (n + m) n)
+      (u := fp.u) (kappaA := kappaA)
+      (c1 := c1) (c2 := c2) (higherOrder := higherOrder)
+      fp.u_nonneg hkappaA hgamma_coeff hc2 hhigher
+
+/-- Small-unit-roundoff version of the determinant compact condition route
+with source-style final-radius assumptions.
+
+The standard `k*u <= 1/2` guard supplies
+`gamma_tilde <= 2*k*u`; the linear printed constant is therefore exposed as
+`12*k <= c2`, and the quadratic term is left as the explicit higher-order
+allowance. -/
+theorem
+    mgs_qr_bounds_of_R11_det_ne_zero_compact_condition_radius_budget_of_small_unit_roundoff
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {rho c2 kappaA higherOrder : Real}
+    (hdet :
+      Ne
+        (Matrix.det
+        (householder_paddedFinInput_R11 fp A :
+          Matrix (Fin n) (Fin n) Real))
+        0)
+    (hRinv :
+      rectOpNorm2Le
+        (nonsingInv n (householder_paddedFinInput_R11 fp A))
+        rho)
+    (hrho : 0 <= rho)
+    (hcondition : frobNormRect A * rho <= kappaA)
+    (hkappaA : 0 <= kappaA)
+    (hc2 :
+      12 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) <=
+        c2)
+    (hhigher :
+      ((3 * Theorem19_4.gamma_tilde fp (n + m) n) * kappaA) ^ 2 <=
+        higherOrder) :
+    MGSQRBounds m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (householder_paddedFinInput_R11 fp A)
+      (2 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      c2
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u (frobNormRect A) kappaA higherOrder := by
+  let k : Real :=
+    ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real)
+  have hgamma_coeff :
+      Theorem19_4.gamma_tilde fp (n + m) n <= (2 * k) * fp.u := by
+    dsimp [k]
+    exact
+      Theorem19_4.gamma_tilde_le_two_index_mul_unit_roundoff_of_small
+        fp (n + m) n hsmall
+  have hcoeff : 6 * (2 * k) <= c2 := by
+    dsimp [k]
+    nlinarith [hc2]
+  exact
+    mgs_qr_bounds_of_R11_det_ne_zero_compact_condition_radius_budget
+      (fp := fp) (m := m) (n := n) A hn hnm hsmall
+      (rho := rho) (c1 := 2 * k) (c2 := c2)
+      (kappaA := kappaA) (higherOrder := higherOrder)
+      hdet hRinv hrho hcondition hkappaA hgamma_coeff hcoeff hhigher
+
+/-- Fully explicit small-unit-roundoff compact condition route.
+
+This specializes the final radius bookkeeping to the concrete first-order
+coefficient `c2 = 12*k` and the exact quadratic higher-order term.  The
+remaining hypotheses are the genuinely source-facing `R11` determinant and
+condition-estimate inputs. -/
+theorem
+    mgs_qr_bounds_of_R11_det_ne_zero_compact_condition_explicit_radius_of_small_unit_roundoff
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {rho kappaA : Real}
+    (hdet :
+      Ne
+        (Matrix.det
+        (householder_paddedFinInput_R11 fp A :
+          Matrix (Fin n) (Fin n) Real))
+        0)
+    (hRinv :
+      rectOpNorm2Le
+        (nonsingInv n (householder_paddedFinInput_R11 fp A))
+        rho)
+    (hrho : 0 <= rho)
+    (hcondition : frobNormRect A * rho <= kappaA) :
+    MGSQRBounds m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (householder_paddedFinInput_R11 fp A)
+      (2 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      (12 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u (frobNormRect A) kappaA
+      (((3 * Theorem19_4.gamma_tilde fp (n + m) n) * kappaA) ^ 2) := by
+  let k : Real :=
+    ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real)
+  have hkappaA : 0 <= kappaA := by
+    exact le_trans (mul_nonneg (frobNormRect_nonneg A) hrho) hcondition
+  exact
+    mgs_qr_bounds_of_R11_det_ne_zero_compact_condition_radius_budget_of_small_unit_roundoff
+      (fp := fp) (m := m) (n := n) A hn hnm hsmall
+      (rho := rho) (c2 := 12 * k)
+      (kappaA := kappaA)
+      (higherOrder :=
+        ((3 * Theorem19_4.gamma_tilde fp (n + m) n) * kappaA) ^ 2)
+      hdet hRinv hrho hcondition hkappaA
+      (by
+        dsimp [k]
+        exact le_rfl)
+      (by exact le_rfl)
+
+/-- Fully explicit small-unit-roundoff route using the Frobenius fallback
+inverse budget for the extracted `R11` block.
+
+This removes the visible `rectOpNorm2Le (nonsingInv R11) rho` and `0 <= rho`
+premises from the explicit-radius wrapper by choosing
+`rho = ||nonsingInv R11||_F`.  It is still weaker than the intended printed
+source condition-number estimate, which should eventually prove the displayed
+product bound from source-side nonbreakdown and conditioning facts. -/
+theorem
+    mgs_qr_bounds_of_R11_det_ne_zero_frob_condition_explicit_radius_of_small_unit_roundoff
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {kappaA : Real}
+    (hdet :
+      Ne
+        (Matrix.det
+        (householder_paddedFinInput_R11 fp A :
+          Matrix (Fin n) (Fin n) Real))
+        0)
+    (hcondition :
+      frobNormRect A *
+          frobNorm (nonsingInv n (householder_paddedFinInput_R11 fp A)) <=
+        kappaA) :
+    MGSQRBounds m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (householder_paddedFinInput_R11 fp A)
+      (2 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      (12 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u (frobNormRect A) kappaA
+      (((3 * Theorem19_4.gamma_tilde fp (n + m) n) * kappaA) ^ 2) := by
+  let R11 : Fin n -> Fin n -> Real := householder_paddedFinInput_R11 fp A
+  let rho : Real := frobNorm (nonsingInv n R11)
+  have hRinv : rectOpNorm2Le (nonsingInv n R11) rho := by
+    dsimp [rho]
+    exact rectOpNorm2Le_nonsingInv_frobNorm R11
+  have hrho : 0 <= rho := by
+    dsimp [rho]
+    exact frobNorm_nonneg (nonsingInv n R11)
+  exact
+    mgs_qr_bounds_of_R11_det_ne_zero_compact_condition_explicit_radius_of_small_unit_roundoff
+      (fp := fp) (m := m) (n := n) A hn hnm hsmall
+      (rho := rho) (kappaA := kappaA)
+      hdet
+      (by simpa [R11] using hRinv)
+      hrho
+      (by simpa [R11, rho] using hcondition)
+
+/-- Fully explicit Frobenius-self fallback route.
+
+This specializes the fallback condition theorem to
+`kappaA = ||A||_F * ||nonsingInv R11||_F`, removing the separate product-bound
+premise.  The result is a checked determinant-only fallback after the standard
+small-unit-roundoff guard, not the sharper printed condition-number theorem. -/
+theorem
+    mgs_qr_bounds_of_R11_det_ne_zero_frob_self_condition_explicit_radius_of_small_unit_roundoff
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    (hdet :
+      Ne
+        (Matrix.det
+        (householder_paddedFinInput_R11 fp A :
+          Matrix (Fin n) (Fin n) Real))
+        0) :
+    MGSQRBounds m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (householder_paddedFinInput_R11 fp A)
+      (2 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      (12 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u (frobNormRect A)
+      (frobNormRect A *
+        frobNorm (nonsingInv n (householder_paddedFinInput_R11 fp A)))
+      (((3 * Theorem19_4.gamma_tilde fp (n + m) n) *
+          (frobNormRect A *
+            frobNorm
+              (nonsingInv n (householder_paddedFinInput_R11 fp A)))) ^ 2) := by
+  exact
+    mgs_qr_bounds_of_R11_det_ne_zero_frob_condition_explicit_radius_of_small_unit_roundoff
+      (fp := fp) (m := m) (n := n) A hn hnm hsmall
+      (kappaA :=
+        frobNormRect A *
+          frobNorm (nonsingInv n (householder_paddedFinInput_R11 fp A)))
+      hdet le_rfl
+
+/-- Source-diagonal form of the fully explicit Frobenius-fallback condition
+route.
+
+This is the same checked fallback as
+`mgs_qr_bounds_of_R11_det_ne_zero_frob_condition_explicit_radius_of_small_unit_roundoff`,
+but the nonbreakdown premise is stated on the extracted `R11` diagonal, matching
+the source-facing diagonal form used by the surrounding MGS route. -/
+theorem
+    mgs_qr_bounds_of_R11_diag_ne_zero_frob_condition_explicit_radius_of_small_unit_roundoff
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {kappaA : Real}
+    (hdiag :
+      forall i : Fin n,
+        Ne (householder_paddedFinInput_R11 fp A i i) 0)
+    (hcondition :
+      frobNormRect A *
+          frobNorm (nonsingInv n (householder_paddedFinInput_R11 fp A)) <=
+        kappaA) :
+    MGSQRBounds m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (householder_paddedFinInput_R11 fp A)
+      (2 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      (12 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u (frobNormRect A) kappaA
+      (((3 * Theorem19_4.gamma_tilde fp (n + m) n) * kappaA) ^ 2) := by
+  have hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + m)) := by
+    unfold gammaValid
+    have hhalf_lt_one : (1 / 2 : Real) < 1 := by norm_num
+    exact lt_of_le_of_lt hsmall hhalf_lt_one
+  have hdet :
+      Ne
+        (Matrix.det
+        (householder_paddedFinInput_R11 fp A :
+          Matrix (Fin n) (Fin n) Real))
+        0 :=
+    (householder_paddedFinInput_R11_det_ne_zero_iff_diag_ne_zero
+      fp A hn hvalid).2 hdiag
+  exact
+    mgs_qr_bounds_of_R11_det_ne_zero_frob_condition_explicit_radius_of_small_unit_roundoff
+      (fp := fp) (m := m) (n := n) A hn hnm hsmall
+      (kappaA := kappaA) hdet hcondition
+
+/-- Source-diagonal Frobenius-self fallback route for the chapter-facing
+Theorem 19.13 assembly.
+
+This keeps the remaining source nonbreakdown input in diagonal form while
+choosing the fallback condition quantity
+`kappaA = ||A||_F * ||nonsingInv R11||_F`. -/
+theorem
+    mgs_qr_bounds_of_R11_diag_ne_zero_frob_self_condition_explicit_radius_of_small_unit_roundoff
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    (hdiag :
+      forall i : Fin n,
+        Ne (householder_paddedFinInput_R11 fp A i i) 0) :
+    MGSQRBounds m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (householder_paddedFinInput_R11 fp A)
+      (2 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      (12 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u (frobNormRect A)
+      (frobNormRect A *
+        frobNorm (nonsingInv n (householder_paddedFinInput_R11 fp A)))
+      (((3 * Theorem19_4.gamma_tilde fp (n + m) n) *
+          (frobNormRect A *
+            frobNorm
+              (nonsingInv n (householder_paddedFinInput_R11 fp A)))) ^ 2) := by
+  exact
+    mgs_qr_bounds_of_R11_diag_ne_zero_frob_condition_explicit_radius_of_small_unit_roundoff
+      (fp := fp) (m := m) (n := n) A hn hnm hsmall
+      (kappaA :=
+        frobNormRect A *
+          frobNorm (nonsingInv n (householder_paddedFinInput_R11 fp A)))
+      hdiag le_rfl
+
 /-- Chapter-facing Theorem 19.13 assembly currently proved for the concrete
 padded Householder route.
 
@@ -9607,6 +10819,20 @@ noncomputable def gamma_tilde (fp : FPModel) (m n : Nat) : Real :=
     (residualAccumBound (gamma fp 8 * Real.sqrt (m : Real))
       (givensQRStageTaskList m n (givensQRStageCount m n)).length)
     (givensQRStageCount m n)
+
+/-- Equation `(19.25)` coefficient currently proved for the concrete staged
+Givens QR schedule.
+
+The printed source leaves this as a modest dimension-dependent `gamma_tilde`;
+the implementation exposes the exact conservative accumulator generated by the
+verified anti-diagonal Givens task schedule. -/
+theorem eq19_25_gamma_tilde_eq_concrete_staged_coefficient
+    (fp : FPModel) (m n : Nat) :
+    gamma_tilde fp m n =
+      residualAccumBound
+        (residualAccumBound (gamma fp 8 * Real.sqrt (m : Real))
+          (givensQRStageTaskList m n (givensQRStageCount m n)).length)
+        (givensQRStageCount m n) := rfl
 
 /-- Source-facing form of Higham, Theorem 19.10.
 
@@ -9695,6 +10921,41 @@ theorem givens_qr_backward_error
           rw [matMulRect_assoc_square_left]
     _ = matMulRect m m n Q R_hat i j := by
           rw [<- hRmat]
+
+/-- Equation `(19.25)` source row for the concrete staged Givens QR path.
+
+This packages the verified columnwise sequence perturbation bound under the
+conservative coefficient `H19.Theorem19_10.gamma_tilde`.  The exact
+printed-constant comparison remains a separate audit from this source-row
+wrapper. -/
+theorem eq19_25_columnwise_perturbation_bound
+    (fp : FPModel) (m n : Nat) (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n) (hnm : n <= m)
+    (hvalid : gammaValid fp 8) :
+    Exists fun Q : Fin m -> Fin m -> Real =>
+      GivensQRBackwardError m n A Q
+        (fl_givensQRStageFold fp m n (givensQRStageCount m n) A)
+        (gamma_tilde fp m n) := by
+  classical
+  let hstage :=
+    fl_givensQRStageFold_sequence_columnFrob_backward_error_uniform
+      fp m n A (givensQRStageCount m n) hvalid
+  refine Exists.intro (Classical.choose hstage) ?_
+  simpa [hstage] using givens_qr_backward_error fp m n A hn hnm hvalid
+
+/-- Theorem 19.10 exposed through its equation `(19.25)` columnwise
+perturbation row. -/
+theorem eq19_25_givens_qr_backward_error
+    (fp : FPModel) (m n : Nat) (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n) (hnm : n <= m)
+    (hvalid : gammaValid fp 8) :
+    GivensQRBackwardError m n A
+      (Classical.choose
+        (fl_givensQRStageFold_sequence_columnFrob_backward_error_uniform
+          fp m n A (givensQRStageCount m n) hvalid))
+      (fl_givensQRStageFold fp m n (givensQRStageCount m n) A)
+      (gamma_tilde fp m n) :=
+  givens_qr_backward_error fp m n A hn hnm hvalid
 
 end Theorem19_10
 

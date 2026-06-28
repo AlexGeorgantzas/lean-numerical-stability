@@ -211,6 +211,37 @@ lemma n_mul_u_le_gamma (fp : FPModel) (n : ℕ) (hval : gammaValid fp n) :
   rw [le_div_iff₀ hden]
   nlinarith [sq_nonneg ((n : ℝ) * fp.u)]
 
+/-- Multiplicative-index upper comparison for accumulated `gamma` terms.
+
+If the larger index `i*k` is in the standard half-radius regime, then
+`gamma (i*k)` is at most `2*i*gamma k`.  This is the converse-style estimate
+used when a conservative operation-count radius has already been absorbed into
+one large `gamma`, but a source-facing statement wants the smaller base radius
+`gamma k` with an explicit dimension-only multiplier. -/
+lemma gamma_mul_index_le_two_mul_nat_mul_gamma (fp : FPModel)
+    (i k : ℕ)
+    (hhalf : ((i * k : ℕ) : ℝ) * fp.u ≤ 1 / 2)
+    (hkvalid : gammaValid fp k) :
+    gamma fp (i * k) ≤ (2 : ℝ) * (i : ℝ) * gamma fp k := by
+  have hlinear :
+      ((i * k : ℕ) : ℝ) * fp.u ≤ (i : ℝ) * gamma fp k := by
+    calc
+      ((i * k : ℕ) : ℝ) * fp.u
+          = (i : ℝ) * ((k : ℝ) * fp.u) := by
+              norm_num [Nat.cast_mul]
+              ring
+      _ ≤ (i : ℝ) * gamma fp k :=
+          mul_le_mul_of_nonneg_left
+            (n_mul_u_le_gamma fp k hkvalid)
+            (by exact_mod_cast Nat.zero_le i)
+  calc
+    gamma fp (i * k)
+        ≤ 2 * (((i * k : ℕ) : ℝ) * fp.u) :=
+            gamma_le_two_mul_n_u_of_nu_le_half fp (i * k) hhalf
+    _ ≤ 2 * ((i : ℝ) * gamma fp k) :=
+        mul_le_mul_of_nonneg_left hlinear (by norm_num)
+    _ = (2 : ℝ) * (i : ℝ) * gamma fp k := by ring
+
 /-- Cap `gamma fp n` by replacing the unit roundoff with a displayed upper cap.
 
 This is the monotonicity of `x ↦ n*x/(1-n*x)` on the validity interval,
@@ -931,6 +962,87 @@ lemma gamma_sum_le (fp : FPModel) (j k : ℕ) (hval : gammaValid fp (j + k)) :
     (mul_nonneg (mul_nonneg (by exact_mod_cast j.zero_le) (by exact_mod_cast k.zero_le))
                 (sq_nonneg fp.u))
     (le_of_lt (mul_pos (mul_pos hdj hdk) hdjk))
+
+/-- Absorb a repeated nonnegative local factor bounded by `gamma fp k` into the
+    single Higham factor `gamma fp (n*k)`.
+
+    This is the product-form analogue of replacing a sequence of first-order
+    local constants by one larger accumulated gamma constant. -/
+lemma one_add_pow_sub_one_le_gamma_mul_of_le_gamma
+    (fp : FPModel) (n k : ℕ) {c : ℝ}
+    (hc0 : 0 ≤ c) (hc : c ≤ gamma fp k)
+    (hvalid : gammaValid fp (n * k)) :
+    (1 + c) ^ n - 1 ≤ gamma fp (n * k) := by
+  induction n with
+  | zero =>
+      simp [gamma]
+  | succ n ih =>
+      have hvalid_n : gammaValid fp (n * k) :=
+        gammaValid_mono fp (by
+          rw [Nat.succ_mul]
+          exact Nat.le_add_right (n * k) k) hvalid
+      have hvalid_step : gammaValid fp (n * k + k) := by
+        simpa [Nat.succ_mul] using hvalid
+      have hbase : (1 : ℝ) ≤ 1 + c := by linarith
+      have hpow_ge_one : (1 : ℝ) ≤ (1 + c) ^ n := by
+        exact one_le_pow₀ hbase
+      have htheta_nonneg : 0 ≤ (1 + c) ^ n - 1 := by linarith
+      have htheta_abs : |(1 + c) ^ n - 1| ≤ gamma fp (n * k) := by
+        rw [abs_of_nonneg htheta_nonneg]
+        exact ih hvalid_n
+      have hc_abs : |c| ≤ gamma fp k := by
+        rw [abs_of_nonneg hc0]
+        exact hc
+      rcases gamma_mul fp (n * k) k ((1 + c) ^ n - 1) c
+          htheta_abs hc_abs hvalid_step with
+        ⟨θ, hθ_abs, hprod⟩
+      have hprod_pow : (1 + c) ^ (n + 1) = 1 + θ := by
+        calc
+          (1 + c) ^ (n + 1) = (1 + c) ^ n * (1 + c) := by
+            rw [pow_succ]
+          _ = (1 + ((1 + c) ^ n - 1)) * (1 + c) := by ring
+          _ = 1 + θ := hprod
+      have htheta_eq : (1 + c) ^ (n + 1) - 1 = θ := by linarith
+      calc
+        (1 + c) ^ (n + 1) - 1 = θ := htheta_eq
+        _ ≤ |θ| := le_abs_self θ
+        _ ≤ gamma fp (n * k + k) := hθ_abs
+        _ = gamma fp ((n + 1) * k) := by rw [Nat.succ_mul]
+
+/-- Absorb a repeated local `gamma fp k` factor followed by an additional
+    `gamma fp n` solve factor into the single bound `gamma fp (n*k+n)`. -/
+lemma one_add_pow_mul_one_add_gamma_sub_one_le_gamma_sum_of_le_gamma
+    (fp : FPModel) (n k : ℕ) {c : ℝ}
+    (hc0 : 0 ≤ c) (hc : c ≤ gamma fp k)
+    (hvalid : gammaValid fp (n * k + n)) :
+    (1 + c) ^ n * (1 + gamma fp n) - 1 ≤ gamma fp (n * k + n) := by
+  have hvalid_nk : gammaValid fp (n * k) :=
+    gammaValid_mono fp (Nat.le_add_right (n * k) n) hvalid
+  have hvalid_n : gammaValid fp n :=
+    gammaValid_mono fp (Nat.le_add_left n (n * k)) hvalid
+  have htheta_le : (1 + c) ^ n - 1 ≤ gamma fp (n * k) :=
+    one_add_pow_sub_one_le_gamma_mul_of_le_gamma fp n k hc0 hc hvalid_nk
+  have hgamma_n_nonneg : 0 ≤ gamma fp n := gamma_nonneg fp hvalid_n
+  have hone_theta_le :
+      1 + ((1 + c) ^ n - 1) ≤ 1 + gamma fp (n * k) := by
+    linarith
+  have hmul :
+      gamma fp n * (1 + ((1 + c) ^ n - 1)) ≤
+        gamma fp n * (1 + gamma fp (n * k)) :=
+    mul_le_mul_of_nonneg_left hone_theta_le hgamma_n_nonneg
+  have hsum :
+      gamma fp (n * k) + gamma fp n + gamma fp (n * k) * gamma fp n ≤
+        gamma fp (n * k + n) :=
+    gamma_sum_le fp (n * k) n hvalid
+  calc
+    (1 + c) ^ n * (1 + gamma fp n) - 1
+        = ((1 + c) ^ n - 1) +
+          gamma fp n * (1 + ((1 + c) ^ n - 1)) := by ring
+    _ ≤ gamma fp (n * k) + gamma fp n * (1 + gamma fp (n * k)) := by
+      exact add_le_add htheta_le hmul
+    _ = gamma fp (n * k) + gamma fp n + gamma fp (n * k) * gamma fp n := by ring
+    _ ≤ gamma fp (n * k + n) := by
+      simpa [mul_comm, mul_left_comm, mul_assoc] using hsum
 
 /-- **Lemma 3.3 rule 5**: γ(k) + u ≤ γ(k+1).
 
