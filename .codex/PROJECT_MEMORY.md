@@ -9629,3 +9629,28 @@ These compile, but should not be treated as fully derived stability results:
   not close the printed arbitrary-subordinate-norm theorem or the separate
   max-entry Eq.13.21 route without a documented Euclidean specialization or
   additional norm-comparison/source-table work.
+
+- 2026-06-28 Algorithm 13.3 BDD generic lower-norm source-table dependency:
+  added the continuous-linear-map lower-norm infrastructure in
+  `MatrixAlgebra.lean`: `isCompact_norm_unit_sphere`,
+  `exists_continuousLinearMap_unit_minimizer`,
+  `continuousLinearMapLowerNorm`,
+  `continuousLinearMapLowerNorm_attained`,
+  `continuousLinearMapLowerNorm_le`,
+  `exists_continuousLinearMap_unit_maximizer`,
+  `continuousLinearMap_opNorm_eq_norm_of_unit_maximizer`,
+  `exists_continuousLinearMap_unit_opNorm_attained`,
+  `continuousLinearMap_opNorm_pos_of_right_inverse`,
+  `continuousLinearMapLowerNorm_le_inv_opNorm_of_inverse`,
+  `inv_opNorm_le_continuousLinearMapLowerNorm_of_inverse`, and
+  `continuousLinearMapLowerNorm_eq_inv_opNorm_of_inverse`.  These prove
+  minimum/maximum attainment on the unit sphere in a proper normed real vector
+  space and identify a two-sided inverse's reciprocal operator norm with the
+  lower norm.  Added the Chapter 13 adapters
+  `SchurStageActiveDiagLowerUpdate13_7.of_continuousLinearMap_stage_lower_norms`
+  and `SchurStageActivePivotInvReciprocal13_7.of_continuousLinearMap_inverse`
+  in `BlockLU.lean`, giving the arbitrary-norm analogue of the Eq.13.18 lower
+  table and active reciprocal route.  This closes a source-table dependency
+  for the printed BDD theorem, but not the theorem itself: the concrete
+  subordinate block action, Schur perturbation estimate, max-entry Eq.13.21
+  integration, and BDD nonsingularity/block-LU existence surface remain open.

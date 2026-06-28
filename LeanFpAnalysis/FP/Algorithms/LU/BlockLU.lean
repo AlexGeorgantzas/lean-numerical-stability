@@ -10638,6 +10638,73 @@ theorem SchurStageActiveDiagLowerUpdate13_7.of_unit_min_actions {m : ℕ}
     (hSchur k hk j hj)
 
 /-- Higham, 2nd ed., Chapter 13, equation (13.18):
+    continuous-linear lower-norm table for active Schur diagonal updates.
+
+    This is the source lower-norm construction in a generic proper normed real
+    vector space.  The certificate at stage `(k,j)` is the attained minimum
+    `min_{‖x‖=1} ‖A_jj^(k) x‖`.  The perturbation estimate remains explicit
+    and should be supplied by the chosen subordinate block norm. -/
+theorem SchurStageActiveDiagLowerUpdate13_7.of_continuousLinearMap_stage_lower_norms
+    {m : ℕ} {E : Type*}
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [ProperSpace E]
+    (hunit : ({x : E | ‖x‖ = 1} : Set E).Nonempty)
+    (stageNorm : ℕ → Fin m → Fin m → ℝ)
+    (pivotInvNorm : ℕ → ℝ)
+    (stageDiag perturb : ℕ → Fin m → E →L[ℝ] E)
+    (hPerturb : ∀ k : ℕ, ∀ hk : k < m, ∀ j : Fin m,
+      k + 1 ≤ j.val → ∀ x : E, ‖x‖ = 1 →
+        ‖perturb k j x‖ ≤
+          stageNorm k j ⟨k, hk⟩ * pivotInvNorm k *
+            stageNorm k ⟨k, hk⟩ j)
+    (hSchur : ∀ k : ℕ, ∀ _hk : k < m, ∀ j : Fin m,
+      k + 1 ≤ j.val → ∀ x : E,
+        stageDiag (k + 1) j x = stageDiag k j x - perturb k j x) :
+    SchurStageActiveDiagLowerUpdate13_7
+      stageNorm
+      (fun k j => continuousLinearMapLowerNorm (stageDiag k j) hunit)
+      pivotInvNorm := by
+  exact
+    SchurStageActiveDiagLowerUpdate13_7.of_unit_min_actions
+      stageNorm
+      (fun k j => continuousLinearMapLowerNorm (stageDiag k j) hunit)
+      pivotInvNorm
+      (fun k j x => stageDiag k j x)
+      (fun k j x => perturb k j x)
+      (fun k j x => stageDiag (k + 1) j x)
+      (fun k _hk j _hj x hx =>
+        continuousLinearMapLowerNorm_le (stageDiag k j) hunit x hx)
+      (fun k _hk j _hj =>
+        continuousLinearMapLowerNorm_attained (stageDiag (k + 1) j) hunit)
+      hPerturb hSchur
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.18):
+    reciprocal active-pivot table from a two-sided continuous-linear inverse.
+
+    In a generic proper normed real vector space, if the supplied active pivot
+    inverse is a two-sided inverse of the active diagonal action, then the
+    active lower norm is exactly the reciprocal operator norm of that inverse.
+    This is the arbitrary-norm analogue of the Euclidean finite-matrix
+    reciprocal table. -/
+theorem SchurStageActivePivotInvReciprocal13_7.of_continuousLinearMap_inverse
+    {m : ℕ} {E : Type*}
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [ProperSpace E]
+    (hunit : ({x : E | ‖x‖ = 1} : Set E).Nonempty)
+    (stageDiag : ℕ → Fin m → E →L[ℝ] E)
+    (pivotInv : ℕ → E →L[ℝ] E)
+    (hLeft : ∀ k : ℕ, ∀ hk : k < m, ∀ x : E,
+      pivotInv k (stageDiag k ⟨k, hk⟩ x) = x)
+    (hRight : ∀ k : ℕ, ∀ hk : k < m, ∀ y : E,
+      stageDiag k ⟨k, hk⟩ (pivotInv k y) = y) :
+    SchurStageActivePivotInvReciprocal13_7
+      (fun k j => continuousLinearMapLowerNorm (stageDiag k j) hunit)
+      (fun k => ‖pivotInv k‖) := by
+  intro k hk
+  exact
+    continuousLinearMapLowerNorm_eq_inv_opNorm_of_inverse
+      (stageDiag k ⟨k, hk⟩) (pivotInv k) hunit
+      (hLeft k hk) (hRight k hk)
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.18):
     Euclidean lower-norm table construction for active Schur diagonal updates.
 
     The diagonal certificate is the actually attained minimum
