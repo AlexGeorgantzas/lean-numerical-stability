@@ -197,6 +197,68 @@ theorem rectRightGramPolarQFull_mul_polarH_of_pos {m n : Nat}
         rw [matMul_id_left]
     _ = A := hUDV
 
+/-- The full-positive right-Gram polar positive factor is symmetric. -/
+theorem rectRightGramPolarH_symmetric {m n : Nat}
+    (A : Fin m -> Fin n -> Real) :
+    finiteTranspose (rectRightGramPolarH A) = rectRightGramPolarH A := by
+  let V := rectRightGramEigenbasis A
+  let D := finiteDiagonal (rectRightGramBasisSingularValue A)
+  let Vt := finiteTranspose V
+  calc
+    finiteTranspose (rectRightGramPolarH A)
+        = finiteTranspose (matMul n V (matMul n D Vt)) := by
+        rfl
+    _ =
+      matMul n (finiteTranspose (matMul n D Vt)) (finiteTranspose V) := by
+        rw [finiteTranspose_matMul]
+    _ =
+      matMul n (matMul n (finiteTranspose Vt) (finiteTranspose D))
+        (finiteTranspose V) := by
+        rw [finiteTranspose_matMul]
+    _ = matMul n (matMul n V D) Vt := by
+        rw [finiteTranspose_finiteTranspose, finiteTranspose_finiteDiagonal]
+    _ = matMul n V (matMul n D Vt) := by
+        rw [matMul_assoc]
+    _ = rectRightGramPolarH A := by
+        rfl
+
+/-- In the full-positive right-Gram polar branch, `H^2` is the rectangular
+right Gram `A^T A`. -/
+theorem rectRightGramPolarH_sq_eq_rectangularGram_of_pos {m n : Nat}
+    (A : Fin m -> Fin n -> Real)
+    (hpos : forall a : Fin n, 0 < rectRightGramBasisSingularValue A a) :
+    matMul n (rectRightGramPolarH A) (rectRightGramPolarH A) =
+      rectangularGram A := by
+  have horth : GramSchmidtOrthonormalColumns (rectRightGramPolarQFull A) :=
+    rectRightGramPolarQFull_orthonormal_of_pos A hpos
+  have hfactor :
+      matMulRect m n n (rectRightGramPolarQFull A)
+          (rectRightGramPolarH A) = A :=
+    rectRightGramPolarQFull_mul_polarH_of_pos A hpos
+  have hgram :=
+    rectangularGram_matMulRect_of_orthonormal_left horth
+      (rectRightGramPolarH A)
+  rw [hfactor] at hgram
+  rw [rectRightGramPolarH_symmetric A] at hgram
+  exact hgram.symm
+
+/-- Full-positive polar rewrite of the top Gram in a corrected Problem 19.12
+CS/polar input: `P11^T P11 = I - H^2`. -/
+theorem MGSProblem1912CSPolarInput.p11_gram_eq_id_sub_polarH_sq
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : MGSProblem1912CSPolarInput m n P11 P21)
+    (hpos : forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a) :
+    rectangularGram P11 =
+      fun i j =>
+        idMatrix n i j -
+          matMul n (rectRightGramPolarH P21) (rectRightGramPolarH P21) i j := by
+  have hp21 :
+      rectangularGram P21 =
+        matMul n (rectRightGramPolarH P21) (rectRightGramPolarH P21) := by
+    exact (rectRightGramPolarH_sq_eq_rectangularGram_of_pos P21 hpos).symm
+  rw [hinput.p11_gram_eq_id_sub_p21_gram, hp21]
+
 /-- Full-positive right-Gram polar factors give the bottom factor and
 orthonormal part required by the Problem 19.12 polar payload.  The bridge
 `T * P11 = I - H` and contraction bound remain explicit obligations. -/

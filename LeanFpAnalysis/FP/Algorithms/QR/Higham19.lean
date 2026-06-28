@@ -360,6 +360,38 @@ theorem problem1912_rightGramPolarQFull_mul_polarH_of_pos {m n : Nat}
       P21 := by
   exact rectRightGramPolarQFull_mul_polarH_of_pos P21 hpos
 
+/-- Chapter-labeled symmetry of the full-positive right-Gram polar positive
+factor. -/
+theorem problem1912_rightGramPolarH_symmetric {m n : Nat}
+    (P21 : Fin m -> Fin n -> Real) :
+    finiteTranspose (Problem1912RightGramPolarH P21) =
+      Problem1912RightGramPolarH P21 := by
+  exact rectRightGramPolarH_symmetric P21
+
+/-- Chapter-labeled full-positive right-Gram identity `H^2 = P21^T P21`. -/
+theorem problem1912_rightGramPolarH_sq_eq_rectangularGram_of_pos
+    {m n : Nat}
+    (P21 : Fin m -> Fin n -> Real)
+    (hpos : forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a) :
+    matMul n (Problem1912RightGramPolarH P21)
+        (Problem1912RightGramPolarH P21) =
+      rectangularGram P21 := by
+  exact rectRightGramPolarH_sq_eq_rectangularGram_of_pos P21 hpos
+
+/-- Chapter-labeled full-positive polar rewrite of the top Gram:
+`P11^T P11 = I - H^2`. -/
+theorem problem1912_csPolarInput_p11_gram_eq_id_sub_polarH_sq
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hpos : forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a) :
+    rectangularGram P11 =
+      fun i j =>
+        idMatrix n i j -
+          matMul n (Problem1912RightGramPolarH P21)
+            (Problem1912RightGramPolarH P21) i j := by
+  exact hinput.p11_gram_eq_id_sub_polarH_sq hpos
+
 /-- Chapter-labeled full-positive right-Gram polar payload constructor.  The
 bridge `T * P11 = I - H` and contraction bound are the remaining explicit
 obligations. -/
