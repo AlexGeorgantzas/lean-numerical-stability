@@ -10608,6 +10608,53 @@ theorem SchurStageActiveDiagLowerUpdate13_7.of_unit_min_actions {m : ℕ}
     (hPerturb k hk j hj)
     (hSchur k hk j hj)
 
+/-- Higham, 2nd ed., Chapter 13, equation (13.18):
+    for the Euclidean subordinate norm, an actual right inverse of a diagonal
+    block gives the unit-vector lower bound
+    `||B⁻¹||₂⁻¹ <= ||B x||₂`.
+
+    This is the concrete inverse-data half of the lower-norm table route; it
+    does not assert that the lower norm/minimum has already been attained. -/
+theorem higham13_eq13_18_unit_lower_bound_of_right_inverse_opNorm2
+    {r : ℕ} (hr : 0 < r)
+    (B Binv : Fin r → Fin r → ℝ)
+    (hRight : IsRightInverse r B Binv) :
+    ∀ x : Fin r → ℝ, vecNorm2 x = 1 →
+      (opNorm2 Binv)⁻¹ ≤ vecNorm2 (matMulVec r B x) := by
+  classical
+  letI : Nonempty (Fin r) := ⟨⟨0, hr⟩⟩
+  intro x hx
+  exact
+    opNorm2_inv_recip_le_vecNorm2_matMulVec_of_isRightInverse
+      B Binv hRight hx
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.18):
+    active-stage table form of the Euclidean lower-bound half.
+
+    If a source diagonal certificate is the reciprocal 2-norm of a certified
+    right inverse for each active diagonal block, then it is a lower bound for
+    that block's action on every Euclidean unit vector.  The separate
+    minimum-attainment/Schur-update step remains the open lower-norm-table
+    obligation. -/
+theorem higham13_eq13_18_active_diag_table_unit_lower_bound_of_right_inverse_opNorm2
+    {m r : ℕ} (hr : 0 < r)
+    (stageInvDiagBound : ℕ → Fin m → ℝ)
+    (diag diagInv : ℕ → Fin m → Fin r → Fin r → ℝ)
+    (hEq : ∀ k : ℕ, k < m → ∀ j : Fin m,
+      k + 1 ≤ j.val →
+        stageInvDiagBound k j = (opNorm2 (diagInv k j))⁻¹)
+    (hRight : ∀ k : ℕ, k < m → ∀ j : Fin m,
+      k + 1 ≤ j.val →
+        IsRightInverse r (diag k j) (diagInv k j)) :
+    ∀ k : ℕ, k < m → ∀ j : Fin m,
+      k + 1 ≤ j.val → ∀ x : Fin r → ℝ, vecNorm2 x = 1 →
+        stageInvDiagBound k j ≤ vecNorm2 (matMulVec r (diag k j) x) := by
+  intro k hk j hj x hx
+  rw [hEq k hk j hj]
+  exact
+    higham13_eq13_18_unit_lower_bound_of_right_inverse_opNorm2
+      hr (diag k j) (diagInv k j) (hRight k hk j hj) x hx
+
 /-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof:
     the source reciprocal pivot certificate implies the pivot inverse product
     bound used in the Schur-stage dominance and growth arguments.

@@ -7225,6 +7225,26 @@ theorem lsNormwiseBackwardErrorRankOneDeltaA_transpose_mul
                     rw [hinv]
                     ring
 
+/-- Matrix-vector action of the rank-one WKS perturbation.  This exposes the
+    `DeltaA * y` term in the constructive upper-bound witness cost. -/
+theorem lsNormwiseBackwardErrorRankOneDeltaA_mulVec
+    {m n : ℕ} (p : Fin m → ℝ) (u y : Fin n → ℝ) :
+    rectMatMulVec (lsNormwiseBackwardErrorRankOneDeltaA p u) y =
+      fun i : Fin m =>
+        -((1 / vecNorm2Sq p) * p i * (∑ j : Fin n, u j * y j)) := by
+  ext i
+  unfold rectMatMulVec lsNormwiseBackwardErrorRankOneDeltaA
+  calc
+    ∑ j : Fin n, -((1 / vecNorm2Sq p) * p i * u j) * y j
+        = ∑ j : Fin n, (-((1 / vecNorm2Sq p) * p i)) * (u j * y j) := by
+            apply Finset.sum_congr rfl
+            intro j _
+            ring
+    _ = (-((1 / vecNorm2Sq p) * p i)) * ∑ j : Fin n, u j * y j := by
+            rw [Finset.mul_sum]
+    _ = -((1 / vecNorm2Sq p) * p i * (∑ j : Fin n, u j * y j)) := by
+            ring
+
 /-- Frobenius norm of the rank-one WKS perturbation. -/
 theorem lsNormwiseBackwardErrorRankOneDeltaA_frobNormSq
     {m n : ℕ} {p : Fin m → ℝ} {u : Fin n → ℝ}
@@ -14515,6 +14535,393 @@ theorem LSNormwiseBackwardErrorFeasible.exists_rankOne_source_residual_witness
       (lsNormwiseBackwardErrorRankOneDeltaA_frobNormSq
         (p := p) (u := u) hp)
 
+/-- Rank-one WKS source-residual upper bound.  Any nonzero expanded residual
+    candidate `p` gives an explicit feasible perturbation, hence an explicit
+    upper bound for `eta_F`; a later `sigma_min` branch proof must choose `p`
+    from the source block so this square-root expression is bounded by the
+    printed row-side singular value. -/
+theorem lsNormwiseBackwardErrorEtaF_le_rankOne_source_residual_witness
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (y : Fin n → ℝ)
+    (p : Fin m → ℝ) (hp : vecNorm2Sq p ≠ 0) :
+    let u : Fin n → ℝ := fun j => ∑ i : Fin m, A i j * p i
+    let DeltaA : Fin m → Fin n → ℝ :=
+      lsNormwiseBackwardErrorRankOneDeltaA p u
+    let Deltab : Fin m → ℝ :=
+      fun i => p i - lsResidualHigham A b y i + rectMatMulVec DeltaA y i
+    lsNormwiseBackwardErrorEtaF theta A b y ≤
+      Real.sqrt (vecNorm2Sq u / vecNorm2Sq p +
+        theta ^ 2 * vecNorm2Sq Deltab) := by
+  let u : Fin n → ℝ := fun j => ∑ i : Fin m, A i j * p i
+  let DeltaA : Fin m → Fin n → ℝ :=
+    lsNormwiseBackwardErrorRankOneDeltaA p u
+  let Deltab : Fin m → ℝ :=
+    fun i => p i - lsResidualHigham A b y i + rectMatMulVec DeltaA y i
+  dsimp only
+  have hfeas : LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab := by
+    simpa [DeltaA, Deltab, u] using
+      (LSNormwiseBackwardErrorFeasible.rankOne_source_residual_witness
+        A b y p hp)
+  have heta :
+      lsNormwiseBackwardErrorEtaF theta A b y ≤
+        lsNormwiseBackwardErrorCostF theta DeltaA Deltab :=
+    lsNormwiseBackwardErrorEtaF_le_costF_of_feasible
+      theta A b y DeltaA Deltab hfeas
+  have hcost :
+      lsNormwiseBackwardErrorCostF theta DeltaA Deltab =
+        Real.sqrt (vecNorm2Sq u / vecNorm2Sq p +
+          theta ^ 2 * vecNorm2Sq Deltab) := by
+    rw [lsNormwiseBackwardErrorCostF_eq_sqrt_sq_sum]
+    rw [lsNormwiseBackwardErrorRankOneDeltaA_frobNormSq (p := p) (u := u) hp]
+  exact hcost ▸ heta
+
+/-- Expanded rank-one WKS source-residual upper bound.  This rewrites the
+    `Delta b` component of the rank-one witness cost using the explicit
+    matrix-vector action of the rank-one `DeltaA`, preparing the later
+    source-block singular-vector certificate. -/
+theorem lsNormwiseBackwardErrorEtaF_le_rankOne_source_residual_witness_expanded
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (y : Fin n → ℝ)
+    (p : Fin m → ℝ) (hp : vecNorm2Sq p ≠ 0) :
+    let r : Fin m → ℝ := lsResidualHigham A b y
+    let u : Fin n → ℝ := fun j => ∑ i : Fin m, A i j * p i
+    lsNormwiseBackwardErrorEtaF theta A b y ≤
+      Real.sqrt (vecNorm2Sq u / vecNorm2Sq p +
+        theta ^ 2 *
+          vecNorm2Sq
+            (fun i : Fin m =>
+              p i - r i -
+                ((1 / vecNorm2Sq p) * p i *
+                  (∑ j : Fin n, u j * y j)))) := by
+  let r : Fin m → ℝ := lsResidualHigham A b y
+  let u : Fin n → ℝ := fun j => ∑ i : Fin m, A i j * p i
+  let DeltaA : Fin m → Fin n → ℝ :=
+    lsNormwiseBackwardErrorRankOneDeltaA p u
+  let Deltab : Fin m → ℝ :=
+    fun i => p i - r i + rectMatMulVec DeltaA y i
+  have hbase :
+      lsNormwiseBackwardErrorEtaF theta A b y ≤
+        Real.sqrt (vecNorm2Sq u / vecNorm2Sq p +
+          theta ^ 2 * vecNorm2Sq Deltab) := by
+    simpa [r, u, DeltaA, Deltab] using
+      (lsNormwiseBackwardErrorEtaF_le_rankOne_source_residual_witness
+        theta A b y p hp)
+  have hDeltab :
+      Deltab =
+        fun i : Fin m =>
+          p i - r i -
+            ((1 / vecNorm2Sq p) * p i * (∑ j : Fin n, u j * y j)) := by
+    ext i
+    have hmul :
+        rectMatMulVec DeltaA y i =
+          -((1 / vecNorm2Sq p) * p i * (∑ j : Fin n, u j * y j)) := by
+      simpa [DeltaA] using
+        congrFun
+          (lsNormwiseBackwardErrorRankOneDeltaA_mulVec
+            (p := p) (u := u) (y := y)) i
+    dsimp [Deltab]
+    rw [hmul]
+    ring
+  simpa [r, u, hDeltab] using hbase
+
+/-- Scaled expanded rank-one WKS source-residual upper bound.  Scaling the
+    expanded residual candidate by a nonzero scalar preserves the rank-one
+    Frobenius component and leaves the source-action term invariant, while
+    exposing the free scalar in the `Delta b` part of the witness cost. -/
+theorem lsNormwiseBackwardErrorEtaF_le_rankOne_source_residual_witness_scaled
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (y : Fin n → ℝ)
+    (p : Fin m → ℝ) (hp : vecNorm2Sq p ≠ 0)
+    (c : ℝ) (hc : c ≠ 0) :
+    let r : Fin m → ℝ := lsResidualHigham A b y
+    let u : Fin n → ℝ := fun j => ∑ i : Fin m, A i j * p i
+    lsNormwiseBackwardErrorEtaF theta A b y ≤
+      Real.sqrt (vecNorm2Sq u / vecNorm2Sq p +
+        theta ^ 2 *
+          vecNorm2Sq
+            (fun i : Fin m =>
+              c * p i - r i -
+                ((1 / vecNorm2Sq p) * p i *
+                  (∑ j : Fin n, u j * y j)))) := by
+  let r : Fin m → ℝ := lsResidualHigham A b y
+  let u : Fin n → ℝ := fun j => ∑ i : Fin m, A i j * p i
+  let q : Fin m → ℝ := fun i => c * p i
+  let uq : Fin n → ℝ := fun j => ∑ i : Fin m, A i j * q i
+  have hc_sq : c ^ 2 ≠ 0 := pow_ne_zero 2 hc
+  have hqnorm : vecNorm2Sq q = c ^ 2 * vecNorm2Sq p := by
+    simpa [q] using (vecNorm2Sq_smul c p)
+  have hq : vecNorm2Sq q ≠ 0 := by
+    rw [hqnorm]
+    exact mul_ne_zero hc_sq hp
+  have huq : uq = fun j => c * u j := by
+    ext j
+    dsimp [uq, u, q]
+    calc
+      ∑ i : Fin m, A i j * (c * p i)
+          = ∑ i : Fin m, c * (A i j * p i) := by
+              apply Finset.sum_congr rfl
+              intro i _
+              ring
+      _ = c * ∑ i : Fin m, A i j * p i := by
+              rw [Finset.mul_sum]
+  have huqnorm : vecNorm2Sq uq = c ^ 2 * vecNorm2Sq u := by
+    rw [huq]
+    exact vecNorm2Sq_smul c u
+  have hratio :
+      vecNorm2Sq uq / vecNorm2Sq q = vecNorm2Sq u / vecNorm2Sq p := by
+    rw [huqnorm, hqnorm]
+    field_simp [hp, hc_sq]
+  have hdot :
+      (∑ j : Fin n, uq j * y j) = c * (∑ j : Fin n, u j * y j) := by
+    rw [huq]
+    calc
+      ∑ j : Fin n, (c * u j) * y j
+          = ∑ j : Fin n, c * (u j * y j) := by
+              apply Finset.sum_congr rfl
+              intro j _
+              ring
+      _ = c * ∑ j : Fin n, u j * y j := by
+              rw [Finset.mul_sum]
+  have hproj :
+      (fun i : Fin m =>
+        (1 / vecNorm2Sq q) * q i * (∑ j : Fin n, uq j * y j)) =
+        fun i : Fin m =>
+          (1 / vecNorm2Sq p) * p i * (∑ j : Fin n, u j * y j) := by
+    ext i
+    rw [hdot]
+    dsimp [q]
+    rw [hqnorm]
+    field_simp [hp, hc, hc_sq]
+  have hDeltab :
+      (fun i : Fin m =>
+        q i - r i -
+          ((1 / vecNorm2Sq q) * q i * (∑ j : Fin n, uq j * y j))) =
+        fun i : Fin m =>
+          c * p i - r i -
+            ((1 / vecNorm2Sq p) * p i * (∑ j : Fin n, u j * y j)) := by
+    ext i
+    rw [congrFun hproj i]
+  have hbase :
+      lsNormwiseBackwardErrorEtaF theta A b y ≤
+        Real.sqrt (vecNorm2Sq uq / vecNorm2Sq q +
+          theta ^ 2 *
+            vecNorm2Sq
+              (fun i : Fin m =>
+                q i - r i -
+                  ((1 / vecNorm2Sq q) * q i *
+                    (∑ j : Fin n, uq j * y j)))) := by
+    simpa [r, q, uq] using
+      (lsNormwiseBackwardErrorEtaF_le_rankOne_source_residual_witness_expanded
+        theta A b y q hq)
+  rw [hratio, hDeltab] at hbase
+  simpa [r, u] using hbase
+
+/-- Source-block `sigma_min` branch handoff for the rank-one WKS witness.
+    If a nonzero expanded residual `p` makes the explicit rank-one witness cost
+    no larger than the row-side source-block `sigma_min`, and that branch is
+    selected by the printed outer minimum, then the constructive upper
+    inequality `eta_F(y) <=` the right-hand side of (20.21) follows.  The
+    remaining WKS work is to prove the displayed expanded-cost certificate from
+    a genuine source-block singular-vector construction. -/
+theorem lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_rankOne_expanded_cost_le_sigmaMin
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (p : Fin (m + 1) → ℝ) (hp : vecNorm2Sq p ≠ 0)
+    (hbranch :
+      lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+          (lsResidualHigham A b y) y ≤
+        lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y)
+    (hcost :
+      let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+      let u : Fin n → ℝ := fun j => ∑ i : Fin (m + 1), A i j * p i
+      Real.sqrt (vecNorm2Sq u / vecNorm2Sq p +
+        theta ^ 2 *
+          vecNorm2Sq
+            (fun i : Fin (m + 1) =>
+              p i - r i -
+                ((1 / vecNorm2Sq p) * p i *
+                  (∑ j : Fin n, u j * y j)))) ≤
+        lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y) :
+    lsNormwiseBackwardErrorEtaF theta A b y ≤
+      lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+  let u : Fin n → ℝ := fun j => ∑ i : Fin (m + 1), A i j * p i
+  let sigma : ℝ := lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y
+  have heta :
+      lsNormwiseBackwardErrorEtaF theta A b y ≤
+        Real.sqrt (vecNorm2Sq u / vecNorm2Sq p +
+          theta ^ 2 *
+            vecNorm2Sq
+              (fun i : Fin (m + 1) =>
+                p i - r i -
+                  ((1 / vecNorm2Sq p) * p i *
+                    (∑ j : Fin n, u j * y j)))) := by
+    simpa [r, u] using
+      (lsNormwiseBackwardErrorEtaF_le_rankOne_source_residual_witness_expanded
+        theta A b y p hp)
+  have hcost' :
+      Real.sqrt (vecNorm2Sq u / vecNorm2Sq p +
+        theta ^ 2 *
+          vecNorm2Sq
+            (fun i : Fin (m + 1) =>
+              p i - r i -
+                ((1 / vecNorm2Sq p) * p i *
+                  (∑ j : Fin n, u j * y j)))) ≤ sigma := by
+    simpa [r, u, sigma] using hcost
+  have hrhs :
+      lsNormwiseBackwardErrorFormulaRHS theta A b y = sigma := by
+    unfold lsNormwiseBackwardErrorFormulaRHS lsNormwiseBackwardErrorFormulaValue
+    exact min_eq_right (by simpa [r, sigma] using hbranch)
+  rw [hrhs]
+  exact heta.trans hcost'
+
+/-- Scaled source-block `sigma_min` branch handoff for the rank-one WKS
+    witness.  This is the same constructive upper-bound route as
+    `lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_rankOne_expanded_cost_le_sigmaMin`,
+    but keeps the nonzero scalar freedom in the expanded residual witness
+    visible for the remaining singular-vector cost certificate. -/
+theorem lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_rankOne_scaled_cost_le_sigmaMin
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (p : Fin (m + 1) → ℝ) (hp : vecNorm2Sq p ≠ 0)
+    (c : ℝ) (hc : c ≠ 0)
+    (hbranch :
+      lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+          (lsResidualHigham A b y) y ≤
+        lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y)
+    (hcost :
+      let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+      let u : Fin n → ℝ := fun j => ∑ i : Fin (m + 1), A i j * p i
+      Real.sqrt (vecNorm2Sq u / vecNorm2Sq p +
+        theta ^ 2 *
+          vecNorm2Sq
+            (fun i : Fin (m + 1) =>
+              c * p i - r i -
+                ((1 / vecNorm2Sq p) * p i *
+                  (∑ j : Fin n, u j * y j)))) ≤
+        lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y) :
+    lsNormwiseBackwardErrorEtaF theta A b y ≤
+      lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+  let u : Fin n → ℝ := fun j => ∑ i : Fin (m + 1), A i j * p i
+  let sigma : ℝ := lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y
+  have heta :
+      lsNormwiseBackwardErrorEtaF theta A b y ≤
+        Real.sqrt (vecNorm2Sq u / vecNorm2Sq p +
+          theta ^ 2 *
+            vecNorm2Sq
+              (fun i : Fin (m + 1) =>
+                c * p i - r i -
+                  ((1 / vecNorm2Sq p) * p i *
+                    (∑ j : Fin n, u j * y j)))) := by
+    simpa [r, u] using
+      (lsNormwiseBackwardErrorEtaF_le_rankOne_source_residual_witness_scaled
+        theta A b y p hp c hc)
+  have hcost' :
+      Real.sqrt (vecNorm2Sq u / vecNorm2Sq p +
+        theta ^ 2 *
+          vecNorm2Sq
+            (fun i : Fin (m + 1) =>
+              c * p i - r i -
+                ((1 / vecNorm2Sq p) * p i *
+                  (∑ j : Fin n, u j * y j)))) ≤ sigma := by
+    simpa [r, u, sigma] using hcost
+  have hrhs :
+      lsNormwiseBackwardErrorFormulaRHS theta A b y = sigma := by
+    unfold lsNormwiseBackwardErrorFormulaRHS lsNormwiseBackwardErrorFormulaValue
+    exact min_eq_right (by simpa [r, sigma] using hbranch)
+  rw [hrhs]
+  exact heta.trans hcost'
+
+/-- Division-free squared-cost bridge for the scaled rank-one WKS witness.
+    A future singular-vector construction naturally supplies the scaled witness
+    cost as a squared inequality after multiplying by `||p||_2^2`; this lemma
+    converts that certificate into the square-root form used by the
+    source-block `sigma_min` handoff. -/
+theorem lsNormwiseBackwardErrorRankOne_scaled_cost_sqrt_le_of_sq_le
+    {m n : ℕ} (theta sigma : ℝ)
+    (p : Fin m → ℝ) (hp : vecNorm2Sq p ≠ 0)
+    (u : Fin n → ℝ) (q : Fin m → ℝ)
+    (hsigma : 0 ≤ sigma)
+    (hcost_sq :
+      vecNorm2Sq u + theta ^ 2 * vecNorm2Sq q * vecNorm2Sq p ≤
+        sigma ^ 2 * vecNorm2Sq p) :
+    Real.sqrt (vecNorm2Sq u / vecNorm2Sq p +
+      theta ^ 2 * vecNorm2Sq q) ≤ sigma := by
+  have hp_pos : 0 < vecNorm2Sq p :=
+    lt_of_le_of_ne (vecNorm2Sq_nonneg p) (Ne.symm hp)
+  have hinside_le :
+      vecNorm2Sq u / vecNorm2Sq p + theta ^ 2 * vecNorm2Sq q ≤
+        sigma ^ 2 := by
+    have hmul :
+        (vecNorm2Sq u / vecNorm2Sq p + theta ^ 2 * vecNorm2Sq q) *
+            vecNorm2Sq p ≤
+          sigma ^ 2 * vecNorm2Sq p := by
+      calc
+        (vecNorm2Sq u / vecNorm2Sq p + theta ^ 2 * vecNorm2Sq q) *
+            vecNorm2Sq p
+            = vecNorm2Sq u + theta ^ 2 * vecNorm2Sq q * vecNorm2Sq p := by
+                field_simp [ne_of_gt hp_pos]
+        _ ≤ sigma ^ 2 * vecNorm2Sq p := hcost_sq
+    exact le_of_mul_le_mul_right hmul hp_pos
+  calc
+    Real.sqrt (vecNorm2Sq u / vecNorm2Sq p +
+        theta ^ 2 * vecNorm2Sq q)
+        ≤ Real.sqrt (sigma ^ 2) := Real.sqrt_le_sqrt hinside_le
+    _ = sigma := by
+        rw [Real.sqrt_sq_eq_abs, abs_of_nonneg hsigma]
+
+/-- Source-block `sigma_min` branch handoff from a division-free squared-cost
+    certificate for the scaled rank-one WKS witness.  This is the form expected
+    from the remaining singular-vector algebra: prove the explicit scaled
+    witness cost squared is at most `sigma_min^2 * ||p||_2^2`, and the
+    constructive upper inequality `eta_F(y) <=` the right-hand side of (20.21)
+    follows when the printed minimum selects the source-block branch. -/
+theorem lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_rankOne_scaled_sq_cost_le_sigmaMin
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (p : Fin (m + 1) → ℝ) (hp : vecNorm2Sq p ≠ 0)
+    (c : ℝ) (hc : c ≠ 0)
+    (hbranch :
+      lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+          (lsResidualHigham A b y) y ≤
+        lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y)
+    (hcost_sq :
+      let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+      let u : Fin n → ℝ := fun j => ∑ i : Fin (m + 1), A i j * p i
+      let q : Fin (m + 1) → ℝ :=
+        fun i =>
+          c * p i - r i -
+            ((1 / vecNorm2Sq p) * p i *
+              (∑ j : Fin n, u j * y j))
+      vecNorm2Sq u + theta ^ 2 * vecNorm2Sq q * vecNorm2Sq p ≤
+        (lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y) ^ 2 *
+          vecNorm2Sq p) :
+    lsNormwiseBackwardErrorEtaF theta A b y ≤
+      lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+  let u : Fin n → ℝ := fun j => ∑ i : Fin (m + 1), A i j * p i
+  let q : Fin (m + 1) → ℝ :=
+    fun i =>
+      c * p i - r i -
+        ((1 / vecNorm2Sq p) * p i *
+          (∑ j : Fin n, u j * y j))
+  let sigma : ℝ := lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y
+  have hsigma : 0 ≤ sigma := by
+    simpa [sigma, r] using
+      lsNormwiseBackwardErrorFormulaMatrixSigmaMin_nonneg theta A r y
+  have hcost :
+      Real.sqrt (vecNorm2Sq u / vecNorm2Sq p +
+        theta ^ 2 * vecNorm2Sq q) ≤ sigma := by
+    exact
+      lsNormwiseBackwardErrorRankOne_scaled_cost_sqrt_le_of_sq_le
+        theta sigma p hp u q hsigma (by
+          simpa [r, u, q, sigma] using hcost_sq)
+  exact
+    lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_rankOne_scaled_cost_le_sigmaMin
+      theta A b y p hp c hc hbranch (by
+        simpa [r, u, q, sigma] using hcost)
+
 /-- Left block of the transposed WKS source matrix on a feasible perturbed
     residual.  Under (20.20) feasibility, the `A^T` part of
     `[A phi(I-r r^+)]^T p` is exactly cancelled by `DeltaA^T p`, where
@@ -16662,6 +17069,90 @@ theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_upper_cert
   exact
     lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_inequality_certificate
       htheta A b hy hnot hrank hlower hupper
+
+/-- Positive finite-`theta` WKS branch from the concrete rank-one
+    source-block certificate.  This replaces the generic upper-inequality
+    hypothesis by the explicit expanded rank-one witness cost bound against
+    the source-block `sigma_min`; proving that bound from an actual
+    singular-vector construction remains the open WKS dependency. -/
+theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_rankOne_expanded_cost_le_sigmaMin
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hnot : ¬ IsLeastSquaresMinimizer A b y)
+    (hrank :
+      lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+        (lsResidualHigham A b y) y = m + 1)
+    (p : Fin (m + 1) → ℝ) (hp : vecNorm2Sq p ≠ 0)
+    (hbranch :
+      lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+          (lsResidualHigham A b y) y ≤
+        lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y)
+    (hcost :
+      let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+      let u : Fin n → ℝ := fun j => ∑ i : Fin (m + 1), A i j * p i
+      Real.sqrt (vecNorm2Sq u / vecNorm2Sq p +
+        theta ^ 2 *
+          vecNorm2Sq
+            (fun i : Fin (m + 1) =>
+              p i - r i -
+                ((1 / vecNorm2Sq p) * p i *
+                  (∑ j : Fin n, u j * y j)))) ≤
+        lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y) :
+    lsNormwiseBackwardErrorEtaF theta A b y =
+        lsNormwiseBackwardErrorFormulaRHS theta A b y ∧
+      0 < lsNormwiseBackwardErrorEtaF theta A b y ∧
+      0 < lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  have hupper :
+      lsNormwiseBackwardErrorEtaF theta A b y ≤
+        lsNormwiseBackwardErrorFormulaRHS theta A b y :=
+    lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_rankOne_expanded_cost_le_sigmaMin
+      theta A b y p hp hbranch hcost
+  exact
+    lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_upper_certificate
+      htheta A b hy hnot hrank hupper
+
+/-- Positive finite-`theta` WKS branch from the scaled concrete rank-one
+    source-block certificate.  This keeps the scalar degree of freedom in the
+    expanded residual witness visible while using the already proved
+    finite-positive lower-bound side. -/
+theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_rankOne_scaled_cost_le_sigmaMin
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hnot : ¬ IsLeastSquaresMinimizer A b y)
+    (hrank :
+      lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+        (lsResidualHigham A b y) y = m + 1)
+    (p : Fin (m + 1) → ℝ) (hp : vecNorm2Sq p ≠ 0)
+    (c : ℝ) (hc : c ≠ 0)
+    (hbranch :
+      lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+          (lsResidualHigham A b y) y ≤
+        lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y)
+    (hcost :
+      let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+      let u : Fin n → ℝ := fun j => ∑ i : Fin (m + 1), A i j * p i
+      Real.sqrt (vecNorm2Sq u / vecNorm2Sq p +
+        theta ^ 2 *
+          vecNorm2Sq
+            (fun i : Fin (m + 1) =>
+              c * p i - r i -
+                ((1 / vecNorm2Sq p) * p i *
+                  (∑ j : Fin n, u j * y j)))) ≤
+        lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y) :
+    lsNormwiseBackwardErrorEtaF theta A b y =
+        lsNormwiseBackwardErrorFormulaRHS theta A b y ∧
+      0 < lsNormwiseBackwardErrorEtaF theta A b y ∧
+      0 < lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  have hupper :
+      lsNormwiseBackwardErrorEtaF theta A b y ≤
+        lsNormwiseBackwardErrorFormulaRHS theta A b y :=
+    lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_rankOne_scaled_cost_le_sigmaMin
+      theta A b y p hp c hc hbranch hcost
+  exact
+    lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_upper_certificate
+      htheta A b hy hnot hrank hupper
 
 /-- Positive-branch certificate form of the Walden--Karlson--Sun formula
     (20.21): for positive finite `theta`, nonzero `y`, and full row rank of
