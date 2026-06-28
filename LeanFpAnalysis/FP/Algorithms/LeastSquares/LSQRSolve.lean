@@ -15563,6 +15563,57 @@ theorem lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_rankOne_scaled_source_trans
       theta A b y p hpsq c hc' hbranch hprojector (by
         simpa [r] using hsource)
 
+/-- Source-dot nonzero version of the degenerate source-projector WKS handoff.
+    The optimal scale side condition from
+    `lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_rankOne_scaled_source_transpose_projected_eq_zero`
+    is discharged by the source-shaped identity
+    `c = (p^T b)/||p||_2^2`. -/
+theorem lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_rankOne_scaled_source_transpose_projected_eq_zero_of_dot_b_ne_zero
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (p : Fin (m + 1) → ℝ) (hp : p ≠ 0)
+    (hrsq : vecNorm2Sq (lsResidualHigham A b y) ≠ 0)
+    (hdotb : (∑ i : Fin (m + 1), p i * b i) ≠ 0)
+    (hbranch :
+      lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+          (lsResidualHigham A b y) y ≤
+        lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y)
+    (hprojected :
+      let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+      vecNorm2Sq (matMulVec (m + 1) (lsResidualComplementProjector r) p) = 0)
+    (hsource :
+      let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+      vecNorm2Sq
+          (rectMatMulVec
+            (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y)) p) ≤
+        (lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y) ^ 2 *
+          vecNorm2Sq p) :
+    lsNormwiseBackwardErrorEtaF theta A b y ≤
+      lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+  let u : Fin n → ℝ := fun j => ∑ i : Fin (m + 1), A i j * p i
+  have hpsq : vecNorm2Sq p ≠ 0 :=
+    ne_of_gt (vecNorm2Sq_pos_of_ne_zero_lsq hp)
+  have hc :
+      let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+      let u : Fin n → ℝ := fun j => ∑ i : Fin (m + 1), A i j * p i
+      (((∑ k : Fin (m + 1), p k * r k) +
+          (∑ j : Fin n, u j * y j)) / vecNorm2Sq p) ≠ 0 := by
+    have hscale :
+        (((∑ k : Fin (m + 1), p k * r k) +
+            (∑ j : Fin n, u j * y j)) / vecNorm2Sq p) =
+          (∑ i : Fin (m + 1), p i * b i) / vecNorm2Sq p := by
+      simpa [r, u] using
+        lsNormwiseBackwardErrorRankOne_scaled_optimal_scale_eq_dot_b_div
+          A b y p
+    have hdiv :
+        (∑ i : Fin (m + 1), p i * b i) / vecNorm2Sq p ≠ 0 :=
+      div_ne_zero hdotb hpsq
+    simpa [r, u, hscale] using hdiv
+  exact
+    lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_rankOne_scaled_source_transpose_projected_eq_zero
+      theta A b y p hp hrsq hc hbranch hprojected hsource
+
 /-- Left block of the transposed WKS source matrix on a feasible perturbed
     residual.  Under (20.20) feasibility, the `A^T` part of
     `[A phi(I-r r^+)]^T p` is exactly cancelled by `DeltaA^T p`, where
