@@ -8793,6 +8793,165 @@ theorem lsLemma20_6ProjectorComplement_vecNorm2Sq_le {m : ℕ}
   rw [hnorm]
   linarith
 
+/-- Complement projectors commute with the perturbation residual
+    `Delta b - Delta A y`.  This is the algebraic bridge used in the WKS
+    nonzero-`p` route to apply the weighted residual bound after projecting
+    both perturbation blocks away from the expanded residual direction. -/
+theorem lsLemma20_6ProjectorComplement_deltab_sub_deltaA_y
+    {m n : ℕ} (p : Fin m → ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (y : Fin n → ℝ) :
+    matMulVec m (lsLemma20_6ProjectorComplement p)
+        (fun i : Fin m => Deltab i - rectMatMulVec DeltaA y i) =
+      fun i : Fin m =>
+        matMulVec m (lsLemma20_6ProjectorComplement p) Deltab i -
+          rectMatMulVec
+            (matMulRectLeft (lsLemma20_6ProjectorComplement p) DeltaA) y i := by
+  let Q : Fin m → Fin m → ℝ := lsLemma20_6ProjectorComplement p
+  ext i
+  have hmul := congrFun (rectMatMulVec_matMulRectLeft Q DeltaA y) i
+  calc
+    matMulVec m (lsLemma20_6ProjectorComplement p)
+        (fun i : Fin m => Deltab i - rectMatMulVec DeltaA y i) i =
+        (∑ j : Fin m, Q i j * (Deltab j - rectMatMulVec DeltaA y j)) := by
+          simp [Q, matMulVec]
+    _ = (∑ j : Fin m, Q i j * Deltab j) -
+          (∑ j : Fin m, Q i j * rectMatMulVec DeltaA y j) := by
+          rw [← Finset.sum_sub_distrib]
+          apply Finset.sum_congr rfl
+          intro j _
+          ring
+    _ = matMulVec m Q Deltab i -
+          rectMatMulVec (matMulRectLeft Q DeltaA) y i := by
+          rw [hmul]
+          rfl
+    _ = matMulVec m (lsLemma20_6ProjectorComplement p) Deltab i -
+          rectMatMulVec
+            (matMulRectLeft (lsLemma20_6ProjectorComplement p) DeltaA) y i := by
+          rfl
+
+/-- Projected weighted perturbation-residual bound for the nonzero-`p` WKS
+    lower-bound route.  After projecting both perturbation blocks by
+    `I - p p^+`, the Cauchy--Schwarz witness `[theta y; -1]` gives the sharp
+    squared estimate needed to couple the right projector term with the
+    Frobenius slack left by the `Delta A^T p` block. -/
+theorem lsNormwiseBackwardErrorProjectedPerturbationResidual_weighted_vecNorm2Sq_le
+    {m n : ℕ} (theta : ℝ) (p : Fin m → ℝ)
+    (hpsq : vecNorm2Sq p ≠ 0)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (y : Fin n → ℝ) :
+    theta ^ 2 *
+        vecNorm2Sq
+          (matMulVec m (lsLemma20_6ProjectorComplement p)
+            (fun i : Fin m => Deltab i - rectMatMulVec DeltaA y i)) ≤
+      (1 + theta ^ 2 * vecNorm2Sq y) *
+        (frobNormSqRect
+            (matMulRectLeft (lsLemma20_6ProjectorComplement p) DeltaA) +
+          theta ^ 2 * vecNorm2Sq Deltab) := by
+  let Q : Fin m → Fin m → ℝ := lsLemma20_6ProjectorComplement p
+  let DeltaAQ : Fin m → Fin n → ℝ := matMulRectLeft Q DeltaA
+  let DeltabQ : Fin m → ℝ := matMulVec m Q Deltab
+  let qQ : Fin m → ℝ :=
+    matMulVec m Q (fun i : Fin m => Deltab i - rectMatMulVec DeltaA y i)
+  let w : Fin (n + 1) → ℝ :=
+    Fin.append (fun j : Fin n => theta * y j) (fun _ : Fin 1 => -1)
+  let W : Fin m → Fin (n + 1) → ℝ :=
+    lsNormwiseBackwardErrorWeightedMatrix theta DeltaAQ DeltabQ
+  have hres :
+      qQ = fun i : Fin m => DeltabQ i - rectMatMulVec DeltaAQ y i := by
+    simpa [Q, DeltaAQ, DeltabQ, qQ] using
+      lsLemma20_6ProjectorComplement_deltab_sub_deltaA_y
+        p DeltaA Deltab y
+  have hneg :
+      (fun i : Fin m => rectMatMulVec DeltaAQ y i - DeltabQ i) =
+        fun i : Fin m => -qQ i := by
+    ext i
+    rw [hres]
+    ring
+  have hWw :
+      rectMatMulVec W w =
+        fun i : Fin m => theta * (rectMatMulVec DeltaAQ y i - DeltabQ i) := by
+    simpa [W, w] using
+      lsNormwiseBackwardErrorWeightedMatrix_mulVec_phi_witness
+        theta DeltaAQ DeltabQ y
+  have hleft :
+      vecNorm2Sq (rectMatMulVec W w) = theta ^ 2 * vecNorm2Sq qQ := by
+    calc
+      vecNorm2Sq (rectMatMulVec W w) =
+          vecNorm2Sq
+            (fun i : Fin m =>
+              theta * (rectMatMulVec DeltaAQ y i - DeltabQ i)) := by
+            rw [hWw]
+      _ = theta ^ 2 *
+            vecNorm2Sq
+              (fun i : Fin m => rectMatMulVec DeltaAQ y i - DeltabQ i) := by
+            simpa using
+              (vecNorm2Sq_smul theta
+                (fun i : Fin m => rectMatMulVec DeltaAQ y i - DeltabQ i))
+      _ = theta ^ 2 * vecNorm2Sq qQ := by
+            have hnorm :
+                vecNorm2Sq
+                    (fun i : Fin m => rectMatMulVec DeltaAQ y i - DeltabQ i) =
+                  vecNorm2Sq qQ := by
+              rw [hneg]
+              simpa using (vecNorm2Sq_smul (-1 : ℝ) qQ)
+            rw [hnorm]
+  have hw_sq :
+      vecNorm2Sq w = 1 + theta ^ 2 * vecNorm2Sq y := by
+    unfold w vecNorm2Sq
+    rw [Fin.sum_univ_add]
+    simp [Fin.append_left, Fin.append_right]
+    rw [Finset.mul_sum]
+    ring_nf
+  have hcs :
+      theta ^ 2 * vecNorm2Sq qQ ≤
+        (frobNormSqRect DeltaAQ + theta ^ 2 * vecNorm2Sq DeltabQ) *
+          (1 + theta ^ 2 * vecNorm2Sq y) := by
+    calc
+      theta ^ 2 * vecNorm2Sq qQ =
+          vecNorm2Sq (rectMatMulVec W w) := by
+          rw [hleft]
+      _ ≤ frobNormSqRect W * vecNorm2Sq w :=
+          vecNorm2Sq_rectMatMulVec_le_frobNormSqRect_mul W w
+      _ = (frobNormSqRect DeltaAQ + theta ^ 2 * vecNorm2Sq DeltabQ) *
+          (1 + theta ^ 2 * vecNorm2Sq y) := by
+          rw [lsNormwiseBackwardErrorWeightedMatrix_frobNormSqRect, hw_sq]
+  have hDeltabQ_le : vecNorm2Sq DeltabQ ≤ vecNorm2Sq Deltab := by
+    simpa [Q, DeltabQ] using
+      lsLemma20_6ProjectorComplement_vecNorm2Sq_le p hpsq Deltab
+  have hcost_tail :
+      theta ^ 2 * vecNorm2Sq DeltabQ ≤
+        theta ^ 2 * vecNorm2Sq Deltab :=
+    mul_le_mul_of_nonneg_left hDeltabQ_le (sq_nonneg theta)
+  have hcost_le :
+      frobNormSqRect DeltaAQ + theta ^ 2 * vecNorm2Sq DeltabQ ≤
+        frobNormSqRect DeltaAQ + theta ^ 2 * vecNorm2Sq Deltab := by
+    linarith
+  have hden_nonneg : 0 ≤ 1 + theta ^ 2 * vecNorm2Sq y := by
+    exact le_of_lt (lsNormwiseBackwardErrorMu_den_pos theta y)
+  have hmul :
+      (frobNormSqRect DeltaAQ + theta ^ 2 * vecNorm2Sq DeltabQ) *
+          (1 + theta ^ 2 * vecNorm2Sq y) ≤
+        (frobNormSqRect DeltaAQ + theta ^ 2 * vecNorm2Sq Deltab) *
+          (1 + theta ^ 2 * vecNorm2Sq y) :=
+    mul_le_mul_of_nonneg_right hcost_le hden_nonneg
+  calc
+    theta ^ 2 *
+        vecNorm2Sq
+          (matMulVec m (lsLemma20_6ProjectorComplement p)
+            (fun i : Fin m => Deltab i - rectMatMulVec DeltaA y i)) =
+        theta ^ 2 * vecNorm2Sq qQ := by
+          rfl
+    _ ≤ (frobNormSqRect DeltaAQ + theta ^ 2 * vecNorm2Sq DeltabQ) *
+        (1 + theta ^ 2 * vecNorm2Sq y) := hcs
+    _ ≤ (frobNormSqRect DeltaAQ + theta ^ 2 * vecNorm2Sq Deltab) *
+        (1 + theta ^ 2 * vecNorm2Sq y) := hmul
+    _ = (1 + theta ^ 2 * vecNorm2Sq y) *
+        (frobNormSqRect
+            (matMulRectLeft (lsLemma20_6ProjectorComplement p) DeltaA) +
+          theta ^ 2 * vecNorm2Sq Deltab) := by
+          simp [Q, DeltaAQ, mul_comm]
+
 /-- The source projector `r r^+` from (20.21) is symmetric. -/
 theorem lsResidualPseudoinverseProjector_symmetric {m : ℕ}
     (r : Fin m → ℝ) (i j : Fin m) :
