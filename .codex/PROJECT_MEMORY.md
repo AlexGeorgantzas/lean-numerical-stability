@@ -9497,3 +9497,17 @@ These compile, but should not be treated as fully derived stability results:
   `/tmp/ch13_lookup_recip_det.{out,err}` with empty stderr and the name
   present, `git diff --check`, Lean-only placeholder scan, scratch cleanup, and
   `#print axioms` with only `propext`, `Classical.choice`, and `Quot.sound`.
+
+- 2026-06-28 Problem 13.4 canonical stage-local Eq.13.23 composition: added
+  `higham13_eq13_23_matrix_stage_history_product_from_stageLocalGrowth_source_comparisons_exact_kappa_of_product_bound_diag_update`.
+  It composes the canonical stage-local-growth source-comparison product route
+  with the matrix-stage product-bound/diagonal-update `rho <= 2` layer, removing
+  the raw Eq.13.23 `growthFactorEntry <= 2` premise from that route. The
+  local-to-full scalar comparison table and active BDD product/update data
+  remain explicit source obligations. Verification passed: direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_lookup_stage_local_product_update.{out,err}` with empty stderr and
+  the name present, `git diff --check`, Lean-only placeholder scan, scratch
+  cleanup, and `#print axioms` with only `propext`, `Classical.choice`, and
+  `Quot.sound`.
