@@ -8495,6 +8495,67 @@ theorem lsLemma20_6Projector_vecNorm2Sq_le {m : ℕ}
   rw [div_le_iff₀ hDpos]
   simpa [D, dot, mul_comm] using hcs
 
+/-- Exact squared-norm formula for the complement projector `I - s s^+`:
+    applying the complement removes precisely the squared component in the
+    source direction `s`. -/
+theorem lsLemma20_6ProjectorComplement_vecNorm2Sq_eq_sub {m : ℕ}
+    (s : Fin m → ℝ) (hsq : vecNorm2Sq s ≠ 0) (v : Fin m → ℝ) :
+    vecNorm2Sq (matMulVec m (lsLemma20_6ProjectorComplement s) v) =
+      vecNorm2Sq v - (∑ k : Fin m, s k * v k) ^ 2 / vecNorm2Sq s := by
+  let D : ℝ := vecNorm2Sq s
+  let dot : ℝ := ∑ k : Fin m, s k * v k
+  have hD : D ≠ 0 := by
+    simpa [D] using hsq
+  have hmiddle :
+      (∑ i : Fin m, 2 * (v i * ((s i / D) * dot))) =
+        2 * (dot / D) * dot := by
+    calc
+      (∑ i : Fin m, 2 * (v i * ((s i / D) * dot)))
+          = 2 * (dot / D) * ∑ i : Fin m, s i * v i := by
+            rw [Finset.mul_sum]
+            apply Finset.sum_congr rfl
+            intro i _
+            ring
+      _ = 2 * (dot / D) * dot := by
+            simp [dot]
+  have hlast :
+      (∑ i : Fin m, ((s i / D) * dot) ^ 2) =
+        (dot ^ 2 / (D * D)) * ∑ i : Fin m, s i ^ 2 := by
+    rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl
+    intro i _
+    ring
+  unfold vecNorm2Sq matMulVec
+  calc
+    (∑ i : Fin m,
+        (∑ k : Fin m, lsLemma20_6ProjectorComplement s i k * v k) ^ 2)
+        = ∑ i : Fin m, (v i - (s i / D) * dot) ^ 2 := by
+          apply Finset.sum_congr rfl
+          intro i _
+          simpa [D, dot] using congrArg (fun x => x ^ 2)
+            (lsLemma20_6ProjectorComplement_apply_vec s v i)
+    _ = ∑ i : Fin m,
+          (v i ^ 2 - 2 * (v i * ((s i / D) * dot)) +
+            ((s i / D) * dot) ^ 2) := by
+          apply Finset.sum_congr rfl
+          intro i _
+          ring
+    _ = (∑ i : Fin m, v i ^ 2) -
+          (∑ i : Fin m, 2 * (v i * ((s i / D) * dot))) +
+          (∑ i : Fin m, ((s i / D) * dot) ^ 2) := by
+          rw [Finset.sum_add_distrib, Finset.sum_sub_distrib]
+    _ = (∑ i : Fin m, v i ^ 2) -
+          2 * (dot / D) * dot + (dot ^ 2 / (D * D)) * ∑ i : Fin m, s i ^ 2 := by
+          rw [hmiddle, hlast]
+    _ = (∑ i : Fin m, v i ^ 2) -
+          2 * (dot / D) * dot + (dot ^ 2 / (D * D)) * D := by
+          simp [D, vecNorm2Sq]
+    _ = (∑ i : Fin m, v i ^ 2) - dot ^ 2 / D := by
+          field_simp [hD]
+          ring
+    _ = vecNorm2Sq v - (∑ k : Fin m, s k * v k) ^ 2 / vecNorm2Sq s := by
+          simp [D, dot, vecNorm2Sq]
+
 /-- The complementary projector `I-P` from equation (20.22) is a vector
     2-norm contraction. -/
 theorem lsLemma20_6ProjectorComplement_vecNorm2Sq_le {m : ℕ}
