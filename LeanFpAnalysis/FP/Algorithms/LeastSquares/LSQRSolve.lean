@@ -14833,6 +14833,95 @@ theorem lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_rankOne_scaled_cost_le_sigm
   rw [hrhs]
   exact heta.trans hcost'
 
+/-- Division-free squared-cost bridge for the scaled rank-one WKS witness.
+    A future singular-vector construction naturally supplies the scaled witness
+    cost as a squared inequality after multiplying by `||p||_2^2`; this lemma
+    converts that certificate into the square-root form used by the
+    source-block `sigma_min` handoff. -/
+theorem lsNormwiseBackwardErrorRankOne_scaled_cost_sqrt_le_of_sq_le
+    {m n : ℕ} (theta sigma : ℝ)
+    (p : Fin m → ℝ) (hp : vecNorm2Sq p ≠ 0)
+    (u : Fin n → ℝ) (q : Fin m → ℝ)
+    (hsigma : 0 ≤ sigma)
+    (hcost_sq :
+      vecNorm2Sq u + theta ^ 2 * vecNorm2Sq q * vecNorm2Sq p ≤
+        sigma ^ 2 * vecNorm2Sq p) :
+    Real.sqrt (vecNorm2Sq u / vecNorm2Sq p +
+      theta ^ 2 * vecNorm2Sq q) ≤ sigma := by
+  have hp_pos : 0 < vecNorm2Sq p :=
+    lt_of_le_of_ne (vecNorm2Sq_nonneg p) (Ne.symm hp)
+  have hinside_le :
+      vecNorm2Sq u / vecNorm2Sq p + theta ^ 2 * vecNorm2Sq q ≤
+        sigma ^ 2 := by
+    have hmul :
+        (vecNorm2Sq u / vecNorm2Sq p + theta ^ 2 * vecNorm2Sq q) *
+            vecNorm2Sq p ≤
+          sigma ^ 2 * vecNorm2Sq p := by
+      calc
+        (vecNorm2Sq u / vecNorm2Sq p + theta ^ 2 * vecNorm2Sq q) *
+            vecNorm2Sq p
+            = vecNorm2Sq u + theta ^ 2 * vecNorm2Sq q * vecNorm2Sq p := by
+                field_simp [ne_of_gt hp_pos]
+        _ ≤ sigma ^ 2 * vecNorm2Sq p := hcost_sq
+    exact le_of_mul_le_mul_right hmul hp_pos
+  calc
+    Real.sqrt (vecNorm2Sq u / vecNorm2Sq p +
+        theta ^ 2 * vecNorm2Sq q)
+        ≤ Real.sqrt (sigma ^ 2) := Real.sqrt_le_sqrt hinside_le
+    _ = sigma := by
+        rw [Real.sqrt_sq_eq_abs, abs_of_nonneg hsigma]
+
+/-- Source-block `sigma_min` branch handoff from a division-free squared-cost
+    certificate for the scaled rank-one WKS witness.  This is the form expected
+    from the remaining singular-vector algebra: prove the explicit scaled
+    witness cost squared is at most `sigma_min^2 * ||p||_2^2`, and the
+    constructive upper inequality `eta_F(y) <=` the right-hand side of (20.21)
+    follows when the printed minimum selects the source-block branch. -/
+theorem lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_rankOne_scaled_sq_cost_le_sigmaMin
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (p : Fin (m + 1) → ℝ) (hp : vecNorm2Sq p ≠ 0)
+    (c : ℝ) (hc : c ≠ 0)
+    (hbranch :
+      lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+          (lsResidualHigham A b y) y ≤
+        lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y)
+    (hcost_sq :
+      let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+      let u : Fin n → ℝ := fun j => ∑ i : Fin (m + 1), A i j * p i
+      let q : Fin (m + 1) → ℝ :=
+        fun i =>
+          c * p i - r i -
+            ((1 / vecNorm2Sq p) * p i *
+              (∑ j : Fin n, u j * y j))
+      vecNorm2Sq u + theta ^ 2 * vecNorm2Sq q * vecNorm2Sq p ≤
+        (lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y) ^ 2 *
+          vecNorm2Sq p) :
+    lsNormwiseBackwardErrorEtaF theta A b y ≤
+      lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+  let u : Fin n → ℝ := fun j => ∑ i : Fin (m + 1), A i j * p i
+  let q : Fin (m + 1) → ℝ :=
+    fun i =>
+      c * p i - r i -
+        ((1 / vecNorm2Sq p) * p i *
+          (∑ j : Fin n, u j * y j))
+  let sigma : ℝ := lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y
+  have hsigma : 0 ≤ sigma := by
+    simpa [sigma, r] using
+      lsNormwiseBackwardErrorFormulaMatrixSigmaMin_nonneg theta A r y
+  have hcost :
+      Real.sqrt (vecNorm2Sq u / vecNorm2Sq p +
+        theta ^ 2 * vecNorm2Sq q) ≤ sigma := by
+    exact
+      lsNormwiseBackwardErrorRankOne_scaled_cost_sqrt_le_of_sq_le
+        theta sigma p hp u q hsigma (by
+          simpa [r, u, q, sigma] using hcost_sq)
+  exact
+    lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_rankOne_scaled_cost_le_sigmaMin
+      theta A b y p hp c hc hbranch (by
+        simpa [r, u, q, sigma] using hcost)
+
 /-- Left block of the transposed WKS source matrix on a feasible perturbed
     residual.  Under (20.20) feasibility, the `A^T` part of
     `[A phi(I-r r^+)]^T p` is exactly cancelled by `DeltaA^T p`, where
