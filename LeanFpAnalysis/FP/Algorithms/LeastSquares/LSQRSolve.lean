@@ -7225,6 +7225,26 @@ theorem lsNormwiseBackwardErrorRankOneDeltaA_transpose_mul
                     rw [hinv]
                     ring
 
+/-- Matrix-vector action of the rank-one WKS perturbation.  This exposes the
+    `DeltaA * y` term in the constructive upper-bound witness cost. -/
+theorem lsNormwiseBackwardErrorRankOneDeltaA_mulVec
+    {m n : ℕ} (p : Fin m → ℝ) (u y : Fin n → ℝ) :
+    rectMatMulVec (lsNormwiseBackwardErrorRankOneDeltaA p u) y =
+      fun i : Fin m =>
+        -((1 / vecNorm2Sq p) * p i * (∑ j : Fin n, u j * y j)) := by
+  ext i
+  unfold rectMatMulVec lsNormwiseBackwardErrorRankOneDeltaA
+  calc
+    ∑ j : Fin n, -((1 / vecNorm2Sq p) * p i * u j) * y j
+        = ∑ j : Fin n, (-((1 / vecNorm2Sq p) * p i)) * (u j * y j) := by
+            apply Finset.sum_congr rfl
+            intro j _
+            ring
+    _ = (-((1 / vecNorm2Sq p) * p i)) * ∑ j : Fin n, u j * y j := by
+            rw [Finset.mul_sum]
+    _ = -((1 / vecNorm2Sq p) * p i * (∑ j : Fin n, u j * y j)) := by
+            ring
+
 /-- Frobenius norm of the rank-one WKS perturbation. -/
 theorem lsNormwiseBackwardErrorRankOneDeltaA_frobNormSq
     {m n : ℕ} {p : Fin m → ℝ} {u : Fin n → ℝ}
@@ -14554,6 +14574,55 @@ theorem lsNormwiseBackwardErrorEtaF_le_rankOne_source_residual_witness
     rw [lsNormwiseBackwardErrorCostF_eq_sqrt_sq_sum]
     rw [lsNormwiseBackwardErrorRankOneDeltaA_frobNormSq (p := p) (u := u) hp]
   exact hcost ▸ heta
+
+/-- Expanded rank-one WKS source-residual upper bound.  This rewrites the
+    `Delta b` component of the rank-one witness cost using the explicit
+    matrix-vector action of the rank-one `DeltaA`, preparing the later
+    source-block singular-vector certificate. -/
+theorem lsNormwiseBackwardErrorEtaF_le_rankOne_source_residual_witness_expanded
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (y : Fin n → ℝ)
+    (p : Fin m → ℝ) (hp : vecNorm2Sq p ≠ 0) :
+    let r : Fin m → ℝ := lsResidualHigham A b y
+    let u : Fin n → ℝ := fun j => ∑ i : Fin m, A i j * p i
+    lsNormwiseBackwardErrorEtaF theta A b y ≤
+      Real.sqrt (vecNorm2Sq u / vecNorm2Sq p +
+        theta ^ 2 *
+          vecNorm2Sq
+            (fun i : Fin m =>
+              p i - r i -
+                ((1 / vecNorm2Sq p) * p i *
+                  (∑ j : Fin n, u j * y j)))) := by
+  let r : Fin m → ℝ := lsResidualHigham A b y
+  let u : Fin n → ℝ := fun j => ∑ i : Fin m, A i j * p i
+  let DeltaA : Fin m → Fin n → ℝ :=
+    lsNormwiseBackwardErrorRankOneDeltaA p u
+  let Deltab : Fin m → ℝ :=
+    fun i => p i - r i + rectMatMulVec DeltaA y i
+  have hbase :
+      lsNormwiseBackwardErrorEtaF theta A b y ≤
+        Real.sqrt (vecNorm2Sq u / vecNorm2Sq p +
+          theta ^ 2 * vecNorm2Sq Deltab) := by
+    simpa [r, u, DeltaA, Deltab] using
+      (lsNormwiseBackwardErrorEtaF_le_rankOne_source_residual_witness
+        theta A b y p hp)
+  have hDeltab :
+      Deltab =
+        fun i : Fin m =>
+          p i - r i -
+            ((1 / vecNorm2Sq p) * p i * (∑ j : Fin n, u j * y j)) := by
+    ext i
+    have hmul :
+        rectMatMulVec DeltaA y i =
+          -((1 / vecNorm2Sq p) * p i * (∑ j : Fin n, u j * y j)) := by
+      simpa [DeltaA] using
+        congrFun
+          (lsNormwiseBackwardErrorRankOneDeltaA_mulVec
+            (p := p) (u := u) (y := y)) i
+    dsimp [Deltab]
+    rw [hmul]
+    ring
+  simpa [r, u, hDeltab] using hbase
 
 /-- Left block of the transposed WKS source matrix on a feasible perturbed
     residual.  Under (20.20) feasibility, the `A^T` part of
