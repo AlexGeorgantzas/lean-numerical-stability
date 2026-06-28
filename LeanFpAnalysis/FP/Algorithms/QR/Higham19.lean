@@ -9891,6 +9891,59 @@ theorem
         exact le_rfl)
       (by exact le_rfl)
 
+/-- Fully explicit small-unit-roundoff route using the Frobenius fallback
+inverse budget for the extracted `R11` block.
+
+This removes the visible `rectOpNorm2Le (nonsingInv R11) rho` and `0 <= rho`
+premises from the explicit-radius wrapper by choosing
+`rho = ||nonsingInv R11||_F`.  It is still weaker than the intended printed
+source condition-number estimate, which should eventually prove the displayed
+product bound from source-side nonbreakdown and conditioning facts. -/
+theorem
+    mgs_qr_bounds_of_R11_det_ne_zero_frob_condition_explicit_radius_of_small_unit_roundoff
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {kappaA : Real}
+    (hdet :
+      Ne
+        (Matrix.det
+        (householder_paddedFinInput_R11 fp A :
+          Matrix (Fin n) (Fin n) Real))
+        0)
+    (hcondition :
+      frobNormRect A *
+          frobNorm (nonsingInv n (householder_paddedFinInput_R11 fp A)) <=
+        kappaA) :
+    MGSQRBounds m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (householder_paddedFinInput_R11 fp A)
+      (2 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      (12 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u (frobNormRect A) kappaA
+      (((3 * Theorem19_4.gamma_tilde fp (n + m) n) * kappaA) ^ 2) := by
+  let R11 : Fin n -> Fin n -> Real := householder_paddedFinInput_R11 fp A
+  let rho : Real := frobNorm (nonsingInv n R11)
+  have hRinv : rectOpNorm2Le (nonsingInv n R11) rho := by
+    dsimp [rho]
+    exact rectOpNorm2Le_nonsingInv_frobNorm R11
+  have hrho : 0 <= rho := by
+    dsimp [rho]
+    exact frobNorm_nonneg (nonsingInv n R11)
+  exact
+    mgs_qr_bounds_of_R11_det_ne_zero_compact_condition_explicit_radius_of_small_unit_roundoff
+      (fp := fp) (m := m) (n := n) A hn hnm hsmall
+      (rho := rho) (kappaA := kappaA)
+      hdet
+      (by simpa [R11] using hRinv)
+      hrho
+      (by simpa [R11, rho] using hcondition)
+
 /-- Chapter-facing Theorem 19.13 assembly currently proved for the concrete
 padded Householder route.
 
