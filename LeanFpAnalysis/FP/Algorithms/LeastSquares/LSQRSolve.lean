@@ -8952,6 +8952,134 @@ theorem lsNormwiseBackwardErrorProjectedPerturbationResidual_weighted_vecNorm2Sq
           theta ^ 2 * vecNorm2Sq Deltab) := by
           simp [Q, DeltaAQ, mul_comm]
 
+/-- Exact projector squared estimate for the nonzero-`p` WKS lower-bound
+    route.  The left block `DeltaA^T p` consumes the rank-one direction in
+    `DeltaA` by the Frobenius Pythagoras identity; the right block is controlled
+    by the projected weighted perturbation-residual bound and the symmetric
+    projector area identity. -/
+theorem lsNormwiseBackwardErrorExactProjector_sq_bound
+    {m n : ℕ} {theta : ℝ} (htheta : 0 ≤ theta)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (r p : Fin m → ℝ) (hrsq : vecNorm2Sq r ≠ 0)
+    (hpsq : vecNorm2Sq p ≠ 0)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (hp :
+      p = fun i : Fin m => r i + Deltab i - rectMatMulVec DeltaA y i) :
+    vecNorm2Sq
+        (fun j : Fin n => -∑ i : Fin m, DeltaA i j * p i) +
+      (lsNormwiseBackwardErrorPhi theta r y) ^ 2 *
+        vecNorm2Sq (matMulVec m (lsResidualComplementProjector r) p) ≤
+      (lsNormwiseBackwardErrorCostF theta DeltaA Deltab) ^ 2 *
+        vecNorm2Sq p := by
+  let Qp : Fin m → Fin m → ℝ := lsLemma20_6ProjectorComplement p
+  let DeltaAQp : Fin m → Fin n → ℝ := matMulRectLeft Qp DeltaA
+  let left : Fin n → ℝ := fun j : Fin n => -∑ i : Fin m, DeltaA i j * p i
+  let trans : Fin n → ℝ := fun j : Fin n => ∑ i : Fin m, p i * DeltaA i j
+  let P : ℝ := vecNorm2Sq p
+  let F : ℝ := frobNormSqRect DeltaA
+  let Fq : ℝ := frobNormSqRect DeltaAQp
+  let B : ℝ := vecNorm2Sq Deltab
+  let D : ℝ := 1 + theta ^ 2 * vecNorm2Sq y
+  let C : ℝ := Fq + theta ^ 2 * B
+  have hleft_neg : left = fun j : Fin n => -trans j := by
+    ext j
+    change -(∑ i : Fin m, DeltaA i j * p i) =
+      -(∑ i : Fin m, p i * DeltaA i j)
+    congr 1
+    apply Finset.sum_congr rfl
+    intro i _
+    ring
+  have hleft_sq : vecNorm2Sq left = vecNorm2Sq trans := by
+    rw [hleft_neg]
+    simpa using (vecNorm2Sq_smul (-1 : ℝ) trans)
+  have hpyth :
+      vecNorm2Sq left + P * Fq = P * F := by
+    rw [hleft_sq]
+    simpa [Qp, DeltaAQp, trans, P, F, Fq, mul_comm] using
+      lsLemma20_6Projector_transpose_action_vecNorm2Sq_add_complement_frobNormSqRect
+        p hpsq DeltaA
+  have hdiff :
+      (fun i : Fin m => p i - r i) =
+        fun i : Fin m => Deltab i - rectMatMulVec DeltaA y i := by
+    ext i
+    have hpi := congrFun hp i
+    linarith
+  have hprojected :
+      theta ^ 2 *
+          vecNorm2Sq
+            (matMulVec m Qp (fun i : Fin m => p i - r i)) ≤
+        D * C := by
+    have hbase :=
+      lsNormwiseBackwardErrorProjectedPerturbationResidual_weighted_vecNorm2Sq_le
+        theta p hpsq DeltaA Deltab y
+    simpa [Qp, DeltaAQp, D, C, B, hdiff] using hbase
+  have hDpos : 0 < D := by
+    simpa [D] using lsNormwiseBackwardErrorMu_den_pos theta y
+  have hP_nonneg : 0 ≤ P := by
+    simpa [P] using vecNorm2Sq_nonneg p
+  have hproj_div :
+      theta ^ 2 *
+          vecNorm2Sq (matMulVec m Qp (fun i : Fin m => p i - r i)) / D ≤
+        C := by
+    rw [div_le_iff₀ hDpos]
+    simpa [mul_comm, mul_left_comm, mul_assoc] using hprojected
+  have hphi_sq :
+      (lsNormwiseBackwardErrorPhi theta r y) ^ 2 =
+        theta ^ 2 * vecNorm2Sq r / D := by
+    rw [lsNormwiseBackwardErrorPhi_eq_theta_mul_norm_div_sqrt_den htheta hy r]
+    rw [div_pow, mul_pow, Real.sq_sqrt (le_of_lt hDpos), ← vecNorm2_sq r]
+  have harea :=
+    lsLemma20_6ProjectorComplement_area_identity_sub r p hrsq hpsq
+  have hright_eq :
+      (lsNormwiseBackwardErrorPhi theta r y) ^ 2 *
+          vecNorm2Sq (matMulVec m (lsResidualComplementProjector r) p) =
+        P *
+          (theta ^ 2 *
+            vecNorm2Sq (matMulVec m Qp (fun i : Fin m => p i - r i)) / D) := by
+    calc
+      (lsNormwiseBackwardErrorPhi theta r y) ^ 2 *
+          vecNorm2Sq (matMulVec m (lsResidualComplementProjector r) p)
+          = (theta ^ 2 * vecNorm2Sq r / D) *
+              vecNorm2Sq
+                (matMulVec m (lsLemma20_6ProjectorComplement r) p) := by
+              rw [hphi_sq]
+      _ = (theta ^ 2 / D) *
+            (vecNorm2Sq r *
+              vecNorm2Sq
+                (matMulVec m (lsLemma20_6ProjectorComplement r) p)) := by
+              ring
+      _ = (theta ^ 2 / D) *
+            (vecNorm2Sq p *
+              vecNorm2Sq (matMulVec m Qp (fun i : Fin m => p i - r i))) := by
+              rw [harea]
+      _ = P *
+          (theta ^ 2 *
+            vecNorm2Sq (matMulVec m Qp (fun i : Fin m => p i - r i)) / D) := by
+          ring
+  have hright_le :
+      (lsNormwiseBackwardErrorPhi theta r y) ^ 2 *
+          vecNorm2Sq (matMulVec m (lsResidualComplementProjector r) p) ≤
+        P * C := by
+    rw [hright_eq]
+    exact mul_le_mul_of_nonneg_left hproj_div hP_nonneg
+  calc
+    vecNorm2Sq left +
+        (lsNormwiseBackwardErrorPhi theta r y) ^ 2 *
+          vecNorm2Sq (matMulVec m (lsResidualComplementProjector r) p)
+        ≤ vecNorm2Sq left + P * C := by
+          exact add_le_add (le_refl (vecNorm2Sq left)) hright_le
+    _ = vecNorm2Sq left + P * Fq + P * (theta ^ 2 * B) := by
+          simp [C]
+          ring
+    _ = P * F + P * (theta ^ 2 * B) := by
+          rw [hpyth]
+    _ = P * (F + theta ^ 2 * B) := by
+          ring
+    _ = (lsNormwiseBackwardErrorCostF theta DeltaA Deltab) ^ 2 *
+          vecNorm2Sq p := by
+          rw [lsNormwiseBackwardErrorCostF_sq]
+          simp [P, F, B, mul_comm]
+
 /-- The source projector `r r^+` from (20.21) is symmetric. -/
 theorem lsResidualPseudoinverseProjector_symmetric {m : ℕ}
     (r : Fin m → ℝ) (i j : Fin m) :
