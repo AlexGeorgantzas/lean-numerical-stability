@@ -9597,3 +9597,16 @@ These compile, but should not be treated as fully derived stability results:
   and the concrete subordinate-norm perturbation estimates are still not
   instantiated, and the source theorem is still stated for an arbitrary
   subordinate norm.
+
+- 2026-06-28 Algorithm 13.3 BDD Euclidean Schur perturbation instantiation:
+  added `vecNorm2_matMulVec_triple_le_opNorm2` and
+  `vecNorm2_matMulVec_triple_le_opNorm2_of_unit` in `MatrixAlgebra.lean`,
+  proving the exact 2-norm subordinate triple-product action estimate.  Added
+  `higham13_algorithm13_3_vecNorm2_diag_lower_update` in `BlockLU.lean`, which
+  instantiates the Eq.13.18 Euclidean lower-norm diagonal update for the actual
+  Algorithm 13.3 matrix-product Schur stages.  This closes the concrete Schur
+  action identity and 2-norm perturbation-estimate parts of the Euclidean
+  lower-norm route.  The selected BDD row still remains open because active
+  reciprocal equality for the stage pivots is not proved, and the printed
+  theorem remains arbitrary-subordinate-norm unless a Euclidean specialization
+  is explicitly chosen.

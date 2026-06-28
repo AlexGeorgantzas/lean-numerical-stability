@@ -10679,6 +10679,69 @@ theorem SchurStageActiveDiagLowerUpdate13_7.of_vecNorm2_stage_lower_norm_matrice
     (hPerturb k hk j hj)
     (hSchur k hk j hj)
 
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equation (13.18):
+    concrete Euclidean lower-norm diagonal update for the true matrix-product
+    Schur-stage table.
+
+    This instantiates the lower-norm table construction with the actual
+    diagonal blocks `A_jj^(k)`, proves the Schur action identity from the
+    Algorithm 13.3 exact update, and proves the perturbation estimate by the
+    exact `opNorm2` subordinate triple-product bound.  The active reciprocal
+    equality identifying the active lower norm with `||pivotInv_k||₂⁻¹` remains
+    a separate nonsingularity/pivot-inverse obligation. -/
+theorem higham13_algorithm13_3_vecNorm2_diag_lower_update
+    {m r : ℕ} (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ) :
+    SchurStageActiveDiagLowerUpdate13_7
+      (fun k i j => opNorm2 (fun s t =>
+        higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j s t))
+      (fun k j => matMulVecLowerNorm2 hr (fun s t =>
+        higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k j j s t))
+      (fun k => opNorm2 (fun s t => pivotInv k s t)) := by
+  let stage : ℕ → Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ :=
+    higham13_algorithm13_3_schurStageMatrixBlock A pivotInv
+  let stageDiag : ℕ → Fin m → Fin r → Fin r → ℝ :=
+    fun k j s t => stage k j j s t
+  let perturb : ℕ → Fin m → Fin r → Fin r → ℝ :=
+    fun k j =>
+      if hk : k < m then
+        matMul r
+          (matMul r (fun s t => stage k j ⟨k, hk⟩ s t)
+            (fun s t => pivotInv k s t))
+          (fun s t => stage k ⟨k, hk⟩ j s t)
+      else
+        fun _ _ => 0
+  exact
+    SchurStageActiveDiagLowerUpdate13_7.of_vecNorm2_stage_lower_norm_matrices
+      (m := m) (r := r) hr
+      (fun k i j => opNorm2 (fun s t => stage k i j s t))
+      (fun k => opNorm2 (fun s t => pivotInv k s t))
+      stageDiag perturb
+      (by
+        intro k hk j _hj x hx
+        let p : Fin m := ⟨k, hk⟩
+        simpa [perturb, hk, p, stage] using
+          (vecNorm2_matMulVec_triple_le_opNorm2_of_unit
+            (fun s t => stage k j p s t)
+            (fun s t => pivotInv k s t)
+            (fun s t => stage k p j s t)
+            hx))
+      (by
+        intro k hk j hj x
+        let p : Fin m := ⟨k, hk⟩
+        have hUpdate :=
+          (higham13_algorithm13_3_schurStageBlock_exact_update A pivotInv)
+            k hk j j hj hj
+        have hUpdateM :
+            stage (k + 1) j j =
+              stage k j j - stage k j p * pivotInv k * stage k p j := by
+          simpa [stage, higham13_algorithm13_3_schurStageMatrixBlock, p] using
+            hUpdate
+        ext s
+        simp [stageDiag, perturb, hk, p, hUpdateM, matMulVec, matMul,
+          Matrix.mul_apply, sub_mul, Finset.sum_sub_distrib])
+
 /-- Higham, 2nd ed., Chapter 13, equation (13.18):
     abstract subordinate-norm lower-bound half.
 
