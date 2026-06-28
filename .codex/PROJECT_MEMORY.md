@@ -9578,3 +9578,22 @@ These compile, but should not be treated as fully derived stability results:
   Euclidean-only limitation for that dependency but still does not construct
   the actual lower-norm/source table, active reciprocal equality, or concrete
   subordinate-norm perturbation estimates.
+
+- 2026-06-28 Algorithm 13.3 BDD Euclidean lower-norm table construction:
+  added `continuous_vecNorm2`, `continuous_vecNorm2_matMulVec`,
+  `isCompact_vecNorm2_unit_sphere`,
+  `exists_vecNorm2_matMulVec_unit_minimizer`, `matMulVecLowerNorm2`,
+  `matMulVecLowerNorm2_attained`, and `matMulVecLowerNorm2_le` in
+  `MatrixAlgebra.lean`. These prove that the finite Euclidean unit sphere is
+  compact and that every matrix action attains its lower norm on
+  `||x||_2 = 1`. Added the Chapter 13 wrappers
+  `higham13_eq13_18_vecNorm2_min_lower_bound` and
+  `SchurStageActiveDiagLowerUpdate13_7.of_vecNorm2_stage_lower_norm_matrices`
+  in `BlockLU.lean`, which use `matMulVecLowerNorm2` as the active Eq.13.18
+  diagonal certificate table for concrete finite 2-norm block actions. This is
+  genuine source-table progress for the Euclidean route: minimum attainment and
+  lower-norm table construction are now proved locally. The selected BDD row
+  remains open because active reciprocal equality for actual Schur-stage pivots
+  and the concrete subordinate-norm perturbation estimates are still not
+  instantiated, and the source theorem is still stated for an arbitrary
+  subordinate norm.

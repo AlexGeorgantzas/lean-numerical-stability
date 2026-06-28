@@ -6630,6 +6630,35 @@ theorem higham13_eq13_18_min_lower_bound {E : Type*}
     _ ≤ ‖diag x - perturb x‖ := norm_sub_norm_le (diag x) (perturb x)
     _ = schurMin := by rw [← hSchur x, hxMin]
 
+/-- **Equation (13.18), Euclidean min-step abstraction**.
+
+    This is the explicit `vecNorm2` version of
+    `higham13_eq13_18_min_lower_bound`.  It is used when the block norm is
+    represented by the repository's concrete finite-vector Euclidean norm rather
+    than by the ambient typeclass norm on `Fin r → ℝ`. -/
+theorem higham13_eq13_18_vecNorm2_min_lower_bound {r : ℕ}
+    (diag perturb schur : (Fin r → ℝ) → (Fin r → ℝ))
+    (diagMin schurMin perturbBound : ℝ)
+    (hDiagMin : ∀ x : Fin r → ℝ, vecNorm2 x = 1 →
+      diagMin ≤ vecNorm2 (diag x))
+    (hSchurMin : ∃ x : Fin r → ℝ, vecNorm2 x = 1 ∧
+      schurMin = vecNorm2 (schur x))
+    (hPerturb : ∀ x : Fin r → ℝ, vecNorm2 x = 1 →
+      vecNorm2 (perturb x) ≤ perturbBound)
+    (hSchur : ∀ x : Fin r → ℝ,
+      schur x = fun i => diag x i - perturb x i) :
+    diagMin - perturbBound ≤ schurMin := by
+  rcases hSchurMin with ⟨x, hxUnit, hxMin⟩
+  calc
+    diagMin - perturbBound ≤ vecNorm2 (diag x) - perturbBound :=
+      sub_le_sub_right (hDiagMin x hxUnit) perturbBound
+    _ ≤ vecNorm2 (diag x) - vecNorm2 (perturb x) :=
+      sub_le_sub_left (hPerturb x hxUnit) (vecNorm2 (diag x))
+    _ ≤ vecNorm2 (fun i => diag x i - perturb x i) :=
+      (le_abs_self _).trans
+        (abs_vecNorm2_sub_le_vecNorm2_sub (diag x) (perturb x))
+    _ = schurMin := by rw [← hSchur x, hxMin]
+
 /-- **Equation (13.18), scalar column-chain part**.
 
     From block column diagonal dominance (13.17), submultiplicativity for
@@ -10601,10 +10630,52 @@ theorem SchurStageActiveDiagLowerUpdate13_7.of_unit_min_actions {m : ℕ}
   exact higham13_eq13_18_min_lower_bound
     (diag k j) (perturb k j) (schurDiag k j)
     (stageInvDiagBound k j) (stageInvDiagBound (k + 1) j)
-    (stageNorm k j ⟨k, hk⟩ * pivotInvNorm k *
-      stageNorm k ⟨k, hk⟩ j)
+        (stageNorm k j ⟨k, hk⟩ * pivotInvNorm k *
+          stageNorm k ⟨k, hk⟩ j)
     (hDiagMin k hk j hj)
     (hSchurMin k hk j hj)
+    (hPerturb k hk j hj)
+    (hSchur k hk j hj)
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.18):
+    Euclidean lower-norm table construction for active Schur diagonal updates.
+
+    The diagonal certificate is the actually attained minimum
+    `min_{||x||₂=1} ||A_jj^(k) x||₂`, represented by
+    `matMulVecLowerNorm2`.  Thus the theorem discharges the
+    minimum-attainment part of the Eq.13.18 source route for concrete finite
+    Euclidean blocks.  The Schur action identity and subordinate perturbation
+    estimate remain explicit analytic obligations. -/
+theorem SchurStageActiveDiagLowerUpdate13_7.of_vecNorm2_stage_lower_norm_matrices
+    {m r : ℕ} (hr : 0 < r)
+    (stageNorm : ℕ → Fin m → Fin m → ℝ)
+    (pivotInvNorm : ℕ → ℝ)
+    (stageDiag perturb : ℕ → Fin m → Fin r → Fin r → ℝ)
+    (hPerturb : ∀ k : ℕ, ∀ hk : k < m, ∀ j : Fin m,
+      k + 1 ≤ j.val → ∀ x : Fin r → ℝ, vecNorm2 x = 1 →
+        vecNorm2 (matMulVec r (perturb k j) x) ≤
+          stageNorm k j ⟨k, hk⟩ * pivotInvNorm k *
+            stageNorm k ⟨k, hk⟩ j)
+    (hSchur : ∀ k : ℕ, ∀ _hk : k < m, ∀ j : Fin m,
+      k + 1 ≤ j.val → ∀ x : Fin r → ℝ,
+        matMulVec r (stageDiag (k + 1) j) x =
+          fun i => matMulVec r (stageDiag k j) x i -
+            matMulVec r (perturb k j) x i) :
+    SchurStageActiveDiagLowerUpdate13_7
+      stageNorm
+      (fun k j => matMulVecLowerNorm2 hr (stageDiag k j))
+      pivotInvNorm := by
+  intro k hk j hj
+  exact higham13_eq13_18_vecNorm2_min_lower_bound
+    (fun x => matMulVec r (stageDiag k j) x)
+    (fun x => matMulVec r (perturb k j) x)
+    (fun x => matMulVec r (stageDiag (k + 1) j) x)
+    (matMulVecLowerNorm2 hr (stageDiag k j))
+    (matMulVecLowerNorm2 hr (stageDiag (k + 1) j))
+    (stageNorm k j ⟨k, hk⟩ * pivotInvNorm k *
+      stageNorm k ⟨k, hk⟩ j)
+    (fun x hx => matMulVecLowerNorm2_le hr (stageDiag k j) x hx)
+    (matMulVecLowerNorm2_attained hr (stageDiag (k + 1) j))
     (hPerturb k hk j hj)
     (hSchur k hk j hj)
 
