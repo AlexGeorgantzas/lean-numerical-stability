@@ -16293,6 +16293,75 @@ theorem higham13_algorithm13_3_matrix_infNorm_active_local_schur_bound
     (higham13_algorithm13_3_schurStage_local_schur_bound A pivotInv)
 
 /-- Higham, 2nd ed., Chapter 13, Theorem 13.7:
+    source-shaped active column block diagonal dominance for true
+    matrix-product Algorithm 13.3 in the matrix `∞` operator norm.
+
+    This is the concrete block-`∞` specialization of the exact-update
+    Theorem 13.7 proof layer.  The pivot-product and diagonal-update
+    certificates remain explicit; this theorem closes only the active
+    dominance propagation step for the submultiplicative matrix norm. -/
+theorem higham13_algorithm13_3_matrix_infNorm_active_column_dominance_of_pivot_bound
+    {m r : ℕ}
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (stageInvDiagBound : ℕ → Fin m → ℝ)
+    (hDom : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j)) invDiagBound)
+    (hInitInv : ∀ j : Fin m, stageInvDiagBound 0 j = invDiagBound j)
+    (hPivotBound : ∀ k : ℕ, ∀ hk : k < m,
+      infNorm (pivotInv k) * stageInvDiagBound k ⟨k, hk⟩ ≤ 1)
+    (hDiagUpdate : SchurStageActiveDiagLowerUpdate13_7
+      (fun k i j => infNorm
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j))
+      stageInvDiagBound
+      (fun k => infNorm (pivotInv k))) :
+    SchurStageActiveColumnDom13_7
+      (fun k i j => infNorm
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j))
+      stageInvDiagBound := by
+  letI := Matrix.linftyOpNormedRing (n := Fin r) (α := ℝ)
+  have hInitNorm :
+      ∀ i j : Fin m, ‖A i j‖ = (fun i j : Fin m => infNorm (A i j)) i j := by
+    intro i j
+    rfl
+  have hStageNorm :
+      ∀ k : ℕ, ∀ i j : Fin m,
+        higham13_algorithm13_3_schurStageNorm A pivotInv k i j =
+          infNorm
+            (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j) := by
+    intro k i j
+    rfl
+  have hPivotNorm :
+      ∀ k : ℕ, higham13_algorithm13_3_pivotInvNorm pivotInv k =
+        infNorm (pivotInv k) := by
+    intro k
+    rfl
+  have hPivotBound' : ∀ k : ℕ, ∀ hk : k < m,
+      higham13_algorithm13_3_pivotInvNorm pivotInv k *
+          stageInvDiagBound k ⟨k, hk⟩ ≤ 1 := by
+    intro k hk
+    simpa [hPivotNorm k] using hPivotBound k hk
+  have hDiagUpdate' : SchurStageActiveDiagLowerUpdate13_7
+      (higham13_algorithm13_3_schurStageNorm A pivotInv)
+      stageInvDiagBound
+      (higham13_algorithm13_3_pivotInvNorm pivotInv) := by
+    intro k hk j hj
+    simpa [hStageNorm, hPivotNorm] using hDiagUpdate k hk j hj
+  have h :=
+    higham13_algorithm13_3_active_column_dominance_of_pivot_bound
+      (blockNorm := fun i j : Fin m => infNorm (A i j))
+      (invDiagBound := invDiagBound)
+      (hDom := hDom)
+      (A := A)
+      (pivotInv := pivotInv)
+      (stageInvDiagBound := stageInvDiagBound)
+      (hInitNorm := hInitNorm)
+      (hInitInv := hInitInv)
+      (hPivotBound := hPivotBound')
+      (hDiagUpdate := hDiagUpdate')
+  simpa [hStageNorm] using h
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7:
     matrix-product active column dominance from the source induction layer.
 
     This specializes the abstract active-dominance induction to the concrete
