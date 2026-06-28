@@ -10742,6 +10742,38 @@ theorem higham13_algorithm13_3_vecNorm2_diag_lower_update
         simp [stageDiag, perturb, hk, p, hUpdateM, matMulVec, matMul,
           Matrix.mul_apply, sub_mul, Finset.sum_sub_distrib])
 
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equation (13.18):
+    active reciprocal certificate for the Euclidean lower-norm source table.
+
+    If the supplied `pivotInv k` is a right inverse of the active Schur-stage
+    pivot block `A_kk^(k)`, then the attained Euclidean lower norm of that
+    pivot block is exactly `||pivotInv k||₂⁻¹`.  Together with
+    `higham13_algorithm13_3_vecNorm2_diag_lower_update`, this closes the
+    active reciprocal-equality part of the concrete 2-norm lower-norm route;
+    the source arbitrary-subordinate-norm theorem remains a separate route. -/
+theorem higham13_algorithm13_3_vecNorm2_active_pivot_reciprocal_of_right_inverse
+    {m r : ℕ} (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hRight : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (fun s t =>
+          higham13_algorithm13_3_schurStageMatrixBlock
+            A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩ s t)
+        (fun s t => pivotInv k s t)) :
+    SchurStageActivePivotInvReciprocal13_7
+      (fun k j => matMulVecLowerNorm2 hr (fun s t =>
+        higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k j j s t))
+      (fun k => opNorm2 (fun s t => pivotInv k s t)) := by
+  intro k hk
+  simpa using
+    (matMulVecLowerNorm2_eq_inv_opNorm2_of_isRightInverse hr
+      (fun s t =>
+        higham13_algorithm13_3_schurStageMatrixBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩ s t)
+      (fun s t => pivotInv k s t)
+      (hRight k hk))
+
 /-- Higham, 2nd ed., Chapter 13, equation (13.18):
     abstract subordinate-norm lower-bound half.
 

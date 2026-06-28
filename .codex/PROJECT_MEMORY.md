@@ -9610,3 +9610,22 @@ These compile, but should not be treated as fully derived stability results:
   reciprocal equality for the stage pivots is not proved, and the printed
   theorem remains arbitrary-subordinate-norm unless a Euclidean specialization
   is explicitly chosen.
+
+- 2026-06-28 Algorithm 13.3 BDD Euclidean active reciprocal instantiation:
+  added finite-dimensional 2-norm attainment and reciprocal lower-norm
+  infrastructure in `MatrixAlgebra.lean`: `matMulVec_const_mul_right`,
+  `matMulVec_of_isRightInverse`, `exists_vecNorm2_matMulVec_unit_maximizer`,
+  `opNorm2_le_of_unit_vecNorm2_bound`,
+  `opNorm2_eq_vecNorm2_matMulVec_of_unit_maximizer`,
+  `exists_vecNorm2_matMulVec_unit_opNorm2_attained`,
+  `matMulVecLowerNorm2_le_inv_opNorm2_of_isRightInverse`, and
+  `matMulVecLowerNorm2_eq_inv_opNorm2_of_isRightInverse`.  Added
+  `higham13_algorithm13_3_vecNorm2_active_pivot_reciprocal_of_right_inverse`
+  in `BlockLU.lean`, proving that exact active pivot right-inverse data
+  identifies the Algorithm 13.3 Euclidean lower-norm table entry with
+  `||pivotInv_k||₂⁻¹`.  Together with
+  `higham13_algorithm13_3_vecNorm2_diag_lower_update`, this closes the
+  concrete Euclidean lower-norm table/update/active-reciprocal route.  It does
+  not close the printed arbitrary-subordinate-norm theorem or the separate
+  max-entry Eq.13.21 route without a documented Euclidean specialization or
+  additional norm-comparison/source-table work.

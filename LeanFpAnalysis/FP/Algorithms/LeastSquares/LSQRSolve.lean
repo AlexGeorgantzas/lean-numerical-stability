@@ -14887,6 +14887,221 @@ theorem lsNormwiseBackwardErrorEtaF_le_rankOne_source_residual_witness_scaled
   rw [hratio, hDeltab] at hbase
   simpa [r, u] using hbase
 
+/-- The free scalar in the scaled rank-one WKS witness only changes the
+    component parallel to `p`.  After applying the complementary projector
+    `I-p p^+`, the explicit right-hand-side perturbation term is always the
+    negative projection of the source residual `r`. -/
+theorem lsNormwiseBackwardErrorRankOne_scaled_q_projected_eq_neg
+    {m : ℕ} (p r : Fin m → ℝ) (hp : vecNorm2Sq p ≠ 0)
+    (t c : ℝ) :
+    matMulVec m (lsLemma20_6ProjectorComplement p)
+        (fun i : Fin m =>
+          c * p i - r i - ((1 / vecNorm2Sq p) * p i * t)) =
+      fun i : Fin m =>
+        -matMulVec m (lsLemma20_6ProjectorComplement p) r i := by
+  let Qp : Fin m → Fin m → ℝ := lsLemma20_6ProjectorComplement p
+  ext i
+  have hself := congrFun (lsLemma20_6ProjectorComplement_mulVec_self p hp) i
+  have hpzero : ∑ j : Fin m, Qp i j * p j = 0 := by
+    simpa [Qp, matMulVec] using hself
+  calc
+    matMulVec m (lsLemma20_6ProjectorComplement p)
+        (fun i : Fin m =>
+          c * p i - r i - ((1 / vecNorm2Sq p) * p i * t)) i
+        =
+      ∑ j : Fin m,
+        Qp i j *
+          (c * p j - r j - ((1 / vecNorm2Sq p) * p j * t)) := by
+          rfl
+    _ =
+      c * (∑ j : Fin m, Qp i j * p j) -
+        (∑ j : Fin m, Qp i j * r j) -
+          ((1 / vecNorm2Sq p) * t) *
+            (∑ j : Fin m, Qp i j * p j) := by
+          calc
+            ∑ j : Fin m,
+                Qp i j *
+                  (c * p j - r j - ((1 / vecNorm2Sq p) * p j * t))
+                =
+              ∑ j : Fin m,
+                (c * (Qp i j * p j) -
+                  Qp i j * r j -
+                    ((1 / vecNorm2Sq p) * t) * (Qp i j * p j)) := by
+                apply Finset.sum_congr rfl
+                intro j _
+                ring
+            _ =
+              c * (∑ j : Fin m, Qp i j * p j) -
+                (∑ j : Fin m, Qp i j * r j) -
+                  ((1 / vecNorm2Sq p) * t) *
+                    (∑ j : Fin m, Qp i j * p j) := by
+                rw [Finset.sum_sub_distrib, Finset.sum_sub_distrib,
+                  Finset.mul_sum, Finset.mul_sum]
+    _ = -matMulVec m (lsLemma20_6ProjectorComplement p) r i := by
+          rw [hpzero]
+          simp [Qp, matMulVec]
+
+/-- Any scalar choice in the scaled rank-one WKS witness has squared norm at
+    least the squared norm of the source residual projected away from `p`.
+    Thus the remaining upper-bound route must account for this unavoidable
+    orthogonal component. -/
+theorem lsNormwiseBackwardErrorRankOne_scaled_q_projector_lower_bound
+    {m : ℕ} (p r : Fin m → ℝ) (hp : vecNorm2Sq p ≠ 0)
+    (t c : ℝ) :
+    vecNorm2Sq (matMulVec m (lsLemma20_6ProjectorComplement p) r) ≤
+      vecNorm2Sq
+        (fun i : Fin m =>
+          c * p i - r i - ((1 / vecNorm2Sq p) * p i * t)) := by
+  let q : Fin m → ℝ :=
+    fun i : Fin m => c * p i - r i - ((1 / vecNorm2Sq p) * p i * t)
+  let Qr : Fin m → ℝ := matMulVec m (lsLemma20_6ProjectorComplement p) r
+  have hproj :
+      matMulVec m (lsLemma20_6ProjectorComplement p) q =
+        fun i : Fin m => -Qr i := by
+    simpa [q, Qr] using
+      lsNormwiseBackwardErrorRankOne_scaled_q_projected_eq_neg p r hp t c
+  have hnorm :
+      vecNorm2Sq (matMulVec m (lsLemma20_6ProjectorComplement p) q) =
+        vecNorm2Sq Qr := by
+    rw [hproj]
+    simpa [Qr] using (vecNorm2Sq_smul (-1 : ℝ) Qr)
+  have hcontract :
+      vecNorm2Sq (matMulVec m (lsLemma20_6ProjectorComplement p) q) ≤
+        vecNorm2Sq q :=
+    lsLemma20_6ProjectorComplement_vecNorm2Sq_le p hp q
+  rw [hnorm] at hcontract
+  simpa [q, Qr] using hcontract
+
+/-- Optimal scalar choice for the scaled rank-one WKS witness.  Choosing
+    `c = (p^T r + t) / ||p||_2^2` makes the explicit `Delta b` component
+    exactly the negative complement projection of `r` away from `p`, hence
+    realizes the lower bound from
+    `lsNormwiseBackwardErrorRankOne_scaled_q_projector_lower_bound`. -/
+theorem lsNormwiseBackwardErrorRankOne_scaled_q_optimal_vecNorm2Sq
+    {m : ℕ} (p r : Fin m → ℝ) (hp : vecNorm2Sq p ≠ 0)
+    (t : ℝ) :
+    vecNorm2Sq
+        (fun i : Fin m =>
+          (((∑ k : Fin m, p k * r k) + t) / vecNorm2Sq p) * p i -
+            r i - ((1 / vecNorm2Sq p) * p i * t)) =
+      vecNorm2Sq (matMulVec m (lsLemma20_6ProjectorComplement p) r) := by
+  let dot : ℝ := ∑ k : Fin m, p k * r k
+  let q : Fin m → ℝ :=
+    fun i : Fin m =>
+      ((dot + t) / vecNorm2Sq p) * p i -
+        r i - ((1 / vecNorm2Sq p) * p i * t)
+  let Qr : Fin m → ℝ := matMulVec m (lsLemma20_6ProjectorComplement p) r
+  have hq : q = fun i : Fin m => -Qr i := by
+    ext i
+    have hentry :
+        Qr i = r i - (p i / vecNorm2Sq p) * dot := by
+      simpa [Qr, dot, matMulVec] using
+        (lsLemma20_6ProjectorComplement_apply_vec p r i)
+    dsimp [q]
+    rw [hentry]
+    field_simp [hp]
+    ring
+  calc
+    vecNorm2Sq
+        (fun i : Fin m =>
+          (((∑ k : Fin m, p k * r k) + t) / vecNorm2Sq p) * p i -
+            r i - ((1 / vecNorm2Sq p) * p i * t))
+        = vecNorm2Sq q := by
+          rfl
+    _ = vecNorm2Sq (fun i : Fin m => -Qr i) := by
+          rw [hq]
+    _ = vecNorm2Sq Qr := by
+          simpa using (vecNorm2Sq_smul (-1 : ℝ) Qr)
+    _ = vecNorm2Sq (matMulVec m (lsLemma20_6ProjectorComplement p) r) := by
+          rfl
+
+/-- Route-elimination check for the scaled rank-one WKS source-transpose
+    handoff.  In the nondegenerate case where `(I-r r^+)p` is nonzero, the
+    current right-projector comparison required by the rank-one route is
+    impossible for every scalar: the best scalar still leaves the projected
+    residual component, while `phi^2` contains the extra
+    `1 + theta^2 ||y||_2^2` denominator. -/
+theorem lsNormwiseBackwardErrorRankOne_scaled_projector_comparison_not_of_projected_ne_zero
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (r p : Fin m → ℝ) (hrsq : vecNorm2Sq r ≠ 0)
+    (hpsq : vecNorm2Sq p ≠ 0)
+    (hprojected :
+      vecNorm2Sq (matMulVec m (lsLemma20_6ProjectorComplement r) p) ≠ 0)
+    (t c : ℝ) :
+    ¬ theta ^ 2 *
+        vecNorm2Sq
+          (fun i : Fin m =>
+            c * p i - r i - ((1 / vecNorm2Sq p) * p i * t)) *
+          vecNorm2Sq p ≤
+        (lsNormwiseBackwardErrorPhi theta r y) ^ 2 *
+          vecNorm2Sq (matMulVec m (lsLemma20_6ProjectorComplement r) p) := by
+  intro hcomparison
+  let q : Fin m → ℝ :=
+    fun i : Fin m => c * p i - r i - ((1 / vecNorm2Sq p) * p i * t)
+  let Qrp : Fin m → ℝ := matMulVec m (lsLemma20_6ProjectorComplement r) p
+  let Qpr : Fin m → ℝ := matMulVec m (lsLemma20_6ProjectorComplement p) r
+  let R : ℝ := vecNorm2Sq r
+  let P : ℝ := vecNorm2Sq p
+  let Z : ℝ := vecNorm2Sq Qrp
+  let D : ℝ := 1 + theta ^ 2 * vecNorm2Sq y
+  have htheta_nonneg : 0 ≤ theta := le_of_lt htheta
+  have htheta_sq_pos : 0 < theta ^ 2 := sq_pos_of_ne_zero (ne_of_gt htheta)
+  have hRpos : 0 < R := by
+    exact lt_of_le_of_ne (by simpa [R] using vecNorm2Sq_nonneg r) (by simpa [R] using Ne.symm hrsq)
+  have hPpos : 0 < P := by
+    exact lt_of_le_of_ne (by simpa [P] using vecNorm2Sq_nonneg p) (by simpa [P] using Ne.symm hpsq)
+  have hZpos : 0 < Z := by
+    exact lt_of_le_of_ne (by simpa [Z, Qrp] using vecNorm2Sq_nonneg Qrp)
+      (by simpa [Z, Qrp] using Ne.symm hprojected)
+  have hy_sq_pos : 0 < vecNorm2Sq y := vecNorm2Sq_pos_of_ne_zero_lsq hy
+  have hDpos : 0 < D := by
+    dsimp [D]
+    nlinarith [mul_pos htheta_sq_pos hy_sq_pos]
+  have hDgt_one : 1 < D := by
+    dsimp [D]
+    nlinarith [mul_pos htheta_sq_pos hy_sq_pos]
+  have hphi_sq :
+      (lsNormwiseBackwardErrorPhi theta r y) ^ 2 = theta ^ 2 * R / D := by
+    rw [lsNormwiseBackwardErrorPhi_eq_theta_mul_norm_div_sqrt_den
+      htheta_nonneg hy r]
+    rw [div_pow, mul_pow, Real.sq_sqrt (le_of_lt hDpos), vecNorm2_sq r]
+  have hq_lower :
+      vecNorm2Sq Qpr ≤ vecNorm2Sq q := by
+    simpa [q, Qpr] using
+      lsNormwiseBackwardErrorRankOne_scaled_q_projector_lower_bound
+        p r hpsq t c
+  have harea :
+      R * Z = P * vecNorm2Sq Qpr := by
+    simpa [R, P, Z, Qrp, Qpr] using
+      lsLemma20_6ProjectorComplement_area_identity r p hrsq hpsq
+  have hRZ_le_Pq : R * Z ≤ P * vecNorm2Sq q := by
+    rw [harea]
+    exact mul_le_mul_of_nonneg_left hq_lower (le_of_lt hPpos)
+  have hleft_ge :
+      theta ^ 2 * R * Z ≤ theta ^ 2 * vecNorm2Sq q * P := by
+    have hmul :=
+      mul_le_mul_of_nonneg_left hRZ_le_Pq (le_of_lt htheta_sq_pos)
+    nlinarith [hmul]
+  have hcomparison' :
+      theta ^ 2 * vecNorm2Sq q * P ≤
+        (lsNormwiseBackwardErrorPhi theta r y) ^ 2 * Z := by
+    simpa [q, P, Z, Qrp] using hcomparison
+  have hApos : 0 < theta ^ 2 * R * Z := by
+    exact mul_pos (mul_pos htheta_sq_pos hRpos) hZpos
+  have hrhs_eq :
+      (lsNormwiseBackwardErrorPhi theta r y) ^ 2 * Z =
+        theta ^ 2 * R * Z / D := by
+    rw [hphi_sq]
+    field_simp [ne_of_gt hDpos]
+  have hrhs_lt :
+      (lsNormwiseBackwardErrorPhi theta r y) ^ 2 * Z <
+        theta ^ 2 * R * Z := by
+    rw [hrhs_eq]
+    rw [div_lt_iff₀ hDpos]
+    nlinarith [hApos, hDgt_one]
+  exact not_lt_of_ge (hleft_ge.trans hcomparison') hrhs_lt
+
 /-- Source-block `sigma_min` branch handoff for the rank-one WKS witness.
     If a nonzero expanded residual `p` makes the explicit rank-one witness cost
     no larger than the row-side source-block `sigma_min`, and that branch is
