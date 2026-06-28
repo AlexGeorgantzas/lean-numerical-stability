@@ -10563,6 +10563,51 @@ theorem SchurStageActiveDiagLowerUpdate13_7.of_eq {m : ℕ}
   intro k hk j hj
   rw [hEq k hk j hj]
 
+/-- Higham, 2nd ed., Chapter 13, equation (13.18) proof chain:
+    lower-norm/min-action data supplies the active diagonal Schur lower-bound
+    update.
+
+    This is the source-shaped route suggested by the proof: the certificate
+    `stageInvDiagBound k j` is represented as the minimum of the active
+    diagonal block on unit vectors, while the perturbation term is bounded by
+    the subordinate-norm product
+    `‖A_jk^(k)‖ ‖pivotInv_k‖ ‖A_kj^(k)‖`.  The theorem packages the reverse
+    triangle step into the active-stage predicate used by the BDD induction,
+    without assuming the updated diagonal block is already invertible. -/
+theorem SchurStageActiveDiagLowerUpdate13_7.of_unit_min_actions {m : ℕ}
+    {E : Type*} [SeminormedAddCommGroup E]
+    (stageNorm : ℕ → Fin m → Fin m → ℝ)
+    (stageInvDiagBound : ℕ → Fin m → ℝ)
+    (pivotInvNorm : ℕ → ℝ)
+    (diag perturb schurDiag : ℕ → Fin m → E → E)
+    (hDiagMin : ∀ k : ℕ, ∀ _hk : k < m, ∀ j : Fin m,
+      k + 1 ≤ j.val → ∀ x : E, ‖x‖ = 1 →
+        stageInvDiagBound k j ≤ ‖diag k j x‖)
+    (hSchurMin : ∀ k : ℕ, ∀ _hk : k < m, ∀ j : Fin m,
+      k + 1 ≤ j.val →
+        ∃ x : E, ‖x‖ = 1 ∧
+          stageInvDiagBound (k + 1) j = ‖schurDiag k j x‖)
+    (hPerturb : ∀ k : ℕ, ∀ hk : k < m, ∀ j : Fin m,
+      k + 1 ≤ j.val → ∀ x : E, ‖x‖ = 1 →
+        ‖perturb k j x‖ ≤
+          stageNorm k j ⟨k, hk⟩ * pivotInvNorm k *
+            stageNorm k ⟨k, hk⟩ j)
+    (hSchur : ∀ k : ℕ, ∀ _hk : k < m, ∀ j : Fin m,
+      k + 1 ≤ j.val → ∀ x : E,
+        schurDiag k j x = diag k j x - perturb k j x) :
+    SchurStageActiveDiagLowerUpdate13_7
+      stageNorm stageInvDiagBound pivotInvNorm := by
+  intro k hk j hj
+  exact higham13_eq13_18_min_lower_bound
+    (diag k j) (perturb k j) (schurDiag k j)
+    (stageInvDiagBound k j) (stageInvDiagBound (k + 1) j)
+    (stageNorm k j ⟨k, hk⟩ * pivotInvNorm k *
+      stageNorm k ⟨k, hk⟩ j)
+    (hDiagMin k hk j hj)
+    (hSchurMin k hk j hj)
+    (hPerturb k hk j hj)
+    (hSchur k hk j hj)
+
 /-- Higham, 2nd ed., Chapter 13, Theorem 13.7 proof:
     the source reciprocal pivot certificate implies the pivot inverse product
     bound used in the Schur-stage dominance and growth arguments.
@@ -12162,6 +12207,99 @@ theorem higham13_algorithm13_3_diagLowerCert_diag_lower_of_source_table_reciproc
     invDiagBound A pivotInv stageInvDiagBound hInit hDiagUpdate
     (fun k hk => by
       rw [hReciprocal k hk])
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equation (13.18):
+    min-action/lower-norm source data supplies the concrete one-sided active
+    pivot certificate for `diagLowerCert`.
+
+    This is the book-shaped source-table route after unfolding the diagonal
+    update: the supplied actions represent the active diagonal block, the
+    Schur perturbation, and the updated diagonal block on unit vectors.  The
+    reverse-triangle lower-bound step proves the active Eq.13.18 update, and
+    the reciprocal active-pivot table then feeds the existing
+    `diagLowerCert` bridge.  The remaining source obligations are the
+    nonsingularity/reciprocal proof for the lower-norm table and the concrete
+    subordinate-norm perturbation estimates. -/
+theorem higham13_algorithm13_3_diagLowerCert_diag_lower_of_unit_min_source_table
+    {m r : ℕ} {E : Type*} [SeminormedAddCommGroup E]
+    (invDiagBound : Fin m → ℝ)
+    (A : Fin m → Fin m → (Fin r → Fin r → ℝ))
+    (pivotInv : ℕ → (Fin r → Fin r → ℝ))
+    (stageInvDiagBound : ℕ → Fin m → ℝ)
+    (diag perturb schurDiag : ℕ → Fin m → E → E)
+    (hInit : ∀ j : Fin m, invDiagBound j ≤ stageInvDiagBound 0 j)
+    (hDiagMin : ∀ k : ℕ, ∀ _hk : k < m, ∀ j : Fin m,
+      k + 1 ≤ j.val → ∀ x : E, ‖x‖ = 1 →
+        stageInvDiagBound k j ≤ ‖diag k j x‖)
+    (hSchurMin : ∀ k : ℕ, ∀ _hk : k < m, ∀ j : Fin m,
+      k + 1 ≤ j.val →
+        ∃ x : E, ‖x‖ = 1 ∧
+          stageInvDiagBound (k + 1) j = ‖schurDiag k j x‖)
+    (hPerturb : ∀ k : ℕ, ∀ hk : k < m, ∀ j : Fin m,
+      k + 1 ≤ j.val → ∀ x : E, ‖x‖ = 1 →
+        ‖perturb k j x‖ ≤
+          higham13_algorithm13_3_schurStageNorm A pivotInv k j ⟨k, hk⟩ *
+            higham13_algorithm13_3_pivotInvNorm pivotInv k *
+              higham13_algorithm13_3_schurStageNorm A pivotInv k ⟨k, hk⟩ j)
+    (hSchur : ∀ k : ℕ, ∀ _hk : k < m, ∀ j : Fin m,
+      k + 1 ≤ j.val → ∀ x : E,
+        schurDiag k j x = diag k j x - perturb k j x)
+    (hReciprocal : SchurStageActivePivotInvReciprocal13_7
+      stageInvDiagBound (higham13_algorithm13_3_pivotInvNorm pivotInv)) :
+    SchurStageActivePivotInvDiagLower13_7
+      (higham13_algorithm13_3_diagLowerCert invDiagBound A pivotInv)
+      (higham13_algorithm13_3_pivotInvNorm pivotInv) := by
+  exact
+    higham13_algorithm13_3_diagLowerCert_diag_lower_of_source_table_reciprocal
+      invDiagBound A pivotInv stageInvDiagBound hInit
+      (SchurStageActiveDiagLowerUpdate13_7.of_unit_min_actions
+        (higham13_algorithm13_3_schurStageNorm A pivotInv)
+        stageInvDiagBound
+        (higham13_algorithm13_3_pivotInvNorm pivotInv)
+        diag perturb schurDiag hDiagMin hSchurMin hPerturb hSchur)
+      hReciprocal
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equation (13.18):
+    min-action/lower-norm source data supplies the direct scalar active pivot
+    product bound used by the column-BDD growth route. -/
+theorem higham13_algorithm13_3_diagLowerCert_pivot_bound_of_unit_min_source_table
+    {m r : ℕ} {E : Type*} [SeminormedAddCommGroup E]
+    (invDiagBound : Fin m → ℝ)
+    (A : Fin m → Fin m → (Fin r → Fin r → ℝ))
+    (pivotInv : ℕ → (Fin r → Fin r → ℝ))
+    (stageInvDiagBound : ℕ → Fin m → ℝ)
+    (diag perturb schurDiag : ℕ → Fin m → E → E)
+    (hInit : ∀ j : Fin m, invDiagBound j ≤ stageInvDiagBound 0 j)
+    (hDiagMin : ∀ k : ℕ, ∀ _hk : k < m, ∀ j : Fin m,
+      k + 1 ≤ j.val → ∀ x : E, ‖x‖ = 1 →
+        stageInvDiagBound k j ≤ ‖diag k j x‖)
+    (hSchurMin : ∀ k : ℕ, ∀ _hk : k < m, ∀ j : Fin m,
+      k + 1 ≤ j.val →
+        ∃ x : E, ‖x‖ = 1 ∧
+          stageInvDiagBound (k + 1) j = ‖schurDiag k j x‖)
+    (hPerturb : ∀ k : ℕ, ∀ hk : k < m, ∀ j : Fin m,
+      k + 1 ≤ j.val → ∀ x : E, ‖x‖ = 1 →
+        ‖perturb k j x‖ ≤
+          higham13_algorithm13_3_schurStageNorm A pivotInv k j ⟨k, hk⟩ *
+            higham13_algorithm13_3_pivotInvNorm pivotInv k *
+              higham13_algorithm13_3_schurStageNorm A pivotInv k ⟨k, hk⟩ j)
+    (hSchur : ∀ k : ℕ, ∀ _hk : k < m, ∀ j : Fin m,
+      k + 1 ≤ j.val → ∀ x : E,
+        schurDiag k j x = diag k j x - perturb k j x)
+    (hReciprocal : SchurStageActivePivotInvReciprocal13_7
+      stageInvDiagBound (higham13_algorithm13_3_pivotInvNorm pivotInv)) :
+    ∀ k : ℕ, ∀ hk : k < m,
+      higham13_algorithm13_3_pivotInvNorm pivotInv k *
+        higham13_algorithm13_3_diagLowerCert invDiagBound A pivotInv k ⟨k, hk⟩ ≤ 1 :=
+  higham13_theorem13_7_pivot_inverse_bound_of_diag_lower
+    (higham13_algorithm13_3_diagLowerCert invDiagBound A pivotInv)
+    (higham13_algorithm13_3_pivotInvNorm pivotInv)
+    (by
+      intro k
+      simp [higham13_algorithm13_3_pivotInvNorm])
+    (higham13_algorithm13_3_diagLowerCert_diag_lower_of_unit_min_source_table
+      invDiagBound A pivotInv stageInvDiagBound diag perturb schurDiag hInit
+      hDiagMin hSchurMin hPerturb hSchur hReciprocal)
 
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and Theorem 13.7:
     if the supplied active pivot inverse is certified as a right inverse of

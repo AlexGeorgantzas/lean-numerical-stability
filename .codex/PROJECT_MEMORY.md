@@ -9531,3 +9531,25 @@ These compile, but should not be treated as fully derived stability results:
   stderr and both names present, `git diff --check`, Lean-only placeholder
   scan, scratch cleanup, and `#print axioms` with only `propext`,
   `Classical.choice`, and `Quot.sound`.
+
+- 2026-06-28 Algorithm 13.3 BDD lower-norm Eq.13.18 route: Oracle/GPT-5.5 Pro
+  confirmed that the source inverse-bound table should be built first as
+  `mu(A_jj^(k)) = min_{||x||=1} ||A_jj^(k)x||`, then rewritten as
+  `||pivotInv_k||^{-1}` only after active diagonal nonsingularity is derived.
+  Added `SchurStageActiveDiagLowerUpdate13_7.of_unit_min_actions`, which
+  derives the active diagonal-update predicate from unit-vector lower-bound /
+  minimum data and the Schur perturbation estimate, plus
+  `higham13_algorithm13_3_diagLowerCert_diag_lower_of_unit_min_source_table`
+  and
+  `higham13_algorithm13_3_diagLowerCert_pivot_bound_of_unit_min_source_table`,
+  which feed that min-action update and reciprocal active table into the
+  concrete `diagLowerCert`/pivot-product route.  This is source Eq.13.18
+  dependency progress only: Theorems 13.7--13.8/Eq.13.21 still require the
+  lower-norm table construction for actual Schur stages, active reciprocal
+  equality from nonsingular pivots, and subordinate-norm perturbation estimates.
+  Verification passed: direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, public lookup
+  `lake env lean -s 65536 examples/LibraryLookup.lean`, `git diff --check`,
+  touched public Lean-file marker scan, scratch cleanup, and focused
+  `#print axioms` with only `propext`, `Classical.choice`, and `Quot.sound`.
