@@ -2670,6 +2670,66 @@ theorem storedTrailingPanel_R_diag_ne_zero_of_leading_block_det_ne_zero_sqrt_bud
       fp hmn A_hat alpha hm hStep halpha hdetPrev hdetLead hlowerPrev
       hsign hbudgetSqrt
 
+/-- Sequence-budget form of the stored Householder nonbreakdown route.
+The deterministic summed compact-update budget controls each active pivot
+component budget, so a per-pivot sequence-budget margin is enough to feed the
+leading-minor square-root nonbreakdown theorem. -/
+theorem storedTrailingPanel_R_diag_ne_zero_of_leading_block_det_ne_zero_sequence_budget
+    {m n : Nat}
+    (fp : FPModel) (hmn : n ≤ m)
+    (A_hat : Nat → Fin m → Fin n → Real)
+    (b_hat : Nat → Fin m → Real)
+    (alpha : Nat → Real)
+    (hm : gammaValid fp m)
+    (hStep : ∀ k (hk : k < n),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
+          (A_hat k))
+    (halpha : ∀ k (hk : k < n),
+      alpha k * alpha k =
+        householderTrailingNorm2Sq m
+          ⟨k, lt_of_lt_of_le hk hmn⟩
+          (fun i => A_hat k i ⟨k, hk⟩))
+    (hdetPrev : ∀ k (hk : k < n),
+      Matrix.det
+        (qrPreviousLeadingBlockTranspose (A_hat k)
+          (le_trans (Nat.le_of_lt hk) hmn) hk :
+          Matrix (Fin k) (Fin k) Real) ≠ 0)
+    (hdetLead : ∀ k (hk : k < n),
+      Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (le_trans (Nat.succ_le_of_lt hk) hmn) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real) ≠ 0)
+    (hlowerPrev : ∀ k (hk : k < n) (i : Fin m) (j : Fin k),
+      k ≤ i.val → A_hat k i (qrPreviousColumn n k hk j) = 0)
+    (hsign : ∀ k (hk : k < n),
+      alpha k * A_hat k ⟨k, lt_of_lt_of_le hk hmn⟩ ⟨k, hk⟩ ≤ 0)
+    (hsequenceBudget : ∀ k (hk : k < n),
+      storedQRCompactSequenceRelativeBudget hmn fp A_hat b_hat alpha *
+          vecNorm2 (fun i : Fin m => A_hat k i ⟨k, hk⟩) <
+        Real.sqrt
+          (householderTrailingNorm2Sq m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun i => A_hat k i ⟨k, hk⟩))) :
+    ∀ i : Fin n, A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ i ≠ 0 := by
+  refine
+    storedTrailingPanel_R_diag_ne_zero_of_leading_block_det_ne_zero_sqrt_budget
+      fp hmn A_hat alpha hm hStep halpha hdetPrev hdetLead hlowerPrev
+      hsign ?_
+  intro k hk
+  exact
+    lt_of_le_of_lt
+      (storedQRCompactPivotBudget_le_sequence_column_norm
+        hmn fp A_hat b_hat alpha hm k hk)
+      (hsequenceBudget k hk)
+
 theorem paddedEconomyR_upper_trapezoidal {m n : Nat}
     (R : Fin (n + m) -> Fin n -> Real)
     (hR : IsUpperTrapezoidal (n + m) n R) :
