@@ -9465,3 +9465,35 @@ These compile, but should not be treated as fully derived stability results:
   `/tmp/ch13_lookup_stage_local_base_counterexample.{out,err}` with empty
   stderr and the name present, scratch cleanup, and `#print axioms` with only
   `propext`, `Classical.choice`, and `Quot.sound`.
+
+- 2026-06-28 Theorem 13.6 cited-estimate surface: added
+  `DemmelHighamSchreiber13_6Estimates` and
+  `higham13_theorem13_6_eq13_16_firstOrder_from_DHS_estimates` in
+  `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, plus public lookup entries.
+  The new predicate names the [326]-level Implementation 1 factorization/solve
+  estimates cited by Higham, and the theorem routes that named conditional
+  surface through the existing Eq.13.16 first-order scalar aggregation wrapper.
+  This is dependency organization only and does not close `H13-Thm13.6` or
+  `H13-Eq13.16`; the implementation proof from Demmel--Higham--Schreiber is
+  still open. Verification passed: direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_lookup_dhs_surface.{out,err}` with empty stderr and both names
+  present, `git diff --check`, Lean-only placeholder scan, scratch cleanup, and
+  `#print axioms` with only `propext`, `Classical.choice`, and `Quot.sound`.
+  Public commit pushed to `origin/main` as `00f37b5` with subject
+  `Split 3A: name Ch13 DHS estimate surface`.
+
+- 2026-06-28 Algorithm 13.3 reciprocal source-table determinant surface: added
+  `higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_source_table_reciprocal_of_det_ne_zero`.
+  This derives the positive finite-history growth denominator from
+  `det(blockMatrixFlatFin A) != 0` for the reciprocal source-table package,
+  matching the existing determinant surfaces for the non-reciprocal and
+  exact-update reciprocal routes. It removes a proof-artifact premise from the
+  book-shaped reciprocal interface but does not construct the source
+  inverse-bound table or prove its Eq.13.18 diagonal-update data. Verification
+  passed: direct `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`,
+  focused `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_lookup_recip_det.{out,err}` with empty stderr and the name
+  present, `git diff --check`, Lean-only placeholder scan, scratch cleanup, and
+  `#print axioms` with only `propext`, `Classical.choice`, and `Quot.sound`.
