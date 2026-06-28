@@ -23,6 +23,15 @@ noncomputable def rectRightGramPolarQFull {m n : Nat}
     (rectRightGramLeftSingularFromEigenbasis A)
     (finiteTranspose (rectRightGramEigenbasis A))
 
+/-- Zero-safe right-Gram polar isometry candidate `U0 * V^T`.  Zero
+singular-value columns are set to zero in `U0`, so this reconstructs the bottom
+factor without full positivity but is not itself an orthonormal completion. -/
+noncomputable def rectRightGramPolarQZeroSafe {m n : Nat}
+    (A : Fin m -> Fin n -> Real) : Fin m -> Fin n -> Real :=
+  matMulRect m n n
+    (rectRightGramLeftSingularZeroSafe A)
+    (finiteTranspose (rectRightGramEigenbasis A))
+
 /-- Full-positive right-Gram polar positive factor `V * Sigma * V^T` attached
 to a rectangular matrix `A`. -/
 noncomputable def rectRightGramPolarH {m n : Nat}
@@ -156,6 +165,36 @@ theorem rectRightGramLeftSingularFromEigenbasis_mul_diagonal_transpose_eq
         ring
     _ = A i j := h.symm
 
+/-- Zero-safe SVD reconstruction in matrix-product form.  This removes the
+full-positive hypothesis, but the zero-safe left table is not orthonormal when
+some displayed singular value is zero. -/
+theorem rectRightGramLeftSingularZeroSafe_mul_diagonal_transpose_eq
+    {m n : Nat} (A : Fin m -> Fin n -> Real) :
+    matMulRect m n n (rectRightGramLeftSingularZeroSafe A)
+      (matMul n (finiteDiagonal (rectRightGramBasisSingularValue A))
+        (finiteTranspose (rectRightGramEigenbasis A))) = A := by
+  ext i j
+  have h := rectRightGram_basisSVD_representation A i j
+  calc
+    matMulRect m n n (rectRightGramLeftSingularZeroSafe A)
+        (matMul n (finiteDiagonal (rectRightGramBasisSingularValue A))
+          (finiteTranspose (rectRightGramEigenbasis A))) i j
+        =
+      Finset.univ.sum fun a : Fin n =>
+        rectRightGramLeftSingularZeroSafe A i a *
+          (rectRightGramBasisSingularValue A a *
+            rectRightGramEigenbasis A j a) := by
+        simp [matMulRect, matMul, finiteDiagonal, finiteTranspose]
+    _ =
+      Finset.univ.sum fun a : Fin n =>
+        rectRightGramLeftSingularZeroSafe A i a *
+          rectRightGramBasisSingularValue A a *
+          rectRightGramEigenbasis A j a := by
+        apply Finset.sum_congr rfl
+        intro a _ha
+        ring
+    _ = A i j := h.symm
+
 /-- In the full-positive branch, the exact right-Gram polar factors reconstruct
 the original rectangular matrix. -/
 theorem rectRightGramPolarQFull_mul_polarH_of_pos {m n : Nat}
@@ -177,6 +216,46 @@ theorem rectRightGramPolarQFull_mul_polarH_of_pos {m n : Nat}
         A hpos
   calc
     matMulRect m n n (rectRightGramPolarQFull A) (rectRightGramPolarH A)
+        =
+      matMulRect m n n (matMulRect m n n U Vt)
+        (matMul n V (matMul n D Vt)) := by
+        rfl
+    _ =
+      matMulRect m n n U
+        (matMul n Vt (matMul n V (matMul n D Vt))) := by
+        rw [matMulRect_assoc_square_right]
+    _ =
+      matMulRect m n n U
+        (matMul n (matMul n Vt V) (matMul n D Vt)) := by
+        rw [<- matMul_assoc]
+    _ =
+      matMulRect m n n U
+        (matMul n (idMatrix n) (matMul n D Vt)) := by
+        rw [hVtV]
+    _ = matMulRect m n n U (matMul n D Vt) := by
+        rw [matMul_id_left]
+    _ = A := hUDV
+
+/-- The zero-safe exact right-Gram polar candidate reconstructs the original
+rectangular matrix without assuming full positivity.  The remaining mixed-rank
+work is to replace the zero columns by an orthonormal completion. -/
+theorem rectRightGramPolarQZeroSafe_mul_polarH {m n : Nat}
+    (A : Fin m -> Fin n -> Real) :
+    matMulRect m n n (rectRightGramPolarQZeroSafe A) (rectRightGramPolarH A) =
+      A := by
+  let U := rectRightGramLeftSingularZeroSafe A
+  let V := rectRightGramEigenbasis A
+  let D := finiteDiagonal (rectRightGramBasisSingularValue A)
+  let Vt := finiteTranspose V
+  have hVtV : matMul n Vt V = idMatrix n := by
+    ext a b
+    simpa [Vt, V, matMul, finiteTranspose] using
+      rectRightGramEigenbasis_col_orthonormal A a b
+  have hUDV : matMulRect m n n U (matMul n D Vt) = A := by
+    simpa [U, V, D, Vt] using
+      rectRightGramLeftSingularZeroSafe_mul_diagonal_transpose_eq A
+  calc
+    matMulRect m n n (rectRightGramPolarQZeroSafe A) (rectRightGramPolarH A)
         =
       matMulRect m n n (matMulRect m n n U Vt)
         (matMul n V (matMul n D Vt)) := by
@@ -371,6 +450,98 @@ theorem rectRightGramPolarH_sq_eq_spectral_square {m n : Nat}
         (matMul n (finiteDiagonal
             (fun i => rectRightGramBasisSingularValue A i ^ 2)) Vt) := by
         rw [matMul_finiteDiagonal_self]
+
+/-- Recompose the right-Gram eigenbasis diagonalization into the original
+rectangular Gram matrix. -/
+theorem rectRightGram_spectral_square_eq_rectangularGram {m n : Nat}
+    (A : Fin m -> Fin n -> Real) :
+    matMul n (rectRightGramEigenbasis A)
+      (matMul n (finiteDiagonal
+          (fun i => rectRightGramBasisSingularValue A i ^ 2))
+        (finiteTranspose (rectRightGramEigenbasis A))) =
+      rectangularGram A := by
+  ext j k
+  let V := rectRightGramEigenbasis A
+  let s := rectRightGramBasisSingularValue A
+  have heig : forall a : Fin n,
+      (Finset.univ.sum fun l : Fin n => rectRightGram A j l * V l a) =
+        s a ^ 2 * V j a := by
+    intro a
+    have h := rectRightGramEigenbasis_eigenvector A a j
+    have hsq := rectRightGramBasisSingularValue_sq_eq A a
+    simpa [V, s, hsq] using h
+  calc
+    matMul n (rectRightGramEigenbasis A)
+        (matMul n (finiteDiagonal
+            (fun i => rectRightGramBasisSingularValue A i ^ 2))
+          (finiteTranspose (rectRightGramEigenbasis A))) j k
+        =
+      Finset.univ.sum fun a : Fin n =>
+        V j a * (s a ^ 2 * V k a) := by
+        simp [matMul, finiteDiagonal, finiteTranspose, V, s]
+    _ =
+      Finset.univ.sum fun a : Fin n =>
+        (Finset.univ.sum fun l : Fin n => rectRightGram A j l * V l a) *
+          V k a := by
+        apply Finset.sum_congr rfl
+        intro a _ha
+        rw [heig a]
+        ring
+    _ =
+      Finset.univ.sum fun l : Fin n =>
+        rectRightGram A j l *
+          (Finset.univ.sum fun a : Fin n => V l a * V k a) := by
+        calc
+          Finset.univ.sum (fun a : Fin n =>
+              (Finset.univ.sum fun l : Fin n => rectRightGram A j l * V l a) *
+                V k a)
+              =
+            Finset.univ.sum fun a : Fin n =>
+              Finset.univ.sum fun l : Fin n =>
+                (rectRightGram A j l * V l a) * V k a := by
+              apply Finset.sum_congr rfl
+              intro a _ha
+              rw [Finset.sum_mul]
+          _ =
+            Finset.univ.sum fun a : Fin n =>
+              Finset.univ.sum fun l : Fin n =>
+                rectRightGram A j l * (V l a * V k a) := by
+              apply Finset.sum_congr rfl
+              intro a _ha
+              apply Finset.sum_congr rfl
+              intro l _hl
+              ring
+          _ =
+            Finset.univ.sum fun l : Fin n =>
+              Finset.univ.sum fun a : Fin n =>
+                rectRightGram A j l * (V l a * V k a) := by
+              rw [Finset.sum_comm]
+          _ =
+            Finset.univ.sum fun l : Fin n =>
+              rectRightGram A j l *
+                (Finset.univ.sum fun a : Fin n => V l a * V k a) := by
+              apply Finset.sum_congr rfl
+              intro l _hl
+              rw [Finset.mul_sum]
+    _ =
+      Finset.univ.sum fun l : Fin n =>
+        rectRightGram A j l * idMatrix n l k := by
+        apply Finset.sum_congr rfl
+        intro l _hl
+        rw [rectRightGramEigenbasis_row_orthonormal A l k]
+    _ = rectRightGram A j k := by
+        simp [idMatrix]
+    _ = rectangularGram A j k := by
+        rfl
+
+/-- The right-Gram polar positive factor satisfies `H^2 = A^T A` without any
+full-positivity assumption. -/
+theorem rectRightGramPolarH_sq_eq_rectangularGram {m n : Nat}
+    (A : Fin m -> Fin n -> Real) :
+    matMul n (rectRightGramPolarH A) (rectRightGramPolarH A) =
+      rectangularGram A := by
+  rw [rectRightGramPolarH_sq_eq_spectral_square]
+  exact rectRightGram_spectral_square_eq_rectangularGram A
 
 /-- Spectral `(I + H)^{-1}` for the right-Gram polar positive factor. -/
 noncomputable def rectRightGramPolarResolvent {m n : Nat}
@@ -748,6 +919,58 @@ theorem mgsProblem1912_add_factor_exists_of_completed_rightGramPolar
     mgsProblem1912_add_factor_exists_of_polarFactorData
       (mgsProblem1912_polarFactorData_of_completed_rightGramPolar
         hinput hbottom hQorth hHsq)
+
+/-- A completed right-Gram polar factor only has to supply the bottom
+factorization and orthonormal columns; the square identity for `H` is now
+available from the right-Gram spectral construction. -/
+def mgsProblem1912_polarFactorData_of_rightGramPolar_completion
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    {Q : Fin m -> Fin n -> Real}
+    (hinput : MGSProblem1912CSPolarInput m n P11 P21)
+    (hbottom :
+      P21 = matMulRect m n n Q (rectRightGramPolarH P21))
+    (hQorth : GramSchmidtOrthonormalColumns Q) :
+    MGSProblem1912PolarFactorData m n P11 P21 :=
+  mgsProblem1912_polarFactorData_of_completed_rightGramPolar
+    hinput hbottom hQorth (rectRightGramPolarH_sq_eq_rectangularGram P21)
+
+/-- A right-Gram polar completion gives pure Problem 19.12 correction-map
+data. -/
+theorem mgsProblem1912_correctionMapData_exists_of_rightGramPolar_completion
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    {Q : Fin m -> Fin n -> Real}
+    (hinput : MGSProblem1912CSPolarInput m n P11 P21)
+    (hbottom :
+      P21 = matMulRect m n n Q (rectRightGramPolarH P21))
+    (hQorth : GramSchmidtOrthonormalColumns Q) :
+    Exists fun Qout : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      MGSProblem1912CorrectionMapData m n P11 P21 Qout F := by
+  exact
+    mgsProblem1912_correctionMapData_exists_of_polarFactorData
+      (mgsProblem1912_polarFactorData_of_rightGramPolar_completion
+        hinput hbottom hQorth)
+
+/-- A right-Gram polar completion gives additive Problem 19.12 witnesses. -/
+theorem mgsProblem1912_add_factor_exists_of_rightGramPolar_completion
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    {Q : Fin m -> Fin n -> Real}
+    (hinput : MGSProblem1912CSPolarInput m n P11 P21)
+    (hbottom :
+      P21 = matMulRect m n n Q (rectRightGramPolarH P21))
+    (hQorth : GramSchmidtOrthonormalColumns Q) :
+    Exists fun Qout : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      (Qout = fun i j => P21 i j + matMulRect m n n F P11 i j) /\
+        GramSchmidtOrthonormalColumns Qout /\
+        rectOpNorm2Le F 1 := by
+  exact
+    mgsProblem1912_add_factor_exists_of_polarFactorData
+      (mgsProblem1912_polarFactorData_of_rightGramPolar_completion
+        hinput hbottom hQorth)
 
 /-- Full-positive right-Gram polar factors give the bottom factor and
 orthonormal part required by the Problem 19.12 polar payload.  The bridge
