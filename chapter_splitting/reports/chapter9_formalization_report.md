@@ -4465,33 +4465,32 @@ file.
 
 - Local branch: `main`.
 - Latest remote base integrated before the latest local push attempt:
-  `origin/main` at `99f66b3`.  Earlier sync points in this recovery were
+  `origin/main` at `5ce9057`.  Earlier sync points in this recovery were
   `5d681d2` for the initial conflict recovery, `74351c1` for the first
   post-milestone pull-before-push merge, `70936be` for the later report
-  correction merge, and `19b3400` for the factorization-handoff merge.
+  correction merge, `19b3400` for the factorization-handoff merge, and
+  `99f66b3` for the source-inverse handoff merge.
 - Merge/conflict resolution: local `main` merged `origin/main` in merge commit
   `be66eb4`; later clean pull-before-push merges integrated `origin/main` at
   `74351c1` into local merge commit `cf03c8c`, `origin/main` at `70936be`
   into local merge commit `ddfb358`, `origin/main` at `19b3400` into local
   merge commit `47d0d82`, and `origin/main` at `99f66b3` into local merge
-  commit `1f49198`.  The pre-merge dirty state was reapplied from `stash@{0}`
-  and resolved conservatively, preserving both Split 2 work and newer upstream
+  commit `1f49198`, and `origin/main` at `5ce9057` into local merge commit
+  `a887a93`.  The pre-merge dirty state was reapplied from `stash@{0}` and
+  resolved conservatively, preserving both Split 2 work and newer upstream
   lookup/report rows while removing duplicate conflict artifacts.
 - Milestone subject committed for the resolved sync state:
   `Split 2: recover ch09 proof-completion milestone after sync`.
 - Latest local Split 2 proof-completion milestone:
-  `Split 2: add ch09 source linear-step handoffs`.
-- Post-`99f66b3` merge verification: `lake build
+  `Split 2: add ch09 source-inverse linear handoffs`.
+- Post-`5ce9057` merge verification: `lake build
   LeanFpAnalysis.FP.Algorithms.HighamChapter9` passed; `lake env lean
   --tstack=65536 examples/LibraryLookup.lean >
-  /tmp/ch9_lookup_915_split_source_inverse_linear_step.out 2>&1` passed with
-  79469 output lines; focused placeholder/conflict/temp-file scans and
-  `git diff --check` passed.
-- Push status: blocked by GitHub HTTPS credentials in this environment.  The
-  command `git push origin main` failed, including after the `70936be` merge,
-  with
-  `fatal: could not read Username for 'https://github.com': No such device or address`;
-  no `credential.helper` is configured and `gh` is not installed.
+  /tmp/ch9_lookup_after_cred_fetch_merge.out 2>&1` passed with 79482 output
+  lines; focused placeholder/conflict/temp-file scans and `git diff --check`
+  passed.
+- Push status: GitHub HTTPS credentials are now available for `git fetch`; the
+  final verified push attempt is pending.
 
 ## Documentation
 
