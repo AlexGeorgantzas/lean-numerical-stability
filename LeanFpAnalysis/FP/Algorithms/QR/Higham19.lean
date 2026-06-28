@@ -4106,6 +4106,55 @@ theorem householder_paddedFinInput_R11_diag_ne_zero_of_det_ne_zero
           intro i
           simpa [R11] using hdiag i
 
+/-- The concrete padded Householder `R11` block is upper triangular, so its
+determinant-nonzero and pointwise nonzero-diagonal nonbreakdown surfaces are
+equivalent. -/
+theorem householder_paddedFinInput_R11_det_ne_zero_iff_diag_ne_zero
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + m))) :
+    Ne
+      (Matrix.det
+        (householder_paddedFinInput_R11 fp A :
+          Matrix (Fin n) (Fin n) Real))
+      0 <->
+      forall i : Fin n,
+        Ne (householder_paddedFinInput_R11 fp A i i) 0 := by
+  constructor
+  · intro hdet i
+    have hdet_expanded :
+        Ne
+          (Matrix.det
+          (paddedEconomyR
+            (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)) :
+              Matrix (Fin n) (Fin n) Real))
+          0 := by
+      simpa [householder_paddedFinInput_R11] using hdet
+    simpa [householder_paddedFinInput_R11] using
+      householder_paddedFinInput_R11_diag_ne_zero_of_det_ne_zero
+        fp A hn hvalid hdet_expanded i
+  · intro hdiag
+    have hdiag_expanded :
+        forall i : Fin n,
+          Ne
+            (paddedEconomyR
+              (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))
+              i i)
+            0 := by
+      intro i
+      simpa [householder_paddedFinInput_R11] using hdiag i
+    have hdet_expanded :
+        Ne
+          (Matrix.det
+          (paddedEconomyR
+            (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)) :
+              Matrix (Fin n) (Fin n) Real))
+          0 :=
+      householder_paddedFinInput_R11_det_ne_zero_of_diag_ne_zero
+        fp A hn hvalid hdiag_expanded
+    simpa [householder_paddedFinInput_R11] using hdet_expanded
+
 /-- Fallback rectangular operator certificate for the repository inverse.
 
 Source condition-number estimates should eventually provide a sharper budget
@@ -10448,6 +10497,95 @@ theorem
         frobNormRect A *
           frobNorm (nonsingInv n (householder_paddedFinInput_R11 fp A)))
       hdet le_rfl
+
+/-- Source-diagonal form of the fully explicit Frobenius-fallback condition
+route.
+
+This is the same checked fallback as
+`mgs_qr_bounds_of_R11_det_ne_zero_frob_condition_explicit_radius_of_small_unit_roundoff`,
+but the nonbreakdown premise is stated on the extracted `R11` diagonal, matching
+the source-facing diagonal form used by the surrounding MGS route. -/
+theorem
+    mgs_qr_bounds_of_R11_diag_ne_zero_frob_condition_explicit_radius_of_small_unit_roundoff
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {kappaA : Real}
+    (hdiag :
+      forall i : Fin n,
+        Ne (householder_paddedFinInput_R11 fp A i i) 0)
+    (hcondition :
+      frobNormRect A *
+          frobNorm (nonsingInv n (householder_paddedFinInput_R11 fp A)) <=
+        kappaA) :
+    MGSQRBounds m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (householder_paddedFinInput_R11 fp A)
+      (2 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      (12 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u (frobNormRect A) kappaA
+      (((3 * Theorem19_4.gamma_tilde fp (n + m) n) * kappaA) ^ 2) := by
+  have hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + m)) := by
+    unfold gammaValid
+    have hhalf_lt_one : (1 / 2 : Real) < 1 := by norm_num
+    exact lt_of_le_of_lt hsmall hhalf_lt_one
+  have hdet :
+      Ne
+        (Matrix.det
+        (householder_paddedFinInput_R11 fp A :
+          Matrix (Fin n) (Fin n) Real))
+        0 :=
+    (householder_paddedFinInput_R11_det_ne_zero_iff_diag_ne_zero
+      fp A hn hvalid).2 hdiag
+  exact
+    mgs_qr_bounds_of_R11_det_ne_zero_frob_condition_explicit_radius_of_small_unit_roundoff
+      (fp := fp) (m := m) (n := n) A hn hnm hsmall
+      (kappaA := kappaA) hdet hcondition
+
+/-- Source-diagonal Frobenius-self fallback route for the chapter-facing
+Theorem 19.13 assembly.
+
+This keeps the remaining source nonbreakdown input in diagonal form while
+choosing the fallback condition quantity
+`kappaA = ||A||_F * ||nonsingInv R11||_F`. -/
+theorem
+    mgs_qr_bounds_of_R11_diag_ne_zero_frob_self_condition_explicit_radius_of_small_unit_roundoff
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    (hdiag :
+      forall i : Fin n,
+        Ne (householder_paddedFinInput_R11 fp A i i) 0) :
+    MGSQRBounds m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (householder_paddedFinInput_R11 fp A)
+      (2 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      (12 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u (frobNormRect A)
+      (frobNormRect A *
+        frobNorm (nonsingInv n (householder_paddedFinInput_R11 fp A)))
+      (((3 * Theorem19_4.gamma_tilde fp (n + m) n) *
+          (frobNormRect A *
+            frobNorm
+              (nonsingInv n (householder_paddedFinInput_R11 fp A)))) ^ 2) := by
+  exact
+    mgs_qr_bounds_of_R11_diag_ne_zero_frob_condition_explicit_radius_of_small_unit_roundoff
+      (fp := fp) (m := m) (n := n) A hn hnm hsmall
+      (kappaA :=
+        frobNormRect A *
+          frobNorm (nonsingInv n (householder_paddedFinInput_R11 fp A)))
+      hdiag le_rfl
 
 /-- Chapter-facing Theorem 19.13 assembly currently proved for the concrete
 padded Householder route.
