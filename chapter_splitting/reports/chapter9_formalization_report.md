@@ -4434,6 +4434,27 @@ theorem is still explicit as the principal-block linearized-step hypothesis.
 | `lake env lean --stdin` with fully qualified `#print axioms` for the four factorization linear-step declarations | PASS; all four report only `propext`, `Classical.choice`, and `Quot.sound` |
 | focused implementation/lookup placeholder/local-placeholder/temp-file scans plus repo-local `git diff --check` | PASS after the factorization linear-step update; implementation, docs, and lookup scans had no matches, no temporary axiom/probe files remain, and whitespace diff check passed |
 
+## 2026-06-28 Theorem 9.15 Source-Inverse Linear-Step Handoffs
+
+Added the source-oriented inverse-identity split companions:
+
+- `higham9_15_normwise_source_bound_of_G_split_init_linear_step_opNorm_of_source_inverse_identities`
+- `higham9_15_normwise_source_bound_of_Gtilde_split_init_linear_step_opNorm_of_source_inverse_identities`
+
+These wrappers match the existing min-factor source-inverse API: callers may
+assume only `L^{-1}L = I` and `UU^{-1} = I` (or the signed analogues), while
+the proof derives the opposite inverse identities internally before applying
+the source linear-step residual handoff.  The principal-block linearized step
+remains the explicit unresolved Schur-induction hypothesis.
+
+| Command | Result |
+| --- | --- |
+| `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | PASS after adding the two source-inverse linear-step handoffs |
+| `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter9` | PASS, 3045 jobs, after refreshing the Chapter 9 module for the source-inverse linear-step handoffs |
+| `lake env lean --tstack=65536 examples/LibraryLookup.lean > /tmp/ch9_lookup_915_split_source_inverse_linear_step.out 2>&1` | PASS after adding lookup checks for the two declarations; redirected output has 79469 lines |
+| `lake env lean --stdin` with fully qualified `#print axioms` for the two source-inverse linear-step declarations | PASS; both report only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused implementation/lookup placeholder/local-placeholder/temp-file scans plus repo-local `git diff --check` | PASS after the source-inverse linear-step update; implementation, docs, and lookup scans had no matches, no temporary axiom/probe files remain, and whitespace diff check passed |
+
 No new `sorry`, `admit`, `axiom`, `unsafe`, or `opaque` appears in the touched Lean
 files. Earlier default-stack lookup runs hit the unrelated pre-Chapter-9 IEEE
 stack limit; the unifying pass verified the full lookup file with
@@ -4444,27 +4465,27 @@ file.
 
 - Local branch: `main`.
 - Latest remote base integrated before the latest local push attempt:
-  `origin/main` at `19b3400`.  Earlier sync points in this recovery were
+  `origin/main` at `99f66b3`.  Earlier sync points in this recovery were
   `5d681d2` for the initial conflict recovery, `74351c1` for the first
-  post-milestone pull-before-push merge, and `70936be` for the later report
-  correction merge.
+  post-milestone pull-before-push merge, `70936be` for the later report
+  correction merge, and `19b3400` for the factorization-handoff merge.
 - Merge/conflict resolution: local `main` merged `origin/main` in merge commit
   `be66eb4`; later clean pull-before-push merges integrated `origin/main` at
   `74351c1` into local merge commit `cf03c8c`, `origin/main` at `70936be`
-  into local merge commit `ddfb358`, and `origin/main` at `19b3400` into local
-  merge commit `47d0d82`.  The pre-merge dirty state was reapplied from
-  `stash@{0}` and resolved conservatively, preserving both Split 2 work and
-  newer upstream lookup/report rows while removing duplicate conflict
-  artifacts.
+  into local merge commit `ddfb358`, `origin/main` at `19b3400` into local
+  merge commit `47d0d82`, and `origin/main` at `99f66b3` into local merge
+  commit `1f49198`.  The pre-merge dirty state was reapplied from `stash@{0}`
+  and resolved conservatively, preserving both Split 2 work and newer upstream
+  lookup/report rows while removing duplicate conflict artifacts.
 - Milestone subject committed for the resolved sync state:
   `Split 2: recover ch09 proof-completion milestone after sync`.
 - Latest local Split 2 proof-completion milestone:
   `Split 2: add ch09 source linear-step handoffs`.
-- Post-`19b3400` merge verification: `lake build
+- Post-`99f66b3` merge verification: `lake build
   LeanFpAnalysis.FP.Algorithms.HighamChapter9` passed; `lake env lean
   --tstack=65536 examples/LibraryLookup.lean >
-  /tmp/ch9_lookup_915_factorization_linear_step_postmerge.out 2>&1` passed
-  with 79403 output lines; focused placeholder/conflict/temp-file scans and
+  /tmp/ch9_lookup_915_split_source_inverse_linear_step.out 2>&1` passed with
+  79469 output lines; focused placeholder/conflict/temp-file scans and
   `git diff --check` passed.
 - Push status: blocked by GitHub HTTPS credentials in this environment.  The
   command `git push origin main` failed, including after the `70936be` merge,
