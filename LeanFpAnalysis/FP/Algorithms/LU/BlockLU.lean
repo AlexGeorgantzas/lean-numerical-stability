@@ -10609,6 +10609,111 @@ theorem SchurStageActiveDiagLowerUpdate13_7.of_unit_min_actions {m : ℕ}
     (hSchur k hk j hj)
 
 /-- Higham, 2nd ed., Chapter 13, equation (13.18):
+    abstract subordinate-norm lower-bound half.
+
+    If `invDiag` is a left inverse for the action of a diagonal block and its
+    action is bounded by `normInv`, then every unit vector satisfies
+    `normInv⁻¹ <= ‖diag x‖`.  This is the normed-space analogue of rewriting
+    a nonsingular block's lower norm as the reciprocal of an inverse norm. -/
+theorem higham13_eq13_18_unit_lower_bound_of_inverse_action_bound
+    {E : Type*} [SeminormedAddCommGroup E]
+    (diag invDiag : E → E) (normInv : ℝ)
+    (hNormInvPos : 0 < normInv)
+    (hInvBound : ∀ y : E, ‖invDiag y‖ ≤ normInv * ‖y‖)
+    (hLeft : ∀ x : E, invDiag (diag x) = x) :
+    ∀ x : E, ‖x‖ = 1 → normInv⁻¹ ≤ ‖diag x‖ := by
+  intro x hx
+  have hInvNonneg : 0 ≤ normInv⁻¹ :=
+    inv_nonneg.mpr (le_of_lt hNormInvPos)
+  have hone_le : 1 ≤ normInv * ‖diag x‖ := by
+    calc
+      1 = ‖x‖ := by rw [hx]
+      _ = ‖invDiag (diag x)‖ := by rw [hLeft x]
+      _ ≤ normInv * ‖diag x‖ := hInvBound (diag x)
+  calc
+    normInv⁻¹ = normInv⁻¹ * 1 := by ring
+    _ ≤ normInv⁻¹ * (normInv * ‖diag x‖) :=
+      mul_le_mul_of_nonneg_left hone_le hInvNonneg
+    _ = (normInv⁻¹ * normInv) * ‖diag x‖ := by ring
+    _ = ‖diag x‖ := by
+      rw [inv_mul_cancel₀ hNormInvPos.ne']
+      ring
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.18):
+    active-stage table form of the abstract inverse-action lower-bound half.
+
+    The hypotheses state the source-shaped reciprocal table
+    `d(k,j)=normInv(k,j)⁻¹`, a norm bound for the inverse action, and the
+    left-inverse identity for each active diagonal block. -/
+theorem higham13_eq13_18_active_diag_table_unit_lower_bound_of_inverse_action_bound
+    {m : ℕ} {E : Type*} [SeminormedAddCommGroup E]
+    (stageInvDiagBound : ℕ → Fin m → ℝ)
+    (diag invDiag : ℕ → Fin m → E → E)
+    (normInv : ℕ → Fin m → ℝ)
+    (hEq : ∀ k : ℕ, k < m → ∀ j : Fin m,
+      k + 1 ≤ j.val → stageInvDiagBound k j = (normInv k j)⁻¹)
+    (hNormInvPos : ∀ k : ℕ, k < m → ∀ j : Fin m,
+      k + 1 ≤ j.val → 0 < normInv k j)
+    (hInvBound : ∀ k : ℕ, k < m → ∀ j : Fin m,
+      k + 1 ≤ j.val → ∀ y : E,
+        ‖invDiag k j y‖ ≤ normInv k j * ‖y‖)
+    (hLeft : ∀ k : ℕ, k < m → ∀ j : Fin m,
+      k + 1 ≤ j.val → ∀ x : E, invDiag k j (diag k j x) = x) :
+    ∀ k : ℕ, k < m → ∀ j : Fin m,
+      k + 1 ≤ j.val → ∀ x : E, ‖x‖ = 1 →
+        stageInvDiagBound k j ≤ ‖diag k j x‖ := by
+  intro k hk j hj x hx
+  rw [hEq k hk j hj]
+  exact
+    higham13_eq13_18_unit_lower_bound_of_inverse_action_bound
+      (diag k j) (invDiag k j) (normInv k j)
+      (hNormInvPos k hk j hj) (hInvBound k hk j hj)
+      (hLeft k hk j hj) x hx
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.18):
+    inverse-action bounds supply the active diagonal Schur lower-bound update.
+
+    This composes the source reciprocal/inverse-action lower-bound half with the
+    existing reverse-triangle/min-action update.  It still keeps the minimum
+    for the updated Schur diagonal block and the perturbation estimate explicit. -/
+theorem SchurStageActiveDiagLowerUpdate13_7.of_inverse_action_bounds {m : ℕ}
+    {E : Type*} [SeminormedAddCommGroup E]
+    (stageNorm : ℕ → Fin m → Fin m → ℝ)
+    (stageInvDiagBound : ℕ → Fin m → ℝ)
+    (pivotInvNorm : ℕ → ℝ)
+    (diag invDiag perturb schurDiag : ℕ → Fin m → E → E)
+    (normInv : ℕ → Fin m → ℝ)
+    (hEq : ∀ k : ℕ, k < m → ∀ j : Fin m,
+      k + 1 ≤ j.val → stageInvDiagBound k j = (normInv k j)⁻¹)
+    (hNormInvPos : ∀ k : ℕ, k < m → ∀ j : Fin m,
+      k + 1 ≤ j.val → 0 < normInv k j)
+    (hInvBound : ∀ k : ℕ, k < m → ∀ j : Fin m,
+      k + 1 ≤ j.val → ∀ y : E,
+        ‖invDiag k j y‖ ≤ normInv k j * ‖y‖)
+    (hLeft : ∀ k : ℕ, k < m → ∀ j : Fin m,
+      k + 1 ≤ j.val → ∀ x : E, invDiag k j (diag k j x) = x)
+    (hSchurMin : ∀ k : ℕ, ∀ _hk : k < m, ∀ j : Fin m,
+      k + 1 ≤ j.val →
+        ∃ x : E, ‖x‖ = 1 ∧
+          stageInvDiagBound (k + 1) j = ‖schurDiag k j x‖)
+    (hPerturb : ∀ k : ℕ, ∀ hk : k < m, ∀ j : Fin m,
+      k + 1 ≤ j.val → ∀ x : E, ‖x‖ = 1 →
+        ‖perturb k j x‖ ≤
+          stageNorm k j ⟨k, hk⟩ * pivotInvNorm k *
+            stageNorm k ⟨k, hk⟩ j)
+    (hSchur : ∀ k : ℕ, ∀ _hk : k < m, ∀ j : Fin m,
+      k + 1 ≤ j.val → ∀ x : E,
+        schurDiag k j x = diag k j x - perturb k j x) :
+    SchurStageActiveDiagLowerUpdate13_7
+      stageNorm stageInvDiagBound pivotInvNorm := by
+  exact
+    SchurStageActiveDiagLowerUpdate13_7.of_unit_min_actions
+      stageNorm stageInvDiagBound pivotInvNorm diag perturb schurDiag
+      (higham13_eq13_18_active_diag_table_unit_lower_bound_of_inverse_action_bound
+        stageInvDiagBound diag invDiag normInv hEq hNormInvPos hInvBound hLeft)
+      hSchurMin hPerturb hSchur
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.18):
     for the Euclidean subordinate norm, an actual right inverse of a diagonal
     block gives the unit-vector lower bound
     `||B⁻¹||₂⁻¹ <= ||B x||₂`.
