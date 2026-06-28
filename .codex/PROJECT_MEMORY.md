@@ -9667,3 +9667,15 @@ These compile, but should not be treated as fully derived stability results:
   needs the concrete active block actions/inverse certificates to be connected
   to Algorithm 13.3, plus the entrywise max-norm Eq.13.21 route and
   BDD nonsingularity/block-LU existence integration.
+
+- 2026-06-28 Algorithm 13.3 BDD CLM source-table integration bridge:
+  added
+  `higham13_algorithm13_3_diagLowerCert_diag_lower_of_continuousLinearMap_source_table`
+  in `BlockLU.lean`.  It packages the generic continuous-linear lower-norm
+  table, Schur-composition update, and two-sided active pivot inverse into the
+  existing concrete `diagLowerCert` one-sided pivot certificate, assuming the
+  CLM operator norms agree with the Algorithm 13.3 stage norm and pivot-inverse
+  norm tables and the initial source lower table dominates the initial
+  `invDiagBound`.  This narrows the printed BDD row to constructing/aligning
+  the actual active block CLMs and inverse certificates, then composing with
+  the existing Eq.13.21 and BDD nonsingularity wrappers.

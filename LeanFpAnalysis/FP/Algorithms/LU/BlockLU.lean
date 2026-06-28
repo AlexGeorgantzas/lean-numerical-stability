@@ -12643,6 +12643,75 @@ theorem higham13_algorithm13_3_diagLowerCert_diag_lower_of_source_table_reciproc
       rw [hReciprocal k hk])
 
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equation (13.18):
+    continuous-linear lower-norm source table supplies the concrete one-sided
+    active pivot certificate for `diagLowerCert`.
+
+    This is the source-table integration bridge for the arbitrary-norm route.
+    The active blocks are modeled as continuous linear maps whose operator
+    norms agree with the Algorithm 13.3 stage norm table, the Schur correction
+    is the composed block action `A_jk A_kk^{-1} A_kj`, and the active pivot
+    inverse is a two-sided continuous-linear inverse.  Under these alignment
+    hypotheses, the generic lower-norm table, Schur-composition update, and
+    reciprocal table feed the existing `diagLowerCert` API. -/
+theorem higham13_algorithm13_3_diagLowerCert_diag_lower_of_continuousLinearMap_source_table
+    {m r : ℕ} {E : Type*}
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [ProperSpace E]
+    (hunit : ({x : E | ‖x‖ = 1} : Set E).Nonempty)
+    (invDiagBound : Fin m → ℝ)
+    (A : Fin m → Fin m → (Fin r → Fin r → ℝ))
+    (pivotInv : ℕ → (Fin r → Fin r → ℝ))
+    (stageBlock : ℕ → Fin m → Fin m → E →L[ℝ] E)
+    (pivotInvCLM : ℕ → E →L[ℝ] E)
+    (hInit : ∀ j : Fin m,
+      invDiagBound j ≤ continuousLinearMapLowerNorm (stageBlock 0 j j) hunit)
+    (hStageNorm : ∀ k : ℕ, ∀ i j : Fin m,
+      ‖stageBlock k i j‖ = higham13_algorithm13_3_schurStageNorm A pivotInv k i j)
+    (hPivotNorm : ∀ k : ℕ,
+      ‖pivotInvCLM k‖ = higham13_algorithm13_3_pivotInvNorm pivotInv k)
+    (hSchur : ∀ k : ℕ, ∀ hk : k < m, ∀ j : Fin m,
+      k + 1 ≤ j.val → ∀ x : E,
+        stageBlock (k + 1) j j x =
+          stageBlock k j j x -
+            stageBlock k j ⟨k, hk⟩
+              (pivotInvCLM k (stageBlock k ⟨k, hk⟩ j x)))
+    (hLeft : ∀ k : ℕ, ∀ hk : k < m, ∀ x : E,
+      pivotInvCLM k (stageBlock k ⟨k, hk⟩ ⟨k, hk⟩ x) = x)
+    (hRight : ∀ k : ℕ, ∀ hk : k < m, ∀ y : E,
+      stageBlock k ⟨k, hk⟩ ⟨k, hk⟩ (pivotInvCLM k y) = y) :
+    SchurStageActivePivotInvDiagLower13_7
+      (higham13_algorithm13_3_diagLowerCert invDiagBound A pivotInv)
+      (higham13_algorithm13_3_pivotInvNorm pivotInv) := by
+  let stageInvDiagBound : ℕ → Fin m → ℝ :=
+    fun k j => continuousLinearMapLowerNorm (stageBlock k j j) hunit
+  have hDiagUpdateCLM : SchurStageActiveDiagLowerUpdate13_7
+      (fun k i j => ‖stageBlock k i j‖)
+      stageInvDiagBound
+      (fun k => ‖pivotInvCLM k‖) := by
+    simpa [stageInvDiagBound] using
+      (SchurStageActiveDiagLowerUpdate13_7.of_continuousLinearMap_schur_composition
+        hunit stageBlock pivotInvCLM hSchur)
+  have hDiagUpdate : SchurStageActiveDiagLowerUpdate13_7
+      (higham13_algorithm13_3_schurStageNorm A pivotInv)
+      stageInvDiagBound
+      (higham13_algorithm13_3_pivotInvNorm pivotInv) := by
+    intro k hk j hj
+    simpa [stageInvDiagBound, hStageNorm k j ⟨k, hk⟩,
+      hStageNorm k ⟨k, hk⟩ j, hPivotNorm k] using
+      hDiagUpdateCLM k hk j hj
+  have hRecipCLM : SchurStageActivePivotInvReciprocal13_7
+      stageInvDiagBound (fun k => ‖pivotInvCLM k‖) := by
+    simpa [stageInvDiagBound] using
+      (SchurStageActivePivotInvReciprocal13_7.of_continuousLinearMap_inverse
+        hunit (fun k j => stageBlock k j j) pivotInvCLM hLeft hRight)
+  have hRecip : SchurStageActivePivotInvReciprocal13_7
+      stageInvDiagBound (higham13_algorithm13_3_pivotInvNorm pivotInv) := by
+    intro k hk
+    simpa [stageInvDiagBound, hPivotNorm k] using hRecipCLM k hk
+  exact
+    higham13_algorithm13_3_diagLowerCert_diag_lower_of_source_table_reciprocal
+      invDiagBound A pivotInv stageInvDiagBound hInit hDiagUpdate hRecip
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equation (13.18):
     min-action/lower-norm source data supplies the concrete one-sided active
     pivot certificate for `diagLowerCert`.
 
