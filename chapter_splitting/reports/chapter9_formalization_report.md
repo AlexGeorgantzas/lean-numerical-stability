@@ -4418,19 +4418,30 @@ file.
 ## GitHub Synchronization
 
 - Local branch: `main`.
-- Latest remote base integrated before this recovery milestone: `origin/main`
-  at `74351c1` after the second pull-before-push fetch; the earlier conflict
-  recovery merged `origin/main` at `5d681d2`.
+- Latest remote base integrated before the latest local push attempt:
+  `origin/main` at `70936be`.  Earlier sync points in this recovery were
+  `5d681d2` for the initial conflict recovery and `74351c1` for the first
+  post-milestone pull-before-push merge.
 - Merge/conflict resolution: local `main` merged `origin/main` in merge commit
-  `be66eb4`; a later clean pull-before-push merge integrated `origin/main` at
-  `74351c1` into local merge commit `cf03c8c`.  The pre-merge dirty state was
-  reapplied from `stash@{0}` and resolved conservatively, preserving both Split
-  2 work and newer upstream lookup/report rows while removing duplicate
-  conflict artifacts.
+  `be66eb4`; later clean pull-before-push merges integrated `origin/main` at
+  `74351c1` into local merge commit `cf03c8c` and `origin/main` at `70936be`
+  into local merge commit `ddfb358`.  The pre-merge dirty state was reapplied
+  from `stash@{0}` and resolved conservatively, preserving both Split 2 work
+  and newer upstream lookup/report rows while removing duplicate conflict
+  artifacts.
 - Milestone subject committed for the resolved sync state:
   `Split 2: recover ch09 proof-completion milestone after sync`.
+- Latest local Split 2 proof-completion milestone:
+  `Split 2: add ch09 source linear-step handoffs`.
+- Post-`70936be` merge verification: `lake build
+  LeanFpAnalysis.FP.Algorithms.HighamChapter9` passed; `lake env lean
+  --tstack=65536 examples/LibraryLookup.lean >
+  /tmp/ch9_lookup_915_init_linear_step_source_postmerge.out 2>&1` passed with
+  79310 output lines; focused placeholder/conflict/temp-file scans and
+  `git diff --check` passed.
 - Push status: blocked by GitHub HTTPS credentials in this environment.  The
-  command `git push origin main` failed with
+  command `git push origin main` failed, including after the `70936be` merge,
+  with
   `fatal: could not read Username for 'https://github.com': No such device or address`;
   no `credential.helper` is configured and `gh` is not installed.
 
