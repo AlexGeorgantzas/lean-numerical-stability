@@ -9497,6 +9497,196 @@ theorem matMulVec_matMul (n : ℕ) (A B : Fin n → Fin n → ℝ) (v : Fin n �
   rw [Finset.sum_comm]
   congr 1; ext k; congr 1; ext j; ring
 
+/-- Pull a scalar out of the vector argument of matrix-vector multiplication.
+
+    The name avoids the existing `matMulVec_smul_right` in another module while
+    keeping this general helper available from `MatrixAlgebra`. -/
+theorem matMulVec_const_mul_right (n : ℕ)
+    (M : Fin n → Fin n → ℝ) (a : ℝ) (x : Fin n → ℝ) :
+    matMulVec n M (fun j => a * x j) =
+      fun i => a * matMulVec n M x i := by
+  ext i
+  unfold matMulVec
+  calc
+    (∑ j : Fin n, M i j * (a * x j))
+        = ∑ j : Fin n, a * (M i j * x j) := by
+            apply Finset.sum_congr rfl
+            intro j _hj
+            ring
+    _ = a * ∑ j : Fin n, M i j * x j := by
+            rw [Finset.mul_sum]
+
+/-- A certified right inverse acts as a right inverse on vectors. -/
+theorem matMulVec_of_isRightInverse {n : ℕ}
+    (M Minv : Fin n → Fin n → ℝ)
+    (hRight : IsRightInverse n M Minv) (x : Fin n → ℝ) :
+    matMulVec n M (matMulVec n Minv x) = x := by
+  ext i
+  calc
+    matMulVec n M (matMulVec n Minv x) i
+        = matMulVec n (matMul n M Minv) x i := by
+            rw [matMulVec_matMul]
+    _ = matMulVec n (idMatrix n) x i := by
+        unfold matMulVec matMul idMatrix
+        apply Finset.sum_congr rfl
+        intro j _hj
+        exact congrArg (fun t : ℝ => t * x j) (hRight i j)
+    _ = x i := by
+        simp [matMulVec, idMatrix]
+
+/-- A finite matrix action attains its maximum Euclidean action on the unit
+    sphere. -/
+theorem exists_vecNorm2_matMulVec_unit_maximizer {n : ℕ} (hn : 0 < n)
+    (M : Fin n → Fin n → ℝ) :
+    ∃ x : Fin n → ℝ,
+      vecNorm2 x = 1 ∧
+        ∀ y : Fin n → ℝ, vecNorm2 y = 1 →
+          vecNorm2 (matMulVec n M y) ≤ vecNorm2 (matMulVec n M x) := by
+  let e : Fin n → ℝ := finiteBasisVec ⟨0, hn⟩
+  have hne : ({x : Fin n → ℝ | vecNorm2 x = 1}).Nonempty := by
+    refine ⟨e, ?_⟩
+    simpa [e] using vecNorm2_finiteBasisVec (⟨0, hn⟩ : Fin n)
+  obtain ⟨x, hx, hmax⟩ :=
+    isCompact_vecNorm2_unit_sphere.exists_isMaxOn hne
+      (continuous_vecNorm2_matMulVec M).continuousOn
+  refine ⟨x, hx, ?_⟩
+  intro y hy
+  exact hmax hy
+
+/-- If a Euclidean matrix action is bounded by `c` on every unit vector, then
+    its exact `opNorm2` is at most `c`. -/
+theorem opNorm2_le_of_unit_vecNorm2_bound {n : ℕ}
+    (M : Fin n → Fin n → ℝ) {c : ℝ} (hc : 0 ≤ c)
+    (hunit : ∀ x : Fin n → ℝ, vecNorm2 x = 1 →
+      vecNorm2 (matMulVec n M x) ≤ c) :
+    opNorm2 M ≤ c := by
+  refine opNorm2_le_of_opNorm2Le M hc ?_
+  intro y
+  by_cases hyzero : vecNorm2 y = 0
+  · have hy_entries : ∀ j, y j = 0 :=
+      (vecNorm2_eq_zero_iff y).mp hyzero
+    have hMy_zero : matMulVec n M y = fun _ => 0 := by
+      ext i
+      simp [matMulVec, hy_entries]
+    have hzeroNorm : vecNorm2 (fun _ : Fin n => 0) = 0 :=
+      (vecNorm2_eq_zero_iff _).mpr (by intro i; rfl)
+    simp [hMy_zero, hyzero, hzeroNorm]
+  · have hypos : 0 < vecNorm2 y :=
+      lt_of_le_of_ne (vecNorm2_nonneg y) (Ne.symm hyzero)
+    let z : Fin n → ℝ := fun i => (vecNorm2 y)⁻¹ * y i
+    have hzunit : vecNorm2 z = 1 :=
+      vecNorm2_inv_smul_self_of_pos y hypos
+    have hzbound : vecNorm2 (matMulVec n M z) ≤ c :=
+      hunit z hzunit
+    have hMz :
+        matMulVec n M z =
+          fun i => (vecNorm2 y)⁻¹ * matMulVec n M y i := by
+      simpa [z] using
+        matMulVec_const_mul_right n M (vecNorm2 y)⁻¹ y
+    have hscaled :
+        (vecNorm2 y)⁻¹ * vecNorm2 (matMulVec n M y) ≤ c := by
+      have hnorm :
+          vecNorm2 (matMulVec n M z) =
+            (vecNorm2 y)⁻¹ * vecNorm2 (matMulVec n M y) := by
+        rw [hMz, vecNorm2_smul, abs_of_pos (inv_pos.mpr hypos)]
+      rwa [hnorm] at hzbound
+    calc
+      vecNorm2 (matMulVec n M y)
+          = vecNorm2 y *
+              ((vecNorm2 y)⁻¹ * vecNorm2 (matMulVec n M y)) := by
+              field_simp [hypos.ne']
+      _ ≤ vecNorm2 y * c :=
+          mul_le_mul_of_nonneg_left hscaled (vecNorm2_nonneg y)
+      _ = c * vecNorm2 y := by ring
+
+/-- A unit-vector maximizer for the Euclidean action realizes the exact
+    `opNorm2`. -/
+theorem opNorm2_eq_vecNorm2_matMulVec_of_unit_maximizer {n : ℕ}
+    (M : Fin n → Fin n → ℝ) {x : Fin n → ℝ}
+    (hx : vecNorm2 x = 1)
+    (hmax : ∀ y : Fin n → ℝ, vecNorm2 y = 1 →
+      vecNorm2 (matMulVec n M y) ≤ vecNorm2 (matMulVec n M x)) :
+    opNorm2 M = vecNorm2 (matMulVec n M x) := by
+  apply le_antisymm
+  · exact opNorm2_le_of_unit_vecNorm2_bound M
+      (vecNorm2_nonneg (matMulVec n M x)) hmax
+  · have h := opNorm2Le_opNorm2 M x
+    simpa [hx] using h
+
+/-- The exact finite-dimensional Euclidean operator norm is attained by a unit
+    vector. -/
+theorem exists_vecNorm2_matMulVec_unit_opNorm2_attained {n : ℕ} (hn : 0 < n)
+    (M : Fin n → Fin n → ℝ) :
+    ∃ x : Fin n → ℝ,
+      vecNorm2 x = 1 ∧
+        opNorm2 M = vecNorm2 (matMulVec n M x) := by
+  obtain ⟨x, hx, hmax⟩ :=
+    exists_vecNorm2_matMulVec_unit_maximizer hn M
+  exact ⟨x, hx, opNorm2_eq_vecNorm2_matMulVec_of_unit_maximizer M hx hmax⟩
+
+/-- Upper half of the Euclidean lower-norm/reciprocal identity:
+    if `Minv` is a right inverse of `M`, then the lower norm of `M` is at most
+    `||Minv||₂⁻¹`. -/
+theorem matMulVecLowerNorm2_le_inv_opNorm2_of_isRightInverse
+    {n : ℕ} (hn : 0 < n)
+    (M Minv : Fin n → Fin n → ℝ)
+    (hRight : IsRightInverse n M Minv) :
+    matMulVecLowerNorm2 hn M ≤ (opNorm2 Minv)⁻¹ := by
+  classical
+  haveI : Nonempty (Fin n) := ⟨⟨0, hn⟩⟩
+  obtain ⟨x, hx, hxop⟩ :=
+    exists_vecNorm2_matMulVec_unit_opNorm2_attained hn Minv
+  let z : Fin n → ℝ := matMulVec n Minv x
+  have hzpos : 0 < vecNorm2 z := by
+    have hoppos : 0 < opNorm2 Minv :=
+      opNorm2_pos_of_right_inverse M Minv hRight
+    simpa [z, hxop] using hoppos
+  let y : Fin n → ℝ := fun i => (vecNorm2 z)⁻¹ * z i
+  have hyunit : vecNorm2 y = 1 :=
+    vecNorm2_inv_smul_self_of_pos z hzpos
+  have hMz : matMulVec n M z = x := by
+    simpa [z] using matMulVec_of_isRightInverse M Minv hRight x
+  have hMy :
+      matMulVec n M y = fun i => (vecNorm2 z)⁻¹ * x i := by
+    calc
+      matMulVec n M y
+          = fun i => (vecNorm2 z)⁻¹ * matMulVec n M z i := by
+              simpa [y] using
+                matMulVec_const_mul_right n M (vecNorm2 z)⁻¹ z
+      _ = fun i => (vecNorm2 z)⁻¹ * x i := by
+              ext i
+              rw [hMz]
+  have hMyNorm :
+      vecNorm2 (matMulVec n M y) = (opNorm2 Minv)⁻¹ := by
+    calc
+      vecNorm2 (matMulVec n M y)
+          = vecNorm2 (fun i => (vecNorm2 z)⁻¹ * x i) := by
+              rw [hMy]
+      _ = (vecNorm2 z)⁻¹ * vecNorm2 x := by
+              rw [vecNorm2_smul, abs_of_pos (inv_pos.mpr hzpos)]
+      _ = (vecNorm2 z)⁻¹ := by rw [hx, mul_one]
+      _ = (opNorm2 Minv)⁻¹ := by rw [hxop]
+  calc
+    matMulVecLowerNorm2 hn M
+        ≤ vecNorm2 (matMulVec n M y) :=
+            matMulVecLowerNorm2_le hn M y hyunit
+    _ = (opNorm2 Minv)⁻¹ := hMyNorm
+
+/-- Euclidean lower-norm/reciprocal identity for a certified right inverse. -/
+theorem matMulVecLowerNorm2_eq_inv_opNorm2_of_isRightInverse
+    {n : ℕ} (hn : 0 < n)
+    (M Minv : Fin n → Fin n → ℝ)
+    (hRight : IsRightInverse n M Minv) :
+    matMulVecLowerNorm2 hn M = (opNorm2 Minv)⁻¹ := by
+  classical
+  haveI : Nonempty (Fin n) := ⟨⟨0, hn⟩⟩
+  apply le_antisymm
+  · exact matMulVecLowerNorm2_le_inv_opNorm2_of_isRightInverse hn M Minv hRight
+  · obtain ⟨x, hx, hlower⟩ := matMulVecLowerNorm2_attained hn M
+    rw [hlower]
+    exact opNorm2_inv_recip_le_vecNorm2_matMulVec_of_isRightInverse
+      M Minv hRight hx
+
 /-- The exact l2 operator norm bounds a triple matrix action.  This is the
     source-shaped subordinate-norm product estimate used for Schur perturbation
     terms in Chapter 13. -/

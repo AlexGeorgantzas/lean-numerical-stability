@@ -6836,6 +6836,14 @@ small enough to serve as a smoke check for representative public declarations.
 #check matMulVecLowerNorm2
 #check matMulVecLowerNorm2_attained
 #check matMulVecLowerNorm2_le
+#check matMulVec_const_mul_right
+#check matMulVec_of_isRightInverse
+#check exists_vecNorm2_matMulVec_unit_maximizer
+#check opNorm2_le_of_unit_vecNorm2_bound
+#check opNorm2_eq_vecNorm2_matMulVec_of_unit_maximizer
+#check exists_vecNorm2_matMulVec_unit_opNorm2_attained
+#check matMulVecLowerNorm2_le_inv_opNorm2_of_isRightInverse
+#check matMulVecLowerNorm2_eq_inv_opNorm2_of_isRightInverse
 #check vecNorm2_matMulVec_triple_le_opNorm2
 #check vecNorm2_matMulVec_triple_le_opNorm2_of_unit
 #check rectOpNorm2Le_radius_nonneg
@@ -11473,6 +11481,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check SchurStageActiveDiagLowerUpdate13_7.of_unit_min_actions
 #check SchurStageActiveDiagLowerUpdate13_7.of_vecNorm2_stage_lower_norm_matrices
 #check higham13_algorithm13_3_vecNorm2_diag_lower_update
+#check higham13_algorithm13_3_vecNorm2_active_pivot_reciprocal_of_right_inverse
 #check higham13_eq13_18_unit_lower_bound_of_inverse_action_bound
 #check higham13_eq13_18_active_diag_table_unit_lower_bound_of_inverse_action_bound
 #check SchurStageActiveDiagLowerUpdate13_7.of_inverse_action_bounds
