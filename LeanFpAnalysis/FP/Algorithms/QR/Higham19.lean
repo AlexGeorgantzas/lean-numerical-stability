@@ -2665,6 +2665,49 @@ theorem firstStoredPanelStep_eq_panelFromTopAndTrailing_applyMatrixRect
             fl_householderApplyMatrixRect, fl_householderApplyCompact,
             fl_householderApply, panelFromTopAndTrailing, trailingPanel]
 
+/-- One-recursion-layer bridge from the nonzero recursive QR branch to the
+first stored-panel step.
+
+For a nonzero active first column, the recursive `R` panel can be written as
+the QR storage reconstruction over the trailing panel of the first stored step,
+provided the stored step uses the same rounded normalized reflector data as the
+recursive branch.  This turns the preceding local storage-shape equality into
+the first recursive/stored `R11` bridge layer; the remaining handoff work is to
+iterate this statement through the shrinking panels and match the stored-loop
+active reflector data at later pivots. -/
+theorem qrPanel_R_nonzero_eq_firstStoredPanelStep
+    (fp : FPModel) {m p : Nat}
+    (A : Fin (m + 1) -> Fin (p + 1) -> Real)
+    (hcol : Ne (panelFirstColumn (Nat.succ_pos p) A) 0) :
+    fl_householderQRPanel_R fp (m + 1) (p + 1) A =
+      (let v := fl_householderNormalizedVector fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A)
+       let S := fl_householderStoredPanelStep fp (m + 1) (p + 1) 0 v 1 A
+       panelFromTopAndTrailing (panelTopLeft S) (panelTopRowTail S)
+         (fl_householderQRPanel_R fp m p (trailingPanel S))) := by
+  let v : Fin (m + 1) -> Real :=
+    fl_householderNormalizedVector fp (Nat.succ_pos m)
+      (panelFirstColumn (Nat.succ_pos p) A)
+  let Astep : Fin (m + 1) -> Fin (p + 1) -> Real :=
+    fl_householderApplyMatrixRect fp (m + 1) (p + 1) v 1 A
+  let S : Fin (m + 1) -> Fin (p + 1) -> Real :=
+    fl_householderStoredPanelStep fp (m + 1) (p + 1) 0 v 1 A
+  have hS :
+      S = panelFromTopAndTrailing (panelTopLeft Astep) (panelTopRowTail Astep)
+        (trailingPanel Astep) := by
+    dsimp [S, Astep, v]
+    exact (firstStoredPanelStep_eq_panelFromTopAndTrailing_applyMatrixRect
+      fp v 1 A).symm
+  rw [fl_householderQRPanel_R_succ_succ_nonzero fp A hcol]
+  change panelFromTopAndTrailing (panelTopLeft Astep) (panelTopRowTail Astep)
+        (fl_householderQRPanel_R fp m p (trailingPanel Astep)) =
+      panelFromTopAndTrailing (panelTopLeft S) (panelTopRowTail S)
+        (fl_householderQRPanel_R fp m p (trailingPanel S))
+  rw [hS]
+  rw [panelTopLeft_panelFromTopAndTrailing,
+    panelTopRowTail_panelFromTopAndTrailing,
+    trailingPanel_panelFromTopAndTrailing]
+
 /-- Source-facing nonbreakdown route for the stored Householder QR loop.
 Nonsingular local leading blocks, the stored lower-zero invariant, the source
 sign convention, and a per-pivot square-root component budget imply that the
