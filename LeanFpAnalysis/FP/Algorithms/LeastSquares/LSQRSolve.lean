@@ -16456,6 +16456,69 @@ theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_inequality
     exact hrhs_pos
   exact ⟨heq, heta_pos, hrhs_pos⟩
 
+/-- Positive finite-`theta` lower-bound side of the WKS formula (20.21) with
+    the source nonzero-residual condition derived from the branch assumption
+    that `y` is not already an exact least-squares minimizer. -/
+theorem lsNormwiseBackwardErrorFormulaRHS_le_etaF_of_positive_theta_not_isLeastSquaresMinimizer
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hnot : ¬ IsLeastSquaresMinimizer A b y) :
+    lsNormwiseBackwardErrorFormulaRHS theta A b y ≤
+      lsNormwiseBackwardErrorEtaF theta A b y := by
+  have hrsq : vecNorm2Sq (lsResidualHigham A b y) ≠ 0 := by
+    intro hrsq_zero
+    have hnorm : vecNorm2 (lsResidualHigham A b y) = 0 := by
+      simp [vecNorm2, hrsq_zero]
+    have hres : lsResidualHigham A b y = 0 := by
+      ext i
+      exact (vecNorm2_eq_zero_iff (lsResidualHigham A b y)).mp hnorm i
+    exact hnot (IsLeastSquaresMinimizer.of_lsResidualHigham_eq_zero hres)
+  exact
+    lsNormwiseBackwardErrorFormulaRHS_le_etaF_of_finite_theta
+      (le_of_lt htheta) A b hy hrsq
+
+/-- Positive-branch upper-certificate form of the Walden--Karlson--Sun formula
+    (20.21): for positive finite `theta`, nonzero `y`, a non-minimizer
+    candidate, and full row rank of `[A phi(I-r r^+)]`, the previously proved
+    finite lower-bound side leaves only the constructive upper inequality
+    `eta_F(y) <= RHS` as an explicit certificate. -/
+theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_upper_certificate
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hnot : ¬ IsLeastSquaresMinimizer A b y)
+    (hrank :
+      lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+        (lsResidualHigham A b y) y = m + 1)
+    (hupper :
+      lsNormwiseBackwardErrorEtaF theta A b y ≤
+        lsNormwiseBackwardErrorFormulaRHS theta A b y) :
+    lsNormwiseBackwardErrorEtaF theta A b y =
+        lsNormwiseBackwardErrorFormulaRHS theta A b y ∧
+      0 < lsNormwiseBackwardErrorEtaF theta A b y ∧
+      0 < lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  have hrsq : vecNorm2Sq (lsResidualHigham A b y) ≠ 0 := by
+    intro hrsq_zero
+    have hnorm : vecNorm2 (lsResidualHigham A b y) = 0 := by
+      simp [vecNorm2, hrsq_zero]
+    have hres : lsResidualHigham A b y = 0 := by
+      ext i
+      exact (vecNorm2_eq_zero_iff (lsResidualHigham A b y)).mp hnorm i
+    exact hnot (IsLeastSquaresMinimizer.of_lsResidualHigham_eq_zero hres)
+  have hlower :
+      ∀ (DeltaA : Fin (m + 1) → Fin n → ℝ) (Deltab : Fin (m + 1) → ℝ),
+        LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab →
+          lsNormwiseBackwardErrorFormulaRHS theta A b y ≤
+            lsNormwiseBackwardErrorCostF theta DeltaA Deltab := by
+    intro DeltaA Deltab hfeas
+    exact
+      lsNormwiseBackwardErrorFormulaRHS_le_costF_of_feasible_finite_theta
+        (le_of_lt htheta) A b hy DeltaA Deltab hfeas hrsq
+  exact
+    lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_inequality_certificate
+      htheta A b hy hnot hrank hlower hupper
+
 /-- Positive-branch certificate form of the Walden--Karlson--Sun formula
     (20.21): for positive finite `theta`, nonzero `y`, and full row rank of
     the source block `[A phi(I-r r^+)]`, a supplied WKS lower-bound certificate

@@ -2887,6 +2887,66 @@ theorem trailingPanel_qrPanel_R_eq_qrPanel_R_firstStoredPanelStep_of_first_leadi
   trailingPanel_qrPanel_R_nonzero_eq_qrPanel_R_firstStoredPanelStep fp A
     (panelFirstColumn_ne_zero_of_first_leadingBlock_det_ne_zero A hdetLead)
 
+/-- Zero-column recursive QR `R` panels collapse to the input for every row
+count.
+
+The core QR file exposes the nonempty-row version as a simp theorem; this
+source-facing wrapper is convenient at the end of shrinking-panel handoffs,
+where the remaining row count is an arbitrary natural number. -/
+theorem qrPanel_R_zero_cols_any (fp : FPModel) (m : Nat)
+    (A : Fin m -> Fin 0 -> Real) :
+    fl_householderQRPanel_R fp m 0 A = A := by
+  cases m with
+  | zero => rfl
+  | succ m =>
+      exact fl_householderQRPanel_R_zero_cols fp (m := m) A
+
+/-- The first stored Householder panel step zeroes the first-column tail. -/
+theorem panelFirstColumnTailZero_firstStoredPanelStep
+    (fp : FPModel) {m p : Nat}
+    (v : Fin (m + 1) -> Real) (beta : Real)
+    (A : Fin (m + 1) -> Fin (p + 1) -> Real) :
+    panelFirstColumnTailZero
+      (fl_householderStoredPanelStep fp (m + 1) (p + 1) 0 v beta A) := by
+  intro i
+  simp [panelFirstColumnTail, fl_householderStoredPanelStep]
+
+/-- One-column determinant-specialized recursive/stored `R` bridge.
+
+Once the active panel has only one column, the determinant-selected nonzero
+recursive branch performs the first stored step and the trailing recursive call
+has zero columns.  This is the terminal base case for the later shrinking-panel
+`R11` induction. -/
+theorem qrPanel_R_one_col_eq_firstStoredPanelStep_of_first_leadingBlock_det_ne_zero
+    (fp : FPModel) {m : Nat}
+    (A : Fin (m + 1) -> Fin 1 -> Real)
+    (hdetLead :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le m))
+          (Nat.succ_pos 0) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0) :
+    fl_householderQRPanel_R fp (m + 1) 1 A =
+      (let v := fl_householderNormalizedVector fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos 0) A)
+       fl_householderStoredPanelStep fp (m + 1) 1 0 v 1 A) := by
+  let v : Fin (m + 1) -> Real :=
+    fl_householderNormalizedVector fp (Nat.succ_pos m)
+      (panelFirstColumn (Nat.succ_pos 0) A)
+  let S : Fin (m + 1) -> Fin 1 -> Real :=
+    fl_householderStoredPanelStep fp (m + 1) 1 0 v 1 A
+  have hqr := qrPanel_R_eq_firstStoredPanelStep_of_first_leadingBlock_det_ne_zero
+    (fp := fp) (m := m) (p := 0) A hdetLead
+  dsimp [v, S] at hqr
+  dsimp [v, S]
+  rw [hqr]
+  change panelFromTopAndTrailing (panelTopLeft S) (panelTopRowTail S)
+      (fl_householderQRPanel_R fp m 0 (trailingPanel S)) = S
+  rw [qrPanel_R_zero_cols_any]
+  exact panelFromTopAndTrailing_of_firstColumnTailZero S
+    (panelFirstColumnTailZero_firstStoredPanelStep fp v 1 A)
+
 /-- Source-facing nonbreakdown route for the stored Householder QR loop.
 Nonsingular local leading blocks, the stored lower-zero invariant, the source
 sign convention, and a per-pivot square-root component budget imply that the
