@@ -15015,6 +15015,91 @@ theorem lsNormwiseBackwardErrorRankOne_scaled_q_optimal_vecNorm2Sq
     _ = vecNorm2Sq (matMulVec m (lsLemma20_6ProjectorComplement p) r) := by
           rfl
 
+/-- Source-shaped numerator for the optimal scalar in the scaled rank-one WKS
+    witness.  When `r = b - A*y` and `u = A^T p`, the scalar numerator
+    `p^T r + u^T y` is exactly `p^T b`. -/
+theorem lsNormwiseBackwardErrorRankOne_scaled_optimal_scale_num_eq_dot_b
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (y : Fin n → ℝ) (p : Fin m → ℝ) :
+    let r : Fin m → ℝ := lsResidualHigham A b y
+    let u : Fin n → ℝ := fun j => ∑ i : Fin m, A i j * p i
+    (∑ k : Fin m, p k * r k) + (∑ j : Fin n, u j * y j) =
+      ∑ i : Fin m, p i * b i := by
+  let r : Fin m → ℝ := lsResidualHigham A b y
+  let u : Fin n → ℝ := fun j => ∑ i : Fin m, A i j * p i
+  have hres :
+      (∑ k : Fin m, p k * r k) =
+        (∑ k : Fin m, p k * b k) -
+          ∑ k : Fin m, ∑ j : Fin n, p k * (A k j * y j) := by
+    calc
+      (∑ k : Fin m, p k * r k)
+          = ∑ k : Fin m, p k * (b k - ∑ j : Fin n, A k j * y j) := by
+              rfl
+      _ = ∑ k : Fin m,
+            (p k * b k - p k * (∑ j : Fin n, A k j * y j)) := by
+              apply Finset.sum_congr rfl
+              intro k _
+              ring
+      _ =
+          (∑ k : Fin m, p k * b k) -
+            ∑ k : Fin m, p k * (∑ j : Fin n, A k j * y j) := by
+          rw [Finset.sum_sub_distrib]
+      _ =
+          (∑ k : Fin m, p k * b k) -
+            ∑ k : Fin m, ∑ j : Fin n, p k * (A k j * y j) := by
+          congr 1
+          apply Finset.sum_congr rfl
+          intro k _
+          rw [Finset.mul_sum]
+  have hu :
+      (∑ j : Fin n, u j * y j) =
+        ∑ k : Fin m, ∑ j : Fin n, p k * (A k j * y j) := by
+    calc
+      (∑ j : Fin n, u j * y j)
+          = ∑ j : Fin n, (∑ k : Fin m, A k j * p k) * y j := by
+              rfl
+      _ = ∑ j : Fin n, ∑ k : Fin m, (A k j * p k) * y j := by
+              apply Finset.sum_congr rfl
+              intro j _
+              rw [Finset.sum_mul]
+      _ = ∑ k : Fin m, ∑ j : Fin n, (A k j * p k) * y j := by
+              rw [Finset.sum_comm]
+      _ = ∑ k : Fin m, ∑ j : Fin n, p k * (A k j * y j) := by
+              apply Finset.sum_congr rfl
+              intro k _
+              apply Finset.sum_congr rfl
+              intro j _
+              ring
+  change
+    (∑ k : Fin m, p k * r k) + (∑ j : Fin n, u j * y j) =
+      ∑ i : Fin m, p i * b i
+  rw [hres, hu]
+  ring
+
+/-- Divided source-shaped form of the optimal scalar in the scaled rank-one WKS
+    witness.  Under the source residual convention, the optimal scale is
+    `(p^T b) / ||p||_2^2`. -/
+theorem lsNormwiseBackwardErrorRankOne_scaled_optimal_scale_eq_dot_b_div
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (y : Fin n → ℝ) (p : Fin m → ℝ) :
+    let r : Fin m → ℝ := lsResidualHigham A b y
+    let u : Fin n → ℝ := fun j => ∑ i : Fin m, A i j * p i
+    (((∑ k : Fin m, p k * r k) + (∑ j : Fin n, u j * y j)) /
+        vecNorm2Sq p) =
+      (∑ i : Fin m, p i * b i) / vecNorm2Sq p := by
+  let r : Fin m → ℝ := lsResidualHigham A b y
+  let u : Fin n → ℝ := fun j => ∑ i : Fin m, A i j * p i
+  have hnum :
+      (∑ k : Fin m, p k * r k) + (∑ j : Fin n, u j * y j) =
+        ∑ i : Fin m, p i * b i := by
+    simpa [r, u] using
+      lsNormwiseBackwardErrorRankOne_scaled_optimal_scale_num_eq_dot_b A b y p
+  change
+    (((∑ k : Fin m, p k * r k) + (∑ j : Fin n, u j * y j)) /
+        vecNorm2Sq p) =
+      (∑ i : Fin m, p i * b i) / vecNorm2Sq p
+  rw [hnum]
+
 /-- Route-elimination check for the scaled rank-one WKS source-transpose
     handoff.  In the nondegenerate case where `(I-r r^+)p` is nonzero, the
     current right-projector comparison required by the rank-one route is
