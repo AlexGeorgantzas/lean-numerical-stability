@@ -2566,6 +2566,47 @@ abbrev householder_paddedFinInput_R11 (fp : FPModel) {m n : Nat}
   paddedEconomyR
     (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))
 
+/-- Hidden-hypothesis audit for the Theorem 19.13 Householder handoff: in
+the smallest tall padded case, a zero source matrix has a zero extracted
+`R11` diagonal.  Thus the later nonbreakdown wrappers cannot be discharged
+from dimensions and roundoff-smallness alone; they need source rank,
+condition, or pivot information. -/
+theorem householder_paddedFinInput_R11_zero_input_diag_zero
+    (fp : FPModel) :
+    householder_paddedFinInput_R11
+      (m := 1) (n := 1) fp (fun _ _ => (0 : Real))
+      (0 : Fin 1) (0 : Fin 1) = 0 := by
+  have hcol :
+      panelFirstColumn (m := 1 + 1) (p := 0 + 1) (by norm_num)
+        (mgsPaddedFinInput (m := 1) (n := 1) (fun _ _ => (0 : Real))) =
+        (fun _ => 0) := by
+    funext i
+    unfold panelFirstColumn mgsPaddedFinInput mgsPaddedRowsToFin mgsPaddedInput
+    cases mgsPaddedRowFromFin (m := 1) (n := 1) i <;> rfl
+  have hzeroFun : (fun _ : Fin (1 + 1) => (0 : Real)) = 0 := by
+    funext i
+    rfl
+  simp only [
+    householder_paddedFinInput_R11,
+    paddedEconomyR,
+    paddedFinInput,
+    fl_householderQRPanel_R,
+    hcol,
+    hzeroFun
+  ]
+  simp [
+    mgsPaddedEconomyR,
+    mgsPaddedTopBlock,
+    mgsPaddedRowsFromFin,
+    mgsPaddedRowToFin,
+    mgsPaddedFinInput,
+    mgsPaddedRowsToFin,
+    mgsPaddedInput,
+    panelFromTopAndTrailing,
+    panelTopLeft
+  ]
+  cases mgsPaddedRowFromFin (m := 1) (n := 1) (0 : Fin (1 + 1)) <;> rfl
+
 theorem paddedEconomyR_upper_trapezoidal {m n : Nat}
     (R : Fin (n + m) -> Fin n -> Real)
     (hR : IsUpperTrapezoidal (n + m) n R) :
