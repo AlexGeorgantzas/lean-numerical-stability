@@ -7132,6 +7132,38 @@ theorem lsNormwiseBackwardErrorPhi_le_costF_of_residual_eq_deltab_sub_deltaA_y
     rw [hnorm]
   simpa [hphi] using hbase
 
+/-- Weighted-cost coupling for the right WKS projector term in the nonzero-`p`
+    lower-bound route.  The scalar `phi` attached to the source residual turns
+    the perturbation residual `Delta b - Delta A y` into a cost-controlled term
+    with the source residual norm as the remaining factor. -/
+theorem lsNormwiseBackwardErrorPhi_mul_deltab_sub_deltaA_y_vecNorm2_le_costF_mul_residual_vecNorm2
+    {m n : ℕ} {theta : ℝ} (htheta : 0 ≤ theta)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (r : Fin m → ℝ) (DeltaA : Fin m → Fin n → ℝ)
+    (Deltab : Fin m → ℝ) :
+    lsNormwiseBackwardErrorPhi theta r y *
+        vecNorm2 (fun i : Fin m => Deltab i - rectMatMulVec DeltaA y i) ≤
+      lsNormwiseBackwardErrorCostF theta DeltaA Deltab * vecNorm2 r := by
+  let q : Fin m → ℝ := fun i => Deltab i - rectMatMulVec DeltaA y i
+  have hqbound :
+      lsNormwiseBackwardErrorPhi theta q y ≤
+        lsNormwiseBackwardErrorCostF theta DeltaA Deltab :=
+    lsNormwiseBackwardErrorPhi_le_costF_of_residual_eq_deltab_sub_deltaA_y
+      htheta hy q DeltaA Deltab rfl
+  have hqmul :
+      lsNormwiseBackwardErrorPhi theta q y * vecNorm2 r ≤
+        lsNormwiseBackwardErrorCostF theta DeltaA Deltab * vecNorm2 r :=
+    mul_le_mul_of_nonneg_right hqbound (vecNorm2_nonneg r)
+  calc
+    lsNormwiseBackwardErrorPhi theta r y *
+        vecNorm2 (fun i : Fin m => Deltab i - rectMatMulVec DeltaA y i)
+        = lsNormwiseBackwardErrorPhi theta q y * vecNorm2 r := by
+          rw [lsNormwiseBackwardErrorPhi_eq_theta_mul_norm_div_sqrt_den htheta hy r]
+          rw [lsNormwiseBackwardErrorPhi_eq_theta_mul_norm_div_sqrt_den htheta hy q]
+          simp [q]
+          ring
+    _ ≤ lsNormwiseBackwardErrorCostF theta DeltaA Deltab * vecNorm2 r := hqmul
+
 private theorem frobNormSqRect_rankOne_real {m n : ℕ} (c : ℝ)
     (r : Fin m → ℝ) (y : Fin n → ℝ) :
     frobNormSqRect (fun i j => c * r i * y j) =
