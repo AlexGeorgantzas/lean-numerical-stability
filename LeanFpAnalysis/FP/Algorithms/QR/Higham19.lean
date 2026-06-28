@@ -3423,6 +3423,102 @@ theorem householder_paddedFinInput_pre_repair_gram_bound_of_right_inverse_budget
               (Theorem19_4.gamma_tilde_nonneg fp hvalid)
               hblock.2.2.2.2.2 hresidual hRinv heta hrho
 
+/-- The concrete padded Householder handoff supplies the upper-trapezoidal
+shape of the extracted `R11` block, so a pointwise nonzero diagonal gives the
+determinant-nonzero certificate needed by the repository inverse API. -/
+theorem householder_paddedFinInput_R11_det_ne_zero_of_diag_ne_zero
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + m)))
+    (hdiag :
+      forall i : Fin n,
+        Ne
+          (paddedEconomyR
+            (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))
+            i i)
+          0) :
+    Ne
+      (Matrix.det
+      (paddedEconomyR
+        (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)) :
+          Matrix (Fin n) (Fin n) Real))
+      0 := by
+  let R11 : Fin n -> Fin n -> Real :=
+    paddedEconomyR
+      (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))
+  have hfull := householder_paddedFinInput_full_block_data fp A hn hvalid
+  cases hfull with
+  | intro dTop htopExists =>
+      cases htopExists with
+      | intro dBottom hblock =>
+          dsimp only at hblock
+          have hupper : IsUpperTrapezoidal n n R11 := hblock.2.2.2.1
+          have hdiagR : forall i : Fin n, Ne (R11 i i) 0 := by
+            intro i
+            simpa [R11] using hdiag i
+          have hdetR :
+              Ne (Matrix.det (R11 : Matrix (Fin n) (Fin n) Real)) 0 :=
+            det_ne_zero_of_upper_triangular_diag_ne_zero n R11 hupper hdiagR
+          simpa [R11] using hdetR
+
+/-- Determinant-nonzero form of the `R11` right-inverse equation for the
+repository `nonsingInv`. -/
+theorem householder_paddedFinInput_R11_nonsingInv_right_inverse_of_det_ne_zero
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hdet :
+      Ne
+        (Matrix.det
+        (paddedEconomyR
+          (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)) :
+            Matrix (Fin n) (Fin n) Real))
+        0) :
+    matMul n
+      (paddedEconomyR
+        (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)))
+      (nonsingInv n
+        (paddedEconomyR
+          (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)))) =
+      idMatrix n := by
+  let R11 : Fin n -> Fin n -> Real :=
+    paddedEconomyR
+      (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))
+  have hdetR : Ne (Matrix.det (R11 : Matrix (Fin n) (Fin n) Real)) 0 := by
+    simpa [R11] using hdet
+  have hrightPred : IsRightInverse n R11 (nonsingInv n R11) :=
+    (isInverse_nonsingInv_of_det_ne_zero n R11 hdetR).2
+  change matMul n R11 (nonsingInv n R11) = idMatrix n
+  ext i j
+  exact hrightPred i j
+
+/-- Diagonal-nonzero form of the `R11` right-inverse equation for the
+repository `nonsingInv`. -/
+theorem householder_paddedFinInput_R11_nonsingInv_right_inverse_of_diag_ne_zero
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + m)))
+    (hdiag :
+      forall i : Fin n,
+        Ne
+          (paddedEconomyR
+            (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))
+            i i)
+          0) :
+    matMul n
+      (paddedEconomyR
+        (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)))
+      (nonsingInv n
+        (paddedEconomyR
+          (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)))) =
+      idMatrix n := by
+  have hdet :=
+    householder_paddedFinInput_R11_det_ne_zero_of_diag_ne_zero
+      fp A hn hvalid hdiag
+  exact
+    householder_paddedFinInput_R11_nonsingInv_right_inverse_of_det_ne_zero
+      fp A hdet
+
 /-- Determinant-specialized form of the concrete pre-repair Gram-residual
 bound.  A nonzero determinant for the extracted `R11` block supplies the
 repository `nonsingInv` right-inverse equation; the remaining condition
@@ -3455,14 +3551,9 @@ theorem householder_paddedFinInput_pre_repair_gram_bound_of_det_ne_zero_inverse_
         (paddedEconomyQ
           (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A))))
       ((eta * rho) ^ 2) := by
-  let R11 : Fin n -> Fin n -> Real :=
-    paddedEconomyR
-      (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))
-  have hrightPred : IsRightInverse n R11 (nonsingInv n R11) :=
-    (isInverse_nonsingInv_of_det_ne_zero n R11 hdet).2
-  have hRright : matMul n R11 (nonsingInv n R11) = idMatrix n := by
-    ext i j
-    exact hrightPred i j
+  have hRright :=
+    householder_paddedFinInput_R11_nonsingInv_right_inverse_of_det_ne_zero
+      fp A hdet
   exact
     householder_paddedFinInput_pre_repair_gram_bound_of_right_inverse_budget
       fp A hn hvalid hRright hresidual hRinv heta hrho
@@ -3499,23 +3590,12 @@ theorem householder_paddedFinInput_pre_repair_gram_bound_of_upper_diag_inverse_b
         (paddedEconomyQ
           (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A))))
       ((eta * rho) ^ 2) := by
-  let R11 : Fin n -> Fin n -> Real :=
-    paddedEconomyR
-      (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))
-  have hfull := householder_paddedFinInput_full_block_data fp A hn hvalid
-  cases hfull with
-  | intro dTop htopExists =>
-      cases htopExists with
-      | intro dBottom hblock =>
-          dsimp only at hblock
-          have hupper : IsUpperTrapezoidal n n R11 := hblock.2.2.2.1
-          have hdet :
-              Ne (Matrix.det (R11 : Matrix (Fin n) (Fin n) Real)) 0 := by
-            exact det_ne_zero_of_upper_triangular_diag_ne_zero
-              n R11 hupper hdiag
-          exact
-            householder_paddedFinInput_pre_repair_gram_bound_of_det_ne_zero_inverse_budget
-              fp A hn hvalid hdet hresidual hRinv heta hrho
+  have hdet :=
+    householder_paddedFinInput_R11_det_ne_zero_of_diag_ne_zero
+      fp A hn hvalid hdiag
+  exact
+    householder_paddedFinInput_pre_repair_gram_bound_of_det_ne_zero_inverse_budget
+      fp A hn hvalid hdet hresidual hRinv heta hrho
 
 /-- The concrete padded Householder handoff supplies the upper-trapezoidal
 shape of the extracted `R11` block, so a determinant-nonzero certificate is
@@ -3641,16 +3721,10 @@ theorem qrsensitivitySourceOutput_of_householder_upper_diag_repair
       cases htopExists with
       | intro dBottom hblock =>
           dsimp only at hblock
-          have hupper : IsUpperTrapezoidal n n R11 := hblock.2.2.2.1
-          have hdet :
-              Ne (Matrix.det (R11 : Matrix (Fin n) (Fin n) Real)) 0 := by
-            exact det_ne_zero_of_upper_triangular_diag_ne_zero
-              n R11 hupper hdiag
-          have hrightPred : IsRightInverse n R11 (nonsingInv n R11) :=
-            (isInverse_nonsingInv_of_det_ne_zero n R11 hdet).2
           have hRright : matMul n R11 (nonsingInv n R11) = idMatrix n := by
-            ext i j
-            exact hrightPred i j
+            simpa [R11] using
+              householder_paddedFinInput_R11_nonsingInv_right_inverse_of_diag_ne_zero
+                fp A hn hvalid hdiag
           have hdA1 : rectOpNorm2Le dBottom eta1 :=
             bottomPerturbation_rectOpNorm2Le_of_stackedColumnwiseBound
               A dTop dBottom (Theorem19_4.gamma_tilde_nonneg fp hvalid)
@@ -3759,16 +3833,10 @@ theorem qrsensitivitySourceOutput_of_householder_upper_diag_correctionMapDataRep
       cases htopExists with
       | intro dBottom hblock =>
           dsimp only at hblock
-          have hupper : IsUpperTrapezoidal n n R11 := hblock.2.2.2.1
-          have hdet :
-              Ne (Matrix.det (R11 : Matrix (Fin n) (Fin n) Real)) 0 := by
-            exact det_ne_zero_of_upper_triangular_diag_ne_zero
-              n R11 hupper hdiag
-          have hrightPred : IsRightInverse n R11 (nonsingInv n R11) :=
-            (isInverse_nonsingInv_of_det_ne_zero n R11 hdet).2
           have hRright : matMul n R11 (nonsingInv n R11) = idMatrix n := by
-            ext i j
-            exact hrightPred i j
+            simpa [R11] using
+              householder_paddedFinInput_R11_nonsingInv_right_inverse_of_diag_ne_zero
+                fp A hn hvalid hdiag
           have hdA1 : rectOpNorm2Le dBottom eta1 :=
             bottomPerturbation_rectOpNorm2Le_of_stackedColumnwiseBound
               A dTop dBottom (Theorem19_4.gamma_tilde_nonneg fp hvalid)
@@ -4073,16 +4141,10 @@ theorem qrsensitivitySourceOutput_of_householder_upper_diag_correctionMapDataRep
       cases htopExists with
       | intro dBottom hblock =>
           dsimp only at hblock
-          have hupper : IsUpperTrapezoidal n n R11 := hblock.2.2.2.1
-          have hdet :
-              Ne (Matrix.det (R11 : Matrix (Fin n) (Fin n) Real)) 0 := by
-            exact det_ne_zero_of_upper_triangular_diag_ne_zero
-              n R11 hupper hdiag
-          have hrightPred : IsRightInverse n R11 (nonsingInv n R11) :=
-            (isInverse_nonsingInv_of_det_ne_zero n R11 hdet).2
           have hRright : matMul n R11 (nonsingInv n R11) = idMatrix n := by
-            ext i j
-            exact hrightPred i j
+            simpa [R11] using
+              householder_paddedFinInput_R11_nonsingInv_right_inverse_of_diag_ne_zero
+                fp A hn hvalid hdiag
           have hdA1 : rectOpNorm2Le dBottom eta1 :=
             bottomPerturbation_rectOpNorm2Le_of_stackedColumnwiseBound
               A dTop dBottom (Theorem19_4.gamma_tilde_nonneg fp hvalid)
@@ -4247,16 +4309,10 @@ theorem qrsensitivitySourceOutput_of_householder_upper_diag_csDiagonalRepair
       cases htopExists with
       | intro dBottom hblock =>
           dsimp only at hblock
-          have hupper : IsUpperTrapezoidal n n R11 := hblock.2.2.2.1
-          have hdet :
-              Ne (Matrix.det (R11 : Matrix (Fin n) (Fin n) Real)) 0 := by
-            exact det_ne_zero_of_upper_triangular_diag_ne_zero
-              n R11 hupper hdiag
-          have hrightPred : IsRightInverse n R11 (nonsingInv n R11) :=
-            (isInverse_nonsingInv_of_det_ne_zero n R11 hdet).2
           have hRright : matMul n R11 (nonsingInv n R11) = idMatrix n := by
-            ext i j
-            exact hrightPred i j
+            simpa [R11] using
+              householder_paddedFinInput_R11_nonsingInv_right_inverse_of_diag_ne_zero
+                fp A hn hvalid hdiag
           have hdA1 : rectOpNorm2Le dBottom eta1 :=
             bottomPerturbation_rectOpNorm2Le_of_stackedColumnwiseBound
               A dTop dBottom (Theorem19_4.gamma_tilde_nonneg fp hvalid)
@@ -4666,16 +4722,10 @@ theorem qrsensitivitySourceOutput_of_householder_upper_diag_csDiagonalRepair_of_
       cases htopExists with
       | intro dBottom hblock =>
           dsimp only at hblock
-          have hupper : IsUpperTrapezoidal n n R11 := hblock.2.2.2.1
-          have hdet :
-              Ne (Matrix.det (R11 : Matrix (Fin n) (Fin n) Real)) 0 := by
-            exact det_ne_zero_of_upper_triangular_diag_ne_zero
-              n R11 hupper hdiag
-          have hrightPred : IsRightInverse n R11 (nonsingInv n R11) :=
-            (isInverse_nonsingInv_of_det_ne_zero n R11 hdet).2
           have hRright : matMul n R11 (nonsingInv n R11) = idMatrix n := by
-            ext i j
-            exact hrightPred i j
+            simpa [R11] using
+              householder_paddedFinInput_R11_nonsingInv_right_inverse_of_diag_ne_zero
+                fp A hn hvalid hdiag
           have hdA1 : rectOpNorm2Le dBottom eta1 :=
             bottomPerturbation_rectOpNorm2Le_of_stackedColumnwiseBound
               A dTop dBottom (Theorem19_4.gamma_tilde_nonneg fp hvalid)
