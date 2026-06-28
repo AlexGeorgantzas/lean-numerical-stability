@@ -89,6 +89,29 @@ theorem householder_mul_orthogonal_vector {n : Nat}
           rw [horth]
           ring
 
+/-- Problem 19.1 Givens active-plane action: the two rotated coordinates follow
+the standard real two-by-two rotation formula.  This records the real part of
+the Givens eigenvalue/fixed-plane calculation in the repository's
+matrix-vector API. -/
+theorem givens_active_plane_action {n : Nat}
+    (p q : Fin n) (c s : Real) (x : Fin n -> Real)
+    (hpq : Not (p = q)) :
+    matMulVec n (givensRotation n p q c s) x p = c * x p + s * x q /\
+    matMulVec n (givensRotation n p q c s) x q = c * x q - s * x p := by
+  exact And.intro
+    (givensRotation_matMulVec_p n p q c s x hpq)
+    (givensRotation_matMulVec_q n p q c s x hpq)
+
+/-- Problem 19.1 Givens fixed subspace: if a vector has zero entries in the two
+rotated coordinates, then the exact Givens rotation fixes it.  This records the
+real `+1` fixed-plane contribution of a Givens rotation. -/
+theorem givens_mul_fixed_of_zero_pair {n : Nat}
+    (p q : Fin n) (c s : Real) (x : Fin n -> Real)
+    (hpq : Not (p = q)) (hxp : x p = 0) (hxq : x q = 0) :
+    matMulVec n (givensRotation n p q c s) x = x := by
+  ext i
+  exact givensRotation_matMulVec_pair_zero n p q c s x hpq hxp hxq i
+
 end Problem19_1
 
 namespace Algorithm19_11
