@@ -14061,6 +14061,58 @@ theorem LSNormwiseBackwardErrorFeasible.formulaMatrix_transpose_source_residual_
             (fun i : Fin (m + 1) => Deltab i - rectMatMulVec DeltaA y i) :=
         add_le_add hleft hright
 
+/-- Spectral-to-additive bridge for the nonzero-`p` WKS lower-bound route.
+    Combining the row-side `sigma_min` action of the source block
+    `[A phi(I-r r^+)]` with the full transposed-action estimate gives the
+    remaining inequality before the sharp coupled weighted-cost step.  This is
+    intentionally not the final (20.21) lower-bound theorem. -/
+theorem LSNormwiseBackwardErrorFeasible.formulaMatrixSigmaMin_mul_source_residual_vecNorm2_le_add
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (DeltaA : Fin (m + 1) → Fin n → ℝ)
+    (Deltab : Fin (m + 1) → ℝ)
+    (hfeas : LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab)
+    (hrsq : vecNorm2Sq (lsResidualHigham A b y) ≠ 0) :
+    lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+        (lsResidualHigham A b y) y *
+      vecNorm2
+        (fun i : Fin (m + 1) =>
+          lsResidualHigham A b y i + Deltab i - rectMatMulVec DeltaA y i) ≤
+      frobNormRect DeltaA *
+        vecNorm2
+          (fun i : Fin (m + 1) =>
+            lsResidualHigham A b y i + Deltab i -
+              rectMatMulVec DeltaA y i) +
+        lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y *
+          vecNorm2
+            (fun i : Fin (m + 1) => Deltab i - rectMatMulVec DeltaA y i) := by
+  let p : Fin (m + 1) → ℝ :=
+    fun i => lsResidualHigham A b y i + Deltab i - rectMatMulVec DeltaA y i
+  have hspec :
+      lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+          (lsResidualHigham A b y) y * vecNorm2 p ≤
+        vecNorm2
+          (rectMatMulVec
+            (finiteTranspose
+              (lsNormwiseBackwardErrorFormulaMatrix theta A
+                (lsResidualHigham A b y) y)) p) :=
+    lsNormwiseBackwardErrorFormulaMatrixSigmaMin_mul_vecNorm2_le_transpose_mulVec
+      theta A (lsResidualHigham A b y) y p
+  have hupper :
+      vecNorm2
+          (rectMatMulVec
+            (finiteTranspose
+              (lsNormwiseBackwardErrorFormulaMatrix theta A
+                (lsResidualHigham A b y) y)) p) ≤
+        frobNormRect DeltaA * vecNorm2 p +
+          lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y *
+            vecNorm2
+              (fun i : Fin (m + 1) => Deltab i - rectMatMulVec DeltaA y i) := by
+    simpa [p] using
+      LSNormwiseBackwardErrorFeasible.formulaMatrix_transpose_source_residual_vecNorm2_le
+        theta A b y DeltaA Deltab hfeas hrsq
+  exact hspec.trans hupper
+
 /-- Exact-minimizer specialization of the nonzero-residual left-null
     certificate for (20.21).  If `y` is a least-squares minimizer, then
     normal-equation orthogonality of Higham's residual `b - A y` to the data
