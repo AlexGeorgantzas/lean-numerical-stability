@@ -14624,6 +14624,98 @@ theorem lsNormwiseBackwardErrorEtaF_le_rankOne_source_residual_witness_expanded
     ring
   simpa [r, u, hDeltab] using hbase
 
+/-- Scaled expanded rank-one WKS source-residual upper bound.  Scaling the
+    expanded residual candidate by a nonzero scalar preserves the rank-one
+    Frobenius component and leaves the source-action term invariant, while
+    exposing the free scalar in the `Delta b` part of the witness cost. -/
+theorem lsNormwiseBackwardErrorEtaF_le_rankOne_source_residual_witness_scaled
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (y : Fin n → ℝ)
+    (p : Fin m → ℝ) (hp : vecNorm2Sq p ≠ 0)
+    (c : ℝ) (hc : c ≠ 0) :
+    let r : Fin m → ℝ := lsResidualHigham A b y
+    let u : Fin n → ℝ := fun j => ∑ i : Fin m, A i j * p i
+    lsNormwiseBackwardErrorEtaF theta A b y ≤
+      Real.sqrt (vecNorm2Sq u / vecNorm2Sq p +
+        theta ^ 2 *
+          vecNorm2Sq
+            (fun i : Fin m =>
+              c * p i - r i -
+                ((1 / vecNorm2Sq p) * p i *
+                  (∑ j : Fin n, u j * y j)))) := by
+  let r : Fin m → ℝ := lsResidualHigham A b y
+  let u : Fin n → ℝ := fun j => ∑ i : Fin m, A i j * p i
+  let q : Fin m → ℝ := fun i => c * p i
+  let uq : Fin n → ℝ := fun j => ∑ i : Fin m, A i j * q i
+  have hc_sq : c ^ 2 ≠ 0 := pow_ne_zero 2 hc
+  have hqnorm : vecNorm2Sq q = c ^ 2 * vecNorm2Sq p := by
+    simpa [q] using (vecNorm2Sq_smul c p)
+  have hq : vecNorm2Sq q ≠ 0 := by
+    rw [hqnorm]
+    exact mul_ne_zero hc_sq hp
+  have huq : uq = fun j => c * u j := by
+    ext j
+    dsimp [uq, u, q]
+    calc
+      ∑ i : Fin m, A i j * (c * p i)
+          = ∑ i : Fin m, c * (A i j * p i) := by
+              apply Finset.sum_congr rfl
+              intro i _
+              ring
+      _ = c * ∑ i : Fin m, A i j * p i := by
+              rw [Finset.mul_sum]
+  have huqnorm : vecNorm2Sq uq = c ^ 2 * vecNorm2Sq u := by
+    rw [huq]
+    exact vecNorm2Sq_smul c u
+  have hratio :
+      vecNorm2Sq uq / vecNorm2Sq q = vecNorm2Sq u / vecNorm2Sq p := by
+    rw [huqnorm, hqnorm]
+    field_simp [hp, hc_sq]
+  have hdot :
+      (∑ j : Fin n, uq j * y j) = c * (∑ j : Fin n, u j * y j) := by
+    rw [huq]
+    calc
+      ∑ j : Fin n, (c * u j) * y j
+          = ∑ j : Fin n, c * (u j * y j) := by
+              apply Finset.sum_congr rfl
+              intro j _
+              ring
+      _ = c * ∑ j : Fin n, u j * y j := by
+              rw [Finset.mul_sum]
+  have hproj :
+      (fun i : Fin m =>
+        (1 / vecNorm2Sq q) * q i * (∑ j : Fin n, uq j * y j)) =
+        fun i : Fin m =>
+          (1 / vecNorm2Sq p) * p i * (∑ j : Fin n, u j * y j) := by
+    ext i
+    rw [hdot]
+    dsimp [q]
+    rw [hqnorm]
+    field_simp [hp, hc, hc_sq]
+  have hDeltab :
+      (fun i : Fin m =>
+        q i - r i -
+          ((1 / vecNorm2Sq q) * q i * (∑ j : Fin n, uq j * y j))) =
+        fun i : Fin m =>
+          c * p i - r i -
+            ((1 / vecNorm2Sq p) * p i * (∑ j : Fin n, u j * y j)) := by
+    ext i
+    rw [congrFun hproj i]
+  have hbase :
+      lsNormwiseBackwardErrorEtaF theta A b y ≤
+        Real.sqrt (vecNorm2Sq uq / vecNorm2Sq q +
+          theta ^ 2 *
+            vecNorm2Sq
+              (fun i : Fin m =>
+                q i - r i -
+                  ((1 / vecNorm2Sq q) * q i *
+                    (∑ j : Fin n, uq j * y j)))) := by
+    simpa [r, q, uq] using
+      (lsNormwiseBackwardErrorEtaF_le_rankOne_source_residual_witness_expanded
+        theta A b y q hq)
+  rw [hratio, hDeltab] at hbase
+  simpa [r, u] using hbase
+
 /-- Source-block `sigma_min` branch handoff for the rank-one WKS witness.
     If a nonzero expanded residual `p` makes the explicit rank-one witness cost
     no larger than the row-side source-block `sigma_min`, and that branch is
