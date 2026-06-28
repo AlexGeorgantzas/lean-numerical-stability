@@ -13737,6 +13737,69 @@ theorem lsNormwiseBackwardErrorFormulaMatrix_transpose_source_residual_right
           rw [hres]
           ring
 
+/-- Norm bound for the right projector block in the transposed WKS source
+    matrix.  This closes the projector-contraction part of the nonzero-`p`
+    lower-bound route for (20.21); the coupled weighted-cost estimate remains
+    a separate open step. -/
+theorem lsNormwiseBackwardErrorFormulaMatrix_transpose_source_residual_right_vecNorm2_le
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (DeltaA : Fin (m + 1) → Fin n → ℝ)
+    (Deltab : Fin (m + 1) → ℝ)
+    (hrsq : vecNorm2Sq (lsResidualHigham A b y) ≠ 0) :
+    vecNorm2
+        (fun k : Fin (m + 1) =>
+          lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y *
+            ∑ i : Fin (m + 1),
+              lsResidualComplementProjector (lsResidualHigham A b y) i k *
+                (Deltab i - rectMatMulVec DeltaA y i)) ≤
+      lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y *
+        vecNorm2
+          (fun i : Fin (m + 1) => Deltab i - rectMatMulVec DeltaA y i) := by
+  let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+  let q : Fin (m + 1) → ℝ := fun i => Deltab i - rectMatMulVec DeltaA y i
+  let phi : ℝ := lsNormwiseBackwardErrorPhi theta r y
+  have hphi : 0 ≤ phi := by
+    simpa [phi, r] using lsNormwiseBackwardErrorPhi_nonneg theta r y
+  have hC : rectOpNorm2Le (lsResidualComplementProjector r) 1 :=
+    lsResidualComplementProjector_rectOpNorm2Le_one r (by simpa [r] using hrsq)
+  have hprojected :
+      (fun k : Fin (m + 1) =>
+        ∑ i : Fin (m + 1), lsResidualComplementProjector r i k * q i) =
+        matMulVec (m + 1) (lsResidualComplementProjector r) q := by
+    ext k
+    unfold matMulVec
+    apply Finset.sum_congr rfl
+    intro i _
+    rw [lsResidualComplementProjector_symmetric]
+  have hCq :
+      vecNorm2 (matMulVec (m + 1) (lsResidualComplementProjector r) q) ≤
+        vecNorm2 q := by
+    simpa [rectMatMulVec, matMulVec] using hC q
+  calc
+    vecNorm2
+        (fun k : Fin (m + 1) =>
+          lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y *
+            ∑ i : Fin (m + 1),
+              lsResidualComplementProjector (lsResidualHigham A b y) i k *
+                (Deltab i - rectMatMulVec DeltaA y i))
+        = vecNorm2
+            (fun k : Fin (m + 1) =>
+              phi * matMulVec (m + 1) (lsResidualComplementProjector r) q k) := by
+          congr 1
+          ext k
+          have hk := congrFun hprojected k
+          exact congrArg (fun z : ℝ => phi * z) hk
+    _ = phi * vecNorm2
+          (matMulVec (m + 1) (lsResidualComplementProjector r) q) := by
+          rw [vecNorm2_smul, abs_of_nonneg hphi]
+    _ ≤ phi * vecNorm2 q :=
+          mul_le_mul_of_nonneg_left hCq hphi
+    _ = lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y *
+        vecNorm2
+          (fun i : Fin (m + 1) => Deltab i - rectMatMulVec DeltaA y i) := by
+          rfl
+
 /-- Vector form of the transposed WKS source-block action on the expanded
     perturbed residual.  This combines the left feasibility cancellation with
     the right projector cancellation and is the squared-norm input for the
