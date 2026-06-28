@@ -8579,6 +8579,40 @@ theorem lsVecNorm2Sq_append {n m : ℕ}
   rw [Fin.sum_univ_add]
   simp [Fin.append_left, Fin.append_right]
 
+/-- Triangle inequality for an appended finite vector, viewed as the sum of
+    its left and right coordinate embeddings. -/
+theorem lsVecNorm2_append_le_add {n m : ℕ}
+    (x : Fin n → ℝ) (z : Fin m → ℝ) :
+    vecNorm2 (Fin.append x z) ≤ vecNorm2 x + vecNorm2 z := by
+  let x' : Fin (n + m) → ℝ := Fin.append x (0 : Fin m → ℝ)
+  let z' : Fin (n + m) → ℝ := Fin.append (0 : Fin n → ℝ) z
+  have happ :
+      Fin.append x z = fun k : Fin (n + m) => x' k + z' k := by
+    ext k
+    refine Fin.addCases
+      (motive := fun k : Fin (n + m) =>
+        Fin.append x z k = x' k + z' k)
+      ?left ?right k
+    · intro i
+      simp [x', z', Fin.append_left]
+    · intro i
+      simp [x', z', Fin.append_right]
+  have hx' : vecNorm2 x' = vecNorm2 x := by
+    unfold x'
+    unfold vecNorm2
+    rw [lsVecNorm2Sq_append]
+    simp [vecNorm2Sq]
+  have hz' : vecNorm2 z' = vecNorm2 z := by
+    unfold z'
+    unfold vecNorm2
+    rw [lsVecNorm2Sq_append]
+    simp [vecNorm2Sq]
+  calc
+    vecNorm2 (Fin.append x z) = vecNorm2 (fun k : Fin (n + m) => x' k + z' k) := by
+      rw [happ]
+    _ ≤ vecNorm2 x' + vecNorm2 z' := vecNorm2_add_le x' z'
+    _ = vecNorm2 x + vecNorm2 z := by rw [hx', hz']
+
 /-- The left coordinate block of an appended vector has no larger Euclidean
     norm than the whole vector. -/
 theorem lsVecNorm2_left_le_append {n m : ℕ}
@@ -13949,6 +13983,83 @@ theorem LSNormwiseBackwardErrorFeasible.formulaMatrixSigmaMin_mul_source_residua
                   (Deltab i - rectMatMulVec DeltaA y i)))
   rw [← haction]
   exact hspec
+
+/-- Upper bound for the full transposed WKS source-block action on the
+    expanded feasible residual.  This combines the left Frobenius estimate for
+    `DeltaA^T p` with the right projector-contraction estimate, exposing the
+    remaining coupled weighted-cost step for the nonzero-`p` lower-bound route
+    behind (20.21). -/
+theorem LSNormwiseBackwardErrorFeasible.formulaMatrix_transpose_source_residual_vecNorm2_le
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (DeltaA : Fin (m + 1) → Fin n → ℝ)
+    (Deltab : Fin (m + 1) → ℝ)
+    (hfeas : LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab)
+    (hrsq : vecNorm2Sq (lsResidualHigham A b y) ≠ 0) :
+    vecNorm2
+        (rectMatMulVec
+          (finiteTranspose
+            (lsNormwiseBackwardErrorFormulaMatrix theta A
+              (lsResidualHigham A b y) y))
+          (fun i => lsResidualHigham A b y i + Deltab i -
+            rectMatMulVec DeltaA y i)) ≤
+      frobNormRect DeltaA *
+        vecNorm2
+          (fun i : Fin (m + 1) =>
+            lsResidualHigham A b y i + Deltab i -
+              rectMatMulVec DeltaA y i) +
+        lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y *
+          vecNorm2
+            (fun i : Fin (m + 1) => Deltab i - rectMatMulVec DeltaA y i) := by
+  let p : Fin (m + 1) → ℝ :=
+    fun i => lsResidualHigham A b y i + Deltab i - rectMatMulVec DeltaA y i
+  let left : Fin n → ℝ :=
+    fun j => -∑ i : Fin (m + 1), DeltaA i j * p i
+  let right : Fin (m + 1) → ℝ :=
+    fun k =>
+      lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y *
+        ∑ i : Fin (m + 1),
+          lsResidualComplementProjector (lsResidualHigham A b y) i k *
+            (Deltab i - rectMatMulVec DeltaA y i)
+  have haction :
+      rectMatMulVec
+          (finiteTranspose
+            (lsNormwiseBackwardErrorFormulaMatrix theta A
+              (lsResidualHigham A b y) y))
+          p =
+        Fin.append left right := by
+    simpa [p, left, right] using
+      LSNormwiseBackwardErrorFeasible.formulaMatrix_transpose_source_residual_eq
+        theta A b y DeltaA Deltab hfeas hrsq
+  have hleft :
+      vecNorm2 left ≤
+        frobNormRect DeltaA * vecNorm2 p := by
+    simpa [p, left] using
+      LSNormwiseBackwardErrorFeasible.formulaMatrix_transpose_source_residual_left_vecNorm2_le
+        A b y DeltaA Deltab
+  have hright :
+      vecNorm2 right ≤
+        lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y *
+          vecNorm2
+            (fun i : Fin (m + 1) => Deltab i - rectMatMulVec DeltaA y i) := by
+    simpa [right] using
+      lsNormwiseBackwardErrorFormulaMatrix_transpose_source_residual_right_vecNorm2_le
+        theta A b y DeltaA Deltab hrsq
+  calc
+    vecNorm2
+        (rectMatMulVec
+          (finiteTranspose
+            (lsNormwiseBackwardErrorFormulaMatrix theta A
+              (lsResidualHigham A b y) y))
+          p)
+        = vecNorm2 (Fin.append left right) := by rw [haction]
+    _ ≤ vecNorm2 left + vecNorm2 right :=
+        lsVecNorm2_append_le_add left right
+    _ ≤ frobNormRect DeltaA * vecNorm2 p +
+        lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y *
+          vecNorm2
+            (fun i : Fin (m + 1) => Deltab i - rectMatMulVec DeltaA y i) :=
+        add_le_add hleft hright
 
 /-- Exact-minimizer specialization of the nonzero-residual left-null
     certificate for (20.21).  If `y` is a least-squares minimizer, then
