@@ -8793,6 +8793,293 @@ theorem lsLemma20_6ProjectorComplement_vecNorm2Sq_le {m : ℕ}
   rw [hnorm]
   linarith
 
+/-- Complement projectors commute with the perturbation residual
+    `Delta b - Delta A y`.  This is the algebraic bridge used in the WKS
+    nonzero-`p` route to apply the weighted residual bound after projecting
+    both perturbation blocks away from the expanded residual direction. -/
+theorem lsLemma20_6ProjectorComplement_deltab_sub_deltaA_y
+    {m n : ℕ} (p : Fin m → ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (y : Fin n → ℝ) :
+    matMulVec m (lsLemma20_6ProjectorComplement p)
+        (fun i : Fin m => Deltab i - rectMatMulVec DeltaA y i) =
+      fun i : Fin m =>
+        matMulVec m (lsLemma20_6ProjectorComplement p) Deltab i -
+          rectMatMulVec
+            (matMulRectLeft (lsLemma20_6ProjectorComplement p) DeltaA) y i := by
+  let Q : Fin m → Fin m → ℝ := lsLemma20_6ProjectorComplement p
+  ext i
+  have hmul := congrFun (rectMatMulVec_matMulRectLeft Q DeltaA y) i
+  calc
+    matMulVec m (lsLemma20_6ProjectorComplement p)
+        (fun i : Fin m => Deltab i - rectMatMulVec DeltaA y i) i =
+        (∑ j : Fin m, Q i j * (Deltab j - rectMatMulVec DeltaA y j)) := by
+          simp [Q, matMulVec]
+    _ = (∑ j : Fin m, Q i j * Deltab j) -
+          (∑ j : Fin m, Q i j * rectMatMulVec DeltaA y j) := by
+          rw [← Finset.sum_sub_distrib]
+          apply Finset.sum_congr rfl
+          intro j _
+          ring
+    _ = matMulVec m Q Deltab i -
+          rectMatMulVec (matMulRectLeft Q DeltaA) y i := by
+          rw [hmul]
+          rfl
+    _ = matMulVec m (lsLemma20_6ProjectorComplement p) Deltab i -
+          rectMatMulVec
+            (matMulRectLeft (lsLemma20_6ProjectorComplement p) DeltaA) y i := by
+          rfl
+
+/-- Projected weighted perturbation-residual bound for the nonzero-`p` WKS
+    lower-bound route.  After projecting both perturbation blocks by
+    `I - p p^+`, the Cauchy--Schwarz witness `[theta y; -1]` gives the sharp
+    squared estimate needed to couple the right projector term with the
+    Frobenius slack left by the `Delta A^T p` block. -/
+theorem lsNormwiseBackwardErrorProjectedPerturbationResidual_weighted_vecNorm2Sq_le
+    {m n : ℕ} (theta : ℝ) (p : Fin m → ℝ)
+    (hpsq : vecNorm2Sq p ≠ 0)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (y : Fin n → ℝ) :
+    theta ^ 2 *
+        vecNorm2Sq
+          (matMulVec m (lsLemma20_6ProjectorComplement p)
+            (fun i : Fin m => Deltab i - rectMatMulVec DeltaA y i)) ≤
+      (1 + theta ^ 2 * vecNorm2Sq y) *
+        (frobNormSqRect
+            (matMulRectLeft (lsLemma20_6ProjectorComplement p) DeltaA) +
+          theta ^ 2 * vecNorm2Sq Deltab) := by
+  let Q : Fin m → Fin m → ℝ := lsLemma20_6ProjectorComplement p
+  let DeltaAQ : Fin m → Fin n → ℝ := matMulRectLeft Q DeltaA
+  let DeltabQ : Fin m → ℝ := matMulVec m Q Deltab
+  let qQ : Fin m → ℝ :=
+    matMulVec m Q (fun i : Fin m => Deltab i - rectMatMulVec DeltaA y i)
+  let w : Fin (n + 1) → ℝ :=
+    Fin.append (fun j : Fin n => theta * y j) (fun _ : Fin 1 => -1)
+  let W : Fin m → Fin (n + 1) → ℝ :=
+    lsNormwiseBackwardErrorWeightedMatrix theta DeltaAQ DeltabQ
+  have hres :
+      qQ = fun i : Fin m => DeltabQ i - rectMatMulVec DeltaAQ y i := by
+    simpa [Q, DeltaAQ, DeltabQ, qQ] using
+      lsLemma20_6ProjectorComplement_deltab_sub_deltaA_y
+        p DeltaA Deltab y
+  have hneg :
+      (fun i : Fin m => rectMatMulVec DeltaAQ y i - DeltabQ i) =
+        fun i : Fin m => -qQ i := by
+    ext i
+    rw [hres]
+    ring
+  have hWw :
+      rectMatMulVec W w =
+        fun i : Fin m => theta * (rectMatMulVec DeltaAQ y i - DeltabQ i) := by
+    simpa [W, w] using
+      lsNormwiseBackwardErrorWeightedMatrix_mulVec_phi_witness
+        theta DeltaAQ DeltabQ y
+  have hleft :
+      vecNorm2Sq (rectMatMulVec W w) = theta ^ 2 * vecNorm2Sq qQ := by
+    calc
+      vecNorm2Sq (rectMatMulVec W w) =
+          vecNorm2Sq
+            (fun i : Fin m =>
+              theta * (rectMatMulVec DeltaAQ y i - DeltabQ i)) := by
+            rw [hWw]
+      _ = theta ^ 2 *
+            vecNorm2Sq
+              (fun i : Fin m => rectMatMulVec DeltaAQ y i - DeltabQ i) := by
+            simpa using
+              (vecNorm2Sq_smul theta
+                (fun i : Fin m => rectMatMulVec DeltaAQ y i - DeltabQ i))
+      _ = theta ^ 2 * vecNorm2Sq qQ := by
+            have hnorm :
+                vecNorm2Sq
+                    (fun i : Fin m => rectMatMulVec DeltaAQ y i - DeltabQ i) =
+                  vecNorm2Sq qQ := by
+              rw [hneg]
+              simpa using (vecNorm2Sq_smul (-1 : ℝ) qQ)
+            rw [hnorm]
+  have hw_sq :
+      vecNorm2Sq w = 1 + theta ^ 2 * vecNorm2Sq y := by
+    unfold w vecNorm2Sq
+    rw [Fin.sum_univ_add]
+    simp [Fin.append_left, Fin.append_right]
+    rw [Finset.mul_sum]
+    ring_nf
+  have hcs :
+      theta ^ 2 * vecNorm2Sq qQ ≤
+        (frobNormSqRect DeltaAQ + theta ^ 2 * vecNorm2Sq DeltabQ) *
+          (1 + theta ^ 2 * vecNorm2Sq y) := by
+    calc
+      theta ^ 2 * vecNorm2Sq qQ =
+          vecNorm2Sq (rectMatMulVec W w) := by
+          rw [hleft]
+      _ ≤ frobNormSqRect W * vecNorm2Sq w :=
+          vecNorm2Sq_rectMatMulVec_le_frobNormSqRect_mul W w
+      _ = (frobNormSqRect DeltaAQ + theta ^ 2 * vecNorm2Sq DeltabQ) *
+          (1 + theta ^ 2 * vecNorm2Sq y) := by
+          rw [lsNormwiseBackwardErrorWeightedMatrix_frobNormSqRect, hw_sq]
+  have hDeltabQ_le : vecNorm2Sq DeltabQ ≤ vecNorm2Sq Deltab := by
+    simpa [Q, DeltabQ] using
+      lsLemma20_6ProjectorComplement_vecNorm2Sq_le p hpsq Deltab
+  have hcost_tail :
+      theta ^ 2 * vecNorm2Sq DeltabQ ≤
+        theta ^ 2 * vecNorm2Sq Deltab :=
+    mul_le_mul_of_nonneg_left hDeltabQ_le (sq_nonneg theta)
+  have hcost_le :
+      frobNormSqRect DeltaAQ + theta ^ 2 * vecNorm2Sq DeltabQ ≤
+        frobNormSqRect DeltaAQ + theta ^ 2 * vecNorm2Sq Deltab := by
+    linarith
+  have hden_nonneg : 0 ≤ 1 + theta ^ 2 * vecNorm2Sq y := by
+    exact le_of_lt (lsNormwiseBackwardErrorMu_den_pos theta y)
+  have hmul :
+      (frobNormSqRect DeltaAQ + theta ^ 2 * vecNorm2Sq DeltabQ) *
+          (1 + theta ^ 2 * vecNorm2Sq y) ≤
+        (frobNormSqRect DeltaAQ + theta ^ 2 * vecNorm2Sq Deltab) *
+          (1 + theta ^ 2 * vecNorm2Sq y) :=
+    mul_le_mul_of_nonneg_right hcost_le hden_nonneg
+  calc
+    theta ^ 2 *
+        vecNorm2Sq
+          (matMulVec m (lsLemma20_6ProjectorComplement p)
+            (fun i : Fin m => Deltab i - rectMatMulVec DeltaA y i)) =
+        theta ^ 2 * vecNorm2Sq qQ := by
+          rfl
+    _ ≤ (frobNormSqRect DeltaAQ + theta ^ 2 * vecNorm2Sq DeltabQ) *
+        (1 + theta ^ 2 * vecNorm2Sq y) := hcs
+    _ ≤ (frobNormSqRect DeltaAQ + theta ^ 2 * vecNorm2Sq Deltab) *
+        (1 + theta ^ 2 * vecNorm2Sq y) := hmul
+    _ = (1 + theta ^ 2 * vecNorm2Sq y) *
+        (frobNormSqRect
+            (matMulRectLeft (lsLemma20_6ProjectorComplement p) DeltaA) +
+          theta ^ 2 * vecNorm2Sq Deltab) := by
+          simp [Q, DeltaAQ, mul_comm]
+
+/-- Exact projector squared estimate for the nonzero-`p` WKS lower-bound
+    route.  The left block `DeltaA^T p` consumes the rank-one direction in
+    `DeltaA` by the Frobenius Pythagoras identity; the right block is controlled
+    by the projected weighted perturbation-residual bound and the symmetric
+    projector area identity. -/
+theorem lsNormwiseBackwardErrorExactProjector_sq_bound
+    {m n : ℕ} {theta : ℝ} (htheta : 0 ≤ theta)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (r p : Fin m → ℝ) (hrsq : vecNorm2Sq r ≠ 0)
+    (hpsq : vecNorm2Sq p ≠ 0)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (hp :
+      p = fun i : Fin m => r i + Deltab i - rectMatMulVec DeltaA y i) :
+    vecNorm2Sq
+        (fun j : Fin n => -∑ i : Fin m, DeltaA i j * p i) +
+      (lsNormwiseBackwardErrorPhi theta r y) ^ 2 *
+        vecNorm2Sq (matMulVec m (lsResidualComplementProjector r) p) ≤
+      (lsNormwiseBackwardErrorCostF theta DeltaA Deltab) ^ 2 *
+        vecNorm2Sq p := by
+  let Qp : Fin m → Fin m → ℝ := lsLemma20_6ProjectorComplement p
+  let DeltaAQp : Fin m → Fin n → ℝ := matMulRectLeft Qp DeltaA
+  let left : Fin n → ℝ := fun j : Fin n => -∑ i : Fin m, DeltaA i j * p i
+  let trans : Fin n → ℝ := fun j : Fin n => ∑ i : Fin m, p i * DeltaA i j
+  let P : ℝ := vecNorm2Sq p
+  let F : ℝ := frobNormSqRect DeltaA
+  let Fq : ℝ := frobNormSqRect DeltaAQp
+  let B : ℝ := vecNorm2Sq Deltab
+  let D : ℝ := 1 + theta ^ 2 * vecNorm2Sq y
+  let C : ℝ := Fq + theta ^ 2 * B
+  have hleft_neg : left = fun j : Fin n => -trans j := by
+    ext j
+    change -(∑ i : Fin m, DeltaA i j * p i) =
+      -(∑ i : Fin m, p i * DeltaA i j)
+    congr 1
+    apply Finset.sum_congr rfl
+    intro i _
+    ring
+  have hleft_sq : vecNorm2Sq left = vecNorm2Sq trans := by
+    rw [hleft_neg]
+    simpa using (vecNorm2Sq_smul (-1 : ℝ) trans)
+  have hpyth :
+      vecNorm2Sq left + P * Fq = P * F := by
+    rw [hleft_sq]
+    simpa [Qp, DeltaAQp, trans, P, F, Fq, mul_comm] using
+      lsLemma20_6Projector_transpose_action_vecNorm2Sq_add_complement_frobNormSqRect
+        p hpsq DeltaA
+  have hdiff :
+      (fun i : Fin m => p i - r i) =
+        fun i : Fin m => Deltab i - rectMatMulVec DeltaA y i := by
+    ext i
+    have hpi := congrFun hp i
+    linarith
+  have hprojected :
+      theta ^ 2 *
+          vecNorm2Sq
+            (matMulVec m Qp (fun i : Fin m => p i - r i)) ≤
+        D * C := by
+    have hbase :=
+      lsNormwiseBackwardErrorProjectedPerturbationResidual_weighted_vecNorm2Sq_le
+        theta p hpsq DeltaA Deltab y
+    simpa [Qp, DeltaAQp, D, C, B, hdiff] using hbase
+  have hDpos : 0 < D := by
+    simpa [D] using lsNormwiseBackwardErrorMu_den_pos theta y
+  have hP_nonneg : 0 ≤ P := by
+    simpa [P] using vecNorm2Sq_nonneg p
+  have hproj_div :
+      theta ^ 2 *
+          vecNorm2Sq (matMulVec m Qp (fun i : Fin m => p i - r i)) / D ≤
+        C := by
+    rw [div_le_iff₀ hDpos]
+    simpa [mul_comm, mul_left_comm, mul_assoc] using hprojected
+  have hphi_sq :
+      (lsNormwiseBackwardErrorPhi theta r y) ^ 2 =
+        theta ^ 2 * vecNorm2Sq r / D := by
+    rw [lsNormwiseBackwardErrorPhi_eq_theta_mul_norm_div_sqrt_den htheta hy r]
+    rw [div_pow, mul_pow, Real.sq_sqrt (le_of_lt hDpos), ← vecNorm2_sq r]
+  have harea :=
+    lsLemma20_6ProjectorComplement_area_identity_sub r p hrsq hpsq
+  have hright_eq :
+      (lsNormwiseBackwardErrorPhi theta r y) ^ 2 *
+          vecNorm2Sq (matMulVec m (lsResidualComplementProjector r) p) =
+        P *
+          (theta ^ 2 *
+            vecNorm2Sq (matMulVec m Qp (fun i : Fin m => p i - r i)) / D) := by
+    calc
+      (lsNormwiseBackwardErrorPhi theta r y) ^ 2 *
+          vecNorm2Sq (matMulVec m (lsResidualComplementProjector r) p)
+          = (theta ^ 2 * vecNorm2Sq r / D) *
+              vecNorm2Sq
+                (matMulVec m (lsLemma20_6ProjectorComplement r) p) := by
+              rw [hphi_sq]
+      _ = (theta ^ 2 / D) *
+            (vecNorm2Sq r *
+              vecNorm2Sq
+                (matMulVec m (lsLemma20_6ProjectorComplement r) p)) := by
+              ring
+      _ = (theta ^ 2 / D) *
+            (vecNorm2Sq p *
+              vecNorm2Sq (matMulVec m Qp (fun i : Fin m => p i - r i))) := by
+              rw [harea]
+      _ = P *
+          (theta ^ 2 *
+            vecNorm2Sq (matMulVec m Qp (fun i : Fin m => p i - r i)) / D) := by
+          ring
+  have hright_le :
+      (lsNormwiseBackwardErrorPhi theta r y) ^ 2 *
+          vecNorm2Sq (matMulVec m (lsResidualComplementProjector r) p) ≤
+        P * C := by
+    rw [hright_eq]
+    exact mul_le_mul_of_nonneg_left hproj_div hP_nonneg
+  calc
+    vecNorm2Sq left +
+        (lsNormwiseBackwardErrorPhi theta r y) ^ 2 *
+          vecNorm2Sq (matMulVec m (lsResidualComplementProjector r) p)
+        ≤ vecNorm2Sq left + P * C := by
+          exact add_le_add (le_refl (vecNorm2Sq left)) hright_le
+    _ = vecNorm2Sq left + P * Fq + P * (theta ^ 2 * B) := by
+          simp [C]
+          ring
+    _ = P * F + P * (theta ^ 2 * B) := by
+          rw [hpyth]
+    _ = P * (F + theta ^ 2 * B) := by
+          ring
+    _ = (lsNormwiseBackwardErrorCostF theta DeltaA Deltab) ^ 2 *
+          vecNorm2Sq p := by
+          rw [lsNormwiseBackwardErrorCostF_sq]
+          simp [P, F, B, mul_comm]
+
 /-- The source projector `r r^+` from (20.21) is symmetric. -/
 theorem lsResidualPseudoinverseProjector_symmetric {m : ℕ}
     (r : Fin m → ℝ) (i j : Fin m) :
@@ -15062,6 +15349,98 @@ theorem lsNormwiseBackwardErrorFormulaRHS_le_costF_of_exact_projector_sq_bound
     simpa [lsNormwiseBackwardErrorFormulaRHS, r, sigma] using
       lsNormwiseBackwardErrorFormulaValue_le_sigmaMin theta A r y
   exact hrhs_le_sigma.trans hsigma_le_cost
+
+/-- Nonzero-expanded-residual WKS lower-bound branch.  For finite
+    nonnegative `theta` and `y ≠ 0`, every feasible perturbation whose
+    perturbed residual is nonzero has weighted Frobenius cost at least the
+    printed right-hand side in (20.21). -/
+theorem lsNormwiseBackwardErrorFormulaRHS_le_costF_of_nonzero_expanded_residual
+    {m n : ℕ} {theta : ℝ} (htheta : 0 ≤ theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (DeltaA : Fin (m + 1) → Fin n → ℝ)
+    (Deltab : Fin (m + 1) → ℝ)
+    (hfeas : LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab)
+    (hrsq : vecNorm2Sq (lsResidualHigham A b y) ≠ 0)
+    (hpne :
+      (fun i : Fin (m + 1) =>
+        lsResidualHigham A b y i + Deltab i - rectMatMulVec DeltaA y i) ≠ 0) :
+    lsNormwiseBackwardErrorFormulaRHS theta A b y ≤
+      lsNormwiseBackwardErrorCostF theta DeltaA Deltab := by
+  let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+  let p : Fin (m + 1) → ℝ :=
+    fun i => lsResidualHigham A b y i + Deltab i - rectMatMulVec DeltaA y i
+  have hpsq : vecNorm2Sq p ≠ 0 := by
+    exact ne_of_gt (vecNorm2Sq_pos_of_ne_zero_lsq (by simpa [p] using hpne))
+  have hexact :
+      let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+      let p : Fin (m + 1) → ℝ :=
+        fun i => lsResidualHigham A b y i + Deltab i - rectMatMulVec DeltaA y i
+      vecNorm2Sq
+        (fun j : Fin n =>
+          -∑ i : Fin (m + 1), DeltaA i j * p i) +
+        (lsNormwiseBackwardErrorPhi theta r y) ^ 2 *
+          vecNorm2Sq
+            (matMulVec (m + 1) (lsResidualComplementProjector r) p) ≤
+        (lsNormwiseBackwardErrorCostF theta DeltaA Deltab) ^ 2 *
+          vecNorm2Sq p := by
+    simpa [r, p] using
+      lsNormwiseBackwardErrorExactProjector_sq_bound
+        htheta hy r p hrsq hpsq DeltaA Deltab rfl
+  exact
+    lsNormwiseBackwardErrorFormulaRHS_le_costF_of_exact_projector_sq_bound
+      theta A b y DeltaA Deltab hfeas hrsq hpne hexact
+
+/-- Finite-`theta` pointwise WKS lower-bound packaging.  Combining the
+    exact-residual `p = 0` branch with the nonzero-expanded-residual branch,
+    every feasible perturbation has weighted Frobenius cost at least the
+    printed right-hand side in (20.21), under the finite nonnegative `theta`,
+    `y ≠ 0`, and nonzero source-residual assumptions. -/
+theorem lsNormwiseBackwardErrorFormulaRHS_le_costF_of_feasible_finite_theta
+    {m n : ℕ} {theta : ℝ} (htheta : 0 ≤ theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (DeltaA : Fin (m + 1) → Fin n → ℝ)
+    (Deltab : Fin (m + 1) → ℝ)
+    (hfeas : LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab)
+    (hrsq : vecNorm2Sq (lsResidualHigham A b y) ≠ 0) :
+    lsNormwiseBackwardErrorFormulaRHS theta A b y ≤
+      lsNormwiseBackwardErrorCostF theta DeltaA Deltab := by
+  let p : Fin (m + 1) → ℝ :=
+    fun i => lsResidualHigham A b y i + Deltab i - rectMatMulVec DeltaA y i
+  by_cases hpzero : p = 0
+  · have hres :
+        lsResidualHigham A b y =
+          fun i : Fin (m + 1) => rectMatMulVec DeltaA y i - Deltab i := by
+      ext i
+      have hp_i :
+          lsResidualHigham A b y i + Deltab i - rectMatMulVec DeltaA y i = 0 := by
+        simpa [p] using congrFun hpzero i
+      linarith
+    exact
+      lsNormwiseBackwardErrorFormulaRHS_le_costF_of_source_residual_eq_deltaA_y_sub_deltab
+        htheta A b hy DeltaA Deltab hres
+  · exact
+      lsNormwiseBackwardErrorFormulaRHS_le_costF_of_nonzero_expanded_residual
+        htheta A b hy DeltaA Deltab hfeas hrsq (by simpa [p] using hpzero)
+
+/-- Finite-`theta` lower-bound side of the WKS formula (20.21).  The pointwise
+    feasible perturbation lower bound transfers to the infimum model
+    `eta_F(y)` from (20.20). -/
+theorem lsNormwiseBackwardErrorFormulaRHS_le_etaF_of_finite_theta
+    {m n : ℕ} {theta : ℝ} (htheta : 0 ≤ theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hrsq : vecNorm2Sq (lsResidualHigham A b y) ≠ 0) :
+    lsNormwiseBackwardErrorFormulaRHS theta A b y ≤
+      lsNormwiseBackwardErrorEtaF theta A b y := by
+  apply
+    lsNormwiseBackwardErrorFormulaRHS_le_etaF_of_forall_feasible_cost_ge
+      theta A b y
+  intro DeltaA Deltab hfeas
+  exact
+    lsNormwiseBackwardErrorFormulaRHS_le_costF_of_feasible_finite_theta
+      htheta A b hy DeltaA Deltab hfeas hrsq
 
 /-- Conditional handoff for the nonzero-expanded-residual WKS lower-bound route.
     Once the sharp coupled squared estimate converts the two perturbation blocks
