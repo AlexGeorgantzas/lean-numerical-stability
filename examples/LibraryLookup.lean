@@ -15356,6 +15356,8 @@ It intentionally contains no task-specific proof scripts.
 #check maxEntryNorm_matrix_mul_mul_le_dim_sq
 #check maxEntryNorm_matrix_mul_dimension_free_counterexample
 #check maxEntryNorm_matrix_mul_mul_dimension_free_counterexample
+#check higham13_algorithm13_3_matrix_infNorm_active_local_schur_bound
+#check higham13_algorithm13_3_matrix_infNorm_active_stage_bound_of_pivot_bound
 #check maxEntryNorm_pos_of_invertible
 #check maxEntryNorm_pos_of_det_ne_zero
 #check blockMatrixFlatFin

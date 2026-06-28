@@ -16270,6 +16270,28 @@ theorem higham13_algorithm13_3_matrix_active_local_schur_bound_with_dim_factor
             (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k p j) := by
         ring
 
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.8:
+    exact matrix-product local Schur estimate in the matrix `∞` operator norm.
+
+    This instantiates the generic `SeminormedRing` exact-update proof with
+    Mathlib's `Matrix.linftyOpNormedRing`.  Unlike the entrywise max norm
+    route above, no dimension factor or separate product-bound hypothesis is
+    needed, because the block norm is genuinely submultiplicative for matrix
+    multiplication. -/
+theorem higham13_algorithm13_3_matrix_infNorm_active_local_schur_bound
+    {m r : ℕ}
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ) :
+    SchurStageActiveLocalSchurBound13_8
+      (fun k i j => infNorm
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j))
+      (fun k => infNorm (pivotInv k)) := by
+  letI := Matrix.linftyOpNormedRing (n := Fin r) (α := ℝ)
+  simpa [higham13_algorithm13_3_schurStageNorm,
+    higham13_algorithm13_3_pivotInvNorm,
+    higham13_algorithm13_3_schurStageMatrixBlock, infNorm] using
+    (higham13_algorithm13_3_schurStage_local_schur_bound A pivotInv)
+
 /-- Higham, 2nd ed., Chapter 13, Theorem 13.7:
     matrix-product active column dominance from the source induction layer.
 
@@ -16648,6 +16670,83 @@ theorem higham13_algorithm13_3_matrix_active_stage_bound_with_dim_factor_of_diag
         hr A pivotInv invDiagBound stageInvDiagBound hDom hInitInv
         hPivotInvBound hDiagUpdate)
       hPivotInvBound
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.8:
+    source-shaped active-stage bound for true matrix-product Algorithm 13.3
+    in the matrix `∞` operator norm.
+
+    The theorem follows the book's submultiplicative block-norm proof path:
+    the exact Schur update supplies the local product estimate through
+    `Matrix.linftyOpNormedRing`, then the existing Theorem 13.7--13.8 active
+    dominance machinery gives
+    `‖Aᵢⱼ^(k)‖∞ <= 2 * normMax`.  The pivot product and diagonal-update
+    certificates remain explicit, matching the analytic source obligations. -/
+theorem higham13_algorithm13_3_matrix_infNorm_active_stage_bound_of_pivot_bound
+    {m r : ℕ}
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (stageInvDiagBound : ℕ → Fin m → ℝ)
+    (hDom : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j)) invDiagBound)
+    (hDiagBound : ∀ j : Fin m, invDiagBound j ≤ infNorm (A j j))
+    (hInitInv : ∀ j : Fin m, stageInvDiagBound 0 j = invDiagBound j)
+    (hPivotBound : ∀ k : ℕ, ∀ hk : k < m,
+      infNorm (pivotInv k) * stageInvDiagBound k ⟨k, hk⟩ ≤ 1)
+    (hDiagUpdate : SchurStageActiveDiagLowerUpdate13_7
+      (fun k i j => infNorm
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j))
+      stageInvDiagBound
+      (fun k => infNorm (pivotInv k)))
+    (normMax : ℝ)
+    (hMax : ∀ i j : Fin m, infNorm (A i j) ≤ normMax)
+    (k : ℕ) (i j : Fin m) (hik : k ≤ i.val) (hjk : k ≤ j.val) :
+    infNorm (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j) ≤
+      2 * normMax := by
+  letI := Matrix.linftyOpNormedRing (n := Fin r) (α := ℝ)
+  have hInitNorm :
+      ∀ i j : Fin m, ‖A i j‖ = (fun i j : Fin m => infNorm (A i j)) i j := by
+    intro i j
+    rfl
+  have hStageNorm :
+      ∀ k : ℕ, ∀ i j : Fin m,
+        higham13_algorithm13_3_schurStageNorm A pivotInv k i j =
+          infNorm
+            (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j) := by
+    intro k i j
+    rfl
+  have hPivotNorm :
+      ∀ k : ℕ, higham13_algorithm13_3_pivotInvNorm pivotInv k =
+        infNorm (pivotInv k) := by
+    intro k
+    rfl
+  have hPivotBound' : ∀ k : ℕ, ∀ hk : k < m,
+      higham13_algorithm13_3_pivotInvNorm pivotInv k *
+          stageInvDiagBound k ⟨k, hk⟩ ≤ 1 := by
+    intro k hk
+    simpa [hPivotNorm k] using hPivotBound k hk
+  have hDiagUpdate' : SchurStageActiveDiagLowerUpdate13_7
+      (higham13_algorithm13_3_schurStageNorm A pivotInv)
+      stageInvDiagBound
+      (higham13_algorithm13_3_pivotInvNorm pivotInv) := by
+    intro k hk j hj
+    simpa [hStageNorm, hPivotNorm] using hDiagUpdate k hk j hj
+  have h :=
+    higham13_algorithm13_3_active_stage_block_bound_of_pivot_bound
+      (blockNorm := fun i j : Fin m => infNorm (A i j))
+      (invDiagBound := invDiagBound)
+      (hDom := hDom)
+      (hDiagBound := hDiagBound)
+      (A := A)
+      (pivotInv := pivotInv)
+      (stageInvDiagBound := stageInvDiagBound)
+      (hInitNorm := hInitNorm)
+      (hInitInv := hInitInv)
+      (hPivotBound := hPivotBound')
+      (hDiagUpdate := hDiagUpdate')
+      (normMax := normMax)
+      (hMax := hMax)
+      (k := k) (i := i) (j := j) hik hjk
+  simpa [hStageNorm k i j] using h
 
 /-- A source active-stage max-entry bound controls every entry of every
     recorded matrix-product Schur stage.
