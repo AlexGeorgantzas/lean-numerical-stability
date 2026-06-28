@@ -9497,6 +9497,46 @@ theorem matMulVec_matMul (n : ℕ) (A B : Fin n → Fin n → ℝ) (v : Fin n �
   rw [Finset.sum_comm]
   congr 1; ext k; congr 1; ext j; ring
 
+/-- The exact l2 operator norm bounds a triple matrix action.  This is the
+    source-shaped subordinate-norm product estimate used for Schur perturbation
+    terms in Chapter 13. -/
+theorem vecNorm2_matMulVec_triple_le_opNorm2 {n : ℕ}
+    (A B C : Fin n → Fin n → ℝ) (x : Fin n → ℝ) :
+    vecNorm2 (matMulVec n (matMul n (matMul n A B) C) x) ≤
+      opNorm2 A * opNorm2 B * opNorm2 C * vecNorm2 x := by
+  have haction :
+      matMulVec n (matMul n (matMul n A B) C) x =
+        matMulVec n A (matMulVec n B (matMulVec n C x)) := by
+    ext i
+    rw [matMulVec_matMul n (matMul n A B) C x i]
+    rw [matMulVec_matMul n A B (matMulVec n C x) i]
+  have hA := opNorm2Le_opNorm2 A (matMulVec n B (matMulVec n C x))
+  have hB := opNorm2Le_opNorm2 B (matMulVec n C x)
+  have hC := opNorm2Le_opNorm2 C x
+  have hBC :
+      opNorm2 B * vecNorm2 (matMulVec n C x) ≤
+        opNorm2 B * (opNorm2 C * vecNorm2 x) :=
+    mul_le_mul_of_nonneg_left hC (opNorm2_nonneg B)
+  calc
+    vecNorm2 (matMulVec n (matMul n (matMul n A B) C) x)
+        = vecNorm2 (matMulVec n A (matMulVec n B (matMulVec n C x))) := by
+            rw [haction]
+    _ ≤ opNorm2 A * vecNorm2 (matMulVec n B (matMulVec n C x)) := hA
+    _ ≤ opNorm2 A * (opNorm2 B * vecNorm2 (matMulVec n C x)) :=
+        mul_le_mul_of_nonneg_left hB (opNorm2_nonneg A)
+    _ ≤ opNorm2 A * (opNorm2 B * (opNorm2 C * vecNorm2 x)) :=
+        mul_le_mul_of_nonneg_left hBC (opNorm2_nonneg A)
+    _ = opNorm2 A * opNorm2 B * opNorm2 C * vecNorm2 x := by ring
+
+/-- Unit-vector specialization of
+    `vecNorm2_matMulVec_triple_le_opNorm2`. -/
+theorem vecNorm2_matMulVec_triple_le_opNorm2_of_unit {n : ℕ}
+    (A B C : Fin n → Fin n → ℝ) {x : Fin n → ℝ}
+    (hx : vecNorm2 x = 1) :
+    vecNorm2 (matMulVec n (matMul n (matMul n A B) C) x) ≤
+      opNorm2 A * opNorm2 B * opNorm2 C := by
+  simpa [hx] using vecNorm2_matMulVec_triple_le_opNorm2 A B C x
+
 /-- The identity matrix acts as the identity on vectors. -/
 theorem matMulVec_id (n : ℕ) (v : Fin n → ℝ) :
     matMulVec n (idMatrix n) v = v := by

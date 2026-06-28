@@ -6836,6 +6836,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check matMulVecLowerNorm2
 #check matMulVecLowerNorm2_attained
 #check matMulVecLowerNorm2_le
+#check vecNorm2_matMulVec_triple_le_opNorm2
+#check vecNorm2_matMulVec_triple_le_opNorm2_of_unit
 #check rectOpNorm2Le_radius_nonneg
 #check finiteBasisVec
 #check finiteTranspose
@@ -11470,6 +11472,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check SchurStageActiveDiagLowerUpdate13_7.of_eq
 #check SchurStageActiveDiagLowerUpdate13_7.of_unit_min_actions
 #check SchurStageActiveDiagLowerUpdate13_7.of_vecNorm2_stage_lower_norm_matrices
+#check higham13_algorithm13_3_vecNorm2_diag_lower_update
 #check higham13_eq13_18_unit_lower_bound_of_inverse_action_bound
 #check higham13_eq13_18_active_diag_table_unit_lower_bound_of_inverse_action_bound
 #check SchurStageActiveDiagLowerUpdate13_7.of_inverse_action_bounds

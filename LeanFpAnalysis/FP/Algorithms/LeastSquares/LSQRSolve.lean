@@ -9874,6 +9874,17 @@ theorem lsRealRectSigmaMinRow_mul_vecNorm2_le_transpose_mulVec {m n : ℕ}
     realVecToEuclidean_norm,
     realRectToCMatrix_euclideanLin_realVecToEuclidean_norm] using h
 
+/-- The row-side `sigma_min` of a real rectangular matrix is attained by a
+    nonzero real left vector in squared transpose-action form. -/
+theorem lsRealRectSigmaMinRow_exists_transpose_attaining_vector_sq {m n : ℕ}
+    (A : Fin (m + 1) → Fin n → ℝ) :
+    ∃ p : Fin (m + 1) → ℝ, p ≠ 0 ∧
+      vecNorm2Sq (rectMatMulVec (finiteTranspose A) p) =
+        (lsRealRectSigmaMinRow A) ^ 2 * vecNorm2Sq p := by
+  simpa [lsRealRectSigmaMinRow, lsRealRectRowSingularValue] using
+    realRectToCMatrix_last_singularValue_exists_real_attaining_vector_sq
+      (finiteTranspose A)
+
 /-- Row-side singular values of the source block
     `[ A   phi(I - r r^+) ]` from equation (20.21). -/
 noncomputable def lsNormwiseBackwardErrorFormulaMatrixRowSingularValue
@@ -9912,6 +9923,22 @@ theorem lsNormwiseBackwardErrorFormulaMatrixSigmaMin_mul_vecNorm2_le_transpose_m
   simpa [lsNormwiseBackwardErrorFormulaMatrixSigmaMin] using
     lsRealRectSigmaMinRow_mul_vecNorm2_le_transpose_mulVec
       (lsNormwiseBackwardErrorFormulaMatrix theta A r y) p
+
+/-- The row-side `sigma_min` of the WKS source block
+    `[A phi(I-r r^+)]` is attained by a nonzero real vector in the exact
+    squared transpose-action form required by the constructive upper route. -/
+theorem lsNormwiseBackwardErrorFormulaMatrixSigmaMin_exists_transpose_attaining_vector_sq
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ) :
+    ∃ p : Fin (m + 1) → ℝ, p ≠ 0 ∧
+      vecNorm2Sq
+          (rectMatMulVec
+            (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y)) p) =
+        (lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y) ^ 2 *
+          vecNorm2Sq p := by
+  simpa [lsNormwiseBackwardErrorFormulaMatrixSigmaMin] using
+    lsRealRectSigmaMinRow_exists_transpose_attaining_vector_sq
+      (lsNormwiseBackwardErrorFormulaMatrix theta A r y)
 
 /-- Squared transpose-action expansion for the WKS source block
     `[A  phi(I-r r^+)]`.  This is the algebraic form needed to compare a
@@ -14859,6 +14886,134 @@ theorem lsNormwiseBackwardErrorEtaF_le_rankOne_source_residual_witness_scaled
         theta A b y q hq)
   rw [hratio, hDeltab] at hbase
   simpa [r, u] using hbase
+
+/-- The free scalar in the scaled rank-one WKS witness only changes the
+    component parallel to `p`.  After applying the complementary projector
+    `I-p p^+`, the explicit right-hand-side perturbation term is always the
+    negative projection of the source residual `r`. -/
+theorem lsNormwiseBackwardErrorRankOne_scaled_q_projected_eq_neg
+    {m : ℕ} (p r : Fin m → ℝ) (hp : vecNorm2Sq p ≠ 0)
+    (t c : ℝ) :
+    matMulVec m (lsLemma20_6ProjectorComplement p)
+        (fun i : Fin m =>
+          c * p i - r i - ((1 / vecNorm2Sq p) * p i * t)) =
+      fun i : Fin m =>
+        -matMulVec m (lsLemma20_6ProjectorComplement p) r i := by
+  let Qp : Fin m → Fin m → ℝ := lsLemma20_6ProjectorComplement p
+  ext i
+  have hself := congrFun (lsLemma20_6ProjectorComplement_mulVec_self p hp) i
+  have hpzero : ∑ j : Fin m, Qp i j * p j = 0 := by
+    simpa [Qp, matMulVec] using hself
+  calc
+    matMulVec m (lsLemma20_6ProjectorComplement p)
+        (fun i : Fin m =>
+          c * p i - r i - ((1 / vecNorm2Sq p) * p i * t)) i
+        =
+      ∑ j : Fin m,
+        Qp i j *
+          (c * p j - r j - ((1 / vecNorm2Sq p) * p j * t)) := by
+          rfl
+    _ =
+      c * (∑ j : Fin m, Qp i j * p j) -
+        (∑ j : Fin m, Qp i j * r j) -
+          ((1 / vecNorm2Sq p) * t) *
+            (∑ j : Fin m, Qp i j * p j) := by
+          calc
+            ∑ j : Fin m,
+                Qp i j *
+                  (c * p j - r j - ((1 / vecNorm2Sq p) * p j * t))
+                =
+              ∑ j : Fin m,
+                (c * (Qp i j * p j) -
+                  Qp i j * r j -
+                    ((1 / vecNorm2Sq p) * t) * (Qp i j * p j)) := by
+                apply Finset.sum_congr rfl
+                intro j _
+                ring
+            _ =
+              c * (∑ j : Fin m, Qp i j * p j) -
+                (∑ j : Fin m, Qp i j * r j) -
+                  ((1 / vecNorm2Sq p) * t) *
+                    (∑ j : Fin m, Qp i j * p j) := by
+                rw [Finset.sum_sub_distrib, Finset.sum_sub_distrib,
+                  Finset.mul_sum, Finset.mul_sum]
+    _ = -matMulVec m (lsLemma20_6ProjectorComplement p) r i := by
+          rw [hpzero]
+          simp [Qp, matMulVec]
+
+/-- Any scalar choice in the scaled rank-one WKS witness has squared norm at
+    least the squared norm of the source residual projected away from `p`.
+    Thus the remaining upper-bound route must account for this unavoidable
+    orthogonal component. -/
+theorem lsNormwiseBackwardErrorRankOne_scaled_q_projector_lower_bound
+    {m : ℕ} (p r : Fin m → ℝ) (hp : vecNorm2Sq p ≠ 0)
+    (t c : ℝ) :
+    vecNorm2Sq (matMulVec m (lsLemma20_6ProjectorComplement p) r) ≤
+      vecNorm2Sq
+        (fun i : Fin m =>
+          c * p i - r i - ((1 / vecNorm2Sq p) * p i * t)) := by
+  let q : Fin m → ℝ :=
+    fun i : Fin m => c * p i - r i - ((1 / vecNorm2Sq p) * p i * t)
+  let Qr : Fin m → ℝ := matMulVec m (lsLemma20_6ProjectorComplement p) r
+  have hproj :
+      matMulVec m (lsLemma20_6ProjectorComplement p) q =
+        fun i : Fin m => -Qr i := by
+    simpa [q, Qr] using
+      lsNormwiseBackwardErrorRankOne_scaled_q_projected_eq_neg p r hp t c
+  have hnorm :
+      vecNorm2Sq (matMulVec m (lsLemma20_6ProjectorComplement p) q) =
+        vecNorm2Sq Qr := by
+    rw [hproj]
+    simpa [Qr] using (vecNorm2Sq_smul (-1 : ℝ) Qr)
+  have hcontract :
+      vecNorm2Sq (matMulVec m (lsLemma20_6ProjectorComplement p) q) ≤
+        vecNorm2Sq q :=
+    lsLemma20_6ProjectorComplement_vecNorm2Sq_le p hp q
+  rw [hnorm] at hcontract
+  simpa [q, Qr] using hcontract
+
+/-- Optimal scalar choice for the scaled rank-one WKS witness.  Choosing
+    `c = (p^T r + t) / ||p||_2^2` makes the explicit `Delta b` component
+    exactly the negative complement projection of `r` away from `p`, hence
+    realizes the lower bound from
+    `lsNormwiseBackwardErrorRankOne_scaled_q_projector_lower_bound`. -/
+theorem lsNormwiseBackwardErrorRankOne_scaled_q_optimal_vecNorm2Sq
+    {m : ℕ} (p r : Fin m → ℝ) (hp : vecNorm2Sq p ≠ 0)
+    (t : ℝ) :
+    vecNorm2Sq
+        (fun i : Fin m =>
+          (((∑ k : Fin m, p k * r k) + t) / vecNorm2Sq p) * p i -
+            r i - ((1 / vecNorm2Sq p) * p i * t)) =
+      vecNorm2Sq (matMulVec m (lsLemma20_6ProjectorComplement p) r) := by
+  let dot : ℝ := ∑ k : Fin m, p k * r k
+  let q : Fin m → ℝ :=
+    fun i : Fin m =>
+      ((dot + t) / vecNorm2Sq p) * p i -
+        r i - ((1 / vecNorm2Sq p) * p i * t)
+  let Qr : Fin m → ℝ := matMulVec m (lsLemma20_6ProjectorComplement p) r
+  have hq : q = fun i : Fin m => -Qr i := by
+    ext i
+    have hentry :
+        Qr i = r i - (p i / vecNorm2Sq p) * dot := by
+      simpa [Qr, dot, matMulVec] using
+        (lsLemma20_6ProjectorComplement_apply_vec p r i)
+    dsimp [q]
+    rw [hentry]
+    field_simp [hp]
+    ring
+  calc
+    vecNorm2Sq
+        (fun i : Fin m =>
+          (((∑ k : Fin m, p k * r k) + t) / vecNorm2Sq p) * p i -
+            r i - ((1 / vecNorm2Sq p) * p i * t))
+        = vecNorm2Sq q := by
+          rfl
+    _ = vecNorm2Sq (fun i : Fin m => -Qr i) := by
+          rw [hq]
+    _ = vecNorm2Sq Qr := by
+          simpa using (vecNorm2Sq_smul (-1 : ℝ) Qr)
+    _ = vecNorm2Sq (matMulVec m (lsLemma20_6ProjectorComplement p) r) := by
+          rfl
 
 /-- Source-block `sigma_min` branch handoff for the rank-one WKS witness.
     If a nonzero expanded residual `p` makes the explicit rank-one witness cost
