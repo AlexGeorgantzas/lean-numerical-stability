@@ -9874,6 +9874,17 @@ theorem lsRealRectSigmaMinRow_mul_vecNorm2_le_transpose_mulVec {m n : ℕ}
     realVecToEuclidean_norm,
     realRectToCMatrix_euclideanLin_realVecToEuclidean_norm] using h
 
+/-- The row-side `sigma_min` of a real rectangular matrix is attained by a
+    nonzero real left vector in squared transpose-action form. -/
+theorem lsRealRectSigmaMinRow_exists_transpose_attaining_vector_sq {m n : ℕ}
+    (A : Fin (m + 1) → Fin n → ℝ) :
+    ∃ p : Fin (m + 1) → ℝ, p ≠ 0 ∧
+      vecNorm2Sq (rectMatMulVec (finiteTranspose A) p) =
+        (lsRealRectSigmaMinRow A) ^ 2 * vecNorm2Sq p := by
+  simpa [lsRealRectSigmaMinRow, lsRealRectRowSingularValue] using
+    realRectToCMatrix_last_singularValue_exists_real_attaining_vector_sq
+      (finiteTranspose A)
+
 /-- Row-side singular values of the source block
     `[ A   phi(I - r r^+) ]` from equation (20.21). -/
 noncomputable def lsNormwiseBackwardErrorFormulaMatrixRowSingularValue
@@ -9912,6 +9923,22 @@ theorem lsNormwiseBackwardErrorFormulaMatrixSigmaMin_mul_vecNorm2_le_transpose_m
   simpa [lsNormwiseBackwardErrorFormulaMatrixSigmaMin] using
     lsRealRectSigmaMinRow_mul_vecNorm2_le_transpose_mulVec
       (lsNormwiseBackwardErrorFormulaMatrix theta A r y) p
+
+/-- The row-side `sigma_min` of the WKS source block
+    `[A phi(I-r r^+)]` is attained by a nonzero real vector in the exact
+    squared transpose-action form required by the constructive upper route. -/
+theorem lsNormwiseBackwardErrorFormulaMatrixSigmaMin_exists_transpose_attaining_vector_sq
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ) :
+    ∃ p : Fin (m + 1) → ℝ, p ≠ 0 ∧
+      vecNorm2Sq
+          (rectMatMulVec
+            (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y)) p) =
+        (lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y) ^ 2 *
+          vecNorm2Sq p := by
+  simpa [lsNormwiseBackwardErrorFormulaMatrixSigmaMin] using
+    lsRealRectSigmaMinRow_exists_transpose_attaining_vector_sq
+      (lsNormwiseBackwardErrorFormulaMatrix theta A r y)
 
 /-- Squared transpose-action expansion for the WKS source block
     `[A  phi(I-r r^+)]`.  This is the algebraic form needed to compare a
