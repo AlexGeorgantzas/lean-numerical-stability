@@ -6656,6 +6656,100 @@ lemma vecNorm2_finiteBasisVec {n : ℕ} (i : Fin n) :
     vecNorm2 (finiteBasisVec i) = 1 := by
   simpa [finiteVecNorm2_fin] using (finiteVecNorm2_finiteBasisVec i)
 
+/-- The finite-dimensional Euclidean vector norm is continuous for the
+    repository's default topology on `Fin n → ℝ`. -/
+lemma continuous_vecNorm2 {n : ℕ} :
+    Continuous (fun x : Fin n → ℝ => vecNorm2 x) := by
+  unfold vecNorm2 vecNorm2Sq
+  apply Real.continuous_sqrt.comp
+  apply continuous_finset_sum
+  intro i _hi
+  exact (continuous_apply i).pow 2
+
+/-- A fixed matrix acting on finite vectors gives a continuous Euclidean
+    norm objective. -/
+lemma continuous_vecNorm2_matMulVec {n : ℕ}
+    (M : Fin n → Fin n → ℝ) :
+    Continuous (fun x : Fin n → ℝ => vecNorm2 (matMulVec n M x)) := by
+  apply continuous_vecNorm2.comp
+  apply continuous_pi
+  intro i
+  unfold matMulVec
+  apply continuous_finset_sum
+  intro j _hj
+  exact continuous_const.mul (continuous_apply j)
+
+/-- The Euclidean unit sphere `{x | ||x||₂ = 1}` is compact for finite
+    repository vectors.  The topology is the default product/sup-norm topology;
+    compactness follows because the set is closed and every coordinate is
+    bounded by the Euclidean norm. -/
+lemma isCompact_vecNorm2_unit_sphere {n : ℕ} :
+    IsCompact {x : Fin n → ℝ | vecNorm2 x = 1} := by
+  have hclosed : IsClosed {x : Fin n → ℝ | vecNorm2 x = 1} := by
+    simpa using isClosed_eq continuous_vecNorm2 continuous_const
+  have hsubset :
+      {x : Fin n → ℝ | vecNorm2 x = 1} ⊆
+        Metric.closedBall (0 : Fin n → ℝ) 1 := by
+    intro x hx
+    rw [Metric.mem_closedBall, dist_zero_right]
+    have hnorm : infNormVec x ≤ 1 := by
+      apply infNormVec_le_of_abs_le
+      · intro i
+        have hcoord := abs_coord_le_vecNorm2 x i
+        rwa [hx] at hcoord
+      · norm_num
+    simpa [infNormVec] using hnorm
+  exact IsCompact.of_isClosed_subset
+    (isCompact_closedBall (0 : Fin n → ℝ) 1) hclosed hsubset
+
+/-- A finite matrix action attains its Euclidean lower norm on the unit sphere. -/
+theorem exists_vecNorm2_matMulVec_unit_minimizer {n : ℕ} (hn : 0 < n)
+    (M : Fin n → Fin n → ℝ) :
+    ∃ x : Fin n → ℝ,
+      vecNorm2 x = 1 ∧
+        ∀ y : Fin n → ℝ, vecNorm2 y = 1 →
+          vecNorm2 (matMulVec n M x) ≤ vecNorm2 (matMulVec n M y) := by
+  let e : Fin n → ℝ := finiteBasisVec ⟨0, hn⟩
+  have hne : ({x : Fin n → ℝ | vecNorm2 x = 1}).Nonempty := by
+    refine ⟨e, ?_⟩
+    simpa [e] using vecNorm2_finiteBasisVec (⟨0, hn⟩ : Fin n)
+  obtain ⟨x, hx, hmin⟩ :=
+    isCompact_vecNorm2_unit_sphere.exists_isMinOn hne
+      (continuous_vecNorm2_matMulVec M).continuousOn
+  refine ⟨x, hx, ?_⟩
+  intro y hy
+  exact hmin hy
+
+/-- The Euclidean lower norm of the matrix action `x ↦ M x`, represented as
+    the attained minimum of `||M x||₂` over `||x||₂ = 1`. -/
+noncomputable def matMulVecLowerNorm2 {n : ℕ} (hn : 0 < n)
+    (M : Fin n → Fin n → ℝ) : ℝ :=
+  vecNorm2 (matMulVec n M
+    (Classical.choose (exists_vecNorm2_matMulVec_unit_minimizer hn M)))
+
+/-- The Euclidean lower norm is attained by a unit vector. -/
+theorem matMulVecLowerNorm2_attained {n : ℕ} (hn : 0 < n)
+    (M : Fin n → Fin n → ℝ) :
+    ∃ x : Fin n → ℝ,
+      vecNorm2 x = 1 ∧
+        matMulVecLowerNorm2 hn M = vecNorm2 (matMulVec n M x) := by
+  let x :=
+    Classical.choose (exists_vecNorm2_matMulVec_unit_minimizer hn M)
+  have hx :=
+    Classical.choose_spec (exists_vecNorm2_matMulVec_unit_minimizer hn M)
+  exact ⟨x, hx.1, rfl⟩
+
+/-- The Euclidean lower norm is a lower bound for the matrix action on every
+    unit vector. -/
+theorem matMulVecLowerNorm2_le {n : ℕ} (hn : 0 < n)
+    (M : Fin n → Fin n → ℝ) :
+    ∀ y : Fin n → ℝ, vecNorm2 y = 1 →
+      matMulVecLowerNorm2 hn M ≤ vecNorm2 (matMulVec n M y) := by
+  intro y hy
+  have hx :=
+    Classical.choose_spec (exists_vecNorm2_matMulVec_unit_minimizer hn M)
+  exact hx.2 y hy
+
 /-- On a nonempty finite domain, any rectangular vector-action operator-2
     radius is nonnegative. -/
 theorem rectOpNorm2Le_radius_nonneg {m n : ℕ} [Nonempty (Fin n)]

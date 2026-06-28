@@ -16215,6 +16215,131 @@ theorem realRectToCMatrix_euclideanLin_realVecToEuclidean_norm {m n : Nat}
   rw [realRectToCMatrix_euclideanLin_norm_sq]
   simp [hzero, vecNorm2_zero]
 
+/-- The smallest singular value of a real rectangular matrix, viewed through
+    the complexification used by the shared spectral API, is attained by a
+    nonzero real vector. -/
+theorem realRectToCMatrix_last_singularValue_exists_real_attaining_vector_sq
+    {m k : Nat} (A : Fin m -> Fin (k + 1) -> Real) :
+    ∃ x : Fin (k + 1) -> Real, x ≠ 0 ∧
+      vecNorm2Sq (rectMatMulVec A x) =
+        (complexMatrixSingularValue (realRectToCMatrix A) (Fin.last k)) ^ 2 *
+          vecNorm2Sq x := by
+  let C : CMatrix m (k + 1) := realRectToCMatrix A
+  let i : Fin (k + 1) := Fin.last k
+  let z : EuclideanSpace Complex (Fin (k + 1)) :=
+    complexMatrixGramEigenvectorBasis C i
+  let xr : Fin (k + 1) -> Real := euclideanReVec z
+  let xim : Fin (k + 1) -> Real := euclideanImVec z
+  let sigma : Real := complexMatrixSingularValue C i
+  have hattain :
+      ‖complexMatrixEuclideanLin C z‖ ^ 2 = sigma ^ 2 * ‖z‖ ^ 2 := by
+    have h :=
+      complexMatrixSingularValue_mul_norm_gramEigenvectorBasis_eq_norm_euclideanLin
+        C i
+    change sigma * ‖z‖ = ‖complexMatrixEuclideanLin C z‖ at h
+    calc
+      ‖complexMatrixEuclideanLin C z‖ ^ 2 = (sigma * ‖z‖) ^ 2 := by
+        rw [h]
+      _ = sigma ^ 2 * ‖z‖ ^ 2 := by
+        ring
+  have hsum :
+      vecNorm2 (rectMatMulVec A xr) ^ 2 +
+          vecNorm2 (rectMatMulVec A xim) ^ 2 =
+        sigma ^ 2 * (vecNorm2 xr ^ 2 + vecNorm2 xim ^ 2) := by
+    calc
+      vecNorm2 (rectMatMulVec A xr) ^ 2 +
+          vecNorm2 (rectMatMulVec A xim) ^ 2 =
+          ‖complexMatrixEuclideanLin C z‖ ^ 2 := by
+            dsimp [C, xr, xim]
+            rw [realRectToCMatrix_euclideanLin_norm_sq]
+      _ = sigma ^ 2 * ‖z‖ ^ 2 := hattain
+      _ = sigma ^ 2 * (vecNorm2 xr ^ 2 + vecNorm2 xim ^ 2) := by
+            rw [euclidean_norm_sq_re_im z]
+  have hsum_expanded :
+      vecNorm2 (rectMatMulVec A xr) ^ 2 +
+          vecNorm2 (rectMatMulVec A xim) ^ 2 =
+        sigma ^ 2 * vecNorm2 xr ^ 2 +
+          sigma ^ 2 * vecNorm2 xim ^ 2 := by
+    calc
+      vecNorm2 (rectMatMulVec A xr) ^ 2 +
+          vecNorm2 (rectMatMulVec A xim) ^ 2 =
+          sigma ^ 2 * (vecNorm2 xr ^ 2 + vecNorm2 xim ^ 2) := hsum
+      _ = sigma ^ 2 * vecNorm2 xr ^ 2 +
+          sigma ^ 2 * vecNorm2 xim ^ 2 := by
+            ring
+  have hsigma_nonneg : 0 ≤ sigma := by
+    simpa [sigma, C, i] using
+      complexMatrixSingularValue_nonneg C i
+  have hlower_re :
+      sigma * vecNorm2 xr ≤ vecNorm2 (rectMatMulVec A xr) := by
+    have h :=
+      complexMatrixSingularValue_last_mul_norm_le_norm_euclideanLin
+        (realRectToCMatrix A) (realVecToEuclidean xr)
+    simpa [sigma, C, i, realVecToEuclidean_norm,
+      realRectToCMatrix_euclideanLin_realVecToEuclidean_norm] using h
+  have hlower_im :
+      sigma * vecNorm2 xim ≤ vecNorm2 (rectMatMulVec A xim) := by
+    have h :=
+      complexMatrixSingularValue_last_mul_norm_le_norm_euclideanLin
+        (realRectToCMatrix A) (realVecToEuclidean xim)
+    simpa [sigma, C, i, realVecToEuclidean_norm,
+      realRectToCMatrix_euclideanLin_realVecToEuclidean_norm] using h
+  have hsq_re :
+      sigma ^ 2 * vecNorm2 xr ^ 2 ≤
+        vecNorm2 (rectMatMulVec A xr) ^ 2 := by
+    have hsq :=
+      (sq_le_sq₀
+        (mul_nonneg hsigma_nonneg (vecNorm2_nonneg xr))
+        (vecNorm2_nonneg (rectMatMulVec A xr))).mpr hlower_re
+    calc
+      sigma ^ 2 * vecNorm2 xr ^ 2 = (sigma * vecNorm2 xr) ^ 2 := by
+        ring
+      _ ≤ vecNorm2 (rectMatMulVec A xr) ^ 2 := hsq
+  have hsq_im :
+      sigma ^ 2 * vecNorm2 xim ^ 2 ≤
+        vecNorm2 (rectMatMulVec A xim) ^ 2 := by
+    have hsq :=
+      (sq_le_sq₀
+        (mul_nonneg hsigma_nonneg (vecNorm2_nonneg xim))
+        (vecNorm2_nonneg (rectMatMulVec A xim))).mpr hlower_im
+    calc
+      sigma ^ 2 * vecNorm2 xim ^ 2 = (sigma * vecNorm2 xim) ^ 2 := by
+        ring
+      _ ≤ vecNorm2 (rectMatMulVec A xim) ^ 2 := hsq
+  have hxr_eq :
+      vecNorm2 (rectMatMulVec A xr) ^ 2 =
+        sigma ^ 2 * vecNorm2 xr ^ 2 := by
+    linarith
+  have hxim_eq :
+      vecNorm2 (rectMatMulVec A xim) ^ 2 =
+        sigma ^ 2 * vecNorm2 xim ^ 2 := by
+    linarith
+  by_cases hxr_ne : xr ≠ 0
+  · refine ⟨xr, hxr_ne, ?_⟩
+    rw [← vecNorm2_sq, ← vecNorm2_sq]
+    exact hxr_eq
+  · have hxr_zero : xr = 0 := not_not.mp hxr_ne
+    have hxim_ne : xim ≠ 0 := by
+      intro hxim_zero
+      have hnorm_zero : ‖z‖ ^ 2 = 0 := by
+        calc
+          ‖z‖ ^ 2 = vecNorm2 xr ^ 2 + vecNorm2 xim ^ 2 := by
+            simpa [xr, xim] using euclidean_norm_sq_re_im z
+          _ = 0 := by
+            rw [hxr_zero, hxim_zero]
+            change
+              vecNorm2 (fun _i : Fin (k + 1) => 0) ^ 2 +
+                vecNorm2 (fun _i : Fin (k + 1) => 0) ^ 2 = 0
+            rw [vecNorm2_zero]
+            norm_num
+      have hnorm_one : ‖z‖ ^ 2 = 1 := by
+        rw [complexMatrixGramEigenvectorBasis_norm C i]
+        norm_num
+      linarith
+    refine ⟨xim, hxim_ne, ?_⟩
+    rw [← vecNorm2_sq, ← vecNorm2_sq]
+    exact hxim_eq
+
 /-- A complex Euclidean operator-norm bound for the complexified matrix gives a
     real rectangular operator-bound certificate. -/
 theorem rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le {m n : Nat}

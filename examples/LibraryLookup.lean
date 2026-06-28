@@ -6829,6 +6829,13 @@ small enough to serve as a smoke check for representative public declarations.
 #check finiteVecNorm2_finiteBasisVec
 #check finiteOpNorm2Le_radius_nonneg
 #check vecNorm2_finiteBasisVec
+#check continuous_vecNorm2
+#check continuous_vecNorm2_matMulVec
+#check isCompact_vecNorm2_unit_sphere
+#check exists_vecNorm2_matMulVec_unit_minimizer
+#check matMulVecLowerNorm2
+#check matMulVecLowerNorm2_attained
+#check matMulVecLowerNorm2_le
 #check rectOpNorm2Le_radius_nonneg
 #check finiteBasisVec
 #check finiteTranspose
@@ -11445,6 +11452,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check isBlockDiagDomCol_leadingBlockPrefix13_7
 #check isBlockDiagDomRow_leadingBlockPrefix13_7
 #check higham13_eq13_18_min_lower_bound
+#check higham13_eq13_18_vecNorm2_min_lower_bound
 #check higham13_eq13_18_scalar_column_chain
 #check higham13_eq13_18_schur_column_dominance
 #check block_diag_dom_schur_inherit
@@ -11461,6 +11469,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check SchurStageActiveDiagLowerUpdate13_7
 #check SchurStageActiveDiagLowerUpdate13_7.of_eq
 #check SchurStageActiveDiagLowerUpdate13_7.of_unit_min_actions
+#check SchurStageActiveDiagLowerUpdate13_7.of_vecNorm2_stage_lower_norm_matrices
 #check higham13_eq13_18_unit_lower_bound_of_inverse_action_bound
 #check higham13_eq13_18_active_diag_table_unit_lower_bound_of_inverse_action_bound
 #check SchurStageActiveDiagLowerUpdate13_7.of_inverse_action_bounds
