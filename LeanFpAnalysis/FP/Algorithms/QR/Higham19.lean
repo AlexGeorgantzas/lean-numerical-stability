@@ -9,6 +9,88 @@ namespace H19
 
 noncomputable section
 
+namespace Problem19_1
+
+/-- Problem 19.1 Householder eigendirection: with the usual normalization
+`beta * (v^T v) = 2`, the Householder reflector sends its defining vector to
+`-v`.  This records the `-1` eigendirection in the repository's matrix-vector
+API. -/
+theorem householder_mul_defining_vector_neg {n : Nat}
+    (v : Fin n -> Real) (beta : Real)
+    (hbeta :
+      beta * ((Finset.univ : Finset (Fin n)).sum (fun k => v k * v k)) =
+        2) :
+    matMulVec n (householder n v beta) v = (fun i => -v i) := by
+  ext i
+  unfold matMulVec householder idMatrix
+  have hterm : forall j : Fin n,
+      ((if i = j then 1 else 0) - beta * v i * v j) * v j =
+        (if i = j then 1 else 0) * v j -
+          (beta * v i) * (v j * v j) := by
+    intro j
+    ring
+  calc
+    ((Finset.univ : Finset (Fin n)).sum
+        (fun j => ((if i = j then 1 else 0) - beta * v i * v j) * v j))
+        =
+          ((Finset.univ : Finset (Fin n)).sum
+            (fun j => (if i = j then 1 else 0) * v j)) -
+            beta * v i *
+              ((Finset.univ : Finset (Fin n)).sum (fun j => v j * v j)) := by
+            simp_rw [hterm]
+            rw [Finset.sum_sub_distrib]
+            congr 1
+            rw [Finset.mul_sum]
+    _ = v i - beta * v i *
+          ((Finset.univ : Finset (Fin n)).sum (fun j => v j * v j)) := by
+          simp [Finset.sum_ite_eq, Finset.mem_univ]
+    _ = v i -
+          (beta *
+            ((Finset.univ : Finset (Fin n)).sum (fun j => v j * v j))) *
+            v i := by
+          ring
+    _ = -v i := by
+          rw [hbeta]
+          ring
+
+/-- Problem 19.1 Householder fixed subspace: vectors orthogonal to the defining
+Householder vector are fixed by the reflector.  Together with
+`householder_mul_defining_vector_neg`, this exposes the usual `+1` and `-1`
+eigendirections without adding a new eigenvalue API. -/
+theorem householder_mul_orthogonal_vector {n : Nat}
+    (v x : Fin n -> Real) (beta : Real)
+    (horth :
+      ((Finset.univ : Finset (Fin n)).sum (fun j => v j * x j)) = 0) :
+    matMulVec n (householder n v beta) x = x := by
+  ext i
+  unfold matMulVec householder idMatrix
+  have hterm : forall j : Fin n,
+      ((if i = j then 1 else 0) - beta * v i * v j) * x j =
+        (if i = j then 1 else 0) * x j -
+          (beta * v i) * (v j * x j) := by
+    intro j
+    ring
+  calc
+    ((Finset.univ : Finset (Fin n)).sum
+        (fun j => ((if i = j then 1 else 0) - beta * v i * v j) * x j))
+        =
+          ((Finset.univ : Finset (Fin n)).sum
+            (fun j => (if i = j then 1 else 0) * x j)) -
+            beta * v i *
+              ((Finset.univ : Finset (Fin n)).sum (fun j => v j * x j)) := by
+            simp_rw [hterm]
+            rw [Finset.sum_sub_distrib]
+            congr 1
+            rw [Finset.mul_sum]
+    _ = x i - beta * v i *
+          ((Finset.univ : Finset (Fin n)).sum (fun j => v j * x j)) := by
+          simp [Finset.sum_ite_eq, Finset.mem_univ]
+    _ = x i := by
+          rw [horth]
+          ring
+
+end Problem19_1
+
 namespace Algorithm19_11
 
 /-- Source-facing state equations for Higham Algorithm 19.11, classical
