@@ -599,6 +599,156 @@ theorem mgsProblem1912_fullPositivePolarBridgeT_opNorm2Le_one
       (by norm_num) hres hP11t
   simpa [mgsProblem1912_fullPositivePolarBridgeT] using hprod
 
+/-- Name-neutral alias for the same spectral bridge matrix.  The formula
+`(I+H)^{-1} * P11^T` does not itself require the full-positive branch; only
+the construction of a completed polar factor does. -/
+noncomputable def mgsProblem1912_rightGramPolarBridgeT
+    {m n : Nat}
+    (P11 : Fin n -> Fin n -> Real) (P21 : Fin m -> Fin n -> Real) :
+    Fin n -> Fin n -> Real :=
+  mgsProblem1912_fullPositivePolarBridgeT P11 P21
+
+/-- If a completed right-Gram polar factor satisfies `H^2 = P21^T P21`, the
+corrected CS/polar input rewrites the top Gram as `P11^T P11 = I - H^2`
+without any full-positivity assumption. -/
+theorem MGSProblem1912CSPolarInput.p11_gram_eq_id_sub_polarH_sq_of_polarH_sq
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : MGSProblem1912CSPolarInput m n P11 P21)
+    (hHsq :
+      matMul n (rectRightGramPolarH P21) (rectRightGramPolarH P21) =
+        rectangularGram P21) :
+    rectangularGram P11 =
+      fun i j =>
+        idMatrix n i j -
+          matMul n (rectRightGramPolarH P21)
+            (rectRightGramPolarH P21) i j := by
+  ext i j
+  have hp11 :=
+    congrFun (congrFun hinput.p11_gram_eq_id_sub_p21_gram i) j
+  have hsq := congrFun (congrFun hHsq i) j
+  rw [hp11, <- hsq]
+
+/-- The spectral bridge matrix converts the completed-polar top-Gram identity
+into `T*P11 = I-H`.  The missing mixed-branch work is now isolated to
+constructing the completed polar factor and proving its square identity. -/
+theorem mgsProblem1912_rightGramPolarBridgeT_mul_p11_of_polarH_sq
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : MGSProblem1912CSPolarInput m n P11 P21)
+    (hHsq :
+      matMul n (rectRightGramPolarH P21) (rectRightGramPolarH P21) =
+        rectangularGram P21) :
+    matMul n (mgsProblem1912_rightGramPolarBridgeT P11 P21) P11 =
+      fun i j => idMatrix n i j - rectRightGramPolarH P21 i j := by
+  have hgram :
+      matMul n (finiteTranspose P11) P11 = rectangularGram P11 := by
+    ext i j
+    rfl
+  have hp11 :
+      rectangularGram P11 =
+        fun i j =>
+          idMatrix n i j -
+            matMul n (rectRightGramPolarH P21)
+              (rectRightGramPolarH P21) i j :=
+    hinput.p11_gram_eq_id_sub_polarH_sq_of_polarH_sq hHsq
+  calc
+    matMul n (mgsProblem1912_rightGramPolarBridgeT P11 P21) P11
+        =
+      matMul n (rectRightGramPolarResolvent P21)
+        (matMul n (finiteTranspose P11) P11) := by
+        rw [mgsProblem1912_rightGramPolarBridgeT,
+          mgsProblem1912_fullPositivePolarBridgeT, matMul_assoc]
+    _ = matMul n (rectRightGramPolarResolvent P21) (rectangularGram P11) := by
+        rw [hgram]
+    _ =
+      matMul n (rectRightGramPolarResolvent P21)
+        (fun i j =>
+          idMatrix n i j -
+            matMul n (rectRightGramPolarH P21)
+              (rectRightGramPolarH P21) i j) := by
+        rw [hp11]
+    _ = fun i j => idMatrix n i j - rectRightGramPolarH P21 i j := by
+        exact rectRightGramPolarResolvent_mul_id_sub_polarH_sq P21
+
+/-- The name-neutral spectral bridge matrix is an operator-2 contraction. -/
+theorem mgsProblem1912_rightGramPolarBridgeT_opNorm2Le_one
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : MGSProblem1912CSPolarInput m n P11 P21) :
+    opNorm2Le (mgsProblem1912_rightGramPolarBridgeT P11 P21) 1 := by
+  simpa [mgsProblem1912_rightGramPolarBridgeT] using
+    mgsProblem1912_fullPositivePolarBridgeT_opNorm2Le_one hinput
+
+/-- A completed right-Gram polar factor supplies the full polar payload for
+Problem 19.12.  This theorem deliberately leaves the hard mixed branch as the
+explicit obligations `P21 = Q*H`, `Q^T Q = I`, and `H^2 = P21^T P21`. -/
+def mgsProblem1912_polarFactorData_of_completed_rightGramPolar
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    {Q : Fin m -> Fin n -> Real}
+    (hinput : MGSProblem1912CSPolarInput m n P11 P21)
+    (hbottom :
+      P21 = matMulRect m n n Q (rectRightGramPolarH P21))
+    (hQorth : GramSchmidtOrthonormalColumns Q)
+    (hHsq :
+      matMul n (rectRightGramPolarH P21) (rectRightGramPolarH P21) =
+        rectangularGram P21) :
+    MGSProblem1912PolarFactorData m n P11 P21 where
+  q := Q
+  hMat := rectRightGramPolarH P21
+  tMat := mgsProblem1912_rightGramPolarBridgeT P11 P21
+  bottom_factor := hbottom
+  bridge_factor :=
+    mgsProblem1912_rightGramPolarBridgeT_mul_p11_of_polarH_sq
+      hinput hHsq
+  q_orth := hQorth
+  t_bound := mgsProblem1912_rightGramPolarBridgeT_opNorm2Le_one hinput
+
+/-- A completed right-Gram polar factor yields pure Problem 19.12
+correction-map data. -/
+theorem mgsProblem1912_correctionMapData_exists_of_completed_rightGramPolar
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    {Q : Fin m -> Fin n -> Real}
+    (hinput : MGSProblem1912CSPolarInput m n P11 P21)
+    (hbottom :
+      P21 = matMulRect m n n Q (rectRightGramPolarH P21))
+    (hQorth : GramSchmidtOrthonormalColumns Q)
+    (hHsq :
+      matMul n (rectRightGramPolarH P21) (rectRightGramPolarH P21) =
+        rectangularGram P21) :
+    Exists fun Qout : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      MGSProblem1912CorrectionMapData m n P11 P21 Qout F := by
+  exact
+    mgsProblem1912_correctionMapData_exists_of_polarFactorData
+      (mgsProblem1912_polarFactorData_of_completed_rightGramPolar
+        hinput hbottom hQorth hHsq)
+
+/-- A completed right-Gram polar factor yields additive Problem 19.12
+witnesses. -/
+theorem mgsProblem1912_add_factor_exists_of_completed_rightGramPolar
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    {Q : Fin m -> Fin n -> Real}
+    (hinput : MGSProblem1912CSPolarInput m n P11 P21)
+    (hbottom :
+      P21 = matMulRect m n n Q (rectRightGramPolarH P21))
+    (hQorth : GramSchmidtOrthonormalColumns Q)
+    (hHsq :
+      matMul n (rectRightGramPolarH P21) (rectRightGramPolarH P21) =
+        rectangularGram P21) :
+    Exists fun Qout : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      (Qout = fun i j => P21 i j + matMulRect m n n F P11 i j) /\
+        GramSchmidtOrthonormalColumns Qout /\
+        rectOpNorm2Le F 1 := by
+  exact
+    mgsProblem1912_add_factor_exists_of_polarFactorData
+      (mgsProblem1912_polarFactorData_of_completed_rightGramPolar
+        hinput hbottom hQorth hHsq)
+
 /-- Full-positive right-Gram polar factors give the bottom factor and
 orthonormal part required by the Problem 19.12 polar payload.  The bridge
 `T * P11 = I - H` and contraction bound remain explicit obligations. -/
