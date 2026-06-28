@@ -14479,6 +14479,42 @@ theorem LSNormwiseBackwardErrorFeasible.rankOne_source_residual_witness
             simp [u, hDelta_j]
     _ = 0 := by ring
 
+/-- Bundled rank-one WKS source-residual witness.  This packages the
+    constructive perturbation with the exact expanded residual, left
+    transpose-action, and Frobenius component needed by the later
+    source-block `sigma_min` upper-bound cost proof. -/
+theorem LSNormwiseBackwardErrorFeasible.exists_rankOne_source_residual_witness
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    (p : Fin m → ℝ) (hp : vecNorm2Sq p ≠ 0) :
+    ∃ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+      LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+        (fun i : Fin m =>
+          lsResidualHigham A b y i + Deltab i - rectMatMulVec DeltaA y i) =
+          p ∧
+        (fun j : Fin n => ∑ i : Fin m, DeltaA i j * p i) =
+          (fun j => -(∑ i : Fin m, A i j * p i)) ∧
+        frobNormSqRect DeltaA =
+          vecNorm2Sq (fun j : Fin n => ∑ i : Fin m, A i j * p i) /
+            vecNorm2Sq p := by
+  let u : Fin n → ℝ := fun j => ∑ i : Fin m, A i j * p i
+  let DeltaA : Fin m → Fin n → ℝ :=
+    lsNormwiseBackwardErrorRankOneDeltaA p u
+  let Deltab : Fin m → ℝ :=
+    fun i => p i - lsResidualHigham A b y i + rectMatMulVec DeltaA y i
+  refine ⟨DeltaA, Deltab, ?_, ?_, ?_, ?_⟩
+  · simpa [DeltaA, Deltab, u] using
+      (LSNormwiseBackwardErrorFeasible.rankOne_source_residual_witness
+        A b y p hp)
+  · ext i
+    dsimp [Deltab]
+    ring
+  · simpa [DeltaA, u] using
+      (lsNormwiseBackwardErrorRankOneDeltaA_transpose_mul
+        (p := p) (u := u) hp)
+  · simpa [DeltaA, u] using
+      (lsNormwiseBackwardErrorRankOneDeltaA_frobNormSq
+        (p := p) (u := u) hp)
+
 /-- Left block of the transposed WKS source matrix on a feasible perturbed
     residual.  Under (20.20) feasibility, the `A^T` part of
     `[A phi(I-r r^+)]^T p` is exactly cancelled by `DeltaA^T p`, where
