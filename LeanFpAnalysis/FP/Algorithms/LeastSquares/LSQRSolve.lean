@@ -7096,6 +7096,124 @@ theorem lsNormwiseBackwardErrorPhi_le_costF_of_residual_eq_deltaA_y_sub_deltab
     htheta hy r]
   exact (div_le_iff₀ hsqrt_pos).mpr hscaled
 
+private theorem frobNormSqRect_rankOne_real {m n : ℕ} (c : ℝ)
+    (r : Fin m → ℝ) (y : Fin n → ℝ) :
+    frobNormSqRect (fun i j => c * r i * y j) =
+      c ^ 2 * vecNorm2Sq r * vecNorm2Sq y := by
+  unfold frobNormSqRect vecNorm2Sq
+  calc
+    (∑ i : Fin m, ∑ j : Fin n, (c * r i * y j) ^ 2)
+        = ∑ i : Fin m, ∑ j : Fin n, (c ^ 2 * r i ^ 2) * y j ^ 2 := by
+            apply Finset.sum_congr rfl
+            intro i _
+            apply Finset.sum_congr rfl
+            intro j _
+            ring
+    _ = ∑ i : Fin m, (c ^ 2 * r i ^ 2) * ∑ j : Fin n, y j ^ 2 := by
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [Finset.mul_sum]
+    _ = (∑ i : Fin m, c ^ 2 * r i ^ 2) * ∑ j : Fin n, y j ^ 2 := by
+            rw [Finset.sum_mul]
+    _ = c ^ 2 * (∑ i : Fin m, r i ^ 2) * ∑ j : Fin n, y j ^ 2 := by
+            congr 1
+            rw [Finset.mul_sum]
+    _ = c ^ 2 * (∑ i : Fin m, r i ^ 2) * (∑ j : Fin n, y j ^ 2) := by
+            ring
+
+/-- Exact-fit constructive witness for the `phi` branch of the WKS
+    upper-bound route.  For finite nonnegative `theta` and nonzero candidate
+    `y`, a rank-one perturbation makes `y` fit the perturbed data exactly and
+    has weighted Frobenius cost equal to the scalar `phi` in (20.21). -/
+theorem lsNormwiseBackwardErrorExactFitPhiWitness {m n : ℕ}
+    {theta : ℝ} (htheta : 0 ≤ theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0) :
+    ∃ (DeltaA : Fin (m + 1) → Fin n → ℝ) (Deltab : Fin (m + 1) → ℝ),
+      LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+        lsNormwiseBackwardErrorCostF theta DeltaA Deltab =
+          lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y := by
+  let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+  let den : ℝ := 1 + theta ^ 2 * vecNorm2Sq y
+  let DeltaA : Fin (m + 1) → Fin n → ℝ :=
+    fun i j => (theta ^ 2 / den) * r i * y j
+  let Deltab : Fin (m + 1) → ℝ :=
+    fun i => -(1 / den) * r i
+  refine ⟨DeltaA, Deltab, ?_, ?_⟩
+  · unfold LSNormwiseBackwardErrorFeasible
+    apply IsLeastSquaresMinimizer.of_lsResidualHigham_eq_zero
+    ext i
+    have hden_pos : 0 < den := by
+      simpa [den] using lsNormwiseBackwardErrorMu_den_pos theta y
+    have hden_ne : den ≠ 0 := ne_of_gt hden_pos
+    unfold lsResidualHigham rectMatMulVec
+    simp_rw [add_mul]
+    rw [Finset.sum_add_distrib]
+    dsimp [DeltaA, Deltab, r]
+    change
+      b i + -(1 / den) * lsResidualHigham A b y i -
+          ((∑ j : Fin n, A i j * y j) +
+            ∑ j : Fin n,
+              theta ^ 2 / den * lsResidualHigham A b y i * y j * y j) = 0
+    calc
+      b i + -(1 / den) * lsResidualHigham A b y i -
+          ((∑ j : Fin n, A i j * y j) +
+            ∑ j : Fin n,
+              theta ^ 2 / den * lsResidualHigham A b y i * y j * y j)
+          = lsResidualHigham A b y i -
+              (1 / den) * lsResidualHigham A b y i -
+              (theta ^ 2 / den * lsResidualHigham A b y i) *
+                vecNorm2Sq y := by
+              unfold lsResidualHigham rectMatMulVec vecNorm2Sq
+              rw [Finset.mul_sum]
+              ring_nf
+      _ = 0 := by
+              field_simp [hden_ne]
+              dsimp [den]
+              ring
+  · have hden_pos : 0 < den := by
+      simpa [den] using lsNormwiseBackwardErrorMu_den_pos theta y
+    have hden_nonneg : 0 ≤ den := le_of_lt hden_pos
+    have hden_ne : den ≠ 0 := ne_of_gt hden_pos
+    have hcost_sq :
+        lsNormwiseBackwardErrorCostF theta DeltaA Deltab ^ 2 =
+          theta ^ 2 * vecNorm2Sq r / den := by
+      rw [lsNormwiseBackwardErrorCostF_sq]
+      have hA : frobNormSqRect DeltaA =
+          (theta ^ 2 / den) ^ 2 * vecNorm2Sq r * vecNorm2Sq y := by
+        simpa [DeltaA, mul_assoc] using
+          frobNormSqRect_rankOne_real (m := m + 1) (n := n)
+            (theta ^ 2 / den) r y
+      have hb : vecNorm2Sq Deltab = (-(1 / den)) ^ 2 * vecNorm2Sq r := by
+        simpa [Deltab] using vecNorm2Sq_smul (-(1 / den)) r
+      rw [hA, hb]
+      field_simp [hden_ne]
+      dsimp [den]
+      ring
+    have hphi_sq :
+        lsNormwiseBackwardErrorPhi theta r y ^ 2 =
+          theta ^ 2 * vecNorm2Sq r / den := by
+      rw [lsNormwiseBackwardErrorPhi_eq_theta_mul_norm_div_sqrt_den htheta hy r]
+      rw [div_pow, mul_pow, Real.sq_sqrt hden_nonneg, ← vecNorm2_sq]
+    have hcost_nonneg : 0 ≤ lsNormwiseBackwardErrorCostF theta DeltaA Deltab :=
+      lsNormwiseBackwardErrorCostF_nonneg theta DeltaA Deltab
+    have hphi_nonneg : 0 ≤ lsNormwiseBackwardErrorPhi theta r y :=
+      lsNormwiseBackwardErrorPhi_nonneg theta r y
+    have hsqeq :
+        lsNormwiseBackwardErrorCostF theta DeltaA Deltab ^ 2 =
+          lsNormwiseBackwardErrorPhi theta r y ^ 2 := by
+      rw [hcost_sq, hphi_sq]
+    have habs := (sq_eq_sq_iff_eq_or_eq_neg.mp hsqeq)
+    rcases habs with h | h
+    · simpa [r] using h
+    · have hphi_le_zero : lsNormwiseBackwardErrorPhi theta r y ≤ 0 := by
+        nlinarith
+      have hphi_zero : lsNormwiseBackwardErrorPhi theta r y = 0 :=
+        le_antisymm hphi_le_zero hphi_nonneg
+      have hcost_zero : lsNormwiseBackwardErrorCostF theta DeltaA Deltab = 0 := by
+        nlinarith
+      exact hcost_zero.trans hphi_zero.symm
+
 /-- Continuity of the weighted Frobenius perturbation cost from (20.20) as a
     function of the perturbation pair.  Together with feasible-graph closedness
     and the entrywise bounded-sublevel lemmas, this is a local ingredient for
@@ -7373,6 +7491,24 @@ theorem lsNormwiseBackwardErrorEtaF_le_costF_of_feasible {m n : ℕ} (theta : �
   exact lsNormwiseBackwardErrorEtaF_le_of_mem theta A b y
     (lsNormwiseBackwardErrorValuesF.mem_of_feasible theta A b y
       DeltaA Deltab hfeas)
+
+/-- Constructive `phi`-branch upper bound for (20.21): the exact-fit witness
+    shows that the infimum model `eta_F(y)` is no larger than the scalar
+    `phi`.  The remaining WKS upper-bound work is the source-block
+    `sigma_min` branch when it is smaller than `phi`. -/
+theorem lsNormwiseBackwardErrorEtaF_le_phi_of_theta_nonneg {m n : ℕ}
+    {theta : ℝ} (htheta : 0 ≤ theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0) :
+    lsNormwiseBackwardErrorEtaF theta A b y ≤
+      lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y := by
+  rcases lsNormwiseBackwardErrorExactFitPhiWitness htheta A b hy with
+    ⟨DeltaA, Deltab, hfeas, hcost⟩
+  calc
+    lsNormwiseBackwardErrorEtaF theta A b y ≤
+        lsNormwiseBackwardErrorCostF theta DeltaA Deltab :=
+      lsNormwiseBackwardErrorEtaF_le_costF_of_feasible theta A b y DeltaA Deltab hfeas
+    _ = lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y := hcost
 
 /-- Minimum-attainment handoff for Higham's normwise backward error (20.20).
     If a feasible perturbation has no larger cost than every other feasible
@@ -9482,6 +9618,30 @@ theorem lsNormwiseBackwardErrorFormulaValue_le_sigmaMin
       lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y := by
   rw [lsNormwiseBackwardErrorFormulaValue]
   exact min_le_right _ _
+
+/-- Constructive upper-bound branch for (20.21): if the printed outer minimum
+    selects the scalar `phi` term, then the exact-fit perturbation witness
+    proves `eta_F(y) <=` the printed right-hand side.  The complementary
+    source-block `sigma_min` branch remains the open WKS construction. -/
+theorem lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_phi_le_sigmaMin
+    {m n : ℕ} {theta : ℝ} (htheta : 0 ≤ theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hbranch :
+      lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y ≤
+        lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+          (lsResidualHigham A b y) y) :
+    lsNormwiseBackwardErrorEtaF theta A b y ≤
+      lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  have heta :=
+    lsNormwiseBackwardErrorEtaF_le_phi_of_theta_nonneg htheta A b hy
+  have hrhs :
+      lsNormwiseBackwardErrorFormulaRHS theta A b y =
+        lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y := by
+    unfold lsNormwiseBackwardErrorFormulaRHS lsNormwiseBackwardErrorFormulaValue
+    exact min_eq_left hbranch
+  rw [hrhs]
+  exact heta
 
 theorem lsNormwiseBackwardErrorFormulaRHS_nonneg
     {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
