@@ -9998,6 +9998,26 @@ theorem lsResidualComplementProjector_transpose_mul_residual {m : ℕ}
   simpa [lsResidualComplementProjector] using
     lsLemma20_6ProjectorComplement_transpose_apply_self r hrsq k
 
+/-- Since `(I-r r^+)^T r = 0`, adding the residual direction before applying
+    the transposed source complement does not change the projected scalar. -/
+theorem lsResidualComplementProjector_transpose_mul_residual_add_eq
+    {m : ℕ} (r q : Fin m → ℝ) (hrsq : vecNorm2Sq r ≠ 0) (k : Fin m) :
+    ∑ i : Fin m, lsResidualComplementProjector r i k * (r i + q i) =
+      ∑ i : Fin m, lsResidualComplementProjector r i k * q i := by
+  have hres :=
+    lsResidualComplementProjector_transpose_mul_residual r hrsq k
+  calc
+    (∑ i : Fin m, lsResidualComplementProjector r i k * (r i + q i))
+        = (∑ i : Fin m, lsResidualComplementProjector r i k * r i) +
+            ∑ i : Fin m, lsResidualComplementProjector r i k * q i := by
+          rw [← Finset.sum_add_distrib]
+          apply Finset.sum_congr rfl
+          intro i _
+          ring
+    _ = ∑ i : Fin m, lsResidualComplementProjector r i k * q i := by
+          rw [hres]
+          ring
+
 /-- The `I-P` and `P` row-projected panels in equation (20.22) are orthogonal
     in the Frobenius inner product. -/
 theorem lsLemma20_6ProjectorComplement_projector_frobInner_eq_zero {m n : ℕ}
@@ -13998,6 +14018,71 @@ theorem lsNormwiseBackwardErrorFormulaMatrix_transpose_source_residual_right
             (Deltab i - rectMatMulVec DeltaA y i) := by
           rw [hres]
           ring
+
+/-- Equivalent expanded-residual form of the right projector block in the
+    transposed WKS source matrix.  The complement projector annihilates the
+    exact residual direction, so the right block may be written with
+    `p = r + Delta b - Delta A y`; this is the form needed for the sharper
+    coupled lower-bound route. -/
+theorem lsNormwiseBackwardErrorFormulaMatrix_transpose_source_residual_right_expanded
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (DeltaA : Fin (m + 1) → Fin n → ℝ)
+    (Deltab : Fin (m + 1) → ℝ)
+    (hrsq : vecNorm2Sq (lsResidualHigham A b y) ≠ 0)
+    (k : Fin (m + 1)) :
+    rectMatMulVec
+        (finiteTranspose
+          (lsNormwiseBackwardErrorFormulaMatrix theta A
+            (lsResidualHigham A b y) y))
+        (fun i => lsResidualHigham A b y i + Deltab i -
+          rectMatMulVec DeltaA y i)
+        (Fin.natAdd n k) =
+      lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y *
+        ∑ i : Fin (m + 1),
+          lsResidualComplementProjector (lsResidualHigham A b y) i k *
+            (lsResidualHigham A b y i + Deltab i -
+              rectMatMulVec DeltaA y i) := by
+  let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+  let q : Fin (m + 1) → ℝ := fun i => Deltab i - rectMatMulVec DeltaA y i
+  have hright :=
+    lsNormwiseBackwardErrorFormulaMatrix_transpose_source_residual_right
+      theta A b y DeltaA Deltab hrsq k
+  have hsum :
+      ∑ i : Fin (m + 1),
+          lsResidualComplementProjector r i k * q i =
+        ∑ i : Fin (m + 1),
+          lsResidualComplementProjector r i k * (r i + q i) :=
+    (lsResidualComplementProjector_transpose_mul_residual_add_eq
+      r q (by simpa [r] using hrsq) k).symm
+  calc
+    rectMatMulVec
+        (finiteTranspose
+          (lsNormwiseBackwardErrorFormulaMatrix theta A
+            (lsResidualHigham A b y) y))
+        (fun i => lsResidualHigham A b y i + Deltab i -
+          rectMatMulVec DeltaA y i)
+        (Fin.natAdd n k)
+        =
+      lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y *
+        ∑ i : Fin (m + 1),
+          lsResidualComplementProjector r i k * q i := by
+          simpa [r, q] using hright
+    _ =
+      lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y *
+        ∑ i : Fin (m + 1),
+          lsResidualComplementProjector r i k * (r i + q i) := by
+          rw [hsum]
+    _ =
+      lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y *
+        ∑ i : Fin (m + 1),
+          lsResidualComplementProjector (lsResidualHigham A b y) i k *
+            (lsResidualHigham A b y i + Deltab i -
+              rectMatMulVec DeltaA y i) := by
+          congr 1
+          apply Finset.sum_congr rfl
+          intro i _
+          simp [r, q, sub_eq_add_neg, add_assoc]
 
 /-- Norm bound for the right projector block in the transposed WKS source
     matrix.  This closes the projector-contraction part of the nonzero-`p`
