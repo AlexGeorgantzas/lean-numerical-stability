@@ -9913,6 +9913,150 @@ theorem lsNormwiseBackwardErrorFormulaMatrixSigmaMin_mul_vecNorm2_le_transpose_m
     lsRealRectSigmaMinRow_mul_vecNorm2_le_transpose_mulVec
       (lsNormwiseBackwardErrorFormulaMatrix theta A r y) p
 
+/-- Squared transpose-action expansion for the WKS source block
+    `[A  phi(I-r r^+)]`.  This is the algebraic form needed to compare a
+    candidate left singular vector with the rank-one source-residual witness
+    cost: the two coordinate blocks of the transpose action contribute
+    independently to the squared norm. -/
+theorem lsNormwiseBackwardErrorFormulaMatrix_transpose_vecNorm2Sq_eq
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ)
+    (r : Fin m → ℝ) (y : Fin n → ℝ) (p : Fin m → ℝ) :
+    vecNorm2Sq
+        (rectMatMulVec
+          (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y)) p) =
+      vecNorm2Sq (fun j : Fin n => ∑ i : Fin m, A i j * p i) +
+        (lsNormwiseBackwardErrorPhi theta r y) ^ 2 *
+          vecNorm2Sq
+            (matMulVec m (lsResidualComplementProjector r) p) := by
+  let phi : ℝ := lsNormwiseBackwardErrorPhi theta r y
+  let left : Fin n → ℝ := fun j => ∑ i : Fin m, A i j * p i
+  let right : Fin m → ℝ :=
+    fun k => phi * ∑ i : Fin m, lsResidualComplementProjector r i k * p i
+  have haction :
+      rectMatMulVec
+          (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y)) p =
+        Fin.append left right := by
+    ext q
+    refine Fin.addCases
+      (motive := fun q : Fin (n + m) =>
+        rectMatMulVec
+            (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y)) p q =
+          Fin.append left right q)
+      ?left ?right q
+    · intro j
+      simp [left, rectMatMulVec, finiteTranspose,
+        lsNormwiseBackwardErrorFormulaMatrix, Fin.append_left]
+    · intro k
+      calc
+        rectMatMulVec
+            (finiteTranspose
+              (lsNormwiseBackwardErrorFormulaMatrix theta A r y)) p
+            (Fin.natAdd n k)
+            =
+          ∑ i : Fin m,
+            (phi * lsResidualComplementProjector r i k) * p i := by
+            simp [phi, rectMatMulVec, finiteTranspose,
+              lsNormwiseBackwardErrorFormulaMatrix, Fin.append_right]
+        _ =
+          phi * ∑ i : Fin m, lsResidualComplementProjector r i k * p i := by
+            rw [Finset.mul_sum]
+            apply Finset.sum_congr rfl
+            intro i _
+            ring
+        _ = Fin.append left right (Fin.natAdd n k) := by
+            simp [right, Fin.append_right]
+  have hprojected :
+      (fun k : Fin m =>
+        ∑ i : Fin m, lsResidualComplementProjector r i k * p i) =
+        matMulVec m (lsResidualComplementProjector r) p := by
+    ext k
+    unfold matMulVec
+    apply Finset.sum_congr rfl
+    intro i _
+    rw [lsResidualComplementProjector_symmetric]
+  have hright_sq :
+      vecNorm2Sq right =
+        phi ^ 2 *
+          vecNorm2Sq (matMulVec m (lsResidualComplementProjector r) p) := by
+    have hsmul :
+        vecNorm2Sq
+            (fun k : Fin m =>
+              phi * matMulVec m (lsResidualComplementProjector r) p k) =
+          phi ^ 2 *
+            vecNorm2Sq (matMulVec m (lsResidualComplementProjector r) p) := by
+      simpa using
+        (vecNorm2Sq_smul phi (matMulVec m (lsResidualComplementProjector r) p))
+    calc
+      vecNorm2Sq right =
+          vecNorm2Sq
+            (fun k : Fin m =>
+              phi * matMulVec m (lsResidualComplementProjector r) p k) := by
+            congr 1
+            ext k
+            exact congrArg (fun z : ℝ => phi * z) (congrFun hprojected k)
+      _ =
+          phi ^ 2 *
+            vecNorm2Sq (matMulVec m (lsResidualComplementProjector r) p) :=
+            hsmul
+  calc
+    vecNorm2Sq
+        (rectMatMulVec
+          (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y)) p)
+        = vecNorm2Sq (Fin.append left right) := by
+            rw [haction]
+    _ = vecNorm2Sq left + vecNorm2Sq right :=
+        lsVecNorm2Sq_append left right
+    _ = vecNorm2Sq left +
+        phi ^ 2 * vecNorm2Sq (matMulVec m (lsResidualComplementProjector r) p) := by
+        rw [hright_sq]
+    _ =
+      vecNorm2Sq (fun j : Fin n => ∑ i : Fin m, A i j * p i) +
+        (lsNormwiseBackwardErrorPhi theta r y) ^ 2 *
+          vecNorm2Sq
+            (matMulVec m (lsResidualComplementProjector r) p) := by
+        rfl
+
+/-- Source-transpose certificate bridge for the scaled rank-one WKS witness.
+    If a candidate vector has a source-block transpose action no larger than
+    `sigma * ||p||_2`, and the scaled witness `Delta b` term is dominated by
+    the source-block projector block, then the division-free squared rank-one
+    witness cost is bounded by `sigma^2 ||p||_2^2`. -/
+theorem lsNormwiseBackwardErrorRankOne_scaled_sq_cost_le_of_source_transpose_sq_le
+    {m n : ℕ} (theta sigma : ℝ) (A : Fin m → Fin n → ℝ)
+    (r : Fin m → ℝ) (y : Fin n → ℝ) (p q : Fin m → ℝ)
+    (hprojector :
+      theta ^ 2 * vecNorm2Sq q * vecNorm2Sq p ≤
+        (lsNormwiseBackwardErrorPhi theta r y) ^ 2 *
+          vecNorm2Sq
+            (matMulVec m (lsResidualComplementProjector r) p))
+    (hsource :
+      vecNorm2Sq
+          (rectMatMulVec
+            (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y)) p) ≤
+        sigma ^ 2 * vecNorm2Sq p) :
+    vecNorm2Sq (fun j : Fin n => ∑ i : Fin m, A i j * p i) +
+        theta ^ 2 * vecNorm2Sq q * vecNorm2Sq p ≤
+      sigma ^ 2 * vecNorm2Sq p := by
+  let left : ℝ := vecNorm2Sq (fun j : Fin n => ∑ i : Fin m, A i j * p i)
+  let right : ℝ :=
+    (lsNormwiseBackwardErrorPhi theta r y) ^ 2 *
+      vecNorm2Sq (matMulVec m (lsResidualComplementProjector r) p)
+  have hsplit :
+      vecNorm2Sq
+          (rectMatMulVec
+            (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y)) p) =
+        left + right := by
+    simpa [left, right] using
+      lsNormwiseBackwardErrorFormulaMatrix_transpose_vecNorm2Sq_eq theta A r y p
+  have hcost_to_split :
+      left + theta ^ 2 * vecNorm2Sq q * vecNorm2Sq p ≤ left + right := by
+    have h := add_le_add_left (by simpa [right] using hprojector) left
+    simpa [add_comm, add_left_comm, add_assoc] using h
+  have hsplit_le : left + right ≤ sigma ^ 2 * vecNorm2Sq p := by
+    rw [← hsplit]
+    exact hsource
+  exact hcost_to_split.trans hsplit_le
+
 theorem lsNormwiseBackwardErrorFormulaMatrixSigmaMin_nonneg
     {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
     (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ) :
@@ -14921,6 +15065,63 @@ theorem lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_rankOne_scaled_sq_cost_le_s
     lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_rankOne_scaled_cost_le_sigmaMin
       theta A b y p hp c hc hbranch (by
         simpa [r, u, q, sigma] using hcost)
+
+/-- Source-transpose certificate version of the scaled rank-one WKS
+    `sigma_min` handoff.  This replaces the raw squared witness-cost
+    certificate by two source-block obligations: an upper certificate for
+    `||[A phi(I-r r^+)]^T p||_2^2`, supplied by the future singular-vector
+    construction, and a right-projector comparison for the explicit scaled
+    `Delta b` component. -/
+theorem lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_rankOne_scaled_source_transpose_cert
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (p : Fin (m + 1) → ℝ) (hp : vecNorm2Sq p ≠ 0)
+    (c : ℝ) (hc : c ≠ 0)
+    (hbranch :
+      lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+          (lsResidualHigham A b y) y ≤
+        lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y)
+    (hprojector :
+      let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+      let u : Fin n → ℝ := fun j => ∑ i : Fin (m + 1), A i j * p i
+      let q : Fin (m + 1) → ℝ :=
+        fun i =>
+          c * p i - r i -
+            ((1 / vecNorm2Sq p) * p i *
+              (∑ j : Fin n, u j * y j))
+      theta ^ 2 * vecNorm2Sq q * vecNorm2Sq p ≤
+        (lsNormwiseBackwardErrorPhi theta r y) ^ 2 *
+          vecNorm2Sq
+            (matMulVec (m + 1) (lsResidualComplementProjector r) p))
+    (hsource :
+      let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+      vecNorm2Sq
+          (rectMatMulVec
+            (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y)) p) ≤
+        (lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y) ^ 2 *
+          vecNorm2Sq p) :
+    lsNormwiseBackwardErrorEtaF theta A b y ≤
+      lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+  let u : Fin n → ℝ := fun j => ∑ i : Fin (m + 1), A i j * p i
+  let q : Fin (m + 1) → ℝ :=
+    fun i =>
+      c * p i - r i -
+        ((1 / vecNorm2Sq p) * p i *
+          (∑ j : Fin n, u j * y j))
+  let sigma : ℝ := lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y
+  have hcost_sq :
+      vecNorm2Sq u + theta ^ 2 * vecNorm2Sq q * vecNorm2Sq p ≤
+        sigma ^ 2 * vecNorm2Sq p := by
+    exact
+      lsNormwiseBackwardErrorRankOne_scaled_sq_cost_le_of_source_transpose_sq_le
+        theta sigma A r y p q
+        (by simpa [r, u, q] using hprojector)
+        (by simpa [r, sigma] using hsource)
+  exact
+    lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_rankOne_scaled_sq_cost_le_sigmaMin
+      theta A b y p hp c hc hbranch (by
+        simpa [r, u, q, sigma] using hcost_sq)
 
 /-- Left block of the transposed WKS source matrix on a feasible perturbed
     residual.  Under (20.20) feasibility, the `A^T` part of
