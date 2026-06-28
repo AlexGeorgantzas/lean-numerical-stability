@@ -9539,6 +9539,98 @@ theorem mgs_qr_bounds_of_R11_diag_ne_zero_compact_inverse_budget
   ring_nf
   exact hbudget
 
+/-- Scalar budget bridge for the compact inverse-budget route.
+
+The source sensitivity estimate is expected to bound the product
+`||A||_F * rho` by the advertised conditioning quantity.  This lemma turns that
+product estimate into the exact `2*delta + delta^2` budget used by the checked
+common-`R` orthogonality-loss proof. -/
+theorem compact_inverse_budget_of_condition_budget
+    {gamma normA rho kappaA budget : Real}
+    (hgamma : 0 <= gamma)
+    (hnormA : 0 <= normA)
+    (hrho : 0 <= rho)
+    (hcondition : normA * rho <= kappaA)
+    (hbudget :
+      2 * ((3 * gamma) * kappaA) + ((3 * gamma) * kappaA) ^ 2 <= budget) :
+    2 * ((3 * (gamma * normA)) * rho) +
+        ((3 * (gamma * normA)) * rho) ^ 2 <= budget := by
+  let delta : Real := (3 * (gamma * normA)) * rho
+  let sourceRadius : Real := (3 * gamma) * kappaA
+  have hthree_gamma : 0 <= 3 * gamma := by nlinarith
+  have hdelta_nonneg : 0 <= delta := by
+    have hgn : 0 <= gamma * normA := mul_nonneg hgamma hnormA
+    have hleft : 0 <= 3 * (gamma * normA) := by nlinarith
+    simpa [delta] using mul_nonneg hleft hrho
+  have hdelta_le : delta <= sourceRadius := by
+    have hprod :
+        (3 * gamma) * (normA * rho) <= (3 * gamma) * kappaA := by
+      exact mul_le_mul_of_nonneg_left hcondition hthree_gamma
+    dsimp [delta, sourceRadius]
+    nlinarith
+  have hmono :
+      2 * delta + delta ^ 2 <= 2 * sourceRadius + sourceRadius ^ 2 := by
+    have hsq : delta ^ 2 <= sourceRadius ^ 2 := by
+      nlinarith [sq_nonneg (sourceRadius - delta)]
+    nlinarith
+  exact hmono.trans hbudget
+
+/-- Source-condition-budget version of the chapter-facing Theorem 19.13 route.
+
+This exposes the remaining QR sensitivity estimate in the same product shape as
+the printed condition-number discussion: a bound for
+`||A||_F * ||R11^{-1}||` feeds the compact inverse-budget wrapper, while the
+final scalar budget carries the printed constants and higher-order term. -/
+theorem mgs_qr_bounds_of_R11_diag_ne_zero_compact_condition_budget
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {rho c2 kappaA higherOrder : Real}
+    (hdiag :
+      forall i : Fin n,
+        Ne (householder_paddedFinInput_R11 fp A i i) 0)
+    (hRinv :
+      rectOpNorm2Le
+        (nonsingInv n (householder_paddedFinInput_R11 fp A))
+        rho)
+    (hrho : 0 <= rho)
+    (hcondition : frobNormRect A * rho <= kappaA)
+    (hbudget :
+      2 * ((3 * Theorem19_4.gamma_tilde fp (n + m) n) * kappaA) +
+          ((3 * Theorem19_4.gamma_tilde fp (n + m) n) * kappaA) ^ 2 <=
+        c2 * fp.u * kappaA + higherOrder) :
+    MGSQRBounds m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (householder_paddedFinInput_R11 fp A)
+      (2 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      c2
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u (frobNormRect A) kappaA higherOrder := by
+  refine
+    mgs_qr_bounds_of_R11_diag_ne_zero_compact_inverse_budget
+      (fp := fp) (m := m) (n := n) A hn hnm hsmall
+      (rho := rho) (c2 := c2)
+      (kappaA := kappaA) (higherOrder := higherOrder)
+      hdiag hRinv hrho ?_
+  have hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + m)) := by
+    unfold gammaValid
+    have hhalf_lt_one : (1 / 2 : Real) < 1 := by norm_num
+    exact lt_of_le_of_lt hsmall hhalf_lt_one
+  exact
+    compact_inverse_budget_of_condition_budget
+      (gamma := Theorem19_4.gamma_tilde fp (n + m) n)
+      (normA := frobNormRect A) (rho := rho)
+      (kappaA := kappaA)
+      (budget := c2 * fp.u * kappaA + higherOrder)
+      (Theorem19_4.gamma_tilde_nonneg fp hvalid)
+      (frobNormRect_nonneg A)
+      hrho hcondition hbudget
+
 /-- Chapter-facing Theorem 19.13 assembly currently proved for the concrete
 padded Householder route.
 
