@@ -4,10 +4,45 @@
 -- Extracted from the main-branch Chapter 18 helper layer so downstream least-squares proofs can reuse it alongside the implementation-backed QR API.
 
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderApplySupport
+import LeanFpAnalysis.FP.Algorithms.QR.HouseholderMatrixStep
 
 namespace LeanFpAnalysis.FP
 
 open scoped BigOperators Matrix.Norms.Frobenius
+
+/-- The compact panel update and the rectangular matrix update use the same
+rounded Householder kernel column by column. -/
+theorem fl_householderApplyCompactPanel_eq_applyMatrixRect
+    (fp : FPModel) (m n : Nat) (v : Fin m -> Real) (beta : Real)
+    (A : Fin m -> Fin n -> Real) :
+    fl_householderApplyCompactPanel fp m n v beta A =
+      fl_householderApplyMatrixRect fp m n v beta A := by
+  rfl
+
+/-- On active nonzero-stored entries, one stored panel step is exactly the
+ordinary rectangular Householder panel update with the same reflector data.
+
+The hypotheses say that the queried column is active and, if it is the pivot
+column, that the queried row is not below the pivot where QR storage inserts a
+structural zero. -/
+theorem fl_householderStoredPanelStep_eq_applyMatrixRect_of_active_not_below
+    (fp : FPModel) (m n k : Nat) (v : Fin m -> Real) (beta : Real)
+    (A : Fin m -> Fin n -> Real) (i : Fin m) (j : Fin n)
+    (hactive : k <= j.val)
+    (hnotBelowPivot : j.val = k -> Not (k < i.val)) :
+    fl_householderStoredPanelStep fp m n k v beta A i j =
+      fl_householderApplyMatrixRect fp m n v beta A i j := by
+  have hnotPrev : Not (j.val < k) := Nat.not_lt.mpr hactive
+  by_cases hpivot : j.val = k
+  case pos =>
+    have hnotBelow : Not (k < i.val) := hnotBelowPivot hpivot
+    simp [fl_householderStoredPanelStep, fl_householderApplyCompactPanel,
+      fl_householderApplyMatrixRect, fl_householderApplyCompact,
+      fl_householderApply, hpivot, hnotBelow]
+  case neg =>
+    simp [fl_householderStoredPanelStep, fl_householderApplyCompactPanel,
+      fl_householderApplyMatrixRect, fl_householderApplyCompact,
+      fl_householderApply, hnotPrev, hpivot]
 
 /-- Rectangular one-step version of `orthogonal_sequence_one_step`.
 

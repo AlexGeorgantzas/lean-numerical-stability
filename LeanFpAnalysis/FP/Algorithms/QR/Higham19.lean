@@ -2608,6 +2608,25 @@ theorem householder_paddedFinInput_R11_zero_input_diag_zero
   ]
   cases mgsPaddedRowFromFin (m := 1) (n := 1) (0 : Fin (1 + 1)) <;> rfl
 
+/-- Ch19-facing active-entry bridge between the stored panel update and the
+ordinary rectangular Householder update.
+
+This closes the kernel-level part of the recursive/stored `R11` handoff: away
+from already completed columns and the stored structural zeros below the pivot,
+the two routes use the same rounded dot-scale-subtract Householder update for
+the same reflector data.  The remaining `R11` bridge must still identify the
+shrinking-panel normalized reflector data with the full stored-loop active
+reflector data. -/
+theorem storedPanelStep_eq_applyMatrixRect_of_active_not_below
+    (fp : FPModel) (m n k : Nat) (v : Fin m -> Real) (beta : Real)
+    (A : Fin m -> Fin n -> Real) (i : Fin m) (j : Fin n)
+    (hactive : k <= j.val)
+    (hnotBelowPivot : j.val = k -> Not (k < i.val)) :
+    fl_householderStoredPanelStep fp m n k v beta A i j =
+      fl_householderApplyMatrixRect fp m n v beta A i j :=
+  fl_householderStoredPanelStep_eq_applyMatrixRect_of_active_not_below
+    fp m n k v beta A i j hactive hnotBelowPivot
+
 /-- Source-facing nonbreakdown route for the stored Householder QR loop.
 Nonsingular local leading blocks, the stored lower-zero invariant, the source
 sign convention, and a per-pivot square-root component budget imply that the
