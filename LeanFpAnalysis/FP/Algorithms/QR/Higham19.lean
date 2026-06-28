@@ -242,6 +242,19 @@ abbrev Problem1912RightGramPolarH {m n : Nat}
     (P21 : Fin m -> Fin n -> Real) : Fin n -> Fin n -> Real :=
   rectRightGramPolarH P21
 
+/-- Spectral `(I+H)^{-1}` factor for the lower-block right-Gram polar factor
+in Problem 19.12. -/
+abbrev Problem1912RightGramPolarResolvent {m n : Nat}
+    (P21 : Fin m -> Fin n -> Real) : Fin n -> Fin n -> Real :=
+  rectRightGramPolarResolvent P21
+
+/-- Concrete full-positive polar bridge matrix
+`T = (I+H)^{-1} * P11^T` for Problem 19.12. -/
+abbrev Problem1912FullPositivePolarBridgeT {m n : Nat}
+    (P11 : Fin n -> Fin n -> Real) (P21 : Fin m -> Fin n -> Real) :
+    Fin n -> Fin n -> Real :=
+  mgsProblem1912_fullPositivePolarBridgeT P11 P21
+
 /-- Corrected source-shaped input for the remaining Problem 19.12 CS/polar
 existence theorem: tallness plus the block-column Gram identity. -/
 abbrev Problem1912CSPolarInput (m n : Nat)
@@ -378,6 +391,37 @@ theorem problem1912_rightGramPolarH_sq_eq_rectangularGram_of_pos
       rectangularGram P21 := by
   exact rectRightGramPolarH_sq_eq_rectangularGram_of_pos P21 hpos
 
+/-- Chapter-labeled spectral square identity for the full-positive polar
+positive factor. -/
+theorem problem1912_rightGramPolarH_sq_eq_spectral_square {m n : Nat}
+    (P21 : Fin m -> Fin n -> Real) :
+    matMul n (Problem1912RightGramPolarH P21)
+        (Problem1912RightGramPolarH P21) =
+      matMul n (rectRightGramEigenbasis P21)
+        (matMul n (finiteDiagonal
+            (fun i => rectRightGramBasisSingularValue P21 i ^ 2))
+          (finiteTranspose (rectRightGramEigenbasis P21))) := by
+  exact rectRightGramPolarH_sq_eq_spectral_square P21
+
+/-- Chapter-labeled contraction bound for the spectral `(I+H)^{-1}` factor. -/
+theorem problem1912_rightGramPolarResolvent_opNorm2Le_one {m n : Nat}
+    (P21 : Fin m -> Fin n -> Real) :
+    opNorm2Le (Problem1912RightGramPolarResolvent P21) 1 := by
+  exact rectRightGramPolarResolvent_opNorm2Le_one P21
+
+/-- Chapter-labeled resolvent identity:
+`(I+H)^{-1} * (I-H^2) = I-H`. -/
+theorem problem1912_rightGramPolarResolvent_mul_id_sub_polarH_sq
+    {m n : Nat}
+    (P21 : Fin m -> Fin n -> Real) :
+    matMul n (Problem1912RightGramPolarResolvent P21)
+      (fun i j =>
+        idMatrix n i j -
+          matMul n (Problem1912RightGramPolarH P21)
+            (Problem1912RightGramPolarH P21) i j) =
+      fun i j => idMatrix n i j - Problem1912RightGramPolarH P21 i j := by
+  exact rectRightGramPolarResolvent_mul_id_sub_polarH_sq P21
+
 /-- Chapter-labeled full-positive polar rewrite of the top Gram:
 `P11^T P11 = I - H^2`. -/
 theorem problem1912_csPolarInput_p11_gram_eq_id_sub_polarH_sq
@@ -408,6 +452,38 @@ def problem1912_polarFactorData_of_fullPositiveRightGram
   LeanFpAnalysis.FP.mgsProblem1912_polarFactorData_of_fullPositive_rightGram
     hpos hTP hT
 
+/-- Chapter-labeled concrete bridge identity for the full-positive polar
+branch: `((I+H)^{-1} * P11^T) * P11 = I-H`. -/
+theorem problem1912_fullPositivePolarBridgeT_mul_p11
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hpos : forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a) :
+    matMul n (Problem1912FullPositivePolarBridgeT P11 P21) P11 =
+      fun i j => idMatrix n i j - Problem1912RightGramPolarH P21 i j := by
+  exact mgsProblem1912_fullPositivePolarBridgeT_mul_p11 hinput hpos
+
+/-- Chapter-labeled contraction bound for the concrete full-positive polar
+bridge matrix. -/
+theorem problem1912_fullPositivePolarBridgeT_opNorm2Le_one
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21) :
+    opNorm2Le (Problem1912FullPositivePolarBridgeT P11 P21) 1 := by
+  exact mgsProblem1912_fullPositivePolarBridgeT_opNorm2Le_one hinput
+
+/-- Chapter-labeled full-positive right-Gram polar payload constructor from
+the corrected CS/polar input.  The bridge and contraction obligations are
+discharged by `T = (I+H)^{-1} * P11^T`. -/
+def problem1912_polarFactorData_of_csPolarInput_fullPositiveRightGram
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hpos : forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a) :
+    Problem1912PolarFactorData m n P11 P21 :=
+  mgsProblem1912_polarFactorData_of_csPolarInput_fullPositive_rightGram
+    hinput hpos
+
 /-- Full-positive right-Gram polar factors plus the remaining bridge produce
 chapter-facing pure Problem 19.12 correction-map data. -/
 theorem problem1912_correctionMapData_exists_of_fullPositiveRightGram
@@ -425,6 +501,20 @@ theorem problem1912_correctionMapData_exists_of_fullPositiveRightGram
   exact
     LeanFpAnalysis.FP.mgsProblem1912_correctionMapData_exists_of_fullPositive_rightGram
       hpos hTP hT
+
+/-- Full-positive right-Gram polar factors plus the corrected CS/polar input
+produce chapter-facing pure Problem 19.12 correction-map data. -/
+theorem problem1912_correctionMapData_exists_of_csPolarInput_fullPositiveRightGram
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hpos : forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      Problem1912CorrectionMapData m n P11 P21 Q F := by
+  exact
+    mgsProblem1912_correctionMapData_exists_of_csPolarInput_fullPositive_rightGram
+      hinput hpos
 
 /-- Full-positive right-Gram polar factors plus the remaining bridge produce
 chapter-facing additive Problem 19.12 witnesses. -/
@@ -445,6 +535,22 @@ theorem problem1912_add_factor_exists_of_fullPositiveRightGram
   exact
     LeanFpAnalysis.FP.mgsProblem1912_add_factor_exists_of_fullPositive_rightGram
       hpos hTP hT
+
+/-- Full-positive right-Gram polar factors plus the corrected CS/polar input
+produce chapter-facing additive Problem 19.12 witnesses. -/
+theorem problem1912_add_factor_exists_of_csPolarInput_fullPositiveRightGram
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hpos : forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      (Q = fun i j => P21 i j + matMulRect m n n F P11 i j) /\
+        GramSchmidtOrthonormalColumns Q /\
+        rectOpNorm2Le F 1 := by
+  exact
+    mgsProblem1912_add_factor_exists_of_csPolarInput_fullPositive_rightGram
+      hinput hpos
 
 /-- Chapter-labeled conversion from a polar-factor payload to pure Problem
 19.12 correction-map data. -/

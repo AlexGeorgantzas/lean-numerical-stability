@@ -259,6 +259,346 @@ theorem MGSProblem1912CSPolarInput.p11_gram_eq_id_sub_polarH_sq
     exact (rectRightGramPolarH_sq_eq_rectangularGram_of_pos P21 hpos).symm
   rw [hinput.p11_gram_eq_id_sub_p21_gram, hp21]
 
+/-- Right distributivity for square matrix subtraction. -/
+theorem matMul_sub_right_square (n : Nat)
+    (A B C : Fin n -> Fin n -> Real) :
+    matMul n A (fun i j => B i j - C i j) =
+      fun i j => matMul n A B i j - matMul n A C i j := by
+  ext i j
+  unfold matMul
+  rw [<- Finset.sum_sub_distrib]
+  apply Finset.sum_congr rfl
+  intro k _hk
+  ring
+
+/-- Scalar estimate for the diagonal entries of `(I + H)^{-1}` when
+`H` is positive semidefinite. -/
+theorem inv_one_add_abs_le_one_of_nonneg {s : Real} (hs : 0 <= s) :
+    |(1 : Real) / (1 + s)| <= 1 := by
+  have hden_pos : 0 < 1 + s := by linarith
+  have hden_ge_one : 1 <= 1 + s := by linarith
+  calc
+    |(1 : Real) / (1 + s)| = (1 : Real) / (1 + s) := by
+      rw [abs_of_pos]
+      positivity
+    _ <= 1 := by
+      exact (div_le_one hden_pos).2 hden_ge_one
+
+/-- Scalar identity `(1+s)^{-1} * (1-s^2) = 1-s` for `s >= 0`. -/
+theorem inv_one_add_mul_one_sub_sq {s : Real} (hs : 0 <= s) :
+    (1 / (1 + s)) * (1 - s ^ 2) = (1 : Real) - s := by
+  have hden_pos : 0 < 1 + s := by linarith
+  have hden_ne : Ne (1 + s) 0 := ne_of_gt hden_pos
+  field_simp [hden_ne]
+  ring
+
+/-- A finite diagonal matrix with entries `(1+s_i)^{-1}` is contractive when
+all `s_i` are nonnegative. -/
+theorem opNorm2Le_finiteDiagonal_inv_one_add_of_nonneg {n : Nat}
+    (s : Fin n -> Real) (hs : forall i, 0 <= s i) :
+    opNorm2Le (finiteDiagonal (fun i => 1 / (1 + s i))) 1 := by
+  exact
+    opNorm2Le_finiteDiagonal_of_abs_le_one
+      (fun i => 1 / (1 + s i))
+      (fun i => inv_one_add_abs_le_one_of_nonneg (hs i))
+
+/-- Diagonal identity behind the polar bridge:
+`diag((1+s)^{-1}) * (I - diag(s^2)) = I - diag(s)`. -/
+theorem matMul_finiteDiagonal_inv_one_add_id_sub_square {n : Nat}
+    (s : Fin n -> Real) (hs : forall i, 0 <= s i) :
+    matMul n (finiteDiagonal (fun i => 1 / (1 + s i)))
+      (fun i j => idMatrix n i j - finiteDiagonal (fun i => s i ^ 2) i j) =
+      fun i j => idMatrix n i j - finiteDiagonal s i j := by
+  ext i j
+  by_cases hij : i = j
+  case pos =>
+    subst j
+    simp [matMul, finiteDiagonal, idMatrix]
+    simpa [one_div] using inv_one_add_mul_one_sub_sq (hs i)
+  case neg =>
+    simp [matMul, finiteDiagonal, idMatrix, hij]
+
+/-- Square matrix products preserve operator-2 certificates. -/
+theorem opNorm2Le_matMul_square_of_bounds {n : Nat}
+    (A B : Fin n -> Fin n -> Real) {cA cB : Real}
+    (hcA : 0 <= cA) (hA : opNorm2Le A cA) (hB : opNorm2Le B cB) :
+    opNorm2Le (matMul n A B) (cA * cB) := by
+  exact opNorm2Le_of_rectOpNorm2Le_square _
+    (rectOpNorm2Le_matMul_square A B hcA hA hB)
+
+/-- The spectral square of the full-positive polar `H` is obtained by
+squaring its singular-value diagonal. -/
+theorem rectRightGramPolarH_sq_eq_spectral_square {m n : Nat}
+    (A : Fin m -> Fin n -> Real) :
+    matMul n (rectRightGramPolarH A) (rectRightGramPolarH A) =
+      matMul n (rectRightGramEigenbasis A)
+        (matMul n (finiteDiagonal
+            (fun i => rectRightGramBasisSingularValue A i ^ 2))
+          (finiteTranspose (rectRightGramEigenbasis A))) := by
+  let V := rectRightGramEigenbasis A
+  let Vt := finiteTranspose V
+  let D := finiteDiagonal (rectRightGramBasisSingularValue A)
+  have hVtV : matMul n Vt V = idMatrix n := by
+    ext i j
+    have hcol := rectRightGramEigenbasis_col_orthonormal A i j
+    simpa [Vt, V, matMul, finiteTranspose, idMatrix] using hcol
+  calc
+    matMul n (rectRightGramPolarH A) (rectRightGramPolarH A)
+        = matMul n (matMul n V (matMul n D Vt))
+            (matMul n V (matMul n D Vt)) := by
+        rfl
+    _ = matMul n V (matMul n (matMul n D Vt)
+          (matMul n V (matMul n D Vt))) := by
+        rw [matMul_assoc]
+    _ = matMul n V (matMul n D
+          (matMul n Vt (matMul n V (matMul n D Vt)))) := by
+        congr 1
+        rw [matMul_assoc]
+    _ = matMul n V (matMul n D
+          (matMul n (matMul n Vt V) (matMul n D Vt))) := by
+        congr 2
+        rw [<- matMul_assoc]
+    _ = matMul n V (matMul n D
+          (matMul n (idMatrix n) (matMul n D Vt))) := by
+        rw [hVtV]
+    _ = matMul n V (matMul n D (matMul n D Vt)) := by
+        rw [matMul_id_left]
+    _ = matMul n V (matMul n (matMul n D D) Vt) := by
+        congr 1
+        rw [<- matMul_assoc]
+    _ =
+      matMul n V
+        (matMul n (finiteDiagonal
+            (fun i => rectRightGramBasisSingularValue A i ^ 2)) Vt) := by
+        rw [matMul_finiteDiagonal_self]
+
+/-- Spectral `(I + H)^{-1}` for the right-Gram polar positive factor. -/
+noncomputable def rectRightGramPolarResolvent {m n : Nat}
+    (A : Fin m -> Fin n -> Real) : Fin n -> Fin n -> Real :=
+  matMul n (rectRightGramEigenbasis A)
+    (matMul n
+      (finiteDiagonal
+        (fun i => 1 / (1 + rectRightGramBasisSingularValue A i)))
+      (finiteTranspose (rectRightGramEigenbasis A)))
+
+/-- The spectral `(I + H)^{-1}` factor is an operator-2 contraction. -/
+theorem rectRightGramPolarResolvent_opNorm2Le_one {m n : Nat}
+    (A : Fin m -> Fin n -> Real) :
+    opNorm2Le (rectRightGramPolarResolvent A) 1 := by
+  let V := rectRightGramEigenbasis A
+  let Vt := finiteTranspose V
+  let Dinv :=
+    finiteDiagonal
+      (fun i => 1 / (1 + rectRightGramBasisSingularValue A i))
+  have hVorth : IsOrthogonal n V :=
+    rectRightGramEigenbasis_isOrthogonal A
+  have hD : opNorm2Le Dinv 1 := by
+    exact
+      opNorm2Le_finiteDiagonal_inv_one_add_of_nonneg
+        (rectRightGramBasisSingularValue A)
+        (fun i => rectRightGramBasisSingularValue_nonneg A i)
+  have hVt : opNorm2Le Vt 1 := by
+    simpa [Vt, V, finiteTranspose, matTranspose] using
+      hVorth.transpose_opNorm2Le_one
+  have hDinvVt : opNorm2Le (matMul n Dinv Vt) 1 := by
+    have hprod :
+        opNorm2Le (matMul n Dinv Vt) (1 * 1) :=
+      opNorm2Le_matMul_square_of_bounds Dinv Vt (by norm_num) hD hVt
+    simpa using hprod
+  have hV : opNorm2Le V 1 := hVorth.opNorm2Le_one
+  have hprod :
+      opNorm2Le (matMul n V (matMul n Dinv Vt)) (1 * 1) :=
+    opNorm2Le_matMul_square_of_bounds V (matMul n Dinv Vt)
+      (by norm_num) hV hDinvVt
+  simpa [rectRightGramPolarResolvent, V, Vt, Dinv] using hprod
+
+/-- The resolvent factor converts the polar top-Gram identity
+`P11^T P11 = I - H^2` into the bridge matrix equation `T*P11 = I-H`. -/
+theorem rectRightGramPolarResolvent_mul_id_sub_polarH_sq {m n : Nat}
+    (A : Fin m -> Fin n -> Real) :
+    matMul n (rectRightGramPolarResolvent A)
+      (fun i j =>
+        idMatrix n i j -
+          matMul n (rectRightGramPolarH A) (rectRightGramPolarH A) i j) =
+      fun i j => idMatrix n i j - rectRightGramPolarH A i j := by
+  let V := rectRightGramEigenbasis A
+  let Vt := finiteTranspose V
+  let s := rectRightGramBasisSingularValue A
+  let D := finiteDiagonal s
+  let Dinv := finiteDiagonal (fun i => 1 / (1 + s i))
+  let D2 := finiteDiagonal (fun i => s i ^ 2)
+  have hVorth : IsOrthogonal n V :=
+    rectRightGramEigenbasis_isOrthogonal A
+  have hVtV : matMul n Vt V = idMatrix n := by
+    ext i j
+    have hcol := hVorth.col_orthonormal i j
+    simpa [Vt, V, matMul, finiteTranspose, idMatrix] using hcol
+  have hVVt : matMul n V Vt = idMatrix n := by
+    ext i j
+    have hrow := hVorth.row_orthonormal i j
+    simpa [Vt, V, matMul, finiteTranspose, idMatrix] using hrow
+  have hHsq :
+      matMul n (rectRightGramPolarH A) (rectRightGramPolarH A) =
+        matMul n V (matMul n D2 Vt) := by
+    simpa [V, Vt, s, D2] using
+      rectRightGramPolarH_sq_eq_spectral_square A
+  have hHsq_expanded :
+      matMul n (matMul n V (matMul n D Vt))
+          (matMul n V (matMul n D Vt)) =
+        matMul n V (matMul n D2 Vt) := by
+    simpa [V, Vt, s, D, D2, rectRightGramPolarH] using hHsq
+  have hdiag :
+      matMul n Dinv (fun i j => idMatrix n i j - D2 i j) =
+        fun i j => idMatrix n i j - D i j := by
+    simpa [Dinv, D, D2, s] using
+      matMul_finiteDiagonal_inv_one_add_id_sub_square s
+        (fun i => rectRightGramBasisSingularValue_nonneg A i)
+  calc
+    matMul n (rectRightGramPolarResolvent A)
+        (fun i j =>
+          idMatrix n i j -
+            matMul n (rectRightGramPolarH A) (rectRightGramPolarH A) i j)
+        =
+      matMul n (matMul n V (matMul n Dinv Vt))
+        (fun i j =>
+          idMatrix n i j -
+            matMul n (matMul n V (matMul n D Vt))
+              (matMul n V (matMul n D Vt)) i j) := by
+        rfl
+    _ =
+      matMul n (matMul n V (matMul n Dinv Vt))
+        (fun i j => idMatrix n i j - matMul n V (matMul n D2 Vt) i j) := by
+        rw [hHsq_expanded]
+    _ =
+      matMul n (matMul n V (matMul n Dinv Vt))
+        (fun i j => matMul n V Vt i j - matMul n V (matMul n D2 Vt) i j) := by
+        rw [hVVt]
+    _ =
+      matMul n (matMul n V (matMul n Dinv Vt))
+        (matMul n V (fun i j => Vt i j - matMul n D2 Vt i j)) := by
+        congr 1
+        symm
+        rw [matMul_sub_right_square]
+    _ =
+      matMul n (matMul n V (matMul n Dinv Vt))
+        (matMul n V (matMul n (fun i j => idMatrix n i j - D2 i j) Vt)) := by
+        congr 1
+        congr 1
+        rw [matMul_sub_left]
+        rw [matMul_id_left]
+    _ =
+      matMul n V (matMul n Dinv
+        (matMul n Vt
+          (matMul n V
+            (matMul n (fun i j => idMatrix n i j - D2 i j) Vt)))) := by
+        rw [matMul_assoc]
+        congr 1
+        rw [matMul_assoc]
+    _ =
+      matMul n V (matMul n Dinv
+        (matMul n (matMul n Vt V)
+          (matMul n (fun i j => idMatrix n i j - D2 i j) Vt))) := by
+        congr 2
+        rw [<- matMul_assoc]
+    _ =
+      matMul n V (matMul n Dinv
+        (matMul n (idMatrix n)
+          (matMul n (fun i j => idMatrix n i j - D2 i j) Vt))) := by
+        rw [hVtV]
+    _ =
+      matMul n V (matMul n Dinv
+        (matMul n (fun i j => idMatrix n i j - D2 i j) Vt)) := by
+        rw [matMul_id_left]
+    _ =
+      matMul n V
+        (matMul n (matMul n Dinv
+          (fun i j => idMatrix n i j - D2 i j)) Vt) := by
+        congr 1
+        rw [<- matMul_assoc]
+    _ = matMul n V (matMul n (fun i j => idMatrix n i j - D i j) Vt) := by
+        rw [hdiag]
+    _ = matMul n V (fun i j => Vt i j - matMul n D Vt i j) := by
+        rw [matMul_sub_left]
+        rw [matMul_id_left]
+    _ = fun i j => matMul n V Vt i j - matMul n V (matMul n D Vt) i j := by
+        rw [matMul_sub_right_square]
+    _ = fun i j => idMatrix n i j - matMul n V (matMul n D Vt) i j := by
+        rw [hVVt]
+    _ = fun i j => idMatrix n i j - rectRightGramPolarH A i j := by
+        rfl
+
+/-- The concrete bridge matrix for the full-positive polar branch:
+`T = (I+H)^{-1} * P11^T`. -/
+noncomputable def mgsProblem1912_fullPositivePolarBridgeT
+    {m n : Nat}
+    (P11 : Fin n -> Fin n -> Real) (P21 : Fin m -> Fin n -> Real) :
+    Fin n -> Fin n -> Real :=
+  matMul n (rectRightGramPolarResolvent P21) (finiteTranspose P11)
+
+/-- In the full-positive right-Gram polar branch, the concrete bridge matrix
+satisfies `T*P11 = I-H`. -/
+theorem mgsProblem1912_fullPositivePolarBridgeT_mul_p11
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : MGSProblem1912CSPolarInput m n P11 P21)
+    (hpos : forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a) :
+    matMul n (mgsProblem1912_fullPositivePolarBridgeT P11 P21) P11 =
+      fun i j => idMatrix n i j - rectRightGramPolarH P21 i j := by
+  have hgram :
+      matMul n (finiteTranspose P11) P11 = rectangularGram P11 := by
+    ext i j
+    rfl
+  have hp11 :
+      rectangularGram P11 =
+        fun i j =>
+          idMatrix n i j -
+            matMul n (rectRightGramPolarH P21)
+              (rectRightGramPolarH P21) i j :=
+    hinput.p11_gram_eq_id_sub_polarH_sq hpos
+  calc
+    matMul n (mgsProblem1912_fullPositivePolarBridgeT P11 P21) P11
+        =
+      matMul n (rectRightGramPolarResolvent P21)
+        (matMul n (finiteTranspose P11) P11) := by
+        rw [mgsProblem1912_fullPositivePolarBridgeT, matMul_assoc]
+    _ = matMul n (rectRightGramPolarResolvent P21) (rectangularGram P11) := by
+        rw [hgram]
+    _ =
+      matMul n (rectRightGramPolarResolvent P21)
+        (fun i j =>
+          idMatrix n i j -
+            matMul n (rectRightGramPolarH P21)
+              (rectRightGramPolarH P21) i j) := by
+        rw [hp11]
+    _ = fun i j => idMatrix n i j - rectRightGramPolarH P21 i j := by
+        exact rectRightGramPolarResolvent_mul_id_sub_polarH_sq P21
+
+/-- In the full-positive right-Gram polar branch, the concrete bridge matrix is
+a contraction. -/
+theorem mgsProblem1912_fullPositivePolarBridgeT_opNorm2Le_one
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : MGSProblem1912CSPolarInput m n P11 P21) :
+    opNorm2Le (mgsProblem1912_fullPositivePolarBridgeT P11 P21) 1 := by
+  have hres : opNorm2Le (rectRightGramPolarResolvent P21) 1 :=
+    rectRightGramPolarResolvent_opNorm2Le_one P21
+  have hP11 : opNorm2Le P11 1 := hinput.p11_opNorm2Le_one
+  have hP11rect : rectOpNorm2Le P11 1 :=
+    rectOpNorm2Le_of_opNorm2Le_square P11 hP11
+  have hP11t_rect : rectOpNorm2Le (finiteTranspose P11) 1 :=
+    rectOpNorm2Le_finiteTranspose_of_rectOpNorm2Le P11 (by norm_num)
+      hP11rect
+  have hP11t : opNorm2Le (finiteTranspose P11) 1 :=
+    opNorm2Le_of_rectOpNorm2Le_square _ hP11t_rect
+  have hprod :
+      opNorm2Le
+        (matMul n (rectRightGramPolarResolvent P21) (finiteTranspose P11))
+        (1 * 1) :=
+    opNorm2Le_matMul_square_of_bounds
+      (rectRightGramPolarResolvent P21) (finiteTranspose P11)
+      (by norm_num) hres hP11t
+  simpa [mgsProblem1912_fullPositivePolarBridgeT] using hprod
+
 /-- Full-positive right-Gram polar factors give the bottom factor and
 orthonormal part required by the Problem 19.12 polar payload.  The bridge
 `T * P11 = I - H` and contraction bound remain explicit obligations. -/
@@ -320,6 +660,51 @@ theorem mgsProblem1912_add_factor_exists_of_fullPositive_rightGram
     mgsProblem1912_add_factor_exists_of_polarFactorData
       (mgsProblem1912_polarFactorData_of_fullPositive_rightGram
         hpos hTP hT)
+
+/-- Full-positive right-Gram polar factors produce the complete polar payload
+from the corrected CS/polar input.  This closes the former explicit bridge
+obligations in this branch by taking `T = (I+H)^{-1} * P11^T`. -/
+def mgsProblem1912_polarFactorData_of_csPolarInput_fullPositive_rightGram
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : MGSProblem1912CSPolarInput m n P11 P21)
+    (hpos : forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a) :
+    MGSProblem1912PolarFactorData m n P11 P21 :=
+  mgsProblem1912_polarFactorData_of_fullPositive_rightGram hpos
+    (mgsProblem1912_fullPositivePolarBridgeT_mul_p11 hinput hpos)
+    (mgsProblem1912_fullPositivePolarBridgeT_opNorm2Le_one hinput)
+
+/-- Full-positive right-Gram polar factors plus the corrected CS/polar input
+produce pure Problem 19.12 correction-map data. -/
+theorem mgsProblem1912_correctionMapData_exists_of_csPolarInput_fullPositive_rightGram
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : MGSProblem1912CSPolarInput m n P11 P21)
+    (hpos : forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      MGSProblem1912CorrectionMapData m n P11 P21 Q F := by
+  exact
+    mgsProblem1912_correctionMapData_exists_of_polarFactorData
+      (mgsProblem1912_polarFactorData_of_csPolarInput_fullPositive_rightGram
+        hinput hpos)
+
+/-- Full-positive right-Gram polar factors plus the corrected CS/polar input
+produce additive Problem 19.12 witnesses. -/
+theorem mgsProblem1912_add_factor_exists_of_csPolarInput_fullPositive_rightGram
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : MGSProblem1912CSPolarInput m n P11 P21)
+    (hpos : forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      (Q = fun i j => P21 i j + matMulRect m n n F P11 i j) /\
+        GramSchmidtOrthonormalColumns Q /\
+        rectOpNorm2Le F 1 := by
+  exact
+    mgsProblem1912_add_factor_exists_of_polarFactorData
+      (mgsProblem1912_polarFactorData_of_csPolarInput_fullPositive_rightGram
+        hinput hpos)
 
 end
 
