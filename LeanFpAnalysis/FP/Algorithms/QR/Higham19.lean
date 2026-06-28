@@ -222,6 +222,13 @@ abbrev Problem1912CSDiagonalFactorData (m n : Nat)
     (P21 : Fin m -> Fin n -> Real) : Type :=
   MGSProblem1912CSDiagonalFactorData m n P11 P21
 
+/-- Source-shaped polar-factor payload for Problem 19.12.  This is a
+non-diagonal payload the remaining CS/polar existence theorem may produce. -/
+abbrev Problem1912PolarFactorData (m n : Nat)
+    (P11 : Fin n -> Fin n -> Real)
+    (P21 : Fin m -> Fin n -> Real) : Type :=
+  MGSProblem1912PolarFactorData m n P11 P21
+
 /-- Corrected source-shaped input for the remaining Problem 19.12 CS/polar
 existence theorem: tallness plus the block-column Gram identity. -/
 abbrev Problem1912CSPolarInput (m n : Nat)
@@ -291,6 +298,114 @@ theorem problem1912_correctionMapData_of_add_factor {m n : Nat}
   exact
     LeanFpAnalysis.FP.mgsProblem1912_correctionMapData_of_add_factor
       hQadd hQorth hFbound
+
+/-- Chapter-labeled polar-factor algebra for Problem 19.12:
+from `P21 = Q*H`, `F = Q*T`, and `T*P11 = I-H`, obtain
+`F*P11 = Q-P21`. -/
+theorem problem1912_polarAlgebra_correction_factor {m n : Nat}
+    {P11 H T : Fin n -> Fin n -> Real}
+    {P21 Q F : Fin m -> Fin n -> Real}
+    (hP21 : P21 = matMulRect m n n Q H)
+    (hF : F = matMulRect m n n Q T)
+    (hTP : matMul n T P11 = fun i j => idMatrix n i j - H i j) :
+    matMulRect m n n F P11 = fun i j => Q i j - P21 i j := by
+  exact
+    LeanFpAnalysis.FP.mgsProblem1912_polarAlgebra_correction_factor
+      hP21 hF hTP
+
+/-- Chapter-labeled construction of pure Problem 19.12 correction-map data
+from a polar-style algebraic payload. -/
+theorem problem1912_correctionMapData_of_polarAlgebra {m n : Nat}
+    {P11 H T : Fin n -> Fin n -> Real}
+    {P21 Q F : Fin m -> Fin n -> Real}
+    (hP21 : P21 = matMulRect m n n Q H)
+    (hF : F = matMulRect m n n Q T)
+    (hTP : matMul n T P11 = fun i j => idMatrix n i j - H i j)
+    (hQorth : GramSchmidtOrthonormalColumns Q)
+    (hFbound : rectOpNorm2Le F 1) :
+    Problem1912CorrectionMapData m n P11 P21 Q F := by
+  exact
+    LeanFpAnalysis.FP.mgsProblem1912_correctionMapData_of_polarAlgebra
+      hP21 hF hTP hQorth hFbound
+
+/-- Chapter-labeled conversion from a polar-factor payload to pure Problem
+19.12 correction-map data. -/
+theorem problem1912_polarFactorData_to_correctionMapData {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hpolar : Problem1912PolarFactorData m n P11 P21) :
+    Problem1912CorrectionMapData m n P11 P21 hpolar.q
+      (matMulRect m n n hpolar.q hpolar.tMat) := by
+  exact
+    LeanFpAnalysis.FP.MGSProblem1912PolarFactorData.to_correctionMapData
+      hpolar
+
+/-- Chapter-facing additive identity supplied by a polar-factor payload. -/
+theorem problem1912_polarFactorData_add_factor_eq {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hpolar : Problem1912PolarFactorData m n P11 P21) :
+    hpolar.q =
+      fun i j =>
+        P21 i j +
+          matMulRect m n n (matMulRect m n n hpolar.q hpolar.tMat)
+            P11 i j := by
+  exact
+    LeanFpAnalysis.FP.MGSProblem1912PolarFactorData.add_factor_eq
+      hpolar
+
+/-- Existential chapter-facing pure correction-map data from a polar-factor
+payload. -/
+theorem problem1912_correctionMapData_exists_of_polarFactorData
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hpolar : Problem1912PolarFactorData m n P11 P21) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      Problem1912CorrectionMapData m n P11 P21 Q F := by
+  exact
+    LeanFpAnalysis.FP.mgsProblem1912_correctionMapData_exists_of_polarFactorData
+      hpolar
+
+/-- Existential chapter-facing additive Problem 19.12 witnesses from a
+polar-factor payload. -/
+theorem problem1912_add_factor_exists_of_polarFactorData
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hpolar : Problem1912PolarFactorData m n P11 P21) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      (Q = fun i j => P21 i j + matMulRect m n n F P11 i j) /\
+        GramSchmidtOrthonormalColumns Q /\
+        rectOpNorm2Le F 1 := by
+  exact
+    LeanFpAnalysis.FP.mgsProblem1912_add_factor_exists_of_polarFactorData
+      hpolar
+
+/-- Nonempty polar-factor payloads provide pure Problem 19.12 correction-map
+data. -/
+theorem problem1912_correctionMapData_exists_of_polarFactorData_nonempty
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hpolar : Nonempty (Problem1912PolarFactorData m n P11 P21)) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      Problem1912CorrectionMapData m n P11 P21 Q F := by
+  exact
+    LeanFpAnalysis.FP.mgsProblem1912_correctionMapData_exists_of_polarFactorData_nonempty
+      hpolar
+
+/-- Nonempty polar-factor payloads provide additive Problem 19.12 witnesses. -/
+theorem problem1912_add_factor_exists_of_polarFactorData_nonempty
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hpolar : Nonempty (Problem1912PolarFactorData m n P11 P21)) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      (Q = fun i j => P21 i j + matMulRect m n n F P11 i j) /\
+        GramSchmidtOrthonormalColumns Q /\
+        rectOpNorm2Le F 1 := by
+  exact
+    LeanFpAnalysis.FP.mgsProblem1912_add_factor_exists_of_polarFactorData_nonempty
+      hpolar
 
 /-- Chapter-labeled specialization from pure Problem 19.12 correction-map data
 to the common-`R` correction-map contract. -/

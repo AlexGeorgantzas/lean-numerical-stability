@@ -3565,6 +3565,153 @@ theorem mgsProblem1912_correctionMapData_of_add_factor {m n : Nat}
   rw [hq]
   ring
 
+/-- Polar-factor algebra behind Higham Problem 19.12.
+
+If the lower block has a polar-style factorization `P21 = Q * H`, and a
+contractive bridge `T` satisfies `T * P11 = I - H`, then the correction map
+`F = Q * T` has the required factor identity `F * P11 = Q - P21`. -/
+theorem mgsProblem1912_polarAlgebra_correction_factor {m n : Nat}
+    {P11 H T : Fin n -> Fin n -> Real}
+    {P21 Q F : Fin m -> Fin n -> Real}
+    (hP21 : P21 = matMulRect m n n Q H)
+    (hF : F = matMulRect m n n Q T)
+    (hTP : matMul n T P11 = fun i j => idMatrix n i j - H i j) :
+    matMulRect m n n F P11 = fun i j => Q i j - P21 i j := by
+  calc
+    matMulRect m n n F P11
+        = matMulRect m n n (matMulRect m n n Q T) P11 := by
+          rw [hF]
+    _ = matMulRect m n n Q (matMul n T P11) := by
+          rw [matMulRect_assoc_square_right]
+    _ = matMulRect m n n Q
+        (fun i j => idMatrix n i j - H i j) := by
+          rw [hTP]
+    _ = fun i j =>
+        matMulRect m n n Q (idMatrix n) i j -
+          matMulRect m n n Q H i j := by
+          rw [matMulRect_sub_right]
+    _ = fun i j => Q i j - P21 i j := by
+          rw [matMulRect_id_right, <- hP21]
+
+/-- Build pure Problem 19.12 correction-map data from a polar-style algebraic
+payload.
+
+This is a non-diagonal alternative to the existing CS adapter: a future polar
+existence theorem may supply `P21 = Q*H`, `T*P11 = I-H`, orthonormal columns of
+`Q`, and the contraction bound for `F`. -/
+theorem mgsProblem1912_correctionMapData_of_polarAlgebra {m n : Nat}
+    {P11 H T : Fin n -> Fin n -> Real}
+    {P21 Q F : Fin m -> Fin n -> Real}
+    (hP21 : P21 = matMulRect m n n Q H)
+    (hF : F = matMulRect m n n Q T)
+    (hTP : matMul n T P11 = fun i j => idMatrix n i j - H i j)
+    (hQorth : GramSchmidtOrthonormalColumns Q)
+    (hFbound : rectOpNorm2Le F 1) :
+    MGSProblem1912CorrectionMapData m n P11 P21 Q F := by
+  refine
+    { orthonormal := hQorth
+      correction_factor := ?_
+      map_bound := hFbound }
+  exact mgsProblem1912_polarAlgebra_correction_factor hP21 hF hTP
+
+/-- Source-shaped polar-factor payload for the remaining Problem 19.12
+existence step.
+
+The open CS/polar theorem may target this data instead of diagonal CS factors:
+`P21 = Q*H`, `Q` has orthonormal columns, `T*P11 = I-H`, and `T` is a
+contraction. The checked algebra below then constructs the actual correction
+map `F = Q*T`. -/
+structure MGSProblem1912PolarFactorData (m n : Nat)
+    (P11 : Fin n -> Fin n -> Real)
+    (P21 : Fin m -> Fin n -> Real) where
+  q : Fin m -> Fin n -> Real
+  hMat : Fin n -> Fin n -> Real
+  tMat : Fin n -> Fin n -> Real
+  bottom_factor : P21 = matMulRect m n n q hMat
+  bridge_factor :
+    matMul n tMat P11 = fun i j => idMatrix n i j - hMat i j
+  q_orth : GramSchmidtOrthonormalColumns q
+  t_bound : opNorm2Le tMat 1
+
+/-- A polar-factor payload gives the pure Problem 19.12 correction-map data
+with correction map `F = Q*T`. -/
+theorem MGSProblem1912PolarFactorData.to_correctionMapData {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hpolar : MGSProblem1912PolarFactorData m n P11 P21) :
+    MGSProblem1912CorrectionMapData m n P11 P21 hpolar.q
+      (matMulRect m n n hpolar.q hpolar.tMat) := by
+  exact
+    mgsProblem1912_correctionMapData_of_polarAlgebra
+      hpolar.bottom_factor rfl hpolar.bridge_factor hpolar.q_orth
+      (GramSchmidtOrthonormalColumns.rectOpNorm2Le_matMulRect_square_right
+        hpolar.q_orth hpolar.t_bound)
+
+/-- Additive orientation supplied by a polar-factor payload. -/
+theorem MGSProblem1912PolarFactorData.add_factor_eq {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hpolar : MGSProblem1912PolarFactorData m n P11 P21) :
+    hpolar.q =
+      fun i j =>
+        P21 i j +
+          matMulRect m n n (matMulRect m n n hpolar.q hpolar.tMat)
+            P11 i j := by
+  exact MGSProblem1912CorrectionMapData.add_factor_eq
+    hpolar.to_correctionMapData
+
+/-- Existential pure correction-map data from a polar-factor payload. -/
+theorem mgsProblem1912_correctionMapData_exists_of_polarFactorData
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hpolar : MGSProblem1912PolarFactorData m n P11 P21) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      MGSProblem1912CorrectionMapData m n P11 P21 Q F := by
+  exact Exists.intro hpolar.q
+    (Exists.intro (matMulRect m n n hpolar.q hpolar.tMat)
+      hpolar.to_correctionMapData)
+
+/-- Existential additive Problem 19.12 witnesses from a polar-factor payload. -/
+theorem mgsProblem1912_add_factor_exists_of_polarFactorData
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hpolar : MGSProblem1912PolarFactorData m n P11 P21) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      (Q = fun i j => P21 i j + matMulRect m n n F P11 i j) /\
+        GramSchmidtOrthonormalColumns Q /\
+        rectOpNorm2Le F 1 := by
+  refine Exists.intro hpolar.q
+    (Exists.intro (matMulRect m n n hpolar.q hpolar.tMat) ?_)
+  exact
+    And.intro hpolar.add_factor_eq
+      (And.intro hpolar.q_orth hpolar.to_correctionMapData.map_bound)
+
+/-- Nonempty polar-factor payloads provide pure correction-map data. -/
+theorem mgsProblem1912_correctionMapData_exists_of_polarFactorData_nonempty
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hpolar : Nonempty (MGSProblem1912PolarFactorData m n P11 P21)) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      MGSProblem1912CorrectionMapData m n P11 P21 Q F := by
+  cases hpolar with
+  | intro hpolar =>
+      exact mgsProblem1912_correctionMapData_exists_of_polarFactorData hpolar
+
+/-- Nonempty polar-factor payloads provide additive Problem 19.12 witnesses. -/
+theorem mgsProblem1912_add_factor_exists_of_polarFactorData_nonempty
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hpolar : Nonempty (MGSProblem1912PolarFactorData m n P11 P21)) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      (Q = fun i j => P21 i j + matMulRect m n n F P11 i j) /\
+        GramSchmidtOrthonormalColumns Q /\
+        rectOpNorm2Le F 1 := by
+  cases hpolar with
+  | intro hpolar =>
+      exact mgsProblem1912_add_factor_exists_of_polarFactorData hpolar
+
 /-- Source-shaped correction map from Higham Problem 19.12 after choosing the
 common right factor `R` and the top perturbation block.
 
