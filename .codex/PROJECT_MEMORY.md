@@ -9566,3 +9566,15 @@ These compile, but should not be treated as fully derived stability results:
   construction/minimum-attainment Schur update, active reciprocal equality for
   actual Schur-stage pivots, and the source arbitrary-subordinate-norm
   perturbation estimates.
+
+- 2026-06-28 Algorithm 13.3 BDD abstract inverse-action lower-bound route:
+  added `higham13_eq13_18_unit_lower_bound_of_inverse_action_bound`,
+  `higham13_eq13_18_active_diag_table_unit_lower_bound_of_inverse_action_bound`,
+  and `SchurStageActiveDiagLowerUpdate13_7.of_inverse_action_bounds` in
+  `BlockLU.lean`. These prove the arbitrary normed-space lower-bound half:
+  a bounded inverse action plus a left-inverse identity gives
+  `normInv^{-1} <= ||diag x||` for every unit vector, and the active wrapper
+  feeds it into the Eq.13.18 Schur lower-update predicate. This removes the
+  Euclidean-only limitation for that dependency but still does not construct
+  the actual lower-norm/source table, active reciprocal equality, or concrete
+  subordinate-norm perturbation estimates.
