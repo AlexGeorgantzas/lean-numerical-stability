@@ -15015,6 +15015,93 @@ theorem lsNormwiseBackwardErrorRankOne_scaled_q_optimal_vecNorm2Sq
     _ = vecNorm2Sq (matMulVec m (lsLemma20_6ProjectorComplement p) r) := by
           rfl
 
+/-- Route-elimination check for the scaled rank-one WKS source-transpose
+    handoff.  In the nondegenerate case where `(I-r r^+)p` is nonzero, the
+    current right-projector comparison required by the rank-one route is
+    impossible for every scalar: the best scalar still leaves the projected
+    residual component, while `phi^2` contains the extra
+    `1 + theta^2 ||y||_2^2` denominator. -/
+theorem lsNormwiseBackwardErrorRankOne_scaled_projector_comparison_not_of_projected_ne_zero
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (r p : Fin m → ℝ) (hrsq : vecNorm2Sq r ≠ 0)
+    (hpsq : vecNorm2Sq p ≠ 0)
+    (hprojected :
+      vecNorm2Sq (matMulVec m (lsLemma20_6ProjectorComplement r) p) ≠ 0)
+    (t c : ℝ) :
+    ¬ theta ^ 2 *
+        vecNorm2Sq
+          (fun i : Fin m =>
+            c * p i - r i - ((1 / vecNorm2Sq p) * p i * t)) *
+          vecNorm2Sq p ≤
+        (lsNormwiseBackwardErrorPhi theta r y) ^ 2 *
+          vecNorm2Sq (matMulVec m (lsLemma20_6ProjectorComplement r) p) := by
+  intro hcomparison
+  let q : Fin m → ℝ :=
+    fun i : Fin m => c * p i - r i - ((1 / vecNorm2Sq p) * p i * t)
+  let Qrp : Fin m → ℝ := matMulVec m (lsLemma20_6ProjectorComplement r) p
+  let Qpr : Fin m → ℝ := matMulVec m (lsLemma20_6ProjectorComplement p) r
+  let R : ℝ := vecNorm2Sq r
+  let P : ℝ := vecNorm2Sq p
+  let Z : ℝ := vecNorm2Sq Qrp
+  let D : ℝ := 1 + theta ^ 2 * vecNorm2Sq y
+  have htheta_nonneg : 0 ≤ theta := le_of_lt htheta
+  have htheta_sq_pos : 0 < theta ^ 2 := sq_pos_of_ne_zero (ne_of_gt htheta)
+  have hRpos : 0 < R := by
+    exact lt_of_le_of_ne (by simpa [R] using vecNorm2Sq_nonneg r) (by simpa [R] using Ne.symm hrsq)
+  have hPpos : 0 < P := by
+    exact lt_of_le_of_ne (by simpa [P] using vecNorm2Sq_nonneg p) (by simpa [P] using Ne.symm hpsq)
+  have hZpos : 0 < Z := by
+    exact lt_of_le_of_ne (by simpa [Z, Qrp] using vecNorm2Sq_nonneg Qrp)
+      (by simpa [Z, Qrp] using Ne.symm hprojected)
+  have hy_sq_pos : 0 < vecNorm2Sq y := vecNorm2Sq_pos_of_ne_zero_lsq hy
+  have hDpos : 0 < D := by
+    dsimp [D]
+    nlinarith [mul_pos htheta_sq_pos hy_sq_pos]
+  have hDgt_one : 1 < D := by
+    dsimp [D]
+    nlinarith [mul_pos htheta_sq_pos hy_sq_pos]
+  have hphi_sq :
+      (lsNormwiseBackwardErrorPhi theta r y) ^ 2 = theta ^ 2 * R / D := by
+    rw [lsNormwiseBackwardErrorPhi_eq_theta_mul_norm_div_sqrt_den
+      htheta_nonneg hy r]
+    rw [div_pow, mul_pow, Real.sq_sqrt (le_of_lt hDpos), vecNorm2_sq r]
+  have hq_lower :
+      vecNorm2Sq Qpr ≤ vecNorm2Sq q := by
+    simpa [q, Qpr] using
+      lsNormwiseBackwardErrorRankOne_scaled_q_projector_lower_bound
+        p r hpsq t c
+  have harea :
+      R * Z = P * vecNorm2Sq Qpr := by
+    simpa [R, P, Z, Qrp, Qpr] using
+      lsLemma20_6ProjectorComplement_area_identity r p hrsq hpsq
+  have hRZ_le_Pq : R * Z ≤ P * vecNorm2Sq q := by
+    rw [harea]
+    exact mul_le_mul_of_nonneg_left hq_lower (le_of_lt hPpos)
+  have hleft_ge :
+      theta ^ 2 * R * Z ≤ theta ^ 2 * vecNorm2Sq q * P := by
+    have hmul :=
+      mul_le_mul_of_nonneg_left hRZ_le_Pq (le_of_lt htheta_sq_pos)
+    nlinarith [hmul]
+  have hcomparison' :
+      theta ^ 2 * vecNorm2Sq q * P ≤
+        (lsNormwiseBackwardErrorPhi theta r y) ^ 2 * Z := by
+    simpa [q, P, Z, Qrp] using hcomparison
+  have hApos : 0 < theta ^ 2 * R * Z := by
+    exact mul_pos (mul_pos htheta_sq_pos hRpos) hZpos
+  have hrhs_eq :
+      (lsNormwiseBackwardErrorPhi theta r y) ^ 2 * Z =
+        theta ^ 2 * R * Z / D := by
+    rw [hphi_sq]
+    field_simp [ne_of_gt hDpos]
+  have hrhs_lt :
+      (lsNormwiseBackwardErrorPhi theta r y) ^ 2 * Z <
+        theta ^ 2 * R * Z := by
+    rw [hrhs_eq]
+    rw [div_lt_iff₀ hDpos]
+    nlinarith [hApos, hDgt_one]
+  exact not_lt_of_ge (hleft_ge.trans hcomparison') hrhs_lt
+
 /-- Source-block `sigma_min` branch handoff for the rank-one WKS witness.
     If a nonzero expanded residual `p` makes the explicit rank-one witness cost
     no larger than the row-side source-block `sigma_min`, and that branch is
