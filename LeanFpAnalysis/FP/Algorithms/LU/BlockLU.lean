@@ -20853,6 +20853,44 @@ theorem higham13_inverse_ratio_principal_tail_counterexample :
   · rw [hSinv_norm, hAinv_norm]
   · norm_num [hSinv_norm, hA_norm, hAinv_norm, hS_norm]
 
+/-- Higham, 2nd ed., Chapter 13, Problem 13.4 audit:
+    the direct local-inverse comparison used by the stage-local growth route is
+    not a scalar consequence of ambient growth containment alone.
+
+    The values come from a valid scalar-pivot search instance: ambient base
+    norm `5`, stage-history growth norm `20`, full inverse norm `19/40`, and
+    local inverse norm `2`.  The growth object contains the base norm, but the
+    cross-multiplied direct inverse comparison
+    `||A_local^{-1}|| * ||A|| <= ||G|| * ||A^{-1}||` fails. -/
+theorem higham13_stage_local_inverse_bound_scalar_counterexample :
+    ∃ normA growthNorm fullInvNorm localInvNorm : ℝ,
+      0 ≤ normA ∧ 0 ≤ growthNorm ∧ 0 ≤ fullInvNorm ∧ 0 ≤ localInvNorm ∧
+        normA ≤ growthNorm ∧
+          ¬ localInvNorm * normA ≤ growthNorm * fullInvNorm := by
+  refine ⟨5, 20, 19 / 40, 2, ?_⟩
+  norm_num
+
+/-- Higham, 2nd ed., Chapter 13, Problem 13.4 audit:
+    ambient growth containment does not imply the direct local-inverse
+    comparison exposed by
+    `higham13_algorithm13_3_multiplier_bounds_from_stageLocalGrowth_inverse_bound_exact_kappa`.
+
+    A source proof must therefore provide the local inverse estimate itself or
+    replace it by a stronger condition/inverse-ratio argument; it cannot be
+    generated from `||A|| <= ||G||` and nonnegativity alone. -/
+theorem higham13_stage_local_inverse_bound_not_implied_by_growth_containment :
+    ¬ (∀ normA growthNorm fullInvNorm localInvNorm : ℝ,
+      0 ≤ normA → 0 ≤ growthNorm → 0 ≤ fullInvNorm → 0 ≤ localInvNorm →
+        normA ≤ growthNorm →
+          localInvNorm * normA ≤ growthNorm * fullInvNorm) := by
+  intro h
+  rcases higham13_stage_local_inverse_bound_scalar_counterexample with
+    ⟨normA, growthNorm, fullInvNorm, localInvNorm,
+      hNormA, hGrowth, hFullInv, hLocalInv, hContains, hbad⟩
+  exact hbad
+    (h normA growthNorm fullInvNorm localInvNorm
+      hNormA hGrowth hFullInv hLocalInv hContains)
+
 /-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23) audit:
     even with equal dimensions, `rhoTail <= rho` and the Problem 13.4-shaped
     condition comparison `kappaTail <= rho * kappa` do not imply the lower
