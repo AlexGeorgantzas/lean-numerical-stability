@@ -10678,6 +10678,55 @@ theorem SchurStageActiveDiagLowerUpdate13_7.of_continuousLinearMap_stage_lower_n
       hPerturb hSchur
 
 /-- Higham, 2nd ed., Chapter 13, equation (13.18):
+    continuous-linear Schur-composition instance of the lower-norm table.
+
+    This packages the subordinate-norm perturbation estimate when the Schur
+    correction has the source form
+    `A_jk^(k) (A_kk^(k))⁻¹ A_kj^(k)`.  The block norm is the operator norm of
+    the corresponding continuous linear map, so the perturbation estimate is
+    discharged by the generic triple-product op-norm inequality. -/
+theorem SchurStageActiveDiagLowerUpdate13_7.of_continuousLinearMap_schur_composition
+    {m : ℕ} {E : Type*}
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [ProperSpace E]
+    (hunit : ({x : E | ‖x‖ = 1} : Set E).Nonempty)
+    (stageBlock : ℕ → Fin m → Fin m → E →L[ℝ] E)
+    (pivotInv : ℕ → E →L[ℝ] E)
+    (hSchur : ∀ k : ℕ, ∀ hk : k < m, ∀ j : Fin m,
+      k + 1 ≤ j.val → ∀ x : E,
+        stageBlock (k + 1) j j x =
+          stageBlock k j j x -
+            stageBlock k j ⟨k, hk⟩
+              (pivotInv k (stageBlock k ⟨k, hk⟩ j x))) :
+    SchurStageActiveDiagLowerUpdate13_7
+      (fun k i j => ‖stageBlock k i j‖)
+      (fun k j => continuousLinearMapLowerNorm (stageBlock k j j) hunit)
+      (fun k => ‖pivotInv k‖) := by
+  let perturb : ℕ → Fin m → E →L[ℝ] E :=
+    fun k j =>
+      if hk : k < m then
+        (stageBlock k j ⟨k, hk⟩).comp
+          ((pivotInv k).comp (stageBlock k ⟨k, hk⟩ j))
+      else 0
+  exact
+    SchurStageActiveDiagLowerUpdate13_7.of_continuousLinearMap_stage_lower_norms
+      hunit
+      (fun k i j => ‖stageBlock k i j‖)
+      (fun k => ‖pivotInv k‖)
+      (fun k j => stageBlock k j j)
+      perturb
+      (by
+        intro k hk j _hj x hx
+        let p : Fin m := ⟨k, hk⟩
+        simpa [perturb, hk, p, ContinuousLinearMap.comp_apply] using
+          (continuousLinearMap_triple_norm_le_of_unit
+            (stageBlock k j p) (pivotInv k) (stageBlock k p j) hx))
+      (by
+        intro k hk j hj x
+        let p : Fin m := ⟨k, hk⟩
+        simpa [perturb, hk, p, ContinuousLinearMap.comp_apply] using
+          (hSchur k hk j hj x))
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.18):
     reciprocal active-pivot table from a two-sided continuous-linear inverse.
 
     In a generic proper normed real vector space, if the supplied active pivot

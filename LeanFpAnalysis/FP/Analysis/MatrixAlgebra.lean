@@ -6845,6 +6845,30 @@ theorem continuousLinearMapLowerNorm_eq_inv_opNorm_of_inverse [ProperSpace E]
     (continuousLinearMapLowerNorm_le_inv_opNorm_of_inverse T S hunit hRight)
     (inv_opNorm_le_continuousLinearMapLowerNorm_of_inverse T S hunit hLeft hRight)
 
+/-- Generic subordinate-norm triple-product bound for continuous linear maps. -/
+theorem continuousLinearMap_triple_norm_le
+    (A B C : E →L[ℝ] E) (x : E) :
+    ‖A (B (C x))‖ ≤ ‖A‖ * ‖B‖ * ‖C‖ * ‖x‖ := by
+  calc
+    ‖A (B (C x))‖ ≤ ‖A‖ * ‖B (C x)‖ :=
+      ContinuousLinearMap.le_opNorm A (B (C x))
+    _ ≤ ‖A‖ * (‖B‖ * ‖C x‖) := by
+      exact mul_le_mul_of_nonneg_left
+        (ContinuousLinearMap.le_opNorm B (C x)) (norm_nonneg A)
+    _ ≤ ‖A‖ * (‖B‖ * (‖C‖ * ‖x‖)) := by
+      exact mul_le_mul_of_nonneg_left
+        (mul_le_mul_of_nonneg_left
+          (ContinuousLinearMap.le_opNorm C x) (norm_nonneg B))
+        (norm_nonneg A)
+    _ = ‖A‖ * ‖B‖ * ‖C‖ * ‖x‖ := by ring
+
+/-- Unit-vector form of the generic subordinate-norm triple-product bound for
+continuous linear maps. -/
+theorem continuousLinearMap_triple_norm_le_of_unit
+    (A B C : E →L[ℝ] E) {x : E} (hx : ‖x‖ = 1) :
+    ‖A (B (C x))‖ ≤ ‖A‖ * ‖B‖ * ‖C‖ := by
+  simpa [hx, mul_assoc] using continuousLinearMap_triple_norm_le A B C x
+
 end GenericLowerNorm
 
 /-- The finite-dimensional Euclidean vector norm is continuous for the

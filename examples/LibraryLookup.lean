@@ -6844,6 +6844,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check continuousLinearMapLowerNorm_le_inv_opNorm_of_inverse
 #check inv_opNorm_le_continuousLinearMapLowerNorm_of_inverse
 #check continuousLinearMapLowerNorm_eq_inv_opNorm_of_inverse
+#check continuousLinearMap_triple_norm_le
+#check continuousLinearMap_triple_norm_le_of_unit
 #check exists_vecNorm2_matMulVec_unit_minimizer
 #check matMulVecLowerNorm2
 #check matMulVecLowerNorm2_attained
@@ -11492,6 +11494,7 @@ small enough to serve as a smoke check for representative public declarations.
 #check SchurStageActiveDiagLowerUpdate13_7.of_eq
 #check SchurStageActiveDiagLowerUpdate13_7.of_unit_min_actions
 #check SchurStageActiveDiagLowerUpdate13_7.of_continuousLinearMap_stage_lower_norms
+#check SchurStageActiveDiagLowerUpdate13_7.of_continuousLinearMap_schur_composition
 #check SchurStageActiveDiagLowerUpdate13_7.of_vecNorm2_stage_lower_norm_matrices
 #check higham13_algorithm13_3_vecNorm2_diag_lower_update
 #check higham13_algorithm13_3_vecNorm2_active_pivot_reciprocal_of_right_inverse
