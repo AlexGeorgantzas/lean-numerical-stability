@@ -8196,6 +8196,26 @@ theorem lsLemma20_6Projector_sub_id_apply_self {m : ℕ} (s : Fin m → ℝ)
       rw [lsLemma20_6Projector_apply_self s hsq i, hid]
     _ = 0 := by ring
 
+/-- The complementary projector `I - s s^+` annihilates its source direction. -/
+theorem lsLemma20_6ProjectorComplement_mulVec_self {m : ℕ} (s : Fin m → ℝ)
+    (hsq : vecNorm2Sq s ≠ 0) :
+    matMulVec m (lsLemma20_6ProjectorComplement s) s = 0 := by
+  ext i
+  have hrow := lsLemma20_6Projector_sub_id_apply_self s hsq i
+  have hcomp :
+      ∑ j : Fin m, (idMatrix m i j - lsLemma20_6Projector s i j) * s j = 0 := by
+    calc
+      (∑ j : Fin m, (idMatrix m i j - lsLemma20_6Projector s i j) * s j)
+          = -∑ j : Fin m, (lsLemma20_6Projector s i j - idMatrix m i j) * s j := by
+            rw [← Finset.sum_neg_distrib]
+            apply Finset.sum_congr rfl
+            intro j _
+            ring
+      _ = 0 := by
+            rw [hrow]
+            ring
+  simpa [lsLemma20_6ProjectorComplement, matMulVec] using hcomp
+
 /-- The two projector blocks in equation (20.22), here `P` and `I-P`, add to
     the identity. -/
 theorem lsLemma20_6Projector_add_complement {m : ℕ} (s : Fin m → ℝ)
@@ -8599,6 +8619,54 @@ theorem lsLemma20_6ProjectorComplement_area_identity {m : ℕ}
     _ = vecNorm2Sq p *
         vecNorm2Sq (matMulVec m (lsLemma20_6ProjectorComplement p) r) := by
           simp [P, hQp]
+
+/-- Area identity with the second vector written as the difference `p - r`.
+    This is the projection form used by the WKS expanded-residual route, where
+    `p - r` is the perturbation residual. -/
+theorem lsLemma20_6ProjectorComplement_area_identity_sub {m : ℕ}
+    (r p : Fin m → ℝ) (hrsq : vecNorm2Sq r ≠ 0)
+    (hpsq : vecNorm2Sq p ≠ 0) :
+    vecNorm2Sq r *
+        vecNorm2Sq (matMulVec m (lsLemma20_6ProjectorComplement r) p) =
+      vecNorm2Sq p *
+        vecNorm2Sq
+          (matMulVec m (lsLemma20_6ProjectorComplement p)
+            (fun i : Fin m => p i - r i)) := by
+  let Qp : Fin m → Fin m → ℝ := lsLemma20_6ProjectorComplement p
+  have harea :=
+    lsLemma20_6ProjectorComplement_area_identity r p hrsq hpsq
+  have hsub :
+      matMulVec m Qp (fun i : Fin m => p i - r i) =
+        fun i : Fin m => -matMulVec m Qp r i := by
+    ext i
+    have hself := congrFun (lsLemma20_6ProjectorComplement_mulVec_self p hpsq) i
+    calc
+      matMulVec m Qp (fun i : Fin m => p i - r i) i
+          = (∑ j : Fin m, Qp i j * p j) -
+              (∑ j : Fin m, Qp i j * r j) := by
+            unfold matMulVec
+            rw [← Finset.sum_sub_distrib]
+            apply Finset.sum_congr rfl
+            intro j _
+            ring
+      _ = -matMulVec m Qp r i := by
+            simpa [Qp, matMulVec, hself]
+  have hnorm :
+      vecNorm2Sq (matMulVec m Qp (fun i : Fin m => p i - r i)) =
+        vecNorm2Sq (matMulVec m Qp r) := by
+    rw [hsub]
+    simpa using (vecNorm2Sq_smul (-1 : ℝ) (matMulVec m Qp r))
+  calc
+    vecNorm2Sq r *
+        vecNorm2Sq (matMulVec m (lsLemma20_6ProjectorComplement r) p)
+        = vecNorm2Sq p *
+          vecNorm2Sq (matMulVec m (lsLemma20_6ProjectorComplement p) r) := harea
+    _ = vecNorm2Sq p *
+        vecNorm2Sq
+          (matMulVec m (lsLemma20_6ProjectorComplement p)
+            (fun i : Fin m => p i - r i)) := by
+          rw [show lsLemma20_6ProjectorComplement p = Qp by rfl]
+          rw [hnorm]
 
 /-- The complementary projector `I-P` from equation (20.22) is a vector
     2-norm contraction. -/
