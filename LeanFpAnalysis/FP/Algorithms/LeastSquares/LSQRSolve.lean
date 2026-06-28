@@ -15102,6 +15102,59 @@ theorem lsNormwiseBackwardErrorRankOne_scaled_projector_comparison_not_of_projec
     nlinarith [hApos, hDgt_one]
   exact not_lt_of_ge (hleft_ge.trans hcomparison') hrhs_lt
 
+/-- Degenerate source-projector branch for the scaled rank-one WKS
+    source-transpose handoff.  If the source candidate `p` has zero component
+    away from the residual direction `r`, then the optimal scalar choice in the
+    explicit `Delta b` witness makes the required right-projector comparison
+    vanish on both sides. -/
+theorem lsNormwiseBackwardErrorRankOne_scaled_projector_comparison_of_projected_eq_zero
+    {m n : ℕ} (theta : ℝ) (y : Fin n → ℝ)
+    (r p : Fin m → ℝ) (hrsq : vecNorm2Sq r ≠ 0)
+    (hpsq : vecNorm2Sq p ≠ 0)
+    (hprojected :
+      vecNorm2Sq (matMulVec m (lsResidualComplementProjector r) p) = 0)
+    (t : ℝ) :
+    let c : ℝ := ((∑ k : Fin m, p k * r k) + t) / vecNorm2Sq p
+    let q : Fin m → ℝ :=
+      fun i : Fin m =>
+        c * p i - r i - ((1 / vecNorm2Sq p) * p i * t)
+    theta ^ 2 * vecNorm2Sq q * vecNorm2Sq p ≤
+      (lsNormwiseBackwardErrorPhi theta r y) ^ 2 *
+        vecNorm2Sq (matMulVec m (lsResidualComplementProjector r) p) := by
+  let c : ℝ := ((∑ k : Fin m, p k * r k) + t) / vecNorm2Sq p
+  let q : Fin m → ℝ :=
+    fun i : Fin m =>
+      c * p i - r i - ((1 / vecNorm2Sq p) * p i * t)
+  let Qrp : Fin m → ℝ := matMulVec m (lsResidualComplementProjector r) p
+  let Qpr : Fin m → ℝ := matMulVec m (lsLemma20_6ProjectorComplement p) r
+  have hPpos : 0 < vecNorm2Sq p :=
+    lt_of_le_of_ne (vecNorm2Sq_nonneg p) (Ne.symm hpsq)
+  have harea :
+      vecNorm2Sq r * vecNorm2Sq Qrp =
+        vecNorm2Sq p * vecNorm2Sq Qpr := by
+    simpa [Qrp, Qpr, lsResidualComplementProjector] using
+      lsLemma20_6ProjectorComplement_area_identity r p hrsq hpsq
+  have hmul_zero : vecNorm2Sq p * vecNorm2Sq Qpr = 0 := by
+    rw [← harea]
+    simp [Qrp, hprojected]
+  have hQpr_zero : vecNorm2Sq Qpr = 0 := by
+    exact (mul_eq_zero.mp hmul_zero).resolve_left (ne_of_gt hPpos)
+  have hopt : vecNorm2Sq q = vecNorm2Sq Qpr := by
+    simpa [q, c, Qpr] using
+      lsNormwiseBackwardErrorRankOne_scaled_q_optimal_vecNorm2Sq p r hpsq t
+  have hq_zero : vecNorm2Sq q = 0 := by
+    rw [hopt]
+    exact hQpr_zero
+  calc
+    theta ^ 2 * vecNorm2Sq q * vecNorm2Sq p = 0 := by
+      rw [hq_zero]
+      ring
+    _ ≤
+        (lsNormwiseBackwardErrorPhi theta r y) ^ 2 *
+          vecNorm2Sq (matMulVec m (lsResidualComplementProjector r) p) := by
+      rw [hprojected]
+      simp
+
 /-- Source-block `sigma_min` branch handoff for the rank-one WKS witness.
     If a nonzero expanded residual `p` makes the explicit rank-one witness cost
     no larger than the row-side source-block `sigma_min`, and that branch is
