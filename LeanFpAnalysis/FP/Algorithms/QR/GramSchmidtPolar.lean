@@ -276,6 +276,243 @@ theorem rectRightGramPolarQZeroSafe_mul_polarH {m n : Nat}
         rw [matMul_id_left]
     _ = A := hUDV
 
+/-- Ambient columns whose embedded right-Gram singular direction is strictly
+positive.  These are precisely the zero-safe left singular columns that must
+be preserved by the tall orthonormal completion. -/
+def rectRightGramPositiveLeftCompletionSet {m n : Nat}
+    (A : Fin m -> Fin n -> Real) (hnm : n <= m) : Set (Fin m) :=
+  {k | Exists fun a : Fin n =>
+    k = Fin.castLE hnm a /\ 0 < rectRightGramBasisSingularValue A a}
+
+/-- Ambient seed table for the tall left-singular completion.  On embedded
+`Fin n` columns it is the zero-safe left singular table; other ambient columns
+are set to zero before the orthonormal extension step replaces them. -/
+noncomputable def rectRightGramLeftCompletionSeed {m n : Nat}
+    (A : Fin m -> Fin n -> Real) (hnm : n <= m) :
+    Fin m -> Fin m -> Real := by
+  classical
+  exact fun i k =>
+    if hk : Exists fun a : Fin n => k = Fin.castLE hnm a then
+      rectRightGramLeftSingularZeroSafe A i (Classical.choose hk)
+    else
+      0
+
+/-- The completion seed agrees with the zero-safe left singular table on every
+embedded source column. -/
+theorem rectRightGramLeftCompletionSeed_apply_castLE {m n : Nat}
+    (A : Fin m -> Fin n -> Real) (hnm : n <= m)
+    (i : Fin m) (a : Fin n) :
+    rectRightGramLeftCompletionSeed A hnm i (Fin.castLE hnm a) =
+      rectRightGramLeftSingularZeroSafe A i a := by
+  classical
+  let hk : Exists fun b : Fin n => Fin.castLE hnm a = Fin.castLE hnm b :=
+    Exists.intro a rfl
+  have hchoose : Classical.choose hk = a := by
+    apply Fin.castLE_injective hnm
+    exact (Classical.choose_spec hk).symm
+  rw [rectRightGramLeftCompletionSeed]
+  rw [dif_pos hk]
+  rw [hchoose]
+
+/-- In the tall case, the positive zero-safe left singular columns can be
+extended to an `m x n` table with orthonormal columns.  Positive singular
+directions are preserved; zero singular directions are supplied by the
+orthonormal completion. -/
+theorem exists_rectRightGramLeftSingularCompletion_of_tall {m n : Nat}
+    (A : Fin m -> Fin n -> Real) (hnm : n <= m) :
+    Exists fun U : Fin m -> Fin n -> Real =>
+      GramSchmidtOrthonormalColumns U /\
+        forall i a,
+          0 < rectRightGramBasisSingularValue A a ->
+            U i a = rectRightGramLeftSingularZeroSafe A i a := by
+  classical
+  let X := rectRightGramLeftCompletionSeed A hnm
+  let s := rectRightGramPositiveLeftCompletionSet A hnm
+  have hX : forall a b : s,
+      (Finset.univ.sum fun i : Fin m => X i a * X i b) =
+        if a = b then 1 else 0 := by
+    intro a b
+    rcases a.2 with ⟨aa, haa, ha_pos⟩
+    rcases b.2 with ⟨bb, hbb, hb_pos⟩
+    have hXa : forall i : Fin m,
+        X i a = rectRightGramLeftSingularZeroSafe A i aa := by
+      intro i
+      rw [haa]
+      exact rectRightGramLeftCompletionSeed_apply_castLE A hnm i aa
+    have hXb : forall i : Fin m,
+        X i b = rectRightGramLeftSingularZeroSafe A i bb := by
+      intro i
+      rw [hbb]
+      exact rectRightGramLeftCompletionSeed_apply_castLE A hnm i bb
+    have hsubeq : a = b <-> aa = bb := by
+      constructor
+      · intro hab
+        apply Fin.castLE_injective hnm
+        calc
+          Fin.castLE hnm aa = (a : Fin m) := haa.symm
+          _ = (b : Fin m) := congrArg Subtype.val hab
+          _ = Fin.castLE hnm bb := hbb
+      · intro hab
+        apply Subtype.ext
+        calc
+          (a : Fin m) = Fin.castLE hnm aa := haa
+          _ = Fin.castLE hnm bb := by rw [hab]
+          _ = (b : Fin m) := hbb.symm
+    have horth :=
+      rectRightGramLeftSingularZeroSafe_col_orthonormal_of_pos
+        A ha_pos hb_pos
+    calc
+      (Finset.univ.sum fun i : Fin m => X i a * X i b)
+          =
+        Finset.univ.sum fun i : Fin m =>
+          rectRightGramLeftSingularZeroSafe A i aa *
+            rectRightGramLeftSingularZeroSafe A i bb := by
+          apply Finset.sum_congr rfl
+          intro i _hi
+          rw [hXa i, hXb i]
+      _ = idMatrix n aa bb := horth
+      _ = if a = b then 1 else 0 := by
+          by_cases hab : aa = bb
+          · subst bb
+            have hsub : a = b := hsubeq.mpr rfl
+            simp [idMatrix, hsub]
+          · have hsub : a ≠ b := fun h => hab (hsubeq.mp h)
+            simp [idMatrix, hab, hsub]
+  obtain ⟨Y, hYpreserve, hYorth⟩ :=
+    partialColOrthonormal_exists_fullColOrthonormal X s hX
+  let U : Fin m -> Fin n -> Real :=
+    fun i a => Y i (Fin.castLE hnm a)
+  refine Exists.intro U ?_
+  constructor
+  · intro a b
+    have h := hYorth (Fin.castLE hnm a) (Fin.castLE hnm b)
+    calc
+      (Finset.univ.sum fun i : Fin m => U i a * U i b)
+          =
+        Finset.univ.sum fun i : Fin m =>
+          Y i (Fin.castLE hnm a) * Y i (Fin.castLE hnm b) := rfl
+      _ = if Fin.castLE hnm a = Fin.castLE hnm b then 1 else 0 := h
+      _ = idMatrix n a b := by
+          by_cases hab : a = b
+          · subst b
+            simp [idMatrix]
+          · have hcast :
+                Fin.castLE hnm a ≠ Fin.castLE hnm b := by
+              intro hEq
+              exact hab (Fin.castLE_injective hnm hEq)
+            simp [idMatrix, hab, hcast]
+  · intro i a ha_pos
+    have hmem : Fin.castLE hnm a ∈ s :=
+      Exists.intro a (And.intro rfl ha_pos)
+    calc
+      U i a = Y i (Fin.castLE hnm a) := rfl
+      _ = X i (Fin.castLE hnm a) :=
+          hYpreserve (Fin.castLE hnm a) hmem i
+      _ = rectRightGramLeftSingularZeroSafe A i a :=
+          rectRightGramLeftCompletionSeed_apply_castLE A hnm i a
+
+/-- Any tall left-singular completion that preserves the positive zero-safe
+columns gives the same diagonal reconstruction as the zero-safe SVD table.
+Zero singular directions do not contribute to the diagonal product. -/
+theorem rectRightGramLeftSingularCompletion_mul_diagonal_transpose_eq
+    {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (U : Fin m -> Fin n -> Real)
+    (hUpos :
+      forall i a,
+        0 < rectRightGramBasisSingularValue A a ->
+          U i a = rectRightGramLeftSingularZeroSafe A i a) :
+    matMulRect m n n U
+      (matMul n (finiteDiagonal (rectRightGramBasisSingularValue A))
+        (finiteTranspose (rectRightGramEigenbasis A))) = A := by
+  have hsame :
+      matMulRect m n n U
+          (matMul n (finiteDiagonal (rectRightGramBasisSingularValue A))
+            (finiteTranspose (rectRightGramEigenbasis A))) =
+        matMulRect m n n (rectRightGramLeftSingularZeroSafe A)
+          (matMul n (finiteDiagonal (rectRightGramBasisSingularValue A))
+            (finiteTranspose (rectRightGramEigenbasis A))) := by
+    ext i j
+    calc
+      matMulRect m n n U
+          (matMul n (finiteDiagonal (rectRightGramBasisSingularValue A))
+            (finiteTranspose (rectRightGramEigenbasis A))) i j
+          =
+        Finset.univ.sum fun a : Fin n =>
+          U i a *
+            (rectRightGramBasisSingularValue A a *
+              rectRightGramEigenbasis A j a) := by
+          simp [matMulRect, matMul, finiteDiagonal, finiteTranspose]
+      _ =
+        Finset.univ.sum fun a : Fin n =>
+          rectRightGramLeftSingularZeroSafe A i a *
+            (rectRightGramBasisSingularValue A a *
+              rectRightGramEigenbasis A j a) := by
+          apply Finset.sum_congr rfl
+          intro a _ha
+          by_cases hzero : rectRightGramBasisSingularValue A a = 0
+          · simp [hzero]
+          · have hpos : 0 < rectRightGramBasisSingularValue A a :=
+              lt_of_le_of_ne (rectRightGramBasisSingularValue_nonneg A a)
+                (Ne.symm hzero)
+            rw [hUpos i a hpos]
+      _ =
+        matMulRect m n n (rectRightGramLeftSingularZeroSafe A)
+          (matMul n (finiteDiagonal (rectRightGramBasisSingularValue A))
+            (finiteTranspose (rectRightGramEigenbasis A))) i j := by
+          simp [matMulRect, matMul, finiteDiagonal, finiteTranspose]
+  rw [hsame]
+  exact rectRightGramLeftSingularZeroSafe_mul_diagonal_transpose_eq A
+
+/-- Tall right-Gram polar completion.  The completed `Q` has orthonormal
+columns and reconstructs `A` through the positive factor `H`. -/
+theorem exists_rectRightGramPolarCompletion_of_tall {m n : Nat}
+    (A : Fin m -> Fin n -> Real) (hnm : n <= m) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+      A = matMulRect m n n Q (rectRightGramPolarH A) /\
+        GramSchmidtOrthonormalColumns Q := by
+  obtain ⟨U, hUorth, hUpos⟩ :=
+    exists_rectRightGramLeftSingularCompletion_of_tall A hnm
+  let V := rectRightGramEigenbasis A
+  let D := finiteDiagonal (rectRightGramBasisSingularValue A)
+  let Vt := finiteTranspose V
+  let Q : Fin m -> Fin n -> Real := matMulRect m n n U Vt
+  have hQorth : GramSchmidtOrthonormalColumns Q := by
+    exact
+      GramSchmidtOrthonormalColumns.matMulRect_finiteTranspose_of_orthogonal
+        hUorth (rectRightGramEigenbasis_isOrthogonal A)
+  have hVtV : matMul n Vt V = idMatrix n := by
+    ext a b
+    simpa [Vt, V, matMul, finiteTranspose] using
+      rectRightGramEigenbasis_col_orthonormal A a b
+  have hUDV :
+      matMulRect m n n U (matMul n D Vt) = A :=
+    rectRightGramLeftSingularCompletion_mul_diagonal_transpose_eq
+      A U hUpos
+  have hfactor :
+      matMulRect m n n Q (rectRightGramPolarH A) = A := by
+    calc
+      matMulRect m n n Q (rectRightGramPolarH A)
+          =
+        matMulRect m n n (matMulRect m n n U Vt)
+          (matMul n V (matMul n D Vt)) := by
+          rfl
+      _ =
+        matMulRect m n n U
+          (matMul n Vt (matMul n V (matMul n D Vt))) := by
+          rw [matMulRect_assoc_square_right]
+      _ =
+        matMulRect m n n U
+          (matMul n (matMul n Vt V) (matMul n D Vt)) := by
+          rw [<- matMul_assoc]
+      _ =
+        matMulRect m n n U
+          (matMul n (idMatrix n) (matMul n D Vt)) := by
+          rw [hVtV]
+      _ = matMulRect m n n U (matMul n D Vt) := by
+          rw [matMul_id_left]
+      _ = A := hUDV
+  exact Exists.intro Q (And.intro hfactor.symm hQorth)
+
 /-- The full-positive right-Gram polar positive factor is symmetric. -/
 theorem rectRightGramPolarH_symmetric {m n : Nat}
     (A : Fin m -> Fin n -> Real) :
@@ -971,6 +1208,37 @@ theorem mgsProblem1912_add_factor_exists_of_rightGramPolar_completion
     mgsProblem1912_add_factor_exists_of_polarFactorData
       (mgsProblem1912_polarFactorData_of_rightGramPolar_completion
         hinput hbottom hQorth)
+
+/-- Tall corrected CS/polar inputs have a completed right-Gram polar factor. -/
+theorem mgsProblem1912_correctionMapData_exists_of_csPolarInput
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : MGSProblem1912CSPolarInput m n P11 P21) :
+    Exists fun Qout : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      MGSProblem1912CorrectionMapData m n P11 P21 Qout F := by
+  obtain ⟨Q, hbottom, hQorth⟩ :=
+    exists_rectRightGramPolarCompletion_of_tall P21 hinput.tall
+  exact
+    mgsProblem1912_correctionMapData_exists_of_rightGramPolar_completion
+      hinput hbottom hQorth
+
+/-- Tall corrected CS/polar inputs solve the additive form of Higham
+Problem 19.12. -/
+theorem mgsProblem1912_add_factor_exists_of_csPolarInput
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : MGSProblem1912CSPolarInput m n P11 P21) :
+    Exists fun Qout : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      (Qout = fun i j => P21 i j + matMulRect m n n F P11 i j) /\
+        GramSchmidtOrthonormalColumns Qout /\
+        rectOpNorm2Le F 1 := by
+  obtain ⟨Q, hbottom, hQorth⟩ :=
+    exists_rectRightGramPolarCompletion_of_tall P21 hinput.tall
+  exact
+    mgsProblem1912_add_factor_exists_of_rightGramPolar_completion
+      hinput hbottom hQorth
 
 /-- Full-positive right-Gram polar factors give the bottom factor and
 orthonormal part required by the Problem 19.12 polar payload.  The bridge

@@ -673,6 +673,43 @@ theorem problem1912_add_factor_exists_of_rightGramPolarCompletion
     mgsProblem1912_add_factor_exists_of_rightGramPolar_completion
       hinput hbottom hQorth
 
+/-- Chapter-facing tall right-Gram polar completion extracted from the
+corrected CS/polar input. -/
+theorem problem1912_rightGramPolarCompletion_exists
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+      P21 = matMulRect m n n Q (Problem1912RightGramPolarH P21) /\
+        GramSchmidtOrthonormalColumns Q := by
+  exact exists_rectRightGramPolarCompletion_of_tall P21 hinput.tall
+
+/-- Chapter-facing pure correction-map data from the corrected CS/polar
+input.  This closes the tall mixed-rank right-Gram polar completion branch. -/
+theorem problem1912_correctionMapData_exists_of_csPolarInput
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21) :
+    Exists fun Qout : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      Problem1912CorrectionMapData m n P11 P21 Qout F := by
+  exact
+    mgsProblem1912_correctionMapData_exists_of_csPolarInput hinput
+
+/-- Chapter-facing additive Problem 19.12 witnesses from the corrected
+CS/polar input. -/
+theorem problem1912_add_factor_exists_of_csPolarInput
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21) :
+    Exists fun Qout : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      (Qout = fun i j => P21 i j + matMulRect m n n F P11 i j) /\
+        GramSchmidtOrthonormalColumns Qout /\
+        rectOpNorm2Le F 1 := by
+  exact
+    mgsProblem1912_add_factor_exists_of_csPolarInput hinput
+
 /-- Chapter-labeled full-positive right-Gram polar payload constructor from
 the corrected CS/polar input.  The bridge and contraction obligations are
 discharged by `T = (I+H)^{-1} * P11^T`. -/
