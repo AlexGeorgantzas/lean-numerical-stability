@@ -15391,6 +15391,57 @@ theorem lsNormwiseBackwardErrorFormulaRHS_le_costF_of_nonzero_expanded_residual
     lsNormwiseBackwardErrorFormulaRHS_le_costF_of_exact_projector_sq_bound
       theta A b y DeltaA Deltab hfeas hrsq hpne hexact
 
+/-- Finite-`theta` pointwise WKS lower-bound packaging.  Combining the
+    exact-residual `p = 0` branch with the nonzero-expanded-residual branch,
+    every feasible perturbation has weighted Frobenius cost at least the
+    printed right-hand side in (20.21), under the finite nonnegative `theta`,
+    `y ≠ 0`, and nonzero source-residual assumptions. -/
+theorem lsNormwiseBackwardErrorFormulaRHS_le_costF_of_feasible_finite_theta
+    {m n : ℕ} {theta : ℝ} (htheta : 0 ≤ theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (DeltaA : Fin (m + 1) → Fin n → ℝ)
+    (Deltab : Fin (m + 1) → ℝ)
+    (hfeas : LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab)
+    (hrsq : vecNorm2Sq (lsResidualHigham A b y) ≠ 0) :
+    lsNormwiseBackwardErrorFormulaRHS theta A b y ≤
+      lsNormwiseBackwardErrorCostF theta DeltaA Deltab := by
+  let p : Fin (m + 1) → ℝ :=
+    fun i => lsResidualHigham A b y i + Deltab i - rectMatMulVec DeltaA y i
+  by_cases hpzero : p = 0
+  · have hres :
+        lsResidualHigham A b y =
+          fun i : Fin (m + 1) => rectMatMulVec DeltaA y i - Deltab i := by
+      ext i
+      have hp_i :
+          lsResidualHigham A b y i + Deltab i - rectMatMulVec DeltaA y i = 0 := by
+        simpa [p] using congrFun hpzero i
+      linarith
+    exact
+      lsNormwiseBackwardErrorFormulaRHS_le_costF_of_source_residual_eq_deltaA_y_sub_deltab
+        htheta A b hy DeltaA Deltab hres
+  · exact
+      lsNormwiseBackwardErrorFormulaRHS_le_costF_of_nonzero_expanded_residual
+        htheta A b hy DeltaA Deltab hfeas hrsq (by simpa [p] using hpzero)
+
+/-- Finite-`theta` lower-bound side of the WKS formula (20.21).  The pointwise
+    feasible perturbation lower bound transfers to the infimum model
+    `eta_F(y)` from (20.20). -/
+theorem lsNormwiseBackwardErrorFormulaRHS_le_etaF_of_finite_theta
+    {m n : ℕ} {theta : ℝ} (htheta : 0 ≤ theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hrsq : vecNorm2Sq (lsResidualHigham A b y) ≠ 0) :
+    lsNormwiseBackwardErrorFormulaRHS theta A b y ≤
+      lsNormwiseBackwardErrorEtaF theta A b y := by
+  apply
+    lsNormwiseBackwardErrorFormulaRHS_le_etaF_of_forall_feasible_cost_ge
+      theta A b y
+  intro DeltaA Deltab hfeas
+  exact
+    lsNormwiseBackwardErrorFormulaRHS_le_costF_of_feasible_finite_theta
+      htheta A b hy DeltaA Deltab hfeas hrsq
+
 /-- Conditional handoff for the nonzero-expanded-residual WKS lower-bound route.
     Once the sharp coupled squared estimate converts the two perturbation blocks
     from `formulaMatrixSigmaMin_mul_source_residual_vecNorm2_sq_le` into
