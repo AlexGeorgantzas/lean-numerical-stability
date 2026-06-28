@@ -3115,6 +3115,51 @@ theorem householder_paddedFinInput_csPolarInput
             problem1912_csPolarInput_of_paddedEconomy_blocks
               (m := m) (n := n) (P := Q) hnm hres.2.2.1
 
+/-- The actual padded Householder block data supplies pure Problem 19.12
+correction-map data for the economy blocks. -/
+theorem householder_paddedFinInput_correctionMapData_exists
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + m))) :
+    Exists fun Qrepair : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      Problem1912CorrectionMapData m n
+        (paddedEconomyP11
+          (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+        (paddedEconomyQ
+          (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+        Qrepair F := by
+  exact
+    problem1912_correctionMapData_exists_of_csPolarInput
+      (householder_paddedFinInput_csPolarInput fp A hn hnm hvalid)
+
+/-- The actual padded Householder block data supplies the additive Problem
+19.12 repair witnesses for the economy blocks. -/
+theorem householder_paddedFinInput_add_factor_exists
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + m))) :
+    Exists fun Qrepair : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      (Qrepair =
+          fun i j =>
+            paddedEconomyQ
+                (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A))
+                i j +
+              matMulRect m n n F
+                (paddedEconomyP11
+                  (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+                i j) /\
+        GramSchmidtOrthonormalColumns Qrepair /\
+        rectOpNorm2Le F 1 := by
+  exact
+    problem1912_add_factor_exists_of_csPolarInput
+      (householder_paddedFinInput_csPolarInput fp A hn hnm hvalid)
+
 /-- The actual padded Householder top-left economy block is a contraction once
 the corrected Problem 19.12 input is instantiated. -/
 theorem householder_paddedFinInput_p11_opNorm2Le_one
@@ -7417,6 +7462,450 @@ theorem
               (higherOrder := higherOrder)
               (Qrepair := Qrepair) (F := F)
               hdet hresidual hdata hbudget
+
+/-- Concrete source-output assembly using the general CS/polar witness for the
+actual padded Householder economy blocks. -/
+theorem
+    qrsensitivitySourceOutput_of_householder_upper_diag_csPolarRepair_of_householder_stacked_double_residual_coefficient_budget_of_small_unit_roundoff
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {eta1 rho c2 kappaA higherOrder : Real}
+    (hdiag :
+      forall i : Fin n,
+        Ne
+          (paddedEconomyR
+            (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))
+            i i)
+          0)
+    (hresidual :
+      Theorem19_4.gamma_tilde fp (n + m) n * frobNormRect A <= eta1)
+    (hRinv :
+      rectOpNorm2Le
+        (nonsingInv n
+          (paddedEconomyR
+            (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))))
+        rho)
+    (hrho : 0 <= rho)
+    (hbudget :
+      2 * ((eta1 + 2 * eta1) * rho) +
+          ((eta1 + 2 * eta1) * rho) ^ 2 <=
+        c2 * fp.u * kappaA + higherOrder) :
+    QRSensitivitySourceOutput m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (paddedEconomyR
+        (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)))
+      c2
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u kappaA higherOrder := by
+  have hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + m)) := by
+    unfold gammaValid
+    have hhalf_lt_one : (1 / 2 : Real) < 1 := by norm_num
+    exact lt_of_le_of_lt hsmall hhalf_lt_one
+  exact
+    qrsensitivitySourceOutput_of_householder_upper_diag_correctionMapDataExistsRepair_of_householder_stacked_double_residual_coefficient_budget_of_small_unit_roundoff
+      (fp := fp) (m := m) (n := n) A hn hsmall
+      (eta1 := eta1) (rho := rho) (c2 := c2)
+      (kappaA := kappaA) (higherOrder := higherOrder)
+      hdiag hresidual hRinv
+      (householder_paddedFinInput_correctionMapData_exists
+        fp A hn hnm hvalid)
+      hrho hbudget
+
+/-- Concrete `MGSQRBounds` assembly using the general CS/polar witness for the
+actual padded Householder economy blocks. -/
+theorem
+    mgs_qr_bounds_of_householder_upper_diag_csPolarRepair_of_householder_stacked_double_residual_coefficient_budget_of_small_unit_roundoff
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {eta1 rho c2 kappaA higherOrder : Real}
+    (hdiag :
+      forall i : Fin n,
+        Ne
+          (paddedEconomyR
+            (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))
+            i i)
+          0)
+    (hresidual :
+      Theorem19_4.gamma_tilde fp (n + m) n * frobNormRect A <= eta1)
+    (hRinv :
+      rectOpNorm2Le
+        (nonsingInv n
+          (paddedEconomyR
+            (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))))
+        rho)
+    (hrho : 0 <= rho)
+    (hbudget :
+      2 * ((eta1 + 2 * eta1) * rho) +
+          ((eta1 + 2 * eta1) * rho) ^ 2 <=
+        c2 * fp.u * kappaA + higherOrder) :
+    MGSQRBounds m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (paddedEconomyR
+        (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)))
+      (2 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      c2
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u (frobNormRect A) kappaA higherOrder := by
+  have hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + m)) := by
+    unfold gammaValid
+    have hhalf_lt_one : (1 / 2 : Real) < 1 := by norm_num
+    exact lt_of_le_of_lt hsmall hhalf_lt_one
+  exact
+    mgs_qr_bounds_of_householder_upper_diag_correctionMapDataExistsRepair_of_householder_stacked_double_residual_coefficient_budget_of_small_unit_roundoff
+      (fp := fp) (m := m) (n := n) A hn hsmall
+      (eta1 := eta1) (rho := rho) (c2 := c2)
+      (kappaA := kappaA) (higherOrder := higherOrder)
+      hdiag hresidual hRinv
+      (householder_paddedFinInput_correctionMapData_exists
+        fp A hn hnm hvalid)
+      hrho hbudget
+
+/-- Frobenius-inverse source-output fallback using the general CS/polar witness
+for the actual padded Householder economy blocks. -/
+theorem
+    qrsensitivitySourceOutput_of_householder_upper_diag_csPolarRepair_of_householder_stacked_double_residual_coefficient_budget_frobInv_of_small_unit_roundoff
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {eta1 c2 kappaA higherOrder : Real}
+    (hdiag :
+      forall i : Fin n,
+        Ne
+          (paddedEconomyR
+            (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))
+            i i)
+          0)
+    (hresidual :
+      Theorem19_4.gamma_tilde fp (n + m) n * frobNormRect A <= eta1)
+    (hbudget :
+      2 * ((eta1 + 2 * eta1) *
+          frobNorm
+            (nonsingInv n
+              (paddedEconomyR
+                (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))))) +
+          ((eta1 + 2 * eta1) *
+            frobNorm
+              (nonsingInv n
+                (paddedEconomyR
+                  (fl_householderQRPanel_R fp (n + m) n
+                    (paddedFinInput A))))) ^ 2 <=
+        c2 * fp.u * kappaA + higherOrder) :
+    QRSensitivitySourceOutput m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (paddedEconomyR
+        (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)))
+      c2
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u kappaA higherOrder := by
+  have hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + m)) := by
+    unfold gammaValid
+    have hhalf_lt_one : (1 / 2 : Real) < 1 := by norm_num
+    exact lt_of_le_of_lt hsmall hhalf_lt_one
+  exact
+    qrsensitivitySourceOutput_of_householder_upper_diag_correctionMapDataExistsRepair_of_householder_stacked_double_residual_coefficient_budget_frobInv_of_small_unit_roundoff
+      (fp := fp) (m := m) (n := n) A hn hsmall
+      (eta1 := eta1) (c2 := c2) (kappaA := kappaA)
+      (higherOrder := higherOrder)
+      hdiag hresidual
+      (householder_paddedFinInput_correctionMapData_exists
+        fp A hn hnm hvalid)
+      hbudget
+
+/-- Frobenius-inverse `MGSQRBounds` fallback using the general CS/polar witness
+for the actual padded Householder economy blocks. -/
+theorem
+    mgs_qr_bounds_of_householder_upper_diag_csPolarRepair_of_householder_stacked_double_residual_coefficient_budget_frobInv_of_small_unit_roundoff
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {eta1 c2 kappaA higherOrder : Real}
+    (hdiag :
+      forall i : Fin n,
+        Ne
+          (paddedEconomyR
+            (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))
+            i i)
+          0)
+    (hresidual :
+      Theorem19_4.gamma_tilde fp (n + m) n * frobNormRect A <= eta1)
+    (hbudget :
+      2 * ((eta1 + 2 * eta1) *
+          frobNorm
+            (nonsingInv n
+              (paddedEconomyR
+                (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))))) +
+          ((eta1 + 2 * eta1) *
+            frobNorm
+              (nonsingInv n
+                (paddedEconomyR
+                  (fl_householderQRPanel_R fp (n + m) n
+                    (paddedFinInput A))))) ^ 2 <=
+        c2 * fp.u * kappaA + higherOrder) :
+    MGSQRBounds m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (paddedEconomyR
+        (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)))
+      (2 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      c2
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u (frobNormRect A) kappaA higherOrder := by
+  have hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + m)) := by
+    unfold gammaValid
+    have hhalf_lt_one : (1 / 2 : Real) < 1 := by norm_num
+    exact lt_of_le_of_lt hsmall hhalf_lt_one
+  exact
+    mgs_qr_bounds_of_householder_upper_diag_correctionMapDataExistsRepair_of_householder_stacked_double_residual_coefficient_budget_frobInv_of_small_unit_roundoff
+      (fp := fp) (m := m) (n := n) A hn hsmall
+      (eta1 := eta1) (c2 := c2) (kappaA := kappaA)
+      (higherOrder := higherOrder)
+      hdiag hresidual
+      (householder_paddedFinInput_correctionMapData_exists
+        fp A hn hnm hvalid)
+      hbudget
+
+/-- Determinant-nonzero source-output assembly using the general CS/polar
+witness for the actual padded Householder economy blocks. -/
+theorem
+    qrsensitivitySourceOutput_of_householder_det_ne_zero_csPolarRepair_of_householder_stacked_double_residual_coefficient_budget_of_small_unit_roundoff
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {eta1 rho c2 kappaA higherOrder : Real}
+    (hdet :
+      Ne
+        (Matrix.det
+        (paddedEconomyR
+          (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)) :
+            Matrix (Fin n) (Fin n) Real))
+        0)
+    (hresidual :
+      Theorem19_4.gamma_tilde fp (n + m) n * frobNormRect A <= eta1)
+    (hRinv :
+      rectOpNorm2Le
+        (nonsingInv n
+          (paddedEconomyR
+            (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))))
+        rho)
+    (hrho : 0 <= rho)
+    (hbudget :
+      2 * ((eta1 + 2 * eta1) * rho) +
+          ((eta1 + 2 * eta1) * rho) ^ 2 <=
+        c2 * fp.u * kappaA + higherOrder) :
+    QRSensitivitySourceOutput m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (paddedEconomyR
+        (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)))
+      c2
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u kappaA higherOrder := by
+  have hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + m)) := by
+    unfold gammaValid
+    have hhalf_lt_one : (1 / 2 : Real) < 1 := by norm_num
+    exact lt_of_le_of_lt hsmall hhalf_lt_one
+  exact
+    qrsensitivitySourceOutput_of_householder_det_ne_zero_correctionMapDataExistsRepair_of_householder_stacked_double_residual_coefficient_budget_of_small_unit_roundoff
+      (fp := fp) (m := m) (n := n) A hn hsmall
+      (eta1 := eta1) (rho := rho) (c2 := c2)
+      (kappaA := kappaA) (higherOrder := higherOrder)
+      hdet hresidual hRinv
+      (householder_paddedFinInput_correctionMapData_exists
+        fp A hn hnm hvalid)
+      hrho hbudget
+
+/-- Determinant-nonzero `MGSQRBounds` assembly using the general CS/polar
+witness for the actual padded Householder economy blocks. -/
+theorem
+    mgs_qr_bounds_of_householder_det_ne_zero_csPolarRepair_of_householder_stacked_double_residual_coefficient_budget_of_small_unit_roundoff
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {eta1 rho c2 kappaA higherOrder : Real}
+    (hdet :
+      Ne
+        (Matrix.det
+        (paddedEconomyR
+          (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)) :
+            Matrix (Fin n) (Fin n) Real))
+        0)
+    (hresidual :
+      Theorem19_4.gamma_tilde fp (n + m) n * frobNormRect A <= eta1)
+    (hRinv :
+      rectOpNorm2Le
+        (nonsingInv n
+          (paddedEconomyR
+            (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))))
+        rho)
+    (hrho : 0 <= rho)
+    (hbudget :
+      2 * ((eta1 + 2 * eta1) * rho) +
+          ((eta1 + 2 * eta1) * rho) ^ 2 <=
+        c2 * fp.u * kappaA + higherOrder) :
+    MGSQRBounds m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (paddedEconomyR
+        (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)))
+      (2 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      c2
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u (frobNormRect A) kappaA higherOrder := by
+  have hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + m)) := by
+    unfold gammaValid
+    have hhalf_lt_one : (1 / 2 : Real) < 1 := by norm_num
+    exact lt_of_le_of_lt hsmall hhalf_lt_one
+  exact
+    mgs_qr_bounds_of_householder_det_ne_zero_correctionMapDataExistsRepair_of_householder_stacked_double_residual_coefficient_budget_of_small_unit_roundoff
+      (fp := fp) (m := m) (n := n) A hn hsmall
+      (eta1 := eta1) (rho := rho) (c2 := c2)
+      (kappaA := kappaA) (higherOrder := higherOrder)
+      hdet hresidual hRinv
+      (householder_paddedFinInput_correctionMapData_exists
+        fp A hn hnm hvalid)
+      hrho hbudget
+
+/-- Determinant-nonzero Frobenius-inverse source-output fallback using the
+general CS/polar witness for the actual padded Householder economy blocks. -/
+theorem
+    qrsensitivitySourceOutput_of_householder_det_ne_zero_csPolarRepair_of_householder_stacked_double_residual_coefficient_budget_frobInv_of_small_unit_roundoff
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {eta1 c2 kappaA higherOrder : Real}
+    (hdet :
+      Ne
+        (Matrix.det
+        (paddedEconomyR
+          (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)) :
+            Matrix (Fin n) (Fin n) Real))
+        0)
+    (hresidual :
+      Theorem19_4.gamma_tilde fp (n + m) n * frobNormRect A <= eta1)
+    (hbudget :
+      2 * ((eta1 + 2 * eta1) *
+          frobNorm
+            (nonsingInv n
+              (paddedEconomyR
+                (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))))) +
+          ((eta1 + 2 * eta1) *
+            frobNorm
+              (nonsingInv n
+                (paddedEconomyR
+                  (fl_householderQRPanel_R fp (n + m) n
+                    (paddedFinInput A))))) ^ 2 <=
+        c2 * fp.u * kappaA + higherOrder) :
+    QRSensitivitySourceOutput m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (paddedEconomyR
+        (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)))
+      c2
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u kappaA higherOrder := by
+  have hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + m)) := by
+    unfold gammaValid
+    have hhalf_lt_one : (1 / 2 : Real) < 1 := by norm_num
+    exact lt_of_le_of_lt hsmall hhalf_lt_one
+  exact
+    qrsensitivitySourceOutput_of_householder_det_ne_zero_correctionMapDataExistsRepair_of_householder_stacked_double_residual_coefficient_budget_frobInv_of_small_unit_roundoff
+      (fp := fp) (m := m) (n := n) A hn hsmall
+      (eta1 := eta1) (c2 := c2) (kappaA := kappaA)
+      (higherOrder := higherOrder)
+      hdet hresidual
+      (householder_paddedFinInput_correctionMapData_exists
+        fp A hn hnm hvalid)
+      hbudget
+
+/-- Determinant-nonzero Frobenius-inverse `MGSQRBounds` fallback using the
+general CS/polar witness for the actual padded Householder economy blocks. -/
+theorem
+    mgs_qr_bounds_of_householder_det_ne_zero_csPolarRepair_of_householder_stacked_double_residual_coefficient_budget_frobInv_of_small_unit_roundoff
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {eta1 c2 kappaA higherOrder : Real}
+    (hdet :
+      Ne
+        (Matrix.det
+        (paddedEconomyR
+          (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)) :
+            Matrix (Fin n) (Fin n) Real))
+        0)
+    (hresidual :
+      Theorem19_4.gamma_tilde fp (n + m) n * frobNormRect A <= eta1)
+    (hbudget :
+      2 * ((eta1 + 2 * eta1) *
+          frobNorm
+            (nonsingInv n
+              (paddedEconomyR
+                (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))))) +
+          ((eta1 + 2 * eta1) *
+            frobNorm
+              (nonsingInv n
+                (paddedEconomyR
+                  (fl_householderQRPanel_R fp (n + m) n
+                    (paddedFinInput A))))) ^ 2 <=
+        c2 * fp.u * kappaA + higherOrder) :
+    MGSQRBounds m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (paddedEconomyR
+        (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)))
+      (2 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      c2
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u (frobNormRect A) kappaA higherOrder := by
+  have hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + m)) := by
+    unfold gammaValid
+    have hhalf_lt_one : (1 / 2 : Real) < 1 := by norm_num
+    exact lt_of_le_of_lt hsmall hhalf_lt_one
+  exact
+    mgs_qr_bounds_of_householder_det_ne_zero_correctionMapDataExistsRepair_of_householder_stacked_double_residual_coefficient_budget_frobInv_of_small_unit_roundoff
+      (fp := fp) (m := m) (n := n) A hn hsmall
+      (eta1 := eta1) (c2 := c2) (kappaA := kappaA)
+      (higherOrder := higherOrder)
+      hdet hresidual
+      (householder_paddedFinInput_correctionMapData_exists
+        fp A hn hnm hvalid)
+      hbudget
 
 /-- Source-output assembly from a packaged diagonal CS factor-data certificate.
 
