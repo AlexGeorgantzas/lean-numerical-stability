@@ -586,6 +586,22 @@ theorem problem1912_add_factor_exists_of_csPolarInput_zeroOrFullPositiveRightGra
     mgsProblem1912_add_factor_exists_of_csPolarInput_zero_or_fullPositive_rightGram
       hinput hcase
 
+/-- Chapter-facing residual branch after the closed zero/full-positive
+CS/polar router fails: the top Gram is nonzero and the lower right-Gram surface
+has at least one zero singular value. -/
+theorem problem1912_remainingMixedBranch_of_not_zeroOrFullPositiveRightGram
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hnot :
+      Not (rectangularGram P11 = (fun _ _ => 0) \/
+        forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a)) :
+    Ne (rectangularGram P11) (fun _ _ => 0) /\
+      Exists fun a : Fin n => rectRightGramBasisSingularValue P21 a = 0 := by
+  exact
+    MGSProblem1912CSPolarInput.remaining_mixedBranch_of_not_zero_or_fullPositive_rightGram
+      hinput hnot
+
 /-- Chapter-labeled conversion from a polar-factor payload to pure Problem
 19.12 correction-map data. -/
 theorem problem1912_polarFactorData_to_correctionMapData {m n : Nat}

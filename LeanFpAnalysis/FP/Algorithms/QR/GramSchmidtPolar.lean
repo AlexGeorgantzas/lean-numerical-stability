@@ -754,6 +754,50 @@ theorem mgsProblem1912_add_factor_exists_of_csPolarInput_zero_or_fullPositive_ri
         mgsProblem1912_add_factor_exists_of_csPolarInput_fullPositive_rightGram
           hinput hpos
 
+/-- A nonpositive right-Gram singular value in this finite SVD surface must
+vanish, since the local singular-value API proves nonnegativity. -/
+theorem rectRightGramBasisSingularValue_eq_zero_of_not_pos {m n : Nat}
+    (A : Fin m -> Fin n -> Real) {a : Fin n}
+    (hnot : Not (0 < rectRightGramBasisSingularValue A a)) :
+    rectRightGramBasisSingularValue A a = 0 := by
+  exact
+    le_antisymm (not_lt.mp hnot)
+      (rectRightGramBasisSingularValue_nonneg A a)
+
+/-- Failure of the full-positive right-Gram branch produces a zero
+basis-indexed singular value. -/
+theorem rectRightGramBasisSingularValue_zero_exists_of_not_fullPositive
+    {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hnot :
+      Not (forall a : Fin n, 0 < rectRightGramBasisSingularValue A a)) :
+    Exists fun a : Fin n => rectRightGramBasisSingularValue A a = 0 := by
+  cases not_forall.mp hnot with
+  | intro a ha =>
+      exact Exists.intro a
+        (rectRightGramBasisSingularValue_eq_zero_of_not_pos A ha)
+
+/-- If the closed zero/full-positive branch router cannot be applied, the
+remaining CS/polar case has nonzero top Gram and at least one zero lower
+right-Gram singular value.  This records the exact residual branch for the
+future mixed-singular-value proof. -/
+theorem MGSProblem1912CSPolarInput.remaining_mixedBranch_of_not_zero_or_fullPositive_rightGram
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (_hinput : MGSProblem1912CSPolarInput m n P11 P21)
+    (hnot :
+      Not (rectangularGram P11 = (fun _ _ => 0) \/
+        forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a)) :
+    Ne (rectangularGram P11) (fun _ _ => 0) /\
+      Exists fun a : Fin n => rectRightGramBasisSingularValue P21 a = 0 := by
+  constructor
+  case left =>
+    intro hzero
+    exact hnot (Or.inl hzero)
+  case right =>
+    exact
+      rectRightGramBasisSingularValue_zero_exists_of_not_fullPositive P21
+        (fun hpos => hnot (Or.inr hpos))
+
 end
 
 end LeanFpAnalysis.FP
