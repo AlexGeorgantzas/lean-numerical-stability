@@ -3320,6 +3320,124 @@ theorem qrPanel_R_two_col_eq_secondStoredStep_of_leadingBlock_det_ne_zero_of_fl_
       exact panelTopRowTail_storedPanelStep_succ_zeroPrefix_eq_of_fl_sub_zero
         fp _ 1 _ hsubZero)
 
+/-- Named exact-copy convention for the subtract-by-zero operation.
+
+The abstract `FPModel` deliberately does not include this law, but the
+recursive/stored Householder bridge can consume it as a model-strengthening
+surface instead of carrying an anonymous raw hypothesis. -/
+def subtractZeroExact (fp : FPModel) : Prop :=
+  forall x : Real, fp.fl_sub x 0 = x
+
+/-- Exact real arithmetic satisfies the Ch19 subtract-zero copy convention. -/
+theorem subtractZeroExact_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) :
+    subtractZeroExact (FPModel.exactWithUnitRoundoff u0 hu0) := by
+  intro x
+  simp [FPModel.exactWithUnitRoundoff]
+
+/-- Top-row-tail preservation using the named subtract-zero exact-copy
+convention. -/
+theorem panelTopRowTail_storedPanelStep_succ_zeroPrefix_eq_of_subtractZeroExact
+    (fp : FPModel) {m : Nat}
+    (v : Fin (m + 1) -> Real) (beta : Real)
+    (A : Fin (m + 2) -> Fin 2 -> Real)
+    (hcopy : subtractZeroExact fp) :
+    panelTopRowTail
+        (fl_householderStoredPanelStep fp (m + 2) 2 1 (Fin.cases 0 v) beta A) =
+      panelTopRowTail A :=
+  panelTopRowTail_storedPanelStep_succ_zeroPrefix_eq_of_fl_sub_zero
+    fp v beta A hcopy
+
+/-- Full pivot-1 zero-prefix stored-step reconstruction using the named
+subtract-zero exact-copy convention. -/
+theorem storedPanelStep_succ_zeroPrefix_eq_panelFromTopAndTrailing_of_subtractZeroExact
+    (fp : FPModel) {m : Nat}
+    (v : Fin (m + 1) -> Real) (beta : Real)
+    (A : Fin (m + 2) -> Fin 2 -> Real)
+    (hfirstTail : panelFirstColumnTailZero A)
+    (hcopy : subtractZeroExact fp) :
+    fl_householderStoredPanelStep fp (m + 2) 2 1 (Fin.cases 0 v) beta A =
+      panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+        (fl_householderStoredPanelStep fp (m + 1) 1 0 v beta (trailingPanel A)) :=
+  storedPanelStep_succ_zeroPrefix_eq_panelFromTopAndTrailing_of_fl_sub_zero
+    fp v beta A hfirstTail hcopy
+
+/-- Two-column recursive/stored bridge using the named subtract-zero
+exact-copy convention. -/
+theorem qrPanel_R_two_col_eq_secondStoredStep_of_leadingBlock_det_ne_zero_of_subtractZeroExact
+    (fp : FPModel) {m : Nat}
+    (A : Fin (m + 2) -> Fin 2 -> Real)
+    (hdetFirst :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le (m + 1)))
+          (Nat.succ_pos 1) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hdetTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+              (panelFirstColumn (Nat.succ_pos 1) A)
+           let S0 := fl_householderStoredPanelStep fp (m + 2) 2 0 v0 1 A
+           trailingPanel S0)
+          (Nat.succ_le_succ (Nat.zero_le m))
+          (Nat.succ_pos 0) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hcopy : subtractZeroExact fp) :
+    fl_householderQRPanel_R fp (m + 2) 2 A =
+      (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+          (panelFirstColumn (Nat.succ_pos 1) A)
+       let S0 := fl_householderStoredPanelStep fp (m + 2) 2 0 v0 1 A
+       let v1 := fl_householderNormalizedVector fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos 0) (trailingPanel S0))
+       fl_householderStoredPanelStep fp (m + 2) 2 1 (Fin.cases 0 v1) 1 S0) :=
+  qrPanel_R_two_col_eq_secondStoredStep_of_leadingBlock_det_ne_zero_of_fl_sub_zero
+    fp A hdetFirst hdetTail hcopy
+
+/-- Exact-arithmetic instance of the two-column recursive/stored bridge.
+
+This is not the finite-precision source theorem; it records that the new named
+copy-convention surface is strong enough to discharge the top-row-tail gate for
+the exact model. -/
+theorem qrPanel_R_two_col_eq_secondStoredStep_of_leadingBlock_det_ne_zero_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) {m : Nat}
+    (A : Fin (m + 2) -> Fin 2 -> Real)
+    (hdetFirst :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le (m + 1)))
+          (Nat.succ_pos 1) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hdetTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (let fp := FPModel.exactWithUnitRoundoff u0 hu0
+           let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+              (panelFirstColumn (Nat.succ_pos 1) A)
+           let S0 := fl_householderStoredPanelStep fp (m + 2) 2 0 v0 1 A
+           trailingPanel S0)
+          (Nat.succ_le_succ (Nat.zero_le m))
+          (Nat.succ_pos 0) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0) :
+    fl_householderQRPanel_R (FPModel.exactWithUnitRoundoff u0 hu0)
+        (m + 2) 2 A =
+      (let fp := FPModel.exactWithUnitRoundoff u0 hu0
+       let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+          (panelFirstColumn (Nat.succ_pos 1) A)
+       let S0 := fl_householderStoredPanelStep fp (m + 2) 2 0 v0 1 A
+       let v1 := fl_householderNormalizedVector fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos 0) (trailingPanel S0))
+       fl_householderStoredPanelStep fp (m + 2) 2 1 (Fin.cases 0 v1) 1 S0) := by
+  let fp : FPModel := FPModel.exactWithUnitRoundoff u0 hu0
+  exact
+    qrPanel_R_two_col_eq_secondStoredStep_of_leadingBlock_det_ne_zero_of_subtractZeroExact
+      fp A hdetFirst hdetTail
+      (subtractZeroExact_exactWithUnitRoundoff u0 hu0)
+
 /-- Source-facing nonbreakdown route for the stored Householder QR loop.
 Nonsingular local leading blocks, the stored lower-zero invariant, the source
 sign convention, and a per-pivot square-root component budget imply that the
