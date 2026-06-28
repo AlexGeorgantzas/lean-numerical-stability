@@ -9696,6 +9696,148 @@ theorem mgs_qr_bounds_of_R11_det_ne_zero_compact_condition_budget
       (kappaA := kappaA) (higherOrder := higherOrder)
       hdiag hRinv hrho hcondition hbudget
 
+/-- Scalar final-radius bridge for the compact source-condition route.
+
+The linear part is discharged from a coefficient bound
+`gamma <= c1*u` and a printed-style constant inequality `6*c1 <= c2`;
+the quadratic part is recorded as the higher-order contribution. -/
+theorem compact_condition_radius_budget_of_coefficient_budget
+    {gamma u kappaA c1 c2 higherOrder : Real}
+    (hu : 0 <= u)
+    (hkappa : 0 <= kappaA)
+    (hgamma_le : gamma <= c1 * u)
+    (hc2 : 6 * c1 <= c2)
+    (hquad : ((3 * gamma) * kappaA) ^ 2 <= higherOrder) :
+    2 * ((3 * gamma) * kappaA) + ((3 * gamma) * kappaA) ^ 2 <=
+      c2 * u * kappaA + higherOrder := by
+  have hlinear_coeff : 6 * gamma <= 6 * (c1 * u) := by
+    exact mul_le_mul_of_nonneg_left hgamma_le (by norm_num : (0 : Real) <= 6)
+  have hlinear1 : (6 * gamma) * kappaA <= (6 * (c1 * u)) * kappaA := by
+    exact mul_le_mul_of_nonneg_right hlinear_coeff hkappa
+  have hu_kappa : 0 <= u * kappaA := mul_nonneg hu hkappa
+  have hlinear2 : (6 * c1) * (u * kappaA) <= c2 * (u * kappaA) := by
+    exact mul_le_mul_of_nonneg_right hc2 hu_kappa
+  have hlinear : 2 * ((3 * gamma) * kappaA) <= c2 * u * kappaA := by
+    nlinarith
+  nlinarith
+
+/-- Determinant-nonzero compact condition route with the final radius budget
+split into the source-style linear coefficient and a quadratic higher-order
+term.
+
+This removes the monolithic final scalar-budget hypothesis from
+`mgs_qr_bounds_of_R11_det_ne_zero_compact_condition_budget`; the remaining
+assumptions are the source condition estimate, the coefficient bound for
+`gamma_tilde`, and the explicit quadratic higher-order allowance. -/
+theorem mgs_qr_bounds_of_R11_det_ne_zero_compact_condition_radius_budget
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {rho c1 c2 kappaA higherOrder : Real}
+    (hdet :
+      Ne
+        (Matrix.det
+        (householder_paddedFinInput_R11 fp A :
+          Matrix (Fin n) (Fin n) Real))
+        0)
+    (hRinv :
+      rectOpNorm2Le
+        (nonsingInv n (householder_paddedFinInput_R11 fp A))
+        rho)
+    (hrho : 0 <= rho)
+    (hcondition : frobNormRect A * rho <= kappaA)
+    (hkappaA : 0 <= kappaA)
+    (hgamma_coeff :
+      Theorem19_4.gamma_tilde fp (n + m) n <= c1 * fp.u)
+    (hc2 : 6 * c1 <= c2)
+    (hhigher :
+      ((3 * Theorem19_4.gamma_tilde fp (n + m) n) * kappaA) ^ 2 <=
+        higherOrder) :
+    MGSQRBounds m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (householder_paddedFinInput_R11 fp A)
+      (2 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      c2
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u (frobNormRect A) kappaA higherOrder := by
+  refine
+    mgs_qr_bounds_of_R11_det_ne_zero_compact_condition_budget
+      (fp := fp) (m := m) (n := n) A hn hnm hsmall
+      (rho := rho) (c2 := c2)
+      (kappaA := kappaA) (higherOrder := higherOrder)
+      hdet hRinv hrho hcondition ?_
+  exact
+    compact_condition_radius_budget_of_coefficient_budget
+      (gamma := Theorem19_4.gamma_tilde fp (n + m) n)
+      (u := fp.u) (kappaA := kappaA)
+      (c1 := c1) (c2 := c2) (higherOrder := higherOrder)
+      fp.u_nonneg hkappaA hgamma_coeff hc2 hhigher
+
+/-- Small-unit-roundoff version of the determinant compact condition route
+with source-style final-radius assumptions.
+
+The standard `k*u <= 1/2` guard supplies
+`gamma_tilde <= 2*k*u`; the linear printed constant is therefore exposed as
+`12*k <= c2`, and the quadratic term is left as the explicit higher-order
+allowance. -/
+theorem
+    mgs_qr_bounds_of_R11_det_ne_zero_compact_condition_radius_budget_of_small_unit_roundoff
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {rho c2 kappaA higherOrder : Real}
+    (hdet :
+      Ne
+        (Matrix.det
+        (householder_paddedFinInput_R11 fp A :
+          Matrix (Fin n) (Fin n) Real))
+        0)
+    (hRinv :
+      rectOpNorm2Le
+        (nonsingInv n (householder_paddedFinInput_R11 fp A))
+        rho)
+    (hrho : 0 <= rho)
+    (hcondition : frobNormRect A * rho <= kappaA)
+    (hkappaA : 0 <= kappaA)
+    (hc2 :
+      12 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) <=
+        c2)
+    (hhigher :
+      ((3 * Theorem19_4.gamma_tilde fp (n + m) n) * kappaA) ^ 2 <=
+        higherOrder) :
+    MGSQRBounds m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (householder_paddedFinInput_R11 fp A)
+      (2 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      c2
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u (frobNormRect A) kappaA higherOrder := by
+  let k : Real :=
+    ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real)
+  have hgamma_coeff :
+      Theorem19_4.gamma_tilde fp (n + m) n <= (2 * k) * fp.u := by
+    dsimp [k]
+    exact
+      Theorem19_4.gamma_tilde_le_two_index_mul_unit_roundoff_of_small
+        fp (n + m) n hsmall
+  have hcoeff : 6 * (2 * k) <= c2 := by
+    dsimp [k]
+    nlinarith [hc2]
+  exact
+    mgs_qr_bounds_of_R11_det_ne_zero_compact_condition_radius_budget
+      (fp := fp) (m := m) (n := n) A hn hnm hsmall
+      (rho := rho) (c1 := 2 * k) (c2 := c2)
+      (kappaA := kappaA) (higherOrder := higherOrder)
+      hdet hRinv hrho hcondition hkappaA hgamma_coeff hcoeff hhigher
+
 /-- Chapter-facing Theorem 19.13 assembly currently proved for the concrete
 padded Householder route.
 
