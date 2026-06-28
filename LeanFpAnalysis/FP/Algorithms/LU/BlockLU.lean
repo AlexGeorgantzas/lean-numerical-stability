@@ -256,8 +256,11 @@
     spec-shaped induction step for Theorem 13.5
   - block_lu_solve_backward_error, block_lu_solve_backward_error_firstOrder,
     higham13_theorem13_6_eq13_16_from_factor_solve_estimates,
-    higham13_theorem13_6_eq13_16_firstOrder_from_factor_solve_estimates:
-    Theorem 13.6 scalar and conditional Eq.13.16 aggregation
+    higham13_theorem13_6_eq13_16_firstOrder_from_factor_solve_estimates,
+    DemmelHighamSchreiber13_6Estimates,
+    higham13_theorem13_6_eq13_16_firstOrder_from_DHS_estimates:
+    Theorem 13.6 scalar and conditional Eq.13.16 aggregation, with a named
+    surface for the still-open Demmel--Higham--Schreiber estimates
   - maxEntryNormRect_rectMatMul_le, maxEntryNorm_matrix_mul_le_dim,
     maxEntryNorm_matrix_mul_mul_le_dim_sq,
     maxEntryNorm_matrix_mul_dimension_free_counterexample,
@@ -6032,6 +6035,44 @@ theorem higham13_theorem13_6_eq13_16_firstOrder_from_factor_solve_estimates
   have hFactDn := hFact.mono_leading hFactLeading
   have hSolveDn := hSolve.mono_leading hSolveLeading
   exact ⟨hFactDn, hSolveDn, FirstOrderLe.max_same hFactDn hSolveDn⟩
+
+/-- Conditional proof-source predicate for Higham, 2nd ed., Chapter 13,
+    Theorem 13.6 / equation (13.16).
+
+    The book cites Demmel--Higham--Schreiber [326] for the implementation
+    analysis behind these two first-order estimates.  This predicate names that
+    still-open proof obligation explicitly: it records the factorization and
+    solve perturbation estimates that the cited analysis must eventually
+    provide for Algorithm 13.3 Implementation 1. -/
+structure DemmelHighamSchreiber13_6Estimates
+    (u d_fact d_solve normA normL normU normDeltaA_fact normDeltaA_solve : ℝ) :
+    Prop where
+  factorization :
+    FirstOrderLe u (d_fact * u * (normA + normL * normU)) normDeltaA_fact
+  solve :
+    FirstOrderLe u (d_solve * u * (normA + normL * normU)) normDeltaA_solve
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.6 / equation (13.16), conditional
+    on the Demmel--Higham--Schreiber [326] implementation estimates.
+
+    This theorem is deliberately conditional: it packages the existing scalar
+    aggregation around the named [326]-level estimate predicate.  It does not
+    prove the cited implementation analysis and therefore does not close the
+    Theorem 13.6 source row by itself. -/
+theorem higham13_theorem13_6_eq13_16_firstOrder_from_DHS_estimates
+    (normDeltaA_fact normDeltaA_solve : ℝ)
+    (normA normL normU u d_fact d_solve dn : ℝ)
+    (hu : 0 ≤ u) (hA : 0 ≤ normA) (hL : 0 ≤ normL) (hU : 0 ≤ normU)
+    (hd_fact : d_fact ≤ dn) (hd_solve : d_solve ≤ dn)
+    (hEst : DemmelHighamSchreiber13_6Estimates
+      u d_fact d_solve normA normL normU normDeltaA_fact normDeltaA_solve) :
+    FirstOrderLe u (dn * u * (normA + normL * normU)) normDeltaA_fact ∧
+      FirstOrderLe u (dn * u * (normA + normL * normU)) normDeltaA_solve ∧
+      FirstOrderLe u (dn * u * (normA + normL * normU))
+        (max normDeltaA_fact normDeltaA_solve) := by
+  exact higham13_theorem13_6_eq13_16_firstOrder_from_factor_solve_estimates
+    normDeltaA_fact normDeltaA_solve normA normL normU u d_fact d_solve dn
+    hu hA hL hU hd_fact hd_solve hEst.factorization hEst.solve
 
 /-- Higham, 2nd ed., Chapter 13, p.251, Algorithm 13.3 Implementation 2:
     if the exact-inverse local analysis has multiplied the factorization and
