@@ -3077,6 +3077,21 @@ theorem fl_mul_zero_right (fp : FPModel) (x : Real) :
       rw [hmul]
       ring) hd)
 
+/-- Named exact-copy convention for the subtract-by-zero operation.
+
+The abstract `FPModel` deliberately does not include this law, but the
+recursive/stored Householder bridge can consume it as a model-strengthening
+surface instead of carrying an anonymous raw hypothesis. -/
+def subtractZeroExact (fp : FPModel) : Prop :=
+  forall x : Real, fp.fl_sub x 0 = x
+
+/-- Exact real arithmetic satisfies the Ch19 subtract-zero copy convention. -/
+theorem subtractZeroExact_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) :
+    subtractZeroExact (FPModel.exactWithUnitRoundoff u0 hu0) := by
+  intro x
+  simp [FPModel.exactWithUnitRoundoff]
+
 /-- Zero-prefix dot-product lift for compact Householder support.
 
 Adding one leading component whose left factor is zero does not change the
@@ -3088,6 +3103,59 @@ theorem fl_dotProduct_zero_cons (fp : FPModel) {m : Nat}
     fl_dotProduct fp (m + 2) (Fin.cases 0 v) (Fin.cases b0 b) =
       fl_dotProduct fp (m + 1) v b := by
   simp [fl_dotProduct, Fin.foldl_succ, fl_mul_zero_left, fp.fl_add_zero]
+
+/-- Compact Householder tail lift for a zero-prefixed reflector.
+
+After adding one leading zero to the reflector and one leading entry to the
+column being transformed, the updated active tail is the same compact
+Householder update on the original tail. -/
+theorem fl_householderApplyCompact_zero_cons_tail
+    (fp : FPModel) {m : Nat}
+    (v b : Fin (m + 1) -> Real) (b0 beta : Real) :
+    (fun i : Fin (m + 1) =>
+        fl_householderApplyCompact fp (m + 2) (Fin.cases 0 v) beta
+          (Fin.cases b0 b) i.succ) =
+      fl_householderApplyCompact fp (m + 1) v beta b := by
+  funext i
+  simp [fl_householderApplyCompact, fl_dotProduct_zero_cons]
+
+/-- Arbitrary-width trailing-panel lift for a full stored step with a
+zero-prefixed reflector.
+
+The previous terminal bridge only needed two columns.  This version removes
+that width restriction and is the reusable statement needed by the full
+stored-loop induction: deleting the first row and first column after a pivot-1
+full stored step with reflector `0 :: v` is exactly the pivot-0 stored step on
+the trailing panel. -/
+theorem trailingPanel_storedPanelStep_succ_zeroPrefix_eq_storedPanelStep_trailingPanel_anyCols
+    (fp : FPModel) {m p : Nat}
+    (v : Fin (m + 1) -> Real) (beta : Real)
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real) :
+    trailingPanel
+        (fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+          (Fin.cases 0 v) beta A) =
+      fl_householderStoredPanelStep fp (m + 1) (p + 1) 0 v beta
+        (trailingPanel A) := by
+  ext i j
+  cases j using Fin.cases with
+  | zero =>
+      cases i using Fin.cases with
+      | zero =>
+          have htail := congrFun
+            (fl_householderApplyCompact_zero_cons_tail fp
+              (v := v) (b := fun a => A a.succ 1)
+              (b0 := A 0 1) (beta := beta)) 0
+          simpa [trailingPanel, fl_householderStoredPanelStep,
+            fl_householderApplyCompactPanel] using htail
+      | succ i =>
+          simp [trailingPanel, fl_householderStoredPanelStep]
+  | succ j =>
+      have htail := congrFun
+        (fl_householderApplyCompact_zero_cons_tail fp
+          (v := v) (b := fun a => A a.succ j.succ.succ)
+          (b0 := A 0 j.succ.succ) (beta := beta)) i
+      simpa [trailingPanel, fl_householderStoredPanelStep,
+        fl_householderApplyCompactPanel] using htail
 
 /-- Trailing-panel lift for a full stored step with a zero-prefixed reflector.
 
@@ -3101,22 +3169,130 @@ theorem trailingPanel_storedPanelStep_succ_zeroPrefix_eq_storedPanelStep_trailin
     (A : Fin (m + 2) -> Fin 2 -> Real) :
     trailingPanel
         (fl_householderStoredPanelStep fp (m + 2) 2 1 (Fin.cases 0 v) beta A) =
-      fl_householderStoredPanelStep fp (m + 1) 1 0 v beta (trailingPanel A) := by
-  ext i j
-  fin_cases j
-  cases i using Fin.cases with
+      fl_householderStoredPanelStep fp (m + 1) 1 0 v beta (trailingPanel A) :=
+  trailingPanel_storedPanelStep_succ_zeroPrefix_eq_storedPanelStep_trailingPanel_anyCols
+    fp v beta A
+
+/-- Arbitrary-width top-row-tail preservation for a pivot-1 zero-prefixed
+stored step under an explicit exact subtract-zero copy convention. -/
+theorem panelTopRowTail_storedPanelStep_succ_zeroPrefix_eq_of_fl_sub_zero_anyCols
+    (fp : FPModel) {m p : Nat}
+    (v : Fin (m + 1) -> Real) (beta : Real)
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real)
+    (hsubZero : (x : Real) -> fp.fl_sub x 0 = x) :
+    panelTopRowTail
+        (fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+          (Fin.cases 0 v) beta A) =
+      panelTopRowTail A := by
+  ext j
+  cases j using Fin.cases with
   | zero =>
-      simp [trailingPanel, fl_householderStoredPanelStep,
-        fl_householderApplyCompactPanel, fl_householderApplyCompact]
-      have hdot :
-          fl_dotProduct fp (m + 2) (fun i => Fin.cases 0 v i) (fun a => A a 1) =
-            fl_dotProduct fp (m + 1) v (fun a => A a.succ 1) := by
-        simpa using fl_dotProduct_zero_cons fp
-          (v := v) (b := fun a => A a.succ 1) (b0 := A 0 1)
-      rw [hdot]
-      rfl
-  | succ i =>
-      simp [trailingPanel, fl_householderStoredPanelStep]
+      simp [panelTopRowTail, fl_householderStoredPanelStep,
+        fl_householderApplyCompactPanel, fl_householderApplyCompact,
+        fl_mul_zero_right, hsubZero]
+  | succ j =>
+      simp [panelTopRowTail, fl_householderStoredPanelStep,
+        fl_householderApplyCompactPanel, fl_householderApplyCompact,
+        fl_mul_zero_right, hsubZero]
+
+/-- Arbitrary-width full pivot-1 zero-prefix stored-step reconstruction.
+
+This removes the two-column restriction from the storage-shape lemma.  It keeps
+the top-row-tail preservation hypothesis explicit so callers can choose either
+the exact-copy route or a later copy-error route. -/
+theorem storedPanelStep_succ_zeroPrefix_eq_panelFromTopAndTrailing_of_topRowTail_anyCols
+    (fp : FPModel) {m p : Nat}
+    (v : Fin (m + 1) -> Real) (beta : Real)
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real)
+    (hfirstTail : panelFirstColumnTailZero A)
+    (htop :
+      panelTopRowTail
+          (fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+            (Fin.cases 0 v) beta A) =
+        panelTopRowTail A) :
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+        (Fin.cases 0 v) beta A =
+      panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+        (fl_householderStoredPanelStep fp (m + 1) (p + 1) 0 v beta
+          (trailingPanel A)) := by
+  let Sfull : Fin (m + 2) -> Fin (p + 2) -> Real :=
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+      (Fin.cases 0 v) beta A
+  let Strail : Fin (m + 1) -> Fin (p + 1) -> Real :=
+    fl_householderStoredPanelStep fp (m + 1) (p + 1) 0 v beta
+      (trailingPanel A)
+  have htrail : trailingPanel Sfull = Strail := by
+    dsimp [Sfull, Strail]
+    exact
+      trailingPanel_storedPanelStep_succ_zeroPrefix_eq_storedPanelStep_trailingPanel_anyCols
+        fp v beta A
+  ext i j
+  cases j using Fin.cases with
+  | zero =>
+      cases i using Fin.cases with
+      | zero =>
+          simp [fl_householderStoredPanelStep,
+            panelFromTopAndTrailing, panelTopLeft]
+      | succ itail =>
+          have htail0 := hfirstTail itail
+          simpa [Sfull, fl_householderStoredPanelStep,
+            panelFromTopAndTrailing, panelFirstColumnTail] using htail0
+  | succ jtail =>
+      cases i using Fin.cases with
+      | zero =>
+          have hentry := congrFun htop jtail
+          simpa [Sfull, panelTopRowTail, panelFromTopAndTrailing] using hentry
+      | succ itail =>
+          have hentry := congrFun (congrFun htrail itail) jtail
+          simpa [Sfull, Strail, trailingPanel, panelFromTopAndTrailing] using hentry
+
+/-- Arbitrary-width full pivot-1 zero-prefix reconstruction under exact
+subtract-zero copy. -/
+theorem storedPanelStep_succ_zeroPrefix_eq_panelFromTopAndTrailing_of_fl_sub_zero_anyCols
+    (fp : FPModel) {m p : Nat}
+    (v : Fin (m + 1) -> Real) (beta : Real)
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real)
+    (hfirstTail : panelFirstColumnTailZero A)
+    (hsubZero : (x : Real) -> fp.fl_sub x 0 = x) :
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+        (Fin.cases 0 v) beta A =
+      panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+        (fl_householderStoredPanelStep fp (m + 1) (p + 1) 0 v beta
+          (trailingPanel A)) :=
+  storedPanelStep_succ_zeroPrefix_eq_panelFromTopAndTrailing_of_topRowTail_anyCols
+    fp v beta A hfirstTail
+    (panelTopRowTail_storedPanelStep_succ_zeroPrefix_eq_of_fl_sub_zero_anyCols
+      fp v beta A hsubZero)
+
+/-- Arbitrary-width top-row-tail preservation using the named subtract-zero
+exact-copy convention. -/
+theorem panelTopRowTail_storedPanelStep_succ_zeroPrefix_eq_of_subtractZeroExact_anyCols
+    (fp : FPModel) {m p : Nat}
+    (v : Fin (m + 1) -> Real) (beta : Real)
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real)
+    (hcopy : subtractZeroExact fp) :
+    panelTopRowTail
+        (fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+          (Fin.cases 0 v) beta A) =
+      panelTopRowTail A :=
+  panelTopRowTail_storedPanelStep_succ_zeroPrefix_eq_of_fl_sub_zero_anyCols
+    fp v beta A hcopy
+
+/-- Arbitrary-width full pivot-1 zero-prefix reconstruction using the named
+subtract-zero exact-copy convention. -/
+theorem storedPanelStep_succ_zeroPrefix_eq_panelFromTopAndTrailing_of_subtractZeroExact_anyCols
+    (fp : FPModel) {m p : Nat}
+    (v : Fin (m + 1) -> Real) (beta : Real)
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real)
+    (hfirstTail : panelFirstColumnTailZero A)
+    (hcopy : subtractZeroExact fp) :
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+        (Fin.cases 0 v) beta A =
+      panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+        (fl_householderStoredPanelStep fp (m + 1) (p + 1) 0 v beta
+          (trailingPanel A)) :=
+  storedPanelStep_succ_zeroPrefix_eq_panelFromTopAndTrailing_of_fl_sub_zero_anyCols
+    fp v beta A hfirstTail hcopy
 
 /-- Full pivot-1 zero-prefix stored-step reconstruction.
 
@@ -3319,21 +3495,6 @@ theorem qrPanel_R_two_col_eq_secondStoredStep_of_leadingBlock_det_ne_zero_of_fl_
       dsimp
       exact panelTopRowTail_storedPanelStep_succ_zeroPrefix_eq_of_fl_sub_zero
         fp _ 1 _ hsubZero)
-
-/-- Named exact-copy convention for the subtract-by-zero operation.
-
-The abstract `FPModel` deliberately does not include this law, but the
-recursive/stored Householder bridge can consume it as a model-strengthening
-surface instead of carrying an anonymous raw hypothesis. -/
-def subtractZeroExact (fp : FPModel) : Prop :=
-  forall x : Real, fp.fl_sub x 0 = x
-
-/-- Exact real arithmetic satisfies the Ch19 subtract-zero copy convention. -/
-theorem subtractZeroExact_exactWithUnitRoundoff
-    (u0 : Real) (hu0 : 0 <= u0) :
-    subtractZeroExact (FPModel.exactWithUnitRoundoff u0 hu0) := by
-  intro x
-  simp [FPModel.exactWithUnitRoundoff]
 
 /-- Top-row-tail preservation using the named subtract-zero exact-copy
 convention. -/
