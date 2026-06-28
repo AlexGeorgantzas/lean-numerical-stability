@@ -9679,3 +9679,22 @@ These compile, but should not be treated as fully derived stability results:
   `invDiagBound`.  This narrows the printed BDD row to constructing/aligning
   the actual active block CLMs and inverse certificates, then composing with
   the existing Eq.13.21 and BDD nonsingularity wrappers.
+
+- 2026-06-28 Algorithm 13.3 BDD matrix-infinity CLM instantiation:
+  added `matrixMulVecCLM`, `matrixMulVecCLM_apply`, and
+  `matrixMulVecCLM_norm_eq_infNorm` in `MatrixAlgebra.lean`, identifying a
+  Mathlib square matrix with its continuous-linear `mulVec` action and
+  proving its operator norm is the repository `infNorm`/Mathlib matrix
+  infinity operator norm.  Added the generic scalar recurrence
+  `higham13_algorithm13_3_diagLowerCertGeneric` and bridges
+  `higham13_algorithm13_3_diagLowerCertGeneric_diag_lower_of_source_table_reciprocal`,
+  `higham13_algorithm13_3_diagLowerCertGeneric_diag_lower_of_continuousLinearMap_source_table`,
+  and
+  `higham13_algorithm13_3_matrix_infNorm_diagLowerCertGeneric_diag_lower_of_continuousLinearMap_source_table`
+  in `BlockLU.lean`.  The last theorem instantiates the CLM source-table route
+  for the actual Algorithm 13.3 matrix-product Schur stages in matrix
+  infinity norm, assuming the initial lower table and exact two-sided active
+  pivot inverse identities.  The printed BDD row remains open for deriving
+  those table/inverse facts from BDD and integrating the result with the
+  entrywise max-norm Eq.13.21 and BDD nonsingularity/block-LU existence
+  endpoints.
