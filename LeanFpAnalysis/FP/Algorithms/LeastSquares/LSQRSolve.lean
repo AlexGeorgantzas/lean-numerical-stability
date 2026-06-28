@@ -15015,6 +15015,91 @@ theorem lsNormwiseBackwardErrorRankOne_scaled_q_optimal_vecNorm2Sq
     _ = vecNorm2Sq (matMulVec m (lsLemma20_6ProjectorComplement p) r) := by
           rfl
 
+/-- Source-shaped numerator for the optimal scalar in the scaled rank-one WKS
+    witness.  When `r = b - A*y` and `u = A^T p`, the scalar numerator
+    `p^T r + u^T y` is exactly `p^T b`. -/
+theorem lsNormwiseBackwardErrorRankOne_scaled_optimal_scale_num_eq_dot_b
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (y : Fin n → ℝ) (p : Fin m → ℝ) :
+    let r : Fin m → ℝ := lsResidualHigham A b y
+    let u : Fin n → ℝ := fun j => ∑ i : Fin m, A i j * p i
+    (∑ k : Fin m, p k * r k) + (∑ j : Fin n, u j * y j) =
+      ∑ i : Fin m, p i * b i := by
+  let r : Fin m → ℝ := lsResidualHigham A b y
+  let u : Fin n → ℝ := fun j => ∑ i : Fin m, A i j * p i
+  have hres :
+      (∑ k : Fin m, p k * r k) =
+        (∑ k : Fin m, p k * b k) -
+          ∑ k : Fin m, ∑ j : Fin n, p k * (A k j * y j) := by
+    calc
+      (∑ k : Fin m, p k * r k)
+          = ∑ k : Fin m, p k * (b k - ∑ j : Fin n, A k j * y j) := by
+              rfl
+      _ = ∑ k : Fin m,
+            (p k * b k - p k * (∑ j : Fin n, A k j * y j)) := by
+              apply Finset.sum_congr rfl
+              intro k _
+              ring
+      _ =
+          (∑ k : Fin m, p k * b k) -
+            ∑ k : Fin m, p k * (∑ j : Fin n, A k j * y j) := by
+          rw [Finset.sum_sub_distrib]
+      _ =
+          (∑ k : Fin m, p k * b k) -
+            ∑ k : Fin m, ∑ j : Fin n, p k * (A k j * y j) := by
+          congr 1
+          apply Finset.sum_congr rfl
+          intro k _
+          rw [Finset.mul_sum]
+  have hu :
+      (∑ j : Fin n, u j * y j) =
+        ∑ k : Fin m, ∑ j : Fin n, p k * (A k j * y j) := by
+    calc
+      (∑ j : Fin n, u j * y j)
+          = ∑ j : Fin n, (∑ k : Fin m, A k j * p k) * y j := by
+              rfl
+      _ = ∑ j : Fin n, ∑ k : Fin m, (A k j * p k) * y j := by
+              apply Finset.sum_congr rfl
+              intro j _
+              rw [Finset.sum_mul]
+      _ = ∑ k : Fin m, ∑ j : Fin n, (A k j * p k) * y j := by
+              rw [Finset.sum_comm]
+      _ = ∑ k : Fin m, ∑ j : Fin n, p k * (A k j * y j) := by
+              apply Finset.sum_congr rfl
+              intro k _
+              apply Finset.sum_congr rfl
+              intro j _
+              ring
+  change
+    (∑ k : Fin m, p k * r k) + (∑ j : Fin n, u j * y j) =
+      ∑ i : Fin m, p i * b i
+  rw [hres, hu]
+  ring
+
+/-- Divided source-shaped form of the optimal scalar in the scaled rank-one WKS
+    witness.  Under the source residual convention, the optimal scale is
+    `(p^T b) / ||p||_2^2`. -/
+theorem lsNormwiseBackwardErrorRankOne_scaled_optimal_scale_eq_dot_b_div
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (y : Fin n → ℝ) (p : Fin m → ℝ) :
+    let r : Fin m → ℝ := lsResidualHigham A b y
+    let u : Fin n → ℝ := fun j => ∑ i : Fin m, A i j * p i
+    (((∑ k : Fin m, p k * r k) + (∑ j : Fin n, u j * y j)) /
+        vecNorm2Sq p) =
+      (∑ i : Fin m, p i * b i) / vecNorm2Sq p := by
+  let r : Fin m → ℝ := lsResidualHigham A b y
+  let u : Fin n → ℝ := fun j => ∑ i : Fin m, A i j * p i
+  have hnum :
+      (∑ k : Fin m, p k * r k) + (∑ j : Fin n, u j * y j) =
+        ∑ i : Fin m, p i * b i := by
+    simpa [r, u] using
+      lsNormwiseBackwardErrorRankOne_scaled_optimal_scale_num_eq_dot_b A b y p
+  change
+    (((∑ k : Fin m, p k * r k) + (∑ j : Fin n, u j * y j)) /
+        vecNorm2Sq p) =
+      (∑ i : Fin m, p i * b i) / vecNorm2Sq p
+  rw [hnum]
+
 /-- Route-elimination check for the scaled rank-one WKS source-transpose
     handoff.  In the nondegenerate case where `(I-r r^+)p` is nonzero, the
     current right-projector comparison required by the rank-one route is
@@ -15417,6 +15502,117 @@ theorem lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_rankOne_scaled_source_trans
     lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_rankOne_scaled_sq_cost_le_sigmaMin
       theta A b y p hp c hc hbranch (by
         simpa [r, u, q, sigma] using hcost_sq)
+
+/-- Degenerate source-projector specialization of the scaled rank-one
+    source-transpose WKS handoff.  If the `sigma_min` candidate `p` has zero
+    component away from the residual direction, then the optimal scalar choice
+    supplies the required right-projector comparison, so only the
+    source-transpose certificate and the nonzero scaling side condition remain
+    as hypotheses. -/
+theorem lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_rankOne_scaled_source_transpose_projected_eq_zero
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (p : Fin (m + 1) → ℝ) (hp : p ≠ 0)
+    (hrsq : vecNorm2Sq (lsResidualHigham A b y) ≠ 0)
+    (hc :
+      let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+      let u : Fin n → ℝ := fun j => ∑ i : Fin (m + 1), A i j * p i
+      (((∑ k : Fin (m + 1), p k * r k) +
+          (∑ j : Fin n, u j * y j)) / vecNorm2Sq p) ≠ 0)
+    (hbranch :
+      lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+          (lsResidualHigham A b y) y ≤
+        lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y)
+    (hprojected :
+      let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+      vecNorm2Sq (matMulVec (m + 1) (lsResidualComplementProjector r) p) = 0)
+    (hsource :
+      let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+      vecNorm2Sq
+          (rectMatMulVec
+            (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y)) p) ≤
+        (lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y) ^ 2 *
+          vecNorm2Sq p) :
+    lsNormwiseBackwardErrorEtaF theta A b y ≤
+      lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+  let u : Fin n → ℝ := fun j => ∑ i : Fin (m + 1), A i j * p i
+  let t : ℝ := ∑ j : Fin n, u j * y j
+  let c : ℝ := ((∑ k : Fin (m + 1), p k * r k) + t) / vecNorm2Sq p
+  have hpsq : vecNorm2Sq p ≠ 0 :=
+    ne_of_gt (vecNorm2Sq_pos_of_ne_zero_lsq hp)
+  have hc' : c ≠ 0 := by
+    simpa [r, u, t, c] using hc
+  have hprojector :
+      let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+      let u : Fin n → ℝ := fun j => ∑ i : Fin (m + 1), A i j * p i
+      let q : Fin (m + 1) → ℝ :=
+        fun i =>
+          c * p i - r i -
+            ((1 / vecNorm2Sq p) * p i *
+              (∑ j : Fin n, u j * y j))
+      theta ^ 2 * vecNorm2Sq q * vecNorm2Sq p ≤
+        (lsNormwiseBackwardErrorPhi theta r y) ^ 2 *
+          vecNorm2Sq
+            (matMulVec (m + 1) (lsResidualComplementProjector r) p) := by
+    simpa [r, u, t, c] using
+      lsNormwiseBackwardErrorRankOne_scaled_projector_comparison_of_projected_eq_zero
+        theta y r p hrsq hpsq (by simpa [r] using hprojected) t
+  exact
+    lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_rankOne_scaled_source_transpose_cert
+      theta A b y p hpsq c hc' hbranch hprojector (by
+        simpa [r] using hsource)
+
+/-- Source-dot nonzero version of the degenerate source-projector WKS handoff.
+    The optimal scale side condition from
+    `lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_rankOne_scaled_source_transpose_projected_eq_zero`
+    is discharged by the source-shaped identity
+    `c = (p^T b)/||p||_2^2`. -/
+theorem lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_rankOne_scaled_source_transpose_projected_eq_zero_of_dot_b_ne_zero
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (p : Fin (m + 1) → ℝ) (hp : p ≠ 0)
+    (hrsq : vecNorm2Sq (lsResidualHigham A b y) ≠ 0)
+    (hdotb : (∑ i : Fin (m + 1), p i * b i) ≠ 0)
+    (hbranch :
+      lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+          (lsResidualHigham A b y) y ≤
+        lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y)
+    (hprojected :
+      let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+      vecNorm2Sq (matMulVec (m + 1) (lsResidualComplementProjector r) p) = 0)
+    (hsource :
+      let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+      vecNorm2Sq
+          (rectMatMulVec
+            (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y)) p) ≤
+        (lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y) ^ 2 *
+          vecNorm2Sq p) :
+    lsNormwiseBackwardErrorEtaF theta A b y ≤
+      lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+  let u : Fin n → ℝ := fun j => ∑ i : Fin (m + 1), A i j * p i
+  have hpsq : vecNorm2Sq p ≠ 0 :=
+    ne_of_gt (vecNorm2Sq_pos_of_ne_zero_lsq hp)
+  have hc :
+      let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+      let u : Fin n → ℝ := fun j => ∑ i : Fin (m + 1), A i j * p i
+      (((∑ k : Fin (m + 1), p k * r k) +
+          (∑ j : Fin n, u j * y j)) / vecNorm2Sq p) ≠ 0 := by
+    have hscale :
+        (((∑ k : Fin (m + 1), p k * r k) +
+            (∑ j : Fin n, u j * y j)) / vecNorm2Sq p) =
+          (∑ i : Fin (m + 1), p i * b i) / vecNorm2Sq p := by
+      simpa [r, u] using
+        lsNormwiseBackwardErrorRankOne_scaled_optimal_scale_eq_dot_b_div
+          A b y p
+    have hdiv :
+        (∑ i : Fin (m + 1), p i * b i) / vecNorm2Sq p ≠ 0 :=
+      div_ne_zero hdotb hpsq
+    simpa [r, u, hscale] using hdiv
+  exact
+    lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_rankOne_scaled_source_transpose_projected_eq_zero
+      theta A b y p hp hrsq hc hbranch hprojected hsource
 
 /-- Left block of the transposed WKS source matrix on a feasible perturbed
     residual.  Under (20.20) feasibility, the `A^T` part of

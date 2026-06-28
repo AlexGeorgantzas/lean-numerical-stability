@@ -3119,6 +3119,47 @@ theorem fl_householderApplyCompact_zero_cons_tail
   funext i
   simp [fl_householderApplyCompact, fl_dotProduct_zero_cons]
 
+/-- Pivot-1 trailing active vector as a zero-prefixed pivot-0 active vector.
+
+This is the reflector-data indexing bridge needed by the later full-loop
+induction: after dropping the first row, the full stored-loop active vector at
+pivot `1` is exactly a leading zero followed by the active vector of the
+shrinking trailing panel. -/
+theorem householderTrailingActiveVector_succ_zeroPrefix {m : Nat}
+    (x : Fin (m + 2) -> Real) (alpha : Real) :
+    householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ) x alpha =
+      Fin.cases 0
+        (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
+          (fun i => x i.succ) alpha) := by
+  funext i
+  cases i using Fin.cases with
+  | zero =>
+      simp [householderTrailingActiveVector, householderActiveVector,
+        householderTrailingPart]
+  | succ i =>
+      cases i using Fin.cases with
+      | zero =>
+          change householderTrailingActiveVector (m + 2)
+              ((0 : Fin (m + 1)).succ) x alpha
+              ((0 : Fin (m + 1)).succ) =
+            householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
+              (fun i => x i.succ) alpha 0
+          simp [householderTrailingActiveVector, householderActiveVector,
+            householderTrailingPart]
+      | succ i =>
+          simp [householderTrailingActiveVector, householderActiveVector,
+            householderTrailingPart]
+          intro h
+          have hv := congrArg Fin.val h
+          simp at hv
+
+/-- Adding a leading zero to Householder data leaves the exact beta unchanged. -/
+theorem householderBetaSpec_zero_cons {m : Nat}
+    (v : Fin (m + 1) -> Real) :
+    householderBetaSpec (m + 2) (Fin.cases 0 v) =
+      householderBetaSpec (m + 1) v := by
+  simp [householderBetaSpec, Fin.sum_univ_succ]
+
 /-- Arbitrary-width trailing-panel lift for a full stored step with a
 zero-prefixed reflector.
 
@@ -3293,6 +3334,54 @@ theorem storedPanelStep_succ_zeroPrefix_eq_panelFromTopAndTrailing_of_subtractZe
           (trailingPanel A)) :=
   storedPanelStep_succ_zeroPrefix_eq_panelFromTopAndTrailing_of_fl_sub_zero_anyCols
     fp v beta A hfirstTail hcopy
+
+/-- Pivot-1 stored-step reconstruction with actual trailing-active
+Householder data under exact subtract-zero copy.
+
+The earlier zero-prefix reconstruction was phrased for an arbitrary
+`Fin.cases 0 v` reflector.  This version instantiates that bridge with the
+stored loop's own pivot-1 active vector and the corresponding `beta`, reducing
+the later `R11` induction to the remaining equality between this pivot-0
+trailing active data and the recursive normalized reflector data. -/
+theorem
+    storedPanelStep_succ_trailingActiveVector_eq_panelFromTopAndTrailing_of_subtractZeroExact_anyCols
+    (fp : FPModel) {m p : Nat}
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real) (alpha : Real)
+    (hfirstTail : panelFirstColumnTailZero A)
+    (hcopy : subtractZeroExact fp) :
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+        (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+          (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)
+        (householderBetaSpec (m + 2)
+          (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+            (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)) A =
+      panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+        (fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+          (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)) alpha)
+          (householderBetaSpec (m + 1)
+            (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
+              (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)) alpha))
+          (trailingPanel A)) := by
+  let vtail : Fin (m + 1) -> Real :=
+    householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
+      (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)) alpha
+  have hv :
+      householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+          (fun a => A a ((0 : Fin (p + 1)).succ)) alpha =
+        Fin.cases 0 vtail := by
+    simpa [vtail, panelFirstColumn, trailingPanel] using
+      (householderTrailingActiveVector_succ_zeroPrefix
+        (m := m) (x := fun a => A a ((0 : Fin (p + 1)).succ)) alpha)
+  have hbeta :
+      householderBetaSpec (m + 2) (Fin.cases 0 vtail) =
+        householderBetaSpec (m + 1) vtail :=
+    householderBetaSpec_zero_cons vtail
+  rw [hv]
+  rw [hbeta]
+  exact
+    storedPanelStep_succ_zeroPrefix_eq_panelFromTopAndTrailing_of_subtractZeroExact_anyCols
+      fp vtail (householderBetaSpec (m + 1) vtail) A hfirstTail hcopy
 
 /-- Full pivot-1 zero-prefix stored-step reconstruction.
 
