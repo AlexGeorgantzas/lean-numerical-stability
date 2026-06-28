@@ -113,10 +113,14 @@
     Higham13Eq1322LowerComparisonSourceChain.det_ne_zero,
     Higham13Eq1322LowerComparisonSourceChain.to_blockLUBudgetChain,
     Higham13Eq1322LowerComparisonSourceChain.exists_blockLUFact_eq13_22_product_exact_kappa,
-    Higham13Eq1322LowerComparisonSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa:
+    Higham13Eq1322LowerComparisonSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa,
+    Higham13Eq1322LowerComparisonSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update:
     recursive source certificate and chain/product lift for the direct
     lower-budget comparison route, replacing the prebuilt ambient-chain
-    hypothesis by per-tail determinant, pivot, and direct comparison data
+    hypothesis by per-tail determinant, pivot, and direct comparison data; the
+    Eq.13.23 product-bound/diagonal-update wrapper replaces the raw `rho <= 2`
+    hypothesis at this source-chain surface while keeping the direct comparison
+    and product/update obligations explicit
   - higham13_eq13_22_exists_blockLUOneStep_fact_product_from_matrix_stage_history_first_split_tail_exact_kappa:
     source-facing one-step Eq.13.22 witness theorem combining the explicit
     block LU construction with the one-step product bound
@@ -30117,6 +30121,90 @@ theorem Higham13Eq1322LowerComparisonSourceChain.exists_blockLUFact_eq13_23_prod
     Higham13BlockLUBudgetChain.exists_blockLUFact_eq13_23_product_exact_kappa
       (r := r) hr (hN := hN) (A0 := A0) (G := G) (Ainv := Ainv)
       hApos n hchain hRho_le_two
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.23):
+    full recursive point-row product witness from the direct-lower-comparison
+    source certificate, with the `rho <= 2` side condition supplied by the
+    matrix-stage product-bound/diagonal-update BDD route.
+
+    This removes the raw growth-factor hypothesis from the recursive
+    source-chain surface while keeping the source-strength structured
+    triple-product estimate and diagonal-update table explicit.  The per-tail
+    direct lower comparison and the product-bound/diagonal-update hypotheses
+    remain the visible mathematical obligations. -/
+theorem
+    Higham13Eq1322LowerComparisonSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update
+    {r n : ℕ} (hr : 0 < r) :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ}
+      (_hdet :
+        Matrix.det (blockMatrixFlatFin Ablk :
+          Matrix (Fin ((m + 1) * r)) (Fin ((m + 1) * r)) ℝ) ≠ 0)
+      (_hcert : Higham13Eq1322LowerComparisonSourceChain hr n m Ablk pivotInv),
+      let hm : 0 < m + 1 := Nat.succ_pos m
+      let hN : 0 < (m + 1) * r := Nat.mul_pos hm hr
+      let A0 : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+        blockMatrixFlatFin Ablk
+      let Ainv : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+        nonsingInv ((m + 1) * r) A0
+      (invDiagBound : Fin (m + 1) → ℝ) →
+      (stageInvDiagBound : ℕ → Fin (m + 1) → ℝ) →
+      IsBlockDiagDomCol (m + 1)
+        (fun i j => maxEntryNorm hr (Ablk i j)) invDiagBound →
+      (∀ j : Fin (m + 1), invDiagBound j ≤ maxEntryNorm hr (Ablk j j)) →
+      (∀ j : Fin (m + 1), stageInvDiagBound 0 j = invDiagBound j) →
+      (∀ k : ℕ, ∀ hk : k < m + 1,
+        maxEntryNorm hr (pivotInv k) * stageInvDiagBound k ⟨k, hk⟩ ≤ 1) →
+      (∀ k : ℕ, ∀ hk : k < m + 1, ∀ i j : Fin (m + 1),
+        k + 1 ≤ i.val → k + 1 ≤ j.val →
+          maxEntryNorm hr
+            (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k i
+              ⟨k, hk⟩ *
+              pivotInv k *
+              higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+                ⟨k, hk⟩ j) ≤
+            maxEntryNorm hr
+              (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k i
+                ⟨k, hk⟩) *
+            maxEntryNorm hr (pivotInv k) *
+            maxEntryNorm hr
+              (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+                ⟨k, hk⟩ j)) →
+      SchurStageActiveDiagLowerUpdate13_7
+        (fun k i j => maxEntryNorm hr
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k i j))
+        stageInvDiagBound
+        (fun k => maxEntryNorm hr (pivotInv k)) →
+      ∃ L U : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ,
+        BlockLUFactSpec (m + 1) r Ablk L U ∧
+          blockMaxNorm (Nat.succ_pos m) hr L *
+              blockMaxNorm (Nat.succ_pos m) hr U ≤
+            8 * (n : ℝ) *
+              (maxEntryNormRect hN hN A0 * maxEntryNormRect hN hN Ainv) *
+              maxEntryNormRect hN hN A0 := by
+  intro m Ablk pivotInv hdet hcert
+  dsimp only
+  intro invDiagBound stageInvDiagBound hDom hDiagBound hInitInv
+    hPivotInvBound hProduct hDiagUpdate
+  let hm : 0 < m + 1 := Nat.succ_pos m
+  let hN : 0 < (m + 1) * r := Nat.mul_pos hm hr
+  let A0 : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+    blockMatrixFlatFin Ablk
+  let G : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+    higham13_algorithm13_3_matrixStageHistoryGrowthMatrix hN hm hr Ablk pivotInv
+  let Ainv : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+    nonsingInv ((m + 1) * r) A0
+  let hApos : 0 < maxEntryNorm hN A0 :=
+    maxEntryNorm_pos_of_det_ne_zero hN A0 hdet
+  exact
+    Higham13Eq1322LowerComparisonSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa
+      (r := r) (n := n) hr hdet hcert
+      (by
+        simpa [hm, hN, A0, G, Ainv, hApos] using
+          higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_product_bound_diag_update
+            hm hr Ablk pivotInv hApos invDiagBound stageInvDiagBound
+            hDom hDiagBound hInitInv hPivotInvBound hProduct hDiagUpdate)
 
 /-- Higham, 2nd ed., Chapter 13, equation (13.22):
     uniform-flat determinant-nonzero successor product witness from an ambient
