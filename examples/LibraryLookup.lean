@@ -11381,6 +11381,7 @@ It intentionally contains no task-specific proof scripts.
 #check opNorm2Le_opNorm2
 #check opNorm2_pos_of_right_inverse_at
 #check opNorm2_pos_of_right_inverse
+#check opNorm2_inv_recip_le_vecNorm2_matMulVec_of_isRightInverse
 #check kappa2
 #check isSymPosDef_to_matrix_posDef
 #check isSymPosDef_det_ne_zero
@@ -15159,6 +15160,8 @@ It intentionally contains no task-specific proof scripts.
 #check SchurStageActiveDiagLowerUpdate13_7
 #check SchurStageActiveDiagLowerUpdate13_7.of_eq
 #check SchurStageActiveDiagLowerUpdate13_7.of_unit_min_actions
+#check higham13_eq13_18_unit_lower_bound_of_right_inverse_opNorm2
+#check higham13_eq13_18_active_diag_table_unit_lower_bound_of_right_inverse_opNorm2
 #check higham13_theorem13_7_pivot_inverse_bound_of_reciprocal
 #check higham13_theorem13_7_pivot_inverse_bound_of_diag_lower
 #check higham13_theorem13_7_active_column_dom_step_of_local_schur_bound
