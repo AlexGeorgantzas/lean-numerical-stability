@@ -102,10 +102,13 @@
     Higham13Eq1322InverseRatioSourceChain.to_blockLUBudgetChain,
     Higham13Eq1322InverseRatioSourceChain.exists_blockLUFact_eq13_22_product_exact_kappa,
     Higham13Eq1322InverseRatioSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa,
-    Higham13Eq1322InverseRatioSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update:
+    Higham13Eq1322InverseRatioSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update,
+    Higham13Eq1322InverseRatioSourceChain.to_lowerComparisonSourceChain:
     recursive source certificate and chain/product lift for the inverse-ratio
     transport route, replacing the prebuilt ambient-chain hypothesis by
-    per-tail determinant, pivot, and inverse-ratio comparison data
+    per-tail determinant, pivot, and inverse-ratio comparison data; the
+    conversion theorem integrates it with the direct lower-comparison
+    source-chain API
   - higham13_eq13_22_blockLUBudgetChain_succ_from_tail_local_chain_lower_comparison_matrix_stage_history_exact_kappa,
     higham13_eq13_22_blockLUBudgetChain_succ_from_tail_local_chain_lower_comparison_matrix_stage_history_exact_kappa_of_det_ne_zero,
     higham13_eq13_22_blockLUBudgetChain_succ_from_tail_local_chain_lower_comparison_matrix_stage_history_exact_kappa_of_det_ne_zero_of_schur_invertible,
@@ -30697,6 +30700,52 @@ theorem
           higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_product_bound_diag_update
             hm hr Ablk pivotInv hApos invDiagBound stageInvDiagBound
             hDom hDiagBound hInitInv hPivotInvBound hProduct hDiagUpdate)
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    the inverse-ratio source certificate is a specialization of the direct
+    lower-comparison source certificate.
+
+    The conversion uses the already-proved tail-history comparison and
+    inverse-ratio lower-budget adapter at each Schur-tail step.  This keeps the
+    optional inverse-ratio route integrated with the stronger direct
+    lower-comparison source-chain API. -/
+theorem Higham13Eq1322InverseRatioSourceChain.to_lowerComparisonSourceChain
+    {r n : ℕ} (hr : 0 < r) :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322InverseRatioSourceChain hr n m Ablk pivotInv →
+        Higham13Eq1322LowerComparisonSourceChain hr n m Ablk pivotInv := by
+  intro m
+  induction m with
+  | zero =>
+      intro Ablk pivotInv hcert
+      cases hcert with
+      | one hdet hNn =>
+          exact Higham13Eq1322LowerComparisonSourceChain.one hdet hNn
+  | succ m ih =>
+      intro Ablk pivotInv hcert
+      cases hcert with
+      | succ hpivot hdetFlat hsn hNn hInvRatio hTail =>
+          have hTailLower :
+              Higham13Eq1322LowerComparisonSourceChain hr n m
+                (blockSchur Ablk (pivotInv 0)) (fun q => pivotInv (q + 1)) :=
+            ih hTail
+          refine
+            Higham13Eq1322LowerComparisonSourceChain.succ
+              (hr := hr) (n := n) hpivot hdetFlat hsn hNn ?_ hTailLower
+          have hTailPos :=
+            maxEntryNorm_blockMatrixFlatFin_blockSchur_pos_of_first_split_invertible
+              hr Ablk pivotInv hpivot
+          have hLower :=
+            higham13_eq13_22_tail_lower_budget_le_full_from_inverse_ratio_matrix_stage_history_exact_kappa
+              hr Ablk pivotInv hTailPos
+              (by
+                rw [maxEntryNorm_blockMatrixFirstSplitFlat_eq_blockMatrixFlatFin
+                  (Nat.succ_pos m) hr]
+                exact maxEntryNorm_pos_of_det_ne_zero _ _ hdetFlat)
+              n hInvRatio
+          simpa using hLower
 
 /-- Higham, 2nd ed., Chapter 13, equation (13.22):
     uniform-flat determinant-nonzero successor product witness from an ambient
