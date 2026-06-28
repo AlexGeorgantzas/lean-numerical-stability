@@ -26979,6 +26979,61 @@ theorem higham9_15_componentwise_source_bound_of_factorization_G_majorant_of_mat
       L U Linv Uinv ΔA ΔL ΔU B hLrightRect hUleftRect hfact hXtri hYtri hB
 
 /-- **Theorem 9.15**, source-facing componentwise endpoint from the original
+`G` factorization equations, two-sided inverse identities, and the canonical
+local majorant. -/
+theorem higham9_15_componentwise_source_bound_of_factorization_G_local_majorant_of_matrix_inverse_identities
+    {n : ℕ}
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hLright : L * Linv = 1)
+    (hUright : U * Uinv = 1)
+    (hUleft : Uinv * U = 1)
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU Uinv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (fun i j : Fin n =>
+              |higham9_27_GMatrix Linv ΔA Uinv i j| +
+                rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+                  (absMatrix n (rectMatMul ΔU Uinv)) i j)) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (fun i j : Fin n =>
+              |higham9_27_GMatrix Linv ΔA Uinv i j| +
+                rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+                  (absMatrix n (rectMatMul ΔU Uinv)) i j))
+          (absMatrix n U) i j) := by
+  have hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)) := by
+    have h :=
+      higham9_15_normalized_G_factorization_matrix
+        A L U ΔA ΔL ΔU Linv Uinv hLU hPert hLleft hUright
+    simpa [higham9_27_GMatrix, rectMatMul, Matrix.mul_apply] using h.symm
+  have hLrightRect : rectMatMul L Linv = idMatrix n := by
+    ext i j
+    have h := congrFun (congrFun hLright i) j
+    simpa [rectMatMul, idMatrix, Matrix.mul_apply] using h
+  have hUleftRect : rectMatMul Uinv U = idMatrix n := by
+    ext i j
+    have h := congrFun (congrFun hUleft i) j
+    simpa [rectMatMul, idMatrix, Matrix.mul_apply] using h
+  exact
+    higham9_15_componentwise_source_bound_of_G_split_local_majorant_of_inverse_identities
+      L U Linv Uinv ΔA ΔL ΔU hLrightRect hUleftRect hfact hXtri hYtri
+
+/-- **Theorem 9.15**, source-facing componentwise endpoint from the original
 factorization equations with only the source-oriented inverse identities
 `L⁻¹L = I` and `U U⁻¹ = I`. -/
 theorem higham9_15_componentwise_source_bound_of_factorization_G_majorant
@@ -27299,6 +27354,62 @@ theorem higham9_15_componentwise_source_bound_of_factorization_Gtilde_majorant_o
     higham9_15_componentwise_source_bound_of_Gtilde_split_majorant_of_inverse_identities
       Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU B hLrightRect hUleftRect hfact
       hXtri hYtri hB
+
+/-- **Theorem 9.15**, source-facing componentwise endpoint from the original
+`Gtilde` factorization equations, two-sided inverse identities, and the
+canonical local majorant. -/
+theorem higham9_15_componentwise_source_bound_of_factorization_Gtilde_local_majorant_of_matrix_inverse_identities
+    {n : ℕ}
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hLright : Lhat * LhatInv = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hUleft : UhatInv * Uhat = 1)
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU UhatInv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (fun i j : Fin n =>
+              |higham9_27_GMatrix LhatInv ΔA UhatInv i j| +
+                rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+                  (absMatrix n (rectMatMul ΔU UhatInv)) i j)) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (fun i j : Fin n =>
+              |higham9_27_GMatrix LhatInv ΔA UhatInv i j| +
+                rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+                  (absMatrix n (rectMatMul ΔU UhatInv)) i j))
+          (absMatrix n Uhat) i j) := by
+  have hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)) := by
+    have h :=
+      higham9_15_normalized_Gtilde_factorization_matrix
+        A Lhat Uhat ΔA ΔL ΔU LhatInv UhatInv hA hPert hLleft hUright
+    simpa [higham9_27_GMatrix, rectMatMul, Matrix.mul_apply] using h.symm
+  have hLrightRect : rectMatMul Lhat LhatInv = idMatrix n := by
+    ext i j
+    have h := congrFun (congrFun hLright i) j
+    simpa [rectMatMul, idMatrix, Matrix.mul_apply] using h
+  have hUleftRect : rectMatMul UhatInv Uhat = idMatrix n := by
+    ext i j
+    have h := congrFun (congrFun hUleft i) j
+    simpa [rectMatMul, idMatrix, Matrix.mul_apply] using h
+  exact
+    higham9_15_componentwise_source_bound_of_Gtilde_split_local_majorant_of_inverse_identities
+      Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hLrightRect hUleftRect hfact
+      hXtri hYtri
 
 /-- **Theorem 9.15**, source-facing componentwise endpoint from the original
 factorization equations with only the source-oriented inverse identities
