@@ -9838,6 +9838,59 @@ theorem
       (kappaA := kappaA) (higherOrder := higherOrder)
       hdet hRinv hrho hcondition hkappaA hgamma_coeff hcoeff hhigher
 
+/-- Fully explicit small-unit-roundoff compact condition route.
+
+This specializes the final radius bookkeeping to the concrete first-order
+coefficient `c2 = 12*k` and the exact quadratic higher-order term.  The
+remaining hypotheses are the genuinely source-facing `R11` determinant and
+condition-estimate inputs. -/
+theorem
+    mgs_qr_bounds_of_R11_det_ne_zero_compact_condition_explicit_radius_of_small_unit_roundoff
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {rho kappaA : Real}
+    (hdet :
+      Ne
+        (Matrix.det
+        (householder_paddedFinInput_R11 fp A :
+          Matrix (Fin n) (Fin n) Real))
+        0)
+    (hRinv :
+      rectOpNorm2Le
+        (nonsingInv n (householder_paddedFinInput_R11 fp A))
+        rho)
+    (hrho : 0 <= rho)
+    (hcondition : frobNormRect A * rho <= kappaA) :
+    MGSQRBounds m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (householder_paddedFinInput_R11 fp A)
+      (2 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      (12 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u (frobNormRect A) kappaA
+      (((3 * Theorem19_4.gamma_tilde fp (n + m) n) * kappaA) ^ 2) := by
+  let k : Real :=
+    ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real)
+  have hkappaA : 0 <= kappaA := by
+    exact le_trans (mul_nonneg (frobNormRect_nonneg A) hrho) hcondition
+  exact
+    mgs_qr_bounds_of_R11_det_ne_zero_compact_condition_radius_budget_of_small_unit_roundoff
+      (fp := fp) (m := m) (n := n) A hn hnm hsmall
+      (rho := rho) (c2 := 12 * k)
+      (kappaA := kappaA)
+      (higherOrder :=
+        ((3 * Theorem19_4.gamma_tilde fp (n + m) n) * kappaA) ^ 2)
+      hdet hRinv hrho hcondition hkappaA
+      (by
+        dsimp [k]
+        exact le_rfl)
+      (by exact le_rfl)
+
 /-- Chapter-facing Theorem 19.13 assembly currently proved for the concrete
 padded Householder route.
 
