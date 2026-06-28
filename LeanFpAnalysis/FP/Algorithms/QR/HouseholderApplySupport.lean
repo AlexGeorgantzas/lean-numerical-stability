@@ -1479,6 +1479,61 @@ theorem householderCompactNormBudgetCoeffFactor_le_of_u_gamma_le
         Ucap * (1 + Gcap) * (1 + Ucap) ^ 2
   linarith
 
+/-- Concrete gamma-index cap for the compact Householder norm-budget scalar
+    factor.
+
+    Under the standard validity guard for `2*n` operations and `0 < n`, the
+    explicit scalar factor in the compact dot-scale-subtract Householder
+    budget is at most `15 * gamma fp n`.  The constant is deliberately
+    conservative; it packages the polynomial in `u` and `gamma_n` into a single
+    reusable operation-count comparison. -/
+theorem householderCompactNormBudgetCoeffFactor_le_fifteen_gamma
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (hvalid2n : gammaValid fp (2 * n)) :
+    householderCompactNormBudgetCoeffFactor fp n ≤ 15 * gamma fp n := by
+  let g : ℝ := gamma fp n
+  have hn : gammaValid fp n := gammaValid_mono fp (by omega) hvalid2n
+  have hg_nonneg : 0 ≤ g := by
+    simpa [g] using gamma_nonneg fp hn
+  have hg_le_one : g ≤ 1 := by
+    simpa [g] using le_of_lt (gamma_lt_one fp n hvalid2n)
+  have hu_le_g : fp.u ≤ g := by
+    simpa [g] using u_le_gamma fp hn_pos hn
+  have hFcap :
+      householderCompactNormBudgetCoeffFactor fp n ≤
+        g * (1 + g) * (1 + g) +
+          g * (1 + g) +
+          g +
+          g * (1 + g) * (1 + g) ^ 2 := by
+    simpa [g] using
+      householderCompactNormBudgetCoeffFactor_le_of_u_gamma_le
+        fp n hn (gamma fp n) (gamma fp n)
+        (by simpa [g] using hg_nonneg)
+        (by simpa [g] using hg_nonneg)
+        (by simpa [g] using hu_le_g) (le_rfl)
+  have hpoly :
+      g * (1 + g) * (1 + g) +
+          g * (1 + g) +
+          g +
+          g * (1 + g) * (1 + g) ^ 2 ≤
+        15 * g := by
+    have hg2 : g ^ 2 ≤ g := by
+      nlinarith [mul_nonneg hg_nonneg (sub_nonneg.mpr hg_le_one)]
+    have hg3 : g ^ 3 ≤ g := by
+      have h : g ^ 2 * g ≤ g * g :=
+        mul_le_mul_of_nonneg_right hg2 hg_nonneg
+      have h' : g ^ 3 ≤ g ^ 2 := by nlinarith [h]
+      exact le_trans h' hg2
+    have hg4 : g ^ 4 ≤ g := by
+      have h : g ^ 3 * g ≤ g * g :=
+        mul_le_mul_of_nonneg_right hg3 hg_nonneg
+      have h' : g ^ 4 ≤ g ^ 2 := by nlinarith [h]
+      exact le_trans h' hg2
+    ring_nf
+    nlinarith [hg2, hg3, hg4]
+  exact le_trans hFcap hpoly
+
 /-- Unit-roundoff-cap form of
     `householderCompactNormBudgetCoeffFactor_le_of_u_gamma_le`.
 

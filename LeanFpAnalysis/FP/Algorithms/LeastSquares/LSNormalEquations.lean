@@ -1,22 +1,24 @@
 -- Algorithms/LeastSquares/LSNormalEquations.lean
 --
--- Error analysis of the normal equations method for least squares (Higham §19.4).
+-- Error analysis of the normal equations method for least squares (Higham §20.4).
 --
 -- The LS problem min‖b−Ax‖₂ can be solved via the normal equations
 -- AᵀAx = Aᵀb. The method forms C = fl(AᵀA), c = fl(Aᵀb), then
 -- solves via Cholesky: R̂ᵀR̂ = Ĉ, R̂ᵀy = ĉ, R̂x̂ = y.
 --
--- The overall backward error is (AᵀA + ΔA)x̂ = Aᵀb + Δc (eq 19.12)
+-- The overall backward error is (AᵀA + ΔA)x̂ = Aᵀb + Δc (eq 20.12)
 -- with |ΔA| ≤ γ_m|Aᵀ||A| + γ_{3n+1}|R̂ᵀ||R̂| and |Δc| ≤ γ_m|Aᵀ||b|.
 --
--- The forward error bound involves κ(AᵀA) = κ₂(A)² (eq 19.14),
+-- The forward error bound involves κ(AᵀA) = κ₂(A)² (eq 20.14),
 -- explaining why the normal equations method is inferior to QR
 -- when A is ill conditioned and the residual is small.
 
 import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
+import Mathlib.Tactic.FinCases
 import Mathlib.Tactic.Linarith
+import Mathlib.Tactic.NormNum
 import Mathlib.Tactic.Ring
 import LeanFpAnalysis.FP.Model
 import LeanFpAnalysis.FP.Analysis.Rounding
@@ -31,10 +33,59 @@ namespace LeanFpAnalysis.FP
 open scoped BigOperators
 
 -- ============================================================
--- §19.4  Gram product and vector computation errors
+-- §20.4  Gram product and vector computation errors
 -- ============================================================
 
-/-- **Error in computing Ĉ = fl(AᵀA)** (Higham §19.4, eq before 19.11).
+/-- Higham, 2nd ed., Chapter 20, Section 20.4, printed p. 386:
+    the 2-by-2 normal-equations cross-product example
+    `A = [[1, 1], [epsilon, 0]]`. -/
+noncomputable def normalEquationsCrossProductExampleA
+    (epsilon : ℝ) : Fin 2 → Fin 2 → ℝ :=
+  fun i j => if i = 0 then 1 else if j = 0 then epsilon else 0
+
+/-- Higham, 2nd ed., Chapter 20, Section 20.4, printed p. 387:
+    exact cross product for the example
+    `A^T A = [[1 + epsilon^2, 1], [1, 1]]`. -/
+theorem normalEquationsCrossProductExample_gram_eq (epsilon : ℝ) :
+    (fun i j : Fin 2 =>
+        ∑ k : Fin 2,
+          normalEquationsCrossProductExampleA epsilon k i *
+          normalEquationsCrossProductExampleA epsilon k j) =
+      fun i j =>
+        if i = 0 then
+          if j = 0 then 1 + epsilon ^ 2 else 1
+        else
+          if j = 0 then 1 else 1 := by
+  ext i j
+  fin_cases i <;> fin_cases j
+  · norm_num [normalEquationsCrossProductExampleA]
+    ring
+  · norm_num [normalEquationsCrossProductExampleA]
+  · norm_num [normalEquationsCrossProductExampleA]
+  · norm_num [normalEquationsCrossProductExampleA]
+
+/-- Higham, 2nd ed., Chapter 20, Section 20.4, printed p. 387:
+    source model of the rounded cross product in the example,
+    `fl(A^T A) = [[1, 1], [1, 1]]`. -/
+noncomputable def normalEquationsCrossProductExampleRoundedGram :
+    Fin 2 → Fin 2 → ℝ :=
+  fun _ _ => 1
+
+/-- The rounded cross product displayed in Higham's Section 20.4 example is
+    singular, witnessed by the nonzero vector `[1, -1]`. -/
+theorem normalEquationsCrossProductExampleRoundedGram_singular :
+    ∃ x : Fin 2 → ℝ,
+      x ≠ 0 ∧
+      matMulVec 2 normalEquationsCrossProductExampleRoundedGram x = 0 := by
+  refine ⟨fun i => if i = 0 then 1 else -1, ?_, ?_⟩
+  · intro hx
+    have h0 := congrFun hx (0 : Fin 2)
+    norm_num at h0
+  · ext i
+    fin_cases i <;>
+      norm_num [matMulVec, normalEquationsCrossProductExampleRoundedGram]
+
+/-- **Error in computing Ĉ = fl(AᵀA)** (Higham §20.4, eq before 20.11).
 
     When the Gram matrix C = AᵀA is formed in floating-point arithmetic,
     the computed matrix Ĉ satisfies Ĉ = AᵀA + ΔC₁ where
@@ -54,7 +105,7 @@ structure GramProductError (n : ℕ)
   /-- Componentwise error bound: |Ĉ_{ij} − C_{ij}| ≤ ε · (|Aᵀ||A|)_{ij}. -/
   bound : ∀ i j : Fin n, |C_hat i j - C_exact i j| ≤ ε * absATA i j
 
-/-- **Error in computing ĉ = fl(Aᵀb)** (Higham §19.4).
+/-- **Error in computing ĉ = fl(Aᵀb)** (Higham §20.4).
 
     The computed right-hand side ĉ satisfies ĉ = Aᵀb + Δc where
     |Δc_i| ≤ ε · absATb_i componentwise.
@@ -104,10 +155,10 @@ theorem gramVecError_from_fl_matVec (fp : FPModel) (m n : ℕ)
     (matVec_error_bound fp n m (fun i k => A k i) b hm i)
 
 -- ============================================================
--- §19.4  Normal equations overall backward error (eq 19.12)
+-- §20.4  Normal equations overall backward error (eq 20.12)
 -- ============================================================
 
-/-- **Normal equations overall backward error** (Higham §19.4, eq 19.12).
+/-- **Normal equations overall backward error** (Higham §20.4, eq 20.12).
 
     Solving min‖b−Ax‖₂ via the normal equations AᵀAx = Aᵀb with
     Cholesky factorization gives:
@@ -184,10 +235,10 @@ theorem ls_normal_equations_backward (fp : FPModel) (n : ℕ)
     exact hGramVec.bound i
 
 -- ============================================================
--- §19.4  Forward error bound (eq 19.14)
+-- §20.4  Forward error bound (eq 20.14)
 -- ============================================================
 
-/-- **Normal equations forward error via condition number** (Higham §19.4, eq 19.14).
+/-- **Normal equations forward error via condition number** (Higham §20.4, eq 20.14).
 
     The forward error of the normal equations method satisfies
     |x̂ − x| ≤ |(AᵀA)⁻¹| · |ΔA · x̂ + Δc|
@@ -386,10 +437,10 @@ theorem normal_equations_cholesky_forward_error_certificate {m n : ℕ}
         · exact hΔc_bound j
 
 -- ============================================================
--- §19.4  Condition number squaring (eq 19.14 explanation)
+-- §20.4  Condition number squaring (eq 20.14 explanation)
 -- ============================================================
 
-/-- **Condition number squaring for the Gram system** (Higham §19.4).
+/-- **Condition number squaring for the Gram system** (Higham §20.4).
 
     For the normal equations AᵀAx = Aᵀb, the condition number of
     the coefficient matrix satisfies κ(AᵀA) ≤ κ₂(A)².
@@ -402,7 +453,7 @@ structure GramConditionSquared (n : ℕ)
   kappa_ge_one : 1 ≤ kappa_A
   gram_le_squared : kappa_gram ≤ kappa_A ^ 2
 
-/-- **Forward error amplification** (Higham §19.4, eq 19.14).
+/-- **Forward error amplification** (Higham §20.4, eq 20.14).
 
     Normal equations: forward_err ≤ κ(AᵀA) · ε ≤ κ₂(A)² · ε.
     QR method:        forward_err ≤ κ₂(A) · ε. -/

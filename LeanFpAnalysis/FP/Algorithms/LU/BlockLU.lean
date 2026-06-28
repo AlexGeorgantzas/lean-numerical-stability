@@ -256,8 +256,11 @@
     spec-shaped induction step for Theorem 13.5
   - block_lu_solve_backward_error, block_lu_solve_backward_error_firstOrder,
     higham13_theorem13_6_eq13_16_from_factor_solve_estimates,
-    higham13_theorem13_6_eq13_16_firstOrder_from_factor_solve_estimates:
-    Theorem 13.6 scalar and conditional Eq.13.16 aggregation
+    higham13_theorem13_6_eq13_16_firstOrder_from_factor_solve_estimates,
+    DemmelHighamSchreiber13_6Estimates,
+    higham13_theorem13_6_eq13_16_firstOrder_from_DHS_estimates:
+    Theorem 13.6 scalar and conditional Eq.13.16 aggregation, with a named
+    surface for the still-open Demmel--Higham--Schreiber estimates
   - maxEntryNormRect_rectMatMul_le, maxEntryNorm_matrix_mul_le_dim,
     maxEntryNorm_matrix_mul_mul_le_dim_sq,
     maxEntryNorm_matrix_mul_dimension_free_counterexample,
@@ -6032,6 +6035,44 @@ theorem higham13_theorem13_6_eq13_16_firstOrder_from_factor_solve_estimates
   have hFactDn := hFact.mono_leading hFactLeading
   have hSolveDn := hSolve.mono_leading hSolveLeading
   exact ⟨hFactDn, hSolveDn, FirstOrderLe.max_same hFactDn hSolveDn⟩
+
+/-- Conditional proof-source predicate for Higham, 2nd ed., Chapter 13,
+    Theorem 13.6 / equation (13.16).
+
+    The book cites Demmel--Higham--Schreiber [326] for the implementation
+    analysis behind these two first-order estimates.  This predicate names that
+    still-open proof obligation explicitly: it records the factorization and
+    solve perturbation estimates that the cited analysis must eventually
+    provide for Algorithm 13.3 Implementation 1. -/
+structure DemmelHighamSchreiber13_6Estimates
+    (u d_fact d_solve normA normL normU normDeltaA_fact normDeltaA_solve : ℝ) :
+    Prop where
+  factorization :
+    FirstOrderLe u (d_fact * u * (normA + normL * normU)) normDeltaA_fact
+  solve :
+    FirstOrderLe u (d_solve * u * (normA + normL * normU)) normDeltaA_solve
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.6 / equation (13.16), conditional
+    on the Demmel--Higham--Schreiber [326] implementation estimates.
+
+    This theorem is deliberately conditional: it packages the existing scalar
+    aggregation around the named [326]-level estimate predicate.  It does not
+    prove the cited implementation analysis and therefore does not close the
+    Theorem 13.6 source row by itself. -/
+theorem higham13_theorem13_6_eq13_16_firstOrder_from_DHS_estimates
+    (normDeltaA_fact normDeltaA_solve : ℝ)
+    (normA normL normU u d_fact d_solve dn : ℝ)
+    (hu : 0 ≤ u) (hA : 0 ≤ normA) (hL : 0 ≤ normL) (hU : 0 ≤ normU)
+    (hd_fact : d_fact ≤ dn) (hd_solve : d_solve ≤ dn)
+    (hEst : DemmelHighamSchreiber13_6Estimates
+      u d_fact d_solve normA normL normU normDeltaA_fact normDeltaA_solve) :
+    FirstOrderLe u (dn * u * (normA + normL * normU)) normDeltaA_fact ∧
+      FirstOrderLe u (dn * u * (normA + normL * normU)) normDeltaA_solve ∧
+      FirstOrderLe u (dn * u * (normA + normL * normU))
+        (max normDeltaA_fact normDeltaA_solve) := by
+  exact higham13_theorem13_6_eq13_16_firstOrder_from_factor_solve_estimates
+    normDeltaA_fact normDeltaA_solve normA normL normU u d_fact d_solve dn
+    hu hA hL hU hd_fact hd_solve hEst.factorization hEst.solve
 
 /-- Higham, 2nd ed., Chapter 13, p.251, Algorithm 13.3 Implementation 2:
     if the exact-inverse local analysis has multiplied the factorization and
@@ -23549,6 +23590,301 @@ theorem
 
 /-- Higham, 2nd ed., Chapter 13, equation (13.22):
     determinant-nonzero canonical-inverse matrix-stage-history product bound
+    from the direct stage-local inverse-bound route.
+
+    This is the `nonsingInv`/`det != 0` variant of
+    `higham13_eq13_22_matrix_stage_history_product_from_stageLocalGrowth_inverse_bound_exact_kappa`:
+    the full-matrix positive denominator and right-inverse certificate are
+    derived from `det(blockMatrixFlatFin Ablk) != 0`; the local inverse
+    comparison remains visible. -/
+theorem
+    higham13_eq13_22_matrix_stage_history_product_from_stageLocalGrowth_inverse_bound_exact_kappa_of_det_ne_zero
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (Ablk : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hdet :
+      Matrix.det (blockMatrixFlatFin Ablk :
+        Matrix (Fin (m * r)) (Fin (m * r)) ℝ) ≠ 0)
+    (n : ℕ) (hNn : ((m * r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hInvPivot : ∀ i j : Fin m, j.val < i.val →
+      Invertible (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv j.val j j))
+    (hInvSchur : ∀ i j : Fin m, ∀ hji : j.val < i.val,
+      Invertible
+        (@higham13_algorithm13_3_stageLocalSchurOfInv m r Ablk pivotInv i j
+          (hInvPivot i j hji)))
+    (hInvFull : ∀ i j : Fin m, j.val < i.val →
+      Invertible (higham13_algorithm13_3_stageLocalBlockMatrix Ablk pivotInv i j))
+    (hPivotRight : ∀ i j : Fin m, ∀ _hji : j.val < i.val,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv j.val j j)
+        (pivotInv j.val)) :
+    let hN : 0 < m * r := Nat.mul_pos hm hr
+    let hApos : 0 < maxEntryNorm hN (blockMatrixFlatFin Ablk) :=
+      maxEntryNorm_pos_of_det_ne_zero hN (blockMatrixFlatFin Ablk) hdet
+    (∀ i j : Fin m, j.val < i.val →
+      maxEntryNormRect (Nat.add_pos_left hr r) (Nat.add_pos_left hr r)
+          (nonsingInv (r + r)
+            (higham13_algorithm13_3_stageLocalFlatMatrix Ablk pivotInv i j)) ≤
+        growthFactorEntry hN (blockMatrixFlatFin Ablk)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            hN hm hr Ablk pivotInv) hApos *
+          maxEntryNormRect hN hN
+            (nonsingInv (m * r) (blockMatrixFlatFin Ablk))) →
+    blockMaxNorm hm hr (higham13_algorithm13_3_lowerFromMatrixStages Ablk pivotInv) *
+        blockMaxNorm hm hr (higham13_algorithm13_3_upperFromMatrixStages Ablk pivotInv) ≤
+      (n : ℝ) *
+        (growthFactorEntry hN (blockMatrixFlatFin Ablk)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            hN hm hr Ablk pivotInv) hApos) ^ 3 *
+        (maxEntryNormRect hN hN (blockMatrixFlatFin Ablk) *
+          maxEntryNormRect hN hN
+            (nonsingInv (m * r) (blockMatrixFlatFin Ablk))) *
+        maxEntryNormRect hN hN (blockMatrixFlatFin Ablk) := by
+  dsimp only
+  intro hInvLocal_le
+  let hN : 0 < m * r := Nat.mul_pos hm hr
+  let hApos : 0 < maxEntryNorm hN (blockMatrixFlatFin Ablk) :=
+    maxEntryNorm_pos_of_det_ne_zero hN (blockMatrixFlatFin Ablk) hdet
+  have hRight :
+      IsRightInverse (m * r) (blockMatrixFlatFin Ablk)
+        (nonsingInv (m * r) (blockMatrixFlatFin Ablk)) :=
+    (isInverse_nonsingInv_of_det_ne_zero
+      (m * r) (blockMatrixFlatFin Ablk) hdet).2
+  exact
+    higham13_eq13_22_matrix_stage_history_product_from_stageLocalGrowth_inverse_bound_exact_kappa
+      hm hr Ablk pivotInv
+      (nonsingInv (m * r) (blockMatrixFlatFin Ablk))
+      hApos hRight n hNn hInvPivot hInvSchur hInvFull
+      hPivotRight hInvLocal_le
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.23):
+    determinant-nonzero canonical-inverse point-row product bound from the
+    direct stage-local inverse-bound route and the source `rho <= 2` side
+    condition. -/
+theorem
+    higham13_eq13_23_matrix_stage_history_product_from_stageLocalGrowth_inverse_bound_exact_kappa_of_det_ne_zero
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (Ablk : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hdet :
+      Matrix.det (blockMatrixFlatFin Ablk :
+        Matrix (Fin (m * r)) (Fin (m * r)) ℝ) ≠ 0)
+    (n : ℕ) (hNn : ((m * r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hInvPivot : ∀ i j : Fin m, j.val < i.val →
+      Invertible (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv j.val j j))
+    (hInvSchur : ∀ i j : Fin m, ∀ hji : j.val < i.val,
+      Invertible
+        (@higham13_algorithm13_3_stageLocalSchurOfInv m r Ablk pivotInv i j
+          (hInvPivot i j hji)))
+    (hInvFull : ∀ i j : Fin m, j.val < i.val →
+      Invertible (higham13_algorithm13_3_stageLocalBlockMatrix Ablk pivotInv i j))
+    (hPivotRight : ∀ i j : Fin m, ∀ _hji : j.val < i.val,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv j.val j j)
+        (pivotInv j.val)) :
+    let hN : 0 < m * r := Nat.mul_pos hm hr
+    let hApos : 0 < maxEntryNorm hN (blockMatrixFlatFin Ablk) :=
+      maxEntryNorm_pos_of_det_ne_zero hN (blockMatrixFlatFin Ablk) hdet
+    (∀ i j : Fin m, j.val < i.val →
+      maxEntryNormRect (Nat.add_pos_left hr r) (Nat.add_pos_left hr r)
+          (nonsingInv (r + r)
+            (higham13_algorithm13_3_stageLocalFlatMatrix Ablk pivotInv i j)) ≤
+        growthFactorEntry hN (blockMatrixFlatFin Ablk)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            hN hm hr Ablk pivotInv) hApos *
+          maxEntryNormRect hN hN
+            (nonsingInv (m * r) (blockMatrixFlatFin Ablk))) →
+    (growthFactorEntry hN (blockMatrixFlatFin Ablk)
+        (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+          hN hm hr Ablk pivotInv) hApos ≤ 2) →
+    blockMaxNorm hm hr (higham13_algorithm13_3_lowerFromMatrixStages Ablk pivotInv) *
+        blockMaxNorm hm hr (higham13_algorithm13_3_upperFromMatrixStages Ablk pivotInv) ≤
+      8 * (n : ℝ) *
+        (maxEntryNormRect hN hN (blockMatrixFlatFin Ablk) *
+          maxEntryNormRect hN hN
+            (nonsingInv (m * r) (blockMatrixFlatFin Ablk))) *
+        maxEntryNormRect hN hN (blockMatrixFlatFin Ablk) := by
+  dsimp only
+  intro hInvLocal_le hRho_le_two
+  let hN : 0 < m * r := Nat.mul_pos hm hr
+  let hApos : 0 < maxEntryNorm hN (blockMatrixFlatFin Ablk) :=
+    maxEntryNorm_pos_of_det_ne_zero hN (blockMatrixFlatFin Ablk) hdet
+  have hRight :
+      IsRightInverse (m * r) (blockMatrixFlatFin Ablk)
+        (nonsingInv (m * r) (blockMatrixFlatFin Ablk)) :=
+    (isInverse_nonsingInv_of_det_ne_zero
+      (m * r) (blockMatrixFlatFin Ablk) hdet).2
+  exact
+    higham13_eq13_23_matrix_stage_history_product_from_stageLocalGrowth_inverse_bound_exact_kappa
+      hm hr Ablk pivotInv
+      (nonsingInv (m * r) (blockMatrixFlatFin Ablk))
+      hApos hRight n hNn hInvPivot hInvSchur hInvFull
+      hPivotRight hInvLocal_le hRho_le_two
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.23):
+    determinant-nonzero canonical-inverse product bound from the direct
+    inverse-bound route and the source-strength product-bound/diagonal-update
+    `rho <= 2` proof layer. -/
+theorem
+    higham13_eq13_23_matrix_stage_history_product_from_stageLocalGrowth_inverse_bound_exact_kappa_of_product_bound_diag_update_of_det_ne_zero
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (Ablk : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hdet :
+      Matrix.det (blockMatrixFlatFin Ablk :
+        Matrix (Fin (m * r)) (Fin (m * r)) ℝ) ≠ 0)
+    (n : ℕ) (hNn : ((m * r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hInvPivot : ∀ i j : Fin m, j.val < i.val →
+      Invertible (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv j.val j j))
+    (hInvSchur : ∀ i j : Fin m, ∀ hji : j.val < i.val,
+      Invertible
+        (@higham13_algorithm13_3_stageLocalSchurOfInv m r Ablk pivotInv i j
+          (hInvPivot i j hji)))
+    (hInvFull : ∀ i j : Fin m, j.val < i.val →
+      Invertible (higham13_algorithm13_3_stageLocalBlockMatrix Ablk pivotInv i j))
+    (hPivotRight : ∀ i j : Fin m, ∀ _hji : j.val < i.val,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv j.val j j)
+        (pivotInv j.val)) :
+    let hN : 0 < m * r := Nat.mul_pos hm hr
+    let hApos : 0 < maxEntryNorm hN (blockMatrixFlatFin Ablk) :=
+      maxEntryNorm_pos_of_det_ne_zero hN (blockMatrixFlatFin Ablk) hdet
+    (∀ i j : Fin m, j.val < i.val →
+      maxEntryNormRect (Nat.add_pos_left hr r) (Nat.add_pos_left hr r)
+          (nonsingInv (r + r)
+            (higham13_algorithm13_3_stageLocalFlatMatrix Ablk pivotInv i j)) ≤
+        growthFactorEntry hN (blockMatrixFlatFin Ablk)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            hN hm hr Ablk pivotInv) hApos *
+          maxEntryNormRect hN hN
+            (nonsingInv (m * r) (blockMatrixFlatFin Ablk))) →
+    (invDiagBound : Fin m → ℝ) →
+    (stageInvDiagBound : ℕ → Fin m → ℝ) →
+    IsBlockDiagDomCol m (fun i j => maxEntryNorm hr (Ablk i j)) invDiagBound →
+    (∀ j : Fin m, invDiagBound j ≤ maxEntryNorm hr (Ablk j j)) →
+    (∀ j : Fin m, stageInvDiagBound 0 j = invDiagBound j) →
+    (∀ k : ℕ, ∀ hk : k < m,
+      maxEntryNorm hr (pivotInv k) * stageInvDiagBound k ⟨k, hk⟩ ≤ 1) →
+    (∀ k : ℕ, ∀ hk : k < m, ∀ i j : Fin m,
+      k + 1 ≤ i.val → k + 1 ≤ j.val →
+        maxEntryNorm hr
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k i ⟨k, hk⟩ *
+            pivotInv k *
+            higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k ⟨k, hk⟩ j) ≤
+          maxEntryNorm hr
+            (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k i ⟨k, hk⟩) *
+          maxEntryNorm hr (pivotInv k) *
+          maxEntryNorm hr
+            (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k ⟨k, hk⟩ j)) →
+    SchurStageActiveDiagLowerUpdate13_7
+      (fun k i j => maxEntryNorm hr
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k i j))
+      stageInvDiagBound
+      (fun k => maxEntryNorm hr (pivotInv k)) →
+    blockMaxNorm hm hr (higham13_algorithm13_3_lowerFromMatrixStages Ablk pivotInv) *
+        blockMaxNorm hm hr (higham13_algorithm13_3_upperFromMatrixStages Ablk pivotInv) ≤
+      8 * (n : ℝ) *
+        (maxEntryNormRect hN hN (blockMatrixFlatFin Ablk) *
+          maxEntryNormRect hN hN
+            (nonsingInv (m * r) (blockMatrixFlatFin Ablk))) *
+        maxEntryNormRect hN hN (blockMatrixFlatFin Ablk) := by
+  dsimp only
+  intro hInvLocal_le invDiagBound stageInvDiagBound hDom hDiagBound hInitInv
+    hPivotInvBound hProduct hDiagUpdate
+  let hN : 0 < m * r := Nat.mul_pos hm hr
+  let hApos : 0 < maxEntryNorm hN (blockMatrixFlatFin Ablk) :=
+    maxEntryNorm_pos_of_det_ne_zero hN (blockMatrixFlatFin Ablk) hdet
+  have hRight :
+      IsRightInverse (m * r) (blockMatrixFlatFin Ablk)
+        (nonsingInv (m * r) (blockMatrixFlatFin Ablk)) :=
+    (isInverse_nonsingInv_of_det_ne_zero
+      (m * r) (blockMatrixFlatFin Ablk) hdet).2
+  exact
+    higham13_eq13_23_matrix_stage_history_product_from_stageLocalGrowth_inverse_bound_exact_kappa_of_product_bound_diag_update
+      hm hr Ablk pivotInv
+      (nonsingInv (m * r) (blockMatrixFlatFin Ablk))
+      hApos hRight n hNn hInvPivot hInvSchur hInvFull
+      hPivotRight hInvLocal_le invDiagBound stageInvDiagBound hDom hDiagBound
+      hInitInv hPivotInvBound hProduct hDiagUpdate
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.23):
+    determinant-nonzero canonical-inverse product bound from the direct
+    inverse-bound route and the dimension-aware diagonal-update layer. -/
+theorem
+    higham13_eq13_23_matrix_stage_history_product_from_stageLocalGrowth_inverse_bound_exact_kappa_with_dim_factor_of_diag_update_of_det_ne_zero
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (Ablk : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hdet :
+      Matrix.det (blockMatrixFlatFin Ablk :
+        Matrix (Fin (m * r)) (Fin (m * r)) ℝ) ≠ 0)
+    (n : ℕ) (hNn : ((m * r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hInvPivot : ∀ i j : Fin m, j.val < i.val →
+      Invertible (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv j.val j j))
+    (hInvSchur : ∀ i j : Fin m, ∀ hji : j.val < i.val,
+      Invertible
+        (@higham13_algorithm13_3_stageLocalSchurOfInv m r Ablk pivotInv i j
+          (hInvPivot i j hji)))
+    (hInvFull : ∀ i j : Fin m, j.val < i.val →
+      Invertible (higham13_algorithm13_3_stageLocalBlockMatrix Ablk pivotInv i j))
+    (hPivotRight : ∀ i j : Fin m, ∀ _hji : j.val < i.val,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv j.val j j)
+        (pivotInv j.val)) :
+    let hN : 0 < m * r := Nat.mul_pos hm hr
+    let hApos : 0 < maxEntryNorm hN (blockMatrixFlatFin Ablk) :=
+      maxEntryNorm_pos_of_det_ne_zero hN (blockMatrixFlatFin Ablk) hdet
+    (∀ i j : Fin m, j.val < i.val →
+      maxEntryNormRect (Nat.add_pos_left hr r) (Nat.add_pos_left hr r)
+          (nonsingInv (r + r)
+            (higham13_algorithm13_3_stageLocalFlatMatrix Ablk pivotInv i j)) ≤
+        growthFactorEntry hN (blockMatrixFlatFin Ablk)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            hN hm hr Ablk pivotInv) hApos *
+          maxEntryNormRect hN hN
+            (nonsingInv (m * r) (blockMatrixFlatFin Ablk))) →
+    (invDiagBound : Fin m → ℝ) →
+    (stageInvDiagBound : ℕ → Fin m → ℝ) →
+    IsBlockDiagDomCol m (fun i j => maxEntryNorm hr (Ablk i j)) invDiagBound →
+    (∀ j : Fin m, invDiagBound j ≤ maxEntryNorm hr (Ablk j j)) →
+    (∀ j : Fin m, stageInvDiagBound 0 j = invDiagBound j) →
+    (∀ k : ℕ, ∀ hk : k < m,
+      ((r : ℝ) ^ 2 * maxEntryNorm hr (pivotInv k)) *
+          stageInvDiagBound k ⟨k, hk⟩ ≤
+        1) →
+    SchurStageActiveDiagLowerUpdate13_7
+      (fun k i j => maxEntryNorm hr
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k i j))
+      stageInvDiagBound
+      (fun k => (r : ℝ) ^ 2 * maxEntryNorm hr (pivotInv k)) →
+    blockMaxNorm hm hr (higham13_algorithm13_3_lowerFromMatrixStages Ablk pivotInv) *
+        blockMaxNorm hm hr (higham13_algorithm13_3_upperFromMatrixStages Ablk pivotInv) ≤
+      8 * (n : ℝ) *
+        (maxEntryNormRect hN hN (blockMatrixFlatFin Ablk) *
+          maxEntryNormRect hN hN
+            (nonsingInv (m * r) (blockMatrixFlatFin Ablk))) *
+        maxEntryNormRect hN hN (blockMatrixFlatFin Ablk) := by
+  dsimp only
+  intro hInvLocal_le invDiagBound stageInvDiagBound hDom hDiagBound hInitInv
+    hPivotInvBound hDiagUpdate
+  let hN : 0 < m * r := Nat.mul_pos hm hr
+  let hApos : 0 < maxEntryNorm hN (blockMatrixFlatFin Ablk) :=
+    maxEntryNorm_pos_of_det_ne_zero hN (blockMatrixFlatFin Ablk) hdet
+  have hRight :
+      IsRightInverse (m * r) (blockMatrixFlatFin Ablk)
+        (nonsingInv (m * r) (blockMatrixFlatFin Ablk)) :=
+    (isInverse_nonsingInv_of_det_ne_zero
+      (m * r) (blockMatrixFlatFin Ablk) hdet).2
+  exact
+    higham13_eq13_23_matrix_stage_history_product_from_stageLocalGrowth_inverse_bound_exact_kappa_with_dim_factor_of_diag_update
+      hm hr Ablk pivotInv
+      (nonsingInv (m * r) (blockMatrixFlatFin Ablk))
+      hApos hRight n hNn hInvPivot hInvSchur hInvFull
+      hPivotRight hInvLocal_le invDiagBound stageInvDiagBound hDom hDiagBound
+      hInitInv hPivotInvBound hDiagUpdate
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.22):
+    determinant-nonzero canonical-inverse matrix-stage-history product bound
     from the canonical stage-local-growth source comparison route.
 
     This is the `nonsingInv`/`det != 0` variant of
@@ -24753,6 +25089,310 @@ theorem
       (higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_with_dim_factor_of_diag_update
         hm hr Ablk pivotInv hApos invDiagBound stageInvDiagBound hDom hDiagBound
         hInitInv hPivotInvBound hDiagUpdate)
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.22):
+    determinant-nonzero exact-κ `BlockLUFactSpec` witness from the direct
+    stage-local inverse-bound route.
+
+    This is the canonical-inverse variant of
+    `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_inverse_bound_exact_kappa_of_pivot_right_inverse`:
+    it uses `nonsingInv (m*r) (blockMatrixFlatFin Ablk)` and derives the full
+    positive denominator and right-inverse certificate from
+    `det(blockMatrixFlatFin Ablk) != 0`. -/
+theorem
+    higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_inverse_bound_exact_kappa_of_pivot_right_inverse_of_det_ne_zero
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (Ablk : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hPivotRightAll : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+          ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k))
+    (hdet :
+      Matrix.det (blockMatrixFlatFin Ablk :
+        Matrix (Fin (m * r)) (Fin (m * r)) ℝ) ≠ 0)
+    (n : ℕ) (hNn : ((m * r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hInvPivot : ∀ i j : Fin m, j.val < i.val →
+      Invertible (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv j.val j j))
+    (hInvSchur : ∀ i j : Fin m, ∀ hji : j.val < i.val,
+      Invertible
+        (@higham13_algorithm13_3_stageLocalSchurOfInv m r Ablk pivotInv i j
+          (hInvPivot i j hji)))
+    (hInvFull : ∀ i j : Fin m, j.val < i.val →
+      Invertible (higham13_algorithm13_3_stageLocalBlockMatrix Ablk pivotInv i j)) :
+    let hN : 0 < m * r := Nat.mul_pos hm hr
+    let hApos : 0 < maxEntryNorm hN (blockMatrixFlatFin Ablk) :=
+      maxEntryNorm_pos_of_det_ne_zero hN (blockMatrixFlatFin Ablk) hdet
+    (∀ i j : Fin m, j.val < i.val →
+      maxEntryNormRect (Nat.add_pos_left hr r) (Nat.add_pos_left hr r)
+          (nonsingInv (r + r)
+            (higham13_algorithm13_3_stageLocalFlatMatrix Ablk pivotInv i j)) ≤
+        growthFactorEntry hN (blockMatrixFlatFin Ablk)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            hN hm hr Ablk pivotInv) hApos *
+          maxEntryNormRect hN hN
+            (nonsingInv (m * r) (blockMatrixFlatFin Ablk))) →
+    ∃ L U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ,
+      BlockLUFactSpec m r Ablk L U ∧
+        blockMaxNorm hm hr L * blockMaxNorm hm hr U ≤
+          (n : ℝ) *
+            (growthFactorEntry hN (blockMatrixFlatFin Ablk)
+              (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+                hN hm hr Ablk pivotInv) hApos) ^ 3 *
+            (maxEntryNormRect hN hN (blockMatrixFlatFin Ablk) *
+              maxEntryNormRect hN hN
+                (nonsingInv (m * r) (blockMatrixFlatFin Ablk))) *
+            maxEntryNormRect hN hN (blockMatrixFlatFin Ablk) := by
+  dsimp only
+  intro hInvLocal_le
+  let hN : 0 < m * r := Nat.mul_pos hm hr
+  let hApos : 0 < maxEntryNorm hN (blockMatrixFlatFin Ablk) :=
+    maxEntryNorm_pos_of_det_ne_zero hN (blockMatrixFlatFin Ablk) hdet
+  have hRight :
+      IsRightInverse (m * r) (blockMatrixFlatFin Ablk)
+        (nonsingInv (m * r) (blockMatrixFlatFin Ablk)) :=
+    (isInverse_nonsingInv_of_det_ne_zero
+      (m * r) (blockMatrixFlatFin Ablk) hdet).2
+  exact
+    higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_inverse_bound_exact_kappa_of_pivot_right_inverse
+      hm hr Ablk pivotInv
+      (nonsingInv (m * r) (blockMatrixFlatFin Ablk))
+      hPivotRightAll hApos hRight n hNn
+      hInvPivot hInvSchur hInvFull hInvLocal_le
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.23):
+    determinant-nonzero point-row exact-κ `BlockLUFactSpec` witness from the
+    direct stage-local inverse-bound route and the source `rho <= 2` side
+    condition. -/
+theorem
+    higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_inverse_bound_exact_kappa_of_pivot_right_inverse_of_det_ne_zero
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (Ablk : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hPivotRightAll : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+          ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k))
+    (hdet :
+      Matrix.det (blockMatrixFlatFin Ablk :
+        Matrix (Fin (m * r)) (Fin (m * r)) ℝ) ≠ 0)
+    (n : ℕ) (hNn : ((m * r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hInvPivot : ∀ i j : Fin m, j.val < i.val →
+      Invertible (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv j.val j j))
+    (hInvSchur : ∀ i j : Fin m, ∀ hji : j.val < i.val,
+      Invertible
+        (@higham13_algorithm13_3_stageLocalSchurOfInv m r Ablk pivotInv i j
+          (hInvPivot i j hji)))
+    (hInvFull : ∀ i j : Fin m, j.val < i.val →
+      Invertible (higham13_algorithm13_3_stageLocalBlockMatrix Ablk pivotInv i j)) :
+    let hN : 0 < m * r := Nat.mul_pos hm hr
+    let hApos : 0 < maxEntryNorm hN (blockMatrixFlatFin Ablk) :=
+      maxEntryNorm_pos_of_det_ne_zero hN (blockMatrixFlatFin Ablk) hdet
+    (∀ i j : Fin m, j.val < i.val →
+      maxEntryNormRect (Nat.add_pos_left hr r) (Nat.add_pos_left hr r)
+          (nonsingInv (r + r)
+            (higham13_algorithm13_3_stageLocalFlatMatrix Ablk pivotInv i j)) ≤
+        growthFactorEntry hN (blockMatrixFlatFin Ablk)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            hN hm hr Ablk pivotInv) hApos *
+          maxEntryNormRect hN hN
+            (nonsingInv (m * r) (blockMatrixFlatFin Ablk))) →
+    (growthFactorEntry hN (blockMatrixFlatFin Ablk)
+        (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+          hN hm hr Ablk pivotInv) hApos ≤ 2) →
+    ∃ L U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ,
+      BlockLUFactSpec m r Ablk L U ∧
+        blockMaxNorm hm hr L * blockMaxNorm hm hr U ≤
+          8 * (n : ℝ) *
+            (maxEntryNormRect hN hN (blockMatrixFlatFin Ablk) *
+              maxEntryNormRect hN hN
+                (nonsingInv (m * r) (blockMatrixFlatFin Ablk))) *
+            maxEntryNormRect hN hN (blockMatrixFlatFin Ablk) := by
+  dsimp only
+  intro hInvLocal_le hRho_le_two
+  let hN : 0 < m * r := Nat.mul_pos hm hr
+  let hApos : 0 < maxEntryNorm hN (blockMatrixFlatFin Ablk) :=
+    maxEntryNorm_pos_of_det_ne_zero hN (blockMatrixFlatFin Ablk) hdet
+  have hRight :
+      IsRightInverse (m * r) (blockMatrixFlatFin Ablk)
+        (nonsingInv (m * r) (blockMatrixFlatFin Ablk)) :=
+    (isInverse_nonsingInv_of_det_ne_zero
+      (m * r) (blockMatrixFlatFin Ablk) hdet).2
+  exact
+    higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_inverse_bound_exact_kappa_of_pivot_right_inverse
+      hm hr Ablk pivotInv
+      (nonsingInv (m * r) (blockMatrixFlatFin Ablk))
+      hPivotRightAll hApos hRight n hNn
+      hInvPivot hInvSchur hInvFull hInvLocal_le hRho_le_two
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.23):
+    determinant-nonzero exact-κ `BlockLUFactSpec` witness from the direct
+    inverse-bound route and the source-strength product-bound/diagonal-update
+    proof layer. -/
+theorem
+    higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_inverse_bound_exact_kappa_of_product_bound_diag_update_of_pivot_right_inverse_of_det_ne_zero
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (Ablk : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hPivotRightAll : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+          ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k))
+    (hdet :
+      Matrix.det (blockMatrixFlatFin Ablk :
+        Matrix (Fin (m * r)) (Fin (m * r)) ℝ) ≠ 0)
+    (n : ℕ) (hNn : ((m * r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hInvPivot : ∀ i j : Fin m, j.val < i.val →
+      Invertible (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv j.val j j))
+    (hInvSchur : ∀ i j : Fin m, ∀ hji : j.val < i.val,
+      Invertible
+        (@higham13_algorithm13_3_stageLocalSchurOfInv m r Ablk pivotInv i j
+          (hInvPivot i j hji)))
+    (hInvFull : ∀ i j : Fin m, j.val < i.val →
+      Invertible (higham13_algorithm13_3_stageLocalBlockMatrix Ablk pivotInv i j)) :
+    let hN : 0 < m * r := Nat.mul_pos hm hr
+    let hApos : 0 < maxEntryNorm hN (blockMatrixFlatFin Ablk) :=
+      maxEntryNorm_pos_of_det_ne_zero hN (blockMatrixFlatFin Ablk) hdet
+    (∀ i j : Fin m, j.val < i.val →
+      maxEntryNormRect (Nat.add_pos_left hr r) (Nat.add_pos_left hr r)
+          (nonsingInv (r + r)
+            (higham13_algorithm13_3_stageLocalFlatMatrix Ablk pivotInv i j)) ≤
+        growthFactorEntry hN (blockMatrixFlatFin Ablk)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            hN hm hr Ablk pivotInv) hApos *
+          maxEntryNormRect hN hN
+            (nonsingInv (m * r) (blockMatrixFlatFin Ablk))) →
+    (invDiagBound : Fin m → ℝ) →
+    (stageInvDiagBound : ℕ → Fin m → ℝ) →
+    IsBlockDiagDomCol m (fun i j => maxEntryNorm hr (Ablk i j)) invDiagBound →
+    (∀ j : Fin m, invDiagBound j ≤ maxEntryNorm hr (Ablk j j)) →
+    (∀ j : Fin m, stageInvDiagBound 0 j = invDiagBound j) →
+    (∀ k : ℕ, ∀ hk : k < m,
+      maxEntryNorm hr (pivotInv k) * stageInvDiagBound k ⟨k, hk⟩ ≤ 1) →
+    (∀ k : ℕ, ∀ hk : k < m, ∀ i j : Fin m,
+      k + 1 ≤ i.val → k + 1 ≤ j.val →
+        maxEntryNorm hr
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k i ⟨k, hk⟩ *
+            pivotInv k *
+            higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k ⟨k, hk⟩ j) ≤
+          maxEntryNorm hr
+            (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k i ⟨k, hk⟩) *
+          maxEntryNorm hr (pivotInv k) *
+          maxEntryNorm hr
+            (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k ⟨k, hk⟩ j)) →
+    SchurStageActiveDiagLowerUpdate13_7
+      (fun k i j => maxEntryNorm hr
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k i j))
+      stageInvDiagBound
+      (fun k => maxEntryNorm hr (pivotInv k)) →
+    ∃ L U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ,
+      BlockLUFactSpec m r Ablk L U ∧
+        blockMaxNorm hm hr L * blockMaxNorm hm hr U ≤
+          8 * (n : ℝ) *
+            (maxEntryNormRect hN hN (blockMatrixFlatFin Ablk) *
+              maxEntryNormRect hN hN
+                (nonsingInv (m * r) (blockMatrixFlatFin Ablk))) *
+            maxEntryNormRect hN hN (blockMatrixFlatFin Ablk) := by
+  dsimp only
+  intro hInvLocal_le invDiagBound stageInvDiagBound hDom hDiagBound hInitInv
+    hPivotInvBound hProduct hDiagUpdate
+  let hN : 0 < m * r := Nat.mul_pos hm hr
+  let hApos : 0 < maxEntryNorm hN (blockMatrixFlatFin Ablk) :=
+    maxEntryNorm_pos_of_det_ne_zero hN (blockMatrixFlatFin Ablk) hdet
+  have hRight :
+      IsRightInverse (m * r) (blockMatrixFlatFin Ablk)
+        (nonsingInv (m * r) (blockMatrixFlatFin Ablk)) :=
+    (isInverse_nonsingInv_of_det_ne_zero
+      (m * r) (blockMatrixFlatFin Ablk) hdet).2
+  exact
+    higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_inverse_bound_exact_kappa_of_product_bound_diag_update_of_pivot_right_inverse
+      hm hr Ablk pivotInv
+      (nonsingInv (m * r) (blockMatrixFlatFin Ablk))
+      hPivotRightAll hApos hRight n hNn
+      hInvPivot hInvSchur hInvFull hInvLocal_le invDiagBound
+      stageInvDiagBound hDom hDiagBound hInitInv hPivotInvBound hProduct
+      hDiagUpdate
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.23):
+    determinant-nonzero exact-κ `BlockLUFactSpec` witness from the direct
+    inverse-bound route and the dimension-aware diagonal-update layer. -/
+theorem
+    higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_inverse_bound_exact_kappa_with_dim_factor_of_diag_update_of_pivot_right_inverse_of_det_ne_zero
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (Ablk : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hPivotRightAll : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+          ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k))
+    (hdet :
+      Matrix.det (blockMatrixFlatFin Ablk :
+        Matrix (Fin (m * r)) (Fin (m * r)) ℝ) ≠ 0)
+    (n : ℕ) (hNn : ((m * r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hInvPivot : ∀ i j : Fin m, j.val < i.val →
+      Invertible (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv j.val j j))
+    (hInvSchur : ∀ i j : Fin m, ∀ hji : j.val < i.val,
+      Invertible
+        (@higham13_algorithm13_3_stageLocalSchurOfInv m r Ablk pivotInv i j
+          (hInvPivot i j hji)))
+    (hInvFull : ∀ i j : Fin m, j.val < i.val →
+      Invertible (higham13_algorithm13_3_stageLocalBlockMatrix Ablk pivotInv i j)) :
+    let hN : 0 < m * r := Nat.mul_pos hm hr
+    let hApos : 0 < maxEntryNorm hN (blockMatrixFlatFin Ablk) :=
+      maxEntryNorm_pos_of_det_ne_zero hN (blockMatrixFlatFin Ablk) hdet
+    (∀ i j : Fin m, j.val < i.val →
+      maxEntryNormRect (Nat.add_pos_left hr r) (Nat.add_pos_left hr r)
+          (nonsingInv (r + r)
+            (higham13_algorithm13_3_stageLocalFlatMatrix Ablk pivotInv i j)) ≤
+        growthFactorEntry hN (blockMatrixFlatFin Ablk)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            hN hm hr Ablk pivotInv) hApos *
+          maxEntryNormRect hN hN
+            (nonsingInv (m * r) (blockMatrixFlatFin Ablk))) →
+    (invDiagBound : Fin m → ℝ) →
+    (stageInvDiagBound : ℕ → Fin m → ℝ) →
+    IsBlockDiagDomCol m (fun i j => maxEntryNorm hr (Ablk i j)) invDiagBound →
+    (∀ j : Fin m, invDiagBound j ≤ maxEntryNorm hr (Ablk j j)) →
+    (∀ j : Fin m, stageInvDiagBound 0 j = invDiagBound j) →
+    (∀ k : ℕ, ∀ hk : k < m,
+      ((r : ℝ) ^ 2 * maxEntryNorm hr (pivotInv k)) *
+          stageInvDiagBound k ⟨k, hk⟩ ≤
+        1) →
+    SchurStageActiveDiagLowerUpdate13_7
+      (fun k i j => maxEntryNorm hr
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k i j))
+      stageInvDiagBound
+      (fun k => (r : ℝ) ^ 2 * maxEntryNorm hr (pivotInv k)) →
+    ∃ L U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ,
+      BlockLUFactSpec m r Ablk L U ∧
+        blockMaxNorm hm hr L * blockMaxNorm hm hr U ≤
+          8 * (n : ℝ) *
+            (maxEntryNormRect hN hN (blockMatrixFlatFin Ablk) *
+              maxEntryNormRect hN hN
+                (nonsingInv (m * r) (blockMatrixFlatFin Ablk))) *
+            maxEntryNormRect hN hN (blockMatrixFlatFin Ablk) := by
+  dsimp only
+  intro hInvLocal_le invDiagBound stageInvDiagBound hDom hDiagBound hInitInv
+    hPivotInvBound hDiagUpdate
+  let hN : 0 < m * r := Nat.mul_pos hm hr
+  let hApos : 0 < maxEntryNorm hN (blockMatrixFlatFin Ablk) :=
+    maxEntryNorm_pos_of_det_ne_zero hN (blockMatrixFlatFin Ablk) hdet
+  have hRight :
+      IsRightInverse (m * r) (blockMatrixFlatFin Ablk)
+        (nonsingInv (m * r) (blockMatrixFlatFin Ablk)) :=
+    (isInverse_nonsingInv_of_det_ne_zero
+      (m * r) (blockMatrixFlatFin Ablk) hdet).2
+  exact
+    higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_inverse_bound_exact_kappa_with_dim_factor_of_diag_update_of_pivot_right_inverse
+      hm hr Ablk pivotInv
+      (nonsingInv (m * r) (blockMatrixFlatFin Ablk))
+      hPivotRightAll hApos hRight n hNn
+      hInvPivot hInvSchur hInvFull hInvLocal_le invDiagBound
+      stageInvDiagBound hDom hDiagBound hInitInv hPivotInvBound hDiagUpdate
 
 /-- Higham, 2nd ed., Chapter 13, equation (13.22):
     determinant-nonzero exact-kappa `BlockLUFactSpec` witness from the
