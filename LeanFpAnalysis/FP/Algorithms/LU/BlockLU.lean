@@ -30128,10 +30128,7 @@ theorem Higham13Eq1322InverseRatioSourceChain.to_blockLUBudgetChain
     ∀ {m : ℕ}
       {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
       {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ}
-      (hdet :
-        Matrix.det (blockMatrixFlatFin Ablk :
-          Matrix (Fin ((m + 1) * r)) (Fin ((m + 1) * r)) ℝ) ≠ 0)
-      (_hcert : Higham13Eq1322InverseRatioSourceChain hr n m Ablk pivotInv),
+      (hcert : Higham13Eq1322InverseRatioSourceChain hr n m Ablk pivotInv),
       let hm : 0 < m + 1 := Nat.succ_pos m
       let hN : 0 < (m + 1) * r := Nat.mul_pos hm hr
       let A0 : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
@@ -30142,15 +30139,16 @@ theorem Higham13Eq1322InverseRatioSourceChain.to_blockLUBudgetChain
       let Ainv : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
         nonsingInv ((m + 1) * r) A0
       let hApos : 0 < maxEntryNorm hN A0 :=
-        maxEntryNorm_pos_of_det_ne_zero hN A0 hdet
+        maxEntryNorm_pos_of_det_ne_zero hN A0
+          (Higham13Eq1322InverseRatioSourceChain.det_ne_zero hcert)
       Higham13BlockLUBudgetChain hr
         ((n : ℝ) * (growthFactorEntry hN A0 G hApos) ^ 2 *
           (maxEntryNormRect hN hN A0 * maxEntryNormRect hN hN Ainv))
         (growthFactorEntry hN A0 G hApos * maxEntryNormRect hN hN A0)
         m Ablk pivotInv := by
-  intro m Ablk pivotInv hdet hcert
+  intro m Ablk pivotInv hcert
   cases hcert with
-  | one _ hNn =>
+  | one hdet hNn =>
       dsimp only
       simpa using
         higham13_eq13_22_blockLUBudgetChain_one_from_matrix_stage_history_exact_kappa_of_det_ne_zero
@@ -30158,8 +30156,7 @@ theorem Higham13Eq1322InverseRatioSourceChain.to_blockLUBudgetChain
   | succ hpivot hdetFlat hsn hNn hInvRatio hTail =>
       have ih :=
         Higham13Eq1322InverseRatioSourceChain.to_blockLUBudgetChain
-          (r := r) (n := n) hr
-          (Higham13Eq1322InverseRatioSourceChain.det_ne_zero hTail) hTail
+          (r := r) (n := n) hr hTail
       have hTailPos :
           0 < maxEntryNorm (Nat.mul_pos (Nat.succ_pos _) hr)
             (blockMatrixFlatFin (blockSchur _ (pivotInv 0))) :=
@@ -30178,10 +30175,7 @@ theorem Higham13Eq1322InverseRatioSourceChain.exists_blockLUFact_eq13_22_product
     ∀ {m : ℕ}
       {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
       {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ}
-      (hdet :
-        Matrix.det (blockMatrixFlatFin Ablk :
-          Matrix (Fin ((m + 1) * r)) (Fin ((m + 1) * r)) ℝ) ≠ 0)
-      (_hcert : Higham13Eq1322InverseRatioSourceChain hr n m Ablk pivotInv),
+      (hcert : Higham13Eq1322InverseRatioSourceChain hr n m Ablk pivotInv),
       let hm : 0 < m + 1 := Nat.succ_pos m
       let hN : 0 < (m + 1) * r := Nat.mul_pos hm hr
       let A0 : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
@@ -30192,7 +30186,8 @@ theorem Higham13Eq1322InverseRatioSourceChain.exists_blockLUFact_eq13_22_product
       let Ainv : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
         nonsingInv ((m + 1) * r) A0
       let hApos : 0 < maxEntryNorm hN A0 :=
-        maxEntryNorm_pos_of_det_ne_zero hN A0 hdet
+        maxEntryNorm_pos_of_det_ne_zero hN A0
+          (Higham13Eq1322InverseRatioSourceChain.det_ne_zero hcert)
       ∃ L U : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ,
         BlockLUFactSpec (m + 1) r Ablk L U ∧
           blockMaxNorm (Nat.succ_pos m) hr L *
@@ -30200,8 +30195,12 @@ theorem Higham13Eq1322InverseRatioSourceChain.exists_blockLUFact_eq13_22_product
             (n : ℝ) * (growthFactorEntry hN A0 G hApos) ^ 3 *
               (maxEntryNormRect hN hN A0 * maxEntryNormRect hN hN Ainv) *
               maxEntryNormRect hN hN A0 := by
-  intro m Ablk pivotInv hdet hcert
+  intro m Ablk pivotInv hcert
   dsimp only
+  let hdet :
+      Matrix.det (blockMatrixFlatFin Ablk :
+        Matrix (Fin ((m + 1) * r)) (Fin ((m + 1) * r)) ℝ) ≠ 0 :=
+    Higham13Eq1322InverseRatioSourceChain.det_ne_zero hcert
   let hm : 0 < m + 1 := Nat.succ_pos m
   let hN : 0 < (m + 1) * r := Nat.mul_pos hm hr
   let A0 : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ := blockMatrixFlatFin Ablk
@@ -30219,7 +30218,7 @@ theorem Higham13Eq1322InverseRatioSourceChain.exists_blockLUFact_eq13_22_product
         m Ablk pivotInv := by
     simpa [hm, hN, A0, G, Ainv, hApos] using
       Higham13Eq1322InverseRatioSourceChain.to_blockLUBudgetChain
-        (r := r) (n := n) hr hdet hcert
+        (r := r) (n := n) hr hcert
   simpa [hm, hN, A0, G, Ainv, hApos] using
     Higham13BlockLUBudgetChain.exists_blockLUFact_eq13_22_product_exact_kappa
       (r := r) hr (hN := hN) (A0 := A0) (G := G) (Ainv := Ainv)
@@ -30233,10 +30232,7 @@ theorem Higham13Eq1322InverseRatioSourceChain.exists_blockLUFact_eq13_23_product
     ∀ {m : ℕ}
       {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
       {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ}
-      (hdet :
-        Matrix.det (blockMatrixFlatFin Ablk :
-          Matrix (Fin ((m + 1) * r)) (Fin ((m + 1) * r)) ℝ) ≠ 0)
-      (_hcert : Higham13Eq1322InverseRatioSourceChain hr n m Ablk pivotInv),
+      (hcert : Higham13Eq1322InverseRatioSourceChain hr n m Ablk pivotInv),
       let hm : 0 < m + 1 := Nat.succ_pos m
       let hN : 0 < (m + 1) * r := Nat.mul_pos hm hr
       let A0 : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
@@ -30247,7 +30243,8 @@ theorem Higham13Eq1322InverseRatioSourceChain.exists_blockLUFact_eq13_23_product
       let Ainv : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
         nonsingInv ((m + 1) * r) A0
       let hApos : 0 < maxEntryNorm hN A0 :=
-        maxEntryNorm_pos_of_det_ne_zero hN A0 hdet
+        maxEntryNorm_pos_of_det_ne_zero hN A0
+          (Higham13Eq1322InverseRatioSourceChain.det_ne_zero hcert)
       growthFactorEntry hN A0 G hApos ≤ 2 →
         ∃ L U : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ,
           BlockLUFactSpec (m + 1) r Ablk L U ∧
@@ -30256,9 +30253,13 @@ theorem Higham13Eq1322InverseRatioSourceChain.exists_blockLUFact_eq13_23_product
               8 * (n : ℝ) *
                 (maxEntryNormRect hN hN A0 * maxEntryNormRect hN hN Ainv) *
                 maxEntryNormRect hN hN A0 := by
-  intro m Ablk pivotInv hdet hcert
+  intro m Ablk pivotInv hcert
   dsimp only
   intro hRho_le_two
+  let hdet :
+      Matrix.det (blockMatrixFlatFin Ablk :
+        Matrix (Fin ((m + 1) * r)) (Fin ((m + 1) * r)) ℝ) ≠ 0 :=
+    Higham13Eq1322InverseRatioSourceChain.det_ne_zero hcert
   let hm : 0 < m + 1 := Nat.succ_pos m
   let hN : 0 < (m + 1) * r := Nat.mul_pos hm hr
   let A0 : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ := blockMatrixFlatFin Ablk
@@ -30276,7 +30277,7 @@ theorem Higham13Eq1322InverseRatioSourceChain.exists_blockLUFact_eq13_23_product
         m Ablk pivotInv := by
     simpa [hm, hN, A0, G, Ainv, hApos] using
       Higham13Eq1322InverseRatioSourceChain.to_blockLUBudgetChain
-        (r := r) (n := n) hr hdet hcert
+        (r := r) (n := n) hr hcert
   simpa [hm, hN, A0, G, Ainv, hApos] using
     Higham13BlockLUBudgetChain.exists_blockLUFact_eq13_23_product_exact_kappa
       (r := r) hr (hN := hN) (A0 := A0) (G := G) (Ainv := Ainv)
@@ -30292,9 +30293,6 @@ theorem
     ∀ {m : ℕ}
       {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
       {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ}
-      (_hdet :
-        Matrix.det (blockMatrixFlatFin Ablk :
-          Matrix (Fin ((m + 1) * r)) (Fin ((m + 1) * r)) ℝ) ≠ 0)
       (_hcert : Higham13Eq1322InverseRatioSourceChain hr n m Ablk pivotInv),
       let hm : 0 < m + 1 := Nat.succ_pos m
       let hN : 0 < (m + 1) * r := Nat.mul_pos hm hr
@@ -30337,10 +30335,14 @@ theorem
             8 * (n : ℝ) *
               (maxEntryNormRect hN hN A0 * maxEntryNormRect hN hN Ainv) *
               maxEntryNormRect hN hN A0 := by
-  intro m Ablk pivotInv hdet hcert
+  intro m Ablk pivotInv hcert
   dsimp only
   intro invDiagBound stageInvDiagBound hDom hDiagBound hInitInv
     hPivotInvBound hProduct hDiagUpdate
+  let hdet :
+      Matrix.det (blockMatrixFlatFin Ablk :
+        Matrix (Fin ((m + 1) * r)) (Fin ((m + 1) * r)) ℝ) ≠ 0 :=
+    Higham13Eq1322InverseRatioSourceChain.det_ne_zero hcert
   let hm : 0 < m + 1 := Nat.succ_pos m
   let hN : 0 < (m + 1) * r := Nat.mul_pos hm hr
   let A0 : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
@@ -30353,7 +30355,7 @@ theorem
     maxEntryNorm_pos_of_det_ne_zero hN A0 hdet
   exact
     Higham13Eq1322InverseRatioSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa
-      (r := r) (n := n) hr hdet hcert
+      (r := r) (n := n) hr hcert
       (by
         simpa [hm, hN, A0, G, Ainv, hApos] using
           higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_product_bound_diag_update
@@ -30468,10 +30470,7 @@ theorem Higham13Eq1322LowerComparisonSourceChain.to_blockLUBudgetChain
     ∀ {m : ℕ}
       {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
       {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ}
-      (hdet :
-        Matrix.det (blockMatrixFlatFin Ablk :
-          Matrix (Fin ((m + 1) * r)) (Fin ((m + 1) * r)) ℝ) ≠ 0)
-      (_hcert : Higham13Eq1322LowerComparisonSourceChain hr n m Ablk pivotInv),
+      (hcert : Higham13Eq1322LowerComparisonSourceChain hr n m Ablk pivotInv),
       let hm : 0 < m + 1 := Nat.succ_pos m
       let hN : 0 < (m + 1) * r := Nat.mul_pos hm hr
       let A0 : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
@@ -30482,15 +30481,16 @@ theorem Higham13Eq1322LowerComparisonSourceChain.to_blockLUBudgetChain
       let Ainv : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
         nonsingInv ((m + 1) * r) A0
       let hApos : 0 < maxEntryNorm hN A0 :=
-        maxEntryNorm_pos_of_det_ne_zero hN A0 hdet
+        maxEntryNorm_pos_of_det_ne_zero hN A0
+          (Higham13Eq1322LowerComparisonSourceChain.det_ne_zero hcert)
       Higham13BlockLUBudgetChain hr
         ((n : ℝ) * (growthFactorEntry hN A0 G hApos) ^ 2 *
           (maxEntryNormRect hN hN A0 * maxEntryNormRect hN hN Ainv))
         (growthFactorEntry hN A0 G hApos * maxEntryNormRect hN hN A0)
         m Ablk pivotInv := by
-  intro m Ablk pivotInv hdet hcert
+  intro m Ablk pivotInv hcert
   cases hcert with
-  | one _ hNn =>
+  | one hdet hNn =>
       dsimp only
       simpa using
         higham13_eq13_22_blockLUBudgetChain_one_from_matrix_stage_history_exact_kappa_of_det_ne_zero
@@ -30498,8 +30498,7 @@ theorem Higham13Eq1322LowerComparisonSourceChain.to_blockLUBudgetChain
   | succ hpivot hdetFlat hsn hNn hLower hTail =>
       have ih :=
         Higham13Eq1322LowerComparisonSourceChain.to_blockLUBudgetChain
-          (r := r) (n := n) hr
-          (Higham13Eq1322LowerComparisonSourceChain.det_ne_zero hTail) hTail
+          (r := r) (n := n) hr hTail
       dsimp only at ih ⊢
       simpa using
         higham13_eq13_22_blockLUBudgetChain_succ_from_tail_local_chain_lower_comparison_flat_matrix_stage_history_exact_kappa_of_det_ne_zero_of_schur_invertible
@@ -30513,10 +30512,7 @@ theorem Higham13Eq1322LowerComparisonSourceChain.exists_blockLUFact_eq13_22_prod
     ∀ {m : ℕ}
       {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
       {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ}
-      (hdet :
-        Matrix.det (blockMatrixFlatFin Ablk :
-          Matrix (Fin ((m + 1) * r)) (Fin ((m + 1) * r)) ℝ) ≠ 0)
-      (_hcert : Higham13Eq1322LowerComparisonSourceChain hr n m Ablk pivotInv),
+      (hcert : Higham13Eq1322LowerComparisonSourceChain hr n m Ablk pivotInv),
       let hm : 0 < m + 1 := Nat.succ_pos m
       let hN : 0 < (m + 1) * r := Nat.mul_pos hm hr
       let A0 : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
@@ -30527,7 +30523,8 @@ theorem Higham13Eq1322LowerComparisonSourceChain.exists_blockLUFact_eq13_22_prod
       let Ainv : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
         nonsingInv ((m + 1) * r) A0
       let hApos : 0 < maxEntryNorm hN A0 :=
-        maxEntryNorm_pos_of_det_ne_zero hN A0 hdet
+        maxEntryNorm_pos_of_det_ne_zero hN A0
+          (Higham13Eq1322LowerComparisonSourceChain.det_ne_zero hcert)
       ∃ L U : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ,
         BlockLUFactSpec (m + 1) r Ablk L U ∧
           blockMaxNorm (Nat.succ_pos m) hr L *
@@ -30535,8 +30532,12 @@ theorem Higham13Eq1322LowerComparisonSourceChain.exists_blockLUFact_eq13_22_prod
             (n : ℝ) * (growthFactorEntry hN A0 G hApos) ^ 3 *
               (maxEntryNormRect hN hN A0 * maxEntryNormRect hN hN Ainv) *
               maxEntryNormRect hN hN A0 := by
-  intro m Ablk pivotInv hdet hcert
+  intro m Ablk pivotInv hcert
   dsimp only
+  let hdet :
+      Matrix.det (blockMatrixFlatFin Ablk :
+        Matrix (Fin ((m + 1) * r)) (Fin ((m + 1) * r)) ℝ) ≠ 0 :=
+    Higham13Eq1322LowerComparisonSourceChain.det_ne_zero hcert
   let hm : 0 < m + 1 := Nat.succ_pos m
   let hN : 0 < (m + 1) * r := Nat.mul_pos hm hr
   let A0 : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ := blockMatrixFlatFin Ablk
@@ -30554,7 +30555,7 @@ theorem Higham13Eq1322LowerComparisonSourceChain.exists_blockLUFact_eq13_22_prod
         m Ablk pivotInv := by
     simpa [hm, hN, A0, G, Ainv, hApos] using
       Higham13Eq1322LowerComparisonSourceChain.to_blockLUBudgetChain
-        (r := r) (n := n) hr hdet hcert
+        (r := r) (n := n) hr hcert
   simpa [hm, hN, A0, G, Ainv, hApos] using
     Higham13BlockLUBudgetChain.exists_blockLUFact_eq13_22_product_exact_kappa
       (r := r) hr (hN := hN) (A0 := A0) (G := G) (Ainv := Ainv)
@@ -30568,10 +30569,7 @@ theorem Higham13Eq1322LowerComparisonSourceChain.exists_blockLUFact_eq13_23_prod
     ∀ {m : ℕ}
       {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
       {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ}
-      (hdet :
-        Matrix.det (blockMatrixFlatFin Ablk :
-          Matrix (Fin ((m + 1) * r)) (Fin ((m + 1) * r)) ℝ) ≠ 0)
-      (_hcert : Higham13Eq1322LowerComparisonSourceChain hr n m Ablk pivotInv),
+      (hcert : Higham13Eq1322LowerComparisonSourceChain hr n m Ablk pivotInv),
       let hm : 0 < m + 1 := Nat.succ_pos m
       let hN : 0 < (m + 1) * r := Nat.mul_pos hm hr
       let A0 : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
@@ -30582,7 +30580,8 @@ theorem Higham13Eq1322LowerComparisonSourceChain.exists_blockLUFact_eq13_23_prod
       let Ainv : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
         nonsingInv ((m + 1) * r) A0
       let hApos : 0 < maxEntryNorm hN A0 :=
-        maxEntryNorm_pos_of_det_ne_zero hN A0 hdet
+        maxEntryNorm_pos_of_det_ne_zero hN A0
+          (Higham13Eq1322LowerComparisonSourceChain.det_ne_zero hcert)
       growthFactorEntry hN A0 G hApos ≤ 2 →
         ∃ L U : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ,
           BlockLUFactSpec (m + 1) r Ablk L U ∧
@@ -30591,9 +30590,13 @@ theorem Higham13Eq1322LowerComparisonSourceChain.exists_blockLUFact_eq13_23_prod
               8 * (n : ℝ) *
                 (maxEntryNormRect hN hN A0 * maxEntryNormRect hN hN Ainv) *
                 maxEntryNormRect hN hN A0 := by
-  intro m Ablk pivotInv hdet hcert
+  intro m Ablk pivotInv hcert
   dsimp only
   intro hRho_le_two
+  let hdet :
+      Matrix.det (blockMatrixFlatFin Ablk :
+        Matrix (Fin ((m + 1) * r)) (Fin ((m + 1) * r)) ℝ) ≠ 0 :=
+    Higham13Eq1322LowerComparisonSourceChain.det_ne_zero hcert
   let hm : 0 < m + 1 := Nat.succ_pos m
   let hN : 0 < (m + 1) * r := Nat.mul_pos hm hr
   let A0 : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ := blockMatrixFlatFin Ablk
@@ -30611,7 +30614,7 @@ theorem Higham13Eq1322LowerComparisonSourceChain.exists_blockLUFact_eq13_23_prod
         m Ablk pivotInv := by
     simpa [hm, hN, A0, G, Ainv, hApos] using
       Higham13Eq1322LowerComparisonSourceChain.to_blockLUBudgetChain
-        (r := r) (n := n) hr hdet hcert
+        (r := r) (n := n) hr hcert
   simpa [hm, hN, A0, G, Ainv, hApos] using
     Higham13BlockLUBudgetChain.exists_blockLUFact_eq13_23_product_exact_kappa
       (r := r) hr (hN := hN) (A0 := A0) (G := G) (Ainv := Ainv)
@@ -30633,9 +30636,6 @@ theorem
     ∀ {m : ℕ}
       {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
       {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ}
-      (_hdet :
-        Matrix.det (blockMatrixFlatFin Ablk :
-          Matrix (Fin ((m + 1) * r)) (Fin ((m + 1) * r)) ℝ) ≠ 0)
       (_hcert : Higham13Eq1322LowerComparisonSourceChain hr n m Ablk pivotInv),
       let hm : 0 < m + 1 := Nat.succ_pos m
       let hN : 0 < (m + 1) * r := Nat.mul_pos hm hr
@@ -30678,10 +30678,14 @@ theorem
             8 * (n : ℝ) *
               (maxEntryNormRect hN hN A0 * maxEntryNormRect hN hN Ainv) *
               maxEntryNormRect hN hN A0 := by
-  intro m Ablk pivotInv hdet hcert
+  intro m Ablk pivotInv hcert
   dsimp only
   intro invDiagBound stageInvDiagBound hDom hDiagBound hInitInv
     hPivotInvBound hProduct hDiagUpdate
+  let hdet :
+      Matrix.det (blockMatrixFlatFin Ablk :
+        Matrix (Fin ((m + 1) * r)) (Fin ((m + 1) * r)) ℝ) ≠ 0 :=
+    Higham13Eq1322LowerComparisonSourceChain.det_ne_zero hcert
   let hm : 0 < m + 1 := Nat.succ_pos m
   let hN : 0 < (m + 1) * r := Nat.mul_pos hm hr
   let A0 : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
@@ -30694,7 +30698,7 @@ theorem
     maxEntryNorm_pos_of_det_ne_zero hN A0 hdet
   exact
     Higham13Eq1322LowerComparisonSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa
-      (r := r) (n := n) hr hdet hcert
+      (r := r) (n := n) hr hcert
       (by
         simpa [hm, hN, A0, G, Ainv, hApos] using
           higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_product_bound_diag_update
