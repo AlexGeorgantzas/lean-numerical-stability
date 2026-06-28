@@ -9631,6 +9631,71 @@ theorem mgs_qr_bounds_of_R11_diag_ne_zero_compact_condition_budget
       (frobNormRect_nonneg A)
       hrho hcondition hbudget
 
+/-- Determinant-nonzero version of
+`mgs_qr_bounds_of_R11_diag_ne_zero_compact_condition_budget`.
+
+The full padded Householder block data already gives the extracted `R11`
+upper-trapezoidal shape, so a determinant certificate supplies the
+source-style nonzero diagonal required by the compact condition-budget route. -/
+theorem mgs_qr_bounds_of_R11_det_ne_zero_compact_condition_budget
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {rho c2 kappaA higherOrder : Real}
+    (hdet :
+      Ne
+        (Matrix.det
+        (householder_paddedFinInput_R11 fp A :
+          Matrix (Fin n) (Fin n) Real))
+        0)
+    (hRinv :
+      rectOpNorm2Le
+        (nonsingInv n (householder_paddedFinInput_R11 fp A))
+        rho)
+    (hrho : 0 <= rho)
+    (hcondition : frobNormRect A * rho <= kappaA)
+    (hbudget :
+      2 * ((3 * Theorem19_4.gamma_tilde fp (n + m) n) * kappaA) +
+          ((3 * Theorem19_4.gamma_tilde fp (n + m) n) * kappaA) ^ 2 <=
+        c2 * fp.u * kappaA + higherOrder) :
+    MGSQRBounds m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (householder_paddedFinInput_R11 fp A)
+      (2 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      c2
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u (frobNormRect A) kappaA higherOrder := by
+  have hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + m)) := by
+    unfold gammaValid
+    have hhalf_lt_one : (1 / 2 : Real) < 1 := by norm_num
+    exact lt_of_le_of_lt hsmall hhalf_lt_one
+  have hdet_expanded :
+      Ne
+        (Matrix.det
+        (paddedEconomyR
+          (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)) :
+            Matrix (Fin n) (Fin n) Real))
+        0 := by
+    simpa [householder_paddedFinInput_R11] using hdet
+  have hdiag :
+      forall i : Fin n,
+        Ne (householder_paddedFinInput_R11 fp A i i) 0 := by
+    intro i
+    simpa [householder_paddedFinInput_R11] using
+      householder_paddedFinInput_R11_diag_ne_zero_of_det_ne_zero
+        fp A hn hvalid hdet_expanded i
+  exact
+    mgs_qr_bounds_of_R11_diag_ne_zero_compact_condition_budget
+      (fp := fp) (m := m) (n := n) A hn hnm hsmall
+      (rho := rho) (c2 := c2)
+      (kappaA := kappaA) (higherOrder := higherOrder)
+      hdiag hRinv hrho hcondition hbudget
+
 /-- Chapter-facing Theorem 19.13 assembly currently proved for the concrete
 padded Householder route.
 
