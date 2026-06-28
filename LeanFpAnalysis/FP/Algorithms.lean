@@ -38,6 +38,8 @@ import LeanFpAnalysis.FP.Algorithms.TriangularSolveCombined
 import LeanFpAnalysis.FP.Algorithms.TriangularForwardBound
 import LeanFpAnalysis.FP.Algorithms.InverseBounds
 import LeanFpAnalysis.FP.Algorithms.TriangularForwardComparison
+import LeanFpAnalysis.FP.Algorithms.TriangularArbitraryOrder
+import LeanFpAnalysis.FP.Algorithms.TriangularNoGuard
 import LeanFpAnalysis.FP.Algorithms.MMatrix
 import LeanFpAnalysis.FP.Algorithms.HighamChapter8
 import LeanFpAnalysis.FP.Algorithms.HighamChapter9

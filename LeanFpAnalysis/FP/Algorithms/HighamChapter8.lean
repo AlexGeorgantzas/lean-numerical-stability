@@ -10,6 +10,8 @@ import LeanFpAnalysis.FP.Algorithms.TriangularSolveCombined
 import LeanFpAnalysis.FP.Algorithms.TriangularForwardBound
 import LeanFpAnalysis.FP.Algorithms.InverseBounds
 import LeanFpAnalysis.FP.Algorithms.TriangularForwardComparison
+import LeanFpAnalysis.FP.Algorithms.TriangularArbitraryOrder
+import LeanFpAnalysis.FP.Algorithms.TriangularNoGuard
 import LeanFpAnalysis.FP.Algorithms.MMatrix
 import LeanFpAnalysis.FP.Algorithms.LU.GrowthFactor
 import LeanFpAnalysis.FP.Analysis.HighamChapter7
@@ -17,6 +19,7 @@ import Mathlib.Data.Finset.Max
 import Mathlib.Data.Matrix.Basis
 import Mathlib.Data.Sign.Basic
 import Mathlib.LinearAlgebra.Matrix.ToLinearEquiv
+import Mathlib.Order.Interval.Finset.Fin
 
 namespace LeanFpAnalysis.FP
 
@@ -64,6 +67,26 @@ theorem higham8_3_backSub_backward_error (fp : FPModel) (n : ℕ)
       ∀ i, ∑ j : Fin n, (U i j + ΔU i j) * fl_backSub fp n U b j = b i :=
   backSub_backward_error_algorithm_8_1 fp n U b hU hUT hn
 
+/-- **Lemma 8.4** (Higham, 2nd ed., §8.1): order-independent backward error of
+`ŷ = fl((∑ wᵢ)/bₖ)` when the `n`-term sum is evaluated in *any* order (encoded by
+an arbitrary summation tree `t`).  With the distinguished summand `w p`
+(Higham's `c`) kept unperturbed,
+`bₖ ŷ (1 + θ₀) = ∑ᵢ wᵢ (1 + θᵢ)` with every `|θ| ≤ γ_n` and `θ p = 0`.
+
+Unlike `higham8_5_backSub_backward_error`, which fixes the repository evaluation
+order, this is the sharp order-independent statement underlying Theorem 8.5.  It
+is proved from the pivot-normalised summation-tree backward error
+`SumTree.backward_error_pivot`. -/
+theorem higham8_4_anyOrder_backwardError (fp : FPModel) {n : ℕ} (t : SumTree n)
+    (ht : gammaValid fp n) (w : Fin n → ℝ) (p : Fin n)
+    (bk : ℝ) (hbk : bk ≠ 0) :
+    ∃ (θ₀ : ℝ) (θ : Fin n → ℝ),
+      |θ₀| ≤ gamma fp n ∧
+      θ p = 0 ∧
+      (∀ i, |θ i| ≤ gamma fp n) ∧
+      bk * fp.fl_div (t.eval fp w) bk * (1 + θ₀) = ∑ i : Fin n, w i * (1 + θ i) :=
+  higham8_4_anyOrder fp t ht w p bk hbk
+
 /-- **Theorem 8.5**, upper-triangular back-substitution specialization. -/
 theorem higham8_5_backSub_backward_error (fp : FPModel) (n : ℕ)
     (U : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
@@ -75,6 +98,22 @@ theorem higham8_5_backSub_backward_error (fp : FPModel) (n : ℕ)
       ∀ i, ∑ j : Fin n, (U i j + ΔU i j) * fl_backSub fp n U b j = b i :=
   backSub_backward_error fp n U b hU hUT hn
 
+/-- **Theorem 8.5**, upper-triangular back-substitution with arbitrary row
+evaluation orders.  Each row supplies a summation tree for the standard
+`bᵢ - Σ Uᵢⱼ*x̂ⱼ` row terms; the resulting vector solves a componentwise
+perturbed upper-triangular system with Higham's `γ_n` envelope. -/
+theorem higham8_5_backSub_anyOrder_backward_error (fp : FPModel) (n : ℕ)
+    (U : Fin n → Fin n → ℝ) (b xhat : Fin n → ℝ)
+    (rowTree : (i : Fin n) → SumTree ((n - i.val - 1) + 1))
+    (hU : ∀ i, U i i ≠ 0)
+    (hUT : ∀ i j : Fin n, j.val < i.val → U i j = 0)
+    (hn : gammaValid fp n)
+    (hrow : BackSubAnyOrderSpec fp n U b xhat rowTree) :
+    ∃ ΔU : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔU i j| ≤ gamma fp n * |U i j|) ∧
+      ∀ i, ∑ j : Fin n, (U i j + ΔU i j) * xhat j = b i :=
+  backSub_backward_error_anyOrder fp n U b xhat rowTree hU hUT hn hrow
+
 /-- **Theorem 8.5**, lower-triangular forward-substitution specialization. -/
 theorem higham8_5_forwardSub_backward_error (fp : FPModel) (n : ℕ)
     (L : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
@@ -85,6 +124,20 @@ theorem higham8_5_forwardSub_backward_error (fp : FPModel) (n : ℕ)
       (∀ i j, |ΔL i j| ≤ gamma fp n * |L i j|) ∧
       ∀ i, ∑ j : Fin n, (L i j + ΔL i j) * fl_forwardSub fp n L b j = b i :=
   forwardSub_backward_error fp n L b hL hLT hn
+
+/-- **Theorem 8.5**, lower-triangular forward-substitution with arbitrary row
+evaluation orders. -/
+theorem higham8_5_forwardSub_anyOrder_backward_error (fp : FPModel) (n : ℕ)
+    (L : Fin n → Fin n → ℝ) (b xhat : Fin n → ℝ)
+    (rowTree : (i : Fin n) → SumTree (i.val + 1))
+    (hL : ∀ i, L i i ≠ 0)
+    (hLT : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hn : gammaValid fp n)
+    (hrow : ForwardSubAnyOrderSpec fp n L b xhat rowTree) :
+    ∃ ΔL : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔL i j| ≤ gamma fp n * |L i j|) ∧
+      ∀ i, ∑ j : Fin n, (L i j + ΔL i j) * xhat j = b i :=
+  forwardSub_backward_error_anyOrder fp n L b xhat rowTree hL hLT hn hrow
 
 /-! ## §8.2 Forward Error Analysis -/
 
@@ -179,6 +232,72 @@ theorem higham8_2_forwardSub_relative_infNorm_bound (fp : FPModel) (n : ℕ) (hn
     n hn L L_inv x (fl_forwardSub fp n L b) b
   · exact gamma_nonneg fp hγ
   · rcases higham8_5_forwardSub_backward_error fp n L b hL_diag hLT hγ with
+      ⟨ΔL, hΔL, hPerturbed⟩
+    refine ⟨ΔL, ?_, ?_⟩
+    · intro i j
+      simpa using hΔL i j
+    · simpa using hPerturbed
+  · exact hInv.1
+  · exact hLx
+  · exact hγcond
+  · exact hx
+
+/-- **Equation (8.2)** for upper-triangular substitution with arbitrary row
+evaluation orders. -/
+theorem higham8_2_backSub_anyOrder_relative_infNorm_bound (fp : FPModel)
+    (n : ℕ) (hn : 0 < n)
+    (U U_inv : Fin n → Fin n → ℝ)
+    (x b xhat : Fin n → ℝ)
+    (rowTree : (i : Fin n) → SumTree ((n - i.val - 1) + 1))
+    (hU_diag : ∀ i, U i i ≠ 0)
+    (hUT : ∀ i j : Fin n, j.val < i.val → U i j = 0)
+    (hInv : IsInverse n U U_inv)
+    (hUx : ∀ i, ∑ j : Fin n, U i j * x j = b i)
+    (hγ : gammaValid fp n)
+    (hrow : BackSubAnyOrderSpec fp n U b xhat rowTree)
+    (hγcond : gamma fp n * condSkeel n hn U U_inv < 1)
+    (hx : 0 < infNormVec x) :
+    infNormVec (fun i => x i - xhat i) / infNormVec x ≤
+      gamma fp n / (1 - gamma fp n * condSkeel n hn U U_inv) *
+        ch7SkeelCondAtSolutionInf n hn U U_inv x := by
+  apply higham8_relative_infNorm_bound_of_componentwise_backward_error
+    n hn U U_inv x xhat b
+  · exact gamma_nonneg fp hγ
+  · rcases higham8_5_backSub_anyOrder_backward_error fp n U b xhat rowTree
+      hU_diag hUT hγ hrow with
+      ⟨ΔU, hΔU, hPerturbed⟩
+    refine ⟨ΔU, ?_, ?_⟩
+    · intro i j
+      simpa using hΔU i j
+    · simpa using hPerturbed
+  · exact hInv.1
+  · exact hUx
+  · exact hγcond
+  · exact hx
+
+/-- **Equation (8.2)** for lower-triangular substitution with arbitrary row
+evaluation orders. -/
+theorem higham8_2_forwardSub_anyOrder_relative_infNorm_bound (fp : FPModel)
+    (n : ℕ) (hn : 0 < n)
+    (L L_inv : Fin n → Fin n → ℝ)
+    (x b xhat : Fin n → ℝ)
+    (rowTree : (i : Fin n) → SumTree (i.val + 1))
+    (hL_diag : ∀ i, L i i ≠ 0)
+    (hLT : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hInv : IsInverse n L L_inv)
+    (hLx : ∀ i, ∑ j : Fin n, L i j * x j = b i)
+    (hγ : gammaValid fp n)
+    (hrow : ForwardSubAnyOrderSpec fp n L b xhat rowTree)
+    (hγcond : gamma fp n * condSkeel n hn L L_inv < 1)
+    (hx : 0 < infNormVec x) :
+    infNormVec (fun i => x i - xhat i) / infNormVec x ≤
+      gamma fp n / (1 - gamma fp n * condSkeel n hn L L_inv) *
+        ch7SkeelCondAtSolutionInf n hn L L_inv x := by
+  apply higham8_relative_infNorm_bound_of_componentwise_backward_error
+    n hn L L_inv x xhat b
+  · exact gamma_nonneg fp hγ
+  · rcases higham8_5_forwardSub_anyOrder_backward_error fp n L b xhat rowTree
+      hL_diag hLT hγ hrow with
       ⟨ΔL, hΔL, hPerturbed⟩
     refine ⟨ΔL, ?_, ?_⟩
     · intro i j
@@ -430,6 +549,1779 @@ theorem higham8_4_stressUpperInvFormula_isInverse (n : ℕ) (α : ℝ) :
     IsInverse n (higham8_3_stressUpper n α) (higham8_4_stressUpperInvFormula n α) := by
   have hRight := higham8_4_stressUpperInvFormula_isRightInverse n α
   exact ⟨ch7_isLeftInverse_of_isRightInverse hRight, hRight⟩
+
+/-! ## §8.3 Kahan's triangular example -/
+
+/-- **Equation (8.11)**: Kahan's row-scaled triangular matrix
+`U_n(θ)`, parameterized by `c = cos θ` and `s = sin θ`.
+
+The source writes this as
+`diag(1, s, ..., s^(n-1))` times a unit upper-triangular matrix with
+strict upper entries `-c`. -/
+noncomputable def higham8_11_kahanMatrix (n : ℕ) (c s : ℝ) :
+    Fin n → Fin n → ℝ :=
+  fun i j => s ^ i.val * higham8_3_stressUpper n c i j
+
+/-- **Problem 8.9** support: the leading principal block of the `(n+1) × (n+1)`
+Kahan matrix is the `n × n` Kahan matrix with the same parameters.  This is the
+matrix-family identity used by the Appendix A interlacing induction. -/
+theorem higham8_11_kahanMatrix_leadingBlock_succ
+    (n : ℕ) (c s : ℝ) (i j : Fin n) :
+    higham8_11_kahanMatrix (n + 1) c s i.castSucc j.castSucc =
+      higham8_11_kahanMatrix n c s i j := by
+  simp [higham8_11_kahanMatrix, higham8_3_stressUpper]
+
+/-- **Problem 8.9** support: the leading principal block of the Kahan Gram
+matrix for size `n+1` is the Kahan Gram matrix for size `n`.  This is the
+matrix-level input needed before applying Cauchy interlacing. -/
+theorem higham8_11_kahanGram_leadingBlock_succ
+    (n : ℕ) (c s : ℝ) (i j : Fin n) :
+    (∑ k : Fin (n + 1),
+        higham8_11_kahanMatrix (n + 1) c s k i.castSucc *
+          higham8_11_kahanMatrix (n + 1) c s k j.castSucc) =
+      ∑ k : Fin n,
+        higham8_11_kahanMatrix n c s k i *
+          higham8_11_kahanMatrix n c s k j := by
+  rw [Fin.sum_univ_castSucc]
+  have hsum :
+      (∑ k : Fin n,
+          higham8_11_kahanMatrix (n + 1) c s k.castSucc i.castSucc *
+            higham8_11_kahanMatrix (n + 1) c s k.castSucc j.castSucc) =
+        ∑ k : Fin n,
+          higham8_11_kahanMatrix n c s k i *
+            higham8_11_kahanMatrix n c s k j := by
+    apply Finset.sum_congr rfl
+    intro k _hk
+    rw [higham8_11_kahanMatrix_leadingBlock_succ n c s k i,
+      higham8_11_kahanMatrix_leadingBlock_succ n c s k j]
+  have hlast_i :
+      higham8_11_kahanMatrix (n + 1) c s (Fin.last n) i.castSucc = 0 := by
+    have hne : (Fin.last n : Fin (n + 1)) ≠ i.castSucc := by
+      intro h
+      have hval := congrArg Fin.val h
+      simp at hval
+      omega
+    have hnlt : ¬ (n : ℕ) < i.val := by omega
+    simp [higham8_11_kahanMatrix, higham8_3_stressUpper, hne, hnlt]
+  rw [hsum, hlast_i]
+  simp
+
+/-- The displayed inverse-entry formula following **Equation (8.11)**:
+the inverse of Kahan's matrix is the stress inverse with column `j` scaled by
+`s^(-j)` in zero-based indexing. -/
+noncomputable def higham8_11_kahanInvFormula (n : ℕ) (c s : ℝ) :
+    Fin n → Fin n → ℝ :=
+  fun i j => (1 / s ^ j.val) * higham8_4_stressUpperInvFormula n c i j
+
+/-- **Equation (8.11)** support: for `s ≠ 0`, the displayed Kahan inverse
+formula is a genuine right inverse. -/
+theorem higham8_11_kahanInvFormula_isRightInverse (n : ℕ) (c s : ℝ)
+    (hs : s ≠ 0) :
+    IsRightInverse n (higham8_11_kahanMatrix n c s)
+      (higham8_11_kahanInvFormula n c s) := by
+  intro i j
+  have hpowj : s ^ j.val ≠ 0 := pow_ne_zero _ hs
+  have hstress := higham8_4_stressUpperInvFormula_isRightInverse n c i j
+  calc
+    ∑ k : Fin n,
+        higham8_11_kahanMatrix n c s i k *
+          higham8_11_kahanInvFormula n c s k j
+        =
+      (s ^ i.val * (1 / s ^ j.val)) *
+        ∑ k : Fin n,
+          higham8_3_stressUpper n c i k *
+            higham8_4_stressUpperInvFormula n c k j := by
+          rw [Finset.mul_sum]
+          apply Finset.sum_congr rfl
+          intro k _hk
+          simp [higham8_11_kahanMatrix, higham8_11_kahanInvFormula]
+          ring_nf
+    _ = (s ^ i.val * (1 / s ^ j.val)) * (if i = j then 1 else 0) := by
+          rw [hstress]
+    _ = (if i = j then 1 else 0) := by
+          by_cases hij : i = j
+          · subst j
+            simp [hs]
+          · simp [hij]
+
+/-- **Equation (8.11)** support: for `s ≠ 0`, the displayed Kahan inverse
+formula is a genuine two-sided inverse. -/
+theorem higham8_11_kahanInvFormula_isInverse (n : ℕ) (c s : ℝ) (hs : s ≠ 0) :
+    IsInverse n (higham8_11_kahanMatrix n c s)
+      (higham8_11_kahanInvFormula n c s) := by
+  have hRight := higham8_11_kahanInvFormula_isRightInverse n c s hs
+  exact ⟨ch7_isLeftInverse_of_isRightInverse hRight, hRight⟩
+
+/-- **Problem 8.9** support: in the repository's descending singular-value
+order, the second-smallest singular value of an `n × n` matrix is at zero-based
+index `n - 2`. -/
+def higham8_problem8_9_secondSmallestIndex (n : ℕ) (h2 : 2 ≤ n) : Fin n :=
+  ⟨n - 2, by omega⟩
+
+/-- **Problem 8.9** support: in descending order, the third-smallest slot of an
+`n × n` matrix is at zero-based index `n - 3`.  This is the slot that appears
+in the one-step Cauchy-interlacing reduction for the Kahan induction. -/
+def higham8_problem8_9_thirdSmallestIndex (n : ℕ) (h3 : 3 ≤ n) : Fin n :=
+  ⟨n - 3, by omega⟩
+
+/-- **Problem 8.9** displayed scalar value for Kahan's matrix. -/
+noncomputable def higham8_problem8_9_kahanSecondSmallestValue
+    (n : ℕ) (c s : ℝ) : ℝ :=
+  s ^ (n - 2) * Real.sqrt (1 + c)
+
+private noncomputable def higham8_problem8_9_svdTopSpan
+    {n : ℕ} (A : CMatrix n n) (k : Fin n) :
+    Submodule ℂ (EuclideanSpace ℂ (Fin n)) :=
+  Submodule.span ℂ
+    (Set.range (fun i : {i : Fin n // i ≤ k} =>
+      complexMatrixGramEigenvectorBasis A i.1))
+
+private noncomputable def higham8_problem8_9_svdTailSpan
+    {n : ℕ} (A : CMatrix n n) (k : Fin n) :
+    Submodule ℂ (EuclideanSpace ℂ (Fin n)) :=
+  Submodule.span ℂ
+    (Set.range (fun i : {i : Fin n // k ≤ i} =>
+      complexMatrixGramEigenvectorBasis A i.1))
+
+private theorem higham8_problem8_9_svdTopSpan_finrank
+    {n : ℕ} (A : CMatrix n n) (k : Fin n) :
+    Module.finrank ℂ (↥(higham8_problem8_9_svdTopSpan A k)) = k.val + 1 := by
+  rw [higham8_problem8_9_svdTopSpan]
+  rw [finrank_span_eq_card]
+  · convert (Fintype.card_Iic k).trans (Fin.card_Iic k) using 2
+  · exact (complexMatrixGramEigenvectorBasis A).toBasis.linearIndependent.comp
+      (fun i : {i : Fin n // i ≤ k} => (i : Fin n))
+      (Subtype.val_injective)
+
+private theorem higham8_problem8_9_svdTailSpan_finrank
+    {n : ℕ} (A : CMatrix n n) (k : Fin n) :
+    Module.finrank ℂ (↥(higham8_problem8_9_svdTailSpan A k)) = n - k.val := by
+  rw [higham8_problem8_9_svdTailSpan]
+  rw [finrank_span_eq_card]
+  · convert (Fintype.card_Ici k).trans (Fin.card_Ici k) using 2
+  · exact (complexMatrixGramEigenvectorBasis A).toBasis.linearIndependent.comp
+      (fun i : {i : Fin n // k ≤ i} => (i : Fin n))
+      (Subtype.val_injective)
+
+private theorem higham8_problem8_9_svdTopSpan_repr_eq_zero_of_lt
+    {n : ℕ} (A : CMatrix n n) (k j : Fin n)
+    {x : EuclideanSpace ℂ (Fin n)}
+    (hx : x ∈ higham8_problem8_9_svdTopSpan A k) (hkj : k < j) :
+    (complexMatrixGramEigenvectorBasis A).repr x j = 0 := by
+  rw [higham8_problem8_9_svdTopSpan] at hx
+  refine Submodule.span_induction
+    (s := Set.range (fun i : {i : Fin n // i ≤ k} =>
+      complexMatrixGramEigenvectorBasis A i.1))
+    ?mem ?zero ?add ?smul hx
+  · rintro y ⟨i, rfl⟩
+    have hji : j ≠ (i : Fin n) := by
+      intro h
+      subst j
+      exact not_lt_of_ge i.2 hkj
+    simp [OrthonormalBasis.repr_self, hji]
+  · simp
+  · intro x y hx hy hx0 hy0
+    simp [map_add, hx0, hy0]
+  · intro a x hx hx0
+    simp [map_smul, hx0]
+
+private theorem higham8_problem8_9_svdTailSpan_repr_eq_zero_of_lt
+    {n : ℕ} (A : CMatrix n n) (k j : Fin n)
+    {x : EuclideanSpace ℂ (Fin n)}
+    (hx : x ∈ higham8_problem8_9_svdTailSpan A k) (hjk : j < k) :
+    (complexMatrixGramEigenvectorBasis A).repr x j = 0 := by
+  rw [higham8_problem8_9_svdTailSpan] at hx
+  refine Submodule.span_induction
+    (s := Set.range (fun i : {i : Fin n // k ≤ i} =>
+      complexMatrixGramEigenvectorBasis A i.1))
+    ?mem ?zero ?add ?smul hx
+  · rintro y ⟨i, rfl⟩
+    have hji : j ≠ (i : Fin n) := by
+      intro h
+      subst j
+      exact not_lt_of_ge i.2 hjk
+    simp [OrthonormalBasis.repr_self, hji]
+  · simp
+  · intro x y hx hy hx0 hy0
+    simp [map_add, hx0, hy0]
+  · intro a x hx hx0
+    simp [map_smul, hx0]
+
+private theorem higham8_problem8_9_matrix_toEuclideanLin_ofLp
+    {m n : Type} [Fintype n] [DecidableEq n]
+    (A : Matrix m n ℂ) (x : EuclideanSpace ℂ n) :
+    WithLp.ofLp (Matrix.toEuclideanLin A x) =
+      Matrix.toLin' A (WithLp.ofLp x) := by
+  change WithLp.ofLp (((Matrix.toLpLin (2 : ENNReal) (2 : ENNReal)) A) x) =
+    Matrix.toLin' A (WithLp.ofLp x)
+  exact Matrix.ofLp_toLpLin (2 : ENNReal) (2 : ENNReal) A x
+
+private theorem higham8_problem8_9_norm_sq_eq_sum
+    {n : ℕ} (A : CMatrix n n) (z : EuclideanSpace ℂ (Fin n)) :
+    ‖complexMatrixEuclideanLin A z‖ ^ 2 =
+      ∑ i : Fin n,
+        complexMatrixSingularValue A i ^ 2 *
+          ‖(complexMatrixGramEigenvectorBasis A).repr z i‖ ^ 2 := by
+  classical
+  obtain ⟨b, hcontains⟩ :=
+    exists_complexMatrixLeftSingularVector_fin_orthonormalBasis_extension A
+  let q : Equiv.Perm (Fin n) := complexMatrixLeftSingularVectorBasisPerm A b hcontains
+  let coeff : EuclideanSpace ℂ (Fin n) := (complexMatrixGramEigenvectorBasis A).repr z
+  have hcoord :
+      Matrix.mulVec (highamProblem65MonomialMatrix q
+          (fun i => (complexMatrixSingularValue A i : ℂ))) coeff =
+        b.repr (complexMatrixEuclideanLin A z) := by
+    have h := complexMatrixSVDFinDiagonalCoordinateMatrix_mulVec_repr A b hcontains z
+    rw [complexMatrixSVDFinDiagonalCoordinateMatrix_eq_monomial_basisPerm A b hcontains] at h
+    simpa [q, coeff] using h
+  have hcoord_lift :
+      (WithLp.toLp (2 : ENNReal)
+        (Matrix.mulVec (highamProblem65MonomialMatrix q
+          (fun i => (complexMatrixSingularValue A i : ℂ)))
+          (WithLp.ofLp coeff)) : EuclideanSpace ℂ (Fin n)) =
+        b.repr (complexMatrixEuclideanLin A z) := by
+    apply WithLp.ofLp_injective
+    simpa [q, coeff] using hcoord
+  have hnorm_repr :
+      ‖b.repr (complexMatrixEuclideanLin A z)‖ =
+        ‖complexMatrixEuclideanLin A z‖ :=
+    LinearIsometryEquiv.norm_map b.repr (complexMatrixEuclideanLin A z)
+  rw [← hnorm_repr, ← hcoord_lift]
+  exact ch7Problem75_monomial_mulVec_norm_sq_eq_sum q
+    (fun i => complexMatrixSingularValue A i) coeff
+
+private theorem higham8_problem8_9_topSpan_sigma_mul_norm_le
+    {n : ℕ} (A : CMatrix n n) (k : Fin n) {x : EuclideanSpace ℂ (Fin n)}
+    (hx : x ∈ higham8_problem8_9_svdTopSpan A k) :
+    complexMatrixSingularValue A k * ‖x‖ ≤ ‖complexMatrixEuclideanLin A x‖ := by
+  apply (sq_le_sq₀
+    (mul_nonneg (complexMatrixSingularValue_nonneg A k) (norm_nonneg x))
+    (norm_nonneg (complexMatrixEuclideanLin A x))).mp
+  rw [mul_pow, higham8_problem8_9_norm_sq_eq_sum]
+  calc
+    complexMatrixSingularValue A k ^ 2 * ‖x‖ ^ 2
+        = ∑ i : Fin n,
+            complexMatrixSingularValue A k ^ 2 *
+              ‖(complexMatrixGramEigenvectorBasis A).repr x i‖ ^ 2 := by
+          rw [← ch7Problem75_orthonormalBasis_repr_norm_sq
+            (complexMatrixGramEigenvectorBasis A) x]
+          rw [Finset.mul_sum]
+    _ ≤ ∑ i : Fin n,
+        complexMatrixSingularValue A i ^ 2 *
+          ‖(complexMatrixGramEigenvectorBasis A).repr x i‖ ^ 2 := by
+          apply Finset.sum_le_sum
+          intro i _hi
+          by_cases hki : k < i
+          · have hzero :=
+              higham8_problem8_9_svdTopSpan_repr_eq_zero_of_lt A k i hx hki
+            simp [hzero]
+          · have hik : i ≤ k := le_of_not_gt hki
+            exact mul_le_mul_of_nonneg_right
+              ((sq_le_sq₀ (complexMatrixSingularValue_nonneg A k)
+                (complexMatrixSingularValue_nonneg A i)).mpr
+                (complexMatrixSingularValue_antitone A hik))
+              (sq_nonneg _)
+
+private theorem higham8_problem8_9_tailSpan_norm_image_le_sigma_mul_norm
+    {n : ℕ} (A : CMatrix n n) (k : Fin n) {x : EuclideanSpace ℂ (Fin n)}
+    (hx : x ∈ higham8_problem8_9_svdTailSpan A k) :
+    ‖complexMatrixEuclideanLin A x‖ ≤ complexMatrixSingularValue A k * ‖x‖ := by
+  apply (sq_le_sq₀
+    (norm_nonneg (complexMatrixEuclideanLin A x))
+    (mul_nonneg (complexMatrixSingularValue_nonneg A k) (norm_nonneg x))).mp
+  rw [mul_pow, higham8_problem8_9_norm_sq_eq_sum]
+  calc
+    (∑ i : Fin n,
+        complexMatrixSingularValue A i ^ 2 *
+          ‖(complexMatrixGramEigenvectorBasis A).repr x i‖ ^ 2)
+        ≤ ∑ i : Fin n,
+            complexMatrixSingularValue A k ^ 2 *
+              ‖(complexMatrixGramEigenvectorBasis A).repr x i‖ ^ 2 := by
+          apply Finset.sum_le_sum
+          intro i _hi
+          by_cases hik : i < k
+          · have hzero :=
+              higham8_problem8_9_svdTailSpan_repr_eq_zero_of_lt A k i hx hik
+            simp [hzero]
+          · have hki : k ≤ i := le_of_not_gt hik
+            exact mul_le_mul_of_nonneg_right
+              ((sq_le_sq₀ (complexMatrixSingularValue_nonneg A i)
+                (complexMatrixSingularValue_nonneg A k)).mpr
+                (complexMatrixSingularValue_antitone A hki))
+              (sq_nonneg _)
+    _ = complexMatrixSingularValue A k ^ 2 * ‖x‖ ^ 2 := by
+          rw [← Finset.mul_sum]
+          rw [ch7Problem75_orthonormalBasis_repr_norm_sq]
+
+private noncomputable def higham8_problem8_9_embedLastZero (n : ℕ) :
+    EuclideanSpace ℂ (Fin n) →ₗ[ℂ] EuclideanSpace ℂ (Fin (n + 1)) where
+  toFun x := WithLp.toLp (2 : ENNReal)
+    (fun i : Fin (n + 1) => if h : i.val < n then WithLp.ofLp x ⟨i.val, h⟩ else 0)
+  map_add' x y := by
+    apply WithLp.ofLp_injective
+    ext i
+    by_cases h : i.val < n <;> simp [h]
+  map_smul' a x := by
+    apply WithLp.ofLp_injective
+    ext i
+    by_cases h : i.val < n <;> simp [h]
+
+@[simp] private theorem higham8_problem8_9_embedLastZero_apply_castSucc
+    (n : ℕ) (x : EuclideanSpace ℂ (Fin n)) (i : Fin n) :
+    higham8_problem8_9_embedLastZero n x i.castSucc = x i := by
+  simp [higham8_problem8_9_embedLastZero]
+
+@[simp] private theorem higham8_problem8_9_embedLastZero_apply_last
+    (n : ℕ) (x : EuclideanSpace ℂ (Fin n)) :
+    higham8_problem8_9_embedLastZero n x (Fin.last n) = 0 := by
+  simp [higham8_problem8_9_embedLastZero]
+
+private theorem higham8_problem8_9_embedLastZero_norm
+    (n : ℕ) (x : EuclideanSpace ℂ (Fin n)) :
+    ‖higham8_problem8_9_embedLastZero n x‖ = ‖x‖ := by
+  apply (sq_eq_sq₀ (norm_nonneg _) (norm_nonneg _)).mp
+  rw [EuclideanSpace.norm_sq_eq, EuclideanSpace.norm_sq_eq]
+  rw [Fin.sum_univ_castSucc]
+  simp [higham8_problem8_9_embedLastZero]
+
+private theorem higham8_problem8_9_embedLastZero_injective (n : ℕ) :
+    Function.Injective (higham8_problem8_9_embedLastZero n) := by
+  intro x y hxy
+  apply WithLp.ofLp_injective
+  ext i
+  have hcoord :=
+    congrArg (fun z : EuclideanSpace ℂ (Fin (n + 1)) => z i.castSucc) hxy
+  simpa using hcoord
+
+private theorem higham8_problem8_9_kahan_euclideanLin_embed
+    (n : ℕ) (c s : ℝ) (x : EuclideanSpace ℂ (Fin n)) :
+    complexMatrixEuclideanLin
+        (realRectToCMatrix (higham8_11_kahanMatrix (n + 1) c s))
+        (higham8_problem8_9_embedLastZero n x) =
+      higham8_problem8_9_embedLastZero n
+        (complexMatrixEuclideanLin
+          (realRectToCMatrix (higham8_11_kahanMatrix n c s)) x) := by
+  apply WithLp.ofLp_injective
+  ext r
+  refine Fin.lastCases ?last ?cast r
+  · simp only [complexMatrixEuclideanLin]
+    rw [higham8_problem8_9_matrix_toEuclideanLin_ofLp]
+    change Matrix.toLin' (realRectToCMatrix (higham8_11_kahanMatrix (n + 1) c s))
+        (WithLp.ofLp ((higham8_problem8_9_embedLastZero n) x)) (Fin.last n) =
+      WithLp.ofLp ((higham8_problem8_9_embedLastZero n)
+        ((complexMatrixEuclideanLin
+          (realRectToCMatrix (higham8_11_kahanMatrix n c s))) x)) (Fin.last n)
+    rw [Matrix.toLin'_apply]
+    unfold Matrix.mulVec dotProduct
+    rw [Fin.sum_univ_castSucc]
+    simp [higham8_problem8_9_embedLastZero]
+    apply Finset.sum_eq_zero
+    intro j _hj
+    have hne : Fin.last n ≠ j.castSucc := (Fin.castSucc_ne_last j).symm
+    have hnlt : ¬ n < j.val := by omega
+    simp [realRectToCMatrix, higham8_11_kahanMatrix, higham8_3_stressUpper, hne, hnlt]
+  · intro i
+    simp only [complexMatrixEuclideanLin]
+    rw [higham8_problem8_9_matrix_toEuclideanLin_ofLp]
+    change Matrix.toLin' (realRectToCMatrix (higham8_11_kahanMatrix (n + 1) c s))
+        (WithLp.ofLp ((higham8_problem8_9_embedLastZero n) x)) i.castSucc =
+      WithLp.ofLp ((higham8_problem8_9_embedLastZero n)
+        ((complexMatrixEuclideanLin
+          (realRectToCMatrix (higham8_11_kahanMatrix n c s))) x)) i.castSucc
+    rw [Matrix.toLin'_apply]
+    unfold Matrix.mulVec dotProduct
+    rw [Fin.sum_univ_castSucc]
+    simp [higham8_problem8_9_embedLastZero, realRectToCMatrix,
+      higham8_11_kahanMatrix_leadingBlock_succ]
+    rfl
+
+private noncomputable def higham8_problem8_9_embeddedTopSpan
+    {n : ℕ} (A : CMatrix n n) (k : Fin n) :
+    Submodule ℂ (EuclideanSpace ℂ (Fin (n + 1))) :=
+  LinearMap.range
+    ((higham8_problem8_9_embedLastZero n).comp
+      (higham8_problem8_9_svdTopSpan A k).subtype)
+
+private theorem higham8_problem8_9_embeddedTopSpan_finrank
+    {n : ℕ} (A : CMatrix n n) (k : Fin n) :
+    Module.finrank ℂ (↥(higham8_problem8_9_embeddedTopSpan A k)) = k.val + 1 := by
+  rw [higham8_problem8_9_embeddedTopSpan]
+  rw [LinearMap.finrank_range_of_inj]
+  · exact higham8_problem8_9_svdTopSpan_finrank A k
+  · intro x y hxy
+    apply Subtype.ext
+    exact higham8_problem8_9_embedLastZero_injective n hxy
+
+private theorem higham8_problem8_9_subspace_intersection_nonzero
+    {N dS dT : ℕ}
+    (S T : Submodule ℂ (EuclideanSpace ℂ (Fin N)))
+    (hS : Module.finrank ℂ (↥S) = dS)
+    (hT : Module.finrank ℂ (↥T) = dT)
+    (hsum : N < dS + dT) :
+    ∃ x : EuclideanSpace ℂ (Fin N), x ∈ S ∧ x ∈ T ∧ x ≠ 0 := by
+  have hdim := Submodule.finrank_sup_add_finrank_inf_eq S T
+  have hsup_le : Module.finrank ℂ (↥(S ⊔ T)) ≤ N := by
+    calc
+      Module.finrank ℂ (↥(S ⊔ T)) ≤
+          Module.finrank ℂ (EuclideanSpace ℂ (Fin N)) :=
+        Submodule.finrank_le (S ⊔ T)
+      _ = N := finrank_euclideanSpace_fin
+  have hinf_pos : 0 < Module.finrank ℂ (↥(S ⊓ T)) := by
+    rw [hS, hT] at hdim
+    omega
+  have hne : S ⊓ T ≠ ⊥ := by
+    intro hbot
+    have hfin : Module.finrank ℂ (↥(S ⊓ T)) = 0 := by
+      rw [hbot, finrank_bot]
+    omega
+  obtain ⟨x, hx, hxne⟩ := (Submodule.ne_bot_iff (S ⊓ T)).1 hne
+  rw [Submodule.mem_inf] at hx
+  exact ⟨x, hx.1, hx.2, hxne⟩
+
+private theorem higham8_problem8_9_kahanSingularValue_interlace_succ
+    (n : ℕ) (h2 : 2 ≤ n) (c s : ℝ) :
+    complexMatrixSingularValue
+        (realRectToCMatrix (higham8_11_kahanMatrix n c s))
+        (higham8_problem8_9_secondSmallestIndex n h2) ≤
+      complexMatrixSingularValue
+        (realRectToCMatrix (higham8_11_kahanMatrix (n + 1) c s))
+        (higham8_problem8_9_thirdSmallestIndex (n + 1) (by omega)) := by
+  classical
+  let B : CMatrix n n := realRectToCMatrix (higham8_11_kahanMatrix n c s)
+  let A : CMatrix (n + 1) (n + 1) :=
+    realRectToCMatrix (higham8_11_kahanMatrix (n + 1) c s)
+  let k := higham8_problem8_9_secondSmallestIndex n h2
+  let r := higham8_problem8_9_thirdSmallestIndex (n + 1) (by omega : 3 ≤ n + 1)
+  by_contra hnot
+  have hlt : complexMatrixSingularValue A r < complexMatrixSingularValue B k :=
+    lt_of_not_ge hnot
+  let S := higham8_problem8_9_embeddedTopSpan B k
+  let T := higham8_problem8_9_svdTailSpan A r
+  have hSdim : Module.finrank ℂ (↥S) = n - 1 := by
+    have hkval : k.val + 1 = n - 1 := by
+      simp [k, higham8_problem8_9_secondSmallestIndex]
+      omega
+    rw [higham8_problem8_9_embeddedTopSpan_finrank B k, hkval]
+  have hTdim : Module.finrank ℂ (↥T) = 3 := by
+    have hrval : (n + 1) - r.val = 3 := by
+      simp [r, higham8_problem8_9_thirdSmallestIndex]
+      omega
+    rw [higham8_problem8_9_svdTailSpan_finrank A r, hrval]
+  obtain ⟨x, hxS, hxT, hxne⟩ :=
+    higham8_problem8_9_subspace_intersection_nonzero S T hSdim hTdim (by omega)
+  rcases hxS with ⟨yTop, hyEq⟩
+  let y : EuclideanSpace ℂ (Fin n) := yTop
+  have hyTop : y ∈ higham8_problem8_9_svdTopSpan B k := yTop.property
+  have hxy : higham8_problem8_9_embedLastZero n y = x := by
+    simpa [S, higham8_problem8_9_embeddedTopSpan, y] using hyEq
+  have hyne : y ≠ 0 := by
+    intro hy0
+    apply hxne
+    rw [← hxy, hy0]
+    simp
+  have hynorm_pos : 0 < ‖y‖ := norm_pos_iff.mpr hyne
+  have hlower : complexMatrixSingularValue B k * ‖y‖ ≤
+      ‖complexMatrixEuclideanLin B y‖ :=
+    higham8_problem8_9_topSpan_sigma_mul_norm_le B k hyTop
+  have haction :
+      ‖complexMatrixEuclideanLin A (higham8_problem8_9_embedLastZero n y)‖ =
+        ‖complexMatrixEuclideanLin B y‖ := by
+    rw [higham8_problem8_9_kahan_euclideanLin_embed]
+    exact higham8_problem8_9_embedLastZero_norm n (complexMatrixEuclideanLin B y)
+  have hupper_x :
+      ‖complexMatrixEuclideanLin A x‖ ≤ complexMatrixSingularValue A r * ‖x‖ :=
+    higham8_problem8_9_tailSpan_norm_image_le_sigma_mul_norm A r hxT
+  have hupper :
+      ‖complexMatrixEuclideanLin B y‖ ≤ complexMatrixSingularValue A r * ‖y‖ := by
+    rw [← haction, hxy]
+    calc
+      ‖complexMatrixEuclideanLin A x‖ ≤ complexMatrixSingularValue A r * ‖x‖ :=
+        hupper_x
+      _ = complexMatrixSingularValue A r * ‖y‖ := by
+            rw [← hxy, higham8_problem8_9_embedLastZero_norm]
+  have hle_mul : complexMatrixSingularValue B k * ‖y‖ ≤
+      complexMatrixSingularValue A r * ‖y‖ := hlower.trans hupper
+  have hlt_mul : complexMatrixSingularValue A r * ‖y‖ <
+      complexMatrixSingularValue B k * ‖y‖ :=
+    mul_lt_mul_of_pos_right hlt hynorm_pos
+  exact not_lt_of_ge hle_mul hlt_mul
+
+private theorem higham8_problem8_9_kahanGram_interlace_succ
+    (n : ℕ) (h2 : 2 ≤ n) (c s : ℝ) :
+    complexMatrixGramEigenvalues
+        (realRectToCMatrix (higham8_11_kahanMatrix n c s))
+        (higham8_problem8_9_secondSmallestIndex n h2) ≤
+      complexMatrixGramEigenvalues
+        (realRectToCMatrix (higham8_11_kahanMatrix (n + 1) c s))
+        (higham8_problem8_9_thirdSmallestIndex (n + 1) (by omega)) := by
+  have hsing := higham8_problem8_9_kahanSingularValue_interlace_succ n h2 c s
+  have hsq := (sq_le_sq₀
+    (complexMatrixSingularValue_nonneg
+      (realRectToCMatrix (higham8_11_kahanMatrix n c s))
+      (higham8_problem8_9_secondSmallestIndex n h2))
+    (complexMatrixSingularValue_nonneg
+      (realRectToCMatrix (higham8_11_kahanMatrix (n + 1) c s))
+      (higham8_problem8_9_thirdSmallestIndex (n + 1) (by omega)))).mpr hsing
+  rw [complexMatrixSingularValue_sq, complexMatrixSingularValue_sq] at hsq
+  exact hsq
+
+/-- **Problem 8.9**, Kahan-specific leading-block interlacing step.
+
+This is the ordered Gram-eigenvalue inequality used by Appendix A's induction:
+the previous-size second-smallest Gram eigenvalue is bounded by the current
+third-smallest Gram eigenvalue.  The proof uses the right singular-vector
+top span for the leading block, the tail span for the current matrix, and a
+dimension-count intersection after embedding the leading block by appending
+one zero coordinate. -/
+theorem higham8_problem8_9_kahanGram_interlacing (c s : ℝ) :
+    ∀ (m : ℕ) (hm : 3 ≤ m),
+      complexMatrixGramEigenvalues
+          (realRectToCMatrix (higham8_11_kahanMatrix (m - 1) c s))
+          (higham8_problem8_9_secondSmallestIndex (m - 1) (by omega)) ≤
+        complexMatrixGramEigenvalues
+          (realRectToCMatrix (higham8_11_kahanMatrix m c s))
+          (higham8_problem8_9_thirdSmallestIndex m hm) := by
+  intro m hm
+  rcases m with _ | _ | _ | k
+  · omega
+  · omega
+  · omega
+  · have h := higham8_problem8_9_kahanGram_interlace_succ (k + 2) (by omega) c s
+    simpa [Nat.add_assoc] using h
+
+private theorem higham8_complexMatrixGramLin_eq_smul_id_of_conjTranspose_mul_self_scalar
+    {n : ℕ} (A : CMatrix n n) (lam : ℂ)
+    (hA : (complexCMatrixAsMatrix A).conjTranspose * complexCMatrixAsMatrix A =
+      (lam • (1 : Matrix (Fin n) (Fin n) ℂ))) :
+    complexMatrixGramLin A =
+      lam •
+        (LinearMap.id : EuclideanSpace ℂ (Fin n) →ₗ[ℂ] EuclideanSpace ℂ (Fin n)) := by
+  let b := complexEuclideanBasisFin n
+  rw [← Matrix.toLin_toMatrix b b (complexMatrixGramLin A)]
+  rw [← Matrix.toLin_toMatrix b b
+    (lam •
+      (LinearMap.id : EuclideanSpace ℂ (Fin n) →ₗ[ℂ] EuclideanSpace ℂ (Fin n)))]
+  congr 1
+  rw [complexMatrixGramLin_toMatrix, hA]
+  ext i j
+  by_cases hij : i = j
+  · subst j
+    simp [LinearMap.toMatrix_apply]
+  · simp [LinearMap.toMatrix_apply, hij]
+
+private theorem higham8_complexMatrixGramEigenvalues_eq_of_gramLin_eq_smul_id
+    {m n : ℕ} (A : CMatrix m n) {lam : ℝ}
+    (h :
+      complexMatrixGramLin A =
+        ((lam : ℂ) •
+          (LinearMap.id : EuclideanSpace ℂ (Fin n) →ₗ[ℂ] EuclideanSpace ℂ (Fin n)))) :
+    ∀ i : Fin n, complexMatrixGramEigenvalues A i = lam := by
+  intro i
+  let b := complexMatrixGramEigenvectorBasis A
+  let v : EuclideanSpace ℂ (Fin n) := b i
+  have heig := complexMatrixGramLin_apply_eigenvectorBasis A i
+  have hsmul : ((lam : ℂ) • v) = (complexMatrixGramEigenvalues A i : ℂ) • v := by
+    simpa [v, b, h, LinearMap.smul_apply] using heig
+  have hv_ne : v ≠ 0 := by
+    intro hv
+    have hvn : ‖v‖ = 1 := by
+      simp [v, b, complexMatrixGramEigenvectorBasis_norm A i]
+    simp [hv] at hvn
+  have hzero : (((lam : ℂ) - (complexMatrixGramEigenvalues A i : ℂ)) • v) = 0 := by
+    rw [sub_smul, sub_eq_zero]
+    exact hsmul
+  have hscalar : (lam : ℂ) - (complexMatrixGramEigenvalues A i : ℂ) = 0 := by
+    exact (smul_eq_zero.mp hzero).resolve_right hv_ne
+  apply Complex.ofReal_injective
+  exact (sub_eq_zero.mp hscalar).symm
+
+theorem higham8_11_kahanMatrix_zero_one_eq_finiteId (n : ℕ) :
+    higham8_11_kahanMatrix n 0 1 = (finiteIdMatrix : Fin n → Fin n → ℝ) := by
+  ext i j
+  by_cases hij : i = j
+  · subst j
+    simp [higham8_11_kahanMatrix, higham8_3_stressUpper, finiteIdMatrix]
+  · simp [higham8_11_kahanMatrix, higham8_3_stressUpper, finiteIdMatrix, hij]
+
+theorem higham8_problem8_9_kahan_zero_one_gramEigenvalues_eq_one
+    (n : ℕ) :
+    ∀ i : Fin n,
+      complexMatrixGramEigenvalues
+          (realRectToCMatrix (higham8_11_kahanMatrix n 0 1)) i = 1 := by
+  apply higham8_complexMatrixGramEigenvalues_eq_of_gramLin_eq_smul_id
+  apply higham8_complexMatrixGramLin_eq_smul_id_of_conjTranspose_mul_self_scalar
+  have hA :
+      complexCMatrixAsMatrix (realRectToCMatrix (higham8_11_kahanMatrix n 0 1)) =
+        (1 : Matrix (Fin n) (Fin n) ℂ) := by
+    rw [higham8_11_kahanMatrix_zero_one_eq_finiteId n]
+    ext i j
+    by_cases hij : i = j
+    · subst j
+      simp [complexCMatrixAsMatrix, realRectToCMatrix, finiteIdMatrix]
+    · simp [complexCMatrixAsMatrix, realRectToCMatrix, finiteIdMatrix, hij]
+  rw [hA]
+  simp
+
+theorem higham8_problem8_9_kahan_secondSmallestGramEigenvalue_eq_candidate_of_s_eq_one
+    (n : ℕ) (h2 : 2 ≤ n) (c s : ℝ)
+    (hcs : c ^ 2 + s ^ 2 = 1) (hs_one : s = 1) :
+    complexMatrixGramEigenvalues
+        (realRectToCMatrix (higham8_11_kahanMatrix n c s))
+        (higham8_problem8_9_secondSmallestIndex n h2) =
+      (s ^ (n - 2)) ^ 2 * (1 + c) := by
+  subst s
+  have hc_sq : c ^ 2 = 0 := by nlinarith
+  have hc_zero : c = 0 := sq_eq_zero_iff.mp hc_sq
+  subst c
+  have hgram :=
+    higham8_problem8_9_kahan_zero_one_gramEigenvalues_eq_one n
+      (higham8_problem8_9_secondSmallestIndex n h2)
+  simpa using hgram
+
+/-- **Problem 8.9**, SVD/Gram reduction.
+
+The remaining hard step is the spectral statement that the Kahan Gram
+eigenvalue at index `n - 2` is `s^(2(n-2)) (1+c)`.  This theorem discharges the
+source's singular-value formula from exactly that Gram-eigenvalue certificate,
+including the scalar square-root algebra under `c, s ≥ 0`. -/
+theorem higham8_problem8_9_kahan_secondSmallestSingularValue_of_gramEigenvalue
+    (n : ℕ) (h2 : 2 ≤ n) (c s : ℝ)
+    (hc : 0 ≤ c) (hs : 0 ≤ s)
+    (hgram :
+      complexMatrixGramEigenvalues (realRectToCMatrix (higham8_11_kahanMatrix n c s))
+          (higham8_problem8_9_secondSmallestIndex n h2) =
+        (s ^ (n - 2)) ^ 2 * (1 + c)) :
+    complexMatrixSingularValue (realRectToCMatrix (higham8_11_kahanMatrix n c s))
+        (higham8_problem8_9_secondSmallestIndex n h2) =
+      higham8_problem8_9_kahanSecondSmallestValue n c s := by
+  apply (sq_eq_sq₀
+    (complexMatrixSingularValue_nonneg
+      (realRectToCMatrix (higham8_11_kahanMatrix n c s))
+      (higham8_problem8_9_secondSmallestIndex n h2))
+    (mul_nonneg (pow_nonneg hs _) (Real.sqrt_nonneg _))).mp
+  rw [complexMatrixSingularValue_sq, hgram]
+  rw [mul_pow, Real.sq_sqrt (by linarith)]
+
+theorem higham8_problem8_9_kahan_secondSmallestSingularValue_of_s_eq_one
+    (n : ℕ) (h2 : 2 ≤ n) (c s : ℝ)
+    (hc : 0 ≤ c) (hcs : c ^ 2 + s ^ 2 = 1) (hs_one : s = 1) :
+    complexMatrixSingularValue
+        (realRectToCMatrix (higham8_11_kahanMatrix n c s))
+        (higham8_problem8_9_secondSmallestIndex n h2) =
+      higham8_problem8_9_kahanSecondSmallestValue n c s := by
+  apply higham8_problem8_9_kahan_secondSmallestSingularValue_of_gramEigenvalue
+    n h2 c s hc
+  · rw [hs_one]
+    norm_num
+  · exact
+      higham8_problem8_9_kahan_secondSmallestGramEigenvalue_eq_candidate_of_s_eq_one
+        n h2 c s hcs hs_one
+
+/-- **Problem 8.9** support: the last index of the `n × n` Kahan matrix. -/
+def higham8_problem8_9_lastIndex (n : ℕ) (hn : 0 < n) : Fin n :=
+  ⟨n - 1, by omega⟩
+
+/-- **Problem 8.9** support: the last ordered singular value is bounded above
+by any test-vector quotient.  This is the local minimum-singular-value half
+needed for Appendix A's line `σ_n(U_n(θ)) ≤ s^(n-1)`. -/
+theorem higham8_problem8_9_lastSingularValue_mul_norm_le_image_norm
+    {n : ℕ} (hn : 0 < n) (A : CMatrix n n)
+    (z : EuclideanSpace ℂ (Fin n)) :
+    complexMatrixSingularValue A (higham8_problem8_9_lastIndex n hn) * ‖z‖ ≤
+      ‖complexMatrixEuclideanLin A z‖ := by
+  classical
+  obtain ⟨b, hcontains⟩ :=
+    exists_complexMatrixLeftSingularVector_fin_orthonormalBasis_extension A
+  refine
+    problem7_5_sigmaMin_mul_norm_le_image_norm A b hcontains z
+      (complexMatrixSingularValue_nonneg A (higham8_problem8_9_lastIndex n hn))
+      ?_
+  intro i
+  exact complexMatrixSingularValue_antitone A
+    (Fin.le_iff_val_le_val.2 (by
+      simp [higham8_problem8_9_lastIndex]
+      omega))
+
+/-- **Problem 8.9** support: real square-matrix version of the test-vector
+upper bound for the smallest ordered singular value. -/
+theorem higham8_problem8_9_lastSingularValue_mul_vecNorm_le_matMulVec_norm
+    {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ) (z : Fin n → ℝ) :
+    complexMatrixSingularValue (realRectToCMatrix A)
+        (higham8_problem8_9_lastIndex n hn) * vecNorm2 z ≤
+      vecNorm2 (matMulVec n A z) := by
+  have h :=
+    higham8_problem8_9_lastSingularValue_mul_norm_le_image_norm
+      (n := n) hn (A := realRectToCMatrix A) (z := realVecToEuclidean z)
+  rw [realVecToEuclidean_norm] at h
+  rw [realRectToCMatrix_euclideanLin_realVecToEuclidean_norm] at h
+  simpa [matMulVec, rectMatMulVec] using h
+
+/-- **Problem 8.9** support: the unscaled last column of the stress inverse is
+sent by Kahan's matrix to `s^(n-1)` times the last coordinate vector. -/
+theorem higham8_problem8_9_kahan_stressInvLastColumn_action
+    (n : ℕ) (hn : 0 < n) (c s : ℝ) :
+    matMulVec n (higham8_11_kahanMatrix n c s)
+        (fun k => higham8_4_stressUpperInvFormula n c k
+          (higham8_problem8_9_lastIndex n hn)) =
+      fun i => s ^ (n - 1) *
+        finiteBasisVec (higham8_problem8_9_lastIndex n hn) i := by
+  let q := higham8_problem8_9_lastIndex n hn
+  have hstress := higham8_4_stressUpperInvFormula_isRightInverse n c
+  ext i
+  unfold matMulVec
+  calc
+    (∑ k : Fin n,
+        higham8_11_kahanMatrix n c s i k *
+          higham8_4_stressUpperInvFormula n c k q)
+        =
+      s ^ i.val *
+        ∑ k : Fin n,
+          higham8_3_stressUpper n c i k *
+            higham8_4_stressUpperInvFormula n c k q := by
+          rw [Finset.mul_sum]
+          apply Finset.sum_congr rfl
+          intro k _hk
+          simp [higham8_11_kahanMatrix]
+          ring
+    _ = s ^ i.val * (if i = q then 1 else 0) := by
+          rw [hstress i q]
+    _ = s ^ (n - 1) * finiteBasisVec q i := by
+          by_cases hiq : i = q
+          · subst i
+            simp [q, higham8_problem8_9_lastIndex, finiteBasisVec]
+          · simp [finiteBasisVec, hiq]
+
+/-- **Problem 8.9** support: Appendix A's upper bound on the smallest singular
+value of Kahan's matrix, `σ_n(U_n(θ)) ≤ s^(n-1)`, in zero-based local order. -/
+theorem higham8_problem8_9_kahan_smallestSingularValue_le_pow
+    (n : ℕ) (h2 : 2 ≤ n) (c s : ℝ) (hs : 0 ≤ s) :
+    complexMatrixSingularValue
+        (realRectToCMatrix (higham8_11_kahanMatrix n c s))
+        (higham8_problem8_9_lastIndex n (by omega)) ≤
+      s ^ (n - 1) := by
+  let q := higham8_problem8_9_lastIndex n (by omega : 0 < n)
+  let z : Fin n → ℝ := fun k => higham8_4_stressUpperInvFormula n c k q
+  have hz_norm_ge : 1 ≤ vecNorm2 z := by
+    have hcoord := abs_coord_le_vecNorm2 z q
+    simpa [z, q, higham8_4_stressUpperInvFormula] using hcoord
+  have haction :
+      matMulVec n (higham8_11_kahanMatrix n c s) z =
+        fun i => s ^ (n - 1) * finiteBasisVec q i := by
+    simpa [z, q] using
+      higham8_problem8_9_kahan_stressInvLastColumn_action
+        n (by omega : 0 < n) c s
+  have himage :
+      vecNorm2 (matMulVec n (higham8_11_kahanMatrix n c s) z) =
+        s ^ (n - 1) := by
+    rw [haction, vecNorm2_smul, ch7Problem79_vecNorm2_finiteBasisVec]
+    rw [abs_of_nonneg (pow_nonneg hs _), mul_one]
+  have htest :=
+    higham8_problem8_9_lastSingularValue_mul_vecNorm_le_matMulVec_norm
+      (n := n) (by omega : 0 < n) (higham8_11_kahanMatrix n c s) z
+  have hσ_nonneg :
+      0 ≤ complexMatrixSingularValue
+        (realRectToCMatrix (higham8_11_kahanMatrix n c s)) q :=
+    complexMatrixSingularValue_nonneg
+      (realRectToCMatrix (higham8_11_kahanMatrix n c s)) q
+  calc
+    complexMatrixSingularValue
+        (realRectToCMatrix (higham8_11_kahanMatrix n c s)) q
+        =
+      complexMatrixSingularValue
+        (realRectToCMatrix (higham8_11_kahanMatrix n c s)) q * 1 := by ring
+    _ ≤
+      complexMatrixSingularValue
+        (realRectToCMatrix (higham8_11_kahanMatrix n c s)) q * vecNorm2 z :=
+        mul_le_mul_of_nonneg_left hz_norm_ge hσ_nonneg
+    _ ≤ vecNorm2 (matMulVec n (higham8_11_kahanMatrix n c s) z) := htest
+    _ = s ^ (n - 1) := himage
+
+/-- **Problem 8.9** support: in Appendix A's `0 < s < 1` branch, the
+smallest singular value lies strictly below the displayed candidate.  The
+remaining source step is therefore only the interlacing induction that puts a
+larger singular value before the candidate. -/
+theorem higham8_problem8_9_kahan_smallestSingularValue_lt_candidate
+    (n : ℕ) (h2 : 2 ≤ n) (c s : ℝ)
+    (hc : 0 ≤ c) (hs_pos : 0 < s) (hs_lt : s < 1) :
+    complexMatrixSingularValue
+        (realRectToCMatrix (higham8_11_kahanMatrix n c s))
+        (higham8_problem8_9_lastIndex n (by omega)) <
+      higham8_problem8_9_kahanSecondSmallestValue n c s := by
+  have hs_nonneg : 0 ≤ s := le_of_lt hs_pos
+  have hsmall :=
+    higham8_problem8_9_kahan_smallestSingularValue_le_pow n h2 c s hs_nonneg
+  have hsqrt_ge_one : 1 ≤ Real.sqrt (1 + c) := by
+    have hle : (1 : ℝ) ≤ 1 + c := by linarith
+    simpa using Real.sqrt_le_sqrt hle
+  have hs_lt_sqrt : s < Real.sqrt (1 + c) := lt_of_lt_of_le hs_lt hsqrt_ge_one
+  have hpow_pos : 0 < s ^ (n - 2) := pow_pos hs_pos _
+  have hidx : n - 1 = n - 2 + 1 := by omega
+  calc
+    complexMatrixSingularValue
+        (realRectToCMatrix (higham8_11_kahanMatrix n c s))
+        (higham8_problem8_9_lastIndex n (by omega))
+        ≤ s ^ (n - 1) := hsmall
+    _ = s ^ (n - 2) * s := by rw [hidx, pow_succ]
+    _ < s ^ (n - 2) * Real.sqrt (1 + c) :=
+        mul_lt_mul_of_pos_left hs_lt_sqrt hpow_pos
+    _ = higham8_problem8_9_kahanSecondSmallestValue n c s := rfl
+
+/-- **Problem 8.9** support: in Appendix A's `0 < s < 1` branch, the
+smallest Gram eigenvalue lies strictly below the displayed Gram candidate. -/
+theorem higham8_problem8_9_kahan_smallestGramEigenvalue_lt_candidate
+    (n : ℕ) (h2 : 2 ≤ n) (c s : ℝ)
+    (hc : 0 ≤ c) (hs_pos : 0 < s) (hs_lt : s < 1) :
+    complexMatrixGramEigenvalues
+        (realRectToCMatrix (higham8_11_kahanMatrix n c s))
+        (higham8_problem8_9_lastIndex n (by omega)) <
+      (s ^ (n - 2)) ^ 2 * (1 + c) := by
+  let A : CMatrix n n := realRectToCMatrix (higham8_11_kahanMatrix n c s)
+  let q := higham8_problem8_9_lastIndex n (by omega : 0 < n)
+  let σ := higham8_problem8_9_kahanSecondSmallestValue n c s
+  let lam : ℝ := (s ^ (n - 2)) ^ 2 * (1 + c)
+  have hσ_nonneg : 0 ≤ σ := by
+    exact mul_nonneg (pow_nonneg (le_of_lt hs_pos) _) (Real.sqrt_nonneg _)
+  have hsmall :
+      complexMatrixSingularValue A q < σ := by
+    simpa [A, q, σ] using
+      higham8_problem8_9_kahan_smallestSingularValue_lt_candidate
+        n h2 c s hc hs_pos hs_lt
+  have hsq :
+      complexMatrixSingularValue A q ^ 2 < σ ^ 2 :=
+    (sq_lt_sq₀ (complexMatrixSingularValue_nonneg A q) hσ_nonneg).2 hsmall
+  have hσ_sq : σ ^ 2 = lam := by
+    simp [σ, lam, higham8_problem8_9_kahanSecondSmallestValue, mul_pow,
+      Real.sq_sqrt (by linarith : 0 ≤ 1 + c)]
+  rw [complexMatrixSingularValue_sq, hσ_sq] at hsq
+  simpa [A, q, lam] using hsq
+
+/-- **Problem 8.9** support: a scaled right witness vector for Zha's
+Appendix A singular-vector calculation.  It is supported on the last two
+coordinates and is scaled by `sqrt (1+c)` to avoid denominator bookkeeping. -/
+noncomputable def higham8_problem8_9_kahanRightWitness
+    (n : ℕ) (h2 : 2 ≤ n) (c : ℝ) : Fin n → ℝ :=
+  let p := higham8_problem8_9_secondSmallestIndex n h2
+  let q := higham8_problem8_9_lastIndex n (by omega)
+  fun i =>
+    if i = p then Real.sqrt (1 + c)
+    else if i = q then -Real.sqrt (1 + c)
+    else 0
+
+/-- **Problem 8.9** support: the right Kahan witness is nonzero under the
+source-side assumption `0 ≤ c`. -/
+theorem higham8_problem8_9_kahanRightWitness_euclidean_ne_zero
+    (n : ℕ) (h2 : 2 ≤ n) (c : ℝ) (hc : 0 ≤ c) :
+    realVecToEuclidean (higham8_problem8_9_kahanRightWitness n h2 c) ≠ 0 := by
+  let p := higham8_problem8_9_secondSmallestIndex n h2
+  have hp :
+      higham8_problem8_9_kahanRightWitness n h2 c p =
+        Real.sqrt (1 + c) := by
+    simp [higham8_problem8_9_kahanRightWitness, p]
+  have hsqrt_pos : 0 < Real.sqrt (1 + c) :=
+    Real.sqrt_pos.2 (by linarith)
+  intro hzero
+  have hfun :
+      (fun j : Fin n =>
+          (higham8_problem8_9_kahanRightWitness n h2 c j : ℂ)) = 0 := by
+    have h := congrArg WithLp.ofLp hzero
+    simpa [realVecToEuclidean] using h
+  have hp_zero :
+      (higham8_problem8_9_kahanRightWitness n h2 c p : ℂ) = 0 := by
+    exact congrFun hfun p
+  rw [hp] at hp_zero
+  exact (Complex.ofReal_ne_zero.mpr hsqrt_pos.ne') hp_zero
+
+/-- **Problem 8.9** support: a scaled left witness vector for Zha's Appendix A
+singular-vector calculation. -/
+noncomputable def higham8_problem8_9_kahanLeftWitness
+    (n : ℕ) (h2 : 2 ≤ n) (c s : ℝ) : Fin n → ℝ :=
+  let p := higham8_problem8_9_secondSmallestIndex n h2
+  let q := higham8_problem8_9_lastIndex n (by omega)
+  fun i =>
+    if i = p then 1 + c
+    else if i = q then -s
+    else 0
+
+private theorem higham8_sum_two_support {n : ℕ}
+    (p q : Fin n) (hpq : p ≠ q) (f : Fin n → ℝ) (a b : ℝ) :
+    (∑ j : Fin n, f j * (if j = p then a else if j = q then b else 0)) =
+      f p * a + f q * b := by
+  calc
+    (∑ j : Fin n, f j * (if j = p then a else if j = q then b else 0)) =
+        ∑ j : Fin n,
+          ((if j = p then f j * a else 0) + (if j = q then f j * b else 0)) := by
+          apply Finset.sum_congr rfl
+          intro j _
+          by_cases hjp : j = p
+          · simp [hjp, hpq]
+          · by_cases hjq : j = q
+            · have hqp : q ≠ p := by
+                intro h
+                exact hpq h.symm
+              simp [hjq, hqp]
+            · simp [hjp, hjq]
+    _ = (∑ j : Fin n, if j = p then f j * a else 0) +
+          (∑ j : Fin n, if j = q then f j * b else 0) := by
+          rw [Finset.sum_add_distrib]
+    _ = f p * a + f q * b := by
+          rw [Fintype.sum_ite_eq', Fintype.sum_ite_eq']
+
+/-- **Problem 8.9**, Appendix A forward witness equation:
+`U_n(θ) v = s^(n-2) sqrt(1+c) u`, using the scaled witness vectors above. -/
+theorem higham8_problem8_9_kahan_witness_forward
+    (n : ℕ) (h2 : 2 ≤ n) (c s : ℝ) :
+    matMulVec n (higham8_11_kahanMatrix n c s)
+        (higham8_problem8_9_kahanRightWitness n h2 c) =
+      fun i =>
+        s ^ (n - 2) * Real.sqrt (1 + c) *
+          higham8_problem8_9_kahanLeftWitness n h2 c s i := by
+  let p := higham8_problem8_9_secondSmallestIndex n h2
+  let q := higham8_problem8_9_lastIndex n (by omega : 0 < n)
+  have hpq : p ≠ q := by
+    intro h
+    have hval := congrArg Fin.val h
+    simp [p, q, higham8_problem8_9_secondSmallestIndex,
+      higham8_problem8_9_lastIndex] at hval
+    omega
+  have hpval : p.val = n - 2 := rfl
+  have hqval : q.val = n - 1 := rfl
+  have hqpow : s ^ q.val = s ^ (n - 2) * s := by
+    rw [hqval]
+    have hidx : n - 1 = n - 2 + 1 := by omega
+    rw [hidx, pow_succ]
+  have hpow_nm1 : s ^ (n - 1) = s ^ (n - 2) * s := by
+    have hidx : n - 1 = n - 2 + 1 := by omega
+    rw [hidx, pow_succ]
+  have hnm2_ne_nm1 : n - 2 ≠ n - 1 := by omega
+  have hnm1_ne_nm2 : n - 1 ≠ n - 2 := by omega
+  have hnm2_lt_nm1 : n - 2 < n - 1 := by omega
+  have hnot_nm1_lt_nm2 : ¬ n - 1 < n - 2 := by omega
+  have hp_lt_q : p < q := by
+    rw [Fin.lt_def, hpval, hqval]
+    omega
+  have hq_ne_p : q ≠ p := hpq.symm
+  have hnot_q_lt_p : ¬ q < p := by
+    rw [Fin.lt_def, hpval, hqval]
+    omega
+  have hright :
+      higham8_problem8_9_kahanRightWitness n h2 c =
+        fun j =>
+          if j = p then Real.sqrt (1 + c)
+          else if j = q then -Real.sqrt (1 + c)
+          else 0 := by
+    ext j
+    simp [higham8_problem8_9_kahanRightWitness, p, q]
+  ext i
+  unfold matMulVec
+  rw [hright]
+  rw [higham8_sum_two_support p q hpq]
+  by_cases hip : i = p
+  · subst i
+    simp [higham8_problem8_9_kahanLeftWitness, higham8_11_kahanMatrix,
+      higham8_3_stressUpper, higham8_problem8_9_secondSmallestIndex,
+      higham8_problem8_9_lastIndex, p, q, hnm2_ne_nm1, hnm2_lt_nm1]
+    ring_nf
+  · by_cases hiq : i = q
+    · subst i
+      simp [higham8_problem8_9_kahanLeftWitness, higham8_11_kahanMatrix,
+        higham8_3_stressUpper, higham8_problem8_9_secondSmallestIndex,
+        higham8_problem8_9_lastIndex, p, q, hnm1_ne_nm2, hnot_nm1_lt_nm2]
+      rw [hpow_nm1]
+      ring_nf
+    · have hip_lt : i.val < p.val := by
+        have hi_ne_p : i.val ≠ n - 2 := by
+          intro hval
+          exact hip (Fin.ext (by simpa [p, hpval] using hval))
+        have hi_ne_q : i.val ≠ n - 1 := by
+          intro hval
+          exact hiq (Fin.ext (by simpa [q, hqval] using hval))
+        have hi_bound : i.val < n := i.isLt
+        omega
+      have hi_ne_p : i ≠ p := hip
+      have hi_ne_q : i ≠ q := hiq
+      have hi_lt_q : i < q := by
+        rw [Fin.lt_def]
+        rw [hqval]
+        omega
+      simp [higham8_problem8_9_kahanLeftWitness, higham8_11_kahanMatrix,
+        higham8_3_stressUpper, p, q, hi_ne_p, hi_ne_q, hip_lt, hi_lt_q]
+
+/-- **Problem 8.9**, Appendix A transpose witness equation:
+`U_n(θ)^T u = s^(n-2) sqrt(1+c) v`, using the scaled witness vectors above. -/
+theorem higham8_problem8_9_kahan_witness_transpose
+    (n : ℕ) (h2 : 2 ≤ n) (c s : ℝ)
+    (hc : 0 ≤ c) (hcs : c ^ 2 + s ^ 2 = 1) :
+    matMulVec n (matTranspose (higham8_11_kahanMatrix n c s))
+        (higham8_problem8_9_kahanLeftWitness n h2 c s) =
+      fun i =>
+        s ^ (n - 2) * Real.sqrt (1 + c) *
+          higham8_problem8_9_kahanRightWitness n h2 c i := by
+  let p := higham8_problem8_9_secondSmallestIndex n h2
+  let q := higham8_problem8_9_lastIndex n (by omega : 0 < n)
+  have hpq : p ≠ q := by
+    intro h
+    have hval := congrArg Fin.val h
+    simp [p, q, higham8_problem8_9_secondSmallestIndex,
+      higham8_problem8_9_lastIndex] at hval
+    omega
+  have hpval : p.val = n - 2 := rfl
+  have hqval : q.val = n - 1 := rfl
+  have hqpow : s ^ q.val = s ^ (n - 2) * s := by
+    rw [hqval]
+    have hidx : n - 1 = n - 2 + 1 := by omega
+    rw [hidx, pow_succ]
+  have hpow_nm1 : s ^ (n - 1) = s ^ (n - 2) * s := by
+    have hidx : n - 1 = n - 2 + 1 := by omega
+    rw [hidx, pow_succ]
+  have hnm2_ne_nm1 : n - 2 ≠ n - 1 := by omega
+  have hnm1_ne_nm2 : n - 1 ≠ n - 2 := by omega
+  have hnm2_lt_nm1 : n - 2 < n - 1 := by omega
+  have hnot_nm1_lt_nm2 : ¬ n - 1 < n - 2 := by omega
+  have hp_lt_q : p < q := by
+    rw [Fin.lt_def, hpval, hqval]
+    omega
+  have hq_ne_p : q ≠ p := hpq.symm
+  have hnot_q_lt_p : ¬ q < p := by
+    rw [Fin.lt_def, hpval, hqval]
+    omega
+  have hleft :
+      higham8_problem8_9_kahanLeftWitness n h2 c s =
+        fun j =>
+          if j = p then 1 + c
+          else if j = q then -s
+          else 0 := by
+    ext j
+    simp [higham8_problem8_9_kahanLeftWitness, p, q]
+  have hright :
+      higham8_problem8_9_kahanRightWitness n h2 c =
+        fun j =>
+          if j = p then Real.sqrt (1 + c)
+          else if j = q then -Real.sqrt (1 + c)
+          else 0 := by
+    ext j
+    simp [higham8_problem8_9_kahanRightWitness, p, q]
+  have hone_c_nonneg : 0 ≤ 1 + c := by linarith
+  have hsqrt_sq : Real.sqrt (1 + c) * Real.sqrt (1 + c) = 1 + c := by
+    simpa [sq] using Real.sq_sqrt hone_c_nonneg
+  have hsqrt_prod :
+      s ^ (n - 2) * Real.sqrt (1 + c) * Real.sqrt (1 + c) =
+        s ^ (n - 2) * (1 + c) := by
+    rw [mul_assoc, hsqrt_sq]
+  ext i
+  unfold matMulVec
+  rw [hleft]
+  rw [higham8_sum_two_support p q hpq]
+  by_cases hip : i = p
+  · subst i
+    simp [higham8_problem8_9_kahanRightWitness, higham8_11_kahanMatrix,
+      higham8_3_stressUpper, matTranspose, higham8_problem8_9_secondSmallestIndex,
+      higham8_problem8_9_lastIndex, p, q, hnm1_ne_nm2, hnot_nm1_lt_nm2]
+    rw [hsqrt_prod]
+  · by_cases hiq : i = q
+    · subst i
+      simp [higham8_problem8_9_kahanRightWitness, higham8_11_kahanMatrix,
+        higham8_3_stressUpper, matTranspose, higham8_problem8_9_secondSmallestIndex,
+        higham8_problem8_9_lastIndex, p, q, hnm2_ne_nm1, hnm1_ne_nm2,
+        hnm2_lt_nm1]
+      rw [hpow_nm1, hsqrt_prod]
+      have hsum : c * (1 + c) + s * s = 1 + c := by
+        nlinarith [hcs]
+      calc
+        -(s ^ (n - 2) * c * (1 + c)) + -(s ^ (n - 2) * s * s)
+            = -s ^ (n - 2) * (c * (1 + c) + s * s) := by ring
+        _ = -s ^ (n - 2) * (1 + c) := by rw [hsum]
+        _ = -(s ^ (n - 2) * (1 + c)) := by ring
+    · have hip_lt : i.val < p.val := by
+        have hi_ne_p : i.val ≠ n - 2 := by
+          intro hval
+          exact hip (Fin.ext (by simpa [p, hpval] using hval))
+        have hi_ne_q : i.val ≠ n - 1 := by
+          intro hval
+          exact hiq (Fin.ext (by simpa [q, hqval] using hval))
+        have hi_bound : i.val < n := i.isLt
+        omega
+      have hp_ne_i : p ≠ i := by exact fun h => hip h.symm
+      have hq_ne_i : q ≠ i := by exact fun h => hiq h.symm
+      have hnot_p_lt_i : ¬ p < i := by
+        rw [Fin.lt_def]
+        omega
+      have hnot_q_lt_i : ¬ q < i := by
+        rw [Fin.lt_def]
+        rw [hqval]
+        omega
+      simp [higham8_problem8_9_kahanRightWitness, higham8_11_kahanMatrix,
+        higham8_3_stressUpper, matTranspose, p, q, hip, hiq, hp_ne_i, hq_ne_i,
+        hnot_p_lt_i, hnot_q_lt_i]
+
+private theorem higham8_realRectToCMatrix_euclideanLin_realVec {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (x : Fin n → ℝ) :
+    complexMatrixEuclideanLin (realRectToCMatrix A) (realVecToEuclidean x) =
+      realVecToEuclidean (rectMatMulVec A x) := by
+  apply WithLp.ofLp_injective
+  ext i
+  simp [realRectToCMatrix_euclideanLin_ofLp, realVecToEuclidean,
+    complexMatrixVecMul, realRectToCMatrix, rectMatMulVec]
+
+private theorem higham8_realRectToCMatrix_euclideanLin_realVec_square {n : ℕ}
+    (A : Fin n → Fin n → ℝ) (x : Fin n → ℝ) :
+    complexMatrixEuclideanLin (realRectToCMatrix A) (realVecToEuclidean x) =
+      realVecToEuclidean (matMulVec n A x) := by
+  simpa [matMulVec, rectMatMulVec] using
+    higham8_realRectToCMatrix_euclideanLin_realVec A x
+
+/-- **Problem 8.9**, Gram-eigenpair certificate for the Appendix A Kahan
+witness.  This proves that the explicit candidate has squared singular value
+`(s^(n-2))^2 (1+c)`; the remaining source step is to place this eigenvalue at
+the ordered index `n-2`. -/
+theorem higham8_problem8_9_kahan_gram_witness
+    (n : ℕ) (h2 : 2 ≤ n) (c s : ℝ)
+    (hc : 0 ≤ c) (hcs : c ^ 2 + s ^ 2 = 1) :
+    complexMatrixGramLin (realRectToCMatrix (higham8_11_kahanMatrix n c s))
+        (realVecToEuclidean (higham8_problem8_9_kahanRightWitness n h2 c)) =
+      (((s ^ (n - 2)) ^ 2 * (1 + c) : ℝ) : ℂ) •
+        realVecToEuclidean (higham8_problem8_9_kahanRightWitness n h2 c) := by
+  let A : Fin n → Fin n → ℝ := higham8_11_kahanMatrix n c s
+  let x : Fin n → ℝ := higham8_problem8_9_kahanRightWitness n h2 c
+  let y : Fin n → ℝ := higham8_problem8_9_kahanLeftWitness n h2 c s
+  let σ : ℝ := s ^ (n - 2) * Real.sqrt (1 + c)
+  have hforward : matMulVec n A x = fun i => σ * y i := by
+    simpa [A, x, y, σ] using
+      higham8_problem8_9_kahan_witness_forward n h2 c s
+  have htranspose : matMulVec n (matTranspose A) y = fun i => σ * x i := by
+    simpa [A, x, y, σ] using
+      higham8_problem8_9_kahan_witness_transpose n h2 c s hc hcs
+  have hscale :
+      matMulVec n (matTranspose A) (fun j => σ * y j) =
+        fun i => σ * matMulVec n (matTranspose A) y i := by
+    ext i
+    unfold matMulVec
+    rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl
+    intro j _
+    ring
+  have hreal :
+      matMulVec n (matMul n (matTranspose A) A) x =
+        fun i => σ ^ 2 * x i := by
+    ext i
+    calc
+      matMulVec n (matMul n (matTranspose A) A) x i =
+          matMulVec n (matTranspose A) (matMulVec n A x) i :=
+            matMulVec_matMul n (matTranspose A) A x i
+      _ = matMulVec n (matTranspose A) (fun j => σ * y j) i := by
+            rw [hforward]
+      _ = σ * matMulVec n (matTranspose A) y i := by
+            rw [hscale]
+      _ = σ * (σ * x i) := by
+            rw [htranspose]
+      _ = σ ^ 2 * x i := by ring
+  have hsigma_sq : σ ^ 2 = (s ^ (n - 2)) ^ 2 * (1 + c) := by
+    dsimp [σ]
+    rw [mul_pow, Real.sq_sqrt (by linarith)]
+  rw [← complexMatrixEuclideanLin_adjoint_mul_self (realRectToCMatrix A)]
+  rw [← realRectToCMatrix_matTranspose A]
+  rw [← realRectToCMatrix_matMul]
+  rw [higham8_realRectToCMatrix_euclideanLin_realVec_square]
+  rw [hreal]
+  apply WithLp.ofLp_injective
+  ext i
+  change ((σ ^ 2 * x i : ℝ) : ℂ) =
+    (((s ^ (n - 2)) ^ 2 * (1 + c) : ℝ) : ℂ) * (x i : ℂ)
+  rw [hsigma_sq]
+  norm_num [Complex.ofReal_mul]
+
+/-- **Problem 8.9** support: the Appendix A witness gives an actual Gram
+eigenvalue, not only a formal action equation.  The remaining source step is
+the ordered placement at index `n - 2`. -/
+theorem higham8_problem8_9_kahan_candidate_hasGramEigenvalue
+    (n : ℕ) (h2 : 2 ≤ n) (c s : ℝ)
+    (hc : 0 ≤ c) (hcs : c ^ 2 + s ^ 2 = 1) :
+    Module.End.HasEigenvalue
+      (complexMatrixGramLin (realRectToCMatrix (higham8_11_kahanMatrix n c s)))
+      ((((s ^ (n - 2)) ^ 2 * (1 + c) : ℝ) : ℂ)) := by
+  let v := realVecToEuclidean (higham8_problem8_9_kahanRightWitness n h2 c)
+  refine Module.End.hasEigenvalue_of_hasEigenvector (x := v) ?_
+  refine ⟨?_, ?_⟩
+  · rw [Module.End.mem_eigenspace_iff]
+    simpa [v] using higham8_problem8_9_kahan_gram_witness n h2 c s hc hcs
+  · exact higham8_problem8_9_kahanRightWitness_euclidean_ne_zero n h2 c hc
+
+/-- **Problem 8.9** support: the Appendix A candidate occurs somewhere in the
+repository's sorted Gram-eigenvalue list.  Problem 8.9 remains open precisely
+because this theorem does not identify the occurrence with index `n - 2`. -/
+theorem higham8_problem8_9_kahan_candidate_mem_gramEigenvalues
+    (n : ℕ) (h2 : 2 ≤ n) (c s : ℝ)
+    (hc : 0 ≤ c) (hcs : c ^ 2 + s ^ 2 = 1) :
+    ∃ i : Fin n,
+      complexMatrixGramEigenvalues
+          (realRectToCMatrix (higham8_11_kahanMatrix n c s)) i =
+        (s ^ (n - 2)) ^ 2 * (1 + c) := by
+  obtain ⟨i, hi⟩ :=
+    (complexMatrixGramLin_isSymmetric
+      (realRectToCMatrix (higham8_11_kahanMatrix n c s))).exists_eigenvalues_eq
+      (finrank_euclideanSpace_fin (𝕜 := ℂ) (n := n))
+      (higham8_problem8_9_kahan_candidate_hasGramEigenvalue n h2 c s hc hcs)
+  exact ⟨i, Complex.ofReal_injective (by
+    simpa [complexMatrixGramEigenvalues] using hi)⟩
+
+private theorem higham8_complexMatrixRank_rankOne_standard_le_one
+    {m n : ℕ} (i0 : Fin m) (y : CVec n) :
+    complexMatrixRank (complexMatrixRankOne (standardBasisCVec i0) y) ≤ 1 := by
+  unfold complexMatrixRank
+  rw [Matrix.rank_eq_finrank_span_cols]
+  have hspan_le :
+      Submodule.span ℂ
+          (Set.range
+            (Matrix.col
+              (complexMatrixRankOne (standardBasisCVec i0) y :
+                Matrix (Fin m) (Fin n) ℂ))) ≤
+        ℂ ∙ standardBasisCVec i0 := by
+    apply Submodule.span_le.mpr
+    rintro x ⟨j, rfl⟩
+    have hcol :
+        Matrix.col
+            (complexMatrixRankOne (standardBasisCVec i0) y : Matrix (Fin m) (Fin n) ℂ) j =
+          y j • standardBasisCVec i0 := by
+      ext i
+      simp [complexMatrixRankOne, mul_comm]
+    rw [hcol]
+    exact Submodule.smul_mem (ℂ ∙ standardBasisCVec i0) (y j)
+      (Submodule.mem_span_singleton_self (standardBasisCVec i0))
+  calc
+    Module.finrank ℂ
+        (Submodule.span ℂ
+          (Set.range
+            (Matrix.col
+              (complexMatrixRankOne (standardBasisCVec i0) y :
+                Matrix (Fin m) (Fin n) ℂ)))) ≤
+        Module.finrank ℂ (ℂ ∙ standardBasisCVec i0) :=
+          Submodule.finrank_mono hspan_le
+    _ = 1 := finrank_span_singleton (standardBasisCVec_ne_zero i0)
+
+private theorem higham8_problem8_9_kahan_zero_eq_rankOne
+    (n : ℕ) (hn : 0 < n) :
+    realRectToCMatrix (higham8_11_kahanMatrix n 1 0) =
+      complexMatrixRankOne (standardBasisCVec (⟨0, hn⟩ : Fin n))
+        (fun j => realRectToCMatrix (higham8_11_kahanMatrix n 1 0)
+          (⟨0, hn⟩ : Fin n) j) := by
+  let z : Fin n := ⟨0, hn⟩
+  ext i j
+  by_cases hi : i = z
+  · subst i
+    simp [complexMatrixRankOne, standardBasisCVec, z]
+  · have hi' : i ≠ (⟨0, hn⟩ : Fin n) := by simpa [z] using hi
+    have hi_pos : 0 < i.val := by
+      have hi_ne_zero : i.val ≠ 0 := by
+        intro hzero
+        exact hi' (Fin.ext (by simpa using hzero))
+      omega
+    have hpow : (0 : ℝ) ^ i.val = 0 := zero_pow (Nat.ne_of_gt hi_pos)
+    simp [realRectToCMatrix, higham8_11_kahanMatrix, complexMatrixRankOne,
+      standardBasisCVec, hi', hpow]
+
+private theorem higham8_problem8_9_kahan_zero_rank_le_one
+    (n : ℕ) (hn : 0 < n) :
+    complexMatrixRank (realRectToCMatrix (higham8_11_kahanMatrix n 1 0)) ≤ 1 := by
+  rw [higham8_problem8_9_kahan_zero_eq_rankOne n hn]
+  exact higham8_complexMatrixRank_rankOne_standard_le_one (⟨0, hn⟩ : Fin n)
+    (fun j => realRectToCMatrix (higham8_11_kahanMatrix n 1 0) (⟨0, hn⟩ : Fin n) j)
+
+private theorem higham8_complexMatrixGramEigenvalues_eq_zero_of_rank_le_one
+    {m n : ℕ} (A : CMatrix m n) (i : Fin n)
+    (hi : 1 ≤ i.val) (hrank : complexMatrixRank A ≤ 1) :
+    complexMatrixGramEigenvalues A i = 0 := by
+  classical
+  by_contra hne
+  let z : Fin n := ⟨0, by omega⟩
+  have hz_ne_i : z ≠ i := by
+    intro h
+    have hval := congrArg Fin.val h
+    simp [z] at hval
+    omega
+  have hpos_i : 0 < complexMatrixGramEigenvalues A i := by
+    exact lt_of_le_of_ne (complexMatrixGramEigenvalues_nonneg A i) (by
+      intro hzero
+      exact hne hzero.symm)
+  have hle : complexMatrixGramEigenvalues A i ≤ complexMatrixGramEigenvalues A z := by
+    exact (complexMatrixGramEigenvalues_antitone A) (by
+      rw [Fin.le_iff_val_le_val]
+      simp [z])
+  have hz_ne_zero : complexMatrixGramEigenvalues A z ≠ 0 := by
+    have hz_pos : 0 < complexMatrixGramEigenvalues A z := lt_of_lt_of_le hpos_i hle
+    exact ne_of_gt hz_pos
+  have hcard : Fintype.card {j : Fin n // complexMatrixGramEigenvalues A j ≠ 0} ≤ 1 := by
+    have hcount := complexMatrixRank_eq_card_nonzero_gramEigenvalues (A := A)
+    omega
+  have hsub : Subsingleton {j : Fin n // complexMatrixGramEigenvalues A j ≠ 0} :=
+    Fintype.card_le_one_iff_subsingleton.mp hcard
+  let zi : {j : Fin n // complexMatrixGramEigenvalues A j ≠ 0} := ⟨z, hz_ne_zero⟩
+  let ii : {j : Fin n // complexMatrixGramEigenvalues A j ≠ 0} := ⟨i, hne⟩
+  have hzi : zi = ii := Subsingleton.elim zi ii
+  exact hz_ne_i (Subtype.ext_iff.mp hzi)
+
+private theorem higham8_complexMatrixGramEigenvalues_top_eq_of_rank_le_one_of_mem_nonzero
+    {m n : ℕ} (A : CMatrix m n) (hn : 0 < n) {lam : ℝ}
+    (hlam : lam ≠ 0) (hrank : complexMatrixRank A ≤ 1)
+    (hmem : ∃ i : Fin n, complexMatrixGramEigenvalues A i = lam) :
+    complexMatrixGramEigenvalues A (⟨0, hn⟩ : Fin n) = lam := by
+  rcases hmem with ⟨i, hi⟩
+  by_cases hiz : i = (⟨0, hn⟩ : Fin n)
+  · simpa [hiz] using hi
+  · have hi_pos : 1 ≤ i.val := by
+      have hi_ne_zero : i.val ≠ 0 := by
+        intro hzero
+        exact hiz (Fin.ext (by simpa using hzero))
+      omega
+    have hzero := higham8_complexMatrixGramEigenvalues_eq_zero_of_rank_le_one A i hi_pos hrank
+    exact False.elim (hlam (by simpa [hi] using hzero))
+
+theorem higham8_problem8_9_kahan_secondSmallestGramEigenvalue_eq_candidate_zero_three_le
+    (n : ℕ) (h3 : 3 ≤ n) :
+    complexMatrixGramEigenvalues
+        (realRectToCMatrix (higham8_11_kahanMatrix n 1 0))
+        (higham8_problem8_9_secondSmallestIndex n (by omega)) =
+      (0 ^ (n - 2)) ^ 2 * (1 + (1 : ℝ)) := by
+  let p := higham8_problem8_9_secondSmallestIndex n (by omega : 2 ≤ n)
+  have hp_pos : 1 ≤ p.val := by
+    simp [p, higham8_problem8_9_secondSmallestIndex]
+    omega
+  have hzero :
+      complexMatrixGramEigenvalues
+          (realRectToCMatrix (higham8_11_kahanMatrix n 1 0)) p = 0 :=
+    higham8_complexMatrixGramEigenvalues_eq_zero_of_rank_le_one _ p hp_pos
+      (higham8_problem8_9_kahan_zero_rank_le_one n (by omega))
+  have hpow : (0 : ℝ) ^ (n - 2) = 0 :=
+    zero_pow (by omega : n - 2 ≠ 0)
+  rw [hzero, hpow]
+  ring
+
+theorem higham8_problem8_9_kahan_secondSmallestGramEigenvalue_eq_candidate_zero_two :
+    complexMatrixGramEigenvalues
+        (realRectToCMatrix (higham8_11_kahanMatrix 2 1 0))
+        (higham8_problem8_9_secondSmallestIndex 2 (by norm_num)) =
+      (0 ^ (2 - 2)) ^ 2 * (1 + (1 : ℝ)) := by
+  let A : CMatrix 2 2 := realRectToCMatrix (higham8_11_kahanMatrix 2 1 0)
+  have hmem :
+      ∃ i : Fin 2,
+        complexMatrixGramEigenvalues A i =
+          (0 ^ (2 - 2)) ^ 2 * (1 + (1 : ℝ)) := by
+    simpa [A] using
+      higham8_problem8_9_kahan_candidate_mem_gramEigenvalues
+        2 (by norm_num : 2 ≤ 2) 1 0 (by norm_num) (by norm_num)
+  have htop :
+      complexMatrixGramEigenvalues A (⟨0, by norm_num⟩ : Fin 2) =
+        (0 ^ (2 - 2)) ^ 2 * (1 + (1 : ℝ)) := by
+    apply higham8_complexMatrixGramEigenvalues_top_eq_of_rank_le_one_of_mem_nonzero A
+      (by norm_num)
+    · norm_num
+    · simpa [A] using higham8_problem8_9_kahan_zero_rank_le_one 2 (by norm_num)
+    · exact hmem
+  have hp :
+      higham8_problem8_9_secondSmallestIndex 2 (by norm_num : 2 ≤ 2) =
+        (⟨0, by norm_num⟩ : Fin 2) := by
+    ext
+    simp [higham8_problem8_9_secondSmallestIndex]
+  simpa [A, hp] using htop
+
+theorem higham8_problem8_9_kahan_secondSmallestGramEigenvalue_eq_candidate_of_s_eq_zero
+    (n : ℕ) (h2 : 2 ≤ n) (c s : ℝ)
+    (hc : 0 ≤ c) (hcs : c ^ 2 + s ^ 2 = 1) (hs_zero : s = 0) :
+    complexMatrixGramEigenvalues
+        (realRectToCMatrix (higham8_11_kahanMatrix n c s))
+        (higham8_problem8_9_secondSmallestIndex n h2) =
+      (s ^ (n - 2)) ^ 2 * (1 + c) := by
+  subst s
+  have hc_sq : c ^ 2 = 1 := by nlinarith
+  have hc_one : c = 1 := by
+    nlinarith [sq_nonneg (c - 1), sq_nonneg (c + 1)]
+  subst c
+  by_cases hn2 : n = 2
+  · subst n
+    simpa using
+      higham8_problem8_9_kahan_secondSmallestGramEigenvalue_eq_candidate_zero_two
+  · have h3 : 3 ≤ n := by omega
+    simpa using
+      higham8_problem8_9_kahan_secondSmallestGramEigenvalue_eq_candidate_zero_three_le n h3
+
+theorem higham8_problem8_9_kahan_secondSmallestSingularValue_of_s_eq_zero
+    (n : ℕ) (h2 : 2 ≤ n) (c s : ℝ)
+    (hc : 0 ≤ c) (hcs : c ^ 2 + s ^ 2 = 1) (hs_zero : s = 0) :
+    complexMatrixSingularValue
+        (realRectToCMatrix (higham8_11_kahanMatrix n c s))
+        (higham8_problem8_9_secondSmallestIndex n h2) =
+      higham8_problem8_9_kahanSecondSmallestValue n c s := by
+  apply higham8_problem8_9_kahan_secondSmallestSingularValue_of_gramEigenvalue
+    n h2 c s hc
+  · rw [hs_zero]
+  · exact
+      higham8_problem8_9_kahan_secondSmallestGramEigenvalue_eq_candidate_of_s_eq_zero
+        n h2 c s hc hcs hs_zero
+
+/-- **Problem 8.9** support: in the source branch `0 < s < 1`, the already
+proved smallest-slot exclusion and witness eigenvalue prove the easy ordered
+half: the second-smallest Gram eigenvalue is no larger than the Appendix A
+candidate.  The missing half is the interlacing lower bound. -/
+theorem higham8_problem8_9_kahan_secondSmallestGramEigenvalue_le_candidate
+    (n : ℕ) (h2 : 2 ≤ n) (c s : ℝ)
+    (hc : 0 ≤ c) (hcs : c ^ 2 + s ^ 2 = 1)
+    (hs_pos : 0 < s) (hs_lt : s < 1) :
+    complexMatrixGramEigenvalues
+        (realRectToCMatrix (higham8_11_kahanMatrix n c s))
+        (higham8_problem8_9_secondSmallestIndex n h2) ≤
+      (s ^ (n - 2)) ^ 2 * (1 + c) := by
+  let A : CMatrix n n := realRectToCMatrix (higham8_11_kahanMatrix n c s)
+  let p := higham8_problem8_9_secondSmallestIndex n h2
+  let q := higham8_problem8_9_lastIndex n (by omega : 0 < n)
+  let σ := higham8_problem8_9_kahanSecondSmallestValue n c s
+  let lam : ℝ := (s ^ (n - 2)) ^ 2 * (1 + c)
+  have hσ_nonneg : 0 ≤ σ := by
+    exact mul_nonneg (pow_nonneg (le_of_lt hs_pos) _) (Real.sqrt_nonneg _)
+  have hsmall :
+      complexMatrixSingularValue A q < σ := by
+    simpa [A, q, σ] using
+      higham8_problem8_9_kahan_smallestSingularValue_lt_candidate
+        n h2 c s hc hs_pos hs_lt
+  have hlast_lt : complexMatrixGramEigenvalues A q < lam := by
+    have hsq :
+        complexMatrixSingularValue A q ^ 2 < σ ^ 2 :=
+      (sq_lt_sq₀ (complexMatrixSingularValue_nonneg A q) hσ_nonneg).2 hsmall
+    have hσ_sq : σ ^ 2 = lam := by
+      simp [σ, lam, higham8_problem8_9_kahanSecondSmallestValue, mul_pow,
+        Real.sq_sqrt (by linarith : 0 ≤ 1 + c)]
+    rw [complexMatrixSingularValue_sq, hσ_sq] at hsq
+    exact hsq
+  obtain ⟨i, hi⟩ :=
+    higham8_problem8_9_kahan_candidate_mem_gramEigenvalues n h2 c s hc hcs
+  have hi_ne_q : i ≠ q := by
+    intro hiq
+    have hqeq : complexMatrixGramEigenvalues A q = lam := by
+      simpa [A, q, lam, hiq] using hi
+    exact (ne_of_lt hlast_lt) hqeq
+  have hi_le_p : i ≤ p := by
+    rw [Fin.le_iff_val_le_val]
+    have hi_val_ne : i.val ≠ n - 1 := by
+      intro hv
+      apply hi_ne_q
+      exact Fin.ext (by
+        simpa [q, higham8_problem8_9_lastIndex] using hv)
+    have hi_bound : i.val < n := i.isLt
+    simp [p, higham8_problem8_9_secondSmallestIndex]
+    omega
+  have hp_le_hi : complexMatrixGramEigenvalues A p ≤ complexMatrixGramEigenvalues A i :=
+    (complexMatrixGramEigenvalues_antitone A) hi_le_p
+  simpa [A, p, lam, hi] using hp_le_hi
+
+/-- **Problem 8.9** support: the exact ordered Gram-eigenvalue statement follows
+from the sole missing source-side lower bound.  The lower bound is the
+interlacing/min-max step from Appendix A. -/
+theorem higham8_problem8_9_kahan_secondSmallestGramEigenvalue_eq_candidate_of_lower_bound
+    (n : ℕ) (h2 : 2 ≤ n) (c s : ℝ)
+    (hc : 0 ≤ c) (hcs : c ^ 2 + s ^ 2 = 1)
+    (hs_pos : 0 < s) (hs_lt : s < 1)
+    (hlower :
+      (s ^ (n - 2)) ^ 2 * (1 + c) ≤
+        complexMatrixGramEigenvalues
+          (realRectToCMatrix (higham8_11_kahanMatrix n c s))
+          (higham8_problem8_9_secondSmallestIndex n h2)) :
+    complexMatrixGramEigenvalues
+        (realRectToCMatrix (higham8_11_kahanMatrix n c s))
+        (higham8_problem8_9_secondSmallestIndex n h2) =
+      (s ^ (n - 2)) ^ 2 * (1 + c) := by
+  exact le_antisymm
+    (higham8_problem8_9_kahan_secondSmallestGramEigenvalue_le_candidate
+      n h2 c s hc hcs hs_pos hs_lt)
+    hlower
+
+/-- **Problem 8.9** support: once the interlacing lower bound places the
+candidate at the ordered Gram slot `n - 2`, the displayed singular-value
+formula follows from the local SVD/Gram reduction. -/
+theorem higham8_problem8_9_kahan_secondSmallestSingularValue_of_lower_bound
+    (n : ℕ) (h2 : 2 ≤ n) (c s : ℝ)
+    (hc : 0 ≤ c) (hcs : c ^ 2 + s ^ 2 = 1)
+    (hs_pos : 0 < s) (hs_lt : s < 1)
+    (hlower :
+      (s ^ (n - 2)) ^ 2 * (1 + c) ≤
+        complexMatrixGramEigenvalues
+          (realRectToCMatrix (higham8_11_kahanMatrix n c s))
+          (higham8_problem8_9_secondSmallestIndex n h2)) :
+    complexMatrixSingularValue
+        (realRectToCMatrix (higham8_11_kahanMatrix n c s))
+        (higham8_problem8_9_secondSmallestIndex n h2) =
+      higham8_problem8_9_kahanSecondSmallestValue n c s := by
+  apply higham8_problem8_9_kahan_secondSmallestSingularValue_of_gramEigenvalue
+    n h2 c s hc (le_of_lt hs_pos)
+  exact
+    higham8_problem8_9_kahan_secondSmallestGramEigenvalue_eq_candidate_of_lower_bound
+      n h2 c s hc hcs hs_pos hs_lt hlower
+
+/-- **Problem 8.9** base case: for the `2 × 2` Kahan matrix, the target
+`second-smallest` slot is the top sorted Gram eigenvalue, so candidate
+membership and antitonicity give the missing lower bound without interlacing. -/
+theorem higham8_problem8_9_kahan_secondSmallestGramEigenvalue_eq_candidate_two
+    (c s : ℝ) (hc : 0 ≤ c) (hcs : c ^ 2 + s ^ 2 = 1)
+    (hs_pos : 0 < s) (hs_lt : s < 1) :
+    complexMatrixGramEigenvalues
+        (realRectToCMatrix (higham8_11_kahanMatrix 2 c s))
+        (higham8_problem8_9_secondSmallestIndex 2 (by norm_num)) =
+      (s ^ (2 - 2)) ^ 2 * (1 + c) := by
+  let A : CMatrix 2 2 := realRectToCMatrix (higham8_11_kahanMatrix 2 c s)
+  let p := higham8_problem8_9_secondSmallestIndex 2 (by norm_num : 2 ≤ 2)
+  let lam : ℝ := (s ^ (2 - 2)) ^ 2 * (1 + c)
+  have hp_top : p = (⟨0, by norm_num⟩ : Fin 2) := by
+    ext
+    simp [p, higham8_problem8_9_secondSmallestIndex]
+  have hupper : complexMatrixGramEigenvalues A p ≤ lam := by
+    simpa [A, p, lam] using
+      higham8_problem8_9_kahan_secondSmallestGramEigenvalue_le_candidate
+        2 (by norm_num : 2 ≤ 2) c s hc hcs hs_pos hs_lt
+  have hlower : lam ≤ complexMatrixGramEigenvalues A p := by
+    obtain ⟨i, hi⟩ :=
+      higham8_problem8_9_kahan_candidate_mem_gramEigenvalues
+        2 (by norm_num : 2 ≤ 2) c s hc hcs
+    have hp_le_i : p ≤ i := by
+      rw [hp_top]
+      exact Fin.zero_le i
+    have hi_le_top : complexMatrixGramEigenvalues A i ≤ complexMatrixGramEigenvalues A p :=
+      (complexMatrixGramEigenvalues_antitone A) hp_le_i
+    simpa [A, lam, hi] using hi_le_top
+  exact le_antisymm hupper hlower
+
+/-- **Problem 8.9** base case: the displayed second-smallest singular value is
+closed for `n = 2` in the source branch `0 < s < 1`. -/
+theorem higham8_problem8_9_kahan_secondSmallestSingularValue_two
+    (c s : ℝ) (hc : 0 ≤ c) (hcs : c ^ 2 + s ^ 2 = 1)
+    (hs_pos : 0 < s) (hs_lt : s < 1) :
+    complexMatrixSingularValue
+        (realRectToCMatrix (higham8_11_kahanMatrix 2 c s))
+        (higham8_problem8_9_secondSmallestIndex 2 (by norm_num)) =
+      higham8_problem8_9_kahanSecondSmallestValue 2 c s := by
+  apply higham8_problem8_9_kahan_secondSmallestSingularValue_of_gramEigenvalue
+    2 (by norm_num : 2 ≤ 2) c s hc (le_of_lt hs_pos)
+  exact higham8_problem8_9_kahan_secondSmallestGramEigenvalue_eq_candidate_two
+    c s hc hcs hs_pos hs_lt
+
+/-- **Problem 8.9** induction reduction: if the one-step Cauchy-interlacing
+consequence holds for the leading Kahan Gram blocks, then the displayed
+interior Gram eigenvalue formula follows for every size.
+
+The required interlacing consequence is the exact source induction step: the
+previous-size second-smallest Gram eigenvalue is no larger than the current
+third-smallest Gram eigenvalue.  The remaining project-level spectral blocker
+is proving that hypothesis from a reusable interlacing/min-max theorem. -/
+theorem higham8_problem8_9_kahan_secondSmallestGramEigenvalue_eq_candidate_of_interlacing
+    (n : ℕ) (h2 : 2 ≤ n) (c s : ℝ)
+    (hc : 0 ≤ c) (hcs : c ^ 2 + s ^ 2 = 1)
+    (hs_pos : 0 < s) (hs_lt : s < 1)
+    (hinterlace :
+      ∀ (m : ℕ) (hm : 3 ≤ m),
+        complexMatrixGramEigenvalues
+            (realRectToCMatrix (higham8_11_kahanMatrix (m - 1) c s))
+            (higham8_problem8_9_secondSmallestIndex (m - 1) (by omega)) ≤
+          complexMatrixGramEigenvalues
+            (realRectToCMatrix (higham8_11_kahanMatrix m c s))
+            (higham8_problem8_9_thirdSmallestIndex m hm)) :
+    complexMatrixGramEigenvalues
+        (realRectToCMatrix (higham8_11_kahanMatrix n c s))
+        (higham8_problem8_9_secondSmallestIndex n h2) =
+      (s ^ (n - 2)) ^ 2 * (1 + c) := by
+  classical
+  let P : ℕ → Prop := fun k =>
+    ∀ (hk2 : 2 ≤ k),
+      complexMatrixGramEigenvalues
+          (realRectToCMatrix (higham8_11_kahanMatrix k c s))
+          (higham8_problem8_9_secondSmallestIndex k hk2) =
+        (s ^ (k - 2)) ^ 2 * (1 + c)
+  have hmain : ∀ k, P k := by
+    intro k
+    induction k using Nat.strong_induction_on with
+    | h k ih =>
+        intro hk2
+        by_cases hk_two : k = 2
+        · subst k
+          exact
+            higham8_problem8_9_kahan_secondSmallestGramEigenvalue_eq_candidate_two
+              c s hc hcs hs_pos hs_lt
+        · have hk3 : 3 ≤ k := by omega
+          let A : CMatrix k k := realRectToCMatrix (higham8_11_kahanMatrix k c s)
+          let p := higham8_problem8_9_secondSmallestIndex k hk2
+          let q := higham8_problem8_9_lastIndex k (by omega : 0 < k)
+          let r := higham8_problem8_9_thirdSmallestIndex k hk3
+          let lam : ℝ := (s ^ (k - 2)) ^ 2 * (1 + c)
+          let lamPrev : ℝ := (s ^ ((k - 1) - 2)) ^ 2 * (1 + c)
+          have hprev2 : 2 ≤ k - 1 := by omega
+          have hprev :
+              complexMatrixGramEigenvalues
+                  (realRectToCMatrix (higham8_11_kahanMatrix (k - 1) c s))
+                  (higham8_problem8_9_secondSmallestIndex (k - 1) hprev2) =
+                lamPrev := by
+            simpa [P, lamPrev] using ih (k - 1) (by omega) hprev2
+          have hthird_ge_prev : lamPrev ≤ complexMatrixGramEigenvalues A r := by
+            calc
+              lamPrev =
+                  complexMatrixGramEigenvalues
+                    (realRectToCMatrix (higham8_11_kahanMatrix (k - 1) c s))
+                    (higham8_problem8_9_secondSmallestIndex (k - 1) (by omega)) := by
+                      simpa [lamPrev] using hprev.symm
+              _ ≤ complexMatrixGramEigenvalues A r := by
+                      simpa [A, r] using hinterlace k hk3
+          have hs_sq_lt_one : s ^ 2 < 1 := by
+            nlinarith [mul_lt_mul_of_pos_right hs_lt hs_pos]
+          have hprev_pos : 0 < lamPrev := by
+            have hpow_pos : 0 < s ^ ((k - 1) - 2) := pow_pos hs_pos _
+            have hc_pos : 0 < 1 + c := by linarith
+            exact mul_pos (sq_pos_of_pos hpow_pos) hc_pos
+          have hlam_lt_prev : lam < lamPrev := by
+            have hkidx : k - 2 = (k - 1) - 2 + 1 := by omega
+            have hrewrite :
+                lam = s ^ 2 * lamPrev := by
+              simp [lam, lamPrev, hkidx, pow_succ]
+              ring
+            rw [hrewrite]
+            simpa using mul_lt_mul_of_pos_right hs_sq_lt_one hprev_pos
+          have hthird_gt_lam : lam < complexMatrixGramEigenvalues A r :=
+            hlam_lt_prev.trans_le hthird_ge_prev
+          obtain ⟨i, hi⟩ :=
+            higham8_problem8_9_kahan_candidate_mem_gramEigenvalues
+              k hk2 c s hc hcs
+          have hi_not_le_r : ¬ i ≤ r := by
+            intro hir
+            have hr_le_i :
+                complexMatrixGramEigenvalues A r ≤ complexMatrixGramEigenvalues A i :=
+              complexMatrixGramEigenvalues_antitone A hir
+            have hr_le_lam : complexMatrixGramEigenvalues A r ≤ lam := by
+              simpa [A, lam, hi] using hr_le_i
+            exact (not_lt_of_ge hr_le_lam) hthird_gt_lam
+          have hi_val_gt_r : r.val < i.val := by
+            by_contra hle
+            exact hi_not_le_r (Fin.le_iff_val_le_val.2 (by omega))
+          have hi_ge_p_val : p.val ≤ i.val := by
+            simp [p, higham8_problem8_9_secondSmallestIndex]
+            simp [r, higham8_problem8_9_thirdSmallestIndex] at hi_val_gt_r
+            omega
+          have hlast_lt :
+              complexMatrixGramEigenvalues A q < lam := by
+            simpa [A, q, lam] using
+              higham8_problem8_9_kahan_smallestGramEigenvalue_lt_candidate
+                k hk2 c s hc hs_pos hs_lt
+          have hi_ne_q : i ≠ q := by
+            intro hiq
+            have hqeq : complexMatrixGramEigenvalues A q = lam := by
+              simpa [A, q, lam, hiq] using hi
+            exact (ne_of_lt hlast_lt) hqeq
+          have hi_eq_p : i = p := by
+            apply Fin.ext
+            have hi_ne_last_val : i.val ≠ k - 1 := by
+              intro hv
+              apply hi_ne_q
+              exact Fin.ext (by
+                simpa [q, higham8_problem8_9_lastIndex] using hv)
+            have hi_lt_last : i.val < k - 1 := by
+              have hi_lt_k : i.val < k := i.isLt
+              omega
+            simp [p, higham8_problem8_9_secondSmallestIndex] at hi_ge_p_val ⊢
+            omega
+          simpa [A, p, lam, hi_eq_p] using hi
+  exact hmain n h2
+
+/-- **Problem 8.9** induction reduction, singular-value form: the source
+interior formula follows from the exact one-step Cauchy-interlacing consequence
+for the leading Kahan Gram blocks. -/
+theorem higham8_problem8_9_kahan_secondSmallestSingularValue_of_interlacing
+    (n : ℕ) (h2 : 2 ≤ n) (c s : ℝ)
+    (hc : 0 ≤ c) (hcs : c ^ 2 + s ^ 2 = 1)
+    (hs_pos : 0 < s) (hs_lt : s < 1)
+    (hinterlace :
+      ∀ (m : ℕ) (hm : 3 ≤ m),
+        complexMatrixGramEigenvalues
+            (realRectToCMatrix (higham8_11_kahanMatrix (m - 1) c s))
+            (higham8_problem8_9_secondSmallestIndex (m - 1) (by omega)) ≤
+          complexMatrixGramEigenvalues
+            (realRectToCMatrix (higham8_11_kahanMatrix m c s))
+            (higham8_problem8_9_thirdSmallestIndex m hm)) :
+    complexMatrixSingularValue
+        (realRectToCMatrix (higham8_11_kahanMatrix n c s))
+        (higham8_problem8_9_secondSmallestIndex n h2) =
+      higham8_problem8_9_kahanSecondSmallestValue n c s := by
+  apply higham8_problem8_9_kahan_secondSmallestSingularValue_of_gramEigenvalue
+    n h2 c s hc (le_of_lt hs_pos)
+  exact
+    higham8_problem8_9_kahan_secondSmallestGramEigenvalue_eq_candidate_of_interlacing
+      n h2 c s hc hcs hs_pos hs_lt hinterlace
+
+theorem higham8_problem8_9_kahan_secondSmallestSingularValue_of_interior_lower_bound
+    (n : ℕ) (h2 : 2 ≤ n) (c s : ℝ)
+    (hc : 0 ≤ c) (hs : 0 ≤ s) (hcs : c ^ 2 + s ^ 2 = 1)
+    (hlower : 3 ≤ n → 0 < s → s < 1 →
+      (s ^ (n - 2)) ^ 2 * (1 + c) ≤
+        complexMatrixGramEigenvalues
+          (realRectToCMatrix (higham8_11_kahanMatrix n c s))
+          (higham8_problem8_9_secondSmallestIndex n h2)) :
+    complexMatrixSingularValue
+        (realRectToCMatrix (higham8_11_kahanMatrix n c s))
+        (higham8_problem8_9_secondSmallestIndex n h2) =
+      higham8_problem8_9_kahanSecondSmallestValue n c s := by
+  by_cases hs_zero : s = 0
+  · exact higham8_problem8_9_kahan_secondSmallestSingularValue_of_s_eq_zero
+      n h2 c s hc hcs hs_zero
+  · by_cases hs_one : s = 1
+    · exact higham8_problem8_9_kahan_secondSmallestSingularValue_of_s_eq_one
+        n h2 c s hc hcs hs_one
+    · have hs_pos : 0 < s := lt_of_le_of_ne hs (by
+        intro hzero
+        exact hs_zero hzero.symm)
+      have hs_lt : s < 1 := by
+        have hs_sq_le : s ^ 2 ≤ 1 := by nlinarith [sq_nonneg c]
+        have hs_le : s ≤ 1 := by
+          simpa using Real.le_sqrt_of_sq_le hs_sq_le
+        exact lt_of_le_of_ne hs_le hs_one
+      by_cases hn2 : n = 2
+      · subst n
+        exact higham8_problem8_9_kahan_secondSmallestSingularValue_two
+          c s hc hcs hs_pos hs_lt
+      · have h3 : 3 ≤ n := by omega
+        exact higham8_problem8_9_kahan_secondSmallestSingularValue_of_lower_bound
+          n h2 c s hc hcs hs_pos hs_lt (hlower h3 hs_pos hs_lt)
+
+/-- **Problem 8.9** all-cases reduction to the Kahan Gram interlacing step.
+Once the leading-principal-block Cauchy interlacing consequence is available,
+this theorem closes the displayed second-smallest singular-value formula without
+any separate edge-case assumptions. -/
+theorem higham8_problem8_9_kahan_secondSmallestSingularValue_of_kahanGram_interlacing
+    (n : ℕ) (h2 : 2 ≤ n) (c s : ℝ)
+    (hc : 0 ≤ c) (hs : 0 ≤ s) (hcs : c ^ 2 + s ^ 2 = 1)
+    (hinterlace :
+      ∀ (m : ℕ) (hm : 3 ≤ m),
+        complexMatrixGramEigenvalues
+            (realRectToCMatrix (higham8_11_kahanMatrix (m - 1) c s))
+            (higham8_problem8_9_secondSmallestIndex (m - 1) (by omega)) ≤
+          complexMatrixGramEigenvalues
+            (realRectToCMatrix (higham8_11_kahanMatrix m c s))
+            (higham8_problem8_9_thirdSmallestIndex m hm)) :
+    complexMatrixSingularValue
+        (realRectToCMatrix (higham8_11_kahanMatrix n c s))
+        (higham8_problem8_9_secondSmallestIndex n h2) =
+      higham8_problem8_9_kahanSecondSmallestValue n c s := by
+  apply
+    higham8_problem8_9_kahan_secondSmallestSingularValue_of_interior_lower_bound
+      n h2 c s hc hs hcs
+  intro h3 hs_pos hs_lt
+  exact le_of_eq
+    (higham8_problem8_9_kahan_secondSmallestGramEigenvalue_eq_candidate_of_interlacing
+      n h2 c s hc hcs hs_pos hs_lt hinterlace).symm
+
+/-- **Problem 8.9**: for Kahan's matrix in (8.11), the second-smallest
+singular value is `s^(n-2) * sqrt (1+c)` in the repository's descending
+singular-value order. -/
+theorem higham8_problem8_9_kahan_secondSmallestSingularValue
+    (n : ℕ) (h2 : 2 ≤ n) (c s : ℝ)
+    (hc : 0 ≤ c) (hs : 0 ≤ s) (hcs : c ^ 2 + s ^ 2 = 1) :
+    complexMatrixSingularValue
+        (realRectToCMatrix (higham8_11_kahanMatrix n c s))
+        (higham8_problem8_9_secondSmallestIndex n h2) =
+      higham8_problem8_9_kahanSecondSmallestValue n c s := by
+  exact
+    higham8_problem8_9_kahan_secondSmallestSingularValue_of_kahanGram_interlacing
+      n h2 c s hc hs hcs
+      (higham8_problem8_9_kahanGram_interlacing c s)
 
 /-- **Problem 8.2**, Appendix A witness `T(λ)`. -/
 noncomputable def higham8_2_ratioWitness (lam : ℝ) : Fin 3 → Fin 3 → ℝ :=
@@ -1201,6 +3093,130 @@ theorem higham8_11_mmatrix_forwardSub_relative_error (fp : FPModel) (n : ℕ)
     (∀ i, |x i - x_hat i| ≤ mu fp n i.val * |x i|) :=
   mmatrix_forwardSub_relative_error fp n L L_inv x b hLT hL_diag_pos
     hL_offdiag hInv hTx hb hn hn1 h2n
+
+/-- **Problem 8.3**, exact `μ`-form for unit upper-triangular substitution.
+
+If `U` is unit upper triangular with `|u_ij| ≤ 1` for `j > i`, then the
+comparison-matrix route behind **Theorem 8.10** yields the explicit componentwise
+bound
+
+`|x_i - x̂_i| ≤ μ_{n-1-i} 2^(n-1-i) ‖b‖∞`.
+
+This is slightly sharper than the printed source factor `2^(n-i)`, because the
+row sum of `M(U)⁻¹` is bounded here by the exact geometric sum
+`1 + ∑_{k=0}^{n-i-2} 2^k = 2^(n-1-i)`. -/
+theorem higham8_problem8_3_unitUpper_backSub_forward_error_mu_infNorm_bound
+    (fp : FPModel) (n : ℕ)
+    (U U_inv M_inv : Fin n → Fin n → ℝ)
+    (x b : Fin n → ℝ)
+    (hUT : ∀ i j : Fin n, j.val < i.val → U i j = 0)
+    (hU_unit : ∀ i : Fin n, U i i = 1)
+    (hU_bound : ∀ i j : Fin n, i.val < j.val → |U i j| ≤ 1)
+    (hInv : IsInverse n U U_inv)
+    (hM_RInv : IsRightInverse n (comparisonMatrix n U) M_inv)
+    (hM_inv_ut : ∀ i j : Fin n, j.val < i.val → M_inv i j = 0)
+    (hTx : ∀ i, ∑ j : Fin n, U i j * x j = b i)
+    (hn : gammaValid fp n)
+    (hn1 : gammaValid fp (n + 1)) :
+    let x_hat := fl_backSub fp n U b
+    ∀ i : Fin n,
+      |x i - x_hat i| ≤
+        mu fp n (n - 1 - i.val) * 2 ^ (n - 1 - i.val) * infNormVec b := by
+  intro x_hat i
+  let y : Fin n → ℝ := fun k => ∑ j : Fin n, M_inv k j * |b j|
+  have herr_i :
+      |x i - x_hat i| ≤ mu fp n (n - 1 - i.val) * y i := by
+    simpa [x_hat, y] using
+      (backSub_forward_error_mu_bound fp n U U_inv M_inv x b
+        (fun k => by rw [hU_unit k]; norm_num)
+        hUT hInv hM_RInv hM_inv_ut hTx hn hn1 i)
+  have hM_diag_ne : ∀ k : Fin n, comparisonMatrix n U k k ≠ 0 := by
+    intro k
+    simp [comparisonMatrix, hU_unit k]
+  have hM_unit : ∀ k : Fin n, comparisonMatrix n U k k = 1 := by
+    intro k
+    simp [comparisonMatrix, hU_unit k]
+  have hM_bound : ∀ a b : Fin n, a.val < b.val → |comparisonMatrix n U a b| ≤ 1 := by
+    intro a b hab
+    unfold comparisonMatrix
+    simpa [show a ≠ b from Fin.ne_of_val_ne (by omega)] using hU_bound a b hab
+  have hM_ut : ∀ a b : Fin n, b.val < a.val → comparisonMatrix n U a b = 0 := by
+    intro a b hab
+    unfold comparisonMatrix
+    simp [show a ≠ b from Fin.ne_of_val_ne (by omega), hUT a b hab]
+  have hM_diag_pos : ∀ k : Fin n, 0 < comparisonMatrix n U k k := by
+    intro k
+    simp [comparisonMatrix, hU_unit k]
+  have hM_offdiag : ∀ a b : Fin n, a.val < b.val → comparisonMatrix n U a b ≤ 0 := by
+    intro a b hab
+    unfold comparisonMatrix
+    simp [show a ≠ b from Fin.ne_of_val_ne (by omega)]
+  have hM_nonneg :=
+    upper_tri_mmatrix_inv_nonneg n (comparisonMatrix n U) M_inv
+      hM_ut hM_diag_pos hM_offdiag hM_RInv hM_inv_ut
+  have hM_LInv := ch7_isLeftInverse_of_isRightInverse hM_RInv
+  have hM_inv_diag : ∀ k : Fin n, M_inv k k = 1 := by
+    intro k
+    have hM_inv_ut' :=
+      inv_upper_tri n (comparisonMatrix n U) M_inv hM_ut hM_diag_ne hM_LInv
+    simpa [comparisonMatrix, hU_unit k] using
+      inv_diag_entry n (comparisonMatrix n U) M_inv hM_ut hM_diag_ne hM_LInv hM_inv_ut' k
+  have hrow_sum : ∑ j : Fin n, M_inv i j ≤ 2 ^ (n - 1 - i.val) := by
+    have hsum_abs : ∑ j : Fin n, M_inv i j = ∑ j : Fin n, |M_inv i j| := by
+      apply Finset.sum_congr rfl
+      intro j _
+      exact (abs_of_nonneg (hM_nonneg i j)).symm
+    have hsplit :
+        ∑ j : Fin n, |M_inv i j| =
+          ∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val ≤ j.val), |M_inv i j| := by
+      symm
+      apply Finset.sum_subset (Finset.filter_subset _ _)
+      intro j _ hj
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and, not_le] at hj
+      rw [hM_inv_ut i j hj, abs_zero]
+    have hn_pos : 0 < n := by
+      exact lt_of_le_of_lt (Nat.zero_le i.val) i.isLt
+    have hfilt_eq :
+        Finset.univ.filter (fun j : Fin n => i.val ≤ j.val) =
+          Finset.univ.filter (fun j : Fin n =>
+            i.val ≤ j.val ∧ j.val ≤ (⟨n - 1, by omega⟩ : Fin n).val) := by
+      ext k
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+      exact ⟨fun h => ⟨h, by omega⟩, fun h => h.1⟩
+    calc
+      ∑ j : Fin n, M_inv i j = ∑ j : Fin n, |M_inv i j| := hsum_abs
+      _ = ∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val ≤ j.val), |M_inv i j| := hsplit
+      _ = ∑ j ∈ Finset.univ.filter
+            (fun j : Fin n => i.val ≤ j.val ∧
+              j.val ≤ (⟨n - 1, by omega⟩ : Fin n).val), |M_inv i j| := by
+            rw [hfilt_eq]
+      _ ≤ 2 ^ (n - 1 - i.val) := by
+            exact inv_row_sum_bound n (comparisonMatrix n U) M_inv
+              hM_ut hM_unit hM_bound hM_LInv hM_inv_ut hM_inv_diag
+              (n - 1 - i.val) i ⟨n - 1, by omega⟩ (by simp) (by simp; omega)
+  have hy_bound : y i ≤ 2 ^ (n - 1 - i.val) * infNormVec b := by
+    have hy_le :
+        y i ≤ (∑ j : Fin n, M_inv i j) * infNormVec b := by
+      unfold y
+      calc
+        ∑ j : Fin n, M_inv i j * |b j|
+            ≤ ∑ j : Fin n, M_inv i j * infNormVec b := by
+                  apply Finset.sum_le_sum
+                  intro j _
+                  exact mul_le_mul_of_nonneg_left (abs_le_infNormVec b j) (hM_nonneg i j)
+        _ = (∑ j : Fin n, M_inv i j) * infNormVec b := by
+              symm
+              exact Finset.sum_mul (Finset.univ) (fun j => M_inv i j) (infNormVec b)
+    calc
+      y i ≤ (∑ j : Fin n, M_inv i j) * infNormVec b := hy_le
+      _ ≤ 2 ^ (n - 1 - i.val) * infNormVec b := by
+            exact mul_le_mul_of_nonneg_right hrow_sum (infNormVec_nonneg b)
+  calc
+    |x i - x_hat i| ≤ mu fp n (n - 1 - i.val) * y i := herr_i
+    _ ≤ mu fp n (n - 1 - i.val) * (2 ^ (n - 1 - i.val) * infNormVec b) := by
+          exact mul_le_mul_of_nonneg_left hy_bound (mu_nonneg fp n hn1 _)
+    _ = mu fp n (n - 1 - i.val) * 2 ^ (n - 1 - i.val) * infNormVec b := by
+          ring
 
 /-- An upper-triangular row sum over `univ.erase i` only sees the strict-upper
 entries. -/
@@ -2832,6 +4848,187 @@ theorem higham8_13_inverse_bound_from_comparison {n : ℕ}
       _ ≤ infNorm M_inv := row_sum_le_infNorm M_inv i
   · exact infNorm_nonneg M_inv
 
+/-- **Problem 8.6**, first exact vector quantity:
+`M(U)⁻¹ |z|`, represented once an inverse of `M(U)` has been supplied. -/
+noncomputable def higham8_6_comparisonInverseAbsVec {n : ℕ}
+    (M_inv : Fin n → Fin n → ℝ) (z : Fin n → ℝ) : Fin n → ℝ :=
+  fun i => ∑ j : Fin n, M_inv i j * |z j|
+
+/-- **Problem 8.6**, first displayed quantity `‖M(U)⁻¹ |z|‖∞`. -/
+noncomputable def higham8_6_comparisonInverseAbsVecInfNorm {n : ℕ}
+    (M_inv : Fin n → Fin n → ℝ) (z : Fin n → ℝ) : ℝ :=
+  infNormVec (higham8_6_comparisonInverseAbsVec M_inv z)
+
+/-- **Problem 8.6**, second exact vector quantity:
+`W(U)⁻¹ |z|`, represented once an inverse of `W(U)` has been supplied. -/
+noncomputable def higham8_6_WInverseAbsVec {n : ℕ}
+    (W_inv : Fin n → Fin n → ℝ) (z : Fin n → ℝ) : Fin n → ℝ :=
+  fun i => ∑ j : Fin n, W_inv i j * |z j|
+
+/-- **Problem 8.6**, second displayed quantity `‖W(U)⁻¹ |z|‖∞`. -/
+noncomputable def higham8_6_WInverseAbsVecInfNorm {n : ℕ}
+    (W_inv : Fin n → Fin n → ℝ) (z : Fin n → ℝ) : ℝ :=
+  infNormVec (higham8_6_WInverseAbsVec W_inv z)
+
+/-- **Problem 8.6**, backward-sweep recurrence for
+`M(U)⁻¹ |z|`: the vector is computed by solving an upper-triangular
+comparison-matrix system. -/
+theorem higham8_6_comparisonInverseAbsVec_recurrence (n : ℕ)
+    (U M_inv : Fin n → Fin n → ℝ) (z : Fin n → ℝ)
+    (hUT : ∀ i j : Fin n, j.val < i.val → U i j = 0)
+    (hU_diag : ∀ i : Fin n, U i i ≠ 0)
+    (hM_RInv : IsRightInverse n (comparisonMatrix n U) M_inv)
+    (i : Fin n) :
+    |U i i| * higham8_6_comparisonInverseAbsVec M_inv z i =
+      |z i| +
+        ∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
+          |U i j| * higham8_6_comparisonInverseAbsVec M_inv z j := by
+  have hM_ut : ∀ i j : Fin n, j.val < i.val → comparisonMatrix n U i j = 0 := by
+    intro i j hij
+    unfold comparisonMatrix
+    simp [show i ≠ j from Fin.ne_of_val_ne (by omega), hUT i j hij]
+  have hM_diag : ∀ i : Fin n, comparisonMatrix n U i i ≠ 0 := by
+    intro i
+    simp [comparisonMatrix, hU_diag i]
+  have hM_LInv := ch7_isLeftInverse_of_isRightInverse hM_RInv
+  have hM_inv_ut := inv_upper_tri n (comparisonMatrix n U) M_inv hM_ut hM_diag hM_LInv
+  simpa [higham8_6_comparisonInverseAbsVec] using
+    (compMatrix_inv_upper_row_eq n U M_inv z hUT hU_diag hM_RInv hM_inv_ut i)
+
+/-- **Problem 8.6**, backward-sweep recurrence for
+`W(U)⁻¹ |z|`: each row uses the strict-upper row maximum from `W(U)`. -/
+theorem higham8_6_WInverseAbsVec_recurrence (n : ℕ)
+    (U W_inv : Fin n → Fin n → ℝ) (z : Fin n → ℝ)
+    (hW_RInv : IsRightInverse n (higham8_12_WMatrix n U) W_inv)
+    (i : Fin n) :
+    |U i i| * higham8_6_WInverseAbsVec W_inv z i =
+      |z i| +
+        ∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
+          higham8_12_rowMaxStrictUpper n U i *
+            higham8_6_WInverseAbsVec W_inv z j := by
+  let y : Fin n → ℝ := higham8_6_WInverseAbsVec W_inv z
+  have hWy : ∀ i' : Fin n,
+      ∑ k : Fin n, higham8_12_WMatrix n U i' k * y k = |z i'| := by
+    intro i'
+    simp only [y, higham8_6_WInverseAbsVec]
+    simp_rw [Finset.mul_sum]
+    rw [Finset.sum_comm]
+    simp_rw [← mul_assoc, ← Finset.sum_mul]
+    conv_rhs =>
+      rw [show |z i'| = ∑ j : Fin n, (if i' = j then 1 else 0) * |z j| by
+        simp [Finset.mem_univ]]
+    apply Finset.sum_congr rfl
+    intro j _
+    congr 1
+    exact hW_RInv i' j
+  have hrow := hWy i
+  rw [← Finset.add_sum_erase _ _ (Finset.mem_univ i)] at hrow
+  rw [higham8_12_WMatrix_diag] at hrow
+  have hrest :
+      ∑ k ∈ Finset.univ.erase i, higham8_12_WMatrix n U i k * y k =
+        -(∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
+          higham8_12_rowMaxStrictUpper n U i * y j) := by
+    have herase_eq :
+        ∑ k ∈ Finset.univ.erase i, higham8_12_WMatrix n U i k * y k =
+          ∑ k ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
+            higham8_12_WMatrix n U i k * y k := by
+      symm
+      apply Finset.sum_subset
+      · intro j hj
+        simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hj
+        exact Finset.mem_erase.mpr ⟨Fin.ne_of_val_ne (by omega), Finset.mem_univ _⟩
+      · intro k hk hknot
+        rw [Finset.mem_erase] at hk
+        have hknot' : ¬ i.val < k.val := by
+          intro hc
+          exact hknot (Finset.mem_filter.mpr ⟨Finset.mem_univ _, hc⟩)
+        have hlt : k.val < i.val := by omega
+        rw [higham8_12_WMatrix_upper n U i k hlt, zero_mul]
+    rw [herase_eq, ← Finset.sum_neg_distrib]
+    apply Finset.sum_congr rfl
+    intro k hk
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hk
+    rw [higham8_12_WMatrix_strictUpper n U hk]
+    ring
+  rw [hrest] at hrow
+  simpa [y, higham8_6_WInverseAbsVec] using (by linarith : |U i i| * y i =
+    |z i| + ∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
+      higham8_12_rowMaxStrictUpper n U i * y j)
+
+private theorem higham8_6_comparisonInverseAbsVec_nonneg (n : ℕ)
+    (U M_inv : Fin n → Fin n → ℝ) (z : Fin n → ℝ)
+    (hUT : ∀ i j : Fin n, j.val < i.val → U i j = 0)
+    (hU_diag : ∀ i : Fin n, U i i ≠ 0)
+    (hM_RInv : IsRightInverse n (comparisonMatrix n U) M_inv)
+    (i : Fin n) :
+    0 ≤ higham8_6_comparisonInverseAbsVec M_inv z i := by
+  have hM_nonneg :=
+    higham8_12_comparisonInv_nonneg n U M_inv hUT hU_diag hM_RInv
+  unfold higham8_6_comparisonInverseAbsVec
+  exact Finset.sum_nonneg (fun j _ => mul_nonneg (hM_nonneg i j) (abs_nonneg _))
+
+private theorem higham8_6_WInverseAbsVec_nonneg (n : ℕ)
+    (U W_inv : Fin n → Fin n → ℝ) (z : Fin n → ℝ)
+    (hU_diag : ∀ i : Fin n, U i i ≠ 0)
+    (hW_RInv : IsRightInverse n (higham8_12_WMatrix n U) W_inv)
+    (i : Fin n) :
+    0 ≤ higham8_6_WInverseAbsVec W_inv z i := by
+  have hW_nonneg :=
+    higham8_12_WInv_nonneg n U W_inv hU_diag hW_RInv
+  unfold higham8_6_WInverseAbsVec
+  exact Finset.sum_nonneg (fun j _ => mul_nonneg (hW_nonneg i j) (abs_nonneg _))
+
+/-- **Problem 8.6**, the `M(U)` bound vector is componentwise bounded by the
+`W(U)` bound vector from Theorem 8.12. -/
+theorem higham8_6_comparisonInverseAbsVec_le_WInverseAbsVec (n : ℕ)
+    (U M_inv W_inv : Fin n → Fin n → ℝ) (z : Fin n → ℝ)
+    (hUT : ∀ i j : Fin n, j.val < i.val → U i j = 0)
+    (hU_diag : ∀ i : Fin n, U i i ≠ 0)
+    (hM_RInv : IsRightInverse n (comparisonMatrix n U) M_inv)
+    (hW_RInv : IsRightInverse n (higham8_12_WMatrix n U) W_inv) :
+    ∀ i : Fin n,
+      higham8_6_comparisonInverseAbsVec M_inv z i ≤
+        higham8_6_WInverseAbsVec W_inv z i := by
+  have hMW :=
+    higham8_12_comparisonInv_le_WInv n U M_inv W_inv hUT hU_diag hM_RInv hW_RInv
+  intro i
+  unfold higham8_6_comparisonInverseAbsVec higham8_6_WInverseAbsVec
+  apply Finset.sum_le_sum
+  intro j _
+  exact mul_le_mul_of_nonneg_right (hMW i j) (abs_nonneg _)
+
+/-- **Problem 8.6**, the displayed `∞`-norm quantity obtained from `M(U)` is
+bounded by the corresponding `W(U)` quantity.  The source flop counts are cost
+claims; this theorem records the mathematical correctness of the two exact
+triangular-solve quantities. -/
+theorem higham8_6_comparisonInverseAbsVecInfNorm_le_WInverseAbsVecInfNorm (n : ℕ)
+    (U M_inv W_inv : Fin n → Fin n → ℝ) (z : Fin n → ℝ)
+    (hUT : ∀ i j : Fin n, j.val < i.val → U i j = 0)
+    (hU_diag : ∀ i : Fin n, U i i ≠ 0)
+    (hM_RInv : IsRightInverse n (comparisonMatrix n U) M_inv)
+    (hW_RInv : IsRightInverse n (higham8_12_WMatrix n U) W_inv) :
+    higham8_6_comparisonInverseAbsVecInfNorm M_inv z ≤
+      higham8_6_WInverseAbsVecInfNorm W_inv z := by
+  unfold higham8_6_comparisonInverseAbsVecInfNorm higham8_6_WInverseAbsVecInfNorm
+  apply infNormVec_le_of_abs_le
+  · intro i
+    have hM_nonneg :=
+      higham8_6_comparisonInverseAbsVec_nonneg n U M_inv z hUT hU_diag hM_RInv i
+    have hW_nonneg :=
+      higham8_6_WInverseAbsVec_nonneg n U W_inv z hU_diag hW_RInv i
+    calc
+      |higham8_6_comparisonInverseAbsVec M_inv z i|
+          = higham8_6_comparisonInverseAbsVec M_inv z i :=
+            abs_of_nonneg hM_nonneg
+      _ ≤ higham8_6_WInverseAbsVec W_inv z i :=
+            higham8_6_comparisonInverseAbsVec_le_WInverseAbsVec n U M_inv W_inv z
+              hUT hU_diag hM_RInv hW_RInv i
+      _ = |higham8_6_WInverseAbsVec W_inv z i| := by
+            rw [abs_of_nonneg hW_nonneg]
+      _ ≤ infNormVec (higham8_6_WInverseAbsVec W_inv z) :=
+            abs_le_infNormVec (higham8_6_WInverseAbsVec W_inv z) i
+  · exact infNormVec_nonneg (higham8_6_WInverseAbsVec W_inv z)
+
 /-- **Theorem 8.14**, ∞-norm lower-bound part of (8.9). -/
 theorem higham8_14_infNorm_lowerBound (n : ℕ)
     (U U_inv : Fin n → Fin n → ℝ)
@@ -3034,6 +5231,660 @@ theorem higham8_14_full_norm_chain (n : ℕ) (hn : 0 < n)
     ⟨⟨hOneLower, hOneChain.1, hOneChain.2.1, hOneChain.2.2, hOneUpperZ⟩,
       ⟨hOp2Lower, hOp2Chain.1, hOp2Chain.2.1, hOp2Chain.2.2, hOp2UpperZ⟩⟩⟩
 
+/-! ## §8.4 Parallel fan-in exact product surface -/
+
+/-- **Equation (8.12)**: the `k`th lower-triangular column factor `L_k`.
+It is the identity matrix except that column `k` is copied from `L`. -/
+noncomputable def higham8_12_lowerColumnFactor (n : ℕ)
+    (L : Fin n → Fin n → ℝ) (k : Fin n) : Fin n → Fin n → ℝ :=
+  fun i j =>
+    if j = k then L i k
+    else if i = j then 1 else 0
+
+/-- Prefix product of the first `r` factors in the exact factorization
+`L = L_1 ... L_n` from (8.12). -/
+noncomputable def higham8_12_lowerColumnProductPrefix (n : ℕ)
+    (L : Fin n → Fin n → ℝ) : (r : ℕ) → r ≤ n → Fin n → Fin n → ℝ
+  | 0, _ => idMatrix n
+  | r + 1, hr =>
+      matMul n (higham8_12_lowerColumnProductPrefix n L r (Nat.le_of_succ_le hr))
+        (higham8_12_lowerColumnFactor n L ⟨r, hr⟩)
+
+/-- Full exact product of the column factors in (8.12). -/
+noncomputable def higham8_12_lowerColumnProduct (n : ℕ)
+    (L : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  higham8_12_lowerColumnProductPrefix n L n (le_refl n)
+
+/-- Prefix invariant for the exact column-factor product: after multiplying the
+first `r` factors, the first `r` columns agree with `L` and the remaining
+columns are still those of the identity. -/
+theorem higham8_12_lowerColumnProductPrefix_apply (n : ℕ)
+    (L : Fin n → Fin n → ℝ)
+    (hLT : ∀ i j : Fin n, i.val < j.val → L i j = 0) :
+    ∀ (r : ℕ) (hr : r ≤ n) (i j : Fin n),
+      higham8_12_lowerColumnProductPrefix n L r hr i j =
+        if j.val < r then L i j else idMatrix n i j := by
+  intro r
+  induction r with
+  | zero =>
+      intro hr i j
+      simp [higham8_12_lowerColumnProductPrefix]
+  | succ r ih =>
+      intro hr i j
+      have hri : r < n := hr
+      unfold higham8_12_lowerColumnProductPrefix
+      unfold matMul
+      by_cases hjr : j.val = r
+      · have hj_eq_col : j = (⟨r, hr⟩ : Fin n) := Fin.ext hjr
+        have hsum :
+            (∑ k : Fin n,
+              higham8_12_lowerColumnProductPrefix n L r (Nat.le_of_succ_le hr) i k *
+                higham8_12_lowerColumnFactor n L ⟨r, hr⟩ k j) =
+              higham8_12_lowerColumnProductPrefix n L r (Nat.le_of_succ_le hr) i i *
+                higham8_12_lowerColumnFactor n L ⟨r, hr⟩ i j := by
+          apply Finset.sum_eq_single i
+          · intro k _ hk
+            by_cases hkr : k.val < r
+            · have hLkr : L k (⟨r, hr⟩ : Fin n) = 0 := hLT k ⟨r, hr⟩ hkr
+              rw [ih (Nat.le_of_succ_le hr) i k]
+              simp [higham8_12_lowerColumnFactor, hj_eq_col, hkr, hLkr]
+            · have hik : i ≠ k := by exact Ne.symm hk
+              rw [ih (Nat.le_of_succ_le hr) i k]
+              simp [higham8_12_lowerColumnFactor, hj_eq_col, hkr, hik, idMatrix]
+          · intro hi
+            exact (hi (Finset.mem_univ i)).elim
+        rw [hsum]
+        rw [ih (Nat.le_of_succ_le hr) i i]
+        by_cases hir : i.val < r
+        · have hLij : L i (⟨r, hr⟩ : Fin n) = 0 := hLT i ⟨r, hr⟩ hir
+          simp [higham8_12_lowerColumnFactor, hj_eq_col, hir, hLij]
+        · simp [higham8_12_lowerColumnFactor, hj_eq_col, hir, idMatrix]
+      · by_cases hjlt : j.val < r
+        ·
+          have hj_ne_col : j ≠ (⟨r, hr⟩ : Fin n) := by
+            intro h
+            exact hjr (congrArg Fin.val h)
+          have hfactor_j :
+              higham8_12_lowerColumnFactor n L ⟨r, hr⟩ j j = 1 := by
+            simp [higham8_12_lowerColumnFactor, hj_ne_col]
+          have hsum :
+            (∑ k : Fin n,
+              higham8_12_lowerColumnProductPrefix n L r (Nat.le_of_succ_le hr) i k *
+                higham8_12_lowerColumnFactor n L ⟨r, hr⟩ k j) =
+              higham8_12_lowerColumnProductPrefix n L r (Nat.le_of_succ_le hr) i j := by
+            calc
+              (∑ k : Fin n,
+                higham8_12_lowerColumnProductPrefix n L r (Nat.le_of_succ_le hr) i k *
+                  higham8_12_lowerColumnFactor n L ⟨r, hr⟩ k j)
+                  =
+                higham8_12_lowerColumnProductPrefix n L r (Nat.le_of_succ_le hr) i j *
+                  higham8_12_lowerColumnFactor n L ⟨r, hr⟩ j j := by
+                    apply Finset.sum_eq_single j
+                    · intro k _ hk
+                      have hkj : k ≠ j := hk
+                      rw [ih (Nat.le_of_succ_le hr) i k]
+                      by_cases hkr : k.val < r
+                      · simp [higham8_12_lowerColumnFactor, hj_ne_col, hkj, hkr]
+                      · simp [higham8_12_lowerColumnFactor, hj_ne_col, hkj, hkr]
+                    · intro hj
+                      exact (hj (Finset.mem_univ j)).elim
+              _ = higham8_12_lowerColumnProductPrefix n L r (Nat.le_of_succ_le hr) i j := by
+                    rw [hfactor_j, mul_one]
+          rw [hsum, ih (Nat.le_of_succ_le hr) i j]
+          simp [hjlt, Nat.lt_trans hjlt (Nat.lt_succ_self r)]
+        ·
+          have hjgt : r < j.val := by omega
+          have hj_ne_col : j ≠ (⟨r, hr⟩ : Fin n) := by
+            intro h
+            exact hjr (congrArg Fin.val h)
+          have hfactor_j :
+              higham8_12_lowerColumnFactor n L ⟨r, hr⟩ j j = 1 := by
+            simp [higham8_12_lowerColumnFactor, hj_ne_col]
+          have hsum :
+            (∑ k : Fin n,
+              higham8_12_lowerColumnProductPrefix n L r (Nat.le_of_succ_le hr) i k *
+                higham8_12_lowerColumnFactor n L ⟨r, hr⟩ k j) =
+              higham8_12_lowerColumnProductPrefix n L r (Nat.le_of_succ_le hr) i j := by
+            calc
+              (∑ k : Fin n,
+                higham8_12_lowerColumnProductPrefix n L r (Nat.le_of_succ_le hr) i k *
+                  higham8_12_lowerColumnFactor n L ⟨r, hr⟩ k j)
+                  =
+                higham8_12_lowerColumnProductPrefix n L r (Nat.le_of_succ_le hr) i j *
+                  higham8_12_lowerColumnFactor n L ⟨r, hr⟩ j j := by
+                    apply Finset.sum_eq_single j
+                    · intro k _ hk
+                      have hkj : k ≠ j := hk
+                      rw [ih (Nat.le_of_succ_le hr) i k]
+                      by_cases hkr : k.val < r
+                      · simp [higham8_12_lowerColumnFactor, hj_ne_col, hkj, hkr]
+                      · simp [higham8_12_lowerColumnFactor, hj_ne_col, hkj, hkr]
+                    · intro hj
+                      exact (hj (Finset.mem_univ j)).elim
+              _ = higham8_12_lowerColumnProductPrefix n L r (Nat.le_of_succ_le hr) i j := by
+                    rw [hfactor_j, mul_one]
+          rw [hsum, ih (Nat.le_of_succ_le hr) i j]
+          have hjnotr : ¬ j.val < r := by omega
+          have hjnotrs : ¬ j.val < r + 1 := by omega
+          simp [hjnotr, hjnotrs]
+
+/-- **Equation (8.12)** exact factorization: every lower-triangular matrix is the
+product of its column factors `L_1 ... L_n`. -/
+theorem higham8_12_lowerColumnProduct_eq (n : ℕ)
+    (L : Fin n → Fin n → ℝ)
+    (hLT : ∀ i j : Fin n, i.val < j.val → L i j = 0) :
+    higham8_12_lowerColumnProduct n L = L := by
+  ext i j
+  unfold higham8_12_lowerColumnProduct
+  rw [higham8_12_lowerColumnProductPrefix_apply n L hLT n (le_refl n) i j]
+  have hj : j.val < n := j.isLt
+  simp [hj]
+
+/-- **Equation (8.13)**, source's displayed `n = 7` fan-in matrix product
+shape before rounding errors are introduced. -/
+noncomputable def higham8_13_fanIn7Matrix (n : ℕ)
+    (M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ) :
+    Fin n → Fin n → ℝ :=
+  matMul n
+    (matMul n (matMul n M7 M6) (matMul n M5 M4))
+    (matMul n (matMul n M3 M2) M1)
+
+/-- **Equation (8.13)**, applying the displayed `n = 7` fan-in product to the
+right-hand side vector. -/
+noncomputable def higham8_13_fanIn7Apply (n : ℕ)
+    (M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ) (b : Fin n → ℝ) :
+    Fin n → ℝ :=
+  matMulVec n (higham8_13_fanIn7Matrix n M1 M2 M3 M4 M5 M6 M7) b
+
+/-- Left-associated reference product for the same seven matrices. -/
+noncomputable def higham8_13_sequential7Matrix (n : ℕ)
+    (M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ) :
+    Fin n → Fin n → ℝ :=
+  matMul n
+    (matMul n
+      (matMul n
+        (matMul n
+          (matMul n (matMul n M7 M6) M5) M4) M3) M2) M1
+
+/-- **Equation (8.13)** exact-arithmetic support: the displayed fan-in tree is
+only a parenthesization of the same exact matrix product.  The rounded fan-in
+expansion and residual bounds `(8.14)`--`(8.20)` remain separate rounding rows. -/
+theorem higham8_13_fanIn7Matrix_eq_sequential7Matrix (n : ℕ)
+    (M1 M2 M3 M4 M5 M6 M7 : Fin n → Fin n → ℝ) :
+    higham8_13_fanIn7Matrix n M1 M2 M3 M4 M5 M6 M7 =
+      higham8_13_sequential7Matrix n M1 M2 M3 M4 M5 M6 M7 := by
+  unfold higham8_13_fanIn7Matrix higham8_13_sequential7Matrix
+  rw [← matMul_assoc n (matMul n (matMul n M7 M6) (matMul n M5 M4))
+    (matMul n M3 M2) M1]
+  rw [← matMul_assoc n (matMul n (matMul n M7 M6) (matMul n M5 M4)) M3 M2]
+  rw [← matMul_assoc n (matMul n M7 M6) M5 M4]
+
+/-- **Equation (8.14)**, rounded `n = 7` fan-in matrix expression.
+
+The displayed first-order analysis writes the computed tree in terms of
+perturbations of the local matrix products.  This definition records the exact
+algebraic expression before bounding the perturbation matrices. -/
+noncomputable def higham8_14_fanIn7RoundedMatrix (n : ℕ)
+    (M1 M2 M3 M4 M5 M6 M7 Δ1 Δ32 Δ54 Δ76 Δ7654 :
+      Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  matMul n
+    (fun i j =>
+      matMul n
+        (fun i j => matMul n M7 M6 i j + Δ76 i j)
+        (fun i j => matMul n M5 M4 i j + Δ54 i j) i j +
+        Δ7654 i j)
+    (matMul n
+      (fun i j => matMul n M3 M2 i j + Δ32 i j)
+      (fun i j => M1 i j + Δ1 i j))
+
+/-- **Equation (8.14)**, rounded `n = 7` fan-in expression applied to the
+right-hand side vector. -/
+noncomputable def higham8_14_fanIn7RoundedApply (n : ℕ)
+    (M1 M2 M3 M4 M5 M6 M7 Δ1 Δ32 Δ54 Δ76 Δ7654 :
+      Fin n → Fin n → ℝ) (b : Fin n → ℝ) : Fin n → ℝ :=
+  matMulVec n
+    (higham8_14_fanIn7RoundedMatrix n
+      M1 M2 M3 M4 M5 M6 M7 Δ1 Δ32 Δ54 Δ76 Δ7654)
+    b
+
+/-- **Equation (8.18), finite-product form**: a componentwise perturbation
+bound for the fan-in product gives a componentwise forward-error bound after
+applying the product to `b`. -/
+theorem higham8_18_fanIn_forward_componentwise_bound (n m : ℕ)
+    (M ΔM : Fin m → Fin n → Fin n → ℝ) (δ : Fin m → ℝ)
+    (b : Fin n → ℝ)
+    (hδ : ∀ r, 0 ≤ δ r)
+    (hΔ : ∀ r i j, |ΔM r i j| ≤ δ r * |M r i j|) :
+    ∀ i : Fin n,
+      |matMulVec n (matSeqProd n m (fun r i j => M r i j + ΔM r i j)) b i -
+        matMulVec n (matSeqProd n m M) b i| ≤
+        matMulVec n
+          (fun i j =>
+            (scalarSeqProd m (fun r => 1 + δ r) - 1) *
+              matSeqProd n m (fun r => absMatrix n (M r)) i j)
+          (absVec n b) i := by
+  intro i
+  have hprod :=
+    matSeqProd_componentwise_perturbation_bound n m M ΔM δ hδ hΔ
+  unfold matMulVec
+  calc
+    |(∑ j : Fin n,
+        matSeqProd n m (fun r i j => M r i j + ΔM r i j) i j * b j) -
+        ∑ j : Fin n, matSeqProd n m M i j * b j|
+        =
+          |∑ j : Fin n,
+            (matSeqProd n m (fun r i j => M r i j + ΔM r i j) i j -
+              matSeqProd n m M i j) * b j| := by
+            congr 1
+            rw [← Finset.sum_sub_distrib]
+            apply Finset.sum_congr rfl
+            intro j _
+            ring
+    _ ≤
+        ∑ j : Fin n,
+          |(matSeqProd n m (fun r i j => M r i j + ΔM r i j) i j -
+            matSeqProd n m M i j) * b j| :=
+          Finset.abs_sum_le_sum_abs _ _
+    _ =
+        ∑ j : Fin n,
+          |matSeqProd n m (fun r i j => M r i j + ΔM r i j) i j -
+            matSeqProd n m M i j| * |b j| := by
+          apply Finset.sum_congr rfl
+          intro j _
+          exact abs_mul
+            (matSeqProd n m (fun r i j => M r i j + ΔM r i j) i j -
+              matSeqProd n m M i j) (b j)
+    _ ≤
+        ∑ j : Fin n,
+          ((scalarSeqProd m (fun r => 1 + δ r) - 1) *
+            matSeqProd n m (fun r => absMatrix n (M r)) i j) * |b j| := by
+          apply Finset.sum_le_sum
+          intro j _
+          exact mul_le_mul_of_nonneg_right (hprod i j) (abs_nonneg (b j))
+    _ =
+        ∑ j : Fin n,
+          ((scalarSeqProd m (fun r => 1 + δ r) - 1) *
+            matSeqProd n m (fun r => absMatrix n (M r)) i j) *
+              absVec n b j := by
+          simp [absVec]
+
+/-- **Equation (8.19)**: relative `∞`-norm forward-error form of the finite
+fan-in product perturbation bound. -/
+theorem higham8_19_fanIn_forward_relative_infNorm_bound (n m : ℕ)
+    (M ΔM : Fin m → Fin n → Fin n → ℝ) (δ : Fin m → ℝ)
+    (b : Fin n → ℝ)
+    (hδ : ∀ r, 0 ≤ δ r)
+    (hΔ : ∀ r i j, |ΔM r i j| ≤ δ r * |M r i j|)
+    (hx : 0 < infNormVec (matMulVec n (matSeqProd n m M) b)) :
+    infNormVec
+      (fun i =>
+        matMulVec n (matSeqProd n m (fun r i j => M r i j + ΔM r i j)) b i -
+          matMulVec n (matSeqProd n m M) b i) /
+        infNormVec (matMulVec n (matSeqProd n m M) b) ≤
+      infNormVec
+        (matMulVec n
+          (fun i j =>
+            (scalarSeqProd m (fun r => 1 + δ r) - 1) *
+              matSeqProd n m (fun r => absMatrix n (M r)) i j)
+          (absVec n b)) /
+        infNormVec (matMulVec n (matSeqProd n m M) b) := by
+  have hnorm :
+      infNormVec
+        (fun i =>
+          matMulVec n (matSeqProd n m (fun r i j => M r i j + ΔM r i j)) b i -
+            matMulVec n (matSeqProd n m M) b i) ≤
+        infNormVec
+          (matMulVec n
+            (fun i j =>
+              (scalarSeqProd m (fun r => 1 + δ r) - 1) *
+                matSeqProd n m (fun r => absMatrix n (M r)) i j)
+            (absVec n b)) := by
+    apply infNormVec_le_of_abs_le
+    · intro i
+      exact le_trans
+        (higham8_18_fanIn_forward_componentwise_bound n m M ΔM δ b hδ hΔ i)
+        (le_trans (le_abs_self _) (abs_le_infNormVec _ i))
+    · exact infNormVec_nonneg _
+  exact div_le_div_of_nonneg_right hnorm (le_of_lt hx)
+
+/-- **Equation (8.15), residual transfer**: any componentwise forward-error
+envelope `E` gives a componentwise residual envelope after multiplying by
+`|L|`. -/
+theorem higham8_15_residual_componentwise_of_forward_error (n : ℕ)
+    (L : Fin n → Fin n → ℝ) (x xhat b E : Fin n → ℝ)
+    (hsolve : matMulVec n L x = b)
+    (hE : ∀ i : Fin n, |xhat i - x i| ≤ E i) :
+    ∀ i : Fin n,
+      |b i - matMulVec n L xhat i| ≤
+        matMulVec n (absMatrix n L) E i := by
+  intro i
+  have hb : b i = matMulVec n L x i := by
+    exact (congrFun hsolve i).symm
+  calc
+    |b i - matMulVec n L xhat i|
+        = |matMulVec n L x i - matMulVec n L xhat i| := by rw [hb]
+    _ =
+        |matMulVec n L (fun j => x j - xhat j) i| := by
+          congr 1
+          unfold matMulVec
+          rw [← Finset.sum_sub_distrib]
+          apply Finset.sum_congr rfl
+          intro j _
+          ring
+    _ ≤ ∑ j : Fin n, |L i j| * |x j - xhat j| :=
+        abs_matMulVec_le n L (fun j => x j - xhat j) i
+    _ ≤ ∑ j : Fin n, |L i j| * E j := by
+        apply Finset.sum_le_sum
+        intro j _
+        exact mul_le_mul_of_nonneg_left
+          (by simpa [abs_sub_comm] using hE j) (abs_nonneg (L i j))
+    _ = matMulVec n (absMatrix n L) E i := by
+        simp [matMulVec, absMatrix]
+
+/-- **Equations (8.15)--(8.16), fan-in residual bound**: applying the
+finite-product forward envelope from (8.18) to `L x = b` yields the
+componentwise residual bound used before taking norms. -/
+theorem higham8_15_fanIn_residual_componentwise_bound (n m : ℕ)
+    (L : Fin n → Fin n → ℝ)
+    (M ΔM : Fin m → Fin n → Fin n → ℝ) (δ : Fin m → ℝ)
+    (b : Fin n → ℝ)
+    (hδ : ∀ r, 0 ≤ δ r)
+    (hΔ : ∀ r i j, |ΔM r i j| ≤ δ r * |M r i j|)
+    (hsolve :
+      matMulVec n L (matMulVec n (matSeqProd n m M) b) = b) :
+    ∀ i : Fin n,
+      |b i -
+        matMulVec n L
+          (matMulVec n (matSeqProd n m (fun r i j => M r i j + ΔM r i j)) b) i| ≤
+        matMulVec n (absMatrix n L)
+          (matMulVec n
+            (fun i j =>
+              (scalarSeqProd m (fun r => 1 + δ r) - 1) *
+                matSeqProd n m (fun r => absMatrix n (M r)) i j)
+            (absVec n b)) i := by
+  let x : Fin n → ℝ := matMulVec n (matSeqProd n m M) b
+  let xhat : Fin n → ℝ :=
+    matMulVec n (matSeqProd n m (fun r i j => M r i j + ΔM r i j)) b
+  let E : Fin n → ℝ :=
+    matMulVec n
+      (fun i j =>
+        (scalarSeqProd m (fun r => 1 + δ r) - 1) *
+          matSeqProd n m (fun r => absMatrix n (M r)) i j)
+      (absVec n b)
+  have hE : ∀ i : Fin n, |xhat i - x i| ≤ E i := by
+    intro i
+    simpa [x, xhat, E, abs_sub_comm] using
+      higham8_18_fanIn_forward_componentwise_bound n m M ΔM δ b hδ hΔ i
+  simpa [x, xhat, E] using
+    higham8_15_residual_componentwise_of_forward_error n L x xhat b E hsolve hE
+
+/-- **Equation (8.16)**: the `∞`-norm form of the fan-in residual bound. -/
+theorem higham8_16_fanIn_residual_infNorm_bound (n m : ℕ)
+    (L : Fin n → Fin n → ℝ)
+    (M ΔM : Fin m → Fin n → Fin n → ℝ) (δ : Fin m → ℝ)
+    (b : Fin n → ℝ)
+    (hδ : ∀ r, 0 ≤ δ r)
+    (hΔ : ∀ r i j, |ΔM r i j| ≤ δ r * |M r i j|)
+    (hsolve :
+      matMulVec n L (matMulVec n (matSeqProd n m M) b) = b) :
+    infNormVec
+      (fun i =>
+        b i -
+          matMulVec n L
+            (matMulVec n (matSeqProd n m (fun r i j => M r i j + ΔM r i j)) b) i) ≤
+      infNormVec
+        (matMulVec n (absMatrix n L)
+          (matMulVec n
+            (fun i j =>
+              (scalarSeqProd m (fun r => 1 + δ r) - 1) *
+                matSeqProd n m (fun r => absMatrix n (M r)) i j)
+            (absVec n b))) := by
+  apply infNormVec_le_of_abs_le
+  · intro i
+    exact le_trans
+      (higham8_15_fanIn_residual_componentwise_bound n m L M ΔM δ b hδ hΔ hsolve i)
+      (le_trans (le_abs_self _)
+        (abs_le_infNormVec _ i))
+  · exact infNormVec_nonneg _
+
+/-- **Equation (8.17) support**: rank-one backward perturbation built from a
+residual vector and one nonzero component of the computed solution. -/
+noncomputable def higham8_17_rankOneBackwardDelta {n : ℕ}
+    (r xhat : Fin n → ℝ) (j0 : Fin n) : Fin n → Fin n → ℝ :=
+  fun i j => if j = j0 then r i / xhat j0 else 0
+
+/-- **Equation (8.17) support**: the rank-one correction maps `xhat` to the
+specified residual. -/
+theorem higham8_17_rankOneBackwardDelta_mulVec {n : ℕ}
+    (r xhat : Fin n → ℝ) (j0 : Fin n) (hxj0 : xhat j0 ≠ 0) :
+    matMulVec n (higham8_17_rankOneBackwardDelta r xhat j0) xhat = r := by
+  ext i
+  unfold matMulVec higham8_17_rankOneBackwardDelta
+  simp [hxj0]
+
+/-- **Equation (8.17) support**: infinity-norm size of the rank-one backward
+correction. -/
+theorem higham8_17_rankOneBackwardDelta_infNorm_le {n : ℕ}
+    (r xhat : Fin n → ℝ) (j0 : Fin n) :
+    infNorm (higham8_17_rankOneBackwardDelta r xhat j0) ≤
+      infNormVec r / |xhat j0| := by
+  apply infNorm_le_of_row_sum_le
+  · intro i
+    unfold higham8_17_rankOneBackwardDelta
+    calc
+      ∑ j : Fin n, |(if j = j0 then r i / xhat j0 else 0)|
+          = |r i / xhat j0| := by
+            rw [Finset.sum_eq_single j0]
+            · simp
+            · intro j _ hj
+              simp [hj]
+            · intro hj
+              exact (hj (Finset.mem_univ j0)).elim
+      _ = |r i| / |xhat j0| := by
+            rw [abs_div]
+      _ ≤ infNormVec r / |xhat j0| :=
+            div_le_div_of_nonneg_right (abs_le_infNormVec r i) (abs_nonneg _)
+  · exact div_nonneg (infNormVec_nonneg r) (abs_nonneg _)
+
+/-- **Equation (8.17)**: a residual bound gives a normwise backward-error
+perturbation `(L + ΔL) xhat = b`.  Choosing `j0` as a maximum component of
+`xhat` turns the denominator into `‖xhat‖∞`, matching the source's
+normwise-backward-error route. -/
+theorem higham8_17_backward_error_from_residual_infNorm_bound (n : ℕ)
+    (L : Fin n → Fin n → ℝ) (xhat b : Fin n → ℝ)
+    (j0 : Fin n) (hxj0 : xhat j0 ≠ 0) (ρ : ℝ)
+    (hρ :
+      infNormVec (fun i => b i - matMulVec n L xhat i) / |xhat j0| ≤ ρ) :
+    ∃ ΔL : Fin n → Fin n → ℝ,
+      matMulVec n (fun i j => L i j + ΔL i j) xhat = b ∧
+        infNorm ΔL ≤ ρ := by
+  let r : Fin n → ℝ := fun i => b i - matMulVec n L xhat i
+  let ΔL : Fin n → Fin n → ℝ := higham8_17_rankOneBackwardDelta r xhat j0
+  refine ⟨ΔL, ?_, ?_⟩
+  · ext i
+    have hdelta :=
+      congrFun (higham8_17_rankOneBackwardDelta_mulVec r xhat j0 hxj0) i
+    calc
+      matMulVec n (fun i j => L i j + ΔL i j) xhat i
+          = matMulVec n L xhat i + matMulVec n ΔL xhat i := by
+            exact congrFun (matMulVec_add_left n L ΔL xhat) i
+      _ = matMulVec n L xhat i + r i := by
+            rw [hdelta]
+      _ = b i := by
+            dsimp [r]
+            ring_nf
+  · exact le_trans (higham8_17_rankOneBackwardDelta_infNorm_le r xhat j0) hρ
+
+/-- **Equation (8.20) support**: the source residual envelope before the final
+left multiplication by `|L⁻¹|`, namely `|L||L⁻¹||L||L⁻¹||L|`. -/
+noncomputable def higham8_15_residualCubeBase (n : ℕ)
+    (L L_inv : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  matMul n (absMatrix n L)
+    (matMul n (absMatrix n L_inv)
+      (matMul n (absMatrix n L)
+        (matMul n (absMatrix n L_inv) (absMatrix n L))))
+
+/-- **Equation (8.20) support**: the condition-cubing matrix
+`(|L⁻¹||L|)^3`. -/
+noncomputable def higham8_20_absCondCube (n : ℕ)
+    (L L_inv : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  matMul n (absMatrix n L_inv) (higham8_15_residualCubeBase n L L_inv)
+
+/-- **Equation (8.20) support**: a residual componentwise envelope transfers to
+a forward componentwise envelope by multiplying by `|L⁻¹|`. -/
+theorem higham8_20_forward_componentwise_of_residual_bound (n : ℕ)
+    (L L_inv : Fin n → Fin n → ℝ) (x xhat b Eres : Fin n → ℝ)
+    (hLeft : IsLeftInverse n L L_inv)
+    (hsolve : matMulVec n L x = b)
+    (hres : ∀ i : Fin n, |b i - matMulVec n L xhat i| ≤ Eres i) :
+    ∀ i : Fin n,
+      |x i - xhat i| ≤ matMulVec n (absMatrix n L_inv) Eres i := by
+  let r : Fin n → ℝ := fun k => b k - matMulVec n L xhat k
+  let d : Fin n → ℝ := fun j => x j - xhat j
+  have hr : r = matMulVec n L d := by
+    ext i
+    dsimp [r, d]
+    rw [← congrFun hsolve i]
+    unfold matMulVec
+    rw [← Finset.sum_sub_distrib]
+    apply Finset.sum_congr rfl
+    intro j _
+    ring
+  have hmat : matMul n L_inv L = idMatrix n := by
+    ext i j
+    exact hLeft i j
+  have hd : d = matMulVec n L_inv r := by
+    rw [hr]
+    ext i
+    rw [← matMulVec_matMul n L_inv L d i]
+    rw [hmat, matMulVec_id]
+  intro i
+  calc
+    |x i - xhat i| = |d i| := rfl
+    _ = |matMulVec n L_inv r i| := by rw [hd]
+    _ ≤ ∑ j : Fin n, |L_inv i j| * |r j| :=
+        abs_matMulVec_le n L_inv r i
+    _ ≤ ∑ j : Fin n, |L_inv i j| * Eres j := by
+        apply Finset.sum_le_sum
+        intro j _
+        exact mul_le_mul_of_nonneg_left (hres j) (abs_nonneg (L_inv i j))
+    _ = matMulVec n (absMatrix n L_inv) Eres i := by
+        simp [matMulVec, absMatrix]
+
+/-- **Equation (8.20) support**: normwise residual-to-forward transfer. -/
+theorem higham8_20_forward_relative_infNorm_of_residual_bound (n : ℕ)
+    (L L_inv : Fin n → Fin n → ℝ) (x xhat b Eres : Fin n → ℝ)
+    (hLeft : IsLeftInverse n L L_inv)
+    (hsolve : matMulVec n L x = b)
+    (hres : ∀ i : Fin n, |b i - matMulVec n L xhat i| ≤ Eres i)
+    (hx : 0 < infNormVec x) :
+    infNormVec (fun i => x i - xhat i) / infNormVec x ≤
+      infNormVec (matMulVec n (absMatrix n L_inv) Eres) / infNormVec x := by
+  have hnorm :
+      infNormVec (fun i => x i - xhat i) ≤
+        infNormVec (matMulVec n (absMatrix n L_inv) Eres) := by
+    apply infNormVec_le_of_abs_le
+    · intro i
+      exact le_trans
+        (higham8_20_forward_componentwise_of_residual_bound
+          n L L_inv x xhat b Eres hLeft hsolve hres i)
+        (le_trans (le_abs_self _) (abs_le_infNormVec _ i))
+    · exact infNormVec_nonneg _
+  exact div_le_div_of_nonneg_right hnorm (le_of_lt hx)
+
+/-- **Equation (8.20) support**: moving the residual scalar through the final
+left multiplication exposes the explicit condition-cubing matrix. -/
+theorem higham8_20_condition_cube_envelope_eq (n : ℕ)
+    (L L_inv : Fin n → Fin n → ℝ) (ρ : ℝ) (x : Fin n → ℝ) :
+    matMulVec n (absMatrix n L_inv)
+      (fun k =>
+        ρ * matMulVec n (higham8_15_residualCubeBase n L L_inv) (absVec n x) k) =
+      fun i => ρ * matMulVec n (higham8_20_absCondCube n L L_inv) (absVec n x) i := by
+  ext i
+  calc
+    matMulVec n (absMatrix n L_inv)
+        (fun k =>
+          ρ * matMulVec n (higham8_15_residualCubeBase n L L_inv) (absVec n x) k) i
+        =
+          ρ * matMulVec n (absMatrix n L_inv)
+            (matMulVec n (higham8_15_residualCubeBase n L L_inv) (absVec n x)) i := by
+          unfold matMulVec
+          rw [Finset.mul_sum]
+          apply Finset.sum_congr rfl
+          intro j _
+          ring
+    _ =
+        ρ * matMulVec n
+          (matMul n (absMatrix n L_inv) (higham8_15_residualCubeBase n L L_inv))
+          (absVec n x) i := by
+        rw [matMulVec_matMul n (absMatrix n L_inv)
+          (higham8_15_residualCubeBase n L L_inv) (absVec n x) i]
+    _ =
+        ρ * matMulVec n (higham8_20_absCondCube n L L_inv) (absVec n x) i := rfl
+
+/-- **Equation (8.20)**: if the residual has the source componentwise envelope
+`ρ |L||L⁻¹||L||L⁻¹||L| |x|`, then the forward error has the condition-cubing
+envelope `ρ (|L⁻¹||L|)^3 |x|`. -/
+theorem higham8_20_condition_cubing_componentwise_bound (n : ℕ)
+    (L L_inv : Fin n → Fin n → ℝ) (x xhat b : Fin n → ℝ) (ρ : ℝ)
+    (hLeft : IsLeftInverse n L L_inv)
+    (hsolve : matMulVec n L x = b)
+    (hres : ∀ i : Fin n,
+      |b i - matMulVec n L xhat i| ≤
+        ρ * matMulVec n (higham8_15_residualCubeBase n L L_inv)
+          (absVec n x) i) :
+    ∀ i : Fin n,
+      |x i - xhat i| ≤
+        ρ * matMulVec n (higham8_20_absCondCube n L L_inv) (absVec n x) i := by
+  have hforward :=
+    higham8_20_forward_componentwise_of_residual_bound n L L_inv x xhat b
+      (fun i =>
+        ρ * matMulVec n (higham8_15_residualCubeBase n L L_inv) (absVec n x) i)
+      hLeft hsolve hres
+  intro i
+  calc
+    |x i - xhat i| ≤
+        matMulVec n (absMatrix n L_inv)
+          (fun k =>
+            ρ * matMulVec n (higham8_15_residualCubeBase n L L_inv) (absVec n x) k) i :=
+        hforward i
+    _ =
+        ρ * matMulVec n (higham8_20_absCondCube n L L_inv) (absVec n x) i := by
+        rw [higham8_20_condition_cube_envelope_eq]
+
+/-- **Equation (8.20)**, relative `∞`-norm condition-cubing form. -/
+theorem higham8_20_condition_cubing_relative_infNorm_bound (n : ℕ)
+    (L L_inv : Fin n → Fin n → ℝ) (x xhat b : Fin n → ℝ) (ρ : ℝ)
+    (hLeft : IsLeftInverse n L L_inv)
+    (hsolve : matMulVec n L x = b)
+    (hres : ∀ i : Fin n,
+      |b i - matMulVec n L xhat i| ≤
+        ρ * matMulVec n (higham8_15_residualCubeBase n L L_inv)
+          (absVec n x) i)
+    (hx : 0 < infNormVec x) :
+    infNormVec (fun i => x i - xhat i) / infNormVec x ≤
+      infNormVec
+        (fun i =>
+          ρ * matMulVec n (higham8_20_absCondCube n L L_inv) (absVec n x) i) /
+        infNormVec x := by
+  have hnorm :
+      infNormVec (fun i => x i - xhat i) ≤
+        infNormVec
+          (fun i =>
+            ρ * matMulVec n (higham8_20_absCondCube n L L_inv) (absVec n x) i) := by
+    apply infNormVec_le_of_abs_le
+    · intro i
+      exact le_trans
+        (higham8_20_condition_cubing_componentwise_bound
+          n L L_inv x xhat b ρ hLeft hsolve hres i)
+        (le_trans (le_abs_self _)
+          (abs_le_infNormVec
+            (fun i =>
+              ρ * matMulVec n (higham8_20_absCondCube n L L_inv) (absVec n x) i)
+            i))
+    · exact infNormVec_nonneg _
+  exact div_le_div_of_nonneg_right hnorm (le_of_lt hx)
+
 /-- **Problem 8.7(a)**: the strict row-diagonal-dominance margin of row `i`. -/
 noncomputable def higham8_7_rowDiagMargin {n : ℕ}
     (A : Fin n → Fin n → ℝ) (i : Fin n) : ℝ :=
@@ -3123,7 +5974,7 @@ private theorem higham8_7_scaled_vector_bound {n : ℕ} (hn : 0 < n)
       _ = |matMulVec n A x i0 - ∑ j ∈ Finset.univ.erase i0, A i0 j * x j| := by
           unfold matMulVec
           rw [hsplit]
-          ring
+          ring_nf
       _ ≤ |matMulVec n A x i0| + |∑ j ∈ Finset.univ.erase i0, A i0 j * x j| := by
           simpa using (abs_sub (matMulVec n A x i0)
             (∑ j ∈ Finset.univ.erase i0, A i0 j * x j))
@@ -3234,7 +6085,7 @@ theorem higham8_7_scaledStrictRowDiagDominant_invInfNorm_le (n : ℕ) (hn : 0 < 
       unfold matMulVec s
       apply Finset.sum_congr rfl
       intro j _
-      simpa using (self_mul_sign (A_inv i j))
+      simp [self_mul_sign (A_inv i j)]
     have hprod : matMul n A A_inv = idMatrix n := by
       ext r c
       simpa [matMul, idMatrix] using hInv.2 r c
@@ -3364,7 +6215,7 @@ theorem higham8_7_comparisonInverseOnes_infNorm_ge_inverseInfNorm (n : ℕ) (hn 
                 intro j hj
                 simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hj
                 unfold comparisonMatrix
-                simp [show i ≠ j from Fin.ne_of_val_ne (by omega), hj]
+                simp [show i ≠ j from Fin.ne_of_val_ne (by omega)]
     have hrow :=
       higham8_13_comparison_inverse_row_recurrence n U M_inv hUT hU_diag hM_RInv i
     unfold higham8_13_y at hrow
@@ -3396,6 +6247,62 @@ theorem higham8_7_comparisonInverseOnes_infNorm_ge_inverseInfNorm (n : ℕ) (hn 
   exact le_trans hU_bound hM_bound'
 
 /-! ## Problems -/
+
+/-- **Problem 8.1 support**: no-guard subtraction-fold unroll with separate
+accumulator and subtrahend perturbations from Higham model (2.6).  This is the
+fold-level algebra needed for the modified Lemma 8.2 row proof. -/
+theorem higham8_problem8_1_noGuard_sub_fold_unroll (fp : NoGuardFPModel)
+    (m : ℕ) (a : Fin m → ℝ) (c : ℝ) :
+    ∃ (α β : Fin m → ℝ),
+      (∀ k, |α k| < fp.u) ∧
+      (∀ k, |β k| < fp.u) ∧
+      Fin.foldl m (fun acc t => fp.fl_sub acc (a t)) c =
+        c * ∏ k : Fin m, (1 + α k) -
+          ∑ t : Fin m, a t * (1 + β t) *
+            ∏ k : Fin m, if t.val < k.val then (1 + α k) else 1 :=
+  noGuard_sub_fold_unroll fp m a c
+
+/-- **Problem 8.1 / modified Lemma 8.2**, scalar row form under Higham's
+no-guard-digit model (2.6).  The right-hand-side term `c` is unperturbed; the
+diagonal factor is bounded by `γ_(m+1)` and the zero-based `t`th product term by
+`γ_(t+3)`, matching the source's one-based `θ_(i+2)` indexing. -/
+theorem higham8_problem8_1_noGuard_mulSub_div_row_tight (fp : NoGuardFPModel)
+    (m : ℕ) (a x : Fin m → ℝ) (c bk : ℝ) (hbk : bk ≠ 0)
+    (hγ : noGuardGammaValid fp (m + 2)) :
+    let fold :=
+      Fin.foldl m (fun acc t => fp.fl_sub acc (fp.fl_mul (a t) (x t))) c
+    ∃ (θdiag : ℝ) (η : Fin m → ℝ),
+      |θdiag| ≤ noGuardGamma fp (m + 1) ∧
+      (∀ t, |η t| ≤ noGuardGamma fp (t.val + 3)) ∧
+      bk * fp.fl_div fold bk * (1 + θdiag) =
+        c - ∑ t : Fin m, a t * x t * (1 + η t) :=
+  noGuard_mulSub_div_row_tight fp m a x c bk hbk hγ
+
+/-- **Problem 8.1 / modified Theorem 8.5**, upper-triangular no-guard
+substitution: `(U + ΔU)x̂ = b`, with `|ΔU| ≤ γ_(n+1)|U|`. -/
+theorem higham8_problem8_1_noGuard_backSub_backward_error (fp : NoGuardFPModel)
+    (n : ℕ) (U : Fin n → Fin n → ℝ) (b xhat : Fin n → ℝ)
+    (hU : ∀ i, U i i ≠ 0)
+    (hUT : ∀ i j : Fin n, j.val < i.val → U i j = 0)
+    (hn : noGuardGammaValid fp (n + 1))
+    (hrow : NoGuardBackSubSpec fp n U b xhat) :
+    ∃ ΔU : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔU i j| ≤ noGuardGamma fp (n + 1) * |U i j|) ∧
+      ∀ i, ∑ j : Fin n, (U i j + ΔU i j) * xhat j = b i :=
+  noGuard_backSub_backward_error fp n U b xhat hU hUT hn hrow
+
+/-- **Problem 8.1 / modified Theorem 8.5**, lower-triangular no-guard
+substitution: `(L + ΔL)x̂ = b`, with `|ΔL| ≤ γ_(n+1)|L|`. -/
+theorem higham8_problem8_1_noGuard_forwardSub_backward_error (fp : NoGuardFPModel)
+    (n : ℕ) (L : Fin n → Fin n → ℝ) (b xhat : Fin n → ℝ)
+    (hL : ∀ i, L i i ≠ 0)
+    (hLT : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hn : noGuardGammaValid fp (n + 1))
+    (hrow : NoGuardForwardSubSpec fp n L b xhat) :
+    ∃ ΔL : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔL i j| ≤ noGuardGamma fp (n + 1) * |L i j|) ∧
+      ∀ i, ∑ j : Fin n, (L i j + ΔL i j) * xhat j = b i :=
+  noGuard_forwardSub_backward_error fp n L b xhat hL hLT hn hrow
 
 private theorem higham8_8_matMulVec_scaledBasis {n : ℕ}
     (A_inv : Fin n → Fin n → ℝ) (i : Fin n) (alpha xj : ℝ) :

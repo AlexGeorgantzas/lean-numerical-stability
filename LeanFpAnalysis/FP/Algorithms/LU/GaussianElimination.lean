@@ -283,6 +283,21 @@ structure LUBackwardError (n : ℕ) (A L_hat U_hat : Fin n → Fin n → ℝ)
     |∑ k : Fin n, L_hat i k * U_hat k j - A i j| ≤
       ε * ∑ k : Fin n, |L_hat i k| * |U_hat k j|
 
+/-- An exact LU certificate is a zero-coefficient backward-error certificate. -/
+theorem LUFactSpec.to_LUBackwardError_zero {n : ℕ}
+    {A L U : Fin n → Fin n → ℝ}
+    (hLU : LUFactSpec n A L U) :
+    LUBackwardError n A L U 0 where
+  L_diag := hLU.L_diag
+  L_upper_zero := hLU.L_upper_zero
+  U_lower_zero := hLU.U_lower_zero
+  backward_bound := by
+    intro i j
+    calc
+      |∑ k : Fin n, L i k * U k j - A i j|
+          = |A i j - A i j| := by rw [hLU.product_eq i j]
+      _ ≤ 0 * ∑ k : Fin n, |L i k| * |U k j| := by simp
+
 /-- Transfer an LU backward-error certificate from a computed input matrix
 `A_hat` to an exact reference matrix `A` when the input perturbation is measured
 against the same componentwise `|L_hat||U_hat|` weights.  This is the narrow
