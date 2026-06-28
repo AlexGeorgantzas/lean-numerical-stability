@@ -2827,6 +2827,66 @@ theorem qrPanel_R_eq_firstStoredPanelStep_of_first_leadingBlock_det_ne_zero
   qrPanel_R_nonzero_eq_firstStoredPanelStep fp A
     (panelFirstColumn_ne_zero_of_first_leadingBlock_det_ne_zero A hdetLead)
 
+/-- Top-left determinant-specialized projection of the first recursive/stored
+bridge. -/
+theorem panelTopLeft_qrPanel_R_eq_firstStoredPanelStep_of_first_leadingBlock_det_ne_zero
+    (fp : FPModel) {m p : Nat}
+    (A : Fin (m + 1) -> Fin (p + 1) -> Real)
+    (hdetLead :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le m))
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0) :
+    panelTopLeft (fl_householderQRPanel_R fp (m + 1) (p + 1) A) =
+      (let v := fl_householderNormalizedVector fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A)
+       let S := fl_householderStoredPanelStep fp (m + 1) (p + 1) 0 v 1 A
+       panelTopLeft S) :=
+  panelTopLeft_qrPanel_R_nonzero_eq_firstStoredPanelStep fp A
+    (panelFirstColumn_ne_zero_of_first_leadingBlock_det_ne_zero A hdetLead)
+
+/-- Top-row-tail determinant-specialized projection of the first
+recursive/stored bridge. -/
+theorem panelTopRowTail_qrPanel_R_eq_firstStoredPanelStep_of_first_leadingBlock_det_ne_zero
+    (fp : FPModel) {m p : Nat}
+    (A : Fin (m + 1) -> Fin (p + 1) -> Real)
+    (hdetLead :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le m))
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0) :
+    panelTopRowTail (fl_householderQRPanel_R fp (m + 1) (p + 1) A) =
+      (let v := fl_householderNormalizedVector fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A)
+       let S := fl_householderStoredPanelStep fp (m + 1) (p + 1) 0 v 1 A
+       panelTopRowTail S) :=
+  panelTopRowTail_qrPanel_R_nonzero_eq_firstStoredPanelStep fp A
+    (panelFirstColumn_ne_zero_of_first_leadingBlock_det_ne_zero A hdetLead)
+
+/-- Trailing-panel determinant-specialized recurrence for the first
+recursive/stored bridge. -/
+theorem trailingPanel_qrPanel_R_eq_qrPanel_R_firstStoredPanelStep_of_first_leadingBlock_det_ne_zero
+    (fp : FPModel) {m p : Nat}
+    (A : Fin (m + 1) -> Fin (p + 1) -> Real)
+    (hdetLead :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le m))
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0) :
+    trailingPanel (fl_householderQRPanel_R fp (m + 1) (p + 1) A) =
+      (let v := fl_householderNormalizedVector fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A)
+       let S := fl_householderStoredPanelStep fp (m + 1) (p + 1) 0 v 1 A
+       fl_householderQRPanel_R fp m p (trailingPanel S)) :=
+  trailingPanel_qrPanel_R_nonzero_eq_qrPanel_R_firstStoredPanelStep fp A
+    (panelFirstColumn_ne_zero_of_first_leadingBlock_det_ne_zero A hdetLead)
+
 /-- Source-facing nonbreakdown route for the stored Householder QR loop.
 Nonsingular local leading blocks, the stored lower-zero invariant, the source
 sign convention, and a per-pivot square-root component budget imply that the
