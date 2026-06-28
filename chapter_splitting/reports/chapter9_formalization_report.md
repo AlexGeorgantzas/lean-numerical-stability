@@ -4409,6 +4409,31 @@ Schur-induction/spectral-radius theorem.
 | `lake env lean --stdin` with fully qualified `#print axioms` for the two source linear-step declarations | PASS; both report only `propext`, `Classical.choice`, and `Quot.sound` |
 | focused implementation/lookup placeholder/local-placeholder/temp-file scans plus repo-local `git diff --check` | PASS after the source linear-step update; implementation, docs, and lookup scans had no matches, no temporary axiom/probe files remain, and whitespace diff check passed |
 
+## 2026-06-28 Theorem 9.15 Factorization Linear-Step Handoffs
+
+Lifted the source split linear-step residual handoffs through the original
+factorization equations:
+
+- `higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_of_matrix_inverse_identities`
+- `higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm`
+- `higham9_15_normwise_source_bound_of_factorization_Gtilde_init_linear_step_opNorm_of_matrix_inverse_identities`
+- `higham9_15_normwise_source_bound_of_factorization_Gtilde_init_linear_step_opNorm`
+
+The matrix-inverse versions derive the normalized `I + G` and `I - Gtilde`
+split identities from the original exact perturbed factorization equations.
+The source-oriented versions assume only the displayed source inverse
+identities and recover the opposite inverse identities internally.  The
+remaining nonzero-residual Barrlund--Sun Schur-induction/spectral-radius
+theorem is still explicit as the principal-block linearized-step hypothesis.
+
+| Command | Result |
+| --- | --- |
+| `lake env lean LeanFpAnalysis/FP/Algorithms/HighamChapter9.lean` | PASS after adding the four factorization linear-step handoffs |
+| `lake build LeanFpAnalysis.FP.Algorithms.HighamChapter9` | PASS, 3045 jobs, after refreshing the Chapter 9 module for the factorization linear-step handoffs |
+| `lake env lean --tstack=65536 examples/LibraryLookup.lean > /tmp/ch9_lookup_915_factorization_linear_step.out 2>&1` | PASS after adding lookup checks for the four declarations; redirected output has 79403 lines |
+| `lake env lean --stdin` with fully qualified `#print axioms` for the four factorization linear-step declarations | PASS; all four report only `propext`, `Classical.choice`, and `Quot.sound` |
+| focused implementation/lookup placeholder/local-placeholder/temp-file scans plus repo-local `git diff --check` | PASS after the factorization linear-step update; implementation, docs, and lookup scans had no matches, no temporary axiom/probe files remain, and whitespace diff check passed |
+
 No new `sorry`, `admit`, `axiom`, `unsafe`, or `opaque` appears in the touched Lean
 files. Earlier default-stack lookup runs hit the unrelated pre-Chapter-9 IEEE
 stack limit; the unifying pass verified the full lookup file with
