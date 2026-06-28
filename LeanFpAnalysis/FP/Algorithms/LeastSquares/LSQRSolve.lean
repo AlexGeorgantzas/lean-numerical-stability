@@ -9913,6 +9913,109 @@ theorem lsNormwiseBackwardErrorFormulaMatrixSigmaMin_mul_vecNorm2_le_transpose_m
     lsRealRectSigmaMinRow_mul_vecNorm2_le_transpose_mulVec
       (lsNormwiseBackwardErrorFormulaMatrix theta A r y) p
 
+/-- Squared transpose-action expansion for the WKS source block
+    `[A  phi(I-r r^+)]`.  This is the algebraic form needed to compare a
+    candidate left singular vector with the rank-one source-residual witness
+    cost: the two coordinate blocks of the transpose action contribute
+    independently to the squared norm. -/
+theorem lsNormwiseBackwardErrorFormulaMatrix_transpose_vecNorm2Sq_eq
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ)
+    (r : Fin m → ℝ) (y : Fin n → ℝ) (p : Fin m → ℝ) :
+    vecNorm2Sq
+        (rectMatMulVec
+          (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y)) p) =
+      vecNorm2Sq (fun j : Fin n => ∑ i : Fin m, A i j * p i) +
+        (lsNormwiseBackwardErrorPhi theta r y) ^ 2 *
+          vecNorm2Sq
+            (matMulVec m (lsResidualComplementProjector r) p) := by
+  let phi : ℝ := lsNormwiseBackwardErrorPhi theta r y
+  let left : Fin n → ℝ := fun j => ∑ i : Fin m, A i j * p i
+  let right : Fin m → ℝ :=
+    fun k => phi * ∑ i : Fin m, lsResidualComplementProjector r i k * p i
+  have haction :
+      rectMatMulVec
+          (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y)) p =
+        Fin.append left right := by
+    ext q
+    refine Fin.addCases
+      (motive := fun q : Fin (n + m) =>
+        rectMatMulVec
+            (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y)) p q =
+          Fin.append left right q)
+      ?left ?right q
+    · intro j
+      simp [left, rectMatMulVec, finiteTranspose,
+        lsNormwiseBackwardErrorFormulaMatrix, Fin.append_left]
+    · intro k
+      calc
+        rectMatMulVec
+            (finiteTranspose
+              (lsNormwiseBackwardErrorFormulaMatrix theta A r y)) p
+            (Fin.natAdd n k)
+            =
+          ∑ i : Fin m,
+            (phi * lsResidualComplementProjector r i k) * p i := by
+            simp [phi, rectMatMulVec, finiteTranspose,
+              lsNormwiseBackwardErrorFormulaMatrix, Fin.append_right]
+        _ =
+          phi * ∑ i : Fin m, lsResidualComplementProjector r i k * p i := by
+            rw [Finset.mul_sum]
+            apply Finset.sum_congr rfl
+            intro i _
+            ring
+        _ = Fin.append left right (Fin.natAdd n k) := by
+            simp [right, Fin.append_right]
+  have hprojected :
+      (fun k : Fin m =>
+        ∑ i : Fin m, lsResidualComplementProjector r i k * p i) =
+        matMulVec m (lsResidualComplementProjector r) p := by
+    ext k
+    unfold matMulVec
+    apply Finset.sum_congr rfl
+    intro i _
+    rw [lsResidualComplementProjector_symmetric]
+  have hright_sq :
+      vecNorm2Sq right =
+        phi ^ 2 *
+          vecNorm2Sq (matMulVec m (lsResidualComplementProjector r) p) := by
+    have hsmul :
+        vecNorm2Sq
+            (fun k : Fin m =>
+              phi * matMulVec m (lsResidualComplementProjector r) p k) =
+          phi ^ 2 *
+            vecNorm2Sq (matMulVec m (lsResidualComplementProjector r) p) := by
+      simpa using
+        (vecNorm2Sq_smul phi (matMulVec m (lsResidualComplementProjector r) p))
+    calc
+      vecNorm2Sq right =
+          vecNorm2Sq
+            (fun k : Fin m =>
+              phi * matMulVec m (lsResidualComplementProjector r) p k) := by
+            congr 1
+            ext k
+            exact congrArg (fun z : ℝ => phi * z) (congrFun hprojected k)
+      _ =
+          phi ^ 2 *
+            vecNorm2Sq (matMulVec m (lsResidualComplementProjector r) p) :=
+            hsmul
+  calc
+    vecNorm2Sq
+        (rectMatMulVec
+          (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y)) p)
+        = vecNorm2Sq (Fin.append left right) := by
+            rw [haction]
+    _ = vecNorm2Sq left + vecNorm2Sq right :=
+        lsVecNorm2Sq_append left right
+    _ = vecNorm2Sq left +
+        phi ^ 2 * vecNorm2Sq (matMulVec m (lsResidualComplementProjector r) p) := by
+        rw [hright_sq]
+    _ =
+      vecNorm2Sq (fun j : Fin n => ∑ i : Fin m, A i j * p i) +
+        (lsNormwiseBackwardErrorPhi theta r y) ^ 2 *
+          vecNorm2Sq
+            (matMulVec m (lsResidualComplementProjector r) p) := by
+        rfl
+
 theorem lsNormwiseBackwardErrorFormulaMatrixSigmaMin_nonneg
     {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
     (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ) :
