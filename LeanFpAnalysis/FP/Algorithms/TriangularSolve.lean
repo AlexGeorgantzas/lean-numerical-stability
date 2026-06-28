@@ -631,7 +631,9 @@ theorem backSub_backward_error_dual (fp : FPModel) (n : ℕ)
 
     For row i of back substitution, the computed solution satisfies
       b_i = ∑_{j ≥ i} U_ij * (1 + φ_j) * x̂_j
-    where each |φ_j| ≤ γ(n).
+    with the source-sharp constants: the diagonal factor is bounded by
+    `γ(n-i)` in zero-based indexing, and the off-diagonal factor in column
+    `j > i` is bounded by `γ(j-i)`.
 
     Unlike `BackSubRowSpec` (which perturbs b via Θ and ρ), this form
     leaves b_i unperturbed by tracking individual (1+δ) factors through
@@ -648,13 +650,14 @@ theorem backSub_backward_error_dual (fp : FPModel) (n : ℕ)
        where |α_t| ≤ γ(t) by `inv_prod_error_bound` and then = 1+η_t
        with |η_t| ≤ γ(t+1) by `gamma_mul`
     7. All bounds ≤ γ(n-i) ≤ γ(n) -/
-private lemma backSub_row_tight (fp : FPModel) (n : ℕ)
+lemma backSub_row_tight (fp : FPModel) (n : ℕ)
     (U : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
     (hU : ∀ i, U i i ≠ 0)
     (hn : gammaValid fp n)
     (i : Fin n) :
     ∃ (φ : Fin n → ℝ),
-      (∀ j, i.val ≤ j.val → |φ j| ≤ gamma fp n) ∧
+      |φ i| ≤ gamma fp (n - i.val) ∧
+      (∀ j, i.val < j.val → |φ j| ≤ gamma fp (j.val - i.val)) ∧
       b i = Finset.sum (Finset.filter (fun j : Fin n => i.val ≤ j.val) Finset.univ)
               (fun j => U i j * (1 + φ j) * fl_backSub fp n U b j) := by
   set m := n - i.val - 1 with hm_def
@@ -747,7 +750,7 @@ private lemma backSub_row_tight (fp : FPModel) (n : ℕ)
     · simp [h]
   -- For each t < m, inv_prod_error_bound on first t factors of σ
   have hoff : ∀ t : Fin m,
-      ∃ η : ℝ, |η| ≤ gamma fp (m + 1) ∧
+      ∃ η : ℝ, |η| ≤ gamma fp (t.val + 1) ∧
         a_vals t * (∏ k : Fin m, if t.val ≤ k.val then (1+σ k) else 1) * (1+δd) =
         U i ⟨i.val+1+t.val, by omega⟩ *
           fl_backSub fp n U b ⟨i.val+1+t.val, by omega⟩ * (1+η) * Q := by
@@ -796,10 +799,9 @@ private lemma backSub_row_tight (fp : FPModel) (n : ℕ)
     have hα_mono : |α| ≤ gamma fp t.val := hα
     obtain ⟨η, hη, hη_eq⟩ := gamma_mul fp 1 t.val (ε t) α hε_γ1 hα_mono
       (gammaValid_mono fp (by omega) hn)
-    have hη_le : |η| ≤ gamma fp (m + 1) := by
-      have : 1 + t.val ≤ m + 1 := by omega
-      exact le_trans hη (gamma_mono fp this hm1_valid)
-    refine ⟨η, hη_le, ?_⟩
+    have hη_exact : |η| ≤ gamma fp (t.val + 1) := by
+      simpa [Nat.add_comm] using hη
+    refine ⟨η, hη_exact, ?_⟩
     -- Algebraic identity: a_t * TP(t) * (1+δd) = U*x̂*(1+η) * Q
     -- TP = (1+α)*P, (1+ε)*(1+α) = 1+η, Q = P*(1+δd)
     have hTP_eq : (1 + α) * P = ∏ k : Fin m, if t.val ≤ k.val then (1+σ k) else 1 := by
@@ -814,7 +816,7 @@ private lemma backSub_row_tight (fp : FPModel) (n : ℕ)
     rw [hε_eq t, ← hTP_eq, ← hη_eq]; ring
   -- Step 9: Extract all η witnesses
   let η_vals : Fin m → ℝ := fun t => Classical.choose (hoff t)
-  have hη_bd : ∀ t, |η_vals t| ≤ gamma fp (m+1) := fun t =>
+  have hη_bd : ∀ t, |η_vals t| ≤ gamma fp (t.val + 1) := fun t =>
     (Classical.choose_spec (hoff t)).1
   have hη_eq : ∀ t,
       a_vals t * (∏ k : Fin m, if t.val ≤ k.val then (1+σ k) else 1) * (1+δd) =
@@ -826,20 +828,19 @@ private lemma backSub_row_tight (fp : FPModel) (n : ℕ)
     if h : j.val = i.val then β
     else if h2 : i.val < j.val then η_vals ⟨j.val - (i.val + 1), by omega⟩
     else 0
-  refine ⟨φ, ?_, ?_⟩
+  refine ⟨φ, ?_, ?_, ?_⟩
   -- Bounds
+  · simp only [φ]
+    exact (by
+      simp only [dite_true]
+      simpa [hm1_eq] using hβ)
   · intro j hij
     simp only [φ]
-    by_cases heq : j.val = i.val
-    · -- j = i (diagonal)
-      simp only [heq, dite_true]
-      exact le_trans hβ (gamma_mono fp hm1_le hn)
-    · -- j > i (off-diagonal)
-      have hgt : i.val < j.val := by omega
-      simp only [show ¬(j.val = i.val) from heq, dite_false,
-                  show i.val < j.val from hgt, dite_true]
-      have := hη_bd ⟨j.val - (i.val + 1), by omega⟩
-      exact le_trans this (gamma_mono fp hm1_le hn)
+    have hne : ¬ j.val = i.val := by omega
+    simp only [hne, dite_false, hij, dite_true]
+    have ht : j.val - (i.val + 1) + 1 = j.val - i.val := by
+      omega
+    simpa [ht] using hη_bd ⟨j.val - (i.val + 1), by omega⟩
   -- Equation: b_i = Σ_{j≥i} U_ij * (1+φ_j) * x̂_j
   · -- Multiply both sides by Q (nonzero), then use hkey and hη_eq
     have hQ_ne' : Q ≠ 0 := hQ_ne
@@ -908,6 +909,86 @@ private lemma backSub_row_tight (fp : FPModel) (n : ℕ)
       rw [hφ_eq]; ring
 
 -- ============================================================
+-- §8.1  Source-sharp backward error (Theorem 8.3)
+-- ============================================================
+
+/-- **Higham Theorem 8.3** (Algorithm 8.1, source-sharp constants).
+
+    For the back-substitution algorithm applied to a nonsingular upper
+    triangular system `Ux = b`, the computed solution `x̂` satisfies
+    `(U + ΔU)x̂ = b`, with row-wise perturbation constants matching the
+    source statement in zero-based indexing:
+
+    * diagonal entry in row `i`: `γ(n - i)`, corresponding to
+      `γ_{n-i+1}` in the book's one-based indexing;
+    * off-diagonal entry `(i,j)`, `i < j`: `γ(j - i)`, corresponding to
+      `γ_{|i-j|}`. -/
+theorem backSub_backward_error_algorithm_8_1 (fp : FPModel) (n : ℕ)
+    (U : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (hU : ∀ i, U i i ≠ 0)
+    (hUT : ∀ i j : Fin n, j.val < i.val → U i j = 0)
+    (hn : gammaValid fp n) :
+    ∃ ΔU : Fin n → Fin n → ℝ,
+      (∀ i, |ΔU i i| ≤ gamma fp (n - i.val) * |U i i|) ∧
+      (∀ i j, i.val < j.val →
+        |ΔU i j| ≤ gamma fp (j.val - i.val) * |U i j|) ∧
+      (∀ i j, j.val < i.val → ΔU i j = 0) ∧
+      ∀ i, ∑ j : Fin n, (U i j + ΔU i j) * fl_backSub fp n U b j = b i := by
+  have h_tight : ∀ i : Fin n, ∃ (φ : Fin n → ℝ),
+      |φ i| ≤ gamma fp (n - i.val) ∧
+      (∀ j, i.val < j.val → |φ j| ≤ gamma fp (j.val - i.val)) ∧
+      b i = Finset.sum (Finset.filter (fun j : Fin n => i.val ≤ j.val) Finset.univ)
+              (fun j => U i j * (1 + φ j) * fl_backSub fp n U b j) :=
+    fun i => backSub_row_tight fp n U b hU hn i
+  let φ_data : Fin n → Fin n → ℝ := fun i =>
+    Classical.choose (h_tight i)
+  have hφ_diag : ∀ i, |φ_data i i| ≤ gamma fp (n - i.val) := fun i =>
+    (Classical.choose_spec (h_tight i)).1
+  have hφ_off : ∀ i j, i.val < j.val →
+      |φ_data i j| ≤ gamma fp (j.val - i.val) := fun i j hij =>
+    (Classical.choose_spec (h_tight i)).2.1 j hij
+  have hφ_eq : ∀ i,
+      b i = Finset.sum (Finset.filter (fun j : Fin n => i.val ≤ j.val) Finset.univ)
+              (fun j => U i j * (1 + φ_data i j) * fl_backSub fp n U b j) := fun i =>
+    (Classical.choose_spec (h_tight i)).2.2
+  let ΔU : Fin n → Fin n → ℝ := fun i j =>
+    if i.val ≤ j.val then U i j * φ_data i j else 0
+  refine ⟨ΔU, ?_, ?_, ?_, ?_⟩
+  · intro i
+    show |ΔU i i| ≤ gamma fp (n - i.val) * |U i i|
+    simp only [ΔU, le_rfl, ite_true, abs_mul]
+    rw [mul_comm (gamma fp (n - i.val))]
+    exact mul_le_mul_of_nonneg_left (hφ_diag i) (abs_nonneg _)
+  · intro i j hij
+    show |ΔU i j| ≤ gamma fp (j.val - i.val) * |U i j|
+    simp only [ΔU, le_of_lt hij, ite_true, abs_mul]
+    rw [mul_comm (gamma fp (j.val - i.val))]
+    exact mul_le_mul_of_nonneg_left (hφ_off i j hij) (abs_nonneg _)
+  · intro i j hij
+    show ΔU i j = 0
+    simp only [ΔU, show ¬ i.val ≤ j.val by omega, ite_false]
+  · intro i
+    rw [hφ_eq i]
+    rw [← Finset.sum_filter_add_sum_filter_not Finset.univ (fun j : Fin n => i.val ≤ j.val)]
+    have hbelow_zero : Finset.sum (Finset.filter (fun j : Fin n => ¬(i.val ≤ j.val)) Finset.univ)
+        (fun j => (U i j + ΔU i j) * fl_backSub fp n U b j) = 0 := by
+      apply Finset.sum_eq_zero
+      intro j hj
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and, not_le] at hj
+      have hU_zero : U i j = 0 := hUT i j hj
+      have hΔU_zero : ΔU i j = 0 := by
+        simp only [ΔU, show ¬(i.val ≤ j.val) by omega, ite_false]
+      rw [hU_zero, hΔU_zero, add_zero, zero_mul]
+    rw [hbelow_zero, add_zero]
+    apply Finset.sum_congr rfl
+    intro j hj
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hj
+    show (U i j + ΔU i j) * fl_backSub fp n U b j =
+      U i j * (1 + φ_data i j) * fl_backSub fp n U b j
+    simp only [ΔU, show i.val ≤ j.val from hj, ite_true]
+    ring
+
+-- ============================================================
 -- §8.1  Backward error (Theorem 8.5)
 -- ============================================================
 
@@ -920,7 +1001,9 @@ private lemma backSub_row_tight (fp : FPModel) (n : ℕ)
     In other words, x̂ is the exact solution of (U + ΔU)x = b.
 
     Proof: For each row i, `backSub_row_tight` gives
-      b_i = ∑_{j≥i} U_ij (1+φ_j) x̂_j, |φ_j| ≤ γ(n).
+      b_i = ∑_{j≥i} U_ij (1+φ_j) x̂_j, with the source-sharp
+      row constants.  Monotonicity of `γ` gives the displayed uniform
+      `γ(n)` envelope.
     Define ΔU_ij = U_ij · φ_j for j ≥ i, and ΔU_ij = 0 for j < i.
     By upper triangularity, U_ij = 0 for j < i, so the j < i terms vanish
     and the sum reduces to the tight backward error equation. -/
@@ -934,19 +1017,28 @@ theorem backSub_backward_error (fp : FPModel) (n : ℕ)
       ∀ i, ∑ j : Fin n, (U i j + ΔU i j) * fl_backSub fp n U b j = b i := by
   -- For each row, extract tight backward error witnesses
   have h_tight : ∀ i : Fin n, ∃ (φ : Fin n → ℝ),
-      (∀ j, i.val ≤ j.val → |φ j| ≤ gamma fp n) ∧
+      |φ i| ≤ gamma fp (n - i.val) ∧
+      (∀ j, i.val < j.val → |φ j| ≤ gamma fp (j.val - i.val)) ∧
       b i = Finset.sum (Finset.filter (fun j : Fin n => i.val ≤ j.val) Finset.univ)
               (fun j => U i j * (1 + φ j) * fl_backSub fp n U b j) :=
     fun i => backSub_row_tight fp n U b hU hn i
   -- Extract per-row witnesses
   let φ_data : Fin n → Fin n → ℝ := fun i =>
     Classical.choose (h_tight i)
-  have hφ_bound : ∀ i j, i.val ≤ j.val → |φ_data i j| ≤ gamma fp n := fun i j hij =>
-    (Classical.choose_spec (h_tight i)).1 j hij
+  have hφ_bound : ∀ i j, i.val ≤ j.val → |φ_data i j| ≤ gamma fp n := by
+    intro i j hij
+    by_cases heq : i = j
+    · subst j
+      exact le_trans (Classical.choose_spec (h_tight i)).1
+        (gamma_mono fp (Nat.sub_le n i.val) hn)
+    · have hij_lt : i.val < j.val := by
+        exact Nat.lt_of_le_of_ne hij (fun h => heq (Fin.ext h))
+      exact le_trans ((Classical.choose_spec (h_tight i)).2.1 j hij_lt)
+        (gamma_mono fp (by omega : j.val - i.val ≤ n) hn)
   have hφ_eq : ∀ i,
       b i = Finset.sum (Finset.filter (fun j : Fin n => i.val ≤ j.val) Finset.univ)
               (fun j => U i j * (1 + φ_data i j) * fl_backSub fp n U b j) := fun i =>
-    (Classical.choose_spec (h_tight i)).2
+    (Classical.choose_spec (h_tight i)).2.2
   -- Define ΔU
   let ΔU : Fin n → Fin n → ℝ := fun i j =>
     if i.val ≤ j.val then U i j * φ_data i j else 0

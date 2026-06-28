@@ -1,8 +1,8 @@
 -- Algorithms/InverseBounds.lean
 --
 -- Higham §8.3: Bounds for the inverse of a triangular matrix.
--- Theorem 8.11 (first inequality): |U⁻¹| ≤ M(U)⁻¹.
--- Theorem 8.13: 1/min|u_ii| ≤ ‖U⁻¹‖_∞ ≤ 2^{n-1}/min|u_ii|
+-- Theorem 8.12 (first inequality): |U⁻¹| ≤ M(U)⁻¹.
+-- Theorem 8.14 (∞-norm part): 1/min|u_ii| ≤ ‖U⁻¹‖_∞ ≤ 2^{n-1}/min|u_ii|
 --               under diagonal dominance.
 
 import Mathlib.Data.Real.Basic
@@ -100,10 +100,10 @@ theorem upper_tri_mmatrix_inv_nonneg (n : ℕ) (T T_inv : Fin n → Fin n → �
       rwa [mul_div_cancel_left₀ (T_inv i j) (ne_of_gt (hT_diag_pos i))] at h1
 
 -- ============================================================
--- Theorem 8.11: |U⁻¹| ≤ M(U)⁻¹ (first inequality, componentwise)
+-- Theorem 8.12: |U⁻¹| ≤ M(U)⁻¹ (first inequality, componentwise)
 -- ============================================================
 
-/-- **Theorem 8.11, first inequality** (Higham §8.3).
+/-- **Theorem 8.12, first inequality** (Higham §8.3).
 
     For a nonsingular upper triangular U with inverse U_inv, and M_inv the
     inverse of M(U), we have |U_inv_ij| ≤ M_inv_ij componentwise.
@@ -232,10 +232,82 @@ theorem abs_inv_le_compMatrix_inv (n : ℕ) (U U_inv M_inv : Fin n → Fin n →
             rw [← hM_prod]; field_simp [ne_of_gt hUii_pos]
 
 -- ============================================================
--- Theorem 8.13: Row sum bounds under diagonal dominance
+-- Algorithm 8.13: comparison-inverse row recurrence
 -- ============================================================
 
-/-- **Theorem 8.13, lower bound** (Higham §8.3).
+/-- **Algorithm 8.13 row recurrence** (Higham §8.3).
+
+    If `M_inv` is a right inverse of the comparison matrix `M(U)`, then the
+    vector `y = M(U)⁻¹ e` satisfies exactly the recurrence used by Higham's
+    Algorithm 8.13:
+
+    `|u_ii| y_i = 1 + sum_{j>i} |u_ij| y_j`.
+
+    This is exact algebra; no floating-point rounding is modeled here. -/
+theorem compMatrix_inv_upper_row_eq_ones (n : ℕ)
+    (U M_inv : Fin n → Fin n → ℝ)
+    (hUT : ∀ i j : Fin n, j.val < i.val → U i j = 0)
+    (_hU_diag : ∀ i : Fin n, U i i ≠ 0)
+    (hM_RInv : IsRightInverse n (comparisonMatrix n U) M_inv)
+    (i : Fin n) :
+    let y := fun i => ∑ j : Fin n, M_inv i j
+    |U i i| * y i = 1 +
+      ∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
+        |U i j| * y j := by
+  intro y
+  have hMy : ∀ i', ∑ k : Fin n, comparisonMatrix n U i' k * y k = 1 := by
+    intro i'
+    simp only [y]
+    simp_rw [Finset.mul_sum]
+    rw [Finset.sum_comm]
+    conv_rhs =>
+      rw [show (1 : ℝ) =
+          ∑ j : Fin n, (if i' = j then 1 else 0) by
+        simp [Finset.mem_univ]]
+    apply Finset.sum_congr rfl
+    intro j _
+    exact hM_RInv i' j
+  have hrow := hMy i
+  rw [← Finset.add_sum_erase _ _ (Finset.mem_univ i)] at hrow
+  have hM_ii : comparisonMatrix n U i i = |U i i| := by
+    simp [comparisonMatrix]
+  rw [hM_ii] at hrow
+  have hrest : ∑ k ∈ Finset.univ.erase i, comparisonMatrix n U i k * y k =
+      -(∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
+        |U i j| * y j) := by
+    have herase_eq : ∑ k ∈ Finset.univ.erase i, comparisonMatrix n U i k * y k =
+        ∑ k ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
+          comparisonMatrix n U i k * y k := by
+      symm
+      apply Finset.sum_subset
+      · intro j hj
+        simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hj
+        exact Finset.mem_erase.mpr ⟨Fin.ne_of_val_ne (by omega), Finset.mem_univ _⟩
+      · intro k hk hknot
+        rw [Finset.mem_erase] at hk
+        have hknot' : ¬(i.val < k.val) := by
+          intro hc
+          exact hknot (Finset.mem_filter.mpr ⟨Finset.mem_univ _, hc⟩)
+        have hlt : k.val < i.val := by
+          by_contra hle
+          push_neg at hle
+          exact hk.1 (Fin.ext (by omega))
+        unfold comparisonMatrix
+        simp [show i ≠ k from Fin.ne_of_val_ne (by omega), hUT i k hlt, zero_mul]
+    rw [herase_eq, ← Finset.sum_neg_distrib]
+    apply Finset.sum_congr rfl
+    intro k hk
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hk
+    unfold comparisonMatrix
+    simp [show i ≠ k from Fin.ne_of_val_ne (by omega)]
+  rw [hrest] at hrow
+  linarith
+
+-- ============================================================
+-- Theorem 8.14: Row sum bounds under diagonal dominance
+-- ============================================================
+
+/-- **Theorem 8.14, lower-bound ingredient** (Higham §8.3).
 
     For a nonsingular upper triangular U, the row sum of |U⁻¹| at row i
     satisfies ∑_j |U_inv i j| ≥ 1/|U_ii|.
@@ -257,7 +329,7 @@ theorem triInv_row_sum_lowerBound (n : ℕ) (U U_inv : Fin n → Fin n → ℝ)
         linarith [abs_nonneg (U_inv i i),
           Finset.sum_nonneg (fun j (_ : j ∈ Finset.univ.erase i) => abs_nonneg (U_inv i j))]
 
-/-- **Theorem 8.13, upper bound** (Higham §8.3).
+/-- **Theorem 8.14, upper-bound ingredient** (Higham §8.3).
 
     Under diagonal dominance (|U_ii| ≥ |U_ij| for j > i), the row sum
     of |U⁻¹| at row i satisfies
@@ -361,7 +433,7 @@ theorem triInv_row_sum_upperBound (n : ℕ) (U U_inv : Fin n → Fin n → ℝ)
         mul_le_mul_of_nonneg_left hV_sum (by positivity)
     _ = 2 ^ (n - 1 - i.val) * (1 / α) := by ring
 
-/-- **Higham Theorem 8.13, matrix ∞-norm form**.
+/-- **Higham Theorem 8.14, matrix ∞-norm form**.
 
     Under the repository's diagonal-dominance hypothesis for an upper
     triangular matrix, the row-sum theorem gives the usual
@@ -839,7 +911,7 @@ theorem lower_tri_mmatrix_inv_nonneg (n : ℕ) (T T_inv : Fin n → Fin n → �
 -- |L⁻¹| ≤ M(L)⁻¹ for lower triangular matrices
 -- ============================================================
 
-/-- **Theorem 8.11, first inequality, lower triangular** (Higham §8.3).
+/-- **Theorem 8.12, first inequality, lower triangular analogue** (Higham §8.3).
 
     For a nonsingular lower triangular L with inverse L_inv, and M_inv the
     inverse of M(L), we have |L_inv_ij| ≤ M_inv_ij componentwise. -/

@@ -434,6 +434,80 @@ theorem unitUpperTri_inv_entry_bound (n : ℕ) (V V_inv : Fin n → Fin n → �
     rw [this] at hS; exact hS
   linarith
 
+/-- If `V` is unit upper triangular and each strict-upper row has absolute
+    sum at most `1`, then every inverse entry on or above the diagonal has
+    absolute value at most `1`. -/
+theorem unitUpperTri_inv_entry_le_one_of_row_sum_le_one
+    (n : ℕ) (V V_inv : Fin n → Fin n → ℝ)
+    (hVT : ∀ i j : Fin n, j.val < i.val → V i j = 0)
+    (hV_unit : ∀ i : Fin n, V i i = 1)
+    (hV_row : ∀ i : Fin n,
+      ∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val), |V i j| ≤ 1)
+    (hRInv : IsRightInverse n V V_inv)
+    (hInv_ut : ∀ i j : Fin n, j.val < i.val → V_inv i j = 0)
+    (hInv_diag : ∀ i : Fin n, V_inv i i = 1) :
+    ∀ i j : Fin n, i.val ≤ j.val → |V_inv i j| ≤ 1 := by
+  suffices h : ∀ (d : ℕ), ∀ i j : Fin n, j.val - i.val ≤ d → i.val ≤ j.val →
+      |V_inv i j| ≤ 1 from
+    fun i j hij => h (j.val - i.val) i j (le_refl _) hij
+  intro d
+  induction d with
+  | zero =>
+      intro i j hdiff hij
+      have heq : i = j := Fin.ext (by omega)
+      subst heq
+      rw [hInv_diag, abs_one]
+  | succ d' ih =>
+      intro i j hdiff hij
+      by_cases heq : i.val = j.val
+      · have heq' : i = j := Fin.ext heq
+        subst heq'
+        rw [hInv_diag, abs_one]
+      · have hij' : i.val < j.val := by omega
+        have hrec := inv_recurrence n V V_inv hVT
+          (by intro k; rw [hV_unit]; exact one_ne_zero) hRInv hInv_ut i j hij'
+        rw [hV_unit, one_mul] at hrec
+        have hvinv_eq : V_inv i j = -(∑ k ∈ Finset.univ.filter (fun k : Fin n =>
+            i.val < k.val ∧ k.val ≤ j.val), V i k * V_inv k j) := by
+          linarith
+        rw [hvinv_eq, abs_neg]
+        calc
+          |∑ k ∈ Finset.univ.filter (fun k : Fin n => i.val < k.val ∧ k.val ≤ j.val),
+              V i k * V_inv k j|
+              ≤ ∑ k ∈ Finset.univ.filter
+                  (fun k : Fin n => i.val < k.val ∧ k.val ≤ j.val),
+                    |V i k * V_inv k j| :=
+                Finset.abs_sum_le_sum_abs _ _
+          _ = ∑ k ∈ Finset.univ.filter
+                (fun k : Fin n => i.val < k.val ∧ k.val ≤ j.val),
+                  |V i k| * |V_inv k j| := by
+                apply Finset.sum_congr rfl
+                intro k _
+                exact abs_mul _ _
+          _ ≤ ∑ k ∈ Finset.univ.filter
+                (fun k : Fin n => i.val < k.val ∧ k.val ≤ j.val),
+                  |V i k| * 1 := by
+                apply Finset.sum_le_sum
+                intro k hk
+                simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hk
+                exact mul_le_mul_of_nonneg_left
+                  (ih k j (by omega) (by omega)) (abs_nonneg (V i k))
+          _ = ∑ k ∈ Finset.univ.filter
+                (fun k : Fin n => i.val < k.val ∧ k.val ≤ j.val), |V i k| := by
+                apply Finset.sum_congr rfl
+                intro k _
+                rw [mul_one]
+          _ ≤ ∑ k ∈ Finset.univ.filter (fun k : Fin n => i.val < k.val), |V i k| := by
+                exact Finset.sum_le_sum_of_subset_of_nonneg
+                  (by
+                    intro k hk
+                    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hk ⊢
+                    exact hk.1)
+                  (by
+                    intro k _hk _hknot
+                    exact abs_nonneg (V i k))
+          _ ≤ 1 := hV_row i
+
 -- ============================================================
 -- Row-sum bound for inverse of unit upper triangular matrix
 -- ============================================================

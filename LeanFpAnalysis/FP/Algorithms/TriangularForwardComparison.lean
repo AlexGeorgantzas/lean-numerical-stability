@@ -4,6 +4,8 @@
 --
 -- Backward-error-derived comparison bound, direct Theorem 8.9 μ-bound,
 -- and M-matrix utilities for lower triangular matrices.
+-- Also includes the comparison-matrix consequence:
+-- |x - x̂| ≤ γ(n) · M(T)⁻¹ · |T| · |x̂| componentwise.
 
 import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
@@ -109,7 +111,7 @@ theorem mmatrix_inv_nonneg_lower (n : ℕ) (L L_inv : Fin n → Fin n → ℝ)
   exact lower_tri_mmatrix_inv_nonneg n L L_inv hLT hL_diag_pos hL_offdiag hInv.2 hInv_lt
 
 -- ============================================================
--- Theorem 8.9: Direct forward error via comparison matrix
+-- Theorem 8.10: Direct forward error via comparison matrix
 -- ============================================================
 
 /-- The error multiplier recurrence for Theorem 8.9.
@@ -253,7 +255,7 @@ lemma compMatrix_inv_row_eq (n : ℕ)
 
 set_option maxHeartbeats 800000
 
-/-- **Theorem 8.9** (Higham §8.2, pp. 158-159).
+/-- **Theorem 8.10** (Higham §8.2).
 
     The forward error for forward substitution, proved by direct component-wise
     induction (not via backward error), satisfies:
@@ -603,5 +605,508 @@ theorem forwardSub_forward_error_mu_bound (fp : FPModel) (n : ℕ)
               rw [← hrow i]
         _ = mu fp n (d+1) * y i := by field_simp
         _ = mu fp n i.val * y i := by rw [hi_eq]
+
+/-- Exact solution satisfies `|x_i| ≤ (M(U)⁻¹|b|)_i` componentwise for an
+    upper-triangular system.  This is the upper-triangular analogue of
+    `exact_solution_le_comp_inv_abs_b`. -/
+lemma exact_upper_solution_le_comp_inv_abs_b (n : ℕ)
+    (U U_inv M_inv : Fin n → Fin n → ℝ)
+    (x b : Fin n → ℝ)
+    (hUT : ∀ i j : Fin n, j.val < i.val → U i j = 0)
+    (hU_diag : ∀ i : Fin n, U i i ≠ 0)
+    (hInv : IsInverse n U U_inv)
+    (hM_RInv : IsRightInverse n (comparisonMatrix n U) M_inv)
+    (hM_inv_ut : ∀ i j : Fin n, j.val < i.val → M_inv i j = 0)
+    (hTx : ∀ i, ∑ j : Fin n, U i j * x j = b i) :
+    ∀ i, |x i| ≤ ∑ j : Fin n, M_inv i j * |b j| := by
+  have habs := abs_inv_le_compMatrix_inv n U U_inv M_inv hUT hU_diag hInv
+    hM_RInv hM_inv_ut
+  intro i
+  have hx : x i = ∑ j : Fin n, U_inv i j * b j := by
+    have hLI := hInv.1 i
+    have : ∑ j : Fin n, U_inv i j * b j =
+        ∑ j : Fin n, U_inv i j * (∑ k : Fin n, U j k * x k) := by
+      congr 1
+      funext j
+      rw [hTx j]
+    rw [this]
+    simp_rw [Finset.mul_sum]
+    rw [Finset.sum_comm]
+    simp_rw [← mul_assoc, ← Finset.sum_mul]
+    have hsimp : ∀ k : Fin n,
+        (∑ j : Fin n, U_inv i j * U j k) * x k =
+          (if i = k then 1 else 0) * x k := by
+      intro k
+      congr 1
+      exact hLI k
+    simp_rw [hsimp]
+    simp [Finset.mem_univ]
+  rw [hx]
+  calc
+    |∑ j : Fin n, U_inv i j * b j|
+        ≤ ∑ j : Fin n, |U_inv i j * b j| := Finset.abs_sum_le_sum_abs _ _
+    _ = ∑ j : Fin n, |U_inv i j| * |b j| := by
+          apply Finset.sum_congr rfl
+          intro j _
+          exact abs_mul _ _
+    _ ≤ ∑ j : Fin n, M_inv i j * |b j| := by
+          apply Finset.sum_le_sum
+          intro j _
+          exact mul_le_mul_of_nonneg_right (habs i j) (abs_nonneg _)
+
+/-- An upper-triangular row sum over `univ.erase i` only sees the strict-upper
+    entries. -/
+private lemma upperTriangular_erase_sum_eq_strictUpper (n : ℕ)
+    (T : Fin n → Fin n → ℝ)
+    (hUT : ∀ i j : Fin n, j.val < i.val → T i j = 0)
+    (i : Fin n) (v : Fin n → ℝ) :
+    ∑ j ∈ Finset.univ.erase i, T i j * v j =
+      ∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val), T i j * v j := by
+  symm
+  apply Finset.sum_subset
+  · intro j hj
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hj
+    exact Finset.mem_erase.mpr ⟨Fin.ne_of_val_ne (by omega), Finset.mem_univ _⟩
+  · intro j hj hnot
+    rw [Finset.mem_erase] at hj
+    have hnot' : ¬ i.val < j.val := by
+      intro hij
+      exact hnot (Finset.mem_filter.mpr ⟨Finset.mem_univ _, hij⟩)
+    have hji : j.val < i.val := by
+      by_contra hge
+      push_neg at hge
+      exact hj.1 (Fin.ext (by omega))
+    rw [hUT i j hji, zero_mul]
+
+/-- Row equation for `(M(U)⁻¹ |b|)_i` in the upper-triangular case:
+    `|U_ii| y_i = |b_i| + Σ_{j>i} |U_ij| y_j`. -/
+lemma compMatrix_inv_upper_row_eq (n : ℕ)
+    (U M_inv : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (hUT : ∀ i j : Fin n, j.val < i.val → U i j = 0)
+    (_hU_diag : ∀ i : Fin n, U i i ≠ 0)
+    (hM_RInv : IsRightInverse n (comparisonMatrix n U) M_inv)
+    (_hM_inv_ut : ∀ i j : Fin n, j.val < i.val → M_inv i j = 0)
+    (i : Fin n) :
+    let y := fun i => ∑ j : Fin n, M_inv i j * |b j|
+    |U i i| * y i = |b i| +
+      ∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
+        |U i j| * y j := by
+  intro y
+  have hMy : ∀ i', ∑ k : Fin n, comparisonMatrix n U i' k * y k = |b i'| := by
+    intro i'
+    simp only [y]
+    simp_rw [Finset.mul_sum]
+    rw [Finset.sum_comm]
+    simp_rw [← mul_assoc, ← Finset.sum_mul]
+    conv_rhs =>
+      rw [show |b i'| = ∑ j : Fin n, (if i' = j then 1 else 0) * |b j| by
+        simp [Finset.mem_univ]]
+    apply Finset.sum_congr rfl
+    intro j _
+    congr 1
+    exact hM_RInv i' j
+  have hrow := hMy i
+  rw [← Finset.add_sum_erase _ _ (Finset.mem_univ i)] at hrow
+  have hM_ii : comparisonMatrix n U i i = |U i i| := by
+    simp [comparisonMatrix]
+  rw [hM_ii] at hrow
+  have hrest :
+      ∑ k ∈ Finset.univ.erase i, comparisonMatrix n U i k * y k =
+        -(∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
+          |U i j| * y j) := by
+    have herase_eq :
+        ∑ k ∈ Finset.univ.erase i, comparisonMatrix n U i k * y k =
+          ∑ k ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
+            comparisonMatrix n U i k * y k := by
+      symm
+      apply Finset.sum_subset
+      · intro j hj
+        simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hj
+        exact Finset.mem_erase.mpr ⟨Fin.ne_of_val_ne (by omega), Finset.mem_univ _⟩
+      · intro k hk hknot
+        rw [Finset.mem_erase] at hk
+        have hknot' : ¬ i.val < k.val := by
+          intro hc
+          exact hknot (Finset.mem_filter.mpr ⟨Finset.mem_univ _, hc⟩)
+        have hlt : k.val < i.val := by
+          by_contra hle
+          push_neg at hle
+          exact hk.1 (Fin.ext (by omega))
+        unfold comparisonMatrix
+        simp [show i ≠ k from Fin.ne_of_val_ne (by omega), hUT i k hlt, zero_mul]
+    rw [herase_eq, ← Finset.sum_neg_distrib]
+    apply Finset.sum_congr rfl
+    intro k hk
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hk
+    unfold comparisonMatrix
+    simp [show i ≠ k from Fin.ne_of_val_ne (by omega)]
+  rw [hrest] at hrow
+  linarith
+
+/-- Theorem 8.10-style `μ`-bound for back substitution, proved directly for
+    upper-triangular systems.  This is the upper-triangular comparison-matrix
+    analogue of `forwardSub_forward_error_mu_bound`. -/
+theorem backSub_forward_error_mu_bound (fp : FPModel) (n : ℕ)
+    (U U_inv M_inv : Fin n → Fin n → ℝ)
+    (x b : Fin n → ℝ)
+    (hU_diag : ∀ i : Fin n, U i i ≠ 0)
+    (hUT : ∀ i j : Fin n, j.val < i.val → U i j = 0)
+    (hInv : IsInverse n U U_inv)
+    (hM_RInv : IsRightInverse n (comparisonMatrix n U) M_inv)
+    (hM_inv_ut : ∀ i j : Fin n, j.val < i.val → M_inv i j = 0)
+    (hTx : ∀ i, ∑ j : Fin n, U i j * x j = b i)
+    (hn : gammaValid fp n)
+    (hn1 : gammaValid fp (n + 1)) :
+    let x_hat := fl_backSub fp n U b
+    let y := fun i => ∑ j : Fin n, M_inv i j * |b j|
+    ∀ i : Fin n, |x i - x_hat i| ≤ mu fp n (n - 1 - i.val) * y i := by
+  intro x_hat y
+  have hM_nn := upper_tri_mmatrix_inv_nonneg n (comparisonMatrix n U) M_inv
+    (by
+      intro i j hij
+      unfold comparisonMatrix
+      simp [show i ≠ j from Fin.ne_of_val_ne (by omega), hUT i j hij])
+    (by
+      intro i
+      simp [comparisonMatrix, hU_diag i])
+    (by
+      intro i j _
+      simp [comparisonMatrix, show i ≠ j from Fin.ne_of_val_ne (by omega)])
+    hM_RInv hM_inv_ut
+  have hy_nn : ∀ i, 0 ≤ y i := by
+    intro i
+    apply Finset.sum_nonneg
+    intro j _
+    exact mul_nonneg (hM_nn i j) (abs_nonneg _)
+  have hx_le_y := exact_upper_solution_le_comp_inv_abs_b n U U_inv M_inv x b
+    hUT hU_diag hInv hM_RInv hM_inv_ut hTx
+  have hspec := fl_backSub_satisfies_spec fp n U b hU_diag hn
+  have hrow := compMatrix_inv_upper_row_eq n U M_inv b hUT hU_diag hM_RInv hM_inv_ut
+  set γ := gamma fp (n + 1) with hγ_def
+  have hγ_nn : 0 ≤ γ := gamma_nonneg fp hn1
+  suffices h :
+      ∀ d : ℕ, ∀ i : Fin n, n - 1 - i.val ≤ d →
+        |x i - x_hat i| ≤ mu fp n (n - 1 - i.val) * y i from
+    fun i => h (n - 1 - i.val) i (le_refl _)
+  intro d
+  induction d with
+  | zero =>
+      intro i hi
+      have hi_last : i.val = n - 1 := by omega
+      obtain ⟨Θ, ρ, θ, hΘ, hρ, _, hspec_eq⟩ := hspec i
+      have hΘ' : |Θ| ≤ gamma fp 0 := by
+        simpa [hi_last] using hΘ
+      have hΘ0 : Θ = 0 := by
+        have hg0 : gamma fp 0 = 0 := by
+          unfold gamma
+          simp
+        rw [hg0] at hΘ'
+        exact abs_eq_zero.mp (le_antisymm hΘ' (abs_nonneg Θ))
+      have hfilt_empty :
+          Finset.filter (fun j : Fin n => i.val < j.val) Finset.univ = ∅ := by
+        ext j
+        simp
+        omega
+      simp only [hΘ0, hfilt_empty, Finset.sum_empty, sub_zero, add_zero, mul_one] at hspec_eq
+      have hUx : U i i * x i = b i := by
+        have hTxi := hTx i
+        rw [← Finset.add_sum_erase _ _ (Finset.mem_univ i)] at hTxi
+        rw [upperTriangular_erase_sum_eq_strictUpper n U hUT i x] at hTxi
+        rw [hfilt_empty, Finset.sum_empty, add_zero] at hTxi
+        simpa using hTxi
+      have hdiff : U i i * (x i - x_hat i) = -b i * ρ := by
+        linarith
+      have habs_eq : |U i i| * |x i - x_hat i| = |b i| * |ρ| := by
+        rw [← abs_mul]
+        conv_rhs => rw [← abs_neg (b i), ← abs_mul]
+        exact congrArg _ hdiff
+      have hUii_pos : 0 < |U i i| := abs_pos.mpr (hU_diag i)
+      have hbound : |x i - x_hat i| ≤ fp.u * (|b i| / |U i i|) := by
+        have h1 : |U i i| * |x i - x_hat i| ≤ fp.u * |b i| := by
+          nlinarith [habs_eq, mul_le_mul_of_nonneg_left hρ (abs_nonneg (b i))]
+        calc
+          |x i - x_hat i| = |U i i| * |x i - x_hat i| / |U i i| := by
+            field_simp [ne_of_gt hUii_pos]
+          _ ≤ fp.u * |b i| / |U i i| := by
+            exact div_le_div_of_nonneg_right h1 (le_of_lt hUii_pos)
+          _ = fp.u * (|b i| / |U i i|) := by
+            rw [mul_div_assoc]
+      have hrow_i := hrow i
+      dsimp only at hrow_i
+      rw [hfilt_empty] at hrow_i
+      simp at hrow_i
+      have hy_eq : y i = |b i| / |U i i| := by
+        have := hrow_i
+        field_simp [ne_of_gt hUii_pos] at this ⊢
+        linarith
+      have hmu0 : mu fp n (n - 1 - i.val) = fp.u := by
+        simp [hi_last, mu]
+      rw [hmu0]
+      rw [hy_eq]
+      linarith
+  | succ d ih =>
+      intro i hi
+      by_cases htail : n - 1 - i.val ≤ d
+      · exact ih i htail
+      · have hi_eq : n - 1 - i.val = d + 1 := by omega
+        have hi_theta_eq : n - i.val = d + 2 := by omega
+        obtain ⟨Θ, ρ, θ, hΘ, hρ, hθ, hspec_eq⟩ := hspec i
+        have hUx : U i i * x i =
+            b i -
+              ∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
+                U i j * x j := by
+          have hTxi := hTx i
+          rw [← Finset.add_sum_erase _ _ (Finset.mem_univ i)] at hTxi
+          rw [upperTriangular_erase_sum_eq_strictUpper n U hUT i x] at hTxi
+          linarith
+        have hdiff : U i i * (x i - x_hat i) =
+            b i * (1 - (1 + Θ) * (1 + ρ)) +
+              ∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
+                U i j * (x_hat j * (1 + θ j) * (1 + ρ) - x j) := by
+          have h1 : U i i * x_hat i =
+              (b i * (1 + Θ) -
+                  ∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
+                    U i j * x_hat j * (1 + θ j)) * (1 + ρ) := hspec_eq
+          have h2 : U i i * (x i - x_hat i) = U i i * x i - U i i * x_hat i := by
+            ring
+          rw [h2, hUx, h1]
+          set S := Finset.univ.filter (fun j : Fin n => i.val < j.val) with hS_def
+          have hexpand :
+              (b i * (1 + Θ) - ∑ j ∈ S, U i j * x_hat j * (1 + θ j)) * (1 + ρ) =
+                b i * (1 + Θ) * (1 + ρ) -
+                  ∑ j ∈ S, (U i j * x_hat j * (1 + θ j) * (1 + ρ)) := by
+            rw [sub_mul, Finset.sum_mul]
+          rw [hexpand]
+          have hcombine :
+              ∑ j ∈ S, (U i j * x_hat j * (1 + θ j) * (1 + ρ)) -
+                  ∑ j ∈ S, (U i j * x j) =
+                ∑ j ∈ S, (U i j * (x_hat j * (1 + θ j) * (1 + ρ) - x j)) := by
+            rw [← Finset.sum_sub_distrib]
+            apply Finset.sum_congr rfl
+            intro j _
+            ring
+          linarith [hcombine]
+        have hUii_pos : 0 < |U i i| := abs_pos.mpr (hU_diag i)
+        have hα_bound : |(1 + Θ) * (1 + ρ) - 1| ≤ γ := by
+          have hΘ' : |Θ| ≤ gamma fp (d + 1) := by
+            simpa [hi_eq] using hΘ
+          have h1_valid : gammaValid fp 1 := gammaValid_mono fp (by omega) hn
+          have hρ_γ1 : |ρ| ≤ gamma fp 1 :=
+            le_trans hρ (u_le_gamma fp one_pos h1_valid)
+          have hd2_valid : gammaValid fp (d + 2) := gammaValid_mono fp (by omega) hn1
+          obtain ⟨η, hη, hη_eq⟩ := gamma_mul fp (d + 1) 1 Θ ρ hΘ' hρ_γ1 hd2_valid
+          rw [show (1 + Θ) * (1 + ρ) - 1 = η by linarith [hη_eq]]
+          exact le_trans hη (gamma_mono fp (by omega) hn1)
+        have hη_bound : ∀ j : Fin n, i.val < j.val →
+            |(1 + θ j) * (1 + ρ) - 1| ≤ γ := by
+          intro j hj
+          have hθj : |θ j| ≤ gamma fp (d + 2) := by
+            simpa [hi_theta_eq] using hθ j
+          have h1_valid : gammaValid fp 1 := gammaValid_mono fp (by omega) hn
+          have hρ_γ1 : |ρ| ≤ gamma fp 1 :=
+            le_trans hρ (u_le_gamma fp one_pos h1_valid)
+          have hd3_valid : gammaValid fp (d + 3) := gammaValid_mono fp (by omega) hn1
+          obtain ⟨η, hη, hη_eq⟩ := gamma_mul fp (d + 2) 1 (θ j) ρ hθj hρ_γ1 hd3_valid
+          rw [show (1 + θ j) * (1 + ρ) - 1 = η by linarith [hη_eq]]
+          exact le_trans hη (gamma_mono fp (by omega) hn1)
+        have hξ_bound : ∀ j : Fin n, i.val < j.val →
+            |(1 + θ j) * (1 + ρ)| ≤ 1 + γ := by
+          intro j hj
+          have : |(1 + θ j) * (1 + ρ)| = |(1 + θ j) * (1 + ρ) - 1 + 1| := by
+            ring_nf
+          rw [this]
+          set a := (1 + θ j) * (1 + ρ) - 1 with ha_def
+          have hab : |a + 1| ≤ |a| + 1 := by
+            by_cases h : 0 ≤ a + 1
+            · rw [abs_of_nonneg h]
+              linarith [le_abs_self a]
+            · push_neg at h
+              rw [abs_of_neg h]
+              linarith [neg_abs_le a]
+          linarith [hη_bound j hj]
+        have htri : |U i i| * |x i - x_hat i| ≤
+            γ * |b i| +
+              ∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
+                |U i j| * ((1 + γ) * |x j - x_hat j| + γ * |x j|) := by
+          calc
+            |U i i| * |x i - x_hat i| = |U i i * (x i - x_hat i)| := (abs_mul _ _).symm
+            _ = |b i * (1 - (1 + Θ) * (1 + ρ)) +
+                  ∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
+                    U i j * (x_hat j * (1 + θ j) * (1 + ρ) - x j)| := by
+                  rw [hdiff]
+            _ ≤ |b i * (1 - (1 + Θ) * (1 + ρ))| +
+                |∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
+                    U i j * (x_hat j * (1 + θ j) * (1 + ρ) - x j)| := by
+                  have hp := le_abs_self (b i * (1 - (1 + Θ) * (1 + ρ)))
+                  have hq := le_abs_self
+                    (∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
+                      U i j * (x_hat j * (1 + θ j) * (1 + ρ) - x j))
+                  have hnp := neg_abs_le (b i * (1 - (1 + Θ) * (1 + ρ)))
+                  have hnq := neg_abs_le
+                    (∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
+                      U i j * (x_hat j * (1 + θ j) * (1 + ρ) - x j))
+                  by_cases hpq :
+                      0 ≤ b i * (1 - (1 + Θ) * (1 + ρ)) +
+                        ∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
+                          U i j * (x_hat j * (1 + θ j) * (1 + ρ) - x j)
+                  · rw [abs_of_nonneg hpq]
+                    linarith
+                  · push_neg at hpq
+                    rw [abs_of_neg hpq]
+                    linarith
+            _ ≤ |b i| * |(1 + Θ) * (1 + ρ) - 1| +
+                ∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
+                  |U i j * (x_hat j * (1 + θ j) * (1 + ρ) - x j)| := by
+                  have h1 :
+                      |b i * (1 - (1 + Θ) * (1 + ρ))| =
+                        |b i| * |(1 + Θ) * (1 + ρ) - 1| := by
+                    rw [show (1 - (1 + Θ) * (1 + ρ)) = -((1 + Θ) * (1 + ρ) - 1) by ring]
+                    rw [abs_mul, abs_neg]
+                  have h2 :
+                      |∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
+                          U i j * (x_hat j * (1 + θ j) * (1 + ρ) - x j)| ≤
+                        ∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
+                          |U i j * (x_hat j * (1 + θ j) * (1 + ρ) - x j)| :=
+                    Finset.abs_sum_le_sum_abs _ _
+                  linarith
+            _ ≤ γ * |b i| +
+                ∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
+                  |U i j| * ((1 + γ) * |x j - x_hat j| + γ * |x j|) := by
+                  apply add_le_add
+                  · linarith [mul_le_mul_of_nonneg_left hα_bound (abs_nonneg (b i)),
+                      mul_comm (|b i|) (|(1 + Θ) * (1 + ρ) - 1|),
+                      mul_comm γ (|b i|)]
+                  · apply Finset.sum_le_sum
+                    intro j hj
+                    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hj
+                    have hdecomp :
+                        x_hat j * (1 + θ j) * (1 + ρ) - x j =
+                          -(x j - x_hat j) * ((1 + θ j) * (1 + ρ)) +
+                            x j * ((1 + θ j) * (1 + ρ) - 1) := by
+                      ring
+                    rw [abs_mul, hdecomp]
+                    have habs_tri :
+                        |-(x j - x_hat j) * ((1 + θ j) * (1 + ρ)) +
+                            x j * ((1 + θ j) * (1 + ρ) - 1)| ≤
+                          |x j - x_hat j| * (1 + γ) + |x j| * γ := by
+                      have ht1 :
+                          |-(x j - x_hat j) * ((1 + θ j) * (1 + ρ))| =
+                            |x j - x_hat j| * |(1 + θ j) * (1 + ρ)| := by
+                        rw [abs_mul, abs_neg]
+                      have ht2 :
+                          |x j * ((1 + θ j) * (1 + ρ) - 1)| =
+                            |x j| * |(1 + θ j) * (1 + ρ) - 1| :=
+                        abs_mul _ _
+                      have hb1 :
+                          |x j - x_hat j| * |(1 + θ j) * (1 + ρ)| ≤
+                            |x j - x_hat j| * (1 + γ) :=
+                        mul_le_mul_of_nonneg_left (hξ_bound j hj) (abs_nonneg _)
+                      have hb2 :
+                          |x j| * |(1 + θ j) * (1 + ρ) - 1| ≤ |x j| * γ :=
+                        mul_le_mul_of_nonneg_left (hη_bound j hj) (abs_nonneg _)
+                      have hp' := le_abs_self (-(x j - x_hat j) * ((1 + θ j) * (1 + ρ)))
+                      have hq' := le_abs_self (x j * ((1 + θ j) * (1 + ρ) - 1))
+                      have hnp' := neg_abs_le (-(x j - x_hat j) * ((1 + θ j) * (1 + ρ)))
+                      have hnq' := neg_abs_le (x j * ((1 + θ j) * (1 + ρ) - 1))
+                      by_cases hpq' :
+                          0 ≤ -(x j - x_hat j) * ((1 + θ j) * (1 + ρ)) +
+                            x j * ((1 + θ j) * (1 + ρ) - 1)
+                      · rw [abs_of_nonneg hpq']
+                        linarith [ht1, ht2, hb1, hb2]
+                      · push_neg at hpq'
+                        rw [abs_of_neg hpq']
+                        linarith [ht1, ht2, hb1, hb2]
+                    calc
+                      |U i j| *
+                          |-(x j - x_hat j) * ((1 + θ j) * (1 + ρ)) +
+                            x j * ((1 + θ j) * (1 + ρ) - 1)|
+                          ≤ |U i j| *
+                              (|x j - x_hat j| * (1 + γ) + |x j| * γ) :=
+                            mul_le_mul_of_nonneg_left habs_tri (abs_nonneg _)
+                      _ = |U i j| * ((1 + γ) * |x j - x_hat j| + γ * |x j|) := by
+                            ring
+        have hmu_eq : mu fp n (d + 1) = (1 + γ) * mu fp n d + γ := by
+          simp [mu, hγ_def]
+        have hmu_mono : ∀ k1 k2 : ℕ, k1 ≤ k2 → mu fp n k1 ≤ mu fp n k2 := by
+          intro k1 k2 hle
+          induction hle with
+          | refl => exact le_refl _
+          | step hle' ih => exact le_trans ih (mu_mono fp n hn1 _)
+        have hj_bound :
+            ∀ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
+              |x j - x_hat j| ≤ mu fp n d * y j := by
+          intro j hj
+          simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hj
+          have hj_tail : n - 1 - j.val ≤ d := by omega
+          have hih_j := ih j hj_tail
+          exact le_trans hih_j
+            (mul_le_mul_of_nonneg_right
+              (hmu_mono (n - 1 - j.val) d hj_tail) (hy_nn j))
+        calc
+          |x i - x_hat i| ≤
+              (γ * |b i| +
+                  ∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
+                    |U i j| * ((1 + γ) * |x j - x_hat j| + γ * |x j|)) / |U i i| := by
+                rw [le_div_iff₀ hUii_pos]
+                linarith [htri]
+          _ ≤
+              (γ * |b i| +
+                  ∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
+                    |U i j| * ((1 + γ) * (mu fp n d * y j) + γ * y j)) / |U i i| := by
+                apply div_le_div_of_nonneg_right _ (le_of_lt hUii_pos)
+                have hsum_ineq :
+                    ∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
+                      |U i j| * ((1 + γ) * |x j - x_hat j| + γ * |x j|) ≤
+                    ∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
+                      |U i j| * ((1 + γ) * (mu fp n d * y j) + γ * y j) := by
+                  apply Finset.sum_le_sum
+                  intro j hj
+                  simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hj
+                  apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
+                  have hih_j := hj_bound j (Finset.mem_filter.mpr ⟨Finset.mem_univ _, hj⟩)
+                  have hxle := hx_le_y j
+                  linarith [abs_nonneg (x j - x_hat j), mu_nonneg fp n hn1 d,
+                    mul_nonneg (show (0 : ℝ) ≤ 1 + γ by linarith) (hy_nn j),
+                    mul_le_mul_of_nonneg_left hih_j (show (0 : ℝ) ≤ 1 + γ by linarith),
+                    mul_le_mul_of_nonneg_left hxle hγ_nn]
+                linarith
+          _ =
+              (γ * |b i| +
+                  ∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
+                    |U i j| * (((1 + γ) * mu fp n d + γ) * y j)) / |U i i| := by
+                congr 2
+                apply Finset.sum_congr rfl
+                intro j _
+                ring
+          _ =
+              (γ * |b i| +
+                  mu fp n (d + 1) *
+                    ∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
+                      |U i j| * y j) / |U i i| := by
+                rw [hmu_eq]
+                congr 2
+                rw [Finset.mul_sum]
+                apply Finset.sum_congr rfl
+                intro j _
+                ring
+          _ ≤
+              (mu fp n (d + 1) * |b i| +
+                  mu fp n (d + 1) *
+                    ∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
+                      |U i j| * y j) / |U i i| := by
+                apply div_le_div_of_nonneg_right _ (le_of_lt hUii_pos)
+                gcongr
+                exact gamma_le_mu_succ fp n hn1 d
+          _ = mu fp n (d + 1) *
+                (|b i| +
+                  ∑ j ∈ Finset.univ.filter (fun j : Fin n => i.val < j.val),
+                    |U i j| * y j) / |U i i| := by
+                ring_nf
+          _ = mu fp n (d + 1) * (|U i i| * y i) / |U i i| := by
+                rw [← hrow i]
+          _ = mu fp n (d + 1) * y i := by
+                field_simp [ne_of_gt hUii_pos]
+          _ = mu fp n (n - 1 - i.val) * y i := by
+                rw [hi_eq]
 
 end LeanFpAnalysis.FP
