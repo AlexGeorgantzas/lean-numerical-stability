@@ -5773,6 +5773,59 @@ theorem opNorm2_pos_of_right_inverse {n : ℕ} [Nonempty (Fin n)]
   exact opNorm2_pos_of_right_inverse_at
     (Classical.choice (inferInstance : Nonempty (Fin n))) M Minv hRight
 
+/-- A right inverse gives the reciprocal-operator-norm lower bound on every
+    Euclidean unit vector:
+    `||Minv||₂⁻¹ <= ||M x||₂` when `M * Minv = I` and `||x||₂ = 1`.
+
+This is the lower-bound half used when a source proof represents a block's
+lower norm by the reciprocal norm of an inverse. -/
+theorem opNorm2_inv_recip_le_vecNorm2_matMulVec_of_isRightInverse
+    {n : ℕ} [Nonempty (Fin n)]
+    (M Minv : Fin n → Fin n → ℝ)
+    (hRight : IsRightInverse n M Minv) {x : Fin n → ℝ}
+    (hx : vecNorm2 x = 1) :
+    (opNorm2 Minv)⁻¹ ≤ vecNorm2 (matMulVec n M x) := by
+  have hLeft : IsLeftInverse n M Minv :=
+    isLeftInverse_of_isRightInverse M Minv hRight
+  have hMinvMx : matMulVec n Minv (matMulVec n M x) = x := by
+    ext i
+    calc
+      matMulVec n Minv (matMulVec n M x) i
+          = matMulVec n (matMul n Minv M) x i := by
+              unfold matMulVec matMul
+              simp_rw [Finset.sum_mul, Finset.mul_sum]
+              rw [Finset.sum_comm]
+              apply Finset.sum_congr rfl
+              intro j _hj
+              apply Finset.sum_congr rfl
+              intro k _hk
+              ring
+      _ = matMulVec n (idMatrix n) x i := by
+          unfold matMul idMatrix
+          apply Finset.sum_congr rfl
+          intro j _hj
+          exact congrArg (fun t : ℝ => t * x j) (hLeft i j)
+      _ = x i := by
+          exact congrFun (idMatrix_mulVec n x) i
+  have hbound := opNorm2Le_opNorm2 Minv (matMulVec n M x)
+  have hone_le :
+      1 ≤ opNorm2 Minv * vecNorm2 (matMulVec n M x) := by
+    calc
+      1 = vecNorm2 x := by rw [hx]
+      _ = vecNorm2 (matMulVec n Minv (matMulVec n M x)) := by
+          rw [hMinvMx]
+      _ ≤ opNorm2 Minv * vecNorm2 (matMulVec n M x) := hbound
+  have hpos : 0 < opNorm2 Minv :=
+    opNorm2_pos_of_right_inverse M Minv hRight
+  calc
+    (opNorm2 Minv)⁻¹
+        = (opNorm2 Minv)⁻¹ * 1 := by ring
+    _ ≤ (opNorm2 Minv)⁻¹ *
+          (opNorm2 Minv * vecNorm2 (matMulVec n M x)) :=
+          mul_le_mul_of_nonneg_left hone_le (inv_nonneg.mpr (le_of_lt hpos))
+    _ = vecNorm2 (matMulVec n M x) := by
+          field_simp [hpos.ne']
+
 /-- Source-facing 2-norm condition number product for a matrix and a chosen
     inverse candidate. -/
 noncomputable def kappa2 {n : ℕ}

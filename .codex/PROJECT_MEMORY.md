@@ -9553,3 +9553,16 @@ These compile, but should not be treated as fully derived stability results:
   `lake env lean -s 65536 examples/LibraryLookup.lean`, `git diff --check`,
   touched public Lean-file marker scan, scratch cleanup, and focused
   `#print axioms` with only `propext`, `Classical.choice`, and `Quot.sound`.
+
+- 2026-06-28 Algorithm 13.3 BDD Euclidean right-inverse lower-bound route:
+  added `opNorm2_inv_recip_le_vecNorm2_matMulVec_of_isRightInverse` in
+  `MatrixAlgebra.lean`, proving that a certified right inverse gives
+  `||Minv||_2^{-1} <= ||M x||_2` for every Euclidean unit vector.  Chapter 13
+  wrappers `higham13_eq13_18_unit_lower_bound_of_right_inverse_opNorm2` and
+  `higham13_eq13_18_active_diag_table_unit_lower_bound_of_right_inverse_opNorm2`
+  package the individual-block and active-table forms for Eq.13.18.  This
+  closes only the right-inverse/unit-lower-bound half for the concrete 2-norm
+  route; the selected BDD row still needs the lower-norm table
+  construction/minimum-attainment Schur update, active reciprocal equality for
+  actual Schur-stage pivots, and the source arbitrary-subordinate-norm
+  perturbation estimates.
