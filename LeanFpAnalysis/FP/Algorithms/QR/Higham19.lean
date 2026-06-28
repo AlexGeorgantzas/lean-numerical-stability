@@ -2757,6 +2757,76 @@ theorem trailingPanel_qrPanel_R_nonzero_eq_qrPanel_R_firstStoredPanelStep
   rw [qrPanel_R_nonzero_eq_firstStoredPanelStep fp A hcol]
   rfl
 
+/-- Leading-block determinant data selects the nonzero first-pivot branch of
+the recursive Householder QR panel.
+
+This is the branch-selection link needed by the final recursive/stored bridge:
+the stored-loop nonbreakdown route supplies leading-block determinant
+hypotheses, while `fl_householderQRPanel_R` branches on whether the active
+first column is zero. -/
+theorem panelFirstColumn_ne_zero_of_first_leadingBlock_det_ne_zero
+    {m p : Nat}
+    (A : Fin (m + 1) -> Fin (p + 1) -> Real)
+    (hdetLead :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le m))
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0) :
+    Ne (panelFirstColumn (Nat.succ_pos p) A) 0 := by
+  classical
+  have hdetPrev :
+      Ne (Matrix.det
+        (qrPreviousLeadingBlockTranspose A
+          (le_trans (Nat.le_succ 0)
+            (Nat.succ_le_succ (Nat.zero_le m)))
+          (Nat.succ_pos p) :
+          Matrix (Fin 0) (Fin 0) Real))
+        0 := by
+    simp
+  have hlowerPrev :
+      forall (i : Fin (m + 1)) (j : Fin 0),
+        0 <= i.val ->
+          A i (qrPreviousColumn (p + 1) 0 (Nat.succ_pos p) j) = 0 := by
+    intro _i j _hj
+    exact Fin.elim0 j
+  let hex := exists_active_trailing_entry_ne_of_leading_block_det_ne_zero
+      A (Nat.succ_le_succ (Nat.zero_le m)) (Nat.succ_pos p)
+      hdetPrev hdetLead hlowerPrev
+  match hex with
+  | Exists.intro i hrest =>
+      match hrest with
+      | And.intro _hi hne =>
+          intro hzero
+          have hentry := congrFun hzero i
+          exact hne (by simpa [panelFirstColumn] using hentry)
+
+/-- Determinant-specialized first-step recursive/stored bridge.
+
+The existing first-step bridge consumes the recursive QR nonzero-branch
+condition directly.  This version consumes the source-facing first leading
+block determinant condition instead, matching the hypotheses used by the
+stored-loop nonbreakdown route. -/
+theorem qrPanel_R_eq_firstStoredPanelStep_of_first_leadingBlock_det_ne_zero
+    (fp : FPModel) {m p : Nat}
+    (A : Fin (m + 1) -> Fin (p + 1) -> Real)
+    (hdetLead :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le m))
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0) :
+    fl_householderQRPanel_R fp (m + 1) (p + 1) A =
+      (let v := fl_householderNormalizedVector fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A)
+       let S := fl_householderStoredPanelStep fp (m + 1) (p + 1) 0 v 1 A
+       panelFromTopAndTrailing (panelTopLeft S) (panelTopRowTail S)
+         (fl_householderQRPanel_R fp m p (trailingPanel S))) :=
+  qrPanel_R_nonzero_eq_firstStoredPanelStep fp A
+    (panelFirstColumn_ne_zero_of_first_leadingBlock_det_ne_zero A hdetLead)
+
 /-- Source-facing nonbreakdown route for the stored Householder QR loop.
 Nonsingular local leading blocks, the stored lower-zero invariant, the source
 sign convention, and a per-pivot square-root component budget imply that the
