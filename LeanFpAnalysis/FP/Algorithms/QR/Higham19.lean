@@ -1,5 +1,6 @@
 import LeanFpAnalysis.FP.Algorithms.QR.GivensQR
 import LeanFpAnalysis.FP.Algorithms.QR.GramSchmidt
+import LeanFpAnalysis.FP.Algorithms.QR.GramSchmidtPolar
 import LeanFpAnalysis.FP.Algorithms.QR.HouseholderQR
 
 open LeanFpAnalysis.FP
@@ -222,6 +223,52 @@ abbrev Problem1912CSDiagonalFactorData (m n : Nat)
     (P21 : Fin m -> Fin n -> Real) : Type :=
   MGSProblem1912CSDiagonalFactorData m n P11 P21
 
+/-- Source-shaped polar-factor payload for Problem 19.12.  This is a
+non-diagonal payload the remaining CS/polar existence theorem may produce. -/
+abbrev Problem1912PolarFactorData (m n : Nat)
+    (P11 : Fin n -> Fin n -> Real)
+    (P21 : Fin m -> Fin n -> Real) : Type :=
+  MGSProblem1912PolarFactorData m n P11 P21
+
+/-- Full-positive right-Gram polar isometry for the lower block in Problem
+19.12. -/
+abbrev Problem1912RightGramPolarQFull {m n : Nat}
+    (P21 : Fin m -> Fin n -> Real) : Fin m -> Fin n -> Real :=
+  rectRightGramPolarQFull P21
+
+/-- Zero-safe right-Gram polar isometry candidate for the lower block in
+Problem 19.12.  This reconstructs the bottom factor without full positivity,
+but still requires an orthonormal completion before it closes the theorem. -/
+abbrev Problem1912RightGramPolarQZeroSafe {m n : Nat}
+    (P21 : Fin m -> Fin n -> Real) : Fin m -> Fin n -> Real :=
+  rectRightGramPolarQZeroSafe P21
+
+/-- Full-positive right-Gram polar positive factor for the lower block in
+Problem 19.12. -/
+abbrev Problem1912RightGramPolarH {m n : Nat}
+    (P21 : Fin m -> Fin n -> Real) : Fin n -> Fin n -> Real :=
+  rectRightGramPolarH P21
+
+/-- Spectral `(I+H)^{-1}` factor for the lower-block right-Gram polar factor
+in Problem 19.12. -/
+abbrev Problem1912RightGramPolarResolvent {m n : Nat}
+    (P21 : Fin m -> Fin n -> Real) : Fin n -> Fin n -> Real :=
+  rectRightGramPolarResolvent P21
+
+/-- Concrete full-positive polar bridge matrix
+`T = (I+H)^{-1} * P11^T` for Problem 19.12. -/
+abbrev Problem1912FullPositivePolarBridgeT {m n : Nat}
+    (P11 : Fin n -> Fin n -> Real) (P21 : Fin m -> Fin n -> Real) :
+    Fin n -> Fin n -> Real :=
+  mgsProblem1912_fullPositivePolarBridgeT P11 P21
+
+/-- Name-neutral spectral polar bridge matrix
+`T = (I+H)^{-1} * P11^T` for Problem 19.12. -/
+abbrev Problem1912RightGramPolarBridgeT {m n : Nat}
+    (P11 : Fin n -> Fin n -> Real) (P21 : Fin m -> Fin n -> Real) :
+    Fin n -> Fin n -> Real :=
+  mgsProblem1912_rightGramPolarBridgeT P11 P21
+
 /-- Corrected source-shaped input for the remaining Problem 19.12 CS/polar
 existence theorem: tallness plus the block-column Gram identity. -/
 abbrev Problem1912CSPolarInput (m n : Nat)
@@ -291,6 +338,586 @@ theorem problem1912_correctionMapData_of_add_factor {m n : Nat}
   exact
     LeanFpAnalysis.FP.mgsProblem1912_correctionMapData_of_add_factor
       hQadd hQorth hFbound
+
+/-- Chapter-labeled polar-factor algebra for Problem 19.12:
+from `P21 = Q*H`, `F = Q*T`, and `T*P11 = I-H`, obtain
+`F*P11 = Q-P21`. -/
+theorem problem1912_polarAlgebra_correction_factor {m n : Nat}
+    {P11 H T : Fin n -> Fin n -> Real}
+    {P21 Q F : Fin m -> Fin n -> Real}
+    (hP21 : P21 = matMulRect m n n Q H)
+    (hF : F = matMulRect m n n Q T)
+    (hTP : matMul n T P11 = fun i j => idMatrix n i j - H i j) :
+    matMulRect m n n F P11 = fun i j => Q i j - P21 i j := by
+  exact
+    LeanFpAnalysis.FP.mgsProblem1912_polarAlgebra_correction_factor
+      hP21 hF hTP
+
+/-- Chapter-labeled construction of pure Problem 19.12 correction-map data
+from a polar-style algebraic payload. -/
+theorem problem1912_correctionMapData_of_polarAlgebra {m n : Nat}
+    {P11 H T : Fin n -> Fin n -> Real}
+    {P21 Q F : Fin m -> Fin n -> Real}
+    (hP21 : P21 = matMulRect m n n Q H)
+    (hF : F = matMulRect m n n Q T)
+    (hTP : matMul n T P11 = fun i j => idMatrix n i j - H i j)
+    (hQorth : GramSchmidtOrthonormalColumns Q)
+    (hFbound : rectOpNorm2Le F 1) :
+    Problem1912CorrectionMapData m n P11 P21 Q F := by
+  exact
+    LeanFpAnalysis.FP.mgsProblem1912_correctionMapData_of_polarAlgebra
+      hP21 hF hTP hQorth hFbound
+
+/-- Chapter-labeled orthonormality of the full-positive right-Gram polar
+isometry for the lower block. -/
+theorem problem1912_rightGramPolarQFull_orthonormal_of_pos {m n : Nat}
+    (P21 : Fin m -> Fin n -> Real)
+    (hpos : forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a) :
+    GramSchmidtOrthonormalColumns
+      (Problem1912RightGramPolarQFull P21) := by
+  exact rectRightGramPolarQFull_orthonormal_of_pos P21 hpos
+
+/-- Chapter-labeled full-positive right-Gram polar factorization of the lower
+block. -/
+theorem problem1912_rightGramPolarQFull_mul_polarH_of_pos {m n : Nat}
+    (P21 : Fin m -> Fin n -> Real)
+    (hpos : forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a) :
+    matMulRect m n n (Problem1912RightGramPolarQFull P21)
+        (Problem1912RightGramPolarH P21) =
+      P21 := by
+  exact rectRightGramPolarQFull_mul_polarH_of_pos P21 hpos
+
+/-- Chapter-labeled zero-safe right-Gram polar factorization of the lower
+block.  The factorization holds without full positivity; the remaining
+mixed-rank obligation is the orthonormal completion of zero singular
+directions. -/
+theorem problem1912_rightGramPolarQZeroSafe_mul_polarH {m n : Nat}
+    (P21 : Fin m -> Fin n -> Real) :
+    matMulRect m n n (Problem1912RightGramPolarQZeroSafe P21)
+        (Problem1912RightGramPolarH P21) =
+      P21 := by
+  exact rectRightGramPolarQZeroSafe_mul_polarH P21
+
+/-- Chapter-labeled symmetry of the full-positive right-Gram polar positive
+factor. -/
+theorem problem1912_rightGramPolarH_symmetric {m n : Nat}
+    (P21 : Fin m -> Fin n -> Real) :
+    finiteTranspose (Problem1912RightGramPolarH P21) =
+      Problem1912RightGramPolarH P21 := by
+  exact rectRightGramPolarH_symmetric P21
+
+/-- Chapter-labeled full-positive right-Gram identity `H^2 = P21^T P21`. -/
+theorem problem1912_rightGramPolarH_sq_eq_rectangularGram_of_pos
+    {m n : Nat}
+    (P21 : Fin m -> Fin n -> Real)
+    (hpos : forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a) :
+    matMul n (Problem1912RightGramPolarH P21)
+        (Problem1912RightGramPolarH P21) =
+      rectangularGram P21 := by
+  exact rectRightGramPolarH_sq_eq_rectangularGram_of_pos P21 hpos
+
+/-- Chapter-labeled spectral square identity for the full-positive polar
+positive factor. -/
+theorem problem1912_rightGramPolarH_sq_eq_spectral_square {m n : Nat}
+    (P21 : Fin m -> Fin n -> Real) :
+    matMul n (Problem1912RightGramPolarH P21)
+        (Problem1912RightGramPolarH P21) =
+      matMul n (rectRightGramEigenbasis P21)
+        (matMul n (finiteDiagonal
+            (fun i => rectRightGramBasisSingularValue P21 i ^ 2))
+          (finiteTranspose (rectRightGramEigenbasis P21))) := by
+  exact rectRightGramPolarH_sq_eq_spectral_square P21
+
+/-- Chapter-labeled recomposition of the right-Gram spectral square back into
+`P21^T P21`. -/
+theorem problem1912_rightGram_spectral_square_eq_rectangularGram {m n : Nat}
+    (P21 : Fin m -> Fin n -> Real) :
+    matMul n (rectRightGramEigenbasis P21)
+      (matMul n (finiteDiagonal
+          (fun i => rectRightGramBasisSingularValue P21 i ^ 2))
+        (finiteTranspose (rectRightGramEigenbasis P21))) =
+      rectangularGram P21 := by
+  exact rectRightGram_spectral_square_eq_rectangularGram P21
+
+/-- Chapter-labeled right-Gram identity `H^2 = P21^T P21` with no
+full-positivity assumption. -/
+theorem problem1912_rightGramPolarH_sq_eq_rectangularGram {m n : Nat}
+    (P21 : Fin m -> Fin n -> Real) :
+    matMul n (Problem1912RightGramPolarH P21)
+        (Problem1912RightGramPolarH P21) =
+      rectangularGram P21 := by
+  exact rectRightGramPolarH_sq_eq_rectangularGram P21
+
+/-- Chapter-labeled contraction bound for the spectral `(I+H)^{-1}` factor. -/
+theorem problem1912_rightGramPolarResolvent_opNorm2Le_one {m n : Nat}
+    (P21 : Fin m -> Fin n -> Real) :
+    opNorm2Le (Problem1912RightGramPolarResolvent P21) 1 := by
+  exact rectRightGramPolarResolvent_opNorm2Le_one P21
+
+/-- Chapter-labeled resolvent identity:
+`(I+H)^{-1} * (I-H^2) = I-H`. -/
+theorem problem1912_rightGramPolarResolvent_mul_id_sub_polarH_sq
+    {m n : Nat}
+    (P21 : Fin m -> Fin n -> Real) :
+    matMul n (Problem1912RightGramPolarResolvent P21)
+      (fun i j =>
+        idMatrix n i j -
+          matMul n (Problem1912RightGramPolarH P21)
+            (Problem1912RightGramPolarH P21) i j) =
+      fun i j => idMatrix n i j - Problem1912RightGramPolarH P21 i j := by
+  exact rectRightGramPolarResolvent_mul_id_sub_polarH_sq P21
+
+/-- Chapter-labeled full-positive polar rewrite of the top Gram:
+`P11^T P11 = I - H^2`. -/
+theorem problem1912_csPolarInput_p11_gram_eq_id_sub_polarH_sq
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hpos : forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a) :
+    rectangularGram P11 =
+      fun i j =>
+        idMatrix n i j -
+          matMul n (Problem1912RightGramPolarH P21)
+            (Problem1912RightGramPolarH P21) i j := by
+  exact hinput.p11_gram_eq_id_sub_polarH_sq hpos
+
+/-- Chapter-labeled full-positive right-Gram polar payload constructor.  The
+bridge `T * P11 = I - H` and contraction bound are the remaining explicit
+obligations. -/
+def problem1912_polarFactorData_of_fullPositiveRightGram
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    {T : Fin n -> Fin n -> Real}
+    (hpos : forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a)
+    (hTP :
+      matMul n T P11 =
+        fun i j => idMatrix n i j - Problem1912RightGramPolarH P21 i j)
+    (hT : opNorm2Le T 1) :
+    Problem1912PolarFactorData m n P11 P21 :=
+  LeanFpAnalysis.FP.mgsProblem1912_polarFactorData_of_fullPositive_rightGram
+    hpos hTP hT
+
+/-- Chapter-labeled concrete bridge identity for the full-positive polar
+branch: `((I+H)^{-1} * P11^T) * P11 = I-H`. -/
+theorem problem1912_fullPositivePolarBridgeT_mul_p11
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hpos : forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a) :
+    matMul n (Problem1912FullPositivePolarBridgeT P11 P21) P11 =
+      fun i j => idMatrix n i j - Problem1912RightGramPolarH P21 i j := by
+  exact mgsProblem1912_fullPositivePolarBridgeT_mul_p11 hinput hpos
+
+/-- Chapter-labeled contraction bound for the concrete full-positive polar
+bridge matrix. -/
+theorem problem1912_fullPositivePolarBridgeT_opNorm2Le_one
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21) :
+    opNorm2Le (Problem1912FullPositivePolarBridgeT P11 P21) 1 := by
+  exact mgsProblem1912_fullPositivePolarBridgeT_opNorm2Le_one hinput
+
+/-- Chapter-labeled completed-polar top-Gram rewrite:
+`P11^T P11 = I-H^2` follows from the corrected input and the supplied
+right-Gram square identity `H^2 = P21^T P21`. -/
+theorem problem1912_csPolarInput_p11_gram_eq_id_sub_polarH_sq_of_polarH_sq
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hHsq :
+      matMul n (Problem1912RightGramPolarH P21)
+          (Problem1912RightGramPolarH P21) =
+        rectangularGram P21) :
+    rectangularGram P11 =
+      fun i j =>
+        idMatrix n i j -
+          matMul n (Problem1912RightGramPolarH P21)
+            (Problem1912RightGramPolarH P21) i j := by
+  exact hinput.p11_gram_eq_id_sub_polarH_sq_of_polarH_sq hHsq
+
+/-- Chapter-labeled completed-polar bridge identity:
+`((I+H)^{-1} * P11^T) * P11 = I-H`. -/
+theorem problem1912_rightGramPolarBridgeT_mul_p11_of_polarH_sq
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hHsq :
+      matMul n (Problem1912RightGramPolarH P21)
+          (Problem1912RightGramPolarH P21) =
+        rectangularGram P21) :
+    matMul n (Problem1912RightGramPolarBridgeT P11 P21) P11 =
+      fun i j => idMatrix n i j - Problem1912RightGramPolarH P21 i j := by
+  exact
+    mgsProblem1912_rightGramPolarBridgeT_mul_p11_of_polarH_sq
+      hinput hHsq
+
+/-- Chapter-labeled contraction bound for the name-neutral spectral polar
+bridge matrix. -/
+theorem problem1912_rightGramPolarBridgeT_opNorm2Le_one
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21) :
+    opNorm2Le (Problem1912RightGramPolarBridgeT P11 P21) 1 := by
+  exact mgsProblem1912_rightGramPolarBridgeT_opNorm2Le_one hinput
+
+/-- Chapter-labeled completed right-Gram polar payload constructor.  The
+remaining mixed-branch foundation is isolated to the supplied completed polar
+factor equations. -/
+def problem1912_polarFactorData_of_completedRightGramPolar
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    {Q : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hbottom :
+      P21 = matMulRect m n n Q (Problem1912RightGramPolarH P21))
+    (hQorth : GramSchmidtOrthonormalColumns Q)
+    (hHsq :
+      matMul n (Problem1912RightGramPolarH P21)
+          (Problem1912RightGramPolarH P21) =
+        rectangularGram P21) :
+    Problem1912PolarFactorData m n P11 P21 :=
+  mgsProblem1912_polarFactorData_of_completed_rightGramPolar
+    hinput hbottom hQorth hHsq
+
+/-- Chapter-facing pure correction-map data from a completed right-Gram polar
+factor. -/
+theorem problem1912_correctionMapData_exists_of_completedRightGramPolar
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    {Q : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hbottom :
+      P21 = matMulRect m n n Q (Problem1912RightGramPolarH P21))
+    (hQorth : GramSchmidtOrthonormalColumns Q)
+    (hHsq :
+      matMul n (Problem1912RightGramPolarH P21)
+          (Problem1912RightGramPolarH P21) =
+        rectangularGram P21) :
+    Exists fun Qout : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      Problem1912CorrectionMapData m n P11 P21 Qout F := by
+  exact
+    mgsProblem1912_correctionMapData_exists_of_completed_rightGramPolar
+      hinput hbottom hQorth hHsq
+
+/-- Chapter-facing additive witnesses from a completed right-Gram polar
+factor. -/
+theorem problem1912_add_factor_exists_of_completedRightGramPolar
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    {Q : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hbottom :
+      P21 = matMulRect m n n Q (Problem1912RightGramPolarH P21))
+    (hQorth : GramSchmidtOrthonormalColumns Q)
+    (hHsq :
+      matMul n (Problem1912RightGramPolarH P21)
+          (Problem1912RightGramPolarH P21) =
+        rectangularGram P21) :
+    Exists fun Qout : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      (Qout = fun i j => P21 i j + matMulRect m n n F P11 i j) /\
+        GramSchmidtOrthonormalColumns Qout /\
+        rectOpNorm2Le F 1 := by
+  exact
+    mgsProblem1912_add_factor_exists_of_completed_rightGramPolar
+      hinput hbottom hQorth hHsq
+
+/-- Chapter-labeled right-Gram polar completion payload constructor.  Since
+`H^2 = P21^T P21` is now supplied by the spectral right-Gram construction, the
+remaining completion data is just `P21 = Q*H` with orthonormal `Q`. -/
+def problem1912_polarFactorData_of_rightGramPolarCompletion
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    {Q : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hbottom :
+      P21 = matMulRect m n n Q (Problem1912RightGramPolarH P21))
+    (hQorth : GramSchmidtOrthonormalColumns Q) :
+    Problem1912PolarFactorData m n P11 P21 :=
+  mgsProblem1912_polarFactorData_of_rightGramPolar_completion
+    hinput hbottom hQorth
+
+/-- Chapter-facing pure correction-map data from a right-Gram polar
+completion. -/
+theorem problem1912_correctionMapData_exists_of_rightGramPolarCompletion
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    {Q : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hbottom :
+      P21 = matMulRect m n n Q (Problem1912RightGramPolarH P21))
+    (hQorth : GramSchmidtOrthonormalColumns Q) :
+    Exists fun Qout : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      Problem1912CorrectionMapData m n P11 P21 Qout F := by
+  exact
+    mgsProblem1912_correctionMapData_exists_of_rightGramPolar_completion
+      hinput hbottom hQorth
+
+/-- Chapter-facing additive witnesses from a right-Gram polar completion. -/
+theorem problem1912_add_factor_exists_of_rightGramPolarCompletion
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    {Q : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hbottom :
+      P21 = matMulRect m n n Q (Problem1912RightGramPolarH P21))
+    (hQorth : GramSchmidtOrthonormalColumns Q) :
+    Exists fun Qout : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      (Qout = fun i j => P21 i j + matMulRect m n n F P11 i j) /\
+        GramSchmidtOrthonormalColumns Qout /\
+        rectOpNorm2Le F 1 := by
+  exact
+    mgsProblem1912_add_factor_exists_of_rightGramPolar_completion
+      hinput hbottom hQorth
+
+/-- Chapter-facing tall right-Gram polar completion extracted from the
+corrected CS/polar input. -/
+theorem problem1912_rightGramPolarCompletion_exists
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+      P21 = matMulRect m n n Q (Problem1912RightGramPolarH P21) /\
+        GramSchmidtOrthonormalColumns Q := by
+  exact exists_rectRightGramPolarCompletion_of_tall P21 hinput.tall
+
+/-- Chapter-facing pure correction-map data from the corrected CS/polar
+input.  This closes the tall mixed-rank right-Gram polar completion branch. -/
+theorem problem1912_correctionMapData_exists_of_csPolarInput
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21) :
+    Exists fun Qout : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      Problem1912CorrectionMapData m n P11 P21 Qout F := by
+  exact
+    mgsProblem1912_correctionMapData_exists_of_csPolarInput hinput
+
+/-- Chapter-facing additive Problem 19.12 witnesses from the corrected
+CS/polar input. -/
+theorem problem1912_add_factor_exists_of_csPolarInput
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21) :
+    Exists fun Qout : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      (Qout = fun i j => P21 i j + matMulRect m n n F P11 i j) /\
+        GramSchmidtOrthonormalColumns Qout /\
+        rectOpNorm2Le F 1 := by
+  exact
+    mgsProblem1912_add_factor_exists_of_csPolarInput hinput
+
+/-- Chapter-labeled full-positive right-Gram polar payload constructor from
+the corrected CS/polar input.  The bridge and contraction obligations are
+discharged by `T = (I+H)^{-1} * P11^T`. -/
+def problem1912_polarFactorData_of_csPolarInput_fullPositiveRightGram
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hpos : forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a) :
+    Problem1912PolarFactorData m n P11 P21 :=
+  mgsProblem1912_polarFactorData_of_csPolarInput_fullPositive_rightGram
+    hinput hpos
+
+/-- Full-positive right-Gram polar factors plus the remaining bridge produce
+chapter-facing pure Problem 19.12 correction-map data. -/
+theorem problem1912_correctionMapData_exists_of_fullPositiveRightGram
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    {T : Fin n -> Fin n -> Real}
+    (hpos : forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a)
+    (hTP :
+      matMul n T P11 =
+        fun i j => idMatrix n i j - Problem1912RightGramPolarH P21 i j)
+    (hT : opNorm2Le T 1) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      Problem1912CorrectionMapData m n P11 P21 Q F := by
+  exact
+    LeanFpAnalysis.FP.mgsProblem1912_correctionMapData_exists_of_fullPositive_rightGram
+      hpos hTP hT
+
+/-- Full-positive right-Gram polar factors plus the corrected CS/polar input
+produce chapter-facing pure Problem 19.12 correction-map data. -/
+theorem problem1912_correctionMapData_exists_of_csPolarInput_fullPositiveRightGram
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hpos : forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      Problem1912CorrectionMapData m n P11 P21 Q F := by
+  exact
+    mgsProblem1912_correctionMapData_exists_of_csPolarInput_fullPositive_rightGram
+      hinput hpos
+
+/-- Full-positive right-Gram polar factors plus the remaining bridge produce
+chapter-facing additive Problem 19.12 witnesses. -/
+theorem problem1912_add_factor_exists_of_fullPositiveRightGram
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    {T : Fin n -> Fin n -> Real}
+    (hpos : forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a)
+    (hTP :
+      matMul n T P11 =
+        fun i j => idMatrix n i j - Problem1912RightGramPolarH P21 i j)
+    (hT : opNorm2Le T 1) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      (Q = fun i j => P21 i j + matMulRect m n n F P11 i j) /\
+        GramSchmidtOrthonormalColumns Q /\
+        rectOpNorm2Le F 1 := by
+  exact
+    LeanFpAnalysis.FP.mgsProblem1912_add_factor_exists_of_fullPositive_rightGram
+      hpos hTP hT
+
+/-- Full-positive right-Gram polar factors plus the corrected CS/polar input
+produce chapter-facing additive Problem 19.12 witnesses. -/
+theorem problem1912_add_factor_exists_of_csPolarInput_fullPositiveRightGram
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hpos : forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      (Q = fun i j => P21 i j + matMulRect m n n F P11 i j) /\
+        GramSchmidtOrthonormalColumns Q /\
+        rectOpNorm2Le F 1 := by
+  exact
+    mgsProblem1912_add_factor_exists_of_csPolarInput_fullPositive_rightGram
+      hinput hpos
+
+/-- Chapter-facing branch router for the closed zero-top-Gram and
+full-positive right-Gram polar cases of Problem 19.12. -/
+theorem problem1912_correctionMapData_exists_of_csPolarInput_zeroOrFullPositiveRightGram
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hcase :
+      rectangularGram P11 = (fun _ _ => 0) \/
+        forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      Problem1912CorrectionMapData m n P11 P21 Q F := by
+  exact
+    mgsProblem1912_correctionMapData_exists_of_csPolarInput_zero_or_fullPositive_rightGram
+      hinput hcase
+
+/-- Chapter-facing additive branch router for the closed zero-top-Gram and
+full-positive right-Gram polar cases of Problem 19.12. -/
+theorem problem1912_add_factor_exists_of_csPolarInput_zeroOrFullPositiveRightGram
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hcase :
+      rectangularGram P11 = (fun _ _ => 0) \/
+        forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      (Q = fun i j => P21 i j + matMulRect m n n F P11 i j) /\
+        GramSchmidtOrthonormalColumns Q /\
+        rectOpNorm2Le F 1 := by
+  exact
+    mgsProblem1912_add_factor_exists_of_csPolarInput_zero_or_fullPositive_rightGram
+      hinput hcase
+
+/-- Chapter-facing residual branch after the closed zero/full-positive
+CS/polar router fails: the top Gram is nonzero and the lower right-Gram surface
+has at least one zero singular value. -/
+theorem problem1912_remainingMixedBranch_of_not_zeroOrFullPositiveRightGram
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hnot :
+      Not (rectangularGram P11 = (fun _ _ => 0) \/
+        forall a : Fin n, 0 < rectRightGramBasisSingularValue P21 a)) :
+    Ne (rectangularGram P11) (fun _ _ => 0) /\
+      Exists fun a : Fin n => rectRightGramBasisSingularValue P21 a = 0 := by
+  exact
+    MGSProblem1912CSPolarInput.remaining_mixedBranch_of_not_zero_or_fullPositive_rightGram
+      hinput hnot
+
+/-- Chapter-labeled conversion from a polar-factor payload to pure Problem
+19.12 correction-map data. -/
+theorem problem1912_polarFactorData_to_correctionMapData {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hpolar : Problem1912PolarFactorData m n P11 P21) :
+    Problem1912CorrectionMapData m n P11 P21 hpolar.q
+      (matMulRect m n n hpolar.q hpolar.tMat) := by
+  exact
+    LeanFpAnalysis.FP.MGSProblem1912PolarFactorData.to_correctionMapData
+      hpolar
+
+/-- Chapter-facing additive identity supplied by a polar-factor payload. -/
+theorem problem1912_polarFactorData_add_factor_eq {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hpolar : Problem1912PolarFactorData m n P11 P21) :
+    hpolar.q =
+      fun i j =>
+        P21 i j +
+          matMulRect m n n (matMulRect m n n hpolar.q hpolar.tMat)
+            P11 i j := by
+  exact
+    LeanFpAnalysis.FP.MGSProblem1912PolarFactorData.add_factor_eq
+      hpolar
+
+/-- Existential chapter-facing pure correction-map data from a polar-factor
+payload. -/
+theorem problem1912_correctionMapData_exists_of_polarFactorData
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hpolar : Problem1912PolarFactorData m n P11 P21) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      Problem1912CorrectionMapData m n P11 P21 Q F := by
+  exact
+    LeanFpAnalysis.FP.mgsProblem1912_correctionMapData_exists_of_polarFactorData
+      hpolar
+
+/-- Existential chapter-facing additive Problem 19.12 witnesses from a
+polar-factor payload. -/
+theorem problem1912_add_factor_exists_of_polarFactorData
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hpolar : Problem1912PolarFactorData m n P11 P21) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      (Q = fun i j => P21 i j + matMulRect m n n F P11 i j) /\
+        GramSchmidtOrthonormalColumns Q /\
+        rectOpNorm2Le F 1 := by
+  exact
+    LeanFpAnalysis.FP.mgsProblem1912_add_factor_exists_of_polarFactorData
+      hpolar
+
+/-- Nonempty polar-factor payloads provide pure Problem 19.12 correction-map
+data. -/
+theorem problem1912_correctionMapData_exists_of_polarFactorData_nonempty
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hpolar : Nonempty (Problem1912PolarFactorData m n P11 P21)) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      Problem1912CorrectionMapData m n P11 P21 Q F := by
+  exact
+    LeanFpAnalysis.FP.mgsProblem1912_correctionMapData_exists_of_polarFactorData_nonempty
+      hpolar
+
+/-- Nonempty polar-factor payloads provide additive Problem 19.12 witnesses. -/
+theorem problem1912_add_factor_exists_of_polarFactorData_nonempty
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hpolar : Nonempty (Problem1912PolarFactorData m n P11 P21)) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      (Q = fun i j => P21 i j + matMulRect m n n F P11 i j) /\
+        GramSchmidtOrthonormalColumns Q /\
+        rectOpNorm2Le F 1 := by
+  exact
+    LeanFpAnalysis.FP.mgsProblem1912_add_factor_exists_of_polarFactorData_nonempty
+      hpolar
 
 /-- Chapter-labeled specialization from pure Problem 19.12 correction-map data
 to the common-`R` correction-map contract. -/
@@ -683,6 +1310,134 @@ theorem problem1912_add_factor_exists_of_csDiagonalFactorData_nonempty
   exact
     LeanFpAnalysis.FP.mgsProblem1912_add_factor_exists_of_csDiagonalFactorData_nonempty
       hcs
+
+/-- Chapter-facing zero-correction branch: if the lower block already has
+orthonormal columns, it provides the repaired factor with zero correction. -/
+theorem problem1912_correctionMapData_exists_of_bottom_orthonormal
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hP21 : GramSchmidtOrthonormalColumns P21) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      Problem1912CorrectionMapData m n P11 P21 Q F := by
+  exact
+    LeanFpAnalysis.FP.mgsProblem1912_correctionMapData_exists_of_bottom_orthonormal
+      hP21
+
+/-- Chapter-facing additive form of the zero-correction branch. -/
+theorem problem1912_add_factor_exists_of_bottom_orthonormal {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hP21 : GramSchmidtOrthonormalColumns P21) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      (Q = fun i j => P21 i j + matMulRect m n n F P11 i j) /\
+        GramSchmidtOrthonormalColumns Q /\
+        rectOpNorm2Le F 1 := by
+  exact
+    LeanFpAnalysis.FP.mgsProblem1912_add_factor_exists_of_bottom_orthonormal
+      hP21
+
+/-- Chapter-facing degenerate CS/polar reduction: if the top block is zero,
+the corrected CS/polar input makes the lower block orthonormal. -/
+theorem problem1912_csPolarInput_bottom_orthonormal_of_top_zero
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hP11zero : P11 = fun _ _ => 0) :
+    GramSchmidtOrthonormalColumns P21 := by
+  exact
+    LeanFpAnalysis.FP.MGSProblem1912CSPolarInput.bottom_orthonormal_of_top_zero
+      hinput hP11zero
+
+/-- Chapter-facing degenerate CS/polar reduction: if the top Gram matrix is
+zero, the corrected CS/polar input makes the lower block orthonormal. -/
+theorem problem1912_csPolarInput_bottom_orthonormal_of_top_gram_zero
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hP11gram : rectangularGram P11 = fun _ _ => 0) :
+    GramSchmidtOrthonormalColumns P21 := by
+  exact
+    LeanFpAnalysis.FP.MGSProblem1912CSPolarInput.bottom_orthonormal_of_top_gram_zero
+      hinput hP11gram
+
+/-- Chapter-facing zero-Gram equivalence for rectangular blocks. -/
+theorem problem1912_rectangularGram_eq_zero_iff {m n : Nat}
+    (Q : Fin m -> Fin n -> Real) :
+    rectangularGram Q = (fun _ _ => 0) <-> Q = fun _ _ => 0 := by
+  exact LeanFpAnalysis.FP.rectangularGram_eq_zero_iff Q
+
+/-- Chapter-facing degenerate CS/polar reduction: a zero top Gram matrix means
+the top block itself is zero. -/
+theorem problem1912_csPolarInput_top_zero_of_top_gram_zero
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hP11gram : rectangularGram P11 = fun _ _ => 0) :
+    P11 = fun _ _ => 0 := by
+  exact
+    LeanFpAnalysis.FP.MGSProblem1912CSPolarInput.top_zero_of_top_gram_zero
+      hinput hP11gram
+
+/-- Chapter-facing correction-data existence for the zero-top-block CS/polar
+branch. -/
+theorem problem1912_correctionMapData_exists_of_csPolarInput_top_zero
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hP11zero : P11 = fun _ _ => 0) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      Problem1912CorrectionMapData m n P11 P21 Q F := by
+  exact
+    LeanFpAnalysis.FP.mgsProblem1912_correctionMapData_exists_of_csPolarInput_top_zero
+      hinput hP11zero
+
+/-- Chapter-facing additive-witness existence for the zero-top-block CS/polar
+branch. -/
+theorem problem1912_add_factor_exists_of_csPolarInput_top_zero
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hP11zero : P11 = fun _ _ => 0) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      (Q = fun i j => P21 i j + matMulRect m n n F P11 i j) /\
+        GramSchmidtOrthonormalColumns Q /\
+        rectOpNorm2Le F 1 := by
+  exact
+    LeanFpAnalysis.FP.mgsProblem1912_add_factor_exists_of_csPolarInput_top_zero
+      hinput hP11zero
+
+/-- Chapter-facing correction-data existence for the zero-top-Gram CS/polar
+branch. -/
+theorem problem1912_correctionMapData_exists_of_csPolarInput_top_gram_zero
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hP11gram : rectangularGram P11 = fun _ _ => 0) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      Problem1912CorrectionMapData m n P11 P21 Q F := by
+  exact
+    LeanFpAnalysis.FP.mgsProblem1912_correctionMapData_exists_of_csPolarInput_top_gram_zero
+      hinput hP11gram
+
+/-- Chapter-facing additive-witness existence for the zero-top-Gram CS/polar
+branch. -/
+theorem problem1912_add_factor_exists_of_csPolarInput_top_gram_zero
+    {m n : Nat}
+    {P11 : Fin n -> Fin n -> Real} {P21 : Fin m -> Fin n -> Real}
+    (hinput : Problem1912CSPolarInput m n P11 P21)
+    (hP11gram : rectangularGram P11 = fun _ _ => 0) :
+    Exists fun Q : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      (Q = fun i j => P21 i j + matMulRect m n n F P11 i j) /\
+        GramSchmidtOrthonormalColumns Q /\
+        rectOpNorm2Le F 1 := by
+  exact
+    LeanFpAnalysis.FP.mgsProblem1912_add_factor_exists_of_csPolarInput_top_gram_zero
+      hinput hP11gram
 
 /-- Chapter-facing sanity check for the remaining CS/polar target: the
 block-column Gram identity alone is not a dimension-free source of additive
@@ -1469,6 +2224,13 @@ abbrev paddedEconomyR {m n : Nat}
     (R : Fin (n + m) -> Fin n -> Real) :
     Fin n -> Fin n -> Real :=
   mgsPaddedEconomyR R
+
+/-- The extracted `R11` block from the padded Householder QR computation used
+in the Theorem 19.13 MGS handoff. -/
+abbrev householder_paddedFinInput_R11 (fp : FPModel) {m n : Nat}
+    (A : Fin m -> Fin n -> Real) : Fin n -> Fin n -> Real :=
+  paddedEconomyR
+    (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))
 
 theorem paddedEconomyR_upper_trapezoidal {m n : Nat}
     (R : Fin (n + m) -> Fin n -> Real)
@@ -2360,6 +3122,51 @@ theorem householder_paddedFinInput_csPolarInput
             problem1912_csPolarInput_of_paddedEconomy_blocks
               (m := m) (n := n) (P := Q) hnm hres.2.2.1
 
+/-- The actual padded Householder block data supplies pure Problem 19.12
+correction-map data for the economy blocks. -/
+theorem householder_paddedFinInput_correctionMapData_exists
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + m))) :
+    Exists fun Qrepair : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      Problem1912CorrectionMapData m n
+        (paddedEconomyP11
+          (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+        (paddedEconomyQ
+          (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+        Qrepair F := by
+  exact
+    problem1912_correctionMapData_exists_of_csPolarInput
+      (householder_paddedFinInput_csPolarInput fp A hn hnm hvalid)
+
+/-- The actual padded Householder block data supplies the additive Problem
+19.12 repair witnesses for the economy blocks. -/
+theorem householder_paddedFinInput_add_factor_exists
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + m))) :
+    Exists fun Qrepair : Fin m -> Fin n -> Real =>
+    Exists fun F : Fin m -> Fin n -> Real =>
+      (Qrepair =
+          fun i j =>
+            paddedEconomyQ
+                (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A))
+                i j +
+              matMulRect m n n F
+                (paddedEconomyP11
+                  (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+                i j) /\
+        GramSchmidtOrthonormalColumns Qrepair /\
+        rectOpNorm2Le F 1 := by
+  exact
+    problem1912_add_factor_exists_of_csPolarInput
+      (householder_paddedFinInput_csPolarInput fp A hn hnm hvalid)
+
 /-- The actual padded Householder top-left economy block is a contraction once
 the corrected Problem 19.12 input is instantiated. -/
 theorem householder_paddedFinInput_p11_opNorm2Le_one
@@ -2623,6 +3430,102 @@ theorem householder_paddedFinInput_pre_repair_gram_bound_of_right_inverse_budget
               (Theorem19_4.gamma_tilde_nonneg fp hvalid)
               hblock.2.2.2.2.2 hresidual hRinv heta hrho
 
+/-- The concrete padded Householder handoff supplies the upper-trapezoidal
+shape of the extracted `R11` block, so a pointwise nonzero diagonal gives the
+determinant-nonzero certificate needed by the repository inverse API. -/
+theorem householder_paddedFinInput_R11_det_ne_zero_of_diag_ne_zero
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + m)))
+    (hdiag :
+      forall i : Fin n,
+        Ne
+          (paddedEconomyR
+            (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))
+            i i)
+          0) :
+    Ne
+      (Matrix.det
+      (paddedEconomyR
+        (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)) :
+          Matrix (Fin n) (Fin n) Real))
+      0 := by
+  let R11 : Fin n -> Fin n -> Real :=
+    paddedEconomyR
+      (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))
+  have hfull := householder_paddedFinInput_full_block_data fp A hn hvalid
+  cases hfull with
+  | intro dTop htopExists =>
+      cases htopExists with
+      | intro dBottom hblock =>
+          dsimp only at hblock
+          have hupper : IsUpperTrapezoidal n n R11 := hblock.2.2.2.1
+          have hdiagR : forall i : Fin n, Ne (R11 i i) 0 := by
+            intro i
+            simpa [R11] using hdiag i
+          have hdetR :
+              Ne (Matrix.det (R11 : Matrix (Fin n) (Fin n) Real)) 0 :=
+            det_ne_zero_of_upper_triangular_diag_ne_zero n R11 hupper hdiagR
+          simpa [R11] using hdetR
+
+/-- Determinant-nonzero form of the `R11` right-inverse equation for the
+repository `nonsingInv`. -/
+theorem householder_paddedFinInput_R11_nonsingInv_right_inverse_of_det_ne_zero
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hdet :
+      Ne
+        (Matrix.det
+        (paddedEconomyR
+          (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)) :
+            Matrix (Fin n) (Fin n) Real))
+        0) :
+    matMul n
+      (paddedEconomyR
+        (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)))
+      (nonsingInv n
+        (paddedEconomyR
+          (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)))) =
+      idMatrix n := by
+  let R11 : Fin n -> Fin n -> Real :=
+    paddedEconomyR
+      (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))
+  have hdetR : Ne (Matrix.det (R11 : Matrix (Fin n) (Fin n) Real)) 0 := by
+    simpa [R11] using hdet
+  have hrightPred : IsRightInverse n R11 (nonsingInv n R11) :=
+    (isInverse_nonsingInv_of_det_ne_zero n R11 hdetR).2
+  change matMul n R11 (nonsingInv n R11) = idMatrix n
+  ext i j
+  exact hrightPred i j
+
+/-- Diagonal-nonzero form of the `R11` right-inverse equation for the
+repository `nonsingInv`. -/
+theorem householder_paddedFinInput_R11_nonsingInv_right_inverse_of_diag_ne_zero
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + m)))
+    (hdiag :
+      forall i : Fin n,
+        Ne
+          (paddedEconomyR
+            (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))
+            i i)
+          0) :
+    matMul n
+      (paddedEconomyR
+        (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)))
+      (nonsingInv n
+        (paddedEconomyR
+          (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)))) =
+      idMatrix n := by
+  have hdet :=
+    householder_paddedFinInput_R11_det_ne_zero_of_diag_ne_zero
+      fp A hn hvalid hdiag
+  exact
+    householder_paddedFinInput_R11_nonsingInv_right_inverse_of_det_ne_zero
+      fp A hdet
+
 /-- Determinant-specialized form of the concrete pre-repair Gram-residual
 bound.  A nonzero determinant for the extracted `R11` block supplies the
 repository `nonsingInv` right-inverse equation; the remaining condition
@@ -2655,14 +3558,9 @@ theorem householder_paddedFinInput_pre_repair_gram_bound_of_det_ne_zero_inverse_
         (paddedEconomyQ
           (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A))))
       ((eta * rho) ^ 2) := by
-  let R11 : Fin n -> Fin n -> Real :=
-    paddedEconomyR
-      (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))
-  have hrightPred : IsRightInverse n R11 (nonsingInv n R11) :=
-    (isInverse_nonsingInv_of_det_ne_zero n R11 hdet).2
-  have hRright : matMul n R11 (nonsingInv n R11) = idMatrix n := by
-    ext i j
-    exact hrightPred i j
+  have hRright :=
+    householder_paddedFinInput_R11_nonsingInv_right_inverse_of_det_ne_zero
+      fp A hdet
   exact
     householder_paddedFinInput_pre_repair_gram_bound_of_right_inverse_budget
       fp A hn hvalid hRright hresidual hRinv heta hrho
@@ -2699,23 +3597,12 @@ theorem householder_paddedFinInput_pre_repair_gram_bound_of_upper_diag_inverse_b
         (paddedEconomyQ
           (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A))))
       ((eta * rho) ^ 2) := by
-  let R11 : Fin n -> Fin n -> Real :=
-    paddedEconomyR
-      (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))
-  have hfull := householder_paddedFinInput_full_block_data fp A hn hvalid
-  cases hfull with
-  | intro dTop htopExists =>
-      cases htopExists with
-      | intro dBottom hblock =>
-          dsimp only at hblock
-          have hupper : IsUpperTrapezoidal n n R11 := hblock.2.2.2.1
-          have hdet :
-              Ne (Matrix.det (R11 : Matrix (Fin n) (Fin n) Real)) 0 := by
-            exact det_ne_zero_of_upper_triangular_diag_ne_zero
-              n R11 hupper hdiag
-          exact
-            householder_paddedFinInput_pre_repair_gram_bound_of_det_ne_zero_inverse_budget
-              fp A hn hvalid hdet hresidual hRinv heta hrho
+  have hdet :=
+    householder_paddedFinInput_R11_det_ne_zero_of_diag_ne_zero
+      fp A hn hvalid hdiag
+  exact
+    householder_paddedFinInput_pre_repair_gram_bound_of_det_ne_zero_inverse_budget
+      fp A hn hvalid hdet hresidual hRinv heta hrho
 
 /-- The concrete padded Householder handoff supplies the upper-trapezoidal
 shape of the extracted `R11` block, so a determinant-nonzero certificate is
@@ -2841,16 +3728,10 @@ theorem qrsensitivitySourceOutput_of_householder_upper_diag_repair
       cases htopExists with
       | intro dBottom hblock =>
           dsimp only at hblock
-          have hupper : IsUpperTrapezoidal n n R11 := hblock.2.2.2.1
-          have hdet :
-              Ne (Matrix.det (R11 : Matrix (Fin n) (Fin n) Real)) 0 := by
-            exact det_ne_zero_of_upper_triangular_diag_ne_zero
-              n R11 hupper hdiag
-          have hrightPred : IsRightInverse n R11 (nonsingInv n R11) :=
-            (isInverse_nonsingInv_of_det_ne_zero n R11 hdet).2
           have hRright : matMul n R11 (nonsingInv n R11) = idMatrix n := by
-            ext i j
-            exact hrightPred i j
+            simpa [R11] using
+              householder_paddedFinInput_R11_nonsingInv_right_inverse_of_diag_ne_zero
+                fp A hn hvalid hdiag
           have hdA1 : rectOpNorm2Le dBottom eta1 :=
             bottomPerturbation_rectOpNorm2Le_of_stackedColumnwiseBound
               A dTop dBottom (Theorem19_4.gamma_tilde_nonneg fp hvalid)
@@ -2959,16 +3840,10 @@ theorem qrsensitivitySourceOutput_of_householder_upper_diag_correctionMapDataRep
       cases htopExists with
       | intro dBottom hblock =>
           dsimp only at hblock
-          have hupper : IsUpperTrapezoidal n n R11 := hblock.2.2.2.1
-          have hdet :
-              Ne (Matrix.det (R11 : Matrix (Fin n) (Fin n) Real)) 0 := by
-            exact det_ne_zero_of_upper_triangular_diag_ne_zero
-              n R11 hupper hdiag
-          have hrightPred : IsRightInverse n R11 (nonsingInv n R11) :=
-            (isInverse_nonsingInv_of_det_ne_zero n R11 hdet).2
           have hRright : matMul n R11 (nonsingInv n R11) = idMatrix n := by
-            ext i j
-            exact hrightPred i j
+            simpa [R11] using
+              householder_paddedFinInput_R11_nonsingInv_right_inverse_of_diag_ne_zero
+                fp A hn hvalid hdiag
           have hdA1 : rectOpNorm2Le dBottom eta1 :=
             bottomPerturbation_rectOpNorm2Le_of_stackedColumnwiseBound
               A dTop dBottom (Theorem19_4.gamma_tilde_nonneg fp hvalid)
@@ -3273,16 +4148,10 @@ theorem qrsensitivitySourceOutput_of_householder_upper_diag_correctionMapDataRep
       cases htopExists with
       | intro dBottom hblock =>
           dsimp only at hblock
-          have hupper : IsUpperTrapezoidal n n R11 := hblock.2.2.2.1
-          have hdet :
-              Ne (Matrix.det (R11 : Matrix (Fin n) (Fin n) Real)) 0 := by
-            exact det_ne_zero_of_upper_triangular_diag_ne_zero
-              n R11 hupper hdiag
-          have hrightPred : IsRightInverse n R11 (nonsingInv n R11) :=
-            (isInverse_nonsingInv_of_det_ne_zero n R11 hdet).2
           have hRright : matMul n R11 (nonsingInv n R11) = idMatrix n := by
-            ext i j
-            exact hrightPred i j
+            simpa [R11] using
+              householder_paddedFinInput_R11_nonsingInv_right_inverse_of_diag_ne_zero
+                fp A hn hvalid hdiag
           have hdA1 : rectOpNorm2Le dBottom eta1 :=
             bottomPerturbation_rectOpNorm2Le_of_stackedColumnwiseBound
               A dTop dBottom (Theorem19_4.gamma_tilde_nonneg fp hvalid)
@@ -3447,16 +4316,10 @@ theorem qrsensitivitySourceOutput_of_householder_upper_diag_csDiagonalRepair
       cases htopExists with
       | intro dBottom hblock =>
           dsimp only at hblock
-          have hupper : IsUpperTrapezoidal n n R11 := hblock.2.2.2.1
-          have hdet :
-              Ne (Matrix.det (R11 : Matrix (Fin n) (Fin n) Real)) 0 := by
-            exact det_ne_zero_of_upper_triangular_diag_ne_zero
-              n R11 hupper hdiag
-          have hrightPred : IsRightInverse n R11 (nonsingInv n R11) :=
-            (isInverse_nonsingInv_of_det_ne_zero n R11 hdet).2
           have hRright : matMul n R11 (nonsingInv n R11) = idMatrix n := by
-            ext i j
-            exact hrightPred i j
+            simpa [R11] using
+              householder_paddedFinInput_R11_nonsingInv_right_inverse_of_diag_ne_zero
+                fp A hn hvalid hdiag
           have hdA1 : rectOpNorm2Le dBottom eta1 :=
             bottomPerturbation_rectOpNorm2Le_of_stackedColumnwiseBound
               A dTop dBottom (Theorem19_4.gamma_tilde_nonneg fp hvalid)
@@ -3866,16 +4729,10 @@ theorem qrsensitivitySourceOutput_of_householder_upper_diag_csDiagonalRepair_of_
       cases htopExists with
       | intro dBottom hblock =>
           dsimp only at hblock
-          have hupper : IsUpperTrapezoidal n n R11 := hblock.2.2.2.1
-          have hdet :
-              Ne (Matrix.det (R11 : Matrix (Fin n) (Fin n) Real)) 0 := by
-            exact det_ne_zero_of_upper_triangular_diag_ne_zero
-              n R11 hupper hdiag
-          have hrightPred : IsRightInverse n R11 (nonsingInv n R11) :=
-            (isInverse_nonsingInv_of_det_ne_zero n R11 hdet).2
           have hRright : matMul n R11 (nonsingInv n R11) = idMatrix n := by
-            ext i j
-            exact hrightPred i j
+            simpa [R11] using
+              householder_paddedFinInput_R11_nonsingInv_right_inverse_of_diag_ne_zero
+                fp A hn hvalid hdiag
           have hdA1 : rectOpNorm2Le dBottom eta1 :=
             bottomPerturbation_rectOpNorm2Le_of_stackedColumnwiseBound
               A dTop dBottom (Theorem19_4.gamma_tilde_nonneg fp hvalid)
@@ -6663,6 +7520,450 @@ theorem
               (Qrepair := Qrepair) (F := F)
               hdet hresidual hdata hbudget
 
+/-- Concrete source-output assembly using the general CS/polar witness for the
+actual padded Householder economy blocks. -/
+theorem
+    qrsensitivitySourceOutput_of_householder_upper_diag_csPolarRepair_of_householder_stacked_double_residual_coefficient_budget_of_small_unit_roundoff
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {eta1 rho c2 kappaA higherOrder : Real}
+    (hdiag :
+      forall i : Fin n,
+        Ne
+          (paddedEconomyR
+            (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))
+            i i)
+          0)
+    (hresidual :
+      Theorem19_4.gamma_tilde fp (n + m) n * frobNormRect A <= eta1)
+    (hRinv :
+      rectOpNorm2Le
+        (nonsingInv n
+          (paddedEconomyR
+            (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))))
+        rho)
+    (hrho : 0 <= rho)
+    (hbudget :
+      2 * ((eta1 + 2 * eta1) * rho) +
+          ((eta1 + 2 * eta1) * rho) ^ 2 <=
+        c2 * fp.u * kappaA + higherOrder) :
+    QRSensitivitySourceOutput m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (paddedEconomyR
+        (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)))
+      c2
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u kappaA higherOrder := by
+  have hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + m)) := by
+    unfold gammaValid
+    have hhalf_lt_one : (1 / 2 : Real) < 1 := by norm_num
+    exact lt_of_le_of_lt hsmall hhalf_lt_one
+  exact
+    qrsensitivitySourceOutput_of_householder_upper_diag_correctionMapDataExistsRepair_of_householder_stacked_double_residual_coefficient_budget_of_small_unit_roundoff
+      (fp := fp) (m := m) (n := n) A hn hsmall
+      (eta1 := eta1) (rho := rho) (c2 := c2)
+      (kappaA := kappaA) (higherOrder := higherOrder)
+      hdiag hresidual hRinv
+      (householder_paddedFinInput_correctionMapData_exists
+        fp A hn hnm hvalid)
+      hrho hbudget
+
+/-- Concrete `MGSQRBounds` assembly using the general CS/polar witness for the
+actual padded Householder economy blocks. -/
+theorem
+    mgs_qr_bounds_of_householder_upper_diag_csPolarRepair_of_householder_stacked_double_residual_coefficient_budget_of_small_unit_roundoff
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {eta1 rho c2 kappaA higherOrder : Real}
+    (hdiag :
+      forall i : Fin n,
+        Ne
+          (paddedEconomyR
+            (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))
+            i i)
+          0)
+    (hresidual :
+      Theorem19_4.gamma_tilde fp (n + m) n * frobNormRect A <= eta1)
+    (hRinv :
+      rectOpNorm2Le
+        (nonsingInv n
+          (paddedEconomyR
+            (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))))
+        rho)
+    (hrho : 0 <= rho)
+    (hbudget :
+      2 * ((eta1 + 2 * eta1) * rho) +
+          ((eta1 + 2 * eta1) * rho) ^ 2 <=
+        c2 * fp.u * kappaA + higherOrder) :
+    MGSQRBounds m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (paddedEconomyR
+        (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)))
+      (2 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      c2
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u (frobNormRect A) kappaA higherOrder := by
+  have hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + m)) := by
+    unfold gammaValid
+    have hhalf_lt_one : (1 / 2 : Real) < 1 := by norm_num
+    exact lt_of_le_of_lt hsmall hhalf_lt_one
+  exact
+    mgs_qr_bounds_of_householder_upper_diag_correctionMapDataExistsRepair_of_householder_stacked_double_residual_coefficient_budget_of_small_unit_roundoff
+      (fp := fp) (m := m) (n := n) A hn hsmall
+      (eta1 := eta1) (rho := rho) (c2 := c2)
+      (kappaA := kappaA) (higherOrder := higherOrder)
+      hdiag hresidual hRinv
+      (householder_paddedFinInput_correctionMapData_exists
+        fp A hn hnm hvalid)
+      hrho hbudget
+
+/-- Frobenius-inverse source-output fallback using the general CS/polar witness
+for the actual padded Householder economy blocks. -/
+theorem
+    qrsensitivitySourceOutput_of_householder_upper_diag_csPolarRepair_of_householder_stacked_double_residual_coefficient_budget_frobInv_of_small_unit_roundoff
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {eta1 c2 kappaA higherOrder : Real}
+    (hdiag :
+      forall i : Fin n,
+        Ne
+          (paddedEconomyR
+            (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))
+            i i)
+          0)
+    (hresidual :
+      Theorem19_4.gamma_tilde fp (n + m) n * frobNormRect A <= eta1)
+    (hbudget :
+      2 * ((eta1 + 2 * eta1) *
+          frobNorm
+            (nonsingInv n
+              (paddedEconomyR
+                (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))))) +
+          ((eta1 + 2 * eta1) *
+            frobNorm
+              (nonsingInv n
+                (paddedEconomyR
+                  (fl_householderQRPanel_R fp (n + m) n
+                    (paddedFinInput A))))) ^ 2 <=
+        c2 * fp.u * kappaA + higherOrder) :
+    QRSensitivitySourceOutput m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (paddedEconomyR
+        (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)))
+      c2
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u kappaA higherOrder := by
+  have hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + m)) := by
+    unfold gammaValid
+    have hhalf_lt_one : (1 / 2 : Real) < 1 := by norm_num
+    exact lt_of_le_of_lt hsmall hhalf_lt_one
+  exact
+    qrsensitivitySourceOutput_of_householder_upper_diag_correctionMapDataExistsRepair_of_householder_stacked_double_residual_coefficient_budget_frobInv_of_small_unit_roundoff
+      (fp := fp) (m := m) (n := n) A hn hsmall
+      (eta1 := eta1) (c2 := c2) (kappaA := kappaA)
+      (higherOrder := higherOrder)
+      hdiag hresidual
+      (householder_paddedFinInput_correctionMapData_exists
+        fp A hn hnm hvalid)
+      hbudget
+
+/-- Frobenius-inverse `MGSQRBounds` fallback using the general CS/polar witness
+for the actual padded Householder economy blocks. -/
+theorem
+    mgs_qr_bounds_of_householder_upper_diag_csPolarRepair_of_householder_stacked_double_residual_coefficient_budget_frobInv_of_small_unit_roundoff
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {eta1 c2 kappaA higherOrder : Real}
+    (hdiag :
+      forall i : Fin n,
+        Ne
+          (paddedEconomyR
+            (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))
+            i i)
+          0)
+    (hresidual :
+      Theorem19_4.gamma_tilde fp (n + m) n * frobNormRect A <= eta1)
+    (hbudget :
+      2 * ((eta1 + 2 * eta1) *
+          frobNorm
+            (nonsingInv n
+              (paddedEconomyR
+                (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))))) +
+          ((eta1 + 2 * eta1) *
+            frobNorm
+              (nonsingInv n
+                (paddedEconomyR
+                  (fl_householderQRPanel_R fp (n + m) n
+                    (paddedFinInput A))))) ^ 2 <=
+        c2 * fp.u * kappaA + higherOrder) :
+    MGSQRBounds m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (paddedEconomyR
+        (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)))
+      (2 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      c2
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u (frobNormRect A) kappaA higherOrder := by
+  have hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + m)) := by
+    unfold gammaValid
+    have hhalf_lt_one : (1 / 2 : Real) < 1 := by norm_num
+    exact lt_of_le_of_lt hsmall hhalf_lt_one
+  exact
+    mgs_qr_bounds_of_householder_upper_diag_correctionMapDataExistsRepair_of_householder_stacked_double_residual_coefficient_budget_frobInv_of_small_unit_roundoff
+      (fp := fp) (m := m) (n := n) A hn hsmall
+      (eta1 := eta1) (c2 := c2) (kappaA := kappaA)
+      (higherOrder := higherOrder)
+      hdiag hresidual
+      (householder_paddedFinInput_correctionMapData_exists
+        fp A hn hnm hvalid)
+      hbudget
+
+/-- Determinant-nonzero source-output assembly using the general CS/polar
+witness for the actual padded Householder economy blocks. -/
+theorem
+    qrsensitivitySourceOutput_of_householder_det_ne_zero_csPolarRepair_of_householder_stacked_double_residual_coefficient_budget_of_small_unit_roundoff
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {eta1 rho c2 kappaA higherOrder : Real}
+    (hdet :
+      Ne
+        (Matrix.det
+        (paddedEconomyR
+          (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)) :
+            Matrix (Fin n) (Fin n) Real))
+        0)
+    (hresidual :
+      Theorem19_4.gamma_tilde fp (n + m) n * frobNormRect A <= eta1)
+    (hRinv :
+      rectOpNorm2Le
+        (nonsingInv n
+          (paddedEconomyR
+            (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))))
+        rho)
+    (hrho : 0 <= rho)
+    (hbudget :
+      2 * ((eta1 + 2 * eta1) * rho) +
+          ((eta1 + 2 * eta1) * rho) ^ 2 <=
+        c2 * fp.u * kappaA + higherOrder) :
+    QRSensitivitySourceOutput m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (paddedEconomyR
+        (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)))
+      c2
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u kappaA higherOrder := by
+  have hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + m)) := by
+    unfold gammaValid
+    have hhalf_lt_one : (1 / 2 : Real) < 1 := by norm_num
+    exact lt_of_le_of_lt hsmall hhalf_lt_one
+  exact
+    qrsensitivitySourceOutput_of_householder_det_ne_zero_correctionMapDataExistsRepair_of_householder_stacked_double_residual_coefficient_budget_of_small_unit_roundoff
+      (fp := fp) (m := m) (n := n) A hn hsmall
+      (eta1 := eta1) (rho := rho) (c2 := c2)
+      (kappaA := kappaA) (higherOrder := higherOrder)
+      hdet hresidual hRinv
+      (householder_paddedFinInput_correctionMapData_exists
+        fp A hn hnm hvalid)
+      hrho hbudget
+
+/-- Determinant-nonzero `MGSQRBounds` assembly using the general CS/polar
+witness for the actual padded Householder economy blocks. -/
+theorem
+    mgs_qr_bounds_of_householder_det_ne_zero_csPolarRepair_of_householder_stacked_double_residual_coefficient_budget_of_small_unit_roundoff
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {eta1 rho c2 kappaA higherOrder : Real}
+    (hdet :
+      Ne
+        (Matrix.det
+        (paddedEconomyR
+          (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)) :
+            Matrix (Fin n) (Fin n) Real))
+        0)
+    (hresidual :
+      Theorem19_4.gamma_tilde fp (n + m) n * frobNormRect A <= eta1)
+    (hRinv :
+      rectOpNorm2Le
+        (nonsingInv n
+          (paddedEconomyR
+            (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))))
+        rho)
+    (hrho : 0 <= rho)
+    (hbudget :
+      2 * ((eta1 + 2 * eta1) * rho) +
+          ((eta1 + 2 * eta1) * rho) ^ 2 <=
+        c2 * fp.u * kappaA + higherOrder) :
+    MGSQRBounds m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (paddedEconomyR
+        (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)))
+      (2 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      c2
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u (frobNormRect A) kappaA higherOrder := by
+  have hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + m)) := by
+    unfold gammaValid
+    have hhalf_lt_one : (1 / 2 : Real) < 1 := by norm_num
+    exact lt_of_le_of_lt hsmall hhalf_lt_one
+  exact
+    mgs_qr_bounds_of_householder_det_ne_zero_correctionMapDataExistsRepair_of_householder_stacked_double_residual_coefficient_budget_of_small_unit_roundoff
+      (fp := fp) (m := m) (n := n) A hn hsmall
+      (eta1 := eta1) (rho := rho) (c2 := c2)
+      (kappaA := kappaA) (higherOrder := higherOrder)
+      hdet hresidual hRinv
+      (householder_paddedFinInput_correctionMapData_exists
+        fp A hn hnm hvalid)
+      hrho hbudget
+
+/-- Determinant-nonzero Frobenius-inverse source-output fallback using the
+general CS/polar witness for the actual padded Householder economy blocks. -/
+theorem
+    qrsensitivitySourceOutput_of_householder_det_ne_zero_csPolarRepair_of_householder_stacked_double_residual_coefficient_budget_frobInv_of_small_unit_roundoff
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {eta1 c2 kappaA higherOrder : Real}
+    (hdet :
+      Ne
+        (Matrix.det
+        (paddedEconomyR
+          (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)) :
+            Matrix (Fin n) (Fin n) Real))
+        0)
+    (hresidual :
+      Theorem19_4.gamma_tilde fp (n + m) n * frobNormRect A <= eta1)
+    (hbudget :
+      2 * ((eta1 + 2 * eta1) *
+          frobNorm
+            (nonsingInv n
+              (paddedEconomyR
+                (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))))) +
+          ((eta1 + 2 * eta1) *
+            frobNorm
+              (nonsingInv n
+                (paddedEconomyR
+                  (fl_householderQRPanel_R fp (n + m) n
+                    (paddedFinInput A))))) ^ 2 <=
+        c2 * fp.u * kappaA + higherOrder) :
+    QRSensitivitySourceOutput m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (paddedEconomyR
+        (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)))
+      c2
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u kappaA higherOrder := by
+  have hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + m)) := by
+    unfold gammaValid
+    have hhalf_lt_one : (1 / 2 : Real) < 1 := by norm_num
+    exact lt_of_le_of_lt hsmall hhalf_lt_one
+  exact
+    qrsensitivitySourceOutput_of_householder_det_ne_zero_correctionMapDataExistsRepair_of_householder_stacked_double_residual_coefficient_budget_frobInv_of_small_unit_roundoff
+      (fp := fp) (m := m) (n := n) A hn hsmall
+      (eta1 := eta1) (c2 := c2) (kappaA := kappaA)
+      (higherOrder := higherOrder)
+      hdet hresidual
+      (householder_paddedFinInput_correctionMapData_exists
+        fp A hn hnm hvalid)
+      hbudget
+
+/-- Determinant-nonzero Frobenius-inverse `MGSQRBounds` fallback using the
+general CS/polar witness for the actual padded Householder economy blocks. -/
+theorem
+    mgs_qr_bounds_of_householder_det_ne_zero_csPolarRepair_of_householder_stacked_double_residual_coefficient_budget_frobInv_of_small_unit_roundoff
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {eta1 c2 kappaA higherOrder : Real}
+    (hdet :
+      Ne
+        (Matrix.det
+        (paddedEconomyR
+          (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)) :
+            Matrix (Fin n) (Fin n) Real))
+        0)
+    (hresidual :
+      Theorem19_4.gamma_tilde fp (n + m) n * frobNormRect A <= eta1)
+    (hbudget :
+      2 * ((eta1 + 2 * eta1) *
+          frobNorm
+            (nonsingInv n
+              (paddedEconomyR
+                (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))))) +
+          ((eta1 + 2 * eta1) *
+            frobNorm
+              (nonsingInv n
+                (paddedEconomyR
+                  (fl_householderQRPanel_R fp (n + m) n
+                    (paddedFinInput A))))) ^ 2 <=
+        c2 * fp.u * kappaA + higherOrder) :
+    MGSQRBounds m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (paddedEconomyR
+        (fl_householderQRPanel_R fp (n + m) n (paddedFinInput A)))
+      (2 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      c2
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u (frobNormRect A) kappaA higherOrder := by
+  have hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + m)) := by
+    unfold gammaValid
+    have hhalf_lt_one : (1 / 2 : Real) < 1 := by norm_num
+    exact lt_of_le_of_lt hsmall hhalf_lt_one
+  exact
+    mgs_qr_bounds_of_householder_det_ne_zero_correctionMapDataExistsRepair_of_householder_stacked_double_residual_coefficient_budget_frobInv_of_small_unit_roundoff
+      (fp := fp) (m := m) (n := n) A hn hsmall
+      (eta1 := eta1) (c2 := c2) (kappaA := kappaA)
+      (higherOrder := higherOrder)
+      hdet hresidual
+      (householder_paddedFinInput_correctionMapData_exists
+        fp A hn hnm hvalid)
+      hbudget
+
 /-- Source-output assembly from a packaged diagonal CS factor-data certificate.
 
 This is the source-shaped form of the pure-data fixed-budget wrapper: the
@@ -8035,6 +9336,262 @@ theorem
       fp A hn hsmall hdiag hresidual hRinv hP11 hP21 hQcs hF hUorth
       hWorth hVorth hCdiag hSdiag hTdiag hs hcs hnorm hcol heta12
       hrho hbudget
+
+/-- Source-nonbreakdown form of the chapter-facing Theorem 19.13 assembly.
+
+The diagonal-nonzero hypothesis is stated directly on the extracted `R11`
+block. The CS/polar repair witness and the fallback `nonsingInv` operator
+certificate are selected internally; the remaining visible obligation is the
+Frobenius-inverse budget that will eventually be replaced by the sharper
+source condition-number estimate. -/
+theorem mgs_qr_bounds_of_R11_diag_ne_zero
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {c2 kappaA higherOrder : Real}
+    (hdiag :
+      forall i : Fin n,
+        Ne (householder_paddedFinInput_R11 fp A i i) 0)
+    (hbudget :
+      2 *
+          (((Theorem19_4.gamma_tilde fp (n + m) n * frobNormRect A) +
+                2 *
+                  (Theorem19_4.gamma_tilde fp (n + m) n *
+                    frobNormRect A)) *
+              frobNorm (nonsingInv n (householder_paddedFinInput_R11 fp A))) +
+            (((Theorem19_4.gamma_tilde fp (n + m) n * frobNormRect A) +
+                  2 *
+                    (Theorem19_4.gamma_tilde fp (n + m) n *
+                      frobNormRect A)) *
+                frobNorm
+                  (nonsingInv n (householder_paddedFinInput_R11 fp A))) ^ 2 <=
+        c2 * fp.u * kappaA + higherOrder) :
+    MGSQRBounds m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (householder_paddedFinInput_R11 fp A)
+      (2 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      c2
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u (frobNormRect A) kappaA higherOrder := by
+  exact
+    mgs_qr_bounds_of_householder_upper_diag_csPolarRepair_of_householder_stacked_double_residual_coefficient_budget_frobInv_of_small_unit_roundoff
+      (fp := fp) (m := m) (n := n) A hn hnm hsmall
+      (eta1 := Theorem19_4.gamma_tilde fp (n + m) n * frobNormRect A)
+      (c2 := c2) (kappaA := kappaA) (higherOrder := higherOrder)
+      (by
+        intro i
+        simpa [householder_paddedFinInput_R11] using hdiag i)
+      (le_rfl)
+      (by
+        simpa [householder_paddedFinInput_R11] using hbudget)
+
+/-- Compact-budget version of `mgs_qr_bounds_of_R11_diag_ne_zero`.
+
+This records the current concrete residual combination as `3 * gamma_tilde *
+||A||_F`, leaving only the source inverse/condition estimate as the remaining
+budget refinement. -/
+theorem mgs_qr_bounds_of_R11_diag_ne_zero_compact_budget
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {c2 kappaA higherOrder : Real}
+    (hdiag :
+      forall i : Fin n,
+        Ne (householder_paddedFinInput_R11 fp A i i) 0)
+    (hbudget :
+      2 *
+          ((3 * (Theorem19_4.gamma_tilde fp (n + m) n * frobNormRect A)) *
+              frobNorm (nonsingInv n (householder_paddedFinInput_R11 fp A))) +
+            ((3 *
+                  (Theorem19_4.gamma_tilde fp (n + m) n *
+                    frobNormRect A)) *
+                frobNorm
+                  (nonsingInv n (householder_paddedFinInput_R11 fp A))) ^ 2 <=
+        c2 * fp.u * kappaA + higherOrder) :
+    MGSQRBounds m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (householder_paddedFinInput_R11 fp A)
+      (2 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      c2
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u (frobNormRect A) kappaA higherOrder := by
+  refine
+    mgs_qr_bounds_of_R11_diag_ne_zero
+      (fp := fp) (m := m) (n := n) A hn hnm hsmall
+      (c2 := c2) (kappaA := kappaA) (higherOrder := higherOrder)
+      hdiag ?_
+  ring_nf at hbudget
+  ring_nf
+  exact hbudget
+
+/-- Source-nonbreakdown form of the chapter-facing Theorem 19.13 assembly with
+an explicit inverse-norm budget for the extracted `R11` block.
+
+This is the plug-in point for the remaining source condition estimate: future
+work can replace the visible `rectOpNorm2Le (nonsingInv R11) rho` premise by a
+proved bound in terms of the chapter's advertised conditioning quantity. -/
+theorem mgs_qr_bounds_of_R11_diag_ne_zero_inverse_budget
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {rho c2 kappaA higherOrder : Real}
+    (hdiag :
+      forall i : Fin n,
+        Ne (householder_paddedFinInput_R11 fp A i i) 0)
+    (hRinv :
+      rectOpNorm2Le
+        (nonsingInv n (householder_paddedFinInput_R11 fp A))
+        rho)
+    (hrho : 0 <= rho)
+    (hbudget :
+      2 *
+          (((Theorem19_4.gamma_tilde fp (n + m) n * frobNormRect A) +
+                2 *
+                  (Theorem19_4.gamma_tilde fp (n + m) n *
+                    frobNormRect A)) *
+              rho) +
+            (((Theorem19_4.gamma_tilde fp (n + m) n * frobNormRect A) +
+                  2 *
+                    (Theorem19_4.gamma_tilde fp (n + m) n *
+                      frobNormRect A)) *
+                rho) ^ 2 <=
+        c2 * fp.u * kappaA + higherOrder) :
+    MGSQRBounds m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (householder_paddedFinInput_R11 fp A)
+      (2 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      c2
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u (frobNormRect A) kappaA higherOrder := by
+  simpa [householder_paddedFinInput_R11] using
+    mgs_qr_bounds_of_householder_upper_diag_csPolarRepair_of_householder_stacked_double_residual_coefficient_budget_of_small_unit_roundoff
+      (fp := fp) (m := m) (n := n) A hn hnm hsmall
+      (eta1 := Theorem19_4.gamma_tilde fp (n + m) n * frobNormRect A)
+      (rho := rho) (c2 := c2)
+      (kappaA := kappaA) (higherOrder := higherOrder)
+      (by
+        intro i
+        simpa [householder_paddedFinInput_R11] using hdiag i)
+      (le_rfl)
+      (by
+        simpa [householder_paddedFinInput_R11] using hRinv)
+      hrho
+      (by
+        simpa using hbudget)
+
+/-- Compact-budget version of
+`mgs_qr_bounds_of_R11_diag_ne_zero_inverse_budget`.
+
+The residual contribution is exposed as `3 * gamma_tilde * ||A||_F`, while the
+inverse-norm estimate is left as the explicit source-facing quantity `rho`. -/
+theorem mgs_qr_bounds_of_R11_diag_ne_zero_compact_inverse_budget
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {rho c2 kappaA higherOrder : Real}
+    (hdiag :
+      forall i : Fin n,
+        Ne (householder_paddedFinInput_R11 fp A i i) 0)
+    (hRinv :
+      rectOpNorm2Le
+        (nonsingInv n (householder_paddedFinInput_R11 fp A))
+        rho)
+    (hrho : 0 <= rho)
+    (hbudget :
+      2 *
+          ((3 * (Theorem19_4.gamma_tilde fp (n + m) n * frobNormRect A)) *
+              rho) +
+            ((3 *
+                  (Theorem19_4.gamma_tilde fp (n + m) n *
+                    frobNormRect A)) *
+                rho) ^ 2 <=
+        c2 * fp.u * kappaA + higherOrder) :
+    MGSQRBounds m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (householder_paddedFinInput_R11 fp A)
+      (2 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      c2
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u (frobNormRect A) kappaA higherOrder := by
+  refine
+    mgs_qr_bounds_of_R11_diag_ne_zero_inverse_budget
+      (fp := fp) (m := m) (n := n) A hn hnm hsmall
+      (rho := rho) (c2 := c2)
+      (kappaA := kappaA) (higherOrder := higherOrder)
+      hdiag hRinv hrho ?_
+  ring_nf at hbudget
+  ring_nf
+  exact hbudget
+
+/-- Chapter-facing Theorem 19.13 assembly currently proved for the concrete
+padded Householder route.
+
+The CS/polar repair witness and the `nonsingInv` operator certificate are
+constructed internally. The remaining source-strength obligations are explicit:
+the actual extracted `R11` block must be nonsingular, and the final
+Frobenius-inverse budget must match the advertised condition-number term. -/
+theorem mgs_qr_bounds
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    {c2 kappaA higherOrder : Real}
+    (hdet :
+      Ne
+        (Matrix.det
+          (householder_paddedFinInput_R11 fp A :
+            Matrix (Fin n) (Fin n) Real))
+        0)
+    (hbudget :
+      2 *
+          (((Theorem19_4.gamma_tilde fp (n + m) n * frobNormRect A) +
+                2 *
+                  (Theorem19_4.gamma_tilde fp (n + m) n *
+                    frobNormRect A)) *
+              frobNorm (nonsingInv n (householder_paddedFinInput_R11 fp A))) +
+            (((Theorem19_4.gamma_tilde fp (n + m) n * frobNormRect A) +
+                  2 *
+                    (Theorem19_4.gamma_tilde fp (n + m) n *
+                      frobNormRect A)) *
+                frobNorm
+                  (nonsingInv n (householder_paddedFinInput_R11 fp A))) ^ 2 <=
+        c2 * fp.u * kappaA + higherOrder) :
+    MGSQRBounds m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (householder_paddedFinInput_R11 fp A)
+      (2 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      c2
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u (frobNormRect A) kappaA higherOrder := by
+  exact
+    mgs_qr_bounds_of_householder_det_ne_zero_csPolarRepair_of_householder_stacked_double_residual_coefficient_budget_frobInv_of_small_unit_roundoff
+      (fp := fp) (m := m) (n := n) A hn hnm hsmall
+      (eta1 := Theorem19_4.gamma_tilde fp (n + m) n * frobNormRect A)
+      (c2 := c2) (kappaA := kappaA) (higherOrder := higherOrder)
+      (by
+        simpa [householder_paddedFinInput_R11] using hdet)
+      (le_rfl)
+      (by
+        simpa [householder_paddedFinInput_R11] using hbudget)
 
 end Theorem19_13
 
