@@ -87,14 +87,25 @@
     higham13_eq13_23_exists_blockLUFact_succ_product_from_tail_local_chain_inverse_ratio_matrix_stage_history_exact_kappa,
     higham13_eq13_22_exists_blockLUFact_succ_product_from_tail_local_chain_inverse_ratio_matrix_stage_history_exact_kappa_of_det_ne_zero,
     higham13_eq13_23_exists_blockLUFact_succ_product_from_tail_local_chain_inverse_ratio_matrix_stage_history_exact_kappa_of_det_ne_zero,
+    higham13_eq13_22_blockLUBudgetChain_succ_from_tail_local_chain_inverse_ratio_flat_matrix_stage_history_exact_kappa_of_det_ne_zero,
     higham13_eq13_22_blockLUBudgetChain_succ_from_tail_local_chain_inverse_ratio_matrix_stage_history_exact_kappa_of_det_ne_zero_of_schur_invertible,
     higham13_eq13_22_exists_blockLUFact_succ_product_from_tail_local_chain_inverse_ratio_matrix_stage_history_exact_kappa_of_det_ne_zero_of_schur_invertible,
     higham13_eq13_23_exists_blockLUFact_succ_product_from_tail_local_chain_inverse_ratio_matrix_stage_history_exact_kappa_of_det_ne_zero_of_schur_invertible:
     exact-κ Eq.13.22/Eq.13.23 successor product witnesses from a tail-local
     recursive chain plus the source inverse-ratio transport comparison, with
-    certificate and determinant-nonzero surfaces; the Schur-invertible variants
-    derive the tail positivity premise from the source Schur complement and the
-    full positive denominator from determinant nonsingularity
+    certificate, determinant-nonzero, and uniform-flat surfaces; the
+    Schur-invertible variants derive the tail positivity premise from the
+    source Schur complement and the full positive denominator from determinant
+    nonsingularity
+  - Higham13Eq1322InverseRatioSourceChain,
+    Higham13Eq1322InverseRatioSourceChain.det_ne_zero,
+    Higham13Eq1322InverseRatioSourceChain.to_blockLUBudgetChain,
+    Higham13Eq1322InverseRatioSourceChain.exists_blockLUFact_eq13_22_product_exact_kappa,
+    Higham13Eq1322InverseRatioSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa,
+    Higham13Eq1322InverseRatioSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update:
+    recursive source certificate and chain/product lift for the inverse-ratio
+    transport route, replacing the prebuilt ambient-chain hypothesis by
+    per-tail determinant, pivot, and inverse-ratio comparison data
   - higham13_eq13_22_blockLUBudgetChain_succ_from_tail_local_chain_lower_comparison_matrix_stage_history_exact_kappa,
     higham13_eq13_22_blockLUBudgetChain_succ_from_tail_local_chain_lower_comparison_matrix_stage_history_exact_kappa_of_det_ne_zero,
     higham13_eq13_22_blockLUBudgetChain_succ_from_tail_local_chain_lower_comparison_matrix_stage_history_exact_kappa_of_det_ne_zero_of_schur_invertible,
@@ -29313,6 +29324,130 @@ theorem
       hr Ablk pivotInv hpivot hdetFlat n hsn hNn hTailFlat
 
 /-- Higham, 2nd ed., Chapter 13, equation (13.22):
+    uniform-flat determinant-nonzero successor chain from a tail-local chain
+    plus the inverse-ratio comparison.
+
+    This is the inverse-ratio companion to
+    `higham13_eq13_22_blockLUBudgetChain_succ_from_tail_local_chain_lower_comparison_flat_matrix_stage_history_exact_kappa_of_det_ne_zero`:
+    the proved tail-history domination first converts the inverse-ratio
+    hypothesis into the direct lower-budget comparison, then the existing
+    uniform-flat successor bridge removes the first-split representation
+    artifact. -/
+theorem
+    higham13_eq13_22_blockLUBudgetChain_succ_from_tail_local_chain_inverse_ratio_flat_matrix_stage_history_exact_kappa_of_det_ne_zero
+    {m r : ℕ} (hr : 0 < r)
+    (Ablk : Fin ((m + 1) + 1) → Fin ((m + 1) + 1) →
+      Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    [Invertible (blockMatrixFirstSplitA11 Ablk)]
+    [Invertible (blockMatrixFirstSplitA22 Ablk -
+      blockMatrixFirstSplitA21 Ablk * ⅟(blockMatrixFirstSplitA11 Ablk) *
+        blockMatrixFirstSplitA12 Ablk)]
+    [Invertible (Matrix.fromBlocks
+      (blockMatrixFirstSplitA11 Ablk)
+      (blockMatrixFirstSplitA12 Ablk)
+      (blockMatrixFirstSplitA21 Ablk)
+      (blockMatrixFirstSplitA22 Ablk))]
+    (hpivot : pivotInv 0 = ⅟(blockMatrixFirstSplitA11 Ablk))
+    (hTailPos :
+      0 < maxEntryNorm (Nat.mul_pos (Nat.succ_pos m) hr)
+        (blockMatrixFlatFin (blockSchur Ablk (pivotInv 0))))
+    (hdetFlat :
+      Matrix.det (blockMatrixFlatFin Ablk :
+        Matrix (Fin (((m + 1) + 1) * r)) (Fin (((m + 1) + 1) * r)) ℝ) ≠ 0)
+    (n : ℕ)
+    (hsn : (((m + 1) * r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hNn : ((((m + 1) + 1) * r : ℕ) : ℝ) ≤ (n : ℝ)) :
+    let hmTail : 0 < m + 1 := Nat.succ_pos m
+    let hNTail : 0 < (m + 1) * r := Nat.mul_pos hmTail hr
+    let hNSplit : 0 < r + (m + 1) * r :=
+      Nat.add_pos_left hr ((m + 1) * r)
+    let hmFull : 0 < (m + 1) + 1 := Nat.succ_pos (m + 1)
+    let hNFlat : 0 < ((m + 1) + 1) * r := Nat.mul_pos hmFull hr
+    let Atail : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+      blockMatrixFlatFin (blockSchur Ablk (pivotInv 0))
+    let Gtail : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+      higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+        hNTail hmTail hr (blockSchur Ablk (pivotInv 0))
+        (fun q => pivotInv (q + 1))
+    let AinvTail : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+      nonsingInv ((m + 1) * r) Atail
+    let ASplit : Fin (r + (m + 1) * r) → Fin (r + (m + 1) * r) → ℝ :=
+      blockMatrixFirstSplitFlat Ablk
+    let AinvSplit : Fin (r + (m + 1) * r) → Fin (r + (m + 1) * r) → ℝ :=
+      nonsingInv (r + (m + 1) * r) ASplit
+    let A0 : Fin (((m + 1) + 1) * r) → Fin (((m + 1) + 1) * r) → ℝ :=
+      blockMatrixFlatFin Ablk
+    let G : Fin (((m + 1) + 1) * r) → Fin (((m + 1) + 1) * r) → ℝ :=
+      higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+        hNFlat hmFull hr Ablk pivotInv
+    let Ainv : Fin (((m + 1) + 1) * r) → Fin (((m + 1) + 1) * r) → ℝ :=
+      nonsingInv (((m + 1) + 1) * r) A0
+    let hApos : 0 < maxEntryNorm hNFlat A0 :=
+      maxEntryNorm_pos_of_det_ne_zero hNFlat A0 hdetFlat
+    (maxEntryNormRect hNTail hNTail AinvTail *
+          maxEntryNormRect hNSplit hNSplit ASplit ≤
+        maxEntryNormRect hNSplit hNSplit AinvSplit *
+          maxEntryNormRect hNTail hNTail Atail) →
+      Higham13BlockLUBudgetChain hr
+        ((n : ℝ) * (growthFactorEntry hNTail Atail Gtail hTailPos) ^ 2 *
+          (maxEntryNormRect hNTail hNTail Atail *
+            maxEntryNormRect hNTail hNTail AinvTail))
+        (growthFactorEntry hNTail Atail Gtail hTailPos *
+          maxEntryNormRect hNTail hNTail Atail)
+        m (blockSchur Ablk (pivotInv 0)) (fun q => pivotInv (q + 1)) →
+      Higham13BlockLUBudgetChain hr
+        ((n : ℝ) * (growthFactorEntry hNFlat A0 G hApos) ^ 2 *
+          (maxEntryNormRect hNFlat hNFlat A0 *
+            maxEntryNormRect hNFlat hNFlat Ainv))
+        (growthFactorEntry hNFlat A0 G hApos *
+          maxEntryNormRect hNFlat hNFlat A0)
+        (m + 1) Ablk pivotInv := by
+  dsimp only
+  intro hInvRatio hTailLocal
+  let hmTail : 0 < m + 1 := Nat.succ_pos m
+  let hNSplit : 0 < r + (m + 1) * r :=
+    Nat.add_pos_left hr ((m + 1) * r)
+  let hmFull : 0 < (m + 1) + 1 := Nat.succ_pos (m + 1)
+  let hNFlat : 0 < ((m + 1) + 1) * r := Nat.mul_pos hmFull hr
+  let A0 : Fin (((m + 1) + 1) * r) → Fin (((m + 1) + 1) * r) → ℝ :=
+    blockMatrixFlatFin Ablk
+  let hApos : 0 < maxEntryNorm hNFlat A0 :=
+    maxEntryNorm_pos_of_det_ne_zero hNFlat A0 hdetFlat
+  let hSplitPos : 0 < maxEntryNorm hNSplit (blockMatrixFirstSplitFlat Ablk) := by
+    rw [maxEntryNorm_blockMatrixFirstSplitFlat_eq_blockMatrixFlatFin hmTail hr Ablk]
+    exact hApos
+  have hLower :
+      (n : ℝ) *
+          (growthFactorEntry (Nat.mul_pos hmTail hr)
+            (blockMatrixFlatFin (blockSchur Ablk (pivotInv 0)))
+            (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+              (Nat.mul_pos hmTail hr) hmTail hr
+              (blockSchur Ablk (pivotInv 0)) (fun q => pivotInv (q + 1)))
+            hTailPos) ^ 2 *
+          (maxEntryNormRect (Nat.mul_pos hmTail hr)
+            (Nat.mul_pos hmTail hr)
+            (blockMatrixFlatFin (blockSchur Ablk (pivotInv 0))) *
+            maxEntryNormRect (Nat.mul_pos hmTail hr)
+              (Nat.mul_pos hmTail hr)
+              (nonsingInv ((m + 1) * r)
+                (blockMatrixFlatFin (blockSchur Ablk (pivotInv 0))))) ≤
+        (n : ℝ) *
+          (growthFactorEntry hNSplit (blockMatrixFirstSplitFlat Ablk)
+            (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+              hNSplit hmFull hr Ablk pivotInv) hSplitPos) ^ 2 *
+          (maxEntryNormRect hNSplit hNSplit (blockMatrixFirstSplitFlat Ablk) *
+            maxEntryNormRect hNSplit hNSplit
+              (nonsingInv (r + (m + 1) * r)
+                (blockMatrixFirstSplitFlat Ablk))) := by
+    simpa [hmTail, hNSplit, hmFull, hSplitPos] using
+      higham13_eq13_22_tail_lower_budget_le_full_from_inverse_ratio_matrix_stage_history_exact_kappa
+        hr Ablk pivotInv hTailPos hSplitPos n hInvRatio
+  simpa [hmTail, hNSplit, hmFull, hNFlat, A0, hApos, hSplitPos] using
+    higham13_eq13_22_blockLUBudgetChain_succ_from_tail_local_chain_lower_comparison_flat_matrix_stage_history_exact_kappa_of_det_ne_zero
+      hr Ablk pivotInv hpivot hTailPos hdetFlat n hsn hNn hLower hTailLocal
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.22):
     uniform-flat determinant-nonzero successor product witness from a
     tail-local chain plus the direct lower-budget comparison. -/
 theorem
@@ -29902,6 +30037,325 @@ theorem
     higham13_eq13_23_exists_blockLUFact_succ_product_from_tail_local_chain_lower_comparison_flat_matrix_stage_history_exact_kappa_of_det_ne_zero
       hr Ablk pivotInv hpivot hTailPos hdetFlat n hsn hNn
       hRho_le_two hLower hTailLocal
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    recursive source certificate for the inverse-ratio route.
+
+    This is the source-chain version of the optional inverse-ratio transport:
+    each Schur-tail step records determinant nonsingularity, the pivot
+    identification, and the cross-multiplied inverse-ratio comparison.  The
+    ambient budget chain is then built by recursion, rather than assumed. -/
+inductive Higham13Eq1322InverseRatioSourceChain {r : ℕ} (hr : 0 < r)
+    (n : ℕ) :
+    (m : ℕ) →
+      (Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ) →
+      (ℕ → Matrix (Fin r) (Fin r) ℝ) → Prop
+  | one {Ablk : Fin 1 → Fin 1 → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ}
+      (hdet :
+        Matrix.det (blockMatrixFlatFin Ablk :
+          Matrix (Fin (1 * r)) (Fin (1 * r)) ℝ) ≠ 0)
+      (hNn : (((1 * r : ℕ) : ℝ) ≤ (n : ℝ))) :
+      Higham13Eq1322InverseRatioSourceChain hr n 0 Ablk pivotInv
+  | succ {m : ℕ}
+      {Ablk : Fin ((m + 1) + 1) → Fin ((m + 1) + 1) →
+        Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ}
+      [Invertible (blockMatrixFirstSplitA11 Ablk)]
+      [Invertible (blockMatrixFirstSplitA22 Ablk -
+        blockMatrixFirstSplitA21 Ablk * ⅟(blockMatrixFirstSplitA11 Ablk) *
+          blockMatrixFirstSplitA12 Ablk)]
+      [Invertible (Matrix.fromBlocks
+        (blockMatrixFirstSplitA11 Ablk)
+        (blockMatrixFirstSplitA12 Ablk)
+        (blockMatrixFirstSplitA21 Ablk)
+        (blockMatrixFirstSplitA22 Ablk))]
+      (hpivot : pivotInv 0 = ⅟(blockMatrixFirstSplitA11 Ablk))
+      (hdetFlat :
+        Matrix.det (blockMatrixFlatFin Ablk :
+          Matrix (Fin (((m + 1) + 1) * r)) (Fin (((m + 1) + 1) * r)) ℝ) ≠ 0)
+      (hsn : (((m + 1) * r : ℕ) : ℝ) ≤ (n : ℝ))
+      (hNn : ((((m + 1) + 1) * r : ℕ) : ℝ) ≤ (n : ℝ)) :
+      (let hmTail : 0 < m + 1 := Nat.succ_pos m
+       let hNTail : 0 < (m + 1) * r := Nat.mul_pos hmTail hr
+       let hNSplit : 0 < r + (m + 1) * r :=
+        Nat.add_pos_left hr ((m + 1) * r)
+       let Atail : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+        blockMatrixFlatFin (blockSchur Ablk (pivotInv 0))
+       let AinvTail : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+        nonsingInv ((m + 1) * r) Atail
+       let ASplit : Fin (r + (m + 1) * r) → Fin (r + (m + 1) * r) → ℝ :=
+        blockMatrixFirstSplitFlat Ablk
+       let AinvSplit : Fin (r + (m + 1) * r) → Fin (r + (m + 1) * r) → ℝ :=
+        nonsingInv (r + (m + 1) * r) ASplit
+       maxEntryNormRect hNTail hNTail AinvTail *
+            maxEntryNormRect hNSplit hNSplit ASplit ≤
+          maxEntryNormRect hNSplit hNSplit AinvSplit *
+            maxEntryNormRect hNTail hNTail Atail) →
+      Higham13Eq1322InverseRatioSourceChain hr n m
+        (blockSchur Ablk (pivotInv 0)) (fun q => pivotInv (q + 1)) →
+      Higham13Eq1322InverseRatioSourceChain hr n (m + 1) Ablk pivotInv
+
+/-- The inverse-ratio source-chain certificate carries determinant
+    nonsingularity for its current block matrix. -/
+theorem Higham13Eq1322InverseRatioSourceChain.det_ne_zero {r n : ℕ}
+    {hr : 0 < r} :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322InverseRatioSourceChain hr n m Ablk pivotInv →
+        Matrix.det (blockMatrixFlatFin Ablk :
+          Matrix (Fin ((m + 1) * r)) (Fin ((m + 1) * r)) ℝ) ≠ 0 := by
+  intro m Ablk pivotInv hcert
+  cases hcert with
+  | one hdet _ =>
+      simpa using hdet
+  | succ _ hdetFlat _ _ _ _ =>
+      simpa using hdetFlat
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.22):
+    a recursive inverse-ratio source certificate instantiates the ambient
+    exact-κ budget chain.
+
+    This removes the prebuilt ambient-chain hypothesis from the inverse-ratio
+    route.  The inverse-ratio comparison itself remains the visible
+    source-side mathematical obligation at each recursive Schur tail. -/
+theorem Higham13Eq1322InverseRatioSourceChain.to_blockLUBudgetChain
+    {r n : ℕ} (hr : 0 < r) :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ}
+      (hdet :
+        Matrix.det (blockMatrixFlatFin Ablk :
+          Matrix (Fin ((m + 1) * r)) (Fin ((m + 1) * r)) ℝ) ≠ 0)
+      (_hcert : Higham13Eq1322InverseRatioSourceChain hr n m Ablk pivotInv),
+      let hm : 0 < m + 1 := Nat.succ_pos m
+      let hN : 0 < (m + 1) * r := Nat.mul_pos hm hr
+      let A0 : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+        blockMatrixFlatFin Ablk
+      let G : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+        higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+          hN hm hr Ablk pivotInv
+      let Ainv : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+        nonsingInv ((m + 1) * r) A0
+      let hApos : 0 < maxEntryNorm hN A0 :=
+        maxEntryNorm_pos_of_det_ne_zero hN A0 hdet
+      Higham13BlockLUBudgetChain hr
+        ((n : ℝ) * (growthFactorEntry hN A0 G hApos) ^ 2 *
+          (maxEntryNormRect hN hN A0 * maxEntryNormRect hN hN Ainv))
+        (growthFactorEntry hN A0 G hApos * maxEntryNormRect hN hN A0)
+        m Ablk pivotInv := by
+  intro m Ablk pivotInv hdet hcert
+  cases hcert with
+  | one _ hNn =>
+      dsimp only
+      simpa using
+        higham13_eq13_22_blockLUBudgetChain_one_from_matrix_stage_history_exact_kappa_of_det_ne_zero
+          hr _ pivotInv hdet n hNn
+  | succ hpivot hdetFlat hsn hNn hInvRatio hTail =>
+      have ih :=
+        Higham13Eq1322InverseRatioSourceChain.to_blockLUBudgetChain
+          (r := r) (n := n) hr
+          (Higham13Eq1322InverseRatioSourceChain.det_ne_zero hTail) hTail
+      have hTailPos :
+          0 < maxEntryNorm (Nat.mul_pos (Nat.succ_pos _) hr)
+            (blockMatrixFlatFin (blockSchur _ (pivotInv 0))) :=
+        maxEntryNorm_blockMatrixFlatFin_blockSchur_pos_of_first_split_invertible
+          hr _ pivotInv hpivot
+      dsimp only at ih ⊢
+      simpa using
+        higham13_eq13_22_blockLUBudgetChain_succ_from_tail_local_chain_inverse_ratio_flat_matrix_stage_history_exact_kappa_of_det_ne_zero
+          hr _ pivotInv hpivot hTailPos hdetFlat n hsn hNn hInvRatio ih
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.22):
+    full recursive Eq.13.22 product witness from the inverse-ratio source
+    certificate. -/
+theorem Higham13Eq1322InverseRatioSourceChain.exists_blockLUFact_eq13_22_product_exact_kappa
+    {r n : ℕ} (hr : 0 < r) :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ}
+      (hdet :
+        Matrix.det (blockMatrixFlatFin Ablk :
+          Matrix (Fin ((m + 1) * r)) (Fin ((m + 1) * r)) ℝ) ≠ 0)
+      (_hcert : Higham13Eq1322InverseRatioSourceChain hr n m Ablk pivotInv),
+      let hm : 0 < m + 1 := Nat.succ_pos m
+      let hN : 0 < (m + 1) * r := Nat.mul_pos hm hr
+      let A0 : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+        blockMatrixFlatFin Ablk
+      let G : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+        higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+          hN hm hr Ablk pivotInv
+      let Ainv : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+        nonsingInv ((m + 1) * r) A0
+      let hApos : 0 < maxEntryNorm hN A0 :=
+        maxEntryNorm_pos_of_det_ne_zero hN A0 hdet
+      ∃ L U : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ,
+        BlockLUFactSpec (m + 1) r Ablk L U ∧
+          blockMaxNorm (Nat.succ_pos m) hr L *
+              blockMaxNorm (Nat.succ_pos m) hr U ≤
+            (n : ℝ) * (growthFactorEntry hN A0 G hApos) ^ 3 *
+              (maxEntryNormRect hN hN A0 * maxEntryNormRect hN hN Ainv) *
+              maxEntryNormRect hN hN A0 := by
+  intro m Ablk pivotInv hdet hcert
+  dsimp only
+  let hm : 0 < m + 1 := Nat.succ_pos m
+  let hN : 0 < (m + 1) * r := Nat.mul_pos hm hr
+  let A0 : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ := blockMatrixFlatFin Ablk
+  let G : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+    higham13_algorithm13_3_matrixStageHistoryGrowthMatrix hN hm hr Ablk pivotInv
+  let Ainv : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+    nonsingInv ((m + 1) * r) A0
+  let hApos : 0 < maxEntryNorm hN A0 :=
+    maxEntryNorm_pos_of_det_ne_zero hN A0 hdet
+  have hchain :
+      Higham13BlockLUBudgetChain hr
+        ((n : ℝ) * (growthFactorEntry hN A0 G hApos) ^ 2 *
+          (maxEntryNormRect hN hN A0 * maxEntryNormRect hN hN Ainv))
+        (growthFactorEntry hN A0 G hApos * maxEntryNormRect hN hN A0)
+        m Ablk pivotInv := by
+    simpa [hm, hN, A0, G, Ainv, hApos] using
+      Higham13Eq1322InverseRatioSourceChain.to_blockLUBudgetChain
+        (r := r) (n := n) hr hdet hcert
+  simpa [hm, hN, A0, G, Ainv, hApos] using
+    Higham13BlockLUBudgetChain.exists_blockLUFact_eq13_22_product_exact_kappa
+      (r := r) hr (hN := hN) (A0 := A0) (G := G) (Ainv := Ainv)
+      hApos n hchain
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.23):
+    full recursive point-row product witness from the inverse-ratio source
+    certificate plus the remaining source-side `rho <= 2` theorem. -/
+theorem Higham13Eq1322InverseRatioSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa
+    {r n : ℕ} (hr : 0 < r) :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ}
+      (hdet :
+        Matrix.det (blockMatrixFlatFin Ablk :
+          Matrix (Fin ((m + 1) * r)) (Fin ((m + 1) * r)) ℝ) ≠ 0)
+      (_hcert : Higham13Eq1322InverseRatioSourceChain hr n m Ablk pivotInv),
+      let hm : 0 < m + 1 := Nat.succ_pos m
+      let hN : 0 < (m + 1) * r := Nat.mul_pos hm hr
+      let A0 : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+        blockMatrixFlatFin Ablk
+      let G : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+        higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+          hN hm hr Ablk pivotInv
+      let Ainv : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+        nonsingInv ((m + 1) * r) A0
+      let hApos : 0 < maxEntryNorm hN A0 :=
+        maxEntryNorm_pos_of_det_ne_zero hN A0 hdet
+      growthFactorEntry hN A0 G hApos ≤ 2 →
+        ∃ L U : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ,
+          BlockLUFactSpec (m + 1) r Ablk L U ∧
+            blockMaxNorm (Nat.succ_pos m) hr L *
+                blockMaxNorm (Nat.succ_pos m) hr U ≤
+              8 * (n : ℝ) *
+                (maxEntryNormRect hN hN A0 * maxEntryNormRect hN hN Ainv) *
+                maxEntryNormRect hN hN A0 := by
+  intro m Ablk pivotInv hdet hcert
+  dsimp only
+  intro hRho_le_two
+  let hm : 0 < m + 1 := Nat.succ_pos m
+  let hN : 0 < (m + 1) * r := Nat.mul_pos hm hr
+  let A0 : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ := blockMatrixFlatFin Ablk
+  let G : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+    higham13_algorithm13_3_matrixStageHistoryGrowthMatrix hN hm hr Ablk pivotInv
+  let Ainv : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+    nonsingInv ((m + 1) * r) A0
+  let hApos : 0 < maxEntryNorm hN A0 :=
+    maxEntryNorm_pos_of_det_ne_zero hN A0 hdet
+  have hchain :
+      Higham13BlockLUBudgetChain hr
+        ((n : ℝ) * (growthFactorEntry hN A0 G hApos) ^ 2 *
+          (maxEntryNormRect hN hN A0 * maxEntryNormRect hN hN Ainv))
+        (growthFactorEntry hN A0 G hApos * maxEntryNormRect hN hN A0)
+        m Ablk pivotInv := by
+    simpa [hm, hN, A0, G, Ainv, hApos] using
+      Higham13Eq1322InverseRatioSourceChain.to_blockLUBudgetChain
+        (r := r) (n := n) hr hdet hcert
+  simpa [hm, hN, A0, G, Ainv, hApos] using
+    Higham13BlockLUBudgetChain.exists_blockLUFact_eq13_23_product_exact_kappa
+      (r := r) hr (hN := hN) (A0 := A0) (G := G) (Ainv := Ainv)
+      hApos n hchain hRho_le_two
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.23):
+    full recursive point-row product witness from the inverse-ratio source
+    certificate, with the `rho <= 2` side condition supplied by the
+    matrix-stage product-bound/diagonal-update BDD route. -/
+theorem
+    Higham13Eq1322InverseRatioSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update
+    {r n : ℕ} (hr : 0 < r) :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ}
+      (_hdet :
+        Matrix.det (blockMatrixFlatFin Ablk :
+          Matrix (Fin ((m + 1) * r)) (Fin ((m + 1) * r)) ℝ) ≠ 0)
+      (_hcert : Higham13Eq1322InverseRatioSourceChain hr n m Ablk pivotInv),
+      let hm : 0 < m + 1 := Nat.succ_pos m
+      let hN : 0 < (m + 1) * r := Nat.mul_pos hm hr
+      let A0 : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+        blockMatrixFlatFin Ablk
+      let Ainv : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+        nonsingInv ((m + 1) * r) A0
+      (invDiagBound : Fin (m + 1) → ℝ) →
+      (stageInvDiagBound : ℕ → Fin (m + 1) → ℝ) →
+      IsBlockDiagDomCol (m + 1)
+        (fun i j => maxEntryNorm hr (Ablk i j)) invDiagBound →
+      (∀ j : Fin (m + 1), invDiagBound j ≤ maxEntryNorm hr (Ablk j j)) →
+      (∀ j : Fin (m + 1), stageInvDiagBound 0 j = invDiagBound j) →
+      (∀ k : ℕ, ∀ hk : k < m + 1,
+        maxEntryNorm hr (pivotInv k) * stageInvDiagBound k ⟨k, hk⟩ ≤ 1) →
+      (∀ k : ℕ, ∀ hk : k < m + 1, ∀ i j : Fin (m + 1),
+        k + 1 ≤ i.val → k + 1 ≤ j.val →
+          maxEntryNorm hr
+            (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k i
+              ⟨k, hk⟩ *
+              pivotInv k *
+              higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+                ⟨k, hk⟩ j) ≤
+            maxEntryNorm hr
+              (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k i
+                ⟨k, hk⟩) *
+            maxEntryNorm hr (pivotInv k) *
+            maxEntryNorm hr
+              (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+                ⟨k, hk⟩ j)) →
+      SchurStageActiveDiagLowerUpdate13_7
+        (fun k i j => maxEntryNorm hr
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k i j))
+        stageInvDiagBound
+        (fun k => maxEntryNorm hr (pivotInv k)) →
+      ∃ L U : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ,
+        BlockLUFactSpec (m + 1) r Ablk L U ∧
+          blockMaxNorm (Nat.succ_pos m) hr L *
+              blockMaxNorm (Nat.succ_pos m) hr U ≤
+            8 * (n : ℝ) *
+              (maxEntryNormRect hN hN A0 * maxEntryNormRect hN hN Ainv) *
+              maxEntryNormRect hN hN A0 := by
+  intro m Ablk pivotInv hdet hcert
+  dsimp only
+  intro invDiagBound stageInvDiagBound hDom hDiagBound hInitInv
+    hPivotInvBound hProduct hDiagUpdate
+  let hm : 0 < m + 1 := Nat.succ_pos m
+  let hN : 0 < (m + 1) * r := Nat.mul_pos hm hr
+  let A0 : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+    blockMatrixFlatFin Ablk
+  let G : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+    higham13_algorithm13_3_matrixStageHistoryGrowthMatrix hN hm hr Ablk pivotInv
+  let Ainv : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+    nonsingInv ((m + 1) * r) A0
+  let hApos : 0 < maxEntryNorm hN A0 :=
+    maxEntryNorm_pos_of_det_ne_zero hN A0 hdet
+  exact
+    Higham13Eq1322InverseRatioSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa
+      (r := r) (n := n) hr hdet hcert
+      (by
+        simpa [hm, hN, A0, G, Ainv, hApos] using
+          higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_product_bound_diag_update
+            hm hr Ablk pivotInv hApos invDiagBound stageInvDiagBound
+            hDom hDiagBound hInitInv hPivotInvBound hProduct hDiagUpdate)
 
 /-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
     recursive source certificate for the direct lower-budget route.
