@@ -20662,6 +20662,61 @@ theorem higham9_15_exists_matMulVec_lt_of_positive_spectralRadius_lt_one
       hn C 1 x hC_nonneg (by norm_num) hx_pos hsub hrho
   exact (lt_irrefl (1 : ℝ)) hone_lt
 
+/-- **Theorem 9.15 spectral-majorant support**.  In the irreducible
+nonnegative case, Chapter 7's Perron-style positivity upgrade turns a nonzero
+nonnegative right subeigenvector into a positive one; the positive
+spectral-radius bridge then forces the subeigen scale below one. -/
+theorem higham9_15_irreducible_nonneg_subeigen_scale_lt_one_of_spectralRadius_lt_one
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (eta : ℝ) (x : Fin n → ℝ)
+    (hC_irred :
+      Matrix.IsIrreducible (Matrix.of C : Matrix (Fin n) (Fin n) ℝ))
+    (heta_nonneg : 0 ≤ eta)
+    (hx_nonneg : ∀ i : Fin n, 0 ≤ x i)
+    (hx_ne : x ≠ 0)
+    (hsub : ∀ i : Fin n, eta * x i ≤ matMulVec n C x i)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) < 1) :
+    eta < 1 := by
+  have hC_nonneg : ∀ i j : Fin n, 0 ≤ C i j := by
+    intro i j
+    simpa [Matrix.of] using hC_irred.1 i j
+  obtain ⟨y, hy_pos, hy_sub⟩ :=
+    ch7_exists_positive_subeigenvector_of_irreducible_nonzero_nonneg_subeigen
+      C eta x hC_irred hx_nonneg hx_ne hsub
+  exact higham9_15_positive_subeigen_scale_lt_one_of_spectralRadius_lt_one
+    hn C eta y hC_nonneg heta_nonneg hy_pos hy_sub hrho
+
+/-- **Theorem 9.15 spectral-majorant support**.  If an irreducible
+nonnegative majorant matrix has spectral radius below one, then every nonzero
+nonnegative vector has a component that is mapped strictly downward. -/
+theorem higham9_15_exists_matMulVec_lt_of_irreducible_nonzero_nonneg_spectralRadius_lt_one
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (x : Fin n → ℝ)
+    (hC_irred :
+      Matrix.IsIrreducible (Matrix.of C : Matrix (Fin n) (Fin n) ℝ))
+    (hx_nonneg : ∀ i : Fin n, 0 ≤ x i)
+    (hx_ne : x ≠ 0)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) < 1) :
+    ∃ i : Fin n, matMulVec n C x i < x i := by
+  by_contra hnone
+  have hsub : ∀ i : Fin n, (1 : ℝ) * x i ≤ matMulVec n C x i := by
+    intro i
+    have hi : ¬ matMulVec n C x i < x i := by
+      intro hlt
+      exact hnone ⟨i, hlt⟩
+    simpa [one_mul] using (le_of_not_gt hi)
+  have hone_lt :
+      (1 : ℝ) < 1 :=
+    higham9_15_irreducible_nonneg_subeigen_scale_lt_one_of_spectralRadius_lt_one
+      hn C 1 x hC_irred (by norm_num) hx_nonneg hx_ne hsub hrho
+  exact (lt_irrefl (1 : ℝ)) hone_lt
+
 /-- **Theorem 9.15**, one-step Frobenius nonlinear bound from the
 componentwise normalized split equation. -/
 theorem higham9_15_normalized_Gtilde_split_frobNorm_step_bound {n : ℕ}
