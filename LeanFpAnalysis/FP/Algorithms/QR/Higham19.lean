@@ -3127,6 +3127,184 @@ theorem storedSequence_qrPreviousLeadingBlockTranspose_det_ne_zero_final_iff_sta
   rw [storedSequence_qrPreviousLeadingBlockTranspose_eq_final fp A_hat v beta
     hStep hkm hk hkN]
 
+/-- The source-shaped signed stored-QR step is the generic stored-panel step
+instantiated with the repository's signed-stage vector and beta. -/
+theorem storedSignedSequence_step_of_source_step
+    (fp : FPModel) {m n : Nat} (hmn : n <= m)
+    (A_hat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall k (hk : k < n),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    {k : Nat} (hk : k < n) :
+    A_hat (k + 1) =
+      fl_householderStoredPanelStep fp m n k
+        (storedQRSignedStageVector hmn A_hat alpha k)
+        (storedQRSignedStageBeta hmn A_hat alpha k)
+        (A_hat k) := by
+  simpa [storedQRSignedStageVector, storedQRSignedStageBeta, hk] using
+    hStep k hk
+
+/-- Under the signed stored-QR recurrence, a completed prefix column is
+unchanged from stage `k` through the final stored stage. -/
+theorem storedSignedSequence_prevColumn_eq_final
+    (fp : FPModel) {m n k : Nat} (hmn : n <= m)
+    (A_hat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall t (ht : t < n),
+      A_hat (t + 1) =
+        fl_householderStoredPanelStep fp m n t
+          (householderTrailingActiveVector m
+            (Fin.mk t (lt_of_lt_of_le ht hmn))
+            (fun a => A_hat t a (Fin.mk t ht)) (alpha t))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk t (lt_of_lt_of_le ht hmn))
+              (fun a => A_hat t a (Fin.mk t ht)) (alpha t)))
+          (A_hat t))
+    {i : Fin m} {j : Fin n}
+    (hj : j.val < k) (hkN : k <= n) :
+    A_hat n i j = A_hat k i j := by
+  exact
+    storedSequence_prevColumn_eq_final fp A_hat
+      (fun t => storedQRSignedStageVector hmn A_hat alpha t)
+      (fun t => storedQRSignedStageBeta hmn A_hat alpha t)
+      (by
+        intro t ht
+        exact storedSignedSequence_step_of_source_step
+          fp hmn A_hat alpha hStep ht)
+      hj hkN
+
+/-- Under the signed stored-QR recurrence, the final stored stage and the stage
+just after pivot `k` have the same leading `(k+1) x (k+1)` block. -/
+theorem storedSignedSequence_qrLeadingBlock_eq_final
+    (fp : FPModel) {m n k : Nat} (hmn : n <= m)
+    (A_hat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall t (ht : t < n),
+      A_hat (t + 1) =
+        fl_householderStoredPanelStep fp m n t
+          (householderTrailingActiveVector m
+            (Fin.mk t (lt_of_lt_of_le ht hmn))
+            (fun a => A_hat t a (Fin.mk t ht)) (alpha t))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk t (lt_of_lt_of_le ht hmn))
+              (fun a => A_hat t a (Fin.mk t ht)) (alpha t)))
+          (A_hat t))
+    (hkm : k + 1 <= m) (hk : k < n) :
+    qrLeadingBlock (A_hat n) hkm hk =
+      qrLeadingBlock (A_hat (k + 1)) hkm hk := by
+  exact
+    storedSequence_qrLeadingBlock_eq_final fp A_hat
+      (fun t => storedQRSignedStageVector hmn A_hat alpha t)
+      (fun t => storedQRSignedStageBeta hmn A_hat alpha t)
+      (by
+        intro t ht
+        exact storedSignedSequence_step_of_source_step
+          fp hmn A_hat alpha hStep ht)
+      hkm hk (Nat.succ_le_of_lt hk)
+
+/-- The leading-block nonzero determinant condition for the signed stored-QR
+loop can be read at the final stage or just after the last pivot in the block. -/
+theorem storedSignedSequence_qrLeadingBlock_det_ne_zero_final_iff_after_pivot
+    (fp : FPModel) {m n k : Nat} (hmn : n <= m)
+    (A_hat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall t (ht : t < n),
+      A_hat (t + 1) =
+        fl_householderStoredPanelStep fp m n t
+          (householderTrailingActiveVector m
+            (Fin.mk t (lt_of_lt_of_le ht hmn))
+            (fun a => A_hat t a (Fin.mk t ht)) (alpha t))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk t (lt_of_lt_of_le ht hmn))
+              (fun a => A_hat t a (Fin.mk t ht)) (alpha t)))
+          (A_hat t))
+    (hkm : k + 1 <= m) (hk : k < n) :
+    Ne
+        (Matrix.det
+          (qrLeadingBlock (A_hat n) hkm hk :
+            Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+        0 <->
+      Ne
+        (Matrix.det
+          (qrLeadingBlock (A_hat (k + 1)) hkm hk :
+            Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+        0 := by
+  rw [storedSignedSequence_qrLeadingBlock_eq_final
+    fp hmn A_hat alpha hStep hkm hk]
+
+/-- Under the signed stored-QR recurrence, the final stored stage and stage
+`k` have the same previous-leading-block transpose. -/
+theorem storedSignedSequence_qrPreviousLeadingBlockTranspose_eq_final
+    (fp : FPModel) {m n k : Nat} (hmn : n <= m)
+    (A_hat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall t (ht : t < n),
+      A_hat (t + 1) =
+        fl_householderStoredPanelStep fp m n t
+          (householderTrailingActiveVector m
+            (Fin.mk t (lt_of_lt_of_le ht hmn))
+            (fun a => A_hat t a (Fin.mk t ht)) (alpha t))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk t (lt_of_lt_of_le ht hmn))
+              (fun a => A_hat t a (Fin.mk t ht)) (alpha t)))
+          (A_hat t))
+    (hkm : k <= m) (hk : k < n) :
+    qrPreviousLeadingBlockTranspose (A_hat n) hkm hk =
+      qrPreviousLeadingBlockTranspose (A_hat k) hkm hk := by
+  exact
+    storedSequence_qrPreviousLeadingBlockTranspose_eq_final fp A_hat
+      (fun t => storedQRSignedStageVector hmn A_hat alpha t)
+      (fun t => storedQRSignedStageBeta hmn A_hat alpha t)
+      (by
+        intro t ht
+        exact storedSignedSequence_step_of_source_step
+          fp hmn A_hat alpha hStep ht)
+      hkm hk (Nat.le_of_lt hk)
+
+/-- The previous-leading-block determinant condition for the signed stored-QR
+loop can be read at the final stage or at stage `k`. -/
+theorem storedSignedSequence_qrPreviousLeadingBlockTranspose_det_ne_zero_final_iff_stage
+    (fp : FPModel) {m n k : Nat} (hmn : n <= m)
+    (A_hat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall t (ht : t < n),
+      A_hat (t + 1) =
+        fl_householderStoredPanelStep fp m n t
+          (householderTrailingActiveVector m
+            (Fin.mk t (lt_of_lt_of_le ht hmn))
+            (fun a => A_hat t a (Fin.mk t ht)) (alpha t))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk t (lt_of_lt_of_le ht hmn))
+              (fun a => A_hat t a (Fin.mk t ht)) (alpha t)))
+          (A_hat t))
+    (hkm : k <= m) (hk : k < n) :
+    Ne
+        (Matrix.det
+          (qrPreviousLeadingBlockTranspose (A_hat n) hkm hk :
+            Matrix (Fin k) (Fin k) Real))
+        0 <->
+      Ne
+        (Matrix.det
+          (qrPreviousLeadingBlockTranspose (A_hat k) hkm hk :
+            Matrix (Fin k) (Fin k) Real))
+        0 := by
+  rw [storedSignedSequence_qrPreviousLeadingBlockTranspose_eq_final
+    fp hmn A_hat alpha hStep hkm hk]
+
 /-- One-column determinant-specialized recursive/stored `R` bridge.
 
 Once the active panel has only one column, the determinant-selected nonzero
