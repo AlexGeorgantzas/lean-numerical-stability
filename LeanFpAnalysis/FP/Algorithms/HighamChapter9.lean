@@ -47927,6 +47927,102 @@ theorem higham9_8_abs_lu_product_eq_abs_of_nonsingInv_totalNonnegative
           higham9_6_principalBlock_determinantal_inequality_of_totalNonnegative
             n JinvA hTNJ k (Nat.le_of_lt hk))
 
+/-- **Problem 9.8 / Theorem 9.14**, explicit-model final `h(u)` source bound
+for the nonsingular-inverse total-nonnegative class.
+
+Problem 9.8 supplies an exact LU factorization of `A^{-1}` whose absolute
+factor product is exactly `|A^{-1}|`; this wrapper feeds those exact factors
+and explicit equation (9.20)/(9.21) perturbation models into the final
+Theorem 9.14 `h(u)` endpoint. -/
+theorem higham9_14_nonsingInv_totalNonnegative_exists_source_h_bound_of_models
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n (nonsingInv n A) L_hat U_hat ∧
+        (∀ i j : Fin n,
+          ∑ k : Fin n, |L_hat i k| * |U_hat k j| =
+            |nonsingInv n A i j|) ∧
+        (∀ y_hat x_hat b : Fin n → ℝ,
+          ∀ u : ℝ, 0 ≤ u → u < 1 →
+          ∀ DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ,
+            higham9_20_tridiag_lu_perturbation_model n
+              (nonsingInv n A) L_hat U_hat DeltaA_LU u →
+            higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+              y_hat x_hat b DeltaL DeltaU u →
+            ∃ DeltaA : Fin n → Fin n → ℝ,
+              (∀ i j, |DeltaA i j| ≤
+                higham9_14_h u * |nonsingInv n A i j|) ∧
+              (∀ i, ∑ j : Fin n,
+                (nonsingInv n A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L, U, hLU, hOpt⟩ :=
+    higham9_8_abs_lu_product_eq_abs_of_nonsingInv_totalNonnegative
+      A hTN hdet
+  let L_hat : Fin n → Fin n → ℝ := higham9_8_checkerboardConjugate L
+  let U_hat : Fin n → Fin n → ℝ := higham9_8_checkerboardConjugate U
+  have hLU_hat : LUFactSpec n (nonsingInv n A) L_hat U_hat := hLU
+  have hOpt_hat :
+      ∀ i j : Fin n,
+        ∑ k : Fin n, |L_hat i k| * |U_hat k j| =
+          |nonsingInv n A i j| := hOpt
+  refine ⟨L_hat, U_hat, hLU_hat, hOpt_hat, ?_⟩
+  intro y_hat x_hat b u hu hu_lt_one DeltaA_LU DeltaL DeltaU h20 h21
+  exact
+    higham9_14_source_h_bound_of_absLU_le_absA_and_9_20_9_21_models
+      n (nonsingInv n A) L_hat U_hat y_hat x_hat b u hu hu_lt_one
+      (fun i j => le_of_eq (hOpt_hat i j))
+      DeltaA_LU DeltaL DeltaU h20 h21
+
+/-- **Problem 9.8 / Theorem 9.14**, explicit-model `f(u)` source bound for
+the nonsingular-inverse total-nonnegative class.
+
+This is the equation-(9.22) counterpart of
+`higham9_14_nonsingInv_totalNonnegative_exists_source_h_bound_of_models`: it
+uses the same Problem 9.8 exact factors but stops at the `f(u)|A^{-1}|`
+source bound and does not require `u < 1`. -/
+theorem higham9_14_nonsingInv_totalNonnegative_exists_source_f_bound_of_models
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n (nonsingInv n A) L_hat U_hat ∧
+        (∀ i j : Fin n,
+          ∑ k : Fin n, |L_hat i k| * |U_hat k j| =
+            |nonsingInv n A i j|) ∧
+        (∀ y_hat x_hat b : Fin n → ℝ,
+          ∀ u : ℝ, 0 ≤ u →
+          ∀ DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ,
+            higham9_20_tridiag_lu_perturbation_model n
+              (nonsingInv n A) L_hat U_hat DeltaA_LU u →
+            higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+              y_hat x_hat b DeltaL DeltaU u →
+            ∃ DeltaA : Fin n → Fin n → ℝ,
+              (∀ i j, |DeltaA i j| ≤
+                higham9_14_f u * |nonsingInv n A i j|) ∧
+              (∀ i, ∑ j : Fin n,
+                (nonsingInv n A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L, U, hLU, hOpt⟩ :=
+    higham9_8_abs_lu_product_eq_abs_of_nonsingInv_totalNonnegative
+      A hTN hdet
+  let L_hat : Fin n → Fin n → ℝ := higham9_8_checkerboardConjugate L
+  let U_hat : Fin n → Fin n → ℝ := higham9_8_checkerboardConjugate U
+  have hLU_hat : LUFactSpec n (nonsingInv n A) L_hat U_hat := hLU
+  have hOpt_hat :
+      ∀ i j : Fin n,
+        ∑ k : Fin n, |L_hat i k| * |U_hat k j| =
+          |nonsingInv n A i j| := hOpt
+  refine ⟨L_hat, U_hat, hLU_hat, hOpt_hat, ?_⟩
+  intro y_hat x_hat b u hu DeltaA_LU DeltaL DeltaU h20 h21
+  obtain ⟨DeltaA, hDeltaA, hBackward⟩ :=
+    higham9_14_source_f_bound_of_absLU_le_const_absA_and_9_20_9_21_models
+      n (nonsingInv n A) L_hat U_hat y_hat x_hat b 1 u hu
+      (fun i j => by
+        simpa [one_mul] using le_of_eq (hOpt_hat i j))
+      DeltaA_LU DeltaL DeltaU h20 h21
+  refine ⟨DeltaA, ?_, hBackward⟩
+  intro i j
+  simpa [one_mul] using hDeltaA i j
+
 /-- **Problem 9.8 / Theorem 9.14**, actual-solve `f(u)` source bound for the
 nonsingular-inverse total-nonnegative class.
 

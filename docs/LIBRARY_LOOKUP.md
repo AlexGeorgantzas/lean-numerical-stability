@@ -2866,6 +2866,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_8_abs_lu_product_eq_abs_of_nonsingInv_checkerboard_pos`
 - `higham9_8_abs_lu_product_eq_abs_of_nonsingInv_principalBlock_inequalities`
 - `higham9_8_abs_lu_product_eq_abs_of_nonsingInv_totalNonnegative`
+- `higham9_14_nonsingInv_totalNonnegative_exists_source_h_bound_of_models`
+- `higham9_14_nonsingInv_totalNonnegative_exists_source_f_bound_of_models`
 - `higham9_14_nonsingInv_totalNonnegative_exists_source_f_bound_actual_triangular_solves`
 - `higham9_14_nonsingInv_totalNonnegative_exists_source_h_bound_actual_triangular_solves`
 
