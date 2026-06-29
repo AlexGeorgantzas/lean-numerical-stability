@@ -646,6 +646,68 @@ theorem higham21_lemma21_2_symmetrized_transpose_mulVec_eq_beta_smul {m n : ℕ}
           ring
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    conditional rescaling step after the source proof's beta algebra.
+    If the source-oriented perturbation preserves the first perturbed system,
+    `(A + DeltaA2)^T y = x`, and the beta scalar is nonzero, then the same
+    constructed perturbation makes `x` a minimum 2-norm solution of the single
+    perturbed rectangular system.
+
+    This is intentionally conditional on `beta ≠ 0`; the source proof's
+    perturbation-smallness argument that ensures this condition remains a
+    separate open dependency. -/
+theorem higham21_lemma21_2_symmetrized_min_norm_of_beta_ne_zero {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (hsq : vecNorm2Sq x ≠ 0)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hDeltaA2 :
+      rectMatMulVec (finiteTranspose (fun i j => A i j + DeltaA2 i j)) y = x)
+    (hbeta : undetLemma21_2Beta x DeltaA1 DeltaA2 y ≠ 0) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j)
+      b x := by
+  let M : Fin m → Fin n → ℝ :=
+    fun i j => A i j + undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j
+  let beta : ℝ := undetLemma21_2Beta x DeltaA1 DeltaA2 y
+  let ytilde : Fin m → ℝ := fun i => beta⁻¹ * y i
+  have hfirst : rectMatMulVec M x = b := by
+    simpa [M] using
+      higham21_lemma21_2_symmetrized_system_mulVec_self_of_deltaA1
+        A x hsq DeltaA1 DeltaA2 b hDeltaA1
+  have haction :
+      rectMatMulVec (finiteTranspose M) y = fun j : Fin n => beta * x j := by
+    simpa [M, beta] using
+      higham21_lemma21_2_symmetrized_transpose_mulVec_eq_beta_smul
+        A x DeltaA1 DeltaA2 y hDeltaA2
+  have hytilde_eq : rectTransposeMulVec M ytilde = x := by
+    ext j
+    have hsmul_j :=
+      congrFun (rectMatMulVec_smul (finiteTranspose M) beta⁻¹ y) j
+    have haction_j := congrFun haction j
+    calc
+      rectTransposeMulVec M ytilde j =
+          rectMatMulVec (finiteTranspose M) ytilde j := by
+            rfl
+      _ = beta⁻¹ * rectMatMulVec (finiteTranspose M) y j := by
+            change rectMatMulVec (finiteTranspose M) (fun i : Fin m => beta⁻¹ * y i) j =
+              beta⁻¹ * rectMatMulVec (finiteTranspose M) y j
+            exact hsmul_j
+      _ = beta⁻¹ * (beta * x j) := by rw [haction_j]
+      _ = x j := by
+            rw [← mul_assoc, inv_mul_cancel₀ hbeta, one_mul]
+  have hsolve : rectMatMulVec M (rectTransposeMulVec M ytilde) = b := by
+    rw [hytilde_eq]
+    exact hfirst
+  have hmin :=
+    higham21_eq21_4_rect_transpose_min_norm_of_solves M b ytilde hsolve
+  rwa [hytilde_eq] at hmin
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     the Frobenius-squared norm bound for the projector mixture used to replace
     two perturbation blocks by one. -/
 theorem higham21_lemma21_2_symmetrized_perturbation_frobNormSq_le {m n : ℕ}
