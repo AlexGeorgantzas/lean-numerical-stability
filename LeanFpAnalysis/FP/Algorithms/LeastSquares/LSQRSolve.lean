@@ -17762,6 +17762,37 @@ theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_upper_cert
     lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_inequality_certificate
       htheta A b hy hnot hrank hlower hupper
 
+/-- Scalar-branch positive finite-`theta` WKS handoff.  If the printed outer
+    minimum in (20.21) selects the scalar `phi` branch, the exact-fit
+    perturbation witness gives the upper inequality; the finite-positive
+    lower-bound side then gives equality and positivity.  The source-block
+    `sigma_min` branch, eigenvalue branch formula, and `theta = infinity` case
+    remain separate obligations. -/
+theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_phi_le_sigmaMin
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hnot : ¬ IsLeastSquaresMinimizer A b y)
+    (hrank :
+      lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+        (lsResidualHigham A b y) y = m + 1)
+    (hbranch :
+      lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y ≤
+        lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+          (lsResidualHigham A b y) y) :
+    lsNormwiseBackwardErrorEtaF theta A b y =
+        lsNormwiseBackwardErrorFormulaRHS theta A b y ∧
+      0 < lsNormwiseBackwardErrorEtaF theta A b y ∧
+      0 < lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  have hupper :
+      lsNormwiseBackwardErrorEtaF theta A b y ≤
+        lsNormwiseBackwardErrorFormulaRHS theta A b y :=
+    lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_phi_le_sigmaMin
+      (le_of_lt htheta) A b hy hbranch
+  exact
+    lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_upper_certificate
+      htheta A b hy hnot hrank hupper
+
 /-- Positive finite-`theta` WKS branch from the concrete rank-one
     source-block certificate.  This replaces the generic upper-inequality
     hypothesis by the explicit expanded rank-one witness cost bound against
