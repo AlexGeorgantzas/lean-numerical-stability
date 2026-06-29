@@ -12930,6 +12930,11 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_14_rowDiagDom_exists_LUFactSpec_source_f_bound_actual_triangular_solves
 #check higham9_14_colDiagDom_exists_LUFactSpec_source_h_bound_actual_triangular_solves
 #check higham9_14_rowDiagDom_exists_LUFactSpec_source_h_bound_actual_triangular_solves
+#check higham9_24_scaledMatrix
+#check higham9_24_scaled_system_equiv
+#check higham9_25_trailingRowInf
+#check higham9_25_implicitRowScalingPivotRule
+#check higham9_25_exists_implicitRowScalingPivotRule
 #check higham_problem9_14_RecursivePairwiseLUFactSpec_same_as_PrePivotedGEPP
 
 -- Higham Chapter 10 source-facing wrappers.

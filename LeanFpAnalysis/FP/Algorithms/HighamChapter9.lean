@@ -18377,6 +18377,43 @@ def higham9_25_implicitRowScalingPivotRule {n : ℕ}
       |Astage i k| / higham9_25_trailingRowInf Astage k i ≤
         |Astage r k| / higham9_25_trailingRowInf Astage k r
 
+/-- **Equation (9.25)**, finite active-set existence for implicit row scaling.
+
+If some active row has nonzero trailing row norm, then a row maximizing the
+scaled pivot ratio in Higham's implicit row-scaling rule exists.  This is only
+the finite pivot-choice layer; it does not construct a rounded elimination
+trace from the rule. -/
+theorem higham9_25_exists_implicitRowScalingPivotRule {n : ℕ}
+    (Astage : Fin n → Fin n → ℝ) (k : Fin n)
+    (hactive :
+      ∃ i : Fin n,
+        k.val ≤ i.val ∧ higham9_25_trailingRowInf Astage k i ≠ 0) :
+    ∃ r : Fin n, higham9_25_implicitRowScalingPivotRule Astage k r := by
+  classical
+  let activeRows : Finset (Fin n) :=
+    Finset.univ.filter
+      (fun i : Fin n =>
+        k.val ≤ i.val ∧ higham9_25_trailingRowInf Astage k i ≠ 0)
+  have hactiveRows : activeRows.Nonempty := by
+    rcases hactive with ⟨i, hik, hiNorm⟩
+    have hikFin : k ≤ i := hik
+    refine ⟨i, ?_⟩
+    simp [activeRows, hikFin, hiNorm]
+  obtain ⟨r, hr, hmax⟩ :=
+    Finset.exists_max_image activeRows
+      (fun i : Fin n =>
+        |Astage i k| / higham9_25_trailingRowInf Astage k i)
+      hactiveRows
+  have hr_active :
+      k.val ≤ r.val ∧ higham9_25_trailingRowInf Astage k r ≠ 0 := by
+    simpa [activeRows] using hr
+  refine ⟨r, hr_active.1, hr_active.2, ?_⟩
+  intro i hik hiNorm
+  have hikFin : k ≤ i := hik
+  have hi_mem : i ∈ activeRows := by
+    simp [activeRows, hikFin, hiNorm]
+  exact hmax i hi_mem
+
 /-! ## §9.10 A posteriori stability tests -/
 
 /-- **Equation (9.26)**, finite real prefix `p`-norm, implemented through the
