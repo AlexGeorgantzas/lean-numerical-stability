@@ -82,11 +82,19 @@ end-to-end stability rebuild is tagged as
   sharper Schur-tail inverse comparison
   `||A_local^{-1}||_max <= ||A^{-1}||_max`; the extra `rhoFull` factor is
   derived from `rhoFull >= 1` because the matrix-stage history contains the
-  input.  The Schur-tail inverse comparison itself, active BDD product/update
-  data, active pivot determinant/equality table, and Theorem 13.6 cited
-  implementation estimates remain open.  Verified by focused `lake build
-  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet public lookup with empty
-  stderr, `git diff --check`, marker/conflict-marker scans, and focused
+  input.  The matching concrete factor witnesses
+  `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_of_pivot_right_inverse`,
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_of_pivot_right_inverse`,
+  `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_of_pivot_right_inverse_of_det_ne_zero`,
+  and
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_of_pivot_right_inverse_of_det_ne_zero`
+  package this sharper route as `BlockLUFactSpec` witnesses and specialize the
+  determinant variants to the source-facing full inverse `nonsingInv (m*r)
+  (blockMatrixFlatFin Ablk)`.  The Schur-tail inverse comparison itself,
+  active BDD product/update data, active pivot determinant/equality table, and
+  Theorem 13.6 cited implementation estimates remain open.  Verified by focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet public lookup with
+  empty stderr, `git diff --check`, marker/conflict-marker scans, and focused
   `#print axioms` reporting only `propext`, `Classical.choice`, and
   `Quot.sound`.
 - 2026-06-29 Algorithm 13.3 max-entry product-bound audit:
