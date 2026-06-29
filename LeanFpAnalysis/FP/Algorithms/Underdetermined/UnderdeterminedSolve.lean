@@ -741,6 +741,51 @@ theorem higham21_lemma21_2_scalar_beta_ne_zero_of_bound
   ne_of_gt (higham21_lemma21_2_scalar_beta_pos_of_bound a b beta hsmall hbound)
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    inner-product route to the source proof's displayed beta lower bound.
+    If the numerator `x^T (DeltaA1 - DeltaA2)^T y` is bounded in absolute
+    value by `gamma * x^T x`, then
+    `beta >= 1 - gamma`.
+
+    This is an algebraic handoff for the still-open pseudoinverse perturbation
+    estimate, which must provide the absolute inner-product bound. -/
+theorem higham21_lemma21_2_beta_lower_bound_of_abs_inner_bound {m n : ℕ}
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (y : Fin m → ℝ)
+    (gamma : ℝ)
+    (hsq : vecNorm2Sq x ≠ 0)
+    (hinner :
+      |∑ j : Fin n,
+        x j *
+          rectMatMulVec (finiteTranspose (fun i j => DeltaA1 i j - DeltaA2 i j))
+            y j| ≤
+        gamma * vecNorm2Sq x) :
+    1 - gamma ≤ undetLemma21_2Beta x DeltaA1 DeltaA2 y := by
+  let numer : ℝ :=
+    ∑ j : Fin n,
+      x j *
+        rectMatMulVec (finiteTranspose (fun i j => DeltaA1 i j - DeltaA2 i j))
+          y j
+  let denom : ℝ := vecNorm2Sq x
+  have hden_pos : 0 < denom := by
+    exact lt_of_le_of_ne (by simpa [denom] using vecNorm2Sq_nonneg x)
+      (by simpa [denom] using hsq.symm)
+  have hden_ne : denom ≠ 0 := ne_of_gt hden_pos
+  have hinner' : |numer| ≤ gamma * denom := by
+    simpa [numer, denom] using hinner
+  have hnum_lower : -(gamma * denom) ≤ numer := (abs_le.mp hinner').1
+  have hdiv_lower :
+      (-(gamma * denom)) / denom ≤ numer / denom :=
+    div_le_div_of_nonneg_right hnum_lower (le_of_lt hden_pos)
+  have hleft : (-(gamma * denom)) / denom = -gamma := by
+    field_simp [hden_ne]
+  have hratio_lower : -gamma ≤ numer / denom := by
+    simpa [hleft] using hdiv_lower
+  have hfinal : 1 - gamma ≤ 1 + numer / denom := by
+    linarith
+  simpa [undetLemma21_2Beta, numer, denom] using hfinal
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     minimum-norm handoff from the source proof's scalar beta lower bound.
     If the matrix perturbation argument supplies
     `1 - (rho1 + rho2)/(1 - rho2) <= beta`, then the source smallness condition
@@ -773,6 +818,42 @@ theorem higham21_lemma21_2_symmetrized_min_norm_of_beta_lower_bound {m n : ℕ}
     A x DeltaA1 DeltaA2 b y hsq hDeltaA1 hDeltaA2
     (higham21_lemma21_2_scalar_beta_ne_zero_of_bound
       rho1 rho2 (undetLemma21_2Beta x DeltaA1 DeltaA2 y) hsmall hbound)
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    minimum-norm handoff from the beta numerator bound.  This replaces the
+    previous displayed beta lower-bound hypothesis by the equivalent local
+    obligation that the absolute beta numerator is bounded by
+    `((rho1 + rho2)/(1 - rho2)) * x^T x`.
+
+    The pseudoinverse perturbation estimate needed to prove this absolute
+    numerator bound remains open. -/
+theorem higham21_lemma21_2_symmetrized_min_norm_of_abs_inner_fraction_bound {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (rho1 rho2 : ℝ)
+    (hsq : vecNorm2Sq x ≠ 0)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hDeltaA2 :
+      rectMatMulVec (finiteTranspose (fun i j => A i j + DeltaA2 i j)) y = x)
+    (hsmall : 3 * max rho1 rho2 < 1)
+    (hinner :
+      |∑ j : Fin n,
+        x j *
+          rectMatMulVec (finiteTranspose (fun i j => DeltaA1 i j - DeltaA2 i j))
+            y j| ≤
+        ((rho1 + rho2) / (1 - rho2)) * vecNorm2Sq x) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j)
+      b x :=
+  higham21_lemma21_2_symmetrized_min_norm_of_beta_lower_bound
+    A x DeltaA1 DeltaA2 b y rho1 rho2 hsq hDeltaA1 hDeltaA2 hsmall
+    (higham21_lemma21_2_beta_lower_bound_of_abs_inner_bound
+      x DeltaA1 DeltaA2 y ((rho1 + rho2) / (1 - rho2)) hsq hinner)
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     the Frobenius-squared norm bound for the projector mixture used to replace
