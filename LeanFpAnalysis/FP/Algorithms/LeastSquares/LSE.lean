@@ -2488,6 +2488,34 @@ theorem GQRAQTallAssocCase.exists_of_qr_reversed_cols {k p q : ℕ}
           simpa using congrFun (congrFun hCase.aq_eq (e row)) col
     _ = gqrAQTallBlockAssoc (k := k) hCase.L row col := hblock_eq
 
+/-- Exact-MGS associated-row tall (20.28) construction.  Nonzero exact-MGS
+    stages for the column-reversed full block supply the QR factorization used
+    by `GQRAQTallAssocCase.exists_of_qr_reversed_cols`. -/
+theorem GQRAQTallAssocCase.exists_of_mgs_reversed_cols {k p q : ℕ}
+    (C : Fin ((k + p) + q) → Fin (p + q) → ℝ)
+    (hdiag : ∀ j : Fin (p + q),
+      gsColumnNorm2
+        (modifiedGramSchmidtVectors (rectPermuteCols Fin.revPerm C) j.val j) ≠ 0) :
+    ∃ U : Fin ((k + p) + q) → Fin ((k + p) + q) → ℝ,
+      IsOrthogonal ((k + p) + q) U ∧
+        Nonempty (GQRAQTallAssocCase k p q
+          (matMulRectLeft (matTranspose U) C)) := by
+  let Crev : Fin ((k + p) + q) → Fin (p + q) → ℝ :=
+    rectPermuteCols Fin.revPerm C
+  let Q2 : Fin ((k + p) + q) → Fin (p + q) → ℝ :=
+    modifiedGramSchmidtQ Crev
+  let R : Fin (p + q) → Fin (p + q) → ℝ :=
+    modifiedGramSchmidtR Crev
+  have hQ2 : GramSchmidtOrthonormalColumns Q2 :=
+    modifiedGramSchmidtQ_orthonormal_columns Crev hdiag
+  have hR : IsUpperTriangular (p + q) R :=
+    IsUpperTrapezoidal.to_upperTriangular
+      (modifiedGramSchmidtR_upper_trapezoidal Crev)
+  have hfactor : rectPermuteCols Fin.revPerm C =
+      matMulRect ((k + p) + q) (p + q) (p + q) Q2 R := by
+    exact modifiedGramSchmidt_exact_factorization Crev hdiag
+  exact GQRAQTallAssocCase.exists_of_qr_reversed_cols C Q2 R hQ2 hR hfactor
+
 /-- Higham, 2nd ed., Chapter 20, equation (20.28), supplied wide-case
     shape for `U^T A Q = [X L]`.
 
