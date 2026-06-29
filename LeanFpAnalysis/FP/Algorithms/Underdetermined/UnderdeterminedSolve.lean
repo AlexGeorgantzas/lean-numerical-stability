@@ -31,6 +31,32 @@ namespace LeanFpAnalysis.FP
 open scoped BigOperators Matrix.Norms.Frobenius
 
 -- ============================================================
+-- §21.1  QR block algebra for the Q method and SNE setup
+-- ============================================================
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.1):
+    source-facing wrapper for multiplying by the tall QR block `[R; 0]`
+    appearing in `Aᵀ = Q [R; 0]`. -/
+theorem higham21_eq21_1_qr_transpose_block_mulVec {m k : ℕ}
+    (R : Fin m → Fin m → ℝ) (x : Fin m → ℝ) :
+    rectMatMulVec (lsQRTallBlock (k := k) R) x =
+      Fin.append (rectMatMulVec R x) (0 : Fin k → ℝ) :=
+  lsQRTallBlock_mulVec R x
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.2):
+    source-facing wrapper for the block-transpose coordinate identity
+    `[Rᵀ 0] [y₁; y₂] = Rᵀ y₁`.  This is the algebraic step behind reducing
+    `b = A x` to the triangular equation for the first coordinate block after
+    applying the orthogonal factor from (21.1). -/
+theorem higham21_eq21_2_qr_block_transpose_coordinates {m k : ℕ}
+    (R : Fin m → Fin m → ℝ) (y1 : Fin m → ℝ) (y2 : Fin k → ℝ) :
+    (fun j : Fin m =>
+      ∑ i : Fin (m + k), lsQRTallBlock (k := k) R i j *
+        Fin.append y1 y2 i) =
+      fun j : Fin m => ∑ i : Fin m, R i j * y1 i :=
+  lsQRTallBlock_transpose_mulVec_append R y1 y2
+
+-- ============================================================
 -- §21.3  Row-wise backward error for underdetermined systems
 -- ============================================================
 
@@ -157,6 +183,160 @@ theorem undetNormwiseBackwardErrorEtaF_eq_zero_of_rectMinNormSolution
       (undetNormwiseBackwardErrorValuesF.zero_mem_of_rectMinNormSolution
         theta A b y hmin)
   · exact undetNormwiseBackwardErrorEtaF_nonneg theta A b y
+
+/-- In the Chapter 21 Theorem 21.3 weighted Frobenius model, perturbing only
+    the right-hand side by `-b` has cost `theta * ||b||_2`, for nonnegative
+    source weight `theta`. -/
+theorem undetNormwiseBackwardErrorCostF_zero_deltaA_neg_deltab
+    {m n : ℕ} (theta : ℝ) (htheta : 0 ≤ theta) (b : Fin m → ℝ) :
+    lsNormwiseBackwardErrorCostF (m := m) (n := n) theta
+      (0 : Fin m → Fin n → ℝ) (fun i => -b i) = theta * vecNorm2 b := by
+  have hleft : 0 ≤ lsNormwiseBackwardErrorCostF theta
+      (0 : Fin m → Fin n → ℝ) (fun i => -b i) :=
+    lsNormwiseBackwardErrorCostF_nonneg theta
+      (0 : Fin m → Fin n → ℝ) (fun i => -b i)
+  have hright : 0 ≤ theta * vecNorm2 b :=
+    mul_nonneg htheta (vecNorm2_nonneg b)
+  apply (sq_eq_sq₀ hleft hright).mp
+  rw [lsNormwiseBackwardErrorCostF_sq]
+  rw [show frobNormSqRect (0 : Fin m → Fin n → ℝ) = 0 by
+    simp [frobNormSqRect]]
+  have hneg : vecNorm2Sq (fun i : Fin m => -b i) = vecNorm2Sq b := by
+    unfold vecNorm2Sq
+    apply Finset.sum_congr rfl
+    intro i _
+    ring
+  rw [hneg]
+  rw [show (theta * vecNorm2 b) ^ 2 = theta ^ 2 * vecNorm2 b ^ 2 by ring]
+  rw [vecNorm2_sq]
+  ring
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.2, Theorem 21.3:
+    the source zero-vector candidate `y = 0` has attainable cost
+    `theta * ||b||_2` in the underdetermined normwise backward-error model. -/
+theorem undetNormwiseBackwardErrorValuesF.theta_vecNorm_mem_zero
+    {m n : ℕ} (theta : ℝ) (htheta : 0 ≤ theta)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) :
+    theta * vecNorm2 b ∈
+      undetNormwiseBackwardErrorValuesF theta A b (0 : Fin n → ℝ) := by
+  refine ⟨(0 : Fin m → Fin n → ℝ), (fun i => -b i), ?_, ?_⟩
+  · unfold UndetNormwiseBackwardErrorFeasible
+    constructor
+    · ext i
+      simp [rectMatMulVec]
+    · intro z _hz
+      change vecNorm2 (fun _ : Fin n => 0) ≤ vecNorm2 z
+      rw [vecNorm2_zero]
+      exact vecNorm2_nonneg z
+  · exact (undetNormwiseBackwardErrorCostF_zero_deltaA_neg_deltab
+      theta htheta b).symm
+
+/-- Any feasible perturbation for the Chapter 21 zero-vector candidate must
+    pay at least the weighted right-hand-side cost `theta * ||b||_2`. -/
+theorem undetNormwiseBackwardErrorCostF_ge_theta_vecNorm_of_zero_feasible
+    {m n : ℕ} {theta : ℝ} (htheta : 0 ≤ theta)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (hfeas :
+      UndetNormwiseBackwardErrorFeasible A b (0 : Fin n → ℝ) DeltaA Deltab) :
+    theta * vecNorm2 b ≤ lsNormwiseBackwardErrorCostF theta DeltaA Deltab := by
+  have hDeltab : Deltab = fun i : Fin m => -b i := by
+    ext i
+    have hi := congrFun hfeas.system_eq i
+    have hzero : (0 : ℝ) = b i + Deltab i := by
+      simpa [rectMatMulVec] using hi
+    linarith
+  have hweighted : theta * vecNorm2 Deltab ≤
+      lsNormwiseBackwardErrorCostF theta DeltaA Deltab :=
+    lsNormwiseBackwardErrorCostF_weighted_deltab_le htheta DeltaA Deltab
+  simpa [hDeltab, vecNorm2_neg] using hweighted
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.2, Theorem 21.3:
+    zero-vector branch of the Sun--Sun normwise Frobenius backward-error
+    formula, `eta_F(0) = theta * ||b||_2`, stated for nonnegative `theta`.
+    The nonzero singular-value formula remains a separate selected target. -/
+theorem higham21_thm21_3_etaF_zero
+    {m n : ℕ} (theta : ℝ) (htheta : 0 ≤ theta)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) :
+    undetNormwiseBackwardErrorEtaF theta A b (0 : Fin n → ℝ) =
+      theta * vecNorm2 b := by
+  apply le_antisymm
+  · unfold undetNormwiseBackwardErrorEtaF
+    exact csInf_le
+      (undetNormwiseBackwardErrorValuesF.bddBelow theta A b (0 : Fin n → ℝ))
+      (undetNormwiseBackwardErrorValuesF.theta_vecNorm_mem_zero theta htheta A b)
+  · unfold undetNormwiseBackwardErrorEtaF
+    apply le_csInf
+    · exact ⟨theta * vecNorm2 b,
+        undetNormwiseBackwardErrorValuesF.theta_vecNorm_mem_zero theta htheta A b⟩
+    · intro eta heta
+      rcases heta with ⟨DeltaA, Deltab, hfeas, rfl⟩
+      exact undetNormwiseBackwardErrorCostF_ge_theta_vecNorm_of_zero_feasible
+        htheta A b DeltaA Deltab hfeas
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.2, Theorem 21.3:
+    residual for an approximate underdetermined solution, using the source
+    sign convention `r = b - A y`. -/
+noncomputable def undetResidualHigham {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    Fin m → ℝ :=
+  fun i => b i - rectMatMulVec A y i
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.2, Theorem 21.3:
+    source-facing model of `I - y y^+` in the nonzero-`y` branch.  This reuses
+    the Chapter 20 rank-one complement-projector infrastructure. -/
+noncomputable abbrev undetApproxComplementProjector {n : ℕ}
+    (y : Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  lsResidualComplementProjector y
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.2, Theorem 21.3:
+    source matrix `A(I - y y^+)` appearing in the nonzero Sun--Sun formula. -/
+noncomputable def undetNormwiseBackwardErrorFormulaMatrix {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (y : Fin n → ℝ) :
+    Fin m → Fin n → ℝ :=
+  rectMatMul A (undetApproxComplementProjector y)
+
+/-- Entry expansion of the Chapter 21 source matrix `A(I - y y^+)`. -/
+theorem undetNormwiseBackwardErrorFormulaMatrix_apply {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (y : Fin n → ℝ) (i : Fin m) (j : Fin n) :
+    undetNormwiseBackwardErrorFormulaMatrix A y i j =
+      ∑ k : Fin n, A i k *
+        (idMatrix n k j - y k * y j / vecNorm2Sq y) := by
+  rfl
+
+/-- Applying the Chapter 21 source matrix `A(I - y y^+)` is the same as first
+    projecting with `I - y y^+`, then applying `A`. -/
+theorem undetNormwiseBackwardErrorFormulaMatrix_mulVec_eq {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (y x : Fin n → ℝ) :
+    rectMatMulVec (undetNormwiseBackwardErrorFormulaMatrix A y) x =
+      rectMatMulVec A (rectMatMulVec (undetApproxComplementProjector y) x) := by
+  rw [undetNormwiseBackwardErrorFormulaMatrix, rectMatMulVec_rectMatMul]
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.2, Theorem 21.3:
+    the source matrix `A(I - y y^+)` annihilates the nonzero candidate
+    direction `y`. -/
+theorem higham21_thm21_3_formulaMatrix_mulVec_candidate_eq_zero
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) (y : Fin n → ℝ)
+    (hysq : vecNorm2Sq y ≠ 0) :
+    rectMatMulVec (undetNormwiseBackwardErrorFormulaMatrix A y) y = 0 := by
+  have hcomp : rectMatMulVec (undetApproxComplementProjector y) y = 0 := by
+    simpa [undetApproxComplementProjector, rectMatMulVec, matMulVec] using
+      (lsResidualComplementProjector_mulVec_residual y hysq)
+  rw [undetNormwiseBackwardErrorFormulaMatrix_mulVec_eq A y y, hcomp]
+  ext i
+  simp [rectMatMulVec]
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.2, Theorem 21.3:
+    scalar right-hand side of the nonzero Sun--Sun formula, parameterized by
+    the smallest singular value of `A(I - y y^+)`.  Proving that this equals
+    `eta_F(y)` remains the open singular-value branch. -/
+noncomputable def undetNormwiseBackwardErrorNonzeroFormulaRHS {m n : ℕ}
+    (theta : ℝ) (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (y : Fin n → ℝ) (sigma : ℝ) : ℝ :=
+  Real.sqrt
+    (theta ^ 2 * vecNorm2Sq y / (1 + theta ^ 2 * vecNorm2Sq y) *
+        (vecNorm2Sq (undetResidualHigham A b y) / vecNorm2Sq y) +
+      sigma ^ 2)
 
 -- ============================================================
 -- §21.3  Theorem 21.4: Q method backward stability
