@@ -232,6 +232,18 @@ noncomputable def undetAplusOfGramInv {m n : ℕ}
     (AAT_inv : Fin m → Fin m → ℝ) : Fin n → Fin m → ℝ :=
   fun j i => ∑ k : Fin m, A k j * AAT_inv k i
 
+/-- Repository nonsingular inverse candidate for the underdetermined Gram
+    matrix `AAᵀ` in Higham, 2nd ed., Chapter 21, equation (21.4). -/
+noncomputable def undetGramNonsingInv {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) : Fin m → Fin m → ℝ :=
+  nonsingInv m (rectGram A)
+
+/-- Concrete determinant-facing table for `Aᵀ(AAᵀ)⁻¹` using the repository
+    nonsingular inverse candidate for `AAᵀ`. -/
+noncomputable def undetAplusOfGramNonsingInv {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) : Fin n → Fin m → ℝ :=
+  undetAplusOfGramInv A (undetGramNonsingInv A)
+
 /-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.4):
     the concrete table `Aᵀ(AAᵀ)⁻¹` is a right inverse of `A` when the
     supplied inverse candidate is an inverse of `AAᵀ`. -/
@@ -265,6 +277,18 @@ theorem higham21_eq21_4_rect_pseudoinverse_right_inverse_of_gram_inverse
             simpa [rectGram] using
               congrArg (fun t : ℝ => t * AAT_inv r j) (hAAT i r).symm
     _ = if i = j then 1 else 0 := hInv.2 i j
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.4):
+    determinant-facing right-inverse form of `Aᵀ(AAᵀ)⁻¹`. -/
+theorem higham21_eq21_4_rect_pseudoinverse_right_inverse_of_gram_det_ne_zero
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (hdet : Matrix.det (rectGram A : Matrix (Fin m) (Fin m) ℝ) ≠ 0) :
+    rectMatMul A (undetAplusOfGramNonsingInv A) = idMatrix m :=
+  higham21_eq21_4_rect_pseudoinverse_right_inverse_of_gram_inverse
+    A (rectGram A) (undetGramNonsingInv A)
+    (by intro i j; rfl)
+    (isInverse_nonsingInv_of_det_ne_zero m (rectGram A) hdet)
 
 /-- Applying the concrete table `Aᵀ(AAᵀ)⁻¹` to `b` is the same as first
     solving for `y = (AAᵀ)⁻¹b` and then forming `Aᵀy`. -/
@@ -314,6 +338,22 @@ theorem higham21_eq21_4_rect_pseudoinverse_formula_min_norm_of_gram_inverse
   exact higham21_eq21_4_rect_transpose_min_norm_of_gram_normal_eq
     A AAT b (matMulVec m AAT_inv b) hAAT
     (fun i => congrFun (matMulVec_of_isRightInverse AAT AAT_inv hInv.2 b) i)
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.4):
+    determinant-facing concrete form of `x_LS = Aᵀ(AAᵀ)⁻¹b`.  If the Gram
+    matrix `AAᵀ` has nonzero determinant, then the repository nonsingular
+    inverse candidate gives an exact minimum 2-norm solution. -/
+theorem higham21_eq21_4_rect_pseudoinverse_formula_min_norm_of_gram_det_ne_zero
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (hdet : Matrix.det (rectGram A : Matrix (Fin m) (Fin m) ℝ) ≠ 0) :
+    RectMinNormSolution m n A b
+      (rectMatMulVec (undetAplusOfGramNonsingInv A) b) :=
+  higham21_eq21_4_rect_pseudoinverse_formula_min_norm_of_gram_inverse
+    A (rectGram A) (undetGramNonsingInv A) b
+    (by intro i j; rfl)
+    (isInverse_nonsingInv_of_det_ne_zero m (rectGram A) hdet)
 
 /-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.5):
     source-facing wrapper for the SNE formation step.  Once the seminormal
