@@ -3820,6 +3820,144 @@ theorem subtractZeroExact_exactWithUnitRoundoff
   intro x
   simp [FPModel.exactWithUnitRoundoff]
 
+/-- A stored panel step preserves the top row tail when the active vector has
+zero in the top row and subtraction by zero is exact. -/
+theorem panelTopRowTail_storedPanelStep_eq_of_top_zero
+    (fp : FPModel) {m p k : Nat}
+    (v : Fin (m + 1) -> Real) (beta : Real)
+    (A : Fin (m + 1) -> Fin (p + 1) -> Real)
+    (hv0 : v 0 = 0)
+    (hcopy : subtractZeroExact fp) :
+    panelTopRowTail
+        (fl_householderStoredPanelStep fp (m + 1) (p + 1) k v beta A) =
+      panelTopRowTail A := by
+  ext j
+  have hraw :
+      fl_householderApplyCompactPanel fp (m + 1) (p + 1) v beta A
+          0 j.succ =
+        A 0 j.succ := by
+    change fp.fl_sub (A 0 j.succ)
+        (fp.fl_mul
+          (fp.fl_mul beta
+            (fl_dotProduct fp (m + 1) v (fun a => A a j.succ)))
+          (v 0)) =
+      A 0 j.succ
+    rw [hv0, fl_mul_zero_right]
+    exact hcopy (A 0 j.succ)
+  by_cases hlt : j.val + 1 < k
+  · simp [panelTopRowTail, fl_householderStoredPanelStep, Fin.val_succ, hlt]
+  · by_cases heq : j.val + 1 = k
+    · simp [panelTopRowTail, fl_householderStoredPanelStep, Fin.val_succ,
+        heq, hraw]
+    · simp [panelTopRowTail, fl_householderStoredPanelStep, Fin.val_succ,
+        hlt, heq, hraw]
+
+/-- Top-row-tail preservation for a stored-panel sequence over a suffix of
+stages whose active vectors all have zero top entry. -/
+theorem panelTopRowTail_storedSequence_eq_add_of_top_zero
+    (fp : FPModel) {m p N : Nat}
+    (A_hat : Nat -> Fin (m + 1) -> Fin (p + 1) -> Real)
+    (v : Nat -> Fin (m + 1) -> Real) (beta : Nat -> Real)
+    (hcopy : subtractZeroExact fp)
+    (hStep : forall k, k < N ->
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (m + 1) (p + 1) k
+          (v k) (beta k) (A_hat k))
+    {s d : Nat}
+    (hsd : s + d <= N)
+    (hvzero : forall t, s <= t -> t < N -> v t 0 = 0) :
+    panelTopRowTail (A_hat (s + d)) = panelTopRowTail (A_hat s) := by
+  induction d with
+  | zero =>
+      change panelTopRowTail (A_hat s) = panelTopRowTail (A_hat s)
+      rfl
+  | succ d ih =>
+      have hsd_prev : s + d <= N := by
+        omega
+      have hstep : s + d < N := by
+        omega
+      rw [Nat.add_succ, hStep (s + d) hstep]
+      rw [panelTopRowTail_storedPanelStep_eq_of_top_zero
+        fp (v (s + d)) (beta (s + d)) (A_hat (s + d))
+        (hvzero (s + d) (Nat.le_add_right s d) hstep) hcopy]
+      exact ih hsd_prev
+
+/-- Final-stage form of top-row-tail preservation for a stored-panel sequence
+over a suffix whose active vectors all have zero top entry. -/
+theorem panelTopRowTail_storedSequence_eq_final_of_top_zero
+    (fp : FPModel) {m p N : Nat}
+    (A_hat : Nat -> Fin (m + 1) -> Fin (p + 1) -> Real)
+    (v : Nat -> Fin (m + 1) -> Real) (beta : Nat -> Real)
+    (hcopy : subtractZeroExact fp)
+    (hStep : forall k, k < N ->
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (m + 1) (p + 1) k
+          (v k) (beta k) (A_hat k))
+    {s : Nat} (hsN : s <= N)
+    (hvzero : forall t, s <= t -> t < N -> v t 0 = 0) :
+    panelTopRowTail (A_hat N) = panelTopRowTail (A_hat s) := by
+  have hsd : s + (N - s) <= N := by
+    omega
+  have hkeep :=
+    panelTopRowTail_storedSequence_eq_add_of_top_zero fp A_hat v beta hcopy
+      hStep (s := s) (d := N - s) hsd hvzero
+  have hsum : s + (N - s) = N := Nat.add_sub_of_le hsN
+  simpa [hsum] using hkeep
+
+/-- In a signed stored-QR source recurrence of width `p + 2`, all stages after
+the first two preserve the first row after the leading entry.
+
+This is the top-row half of the final-panel induction bookkeeping: after the
+two-step bridge has identified `A_hat 2`, later signed Householder steps have a
+zero top component and copy that row under the subtract-zero exact-copy
+convention. -/
+theorem storedSignedSequence_panelTopRowTail_final_eq_two_of_subtractZeroExact
+    (fp : FPModel) {m p : Nat}
+    (hmn : p + 2 <= m + 2)
+    (A_hat : Nat -> Fin (m + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall k (hk : k < p + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (m + 2) (p + 2) k
+          (householderTrailingActiveVector (m + 2)
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (m + 2)
+            (householderTrailingActiveVector (m + 2)
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hcopy : subtractZeroExact fp) :
+    panelTopRowTail (A_hat (p + 2)) =
+      panelTopRowTail (A_hat 2) := by
+  have hStepSigned : forall k, k < p + 2 ->
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (m + 2) (p + 2) k
+          (storedQRSignedStageVector hmn A_hat alpha k)
+          (storedQRSignedStageBeta hmn A_hat alpha k)
+          (A_hat k) := by
+    intro k hk
+    exact storedSignedSequence_step_of_source_step
+      fp hmn A_hat alpha hStep hk
+  have hvzero : forall t, 2 <= t -> t < p + 2 ->
+      storedQRSignedStageVector hmn A_hat alpha t (0 : Fin (m + 2)) = 0 := by
+    intro t ht2 ht
+    let pivot : Fin (m + 2) := Fin.mk t (lt_of_lt_of_le ht hmn)
+    let col : Fin (p + 2) := Fin.mk t ht
+    have hprefix : (0 : Fin (m + 2)).val < pivot.val := by
+      dsimp [pivot]
+      omega
+    have hz :=
+      householderTrailingActiveVector_zero_prefix (m + 2) pivot
+        (fun a => A_hat t a col) (alpha t) (0 : Fin (m + 2)) hprefix
+    simpa [storedQRSignedStageVector, ht, pivot, col] using hz
+  exact
+    panelTopRowTail_storedSequence_eq_final_of_top_zero
+      fp A_hat
+      (fun t => storedQRSignedStageVector hmn A_hat alpha t)
+      (fun t => storedQRSignedStageBeta hmn A_hat alpha t)
+      hcopy hStepSigned (s := 2) (by omega) hvzero
+
 /-- Zero-prefix dot-product lift for compact Householder support.
 
 Adding one leading component whose left factor is zero does not change the
