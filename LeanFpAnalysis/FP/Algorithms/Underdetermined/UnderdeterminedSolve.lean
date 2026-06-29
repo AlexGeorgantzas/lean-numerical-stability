@@ -1047,6 +1047,73 @@ theorem higham21_lemma21_2_symmetrized_min_norm_of_separate_op_bounds_and_dual_n
     hy
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    scalar product-budget bridge for the operator/dual-vector route.  If the
+    two perturbation operator bounds are no larger than `rho1` and `rho2`, and
+    the dual-vector factor is bounded by `(1 - rho2)^{-1}`, then the product
+    budget required by the beta handoff follows. -/
+theorem higham21_lemma21_2_product_budget_of_separate_bounds_and_dual_factor
+    (rho1 rho2 alpha beta eta : ℝ)
+    (hsmall : 3 * max rho1 rho2 < 1)
+    (halpha : 0 ≤ alpha)
+    (hbeta : 0 ≤ beta)
+    (heta : 0 ≤ eta)
+    (halpha_le : alpha ≤ rho1)
+    (hbeta_le : beta ≤ rho2)
+    (heta_le : eta ≤ (1 - rho2)⁻¹) :
+    (alpha + beta) * eta ≤ (rho1 + rho2) / (1 - rho2) := by
+  have hrho2_le : rho2 ≤ max rho1 rho2 := le_max_right rho1 rho2
+  have hden_pos : 0 < 1 - rho2 := by
+    nlinarith [hrho2_le, hsmall]
+  have hsum_le : alpha + beta ≤ rho1 + rho2 :=
+    add_le_add halpha_le hbeta_le
+  have hsum_rhs_nonneg : 0 ≤ rho1 + rho2 :=
+    le_trans (add_nonneg halpha hbeta) hsum_le
+  have hprod :
+      (alpha + beta) * eta ≤ (rho1 + rho2) * (1 - rho2)⁻¹ :=
+    mul_le_mul hsum_le heta_le heta hsum_rhs_nonneg
+  simpa [div_eq_mul_inv] using hprod
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    minimum-norm handoff from separate perturbation operator bounds and a
+    source-shaped dual-vector factor estimate.  The remaining source-specific
+    work is to prove `||y||₂ <= eta ||x||₂` with
+    `eta <= (1 - rho2)^{-1}` from the pseudoinverse perturbation argument. -/
+theorem higham21_lemma21_2_symmetrized_min_norm_of_separate_op_bounds_and_dual_factor
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (rho1 rho2 alpha beta eta : ℝ)
+    (hsq : vecNorm2Sq x ≠ 0)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hDeltaA2 :
+      rectMatMulVec (finiteTranspose (fun i j => A i j + DeltaA2 i j)) y = x)
+    (hsmall : 3 * max rho1 rho2 < 1)
+    (halpha : 0 ≤ alpha)
+    (hbeta : 0 ≤ beta)
+    (heta : 0 ≤ eta)
+    (halpha_le : alpha ≤ rho1)
+    (hbeta_le : beta ≤ rho2)
+    (heta_le : eta ≤ (1 - rho2)⁻¹)
+    (hDeltaA1Op : rectOpNorm2Le DeltaA1 alpha)
+    (hDeltaA2Op : rectOpNorm2Le DeltaA2 beta)
+    (hy : vecNorm2 y ≤ eta * vecNorm2 x) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j)
+      b x :=
+  higham21_lemma21_2_symmetrized_min_norm_of_separate_op_bounds_and_dual_norm
+    A x DeltaA1 DeltaA2 b y rho1 rho2 alpha beta eta hsq hDeltaA1 hDeltaA2
+    hsmall halpha hbeta
+    (higham21_lemma21_2_product_budget_of_separate_bounds_and_dual_factor
+      rho1 rho2 alpha beta eta hsmall halpha hbeta heta halpha_le hbeta_le
+      heta_le)
+    hDeltaA1Op hDeltaA2Op hy
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     the Frobenius-squared norm bound for the projector mixture used to replace
     two perturbation blocks by one. -/
 theorem higham21_lemma21_2_symmetrized_perturbation_frobNormSq_le {m n : ℕ}
