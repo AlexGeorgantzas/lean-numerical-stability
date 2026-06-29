@@ -2391,6 +2391,103 @@ theorem GQRAQTallCase.exists_of_qr_reversed_cols {r q : ℕ}
       _ = gqrAQTallBlock (k := r) L (Fin.natAdd r row) col := by
             simp [gqrAQTallBlock, L, gqrReverseSquare]
 
+/-- Associated-row tall (20.28) construction from a QR factorization of the
+    column-reversed block.  This is the same construction as
+    `GQRAQTallCase.exists_of_qr_reversed_cols`, transported across the finite
+    row associativity equivalence from `k + (p + q)` to `((k + p) + q)`. -/
+theorem GQRAQTallAssocCase.exists_of_qr_reversed_cols {k p q : ℕ}
+    (C : Fin ((k + p) + q) → Fin (p + q) → ℝ)
+    (Q2 : Fin ((k + p) + q) → Fin (p + q) → ℝ)
+    (R : Fin (p + q) → Fin (p + q) → ℝ)
+    (hQ2 : GramSchmidtOrthonormalColumns Q2)
+    (hR : IsUpperTriangular (p + q) R)
+    (hfactor : rectPermuteCols Fin.revPerm C =
+      matMulRect ((k + p) + q) (p + q) (p + q) Q2 R) :
+    ∃ U : Fin ((k + p) + q) → Fin ((k + p) + q) → ℝ,
+      IsOrthogonal ((k + p) + q) U ∧
+        Nonempty (GQRAQTallAssocCase k p q
+          (matMulRectLeft (matTranspose U) C)) := by
+  let e : Fin ((k + p) + q) ≃ Fin (k + (p + q)) :=
+    finAddAssocEquiv k p q
+  let C' : Fin (k + (p + q)) → Fin (p + q) → ℝ :=
+    fun i j => C (e.symm i) j
+  let Q2' : Fin (k + (p + q)) → Fin (p + q) → ℝ :=
+    fun i j => Q2 (e.symm i) j
+  have hQ2' : GramSchmidtOrthonormalColumns Q2' :=
+    GramSchmidtOrthonormalColumns.reindexRowsEquiv e hQ2
+  have hfactor' :
+      rectPermuteCols Fin.revPerm C' =
+        matMulRect (k + (p + q)) (p + q) (p + q) Q2' R := by
+    ext i j
+    have hentry := congrFun (congrFun hfactor (e.symm i)) j
+    simpa [C', Q2', rectPermuteCols, matMulRect] using hentry
+  rcases GQRAQTallCase.exists_of_qr_reversed_cols
+      (r := k) (q := p + q) C' Q2' R hQ2' hR hfactor' with
+    ⟨U', hU', hCaseNonempty⟩
+  rcases hCaseNonempty with ⟨hCase⟩
+  let U : Fin ((k + p) + q) → Fin ((k + p) + q) → ℝ :=
+    fun i j => U' (e i) (e j)
+  refine ⟨U, IsOrthogonal.reindexRowsColsEquiv e hU', ?_⟩
+  refine ⟨⟨hCase.L, hCase.lowerL, ?_⟩⟩
+  ext row col
+  have hrow_eq :
+      matMulRectLeft (matTranspose U) C row col =
+        matMulRectLeft (matTranspose U') C' (e row) col := by
+    calc
+      matMulRectLeft (matTranspose U) C row col
+          = ∑ i : Fin ((k + p) + q), U' (e i) (e row) * C i col := by
+              simp [matMulRectLeft, matTranspose, U]
+      _ = ∑ i' : Fin (k + (p + q)), U' i' (e row) * C (e.symm i') col := by
+              exact Equiv.sum_comp e
+                (fun i' : Fin (k + (p + q)) =>
+                  U' i' (e row) * C (e.symm i') col)
+      _ = matMulRectLeft (matTranspose U') C' (e row) col := by
+              simp [matMulRectLeft, matTranspose, C']
+  have hblock_eq :
+      gqrAQTallBlock hCase.L (e row) col =
+        gqrAQTallBlockAssoc (k := k) hCase.L row col := by
+    refine Fin.addCases
+      (motive := fun row : Fin ((k + p) + q) =>
+        gqrAQTallBlock hCase.L (e row) col =
+          gqrAQTallBlockAssoc (k := k) hCase.L row col)
+      ?topRows ?bottomRows row
+    · intro row
+      refine Fin.addCases
+        (motive := fun row : Fin (k + p) =>
+          gqrAQTallBlock hCase.L (e (Fin.castAdd q row)) col =
+            gqrAQTallBlockAssoc (k := k) hCase.L (Fin.castAdd q row) col)
+        ?zeroRows ?middleRows row
+      · intro row
+        have heq :
+            e (Fin.castAdd q (Fin.castAdd p row)) =
+              Fin.castAdd (p + q) row := by
+          ext
+          simp [e, finAddAssocEquiv, Fin.castAdd, Fin.cast]
+        rw [heq]
+        simp [gqrAQTallBlock, gqrAQTallBlockAssoc]
+      · intro row
+        have heq :
+            e (Fin.castAdd q (Fin.natAdd k row)) =
+              Fin.natAdd k (Fin.castAdd q row) := by
+          ext
+          simp [e, finAddAssocEquiv, Fin.castAdd, Fin.natAdd, Fin.cast]
+        rw [heq]
+        simp [gqrAQTallBlock, gqrAQTallBlockAssoc]
+    · intro row
+      have heq :
+          e (Fin.natAdd (k + p) row) =
+            Fin.natAdd k (Fin.natAdd p row) := by
+        ext
+        simp [e, finAddAssocEquiv, Fin.natAdd, Fin.cast, Nat.add_assoc]
+      rw [heq]
+      simp [gqrAQTallBlock, gqrAQTallBlockAssoc]
+  calc
+    matMulRectLeft (matTranspose U) C row col
+        = matMulRectLeft (matTranspose U') C' (e row) col := hrow_eq
+    _ = gqrAQTallBlock hCase.L (e row) col := by
+          simpa using congrFun (congrFun hCase.aq_eq (e row)) col
+    _ = gqrAQTallBlockAssoc (k := k) hCase.L row col := hblock_eq
+
 /-- Higham, 2nd ed., Chapter 20, equation (20.28), supplied wide-case
     shape for `U^T A Q = [X L]`.
 
