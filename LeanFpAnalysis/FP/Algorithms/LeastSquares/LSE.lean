@@ -2290,6 +2290,37 @@ theorem GeneralizedQRFactorization.exists_of_wide_mgs_constraint_and_assoc_shape
       lowerS := hSlower }⟩
   rw [hCase.aq_eq, ← hAQBlock]
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 wide-case construction step:
+    exact MGS data for `Bᵀ` supplies the constraint side, and exact MGS data
+    for the column-reversed trailing square block of the actual transformed
+    matrix `A Q` supplies the associated `[X L]` side. -/
+theorem GeneralizedQRFactorization.exists_of_wide_mgs_constraint_and_trailing_mgs_assoc_shape
+    {k r q : ℕ}
+    {A : Fin (r + q) → Fin ((k + r) + q) → ℝ}
+    {B : Fin (k + r) → Fin ((k + r) + q) → ℝ}
+    (hdiagB : ∀ j : Fin (k + r),
+      gsColumnNorm2
+        (modifiedGramSchmidtVectors
+          (fun col : Fin ((k + r) + q) => fun row : Fin (k + r) => B row col)
+          j.val j) ≠ 0)
+    (hdiagAQ : ∀ Q : Fin ((k + r) + q) → Fin ((k + r) + q) → ℝ,
+      IsOrthogonal ((k + r) + q) Q →
+        ∀ j : Fin (r + q),
+          gsColumnNorm2
+            (modifiedGramSchmidtVectors
+              (rectPermuteCols Fin.revPerm
+                (gqrAQWideAssocL
+                  (matMulRect (r + q) ((k + r) + q) ((k + r) + q) A Q)))
+              j.val j) ≠ 0) :
+    Nonempty (GeneralizedQRFactorization r (k + r) q A B) := by
+  refine
+    GeneralizedQRFactorization.exists_of_wide_mgs_constraint_and_assoc_shape
+      (A := A) (B := B) hdiagB ?_
+  intro Q hQorth
+  exact GQRAQWideAssocCase.exists_of_trailing_mgs_reversed_cols
+    (matMulRect (r + q) ((k + r) + q) ((k + r) + q) A Q)
+    (hdiagAQ Q hQorth)
+
 /-- Higham, 2nd ed., Chapter 20, equations (20.27)-(20.28), tall case:
     a supplied `GeneralizedQRFactorization` connects the reconstructed
     `[0; L]` row action to the actual transformed matrix `U^T A Q`.
@@ -4916,6 +4947,38 @@ theorem GeneralizedQRFactorization.exists_unique_lse_minimizer_of_fullRowRank_st
     ∃! x : Fin (p + q) → ℝ, IsLSEMinimizer A b B d x :=
   h.exists_unique_lse_minimizer_of_conditions20_24 hB
     ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, wide exact-MGS route:
+    nonzero MGS stages for `Bᵀ` and for the column-reversed trailing block of
+    the actual transformed `A Q`, together with the source rank assumptions,
+    give the unique exact equality-constrained least-squares minimizer. -/
+theorem GeneralizedQRFactorization.exists_unique_lse_minimizer_of_wide_mgs_constraint_and_trailing_mgs_assoc_shape
+    {k r q : ℕ}
+    {A : Fin (r + q) → Fin ((k + r) + q) → ℝ}
+    {B : Fin (k + r) → Fin ((k + r) + q) → ℝ}
+    (hdiagB : ∀ j : Fin (k + r),
+      gsColumnNorm2
+        (modifiedGramSchmidtVectors
+          (fun col : Fin ((k + r) + q) => fun row : Fin (k + r) => B row col)
+          j.val j) ≠ 0)
+    (hdiagAQ : ∀ Q : Fin ((k + r) + q) → Fin ((k + r) + q) → ℝ,
+      IsOrthogonal ((k + r) + q) Q →
+        ∀ j : Fin (r + q),
+          gsColumnNorm2
+            (modifiedGramSchmidtVectors
+              (rectPermuteCols Fin.revPerm
+                (gqrAQWideAssocL
+                  (matMulRect (r + q) ((k + r) + q) ((k + r) + q) A Q)))
+              j.val j) ≠ 0)
+    {b : Fin (r + q) → ℝ} {d : Fin (k + r) → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃! x : Fin ((k + r) + q) → ℝ, IsLSEMinimizer A b B d x := by
+  rcases
+    GeneralizedQRFactorization.exists_of_wide_mgs_constraint_and_trailing_mgs_assoc_shape
+      (A := A) (B := B) hdiagB hdiagAQ with
+    ⟨h⟩
+  exact h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9:
     supplied-GQR uniqueness consequence stated at the kernel nonsingularity
