@@ -3607,6 +3607,43 @@ theorem exists_gqr_constraint_block_and_A_Q2_mgs_of_fullRowRank_stackedFullColum
     gqrAQ2_mgs_norm_ne_zero_of_constraint_block_nullIntersection
       hQ hBQ hnull j
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction route:
+    after constructing the `Bᵀ` constraint block from full row rank of `B`,
+    the smaller `A Q₂` block has an exact MGS QR factorization under the
+    source stacked-full-column-rank hypothesis.
+
+    This packages the oracle-recommended smaller-block route as explicit
+    QR data for the next associated-shape construction step. -/
+theorem exists_gqr_constraint_block_and_A_Q2_mgs_qr_of_fullRowRank_stackedFullColumnRank
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ (Q : Fin (p + q) → Fin (p + q) → ℝ) (S : Fin p → Fin p → ℝ)
+        (Q2 : Fin (r + q) → Fin q → ℝ) (R2 : Fin q → Fin q → ℝ),
+      IsOrthogonal (p + q) Q ∧
+        IsLowerTriangular S ∧
+        matMulRect p (p + q) (p + q) B Q = gqrBQBlock S ∧
+        GramSchmidtOrthonormalColumns Q2 ∧
+        IsUpperTriangular q R2 ∧
+        gqrAQ2Block A Q = matMulRect (r + q) q q Q2 R2 := by
+  rcases
+    exists_gqr_constraint_block_and_A_Q2_mgs_of_fullRowRank_stackedFullColumnRank
+      (A := A) (B := B) hB hstack with
+    ⟨Q, S, hQ, hS, hBQ, hdiagAQ2⟩
+  let C : Fin (r + q) → Fin q → ℝ := gqrAQ2Block A Q
+  let Q2 : Fin (r + q) → Fin q → ℝ := modifiedGramSchmidtQ C
+  let R2 : Fin q → Fin q → ℝ := modifiedGramSchmidtR C
+  have horthQ2 : GramSchmidtOrthonormalColumns Q2 := by
+    exact modifiedGramSchmidtQ_orthonormal_columns C hdiagAQ2
+  have hR2upper : IsUpperTriangular q R2 := by
+    exact IsUpperTrapezoidal.to_upperTriangular
+      (modifiedGramSchmidtR_upper_trapezoidal C)
+  have hfactor : C = matMulRect (r + q) q q Q2 R2 := by
+    exact modifiedGramSchmidt_exact_factorization C hdiagAQ2
+  exact ⟨Q, S, Q2, R2, hQ, hS, hBQ, horthQ2, hR2upper, hfactor⟩
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof:
     on the `Q₂` coordinate range, the equation `A x = 0` is equivalent to
     `L22 y₂ = 0`.
