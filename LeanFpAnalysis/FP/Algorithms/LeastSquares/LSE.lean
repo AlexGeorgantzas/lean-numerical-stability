@@ -2069,6 +2069,101 @@ theorem GQRAQTallCase.mulVec_eq {k n : ℕ}
   subst M
   simpa using gqrAQTallBlock_mulVec L y
 
+/-- Completion helper for the tall associated (20.28) route: an orthonormal
+    rectangular factor can be extended to a square orthogonal matrix whose
+    bottom columns are the original columns in reverse order.
+
+    The reversed placement is the row-side companion to applying QR/MGS to the
+    column-reversed `A Q₂` block: after the later matrix-action step, the upper
+    triangular QR factor becomes the lower-triangular `L₂₂` block. -/
+theorem exists_orthogonal_completion_bottom_reversed_columns {r q : ℕ}
+    (Q2 : Fin (r + q) → Fin q → ℝ)
+    (hQ2 : GramSchmidtOrthonormalColumns Q2) :
+    ∃ U : Fin (r + q) → Fin (r + q) → ℝ,
+      IsOrthogonal (r + q) U ∧
+        ∀ i j, U i (Fin.natAdd r j) = Q2 i (Fin.rev j) := by
+  classical
+  let s : Set (Fin (r + q)) :=
+    {a | ∃ j : Fin q, a = Fin.natAdd r j}
+  let X : Fin (r + q) → Fin (r + q) → ℝ :=
+    fun i a =>
+      if ha : ∃ j : Fin q, a = Fin.natAdd r j then
+        Q2 i (Fin.rev (Classical.choose ha))
+      else
+        0
+  have hX : ∀ a b : s,
+      (∑ i : Fin (r + q), X i a * X i b) =
+        if a = b then 1 else 0 := by
+    intro a b
+    rcases a.2 with ⟨ja, hja⟩
+    rcases b.2 with ⟨jb, hjb⟩
+    have hXa : ∀ i : Fin (r + q), X i a = Q2 i (Fin.rev ja) := by
+      intro i
+      have ha : ∃ j : Fin q, (a : Fin (r + q)) = Fin.natAdd r j :=
+        ⟨ja, hja⟩
+      have hchoose : Classical.choose ha = ja := by
+        apply (Fin.natAdd_inj r).mp
+        calc
+          Fin.natAdd r (Classical.choose ha) = (a : Fin (r + q)) :=
+            (Classical.choose_spec ha).symm
+          _ = Fin.natAdd r ja := hja
+      simp [X, ha, hchoose]
+    have hXb : ∀ i : Fin (r + q), X i b = Q2 i (Fin.rev jb) := by
+      intro i
+      have hb : ∃ j : Fin q, (b : Fin (r + q)) = Fin.natAdd r j :=
+        ⟨jb, hjb⟩
+      have hchoose : Classical.choose hb = jb := by
+        apply (Fin.natAdd_inj r).mp
+        calc
+          Fin.natAdd r (Classical.choose hb) = (b : Fin (r + q)) :=
+            (Classical.choose_spec hb).symm
+          _ = Fin.natAdd r jb := hjb
+      simp [X, hb, hchoose]
+    have hsubeq : a = b ↔ ja = jb := by
+      constructor
+      · intro hab
+        apply (Fin.natAdd_inj r).mp
+        calc
+          Fin.natAdd r ja = (a : Fin (r + q)) := hja.symm
+          _ = (b : Fin (r + q)) := congrArg Subtype.val hab
+          _ = Fin.natAdd r jb := hjb
+      · intro h
+        apply Subtype.ext
+        calc
+          (a : Fin (r + q)) = Fin.natAdd r ja := hja
+          _ = Fin.natAdd r jb := by rw [h]
+          _ = (b : Fin (r + q)) := hjb.symm
+    calc
+      (∑ i : Fin (r + q), X i a * X i b)
+          =
+        ∑ i : Fin (r + q), Q2 i (Fin.rev ja) * Q2 i (Fin.rev jb) := by
+              apply Finset.sum_congr rfl
+              intro i _
+              rw [hXa i, hXb i]
+      _ = idMatrix q (Fin.rev ja) (Fin.rev jb) :=
+            hQ2 (Fin.rev ja) (Fin.rev jb)
+      _ = if a = b then 1 else 0 := by
+          by_cases h : ja = jb
+          · subst jb
+            have hab : a = b := hsubeq.mpr rfl
+            simp [idMatrix, hab]
+          · have hab : a ≠ b := fun hab => h (hsubeq.mp hab)
+            have hrev : Fin.rev ja ≠ Fin.rev jb :=
+              fun hrev => h (Fin.rev_injective hrev)
+            simp [idMatrix, hrev, hab]
+  obtain ⟨U, hUpreserve, hUcols⟩ :=
+    partialColOrthonormal_exists_fullColOrthonormal X s hX
+  refine ⟨U, isOrthogonal_of_column_orthonormal hUcols, ?_⟩
+  intro i j
+  have hmem : Fin.natAdd r j ∈ s := ⟨j, rfl⟩
+  have hp := hUpreserve (Fin.natAdd r j) hmem i
+  have hcast : ∃ k : Fin q, Fin.natAdd r j = Fin.natAdd r k :=
+    ⟨j, rfl⟩
+  have hchoose : Classical.choose hcast = j := by
+    apply (Fin.natAdd_inj r).mp
+    exact (Classical.choose_spec hcast).symm
+  simpa [X, hcast, hchoose] using hp
+
 /-- Higham, 2nd ed., Chapter 20, equation (20.28), supplied wide-case
     shape for `U^T A Q = [X L]`.
 
