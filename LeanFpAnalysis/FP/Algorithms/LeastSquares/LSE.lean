@@ -7915,6 +7915,86 @@ theorem GeneralizedQRFactorization.exists_unique_method_solution_of_wide_fullRow
     h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack,
     h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack⟩
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, tall exact-Householder method
+    package with the source nonsingularity consequence.
+
+    This attaches the post-(20.28) rank/nonsingularity equivalence to the
+    constructed exact-Householder associated-row route: under source full row
+    rank of `B` and full column rank of `[A; B]`, the returned exact GQR data
+    has nonzero diagonals in the triangular `S` and `L22` blocks and gives the
+    unique exact triangular solve coordinates and LSE minimizer. -/
+theorem GeneralizedQRFactorization.exists_unique_method_solution_with_s_l22_diag_ne_zero_of_tall_fullRowRank_constraint_and_exact_householder_assoc_shape
+    {k p q : ℕ}
+    {A : Fin ((k + p) + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    {b : Fin ((k + p) + q) → ℝ} {d : Fin p → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ h : GeneralizedQRFactorization (k + p) p q A B,
+      (∀ i : Fin p, h.S i i ≠ 0) ∧
+      (∀ i : Fin q, h.L22 i i ≠ 0) ∧
+      (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+        rectMatMulVec h.S yz.1 = d ∧
+        rectMatMulVec h.L22 yz.2 =
+          (fun i : Fin q =>
+            matMulVec ((k + p) + q) (matTranspose h.U) b (Fin.natAdd (k + p) i) -
+              rectMatMulVec h.L21 yz.1 i) ∧
+        IsLSEMinimizer A b B d
+          (matMulVec (p + q) h.Q (Fin.append yz.1 yz.2))) ∧
+      (∃! x : Fin (p + q) → ℝ, IsLSEMinimizer A b B d x) := by
+  rcases
+    GeneralizedQRFactorization.exists_of_tall_fullRowRank_constraint_and_exact_householder_assoc_shape
+      (A := A) (B := B) hB with
+    ⟨h⟩
+  have hdiag :
+      (∀ i : Fin p, h.S i i ≠ 0) ∧
+        (∀ i : Fin q, h.L22 i i ≠ 0) :=
+    (h.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero).1
+      ⟨hB, hstack⟩
+  exact ⟨h, hdiag.1, hdiag.2,
+    h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack,
+    h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, wide exact-Householder method
+    package with the source nonsingularity consequence.
+
+    This is the associated-column analogue of
+    `exists_unique_method_solution_with_s_l22_diag_ne_zero_of_tall_fullRowRank_constraint_and_exact_householder_assoc_shape`.
+    Exact Householder QR constructs the wide (20.28) shape, and the source rank
+    assumptions give nonzero diagonals in the triangular `S` and `L22` blocks
+    together with the unique exact GQR method solution. -/
+theorem GeneralizedQRFactorization.exists_unique_method_solution_with_s_l22_diag_ne_zero_of_wide_fullRowRank_constraint_and_exact_householder_assoc_shape
+    {k r q : ℕ}
+    {A : Fin (r + q) → Fin ((k + r) + q) → ℝ}
+    {B : Fin (k + r) → Fin ((k + r) + q) → ℝ}
+    {b : Fin (r + q) → ℝ} {d : Fin (k + r) → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ h : GeneralizedQRFactorization r (k + r) q A B,
+      (∀ i : Fin (k + r), h.S i i ≠ 0) ∧
+      (∀ i : Fin q, h.L22 i i ≠ 0) ∧
+      (∃! yz : (Fin (k + r) → ℝ) × (Fin q → ℝ),
+        rectMatMulVec h.S yz.1 = d ∧
+        rectMatMulVec h.L22 yz.2 =
+          (fun i : Fin q =>
+            matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i) -
+              rectMatMulVec h.L21 yz.1 i) ∧
+        IsLSEMinimizer A b B d
+          (matMulVec ((k + r) + q) h.Q (Fin.append yz.1 yz.2))) ∧
+      (∃! x : Fin ((k + r) + q) → ℝ, IsLSEMinimizer A b B d x) := by
+  rcases
+    GeneralizedQRFactorization.exists_of_wide_fullRowRank_constraint_and_exact_householder_assoc_shape
+      (A := A) (B := B) hB with
+    ⟨h⟩
+  have hdiag :
+      (∀ i : Fin (k + r), h.S i i ≠ 0) ∧
+        (∀ i : Fin q, h.L22 i i ≠ 0) :=
+    (h.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero).1
+      ⟨hB, hstack⟩
+  exact ⟨h, hdiag.1, hdiag.2,
+    h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack,
+    h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack⟩
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, constructed exact GQR method
     package for the block form (20.27).
 

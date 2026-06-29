@@ -209,6 +209,58 @@ theorem higham21_eq21_4_rect_transpose_min_norm_of_solves {m n : ℕ}
       higham21_eq21_4_rect_transpose_nullspace_orthogonal A y e he)
 
 /-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.4):
+    uniqueness of the minimum 2-norm solution against a feasible transpose-form
+    solution.  If `x` is already known to be a minimum-norm solution of
+    `A x = b` and some vector `Aᵀ y` solves the same system, then `x = Aᵀ y`.
+
+    This is the range/transpose bridge used by later Chapter 21 perturbation
+    handoffs: a source minimum-norm candidate can be rewritten in transpose
+    form once the perturbed normal equations provide the feasible dual vector. -/
+theorem rectMinNormSolution_eq_of_transpose_solution {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (x : Fin n → ℝ) (y : Fin m → ℝ)
+    (hx : RectMinNormSolution m n A b x)
+    (hy : rectMatMulVec A (rectTransposeMulVec A y) = b) :
+    x = rectTransposeMulVec A y := by
+  let z : Fin n → ℝ := rectTransposeMulVec A y
+  let e : Fin n → ℝ := fun j => x j - z j
+  have he_kernel : rectMatMulVec A e = (0 : Fin m → ℝ) := by
+    unfold e z
+    rw [rectMatMulVec_sub, hx.system_eq, hy]
+    ext i
+    simp
+  have horth : (∑ j : Fin n, z j * e j) = 0 := by
+    simpa [z, e] using
+      higham21_eq21_4_rect_transpose_nullspace_orthogonal A y e he_kernel
+  have hx_decomp : x = fun j : Fin n => z j + e j := by
+    ext j
+    simp [z, e]
+  have hpyth : vecNorm2Sq x = vecNorm2Sq z + vecNorm2Sq e := by
+    rw [hx_decomp]
+    simpa [finiteVecNorm2Sq_fin] using
+      finiteVecNorm2Sq_add_of_inner_eq_zero z e horth
+  have hnorm_le : vecNorm2 x ≤ vecNorm2 z :=
+    hx.min_norm z hy
+  have hsquare_le_norm : vecNorm2 x ^ 2 ≤ vecNorm2 z ^ 2 := by
+    nlinarith [hnorm_le, vecNorm2_nonneg x, vecNorm2_nonneg z]
+  have hsquare_le : vecNorm2Sq x ≤ vecNorm2Sq z := by
+    rw [← vecNorm2_sq x, ← vecNorm2_sq z]
+    exact hsquare_le_norm
+  have he_zero_sq : vecNorm2Sq e = 0 := by
+    nlinarith [hpyth, hsquare_le, vecNorm2Sq_nonneg e]
+  have he_norm_zero : vecNorm2 e = 0 := by
+    have hs : vecNorm2 e ^ 2 = 0 := by
+      simpa [vecNorm2_sq e] using he_zero_sq
+    exact sq_eq_zero_iff.mp hs
+  have he_zero : e = 0 := by
+    ext j
+    exact (vecNorm2_eq_zero_iff e).mp he_norm_zero j
+  ext j
+  have hj := congrFun he_zero j
+  simp [e, z] at hj
+  exact sub_eq_zero.mp hj
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.4):
     algebraic normal-equation identity `A (Aᵀ y) = (A Aᵀ) y`. -/
 theorem rectMatMulVec_rectTransposeMulVec {m n : ℕ}
     (A : Fin m → Fin n → ℝ) (y : Fin m → ℝ) :
@@ -278,6 +330,49 @@ theorem higham21_eq21_4_rect_transpose_min_norm_of_gram_normal_eq {m n : ℕ}
     RectMinNormSolution m n A b (rectTransposeMulVec A y) :=
   higham21_eq21_4_rect_transpose_min_norm_of_solves A b y
     (rectTransposeMulVec_solves_of_gram_normal_eq A AAT b y hAAT hy)
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.4):
+    normal-equation range rewrite for an already-known minimum-norm solution.
+    If `x` is the minimum 2-norm solution of `A x = b` and `y` solves
+    `(A Aᵀ)y = b`, then the minimum-norm solution is the transpose-form vector
+    `Aᵀ y`.
+
+    This is a source-facing bridge for later perturbation arguments: after
+    a perturbed Gram normal equation supplies the dual vector, a minimum-norm
+    candidate can be rewritten in the required transpose/range form. -/
+theorem rectMinNormSolution_eq_transpose_of_gram_normal_eq {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (AAT : Fin m → Fin m → ℝ)
+    (b y : Fin m → ℝ)
+    (x : Fin n → ℝ)
+    (hx : RectMinNormSolution m n A b x)
+    (hAAT : ∀ i j : Fin m, AAT i j = rectGram A i j)
+    (hy : ∀ i : Fin m, matMulVec m AAT y i = b i) :
+    x = rectTransposeMulVec A y :=
+  rectMinNormSolution_eq_of_transpose_solution A b x y hx
+    (rectTransposeMulVec_solves_of_gram_normal_eq A AAT b y hAAT hy)
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    perturbed-Gram specialization of the transpose/range rewrite.  For
+    `B = A + DeltaA2`, a minimum-norm solution of `B x = b` equals `Bᵀ y`
+    once `y` solves the perturbed Gram normal equation `(B Bᵀ)y = b`.
+
+    The remaining source perturbation work is to produce this perturbed Gram
+    dual solution and prove the associated nonsingularity/operator estimates. -/
+theorem higham21_lemma21_2_transpose_range_of_min_norm_and_perturbed_gram_normal_eq
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (DeltaA2 : Fin m → Fin n → ℝ)
+    (b y : Fin m → ℝ)
+    (x : Fin n → ℝ)
+    (hx : RectMinNormSolution m n (fun i j => A i j + DeltaA2 i j) b x)
+    (hy : ∀ i : Fin m,
+      matMulVec m (rectGram (fun i j => A i j + DeltaA2 i j)) y i = b i) :
+    x = rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y :=
+  rectMinNormSolution_eq_transpose_of_gram_normal_eq
+    (fun i j => A i j + DeltaA2 i j)
+    (rectGram (fun i j => A i j + DeltaA2 i j)) b y x hx
+    (by intro i j; rfl) hy
 
 /-- Concrete table for the source expression `Aᵀ(AAᵀ)⁻¹` in Higham,
     2nd ed., Chapter 21, Section 21.1, equation (21.4), parameterized by a
