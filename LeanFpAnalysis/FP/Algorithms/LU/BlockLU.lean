@@ -18222,6 +18222,41 @@ theorem higham13_algorithm13_3_matrix_active_local_schur_bound_of_product_bound
   dsimp [p] at hp ⊢
   nlinarith
 
+/-- Audit for the Chapter 13 max-entry route: the product-bound hypothesis in
+    `higham13_algorithm13_3_matrix_active_local_schur_bound_of_product_bound`
+    is not a generic consequence of the Algorithm 13.3 stage-table shape.
+
+    At the initial stage of a `2 × 2` block table whose blocks and pivot
+    inverse are all the all-ones `2 × 2` matrix, the required active
+    triple-product max-entry estimate would assert `4 <= 1`.  Any source
+    closure of the product-bound route therefore has to use additional
+    structure, not ordinary max-entry submultiplicativity. -/
+theorem higham13_algorithm13_3_product_bound_not_generic :
+    ¬ (∀ (A : Fin 2 → Fin 2 → Matrix (Fin 2) (Fin 2) ℝ)
+        (pivotInv : ℕ → Matrix (Fin 2) (Fin 2) ℝ),
+      ∀ k : ℕ, ∀ hk : k < 2, ∀ i j : Fin 2,
+        k + 1 ≤ i.val → k + 1 ≤ j.val →
+          maxEntryNorm (by norm_num : 0 < 2)
+            (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i ⟨k, hk⟩ *
+              pivotInv k *
+              higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k ⟨k, hk⟩ j) ≤
+            maxEntryNorm (by norm_num : 0 < 2)
+              (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i ⟨k, hk⟩) *
+            maxEntryNorm (by norm_num : 0 < 2) (pivotInv k) *
+            maxEntryNorm (by norm_num : 0 < 2)
+              (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k ⟨k, hk⟩ j)) := by
+  intro h
+  let J : Matrix (Fin 2) (Fin 2) ℝ := fun _ _ => 1
+  let A : Fin 2 → Fin 2 → Matrix (Fin 2) (Fin 2) ℝ := fun _ _ => J
+  let pivotInv : ℕ → Matrix (Fin 2) (Fin 2) ℝ := fun _ => J
+  have hineq :=
+    h A pivotInv 0 (by norm_num) ⟨1, by norm_num⟩ ⟨1, by norm_num⟩
+      (by norm_num) (by norm_num)
+  norm_num [A, pivotInv, J, maxEntryNorm,
+    higham13_algorithm13_3_schurStageMatrixBlock,
+    higham13_algorithm13_3_schurStageBlock, Matrix.mul_apply,
+    Fin.sum_univ_two] at hineq
+
 /-- Higham, 2nd ed., Chapter 13, Theorem 13.8:
     exact matrix-product local Schur estimate in the Chapter 13 max-entry
     norm, with the finite-dimensional `r^2` factor made explicit.

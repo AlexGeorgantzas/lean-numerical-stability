@@ -80,6 +80,17 @@ end-to-end stability rebuild is tagged as
   stderr, `git diff --check`, marker/conflict-marker scans, and focused
   `#print axioms` reporting only `propext`, `Classical.choice`, and
   `Quot.sound`.
+- 2026-06-29 Algorithm 13.3 max-entry product-bound audit:
+  added `higham13_algorithm13_3_product_bound_not_generic`, proving that the
+  source-conditional `hProduct` surface used by
+  `higham13_algorithm13_3_matrix_active_local_schur_bound_of_product_bound`
+  is false as a generic Algorithm 13.3 stage-table theorem.  The all-ones
+  `2 x 2` block table at the initial active stage would force the max-entry
+  triple-product estimate `4 <= 1`.  This rules out the ordinary
+  dimension-free max-entry multiplication shortcut for the Eq.13.21/Eq.13.23
+  branch; it is route-rejection evidence only and leaves the structured
+  source product/update theorem, source BDD reciprocal data, Problem 13.4
+  comparisons, and Theorem 13.6 cited estimates open.
 - 2026-06-29 matrix-`∞` source-norm upper endpoint checkpoint:
   `blockInfNorm` is the blockwise maximum of matrix-`∞` operator norms, with
   helpers `block_le_blockInfNorm`, `blockInfNorm_nonneg`,
