@@ -23,6 +23,7 @@ import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
 import LeanFpAnalysis.FP.Analysis.PerturbationTheory
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskySpec
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskySolve
+import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSQRSolve
 import LeanFpAnalysis.FP.Algorithms.Underdetermined.UnderdeterminedSpec
 
 namespace LeanFpAnalysis.FP
@@ -78,6 +79,84 @@ theorem higham21_rowwise_backward_error_bound_witness
     (hrow : ∀ i : Fin m, rectRowNorm2 ΔA i ≤ eta * rectRowNorm2 A i) :
     UndetRowwiseBackwardErrorBounded m n A b x_hat eta :=
   ⟨ΔA, ⟨heta, hmin, hrow⟩⟩
+
+-- ============================================================
+-- §21.2  Theorem 21.3: normwise backward-error model
+-- ============================================================
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.2, Theorem 21.3:
+    feasibility predicate for the normwise Frobenius backward error
+    `eta_F(y)` of an approximate minimum 2-norm underdetermined solution.
+
+    This reuses the Chapter 20 weighted Frobenius perturbation cost
+    `||[DeltaA, theta Delta b]||_F`; the Ch21-specific change is that `y`
+    must be a minimum 2-norm solution of the perturbed rectangular system. -/
+def UndetNormwiseBackwardErrorFeasible {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ) : Prop :=
+  RectMinNormSolution m n
+    (fun i j => A i j + DeltaA i j)
+    (fun i => b i + Deltab i) y
+
+/-- Attainable weighted Frobenius costs in the Chapter 21 Theorem 21.3
+    normwise backward-error definition. -/
+noncomputable def undetNormwiseBackwardErrorValuesF {m n : ℕ} (theta : ℝ)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) : Set ℝ :=
+  {eta | ∃ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+    UndetNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+      eta = lsNormwiseBackwardErrorCostF theta DeltaA Deltab}
+
+/-- Infimum model of Higham Chapter 21 Theorem 21.3's normwise backward
+    error `eta_F(y)`.  The source writes a minimum and gives the Sun-Sun
+    closed formula; those attainment and singular-value formula rows remain
+    separate selected targets. -/
+noncomputable def undetNormwiseBackwardErrorEtaF {m n : ℕ} (theta : ℝ)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) : ℝ :=
+  sInf (undetNormwiseBackwardErrorValuesF theta A b y)
+
+/-- The Chapter 21 attainable-cost set is bounded below by zero. -/
+theorem undetNormwiseBackwardErrorValuesF.bddBelow {m n : ℕ} (theta : ℝ)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    BddBelow (undetNormwiseBackwardErrorValuesF theta A b y) := by
+  refine ⟨0, ?_⟩
+  intro eta heta
+  rcases heta with ⟨DeltaA, Deltab, _hfeas, rfl⟩
+  exact lsNormwiseBackwardErrorCostF_nonneg theta DeltaA Deltab
+
+/-- The Chapter 21 normwise backward-error infimum model is nonnegative. -/
+theorem undetNormwiseBackwardErrorEtaF_nonneg {m n : ℕ} (theta : ℝ)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    0 ≤ undetNormwiseBackwardErrorEtaF theta A b y := by
+  unfold undetNormwiseBackwardErrorEtaF
+  apply Real.sInf_nonneg
+  intro eta heta
+  rcases heta with ⟨DeltaA, Deltab, _hfeas, rfl⟩
+  exact lsNormwiseBackwardErrorCostF_nonneg theta DeltaA Deltab
+
+/-- Zero is an attainable Chapter 21 normwise backward-error cost when `y`
+    is already a minimum 2-norm solution of the original data. -/
+theorem undetNormwiseBackwardErrorValuesF.zero_mem_of_rectMinNormSolution
+    {m n : ℕ} (theta : ℝ)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    (hmin : RectMinNormSolution m n A b y) :
+    (0 : ℝ) ∈ undetNormwiseBackwardErrorValuesF theta A b y := by
+  rw [← lsNormwiseBackwardErrorCostF_zero (m := m) (n := n) theta]
+  refine ⟨(0 : Fin m → Fin n → ℝ), (0 : Fin m → ℝ), ?_, rfl⟩
+  simpa [UndetNormwiseBackwardErrorFeasible] using hmin
+
+/-- If `y` is already a minimum 2-norm solution of the original data, then
+    the Chapter 21 infimum model gives zero backward error. -/
+theorem undetNormwiseBackwardErrorEtaF_eq_zero_of_rectMinNormSolution
+    {m n : ℕ} (theta : ℝ)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    (hmin : RectMinNormSolution m n A b y) :
+    undetNormwiseBackwardErrorEtaF theta A b y = 0 := by
+  apply le_antisymm
+  · unfold undetNormwiseBackwardErrorEtaF
+    exact csInf_le (undetNormwiseBackwardErrorValuesF.bddBelow theta A b y)
+      (undetNormwiseBackwardErrorValuesF.zero_mem_of_rectMinNormSolution
+        theta A b y hmin)
+  · exact undetNormwiseBackwardErrorEtaF_nonneg theta A b y
 
 -- ============================================================
 -- §21.3  Theorem 21.4: Q method backward stability
