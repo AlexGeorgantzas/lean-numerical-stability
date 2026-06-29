@@ -1173,6 +1173,164 @@ theorem higham21_lemma21_2_dual_vector_bound_of_perturbed_pseudoinverse_op_bound
   (rectOpNorm2Le_finiteTranspose_of_rectOpNorm2Le Bplus heta hBplusOp) x
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    source-shaped product-bound bridge.  A direct operator bound for
+    `Bplus * (DeltaA1 - DeltaA2)` gives the vector-action estimate for
+    `(DeltaA1 - DeltaA2)ᵀ (Bplusᵀ x)` used in the beta numerator. -/
+theorem higham21_lemma21_2_transpose_action_bound_of_pseudoinverse_product_bound
+    {m n : ℕ}
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (Bplus : Fin n → Fin m → ℝ)
+    {gamma : ℝ}
+    (hgamma : 0 ≤ gamma)
+    (hProduct :
+      rectOpNorm2Le
+        (rectMatMul Bplus (fun i j => DeltaA1 i j - DeltaA2 i j))
+        gamma) :
+    vecNorm2
+        (rectMatMulVec
+          (finiteTranspose (fun i j => DeltaA1 i j - DeltaA2 i j))
+          (rectMatMulVec (finiteTranspose Bplus) x)) ≤
+      gamma * vecNorm2 x := by
+  have haction :
+      rectMatMulVec
+          (finiteTranspose (fun i j => DeltaA1 i j - DeltaA2 i j))
+          (rectMatMulVec (finiteTranspose Bplus) x) =
+        rectMatMulVec
+          (finiteTranspose
+            (rectMatMul Bplus (fun i j => DeltaA1 i j - DeltaA2 i j)))
+          x :=
+    higham21_lemma21_2_pseudoinverse_transpose_action_eq_domain_projection
+      (fun i j => DeltaA1 i j - DeltaA2 i j) Bplus x
+  rw [haction]
+  exact
+    (rectOpNorm2Le_finiteTranspose_of_rectOpNorm2Le
+      (rectMatMul Bplus (fun i j => DeltaA1 i j - DeltaA2 i j))
+      hgamma hProduct) x
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    minimum-norm handoff from a source-shaped product bound on
+    `Bplus * (DeltaA1 - DeltaA2)`.  The remaining perturbation proof is to
+    instantiate this product bound for `Bplus = (A + DeltaA2)^+` from the
+    source smallness hypotheses. -/
+theorem higham21_lemma21_2_symmetrized_min_norm_of_pseudoinverse_product_bound
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (Bplus : Fin n → Fin m → ℝ)
+    (rho1 rho2 gamma : ℝ)
+    (hsq : vecNorm2Sq x ≠ 0)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hDomainSym :
+      IsSymmetricFiniteMatrix
+        (rectMatMul Bplus (fun i j => A i j + DeltaA2 i j)))
+    (hDomainX :
+      rectMatMulVec
+        (rectMatMul Bplus (fun i j => A i j + DeltaA2 i j)) x = x)
+    (hsmall : 3 * max rho1 rho2 < 1)
+    (hgamma : 0 ≤ gamma)
+    (hgamma_le : gamma ≤ (rho1 + rho2) / (1 - rho2))
+    (hProduct :
+      rectOpNorm2Le
+        (rectMatMul Bplus (fun i j => DeltaA1 i j - DeltaA2 i j))
+        gamma) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j)
+      b x := by
+  let B : Fin m → Fin n → ℝ := fun i j => A i j + DeltaA2 i j
+  let y : Fin m → ℝ := rectMatMulVec (finiteTranspose Bplus) x
+  have hDeltaA2 :
+      rectMatMulVec (finiteTranspose B) y = x := by
+    simpa [B, y] using
+      higham21_lemma21_2_perturbed_pseudoinverse_transpose_solves_of_domain_projection
+        B Bplus x (by simpa [B] using hDomainSym) (by simpa [B] using hDomainX)
+  have hActionGamma :
+      vecNorm2
+          (rectMatMulVec
+            (finiteTranspose (fun i j => DeltaA1 i j - DeltaA2 i j)) y) ≤
+        gamma * vecNorm2 x := by
+    simpa [y] using
+      higham21_lemma21_2_transpose_action_bound_of_pseudoinverse_product_bound
+        x DeltaA1 DeltaA2 Bplus hgamma hProduct
+  have hAction :
+      vecNorm2
+          (rectMatMulVec
+            (finiteTranspose (fun i j => DeltaA1 i j - DeltaA2 i j)) y) ≤
+        ((rho1 + rho2) / (1 - rho2)) * vecNorm2 x :=
+    le_trans hActionGamma
+      (mul_le_mul_of_nonneg_right hgamma_le (vecNorm2_nonneg x))
+  exact
+    higham21_lemma21_2_symmetrized_min_norm_of_transpose_action_bound
+      A x DeltaA1 DeltaA2 b y rho1 rho2 hsq hDeltaA1 hDeltaA2 hsmall hAction
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    concrete Gram-pseudoinverse specialization of the source-shaped product
+    handoff.  Under Gram nonsingularity for `B = A + DeltaA2`, the printed
+    hypothesis `x = Bᵀ y` supplies the domain-projection condition, so the
+    remaining source perturbation work is reduced to the product bound
+    on `B⁺ (DeltaA1 - DeltaA2)`. -/
+theorem higham21_lemma21_2_symmetrized_min_norm_of_gram_pseudoinverse_product_bound
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (rho1 rho2 gamma : ℝ)
+    (hsq : vecNorm2Sq x ≠ 0)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hdet :
+      Matrix.det
+          (rectGram (fun i j => A i j + DeltaA2 i j) :
+            Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hxTranspose :
+      x =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : 3 * max rho1 rho2 < 1)
+    (hgamma : 0 ≤ gamma)
+    (hgamma_le : gamma ≤ (rho1 + rho2) / (1 - rho2))
+    (hProduct :
+      rectOpNorm2Le
+        (rectMatMul
+          (undetAplusOfGramNonsingInv (fun i j => A i j + DeltaA2 i j))
+          (fun i j => DeltaA1 i j - DeltaA2 i j))
+        gamma) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j)
+      b x := by
+  let B : Fin m → Fin n → ℝ := fun i j => A i j + DeltaA2 i j
+  let Bplus : Fin n → Fin m → ℝ := undetAplusOfGramNonsingInv B
+  have hdetB : Matrix.det (rectGram B : Matrix (Fin m) (Fin m) ℝ) ≠ 0 := by
+    simpa [B] using hdet
+  have hMP : RectMoorePenrosePseudoinverse m n B Bplus :=
+    higham21_eq21_4_rect_moore_penrose_of_gram_det_ne_zero B hdetB
+  have hxRange :
+      x = rectMatMulVec Bplus (matMulVec m (rectGram B) y) := by
+    calc
+      x = rectTransposeMulVec B y := by
+        simpa [B] using hxTranspose
+      _ = rectMatMulVec Bplus (matMulVec m (rectGram B) y) := by
+        simpa [Bplus] using
+          higham21_lemma21_2_gram_pseudoinverse_range_of_transpose B hdetB y
+  have hDomainX : rectMatMulVec (rectMatMul Bplus B) x = x := by
+    rw [hxRange]
+    simpa [Bplus] using
+      higham21_lemma21_2_gram_pseudoinverse_domain_projection_apply_range
+        B hdetB (matMulVec m (rectGram B) y)
+  exact
+    higham21_lemma21_2_symmetrized_min_norm_of_pseudoinverse_product_bound
+      A x DeltaA1 DeltaA2 b Bplus rho1 rho2 gamma hsq hDeltaA1
+      (by simpa [B, Bplus] using hMP.domain_projection_symmetric)
+      (by simpa [B, Bplus] using hDomainX) hsmall hgamma hgamma_le
+      (by simpa [B, Bplus] using hProduct)
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     source-shaped pseudoinverse handoff for the remaining beta argument.
     If `Bplus` is a perturbed pseudoinverse for `B = A + DeltaA2` whose
     domain projection fixes `x`, and `Bplus` has the source perturbation
