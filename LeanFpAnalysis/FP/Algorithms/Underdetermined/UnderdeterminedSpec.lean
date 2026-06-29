@@ -331,6 +331,49 @@ theorem higham21_eq21_4_rect_transpose_min_norm_of_gram_normal_eq {m n : ℕ}
   higham21_eq21_4_rect_transpose_min_norm_of_solves A b y
     (rectTransposeMulVec_solves_of_gram_normal_eq A AAT b y hAAT hy)
 
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.4):
+    normal-equation range rewrite for an already-known minimum-norm solution.
+    If `x` is the minimum 2-norm solution of `A x = b` and `y` solves
+    `(A Aᵀ)y = b`, then the minimum-norm solution is the transpose-form vector
+    `Aᵀ y`.
+
+    This is a source-facing bridge for later perturbation arguments: after
+    a perturbed Gram normal equation supplies the dual vector, a minimum-norm
+    candidate can be rewritten in the required transpose/range form. -/
+theorem rectMinNormSolution_eq_transpose_of_gram_normal_eq {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (AAT : Fin m → Fin m → ℝ)
+    (b y : Fin m → ℝ)
+    (x : Fin n → ℝ)
+    (hx : RectMinNormSolution m n A b x)
+    (hAAT : ∀ i j : Fin m, AAT i j = rectGram A i j)
+    (hy : ∀ i : Fin m, matMulVec m AAT y i = b i) :
+    x = rectTransposeMulVec A y :=
+  rectMinNormSolution_eq_of_transpose_solution A b x y hx
+    (rectTransposeMulVec_solves_of_gram_normal_eq A AAT b y hAAT hy)
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    perturbed-Gram specialization of the transpose/range rewrite.  For
+    `B = A + DeltaA2`, a minimum-norm solution of `B x = b` equals `Bᵀ y`
+    once `y` solves the perturbed Gram normal equation `(B Bᵀ)y = b`.
+
+    The remaining source perturbation work is to produce this perturbed Gram
+    dual solution and prove the associated nonsingularity/operator estimates. -/
+theorem higham21_lemma21_2_transpose_range_of_min_norm_and_perturbed_gram_normal_eq
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (DeltaA2 : Fin m → Fin n → ℝ)
+    (b y : Fin m → ℝ)
+    (x : Fin n → ℝ)
+    (hx : RectMinNormSolution m n (fun i j => A i j + DeltaA2 i j) b x)
+    (hy : ∀ i : Fin m,
+      matMulVec m (rectGram (fun i j => A i j + DeltaA2 i j)) y i = b i) :
+    x = rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y :=
+  rectMinNormSolution_eq_transpose_of_gram_normal_eq
+    (fun i j => A i j + DeltaA2 i j)
+    (rectGram (fun i j => A i j + DeltaA2 i j)) b y x hx
+    (by intro i j; rfl) hy
+
 /-- Concrete table for the source expression `Aᵀ(AAᵀ)⁻¹` in Higham,
     2nd ed., Chapter 21, Section 21.1, equation (21.4), parameterized by a
     supplied inverse candidate for `AAᵀ`. -/
