@@ -267,6 +267,45 @@ def modifiedGramSchmidtVectors {m n : Nat}
       else
         modifiedGramSchmidtVectors A t
 
+/-- Rectangular multiplication by a standard basis vector selects the
+corresponding column. -/
+theorem rectMatMulVec_finiteBasisVec_gsColumn {m n : Nat}
+    (A : Fin m -> Fin n -> Real) (j : Fin n) :
+    rectMatMulVec A (finiteBasisVec j) = gsColumn A j := by
+  ext i
+  unfold rectMatMulVec finiteBasisVec gsColumn
+  simp [Finset.mem_univ]
+
+/-- Rank-to-MGS nonbreakdown base step: if the rectangular column map for `A`
+is injective, then no input column has zero norm, so the stage-0 MGS
+normalizer is nonzero. -/
+theorem modifiedGramSchmidtVectors_zero_norm_ne_zero_of_rectMatMulVec_injective
+    {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hinj : Function.Injective (rectMatMulVec A)) (j : Fin n) :
+    gsColumnNorm2 (modifiedGramSchmidtVectors A 0 j) ≠ 0 := by
+  intro hnorm
+  have hvecnorm : vecNorm2 (gsColumn A j) = 0 := by
+    simpa [modifiedGramSchmidtVectors, gsColumnNorm2] using hnorm
+  have hcol_zero : gsColumn A j = 0 := by
+    ext i
+    exact (vecNorm2_eq_zero_iff (gsColumn A j)).mp hvecnorm i
+  let e : Fin n -> Real := finiteBasisVec j
+  have hAe_zero : rectMatMulVec A e = 0 := by
+    rw [rectMatMulVec_finiteBasisVec_gsColumn]
+    exact hcol_zero
+  have hA0_zero : rectMatMulVec A (0 : Fin n -> Real) = 0 := by
+    ext i
+    unfold rectMatMulVec
+    simp
+  have heq : e = (0 : Fin n -> Real) := by
+    apply hinj
+    rw [hAe_zero, hA0_zero]
+  have hone : e j = 1 := by
+    simp [e, finiteBasisVec]
+  have hzero : e j = 0 := by
+    simpa using congrFun heq j
+  linarith
+
 /-- Computed MGS `q_j` column from stage `j`. -/
 def modifiedGramSchmidtQ {m n : Nat}
     (A : Fin m -> Fin n -> Real) : Fin m -> Fin n -> Real :=
