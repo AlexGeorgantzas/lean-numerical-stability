@@ -462,6 +462,57 @@ theorem higham21_lemma21_2_symmetrized_perturbation_mulVec_self_eq {m n : ℕ}
           simp [rectMatMulVec]
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    system-action form of the previous identity.  The constructed perturbation
+    has the same action on `x` as `DeltaA1`, so replacing `DeltaA1` by the
+    symmetrized perturbation preserves the equation tested at `x`. -/
+theorem higham21_lemma21_2_symmetrized_system_mulVec_self_eq {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ) (hsq : vecNorm2Sq x ≠ 0)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ) :
+    rectMatMulVec
+        (fun i j => A i j + undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j) x =
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x := by
+  have hDelta :=
+    higham21_lemma21_2_symmetrized_perturbation_mulVec_self_eq
+      x hsq DeltaA1 DeltaA2
+  ext i
+  have hDelta_i := congrFun hDelta i
+  unfold rectMatMulVec at hDelta_i ⊢
+  calc
+    (∑ j : Fin n,
+        (A i j + undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j) * x j)
+        = (∑ j : Fin n, A i j * x j) +
+            (∑ j : Fin n, undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j * x j) := by
+          rw [← Finset.sum_add_distrib]
+          apply Finset.sum_congr rfl
+          intro j _
+          ring
+    _ = (∑ j : Fin n, A i j * x j) + (∑ j : Fin n, DeltaA1 i j * x j) := by
+          rw [hDelta_i]
+    _ = ∑ j : Fin n, (A i j + DeltaA1 i j) * x j := by
+          rw [← Finset.sum_add_distrib]
+          apply Finset.sum_congr rfl
+          intro j _
+          ring
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    if the first perturbed system `(A + DeltaA1)x = b` holds, then the
+    source-oriented symmetrized perturbation also satisfies `(A + DeltaA)x = b`
+    at the same vector `x`. -/
+theorem higham21_lemma21_2_symmetrized_system_mulVec_self_of_deltaA1 {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ) (hsq : vecNorm2Sq x ≠ 0)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b) :
+    rectMatMulVec
+        (fun i j => A i j + undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j) x =
+      b := by
+  rw [higham21_lemma21_2_symmetrized_system_mulVec_self_eq A x hsq DeltaA1 DeltaA2]
+  exact hDeltaA1
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     the Frobenius-squared norm bound for the projector mixture used to replace
     two perturbation blocks by one. -/
 theorem higham21_lemma21_2_symmetrized_perturbation_frobNormSq_le {m n : ℕ}

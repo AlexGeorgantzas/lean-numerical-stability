@@ -5799,4 +5799,48 @@ theorem GeneralizedQRFactorization.exists_unique_method_solution_of_wide_qr_asso
   · exact h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack
   · exact h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, wide exact-MGS method package:
+    the exact-MGS constraint construction for `Bᵀ`, the exact-MGS trailing-block
+    associated-shape construction for the actual `A Q`, and the source rank
+    assumptions yield GQR data, unique exact triangular solve coordinates, and
+    the unique exact equality-constrained least-squares minimizer. -/
+theorem GeneralizedQRFactorization.exists_unique_method_solution_of_wide_mgs_constraint_and_trailing_mgs_assoc_shape
+    {k r q : ℕ}
+    {A : Fin (r + q) → Fin ((k + r) + q) → ℝ}
+    {B : Fin (k + r) → Fin ((k + r) + q) → ℝ}
+    (hdiagB : ∀ j : Fin (k + r),
+      gsColumnNorm2
+        (modifiedGramSchmidtVectors
+          (fun col : Fin ((k + r) + q) => fun row : Fin (k + r) => B row col)
+          j.val j) ≠ 0)
+    (hdiagAQ : ∀ Q : Fin ((k + r) + q) → Fin ((k + r) + q) → ℝ,
+      IsOrthogonal ((k + r) + q) Q →
+        ∀ j : Fin (r + q),
+          gsColumnNorm2
+            (modifiedGramSchmidtVectors
+              (rectPermuteCols Fin.revPerm
+                (gqrAQWideAssocL
+                  (matMulRect (r + q) ((k + r) + q) ((k + r) + q) A Q)))
+              j.val j) ≠ 0)
+    {b : Fin (r + q) → ℝ} {d : Fin (k + r) → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ h : GeneralizedQRFactorization r (k + r) q A B,
+      (∃! yz : (Fin (k + r) → ℝ) × (Fin q → ℝ),
+        rectMatMulVec h.S yz.1 = d ∧
+        rectMatMulVec h.L22 yz.2 =
+          (fun i : Fin q =>
+            matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i) -
+              rectMatMulVec h.L21 yz.1 i) ∧
+        IsLSEMinimizer A b B d
+          (matMulVec ((k + r) + q) h.Q (Fin.append yz.1 yz.2))) ∧
+      (∃! x : Fin ((k + r) + q) → ℝ, IsLSEMinimizer A b B d x) := by
+  rcases
+    GeneralizedQRFactorization.exists_of_wide_mgs_constraint_and_trailing_mgs_assoc_shape
+      (A := A) (B := B) hdiagB hdiagAQ with
+    ⟨h⟩
+  exact ⟨h,
+    h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack,
+    h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack⟩
+
 end LeanFpAnalysis.FP
