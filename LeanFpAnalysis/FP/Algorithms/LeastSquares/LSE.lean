@@ -2164,6 +2164,163 @@ theorem exists_orthogonal_completion_bottom_reversed_columns {r q : ℕ}
     exact (Classical.choose_spec hcast).symm
   simpa [X, hcast, hchoose] using hp
 
+/-- Tall associated-shape construction from a QR factorization of the
+    column-reversed block.  If
+    `rectPermuteCols Fin.revPerm C = Q2 R` with orthonormal `Q2` columns and
+    upper-triangular `R`, then a completed square orthogonal `U` sends the
+    original block `C` to `[0; gqrReverseSquare R]`.
+
+    This is the small-block row/column orientation step needed for the
+    oracle-recommended `A Q₂` route in Higham's Chapter 20 GQR construction. -/
+theorem GQRAQTallCase.exists_of_qr_reversed_cols {r q : ℕ}
+    (C : Fin (r + q) → Fin q → ℝ)
+    (Q2 : Fin (r + q) → Fin q → ℝ)
+    (R : Fin q → Fin q → ℝ)
+    (hQ2 : GramSchmidtOrthonormalColumns Q2)
+    (hR : IsUpperTriangular q R)
+    (hfactor : rectPermuteCols Fin.revPerm C =
+      matMulRect (r + q) q q Q2 R) :
+    ∃ U : Fin (r + q) → Fin (r + q) → ℝ,
+      IsOrthogonal (r + q) U ∧
+        Nonempty (GQRAQTallCase r q (matMulRectLeft (matTranspose U) C)) := by
+  rcases exists_orthogonal_completion_bottom_reversed_columns Q2 hQ2 with
+    ⟨U, hU, hUbottom⟩
+  let L : Fin q → Fin q → ℝ := gqrReverseSquare R
+  refine ⟨U, hU, ⟨⟨L, gqrReverseSquare_lowerTriangular_of_upper hR, ?_⟩⟩⟩
+  ext row col
+  have hC : ∀ i : Fin (r + q),
+      C i col = ∑ k : Fin q, Q2 i k * R k (Fin.rev col) := by
+    intro i
+    have hentry := congrFun (congrFun hfactor i) (Fin.rev col)
+    simpa [rectPermuteCols, matMulRect] using hentry
+  have hsum_rearrange : ∀ a : Fin (r + q),
+      (∑ i : Fin (r + q),
+          U i a * (∑ k : Fin q, Q2 i k * R k (Fin.rev col))) =
+        ∑ k : Fin q,
+          (∑ i : Fin (r + q), U i a * Q2 i k) * R k (Fin.rev col) := by
+    intro a
+    calc
+      (∑ i : Fin (r + q),
+          U i a * (∑ k : Fin q, Q2 i k * R k (Fin.rev col)))
+          =
+        ∑ i : Fin (r + q), ∑ k : Fin q,
+          U i a * (Q2 i k * R k (Fin.rev col)) := by
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [Finset.mul_sum]
+      _ =
+        ∑ k : Fin q, ∑ i : Fin (r + q),
+          U i a * (Q2 i k * R k (Fin.rev col)) := by
+            rw [Finset.sum_comm]
+      _ =
+        ∑ k : Fin q,
+          (∑ i : Fin (r + q), U i a * Q2 i k) * R k (Fin.rev col) := by
+            apply Finset.sum_congr rfl
+            intro k _
+            rw [Finset.sum_mul]
+            apply Finset.sum_congr rfl
+            intro i _
+            ring
+  refine Fin.addCases
+    (motive := fun row : Fin (r + q) =>
+      matMulRectLeft (matTranspose U) C row col =
+        gqrAQTallBlock (k := r) L row col)
+    ?topRows ?bottomRows row
+  · intro row
+    have htail_orth : ∀ k : Fin q,
+        (∑ i : Fin (r + q), U i (Fin.castAdd q row) * Q2 i k) = 0 := by
+      intro k
+      have hne :
+          Fin.castAdd q row ≠ Fin.natAdd r (Fin.rev k) := by
+        intro h
+        have hval := congrArg Fin.val h
+        have hrle : r ≤ row.val := by
+          calc
+            r ≤ r + (Fin.rev k).val := Nat.le_add_right r (Fin.rev k).val
+            _ = row.val := hval.symm
+        exact (Nat.not_le_of_gt row.isLt) hrle
+      have hpreserve : ∀ i : Fin (r + q),
+          U i (Fin.natAdd r (Fin.rev k)) = Q2 i k := by
+        intro i
+        simpa using hUbottom i (Fin.rev k)
+      calc
+        (∑ i : Fin (r + q), U i (Fin.castAdd q row) * Q2 i k)
+            =
+          ∑ i : Fin (r + q),
+            U i (Fin.castAdd q row) * U i (Fin.natAdd r (Fin.rev k)) := by
+              apply Finset.sum_congr rfl
+              intro i _
+              rw [hpreserve i]
+        _ = 0 := by
+              simpa [hne] using
+                hU.col_orthonormal (Fin.castAdd q row)
+                  (Fin.natAdd r (Fin.rev k))
+    calc
+      matMulRectLeft (matTranspose U) C (Fin.castAdd q row) col
+          =
+        ∑ i : Fin (r + q), U i (Fin.castAdd q row) * C i col := by
+            simp [matMulRectLeft, matTranspose]
+      _ =
+        ∑ i : Fin (r + q),
+          U i (Fin.castAdd q row) *
+            (∑ k : Fin q, Q2 i k * R k (Fin.rev col)) := by
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [hC i]
+      _ =
+        ∑ k : Fin q,
+          (∑ i : Fin (r + q), U i (Fin.castAdd q row) * Q2 i k) *
+            R k (Fin.rev col) := hsum_rearrange (Fin.castAdd q row)
+      _ = 0 := by
+            simp [htail_orth]
+      _ = gqrAQTallBlock (k := r) L (Fin.castAdd q row) col := by
+            simp [gqrAQTallBlock]
+  · intro row
+    have hpreserve : ∀ i : Fin (r + q),
+        U i (Fin.natAdd r row) = Q2 i (Fin.rev row) := by
+      intro i
+      exact hUbottom i row
+    calc
+      matMulRectLeft (matTranspose U) C (Fin.natAdd r row) col
+          =
+        ∑ i : Fin (r + q), U i (Fin.natAdd r row) * C i col := by
+            simp [matMulRectLeft, matTranspose]
+      _ =
+        ∑ i : Fin (r + q),
+          U i (Fin.natAdd r row) *
+            (∑ k : Fin q, Q2 i k * R k (Fin.rev col)) := by
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [hC i]
+      _ =
+        ∑ k : Fin q,
+          (∑ i : Fin (r + q), U i (Fin.natAdd r row) * Q2 i k) *
+            R k (Fin.rev col) := hsum_rearrange (Fin.natAdd r row)
+      _ =
+        ∑ k : Fin q,
+          (∑ i : Fin (r + q), Q2 i (Fin.rev row) * Q2 i k) *
+            R k (Fin.rev col) := by
+            apply Finset.sum_congr rfl
+            intro k _
+            congr 1
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [hpreserve i]
+      _ =
+        ∑ k : Fin q, idMatrix q (Fin.rev row) k * R k (Fin.rev col) := by
+            apply Finset.sum_congr rfl
+            intro k _
+            have horth :
+                (∑ i : Fin (r + q), Q2 i (Fin.rev row) * Q2 i k) =
+                  idMatrix q (Fin.rev row) k := by
+              simpa [GramSchmidtOrthonormalColumns, rectangularGram] using
+                hQ2 (Fin.rev row) k
+            rw [horth]
+      _ = R (Fin.rev row) (Fin.rev col) := by
+            simp [idMatrix]
+      _ = gqrAQTallBlock (k := r) L (Fin.natAdd r row) col := by
+            simp [gqrAQTallBlock, L, gqrReverseSquare]
+
 /-- Higham, 2nd ed., Chapter 20, equation (20.28), supplied wide-case
     shape for `U^T A Q = [X L]`.
 
@@ -3864,6 +4021,36 @@ theorem exists_gqr_constraint_block_and_reversed_A_Q2_mgs_qr_of_fullRowRank_stac
   have hfactor : C = matMulRect (r + q) q q Q2 R2 := by
     exact modifiedGramSchmidt_exact_factorization C hdiagAQ2rev
   exact ⟨Q, S, Q2, R2, hQ, hS, hBQ, horthQ2, hR2upper, hfactor⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction route:
+    after constructing the `Bᵀ` constraint block, the smaller `A Q₂` block can
+    be put into the tall associated shape `[0; L₂₂]` by an orthogonal row
+    factor.
+
+    This is still a smaller-block result: it does not yet lift the constructed
+    `U` to the full transformed matrix `A Q` with its leading `p` columns. -/
+theorem exists_gqr_constraint_block_and_A_Q2_tall_assoc_of_fullRowRank_stackedFullColumnRank
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ (Q : Fin (p + q) → Fin (p + q) → ℝ) (S : Fin p → Fin p → ℝ)
+        (U : Fin (r + q) → Fin (r + q) → ℝ),
+      IsOrthogonal (p + q) Q ∧
+        IsLowerTriangular S ∧
+        matMulRect p (p + q) (p + q) B Q = gqrBQBlock S ∧
+        IsOrthogonal (r + q) U ∧
+        Nonempty (GQRAQTallCase r q
+          (matMulRectLeft (matTranspose U) (gqrAQ2Block A Q))) := by
+  rcases
+    exists_gqr_constraint_block_and_reversed_A_Q2_mgs_qr_of_fullRowRank_stackedFullColumnRank
+      (A := A) (B := B) hB hstack with
+    ⟨Q, S, Q2, R2, hQ, hS, hBQ, hQ2orth, hR2upper, hfactor⟩
+  rcases GQRAQTallCase.exists_of_qr_reversed_cols
+      (gqrAQ2Block A Q) Q2 R2 hQ2orth hR2upper hfactor with
+    ⟨U, hU, hCase⟩
+  exact ⟨Q, S, U, hQ, hS, hBQ, hU, hCase⟩
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof:
     on the `Q₂` coordinate range, the equation `A x = 0` is equivalent to
