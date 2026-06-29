@@ -4166,6 +4166,196 @@ theorem storedSignedSequence_trailingPanel_panelTopLeft_final_eq_two
       (hkN := by omega)
   simpa [panelTopLeft, trailingPanel] using hcol
 
+/-- Completed column preservation gives the top-left entry of the final stored
+panel from the stage after the first two pivots. -/
+theorem storedSignedSequence_panelTopLeft_final_eq_two
+    (fp : FPModel) {m p : Nat}
+    (hmn : p + 2 <= m + 2)
+    (A_hat : Nat -> Fin (m + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall k (hk : k < p + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (m + 2) (p + 2) k
+          (householderTrailingActiveVector (m + 2)
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (m + 2)
+            (householderTrailingActiveVector (m + 2)
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k)) :
+    panelTopLeft (A_hat (p + 2)) =
+      panelTopLeft (A_hat 2) := by
+  have hcol :=
+    storedSignedSequence_prevColumn_eq_final
+      (fp := fp) (m := m + 2) (n := p + 2) (k := 2)
+      (hmn := hmn) (A_hat := A_hat) (alpha := alpha) (hStep := hStep)
+      (i := (0 : Fin (m + 2))) (j := (0 : Fin (p + 2)))
+      (hj := by simp)
+      (hkN := by omega)
+  simpa [panelTopLeft] using hcol
+
+/-- The final signed stored-QR panel has zero first-column tail, purely from
+the stored lower-trapezoidal shape. -/
+theorem storedSignedSequence_panelFirstColumnTailZero_final
+    (fp : FPModel) {m p : Nat}
+    (hmn : p + 2 <= m + 2)
+    (A_hat : Nat -> Fin (m + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall k (hk : k < p + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (m + 2) (p + 2) k
+          (householderTrailingActiveVector (m + 2)
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (m + 2)
+            (householderTrailingActiveVector (m + 2)
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k)) :
+    panelFirstColumnTailZero (A_hat (p + 2)) := by
+  have hStepSigned : forall k, k < p + 2 ->
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (m + 2) (p + 2) k
+          (storedQRSignedStageVector hmn A_hat alpha k)
+          (storedQRSignedStageBeta hmn A_hat alpha k)
+          (A_hat k) := by
+    intro k hk
+    exact storedSignedSequence_step_of_source_step
+      fp hmn A_hat alpha hStep hk
+  have hlower :=
+    fl_householderStoredPanel_sequence_lower_zero
+      fp
+      (fun k => storedQRSignedStageVector hmn A_hat alpha k)
+      (fun k => storedQRSignedStageBeta hmn A_hat alpha k)
+      A_hat hStepSigned
+  intro i
+  have hji : (0 : Fin (p + 2)).val < i.succ.val := by
+    simp
+  simpa [panelFirstColumnTail] using
+    hlower i.succ (0 : Fin (p + 2)) hji
+
+/-- The once-trailing final signed stored-QR panel has zero first-column tail,
+again as a direct consequence of the stored lower-trapezoidal shape. -/
+theorem storedSignedSequence_trailingPanel_panelFirstColumnTailZero_final
+    (fp : FPModel) {m p : Nat}
+    (hmn : p + 2 <= m + 2)
+    (A_hat : Nat -> Fin (m + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall k (hk : k < p + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (m + 2) (p + 2) k
+          (householderTrailingActiveVector (m + 2)
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (m + 2)
+            (householderTrailingActiveVector (m + 2)
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k)) :
+    panelFirstColumnTailZero (trailingPanel (A_hat (p + 2))) := by
+  have hStepSigned : forall k, k < p + 2 ->
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (m + 2) (p + 2) k
+          (storedQRSignedStageVector hmn A_hat alpha k)
+          (storedQRSignedStageBeta hmn A_hat alpha k)
+          (A_hat k) := by
+    intro k hk
+    exact storedSignedSequence_step_of_source_step
+      fp hmn A_hat alpha hStep hk
+  have hlower :=
+    fl_householderStoredPanel_sequence_lower_zero
+      fp
+      (fun k => storedQRSignedStageVector hmn A_hat alpha k)
+      (fun k => storedQRSignedStageBeta hmn A_hat alpha k)
+      A_hat hStepSigned
+  intro i
+  have hji :
+      ((0 : Fin (p + 1)).succ : Fin (p + 2)).val < i.succ.succ.val := by
+    simp [Fin.val_succ]
+  simpa [panelFirstColumnTail, trailingPanel] using
+    hlower i.succ.succ ((0 : Fin (p + 1)).succ) hji
+
+/-- Assemble the full signed stored-QR final panel once the two-step QR
+recursion and the twice-trailing recursive subproblem have been identified.
+
+This is the structural induction step for the remaining recursive/stored final
+panel equality: the top block is transported from stage `2`, the once-trailing
+top row is transported from stage `2`, and the only genuine recursive premise is
+the twice-trailing final-panel equality. -/
+theorem
+    storedSignedSequence_final_panel_eq_qrPanel_R_of_two_step_qrPanel_R_of_twice_trailing_final
+    (fp : FPModel) {m p : Nat}
+    (hmn : p + 2 <= m + 2)
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real)
+    (A_hat : Nat -> Fin (m + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall k (hk : k < p + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (m + 2) (p + 2) k
+          (householderTrailingActiveVector (m + 2)
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (m + 2)
+            (householderTrailingActiveVector (m + 2)
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hcopy : subtractZeroExact fp)
+    (hQR2 :
+      fl_householderQRPanel_R fp (m + 2) (p + 2) A =
+        panelFromTopAndTrailing (panelTopLeft (A_hat 2))
+          (panelTopRowTail (A_hat 2))
+          (panelFromTopAndTrailing
+            (panelTopLeft (trailingPanel (A_hat 2)))
+            (panelTopRowTail (trailingPanel (A_hat 2)))
+            (fl_householderQRPanel_R fp m p
+              (trailingPanel (trailingPanel (A_hat 2))))))
+    (hTailFinal :
+      trailingPanel (trailingPanel (A_hat (p + 2))) =
+        fl_householderQRPanel_R fp m p
+          (trailingPanel (trailingPanel (A_hat 2)))) :
+    A_hat (p + 2) =
+      fl_householderQRPanel_R fp (m + 2) (p + 2) A := by
+  have htopLeft :
+      panelTopLeft (A_hat (p + 2)) = panelTopLeft (A_hat 2) :=
+    storedSignedSequence_panelTopLeft_final_eq_two fp hmn A_hat alpha hStep
+  have htop :
+      panelTopRowTail (A_hat (p + 2)) = panelTopRowTail (A_hat 2) :=
+    storedSignedSequence_panelTopRowTail_final_eq_two_of_subtractZeroExact
+      fp hmn A_hat alpha hStep hcopy
+  have htrailTopLeft :
+      panelTopLeft (trailingPanel (A_hat (p + 2))) =
+        panelTopLeft (trailingPanel (A_hat 2)) :=
+    storedSignedSequence_trailingPanel_panelTopLeft_final_eq_two
+      fp hmn A_hat alpha hStep
+  have htrailTop :
+      panelTopRowTail (trailingPanel (A_hat (p + 2))) =
+        panelTopRowTail (trailingPanel (A_hat 2)) :=
+    storedSignedSequence_trailingPanel_panelTopRowTail_final_eq_two_of_subtractZeroExact
+      fp hmn A_hat alpha hStep hcopy
+  have hzero :
+      panelFirstColumnTailZero (A_hat (p + 2)) :=
+    storedSignedSequence_panelFirstColumnTailZero_final fp hmn A_hat alpha hStep
+  have hzeroTrail :
+      panelFirstColumnTailZero (trailingPanel (A_hat (p + 2))) :=
+    storedSignedSequence_trailingPanel_panelFirstColumnTailZero_final
+      fp hmn A_hat alpha hStep
+  have htrail :
+      trailingPanel (A_hat (p + 2)) =
+        panelFromTopAndTrailing
+          (panelTopLeft (trailingPanel (A_hat 2)))
+          (panelTopRowTail (trailingPanel (A_hat 2)))
+          (fl_householderQRPanel_R fp m p
+            (trailingPanel (trailingPanel (A_hat 2)))) := by
+    rw [<- panelFromTopAndTrailing_of_firstColumnTailZero
+      (trailingPanel (A_hat (p + 2))) hzeroTrail]
+    rw [htrailTopLeft, htrailTop, hTailFinal]
+  rw [<- panelFromTopAndTrailing_of_firstColumnTailZero
+    (A_hat (p + 2)) hzero]
+  rw [htopLeft, htop, htrail]
+  exact hQR2.symm
+
 /-- Zero-prefix dot-product lift for compact Householder support.
 
 Adding one leading component whose left factor is zero does not change the
