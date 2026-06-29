@@ -14285,6 +14285,14 @@ theorem higham9_11_bohteBound_bandwidth_four_formula :
   norm_num [higham9_11_bohteBound]
   rfl
 
+/-- **Theorem 9.11**, arithmetic check for the saturated formal expression at
+`p = 0`.  The source theorem is used for positive bandwidths; this endpoint is
+recorded for totality of the formal scalar definition. -/
+theorem higham9_11_bohteBound_zero :
+    higham9_11_bohteBound 0 = 2 := by
+  norm_num [higham9_11_bohteBound]
+  rfl
+
 /-- **Theorem 9.11**, the printed Bohte scalar expression is nonnegative.
 This discharges the nonnegativity side condition needed when using the
 expression as a growth constant; it does not prove the banded growth theorem
@@ -14360,6 +14368,20 @@ theorem higham9_11_bohteBound_ge_two (p : ℕ) :
             rw [show 2 * k + 3 = (2 * k + 2) + 1 by omega, pow_add]
             ring
           linarith
+
+/-- **Theorem 9.11**, Bohte's scalar expression is strictly positive for every
+formal bandwidth parameter. -/
+theorem higham9_11_bohteBound_pos (p : ℕ) :
+    0 < higham9_11_bohteBound p := by
+  exact lt_of_lt_of_le (by norm_num : (0 : ℝ) < 2)
+    (higham9_11_bohteBound_ge_two p)
+
+/-- **Theorem 9.11**, Bohte's scalar expression is at least one for every
+formal bandwidth parameter. -/
+theorem higham9_11_bohteBound_ge_one (p : ℕ) :
+    (1 : ℝ) ≤ higham9_11_bohteBound p := by
+  exact le_trans (by norm_num : (1 : ℝ) ≤ 2)
+    (higham9_11_bohteBound_ge_two p)
 
 /-- **Theorem 9.11**, Bohte scalar recurrence beyond the first two
 bandwidths.  This is the closed-form arithmetic recurrence an induction proof

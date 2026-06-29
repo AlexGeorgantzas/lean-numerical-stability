@@ -12615,7 +12615,10 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_8_exists_CompletePermutedLUFactSpec_L_bound_growth_le_pow_two_of_det_ne_zero
 #check higham9_8_CompletePivotGECPUTrace_growth_factor_ge_theta_nonsingInv
 #check higham9_5_wilkinson_source_bound_exists_of_CompletePivotGECPUTrace_of_det_ne_zero
+#check higham9_11_bohteBound_zero
 #check higham9_11_bohteBound_ge_two
+#check higham9_11_bohteBound_pos
+#check higham9_11_bohteBound_ge_one
 #check higham9_11_bohteBound_add_three_eq
 #check higham9_11_bohteBound_quad_le_add_three
 #check higham9_11_bohteBound_le_add_three
