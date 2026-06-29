@@ -34286,6 +34286,52 @@ theorem higham9_completePivotingUTraceGrowthValues_nonempty {n : ℕ}
   refine ⟨growthFactorEntry hn A U hApos, ?_⟩
   exact ⟨hn, A, U, hApos, htrace, rfl⟩
 
+/-- **Theorem 9.8 / Problem 9.11 bridge**, a recursive complete-pivoting
+`U` trace supplies a certificate-level growth value for the same source matrix,
+no larger than the trace growth value.
+
+The cumulative `PAQ = LU` certificate may reorder trailing columns of the trace
+upper factor, so the comparison is stated through max-entry growth. -/
+theorem higham9_8_CompletePivotGECPUTrace_exists_certificateGrowth_le {n : ℕ}
+    (hn : 0 < n) (A Utrace : Fin n → Fin n → ℝ)
+    (hApos : 0 < maxEntryNorm hn A)
+    (htrace : higham9_8_CompletePivotGECPUTrace n A Utrace) :
+    ∃ r ∈ higham9_completePivotingCertificateGrowthSet hn A hApos,
+      r ≤ growthFactorEntry hn A Utrace hApos := by
+  obtain ⟨L, Uc, sigma, tau, hLU, _hL_bound, hmax⟩ :=
+    higham9_8_CompletePivotGECPUTrace_exists_CompletePermutedLUFactSpec_L_bound_maxEntryNorm_le
+      htrace
+  refine ⟨growthFactorEntry hn A Uc hApos, ?_, ?_⟩
+  · exact ⟨L, Uc, sigma, tau, hLU, rfl⟩
+  · unfold growthFactorEntry
+    exact div_le_div_of_nonneg_right (hmax hn) (le_of_lt hApos)
+
+/-- **Theorem 9.8 / Problem 9.11 bridge**, value-set form of the
+trace-to-certificate complete-pivoting growth comparison. -/
+theorem higham9_8_CompletePivotGECPUTrace_exists_certificateGrowthValue_le
+    {n : ℕ} (hn : 0 < n) (A Utrace : Fin n → Fin n → ℝ)
+    (hApos : 0 < maxEntryNorm hn A)
+    (htrace : higham9_8_CompletePivotGECPUTrace n A Utrace) :
+    ∃ r ∈ higham9_completePivotingCertificateGrowthValues n,
+      r ≤ growthFactorEntry hn A Utrace hApos := by
+  obtain ⟨r, hr, hle⟩ :=
+    higham9_8_CompletePivotGECPUTrace_exists_certificateGrowth_le
+      hn A Utrace hApos htrace
+  exact ⟨r, ⟨hn, A, hApos, hr⟩, hle⟩
+
+/-- **Problem 9.11 / equation (9.15)**, the certificate-level
+complete-pivoting growth family is nonempty in every positive dimension. -/
+theorem higham9_completePivotingCertificateGrowthValues_nonempty {n : ℕ}
+    (hn : 0 < n) :
+    (higham9_completePivotingCertificateGrowthValues n).Nonempty := by
+  obtain ⟨rTrace, hrTrace⟩ :=
+    higham9_completePivotingUTraceGrowthValues_nonempty hn
+  rcases hrTrace with ⟨hn', A, Utrace, hApos, htrace, _hrTrace_eq⟩
+  obtain ⟨rCert, hrCert, _hle⟩ :=
+    higham9_8_CompletePivotGECPUTrace_exists_certificateGrowthValue_le
+      hn' A Utrace hApos htrace
+  exact ⟨rCert, hrCert⟩
+
 /-- **Problem 9.11 / equation (9.15)**, elementary source-shaped supremum
 upper bound for recursive complete-pivoting `U` traces. -/
 theorem higham9_8_completePivotingUTraceGrowthSup_le_pow_two {n : ℕ}
