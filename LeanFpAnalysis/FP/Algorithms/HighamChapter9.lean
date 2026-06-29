@@ -40632,6 +40632,74 @@ theorem higham9_7_exists_PartialPivotGEPPUTrace_growthFactorEntry_le_pow_two_of_
       hn A hdet hAmax
   exact ⟨hAmax, U, hU, hρ⟩
 
+/-- **Theorem 9.7 / GEPP trace support**, every nonsingular real input admits a
+cumulative partial-pivoting `PA = LU` certificate with unit-bounded lower
+multipliers, nonzero computed pivots, and the elementary certificate growth
+bound `rho <= 2^(n-1)`.
+
+This exposes the certificate-level package used by the partial-pivoting solve
+wrapper. -/
+theorem higham9_7_exists_PermutedLUFactSpec_L_bound_growth_le_pow_two_of_det_ne_zero
+    (n : ℕ)
+    (hn_pos : 0 < n)
+    (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+    ∃ sigma : Fin n → Fin n,
+    ∃ _hLU : higham9_2_PermutedLUFactSpec n A L_hat U_hat sigma,
+      (∀ i j : Fin n, |L_hat i j| ≤ 1) ∧
+      (∀ i : Fin n, U_hat i i ≠ 0) ∧
+      ∃ hBmax :
+        0 < maxEntryNorm hn_pos (higham9_2_rowPermutedMatrix A sigma),
+        growthFactorEntry hn_pos
+          (higham9_2_rowPermutedMatrix A sigma) U_hat hBmax ≤
+            (2 : ℝ) ^ (n - 1) := by
+  obtain ⟨U_trace, htrace⟩ :=
+    higham9_7_exists_PartialPivotGEPPUTrace_of_det_ne_zero (A := A) hdet
+  obtain ⟨L_hat, U_hat, sigma, hLU, hL_bound, hmax⟩ :=
+    higham9_7_PartialPivotGEPPUTrace_exists_PermutedLUFactSpec_L_bound_maxEntryNorm_le
+      htrace
+  have hAmax : 0 < maxEntryNorm hn_pos A :=
+    maxEntryNorm_pos_of_det_ne_zero hn_pos A hdet
+  have hBmax :
+      0 < maxEntryNorm hn_pos (higham9_2_rowPermutedMatrix A sigma) := by
+    simpa [higham9_2_rowPermutedMatrix_maxEntryNorm hn_pos A hLU.perm] using hAmax
+  have htrace_growth :
+      growthFactorEntry hn_pos A U_trace hAmax ≤
+        (2 : ℝ) ^ (n - 1) :=
+    higham9_7_PartialPivotGEPPUTrace_growthFactorEntry_le_pow_two
+      hn_pos A U_trace hAmax htrace
+  have hBmax_eq :
+      maxEntryNorm hn_pos (higham9_2_rowPermutedMatrix A sigma) =
+        maxEntryNorm hn_pos A :=
+    higham9_2_rowPermutedMatrix_maxEntryNorm hn_pos A hLU.perm
+  have hgrowth :
+      growthFactorEntry hn_pos
+          (higham9_2_rowPermutedMatrix A sigma) U_hat hBmax ≤
+        (2 : ℝ) ^ (n - 1) := by
+    unfold growthFactorEntry at htrace_growth ⊢
+    calc
+      maxEntryNorm hn_pos U_hat /
+          maxEntryNorm hn_pos (higham9_2_rowPermutedMatrix A sigma)
+          = maxEntryNorm hn_pos U_hat / maxEntryNorm hn_pos A := by
+              rw [hBmax_eq]
+      _ ≤ maxEntryNorm hn_pos U_trace / maxEntryNorm hn_pos A :=
+          div_le_div_of_nonneg_right (hmax hn_pos) (le_of_lt hAmax)
+      _ ≤ (2 : ℝ) ^ (n - 1) := htrace_growth
+  have hdet_row :
+      Matrix.det
+        (Matrix.of (higham9_2_rowPermutedMatrix A sigma) :
+          Matrix (Fin n) (Fin n) ℝ) ≠ 0 := by
+    let idp : Fin n → Fin n := fun i => i
+    have hid : IsPermutation n idp := Function.bijective_id
+    have hdet_col :=
+      higham9_2_rowColPermutedMatrix_det_ne_zero A hLU.perm hid hdet
+    simpa [idp, higham9_2_rowColPermutedMatrix, higham9_2_colPermutedMatrix]
+      using hdet_col
+  have hU_diag : ∀ i : Fin n, U_hat i i ≠ 0 :=
+    (higham9_2_permutedLUFactSpec_det_ne_zero_iff_pivots_ne_zero hLU).mp hdet_row
+  exact ⟨L_hat, U_hat, sigma, hLU, hL_bound, hU_diag, hBmax, hgrowth⟩
+
 /-- **Theorem 9.7**, source-facing upper-bound plus attainability package.
 Every nonsingular real matrix admits the closed partial-pivoting `U` trace with
 `rho_n^p <= 2^(n-1)`, and the Wilkinson family attains this value. -/
