@@ -20635,6 +20635,33 @@ theorem higham9_15_positive_subeigen_scale_lt_one_of_spectralRadius_lt_one
   have heta_enn_lt : ENNReal.ofReal eta < 1 := lt_of_le_of_lt hle hrho
   exact ENNReal.ofReal_lt_one.mp heta_enn_lt
 
+/-- **Theorem 9.15 spectral-majorant support**.  If a nonnegative majorant
+matrix has spectral radius below one, then no positive vector can be
+componentwise dominated by its image under that matrix.  Equivalently, every
+positive vector has a component that the majorant maps strictly downward. -/
+theorem higham9_15_exists_matMulVec_lt_of_positive_spectralRadius_lt_one
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (x : Fin n → ℝ)
+    (hC_nonneg : ∀ i j : Fin n, 0 ≤ C i j)
+    (hx_pos : ∀ i : Fin n, 0 < x i)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) < 1) :
+    ∃ i : Fin n, matMulVec n C x i < x i := by
+  by_contra hnone
+  have hsub : ∀ i : Fin n, (1 : ℝ) * x i ≤ matMulVec n C x i := by
+    intro i
+    have hi : ¬ matMulVec n C x i < x i := by
+      intro hlt
+      exact hnone ⟨i, hlt⟩
+    simpa using (le_of_not_gt hi)
+  have hone_lt :
+      (1 : ℝ) < 1 :=
+    higham9_15_positive_subeigen_scale_lt_one_of_spectralRadius_lt_one
+      hn C 1 x hC_nonneg (by norm_num) hx_pos hsub hrho
+  exact (lt_irrefl (1 : ℝ)) hone_lt
+
 /-- **Theorem 9.15**, one-step Frobenius nonlinear bound from the
 componentwise normalized split equation. -/
 theorem higham9_15_normalized_Gtilde_split_frobNorm_step_bound {n : ℕ}
