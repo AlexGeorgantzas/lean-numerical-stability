@@ -7168,6 +7168,88 @@ theorem lsScaledAugmentedBranchSigma_le_max
         Finset.univ_nonempty)
   exact hspec.2 i (by simp)
 
+/-- Finite branch minima are invariant under reindexing by an equivalence. -/
+theorem lsScaledAugmentedBranchSigmaMin_eq_of_equiv
+    {ι κ : Type*} [Fintype ι] [Nonempty ι] [Fintype κ] [Nonempty κ]
+    (sigma : ι → ℝ) (tau : κ → ℝ) (e : ι ≃ κ)
+    (h : ∀ i : ι, sigma i = tau (e i)) :
+    lsScaledAugmentedBranchSigmaMin sigma =
+      lsScaledAugmentedBranchSigmaMin tau := by
+  apply le_antisymm
+  · have hle :=
+      lsScaledAugmentedBranchSigmaMin_le sigma
+        (e.symm (lsScaledAugmentedBranchSigmaMinIndex tau))
+    simpa [lsScaledAugmentedBranchSigmaMin,
+      h (e.symm (lsScaledAugmentedBranchSigmaMinIndex tau))] using hle
+  · have hle :=
+      lsScaledAugmentedBranchSigmaMin_le tau
+        (e (lsScaledAugmentedBranchSigmaMinIndex sigma))
+    simpa [lsScaledAugmentedBranchSigmaMin,
+      h (lsScaledAugmentedBranchSigmaMinIndex sigma)] using hle
+
+/-- Finite branch maxima are invariant under reindexing by an equivalence. -/
+theorem lsScaledAugmentedBranchSigmaMax_eq_of_equiv
+    {ι κ : Type*} [Fintype ι] [Nonempty ι] [Fintype κ] [Nonempty κ]
+    (sigma : ι → ℝ) (tau : κ → ℝ) (e : ι ≃ κ)
+    (h : ∀ i : ι, sigma i = tau (e i)) :
+    lsScaledAugmentedBranchSigmaMax sigma =
+      lsScaledAugmentedBranchSigmaMax tau := by
+  apply le_antisymm
+  · have hle :=
+      lsScaledAugmentedBranchSigma_le_max tau
+        (e (lsScaledAugmentedBranchSigmaMaxIndex sigma))
+    simpa [lsScaledAugmentedBranchSigmaMax,
+      h (lsScaledAugmentedBranchSigmaMaxIndex sigma)] using hle
+  · have hle :=
+      lsScaledAugmentedBranchSigma_le_max sigma
+        (e.symm (lsScaledAugmentedBranchSigmaMaxIndex tau))
+    simpa [lsScaledAugmentedBranchSigmaMax,
+      h (e.symm (lsScaledAugmentedBranchSigmaMaxIndex tau))] using hle
+
+/-- Equivalence from a right-Gram basis index to the ordered singular-value
+    coordinate selected by the same mathlib Hermitian reindexing. -/
+noncomputable def rectRightGramBasisOrderedEquiv (n : ℕ) : Fin n ≃ Fin n where
+  toFun := rectRightGramBasisOrderedIndex n
+  invFun i := rectRightGramOrderedEigenbasisEquiv n (finCardIndex n i)
+  left_inv := by
+    intro b
+    change rectRightGramOrderedEigenbasisEquiv n
+        (finCardIndex n (rectRightGramBasisOrderedIndex n b)) = b
+    rw [finCardIndex_rectRightGramBasisOrderedIndex]
+    exact (rectRightGramOrderedEigenbasisEquiv n).apply_symm_apply b
+  right_inv := by
+    intro i
+    apply Fin.ext
+    have h :=
+      finCardIndex_rectRightGramBasisOrderedIndex n
+        (rectRightGramOrderedEigenbasisEquiv n (finCardIndex n i))
+    rw [(rectRightGramOrderedEigenbasisEquiv n).symm_apply_apply] at h
+    simpa [finCardIndex] using congrArg Fin.val h
+
+/-- The finite minimum of the basis-indexed right-Gram singular values is the
+    finite minimum of the ordered real right-Gram singular values. -/
+theorem lsScaledAugmentedBranchSigmaMin_rectRightGramBasis_eq_rectSingularValue
+    {m n : ℕ} [Nonempty (Fin n)] (A : Fin m → Fin n → ℝ) :
+    lsScaledAugmentedBranchSigmaMin (rectRightGramBasisSingularValue A) =
+      lsScaledAugmentedBranchSigmaMin (rectSingularValue A) := by
+  exact
+    lsScaledAugmentedBranchSigmaMin_eq_of_equiv
+      (rectRightGramBasisSingularValue A) (rectSingularValue A)
+      (rectRightGramBasisOrderedEquiv n)
+      (fun b => rectRightGramBasisSingularValue_eq_orderedIndex A b)
+
+/-- The finite maximum of the basis-indexed right-Gram singular values is the
+    finite maximum of the ordered real right-Gram singular values. -/
+theorem lsScaledAugmentedBranchSigmaMax_rectRightGramBasis_eq_rectSingularValue
+    {m n : ℕ} [Nonempty (Fin n)] (A : Fin m → Fin n → ℝ) :
+    lsScaledAugmentedBranchSigmaMax (rectRightGramBasisSingularValue A) =
+      lsScaledAugmentedBranchSigmaMax (rectSingularValue A) := by
+  exact
+    lsScaledAugmentedBranchSigmaMax_eq_of_equiv
+      (rectRightGramBasisSingularValue A) (rectSingularValue A)
+      (rectRightGramBasisOrderedEquiv n)
+      (fun b => rectRightGramBasisSingularValue_eq_orderedIndex A b)
+
 /-- Higham, 2nd ed., Chapter 20, equations (20.18)-(20.19):
     cardinality-based source-shaped condition-number handoff.  This constructs
     the complete branch enumeration from the displayed count
