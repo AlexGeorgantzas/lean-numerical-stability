@@ -285,6 +285,28 @@ theorem higham21_eq21_5_sne_rect_transpose_solution_of_qr {m k : ℕ}
           exact (congrFun (congrFun hgram i) j).symm
   exact higham21_eq21_5_sne_rect_transpose_solution A SNE b y x hSNEgram hy hx
 
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.5):
+    QR-specialized SNE minimum-norm handoff.  Under `Aᵀ = Q[R;0]`, solving
+    `RᵀR y = b` and forming `x = Aᵀ y` gives the minimum 2-norm solution of
+    the exact underdetermined system. -/
+theorem higham21_eq21_5_sne_rect_transpose_min_norm_of_qr {m k : ℕ}
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (hQ : IsOrthogonal (m + k) Q)
+    (R SNE : Fin m → Fin m → ℝ)
+    (b y : Fin m → ℝ)
+    (hSNE : ∀ i j : Fin m, SNE i j = ∑ row : Fin m, R row i * R row j)
+    (hy : ∀ i : Fin m, matMulVec m SNE y i = b i) :
+    RectMinNormSolution m (m + k)
+      (finiteTranspose (matMulRectLeft Q (lsQRTallBlock (k := k) R)))
+      b
+      (rectTransposeMulVec
+        (finiteTranspose (matMulRectLeft Q (lsQRTallBlock (k := k) R))) y) := by
+  let A : Fin m → Fin (m + k) → ℝ :=
+    finiteTranspose (matMulRectLeft Q (lsQRTallBlock (k := k) R))
+  exact higham21_eq21_4_rect_transpose_min_norm_of_solves A b y
+    (higham21_eq21_5_sne_rect_transpose_solution_of_qr
+      Q hQ R SNE b y (rectTransposeMulVec A y) hSNE hy rfl)
+
 /-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.3):
     source-facing algebraic wrapper for the minimum-norm coordinate choice
     in the Q method.  Among coordinate vectors with the same first block,

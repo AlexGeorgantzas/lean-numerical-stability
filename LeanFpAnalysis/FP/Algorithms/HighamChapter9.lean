@@ -37574,12 +37574,13 @@ theorem higham9_8_exists_completePivoting_growth_factor_ge_theta_real {n : ℕ}
         higham9_8_growth_factor_ge_theta_of_completePermutedLUFactSpec_right_inverse
           A A_inv L U sigma tau hLU hRight hA hAinv
 
-/-- **Theorem 9.8 support**, determinant nonsingularity makes the canonical
-`nonsingInv` have positive max-entry norm. -/
-theorem higham9_nonsingInv_maxEntryNorm_pos_of_det_ne_zero {n : ℕ}
-    (hn : 0 < n) (A : Fin n → Fin n → ℝ)
+/-- **Theorem 9.8 support**, determinant nonsingularity is preserved by the
+canonical repository inverse `nonsingInv`. -/
+theorem higham9_nonsingInv_det_ne_zero_of_det_ne_zero {n : ℕ}
+    (A : Fin n → Fin n → ℝ)
     (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
-    0 < maxEntryNorm hn (nonsingInv n A) := by
+    Matrix.det (Matrix.of (nonsingInv n A) :
+        Matrix (Fin n) (Fin n) ℝ) ≠ 0 := by
   classical
   have hinv_det :
       Matrix.det (Matrix.of (nonsingInv n A) :
@@ -37592,13 +37593,17 @@ theorem higham9_nonsingInv_maxEntryNorm_pos_of_det_ne_zero {n : ℕ}
           ((Matrix.of A : Matrix (Fin n) (Fin n) ℝ)⁻¹) =
         (Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ))⁻¹
     rw [Matrix.det_nonsing_inv, Ring.inverse_eq_inv]
-  have hdetInv :
-      Matrix.det (Matrix.of (nonsingInv n A) :
-          Matrix (Fin n) (Fin n) ℝ) ≠ 0 := by
-    rw [hinv_det]
-    exact inv_ne_zero hdet
-  exact maxEntryNorm_pos_of_det_ne_zero hn (nonsingInv n A) (by
-    simpa using hdetInv)
+  rw [hinv_det]
+  exact inv_ne_zero hdet
+
+/-- **Theorem 9.8 support**, determinant nonsingularity makes the canonical
+`nonsingInv` have positive max-entry norm. -/
+theorem higham9_nonsingInv_maxEntryNorm_pos_of_det_ne_zero {n : ℕ}
+    (hn : 0 < n) (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    0 < maxEntryNorm hn (nonsingInv n A) :=
+  maxEntryNorm_pos_of_det_ne_zero hn (nonsingInv n A)
+    (higham9_nonsingInv_det_ne_zero_of_det_ne_zero A hdet)
 
 /-- **Theorem 9.8**, determinant-only real complete-pivoting lower-bound
 existence form.
@@ -47921,5 +47926,104 @@ theorem higham9_8_abs_lu_product_eq_abs_of_nonsingInv_totalNonnegative
         simpa [JinvA] using
           higham9_6_principalBlock_determinantal_inequality_of_totalNonnegative
             n JinvA hTNJ k (Nat.le_of_lt hk))
+
+/-- **Problem 9.8 / Theorem 9.14**, actual-solve `f(u)` source bound for the
+nonsingular-inverse total-nonnegative class.
+
+Problem 9.8 supplies an exact LU factorization of `A^{-1}` whose absolute
+factor product is exactly `|A^{-1}|`; this wrapper feeds those exact factors
+and actual triangular solves into the Theorem 9.14 `f(u)` endpoint. -/
+theorem higham9_14_nonsingInv_totalNonnegative_exists_source_f_bound_actual_triangular_solves
+    {n : ℕ}
+    (A : Fin n → Fin n → ℝ)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n (nonsingInv n A) L_hat U_hat ∧
+        (∀ i j : Fin n,
+          ∑ k : Fin n, |L_hat i k| * |U_hat k j| =
+            |nonsingInv n A i j|) ∧
+        (∀ fp : FPModel, ∀ b : Fin n → ℝ, ∀ u : ℝ,
+          0 ≤ u → gammaValid fp n → gamma fp n ≤ u →
+          let y_hat := fl_forwardSub fp n L_hat b
+          let x_hat := fl_backSub fp n U_hat y_hat
+          ∃ DeltaA : Fin n → Fin n → ℝ,
+            (∀ i j, |DeltaA i j| ≤
+              higham9_14_f u * |nonsingInv n A i j|) ∧
+            (∀ i, ∑ j : Fin n,
+              (nonsingInv n A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L, U, hLU, hOpt⟩ :=
+    higham9_8_abs_lu_product_eq_abs_of_nonsingInv_totalNonnegative
+      A hTN hdet
+  let L_hat : Fin n → Fin n → ℝ := higham9_8_checkerboardConjugate L
+  let U_hat : Fin n → Fin n → ℝ := higham9_8_checkerboardConjugate U
+  have hLU_hat : LUFactSpec n (nonsingInv n A) L_hat U_hat := hLU
+  have hOpt_hat :
+      ∀ i j : Fin n,
+        ∑ k : Fin n, |L_hat i k| * |U_hat k j| =
+          |nonsingInv n A i j| := hOpt
+  refine ⟨L_hat, U_hat, hLU_hat, hOpt_hat, ?_⟩
+  intro fp b u hu hn hγ_le_u
+  have hdetInv :
+      Matrix.det (Matrix.of (nonsingInv n A) :
+          Matrix (Fin n) (Fin n) ℝ) ≠ 0 :=
+    higham9_nonsingInv_det_ne_zero_of_det_ne_zero A hdet
+  have hU_diag : ∀ i : Fin n, U_hat i i ≠ 0 :=
+    hLU_hat.det_ne_zero_iff_U_diag_ne_zero.mp hdetInv
+  obtain ⟨DeltaA, hDeltaA, hBackward⟩ :=
+    higham9_14_source_f_bound_of_LUFactSpec_fl_triangular_solves_gamma_le
+      fp n (nonsingInv n A) L_hat U_hat b 1 u hu hn hLU_hat hγ_le_u
+      hU_diag
+      (fun i j => by
+        simpa [one_mul] using le_of_eq (hOpt_hat i j))
+  refine ⟨DeltaA, ?_, hBackward⟩
+  intro i j
+  simpa [one_mul] using hDeltaA i j
+
+/-- **Problem 9.8 / Theorem 9.14**, actual-solve final `h(u)` source bound for
+the nonsingular-inverse total-nonnegative class. -/
+theorem higham9_14_nonsingInv_totalNonnegative_exists_source_h_bound_actual_triangular_solves
+    {n : ℕ}
+    (A : Fin n → Fin n → ℝ)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n (nonsingInv n A) L_hat U_hat ∧
+        (∀ i j : Fin n,
+          ∑ k : Fin n, |L_hat i k| * |U_hat k j| =
+            |nonsingInv n A i j|) ∧
+        (∀ fp : FPModel, ∀ b : Fin n → ℝ, ∀ u : ℝ,
+          0 ≤ u → u < 1 → gammaValid fp n → gamma fp n ≤ u →
+          let y_hat := fl_forwardSub fp n L_hat b
+          let x_hat := fl_backSub fp n U_hat y_hat
+          ∃ DeltaA : Fin n → Fin n → ℝ,
+            (∀ i j, |DeltaA i j| ≤
+              higham9_14_h u * |nonsingInv n A i j|) ∧
+            (∀ i, ∑ j : Fin n,
+              (nonsingInv n A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L, U, hLU, hOpt⟩ :=
+    higham9_8_abs_lu_product_eq_abs_of_nonsingInv_totalNonnegative
+      A hTN hdet
+  let L_hat : Fin n → Fin n → ℝ := higham9_8_checkerboardConjugate L
+  let U_hat : Fin n → Fin n → ℝ := higham9_8_checkerboardConjugate U
+  have hLU_hat : LUFactSpec n (nonsingInv n A) L_hat U_hat := hLU
+  have hOpt_hat :
+      ∀ i j : Fin n,
+        ∑ k : Fin n, |L_hat i k| * |U_hat k j| =
+          |nonsingInv n A i j| := hOpt
+  refine ⟨L_hat, U_hat, hLU_hat, hOpt_hat, ?_⟩
+  intro fp b u hu hu_lt_one hn hγ_le_u
+  have hdetInv :
+      Matrix.det (Matrix.of (nonsingInv n A) :
+          Matrix (Fin n) (Fin n) ℝ) ≠ 0 :=
+    higham9_nonsingInv_det_ne_zero_of_det_ne_zero A hdet
+  have hU_diag : ∀ i : Fin n, U_hat i i ≠ 0 :=
+    hLU_hat.det_ne_zero_iff_U_diag_ne_zero.mp hdetInv
+  exact
+    higham9_14_source_h_bound_of_LUFactSpec_fl_triangular_solves_gamma_le
+      fp n (nonsingInv n A) L_hat U_hat b u hu hu_lt_one hn hLU_hat
+      hγ_le_u hU_diag
+      (fun i j => by
+        exact le_of_eq (hOpt_hat i j))
 
 end LeanFpAnalysis.FP
