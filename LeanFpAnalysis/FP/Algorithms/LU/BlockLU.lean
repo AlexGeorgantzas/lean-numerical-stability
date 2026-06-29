@@ -24925,6 +24925,75 @@ theorem higham13_algorithm13_3_multiplier_bounds_from_stageLocalGrowth_source_co
 
 /-- Higham, 2nd ed., Chapter 13, Problem 13.4 feeding equations
     (13.22)--(13.23):
+    matrix-stage multiplier bounds from canonical local growth, an explicit
+    local/global denominator comparison, and the source condition comparison.
+
+    This is the source-comparison route with the `rhoLocal <= rhoFull`
+    premise discharged by
+    `higham13_algorithm13_3_stageLocalGrowthFactor_le_matrixStageHistoryGrowthFactor_of_base_le`.
+    The remaining local/base comparison is explicit because it is false as a
+    generic stage-local fact. -/
+theorem higham13_algorithm13_3_multiplier_bounds_from_stageLocalGrowth_base_comparisons_exact_kappa
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (Ablk : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (Ainv : Fin (m * r) → Fin (m * r) → ℝ)
+    (hApos : 0 < maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin Ablk))
+    (n : ℕ) (hNn : ((m * r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hInvPivot : ∀ i j : Fin m, j.val < i.val →
+      Invertible (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv j.val j j))
+    (hInvSchur : ∀ i j : Fin m, ∀ hji : j.val < i.val,
+      Invertible
+        (@higham13_algorithm13_3_stageLocalSchurOfInv m r Ablk pivotInv i j
+          (hInvPivot i j hji)))
+    (hInvFull : ∀ i j : Fin m, j.val < i.val →
+      Invertible (higham13_algorithm13_3_stageLocalBlockMatrix Ablk pivotInv i j))
+    (hPivotRight : ∀ i j : Fin m, ∀ _hji : j.val < i.val,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv j.val j j)
+        (pivotInv j.val))
+    (hLocalApos : ∀ i j : Fin m, ∀ _hji : j.val < i.val,
+      0 < maxEntryNorm (Nat.add_pos_left hr r)
+        (higham13_algorithm13_3_stageLocalFlatMatrix Ablk pivotInv i j))
+    (hBaseLocal : ∀ i j : Fin m, ∀ _hji : j.val < i.val,
+      maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin Ablk) ≤
+        maxEntryNorm (Nat.add_pos_left hr r)
+          (higham13_algorithm13_3_stageLocalFlatMatrix Ablk pivotInv i j))
+    (hKappaLocal_le : ∀ i j : Fin m, ∀ _hji : j.val < i.val,
+      (maxEntryNormRect (Nat.add_pos_left hr r) (Nat.add_pos_left hr r)
+          (higham13_algorithm13_3_stageLocalFlatMatrix Ablk pivotInv i j) *
+        maxEntryNormRect (Nat.add_pos_left hr r) (Nat.add_pos_left hr r)
+          (nonsingInv (r + r)
+            (higham13_algorithm13_3_stageLocalFlatMatrix Ablk pivotInv i j))) ≤
+        growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin Ablk)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            (Nat.mul_pos hm hr) hm hr Ablk pivotInv) hApos *
+        (maxEntryNormRect (Nat.mul_pos hm hr) (Nat.mul_pos hm hr)
+            (blockMatrixFlatFin Ablk) *
+          maxEntryNormRect (Nat.mul_pos hm hr) (Nat.mul_pos hm hr) Ainv)) :
+    ∀ i j : Fin m, j.val < i.val →
+      maxEntryNorm hr
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv j.val i j *
+            pivotInv j.val) ≤
+        (n : ℝ) *
+          (growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin Ablk)
+            (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+              (Nat.mul_pos hm hr) hm hr Ablk pivotInv) hApos) ^ 2 *
+          (maxEntryNormRect (Nat.mul_pos hm hr) (Nat.mul_pos hm hr)
+              (blockMatrixFlatFin Ablk) *
+            maxEntryNormRect (Nat.mul_pos hm hr) (Nat.mul_pos hm hr) Ainv) := by
+  exact
+    higham13_algorithm13_3_multiplier_bounds_from_stageLocalGrowth_source_comparisons_exact_kappa
+      hm hr Ablk pivotInv Ainv hApos n hNn hInvPivot hInvSchur hInvFull
+      hPivotRight hLocalApos
+      (fun i j hji =>
+        higham13_algorithm13_3_stageLocalGrowthFactor_le_matrixStageHistoryGrowthFactor_of_base_le
+          hm hr Ablk pivotInv i j hji hApos (hLocalApos i j hji)
+          (hBaseLocal i j hji))
+      hKappaLocal_le
+
+/-- Higham, 2nd ed., Chapter 13, Problem 13.4 feeding equations
+    (13.22)--(13.23):
     matrix-stage multiplier bounds from canonical local growth and a
     local-inverse comparison.
 
