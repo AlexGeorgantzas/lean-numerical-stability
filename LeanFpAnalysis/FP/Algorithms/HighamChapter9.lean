@@ -21024,6 +21024,26 @@ theorem higham9_15_not_exists_positive_le_matMulVec_of_spectralRadius_lt_one
       hn C x hC_nonneg hx_pos hrho
   exact (not_lt_of_ge (hle i)) hlt
 
+/-- **Theorem 9.15 spectral-majorant support**.  Under `rho(C) < 1`, a
+nonnegative majorant has no strictly positive fixed point.  This is the
+fixed-point form of the componentwise domination obstruction used by the
+Barrlund--Sun spectral-radius route. -/
+theorem higham9_15_not_exists_positive_fixedPoint_of_spectralRadius_lt_one
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (hC_nonneg : ∀ i j : Fin n, 0 ≤ C i j)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) < 1) :
+    ¬ ∃ x : Fin n → ℝ,
+      (∀ i : Fin n, 0 < x i) ∧
+        ∀ i : Fin n, matMulVec n C x i = x i := by
+  rintro ⟨x, hx_pos, hfixed⟩
+  exact
+    (higham9_15_not_exists_positive_le_matMulVec_of_spectralRadius_lt_one
+      hn C hC_nonneg hrho)
+      ⟨x, hx_pos, fun i => le_of_eq (hfixed i).symm⟩
+
 /-- **Theorem 9.15 spectral-majorant support**.  Irreducibility upgrades a
 nonzero nonnegative right subeigenvector to a positive one, so the Chapter 7
 Collatz/Gelfand lower bound applies to nonzero nonnegative data. -/
@@ -21124,6 +21144,27 @@ theorem higham9_15_not_exists_nonzero_nonneg_le_matMulVec_of_irreducible_spectra
     higham9_15_exists_matMulVec_lt_of_irreducible_nonzero_nonneg_spectralRadius_lt_one
       hn C x hC_irred hx_nonneg hx_ne hrho
   exact (not_lt_of_ge (hle i)) hlt
+
+/-- **Theorem 9.15 spectral-majorant support**.  Under irreducibility and
+`rho(C) < 1`, a nonnegative majorant has no nonzero nonnegative fixed point.
+This packages the Perron-style positivity upgrade in the fixed-point form
+needed by componentwise Schur-majorant arguments. -/
+theorem higham9_15_not_exists_nonzero_nonneg_fixedPoint_of_irreducible_spectralRadius_lt_one
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (hC_irred :
+      Matrix.IsIrreducible (Matrix.of C : Matrix (Fin n) (Fin n) ℝ))
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) < 1) :
+    ¬ ∃ x : Fin n → ℝ,
+      x ≠ 0 ∧ (∀ i : Fin n, 0 ≤ x i) ∧
+        ∀ i : Fin n, matMulVec n C x i = x i := by
+  rintro ⟨x, hx_ne, hx_nonneg, hfixed⟩
+  exact
+    (higham9_15_not_exists_nonzero_nonneg_le_matMulVec_of_irreducible_spectralRadius_lt_one
+      hn C hC_irred hrho)
+      ⟨x, hx_ne, hx_nonneg, fun i => le_of_eq (hfixed i).symm⟩
 
 /-- **Theorem 9.15**, one-step Frobenius nonlinear bound from the
 componentwise normalized split equation. -/
