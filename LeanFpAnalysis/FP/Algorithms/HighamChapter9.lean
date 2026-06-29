@@ -8828,6 +8828,69 @@ lemma higham9_16_rookPivotFosterBound_ge_three_halves {n : ℕ} (hn : 0 < n) :
         (n : ℝ) ^ ((3 / 4 : ℝ) * Real.log (n : ℝ)) :=
         mul_le_mul_of_nonneg_left hrpow_ge_one (by norm_num)
 
+/-- **Equation (9.16)**, monotonicity of Foster's logarithmic scalar factor on
+positive dimensions. -/
+lemma higham9_16_rookPivotFosterFactor_le_of_le {n m : ℕ}
+    (hn : 1 ≤ n) (hnm : n ≤ m) :
+    (n : ℝ) ^ ((3 / 4 : ℝ) * Real.log (n : ℝ)) ≤
+      (m : ℝ) ^ ((3 / 4 : ℝ) * Real.log (m : ℝ)) := by
+  have hn_pos_nat : 0 < n := by omega
+  have hm_pos_nat : 0 < m := by omega
+  have hn_pos : 0 < (n : ℝ) := by exact_mod_cast hn_pos_nat
+  have hm_pos : 0 < (m : ℝ) := by exact_mod_cast hm_pos_nat
+  have hn_ge_one : (1 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hn
+  have hnmR : (n : ℝ) ≤ (m : ℝ) := by exact_mod_cast hnm
+  have hlog_nonneg : 0 ≤ Real.log (n : ℝ) := Real.log_nonneg hn_ge_one
+  have hlog_le : Real.log (n : ℝ) ≤ Real.log (m : ℝ) :=
+    Real.log_le_log hn_pos hnmR
+  have hlog_sq :
+      Real.log (n : ℝ) * Real.log (n : ℝ) ≤
+        Real.log (m : ℝ) * Real.log (m : ℝ) :=
+    mul_self_le_mul_self hlog_nonneg hlog_le
+  have hcoef_nonneg : (0 : ℝ) ≤ 3 / 4 := by norm_num
+  have hexp_le :
+      (3 / 4 : ℝ) * (Real.log (n : ℝ) * Real.log (n : ℝ)) ≤
+        (3 / 4 : ℝ) * (Real.log (m : ℝ) * Real.log (m : ℝ)) :=
+    mul_le_mul_of_nonneg_left hlog_sq hcoef_nonneg
+  rw [Real.rpow_def_of_pos hn_pos, Real.rpow_def_of_pos hm_pos]
+  apply Real.exp_le_exp.mpr
+  nlinarith
+
+/-- **Equation (9.16)**, order form of monotonicity for Foster's scalar
+rook-pivoting RHS. -/
+theorem higham9_16_rookPivotFosterBound_le_of_le {n m : ℕ} (hnm : n ≤ m) :
+    higham9_16_rookPivotFosterBound n ≤
+      higham9_16_rookPivotFosterBound m := by
+  cases n with
+  | zero =>
+      cases m with
+      | zero =>
+          exact le_rfl
+      | succ k =>
+          have hzero : higham9_16_rookPivotFosterBound 0 = (3 / 2 : ℝ) := by
+            norm_num [higham9_16_rookPivotFosterBound]
+          have hmpos : 0 < k + 1 := by omega
+          calc
+            higham9_16_rookPivotFosterBound 0 = (3 / 2 : ℝ) := hzero
+            _ ≤ higham9_16_rookPivotFosterBound (k + 1) :=
+              higham9_16_rookPivotFosterBound_ge_three_halves hmpos
+  | succ k =>
+      unfold higham9_16_rookPivotFosterBound
+      have hn : 1 ≤ k + 1 := by omega
+      have hfactor :
+          ((k + 1 : ℕ) : ℝ) ^
+              ((3 / 4 : ℝ) * Real.log ((k + 1 : ℕ) : ℝ)) ≤
+            (m : ℝ) ^ ((3 / 4 : ℝ) * Real.log (m : ℝ)) :=
+        higham9_16_rookPivotFosterFactor_le_of_le hn hnm
+      exact mul_le_mul_of_nonneg_left hfactor (by norm_num)
+
+/-- **Equation (9.16)**, Foster's scalar rook-pivoting RHS is monotone in the
+matrix order parameter. -/
+theorem higham9_16_rookPivotFosterBound_monotone :
+    Monotone higham9_16_rookPivotFosterBound := by
+  intro n m hnm
+  exact higham9_16_rookPivotFosterBound_le_of_le hnm
+
 /-! ## Problem 9.13: threshold pivoting and sparse-column growth -/
 
 /-- **Problem 9.13**, the per-modification threshold-pivoting factor
