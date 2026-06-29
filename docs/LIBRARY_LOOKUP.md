@@ -1402,6 +1402,10 @@ Source-facing Chapter 9 wrappers:
 - `higham9_3_rectDenseLoopCertificate_square_backward_error`
 - `higham9_3_rectAbsBudgetCertificate_square_backward_error`
 - `higham9_3_rectLiteralDoolittle_source_budgets_square_backward_error`
+- `higham9_3_rectLiteralDoolittle_componentDominance_square_backward_error`
+- `higham9_3_rectLiteralDoolittle_exactProductMargins_square_backward_error`
+- `higham9_3_rectLiteralDoolittle_exactProductNumeratorMargins_square_backward_error`
+- `higham9_3_rectLiteralDoolittle_exactTargetGaps_square_backward_error`
 - `higham9_3_lu_backward_error_gamma`
 - `higham9_4_lu_solve_backward_error`
 - `higham_problem9_4_permuted_lu_solve_backward_error`
