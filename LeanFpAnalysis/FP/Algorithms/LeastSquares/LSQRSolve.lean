@@ -6971,6 +6971,142 @@ theorem
   simpa [Q, d] using
     finiteMatrix_eq_orthogonal_diagonalization_of_eigenvector_columns hQ heig
 
+/-- Higham, 2nd ed., Chapter 20, equations (20.18)-(20.19):
+    source-shaped condition-number handoff from a complete branch enumeration.
+    A complete equivalence for the displayed plus/minus/left-null branch family,
+    together with min/max branch indices and scalar range bounds, gives the
+    two-sided balanced `κ₂` certificate for the reciprocal-diagonal inverse
+    candidate.  This removes the separate supplied `Q`, diagonal list, branch
+    classification proof, and extremal singular-pair witnesses from the final
+    handoff surface; deriving the complete equivalence from an SVD/nullspace
+    basis remains the source-side obligation. -/
+theorem
+    lsScaledAugmentedMatrix_kappa2_bounds_of_complete_branch_equiv_and_extreme_branches
+    {m n : ℕ} {ι κ : Type*} {alpha sigmaMin sigmaMax : ℝ}
+    {A : Fin m → Fin n → ℝ} {sigma : ι → ℝ}
+    {u : ι → Fin m → ℝ} {v : ι → Fin n → ℝ}
+    {w : κ → Fin m → ℝ}
+    (e : Fin (m + n) ≃ Sum (Sum ι ι) κ)
+    (iMin iMax : ι)
+    (hu : ∀ i : ι, vecNorm2Sq (u i) = 1)
+    (hv : ∀ i : ι, vecNorm2Sq (v i) = 1)
+    (hw : ∀ k : κ, vecNorm2Sq (w k) = 1)
+    (hleft : ∀ i j : ι, i ≠ j → (∑ r : Fin m, u i r * u j r) = 0)
+    (hright : ∀ i j : ι, i ≠ j → (∑ c : Fin n, v i c * v j c) = 0)
+    (hnull : ∀ k l : κ, k ≠ l → (∑ r : Fin m, w k r * w l r) = 0)
+    (hAv : ∀ i : ι, rectMatMulVec A (v i) = fun r => sigma i * u i r)
+    (hATu : ∀ i : ι,
+      (fun j : Fin n => ∑ r : Fin m, A r j * u i r) =
+        fun j => sigma i * v i j)
+    (hATw : ∀ k : κ, ∀ j : Fin n, ∑ r : Fin m, A r j * w k r = 0)
+    (hsigmaRange : ∀ i : ι, sigmaMin ≤ sigma i ∧ sigma i ≤ sigmaMax)
+    (hsigmaMin_pos : 0 < sigmaMin)
+    (hsigmaMin_eq : sigma iMin = sigmaMin)
+    (hsigmaMax_eq : sigma iMax = sigmaMax)
+    (halpha : alpha = sigmaMin / Real.sqrt 2) :
+    Real.sqrt 2 * (sigmaMax / sigmaMin) ≤
+        kappa2 (lsScaledAugmentedMatrix alpha A)
+          (finiteMatMul
+            (fun r c : Fin (m + n) =>
+              lsScaledAugmentedMatrixBranchVector alpha sigma u v w (e c) r)
+            (finiteMatMul
+              (finiteDiagonal
+                (fun c : Fin (m + n) =>
+                  (lsScaledAugmentedMatrixBranchEigenvalue alpha sigma (e c))⁻¹))
+              (matTranspose
+                (fun r c : Fin (m + n) =>
+                  lsScaledAugmentedMatrixBranchVector alpha sigma u v w (e c) r)))) ∧
+      kappa2 (lsScaledAugmentedMatrix alpha A)
+          (finiteMatMul
+            (fun r c : Fin (m + n) =>
+              lsScaledAugmentedMatrixBranchVector alpha sigma u v w (e c) r)
+            (finiteMatMul
+              (finiteDiagonal
+                (fun c : Fin (m + n) =>
+                  (lsScaledAugmentedMatrixBranchEigenvalue alpha sigma (e c))⁻¹))
+              (matTranspose
+                (fun r c : Fin (m + n) =>
+                  lsScaledAugmentedMatrixBranchVector alpha sigma u v w (e c) r)))) ≤
+        2 * (sigmaMax / sigmaMin) := by
+  classical
+  let Q : Fin (m + n) → Fin (m + n) → ℝ :=
+    fun r c => lsScaledAugmentedMatrixBranchVector alpha sigma u v w (e c) r
+  let d : Fin (m + n) → ℝ :=
+    fun c => lsScaledAugmentedMatrixBranchEigenvalue alpha sigma (e c)
+  have halpha_nonneg : 0 ≤ alpha := by
+    rw [halpha]
+    positivity
+  have hsigma_nonzero : ∀ i : ι, sigma i ≠ 0 := by
+    intro i hzero
+    have hpos : 0 < sigma i :=
+      lt_of_lt_of_le hsigmaMin_pos (hsigmaRange i).1
+    exact (ne_of_gt hpos) hzero
+  have hQ : IsOrthogonal (m + n) Q :=
+    lsScaledAugmentedMatrixBranchVector_isOrthogonal_of_complete_equiv
+      (alpha := alpha) (sigma := sigma) (A := A) (u := u) (v := v) (w := w)
+      e hu hv hw hleft hright hnull hAv hATu hATw halpha_nonneg
+      hsigma_nonzero
+  have hdiag :
+      lsScaledAugmentedMatrix alpha A =
+        finiteMatMul Q (finiteMatMul (finiteDiagonal d) (matTranspose Q)) := by
+    simpa [Q, d] using
+      lsScaledAugmentedMatrix_branch_orthogonal_diagonalization_of_complete_equiv
+        (alpha := alpha) (sigma := sigma) (A := A) (u := u) (v := v) (w := w)
+        e hu hv hw hleft hright hnull hAv hATu hATw halpha_nonneg
+        hsigma_nonzero
+  have hsigmaMin_le_max : sigmaMin ≤ sigmaMax :=
+    le_trans (hsigmaRange iMin).1 (hsigmaRange iMin).2
+  have hvMax : v iMax ≠ 0 := by
+    intro hzero
+    have hsq_zero : vecNorm2Sq (v iMax) = 0 := by
+      simp [hzero, vecNorm2Sq]
+    linarith [hv iMax]
+  have hvMin : v iMin ≠ 0 := by
+    intro hzero
+    have hsq_zero : vecNorm2Sq (v iMin) = 0 := by
+      simp [hzero, vecNorm2Sq]
+    linarith [hv iMin]
+  have hAvMax :
+      rectMatMulVec A (v iMax) = fun r => sigmaMax * u iMax r := by
+    simpa [hsigmaMax_eq] using hAv iMax
+  have hATuMax :
+      (fun j : Fin n => ∑ r : Fin m, A r j * u iMax r) =
+        fun j => sigmaMax * v iMax j := by
+    simpa [hsigmaMax_eq] using hATu iMax
+  have hAvMin :
+      rectMatMulVec A (v iMin) = fun r => sigmaMin * u iMin r := by
+    simpa [hsigmaMin_eq] using hAv iMin
+  have hATuMin :
+      (fun j : Fin n => ∑ r : Fin m, A r j * u iMin r) =
+        fun j => sigmaMin * v iMin j := by
+    simpa [hsigmaMin_eq] using hATu iMin
+  have hd : ∀ c : Fin (m + n),
+      d c = alpha ∨
+        ∃ sigma0 : ℝ, sigmaMin ≤ sigma0 ∧ sigma0 ≤ sigmaMax ∧
+          (d c = lsScaledAugmentedEigenvaluePlus alpha sigma0 ∨
+            d c = lsScaledAugmentedEigenvalueMinus alpha sigma0) := by
+    intro c
+    rcases hc : e c with ((i | i) | k)
+    · right
+      refine ⟨sigma i, (hsigmaRange i).1, (hsigmaRange i).2, ?_⟩
+      left
+      simp [d, lsScaledAugmentedMatrixBranchEigenvalue, hc]
+    · right
+      refine ⟨sigma i, (hsigmaRange i).1, (hsigmaRange i).2, ?_⟩
+      right
+      simp [d, lsScaledAugmentedMatrixBranchEigenvalue, hc]
+    · left
+      simp [d, lsScaledAugmentedMatrixBranchEigenvalue, hc]
+  simpa [Q, d] using
+    lsScaledAugmentedMatrix_kappa2_bounds_of_balanced_branch_orthogonal_diagonalization_and_singular_pairs
+      (alpha := alpha) (sigmaMin := sigmaMin) (sigmaMax := sigmaMax) (A := A)
+      (Q := Q) (d := d) (uMax := u iMax) (uMin := u iMin)
+      (vMax := v iMax) (vMin := v iMin)
+      (hdiag := hdiag) (hQ := hQ)
+      (hAvMax := hAvMax) (hATuMax := hATuMax)
+      (hAvMin := hAvMin) (hATuMin := hATuMin)
+      hsigmaMin_pos hsigmaMin_le_max halpha hvMax hvMin hd
+
 /-- Higham, 2nd ed., Chapter 20, equation (20.20): the weighted perturbation
     block `[DeltaA, theta Delta b]` used in the Frobenius normwise
     least-squares backward error. -/
