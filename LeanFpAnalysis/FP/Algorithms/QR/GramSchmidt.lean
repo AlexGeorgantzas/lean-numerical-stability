@@ -36,6 +36,55 @@ def gsSub {m : Nat} (x y : Fin m -> Real) : Fin m -> Real :=
 def gsProjectAway {m : Nat} (x q : Fin m -> Real) : Fin m -> Real :=
   fun i => x i - gsDot q x * q i
 
+/-- The Gram-Schmidt dot product of a vector with itself is its finite squared
+Euclidean norm. -/
+theorem gsDot_self_eq_finiteVecNorm2Sq {m : Nat} (x : Fin m -> Real) :
+    gsDot x x = finiteVecNorm2Sq x := by
+  simp [gsDot, finiteVecNorm2Sq, pow_two]
+
+/-- Dot-product expansion after removing the projection of `x` along `q`. -/
+theorem gsDot_projectAway_self {m : Nat} (q x : Fin m -> Real) :
+    gsDot q (gsProjectAway x q) = gsDot q x - gsDot q x * gsDot q q := by
+  unfold gsDot gsProjectAway
+  calc
+    (Finset.univ.sum fun i : Fin m => q i * (x i - gsDot q x * q i))
+        =
+      Finset.univ.sum fun i : Fin m =>
+        q i * x i - q i * (gsDot q x * q i) := by
+        apply Finset.sum_congr rfl
+        intro i _
+        ring
+    _ =
+      (Finset.univ.sum fun i : Fin m => q i * x i) -
+        (Finset.univ.sum fun i : Fin m => q i * (gsDot q x * q i)) := by
+        rw [Finset.sum_sub_distrib]
+    _ =
+      (Finset.univ.sum fun i : Fin m => q i * x i) -
+        gsDot q x * (Finset.univ.sum fun i : Fin m => q i * q i) := by
+        congr 1
+        calc
+          (Finset.univ.sum fun i : Fin m => q i * (gsDot q x * q i))
+              = Finset.univ.sum fun i : Fin m =>
+                  gsDot q x * (q i * q i) := by
+              apply Finset.sum_congr rfl
+              intro i _
+              ring
+          _ = gsDot q x * Finset.univ.sum fun i : Fin m => q i * q i := by
+              rw [Finset.mul_sum]
+    _ =
+      (Finset.univ.sum fun i : Fin m => q i * x i) -
+        (Finset.univ.sum fun i : Fin m => q i * x i) *
+          (Finset.univ.sum fun i : Fin m => q i * q i) := by
+        rfl
+
+/-- Removing the projection along a unit vector leaves a vector orthogonal to
+that unit vector. -/
+theorem gsDot_projectAway_eq_zero_of_unit {m : Nat} (q x : Fin m -> Real)
+    (hunit : gsDot q q = 1) :
+    gsDot q (gsProjectAway x q) = 0 := by
+  rw [gsDot_projectAway_self, hunit]
+  ring
+
 /-- Normalize a column vector by a supplied scalar. -/
 def gsNormalize {m : Nat} (x : Fin m -> Real) (r : Real) : Fin m -> Real :=
   fun i => x i / r
@@ -225,6 +274,20 @@ theorem modifiedGramSchmidtVectors_succ_later {m n : Nat}
   rw [modifiedGramSchmidtVectors_succ_eq_step_fin A k]
   exact modifiedGramSchmidtStep_eq_projectAway_of_lt
     (modifiedGramSchmidtVectors A k.val) hkj
+
+/-- One exact MGS step makes each later residual column orthogonal to the
+current normalized `q_k` column.  This is the local orthogonality atom needed
+for the full MGS orthonormal-columns route. -/
+theorem modifiedGramSchmidtQ_dot_vectors_succ_later_eq_zero {m n : Nat}
+    (A : Fin m -> Fin n -> Real) {k j : Fin n} (hkj : k < j)
+    (hdiag :
+      Ne (gsColumnNorm2 (modifiedGramSchmidtVectors A k.val k)) 0) :
+    gsDot (gsColumn (modifiedGramSchmidtQ A) k)
+        (modifiedGramSchmidtVectors A (k.val + 1) j) = 0 := by
+  rw [modifiedGramSchmidtVectors_succ_later A hkj]
+  apply gsDot_projectAway_eq_zero_of_unit
+  have hnorm := modifiedGramSchmidtQ_column_norm_sq A k hdiag
+  simpa [gsDot_self_eq_finiteVecNorm2Sq] using hnorm
 
 /-- MGS `R` is zero below the diagonal by construction. -/
 theorem modifiedGramSchmidtR_eq_zero_of_lt {m n : Nat}
