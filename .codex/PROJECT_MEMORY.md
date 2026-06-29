@@ -9629,3 +9629,86 @@ These compile, but should not be treated as fully derived stability results:
   not close the printed arbitrary-subordinate-norm theorem or the separate
   max-entry Eq.13.21 route without a documented Euclidean specialization or
   additional norm-comparison/source-table work.
+
+- 2026-06-28 Algorithm 13.3 BDD generic lower-norm source-table dependency:
+  added the continuous-linear-map lower-norm infrastructure in
+  `MatrixAlgebra.lean`: `isCompact_norm_unit_sphere`,
+  `exists_continuousLinearMap_unit_minimizer`,
+  `continuousLinearMapLowerNorm`,
+  `continuousLinearMapLowerNorm_attained`,
+  `continuousLinearMapLowerNorm_le`,
+  `exists_continuousLinearMap_unit_maximizer`,
+  `continuousLinearMap_opNorm_eq_norm_of_unit_maximizer`,
+  `exists_continuousLinearMap_unit_opNorm_attained`,
+  `continuousLinearMap_opNorm_pos_of_right_inverse`,
+  `continuousLinearMapLowerNorm_le_inv_opNorm_of_inverse`,
+  `inv_opNorm_le_continuousLinearMapLowerNorm_of_inverse`, and
+  `continuousLinearMapLowerNorm_eq_inv_opNorm_of_inverse`.  These prove
+  minimum/maximum attainment on the unit sphere in a proper normed real vector
+  space and identify a two-sided inverse's reciprocal operator norm with the
+  lower norm.  Added the Chapter 13 adapters
+  `SchurStageActiveDiagLowerUpdate13_7.of_continuousLinearMap_stage_lower_norms`
+  and `SchurStageActivePivotInvReciprocal13_7.of_continuousLinearMap_inverse`
+  in `BlockLU.lean`, giving the arbitrary-norm analogue of the Eq.13.18 lower
+  table and active reciprocal route.  This closes a source-table dependency
+  for the printed BDD theorem, but not the theorem itself: the concrete
+  subordinate block action, Schur perturbation estimate, max-entry Eq.13.21
+  integration, and BDD nonsingularity/block-LU existence surface remain open.
+
+- 2026-06-28 Algorithm 13.3 BDD generic Schur-composition perturbation
+  dependency: added `continuousLinearMap_triple_norm_le` and
+  `continuousLinearMap_triple_norm_le_of_unit` in `MatrixAlgebra.lean`, plus
+  `SchurStageActiveDiagLowerUpdate13_7.of_continuousLinearMap_schur_composition`
+  in `BlockLU.lean`.  The new adapter instantiates the Eq.13.18 generic
+  lower-norm table's perturbation hypothesis when the Schur correction is the
+  composed continuous-linear block action `A_jk A_kk^{-1} A_kj`, with block
+  norms interpreted as Mathlib operator norms.  This removes the standalone
+  arbitrary-norm Schur perturbation-estimate gap; the printed BDD row still
+  needs the concrete active block actions/inverse certificates to be connected
+  to Algorithm 13.3, plus the entrywise max-norm Eq.13.21 route and
+  BDD nonsingularity/block-LU existence integration.
+
+- 2026-06-28 Algorithm 13.3 BDD CLM source-table integration bridge:
+  added
+  `higham13_algorithm13_3_diagLowerCert_diag_lower_of_continuousLinearMap_source_table`
+  in `BlockLU.lean`.  It packages the generic continuous-linear lower-norm
+  table, Schur-composition update, and two-sided active pivot inverse into the
+  existing concrete `diagLowerCert` one-sided pivot certificate, assuming the
+  CLM operator norms agree with the Algorithm 13.3 stage norm and pivot-inverse
+  norm tables and the initial source lower table dominates the initial
+  `invDiagBound`.  This narrows the printed BDD row to constructing/aligning
+  the actual active block CLMs and inverse certificates, then composing with
+  the existing Eq.13.21 and BDD nonsingularity wrappers.
+
+- 2026-06-28 Algorithm 13.3 BDD matrix-infinity CLM instantiation:
+  added `matrixMulVecCLM`, `matrixMulVecCLM_apply`, and
+  `matrixMulVecCLM_norm_eq_infNorm` in `MatrixAlgebra.lean`, identifying a
+  Mathlib square matrix with its continuous-linear `mulVec` action and
+  proving its operator norm is the repository `infNorm`/Mathlib matrix
+  infinity operator norm.  Added the generic scalar recurrence
+  `higham13_algorithm13_3_diagLowerCertGeneric` and bridges
+  `higham13_algorithm13_3_diagLowerCertGeneric_diag_lower_of_source_table_reciprocal`,
+  `higham13_algorithm13_3_diagLowerCertGeneric_diag_lower_of_continuousLinearMap_source_table`,
+  and
+  `higham13_algorithm13_3_matrix_infNorm_diagLowerCertGeneric_diag_lower_of_continuousLinearMap_source_table`
+  in `BlockLU.lean`.  The last theorem instantiates the CLM source-table route
+  for the actual Algorithm 13.3 matrix-product Schur stages in matrix
+  infinity norm, assuming the initial lower table and exact two-sided active
+  pivot inverse identities.  The printed BDD row remains open for deriving
+  those table/inverse facts from BDD and integrating the result with the
+  entrywise max-norm Eq.13.21 and BDD nonsingularity/block-LU existence
+  endpoints.
+
+- 2026-06-28 Algorithm 13.3 BDD matrix-infinity CLM downstream wrappers:
+  added
+  `higham13_algorithm13_3_matrix_infNorm_diagLowerCertGeneric_pivot_bound_of_continuousLinearMap_source_table`,
+  `higham13_algorithm13_3_matrix_infNorm_active_column_dominance_of_continuousLinearMap_source_table`,
+  and
+  `higham13_algorithm13_3_matrix_infNorm_active_stage_bound_of_continuousLinearMap_source_table`
+  in `BlockLU.lean`.  These carry the matrix-`∞` CLM source-table hypotheses
+  through the direct active pivot-product bound, active column dominance, and
+  the Theorem 13.8-style `2 * normMax` active-stage bound for the actual
+  Algorithm 13.3 matrix Schur stages.  This is downstream packaging only: the
+  initial lower table, exact active pivot inverse identities, entrywise
+  max-norm Eq.13.21 transfer, and BDD nonsingularity/block-LU existence
+  endpoints remain open.

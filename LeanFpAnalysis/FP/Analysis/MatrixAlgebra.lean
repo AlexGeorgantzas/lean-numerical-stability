@@ -1181,6 +1181,27 @@ noncomputable def infNorm {n : ℕ} (A : Fin n → Fin n → ℝ) : ℝ :=
   letI := Matrix.linftyOpNormedRing (n := Fin n) (α := ℝ)
   ‖(Matrix.of A : Matrix (Fin n) (Fin n) ℝ)‖
 
+/-- A square real matrix as a continuous linear map on finite vectors with the
+default Pi/infinity vector norm. -/
+noncomputable def matrixMulVecCLM {n : ℕ}
+    (A : Matrix (Fin n) (Fin n) ℝ) :
+    (Fin n → ℝ) →L[ℝ] (Fin n → ℝ) :=
+  ContinuousLinearMap.mk (Matrix.mulVecLin A)
+
+@[simp] theorem matrixMulVecCLM_apply {n : ℕ}
+    (A : Matrix (Fin n) (Fin n) ℝ) (x : Fin n → ℝ) :
+    matrixMulVecCLM A x = A.mulVec x := by
+  rfl
+
+/-- The operator norm of `matrixMulVecCLM` is the repository infinity norm of
+the underlying matrix. -/
+theorem matrixMulVecCLM_norm_eq_infNorm {n : ℕ}
+    (A : Matrix (Fin n) (Fin n) ℝ) :
+    ‖matrixMulVecCLM A‖ = infNorm A := by
+  letI := Matrix.linftyOpNormedRing (n := Fin n) (α := ℝ)
+  simpa [matrixMulVecCLM, infNorm] using
+    (Matrix.linfty_opNorm_eq_opNorm A).symm
+
 /-- Infinity norm of a matrix is nonneg. -/
 lemma infNorm_nonneg {n : ℕ} (A : Fin n → Fin n → ℝ) :
     0 ≤ infNorm A := by
@@ -6655,6 +6676,221 @@ theorem rectOpNorm2Le_sumInr_sumInl_of_finiteOpNorm2Le {r s : ℕ}
 lemma vecNorm2_finiteBasisVec {n : ℕ} (i : Fin n) :
     vecNorm2 (finiteBasisVec i) = 1 := by
   simpa [finiteVecNorm2_fin] using (finiteVecNorm2_finiteBasisVec i)
+
+section GenericLowerNorm
+
+variable {E : Type*} [NormedAddCommGroup E]
+
+/-- In a proper normed group, the unit sphere `{x | ‖x‖ = 1}` is compact. -/
+lemma isCompact_norm_unit_sphere [ProperSpace E] :
+    IsCompact {x : E | ‖x‖ = 1} := by
+  have hclosed : IsClosed {x : E | ‖x‖ = 1} := by
+    simpa using isClosed_eq continuous_norm continuous_const
+  have hsubset : {x : E | ‖x‖ = 1} ⊆ Metric.closedBall (0 : E) 1 := by
+    intro x hx
+    rw [Metric.mem_closedBall, dist_zero_right]
+    exact le_of_eq hx
+  exact IsCompact.of_isClosed_subset (isCompact_closedBall (0 : E) 1) hclosed hsubset
+
+variable [NormedSpace ℝ E]
+
+/-- A continuous linear action on a proper normed real vector space attains
+    its lower norm on the unit sphere, provided the sphere is nonempty. -/
+theorem exists_continuousLinearMap_unit_minimizer [ProperSpace E]
+    (T : E →L[ℝ] E) (hunit : ({x : E | ‖x‖ = 1} : Set E).Nonempty) :
+    ∃ x : E, ‖x‖ = 1 ∧
+      ∀ y : E, ‖y‖ = 1 → ‖T x‖ ≤ ‖T y‖ := by
+  obtain ⟨x, hx, hmin⟩ :=
+    isCompact_norm_unit_sphere.exists_isMinOn hunit
+      (T.continuous.norm.continuousOn)
+  exact ⟨x, hx, fun y hy => hmin hy⟩
+
+/-- Lower norm of a continuous linear action on the unit sphere, represented
+    by the attained minimum. -/
+noncomputable def continuousLinearMapLowerNorm [ProperSpace E]
+    (T : E →L[ℝ] E) (hunit : ({x : E | ‖x‖ = 1} : Set E).Nonempty) : ℝ :=
+  ‖T (Classical.choose (exists_continuousLinearMap_unit_minimizer T hunit))‖
+
+/-- The generic continuous-linear lower norm is attained by a unit vector. -/
+theorem continuousLinearMapLowerNorm_attained [ProperSpace E]
+    (T : E →L[ℝ] E) (hunit : ({x : E | ‖x‖ = 1} : Set E).Nonempty) :
+    ∃ x : E, ‖x‖ = 1 ∧
+      continuousLinearMapLowerNorm T hunit = ‖T x‖ := by
+  let x := Classical.choose (exists_continuousLinearMap_unit_minimizer T hunit)
+  have hx := Classical.choose_spec (exists_continuousLinearMap_unit_minimizer T hunit)
+  exact ⟨x, hx.1, rfl⟩
+
+/-- The generic continuous-linear lower norm bounds every unit-vector action
+    from below. -/
+theorem continuousLinearMapLowerNorm_le [ProperSpace E]
+    (T : E →L[ℝ] E) (hunit : ({x : E | ‖x‖ = 1} : Set E).Nonempty) :
+    ∀ y : E, ‖y‖ = 1 → continuousLinearMapLowerNorm T hunit ≤ ‖T y‖ := by
+  intro y hy
+  have hx := Classical.choose_spec (exists_continuousLinearMap_unit_minimizer T hunit)
+  exact hx.2 y hy
+
+/-- A continuous linear action on a proper normed real vector space attains
+    its operator norm on the unit sphere, before identifying the value with
+    Mathlib's operator norm. -/
+theorem exists_continuousLinearMap_unit_maximizer [ProperSpace E]
+    (T : E →L[ℝ] E) (hunit : ({x : E | ‖x‖ = 1} : Set E).Nonempty) :
+    ∃ x : E, ‖x‖ = 1 ∧
+      ∀ y : E, ‖y‖ = 1 → ‖T y‖ ≤ ‖T x‖ := by
+  obtain ⟨x, hx, hmax⟩ :=
+    isCompact_norm_unit_sphere.exists_isMaxOn hunit
+      (T.continuous.norm.continuousOn)
+  exact ⟨x, hx, fun y hy => hmax hy⟩
+
+/-- If a unit vector maximizes `‖T x‖`, then it realizes the Mathlib operator
+    norm of the continuous linear map `T`. -/
+theorem continuousLinearMap_opNorm_eq_norm_of_unit_maximizer
+    (T : E →L[ℝ] E) {x : E}
+    (hx : ‖x‖ = 1)
+    (hmax : ∀ y : E, ‖y‖ = 1 → ‖T y‖ ≤ ‖T x‖) :
+    ‖T‖ = ‖T x‖ := by
+  apply le_antisymm
+  · refine ContinuousLinearMap.opNorm_le_bound T (norm_nonneg (T x)) ?_
+    intro y
+    by_cases hy : y = 0
+    · simp [hy]
+    · let a : ℝ := ‖y‖
+      have ha_pos : 0 < a := by
+        exact norm_pos_iff.mpr hy
+      let z : E := a⁻¹ • y
+      have hz : ‖z‖ = 1 := by
+        simp [z, a, norm_smul, ha_pos.ne']
+      have hzmax : ‖T z‖ ≤ ‖T x‖ := hmax z hz
+      have hy_eq : y = a • z := by
+        simp [z, a, ha_pos.ne']
+      calc
+        ‖T y‖ = ‖T (a • z)‖ := by rw [hy_eq]
+        _ = ‖a • T z‖ := by rw [map_smul]
+        _ = a * ‖T z‖ := by
+          simp [a, norm_smul]
+        _ ≤ a * ‖T x‖ := mul_le_mul_of_nonneg_left hzmax (norm_nonneg y)
+        _ = ‖T x‖ * ‖y‖ := by ring
+  · have hle := ContinuousLinearMap.le_opNorm T x
+    simpa [hx] using hle
+
+/-- On a proper normed real vector space with nonempty unit sphere, a
+    continuous linear action attains Mathlib's operator norm on a unit vector. -/
+theorem exists_continuousLinearMap_unit_opNorm_attained [ProperSpace E]
+    (T : E →L[ℝ] E) (hunit : ({x : E | ‖x‖ = 1} : Set E).Nonempty) :
+    ∃ x : E, ‖x‖ = 1 ∧ ‖T x‖ = ‖T‖ := by
+  obtain ⟨x, hx, hmax⟩ := exists_continuousLinearMap_unit_maximizer T hunit
+  refine ⟨x, hx, ?_⟩
+  exact (continuousLinearMap_opNorm_eq_norm_of_unit_maximizer T hx hmax).symm
+
+/-- A right inverse on a nonempty unit sphere has positive operator norm. -/
+theorem continuousLinearMap_opNorm_pos_of_right_inverse
+    (T S : E →L[ℝ] E) (hunit : ({x : E | ‖x‖ = 1} : Set E).Nonempty)
+    (hRight : ∀ y : E, T (S y) = y) :
+    0 < ‖S‖ := by
+  rcases hunit with ⟨y, hy⟩
+  have hy_ne : y ≠ 0 := by
+    intro hzero
+    simp [hzero] at hy
+  have hSy_ne : S y ≠ 0 := by
+    intro hzero
+    have hyzero : y = 0 := by
+      simpa [hzero] using (hRight y).symm
+    exact hy_ne hyzero
+  have hSy_pos : 0 < ‖S y‖ := norm_pos_iff.mpr hSy_ne
+  have hle := ContinuousLinearMap.le_opNorm S y
+  have hle' : ‖S y‖ ≤ ‖S‖ := by
+    calc
+      ‖S y‖ ≤ ‖S‖ * ‖y‖ := hle
+      _ = ‖S‖ := by rw [hy, mul_one]
+  exact lt_of_lt_of_le hSy_pos hle'
+
+/-- The lower norm of `T` is bounded above by the reciprocal operator norm of
+    any continuous-linear right inverse `S`. -/
+theorem continuousLinearMapLowerNorm_le_inv_opNorm_of_inverse [ProperSpace E]
+    (T S : E →L[ℝ] E) (hunit : ({x : E | ‖x‖ = 1} : Set E).Nonempty)
+    (hRight : ∀ y : E, T (S y) = y) :
+    continuousLinearMapLowerNorm T hunit ≤ (‖S‖)⁻¹ := by
+  have hSpos : 0 < ‖S‖ :=
+    continuousLinearMap_opNorm_pos_of_right_inverse T S hunit hRight
+  obtain ⟨y, hy, hymax⟩ := exists_continuousLinearMap_unit_opNorm_attained S hunit
+  let z : E := (‖S‖)⁻¹ • S y
+  have hz : ‖z‖ = 1 := by
+    have hSy_norm : ‖S y‖ = ‖S‖ := hymax
+    simp [z, norm_smul, hSy_norm, hSpos.ne']
+  have hTz : ‖T z‖ = (‖S‖)⁻¹ := by
+    calc
+      ‖T z‖ = ‖(‖S‖)⁻¹ • T (S y)‖ := by simp [z, map_smul]
+      _ = ‖(‖S‖)⁻¹ • y‖ := by rw [hRight y]
+      _ = (‖S‖)⁻¹ := by
+        simp [norm_smul, hy]
+  calc
+    continuousLinearMapLowerNorm T hunit ≤ ‖T z‖ :=
+      continuousLinearMapLowerNorm_le T hunit z hz
+    _ = (‖S‖)⁻¹ := hTz
+
+/-- The reciprocal operator norm of a two-sided continuous-linear inverse is a
+    lower bound for the lower norm. -/
+theorem inv_opNorm_le_continuousLinearMapLowerNorm_of_inverse [ProperSpace E]
+    (T S : E →L[ℝ] E) (hunit : ({x : E | ‖x‖ = 1} : Set E).Nonempty)
+    (hLeft : ∀ x : E, S (T x) = x)
+    (hRight : ∀ y : E, T (S y) = y) :
+    (‖S‖)⁻¹ ≤ continuousLinearMapLowerNorm T hunit := by
+  have hSpos : 0 < ‖S‖ :=
+    continuousLinearMap_opNorm_pos_of_right_inverse T S hunit hRight
+  obtain ⟨x, hx, hlower⟩ := continuousLinearMapLowerNorm_attained T hunit
+  have hone_le : 1 ≤ ‖S‖ * ‖T x‖ := by
+    calc
+      1 = ‖x‖ := by rw [hx]
+      _ = ‖S (T x)‖ := by rw [hLeft x]
+      _ ≤ ‖S‖ * ‖T x‖ := ContinuousLinearMap.le_opNorm S (T x)
+  have hInvNonneg : 0 ≤ (‖S‖)⁻¹ := inv_nonneg.mpr (le_of_lt hSpos)
+  calc
+    (‖S‖)⁻¹ = (‖S‖)⁻¹ * 1 := by ring
+    _ ≤ (‖S‖)⁻¹ * (‖S‖ * ‖T x‖) :=
+        mul_le_mul_of_nonneg_left hone_le hInvNonneg
+    _ = ‖T x‖ := by
+        calc
+          (‖S‖)⁻¹ * (‖S‖ * ‖T x‖)
+              = ((‖S‖)⁻¹ * ‖S‖) * ‖T x‖ := by ring
+          _ = 1 * ‖T x‖ := by rw [inv_mul_cancel₀ hSpos.ne']
+          _ = ‖T x‖ := by ring
+    _ = continuousLinearMapLowerNorm T hunit := hlower.symm
+
+/-- For a two-sided continuous-linear inverse, the lower norm of `T` equals
+    the reciprocal operator norm of the inverse. -/
+theorem continuousLinearMapLowerNorm_eq_inv_opNorm_of_inverse [ProperSpace E]
+    (T S : E →L[ℝ] E) (hunit : ({x : E | ‖x‖ = 1} : Set E).Nonempty)
+    (hLeft : ∀ x : E, S (T x) = x)
+    (hRight : ∀ y : E, T (S y) = y) :
+    continuousLinearMapLowerNorm T hunit = (‖S‖)⁻¹ :=
+  le_antisymm
+    (continuousLinearMapLowerNorm_le_inv_opNorm_of_inverse T S hunit hRight)
+    (inv_opNorm_le_continuousLinearMapLowerNorm_of_inverse T S hunit hLeft hRight)
+
+/-- Generic subordinate-norm triple-product bound for continuous linear maps. -/
+theorem continuousLinearMap_triple_norm_le
+    (A B C : E →L[ℝ] E) (x : E) :
+    ‖A (B (C x))‖ ≤ ‖A‖ * ‖B‖ * ‖C‖ * ‖x‖ := by
+  calc
+    ‖A (B (C x))‖ ≤ ‖A‖ * ‖B (C x)‖ :=
+      ContinuousLinearMap.le_opNorm A (B (C x))
+    _ ≤ ‖A‖ * (‖B‖ * ‖C x‖) := by
+      exact mul_le_mul_of_nonneg_left
+        (ContinuousLinearMap.le_opNorm B (C x)) (norm_nonneg A)
+    _ ≤ ‖A‖ * (‖B‖ * (‖C‖ * ‖x‖)) := by
+      exact mul_le_mul_of_nonneg_left
+        (mul_le_mul_of_nonneg_left
+          (ContinuousLinearMap.le_opNorm C x) (norm_nonneg B))
+        (norm_nonneg A)
+    _ = ‖A‖ * ‖B‖ * ‖C‖ * ‖x‖ := by ring
+
+/-- Unit-vector form of the generic subordinate-norm triple-product bound for
+continuous linear maps. -/
+theorem continuousLinearMap_triple_norm_le_of_unit
+    (A B C : E →L[ℝ] E) {x : E} (hx : ‖x‖ = 1) :
+    ‖A (B (C x))‖ ≤ ‖A‖ * ‖B‖ * ‖C‖ := by
+  simpa [hx, mul_assoc] using continuousLinearMap_triple_norm_le A B C x
+
+end GenericLowerNorm
 
 /-- The finite-dimensional Euclidean vector norm is continuous for the
     repository's default topology on `Fin n → ℝ`. -/
