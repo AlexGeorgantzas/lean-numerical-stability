@@ -10059,3 +10059,16 @@ These compile, but should not be treated as fully derived stability results:
   Eq.13.23 surfaces.  The active pivot determinant/equality table,
   local-to-full source comparison table, and Eq.13.23 BDD product/update data
   remain open.
+
+- 2026-06-29 Eq.13.22/Eq.13.23 source-chain nonterminal pivot extraction:
+  added
+  `Higham13Eq1322LowerComparisonSourceChain.nonterminal_pivot_right_inverse`
+  and
+  `Higham13Eq1322InverseRatioSourceChain.nonterminal_pivot_right_inverse`.
+  These extract exact active pivot right-inverse certificates for genuine
+  elimination steps `k < m` in an `(m+1)`-block recursive source chain; the
+  one-block base case intentionally carries no `pivotInv 0` condition because
+  no further elimination step uses it.  This removes another proof-artifact
+  premise for the represented pivots, while final one-block/all-pivot data for
+  downstream APIs, per-tail source comparisons, product/update source data, and
+  the Eq.13.23 `rho <= 2` theorem remain open.

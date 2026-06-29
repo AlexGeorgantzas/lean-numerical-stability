@@ -38419,6 +38419,62 @@ theorem Higham13Eq1322LowerComparisonSourceChain.det_ne_zero {r n : ℕ}
   | succ _ hdetFlat _ _ _ _ =>
       simpa using hdetFlat
 
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    nonterminal active pivot right-inverse data carried by the recursive
+    direct lower-comparison source certificate.
+
+    The source certificate stores a pivot identity at each genuine elimination
+    step.  The one-block base case intentionally carries no condition on
+    `pivotInv 0`, since no further elimination step uses it; therefore this
+    extractor is stated for `k < m` when the current chain has `m + 1` block
+    rows. -/
+theorem Higham13Eq1322LowerComparisonSourceChain.nonterminal_pivot_right_inverse
+    {r n : ℕ} {hr : 0 < r} :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322LowerComparisonSourceChain hr n m Ablk pivotInv →
+        ∀ k : ℕ, ∀ hk : k < m,
+          IsRightInverse r
+            (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+              ⟨k, Nat.lt_trans hk (Nat.lt_succ_self m)⟩
+              ⟨k, Nat.lt_trans hk (Nat.lt_succ_self m)⟩)
+            (pivotInv k) := by
+  intro m Ablk pivotInv hcert
+  induction hcert with
+  | one hdet hNn =>
+      intro k hk
+      exact (Nat.not_lt_zero k hk).elim
+  | @succ m Ablk pivotInv hA11 hSchur hFull hpivot hdetFlat hsn hNn hLower hTail ih =>
+      intro k hk
+      cases k with
+      | zero =>
+          letI : Invertible (blockMatrixFirstSplitA11 Ablk) := hA11
+          have hri :
+              IsRightInverse r (blockMatrixFirstSplitA11 Ablk) (pivotInv 0) :=
+            isRightInverse_of_eq_invOf
+              (blockMatrixFirstSplitA11 Ablk) (pivotInv 0) hpivot
+          simpa [higham13_algorithm13_3_schurStageMatrixBlock,
+            higham13_algorithm13_3_schurStageBlock, blockMatrixFirstSplitA11]
+            using hri
+      | succ k =>
+          have hkTail : k < m := Nat.succ_lt_succ_iff.mp hk
+          have htail := ih k hkTail
+          have hkTailFin : k < m + 1 := Nat.lt_trans hkTail (Nat.lt_succ_self m)
+          have hkFull : k + 1 < (m + 1) + 1 :=
+            Nat.lt_trans hk (Nat.lt_succ_self (m + 1))
+          have hidx :
+              (Fin.succ (⟨k, hkTailFin⟩ : Fin (m + 1)) :
+                  Fin ((m + 1) + 1)) =
+                (⟨k + 1, hkFull⟩ : Fin ((m + 1) + 1)) := by
+            ext
+            rfl
+          have hstage :=
+            higham13_algorithm13_3_schurStageMatrixBlock_tail_shift
+              Ablk pivotInv k (⟨k, hkTailFin⟩ : Fin (m + 1))
+              (⟨k, hkTailFin⟩ : Fin (m + 1))
+          simpa [hidx, hstage] using htail
+
 /-- Higham, 2nd ed., Chapter 13, equation (13.22):
     a recursive direct-lower-comparison source certificate instantiates the
     ambient exact-κ budget chain.
@@ -38713,6 +38769,30 @@ theorem Higham13Eq1322InverseRatioSourceChain.to_lowerComparisonSourceChain
                 exact maxEntryNorm_pos_of_det_ne_zero _ _ hdetFlat)
               n hInvRatio
           simpa using hLower
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    nonterminal active pivot right-inverse data carried by the recursive
+    inverse-ratio source certificate.
+
+    This is inherited through the conversion to the direct lower-comparison
+    source certificate. -/
+theorem Higham13Eq1322InverseRatioSourceChain.nonterminal_pivot_right_inverse
+    {r n : ℕ} {hr : 0 < r} :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322InverseRatioSourceChain hr n m Ablk pivotInv →
+        ∀ k : ℕ, ∀ hk : k < m,
+          IsRightInverse r
+            (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+              ⟨k, Nat.lt_trans hk (Nat.lt_succ_self m)⟩
+              ⟨k, Nat.lt_trans hk (Nat.lt_succ_self m)⟩)
+            (pivotInv k) := by
+  intro m Ablk pivotInv hcert
+  exact
+    Higham13Eq1322LowerComparisonSourceChain.nonterminal_pivot_right_inverse
+      (Higham13Eq1322InverseRatioSourceChain.to_lowerComparisonSourceChain
+        (r := r) (n := n) hr hcert)
 
 /-- Higham, 2nd ed., Chapter 13, equation (13.22):
     uniform-flat determinant-nonzero successor product witness from an ambient
