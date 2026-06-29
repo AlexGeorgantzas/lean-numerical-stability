@@ -1442,6 +1442,42 @@ noncomputable def gqrAQWideBlockAssoc {k r q : ℕ}
       (Fin.append (X i) (fun j : Fin r => L i (Fin.castAdd q j)))
       (fun j : Fin q => L i (Fin.natAdd r j))
 
+/-- Leading `X` block extracted from an associated-column wide matrix in
+    Higham's Chapter 20 display (20.28). -/
+def gqrAQWideAssocX {k r q : ℕ}
+    (M : Fin (r + q) → Fin ((k + r) + q) → ℝ) :
+    Fin (r + q) → Fin k → ℝ :=
+  fun i j => M i (Fin.castAdd q (Fin.castAdd r j))
+
+/-- Trailing square `L` block extracted from an associated-column wide matrix in
+    Higham's Chapter 20 display (20.28). -/
+def gqrAQWideAssocL {k r q : ℕ}
+    (M : Fin (r + q) → Fin ((k + r) + q) → ℝ) :
+    Fin (r + q) → Fin (r + q) → ℝ :=
+  fun i j =>
+    Fin.addCases
+      (motive := fun _ : Fin (r + q) => ℝ)
+      (fun a : Fin r => M i (Fin.castAdd q (Fin.natAdd k a)))
+      (fun b : Fin q => M i (Fin.natAdd (k + r) b)) j
+
+/-- Any associated-column wide matrix is recovered from its leading block and
+    trailing square block.  Thus, for the wide case of (20.28), only
+    lower-triangularity of the trailing block is a real shape condition. -/
+theorem gqrAQWideBlockAssoc_extract_eq {k r q : ℕ}
+    (M : Fin (r + q) → Fin ((k + r) + q) → ℝ) :
+    M = gqrAQWideBlockAssoc (gqrAQWideAssocX M) (gqrAQWideAssocL M) := by
+  ext i j
+  unfold gqrAQWideBlockAssoc gqrAQWideAssocX gqrAQWideAssocL
+  refine Fin.addCases ?_ ?_ j
+  · intro j
+    refine Fin.addCases ?_ ?_ j
+    · intro j
+      simp [Fin.append_left]
+    · intro j
+      simp [Fin.append_left, Fin.append_right]
+  · intro j
+    simp [Fin.append_right]
+
 /-- Vector-action form of the associated-column wide (20.28) block `[X L]`,
     matching the column association used by (20.27). -/
 theorem gqrAQWideBlockAssoc_mulVec {k r q : ℕ}
@@ -1469,6 +1505,16 @@ structure GQRAQWideAssocCase (k r q : ℕ)
   lowerL : IsLowerTriangular L
   /-- Source block identity `M = [X L]` with associated columns. -/
   aq_eq : M = gqrAQWideBlockAssoc X L
+
+/-- Wide associated-shape constructor for Higham's Chapter 20 display (20.28):
+    once the trailing extracted square block is lower triangular, the matrix has
+    the required `[X L]` associated-column shape. -/
+def GQRAQWideAssocCase.of_trailing_lower {k r q : ℕ}
+    {M : Fin (r + q) → Fin ((k + r) + q) → ℝ}
+    (hL : IsLowerTriangular (gqrAQWideAssocL M)) :
+    GQRAQWideAssocCase k r q M :=
+  ⟨gqrAQWideAssocX M, gqrAQWideAssocL M, hL,
+    gqrAQWideBlockAssoc_extract_eq M⟩
 
 /-- Vector-action form of a supplied associated-column wide (20.28) shape. -/
 theorem GQRAQWideAssocCase.mulVec_eq {k r q : ℕ}
