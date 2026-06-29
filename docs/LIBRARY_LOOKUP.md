@@ -1515,6 +1515,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_10_HessenbergGEPPUTrace_growthFactorEntry_le_card`
 - `higham9_10_exists_HessenbergGEPPUTrace_growthFactorEntry_le_card_of_det_ne_zero`
 - `higham9_10_exists_HessenbergGEPPUTrace_growthFactorEntry_le_card_of_det_ne_zero_exists_hAmax`
+- `higham9_10_exists_PermutedLUFactSpec_L_bound_growth_le_of_det_ne_zero`
 - `higham9_10_hessenbergGEPPUTraceGrowthValues`
 - `higham9_10_hessenbergGEPPUTraceGrowthSup`
 - `higham9_10_hessenbergGEPPUTraceGrowthValues_le_card`
