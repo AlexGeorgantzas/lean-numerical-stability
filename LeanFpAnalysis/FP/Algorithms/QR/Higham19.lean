@@ -3904,6 +3904,17 @@ theorem householderBetaSpec_trailingActiveVector_succ_zeroPrefix_of_succ
     (householderTrailingActiveVector (m + 1) p
       (fun i => x i.succ) alpha)
 
+/-- Adding a leading zero preserves the beta-one consequence of the
+source-normalized self-dot condition. -/
+theorem householderBetaSpec_zero_cons_eq_one_of_inner_self_eq_two {m : Nat}
+    (v : Fin (m + 1) -> Real)
+    (hself :
+      (Finset.univ : Finset (Fin (m + 1))).sum
+        (fun i => v i * v i) = 2) :
+    householderBetaSpec (m + 2) (Fin.cases 0 v) = 1 := by
+  rw [householderBetaSpec_zero_cons]
+  exact householderBetaSpec_eq_one_of_inner_self_eq_two (m + 1) v hself
+
 /-- Exact normalized-reflector bridge for stored trailing-active Householder
 data.
 
@@ -3942,6 +3953,31 @@ theorem householderTrailingActiveVector_betaSpec_eq_one_of_self_dot
   exact
     householderBetaSpec_eq_one_of_inner_self_eq_two n
       (householderTrailingActiveVector n p x alpha) hself
+
+/-- Successor-pivot beta-one bridge from the once-shrunk panel self-dot
+normalization.
+
+This packages the zero-prefix equality with the source-shaped `v^T v = 2`
+condition for the trailing panel, so later stored-loop lifts can use the actual
+successor-pivot active vector without assuming beta-one separately. -/
+theorem
+    householderBetaSpec_trailingActiveVector_succ_zeroPrefix_eq_one_of_tail_self_dot
+    {m : Nat} (p : Fin (m + 1))
+    (x : Fin (m + 2) -> Real) (alpha : Real)
+    (hself :
+      (Finset.univ : Finset (Fin (m + 1))).sum
+        (fun i =>
+          householderTrailingActiveVector (m + 1) p
+              (fun a => x a.succ) alpha i *
+            householderTrailingActiveVector (m + 1) p
+              (fun a => x a.succ) alpha i) =
+        2) :
+    householderBetaSpec (m + 2)
+        (householderTrailingActiveVector (m + 2) p.succ x alpha) =
+      1 := by
+  rw [householderBetaSpec_trailingActiveVector_succ_zeroPrefix_of_succ]
+  exact householderTrailingActiveVector_betaSpec_eq_one_of_self_dot
+    p (fun a => x a.succ) alpha hself
 
 /-- Successor-pivot trailing-panel lift for a full stored step with a
 zero-prefixed reflector.
@@ -4340,6 +4376,114 @@ theorem
   exact
     storedPanelStep_succ_zeroPrefix_eq_panelFromTopAndTrailing_of_subtractZeroExact_anyCols
       fp vtail (householderBetaSpec (m + 1) vtail) A hfirstTail hcopy
+
+/-- Successor-pivot stored-step reconstruction with beta-one data from the
+once-shrunk panel self-dot normalization.
+
+This is the source-normalized version of
+`storedPanelStep_succ_trailingActiveVector_eq_panelFromTopAndTrailing_of_subtractZeroExact_of_succ`:
+the tail-panel condition `v^T v = 2` changes both the full successor-pivot beta
+and the once-shrunk beta to `1`.  It is the exact step needed when the recursive
+QR branch has already normalized the trailing Householder reflector. -/
+theorem
+    storedPanelStep_succ_trailingActiveVector_one_eq_panelFromTopAndTrailing_one_of_tail_self_dot_of_subtractZeroExact_of_succ
+    (fp : FPModel) {m p : Nat} (q : Fin (m + 1))
+    (hq : q.val < p + 1)
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real) (alpha : Real)
+    (hself :
+      (Finset.univ : Finset (Fin (m + 1))).sum
+        (fun i =>
+          householderTrailingActiveVector (m + 1) q
+              (fun a => trailingPanel A a (Fin.mk q.val hq)) alpha i *
+            householderTrailingActiveVector (m + 1) q
+              (fun a => trailingPanel A a (Fin.mk q.val hq)) alpha i) =
+        2)
+    (hfirstTail : panelFirstColumnTailZero A)
+    (hcopy : subtractZeroExact fp) :
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) (q.val + 1)
+        (householderTrailingActiveVector (m + 2) q.succ
+          (fun a => A a (Fin.mk (q.val + 1) (Nat.succ_lt_succ hq))) alpha)
+        1 A =
+      panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+        (fl_householderStoredPanelStep fp (m + 1) (p + 1) q.val
+          (householderTrailingActiveVector (m + 1) q
+            (fun i => trailingPanel A i (Fin.mk q.val hq)) alpha)
+          1
+          (trailingPanel A)) := by
+  let fullCol : Fin (p + 2) := Fin.mk (q.val + 1) (Nat.succ_lt_succ hq)
+  let tailCol : Fin (p + 1) := Fin.mk q.val hq
+  have hcol : tailCol.succ = fullCol := by
+    ext
+    simp [tailCol, fullCol]
+  have hselfFull :
+      (Finset.univ : Finset (Fin (m + 1))).sum
+        (fun i =>
+          householderTrailingActiveVector (m + 1) q
+              (fun a => (fun b => A b fullCol) a.succ) alpha i *
+            householderTrailingActiveVector (m + 1) q
+              (fun a => (fun b => A b fullCol) a.succ) alpha i) =
+        2 := by
+    simpa [fullCol, tailCol, trailingPanel, hcol] using hself
+  have hfullBeta :
+      householderBetaSpec (m + 2)
+          (householderTrailingActiveVector (m + 2) q.succ
+            (fun a => A a fullCol) alpha) =
+        1 := by
+    exact
+      householderBetaSpec_trailingActiveVector_succ_zeroPrefix_eq_one_of_tail_self_dot
+        q (fun a => A a fullCol) alpha hselfFull
+  have htailBetaFull :
+      householderBetaSpec (m + 1)
+          (householderTrailingActiveVector (m + 1) q
+            (fun i => A i.succ fullCol) alpha) =
+        1 := by
+    exact
+      householderTrailingActiveVector_betaSpec_eq_one_of_self_dot
+        q (fun i => A i.succ fullCol) alpha hselfFull
+  have hstep :=
+    storedPanelStep_succ_trailingActiveVector_eq_panelFromTopAndTrailing_of_subtractZeroExact_of_succ
+      fp q hq A alpha hfirstTail hcopy
+  simpa [fullCol, hfullBeta, htailBetaFull] using hstep
+
+/-- Pivot-1 stored-step reconstruction with beta-one data from the trailing
+panel self-dot normalization, in arbitrary column width. -/
+theorem
+    storedPanelStep_succ_trailingActiveVector_one_eq_panelFromTopAndTrailing_one_of_tail_self_dot_of_subtractZeroExact_anyCols
+    (fp : FPModel) {m p : Nat}
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real) (alpha : Real)
+    (hself :
+      (Finset.univ : Finset (Fin (m + 1))).sum
+        (fun i =>
+          householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
+              (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)) alpha i *
+            householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
+              (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)) alpha i) =
+        2)
+    (hfirstTail : panelFirstColumnTailZero A)
+    (hcopy : subtractZeroExact fp) :
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+        (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+          (fun a => A a ((0 : Fin (p + 1)).succ)) alpha)
+        1 A =
+      panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+        (fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+          (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel A)) alpha)
+          1
+          (trailingPanel A)) := by
+  have hself' :
+      (Finset.univ : Finset (Fin (m + 1))).sum
+        (fun i =>
+          householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
+              (fun a => trailingPanel A a (Fin.mk 0 (Nat.succ_pos p))) alpha i *
+            householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
+              (fun a => trailingPanel A a (Fin.mk 0 (Nat.succ_pos p))) alpha i) =
+        2 := by
+    simpa [panelFirstColumn] using hself
+  have h :=
+    storedPanelStep_succ_trailingActiveVector_one_eq_panelFromTopAndTrailing_one_of_tail_self_dot_of_subtractZeroExact_of_succ
+      fp (0 : Fin (m + 1)) (Nat.succ_pos p) A alpha hself' hfirstTail hcopy
+  simpa [panelFirstColumn] using h
 
 /-- Full pivot-1 zero-prefix stored-step reconstruction.
 
