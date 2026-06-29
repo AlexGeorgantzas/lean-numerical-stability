@@ -442,6 +442,33 @@ theorem modifiedGramSchmidtQ_dot_eq_zero_of_lt_of_prev
   rw [gsDot_normalize_right, hstage]
   simp
 
+/-- Exact MGS produces pairwise orthogonal normalized columns under the
+standard nonzero-stage hypothesis. -/
+theorem modifiedGramSchmidtQ_dot_eq_zero_of_lt
+    {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hdiag :
+      forall k : Fin n,
+        Ne (gsColumnNorm2 (modifiedGramSchmidtVectors A k.val k)) 0)
+    {i j : Fin n} (hij : i < j) :
+    gsDot (gsColumn (modifiedGramSchmidtQ A) i)
+        (gsColumn (modifiedGramSchmidtQ A) j) = 0 := by
+  let P : Nat -> Prop := fun t =>
+    forall j : Fin n, j.val = t ->
+      forall i : Fin n, i < j ->
+        gsDot (gsColumn (modifiedGramSchmidtQ A) i)
+          (gsColumn (modifiedGramSchmidtQ A) j) = 0
+  have hmain : forall t, P t := by
+    intro t
+    induction t using Nat.strong_induction_on with
+    | h t ih =>
+        intro j hjt i hij
+        apply modifiedGramSchmidtQ_dot_eq_zero_of_lt_of_prev A hij (hdiag i)
+        intro k hik hkj
+        have hkt : k.val < t := by
+          simpa [hjt] using hkj
+        exact ih k.val hkt k rfl i (by simpa using hik)
+  exact hmain j.val j rfl i hij
+
 /-- MGS `R` is zero below the diagonal by construction. -/
 theorem modifiedGramSchmidtR_eq_zero_of_lt {m n : Nat}
     (A : Fin m -> Fin n -> Real) {i j : Fin n}
