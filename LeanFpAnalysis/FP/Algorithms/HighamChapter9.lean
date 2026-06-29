@@ -8517,6 +8517,76 @@ lemma higham9_14_completePivotWilkinsonBound_pos {n : ℕ} (hn : 0 < n) :
   exact mul_pos (Real.sqrt_pos_of_pos hnR)
     (Real.sqrt_pos_of_pos (higham9_14_completePivotWilkinsonProduct_pos n))
 
+/-- **Equation (9.14)**, scalar product lower bound.
+
+Every factor in Wilkinson's displayed complete-pivoting product is at least
+one, so the whole scalar product is at least one. -/
+lemma higham9_14_completePivotWilkinsonProduct_ge_one (n : ℕ) :
+    1 ≤ higham9_14_completePivotWilkinsonProduct n := by
+  unfold higham9_14_completePivotWilkinsonProduct
+  have hprod :
+      (Finset.Icc 2 n).prod (fun _ : ℕ => (1 : ℝ)) ≤
+        (Finset.Icc 2 n).prod
+          (fun k => (k : ℝ) ^ ((1 : ℝ) / ((k : ℝ) - 1))) := by
+    apply Finset.prod_le_prod
+    · intro k hk
+      norm_num
+    · intro k hk
+      have hk2 : 2 ≤ k := (Finset.mem_Icc.mp hk).1
+      have hk_ge_one_nat : 1 ≤ k := le_trans (by decide : 1 ≤ 2) hk2
+      have hk_ge_one : (1 : ℝ) ≤ (k : ℝ) := by exact_mod_cast hk_ge_one_nat
+      have hk_gt_one_nat : 1 < k :=
+        Nat.lt_of_lt_of_le (by decide : 1 < 2) hk2
+      have hden_pos : 0 < (k : ℝ) - 1 := by
+        have hk_gt_one : (1 : ℝ) < (k : ℝ) := by exact_mod_cast hk_gt_one_nat
+        linarith
+      have hexp_nonneg : 0 ≤ (1 : ℝ) / ((k : ℝ) - 1) :=
+        div_nonneg zero_le_one (le_of_lt hden_pos)
+      exact Real.one_le_rpow hk_ge_one hexp_nonneg
+  simpa using hprod
+
+/-- **Equation (9.14)**, base value of Wilkinson's scalar product. -/
+lemma higham9_14_completePivotWilkinsonProduct_two :
+    higham9_14_completePivotWilkinsonProduct 2 = 2 := by
+  norm_num [higham9_14_completePivotWilkinsonProduct]
+
+/-- **Equation (9.14)**, one-step recurrence for Wilkinson's scalar product.
+
+This exposes the factor appended when the product endpoint is increased from
+`n` to `n + 1`, which is the form needed by inductive scalar-product
+arguments. -/
+lemma higham9_14_completePivotWilkinsonProduct_succ {n : ℕ} (hn : 1 ≤ n) :
+    higham9_14_completePivotWilkinsonProduct (n + 1) =
+      higham9_14_completePivotWilkinsonProduct n *
+        ((n + 1 : ℕ) : ℝ) ^ ((1 : ℝ) / (n : ℝ)) := by
+  unfold higham9_14_completePivotWilkinsonProduct
+  have hab : 2 ≤ n + 1 := by omega
+  have hprod :=
+    Finset.prod_Icc_succ_top (a := 2) (b := n)
+      (f := fun k : ℕ => (k : ℝ) ^ ((1 : ℝ) / ((k : ℝ) - 1))) hab
+  have hden : ((n + 1 : ℕ) : ℝ) - 1 = (n : ℝ) := by norm_num
+  simpa [hden] using hprod
+
+/-- **Equation (9.14)**, Wilkinson RHS dominates its leading `sqrt n` factor.
+
+This is only scalar support for the displayed RHS; it does not prove the
+complete-pivoting trace growth theorem. -/
+lemma higham9_14_completePivotWilkinsonBound_ge_sqrt (n : ℕ) :
+    Real.sqrt (n : ℝ) ≤ higham9_14_completePivotWilkinsonBound n := by
+  unfold higham9_14_completePivotWilkinsonBound
+  have hsqrt_prod :
+      1 ≤ Real.sqrt (higham9_14_completePivotWilkinsonProduct n) := by
+    simpa using
+      (Real.sqrt_le_sqrt
+        (higham9_14_completePivotWilkinsonProduct_ge_one n) :
+          Real.sqrt (1 : ℝ) ≤
+            Real.sqrt (higham9_14_completePivotWilkinsonProduct n))
+  calc
+    Real.sqrt (n : ℝ) = Real.sqrt (n : ℝ) * 1 := by rw [mul_one]
+    _ ≤ Real.sqrt (n : ℝ) *
+          Real.sqrt (higham9_14_completePivotWilkinsonProduct n) :=
+        mul_le_mul_of_nonneg_left hsqrt_prod (Real.sqrt_nonneg _)
+
 /-- **Problem 9.11 / equation (9.15)**, the source growth-function set
 underlying `g(n) = sup_A rho_n^c(A)`, parameterized by the still-separate
 complete-pivoting growth map `rhoC`. -/
@@ -8658,6 +8728,28 @@ lemma higham9_16_rookPivotFosterBound_pos {n : ℕ} (hn : 0 < n) :
   have hnR : 0 < (n : ℝ) := by exact_mod_cast hn
   exact mul_pos (by norm_num)
     (Real.rpow_pos_of_pos hnR ((3 / 4 : ℝ) * Real.log (n : ℝ)))
+
+/-- **Equation (9.16)**, Foster RHS lower bound in positive dimensions.
+
+For `n >= 1`, the scalar factor `n^(3/4 log n)` is at least one, so Foster's
+displayed rook-pivoting RHS is at least `3/2`. -/
+lemma higham9_16_rookPivotFosterBound_ge_three_halves {n : ℕ} (hn : 0 < n) :
+    (3 / 2 : ℝ) ≤ higham9_16_rookPivotFosterBound n := by
+  unfold higham9_16_rookPivotFosterBound
+  have hn_ge_one_nat : 1 ≤ n := Nat.succ_le_of_lt hn
+  have hn_ge_one : (1 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hn_ge_one_nat
+  have hlog_nonneg : 0 ≤ Real.log (n : ℝ) := Real.log_nonneg hn_ge_one
+  have hexp_nonneg : 0 ≤ (3 / 4 : ℝ) * Real.log (n : ℝ) :=
+    mul_nonneg (by norm_num) hlog_nonneg
+  have hrpow_ge_one :
+      1 ≤ (n : ℝ) ^ ((3 / 4 : ℝ) * Real.log (n : ℝ)) :=
+    Real.one_le_rpow hn_ge_one hexp_nonneg
+  calc
+    (3 / 2 : ℝ) =
+        (3 / 2 : ℝ) * 1 := by ring
+    _ ≤ (3 / 2 : ℝ) *
+        (n : ℝ) ^ ((3 / 4 : ℝ) * Real.log (n : ℝ)) :=
+        mul_le_mul_of_nonneg_left hrpow_ge_one (by norm_num)
 
 /-! ## Problem 9.13: threshold pivoting and sparse-column growth -/
 
@@ -13352,6 +13444,25 @@ theorem higham9_9_growthFactorEntry_le_two_of_upper_entry_bound {n : ℕ}
     growthFactorEntry hn A U hA ≤ 2 :=
   growthFactorEntry_le_of_entry_bound_factor hn A U 2 hA hU
 
+/-- **Theorem 9.9**, det-input max-entry growth endpoint from the remaining
+final-upper entry bound.
+
+This packages the scalar `rho <= 2` adapter with the positive denominator
+derived from nonsingularity of the source matrix.  The algorithmic entry bound
+for the final upper factor remains the explicit remaining hypothesis. -/
+theorem higham9_9_growthFactorEntry_le_two_of_upper_entry_bound_exists_hAmax
+    {n : ℕ} (hn : 0 < n) (A U : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hU : ∀ i j : Fin n, |U i j| ≤ 2 * maxEntryNorm hn A) :
+    ∃ hAmax : 0 < maxEntryNorm hn A,
+      growthFactorEntry hn A U hAmax ≤ 2 := by
+  have hAmax : 0 < maxEntryNorm hn A :=
+    maxEntryNorm_pos_of_det_ne_zero hn A hdet
+  exact
+    ⟨hAmax,
+      higham9_9_growthFactorEntry_le_two_of_upper_entry_bound
+        hn A U hAmax hU⟩
+
 /-- **Theorem 9.9**, sharper first-step off-diagonal growth for the
 column-dominant no-pivot route.  In the first Schur complement, off-diagonal
 trailing entries are bounded by the original max-entry norm; only the diagonal
@@ -14003,6 +14114,52 @@ theorem higham9_11_bohteBound_nonneg (p : ℕ) :
               pow_le_pow_right₀ (by decide : 1 ≤ (2 : ℕ)) (by omega)
             exact_mod_cast hk1.trans hmono) (pow_nonneg (by norm_num) k)
 
+/-- **Theorem 9.11**, Bohte's scalar expression dominates the tridiagonal
+value.
+
+The formal expression is at least `2` for every natural bandwidth parameter.
+This is scalar support only; the banded GEPP growth theorem supplying this
+constant remains the external Bohte proof obligation. -/
+theorem higham9_11_bohteBound_ge_two (p : ℕ) :
+    (2 : ℝ) ≤ higham9_11_bohteBound p := by
+  cases p with
+  | zero =>
+      norm_num [higham9_11_bohteBound]
+      exact le_rfl
+  | succ p =>
+      cases p with
+      | zero =>
+          rw [higham9_11_bohteBound_tridiagonal]
+      | succ k =>
+          unfold higham9_11_bohteBound
+          have hpow1 : 2 * (k + 1 + 1) - 1 = 2 * k + 3 := by omega
+          have hpow2 : k + 1 + 1 - 2 = k := by omega
+          rw [hpow1, hpow2]
+          norm_num
+          have hterm :
+              ((k : ℝ) + 1) * (2 : ℝ) ^ k ≤ (2 : ℝ) ^ (2 * k + 2) := by
+            rw [show 2 * k + 2 = k + (k + 2) by omega, pow_add]
+            rw [mul_comm ((2 : ℝ) ^ k)]
+            exact mul_le_mul_of_nonneg_right (by
+              have hk1 : k + 1 ≤ 2 ^ (k + 1) := (k + 1).lt_two_pow_self.le
+              have hmono : 2 ^ (k + 1) ≤ 2 ^ (k + 2) :=
+                pow_le_pow_right₀ (by decide : 1 ≤ (2 : ℕ)) (by omega)
+              exact_mod_cast hk1.trans hmono) (pow_nonneg (by norm_num) k)
+          have htwo : (2 : ℝ) ≤ (2 : ℝ) ^ (2 * k + 2) := by
+            have hpow : (2 : ℝ) ^ 1 ≤ (2 : ℝ) ^ (2 * k + 2) :=
+              pow_le_pow_right₀ (by norm_num : (1 : ℝ) ≤ 2) (by omega)
+            simpa using hpow
+          have hsum :
+              (2 : ℝ) + ((k : ℝ) + 1) * (2 : ℝ) ^ k ≤
+                (2 : ℝ) ^ (2 * k + 2) + (2 : ℝ) ^ (2 * k + 2) :=
+            add_le_add htwo hterm
+          have hdouble :
+              (2 : ℝ) ^ (2 * k + 2) + (2 : ℝ) ^ (2 * k + 2) =
+                (2 : ℝ) ^ (2 * k + 3) := by
+            rw [show 2 * k + 3 = (2 * k + 2) + 1 by omega, pow_add]
+            ring
+          linarith
+
 /-- **Theorem 9.11**, banded growth-factor solve bound once the Bohte growth
 constant has been supplied. -/
 theorem higham9_11_banded_growth_factor_solve_tight (fp : FPModel) (n : ℕ)
@@ -14048,6 +14205,35 @@ theorem higham9_11_bohte_banded_solve_tight (fp : FPModel) (n p : ℕ)
   higham9_11_banded_growth_factor_solve_tight fp n A L_hat U_hat b
     (higham9_11_bohteBound p) (higham9_11_bohteBound_nonneg p)
     hL_diag hU_diag hLU hn hn3 hGrowth
+
+/-- **Theorem 9.11**, tridiagonal `p = 1` Bohte solve bound.
+
+This is the printed tridiagonal specialization of
+`higham9_11_bohte_banded_solve_tight`: the Bohte scalar expression is reduced
+to the concrete constant `2`, while the external GEPP growth hypothesis remains
+explicit. -/
+theorem higham9_11_tridiagonal_bohte_solve_tight (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hL_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hGrowth : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤
+        2 * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤
+        2 * gamma fp (3 * n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  simpa [higham9_11_bohteBound_tridiagonal] using
+    higham9_11_bohte_banded_solve_tight fp n 1 A L_hat U_hat b
+      hL_diag hU_diag hLU hn hn3
+      (fun i j => by
+        simpa [higham9_11_bohteBound_tridiagonal] using hGrowth i j)
 
 /-! ## §9.6 Special Tridiagonal Classes -/
 
@@ -15710,6 +15896,85 @@ theorem higham9_20_tridiag_lu_perturbation_model_of_LUBackwardError_le
     exact le_trans (hLU.backward_bound i j)
       (mul_le_mul_of_nonneg_right hε_le_u hsum_nonneg)
 
+/-- **Equation (9.20)** from a dense Doolittle loop certificate.
+
+The literal square Algorithm 9.2 dense-loop certificate supplies the
+componentwise LU backward-error certificate used by the equation-(9.20)
+perturbation model, provided the caller weakens `γ_n` to the printed source
+coefficient `u`. -/
+theorem higham9_20_tridiag_lu_perturbation_model_of_DoolittleDenseLoopCertificate
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (u : ℝ) (hn : gammaValid fp n)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hC : higham9_2_DoolittleDenseLoopCertificate n A L_hat U_hat fp) :
+    ∃ DeltaA_LU : Fin n → Fin n → ℝ,
+      higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+        DeltaA_LU u :=
+  higham9_20_tridiag_lu_perturbation_model_of_LUBackwardError_le
+    n A L_hat U_hat (gamma fp n) u hγ_le_u
+    (DoolittleDenseLoopCertificate.to_LUBackwardError hC hn)
+
+/-- **Equation (9.20)** from an absolute-budget dense Doolittle certificate.
+
+Absolute entry residual budgets for the square Algorithm 9.2 dense loop first
+compress to a componentwise LU backward-error certificate and then supply the
+equation-(9.20) perturbation model. -/
+theorem higham9_20_tridiag_lu_perturbation_model_of_DoolittleDenseLoopAbsBudgetCertificate
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (BU BL : Fin n → Fin n → ℝ)
+    (u : ℝ) (hn : gammaValid fp n)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hC : higham9_2_DoolittleDenseLoopAbsBudgetCertificate n
+      A L_hat U_hat fp BU BL) :
+    ∃ DeltaA_LU : Fin n → Fin n → ℝ,
+      higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+        DeltaA_LU u :=
+  higham9_20_tridiag_lu_perturbation_model_of_LUBackwardError_le
+    n A L_hat U_hat (gamma fp n) u hγ_le_u
+    (DoolittleDenseLoopAbsBudgetCertificate.to_LUBackwardError hC hn)
+
+/-- **Equation (9.20)** from a square-specialized rectangular dense Doolittle
+certificate.
+
+At `m = n`, the rectangular Algorithm 9.2 dense-loop certificate feeds the
+existing square Doolittle source perturbation model through the certified
+rectangular-to-square bridge. -/
+theorem higham9_20_tridiag_lu_perturbation_model_of_RectDoolittleDenseLoopCertificate_square
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (u : ℝ) (hn : gammaValid fp n)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hC : higham9_2_RectDoolittleDenseLoopCertificate
+      (Nat.le_refl n) A L_hat U_hat fp) :
+    ∃ DeltaA_LU : Fin n → Fin n → ℝ,
+      higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+        DeltaA_LU u :=
+  higham9_20_tridiag_lu_perturbation_model_of_DoolittleDenseLoopCertificate
+    fp n A L_hat U_hat u hn hγ_le_u
+    (higham9_2_rectDenseLoopCertificate_to_squareDenseLoopCertificate hC)
+
+/-- **Equation (9.20)** from a square-specialized rectangular absolute-budget
+Doolittle certificate.
+
+This exposes the rectangular absolute-budget layer at the same source
+perturbation interface as the square Algorithm 9.2 dense-loop certificate. -/
+theorem higham9_20_tridiag_lu_perturbation_model_of_RectDoolittleDenseLoopAbsBudgetCertificate_square
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (BU BL : Fin n → Fin n → ℝ)
+    (u : ℝ) (hn : gammaValid fp n)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hC : higham9_2_RectDoolittleDenseLoopAbsBudgetCertificate
+      (Nat.le_refl n) A L_hat U_hat fp BU BL) :
+    ∃ DeltaA_LU : Fin n → Fin n → ℝ,
+      higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+        DeltaA_LU u :=
+  higham9_20_tridiag_lu_perturbation_model_of_DoolittleDenseLoopAbsBudgetCertificate
+    fp n A L_hat U_hat BU BL u hn hγ_le_u
+    (higham9_2_rectAbsBudgetCertificate_to_squareAbsBudgetCertificate hC)
+
 /-- **Equation (9.21)** for the actual triangular solves.
 
 If the uniform triangular-solve coefficient `γ_n` is bounded by the source
@@ -16297,6 +16562,322 @@ theorem higham9_14_source_h_bound_of_LUFactSpec_fl_triangular_solves_gamma_le
   higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_gamma_le
     fp n A L_hat U_hat b 0 u hu hu_lt_one hn
     (LUFactSpec.to_LUBackwardError_zero hLU) hu hγ_le_u hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, dense Doolittle certificate plus actual triangular solves.
+
+This is the source-facing `f(u)` specialization of
+`higham9_14_source_f_bound_of_LUBackwardError_fl_triangular_solves_gamma_le`
+for a literal Algorithm 9.2 square dense-loop certificate.  The coefficient
+weakening `γ_n <= u` is explicit, matching the source statement's printed
+unit-roundoff coefficient. -/
+theorem higham9_14_source_f_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (c u : ℝ) (hu : 0 ≤ u)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_DoolittleDenseLoopCertificate n A L_hat U_hat fp)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ c * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ c * higham9_14_f u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_f_bound_of_LUBackwardError_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b c (gamma fp n) u hu hn
+    (DoolittleDenseLoopCertificate.to_LUBackwardError hC hn)
+    hγ_le_u hγ_le_u hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, absolute-budget Doolittle certificate plus actual
+triangular solves.
+
+This exposes the lower absolute-budget Algorithm 9.2 certificate layer at the
+same source-facing `f(u)` tridiagonal-solve bound. -/
+theorem higham9_14_source_f_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (BU BL : Fin n → Fin n → ℝ)
+    (c u : ℝ) (hu : 0 ≤ u)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_DoolittleDenseLoopAbsBudgetCertificate n
+      A L_hat U_hat fp BU BL)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ c * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ c * higham9_14_f u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_f_bound_of_LUBackwardError_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b c (gamma fp n) u hu hn
+    (DoolittleDenseLoopAbsBudgetCertificate.to_LUBackwardError hC hn)
+    hγ_le_u hγ_le_u hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, dense Doolittle certificate with the final `h(u)` bound.
+
+This is the exact-growth `|Lhat||Uhat| <= |A|` source-model specialization
+for a literal Algorithm 9.2 square dense-loop certificate and the actual
+`fl_forwardSub`/`fl_backSub` triangular solves. -/
+theorem higham9_14_source_h_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u) (hu_lt_one : u < 1)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_DoolittleDenseLoopCertificate n A L_hat U_hat fp)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_h u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b (gamma fp n) u hu hu_lt_one hn
+    (DoolittleDenseLoopCertificate.to_LUBackwardError hC hn)
+    hγ_le_u hγ_le_u hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, absolute-budget Doolittle certificate with the final
+`h(u)` bound.
+
+This is the exact-growth `h(u)` source-model specialization for an absolute
+budget square dense-loop certificate and the actual triangular solves. -/
+theorem higham9_14_source_h_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (BU BL : Fin n → Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u) (hu_lt_one : u < 1)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_DoolittleDenseLoopAbsBudgetCertificate n
+      A L_hat U_hat fp BU BL)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_h u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b (gamma fp n) u hu hu_lt_one hn
+    (DoolittleDenseLoopAbsBudgetCertificate.to_LUBackwardError hC hn)
+    hγ_le_u hγ_le_u hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, dense Doolittle certificate with a constant-growth
+final `h(u)` bound.
+
+This variant keeps the structural comparison
+`|Lhat||Uhat| <= c |A|`, needed for tridiagonal subclasses with a visible
+constant such as `3`. -/
+theorem higham9_14_source_h_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_const_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (c u : ℝ) (hc : 0 ≤ c) (hu : 0 ≤ u) (hu_lt_one : u < 1)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_DoolittleDenseLoopCertificate n A L_hat U_hat fp)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ c * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ c * higham9_14_h u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_const_gamma_le
+    fp n A L_hat U_hat b c (gamma fp n) u hc hu hu_lt_one hn
+    (DoolittleDenseLoopCertificate.to_LUBackwardError hC hn)
+    hγ_le_u hγ_le_u hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, absolute-budget Doolittle certificate with a
+constant-growth final `h(u)` bound.
+
+This exposes the lower absolute-budget dense-loop layer for tridiagonal
+classes whose structural growth comparison has an explicit constant. -/
+theorem higham9_14_source_h_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_const_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (BU BL : Fin n → Fin n → ℝ)
+    (c u : ℝ) (hc : 0 ≤ c) (hu : 0 ≤ u) (hu_lt_one : u < 1)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_DoolittleDenseLoopAbsBudgetCertificate n
+      A L_hat U_hat fp BU BL)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ c * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ c * higham9_14_h u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_const_gamma_le
+    fp n A L_hat U_hat b c (gamma fp n) u hc hu hu_lt_one hn
+    (DoolittleDenseLoopAbsBudgetCertificate.to_LUBackwardError hC hn)
+    hγ_le_u hγ_le_u hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, square-specialized rectangular dense Doolittle
+certificate plus actual triangular solves.
+
+This is the rectangular `m = n` entry point for the source-facing `f(u)` bound:
+the rectangular dense-loop certificate is first converted to the square
+Doolittle certificate API, then reused by the established Theorem 9.14 wrapper. -/
+theorem higham9_14_source_f_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (c u : ℝ) (hu : 0 ≤ u)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_RectDoolittleDenseLoopCertificate
+      (Nat.le_refl n) A L_hat U_hat fp)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ c * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ c * higham9_14_f u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_f_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b c u hu hn
+    (higham9_2_rectDenseLoopCertificate_to_squareDenseLoopCertificate hC)
+    hγ_le_u hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, square-specialized rectangular absolute-budget
+Doolittle certificate plus actual triangular solves. -/
+theorem higham9_14_source_f_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (BU BL : Fin n → Fin n → ℝ)
+    (c u : ℝ) (hu : 0 ≤ u)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_RectDoolittleDenseLoopAbsBudgetCertificate
+      (Nat.le_refl n) A L_hat U_hat fp BU BL)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ c * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ c * higham9_14_f u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_f_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b BU BL c u hu hn
+    (higham9_2_rectAbsBudgetCertificate_to_squareAbsBudgetCertificate hC)
+    hγ_le_u hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, square-specialized rectangular dense Doolittle
+certificate with the final `h(u)` bound. -/
+theorem higham9_14_source_h_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u) (hu_lt_one : u < 1)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_RectDoolittleDenseLoopCertificate
+      (Nat.le_refl n) A L_hat U_hat fp)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_h u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b u hu hu_lt_one hn
+    (higham9_2_rectDenseLoopCertificate_to_squareDenseLoopCertificate hC)
+    hγ_le_u hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, square-specialized rectangular absolute-budget
+Doolittle certificate with the final `h(u)` bound. -/
+theorem higham9_14_source_h_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (BU BL : Fin n → Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u) (hu_lt_one : u < 1)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_RectDoolittleDenseLoopAbsBudgetCertificate
+      (Nat.le_refl n) A L_hat U_hat fp BU BL)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_h u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b BU BL u hu hu_lt_one hn
+    (higham9_2_rectAbsBudgetCertificate_to_squareAbsBudgetCertificate hC)
+    hγ_le_u hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, square-specialized rectangular dense Doolittle
+certificate with a constant-growth final `h(u)` bound. -/
+theorem higham9_14_source_h_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_const_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (c u : ℝ) (hc : 0 ≤ c) (hu : 0 ≤ u) (hu_lt_one : u < 1)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_RectDoolittleDenseLoopCertificate
+      (Nat.le_refl n) A L_hat U_hat fp)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ c * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ c * higham9_14_h u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_const_gamma_le
+    fp n A L_hat U_hat b c u hc hu hu_lt_one hn
+    (higham9_2_rectDenseLoopCertificate_to_squareDenseLoopCertificate hC)
+    hγ_le_u hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, square-specialized rectangular absolute-budget
+Doolittle certificate with a constant-growth final `h(u)` bound. -/
+theorem higham9_14_source_h_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_const_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (BU BL : Fin n → Fin n → ℝ)
+    (c u : ℝ) (hc : 0 ≤ c) (hu : 0 ≤ u) (hu_lt_one : u < 1)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_RectDoolittleDenseLoopAbsBudgetCertificate
+      (Nat.le_refl n) A L_hat U_hat fp BU BL)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ c * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ c * higham9_14_h u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_const_gamma_le
+    fp n A L_hat U_hat b BU BL c u hc hu hu_lt_one hn
+    (higham9_2_rectAbsBudgetCertificate_to_squareAbsBudgetCertificate hC)
+    hγ_le_u hU_diag hAbsLU_le
 
 /-- **Theorem 9.14**, column-dominant builder source-model `f(u)` bound.
 
@@ -19028,6 +19609,58 @@ theorem higham9_15_triuPart_mono {n : ℕ}
   by_cases h : i.val ≤ j.val
   · simpa [h] using hAB i j
   · simp [h]
+
+/-- **Theorem 9.15**, the strictly lower projection distributes over addition. -/
+theorem higham9_15_strilPart_add {n : ℕ}
+    (A B : Matrix (Fin n) (Fin n) ℝ) :
+    higham9_15_strilPart (A + B) =
+      higham9_15_strilPart A + higham9_15_strilPart B := by
+  ext i j
+  unfold higham9_15_strilPart
+  by_cases h : j.val < i.val
+  · have hfin : j < i := h
+    simp [hfin]
+  · have hfin : ¬ j < i := by
+      intro hji
+      exact h hji
+    simp [hfin]
+
+/-- **Theorem 9.15**, the upper projection distributes over addition. -/
+theorem higham9_15_triuPart_add {n : ℕ}
+    (A B : Matrix (Fin n) (Fin n) ℝ) :
+    higham9_15_triuPart (A + B) =
+      higham9_15_triuPart A + higham9_15_triuPart B := by
+  ext i j
+  unfold higham9_15_triuPart
+  by_cases h : i.val ≤ j.val
+  · have hfin : i ≤ j := h
+    simp [hfin]
+  · have hfin : ¬ i ≤ j := by
+      intro hij
+      exact h hij
+    simp [hfin]
+
+/-- **Theorem 9.15**, right multiplication by a split strictly-lower
+majorant separates into leading and local-product contributions. -/
+theorem higham9_15_rectMatMul_strilPart_add_right {n : ℕ}
+    (A B C : Matrix (Fin n) (Fin n) ℝ) (i j : Fin n) :
+    rectMatMul A (higham9_15_strilPart (B + C)) i j =
+      rectMatMul A (higham9_15_strilPart B) i j +
+        rectMatMul A (higham9_15_strilPart C) i j := by
+  rw [higham9_15_strilPart_add]
+  unfold rectMatMul
+  simp [mul_add, Finset.sum_add_distrib]
+
+/-- **Theorem 9.15**, left multiplication by a split upper majorant separates
+into leading and local-product contributions. -/
+theorem higham9_15_rectMatMul_triuPart_add_left {n : ℕ}
+    (A B C : Matrix (Fin n) (Fin n) ℝ) (i j : Fin n) :
+    rectMatMul (higham9_15_triuPart (A + B)) C i j =
+      rectMatMul (higham9_15_triuPart A) C i j +
+        rectMatMul (higham9_15_triuPart B) C i j := by
+  rw [higham9_15_triuPart_add]
+  unfold rectMatMul
+  simp [add_mul, Finset.sum_add_distrib]
 
 /-- **Theorem 9.15**, entrywise absolute product bound for the local square
 matrix product. -/
@@ -22834,6 +23467,35 @@ theorem higham9_15_normwise_source_bound_of_normalized_linear_step_opNorm_of_sou
       Linv ΔA Uinv hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta)
     hlinear hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
 
+/-- **Theorem 9.15**, exact-operator-norm specialization of the normalized
+linear-step normwise wrapper.
+
+This chooses the printed denominator constants as the actual operator 2-norms
+of `Linv`, `ΔA`, and `Uinv`, instead of requiring separate `opNorm2Le`
+certificates. -/
+theorem higham9_15_normwise_source_bound_of_normalized_linear_step_opNorm_of_source_inverse_identities_exact_opNorm2
+    {n : ℕ} [Nonempty (Fin n)]
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hlinear :
+      max (frobNormRect (rectMatMul Linv ΔL))
+          (frobNormRect (rectMatMul ΔU Uinv)) ≤
+        frobNormRect (higham9_27_GMatrix Linv ΔA Uinv) +
+          opNorm2 (higham9_27_GMatrix Linv ΔA Uinv) *
+            max (frobNormRect (rectMatMul Linv ΔL))
+              (frobNormRect (rectMatMul ΔU Uinv)))
+    (heta : opNorm2 Linv * opNorm2 ΔA * opNorm2 Uinv < 1) :
+    max (frobNormRect ΔL / opNorm2 L)
+        (frobNormRect ΔU / opNorm2 U) ≤
+      (opNorm2 Linv * frobNormRect ΔA * opNorm2 Uinv) /
+        (1 - opNorm2 Linv * opNorm2 ΔA * opNorm2 Uinv) :=
+  higham9_15_normwise_source_bound_of_normalized_linear_step_opNorm_of_source_inverse_identities_product_lt
+    L U Linv Uinv ΔA ΔL ΔU hLleft hUright hlinear
+    (opNorm2_nonneg Linv) (opNorm2_nonneg ΔA) (opNorm2_nonneg Uinv)
+    (opNorm2Le_opNorm2 Linv) (opNorm2Le_opNorm2 ΔA) (opNorm2Le_opNorm2 Uinv)
+    heta
+
 /-- **Theorem 9.15**, source-facing normwise endpoint from the original
 perturbed factorization equations plus the conditional min-factor control.
 
@@ -23005,6 +23667,37 @@ theorem higham9_15_normwise_source_bound_of_factorization_min_factor_bound_opNor
       (higham9_27_GMatrix_opNorm2_lt_one_of_product_lt_one
         Linv ΔA Uinv hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta)
       hmin hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+
+/-- **Theorem 9.15**, exact-operator-norm source-facing normwise endpoint
+from the original `G` factorization equations.
+
+The Barrlund--Sun min-factor control remains explicit; this wrapper removes
+the auxiliary norm-bound constants from the printed denominator. -/
+theorem higham9_15_normwise_source_bound_of_factorization_min_factor_bound_opNorm_exact_opNorm2
+    {n : ℕ} [Nonempty (Fin n)]
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hmin :
+      min (frobNormRect (rectMatMul Linv ΔL))
+          (frobNormRect (rectMatMul ΔU Uinv)) ≤
+        opNorm2 (higham9_27_GMatrix Linv ΔA Uinv))
+    (heta : opNorm2 Linv * opNorm2 ΔA * opNorm2 Uinv < 1) :
+    max (frobNormRect ΔL / opNorm2 L)
+        (frobNormRect ΔU / opNorm2 U) ≤
+      (opNorm2 Linv * frobNormRect ΔA * opNorm2 Uinv) /
+        (1 - opNorm2 Linv * opNorm2 ΔA * opNorm2 Uinv) :=
+  higham9_15_normwise_source_bound_of_factorization_min_factor_bound_opNorm_product_lt
+    A L U Linv Uinv ΔA ΔL ΔU hLU hPert hLleft hUright hXtri hYtri hmin
+    (opNorm2_nonneg Linv) (opNorm2_nonneg ΔA) (opNorm2_nonneg Uinv)
+    (opNorm2Le_opNorm2 Linv) (opNorm2Le_opNorm2 ΔA) (opNorm2Le_opNorm2 Uinv)
+    heta
 
 /-- **Theorem 9.15 support**, source-facing residual handoff from the original
 factorization equations plus a principal-block min-factor hypothesis.
@@ -23890,6 +24583,31 @@ theorem higham9_15_normwise_source_bound_of_Gtilde_normalized_linear_step_opNorm
     (higham9_27_GMatrix_opNorm2_lt_one_of_product_lt_one
       LhatInv ΔA UhatInv hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta)
     hlinear hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+
+/-- **Theorem 9.15**, exact-operator-norm specialization of the `Gtilde`
+normalized linear-step normwise wrapper. -/
+theorem higham9_15_normwise_source_bound_of_Gtilde_normalized_linear_step_opNorm_of_source_inverse_identities_exact_opNorm2
+    {n : ℕ} [Nonempty (Fin n)]
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hlinear :
+      max (frobNormRect (rectMatMul LhatInv ΔL))
+          (frobNormRect (rectMatMul ΔU UhatInv)) ≤
+        frobNormRect (higham9_27_GMatrix LhatInv ΔA UhatInv) +
+          opNorm2 (higham9_27_GMatrix LhatInv ΔA UhatInv) *
+            max (frobNormRect (rectMatMul LhatInv ΔL))
+              (frobNormRect (rectMatMul ΔU UhatInv)))
+    (heta : opNorm2 LhatInv * opNorm2 ΔA * opNorm2 UhatInv < 1) :
+    max (frobNormRect ΔL / opNorm2 Lhat)
+        (frobNormRect ΔU / opNorm2 Uhat) ≤
+      (opNorm2 LhatInv * frobNormRect ΔA * opNorm2 UhatInv) /
+        (1 - opNorm2 LhatInv * opNorm2 ΔA * opNorm2 UhatInv) :=
+  higham9_15_normwise_source_bound_of_Gtilde_normalized_linear_step_opNorm_of_source_inverse_identities_product_lt
+    Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hLleft hUright hlinear
+    (opNorm2_nonneg LhatInv) (opNorm2_nonneg ΔA) (opNorm2_nonneg UhatInv)
+    (opNorm2Le_opNorm2 LhatInv) (opNorm2Le_opNorm2 ΔA)
+    (opNorm2Le_opNorm2 UhatInv) heta
 
 /-- **Theorem 9.15**, printed-denominator normwise source bound from the
 componentwise `Gtilde` split plus a conditional min-factor control.
@@ -25376,6 +26094,38 @@ theorem higham9_15_normwise_source_bound_of_factorization_Gtilde_min_factor_boun
       (higham9_27_GMatrix_opNorm2_lt_one_of_product_lt_one
         LhatInv ΔA UhatInv hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta)
       hmin hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+
+/-- **Theorem 9.15**, exact-operator-norm source-facing `Gtilde` endpoint
+from the original signed factorization equations.
+
+The conditional min-factor control remains explicit; the denominator uses the
+actual operator 2-norms of `LhatInv`, `ΔA`, and `UhatInv`. -/
+theorem higham9_15_normwise_source_bound_of_factorization_Gtilde_min_factor_bound_opNorm_exact_opNorm2
+    {n : ℕ} [Nonempty (Fin n)]
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hmin :
+      min (frobNormRect (rectMatMul LhatInv ΔL))
+          (frobNormRect (rectMatMul ΔU UhatInv)) ≤
+        opNorm2 (higham9_27_GMatrix LhatInv ΔA UhatInv))
+    (heta : opNorm2 LhatInv * opNorm2 ΔA * opNorm2 UhatInv < 1) :
+    max (frobNormRect ΔL / opNorm2 Lhat)
+        (frobNormRect ΔU / opNorm2 Uhat) ≤
+      (opNorm2 LhatInv * frobNormRect ΔA * opNorm2 UhatInv) /
+        (1 - opNorm2 LhatInv * opNorm2 ΔA * opNorm2 UhatInv) :=
+  higham9_15_normwise_source_bound_of_factorization_Gtilde_min_factor_bound_opNorm_product_lt
+    A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hA hPert hLleft hUright
+    hXtri hYtri hmin
+    (opNorm2_nonneg LhatInv) (opNorm2_nonneg ΔA) (opNorm2_nonneg UhatInv)
+    (opNorm2Le_opNorm2 LhatInv) (opNorm2Le_opNorm2 ΔA)
+    (opNorm2Le_opNorm2 UhatInv) heta
 
 /-- **Theorem 9.15 support**, source-facing `Gtilde` residual handoff from
 the original signed factorization equations plus a principal-block min-factor
@@ -27526,6 +28276,451 @@ theorem higham9_15_componentwise_source_bound_of_factorization_Gtilde_local_majo
   exact
     higham9_15_componentwise_source_bound_of_Gtilde_split_local_majorant_of_source_inverse_identities
       Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hLleft hUright hfact hXtri hYtri
+
+/-- **Theorem 9.15**, first-order componentwise source wrapper for the
+normalized `G` split.
+
+The exact local majorant is split into the printed leading envelope involving
+`|G|` and an explicit `O(u²)` local-product envelope.  This formalizes the
+source's first-order reading without discarding the quadratic term. -/
+theorem higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_inverse_identities
+    {n : ℕ}
+    (u : ℝ)
+    (L U Linv Uinv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (hLright : rectMatMul L Linv = idMatrix n)
+    (hUleft : rectMatMul Uinv U = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hquadL :
+      ∀ i j : Fin n,
+        FirstOrderLe u 0
+          (rectMatMul (absMatrix n L)
+            (higham9_15_strilPart
+              (fun i j : Fin n =>
+                rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+                  (absMatrix n (rectMatMul ΔU Uinv)) i j)) i j))
+    (hquadU :
+      ∀ i j : Fin n,
+        FirstOrderLe u 0
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n =>
+                rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+                  (absMatrix n (rectMatMul ΔU Uinv)) i j))
+            (absMatrix n U) i j)) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|))
+            (absMatrix n U) i j)
+          |ΔU i j|) := by
+  let Gabs : Matrix (Fin n) (Fin n) ℝ :=
+    fun i j => |higham9_27_GMatrix Linv ΔA Uinv i j|
+  let Q : Matrix (Fin n) (Fin n) ℝ :=
+    fun i j =>
+      rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+        (absMatrix n (rectMatMul ΔU Uinv)) i j
+  have hlocal :=
+    higham9_15_componentwise_source_bound_of_G_split_local_majorant_of_inverse_identities
+      L U Linv Uinv ΔA ΔL ΔU hLright hUleft hfact hXtri hYtri
+  constructor
+  · intro i j
+    let leading : ℝ :=
+      rectMatMul (absMatrix n L) (higham9_15_strilPart Gabs) i j
+    let rem : ℝ :=
+      rectMatMul (absMatrix n L) (higham9_15_strilPart Q) i j
+    have hvalue : |ΔL i j| ≤ leading + rem := by
+      calc
+        |ΔL i j| ≤
+            rectMatMul (absMatrix n L) (higham9_15_strilPart (Gabs + Q)) i j := by
+              simpa [Gabs, Q] using hlocal.1 i j
+        _ = leading + rem := by
+              dsimp [leading, rem]
+              exact higham9_15_rectMatMul_strilPart_add_right
+                (absMatrix n L) Gabs Q i j
+    have hleading : FirstOrderLe u leading leading :=
+      FirstOrderLe.of_le le_rfl
+    have hrem : FirstOrderLe u 0 rem := by
+      simpa [rem, Q] using hquadL i j
+    have hsum := FirstOrderLe.add hleading hrem hvalue
+    simpa [leading, Gabs, zero_add] using hsum
+  · intro i j
+    let leading : ℝ :=
+      rectMatMul (higham9_15_triuPart Gabs) (absMatrix n U) i j
+    let rem : ℝ :=
+      rectMatMul (higham9_15_triuPart Q) (absMatrix n U) i j
+    have hvalue : |ΔU i j| ≤ leading + rem := by
+      calc
+        |ΔU i j| ≤
+            rectMatMul (higham9_15_triuPart (Gabs + Q)) (absMatrix n U) i j := by
+              simpa [Gabs, Q] using hlocal.2 i j
+        _ = leading + rem := by
+              dsimp [leading, rem]
+              exact higham9_15_rectMatMul_triuPart_add_left
+                Gabs Q (absMatrix n U) i j
+    have hleading : FirstOrderLe u leading leading :=
+      FirstOrderLe.of_le le_rfl
+    have hrem : FirstOrderLe u 0 rem := by
+      simpa [rem, Q] using hquadU i j
+    have hsum := FirstOrderLe.add hleading hrem hvalue
+    simpa [leading, Gabs, zero_add] using hsum
+
+/-- **Theorem 9.15**, first-order componentwise source wrapper for the
+componentwise `Gtilde` split. -/
+theorem higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_inverse_identities
+    {n : ℕ}
+    (u : ℝ)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix n)
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hquadL :
+      ∀ i j : Fin n,
+        FirstOrderLe u 0
+          (rectMatMul (absMatrix n Lhat)
+            (higham9_15_strilPart
+              (fun i j : Fin n =>
+                rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+                  (absMatrix n (rectMatMul ΔU UhatInv)) i j)) i j))
+    (hquadU :
+      ∀ i j : Fin n,
+        FirstOrderLe u 0
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n =>
+                rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+                  (absMatrix n (rectMatMul ΔU UhatInv)) i j))
+            (absMatrix n Uhat) i j)) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|))
+            (absMatrix n Uhat) i j)
+          |ΔU i j|) := by
+  let Gabs : Matrix (Fin n) (Fin n) ℝ :=
+    fun i j => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|
+  let Q : Matrix (Fin n) (Fin n) ℝ :=
+    fun i j =>
+      rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+        (absMatrix n (rectMatMul ΔU UhatInv)) i j
+  have hlocal :=
+    higham9_15_componentwise_source_bound_of_Gtilde_split_local_majorant_of_inverse_identities
+      Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU
+      hLright hUleft hfact hXtri hYtri
+  constructor
+  · intro i j
+    let leading : ℝ :=
+      rectMatMul (absMatrix n Lhat) (higham9_15_strilPart Gabs) i j
+    let rem : ℝ :=
+      rectMatMul (absMatrix n Lhat) (higham9_15_strilPart Q) i j
+    have hvalue : |ΔL i j| ≤ leading + rem := by
+      calc
+        |ΔL i j| ≤
+            rectMatMul (absMatrix n Lhat)
+              (higham9_15_strilPart (Gabs + Q)) i j := by
+              simpa [Gabs, Q] using hlocal.1 i j
+        _ = leading + rem := by
+              dsimp [leading, rem]
+              exact higham9_15_rectMatMul_strilPart_add_right
+                (absMatrix n Lhat) Gabs Q i j
+    have hleading : FirstOrderLe u leading leading :=
+      FirstOrderLe.of_le le_rfl
+    have hrem : FirstOrderLe u 0 rem := by
+      simpa [rem, Q] using hquadL i j
+    have hsum := FirstOrderLe.add hleading hrem hvalue
+    simpa [leading, Gabs, zero_add] using hsum
+  · intro i j
+    let leading : ℝ :=
+      rectMatMul (higham9_15_triuPart Gabs) (absMatrix n Uhat) i j
+    let rem : ℝ :=
+      rectMatMul (higham9_15_triuPart Q) (absMatrix n Uhat) i j
+    have hvalue : |ΔU i j| ≤ leading + rem := by
+      calc
+        |ΔU i j| ≤
+            rectMatMul (higham9_15_triuPart (Gabs + Q))
+              (absMatrix n Uhat) i j := by
+              simpa [Gabs, Q] using hlocal.2 i j
+        _ = leading + rem := by
+              dsimp [leading, rem]
+              exact higham9_15_rectMatMul_triuPart_add_left
+                Gabs Q (absMatrix n Uhat) i j
+    have hleading : FirstOrderLe u leading leading :=
+      FirstOrderLe.of_le le_rfl
+    have hrem : FirstOrderLe u 0 rem := by
+      simpa [rem, Q] using hquadU i j
+    have hsum := FirstOrderLe.add hleading hrem hvalue
+    simpa [leading, Gabs, zero_add] using hsum
+
+/-- **Theorem 9.15**, source-oriented inverse-identity form of the first-order
+componentwise `G` split wrapper. -/
+theorem higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_source_inverse_identities
+    {n : ℕ}
+    (u : ℝ)
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hquadL :
+      ∀ i j : Fin n,
+        FirstOrderLe u 0
+          (rectMatMul (absMatrix n L)
+            (higham9_15_strilPart
+              (fun i j : Fin n =>
+                rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+                  (absMatrix n (rectMatMul ΔU Uinv)) i j)) i j))
+    (hquadU :
+      ∀ i j : Fin n,
+        FirstOrderLe u 0
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n =>
+                rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+                  (absMatrix n (rectMatMul ΔU Uinv)) i j))
+            (absMatrix n U) i j)) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|))
+            (absMatrix n U) i j)
+          |ΔU i j|) :=
+  higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_inverse_identities
+    u L U Linv Uinv ΔA ΔL ΔU
+    (higham9_15_rectMatMul_right_inverse_of_matrix_left_inverse L Linv hLleft)
+    (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse U Uinv hUright)
+    hfact hXtri hYtri hquadL hquadU
+
+/-- **Theorem 9.15**, source-facing first-order componentwise endpoint from the
+original `G` factorization equations. -/
+theorem higham9_15_componentwise_source_firstOrder_of_factorization_G_local_majorant
+    {n : ℕ}
+    (u : ℝ)
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hquadL :
+      ∀ i j : Fin n,
+        FirstOrderLe u 0
+          (rectMatMul (absMatrix n L)
+            (higham9_15_strilPart
+              (fun i j : Fin n =>
+                rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+                  (absMatrix n (rectMatMul ΔU Uinv)) i j)) i j))
+    (hquadU :
+      ∀ i j : Fin n,
+        FirstOrderLe u 0
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n =>
+                rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+                  (absMatrix n (rectMatMul ΔU Uinv)) i j))
+            (absMatrix n U) i j)) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|))
+            (absMatrix n U) i j)
+          |ΔU i j|) := by
+  have hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)) := by
+    have h :=
+      higham9_15_normalized_G_factorization_matrix
+        A L U ΔA ΔL ΔU Linv Uinv hLU hPert hLleft hUright
+    simpa [higham9_27_GMatrix, rectMatMul, Matrix.mul_apply] using h.symm
+  exact
+    higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_source_inverse_identities
+      u L U Linv Uinv ΔA ΔL ΔU hLleft hUright hfact hXtri hYtri
+      hquadL hquadU
+
+/-- **Theorem 9.15**, source-oriented inverse-identity form of the first-order
+componentwise `Gtilde` split wrapper. -/
+theorem higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_source_inverse_identities
+    {n : ℕ}
+    (u : ℝ)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hquadL :
+      ∀ i j : Fin n,
+        FirstOrderLe u 0
+          (rectMatMul (absMatrix n Lhat)
+            (higham9_15_strilPart
+              (fun i j : Fin n =>
+                rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+                  (absMatrix n (rectMatMul ΔU UhatInv)) i j)) i j))
+    (hquadU :
+      ∀ i j : Fin n,
+        FirstOrderLe u 0
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n =>
+                rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+                  (absMatrix n (rectMatMul ΔU UhatInv)) i j))
+            (absMatrix n Uhat) i j)) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|))
+            (absMatrix n Uhat) i j)
+          |ΔU i j|) :=
+  higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_inverse_identities
+    u Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU
+    (higham9_15_rectMatMul_right_inverse_of_matrix_left_inverse
+      Lhat LhatInv hLleft)
+    (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse
+      Uhat UhatInv hUright)
+    hfact hXtri hYtri hquadL hquadU
+
+/-- **Theorem 9.15**, source-facing first-order componentwise endpoint from the
+original `Gtilde` factorization equations. -/
+theorem higham9_15_componentwise_source_firstOrder_of_factorization_Gtilde_local_majorant
+    {n : ℕ}
+    (u : ℝ)
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hquadL :
+      ∀ i j : Fin n,
+        FirstOrderLe u 0
+          (rectMatMul (absMatrix n Lhat)
+            (higham9_15_strilPart
+              (fun i j : Fin n =>
+                rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+                  (absMatrix n (rectMatMul ΔU UhatInv)) i j)) i j))
+    (hquadU :
+      ∀ i j : Fin n,
+        FirstOrderLe u 0
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n =>
+                rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+                  (absMatrix n (rectMatMul ΔU UhatInv)) i j))
+            (absMatrix n Uhat) i j)) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|))
+            (absMatrix n Uhat) i j)
+          |ΔU i j|) := by
+  have hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)) := by
+    have h :=
+      higham9_15_normalized_Gtilde_factorization_matrix
+        A Lhat Uhat ΔA ΔL ΔU LhatInv UhatInv hA hPert hLleft hUright
+    simpa [higham9_27_GMatrix, rectMatMul, Matrix.mul_apply] using h.symm
+  exact
+    higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_source_inverse_identities
+      u Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hLleft hUright hfact
+      hXtri hYtri hquadL hquadU
 
 /-! ## Appendix A, Problem 9.2 -/
 
@@ -30140,6 +31335,61 @@ theorem higham9_8_exists_completePivoting_growth_factor_ge_theta_real {n : ℕ}
         higham9_8_growth_factor_ge_theta_of_completePermutedLUFactSpec_right_inverse
           A A_inv L U sigma tau hLU hRight hA hAinv
 
+/-- **Theorem 9.8 support**, determinant nonsingularity makes the canonical
+`nonsingInv` have positive max-entry norm. -/
+theorem higham9_nonsingInv_maxEntryNorm_pos_of_det_ne_zero {n : ℕ}
+    (hn : 0 < n) (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    0 < maxEntryNorm hn (nonsingInv n A) := by
+  classical
+  have hinv_det :
+      Matrix.det (Matrix.of (nonsingInv n A) :
+          Matrix (Fin n) (Fin n) ℝ) =
+        (Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ))⁻¹ := by
+    unfold nonsingInv
+    letI : Inv (Matrix (Fin n) (Fin n) ℝ) := Matrix.inv
+    change
+      Matrix.det
+          ((Matrix.of A : Matrix (Fin n) (Fin n) ℝ)⁻¹) =
+        (Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ))⁻¹
+    rw [Matrix.det_nonsing_inv, Ring.inverse_eq_inv]
+  have hdetInv :
+      Matrix.det (Matrix.of (nonsingInv n A) :
+          Matrix (Fin n) (Fin n) ℝ) ≠ 0 := by
+    rw [hinv_det]
+    exact inv_ne_zero hdet
+  exact maxEntryNorm_pos_of_det_ne_zero hn (nonsingInv n A) (by
+    simpa using hdetInv)
+
+/-- **Theorem 9.8**, determinant-only real complete-pivoting lower-bound
+existence form.
+
+For every nonsingular real matrix, the canonical `nonsingInv` discharges the
+visible right-inverse and positive inverse-norm hypotheses in
+`higham9_8_exists_completePivoting_growth_factor_ge_theta_real`. -/
+theorem higham9_8_exists_completePivoting_growth_factor_ge_theta_nonsingInv {n : ℕ}
+    (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ hA : 0 < maxEntryNorm hn A,
+    ∃ _ : 0 < maxEntryNorm hn (nonsingInv n A),
+    ∃ L U : Fin n → Fin n → ℝ,
+    ∃ sigma tau : Fin n → Fin n,
+      higham9_2_CompletePermutedLUFactSpec n A L U sigma tau ∧
+        1 / (maxEntryNorm hn A * maxEntryNorm hn (nonsingInv n A)) ≤
+          growthFactorEntry hn A U hA := by
+  classical
+  have hA : 0 < maxEntryNorm hn A :=
+    maxEntryNorm_pos_of_det_ne_zero hn A hdet
+  have hAinv : 0 < maxEntryNorm hn (nonsingInv n A) :=
+    higham9_nonsingInv_maxEntryNorm_pos_of_det_ne_zero hn A hdet
+  have hRight : IsRightInverse n A (nonsingInv n A) :=
+    (isInverse_nonsingInv_of_det_ne_zero n A hdet).2
+  obtain ⟨L, U, sigma, tau, hLU, hbound⟩ :=
+    higham9_8_exists_completePivoting_growth_factor_ge_theta_real
+      hn A (nonsingInv n A) hdet hRight hA hAinv
+  exact ⟨hA, hAinv, L, U, sigma, tau, hLU, hbound⟩
+
 /-- **Problem 9.11**, the flattened sine block has an actual cumulative
 complete-pivoting certificate whose entrywise growth is at least `n + 1`.
 
@@ -32102,6 +33352,32 @@ theorem higham9_8_CompletePivotGECPUTrace_growth_factor_ge_theta_real {n : ℕ}
             growthFactorEntry (Nat.succ_pos m) A U hA' :=
         le_trans hcert' hgrowth_le'
       simpa using hfinal'
+
+/-- **Theorem 9.8 / Problem 9.11 bridge**, determinant-only recursive
+complete-pivoting trace lower bound.
+
+For a nonsingular input matrix and a supplied recursive complete-pivoting trace,
+the canonical `nonsingInv` discharges the right-inverse and positive
+inverse-norm hypotheses in the explicit-inverse trace theorem. -/
+theorem higham9_8_CompletePivotGECPUTrace_growth_factor_ge_theta_nonsingInv {n : ℕ}
+    (hn : 0 < n)
+    (A U : Fin n → Fin n → ℝ)
+    (htrace : higham9_8_CompletePivotGECPUTrace n A U)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ hA : 0 < maxEntryNorm hn A,
+    ∃ _ : 0 < maxEntryNorm hn (nonsingInv n A),
+      1 / (maxEntryNorm hn A * maxEntryNorm hn (nonsingInv n A)) ≤
+        growthFactorEntry hn A U hA := by
+  classical
+  have hA : 0 < maxEntryNorm hn A :=
+    maxEntryNorm_pos_of_det_ne_zero hn A hdet
+  have hAinv : 0 < maxEntryNorm hn (nonsingInv n A) :=
+    higham9_nonsingInv_maxEntryNorm_pos_of_det_ne_zero hn A hdet
+  have hRight : IsRightInverse n A (nonsingInv n A) :=
+    (isInverse_nonsingInv_of_det_ne_zero n A hdet).2
+  exact ⟨hA, hAinv,
+    higham9_8_CompletePivotGECPUTrace_growth_factor_ge_theta_real
+      hn A (nonsingInv n A) U htrace hRight hA hAinv⟩
 
 /-- **Problem 9.11**, the flattened sine block has an actual recursive
 complete-pivoting `U` trace whose entrywise growth is at least `n + 1`. -/
@@ -39741,6 +41017,34 @@ theorem higham9_8_checkerboardConjugate_nonsingInv_det_nonneg
   rw [higham9_8_checkerboardConjugate_det_eq]
   exact le_of_lt hinv_pos
 
+/-- **Problem 9.8 support**, the full determinant of the checkerboard
+conjugate of the nonsingular inverse is strictly positive. -/
+theorem higham9_8_checkerboardConjugate_nonsingInv_det_pos
+    {n : ℕ} {A : Fin n → Fin n → ℝ}
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdet :
+      Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    0 < Matrix.det
+      (Matrix.of (higham9_8_checkerboardConjugate (nonsingInv n A)) :
+        Matrix (Fin n) (Fin n) ℝ) := by
+  classical
+  have hdet_pos :
+      0 < Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) :=
+    higham9_6_totalNonnegative_det_pos_of_det_ne_zero hTN hdet
+  have hinv_det :
+      Matrix.det (Matrix.of (nonsingInv n A) :
+          Matrix (Fin n) (Fin n) ℝ) =
+        (Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ))⁻¹ := by
+    unfold nonsingInv
+    letI : Inv (Matrix (Fin n) (Fin n) ℝ) := Matrix.inv
+    change
+      Matrix.det
+          ((Matrix.of A : Matrix (Fin n) (Fin n) ℝ)⁻¹) =
+        (Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ))⁻¹
+    rw [Matrix.det_nonsing_inv, Ring.inverse_eq_inv]
+  rw [higham9_8_checkerboardConjugate_det_eq, hinv_det]
+  exact inv_pos.mpr hdet_pos
+
 /-- **Problem 9.8 support**, the full-order minor case of total
 nonnegativity for the checkerboard conjugate of the nonsingular inverse.  Any
 strictly increasing self-selection of `Fin n` is the identity, so this reduces
@@ -39764,6 +41068,20 @@ theorem higham9_8_checkerboardConjugate_nonsingInv_full_order_minor_nonneg
     higham9_8_strictMono_fin_self_eq_id hcols
   rw [hrows_id, hcols_id]
   exact higham9_8_checkerboardConjugate_nonsingInv_det_nonneg hTN hdet
+
+/-- **Problem 9.8**, predicate-level all-minor theorem: if `A` is nonsingular
+and totally nonnegative, then `J A^{-1} J` is totally nonnegative. -/
+theorem higham9_8_checkerboardConjugate_nonsingInv_totalNonnegative
+    {n : ℕ} {A : Fin n → Fin n → ℝ}
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdet :
+      Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate (nonsingInv n A)) := by
+  intro k rows cols hrows hcols
+  exact
+    higham9_8_checkerboardConjugate_nonsingInv_minor_nonneg
+      hTN hdet hrows hcols
 
 /-- **Problem 9.8**, if `J A J = L U`, then the checkerboard-conjugated
 factors multiply back to `A`. -/
@@ -39925,5 +41243,109 @@ theorem higham9_8_abs_lu_product_eq_abs_of_checkerboard_principalBlock_inequalit
   exact
     higham9_6_leadingPrincipalBlock_det_pos_of_determinantal_inequality
       hTNJ (Nat.le_of_lt hk) hdetJ (hineqJ k hk hk0)
+
+/-- **Problem 9.8**, source-facing nonsingular-inverse checkerboard route.
+
+For a nonsingular totally nonnegative `A`, the proved inverse-minor theorem
+supplies total nonnegativity of `J A^{-1} J`; positive leading principal
+blocks for that checkerboard conjugate then give the LU and `|L||U| = |A^{-1}|`
+conclusion through the Problem 9.6 nonnegative-LU route. -/
+theorem higham9_8_abs_lu_product_eq_abs_of_nonsingInv_checkerboard_pos
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdet :
+      Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hleadJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        0 < Matrix.det
+          (higham9_2_leadingPrincipalBlock
+            (Matrix.of
+              (higham9_8_checkerboardConjugate (nonsingInv n A)) :
+              Matrix (Fin n) (Fin n) ℝ) k)) :
+    ∃ L U : Fin n → Fin n → ℝ,
+      LUFactSpec n (nonsingInv n A)
+        (higham9_8_checkerboardConjugate L)
+        (higham9_8_checkerboardConjugate U) ∧
+      (∀ i j : Fin n,
+        ∑ k : Fin n,
+          |higham9_8_checkerboardConjugate L i k| *
+            |higham9_8_checkerboardConjugate U k j| =
+              |nonsingInv n A i j|) :=
+  higham9_8_abs_lu_product_eq_abs_of_checkerboard_totalNonnegative_and_pos
+    (nonsingInv n A)
+    (higham9_8_checkerboardConjugate_nonsingInv_totalNonnegative hTN hdet)
+    (higham9_8_checkerboardConjugate_nonsingInv_det_pos hTN hdet)
+    hleadJ
+
+/-- **Problem 9.8**, source-facing nonsingular-inverse route with the
+principal-block determinant inequalities exposed. -/
+theorem higham9_8_abs_lu_product_eq_abs_of_nonsingInv_principalBlock_inequalities
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdet :
+      Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hineqJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        Matrix.det
+            (Matrix.of
+              (higham9_8_checkerboardConjugate (nonsingInv n A)) :
+              Matrix (Fin n) (Fin n) ℝ) ≤
+          Matrix.det
+              (higham9_2_leadingPrincipalBlock
+                (Matrix.of
+                  (higham9_8_checkerboardConjugate (nonsingInv n A)) :
+                  Matrix (Fin n) (Fin n) ℝ) k) *
+            Matrix.det
+              (higham9_6_trailingPrincipalBlock
+                (Matrix.of
+                  (higham9_8_checkerboardConjugate (nonsingInv n A)) :
+                  Matrix (Fin n) (Fin n) ℝ) k)) :
+    ∃ L U : Fin n → Fin n → ℝ,
+      LUFactSpec n (nonsingInv n A)
+        (higham9_8_checkerboardConjugate L)
+        (higham9_8_checkerboardConjugate U) ∧
+      (∀ i j : Fin n,
+        ∑ k : Fin n,
+          |higham9_8_checkerboardConjugate L i k| *
+            |higham9_8_checkerboardConjugate U k j| =
+              |nonsingInv n A i j|) :=
+  higham9_8_abs_lu_product_eq_abs_of_checkerboard_principalBlock_inequalities
+    (nonsingInv n A)
+    (higham9_8_checkerboardConjugate_nonsingInv_totalNonnegative hTN hdet)
+    (higham9_8_checkerboardConjugate_nonsingInv_det_pos hTN hdet)
+    hineqJ
+
+/-- **Problem 9.8**, fully source-facing nonsingular-inverse route.
+
+If `A` is nonsingular and totally nonnegative, then the checkerboard-conjugated
+nonsingular inverse `J A^{-1} J` is totally nonnegative, its principal-block
+determinant inequalities follow from Problem 9.6, and the nonnegative-LU route
+gives exact factors for `A^{-1}` with `|J L J| |J U J| = |A^{-1}|`. -/
+theorem higham9_8_abs_lu_product_eq_abs_of_nonsingInv_totalNonnegative
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdet :
+      Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ L U : Fin n → Fin n → ℝ,
+      LUFactSpec n (nonsingInv n A)
+        (higham9_8_checkerboardConjugate L)
+        (higham9_8_checkerboardConjugate U) ∧
+      (∀ i j : Fin n,
+        ∑ k : Fin n,
+          |higham9_8_checkerboardConjugate L i k| *
+            |higham9_8_checkerboardConjugate U k j| =
+              |nonsingInv n A i j|) := by
+  let JinvA : Fin n → Fin n → ℝ :=
+    higham9_8_checkerboardConjugate (nonsingInv n A)
+  have hTNJ : higham9_6_IsTotallyNonnegative JinvA :=
+    higham9_8_checkerboardConjugate_nonsingInv_totalNonnegative hTN hdet
+  exact
+    higham9_8_abs_lu_product_eq_abs_of_nonsingInv_principalBlock_inequalities
+      A hTN hdet
+      (by
+        intro k hk _hk0
+        simpa [JinvA] using
+          higham9_6_principalBlock_determinantal_inequality_of_totalNonnegative
+            n JinvA hTNJ k (Nat.le_of_lt hk))
 
 end LeanFpAnalysis.FP

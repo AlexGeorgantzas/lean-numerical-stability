@@ -20,6 +20,29 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-06-29 matrix-`∞` source-table max-entry composition checkpoint:
+  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockMaxNorm_bound_with_card_of_continuousLinearMap_source_table`,
+  `higham13_algorithm13_3_matrix_infNorm_matrixStageHistoryGrowthFactor_le_card_of_continuousLinearMap_source_table`,
+  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table`,
+  and the corresponding `_of_pivot_right_inverse` variants now compose the
+  matrix-`∞` continuous-linear source-table route directly into the max-entry
+  upper-factor and finite-history growth APIs.  The endpoint remains
+  dimension-aware (`2*r*blockMaxNorm(A)` and `growthFactorEntry <= 2*r`), so
+  the source-strength Eq.13.21/`rho <= 2` branch remains open.  The
+  `_of_det_ne_zero` paired variants, including the initial-diagonal/right-inverse
+  specialization, derive the positive growth-factor denominator from
+  `det(blockMatrixFlatFin A) != 0` while keeping the same dimension-aware
+  endpoint.
+- 2026-06-29 matrix-`∞` max-entry transfer checkpoint:
+  `higham13_algorithm13_3_matrix_infNorm_block_le_card_mul_blockMaxNorm`,
+  `higham13_algorithm13_3_matrix_infNorm_active_stage_maxEntry_bound`, and the
+  `higham13_algorithm13_3_matrix_infNorm_*upperFromMatrixStages*` /
+  `*matrixStageHistoryGrowth*` wrappers now route matrix-`∞` active-stage
+  bounds into the Chapter 13 max-entry upper-factor and finite-history growth
+  APIs. The resulting endpoint is dimension-aware
+  `upperFromMatrixStages <= 2*r*blockMaxNorm(A)` and
+  `growthFactorEntry <= 2*r`; the source-strength Eq.13.21/`rho <= 2`
+  branch remains open.
 - Existing `BlockLU.lean` was already Chapter-13-shaped but mislabeled as
   Chapter 12. Its labels were corrected to Higham Chapter 13, and it now exposes
   source-facing first-order bound vocabulary for equations (13.4)--(13.6) and
@@ -9712,3 +9735,62 @@ These compile, but should not be treated as fully derived stability results:
   initial lower table, exact active pivot inverse identities, entrywise
   max-norm Eq.13.21 transfer, and BDD nonsingularity/block-LU existence
   endpoints remain open.
+
+- 2026-06-29 Algorithm 13.3 BDD matrix-infinity CLM right-inverse wrappers:
+  added `matrixMulVecCLM_right_inverse_of_isRightInverse` and
+  `matrixMulVecCLM_left_inverse_of_isRightInverse` in `MatrixAlgebra.lean`,
+  plus the `_of_pivot_right_inverse` matrix-`∞` CLM source-table wrappers for
+  `diagLowerCertGeneric` diagonal-lower, direct pivot-product, active column
+  dominance, and active-stage `2 * normMax` bounds in `BlockLU.lean`.  These
+  derive the exact CLM action identities from the repository's matrix
+  `IsRightInverse` pivot certificates.  The BDD source row still remains open
+  for the initial source lower table/source reciprocal data, entrywise
+  max-norm Eq.13.21 transfer, and BDD nonsingularity/block-LU existence
+  endpoint.
+
+- 2026-06-29 Algorithm 13.3 BDD matrix-infinity initial lower-table wrappers:
+  added
+  `higham13_algorithm13_3_matrix_infNorm_initial_lower_table_of_diag_right_inverse`,
+  `higham13_algorithm13_3_matrix_infNorm_initial_diag_bound_of_diag_right_inverse`,
+  and downstream `_of_initial_diag_right_inverse_of_pivot_right_inverse`
+  wrappers for `diagLowerCertGeneric` diagonal-lower, active pivot-product,
+  active column dominance, and active-stage `2 * normMax` bounds in
+  `BlockLU.lean`.  These derive the stage-zero lower-norm table and initial
+  diagonal comparison from per-diagonal right-inverse certificates plus
+  reciprocal norm bounds.  The BDD source row remains open for deriving those
+  reciprocal data and the active-pivot/source bridge from the source BDD
+  hypotheses, then connecting the matrix-`∞` surface to Eq.13.21/max-entry and
+  block-LU existence endpoints.
+
+- 2026-06-29 Algorithm 13.3 BDD actual CLM source-table wrappers:
+  added
+  `higham13_algorithm13_3_clm_diagLowerCertGeneric_diag_lower_of_continuousLinearMap_source_table`,
+  `higham13_algorithm13_3_clm_diagLowerCertGeneric_pivot_bound_of_continuousLinearMap_source_table`,
+  `higham13_algorithm13_3_clm_initial_lower_table_of_diag_inverse`,
+  `higham13_algorithm13_3_clm_initial_diag_bound_of_diag_inverse`, and the
+  downstream `_of_initial_diag_inverse_of_pivot_inverse` wrappers in
+  `BlockLU.lean`.  These instantiate the generic continuous-linear source-table
+  theorem for the actual Algorithm 13.3 Schur-stage recurrence on CLM blocks,
+  deriving the Schur update from
+  `higham13_algorithm13_3_schurStageBlock_exact_update`, and build the
+  stage-zero lower table plus initial diagonal comparison from two-sided
+  diagonal inverse data.  This removes one more abstract-table alignment layer
+  for arbitrary subordinate CLM norms; the BDD source row remains open for
+  deriving the reciprocal/inverse data from block diagonal dominance and for
+  the source-strength max-entry Eq.13.21/`rho <= 2` endpoint.
+
+- 2026-06-29 Algorithm 13.3 BDD actual CLM active-stage wrappers:
+  added
+  `higham13_algorithm13_3_clm_active_column_dominance_of_continuousLinearMap_source_table`,
+  `higham13_algorithm13_3_clm_active_stage_bound_of_continuousLinearMap_source_table`,
+  `higham13_algorithm13_3_clm_active_column_dominance_of_initial_diag_inverse_of_pivot_inverse`,
+  and
+  `higham13_algorithm13_3_clm_active_stage_bound_of_initial_diag_inverse_of_pivot_inverse`
+  in `BlockLU.lean`.  These route the actual CLM source-table/pivot-product
+  certificate through the Theorem 13.7 active-column and Theorem 13.8
+  active-stage `2 * normMax` interfaces, with the initial-inverse variants also
+  deriving the stage-zero lower table and initial diagonal comparison from
+  two-sided diagonal inverse data.  This is source-facing CLM downstream
+  packaging; the printed BDD row remains open for deriving the reciprocal data
+  from the BDD hypotheses and for the source-strength entrywise max-norm
+  Eq.13.21/`rho <= 2` endpoint.

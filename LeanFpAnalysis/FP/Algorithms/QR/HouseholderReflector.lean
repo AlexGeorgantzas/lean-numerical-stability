@@ -757,6 +757,30 @@ noncomputable def fl_householderNormalizedVector (fp : FPModel)
     (fl_householderVector fp hn x)
     (fl_householderBeta fp hn x)
 
+/-- Tail entries of the analysis-only normalized computed Householder vector.
+
+The normalized vector is `sqrt(beta_hat) * v_hat`; since the rounded
+Householder vector copies all tail entries of the active vector exactly, its
+normalized tail is the same common scale times the input tail. -/
+theorem fl_householderNormalizedVector_tail (fp : FPModel)
+    {n : ℕ} (hn : 0 < n) (x : Fin n → ℝ) (i : Fin n)
+    (hi : i ≠ ⟨0, hn⟩) :
+    fl_householderNormalizedVector fp hn x i =
+      Real.sqrt (fl_householderBeta fp hn x) * x i := by
+  rw [fl_householderNormalizedVector, householderNormalizedVector,
+    fl_householderVector_tail fp hn x i hi]
+
+/-- Successor-index form of `fl_householderNormalizedVector_tail`. -/
+theorem fl_householderNormalizedVector_succ (fp : FPModel)
+    {n : ℕ} (x : Fin (n + 1) → ℝ) (i : Fin n) :
+    fl_householderNormalizedVector fp (Nat.succ_pos n) x i.succ =
+      Real.sqrt (fl_householderBeta fp (Nat.succ_pos n) x) * x i.succ := by
+  have hi : i.succ ≠ (⟨0, Nat.succ_pos n⟩ : Fin (n + 1)) := by
+    intro h
+    have hv := congrArg Fin.val h
+    simp at hv
+  exact fl_householderNormalizedVector_tail fp (Nat.succ_pos n) x i.succ hi
+
 /-- Componentwise relative-error form for the vector part of
     `HouseholderConstructionError`. -/
 theorem householderConstruction_vector_component_relative_error
