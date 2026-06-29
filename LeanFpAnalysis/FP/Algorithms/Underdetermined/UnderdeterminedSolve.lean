@@ -248,6 +248,70 @@ theorem higham21_thm21_3_etaF_zero
       exact undetNormwiseBackwardErrorCostF_ge_theta_vecNorm_of_zero_feasible
         htheta A b DeltaA Deltab hfeas
 
+/-- Higham, 2nd ed., Chapter 21, Section 21.2, Theorem 21.3:
+    residual for an approximate underdetermined solution, using the source
+    sign convention `r = b - A y`. -/
+noncomputable def undetResidualHigham {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    Fin m → ℝ :=
+  fun i => b i - rectMatMulVec A y i
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.2, Theorem 21.3:
+    source-facing model of `I - y y^+` in the nonzero-`y` branch.  This reuses
+    the Chapter 20 rank-one complement-projector infrastructure. -/
+noncomputable abbrev undetApproxComplementProjector {n : ℕ}
+    (y : Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  lsResidualComplementProjector y
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.2, Theorem 21.3:
+    source matrix `A(I - y y^+)` appearing in the nonzero Sun--Sun formula. -/
+noncomputable def undetNormwiseBackwardErrorFormulaMatrix {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (y : Fin n → ℝ) :
+    Fin m → Fin n → ℝ :=
+  rectMatMul A (undetApproxComplementProjector y)
+
+/-- Entry expansion of the Chapter 21 source matrix `A(I - y y^+)`. -/
+theorem undetNormwiseBackwardErrorFormulaMatrix_apply {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (y : Fin n → ℝ) (i : Fin m) (j : Fin n) :
+    undetNormwiseBackwardErrorFormulaMatrix A y i j =
+      ∑ k : Fin n, A i k *
+        (idMatrix n k j - y k * y j / vecNorm2Sq y) := by
+  rfl
+
+/-- Applying the Chapter 21 source matrix `A(I - y y^+)` is the same as first
+    projecting with `I - y y^+`, then applying `A`. -/
+theorem undetNormwiseBackwardErrorFormulaMatrix_mulVec_eq {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (y x : Fin n → ℝ) :
+    rectMatMulVec (undetNormwiseBackwardErrorFormulaMatrix A y) x =
+      rectMatMulVec A (rectMatMulVec (undetApproxComplementProjector y) x) := by
+  rw [undetNormwiseBackwardErrorFormulaMatrix, rectMatMulVec_rectMatMul]
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.2, Theorem 21.3:
+    the source matrix `A(I - y y^+)` annihilates the nonzero candidate
+    direction `y`. -/
+theorem higham21_thm21_3_formulaMatrix_mulVec_candidate_eq_zero
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) (y : Fin n → ℝ)
+    (hysq : vecNorm2Sq y ≠ 0) :
+    rectMatMulVec (undetNormwiseBackwardErrorFormulaMatrix A y) y = 0 := by
+  have hcomp : rectMatMulVec (undetApproxComplementProjector y) y = 0 := by
+    simpa [undetApproxComplementProjector, rectMatMulVec, matMulVec] using
+      (lsResidualComplementProjector_mulVec_residual y hysq)
+  rw [undetNormwiseBackwardErrorFormulaMatrix_mulVec_eq A y y, hcomp]
+  ext i
+  simp [rectMatMulVec]
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.2, Theorem 21.3:
+    scalar right-hand side of the nonzero Sun--Sun formula, parameterized by
+    the smallest singular value of `A(I - y y^+)`.  Proving that this equals
+    `eta_F(y)` remains the open singular-value branch. -/
+noncomputable def undetNormwiseBackwardErrorNonzeroFormulaRHS {m n : ℕ}
+    (theta : ℝ) (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (y : Fin n → ℝ) (sigma : ℝ) : ℝ :=
+  Real.sqrt
+    (theta ^ 2 * vecNorm2Sq y / (1 + theta ^ 2 * vecNorm2Sq y) *
+        (vecNorm2Sq (undetResidualHigham A b y) / vecNorm2Sq y) +
+      sigma ^ 2)
+
 -- ============================================================
 -- §21.3  Theorem 21.4: Q method backward stability
 -- ============================================================
