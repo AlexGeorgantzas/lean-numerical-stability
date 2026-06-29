@@ -10998,6 +10998,101 @@ private theorem complexMatrixEuclideanLin_ker_eq_bot_of_rank_eq_card
   by_contra hz_ne
   exact complexMatrixRank_ne_card_of_euclideanLin_ker_nonzero A hz hz_ne hrank
 
+/-- Full source column rank of the real rectangular least-squares matrix makes
+    the real column-map kernel trivial. -/
+theorem lsRealRectColRank_rectMatMulVec_eq_zero_of_colRank_eq_card {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (hrank : lsRealRectColRank A = n)
+    {x : Fin n → ℝ} (hx : rectMatMulVec A x = 0) :
+    x = 0 := by
+  have hker_bot :
+      LinearMap.ker (complexMatrixEuclideanLin (realRectToCMatrix A)) = ⊥ :=
+    complexMatrixEuclideanLin_ker_eq_bot_of_rank_eq_card
+      (realRectToCMatrix A) (by simpa [lsRealRectColRank] using hrank)
+  have hxker :
+      complexMatrixEuclideanLin (realRectToCMatrix A) (realVecToEuclidean x) = 0 := by
+    apply norm_eq_zero.mp
+    rw [realRectToCMatrix_euclideanLin_realVecToEuclidean_norm, hx]
+    exact vecNorm2_zero
+  have hxmem :
+      realVecToEuclidean x ∈
+        LinearMap.ker (complexMatrixEuclideanLin (realRectToCMatrix A)) := by
+    simpa [LinearMap.mem_ker] using hxker
+  have hxE_zero : realVecToEuclidean x = 0 := by
+    have hxbot :
+        realVecToEuclidean x ∈
+          (⊥ : Submodule ℂ (EuclideanSpace ℂ (Fin n))) := by
+      simpa [hker_bot] using hxmem
+    simpa using hxbot
+  have hre := congrArg euclideanReVec hxE_zero
+  simpa using hre
+
+/-- Full source column rank of the real rectangular least-squares matrix makes
+    the real matrix-vector action injective. -/
+theorem lsRealRectColRank_rectMatMulVec_injective_of_colRank_eq_card {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (hrank : lsRealRectColRank A = n) :
+    Function.Injective (rectMatMulVec A) := by
+  intro x y hxy
+  have hdiff : rectMatMulVec A (fun j : Fin n => x j - y j) = 0 := by
+    ext i
+    have hi := congrFun hxy i
+    calc
+      ∑ j : Fin n, A i j * (x j - y j)
+          = ∑ j : Fin n, (A i j * x j - A i j * y j) := by
+            apply Finset.sum_congr rfl
+            intro j _
+            ring
+      _ = (∑ j : Fin n, A i j * x j) -
+              ∑ j : Fin n, A i j * y j := by
+            rw [Finset.sum_sub_distrib]
+      _ = 0 := by
+            simpa [rectMatMulVec] using sub_eq_zero.mpr hi
+  have hzero :=
+    lsRealRectColRank_rectMatMulVec_eq_zero_of_colRank_eq_card
+      A hrank hdiff
+  ext j
+  exact sub_eq_zero.mp (congrFun hzero j)
+
+/-- Higham, 2nd ed., Chapter 20, equations (20.18)-(20.19):
+    source-rank version of the real right-Gram branch handoff.  Full source
+    column rank supplies the real column-map injectivity used by the constructed
+    right-Gram singular branches and left-nullspace tail. -/
+theorem
+    exists_lsScaledAugmentedMatrix_kappa2_bounds_of_rightGram_basis_of_colRank_eq_card
+    {m n : ℕ} [Nonempty (Fin n)] (hmn : n ≤ m)
+    {alpha : ℝ} {A : Fin m → Fin n → ℝ}
+    (hrank : lsRealRectColRank A = n)
+    (halpha :
+      alpha = lsScaledAugmentedBranchSigmaMin
+        (rectRightGramBasisSingularValue A) / Real.sqrt 2) :
+    ∃ w : Fin (m - n) → Fin m → ℝ,
+      (∀ k : Fin (m - n), vecNorm2Sq (w k) = 1) ∧
+        (∀ k l : Fin (m - n),
+          k ≠ l → (∑ r : Fin m, w k r * w l r) = 0) ∧
+        (∀ k : Fin (m - n), ∀ j : Fin n,
+          ∑ r : Fin m, A r j * w k r = 0) ∧
+        Real.sqrt 2 *
+              (lsScaledAugmentedBranchSigmaMax (rectRightGramBasisSingularValue A) /
+                lsScaledAugmentedBranchSigmaMin (rectRightGramBasisSingularValue A)) ≤
+            kappa2 (lsScaledAugmentedMatrix alpha A)
+              (lsScaledAugmentedSourceBranchInverseCandidate hmn alpha
+                (rectRightGramBasisSingularValue A)
+                (fun a r => rectRightGramLeftSingularFromEigenbasis A r a)
+                (fun a j => rectRightGramEigenbasis A j a) w) ∧
+          kappa2 (lsScaledAugmentedMatrix alpha A)
+              (lsScaledAugmentedSourceBranchInverseCandidate hmn alpha
+                (rectRightGramBasisSingularValue A)
+                (fun a r => rectRightGramLeftSingularFromEigenbasis A r a)
+                (fun a j => rectRightGramEigenbasis A j a) w) ≤
+            2 *
+              (lsScaledAugmentedBranchSigmaMax (rectRightGramBasisSingularValue A) /
+                lsScaledAugmentedBranchSigmaMin (rectRightGramBasisSingularValue A)) := by
+  exact
+    exists_lsScaledAugmentedMatrix_kappa2_bounds_of_rightGram_basis_of_rectMatMulVec_injective
+      (m := m) (n := n) hmn
+      (A := A) (alpha := alpha)
+      (lsRealRectColRank_rectMatMulVec_injective_of_colRank_eq_card A hrank)
+      halpha
+
 /-- A nonzero vector annihilating every column of a real rectangular matrix
     rules out full row rank of the row-side complexified transpose. -/
 theorem lsRealRectRowRank_ne_card_of_leftNull {m n : ℕ}
