@@ -9912,3 +9912,14 @@ These compile, but should not be treated as fully derived stability results:
   matrix-`∞` route with explicit comparison loss `r`, proving
   `growthFactorEntry <= 2*r` rather than the printed dimension-free
   Eq.13.23 `rho <= 2` source row.
+
+- 2026-06-29 Algorithm 13.3 BDD canonical diagonal-inverse wrappers:
+  added the `_of_nonsingInv_diag_of_pivot_right_inverse` family in
+  `BlockLU.lean`, specializing the matrix-`∞` reciprocal-table route further
+  to the repository canonical inverse `nonsingInv r (A j j)` under
+  per-diagonal determinant nonzero hypotheses.  These remove the explicit
+  `diagInv` object and diagonal right-inverse hypothesis from the active-stage,
+  `blockInfNorm`, finite-history, and dimension-aware max-entry/growth-factor
+  packages.  The active pivot right-inverse data and the explicit comparison
+  loss `r` remain; this still does not close the printed dimension-free
+  Eq.13.21/Eq.13.23 source endpoint.

@@ -20731,6 +20731,172 @@ theorem
     higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_reciprocal_diag_right_inverse_of_pivot_right_inverse
       hm hr hunit A pivotInv hApos diagInv hDom hDiagRight hPivotRight
 
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and Theorem 13.8:
+    matrix-`∞` active-stage bound using the canonical `nonsingInv` of each
+    initial diagonal block.
+
+    This is the determinant-nonzero diagonal-block specialization of
+    `higham13_algorithm13_3_matrix_infNorm_active_stage_bound_of_reciprocal_diag_right_inverse_of_pivot_right_inverse`.
+    It removes the explicit diagonal inverse object from the reciprocal-table
+    route, but still leaves the active pivot right-inverse data explicit. -/
+theorem
+    higham13_algorithm13_3_matrix_infNorm_active_stage_bound_of_nonsingInv_diag_of_pivot_right_inverse
+    {m r : ℕ}
+    (hunit : ({x : Fin r → ℝ | ‖x‖ = 1} : Set (Fin r → ℝ)).Nonempty)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hDiagDet : ∀ j : Fin m, Matrix.det (A j j) ≠ 0)
+    (hDom : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j))
+      (fun j : Fin m => (infNorm (nonsingInv r (A j j)))⁻¹))
+    (hPivotRight : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k))
+    (normMax : ℝ)
+    (hMax : ∀ i j : Fin m, infNorm (A i j) ≤ normMax)
+    (k : ℕ) (i j : Fin m) (hik : k ≤ i.val) (hjk : k ≤ j.val) :
+    infNorm (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j) ≤
+      2 * normMax := by
+  have hDiagRight :
+      ∀ j : Fin m, IsRightInverse r (A j j) (nonsingInv r (A j j)) := by
+    intro j
+    exact (isInverse_nonsingInv_of_det_ne_zero r (A j j) (hDiagDet j)).2
+  exact
+    higham13_algorithm13_3_matrix_infNorm_active_stage_bound_of_reciprocal_diag_right_inverse_of_pivot_right_inverse
+      hunit A pivotInv (fun j : Fin m => nonsingInv r (A j j))
+      hDom hDiagRight hPivotRight normMax hMax k i j hik hjk
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equation (13.21):
+    matrix-`∞` upper-factor endpoint using canonical initial diagonal
+    `nonsingInv` blocks. -/
+theorem
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockInfNorm_bound_of_nonsingInv_diag_of_pivot_right_inverse
+    {m r : ℕ} (hm : 0 < m)
+    (hunit : ({x : Fin r → ℝ | ‖x‖ = 1} : Set (Fin r → ℝ)).Nonempty)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hDiagDet : ∀ j : Fin m, Matrix.det (A j j) ≠ 0)
+    (hDom : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j))
+      (fun j : Fin m => (infNorm (nonsingInv r (A j j)))⁻¹))
+    (hPivotRight : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k)) :
+    blockInfNorm hm (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) ≤
+      2 * blockInfNorm hm A := by
+  have hDiagRight :
+      ∀ j : Fin m, IsRightInverse r (A j j) (nonsingInv r (A j j)) := by
+    intro j
+    exact (isInverse_nonsingInv_of_det_ne_zero r (A j j) (hDiagDet j)).2
+  exact
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockInfNorm_bound_of_reciprocal_diag_right_inverse_of_pivot_right_inverse
+      hm hunit A pivotInv (fun j : Fin m => nonsingInv r (A j j))
+      hDom hDiagRight hPivotRight
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equation (13.23):
+    finite matrix-stage-history matrix-`∞` endpoint using canonical initial
+    diagonal `nonsingInv` blocks. -/
+theorem
+    higham13_algorithm13_3_matrix_infNorm_matrixStageHistoryInfBound_le_of_nonsingInv_diag_of_pivot_right_inverse
+    {m r : ℕ} (hm : 0 < m)
+    (hunit : ({x : Fin r → ℝ | ‖x‖ = 1} : Set (Fin r → ℝ)).Nonempty)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hDiagDet : ∀ j : Fin m, Matrix.det (A j j) ≠ 0)
+    (hDom : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j))
+      (fun j : Fin m => (infNorm (nonsingInv r (A j j)))⁻¹))
+    (hPivotRight : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k)) :
+    higham13_algorithm13_3_matrixStageHistoryInfBound hm A pivotInv ≤
+      2 * blockInfNorm hm A := by
+  have hDiagRight :
+      ∀ j : Fin m, IsRightInverse r (A j j) (nonsingInv r (A j j)) := by
+    intro j
+    exact (isInverse_nonsingInv_of_det_ne_zero r (A j j) (hDiagDet j)).2
+  exact
+    higham13_algorithm13_3_matrix_infNorm_matrixStageHistoryInfBound_le_of_reciprocal_diag_right_inverse_of_pivot_right_inverse
+      hm hunit A pivotInv (fun j : Fin m => nonsingInv r (A j j))
+      hDom hDiagRight hPivotRight
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
+    dimension-aware max-entry package using canonical initial diagonal
+    `nonsingInv` blocks.
+
+    This removes explicit diagonal inverse witnesses from the matrix-`∞`
+    reciprocal-table package, while retaining the dimension-aware
+    `growthFactorEntry <= 2*r` conclusion. -/
+theorem
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_nonsingInv_diag_of_pivot_right_inverse
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (hunit : ({x : Fin r → ℝ | ‖x‖ = 1} : Set (Fin r → ℝ)).Nonempty)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hApos : 0 < maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin A))
+    (hDiagDet : ∀ j : Fin m, Matrix.det (A j j) ≠ 0)
+    (hDom : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j))
+      (fun j : Fin m => (infNorm (nonsingInv r (A j j)))⁻¹))
+    (hPivotRight : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k)) :
+    blockMaxNorm hm hr (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) ≤
+        2 * ((r : ℝ) * blockMaxNorm hm hr A) ∧
+      growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            (Nat.mul_pos hm hr) hm hr A pivotInv) hApos ≤
+        2 * (r : ℝ) := by
+  have hDiagRight :
+      ∀ j : Fin m, IsRightInverse r (A j j) (nonsingInv r (A j j)) := by
+    intro j
+    exact (isInverse_nonsingInv_of_det_ne_zero r (A j j) (hDiagDet j)).2
+  exact
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_reciprocal_diag_right_inverse_of_pivot_right_inverse
+      hm hr hunit A pivotInv hApos (fun j : Fin m => nonsingInv r (A j j))
+      hDom hDiagRight hPivotRight
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
+    determinant-nonzero growth-denominator form of the canonical diagonal
+    `nonsingInv` matrix-`∞` package. -/
+theorem
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_nonsingInv_diag_of_pivot_right_inverse_of_det_ne_zero
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (hunit : ({x : Fin r → ℝ | ‖x‖ = 1} : Set (Fin r → ℝ)).Nonempty)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hDiagDet : ∀ j : Fin m, Matrix.det (A j j) ≠ 0)
+    (hdet :
+      Matrix.det (blockMatrixFlatFin A :
+        Matrix (Fin (m * r)) (Fin (m * r)) ℝ) ≠ 0)
+    (hDom : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j))
+      (fun j : Fin m => (infNorm (nonsingInv r (A j j)))⁻¹))
+    (hPivotRight : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k)) :
+    blockMaxNorm hm hr (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) ≤
+        2 * ((r : ℝ) * blockMaxNorm hm hr A) ∧
+      growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            (Nat.mul_pos hm hr) hm hr A pivotInv)
+          (maxEntryNorm_pos_of_det_ne_zero
+            (Nat.mul_pos hm hr) (blockMatrixFlatFin A) hdet) ≤
+        2 * (r : ℝ) := by
+  have hDiagRight :
+      ∀ j : Fin m, IsRightInverse r (A j j) (nonsingInv r (A j j)) := by
+    intro j
+    exact (isInverse_nonsingInv_of_det_ne_zero r (A j j) (hDiagDet j)).2
+  exact
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_reciprocal_diag_right_inverse_of_pivot_right_inverse_of_det_ne_zero
+      hm hr hunit A pivotInv (fun j : Fin m => nonsingInv r (A j j))
+      hdet hDom hDiagRight hPivotRight
+
 /-- Higham, 2nd ed., Chapter 13, Problem 13.4:
     max-entry-norm product bridge for the lower-left solve
     `A₂₁ A₁₁⁻¹`.
