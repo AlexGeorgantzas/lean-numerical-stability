@@ -705,6 +705,66 @@ theorem gqrBQBlock_eq_of_transpose_tall_qr {p q : ℕ}
               ring
       _ = 0 := hentry
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction step:
+    exact MGS data for `Bᵀ`, once its computed columns are known
+    orthonormal, supplies the completed tall QR block `Qᵀ Bᵀ = [R;0]`.
+
+    This removes the arbitrary supplied rectangular factorization from the
+    previous completion theorem.  The remaining exposed QR-side dependency is
+    the local orthonormal-columns proof for the MGS `Q` factor. -/
+theorem exists_transpose_tall_qr_of_mgs_orthonormal {p q : ℕ}
+    (B : Fin p → Fin (p + q) → ℝ)
+    (hdiag : ∀ k : Fin p,
+      gsColumnNorm2
+        (modifiedGramSchmidtVectors
+          (fun j : Fin (p + q) => fun i : Fin p => B i j) k.val k) ≠ 0)
+    (horth : GramSchmidtOrthonormalColumns
+      (modifiedGramSchmidtQ
+        (fun j : Fin (p + q) => fun i : Fin p => B i j))) :
+    ∃ (Q : Fin (p + q) → Fin (p + q) → ℝ) (R : Fin p → Fin p → ℝ),
+      IsOrthogonal (p + q) Q ∧
+        IsUpperTriangular p R ∧
+        matMulRectLeft (matTranspose Q)
+          (fun j : Fin (p + q) => fun i : Fin p => B i j) =
+          lsQRTallBlock (k := q) R := by
+  let Bt : Fin (p + q) → Fin p → ℝ :=
+    fun j => fun i => B i j
+  let R : Fin p → Fin p → ℝ := modifiedGramSchmidtR Bt
+  have hfactor :
+      Bt = matMulRect (p + q) p p (modifiedGramSchmidtQ Bt) R := by
+    exact modifiedGramSchmidt_exact_factorization Bt hdiag
+  have hRupper : IsUpperTriangular p R :=
+    IsUpperTrapezoidal.to_upperTriangular
+      (modifiedGramSchmidtR_upper_trapezoidal Bt)
+  obtain ⟨Q, hQorth, _hpreserve, hblock⟩ :=
+    exists_orthogonal_completion_tall_qr_block Bt
+      (modifiedGramSchmidtQ Bt) R horth hfactor
+  refine ⟨Q, R, hQorth, hRupper, ?_⟩
+  simpa [Bt] using hblock
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction step:
+    exact MGS data for `Bᵀ`, plus the remaining MGS orthonormality
+    dependency, constructs the GQR constraint block `B Q = [S 0]` with
+    `S` lower triangular. -/
+theorem exists_gqr_constraint_block_of_mgs_orthonormal {p q : ℕ}
+    (B : Fin p → Fin (p + q) → ℝ)
+    (hdiag : ∀ k : Fin p,
+      gsColumnNorm2
+        (modifiedGramSchmidtVectors
+          (fun j : Fin (p + q) => fun i : Fin p => B i j) k.val k) ≠ 0)
+    (horth : GramSchmidtOrthonormalColumns
+      (modifiedGramSchmidtQ
+        (fun j : Fin (p + q) => fun i : Fin p => B i j))) :
+    ∃ (Q : Fin (p + q) → Fin (p + q) → ℝ) (S : Fin p → Fin p → ℝ),
+      IsOrthogonal (p + q) Q ∧
+        IsLowerTriangular S ∧
+        matMulRect p (p + q) (p + q) B Q = gqrBQBlock S := by
+  obtain ⟨Q, R, hQorth, hRupper, hqr⟩ :=
+    exists_transpose_tall_qr_of_mgs_orthonormal B hdiag horth
+  refine ⟨Q, matTranspose R, hQorth,
+    isLowerTriangular_matTranspose_of_isUpperTriangular hRupper, ?_⟩
+  exact gqrBQBlock_eq_of_transpose_tall_qr B Q R hqr
+
 /-- Matrix-vector multiplication by the `U^T A Q` block in (20.27). -/
 theorem gqrAQBlock_mulVec {r p q : ℕ}
     (L11 : Fin r → Fin p → ℝ)
