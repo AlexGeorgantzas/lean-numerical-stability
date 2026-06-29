@@ -1114,6 +1114,120 @@ theorem higham21_lemma21_2_symmetrized_min_norm_of_separate_op_bounds_and_dual_f
     hDeltaA1Op hDeltaA2Op hy
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    algebraic action of the perturbed pseudoinverse transpose used in the
+    source proof.  Applying `Bᵀ` to `Bplusᵀ x` is the transposed action of the
+    domain projection `Bplus B` on `x`. -/
+theorem higham21_lemma21_2_pseudoinverse_transpose_action_eq_domain_projection
+    {m n : ℕ}
+    (B : Fin m → Fin n → ℝ) (Bplus : Fin n → Fin m → ℝ)
+    (x : Fin n → ℝ) :
+    rectMatMulVec (finiteTranspose B) (rectMatMulVec (finiteTranspose Bplus) x) =
+      rectMatMulVec (finiteTranspose (rectMatMul Bplus B)) x := by
+  ext j
+  unfold rectMatMulVec finiteTranspose rectMatMul
+  calc
+    ∑ i : Fin m, B i j * (∑ k : Fin n, Bplus k i * x k)
+        = ∑ i : Fin m, ∑ k : Fin n, B i j * (Bplus k i * x k) := by
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [Finset.mul_sum]
+    _ = ∑ k : Fin n, ∑ i : Fin m, B i j * (Bplus k i * x k) := by
+            rw [Finset.sum_comm]
+    _ = ∑ k : Fin n, (∑ i : Fin m, Bplus k i * B i j) * x k := by
+            apply Finset.sum_congr rfl
+            intro k _
+            rw [Finset.sum_mul]
+            apply Finset.sum_congr rfl
+            intro i _
+            ring
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    if the perturbed pseudoinverse domain projection is symmetric and fixes
+    `x`, then the source proof's choice `y = Bplusᵀ x` solves
+    `Bᵀ y = x`. -/
+theorem higham21_lemma21_2_perturbed_pseudoinverse_transpose_solves_of_domain_projection
+    {m n : ℕ}
+    (B : Fin m → Fin n → ℝ) (Bplus : Fin n → Fin m → ℝ)
+    (x : Fin n → ℝ)
+    (hDomainSym : IsSymmetricFiniteMatrix (rectMatMul Bplus B))
+    (hDomainX : rectMatMulVec (rectMatMul Bplus B) x = x) :
+    rectMatMulVec (finiteTranspose B) (rectMatMulVec (finiteTranspose Bplus) x) =
+      x := by
+  rw [higham21_lemma21_2_pseudoinverse_transpose_action_eq_domain_projection]
+  have htranspose :
+      finiteTranspose (rectMatMul Bplus B) = rectMatMul Bplus B := by
+    ext i j
+    exact hDomainSym j i
+  rw [htranspose, hDomainX]
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    a perturbation-pseudoinverse operator bound gives the dual-vector estimate
+    for the source proof's choice `y = Bplusᵀ x`. -/
+theorem higham21_lemma21_2_dual_vector_bound_of_perturbed_pseudoinverse_op_bound
+    {m n : ℕ}
+    (Bplus : Fin n → Fin m → ℝ) (x : Fin n → ℝ)
+    {eta : ℝ}
+    (heta : 0 ≤ eta)
+    (hBplusOp : rectOpNorm2Le Bplus eta) :
+    vecNorm2 (rectMatMulVec (finiteTranspose Bplus) x) ≤ eta * vecNorm2 x :=
+  (rectOpNorm2Le_finiteTranspose_of_rectOpNorm2Le Bplus heta hBplusOp) x
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    source-shaped pseudoinverse handoff for the remaining beta argument.
+    If `Bplus` is a perturbed pseudoinverse for `B = A + DeltaA2` whose
+    domain projection fixes `x`, and `Bplus` has the source perturbation
+    operator bound, then the existing separate-operator bridge proves the
+    single-perturbation minimum-norm system.
+
+    The still-open matrix perturbation work is to instantiate the projection
+    and operator-bound hypotheses for the concrete `(A + DeltaA2)^+`. -/
+theorem higham21_lemma21_2_symmetrized_min_norm_of_separate_op_bounds_and_perturbed_pseudoinverse
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (Bplus : Fin n → Fin m → ℝ)
+    (rho1 rho2 alpha beta eta : ℝ)
+    (hsq : vecNorm2Sq x ≠ 0)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hDomainSym :
+      IsSymmetricFiniteMatrix
+        (rectMatMul Bplus (fun i j => A i j + DeltaA2 i j)))
+    (hDomainX :
+      rectMatMulVec
+        (rectMatMul Bplus (fun i j => A i j + DeltaA2 i j)) x = x)
+    (hsmall : 3 * max rho1 rho2 < 1)
+    (halpha : 0 ≤ alpha)
+    (hbeta : 0 ≤ beta)
+    (heta : 0 ≤ eta)
+    (halpha_le : alpha ≤ rho1)
+    (hbeta_le : beta ≤ rho2)
+    (heta_le : eta ≤ (1 - rho2)⁻¹)
+    (hDeltaA1Op : rectOpNorm2Le DeltaA1 alpha)
+    (hDeltaA2Op : rectOpNorm2Le DeltaA2 beta)
+    (hBplusOp : rectOpNorm2Le Bplus eta) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j)
+      b x := by
+  let y : Fin m → ℝ := rectMatMulVec (finiteTranspose Bplus) x
+  have hDeltaA2 :
+      rectMatMulVec (finiteTranspose (fun i j => A i j + DeltaA2 i j)) y = x := by
+    simpa [y] using
+      higham21_lemma21_2_perturbed_pseudoinverse_transpose_solves_of_domain_projection
+        (fun i j => A i j + DeltaA2 i j) Bplus x hDomainSym hDomainX
+  have hy : vecNorm2 y ≤ eta * vecNorm2 x := by
+    simpa [y] using
+      higham21_lemma21_2_dual_vector_bound_of_perturbed_pseudoinverse_op_bound
+        Bplus x heta hBplusOp
+  exact
+    higham21_lemma21_2_symmetrized_min_norm_of_separate_op_bounds_and_dual_factor
+      A x DeltaA1 DeltaA2 b y rho1 rho2 alpha beta eta hsq hDeltaA1 hDeltaA2
+      hsmall halpha hbeta heta halpha_le hbeta_le heta_le hDeltaA1Op hDeltaA2Op hy
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     the Frobenius-squared norm bound for the projector mixture used to replace
     two perturbation blocks by one. -/
 theorem higham21_lemma21_2_symmetrized_perturbation_frobNormSq_le {m n : ℕ}
