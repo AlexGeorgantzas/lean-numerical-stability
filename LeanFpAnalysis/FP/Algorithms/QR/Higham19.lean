@@ -3262,6 +3262,22 @@ theorem trailingPanel_storedPanelStep_succ_zeroPrefix_eq_storedPanelStep_trailin
   trailingPanel_storedPanelStep_succ_zeroPrefix_eq_storedPanelStep_trailingPanel_anyCols
     fp v beta A
 
+/-- Successor-pivot top-row-tail preservation for a zero-prefixed stored step
+under an explicit exact subtract-zero copy convention. -/
+theorem panelTopRowTail_storedPanelStep_succ_zeroPrefix_eq_of_fl_sub_zero_of_succ
+    (fp : FPModel) {m p : Nat} (k : Nat)
+    (v : Fin (m + 1) -> Real) (beta : Real)
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real)
+    (hsubZero : (x : Real) -> fp.fl_sub x 0 = x) :
+    panelTopRowTail
+        (fl_householderStoredPanelStep fp (m + 2) (p + 2) (k + 1)
+          (Fin.cases 0 v) beta A) =
+      panelTopRowTail A := by
+  ext j
+  simp [panelTopRowTail, fl_householderStoredPanelStep,
+    fl_householderApplyCompactPanel, fl_householderApplyCompact,
+    fl_mul_zero_right, hsubZero, Fin.val_succ]
+
 /-- Arbitrary-width top-row-tail preservation for a pivot-1 zero-prefixed
 stored step under an explicit exact subtract-zero copy convention. -/
 theorem panelTopRowTail_storedPanelStep_succ_zeroPrefix_eq_of_fl_sub_zero_anyCols
@@ -3272,49 +3288,42 @@ theorem panelTopRowTail_storedPanelStep_succ_zeroPrefix_eq_of_fl_sub_zero_anyCol
     panelTopRowTail
         (fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
           (Fin.cases 0 v) beta A) =
-      panelTopRowTail A := by
-  ext j
-  cases j using Fin.cases with
-  | zero =>
-      simp [panelTopRowTail, fl_householderStoredPanelStep,
-        fl_householderApplyCompactPanel, fl_householderApplyCompact,
-        fl_mul_zero_right, hsubZero]
-  | succ j =>
-      simp [panelTopRowTail, fl_householderStoredPanelStep,
-        fl_householderApplyCompactPanel, fl_householderApplyCompact,
-        fl_mul_zero_right, hsubZero]
+      panelTopRowTail A :=
+  panelTopRowTail_storedPanelStep_succ_zeroPrefix_eq_of_fl_sub_zero_of_succ
+    fp 0 v beta A hsubZero
 
-/-- Arbitrary-width full pivot-1 zero-prefix stored-step reconstruction.
+/-- Successor-pivot full zero-prefix stored-step reconstruction.
 
-This removes the two-column restriction from the storage-shape lemma.  It keeps
-the top-row-tail preservation hypothesis explicit so callers can choose either
-the exact-copy route or a later copy-error route. -/
-theorem storedPanelStep_succ_zeroPrefix_eq_panelFromTopAndTrailing_of_topRowTail_anyCols
-    (fp : FPModel) {m p : Nat}
+Deleting the leading row and column turns a pivot `k + 1` stored step with a
+zero-prefixed reflector into the pivot-`k` stored step on the trailing panel.
+Together with top-row preservation and the incoming first-column-tail invariant,
+this reconstructs the full stored panel. -/
+theorem storedPanelStep_succ_zeroPrefix_eq_panelFromTopAndTrailing_of_topRowTail_of_succ
+    (fp : FPModel) {m p : Nat} (k : Nat)
     (v : Fin (m + 1) -> Real) (beta : Real)
     (A : Fin (m + 2) -> Fin (p + 2) -> Real)
     (hfirstTail : panelFirstColumnTailZero A)
     (htop :
       panelTopRowTail
-          (fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+          (fl_householderStoredPanelStep fp (m + 2) (p + 2) (k + 1)
             (Fin.cases 0 v) beta A) =
         panelTopRowTail A) :
-    fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) (k + 1)
         (Fin.cases 0 v) beta A =
       panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
-        (fl_householderStoredPanelStep fp (m + 1) (p + 1) 0 v beta
+        (fl_householderStoredPanelStep fp (m + 1) (p + 1) k v beta
           (trailingPanel A)) := by
   let Sfull : Fin (m + 2) -> Fin (p + 2) -> Real :=
-    fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) (k + 1)
       (Fin.cases 0 v) beta A
   let Strail : Fin (m + 1) -> Fin (p + 1) -> Real :=
-    fl_householderStoredPanelStep fp (m + 1) (p + 1) 0 v beta
+    fl_householderStoredPanelStep fp (m + 1) (p + 1) k v beta
       (trailingPanel A)
   have htrail : trailingPanel Sfull = Strail := by
     dsimp [Sfull, Strail]
     exact
-      trailingPanel_storedPanelStep_succ_zeroPrefix_eq_storedPanelStep_trailingPanel_anyCols
-        fp v beta A
+      trailingPanel_storedPanelStep_succ_zeroPrefix_eq_storedPanelStep_trailingPanel_of_succ
+        fp k v beta A
   ext i j
   cases j using Fin.cases with
   | zero =>
@@ -3335,6 +3344,46 @@ theorem storedPanelStep_succ_zeroPrefix_eq_panelFromTopAndTrailing_of_topRowTail
           have hentry := congrFun (congrFun htrail itail) jtail
           simpa [Sfull, Strail, trailingPanel, panelFromTopAndTrailing] using hentry
 
+/-- Arbitrary-width full pivot-1 zero-prefix stored-step reconstruction.
+
+This removes the two-column restriction from the storage-shape lemma.  It keeps
+the top-row-tail preservation hypothesis explicit so callers can choose either
+the exact-copy route or a later copy-error route. -/
+theorem storedPanelStep_succ_zeroPrefix_eq_panelFromTopAndTrailing_of_topRowTail_anyCols
+    (fp : FPModel) {m p : Nat}
+    (v : Fin (m + 1) -> Real) (beta : Real)
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real)
+    (hfirstTail : panelFirstColumnTailZero A)
+    (htop :
+      panelTopRowTail
+          (fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+            (Fin.cases 0 v) beta A) =
+        panelTopRowTail A) :
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
+        (Fin.cases 0 v) beta A =
+      panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+        (fl_householderStoredPanelStep fp (m + 1) (p + 1) 0 v beta
+          (trailingPanel A)) :=
+  storedPanelStep_succ_zeroPrefix_eq_panelFromTopAndTrailing_of_topRowTail_of_succ
+    fp 0 v beta A hfirstTail htop
+
+/-- Successor-pivot zero-prefix reconstruction under exact subtract-zero copy. -/
+theorem storedPanelStep_succ_zeroPrefix_eq_panelFromTopAndTrailing_of_fl_sub_zero_of_succ
+    (fp : FPModel) {m p : Nat} (k : Nat)
+    (v : Fin (m + 1) -> Real) (beta : Real)
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real)
+    (hfirstTail : panelFirstColumnTailZero A)
+    (hsubZero : (x : Real) -> fp.fl_sub x 0 = x) :
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) (k + 1)
+        (Fin.cases 0 v) beta A =
+      panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+        (fl_householderStoredPanelStep fp (m + 1) (p + 1) k v beta
+          (trailingPanel A)) :=
+  storedPanelStep_succ_zeroPrefix_eq_panelFromTopAndTrailing_of_topRowTail_of_succ
+    fp k v beta A hfirstTail
+    (panelTopRowTail_storedPanelStep_succ_zeroPrefix_eq_of_fl_sub_zero_of_succ
+      fp k v beta A hsubZero)
+
 /-- Arbitrary-width full pivot-1 zero-prefix reconstruction under exact
 subtract-zero copy. -/
 theorem storedPanelStep_succ_zeroPrefix_eq_panelFromTopAndTrailing_of_fl_sub_zero_anyCols
@@ -3353,6 +3402,20 @@ theorem storedPanelStep_succ_zeroPrefix_eq_panelFromTopAndTrailing_of_fl_sub_zer
     (panelTopRowTail_storedPanelStep_succ_zeroPrefix_eq_of_fl_sub_zero_anyCols
       fp v beta A hsubZero)
 
+/-- Successor-pivot top-row-tail preservation using the named subtract-zero
+exact-copy convention. -/
+theorem panelTopRowTail_storedPanelStep_succ_zeroPrefix_eq_of_subtractZeroExact_of_succ
+    (fp : FPModel) {m p : Nat} (k : Nat)
+    (v : Fin (m + 1) -> Real) (beta : Real)
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real)
+    (hcopy : subtractZeroExact fp) :
+    panelTopRowTail
+        (fl_householderStoredPanelStep fp (m + 2) (p + 2) (k + 1)
+          (Fin.cases 0 v) beta A) =
+      panelTopRowTail A :=
+  panelTopRowTail_storedPanelStep_succ_zeroPrefix_eq_of_fl_sub_zero_of_succ
+    fp k v beta A hcopy
+
 /-- Arbitrary-width top-row-tail preservation using the named subtract-zero
 exact-copy convention. -/
 theorem panelTopRowTail_storedPanelStep_succ_zeroPrefix_eq_of_subtractZeroExact_anyCols
@@ -3364,8 +3427,24 @@ theorem panelTopRowTail_storedPanelStep_succ_zeroPrefix_eq_of_subtractZeroExact_
         (fl_householderStoredPanelStep fp (m + 2) (p + 2) 1
           (Fin.cases 0 v) beta A) =
       panelTopRowTail A :=
-  panelTopRowTail_storedPanelStep_succ_zeroPrefix_eq_of_fl_sub_zero_anyCols
-    fp v beta A hcopy
+  panelTopRowTail_storedPanelStep_succ_zeroPrefix_eq_of_subtractZeroExact_of_succ
+    fp 0 v beta A hcopy
+
+/-- Successor-pivot zero-prefix reconstruction using the named subtract-zero
+exact-copy convention. -/
+theorem storedPanelStep_succ_zeroPrefix_eq_panelFromTopAndTrailing_of_subtractZeroExact_of_succ
+    (fp : FPModel) {m p : Nat} (k : Nat)
+    (v : Fin (m + 1) -> Real) (beta : Real)
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real)
+    (hfirstTail : panelFirstColumnTailZero A)
+    (hcopy : subtractZeroExact fp) :
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) (k + 1)
+        (Fin.cases 0 v) beta A =
+      panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+        (fl_householderStoredPanelStep fp (m + 1) (p + 1) k v beta
+          (trailingPanel A)) :=
+  storedPanelStep_succ_zeroPrefix_eq_panelFromTopAndTrailing_of_fl_sub_zero_of_succ
+    fp k v beta A hfirstTail hcopy
 
 /-- Arbitrary-width full pivot-1 zero-prefix reconstruction using the named
 subtract-zero exact-copy convention. -/
@@ -3380,8 +3459,72 @@ theorem storedPanelStep_succ_zeroPrefix_eq_panelFromTopAndTrailing_of_subtractZe
       panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
         (fl_householderStoredPanelStep fp (m + 1) (p + 1) 0 v beta
           (trailingPanel A)) :=
-  storedPanelStep_succ_zeroPrefix_eq_panelFromTopAndTrailing_of_fl_sub_zero_anyCols
-    fp v beta A hfirstTail hcopy
+  storedPanelStep_succ_zeroPrefix_eq_panelFromTopAndTrailing_of_subtractZeroExact_of_succ
+    fp 0 v beta A hfirstTail hcopy
+
+/-- Successor-pivot stored-step reconstruction with actual trailing-active
+Householder data under exact subtract-zero copy.
+
+This is the later-pivot version of the pivot-1 actual-data bridge below.  A
+stored step at full pivot `q.succ` has a zero-prefixed active vector and the
+same beta as the pivot `q` active vector of the once-shrunk trailing panel, so
+the full stored step reconstructs from the unchanged top row and the trailing
+stored step. -/
+theorem
+    storedPanelStep_succ_trailingActiveVector_eq_panelFromTopAndTrailing_of_subtractZeroExact_of_succ
+    (fp : FPModel) {m p : Nat} (q : Fin (m + 1))
+    (hq : q.val < p + 1)
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real) (alpha : Real)
+    (hfirstTail : panelFirstColumnTailZero A)
+    (hcopy : subtractZeroExact fp) :
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) (q.val + 1)
+        (householderTrailingActiveVector (m + 2) q.succ
+          (fun a => A a (Fin.mk (q.val + 1) (Nat.succ_lt_succ hq))) alpha)
+        (householderBetaSpec (m + 2)
+          (householderTrailingActiveVector (m + 2) q.succ
+            (fun a => A a (Fin.mk (q.val + 1) (Nat.succ_lt_succ hq))) alpha)) A =
+      panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+        (fl_householderStoredPanelStep fp (m + 1) (p + 1) q.val
+          (householderTrailingActiveVector (m + 1) q
+            (fun i => trailingPanel A i (Fin.mk q.val hq)) alpha)
+          (householderBetaSpec (m + 1)
+            (householderTrailingActiveVector (m + 1) q
+              (fun i => trailingPanel A i (Fin.mk q.val hq)) alpha))
+          (trailingPanel A)) := by
+  let fullCol : Fin (p + 2) := Fin.mk (q.val + 1) (Nat.succ_lt_succ hq)
+  let tailCol : Fin (p + 1) := Fin.mk q.val hq
+  let vtail : Fin (m + 1) -> Real :=
+    householderTrailingActiveVector (m + 1) q
+      (fun i => trailingPanel A i tailCol) alpha
+  have hcol : tailCol.succ = fullCol := by
+    ext
+    simp [tailCol, fullCol]
+  have hv :
+      householderTrailingActiveVector (m + 2) q.succ
+          (fun a => A a fullCol) alpha =
+        Fin.cases 0 vtail := by
+    simpa [vtail, trailingPanel, hcol] using
+      (householderTrailingActiveVector_succ_zeroPrefix_of_succ
+        q (fun a => A a fullCol) alpha)
+  have hbeta :
+      householderBetaSpec (m + 2) (Fin.cases 0 vtail) =
+        householderBetaSpec (m + 1) vtail :=
+    householderBetaSpec_zero_cons vtail
+  change
+    fl_householderStoredPanelStep fp (m + 2) (p + 2) (q.val + 1)
+        (householderTrailingActiveVector (m + 2) q.succ
+          (fun a => A a fullCol) alpha)
+        (householderBetaSpec (m + 2)
+          (householderTrailingActiveVector (m + 2) q.succ
+            (fun a => A a fullCol) alpha)) A =
+      panelFromTopAndTrailing (panelTopLeft A) (panelTopRowTail A)
+        (fl_householderStoredPanelStep fp (m + 1) (p + 1) q.val
+          vtail (householderBetaSpec (m + 1) vtail) (trailingPanel A))
+  rw [hv]
+  rw [hbeta]
+  exact
+    storedPanelStep_succ_zeroPrefix_eq_panelFromTopAndTrailing_of_subtractZeroExact_of_succ
+      fp q.val vtail (householderBetaSpec (m + 1) vtail) A hfirstTail hcopy
 
 /-- Pivot-1 stored-step reconstruction with actual trailing-active
 Householder data under exact subtract-zero copy.
