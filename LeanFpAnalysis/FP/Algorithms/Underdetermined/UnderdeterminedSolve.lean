@@ -413,6 +413,54 @@ theorem higham21_lemma21_2_symmetrized_perturbation_eq_right_projector_mixture {
           matMulRectRight DeltaA2 (lsLemma20_6ProjectorComplement x) i j := by
           ring
 
+private theorem higham21_rectMatMulVec_matMulRectRight {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (V : Fin n → Fin n → ℝ) (x : Fin n → ℝ) :
+    rectMatMulVec (matMulRectRight A V) x =
+      rectMatMulVec A (matMulVec n V x) := by
+  simpa [matMulRectRight, rectMatMul, rectMatMulVec, matMulVec] using
+    (rectMatMulVec_rectMatMul A V x)
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    for the source-oriented construction
+    `DeltaA = DeltaA1 P + DeltaA2 (I-P)`, multiplying by the projector source
+    vector `x` recovers the first perturbation action `DeltaA1 x`.  This is the
+    algebraic step behind `(A + DeltaA)x = (A + DeltaA1)x = b`. -/
+theorem higham21_lemma21_2_symmetrized_perturbation_mulVec_self_eq {m n : ℕ}
+    (x : Fin n → ℝ) (hsq : vecNorm2Sq x ≠ 0)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ) :
+    rectMatMulVec (undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2) x =
+      rectMatMulVec DeltaA1 x := by
+  let P : Fin n → Fin n → ℝ := lsLemma20_6Projector x
+  let Q : Fin n → Fin n → ℝ := lsLemma20_6ProjectorComplement x
+  have hP : matMulVec n P x = x := by
+    ext j
+    simpa [P, matMulVec] using lsLemma20_6Projector_apply_self x hsq j
+  have hQ : matMulVec n Q x = 0 := by
+    simpa [Q] using lsLemma20_6ProjectorComplement_mulVec_self x hsq
+  ext i
+  calc
+    rectMatMulVec (undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2) x i =
+        rectMatMulVec
+          (fun i j => matMulRectRight DeltaA1 P i j + matMulRectRight DeltaA2 Q i j) x i := by
+          unfold rectMatMulVec
+          apply Finset.sum_congr rfl
+          intro j _
+          rw [higham21_lemma21_2_symmetrized_perturbation_eq_right_projector_mixture]
+    _ = rectMatMulVec (matMulRectRight DeltaA1 P) x i +
+          rectMatMulVec (matMulRectRight DeltaA2 Q) x i := by
+          unfold rectMatMulVec
+          rw [← Finset.sum_add_distrib]
+          apply Finset.sum_congr rfl
+          intro j _
+          ring
+    _ = rectMatMulVec DeltaA1 (matMulVec n P x) i +
+          rectMatMulVec DeltaA2 (matMulVec n Q x) i := by
+          rw [congrFun (higham21_rectMatMulVec_matMulRectRight DeltaA1 P x) i,
+            congrFun (higham21_rectMatMulVec_matMulRectRight DeltaA2 Q x) i]
+    _ = rectMatMulVec DeltaA1 x i := by
+          rw [hP, hQ]
+          simp [rectMatMulVec]
+
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     the Frobenius-squared norm bound for the projector mixture used to replace
     two perturbation blocks by one. -/
