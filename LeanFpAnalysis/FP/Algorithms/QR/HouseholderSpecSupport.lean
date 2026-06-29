@@ -96,6 +96,23 @@ noncomputable def householderActiveVector (n : ℕ) (p : Fin n)
 noncomputable def householderBetaSpec (n : ℕ) (v : Fin n → ℝ) : ℝ :=
   2 / ∑ i : Fin n, v i * v i
 
+/-- The exact Householder beta `2/(v^T v)` is nonnegative. -/
+theorem householderBetaSpec_nonneg (n : ℕ) (v : Fin n → ℝ) :
+    0 ≤ householderBetaSpec n v := by
+  have hden_nonneg : 0 ≤ ∑ i : Fin n, v i * v i := by
+    simpa [vecNorm2Sq, pow_two] using vecNorm2Sq_nonneg v
+  unfold householderBetaSpec
+  exact div_nonneg (by norm_num) hden_nonneg
+
+/-- Normalizing the exact Householder beta leaves the exact reflector
+unchanged. -/
+theorem householder_normalizedVector_eq_betaSpec (n : ℕ)
+    (v : Fin n → ℝ) :
+    householder n (householderNormalizedVector n v (householderBetaSpec n v)) 1 =
+      householder n v (householderBetaSpec n v) :=
+  householder_normalizedVector_eq n v (householderBetaSpec n v)
+    (householderBetaSpec_nonneg n v)
+
 /-- The exact Householder normalization satisfies `beta * (v^T v) = 2`
 whenever the denominator is nonzero. -/
 theorem householderBeta_mul_inner_self_eq_two (n : ℕ) (v : Fin n → ℝ)
