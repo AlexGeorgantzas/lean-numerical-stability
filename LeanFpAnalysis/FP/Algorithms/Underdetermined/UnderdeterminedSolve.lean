@@ -510,6 +510,20 @@ theorem undetNormwiseBackwardErrorEtaF_nonneg {m n : ℕ} (theta : ℝ)
   rcases heta with ⟨DeltaA, Deltab, _hfeas, rfl⟩
   exact lsNormwiseBackwardErrorCostF_nonneg theta DeltaA Deltab
 
+/-- Any feasible Chapter 21 normwise perturbation gives an upper bound on
+    the infimum model `eta_F(y)`. -/
+theorem undetNormwiseBackwardErrorEtaF_le_costF_of_feasible
+    {m n : ℕ} (theta : ℝ)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (hfeas :
+      UndetNormwiseBackwardErrorFeasible A b y DeltaA Deltab) :
+    undetNormwiseBackwardErrorEtaF theta A b y ≤
+      lsNormwiseBackwardErrorCostF theta DeltaA Deltab := by
+  unfold undetNormwiseBackwardErrorEtaF
+  exact csInf_le (undetNormwiseBackwardErrorValuesF.bddBelow theta A b y)
+    ⟨DeltaA, Deltab, hfeas, rfl⟩
+
 /-- Zero is an attainable Chapter 21 normwise backward-error cost when `y`
     is already a minimum 2-norm solution of the original data. -/
 theorem undetNormwiseBackwardErrorValuesF.zero_mem_of_rectMinNormSolution
@@ -762,6 +776,93 @@ theorem undetNormwiseBackwardErrorNonzeroFormulaRHS_pos_of_sigma_pos
       div_nonneg (vecNorm2Sq_nonneg _) hy_sq
     exact mul_nonneg hleft_factor hres
   exact add_pos_of_nonneg_of_pos hleft hsigma_sq_pos
+
+/-- Lower-bound handoff for the nonzero branch of Higham Chapter 21,
+    Theorem 21.3: once every feasible perturbation has cost at least the
+    displayed nonzero RHS, the RHS is below the infimum model `eta_F(y)`.
+    The singular-vector proof of that pointwise lower bound remains open. -/
+theorem undetNormwiseBackwardErrorNonzeroFormulaRHS_le_etaF_of_forall_feasible_cost_ge
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (y : Fin n → ℝ) (sigma : ℝ)
+    (hnonempty : (undetNormwiseBackwardErrorValuesF theta A b y).Nonempty)
+    (hlower :
+      ∀ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+        UndetNormwiseBackwardErrorFeasible A b y DeltaA Deltab →
+          undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma ≤
+            lsNormwiseBackwardErrorCostF theta DeltaA Deltab) :
+    undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma ≤
+      undetNormwiseBackwardErrorEtaF theta A b y := by
+  unfold undetNormwiseBackwardErrorEtaF
+  apply le_csInf hnonempty
+  intro eta heta
+  rcases heta with ⟨DeltaA, Deltab, hfeas, heta_eq⟩
+  rw [heta_eq]
+  exact hlower DeltaA Deltab hfeas
+
+/-- Upper-bound handoff for the nonzero branch of Higham Chapter 21,
+    Theorem 21.3: an attaining feasible perturbation gives
+    `eta_F(y) <=` the displayed nonzero RHS. -/
+theorem undetNormwiseBackwardErrorEtaF_le_nonzeroFormulaRHS_of_exists_feasible_cost_eq
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (y : Fin n → ℝ) (sigma : ℝ)
+    (hatt :
+      ∃ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+        UndetNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+          lsNormwiseBackwardErrorCostF theta DeltaA Deltab =
+            undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma) :
+    undetNormwiseBackwardErrorEtaF theta A b y ≤
+      undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma := by
+  rcases hatt with ⟨DeltaA, Deltab, hfeas, hcost⟩
+  calc
+    undetNormwiseBackwardErrorEtaF theta A b y ≤
+        lsNormwiseBackwardErrorCostF theta DeltaA Deltab :=
+      undetNormwiseBackwardErrorEtaF_le_costF_of_feasible
+        theta A b y DeltaA Deltab hfeas
+    _ = undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma := hcost
+
+/-- Inequality-form upper-bound handoff for the nonzero branch of Higham
+    Chapter 21, Theorem 21.3: it is enough to exhibit a feasible perturbation
+    whose weighted cost is bounded by the displayed nonzero RHS. -/
+theorem undetNormwiseBackwardErrorEtaF_le_nonzeroFormulaRHS_of_exists_feasible_cost_le
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (y : Fin n → ℝ) (sigma : ℝ)
+    (hupper :
+      ∃ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+        UndetNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+          lsNormwiseBackwardErrorCostF theta DeltaA Deltab ≤
+            undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma) :
+    undetNormwiseBackwardErrorEtaF theta A b y ≤
+      undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma := by
+  rcases hupper with ⟨DeltaA, Deltab, hfeas, hcost⟩
+  exact
+    (undetNormwiseBackwardErrorEtaF_le_costF_of_feasible
+      theta A b y DeltaA Deltab hfeas).trans hcost
+
+/-- Certificate form of the open nonzero equality in Higham Chapter 21,
+    Theorem 21.3.  It isolates the two remaining obligations for the
+    Sun--Sun proof: a pointwise lower bound for all feasible perturbations
+    and one feasible perturbation attaining the displayed nonzero RHS. -/
+theorem undetNormwiseBackwardErrorEtaF_eq_nonzeroFormulaRHS_of_formula_certificate
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (y : Fin n → ℝ) (sigma : ℝ)
+    (hnonempty : (undetNormwiseBackwardErrorValuesF theta A b y).Nonempty)
+    (hlower :
+      ∀ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+        UndetNormwiseBackwardErrorFeasible A b y DeltaA Deltab →
+          undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma ≤
+            lsNormwiseBackwardErrorCostF theta DeltaA Deltab)
+    (hatt :
+      ∃ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+        UndetNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+          lsNormwiseBackwardErrorCostF theta DeltaA Deltab =
+            undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma) :
+    undetNormwiseBackwardErrorEtaF theta A b y =
+      undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma := by
+  exact le_antisymm
+    (undetNormwiseBackwardErrorEtaF_le_nonzeroFormulaRHS_of_exists_feasible_cost_eq
+      theta A b y sigma hatt)
+    (undetNormwiseBackwardErrorNonzeroFormulaRHS_le_etaF_of_forall_feasible_cost_ge
+      theta A b y sigma hnonempty hlower)
 
 -- ============================================================
 -- §21.3  Theorem 21.4: Q method backward stability
