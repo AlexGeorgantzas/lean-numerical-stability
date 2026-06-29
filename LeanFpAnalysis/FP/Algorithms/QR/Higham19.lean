@@ -3453,6 +3453,108 @@ theorem qrPanel_R_one_col_eq_firstStoredPanelStep_of_first_leadingBlock_det_ne_z
   exact panelFromTopAndTrailing_of_firstColumnTailZero S
     (panelFirstColumnTailZero_firstStoredPanelStep fp v 1 A)
 
+/-- One-column final-panel bridge for the recursive/stored `R` handoff.
+
+This is the base case for the remaining final-panel equality: if the stored
+source step starts from the recursive input and its signed reflector data has
+already been identified with the normalized reflector used by the recursive QR
+branch, then the stored final panel is the recursive `R` panel. -/
+theorem storedSigned_one_col_final_panel_eq_qrPanel_R_of_reflector_data
+    (fp : FPModel) {m : Nat}
+    (A : Fin (m + 1) -> Fin 1 -> Real)
+    (A_hat : Nat -> Fin (m + 1) -> Fin 1 -> Real)
+    (alpha : Nat -> Real)
+    (hinit : A_hat 0 = A)
+    (hStep0 :
+      A_hat 1 =
+        fl_householderStoredPanelStep fp (m + 1) 1 0
+          (householderTrailingActiveVector (m + 1)
+            (Fin.mk 0 (Nat.succ_pos m))
+            (fun a => A_hat 0 a (Fin.mk 0 (Nat.succ_pos 0))) (alpha 0))
+          (householderBetaSpec (m + 1)
+            (householderTrailingActiveVector (m + 1)
+              (Fin.mk 0 (Nat.succ_pos m))
+              (fun a => A_hat 0 a (Fin.mk 0 (Nat.succ_pos 0))) (alpha 0)))
+          (A_hat 0))
+    (hvec :
+      householderTrailingActiveVector (m + 1)
+          (Fin.mk 0 (Nat.succ_pos m))
+          (fun a => A_hat 0 a (Fin.mk 0 (Nat.succ_pos 0))) (alpha 0) =
+        fl_householderNormalizedVector fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos 0) A))
+    (hbeta :
+      householderBetaSpec (m + 1)
+          (householderTrailingActiveVector (m + 1)
+            (Fin.mk 0 (Nat.succ_pos m))
+            (fun a => A_hat 0 a (Fin.mk 0 (Nat.succ_pos 0))) (alpha 0)) =
+        1)
+    (hdetLead :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le m))
+          (Nat.succ_pos 0) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0) :
+    A_hat 1 = fl_householderQRPanel_R fp (m + 1) 1 A := by
+  have hqr :=
+    qrPanel_R_one_col_eq_firstStoredPanelStep_of_first_leadingBlock_det_ne_zero
+      fp A hdetLead
+  rw [hStep0, hbeta, hvec, hinit]
+  exact hqr.symm
+
+/-- Source-recurrence wrapper for the one-column final-panel bridge.
+
+This form consumes the same signed stored-step recurrence used by the later
+stored-loop nonbreakdown routes, then specializes it to pivot zero.  The only
+extra data obligations are exactly the reflector identification and beta
+normalization needed to match the recursive one-column QR branch. -/
+theorem storedSignedSequence_one_col_final_panel_eq_qrPanel_R_of_reflector_data
+    (fp : FPModel) {m : Nat}
+    (A : Fin (m + 1) -> Fin 1 -> Real)
+    (A_hat : Nat -> Fin (m + 1) -> Fin 1 -> Real)
+    (alpha : Nat -> Real)
+    (hinit : A_hat 0 = A)
+    (hStep : forall k (hk : k < 1),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (m + 1) 1 k
+          (householderTrailingActiveVector (m + 1)
+            (Fin.mk k
+              (lt_of_lt_of_le hk (Nat.succ_le_succ (Nat.zero_le m))))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (m + 1)
+            (householderTrailingActiveVector (m + 1)
+              (Fin.mk k
+                (lt_of_lt_of_le hk (Nat.succ_le_succ (Nat.zero_le m))))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hvec :
+      householderTrailingActiveVector (m + 1)
+          (Fin.mk 0 (Nat.succ_pos m))
+          (fun a => A_hat 0 a (Fin.mk 0 (Nat.succ_pos 0))) (alpha 0) =
+        fl_householderNormalizedVector fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos 0) A))
+    (hbeta :
+      householderBetaSpec (m + 1)
+          (householderTrailingActiveVector (m + 1)
+            (Fin.mk 0 (Nat.succ_pos m))
+            (fun a => A_hat 0 a (Fin.mk 0 (Nat.succ_pos 0))) (alpha 0)) =
+        1)
+    (hdetLead :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le m))
+          (Nat.succ_pos 0) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0) :
+    A_hat 1 = fl_householderQRPanel_R fp (m + 1) 1 A := by
+  exact
+    storedSigned_one_col_final_panel_eq_qrPanel_R_of_reflector_data
+      fp A A_hat alpha hinit
+      (by
+        have h0 := hStep 0 (Nat.succ_pos 0)
+        simpa using h0)
+      hvec hbeta hdetLead
+
 /-- Two-column terminal recurrence for the determinant-specialized
 recursive/stored `R` bridge.
 
