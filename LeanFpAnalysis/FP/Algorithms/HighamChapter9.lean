@@ -19562,6 +19562,58 @@ theorem higham9_15_triuPart_mono {n : ℕ}
   · simpa [h] using hAB i j
   · simp [h]
 
+/-- **Theorem 9.15**, the strictly lower projection distributes over addition. -/
+theorem higham9_15_strilPart_add {n : ℕ}
+    (A B : Matrix (Fin n) (Fin n) ℝ) :
+    higham9_15_strilPart (A + B) =
+      higham9_15_strilPart A + higham9_15_strilPart B := by
+  ext i j
+  unfold higham9_15_strilPart
+  by_cases h : j.val < i.val
+  · have hfin : j < i := h
+    simp [hfin]
+  · have hfin : ¬ j < i := by
+      intro hji
+      exact h hji
+    simp [hfin]
+
+/-- **Theorem 9.15**, the upper projection distributes over addition. -/
+theorem higham9_15_triuPart_add {n : ℕ}
+    (A B : Matrix (Fin n) (Fin n) ℝ) :
+    higham9_15_triuPart (A + B) =
+      higham9_15_triuPart A + higham9_15_triuPart B := by
+  ext i j
+  unfold higham9_15_triuPart
+  by_cases h : i.val ≤ j.val
+  · have hfin : i ≤ j := h
+    simp [hfin]
+  · have hfin : ¬ i ≤ j := by
+      intro hij
+      exact h hij
+    simp [hfin]
+
+/-- **Theorem 9.15**, right multiplication by a split strictly-lower
+majorant separates into leading and local-product contributions. -/
+theorem higham9_15_rectMatMul_strilPart_add_right {n : ℕ}
+    (A B C : Matrix (Fin n) (Fin n) ℝ) (i j : Fin n) :
+    rectMatMul A (higham9_15_strilPart (B + C)) i j =
+      rectMatMul A (higham9_15_strilPart B) i j +
+        rectMatMul A (higham9_15_strilPart C) i j := by
+  rw [higham9_15_strilPart_add]
+  unfold rectMatMul
+  simp [mul_add, Finset.sum_add_distrib]
+
+/-- **Theorem 9.15**, left multiplication by a split upper majorant separates
+into leading and local-product contributions. -/
+theorem higham9_15_rectMatMul_triuPart_add_left {n : ℕ}
+    (A B C : Matrix (Fin n) (Fin n) ℝ) (i j : Fin n) :
+    rectMatMul (higham9_15_triuPart (A + B)) C i j =
+      rectMatMul (higham9_15_triuPart A) C i j +
+        rectMatMul (higham9_15_triuPart B) C i j := by
+  rw [higham9_15_triuPart_add]
+  unfold rectMatMul
+  simp [add_mul, Finset.sum_add_distrib]
+
 /-- **Theorem 9.15**, entrywise absolute product bound for the local square
 matrix product. -/
 theorem higham9_15_abs_matrix_mul_le_abs_mul_abs {n : ℕ}
@@ -28059,6 +28111,215 @@ theorem higham9_15_componentwise_source_bound_of_factorization_Gtilde_local_majo
   exact
     higham9_15_componentwise_source_bound_of_Gtilde_split_local_majorant_of_source_inverse_identities
       Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hLleft hUright hfact hXtri hYtri
+
+/-- **Theorem 9.15**, first-order componentwise source wrapper for the
+normalized `G` split.
+
+The exact local majorant is split into the printed leading envelope involving
+`|G|` and an explicit `O(u²)` local-product envelope.  This formalizes the
+source's first-order reading without discarding the quadratic term. -/
+theorem higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_inverse_identities
+    {n : ℕ}
+    (u : ℝ)
+    (L U Linv Uinv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (hLright : rectMatMul L Linv = idMatrix n)
+    (hUleft : rectMatMul Uinv U = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hquadL :
+      ∀ i j : Fin n,
+        FirstOrderLe u 0
+          (rectMatMul (absMatrix n L)
+            (higham9_15_strilPart
+              (fun i j : Fin n =>
+                rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+                  (absMatrix n (rectMatMul ΔU Uinv)) i j)) i j))
+    (hquadU :
+      ∀ i j : Fin n,
+        FirstOrderLe u 0
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n =>
+                rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+                  (absMatrix n (rectMatMul ΔU Uinv)) i j))
+            (absMatrix n U) i j)) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix Linv ΔA Uinv i j|))
+            (absMatrix n U) i j)
+          |ΔU i j|) := by
+  let Gabs : Matrix (Fin n) (Fin n) ℝ :=
+    fun i j => |higham9_27_GMatrix Linv ΔA Uinv i j|
+  let Q : Matrix (Fin n) (Fin n) ℝ :=
+    fun i j =>
+      rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+        (absMatrix n (rectMatMul ΔU Uinv)) i j
+  have hlocal :=
+    higham9_15_componentwise_source_bound_of_G_split_local_majorant_of_inverse_identities
+      L U Linv Uinv ΔA ΔL ΔU hLright hUleft hfact hXtri hYtri
+  constructor
+  · intro i j
+    let leading : ℝ :=
+      rectMatMul (absMatrix n L) (higham9_15_strilPart Gabs) i j
+    let rem : ℝ :=
+      rectMatMul (absMatrix n L) (higham9_15_strilPart Q) i j
+    have hvalue : |ΔL i j| ≤ leading + rem := by
+      calc
+        |ΔL i j| ≤
+            rectMatMul (absMatrix n L) (higham9_15_strilPart (Gabs + Q)) i j := by
+              simpa [Gabs, Q] using hlocal.1 i j
+        _ = leading + rem := by
+              dsimp [leading, rem]
+              exact higham9_15_rectMatMul_strilPart_add_right
+                (absMatrix n L) Gabs Q i j
+    have hleading : FirstOrderLe u leading leading :=
+      FirstOrderLe.of_le le_rfl
+    have hrem : FirstOrderLe u 0 rem := by
+      simpa [rem, Q] using hquadL i j
+    have hsum := FirstOrderLe.add hleading hrem hvalue
+    simpa [leading, Gabs, zero_add] using hsum
+  · intro i j
+    let leading : ℝ :=
+      rectMatMul (higham9_15_triuPart Gabs) (absMatrix n U) i j
+    let rem : ℝ :=
+      rectMatMul (higham9_15_triuPart Q) (absMatrix n U) i j
+    have hvalue : |ΔU i j| ≤ leading + rem := by
+      calc
+        |ΔU i j| ≤
+            rectMatMul (higham9_15_triuPart (Gabs + Q)) (absMatrix n U) i j := by
+              simpa [Gabs, Q] using hlocal.2 i j
+        _ = leading + rem := by
+              dsimp [leading, rem]
+              exact higham9_15_rectMatMul_triuPart_add_left
+                Gabs Q (absMatrix n U) i j
+    have hleading : FirstOrderLe u leading leading :=
+      FirstOrderLe.of_le le_rfl
+    have hrem : FirstOrderLe u 0 rem := by
+      simpa [rem, Q] using hquadU i j
+    have hsum := FirstOrderLe.add hleading hrem hvalue
+    simpa [leading, Gabs, zero_add] using hsum
+
+/-- **Theorem 9.15**, first-order componentwise source wrapper for the
+componentwise `Gtilde` split. -/
+theorem higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_inverse_identities
+    {n : ℕ}
+    (u : ℝ)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix n)
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hquadL :
+      ∀ i j : Fin n,
+        FirstOrderLe u 0
+          (rectMatMul (absMatrix n Lhat)
+            (higham9_15_strilPart
+              (fun i j : Fin n =>
+                rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+                  (absMatrix n (rectMatMul ΔU UhatInv)) i j)) i j))
+    (hquadU :
+      ∀ i j : Fin n,
+        FirstOrderLe u 0
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n =>
+                rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+                  (absMatrix n (rectMatMul ΔU UhatInv)) i j))
+            (absMatrix n Uhat) i j)) :
+    (∀ i j : Fin n,
+      FirstOrderLe u
+        (rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|)) i j)
+        |ΔL i j|) ∧
+      (∀ i j : Fin n,
+        FirstOrderLe u
+          (rectMatMul
+            (higham9_15_triuPart
+              (fun i j : Fin n => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|))
+            (absMatrix n Uhat) i j)
+          |ΔU i j|) := by
+  let Gabs : Matrix (Fin n) (Fin n) ℝ :=
+    fun i j => |higham9_27_GMatrix LhatInv ΔA UhatInv i j|
+  let Q : Matrix (Fin n) (Fin n) ℝ :=
+    fun i j =>
+      rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+        (absMatrix n (rectMatMul ΔU UhatInv)) i j
+  have hlocal :=
+    higham9_15_componentwise_source_bound_of_Gtilde_split_local_majorant_of_inverse_identities
+      Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU
+      hLright hUleft hfact hXtri hYtri
+  constructor
+  · intro i j
+    let leading : ℝ :=
+      rectMatMul (absMatrix n Lhat) (higham9_15_strilPart Gabs) i j
+    let rem : ℝ :=
+      rectMatMul (absMatrix n Lhat) (higham9_15_strilPart Q) i j
+    have hvalue : |ΔL i j| ≤ leading + rem := by
+      calc
+        |ΔL i j| ≤
+            rectMatMul (absMatrix n Lhat)
+              (higham9_15_strilPart (Gabs + Q)) i j := by
+              simpa [Gabs, Q] using hlocal.1 i j
+        _ = leading + rem := by
+              dsimp [leading, rem]
+              exact higham9_15_rectMatMul_strilPart_add_right
+                (absMatrix n Lhat) Gabs Q i j
+    have hleading : FirstOrderLe u leading leading :=
+      FirstOrderLe.of_le le_rfl
+    have hrem : FirstOrderLe u 0 rem := by
+      simpa [rem, Q] using hquadL i j
+    have hsum := FirstOrderLe.add hleading hrem hvalue
+    simpa [leading, Gabs, zero_add] using hsum
+  · intro i j
+    let leading : ℝ :=
+      rectMatMul (higham9_15_triuPart Gabs) (absMatrix n Uhat) i j
+    let rem : ℝ :=
+      rectMatMul (higham9_15_triuPart Q) (absMatrix n Uhat) i j
+    have hvalue : |ΔU i j| ≤ leading + rem := by
+      calc
+        |ΔU i j| ≤
+            rectMatMul (higham9_15_triuPart (Gabs + Q))
+              (absMatrix n Uhat) i j := by
+              simpa [Gabs, Q] using hlocal.2 i j
+        _ = leading + rem := by
+              dsimp [leading, rem]
+              exact higham9_15_rectMatMul_triuPart_add_left
+                Gabs Q (absMatrix n Uhat) i j
+    have hleading : FirstOrderLe u leading leading :=
+      FirstOrderLe.of_le le_rfl
+    have hrem : FirstOrderLe u 0 rem := by
+      simpa [rem, Q] using hquadU i j
+    have hsum := FirstOrderLe.add hleading hrem hvalue
+    simpa [leading, Gabs, zero_add] using hsum
 
 /-! ## Appendix A, Problem 9.2 -/
 
