@@ -74,6 +74,16 @@ end-to-end stability rebuild is tagged as
   wrappers prove the existing max-entry growth matrix is bounded by
   `2 * blockInfNorm A`.  This is source-norm finite-history progress, not yet
   the chapter's entrywise-denominator `growthFactorEntry <= 2`.
+- 2026-06-29 Problem 13.4 stage-local inverse-bound scalar bridge:
+  `higham13_stage_local_source_lblock_budget_le_of_growth_inverse_bound`
+  exposes the scalar step used by the direct inverse-bound route.  From the
+  already-proved local growth numerator budget
+  `rhoLocal * ||A_local|| <= rhoFull * ||A||` and the remaining source inverse
+  comparison `||A_local^{-1}|| <= rhoFull * ||A^{-1}||`, it proves the full
+  `rhoFull^2 * kappaFull` budget.  The matrix-stage theorem
+  `higham13_algorithm13_3_multiplier_bounds_from_stageLocalGrowth_inverse_bound_exact_kappa`
+  now uses this bridge directly.  This is proof-chain/dependency cleanup; the
+  source inverse estimate and Eq.13.23 `rho <= 2` branch remain open.
 - 2026-06-29 matrix-`∞` source-table max-entry composition checkpoint:
   `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockMaxNorm_bound_with_card_of_continuousLinearMap_source_table`,
   `higham13_algorithm13_3_matrix_infNorm_matrixStageHistoryGrowthFactor_le_card_of_continuousLinearMap_source_table`,
