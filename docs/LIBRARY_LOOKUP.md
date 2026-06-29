@@ -1489,6 +1489,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_16_RookPivotGEUTrace_exists_certificateGrowth_le`
 - `higham9_16_RookPivotGEUTrace_exists_certificateGrowthValue_le`
 - `higham9_16_wilkinson_source_bound_exists_of_RookPivotGEUTrace`
+- `higham9_16_exists_RookPivotCompletePermutedLUFactSpec_L_bound_growth_le_pow_two_of_det_ne_zero`
 - `higham9_5_wilkinson_source_bound_exists_of_CompletePivotGECPUTrace_of_det_ne_zero`
 - `higham9_16_wilkinson_source_bound_exists_of_RookPivotGEUTrace_of_det_ne_zero`
 - `higham9_10_HessenbergGEPPUTrace_to_PartialPivotGEPPUTrace`
