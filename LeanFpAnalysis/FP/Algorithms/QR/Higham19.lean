@@ -3119,39 +3119,40 @@ theorem fl_householderApplyCompact_zero_cons_tail
   funext i
   simp [fl_householderApplyCompact, fl_dotProduct_zero_cons]
 
-/-- Pivot-1 trailing active vector as a zero-prefixed pivot-0 active vector.
+/-- Successor-pivot trailing active vector as a zero-prefixed active vector on
+the once-shrunk panel.
 
-This is the reflector-data indexing bridge needed by the later full-loop
-induction: after dropping the first row, the full stored-loop active vector at
-pivot `1` is exactly a leading zero followed by the active vector of the
-shrinking trailing panel. -/
-theorem householderTrailingActiveVector_succ_zeroPrefix {m : Nat}
-    (x : Fin (m + 2) -> Real) (alpha : Real) :
-    householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ) x alpha =
+This is the general reflector-data indexing bridge needed by the later
+full-loop induction: after dropping the first row, the full stored-loop active
+vector at pivot `p.succ` is exactly a leading zero followed by the active
+vector at pivot `p` of the shrinking trailing panel. -/
+theorem householderTrailingActiveVector_succ_zeroPrefix_of_succ {m : Nat}
+    (p : Fin (m + 1)) (x : Fin (m + 2) -> Real) (alpha : Real) :
+    householderTrailingActiveVector (m + 2) p.succ x alpha =
       Fin.cases 0
-        (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
+        (householderTrailingActiveVector (m + 1) p
           (fun i => x i.succ) alpha) := by
   funext i
   cases i using Fin.cases with
   | zero =>
       simp [householderTrailingActiveVector, householderActiveVector,
         householderTrailingPart]
+      intro h
+      have hv := congrArg Fin.val h
+      simp at hv
   | succ i =>
-      cases i using Fin.cases with
-      | zero =>
-          change householderTrailingActiveVector (m + 2)
-              ((0 : Fin (m + 1)).succ) x alpha
-              ((0 : Fin (m + 1)).succ) =
-            householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
-              (fun i => x i.succ) alpha 0
-          simp [householderTrailingActiveVector, householderActiveVector,
-            householderTrailingPart]
-      | succ i =>
-          simp [householderTrailingActiveVector, householderActiveVector,
-            householderTrailingPart]
-          intro h
-          have hv := congrArg Fin.val h
-          simp at hv
+      simp [householderTrailingActiveVector, householderActiveVector,
+        householderTrailingPart]
+
+/-- Pivot-1 trailing active vector as a zero-prefixed pivot-0 active vector. -/
+theorem householderTrailingActiveVector_succ_zeroPrefix {m : Nat}
+    (x : Fin (m + 2) -> Real) (alpha : Real) :
+    householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ) x alpha =
+      Fin.cases 0
+        (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
+          (fun i => x i.succ) alpha) :=
+  householderTrailingActiveVector_succ_zeroPrefix_of_succ
+    (0 : Fin (m + 1)) x alpha
 
 /-- Adding a leading zero to Householder data leaves the exact beta unchanged. -/
 theorem householderBetaSpec_zero_cons {m : Nat}
@@ -3159,6 +3160,21 @@ theorem householderBetaSpec_zero_cons {m : Nat}
     householderBetaSpec (m + 2) (Fin.cases 0 v) =
       householderBetaSpec (m + 1) v := by
   simp [householderBetaSpec, Fin.sum_univ_succ]
+
+/-- Successor-pivot active-vector zero-prefixing leaves the exact beta equal to
+the once-shrunk panel beta. -/
+theorem householderBetaSpec_trailingActiveVector_succ_zeroPrefix_of_succ
+    {m : Nat} (p : Fin (m + 1))
+    (x : Fin (m + 2) -> Real) (alpha : Real) :
+    householderBetaSpec (m + 2)
+        (householderTrailingActiveVector (m + 2) p.succ x alpha) =
+      householderBetaSpec (m + 1)
+        (householderTrailingActiveVector (m + 1) p
+          (fun i => x i.succ) alpha) := by
+  rw [householderTrailingActiveVector_succ_zeroPrefix_of_succ p x alpha]
+  exact householderBetaSpec_zero_cons
+    (householderTrailingActiveVector (m + 1) p
+      (fun i => x i.succ) alpha)
 
 /-- Arbitrary-width trailing-panel lift for a full stored step with a
 zero-prefixed reflector.
