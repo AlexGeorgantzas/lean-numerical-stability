@@ -1181,6 +1181,27 @@ noncomputable def infNorm {n : ℕ} (A : Fin n → Fin n → ℝ) : ℝ :=
   letI := Matrix.linftyOpNormedRing (n := Fin n) (α := ℝ)
   ‖(Matrix.of A : Matrix (Fin n) (Fin n) ℝ)‖
 
+/-- A square real matrix as a continuous linear map on finite vectors with the
+default Pi/infinity vector norm. -/
+noncomputable def matrixMulVecCLM {n : ℕ}
+    (A : Matrix (Fin n) (Fin n) ℝ) :
+    (Fin n → ℝ) →L[ℝ] (Fin n → ℝ) :=
+  ContinuousLinearMap.mk (Matrix.mulVecLin A)
+
+@[simp] theorem matrixMulVecCLM_apply {n : ℕ}
+    (A : Matrix (Fin n) (Fin n) ℝ) (x : Fin n → ℝ) :
+    matrixMulVecCLM A x = A.mulVec x := by
+  rfl
+
+/-- The operator norm of `matrixMulVecCLM` is the repository infinity norm of
+the underlying matrix. -/
+theorem matrixMulVecCLM_norm_eq_infNorm {n : ℕ}
+    (A : Matrix (Fin n) (Fin n) ℝ) :
+    ‖matrixMulVecCLM A‖ = infNorm A := by
+  letI := Matrix.linftyOpNormedRing (n := Fin n) (α := ℝ)
+  simpa [matrixMulVecCLM, infNorm] using
+    (Matrix.linfty_opNorm_eq_opNorm A).symm
+
 /-- Infinity norm of a matrix is nonneg. -/
 lemma infNorm_nonneg {n : ℕ} (A : Fin n → Fin n → ℝ) :
     0 ≤ infNorm A := by

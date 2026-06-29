@@ -12711,6 +12711,298 @@ theorem higham13_algorithm13_3_diagLowerCert_diag_lower_of_continuousLinearMap_s
     higham13_algorithm13_3_diagLowerCert_diag_lower_of_source_table_reciprocal
       invDiagBound A pivotInv stageInvDiagBound hInit hDiagUpdate hRecip
 
+/-- Generic version of the Algorithm 13.3 diagonal lower-bound certificate.
+
+    The legacy `higham13_algorithm13_3_diagLowerCert` is specialized to the
+    repository's function-shaped matrix blocks.  This parallel definition keeps
+    the same scalar recurrence for any normed block algebra, so concrete
+    Mathlib `Matrix` block norms can use the same source-table proof layer. -/
+noncomputable def higham13_algorithm13_3_diagLowerCertGeneric {m : ℕ}
+    {α : Type*} [Norm α] [Sub α] [Mul α]
+    (invDiagBound : Fin m → ℝ)
+    (A : Fin m → Fin m → α) (pivotInv : ℕ → α) :
+    ℕ → Fin m → ℝ
+  | 0, j => invDiagBound j
+  | k + 1, j =>
+      if hk : k < m then
+        if _hactive : k + 1 ≤ j.val then
+          higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv k j -
+            higham13_algorithm13_3_schurStageNorm A pivotInv k j ⟨k, hk⟩ *
+              higham13_algorithm13_3_pivotInvNorm pivotInv k *
+              higham13_algorithm13_3_schurStageNorm A pivotInv k ⟨k, hk⟩ j
+        else
+          higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv k j
+      else
+        higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv k j
+
+/-- The generic diagonal lower-bound certificate starts from the source initial
+table. -/
+theorem higham13_algorithm13_3_diagLowerCertGeneric_zero {m : ℕ}
+    {α : Type*} [Norm α] [Sub α] [Mul α]
+    (invDiagBound : Fin m → ℝ)
+    (A : Fin m → Fin m → α) (pivotInv : ℕ → α) :
+    ∀ j : Fin m,
+      higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv 0 j =
+        invDiagBound j := by
+  intro j
+  rfl
+
+/-- The generic diagonal lower-bound certificate satisfies the exact active
+recurrence used by the source proof. -/
+theorem higham13_algorithm13_3_diagLowerCertGeneric_eq {m : ℕ}
+    {α : Type*} [Norm α] [Sub α] [Mul α]
+    (invDiagBound : Fin m → ℝ)
+    (A : Fin m → Fin m → α) (pivotInv : ℕ → α) :
+    ∀ k : ℕ, ∀ hk : k < m, ∀ j : Fin m,
+      k + 1 ≤ j.val →
+        higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv (k + 1) j =
+          higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv k j -
+            higham13_algorithm13_3_schurStageNorm A pivotInv k j ⟨k, hk⟩ *
+              higham13_algorithm13_3_pivotInvNorm pivotInv k *
+              higham13_algorithm13_3_schurStageNorm A pivotInv k ⟨k, hk⟩ j := by
+  intro k hk j hj
+  simp [higham13_algorithm13_3_diagLowerCertGeneric, hk, hj]
+
+/-- The generic diagonal lower-bound certificate supplies the named active
+diagonal-update predicate. -/
+theorem higham13_algorithm13_3_diagLowerCertGeneric_update {m : ℕ}
+    {α : Type*} [Norm α] [Sub α] [Mul α]
+    (invDiagBound : Fin m → ℝ)
+    (A : Fin m → Fin m → α) (pivotInv : ℕ → α) :
+    SchurStageActiveDiagLowerUpdate13_7
+      (higham13_algorithm13_3_schurStageNorm A pivotInv)
+      (higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv)
+      (higham13_algorithm13_3_pivotInvNorm pivotInv) := by
+  exact higham13_algorithm13_3_active_diag_lower_update_of_eq A pivotInv
+    (higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv)
+    (higham13_algorithm13_3_diagLowerCertGeneric_eq invDiagBound A pivotInv)
+
+/-- Generic source-table-to-certificate bridge for Algorithm 13.3 diagonal
+lower-bound certificates. -/
+theorem higham13_algorithm13_3_diagLowerCertGeneric_active_le_of_diag_update
+    {m : ℕ} {α : Type*} [Norm α] [Sub α] [Mul α]
+    (invDiagBound : Fin m → ℝ)
+    (A : Fin m → Fin m → α) (pivotInv : ℕ → α)
+    (stageInvDiagBound : ℕ → Fin m → ℝ)
+    (hInit : ∀ j : Fin m, invDiagBound j ≤ stageInvDiagBound 0 j)
+    (hDiagUpdate : SchurStageActiveDiagLowerUpdate13_7
+      (higham13_algorithm13_3_schurStageNorm A pivotInv)
+      stageInvDiagBound
+      (higham13_algorithm13_3_pivotInvNorm pivotInv)) :
+    ∀ k : ℕ, ∀ j : Fin m, k ≤ j.val →
+      higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv k j ≤
+        stageInvDiagBound k j := by
+  intro k
+  induction k with
+  | zero =>
+      intro j _hj
+      simpa [higham13_algorithm13_3_diagLowerCertGeneric] using hInit j
+  | succ k ih =>
+      intro j hj
+      have hk : k < m := Nat.lt_trans (Nat.lt_of_succ_le hj) j.isLt
+      have hprev : k ≤ j.val := Nat.le_of_succ_le hj
+      have hcert_eq :
+          higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv (k + 1) j =
+            higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv k j -
+              higham13_algorithm13_3_schurStageNorm A pivotInv k j ⟨k, hk⟩ *
+                higham13_algorithm13_3_pivotInvNorm pivotInv k *
+                higham13_algorithm13_3_schurStageNorm A pivotInv k ⟨k, hk⟩ j :=
+        higham13_algorithm13_3_diagLowerCertGeneric_eq invDiagBound A pivotInv k hk j hj
+      calc
+        higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv (k + 1) j
+            =
+              higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv k j -
+                higham13_algorithm13_3_schurStageNorm A pivotInv k j ⟨k, hk⟩ *
+                  higham13_algorithm13_3_pivotInvNorm pivotInv k *
+                  higham13_algorithm13_3_schurStageNorm A pivotInv k ⟨k, hk⟩ j := hcert_eq
+        _ ≤
+              stageInvDiagBound k j -
+                higham13_algorithm13_3_schurStageNorm A pivotInv k j ⟨k, hk⟩ *
+                  higham13_algorithm13_3_pivotInvNorm pivotInv k *
+                  higham13_algorithm13_3_schurStageNorm A pivotInv k ⟨k, hk⟩ j := by
+              exact sub_le_sub_right (ih j hprev) _
+        _ ≤ stageInvDiagBound (k + 1) j :=
+              hDiagUpdate k hk j hj
+
+/-- Generic reciprocal source table gives the one-sided active pivot
+certificate for `diagLowerCertGeneric`. -/
+theorem higham13_algorithm13_3_diagLowerCertGeneric_diag_lower_of_source_table_reciprocal
+    {m : ℕ} {α : Type*} [Norm α] [Sub α] [Mul α]
+    (invDiagBound : Fin m → ℝ)
+    (A : Fin m → Fin m → α) (pivotInv : ℕ → α)
+    (stageInvDiagBound : ℕ → Fin m → ℝ)
+    (hInit : ∀ j : Fin m, invDiagBound j ≤ stageInvDiagBound 0 j)
+    (hDiagUpdate : SchurStageActiveDiagLowerUpdate13_7
+      (higham13_algorithm13_3_schurStageNorm A pivotInv)
+      stageInvDiagBound
+      (higham13_algorithm13_3_pivotInvNorm pivotInv))
+    (hReciprocal : SchurStageActivePivotInvReciprocal13_7
+      stageInvDiagBound (higham13_algorithm13_3_pivotInvNorm pivotInv)) :
+    SchurStageActivePivotInvDiagLower13_7
+      (higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv)
+      (higham13_algorithm13_3_pivotInvNorm pivotInv) := by
+  intro k hk
+  exact le_trans
+    (higham13_algorithm13_3_diagLowerCertGeneric_active_le_of_diag_update
+      invDiagBound A pivotInv stageInvDiagBound hInit hDiagUpdate
+      k ⟨k, hk⟩ le_rfl)
+    (by rw [hReciprocal k hk])
+
+/-- Generic continuous-linear source table gives the one-sided active pivot
+certificate for `diagLowerCertGeneric`. -/
+theorem
+    higham13_algorithm13_3_diagLowerCertGeneric_diag_lower_of_continuousLinearMap_source_table
+    {m : ℕ} {α E : Type*}
+    [Norm α] [Sub α] [Mul α]
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [ProperSpace E]
+    (hunit : ({x : E | ‖x‖ = 1} : Set E).Nonempty)
+    (invDiagBound : Fin m → ℝ)
+    (A : Fin m → Fin m → α) (pivotInv : ℕ → α)
+    (stageBlock : ℕ → Fin m → Fin m → E →L[ℝ] E)
+    (pivotInvCLM : ℕ → E →L[ℝ] E)
+    (hInit : ∀ j : Fin m,
+      invDiagBound j ≤ continuousLinearMapLowerNorm (stageBlock 0 j j) hunit)
+    (hStageNorm : ∀ k : ℕ, ∀ i j : Fin m,
+      ‖stageBlock k i j‖ = higham13_algorithm13_3_schurStageNorm A pivotInv k i j)
+    (hPivotNorm : ∀ k : ℕ,
+      ‖pivotInvCLM k‖ = higham13_algorithm13_3_pivotInvNorm pivotInv k)
+    (hSchur : ∀ k : ℕ, ∀ hk : k < m, ∀ j : Fin m,
+      k + 1 ≤ j.val → ∀ x : E,
+        stageBlock (k + 1) j j x =
+          stageBlock k j j x -
+            stageBlock k j ⟨k, hk⟩
+              (pivotInvCLM k (stageBlock k ⟨k, hk⟩ j x)))
+    (hLeft : ∀ k : ℕ, ∀ hk : k < m, ∀ x : E,
+      pivotInvCLM k (stageBlock k ⟨k, hk⟩ ⟨k, hk⟩ x) = x)
+    (hRight : ∀ k : ℕ, ∀ hk : k < m, ∀ y : E,
+      stageBlock k ⟨k, hk⟩ ⟨k, hk⟩ (pivotInvCLM k y) = y) :
+    SchurStageActivePivotInvDiagLower13_7
+      (higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv)
+      (higham13_algorithm13_3_pivotInvNorm pivotInv) := by
+  let stageInvDiagBound : ℕ → Fin m → ℝ :=
+    fun k j => continuousLinearMapLowerNorm (stageBlock k j j) hunit
+  have hDiagUpdateCLM : SchurStageActiveDiagLowerUpdate13_7
+      (fun k i j => ‖stageBlock k i j‖)
+      stageInvDiagBound
+      (fun k => ‖pivotInvCLM k‖) := by
+    simpa [stageInvDiagBound] using
+      (SchurStageActiveDiagLowerUpdate13_7.of_continuousLinearMap_schur_composition
+        hunit stageBlock pivotInvCLM hSchur)
+  have hDiagUpdate : SchurStageActiveDiagLowerUpdate13_7
+      (higham13_algorithm13_3_schurStageNorm A pivotInv)
+      stageInvDiagBound
+      (higham13_algorithm13_3_pivotInvNorm pivotInv) := by
+    intro k hk j hj
+    simpa [stageInvDiagBound, hStageNorm k j ⟨k, hk⟩,
+      hStageNorm k ⟨k, hk⟩ j, hPivotNorm k] using
+      hDiagUpdateCLM k hk j hj
+  have hRecipCLM : SchurStageActivePivotInvReciprocal13_7
+      stageInvDiagBound (fun k => ‖pivotInvCLM k‖) := by
+    simpa [stageInvDiagBound] using
+      (SchurStageActivePivotInvReciprocal13_7.of_continuousLinearMap_inverse
+        hunit (fun k j => stageBlock k j j) pivotInvCLM hLeft hRight)
+  have hRecip : SchurStageActivePivotInvReciprocal13_7
+      stageInvDiagBound (higham13_algorithm13_3_pivotInvNorm pivotInv) := by
+    intro k hk
+    simpa [stageInvDiagBound, hPivotNorm k] using hRecipCLM k hk
+  exact
+    higham13_algorithm13_3_diagLowerCertGeneric_diag_lower_of_source_table_reciprocal
+      invDiagBound A pivotInv stageInvDiagBound hInit hDiagUpdate hRecip
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equation (13.18):
+    concrete matrix-`∞`-operator-norm instance of the generic CLM source table.
+
+    The active Schur-stage blocks are the actual matrix-product Algorithm 13.3
+    stages, viewed as continuous linear maps on finite vectors by
+    `matrixMulVecCLM`.  This proves the source-table-to-certificate bridge for
+    Mathlib's submultiplicative matrix `∞` operator norm.  The active pivot
+    inverse identities and the initial lower-table domination remain explicit
+    hypotheses. -/
+theorem
+    higham13_algorithm13_3_matrix_infNorm_diagLowerCertGeneric_diag_lower_of_continuousLinearMap_source_table
+    {m r : ℕ}
+    (hunit : ({x : Fin r → ℝ | ‖x‖ = 1} : Set (Fin r → ℝ)).Nonempty)
+    (invDiagBound : Fin m → ℝ)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hInit : ∀ j : Fin m,
+      invDiagBound j ≤
+        continuousLinearMapLowerNorm
+          (matrixMulVecCLM
+            (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv 0 j j))
+          hunit)
+    (hLeft : ∀ k : ℕ, ∀ hk : k < m, ∀ x : Fin r → ℝ,
+      matrixMulVecCLM (pivotInv k)
+        (matrixMulVecCLM
+          (higham13_algorithm13_3_schurStageMatrixBlock
+            A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩) x) = x)
+    (hRight : ∀ k : ℕ, ∀ hk : k < m, ∀ y : Fin r → ℝ,
+      matrixMulVecCLM
+          (higham13_algorithm13_3_schurStageMatrixBlock
+            A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩)
+        (matrixMulVecCLM (pivotInv k) y) = y) :
+    letI := Matrix.linftyOpNormedRing (n := Fin r) (α := ℝ)
+    SchurStageActivePivotInvDiagLower13_7
+      (higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv)
+      (fun k => infNorm (pivotInv k)) := by
+  letI := Matrix.linftyOpNormedRing (n := Fin r) (α := ℝ)
+  let stage : ℕ → Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ :=
+    higham13_algorithm13_3_schurStageMatrixBlock A pivotInv
+  let stageCLM : ℕ → Fin m → Fin m → (Fin r → ℝ) →L[ℝ] (Fin r → ℝ) :=
+    fun k i j => matrixMulVecCLM (stage k i j)
+  let pivotCLM : ℕ → (Fin r → ℝ) →L[ℝ] (Fin r → ℝ) :=
+    fun k => matrixMulVecCLM (pivotInv k)
+  have hStageNorm : ∀ k : ℕ, ∀ i j : Fin m,
+      ‖stageCLM k i j‖ = higham13_algorithm13_3_schurStageNorm A pivotInv k i j := by
+    intro k i j
+    simpa [stageCLM, stage, higham13_algorithm13_3_schurStageNorm, infNorm] using
+      matrixMulVecCLM_norm_eq_infNorm (stage k i j)
+  have hPivotNorm : ∀ k : ℕ,
+      ‖pivotCLM k‖ = higham13_algorithm13_3_pivotInvNorm pivotInv k := by
+    intro k
+    simpa [pivotCLM, higham13_algorithm13_3_pivotInvNorm, infNorm] using
+      matrixMulVecCLM_norm_eq_infNorm (pivotInv k)
+  have hSchur : ∀ k : ℕ, ∀ hk : k < m, ∀ j : Fin m,
+      k + 1 ≤ j.val → ∀ x : Fin r → ℝ,
+        stageCLM (k + 1) j j x =
+          stageCLM k j j x -
+            stageCLM k j ⟨k, hk⟩
+              (pivotCLM k (stageCLM k ⟨k, hk⟩ j x)) := by
+    intro k hk j hj x
+    let p : Fin m := ⟨k, hk⟩
+    have hUpdate :=
+      (higham13_algorithm13_3_schurStageBlock_exact_update A pivotInv)
+        k hk j j hj hj
+    have hUpdateM :
+        stage (k + 1) j j =
+          stage k j j - stage k j p * pivotInv k * stage k p j := by
+      simpa [stage, higham13_algorithm13_3_schurStageMatrixBlock, p] using hUpdate
+    change
+      matrixMulVecCLM (stage (k + 1) j j) x =
+        matrixMulVecCLM (stage k j j) x -
+          matrixMulVecCLM (stage k j p)
+            (matrixMulVecCLM (pivotInv k) (matrixMulVecCLM (stage k p j) x))
+    rw [hUpdateM]
+    simp [matrixMulVecCLM_apply, Matrix.sub_mulVec, Matrix.mulVec_mulVec,
+      Matrix.mul_assoc]
+  have hLeft' : ∀ k : ℕ, ∀ hk : k < m, ∀ x : Fin r → ℝ,
+      pivotCLM k (stageCLM k ⟨k, hk⟩ ⟨k, hk⟩ x) = x := by
+    intro k hk x
+    simpa [pivotCLM, stageCLM, stage] using hLeft k hk x
+  have hRight' : ∀ k : ℕ, ∀ hk : k < m, ∀ y : Fin r → ℝ,
+      stageCLM k ⟨k, hk⟩ ⟨k, hk⟩ (pivotCLM k y) = y := by
+    intro k hk y
+    simpa [pivotCLM, stageCLM, stage] using hRight k hk y
+  have hInit' : ∀ j : Fin m,
+      invDiagBound j ≤ continuousLinearMapLowerNorm (stageCLM 0 j j) hunit := by
+    intro j
+    simpa [stageCLM, stage] using hInit j
+  have hDiagLower :=
+    higham13_algorithm13_3_diagLowerCertGeneric_diag_lower_of_continuousLinearMap_source_table
+      hunit invDiagBound A pivotInv stageCLM pivotCLM hInit'
+      hStageNorm hPivotNorm hSchur hLeft' hRight'
+  simpa [higham13_algorithm13_3_pivotInvNorm, infNorm] using hDiagLower
+
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equation (13.18):
     min-action/lower-norm source data supplies the concrete one-sided active
     pivot certificate for `diagLowerCert`.
