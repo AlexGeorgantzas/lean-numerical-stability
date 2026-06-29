@@ -648,6 +648,47 @@ theorem higham21_lemma21_2_symmetrized_system_mulVec_self_of_deltaA1 {m n : ℕ}
   rw [higham21_lemma21_2_symmetrized_system_mulVec_self_eq A x hsq DeltaA1 DeltaA2]
   exact hDeltaA1
 
+/-- A zero right-hand side has the zero vector as a minimum 2-norm solution of
+    any rectangular system. -/
+theorem rectMinNormSolution_zero_of_rhs_zero {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (hb : b = 0) :
+    RectMinNormSolution m n A b (0 : Fin n → ℝ) := by
+  constructor
+  · rw [hb]
+    ext i
+    simp [rectMatMulVec]
+  · intro z _hz
+    have hzero : vecNorm2 (0 : Fin n → ℝ) = 0 := by
+      simpa using (vecNorm2_zero (n := n))
+    rw [hzero]
+    exact vecNorm2_nonneg z
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    zero-vector branch of the Kielbasinski--Schwetlick proof.  If the printed
+    candidate `x` is zero, the source proof takes the single perturbation to be
+    `DeltaA2`; the first perturbed equation then forces `b = 0`, so the zero
+    vector is the minimum 2-norm solution for the `A + DeltaA2` system.
+
+    This is only the `x = 0` branch.  The nonzero branch uses the projector
+    mixture and beta argument below. -/
+theorem higham21_lemma21_2_zero_branch_min_norm_of_deltaA2 {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (hx : x = 0)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b) :
+    RectMinNormSolution m n (fun i j => A i j + DeltaA2 i j) b x := by
+  subst x
+  have hb : b = 0 := by
+    rw [← hDeltaA1]
+    ext i
+    simp [rectMatMulVec]
+  exact rectMinNormSolution_zero_of_rhs_zero
+    (fun i j => A i j + DeltaA2 i j) b hb
+
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     the scalar `beta = 1 + x^T H^T y / x^T x`, where
     `H = DeltaA1 - DeltaA2`, used to rescale the dual vector in the proof. -/
