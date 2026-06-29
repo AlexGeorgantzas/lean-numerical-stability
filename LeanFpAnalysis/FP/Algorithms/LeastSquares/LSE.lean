@@ -380,6 +380,37 @@ theorem isLowerTriangular_matTranspose_of_isUpperTriangular {n : ℕ}
   unfold matTranspose
   exact hR j i hij
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction step:
+    reverse both indices of an upper-triangular QR block.  This is the square
+    block produced when a standard `[R;0]` QR display is turned into the
+    lower-triangular block in the tall associated form (20.28). -/
+def gqrReverseSquare {n : ℕ} (R : Fin n → Fin n → ℝ) :
+    Fin n → Fin n → ℝ :=
+  fun i j => R (Fin.rev i) (Fin.rev j)
+
+/-- Reversing both indices turns an upper-triangular QR block into the
+    lower-triangular block used in Higham's Chapter 20 GQR display (20.28). -/
+theorem gqrReverseSquare_lowerTriangular_of_upper {n : ℕ}
+    {R : Fin n → Fin n → ℝ}
+    (hR : IsUpperTriangular n R) :
+    IsLowerTriangular (gqrReverseSquare R) := by
+  intro i j hij
+  unfold gqrReverseSquare
+  exact hR (Fin.rev i) (Fin.rev j) ((Fin.rev_lt_rev).2 hij)
+
+/-- Diagonal nonzeroness is preserved by the index reversal used to convert an
+    upper QR block into the lower GQR block. -/
+theorem gqrReverseSquare_diag_ne_zero_iff {n : ℕ}
+    (R : Fin n → Fin n → ℝ) :
+    (∀ i : Fin n, gqrReverseSquare R i i ≠ 0) ↔
+      ∀ i : Fin n, R i i ≠ 0 := by
+  constructor
+  · intro h i
+    have hi := h (Fin.rev i)
+    simpa [gqrReverseSquare] using hi
+  · intro h i
+    simpa [gqrReverseSquare] using h (Fin.rev i)
+
 private theorem isRightInverse_of_isLeftInverse_square {n : ℕ}
     {T Tinv : Fin n → Fin n → ℝ}
     (hLeft : IsLeftInverse n T Tinv) :
