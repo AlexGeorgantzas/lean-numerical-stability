@@ -9507,6 +9507,28 @@ These compile, but should not be treated as fully derived stability results:
   scratch cleanup, and focused `#print axioms` with only `propext`,
   `Classical.choice`, and `Quot.sound`.
 
+- 2026-06-29 Problem 13.4 stage-local base-comparison product/witness routing:
+  added
+  `higham13_eq13_22_matrix_stage_history_product_from_stageLocalGrowth_base_comparisons_exact_kappa`,
+  `higham13_eq13_23_matrix_stage_history_product_from_stageLocalGrowth_base_comparisons_exact_kappa`,
+  `higham13_eq13_23_matrix_stage_history_product_from_stageLocalGrowth_base_comparisons_exact_kappa_of_product_bound_diag_update`,
+  `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_base_comparisons_exact_kappa_of_pivot_right_inverse`,
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_base_comparisons_exact_kappa_of_pivot_right_inverse`,
+  and
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_base_comparisons_exact_kappa_of_product_bound_diag_update_of_pivot_right_inverse`.
+  These thread the base-comparison multiplier route into the Eq.13.22/Eq.13.23
+  product wrappers and concrete `BlockLUFactSpec` witness wrappers.  The
+  reduced surface now replaces raw `rhoLocal <= rhoFull` by the explicit
+  base-denominator comparison, and the Eq.13.23 diagonal-update variants also
+  replace raw `rho <= 2` by active BDD product/update data.  The base
+  comparison, condition comparison, and active product/update data remain open
+  source obligations, not assumed closures.  Verification passed: direct
+  `BlockLU.lean`, focused `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`,
+  quiet lookup `/tmp/ch13_stageLocal_baseProducts_lookup.{out,err}` with empty
+  stderr and all six names present, `git diff --check`, touched public
+  Lean-file marker scan, scratch cleanup, and focused `#print axioms` with only
+  `propext`, `Classical.choice`, and `Quot.sound`.
+
 - 2026-06-24 Problem 13.4 stage-local source-comparison determinant cleanup:
   added
   `higham13_eq13_22_matrix_stage_history_product_from_stageLocalGrowth_source_comparisons_exact_kappa_of_det_ne_zero`,
