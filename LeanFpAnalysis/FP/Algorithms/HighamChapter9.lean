@@ -41099,6 +41099,31 @@ theorem higham9_10_HessenbergGEPPUTrace_exists_PermutedLUFactSpec_L_bound_growth
     (higham9_2_permutedLUFactSpec_det_ne_zero_iff_pivots_ne_zero hLU).mp hdet_row
   exact ⟨L_hat, U_hat, sigma, hLU, hL_bound, hU_diag, hBmax, hgrowth⟩
 
+/-- **Theorem 9.10 / GEPP trace support**, every nonsingular upper-Hessenberg
+input admits a cumulative row-permuted `PA = LU` certificate with unit-bounded
+lower multipliers, nonzero computed pivots, and inherited Hessenberg growth
+factor `rho <= n`. -/
+theorem higham9_10_exists_PermutedLUFactSpec_L_bound_growth_le_of_det_ne_zero
+    (n : ℕ)
+    (hn_pos : 0 < n)
+    (A : Fin n → Fin n → ℝ)
+    (hH : IsUpperHessenberg n A)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+    ∃ sigma : Fin n → Fin n,
+    ∃ _hLU : higham9_2_PermutedLUFactSpec n A L_hat U_hat sigma,
+      (∀ i j : Fin n, |L_hat i j| ≤ 1) ∧
+      (∀ i : Fin n, U_hat i i ≠ 0) ∧
+      ∃ hBmax :
+        0 < maxEntryNorm hn_pos (higham9_2_rowPermutedMatrix A sigma),
+        growthFactorEntry hn_pos
+          (higham9_2_rowPermutedMatrix A sigma) U_hat hBmax ≤ (n : ℝ) := by
+  obtain ⟨U_trace, htrace⟩ :=
+    higham9_10_exists_HessenbergGEPPUTrace_of_det_ne_zero hn_pos A hH hdet
+  exact
+    higham9_10_HessenbergGEPPUTrace_exists_PermutedLUFactSpec_L_bound_growth_le
+      n hn_pos A U_trace hdet htrace
+
 /-- **Theorem 9.10 / Theorem 9.5**, exact upper-Hessenberg GEPP trace
 Wilkinson source bound with the Hessenberg `rho <= n` growth constant.
 
