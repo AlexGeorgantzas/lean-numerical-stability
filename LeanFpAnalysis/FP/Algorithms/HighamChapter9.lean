@@ -31218,6 +31218,61 @@ theorem higham9_8_exists_completePivoting_growth_factor_ge_theta_real {n : ℕ}
         higham9_8_growth_factor_ge_theta_of_completePermutedLUFactSpec_right_inverse
           A A_inv L U sigma tau hLU hRight hA hAinv
 
+/-- **Theorem 9.8 support**, determinant nonsingularity makes the canonical
+`nonsingInv` have positive max-entry norm. -/
+theorem higham9_nonsingInv_maxEntryNorm_pos_of_det_ne_zero {n : ℕ}
+    (hn : 0 < n) (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    0 < maxEntryNorm hn (nonsingInv n A) := by
+  classical
+  have hinv_det :
+      Matrix.det (Matrix.of (nonsingInv n A) :
+          Matrix (Fin n) (Fin n) ℝ) =
+        (Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ))⁻¹ := by
+    unfold nonsingInv
+    letI : Inv (Matrix (Fin n) (Fin n) ℝ) := Matrix.inv
+    change
+      Matrix.det
+          ((Matrix.of A : Matrix (Fin n) (Fin n) ℝ)⁻¹) =
+        (Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ))⁻¹
+    rw [Matrix.det_nonsing_inv, Ring.inverse_eq_inv]
+  have hdetInv :
+      Matrix.det (Matrix.of (nonsingInv n A) :
+          Matrix (Fin n) (Fin n) ℝ) ≠ 0 := by
+    rw [hinv_det]
+    exact inv_ne_zero hdet
+  exact maxEntryNorm_pos_of_det_ne_zero hn (nonsingInv n A) (by
+    simpa using hdetInv)
+
+/-- **Theorem 9.8**, determinant-only real complete-pivoting lower-bound
+existence form.
+
+For every nonsingular real matrix, the canonical `nonsingInv` discharges the
+visible right-inverse and positive inverse-norm hypotheses in
+`higham9_8_exists_completePivoting_growth_factor_ge_theta_real`. -/
+theorem higham9_8_exists_completePivoting_growth_factor_ge_theta_nonsingInv {n : ℕ}
+    (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ hA : 0 < maxEntryNorm hn A,
+    ∃ _ : 0 < maxEntryNorm hn (nonsingInv n A),
+    ∃ L U : Fin n → Fin n → ℝ,
+    ∃ sigma tau : Fin n → Fin n,
+      higham9_2_CompletePermutedLUFactSpec n A L U sigma tau ∧
+        1 / (maxEntryNorm hn A * maxEntryNorm hn (nonsingInv n A)) ≤
+          growthFactorEntry hn A U hA := by
+  classical
+  have hA : 0 < maxEntryNorm hn A :=
+    maxEntryNorm_pos_of_det_ne_zero hn A hdet
+  have hAinv : 0 < maxEntryNorm hn (nonsingInv n A) :=
+    higham9_nonsingInv_maxEntryNorm_pos_of_det_ne_zero hn A hdet
+  have hRight : IsRightInverse n A (nonsingInv n A) :=
+    (isInverse_nonsingInv_of_det_ne_zero n A hdet).2
+  obtain ⟨L, U, sigma, tau, hLU, hbound⟩ :=
+    higham9_8_exists_completePivoting_growth_factor_ge_theta_real
+      hn A (nonsingInv n A) hdet hRight hA hAinv
+  exact ⟨hA, hAinv, L, U, sigma, tau, hLU, hbound⟩
+
 /-- **Problem 9.11**, the flattened sine block has an actual cumulative
 complete-pivoting certificate whose entrywise growth is at least `n + 1`.
 
@@ -33180,6 +33235,32 @@ theorem higham9_8_CompletePivotGECPUTrace_growth_factor_ge_theta_real {n : ℕ}
             growthFactorEntry (Nat.succ_pos m) A U hA' :=
         le_trans hcert' hgrowth_le'
       simpa using hfinal'
+
+/-- **Theorem 9.8 / Problem 9.11 bridge**, determinant-only recursive
+complete-pivoting trace lower bound.
+
+For a nonsingular input matrix and a supplied recursive complete-pivoting trace,
+the canonical `nonsingInv` discharges the right-inverse and positive
+inverse-norm hypotheses in the explicit-inverse trace theorem. -/
+theorem higham9_8_CompletePivotGECPUTrace_growth_factor_ge_theta_nonsingInv {n : ℕ}
+    (hn : 0 < n)
+    (A U : Fin n → Fin n → ℝ)
+    (htrace : higham9_8_CompletePivotGECPUTrace n A U)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ hA : 0 < maxEntryNorm hn A,
+    ∃ _ : 0 < maxEntryNorm hn (nonsingInv n A),
+      1 / (maxEntryNorm hn A * maxEntryNorm hn (nonsingInv n A)) ≤
+        growthFactorEntry hn A U hA := by
+  classical
+  have hA : 0 < maxEntryNorm hn A :=
+    maxEntryNorm_pos_of_det_ne_zero hn A hdet
+  have hAinv : 0 < maxEntryNorm hn (nonsingInv n A) :=
+    higham9_nonsingInv_maxEntryNorm_pos_of_det_ne_zero hn A hdet
+  have hRight : IsRightInverse n A (nonsingInv n A) :=
+    (isInverse_nonsingInv_of_det_ne_zero n A hdet).2
+  exact ⟨hA, hAinv,
+    higham9_8_CompletePivotGECPUTrace_growth_factor_ge_theta_real
+      hn A (nonsingInv n A) U htrace hRight hA hAinv⟩
 
 /-- **Problem 9.11**, the flattened sine block has an actual recursive
 complete-pivoting `U` trace whose entrywise growth is at least `n + 1`. -/
