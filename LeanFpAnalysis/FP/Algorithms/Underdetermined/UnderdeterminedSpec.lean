@@ -66,10 +66,65 @@ structure RectMinNormSolution (m n : ℕ)
   /-- The candidate has no larger Euclidean norm than any other solution. -/
   min_norm : ∀ z : Fin n → ℝ, rectMatMulVec A z = b → vecNorm2 x ≤ vecNorm2 z
 
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.4):
+    four-equation Moore--Penrose certificate for a rectangular table `Aplus`.
+
+    For the full-row-rank underdetermined case, the concrete source table
+    `Aᵀ(AAᵀ)⁻¹` should satisfy these identities and is therefore the source
+    pseudoinverse `A⁺`. -/
+structure RectMoorePenrosePseudoinverse (m n : ℕ)
+    (A : Fin m → Fin n → ℝ)
+    (Aplus : Fin n → Fin m → ℝ) : Prop where
+  /-- Penrose equation `A A⁺ A = A`. -/
+  reproduces_matrix :
+    rectMatMul (rectMatMul A Aplus) A = A
+  /-- Penrose equation `A⁺ A A⁺ = A⁺`. -/
+  reproduces_pseudoinverse :
+    rectMatMul (rectMatMul Aplus A) Aplus = Aplus
+  /-- Penrose symmetry condition for `A A⁺`. -/
+  range_projection_symmetric :
+    IsSymmetricFiniteMatrix (rectMatMul A Aplus)
+  /-- Penrose symmetry condition for `A⁺ A`. -/
+  domain_projection_symmetric :
+    IsSymmetricFiniteMatrix (rectMatMul Aplus A)
+
+/-- A rectangular right inverse with a symmetric domain projection satisfies
+    the four Moore--Penrose equations. -/
+theorem rectMoorePenrosePseudoinverse_of_right_inverse_and_domain_symmetric
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (Aplus : Fin n → Fin m → ℝ)
+    (hright : rectMatMul A Aplus = idMatrix m)
+    (hdomain : IsSymmetricFiniteMatrix (rectMatMul Aplus A)) :
+    RectMoorePenrosePseudoinverse m n A Aplus := by
+  constructor
+  · calc
+      rectMatMul (rectMatMul A Aplus) A
+          = rectMatMul (idMatrix m) A := by rw [hright]
+      _ = A := rectMatMul_id_left A
+  · calc
+      rectMatMul (rectMatMul Aplus A) Aplus
+          = rectMatMul Aplus (rectMatMul A Aplus) :=
+              rectMatMul_assoc Aplus A Aplus
+      _ = rectMatMul Aplus (idMatrix m) := by rw [hright]
+      _ = Aplus := rectMatMul_id_right Aplus
+  · rw [hright]
+    intro i j
+    simp [idMatrix, eq_comm]
+  · exact hdomain
+
 /-- Rectangular Gram matrix `A Aᵀ` for an underdetermined system. -/
 noncomputable def rectGram {m n : ℕ} (A : Fin m → Fin n → ℝ) :
     Fin m → Fin m → ℝ :=
   fun i j => ∑ k : Fin n, A i k * A j k
+
+/-- The rectangular Gram matrix `A Aᵀ` is symmetric. -/
+theorem rectGram_symmetric {m n : ℕ} (A : Fin m → Fin n → ℝ) :
+    IsSymmetricFiniteMatrix (rectGram A) := by
+  intro i j
+  unfold rectGram
+  apply Finset.sum_congr rfl
+  intro k _
+  ring
 
 /-- Transpose-times-vector action `Aᵀ y` for a rectangular matrix. -/
 noncomputable def rectTransposeMulVec {m n : ℕ} (A : Fin m → Fin n → ℝ)
@@ -354,6 +409,71 @@ theorem higham21_eq21_4_rect_pseudoinverse_formula_min_norm_of_gram_det_ne_zero
     A (rectGram A) (undetGramNonsingInv A) b
     (by intro i j; rfl)
     (isInverse_nonsingInv_of_det_ne_zero m (rectGram A) hdet)
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.4):
+    the domain-side projection `Aᵀ(AAᵀ)⁻¹ A` is symmetric when the supplied
+    inverse table for `AAᵀ` is symmetric. -/
+theorem undetAplusOfGramInv_domain_projection_symmetric {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (hInvSym : IsSymmetricFiniteMatrix AAT_inv) :
+    IsSymmetricFiniteMatrix (rectMatMul (undetAplusOfGramInv A AAT_inv) A) := by
+  intro j k
+  unfold rectMatMul undetAplusOfGramInv
+  calc
+    ∑ l : Fin m, (∑ r : Fin m, A r j * AAT_inv r l) * A l k
+        = ∑ l : Fin m, ∑ r : Fin m,
+            (A r j * AAT_inv r l) * A l k := by
+            apply Finset.sum_congr rfl
+            intro l _
+            rw [Finset.sum_mul]
+    _ = ∑ r : Fin m, ∑ l : Fin m,
+            (A r j * AAT_inv r l) * A l k := by
+            rw [Finset.sum_comm]
+    _ = ∑ r : Fin m, ∑ l : Fin m,
+            (A r j * AAT_inv l r) * A l k := by
+            apply Finset.sum_congr rfl
+            intro r _
+            apply Finset.sum_congr rfl
+            intro l _
+            rw [hInvSym r l]
+    _ = ∑ r : Fin m, ∑ l : Fin m,
+            (A l k * AAT_inv l r) * A r j := by
+            apply Finset.sum_congr rfl
+            intro r _
+            apply Finset.sum_congr rfl
+            intro l _
+            ring
+    _ = ∑ l : Fin m, ∑ r : Fin m,
+            (A r k * AAT_inv r l) * A l j := by
+            rw [Finset.sum_comm]
+    _ = ∑ l : Fin m, (∑ r : Fin m, A r k * AAT_inv r l) * A l j := by
+            apply Finset.sum_congr rfl
+            intro l _
+            rw [Finset.sum_mul]
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.4):
+    determinant-facing symmetry of the domain projection
+    `Aᵀ(AAᵀ)⁻¹ A`. -/
+theorem undetAplusOfGramNonsingInv_domain_projection_symmetric {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) :
+    IsSymmetricFiniteMatrix (rectMatMul (undetAplusOfGramNonsingInv A) A) :=
+  undetAplusOfGramInv_domain_projection_symmetric A (undetGramNonsingInv A)
+    (nonsingInv_symmetric_of_symmetric (rectGram A) (rectGram_symmetric A))
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.4):
+    determinant-facing Moore--Penrose certificate for the concrete source table
+    `Aᵀ(AAᵀ)⁻¹`.  This is the algebraic identification of that table with
+    `A⁺` under the full-row-rank Gram nonsingularity hypothesis. -/
+theorem higham21_eq21_4_rect_moore_penrose_of_gram_det_ne_zero
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (hdet : Matrix.det (rectGram A : Matrix (Fin m) (Fin m) ℝ) ≠ 0) :
+    RectMoorePenrosePseudoinverse m n A (undetAplusOfGramNonsingInv A) :=
+  rectMoorePenrosePseudoinverse_of_right_inverse_and_domain_symmetric
+    A (undetAplusOfGramNonsingInv A)
+    (higham21_eq21_4_rect_pseudoinverse_right_inverse_of_gram_det_ne_zero A hdet)
+    (undetAplusOfGramNonsingInv_domain_projection_symmetric A)
 
 /-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.5):
     source-facing wrapper for the SNE formation step.  Once the seminormal

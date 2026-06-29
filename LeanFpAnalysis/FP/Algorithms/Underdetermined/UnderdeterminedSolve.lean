@@ -56,6 +56,121 @@ theorem higham21_eq21_2_qr_block_transpose_coordinates {m k : ℕ}
       fun j : Fin m => ∑ i : Fin m, R i j * y1 i :=
   lsQRTallBlock_transpose_mulVec_append R y1 y2
 
+/-- Orthogonal-coordinate transpose action for a rectangular panel.  If
+    `M = Q B`, then `Mᵀ (Q y) = Bᵀ y`. -/
+theorem higham21_matMulRectLeft_transpose_action_orthogonal {m n : ℕ}
+    (Q : Fin m → Fin m → ℝ) (B : Fin m → Fin n → ℝ)
+    (y : Fin m → ℝ) (hQ : IsOrthogonal m Q) :
+    rectMatMulVec (finiteTranspose (matMulRectLeft Q B))
+        (matMulVec m Q y) =
+      fun j : Fin n => ∑ i : Fin m, B i j * y i := by
+  ext j
+  unfold rectMatMulVec finiteTranspose matMulRectLeft matMulVec
+  calc
+    ∑ i : Fin m, (∑ k : Fin m, Q i k * B k j) *
+        (∑ l : Fin m, Q i l * y l)
+        = ∑ i : Fin m, ∑ k : Fin m, ∑ l : Fin m,
+            (Q i k * B k j) * (Q i l * y l) := by
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [Finset.sum_mul]
+            apply Finset.sum_congr rfl
+            intro k _
+            rw [Finset.mul_sum]
+    _ = ∑ k : Fin m, ∑ l : Fin m, ∑ i : Fin m,
+          (Q i k * B k j) * (Q i l * y l) := by
+            rw [Finset.sum_comm]
+            apply Finset.sum_congr rfl
+            intro k _
+            rw [Finset.sum_comm]
+    _ = ∑ k : Fin m, ∑ l : Fin m,
+          (∑ i : Fin m, Q i k * Q i l) * (B k j * y l) := by
+            apply Finset.sum_congr rfl
+            intro k _
+            apply Finset.sum_congr rfl
+            intro l _
+            rw [Finset.sum_mul]
+            apply Finset.sum_congr rfl
+            intro i _
+            ring
+    _ = ∑ k : Fin m, ∑ l : Fin m,
+          (if k = l then 1 else 0) * (B k j * y l) := by
+            apply Finset.sum_congr rfl
+            intro k _
+            apply Finset.sum_congr rfl
+            intro l _
+            rw [hQ.col_orthonormal k l]
+    _ = ∑ k : Fin m, B k j * y k := by
+            simp [Finset.mem_univ]
+
+/-- Multiplying by an orthogonal matrix recovers a vector from its transposed
+    coordinates. -/
+theorem higham21_matMulVec_orthogonal_mul_transpose {n : ℕ}
+    {Q : Fin n → Fin n → ℝ} (hQ : IsOrthogonal n Q)
+    (x : Fin n → ℝ) :
+    matMulVec n Q (matMulVec n (matTranspose Q) x) = x := by
+  ext i
+  calc
+    matMulVec n Q (matMulVec n (matTranspose Q) x) i
+        = matMulVec n (matMul n Q (matTranspose Q)) x i := by
+            exact (matMulVec_matMul n Q (matTranspose Q) x i).symm
+    _ = matMulVec n (idMatrix n) x i := by
+            have hmat : matMul n Q (matTranspose Q) = idMatrix n := by
+              ext a b
+              exact hQ.right_inv a b
+            rw [hmat]
+    _ = x i := by
+            exact congrFun (matMulVec_id n x) i
+
+/-- Reconstruct a vector over `Fin (p + q)` from its left and right
+    `Fin.append` coordinate blocks. -/
+theorem higham21_finAppend_left_right {p q : ℕ}
+    (y : Fin (p + q) → ℝ) :
+    Fin.append
+        (fun i : Fin p => y (Fin.castAdd q i))
+        (fun i : Fin q => y (Fin.natAdd p i)) =
+      y := by
+  ext i
+  refine Fin.addCases
+    (motive := fun i : Fin (p + q) =>
+      Fin.append
+          (fun i : Fin p => y (Fin.castAdd q i))
+          (fun i : Fin q => y (Fin.natAdd p i)) i = y i)
+    ?left ?right i
+  · intro i
+    simp [Fin.append_left]
+  · intro i
+    simp [Fin.append_right]
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equations (21.1)-(21.3):
+    exact QR-coordinate handoff for the underdetermined system.  If
+    `Aᵀ = Q [R;0]`, represented here by
+    `A = (Q [R;0])ᵀ`, then applying `A` to `Q[y₁;y₂]` gives the
+    triangular coordinate equation `Rᵀ y₁`. -/
+theorem higham21_qr_transpose_system_eq {m k : ℕ}
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (hQ : IsOrthogonal (m + k) Q)
+    (R : Fin m → Fin m → ℝ)
+    (y1 : Fin m → ℝ) (y2 : Fin k → ℝ) :
+    rectMatMulVec
+        (finiteTranspose (matMulRectLeft Q (lsQRTallBlock (k := k) R)))
+        (matMulVec (m + k) Q (Fin.append y1 y2)) =
+      fun j : Fin m => ∑ i : Fin m, R i j * y1 i := by
+  have hcols :=
+    higham21_matMulRectLeft_transpose_action_orthogonal
+      Q (lsQRTallBlock (k := k) R) (Fin.append y1 y2) hQ
+  ext j
+  calc
+    rectMatMulVec
+        (finiteTranspose (matMulRectLeft Q (lsQRTallBlock (k := k) R)))
+        (matMulVec (m + k) Q (Fin.append y1 y2)) j
+        = (fun j : Fin m =>
+            ∑ i : Fin (m + k), lsQRTallBlock (k := k) R i j *
+              Fin.append y1 y2 i) j := by
+            exact congrFun hcols j
+    _ = (fun j : Fin m => ∑ i : Fin m, R i j * y1 i) j := by
+            exact congrFun (lsQRTallBlock_transpose_mulVec_append R y1 y2) j
+
 /-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.3):
     source-facing algebraic wrapper for the minimum-norm coordinate choice
     in the Q method.  Among coordinate vectors with the same first block,
@@ -89,6 +204,57 @@ theorem higham21_eq21_3_q_factor_zero_free_block_min_norm {m k : ℕ}
   rw [vecNorm2_orthogonal Q (Fin.append y1 (0 : Fin k → ℝ)) hQ,
     vecNorm2_orthogonal Q (Fin.append y1 y2) hQ]
   exact higham21_eq21_3_free_coordinate_zero_min_norm y1 y2
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equations (21.1)-(21.3):
+    exact Q-method minimum-norm handoff.  Under the supplied exact QR
+    factorization `Aᵀ = Q [R;0]`, if `y₁` is the unique solution of the
+    triangular coordinate equation `Rᵀ y₁ = b`, then the Q-method vector
+    `Q [y₁;0]` is the minimum 2-norm solution of `A x = b`.
+
+    This proves the QR-coordinate/minimum-norm algebra; the existence and
+    triangular nonsingularity route for `R` remain separate selected targets. -/
+theorem higham21_eq21_3_q_method_min_norm_of_qr_unique {m k : ℕ}
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (hQ : IsOrthogonal (m + k) Q)
+    (R : Fin m → Fin m → ℝ)
+    (b y1 : Fin m → ℝ)
+    (hy1 : (fun j : Fin m => ∑ i : Fin m, R i j * y1 i) = b)
+    (huniq :
+      ∀ z1 : Fin m → ℝ,
+        (fun j : Fin m => ∑ i : Fin m, R i j * z1 i) = b → z1 = y1) :
+    RectMinNormSolution m (m + k)
+      (finiteTranspose (matMulRectLeft Q (lsQRTallBlock (k := k) R)))
+      b
+      (matMulVec (m + k) Q (Fin.append y1 (0 : Fin k → ℝ))) := by
+  constructor
+  · rw [higham21_qr_transpose_system_eq Q hQ R y1 (0 : Fin k → ℝ), hy1]
+  · intro z hz
+    let y : Fin (m + k) → ℝ := matMulVec (m + k) (matTranspose Q) z
+    let z1 : Fin m → ℝ := fun i => y (Fin.castAdd k i)
+    let z2 : Fin k → ℝ := fun i => y (Fin.natAdd m i)
+    have hy_append : Fin.append z1 z2 = y := by
+      simpa [z1, z2] using higham21_finAppend_left_right (p := m) (q := k) y
+    have hz_recover :
+        matMulVec (m + k) Q (Fin.append z1 z2) = z := by
+      rw [hy_append]
+      exact higham21_matMulVec_orthogonal_mul_transpose hQ z
+    have hz1_solve :
+        (fun j : Fin m => ∑ i : Fin m, R i j * z1 i) = b := by
+      have hAw :=
+        higham21_qr_transpose_system_eq Q hQ R z1 z2
+      rw [← hAw, hz_recover, hz]
+    have hz1_eq : z1 = y1 := huniq z1 hz1_solve
+    calc
+      vecNorm2 (matMulVec (m + k) Q (Fin.append y1 (0 : Fin k → ℝ)))
+          = vecNorm2 (Fin.append y1 (0 : Fin k → ℝ)) := by
+              exact vecNorm2_orthogonal Q (Fin.append y1 (0 : Fin k → ℝ)) hQ
+      _ ≤ vecNorm2 (Fin.append z1 z2) := by
+              simpa [hz1_eq] using
+                higham21_eq21_3_free_coordinate_zero_min_norm y1 z2
+      _ = vecNorm2 (matMulVec (m + k) Q (Fin.append z1 z2)) := by
+              exact (vecNorm2_orthogonal Q (Fin.append z1 z2) hQ).symm
+      _ = vecNorm2 z := by
+              rw [hz_recover]
 
 -- ============================================================
 -- §21.3  Row-wise backward error for underdetermined systems
