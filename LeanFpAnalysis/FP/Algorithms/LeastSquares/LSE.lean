@@ -4052,6 +4052,127 @@ theorem exists_gqr_constraint_block_and_A_Q2_tall_assoc_of_fullRowRank_stackedFu
     ⟨U, hU, hCase⟩
   exact ⟨Q, S, U, hQ, hS, hBQ, hU, hCase⟩
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction route:
+    a constructed constraint block `B Q = [S 0]` plus a tall associated shape
+    for the smaller trailing block `A Q₂` packages the full generalized QR
+    block display (20.27).
+
+    The leading blocks `L₁₁` and `L₂₁` are extracted from the already
+    transformed full matrix `Uᵀ A Q`; the supplied `A Q₂` tall shape supplies
+    exactly the top-right zero block and the lower-triangular `L₂₂`. -/
+theorem GeneralizedQRFactorization.exists_of_constraint_and_A_Q2_tall_case
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (S : Fin p → Fin p → ℝ)
+    (U : Fin (r + q) → Fin (r + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hS : IsLowerTriangular S)
+    (hBQ : matMulRect p (p + q) (p + q) B Q = gqrBQBlock S)
+    (hU : IsOrthogonal (r + q) U)
+    (hCase : GQRAQTallCase r q
+      (matMulRectLeft (matTranspose U) (gqrAQ2Block A Q))) :
+    ∃ h : GeneralizedQRFactorization r p q A B,
+      h.Q = Q ∧ h.U = U ∧ h.S = S ∧ h.L22 = hCase.L := by
+  rcases hCase with ⟨Lcase, hLcase, hAQ2⟩
+  let M : Fin (r + q) → Fin (p + q) → ℝ :=
+    matMulRectLeft (matTranspose U)
+      (matMulRect (r + q) (p + q) (p + q) A Q)
+  let L11 : Fin r → Fin p → ℝ :=
+    fun i j => M (Fin.castAdd q i) (Fin.castAdd q j)
+  let L21 : Fin q → Fin p → ℝ :=
+    fun i j => M (Fin.natAdd r i) (Fin.castAdd q j)
+  let L22 : Fin q → Fin q → ℝ := Lcase
+  have htrail : ∀ row : Fin (r + q), ∀ j : Fin q,
+      M row (Fin.natAdd p j) =
+        matMulRectLeft (matTranspose U) (gqrAQ2Block A Q) row j := by
+    intro row j
+    simp [M, matMulRectLeft, gqrAQ2Block]
+  have hAQ : M = gqrAQBlock L11 L21 L22 := by
+    ext row col
+    refine Fin.addCases
+      (motive := fun col : Fin (p + q) =>
+        M row col = gqrAQBlock L11 L21 L22 row col)
+      ?leftCols ?rightCols col
+    · intro col
+      refine Fin.addCases
+        (motive := fun row : Fin (r + q) =>
+          M row (Fin.castAdd q col) =
+            gqrAQBlock L11 L21 L22 row (Fin.castAdd q col))
+        (fun row => by simp [L11, gqrAQBlock])
+        (fun row => by simp [L21, gqrAQBlock])
+        row
+    · intro col
+      refine Fin.addCases
+        (motive := fun row : Fin (r + q) =>
+          M row (Fin.natAdd p col) =
+            gqrAQBlock L11 L21 L22 row (Fin.natAdd p col))
+        ?topRows ?bottomRows row
+      · intro row
+        calc
+          M (Fin.castAdd q row) (Fin.natAdd p col)
+              =
+            matMulRectLeft (matTranspose U) (gqrAQ2Block A Q)
+              (Fin.castAdd q row) col := htrail (Fin.castAdd q row) col
+          _ = gqrAQTallBlock Lcase (Fin.castAdd q row) col := by
+                rw [hAQ2]
+          _ = 0 := by
+                simp [gqrAQTallBlock]
+          _ = gqrAQBlock L11 L21 L22 (Fin.castAdd q row) (Fin.natAdd p col) := by
+                simp [gqrAQBlock, L22]
+      · intro row
+        calc
+          M (Fin.natAdd r row) (Fin.natAdd p col)
+              =
+            matMulRectLeft (matTranspose U) (gqrAQ2Block A Q)
+              (Fin.natAdd r row) col := htrail (Fin.natAdd r row) col
+          _ = gqrAQTallBlock Lcase (Fin.natAdd r row) col := by
+                rw [hAQ2]
+          _ = L22 row col := by
+                simp [gqrAQTallBlock, L22]
+          _ = gqrAQBlock L11 L21 L22 (Fin.natAdd r row) (Fin.natAdd p col) := by
+                simp [gqrAQBlock]
+  refine ⟨{
+    Q := Q
+    U := U
+    L11 := L11
+    L21 := L21
+    L22 := L22
+    S := S
+    orthQ := hQ
+    orthU := hU
+    aq_eq := ?_
+    bq_eq := hBQ
+    lowerL22 := hLcase
+    lowerS := hS
+  }, rfl, rfl, rfl, rfl⟩
+  simpa [M] using hAQ
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction theorem for the
+    block form (20.27): source full row rank of `B` and full column rank of the
+    stacked matrix `[A; B]` construct exact generalized QR factorization data.
+
+    This closes the exact algebraic GQR existence surface for (20.27).  The
+    associated (20.28) display, numerical rank equivalences, and computed
+    finite-precision GQR stability remain separate rows. -/
+theorem GeneralizedQRFactorization.exists_of_fullRowRank_stackedFullColumnRank
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    Nonempty (GeneralizedQRFactorization r p q A B) := by
+  rcases
+    exists_gqr_constraint_block_and_A_Q2_tall_assoc_of_fullRowRank_stackedFullColumnRank
+      (A := A) (B := B) hB hstack with
+    ⟨Q, S, U, hQ, hS, hBQ, hU, hCase⟩
+  rcases hCase with ⟨hCase⟩
+  rcases GeneralizedQRFactorization.exists_of_constraint_and_A_Q2_tall_case
+      (A := A) (B := B) Q S U hQ hS hBQ hU hCase with
+    ⟨h, _hQeq, _hUeq, _hSeq, _hL22eq⟩
+  exact ⟨h⟩
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof:
     on the `Q₂` coordinate range, the equation `A x = 0` is equivalent to
     `L22 y₂ = 0`.
@@ -5006,6 +5127,54 @@ theorem GeneralizedQRFactorization.fullRowRank_stackedFullColumnRank_iff_s_l22_b
       (h.conditions20_24_iff_s_l22_bijective).2 hbij
     exact ⟨hcond.1,
       (LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).1 hcond.2⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, sentence after (20.28):
+    source full row rank of `B` and full column rank of `[A; B]` construct
+    exact GQR data whose displayed triangular blocks `S` and `L22` have
+    nonzero diagonals.
+
+    This removes the supplied-factor hypothesis from the diagonal
+    nonsingularity surface, while remaining exact algebra for (20.27). -/
+theorem GeneralizedQRFactorization.exists_with_s_l22_diag_ne_zero_of_fullRowRank_stackedFullColumnRank
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ h : GeneralizedQRFactorization r p q A B,
+      (∀ i : Fin p, h.S i i ≠ 0) ∧
+        (∀ i : Fin q, h.L22 i i ≠ 0) := by
+  rcases
+    GeneralizedQRFactorization.exists_of_fullRowRank_stackedFullColumnRank
+      (A := A) (B := B) hB hstack with
+    ⟨h⟩
+  exact ⟨h,
+    (h.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero).1
+      ⟨hB, hstack⟩⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, sentence after (20.28):
+    source full row rank of `B` and full column rank of `[A; B]` construct
+    exact GQR data whose displayed triangular blocks `S` and `L22` are
+    bijective solve maps.
+
+    This is the constructed-factor version of the source nonsingularity
+    statement, expressed as solvability of the two triangular systems. -/
+theorem GeneralizedQRFactorization.exists_with_s_l22_bijective_of_fullRowRank_stackedFullColumnRank
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ h : GeneralizedQRFactorization r p q A B,
+      Function.Bijective (rectMatMulVec h.S) ∧
+        Function.Bijective (rectMatMulVec h.L22) := by
+  rcases
+    GeneralizedQRFactorization.exists_of_fullRowRank_stackedFullColumnRank
+      (A := A) (B := B) hB hstack with
+    ⟨h⟩
+  exact ⟨h,
+    (h.fullRowRank_stackedFullColumnRank_iff_s_l22_bijective).1
+      ⟨hB, hstack⟩⟩
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, exact supplied-GQR solve
     consequence under the local assumptions (20.24).
@@ -6953,5 +7122,74 @@ theorem GeneralizedQRFactorization.exists_unique_method_solution_of_wide_fullRow
   exact ⟨h,
     h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack,
     h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, constructed exact GQR method
+    package for the block form (20.27).
+
+    Unlike the earlier tall/wide method wrappers, this theorem no longer asks
+    for supplied GQR factors or supplied associated-shape records: source full
+    row rank of `B` and full column rank of `[A; B]` construct exact GQR data,
+    unique triangular solve coordinates, and the unique exact
+    equality-constrained least-squares minimizer.  The associated (20.28)
+    display and finite-precision computed GQR stability remain separate rows. -/
+theorem GeneralizedQRFactorization.exists_unique_method_solution_of_fullRowRank_stackedFullColumnRank
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    {b : Fin (r + q) → ℝ} {d : Fin p → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ h : GeneralizedQRFactorization r p q A B,
+      (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+        rectMatMulVec h.S yz.1 = d ∧
+        rectMatMulVec h.L22 yz.2 =
+          (fun i : Fin q =>
+            matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i) -
+              rectMatMulVec h.L21 yz.1 i) ∧
+        IsLSEMinimizer A b B d
+          (matMulVec (p + q) h.Q (Fin.append yz.1 yz.2))) ∧
+      (∃! x : Fin (p + q) → ℝ, IsLSEMinimizer A b B d x) := by
+  rcases
+    GeneralizedQRFactorization.exists_of_fullRowRank_stackedFullColumnRank
+      (A := A) (B := B) hB hstack with
+    ⟨h⟩
+  exact ⟨h,
+    h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack,
+    h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 exact solvability consequence
+    with no supplied GQR factor input.
+
+    The source rank assumptions construct the exact GQR method data and hence
+    give existence and uniqueness of the equality-constrained least-squares
+    minimizer. -/
+theorem exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    {b : Fin (r + q) → ℝ} {d : Fin p → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃! x : Fin (p + q) → ℝ, IsLSEMinimizer A b B d x := by
+  rcases
+    GeneralizedQRFactorization.exists_unique_method_solution_of_fullRowRank_stackedFullColumnRank
+      (A := A) (B := B) (b := b) (d := d) hB hstack with
+    ⟨_h, _hyz, hx⟩
+  exact hx
+
+/-- Existence-only corollary of
+    `exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank`. -/
+theorem exists_lse_minimizer_of_fullRowRank_stackedFullColumnRank
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    {b : Fin (r + q) → ℝ} {d : Fin p → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ x : Fin (p + q) → ℝ, IsLSEMinimizer A b B d x := by
+  rcases exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank
+      (A := A) (B := B) (b := b) (d := d) hB hstack with
+    ⟨x, hx, _huniq⟩
+  exact ⟨x, hx⟩
 
 end LeanFpAnalysis.FP
