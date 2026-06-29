@@ -3478,6 +3478,172 @@ theorem gqrAQ2Block_mulVec {r p q : ℕ}
         (matMulVec (p + q) Q (Fin.append (0 : Fin p → ℝ) y2)) := by
       exact rectMatMulVec_rectMatMul A Q (Fin.append (0 : Fin p → ℝ) y2)
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction route:
+    the `A Q₂` block has trivial kernel using only the constraint block
+    identity `B Q = [S 0]`, orthogonality of `Q`, and the local
+    null-intersection condition.
+
+    This is the construction-level form of the `Q₂` kernel bridge: it does not
+    assume a complete supplied `GeneralizedQRFactorization`, so it can be used
+    immediately after constructing the `Bᵀ` QR side. -/
+theorem gqrAQ2_kernel_trivial_of_constraint_block_nullIntersection
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    {Q : Fin (p + q) → Fin (p + q) → ℝ}
+    {S : Fin p → Fin p → ℝ}
+    (hQ : IsOrthogonal (p + q) Q)
+    (hBQ : matMulRect p (p + q) (p + q) B Q = gqrBQBlock S)
+    (hnull : LSENullIntersectionTrivial A B)
+    (y2 : Fin q → ℝ)
+    (hAy2 :
+      rectMatMulVec A
+        (matMulVec (p + q) Q (Fin.append (0 : Fin p → ℝ) y2)) = 0) :
+    y2 = 0 := by
+  let y : Fin (p + q) → ℝ := Fin.append (0 : Fin p → ℝ) y2
+  let x : Fin (p + q) → ℝ := matMulVec (p + q) Q y
+  have hBx : rectMatMulVec B x = 0 := by
+    calc
+      rectMatMulVec B (matMulVec (p + q) Q y)
+          = rectMatMulVec (matMulRect p (p + q) (p + q) B Q) y := by
+              exact (rectMatMulVec_rectMatMul B Q y).symm
+      _ = rectMatMulVec (gqrBQBlock S) y := by
+              rw [hBQ]
+      _ = rectMatMulVec S (0 : Fin p → ℝ) := by
+              simpa [y] using gqrBQBlock_mulVec S (0 : Fin p → ℝ) y2
+      _ = 0 := rectMatMulVec_zero S
+  have hxzero : x = 0 := hnull x hAy2 hBx
+  have hyzero : y = 0 := by
+    have hrec := matMulVec_orthogonal_transpose_mul hQ y
+    dsimp [x] at hxzero
+    rw [hxzero, matMulVec_zero] at hrec
+    exact hrec.symm
+  ext i
+  have hi := congrFun hyzero (Fin.natAdd p i)
+  simpa [y, Fin.append_right] using hi
+
+/-- Construction-level injectivity of the `A Q₂` rectangular column map from
+    the constraint block identity and the local null-intersection condition. -/
+theorem gqrAQ2_rectMatMulVec_injective_of_constraint_block_nullIntersection
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    {Q : Fin (p + q) → Fin (p + q) → ℝ}
+    {S : Fin p → Fin p → ℝ}
+    (hQ : IsOrthogonal (p + q) Q)
+    (hBQ : matMulRect p (p + q) (p + q) B Q = gqrBQBlock S)
+    (hnull : LSENullIntersectionTrivial A B) :
+    Function.Injective (rectMatMulVec (gqrAQ2Block A Q)) := by
+  intro y2 z2 hyz
+  let w : Fin q → ℝ := fun i => y2 i - z2 i
+  have hAw :
+      rectMatMulVec A
+        (matMulVec (p + q) Q (Fin.append (0 : Fin p → ℝ) w)) = 0 := by
+    have hblock : rectMatMulVec (gqrAQ2Block A Q) w = 0 := by
+      ext i
+      have hi := congrFun hyz i
+      have hsub := congrFun (rectMatMulVec_sub (gqrAQ2Block A Q) y2 z2) i
+      dsimp [w]
+      rw [hsub, hi]
+      ring
+    simpa [gqrAQ2Block_mulVec A Q w] using hblock
+  have hw : w = 0 :=
+    gqrAQ2_kernel_trivial_of_constraint_block_nullIntersection
+      hQ hBQ hnull w hAw
+  ext i
+  have hwi := congrFun hw i
+  dsimp [w] at hwi
+  linarith
+
+/-- Construction-level exact-MGS nonbreakdown for the smaller `A Q₂` block. -/
+theorem gqrAQ2_mgs_norm_ne_zero_of_constraint_block_nullIntersection
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    {Q : Fin (p + q) → Fin (p + q) → ℝ}
+    {S : Fin p → Fin p → ℝ}
+    (hQ : IsOrthogonal (p + q) Q)
+    (hBQ : matMulRect p (p + q) (p + q) B Q = gqrBQBlock S)
+    (hnull : LSENullIntersectionTrivial A B)
+    (j : Fin q) :
+    gsColumnNorm2
+      (modifiedGramSchmidtVectors (gqrAQ2Block A Q) j.val j) ≠ 0 :=
+  modifiedGramSchmidtVectors_norm_ne_zero_of_rectMatMulVec_injective
+    (gqrAQ2Block A Q)
+    (gqrAQ2_rectMatMulVec_injective_of_constraint_block_nullIntersection
+      hQ hBQ hnull) j
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction route:
+    full row rank of `B` constructs the constraint block side, while stacked
+    full column rank supplies exact-MGS nonbreakdown for the smaller `A Q₂`
+    block associated with the constructed `Q`. -/
+theorem exists_gqr_constraint_block_and_A_Q2_mgs_of_fullRowRank_stackedFullColumnRank
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ (Q : Fin (p + q) → Fin (p + q) → ℝ) (S : Fin p → Fin p → ℝ),
+      IsOrthogonal (p + q) Q ∧
+        IsLowerTriangular S ∧
+        matMulRect p (p + q) (p + q) B Q = gqrBQBlock S ∧
+        ∀ j : Fin q,
+          gsColumnNorm2
+            (modifiedGramSchmidtVectors (gqrAQ2Block A Q) j.val j) ≠ 0 := by
+  have hdiagB : ∀ j : Fin p,
+      gsColumnNorm2
+        (modifiedGramSchmidtVectors
+          (fun col : Fin (p + q) => fun row : Fin p => B row col)
+          j.val j) ≠ 0 := by
+    intro j
+    exact hB.transpose_mgs_norm_ne_zero j
+  rcases exists_gqr_constraint_block_of_mgs B hdiagB with
+    ⟨Q, S, hQ, hS, hBQ⟩
+  have hnull : LSENullIntersectionTrivial A B :=
+    (LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack
+  refine ⟨Q, S, hQ, hS, hBQ, ?_⟩
+  intro j
+  exact
+    gqrAQ2_mgs_norm_ne_zero_of_constraint_block_nullIntersection
+      hQ hBQ hnull j
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction route:
+    after constructing the `Bᵀ` constraint block from full row rank of `B`,
+    the smaller `A Q₂` block has an exact MGS QR factorization under the
+    source stacked-full-column-rank hypothesis.
+
+    This packages the oracle-recommended smaller-block route as explicit
+    QR data for the next associated-shape construction step. -/
+theorem exists_gqr_constraint_block_and_A_Q2_mgs_qr_of_fullRowRank_stackedFullColumnRank
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ (Q : Fin (p + q) → Fin (p + q) → ℝ) (S : Fin p → Fin p → ℝ)
+        (Q2 : Fin (r + q) → Fin q → ℝ) (R2 : Fin q → Fin q → ℝ),
+      IsOrthogonal (p + q) Q ∧
+        IsLowerTriangular S ∧
+        matMulRect p (p + q) (p + q) B Q = gqrBQBlock S ∧
+        GramSchmidtOrthonormalColumns Q2 ∧
+        IsUpperTriangular q R2 ∧
+        gqrAQ2Block A Q = matMulRect (r + q) q q Q2 R2 := by
+  rcases
+    exists_gqr_constraint_block_and_A_Q2_mgs_of_fullRowRank_stackedFullColumnRank
+      (A := A) (B := B) hB hstack with
+    ⟨Q, S, hQ, hS, hBQ, hdiagAQ2⟩
+  let C : Fin (r + q) → Fin q → ℝ := gqrAQ2Block A Q
+  let Q2 : Fin (r + q) → Fin q → ℝ := modifiedGramSchmidtQ C
+  let R2 : Fin q → Fin q → ℝ := modifiedGramSchmidtR C
+  have horthQ2 : GramSchmidtOrthonormalColumns Q2 := by
+    exact modifiedGramSchmidtQ_orthonormal_columns C hdiagAQ2
+  have hR2upper : IsUpperTriangular q R2 := by
+    exact IsUpperTrapezoidal.to_upperTriangular
+      (modifiedGramSchmidtR_upper_trapezoidal C)
+  have hfactor : C = matMulRect (r + q) q q Q2 R2 := by
+    exact modifiedGramSchmidt_exact_factorization C hdiagAQ2
+  exact ⟨Q, S, Q2, R2, hQ, hS, hBQ, horthQ2, hR2upper, hfactor⟩
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof:
     on the `Q₂` coordinate range, the equation `A x = 0` is equivalent to
     `L22 y₂ = 0`.
