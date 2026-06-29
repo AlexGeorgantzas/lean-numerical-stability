@@ -12910,6 +12910,257 @@ theorem
       invDiagBound A pivotInv stageInvDiagBound hInit hDiagUpdate hRecip
 
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equation (13.18):
+    actual continuous-linear-map Schur stages give the one-sided active pivot
+    certificate for `diagLowerCertGeneric`.
+
+    This instantiates the generic CLM source-table theorem with the real
+    Algorithm 13.3 Schur recurrence on continuous linear maps.  The remaining
+    source obligations are the initial lower table and the two-sided active
+    pivot inverse identities. -/
+theorem
+    higham13_algorithm13_3_clm_diagLowerCertGeneric_diag_lower_of_continuousLinearMap_source_table
+    {m : ℕ} {E : Type*}
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [ProperSpace E]
+    (hunit : ({x : E | ‖x‖ = 1} : Set E).Nonempty)
+    (invDiagBound : Fin m → ℝ)
+    (A : Fin m → Fin m → E →L[ℝ] E)
+    (pivotInv : ℕ → E →L[ℝ] E)
+    (hInit : ∀ j : Fin m,
+      invDiagBound j ≤
+        continuousLinearMapLowerNorm
+          (higham13_algorithm13_3_schurStageBlock A pivotInv 0 j j)
+          hunit)
+    (hLeft : ∀ k : ℕ, ∀ hk : k < m, ∀ x : E,
+      pivotInv k
+        (higham13_algorithm13_3_schurStageBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩ x) = x)
+    (hRight : ∀ k : ℕ, ∀ hk : k < m, ∀ y : E,
+      higham13_algorithm13_3_schurStageBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩
+        (pivotInv k y) = y) :
+    SchurStageActivePivotInvDiagLower13_7
+      (higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv)
+      (fun k => ‖pivotInv k‖) := by
+  have hStageNorm : ∀ k : ℕ, ∀ i j : Fin m,
+      ‖higham13_algorithm13_3_schurStageBlock A pivotInv k i j‖ =
+        higham13_algorithm13_3_schurStageNorm A pivotInv k i j := by
+    intro k i j
+    rfl
+  have hPivotNorm : ∀ k : ℕ,
+      ‖pivotInv k‖ = higham13_algorithm13_3_pivotInvNorm pivotInv k := by
+    intro k
+    rfl
+  have hSchur : ∀ k : ℕ, ∀ hk : k < m, ∀ j : Fin m,
+      k + 1 ≤ j.val → ∀ x : E,
+        higham13_algorithm13_3_schurStageBlock A pivotInv (k + 1) j j x =
+          higham13_algorithm13_3_schurStageBlock A pivotInv k j j x -
+            higham13_algorithm13_3_schurStageBlock A pivotInv k j ⟨k, hk⟩
+              (pivotInv k
+                (higham13_algorithm13_3_schurStageBlock A pivotInv k ⟨k, hk⟩ j x)) := by
+    intro k hk j hj x
+    let p : Fin m := ⟨k, hk⟩
+    have hUpdate :=
+      (higham13_algorithm13_3_schurStageBlock_exact_update A pivotInv)
+        k hk j j hj hj
+    have hUpdate' :
+        higham13_algorithm13_3_schurStageBlock A pivotInv (k + 1) j j =
+          higham13_algorithm13_3_schurStageBlock A pivotInv k j j -
+            higham13_algorithm13_3_schurStageBlock A pivotInv k j p *
+              pivotInv k *
+              higham13_algorithm13_3_schurStageBlock A pivotInv k p j := by
+      simpa [p] using hUpdate
+    rw [hUpdate']
+    rfl
+  have hDiagLower :=
+    higham13_algorithm13_3_diagLowerCertGeneric_diag_lower_of_continuousLinearMap_source_table
+      hunit invDiagBound A pivotInv
+      (higham13_algorithm13_3_schurStageBlock A pivotInv)
+      pivotInv hInit hStageNorm hPivotNorm hSchur hLeft hRight
+  simpa [higham13_algorithm13_3_pivotInvNorm] using hDiagLower
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equation (13.18):
+    actual CLM Schur-stage source-table data gives the direct active pivot
+    product bound used by the column-BDD growth route. -/
+theorem
+    higham13_algorithm13_3_clm_diagLowerCertGeneric_pivot_bound_of_continuousLinearMap_source_table
+    {m : ℕ} {E : Type*}
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [ProperSpace E]
+    (hunit : ({x : E | ‖x‖ = 1} : Set E).Nonempty)
+    (invDiagBound : Fin m → ℝ)
+    (A : Fin m → Fin m → E →L[ℝ] E)
+    (pivotInv : ℕ → E →L[ℝ] E)
+    (hInit : ∀ j : Fin m,
+      invDiagBound j ≤
+        continuousLinearMapLowerNorm
+          (higham13_algorithm13_3_schurStageBlock A pivotInv 0 j j)
+          hunit)
+    (hLeft : ∀ k : ℕ, ∀ hk : k < m, ∀ x : E,
+      pivotInv k
+        (higham13_algorithm13_3_schurStageBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩ x) = x)
+    (hRight : ∀ k : ℕ, ∀ hk : k < m, ∀ y : E,
+      higham13_algorithm13_3_schurStageBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩
+        (pivotInv k y) = y) :
+    ∀ k : ℕ, ∀ hk : k < m,
+      ‖pivotInv k‖ *
+          higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv
+            k ⟨k, hk⟩ ≤
+        1 := by
+  have hDiagLower :=
+    higham13_algorithm13_3_clm_diagLowerCertGeneric_diag_lower_of_continuousLinearMap_source_table
+      hunit invDiagBound A pivotInv hInit hLeft hRight
+  exact
+    higham13_theorem13_7_pivot_inverse_bound_of_diag_lower
+      (higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv)
+      (fun k => ‖pivotInv k‖)
+      (fun k => norm_nonneg (pivotInv k))
+      hDiagLower
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equation (13.18):
+    initial CLM lower table from diagonal-block inverse data.
+
+    The stage-zero Schur table is the original block matrix, so a two-sided
+    inverse of each diagonal block and the reciprocal bound
+    `invDiagBound j <= ‖diagInv j‖⁻¹` supply the initial lower-norm table for
+    the actual CLM source-table route. -/
+theorem higham13_algorithm13_3_clm_initial_lower_table_of_diag_inverse
+    {m : ℕ} {E : Type*}
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [ProperSpace E]
+    (hunit : ({x : E | ‖x‖ = 1} : Set E).Nonempty)
+    (invDiagBound : Fin m → ℝ)
+    (A : Fin m → Fin m → E →L[ℝ] E)
+    (pivotInv : ℕ → E →L[ℝ] E)
+    (diagInv : Fin m → E →L[ℝ] E)
+    (hInvBound : ∀ j : Fin m, invDiagBound j ≤ (‖diagInv j‖)⁻¹)
+    (hLeftDiag : ∀ j : Fin m, ∀ x : E, diagInv j (A j j x) = x)
+    (hRightDiag : ∀ j : Fin m, ∀ y : E, A j j (diagInv j y) = y) :
+    ∀ j : Fin m,
+      invDiagBound j ≤
+        continuousLinearMapLowerNorm
+          (higham13_algorithm13_3_schurStageBlock A pivotInv 0 j j)
+          hunit := by
+  intro j
+  have hstage :
+      higham13_algorithm13_3_schurStageBlock A pivotInv 0 j j = A j j := by
+    simpa using higham13_algorithm13_3_schurStageBlock_zero A pivotInv j j
+  calc
+    invDiagBound j ≤ (‖diagInv j‖)⁻¹ := hInvBound j
+    _ = continuousLinearMapLowerNorm (A j j) hunit := by
+      rw [continuousLinearMapLowerNorm_eq_inv_opNorm_of_inverse
+        (A j j) (diagInv j) hunit (hLeftDiag j) (hRightDiag j)]
+    _ = continuousLinearMapLowerNorm
+          (higham13_algorithm13_3_schurStageBlock A pivotInv 0 j j)
+          hunit := by
+      rw [hstage]
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and Theorem 13.8:
+    the same CLM diagonal-inverse reciprocal data supplies the initial
+    diagonal comparison `invDiagBound j <= ‖A_jj‖`. -/
+theorem higham13_algorithm13_3_clm_initial_diag_bound_of_diag_inverse
+    {m : ℕ} {E : Type*}
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [ProperSpace E]
+    (hunit : ({x : E | ‖x‖ = 1} : Set E).Nonempty)
+    (invDiagBound : Fin m → ℝ)
+    (A : Fin m → Fin m → E →L[ℝ] E)
+    (diagInv : Fin m → E →L[ℝ] E)
+    (hInvBound : ∀ j : Fin m, invDiagBound j ≤ (‖diagInv j‖)⁻¹)
+    (hLeftDiag : ∀ j : Fin m, ∀ x : E, diagInv j (A j j x) = x)
+    (hRightDiag : ∀ j : Fin m, ∀ y : E, A j j (diagInv j y) = y) :
+    ∀ j : Fin m, invDiagBound j ≤ ‖A j j‖ := by
+  intro j
+  have hunitCopy := hunit
+  obtain ⟨x, hx⟩ := hunitCopy
+  have hLower_eq :
+      continuousLinearMapLowerNorm (A j j) hunit = (‖diagInv j‖)⁻¹ :=
+    continuousLinearMapLowerNorm_eq_inv_opNorm_of_inverse
+      (A j j) (diagInv j) hunit (hLeftDiag j) (hRightDiag j)
+  have hLower_le_norm :
+      continuousLinearMapLowerNorm (A j j) hunit ≤ ‖A j j‖ := by
+    calc
+      continuousLinearMapLowerNorm (A j j) hunit ≤ ‖A j j x‖ :=
+        continuousLinearMapLowerNorm_le (A j j) hunit x hx
+      _ ≤ ‖A j j‖ * ‖x‖ :=
+        ContinuousLinearMap.le_opNorm (A j j) x
+      _ = ‖A j j‖ := by rw [hx, mul_one]
+  calc
+    invDiagBound j ≤ (‖diagInv j‖)⁻¹ := hInvBound j
+    _ = continuousLinearMapLowerNorm (A j j) hunit := hLower_eq.symm
+    _ ≤ ‖A j j‖ := hLower_le_norm
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equation (13.18):
+    actual CLM diagonal-lower certificate from initial diagonal inverse
+    reciprocal data and active pivot inverse identities. -/
+theorem
+    higham13_algorithm13_3_clm_diagLowerCertGeneric_diag_lower_of_initial_diag_inverse_of_pivot_inverse
+    {m : ℕ} {E : Type*}
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [ProperSpace E]
+    (hunit : ({x : E | ‖x‖ = 1} : Set E).Nonempty)
+    (invDiagBound : Fin m → ℝ)
+    (A : Fin m → Fin m → E →L[ℝ] E)
+    (pivotInv : ℕ → E →L[ℝ] E)
+    (diagInv : Fin m → E →L[ℝ] E)
+    (hInvBound : ∀ j : Fin m, invDiagBound j ≤ (‖diagInv j‖)⁻¹)
+    (hLeftDiag : ∀ j : Fin m, ∀ x : E, diagInv j (A j j x) = x)
+    (hRightDiag : ∀ j : Fin m, ∀ y : E, A j j (diagInv j y) = y)
+    (hLeft : ∀ k : ℕ, ∀ hk : k < m, ∀ x : E,
+      pivotInv k
+        (higham13_algorithm13_3_schurStageBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩ x) = x)
+    (hRight : ∀ k : ℕ, ∀ hk : k < m, ∀ y : E,
+      higham13_algorithm13_3_schurStageBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩
+        (pivotInv k y) = y) :
+    SchurStageActivePivotInvDiagLower13_7
+      (higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv)
+      (fun k => ‖pivotInv k‖) := by
+  exact
+    higham13_algorithm13_3_clm_diagLowerCertGeneric_diag_lower_of_continuousLinearMap_source_table
+      hunit invDiagBound A pivotInv
+      (higham13_algorithm13_3_clm_initial_lower_table_of_diag_inverse
+        hunit invDiagBound A pivotInv diagInv hInvBound hLeftDiag hRightDiag)
+      hLeft hRight
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equation (13.18):
+    actual CLM active pivot product bound from initial diagonal inverse
+    reciprocal data and active pivot inverse identities. -/
+theorem
+    higham13_algorithm13_3_clm_diagLowerCertGeneric_pivot_bound_of_initial_diag_inverse_of_pivot_inverse
+    {m : ℕ} {E : Type*}
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [ProperSpace E]
+    (hunit : ({x : E | ‖x‖ = 1} : Set E).Nonempty)
+    (invDiagBound : Fin m → ℝ)
+    (A : Fin m → Fin m → E →L[ℝ] E)
+    (pivotInv : ℕ → E →L[ℝ] E)
+    (diagInv : Fin m → E →L[ℝ] E)
+    (hInvBound : ∀ j : Fin m, invDiagBound j ≤ (‖diagInv j‖)⁻¹)
+    (hLeftDiag : ∀ j : Fin m, ∀ x : E, diagInv j (A j j x) = x)
+    (hRightDiag : ∀ j : Fin m, ∀ y : E, A j j (diagInv j y) = y)
+    (hLeft : ∀ k : ℕ, ∀ hk : k < m, ∀ x : E,
+      pivotInv k
+        (higham13_algorithm13_3_schurStageBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩ x) = x)
+    (hRight : ∀ k : ℕ, ∀ hk : k < m, ∀ y : E,
+      higham13_algorithm13_3_schurStageBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩
+        (pivotInv k y) = y) :
+    ∀ k : ℕ, ∀ hk : k < m,
+      ‖pivotInv k‖ *
+          higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv
+            k ⟨k, hk⟩ ≤
+        1 := by
+  have hDiagLower :=
+    higham13_algorithm13_3_clm_diagLowerCertGeneric_diag_lower_of_initial_diag_inverse_of_pivot_inverse
+      hunit invDiagBound A pivotInv diagInv hInvBound
+      hLeftDiag hRightDiag hLeft hRight
+  exact
+    higham13_theorem13_7_pivot_inverse_bound_of_diag_lower
+      (higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv)
+      (fun k => ‖pivotInv k‖)
+      (fun k => norm_nonneg (pivotInv k))
+      hDiagLower
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equation (13.18):
     concrete matrix-`∞`-operator-norm instance of the generic CLM source table.
 
     The active Schur-stage blocks are the actual matrix-product Algorithm 13.3
