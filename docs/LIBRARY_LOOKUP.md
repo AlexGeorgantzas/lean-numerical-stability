@@ -2658,6 +2658,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_8_abs_lu_product_eq_abs_of_checkerboard_principalBlock_inequalities`
 - `higham9_8_abs_lu_product_eq_abs_of_nonsingInv_checkerboard_pos`
 - `higham9_8_abs_lu_product_eq_abs_of_nonsingInv_principalBlock_inequalities`
+- `higham9_8_abs_lu_product_eq_abs_of_nonsingInv_totalNonnegative`
 
 Chapter 9 growth-factor and max-entry bridges:
 
