@@ -4022,6 +4022,36 @@ theorem exists_gqr_constraint_block_and_reversed_A_Q2_mgs_qr_of_fullRowRank_stac
     exact modifiedGramSchmidt_exact_factorization C hdiagAQ2rev
   exact ⟨Q, S, Q2, R2, hQ, hS, hBQ, horthQ2, hR2upper, hfactor⟩
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction route:
+    after constructing the `Bᵀ` constraint block, the smaller `A Q₂` block can
+    be put into the tall associated shape `[0; L₂₂]` by an orthogonal row
+    factor.
+
+    This is still a smaller-block result: it does not yet lift the constructed
+    `U` to the full transformed matrix `A Q` with its leading `p` columns. -/
+theorem exists_gqr_constraint_block_and_A_Q2_tall_assoc_of_fullRowRank_stackedFullColumnRank
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ (Q : Fin (p + q) → Fin (p + q) → ℝ) (S : Fin p → Fin p → ℝ)
+        (U : Fin (r + q) → Fin (r + q) → ℝ),
+      IsOrthogonal (p + q) Q ∧
+        IsLowerTriangular S ∧
+        matMulRect p (p + q) (p + q) B Q = gqrBQBlock S ∧
+        IsOrthogonal (r + q) U ∧
+        Nonempty (GQRAQTallCase r q
+          (matMulRectLeft (matTranspose U) (gqrAQ2Block A Q))) := by
+  rcases
+    exists_gqr_constraint_block_and_reversed_A_Q2_mgs_qr_of_fullRowRank_stackedFullColumnRank
+      (A := A) (B := B) hB hstack with
+    ⟨Q, S, Q2, R2, hQ, hS, hBQ, hQ2orth, hR2upper, hfactor⟩
+  rcases GQRAQTallCase.exists_of_qr_reversed_cols
+      (gqrAQ2Block A Q) Q2 R2 hQ2orth hR2upper hfactor with
+    ⟨U, hU, hCase⟩
+  exact ⟨Q, S, U, hQ, hS, hBQ, hU, hCase⟩
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof:
     on the `Q₂` coordinate range, the equation `A x = 0` is equivalent to
     `L22 y₂ = 0`.
