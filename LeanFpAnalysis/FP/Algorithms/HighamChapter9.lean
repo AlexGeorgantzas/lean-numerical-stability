@@ -41069,4 +41069,37 @@ theorem higham9_8_abs_lu_product_eq_abs_of_nonsingInv_principalBlock_inequalitie
     (higham9_8_checkerboardConjugate_nonsingInv_det_pos hTN hdet)
     hineqJ
 
+/-- **Problem 9.8**, fully source-facing nonsingular-inverse route.
+
+If `A` is nonsingular and totally nonnegative, then the checkerboard-conjugated
+nonsingular inverse `J A^{-1} J` is totally nonnegative, its principal-block
+determinant inequalities follow from Problem 9.6, and the nonnegative-LU route
+gives exact factors for `A^{-1}` with `|J L J| |J U J| = |A^{-1}|`. -/
+theorem higham9_8_abs_lu_product_eq_abs_of_nonsingInv_totalNonnegative
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdet :
+      Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ L U : Fin n → Fin n → ℝ,
+      LUFactSpec n (nonsingInv n A)
+        (higham9_8_checkerboardConjugate L)
+        (higham9_8_checkerboardConjugate U) ∧
+      (∀ i j : Fin n,
+        ∑ k : Fin n,
+          |higham9_8_checkerboardConjugate L i k| *
+            |higham9_8_checkerboardConjugate U k j| =
+              |nonsingInv n A i j|) := by
+  let JinvA : Fin n → Fin n → ℝ :=
+    higham9_8_checkerboardConjugate (nonsingInv n A)
+  have hTNJ : higham9_6_IsTotallyNonnegative JinvA :=
+    higham9_8_checkerboardConjugate_nonsingInv_totalNonnegative hTN hdet
+  exact
+    higham9_8_abs_lu_product_eq_abs_of_nonsingInv_principalBlock_inequalities
+      A hTN hdet
+      (by
+        intro k hk _hk0
+        simpa [JinvA] using
+          higham9_6_principalBlock_determinantal_inequality_of_totalNonnegative
+            n JinvA hTNJ k (Nat.le_of_lt hk))
+
 end LeanFpAnalysis.FP
