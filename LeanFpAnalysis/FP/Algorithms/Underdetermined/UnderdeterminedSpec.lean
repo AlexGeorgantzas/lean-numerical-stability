@@ -475,6 +475,36 @@ theorem higham21_eq21_4_rect_moore_penrose_of_gram_det_ne_zero
     (higham21_eq21_4_rect_pseudoinverse_right_inverse_of_gram_det_ne_zero A hdet)
     (undetAplusOfGramNonsingInv_domain_projection_symmetric A)
 
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    the Moore--Penrose domain projection `A⁺A` fixes every vector explicitly
+    represented in the range of `A⁺`.  This is the projection-fixes-`x`
+    component needed by the perturbed-pseudoinverse route when the candidate
+    `x` has already been identified as a pseudoinverse-applied right-hand side. -/
+theorem rectMoorePenrosePseudoinverse_domain_projection_apply_range
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (Aplus : Fin n → Fin m → ℝ)
+    (hMP : RectMoorePenrosePseudoinverse m n A Aplus)
+    (y : Fin m → ℝ) :
+    rectMatMulVec (rectMatMul Aplus A) (rectMatMulVec Aplus y) =
+      rectMatMulVec Aplus y := by
+  rw [← rectMatMulVec_rectMatMul (rectMatMul Aplus A) Aplus y]
+  rw [hMP.reproduces_pseudoinverse]
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    concrete determinant-facing version of the projection-fixes-range fact for
+    the underdetermined Gram pseudoinverse table `Aᵀ(AAᵀ)⁻¹`. -/
+theorem higham21_lemma21_2_gram_pseudoinverse_domain_projection_apply_range
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (hdet : Matrix.det (rectGram A : Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (y : Fin m → ℝ) :
+    rectMatMulVec (rectMatMul (undetAplusOfGramNonsingInv A) A)
+        (rectMatMulVec (undetAplusOfGramNonsingInv A) y) =
+      rectMatMulVec (undetAplusOfGramNonsingInv A) y :=
+  rectMoorePenrosePseudoinverse_domain_projection_apply_range
+    A (undetAplusOfGramNonsingInv A)
+    (higham21_eq21_4_rect_moore_penrose_of_gram_det_ne_zero A hdet) y
+
 /-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.5):
     source-facing wrapper for the SNE formation step.  Once the seminormal
     equation matrix is identified with `A Aᵀ`, solving that Gram system and
