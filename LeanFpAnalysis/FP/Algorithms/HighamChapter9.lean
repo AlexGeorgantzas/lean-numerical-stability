@@ -23597,6 +23597,31 @@ theorem higham9_15_normwise_source_bound_of_normalized_linear_step_opNorm_of_inv
         Linv ΔA Uinv hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta)
       hlinear hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
 
+/-- **Theorem 9.15**, exact-operator-norm form of the normalized linearized
+Barrlund--Sun wrapper with two-sided inverse identities. -/
+theorem higham9_15_normwise_source_bound_of_normalized_linear_step_opNorm_of_inverse_identities_exact_opNorm2
+    {n : ℕ} [Nonempty (Fin n)]
+    (L U Linv Uinv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (hLright : rectMatMul L Linv = idMatrix n)
+    (hUleft : rectMatMul Uinv U = idMatrix n)
+    (hlinear :
+      max (frobNormRect (rectMatMul Linv ΔL))
+          (frobNormRect (rectMatMul ΔU Uinv)) ≤
+        frobNormRect (higham9_27_GMatrix Linv ΔA Uinv) +
+          opNorm2 (higham9_27_GMatrix Linv ΔA Uinv) *
+            max (frobNormRect (rectMatMul Linv ΔL))
+              (frobNormRect (rectMatMul ΔU Uinv)))
+    (heta : opNorm2 Linv * opNorm2 ΔA * opNorm2 Uinv < 1) :
+    max (frobNormRect ΔL / opNorm2 L)
+        (frobNormRect ΔU / opNorm2 U) ≤
+      (opNorm2 Linv * frobNormRect ΔA * opNorm2 Uinv) /
+        (1 - opNorm2 Linv * opNorm2 ΔA * opNorm2 Uinv) :=
+  higham9_15_normwise_source_bound_of_normalized_linear_step_opNorm_of_inverse_identities_product_lt
+    L U Linv Uinv ΔA ΔL ΔU hLright hUleft hlinear
+    (opNorm2_nonneg Linv) (opNorm2_nonneg ΔA) (opNorm2_nonneg Uinv)
+    (opNorm2Le_opNorm2 Linv) (opNorm2Le_opNorm2 ΔA) (opNorm2Le_opNorm2 Uinv)
+    heta
+
 /-- **Theorem 9.15**, source-oriented inverse-identity form of the normalized
 linear-step normwise wrapper.  The opposite inverse identities needed for the
 printed operator denominators are derived from `L⁻¹ L = I` and `U U⁻¹ = I`. -/
@@ -24802,6 +24827,31 @@ theorem higham9_15_normwise_source_bound_of_Gtilde_normalized_linear_step_opNorm
       (higham9_27_GMatrix_opNorm2_lt_one_of_product_lt_one
         LhatInv ΔA UhatInv hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta)
       hlinear hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+
+/-- **Theorem 9.15**, exact-operator-norm form of the componentwise
+`Gtilde` normalized linear-step wrapper with two-sided inverse identities. -/
+theorem higham9_15_normwise_source_bound_of_Gtilde_normalized_linear_step_opNorm_of_inverse_identities_exact_opNorm2
+    {n : ℕ} [Nonempty (Fin n)]
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix n)
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix n)
+    (hlinear :
+      max (frobNormRect (rectMatMul LhatInv ΔL))
+          (frobNormRect (rectMatMul ΔU UhatInv)) ≤
+        frobNormRect (higham9_27_GMatrix LhatInv ΔA UhatInv) +
+          opNorm2 (higham9_27_GMatrix LhatInv ΔA UhatInv) *
+            max (frobNormRect (rectMatMul LhatInv ΔL))
+              (frobNormRect (rectMatMul ΔU UhatInv)))
+    (heta : opNorm2 LhatInv * opNorm2 ΔA * opNorm2 UhatInv < 1) :
+    max (frobNormRect ΔL / opNorm2 Lhat)
+        (frobNormRect ΔU / opNorm2 Uhat) ≤
+      (opNorm2 LhatInv * frobNormRect ΔA * opNorm2 UhatInv) /
+        (1 - opNorm2 LhatInv * opNorm2 ΔA * opNorm2 UhatInv) :=
+  higham9_15_normwise_source_bound_of_Gtilde_normalized_linear_step_opNorm_of_inverse_identities_product_lt
+    Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hLright hUleft hlinear
+    (opNorm2_nonneg LhatInv) (opNorm2_nonneg ΔA) (opNorm2_nonneg UhatInv)
+    (opNorm2Le_opNorm2 LhatInv) (opNorm2Le_opNorm2 ΔA)
+    (opNorm2Le_opNorm2 UhatInv) heta
 
 /-- **Theorem 9.15**, source-oriented inverse-identity form of the
 componentwise `Gtilde` normalized linear-step wrapper. -/
