@@ -20,6 +20,18 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-06-29 matrix-`∞` source-table max-entry composition checkpoint:
+  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockMaxNorm_bound_with_card_of_continuousLinearMap_source_table`,
+  `higham13_algorithm13_3_matrix_infNorm_matrixStageHistoryGrowthFactor_le_card_of_continuousLinearMap_source_table`,
+  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table`,
+  and the corresponding `_of_pivot_right_inverse` variants now compose the
+  matrix-`∞` continuous-linear source-table route directly into the max-entry
+  upper-factor and finite-history growth APIs.  The endpoint remains
+  dimension-aware (`2*r*blockMaxNorm(A)` and `growthFactorEntry <= 2*r`), so
+  the source-strength Eq.13.21/`rho <= 2` branch remains open.  The
+  `_of_det_ne_zero` paired variants derive the positive growth-factor
+  denominator from `det(blockMatrixFlatFin A) != 0` while keeping the same
+  dimension-aware endpoint.
 - 2026-06-29 matrix-`∞` max-entry transfer checkpoint:
   `higham13_algorithm13_3_matrix_infNorm_block_le_card_mul_blockMaxNorm`,
   `higham13_algorithm13_3_matrix_infNorm_active_stage_maxEntry_bound`, and the
