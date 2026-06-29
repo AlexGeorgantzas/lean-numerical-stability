@@ -6616,6 +6616,114 @@ theorem lsScaledAugmentedMatrix_singularPair_minus_leftNull_normalized_rescaled_
     lsScaledAugmentedMatrix_singularPair_minus_leftNull_normalized_dot_eq_zero
       A u w v hAv hATu hATw halpha hsigma
 
+/-- Branch-indexed inverse-2-norm rescaled eigenvectors for Higham, 2nd ed.,
+    Chapter 20, equation (20.18).  The index type is
+    `(plus singular branches) ⊕ (minus singular branches) ⊕ (left-null
+    branches)`, written as `Sum (Sum ι ι) κ`.  This records the actual family
+    shape needed for the later complete-basis proof; it does not assert that
+    the family is complete. -/
+noncomputable def lsScaledAugmentedMatrixBranchVector {m n : ℕ} {ι κ : Type*}
+    (alpha : ℝ) (sigma : ι → ℝ)
+    (u : ι → Fin m → ℝ) (v : ι → Fin n → ℝ)
+    (w : κ → Fin m → ℝ) :
+    Sum (Sum ι ι) κ → Fin (m + n) → ℝ
+  | Sum.inl (Sum.inl i) =>
+      fun k : Fin (m + n) =>
+        (vecNorm2
+            (Fin.append (u i)
+              (fun j : Fin n =>
+                (sigma i / lsScaledAugmentedEigenvaluePlus alpha (sigma i)) *
+                  v i j)))⁻¹ *
+          Fin.append (u i)
+            (fun j : Fin n =>
+              (sigma i / lsScaledAugmentedEigenvaluePlus alpha (sigma i)) *
+                v i j) k
+  | Sum.inl (Sum.inr i) =>
+      fun k : Fin (m + n) =>
+        (vecNorm2
+            (Fin.append (u i)
+              (fun j : Fin n =>
+                (sigma i / lsScaledAugmentedEigenvalueMinus alpha (sigma i)) *
+                  v i j)))⁻¹ *
+          Fin.append (u i)
+            (fun j : Fin n =>
+              (sigma i / lsScaledAugmentedEigenvalueMinus alpha (sigma i)) *
+                v i j) k
+  | Sum.inr k =>
+      fun r : Fin (m + n) =>
+        (vecNorm2 (Fin.append (w k) (0 : Fin n → ℝ)))⁻¹ *
+          Fin.append (w k) (0 : Fin n → ℝ) r
+
+/-- Displayed eigenvalue attached to a branch vector in Higham, 2nd ed.,
+    Chapter 20, equation (20.18). -/
+noncomputable def lsScaledAugmentedMatrixBranchEigenvalue {ι κ : Type*}
+    (alpha : ℝ) (sigma : ι → ℝ) :
+    Sum (Sum ι ι) κ → ℝ
+  | Sum.inl (Sum.inl i) => lsScaledAugmentedEigenvaluePlus alpha (sigma i)
+  | Sum.inl (Sum.inr i) => lsScaledAugmentedEigenvalueMinus alpha (sigma i)
+  | Sum.inr _ => alpha
+
+/-- Unit component data make every branch-indexed vector in the (20.18)
+    family a Euclidean unit vector.  This is one half of the future
+    orthonormal-column construction for the complete `Q` matrix. -/
+theorem lsScaledAugmentedMatrixBranchVector_vecNorm2_eq_one_of_unit_components
+    {m n : ℕ} {ι κ : Type*} {alpha : ℝ} {sigma : ι → ℝ}
+    {u : ι → Fin m → ℝ} {v : ι → Fin n → ℝ}
+    {w : κ → Fin m → ℝ}
+    (hu : ∀ i : ι, vecNorm2Sq (u i) = 1)
+    (hv : ∀ i : ι, vecNorm2Sq (v i) = 1)
+    (hw : ∀ k : κ, vecNorm2Sq (w k) = 1) :
+    ∀ a : Sum (Sum ι ι) κ,
+      vecNorm2 (lsScaledAugmentedMatrixBranchVector alpha sigma u v w a) = 1 := by
+  intro a
+  rcases a with ((i | i) | k)
+  · simpa [lsScaledAugmentedMatrixBranchVector] using
+      lsScaledAugmentedMatrix_singularPair_plus_normalized_rescaled_vecNorm2_eq_one_of_unit_components
+        (alpha := alpha) (sigma := sigma i) (u i) (v i) (hu i) (hv i)
+  · simpa [lsScaledAugmentedMatrixBranchVector] using
+      lsScaledAugmentedMatrix_singularPair_minus_normalized_rescaled_vecNorm2_eq_one_of_unit_components
+        (alpha := alpha) (sigma := sigma i) (u i) (v i) (hu i) (hv i)
+  · simpa [lsScaledAugmentedMatrixBranchVector] using
+      lsScaledAugmentedMatrix_leftNull_rescaled_vecNorm2_eq_one_of_unit_component
+        (m := m) (n := n) (w k) (hw k)
+
+/-- Every branch-indexed vector in the (20.18) family is an eigenvector of
+    `C(alpha)` for its displayed branch eigenvalue, assuming supplied
+    singular-pair equations for the `ι` branches and supplied left-nullspace
+    equations for the `κ` branches.  Completeness and multiplicity are still
+    separate obligations. -/
+theorem lsScaledAugmentedMatrixBranchVector_eigenvector
+    {m n : ℕ} {ι κ : Type*} {alpha : ℝ} {sigma : ι → ℝ}
+    {A : Fin m → Fin n → ℝ}
+    {u : ι → Fin m → ℝ} {v : ι → Fin n → ℝ}
+    {w : κ → Fin m → ℝ}
+    (hAv : ∀ i : ι, rectMatMulVec A (v i) = fun r => sigma i * u i r)
+    (hATu : ∀ i : ι,
+      (fun j : Fin n => ∑ r : Fin m, A r j * u i r) =
+        fun j => sigma i * v i j)
+    (hATw : ∀ k : κ, ∀ j : Fin n, ∑ r : Fin m, A r j * w k r = 0)
+    (halpha : 0 ≤ alpha) (hsigma : ∀ i : ι, sigma i ≠ 0) :
+    ∀ a : Sum (Sum ι ι) κ,
+      rectMatMulVec (lsScaledAugmentedMatrix alpha A)
+          (lsScaledAugmentedMatrixBranchVector alpha sigma u v w a) =
+        fun r : Fin (m + n) =>
+          lsScaledAugmentedMatrixBranchEigenvalue alpha sigma a *
+            lsScaledAugmentedMatrixBranchVector alpha sigma u v w a r := by
+  intro a
+  rcases a with ((i | i) | k)
+  · simpa [lsScaledAugmentedMatrixBranchVector,
+      lsScaledAugmentedMatrixBranchEigenvalue] using
+      lsScaledAugmentedMatrix_singularPair_plus_normalized_rescaled_eigenvector
+        A (u i) (v i) (hAv i) (hATu i) halpha (hsigma i)
+  · simpa [lsScaledAugmentedMatrixBranchVector,
+      lsScaledAugmentedMatrixBranchEigenvalue] using
+      lsScaledAugmentedMatrix_singularPair_minus_normalized_rescaled_eigenvector
+        A (u i) (v i) (hAv i) (hATu i) halpha (hsigma i)
+  · simpa [lsScaledAugmentedMatrixBranchVector,
+      lsScaledAugmentedMatrixBranchEigenvalue] using
+      lsScaledAugmentedMatrix_leftNull_rescaled_eigenvector
+        alpha A (w k) (hATw k)
+
 /-- Higham, 2nd ed., Chapter 20, equation (20.20): the weighted perturbation
     block `[DeltaA, theta Delta b]` used in the Frobenius normwise
     least-squares backward error. -/

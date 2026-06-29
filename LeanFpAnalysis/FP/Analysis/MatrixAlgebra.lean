@@ -7796,6 +7796,24 @@ lemma IsOrthogonal.row_orthonormal {n : ℕ} {U : Fin n → Fin n → ℝ}
     ∑ k : Fin n, U i k * U j k = if i = j then 1 else 0 := by
   have := hU.2 i j; unfold matTranspose at this; exact this
 
+/-- A square matrix whose columns are orthonormal is orthogonal. -/
+theorem IsOrthogonal.of_col_orthonormal {n : ℕ} {U : Fin n → Fin n → ℝ}
+    (hU : ∀ i j : Fin n,
+      ∑ k : Fin n, U k i * U k j = if i = j then 1 else 0) :
+    IsOrthogonal n U := by
+  have hleft : IsLeftInverse n U (matTranspose U) := by
+    intro i j
+    simpa [matTranspose] using hU i j
+  have hrightT : IsRightInverse n (matTranspose U) U := by
+    intro i j
+    simpa [matTranspose] using hU i j
+  have hleftT : IsLeftInverse n (matTranspose U) U :=
+    isLeftInverse_of_isRightInverse (matTranspose U) U hrightT
+  have hright : IsRightInverse n U (matTranspose U) := by
+    intro i j
+    simpa [matTranspose] using hleftT i j
+  exact ⟨hleft, hright⟩
+
 /-- The identity matrix is orthogonal. -/
 theorem IsOrthogonal.id (n : ℕ) : IsOrthogonal n (idMatrix n) := by
   constructor
@@ -9390,6 +9408,80 @@ theorem finiteVecNorm2_finiteMatVec_orthogonal {n : ℕ}
     finiteVecNorm2 (finiteMatVec U x) = finiteVecNorm2 x := by
   simpa [finiteVecNorm2_fin, matMulVec, finiteMatVec] using
     vecNorm2_orthogonal U x hU
+
+/-- Orthogonal eigenvector columns give the corresponding finite
+    orthogonal diagonalization. -/
+theorem finiteMatrix_eq_orthogonal_diagonalization_of_eigenvector_columns
+    {n : ℕ} {M Q : Fin n → Fin n → ℝ} {d : Fin n → ℝ}
+    (hQ : IsOrthogonal n Q)
+    (heig : ∀ j : Fin n,
+      finiteMatVec M (fun i : Fin n => Q i j) =
+        fun i : Fin n => d j * Q i j) :
+    M = finiteMatMul Q (finiteMatMul (finiteDiagonal d) (matTranspose Q)) := by
+  classical
+  ext i j
+  have hleft :
+      (∑ a : Fin n, finiteMatVec M (fun k : Fin n => Q k a) i * Q j a) =
+        M i j := by
+    calc
+      (∑ a : Fin n, finiteMatVec M (fun k : Fin n => Q k a) i * Q j a)
+          = ∑ a : Fin n, (∑ k : Fin n, M i k * Q k a) * Q j a := by
+              rfl
+      _ = ∑ k : Fin n, M i k * (∑ a : Fin n, Q k a * Q j a) := by
+              calc
+                (∑ a : Fin n, (∑ k : Fin n, M i k * Q k a) * Q j a)
+                    = ∑ a : Fin n, ∑ k : Fin n, M i k * Q k a * Q j a := by
+                        apply Finset.sum_congr rfl
+                        intro a _
+                        rw [Finset.sum_mul]
+                _ = ∑ k : Fin n, ∑ a : Fin n, M i k * (Q k a * Q j a) := by
+                        rw [Finset.sum_comm]
+                        apply Finset.sum_congr rfl
+                        intro k _
+                        apply Finset.sum_congr rfl
+                        intro a _
+                        ring
+                _ = ∑ k : Fin n, M i k * (∑ a : Fin n, Q k a * Q j a) := by
+                        apply Finset.sum_congr rfl
+                        intro k _
+                        rw [Finset.mul_sum]
+      _ = ∑ k : Fin n, M i k * (if k = j then 1 else 0) := by
+              apply Finset.sum_congr rfl
+              intro k _
+              rw [hQ.row_orthonormal]
+      _ = M i j := by
+              simp [Finset.mem_univ]
+  have hright :
+      (∑ a : Fin n, finiteMatVec M (fun k : Fin n => Q k a) i * Q j a) =
+        finiteMatMul Q (finiteMatMul (finiteDiagonal d) (matTranspose Q)) i j := by
+    calc
+      (∑ a : Fin n, finiteMatVec M (fun k : Fin n => Q k a) i * Q j a)
+          = ∑ a : Fin n, (d a * Q i a) * Q j a := by
+              apply Finset.sum_congr rfl
+              intro a _
+              rw [heig a]
+      _ = ∑ a : Fin n, Q i a * (d a * Q j a) := by
+              apply Finset.sum_congr rfl
+              intro a _
+              ring
+      _ = finiteMatMul Q (finiteMatMul (finiteDiagonal d) (matTranspose Q)) i j := by
+              symm
+              unfold finiteMatMul finiteDiagonal matTranspose
+              simp [Finset.sum_ite_eq, Finset.mem_univ]
+  rw [← hleft, hright]
+
+/-- Column-orthonormal eigenvectors give the corresponding finite orthogonal
+    diagonalization. -/
+theorem finiteMatrix_eq_orthogonal_diagonalization_of_orthonormal_eigenvectors
+    {n : ℕ} {M Q : Fin n → Fin n → ℝ} {d : Fin n → ℝ}
+    (hQ : ∀ i j : Fin n,
+      ∑ k : Fin n, Q k i * Q k j = if i = j then 1 else 0)
+    (heig : ∀ j : Fin n,
+      finiteMatVec M (fun i : Fin n => Q i j) =
+        fun i : Fin n => d j * Q i j) :
+    M = finiteMatMul Q (finiteMatMul (finiteDiagonal d) (matTranspose Q)) :=
+  finiteMatrix_eq_orthogonal_diagonalization_of_eigenvector_columns
+    (IsOrthogonal.of_col_orthonormal hQ) heig
 
 /-- Orthogonal diagonalization gives a finite operator-2 bound from a uniform
     bound on the diagonal eigenvalue magnitudes.  This is the reusable spectral
