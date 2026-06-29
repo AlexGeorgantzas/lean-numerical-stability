@@ -1408,6 +1408,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_9_nonneg_lu_solve_backward_error`
 - `growthFactorEntry_le_of_entry_bound_factor`
 - `higham9_9_growthFactorEntry_le_two_of_upper_entry_bound`
+- `higham9_9_growthFactorEntry_le_two_of_upper_entry_bound_exists_hAmax`
 - `higham9_7_firstPivotRowSwap_involutive`
 - `higham9_7_firstPivotRowSwap_isPermutation`
 - `higham9_7_firstPivotRowSwap_det_ne_zero`
