@@ -362,34 +362,85 @@ theorem higham21_eq21_3_q_method_min_norm_of_qr_upper_diag_ne_zero {m k : ℕ}
 -- ============================================================
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
-    source-facing alias for the projector mixture reused from the Chapter 20
-    Kielbasinski--Schwetlick construction.  This is the constructed
-    perturbation block, not the full minimum-norm symmetrization theorem. -/
+    source-facing right-projector mixture for the Kielbasinski--Schwetlick
+    construction.  The projector acts on the solution vector `x`, as in the
+    printed formula `DeltaA = DeltaA1 P + DeltaA2 (I - P)`.  This is the
+    constructed perturbation block, not the full minimum-norm symmetrization
+    theorem. -/
 noncomputable abbrev undetLemma21_2SymmetrizedPerturbation {m n : ℕ}
-    (s : Fin m → ℝ) (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ) :
+    (x : Fin n → ℝ) (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ) :
     Fin m → Fin n → ℝ :=
-  lsLemma20_6Perturbation s DeltaA1 DeltaA2
+  finiteTranspose
+    (lsLemma20_6Perturbation x (finiteTranspose DeltaA2) (finiteTranspose DeltaA1))
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    the transposed Chapter 20 construction is exactly the right-projector
+    mixture `DeltaA1 P + DeltaA2 (I - P)` used in the proof. -/
+theorem higham21_lemma21_2_symmetrized_perturbation_eq_right_projector_mixture {m n : ℕ}
+    (x : Fin n → ℝ) (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (i : Fin m) (j : Fin n) :
+    undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j =
+      matMulRectRight DeltaA1 (lsLemma20_6Projector x) i j +
+        matMulRectRight DeltaA2 (lsLemma20_6ProjectorComplement x) i j := by
+  have hmix :=
+    lsLemma20_6Perturbation_eq_projector_mixture
+      x (finiteTranspose DeltaA2) (finiteTranspose DeltaA1) j i
+  have hrightQ :
+      matMulRectLeft (lsLemma20_6ProjectorComplement x) (finiteTranspose DeltaA2) j i =
+        matMulRectRight DeltaA2 (lsLemma20_6ProjectorComplement x) i j := by
+    unfold matMulRectLeft matMulRectRight finiteTranspose
+    apply Finset.sum_congr rfl
+    intro k _
+    rw [lsLemma20_6ProjectorComplement_symmetric x j k]
+    ring
+  have hrightP :
+      matMulRectLeft (lsLemma20_6Projector x) (finiteTranspose DeltaA1) j i =
+        matMulRectRight DeltaA1 (lsLemma20_6Projector x) i j := by
+    unfold matMulRectLeft matMulRectRight finiteTranspose
+    apply Finset.sum_congr rfl
+    intro k _
+    rw [lsLemma20_6Projector_symmetric x j k]
+    ring
+  calc
+    undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j =
+        lsLemma20_6Perturbation x (finiteTranspose DeltaA2) (finiteTranspose DeltaA1) j i := rfl
+    _ = matMulRectLeft (lsLemma20_6ProjectorComplement x) (finiteTranspose DeltaA2) j i +
+          matMulRectLeft (lsLemma20_6Projector x) (finiteTranspose DeltaA1) j i := hmix
+    _ = matMulRectRight DeltaA2 (lsLemma20_6ProjectorComplement x) i j +
+          matMulRectRight DeltaA1 (lsLemma20_6Projector x) i j := by
+          rw [hrightQ, hrightP]
+    _ = matMulRectRight DeltaA1 (lsLemma20_6Projector x) i j +
+          matMulRectRight DeltaA2 (lsLemma20_6ProjectorComplement x) i j := by
+          ring
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     the Frobenius-squared norm bound for the projector mixture used to replace
     two perturbation blocks by one. -/
 theorem higham21_lemma21_2_symmetrized_perturbation_frobNormSq_le {m n : ℕ}
-    (s : Fin m → ℝ) (hsq : vecNorm2Sq s ≠ 0)
+    (x : Fin n → ℝ) (hsq : vecNorm2Sq x ≠ 0)
     (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ) :
-    frobNormSqRect (undetLemma21_2SymmetrizedPerturbation s DeltaA1 DeltaA2) ≤
-      frobNormSqRect DeltaA1 + frobNormSqRect DeltaA2 :=
-  lsLemma20_6Perturbation_frobNormSqRect_le s hsq DeltaA1 DeltaA2
+    frobNormSqRect (undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2) ≤
+      frobNormSqRect DeltaA1 + frobNormSqRect DeltaA2 := by
+  have h :=
+    lsLemma20_6Perturbation_frobNormSqRect_le
+      x hsq (finiteTranspose DeltaA2) (finiteTranspose DeltaA1)
+  simpa [undetLemma21_2SymmetrizedPerturbation, frobNormSqRect_finiteTranspose, add_comm]
+    using h
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     Frobenius-norm form of the printed bound
     `||Delta A||_F <= (||Delta A_1||_F^2 + ||Delta A_2||_F^2)^(1/2)` for the
     projector mixture. -/
 theorem higham21_lemma21_2_symmetrized_perturbation_frob_bound {m n : ℕ}
-    (s : Fin m → ℝ) (hsq : vecNorm2Sq s ≠ 0)
+    (x : Fin n → ℝ) (hsq : vecNorm2Sq x ≠ 0)
     (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ) :
-    frobNormRect (undetLemma21_2SymmetrizedPerturbation s DeltaA1 DeltaA2) ≤
-      Real.sqrt (frobNormRect DeltaA1 ^ 2 + frobNormRect DeltaA2 ^ 2) :=
-  lsLemma20_6Perturbation_norm_bound_two_frob s hsq DeltaA1 DeltaA2
+    frobNormRect (undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2) ≤
+      Real.sqrt (frobNormRect DeltaA1 ^ 2 + frobNormRect DeltaA2 ^ 2) := by
+  have h :=
+    lsLemma20_6Perturbation_norm_bound_two_frob
+      x hsq (finiteTranspose DeltaA2) (finiteTranspose DeltaA1)
+  simpa [undetLemma21_2SymmetrizedPerturbation, frobNormRect_finiteTranspose, add_comm]
+    using h
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     operator-2 norm form of the printed bound for the projector mixture.  If
@@ -397,15 +448,34 @@ theorem higham21_lemma21_2_symmetrized_perturbation_frob_bound {m n : ℕ}
     `beta`, then the constructed perturbation has bound
     `(alpha^2 + beta^2)^(1/2)`. -/
 theorem higham21_lemma21_2_symmetrized_perturbation_op_bound {m n : ℕ}
-    (s : Fin m → ℝ) (hsq : vecNorm2Sq s ≠ 0)
+    (x : Fin n → ℝ) (hsq : vecNorm2Sq x ≠ 0)
     (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
     {alpha beta : ℝ} (halpha : 0 ≤ alpha) (hbeta : 0 ≤ beta)
     (hDeltaA1 : rectOpNorm2Le DeltaA1 alpha)
     (hDeltaA2 : rectOpNorm2Le DeltaA2 beta) :
-    rectOpNorm2Le (undetLemma21_2SymmetrizedPerturbation s DeltaA1 DeltaA2)
-      (Real.sqrt (alpha ^ 2 + beta ^ 2)) :=
-  lsLemma20_6Perturbation_norm_bound_two_operator
-    s hsq DeltaA1 DeltaA2 halpha hbeta hDeltaA1 hDeltaA2
+    rectOpNorm2Le (undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2)
+      (Real.sqrt (alpha ^ 2 + beta ^ 2)) := by
+  have hDeltaA2T : rectOpNorm2Le (finiteTranspose DeltaA2) beta :=
+    rectOpNorm2Le_finiteTranspose_of_rectOpNorm2Le DeltaA2 hbeta hDeltaA2
+  have hDeltaA1T : rectOpNorm2Le (finiteTranspose DeltaA1) alpha :=
+    rectOpNorm2Le_finiteTranspose_of_rectOpNorm2Le DeltaA1 halpha hDeltaA1
+  have hbase :
+      rectOpNorm2Le
+        (lsLemma20_6Perturbation x (finiteTranspose DeltaA2) (finiteTranspose DeltaA1))
+        (Real.sqrt (beta ^ 2 + alpha ^ 2)) :=
+    lsLemma20_6Perturbation_norm_bound_two_operator
+      x hsq (finiteTranspose DeltaA2) (finiteTranspose DeltaA1)
+      hbeta halpha hDeltaA2T hDeltaA1T
+  have htrans :
+      rectOpNorm2Le
+        (finiteTranspose
+          (lsLemma20_6Perturbation x (finiteTranspose DeltaA2) (finiteTranspose DeltaA1)))
+        (Real.sqrt (beta ^ 2 + alpha ^ 2)) :=
+    rectOpNorm2Le_finiteTranspose_of_rectOpNorm2Le
+      (lsLemma20_6Perturbation x (finiteTranspose DeltaA2) (finiteTranspose DeltaA1))
+      (Real.sqrt_nonneg _) hbase
+  have hrad : beta ^ 2 + alpha ^ 2 = alpha ^ 2 + beta ^ 2 := by ring
+  simpa [undetLemma21_2SymmetrizedPerturbation, hrad] using htrans
 
 -- ============================================================
 -- §21.3  Row-wise backward error for underdetermined systems
