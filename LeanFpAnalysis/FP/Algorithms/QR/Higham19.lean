@@ -4368,6 +4368,15 @@ theorem fl_dotProduct_zero_cons (fp : FPModel) {m : Nat}
       fl_dotProduct fp (m + 1) v b := by
   simp [fl_dotProduct, Fin.foldl_succ, fl_mul_zero_left, fp.fl_add_zero]
 
+/-- Zero-prefix dot-product lift without a nonempty-tail side condition. -/
+theorem fl_dotProduct_zero_cons_any (fp : FPModel) {n : Nat}
+    (v b : Fin n -> Real) (b0 : Real) :
+    fl_dotProduct fp (n + 1) (Fin.cases 0 v) (Fin.cases b0 b) =
+      fl_dotProduct fp n v b := by
+  cases n with
+  | zero => simp [fl_dotProduct, fl_mul_zero_left]
+  | succ m => exact fl_dotProduct_zero_cons fp v b b0
+
 /-- Compact Householder tail lift for a zero-prefixed reflector.
 
 After adding one leading zero to the reflector and one leading entry to the
@@ -4382,6 +4391,18 @@ theorem fl_householderApplyCompact_zero_cons_tail
       fl_householderApplyCompact fp (m + 1) v beta b := by
   funext i
   simp [fl_householderApplyCompact, fl_dotProduct_zero_cons]
+
+/-- Compact Householder tail lift for a zero-prefixed reflector, including the
+empty-tail boundary case. -/
+theorem fl_householderApplyCompact_zero_cons_tail_any
+    (fp : FPModel) {n : Nat}
+    (v b : Fin n -> Real) (b0 beta : Real) :
+    (fun i : Fin n =>
+        fl_householderApplyCompact fp (n + 1) (Fin.cases 0 v) beta
+          (Fin.cases b0 b) i.succ) =
+      fl_householderApplyCompact fp n v beta b := by
+  funext i
+  simp [fl_householderApplyCompact, fl_dotProduct_zero_cons_any]
 
 /-- Successor-pivot trailing active vector as a zero-prefixed active vector on
 the once-shrunk panel.
@@ -4408,6 +4429,17 @@ theorem householderTrailingActiveVector_succ_zeroPrefix_of_succ {m : Nat}
       simp [householderTrailingActiveVector, householderActiveVector,
         householderTrailingPart]
 
+/-- Successor-pivot trailing-active-vector zero-prefixing, including the
+vacuous zero-dimensional pivot boundary. -/
+theorem householderTrailingActiveVector_succ_zeroPrefix_of_succ_any
+    {n : Nat} (p : Fin n) (x : Fin (n + 1) -> Real) (alpha : Real) :
+    householderTrailingActiveVector (n + 1) p.succ x alpha =
+      Fin.cases 0
+        (householderTrailingActiveVector n p (fun i => x i.succ) alpha) := by
+  cases n with
+  | zero => exact Fin.elim0 p
+  | succ m => exact householderTrailingActiveVector_succ_zeroPrefix_of_succ p x alpha
+
 /-- Pivot-1 trailing active vector as a zero-prefixed pivot-0 active vector. -/
 theorem householderTrailingActiveVector_succ_zeroPrefix {m : Nat}
     (x : Fin (m + 2) -> Real) (alpha : Real) :
@@ -4424,6 +4456,16 @@ theorem householderBetaSpec_zero_cons {m : Nat}
     householderBetaSpec (m + 2) (Fin.cases 0 v) =
       householderBetaSpec (m + 1) v := by
   simp [householderBetaSpec, Fin.sum_univ_succ]
+
+/-- Zero-prefixing leaves the exact beta unchanged, with no nonempty-tail side
+condition. -/
+theorem householderBetaSpec_zero_cons_any {n : Nat}
+    (v : Fin n -> Real) :
+    householderBetaSpec (n + 1) (Fin.cases 0 v) =
+      householderBetaSpec n v := by
+  cases n with
+  | zero => simp [householderBetaSpec]
+  | succ m => exact householderBetaSpec_zero_cons v
 
 /-- Successor-pivot active-vector zero-prefixing leaves the exact beta equal to
 the once-shrunk panel beta. -/
@@ -4450,6 +4492,151 @@ theorem householderBetaSpec_zero_cons_eq_one_of_inner_self_eq_two {m : Nat}
     householderBetaSpec (m + 2) (Fin.cases 0 v) = 1 := by
   rw [householderBetaSpec_zero_cons]
   exact householderBetaSpec_eq_one_of_inner_self_eq_two (m + 1) v hself
+
+/-- Dropping two leading rows and columns from a double-zero-prefixed stored
+step gives the corresponding stored step on the twice-trailing panel.
+
+This is the storage-level shape needed by the final recursive/stored `R`
+handoff: a full pivot `k + 2` step becomes pivot `k` after the first two
+completed columns have been removed. -/
+theorem
+    trailingPanel_trailingPanel_storedPanelStep_succ_succ_zeroPrefix_eq_storedPanelStep_trailingPanel_trailingPanel
+    (fp : FPModel) {m p : Nat} (k : Nat)
+    (v : Fin m -> Real) (beta : Real)
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real) :
+    trailingPanel (trailingPanel
+        (fl_householderStoredPanelStep fp (m + 2) (p + 2) (k + 2)
+          (Fin.cases 0 (Fin.cases 0 v)) beta A)) =
+      fl_householderStoredPanelStep fp m p k v beta
+        (trailingPanel (trailingPanel A)) := by
+  ext i j
+  have hraw_one :
+      fl_householderApplyCompact fp (m + 2)
+          (Fin.cases 0 (Fin.cases 0 v)) beta
+          (fun a => A a j.succ.succ) i.succ.succ =
+        fl_householderApplyCompact fp (m + 1)
+          (Fin.cases 0 v) beta
+          (fun a => A a.succ j.succ.succ) i.succ := by
+    have h := congrFun
+      (fl_householderApplyCompact_zero_cons_tail_any fp
+        (v := Fin.cases 0 v)
+        (b := fun a : Fin (m + 1) => A a.succ j.succ.succ)
+        (b0 := A 0 j.succ.succ) (beta := beta)) i.succ
+    simpa using h
+  have hraw_two :
+      fl_householderApplyCompact fp (m + 1)
+          (Fin.cases 0 v) beta
+          (fun a => A a.succ j.succ.succ) i.succ =
+        fl_householderApplyCompact fp m v beta
+          (fun a => A a.succ.succ j.succ.succ) i := by
+    have h := congrFun
+      (fl_householderApplyCompact_zero_cons_tail_any fp
+        (v := v)
+        (b := fun a : Fin m => A a.succ.succ j.succ.succ)
+        (b0 := A ((0 : Fin (m + 1)).succ) j.succ.succ) (beta := beta)) i
+    simpa using h
+  have hraw :
+      fl_householderApplyCompactPanel fp (m + 2) (p + 2)
+          (Fin.cases 0 (Fin.cases 0 v)) beta A i.succ.succ j.succ.succ =
+        fl_householderApplyCompactPanel fp m p v beta
+          (trailingPanel (trailingPanel A)) i j := by
+    simp [fl_householderApplyCompactPanel, trailingPanel, hraw_one, hraw_two]
+  by_cases hjlt : j.val < k
+  case pos =>
+    simp [trailingPanel, fl_householderStoredPanelStep, hjlt]
+  case neg =>
+    have hjnot_full : Not (j.succ.succ.val < k + 2) := by
+      intro h
+      apply hjlt
+      have h' : j.val + 2 < k + 2 := by simpa [Fin.val_succ] using h
+      omega
+    by_cases hjeq : j.val = k
+    case pos =>
+      have hjeq_full : j.succ.succ.val = k + 2 := by
+        simp [Fin.val_succ, hjeq]
+      by_cases hik : k < i.val
+      case pos =>
+        simp [trailingPanel, fl_householderStoredPanelStep, hjeq, hik]
+      case neg =>
+        have hiknot_full : Not (k + 2 < i.succ.succ.val) := by
+          intro h
+          apply hik
+          have h' : k + 2 < i.val + 2 := by simpa [Fin.val_succ] using h
+          omega
+        simpa [trailingPanel, fl_householderStoredPanelStep, hjlt, hjnot_full,
+          hjeq, hjeq_full, hik, hiknot_full,
+          fl_householderApplyCompactPanel] using hraw
+    case neg =>
+      have hjeqnot_full : Not (j.succ.succ.val = k + 2) := by
+        intro h
+        apply hjeq
+        have h' : j.val + 2 = k + 2 := by simpa [Fin.val_succ] using h
+        omega
+      simpa [trailingPanel, fl_householderStoredPanelStep, hjlt, hjnot_full,
+        hjeq, hjeqnot_full, fl_householderApplyCompactPanel] using hraw
+
+/-- Double-trailing lift for an actual later-pivot stored Householder step.
+
+After dropping the first two rows and columns, the full stored-loop pivot
+`q + 2` active vector and beta become the pivot-`q` active vector and beta on
+the twice-trailing panel. -/
+theorem
+    trailingPanel_trailingPanel_storedPanelStep_succ_succ_trailingActiveVector_eq_storedPanelStep_trailingPanel_trailingPanel_of_succ_succ
+    (fp : FPModel) {m p : Nat} (q : Fin m) (hq : q.val < p)
+    (A : Fin (m + 2) -> Fin (p + 2) -> Real) (alpha : Real) :
+    trailingPanel (trailingPanel
+        (fl_householderStoredPanelStep fp (m + 2) (p + 2) (q.val + 2)
+          (householderTrailingActiveVector (m + 2) q.succ.succ
+            (fun a => A a (Fin.mk q.val hq).succ.succ) alpha)
+          (householderBetaSpec (m + 2)
+            (householderTrailingActiveVector (m + 2) q.succ.succ
+              (fun a => A a (Fin.mk q.val hq).succ.succ) alpha)) A)) =
+      fl_householderStoredPanelStep fp m p q.val
+        (householderTrailingActiveVector m q
+          (fun i => trailingPanel (trailingPanel A) i (Fin.mk q.val hq)) alpha)
+        (householderBetaSpec m
+          (householderTrailingActiveVector m q
+            (fun i => trailingPanel (trailingPanel A) i (Fin.mk q.val hq)) alpha))
+        (trailingPanel (trailingPanel A)) := by
+  let tailCol : Fin p := Fin.mk q.val hq
+  let vtail : Fin m -> Real :=
+    householderTrailingActiveVector m q
+      (fun i => trailingPanel (trailingPanel A) i tailCol) alpha
+  have hv_inner :
+      householderTrailingActiveVector (m + 1) q.succ
+          (fun i => A i.succ tailCol.succ.succ) alpha =
+        Fin.cases 0 vtail := by
+    simpa [vtail, trailingPanel, tailCol] using
+      (householderTrailingActiveVector_succ_zeroPrefix_of_succ_any
+        (p := q) (x := fun i : Fin (m + 1) => A i.succ tailCol.succ.succ)
+        (alpha := alpha))
+  have hv :
+      householderTrailingActiveVector (m + 2) q.succ.succ
+          (fun a => A a tailCol.succ.succ) alpha =
+        Fin.cases 0 (Fin.cases 0 vtail) := by
+    rw [householderTrailingActiveVector_succ_zeroPrefix_of_succ_any
+      (p := q.succ) (x := fun a : Fin (m + 2) => A a tailCol.succ.succ)
+      (alpha := alpha)]
+    rw [hv_inner]
+  have hbeta :
+      householderBetaSpec (m + 2) (Fin.cases 0 (Fin.cases 0 vtail)) =
+        householderBetaSpec m vtail := by
+    rw [householderBetaSpec_zero_cons_any]
+    rw [householderBetaSpec_zero_cons_any]
+  change trailingPanel (trailingPanel
+        (fl_householderStoredPanelStep fp (m + 2) (p + 2) (q.val + 2)
+          (householderTrailingActiveVector (m + 2) q.succ.succ
+            (fun a => A a tailCol.succ.succ) alpha)
+          (householderBetaSpec (m + 2)
+            (householderTrailingActiveVector (m + 2) q.succ.succ
+              (fun a => A a tailCol.succ.succ) alpha)) A)) =
+      fl_householderStoredPanelStep fp m p q.val vtail
+        (householderBetaSpec m vtail) (trailingPanel (trailingPanel A))
+  rw [hv]
+  rw [hbeta]
+  exact
+    trailingPanel_trailingPanel_storedPanelStep_succ_succ_zeroPrefix_eq_storedPanelStep_trailingPanel_trailingPanel
+      fp q.val vtail (householderBetaSpec m vtail) A
 
 /-- Exact normalized-reflector bridge for stored trailing-active Householder
 data.
@@ -6221,6 +6408,58 @@ theorem
   exact
     storedSignedSequence_final_panel_eq_qrPanel_R_of_two_step_qrPanel_R_of_twice_trailing_final
       fp hmn A A_hat alpha hStep hcopy hQR2 hTailFinal
+
+/-- The twice-trailing panels of a signed stored-QR source recurrence form the
+same signed stored-QR recurrence on the twice-shrunk panel.
+
+This is the induction-step handoff needed by the remaining final-panel bridge:
+the full pivot `k + 2` source step becomes the pivot `k` stored step after the
+first two completed rows and columns are removed. -/
+theorem storedSignedSequence_twice_trailing_step_of_source_step
+    (fp : FPModel) {m p : Nat}
+    (hmn : p + 2 <= m + 2)
+    (A_hat : Nat -> Fin (m + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall k (hk : k < p + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (m + 2) (p + 2) k
+          (householderTrailingActiveVector (m + 2)
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (m + 2)
+            (householderTrailingActiveVector (m + 2)
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (k : Nat) (hk : k < p) :
+    trailingPanel (trailingPanel (A_hat ((k + 2) + 1))) =
+      fl_householderStoredPanelStep fp m p k
+        (householderTrailingActiveVector m
+          (Fin.mk k (by omega))
+          (fun a => trailingPanel (trailingPanel (A_hat (k + 2))) a
+            (Fin.mk k hk)) (alpha (k + 2)))
+        (householderBetaSpec m
+          (householderTrailingActiveVector m
+            (Fin.mk k (by omega))
+            (fun a => trailingPanel (trailingPanel (A_hat (k + 2))) a
+              (Fin.mk k hk)) (alpha (k + 2))))
+        (trailingPanel (trailingPanel (A_hat (k + 2)))) := by
+  have hkfull : k + 2 < p + 2 := by omega
+  let q : Fin m := Fin.mk k (by omega)
+  let tailCol : Fin p := Fin.mk k hk
+  have hrow : Fin.mk (k + 2) (lt_of_lt_of_le hkfull hmn) = q.succ.succ := by
+    ext
+    simp [q]
+  have hcol : Fin.mk (k + 2) hkfull = tailCol.succ.succ := by
+    ext
+    simp [tailCol]
+  have hstep := hStep (k + 2) hkfull
+  rw [hstep]
+  rw [hrow, hcol]
+  simpa only [q, tailCol]
+    using
+      trailingPanel_trailingPanel_storedPanelStep_succ_succ_trailingActiveVector_eq_storedPanelStep_trailingPanel_trailingPanel_of_succ_succ
+        (fp := fp) (m := m) (p := p) q hk (A_hat (k + 2)) (alpha (k + 2))
 
 /-- Exact-arithmetic instance of the arbitrary-width two-step
 recursive/stored bridge. -/

@@ -3447,6 +3447,37 @@ theorem GeneralizedQRFactorization.null_B_iff_exists_Q2_coord
     rw [hc]
     exact rectMatMulVec_zero h.S
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
+    the trailing `Q₂` coordinate block of the transformed data matrix `A Q`.
+
+    Its columns are the last `q` columns of `A Q`, i.e. the action of `A` on
+    the source `Q₂` coordinate range used in the proof of
+    `null(B) = range(Q₂)`. -/
+noncomputable def gqrAQ2Block {r p q : ℕ}
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ) :
+    Fin (r + q) → Fin q → ℝ :=
+  fun i j => matMulRect (r + q) (p + q) (p + q) A Q i (Fin.natAdd p j)
+
+/-- Vector-action form of the `A Q₂` block. -/
+theorem gqrAQ2Block_mulVec {r p q : ℕ}
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (y2 : Fin q → ℝ) :
+    rectMatMulVec (gqrAQ2Block A Q) y2 =
+      rectMatMulVec A (matMulVec (p + q) Q (Fin.append (0 : Fin p → ℝ) y2)) := by
+  calc
+    rectMatMulVec (gqrAQ2Block A Q) y2 =
+        rectMatMulVec (matMulRect (r + q) (p + q) (p + q) A Q)
+          (Fin.append (0 : Fin p → ℝ) y2) := by
+      ext i
+      unfold rectMatMulVec gqrAQ2Block
+      rw [Fin.sum_univ_add]
+      simp [Fin.append_left, Fin.append_right]
+    _ = rectMatMulVec A
+        (matMulVec (p + q) Q (Fin.append (0 : Fin p → ℝ) y2)) := by
+      exact rectMatMulVec_rectMatMul A Q (Fin.append (0 : Fin p → ℝ) y2)
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof:
     on the `Q₂` coordinate range, the equation `A x = 0` is equivalent to
     `L22 y₂ = 0`.
@@ -3504,6 +3535,138 @@ theorem GeneralizedQRFactorization.A_Q2_zero_iff_L22_zero
         have hi := congrFun hL22 i
         simpa [Fin.append_right, rectMatMulVec] using hi
     exact h.A_zero_of_transformed_A_zero hblock
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
+    under the source null-intersection condition, the `Q₂` coordinate block
+    has trivial kernel through `A`.
+
+    This is the source-faithful kernel consequence behind the proof step
+    `null(B) = range(Q₂)` followed by `AQ₂ = U₂ L22`: if
+    `A (Q [0; y₂]) = 0`, then the same vector also satisfies the constraint
+    block equation, hence lies in `null(A) ∩ null(B)` and must be zero. -/
+theorem GeneralizedQRFactorization.A_Q2_kernel_trivial_of_nullIntersectionTrivial
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (hnull : LSENullIntersectionTrivial A B)
+    (y2 : Fin q → ℝ)
+    (hAy2 :
+      rectMatMulVec A
+        (matMulVec (p + q) h.Q (Fin.append (0 : Fin p → ℝ) y2)) = 0) :
+    y2 = 0 := by
+  let y : Fin (p + q) → ℝ := Fin.append (0 : Fin p → ℝ) y2
+  let x : Fin (p + q) → ℝ := matMulVec (p + q) h.Q y
+  have hBx : rectMatMulVec B x = 0 := by
+    have hc := h.constraint_eq (0 : Fin p → ℝ) y2
+    change
+      rectMatMulVec B
+        (matMulVec (p + q) h.Q (Fin.append (0 : Fin p → ℝ) y2)) = 0
+    rw [hc]
+    exact rectMatMulVec_zero h.S
+  have hxzero : x = 0 := hnull x hAy2 hBx
+  have hyzero : y = 0 := by
+    have hrec := matMulVec_orthogonal_transpose_mul h.orthQ y
+    dsimp [x] at hxzero
+    rw [hxzero, matMulVec_zero] at hrec
+    exact hrec.symm
+  ext i
+  have hi := congrFun hyzero (Fin.natAdd p i)
+  simpa [y, Fin.append_right] using hi
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
+    stacked full column rank gives the same trivial-kernel property for the
+    `A Q₂` block, using the repository's equivalence between stacked rank and
+    the local null-intersection condition. -/
+theorem GeneralizedQRFactorization.A_Q2_kernel_trivial_of_stackedFullColumnRank
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (hstack : LSEStackedFullColumnRank A B)
+    (y2 : Fin q → ℝ)
+    (hAy2 :
+      rectMatMulVec A
+        (matMulVec (p + q) h.Q (Fin.append (0 : Fin p → ℝ) y2)) = 0) :
+    y2 = 0 :=
+  h.A_Q2_kernel_trivial_of_nullIntersectionTrivial
+    ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
+    y2 hAy2
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
+    the `A Q₂` block has injective column map under the local
+    null-intersection condition. -/
+theorem GeneralizedQRFactorization.A_Q2_rectMatMulVec_injective_of_nullIntersectionTrivial
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (hnull : LSENullIntersectionTrivial A B) :
+    Function.Injective (rectMatMulVec (gqrAQ2Block A h.Q)) := by
+  intro y2 z2 hyz
+  let w : Fin q → ℝ := fun i => y2 i - z2 i
+  have hAw :
+      rectMatMulVec A
+        (matMulVec (p + q) h.Q (Fin.append (0 : Fin p → ℝ) w)) = 0 := by
+    have hblock : rectMatMulVec (gqrAQ2Block A h.Q) w = 0 := by
+      ext i
+      have hi := congrFun hyz i
+      have hsub :=
+        congrFun (rectMatMulVec_sub (gqrAQ2Block A h.Q) y2 z2) i
+      dsimp [w]
+      rw [hsub, hi]
+      ring
+    simpa [gqrAQ2Block_mulVec A h.Q w] using hblock
+  have hw : w = 0 :=
+    h.A_Q2_kernel_trivial_of_nullIntersectionTrivial hnull w hAw
+  ext i
+  have hwi := congrFun hw i
+  dsimp [w] at hwi
+  linarith
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
+    stacked full column rank gives injectivity of the `A Q₂` column map. -/
+theorem GeneralizedQRFactorization.A_Q2_rectMatMulVec_injective_of_stackedFullColumnRank
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    Function.Injective (rectMatMulVec (gqrAQ2Block A h.Q)) :=
+  h.A_Q2_rectMatMulVec_injective_of_nullIntersectionTrivial
+    ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 exact-MGS A-side bridge:
+    the source null-intersection condition supplies every nonzero-stage
+    normalizer needed for exact MGS applied to the smaller `A Q₂` block. -/
+theorem GeneralizedQRFactorization.A_Q2_mgs_norm_ne_zero_of_nullIntersectionTrivial
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (hnull : LSENullIntersectionTrivial A B)
+    (j : Fin q) :
+    gsColumnNorm2
+      (modifiedGramSchmidtVectors (gqrAQ2Block A h.Q) j.val j) ≠ 0 :=
+  modifiedGramSchmidtVectors_norm_ne_zero_of_rectMatMulVec_injective
+    (gqrAQ2Block A h.Q)
+    (h.A_Q2_rectMatMulVec_injective_of_nullIntersectionTrivial hnull) j
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 exact-MGS A-side bridge:
+    stacked full column rank supplies every exact-MGS nonzero-stage normalizer
+    for the smaller `A Q₂` block. -/
+theorem GeneralizedQRFactorization.A_Q2_mgs_norm_ne_zero_of_stackedFullColumnRank
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (hstack : LSEStackedFullColumnRank A B)
+    (j : Fin q) :
+    gsColumnNorm2
+      (modifiedGramSchmidtVectors (gqrAQ2Block A h.Q) j.val j) ≠ 0 :=
+  h.A_Q2_mgs_norm_ne_zero_of_nullIntersectionTrivial
+    ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
+    j
 
 /-- Exact GQR method handoff for (20.27):
     if the transformed block vector `[y1; y2]` minimizes the transformed
