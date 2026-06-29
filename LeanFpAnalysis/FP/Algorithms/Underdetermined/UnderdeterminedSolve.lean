@@ -708,6 +708,39 @@ theorem higham21_lemma21_2_symmetrized_min_norm_of_beta_ne_zero {m n : ℕ}
   rwa [hytilde_eq] at hmin
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    scalar endpoint of the source proof's beta-positivity estimate.
+    Once the matrix perturbation argument has produced the displayed lower
+    bound `beta >= 1 - (a + b)/(1 - b)`, the source smallness condition
+    `3 * max a b < 1` implies `beta > 0`.
+
+    This is only the final real-arithmetic step; it does not prove the
+    pseudoinverse perturbation lower bound that supplies `hbound`. -/
+theorem higham21_lemma21_2_scalar_beta_pos_of_bound
+    (a b beta : ℝ)
+    (hsmall : 3 * max a b < 1)
+    (hbound : 1 - (a + b) / (1 - b) ≤ beta) :
+    0 < beta := by
+  have ha_le : a ≤ max a b := le_max_left a b
+  have hb_le : b ≤ max a b := le_max_right a b
+  have hden_pos : 0 < 1 - b := by
+    nlinarith [hb_le, hsmall]
+  have hnum_lt_den : a + b < 1 - b := by
+    nlinarith [ha_le, hb_le, hsmall]
+  have hfrac_lt_one : (a + b) / (1 - b) < 1 := by
+    rw [div_lt_iff₀ hden_pos]
+    simpa using hnum_lt_den
+  linarith
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    nonzero form of the scalar beta-positivity endpoint. -/
+theorem higham21_lemma21_2_scalar_beta_ne_zero_of_bound
+    (a b beta : ℝ)
+    (hsmall : 3 * max a b < 1)
+    (hbound : 1 - (a + b) / (1 - b) ≤ beta) :
+    beta ≠ 0 :=
+  ne_of_gt (higham21_lemma21_2_scalar_beta_pos_of_bound a b beta hsmall hbound)
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     the Frobenius-squared norm bound for the projector mixture used to replace
     two perturbation blocks by one. -/
 theorem higham21_lemma21_2_symmetrized_perturbation_frobNormSq_le {m n : ℕ}
