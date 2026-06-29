@@ -2911,6 +2911,60 @@ theorem panelFirstColumnTailZero_firstStoredPanelStep
   intro i
   simp [panelFirstColumnTail, fl_householderStoredPanelStep]
 
+/-- Later stored Householder panel steps preserve a zero first-column tail.
+
+This is the invariant needed by the recursive/stored `R11` handoff: once the
+first stored step has completed the first column, every later pivot copies that
+completed column because it lies before the active pivot. -/
+theorem panelFirstColumnTailZero_storedPanelStep_of_pos
+    (fp : FPModel) {m p k : Nat}
+    (hk : 0 < k)
+    (v : Fin (m + 1) -> Real) (beta : Real)
+    (A : Fin (m + 1) -> Fin (p + 1) -> Real)
+    (hzero : panelFirstColumnTailZero A) :
+    panelFirstColumnTailZero
+      (fl_householderStoredPanelStep fp (m + 1) (p + 1) k v beta A) := by
+  intro i
+  simpa [panelFirstColumnTail, fl_householderStoredPanelStep, hk]
+    using hzero i
+
+/-- Successor-pivot stored steps preserve a zero first-column tail. -/
+theorem panelFirstColumnTailZero_storedPanelStep_succ
+    (fp : FPModel) {m p : Nat} (k : Nat)
+    (v : Fin (m + 1) -> Real) (beta : Real)
+    (A : Fin (m + 1) -> Fin (p + 1) -> Real)
+    (hzero : panelFirstColumnTailZero A) :
+    panelFirstColumnTailZero
+      (fl_householderStoredPanelStep fp (m + 1) (p + 1) (k + 1) v beta A) :=
+  panelFirstColumnTailZero_storedPanelStep_of_pos fp (Nat.succ_pos k)
+    v beta A hzero
+
+/-- Finite stored-panel sequences have a zero first-column tail after the
+first step, and the invariant is preserved through every later stored pivot. -/
+theorem panelFirstColumnTailZero_storedSequence_after_firstStep
+    (fp : FPModel) {m p n : Nat}
+    (A_hat : Nat -> Fin (m + 1) -> Fin (p + 1) -> Real)
+    (v : Nat -> Fin (m + 1) -> Real) (beta : Nat -> Real)
+    (hn : 0 < n)
+    (hStep : forall k, k < n ->
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (m + 1) (p + 1) k
+          (v k) (beta k) (A_hat k)) :
+    forall t, t < n -> panelFirstColumnTailZero (A_hat (t + 1)) := by
+  intro t ht
+  induction t with
+  | zero =>
+      rw [hStep 0 hn]
+      exact panelFirstColumnTailZero_firstStoredPanelStep
+        fp (v 0) (beta 0) (A_hat 0)
+  | succ t ih =>
+      have htprev : t < n := Nat.lt_trans (Nat.lt_succ_self t) ht
+      have hprev : panelFirstColumnTailZero (A_hat (t + 1)) :=
+        ih htprev
+      rw [hStep (t + 1) ht]
+      exact panelFirstColumnTailZero_storedPanelStep_succ
+        fp t (v (t + 1)) (beta (t + 1)) (A_hat (t + 1)) hprev
+
 /-- One-column determinant-specialized recursive/stored `R` bridge.
 
 Once the active panel has only one column, the determinant-selected nonzero

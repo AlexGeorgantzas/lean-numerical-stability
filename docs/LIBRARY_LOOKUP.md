@@ -1635,6 +1635,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_completePivotWilkinsonBound_nonneg`
 - `higham9_14_completePivotWilkinsonBound_pos`
 - `higham9_14_completePivotWilkinsonProduct_ge_one`
+- `higham9_14_completePivotWilkinsonProduct_two`
+- `higham9_14_completePivotWilkinsonProduct_succ`
 - `higham9_14_completePivotWilkinsonBound_ge_sqrt`
 - `higham9_completePivotGrowthSet`
 - `higham9_completePivotGrowthSup`

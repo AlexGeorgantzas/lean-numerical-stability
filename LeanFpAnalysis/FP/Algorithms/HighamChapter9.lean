@@ -8545,6 +8545,28 @@ lemma higham9_14_completePivotWilkinsonProduct_ge_one (n : ℕ) :
       exact Real.one_le_rpow hk_ge_one hexp_nonneg
   simpa using hprod
 
+/-- **Equation (9.14)**, base value of Wilkinson's scalar product. -/
+lemma higham9_14_completePivotWilkinsonProduct_two :
+    higham9_14_completePivotWilkinsonProduct 2 = 2 := by
+  norm_num [higham9_14_completePivotWilkinsonProduct]
+
+/-- **Equation (9.14)**, one-step recurrence for Wilkinson's scalar product.
+
+This exposes the factor appended when the product endpoint is increased from
+`n` to `n + 1`, which is the form needed by inductive scalar-product
+arguments. -/
+lemma higham9_14_completePivotWilkinsonProduct_succ {n : ℕ} (hn : 1 ≤ n) :
+    higham9_14_completePivotWilkinsonProduct (n + 1) =
+      higham9_14_completePivotWilkinsonProduct n *
+        ((n + 1 : ℕ) : ℝ) ^ ((1 : ℝ) / (n : ℝ)) := by
+  unfold higham9_14_completePivotWilkinsonProduct
+  have hab : 2 ≤ n + 1 := by omega
+  have hprod :=
+    Finset.prod_Icc_succ_top (a := 2) (b := n)
+      (f := fun k : ℕ => (k : ℝ) ^ ((1 : ℝ) / ((k : ℝ) - 1))) hab
+  have hden : ((n + 1 : ℕ) : ℝ) - 1 = (n : ℝ) := by norm_num
+  simpa [hden] using hprod
+
 /-- **Equation (9.14)**, Wilkinson RHS dominates its leading `sqrt n` factor.
 
 This is only scalar support for the displayed RHS; it does not prove the
