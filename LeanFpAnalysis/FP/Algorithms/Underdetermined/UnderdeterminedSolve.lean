@@ -845,7 +845,6 @@ theorem undetNormwiseBackwardErrorEtaF_le_nonzeroFormulaRHS_of_exists_feasible_c
 theorem undetNormwiseBackwardErrorEtaF_eq_nonzeroFormulaRHS_of_formula_certificate
     {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ)
     (b : Fin m → ℝ) (y : Fin n → ℝ) (sigma : ℝ)
-    (hnonempty : (undetNormwiseBackwardErrorValuesF theta A b y).Nonempty)
     (hlower :
       ∀ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
         UndetNormwiseBackwardErrorFeasible A b y DeltaA Deltab →
@@ -858,9 +857,13 @@ theorem undetNormwiseBackwardErrorEtaF_eq_nonzeroFormulaRHS_of_formula_certifica
             undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma) :
     undetNormwiseBackwardErrorEtaF theta A b y =
       undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma := by
+  rcases hatt with ⟨DeltaA, Deltab, hfeas, hcost⟩
+  have hnonempty : (undetNormwiseBackwardErrorValuesF theta A b y).Nonempty :=
+    ⟨lsNormwiseBackwardErrorCostF theta DeltaA Deltab,
+      DeltaA, Deltab, hfeas, rfl⟩
   exact le_antisymm
     (undetNormwiseBackwardErrorEtaF_le_nonzeroFormulaRHS_of_exists_feasible_cost_eq
-      theta A b y sigma hatt)
+      theta A b y sigma ⟨DeltaA, Deltab, hfeas, hcost⟩)
     (undetNormwiseBackwardErrorNonzeroFormulaRHS_le_etaF_of_forall_feasible_cost_ge
       theta A b y sigma hnonempty hlower)
 
