@@ -3784,6 +3784,28 @@ theorem householderBetaSpec_trailingActiveVector_succ_zeroPrefix_of_succ
     (householderTrailingActiveVector (m + 1) p
       (fun i => x i.succ) alpha)
 
+/-- Exact normalized-reflector bridge for stored trailing-active Householder
+data.
+
+The stored source recurrence carries an unnormalized vector with its
+`householderBetaSpec`; the recursive QR branch uses the beta-one normalized
+reflector.  This exact algebra fact names the equality between those two
+reflector matrices before any rounded compact-application obligations are
+introduced. -/
+theorem householderTrailingActiveVector_normalized_reflector_eq_betaSpec
+    {n : Nat} (p : Fin n) (x : Fin n -> Real) (alpha : Real) :
+    householder n
+        (householderNormalizedVector n
+          (householderTrailingActiveVector n p x alpha)
+          (householderBetaSpec n
+            (householderTrailingActiveVector n p x alpha))) 1 =
+      householder n
+        (householderTrailingActiveVector n p x alpha)
+        (householderBetaSpec n
+          (householderTrailingActiveVector n p x alpha)) :=
+  householder_normalizedVector_eq_betaSpec n
+    (householderTrailingActiveVector n p x alpha)
+
 /-- Successor-pivot trailing-panel lift for a full stored step with a
 zero-prefixed reflector.
 
