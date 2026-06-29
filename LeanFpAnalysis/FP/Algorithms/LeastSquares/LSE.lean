@@ -380,6 +380,105 @@ theorem isLowerTriangular_matTranspose_of_isUpperTriangular {n : ℕ}
   unfold matTranspose
   exact hR j i hij
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction step:
+    reverse both indices of an upper-triangular QR block.  This is the square
+    block produced when a standard `[R;0]` QR display is turned into the
+    lower-triangular block in the tall associated form (20.28). -/
+def gqrReverseSquare {n : ℕ} (R : Fin n → Fin n → ℝ) :
+    Fin n → Fin n → ℝ :=
+  fun i j => R (Fin.rev i) (Fin.rev j)
+
+/-- Reversing both indices turns an upper-triangular QR block into the
+    lower-triangular block used in Higham's Chapter 20 GQR display (20.28). -/
+theorem gqrReverseSquare_lowerTriangular_of_upper {n : ℕ}
+    {R : Fin n → Fin n → ℝ}
+    (hR : IsUpperTriangular n R) :
+    IsLowerTriangular (gqrReverseSquare R) := by
+  intro i j hij
+  unfold gqrReverseSquare
+  exact hR (Fin.rev i) (Fin.rev j) ((Fin.rev_lt_rev).2 hij)
+
+/-- Diagonal nonzeroness is preserved by the index reversal used to convert an
+    upper QR block into the lower GQR block. -/
+theorem gqrReverseSquare_diag_ne_zero_iff {n : ℕ}
+    (R : Fin n → Fin n → ℝ) :
+    (∀ i : Fin n, gqrReverseSquare R i i ≠ 0) ↔
+      ∀ i : Fin n, R i i ≠ 0 := by
+  constructor
+  · intro h i
+    have hi := h (Fin.rev i)
+    simpa [gqrReverseSquare] using hi
+  · intro h i
+    simpa [gqrReverseSquare] using h (Fin.rev i)
+
+/-- Permutation matrix for a finite index equivalence.  This is the orthogonal
+    left-factor used to make the row permutations in the Chapter 20 GQR block
+    constructions explicit. -/
+def finPermMatrix {n : ℕ} (σ : Fin n ≃ Fin n) : Fin n → Fin n → ℝ :=
+  fun i j => if σ i = j then 1 else 0
+
+/-- Left multiplication by a permutation matrix permutes the rows of a
+    rectangular matrix. -/
+theorem matMulRectLeft_finPermMatrix {m n : ℕ}
+    (σ : Fin m ≃ Fin m) (A : Fin m → Fin n → ℝ) :
+    matMulRectLeft (finPermMatrix σ) A = rectPermuteRows σ A := by
+  ext i j
+  unfold matMulRectLeft finPermMatrix rectPermuteRows
+  simp
+
+/-- A finite permutation matrix is orthogonal. -/
+theorem finPermMatrix_orthogonal {n : ℕ} (σ : Fin n ≃ Fin n) :
+    IsOrthogonal n (finPermMatrix σ) := by
+  constructor
+  · intro i j
+    unfold finPermMatrix matTranspose
+    calc
+      (∑ x : Fin n,
+          (if σ x = i then (1 : ℝ) else 0) *
+            if σ x = j then (1 : ℝ) else 0)
+          = ∑ x : Fin n,
+              if σ x = i then if σ x = j then (1 : ℝ) else 0 else 0 := by
+              apply Finset.sum_congr rfl
+              intro x _
+              by_cases hxi : σ x = i <;> simp [hxi]
+      _ = if i = j then 1 else 0 := by
+          calc
+            (∑ x : Fin n,
+                if σ x = i then if σ x = j then (1 : ℝ) else 0 else 0)
+                = ∑ y : Fin n,
+                    if y = i then if y = j then (1 : ℝ) else 0 else 0 := by
+                    exact Equiv.sum_comp σ
+                      (fun y : Fin n =>
+                        if y = i then if y = j then (1 : ℝ) else 0 else 0)
+            _ = if i = j then 1 else 0 := by
+                by_cases hij : i = j <;> simp [hij]
+  · intro i j
+    unfold finPermMatrix matTranspose
+    calc
+      (∑ x : Fin n,
+          (if σ i = x then (1 : ℝ) else 0) *
+            if σ j = x then (1 : ℝ) else 0)
+          = ∑ x : Fin n,
+              if σ i = x then if σ j = x then (1 : ℝ) else 0 else 0 := by
+              apply Finset.sum_congr rfl
+              intro x _
+              by_cases hxi : σ i = x <;> simp [hxi]
+      _ = if i = j then 1 else 0 := by
+          calc
+            (∑ x : Fin n,
+                if σ i = x then if σ j = x then (1 : ℝ) else 0 else 0)
+                = (if σ j = σ i then (1 : ℝ) else 0) := by
+                    rw [Finset.sum_ite_eq]
+                    simp
+            _ = if i = j then 1 else 0 := by
+                by_cases hij : i = j
+                · subst j
+                  simp
+                · have hsig : σ j ≠ σ i := by
+                    intro h
+                    exact hij ((Equiv.apply_eq_iff_eq σ).1 h.symm)
+                  simp [hij, hsig]
+
 private theorem isRightInverse_of_isLeftInverse_square {n : ℕ}
     {T Tinv : Fin n → Fin n → ℝ}
     (hLeft : IsLeftInverse n T Tinv) :
@@ -743,6 +842,31 @@ theorem exists_transpose_tall_qr_of_mgs_orthonormal {p q : ℕ}
   simpa [Bt] using hblock
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction step:
+    exact MGS data for `Bᵀ` with nonzero stage normalizers supplies the
+    completed tall QR block `Qᵀ Bᵀ = [R;0]`.
+
+    This discharges the previous explicit MGS orthonormality dependency using
+    the exact MGS orthonormal-columns theorem. -/
+theorem exists_transpose_tall_qr_of_mgs {p q : ℕ}
+    (B : Fin p → Fin (p + q) → ℝ)
+    (hdiag : ∀ k : Fin p,
+      gsColumnNorm2
+        (modifiedGramSchmidtVectors
+          (fun j : Fin (p + q) => fun i : Fin p => B i j) k.val k) ≠ 0) :
+    ∃ (Q : Fin (p + q) → Fin (p + q) → ℝ) (R : Fin p → Fin p → ℝ),
+      IsOrthogonal (p + q) Q ∧
+        IsUpperTriangular p R ∧
+        matMulRectLeft (matTranspose Q)
+          (fun j : Fin (p + q) => fun i : Fin p => B i j) =
+          lsQRTallBlock (k := q) R := by
+  have horth : GramSchmidtOrthonormalColumns
+      (modifiedGramSchmidtQ
+        (fun j : Fin (p + q) => fun i : Fin p => B i j)) :=
+    modifiedGramSchmidtQ_orthonormal_columns
+      (fun j : Fin (p + q) => fun i : Fin p => B i j) hdiag
+  exact exists_transpose_tall_qr_of_mgs_orthonormal B hdiag horth
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction step:
     exact MGS data for `Bᵀ`, plus the remaining MGS orthonormality
     dependency, constructs the GQR constraint block `B Q = [S 0]` with
     `S` lower triangular. -/
@@ -764,6 +888,26 @@ theorem exists_gqr_constraint_block_of_mgs_orthonormal {p q : ℕ}
   refine ⟨Q, matTranspose R, hQorth,
     isLowerTriangular_matTranspose_of_isUpperTriangular hRupper, ?_⟩
   exact gqrBQBlock_eq_of_transpose_tall_qr B Q R hqr
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction step:
+    exact MGS data for `Bᵀ` with nonzero stage normalizers constructs the GQR
+    constraint block `B Q = [S 0]` with `S` lower triangular. -/
+theorem exists_gqr_constraint_block_of_mgs {p q : ℕ}
+    (B : Fin p → Fin (p + q) → ℝ)
+    (hdiag : ∀ k : Fin p,
+      gsColumnNorm2
+        (modifiedGramSchmidtVectors
+          (fun j : Fin (p + q) => fun i : Fin p => B i j) k.val k) ≠ 0) :
+    ∃ (Q : Fin (p + q) → Fin (p + q) → ℝ) (S : Fin p → Fin p → ℝ),
+      IsOrthogonal (p + q) Q ∧
+        IsLowerTriangular S ∧
+        matMulRect p (p + q) (p + q) B Q = gqrBQBlock S := by
+  have horth : GramSchmidtOrthonormalColumns
+      (modifiedGramSchmidtQ
+        (fun j : Fin (p + q) => fun i : Fin p => B i j)) :=
+    modifiedGramSchmidtQ_orthonormal_columns
+      (fun j : Fin (p + q) => fun i : Fin p => B i j) hdiag
+  exact exists_gqr_constraint_block_of_mgs_orthonormal B hdiag horth
 
 /-- Matrix-vector multiplication by the `U^T A Q` block in (20.27). -/
 theorem gqrAQBlock_mulVec {r p q : ℕ}
@@ -1842,6 +1986,104 @@ theorem GeneralizedQRFactorization.exists_of_wide_qr_assoc_case {k r q : ℕ}
         h.L22 = gqrAQWideL22FromEq20_28 hCase.L := by
   exact GeneralizedQRFactorization.exists_of_wide_qr_shapes
     Q U R hCase.X hCase.L hQ hU hqrB hR hCase.aq_eq hCase.lowerL
+
+/-- Tall-case construction wrapper for Higham, 2nd ed., Theorem 20.9:
+    exact MGS data for `Bᵀ` supplies the `B Q = [S 0]` side, so the only
+    remaining supplied construction is an associated-row shape for `Uᵀ A Q`
+    for the completed orthogonal `Q`. -/
+theorem GeneralizedQRFactorization.exists_of_tall_mgs_constraint_and_assoc_shape
+    {k p q : ℕ}
+    {A : Fin ((k + p) + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (hdiag : ∀ j : Fin p,
+      gsColumnNorm2
+        (modifiedGramSchmidtVectors
+          (fun col : Fin (p + q) => fun row : Fin p => B row col) j.val j) ≠ 0)
+    (hAQ : ∀ Q : Fin (p + q) → Fin (p + q) → ℝ,
+      IsOrthogonal (p + q) Q →
+        ∃ U : Fin ((k + p) + q) → Fin ((k + p) + q) → ℝ,
+          IsOrthogonal ((k + p) + q) U ∧
+            Nonempty (
+            GQRAQTallAssocCase k p q
+              (matMulRectLeft (matTranspose U)
+                (matMulRect ((k + p) + q) (p + q) (p + q) A Q)))) :
+    Nonempty (GeneralizedQRFactorization (k + p) p q A B) := by
+  rcases exists_gqr_constraint_block_of_mgs B hdiag with
+    ⟨Q, S, hQorth, hSlower, hBQ⟩
+  rcases hAQ Q hQorth with ⟨U, hUorth, hCaseNonempty⟩
+  rcases hCaseNonempty with ⟨hCase⟩
+  let L11 := gqrAQTallL11FromEq20_28 (k := k) hCase.L
+  let L21 := gqrAQTallL21FromEq20_28 hCase.L
+  let L22 := gqrAQTallL22FromEq20_28 hCase.L
+  have hAQBlock :
+      gqrAQBlock L11 L21 L22 =
+        gqrAQTallBlockAssoc (k := k) hCase.L := by
+    simpa [L11, L21, L22] using
+      gqrAQBlock_eq_tallBlockAssoc_of_eq20_28 (k := k)
+        hCase.L hCase.lowerL
+  refine ⟨
+    { Q := Q
+      U := U
+      L11 := L11
+      L21 := L21
+      L22 := L22
+      S := S
+      orthQ := hQorth
+      orthU := hUorth
+      aq_eq := ?_
+      bq_eq := hBQ
+      lowerL22 := gqrAQTallL22FromEq20_28_lowerTriangular hCase.lowerL
+      lowerS := hSlower }⟩
+  rw [hCase.aq_eq, ← hAQBlock]
+
+/-- Wide-case construction wrapper for Higham, 2nd ed., Theorem 20.9:
+    exact MGS data for `Bᵀ` supplies the `B Q = [S 0]` side, so the only
+    remaining supplied construction is an associated-column shape for `Uᵀ A Q`
+    for the completed orthogonal `Q`. -/
+theorem GeneralizedQRFactorization.exists_of_wide_mgs_constraint_and_assoc_shape
+    {k r q : ℕ}
+    {A : Fin (r + q) → Fin ((k + r) + q) → ℝ}
+    {B : Fin (k + r) → Fin ((k + r) + q) → ℝ}
+    (hdiag : ∀ j : Fin (k + r),
+      gsColumnNorm2
+        (modifiedGramSchmidtVectors
+          (fun col : Fin ((k + r) + q) => fun row : Fin (k + r) => B row col)
+          j.val j) ≠ 0)
+    (hAQ : ∀ Q : Fin ((k + r) + q) → Fin ((k + r) + q) → ℝ,
+      IsOrthogonal ((k + r) + q) Q →
+        ∃ U : Fin (r + q) → Fin (r + q) → ℝ,
+          IsOrthogonal (r + q) U ∧
+            Nonempty (
+            GQRAQWideAssocCase k r q
+              (matMulRectLeft (matTranspose U)
+                (matMulRect (r + q) ((k + r) + q) ((k + r) + q) A Q)))) :
+    Nonempty (GeneralizedQRFactorization r (k + r) q A B) := by
+  rcases exists_gqr_constraint_block_of_mgs B hdiag with
+    ⟨Q, S, hQorth, hSlower, hBQ⟩
+  rcases hAQ Q hQorth with ⟨U, hUorth, hCaseNonempty⟩
+  rcases hCaseNonempty with ⟨hCase⟩
+  let L11 := gqrAQWideL11FromEq20_28 hCase.X hCase.L
+  let L21 := gqrAQWideL21FromEq20_28 hCase.X hCase.L
+  let L22 := gqrAQWideL22FromEq20_28 hCase.L
+  have hAQBlock :
+      gqrAQBlock L11 L21 L22 =
+        gqrAQWideBlockAssoc hCase.X hCase.L := by
+    simpa [L11, L21, L22] using
+      gqrAQBlock_eq_wideBlockAssoc_of_eq20_28 hCase.X hCase.L hCase.lowerL
+  refine ⟨
+    { Q := Q
+      U := U
+      L11 := L11
+      L21 := L21
+      L22 := L22
+      S := S
+      orthQ := hQorth
+      orthU := hUorth
+      aq_eq := ?_
+      bq_eq := hBQ
+      lowerL22 := gqrAQWideL22FromEq20_28_lowerTriangular hCase.lowerL
+      lowerS := hSlower }⟩
+  rw [hCase.aq_eq, ← hAQBlock]
 
 /-- Higham, 2nd ed., Chapter 20, equations (20.27)-(20.28), tall case:
     a supplied `GeneralizedQRFactorization` connects the reconstructed

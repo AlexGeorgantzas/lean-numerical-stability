@@ -20968,6 +20968,66 @@ theorem higham9_15_upper_frobNormRect_le_init_lastColumn_diag {n : ℕ}
     frobNormRect_block_lastRowInit_zero_le Y
       (higham9_15_upper_lastRow_init_zero Y hY)
 
+/-- **Theorem 9.15 support**, squared Euclidean norm of the final column split
+into its initial part and final diagonal entry. -/
+theorem higham9_15_vecNorm2Sq_lastColumn_eq_init_add_diag {n : ℕ}
+    (A : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) :
+    vecNorm2Sq (fun i : Fin (n + 1) => A i (Fin.last n)) =
+      vecNorm2Sq (fun i : Fin n => A i.castSucc (Fin.last n)) +
+        A (Fin.last n) (Fin.last n) ^ 2 := by
+  unfold vecNorm2Sq
+  rw [Fin.sum_univ_castSucc]
+
+/-- **Theorem 9.15 support**, an upper-triangular matrix is bounded by its
+top-left principal block and the Euclidean norm of its full final column. -/
+theorem higham9_15_upper_frobNormRect_le_init_lastColumn {n : ℕ}
+    (Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0) :
+    frobNormRect Y ≤
+      frobNormRect (higham9_15_initBlock Y) +
+        vecNorm2 (fun i : Fin (n + 1) => Y i (Fin.last n)) := by
+  let a : ℝ := frobNormRect (higham9_15_initBlock Y)
+  let b : ℝ := vecNorm2 (fun i : Fin (n + 1) => Y i (Fin.last n))
+  have ha : 0 ≤ a := frobNormRect_nonneg _
+  have hb : 0 ≤ b := vecNorm2_nonneg _
+  have hsum_nonneg : 0 ≤ a + b := by positivity
+  have hsq : frobNormSqRect Y ≤ (a + b) ^ 2 := by
+    have hblock :=
+      frobNormSqRect_block_lastRowInit_zero Y
+        (higham9_15_upper_lastRow_init_zero Y hY)
+    have hcol :=
+      higham9_15_vecNorm2Sq_lastColumn_eq_init_add_diag Y
+    have ha_sq : a ^ 2 = frobNormSqRect (higham9_15_initBlock Y) := by
+      dsimp [a]
+      exact frobNormRect_sq _
+    have hb_sq :
+        b ^ 2 = vecNorm2Sq (fun i : Fin (n + 1) => Y i (Fin.last n)) := by
+      dsimp [b]
+      exact vecNorm2_sq _
+    have hinit_eq :
+        frobNormSqRect (fun i j : Fin n => Y i.castSucc j.castSucc) =
+          frobNormSqRect (higham9_15_initBlock Y) := by
+      rfl
+    have hblock' :
+        frobNormSqRect Y =
+          frobNormSqRect (higham9_15_initBlock Y) +
+            vecNorm2Sq (fun i : Fin (n + 1) => Y i (Fin.last n)) := by
+      calc
+        frobNormSqRect Y =
+            frobNormSqRect (fun i j : Fin n => Y i.castSucc j.castSucc) +
+              vecNorm2Sq (fun i : Fin n => Y i.castSucc (Fin.last n)) +
+                Y (Fin.last n) (Fin.last n) ^ 2 := hblock
+        _ = frobNormSqRect (higham9_15_initBlock Y) +
+              vecNorm2Sq (fun i : Fin (n + 1) => Y i (Fin.last n)) := by
+              rw [hinit_eq, hcol]
+              ring
+    rw [hblock', ← ha_sq, ← hb_sq]
+    nlinarith [ha, hb]
+  change frobNormRect Y ≤ a + b
+  unfold frobNormRect
+  rw [← Real.sqrt_sq hsum_nonneg]
+  exact Real.sqrt_le_sqrt hsq
+
 /-- **Theorem 9.15 support**, the top-left principal block inherits the
 normalized normwise factorization `I + G = (I + X)(I + Y)`.  The strict-lower
 support of `X` removes the final summation term. -/
@@ -21048,6 +21108,22 @@ theorem higham9_15_normalized_G_lastColumn_init_eq {n : ℕ}
     exact Nat.le_of_lt i.isLt
   simpa [higham9_15_triuPart, hle] using hentry.symm
 
+/-- **Theorem 9.15 support**, full final-column entries of the upper
+normalized factor from the `I + G` split equation. -/
+theorem higham9_15_normalized_G_lastColumn_eq {n : ℕ}
+    (G X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 + G = (1 + X) * (1 + Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0)
+    (i : Fin (n + 1)) :
+    Y i (Fin.last n) = (G - X * Y) i (Fin.last n) := by
+  refine Fin.lastCases ?last ?cast i
+  · have hsplit := higham9_15_normalized_G_split_matrix G X Y hfact hX hY
+    have hentry := congrFun (congrFun hsplit.2 (Fin.last n)) (Fin.last n)
+    simpa [higham9_15_triuPart] using hentry.symm
+  · intro k
+    exact higham9_15_normalized_G_lastColumn_init_eq G X Y hfact hX hY k
+
 /-- **Theorem 9.15 support**, final diagonal entry of the upper normalized
 factor from the `I + G` split equation. -/
 theorem higham9_15_normalized_G_lastDiag_eq {n : ℕ}
@@ -21097,6 +21173,24 @@ theorem higham9_15_normalized_Gtilde_lastColumn_init_eq {n : ℕ}
     exact Nat.le_of_lt i.isLt
   simpa [higham9_15_triuPart, hle] using hentry.symm
 
+/-- **Theorem 9.15 support**, full final-column entries of the upper
+normalized factor from the `I - Gtilde` split equation. -/
+theorem higham9_15_normalized_Gtilde_lastColumn_eq {n : ℕ}
+    (Gtilde X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 - Gtilde = (1 - X) * (1 - Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0)
+    (i : Fin (n + 1)) :
+    Y i (Fin.last n) = (Gtilde + X * Y) i (Fin.last n) := by
+  refine Fin.lastCases ?last ?cast i
+  · have hsplit :=
+      higham9_15_normalized_Gtilde_split_matrix Gtilde X Y hfact hX hY
+    have hentry := congrFun (congrFun hsplit.2 (Fin.last n)) (Fin.last n)
+    simpa [higham9_15_triuPart] using hentry.symm
+  · intro k
+    exact higham9_15_normalized_Gtilde_lastColumn_init_eq
+      Gtilde X Y hfact hX hY k
+
 /-- **Theorem 9.15 support**, final diagonal entry of the upper normalized
 factor from the `I - Gtilde` split equation. -/
 theorem higham9_15_normalized_Gtilde_lastDiag_eq {n : ℕ}
@@ -21145,6 +21239,31 @@ theorem higham9_15_normalized_G_lastColumn_init_vecNorm2_le_residual {n : ℕ}
   rw [hcol]
   exact vecNorm2_lastColumnInit_le_frobNormRect (G - X * Y)
 
+/-- **Theorem 9.15 support**, full final-column vector of `Y` is bounded by
+the residual Frobenius norm in the `I + G` split. -/
+theorem higham9_15_normalized_G_lastColumn_vecNorm2_le_residual {n : ℕ}
+    (G X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 + G = (1 + X) * (1 + Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0) :
+    vecNorm2 (fun i : Fin (n + 1) => Y i (Fin.last n)) ≤
+      frobNormRect (G - X * Y) := by
+  have hcol :
+      (fun i : Fin (n + 1) => Y i (Fin.last n)) =
+        fun i : Fin (n + 1) => (G - X * Y) i (Fin.last n) := by
+    ext i
+    exact higham9_15_normalized_G_lastColumn_eq G X Y hfact hX hY i
+  rw [hcol]
+  unfold vecNorm2 frobNormRect
+  apply Real.sqrt_le_sqrt
+  unfold vecNorm2Sq frobNormSqRect
+  apply Finset.sum_le_sum
+  intro i _
+  exact
+    Finset.single_le_sum
+      (fun j _ => sq_nonneg ((G - X * Y) i j))
+      (Finset.mem_univ (Fin.last n))
+
 /-- **Theorem 9.15 support**, final diagonal entry of `Y` is bounded by the
 residual Frobenius norm in the `I + G` split. -/
 theorem higham9_15_normalized_G_lastDiag_abs_le_residual {n : ℕ}
@@ -21191,6 +21310,32 @@ theorem higham9_15_normalized_Gtilde_lastColumn_init_vecNorm2_le_residual {n : �
       Gtilde X Y hfact hX hY i
   rw [hcol]
   exact vecNorm2_lastColumnInit_le_frobNormRect (Gtilde + X * Y)
+
+/-- **Theorem 9.15 support**, full final-column vector of `Y` is bounded by
+the residual Frobenius norm in the `I - Gtilde` split. -/
+theorem higham9_15_normalized_Gtilde_lastColumn_vecNorm2_le_residual {n : ℕ}
+    (Gtilde X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 - Gtilde = (1 - X) * (1 - Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0) :
+    vecNorm2 (fun i : Fin (n + 1) => Y i (Fin.last n)) ≤
+      frobNormRect (Gtilde + X * Y) := by
+  have hcol :
+      (fun i : Fin (n + 1) => Y i (Fin.last n)) =
+        fun i : Fin (n + 1) => (Gtilde + X * Y) i (Fin.last n) := by
+    ext i
+    exact higham9_15_normalized_Gtilde_lastColumn_eq
+      Gtilde X Y hfact hX hY i
+  rw [hcol]
+  unfold vecNorm2 frobNormRect
+  apply Real.sqrt_le_sqrt
+  unfold vecNorm2Sq frobNormSqRect
+  apply Finset.sum_le_sum
+  intro i _
+  exact
+    Finset.single_le_sum
+      (fun j _ => sq_nonneg ((Gtilde + X * Y) i j))
+      (Finset.mem_univ (Fin.last n))
 
 /-- **Theorem 9.15 support**, final diagonal entry of `Y` is bounded by the
 residual Frobenius norm in the `I - Gtilde` split. -/
@@ -21248,6 +21393,26 @@ theorem higham9_15_normalized_G_frobNormRect_Y_le_init_add_two_residual {n : ℕ
           frobNormRect (G - X * Y) + frobNormRect (G - X * Y) := by
       linarith
 
+/-- **Theorem 9.15 support**, full upper-factor Frobenius bound from the
+principal block and a single residual norm in the `I + G` split. -/
+theorem higham9_15_normalized_G_frobNormRect_Y_le_init_add_residual {n : ℕ}
+    (G X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 + G = (1 + X) * (1 + Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0) :
+    frobNormRect Y ≤
+      frobNormRect (higham9_15_initBlock Y) + frobNormRect (G - X * Y) := by
+  calc
+    frobNormRect Y ≤
+        frobNormRect (higham9_15_initBlock Y) +
+          vecNorm2 (fun i : Fin (n + 1) => Y i (Fin.last n)) :=
+      higham9_15_upper_frobNormRect_le_init_lastColumn Y hY
+    _ ≤ frobNormRect (higham9_15_initBlock Y) +
+          frobNormRect (G - X * Y) :=
+      add_le_add le_rfl
+        (higham9_15_normalized_G_lastColumn_vecNorm2_le_residual
+          G X Y hfact hX hY)
+
 /-- **Theorem 9.15 support**, full strict-lower Frobenius bound from the
 principal block and residual in the `I - Gtilde` split. -/
 theorem higham9_15_normalized_Gtilde_frobNormRect_X_le_init_add_residual {n : ℕ}
@@ -21296,6 +21461,28 @@ theorem higham9_15_normalized_Gtilde_frobNormRect_Y_le_init_add_two_residual
           frobNormRect (Gtilde + X * Y) + frobNormRect (Gtilde + X * Y) := by
       linarith
 
+/-- **Theorem 9.15 support**, full upper-factor Frobenius bound from the
+principal block and a single residual norm in the `I - Gtilde` split. -/
+theorem higham9_15_normalized_Gtilde_frobNormRect_Y_le_init_add_residual
+    {n : ℕ}
+    (Gtilde X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 - Gtilde = (1 - X) * (1 - Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0) :
+    frobNormRect Y ≤
+      frobNormRect (higham9_15_initBlock Y) +
+        frobNormRect (Gtilde + X * Y) := by
+  calc
+    frobNormRect Y ≤
+        frobNormRect (higham9_15_initBlock Y) +
+          vecNorm2 (fun i : Fin (n + 1) => Y i (Fin.last n)) :=
+      higham9_15_upper_frobNormRect_le_init_lastColumn Y hY
+    _ ≤ frobNormRect (higham9_15_initBlock Y) +
+          frobNormRect (Gtilde + X * Y) :=
+      add_le_add le_rfl
+        (higham9_15_normalized_Gtilde_lastColumn_vecNorm2_le_residual
+          Gtilde X Y hfact hX hY)
+
 /-- **Theorem 9.15 support**, max-Frobenius induction handoff for the `I + G`
 split: the full max is bounded by the principal-block max plus twice the
 residual Frobenius norm. -/
@@ -21329,6 +21516,37 @@ theorem higham9_15_normalized_G_max_frobNormRect_le_init_max_add_two_residual
   · exact hXfull.trans (by dsimp [q, r] at *; nlinarith)
   · exact hYfull.trans (by dsimp [q, r] at *; nlinarith)
 
+/-- **Theorem 9.15 support**, sharpened max-Frobenius induction handoff for
+the `I + G` split: the full max is bounded by the principal-block max plus one
+residual Frobenius norm. -/
+theorem higham9_15_normalized_G_max_frobNormRect_le_init_max_add_residual
+    {n : ℕ}
+    (G X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 + G = (1 + X) * (1 + Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0) :
+    max (frobNormRect X) (frobNormRect Y) ≤
+      max (frobNormRect (higham9_15_initBlock X))
+          (frobNormRect (higham9_15_initBlock Y)) +
+        frobNormRect (G - X * Y) := by
+  let r : ℝ := frobNormRect (G - X * Y)
+  let q : ℝ :=
+    max (frobNormRect (higham9_15_initBlock X))
+      (frobNormRect (higham9_15_initBlock Y))
+  have hXfull : frobNormRect X ≤ frobNormRect (higham9_15_initBlock X) + r := by
+    simpa [r] using
+      higham9_15_normalized_G_frobNormRect_X_le_init_add_residual
+        G X Y hfact hX hY
+  have hYfull : frobNormRect Y ≤ frobNormRect (higham9_15_initBlock Y) + r := by
+    simpa [r] using
+      higham9_15_normalized_G_frobNormRect_Y_le_init_add_residual
+        G X Y hfact hX hY
+  have hix : frobNormRect (higham9_15_initBlock X) ≤ q := le_max_left _ _
+  have hiy : frobNormRect (higham9_15_initBlock Y) ≤ q := le_max_right _ _
+  apply max_le
+  · exact hXfull.trans (by dsimp [q, r] at *; nlinarith)
+  · exact hYfull.trans (by dsimp [q, r] at *; nlinarith)
+
 /-- **Theorem 9.15 support**, max-Frobenius induction handoff for the
 `I - Gtilde` split. -/
 theorem higham9_15_normalized_Gtilde_max_frobNormRect_le_init_max_add_two_residual
@@ -21355,6 +21573,39 @@ theorem higham9_15_normalized_Gtilde_max_frobNormRect_le_init_max_add_two_residu
       frobNormRect Y ≤ frobNormRect (higham9_15_initBlock Y) + r + r := by
     simpa [r] using
       higham9_15_normalized_Gtilde_frobNormRect_Y_le_init_add_two_residual
+        Gtilde X Y hfact hX hY
+  have hix : frobNormRect (higham9_15_initBlock X) ≤ q := le_max_left _ _
+  have hiy : frobNormRect (higham9_15_initBlock Y) ≤ q := le_max_right _ _
+  apply max_le
+  · exact hXfull.trans (by dsimp [q, r] at *; nlinarith)
+  · exact hYfull.trans (by dsimp [q, r] at *; nlinarith)
+
+/-- **Theorem 9.15 support**, sharpened max-Frobenius induction handoff for
+the `I - Gtilde` split: the full max is bounded by the principal-block max plus
+one residual Frobenius norm. -/
+theorem higham9_15_normalized_Gtilde_max_frobNormRect_le_init_max_add_residual
+    {n : ℕ}
+    (Gtilde X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 - Gtilde = (1 - X) * (1 - Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0) :
+    max (frobNormRect X) (frobNormRect Y) ≤
+      max (frobNormRect (higham9_15_initBlock X))
+          (frobNormRect (higham9_15_initBlock Y)) +
+        frobNormRect (Gtilde + X * Y) := by
+  let r : ℝ := frobNormRect (Gtilde + X * Y)
+  let q : ℝ :=
+    max (frobNormRect (higham9_15_initBlock X))
+      (frobNormRect (higham9_15_initBlock Y))
+  have hXfull :
+      frobNormRect X ≤ frobNormRect (higham9_15_initBlock X) + r := by
+    simpa [r] using
+      higham9_15_normalized_Gtilde_frobNormRect_X_le_init_add_residual
+        Gtilde X Y hfact hX hY
+  have hYfull :
+      frobNormRect Y ≤ frobNormRect (higham9_15_initBlock Y) + r := by
+    simpa [r] using
+      higham9_15_normalized_Gtilde_frobNormRect_Y_le_init_add_residual
         Gtilde X Y hfact hX hY
   have hix : frobNormRect (higham9_15_initBlock X) ≤ q := le_max_left _ _
   have hiy : frobNormRect (higham9_15_initBlock Y) ≤ q := le_max_right _ _
@@ -21527,6 +21778,62 @@ theorem higham9_15_normalized_Gtilde_max_frobNormRect_le_init_ratio_add_two_resi
     simpa [add_comm] using
       add_le_add_right hinit (2 * frobNormRect (Gtilde + X * Y)))
 
+/-- **Theorem 9.15 support**, sharpened full max-Frobenius bound from the
+principal-block ratio hypothesis plus a one-residual border handoff in the
+`I + G` split. -/
+theorem higham9_15_normalized_G_max_frobNormRect_le_init_ratio_add_residual_of_min_factor_bound
+    {n : ℕ}
+    (G X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 + G = (1 + X) * (1 + Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0)
+    (hGlt : opNorm2 G < 1)
+    (hmin :
+      min (frobNormRect (higham9_15_initBlock X))
+          (frobNormRect (higham9_15_initBlock Y)) ≤
+        opNorm2 (higham9_15_initBlock G)) :
+    max (frobNormRect X) (frobNormRect Y) ≤
+      frobNormRect (higham9_15_initBlock G) /
+          (1 - opNorm2 (higham9_15_initBlock G)) +
+        frobNormRect (G - X * Y) := by
+  have hfull :=
+    higham9_15_normalized_G_max_frobNormRect_le_init_max_add_residual
+      G X Y hfact hX hY
+  have hinit :=
+    higham9_15_normalized_G_init_frobNorm_ratio_bound_of_min_factor_bound
+      G X Y hfact hX hY hGlt hmin
+  exact hfull.trans (by
+    simpa [add_comm] using
+      add_le_add_right hinit (frobNormRect (G - X * Y)))
+
+/-- **Theorem 9.15 support**, sharpened full max-Frobenius bound from the
+principal-block ratio hypothesis plus a one-residual border handoff in the
+`I - Gtilde` split. -/
+theorem higham9_15_normalized_Gtilde_max_frobNormRect_le_init_ratio_add_residual_of_min_factor_bound
+    {n : ℕ}
+    (Gtilde X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 - Gtilde = (1 - X) * (1 - Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0)
+    (hGlt : opNorm2 Gtilde < 1)
+    (hmin :
+      min (frobNormRect (higham9_15_initBlock X))
+          (frobNormRect (higham9_15_initBlock Y)) ≤
+        opNorm2 (higham9_15_initBlock Gtilde)) :
+    max (frobNormRect X) (frobNormRect Y) ≤
+      frobNormRect (higham9_15_initBlock Gtilde) /
+          (1 - opNorm2 (higham9_15_initBlock Gtilde)) +
+        frobNormRect (Gtilde + X * Y) := by
+  have hfull :=
+    higham9_15_normalized_Gtilde_max_frobNormRect_le_init_max_add_residual
+      Gtilde X Y hfact hX hY
+  have hinit :=
+    higham9_15_normalized_Gtilde_init_frobNorm_ratio_bound_of_min_factor_bound
+      Gtilde X Y hfact hX hY hGlt hmin
+  exact hfull.trans (by
+    simpa [add_comm] using
+      add_le_add_right hinit (frobNormRect (Gtilde + X * Y)))
+
 /-- **Theorem 9.15 support**, the principal-block ratio is bounded by the
 full-matrix ratio because both the Frobenius norm and operator 2-norm contract
 under the top-left principal-block projection. -/
@@ -21618,6 +21925,83 @@ theorem higham9_15_normalized_Gtilde_max_frobNormRect_le_ratio_add_two_residual_
       add_le_add_right (hinit.trans hratio)
         (2 * frobNormRect (Gtilde + X * Y)))
 
+/-- **Theorem 9.15 support**, sharpened full max-Frobenius bound from a
+principal-block linearized step, with the principal-block ratio lifted to the
+full `G` ratio and only one residual border term. -/
+theorem higham9_15_normalized_G_max_frobNormRect_le_ratio_add_residual_of_init_linear_step
+    {n : ℕ}
+    (G X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 + G = (1 + X) * (1 + Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0)
+    (hGlt : opNorm2 G < 1)
+    (hlinear :
+      max (frobNormRect (higham9_15_initBlock X))
+          (frobNormRect (higham9_15_initBlock Y)) ≤
+        frobNormRect (higham9_15_initBlock G) +
+          opNorm2 (higham9_15_initBlock G) *
+            max (frobNormRect (higham9_15_initBlock X))
+              (frobNormRect (higham9_15_initBlock Y))) :
+    max (frobNormRect X) (frobNormRect Y) ≤
+      frobNormRect G / (1 - opNorm2 G) +
+        frobNormRect (G - X * Y) := by
+  have hfull :=
+    higham9_15_normalized_G_max_frobNormRect_le_init_max_add_residual
+      G X Y hfact hX hY
+  have hinit :
+      max (frobNormRect (higham9_15_initBlock X))
+          (frobNormRect (higham9_15_initBlock Y)) ≤
+        frobNormRect (higham9_15_initBlock G) /
+          (1 - opNorm2 (higham9_15_initBlock G)) :=
+    higham9_15_normalized_G_frobNorm_ratio_bound_of_linear_step
+      (higham9_15_initBlock G) (higham9_15_initBlock X)
+      (higham9_15_initBlock Y)
+      (higham9_15_opNorm2_init_lt_one_of_lt_one G hGlt)
+      hlinear
+  have hratio := higham9_15_initBlock_frobNorm_ratio_le G hGlt
+  exact hfull.trans (by
+    simpa [add_comm] using
+      add_le_add_right (hinit.trans hratio)
+        (frobNormRect (G - X * Y)))
+
+/-- **Theorem 9.15 support**, `Gtilde` companion to
+`higham9_15_normalized_G_max_frobNormRect_le_ratio_add_residual_of_init_linear_step`. -/
+theorem higham9_15_normalized_Gtilde_max_frobNormRect_le_ratio_add_residual_of_init_linear_step
+    {n : ℕ}
+    (Gtilde X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 - Gtilde = (1 - X) * (1 - Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0)
+    (hGlt : opNorm2 Gtilde < 1)
+    (hlinear :
+      max (frobNormRect (higham9_15_initBlock X))
+          (frobNormRect (higham9_15_initBlock Y)) ≤
+        frobNormRect (higham9_15_initBlock Gtilde) +
+          opNorm2 (higham9_15_initBlock Gtilde) *
+            max (frobNormRect (higham9_15_initBlock X))
+              (frobNormRect (higham9_15_initBlock Y))) :
+    max (frobNormRect X) (frobNormRect Y) ≤
+      frobNormRect Gtilde / (1 - opNorm2 Gtilde) +
+        frobNormRect (Gtilde + X * Y) := by
+  have hfull :=
+    higham9_15_normalized_Gtilde_max_frobNormRect_le_init_max_add_residual
+      Gtilde X Y hfact hX hY
+  have hinit :
+      max (frobNormRect (higham9_15_initBlock X))
+          (frobNormRect (higham9_15_initBlock Y)) ≤
+        frobNormRect (higham9_15_initBlock Gtilde) /
+          (1 - opNorm2 (higham9_15_initBlock Gtilde)) :=
+    higham9_15_normalized_Gtilde_frobNorm_ratio_bound_of_linear_step
+      (higham9_15_initBlock Gtilde) (higham9_15_initBlock X)
+      (higham9_15_initBlock Y)
+      (higham9_15_opNorm2_init_lt_one_of_lt_one Gtilde hGlt)
+      hlinear
+  have hratio := higham9_15_initBlock_frobNorm_ratio_le Gtilde hGlt
+  exact hfull.trans (by
+    simpa [add_comm] using
+      add_le_add_right (hinit.trans hratio)
+        (frobNormRect (Gtilde + X * Y)))
+
 /-- **Theorem 9.15 support**, full max-Frobenius bound from a
 principal-block min-factor hypothesis, with the principal-block ratio lifted
 to the full `G` ratio. -/
@@ -21659,6 +22043,51 @@ theorem higham9_15_normalized_Gtilde_max_frobNormRect_le_ratio_add_two_residual_
         2 * frobNormRect (Gtilde + X * Y) := by
   exact
     higham9_15_normalized_Gtilde_max_frobNormRect_le_ratio_add_two_residual_of_init_linear_step
+      Gtilde X Y hfact hX hY hGlt
+      (higham9_15_normalized_Gtilde_init_linear_step_of_min_factor_bound
+        Gtilde X Y hfact hX hY hmin)
+
+/-- **Theorem 9.15 support**, sharpened full max-Frobenius bound from a
+principal-block min-factor hypothesis, with the principal-block ratio lifted
+to the full `G` ratio and only one residual border term. -/
+theorem higham9_15_normalized_G_max_frobNormRect_le_ratio_add_residual_of_init_min_factor_bound
+    {n : ℕ}
+    (G X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 + G = (1 + X) * (1 + Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0)
+    (hGlt : opNorm2 G < 1)
+    (hmin :
+      min (frobNormRect (higham9_15_initBlock X))
+          (frobNormRect (higham9_15_initBlock Y)) ≤
+        opNorm2 (higham9_15_initBlock G)) :
+    max (frobNormRect X) (frobNormRect Y) ≤
+      frobNormRect G / (1 - opNorm2 G) +
+        frobNormRect (G - X * Y) := by
+  exact
+    higham9_15_normalized_G_max_frobNormRect_le_ratio_add_residual_of_init_linear_step
+      G X Y hfact hX hY hGlt
+      (higham9_15_normalized_G_init_linear_step_of_min_factor_bound
+        G X Y hfact hX hY hmin)
+
+/-- **Theorem 9.15 support**, `Gtilde` companion to
+`higham9_15_normalized_G_max_frobNormRect_le_ratio_add_residual_of_init_min_factor_bound`. -/
+theorem higham9_15_normalized_Gtilde_max_frobNormRect_le_ratio_add_residual_of_init_min_factor_bound
+    {n : ℕ}
+    (Gtilde X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 - Gtilde = (1 - X) * (1 - Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0)
+    (hGlt : opNorm2 Gtilde < 1)
+    (hmin :
+      min (frobNormRect (higham9_15_initBlock X))
+          (frobNormRect (higham9_15_initBlock Y)) ≤
+        opNorm2 (higham9_15_initBlock Gtilde)) :
+    max (frobNormRect X) (frobNormRect Y) ≤
+      frobNormRect Gtilde / (1 - opNorm2 Gtilde) +
+        frobNormRect (Gtilde + X * Y) := by
+  exact
+    higham9_15_normalized_Gtilde_max_frobNormRect_le_ratio_add_residual_of_init_linear_step
       Gtilde X Y hfact hX hY hGlt
       (higham9_15_normalized_Gtilde_init_linear_step_of_min_factor_bound
         Gtilde X Y hfact hX hY hmin)
@@ -22978,6 +23407,115 @@ theorem higham9_15_normwise_source_bound_of_G_split_init_linear_step_opNorm_of_i
     higham9_15_frobenius_relative_assembly_of_inverse_normalized_bounds_opNorm_of_inverse_identities
       L U Linv Uinv ΔL ΔU hLright hUleft hX hY
 
+/-- **Theorem 9.15 support**, source relative bound for the `I + G` split
+from a principal-block min-factor hypothesis, using the sharpened one-residual
+Schur handoff. -/
+theorem higham9_15_normwise_source_bound_of_G_split_init_min_factor_bound_opNorm_of_inverse_identities_one_residual
+    {n : ℕ}
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hLright : rectMatMul L Linv = idMatrix (n + 1))
+    (hUleft : rectMatMul Uinv U = idMatrix (n + 1))
+    (hfact :
+      (1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) +
+          (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) +
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) +
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul ΔU Uinv)))
+    (hXtri :
+      ∀ i j : Fin (n + 1), i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin (n + 1), j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hGlt : opNorm2 (higham9_27_GMatrix Linv ΔA Uinv) < 1)
+    (hmin :
+      min (frobNormRect (higham9_15_initBlock (rectMatMul Linv ΔL)))
+          (frobNormRect (higham9_15_initBlock (rectMatMul ΔU Uinv))) ≤
+        opNorm2 (higham9_15_initBlock (higham9_27_GMatrix Linv ΔA Uinv))) :
+    max (frobNormRect ΔL / opNorm2 L) (frobNormRect ΔU / opNorm2 U) ≤
+      frobNormRect (higham9_27_GMatrix Linv ΔA Uinv) /
+          (1 - opNorm2 (higham9_27_GMatrix Linv ΔA Uinv)) +
+        frobNormRect
+          ((show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              higham9_27_GMatrix Linv ΔA Uinv) -
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul Linv ΔL) *
+              (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+                rectMatMul ΔU Uinv)) := by
+  let G : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    higham9_27_GMatrix Linv ΔA Uinv
+  let X : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    rectMatMul Linv ΔL
+  let Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    rectMatMul ΔU Uinv
+  let t : ℝ := frobNormRect G / (1 - opNorm2 G) + frobNormRect (G - X * Y)
+  have hmax : max (frobNormRect X) (frobNormRect Y) ≤ t :=
+    higham9_15_normalized_G_max_frobNormRect_le_ratio_add_residual_of_init_min_factor_bound
+      G X Y hfact hXtri hYtri hGlt hmin
+  have hX : frobNormRect X ≤ t := (le_max_left _ _).trans hmax
+  have hY : frobNormRect Y ≤ t := (le_max_right _ _).trans hmax
+  simpa [G, X, Y, t] using
+    higham9_15_frobenius_relative_assembly_of_inverse_normalized_bounds_opNorm_of_inverse_identities
+      L U Linv Uinv ΔL ΔU hLright hUleft hX hY
+
+/-- **Theorem 9.15 support**, source relative bound for the `I + G` split
+from a principal-block linearized step hypothesis, using the sharpened
+one-residual Schur handoff. -/
+theorem higham9_15_normwise_source_bound_of_G_split_init_linear_step_opNorm_of_inverse_identities_one_residual
+    {n : ℕ}
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hLright : rectMatMul L Linv = idMatrix (n + 1))
+    (hUleft : rectMatMul Uinv U = idMatrix (n + 1))
+    (hfact :
+      (1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) +
+          (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) +
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) +
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul ΔU Uinv)))
+    (hXtri :
+      ∀ i j : Fin (n + 1), i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin (n + 1), j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hGlt : opNorm2 (higham9_27_GMatrix Linv ΔA Uinv) < 1)
+    (hlinear :
+      max (frobNormRect (higham9_15_initBlock (rectMatMul Linv ΔL)))
+          (frobNormRect (higham9_15_initBlock (rectMatMul ΔU Uinv))) ≤
+        frobNormRect (higham9_15_initBlock (higham9_27_GMatrix Linv ΔA Uinv)) +
+          opNorm2 (higham9_15_initBlock (higham9_27_GMatrix Linv ΔA Uinv)) *
+            max (frobNormRect (higham9_15_initBlock (rectMatMul Linv ΔL)))
+              (frobNormRect (higham9_15_initBlock (rectMatMul ΔU Uinv)))) :
+    max (frobNormRect ΔL / opNorm2 L) (frobNormRect ΔU / opNorm2 U) ≤
+      frobNormRect (higham9_27_GMatrix Linv ΔA Uinv) /
+          (1 - opNorm2 (higham9_27_GMatrix Linv ΔA Uinv)) +
+        frobNormRect
+          ((show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              higham9_27_GMatrix Linv ΔA Uinv) -
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul Linv ΔL) *
+              (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+                rectMatMul ΔU Uinv)) := by
+  let G : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    higham9_27_GMatrix Linv ΔA Uinv
+  let X : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    rectMatMul Linv ΔL
+  let Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    rectMatMul ΔU Uinv
+  let t : ℝ := frobNormRect G / (1 - opNorm2 G) + frobNormRect (G - X * Y)
+  have hmax : max (frobNormRect X) (frobNormRect Y) ≤ t :=
+    higham9_15_normalized_G_max_frobNormRect_le_ratio_add_residual_of_init_linear_step
+      G X Y hfact hXtri hYtri hGlt hlinear
+  have hX : frobNormRect X ≤ t := (le_max_left _ _).trans hmax
+  have hY : frobNormRect Y ≤ t := (le_max_right _ _).trans hmax
+  simpa [G, X, Y, t] using
+    higham9_15_frobenius_relative_assembly_of_inverse_normalized_bounds_opNorm_of_inverse_identities
+      L U Linv Uinv ΔL ΔU hLright hUleft hX hY
+
 /-- **Theorem 9.15 support**, product-smallness source relative bound for the
 `I + G` split from a principal-block linearized step hypothesis.
 
@@ -23200,6 +23738,225 @@ theorem higham9_15_normwise_source_bound_of_G_split_init_min_factor_bound_opNorm
               (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
                 rectMatMul ΔU Uinv)) :=
   higham9_15_normwise_source_bound_of_G_split_init_min_factor_bound_opNorm_of_inverse_identities_product_lt
+    L U Linv Uinv ΔA ΔL ΔU hLright hUleft hfact hXtri hYtri hmin
+    (opNorm2_nonneg Linv) (opNorm2_nonneg ΔA) (opNorm2_nonneg Uinv)
+    (opNorm2Le_opNorm2 Linv) (opNorm2Le_opNorm2 ΔA) (opNorm2Le_opNorm2 Uinv)
+    heta
+
+/-- **Theorem 9.15 support**, product-smallness source relative bound for the
+`I + G` split from a principal-block linearized step hypothesis, with the
+explicit Schur residual appearing once. -/
+theorem higham9_15_normwise_source_bound_of_G_split_init_linear_step_opNorm_of_inverse_identities_product_lt_one_residual
+    {n : ℕ}
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    {linv2 dA2 uinv2 : ℝ}
+    (hLright : rectMatMul L Linv = idMatrix (n + 1))
+    (hUleft : rectMatMul Uinv U = idMatrix (n + 1))
+    (hfact :
+      (1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) +
+          (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) +
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) +
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul ΔU Uinv)))
+    (hXtri :
+      ∀ i j : Fin (n + 1), i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin (n + 1), j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hlinear :
+      max (frobNormRect (higham9_15_initBlock (rectMatMul Linv ΔL)))
+          (frobNormRect (higham9_15_initBlock (rectMatMul ΔU Uinv))) ≤
+        frobNormRect (higham9_15_initBlock (higham9_27_GMatrix Linv ΔA Uinv)) +
+          opNorm2 (higham9_15_initBlock (higham9_27_GMatrix Linv ΔA Uinv)) *
+            max (frobNormRect (higham9_15_initBlock (rectMatMul Linv ΔL)))
+              (frobNormRect (higham9_15_initBlock (rectMatMul ΔU Uinv))))
+    (hlinv2 : 0 ≤ linv2) (hdA2 : 0 ≤ dA2) (huinv2 : 0 ≤ uinv2)
+    (hLinv : opNorm2Le Linv linv2)
+    (hΔA : opNorm2Le ΔA dA2)
+    (hUinv : opNorm2Le Uinv uinv2)
+    (heta : linv2 * dA2 * uinv2 < 1) :
+    max (frobNormRect ΔL / opNorm2 L) (frobNormRect ΔU / opNorm2 U) ≤
+      (linv2 * frobNormRect ΔA * uinv2) / (1 - linv2 * dA2 * uinv2) +
+        frobNormRect
+          ((show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              higham9_27_GMatrix Linv ΔA Uinv) -
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul Linv ΔL) *
+              (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+                rectMatMul ΔU Uinv)) := by
+  let G : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    higham9_27_GMatrix Linv ΔA Uinv
+  let X : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    rectMatMul Linv ΔL
+  let Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    rectMatMul ΔU Uinv
+  have hGlt : opNorm2 G < 1 := by
+    simpa [G] using
+      higham9_27_GMatrix_opNorm2_lt_one_of_product_lt_one
+        Linv ΔA Uinv hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+  have hsource :
+      max (frobNormRect ΔL / opNorm2 L) (frobNormRect ΔU / opNorm2 U) ≤
+        frobNormRect G / (1 - opNorm2 G) + frobNormRect (G - X * Y) := by
+    simpa [G, X, Y] using
+      higham9_15_normwise_source_bound_of_G_split_init_linear_step_opNorm_of_inverse_identities_one_residual
+        L U Linv Uinv ΔA ΔL ΔU hLright hUleft hfact hXtri hYtri hGlt hlinear
+  have hratio :=
+    higham9_27_GMatrix_ratio_le_product_ratio
+      Linv ΔA Uinv hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+  exact hsource.trans (by
+    simpa [G, X, Y, add_comm] using
+      add_le_add_right hratio (frobNormRect (G - X * Y)))
+
+/-- **Theorem 9.15 support**, product-smallness source relative bound for the
+`I + G` split from a principal-block min-factor hypothesis, with the explicit
+Schur residual appearing once. -/
+theorem higham9_15_normwise_source_bound_of_G_split_init_min_factor_bound_opNorm_of_inverse_identities_product_lt_one_residual
+    {n : ℕ}
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    {linv2 dA2 uinv2 : ℝ}
+    (hLright : rectMatMul L Linv = idMatrix (n + 1))
+    (hUleft : rectMatMul Uinv U = idMatrix (n + 1))
+    (hfact :
+      (1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) +
+          (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) +
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) +
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul ΔU Uinv)))
+    (hXtri :
+      ∀ i j : Fin (n + 1), i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin (n + 1), j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hmin :
+      min (frobNormRect (higham9_15_initBlock (rectMatMul Linv ΔL)))
+          (frobNormRect (higham9_15_initBlock (rectMatMul ΔU Uinv))) ≤
+        opNorm2 (higham9_15_initBlock (higham9_27_GMatrix Linv ΔA Uinv)))
+    (hlinv2 : 0 ≤ linv2) (hdA2 : 0 ≤ dA2) (huinv2 : 0 ≤ uinv2)
+    (hLinv : opNorm2Le Linv linv2)
+    (hΔA : opNorm2Le ΔA dA2)
+    (hUinv : opNorm2Le Uinv uinv2)
+    (heta : linv2 * dA2 * uinv2 < 1) :
+    max (frobNormRect ΔL / opNorm2 L) (frobNormRect ΔU / opNorm2 U) ≤
+      (linv2 * frobNormRect ΔA * uinv2) / (1 - linv2 * dA2 * uinv2) +
+        frobNormRect
+          ((show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              higham9_27_GMatrix Linv ΔA Uinv) -
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul Linv ΔL) *
+              (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+                rectMatMul ΔU Uinv)) := by
+  let G : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    higham9_27_GMatrix Linv ΔA Uinv
+  let X : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    rectMatMul Linv ΔL
+  let Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    rectMatMul ΔU Uinv
+  have hGlt : opNorm2 G < 1 := by
+    simpa [G] using
+      higham9_27_GMatrix_opNorm2_lt_one_of_product_lt_one
+        Linv ΔA Uinv hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+  have hsource :
+      max (frobNormRect ΔL / opNorm2 L) (frobNormRect ΔU / opNorm2 U) ≤
+        frobNormRect G / (1 - opNorm2 G) + frobNormRect (G - X * Y) := by
+    simpa [G, X, Y] using
+      higham9_15_normwise_source_bound_of_G_split_init_min_factor_bound_opNorm_of_inverse_identities_one_residual
+        L U Linv Uinv ΔA ΔL ΔU hLright hUleft hfact hXtri hYtri hGlt hmin
+  have hratio :=
+    higham9_27_GMatrix_ratio_le_product_ratio
+      Linv ΔA Uinv hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+  exact hsource.trans (by
+    simpa [G, X, Y, add_comm] using
+      add_le_add_right hratio (frobNormRect (G - X * Y)))
+
+/-- **Theorem 9.15 support**, exact-operator-norm two-sided inverse-identity
+`I + G` split linear-step residual handoff with one residual term. -/
+theorem higham9_15_normwise_source_bound_of_G_split_init_linear_step_opNorm_of_inverse_identities_exact_opNorm2_one_residual
+    {n : ℕ}
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hLright : rectMatMul L Linv = idMatrix (n + 1))
+    (hUleft : rectMatMul Uinv U = idMatrix (n + 1))
+    (hfact :
+      (1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) +
+          (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) +
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) +
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul ΔU Uinv)))
+    (hXtri :
+      ∀ i j : Fin (n + 1), i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin (n + 1), j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hlinear :
+      max (frobNormRect (higham9_15_initBlock (rectMatMul Linv ΔL)))
+          (frobNormRect (higham9_15_initBlock (rectMatMul ΔU Uinv))) ≤
+        frobNormRect (higham9_15_initBlock (higham9_27_GMatrix Linv ΔA Uinv)) +
+          opNorm2 (higham9_15_initBlock (higham9_27_GMatrix Linv ΔA Uinv)) *
+            max (frobNormRect (higham9_15_initBlock (rectMatMul Linv ΔL)))
+              (frobNormRect (higham9_15_initBlock (rectMatMul ΔU Uinv))))
+    (heta : opNorm2 Linv * opNorm2 ΔA * opNorm2 Uinv < 1) :
+    max (frobNormRect ΔL / opNorm2 L) (frobNormRect ΔU / opNorm2 U) ≤
+      (opNorm2 Linv * frobNormRect ΔA * opNorm2 Uinv) /
+          (1 - opNorm2 Linv * opNorm2 ΔA * opNorm2 Uinv) +
+        frobNormRect
+          ((show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              higham9_27_GMatrix Linv ΔA Uinv) -
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul Linv ΔL) *
+              (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+                rectMatMul ΔU Uinv)) :=
+  higham9_15_normwise_source_bound_of_G_split_init_linear_step_opNorm_of_inverse_identities_product_lt_one_residual
+    L U Linv Uinv ΔA ΔL ΔU hLright hUleft hfact hXtri hYtri hlinear
+    (opNorm2_nonneg Linv) (opNorm2_nonneg ΔA) (opNorm2_nonneg Uinv)
+    (opNorm2Le_opNorm2 Linv) (opNorm2Le_opNorm2 ΔA) (opNorm2Le_opNorm2 Uinv)
+    heta
+
+/-- **Theorem 9.15 support**, exact-operator-norm two-sided inverse-identity
+`I + G` split principal-block min-factor residual handoff with one residual
+term. -/
+theorem higham9_15_normwise_source_bound_of_G_split_init_min_factor_bound_opNorm_of_inverse_identities_exact_opNorm2_one_residual
+    {n : ℕ}
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hLright : rectMatMul L Linv = idMatrix (n + 1))
+    (hUleft : rectMatMul Uinv U = idMatrix (n + 1))
+    (hfact :
+      (1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) +
+          (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) +
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) +
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul ΔU Uinv)))
+    (hXtri :
+      ∀ i j : Fin (n + 1), i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin (n + 1), j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hmin :
+      min (frobNormRect (higham9_15_initBlock (rectMatMul Linv ΔL)))
+          (frobNormRect (higham9_15_initBlock (rectMatMul ΔU Uinv))) ≤
+        opNorm2 (higham9_15_initBlock (higham9_27_GMatrix Linv ΔA Uinv)))
+    (heta : opNorm2 Linv * opNorm2 ΔA * opNorm2 Uinv < 1) :
+    max (frobNormRect ΔL / opNorm2 L) (frobNormRect ΔU / opNorm2 U) ≤
+      (opNorm2 Linv * frobNormRect ΔA * opNorm2 Uinv) /
+          (1 - opNorm2 Linv * opNorm2 ΔA * opNorm2 Uinv) +
+        frobNormRect
+          ((show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              higham9_27_GMatrix Linv ΔA Uinv) -
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul Linv ΔL) *
+              (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+                rectMatMul ΔU Uinv)) :=
+  higham9_15_normwise_source_bound_of_G_split_init_min_factor_bound_opNorm_of_inverse_identities_product_lt_one_residual
     L U Linv Uinv ΔA ΔL ΔU hLright hUleft hfact hXtri hYtri hmin
     (opNorm2_nonneg Linv) (opNorm2_nonneg ΔA) (opNorm2_nonneg Uinv)
     (opNorm2Le_opNorm2 Linv) (opNorm2Le_opNorm2 ΔA) (opNorm2Le_opNorm2 Uinv)
@@ -26688,6 +27445,117 @@ theorem higham9_15_normwise_source_bound_of_Gtilde_split_init_linear_step_opNorm
     higham9_15_frobenius_relative_assembly_of_inverse_normalized_bounds_opNorm_of_inverse_identities
       Lhat Uhat LhatInv UhatInv ΔL ΔU hLright hUleft hX hY
 
+/-- **Theorem 9.15 support**, source relative bound for the `I - Gtilde`
+split from a principal-block min-factor hypothesis, using the sharpened
+one-residual Schur handoff. -/
+theorem higham9_15_normwise_source_bound_of_Gtilde_split_init_min_factor_bound_opNorm_of_inverse_identities_one_residual
+    {n : ℕ}
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU :
+      Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix (n + 1))
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix (n + 1))
+    (hfact :
+      (1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) -
+          (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) -
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) -
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul ΔU UhatInv)))
+    (hXtri :
+      ∀ i j : Fin (n + 1), i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin (n + 1), j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hGlt : opNorm2 (higham9_27_GMatrix LhatInv ΔA UhatInv) < 1)
+    (hmin :
+      min (frobNormRect (higham9_15_initBlock (rectMatMul LhatInv ΔL)))
+          (frobNormRect (higham9_15_initBlock (rectMatMul ΔU UhatInv))) ≤
+        opNorm2 (higham9_15_initBlock (higham9_27_GMatrix LhatInv ΔA UhatInv))) :
+    max (frobNormRect ΔL / opNorm2 Lhat) (frobNormRect ΔU / opNorm2 Uhat) ≤
+      frobNormRect (higham9_27_GMatrix LhatInv ΔA UhatInv) /
+          (1 - opNorm2 (higham9_27_GMatrix LhatInv ΔA UhatInv)) +
+        frobNormRect
+          ((show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              higham9_27_GMatrix LhatInv ΔA UhatInv) +
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul LhatInv ΔL) *
+              (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+                rectMatMul ΔU UhatInv)) := by
+  let G : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    higham9_27_GMatrix LhatInv ΔA UhatInv
+  let X : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    rectMatMul LhatInv ΔL
+  let Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    rectMatMul ΔU UhatInv
+  let t : ℝ := frobNormRect G / (1 - opNorm2 G) + frobNormRect (G + X * Y)
+  have hmax : max (frobNormRect X) (frobNormRect Y) ≤ t :=
+    higham9_15_normalized_Gtilde_max_frobNormRect_le_ratio_add_residual_of_init_min_factor_bound
+      G X Y hfact hXtri hYtri hGlt hmin
+  have hX : frobNormRect X ≤ t := (le_max_left _ _).trans hmax
+  have hY : frobNormRect Y ≤ t := (le_max_right _ _).trans hmax
+  simpa [G, X, Y, t] using
+    higham9_15_frobenius_relative_assembly_of_inverse_normalized_bounds_opNorm_of_inverse_identities
+      Lhat Uhat LhatInv UhatInv ΔL ΔU hLright hUleft hX hY
+
+/-- **Theorem 9.15 support**, source relative bound for the `I - Gtilde`
+split from a principal-block linearized step hypothesis, using the sharpened
+one-residual Schur handoff. -/
+theorem higham9_15_normwise_source_bound_of_Gtilde_split_init_linear_step_opNorm_of_inverse_identities_one_residual
+    {n : ℕ}
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU :
+      Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix (n + 1))
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix (n + 1))
+    (hfact :
+      (1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) -
+          (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) -
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) -
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul ΔU UhatInv)))
+    (hXtri :
+      ∀ i j : Fin (n + 1), i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin (n + 1), j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hGlt : opNorm2 (higham9_27_GMatrix LhatInv ΔA UhatInv) < 1)
+    (hlinear :
+      max (frobNormRect (higham9_15_initBlock (rectMatMul LhatInv ΔL)))
+          (frobNormRect (higham9_15_initBlock (rectMatMul ΔU UhatInv))) ≤
+        frobNormRect (higham9_15_initBlock (higham9_27_GMatrix LhatInv ΔA UhatInv)) +
+          opNorm2 (higham9_15_initBlock (higham9_27_GMatrix LhatInv ΔA UhatInv)) *
+            max (frobNormRect (higham9_15_initBlock (rectMatMul LhatInv ΔL)))
+              (frobNormRect (higham9_15_initBlock (rectMatMul ΔU UhatInv)))) :
+    max (frobNormRect ΔL / opNorm2 Lhat) (frobNormRect ΔU / opNorm2 Uhat) ≤
+      frobNormRect (higham9_27_GMatrix LhatInv ΔA UhatInv) /
+          (1 - opNorm2 (higham9_27_GMatrix LhatInv ΔA UhatInv)) +
+        frobNormRect
+          ((show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              higham9_27_GMatrix LhatInv ΔA UhatInv) +
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul LhatInv ΔL) *
+              (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+                rectMatMul ΔU UhatInv)) := by
+  let G : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    higham9_27_GMatrix LhatInv ΔA UhatInv
+  let X : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    rectMatMul LhatInv ΔL
+  let Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    rectMatMul ΔU UhatInv
+  let t : ℝ := frobNormRect G / (1 - opNorm2 G) + frobNormRect (G + X * Y)
+  have hmax : max (frobNormRect X) (frobNormRect Y) ≤ t :=
+    higham9_15_normalized_Gtilde_max_frobNormRect_le_ratio_add_residual_of_init_linear_step
+      G X Y hfact hXtri hYtri hGlt hlinear
+  have hX : frobNormRect X ≤ t := (le_max_left _ _).trans hmax
+  have hY : frobNormRect Y ≤ t := (le_max_right _ _).trans hmax
+  simpa [G, X, Y, t] using
+    higham9_15_frobenius_relative_assembly_of_inverse_normalized_bounds_opNorm_of_inverse_identities
+      Lhat Uhat LhatInv UhatInv ΔL ΔU hLright hUleft hX hY
+
 /-- **Theorem 9.15 support**, product-smallness source relative bound for the
 `I - Gtilde` split from a principal-block linearized step hypothesis. -/
 theorem higham9_15_normwise_source_bound_of_Gtilde_split_init_linear_step_opNorm_of_inverse_identities_product_lt
@@ -26907,6 +27775,231 @@ theorem higham9_15_normwise_source_bound_of_Gtilde_split_init_min_factor_bound_o
               (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
                 rectMatMul ΔU UhatInv)) :=
   higham9_15_normwise_source_bound_of_Gtilde_split_init_min_factor_bound_opNorm_of_inverse_identities_product_lt
+    Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hLright hUleft hfact hXtri hYtri hmin
+    (opNorm2_nonneg LhatInv) (opNorm2_nonneg ΔA) (opNorm2_nonneg UhatInv)
+    (opNorm2Le_opNorm2 LhatInv) (opNorm2Le_opNorm2 ΔA)
+    (opNorm2Le_opNorm2 UhatInv) heta
+
+/-- **Theorem 9.15 support**, product-smallness source relative bound for the
+`I - Gtilde` split from a principal-block linearized step hypothesis, with the
+explicit Schur residual appearing once. -/
+theorem higham9_15_normwise_source_bound_of_Gtilde_split_init_linear_step_opNorm_of_inverse_identities_product_lt_one_residual
+    {n : ℕ}
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU :
+      Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    {linv2 dA2 uinv2 : ℝ}
+    (hLright : rectMatMul Lhat LhatInv = idMatrix (n + 1))
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix (n + 1))
+    (hfact :
+      (1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) -
+          (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) -
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) -
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul ΔU UhatInv)))
+    (hXtri :
+      ∀ i j : Fin (n + 1), i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin (n + 1), j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hlinear :
+      max (frobNormRect (higham9_15_initBlock (rectMatMul LhatInv ΔL)))
+          (frobNormRect (higham9_15_initBlock (rectMatMul ΔU UhatInv))) ≤
+        frobNormRect (higham9_15_initBlock (higham9_27_GMatrix LhatInv ΔA UhatInv)) +
+          opNorm2 (higham9_15_initBlock (higham9_27_GMatrix LhatInv ΔA UhatInv)) *
+            max (frobNormRect (higham9_15_initBlock (rectMatMul LhatInv ΔL)))
+              (frobNormRect (higham9_15_initBlock (rectMatMul ΔU UhatInv))))
+    (hlinv2 : 0 ≤ linv2) (hdA2 : 0 ≤ dA2) (huinv2 : 0 ≤ uinv2)
+    (hLinv : opNorm2Le LhatInv linv2)
+    (hΔA : opNorm2Le ΔA dA2)
+    (hUinv : opNorm2Le UhatInv uinv2)
+    (heta : linv2 * dA2 * uinv2 < 1) :
+    max (frobNormRect ΔL / opNorm2 Lhat) (frobNormRect ΔU / opNorm2 Uhat) ≤
+      (linv2 * frobNormRect ΔA * uinv2) / (1 - linv2 * dA2 * uinv2) +
+        frobNormRect
+          ((show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              higham9_27_GMatrix LhatInv ΔA UhatInv) +
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul LhatInv ΔL) *
+              (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+                rectMatMul ΔU UhatInv)) := by
+  let G : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    higham9_27_GMatrix LhatInv ΔA UhatInv
+  let X : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    rectMatMul LhatInv ΔL
+  let Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    rectMatMul ΔU UhatInv
+  have hGlt : opNorm2 G < 1 := by
+    simpa [G] using
+      higham9_27_GMatrix_opNorm2_lt_one_of_product_lt_one
+        LhatInv ΔA UhatInv hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+  have hsource :
+      max (frobNormRect ΔL / opNorm2 Lhat) (frobNormRect ΔU / opNorm2 Uhat) ≤
+        frobNormRect G / (1 - opNorm2 G) + frobNormRect (G + X * Y) := by
+    simpa [G, X, Y] using
+      higham9_15_normwise_source_bound_of_Gtilde_split_init_linear_step_opNorm_of_inverse_identities_one_residual
+        Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU
+        hLright hUleft hfact hXtri hYtri hGlt hlinear
+  have hratio :=
+    higham9_27_GMatrix_ratio_le_product_ratio
+      LhatInv ΔA UhatInv hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+  exact hsource.trans (by
+    simpa [G, X, Y, add_comm] using
+      add_le_add_right hratio (frobNormRect (G + X * Y)))
+
+/-- **Theorem 9.15 support**, product-smallness source relative bound for the
+`I - Gtilde` split from a principal-block min-factor hypothesis, with the
+explicit Schur residual appearing once. -/
+theorem higham9_15_normwise_source_bound_of_Gtilde_split_init_min_factor_bound_opNorm_of_inverse_identities_product_lt_one_residual
+    {n : ℕ}
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU :
+      Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    {linv2 dA2 uinv2 : ℝ}
+    (hLright : rectMatMul Lhat LhatInv = idMatrix (n + 1))
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix (n + 1))
+    (hfact :
+      (1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) -
+          (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) -
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) -
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul ΔU UhatInv)))
+    (hXtri :
+      ∀ i j : Fin (n + 1), i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin (n + 1), j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hmin :
+      min (frobNormRect (higham9_15_initBlock (rectMatMul LhatInv ΔL)))
+          (frobNormRect (higham9_15_initBlock (rectMatMul ΔU UhatInv))) ≤
+        opNorm2 (higham9_15_initBlock (higham9_27_GMatrix LhatInv ΔA UhatInv)))
+    (hlinv2 : 0 ≤ linv2) (hdA2 : 0 ≤ dA2) (huinv2 : 0 ≤ uinv2)
+    (hLinv : opNorm2Le LhatInv linv2)
+    (hΔA : opNorm2Le ΔA dA2)
+    (hUinv : opNorm2Le UhatInv uinv2)
+    (heta : linv2 * dA2 * uinv2 < 1) :
+    max (frobNormRect ΔL / opNorm2 Lhat) (frobNormRect ΔU / opNorm2 Uhat) ≤
+      (linv2 * frobNormRect ΔA * uinv2) / (1 - linv2 * dA2 * uinv2) +
+        frobNormRect
+          ((show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              higham9_27_GMatrix LhatInv ΔA UhatInv) +
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul LhatInv ΔL) *
+              (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+                rectMatMul ΔU UhatInv)) := by
+  let G : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    higham9_27_GMatrix LhatInv ΔA UhatInv
+  let X : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    rectMatMul LhatInv ΔL
+  let Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ :=
+    rectMatMul ΔU UhatInv
+  have hGlt : opNorm2 G < 1 := by
+    simpa [G] using
+      higham9_27_GMatrix_opNorm2_lt_one_of_product_lt_one
+        LhatInv ΔA UhatInv hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+  have hsource :
+      max (frobNormRect ΔL / opNorm2 Lhat) (frobNormRect ΔU / opNorm2 Uhat) ≤
+        frobNormRect G / (1 - opNorm2 G) + frobNormRect (G + X * Y) := by
+    simpa [G, X, Y] using
+      higham9_15_normwise_source_bound_of_Gtilde_split_init_min_factor_bound_opNorm_of_inverse_identities_one_residual
+        Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU
+        hLright hUleft hfact hXtri hYtri hGlt hmin
+  have hratio :=
+    higham9_27_GMatrix_ratio_le_product_ratio
+      LhatInv ΔA UhatInv hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+  exact hsource.trans (by
+    simpa [G, X, Y, add_comm] using
+      add_le_add_right hratio (frobNormRect (G + X * Y)))
+
+/-- **Theorem 9.15 support**, exact-operator-norm two-sided inverse-identity
+`I - Gtilde` split linear-step residual handoff with one residual term. -/
+theorem higham9_15_normwise_source_bound_of_Gtilde_split_init_linear_step_opNorm_of_inverse_identities_exact_opNorm2_one_residual
+    {n : ℕ}
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU :
+      Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix (n + 1))
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix (n + 1))
+    (hfact :
+      (1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) -
+          (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) -
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) -
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul ΔU UhatInv)))
+    (hXtri :
+      ∀ i j : Fin (n + 1), i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin (n + 1), j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hlinear :
+      max (frobNormRect (higham9_15_initBlock (rectMatMul LhatInv ΔL)))
+          (frobNormRect (higham9_15_initBlock (rectMatMul ΔU UhatInv))) ≤
+        frobNormRect (higham9_15_initBlock (higham9_27_GMatrix LhatInv ΔA UhatInv)) +
+          opNorm2 (higham9_15_initBlock (higham9_27_GMatrix LhatInv ΔA UhatInv)) *
+            max (frobNormRect (higham9_15_initBlock (rectMatMul LhatInv ΔL)))
+              (frobNormRect (higham9_15_initBlock (rectMatMul ΔU UhatInv))))
+    (heta : opNorm2 LhatInv * opNorm2 ΔA * opNorm2 UhatInv < 1) :
+    max (frobNormRect ΔL / opNorm2 Lhat) (frobNormRect ΔU / opNorm2 Uhat) ≤
+      (opNorm2 LhatInv * frobNormRect ΔA * opNorm2 UhatInv) /
+          (1 - opNorm2 LhatInv * opNorm2 ΔA * opNorm2 UhatInv) +
+        frobNormRect
+          ((show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              higham9_27_GMatrix LhatInv ΔA UhatInv) +
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul LhatInv ΔL) *
+              (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+                rectMatMul ΔU UhatInv)) :=
+  higham9_15_normwise_source_bound_of_Gtilde_split_init_linear_step_opNorm_of_inverse_identities_product_lt_one_residual
+    Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hLright hUleft hfact hXtri hYtri hlinear
+    (opNorm2_nonneg LhatInv) (opNorm2_nonneg ΔA) (opNorm2_nonneg UhatInv)
+    (opNorm2Le_opNorm2 LhatInv) (opNorm2Le_opNorm2 ΔA)
+    (opNorm2Le_opNorm2 UhatInv) heta
+
+/-- **Theorem 9.15 support**, exact-operator-norm two-sided inverse-identity
+`I - Gtilde` split principal-block min-factor residual handoff with one
+residual term. -/
+theorem higham9_15_normwise_source_bound_of_Gtilde_split_init_min_factor_bound_opNorm_of_inverse_identities_exact_opNorm2_one_residual
+    {n : ℕ}
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU :
+      Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix (n + 1))
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix (n + 1))
+    (hfact :
+      (1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) -
+          (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) -
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) -
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul ΔU UhatInv)))
+    (hXtri :
+      ∀ i j : Fin (n + 1), i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin (n + 1), j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hmin :
+      min (frobNormRect (higham9_15_initBlock (rectMatMul LhatInv ΔL)))
+          (frobNormRect (higham9_15_initBlock (rectMatMul ΔU UhatInv))) ≤
+        opNorm2 (higham9_15_initBlock (higham9_27_GMatrix LhatInv ΔA UhatInv)))
+    (heta : opNorm2 LhatInv * opNorm2 ΔA * opNorm2 UhatInv < 1) :
+    max (frobNormRect ΔL / opNorm2 Lhat) (frobNormRect ΔU / opNorm2 Uhat) ≤
+      (opNorm2 LhatInv * frobNormRect ΔA * opNorm2 UhatInv) /
+          (1 - opNorm2 LhatInv * opNorm2 ΔA * opNorm2 UhatInv) +
+        frobNormRect
+          ((show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              higham9_27_GMatrix LhatInv ΔA UhatInv) +
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul LhatInv ΔL) *
+              (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+                rectMatMul ΔU UhatInv)) :=
+  higham9_15_normwise_source_bound_of_Gtilde_split_init_min_factor_bound_opNorm_of_inverse_identities_product_lt_one_residual
     Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hLright hUleft hfact hXtri hYtri hmin
     (opNorm2_nonneg LhatInv) (opNorm2_nonneg ΔA) (opNorm2_nonneg UhatInv)
     (opNorm2Le_opNorm2 LhatInv) (opNorm2Le_opNorm2 ΔA)

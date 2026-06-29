@@ -317,6 +317,96 @@ theorem higham21_eq21_3_q_method_min_norm_of_qr_det_ne_zero {m k : ℕ}
     (isInverse_nonsingInv_of_det_ne_zero m (matTranspose R) hdetT)
     hy1
 
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.3):
+    determinant-facing exact Q-method minimum-norm handoff from nonsingularity
+    of the triangular factor `R` itself.  This is a thin source-facing bridge
+    from the usual triangular-factor determinant condition to the transposed
+    coordinate solve `Rᵀ y₁ = b`. -/
+theorem higham21_eq21_3_q_method_min_norm_of_qr_R_det_ne_zero {m k : ℕ}
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (hQ : IsOrthogonal (m + k) Q)
+    (R : Fin m → Fin m → ℝ)
+    (b y1 : Fin m → ℝ)
+    (hdet : Matrix.det (R : Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hy1 : (fun j : Fin m => ∑ i : Fin m, R i j * y1 i) = b) :
+    RectMinNormSolution m (m + k)
+      (finiteTranspose (matMulRectLeft Q (lsQRTallBlock (k := k) R)))
+      b
+      (matMulVec (m + k) Q (Fin.append y1 (0 : Fin k → ℝ))) := by
+  have hdetT : Matrix.det (matTranspose R : Matrix (Fin m) (Fin m) ℝ) ≠ 0 := by
+    change Matrix.det (Matrix.transpose (R : Matrix (Fin m) (Fin m) ℝ)) ≠ 0
+    simpa [Matrix.det_transpose] using hdet
+  exact higham21_eq21_3_q_method_min_norm_of_qr_det_ne_zero Q hQ R b y1 hdetT hy1
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.3):
+    exact Q-method minimum-norm handoff from the usual triangular-factor
+    nonsingularity condition: `R` is upper triangular with nonzero diagonal. -/
+theorem higham21_eq21_3_q_method_min_norm_of_qr_upper_diag_ne_zero {m k : ℕ}
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (hQ : IsOrthogonal (m + k) Q)
+    (R : Fin m → Fin m → ℝ)
+    (b y1 : Fin m → ℝ)
+    (hupper : IsUpperTrapezoidal m m R)
+    (hdiag : ∀ i : Fin m, R i i ≠ 0)
+    (hy1 : (fun j : Fin m => ∑ i : Fin m, R i j * y1 i) = b) :
+    RectMinNormSolution m (m + k)
+      (finiteTranspose (matMulRectLeft Q (lsQRTallBlock (k := k) R)))
+      b
+      (matMulVec (m + k) Q (Fin.append y1 (0 : Fin k → ℝ))) := by
+  have hdet : Matrix.det (R : Matrix (Fin m) (Fin m) ℝ) ≠ 0 :=
+    det_ne_zero_of_upper_triangular_diag_ne_zero m R hupper hdiag
+  exact higham21_eq21_3_q_method_min_norm_of_qr_R_det_ne_zero Q hQ R b y1 hdet hy1
+
+-- ============================================================
+-- §21.2  Lemma 21.2 projector/norm bridge
+-- ============================================================
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    source-facing alias for the projector mixture reused from the Chapter 20
+    Kielbasinski--Schwetlick construction.  This is the constructed
+    perturbation block, not the full minimum-norm symmetrization theorem. -/
+noncomputable abbrev undetLemma21_2SymmetrizedPerturbation {m n : ℕ}
+    (s : Fin m → ℝ) (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ) :
+    Fin m → Fin n → ℝ :=
+  lsLemma20_6Perturbation s DeltaA1 DeltaA2
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    the Frobenius-squared norm bound for the projector mixture used to replace
+    two perturbation blocks by one. -/
+theorem higham21_lemma21_2_symmetrized_perturbation_frobNormSq_le {m n : ℕ}
+    (s : Fin m → ℝ) (hsq : vecNorm2Sq s ≠ 0)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ) :
+    frobNormSqRect (undetLemma21_2SymmetrizedPerturbation s DeltaA1 DeltaA2) ≤
+      frobNormSqRect DeltaA1 + frobNormSqRect DeltaA2 :=
+  lsLemma20_6Perturbation_frobNormSqRect_le s hsq DeltaA1 DeltaA2
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    Frobenius-norm form of the printed bound
+    `||Delta A||_F <= (||Delta A_1||_F^2 + ||Delta A_2||_F^2)^(1/2)` for the
+    projector mixture. -/
+theorem higham21_lemma21_2_symmetrized_perturbation_frob_bound {m n : ℕ}
+    (s : Fin m → ℝ) (hsq : vecNorm2Sq s ≠ 0)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ) :
+    frobNormRect (undetLemma21_2SymmetrizedPerturbation s DeltaA1 DeltaA2) ≤
+      Real.sqrt (frobNormRect DeltaA1 ^ 2 + frobNormRect DeltaA2 ^ 2) :=
+  lsLemma20_6Perturbation_norm_bound_two_frob s hsq DeltaA1 DeltaA2
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    operator-2 norm form of the printed bound for the projector mixture.  If
+    the two original perturbation blocks have operator-2 bounds `alpha` and
+    `beta`, then the constructed perturbation has bound
+    `(alpha^2 + beta^2)^(1/2)`. -/
+theorem higham21_lemma21_2_symmetrized_perturbation_op_bound {m n : ℕ}
+    (s : Fin m → ℝ) (hsq : vecNorm2Sq s ≠ 0)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    {alpha beta : ℝ} (halpha : 0 ≤ alpha) (hbeta : 0 ≤ beta)
+    (hDeltaA1 : rectOpNorm2Le DeltaA1 alpha)
+    (hDeltaA2 : rectOpNorm2Le DeltaA2 beta) :
+    rectOpNorm2Le (undetLemma21_2SymmetrizedPerturbation s DeltaA1 DeltaA2)
+      (Real.sqrt (alpha ^ 2 + beta ^ 2)) :=
+  lsLemma20_6Perturbation_norm_bound_two_operator
+    s hsq DeltaA1 DeltaA2 halpha hbeta hDeltaA1 hDeltaA2
+
 -- ============================================================
 -- §21.3  Row-wise backward error for underdetermined systems
 -- ============================================================
@@ -419,6 +509,20 @@ theorem undetNormwiseBackwardErrorEtaF_nonneg {m n : ℕ} (theta : ℝ)
   intro eta heta
   rcases heta with ⟨DeltaA, Deltab, _hfeas, rfl⟩
   exact lsNormwiseBackwardErrorCostF_nonneg theta DeltaA Deltab
+
+/-- Any feasible Chapter 21 normwise perturbation gives an upper bound on
+    the infimum model `eta_F(y)`. -/
+theorem undetNormwiseBackwardErrorEtaF_le_costF_of_feasible
+    {m n : ℕ} (theta : ℝ)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (hfeas :
+      UndetNormwiseBackwardErrorFeasible A b y DeltaA Deltab) :
+    undetNormwiseBackwardErrorEtaF theta A b y ≤
+      lsNormwiseBackwardErrorCostF theta DeltaA Deltab := by
+  unfold undetNormwiseBackwardErrorEtaF
+  exact csInf_le (undetNormwiseBackwardErrorValuesF.bddBelow theta A b y)
+    ⟨DeltaA, Deltab, hfeas, rfl⟩
 
 /-- Zero is an attainable Chapter 21 normwise backward-error cost when `y`
     is already a minimum 2-norm solution of the original data. -/
@@ -598,6 +702,167 @@ noncomputable def undetNormwiseBackwardErrorNonzeroFormulaRHS {m n : ℕ}
     (theta ^ 2 * vecNorm2Sq y / (1 + theta ^ 2 * vecNorm2Sq y) *
         (vecNorm2Sq (undetResidualHigham A b y) / vecNorm2Sq y) +
       sigma ^ 2)
+
+/-- Radicand nonnegativity for the scalar right-hand side in the nonzero
+    branch of Higham Chapter 21, Theorem 21.3.  This is only scalar formula
+    bookkeeping; it does not assert the Sun--Sun equality with `eta_F(y)`. -/
+theorem undetNormwiseBackwardErrorNonzeroFormulaRHS_radicand_nonneg
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (y : Fin n → ℝ) (sigma : ℝ) :
+    0 ≤
+      theta ^ 2 * vecNorm2Sq y / (1 + theta ^ 2 * vecNorm2Sq y) *
+          (vecNorm2Sq (undetResidualHigham A b y) / vecNorm2Sq y) +
+        sigma ^ 2 := by
+  have htheta_sq : 0 ≤ theta ^ 2 := sq_nonneg theta
+  have hy_sq : 0 ≤ vecNorm2Sq y := vecNorm2Sq_nonneg y
+  have hnum : 0 ≤ theta ^ 2 * vecNorm2Sq y := mul_nonneg htheta_sq hy_sq
+  have hden : 0 ≤ 1 + theta ^ 2 * vecNorm2Sq y := by
+    exact add_nonneg zero_le_one hnum
+  have hleft :
+      0 ≤ theta ^ 2 * vecNorm2Sq y / (1 + theta ^ 2 * vecNorm2Sq y) :=
+    div_nonneg hnum hden
+  have hres :
+      0 ≤ vecNorm2Sq (undetResidualHigham A b y) / vecNorm2Sq y :=
+    div_nonneg (vecNorm2Sq_nonneg _) hy_sq
+  exact add_nonneg (mul_nonneg hleft hres) (sq_nonneg sigma)
+
+/-- The scalar right-hand side in the nonzero branch of Higham Chapter 21,
+    Theorem 21.3 is nonnegative. -/
+theorem undetNormwiseBackwardErrorNonzeroFormulaRHS_nonneg
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (y : Fin n → ℝ) (sigma : ℝ) :
+    0 ≤ undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma := by
+  unfold undetNormwiseBackwardErrorNonzeroFormulaRHS
+  exact Real.sqrt_nonneg _
+
+/-- Squared form of the scalar right-hand side in the nonzero branch of
+    Higham Chapter 21, Theorem 21.3.  This prepares the later lower/upper
+    bound route against the Sun--Sun formula but does not close it. -/
+theorem undetNormwiseBackwardErrorNonzeroFormulaRHS_sq
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (y : Fin n → ℝ) (sigma : ℝ) :
+    undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma ^ 2 =
+      theta ^ 2 * vecNorm2Sq y / (1 + theta ^ 2 * vecNorm2Sq y) *
+          (vecNorm2Sq (undetResidualHigham A b y) / vecNorm2Sq y) +
+        sigma ^ 2 := by
+  unfold undetNormwiseBackwardErrorNonzeroFormulaRHS
+  exact Real.sq_sqrt
+    (undetNormwiseBackwardErrorNonzeroFormulaRHS_radicand_nonneg
+      theta A b y sigma)
+
+/-- Positive singular-value branch of the scalar right-hand side in Higham
+    Chapter 21, Theorem 21.3: a positive supplied singular-value parameter
+    makes the displayed formula positive. -/
+theorem undetNormwiseBackwardErrorNonzeroFormulaRHS_pos_of_sigma_pos
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (y : Fin n → ℝ) {sigma : ℝ} (hsigma : 0 < sigma) :
+    0 < undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma := by
+  unfold undetNormwiseBackwardErrorNonzeroFormulaRHS
+  apply Real.sqrt_pos.2
+  have hsigma_sq_pos : 0 < sigma ^ 2 := sq_pos_of_pos hsigma
+  have hleft :
+      0 ≤ theta ^ 2 * vecNorm2Sq y / (1 + theta ^ 2 * vecNorm2Sq y) *
+          (vecNorm2Sq (undetResidualHigham A b y) / vecNorm2Sq y) := by
+    have htheta_sq : 0 ≤ theta ^ 2 := sq_nonneg theta
+    have hy_sq : 0 ≤ vecNorm2Sq y := vecNorm2Sq_nonneg y
+    have hnum : 0 ≤ theta ^ 2 * vecNorm2Sq y := mul_nonneg htheta_sq hy_sq
+    have hden : 0 ≤ 1 + theta ^ 2 * vecNorm2Sq y :=
+      add_nonneg zero_le_one hnum
+    have hleft_factor :
+        0 ≤ theta ^ 2 * vecNorm2Sq y / (1 + theta ^ 2 * vecNorm2Sq y) :=
+      div_nonneg hnum hden
+    have hres :
+        0 ≤ vecNorm2Sq (undetResidualHigham A b y) / vecNorm2Sq y :=
+      div_nonneg (vecNorm2Sq_nonneg _) hy_sq
+    exact mul_nonneg hleft_factor hres
+  exact add_pos_of_nonneg_of_pos hleft hsigma_sq_pos
+
+/-- Lower-bound handoff for the nonzero branch of Higham Chapter 21,
+    Theorem 21.3: once every feasible perturbation has cost at least the
+    displayed nonzero RHS, the RHS is below the infimum model `eta_F(y)`.
+    The singular-vector proof of that pointwise lower bound remains open. -/
+theorem undetNormwiseBackwardErrorNonzeroFormulaRHS_le_etaF_of_forall_feasible_cost_ge
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (y : Fin n → ℝ) (sigma : ℝ)
+    (hnonempty : (undetNormwiseBackwardErrorValuesF theta A b y).Nonempty)
+    (hlower :
+      ∀ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+        UndetNormwiseBackwardErrorFeasible A b y DeltaA Deltab →
+          undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma ≤
+            lsNormwiseBackwardErrorCostF theta DeltaA Deltab) :
+    undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma ≤
+      undetNormwiseBackwardErrorEtaF theta A b y := by
+  unfold undetNormwiseBackwardErrorEtaF
+  apply le_csInf hnonempty
+  intro eta heta
+  rcases heta with ⟨DeltaA, Deltab, hfeas, heta_eq⟩
+  rw [heta_eq]
+  exact hlower DeltaA Deltab hfeas
+
+/-- Upper-bound handoff for the nonzero branch of Higham Chapter 21,
+    Theorem 21.3: an attaining feasible perturbation gives
+    `eta_F(y) <=` the displayed nonzero RHS. -/
+theorem undetNormwiseBackwardErrorEtaF_le_nonzeroFormulaRHS_of_exists_feasible_cost_eq
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (y : Fin n → ℝ) (sigma : ℝ)
+    (hatt :
+      ∃ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+        UndetNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+          lsNormwiseBackwardErrorCostF theta DeltaA Deltab =
+            undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma) :
+    undetNormwiseBackwardErrorEtaF theta A b y ≤
+      undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma := by
+  rcases hatt with ⟨DeltaA, Deltab, hfeas, hcost⟩
+  calc
+    undetNormwiseBackwardErrorEtaF theta A b y ≤
+        lsNormwiseBackwardErrorCostF theta DeltaA Deltab :=
+      undetNormwiseBackwardErrorEtaF_le_costF_of_feasible
+        theta A b y DeltaA Deltab hfeas
+    _ = undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma := hcost
+
+/-- Inequality-form upper-bound handoff for the nonzero branch of Higham
+    Chapter 21, Theorem 21.3: it is enough to exhibit a feasible perturbation
+    whose weighted cost is bounded by the displayed nonzero RHS. -/
+theorem undetNormwiseBackwardErrorEtaF_le_nonzeroFormulaRHS_of_exists_feasible_cost_le
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (y : Fin n → ℝ) (sigma : ℝ)
+    (hupper :
+      ∃ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+        UndetNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+          lsNormwiseBackwardErrorCostF theta DeltaA Deltab ≤
+            undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma) :
+    undetNormwiseBackwardErrorEtaF theta A b y ≤
+      undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma := by
+  rcases hupper with ⟨DeltaA, Deltab, hfeas, hcost⟩
+  exact
+    (undetNormwiseBackwardErrorEtaF_le_costF_of_feasible
+      theta A b y DeltaA Deltab hfeas).trans hcost
+
+/-- Certificate form of the open nonzero equality in Higham Chapter 21,
+    Theorem 21.3.  It isolates the two remaining obligations for the
+    Sun--Sun proof: a pointwise lower bound for all feasible perturbations
+    and one feasible perturbation attaining the displayed nonzero RHS. -/
+theorem undetNormwiseBackwardErrorEtaF_eq_nonzeroFormulaRHS_of_formula_certificate
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (y : Fin n → ℝ) (sigma : ℝ)
+    (hnonempty : (undetNormwiseBackwardErrorValuesF theta A b y).Nonempty)
+    (hlower :
+      ∀ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+        UndetNormwiseBackwardErrorFeasible A b y DeltaA Deltab →
+          undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma ≤
+            lsNormwiseBackwardErrorCostF theta DeltaA Deltab)
+    (hatt :
+      ∃ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+        UndetNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+          lsNormwiseBackwardErrorCostF theta DeltaA Deltab =
+            undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma) :
+    undetNormwiseBackwardErrorEtaF theta A b y =
+      undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma := by
+  exact le_antisymm
+    (undetNormwiseBackwardErrorEtaF_le_nonzeroFormulaRHS_of_exists_feasible_cost_eq
+      theta A b y sigma hatt)
+    (undetNormwiseBackwardErrorNonzeroFormulaRHS_le_etaF_of_forall_feasible_cost_ge
+      theta A b y sigma hnonempty hlower)
 
 -- ============================================================
 -- §21.3  Theorem 21.4: Q method backward stability
