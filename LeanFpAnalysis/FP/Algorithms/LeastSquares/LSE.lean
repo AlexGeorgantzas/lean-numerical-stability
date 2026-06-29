@@ -495,6 +495,19 @@ theorem gqrReverseRowsOfQRReversedCols {n : ℕ}
   unfold matMulRectLeft matTranspose
   simpa using hentry
 
+/-- The zero-tail transformed QR block `[R;0]` is just `R`. -/
+theorem lsQRTallBlock_zero {n : ℕ} (R : Fin n → Fin n → ℝ) :
+    lsQRTallBlock (k := 0) R = R := by
+  ext i j
+  unfold lsQRTallBlock
+  refine Fin.addCases ?_ ?_ i
+  · intro i
+    change Fin.append R (fun _ : Fin 0 => fun _ : Fin n => 0)
+        (Fin.castAdd 0 i) j = R i j
+    rw [Fin.append_left]
+  · intro i
+    exact Fin.elim0 i
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction step:
     a QR transform of a column-reversed square block gives an orthogonal
     left-factor whose transpose sends the original block to a lower-triangular
@@ -797,6 +810,39 @@ theorem exists_orthogonal_completion_tall_qr_block {p q : ℕ}
               simp [htail_orth]
         _ = lsQRTallBlock (k := q) R (Fin.natAdd p row) col := by
               simp [lsQRTallBlock]
+
+/-- Exact-MGS version of
+    `exists_orthogonal_gqrReverseSquare_of_qr_reversed_cols`: nonzero MGS stages
+    for the column-reversed square block supply the orthogonal transform and
+    lower-triangular GQR block. -/
+theorem exists_orthogonal_gqrReverseSquare_of_mgs_reversed_cols {n : ℕ}
+    (C : Fin n → Fin n → ℝ)
+    (hdiag : ∀ k : Fin n,
+      gsColumnNorm2
+        (modifiedGramSchmidtVectors (rectPermuteCols Fin.revPerm C) k.val k) ≠ 0) :
+    ∃ (U : Fin n → Fin n → ℝ) (R : Fin n → Fin n → ℝ),
+      IsOrthogonal n U ∧ IsUpperTriangular n R ∧
+        matMulRectLeft (matTranspose U) C = gqrReverseSquare R ∧
+          IsLowerTriangular (gqrReverseSquare R) := by
+  let Crev : Fin n → Fin n → ℝ := rectPermuteCols Fin.revPerm C
+  let R : Fin n → Fin n → ℝ := modifiedGramSchmidtR Crev
+  have hfactor :
+      Crev = matMulRect n n n (modifiedGramSchmidtQ Crev) R := by
+    exact modifiedGramSchmidt_exact_factorization Crev hdiag
+  have horth : GramSchmidtOrthonormalColumns (modifiedGramSchmidtQ Crev) :=
+    modifiedGramSchmidtQ_orthonormal_columns Crev hdiag
+  obtain ⟨V, hV, _hpreserve, hqr⟩ :=
+    exists_orthogonal_completion_tall_qr_block (p := n) (q := 0)
+      Crev (modifiedGramSchmidtQ Crev) R horth hfactor
+  have hRupper : IsUpperTriangular n R :=
+    IsUpperTrapezoidal.to_upperTriangular
+      (modifiedGramSchmidtR_upper_trapezoidal Crev)
+  have hqrR : matMulRectLeft (matTranspose V) (rectPermuteCols Fin.revPerm C) = R := by
+    simpa [Crev, lsQRTallBlock_zero] using hqr
+  rcases exists_orthogonal_gqrReverseSquare_of_qr_reversed_cols
+      C V R hV hRupper hqrR with
+    ⟨U, hU, hUeq, hLower⟩
+  exact ⟨U, R, hU, hRupper, hUeq, hLower⟩
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction step:
     a supplied tall QR factorization of `Bᵀ` yields the constraint block
@@ -1592,6 +1638,33 @@ theorem GQRAQWideAssocCase.exists_of_trailing_qr_reversed_cols {k r q : ℕ}
   rcases exists_orthogonal_gqrReverseSquare_of_qr_reversed_cols
       (gqrAQWideAssocL M) V R hV hR hqr with
     ⟨U, hU, htrail, hLower⟩
+  refine ⟨U, hU, ?_⟩
+  have hExtract :
+      gqrAQWideAssocL (matMulRectLeft (matTranspose U) M) =
+        gqrReverseSquare R := by
+    rw [gqrAQWideAssocL_matMulRectLeft]
+    exact htrail
+  refine ⟨GQRAQWideAssocCase.of_trailing_lower ?_⟩
+  rw [hExtract]
+  exact hLower
+
+/-- Exact-MGS version of
+    `GQRAQWideAssocCase.exists_of_trailing_qr_reversed_cols`: nonzero MGS
+    stages for the column-reversed trailing square block construct the
+    orthogonal `U` and the wide associated `[X L]` shape. -/
+theorem GQRAQWideAssocCase.exists_of_trailing_mgs_reversed_cols {k r q : ℕ}
+    (M : Fin (r + q) → Fin ((k + r) + q) → ℝ)
+    (hdiag : ∀ j : Fin (r + q),
+      gsColumnNorm2
+        (modifiedGramSchmidtVectors
+          (rectPermuteCols Fin.revPerm (gqrAQWideAssocL M)) j.val j) ≠ 0) :
+    ∃ U : Fin (r + q) → Fin (r + q) → ℝ,
+      IsOrthogonal (r + q) U ∧
+        Nonempty (GQRAQWideAssocCase k r q
+          (matMulRectLeft (matTranspose U) M)) := by
+  rcases exists_orthogonal_gqrReverseSquare_of_mgs_reversed_cols
+      (gqrAQWideAssocL M) hdiag with
+    ⟨U, R, hU, _hRupper, htrail, hLower⟩
   refine ⟨U, hU, ?_⟩
   have hExtract :
       gqrAQWideAssocL (matMulRectLeft (matTranspose U) M) =
