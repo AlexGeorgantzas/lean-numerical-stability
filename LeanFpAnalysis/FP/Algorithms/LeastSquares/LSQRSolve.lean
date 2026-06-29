@@ -15187,6 +15187,73 @@ theorem lsNormwiseBackwardErrorRankOne_scaled_projector_comparison_not_of_projec
     nlinarith [hApos, hDgt_one]
   exact not_lt_of_ge (hleft_ge.trans hcomparison') hrhs_lt
 
+/-- Source-block attainer route-elimination check for the WKS `sigma_min`
+    branch in (20.21).  If an exact row-side `sigma_min` attainer for
+    `[A phi(I-r r^+)]` has nonzero component away from the residual direction,
+    then no scalar choice in the current scaled rank-one witness can satisfy
+    the projector comparison required by the source-transpose handoff.
+
+    This is not the full WKS construction; it records, at the source-block
+    attainer surface, why the scalar-only rank-one route cannot close the
+    nondegenerate projected branch. -/
+theorem lsNormwiseBackwardErrorFormulaMatrixSigmaMin_attainer_projector_comparison_not_of_projected_ne_zero
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hrsq : vecNorm2Sq (lsResidualHigham A b y) ≠ 0)
+    (hatt :
+      ∃ p : Fin (m + 1) → ℝ, p ≠ 0 ∧
+        vecNorm2Sq
+            (rectMatMulVec
+              (finiteTranspose
+                (lsNormwiseBackwardErrorFormulaMatrix theta A
+                  (lsResidualHigham A b y) y)) p) =
+          (lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+              (lsResidualHigham A b y) y) ^ 2 * vecNorm2Sq p ∧
+        vecNorm2Sq
+            (matMulVec (m + 1)
+              (lsResidualComplementProjector (lsResidualHigham A b y)) p) ≠ 0) :
+    ∃ p : Fin (m + 1) → ℝ, p ≠ 0 ∧
+      vecNorm2Sq
+          (rectMatMulVec
+            (finiteTranspose
+              (lsNormwiseBackwardErrorFormulaMatrix theta A
+                (lsResidualHigham A b y) y)) p) =
+        (lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+            (lsResidualHigham A b y) y) ^ 2 * vecNorm2Sq p ∧
+      ∀ c : ℝ,
+        let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+        let u : Fin n → ℝ := fun j => ∑ i : Fin (m + 1), A i j * p i
+        let q : Fin (m + 1) → ℝ :=
+          fun i =>
+            c * p i - r i -
+              ((1 / vecNorm2Sq p) * p i *
+                (∑ j : Fin n, u j * y j))
+        ¬ theta ^ 2 * vecNorm2Sq q * vecNorm2Sq p ≤
+          (lsNormwiseBackwardErrorPhi theta r y) ^ 2 *
+            vecNorm2Sq
+              (matMulVec (m + 1) (lsResidualComplementProjector r) p) := by
+  rcases hatt with ⟨p, hp, hsource, hprojected⟩
+  refine ⟨p, hp, hsource, ?_⟩
+  intro c
+  let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+  let u : Fin n → ℝ := fun j => ∑ i : Fin (m + 1), A i j * p i
+  let t : ℝ := ∑ j : Fin n, u j * y j
+  have hpsq : vecNorm2Sq p ≠ 0 :=
+    ne_of_gt (vecNorm2Sq_pos_of_ne_zero_lsq hp)
+  have hnot :
+      ¬ theta ^ 2 *
+          vecNorm2Sq
+            (fun i : Fin (m + 1) =>
+              c * p i - r i - ((1 / vecNorm2Sq p) * p i * t)) *
+          vecNorm2Sq p ≤
+        (lsNormwiseBackwardErrorPhi theta r y) ^ 2 *
+          vecNorm2Sq (matMulVec (m + 1) (lsLemma20_6ProjectorComplement r) p) :=
+    lsNormwiseBackwardErrorRankOne_scaled_projector_comparison_not_of_projected_ne_zero
+      (m := m + 1) (n := n) htheta hy r p hrsq hpsq
+      (by simpa [r, lsResidualComplementProjector] using hprojected) t c
+  simpa [r, u, t, lsResidualComplementProjector] using hnot
+
 /-- Degenerate source-projector branch for the scaled rank-one WKS
     source-transpose handoff.  If the source candidate `p` has zero component
     away from the residual direction `r`, then the optimal scalar choice in the
