@@ -1679,6 +1679,57 @@ theorem higham21_lemma21_2_single_min_norm_of_gram_pseudoinverse_product_budget
     simpa [undetLemma21_2SinglePerturbation, hx] using hnonzero
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    source-shaped case split whose nonzero-branch certificates are only
+    required when `x != 0`.  This records that the `x = 0` branch needs only the
+    first perturbed equation, while the projector/beta branch still needs the
+    perturbed-Gram and pseudoinverse product-budget certificates. -/
+theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_certificates
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (rho1 rho2 alpha beta eta : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hdet : x ≠ 0 →
+      Matrix.det
+          (rectGram (fun i j => A i j + DeltaA2 i j) :
+            Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hxTranspose : x ≠ 0 →
+      x =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : x ≠ 0 → 3 * max rho1 rho2 < 1)
+    (halpha : x ≠ 0 → 0 ≤ alpha)
+    (hbeta : x ≠ 0 → 0 ≤ beta)
+    (heta : x ≠ 0 → 0 ≤ eta)
+    (hbudget : x ≠ 0 →
+      eta * (alpha + beta) ≤ (rho1 + rho2) / (1 - rho2))
+    (hDeltaA1Op : x ≠ 0 → rectOpNorm2Le DeltaA1 alpha)
+    (hDeltaA2Op : x ≠ 0 → rectOpNorm2Le DeltaA2 beta)
+    (hBplusOp : x ≠ 0 →
+      rectOpNorm2Le
+        (undetAplusOfGramNonsingInv (fun i j => A i j + DeltaA2 i j))
+        eta) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j)
+      b x := by
+  by_cases hx : x = 0
+  · have hzero :
+        RectMinNormSolution m n (fun i j => A i j + DeltaA2 i j) b x :=
+      higham21_lemma21_2_zero_branch_min_norm_of_deltaA2
+        A x DeltaA1 DeltaA2 b hx hDeltaA1
+    simpa [undetLemma21_2SinglePerturbation, hx] using hzero
+  · exact
+      higham21_lemma21_2_single_min_norm_of_gram_pseudoinverse_product_budget
+        A x DeltaA1 DeltaA2 b y rho1 rho2 alpha beta eta hDeltaA1
+        (hdet hx) (hxTranspose hx) (hsmall hx) (halpha hx) (hbeta hx)
+        (heta hx) (hbudget hx) (hDeltaA1Op hx) (hDeltaA2Op hx)
+        (hBplusOp hx)
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     source-shaped pseudoinverse handoff for the remaining beta argument.
     If `Bplus` is a perturbed pseudoinverse for `B = A + DeltaA2` whose
     domain projection fixes `x`, and `Bplus` has the source perturbation
