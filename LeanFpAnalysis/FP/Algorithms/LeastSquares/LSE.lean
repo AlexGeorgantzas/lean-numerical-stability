@@ -9,6 +9,7 @@ import Mathlib.LinearAlgebra.Dual.Lemmas
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import LeanFpAnalysis.FP.Algorithms.QR.GramSchmidtPolar
+import LeanFpAnalysis.FP.Algorithms.QR.Higham19
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSQRSolve
 
 namespace LeanFpAnalysis.FP
@@ -8480,5 +8481,123 @@ theorem theorem20_10_partB_backward_error_of_perturbation_certificate
     ⟨cert.DeltaA, cert.DeltaB, cert.Deltab, cert.Deltad, rfl, rfl, rfl, rfl,
       cert.hDeltaA, cert.hDeltaB, cert.hDeltab, cert.hDeltad,
       ⟨h, hyz, hxuniq⟩⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    Householder `gamma_tilde_mn` coefficient for the `A` and `b` perturbation
+    bounds, using the Chapter 19 Householder QR coefficient with the local
+    matrix dimensions `m = r + q` and `n = p + q`. -/
+noncomputable def theorem20_10_householder_gammaA
+    (fp : FPModel) (r p q : ℕ) : ℝ :=
+  H19.Theorem19_4.gamma_tilde fp (r + q) (p + q)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    Householder `gamma_tilde_np` coefficient for the `B`, `Delta x`, and
+    `Delta d` bounds.  The GQR method first triangularizes `Bᵀ`, whose local
+    dimensions are `(p + q) × p`. -/
+noncomputable def theorem20_10_householder_gammaB
+    (fp : FPModel) (_r p q : ℕ) : ℝ :=
+  H19.Theorem19_4.gamma_tilde fp (p + q) p
+
+/-- Theorem 20.10(a) certificate handoff specialized to the Householder
+    `gamma_tilde_mn` and `gamma_tilde_np` coefficients. -/
+theorem theorem20_10_partA_mixed_stability_of_householder_gamma_certificate
+    {r p q : ℕ}
+    (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    (cert :
+      Theorem20_10PartAPerturbationCertificate A B b d xhat
+        (theorem20_10_householder_gammaA fp r p q)
+        (theorem20_10_householder_gammaB fp r p q)) :
+    let Apert : Fin (r + q) → Fin (p + q) → ℝ :=
+      fun i j => A i j + cert.DeltaA i j
+    let Bpert : Fin p → Fin (p + q) → ℝ :=
+      fun i j => B i j + cert.DeltaB i j
+    let bpert : Fin (r + q) → ℝ := fun i => b i + cert.Deltab i
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab : Fin (r + q) → ℝ,
+    ∃ DeltaX : Fin (p + q) → ℝ,
+    ∃ x : Fin (p + q) → ℝ,
+      DeltaA = cert.DeltaA ∧
+      DeltaB = cert.DeltaB ∧
+      Deltab = cert.Deltab ∧
+      (∀ j : Fin (p + q), xhat j = x j + DeltaX j) ∧
+      vecNorm2 DeltaX ≤
+        theorem20_10_householder_gammaB fp r p q * vecNorm2 x ∧
+      frobNormRect DeltaA ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect A ∧
+      vecNorm2 Deltab ≤
+        theorem20_10_householder_gammaA fp r p q * vecNorm2 b ∧
+      frobNormRect DeltaB ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B ∧
+      IsLSEMinimizer Apert bpert Bpert d x ∧
+      (∃ h : GeneralizedQRFactorization r p q Apert Bpert,
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec h.S yz.1 = d ∧
+          rectMatMulVec h.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose h.U) bpert (Fin.natAdd r i) -
+                rectMatMulVec h.L21 yz.1 i) ∧
+          IsLSEMinimizer Apert bpert Bpert d
+            (matMulVec (p + q) h.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x0 : Fin (p + q) → ℝ,
+          IsLSEMinimizer Apert bpert Bpert d x0)) :=
+  theorem20_10_partA_mixed_stability_of_perturbation_certificate
+    A B b d xhat cert
+
+/-- Theorem 20.10(b) certificate handoff specialized to the Householder
+    `gamma_tilde_mn` and `gamma_tilde_np` coefficients. -/
+theorem theorem20_10_partB_backward_error_of_householder_gamma_certificate
+    {r p q : ℕ}
+    (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    (cert :
+      Theorem20_10PartBPerturbationCertificate A B b d xhat
+        (theorem20_10_householder_gammaA fp r p q)
+        (theorem20_10_householder_gammaB fp r p q)) :
+    let Apert : Fin (r + q) → Fin (p + q) → ℝ :=
+      fun i j => A i j + cert.DeltaA i j
+    let Bpert : Fin p → Fin (p + q) → ℝ :=
+      fun i j => B i j + cert.DeltaB i j
+    let bpert : Fin (r + q) → ℝ := fun i => b i + cert.Deltab i
+    let dpert : Fin p → ℝ := fun i => d i + cert.Deltad i
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab : Fin (r + q) → ℝ,
+    ∃ Deltad : Fin p → ℝ,
+      DeltaA = cert.DeltaA ∧
+      DeltaB = cert.DeltaB ∧
+      Deltab = cert.Deltab ∧
+      Deltad = cert.Deltad ∧
+      frobNormRect DeltaA ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect A ∧
+      frobNormRect DeltaB ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        theorem20_10_householder_gammaA fp r p q * vecNorm2 b +
+          theorem20_10_householder_gammaB fp r p q *
+            frobNormRect A * vecNorm2 xhat ∧
+      vecNorm2 Deltad ≤
+        theorem20_10_householder_gammaB fp r p q *
+          frobNormRect B * vecNorm2 xhat ∧
+      (∃ h : GeneralizedQRFactorization r p q Apert Bpert,
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec h.S yz.1 = dpert ∧
+          rectMatMulVec h.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose h.U) bpert (Fin.natAdd r i) -
+                rectMatMulVec h.L21 yz.1 i) ∧
+          IsLSEMinimizer Apert bpert Bpert dpert
+            (matMulVec (p + q) h.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x : Fin (p + q) → ℝ,
+          IsLSEMinimizer Apert bpert Bpert dpert x)) :=
+  theorem20_10_partB_backward_error_of_perturbation_certificate
+    A B b d xhat cert
 
 end LeanFpAnalysis.FP
