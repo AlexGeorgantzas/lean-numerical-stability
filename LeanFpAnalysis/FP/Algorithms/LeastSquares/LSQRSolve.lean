@@ -7107,6 +7107,88 @@ theorem
       (hAvMin := hAvMin) (hATuMin := hATuMin)
       hsigmaMin_pos hsigmaMin_le_max halpha hvMax hvMin hd
 
+/-- Finite branch-count constructor for Higham, 2nd ed., Chapter 20,
+    equations (20.18)-(20.19).  If the displayed branch count
+    `2 * card ι + card κ` equals the augmented dimension `m+n`, the branch
+    index type can be used as a complete finite column enumeration. -/
+noncomputable def lsScaledAugmentedBranchEquivOfCardEq
+    (m n : ℕ) (ι κ : Type*) [Fintype ι] [Fintype κ]
+    (hcard : 2 * Fintype.card ι + Fintype.card κ = m + n) :
+    Fin (m + n) ≃ Sum (Sum ι ι) κ :=
+  Fintype.equivOfCardEq (by
+    rw [Fintype.card_fin, Fintype.card_sum, Fintype.card_sum]
+    omega)
+
+/-- Higham, 2nd ed., Chapter 20, equations (20.18)-(20.19):
+    cardinality-based source-shaped condition-number handoff.  This constructs
+    the complete branch enumeration from the displayed count
+    `2 * card ι + card κ = m+n`, then applies the complete-branch theorem to
+    obtain the balanced two-sided `κ₂` certificate for the reciprocal-diagonal
+    inverse candidate. -/
+theorem
+    lsScaledAugmentedMatrix_kappa2_bounds_of_branch_cardinality_and_extreme_branches
+    {m n : ℕ} {ι κ : Type*} [Fintype ι] [Fintype κ]
+    {alpha sigmaMin sigmaMax : ℝ}
+    {A : Fin m → Fin n → ℝ} {sigma : ι → ℝ}
+    {u : ι → Fin m → ℝ} {v : ι → Fin n → ℝ}
+    {w : κ → Fin m → ℝ}
+    (hcard : 2 * Fintype.card ι + Fintype.card κ = m + n)
+    (iMin iMax : ι)
+    (hu : ∀ i : ι, vecNorm2Sq (u i) = 1)
+    (hv : ∀ i : ι, vecNorm2Sq (v i) = 1)
+    (hw : ∀ k : κ, vecNorm2Sq (w k) = 1)
+    (hleft : ∀ i j : ι, i ≠ j → (∑ r : Fin m, u i r * u j r) = 0)
+    (hright : ∀ i j : ι, i ≠ j → (∑ c : Fin n, v i c * v j c) = 0)
+    (hnull : ∀ k l : κ, k ≠ l → (∑ r : Fin m, w k r * w l r) = 0)
+    (hAv : ∀ i : ι, rectMatMulVec A (v i) = fun r => sigma i * u i r)
+    (hATu : ∀ i : ι,
+      (fun j : Fin n => ∑ r : Fin m, A r j * u i r) =
+        fun j => sigma i * v i j)
+    (hATw : ∀ k : κ, ∀ j : Fin n, ∑ r : Fin m, A r j * w k r = 0)
+    (hsigmaRange : ∀ i : ι, sigmaMin ≤ sigma i ∧ sigma i ≤ sigmaMax)
+    (hsigmaMin_pos : 0 < sigmaMin)
+    (hsigmaMin_eq : sigma iMin = sigmaMin)
+    (hsigmaMax_eq : sigma iMax = sigmaMax)
+    (halpha : alpha = sigmaMin / Real.sqrt 2) :
+    Real.sqrt 2 * (sigmaMax / sigmaMin) ≤
+        kappa2 (lsScaledAugmentedMatrix alpha A)
+          (finiteMatMul
+            (fun r c : Fin (m + n) =>
+              lsScaledAugmentedMatrixBranchVector alpha sigma u v w
+                (lsScaledAugmentedBranchEquivOfCardEq m n ι κ hcard c) r)
+            (finiteMatMul
+              (finiteDiagonal
+                (fun c : Fin (m + n) =>
+                  (lsScaledAugmentedMatrixBranchEigenvalue alpha sigma
+                    (lsScaledAugmentedBranchEquivOfCardEq m n ι κ hcard c))⁻¹))
+              (matTranspose
+                (fun r c : Fin (m + n) =>
+                  lsScaledAugmentedMatrixBranchVector alpha sigma u v w
+                    (lsScaledAugmentedBranchEquivOfCardEq m n ι κ hcard c) r)))) ∧
+      kappa2 (lsScaledAugmentedMatrix alpha A)
+          (finiteMatMul
+            (fun r c : Fin (m + n) =>
+              lsScaledAugmentedMatrixBranchVector alpha sigma u v w
+                (lsScaledAugmentedBranchEquivOfCardEq m n ι κ hcard c) r)
+            (finiteMatMul
+              (finiteDiagonal
+                (fun c : Fin (m + n) =>
+                  (lsScaledAugmentedMatrixBranchEigenvalue alpha sigma
+                    (lsScaledAugmentedBranchEquivOfCardEq m n ι κ hcard c))⁻¹))
+              (matTranspose
+                (fun r c : Fin (m + n) =>
+                  lsScaledAugmentedMatrixBranchVector alpha sigma u v w
+                    (lsScaledAugmentedBranchEquivOfCardEq m n ι κ hcard c) r)))) ≤
+        2 * (sigmaMax / sigmaMin) := by
+  let e : Fin (m + n) ≃ Sum (Sum ι ι) κ :=
+    lsScaledAugmentedBranchEquivOfCardEq m n ι κ hcard
+  simpa [e] using
+    lsScaledAugmentedMatrix_kappa2_bounds_of_complete_branch_equiv_and_extreme_branches
+      (alpha := alpha) (sigmaMin := sigmaMin) (sigmaMax := sigmaMax) (A := A)
+      (sigma := sigma) (u := u) (v := v) (w := w)
+      (e := e) iMin iMax hu hv hw hleft hright hnull hAv hATu hATw
+      hsigmaRange hsigmaMin_pos hsigmaMin_eq hsigmaMax_eq halpha
+
 /-- Higham, 2nd ed., Chapter 20, equation (20.20): the weighted perturbation
     block `[DeltaA, theta Delta b]` used in the Frobenius normwise
     least-squares backward error. -/
