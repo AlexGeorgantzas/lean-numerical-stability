@@ -232,6 +232,40 @@ noncomputable def undetAplusOfGramInv {m n : ℕ}
     (AAT_inv : Fin m → Fin m → ℝ) : Fin n → Fin m → ℝ :=
   fun j i => ∑ k : Fin m, A k j * AAT_inv k i
 
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.4):
+    the concrete table `Aᵀ(AAᵀ)⁻¹` is a right inverse of `A` when the
+    supplied inverse candidate is an inverse of `AAᵀ`. -/
+theorem higham21_eq21_4_rect_pseudoinverse_right_inverse_of_gram_inverse
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (AAT AAT_inv : Fin m → Fin m → ℝ)
+    (hAAT : ∀ i j : Fin m, AAT i j = rectGram A i j)
+    (hInv : IsInverse m AAT AAT_inv) :
+    rectMatMul A (undetAplusOfGramInv A AAT_inv) = idMatrix m := by
+  ext i j
+  unfold rectMatMul undetAplusOfGramInv idMatrix
+  calc
+    ∑ k : Fin n, A i k * (∑ r : Fin m, A r k * AAT_inv r j)
+        = ∑ k : Fin n, ∑ r : Fin m, A i k * (A r k * AAT_inv r j) := by
+            apply Finset.sum_congr rfl
+            intro k _
+            rw [Finset.mul_sum]
+    _ = ∑ r : Fin m, ∑ k : Fin n, A i k * (A r k * AAT_inv r j) := by
+            rw [Finset.sum_comm]
+    _ = ∑ r : Fin m, (∑ k : Fin n, A i k * A r k) * AAT_inv r j := by
+            apply Finset.sum_congr rfl
+            intro r _
+            rw [Finset.sum_mul]
+            apply Finset.sum_congr rfl
+            intro k _
+            ring
+    _ = ∑ r : Fin m, AAT i r * AAT_inv r j := by
+            apply Finset.sum_congr rfl
+            intro r _
+            simpa [rectGram] using
+              congrArg (fun t : ℝ => t * AAT_inv r j) (hAAT i r).symm
+    _ = if i = j then 1 else 0 := hInv.2 i j
+
 /-- Applying the concrete table `Aᵀ(AAᵀ)⁻¹` to `b` is the same as first
     solving for `y = (AAᵀ)⁻¹b` and then forming `Aᵀy`. -/
 theorem rectMatMulVec_undetAplusOfGramInv {m n : ℕ}
