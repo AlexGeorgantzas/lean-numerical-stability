@@ -6905,10 +6905,15 @@ theorem lsScaledAugmentedMatrixBranchVector_isOrthogonal_of_complete_equiv
   · have hecd : e c ≠ e d := by
       intro heq
       exact hcd (e.injective heq)
-    simpa [hcd] using
-      lsScaledAugmentedMatrixBranchVector_pairwise_dot_eq_zero_of_component_orthogonal
-        (alpha := alpha) (sigma := sigma) (A := A) (u := u) (v := v) (w := w)
-        hleft hright hnull hAv hATu hATw halpha hsigma (e c) (e d) hecd
+    calc
+      (∑ k : Fin (m + n),
+          lsScaledAugmentedMatrixBranchVector alpha sigma u v w (e c) k *
+            lsScaledAugmentedMatrixBranchVector alpha sigma u v w (e d) k)
+          = 0 :=
+            lsScaledAugmentedMatrixBranchVector_pairwise_dot_eq_zero_of_component_orthogonal
+              (alpha := alpha) (sigma := sigma) (A := A) (u := u) (v := v) (w := w)
+              hleft hright hnull hAv hATu hATw halpha hsigma (e c) (e d) hecd
+      _ = if c = d then 1 else 0 := by simp [hcd]
 
 /-- Complete branch enumeration handoff for Higham, 2nd ed., Chapter 20,
     equations (20.18)-(20.19): once the supplied branch index really enumerates
