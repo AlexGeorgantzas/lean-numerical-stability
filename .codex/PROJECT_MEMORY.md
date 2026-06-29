@@ -9923,3 +9923,13 @@ These compile, but should not be treated as fully derived stability results:
   packages.  The active pivot right-inverse data and the explicit comparison
   loss `r` remain; this still does not close the printed dimension-free
   Eq.13.21/Eq.13.23 source endpoint.
+
+- 2026-06-29 Algorithm 13.3 BDD canonical active-pivot wrappers:
+  added `higham13_algorithm13_3_pivot_right_inverse_of_pivotInv_eq_nonsingInv`
+  plus the `_of_nonsingInv_diag_of_pivotInv_eq_nonsingInv` matrix-`∞` family
+  in `BlockLU.lean`.  These derive the active pivot right-inverse certificates
+  from `det(pivot_k) != 0` and `pivotInv k = nonsingInv r pivot_k`, then reuse
+  the canonical diagonal route for the active-stage, `blockInfNorm`,
+  finite-history, and dimension-aware max-entry/growth-factor packages.  This
+  removes an active right-inverse proof artifact, while the active pivot
+  determinant/equality table and the `2*r` max-entry transfer loss remain open.
