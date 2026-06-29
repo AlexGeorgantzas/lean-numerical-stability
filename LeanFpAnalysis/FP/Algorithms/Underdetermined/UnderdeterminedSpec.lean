@@ -394,6 +394,50 @@ noncomputable def undetAplusOfGramNonsingInv {m n : ℕ}
     (A : Fin m → Fin n → ℝ) : Fin n → Fin m → ℝ :=
   undetAplusOfGramInv A (undetGramNonsingInv A)
 
+/-- The concrete table `Aᵀ AAT_inv` is the rectangular product of `Aᵀ`
+    with the supplied Gram inverse candidate. -/
+theorem undetAplusOfGramInv_eq_rectMatMul_finiteTranspose {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ) :
+    undetAplusOfGramInv A AAT_inv =
+      rectMatMul (finiteTranspose A) AAT_inv := by
+  ext j i
+  rfl
+
+/-- Higham, 2nd ed., Chapter 21, equation (21.4) and Lemma 21.2:
+    operator-bound handoff for the concrete Gram pseudoinverse table.
+    Bounds on `A` and a supplied Gram inverse candidate imply an operator bound
+    for `Aᵀ AAT_inv`.  This is a reusable dependency for the remaining
+    perturbed-pseudoinverse operator estimate. -/
+theorem rectOpNorm2Le_undetAplusOfGramInv_of_bounds {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    {sigma eta : ℝ}
+    (hsigma : 0 ≤ sigma)
+    (hA : rectOpNorm2Le A sigma)
+    (hAAT_inv : rectOpNorm2Le AAT_inv eta) :
+    rectOpNorm2Le (undetAplusOfGramInv A AAT_inv) (sigma * eta) := by
+  rw [undetAplusOfGramInv_eq_rectMatMul_finiteTranspose]
+  exact
+    rectOpNorm2Le_rectMatMul (finiteTranspose A) AAT_inv hsigma
+      (rectOpNorm2Le_finiteTranspose_of_rectOpNorm2Le A hsigma hA)
+      hAAT_inv
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    determinant-facing operator-bound handoff for the concrete perturbed Gram
+    pseudoinverse table `Aᵀ(AAᵀ)⁻¹` using the repository nonsingular inverse
+    candidate.  The remaining source work is to bound the perturbed matrix and
+    the nonsingular inverse candidate. -/
+theorem rectOpNorm2Le_undetAplusOfGramNonsingInv_of_bounds {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    {sigma eta : ℝ}
+    (hsigma : 0 ≤ sigma)
+    (hA : rectOpNorm2Le A sigma)
+    (hGramInv : rectOpNorm2Le (undetGramNonsingInv A) eta) :
+    rectOpNorm2Le (undetAplusOfGramNonsingInv A) (sigma * eta) :=
+  rectOpNorm2Le_undetAplusOfGramInv_of_bounds
+    A (undetGramNonsingInv A) hsigma hA hGramInv
+
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     determinant-facing version of the perturbed transpose/range rewrite.  If
     `B = A + DeltaA2` has nonsingular Gram matrix and `x` is the minimum-norm
