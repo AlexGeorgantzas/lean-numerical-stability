@@ -7109,4 +7109,39 @@ theorem GeneralizedQRFactorization.exists_unique_method_solution_of_fullRowRank_
     h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack,
     h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack⟩
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 exact solvability consequence
+    with no supplied GQR factor input.
+
+    The source rank assumptions construct the exact GQR method data and hence
+    give existence and uniqueness of the equality-constrained least-squares
+    minimizer. -/
+theorem exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    {b : Fin (r + q) → ℝ} {d : Fin p → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃! x : Fin (p + q) → ℝ, IsLSEMinimizer A b B d x := by
+  rcases
+    GeneralizedQRFactorization.exists_unique_method_solution_of_fullRowRank_stackedFullColumnRank
+      (A := A) (B := B) (b := b) (d := d) hB hstack with
+    ⟨_h, _hyz, hx⟩
+  exact hx
+
+/-- Existence-only corollary of
+    `exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank`. -/
+theorem exists_lse_minimizer_of_fullRowRank_stackedFullColumnRank
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    {b : Fin (r + q) → ℝ} {d : Fin p → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ x : Fin (p + q) → ℝ, IsLSEMinimizer A b B d x := by
+  rcases exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank
+      (A := A) (B := B) (b := b) (d := d) hB hstack with
+    ⟨x, hx, _huniq⟩
+  exact ⟨x, hx⟩
+
 end LeanFpAnalysis.FP
