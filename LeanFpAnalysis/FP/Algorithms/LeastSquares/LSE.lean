@@ -479,6 +479,49 @@ theorem finPermMatrix_orthogonal {n : ℕ} (σ : Fin n ≃ Fin n) :
                     exact hij ((Equiv.apply_eq_iff_eq σ).1 h.symm)
                   simp [hij, hsig]
 
+/-- Square GQR conversion step: if a standard QR transform triangularizes the
+    column-reversed square matrix, then reversing the transformed rows produces
+    `gqrReverseSquare R`, the lower-triangular block used in (20.28). -/
+theorem gqrReverseRowsOfQRReversedCols {n : ℕ}
+    (C V R : Fin n → Fin n → ℝ)
+    (hqr : matMulRectLeft (matTranspose V) (rectPermuteCols Fin.revPerm C) = R) :
+    matMulRectLeft (finPermMatrix Fin.revPerm)
+      (matMulRectLeft (matTranspose V) C) = gqrReverseSquare R := by
+  ext i j
+  rw [matMulRectLeft_finPermMatrix]
+  unfold rectPermuteRows gqrReverseSquare
+  have hentry := congrFun (congrFun hqr (Fin.rev i)) (Fin.rev j)
+  unfold matMulRectLeft matTranspose rectPermuteCols at hentry
+  unfold matMulRectLeft matTranspose
+  simpa using hentry
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction step:
+    a QR transform of a column-reversed square block gives an orthogonal
+    left-factor whose transpose sends the original block to a lower-triangular
+    block. -/
+theorem exists_orthogonal_gqrReverseSquare_of_qr_reversed_cols {n : ℕ}
+    (C V R : Fin n → Fin n → ℝ)
+    (hV : IsOrthogonal n V)
+    (hR : IsUpperTriangular n R)
+    (hqr : matMulRectLeft (matTranspose V) (rectPermuteCols Fin.revPerm C) = R) :
+    ∃ U : Fin n → Fin n → ℝ,
+      IsOrthogonal n U ∧
+        matMulRectLeft (matTranspose U) C = gqrReverseSquare R ∧
+          IsLowerTriangular (gqrReverseSquare R) := by
+  let P : Fin n → Fin n → ℝ := finPermMatrix Fin.revPerm
+  let U : Fin n → Fin n → ℝ := matMul n V (matTranspose P)
+  refine ⟨U, ?_, ?_, gqrReverseSquare_lowerTriangular_of_upper hR⟩
+  · exact hV.mul (finPermMatrix_orthogonal Fin.revPerm).transpose
+  · have hUt : matTranspose U = matMul n P (matTranspose V) := by
+      simp [U, P, matTranspose_matMul, matTranspose_involutive]
+    calc
+      matMulRectLeft (matTranspose U) C
+          = matMulRectLeft (matMul n P (matTranspose V)) C := by rw [hUt]
+      _ = matMulRectLeft P (matMulRectLeft (matTranspose V) C) := by
+          rw [matMulRectLeft_assoc]
+      _ = gqrReverseSquare R := by
+          simpa [P] using gqrReverseRowsOfQRReversedCols C V R hqr
+
 private theorem isRightInverse_of_isLeftInverse_square {n : ℕ}
     {T Tinv : Fin n → Fin n → ℝ}
     (hLeft : IsLeftInverse n T Tinv) :
@@ -1478,6 +1521,21 @@ theorem gqrAQWideBlockAssoc_extract_eq {k r q : ℕ}
   · intro j
     simp [Fin.append_right]
 
+/-- Extracting the trailing associated-column wide block commutes with a square
+    left multiplication. -/
+theorem gqrAQWideAssocL_matMulRectLeft {k r q : ℕ}
+    (U : Fin (r + q) → Fin (r + q) → ℝ)
+    (M : Fin (r + q) → Fin ((k + r) + q) → ℝ) :
+    gqrAQWideAssocL (matMulRectLeft U M) =
+      matMulRectLeft U (gqrAQWideAssocL M) := by
+  ext i j
+  unfold gqrAQWideAssocL matMulRectLeft
+  refine Fin.addCases ?_ ?_ j
+  · intro j
+    simp
+  · intro j
+    simp
+
 /-- Vector-action form of the associated-column wide (20.28) block `[X L]`,
     matching the column association used by (20.27). -/
 theorem gqrAQWideBlockAssoc_mulVec {k r q : ℕ}
@@ -1515,6 +1573,34 @@ def GQRAQWideAssocCase.of_trailing_lower {k r q : ℕ}
     GQRAQWideAssocCase k r q M :=
   ⟨gqrAQWideAssocX M, gqrAQWideAssocL M, hL,
     gqrAQWideBlockAssoc_extract_eq M⟩
+
+/-- Wide associated-shape construction from a QR transform of the column-reversed
+    trailing square block.  This removes the opaque associated-shape assumption
+    for the wide branch of Higham's Chapter 20 GQR construction whenever that
+    square QR route is supplied. -/
+theorem GQRAQWideAssocCase.exists_of_trailing_qr_reversed_cols {k r q : ℕ}
+    (M : Fin (r + q) → Fin ((k + r) + q) → ℝ)
+    (V R : Fin (r + q) → Fin (r + q) → ℝ)
+    (hV : IsOrthogonal (r + q) V)
+    (hR : IsUpperTriangular (r + q) R)
+    (hqr : matMulRectLeft (matTranspose V)
+        (rectPermuteCols Fin.revPerm (gqrAQWideAssocL M)) = R) :
+    ∃ U : Fin (r + q) → Fin (r + q) → ℝ,
+      IsOrthogonal (r + q) U ∧
+        Nonempty (GQRAQWideAssocCase k r q
+          (matMulRectLeft (matTranspose U) M)) := by
+  rcases exists_orthogonal_gqrReverseSquare_of_qr_reversed_cols
+      (gqrAQWideAssocL M) V R hV hR hqr with
+    ⟨U, hU, htrail, hLower⟩
+  refine ⟨U, hU, ?_⟩
+  have hExtract :
+      gqrAQWideAssocL (matMulRectLeft (matTranspose U) M) =
+        gqrReverseSquare R := by
+    rw [gqrAQWideAssocL_matMulRectLeft]
+    exact htrail
+  refine ⟨GQRAQWideAssocCase.of_trailing_lower ?_⟩
+  rw [hExtract]
+  exact hLower
 
 /-- Vector-action form of a supplied associated-column wide (20.28) shape. -/
 theorem GQRAQWideAssocCase.mulVec_eq {k r q : ℕ}
