@@ -47,6 +47,22 @@ end-to-end stability rebuild is tagged as
   `Classical.choice`, and `Quot.sound`.  The base comparison, condition
   comparison table, active BDD product/update data, and Theorem 13.6 cited
   implementation estimates remain open.
+- 2026-06-29 base-comparison determinant/full-inverse checkpoint:
+  added
+  `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_base_comparisons_exact_kappa_of_pivotInv_eq_nonsingInv_of_det_ne_zero`,
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_base_comparisons_exact_kappa_of_pivotInv_eq_nonsingInv_of_det_ne_zero`,
+  and
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_base_comparisons_exact_kappa_of_pivotInv_eq_nonsingInv_of_det_ne_zero_of_product_bound_diag_update`.
+  These specialize the base-comparison witness route to the source-facing full
+  inverse `nonsingInv (m*r) (blockMatrixFlatFin Ablk)` and derive the full
+  positive denominator/right-inverse certificate from
+  `det(blockMatrixFlatFin Ablk) ≠ 0`, while keeping the base comparison,
+  condition comparison, active BDD product/update data, and Theorem 13.6 cited
+  implementation estimates open.  Verification used direct `BlockLU.lean`,
+  focused `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet
+  `examples/LibraryLookup.lean` with empty stderr, `git diff --check`, touched
+  Lean marker scan, and focused `#print axioms`; the axiom output was only
+  `propext`, `Classical.choice`, and `Quot.sound`.
 - 2026-06-29 matrix-`∞` source-norm upper endpoint checkpoint:
   `blockInfNorm` is the blockwise maximum of matrix-`∞` operator norms, with
   helpers `block_le_blockInfNorm`, `blockInfNorm_nonneg`,
