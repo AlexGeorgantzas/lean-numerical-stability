@@ -6724,6 +6724,137 @@ theorem lsScaledAugmentedMatrixBranchVector_eigenvector
       lsScaledAugmentedMatrix_leftNull_rescaled_eigenvector
         alpha A (w k) (hATw k)
 
+/-- Pairwise dot-zero statement for the branch-indexed (20.18) family.  The
+    hypotheses are exactly the component orthogonality data for distinct
+    singular-vector branches, the left-nullspace component orthogonality, and
+    the singular-pair/left-null equations needed for the cross-branch
+    eigenvalue-orthogonality cases.  This still does not assert that the index
+    type is complete. -/
+theorem
+    lsScaledAugmentedMatrixBranchVector_pairwise_dot_eq_zero_of_component_orthogonal
+    {m n : ℕ} {ι κ : Type*} {alpha : ℝ} {sigma : ι → ℝ}
+    {A : Fin m → Fin n → ℝ}
+    {u : ι → Fin m → ℝ} {v : ι → Fin n → ℝ}
+    {w : κ → Fin m → ℝ}
+    (hleft : ∀ i j : ι, i ≠ j → (∑ r : Fin m, u i r * u j r) = 0)
+    (hright : ∀ i j : ι, i ≠ j → (∑ c : Fin n, v i c * v j c) = 0)
+    (hnull : ∀ k l : κ, k ≠ l → (∑ r : Fin m, w k r * w l r) = 0)
+    (hAv : ∀ i : ι, rectMatMulVec A (v i) = fun r => sigma i * u i r)
+    (hATu : ∀ i : ι,
+      (fun j : Fin n => ∑ r : Fin m, A r j * u i r) =
+        fun j => sigma i * v i j)
+    (hATw : ∀ k : κ, ∀ j : Fin n, ∑ r : Fin m, A r j * w k r = 0)
+    (halpha : 0 ≤ alpha) (hsigma : ∀ i : ι, sigma i ≠ 0) :
+    ∀ a b : Sum (Sum ι ι) κ, a ≠ b →
+      (∑ r : Fin (m + n),
+        lsScaledAugmentedMatrixBranchVector alpha sigma u v w a r *
+          lsScaledAugmentedMatrixBranchVector alpha sigma u v w b r) = 0 := by
+  classical
+  have hdot_comm :
+      ∀ x y : Fin (m + n) → ℝ,
+        (∑ r : Fin (m + n), x r * y r) =
+          ∑ r : Fin (m + n), y r * x r := by
+    intro x y
+    apply Finset.sum_congr rfl
+    intro r _
+    ring
+  intro a b hab
+  rcases a with ((i | i) | k) <;> rcases b with ((j | j) | l)
+  · have hij : i ≠ j := by
+      intro hij
+      apply hab
+      simp [hij]
+    simpa [lsScaledAugmentedMatrixBranchVector] using
+      lsScaledAugmentedMatrix_singularPair_plus_plus_normalized_rescaled_dot_eq_zero_of_component_orthogonal
+        (alpha := alpha) (sigma := sigma i) (tau := sigma j)
+        (u i) (u j) (v i) (v j) (hleft i j hij) (hright i j hij)
+  · by_cases hij : i = j
+    · subst j
+      simpa [lsScaledAugmentedMatrixBranchVector] using
+        lsScaledAugmentedMatrix_singularPair_plus_minus_normalized_rescaled_dot_eq_zero
+          A (u i) (v i) (hAv i) (hATu i) halpha (hsigma i)
+    · simpa [lsScaledAugmentedMatrixBranchVector] using
+        lsScaledAugmentedMatrix_singularPair_plus_minus_normalized_rescaled_dot_eq_zero_of_component_orthogonal
+          (alpha := alpha) (sigma := sigma i) (tau := sigma j)
+          (u i) (u j) (v i) (v j) (hleft i j hij) (hright i j hij)
+  · simpa [lsScaledAugmentedMatrixBranchVector] using
+      lsScaledAugmentedMatrix_singularPair_plus_leftNull_normalized_rescaled_dot_eq_zero
+        A (u i) (w l) (v i) (hAv i) (hATu i) (hATw l) halpha (hsigma i)
+  · calc
+      (∑ r : Fin (m + n),
+          lsScaledAugmentedMatrixBranchVector alpha sigma u v w
+              (Sum.inl (Sum.inr i)) r *
+            lsScaledAugmentedMatrixBranchVector alpha sigma u v w
+              (Sum.inl (Sum.inl j)) r)
+          =
+            ∑ r : Fin (m + n),
+              lsScaledAugmentedMatrixBranchVector alpha sigma u v w
+                  (Sum.inl (Sum.inl j)) r *
+                lsScaledAugmentedMatrixBranchVector alpha sigma u v w
+                  (Sum.inl (Sum.inr i)) r := by
+              exact hdot_comm _ _
+      _ = 0 := by
+          by_cases hij : i = j
+          · subst j
+            simpa [lsScaledAugmentedMatrixBranchVector] using
+              lsScaledAugmentedMatrix_singularPair_plus_minus_normalized_rescaled_dot_eq_zero
+                A (u i) (v i) (hAv i) (hATu i) halpha (hsigma i)
+          · have hji : j ≠ i := fun hji => hij hji.symm
+            simpa [lsScaledAugmentedMatrixBranchVector] using
+              lsScaledAugmentedMatrix_singularPair_plus_minus_normalized_rescaled_dot_eq_zero_of_component_orthogonal
+                (alpha := alpha) (sigma := sigma j) (tau := sigma i)
+                (u j) (u i) (v j) (v i) (hleft j i hji) (hright j i hji)
+  · have hij : i ≠ j := by
+      intro hij
+      apply hab
+      simp [hij]
+    simpa [lsScaledAugmentedMatrixBranchVector] using
+      lsScaledAugmentedMatrix_singularPair_minus_minus_normalized_rescaled_dot_eq_zero_of_component_orthogonal
+        (alpha := alpha) (sigma := sigma i) (tau := sigma j)
+        (u i) (u j) (v i) (v j) (hleft i j hij) (hright i j hij)
+  · simpa [lsScaledAugmentedMatrixBranchVector] using
+      lsScaledAugmentedMatrix_singularPair_minus_leftNull_normalized_rescaled_dot_eq_zero
+        A (u i) (w l) (v i) (hAv i) (hATu i) (hATw l) halpha (hsigma i)
+  · calc
+      (∑ r : Fin (m + n),
+          lsScaledAugmentedMatrixBranchVector alpha sigma u v w (Sum.inr k) r *
+            lsScaledAugmentedMatrixBranchVector alpha sigma u v w
+              (Sum.inl (Sum.inl j)) r)
+          =
+            ∑ r : Fin (m + n),
+              lsScaledAugmentedMatrixBranchVector alpha sigma u v w
+                  (Sum.inl (Sum.inl j)) r *
+                lsScaledAugmentedMatrixBranchVector alpha sigma u v w (Sum.inr k) r := by
+              exact hdot_comm _ _
+      _ = 0 := by
+          simpa [lsScaledAugmentedMatrixBranchVector] using
+            lsScaledAugmentedMatrix_singularPair_plus_leftNull_normalized_rescaled_dot_eq_zero
+              A (u j) (w k) (v j) (hAv j) (hATu j) (hATw k)
+              halpha (hsigma j)
+  · calc
+      (∑ r : Fin (m + n),
+          lsScaledAugmentedMatrixBranchVector alpha sigma u v w (Sum.inr k) r *
+            lsScaledAugmentedMatrixBranchVector alpha sigma u v w
+              (Sum.inl (Sum.inr j)) r)
+          =
+            ∑ r : Fin (m + n),
+              lsScaledAugmentedMatrixBranchVector alpha sigma u v w
+                  (Sum.inl (Sum.inr j)) r *
+                lsScaledAugmentedMatrixBranchVector alpha sigma u v w (Sum.inr k) r := by
+              exact hdot_comm _ _
+      _ = 0 := by
+          simpa [lsScaledAugmentedMatrixBranchVector] using
+            lsScaledAugmentedMatrix_singularPair_minus_leftNull_normalized_rescaled_dot_eq_zero
+              A (u j) (w k) (v j) (hAv j) (hATu j) (hATw k)
+              halpha (hsigma j)
+  · have hkl : k ≠ l := by
+      intro hkl
+      apply hab
+      simp [hkl]
+    simpa [lsScaledAugmentedMatrixBranchVector] using
+      lsScaledAugmentedMatrix_leftNull_leftNull_rescaled_dot_eq_zero_of_left_orthogonal
+        (m := m) (n := n) (w k) (w l) (hnull k l hkl)
+
 /-- Higham, 2nd ed., Chapter 20, equation (20.20): the weighted perturbation
     block `[DeltaA, theta Delta b]` used in the Frobenius normwise
     least-squares backward error. -/
