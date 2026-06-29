@@ -15710,6 +15710,45 @@ theorem higham9_20_tridiag_lu_perturbation_model_of_LUBackwardError_le
     exact le_trans (hLU.backward_bound i j)
       (mul_le_mul_of_nonneg_right hε_le_u hsum_nonneg)
 
+/-- **Equation (9.20)** from a dense Doolittle loop certificate.
+
+The literal square Algorithm 9.2 dense-loop certificate supplies the
+componentwise LU backward-error certificate used by the equation-(9.20)
+perturbation model, provided the caller weakens `γ_n` to the printed source
+coefficient `u`. -/
+theorem higham9_20_tridiag_lu_perturbation_model_of_DoolittleDenseLoopCertificate
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (u : ℝ) (hn : gammaValid fp n)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hC : higham9_2_DoolittleDenseLoopCertificate n A L_hat U_hat fp) :
+    ∃ DeltaA_LU : Fin n → Fin n → ℝ,
+      higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+        DeltaA_LU u :=
+  higham9_20_tridiag_lu_perturbation_model_of_LUBackwardError_le
+    n A L_hat U_hat (gamma fp n) u hγ_le_u
+    (DoolittleDenseLoopCertificate.to_LUBackwardError hC hn)
+
+/-- **Equation (9.20)** from an absolute-budget dense Doolittle certificate.
+
+Absolute entry residual budgets for the square Algorithm 9.2 dense loop first
+compress to a componentwise LU backward-error certificate and then supply the
+equation-(9.20) perturbation model. -/
+theorem higham9_20_tridiag_lu_perturbation_model_of_DoolittleDenseLoopAbsBudgetCertificate
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (BU BL : Fin n → Fin n → ℝ)
+    (u : ℝ) (hn : gammaValid fp n)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hC : higham9_2_DoolittleDenseLoopAbsBudgetCertificate n
+      A L_hat U_hat fp BU BL) :
+    ∃ DeltaA_LU : Fin n → Fin n → ℝ,
+      higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+        DeltaA_LU u :=
+  higham9_20_tridiag_lu_perturbation_model_of_LUBackwardError_le
+    n A L_hat U_hat (gamma fp n) u hγ_le_u
+    (DoolittleDenseLoopAbsBudgetCertificate.to_LUBackwardError hC hn)
+
 /-- **Equation (9.21)** for the actual triangular solves.
 
 If the uniform triangular-solve coefficient `γ_n` is bounded by the source
@@ -16297,6 +16336,171 @@ theorem higham9_14_source_h_bound_of_LUFactSpec_fl_triangular_solves_gamma_le
   higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_gamma_le
     fp n A L_hat U_hat b 0 u hu hu_lt_one hn
     (LUFactSpec.to_LUBackwardError_zero hLU) hu hγ_le_u hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, dense Doolittle certificate plus actual triangular solves.
+
+This is the source-facing `f(u)` specialization of
+`higham9_14_source_f_bound_of_LUBackwardError_fl_triangular_solves_gamma_le`
+for a literal Algorithm 9.2 square dense-loop certificate.  The coefficient
+weakening `γ_n <= u` is explicit, matching the source statement's printed
+unit-roundoff coefficient. -/
+theorem higham9_14_source_f_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (c u : ℝ) (hu : 0 ≤ u)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_DoolittleDenseLoopCertificate n A L_hat U_hat fp)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ c * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ c * higham9_14_f u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_f_bound_of_LUBackwardError_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b c (gamma fp n) u hu hn
+    (DoolittleDenseLoopCertificate.to_LUBackwardError hC hn)
+    hγ_le_u hγ_le_u hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, absolute-budget Doolittle certificate plus actual
+triangular solves.
+
+This exposes the lower absolute-budget Algorithm 9.2 certificate layer at the
+same source-facing `f(u)` tridiagonal-solve bound. -/
+theorem higham9_14_source_f_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (BU BL : Fin n → Fin n → ℝ)
+    (c u : ℝ) (hu : 0 ≤ u)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_DoolittleDenseLoopAbsBudgetCertificate n
+      A L_hat U_hat fp BU BL)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ c * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ c * higham9_14_f u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_f_bound_of_LUBackwardError_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b c (gamma fp n) u hu hn
+    (DoolittleDenseLoopAbsBudgetCertificate.to_LUBackwardError hC hn)
+    hγ_le_u hγ_le_u hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, dense Doolittle certificate with the final `h(u)` bound.
+
+This is the exact-growth `|Lhat||Uhat| <= |A|` source-model specialization
+for a literal Algorithm 9.2 square dense-loop certificate and the actual
+`fl_forwardSub`/`fl_backSub` triangular solves. -/
+theorem higham9_14_source_h_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u) (hu_lt_one : u < 1)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_DoolittleDenseLoopCertificate n A L_hat U_hat fp)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_h u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b (gamma fp n) u hu hu_lt_one hn
+    (DoolittleDenseLoopCertificate.to_LUBackwardError hC hn)
+    hγ_le_u hγ_le_u hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, absolute-budget Doolittle certificate with the final
+`h(u)` bound.
+
+This is the exact-growth `h(u)` source-model specialization for an absolute
+budget square dense-loop certificate and the actual triangular solves. -/
+theorem higham9_14_source_h_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (BU BL : Fin n → Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u) (hu_lt_one : u < 1)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_DoolittleDenseLoopAbsBudgetCertificate n
+      A L_hat U_hat fp BU BL)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_h u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b (gamma fp n) u hu hu_lt_one hn
+    (DoolittleDenseLoopAbsBudgetCertificate.to_LUBackwardError hC hn)
+    hγ_le_u hγ_le_u hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, dense Doolittle certificate with a constant-growth
+final `h(u)` bound.
+
+This variant keeps the structural comparison
+`|Lhat||Uhat| <= c |A|`, needed for tridiagonal subclasses with a visible
+constant such as `3`. -/
+theorem higham9_14_source_h_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_const_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (c u : ℝ) (hc : 0 ≤ c) (hu : 0 ≤ u) (hu_lt_one : u < 1)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_DoolittleDenseLoopCertificate n A L_hat U_hat fp)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ c * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ c * higham9_14_h u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_const_gamma_le
+    fp n A L_hat U_hat b c (gamma fp n) u hc hu hu_lt_one hn
+    (DoolittleDenseLoopCertificate.to_LUBackwardError hC hn)
+    hγ_le_u hγ_le_u hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, absolute-budget Doolittle certificate with a
+constant-growth final `h(u)` bound.
+
+This exposes the lower absolute-budget dense-loop layer for tridiagonal
+classes whose structural growth comparison has an explicit constant. -/
+theorem higham9_14_source_h_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_const_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (BU BL : Fin n → Fin n → ℝ)
+    (c u : ℝ) (hc : 0 ≤ c) (hu : 0 ≤ u) (hu_lt_one : u < 1)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_DoolittleDenseLoopAbsBudgetCertificate n
+      A L_hat U_hat fp BU BL)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ c * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ c * higham9_14_h u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_const_gamma_le
+    fp n A L_hat U_hat b c (gamma fp n) u hc hu hu_lt_one hn
+    (DoolittleDenseLoopAbsBudgetCertificate.to_LUBackwardError hC hn)
+    hγ_le_u hγ_le_u hU_diag hAbsLU_le
 
 /-- **Theorem 9.14**, column-dominant builder source-model `f(u)` bound.
 
