@@ -13279,6 +13279,9 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_25_implicitRowScalingPivotRule
 #check higham9_25_exists_implicitRowScalingPivotRule
 #check higham_problem9_14_RecursivePairwiseLUFactSpec_same_as_PrePivotedGEPP
+#check higham_problem9_14_PrePivotedGEPP_exists_RecursiveFirstMethodLUFactSpec_same_as_GEPP
+#check higham_problem9_14_PrePivotedGEPP_exists_RecursivePairwiseLUFactSpec_same_as_GEPP
+#check higham_problem9_14_PrePivotedGEPP_exists_firstMethod_pairwise_same_LU
 
 -- Higham Chapter 10 source-facing wrappers.
 #check higham10_1_cholesky_existence
