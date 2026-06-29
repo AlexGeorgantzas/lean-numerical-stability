@@ -411,6 +411,74 @@ theorem gqrReverseSquare_diag_ne_zero_iff {n : ℕ}
   · intro h i
     simpa [gqrReverseSquare] using h (Fin.rev i)
 
+/-- Permutation matrix for a finite index equivalence.  This is the orthogonal
+    left-factor used to make the row permutations in the Chapter 20 GQR block
+    constructions explicit. -/
+def finPermMatrix {n : ℕ} (σ : Fin n ≃ Fin n) : Fin n → Fin n → ℝ :=
+  fun i j => if σ i = j then 1 else 0
+
+/-- Left multiplication by a permutation matrix permutes the rows of a
+    rectangular matrix. -/
+theorem matMulRectLeft_finPermMatrix {m n : ℕ}
+    (σ : Fin m ≃ Fin m) (A : Fin m → Fin n → ℝ) :
+    matMulRectLeft (finPermMatrix σ) A = rectPermuteRows σ A := by
+  ext i j
+  unfold matMulRectLeft finPermMatrix rectPermuteRows
+  simp
+
+/-- A finite permutation matrix is orthogonal. -/
+theorem finPermMatrix_orthogonal {n : ℕ} (σ : Fin n ≃ Fin n) :
+    IsOrthogonal n (finPermMatrix σ) := by
+  constructor
+  · intro i j
+    unfold finPermMatrix matTranspose
+    calc
+      (∑ x : Fin n,
+          (if σ x = i then (1 : ℝ) else 0) *
+            if σ x = j then (1 : ℝ) else 0)
+          = ∑ x : Fin n,
+              if σ x = i then if σ x = j then (1 : ℝ) else 0 else 0 := by
+              apply Finset.sum_congr rfl
+              intro x _
+              by_cases hxi : σ x = i <;> simp [hxi]
+      _ = if i = j then 1 else 0 := by
+          calc
+            (∑ x : Fin n,
+                if σ x = i then if σ x = j then (1 : ℝ) else 0 else 0)
+                = ∑ y : Fin n,
+                    if y = i then if y = j then (1 : ℝ) else 0 else 0 := by
+                    exact Equiv.sum_comp σ
+                      (fun y : Fin n =>
+                        if y = i then if y = j then (1 : ℝ) else 0 else 0)
+            _ = if i = j then 1 else 0 := by
+                by_cases hij : i = j <;> simp [hij]
+  · intro i j
+    unfold finPermMatrix matTranspose
+    calc
+      (∑ x : Fin n,
+          (if σ i = x then (1 : ℝ) else 0) *
+            if σ j = x then (1 : ℝ) else 0)
+          = ∑ x : Fin n,
+              if σ i = x then if σ j = x then (1 : ℝ) else 0 else 0 := by
+              apply Finset.sum_congr rfl
+              intro x _
+              by_cases hxi : σ i = x <;> simp [hxi]
+      _ = if i = j then 1 else 0 := by
+          calc
+            (∑ x : Fin n,
+                if σ i = x then if σ j = x then (1 : ℝ) else 0 else 0)
+                = (if σ j = σ i then (1 : ℝ) else 0) := by
+                    rw [Finset.sum_ite_eq]
+                    simp
+            _ = if i = j then 1 else 0 := by
+                by_cases hij : i = j
+                · subst j
+                  simp
+                · have hsig : σ j ≠ σ i := by
+                    intro h
+                    exact hij ((Equiv.apply_eq_iff_eq σ).1 h.symm)
+                  simp [hij, hsig]
+
 private theorem isRightInverse_of_isLeftInverse_square {n : ℕ}
     {T Tinv : Fin n → Fin n → ℝ}
     (hLeft : IsLeftInverse n T Tinv) :
