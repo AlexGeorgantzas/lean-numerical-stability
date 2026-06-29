@@ -1888,6 +1888,104 @@ theorem GeneralizedQRFactorization.exists_of_wide_qr_assoc_case {k r q : ℕ}
   exact GeneralizedQRFactorization.exists_of_wide_qr_shapes
     Q U R hCase.X hCase.L hQ hU hqrB hR hCase.aq_eq hCase.lowerL
 
+/-- Tall-case construction wrapper for Higham, 2nd ed., Theorem 20.9:
+    exact MGS data for `Bᵀ` supplies the `B Q = [S 0]` side, so the only
+    remaining supplied construction is an associated-row shape for `Uᵀ A Q`
+    for the completed orthogonal `Q`. -/
+theorem GeneralizedQRFactorization.exists_of_tall_mgs_constraint_and_assoc_shape
+    {k p q : ℕ}
+    {A : Fin ((k + p) + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (hdiag : ∀ j : Fin p,
+      gsColumnNorm2
+        (modifiedGramSchmidtVectors
+          (fun col : Fin (p + q) => fun row : Fin p => B row col) j.val j) ≠ 0)
+    (hAQ : ∀ Q : Fin (p + q) → Fin (p + q) → ℝ,
+      IsOrthogonal (p + q) Q →
+        ∃ U : Fin ((k + p) + q) → Fin ((k + p) + q) → ℝ,
+          IsOrthogonal ((k + p) + q) U ∧
+            Nonempty (
+            GQRAQTallAssocCase k p q
+              (matMulRectLeft (matTranspose U)
+                (matMulRect ((k + p) + q) (p + q) (p + q) A Q)))) :
+    Nonempty (GeneralizedQRFactorization (k + p) p q A B) := by
+  rcases exists_gqr_constraint_block_of_mgs B hdiag with
+    ⟨Q, S, hQorth, hSlower, hBQ⟩
+  rcases hAQ Q hQorth with ⟨U, hUorth, hCaseNonempty⟩
+  rcases hCaseNonempty with ⟨hCase⟩
+  let L11 := gqrAQTallL11FromEq20_28 (k := k) hCase.L
+  let L21 := gqrAQTallL21FromEq20_28 hCase.L
+  let L22 := gqrAQTallL22FromEq20_28 hCase.L
+  have hAQBlock :
+      gqrAQBlock L11 L21 L22 =
+        gqrAQTallBlockAssoc (k := k) hCase.L := by
+    simpa [L11, L21, L22] using
+      gqrAQBlock_eq_tallBlockAssoc_of_eq20_28 (k := k)
+        hCase.L hCase.lowerL
+  refine ⟨
+    { Q := Q
+      U := U
+      L11 := L11
+      L21 := L21
+      L22 := L22
+      S := S
+      orthQ := hQorth
+      orthU := hUorth
+      aq_eq := ?_
+      bq_eq := hBQ
+      lowerL22 := gqrAQTallL22FromEq20_28_lowerTriangular hCase.lowerL
+      lowerS := hSlower }⟩
+  rw [hCase.aq_eq, ← hAQBlock]
+
+/-- Wide-case construction wrapper for Higham, 2nd ed., Theorem 20.9:
+    exact MGS data for `Bᵀ` supplies the `B Q = [S 0]` side, so the only
+    remaining supplied construction is an associated-column shape for `Uᵀ A Q`
+    for the completed orthogonal `Q`. -/
+theorem GeneralizedQRFactorization.exists_of_wide_mgs_constraint_and_assoc_shape
+    {k r q : ℕ}
+    {A : Fin (r + q) → Fin ((k + r) + q) → ℝ}
+    {B : Fin (k + r) → Fin ((k + r) + q) → ℝ}
+    (hdiag : ∀ j : Fin (k + r),
+      gsColumnNorm2
+        (modifiedGramSchmidtVectors
+          (fun col : Fin ((k + r) + q) => fun row : Fin (k + r) => B row col)
+          j.val j) ≠ 0)
+    (hAQ : ∀ Q : Fin ((k + r) + q) → Fin ((k + r) + q) → ℝ,
+      IsOrthogonal ((k + r) + q) Q →
+        ∃ U : Fin (r + q) → Fin (r + q) → ℝ,
+          IsOrthogonal (r + q) U ∧
+            Nonempty (
+            GQRAQWideAssocCase k r q
+              (matMulRectLeft (matTranspose U)
+                (matMulRect (r + q) ((k + r) + q) ((k + r) + q) A Q)))) :
+    Nonempty (GeneralizedQRFactorization r (k + r) q A B) := by
+  rcases exists_gqr_constraint_block_of_mgs B hdiag with
+    ⟨Q, S, hQorth, hSlower, hBQ⟩
+  rcases hAQ Q hQorth with ⟨U, hUorth, hCaseNonempty⟩
+  rcases hCaseNonempty with ⟨hCase⟩
+  let L11 := gqrAQWideL11FromEq20_28 hCase.X hCase.L
+  let L21 := gqrAQWideL21FromEq20_28 hCase.X hCase.L
+  let L22 := gqrAQWideL22FromEq20_28 hCase.L
+  have hAQBlock :
+      gqrAQBlock L11 L21 L22 =
+        gqrAQWideBlockAssoc hCase.X hCase.L := by
+    simpa [L11, L21, L22] using
+      gqrAQBlock_eq_wideBlockAssoc_of_eq20_28 hCase.X hCase.L hCase.lowerL
+  refine ⟨
+    { Q := Q
+      U := U
+      L11 := L11
+      L21 := L21
+      L22 := L22
+      S := S
+      orthQ := hQorth
+      orthU := hUorth
+      aq_eq := ?_
+      bq_eq := hBQ
+      lowerL22 := gqrAQWideL22FromEq20_28_lowerTriangular hCase.lowerL
+      lowerS := hSlower }⟩
+  rw [hCase.aq_eq, ← hAQBlock]
+
 /-- Higham, 2nd ed., Chapter 20, equations (20.27)-(20.28), tall case:
     a supplied `GeneralizedQRFactorization` connects the reconstructed
     `[0; L]` row action to the actual transformed matrix `U^T A Q`.
