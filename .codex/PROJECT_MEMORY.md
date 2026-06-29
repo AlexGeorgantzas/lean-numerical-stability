@@ -10082,3 +10082,14 @@ These compile, but should not be treated as fully derived stability results:
   final one-block pivot datum instead of repeating the whole active pivot table;
   the per-tail source lower-budget/condition comparisons, structured
   product/update source data, and Eq.13.23 `rho <= 2` theorem remain open.
+
+- 2026-06-29 Eq.13.22/Eq.13.23 source-chain canonical final pivots: added
+  `Higham13Eq1322LowerComparisonSourceChain.pivot_right_inverse_of_final_nonsingInv`
+  and
+  `Higham13Eq1322InverseRatioSourceChain.pivot_right_inverse_of_final_nonsingInv`.
+  These specialize the all-pivot wrappers to the common final-stage source data:
+  determinant nonsingularity of the terminal Schur block and
+  `pivotInv m = nonsingInv r` of that block.  They derive the terminal
+  right-inverse proof with `isInverse_nonsingInv_of_det_ne_zero` and reuse the
+  recursive source-chain nonterminal extractor, so downstream APIs can consume a
+  canonical final pivot without a caller-built all-pivot certificate.
