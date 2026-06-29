@@ -209,6 +209,21 @@ theorem higham21_eq21_4_rect_transpose_solves {m n : ℕ}
     rectMatMulVec A (rectTransposeMulVec A y) = b :=
   rectTransposeMulVec_solves_of_gram_normal_eq A AAT b y hAAT hy
 
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.4):
+    source-facing normal-equation minimum-norm wrapper.  If `y` solves
+    `(A Aᵀ)y = b`, then the formed vector `Aᵀy` is an exact minimum
+    2-norm solution of `A x = b`.  The explicit inverse/pseudoinverse
+    construction remains a separate selected target. -/
+theorem higham21_eq21_4_rect_transpose_min_norm_of_gram_normal_eq {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (AAT : Fin m → Fin m → ℝ)
+    (b y : Fin m → ℝ)
+    (hAAT : ∀ i j : Fin m, AAT i j = rectGram A i j)
+    (hy : ∀ i : Fin m, matMulVec m AAT y i = b i) :
+    RectMinNormSolution m n A b (rectTransposeMulVec A y) :=
+  higham21_eq21_4_rect_transpose_min_norm_of_solves A b y
+    (rectTransposeMulVec_solves_of_gram_normal_eq A AAT b y hAAT hy)
+
 /-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.5):
     source-facing wrapper for the SNE formation step.  Once the seminormal
     equation matrix is identified with `A Aᵀ`, solving that Gram system and
