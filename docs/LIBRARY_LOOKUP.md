@@ -2247,6 +2247,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_normalized_Gtilde_split_componentwise_majorants`
 - `higham9_15_positive_subeigen_scale_lt_one_of_spectralRadius_lt_one`
 - `higham9_15_exists_matMulVec_lt_of_positive_spectralRadius_lt_one`
+- `higham9_15_irreducible_nonneg_subeigen_spectralRadius_ge`
 - `higham9_15_irreducible_nonneg_subeigen_scale_lt_one_of_spectralRadius_lt_one`
 - `higham9_15_exists_matMulVec_lt_of_irreducible_nonzero_nonneg_spectralRadius_lt_one`
 - `higham9_15_normalized_Gtilde_split_frobNorm_step_bound`

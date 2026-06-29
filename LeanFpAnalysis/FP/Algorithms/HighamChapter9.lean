@@ -20662,6 +20662,31 @@ theorem higham9_15_exists_matMulVec_lt_of_positive_spectralRadius_lt_one
       hn C 1 x hC_nonneg (by norm_num) hx_pos hsub hrho
   exact (lt_irrefl (1 : ℝ)) hone_lt
 
+/-- **Theorem 9.15 spectral-majorant support**.  Irreducibility upgrades a
+nonzero nonnegative right subeigenvector to a positive one, so the Chapter 7
+Collatz/Gelfand lower bound applies to nonzero nonnegative data. -/
+theorem higham9_15_irreducible_nonneg_subeigen_spectralRadius_ge
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (eta : ℝ) (x : Fin n → ℝ)
+    (hC_irred :
+      Matrix.IsIrreducible (Matrix.of C : Matrix (Fin n) (Fin n) ℝ))
+    (heta_nonneg : 0 ≤ eta)
+    (hx_nonneg : ∀ i : Fin n, 0 ≤ x i)
+    (hx_ne : x ≠ 0)
+    (hsub : ∀ i : Fin n, eta * x i ≤ matMulVec n C x i) :
+    ENNReal.ofReal eta ≤
+      spectralRadius ℂ
+        (Matrix.toLin'
+          (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) := by
+  have hC_nonneg : ∀ i j : Fin n, 0 ≤ C i j := by
+    intro i j
+    simpa [Matrix.of] using hC_irred.1 i j
+  obtain ⟨y, hy_pos, hy_sub⟩ :=
+    ch7_exists_positive_subeigenvector_of_irreducible_nonzero_nonneg_subeigen
+      C eta x hC_irred hx_nonneg hx_ne hsub
+  exact ch7_toLin_spectralRadius_ge_of_positive_right_subeigenvector
+    hn C eta y hC_nonneg heta_nonneg hy_pos hy_sub
+
 /-- **Theorem 9.15 spectral-majorant support**.  In the irreducible
 nonnegative case, Chapter 7's Perron-style positivity upgrade turns a nonzero
 nonnegative right subeigenvector into a positive one; the positive
@@ -20680,14 +20705,15 @@ theorem higham9_15_irreducible_nonneg_subeigen_scale_lt_one_of_spectralRadius_lt
           (Matrix.toLin'
             (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) < 1) :
     eta < 1 := by
-  have hC_nonneg : ∀ i j : Fin n, 0 ≤ C i j := by
-    intro i j
-    simpa [Matrix.of] using hC_irred.1 i j
-  obtain ⟨y, hy_pos, hy_sub⟩ :=
-    ch7_exists_positive_subeigenvector_of_irreducible_nonzero_nonneg_subeigen
-      C eta x hC_irred hx_nonneg hx_ne hsub
-  exact higham9_15_positive_subeigen_scale_lt_one_of_spectralRadius_lt_one
-    hn C eta y hC_nonneg heta_nonneg hy_pos hy_sub hrho
+  have hle :
+      ENNReal.ofReal eta ≤
+        spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) :=
+    higham9_15_irreducible_nonneg_subeigen_spectralRadius_ge
+      hn C eta x hC_irred heta_nonneg hx_nonneg hx_ne hsub
+  have heta_enn_lt : ENNReal.ofReal eta < 1 := lt_of_le_of_lt hle hrho
+  exact ENNReal.ofReal_lt_one.mp heta_enn_lt
 
 /-- **Theorem 9.15 spectral-majorant support**.  If an irreducible
 nonnegative majorant matrix has spectral radius below one, then every nonzero
