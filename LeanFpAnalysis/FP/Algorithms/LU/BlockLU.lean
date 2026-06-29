@@ -350,9 +350,12 @@
     higham13_algorithm13_3_matrixStages_product_eq_of_pivot_right_inverse,
     higham13_algorithm13_3_matrixStages_blockLUFactSpec_of_pivotInv_eq_invOf,
     higham13_algorithm13_3_matrixStages_product_eq_of_pivotInv_eq_invOf,
+    higham13_algorithm13_3_matrixStages_blockLUFactSpec_of_pivotInv_eq_nonsingInv,
+    higham13_algorithm13_3_matrixStages_product_eq_of_pivotInv_eq_nonsingInv,
     higham13_algorithm13_3_matrixStages_exists_blockLUFact_product_bound_of_pivot_left_inverse,
     higham13_algorithm13_3_matrixStages_exists_blockLUFact_product_bound_of_pivot_right_inverse,
     higham13_algorithm13_3_matrixStages_exists_blockLUFact_product_bound_of_pivotInv_eq_invOf,
+    higham13_algorithm13_3_matrixStages_exists_blockLUFact_product_bound_of_pivotInv_eq_nonsingInv,
     higham13_algorithm13_3_matrixStageHistoryBound,
     higham13_algorithm13_3_matrixStageHistoryInfBound,
     higham13_algorithm13_3_matrixStageHistoryBound_tail_le,
@@ -16939,6 +16942,32 @@ theorem higham13_algorithm13_3_matrixStages_blockLUFactSpec_of_pivotInv_eq_invOf
       (higham13_algorithm13_3_pivot_right_inverse_of_pivotInv_eq_invOf
         A pivotInv hInv hPivotInv)
 
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
+    `BlockLUFactSpec` for the assembled matrix-product stage factors when the
+    supplied pivot inverse is the repository canonical nonsingular inverse of
+    every active pivot. -/
+theorem higham13_algorithm13_3_matrixStages_blockLUFactSpec_of_pivotInv_eq_nonsingInv
+    {m r : ℕ}
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hPivotDet : ∀ k : ℕ, ∀ hk : k < m,
+      Matrix.det
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+          ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0)
+    (hPivotInv : ∀ k : ℕ, ∀ hk : k < m,
+      pivotInv k =
+        nonsingInv r
+          (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩)) :
+    BlockLUFactSpec m r A
+      (higham13_algorithm13_3_lowerFromMatrixStages A pivotInv)
+      (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) := by
+  exact
+    higham13_algorithm13_3_matrixStages_blockLUFactSpec_of_pivot_right_inverse
+      A pivotInv
+      (higham13_algorithm13_3_pivot_right_inverse_of_pivotInv_eq_nonsingInv
+        A pivotInv hPivotDet hPivotInv)
+
 /-- Product-entry form of the Algorithm 13.3 matrix-stage reconstruction from
     exact pivot right-inverse certificates. -/
 theorem higham13_algorithm13_3_matrixStages_product_eq_of_pivot_right_inverse
@@ -16984,6 +17013,31 @@ theorem higham13_algorithm13_3_matrixStages_product_eq_of_pivotInv_eq_invOf
   exact
     (higham13_algorithm13_3_matrixStages_blockLUFactSpec_of_pivotInv_eq_invOf
       A pivotInv hInv hPivotInv).product_eq
+
+/-- Product-entry form of the Algorithm 13.3 matrix-stage reconstruction when
+    the supplied pivot inverse is the repository canonical nonsingular inverse
+    of every active pivot. -/
+theorem higham13_algorithm13_3_matrixStages_product_eq_of_pivotInv_eq_nonsingInv
+    {m r : ℕ}
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hPivotDet : ∀ k : ℕ, ∀ hk : k < m,
+      Matrix.det
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+          ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0)
+    (hPivotInv : ∀ k : ℕ, ∀ hk : k < m,
+      pivotInv k =
+        nonsingInv r
+          (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩)) :
+    ∀ (i j : Fin m) (s t : Fin r),
+      ∑ k : Fin m, ∑ l : Fin r,
+        higham13_algorithm13_3_lowerFromMatrixStages A pivotInv i k s l *
+          higham13_algorithm13_3_upperFromMatrixStages A pivotInv k j l t =
+        A i j s t := by
+  exact
+    (higham13_algorithm13_3_matrixStages_blockLUFactSpec_of_pivotInv_eq_nonsingInv
+      A pivotInv hPivotDet hPivotInv).product_eq
 
 /-- The assembled Algorithm 13.3 matrix-stage lower factor is bounded once each
     stage multiplier is bounded and the common bound also covers the identity
@@ -17218,6 +17272,42 @@ theorem
       hm hr A pivotInv
       (higham13_algorithm13_3_matrixStages_product_eq_of_pivotInv_eq_invOf
         A pivotInv hInv hPivotInv)
+      hId hLower hUpper
+
+/-- Product-bound witness theorem for the assembled matrix-stage Algorithm 13.3
+    factors when each supplied pivot inverse is the repository canonical
+    nonsingular inverse of the active pivot. -/
+theorem
+    higham13_algorithm13_3_matrixStages_exists_blockLUFact_product_bound_of_pivotInv_eq_nonsingInv
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    {C_L C_U : ℝ}
+    (hPivotDet : ∀ k : ℕ, ∀ hk : k < m,
+      Matrix.det
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+          ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0)
+    (hPivotInv : ∀ k : ℕ, ∀ hk : k < m,
+      pivotInv k =
+        nonsingInv r
+          (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩))
+    (hId : 1 ≤ C_L)
+    (hLower : ∀ i j : Fin m, j.val < i.val →
+      maxEntryNorm hr
+          (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv j.val i j *
+            pivotInv j.val) ≤ C_L)
+    (hUpper :
+      blockMaxNorm hm hr (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) ≤
+        C_U) :
+    ∃ L U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ,
+      BlockLUFactSpec m r A L U ∧
+        blockMaxNorm hm hr L * blockMaxNorm hm hr U ≤ C_L * C_U := by
+  exact
+    higham13_algorithm13_3_matrixStages_exists_blockLUFact_product_bound
+      hm hr A pivotInv
+      (higham13_algorithm13_3_matrixStages_product_eq_of_pivotInv_eq_nonsingInv
+        A pivotInv hPivotDet hPivotInv)
       hId hLower hUpper
 
 /-- Matrix-product stage-history bound for the source-faithful Algorithm 13.3
