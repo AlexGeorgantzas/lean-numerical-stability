@@ -24,6 +24,14 @@ def gsColumn {m n : Nat} (A : Fin m -> Fin n -> Real) (j : Fin n) :
 def gsDot {m : Nat} (x y : Fin m -> Real) : Real :=
   Finset.univ.sum fun i : Fin m => x i * y i
 
+/-- The Gram-Schmidt dot product is symmetric. -/
+theorem gsDot_comm {m : Nat} (x y : Fin m -> Real) :
+    gsDot x y = gsDot y x := by
+  unfold gsDot
+  apply Finset.sum_congr rfl
+  intro i _
+  ring
+
 /-- Scale a column vector. -/
 def gsScale {m : Nat} (alpha : Real) (x : Fin m -> Real) : Fin m -> Real :=
   fun i => alpha * x i
@@ -2870,6 +2878,13 @@ def rectangularGram {m n : Nat} (Q : Fin m -> Fin n -> Real) :
     Fin n -> Fin n -> Real :=
   matMulRect n m n (finiteTranspose Q) Q
 
+/-- A rectangular Gram entry is the Gram-Schmidt dot product of the
+corresponding columns. -/
+theorem rectangularGram_eq_gsDot {m n : Nat}
+    (Q : Fin m -> Fin n -> Real) (i j : Fin n) :
+    rectangularGram Q i j = gsDot (gsColumn Q i) (gsColumn Q j) := by
+  rfl
+
 /-- Expanding `||Q*x||_2^2` through the rectangular Gram matrix `Q^T Q`. -/
 theorem rectangularGram_quadratic_eq_vecNorm2Sq {m n : Nat}
     (Q : Fin m -> Fin n -> Real) (x : Fin n -> Real) :
@@ -3187,6 +3202,54 @@ surface to avoid collisions with the RandNLA basis predicate. -/
 def GramSchmidtOrthonormalColumns {m n : Nat}
     (Q : Fin m -> Fin n -> Real) : Prop :=
   forall i j : Fin n, rectangularGram Q i j = idMatrix n i j
+
+/-- Exact MGS has orthonormal columns whenever all stage normalizers are
+nonzero. -/
+theorem modifiedGramSchmidtQ_orthonormal_columns {m n : Nat}
+    (A : Fin m -> Fin n -> Real)
+    (hdiag :
+      forall k : Fin n,
+        Ne (gsColumnNorm2 (modifiedGramSchmidtVectors A k.val k)) 0) :
+    GramSchmidtOrthonormalColumns (modifiedGramSchmidtQ A) := by
+  intro i j
+  rw [rectangularGram_eq_gsDot]
+  by_cases hij : i = j
+  · subst j
+    have hnorm := modifiedGramSchmidtQ_column_norm_sq A i (hdiag i)
+    calc
+      gsDot (gsColumn (modifiedGramSchmidtQ A) i)
+          (gsColumn (modifiedGramSchmidtQ A) i)
+          = finiteVecNorm2Sq (gsColumn (modifiedGramSchmidtQ A) i) :=
+            gsDot_self_eq_finiteVecNorm2Sq _
+      _ = 1 := hnorm
+      _ = idMatrix n i i := by simp [idMatrix]
+  · by_cases hlt : i.val < j.val
+    · have hijFin : i < j := by
+        simpa using hlt
+      have hzero :=
+        modifiedGramSchmidtQ_dot_eq_zero_of_lt A hdiag hijFin
+      calc
+        gsDot (gsColumn (modifiedGramSchmidtQ A) i)
+            (gsColumn (modifiedGramSchmidtQ A) j)
+            = 0 := hzero
+        _ = idMatrix n i j := by simp [idMatrix, hij]
+    · have hle : j.val <= i.val := Nat.le_of_not_gt hlt
+      have hne_val : j.val ≠ i.val := by
+        intro hval
+        exact hij (Fin.ext hval.symm)
+      have hjlt : j.val < i.val := lt_of_le_of_ne hle hne_val
+      have hjiFin : j < i := by
+        simpa using hjlt
+      have hzero :=
+        modifiedGramSchmidtQ_dot_eq_zero_of_lt A hdiag hjiFin
+      calc
+        gsDot (gsColumn (modifiedGramSchmidtQ A) i)
+            (gsColumn (modifiedGramSchmidtQ A) j)
+            = gsDot (gsColumn (modifiedGramSchmidtQ A) j)
+                (gsColumn (modifiedGramSchmidtQ A) i) :=
+              gsDot_comm _ _
+        _ = 0 := hzero
+        _ = idMatrix n i j := by simp [idMatrix, hij]
 
 /-- Orthonormal columns give a unit rectangular operator-2 certificate. -/
 theorem GramSchmidtOrthonormalColumns.rectOpNorm2Le_one {m n : Nat}
