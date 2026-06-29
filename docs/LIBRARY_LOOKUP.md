@@ -1947,6 +1947,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_11_bohteBound_pentadiagonal_formula`
 - `higham9_11_bohteBound_bandwidth_four_formula`
 - `higham9_11_bohteBound_nonneg`
+- `higham9_11_bohteBound_ge_two`
 - `higham9_11_banded_growth_factor_solve_tight`
 - `higham9_11_bohte_banded_solve_tight`
 - `higham9_12_spd_lu_backward_error`
