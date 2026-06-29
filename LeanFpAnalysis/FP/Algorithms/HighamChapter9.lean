@@ -40771,6 +40771,34 @@ theorem higham9_8_checkerboardConjugate_nonsingInv_det_nonneg
   rw [higham9_8_checkerboardConjugate_det_eq]
   exact le_of_lt hinv_pos
 
+/-- **Problem 9.8 support**, the full determinant of the checkerboard
+conjugate of the nonsingular inverse is strictly positive. -/
+theorem higham9_8_checkerboardConjugate_nonsingInv_det_pos
+    {n : ℕ} {A : Fin n → Fin n → ℝ}
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdet :
+      Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    0 < Matrix.det
+      (Matrix.of (higham9_8_checkerboardConjugate (nonsingInv n A)) :
+        Matrix (Fin n) (Fin n) ℝ) := by
+  classical
+  have hdet_pos :
+      0 < Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) :=
+    higham9_6_totalNonnegative_det_pos_of_det_ne_zero hTN hdet
+  have hinv_det :
+      Matrix.det (Matrix.of (nonsingInv n A) :
+          Matrix (Fin n) (Fin n) ℝ) =
+        (Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ))⁻¹ := by
+    unfold nonsingInv
+    letI : Inv (Matrix (Fin n) (Fin n) ℝ) := Matrix.inv
+    change
+      Matrix.det
+          ((Matrix.of A : Matrix (Fin n) (Fin n) ℝ)⁻¹) =
+        (Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ))⁻¹
+    rw [Matrix.det_nonsing_inv, Ring.inverse_eq_inv]
+  rw [higham9_8_checkerboardConjugate_det_eq, hinv_det]
+  exact inv_pos.mpr hdet_pos
+
 /-- **Problem 9.8 support**, the full-order minor case of total
 nonnegativity for the checkerboard conjugate of the nonsingular inverse.  Any
 strictly increasing self-selection of `Fin n` is the identity, so this reduces
@@ -40794,6 +40822,20 @@ theorem higham9_8_checkerboardConjugate_nonsingInv_full_order_minor_nonneg
     higham9_8_strictMono_fin_self_eq_id hcols
   rw [hrows_id, hcols_id]
   exact higham9_8_checkerboardConjugate_nonsingInv_det_nonneg hTN hdet
+
+/-- **Problem 9.8**, predicate-level all-minor theorem: if `A` is nonsingular
+and totally nonnegative, then `J A^{-1} J` is totally nonnegative. -/
+theorem higham9_8_checkerboardConjugate_nonsingInv_totalNonnegative
+    {n : ℕ} {A : Fin n → Fin n → ℝ}
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdet :
+      Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate (nonsingInv n A)) := by
+  intro k rows cols hrows hcols
+  exact
+    higham9_8_checkerboardConjugate_nonsingInv_minor_nonneg
+      hTN hdet hrows hcols
 
 /-- **Problem 9.8**, if `J A J = L U`, then the checkerboard-conjugated
 factors multiply back to `A`. -/
@@ -40955,5 +40997,76 @@ theorem higham9_8_abs_lu_product_eq_abs_of_checkerboard_principalBlock_inequalit
   exact
     higham9_6_leadingPrincipalBlock_det_pos_of_determinantal_inequality
       hTNJ (Nat.le_of_lt hk) hdetJ (hineqJ k hk hk0)
+
+/-- **Problem 9.8**, source-facing nonsingular-inverse checkerboard route.
+
+For a nonsingular totally nonnegative `A`, the proved inverse-minor theorem
+supplies total nonnegativity of `J A^{-1} J`; positive leading principal
+blocks for that checkerboard conjugate then give the LU and `|L||U| = |A^{-1}|`
+conclusion through the Problem 9.6 nonnegative-LU route. -/
+theorem higham9_8_abs_lu_product_eq_abs_of_nonsingInv_checkerboard_pos
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdet :
+      Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hleadJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        0 < Matrix.det
+          (higham9_2_leadingPrincipalBlock
+            (Matrix.of
+              (higham9_8_checkerboardConjugate (nonsingInv n A)) :
+              Matrix (Fin n) (Fin n) ℝ) k)) :
+    ∃ L U : Fin n → Fin n → ℝ,
+      LUFactSpec n (nonsingInv n A)
+        (higham9_8_checkerboardConjugate L)
+        (higham9_8_checkerboardConjugate U) ∧
+      (∀ i j : Fin n,
+        ∑ k : Fin n,
+          |higham9_8_checkerboardConjugate L i k| *
+            |higham9_8_checkerboardConjugate U k j| =
+              |nonsingInv n A i j|) :=
+  higham9_8_abs_lu_product_eq_abs_of_checkerboard_totalNonnegative_and_pos
+    (nonsingInv n A)
+    (higham9_8_checkerboardConjugate_nonsingInv_totalNonnegative hTN hdet)
+    (higham9_8_checkerboardConjugate_nonsingInv_det_pos hTN hdet)
+    hleadJ
+
+/-- **Problem 9.8**, source-facing nonsingular-inverse route with the
+principal-block determinant inequalities exposed. -/
+theorem higham9_8_abs_lu_product_eq_abs_of_nonsingInv_principalBlock_inequalities
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdet :
+      Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hineqJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        Matrix.det
+            (Matrix.of
+              (higham9_8_checkerboardConjugate (nonsingInv n A)) :
+              Matrix (Fin n) (Fin n) ℝ) ≤
+          Matrix.det
+              (higham9_2_leadingPrincipalBlock
+                (Matrix.of
+                  (higham9_8_checkerboardConjugate (nonsingInv n A)) :
+                  Matrix (Fin n) (Fin n) ℝ) k) *
+            Matrix.det
+              (higham9_6_trailingPrincipalBlock
+                (Matrix.of
+                  (higham9_8_checkerboardConjugate (nonsingInv n A)) :
+                  Matrix (Fin n) (Fin n) ℝ) k)) :
+    ∃ L U : Fin n → Fin n → ℝ,
+      LUFactSpec n (nonsingInv n A)
+        (higham9_8_checkerboardConjugate L)
+        (higham9_8_checkerboardConjugate U) ∧
+      (∀ i j : Fin n,
+        ∑ k : Fin n,
+          |higham9_8_checkerboardConjugate L i k| *
+            |higham9_8_checkerboardConjugate U k j| =
+              |nonsingInv n A i j|) :=
+  higham9_8_abs_lu_product_eq_abs_of_checkerboard_principalBlock_inequalities
+    (nonsingInv n A)
+    (higham9_8_checkerboardConjugate_nonsingInv_totalNonnegative hTN hdet)
+    (higham9_8_checkerboardConjugate_nonsingInv_det_pos hTN hdet)
+    hineqJ
 
 end LeanFpAnalysis.FP
