@@ -1515,6 +1515,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_10_HessenbergGEPPUTrace_growthFactorEntry_le_card`
 - `higham9_10_exists_HessenbergGEPPUTrace_growthFactorEntry_le_card_of_det_ne_zero`
 - `higham9_10_exists_HessenbergGEPPUTrace_growthFactorEntry_le_card_of_det_ne_zero_exists_hAmax`
+- `higham9_10_exists_PermutedLUFactSpec_L_bound_growth_le_of_det_ne_zero`
 - `higham9_10_hessenbergGEPPUTraceGrowthValues`
 - `higham9_10_hessenbergGEPPUTraceGrowthSup`
 - `higham9_10_hessenbergGEPPUTraceGrowthValues_le_card`
@@ -1652,6 +1653,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_completePivotWilkinsonProduct_monotone`
 - `higham9_14_completePivotWilkinsonProduct_le_of_le`
 - `higham9_14_completePivotWilkinsonBound_ge_sqrt`
+- `higham9_14_completePivotWilkinsonBound_ge_one`
+- `higham9_14_completePivotWilkinsonBound_two`
 - `higham9_14_completePivotWilkinsonBound_le_of_le`
 - `higham9_14_completePivotWilkinsonBound_monotone`
 - `higham9_completePivotGrowthSet`
@@ -1682,6 +1685,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_8_completePivotingUTraceGrowthSup_le_pow_two`
 - `higham9_8_CompletePivotGECPUTrace_exists_CompletePermutedLUFactSpec_maxEntryNorm_le`
 - `higham9_8_CompletePivotGECPUTrace_exists_CompletePermutedLUFactSpec_L_bound_maxEntryNorm_le`
+- `higham9_8_exists_CompletePermutedLUFactSpec_L_bound_growth_le_pow_two_of_det_ne_zero`
 - `higham9_8_CompletePivotGECPUTrace_growth_factor_ge_theta_real`
 - `higham9_8_CompletePivotGECPUTrace_growth_factor_ge_theta_nonsingInv`
 - `higham9_11_exists_completePivotingUTrace_sine_block_growth_ge_succ`
@@ -1691,6 +1695,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_16_rookPivotFosterBound_nonneg`
 - `higham9_16_rookPivotFosterBound_pos`
 - `higham9_16_rookPivotFosterBound_ge_three_halves`
+- `higham9_16_rookPivotFosterBound_ge_one`
+- `higham9_16_rookPivotFosterBound_one`
 - `higham9_16_rookPivotFosterFactor_le_of_le`
 - `higham9_16_rookPivotFosterBound_le_of_le`
 - `higham9_16_rookPivotFosterBound_monotone`
@@ -2247,9 +2253,11 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_normalized_Gtilde_split_componentwise_majorants`
 - `higham9_15_positive_subeigen_scale_lt_one_of_spectralRadius_lt_one`
 - `higham9_15_exists_matMulVec_lt_of_positive_spectralRadius_lt_one`
+- `higham9_15_not_exists_positive_le_matMulVec_of_spectralRadius_lt_one`
 - `higham9_15_irreducible_nonneg_subeigen_spectralRadius_ge`
 - `higham9_15_irreducible_nonneg_subeigen_scale_lt_one_of_spectralRadius_lt_one`
 - `higham9_15_exists_matMulVec_lt_of_irreducible_nonzero_nonneg_spectralRadius_lt_one`
+- `higham9_15_not_exists_nonzero_nonneg_le_matMulVec_of_irreducible_spectralRadius_lt_one`
 - `higham9_15_normalized_Gtilde_split_frobNorm_step_bound`
 - `higham9_15_normalized_Gtilde_frobNorm_ratio_bound_of_linear_step`
 - `higham9_15_normalized_Gtilde_linear_step_of_min_factor_bound`

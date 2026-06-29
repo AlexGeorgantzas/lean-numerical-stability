@@ -8665,6 +8665,30 @@ lemma higham9_14_completePivotWilkinsonBound_ge_sqrt (n : ℕ) :
           Real.sqrt (higham9_14_completePivotWilkinsonProduct n) :=
         mul_le_mul_of_nonneg_left hsqrt_prod (Real.sqrt_nonneg _)
 
+/-- **Equation (9.14)**, Wilkinson's displayed complete-pivoting RHS is at
+least one in every positive dimension. -/
+lemma higham9_14_completePivotWilkinsonBound_ge_one {n : ℕ} (hn : 0 < n) :
+    1 ≤ higham9_14_completePivotWilkinsonBound n := by
+  have hn_one_nat : 1 ≤ n := Nat.succ_le_of_lt hn
+  have hn_one : (1 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hn_one_nat
+  have hsqrt_one :
+      (1 : ℝ) ≤ Real.sqrt (n : ℝ) := by
+    simpa using
+      (Real.sqrt_le_sqrt hn_one :
+        Real.sqrt (1 : ℝ) ≤ Real.sqrt (n : ℝ))
+  exact hsqrt_one.trans (higham9_14_completePivotWilkinsonBound_ge_sqrt n)
+
+/-- **Equation (9.14)**, base value of Wilkinson's displayed complete-pivoting
+RHS. -/
+lemma higham9_14_completePivotWilkinsonBound_two :
+    higham9_14_completePivotWilkinsonBound 2 = 2 := by
+  unfold higham9_14_completePivotWilkinsonBound
+  rw [higham9_14_completePivotWilkinsonProduct_two]
+  have hcast : ((2 : ℕ) : ℝ) = 2 := by norm_num
+  rw [hcast]
+  rw [← pow_two]
+  exact Real.sq_sqrt (show (0 : ℝ) ≤ 2 by positivity)
+
 /-- **Equation (9.14)**, order form of monotonicity for Wilkinson's displayed
 complete-pivoting RHS. -/
 theorem higham9_14_completePivotWilkinsonBound_le_of_le {n m : ℕ}
@@ -8851,6 +8875,19 @@ lemma higham9_16_rookPivotFosterBound_ge_three_halves {n : ℕ} (hn : 0 < n) :
     _ ≤ (3 / 2 : ℝ) *
         (n : ℝ) ^ ((3 / 4 : ℝ) * Real.log (n : ℝ)) :=
         mul_le_mul_of_nonneg_left hrpow_ge_one (by norm_num)
+
+/-- **Equation (9.16)**, Foster's displayed rook-pivoting RHS is at least one
+in every positive dimension. -/
+lemma higham9_16_rookPivotFosterBound_ge_one {n : ℕ} (hn : 0 < n) :
+    1 ≤ higham9_16_rookPivotFosterBound n :=
+  le_trans (by norm_num : (1 : ℝ) ≤ 3 / 2)
+    (higham9_16_rookPivotFosterBound_ge_three_halves hn)
+
+/-- **Equation (9.16)**, base value of Foster's displayed rook-pivoting RHS in
+dimension one. -/
+lemma higham9_16_rookPivotFosterBound_one :
+    higham9_16_rookPivotFosterBound 1 = 3 / 2 := by
+  norm_num [higham9_16_rookPivotFosterBound]
 
 /-- **Equation (9.16)**, monotonicity of Foster's logarithmic scalar factor on
 positive dimensions. -/
@@ -20662,6 +20699,25 @@ theorem higham9_15_exists_matMulVec_lt_of_positive_spectralRadius_lt_one
       hn C 1 x hC_nonneg (by norm_num) hx_pos hsub hrho
   exact (lt_irrefl (1 : ℝ)) hone_lt
 
+/-- **Theorem 9.15 spectral-majorant support**.  Under `rho(C) < 1`, a
+nonnegative majorant cannot dominate any strictly positive vector
+componentwise. -/
+theorem higham9_15_not_exists_positive_le_matMulVec_of_spectralRadius_lt_one
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (hC_nonneg : ∀ i j : Fin n, 0 ≤ C i j)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) < 1) :
+    ¬ ∃ x : Fin n → ℝ,
+      (∀ i : Fin n, 0 < x i) ∧
+        ∀ i : Fin n, x i ≤ matMulVec n C x i := by
+  rintro ⟨x, hx_pos, hle⟩
+  obtain ⟨i, hlt⟩ :=
+    higham9_15_exists_matMulVec_lt_of_positive_spectralRadius_lt_one
+      hn C x hC_nonneg hx_pos hrho
+  exact (not_lt_of_ge (hle i)) hlt
+
 /-- **Theorem 9.15 spectral-majorant support**.  Irreducibility upgrades a
 nonzero nonnegative right subeigenvector to a positive one, so the Chapter 7
 Collatz/Gelfand lower bound applies to nonzero nonnegative data. -/
@@ -20742,6 +20798,26 @@ theorem higham9_15_exists_matMulVec_lt_of_irreducible_nonzero_nonneg_spectralRad
     higham9_15_irreducible_nonneg_subeigen_scale_lt_one_of_spectralRadius_lt_one
       hn C 1 x hC_irred (by norm_num) hx_nonneg hx_ne hsub hrho
   exact (lt_irrefl (1 : ℝ)) hone_lt
+
+/-- **Theorem 9.15 spectral-majorant support**.  Under irreducibility and
+`rho(C) < 1`, a nonnegative majorant cannot dominate any nonzero nonnegative
+vector componentwise. -/
+theorem higham9_15_not_exists_nonzero_nonneg_le_matMulVec_of_irreducible_spectralRadius_lt_one
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (hC_irred :
+      Matrix.IsIrreducible (Matrix.of C : Matrix (Fin n) (Fin n) ℝ))
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) < 1) :
+    ¬ ∃ x : Fin n → ℝ,
+      x ≠ 0 ∧ (∀ i : Fin n, 0 ≤ x i) ∧
+        ∀ i : Fin n, x i ≤ matMulVec n C x i := by
+  rintro ⟨x, hx_ne, hx_nonneg, hle⟩
+  obtain ⟨i, hlt⟩ :=
+    higham9_15_exists_matMulVec_lt_of_irreducible_nonzero_nonneg_spectralRadius_lt_one
+      hn C x hC_irred hx_nonneg hx_ne hrho
+  exact (not_lt_of_ge (hle i)) hlt
 
 /-- **Theorem 9.15**, one-step Frobenius nonlinear bound from the
 componentwise normalized split equation. -/
@@ -38886,6 +38962,69 @@ theorem higham9_5_wilkinson_source_bound_exists_of_CompletePivotGECPUTrace
       hBmax (pow_nonneg (by norm_num : (0 : ℝ) ≤ 2) (n - 1))
       hgrowth hU_diag hLU hn hn3 hL_bound
 
+/-- **Theorem 9.8 / equation (9.14)**, every nonsingular real input admits a
+cumulative complete-pivoting `PAQ = LU` certificate with unit-bounded lower
+multipliers, nonzero computed pivots, and the elementary certificate growth
+bound `rho <= 2^(n-1)`.
+
+This is the certificate-level package used by the source-facing solve wrapper;
+Wilkinson's sharper product bound remains the separate open growth proof. -/
+theorem higham9_8_exists_CompletePermutedLUFactSpec_L_bound_growth_le_pow_two_of_det_ne_zero
+    (n : ℕ)
+    (hn_pos : 0 < n)
+    (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+    ∃ sigma tau : Fin n → Fin n,
+    ∃ _hLU : higham9_2_CompletePermutedLUFactSpec n A L_hat U_hat sigma tau,
+      (∀ i j : Fin n, |L_hat i j| ≤ 1) ∧
+      (∀ i : Fin n, U_hat i i ≠ 0) ∧
+      ∃ hBmax :
+        0 < maxEntryNorm hn_pos
+          (higham9_2_rowColPermutedMatrix A sigma tau),
+        growthFactorEntry hn_pos
+          (higham9_2_rowColPermutedMatrix A sigma tau) U_hat hBmax ≤
+            (2 : ℝ) ^ (n - 1) := by
+  obtain ⟨U_trace, htrace⟩ :=
+    higham9_8_exists_CompletePivotGECPUTrace_of_det_ne_zero (A := A) hdet
+  obtain ⟨L_hat, U_hat, sigma, tau, hLU, hL_bound, hmax⟩ :=
+    higham9_8_CompletePivotGECPUTrace_exists_CompletePermutedLUFactSpec_L_bound_maxEntryNorm_le
+      htrace
+  have hAmax : 0 < maxEntryNorm hn_pos A :=
+    maxEntryNorm_pos_of_det_ne_zero hn_pos A hdet
+  have hBmax :
+      0 < maxEntryNorm hn_pos
+        (higham9_2_rowColPermutedMatrix A sigma tau) := by
+    simpa [higham9_2_rowColPermutedMatrix_maxEntryNorm hn_pos A
+        hLU.2.perm hLU.1] using hAmax
+  have htrace_growth :
+      growthFactorEntry hn_pos A U_trace hAmax ≤
+        (2 : ℝ) ^ (n - 1) :=
+    higham9_8_CompletePivotGECPUTrace_growthFactorEntry_le_pow_two
+      hn_pos A U_trace hAmax htrace
+  have hBmax_eq :
+      maxEntryNorm hn_pos (higham9_2_rowColPermutedMatrix A sigma tau) =
+        maxEntryNorm hn_pos A :=
+    higham9_2_rowColPermutedMatrix_maxEntryNorm hn_pos A hLU.2.perm hLU.1
+  have hgrowth :
+      growthFactorEntry hn_pos
+          (higham9_2_rowColPermutedMatrix A sigma tau) U_hat hBmax ≤
+        (2 : ℝ) ^ (n - 1) := by
+    unfold growthFactorEntry at htrace_growth ⊢
+    calc
+      maxEntryNorm hn_pos U_hat /
+          maxEntryNorm hn_pos (higham9_2_rowColPermutedMatrix A sigma tau)
+          = maxEntryNorm hn_pos U_hat / maxEntryNorm hn_pos A := by
+              rw [hBmax_eq]
+      _ ≤ maxEntryNorm hn_pos U_trace / maxEntryNorm hn_pos A :=
+          div_le_div_of_nonneg_right (hmax hn_pos) (le_of_lt hAmax)
+      _ ≤ (2 : ℝ) ^ (n - 1) := htrace_growth
+  have hU_diag : ∀ i : Fin n, U_hat i i ≠ 0 :=
+    (higham9_2_completePermutedLUFactSpec_det_ne_zero_iff_pivots_ne_zero
+      hLU).mp
+      (higham9_2_rowColPermutedMatrix_det_ne_zero A hLU.2.perm hLU.1 hdet)
+  exact ⟨L_hat, U_hat, sigma, tau, hLU, hL_bound, hU_diag, hBmax, hgrowth⟩
+
 /-- **Theorem 9.8 / equation (9.13) complex support**, a recursive exact
 complete-pivoting trace over complex matrices. -/
 inductive higham9_8_ComplexCompletePivotGECPUTrace :
@@ -41059,6 +41198,31 @@ theorem higham9_10_HessenbergGEPPUTrace_exists_PermutedLUFactSpec_L_bound_growth
   have hU_diag : ∀ i : Fin n, U_hat i i ≠ 0 :=
     (higham9_2_permutedLUFactSpec_det_ne_zero_iff_pivots_ne_zero hLU).mp hdet_row
   exact ⟨L_hat, U_hat, sigma, hLU, hL_bound, hU_diag, hBmax, hgrowth⟩
+
+/-- **Theorem 9.10 / GEPP trace support**, every nonsingular upper-Hessenberg
+input admits a cumulative row-permuted `PA = LU` certificate with unit-bounded
+lower multipliers, nonzero computed pivots, and inherited Hessenberg growth
+factor `rho <= n`. -/
+theorem higham9_10_exists_PermutedLUFactSpec_L_bound_growth_le_of_det_ne_zero
+    (n : ℕ)
+    (hn_pos : 0 < n)
+    (A : Fin n → Fin n → ℝ)
+    (hH : IsUpperHessenberg n A)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+    ∃ sigma : Fin n → Fin n,
+    ∃ _hLU : higham9_2_PermutedLUFactSpec n A L_hat U_hat sigma,
+      (∀ i j : Fin n, |L_hat i j| ≤ 1) ∧
+      (∀ i : Fin n, U_hat i i ≠ 0) ∧
+      ∃ hBmax :
+        0 < maxEntryNorm hn_pos (higham9_2_rowPermutedMatrix A sigma),
+        growthFactorEntry hn_pos
+          (higham9_2_rowPermutedMatrix A sigma) U_hat hBmax ≤ (n : ℝ) := by
+  obtain ⟨U_trace, htrace⟩ :=
+    higham9_10_exists_HessenbergGEPPUTrace_of_det_ne_zero hn_pos A hH hdet
+  exact
+    higham9_10_HessenbergGEPPUTrace_exists_PermutedLUFactSpec_L_bound_growth_le
+      n hn_pos A U_trace hdet htrace
 
 /-- **Theorem 9.10 / Theorem 9.5**, exact upper-Hessenberg GEPP trace
 Wilkinson source bound with the Hessenberg `rho <= n` growth constant.
