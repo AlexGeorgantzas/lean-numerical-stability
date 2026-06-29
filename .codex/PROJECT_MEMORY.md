@@ -9933,3 +9933,15 @@ These compile, but should not be treated as fully derived stability results:
   finite-history, and dimension-aware max-entry/growth-factor packages.  This
   removes an active right-inverse proof artifact, while the active pivot
   determinant/equality table and the `2*r` max-entry transfer loss remain open.
+
+- 2026-06-29 Algorithm 13.3 canonical active-pivot reconstruction wrappers:
+  added `higham13_algorithm13_3_matrixStages_blockLUFactSpec_of_pivotInv_eq_nonsingInv`,
+  `higham13_algorithm13_3_matrixStages_product_eq_of_pivotInv_eq_nonsingInv`,
+  and
+  `higham13_algorithm13_3_matrixStages_exists_blockLUFact_product_bound_of_pivotInv_eq_nonsingInv`.
+  These feed the matrix-stage `BlockLUFactSpec`, product-equality, and
+  product-bound witness surfaces from active pivot determinant nonzero plus
+  `pivotInv k = nonsingInv r pivot_k`, reusing the existing canonical
+  right-inverse theorem.  They are proof-surface cleanup for the witness layer;
+  multiplier bounds, upper-factor bounds, source lower-budget comparisons, and
+  the Eq.13.23 `rho <= 2` endpoint remain open.
