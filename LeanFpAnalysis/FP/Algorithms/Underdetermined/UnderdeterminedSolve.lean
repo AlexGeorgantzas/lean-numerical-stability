@@ -30,6 +30,56 @@ namespace LeanFpAnalysis.FP
 open scoped BigOperators Matrix.Norms.Frobenius
 
 -- ============================================================
+-- §21.3  Row-wise backward error for underdetermined systems
+-- ============================================================
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3:
+    a row-wise backward-error witness for an underdetermined system.
+
+    The computed vector `x_hat` is the exact minimum 2-norm solution of the
+    row-wise perturbed rectangular system `(A + ΔA) x = b`, and each row
+    perturbation is bounded relative to the corresponding row of `A` in the
+    Euclidean norm. -/
+structure UndetRowwiseBackwardErrorFeasible (m n : ℕ)
+    (A ΔA : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (x_hat : Fin n → ℝ)
+    (eta : ℝ) : Prop where
+  /-- The row-wise error factor is nonnegative. -/
+  eta_nonneg : 0 ≤ eta
+  /-- `x_hat` is the minimum 2-norm solution of the perturbed system. -/
+  min_norm :
+    RectMinNormSolution m n (fun i j => A i j + ΔA i j) b x_hat
+  /-- Each row perturbation is bounded by `eta` times the original row norm. -/
+  row_bound : ∀ i : Fin m, rectRowNorm2 ΔA i ≤ eta * rectRowNorm2 A i
+
+/-- Existence form of the Chapter 21 row-wise backward-error predicate. -/
+def UndetRowwiseBackwardErrorBounded (m n : ℕ)
+    (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (x_hat : Fin n → ℝ)
+    (eta : ℝ) : Prop :=
+  ∃ ΔA : Fin m → Fin n → ℝ,
+    UndetRowwiseBackwardErrorFeasible m n A ΔA b x_hat eta
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3:
+    source-facing constructor for a row-wise backward-error certificate.
+    This packages the definition used by Theorem 21.4; it does not by itself
+    prove that a particular QR implementation supplies such a witness. -/
+theorem higham21_rowwise_backward_error_bound_witness
+    (m n : ℕ)
+    (A ΔA : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (x_hat : Fin n → ℝ)
+    (eta : ℝ)
+    (heta : 0 ≤ eta)
+    (hmin :
+      RectMinNormSolution m n (fun i j => A i j + ΔA i j) b x_hat)
+    (hrow : ∀ i : Fin m, rectRowNorm2 ΔA i ≤ eta * rectRowNorm2 A i) :
+    UndetRowwiseBackwardErrorBounded m n A b x_hat eta :=
+  ⟨ΔA, ⟨heta, hmin, hrow⟩⟩
+
+-- ============================================================
 -- §21.3  Theorem 21.4: Q method backward stability
 -- ============================================================
 
