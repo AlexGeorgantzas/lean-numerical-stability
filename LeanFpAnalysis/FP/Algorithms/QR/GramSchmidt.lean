@@ -77,12 +77,56 @@ theorem gsDot_projectAway_self {m : Nat} (q x : Fin m -> Real) :
           (Finset.univ.sum fun i : Fin m => q i * q i) := by
         rfl
 
+/-- Dot-product expansion after removing the projection of `x` along `q`,
+tested against a possibly different vector `u`. -/
+theorem gsDot_projectAway_left {m : Nat}
+    (u q x : Fin m -> Real) :
+    gsDot u (gsProjectAway x q) = gsDot u x - gsDot q x * gsDot u q := by
+  unfold gsDot gsProjectAway
+  calc
+    (Finset.univ.sum fun i : Fin m => u i * (x i - gsDot q x * q i))
+        =
+      Finset.univ.sum fun i : Fin m =>
+        u i * x i - u i * (gsDot q x * q i) := by
+        apply Finset.sum_congr rfl
+        intro i _
+        ring
+    _ =
+      (Finset.univ.sum fun i : Fin m => u i * x i) -
+        (Finset.univ.sum fun i : Fin m => u i * (gsDot q x * q i)) := by
+        rw [Finset.sum_sub_distrib]
+    _ =
+      (Finset.univ.sum fun i : Fin m => u i * x i) -
+        gsDot q x * (Finset.univ.sum fun i : Fin m => u i * q i) := by
+        congr 1
+        calc
+          (Finset.univ.sum fun i : Fin m => u i * (gsDot q x * q i))
+              = Finset.univ.sum fun i : Fin m =>
+                  gsDot q x * (u i * q i) := by
+              apply Finset.sum_congr rfl
+              intro i _
+              ring
+          _ = gsDot q x * Finset.univ.sum fun i : Fin m => u i * q i := by
+              rw [Finset.mul_sum]
+    _ =
+      (Finset.univ.sum fun i : Fin m => u i * x i) -
+        gsDot q x * (Finset.univ.sum fun i : Fin m => u i * q i) := rfl
+
 /-- Removing the projection along a unit vector leaves a vector orthogonal to
 that unit vector. -/
 theorem gsDot_projectAway_eq_zero_of_unit {m : Nat} (q x : Fin m -> Real)
     (hunit : gsDot q q = 1) :
     gsDot q (gsProjectAway x q) = 0 := by
   rw [gsDot_projectAway_self, hunit]
+  ring
+
+/-- Projection removal preserves a prior orthogonality relation when the prior
+vector is orthogonal to the projection direction. -/
+theorem gsDot_projectAway_eq_zero_of_left_orthogonal {m : Nat}
+    (u q x : Fin m -> Real)
+    (hux : gsDot u x = 0) (huq : gsDot u q = 0) :
+    gsDot u (gsProjectAway x q) = 0 := by
+  rw [gsDot_projectAway_left, hux, huq]
   ring
 
 /-- Normalize a column vector by a supplied scalar. -/
