@@ -9486,6 +9486,27 @@ These compile, but should not be treated as fully derived stability results:
   a separate hypothesis.  Remaining source obligations are still the
   local-to-full scalar comparison table and Eq.13.23 source `rho <= 2`.
 
+- 2026-06-29 Problem 13.4 stage-local base-comparison multiplier reduction:
+  added
+  `higham13_algorithm13_3_multiplier_bounds_from_stageLocalGrowth_base_comparisons_exact_kappa`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean` and a public lookup entry.
+  The theorem reuses
+  `higham13_algorithm13_3_stageLocalGrowthFactor_le_matrixStageHistoryGrowthFactor_of_base_le`
+  to discharge the raw `rhoLocal <= rhoFull` premise of the source-comparison
+  multiplier route from the explicit denominator/base comparison
+  `||blockMatrixFlatFin Ablk||_max <= ||stageLocalFlatMatrix i j||_max`.
+  This narrows the remaining scalar table: the base comparison and
+  `kappaLocal <= rhoFull * kappaFull` remain source obligations, and the
+  generic base comparison is still known false by
+  `higham13_stage_local_base_comparison_counterexample`.  Verification passed:
+  direct `lake env lean -s 65536
+  LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_stageLocal_baseComparison_lookup.{out,err}` with empty stderr and
+  the name present, `git diff --check`, touched public Lean-file marker scan,
+  scratch cleanup, and focused `#print axioms` with only `propext`,
+  `Classical.choice`, and `Quot.sound`.
+
 - 2026-06-24 Problem 13.4 stage-local source-comparison determinant cleanup:
   added
   `higham13_eq13_22_matrix_stage_history_product_from_stageLocalGrowth_source_comparisons_exact_kappa_of_det_ne_zero`,
