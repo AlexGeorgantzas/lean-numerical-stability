@@ -7168,6 +7168,88 @@ theorem lsScaledAugmentedBranchSigma_le_max
         Finset.univ_nonempty)
   exact hspec.2 i (by simp)
 
+/-- Finite branch minima are invariant under reindexing by an equivalence. -/
+theorem lsScaledAugmentedBranchSigmaMin_eq_of_equiv
+    {ι κ : Type*} [Fintype ι] [Nonempty ι] [Fintype κ] [Nonempty κ]
+    (sigma : ι → ℝ) (tau : κ → ℝ) (e : ι ≃ κ)
+    (h : ∀ i : ι, sigma i = tau (e i)) :
+    lsScaledAugmentedBranchSigmaMin sigma =
+      lsScaledAugmentedBranchSigmaMin tau := by
+  apply le_antisymm
+  · have hle :=
+      lsScaledAugmentedBranchSigmaMin_le sigma
+        (e.symm (lsScaledAugmentedBranchSigmaMinIndex tau))
+    simpa [lsScaledAugmentedBranchSigmaMin,
+      h (e.symm (lsScaledAugmentedBranchSigmaMinIndex tau))] using hle
+  · have hle :=
+      lsScaledAugmentedBranchSigmaMin_le tau
+        (e (lsScaledAugmentedBranchSigmaMinIndex sigma))
+    simpa [lsScaledAugmentedBranchSigmaMin,
+      h (lsScaledAugmentedBranchSigmaMinIndex sigma)] using hle
+
+/-- Finite branch maxima are invariant under reindexing by an equivalence. -/
+theorem lsScaledAugmentedBranchSigmaMax_eq_of_equiv
+    {ι κ : Type*} [Fintype ι] [Nonempty ι] [Fintype κ] [Nonempty κ]
+    (sigma : ι → ℝ) (tau : κ → ℝ) (e : ι ≃ κ)
+    (h : ∀ i : ι, sigma i = tau (e i)) :
+    lsScaledAugmentedBranchSigmaMax sigma =
+      lsScaledAugmentedBranchSigmaMax tau := by
+  apply le_antisymm
+  · have hle :=
+      lsScaledAugmentedBranchSigma_le_max tau
+        (e (lsScaledAugmentedBranchSigmaMaxIndex sigma))
+    simpa [lsScaledAugmentedBranchSigmaMax,
+      h (lsScaledAugmentedBranchSigmaMaxIndex sigma)] using hle
+  · have hle :=
+      lsScaledAugmentedBranchSigma_le_max sigma
+        (e.symm (lsScaledAugmentedBranchSigmaMaxIndex tau))
+    simpa [lsScaledAugmentedBranchSigmaMax,
+      h (e.symm (lsScaledAugmentedBranchSigmaMaxIndex tau))] using hle
+
+/-- Equivalence from a right-Gram basis index to the ordered singular-value
+    coordinate selected by the same mathlib Hermitian reindexing. -/
+noncomputable def rectRightGramBasisOrderedEquiv (n : ℕ) : Fin n ≃ Fin n where
+  toFun := rectRightGramBasisOrderedIndex n
+  invFun i := rectRightGramOrderedEigenbasisEquiv n (finCardIndex n i)
+  left_inv := by
+    intro b
+    change rectRightGramOrderedEigenbasisEquiv n
+        (finCardIndex n (rectRightGramBasisOrderedIndex n b)) = b
+    rw [finCardIndex_rectRightGramBasisOrderedIndex]
+    exact (rectRightGramOrderedEigenbasisEquiv n).apply_symm_apply b
+  right_inv := by
+    intro i
+    apply Fin.ext
+    have h :=
+      finCardIndex_rectRightGramBasisOrderedIndex n
+        (rectRightGramOrderedEigenbasisEquiv n (finCardIndex n i))
+    rw [(rectRightGramOrderedEigenbasisEquiv n).symm_apply_apply] at h
+    simpa [finCardIndex] using congrArg Fin.val h
+
+/-- The finite minimum of the basis-indexed right-Gram singular values is the
+    finite minimum of the ordered real right-Gram singular values. -/
+theorem lsScaledAugmentedBranchSigmaMin_rectRightGramBasis_eq_rectSingularValue
+    {m n : ℕ} [Nonempty (Fin n)] (A : Fin m → Fin n → ℝ) :
+    lsScaledAugmentedBranchSigmaMin (rectRightGramBasisSingularValue A) =
+      lsScaledAugmentedBranchSigmaMin (rectSingularValue A) := by
+  exact
+    lsScaledAugmentedBranchSigmaMin_eq_of_equiv
+      (rectRightGramBasisSingularValue A) (rectSingularValue A)
+      (rectRightGramBasisOrderedEquiv n)
+      (fun b => rectRightGramBasisSingularValue_eq_orderedIndex A b)
+
+/-- The finite maximum of the basis-indexed right-Gram singular values is the
+    finite maximum of the ordered real right-Gram singular values. -/
+theorem lsScaledAugmentedBranchSigmaMax_rectRightGramBasis_eq_rectSingularValue
+    {m n : ℕ} [Nonempty (Fin n)] (A : Fin m → Fin n → ℝ) :
+    lsScaledAugmentedBranchSigmaMax (rectRightGramBasisSingularValue A) =
+      lsScaledAugmentedBranchSigmaMax (rectSingularValue A) := by
+  exact
+    lsScaledAugmentedBranchSigmaMax_eq_of_equiv
+      (rectRightGramBasisSingularValue A) (rectSingularValue A)
+      (rectRightGramBasisOrderedEquiv n)
+      (fun b => rectRightGramBasisSingularValue_eq_orderedIndex A b)
+
 /-- Higham, 2nd ed., Chapter 20, equations (20.18)-(20.19):
     cardinality-based source-shaped condition-number handoff.  This constructs
     the complete branch enumeration from the displayed count
@@ -11082,6 +11164,56 @@ theorem
       (A := A) (alpha := alpha)
       (lsRealRectColRank_rectMatMulVec_injective_of_colRank_eq_card A hrank)
       halpha
+
+/-- Higham, 2nd ed., Chapter 20, equations (20.18)-(20.19):
+    source-rank right-Gram handoff with the bounds and scaling written using the
+    ordered real right-Gram singular values.  The inverse candidate is still the
+    constructed basis-indexed right-Gram candidate; the finite extrema are
+    permutation-invariant under the basis-to-ordered reindexing. -/
+theorem
+    exists_lsScaledAugmentedMatrix_kappa2_bounds_of_rectSingularValue_rightGram_basis_of_colRank_eq_card
+    {m n : ℕ} [Nonempty (Fin n)] (hmn : n ≤ m)
+    {alpha : ℝ} {A : Fin m → Fin n → ℝ}
+    (hrank : lsRealRectColRank A = n)
+    (halpha :
+      alpha = lsScaledAugmentedBranchSigmaMin (rectSingularValue A) /
+        Real.sqrt 2) :
+    ∃ w : Fin (m - n) → Fin m → ℝ,
+      (∀ k : Fin (m - n), vecNorm2Sq (w k) = 1) ∧
+        (∀ k l : Fin (m - n),
+          k ≠ l → (∑ r : Fin m, w k r * w l r) = 0) ∧
+        (∀ k : Fin (m - n), ∀ j : Fin n,
+          ∑ r : Fin m, A r j * w k r = 0) ∧
+        Real.sqrt 2 *
+              (lsScaledAugmentedBranchSigmaMax (rectSingularValue A) /
+                lsScaledAugmentedBranchSigmaMin (rectSingularValue A)) ≤
+            kappa2 (lsScaledAugmentedMatrix alpha A)
+              (lsScaledAugmentedSourceBranchInverseCandidate hmn alpha
+                (rectRightGramBasisSingularValue A)
+                (fun a r => rectRightGramLeftSingularFromEigenbasis A r a)
+                (fun a j => rectRightGramEigenbasis A j a) w) ∧
+          kappa2 (lsScaledAugmentedMatrix alpha A)
+              (lsScaledAugmentedSourceBranchInverseCandidate hmn alpha
+                (rectRightGramBasisSingularValue A)
+                (fun a r => rectRightGramLeftSingularFromEigenbasis A r a)
+                (fun a j => rectRightGramEigenbasis A j a) w) ≤
+            2 *
+              (lsScaledAugmentedBranchSigmaMax (rectSingularValue A) /
+                lsScaledAugmentedBranchSigmaMin (rectSingularValue A)) := by
+  have hmin :=
+    lsScaledAugmentedBranchSigmaMin_rectRightGramBasis_eq_rectSingularValue A
+  have hmax :=
+    lsScaledAugmentedBranchSigmaMax_rectRightGramBasis_eq_rectSingularValue A
+  have halpha_basis :
+      alpha = lsScaledAugmentedBranchSigmaMin
+          (rectRightGramBasisSingularValue A) / Real.sqrt 2 := by
+    simpa [hmin] using halpha
+  obtain ⟨w, hw, hnull, hATw, hbounds⟩ :=
+    exists_lsScaledAugmentedMatrix_kappa2_bounds_of_rightGram_basis_of_colRank_eq_card
+      (m := m) (n := n) hmn
+      (A := A) (alpha := alpha) hrank halpha_basis
+  refine ⟨w, hw, hnull, hATw, ?_⟩
+  simpa [hmin, hmax] using hbounds
 
 /-- A nonzero vector annihilating every column of a real rectangular matrix
     rules out full row rank of the row-side complexified transpose. -/
