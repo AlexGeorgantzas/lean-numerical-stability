@@ -1977,8 +1977,11 @@ Source-facing Chapter 9 wrappers:
 - `higham9_11_bohteBound_tridiagonal`
 - `higham9_11_bohteBound_pentadiagonal_formula`
 - `higham9_11_bohteBound_bandwidth_four_formula`
+- `higham9_11_bohteBound_zero`
 - `higham9_11_bohteBound_nonneg`
 - `higham9_11_bohteBound_ge_two`
+- `higham9_11_bohteBound_pos`
+- `higham9_11_bohteBound_ge_one`
 - `higham9_11_bohteBound_add_three_eq`
 - `higham9_11_bohteBound_quad_le_add_three`
 - `higham9_11_bohteBound_le_add_three`
