@@ -2069,6 +2069,101 @@ theorem GQRAQTallCase.mulVec_eq {k n : ℕ}
   subst M
   simpa using gqrAQTallBlock_mulVec L y
 
+/-- Completion helper for the tall associated (20.28) route: an orthonormal
+    rectangular factor can be extended to a square orthogonal matrix whose
+    bottom columns are the original columns in reverse order.
+
+    The reversed placement is the row-side companion to applying QR/MGS to the
+    column-reversed `A Q₂` block: after the later matrix-action step, the upper
+    triangular QR factor becomes the lower-triangular `L₂₂` block. -/
+theorem exists_orthogonal_completion_bottom_reversed_columns {r q : ℕ}
+    (Q2 : Fin (r + q) → Fin q → ℝ)
+    (hQ2 : GramSchmidtOrthonormalColumns Q2) :
+    ∃ U : Fin (r + q) → Fin (r + q) → ℝ,
+      IsOrthogonal (r + q) U ∧
+        ∀ i j, U i (Fin.natAdd r j) = Q2 i (Fin.rev j) := by
+  classical
+  let s : Set (Fin (r + q)) :=
+    {a | ∃ j : Fin q, a = Fin.natAdd r j}
+  let X : Fin (r + q) → Fin (r + q) → ℝ :=
+    fun i a =>
+      if ha : ∃ j : Fin q, a = Fin.natAdd r j then
+        Q2 i (Fin.rev (Classical.choose ha))
+      else
+        0
+  have hX : ∀ a b : s,
+      (∑ i : Fin (r + q), X i a * X i b) =
+        if a = b then 1 else 0 := by
+    intro a b
+    rcases a.2 with ⟨ja, hja⟩
+    rcases b.2 with ⟨jb, hjb⟩
+    have hXa : ∀ i : Fin (r + q), X i a = Q2 i (Fin.rev ja) := by
+      intro i
+      have ha : ∃ j : Fin q, (a : Fin (r + q)) = Fin.natAdd r j :=
+        ⟨ja, hja⟩
+      have hchoose : Classical.choose ha = ja := by
+        apply (Fin.natAdd_inj r).mp
+        calc
+          Fin.natAdd r (Classical.choose ha) = (a : Fin (r + q)) :=
+            (Classical.choose_spec ha).symm
+          _ = Fin.natAdd r ja := hja
+      simp [X, ha, hchoose]
+    have hXb : ∀ i : Fin (r + q), X i b = Q2 i (Fin.rev jb) := by
+      intro i
+      have hb : ∃ j : Fin q, (b : Fin (r + q)) = Fin.natAdd r j :=
+        ⟨jb, hjb⟩
+      have hchoose : Classical.choose hb = jb := by
+        apply (Fin.natAdd_inj r).mp
+        calc
+          Fin.natAdd r (Classical.choose hb) = (b : Fin (r + q)) :=
+            (Classical.choose_spec hb).symm
+          _ = Fin.natAdd r jb := hjb
+      simp [X, hb, hchoose]
+    have hsubeq : a = b ↔ ja = jb := by
+      constructor
+      · intro hab
+        apply (Fin.natAdd_inj r).mp
+        calc
+          Fin.natAdd r ja = (a : Fin (r + q)) := hja.symm
+          _ = (b : Fin (r + q)) := congrArg Subtype.val hab
+          _ = Fin.natAdd r jb := hjb
+      · intro h
+        apply Subtype.ext
+        calc
+          (a : Fin (r + q)) = Fin.natAdd r ja := hja
+          _ = Fin.natAdd r jb := by rw [h]
+          _ = (b : Fin (r + q)) := hjb.symm
+    calc
+      (∑ i : Fin (r + q), X i a * X i b)
+          =
+        ∑ i : Fin (r + q), Q2 i (Fin.rev ja) * Q2 i (Fin.rev jb) := by
+              apply Finset.sum_congr rfl
+              intro i _
+              rw [hXa i, hXb i]
+      _ = idMatrix q (Fin.rev ja) (Fin.rev jb) :=
+            hQ2 (Fin.rev ja) (Fin.rev jb)
+      _ = if a = b then 1 else 0 := by
+          by_cases h : ja = jb
+          · subst jb
+            have hab : a = b := hsubeq.mpr rfl
+            simp [idMatrix, hab]
+          · have hab : a ≠ b := fun hab => h (hsubeq.mp hab)
+            have hrev : Fin.rev ja ≠ Fin.rev jb :=
+              fun hrev => h (Fin.rev_injective hrev)
+            simp [idMatrix, hrev, hab]
+  obtain ⟨U, hUpreserve, hUcols⟩ :=
+    partialColOrthonormal_exists_fullColOrthonormal X s hX
+  refine ⟨U, isOrthogonal_of_column_orthonormal hUcols, ?_⟩
+  intro i j
+  have hmem : Fin.natAdd r j ∈ s := ⟨j, rfl⟩
+  have hp := hUpreserve (Fin.natAdd r j) hmem i
+  have hcast : ∃ k : Fin q, Fin.natAdd r j = Fin.natAdd r k :=
+    ⟨j, rfl⟩
+  have hchoose : Classical.choose hcast = j := by
+    apply (Fin.natAdd_inj r).mp
+    exact (Classical.choose_spec hcast).symm
+  simpa [X, hcast, hchoose] using hp
+
 /-- Higham, 2nd ed., Chapter 20, equation (20.28), supplied wide-case
     shape for `U^T A Q = [X L]`.
 
@@ -3555,6 +3650,28 @@ theorem gqrAQ2_rectMatMulVec_injective_of_constraint_block_nullIntersection
   dsimp [w] at hwi
   linarith
 
+/-- Column permutations preserve injectivity of a rectangular matrix-vector
+    map.  This is the coordinate-change step needed before applying exact QR
+    to the column-reversed `A Q₂` block in the Chapter 20 GQR construction. -/
+theorem rectMatMulVec_injective_rectPermuteCols {m n : ℕ}
+    (π : Fin n ≃ Fin n) {A : Fin m → Fin n → ℝ}
+    (hA : Function.Injective (rectMatMulVec A)) :
+    Function.Injective (rectMatMulVec (rectPermuteCols π A)) := by
+  intro x y hxy
+  have hxy' :
+      rectMatMulVec A (vecPermute π.symm x) =
+        rectMatMulVec A (vecPermute π.symm y) := by
+    calc
+      rectMatMulVec A (vecPermute π.symm x)
+          = rectMatMulVec (rectPermuteCols π A) x := by
+              exact (rectMatMulVec_permuteCols π A x).symm
+      _ = rectMatMulVec (rectPermuteCols π A) y := hxy
+      _ = rectMatMulVec A (vecPermute π.symm y) := by
+              exact rectMatMulVec_permuteCols π A y
+  have hperm : vecPermute π.symm x = vecPermute π.symm y := hA hxy'
+  have hrecover := congrArg (vecPermute π) hperm
+  simpa [vecPermute_vecPermute_symm] using hrecover
+
 /-- Construction-level exact-MGS nonbreakdown for the smaller `A Q₂` block. -/
 theorem gqrAQ2_mgs_norm_ne_zero_of_constraint_block_nullIntersection
     {r p q : ℕ}
@@ -3571,6 +3688,44 @@ theorem gqrAQ2_mgs_norm_ne_zero_of_constraint_block_nullIntersection
   modifiedGramSchmidtVectors_norm_ne_zero_of_rectMatMulVec_injective
     (gqrAQ2Block A Q)
     (gqrAQ2_rectMatMulVec_injective_of_constraint_block_nullIntersection
+      hQ hBQ hnull) j
+
+/-- Construction-level injectivity for the column-reversed smaller `A Q₂`
+    block.  This is the precise nonbreakdown route for the QR input that will
+    later be converted into the lower-triangular `L₂₂` block in (20.28). -/
+theorem gqrAQ2_reversed_rectMatMulVec_injective_of_constraint_block_nullIntersection
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    {Q : Fin (p + q) → Fin (p + q) → ℝ}
+    {S : Fin p → Fin p → ℝ}
+    (hQ : IsOrthogonal (p + q) Q)
+    (hBQ : matMulRect p (p + q) (p + q) B Q = gqrBQBlock S)
+    (hnull : LSENullIntersectionTrivial A B) :
+    Function.Injective
+      (rectMatMulVec (rectPermuteCols Fin.revPerm (gqrAQ2Block A Q))) :=
+  rectMatMulVec_injective_rectPermuteCols Fin.revPerm
+    (gqrAQ2_rectMatMulVec_injective_of_constraint_block_nullIntersection
+      hQ hBQ hnull)
+
+/-- Construction-level exact-MGS nonbreakdown for the column-reversed smaller
+    `A Q₂` block. -/
+theorem gqrAQ2_reversed_mgs_norm_ne_zero_of_constraint_block_nullIntersection
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    {Q : Fin (p + q) → Fin (p + q) → ℝ}
+    {S : Fin p → Fin p → ℝ}
+    (hQ : IsOrthogonal (p + q) Q)
+    (hBQ : matMulRect p (p + q) (p + q) B Q = gqrBQBlock S)
+    (hnull : LSENullIntersectionTrivial A B)
+    (j : Fin q) :
+    gsColumnNorm2
+      (modifiedGramSchmidtVectors
+        (rectPermuteCols Fin.revPerm (gqrAQ2Block A Q)) j.val j) ≠ 0 :=
+  modifiedGramSchmidtVectors_norm_ne_zero_of_rectMatMulVec_injective
+    (rectPermuteCols Fin.revPerm (gqrAQ2Block A Q))
+    (gqrAQ2_reversed_rectMatMulVec_injective_of_constraint_block_nullIntersection
       hQ hBQ hnull) j
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction route:
@@ -3608,6 +3763,36 @@ theorem exists_gqr_constraint_block_and_A_Q2_mgs_of_fullRowRank_stackedFullColum
       hQ hBQ hnull j
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction route:
+    full row rank of `B` constructs the constraint block side, while stacked
+    full column rank supplies exact-MGS nonbreakdown for the column-reversed
+    smaller `A Q₂` block. -/
+theorem exists_gqr_constraint_block_and_reversed_A_Q2_mgs_of_fullRowRank_stackedFullColumnRank
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ (Q : Fin (p + q) → Fin (p + q) → ℝ) (S : Fin p → Fin p → ℝ),
+      IsOrthogonal (p + q) Q ∧
+        IsLowerTriangular S ∧
+        matMulRect p (p + q) (p + q) B Q = gqrBQBlock S ∧
+        ∀ j : Fin q,
+          gsColumnNorm2
+            (modifiedGramSchmidtVectors
+              (rectPermuteCols Fin.revPerm (gqrAQ2Block A Q)) j.val j) ≠ 0 := by
+  rcases
+    exists_gqr_constraint_block_and_A_Q2_mgs_of_fullRowRank_stackedFullColumnRank
+      (A := A) (B := B) hB hstack with
+    ⟨Q, S, hQ, hS, hBQ, _hdiagAQ2⟩
+  have hnull : LSENullIntersectionTrivial A B :=
+    (LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack
+  refine ⟨Q, S, hQ, hS, hBQ, ?_⟩
+  intro j
+  exact
+    gqrAQ2_reversed_mgs_norm_ne_zero_of_constraint_block_nullIntersection
+      hQ hBQ hnull j
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction route:
     after constructing the `Bᵀ` constraint block from full row rank of `B`,
     the smaller `A Q₂` block has an exact MGS QR factorization under the
     source stacked-full-column-rank hypothesis.
@@ -3642,6 +3827,42 @@ theorem exists_gqr_constraint_block_and_A_Q2_mgs_qr_of_fullRowRank_stackedFullCo
       (modifiedGramSchmidtR_upper_trapezoidal C)
   have hfactor : C = matMulRect (r + q) q q Q2 R2 := by
     exact modifiedGramSchmidt_exact_factorization C hdiagAQ2
+  exact ⟨Q, S, Q2, R2, hQ, hS, hBQ, horthQ2, hR2upper, hfactor⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction route:
+    after constructing the `Bᵀ` constraint block from full row rank of `B`,
+    the column-reversed smaller `A Q₂` block has an exact MGS QR factorization
+    under the source stacked-full-column-rank hypothesis. -/
+theorem exists_gqr_constraint_block_and_reversed_A_Q2_mgs_qr_of_fullRowRank_stackedFullColumnRank
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ (Q : Fin (p + q) → Fin (p + q) → ℝ) (S : Fin p → Fin p → ℝ)
+        (Q2 : Fin (r + q) → Fin q → ℝ) (R2 : Fin q → Fin q → ℝ),
+      IsOrthogonal (p + q) Q ∧
+        IsLowerTriangular S ∧
+        matMulRect p (p + q) (p + q) B Q = gqrBQBlock S ∧
+        GramSchmidtOrthonormalColumns Q2 ∧
+        IsUpperTriangular q R2 ∧
+        rectPermuteCols Fin.revPerm (gqrAQ2Block A Q) =
+          matMulRect (r + q) q q Q2 R2 := by
+  rcases
+    exists_gqr_constraint_block_and_reversed_A_Q2_mgs_of_fullRowRank_stackedFullColumnRank
+      (A := A) (B := B) hB hstack with
+    ⟨Q, S, hQ, hS, hBQ, hdiagAQ2rev⟩
+  let C : Fin (r + q) → Fin q → ℝ :=
+    rectPermuteCols Fin.revPerm (gqrAQ2Block A Q)
+  let Q2 : Fin (r + q) → Fin q → ℝ := modifiedGramSchmidtQ C
+  let R2 : Fin q → Fin q → ℝ := modifiedGramSchmidtR C
+  have horthQ2 : GramSchmidtOrthonormalColumns Q2 := by
+    exact modifiedGramSchmidtQ_orthonormal_columns C hdiagAQ2rev
+  have hR2upper : IsUpperTriangular q R2 := by
+    exact IsUpperTrapezoidal.to_upperTriangular
+      (modifiedGramSchmidtR_upper_trapezoidal C)
+  have hfactor : C = matMulRect (r + q) q q Q2 R2 := by
+    exact modifiedGramSchmidt_exact_factorization C hdiagAQ2rev
   exact ⟨Q, S, Q2, R2, hQ, hS, hBQ, horthQ2, hR2upper, hfactor⟩
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof:
