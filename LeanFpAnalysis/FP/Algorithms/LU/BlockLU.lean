@@ -1015,6 +1015,18 @@ lemma blockMaxNorm_le_of_entry_abs_le {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
   intro t _ht
   exact hEntry i j s t
 
+/-- The chapter entrywise block max norm is bounded by the blockwise
+    matrix-`∞` maximum. -/
+lemma blockMaxNorm_le_blockInfNorm {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ) :
+    blockMaxNorm hm hr A ≤ blockInfNorm hm A := by
+  apply blockMaxNorm_le_of_entry_abs_le
+  intro i j s t
+  exact le_trans
+    (entry_le_maxEntryNorm hr (A i j) s t)
+    (le_trans (maxEntryNorm_le_infNorm hr (A i j))
+      (block_le_blockInfNorm hm A i j))
+
 /-- A block matrix whose scalar entries occur in a square matrix is bounded by
     that square matrix's max-entry norm.  This is the block analogue of the
     rectangular submatrix containment bridge and is used to connect the
@@ -19422,6 +19434,132 @@ theorem
   exact
     higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockInfNorm_bound_of_active_stage_bound
       hm A pivotInv (blockInfNorm hm A)
+      (fun k i j hik hjk =>
+        higham13_algorithm13_3_matrix_infNorm_active_stage_bound_of_initial_diag_right_inverse_of_pivot_right_inverse
+          hunit A pivotInv invDiagBound diagInv hDom hInvBound hDiagRight hPivotRight
+          (blockInfNorm hm A) (block_le_blockInfNorm hm A) k i j hik hjk)
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.21):
+    a matrix-`∞` active-stage bound also controls the assembled upper factor in
+    the chapter entrywise block max norm, with the input measured in the same
+    blockwise matrix-`∞` maximum.
+
+    This keeps the useful output norm from the existing max-entry APIs while
+    avoiding the factor `r` that appears when the input is measured by the
+    scalar-entry `blockMaxNorm`. -/
+theorem
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockMaxNorm_bound_by_blockInfNorm_of_active_stage_bound
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (normMax : ℝ)
+    (hActive : ∀ k : ℕ, ∀ i j : Fin m, k ≤ i.val → k ≤ j.val →
+      infNorm (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j) ≤
+        2 * normMax) :
+    blockMaxNorm hm hr (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) ≤
+      2 * normMax :=
+  le_trans
+    (blockMaxNorm_le_blockInfNorm hm hr
+      (higham13_algorithm13_3_upperFromMatrixStages A pivotInv))
+    (higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockInfNorm_bound_of_active_stage_bound
+      hm A pivotInv normMax hActive)
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equation (13.21):
+    source-table matrix-`∞` upper-factor endpoint in the chapter entrywise
+    block max norm, with the input measured by `blockInfNorm`. -/
+theorem
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockMaxNorm_bound_by_blockInfNorm_of_continuousLinearMap_source_table
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (hunit : ({x : Fin r → ℝ | ‖x‖ = 1} : Set (Fin r → ℝ)).Nonempty)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hDom : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j)) invDiagBound)
+    (hDiagBound : ∀ j : Fin m, invDiagBound j ≤ infNorm (A j j))
+    (hInit : ∀ j : Fin m,
+      invDiagBound j ≤
+        continuousLinearMapLowerNorm
+          (matrixMulVecCLM
+            (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv 0 j j))
+          hunit)
+    (hLeft : ∀ k : ℕ, ∀ hk : k < m, ∀ x : Fin r → ℝ,
+      matrixMulVecCLM (pivotInv k)
+        (matrixMulVecCLM
+          (higham13_algorithm13_3_schurStageMatrixBlock
+            A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩) x) = x)
+    (hRight : ∀ k : ℕ, ∀ hk : k < m, ∀ y : Fin r → ℝ,
+      matrixMulVecCLM
+          (higham13_algorithm13_3_schurStageMatrixBlock
+            A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩)
+        (matrixMulVecCLM (pivotInv k) y) = y) :
+    blockMaxNorm hm hr (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) ≤
+      2 * blockInfNorm hm A := by
+  exact
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockMaxNorm_bound_by_blockInfNorm_of_active_stage_bound
+      hm hr A pivotInv (blockInfNorm hm A)
+      (fun k i j hik hjk =>
+        higham13_algorithm13_3_matrix_infNorm_active_stage_bound_of_continuousLinearMap_source_table
+          hunit A pivotInv invDiagBound hDom hDiagBound hInit hLeft hRight
+          (blockInfNorm hm A) (block_le_blockInfNorm hm A) k i j hik hjk)
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equation (13.21):
+    source-table matrix-`∞` upper-factor max-entry endpoint with certified
+    active pivot right inverses, with the input measured by `blockInfNorm`. -/
+theorem
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockMaxNorm_bound_by_blockInfNorm_of_continuousLinearMap_source_table_of_pivot_right_inverse
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (hunit : ({x : Fin r → ℝ | ‖x‖ = 1} : Set (Fin r → ℝ)).Nonempty)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hDom : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j)) invDiagBound)
+    (hDiagBound : ∀ j : Fin m, invDiagBound j ≤ infNorm (A j j))
+    (hInit : ∀ j : Fin m,
+      invDiagBound j ≤
+        continuousLinearMapLowerNorm
+          (matrixMulVecCLM
+            (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv 0 j j))
+          hunit)
+    (hPivotRight : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k)) :
+    blockMaxNorm hm hr (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) ≤
+      2 * blockInfNorm hm A := by
+  exact
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockMaxNorm_bound_by_blockInfNorm_of_active_stage_bound
+      hm hr A pivotInv (blockInfNorm hm A)
+      (fun k i j hik hjk =>
+        higham13_algorithm13_3_matrix_infNorm_active_stage_bound_of_continuousLinearMap_source_table_of_pivot_right_inverse
+          hunit A pivotInv invDiagBound hDom hDiagBound hInit hPivotRight
+          (blockInfNorm hm A) (block_le_blockInfNorm hm A) k i j hik hjk)
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equation (13.21):
+    matrix-`∞` upper-factor max-entry endpoint from initial diagonal
+    reciprocal data and certified active pivot right inverses, with the input
+    measured by `blockInfNorm`. -/
+theorem
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockMaxNorm_bound_by_blockInfNorm_of_initial_diag_right_inverse_of_pivot_right_inverse
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (hunit : ({x : Fin r → ℝ | ‖x‖ = 1} : Set (Fin r → ℝ)).Nonempty)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (diagInv : Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (hDom : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j)) invDiagBound)
+    (hInvBound : ∀ j : Fin m, invDiagBound j ≤ (infNorm (diagInv j))⁻¹)
+    (hDiagRight : ∀ j : Fin m, IsRightInverse r (A j j) (diagInv j))
+    (hPivotRight : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k)) :
+    blockMaxNorm hm hr (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) ≤
+      2 * blockInfNorm hm A := by
+  exact
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockMaxNorm_bound_by_blockInfNorm_of_active_stage_bound
+      hm hr A pivotInv (blockInfNorm hm A)
       (fun k i j hik hjk =>
         higham13_algorithm13_3_matrix_infNorm_active_stage_bound_of_initial_diag_right_inverse_of_pivot_right_inverse
           hunit A pivotInv invDiagBound diagInv hDom hInvBound hDiagRight hPivotRight

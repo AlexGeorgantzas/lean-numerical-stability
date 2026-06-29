@@ -39,6 +39,20 @@ end-to-end stability rebuild is tagged as
   with empty stderr, `git diff --check`, marker scan, and focused
   `#print axioms` all passed; axiom output was only `propext`,
   `Classical.choice`, and `Quot.sound`.
+- 2026-06-29 matrix-`∞` source-norm to max-entry upper bridge:
+  `blockMaxNorm_le_blockInfNorm` and the
+  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockMaxNorm_bound_by_blockInfNorm_*`
+  wrappers prove
+  `blockMaxNorm (upperFromMatrixStages ...) <= 2 * blockInfNorm A` from the
+  same active/source-table/pivot-right-inverse/initial-diagonal data.  This
+  gives the existing entrywise upper-factor API without the old input-side
+  `r * blockMaxNorm A` comparison loss when the source norm is the blockwise
+  matrix-`∞` maximum; the entrywise-input Eq.13.21 and finite-history
+  `growthFactorEntry <= 2` rows remain open.  Verification before commit:
+  direct `BlockLU.lean`, focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet `examples/LibraryLookup.lean`
+  with empty stderr, `git diff --check`, marker scan, and focused
+  `#print axioms` all passed with only standard Mathlib axioms.
 - 2026-06-29 matrix-`∞` source-table max-entry composition checkpoint:
   `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockMaxNorm_bound_with_card_of_continuousLinearMap_source_table`,
   `higham13_algorithm13_3_matrix_infNorm_matrixStageHistoryGrowthFactor_le_card_of_continuousLinearMap_source_table`,
