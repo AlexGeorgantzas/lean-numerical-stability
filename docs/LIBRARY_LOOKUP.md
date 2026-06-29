@@ -1954,6 +1954,9 @@ Source-facing Chapter 9 wrappers:
 - `higham9_11_bohteBound_bandwidth_four_formula`
 - `higham9_11_bohteBound_nonneg`
 - `higham9_11_bohteBound_ge_two`
+- `higham9_11_bohteBound_add_three_eq`
+- `higham9_11_bohteBound_quad_le_add_three`
+- `higham9_11_bohteBound_le_add_three`
 - `higham9_11_banded_growth_factor_solve_tight`
 - `higham9_11_bohte_banded_solve_tight`
 - `higham9_11_tridiagonal_bohte_solve_tight`
