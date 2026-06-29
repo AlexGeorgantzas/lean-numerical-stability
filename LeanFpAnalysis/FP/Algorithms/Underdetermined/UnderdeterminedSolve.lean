@@ -338,6 +338,25 @@ theorem higham21_eq21_3_q_method_min_norm_of_qr_R_det_ne_zero {m k : ℕ}
     simpa [Matrix.det_transpose] using hdet
   exact higham21_eq21_3_q_method_min_norm_of_qr_det_ne_zero Q hQ R b y1 hdetT hy1
 
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.3):
+    exact Q-method minimum-norm handoff from the usual triangular-factor
+    nonsingularity condition: `R` is upper triangular with nonzero diagonal. -/
+theorem higham21_eq21_3_q_method_min_norm_of_qr_upper_diag_ne_zero {m k : ℕ}
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (hQ : IsOrthogonal (m + k) Q)
+    (R : Fin m → Fin m → ℝ)
+    (b y1 : Fin m → ℝ)
+    (hupper : IsUpperTrapezoidal m m R)
+    (hdiag : ∀ i : Fin m, R i i ≠ 0)
+    (hy1 : (fun j : Fin m => ∑ i : Fin m, R i j * y1 i) = b) :
+    RectMinNormSolution m (m + k)
+      (finiteTranspose (matMulRectLeft Q (lsQRTallBlock (k := k) R)))
+      b
+      (matMulVec (m + k) Q (Fin.append y1 (0 : Fin k → ℝ))) := by
+  have hdet : Matrix.det (R : Matrix (Fin m) (Fin m) ℝ) ≠ 0 :=
+    det_ne_zero_of_upper_triangular_diag_ne_zero m R hupper hdiag
+  exact higham21_eq21_3_q_method_min_norm_of_qr_R_det_ne_zero Q hQ R b y1 hdet hy1
+
 -- ============================================================
 -- §21.3  Row-wise backward error for underdetermined systems
 -- ============================================================
