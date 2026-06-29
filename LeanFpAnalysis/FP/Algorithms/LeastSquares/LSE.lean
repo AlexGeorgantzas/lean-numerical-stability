@@ -3505,6 +3505,63 @@ theorem GeneralizedQRFactorization.A_Q2_zero_iff_L22_zero
         simpa [Fin.append_right, rectMatMulVec] using hi
     exact h.A_zero_of_transformed_A_zero hblock
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
+    under the source null-intersection condition, the `Q₂` coordinate block
+    has trivial kernel through `A`.
+
+    This is the source-faithful kernel consequence behind the proof step
+    `null(B) = range(Q₂)` followed by `AQ₂ = U₂ L22`: if
+    `A (Q [0; y₂]) = 0`, then the same vector also satisfies the constraint
+    block equation, hence lies in `null(A) ∩ null(B)` and must be zero. -/
+theorem GeneralizedQRFactorization.A_Q2_kernel_trivial_of_nullIntersectionTrivial
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (hnull : LSENullIntersectionTrivial A B)
+    (y2 : Fin q → ℝ)
+    (hAy2 :
+      rectMatMulVec A
+        (matMulVec (p + q) h.Q (Fin.append (0 : Fin p → ℝ) y2)) = 0) :
+    y2 = 0 := by
+  let y : Fin (p + q) → ℝ := Fin.append (0 : Fin p → ℝ) y2
+  let x : Fin (p + q) → ℝ := matMulVec (p + q) h.Q y
+  have hBx : rectMatMulVec B x = 0 := by
+    have hc := h.constraint_eq (0 : Fin p → ℝ) y2
+    change
+      rectMatMulVec B
+        (matMulVec (p + q) h.Q (Fin.append (0 : Fin p → ℝ) y2)) = 0
+    rw [hc]
+    exact rectMatMulVec_zero h.S
+  have hxzero : x = 0 := hnull x hAy2 hBx
+  have hyzero : y = 0 := by
+    have hrec := matMulVec_orthogonal_transpose_mul h.orthQ y
+    dsimp [x] at hxzero
+    rw [hxzero, matMulVec_zero] at hrec
+    exact hrec.symm
+  ext i
+  have hi := congrFun hyzero (Fin.natAdd p i)
+  simpa [y, Fin.append_right] using hi
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 proof after (20.28):
+    stacked full column rank gives the same trivial-kernel property for the
+    `A Q₂` block, using the repository's equivalence between stacked rank and
+    the local null-intersection condition. -/
+theorem GeneralizedQRFactorization.A_Q2_kernel_trivial_of_stackedFullColumnRank
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (hstack : LSEStackedFullColumnRank A B)
+    (y2 : Fin q → ℝ)
+    (hAy2 :
+      rectMatMulVec A
+        (matMulVec (p + q) h.Q (Fin.append (0 : Fin p → ℝ) y2)) = 0) :
+    y2 = 0 :=
+  h.A_Q2_kernel_trivial_of_nullIntersectionTrivial
+    ((LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).2 hstack)
+    y2 hAy2
+
 /-- Exact GQR method handoff for (20.27):
     if the transformed block vector `[y1; y2]` minimizes the transformed
     least-squares objective among all transformed feasible blocks
