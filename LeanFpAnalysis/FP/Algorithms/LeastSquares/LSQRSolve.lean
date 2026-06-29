@@ -11165,6 +11165,56 @@ theorem
       (lsRealRectColRank_rectMatMulVec_injective_of_colRank_eq_card A hrank)
       halpha
 
+/-- Higham, 2nd ed., Chapter 20, equations (20.18)-(20.19):
+    source-rank right-Gram handoff with the bounds and scaling written using the
+    ordered real right-Gram singular values.  The inverse candidate is still the
+    constructed basis-indexed right-Gram candidate; the finite extrema are
+    permutation-invariant under the basis-to-ordered reindexing. -/
+theorem
+    exists_lsScaledAugmentedMatrix_kappa2_bounds_of_rectSingularValue_rightGram_basis_of_colRank_eq_card
+    {m n : ℕ} [Nonempty (Fin n)] (hmn : n ≤ m)
+    {alpha : ℝ} {A : Fin m → Fin n → ℝ}
+    (hrank : lsRealRectColRank A = n)
+    (halpha :
+      alpha = lsScaledAugmentedBranchSigmaMin (rectSingularValue A) /
+        Real.sqrt 2) :
+    ∃ w : Fin (m - n) → Fin m → ℝ,
+      (∀ k : Fin (m - n), vecNorm2Sq (w k) = 1) ∧
+        (∀ k l : Fin (m - n),
+          k ≠ l → (∑ r : Fin m, w k r * w l r) = 0) ∧
+        (∀ k : Fin (m - n), ∀ j : Fin n,
+          ∑ r : Fin m, A r j * w k r = 0) ∧
+        Real.sqrt 2 *
+              (lsScaledAugmentedBranchSigmaMax (rectSingularValue A) /
+                lsScaledAugmentedBranchSigmaMin (rectSingularValue A)) ≤
+            kappa2 (lsScaledAugmentedMatrix alpha A)
+              (lsScaledAugmentedSourceBranchInverseCandidate hmn alpha
+                (rectRightGramBasisSingularValue A)
+                (fun a r => rectRightGramLeftSingularFromEigenbasis A r a)
+                (fun a j => rectRightGramEigenbasis A j a) w) ∧
+          kappa2 (lsScaledAugmentedMatrix alpha A)
+              (lsScaledAugmentedSourceBranchInverseCandidate hmn alpha
+                (rectRightGramBasisSingularValue A)
+                (fun a r => rectRightGramLeftSingularFromEigenbasis A r a)
+                (fun a j => rectRightGramEigenbasis A j a) w) ≤
+            2 *
+              (lsScaledAugmentedBranchSigmaMax (rectSingularValue A) /
+                lsScaledAugmentedBranchSigmaMin (rectSingularValue A)) := by
+  have hmin :=
+    lsScaledAugmentedBranchSigmaMin_rectRightGramBasis_eq_rectSingularValue A
+  have hmax :=
+    lsScaledAugmentedBranchSigmaMax_rectRightGramBasis_eq_rectSingularValue A
+  have halpha_basis :
+      alpha = lsScaledAugmentedBranchSigmaMin
+          (rectRightGramBasisSingularValue A) / Real.sqrt 2 := by
+    simpa [hmin] using halpha
+  obtain ⟨w, hw, hnull, hATw, hbounds⟩ :=
+    exists_lsScaledAugmentedMatrix_kappa2_bounds_of_rightGram_basis_of_colRank_eq_card
+      (m := m) (n := n) hmn
+      (A := A) (alpha := alpha) hrank halpha_basis
+  refine ⟨w, hw, hnull, hATw, ?_⟩
+  simpa [hmin, hmax] using hbounds
+
 /-- A nonzero vector annihilating every column of a real rectangular matrix
     rules out full row rank of the row-side complexified transpose. -/
 theorem lsRealRectRowRank_ne_card_of_leftNull {m n : ℕ}
