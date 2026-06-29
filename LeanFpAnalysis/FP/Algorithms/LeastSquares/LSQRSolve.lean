@@ -11033,19 +11033,9 @@ theorem lsRealRectColRank_rectMatMulVec_injective_of_colRank_eq_card {m n : ℕ}
     Function.Injective (rectMatMulVec A) := by
   intro x y hxy
   have hdiff : rectMatMulVec A (fun j : Fin n => x j - y j) = 0 := by
+    rw [rectMatMulVec_sub A x y]
     ext i
-    have hi := congrFun hxy i
-    calc
-      ∑ j : Fin n, A i j * (x j - y j)
-          = ∑ j : Fin n, (A i j * x j - A i j * y j) := by
-            apply Finset.sum_congr rfl
-            intro j _
-            ring
-      _ = (∑ j : Fin n, A i j * x j) -
-              ∑ j : Fin n, A i j * y j := by
-            rw [Finset.sum_sub_distrib]
-      _ = 0 := by
-            simpa [rectMatMulVec] using sub_eq_zero.mpr hi
+    exact sub_eq_zero.mpr (congrFun hxy i)
   have hzero :=
     lsRealRectColRank_rectMatMulVec_eq_zero_of_colRank_eq_card
       A hrank hdiff
