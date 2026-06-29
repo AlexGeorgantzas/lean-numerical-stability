@@ -1202,6 +1202,39 @@ theorem matrixMulVecCLM_norm_eq_infNorm {n : ℕ}
   simpa [matrixMulVecCLM, infNorm] using
     (Matrix.linfty_opNorm_eq_opNorm A).symm
 
+/-- A certified matrix right inverse acts as a right inverse for the associated
+continuous linear maps. -/
+theorem matrixMulVecCLM_right_inverse_of_isRightInverse {n : ℕ}
+    (T Tinv : Matrix (Fin n) (Fin n) ℝ)
+    (hRight : IsRightInverse n T Tinv) :
+    ∀ x : Fin n → ℝ,
+      matrixMulVecCLM T (matrixMulVecCLM Tinv x) = x := by
+  intro x
+  have hmul : T * Tinv = 1 := by
+    ext i j
+    simpa [Matrix.mul_apply] using hRight i j
+  change T.mulVec (Tinv.mulVec x) = x
+  rw [Matrix.mulVec_mulVec]
+  simp [hmul]
+
+/-- A certified matrix right inverse also supplies the left inverse action for
+the associated continuous linear maps, using finite-dimensional square
+invertibility. -/
+theorem matrixMulVecCLM_left_inverse_of_isRightInverse {n : ℕ}
+    (T Tinv : Matrix (Fin n) (Fin n) ℝ)
+    (hRight : IsRightInverse n T Tinv) :
+    ∀ x : Fin n → ℝ,
+      matrixMulVecCLM Tinv (matrixMulVecCLM T x) = x := by
+  intro x
+  have hLeft : IsLeftInverse n T Tinv :=
+    isLeftInverse_of_isRightInverse T Tinv hRight
+  have hmul : Tinv * T = 1 := by
+    ext i j
+    simpa [Matrix.mul_apply] using hLeft i j
+  change Tinv.mulVec (T.mulVec x) = x
+  rw [Matrix.mulVec_mulVec]
+  simp [hmul]
+
 /-- Infinity norm of a matrix is nonneg. -/
 lemma infNorm_nonneg {n : ℕ} (A : Fin n → Fin n → ℝ) :
     0 ≤ infNorm A := by
