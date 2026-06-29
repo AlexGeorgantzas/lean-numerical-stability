@@ -14349,6 +14349,102 @@ theorem
           frobNorm (nonsingInv n (householder_paddedFinInput_R11 fp A)))
       le_rfl
 
+/-- Source-condition version of the determinant-routed pointwise-`R11`
+stored-loop Theorem 19.13 wrapper.
+
+Compared with the Frobenius fallback immediately above, this keeps the inverse
+budget as the source-facing estimate `||A||_F * rho <= kappaA`, which is the
+sharper condition-number gate still tracked for the final printed route. -/
+theorem
+    mgs_qr_bounds_of_storedTrailingPanel_R11_final_prevBlocks_det_uniform_step_budget_compact_condition_explicit_radius_of_small_unit_roundoff
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hrows : n <= n + m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    (A_hat : Nat -> Fin (n + m) -> Fin n -> Real)
+    (b_hat : Nat -> Fin (n + m) -> Real)
+    (alpha : Nat -> Real)
+    (cStep : Real)
+    (hm : gammaValid fp (n + m))
+    (hStep : forall k (hk : k < n),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (n + m) n k
+          (householderTrailingActiveVector (n + m)
+            (Fin.mk k (lt_of_lt_of_le hk hrows))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (n + m)
+            (householderTrailingActiveVector (n + m)
+              (Fin.mk k (lt_of_lt_of_le hk hrows))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (halpha : forall k (hk : k < n),
+      alpha k * alpha k =
+        householderTrailingNorm2Sq (n + m)
+          (Fin.mk k (lt_of_lt_of_le hk hrows))
+          (fun i => A_hat k i (Fin.mk k hk)))
+    (hdetPrevFinal : forall k (hk : k < n),
+      Ne
+        (Matrix.det
+          (qrPreviousLeadingBlockTranspose (A_hat n)
+            (le_trans (Nat.le_of_lt hk) hrows) hk :
+            Matrix (Fin k) (Fin k) Real))
+        0)
+    (hdetLead : forall k (hk : k < n),
+      Ne
+        (Matrix.det
+          (qrLeadingBlock (A_hat k)
+            (le_trans (Nat.succ_le_of_lt hk) hrows) hk :
+            Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+        0)
+    (hsign : forall k (hk : k < n),
+      alpha k *
+          A_hat k (Fin.mk k (lt_of_lt_of_le hk hrows)) (Fin.mk k hk) <= 0)
+    (hStepBudget : forall k : Fin n,
+      storedQRCompactStepRelativeBudget hrows fp A_hat b_hat alpha k <= cStep)
+    (huniformBudget : forall k (hk : k < n),
+      ((n : Real) * cStep) *
+          vecNorm2 (fun i : Fin (n + m) => A_hat k i (Fin.mk k hk)) <
+        Real.sqrt
+          (householderTrailingNorm2Sq (n + m)
+            (Fin.mk k (lt_of_lt_of_le hk hrows))
+            (fun i => A_hat k i (Fin.mk k hk))))
+    (hR11 : forall i j,
+      householder_paddedFinInput_R11 fp A i j =
+        A_hat n (Fin.mk i.val (lt_of_lt_of_le i.isLt hrows)) j)
+    {rho kappaA : Real}
+    (hRinv :
+      rectOpNorm2Le
+        (nonsingInv n (householder_paddedFinInput_R11 fp A))
+        rho)
+    (hrho : 0 <= rho)
+    (hcondition : frobNormRect A * rho <= kappaA) :
+    MGSQRBounds m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (householder_paddedFinInput_R11 fp A)
+      (2 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      (12 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u (frobNormRect A) kappaA
+      (((3 * Theorem19_4.gamma_tilde fp (n + m) n) * kappaA) ^ 2) := by
+  have hdet :
+      Ne
+        (Matrix.det
+          (householder_paddedFinInput_R11 fp A :
+            Matrix (Fin n) (Fin n) Real))
+        0 :=
+    householder_paddedFinInput_R11_det_ne_zero_of_storedTrailingPanel_final_prevBlocks_uniform_step_budget
+      (fp := fp) (m := m) (n := n) A hn hrows hsmall
+      A_hat b_hat alpha cStep hm hStep halpha hdetPrevFinal hdetLead
+      hsign hStepBudget huniformBudget hR11
+  exact
+    mgs_qr_bounds_of_R11_det_ne_zero_compact_condition_explicit_radius_of_small_unit_roundoff
+      (fp := fp) (m := m) (n := n) A hn hnm hsmall
+      (rho := rho) (kappaA := kappaA) hdet hRinv hrho hcondition
+
 /-- Determinant-routed final-panel equality version of the stored-loop
 Theorem 19.13 Frobenius-condition wrapper.
 
@@ -14528,6 +14624,95 @@ theorem
         frobNormRect A *
           frobNorm (nonsingInv n (householder_paddedFinInput_R11 fp A)))
       le_rfl
+
+/-- Source-condition version of the determinant-routed final-panel equality
+stored-loop Theorem 19.13 wrapper.
+
+The full recursive/stored final-panel equality supplies the top-block `R11`
+bridge internally, while the condition estimate remains visible as
+`||A||_F * rho <= kappaA` for the final source-condition proof. -/
+theorem
+    mgs_qr_bounds_of_storedTrailingPanel_final_panel_eq_final_prevBlocks_det_uniform_step_budget_compact_condition_explicit_radius_of_small_unit_roundoff
+    (fp : FPModel) {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hn : 0 < n)
+    (hnm : n <= m)
+    (hrows : n <= n + m)
+    (hsmall :
+      (((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real) *
+        fp.u <= 1 / 2))
+    (A_hat : Nat -> Fin (n + m) -> Fin n -> Real)
+    (b_hat : Nat -> Fin (n + m) -> Real)
+    (alpha : Nat -> Real)
+    (cStep : Real)
+    (hm : gammaValid fp (n + m))
+    (hStep : forall k (hk : k < n),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (n + m) n k
+          (householderTrailingActiveVector (n + m)
+            (Fin.mk k (lt_of_lt_of_le hk hrows))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (n + m)
+            (householderTrailingActiveVector (n + m)
+              (Fin.mk k (lt_of_lt_of_le hk hrows))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (halpha : forall k (hk : k < n),
+      alpha k * alpha k =
+        householderTrailingNorm2Sq (n + m)
+          (Fin.mk k (lt_of_lt_of_le hk hrows))
+          (fun i => A_hat k i (Fin.mk k hk)))
+    (hdetPrevFinal : forall k (hk : k < n),
+      Ne
+        (Matrix.det
+          (qrPreviousLeadingBlockTranspose (A_hat n)
+            (le_trans (Nat.le_of_lt hk) hrows) hk :
+            Matrix (Fin k) (Fin k) Real))
+        0)
+    (hdetLead : forall k (hk : k < n),
+      Ne
+        (Matrix.det
+          (qrLeadingBlock (A_hat k)
+            (le_trans (Nat.succ_le_of_lt hk) hrows) hk :
+            Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+        0)
+    (hsign : forall k (hk : k < n),
+      alpha k *
+          A_hat k (Fin.mk k (lt_of_lt_of_le hk hrows)) (Fin.mk k hk) <= 0)
+    (hStepBudget : forall k : Fin n,
+      storedQRCompactStepRelativeBudget hrows fp A_hat b_hat alpha k <= cStep)
+    (huniformBudget : forall k (hk : k < n),
+      ((n : Real) * cStep) *
+          vecNorm2 (fun i : Fin (n + m) => A_hat k i (Fin.mk k hk)) <
+        Real.sqrt
+          (householderTrailingNorm2Sq (n + m)
+            (Fin.mk k (lt_of_lt_of_le hk hrows))
+            (fun i => A_hat k i (Fin.mk k hk))))
+    (hFinal :
+      A_hat n = fl_householderQRPanel_R fp (n + m) n (paddedFinInput A))
+    {rho kappaA : Real}
+    (hRinv :
+      rectOpNorm2Le
+        (nonsingInv n (householder_paddedFinInput_R11 fp A))
+        rho)
+    (hrho : 0 <= rho)
+    (hcondition : frobNormRect A * rho <= kappaA) :
+    MGSQRBounds m n A
+      (paddedEconomyQ
+        (fl_householderQRPanel_Q fp (n + m) n (paddedFinInput A)))
+      (householder_paddedFinInput_R11 fp A)
+      (2 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      (12 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      (4 * ((n * householderConstructApplyGammaIndex (n + m) : Nat) : Real))
+      fp.u (frobNormRect A) kappaA
+      (((3 * Theorem19_4.gamma_tilde fp (n + m) n) * kappaA) ^ 2) := by
+  exact
+    mgs_qr_bounds_of_storedTrailingPanel_R11_final_prevBlocks_det_uniform_step_budget_compact_condition_explicit_radius_of_small_unit_roundoff
+      (fp := fp) (m := m) (n := n) A hn hnm hrows hsmall
+      A_hat b_hat alpha cStep hm hStep halpha hdetPrevFinal hdetLead
+      hsign hStepBudget huniformBudget
+      (householder_paddedFinInput_R11_eq_top_block_of_final_panel_eq
+        fp A hrows A_hat hFinal)
+      (rho := rho) (kappaA := kappaA) hRinv hrho hcondition
 
 /-- Source-diagonal Frobenius-self fallback route for the chapter-facing
 Theorem 19.13 assembly.
