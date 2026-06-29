@@ -12623,6 +12623,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_14_completePivotWilkinsonProduct_monotone
 #check higham9_14_completePivotWilkinsonProduct_le_of_le
 #check higham9_14_completePivotWilkinsonBound_ge_sqrt
+#check higham9_14_completePivotWilkinsonBound_ge_one
+#check higham9_14_completePivotWilkinsonBound_two
 #check higham9_14_completePivotWilkinsonBound_le_of_le
 #check higham9_14_completePivotWilkinsonBound_monotone
 #check higham9_16_rookPivotingUTraceGrowthValues
@@ -12633,6 +12635,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_16_rookPivotingUTraceGrowthValues_nonempty
 #check higham9_16_rookPivotingUTraceGrowthSup_le_pow_two
 #check higham9_16_rookPivotFosterBound_ge_three_halves
+#check higham9_16_rookPivotFosterBound_ge_one
+#check higham9_16_rookPivotFosterBound_one
 #check higham9_16_rookPivotFosterFactor_le_of_le
 #check higham9_16_rookPivotFosterBound_le_of_le
 #check higham9_16_rookPivotFosterBound_monotone
