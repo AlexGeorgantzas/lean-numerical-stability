@@ -1634,6 +1634,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_completePivotWilkinsonProduct_pos`
 - `higham9_14_completePivotWilkinsonBound_nonneg`
 - `higham9_14_completePivotWilkinsonBound_pos`
+- `higham9_14_completePivotWilkinsonProduct_ge_one`
+- `higham9_14_completePivotWilkinsonBound_ge_sqrt`
 - `higham9_completePivotGrowthSet`
 - `higham9_completePivotGrowthSup`
 - `higham9_completePivotGrowth_le_sup`
@@ -1666,6 +1668,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_16_rookPivotFosterBound`
 - `higham9_16_rookPivotFosterBound_nonneg`
 - `higham9_16_rookPivotFosterBound_pos`
+- `higham9_16_rookPivotFosterBound_ge_three_halves`
 - `higham9_12_sineMatrix`
 - `higham9_12_sineMatrix_symm`
 - `higham9_12_sineMatrix_entry_abs_le_scale`
@@ -2062,6 +2065,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_h_mul_one_sub_eq_f`
 - `higham9_14_f_le_h`
 - `higham9_20_tridiag_lu_perturbation_model_of_LUBackwardError_le`
+- `higham9_20_tridiag_lu_perturbation_model_of_DoolittleDenseLoopCertificate`
+- `higham9_20_tridiag_lu_perturbation_model_of_DoolittleDenseLoopAbsBudgetCertificate`
 - `higham9_21_tridiag_solve_perturbation_model_of_fl_triangular_solves_gamma_le`
 - `higham9_14_source_f_bound`
 - `higham9_14_source_h_bound_of_absLUhat_bound`
@@ -2075,6 +2080,12 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_source_h_bound_of_LUFactSpec_fl_triangular_solves_gamma_le`
 - `higham9_14_source_h_bound_of_LUFactSpec_fl_triangular_solves_const_gamma_le`
 - `higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_const_gamma_le`
+- `higham9_14_source_f_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_gamma_le`
+- `higham9_14_source_f_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_gamma_le`
+- `higham9_14_source_h_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_gamma_le`
+- `higham9_14_source_h_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_gamma_le`
+- `higham9_14_source_h_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_const_gamma_le`
+- `higham9_14_source_h_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_const_gamma_le`
 - `higham9_14_spd_tridiag_positive_DLT_source_h_bound_of_models`
 - `higham9_14_spd_tridiag_positive_DLT_source_h_bound_of_recurrence`
 - `higham9_14_nonnegative_lu_source_h_bound_of_models`
