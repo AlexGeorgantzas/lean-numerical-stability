@@ -924,6 +924,73 @@ theorem higham21_lemma21_2_symmetrized_min_norm_of_transpose_action_bound {m n :
       x DeltaA1 DeltaA2 y ((rho1 + rho2) / (1 - rho2)) haction)
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    operator/vector route to the beta vector-action bound.  An operator-2
+    bound for `(DeltaA1 - DeltaA2)^T`, together with a bound on the auxiliary
+    dual vector `y` in terms of `x`, gives the vector-action estimate needed by
+    the beta handoff.
+
+    The source pseudoinverse perturbation argument is still responsible for
+    proving the operator and dual-vector bounds used here. -/
+theorem higham21_lemma21_2_transpose_action_bound_of_op_bound_and_dual_norm
+    {m n : ℕ}
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (y : Fin m → ℝ)
+    {alpha eta gamma : ℝ}
+    (halpha : 0 ≤ alpha)
+    (hprod : alpha * eta ≤ gamma)
+    (hOp :
+      rectOpNorm2Le
+        (finiteTranspose (fun i j => DeltaA1 i j - DeltaA2 i j)) alpha)
+    (hy : vecNorm2 y ≤ eta * vecNorm2 x) :
+    vecNorm2
+        (rectMatMulVec
+          (finiteTranspose (fun i j => DeltaA1 i j - DeltaA2 i j)) y) ≤
+      gamma * vecNorm2 x := by
+  calc
+    vecNorm2
+        (rectMatMulVec
+          (finiteTranspose (fun i j => DeltaA1 i j - DeltaA2 i j)) y)
+        ≤ alpha * vecNorm2 y := hOp y
+    _ ≤ alpha * (eta * vecNorm2 x) :=
+        mul_le_mul_of_nonneg_left hy halpha
+    _ = (alpha * eta) * vecNorm2 x := by ring
+    _ ≤ gamma * vecNorm2 x :=
+        mul_le_mul_of_nonneg_right hprod (vecNorm2_nonneg x)
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    minimum-norm handoff from operator and dual-vector norm bounds for the beta
+    vector-action estimate.  This isolates the remaining source-specific work
+    to proving those bounds from pseudoinverse perturbation theory. -/
+theorem higham21_lemma21_2_symmetrized_min_norm_of_op_bound_and_dual_norm {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (rho1 rho2 alpha eta : ℝ)
+    (hsq : vecNorm2Sq x ≠ 0)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hDeltaA2 :
+      rectMatMulVec (finiteTranspose (fun i j => A i j + DeltaA2 i j)) y = x)
+    (hsmall : 3 * max rho1 rho2 < 1)
+    (halpha : 0 ≤ alpha)
+    (hprod : alpha * eta ≤ (rho1 + rho2) / (1 - rho2))
+    (hOp :
+      rectOpNorm2Le
+        (finiteTranspose (fun i j => DeltaA1 i j - DeltaA2 i j)) alpha)
+    (hy : vecNorm2 y ≤ eta * vecNorm2 x) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j)
+      b x :=
+  higham21_lemma21_2_symmetrized_min_norm_of_transpose_action_bound
+    A x DeltaA1 DeltaA2 b y rho1 rho2 hsq hDeltaA1 hDeltaA2 hsmall
+    (higham21_lemma21_2_transpose_action_bound_of_op_bound_and_dual_norm
+      x DeltaA1 DeltaA2 y halpha hprod hOp hy)
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     the Frobenius-squared norm bound for the projector mixture used to replace
     two perturbation blocks by one. -/
 theorem higham21_lemma21_2_symmetrized_perturbation_frobNormSq_le {m n : ℕ}
