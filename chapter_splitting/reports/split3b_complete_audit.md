@@ -1537,15 +1537,18 @@ Not yet run for this complete audit:
 ## GitHub synchronization
 
 - Local branch: `main`.
-- Latest integrated remote base before this increment: `575869c`.
-- Split-prefixed milestone subject for this increment:
-  `Split 3B: prove Ch19 actual-active two-column bridge`.
+- Latest pushed proof/merge HEAD before this report-sync update: `0b55991`.
+- Split-prefixed milestone commit: `2b1ef45`
+  (`Split 3B: prove Ch19 actual-active two-column bridge`).
 - Integration: local `main` and `origin/main` were equal at `575869c` before
-  theorem design; no merge was needed before this proof increment.
+  theorem design.  Remote `main` later advanced to `2e6c1ce`; it was merged
+  cleanly as `0b55991` before pushing, preserving incoming Split 3A/library
+  lookup work.
 - Verification after implementation: `lake env lean LeanFpAnalysis\FP\Algorithms\QR\Higham19.lean`,
   `lake build LeanFpAnalysis.FP.Algorithms.QR.Higham19`, placeholder scan,
   `git diff --check`, and stdin `#print axioms` probe all passed.
-- Pushed to `origin/main`: pending for this increment at this report edit.
+- Pushed to `origin/main`: yes, `git push origin main` advanced
+  `origin/main` to `0b55991`; this report-sync update records that push.
 - Remaining local uncommitted files: pre-existing `.gitignore` modification and
   untracked `.codex/config.toml`.
 
