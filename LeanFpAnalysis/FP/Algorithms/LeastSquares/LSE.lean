@@ -447,7 +447,7 @@ theorem exists_orthogonal_completion_tall_qr_block {p q : ℕ}
         ⟨ja, hja⟩
       have hchoose : Classical.choose ha = ja := by
         apply Fin.castAdd_injective p q
-        simpa [hja] using (Classical.choose_spec ha).symm
+        simp [hja]
       simp [X, ha, hchoose]
     have hXb : ∀ i : Fin (p + q), X i b = Q1 i jb := by
       intro i
@@ -455,7 +455,7 @@ theorem exists_orthogonal_completion_tall_qr_block {p q : ℕ}
         ⟨jb, hjb⟩
       have hchoose : Classical.choose hb = jb := by
         apply Fin.castAdd_injective p q
-        simpa [hjb] using (Classical.choose_spec hb).symm
+        simp [hjb]
       simp [X, hb, hchoose]
     have hsubeq : a = b ↔ ja = jb := by
       constructor
