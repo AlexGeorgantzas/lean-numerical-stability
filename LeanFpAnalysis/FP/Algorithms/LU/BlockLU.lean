@@ -461,6 +461,10 @@
     growthFactorEntry_le_of_growth_le_of_base_le,
     higham13_algorithm13_3_stageLocalGrowthFactor_le_matrixStageHistoryGrowthFactor_of_base_le,
     higham13_stage_local_base_comparison_counterexample,
+    higham13_stage_local_source_lblock_budget_le_of_growth_plain_inverse_bound,
+    higham13_algorithm13_3_multiplier_bounds_from_stageLocalGrowth_plain_inverse_bound_exact_kappa,
+    higham13_eq13_22_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa,
+    higham13_eq13_23_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa,
     growthFactorEntry_sq_kappa_budget_le_of_growth_le_inv_ratio,
     higham13_eq13_22_matrix_stage_history_product_from_stage_local_budgets_exact_kappa,
     higham13_eq13_22_matrix_stage_history_product_from_stage_local_growth_budgets_exact_kappa,
@@ -25452,6 +25456,37 @@ theorem higham13_stage_local_source_lblock_budget_le_of_growth_inverse_bound
 
 /-- Higham, 2nd ed., Chapter 13, Problem 13.4 feeding equations
     (13.22)--(13.23):
+    scalar bridge for the source-strength local inverse-bound route.
+
+    This is the cleaner version of
+    `higham13_stage_local_source_lblock_budget_le_of_growth_inverse_bound`:
+    once the stage history supplies
+    `rhoLocal * ||A_local|| <= rhoFull * ||A||`, it is enough to prove the
+    Schur-tail inverse comparison `||A_local^{-1}|| <= ||A^{-1}||`.  The extra
+    factor of `rhoFull` needed by the ambient `rhoFull^2 kappa(A)` budget is
+    obtained from the standard growth fact `1 <= rhoFull`. -/
+theorem higham13_stage_local_source_lblock_budget_le_of_growth_plain_inverse_bound
+    {rhoLocal rhoFull normLocal normFull normInvLocal normInvFull : ℝ}
+    (hGrowthBudget : rhoLocal * normLocal ≤ rhoFull * normFull)
+    (hInvBudget : normInvLocal ≤ normInvFull)
+    (hInvLocal_nonneg : 0 ≤ normInvLocal)
+    (hInvFull_nonneg : 0 ≤ normInvFull)
+    (hGlobalGrowthBudget_nonneg : 0 ≤ rhoFull * normFull)
+    (hrhoFull_ge_one : 1 ≤ rhoFull) :
+    rhoLocal * (normLocal * normInvLocal) ≤
+      rhoFull ^ 2 * (normFull * normInvFull) := by
+  have hInvBudgetRho : normInvLocal ≤ rhoFull * normInvFull := by
+    refine le_trans hInvBudget ?_
+    calc
+      normInvFull = 1 * normInvFull := by ring
+      _ ≤ rhoFull * normInvFull :=
+          mul_le_mul_of_nonneg_right hrhoFull_ge_one hInvFull_nonneg
+  exact
+    higham13_stage_local_source_lblock_budget_le_of_growth_inverse_bound
+      hGrowthBudget hInvBudgetRho hInvLocal_nonneg hGlobalGrowthBudget_nonneg
+
+/-- Higham, 2nd ed., Chapter 13, Problem 13.4 feeding equations
+    (13.22)--(13.23):
     matrix-stage multiplier bounds from canonical local growth and the
     source scalar comparison table.
 
@@ -25804,6 +25839,82 @@ theorem higham13_algorithm13_3_multiplier_bounds_from_stageLocalGrowth_inverse_b
       _ = (n : ℝ) * rhoFull ^ 2 * kappaFull := by ring
   exact le_trans hLocal
     (by simpa [hN, A0, G, rhoFull, kappaFull, normA, normAinv] using hScaled)
+
+/-- Higham, 2nd ed., Chapter 13, Problem 13.4 feeding equations
+    (13.22)--(13.23):
+    matrix-stage multiplier bounds from canonical local growth and a plain
+    local-inverse comparison.
+
+    Compared with
+    `higham13_algorithm13_3_multiplier_bounds_from_stageLocalGrowth_inverse_bound_exact_kappa`,
+    this theorem asks only for
+    `||A_local^{-1}||_max <= ||A^{-1}||_max`.  The missing multiplier
+    `rhoFull` is derived internally from the fact that the Algorithm 13.3
+    history growth matrix contains the initial matrix, hence `rhoFull >= 1`. -/
+theorem higham13_algorithm13_3_multiplier_bounds_from_stageLocalGrowth_plain_inverse_bound_exact_kappa
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (Ablk : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (Ainv : Fin (m * r) → Fin (m * r) → ℝ)
+    (hApos : 0 < maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin Ablk))
+    (n : ℕ) (hNn : ((m * r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hInvPivot : ∀ i j : Fin m, j.val < i.val →
+      Invertible (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv j.val j j))
+    (hInvSchur : ∀ i j : Fin m, ∀ hji : j.val < i.val,
+      Invertible
+        (@higham13_algorithm13_3_stageLocalSchurOfInv m r Ablk pivotInv i j
+          (hInvPivot i j hji)))
+    (hInvFull : ∀ i j : Fin m, j.val < i.val →
+      Invertible (higham13_algorithm13_3_stageLocalBlockMatrix Ablk pivotInv i j))
+    (hPivotRight : ∀ i j : Fin m, ∀ _hji : j.val < i.val,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv j.val j j)
+        (pivotInv j.val))
+    (hInvLocal_le : ∀ i j : Fin m, j.val < i.val →
+      maxEntryNormRect (Nat.add_pos_left hr r) (Nat.add_pos_left hr r)
+          (nonsingInv (r + r)
+            (higham13_algorithm13_3_stageLocalFlatMatrix Ablk pivotInv i j)) ≤
+        maxEntryNormRect (Nat.mul_pos hm hr) (Nat.mul_pos hm hr) Ainv) :
+    ∀ i j : Fin m, j.val < i.val →
+      maxEntryNorm hr
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv j.val i j *
+            pivotInv j.val) ≤
+        (n : ℝ) *
+          (growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin Ablk)
+            (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+              (Nat.mul_pos hm hr) hm hr Ablk pivotInv) hApos) ^ 2 *
+          (maxEntryNormRect (Nat.mul_pos hm hr) (Nat.mul_pos hm hr)
+              (blockMatrixFlatFin Ablk) *
+            maxEntryNormRect (Nat.mul_pos hm hr) (Nat.mul_pos hm hr) Ainv) := by
+  let hN : 0 < m * r := Nat.mul_pos hm hr
+  let G : Fin (m * r) → Fin (m * r) → ℝ :=
+    higham13_algorithm13_3_matrixStageHistoryGrowthMatrix hN hm hr Ablk pivotInv
+  have hA_le_G : maxEntryNorm hN (blockMatrixFlatFin Ablk) ≤ maxEntryNorm hN G := by
+    simpa [hN, G] using
+      higham13_algorithm13_3_matrixStageHistoryGrowthMatrix_contains_flat_initial
+        hm hr Ablk pivotInv
+  have hrhoFull_ge_one :
+      1 ≤ growthFactorEntry hN (blockMatrixFlatFin Ablk) G hApos := by
+    exact
+      growthFactorEntry_ge_one_of_maxEntryNorm_le hN (blockMatrixFlatFin Ablk)
+        G hApos hA_le_G
+  have hAinv_nonneg : 0 ≤ maxEntryNormRect hN hN Ainv :=
+    maxEntryNormRect_nonneg hN hN Ainv
+  have hAinv_le_rho :
+      maxEntryNormRect hN hN Ainv ≤
+        growthFactorEntry hN (blockMatrixFlatFin Ablk) G hApos *
+          maxEntryNormRect hN hN Ainv := by
+    calc
+      maxEntryNormRect hN hN Ainv = 1 * maxEntryNormRect hN hN Ainv := by ring
+      _ ≤ growthFactorEntry hN (blockMatrixFlatFin Ablk) G hApos *
+            maxEntryNormRect hN hN Ainv :=
+          mul_le_mul_of_nonneg_right hrhoFull_ge_one hAinv_nonneg
+  exact
+    higham13_algorithm13_3_multiplier_bounds_from_stageLocalGrowth_inverse_bound_exact_kappa
+      hm hr Ablk pivotInv Ainv hApos n hNn hInvPivot hInvSchur hInvFull
+      hPivotRight
+      (fun i j hji => by
+        exact le_trans (hInvLocal_le i j hji) (by simpa [hN, G] using hAinv_le_rho))
 
 /-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
     scalar local-to-global `rho^2 kappa` budget comparison from the two real
@@ -27990,6 +28101,110 @@ theorem
     higham13_eq13_23_matrix_stage_history_product_from_multiplier_bounds_exact_kappa
       hm hr Ablk pivotInv Ainv hApos hRight n hNn
       (higham13_algorithm13_3_multiplier_bounds_from_stageLocalGrowth_inverse_bound_exact_kappa
+        hm hr Ablk pivotInv Ainv hApos n hNn hInvPivot hInvSchur hInvFull
+        hPivotRight hInvLocal_le)
+      hRho_le_two
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.22):
+    exact-κ matrix-stage-history product bound from canonical stage-local
+    growth and a plain local-inverse comparison.
+
+    This composes
+    `higham13_algorithm13_3_multiplier_bounds_from_stageLocalGrowth_plain_inverse_bound_exact_kappa`
+    with the assembled Eq.13.22 product wrapper.  The remaining visible source
+    obligation is now the sharper inverse comparison
+    `||A_local^{-1}||_max <= ||A^{-1}||_max`, with the extra `rhoFull` factor
+    supplied internally by growth nonvacuity. -/
+theorem
+    higham13_eq13_22_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (Ablk : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (Ainv : Fin (m * r) → Fin (m * r) → ℝ)
+    (hApos : 0 < maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin Ablk))
+    (hRight : IsRightInverse (m * r) (blockMatrixFlatFin Ablk) Ainv)
+    (n : ℕ) (hNn : ((m * r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hInvPivot : ∀ i j : Fin m, j.val < i.val →
+      Invertible (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv j.val j j))
+    (hInvSchur : ∀ i j : Fin m, ∀ hji : j.val < i.val,
+      Invertible
+        (@higham13_algorithm13_3_stageLocalSchurOfInv m r Ablk pivotInv i j
+          (hInvPivot i j hji)))
+    (hInvFull : ∀ i j : Fin m, j.val < i.val →
+      Invertible (higham13_algorithm13_3_stageLocalBlockMatrix Ablk pivotInv i j))
+    (hPivotRight : ∀ i j : Fin m, ∀ _hji : j.val < i.val,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv j.val j j)
+        (pivotInv j.val))
+    (hInvLocal_le : ∀ i j : Fin m, j.val < i.val →
+      maxEntryNormRect (Nat.add_pos_left hr r) (Nat.add_pos_left hr r)
+          (nonsingInv (r + r)
+            (higham13_algorithm13_3_stageLocalFlatMatrix Ablk pivotInv i j)) ≤
+        maxEntryNormRect (Nat.mul_pos hm hr) (Nat.mul_pos hm hr) Ainv) :
+    blockMaxNorm hm hr (higham13_algorithm13_3_lowerFromMatrixStages Ablk pivotInv) *
+        blockMaxNorm hm hr (higham13_algorithm13_3_upperFromMatrixStages Ablk pivotInv) ≤
+      (n : ℝ) *
+        (growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin Ablk)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            (Nat.mul_pos hm hr) hm hr Ablk pivotInv) hApos) ^ 3 *
+        (maxEntryNormRect (Nat.mul_pos hm hr) (Nat.mul_pos hm hr)
+            (blockMatrixFlatFin Ablk) *
+          maxEntryNormRect (Nat.mul_pos hm hr) (Nat.mul_pos hm hr) Ainv) *
+        maxEntryNormRect (Nat.mul_pos hm hr) (Nat.mul_pos hm hr)
+          (blockMatrixFlatFin Ablk) := by
+  exact
+    higham13_eq13_22_matrix_stage_history_product_from_multiplier_bounds_exact_kappa
+      hm hr Ablk pivotInv Ainv hApos hRight n hNn
+      (higham13_algorithm13_3_multiplier_bounds_from_stageLocalGrowth_plain_inverse_bound_exact_kappa
+        hm hr Ablk pivotInv Ainv hApos n hNn hInvPivot hInvSchur hInvFull
+        hPivotRight hInvLocal_le)
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.23):
+    point-row exact-κ matrix-stage-history product bound from canonical
+    stage-local growth, a plain local-inverse comparison, and the source
+    `rho <= 2` side condition. -/
+theorem
+    higham13_eq13_23_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (Ablk : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (Ainv : Fin (m * r) → Fin (m * r) → ℝ)
+    (hApos : 0 < maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin Ablk))
+    (hRight : IsRightInverse (m * r) (blockMatrixFlatFin Ablk) Ainv)
+    (n : ℕ) (hNn : ((m * r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hInvPivot : ∀ i j : Fin m, j.val < i.val →
+      Invertible (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv j.val j j))
+    (hInvSchur : ∀ i j : Fin m, ∀ hji : j.val < i.val,
+      Invertible
+        (@higham13_algorithm13_3_stageLocalSchurOfInv m r Ablk pivotInv i j
+          (hInvPivot i j hji)))
+    (hInvFull : ∀ i j : Fin m, j.val < i.val →
+      Invertible (higham13_algorithm13_3_stageLocalBlockMatrix Ablk pivotInv i j))
+    (hPivotRight : ∀ i j : Fin m, ∀ _hji : j.val < i.val,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv j.val j j)
+        (pivotInv j.val))
+    (hInvLocal_le : ∀ i j : Fin m, j.val < i.val →
+      maxEntryNormRect (Nat.add_pos_left hr r) (Nat.add_pos_left hr r)
+          (nonsingInv (r + r)
+            (higham13_algorithm13_3_stageLocalFlatMatrix Ablk pivotInv i j)) ≤
+        maxEntryNormRect (Nat.mul_pos hm hr) (Nat.mul_pos hm hr) Ainv)
+    (hRho_le_two :
+      growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin Ablk)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            (Nat.mul_pos hm hr) hm hr Ablk pivotInv) hApos ≤ 2) :
+    blockMaxNorm hm hr (higham13_algorithm13_3_lowerFromMatrixStages Ablk pivotInv) *
+        blockMaxNorm hm hr (higham13_algorithm13_3_upperFromMatrixStages Ablk pivotInv) ≤
+      8 * (n : ℝ) *
+        (maxEntryNormRect (Nat.mul_pos hm hr) (Nat.mul_pos hm hr)
+            (blockMatrixFlatFin Ablk) *
+          maxEntryNormRect (Nat.mul_pos hm hr) (Nat.mul_pos hm hr) Ainv) *
+        maxEntryNormRect (Nat.mul_pos hm hr) (Nat.mul_pos hm hr)
+          (blockMatrixFlatFin Ablk) := by
+  exact
+    higham13_eq13_23_matrix_stage_history_product_from_multiplier_bounds_exact_kappa
+      hm hr Ablk pivotInv Ainv hApos hRight n hNn
+      (higham13_algorithm13_3_multiplier_bounds_from_stageLocalGrowth_plain_inverse_bound_exact_kappa
         hm hr Ablk pivotInv Ainv hApos n hNn hInvPivot hInvSchur hInvFull
         hPivotRight hInvLocal_le)
       hRho_le_two
