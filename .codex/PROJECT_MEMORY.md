@@ -20,6 +20,16 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-06-29 matrix-`∞` max-entry transfer checkpoint:
+  `higham13_algorithm13_3_matrix_infNorm_block_le_card_mul_blockMaxNorm`,
+  `higham13_algorithm13_3_matrix_infNorm_active_stage_maxEntry_bound`, and the
+  `higham13_algorithm13_3_matrix_infNorm_*upperFromMatrixStages*` /
+  `*matrixStageHistoryGrowth*` wrappers now route matrix-`∞` active-stage
+  bounds into the Chapter 13 max-entry upper-factor and finite-history growth
+  APIs. The resulting endpoint is dimension-aware
+  `upperFromMatrixStages <= 2*r*blockMaxNorm(A)` and
+  `growthFactorEntry <= 2*r`; the source-strength Eq.13.21/`rho <= 2`
+  branch remains open.
 - Existing `BlockLU.lean` was already Chapter-13-shaped but mislabeled as
   Chapter 12. Its labels were corrected to Higham Chapter 13, and it now exposes
   source-facing first-order bound vocabulary for equations (13.4)--(13.6) and
