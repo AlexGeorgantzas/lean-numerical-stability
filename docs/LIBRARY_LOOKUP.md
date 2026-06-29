@@ -1684,6 +1684,9 @@ Source-facing Chapter 9 wrappers:
 - `higham9_16_rookPivotFosterBound_nonneg`
 - `higham9_16_rookPivotFosterBound_pos`
 - `higham9_16_rookPivotFosterBound_ge_three_halves`
+- `higham9_16_rookPivotFosterFactor_le_of_le`
+- `higham9_16_rookPivotFosterBound_le_of_le`
+- `higham9_16_rookPivotFosterBound_monotone`
 - `higham9_12_sineMatrix`
 - `higham9_12_sineMatrix_symm`
 - `higham9_12_sineMatrix_entry_abs_le_scale`
