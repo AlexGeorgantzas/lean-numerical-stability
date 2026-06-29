@@ -8,6 +8,7 @@ import Mathlib.Algebra.Order.BigOperators.Group.Finset
 import Mathlib.LinearAlgebra.Dual.Lemmas
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
+import LeanFpAnalysis.FP.Algorithms.QR.GramSchmidtPolar
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSQRSolve
 
 namespace LeanFpAnalysis.FP
@@ -378,6 +379,282 @@ theorem isLowerTriangular_matTranspose_of_isUpperTriangular {n : ℕ}
   intro i j hij
   unfold matTranspose
   exact hR j i hij
+
+private theorem isRightInverse_of_isLeftInverse_square {n : ℕ}
+    {T Tinv : Fin n → Fin n → ℝ}
+    (hLeft : IsLeftInverse n T Tinv) :
+    IsRightInverse n T Tinv := by
+  have hmatLeft :
+      (Matrix.of Tinv : Matrix (Fin n) (Fin n) ℝ) *
+          (Matrix.of T : Matrix (Fin n) (Fin n) ℝ) = 1 := by
+    ext i j
+    simpa [Matrix.mul_apply, Matrix.of_apply, idMatrix] using hLeft i j
+  have hmatRight :
+      (Matrix.of T : Matrix (Fin n) (Fin n) ℝ) *
+          (Matrix.of Tinv : Matrix (Fin n) (Fin n) ℝ) = 1 :=
+    mul_eq_one_comm.mp hmatLeft
+  intro i j
+  have hentry := congrArg
+    (fun M : Matrix (Fin n) (Fin n) ℝ => M i j) hmatRight
+  simpa [Matrix.mul_apply, Matrix.of_apply, idMatrix] using hentry
+
+private theorem isOrthogonal_of_column_orthonormal {n : ℕ}
+    {Q : Fin n → Fin n → ℝ}
+    (hcols : ∀ a b : Fin n,
+      (∑ i : Fin n, Q i a * Q i b) = if a = b then 1 else 0) :
+    IsOrthogonal n Q := by
+  have hleft : IsLeftInverse n Q (matTranspose Q) := by
+    intro a b
+    simpa [matTranspose] using hcols a b
+  exact ⟨hleft, isRightInverse_of_isLeftInverse_square hleft⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction step:
+    a rectangular exact factorization `Bᵀ = Q₁ R` with orthonormal columns can
+    be completed to a square orthogonal `Q` satisfying
+    `Qᵀ Bᵀ = [R; 0]`.
+
+    This removes the supplied square-orthogonal factor from the `Bᵀ` QR part of
+    the GQR construction.  It is exact finite-dimensional algebra; the
+    rectangular factorization itself is still an input to this theorem. -/
+theorem exists_orthogonal_completion_tall_qr_block {p q : ℕ}
+    (Bt : Fin (p + q) → Fin p → ℝ)
+    (Q1 : Fin (p + q) → Fin p → ℝ)
+    (R : Fin p → Fin p → ℝ)
+    (hQ1 : GramSchmidtOrthonormalColumns Q1)
+    (hfactor : Bt = matMulRect (p + q) p p Q1 R) :
+    ∃ Q : Fin (p + q) → Fin (p + q) → ℝ,
+      IsOrthogonal (p + q) Q ∧
+        (∀ i j, Q i (Fin.castAdd q j) = Q1 i j) ∧
+        matMulRectLeft (matTranspose Q) Bt = lsQRTallBlock (k := q) R := by
+  classical
+  let s : Set (Fin (p + q)) :=
+    {a | ∃ j : Fin p, a = Fin.castAdd q j}
+  let X : Fin (p + q) → Fin (p + q) → ℝ :=
+    fun i a =>
+      if ha : ∃ j : Fin p, a = Fin.castAdd q j then
+        Q1 i (Classical.choose ha)
+      else
+        0
+  have hX : ∀ a b : s,
+      (∑ i : Fin (p + q), X i a * X i b) =
+        if a = b then 1 else 0 := by
+    intro a b
+    rcases a.2 with ⟨ja, hja⟩
+    rcases b.2 with ⟨jb, hjb⟩
+    have hXa : ∀ i : Fin (p + q), X i a = Q1 i ja := by
+      intro i
+      have ha : ∃ j : Fin p, (a : Fin (p + q)) = Fin.castAdd q j :=
+        ⟨ja, hja⟩
+      have hchoose : Classical.choose ha = ja := by
+        apply Fin.castAdd_injective p q
+        simpa [hja] using (Classical.choose_spec ha).symm
+      simp [X, ha, hchoose]
+    have hXb : ∀ i : Fin (p + q), X i b = Q1 i jb := by
+      intro i
+      have hb : ∃ j : Fin p, (b : Fin (p + q)) = Fin.castAdd q j :=
+        ⟨jb, hjb⟩
+      have hchoose : Classical.choose hb = jb := by
+        apply Fin.castAdd_injective p q
+        simpa [hjb] using (Classical.choose_spec hb).symm
+      simp [X, hb, hchoose]
+    have hsubeq : a = b ↔ ja = jb := by
+      constructor
+      · intro hab
+        apply Fin.castAdd_injective p q
+        calc
+          Fin.castAdd q ja = (a : Fin (p + q)) := hja.symm
+          _ = (b : Fin (p + q)) := congrArg Subtype.val hab
+          _ = Fin.castAdd q jb := hjb
+      · intro h
+        apply Subtype.ext
+        calc
+          (a : Fin (p + q)) = Fin.castAdd q ja := hja
+          _ = Fin.castAdd q jb := by rw [h]
+          _ = (b : Fin (p + q)) := hjb.symm
+    calc
+      (∑ i : Fin (p + q), X i a * X i b)
+          = ∑ i : Fin (p + q), Q1 i ja * Q1 i jb := by
+              apply Finset.sum_congr rfl
+              intro i _
+              rw [hXa i, hXb i]
+      _ = idMatrix p ja jb := hQ1 ja jb
+      _ = if a = b then 1 else 0 := by
+          by_cases h : ja = jb
+          · subst jb
+            have hab : a = b := hsubeq.mpr rfl
+            simp [idMatrix, hab]
+          · have hab : a ≠ b := fun hab => h (hsubeq.mp hab)
+            simp [idMatrix, h, hab]
+  obtain ⟨Q, hQpreserve, hQcols⟩ :=
+    partialColOrthonormal_exists_fullColOrthonormal X s hX
+  refine ⟨Q, isOrthogonal_of_column_orthonormal hQcols, ?_, ?_⟩
+  · intro i j
+    have hmem : Fin.castAdd q j ∈ s := ⟨j, rfl⟩
+    have hp := hQpreserve (Fin.castAdd q j) hmem i
+    have hcast : ∃ k : Fin p, Fin.castAdd q j = Fin.castAdd q k :=
+      ⟨j, rfl⟩
+    have hchoose : Classical.choose hcast = j := by
+      apply Fin.castAdd_injective p q
+      exact (Classical.choose_spec hcast).symm
+    simpa [X, hcast, hchoose] using hp
+  · subst Bt
+    ext row col
+    refine Fin.addCases
+      (motive := fun row : Fin (p + q) =>
+        matMulRectLeft (matTranspose Q)
+            (matMulRect (p + q) p p Q1 R) row col =
+          lsQRTallBlock (k := q) R row col)
+      ?top ?bottom row
+    · intro row
+      have hpreserve : ∀ i : Fin (p + q), Q i (Fin.castAdd q row) = Q1 i row :=
+        fun i => by
+          have hmem : Fin.castAdd q row ∈ s := ⟨row, rfl⟩
+          have hp := hQpreserve (Fin.castAdd q row) hmem i
+          have hcast : ∃ k : Fin p, Fin.castAdd q row = Fin.castAdd q k :=
+            ⟨row, rfl⟩
+          have hchoose : Classical.choose hcast = row := by
+            apply Fin.castAdd_injective p q
+            exact (Classical.choose_spec hcast).symm
+          simpa [X, hcast, hchoose] using hp
+      have hsum_rearrange :
+          (∑ i : Fin (p + q),
+              Q i (Fin.castAdd q row) *
+                (∑ k : Fin p, Q1 i k * R k col)) =
+            ∑ k : Fin p,
+              (∑ i : Fin (p + q), Q i (Fin.castAdd q row) * Q1 i k) *
+                R k col := by
+        calc
+          (∑ i : Fin (p + q),
+              Q i (Fin.castAdd q row) *
+                (∑ k : Fin p, Q1 i k * R k col))
+              =
+            ∑ i : Fin (p + q), ∑ k : Fin p,
+              Q i (Fin.castAdd q row) * (Q1 i k * R k col) := by
+              apply Finset.sum_congr rfl
+              intro i _
+              rw [Finset.mul_sum]
+          _ =
+            ∑ k : Fin p, ∑ i : Fin (p + q),
+              Q i (Fin.castAdd q row) * (Q1 i k * R k col) := by
+              rw [Finset.sum_comm]
+          _ =
+            ∑ k : Fin p,
+              (∑ i : Fin (p + q), Q i (Fin.castAdd q row) * Q1 i k) *
+                R k col := by
+              apply Finset.sum_congr rfl
+              intro k _
+              rw [Finset.sum_mul]
+              apply Finset.sum_congr rfl
+              intro i _
+              ring
+      calc
+        matMulRectLeft (matTranspose Q)
+            (matMulRect (p + q) p p Q1 R) (Fin.castAdd q row) col
+            =
+          ∑ k : Fin p,
+            (∑ i : Fin (p + q), Q i (Fin.castAdd q row) * Q1 i k) *
+              R k col := by
+              unfold matMulRectLeft matTranspose matMulRect
+              exact hsum_rearrange
+        _ =
+          ∑ k : Fin p, idMatrix p row k * R k col := by
+              apply Finset.sum_congr rfl
+              intro k _
+              have horth :
+                  (∑ i : Fin (p + q), Q1 i row * Q1 i k) =
+                    idMatrix p row k := by
+                simpa [GramSchmidtOrthonormalColumns, rectangularGram] using
+                  hQ1 row k
+              rw [show (∑ i : Fin (p + q), Q i (Fin.castAdd q row) * Q1 i k) =
+                  ∑ i : Fin (p + q), Q1 i row * Q1 i k from by
+                    apply Finset.sum_congr rfl
+                    intro i _
+                    rw [hpreserve i]]
+              rw [horth]
+        _ = R row col := by
+              simp [idMatrix]
+        _ = lsQRTallBlock (k := q) R (Fin.castAdd q row) col := by
+              simp [lsQRTallBlock]
+    · intro row
+      have hsum_rearrange :
+          (∑ i : Fin (p + q),
+              Q i (Fin.natAdd p row) *
+                (∑ k : Fin p, Q1 i k * R k col)) =
+            ∑ k : Fin p,
+              (∑ i : Fin (p + q), Q i (Fin.natAdd p row) * Q1 i k) *
+                R k col := by
+        calc
+          (∑ i : Fin (p + q),
+              Q i (Fin.natAdd p row) *
+                (∑ k : Fin p, Q1 i k * R k col))
+              =
+            ∑ i : Fin (p + q), ∑ k : Fin p,
+              Q i (Fin.natAdd p row) * (Q1 i k * R k col) := by
+              apply Finset.sum_congr rfl
+              intro i _
+              rw [Finset.mul_sum]
+          _ =
+            ∑ k : Fin p, ∑ i : Fin (p + q),
+              Q i (Fin.natAdd p row) * (Q1 i k * R k col) := by
+              rw [Finset.sum_comm]
+          _ =
+            ∑ k : Fin p,
+              (∑ i : Fin (p + q), Q i (Fin.natAdd p row) * Q1 i k) *
+                R k col := by
+              apply Finset.sum_congr rfl
+              intro k _
+              rw [Finset.sum_mul]
+              apply Finset.sum_congr rfl
+              intro i _
+              ring
+      have htail_orth : ∀ k : Fin p,
+          (∑ i : Fin (p + q), Q i (Fin.natAdd p row) * Q1 i k) = 0 := by
+        intro k
+        have hne : Fin.natAdd p row ≠ Fin.castAdd q k := by
+          intro h
+          have hval := congrArg Fin.val h
+          have hp_le : p ≤ k.val := by
+            calc
+              p ≤ p + row.val := Nat.le_add_right p row.val
+              _ = k.val := by simpa using hval
+          exact (Nat.not_le_of_gt k.isLt) hp_le
+        have horth := hQcols (Fin.natAdd p row) (Fin.castAdd q k)
+        have hsumQ :
+            (∑ i : Fin (p + q), Q i (Fin.natAdd p row) *
+              Q i (Fin.castAdd q k)) = 0 := by
+          simpa [hne] using horth
+        have hpreserve : ∀ i : Fin (p + q), Q i (Fin.castAdd q k) = Q1 i k :=
+          fun i => by
+            have hmem : Fin.castAdd q k ∈ s := ⟨k, rfl⟩
+            have hp := hQpreserve (Fin.castAdd q k) hmem i
+            have hcast : ∃ j : Fin p, Fin.castAdd q k = Fin.castAdd q j :=
+              ⟨k, rfl⟩
+            have hchoose : Classical.choose hcast = k := by
+              apply Fin.castAdd_injective p q
+              exact (Classical.choose_spec hcast).symm
+            simpa [X, hcast, hchoose] using hp
+        calc
+          (∑ i : Fin (p + q), Q i (Fin.natAdd p row) * Q1 i k)
+              =
+            ∑ i : Fin (p + q), Q i (Fin.natAdd p row) *
+              Q i (Fin.castAdd q k) := by
+              apply Finset.sum_congr rfl
+              intro i _
+              rw [hpreserve i]
+          _ = 0 := hsumQ
+      calc
+        matMulRectLeft (matTranspose Q)
+            (matMulRect (p + q) p p Q1 R) (Fin.natAdd p row) col
+            =
+          ∑ k : Fin p,
+            (∑ i : Fin (p + q), Q i (Fin.natAdd p row) * Q1 i k) *
+              R k col := by
+              unfold matMulRectLeft matTranspose matMulRect
+              exact hsum_rearrange
+        _ = 0 := by
+              simp [htail_orth]
+        _ = lsQRTallBlock (k := q) R (Fin.natAdd p row) col := by
+              simp [lsQRTallBlock]
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction step:
     a supplied tall QR factorization of `Bᵀ` yields the constraint block
