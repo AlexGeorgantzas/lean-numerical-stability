@@ -20,6 +20,60 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-06-29 matrix-`∞` source-norm upper endpoint checkpoint:
+  `blockInfNorm` is the blockwise maximum of matrix-`∞` operator norms, with
+  helpers `block_le_blockInfNorm`, `blockInfNorm_nonneg`,
+  `blockInfNorm_le_of_block_le`, `infNorm_zeroBlock`, and
+  `infNorm_le_zero_of_eq_zeroBlock`.  The new Algorithm 13.3 wrappers
+  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockInfNorm_bound_of_active_stage_bound`,
+  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockInfNorm_bound_of_continuousLinearMap_source_table`,
+  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockInfNorm_bound_of_continuousLinearMap_source_table_of_pivot_right_inverse`,
+  and
+  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockInfNorm_bound_of_initial_diag_right_inverse_of_pivot_right_inverse`
+  prove `blockInfNorm (upperFromMatrixStages ...) <= 2 * blockInfNorm A`.
+  This closes the source-norm upper-factor packaging gap without introducing
+  the old max-entry comparison loss; the entrywise max-norm Eq.13.21 endpoint
+  and `growthFactorEntry <= 2` remain open.  Verification before commit:
+  direct `BlockLU.lean`, focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet `examples/LibraryLookup.lean`
+  with empty stderr, `git diff --check`, marker scan, and focused
+  `#print axioms` all passed; axiom output was only `propext`,
+  `Classical.choice`, and `Quot.sound`.
+- 2026-06-29 matrix-`∞` source-norm to max-entry upper bridge:
+  `blockMaxNorm_le_blockInfNorm` and the
+  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockMaxNorm_bound_by_blockInfNorm_*`
+  wrappers prove
+  `blockMaxNorm (upperFromMatrixStages ...) <= 2 * blockInfNorm A` from the
+  same active/source-table/pivot-right-inverse/initial-diagonal data.  This
+  gives the existing entrywise upper-factor API without the old input-side
+  `r * blockMaxNorm A` comparison loss when the source norm is the blockwise
+  matrix-`∞` maximum; the entrywise-input Eq.13.21 and finite-history
+  `growthFactorEntry <= 2` rows remain open.  Verification before commit:
+  direct `BlockLU.lean`, focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet `examples/LibraryLookup.lean`
+  with empty stderr, `git diff --check`, marker scan, and focused
+  `#print axioms` all passed with only standard Mathlib axioms.
+- 2026-06-29 matrix-`∞` source-norm finite-history bridge:
+  `higham13_algorithm13_3_matrixStageHistoryInfBound` records the finite
+  matrix-product stage history using the blockwise matrix-`∞` maximum.  The
+  containment lemmas
+  `higham13_algorithm13_3_matrixStageHistoryInfBound_contains_stage`,
+  `higham13_algorithm13_3_matrixStageHistoryInfBound_contains_initial`, and
+  `higham13_algorithm13_3_matrixStageHistoryInfBound_contains_upperFromMatrixStages`
+  parallel the existing max-entry history object.  The active-stage induction
+  layer
+  `higham13_algorithm13_3_matrixStageBlock_infNorm_bound_of_active_bound`,
+  `higham13_algorithm13_3_matrixStage_blockInfNorm_bound_of_active_bound`,
+  `higham13_algorithm13_3_matrixStageHistoryInfBound_le_of_stage_bound`,
+  `higham13_algorithm13_3_matrixStageHistoryInfBound_le_of_active_bound`, and
+  `higham13_algorithm13_3_matrixStageHistoryInfBound_le_two_of_active_stage_bound`
+  proves inactive carry-forward stages are also controlled.  Source-table,
+  pivot-right-inverse, and initial-diagonal/right-inverse wrappers prove
+  `matrixStageHistoryInfBound <= 2 * blockInfNorm A`; the companion
+  `higham13_algorithm13_3_matrix_infNorm_matrixStageHistoryGrowthMatrix_bound_by_blockInfNorm_*`
+  wrappers prove the existing max-entry growth matrix is bounded by
+  `2 * blockInfNorm A`.  This is source-norm finite-history progress, not yet
+  the chapter's entrywise-denominator `growthFactorEntry <= 2`.
 - 2026-06-29 matrix-`∞` source-table max-entry composition checkpoint:
   `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockMaxNorm_bound_with_card_of_continuousLinearMap_source_table`,
   `higham13_algorithm13_3_matrix_infNorm_matrixStageHistoryGrowthFactor_le_card_of_continuousLinearMap_source_table`,
@@ -9431,6 +9485,49 @@ These compile, but should not be treated as fully derived stability results:
   source-comparison route no longer exposes the local lower-block estimate as
   a separate hypothesis.  Remaining source obligations are still the
   local-to-full scalar comparison table and Eq.13.23 source `rho <= 2`.
+
+- 2026-06-29 Problem 13.4 stage-local base-comparison multiplier reduction:
+  added
+  `higham13_algorithm13_3_multiplier_bounds_from_stageLocalGrowth_base_comparisons_exact_kappa`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean` and a public lookup entry.
+  The theorem reuses
+  `higham13_algorithm13_3_stageLocalGrowthFactor_le_matrixStageHistoryGrowthFactor_of_base_le`
+  to discharge the raw `rhoLocal <= rhoFull` premise of the source-comparison
+  multiplier route from the explicit denominator/base comparison
+  `||blockMatrixFlatFin Ablk||_max <= ||stageLocalFlatMatrix i j||_max`.
+  This narrows the remaining scalar table: the base comparison and
+  `kappaLocal <= rhoFull * kappaFull` remain source obligations, and the
+  generic base comparison is still known false by
+  `higham13_stage_local_base_comparison_counterexample`.  Verification passed:
+  direct `lake env lean -s 65536
+  LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup
+  `/tmp/ch13_stageLocal_baseComparison_lookup.{out,err}` with empty stderr and
+  the name present, `git diff --check`, touched public Lean-file marker scan,
+  scratch cleanup, and focused `#print axioms` with only `propext`,
+  `Classical.choice`, and `Quot.sound`.
+
+- 2026-06-29 Problem 13.4 stage-local base-comparison product/witness routing:
+  added
+  `higham13_eq13_22_matrix_stage_history_product_from_stageLocalGrowth_base_comparisons_exact_kappa`,
+  `higham13_eq13_23_matrix_stage_history_product_from_stageLocalGrowth_base_comparisons_exact_kappa`,
+  `higham13_eq13_23_matrix_stage_history_product_from_stageLocalGrowth_base_comparisons_exact_kappa_of_product_bound_diag_update`,
+  `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_base_comparisons_exact_kappa_of_pivot_right_inverse`,
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_base_comparisons_exact_kappa_of_pivot_right_inverse`,
+  and
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_base_comparisons_exact_kappa_of_product_bound_diag_update_of_pivot_right_inverse`.
+  These thread the base-comparison multiplier route into the Eq.13.22/Eq.13.23
+  product wrappers and concrete `BlockLUFactSpec` witness wrappers.  The
+  reduced surface now replaces raw `rhoLocal <= rhoFull` by the explicit
+  base-denominator comparison, and the Eq.13.23 diagonal-update variants also
+  replace raw `rho <= 2` by active BDD product/update data.  The base
+  comparison, condition comparison, and active product/update data remain open
+  source obligations, not assumed closures.  Verification passed: direct
+  `BlockLU.lean`, focused `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`,
+  quiet lookup `/tmp/ch13_stageLocal_baseProducts_lookup.{out,err}` with empty
+  stderr and all six names present, `git diff --check`, touched public
+  Lean-file marker scan, scratch cleanup, and focused `#print axioms` with only
+  `propext`, `Classical.choice`, and `Quot.sound`.
 
 - 2026-06-24 Problem 13.4 stage-local source-comparison determinant cleanup:
   added
