@@ -2300,8 +2300,12 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_normalized_Gtilde_init_min_factor_bound_of_residual_zero`
 - `higham9_15_normalized_G_min_factor_bound_of_left_zero`
 - `higham9_15_normalized_G_min_factor_bound_of_right_zero`
+- `higham9_15_normalized_G_frobNorm_ratio_bound_of_left_le`
+- `higham9_15_normalized_G_frobNorm_ratio_bound_of_right_le`
 - `higham9_15_normalized_G_frobNorm_ratio_bound_of_left_zero`
 - `higham9_15_normalized_G_frobNorm_ratio_bound_of_right_zero`
+- `higham9_15_normalized_Gtilde_frobNorm_ratio_bound_of_left_le`
+- `higham9_15_normalized_Gtilde_frobNorm_ratio_bound_of_right_le`
 - `higham9_15_normalized_Gtilde_frobNorm_ratio_bound_of_left_zero`
 - `higham9_15_normalized_Gtilde_frobNorm_ratio_bound_of_right_zero`
 - `higham9_15_normalized_G_frobNorm_ratio_bound_of_residual_zero`
