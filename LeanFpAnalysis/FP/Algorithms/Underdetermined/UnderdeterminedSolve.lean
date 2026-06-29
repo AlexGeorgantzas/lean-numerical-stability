@@ -741,6 +741,40 @@ theorem higham21_lemma21_2_scalar_beta_ne_zero_of_bound
   ne_of_gt (higham21_lemma21_2_scalar_beta_pos_of_bound a b beta hsmall hbound)
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    minimum-norm handoff from the source proof's scalar beta lower bound.
+    If the matrix perturbation argument supplies
+    `1 - (rho1 + rho2)/(1 - rho2) <= beta`, then the source smallness condition
+    `3 * max rho1 rho2 < 1` gives `beta ≠ 0`, so the conditional rescaling
+    theorem applies.
+
+    This isolates the remaining matrix work to proving the displayed lower
+    bound from pseudoinverse perturbation estimates. -/
+theorem higham21_lemma21_2_symmetrized_min_norm_of_beta_lower_bound {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (rho1 rho2 : ℝ)
+    (hsq : vecNorm2Sq x ≠ 0)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hDeltaA2 :
+      rectMatMulVec (finiteTranspose (fun i j => A i j + DeltaA2 i j)) y = x)
+    (hsmall : 3 * max rho1 rho2 < 1)
+    (hbound :
+      1 - (rho1 + rho2) / (1 - rho2) ≤
+        undetLemma21_2Beta x DeltaA1 DeltaA2 y) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j)
+      b x :=
+  higham21_lemma21_2_symmetrized_min_norm_of_beta_ne_zero
+    A x DeltaA1 DeltaA2 b y hsq hDeltaA1 hDeltaA2
+    (higham21_lemma21_2_scalar_beta_ne_zero_of_bound
+      rho1 rho2 (undetLemma21_2Beta x DeltaA1 DeltaA2 y) hsmall hbound)
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     the Frobenius-squared norm bound for the projector mixture used to replace
     two perturbation blocks by one. -/
 theorem higham21_lemma21_2_symmetrized_perturbation_frobNormSq_le {m n : ℕ}
