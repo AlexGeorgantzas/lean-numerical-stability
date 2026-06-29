@@ -75,6 +75,21 @@ theorem higham21_eq21_3_free_coordinate_zero_min_norm {m k : ℕ}
     vecNorm2 (Fin.append y1 (0 : Fin k → ℝ)) = vecNorm2 y1 := hzero
     _ ≤ vecNorm2 (Fin.append y1 y2) := lsVecNorm2_left_le_append y1 y2
 
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.3):
+    source-facing lift of the free-coordinate norm-minimization step through
+    the orthogonal factor `Q`.  Since orthogonal multiplication preserves the
+    Euclidean norm, the vector `Q [y₁; 0]` has no larger norm than
+    `Q [y₁; y₂]` for the same first coordinate block. -/
+theorem higham21_eq21_3_q_factor_zero_free_block_min_norm {m k : ℕ}
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (hQ : IsOrthogonal (m + k) Q)
+    (y1 : Fin m → ℝ) (y2 : Fin k → ℝ) :
+    vecNorm2 (matMulVec (m + k) Q (Fin.append y1 (0 : Fin k → ℝ))) ≤
+      vecNorm2 (matMulVec (m + k) Q (Fin.append y1 y2)) := by
+  rw [vecNorm2_orthogonal Q (Fin.append y1 (0 : Fin k → ℝ)) hQ,
+    vecNorm2_orthogonal Q (Fin.append y1 y2) hQ]
+  exact higham21_eq21_3_free_coordinate_zero_min_norm y1 y2
+
 -- ============================================================
 -- §21.3  Row-wise backward error for underdetermined systems
 -- ============================================================
