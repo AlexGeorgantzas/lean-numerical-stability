@@ -1,6 +1,6 @@
 -- Algorithms/MMatrix.lean
 --
--- Higham §8.2: M-matrix solution properties and Corollary 8.10 in μ-form.
+-- Higham §8.2: M-matrix solution properties and Corollary 8.11 in μ-form.
 --
 -- When L is a lower triangular M-matrix and b ≥ 0:
 --   1. The exact solution x = L⁻¹b is nonneg
@@ -137,10 +137,10 @@ theorem forwardSub_nonneg (fp : FPModel) (n : ℕ)
     exact le_of_le_of_eq (le_trans h1 (mul_nonpos_of_nonpos_of_nonneg hoff (by linarith))) rfl
 
 -- ============================================================
--- Weak Corollary 8.10: M-matrix forward error bound
+-- Weak Corollary 8.11: M-matrix forward error bound
 -- ============================================================
 
-/-- **Weak Corollary 8.10** (Higham §8.2).
+/-- **Weak Corollary 8.11** (Higham §8.2).
 
     For a lower triangular M-matrix L with b ≥ 0:
       1. The exact solution x ≥ 0
@@ -151,7 +151,7 @@ theorem forwardSub_nonneg (fp : FPModel) (n : ℕ)
     so M(L)⁻¹ = L⁻¹). The nonnegativity of x̂ allows dropping absolute
     values: |x̂_k| = x̂_k in the bound.
 
-    Note: Higham's full Corollary 8.10 gives the tighter bound
+    Note: Higham's full Corollary 8.11 gives the tighter bound
     |x - x̂| ≤ ((n²+n+1)u + O(u²))|x| via a direct recurrence proof. -/
 theorem mmatrix_forwardSub_componentwise_bound (fp : FPModel) (n : ℕ)
     (L L_inv : Fin n → Fin n → ℝ)
@@ -195,10 +195,10 @@ theorem mmatrix_forwardSub_componentwise_bound (fp : FPModel) (n : ℕ)
         rw [abs_of_nonneg (hx_hat_nn k)]
 
 -- ============================================================
--- Corollary 8.10 in μ-form: M-matrix forward relative error
+-- Corollary 8.11 in μ-form: M-matrix forward relative error
 -- ============================================================
 
-/-- **Corollary 8.10 in μ-form** (Higham §8.2, pp. 158–159).
+/-- **Corollary 8.11 in μ-form** (Higham §8.2).
 
     For a lower triangular M-matrix L with b ≥ 0, the computed solution
     from forward substitution satisfies:

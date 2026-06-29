@@ -149,6 +149,18 @@ private lemma schur_pd {m : ℕ} {A : Fin (m + 1) → Fin (m + 1) → ℝ}
   -- Conclude
   rw [lhs_eq, rhs_eq]
 
+/-- A leading Schur complement of an SPD matrix is SPD.
+
+This is the exact algebraic first-stage reduced matrix used by Cholesky
+factorization and by Higham Problem 10.4's first Gaussian-elimination stage. -/
+theorem spd_schur_complement_isSymPosDef {m : ℕ}
+    (A : Fin (m + 1) → Fin (m + 1) → ℝ)
+    (hSPD : IsSymPosDef (m + 1) A) :
+    IsSymPosDef m
+      (fun i j => A i.succ j.succ - A 0 i.succ * A 0 j.succ / A 0 0) := by
+  have ha₁₁ : 0 < A 0 0 := spd_diag_pos hSPD 0
+  exact ⟨schur_sym hSPD.1, schur_pd hSPD ha₁₁⟩
+
 /-- **Cholesky existence** (Higham §10.1, Theorem 10.1).
 
     Every symmetric positive definite matrix has a unique Cholesky

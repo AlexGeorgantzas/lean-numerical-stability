@@ -807,7 +807,7 @@ theorem opNorm2Le_of_rectOpNorm2Le_square {n : Nat}
 
 /-- Monotonicity of square operator-norm upper-bound predicates in the
 radius. -/
-theorem opNorm2Le_mono {n : Nat} {M : Fin n -> Fin n -> Real}
+theorem qr_opNorm2Le_mono {n : Nat} {M : Fin n -> Fin n -> Real}
     {c d : Real} (hcd : c <= d) (hM : opNorm2Le M c) :
     opNorm2Le M d := by
   intro x
@@ -5341,7 +5341,7 @@ theorem ModifiedGramSchmidtQRSensitivitySourceOutput.of_commonR_bounds {m n : Na
           (2 * ((eta1 + eta2) * rho) + ((eta1 + eta2) * rho) ^ 2) :=
       gramSchmidtOrthogonalityResidual_opNorm2Le_of_close_orthonormal
         hQorth hclose hdelta
-    exact opNorm2Le_mono hbudget horth
+    exact qr_opNorm2Le_mono hbudget horth
   eq19_31_r_factor_quality := by
     refine Exists.intro Q ?_
     refine Exists.intro dA2 ?_
