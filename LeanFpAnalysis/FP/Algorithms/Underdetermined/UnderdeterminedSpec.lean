@@ -44,6 +44,28 @@ structure MinNormSolution (m : ℕ)
   /-- y solves the normal equations AAᵀy = b. -/
   normal_eq : ∀ i, matMulVec m AAT y i = b i
 
+/-- Euclidean norm of row `i` of a rectangular matrix. -/
+noncomputable def rectRowNorm2 {m n : ℕ} (A : Fin m → Fin n → ℝ)
+    (i : Fin m) : ℝ :=
+  vecNorm2 (fun j : Fin n => A i j)
+
+/-- A rectangular row 2-norm is nonnegative. -/
+theorem rectRowNorm2_nonneg {m n : ℕ} (A : Fin m → Fin n → ℝ)
+    (i : Fin m) : 0 ≤ rectRowNorm2 A i :=
+  vecNorm2_nonneg _
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.1:
+    exact minimum 2-norm solution predicate for a rectangular
+    underdetermined system `A x = b`. -/
+structure RectMinNormSolution (m n : ℕ)
+    (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (x : Fin n → ℝ) : Prop where
+  /-- The candidate solves the rectangular system. -/
+  system_eq : rectMatMulVec A x = b
+  /-- The candidate has no larger Euclidean norm than any other solution. -/
+  min_norm : ∀ z : Fin n → ℝ, rectMatMulVec A z = b → vecNorm2 x ≤ vecNorm2 z
+
 -- ============================================================
 -- §21.2  Theorem 21.1: Demmel-Higham perturbation bound
 -- ============================================================
