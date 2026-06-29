@@ -9748,3 +9748,20 @@ These compile, but should not be treated as fully derived stability results:
   reciprocal data and the active-pivot/source bridge from the source BDD
   hypotheses, then connecting the matrix-`∞` surface to Eq.13.21/max-entry and
   block-LU existence endpoints.
+
+- 2026-06-29 Algorithm 13.3 BDD actual CLM source-table wrappers:
+  added
+  `higham13_algorithm13_3_clm_diagLowerCertGeneric_diag_lower_of_continuousLinearMap_source_table`,
+  `higham13_algorithm13_3_clm_diagLowerCertGeneric_pivot_bound_of_continuousLinearMap_source_table`,
+  `higham13_algorithm13_3_clm_initial_lower_table_of_diag_inverse`,
+  `higham13_algorithm13_3_clm_initial_diag_bound_of_diag_inverse`, and the
+  downstream `_of_initial_diag_inverse_of_pivot_inverse` wrappers in
+  `BlockLU.lean`.  These instantiate the generic continuous-linear source-table
+  theorem for the actual Algorithm 13.3 Schur-stage recurrence on CLM blocks,
+  deriving the Schur update from
+  `higham13_algorithm13_3_schurStageBlock_exact_update`, and build the
+  stage-zero lower table plus initial diagonal comparison from two-sided
+  diagonal inverse data.  This removes one more abstract-table alignment layer
+  for arbitrary subordinate CLM norms; the BDD source row remains open for
+  deriving the reciprocal/inverse data from block diagonal dominance and for
+  the source-strength max-entry Eq.13.21/`rho <= 2` endpoint.
