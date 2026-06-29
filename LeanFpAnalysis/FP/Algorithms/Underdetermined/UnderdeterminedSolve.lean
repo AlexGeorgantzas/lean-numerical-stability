@@ -1322,6 +1322,58 @@ theorem higham21_lemma21_2_symmetrized_min_norm_of_gram_pseudoinverse_bound
       (by simpa [B] using hBplusOp)
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    concrete Gram-pseudoinverse range specialization of the beta handoff.
+    Instead of assuming the domain projection fixes `x` directly, it suffices
+    that `x` is explicitly represented as `(A + DeltaA2)^+ yB`. -/
+theorem higham21_lemma21_2_symmetrized_min_norm_of_gram_pseudoinverse_range
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (yB : Fin m → ℝ)
+    (rho1 rho2 alpha beta eta : ℝ)
+    (hsq : vecNorm2Sq x ≠ 0)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hdet :
+      Matrix.det
+          (rectGram (fun i j => A i j + DeltaA2 i j) :
+            Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hxRange :
+      x =
+        rectMatMulVec
+          (undetAplusOfGramNonsingInv (fun i j => A i j + DeltaA2 i j))
+          yB)
+    (hsmall : 3 * max rho1 rho2 < 1)
+    (halpha : 0 ≤ alpha)
+    (hbeta : 0 ≤ beta)
+    (heta : 0 ≤ eta)
+    (halpha_le : alpha ≤ rho1)
+    (hbeta_le : beta ≤ rho2)
+    (heta_le : eta ≤ (1 - rho2)⁻¹)
+    (hDeltaA1Op : rectOpNorm2Le DeltaA1 alpha)
+    (hDeltaA2Op : rectOpNorm2Le DeltaA2 beta)
+    (hBplusOp :
+      rectOpNorm2Le
+        (undetAplusOfGramNonsingInv (fun i j => A i j + DeltaA2 i j))
+        eta) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j)
+      b x := by
+  let B : Fin m → Fin n → ℝ := fun i j => A i j + DeltaA2 i j
+  refine
+    higham21_lemma21_2_symmetrized_min_norm_of_gram_pseudoinverse_bound
+      A x DeltaA1 DeltaA2 b rho1 rho2 alpha beta eta hsq hDeltaA1 hdet
+      ?_ hsmall halpha hbeta heta halpha_le hbeta_le heta_le
+      hDeltaA1Op hDeltaA2Op hBplusOp
+  rw [hxRange]
+  simpa [B] using
+    higham21_lemma21_2_gram_pseudoinverse_domain_projection_apply_range
+      B (by simpa [B] using hdet) yB
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     the Frobenius-squared norm bound for the projector mixture used to replace
     two perturbation blocks by one. -/
 theorem higham21_lemma21_2_symmetrized_perturbation_frobNormSq_le {m n : ℕ}
