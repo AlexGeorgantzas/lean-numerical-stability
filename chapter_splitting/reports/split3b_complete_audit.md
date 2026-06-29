@@ -141,12 +141,21 @@ rendered statement comparison is still open.
 | ch16 | core | 45 | 15 | 20 | 10 | 50 | 23 | 37 plus Appendix A rows | All 32 equation rows and 5 problems are accounted for; Sylvester/Lyapunov candidate files compile, but exact source statements and local mapping are not yet source-checked. | low |
 | ch17 | core | 45 | 15 | 20 | 10 | 50 | 23 | 36 plus Appendix A row | All 35 equation rows and problem 17.1 are accounted for; `StationaryIteration.lean` compiles, but its comments use shifted chapter numbering and need source-row remapping. | low |
 | ch18 | core | 50 | 20 | 25 | 15 | 50 | 27 | 23 plus Appendix A rows | Theorems 18.1-18.2 and 17 equation rows are accounted for; `MatrixPowers.lean` compiles as a candidate foundation but uses older chapter-number comments. | low-medium |
-| ch19 | core | 90 | 94 | 99 | 98 | 99 | 95 | 51 plus Appendix A rows | Ch.19 has detailed per-row inventory; Householder and Givens outward contracts compile; Theorem 19.13 now has determinant/source-condition/fallback `MGSQRBounds` wrappers, the CS/polar correction-map existence gate is closed, and the recursive/stored final-panel route now has self-dot beta bridges for the one-column base case and successor-pivot stored-step lift. Remaining gates: the full recursive normalized-reflector versus stored active-reflector match through the stored sequence, sharper source condition estimates for `R11`, exact printed constants, and final source-strength audit of `H19.Theorem19_13.mgs_qr_bounds`. | medium |
+| ch19 | core | 90 | 94 | 99 | 98 | 99 | 95 | 51 plus Appendix A rows | Ch.19 has detailed per-row inventory; Householder and Givens outward contracts compile; Theorem 19.13 now has determinant/source-condition/fallback `MGSQRBounds` wrappers, the CS/polar correction-map existence gate is closed, and the recursive/stored final-panel route now has self-dot beta bridges plus a two-column actual-active stored-step endpoint. Remaining gates: the full recursive normalized-reflector versus stored active-reflector match through the stored sequence, sharper source condition estimates for `R11`, exact printed constants, and final source-strength audit of `H19.Theorem19_13.mgs_qr_bounds`. | medium |
 
 Latest Ch19 audit refresh (2026-06-29): the recursive/stored final-panel route
-can now derive beta-one data from the source-style normalization `v^T v = 2`
-not only for the one-column base case, but also for successor pivots after
-passing to the once-shrunk trailing panel.  The support lemma
+now has a compiled two-column endpoint using actual pivot-1 active-vector data:
+`H19.Theorem19_13.qrPanel_R_two_col_eq_secondStoredActiveStep_one_of_tail_reflector_self_dot_of_subtractZeroExact`.
+It consumes the tail active-vector identification with the recursive normalized
+reflector, the source-style tail self-dot normalization, the determinant
+nonbreakdown premises, and the exact subtract-zero copy convention.  This moves
+the route from an artificial `Fin.cases 0 v1` normalized-vector endpoint to the
+stored loop's own successor-pivot active vector with beta one.
+
+Previous Ch19 audit refresh (2026-06-29): the recursive/stored final-panel route
+can derive beta-one data from the source-style normalization `v^T v = 2` not
+only for the one-column base case, but also for successor pivots after passing
+to the once-shrunk trailing panel.  The support lemma
 `householderBetaSpec_eq_one_of_inner_self_eq_two` proves that a vector with
 square norm `2` has exact beta `1`; H19 exposes the trailing-active wrapper
 `H19.Theorem19_13.householderTrailingActiveVector_betaSpec_eq_one_of_self_dot`
@@ -772,6 +781,7 @@ now exports the public wrapper with the repository's conservative `gamma_tilde`.
 
 | Selected claim/blocker | Oracle session/model | Prompt summary | Key route suggested | Adopted/rejected steps | Lean validation | Status |
 |---|---|---|---|---|---|---|
+| Ch19 two-column actual-active stored endpoint proof script | `split3b-ch19-proof-repair`, ChatGPT browser `gpt-5.5-pro` resolved as Pro Extended | Compact proof packet with only the local theorem skeleton, available facts `hqr`, `hS1`, `hfull`, and the Lean rewrite failure; no PDFs or bulk Lean files | Keep `Sfull` abstract long enough to use `hfull.symm`; prove a separate `panelFromTopAndTrailing ... S1Norm = Sfull` bridge, then close with transitivity and final `simpa` | Adopted as proof-script repair only; first no-file Oracle attempt was a non-answer and was not used | `lake env lean LeanFpAnalysis\FP\Algorithms\QR\Higham19.lean` PASS; `lake build LeanFpAnalysis.FP.Algorithms.QR.Higham19` PASS; axiom probe only `propext`, `Classical.choice`, `Quot.sound` | advisory accepted and locally formalized |
 | Split 3B ordering and QR interface triage | `higham-split3b-current`, `gpt-5.5-pro` browser | Compact reviewed Split 3B planning packet, no PDFs or bulk Lean files | Prioritize Ch19 outward QR interfaces; treat existing QR files as candidate foundations until source-label audit | Adopted for audit ordering; not proof evidence | Oracle status rechecked through bundled Node/pnpm; session completed | advisory accepted for workflow only |
 | Ch19 Theorem 19.10 Givens QR blocker | `higham-split3b-givens-inline`, `gpt-5.5-pro` browser | Compact route packet with prompt file and local Givens/H19 files; no PDFs, no secrets, no bulk repo export | Do not wrap current sequence theorems; first prove a sparse zero-aware Givens task step, disjoint-stage schedule, upper-trapezoidal invariant, and columnwise stage accumulation | Adopted as route constraint; no theorem equivalent hypothesis may be added to `H19.Theorem19_10.*` | Advisory route recorded; the advised route now compiles through sparse residuals, zero-aware task residuals, generic normwise/columnwise sequence accumulation, same-stage and full stage-fold accumulation, upper-trapezoidal invariants, and the public `H19.Theorem19_10.givens_qr_backward_error` wrapper | advisory route completed for public wrapper |
 | Ch19 Theorem 19.13 QR-sensitivity/source-output blocker | `split3b-qr-sensitivit`, `gpt-5.5-pro` browser, resolved `Pro Extended`, verified `yes` | Prompt file plus current `GramSchmidt.lean`, `Higham19.lean`, `Rounding.lean`, Ch19 inventory, and complete audit | Treat `QRSensitivitySourceOutput` as final output channels only; restore full `(19.34)` block data including `Delta A3 = P11 * R11` and full padded orthogonality, then prove/import Problem 19.12 CS/polar pure correction-map data existence/budgets and source right-inverse/condition estimates for the common-`R` route | Adopted the full-block-data route; CS factor algebra, pure correction-map data/algebra, common-`R` algebra and norm bridge, Gram-residual expansion, Gram-residual norm conversion, and conditional source-output assembly from common-`R` bounds now compile; rejected treating `(19.35a)`-`(19.37)` alone as enough for Theorem 19.13 | Full block-data, common-`R` algebra/norm, Gram-expansion, Gram-norm, source-output common-`R`, and Problem 19.12 CS/correction-map probes report only `propext`, `Classical.choice`, and `Quot.sound` | advisory partially translated into checked Lean |
@@ -811,7 +821,7 @@ strength and audit the final constants.
 | Ch16 all selected rows | 32 equations, 5 problems, section-level Sylvester/Lyapunov claims | candidate foundations only | Existing Sylvester files are old-numbered and not mapped to the Ch16 source formulas. | rendered statement inventory and source-label map | Extract exact rows and map each to `Sylvester*` declarations. | yes |
 | Ch17 all selected rows | 35 equations, problem 17.1, section-level stationary iteration claims | candidate foundations only | Existing stationary-iteration file is old-numbered and not mapped to Ch17. | rendered statement inventory and source-label map | Extract exact rows and map to `StationaryIteration.lean`. | yes |
 | Ch18 Theorems 18.1-18.2 | matrix-power finite precision theorems | partial foundation | Existing `higham_knight_17_1` and related theorems are not mapped to current Ch18 theorem statements. | theorem-surface audit | Render Theorems 18.1-18.2 and compare hypotheses/constants to local theorem types. | yes |
-| Ch19 Theorem 19.13 | MGS QR bounds | conditional source-facing theorem plus open source-strength gates | The exact algorithm/state, row `(19.32)` source-stage recurrence, row `(19.33)` product/factorization foundation, exact `A = Q R` theorem, `(19.27)`-`(19.28)` padded-input/vector vocabulary, `v_k^T v_k = 2` normalization channel for computed MGS columns, diagonal scalar channel `q_k^T a_k^(k) = r_kk`, exact reflector symmetry/involution lemmas, one-reflector `[0; A]` action lemmas, padded-stage component lemmas, padded-stage endpoints `[0; A]` and `[R; 0]`, exact forward/reverse one-step padded-stage transitions, forward-prefix endpoint from `[0; A]` to `[R; 0]`, reverse-prefix endpoint from `[R; 0]` to `[0; A]`, exact top/bottom block extraction, generic `[Delta A3; A + Delta A4]` perturbation shape, row reindexing, stacked-column bound transport, Theorem 19.4 padded-input handoff, block-form `(19.34)` perturbed product equation, economy-product extraction `A + Delta A4 = Q21 * R11`, top-block extraction `Delta A3 = P11 * R11`, full padded orthogonality, block-column Gram identities, CS/polar correction-map existence, repaired-budget algebra, concrete Householder-stacked source-output wrappers, common-`R` right-inverse algebra and norm bridge, exact Gram-residual expansion plus `2*delta + delta^2` operator-norm conversion, conditional QR-sensitivity assembly bridges, the determinant/source-condition/fallback `MGSQRBounds` wrappers, the one-column stored/recursive self-dot beta bridge, and the successor-pivot beta-one stored-step reconstruction compile. The chapter-facing `H19.Theorem19_13.mgs_qr_bounds` exists under explicit `det R11 != 0` and final budget hypotheses. | Full recursive/stored final-panel equality, source right-inverse/condition estimates for `R11`, final radius/constant budget audit, and rendered source comparison | Prove the full stored-loop final-panel equality using the terminal self-dot bridge plus the successor-pivot beta-one/trailing-panel lift, then replace the remaining determinant/budget/source-condition hypotheses by source-derived nonbreakdown and conditioning estimates where the printed theorem supplies them. | yes |
+| Ch19 Theorem 19.13 | MGS QR bounds | conditional source-facing theorem plus open source-strength gates | The exact algorithm/state, row `(19.32)` source-stage recurrence, row `(19.33)` product/factorization foundation, exact `A = Q R` theorem, `(19.27)`-`(19.28)` padded-input/vector vocabulary, `v_k^T v_k = 2` normalization channel for computed MGS columns, diagonal scalar channel `q_k^T a_k^(k) = r_kk`, exact reflector symmetry/involution lemmas, one-reflector `[0; A]` action lemmas, padded-stage component lemmas, padded-stage endpoints `[0; A]` and `[R; 0]`, exact forward/reverse one-step padded-stage transitions, forward-prefix endpoint from `[0; A]` to `[R; 0]`, reverse-prefix endpoint from `[R; 0]` to `[0; A]`, exact top/bottom block extraction, generic `[Delta A3; A + Delta A4]` perturbation shape, row reindexing, stacked-column bound transport, Theorem 19.4 padded-input handoff, block-form `(19.34)` perturbed product equation, economy-product extraction `A + Delta A4 = Q21 * R11`, top-block extraction `Delta A3 = P11 * R11`, full padded orthogonality, block-column Gram identities, CS/polar correction-map existence, repaired-budget algebra, concrete Householder-stacked source-output wrappers, common-`R` right-inverse algebra and norm bridge, exact Gram-residual expansion plus `2*delta + delta^2` operator-norm conversion, conditional QR-sensitivity assembly bridges, the determinant/source-condition/fallback `MGSQRBounds` wrappers, the one-column stored/recursive self-dot beta bridge, the successor-pivot beta-one stored-step reconstruction, and the two-column actual-active stored endpoint compile. The chapter-facing `H19.Theorem19_13.mgs_qr_bounds` exists under explicit `det R11 != 0` and final budget hypotheses. | Full recursive/stored final-panel equality, source right-inverse/condition estimates for `R11`, final radius/constant budget audit, and rendered source comparison | Generalize the two-column actual-active endpoint into the arbitrary-width two-step bridge and then the full stored-loop final-panel equality; afterwards replace remaining determinant/budget/source-condition hypotheses by source-derived nonbreakdown and conditioning estimates where the printed theorem supplies them. | yes |
 | Appendix A Split 3B rows | solution proofs for 16.x-19.x | inventory-accounted only | Solution statements have not been audited for omitted proof dependencies. | Appendix A extraction | Read A.16-A.19 rows and link to main text rows. | yes |
 
 Latest refinement to the Ch19 row: the terminal one-column recursive/stored
@@ -834,6 +844,15 @@ successor steps.  The next action is to assemble these bridges through the
 shrinking-panel stored sequence, then discharge the remaining source `R11`
 nonbreakdown/condition estimates and printed-constant audits for the final
 Theorem 19.13 surface.
+
+Newest Ch19 refinement: the two-column endpoint now uses the actual stored-loop
+pivot-1 active vector, not only an artificial zero-prefixed normalized vector.
+The theorem
+`H19.Theorem19_13.qrPanel_R_two_col_eq_secondStoredActiveStep_one_of_tail_reflector_self_dot_of_subtractZeroExact`
+packages the determinant-specialized recursive two-column `R` panel with the
+successor-pivot self-dot beta bridge and exact-copy stored-step reconstruction.
+The next concrete theorem is the arbitrary-width two-step analogue with actual
+pivot-1 active-vector data, then the full induction over the stored sequence.
 
 ## Foundation feasibility gate
 
@@ -961,7 +980,7 @@ Weak components requiring at least two independent checks before closure:
 | Ch19 Householder QR wrapper | implementation-facing FP theorem with many computed objects | rendered theorem page, focused compile, `#check`, and `#print axioms` done | sign-choice universality and equation-row cross-link audit | exported, watch |
 | Ch19 Givens QR wrapper | theorem about full algorithm, not just step sequence | rendered Theorem 19.10, focused compile, GPT-5.5 Pro route audit, public wrapper compile, and `#print axioms` done | exact printed constant and equation-row cross-link audit | exported, watch |
 | Ch19 MGS theorem | stability foundation missing after algorithm/spec start | Rendered pages 370-373 inspected; compiled CGS/MGS skeleton, exact `(19.32)`-`(19.33)` foundations, diagonal scalar/unit-column channel, `(19.27)`-`(19.28)` padded/vector bridge, exact reflector symmetry/involution, one-reflector `[0; A]` action lemmas, padded-stage `[0; A]`/`[R; 0]` endpoints, forward/reverse one-step padded-stage transitions, forward-prefix endpoint, reverse-prefix endpoint, exact top/bottom block extraction, and generic `[Delta A3; A + Delta A4]` perturbation vocabulary done | residual/orthogonality/R-factor proof route | foundation started |
-| Ch19 MGS source-output bridge | risk of mislabeled QR-sensitivity output hiding repair assumptions | GPT-5.5 Pro audit completed; full `(19.34)` block-data theorem, block-column Gram identities for `P11`/`Q21`, CS/polar correction-map existence, pure correction-map data/algebra, data-first repair/source-output/MGSQRBounds bridge with pure-data fixed-budget and Frobenius-inverse fallbacks, determinant-nonzero `R11` wrappers, common-`R` right-inverse algebra and norm bridge, exact Gram-residual expansion, Gram-residual norm conversion, conditional source-output assembly from common-`R` bounds, and the one-column self-dot beta bridge compile with clean checks | prove the full recursive/stored final-panel equality, source determinant nonbreakdown/right-inverse/condition estimates, and final constants/radius audit | foundation started |
+| Ch19 MGS source-output bridge | risk of mislabeled QR-sensitivity output hiding repair assumptions | GPT-5.5 Pro audit completed; full `(19.34)` block-data theorem, block-column Gram identities for `P11`/`Q21`, CS/polar correction-map existence, pure correction-map data/algebra, data-first repair/source-output/MGSQRBounds bridge with pure-data fixed-budget and Frobenius-inverse fallbacks, determinant-nonzero `R11` wrappers, common-`R` right-inverse algebra and norm bridge, exact Gram-residual expansion, Gram-residual norm conversion, conditional source-output assembly from common-`R` bounds, the self-dot beta bridges, and the actual-active two-column recursive/stored endpoint compile with clean checks | prove the arbitrary-width/full recursive/stored final-panel equality, source determinant nonbreakdown/right-inverse/condition estimates, and final constants/radius audit | foundation started |
 
 The Ch19 Problem 19.12 CS/polar bottleneck ledger is resolved in
 `chapter_splitting/reports/split3b_ch19_cs_polar_bottleneck.md`.  The active
@@ -975,6 +994,11 @@ Commands run in this audit context:
 
 | Command | Result | Notes |
 |---|---|---|
+| `lake env lean LeanFpAnalysis\FP\Algorithms\QR\Higham19.lean` | PASS | Focused compile after adding the actual-active two-column recursive/stored endpoint and after applying the GPT Pro proof-script repair. |
+| `lake build LeanFpAnalysis.FP.Algorithms.QR.Higham19` | PASS | Target build after the actual-active two-column endpoint; pre-existing `GivensSpec.lean` unused-simp warnings replayed. |
+| stdin `#print axioms` probe importing `LeanFpAnalysis.FP.Algorithms.QR.Higham19` with `lean --stdin` | PASS | `H19.Theorem19_13.qrPanel_R_two_col_eq_secondStoredActiveStep_one_of_tail_reflector_self_dot_of_subtractZeroExact` reports only `propext`, `Classical.choice`, and `Quot.sound`. |
+| `rg -n "\b(sorry\|admit\|axiom\|unsafe\|opaque)\b"` over `Higham19.lean` | PASS, no matches | Placeholder/unsafe scan after the actual-active two-column endpoint. |
+| bundled Git `diff --check` over `Higham19.lean` and the Split 3B audit report | PASS | Whitespace check after the actual-active endpoint and report refresh; Git repeated expected line-ending notices. |
 | `lake env lean LeanFpAnalysis\FP\Algorithms\QR\Higham19.lean` | PASS | Baseline focused compile before editing, and focused compile after adding the successor-pivot self-dot beta/stored-step bridges. |
 | `lake build LeanFpAnalysis.FP.Algorithms.QR.Higham19` | PASS | Target build after the successor-pivot beta-one stored-step bridge; pre-existing `GivensSpec.lean` unused-simp warnings replayed. |
 | stdin `#print axioms` probe importing `LeanFpAnalysis.FP.Algorithms.QR.Higham19` with `lean --stdin` | PASS | The four new H19 bridge names resolve; printed axiom sets contain only `propext`, `Classical.choice`, and `Quot.sound`. |
@@ -1513,17 +1537,18 @@ Not yet run for this complete audit:
 ## GitHub synchronization
 
 - Local branch: `main`.
-- Latest pushed proof/merge HEAD before this report-sync update: `1eb9351`.
-- Split-prefixed milestone commit: `2edbb17`
-  (`Split 3B: lift Ch19 beta bridge to successors`).
-- Integration: merged `origin/main` after the local milestone because remote
-  `main` advanced during verification; the merge was clean and preserved
-  incoming Split 3A/library lookup work.
-- Verification after integration: `lake env lean LeanFpAnalysis\FP\Algorithms\QR\Higham19.lean`
-  and `lake build LeanFpAnalysis.FP.Algorithms.QR.Higham19` passed on the
-  final merged state.
+- Latest pushed proof/merge HEAD before this report-sync update: `0b55991`.
+- Split-prefixed milestone commit: `2b1ef45`
+  (`Split 3B: prove Ch19 actual-active two-column bridge`).
+- Integration: local `main` and `origin/main` were equal at `575869c` before
+  theorem design.  Remote `main` later advanced to `2e6c1ce`; it was merged
+  cleanly as `0b55991` before pushing, preserving incoming Split 3A/library
+  lookup work.
+- Verification after implementation: `lake env lean LeanFpAnalysis\FP\Algorithms\QR\Higham19.lean`,
+  `lake build LeanFpAnalysis.FP.Algorithms.QR.Higham19`, placeholder scan,
+  `git diff --check`, and stdin `#print axioms` probe all passed.
 - Pushed to `origin/main`: yes, `git push origin main` advanced
-  `origin/main` to `1eb9351`; this report-sync update records that push.
+  `origin/main` to `0b55991`; this report-sync update records that push.
 - Remaining local uncommitted files: pre-existing `.gitignore` modification and
   untracked `.codex/config.toml`.
 

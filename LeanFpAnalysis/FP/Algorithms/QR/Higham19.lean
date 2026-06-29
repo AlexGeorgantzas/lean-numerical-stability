@@ -4748,6 +4748,115 @@ theorem qrPanel_R_two_col_eq_secondStoredStep_of_leadingBlock_det_ne_zero_of_sub
   qrPanel_R_two_col_eq_secondStoredStep_of_leadingBlock_det_ne_zero_of_fl_sub_zero
     fp A hdetFirst hdetTail hcopy
 
+/-- Two-column recursive/stored bridge with actual pivot-1 active-vector data.
+
+This removes the artificial `Fin.cases 0 v1` normalized-vector endpoint from the
+terminal two-column bridge.  If the tail-panel source active vector is the
+recursive normalized reflector and satisfies the source normalization
+`v^T v = 2`, then the recursive two-column `R` panel is exactly the second full
+stored step with the actual successor-pivot active vector and beta one. -/
+theorem
+    qrPanel_R_two_col_eq_secondStoredActiveStep_one_of_tail_reflector_self_dot_of_subtractZeroExact
+    (fp : FPModel) {m : Nat}
+    (A : Fin (m + 2) -> Fin 2 -> Real) (alpha : Real)
+    (hdetFirst :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le (m + 1)))
+          (Nat.succ_pos 1) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hdetTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+              (panelFirstColumn (Nat.succ_pos 1) A)
+           let S0 := fl_householderStoredPanelStep fp (m + 2) 2 0 v0 1 A
+           trailingPanel S0)
+          (Nat.succ_le_succ (Nat.zero_le m))
+          (Nat.succ_pos 0) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hvecTail :
+      (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+          (panelFirstColumn (Nat.succ_pos 1) A)
+       let S0 := fl_householderStoredPanelStep fp (m + 2) 2 0 v0 1 A
+       householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
+            (panelFirstColumn (Nat.succ_pos 0) (trailingPanel S0)) alpha =
+          fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos 0) (trailingPanel S0))))
+    (hselfTail :
+      (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+          (panelFirstColumn (Nat.succ_pos 1) A)
+       let S0 := fl_householderStoredPanelStep fp (m + 2) 2 0 v0 1 A
+       (Finset.univ : Finset (Fin (m + 1))).sum
+          (fun i =>
+            householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
+                (panelFirstColumn (Nat.succ_pos 0) (trailingPanel S0)) alpha i *
+              householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
+                (panelFirstColumn (Nat.succ_pos 0) (trailingPanel S0)) alpha i) =
+        2))
+    (hcopy : subtractZeroExact fp) :
+    fl_householderQRPanel_R fp (m + 2) 2 A =
+      (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+          (panelFirstColumn (Nat.succ_pos 1) A)
+       let S0 := fl_householderStoredPanelStep fp (m + 2) 2 0 v0 1 A
+       fl_householderStoredPanelStep fp (m + 2) 2 1
+        (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+          (fun a => S0 a ((0 : Fin 1).succ)) alpha)
+        1 S0) := by
+  let v0 : Fin (m + 2) -> Real :=
+    fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+      (panelFirstColumn (Nat.succ_pos 1) A)
+  let S0 : Fin (m + 2) -> Fin 2 -> Real :=
+    fl_householderStoredPanelStep fp (m + 2) 2 0 v0 1 A
+  let vTail : Fin (m + 1) -> Real :=
+    householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
+      (panelFirstColumn (Nat.succ_pos 0) (trailingPanel S0)) alpha
+  let v1 : Fin (m + 1) -> Real :=
+    fl_householderNormalizedVector fp (Nat.succ_pos m)
+      (panelFirstColumn (Nat.succ_pos 0) (trailingPanel S0))
+  let S1Tail : Fin (m + 1) -> Fin 1 -> Real :=
+    fl_householderStoredPanelStep fp (m + 1) 1 0 vTail 1
+      (trailingPanel S0)
+  let S1Norm : Fin (m + 1) -> Fin 1 -> Real :=
+    fl_householderStoredPanelStep fp (m + 1) 1 0 v1 1
+      (trailingPanel S0)
+  let Sfull : Fin (m + 2) -> Fin 2 -> Real :=
+    fl_householderStoredPanelStep fp (m + 2) 2 1
+      (householderTrailingActiveVector (m + 2) ((0 : Fin (m + 1)).succ)
+        (fun a => S0 a ((0 : Fin 1).succ)) alpha) 1 S0
+  have hqr :=
+    qrPanel_R_two_col_eq_firstStoredPanelStep_trailingStoredStep_of_leadingBlock_det_ne_zero
+      (fp := fp) (m := m) A hdetFirst hdetTail
+  have hvecTail' : vTail = v1 := by
+    dsimp [vTail, v1]
+    simpa [v0, S0] using hvecTail
+  have hS1 : S1Tail = S1Norm := by
+    dsimp [S1Tail, S1Norm]
+    rw [hvecTail']
+  have hfull :
+      Sfull =
+        panelFromTopAndTrailing (panelTopLeft S0) (panelTopRowTail S0) S1Tail := by
+    dsimp [Sfull, S1Tail, vTail]
+    exact
+      storedPanelStep_succ_trailingActiveVector_one_eq_panelFromTopAndTrailing_one_of_tail_self_dot_of_subtractZeroExact_anyCols
+        fp S0 alpha
+        (by simpa [v0, S0] using hselfTail)
+        (panelFirstColumnTailZero_firstStoredPanelStep fp v0 1 A)
+        hcopy
+  have hqr' :
+      fl_householderQRPanel_R fp (m + 2) 2 A =
+        panelFromTopAndTrailing (panelTopLeft S0) (panelTopRowTail S0)
+          S1Norm := by
+    simpa [v0, S0, v1, S1Norm] using hqr
+  have hpanelNorm_eq_Sfull :
+      panelFromTopAndTrailing (panelTopLeft S0) (panelTopRowTail S0)
+          S1Norm =
+        Sfull := by
+    simpa [hS1] using hfull.symm
+  simpa [v0, S0, Sfull] using hqr'.trans hpanelNorm_eq_Sfull
+
 /-- Exact-arithmetic instance of the two-column recursive/stored bridge.
 
 This is not the finite-precision source theorem; it records that the new named
