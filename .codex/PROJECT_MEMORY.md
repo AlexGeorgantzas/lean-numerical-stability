@@ -9901,3 +9901,14 @@ These compile, but should not be treated as fully derived stability results:
   packaging; the printed BDD row remains open for deriving the reciprocal data
   from the BDD hypotheses and for the source-strength entrywise max-norm
   Eq.13.21/`rho <= 2` endpoint.
+
+- 2026-06-29 Algorithm 13.3 BDD matrix-infinity reciprocal-table wrappers:
+  added the `_of_reciprocal_diag_right_inverse_of_pivot_right_inverse`
+  family in `BlockLU.lean`, including active-stage, `blockInfNorm`,
+  finite-history, and dimension-aware max-entry/growth-factor packages.
+  These specialize the previous initial-diagonal/right-inverse wrappers to
+  the exact table `invDiagBound j = (infNorm (diagInv j))^{-1}`, removing the
+  separate `hInvBound` proof artifact.  The endpoint remains the
+  matrix-`∞` route with explicit comparison loss `r`, proving
+  `growthFactorEntry <= 2*r` rather than the printed dimension-free
+  Eq.13.23 `rho <= 2` source row.
