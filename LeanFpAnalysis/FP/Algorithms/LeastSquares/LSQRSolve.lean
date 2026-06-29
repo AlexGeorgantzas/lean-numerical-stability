@@ -7319,6 +7319,92 @@ theorem
       hu hv hw hleft hright hnull hAv hATu hATw hsigmaRange
       hsigmaMin_pos rfl rfl halpha
 
+/-- Higham, 2nd ed., Chapter 20, equations (20.18)-(20.19):
+    source-shaped rectangular branch count.  For the usual full-column-rank
+    least-squares dimensions `A : R^{m x n}` with `n <= m`, the `n` positive
+    singular branches, their paired negative branches, and the `m-n`
+    left-nullspace branches have total size `m+n`. -/
+theorem lsScaledAugmentedSourceBranchCardEq {m n : ℕ} (hmn : n ≤ m) :
+    2 * Fintype.card (Fin n) + Fintype.card (Fin (m - n)) = m + n := by
+  simp [Fintype.card_fin]
+  omega
+
+/-- Higham, 2nd ed., Chapter 20, equations (20.18)-(20.19):
+    source-shaped complete branch enumeration for a tall rectangular matrix. -/
+noncomputable def lsScaledAugmentedSourceBranchEquiv
+    (m n : ℕ) (hmn : n ≤ m) :
+    Fin (m + n) ≃ Sum (Sum (Fin n) (Fin n)) (Fin (m - n)) :=
+  lsScaledAugmentedBranchEquivOfCardEq m n (Fin n) (Fin (m - n))
+    (lsScaledAugmentedSourceBranchCardEq hmn)
+
+/-- Higham, 2nd ed., Chapter 20, equations (20.18)-(20.19):
+    reciprocal-diagonal inverse candidate built from the source-shaped branch
+    family `Fin n ⊕ Fin n ⊕ Fin (m-n)`. -/
+noncomputable def lsScaledAugmentedSourceBranchInverseCandidate
+    {m n : ℕ} (hmn : n ≤ m) (alpha : ℝ)
+    (sigma : Fin n → ℝ) (u : Fin n → Fin m → ℝ)
+    (v : Fin n → Fin n → ℝ) (w : Fin (m - n) → Fin m → ℝ) :
+    Fin (m + n) → Fin (m + n) → ℝ :=
+  finiteMatMul
+    (fun r c : Fin (m + n) =>
+      lsScaledAugmentedMatrixBranchVector alpha sigma u v w
+        (lsScaledAugmentedSourceBranchEquiv m n hmn c) r)
+    (finiteMatMul
+      (finiteDiagonal
+        (fun c : Fin (m + n) =>
+          (lsScaledAugmentedMatrixBranchEigenvalue alpha sigma
+            (lsScaledAugmentedSourceBranchEquiv m n hmn c))⁻¹))
+      (matTranspose
+        (fun r c : Fin (m + n) =>
+          lsScaledAugmentedMatrixBranchVector alpha sigma u v w
+            (lsScaledAugmentedSourceBranchEquiv m n hmn c) r)))
+
+/-- Higham, 2nd ed., Chapter 20, equations (20.18)-(20.19):
+    source-dimension finite-extrema condition-number handoff.  Under `n <= m`,
+    supplied source-shaped singular-vector and left-nullspace branch data
+    determine the full branch enumeration and finite extrema internally, giving
+    the displayed balanced two-sided `κ₂` bounds for the reciprocal-diagonal
+    inverse candidate. -/
+theorem
+    lsScaledAugmentedMatrix_kappa2_bounds_of_source_dimension_branch_data
+    {m n : ℕ} [Nonempty (Fin n)] (hmn : n ≤ m)
+    {alpha : ℝ} {A : Fin m → Fin n → ℝ}
+    {sigma : Fin n → ℝ} {u : Fin n → Fin m → ℝ}
+    {v : Fin n → Fin n → ℝ} {w : Fin (m - n) → Fin m → ℝ}
+    (hu : ∀ i : Fin n, vecNorm2Sq (u i) = 1)
+    (hv : ∀ i : Fin n, vecNorm2Sq (v i) = 1)
+    (hw : ∀ k : Fin (m - n), vecNorm2Sq (w k) = 1)
+    (hleft : ∀ i j : Fin n, i ≠ j → (∑ r : Fin m, u i r * u j r) = 0)
+    (hright : ∀ i j : Fin n, i ≠ j → (∑ c : Fin n, v i c * v j c) = 0)
+    (hnull : ∀ k l : Fin (m - n),
+      k ≠ l → (∑ r : Fin m, w k r * w l r) = 0)
+    (hAv : ∀ i : Fin n, rectMatMulVec A (v i) = fun r => sigma i * u i r)
+    (hATu : ∀ i : Fin n,
+      (fun j : Fin n => ∑ r : Fin m, A r j * u i r) =
+        fun j => sigma i * v i j)
+    (hATw : ∀ k : Fin (m - n), ∀ j : Fin n,
+      ∑ r : Fin m, A r j * w k r = 0)
+    (hsigma_pos : ∀ i : Fin n, 0 < sigma i)
+    (halpha :
+      alpha = lsScaledAugmentedBranchSigmaMin sigma / Real.sqrt 2) :
+    Real.sqrt 2 *
+          (lsScaledAugmentedBranchSigmaMax sigma /
+            lsScaledAugmentedBranchSigmaMin sigma) ≤
+        kappa2 (lsScaledAugmentedMatrix alpha A)
+          (lsScaledAugmentedSourceBranchInverseCandidate hmn alpha sigma u v w) ∧
+      kappa2 (lsScaledAugmentedMatrix alpha A)
+          (lsScaledAugmentedSourceBranchInverseCandidate hmn alpha sigma u v w) ≤
+        2 *
+          (lsScaledAugmentedBranchSigmaMax sigma /
+            lsScaledAugmentedBranchSigmaMin sigma) := by
+  simpa [lsScaledAugmentedSourceBranchInverseCandidate,
+    lsScaledAugmentedSourceBranchEquiv] using
+    lsScaledAugmentedMatrix_kappa2_bounds_of_branch_cardinality_and_finite_extrema
+      (m := m) (n := n) (ι := Fin n) (κ := Fin (m - n))
+      (alpha := alpha) (A := A) (sigma := sigma) (u := u) (v := v) (w := w)
+      (lsScaledAugmentedSourceBranchCardEq hmn)
+      hu hv hw hleft hright hnull hAv hATu hATw hsigma_pos halpha
+
 /-- Higham, 2nd ed., Chapter 20, equation (20.20): the weighted perturbation
     block `[DeltaA, theta Delta b]` used in the Frobenius normwise
     least-squares backward error. -/
