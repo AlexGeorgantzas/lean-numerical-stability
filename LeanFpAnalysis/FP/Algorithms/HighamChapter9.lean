@@ -4308,6 +4308,223 @@ theorem higham9_3_rectLiteralDoolittle_source_budgets_square_backward_error
         hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq hU_diag hn
         hU_budget_le hL_budget_le)
 
+/-- **Theorem 9.3**, square-specialized rectangular literal
+component-dominance form.  This exposes the rectangular Algorithm 9.2
+component-dominance source conditions directly at `m = n`, with the usual
+square componentwise backward-error conclusion. -/
+theorem higham9_3_rectLiteralDoolittle_componentDominance_square_backward_error
+    {n : ℕ} {fp : FPModel}
+    {A L_hat U_hat : Fin n → Fin n → ℝ}
+    (hL_diag : ∀ i : Fin n, L_hat i i = 1)
+    (hL_upper_zero : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hU_lower_zero : ∀ i j : Fin n, j.val < i.val → U_hat i j = 0)
+    (hU_entry_eq : ∀ k j : Fin n, k.val ≤ j.val →
+      U_hat k j =
+        higham9_2_rectFlDoolittleUEntry fp (Nat.le_refl n)
+          A L_hat U_hat k j)
+    (hL_entry_eq : ∀ i k : Fin n, k.val < i.val →
+      L_hat i k =
+        higham9_2_rectFlDoolittleLEntry fp A L_hat U_hat i k)
+    (hU_diag : ∀ k : Fin n, U_hat k k ≠ 0)
+    (hn : gammaValid fp n)
+    (hL_coeff : ∀ i k : Fin n, k.val < i.val →
+      gamma fp k.val + fp.u + fp.u ≤ gamma fp n)
+    (hU_work_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUWorkAbs fp (Nat.le_refl n)
+          A L_hat U_hat k j ≤ |U_hat k j|)
+    (hU_prod_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUProductAbs fp (Nat.le_refl n)
+          A L_hat U_hat k j ≤ |U_hat k j|)
+    (hL_work_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLWorkAbs fp A L_hat U_hat i k ≤
+        |L_hat i k * U_hat k k|)
+    (hL_prod_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLProductAbs fp A L_hat U_hat i k ≤
+        |L_hat i k * U_hat k k|)
+    (hL_num_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLNumeratorAbs fp A L_hat U_hat i k ≤
+        |L_hat i k * U_hat k k|) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤ gamma fp n *
+        ∑ k : Fin n, |L_hat i k| * |U_hat k j|) ∧
+      (∀ i j, ∑ k : Fin n, L_hat i k * U_hat k j = A i j + ΔA i j) := by
+  exact
+    higham9_3_rectAbsBudgetCertificate_square_backward_error n fp A L_hat U_hat
+      (higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) A L_hat U_hat)
+      (higham9_2_rectDoolittleLAbsBudget fp A L_hat U_hat) hn
+      (higham9_2_rectAbsBudgetCertificate_of_literal_doolittle_component_dominance
+        (hmn := Nat.le_refl n) (A := A) (L := L_hat) (U := U_hat)
+        (by
+          intro k
+          simpa [higham9_2_rectRow] using hL_diag k)
+        hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq hU_diag hn
+        hL_coeff hU_work_le hU_prod_le hL_work_le hL_prod_le hL_num_le)
+
+/-- **Theorem 9.3**, square-specialized rectangular literal exact-product
+margin form. -/
+theorem higham9_3_rectLiteralDoolittle_exactProductMargins_square_backward_error
+    {n : ℕ} {fp : FPModel}
+    {A L_hat U_hat : Fin n → Fin n → ℝ}
+    (hL_diag : ∀ i : Fin n, L_hat i i = 1)
+    (hL_upper_zero : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hU_lower_zero : ∀ i j : Fin n, j.val < i.val → U_hat i j = 0)
+    (hU_entry_eq : ∀ k j : Fin n, k.val ≤ j.val →
+      U_hat k j =
+        higham9_2_rectFlDoolittleUEntry fp (Nat.le_refl n)
+          A L_hat U_hat k j)
+    (hL_entry_eq : ∀ i k : Fin n, k.val < i.val →
+      L_hat i k =
+        higham9_2_rectFlDoolittleLEntry fp A L_hat U_hat i k)
+    (hU_diag : ∀ k : Fin n, U_hat k k ≠ 0)
+    (hn : gammaValid fp n)
+    (hL_coeff : ∀ i k : Fin n, k.val < i.val →
+      gamma fp k.val + fp.u + fp.u ≤ gamma fp n)
+    (hU_margin : ∀ k j : Fin n, k.val ≤ j.val →
+      |A k j| + (1 + fp.u) *
+          higham9_2_rectDoolittleUProductAbs fp (Nat.le_refl n)
+            A L_hat U_hat k j ≤
+        |U_hat k j|)
+    (hL_margin : ∀ i k : Fin n, k.val < i.val →
+      |A i k| + (1 + fp.u) *
+          higham9_2_rectDoolittleLProductAbs fp A L_hat U_hat i k ≤
+        |L_hat i k * U_hat k k|)
+    (hL_num_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLNumeratorAbs fp A L_hat U_hat i k ≤
+        |L_hat i k * U_hat k k|) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤ gamma fp n *
+        ∑ k : Fin n, |L_hat i k| * |U_hat k j|) ∧
+      (∀ i j, ∑ k : Fin n, L_hat i k * U_hat k j = A i j + ΔA i j) := by
+  exact
+    higham9_3_rectAbsBudgetCertificate_square_backward_error n fp A L_hat U_hat
+      (higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) A L_hat U_hat)
+      (higham9_2_rectDoolittleLAbsBudget fp A L_hat U_hat) hn
+      (higham9_2_rectAbsBudgetCertificate_of_literal_doolittle_exact_product_margins
+        (hmn := Nat.le_refl n) (A := A) (L := L_hat) (U := U_hat)
+        (by
+          intro k
+          simpa [higham9_2_rectRow] using hL_diag k)
+        hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq hU_diag hn
+        hL_coeff
+        (by
+          intro k j hkj
+          simpa [higham9_2_rectRow] using hU_margin k j hkj)
+        hL_margin hL_num_le)
+
+/-- **Theorem 9.3**, square-specialized rectangular literal exact-product
+numerator-margin form. -/
+theorem higham9_3_rectLiteralDoolittle_exactProductNumeratorMargins_square_backward_error
+    {n : ℕ} {fp : FPModel}
+    {A L_hat U_hat : Fin n → Fin n → ℝ}
+    (hL_diag : ∀ i : Fin n, L_hat i i = 1)
+    (hL_upper_zero : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hU_lower_zero : ∀ i j : Fin n, j.val < i.val → U_hat i j = 0)
+    (hU_entry_eq : ∀ k j : Fin n, k.val ≤ j.val →
+      U_hat k j =
+        higham9_2_rectFlDoolittleUEntry fp (Nat.le_refl n)
+          A L_hat U_hat k j)
+    (hL_entry_eq : ∀ i k : Fin n, k.val < i.val →
+      L_hat i k =
+        higham9_2_rectFlDoolittleLEntry fp A L_hat U_hat i k)
+    (hU_diag : ∀ k : Fin n, U_hat k k ≠ 0)
+    (hn : gammaValid fp n)
+    (hL_coeff : ∀ i k : Fin n, k.val < i.val →
+      gamma fp k.val + fp.u + fp.u ≤ gamma fp n)
+    (hU_margin : ∀ k j : Fin n, k.val ≤ j.val →
+      |A k j| + (1 + fp.u) *
+          higham9_2_rectDoolittleUProductAbs fp (Nat.le_refl n)
+            A L_hat U_hat k j ≤
+        |U_hat k j|)
+    (hL_margin : ∀ i k : Fin n, k.val < i.val →
+      |A i k| + (1 + fp.u) *
+          higham9_2_rectDoolittleLProductAbs fp A L_hat U_hat i k ≤
+        |L_hat i k * U_hat k k|)
+    (hL_num_margin : ∀ i k : Fin n, k.val < i.val →
+      (|A i k| + higham9_2_rectDoolittleLProductAbs fp A L_hat U_hat i k) +
+        (gamma fp k.val *
+            (|A i k| + (1 + fp.u) *
+              higham9_2_rectDoolittleLProductAbs fp A L_hat U_hat i k) +
+          fp.u * higham9_2_rectDoolittleLProductAbs fp A L_hat U_hat i k) ≤
+        |L_hat i k * U_hat k k|) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤ gamma fp n *
+        ∑ k : Fin n, |L_hat i k| * |U_hat k j|) ∧
+      (∀ i j, ∑ k : Fin n, L_hat i k * U_hat k j = A i j + ΔA i j) := by
+  exact
+    higham9_3_rectAbsBudgetCertificate_square_backward_error n fp A L_hat U_hat
+      (higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) A L_hat U_hat)
+      (higham9_2_rectDoolittleLAbsBudget fp A L_hat U_hat) hn
+      (higham9_2_rectAbsBudgetCertificate_of_literal_doolittle_exact_product_numerator_margins
+        (hmn := Nat.le_refl n) (A := A) (L := L_hat) (U := U_hat)
+        (by
+          intro k
+          simpa [higham9_2_rectRow] using hL_diag k)
+        hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq hU_diag hn
+        hL_coeff
+        (by
+          intro k j hkj
+          simpa [higham9_2_rectRow] using hU_margin k j hkj)
+        hL_margin hL_num_margin)
+
+/-- **Theorem 9.3**, square-specialized rectangular literal exact-target gap
+form. -/
+theorem higham9_3_rectLiteralDoolittle_exactTargetGaps_square_backward_error
+    {n : ℕ} {fp : FPModel}
+    {A L_hat U_hat : Fin n → Fin n → ℝ}
+    (hL_diag : ∀ i : Fin n, L_hat i i = 1)
+    (hL_upper_zero : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hU_lower_zero : ∀ i j : Fin n, j.val < i.val → U_hat i j = 0)
+    (hU_entry_eq : ∀ k j : Fin n, k.val ≤ j.val →
+      U_hat k j =
+        higham9_2_rectFlDoolittleUEntry fp (Nat.le_refl n)
+          A L_hat U_hat k j)
+    (hL_entry_eq : ∀ i k : Fin n, k.val < i.val →
+      L_hat i k =
+        higham9_2_rectFlDoolittleLEntry fp A L_hat U_hat i k)
+    (hU_diag : ∀ k : Fin n, U_hat k k ≠ 0)
+    (hn : gammaValid fp n)
+    (hL_coeff : ∀ i k : Fin n, k.val < i.val →
+      gamma fp k.val + fp.u + fp.u ≤ gamma fp n)
+    (hU_gap : ∀ k j : Fin n, k.val ≤ j.val →
+      |A k j| + (1 + fp.u) *
+          higham9_2_rectDoolittleUProductAbs fp (Nat.le_refl n)
+            A L_hat U_hat k j +
+        higham9_2_rectDoolittleUExactTargetResidualBudget fp (Nat.le_refl n)
+          A L_hat U_hat k j ≤
+        |higham9_2_rectDoolittleUExactTarget (Nat.le_refl n)
+          A L_hat U_hat k j|)
+    (hL_gap : ∀ i k : Fin n, k.val < i.val →
+      |A i k| + (1 + fp.u) *
+          higham9_2_rectDoolittleLProductAbs fp A L_hat U_hat i k +
+        higham9_2_rectDoolittleLExactTargetEntryResidualBudget fp A L_hat U_hat i k ≤
+        |higham9_2_rectDoolittleLExactTarget A L_hat U_hat i k|)
+    (hL_num_gap : ∀ i k : Fin n, k.val < i.val →
+      ((|A i k| + higham9_2_rectDoolittleLProductAbs fp A L_hat U_hat i k) +
+        higham9_2_rectDoolittleLExactTargetNumeratorResidualBudget
+          fp A L_hat U_hat i k) +
+        higham9_2_rectDoolittleLExactTargetEntryResidualBudget
+          fp A L_hat U_hat i k ≤
+        |higham9_2_rectDoolittleLExactTarget A L_hat U_hat i k|) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤ gamma fp n *
+        ∑ k : Fin n, |L_hat i k| * |U_hat k j|) ∧
+      (∀ i j, ∑ k : Fin n, L_hat i k * U_hat k j = A i j + ΔA i j) := by
+  exact
+    higham9_3_rectAbsBudgetCertificate_square_backward_error n fp A L_hat U_hat
+      (higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) A L_hat U_hat)
+      (higham9_2_rectDoolittleLAbsBudget fp A L_hat U_hat) hn
+      (higham9_2_rectAbsBudgetCertificate_of_literal_doolittle_exact_target_gaps
+        (hmn := Nat.le_refl n) (A := A) (L := L_hat) (U := U_hat)
+        (by
+          intro k
+          simpa [higham9_2_rectRow] using hL_diag k)
+        hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq hU_diag hn
+        hL_coeff
+        (by
+          intro k j hkj
+          simpa [higham9_2_rectRow] using hU_gap k j hkj)
+        hL_gap hL_num_gap)
+
 /-- **Theorem 9.3**, rectangular dense-loop certificate form.
 
 The rectangular `m x n`, `m >= n` Algorithm 9.2 certificate gives the same
