@@ -21044,6 +21044,42 @@ theorem higham9_15_not_exists_positive_fixedPoint_of_spectralRadius_lt_one
       hn C hC_nonneg hrho)
       ⟨x, hx_pos, fun i => le_of_eq (hfixed i).symm⟩
 
+/-- **Theorem 9.15 spectral-majorant support**.  A positive vector that is
+componentwise dominated by its nonnegative majorant image forces the majorant
+matrix to have spectral radius at least one.  This is the forward
+contradiction form of the `rho(C) < 1` obstruction. -/
+theorem higham9_15_spectralRadius_ge_one_of_positive_le_matMulVec
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (x : Fin n → ℝ)
+    (hC_nonneg : ∀ i j : Fin n, 0 ≤ C i j)
+    (hx_pos : ∀ i : Fin n, 0 < x i)
+    (hle : ∀ i : Fin n, x i ≤ matMulVec n C x i) :
+    (1 : ENNReal) ≤
+      spectralRadius ℂ
+        (Matrix.toLin'
+          (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) := by
+  have hsub : ∀ i : Fin n, (1 : ℝ) * x i ≤ matMulVec n C x i := by
+    intro i
+    simpa [one_mul] using hle i
+  simpa using
+    (ch7_toLin_spectralRadius_ge_of_positive_right_subeigenvector
+      hn C 1 x hC_nonneg (by norm_num) hx_pos hsub)
+
+/-- **Theorem 9.15 spectral-majorant support**.  A positive fixed point of a
+nonnegative majorant forces spectral radius at least one. -/
+theorem higham9_15_spectralRadius_ge_one_of_positive_fixedPoint
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (x : Fin n → ℝ)
+    (hC_nonneg : ∀ i j : Fin n, 0 ≤ C i j)
+    (hx_pos : ∀ i : Fin n, 0 < x i)
+    (hfixed : ∀ i : Fin n, matMulVec n C x i = x i) :
+    (1 : ENNReal) ≤
+      spectralRadius ℂ
+        (Matrix.toLin'
+          (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) :=
+  higham9_15_spectralRadius_ge_one_of_positive_le_matMulVec
+    hn C x hC_nonneg hx_pos (fun i => le_of_eq (hfixed i).symm)
+
 /-- **Theorem 9.15 spectral-majorant support**.  Irreducibility upgrades a
 nonzero nonnegative right subeigenvector to a positive one, so the Chapter 7
 Collatz/Gelfand lower bound applies to nonzero nonnegative data. -/
@@ -21165,6 +21201,45 @@ theorem higham9_15_not_exists_nonzero_nonneg_fixedPoint_of_irreducible_spectralR
     (higham9_15_not_exists_nonzero_nonneg_le_matMulVec_of_irreducible_spectralRadius_lt_one
       hn C hC_irred hrho)
       ⟨x, hx_ne, hx_nonneg, fun i => le_of_eq (hfixed i).symm⟩
+
+/-- **Theorem 9.15 spectral-majorant support**.  In the irreducible case, a
+nonzero nonnegative vector dominated by its majorant image forces spectral
+radius at least one. -/
+theorem higham9_15_irreducible_spectralRadius_ge_one_of_nonzero_nonneg_le_matMulVec
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (x : Fin n → ℝ)
+    (hC_irred :
+      Matrix.IsIrreducible (Matrix.of C : Matrix (Fin n) (Fin n) ℝ))
+    (hx_ne : x ≠ 0)
+    (hx_nonneg : ∀ i : Fin n, 0 ≤ x i)
+    (hle : ∀ i : Fin n, x i ≤ matMulVec n C x i) :
+    (1 : ENNReal) ≤
+      spectralRadius ℂ
+        (Matrix.toLin'
+          (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) := by
+  have hsub : ∀ i : Fin n, (1 : ℝ) * x i ≤ matMulVec n C x i := by
+    intro i
+    simpa [one_mul] using hle i
+  simpa using
+    (higham9_15_irreducible_nonneg_subeigen_spectralRadius_ge
+      hn C 1 x hC_irred (by norm_num) hx_nonneg hx_ne hsub)
+
+/-- **Theorem 9.15 spectral-majorant support**.  In the irreducible case, a
+nonzero nonnegative fixed point forces spectral radius at least one. -/
+theorem higham9_15_irreducible_spectralRadius_ge_one_of_nonzero_nonneg_fixedPoint
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (x : Fin n → ℝ)
+    (hC_irred :
+      Matrix.IsIrreducible (Matrix.of C : Matrix (Fin n) (Fin n) ℝ))
+    (hx_ne : x ≠ 0)
+    (hx_nonneg : ∀ i : Fin n, 0 ≤ x i)
+    (hfixed : ∀ i : Fin n, matMulVec n C x i = x i) :
+    (1 : ENNReal) ≤
+      spectralRadius ℂ
+        (Matrix.toLin'
+          (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) :=
+  higham9_15_irreducible_spectralRadius_ge_one_of_nonzero_nonneg_le_matMulVec
+    hn C x hC_irred hx_ne hx_nonneg (fun i => le_of_eq (hfixed i).symm)
 
 /-- **Theorem 9.15**, one-step Frobenius nonlinear bound from the
 componentwise normalized split equation. -/
