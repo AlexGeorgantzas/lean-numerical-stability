@@ -36165,6 +36165,39 @@ theorem higham9_16_RookPivotGEUTrace_exists_CompletePermutedLUFactSpec_L_bound_m
               le_trans hUc_to_U₁ hU₁_to_trace
             simpa [Uc, Utrace, luFirstStepU, hi, hj] using hfinal
 
+/-- **Equation (9.16) / Problem 9.11 bridge**, a recursive rook-pivoting `U`
+trace supplies a certificate-level row/column-permuted growth value for the
+same source matrix, no larger than the trace growth value.
+
+This reuses the shared certificate-level `PAQ = LU` growth surface; it does not
+claim Foster's sharper product bound. -/
+theorem higham9_16_RookPivotGEUTrace_exists_certificateGrowth_le {n : ℕ}
+    (hn : 0 < n) (A Utrace : Fin n → Fin n → ℝ)
+    (hApos : 0 < maxEntryNorm hn A)
+    (htrace : higham9_16_RookPivotGEUTrace n A Utrace) :
+    ∃ r ∈ higham9_completePivotingCertificateGrowthSet hn A hApos,
+      r ≤ growthFactorEntry hn A Utrace hApos := by
+  obtain ⟨L, Uc, sigma, tau, hLU, _hL_bound, hmax⟩ :=
+    higham9_16_RookPivotGEUTrace_exists_CompletePermutedLUFactSpec_L_bound_maxEntryNorm_le
+      htrace
+  refine ⟨growthFactorEntry hn A Uc hApos, ?_, ?_⟩
+  · exact ⟨L, Uc, sigma, tau, hLU, rfl⟩
+  · unfold growthFactorEntry
+    exact div_le_div_of_nonneg_right (hmax hn) (le_of_lt hApos)
+
+/-- **Equation (9.16) / Problem 9.11 bridge**, value-set form of the
+rook-trace-to-certificate growth comparison. -/
+theorem higham9_16_RookPivotGEUTrace_exists_certificateGrowthValue_le
+    {n : ℕ} (hn : 0 < n) (A Utrace : Fin n → Fin n → ℝ)
+    (hApos : 0 < maxEntryNorm hn A)
+    (htrace : higham9_16_RookPivotGEUTrace n A Utrace) :
+    ∃ r ∈ higham9_completePivotingCertificateGrowthValues n,
+      r ≤ growthFactorEntry hn A Utrace hApos := by
+  obtain ⟨r, hr, hle⟩ :=
+    higham9_16_RookPivotGEUTrace_exists_certificateGrowth_le
+      hn A Utrace hApos htrace
+  exact ⟨r, ⟨hn, A, hApos, hr⟩, hle⟩
+
 /-- **Equation (9.16) / Theorem 9.5**, trace-derived rook-pivoting exact
 certificate Wilkinson source bound at the elementary `2^(n-1)` growth
 strength.
