@@ -391,6 +391,22 @@ theorem higham21_lemma21_2_symmetrized_perturbation_frob_bound {m n : ℕ}
       Real.sqrt (frobNormRect DeltaA1 ^ 2 + frobNormRect DeltaA2 ^ 2) :=
   lsLemma20_6Perturbation_norm_bound_two_frob s hsq DeltaA1 DeltaA2
 
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    operator-2 norm form of the printed bound for the projector mixture.  If
+    the two original perturbation blocks have operator-2 bounds `alpha` and
+    `beta`, then the constructed perturbation has bound
+    `(alpha^2 + beta^2)^(1/2)`. -/
+theorem higham21_lemma21_2_symmetrized_perturbation_op_bound {m n : ℕ}
+    (s : Fin m → ℝ) (hsq : vecNorm2Sq s ≠ 0)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    {alpha beta : ℝ} (halpha : 0 ≤ alpha) (hbeta : 0 ≤ beta)
+    (hDeltaA1 : rectOpNorm2Le DeltaA1 alpha)
+    (hDeltaA2 : rectOpNorm2Le DeltaA2 beta) :
+    rectOpNorm2Le (undetLemma21_2SymmetrizedPerturbation s DeltaA1 DeltaA2)
+      (Real.sqrt (alpha ^ 2 + beta ^ 2)) :=
+  lsLemma20_6Perturbation_norm_bound_two_operator
+    s hsq DeltaA1 DeltaA2 halpha hbeta hDeltaA1 hDeltaA2
+
 -- ============================================================
 -- §21.3  Row-wise backward error for underdetermined systems
 -- ============================================================
