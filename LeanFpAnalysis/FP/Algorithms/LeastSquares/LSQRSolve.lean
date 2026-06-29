@@ -7119,6 +7119,54 @@ noncomputable def lsScaledAugmentedBranchEquivOfCardEq
     rw [Fintype.card_fin, Fintype.card_sum, Fintype.card_sum]
     omega)
 
+/-- Index attaining the finite minimum singular branch value in the
+    branch-indexed (20.18) family. -/
+noncomputable def lsScaledAugmentedBranchSigmaMinIndex
+    {ι : Type*} [Fintype ι] [Nonempty ι] (sigma : ι → ℝ) : ι :=
+  Classical.choose
+    (Finset.exists_min_image (Finset.univ : Finset ι) sigma
+      Finset.univ_nonempty)
+
+/-- Index attaining the finite maximum singular branch value in the
+    branch-indexed (20.18) family. -/
+noncomputable def lsScaledAugmentedBranchSigmaMaxIndex
+    {ι : Type*} [Fintype ι] [Nonempty ι] (sigma : ι → ℝ) : ι :=
+  Classical.choose
+    (Finset.exists_max_image (Finset.univ : Finset ι) sigma
+      Finset.univ_nonempty)
+
+/-- Finite minimum singular branch value used by the source-shaped
+    cardinality theorem for (20.18)-(20.19). -/
+noncomputable def lsScaledAugmentedBranchSigmaMin
+    {ι : Type*} [Fintype ι] [Nonempty ι] (sigma : ι → ℝ) : ℝ :=
+  sigma (lsScaledAugmentedBranchSigmaMinIndex sigma)
+
+/-- Finite maximum singular branch value used by the source-shaped
+    cardinality theorem for (20.18)-(20.19). -/
+noncomputable def lsScaledAugmentedBranchSigmaMax
+    {ι : Type*} [Fintype ι] [Nonempty ι] (sigma : ι → ℝ) : ℝ :=
+  sigma (lsScaledAugmentedBranchSigmaMaxIndex sigma)
+
+/-- The finite branch minimum is bounded above by every branch value. -/
+theorem lsScaledAugmentedBranchSigmaMin_le
+    {ι : Type*} [Fintype ι] [Nonempty ι] (sigma : ι → ℝ) (i : ι) :
+    lsScaledAugmentedBranchSigmaMin sigma ≤ sigma i := by
+  have hspec :=
+    Classical.choose_spec
+      (Finset.exists_min_image (Finset.univ : Finset ι) sigma
+        Finset.univ_nonempty)
+  exact hspec.2 i (by simp)
+
+/-- Every branch value is bounded above by the finite branch maximum. -/
+theorem lsScaledAugmentedBranchSigma_le_max
+    {ι : Type*} [Fintype ι] [Nonempty ι] (sigma : ι → ℝ) (i : ι) :
+    sigma i ≤ lsScaledAugmentedBranchSigmaMax sigma := by
+  have hspec :=
+    Classical.choose_spec
+      (Finset.exists_max_image (Finset.univ : Finset ι) sigma
+        Finset.univ_nonempty)
+  exact hspec.2 i (by simp)
+
 /-- Higham, 2nd ed., Chapter 20, equations (20.18)-(20.19):
     cardinality-based source-shaped condition-number handoff.  This constructs
     the complete branch enumeration from the displayed count
@@ -7188,6 +7236,88 @@ theorem
       (sigma := sigma) (u := u) (v := v) (w := w)
       (e := e) iMin iMax hu hv hw hleft hright hnull hAv hATu hATw
       hsigmaRange hsigmaMin_pos hsigmaMin_eq hsigmaMax_eq halpha
+
+/-- Higham, 2nd ed., Chapter 20, equations (20.18)-(20.19):
+    finite-extrema version of the cardinality-based condition-number handoff.
+    For a nonempty finite singular branch family with positive branch values,
+    the min/max branch indices are chosen internally from the finite set, so the
+    theorem surface only exposes the source branch data and branch-count
+    identity. -/
+theorem
+    lsScaledAugmentedMatrix_kappa2_bounds_of_branch_cardinality_and_finite_extrema
+    {m n : ℕ} {ι κ : Type*} [Fintype ι] [Nonempty ι] [Fintype κ]
+    {alpha : ℝ} {A : Fin m → Fin n → ℝ} {sigma : ι → ℝ}
+    {u : ι → Fin m → ℝ} {v : ι → Fin n → ℝ}
+    {w : κ → Fin m → ℝ}
+    (hcard : 2 * Fintype.card ι + Fintype.card κ = m + n)
+    (hu : ∀ i : ι, vecNorm2Sq (u i) = 1)
+    (hv : ∀ i : ι, vecNorm2Sq (v i) = 1)
+    (hw : ∀ k : κ, vecNorm2Sq (w k) = 1)
+    (hleft : ∀ i j : ι, i ≠ j → (∑ r : Fin m, u i r * u j r) = 0)
+    (hright : ∀ i j : ι, i ≠ j → (∑ c : Fin n, v i c * v j c) = 0)
+    (hnull : ∀ k l : κ, k ≠ l → (∑ r : Fin m, w k r * w l r) = 0)
+    (hAv : ∀ i : ι, rectMatMulVec A (v i) = fun r => sigma i * u i r)
+    (hATu : ∀ i : ι,
+      (fun j : Fin n => ∑ r : Fin m, A r j * u i r) =
+        fun j => sigma i * v i j)
+    (hATw : ∀ k : κ, ∀ j : Fin n, ∑ r : Fin m, A r j * w k r = 0)
+    (hsigma_pos : ∀ i : ι, 0 < sigma i)
+    (halpha :
+      alpha = lsScaledAugmentedBranchSigmaMin sigma / Real.sqrt 2) :
+    Real.sqrt 2 *
+          (lsScaledAugmentedBranchSigmaMax sigma /
+            lsScaledAugmentedBranchSigmaMin sigma) ≤
+        kappa2 (lsScaledAugmentedMatrix alpha A)
+          (finiteMatMul
+            (fun r c : Fin (m + n) =>
+              lsScaledAugmentedMatrixBranchVector alpha sigma u v w
+                (lsScaledAugmentedBranchEquivOfCardEq m n ι κ hcard c) r)
+            (finiteMatMul
+              (finiteDiagonal
+                (fun c : Fin (m + n) =>
+                  (lsScaledAugmentedMatrixBranchEigenvalue alpha sigma
+                    (lsScaledAugmentedBranchEquivOfCardEq m n ι κ hcard c))⁻¹))
+              (matTranspose
+                (fun r c : Fin (m + n) =>
+                  lsScaledAugmentedMatrixBranchVector alpha sigma u v w
+                    (lsScaledAugmentedBranchEquivOfCardEq m n ι κ hcard c) r)))) ∧
+      kappa2 (lsScaledAugmentedMatrix alpha A)
+          (finiteMatMul
+            (fun r c : Fin (m + n) =>
+              lsScaledAugmentedMatrixBranchVector alpha sigma u v w
+                (lsScaledAugmentedBranchEquivOfCardEq m n ι κ hcard c) r)
+            (finiteMatMul
+              (finiteDiagonal
+                (fun c : Fin (m + n) =>
+                  (lsScaledAugmentedMatrixBranchEigenvalue alpha sigma
+                    (lsScaledAugmentedBranchEquivOfCardEq m n ι κ hcard c))⁻¹))
+              (matTranspose
+                (fun r c : Fin (m + n) =>
+                  lsScaledAugmentedMatrixBranchVector alpha sigma u v w
+                    (lsScaledAugmentedBranchEquivOfCardEq m n ι κ hcard c) r)))) ≤
+        2 *
+          (lsScaledAugmentedBranchSigmaMax sigma /
+            lsScaledAugmentedBranchSigmaMin sigma) := by
+  have hsigmaRange : ∀ i : ι,
+      lsScaledAugmentedBranchSigmaMin sigma ≤ sigma i ∧
+        sigma i ≤ lsScaledAugmentedBranchSigmaMax sigma := by
+    intro i
+    exact
+      ⟨lsScaledAugmentedBranchSigmaMin_le sigma i,
+        lsScaledAugmentedBranchSigma_le_max sigma i⟩
+  have hsigmaMin_pos : 0 < lsScaledAugmentedBranchSigmaMin sigma := by
+    simpa [lsScaledAugmentedBranchSigmaMin] using
+      hsigma_pos (lsScaledAugmentedBranchSigmaMinIndex sigma)
+  simpa using
+    lsScaledAugmentedMatrix_kappa2_bounds_of_branch_cardinality_and_extreme_branches
+      (alpha := alpha)
+      (sigmaMin := lsScaledAugmentedBranchSigmaMin sigma)
+      (sigmaMax := lsScaledAugmentedBranchSigmaMax sigma)
+      (A := A) (sigma := sigma) (u := u) (v := v) (w := w)
+      hcard (lsScaledAugmentedBranchSigmaMinIndex sigma)
+      (lsScaledAugmentedBranchSigmaMaxIndex sigma)
+      hu hv hw hleft hright hnull hAv hATu hATw hsigmaRange
+      hsigmaMin_pos rfl rfl halpha
 
 /-- Higham, 2nd ed., Chapter 20, equation (20.20): the weighted perturbation
     block `[DeltaA, theta Delta b]` used in the Frobenius normwise
