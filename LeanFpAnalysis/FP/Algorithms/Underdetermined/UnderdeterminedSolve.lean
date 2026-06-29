@@ -56,6 +56,25 @@ theorem higham21_eq21_2_qr_block_transpose_coordinates {m k : ℕ}
       fun j : Fin m => ∑ i : Fin m, R i j * y1 i :=
   lsQRTallBlock_transpose_mulVec_append R y1 y2
 
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.3):
+    source-facing algebraic wrapper for the minimum-norm coordinate choice
+    in the Q method.  Among coordinate vectors with the same first block,
+    setting the free second block to zero gives no larger Euclidean norm.
+    This is the norm-minimization step only; the full orthogonal `Q` handoff
+    and triangular solve formula remain separate selected targets. -/
+theorem higham21_eq21_3_free_coordinate_zero_min_norm {m k : ℕ}
+    (y1 : Fin m → ℝ) (y2 : Fin k → ℝ) :
+    vecNorm2 (Fin.append y1 (0 : Fin k → ℝ)) ≤
+      vecNorm2 (Fin.append y1 y2) := by
+  have hzero :
+      vecNorm2 (Fin.append y1 (0 : Fin k → ℝ)) = vecNorm2 y1 := by
+    unfold vecNorm2
+    rw [lsVecNorm2Sq_append]
+    simp [vecNorm2Sq]
+  calc
+    vecNorm2 (Fin.append y1 (0 : Fin k → ℝ)) = vecNorm2 y1 := hzero
+    _ ≤ vecNorm2 (Fin.append y1 y2) := lsVecNorm2_left_le_append y1 y2
+
 -- ============================================================
 -- §21.3  Row-wise backward error for underdetermined systems
 -- ============================================================
