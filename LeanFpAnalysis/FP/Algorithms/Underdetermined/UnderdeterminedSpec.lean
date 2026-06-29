@@ -105,6 +105,54 @@ theorem higham21_eq21_4_rect_transpose_nullspace_orthogonal {m n : ℕ}
             rw [hz]
             simp
 
+/-- A rectangular-system solution that is orthogonal to the nullspace of `A`
+    is a minimum Euclidean-norm solution. -/
+theorem rectMinNormSolution_of_system_eq_and_nullspace_orthogonal {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (x : Fin n → ℝ)
+    (hx : rectMatMulVec A x = b)
+    (horth : ∀ e : Fin n → ℝ,
+      rectMatMulVec A e = (0 : Fin m → ℝ) →
+        (∑ j : Fin n, x j * e j) = 0) :
+    RectMinNormSolution m n A b x := by
+  constructor
+  · exact hx
+  · intro z hz
+    let e : Fin n → ℝ := fun j => z j - x j
+    have he_kernel : rectMatMulVec A e = (0 : Fin m → ℝ) := by
+      unfold e
+      rw [rectMatMulVec_sub, hz, hx]
+      ext i
+      simp
+    have hinner : (∑ j : Fin n, x j * e j) = 0 :=
+      horth e he_kernel
+    have hz_decomp : z = fun j : Fin n => x j + e j := by
+      ext j
+      unfold e
+      ring
+    have hpyth : vecNorm2Sq z = vecNorm2Sq x + vecNorm2Sq e := by
+      rw [hz_decomp]
+      simpa [finiteVecNorm2Sq_fin] using
+        (finiteVecNorm2Sq_add_of_inner_eq_zero x e hinner)
+    unfold vecNorm2
+    exact Real.sqrt_le_sqrt
+      (by
+        rw [hpyth]
+        exact le_add_of_nonneg_right (vecNorm2Sq_nonneg e))
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.4):
+    if a vector of the form `Aᵀ y` solves `A x = b`, then it is the
+    minimum 2-norm solution of the rectangular underdetermined system.
+    This closes the minimum-norm direction of the normal-equation formula;
+    the explicit inverse/pseudoinverse construction remains separate. -/
+theorem higham21_eq21_4_rect_transpose_min_norm_of_solves {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin m → ℝ)
+    (hsolve : rectMatMulVec A (rectTransposeMulVec A y) = b) :
+    RectMinNormSolution m n A b (rectTransposeMulVec A y) :=
+  rectMinNormSolution_of_system_eq_and_nullspace_orthogonal
+    A b (rectTransposeMulVec A y) hsolve
+    (fun e he =>
+      higham21_eq21_4_rect_transpose_nullspace_orthogonal A y e he)
+
 /-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.4):
     algebraic normal-equation identity `A (Aᵀ y) = (A Aᵀ) y`. -/
 theorem rectMatMulVec_rectTransposeMulVec {m n : ℕ}
