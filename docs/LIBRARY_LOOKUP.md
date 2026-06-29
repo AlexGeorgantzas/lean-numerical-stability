@@ -2245,6 +2245,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_normalized_Gtilde_residual_frobNormRect_eq_add`
 - `higham9_15_normalized_Gtilde_split_frobNorm_bounds`
 - `higham9_15_normalized_Gtilde_split_componentwise_majorants`
+- `higham9_15_positive_subeigen_scale_lt_one_of_spectralRadius_lt_one`
 - `higham9_15_normalized_Gtilde_split_frobNorm_step_bound`
 - `higham9_15_normalized_Gtilde_frobNorm_ratio_bound_of_linear_step`
 - `higham9_15_normalized_Gtilde_linear_step_of_min_factor_bound`

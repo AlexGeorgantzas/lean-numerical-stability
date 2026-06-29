@@ -20608,6 +20608,33 @@ theorem higham9_15_normalized_Gtilde_split_componentwise_majorants {n : ℕ}
         higham9_15_abs_triuPart_le_triuPart_of_abs_le
           (Gtilde + X * Y) B hB_nonneg hres i j
 
+/-- **Theorem 9.15 spectral-majorant support**.  In the componentwise
+Barrlund--Sun route, a nonnegative majorant matrix with spectral radius below
+one forces every positive right subeigenvector scale below one.  This is a
+thin Chapter 9 wrapper around the Chapter 7 Collatz/Gelfand
+spectral-radius lower bound. -/
+theorem higham9_15_positive_subeigen_scale_lt_one_of_spectralRadius_lt_one
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (eta : ℝ) (x : Fin n → ℝ)
+    (hC_nonneg : ∀ i j : Fin n, 0 ≤ C i j)
+    (heta_nonneg : 0 ≤ eta)
+    (hx_pos : ∀ i : Fin n, 0 < x i)
+    (hsub : ∀ i : Fin n, eta * x i ≤ matMulVec n C x i)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) < 1) :
+    eta < 1 := by
+  have hle :
+      ENNReal.ofReal eta ≤
+        spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) :=
+    ch7_toLin_spectralRadius_ge_of_positive_right_subeigenvector
+      hn C eta x hC_nonneg heta_nonneg hx_pos hsub
+  have heta_enn_lt : ENNReal.ofReal eta < 1 := lt_of_le_of_lt hle hrho
+  exact ENNReal.ofReal_lt_one.mp heta_enn_lt
+
 /-- **Theorem 9.15**, one-step Frobenius nonlinear bound from the
 componentwise normalized split equation. -/
 theorem higham9_15_normalized_Gtilde_split_frobNorm_step_bound {n : ℕ}
