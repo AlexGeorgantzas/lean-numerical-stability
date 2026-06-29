@@ -509,6 +509,36 @@ noncomputable abbrev undetLemma21_2SymmetrizedPerturbation {m n : ℕ}
   finiteTranspose
     (lsLemma20_6Perturbation x (finiteTranspose DeltaA2) (finiteTranspose DeltaA1))
 
+/-- Nonzero vectors have nonzero squared Euclidean norm.  This local helper lets
+    the Chapter 21 Lemma 21.2 wrapper branch on the source proof's `x = 0`
+    case while feeding the existing nonzero beta/projector route. -/
+theorem higham21_vecNorm2Sq_ne_zero_of_ne_zero {n : ℕ}
+    {x : Fin n → ℝ} (hx : x ≠ 0) :
+    vecNorm2Sq x ≠ 0 := by
+  intro hsq
+  apply hx
+  ext i
+  have hall :
+      ∀ j : Fin n, j ∈ (Finset.univ : Finset (Fin n)) →
+        x j ^ 2 = 0 := by
+    exact
+      (Finset.sum_eq_zero_iff_of_nonneg
+        (s := (Finset.univ : Finset (Fin n)))
+        (f := fun j : Fin n => x j ^ 2)
+        (by intro j _; exact sq_nonneg (x j))).mp
+        (by simpa [vecNorm2Sq] using hsq)
+  have hxi2 : x i ^ 2 = 0 := hall i (Finset.mem_univ i)
+  exact sq_eq_zero_iff.mp hxi2
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    source-case perturbation.  The proof takes `DeltaA = DeltaA2` when the
+    candidate solution `x` is zero; otherwise it uses the right-projector
+    mixture already represented by `undetLemma21_2SymmetrizedPerturbation`. -/
+noncomputable def undetLemma21_2SinglePerturbation {m n : ℕ}
+    (x : Fin n → ℝ) (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ) :
+    Fin m → Fin n → ℝ :=
+  if x = 0 then DeltaA2 else undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2
+
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     the transposed Chapter 20 construction is exactly the right-projector
     mixture `DeltaA1 P + DeltaA2 (I - P)` used in the proof. -/
@@ -1590,6 +1620,63 @@ theorem higham21_lemma21_2_symmetrized_min_norm_of_gram_pseudoinverse_product_bu
       A x DeltaA1 DeltaA2 b y rho1 rho2 (eta * (alpha + beta))
       hsq hDeltaA1 hdet hxTranspose hsmall hgamma hbudget
       (by simpa [Bplus] using hProduct)
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    case-split minimum-norm handoff for the source proof.  If `x = 0`, the
+    single perturbation is `DeltaA2`; otherwise the existing projector/beta
+    argument applies to the symmetrized perturbation.  The nonzero branch is
+    still conditional on the perturbed-Gram nonsingularity and pseudoinverse
+    operator estimate that remain the active source-facing gap. -/
+theorem higham21_lemma21_2_single_min_norm_of_gram_pseudoinverse_product_budget
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (rho1 rho2 alpha beta eta : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hdet :
+      Matrix.det
+          (rectGram (fun i j => A i j + DeltaA2 i j) :
+            Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hxTranspose :
+      x =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : 3 * max rho1 rho2 < 1)
+    (halpha : 0 ≤ alpha)
+    (hbeta : 0 ≤ beta)
+    (heta : 0 ≤ eta)
+    (hbudget : eta * (alpha + beta) ≤ (rho1 + rho2) / (1 - rho2))
+    (hDeltaA1Op : rectOpNorm2Le DeltaA1 alpha)
+    (hDeltaA2Op : rectOpNorm2Le DeltaA2 beta)
+    (hBplusOp :
+      rectOpNorm2Le
+        (undetAplusOfGramNonsingInv (fun i j => A i j + DeltaA2 i j))
+        eta) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j)
+      b x := by
+  by_cases hx : x = 0
+  · have hzero :
+        RectMinNormSolution m n (fun i j => A i j + DeltaA2 i j) b x :=
+      higham21_lemma21_2_zero_branch_min_norm_of_deltaA2
+        A x DeltaA1 DeltaA2 b hx hDeltaA1
+    simpa [undetLemma21_2SinglePerturbation, hx] using hzero
+  · have hsq : vecNorm2Sq x ≠ 0 :=
+      higham21_vecNorm2Sq_ne_zero_of_ne_zero hx
+    have hnonzero :
+        RectMinNormSolution m n
+          (fun i j => A i j +
+            undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j)
+          b x :=
+      higham21_lemma21_2_symmetrized_min_norm_of_gram_pseudoinverse_product_budget
+        A x DeltaA1 DeltaA2 b y rho1 rho2 alpha beta eta hsq hDeltaA1
+        hdet hxTranspose hsmall halpha hbeta heta hbudget hDeltaA1Op
+        hDeltaA2Op hBplusOp
+    simpa [undetLemma21_2SinglePerturbation, hx] using hnonzero
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     source-shaped pseudoinverse handoff for the remaining beta argument.
