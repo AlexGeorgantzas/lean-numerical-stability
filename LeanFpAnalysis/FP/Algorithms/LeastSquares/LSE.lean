@@ -66,6 +66,100 @@ theorem LSEFullRowRank.exists_feasible {p n : ℕ}
   intro i
   simpa [lseConstraintLinearMap] using congrFun hx i
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 rank bridge:
+    full row rank of `B` makes the transpose map `Bᵀ` injective.  This is the
+    finite-dimensional algebra used by the exact-MGS GQR route to connect the
+    source rank assumption to MGS nonbreakdown hypotheses. -/
+theorem LSEFullRowRank.transpose_rectMatMulVec_injective {p n : ℕ}
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B) :
+    Function.Injective
+      (rectMatMulVec (fun j : Fin n => fun i : Fin p => B i j)) := by
+  let Bt : Fin n → Fin p → ℝ := fun j => fun i => B i j
+  have hker : ∀ w : Fin p → ℝ, rectMatMulVec Bt w = 0 → w = 0 := by
+    intro w hw
+    rcases hB w with ⟨x, hx⟩
+    have hxB : rectMatMulVec B x = w := by
+      simpa [lseConstraintLinearMap] using hx
+    have hinner :
+        (∑ i : Fin p, w i * rectMatMulVec B x i) = 0 := by
+      calc
+        (∑ i : Fin p, w i * rectMatMulVec B x i)
+            = ∑ i : Fin p, ∑ j : Fin n, w i * (B i j * x j) := by
+                unfold rectMatMulVec
+                apply Finset.sum_congr rfl
+                intro i _
+                rw [Finset.mul_sum]
+        _ = ∑ j : Fin n, ∑ i : Fin p, w i * (B i j * x j) := by
+                rw [Finset.sum_comm]
+        _ = ∑ j : Fin n, (∑ i : Fin p, B i j * w i) * x j := by
+                apply Finset.sum_congr rfl
+                intro j _
+                calc
+                  (∑ i : Fin p, w i * (B i j * x j))
+                      = ∑ i : Fin p, (B i j * w i) * x j := by
+                          apply Finset.sum_congr rfl
+                          intro i _
+                          ring
+                  _ = (∑ i : Fin p, B i j * w i) * x j := by
+                          rw [Finset.sum_mul]
+        _ = ∑ j : Fin n, rectMatMulVec Bt w j * x j := by
+                unfold rectMatMulVec Bt
+                rfl
+        _ = 0 := by
+                simp [hw]
+    have hsq : vecNorm2Sq w = 0 := by
+      calc
+        vecNorm2Sq w
+            = ∑ i : Fin p, w i * rectMatMulVec B x i := by
+                rw [hxB]
+                unfold vecNorm2Sq
+                apply Finset.sum_congr rfl
+                intro i _
+                ring
+        _ = 0 := hinner
+    have hnorm : vecNorm2 w = 0 := by
+      unfold vecNorm2
+      rw [Real.sqrt_eq_zero (vecNorm2Sq_nonneg w)]
+      exact hsq
+    ext i
+    exact (vecNorm2_eq_zero_iff w).mp hnorm i
+  intro y z hyz
+  have hdiff : rectMatMulVec Bt (fun i => y i - z i) = 0 := by
+    ext j
+    have hentry := congrFun hyz j
+    change (∑ i : Fin p, B i j * y i) =
+      (∑ i : Fin p, B i j * z i) at hentry
+    unfold rectMatMulVec Bt
+    change (∑ i : Fin p, B i j * (y i - z i)) = 0
+    calc
+      (∑ i : Fin p, B i j * (y i - z i))
+          = ∑ i : Fin p, (B i j * y i - B i j * z i) := by
+              apply Finset.sum_congr rfl
+              intro i _
+              ring
+      _ = (∑ i : Fin p, B i j * y i) -
+            (∑ i : Fin p, B i j * z i) := by
+              rw [Finset.sum_sub_distrib]
+      _ = 0 := sub_eq_zero.mpr hentry
+  have hzero := hker (fun i => y i - z i) hdiff
+  ext i
+  have hi : y i - z i = 0 := by
+    simpa using congrFun hzero i
+  exact sub_eq_zero.mp hi
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 exact-MGS rank bridge:
+    full row rank of `B` supplies the stage-0 nonbreakdown fact for MGS applied
+    to `Bᵀ`.  This is the first pivot in the rank-to-all-MGS-stages route. -/
+theorem LSEFullRowRank.transpose_mgs_stage0_norm_ne_zero {p n : ℕ}
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B) (j : Fin p) :
+    gsColumnNorm2
+      (modifiedGramSchmidtVectors
+        (fun col : Fin n => fun row : Fin p => B row col) 0 j) ≠ 0 := by
+  exact
+    modifiedGramSchmidtVectors_zero_norm_ne_zero_of_rectMatMulVec_injective
+      (fun col : Fin n => fun row : Fin p => B row col)
+      hB.transpose_rectMatMulVec_injective j
+
 /-- Column permutations preserve equality-constrained least-squares minimizers.
 
     This is the coordinate-change bridge used by Higham's Chapter 20
