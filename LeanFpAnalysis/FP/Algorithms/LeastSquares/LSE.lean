@@ -147,6 +147,19 @@ theorem LSEFullRowRank.transpose_rectMatMulVec_injective {p n : ℕ}
     simpa using congrFun hzero i
   exact sub_eq_zero.mp hi
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9 exact-MGS rank bridge:
+    full row rank of `B` supplies the stage-0 nonbreakdown fact for MGS applied
+    to `Bᵀ`.  This is the first pivot in the rank-to-all-MGS-stages route. -/
+theorem LSEFullRowRank.transpose_mgs_stage0_norm_ne_zero {p n : ℕ}
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B) (j : Fin p) :
+    gsColumnNorm2
+      (modifiedGramSchmidtVectors
+        (fun col : Fin n => fun row : Fin p => B row col) 0 j) ≠ 0 := by
+  exact
+    modifiedGramSchmidtVectors_zero_norm_ne_zero_of_rectMatMulVec_injective
+      (fun col : Fin n => fun row : Fin p => B row col)
+      hB.transpose_rectMatMulVec_injective j
+
 /-- Column permutations preserve equality-constrained least-squares minimizers.
 
     This is the coordinate-change bridge used by Higham's Chapter 20
