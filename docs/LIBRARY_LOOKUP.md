@@ -1580,6 +1580,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_7_partialPivoting_growth_bound_and_attainment`
 - `higham9_partialPivotingUTraceGrowthValues`
 - `higham9_partialPivotingUTraceGrowthSup`
+- `higham9_partialPivotingUTraceGrowthValues_le_pow_two`
 - `higham9_partialPivotingUTraceGrowthValues_bddAbove`
 - `higham9_partialPivotingUTraceGrowth_le_sup`
 - `higham9_partialPivotingUTraceGrowthValues_nonempty`
@@ -1681,6 +1682,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_completePivotingCertificateGrowthValues_nonempty`
 - `higham9_completePivotingUTraceGrowthValues`
 - `higham9_completePivotingUTraceGrowthSup`
+- `higham9_completePivotingUTraceGrowthValues_le_pow_two`
 - `higham9_completePivotingUTraceGrowthValues_bddAbove`
 - `higham9_completePivotingUTraceGrowth_le_sup`
 - `higham9_completePivotingUTraceGrowthValues_nonempty`
