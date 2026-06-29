@@ -15187,6 +15187,73 @@ theorem lsNormwiseBackwardErrorRankOne_scaled_projector_comparison_not_of_projec
     nlinarith [hApos, hDgt_one]
   exact not_lt_of_ge (hleft_ge.trans hcomparison') hrhs_lt
 
+/-- Source-block attainer route-elimination check for the WKS `sigma_min`
+    branch in (20.21).  If an exact row-side `sigma_min` attainer for
+    `[A phi(I-r r^+)]` has nonzero component away from the residual direction,
+    then no scalar choice in the current scaled rank-one witness can satisfy
+    the projector comparison required by the source-transpose handoff.
+
+    This is not the full WKS construction; it records, at the source-block
+    attainer surface, why the scalar-only rank-one route cannot close the
+    nondegenerate projected branch. -/
+theorem lsNormwiseBackwardErrorFormulaMatrixSigmaMin_attainer_projector_comparison_not_of_projected_ne_zero
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hrsq : vecNorm2Sq (lsResidualHigham A b y) ≠ 0)
+    (hatt :
+      ∃ p : Fin (m + 1) → ℝ, p ≠ 0 ∧
+        vecNorm2Sq
+            (rectMatMulVec
+              (finiteTranspose
+                (lsNormwiseBackwardErrorFormulaMatrix theta A
+                  (lsResidualHigham A b y) y)) p) =
+          (lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+              (lsResidualHigham A b y) y) ^ 2 * vecNorm2Sq p ∧
+        vecNorm2Sq
+            (matMulVec (m + 1)
+              (lsResidualComplementProjector (lsResidualHigham A b y)) p) ≠ 0) :
+    ∃ p : Fin (m + 1) → ℝ, p ≠ 0 ∧
+      vecNorm2Sq
+          (rectMatMulVec
+            (finiteTranspose
+              (lsNormwiseBackwardErrorFormulaMatrix theta A
+                (lsResidualHigham A b y) y)) p) =
+        (lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+            (lsResidualHigham A b y) y) ^ 2 * vecNorm2Sq p ∧
+      ∀ c : ℝ,
+        let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+        let u : Fin n → ℝ := fun j => ∑ i : Fin (m + 1), A i j * p i
+        let q : Fin (m + 1) → ℝ :=
+          fun i =>
+            c * p i - r i -
+              ((1 / vecNorm2Sq p) * p i *
+                (∑ j : Fin n, u j * y j))
+        ¬ theta ^ 2 * vecNorm2Sq q * vecNorm2Sq p ≤
+          (lsNormwiseBackwardErrorPhi theta r y) ^ 2 *
+            vecNorm2Sq
+              (matMulVec (m + 1) (lsResidualComplementProjector r) p) := by
+  rcases hatt with ⟨p, hp, hsource, hprojected⟩
+  refine ⟨p, hp, hsource, ?_⟩
+  intro c
+  let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+  let u : Fin n → ℝ := fun j => ∑ i : Fin (m + 1), A i j * p i
+  let t : ℝ := ∑ j : Fin n, u j * y j
+  have hpsq : vecNorm2Sq p ≠ 0 :=
+    ne_of_gt (vecNorm2Sq_pos_of_ne_zero_lsq hp)
+  have hnot :
+      ¬ theta ^ 2 *
+          vecNorm2Sq
+            (fun i : Fin (m + 1) =>
+              c * p i - r i - ((1 / vecNorm2Sq p) * p i * t)) *
+          vecNorm2Sq p ≤
+        (lsNormwiseBackwardErrorPhi theta r y) ^ 2 *
+          vecNorm2Sq (matMulVec (m + 1) (lsLemma20_6ProjectorComplement r) p) :=
+    lsNormwiseBackwardErrorRankOne_scaled_projector_comparison_not_of_projected_ne_zero
+      (m := m + 1) (n := n) htheta hy r p hrsq hpsq
+      (by simpa [r, lsResidualComplementProjector] using hprojected) t c
+  simpa [r, u, t, lsResidualComplementProjector] using hnot
+
 /-- Degenerate source-projector branch for the scaled rank-one WKS
     source-transpose handoff.  If the source candidate `p` has zero component
     away from the residual direction `r`, then the optimal scalar choice in the
@@ -15613,6 +15680,69 @@ theorem lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_rankOne_scaled_source_trans
   exact
     lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_rankOne_scaled_source_transpose_projected_eq_zero
       theta A b y p hp hrsq hc hbranch hprojected hsource
+
+/-- Source-block-attainer version of the degenerate WKS `sigma_min` upper
+    branch.  The row-side sigma-min attainer for `[A phi(I-r r^+)]` supplies
+    the source-transpose certificate internally; the remaining assumptions say
+    that such an exact attainer lies in the residual direction and has
+    nonzero source dot product with `b`.
+
+    This closes the source-transpose side of the degenerate subcase but still
+    leaves the genuine nondegenerate WKS construction, eigenvalue branch
+    formula, and `theta = infinity` case open. -/
+theorem lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_formulaMatrixSigmaMin_attainer_projected_eq_zero_of_dot_b_ne_zero
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (hrsq : vecNorm2Sq (lsResidualHigham A b y) ≠ 0)
+    (hbranch :
+      lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+          (lsResidualHigham A b y) y ≤
+        lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y)
+    (hprojected :
+      ∀ p : Fin (m + 1) → ℝ, p ≠ 0 →
+        vecNorm2Sq
+            (rectMatMulVec
+              (finiteTranspose
+                (lsNormwiseBackwardErrorFormulaMatrix theta A
+                  (lsResidualHigham A b y) y)) p) =
+          (lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+              (lsResidualHigham A b y) y) ^ 2 * vecNorm2Sq p →
+        vecNorm2Sq
+            (matMulVec (m + 1)
+              (lsResidualComplementProjector (lsResidualHigham A b y)) p) = 0)
+    (hdotb :
+      ∀ p : Fin (m + 1) → ℝ, p ≠ 0 →
+        vecNorm2Sq
+            (rectMatMulVec
+              (finiteTranspose
+                (lsNormwiseBackwardErrorFormulaMatrix theta A
+                  (lsResidualHigham A b y) y)) p) =
+          (lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+              (lsResidualHigham A b y) y) ^ 2 * vecNorm2Sq p →
+        (∑ i : Fin (m + 1), p i * b i) ≠ 0) :
+    lsNormwiseBackwardErrorEtaF theta A b y ≤
+      lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+  rcases
+    lsNormwiseBackwardErrorFormulaMatrixSigmaMin_exists_transpose_attaining_vector_sq
+      theta A r y with
+    ⟨p, hp, hsource_eq⟩
+  have hsource_le :
+      let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+      vecNorm2Sq
+          (rectMatMulVec
+            (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y)) p) ≤
+        (lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y) ^ 2 *
+          vecNorm2Sq p := by
+    simpa [r] using (le_of_eq hsource_eq)
+  exact
+    lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_rankOne_scaled_source_transpose_projected_eq_zero_of_dot_b_ne_zero
+      theta A b y p hp hrsq
+      (hdotb p hp (by simpa [r] using hsource_eq))
+      hbranch
+      (by
+        simpa [r] using hprojected p hp (by simpa [r] using hsource_eq))
+      hsource_le
 
 /-- Left block of the transposed WKS source matrix on a feasible perturbed
     residual.  Under (20.20) feasibility, the `A^T` part of
@@ -17925,6 +18055,70 @@ theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_rankOne_scaled_sour
         lsNormwiseBackwardErrorFormulaRHS theta A b y :=
     lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_rankOne_scaled_source_transpose_projected_eq_zero_of_dot_b_ne_zero
       theta A b y p hp hrsq hdotb hbranch hprojected hsource
+  exact
+    lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_upper_certificate
+      htheta A b hy hnot hrank hupper
+
+/-- Source-block-attainer version of the degenerate projected-residual WKS
+    equality branch.  The row-side sigma-min attainer for
+    `[A phi(I-r r^+)]` supplies the source-transpose certificate internally;
+    the visible side conditions are now the degenerate projected component and
+    nonzero source dot product for exact attainers.
+
+    This is still a degenerate subcase of the (20.21) positive branch.  It does
+    not solve the nondegenerate obstruction, the eigenvalue branch formula, or
+    the `theta = infinity` limiting case. -/
+theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_formulaMatrixSigmaMin_attainer_projected_eq_zero_of_dot_b_ne_zero
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hnot : ¬ IsLeastSquaresMinimizer A b y)
+    (hrank :
+      lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+        (lsResidualHigham A b y) y = m + 1)
+    (hbranch :
+      lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+          (lsResidualHigham A b y) y ≤
+        lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y)
+    (hprojected :
+      ∀ p : Fin (m + 1) → ℝ, p ≠ 0 →
+        vecNorm2Sq
+            (rectMatMulVec
+              (finiteTranspose
+                (lsNormwiseBackwardErrorFormulaMatrix theta A
+                  (lsResidualHigham A b y) y)) p) =
+          (lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+              (lsResidualHigham A b y) y) ^ 2 * vecNorm2Sq p →
+        vecNorm2Sq
+            (matMulVec (m + 1)
+              (lsResidualComplementProjector (lsResidualHigham A b y)) p) = 0)
+    (hdotb :
+      ∀ p : Fin (m + 1) → ℝ, p ≠ 0 →
+        vecNorm2Sq
+            (rectMatMulVec
+              (finiteTranspose
+                (lsNormwiseBackwardErrorFormulaMatrix theta A
+                  (lsResidualHigham A b y) y)) p) =
+          (lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+              (lsResidualHigham A b y) y) ^ 2 * vecNorm2Sq p →
+        (∑ i : Fin (m + 1), p i * b i) ≠ 0) :
+    lsNormwiseBackwardErrorEtaF theta A b y =
+        lsNormwiseBackwardErrorFormulaRHS theta A b y ∧
+      0 < lsNormwiseBackwardErrorEtaF theta A b y ∧
+      0 < lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  have hrsq : vecNorm2Sq (lsResidualHigham A b y) ≠ 0 := by
+    intro hrsq_zero
+    have hnorm : vecNorm2 (lsResidualHigham A b y) = 0 := by
+      simp [vecNorm2, hrsq_zero]
+    have hres : lsResidualHigham A b y = 0 := by
+      ext i
+      exact (vecNorm2_eq_zero_iff (lsResidualHigham A b y)).mp hnorm i
+    exact hnot (IsLeastSquaresMinimizer.of_lsResidualHigham_eq_zero hres)
+  have hupper :
+      lsNormwiseBackwardErrorEtaF theta A b y ≤
+        lsNormwiseBackwardErrorFormulaRHS theta A b y :=
+    lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_formulaMatrixSigmaMin_attainer_projected_eq_zero_of_dot_b_ne_zero
+      theta A b y hrsq hbranch hprojected hdotb
   exact
     lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_upper_certificate
       htheta A b hy hnot hrank hupper
