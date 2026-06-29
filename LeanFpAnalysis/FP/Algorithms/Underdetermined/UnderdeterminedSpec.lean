@@ -132,6 +132,23 @@ theorem higham21_eq21_4_rect_transpose_solves {m n : ℕ}
     rectMatMulVec A (rectTransposeMulVec A y) = b :=
   rectTransposeMulVec_solves_of_gram_normal_eq A AAT b y hAAT hy
 
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.5):
+    source-facing wrapper for the SNE formation step.  Once the seminormal
+    equation matrix is identified with `A Aᵀ`, solving that Gram system and
+    forming `x = Aᵀ y` gives a solution of the rectangular system `A x = b`.
+    This does not assert the full minimum-norm or QR-derived stability result. -/
+theorem higham21_eq21_5_sne_rect_transpose_solution {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (SNE : Fin m → Fin m → ℝ)
+    (b y : Fin m → ℝ)
+    (x : Fin n → ℝ)
+    (hSNE : ∀ i j : Fin m, SNE i j = rectGram A i j)
+    (hy : ∀ i : Fin m, matMulVec m SNE y i = b i)
+    (hx : x = rectTransposeMulVec A y) :
+    rectMatMulVec A x = b := by
+  rw [hx]
+  exact rectTransposeMulVec_solves_of_gram_normal_eq A SNE b y hSNE hy
+
 -- ============================================================
 -- §21.2  Theorem 21.1: Demmel-Higham perturbation bound
 -- ============================================================
