@@ -7157,6 +7157,51 @@ theorem GeneralizedQRFactorization.exists_unique_method_solution_of_fullRowRank_
     h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack,
     h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack⟩
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, constructed exact GQR method
+    package with the associated trailing display used in (20.28).
+
+    This strengthens
+    `GeneralizedQRFactorization.exists_unique_method_solution_of_fullRowRank_stackedFullColumnRank`
+    by returning, for the same constructed GQR data, the tall associated shape
+    for `Uᵀ(AQ₂)` that the construction used internally.  Thus the exact method
+    package no longer hides the associated-display witness behind the existence
+    theorem. -/
+theorem GeneralizedQRFactorization.exists_unique_method_solution_with_A_Q2_tall_assoc_of_fullRowRank_stackedFullColumnRank
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    {b : Fin (r + q) → ℝ} {d : Fin p → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ h : GeneralizedQRFactorization r p q A B,
+      Nonempty (GQRAQTallCase r q
+        (matMulRectLeft (matTranspose h.U) (gqrAQ2Block A h.Q))) ∧
+      (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+        rectMatMulVec h.S yz.1 = d ∧
+        rectMatMulVec h.L22 yz.2 =
+          (fun i : Fin q =>
+            matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i) -
+              rectMatMulVec h.L21 yz.1 i) ∧
+        IsLSEMinimizer A b B d
+          (matMulVec (p + q) h.Q (Fin.append yz.1 yz.2))) ∧
+      (∃! x : Fin (p + q) → ℝ, IsLSEMinimizer A b B d x) := by
+  rcases
+    exists_gqr_constraint_block_and_A_Q2_tall_assoc_of_fullRowRank_stackedFullColumnRank
+      (A := A) (B := B) hB hstack with
+    ⟨Q, S, U, hQ, hS, hBQ, hU, hCaseNonempty⟩
+  rcases hCaseNonempty with ⟨hCase⟩
+  rcases GeneralizedQRFactorization.exists_of_constraint_and_A_Q2_tall_case
+      (A := A) (B := B) Q S U hQ hS hBQ hU hCase with
+    ⟨h, hQeq, hUeq, _hSeq, _hL22eq⟩
+  refine ⟨h, ?_, ?_, ?_⟩
+  · simpa [hQeq, hUeq] using
+      (show Nonempty (GQRAQTallCase r q
+        (matMulRectLeft (matTranspose U) (gqrAQ2Block A Q))) from ⟨hCase⟩)
+  · exact h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank
+      hB hstack
+  · exact h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank
+      hB hstack
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 exact solvability consequence
     with no supplied GQR factor input.
 
