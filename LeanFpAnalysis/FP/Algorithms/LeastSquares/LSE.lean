@@ -1105,6 +1105,76 @@ theorem exists_gqr_constraint_block_of_mgs {p q : ℕ}
       (fun j : Fin (p + q) => fun i : Fin p => B i j) hdiag
   exact exists_gqr_constraint_block_of_mgs_orthonormal B hdiag horth
 
+/-- Finite-index associativity equivalence used to pass between Lean's
+    `k + (p + q)` row shape and Higham's associated `((k + p) + q)` display. -/
+def finAddAssocEquiv (k p q : ℕ) :
+    Fin ((k + p) + q) ≃ Fin (k + (p + q)) where
+  toFun := Fin.cast (Nat.add_assoc k p q)
+  invFun := Fin.cast (Nat.add_assoc k p q).symm
+  left_inv := by
+    intro i
+    ext
+    simp [Fin.cast]
+  right_inv := by
+    intro i
+    ext
+    simp [Fin.cast]
+
+/-- Orthonormal columns are preserved by a finite row-index equivalence. -/
+theorem GramSchmidtOrthonormalColumns.reindexRowsEquiv {m m' n : ℕ}
+    (e : Fin m ≃ Fin m') {Q : Fin m → Fin n → ℝ}
+    (hQ : GramSchmidtOrthonormalColumns Q) :
+    GramSchmidtOrthonormalColumns
+      (fun i : Fin m' => fun j : Fin n => Q (e.symm i) j) := by
+  intro a b
+  unfold rectangularGram
+  calc
+    (∑ i : Fin m', Q (e.symm i) a * Q (e.symm i) b)
+        = ∑ i : Fin m, Q i a * Q i b := by
+            exact Equiv.sum_comp e.symm
+              (fun i : Fin m => Q i a * Q i b)
+    _ = idMatrix n a b := hQ a b
+
+/-- Orthogonality is preserved by conjugating rows and columns through a finite
+    index equivalence. -/
+theorem IsOrthogonal.reindexRowsColsEquiv {m m' : ℕ}
+    (e : Fin m ≃ Fin m') {U : Fin m' → Fin m' → ℝ}
+    (hU : IsOrthogonal m' U) :
+    IsOrthogonal m (fun i j : Fin m => U (e i) (e j)) := by
+  constructor
+  · intro i j
+    unfold matTranspose
+    calc
+      (∑ k : Fin m, U (e k) (e i) * U (e k) (e j))
+          = ∑ k' : Fin m', U k' (e i) * U k' (e j) := by
+              exact Equiv.sum_comp e
+                (fun k' : Fin m' => U k' (e i) * U k' (e j))
+      _ = if e i = e j then 1 else 0 := hU.col_orthonormal (e i) (e j)
+      _ = if i = j then 1 else 0 := by
+          by_cases hij : i = j
+          · subst j
+            simp
+          · have he : e i ≠ e j := fun heq =>
+              hij ((Equiv.apply_eq_iff_eq e).1 heq)
+            simp [hij, he]
+  · intro i j
+    unfold matTranspose
+    calc
+      (∑ k : Fin m, U (e i) (e k) * U (e j) (e k))
+          = ∑ k' : Fin m', U (e i) k' * U (e j) k' := by
+              exact Equiv.sum_comp e
+                (fun k' : Fin m' => U (e i) k' * U (e j) k')
+      _ = if e i = e j then 1 else 0 := by
+          have hrow := hU.right_inv (e i) (e j)
+          simpa [matTranspose] using hrow
+      _ = if i = j then 1 else 0 := by
+          by_cases hij : i = j
+          · subst j
+            simp
+          · have he : e i ≠ e j := fun heq =>
+              hij ((Equiv.apply_eq_iff_eq e).1 heq)
+            simp [hij, he]
+
 /-- Matrix-vector multiplication by the `U^T A Q` block in (20.27). -/
 theorem gqrAQBlock_mulVec {r p q : ℕ}
     (L11 : Fin r → Fin p → ℝ)
@@ -7201,6 +7271,83 @@ theorem GeneralizedQRFactorization.exists_unique_method_solution_with_A_Q2_tall_
       hB hstack
   · exact h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank
       hB hstack
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, constructed exact GQR method
+    package with the trailing `A Q₂` display and the source nonsingularity
+    consequence for the same constructed factors.
+
+    Under source full row rank of `B` and full column rank of `[A; B]`, the
+    returned GQR data simultaneously carries the associated smaller-block
+    display used in the construction, nonzero diagonals for the displayed
+    triangular blocks `S` and `L22`, unique triangular solve coordinates, and
+    the unique exact equality-constrained least-squares minimizer. -/
+theorem GeneralizedQRFactorization.exists_unique_method_solution_with_A_Q2_tall_assoc_s_l22_diag_ne_zero_of_fullRowRank_stackedFullColumnRank
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    {b : Fin (r + q) → ℝ} {d : Fin p → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ h : GeneralizedQRFactorization r p q A B,
+      Nonempty (GQRAQTallCase r q
+        (matMulRectLeft (matTranspose h.U) (gqrAQ2Block A h.Q))) ∧
+      ((∀ i : Fin p, h.S i i ≠ 0) ∧
+        (∀ i : Fin q, h.L22 i i ≠ 0)) ∧
+      (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+        rectMatMulVec h.S yz.1 = d ∧
+        rectMatMulVec h.L22 yz.2 =
+          (fun i : Fin q =>
+            matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i) -
+              rectMatMulVec h.L21 yz.1 i) ∧
+        IsLSEMinimizer A b B d
+          (matMulVec (p + q) h.Q (Fin.append yz.1 yz.2))) ∧
+      (∃! x : Fin (p + q) → ℝ, IsLSEMinimizer A b B d x) := by
+  rcases
+    GeneralizedQRFactorization.exists_unique_method_solution_with_A_Q2_tall_assoc_of_fullRowRank_stackedFullColumnRank
+      (A := A) (B := B) (b := b) (d := d) hB hstack with
+    ⟨h, hCase, hyz, hx⟩
+  exact ⟨h, hCase,
+    (h.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero).1
+      ⟨hB, hstack⟩,
+    hyz, hx⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, constructed exact GQR method
+    package with the trailing `A Q₂` display and bijective triangular solve
+    maps for the same constructed factors.
+
+    This is the solve-map version of
+    `exists_unique_method_solution_with_A_Q2_tall_assoc_s_l22_diag_ne_zero_of_fullRowRank_stackedFullColumnRank`. -/
+theorem GeneralizedQRFactorization.exists_unique_method_solution_with_A_Q2_tall_assoc_s_l22_bijective_of_fullRowRank_stackedFullColumnRank
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    {b : Fin (r + q) → ℝ} {d : Fin p → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ h : GeneralizedQRFactorization r p q A B,
+      Nonempty (GQRAQTallCase r q
+        (matMulRectLeft (matTranspose h.U) (gqrAQ2Block A h.Q))) ∧
+      Function.Bijective (rectMatMulVec h.S) ∧
+      Function.Bijective (rectMatMulVec h.L22) ∧
+      (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+        rectMatMulVec h.S yz.1 = d ∧
+        rectMatMulVec h.L22 yz.2 =
+          (fun i : Fin q =>
+            matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i) -
+              rectMatMulVec h.L21 yz.1 i) ∧
+        IsLSEMinimizer A b B d
+          (matMulVec (p + q) h.Q (Fin.append yz.1 yz.2))) ∧
+      (∃! x : Fin (p + q) → ℝ, IsLSEMinimizer A b B d x) := by
+  rcases
+    GeneralizedQRFactorization.exists_unique_method_solution_with_A_Q2_tall_assoc_of_fullRowRank_stackedFullColumnRank
+      (A := A) (B := B) (b := b) (d := d) hB hstack with
+    ⟨h, hCase, hyz, hx⟩
+  have hbij :
+      Function.Bijective (rectMatMulVec h.S) ∧
+        Function.Bijective (rectMatMulVec h.L22) :=
+    (h.fullRowRank_stackedFullColumnRank_iff_s_l22_bijective).1
+      ⟨hB, hstack⟩
+  exact ⟨h, hCase, hbij.1, hbij.2, hyz, hx⟩
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 exact solvability consequence
     with no supplied GQR factor input.
