@@ -689,6 +689,80 @@ noncomputable def undetNormwiseBackwardErrorNonzeroFormulaRHS {m n : ℕ}
         (vecNorm2Sq (undetResidualHigham A b y) / vecNorm2Sq y) +
       sigma ^ 2)
 
+/-- Radicand nonnegativity for the scalar right-hand side in the nonzero
+    branch of Higham Chapter 21, Theorem 21.3.  This is only scalar formula
+    bookkeeping; it does not assert the Sun--Sun equality with `eta_F(y)`. -/
+theorem undetNormwiseBackwardErrorNonzeroFormulaRHS_radicand_nonneg
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (y : Fin n → ℝ) (sigma : ℝ) :
+    0 ≤
+      theta ^ 2 * vecNorm2Sq y / (1 + theta ^ 2 * vecNorm2Sq y) *
+          (vecNorm2Sq (undetResidualHigham A b y) / vecNorm2Sq y) +
+        sigma ^ 2 := by
+  have htheta_sq : 0 ≤ theta ^ 2 := sq_nonneg theta
+  have hy_sq : 0 ≤ vecNorm2Sq y := vecNorm2Sq_nonneg y
+  have hnum : 0 ≤ theta ^ 2 * vecNorm2Sq y := mul_nonneg htheta_sq hy_sq
+  have hden : 0 ≤ 1 + theta ^ 2 * vecNorm2Sq y := by
+    exact add_nonneg zero_le_one hnum
+  have hleft :
+      0 ≤ theta ^ 2 * vecNorm2Sq y / (1 + theta ^ 2 * vecNorm2Sq y) :=
+    div_nonneg hnum hden
+  have hres :
+      0 ≤ vecNorm2Sq (undetResidualHigham A b y) / vecNorm2Sq y :=
+    div_nonneg (vecNorm2Sq_nonneg _) hy_sq
+  exact add_nonneg (mul_nonneg hleft hres) (sq_nonneg sigma)
+
+/-- The scalar right-hand side in the nonzero branch of Higham Chapter 21,
+    Theorem 21.3 is nonnegative. -/
+theorem undetNormwiseBackwardErrorNonzeroFormulaRHS_nonneg
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (y : Fin n → ℝ) (sigma : ℝ) :
+    0 ≤ undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma := by
+  unfold undetNormwiseBackwardErrorNonzeroFormulaRHS
+  exact Real.sqrt_nonneg _
+
+/-- Squared form of the scalar right-hand side in the nonzero branch of
+    Higham Chapter 21, Theorem 21.3.  This prepares the later lower/upper
+    bound route against the Sun--Sun formula but does not close it. -/
+theorem undetNormwiseBackwardErrorNonzeroFormulaRHS_sq
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (y : Fin n → ℝ) (sigma : ℝ) :
+    undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma ^ 2 =
+      theta ^ 2 * vecNorm2Sq y / (1 + theta ^ 2 * vecNorm2Sq y) *
+          (vecNorm2Sq (undetResidualHigham A b y) / vecNorm2Sq y) +
+        sigma ^ 2 := by
+  unfold undetNormwiseBackwardErrorNonzeroFormulaRHS
+  exact Real.sq_sqrt
+    (undetNormwiseBackwardErrorNonzeroFormulaRHS_radicand_nonneg
+      theta A b y sigma)
+
+/-- Positive singular-value branch of the scalar right-hand side in Higham
+    Chapter 21, Theorem 21.3: a positive supplied singular-value parameter
+    makes the displayed formula positive. -/
+theorem undetNormwiseBackwardErrorNonzeroFormulaRHS_pos_of_sigma_pos
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (y : Fin n → ℝ) {sigma : ℝ} (hsigma : 0 < sigma) :
+    0 < undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma := by
+  unfold undetNormwiseBackwardErrorNonzeroFormulaRHS
+  apply Real.sqrt_pos.2
+  have hsigma_sq_pos : 0 < sigma ^ 2 := sq_pos_of_pos hsigma
+  have hleft :
+      0 ≤ theta ^ 2 * vecNorm2Sq y / (1 + theta ^ 2 * vecNorm2Sq y) *
+          (vecNorm2Sq (undetResidualHigham A b y) / vecNorm2Sq y) := by
+    have htheta_sq : 0 ≤ theta ^ 2 := sq_nonneg theta
+    have hy_sq : 0 ≤ vecNorm2Sq y := vecNorm2Sq_nonneg y
+    have hnum : 0 ≤ theta ^ 2 * vecNorm2Sq y := mul_nonneg htheta_sq hy_sq
+    have hden : 0 ≤ 1 + theta ^ 2 * vecNorm2Sq y :=
+      add_nonneg zero_le_one hnum
+    have hleft_factor :
+        0 ≤ theta ^ 2 * vecNorm2Sq y / (1 + theta ^ 2 * vecNorm2Sq y) :=
+      div_nonneg hnum hden
+    have hres :
+        0 ≤ vecNorm2Sq (undetResidualHigham A b y) / vecNorm2Sq y :=
+      div_nonneg (vecNorm2Sq_nonneg _) hy_sq
+    exact mul_nonneg hleft_factor hres
+  exact add_pos_of_nonneg_of_pos hleft hsigma_sq_pos
+
 -- ============================================================
 -- §21.3  Theorem 21.4: Q method backward stability
 -- ============================================================
