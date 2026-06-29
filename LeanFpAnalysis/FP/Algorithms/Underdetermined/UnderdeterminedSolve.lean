@@ -1228,6 +1228,100 @@ theorem higham21_lemma21_2_symmetrized_min_norm_of_separate_op_bounds_and_pertur
       hsmall halpha hbeta heta halpha_le hbeta_le heta_le hDeltaA1Op hDeltaA2Op hy
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    Moore--Penrose specialization of the perturbed-pseudoinverse beta handoff.
+    A pseudoinverse certificate supplies the domain-projection symmetry needed
+    by the source proof; the remaining open perturbation work is the projection
+    fixing `x` and the operator bound for the concrete perturbed pseudoinverse. -/
+theorem higham21_lemma21_2_symmetrized_min_norm_of_moore_penrose_pseudoinverse_bound
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (Bplus : Fin n → Fin m → ℝ)
+    (rho1 rho2 alpha beta eta : ℝ)
+    (hsq : vecNorm2Sq x ≠ 0)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hMP :
+      RectMoorePenrosePseudoinverse m n
+        (fun i j => A i j + DeltaA2 i j) Bplus)
+    (hDomainX :
+      rectMatMulVec
+        (rectMatMul Bplus (fun i j => A i j + DeltaA2 i j)) x = x)
+    (hsmall : 3 * max rho1 rho2 < 1)
+    (halpha : 0 ≤ alpha)
+    (hbeta : 0 ≤ beta)
+    (heta : 0 ≤ eta)
+    (halpha_le : alpha ≤ rho1)
+    (hbeta_le : beta ≤ rho2)
+    (heta_le : eta ≤ (1 - rho2)⁻¹)
+    (hDeltaA1Op : rectOpNorm2Le DeltaA1 alpha)
+    (hDeltaA2Op : rectOpNorm2Le DeltaA2 beta)
+    (hBplusOp : rectOpNorm2Le Bplus eta) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j)
+      b x :=
+  higham21_lemma21_2_symmetrized_min_norm_of_separate_op_bounds_and_perturbed_pseudoinverse
+    A x DeltaA1 DeltaA2 b Bplus rho1 rho2 alpha beta eta hsq hDeltaA1
+    hMP.domain_projection_symmetric hDomainX hsmall halpha hbeta heta
+    halpha_le hbeta_le heta_le hDeltaA1Op hDeltaA2Op hBplusOp
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    concrete Gram-pseudoinverse specialization of the beta handoff for
+    `B = A + DeltaA2`.  Under nonsingularity of `B Bᵀ`, the source table
+    `Bᵀ(BBᵀ)⁻¹` supplies the Moore--Penrose certificate used by the previous
+    wrapper. -/
+theorem higham21_lemma21_2_symmetrized_min_norm_of_gram_pseudoinverse_bound
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (rho1 rho2 alpha beta eta : ℝ)
+    (hsq : vecNorm2Sq x ≠ 0)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hdet :
+      Matrix.det
+          (rectGram (fun i j => A i j + DeltaA2 i j) :
+            Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hDomainX :
+      rectMatMulVec
+        (rectMatMul
+          (undetAplusOfGramNonsingInv (fun i j => A i j + DeltaA2 i j))
+          (fun i j => A i j + DeltaA2 i j)) x = x)
+    (hsmall : 3 * max rho1 rho2 < 1)
+    (halpha : 0 ≤ alpha)
+    (hbeta : 0 ≤ beta)
+    (heta : 0 ≤ eta)
+    (halpha_le : alpha ≤ rho1)
+    (hbeta_le : beta ≤ rho2)
+    (heta_le : eta ≤ (1 - rho2)⁻¹)
+    (hDeltaA1Op : rectOpNorm2Le DeltaA1 alpha)
+    (hDeltaA2Op : rectOpNorm2Le DeltaA2 beta)
+    (hBplusOp :
+      rectOpNorm2Le
+        (undetAplusOfGramNonsingInv (fun i j => A i j + DeltaA2 i j))
+        eta) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j)
+      b x := by
+  let B : Fin m → Fin n → ℝ := fun i j => A i j + DeltaA2 i j
+  have hMP : RectMoorePenrosePseudoinverse m n B (undetAplusOfGramNonsingInv B) :=
+    higham21_eq21_4_rect_moore_penrose_of_gram_det_ne_zero B (by
+      simpa [B] using hdet)
+  exact
+    higham21_lemma21_2_symmetrized_min_norm_of_moore_penrose_pseudoinverse_bound
+      A x DeltaA1 DeltaA2 b (undetAplusOfGramNonsingInv B)
+      rho1 rho2 alpha beta eta hsq hDeltaA1 hMP
+      (by simpa [B] using hDomainX) hsmall halpha hbeta heta
+      halpha_le hbeta_le heta_le hDeltaA1Op hDeltaA2Op
+      (by simpa [B] using hBplusOp)
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     the Frobenius-squared norm bound for the projector mixture used to replace
     two perturbation blocks by one. -/
 theorem higham21_lemma21_2_symmetrized_perturbation_frobNormSq_le {m n : ℕ}
