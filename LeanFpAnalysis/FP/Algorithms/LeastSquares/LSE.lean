@@ -5128,6 +5128,54 @@ theorem GeneralizedQRFactorization.fullRowRank_stackedFullColumnRank_iff_s_l22_b
     exact ⟨hcond.1,
       (LSENullIntersectionTrivial.iff_lseStackedFullColumnRank A B).1 hcond.2⟩
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, sentence after (20.28):
+    source full row rank of `B` and full column rank of `[A; B]` construct
+    exact GQR data whose displayed triangular blocks `S` and `L22` have
+    nonzero diagonals.
+
+    This removes the supplied-factor hypothesis from the diagonal
+    nonsingularity surface, while remaining exact algebra for (20.27). -/
+theorem GeneralizedQRFactorization.exists_with_s_l22_diag_ne_zero_of_fullRowRank_stackedFullColumnRank
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ h : GeneralizedQRFactorization r p q A B,
+      (∀ i : Fin p, h.S i i ≠ 0) ∧
+        (∀ i : Fin q, h.L22 i i ≠ 0) := by
+  rcases
+    GeneralizedQRFactorization.exists_of_fullRowRank_stackedFullColumnRank
+      (A := A) (B := B) hB hstack with
+    ⟨h⟩
+  exact ⟨h,
+    (h.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero).1
+      ⟨hB, hstack⟩⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, sentence after (20.28):
+    source full row rank of `B` and full column rank of `[A; B]` construct
+    exact GQR data whose displayed triangular blocks `S` and `L22` are
+    bijective solve maps.
+
+    This is the constructed-factor version of the source nonsingularity
+    statement, expressed as solvability of the two triangular systems. -/
+theorem GeneralizedQRFactorization.exists_with_s_l22_bijective_of_fullRowRank_stackedFullColumnRank
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ h : GeneralizedQRFactorization r p q A B,
+      Function.Bijective (rectMatMulVec h.S) ∧
+        Function.Bijective (rectMatMulVec h.L22) := by
+  rcases
+    GeneralizedQRFactorization.exists_of_fullRowRank_stackedFullColumnRank
+      (A := A) (B := B) hB hstack with
+    ⟨h⟩
+  exact ⟨h,
+    (h.fullRowRank_stackedFullColumnRank_iff_s_l22_bijective).1
+      ⟨hB, hstack⟩⟩
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, exact supplied-GQR solve
     consequence under the local assumptions (20.24).
 
