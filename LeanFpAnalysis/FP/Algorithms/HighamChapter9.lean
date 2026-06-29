@@ -14441,6 +14441,67 @@ theorem higham9_11_bohte_banded_solve_tight (fp : FPModel) (n p : ℕ)
     (higham9_11_bohteBound p) (higham9_11_bohteBound_nonneg p)
     hL_diag hU_diag hLU hn hn3 hGrowth
 
+/-- **Theorem 9.11**, Bohte solve bound from any smaller growth constant.
+
+This is the monotone-consumer form for proof routes that establish a sharper
+or lower-bandwidth componentwise growth estimate before widening to the
+printed Bohte scalar.  It does not prove the missing banded GEPP growth
+theorem; it only transports an already supplied growth hypothesis through the
+closed scalar comparison. -/
+theorem higham9_11_bohte_banded_solve_tight_of_growth_le
+    (fp : FPModel) (n p : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (ρ_bound : ℝ)
+    (hρ_le : ρ_bound ≤ higham9_11_bohteBound p)
+    (hL_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hGrowth : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤
+        ρ_bound * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤
+        higham9_11_bohteBound p * gamma fp (3 * n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_11_bohte_banded_solve_tight fp n p A L_hat U_hat b
+    hL_diag hU_diag hLU hn hn3
+    (fun i j =>
+      le_trans (hGrowth i j)
+        (mul_le_mul_of_nonneg_right hρ_le (abs_nonneg _)))
+
+/-- **Theorem 9.11**, solve bound after widening the Bohte bandwidth parameter.
+
+If a caller has established the componentwise growth hypothesis at bandwidth
+`q`, then the scalar monotonicity of Bohte's printed expression allows the
+same solve-level conclusion at any wider parameter `p`. -/
+theorem higham9_11_bohte_banded_solve_tight_of_bandwidth_le
+    (fp : FPModel) (n q p : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hqp : q ≤ p)
+    (hL_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hGrowth : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤
+        higham9_11_bohteBound q * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤
+        higham9_11_bohteBound p * gamma fp (3 * n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_11_bohte_banded_solve_tight_of_growth_le fp n p A L_hat U_hat b
+    (higham9_11_bohteBound q) (higham9_11_bohteBound_le_of_le hqp)
+    hL_diag hU_diag hLU hn hn3 hGrowth
+
 /-- **Theorem 9.11**, tridiagonal `p = 1` Bohte solve bound.
 
 This is the printed tridiagonal specialization of
@@ -14469,6 +14530,61 @@ theorem higham9_11_tridiagonal_bohte_solve_tight (fp : FPModel) (n : ℕ)
       hL_diag hU_diag hLU hn hn3
       (fun i j => by
         simpa [higham9_11_bohteBound_tridiagonal] using hGrowth i j)
+
+/-- **Theorem 9.11**, pentadiagonal `p = 2` Bohte solve bound.
+
+This specializes the printed Bohte expression to the concrete scalar `7`.
+The external banded GEPP growth hypothesis remains explicit. -/
+theorem higham9_11_pentadiagonal_bohte_solve_tight (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hL_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hGrowth : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤
+        7 * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤
+        7 * gamma fp (3 * n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  simpa [higham9_11_bohteBound_pentadiagonal_formula] using
+    higham9_11_bohte_banded_solve_tight fp n 2 A L_hat U_hat b
+      hL_diag hU_diag hLU hn hn3
+      (fun i j => by
+        simpa [higham9_11_bohteBound_pentadiagonal_formula] using hGrowth i j)
+
+/-- **Theorem 9.11**, bandwidth-four Bohte solve bound for the source's
+printed `p = 4`, `n = 9` scalar example.
+
+This reduces Bohte's expression to the concrete scalar `116`; the pivot-trace
+attainability and the external banded GEPP growth theorem remain separate. -/
+theorem higham9_11_bandwidth_four_bohte_solve_tight (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hL_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hGrowth : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤
+        116 * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤
+        116 * gamma fp (3 * n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  simpa [higham9_11_bohteBound_bandwidth_four_formula] using
+    higham9_11_bohte_banded_solve_tight fp n 4 A L_hat U_hat b
+      hL_diag hU_diag hLU hn hn3
+      (fun i j => by
+        simpa [higham9_11_bohteBound_bandwidth_four_formula] using hGrowth i j)
 
 /-! ## §9.6 Special Tridiagonal Classes -/
 

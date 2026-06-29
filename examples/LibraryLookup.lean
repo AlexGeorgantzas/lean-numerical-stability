@@ -12605,7 +12605,11 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_11_bohteBound_le_succ
 #check higham9_11_bohteBound_monotone
 #check higham9_11_bohteBound_le_of_le
+#check higham9_11_bohte_banded_solve_tight_of_growth_le
+#check higham9_11_bohte_banded_solve_tight_of_bandwidth_le
 #check higham9_11_tridiagonal_bohte_solve_tight
+#check higham9_11_pentadiagonal_bohte_solve_tight
+#check higham9_11_bandwidth_four_bohte_solve_tight
 #check higham9_14_completePivotWilkinsonProduct_ge_one
 #check higham9_14_completePivotWilkinsonProduct_two
 #check higham9_14_completePivotWilkinsonProduct_succ
