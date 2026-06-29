@@ -20,6 +20,25 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-06-29 matrix-`∞` source-norm upper endpoint checkpoint:
+  `blockInfNorm` is the blockwise maximum of matrix-`∞` operator norms, with
+  helpers `block_le_blockInfNorm`, `blockInfNorm_nonneg`,
+  `blockInfNorm_le_of_block_le`, `infNorm_zeroBlock`, and
+  `infNorm_le_zero_of_eq_zeroBlock`.  The new Algorithm 13.3 wrappers
+  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockInfNorm_bound_of_active_stage_bound`,
+  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockInfNorm_bound_of_continuousLinearMap_source_table`,
+  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockInfNorm_bound_of_continuousLinearMap_source_table_of_pivot_right_inverse`,
+  and
+  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockInfNorm_bound_of_initial_diag_right_inverse_of_pivot_right_inverse`
+  prove `blockInfNorm (upperFromMatrixStages ...) <= 2 * blockInfNorm A`.
+  This closes the source-norm upper-factor packaging gap without introducing
+  the old max-entry comparison loss; the entrywise max-norm Eq.13.21 endpoint
+  and `growthFactorEntry <= 2` remain open.  Verification before commit:
+  direct `BlockLU.lean`, focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet `examples/LibraryLookup.lean`
+  with empty stderr, `git diff --check`, marker scan, and focused
+  `#print axioms` all passed; axiom output was only `propext`,
+  `Classical.choice`, and `Quot.sound`.
 - 2026-06-29 matrix-`∞` source-table max-entry composition checkpoint:
   `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockMaxNorm_bound_with_card_of_continuousLinearMap_source_table`,
   `higham13_algorithm13_3_matrix_infNorm_matrixStageHistoryGrowthFactor_le_card_of_continuousLinearMap_source_table`,
