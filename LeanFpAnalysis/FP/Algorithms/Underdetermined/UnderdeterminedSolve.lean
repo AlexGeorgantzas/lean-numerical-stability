@@ -317,6 +317,80 @@ theorem higham21_eq21_3_q_method_min_norm_of_qr_det_ne_zero {m k : ℕ}
     (isInverse_nonsingInv_of_det_ne_zero m (matTranspose R) hdetT)
     hy1
 
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.3):
+    determinant-facing exact Q-method minimum-norm handoff from nonsingularity
+    of the triangular factor `R` itself.  This is a thin source-facing bridge
+    from the usual triangular-factor determinant condition to the transposed
+    coordinate solve `Rᵀ y₁ = b`. -/
+theorem higham21_eq21_3_q_method_min_norm_of_qr_R_det_ne_zero {m k : ℕ}
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (hQ : IsOrthogonal (m + k) Q)
+    (R : Fin m → Fin m → ℝ)
+    (b y1 : Fin m → ℝ)
+    (hdet : Matrix.det (R : Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hy1 : (fun j : Fin m => ∑ i : Fin m, R i j * y1 i) = b) :
+    RectMinNormSolution m (m + k)
+      (finiteTranspose (matMulRectLeft Q (lsQRTallBlock (k := k) R)))
+      b
+      (matMulVec (m + k) Q (Fin.append y1 (0 : Fin k → ℝ))) := by
+  have hdetT : Matrix.det (matTranspose R : Matrix (Fin m) (Fin m) ℝ) ≠ 0 := by
+    change Matrix.det (Matrix.transpose (R : Matrix (Fin m) (Fin m) ℝ)) ≠ 0
+    simpa [Matrix.det_transpose] using hdet
+  exact higham21_eq21_3_q_method_min_norm_of_qr_det_ne_zero Q hQ R b y1 hdetT hy1
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.3):
+    exact Q-method minimum-norm handoff from the usual triangular-factor
+    nonsingularity condition: `R` is upper triangular with nonzero diagonal. -/
+theorem higham21_eq21_3_q_method_min_norm_of_qr_upper_diag_ne_zero {m k : ℕ}
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (hQ : IsOrthogonal (m + k) Q)
+    (R : Fin m → Fin m → ℝ)
+    (b y1 : Fin m → ℝ)
+    (hupper : IsUpperTrapezoidal m m R)
+    (hdiag : ∀ i : Fin m, R i i ≠ 0)
+    (hy1 : (fun j : Fin m => ∑ i : Fin m, R i j * y1 i) = b) :
+    RectMinNormSolution m (m + k)
+      (finiteTranspose (matMulRectLeft Q (lsQRTallBlock (k := k) R)))
+      b
+      (matMulVec (m + k) Q (Fin.append y1 (0 : Fin k → ℝ))) := by
+  have hdet : Matrix.det (R : Matrix (Fin m) (Fin m) ℝ) ≠ 0 :=
+    det_ne_zero_of_upper_triangular_diag_ne_zero m R hupper hdiag
+  exact higham21_eq21_3_q_method_min_norm_of_qr_R_det_ne_zero Q hQ R b y1 hdet hy1
+
+-- ============================================================
+-- §21.2  Lemma 21.2 projector/norm bridge
+-- ============================================================
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    source-facing alias for the projector mixture reused from the Chapter 20
+    Kielbasinski--Schwetlick construction.  This is the constructed
+    perturbation block, not the full minimum-norm symmetrization theorem. -/
+noncomputable abbrev undetLemma21_2SymmetrizedPerturbation {m n : ℕ}
+    (s : Fin m → ℝ) (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ) :
+    Fin m → Fin n → ℝ :=
+  lsLemma20_6Perturbation s DeltaA1 DeltaA2
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    the Frobenius-squared norm bound for the projector mixture used to replace
+    two perturbation blocks by one. -/
+theorem higham21_lemma21_2_symmetrized_perturbation_frobNormSq_le {m n : ℕ}
+    (s : Fin m → ℝ) (hsq : vecNorm2Sq s ≠ 0)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ) :
+    frobNormSqRect (undetLemma21_2SymmetrizedPerturbation s DeltaA1 DeltaA2) ≤
+      frobNormSqRect DeltaA1 + frobNormSqRect DeltaA2 :=
+  lsLemma20_6Perturbation_frobNormSqRect_le s hsq DeltaA1 DeltaA2
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    Frobenius-norm form of the printed bound
+    `||Delta A||_F <= (||Delta A_1||_F^2 + ||Delta A_2||_F^2)^(1/2)` for the
+    projector mixture. -/
+theorem higham21_lemma21_2_symmetrized_perturbation_frob_bound {m n : ℕ}
+    (s : Fin m → ℝ) (hsq : vecNorm2Sq s ≠ 0)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ) :
+    frobNormRect (undetLemma21_2SymmetrizedPerturbation s DeltaA1 DeltaA2) ≤
+      Real.sqrt (frobNormRect DeltaA1 ^ 2 + frobNormRect DeltaA2 ^ 2) :=
+  lsLemma20_6Perturbation_norm_bound_two_frob s hsq DeltaA1 DeltaA2
+
 -- ============================================================
 -- §21.3  Row-wise backward error for underdetermined systems
 -- ============================================================

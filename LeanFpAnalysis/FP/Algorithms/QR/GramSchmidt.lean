@@ -333,6 +333,24 @@ theorem modifiedGramSchmidtQ_dot_vectors_succ_later_eq_zero {m n : Nat}
   have hnorm := modifiedGramSchmidtQ_column_norm_sq A k hdiag
   simpa [gsDot_self_eq_finiteVecNorm2Sq] using hnorm
 
+/-- One MGS projection step preserves an older residual orthogonality relation
+provided the older `q_i` column is orthogonal to the current `q_k` column. -/
+theorem modifiedGramSchmidtQ_dot_vectors_succ_later_eq_zero_of_prev
+    {m n : Nat} (A : Fin m -> Fin n -> Real) {i k j : Fin n}
+    (hkj : k < j)
+    (hprev :
+      gsDot (gsColumn (modifiedGramSchmidtQ A) i)
+        (modifiedGramSchmidtVectors A k.val j) = 0)
+    (hiq :
+      gsDot (gsColumn (modifiedGramSchmidtQ A) i)
+        (gsColumn (modifiedGramSchmidtQ A) k) = 0) :
+    gsDot (gsColumn (modifiedGramSchmidtQ A) i)
+        (modifiedGramSchmidtVectors A (k.val + 1) j) = 0 := by
+  rw [modifiedGramSchmidtVectors_succ_later A hkj]
+  apply gsDot_projectAway_eq_zero_of_left_orthogonal
+  · exact hprev
+  · simpa [modifiedGramSchmidtQ, gsColumn] using hiq
+
 /-- MGS `R` is zero below the diagonal by construction. -/
 theorem modifiedGramSchmidtR_eq_zero_of_lt {m n : Nat}
     (A : Fin m -> Fin n -> Real) {i j : Fin n}
