@@ -14160,6 +14160,46 @@ theorem higham9_11_bohteBound_ge_two (p : ℕ) :
             ring
           linarith
 
+/-- **Theorem 9.11**, Bohte scalar recurrence beyond the first two
+bandwidths.  This is the closed-form arithmetic recurrence an induction proof
+of the banded GEPP growth theorem can use; it does not prove the GEPP growth
+bound itself. -/
+theorem higham9_11_bohteBound_add_three_eq (k : ℕ) :
+    higham9_11_bohteBound (k + 3) =
+      4 * higham9_11_bohteBound (k + 2) + (k : ℝ) * (2 : ℝ) ^ (k + 1) := by
+  unfold higham9_11_bohteBound
+  norm_num
+  have h1 : 2 * (k + 3) - 1 = 2 * k + 5 := by omega
+  have h2 : k + 3 - 2 = k + 1 := by omega
+  have h3 : 2 * (k + 2) - 1 = 2 * k + 3 := by omega
+  rw [h1, h2, h3]
+  rw [show 2 * k + 5 = (2 * k + 3) + 2 by omega, pow_add]
+  rw [show k + 1 = k + 1 by rfl, pow_add]
+  norm_num
+  ring
+
+/-- **Theorem 9.11**, Bohte scalar recurrence as a lower step:
+from bandwidth `k + 2` to `k + 3`, the printed scalar bound is at least four
+times the previous scalar bound.  This is scalar support for the future banded
+growth induction, not the banded GEPP theorem. -/
+theorem higham9_11_bohteBound_quad_le_add_three (k : ℕ) :
+    4 * higham9_11_bohteBound (k + 2) ≤ higham9_11_bohteBound (k + 3) := by
+  rw [higham9_11_bohteBound_add_three_eq]
+  exact le_add_of_nonneg_right
+    (mul_nonneg (Nat.cast_nonneg k) (pow_nonneg (by norm_num) (k + 1)))
+
+/-- **Theorem 9.11**, monotonicity of the Bohte scalar bound from bandwidth
+`2` onward.  This is only scalar arithmetic support for the still-open banded
+growth proof. -/
+theorem higham9_11_bohteBound_le_add_three (k : ℕ) :
+    higham9_11_bohteBound (k + 2) ≤ higham9_11_bohteBound (k + 3) := by
+  have hnon : 0 ≤ higham9_11_bohteBound (k + 2) :=
+    higham9_11_bohteBound_nonneg (k + 2)
+  have hle4 : higham9_11_bohteBound (k + 2) ≤
+      4 * higham9_11_bohteBound (k + 2) := by
+    nlinarith
+  exact hle4.trans (higham9_11_bohteBound_quad_le_add_three k)
+
 /-- **Theorem 9.11**, banded growth-factor solve bound once the Bohte growth
 constant has been supplied. -/
 theorem higham9_11_banded_growth_factor_solve_tight (fp : FPModel) (n : ℕ)
