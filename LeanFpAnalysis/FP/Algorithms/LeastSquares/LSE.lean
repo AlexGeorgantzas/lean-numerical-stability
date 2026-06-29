@@ -8274,4 +8274,211 @@ theorem GeneralizedQRFactorization.exists_unique_method_solution_of_theorem20_10
       (b := fun i => b i + Deltab i)
       (d := fun i => d i + Deltad i) hB hstack
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), finite-precision
+    perturbation certificate for the mixed-stability branch.
+
+    This is the part of the computed GQR proof that remains to be supplied by
+    the floating-point algorithm: concrete perturbations with source-shaped
+    norm bounds, perturbed rank assumptions, and a forward-error relation from
+    the computed vector to any exact minimizer of the perturbed problem.  The
+    exact GQR/minimizer algebra is proved separately below, so this certificate
+    deliberately does not assume that the displayed perturbed LSE problem has a
+    solution. -/
+structure Theorem20_10PartAPerturbationCertificate
+    {r p q : ℕ}
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    (gammaA gammaB : ℝ) : Type where
+  /-- Perturbation of the least-squares matrix `A`. -/
+  DeltaA : Fin (r + q) → Fin (p + q) → ℝ
+  /-- Perturbation of the constraint matrix `B`. -/
+  DeltaB : Fin p → Fin (p + q) → ℝ
+  /-- Perturbation of the least-squares right-hand side `b`. -/
+  Deltab : Fin (r + q) → ℝ
+  /-- The perturbed constraint matrix keeps the source full-row-rank condition. -/
+  hB : LSEFullRowRank (fun i j => B i j + DeltaB i j)
+  /-- The perturbed stacked matrix keeps the source uniqueness condition. -/
+  hstack :
+    LSEStackedFullColumnRank
+      (fun i j => A i j + DeltaA i j)
+      (fun i j => B i j + DeltaB i j)
+  /-- The computed vector is close to every exact minimizer of the perturbed
+      problem, with the source `gamma_np`-style coefficient `gammaB`. -/
+  near_exact_solution :
+    ∀ x : Fin (p + q) → ℝ,
+      IsLSEMinimizer
+        (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i)
+        (fun i j => B i j + DeltaB i j) d x →
+      ∃ DeltaX : Fin (p + q) → ℝ,
+        (∀ j : Fin (p + q), xhat j = x j + DeltaX j) ∧
+        vecNorm2 DeltaX ≤ gammaB * vecNorm2 x
+  /-- Source-shaped Frobenius bound for `DeltaA`. -/
+  hDeltaA : frobNormRect DeltaA ≤ gammaA * frobNormRect A
+  /-- Source-shaped vector bound for `Deltab`. -/
+  hDeltab : vecNorm2 Deltab ≤ gammaA * vecNorm2 b
+  /-- Source-shaped Frobenius bound for `DeltaB`. -/
+  hDeltaB : frobNormRect DeltaB ≤ gammaB * frobNormRect B
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), certificate-to-exact-core
+    handoff.
+
+    A verified finite-precision GQR perturbation certificate yields an exact
+    perturbed LSE minimizer, exact GQR method coordinates for that perturbed
+    problem, the mixed forward-error relation for the computed vector, and the
+    displayed perturbation bounds.  The only remaining work for the full
+    theorem is to prove the certificate from the concrete computed GQR path and
+    to instantiate the source `gamma_tilde` coefficients. -/
+theorem theorem20_10_partA_mixed_stability_of_perturbation_certificate
+    {r p q : ℕ}
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    {gammaA gammaB : ℝ}
+    (cert :
+      Theorem20_10PartAPerturbationCertificate A B b d xhat gammaA gammaB) :
+    let Apert : Fin (r + q) → Fin (p + q) → ℝ :=
+      fun i j => A i j + cert.DeltaA i j
+    let Bpert : Fin p → Fin (p + q) → ℝ :=
+      fun i j => B i j + cert.DeltaB i j
+    let bpert : Fin (r + q) → ℝ := fun i => b i + cert.Deltab i
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab : Fin (r + q) → ℝ,
+    ∃ DeltaX : Fin (p + q) → ℝ,
+    ∃ x : Fin (p + q) → ℝ,
+      DeltaA = cert.DeltaA ∧
+      DeltaB = cert.DeltaB ∧
+      Deltab = cert.Deltab ∧
+      (∀ j : Fin (p + q), xhat j = x j + DeltaX j) ∧
+      vecNorm2 DeltaX ≤ gammaB * vecNorm2 x ∧
+      frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+      vecNorm2 Deltab ≤ gammaA * vecNorm2 b ∧
+      frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+      IsLSEMinimizer Apert bpert Bpert d x ∧
+      (∃ h : GeneralizedQRFactorization r p q Apert Bpert,
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec h.S yz.1 = d ∧
+          rectMatMulVec h.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose h.U) bpert (Fin.natAdd r i) -
+                rectMatMulVec h.L21 yz.1 i) ∧
+          IsLSEMinimizer Apert bpert Bpert d
+            (matMulVec (p + q) h.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x0 : Fin (p + q) → ℝ,
+          IsLSEMinimizer Apert bpert Bpert d x0)) := by
+  dsimp
+  rcases
+    GeneralizedQRFactorization.exists_unique_method_solution_of_theorem20_10_perturbed_same_d
+      A cert.DeltaA B cert.DeltaB b cert.Deltab d cert.hB cert.hstack with
+    ⟨h, hyz, hxuniq⟩
+  rcases hxuniq with ⟨x, hx, huniq⟩
+  rcases cert.near_exact_solution x hx with ⟨DeltaX, hxhat, hDeltaX⟩
+  refine ⟨cert.DeltaA, cert.DeltaB, cert.Deltab, DeltaX, x, rfl, rfl, rfl,
+    hxhat, hDeltaX, cert.hDeltaA, cert.hDeltab, cert.hDeltaB, hx, ?_⟩
+  exact ⟨h, hyz, ⟨x, hx, huniq⟩⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), finite-precision
+    perturbation certificate for the fully backward-stable branch.
+
+    The certificate records the perturbations and the displayed norm bounds
+    for the perturbed problem with right-hand side `d + Deltad`.  It does not
+    assume that the computed vector is the minimizer; the theorem below proves
+    the exact perturbed GQR/minimizer core, leaving the computed-vector
+    identification as the remaining algorithmic obligation. -/
+structure Theorem20_10PartBPerturbationCertificate
+    {r p q : ℕ}
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    (gammaA gammaB : ℝ) : Type where
+  /-- Perturbation of the least-squares matrix `A`. -/
+  DeltaA : Fin (r + q) → Fin (p + q) → ℝ
+  /-- Perturbation of the constraint matrix `B`. -/
+  DeltaB : Fin p → Fin (p + q) → ℝ
+  /-- Perturbation of the least-squares right-hand side `b`. -/
+  Deltab : Fin (r + q) → ℝ
+  /-- Perturbation of the constraint right-hand side `d`. -/
+  Deltad : Fin p → ℝ
+  /-- The perturbed constraint matrix keeps the source full-row-rank condition. -/
+  hB : LSEFullRowRank (fun i j => B i j + DeltaB i j)
+  /-- The perturbed stacked matrix keeps the source uniqueness condition. -/
+  hstack :
+    LSEStackedFullColumnRank
+      (fun i j => A i j + DeltaA i j)
+      (fun i j => B i j + DeltaB i j)
+  /-- Source-shaped Frobenius bound for `DeltaA`. -/
+  hDeltaA : frobNormRect DeltaA ≤ gammaA * frobNormRect A
+  /-- Source-shaped Frobenius bound for `DeltaB`. -/
+  hDeltaB : frobNormRect DeltaB ≤ gammaB * frobNormRect B
+  /-- Source-shaped right-hand-side perturbation bound for `Deltab`. -/
+  hDeltab :
+    vecNorm2 Deltab ≤
+      gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat
+  /-- Source-shaped constraint right-hand-side perturbation bound. -/
+  hDeltad : vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), certificate-to-exact-core
+    handoff.
+
+    A verified finite-precision GQR perturbation certificate gives exact GQR
+    method coordinates and a unique exact minimizer for the perturbed problem
+    with right-hand side `d + Deltad`, together with the displayed perturbation
+    bounds.  The remaining computed-algorithm theorem must prove this
+    certificate and identify the actual computed vector with the unique
+    minimizer. -/
+theorem theorem20_10_partB_backward_error_of_perturbation_certificate
+    {r p q : ℕ}
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    {gammaA gammaB : ℝ}
+    (cert :
+      Theorem20_10PartBPerturbationCertificate A B b d xhat gammaA gammaB) :
+    let Apert : Fin (r + q) → Fin (p + q) → ℝ :=
+      fun i j => A i j + cert.DeltaA i j
+    let Bpert : Fin p → Fin (p + q) → ℝ :=
+      fun i j => B i j + cert.DeltaB i j
+    let bpert : Fin (r + q) → ℝ := fun i => b i + cert.Deltab i
+    let dpert : Fin p → ℝ := fun i => d i + cert.Deltad i
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab : Fin (r + q) → ℝ,
+    ∃ Deltad : Fin p → ℝ,
+      DeltaA = cert.DeltaA ∧
+      DeltaB = cert.DeltaB ∧
+      Deltab = cert.Deltab ∧
+      Deltad = cert.Deltad ∧
+      frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+      frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+      vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+      (∃ h : GeneralizedQRFactorization r p q Apert Bpert,
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec h.S yz.1 = dpert ∧
+          rectMatMulVec h.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose h.U) bpert (Fin.natAdd r i) -
+                rectMatMulVec h.L21 yz.1 i) ∧
+          IsLSEMinimizer Apert bpert Bpert dpert
+            (matMulVec (p + q) h.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x : Fin (p + q) → ℝ,
+          IsLSEMinimizer Apert bpert Bpert dpert x)) := by
+  dsimp
+  rcases
+    GeneralizedQRFactorization.exists_unique_method_solution_of_theorem20_10_perturbed_d
+      A cert.DeltaA B cert.DeltaB b cert.Deltab d cert.Deltad
+      cert.hB cert.hstack with
+    ⟨h, hyz, hxuniq⟩
+  exact
+    ⟨cert.DeltaA, cert.DeltaB, cert.Deltab, cert.Deltad, rfl, rfl, rfl, rfl,
+      cert.hDeltaA, cert.hDeltaB, cert.hDeltab, cert.hDeltad,
+      ⟨h, hyz, hxuniq⟩⟩
+
 end LeanFpAnalysis.FP
