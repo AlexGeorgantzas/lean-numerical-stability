@@ -14095,6 +14095,52 @@ theorem higham9_11_bohteBound_nonneg (p : ℕ) :
               pow_le_pow_right₀ (by decide : 1 ≤ (2 : ℕ)) (by omega)
             exact_mod_cast hk1.trans hmono) (pow_nonneg (by norm_num) k)
 
+/-- **Theorem 9.11**, Bohte's scalar expression dominates the tridiagonal
+value.
+
+The formal expression is at least `2` for every natural bandwidth parameter.
+This is scalar support only; the banded GEPP growth theorem supplying this
+constant remains the external Bohte proof obligation. -/
+theorem higham9_11_bohteBound_ge_two (p : ℕ) :
+    (2 : ℝ) ≤ higham9_11_bohteBound p := by
+  cases p with
+  | zero =>
+      norm_num [higham9_11_bohteBound]
+      exact le_rfl
+  | succ p =>
+      cases p with
+      | zero =>
+          rw [higham9_11_bohteBound_tridiagonal]
+      | succ k =>
+          unfold higham9_11_bohteBound
+          have hpow1 : 2 * (k + 1 + 1) - 1 = 2 * k + 3 := by omega
+          have hpow2 : k + 1 + 1 - 2 = k := by omega
+          rw [hpow1, hpow2]
+          norm_num
+          have hterm :
+              ((k : ℝ) + 1) * (2 : ℝ) ^ k ≤ (2 : ℝ) ^ (2 * k + 2) := by
+            rw [show 2 * k + 2 = k + (k + 2) by omega, pow_add]
+            rw [mul_comm ((2 : ℝ) ^ k)]
+            exact mul_le_mul_of_nonneg_right (by
+              have hk1 : k + 1 ≤ 2 ^ (k + 1) := (k + 1).lt_two_pow_self.le
+              have hmono : 2 ^ (k + 1) ≤ 2 ^ (k + 2) :=
+                pow_le_pow_right₀ (by decide : 1 ≤ (2 : ℕ)) (by omega)
+              exact_mod_cast hk1.trans hmono) (pow_nonneg (by norm_num) k)
+          have htwo : (2 : ℝ) ≤ (2 : ℝ) ^ (2 * k + 2) := by
+            have hpow : (2 : ℝ) ^ 1 ≤ (2 : ℝ) ^ (2 * k + 2) :=
+              pow_le_pow_right₀ (by norm_num : (1 : ℝ) ≤ 2) (by omega)
+            simpa using hpow
+          have hsum :
+              (2 : ℝ) + ((k : ℝ) + 1) * (2 : ℝ) ^ k ≤
+                (2 : ℝ) ^ (2 * k + 2) + (2 : ℝ) ^ (2 * k + 2) :=
+            add_le_add htwo hterm
+          have hdouble :
+              (2 : ℝ) ^ (2 * k + 2) + (2 : ℝ) ^ (2 * k + 2) =
+                (2 : ℝ) ^ (2 * k + 3) := by
+            rw [show 2 * k + 3 = (2 * k + 2) + 1 by omega, pow_add]
+            ring
+          linarith
+
 /-- **Theorem 9.11**, banded growth-factor solve bound once the Bohte growth
 constant has been supplied. -/
 theorem higham9_11_banded_growth_factor_solve_tight (fp : FPModel) (n : ℕ)
