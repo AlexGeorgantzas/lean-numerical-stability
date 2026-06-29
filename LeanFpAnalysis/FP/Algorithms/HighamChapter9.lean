@@ -36952,33 +36952,27 @@ theorem higham9_10_HessenbergGEPPUTrace_to_PartialPivotGEPPUTrace {M : ℝ} :
   | step _hactive hchoice hpivot _hnext ih =>
       exact higham9_7_PartialPivotGEPPUTrace.step hchoice hpivot ih
 
-/-- **Theorem 9.10 / Theorem 9.5**, exact upper-Hessenberg GEPP trace
-Wilkinson source bound with the Hessenberg `rho <= n` growth constant.
-
-The recursive Hessenberg trace supplies both the sharper max-entry growth
-bound and, after forgetting the Hessenberg invariant, the exact cumulative
-row-pivoted `PA = LU` certificate used by the solve-level wrapper. -/
-theorem higham9_10_wilkinson_source_bound_exists_of_HessenbergGEPPUTrace
-    (fp : FPModel) (n : ℕ)
+/-- **Theorem 9.10 / GEPP trace support**, an exact upper-Hessenberg GEPP `U`
+trace determines a cumulative row-permuted `PA = LU` certificate.  The
+certificate has unit-bounded lower multipliers, nonzero computed pivots for a
+nonsingular source, and its growth factor inherits the Hessenberg bound
+`rho <= n`. -/
+theorem higham9_10_HessenbergGEPPUTrace_exists_PermutedLUFactSpec_L_bound_growth_le
+    (n : ℕ)
     (hn_pos : 0 < n)
     (A U_trace : Fin n → Fin n → ℝ)
-    (b : Fin n → ℝ)
     (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
     (htrace :
-      higham9_10_HessenbergGEPPUTrace (maxEntryNorm hn_pos A) 1 n A U_trace)
-    (hn : gammaValid fp n)
-    (hn3 : gammaValid fp (3 * n)) :
+      higham9_10_HessenbergGEPPUTrace (maxEntryNorm hn_pos A) 1 n A U_trace) :
     ∃ L_hat U_hat : Fin n → Fin n → ℝ,
     ∃ sigma : Fin n → Fin n,
     ∃ _hLU : higham9_2_PermutedLUFactSpec n A L_hat U_hat sigma,
       (∀ i j : Fin n, |L_hat i j| ≤ 1) ∧
-      let bP : Fin n → ℝ := fun i => b (sigma i)
-      let y_hat := fl_forwardSub fp n L_hat bP
-      let x_hat := fl_backSub fp n U_hat y_hat
-      ∃ ΔA : Fin n → Fin n → ℝ,
-        (infNorm ΔA ≤
-          (↑n) ^ 2 * gamma fp (3 * n) * (n : ℝ) * infNorm A) ∧
-        (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+      (∀ i : Fin n, U_hat i i ≠ 0) ∧
+      ∃ hBmax :
+        0 < maxEntryNorm hn_pos (higham9_2_rowPermutedMatrix A sigma),
+        growthFactorEntry hn_pos
+          (higham9_2_rowPermutedMatrix A sigma) U_hat hBmax ≤ (n : ℝ) := by
   classical
   have hpartial :
       higham9_7_PartialPivotGEPPUTrace n A U_trace :=
@@ -37024,6 +37018,39 @@ theorem higham9_10_wilkinson_source_bound_exists_of_HessenbergGEPPUTrace
       using hdet_col
   have hU_diag : ∀ i : Fin n, U_hat i i ≠ 0 :=
     (higham9_2_permutedLUFactSpec_det_ne_zero_iff_pivots_ne_zero hLU).mp hdet_row
+  exact ⟨L_hat, U_hat, sigma, hLU, hL_bound, hU_diag, hBmax, hgrowth⟩
+
+/-- **Theorem 9.10 / Theorem 9.5**, exact upper-Hessenberg GEPP trace
+Wilkinson source bound with the Hessenberg `rho <= n` growth constant.
+
+The recursive Hessenberg trace supplies both the sharper max-entry growth
+bound and, after forgetting the Hessenberg invariant, the exact cumulative
+row-pivoted `PA = LU` certificate used by the solve-level wrapper. -/
+theorem higham9_10_wilkinson_source_bound_exists_of_HessenbergGEPPUTrace
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (A U_trace : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (htrace :
+      higham9_10_HessenbergGEPPUTrace (maxEntryNorm hn_pos A) 1 n A U_trace)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n)) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+    ∃ sigma : Fin n → Fin n,
+    ∃ _hLU : higham9_2_PermutedLUFactSpec n A L_hat U_hat sigma,
+      (∀ i j : Fin n, |L_hat i j| ≤ 1) ∧
+      let bP : Fin n → ℝ := fun i => b (sigma i)
+      let y_hat := fl_forwardSub fp n L_hat bP
+      let x_hat := fl_backSub fp n U_hat y_hat
+      ∃ ΔA : Fin n → Fin n → ℝ,
+        (infNorm ΔA ≤
+          (↑n) ^ 2 * gamma fp (3 * n) * (n : ℝ) * infNorm A) ∧
+        (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  classical
+  obtain ⟨L_hat, U_hat, sigma, hLU, hL_bound, hU_diag, hBmax, hgrowth⟩ :=
+    higham9_10_HessenbergGEPPUTrace_exists_PermutedLUFactSpec_L_bound_growth_le
+      n hn_pos A U_trace hdet htrace
   refine ⟨L_hat, U_hat, sigma, hLU, hL_bound, ?_⟩
   exact
     higham9_5_wilkinson_source_bound_of_PermutedLUFactSpec_growth

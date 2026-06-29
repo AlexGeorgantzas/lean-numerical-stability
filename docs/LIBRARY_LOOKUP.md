@@ -1488,6 +1488,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_5_wilkinson_source_bound_exists_of_CompletePivotGECPUTrace_of_det_ne_zero`
 - `higham9_16_wilkinson_source_bound_exists_of_RookPivotGEUTrace_of_det_ne_zero`
 - `higham9_10_HessenbergGEPPUTrace_to_PartialPivotGEPPUTrace`
+- `higham9_10_HessenbergGEPPUTrace_exists_PermutedLUFactSpec_L_bound_growth_le`
 - `higham9_10_wilkinson_source_bound_exists_of_HessenbergGEPPUTrace`
 - `higham9_10_wilkinson_source_bound_exists_of_det_ne_zero`
 - `higham9_10_hessenberg_firstSchurComplement_row_bound`
