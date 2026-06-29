@@ -12597,6 +12597,9 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_11_bohteBound_add_three_eq
 #check higham9_11_bohteBound_quad_le_add_three
 #check higham9_11_bohteBound_le_add_three
+#check higham9_11_bohteBound_le_succ
+#check higham9_11_bohteBound_monotone
+#check higham9_11_bohteBound_le_of_le
 #check higham9_11_tridiagonal_bohte_solve_tight
 #check higham9_14_completePivotWilkinsonProduct_ge_one
 #check higham9_14_completePivotWilkinsonProduct_two

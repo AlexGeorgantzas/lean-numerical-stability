@@ -14200,6 +14200,37 @@ theorem higham9_11_bohteBound_le_add_three (k : ℕ) :
     nlinarith
   exact hle4.trans (higham9_11_bohteBound_quad_le_add_three k)
 
+/-- **Theorem 9.11**, one-step monotonicity of the Bohte scalar bound for all
+natural bandwidth parameters.  The first two steps are discharged by direct
+formula evaluation; all later steps reuse the closed-form recurrence
+`higham9_11_bohteBound_le_add_three`. -/
+theorem higham9_11_bohteBound_le_succ (p : ℕ) :
+    higham9_11_bohteBound p ≤ higham9_11_bohteBound (p + 1) := by
+  cases p with
+  | zero =>
+      norm_num [higham9_11_bohteBound]
+  | succ p =>
+      cases p with
+      | zero =>
+          rw [higham9_11_bohteBound_tridiagonal,
+            higham9_11_bohteBound_pentadiagonal_formula]
+          norm_num
+      | succ k =>
+          simpa [Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using
+            higham9_11_bohteBound_le_add_three k
+
+/-- **Theorem 9.11**, monotonicity of Bohte's scalar banded-growth bound.
+This is scalar support for comparing nested bandwidth parameters; the GEPP
+banded-growth theorem itself remains the separate Bohte proof obligation. -/
+theorem higham9_11_bohteBound_monotone :
+    Monotone higham9_11_bohteBound :=
+  monotone_nat_of_le_succ higham9_11_bohteBound_le_succ
+
+/-- **Theorem 9.11**, order form of Bohte scalar monotonicity. -/
+theorem higham9_11_bohteBound_le_of_le {p q : ℕ} (hpq : p ≤ q) :
+    higham9_11_bohteBound p ≤ higham9_11_bohteBound q :=
+  higham9_11_bohteBound_monotone hpq
+
 /-- **Theorem 9.11**, banded growth-factor solve bound once the Bohte growth
 constant has been supplied. -/
 theorem higham9_11_banded_growth_factor_solve_tight (fp : FPModel) (n : ℕ)
