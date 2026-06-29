@@ -1438,6 +1438,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_5_wilkinson_source_bound_exists_of_PartialPivotGEPPUTrace`
 - `higham9_5_wilkinson_source_bound_exists_of_PartialPivotGEPPUTrace_of_det_ne_zero`
 - `higham9_8_exists_completePivoting_growth_factor_ge_theta_real`
+- `higham9_nonsingInv_maxEntryNorm_pos_of_det_ne_zero`
+- `higham9_8_exists_completePivoting_growth_factor_ge_theta_nonsingInv`
 - `higham9_8_CompletePivotGECPUTrace`
 - `higham9_8_CompletePivotGECPUTrace_upper_zero`
 - `higham9_8_CompletePivotGECPUTrace_entry_abs_le_pow_two`
@@ -1551,6 +1553,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_8_growth_factor_ge_theta_of_completePermutedLUFactSpec_right_inverse`
 - `higham9_8_exists_CompletePermutedLUFactSpec_of_det_ne_zero`
 - `higham9_8_exists_completePivoting_growth_factor_ge_theta_real`
+- `higham9_nonsingInv_maxEntryNorm_pos_of_det_ne_zero`
+- `higham9_8_exists_completePivoting_growth_factor_ge_theta_nonsingInv`
 - `higham9_8_theta_le_card_complex`
 - `higham9_7_firstPivotRowSwap`
 - `higham9_7_partialPivot_firstSchurComplement_entry_abs_le_two`
@@ -1665,6 +1669,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_8_CompletePivotGECPUTrace_exists_CompletePermutedLUFactSpec_maxEntryNorm_le`
 - `higham9_8_CompletePivotGECPUTrace_exists_CompletePermutedLUFactSpec_L_bound_maxEntryNorm_le`
 - `higham9_8_CompletePivotGECPUTrace_growth_factor_ge_theta_real`
+- `higham9_8_CompletePivotGECPUTrace_growth_factor_ge_theta_nonsingInv`
 - `higham9_11_exists_completePivotingUTrace_sine_block_growth_ge_succ`
 - `higham9_11_completePivotingUTraceGrowthValues_exists_ge_succ`
 - `higham9_11_completePivotingUTraceGrowthSup_ge_succ`
