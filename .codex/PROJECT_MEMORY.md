@@ -20,6 +20,60 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-06-29 matrix-`∞` source-norm upper endpoint checkpoint:
+  `blockInfNorm` is the blockwise maximum of matrix-`∞` operator norms, with
+  helpers `block_le_blockInfNorm`, `blockInfNorm_nonneg`,
+  `blockInfNorm_le_of_block_le`, `infNorm_zeroBlock`, and
+  `infNorm_le_zero_of_eq_zeroBlock`.  The new Algorithm 13.3 wrappers
+  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockInfNorm_bound_of_active_stage_bound`,
+  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockInfNorm_bound_of_continuousLinearMap_source_table`,
+  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockInfNorm_bound_of_continuousLinearMap_source_table_of_pivot_right_inverse`,
+  and
+  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockInfNorm_bound_of_initial_diag_right_inverse_of_pivot_right_inverse`
+  prove `blockInfNorm (upperFromMatrixStages ...) <= 2 * blockInfNorm A`.
+  This closes the source-norm upper-factor packaging gap without introducing
+  the old max-entry comparison loss; the entrywise max-norm Eq.13.21 endpoint
+  and `growthFactorEntry <= 2` remain open.  Verification before commit:
+  direct `BlockLU.lean`, focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet `examples/LibraryLookup.lean`
+  with empty stderr, `git diff --check`, marker scan, and focused
+  `#print axioms` all passed; axiom output was only `propext`,
+  `Classical.choice`, and `Quot.sound`.
+- 2026-06-29 matrix-`∞` source-norm to max-entry upper bridge:
+  `blockMaxNorm_le_blockInfNorm` and the
+  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockMaxNorm_bound_by_blockInfNorm_*`
+  wrappers prove
+  `blockMaxNorm (upperFromMatrixStages ...) <= 2 * blockInfNorm A` from the
+  same active/source-table/pivot-right-inverse/initial-diagonal data.  This
+  gives the existing entrywise upper-factor API without the old input-side
+  `r * blockMaxNorm A` comparison loss when the source norm is the blockwise
+  matrix-`∞` maximum; the entrywise-input Eq.13.21 and finite-history
+  `growthFactorEntry <= 2` rows remain open.  Verification before commit:
+  direct `BlockLU.lean`, focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet `examples/LibraryLookup.lean`
+  with empty stderr, `git diff --check`, marker scan, and focused
+  `#print axioms` all passed with only standard Mathlib axioms.
+- 2026-06-29 matrix-`∞` source-norm finite-history bridge:
+  `higham13_algorithm13_3_matrixStageHistoryInfBound` records the finite
+  matrix-product stage history using the blockwise matrix-`∞` maximum.  The
+  containment lemmas
+  `higham13_algorithm13_3_matrixStageHistoryInfBound_contains_stage`,
+  `higham13_algorithm13_3_matrixStageHistoryInfBound_contains_initial`, and
+  `higham13_algorithm13_3_matrixStageHistoryInfBound_contains_upperFromMatrixStages`
+  parallel the existing max-entry history object.  The active-stage induction
+  layer
+  `higham13_algorithm13_3_matrixStageBlock_infNorm_bound_of_active_bound`,
+  `higham13_algorithm13_3_matrixStage_blockInfNorm_bound_of_active_bound`,
+  `higham13_algorithm13_3_matrixStageHistoryInfBound_le_of_stage_bound`,
+  `higham13_algorithm13_3_matrixStageHistoryInfBound_le_of_active_bound`, and
+  `higham13_algorithm13_3_matrixStageHistoryInfBound_le_two_of_active_stage_bound`
+  proves inactive carry-forward stages are also controlled.  Source-table,
+  pivot-right-inverse, and initial-diagonal/right-inverse wrappers prove
+  `matrixStageHistoryInfBound <= 2 * blockInfNorm A`; the companion
+  `higham13_algorithm13_3_matrix_infNorm_matrixStageHistoryGrowthMatrix_bound_by_blockInfNorm_*`
+  wrappers prove the existing max-entry growth matrix is bounded by
+  `2 * blockInfNorm A`.  This is source-norm finite-history progress, not yet
+  the chapter's entrywise-denominator `growthFactorEntry <= 2`.
 - 2026-06-29 matrix-`∞` source-table max-entry composition checkpoint:
   `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockMaxNorm_bound_with_card_of_continuousLinearMap_source_table`,
   `higham13_algorithm13_3_matrix_infNorm_matrixStageHistoryGrowthFactor_le_card_of_continuousLinearMap_source_table`,
@@ -29,9 +83,10 @@ end-to-end stability rebuild is tagged as
   upper-factor and finite-history growth APIs.  The endpoint remains
   dimension-aware (`2*r*blockMaxNorm(A)` and `growthFactorEntry <= 2*r`), so
   the source-strength Eq.13.21/`rho <= 2` branch remains open.  The
-  `_of_det_ne_zero` paired variants derive the positive growth-factor
-  denominator from `det(blockMatrixFlatFin A) != 0` while keeping the same
-  dimension-aware endpoint.
+  `_of_det_ne_zero` paired variants, including the initial-diagonal/right-inverse
+  specialization, derive the positive growth-factor denominator from
+  `det(blockMatrixFlatFin A) != 0` while keeping the same dimension-aware
+  endpoint.
 - 2026-06-29 matrix-`∞` max-entry transfer checkpoint:
   `higham13_algorithm13_3_matrix_infNorm_block_le_card_mul_blockMaxNorm`,
   `higham13_algorithm13_3_matrix_infNorm_active_stage_maxEntry_bound`, and the
