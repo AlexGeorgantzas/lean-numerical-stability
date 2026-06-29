@@ -513,6 +513,201 @@ theorem higham21_lemma21_2_symmetrized_system_mulVec_self_of_deltaA1 {m n : ℕ}
   exact hDeltaA1
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    the scalar `beta = 1 + x^T H^T y / x^T x`, where
+    `H = DeltaA1 - DeltaA2`, used to rescale the dual vector in the proof. -/
+noncomputable def undetLemma21_2Beta {m n : ℕ}
+    (x : Fin n → ℝ) (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (y : Fin m → ℝ) : ℝ :=
+  1 + (∑ j : Fin n,
+    x j * rectMatMulVec (finiteTranspose (fun i j => DeltaA1 i j - DeltaA2 i j)) y j) /
+      vecNorm2Sq x
+
+private theorem higham21_lemma21_2_symmetrized_perturbation_eq_deltaA2_add_H_projector
+    {m n : ℕ}
+    (x : Fin n → ℝ) (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (i : Fin m) (j : Fin n) :
+    undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j =
+      DeltaA2 i j +
+        matMulRectRight (fun i j => DeltaA1 i j - DeltaA2 i j)
+          (lsLemma20_6Projector x) i j := by
+  have hmix :=
+    higham21_lemma21_2_symmetrized_perturbation_eq_right_projector_mixture
+      x DeltaA1 DeltaA2 i j
+  have hid :
+      (∑ k : Fin n, DeltaA2 i k * idMatrix n k j) = DeltaA2 i j := by
+    have h := congrFun (congrFun (rectMatMul_id_right DeltaA2) i) j
+    simpa [rectMatMul] using h
+  rw [hmix]
+  unfold matMulRectRight lsLemma20_6ProjectorComplement
+  calc
+    (∑ k : Fin n, DeltaA1 i k * lsLemma20_6Projector x k j) +
+        ∑ k : Fin n, DeltaA2 i k * (idMatrix n k j - lsLemma20_6Projector x k j)
+        = ∑ k : Fin n,
+            (DeltaA2 i k * idMatrix n k j +
+              (DeltaA1 i k - DeltaA2 i k) * lsLemma20_6Projector x k j) := by
+          rw [← Finset.sum_add_distrib]
+          apply Finset.sum_congr rfl
+          intro k _
+          ring
+    _ = (∑ k : Fin n, DeltaA2 i k * idMatrix n k j) +
+            ∑ k : Fin n,
+              (DeltaA1 i k - DeltaA2 i k) * lsLemma20_6Projector x k j := by
+          rw [Finset.sum_add_distrib]
+    _ = DeltaA2 i j +
+          ∑ k : Fin n,
+            (DeltaA1 i k - DeltaA2 i k) * lsLemma20_6Projector x k j := by
+          rw [hid]
+
+private theorem higham21_matMulRectRight_projector_transpose_mulVec {m n : ℕ}
+    (x : Fin n → ℝ) (H : Fin m → Fin n → ℝ) (y : Fin m → ℝ)
+    (j : Fin n) :
+    rectMatMulVec (finiteTranspose (matMulRectRight H (lsLemma20_6Projector x))) y j =
+      ((∑ k : Fin n, x k * rectMatMulVec (finiteTranspose H) y k) /
+          vecNorm2Sq x) * x j := by
+  unfold rectMatMulVec finiteTranspose matMulRectRight lsLemma20_6Projector
+  calc
+    (∑ i : Fin m, (∑ k : Fin n, H i k * (x k * x j / vecNorm2Sq x)) * y i)
+        = ∑ i : Fin m, ∑ k : Fin n,
+            (H i k * y i) * (x k * x j / vecNorm2Sq x) := by
+          apply Finset.sum_congr rfl
+          intro i _
+          rw [Finset.sum_mul]
+          apply Finset.sum_congr rfl
+          intro k _
+          ring
+    _ = ∑ k : Fin n, ∑ i : Fin m,
+            (H i k * y i) * (x k * x j / vecNorm2Sq x) := by
+          rw [Finset.sum_comm]
+    _ = ∑ k : Fin n,
+          (∑ i : Fin m, H i k * y i) * (x k * x j / vecNorm2Sq x) := by
+          apply Finset.sum_congr rfl
+          intro k _
+          rw [Finset.sum_mul]
+    _ = ∑ k : Fin n,
+          (x k * (∑ i : Fin m, H i k * y i) / vecNorm2Sq x) * x j := by
+          apply Finset.sum_congr rfl
+          intro k _
+          ring
+    _ = ((∑ k : Fin n, x k * (∑ i : Fin m, H i k * y i)) /
+          vecNorm2Sq x) * x j := by
+          rw [← Finset.sum_mul]
+          congr 1
+          rw [← Finset.sum_div]
+    _ = ((∑ k : Fin n, x k * rectMatMulVec (finiteTranspose H) y k) /
+          vecNorm2Sq x) * x j := by
+          rfl
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    transposed-system action of the source-oriented projector construction.
+    If `x = (A + DeltaA2)^T y`, then
+    `(A + DeltaA)^T y = beta x`, where
+    `DeltaA = DeltaA1 P + DeltaA2 (I-P)` and
+    `beta = 1 + x^T (DeltaA1 - DeltaA2)^T y / x^T x`.
+
+    This is the algebraic step before the source proof shows `beta ≠ 0` and
+    sets the new dual vector to `beta^{-1} y`; it does not prove positivity of
+    `beta` or the final minimum-norm symmetrization theorem. -/
+theorem higham21_lemma21_2_symmetrized_transpose_mulVec_eq_beta_smul {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (y : Fin m → ℝ)
+    (hDeltaA2 :
+      rectMatMulVec (finiteTranspose (fun i j => A i j + DeltaA2 i j)) y = x) :
+    rectMatMulVec
+        (finiteTranspose
+          (fun i j => A i j +
+            undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j)) y =
+      fun j : Fin n => undetLemma21_2Beta x DeltaA1 DeltaA2 y * x j := by
+  let H : Fin m → Fin n → ℝ := fun i j => DeltaA1 i j - DeltaA2 i j
+  ext j
+  have hDeltaA2_j := congrFun hDeltaA2 j
+  have hcorr :=
+    higham21_matMulRectRight_projector_transpose_mulVec x H y j
+  unfold rectMatMulVec finiteTranspose at hDeltaA2_j ⊢
+  calc
+    (∑ i : Fin m,
+        (A i j + undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j) * y i)
+        = (∑ i : Fin m, (A i j + DeltaA2 i j) * y i) +
+            ∑ i : Fin m, matMulRectRight H (lsLemma20_6Projector x) i j * y i := by
+          rw [← Finset.sum_add_distrib]
+          apply Finset.sum_congr rfl
+          intro i _
+          rw [higham21_lemma21_2_symmetrized_perturbation_eq_deltaA2_add_H_projector]
+          ring
+    _ = x j +
+          ((∑ k : Fin n, x k * rectMatMulVec (finiteTranspose H) y k) /
+            vecNorm2Sq x) * x j := by
+          rw [hDeltaA2_j]
+          rw [← hcorr]
+          rfl
+    _ = undetLemma21_2Beta x DeltaA1 DeltaA2 y * x j := by
+          unfold undetLemma21_2Beta H
+          ring
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    conditional rescaling step after the source proof's beta algebra.
+    If the source-oriented perturbation preserves the first perturbed system,
+    `(A + DeltaA2)^T y = x`, and the beta scalar is nonzero, then the same
+    constructed perturbation makes `x` a minimum 2-norm solution of the single
+    perturbed rectangular system.
+
+    This is intentionally conditional on `beta ≠ 0`; the source proof's
+    perturbation-smallness argument that ensures this condition remains a
+    separate open dependency. -/
+theorem higham21_lemma21_2_symmetrized_min_norm_of_beta_ne_zero {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (hsq : vecNorm2Sq x ≠ 0)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hDeltaA2 :
+      rectMatMulVec (finiteTranspose (fun i j => A i j + DeltaA2 i j)) y = x)
+    (hbeta : undetLemma21_2Beta x DeltaA1 DeltaA2 y ≠ 0) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j)
+      b x := by
+  let M : Fin m → Fin n → ℝ :=
+    fun i j => A i j + undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j
+  let beta : ℝ := undetLemma21_2Beta x DeltaA1 DeltaA2 y
+  let ytilde : Fin m → ℝ := fun i => beta⁻¹ * y i
+  have hfirst : rectMatMulVec M x = b := by
+    simpa [M] using
+      higham21_lemma21_2_symmetrized_system_mulVec_self_of_deltaA1
+        A x hsq DeltaA1 DeltaA2 b hDeltaA1
+  have haction :
+      rectMatMulVec (finiteTranspose M) y = fun j : Fin n => beta * x j := by
+    simpa [M, beta] using
+      higham21_lemma21_2_symmetrized_transpose_mulVec_eq_beta_smul
+        A x DeltaA1 DeltaA2 y hDeltaA2
+  have hytilde_eq : rectTransposeMulVec M ytilde = x := by
+    ext j
+    have hsmul_j :=
+      congrFun (rectMatMulVec_smul (finiteTranspose M) beta⁻¹ y) j
+    have haction_j := congrFun haction j
+    calc
+      rectTransposeMulVec M ytilde j =
+          rectMatMulVec (finiteTranspose M) ytilde j := by
+            rfl
+      _ = beta⁻¹ * rectMatMulVec (finiteTranspose M) y j := by
+            change rectMatMulVec (finiteTranspose M) (fun i : Fin m => beta⁻¹ * y i) j =
+              beta⁻¹ * rectMatMulVec (finiteTranspose M) y j
+            exact hsmul_j
+      _ = beta⁻¹ * (beta * x j) := by rw [haction_j]
+      _ = x j := by
+            rw [← mul_assoc, inv_mul_cancel₀ hbeta, one_mul]
+  have hsolve : rectMatMulVec M (rectTransposeMulVec M ytilde) = b := by
+    rw [hytilde_eq]
+    exact hfirst
+  have hmin :=
+    higham21_eq21_4_rect_transpose_min_norm_of_solves M b ytilde hsolve
+  rwa [hytilde_eq] at hmin
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     the Frobenius-squared norm bound for the projector mixture used to replace
     two perturbation blocks by one. -/
 theorem higham21_lemma21_2_symmetrized_perturbation_frobNormSq_le {m n : ℕ}

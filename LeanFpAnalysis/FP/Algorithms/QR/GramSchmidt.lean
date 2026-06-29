@@ -380,6 +380,123 @@ theorem modifiedGramSchmidtVectors_succ_later {m n : Nat}
   exact modifiedGramSchmidtStep_eq_projectAway_of_lt
     (modifiedGramSchmidtVectors A k.val) hkj
 
+/-- Exact MGS residuals are always source-column combinations whose coefficient
+of the active source column is `1` and whose coefficients on later source
+columns are zero.
+
+This linear-combination invariant is independent of nonzero-pivot assumptions:
+the algorithmic definitions remain algebraic even when a normalizer is zero. -/
+theorem modifiedGramSchmidtVectors_exists_source_coeffs {m n : Nat}
+    (A : Fin m -> Fin n -> Real) (t : Nat) (j : Fin n) :
+    ∃ c : Fin n -> Real,
+      rectMatMulVec A c = modifiedGramSchmidtVectors A t j ∧
+        c j = 1 ∧
+        ∀ r : Fin n, j.val < r.val -> c r = 0 := by
+  revert j
+  induction t with
+  | zero =>
+      intro j
+      refine ⟨finiteBasisVec j, ?_, ?_, ?_⟩
+      · exact rectMatMulVec_finiteBasisVec_gsColumn A j
+      · simp [finiteBasisVec]
+      · intro r hjr
+        have hrne : r ≠ j := by
+          intro hrj
+          rw [hrj] at hjr
+          exact (Nat.lt_irrefl j.val) hjr
+        simp [finiteBasisVec, hrne]
+  | succ t ih =>
+      intro j
+      by_cases ht : t < n
+      · let k : Fin n := ⟨t, ht⟩
+        by_cases hkj : k < j
+        · rcases ih j with ⟨cj, hAcj, hcjj, hcj_supp⟩
+          rcases ih k with ⟨ck, hAck, _hckk, hck_supp⟩
+          let norm : Real :=
+            gsColumnNorm2 (modifiedGramSchmidtVectors A t k)
+          let alpha : Real :=
+            gsDot (gsNormalize (modifiedGramSchmidtVectors A t k) norm)
+              (modifiedGramSchmidtVectors A t j)
+          let c : Fin n -> Real := fun r => cj r - (alpha / norm) * ck r
+          refine ⟨c, ?_, ?_, ?_⟩
+          · have hstep :
+                modifiedGramSchmidtVectors A (t + 1) j =
+                  gsProjectAway (modifiedGramSchmidtVectors A t j)
+                    (gsNormalize (modifiedGramSchmidtVectors A t k)
+                      (gsColumnNorm2 (modifiedGramSchmidtVectors A t k))) := by
+              simpa [k] using
+                (modifiedGramSchmidtVectors_succ_later (A := A)
+                  (k := k) (j := j) hkj)
+            ext i
+            change rectMatMulVec A
+                (fun r : Fin n => cj r - (alpha / norm) * ck r) i =
+              modifiedGramSchmidtVectors A (t + 1) j i
+            rw [hstep]
+            rw [congrFun
+              (rectMatMulVec_sub A cj
+                (fun r : Fin n => (alpha / norm) * ck r)) i]
+            rw [congrFun (rectMatMulVec_smul A (alpha / norm) ck) i]
+            rw [congrFun hAcj i, congrFun hAck i]
+            simp [gsProjectAway, gsNormalize, alpha, norm]
+            ring
+          · have hckj : ck j = 0 :=
+              hck_supp j hkj
+            simp [c, hcjj, hckj]
+          · intro r hjr
+            have hcjr : cj r = 0 := hcj_supp r hjr
+            have hkr : k.val < r.val :=
+              Nat.lt_trans hkj hjr
+            have hckr : ck r = 0 := hck_supp r hkr
+            simp [c, hcjr, hckr]
+        · rcases ih j with ⟨cj, hAcj, hcjj, hcj_supp⟩
+          refine ⟨cj, ?_, hcjj, hcj_supp⟩
+          have hsame :
+              modifiedGramSchmidtVectors A (t + 1) j =
+                modifiedGramSchmidtVectors A t j := by
+            rw [modifiedGramSchmidtVectors_succ_eq_step A ht]
+            exact modifiedGramSchmidtStep_eq_self_of_not_lt
+              (modifiedGramSchmidtVectors A t) hkj
+          rw [hsame]
+          exact hAcj
+      · rcases ih j with ⟨cj, hAcj, hcjj, hcj_supp⟩
+        refine ⟨cj, ?_, hcjj, hcj_supp⟩
+        have hsame :
+            modifiedGramSchmidtVectors A (t + 1) j =
+              modifiedGramSchmidtVectors A t j := by
+          simp [modifiedGramSchmidtVectors, ht]
+        rw [hsame]
+        exact hAcj
+
+/-- Rank-to-MGS nonbreakdown for all exact stages: if the rectangular column
+map for `A` is injective, then every MGS active residual has nonzero Euclidean
+normalizer. -/
+theorem modifiedGramSchmidtVectors_norm_ne_zero_of_rectMatMulVec_injective
+    {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hinj : Function.Injective (rectMatMulVec A)) (j : Fin n) :
+    gsColumnNorm2 (modifiedGramSchmidtVectors A j.val j) ≠ 0 := by
+  rcases modifiedGramSchmidtVectors_exists_source_coeffs A j.val j with
+    ⟨c, hAc, hcj, _hc_supp⟩
+  intro hnorm
+  have hvecnorm : vecNorm2 (modifiedGramSchmidtVectors A j.val j) = 0 := by
+    simpa [gsColumnNorm2] using hnorm
+  have hstage_zero :
+      modifiedGramSchmidtVectors A j.val j = 0 := by
+    ext i
+    exact
+      (vecNorm2_eq_zero_iff
+        (modifiedGramSchmidtVectors A j.val j)).mp hvecnorm i
+  have hAc_zero : rectMatMulVec A c = 0 := by
+    rw [hAc, hstage_zero]
+  have hA0_zero : rectMatMulVec A (0 : Fin n -> Real) = 0 := by
+    ext i
+    simp [rectMatMulVec]
+  have hc_eq_zero : c = (0 : Fin n -> Real) := by
+    apply hinj
+    rw [hAc_zero, hA0_zero]
+  have hcj_zero : c j = 0 := by
+    simpa using congrFun hc_eq_zero j
+  linarith
+
 /-- One exact MGS step makes each later residual column orthogonal to the
 current normalized `q_k` column.  This is the local orthogonality atom needed
 for the full MGS orthonormal-columns route. -/
