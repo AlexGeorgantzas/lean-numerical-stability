@@ -505,6 +505,29 @@ theorem higham21_lemma21_2_gram_pseudoinverse_domain_projection_apply_range
     A (undetAplusOfGramNonsingInv A)
     (higham21_eq21_4_rect_moore_penrose_of_gram_det_ne_zero A hdet) y
 
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    under full-row-rank Gram nonsingularity, every source vector of the form
+    `Aᵀ y` is represented in the concrete Gram-pseudoinverse range.  The
+    witness is `(A Aᵀ)y`, since `A⁺((AAᵀ)y) = Aᵀy`. -/
+theorem higham21_lemma21_2_gram_pseudoinverse_range_of_transpose
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (hdet : Matrix.det (rectGram A : Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (y : Fin m → ℝ) :
+    rectTransposeMulVec A y =
+      rectMatMulVec (undetAplusOfGramNonsingInv A)
+        (matMulVec m (rectGram A) y) := by
+  have hInv : IsInverse m (rectGram A) (undetGramNonsingInv A) :=
+    isInverse_nonsingInv_of_det_ne_zero m (rectGram A) hdet
+  have hleft :
+      matMulVec m (undetGramNonsingInv A)
+          (matMulVec m (rectGram A) y) = y := by
+    simpa [undetGramNonsingInv] using
+      matMulVec_of_isRightInverse
+        (nonsingInv m (rectGram A)) (rectGram A) hInv.1 y
+  rw [undetAplusOfGramNonsingInv, rectMatMulVec_undetAplusOfGramInv]
+  rw [hleft]
+
 /-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.5):
     source-facing wrapper for the SNE formation step.  Once the seminormal
     equation matrix is identified with `A Aᵀ`, solving that Gram system and
