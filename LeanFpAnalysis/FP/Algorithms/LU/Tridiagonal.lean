@@ -63,6 +63,37 @@ lemma isTridiagonal_iff_isBanded (n : ℕ) (A : Fin n → Fin n → ℝ) :
   · intro h i j hij
     exact h i j (by omega)
 
+/-- Tridiagonal matrices are banded with lower and upper bandwidth one. -/
+lemma isBanded_one_one_of_isTridiagonal {n : ℕ} {A : Fin n → Fin n → ℝ}
+    (hA : IsTridiagonal n A) :
+    IsBanded n 1 1 A :=
+  (isTridiagonal_iff_isBanded n A).1 hA
+
+/-- Banded matrices with lower and upper bandwidth one are tridiagonal. -/
+lemma isTridiagonal_of_isBanded_one_one {n : ℕ} {A : Fin n → Fin n → ℝ}
+    (hA : IsBanded n 1 1 A) :
+    IsTridiagonal n A :=
+  (isTridiagonal_iff_isBanded n A).2 hA
+
+/-- Widening the lower and upper bandwidth preserves bandedness. -/
+lemma isBanded_mono {n p q p' q' : ℕ} {A : Fin n → Fin n → ℝ}
+    (hp : p ≤ p') (hq : q ≤ q') (hA : IsBanded n p q A) :
+    IsBanded n p' q' A := by
+  intro i j hij
+  exact hA i j (by
+    rcases hij with hij | hij
+    · left
+      omega
+    · right
+      omega)
+
+/-- A matrix with lower bandwidth `p` and upper bandwidth `q` is banded with a
+common bandwidth `r` whenever both original bandwidths are at most `r`. -/
+lemma isBanded_common_of_le {n p q r : ℕ} {A : Fin n → Fin n → ℝ}
+    (hp : p ≤ r) (hq : q ≤ r) (hA : IsBanded n p q A) :
+    IsBanded n r r A :=
+  isBanded_mono hp hq hA
+
 -- ============================================================
 -- §9.5  Banded LU backward error
 -- ============================================================
