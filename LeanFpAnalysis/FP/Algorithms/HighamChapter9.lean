@@ -13444,6 +13444,25 @@ theorem higham9_9_growthFactorEntry_le_two_of_upper_entry_bound {n : ℕ}
     growthFactorEntry hn A U hA ≤ 2 :=
   growthFactorEntry_le_of_entry_bound_factor hn A U 2 hA hU
 
+/-- **Theorem 9.9**, det-input max-entry growth endpoint from the remaining
+final-upper entry bound.
+
+This packages the scalar `rho <= 2` adapter with the positive denominator
+derived from nonsingularity of the source matrix.  The algorithmic entry bound
+for the final upper factor remains the explicit remaining hypothesis. -/
+theorem higham9_9_growthFactorEntry_le_two_of_upper_entry_bound_exists_hAmax
+    {n : ℕ} (hn : 0 < n) (A U : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hU : ∀ i j : Fin n, |U i j| ≤ 2 * maxEntryNorm hn A) :
+    ∃ hAmax : 0 < maxEntryNorm hn A,
+      growthFactorEntry hn A U hAmax ≤ 2 := by
+  have hAmax : 0 < maxEntryNorm hn A :=
+    maxEntryNorm_pos_of_det_ne_zero hn A hdet
+  exact
+    ⟨hAmax,
+      higham9_9_growthFactorEntry_le_two_of_upper_entry_bound
+        hn A U hAmax hU⟩
+
 /-- **Theorem 9.9**, sharper first-step off-diagonal growth for the
 column-dominant no-pivot route.  In the first Schur complement, off-diagonal
 trailing entries are bounded by the original max-entry norm; only the diagonal
@@ -14186,6 +14205,35 @@ theorem higham9_11_bohte_banded_solve_tight (fp : FPModel) (n p : ℕ)
   higham9_11_banded_growth_factor_solve_tight fp n A L_hat U_hat b
     (higham9_11_bohteBound p) (higham9_11_bohteBound_nonneg p)
     hL_diag hU_diag hLU hn hn3 hGrowth
+
+/-- **Theorem 9.11**, tridiagonal `p = 1` Bohte solve bound.
+
+This is the printed tridiagonal specialization of
+`higham9_11_bohte_banded_solve_tight`: the Bohte scalar expression is reduced
+to the concrete constant `2`, while the external GEPP growth hypothesis remains
+explicit. -/
+theorem higham9_11_tridiagonal_bohte_solve_tight (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hL_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hGrowth : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤
+        2 * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤
+        2 * gamma fp (3 * n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  simpa [higham9_11_bohteBound_tridiagonal] using
+    higham9_11_bohte_banded_solve_tight fp n 1 A L_hat U_hat b
+      hL_diag hU_diag hLU hn hn3
+      (fun i j => by
+        simpa [higham9_11_bohteBound_tridiagonal] using hGrowth i j)
 
 /-! ## §9.6 Special Tridiagonal Classes -/
 

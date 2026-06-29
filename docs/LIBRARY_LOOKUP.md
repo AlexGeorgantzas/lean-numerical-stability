@@ -1408,6 +1408,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_9_nonneg_lu_solve_backward_error`
 - `growthFactorEntry_le_of_entry_bound_factor`
 - `higham9_9_growthFactorEntry_le_two_of_upper_entry_bound`
+- `higham9_9_growthFactorEntry_le_two_of_upper_entry_bound_exists_hAmax`
 - `higham9_7_firstPivotRowSwap_involutive`
 - `higham9_7_firstPivotRowSwap_isPermutation`
 - `higham9_7_firstPivotRowSwap_det_ne_zero`
@@ -1950,6 +1951,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_11_bohteBound_ge_two`
 - `higham9_11_banded_growth_factor_solve_tight`
 - `higham9_11_bohte_banded_solve_tight`
+- `higham9_11_tridiagonal_bohte_solve_tight`
 - `higham9_12_spd_lu_backward_error`
 - `tridiag_spd_shape_absLU_eq_absA`
 - `higham9_12_spd_tridiag_absLU_eq_of_positive_DLT`
