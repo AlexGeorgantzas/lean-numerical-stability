@@ -10531,6 +10531,10 @@ small enough to serve as a smoke check for representative public declarations.
 #check LUBackwardError
 #check lu_backward_error_gamma
 #check lu_solve_backward_error_tight
+#check IsBanded
+#check isBanded_one_one_of_isTridiagonal
+#check isBanded_mono
+#check isBanded_common_of_le
 #check CholeskyBackwardError
 #check cholesky_backward_error_perturbation
 #check cholesky_solve_backward_error_expanded
