@@ -3014,6 +3014,119 @@ theorem storedSequence_completedColumn_eq_after_pivot
   storedSequence_prevColumn_eq_add fp A_hat v beta hStep
     (Nat.lt_succ_self j.val) hd
 
+/-- A completed prefix column is unchanged from its completion stage to the
+final stored stage. -/
+theorem storedSequence_prevColumn_eq_final
+    (fp : FPModel) {m n N k : Nat}
+    (A_hat : Nat -> Fin m -> Fin n -> Real)
+    (v : Nat -> Fin m -> Real) (beta : Nat -> Real)
+    (hStep : forall t, t < N ->
+      A_hat (t + 1) =
+        fl_householderStoredPanelStep fp m n t
+          (v t) (beta t) (A_hat t))
+    {i : Fin m} {j : Fin n}
+    (hj : j.val < k) (hkN : k <= N) :
+    A_hat N i j = A_hat k i j := by
+  have hsd : k + (N - k) <= N := by
+    omega
+  have hkeep :=
+    storedSequence_prevColumn_eq_add fp A_hat v beta hStep
+      (s := k) (d := N - k) (i := i) (j := j) hj hsd
+  have hsum : k + (N - k) = N := Nat.add_sub_of_le hkN
+  simpa [hsum] using hkeep
+
+/-- The final stored stage and the stage just after pivot `k` have the same
+leading `(k+1) x (k+1)` block. -/
+theorem storedSequence_qrLeadingBlock_eq_final
+    (fp : FPModel) {m n N k : Nat}
+    (A_hat : Nat -> Fin m -> Fin n -> Real)
+    (v : Nat -> Fin m -> Real) (beta : Nat -> Real)
+    (hStep : forall t, t < N ->
+      A_hat (t + 1) =
+        fl_householderStoredPanelStep fp m n t
+          (v t) (beta t) (A_hat t))
+    (hkm : k + 1 <= m) (hk : k < n) (hkN : k + 1 <= N) :
+    qrLeadingBlock (A_hat N) hkm hk =
+      qrLeadingBlock (A_hat (k + 1)) hkm hk := by
+  funext r q
+  exact
+    storedSequence_prevColumn_eq_final fp A_hat v beta hStep
+      (k := k + 1)
+      (i := qrLeadingRow m k hkm r)
+      (j := qrLeadingColumn n k hk q)
+      (by simpa [qrLeadingColumn] using q.isLt)
+      hkN
+
+/-- Determinant-nonzero status for a leading block can be read either at the
+final stored stage or just after the block's last pivot. -/
+theorem storedSequence_qrLeadingBlock_det_ne_zero_final_iff_after_pivot
+    (fp : FPModel) {m n N k : Nat}
+    (A_hat : Nat -> Fin m -> Fin n -> Real)
+    (v : Nat -> Fin m -> Real) (beta : Nat -> Real)
+    (hStep : forall t, t < N ->
+      A_hat (t + 1) =
+        fl_householderStoredPanelStep fp m n t
+          (v t) (beta t) (A_hat t))
+    (hkm : k + 1 <= m) (hk : k < n) (hkN : k + 1 <= N) :
+    Ne
+        (Matrix.det
+          (qrLeadingBlock (A_hat N) hkm hk :
+            Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+        0 <->
+      Ne
+        (Matrix.det
+          (qrLeadingBlock (A_hat (k + 1)) hkm hk :
+            Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+        0 := by
+  rw [storedSequence_qrLeadingBlock_eq_final fp A_hat v beta hStep
+    hkm hk hkN]
+
+/-- The final stored stage and stage `k` have the same previous-leading-block
+transpose, because all of its columns have already been completed by then. -/
+theorem storedSequence_qrPreviousLeadingBlockTranspose_eq_final
+    (fp : FPModel) {m n N k : Nat}
+    (A_hat : Nat -> Fin m -> Fin n -> Real)
+    (v : Nat -> Fin m -> Real) (beta : Nat -> Real)
+    (hStep : forall t, t < N ->
+      A_hat (t + 1) =
+        fl_householderStoredPanelStep fp m n t
+          (v t) (beta t) (A_hat t))
+    (hkm : k <= m) (hk : k < n) (hkN : k <= N) :
+    qrPreviousLeadingBlockTranspose (A_hat N) hkm hk =
+      qrPreviousLeadingBlockTranspose (A_hat k) hkm hk := by
+  funext j s
+  exact
+    storedSequence_prevColumn_eq_final fp A_hat v beta hStep
+      (k := k)
+      (i := qrPrefixRow m k hkm s)
+      (j := qrPreviousColumn n k hk j)
+      (by simp [qrPreviousColumn])
+      hkN
+
+/-- Determinant-nonzero status for the previous-leading-block transpose can be
+read either at the final stored stage or at stage `k`. -/
+theorem storedSequence_qrPreviousLeadingBlockTranspose_det_ne_zero_final_iff_stage
+    (fp : FPModel) {m n N k : Nat}
+    (A_hat : Nat -> Fin m -> Fin n -> Real)
+    (v : Nat -> Fin m -> Real) (beta : Nat -> Real)
+    (hStep : forall t, t < N ->
+      A_hat (t + 1) =
+        fl_householderStoredPanelStep fp m n t
+          (v t) (beta t) (A_hat t))
+    (hkm : k <= m) (hk : k < n) (hkN : k <= N) :
+    Ne
+        (Matrix.det
+          (qrPreviousLeadingBlockTranspose (A_hat N) hkm hk :
+            Matrix (Fin k) (Fin k) Real))
+        0 <->
+      Ne
+        (Matrix.det
+          (qrPreviousLeadingBlockTranspose (A_hat k) hkm hk :
+            Matrix (Fin k) (Fin k) Real))
+        0 := by
+  rw [storedSequence_qrPreviousLeadingBlockTranspose_eq_final fp A_hat v beta
+    hStep hkm hk hkN]
+
 /-- One-column determinant-specialized recursive/stored `R` bridge.
 
 Once the active panel has only one column, the determinant-selected nonzero
