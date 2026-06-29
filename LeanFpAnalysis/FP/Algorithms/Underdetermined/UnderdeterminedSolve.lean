@@ -1,14 +1,15 @@
 -- Algorithms/Underdetermined/UnderdeterminedSolve.lean
 --
 -- Error analysis of solution methods for underdetermined systems
--- (Higham §20.3).
+-- (Higham §21.3).
 --
--- Q method (Theorem 20.3): backward stable — axiomatized since it
--- requires rectangular QR.
+-- Q method (Theorem 21.4): backward stable; currently represented by
+-- an abstract Gram-system predicate while the rectangular QR bridge is open.
+-- The full source theorem requires rectangular QR.
 --
 -- SNE method: solves RᵀRy = b via Cholesky-like approach. The
 -- backward error is proved by composing with existing Cholesky
--- solve results. The forward error (eq 20.11) follows from
+-- solve results. The forward error (eq. 21.11) follows from
 -- normwise_perturbation_bound (Theorem 7.2).
 
 import Mathlib.Data.Real.Basic
@@ -29,10 +30,10 @@ namespace LeanFpAnalysis.FP
 open scoped BigOperators Matrix.Norms.Frobenius
 
 -- ============================================================
--- §20.3  Theorem 20.3: Q method backward stability
+-- §21.3  Theorem 21.4: Q method backward stability
 -- ============================================================
 
-/-- **Theorem 20.3** (Higham): The Q method for underdetermined systems
+/-- **Theorem 21.4** (Higham): The Q method for underdetermined systems
     is row-wise backward stable.
 
     The Q method solves Rᵀy₁ = b and forms x = Q[y₁; 0]ᵀ using
@@ -42,10 +43,11 @@ open scoped BigOperators Matrix.Norms.Frobenius
     ‖ΔA‖_F ≤ mγ_{cn}‖A‖_F  (normwise)
     |ΔA| ≤ mnγ_{cn}|A|G, ‖G‖_F = 1  (componentwise)
 
-    Note: b is NOT perturbed (unlike Theorem 19.3 for LS).
+    Note: b is not perturbed (unlike the least-squares QR result in
+    Theorem 20.3).
 
-    Axiomatized since the proof requires rectangular QR factorization
-    and Lemma 20.2 for symmetrization. -/
+    Recorded as an abstract predicate until the rectangular QR factorization
+    bridge and Lemma 21.2 symmetrization route are fully formalized. -/
 structure QMethodBackwardStable (m : ℕ)
     (AAT : Fin m → Fin m → ℝ)
     (b y_hat : Fin m → ℝ)
@@ -61,10 +63,10 @@ structure QMethodBackwardStable (m : ℕ)
     frobNorm ΔG ≤ c_bound
 
 -- ============================================================
--- §20.3  SNE method backward error
+-- §21.3  SNE method backward error
 -- ============================================================
 
-/-- **SNE method backward error for underdetermined systems** (Higham §20.3).
+/-- **SNE method backward error for underdetermined systems** (Higham §21.3).
 
     The SNE method solves RᵀRy = b where Aᵀ = Q[R; 0], then forms
     x = Aᵀy. The solve RᵀRy = b is equivalent to Cholesky-solving
@@ -93,10 +95,10 @@ theorem sne_backward_error (fp : FPModel) (m : ℕ)
   cholesky_solve_backward_error_expanded fp m AAT R_hat b hR_diag hChol hm1
 
 -- ============================================================
--- §20.3  Forward error bound (eq 20.11)
+-- §21.3  Forward error bound (eq. 21.11)
 -- ============================================================
 
-/-- **Forward error for underdetermined system solve** (Higham §20.3, eq 20.11).
+/-- **Forward error for underdetermined system solve** (Higham §21.3, eq. 21.11).
 
     For both the Q method and SNE method, the forward error satisfies:
     ‖x̂ − x‖₂/‖x‖₂ ≤ mnγ'_{cn} · cond₂(A) + O(u²)
@@ -141,14 +143,14 @@ theorem underdetermined_forward_error (m : ℕ)
     _ = ∑ j, |AAT_inv i j| * ∑ k, |ΔG j k| * |y_hat k| := by
         apply Finset.sum_congr rfl; intro j _; ring_nf
 
-/-- **SNE method is NOT backward stable** (Higham §20.3, remark).
+/-- **SNE method is NOT backward stable** (Higham §21.3, remark).
 
-    Unlike the Q method (Theorem 20.3), the SNE method does not
+    Unlike the Q method (Theorem 21.4), the SNE method does not
     guarantee that x̂ is the minimum 2-norm solution to a nearby
     system. The SNE only guarantees a small residual in the normal
     equations RᵀRŷ ≈ b.
 
-    However, both methods achieve the SAME forward error bound (eq 20.11):
+    However, both methods achieve the same forward error bound (eq. 21.11):
     ‖x̂−x‖₂/‖x‖₂ ≤ mnγ'_{cn} · cond₂(A) + O(u²)
 
     This means the forward error from SNE is as good as from Q method,
@@ -168,5 +170,43 @@ theorem sne_forward_error_matches_q_method
   have hPert' : ∀ i, matMulVec m (fun a c => AAT a c + ΔC a c) y_hat i = b i :=
     fun i => hPerturbed i
   exact underdetermined_forward_error m AAT AAT_inv hInv b y y_hat hExact ΔC hPert'
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.11):
+    source-facing wrapper for the currently formalized Gram-system forward
+    perturbation consequence.  This is not the full printed asymptotic
+    `mn * gamma * cond_2(A) + O(u^2)` bound; it is the exact componentwise
+    perturbation inequality used as a dependency for that row. -/
+theorem higham21_eq21_11_gram_forward_error
+    (m : ℕ)
+    (AAT AAT_inv : Fin m → Fin m → ℝ)
+    (hInv : IsInverse m AAT AAT_inv)
+    (b y y_hat : Fin m → ℝ)
+    (hExact : ∀ i, matMulVec m AAT y i = b i)
+    (ΔG : Fin m → Fin m → ℝ)
+    (hPerturbed :
+      ∀ i, matMulVec m (fun a c => AAT a c + ΔG a c) y_hat i = b i) :
+    ∀ i : Fin m, |y_hat i - y i| ≤
+      ∑ j : Fin m, |AAT_inv i j| *
+        ∑ k : Fin m, |ΔG j k| * |y_hat k| :=
+  underdetermined_forward_error m AAT AAT_inv hInv b y y_hat hExact ΔG hPerturbed
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3:
+    source-facing wrapper for the proved statement that the SNE Gram-system
+    perturbation route has the same componentwise forward-error consequence as
+    the Q-method Gram-system route.  The full source statement still requires
+    instantiating the QR/SNE computed-object bounds. -/
+theorem higham21_sne_gram_forward_error_matches_q_method
+    (m : ℕ)
+    (AAT AAT_inv : Fin m → Fin m → ℝ)
+    (hInv : IsInverse m AAT AAT_inv)
+    (b y y_hat : Fin m → ℝ)
+    (hExact : ∀ i, matMulVec m AAT y i = b i)
+    (ΔC : Fin m → Fin m → ℝ)
+    (hPerturbed : ∀ i, ∑ j : Fin m, (AAT i j + ΔC i j) * y_hat j = b i) :
+    ∀ i : Fin m, |y_hat i - y i| ≤
+      ∑ j : Fin m, |AAT_inv i j| *
+        ∑ k : Fin m, |ΔC j k| * |y_hat k| :=
+  sne_forward_error_matches_q_method m AAT AAT_inv hInv b y y_hat hExact ΔC
+    hPerturbed
 
 end LeanFpAnalysis.FP

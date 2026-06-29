@@ -1,7 +1,7 @@
 -- Algorithms/Underdetermined/UnderdeterminedSpec.lean
 --
 -- Solution methods and perturbation theory for underdetermined systems
--- (Higham §20.1–20.2).
+-- (Higham §21.1-§21.2).
 --
 -- An underdetermined system Ax = b with A ∈ ℝ^{m×n}, m < n, has
 -- infinitely many solutions. The minimum 2-norm solution is
@@ -11,9 +11,9 @@
 -- - Q method: solve Rᵀy₁ = b, form x = Q[y₁; 0]ᵀ
 -- - SNE method: solve RᵀRy = b, form x = Aᵀy
 --
--- Theorem 20.1 (Demmel-Higham): Componentwise perturbation bound
+-- Theorem 21.1 (Demmel-Higham): Componentwise perturbation bound
 -- for the minimum-norm solution.
--- Lemma 20.2 (Kielbasiński-Schwetlick): Asymmetric normal equation
+-- Lemma 21.2 (Kielbasiński-Schwetlick): Asymmetric normal equation
 -- perturbations can be symmetrized without increasing the bound.
 
 import Mathlib.Data.Real.Basic
@@ -24,10 +24,10 @@ namespace LeanFpAnalysis.FP
 open scoped BigOperators Matrix.Norms.Frobenius
 
 -- ============================================================
--- §20.1  Minimum-norm solution specification
+-- §21.1  Minimum-norm solution specification
 -- ============================================================
 
-/-- **Minimum 2-norm solution of an underdetermined system** (Higham §20.1).
+/-- **Minimum 2-norm solution of an underdetermined system** (Higham §21.1).
 
     For Ax = b with A ∈ ℝ^{m×n} (m < n), the minimum-norm solution is
     x_LS = Aᵀ(AAᵀ)⁻¹b. In the QR factorization framework with
@@ -45,10 +45,10 @@ structure MinNormSolution (m : ℕ)
   normal_eq : ∀ i, matMulVec m AAT y i = b i
 
 -- ============================================================
--- §20.2  Theorem 20.1: Demmel-Higham perturbation bound
+-- §21.2  Theorem 21.1: Demmel-Higham perturbation bound
 -- ============================================================
 
-/-- **Theorem 20.1** (Demmel and Higham): Componentwise perturbation
+/-- **Theorem 21.1** (Demmel and Higham): Componentwise perturbation
     of the minimum 2-norm solution to an underdetermined system.
 
     Let A ∈ ℝ^{m×n} (m ≤ n) be of full rank, and let x, y be the
@@ -58,11 +58,12 @@ structure MinNormSolution (m : ℕ)
 
     where |ΔA| ≤ εE, |Δb| ≤ εf.
 
-    Special cases (eq 20.8–20.9):
+    Special cases (eqs. 21.8-21.9):
     - E = |A|H, f = |b|: bound involves cond₂(A) = ‖|A⁺||A|‖₂
     - Normwise: ‖x−y‖₂/‖x‖₂ ≤ min{3,n−m+2}(mn)^{1/2}κ₂(A)ε + O(ε²)
 
-    Axiomatized since it requires pseudo-inverse and rectangular matrices. -/
+    Recorded as an abstract predicate until the rectangular pseudoinverse
+    perturbation expansion is fully formalized. -/
 structure DemmelHighamPerturbation (m : ℕ)
     (x y : Fin m → ℝ) (kappa eps : ℝ)
     (sol_bound : ℝ) : Prop where
@@ -72,15 +73,15 @@ structure DemmelHighamPerturbation (m : ℕ)
   eps_nonneg : 0 ≤ eps
   /-- The perturbation is small enough. -/
   small_pert : kappa * eps < 1
-  /-- Forward error bound (normwise form, eq 20.9):
+  /-- Forward error bound (normwise form, eq. 21.9):
       ‖x−y‖₂ ≤ sol_bound. -/
   bound : ∀ i, |y i - x i| ≤ sol_bound
 
 -- ============================================================
--- §20.2  Lemma 20.2: Kielbasiński-Schwetlick symmetrization
+-- §21.2  Lemma 21.2: Kielbasiński-Schwetlick symmetrization
 -- ============================================================
 
-/-- **Lemma 20.2** (Kielbasiński and Schwetlick): Perturbation symmetrization
+/-- **Lemma 21.2** (Kielbasiński and Schwetlick): Perturbation symmetrization
     for underdetermined normal equations.
 
     If x̄ satisfies (A+ΔA₁)x̄ = b and x̄ = (A+ΔA₂)ᵀȳ, then there
@@ -89,8 +90,9 @@ structure DemmelHighamPerturbation (m : ℕ)
 
     The normwise bound satisfies: ‖ΔA‖_p ≤ (‖ΔA₁‖²_p + ‖ΔA₂‖²_p)^{1/2}.
 
-    This is the underdetermined analogue of Lemma 19.6.
-    Axiomatized since the proof requires rectangular projections. -/
+    This is the underdetermined analogue of Lemma 20.6.
+    Recorded as an abstract predicate until the rectangular projector
+    construction is fully formalized. -/
 structure KielbasinskiSchwetlickUndet (m : ℕ)
     (AAT : Fin m → Fin m → ℝ)
     (b : Fin m → ℝ)
