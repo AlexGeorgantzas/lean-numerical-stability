@@ -29,9 +29,10 @@ end-to-end stability rebuild is tagged as
   upper-factor and finite-history growth APIs.  The endpoint remains
   dimension-aware (`2*r*blockMaxNorm(A)` and `growthFactorEntry <= 2*r`), so
   the source-strength Eq.13.21/`rho <= 2` branch remains open.  The
-  `_of_det_ne_zero` paired variants derive the positive growth-factor
-  denominator from `det(blockMatrixFlatFin A) != 0` while keeping the same
-  dimension-aware endpoint.
+  `_of_det_ne_zero` paired variants, including the initial-diagonal/right-inverse
+  specialization, derive the positive growth-factor denominator from
+  `det(blockMatrixFlatFin A) != 0` while keeping the same dimension-aware
+  endpoint.
 - 2026-06-29 matrix-`∞` max-entry transfer checkpoint:
   `higham13_algorithm13_3_matrix_infNorm_block_le_card_mul_blockMaxNorm`,
   `higham13_algorithm13_3_matrix_infNorm_active_stage_maxEntry_bound`, and the
