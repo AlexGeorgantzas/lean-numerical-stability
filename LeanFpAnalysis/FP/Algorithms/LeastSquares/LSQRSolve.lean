@@ -7714,6 +7714,226 @@ theorem
         (A := A) hinj i)
       hw hnull hATw halpha
 
+/-- Source-dimension embedding for completing `n` left singular columns by
+    `m-n` left-null columns.  The two summands occupy the first `n` and last
+    `m-n` coordinates of `Fin m`. -/
+def lsSourceLeftCompletionEmbedding {m n : ℕ} (hmn : n ≤ m) :
+    Fin n ⊕ Fin (m - n) ↪ Fin m where
+  toFun
+    | Sum.inl a => Fin.castLE hmn a
+    | Sum.inr c => ⟨n + c.val, by omega⟩
+  inj' := by
+    intro x y hxy
+    cases x with
+    | inl a =>
+        cases y with
+        | inl b =>
+            have hval :
+                (Fin.castLE hmn a).val = (Fin.castLE hmn b).val :=
+              congrArg Fin.val hxy
+            exact congrArg Sum.inl (Fin.ext (by simpa using hval))
+        | inr c =>
+            have hlt : a.val < n := a.isLt
+            have hge : n ≤ (n + c.val) := Nat.le_add_right n c.val
+            have hval : a.val = n + c.val := by
+              simpa using congrArg Fin.val hxy
+            omega
+    | inr c =>
+        cases y with
+        | inl b =>
+            have hlt : b.val < n := b.isLt
+            have hge : n ≤ (n + c.val) := Nat.le_add_right n c.val
+            have hval : n + c.val = b.val := by
+              simpa using congrArg Fin.val hxy
+            omega
+        | inr d =>
+            have hval : n + c.val = n + d.val :=
+              congrArg Fin.val hxy
+            have hcd : c.val = d.val := by omega
+            exact congrArg Sum.inr (Fin.ext hcd)
+
+/-- Higham, 2nd ed., Chapter 20, equations (20.18)-(20.19):
+    construction of the `m-n` left-nullspace branch family for the real
+    right-Gram route.  Under `n <= m` and real full-column-rank injectivity,
+    the constructed left singular vectors can be completed to an orthonormal
+    `m`-column table; the added tail columns are orthonormal and annihilated by
+    `A^T`. -/
+theorem exists_rightGram_leftNull_branch_data_of_rectMatMulVec_injective
+    {m n : ℕ} (hmn : n ≤ m) {A : Fin m → Fin n → ℝ}
+    (hinj : Function.Injective (rectMatMulVec A)) :
+    ∃ w : Fin (m - n) → Fin m → ℝ,
+      (∀ k : Fin (m - n), vecNorm2Sq (w k) = 1) ∧
+        (∀ k l : Fin (m - n),
+          k ≠ l → (∑ r : Fin m, w k r * w l r) = 0) ∧
+        (∀ k : Fin (m - n), ∀ j : Fin n,
+          ∑ r : Fin m, A r j * w k r = 0) := by
+  classical
+  let U : Fin m → Fin n → ℝ :=
+    fun r a => rectRightGramLeftSingularFromEigenbasis A r a
+  let Utail₀ : Fin m → Fin (m - n) → ℝ := fun _ _ => 0
+  let s : Set (Fin n ⊕ Fin (m - n)) := fun bc =>
+    match bc with
+    | Sum.inl _ => True
+    | Sum.inr _ => False
+  have hpos : ∀ a : Fin n, 0 < rectRightGramBasisSingularValue A a :=
+    fun a => rectRightGramBasisSingularValue_pos_of_rectMatMulVec_injective
+      (A := A) hinj a
+  have hhead : ∀ a : Fin n, Sum.inl a ∈ s := by
+    intro a
+    exact True.intro
+  have hpartial : ∀ a b : s,
+      (∑ i : Fin m,
+        leftBasisBlock U Utail₀ i a *
+          leftBasisBlock U Utail₀ i b) =
+        if a = b then 1 else 0 := by
+    intro a b
+    rcases a with ⟨bc, hbc⟩
+    rcases b with ⟨bd, hbd⟩
+    cases bc with
+    | inl ca =>
+        cases bd with
+        | inl db =>
+            have horth :=
+              rectRightGramLeftSingularFromEigenbasis_col_orthonormal_of_pos
+                A hpos ca db
+            have hite :
+                idMatrix n ca db =
+                  if (⟨Sum.inl ca, hbc⟩ : s) = ⟨Sum.inl db, hbd⟩ then
+                    1
+                  else
+                    0 := by
+              by_cases hcd : ca = db
+              · subst db
+                simp [idMatrix]
+              · have hsub :
+                    (⟨Sum.inl ca, hbc⟩ : s) ≠ ⟨Sum.inl db, hbd⟩ := by
+                  intro hEq
+                  have hval :
+                      (Sum.inl ca : Fin n ⊕ Fin (m - n)) = Sum.inl db :=
+                    congrArg Subtype.val hEq
+                  exact hcd (Sum.inl.inj hval)
+                simp [idMatrix, hcd, hsub]
+            calc
+              (∑ i : Fin m,
+                leftBasisBlock U Utail₀ i (Sum.inl ca) *
+                  leftBasisBlock U Utail₀ i (Sum.inl db))
+                  = idMatrix n ca db := by
+                    simpa [U, Utail₀, leftBasisBlock] using horth
+              _ = if (⟨Sum.inl ca, hbc⟩ : s) = ⟨Sum.inl db, hbd⟩ then
+                    1
+                  else
+                    0 := hite
+        | inr db =>
+            cases hbd
+    | inr ca =>
+        cases hbc
+  obtain ⟨Utail, _hpreserve, hcols⟩ :=
+    partialLeftBasisBlock_exists_replacement_tail
+      (lsSourceLeftCompletionEmbedding hmn) U Utail₀ s hhead hpartial
+  let w : Fin (m - n) → Fin m → ℝ := fun k r => Utail r k
+  have hfields :=
+    leftBasisBlock_component_orthonormal_fields_of_col_orthonormal
+      U Utail hcols
+  have hw : ∀ k : Fin (m - n), vecNorm2Sq (w k) = 1 := by
+    intro k
+    have h := hfields.2.2 k k
+    simpa [w, vecNorm2Sq, idMatrix, pow_two] using h
+  have hnull : ∀ k l : Fin (m - n),
+      k ≠ l → (∑ r : Fin m, w k r * w l r) = 0 := by
+    intro k l hkl
+    have h := hfields.2.2 k l
+    simpa [w, idMatrix, hkl] using h
+  have hATw : ∀ k : Fin (m - n), ∀ j : Fin n,
+      ∑ r : Fin m, A r j * w k r = 0 := by
+    intro k j
+    have hcross := hfields.2.1
+    calc
+      ∑ r : Fin m, A r j * w k r
+          = ∑ r : Fin m,
+              (∑ a : Fin n,
+                U r a * rectRightGramBasisSingularValue A a *
+                  rectRightGramEigenbasis A j a) * w k r := by
+              apply Finset.sum_congr rfl
+              intro r _
+              rw [rectRightGram_fullPositive_basisSVD_representation A hpos r j]
+      _ = ∑ r : Fin m, ∑ a : Fin n,
+              (U r a * w k r) *
+                (rectRightGramBasisSingularValue A a *
+                  rectRightGramEigenbasis A j a) := by
+              apply Finset.sum_congr rfl
+              intro r _
+              rw [Finset.sum_mul]
+              apply Finset.sum_congr rfl
+              intro a _
+              ring
+      _ = ∑ a : Fin n, ∑ r : Fin m,
+              (U r a * w k r) *
+                (rectRightGramBasisSingularValue A a *
+                  rectRightGramEigenbasis A j a) := by
+              rw [Finset.sum_comm]
+      _ = ∑ a : Fin n,
+              (rectRightGramBasisSingularValue A a *
+                rectRightGramEigenbasis A j a) *
+                (∑ r : Fin m, U r a * w k r) := by
+              apply Finset.sum_congr rfl
+              intro a _
+              rw [Finset.mul_sum]
+              apply Finset.sum_congr rfl
+              intro r _
+              ring
+      _ = 0 := by
+              apply Finset.sum_eq_zero
+              intro a _
+              rw [hcross a k]
+              ring
+  exact ⟨w, hw, hnull, hATw⟩
+
+/-- Higham, 2nd ed., Chapter 20, equations (20.18)-(20.19):
+    existential right-Gram condition-number handoff.  Under the source tall
+    dimension condition and real full-column-rank injectivity, the theorem
+    constructs the left-nullspace branch family and returns the balanced
+    two-sided `kappa2` certificate for the corresponding reciprocal-diagonal
+    inverse candidate. -/
+theorem
+    exists_lsScaledAugmentedMatrix_kappa2_bounds_of_rightGram_basis_of_rectMatMulVec_injective
+    {m n : ℕ} [Nonempty (Fin n)] (hmn : n ≤ m)
+    {alpha : ℝ} {A : Fin m → Fin n → ℝ}
+    (hinj : Function.Injective (rectMatMulVec A))
+    (halpha :
+      alpha = lsScaledAugmentedBranchSigmaMin
+        (rectRightGramBasisSingularValue A) / Real.sqrt 2) :
+    ∃ w : Fin (m - n) → Fin m → ℝ,
+      (∀ k : Fin (m - n), vecNorm2Sq (w k) = 1) ∧
+        (∀ k l : Fin (m - n),
+          k ≠ l → (∑ r : Fin m, w k r * w l r) = 0) ∧
+        (∀ k : Fin (m - n), ∀ j : Fin n,
+          ∑ r : Fin m, A r j * w k r = 0) ∧
+        Real.sqrt 2 *
+            (lsScaledAugmentedBranchSigmaMax (rectRightGramBasisSingularValue A) /
+              lsScaledAugmentedBranchSigmaMin (rectRightGramBasisSingularValue A)) ≤
+          kappa2 (lsScaledAugmentedMatrix alpha A)
+            (lsScaledAugmentedSourceBranchInverseCandidate hmn alpha
+              (rectRightGramBasisSingularValue A)
+              (fun a r => rectRightGramLeftSingularFromEigenbasis A r a)
+              (fun a j => rectRightGramEigenbasis A j a) w) ∧
+        kappa2 (lsScaledAugmentedMatrix alpha A)
+            (lsScaledAugmentedSourceBranchInverseCandidate hmn alpha
+              (rectRightGramBasisSingularValue A)
+              (fun a r => rectRightGramLeftSingularFromEigenbasis A r a)
+              (fun a j => rectRightGramEigenbasis A j a) w) ≤
+          2 *
+            (lsScaledAugmentedBranchSigmaMax (rectRightGramBasisSingularValue A) /
+              lsScaledAugmentedBranchSigmaMin (rectRightGramBasisSingularValue A)) := by
+  obtain ⟨w, hw, hnull, hATw⟩ :=
+    exists_rightGram_leftNull_branch_data_of_rectMatMulVec_injective
+      (m := m) (n := n) hmn (A := A) hinj
+  have hbounds :=
+    lsScaledAugmentedMatrix_kappa2_bounds_of_rightGram_basis_branch_data_of_rectMatMulVec_injective
+      (m := m) (n := n) (hmn := hmn)
+      (alpha := alpha) (A := A) (w := w)
+      hinj hw hnull hATw halpha
+  exact ⟨w, hw, hnull, hATw, hbounds⟩
+
 /-- Higham, 2nd ed., Chapter 20, equation (20.20): the weighted perturbation
     block `[DeltaA, theta Delta b]` used in the Frobenius normwise
     least-squares backward error. -/
@@ -10777,6 +10997,101 @@ private theorem complexMatrixEuclideanLin_ker_eq_bot_of_rank_eq_card
   intro z hz
   by_contra hz_ne
   exact complexMatrixRank_ne_card_of_euclideanLin_ker_nonzero A hz hz_ne hrank
+
+/-- Full source column rank of the real rectangular least-squares matrix makes
+    the real column-map kernel trivial. -/
+theorem lsRealRectColRank_rectMatMulVec_eq_zero_of_colRank_eq_card {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (hrank : lsRealRectColRank A = n)
+    {x : Fin n → ℝ} (hx : rectMatMulVec A x = 0) :
+    x = 0 := by
+  have hker_bot :
+      LinearMap.ker (complexMatrixEuclideanLin (realRectToCMatrix A)) = ⊥ :=
+    complexMatrixEuclideanLin_ker_eq_bot_of_rank_eq_card
+      (realRectToCMatrix A) (by simpa [lsRealRectColRank] using hrank)
+  have hxker :
+      complexMatrixEuclideanLin (realRectToCMatrix A) (realVecToEuclidean x) = 0 := by
+    apply norm_eq_zero.mp
+    rw [realRectToCMatrix_euclideanLin_realVecToEuclidean_norm, hx]
+    exact vecNorm2_zero
+  have hxmem :
+      realVecToEuclidean x ∈
+        LinearMap.ker (complexMatrixEuclideanLin (realRectToCMatrix A)) := by
+    simpa [LinearMap.mem_ker] using hxker
+  have hxE_zero : realVecToEuclidean x = 0 := by
+    have hxbot :
+        realVecToEuclidean x ∈
+          (⊥ : Submodule ℂ (EuclideanSpace ℂ (Fin n))) := by
+      simpa [hker_bot] using hxmem
+    simpa using hxbot
+  have hre := congrArg euclideanReVec hxE_zero
+  simpa using hre
+
+/-- Full source column rank of the real rectangular least-squares matrix makes
+    the real matrix-vector action injective. -/
+theorem lsRealRectColRank_rectMatMulVec_injective_of_colRank_eq_card {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (hrank : lsRealRectColRank A = n) :
+    Function.Injective (rectMatMulVec A) := by
+  intro x y hxy
+  have hdiff : rectMatMulVec A (fun j : Fin n => x j - y j) = 0 := by
+    ext i
+    have hi := congrFun hxy i
+    calc
+      ∑ j : Fin n, A i j * (x j - y j)
+          = ∑ j : Fin n, (A i j * x j - A i j * y j) := by
+            apply Finset.sum_congr rfl
+            intro j _
+            ring
+      _ = (∑ j : Fin n, A i j * x j) -
+              ∑ j : Fin n, A i j * y j := by
+            rw [Finset.sum_sub_distrib]
+      _ = 0 := by
+            simpa [rectMatMulVec] using sub_eq_zero.mpr hi
+  have hzero :=
+    lsRealRectColRank_rectMatMulVec_eq_zero_of_colRank_eq_card
+      A hrank hdiff
+  ext j
+  exact sub_eq_zero.mp (congrFun hzero j)
+
+/-- Higham, 2nd ed., Chapter 20, equations (20.18)-(20.19):
+    source-rank version of the real right-Gram branch handoff.  Full source
+    column rank supplies the real column-map injectivity used by the constructed
+    right-Gram singular branches and left-nullspace tail. -/
+theorem
+    exists_lsScaledAugmentedMatrix_kappa2_bounds_of_rightGram_basis_of_colRank_eq_card
+    {m n : ℕ} [Nonempty (Fin n)] (hmn : n ≤ m)
+    {alpha : ℝ} {A : Fin m → Fin n → ℝ}
+    (hrank : lsRealRectColRank A = n)
+    (halpha :
+      alpha = lsScaledAugmentedBranchSigmaMin
+        (rectRightGramBasisSingularValue A) / Real.sqrt 2) :
+    ∃ w : Fin (m - n) → Fin m → ℝ,
+      (∀ k : Fin (m - n), vecNorm2Sq (w k) = 1) ∧
+        (∀ k l : Fin (m - n),
+          k ≠ l → (∑ r : Fin m, w k r * w l r) = 0) ∧
+        (∀ k : Fin (m - n), ∀ j : Fin n,
+          ∑ r : Fin m, A r j * w k r = 0) ∧
+        Real.sqrt 2 *
+              (lsScaledAugmentedBranchSigmaMax (rectRightGramBasisSingularValue A) /
+                lsScaledAugmentedBranchSigmaMin (rectRightGramBasisSingularValue A)) ≤
+            kappa2 (lsScaledAugmentedMatrix alpha A)
+              (lsScaledAugmentedSourceBranchInverseCandidate hmn alpha
+                (rectRightGramBasisSingularValue A)
+                (fun a r => rectRightGramLeftSingularFromEigenbasis A r a)
+                (fun a j => rectRightGramEigenbasis A j a) w) ∧
+          kappa2 (lsScaledAugmentedMatrix alpha A)
+              (lsScaledAugmentedSourceBranchInverseCandidate hmn alpha
+                (rectRightGramBasisSingularValue A)
+                (fun a r => rectRightGramLeftSingularFromEigenbasis A r a)
+                (fun a j => rectRightGramEigenbasis A j a) w) ≤
+            2 *
+              (lsScaledAugmentedBranchSigmaMax (rectRightGramBasisSingularValue A) /
+                lsScaledAugmentedBranchSigmaMin (rectRightGramBasisSingularValue A)) := by
+  exact
+    exists_lsScaledAugmentedMatrix_kappa2_bounds_of_rightGram_basis_of_rectMatMulVec_injective
+      (m := m) (n := n) hmn
+      (A := A) (alpha := alpha)
+      (lsRealRectColRank_rectMatMulVec_injective_of_colRank_eq_card A hrank)
+      halpha
 
 /-- A nonzero vector annihilating every column of a real rectangular matrix
     rules out full row rank of the row-side complexified transpose. -/
