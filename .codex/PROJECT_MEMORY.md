@@ -20,6 +20,17 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-06-29 source-lower-block canonical active-pivot checkpoint:
+  the Eq.13.22/Eq.13.23 source local lower-block witness route now has
+  `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_source_lblock_budgets_exact_kappa_of_pivotInv_eq_nonsingInv`,
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_source_lblock_budgets_exact_kappa_of_pivotInv_eq_nonsingInv`,
+  their determinant/canonical-full-inverse variants, and
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_source_lblock_budgets_exact_kappa_of_pivotInv_eq_nonsingInv_of_det_ne_zero_of_product_bound_diag_update`.
+  These derive the pivot right-inverse certificate from active pivot determinant
+  nonzero plus `pivotInv = nonsingInv`, removing another proof-artifact premise
+  from the Problem 13.4 source-shaped Eq.13.22/Eq.13.23 route.  The local
+  lower-block estimates, scalar comparison table, active BDD product/update
+  data, and Theorem 13.6 cited implementation estimates remain open.
 - 2026-06-29 matrix-`∞` source-norm upper endpoint checkpoint:
   `blockInfNorm` is the blockwise maximum of matrix-`∞` operator norms, with
   helpers `block_le_blockInfNorm`, `blockInfNorm_nonneg`,
