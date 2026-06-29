@@ -8517,6 +8517,54 @@ lemma higham9_14_completePivotWilkinsonBound_pos {n : ℕ} (hn : 0 < n) :
   exact mul_pos (Real.sqrt_pos_of_pos hnR)
     (Real.sqrt_pos_of_pos (higham9_14_completePivotWilkinsonProduct_pos n))
 
+/-- **Equation (9.14)**, scalar product lower bound.
+
+Every factor in Wilkinson's displayed complete-pivoting product is at least
+one, so the whole scalar product is at least one. -/
+lemma higham9_14_completePivotWilkinsonProduct_ge_one (n : ℕ) :
+    1 ≤ higham9_14_completePivotWilkinsonProduct n := by
+  unfold higham9_14_completePivotWilkinsonProduct
+  have hprod :
+      (Finset.Icc 2 n).prod (fun _ : ℕ => (1 : ℝ)) ≤
+        (Finset.Icc 2 n).prod
+          (fun k => (k : ℝ) ^ ((1 : ℝ) / ((k : ℝ) - 1))) := by
+    apply Finset.prod_le_prod
+    · intro k hk
+      norm_num
+    · intro k hk
+      have hk2 : 2 ≤ k := (Finset.mem_Icc.mp hk).1
+      have hk_ge_one_nat : 1 ≤ k := le_trans (by decide : 1 ≤ 2) hk2
+      have hk_ge_one : (1 : ℝ) ≤ (k : ℝ) := by exact_mod_cast hk_ge_one_nat
+      have hk_gt_one_nat : 1 < k :=
+        Nat.lt_of_lt_of_le (by decide : 1 < 2) hk2
+      have hden_pos : 0 < (k : ℝ) - 1 := by
+        have hk_gt_one : (1 : ℝ) < (k : ℝ) := by exact_mod_cast hk_gt_one_nat
+        linarith
+      have hexp_nonneg : 0 ≤ (1 : ℝ) / ((k : ℝ) - 1) :=
+        div_nonneg zero_le_one (le_of_lt hden_pos)
+      exact Real.one_le_rpow hk_ge_one hexp_nonneg
+  simpa using hprod
+
+/-- **Equation (9.14)**, Wilkinson RHS dominates its leading `sqrt n` factor.
+
+This is only scalar support for the displayed RHS; it does not prove the
+complete-pivoting trace growth theorem. -/
+lemma higham9_14_completePivotWilkinsonBound_ge_sqrt (n : ℕ) :
+    Real.sqrt (n : ℝ) ≤ higham9_14_completePivotWilkinsonBound n := by
+  unfold higham9_14_completePivotWilkinsonBound
+  have hsqrt_prod :
+      1 ≤ Real.sqrt (higham9_14_completePivotWilkinsonProduct n) := by
+    simpa using
+      (Real.sqrt_le_sqrt
+        (higham9_14_completePivotWilkinsonProduct_ge_one n) :
+          Real.sqrt (1 : ℝ) ≤
+            Real.sqrt (higham9_14_completePivotWilkinsonProduct n))
+  calc
+    Real.sqrt (n : ℝ) = Real.sqrt (n : ℝ) * 1 := by rw [mul_one]
+    _ ≤ Real.sqrt (n : ℝ) *
+          Real.sqrt (higham9_14_completePivotWilkinsonProduct n) :=
+        mul_le_mul_of_nonneg_left hsqrt_prod (Real.sqrt_nonneg _)
+
 /-- **Problem 9.11 / equation (9.15)**, the source growth-function set
 underlying `g(n) = sup_A rho_n^c(A)`, parameterized by the still-separate
 complete-pivoting growth map `rhoC`. -/
@@ -8658,6 +8706,28 @@ lemma higham9_16_rookPivotFosterBound_pos {n : ℕ} (hn : 0 < n) :
   have hnR : 0 < (n : ℝ) := by exact_mod_cast hn
   exact mul_pos (by norm_num)
     (Real.rpow_pos_of_pos hnR ((3 / 4 : ℝ) * Real.log (n : ℝ)))
+
+/-- **Equation (9.16)**, Foster RHS lower bound in positive dimensions.
+
+For `n >= 1`, the scalar factor `n^(3/4 log n)` is at least one, so Foster's
+displayed rook-pivoting RHS is at least `3/2`. -/
+lemma higham9_16_rookPivotFosterBound_ge_three_halves {n : ℕ} (hn : 0 < n) :
+    (3 / 2 : ℝ) ≤ higham9_16_rookPivotFosterBound n := by
+  unfold higham9_16_rookPivotFosterBound
+  have hn_ge_one_nat : 1 ≤ n := Nat.succ_le_of_lt hn
+  have hn_ge_one : (1 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hn_ge_one_nat
+  have hlog_nonneg : 0 ≤ Real.log (n : ℝ) := Real.log_nonneg hn_ge_one
+  have hexp_nonneg : 0 ≤ (3 / 4 : ℝ) * Real.log (n : ℝ) :=
+    mul_nonneg (by norm_num) hlog_nonneg
+  have hrpow_ge_one :
+      1 ≤ (n : ℝ) ^ ((3 / 4 : ℝ) * Real.log (n : ℝ)) :=
+    Real.one_le_rpow hn_ge_one hexp_nonneg
+  calc
+    (3 / 2 : ℝ) =
+        (3 / 2 : ℝ) * 1 := by ring
+    _ ≤ (3 / 2 : ℝ) *
+        (n : ℝ) ^ ((3 / 4 : ℝ) * Real.log (n : ℝ)) :=
+        mul_le_mul_of_nonneg_left hrpow_ge_one (by norm_num)
 
 /-! ## Problem 9.13: threshold pivoting and sparse-column growth -/
 
