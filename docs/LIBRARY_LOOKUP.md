@@ -2185,6 +2185,10 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_abs_triuPart_le_triuPart_of_abs_le`
 - `higham9_15_strilPart_mono`
 - `higham9_15_triuPart_mono`
+- `higham9_15_strilPart_add`
+- `higham9_15_triuPart_add`
+- `higham9_15_rectMatMul_strilPart_add_right`
+- `higham9_15_rectMatMul_triuPart_add_left`
 - `higham9_15_abs_matrix_mul_le_abs_mul_abs`
 - `higham9_15_strilPart_add_strictLower_upper`
 - `higham9_15_triuPart_add_strictLower_upper`
@@ -2446,6 +2450,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_componentwise_source_bound_of_factorization_Gtilde_local_majorant_of_matrix_inverse_identities`
 - `higham9_15_componentwise_source_bound_of_factorization_Gtilde_majorant`
 - `higham9_15_componentwise_source_bound_of_factorization_Gtilde_local_majorant`
+- `higham9_15_componentwise_source_firstOrder_of_G_split_local_majorant_of_inverse_identities`
+- `higham9_15_componentwise_source_firstOrder_of_Gtilde_split_local_majorant_of_inverse_identities`
 - `higham9_2_danger_shift_count_bound`
 - `higham9_2_charpolyDangerSet`
 - `higham9_2_mem_charpolyDangerSet_iff_isRoot`

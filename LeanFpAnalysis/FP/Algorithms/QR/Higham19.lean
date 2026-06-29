@@ -2965,6 +2965,55 @@ theorem panelFirstColumnTailZero_storedSequence_after_firstStep
       exact panelFirstColumnTailZero_storedPanelStep_succ
         fp t (v (t + 1)) (beta (t + 1)) (A_hat (t + 1)) hprev
 
+/-- Once a stored-panel sequence is past a column, later stored steps leave that
+column unchanged.
+
+This is the completed-column preservation invariant needed for the full stored
+sequence/top-block handoff: every later pivot copies columns strictly before the
+active pivot. -/
+theorem storedSequence_prevColumn_eq_add
+    (fp : FPModel) {m n N : Nat}
+    (A_hat : Nat -> Fin m -> Fin n -> Real)
+    (v : Nat -> Fin m -> Real) (beta : Nat -> Real)
+    (hStep : forall k, k < N ->
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (v k) (beta k) (A_hat k))
+    {s d : Nat} {i : Fin m} {j : Fin n}
+    (hj : j.val < s) (hsd : s + d <= N) :
+    A_hat (s + d) i j = A_hat s i j := by
+  induction d with
+  | zero =>
+      change A_hat s i j = A_hat s i j
+      rfl
+  | succ d ih =>
+      have hsd_prev : s + d <= N := by
+        omega
+      have hstep : s + d < N := by
+        omega
+      have hjprev : j.val < s + d := by
+        exact Nat.lt_of_lt_of_le hj (Nat.le_add_right s d)
+      rw [Nat.add_succ, hStep (s + d) hstep]
+      rw [fl_householderStoredPanelStep_prevColumn_eq fp
+        (v (s + d)) (beta (s + d)) (A_hat (s + d)) hjprev]
+      exact ih hsd_prev
+
+/-- After a column's own stored pivot has completed, every later stored step
+keeps that column fixed. -/
+theorem storedSequence_completedColumn_eq_after_pivot
+    (fp : FPModel) {m n N : Nat}
+    (A_hat : Nat -> Fin m -> Fin n -> Real)
+    (v : Nat -> Fin m -> Real) (beta : Nat -> Real)
+    (hStep : forall k, k < N ->
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (v k) (beta k) (A_hat k))
+    {d : Nat} {i : Fin m} (j : Fin n)
+    (hd : j.val + 1 + d <= N) :
+    A_hat (j.val + 1 + d) i j = A_hat (j.val + 1) i j :=
+  storedSequence_prevColumn_eq_add fp A_hat v beta hStep
+    (Nat.lt_succ_self j.val) hd
+
 /-- One-column determinant-specialized recursive/stored `R` bridge.
 
 Once the active panel has only one column, the determinant-selected nonzero

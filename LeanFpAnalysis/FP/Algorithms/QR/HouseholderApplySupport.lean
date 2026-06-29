@@ -70,6 +70,14 @@ noncomputable def fl_householderStoredPanelStep (fp : FPModel) (m n k : ℕ)
     else
       raw i j
 
+/-- Stored Householder panel steps copy every column before the active pivot. -/
+theorem fl_householderStoredPanelStep_prevColumn_eq (fp : FPModel)
+    {m n k : ℕ} (v : Fin m → ℝ) (beta : ℝ)
+    (A : Fin m → Fin n → ℝ) {i : Fin m} {j : Fin n}
+    (hj : j.val < k) :
+    fl_householderStoredPanelStep fp m n k v beta A i j = A i j := by
+  simp [fl_householderStoredPanelStep, hj]
+
 /-- One stored rectangular Householder QR right-hand-side step.
 
     Rows above the active pivot are preserved, while the active tail is updated
