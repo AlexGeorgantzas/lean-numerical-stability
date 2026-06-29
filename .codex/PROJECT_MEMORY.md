@@ -9961,3 +9961,21 @@ These compile, but should not be treated as fully derived stability results:
   right-inverse certificates from those witness surfaces; the multiplier-bound
   table, source lower-budget comparisons, and Eq.13.23 `rho <= 2` theorem
   remain open.
+
+- 2026-06-29 Eq.13.22/Eq.13.23 canonical active-pivot source-comparison
+  witnesses: added
+  `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_source_comparisons_exact_kappa_of_pivotInv_eq_nonsingInv`,
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_source_comparisons_exact_kappa_of_pivotInv_eq_nonsingInv`,
+  `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_source_comparisons_exact_kappa_of_pivotInv_eq_nonsingInv_of_det_ne_zero`,
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_source_comparisons_exact_kappa_of_pivotInv_eq_nonsingInv_of_det_ne_zero`,
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_source_comparisons_exact_kappa_of_product_bound_diag_update_of_pivotInv_eq_nonsingInv`,
+  and
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_source_comparisons_exact_kappa_of_pivotInv_eq_nonsingInv_of_det_ne_zero_of_product_bound_diag_update`.
+  These reuse
+  `higham13_algorithm13_3_pivot_right_inverse_of_pivotInv_eq_nonsingInv` to
+  remove explicit active pivot right-inverse certificates from the
+  stage-local-growth source-comparison `BlockLUFactSpec` witness layer,
+  including the full canonical inverse and product-bound/diagonal-update
+  Eq.13.23 surfaces.  The active pivot determinant/equality table,
+  local-to-full source comparison table, and Eq.13.23 BDD product/update data
+  remain open.
