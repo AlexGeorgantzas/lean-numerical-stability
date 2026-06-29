@@ -17145,6 +17145,28 @@ theorem higham9_14_source_f_bound_of_LUFactSpec_fl_triangular_solves_gamma_le
     fp n A L_hat U_hat b c 0 u hu hn (LUFactSpec.to_LUBackwardError_zero hLU)
     hu hγ_le_u hU_diag hAbsLU_le
 
+/-- **Theorem 9.14**, exact-LU factor plus actual triangular solves with the
+natural `γ_n` coefficient. -/
+theorem higham9_14_source_f_bound_of_LUFactSpec_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (c : ℝ)
+    (hn : gammaValid fp n)
+    (hLU : LUFactSpec n A L_hat U_hat)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ c * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        c * higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_f_bound_of_LUFactSpec_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b c (gamma fp n) (gamma_nonneg fp hn) hn
+    hLU le_rfl hU_diag hAbsLU_le
+
 /-- **Theorem 9.14**, exact-LU factor plus actual triangular solves with a
 constant-growth final `h(u)` coefficient.
 
@@ -17178,6 +17200,29 @@ theorem higham9_14_source_h_bound_of_LUFactSpec_fl_triangular_solves_const_gamma
     mul_le_mul_of_nonneg_left hf_le_h hc
   exact (hDeltaA_bound i j).trans
     (mul_le_mul_of_nonneg_right hc_bound (abs_nonneg (A i j)))
+
+/-- **Theorem 9.14**, exact-LU factor plus actual triangular solves with a
+constant-growth final `h(γ_n)` coefficient. -/
+theorem higham9_14_source_h_bound_of_LUFactSpec_fl_triangular_solves_const_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (c : ℝ) (hc : 0 ≤ c)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hLU : LUFactSpec n A L_hat U_hat)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ c * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        c * higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_LUFactSpec_fl_triangular_solves_const_gamma_le
+    fp n A L_hat U_hat b c (gamma fp n) hc (gamma_nonneg fp hn)
+    hγ_lt_one hn hLU le_rfl hU_diag hAbsLU_le
 
 /-- **Theorem 9.14**, LU-backward-error plus actual triangular solves with a
 constant-growth final `h(u)` coefficient.
@@ -17216,6 +17261,29 @@ theorem higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_const_
     mul_le_mul_of_nonneg_left hf_le_h hc
   exact (hDeltaA_bound i j).trans
     (mul_le_mul_of_nonneg_right hc_bound (abs_nonneg (A i j)))
+
+/-- **Theorem 9.14**, LU-backward-error plus actual triangular solves with a
+constant-growth final `h(γ_n)` coefficient. -/
+theorem higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_const_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (c : ℝ) (hc : 0 ≤ c)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ c * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        c * higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_const_gamma_le
+    fp n A L_hat U_hat b c (gamma fp n) (gamma fp n) hc
+    (gamma_nonneg fp hn) hγ_lt_one hn hLU le_rfl le_rfl hU_diag hAbsLU_le
 
 /-- **Theorem 9.14**, source-model production for the final `h(u)` bound.
 
@@ -17260,6 +17328,28 @@ theorem higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_gamma_
     n A L_hat U_hat y_hat x_hat b u hu hu_lt_one hAbsLU_le
     DeltaA_LU DeltaL DeltaU h20 h21
 
+/-- **Theorem 9.14**, LU-backward-error plus actual triangular solves with
+Higham's final `h(γ_n)` coefficient. -/
+theorem higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b (gamma fp n) (gamma fp n)
+    (gamma_nonneg fp hn) hγ_lt_one hn hLU le_rfl le_rfl hU_diag hAbsLU_le
+
 /-- **Theorem 9.14**, exact-LU factor plus actual triangular solves for
 Higham's final `h(u)` bound.
 
@@ -17287,6 +17377,28 @@ theorem higham9_14_source_h_bound_of_LUFactSpec_fl_triangular_solves_gamma_le
   higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_gamma_le
     fp n A L_hat U_hat b 0 u hu hu_lt_one hn
     (LUFactSpec.to_LUBackwardError_zero hLU) hu hγ_le_u hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, exact-LU factor plus actual triangular solves with
+Higham's final `h(γ_n)` coefficient. -/
+theorem higham9_14_source_h_bound_of_LUFactSpec_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hLU : LUFactSpec n A L_hat U_hat)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_LUFactSpec_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b (gamma fp n) (gamma_nonneg fp hn)
+    hγ_lt_one hn hLU le_rfl hU_diag hAbsLU_le
 
 /-- **Theorem 9.14**, dense Doolittle certificate plus actual triangular solves.
 
