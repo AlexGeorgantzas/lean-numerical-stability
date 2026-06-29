@@ -16739,6 +16739,25 @@ theorem higham9_21_tridiag_solve_perturbation_model_of_fl_triangular_solves_gamm
     exact le_trans (hDeltaU_bound i j)
       (mul_le_mul_of_nonneg_right hγ_le_ucoeff (abs_nonneg _))
 
+/-- **Equation (9.21)** for actual triangular solves with the natural
+`γ_n` source coefficient. -/
+theorem higham9_21_tridiag_solve_perturbation_model_of_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (L_hat U_hat : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (hL_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hLT : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hUT : ∀ i j : Fin n, j.val < i.val → U_hat i j = 0)
+    (hn : gammaValid fp n) :
+    ∃ DeltaL DeltaU : Fin n → Fin n → ℝ,
+      higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+        (fl_forwardSub fp n L_hat b)
+        (fl_backSub fp n U_hat (fl_forwardSub fp n L_hat b))
+        b DeltaL DeltaU (gamma fp n) :=
+  higham9_21_tridiag_solve_perturbation_model_of_fl_triangular_solves_gamma_le
+    fp n L_hat U_hat b (gamma fp n) (gamma_nonneg fp hn)
+    hL_diag hU_diag hLT hUT hn le_rfl
+
 /-- **Equations (9.20)--(9.22)**, source-coefficient aggregation.
 
 If the tridiagonal LU factorization perturbation has coefficient `u`, the
