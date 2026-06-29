@@ -7304,6 +7304,91 @@ theorem GeneralizedQRFactorization.exists_unique_method_solution_of_tall_fullRow
     h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack,
     h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack⟩
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, tall full-associated exact-MGS
+    method package.
+
+    Exact MGS data for `Bᵀ` and for the column-reversed full transformed block
+    `A Q` construct the associated-row (20.28) display and then yield GQR data,
+    unique exact triangular solve coordinates, and the unique exact
+    equality-constrained least-squares minimizer. -/
+theorem GeneralizedQRFactorization.exists_unique_method_solution_of_tall_mgs_constraint_and_full_mgs_assoc_shape
+    {k p q : ℕ}
+    {A : Fin ((k + p) + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (hdiagB : ∀ j : Fin p,
+      gsColumnNorm2
+        (modifiedGramSchmidtVectors
+          (fun col : Fin (p + q) => fun row : Fin p => B row col)
+          j.val j) ≠ 0)
+    (hdiagAQ : ∀ Q : Fin (p + q) → Fin (p + q) → ℝ,
+      IsOrthogonal (p + q) Q →
+        ∀ j : Fin (p + q),
+          gsColumnNorm2
+            (modifiedGramSchmidtVectors
+              (rectPermuteCols Fin.revPerm
+                (matMulRect ((k + p) + q) (p + q) (p + q) A Q))
+              j.val j) ≠ 0)
+    {b : Fin ((k + p) + q) → ℝ} {d : Fin p → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ h : GeneralizedQRFactorization (k + p) p q A B,
+      (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+        rectMatMulVec h.S yz.1 = d ∧
+        rectMatMulVec h.L22 yz.2 =
+          (fun i : Fin q =>
+            matMulVec ((k + p) + q) (matTranspose h.U) b (Fin.natAdd (k + p) i) -
+              rectMatMulVec h.L21 yz.1 i) ∧
+        IsLSEMinimizer A b B d
+          (matMulVec (p + q) h.Q (Fin.append yz.1 yz.2))) ∧
+      (∃! x : Fin (p + q) → ℝ, IsLSEMinimizer A b B d x) := by
+  rcases
+    GeneralizedQRFactorization.exists_of_tall_mgs_constraint_and_full_mgs_assoc_shape
+      (A := A) (B := B) hdiagB hdiagAQ with
+    ⟨h⟩
+  exact ⟨h,
+    h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack,
+    h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, tall full-row-rank
+    full-associated exact-MGS method package.
+
+    Full row rank of `B` discharges the exact-MGS nonbreakdown hypotheses for
+    `Bᵀ`; nonbreakdown for the column-reversed full transformed block `A Q`
+    constructs the associated-row (20.28) display and then yields the same
+    unique exact method package. -/
+theorem GeneralizedQRFactorization.exists_unique_method_solution_of_tall_fullRowRank_constraint_and_full_mgs_assoc_shape
+    {k p q : ℕ}
+    {A : Fin ((k + p) + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (hdiagAQ : ∀ Q : Fin (p + q) → Fin (p + q) → ℝ,
+      IsOrthogonal (p + q) Q →
+        ∀ j : Fin (p + q),
+          gsColumnNorm2
+            (modifiedGramSchmidtVectors
+              (rectPermuteCols Fin.revPerm
+                (matMulRect ((k + p) + q) (p + q) (p + q) A Q))
+              j.val j) ≠ 0)
+    {b : Fin ((k + p) + q) → ℝ} {d : Fin p → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ h : GeneralizedQRFactorization (k + p) p q A B,
+      (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+        rectMatMulVec h.S yz.1 = d ∧
+        rectMatMulVec h.L22 yz.2 =
+          (fun i : Fin q =>
+            matMulVec ((k + p) + q) (matTranspose h.U) b (Fin.natAdd (k + p) i) -
+              rectMatMulVec h.L21 yz.1 i) ∧
+        IsLSEMinimizer A b B d
+          (matMulVec (p + q) h.Q (Fin.append yz.1 yz.2))) ∧
+      (∃! x : Fin (p + q) → ℝ, IsLSEMinimizer A b B d x) := by
+  rcases
+    GeneralizedQRFactorization.exists_of_tall_fullRowRank_constraint_and_full_mgs_assoc_shape
+      (A := A) (B := B) hB hdiagAQ with
+    ⟨h⟩
+  exact ⟨h,
+    h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack,
+    h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack⟩
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, wide exact-MGS method package:
     the exact-MGS constraint construction for `Bᵀ`, the exact-MGS trailing-block
     associated-shape construction for the actual `A Q`, and the source rank
