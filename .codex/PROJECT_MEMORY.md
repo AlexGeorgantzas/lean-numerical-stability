@@ -9712,3 +9712,15 @@ These compile, but should not be treated as fully derived stability results:
   initial lower table, exact active pivot inverse identities, entrywise
   max-norm Eq.13.21 transfer, and BDD nonsingularity/block-LU existence
   endpoints remain open.
+
+- 2026-06-29 Algorithm 13.3 BDD matrix-infinity CLM right-inverse wrappers:
+  added `matrixMulVecCLM_right_inverse_of_isRightInverse` and
+  `matrixMulVecCLM_left_inverse_of_isRightInverse` in `MatrixAlgebra.lean`,
+  plus the `_of_pivot_right_inverse` matrix-`∞` CLM source-table wrappers for
+  `diagLowerCertGeneric` diagonal-lower, direct pivot-product, active column
+  dominance, and active-stage `2 * normMax` bounds in `BlockLU.lean`.  These
+  derive the exact CLM action identities from the repository's matrix
+  `IsRightInverse` pivot certificates.  The BDD source row still remains open
+  for the initial source lower table/source reciprocal data, entrywise
+  max-norm Eq.13.21 transfer, and BDD nonsingularity/block-LU existence
+  endpoint.
