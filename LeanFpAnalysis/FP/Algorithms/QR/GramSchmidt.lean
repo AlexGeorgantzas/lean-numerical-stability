@@ -133,6 +133,20 @@ theorem gsDot_projectAway_eq_zero_of_left_orthogonal {m : Nat}
 def gsNormalize {m : Nat} (x : Fin m -> Real) (r : Real) : Fin m -> Real :=
   fun i => x i / r
 
+/-- Dot product against a normalized right argument factors out the scalar
+normalizer. -/
+theorem gsDot_normalize_right {m : Nat} (u x : Fin m -> Real) (r : Real) :
+    gsDot u (gsNormalize x r) = gsDot u x / r := by
+  unfold gsDot gsNormalize
+  calc
+    (Finset.univ.sum fun i : Fin m => u i * (x i / r))
+        = Finset.univ.sum fun i : Fin m => (u i * x i) / r := by
+            apply Finset.sum_congr rfl
+            intro i _
+            ring
+    _ = (Finset.univ.sum fun i : Fin m => u i * x i) / r := by
+            rw [Finset.sum_div]
+
 /-- Euclidean column norm used by the Gram-Schmidt algorithms. -/
 def gsColumnNorm2 {m : Nat} (x : Fin m -> Real) : Real :=
   vecNorm2 x
@@ -350,6 +364,83 @@ theorem modifiedGramSchmidtQ_dot_vectors_succ_later_eq_zero_of_prev
   apply gsDot_projectAway_eq_zero_of_left_orthogonal
   · exact hprev
   · simpa [modifiedGramSchmidtQ, gsColumn] using hiq
+
+/-- If an older `q_i` column is already orthogonal to every intervening
+normalized column, then its orthogonality to column `j`'s active residual
+persists from the first MGS projection step through stage `j`. -/
+theorem modifiedGramSchmidtQ_dot_vectors_stage_eq_zero_of_lt_of_prev
+    {m n : Nat} (A : Fin m -> Fin n -> Real) {i j : Fin n}
+    (hij : i < j)
+    (hdiag_i :
+      Ne (gsColumnNorm2 (modifiedGramSchmidtVectors A i.val i)) 0)
+    (hprev :
+      forall k : Fin n, i.val < k.val -> k.val < j.val ->
+        gsDot (gsColumn (modifiedGramSchmidtQ A) i)
+          (gsColumn (modifiedGramSchmidtQ A) k) = 0) :
+    gsDot (gsColumn (modifiedGramSchmidtQ A) i)
+        (modifiedGramSchmidtVectors A j.val j) = 0 := by
+  let P : Nat -> Prop := fun t =>
+    t <= j.val ->
+      gsDot (gsColumn (modifiedGramSchmidtQ A) i)
+        (modifiedGramSchmidtVectors A t j) = 0
+  have hbase : P (i.val + 1) := by
+    intro _hle
+    exact modifiedGramSchmidtQ_dot_vectors_succ_later_eq_zero A hij hdiag_i
+  have hstep : forall t, i.val + 1 <= t -> P t -> P (t + 1) := by
+    intro t hit hP hsucc_le
+    have htj : t < j.val := Nat.lt_of_succ_le hsucc_le
+    have htn : t < n := Nat.lt_trans htj j.isLt
+    let k : Fin n := ⟨t, htn⟩
+    have hkj : k < j := by
+      simpa [k] using htj
+    have hprev_stage :
+        gsDot (gsColumn (modifiedGramSchmidtQ A) i)
+          (modifiedGramSchmidtVectors A k.val j) = 0 := by
+      simpa [k] using hP (Nat.le_of_lt htj)
+    have hi_k : i.val < k.val := by
+      have hi_succ : i.val < i.val + 1 := Nat.lt_succ_self i.val
+      exact Nat.lt_of_lt_of_le hi_succ (by simpa [k] using hit)
+    have hiq :
+        gsDot (gsColumn (modifiedGramSchmidtQ A) i)
+          (gsColumn (modifiedGramSchmidtQ A) k) = 0 :=
+      hprev k hi_k (by simpa [k] using htj)
+    simpa [k] using
+      modifiedGramSchmidtQ_dot_vectors_succ_later_eq_zero_of_prev
+        (A := A) (i := i) (k := k) (j := j) hkj hprev_stage hiq
+  have hle : i.val + 1 <= j.val := Nat.succ_le_of_lt hij
+  have htarget : P j.val :=
+    Nat.le_induction
+      (m := i.val + 1)
+      (P := fun t _ => P t)
+      hbase
+      (by
+        intro t hit hPt
+        exact hstep t hit hPt)
+      j.val hle
+  exact htarget le_rfl
+
+/-- Conditional pairwise MGS orthogonality: once all intervening normalized
+columns are known orthogonal to `q_i`, the final normalized `q_j` column is
+orthogonal to `q_i`. -/
+theorem modifiedGramSchmidtQ_dot_eq_zero_of_lt_of_prev
+    {m n : Nat} (A : Fin m -> Fin n -> Real) {i j : Fin n}
+    (hij : i < j)
+    (hdiag_i :
+      Ne (gsColumnNorm2 (modifiedGramSchmidtVectors A i.val i)) 0)
+    (hprev :
+      forall k : Fin n, i.val < k.val -> k.val < j.val ->
+        gsDot (gsColumn (modifiedGramSchmidtQ A) i)
+          (gsColumn (modifiedGramSchmidtQ A) k) = 0) :
+    gsDot (gsColumn (modifiedGramSchmidtQ A) i)
+        (gsColumn (modifiedGramSchmidtQ A) j) = 0 := by
+  have hstage :=
+    modifiedGramSchmidtQ_dot_vectors_stage_eq_zero_of_lt_of_prev
+      (A := A) hij hdiag_i hprev
+  rw [show gsColumn (modifiedGramSchmidtQ A) j =
+      gsNormalize (modifiedGramSchmidtVectors A j.val j)
+        (gsColumnNorm2 (modifiedGramSchmidtVectors A j.val j)) by rfl]
+  rw [gsDot_normalize_right, hstage]
+  simp
 
 /-- MGS `R` is zero below the diagonal by construction. -/
 theorem modifiedGramSchmidtR_eq_zero_of_lt {m n : Nat}
