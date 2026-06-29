@@ -1374,6 +1374,62 @@ theorem higham21_lemma21_2_symmetrized_min_norm_of_gram_pseudoinverse_range
       B (by simpa [B] using hdet) yB
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    source-shaped Gram-pseudoinverse range handoff.  The printed hypothesis
+    `x = (A + DeltaA2)ᵀ y` supplies the concrete pseudoinverse-range
+    representation needed by the beta/minimum-norm argument. -/
+theorem higham21_lemma21_2_symmetrized_min_norm_of_transpose_range
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (rho1 rho2 alpha beta eta : ℝ)
+    (hsq : vecNorm2Sq x ≠ 0)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hdet :
+      Matrix.det
+          (rectGram (fun i j => A i j + DeltaA2 i j) :
+            Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hxTranspose :
+      x =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : 3 * max rho1 rho2 < 1)
+    (halpha : 0 ≤ alpha)
+    (hbeta : 0 ≤ beta)
+    (heta : 0 ≤ eta)
+    (halpha_le : alpha ≤ rho1)
+    (hbeta_le : beta ≤ rho2)
+    (heta_le : eta ≤ (1 - rho2)⁻¹)
+    (hDeltaA1Op : rectOpNorm2Le DeltaA1 alpha)
+    (hDeltaA2Op : rectOpNorm2Le DeltaA2 beta)
+    (hBplusOp :
+      rectOpNorm2Le
+        (undetAplusOfGramNonsingInv (fun i j => A i j + DeltaA2 i j))
+        eta) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j)
+      b x := by
+  let B : Fin m → Fin n → ℝ := fun i j => A i j + DeltaA2 i j
+  refine
+    higham21_lemma21_2_symmetrized_min_norm_of_gram_pseudoinverse_range
+      A x DeltaA1 DeltaA2 b (matMulVec m (rectGram B) y)
+      rho1 rho2 alpha beta eta hsq hDeltaA1 hdet ?_
+      hsmall halpha hbeta heta halpha_le hbeta_le heta_le
+      hDeltaA1Op hDeltaA2Op hBplusOp
+  calc
+    x = rectTransposeMulVec B y := by
+      simpa [B] using hxTranspose
+    _ =
+        rectMatMulVec (undetAplusOfGramNonsingInv B)
+          (matMulVec m (rectGram B) y) := by
+      exact
+        higham21_lemma21_2_gram_pseudoinverse_range_of_transpose
+          B (by simpa [B] using hdet) y
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     the Frobenius-squared norm bound for the projector mixture used to replace
     two perturbation blocks by one. -/
 theorem higham21_lemma21_2_symmetrized_perturbation_frobNormSq_le {m n : ℕ}
