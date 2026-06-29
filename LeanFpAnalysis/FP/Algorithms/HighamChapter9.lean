@@ -13444,6 +13444,25 @@ theorem higham9_9_growthFactorEntry_le_two_of_upper_entry_bound {n : ℕ}
     growthFactorEntry hn A U hA ≤ 2 :=
   growthFactorEntry_le_of_entry_bound_factor hn A U 2 hA hU
 
+/-- **Theorem 9.9**, det-input max-entry growth endpoint from the remaining
+final-upper entry bound.
+
+This packages the scalar `rho <= 2` adapter with the positive denominator
+derived from nonsingularity of the source matrix.  The algorithmic entry bound
+for the final upper factor remains the explicit remaining hypothesis. -/
+theorem higham9_9_growthFactorEntry_le_two_of_upper_entry_bound_exists_hAmax
+    {n : ℕ} (hn : 0 < n) (A U : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hU : ∀ i j : Fin n, |U i j| ≤ 2 * maxEntryNorm hn A) :
+    ∃ hAmax : 0 < maxEntryNorm hn A,
+      growthFactorEntry hn A U hAmax ≤ 2 := by
+  have hAmax : 0 < maxEntryNorm hn A :=
+    maxEntryNorm_pos_of_det_ne_zero hn A hdet
+  exact
+    ⟨hAmax,
+      higham9_9_growthFactorEntry_le_two_of_upper_entry_bound
+        hn A U hAmax hU⟩
+
 /-- **Theorem 9.9**, sharper first-step off-diagonal growth for the
 column-dominant no-pivot route.  In the first Schur complement, off-diagonal
 trailing entries are bounded by the original max-entry norm; only the diagonal
