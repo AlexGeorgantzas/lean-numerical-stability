@@ -1950,6 +1950,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_11_bohteBound_ge_two`
 - `higham9_11_banded_growth_factor_solve_tight`
 - `higham9_11_bohte_banded_solve_tight`
+- `higham9_11_tridiagonal_bohte_solve_tight`
 - `higham9_12_spd_lu_backward_error`
 - `tridiag_spd_shape_absLU_eq_absA`
 - `higham9_12_spd_tridiag_absLU_eq_of_positive_DLT`
