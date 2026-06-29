@@ -394,6 +394,46 @@ noncomputable def undetAplusOfGramNonsingInv {m n : ℕ}
     (A : Fin m → Fin n → ℝ) : Fin n → Fin m → ℝ :=
   undetAplusOfGramInv A (undetGramNonsingInv A)
 
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    determinant-facing version of the perturbed transpose/range rewrite.  If
+    `B = A + DeltaA2` has nonsingular Gram matrix and `x` is the minimum-norm
+    solution of `B x = b`, then `x` is the transpose-form vector obtained from
+    the repository nonsingular inverse candidate for `B Bᵀ`.
+
+    This discharges the explicit dual-vector construction once the source
+    perturbation proof has supplied perturbed Gram nonsingularity. -/
+theorem higham21_lemma21_2_transpose_range_of_min_norm_and_perturbed_gram_det_ne_zero
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (x : Fin n → ℝ)
+    (hx : RectMinNormSolution m n (fun i j => A i j + DeltaA2 i j) b x)
+    (hdet :
+      Matrix.det
+          (rectGram (fun i j => A i j + DeltaA2 i j) :
+            Matrix (Fin m) (Fin m) ℝ) ≠ 0) :
+    x =
+      rectTransposeMulVec (fun i j => A i j + DeltaA2 i j)
+        (matMulVec m
+          (undetGramNonsingInv (fun i j => A i j + DeltaA2 i j)) b) := by
+  let B : Fin m → Fin n → ℝ := fun i j => A i j + DeltaA2 i j
+  have hdetB : Matrix.det (rectGram B : Matrix (Fin m) (Fin m) ℝ) ≠ 0 := by
+    simpa [B] using hdet
+  have hInv : IsInverse m (rectGram B) (undetGramNonsingInv B) :=
+    isInverse_nonsingInv_of_det_ne_zero m (rectGram B) hdetB
+  have hy : ∀ i : Fin m,
+      matMulVec m (rectGram B)
+          (matMulVec m (undetGramNonsingInv B) b) i = b i := by
+    intro i
+    exact congrFun
+      (matMulVec_of_isRightInverse
+        (rectGram B) (undetGramNonsingInv B) hInv.2 b) i
+  simpa [B] using
+    higham21_lemma21_2_transpose_range_of_min_norm_and_perturbed_gram_normal_eq
+      A DeltaA2 b (matMulVec m (undetGramNonsingInv B) b) x hx
+      (by simpa [B] using hy)
+
 /-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.4):
     the concrete table `Aᵀ(AAᵀ)⁻¹` is a right inverse of `A` when the
     supplied inverse candidate is an inverse of `AAᵀ`. -/
