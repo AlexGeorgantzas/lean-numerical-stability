@@ -158,6 +158,96 @@ theorem undetNormwiseBackwardErrorEtaF_eq_zero_of_rectMinNormSolution
         theta A b y hmin)
   · exact undetNormwiseBackwardErrorEtaF_nonneg theta A b y
 
+/-- In the Chapter 21 Theorem 21.3 weighted Frobenius model, perturbing only
+    the right-hand side by `-b` has cost `theta * ||b||_2`, for nonnegative
+    source weight `theta`. -/
+theorem undetNormwiseBackwardErrorCostF_zero_deltaA_neg_deltab
+    {m n : ℕ} (theta : ℝ) (htheta : 0 ≤ theta) (b : Fin m → ℝ) :
+    lsNormwiseBackwardErrorCostF (m := m) (n := n) theta
+      (0 : Fin m → Fin n → ℝ) (fun i => -b i) = theta * vecNorm2 b := by
+  have hleft : 0 ≤ lsNormwiseBackwardErrorCostF theta
+      (0 : Fin m → Fin n → ℝ) (fun i => -b i) :=
+    lsNormwiseBackwardErrorCostF_nonneg theta
+      (0 : Fin m → Fin n → ℝ) (fun i => -b i)
+  have hright : 0 ≤ theta * vecNorm2 b :=
+    mul_nonneg htheta (vecNorm2_nonneg b)
+  apply (sq_eq_sq₀ hleft hright).mp
+  rw [lsNormwiseBackwardErrorCostF_sq]
+  rw [show frobNormSqRect (0 : Fin m → Fin n → ℝ) = 0 by
+    simp [frobNormSqRect]]
+  have hneg : vecNorm2Sq (fun i : Fin m => -b i) = vecNorm2Sq b := by
+    unfold vecNorm2Sq
+    apply Finset.sum_congr rfl
+    intro i _
+    ring
+  rw [hneg]
+  rw [show (theta * vecNorm2 b) ^ 2 = theta ^ 2 * vecNorm2 b ^ 2 by ring]
+  rw [vecNorm2_sq]
+  ring
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.2, Theorem 21.3:
+    the source zero-vector candidate `y = 0` has attainable cost
+    `theta * ||b||_2` in the underdetermined normwise backward-error model. -/
+theorem undetNormwiseBackwardErrorValuesF.theta_vecNorm_mem_zero
+    {m n : ℕ} (theta : ℝ) (htheta : 0 ≤ theta)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) :
+    theta * vecNorm2 b ∈
+      undetNormwiseBackwardErrorValuesF theta A b (0 : Fin n → ℝ) := by
+  refine ⟨(0 : Fin m → Fin n → ℝ), (fun i => -b i), ?_, ?_⟩
+  · unfold UndetNormwiseBackwardErrorFeasible
+    constructor
+    · ext i
+      simp [rectMatMulVec]
+    · intro z _hz
+      change vecNorm2 (fun _ : Fin n => 0) ≤ vecNorm2 z
+      rw [vecNorm2_zero]
+      exact vecNorm2_nonneg z
+  · exact (undetNormwiseBackwardErrorCostF_zero_deltaA_neg_deltab
+      theta htheta b).symm
+
+/-- Any feasible perturbation for the Chapter 21 zero-vector candidate must
+    pay at least the weighted right-hand-side cost `theta * ||b||_2`. -/
+theorem undetNormwiseBackwardErrorCostF_ge_theta_vecNorm_of_zero_feasible
+    {m n : ℕ} {theta : ℝ} (htheta : 0 ≤ theta)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (hfeas :
+      UndetNormwiseBackwardErrorFeasible A b (0 : Fin n → ℝ) DeltaA Deltab) :
+    theta * vecNorm2 b ≤ lsNormwiseBackwardErrorCostF theta DeltaA Deltab := by
+  have hDeltab : Deltab = fun i : Fin m => -b i := by
+    ext i
+    have hi := congrFun hfeas.system_eq i
+    have hzero : (0 : ℝ) = b i + Deltab i := by
+      simpa [rectMatMulVec] using hi
+    linarith
+  have hweighted : theta * vecNorm2 Deltab ≤
+      lsNormwiseBackwardErrorCostF theta DeltaA Deltab :=
+    lsNormwiseBackwardErrorCostF_weighted_deltab_le htheta DeltaA Deltab
+  simpa [hDeltab, vecNorm2_neg] using hweighted
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.2, Theorem 21.3:
+    zero-vector branch of the Sun--Sun normwise Frobenius backward-error
+    formula, `eta_F(0) = theta * ||b||_2`, stated for nonnegative `theta`.
+    The nonzero singular-value formula remains a separate selected target. -/
+theorem higham21_thm21_3_etaF_zero
+    {m n : ℕ} (theta : ℝ) (htheta : 0 ≤ theta)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) :
+    undetNormwiseBackwardErrorEtaF theta A b (0 : Fin n → ℝ) =
+      theta * vecNorm2 b := by
+  apply le_antisymm
+  · unfold undetNormwiseBackwardErrorEtaF
+    exact csInf_le
+      (undetNormwiseBackwardErrorValuesF.bddBelow theta A b (0 : Fin n → ℝ))
+      (undetNormwiseBackwardErrorValuesF.theta_vecNorm_mem_zero theta htheta A b)
+  · unfold undetNormwiseBackwardErrorEtaF
+    apply le_csInf
+    · exact ⟨theta * vecNorm2 b,
+        undetNormwiseBackwardErrorValuesF.theta_vecNorm_mem_zero theta htheta A b⟩
+    · intro eta heta
+      rcases heta with ⟨DeltaA, Deltab, hfeas, rfl⟩
+      exact undetNormwiseBackwardErrorCostF_ge_theta_vecNorm_of_zero_feasible
+        htheta A b DeltaA Deltab hfeas
+
 -- ============================================================
 -- §21.3  Theorem 21.4: Q method backward stability
 -- ============================================================
