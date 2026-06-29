@@ -123,6 +123,16 @@ theorem householderBeta_mul_inner_self_eq_two (n : ℕ) (v : Fin n → ℝ)
   unfold householderBetaSpec
   field_simp [hden_sq]
 
+/-- If a Householder vector is already normalized with squared norm `2`, its
+exact beta is `1`. -/
+theorem householderBetaSpec_eq_one_of_inner_self_eq_two (n : Nat)
+    (v : Fin n -> Real)
+    (hden : (∑ i : Fin n, v i * v i) = 2) :
+    householderBetaSpec n v = 1 := by
+  unfold householderBetaSpec
+  rw [hden]
+  norm_num
+
 /-- Absolute normalization form of `householderBeta_mul_inner_self_eq_two`.
 
 For a nonzero Householder denominator, the exact choice
