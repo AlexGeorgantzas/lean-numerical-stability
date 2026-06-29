@@ -224,6 +224,63 @@ theorem higham21_eq21_4_rect_transpose_min_norm_of_gram_normal_eq {m n : ℕ}
   higham21_eq21_4_rect_transpose_min_norm_of_solves A b y
     (rectTransposeMulVec_solves_of_gram_normal_eq A AAT b y hAAT hy)
 
+/-- Concrete table for the source expression `Aᵀ(AAᵀ)⁻¹` in Higham,
+    2nd ed., Chapter 21, Section 21.1, equation (21.4), parameterized by a
+    supplied inverse candidate for `AAᵀ`. -/
+noncomputable def undetAplusOfGramInv {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ) : Fin n → Fin m → ℝ :=
+  fun j i => ∑ k : Fin m, A k j * AAT_inv k i
+
+/-- Applying the concrete table `Aᵀ(AAᵀ)⁻¹` to `b` is the same as first
+    solving for `y = (AAᵀ)⁻¹b` and then forming `Aᵀy`. -/
+theorem rectMatMulVec_undetAplusOfGramInv {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (b : Fin m → ℝ) :
+    rectMatMulVec (undetAplusOfGramInv A AAT_inv) b =
+      rectTransposeMulVec A (matMulVec m AAT_inv b) := by
+  ext j
+  unfold rectMatMulVec undetAplusOfGramInv rectTransposeMulVec matMulVec
+  calc
+    ∑ i : Fin m, (∑ k : Fin m, A k j * AAT_inv k i) * b i
+        = ∑ i : Fin m, ∑ k : Fin m, (A k j * AAT_inv k i) * b i := by
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [Finset.sum_mul]
+    _ = ∑ k : Fin m, ∑ i : Fin m, (A k j * AAT_inv k i) * b i := by
+            rw [Finset.sum_comm]
+    _ = ∑ k : Fin m, A k j * ∑ i : Fin m, AAT_inv k i * b i := by
+            apply Finset.sum_congr rfl
+            intro k _
+            rw [Finset.mul_sum]
+            apply Finset.sum_congr rfl
+            intro i _
+            ring
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.4):
+    determinant/inverse-candidate-facing form of the formula
+    `x_LS = Aᵀ(AAᵀ)⁻¹b`.  If `AAT_inv` is an inverse of the Gram matrix
+    `AAᵀ`, then the concrete table `Aᵀ AAT_inv` applied to `b` is an exact
+    minimum 2-norm solution of `A x = b`.
+
+    This proves the explicit inverse-action part of (21.4); identifying the
+    same table with the Moore--Penrose pseudoinverse `A⁺` remains a separate
+    selected target. -/
+theorem higham21_eq21_4_rect_pseudoinverse_formula_min_norm_of_gram_inverse
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (AAT AAT_inv : Fin m → Fin m → ℝ)
+    (b : Fin m → ℝ)
+    (hAAT : ∀ i j : Fin m, AAT i j = rectGram A i j)
+    (hInv : IsInverse m AAT AAT_inv) :
+    RectMinNormSolution m n A b
+      (rectMatMulVec (undetAplusOfGramInv A AAT_inv) b) := by
+  rw [rectMatMulVec_undetAplusOfGramInv]
+  exact higham21_eq21_4_rect_transpose_min_norm_of_gram_normal_eq
+    A AAT b (matMulVec m AAT_inv b) hAAT
+    (fun i => congrFun (matMulVec_of_isRightInverse AAT AAT_inv hInv.2 b) i)
+
 /-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.5):
     source-facing wrapper for the SNE formation step.  Once the seminormal
     equation matrix is identified with `A Aᵀ`, solving that Gram system and
