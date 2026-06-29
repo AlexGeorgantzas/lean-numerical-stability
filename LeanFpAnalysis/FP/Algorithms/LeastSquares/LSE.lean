@@ -8186,4 +8186,92 @@ theorem exists_lse_minimizer_of_fullRowRank_stackedFullColumnRank
     ⟨x, hx, _huniq⟩
   exact ⟨x, hx⟩
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, exact perturbed-data
+    GQR core for the same-constraint-right-hand-side branch.
+
+    The finite-precision theorem says the computed GQR method produces
+    perturbations `DeltaA`, `DeltaB`, `Deltab` for which the computed vector is
+    the exact solution of the perturbed LSE problem with the original `d`.
+    This theorem isolates the exact algebra behind that sentence: once such
+    perturbed data satisfy the source rank conditions, exact GQR constructs the
+    method factors, unique triangular coordinates, and unique minimizer for the
+    perturbed problem.  It does not prove the floating-point algorithm supplies
+    these perturbations or the norm bounds. -/
+theorem GeneralizedQRFactorization.exists_unique_method_solution_of_theorem20_10_perturbed_same_d
+    {r p q : ℕ}
+    (A DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
+    (B DeltaB : Fin p → Fin (p + q) → ℝ)
+    (b Deltab : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hB :
+      LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (hstack :
+      LSEStackedFullColumnRank
+        (fun i j => A i j + DeltaA i j)
+        (fun i j => B i j + DeltaB i j)) :
+    let Apert : Fin (r + q) → Fin (p + q) → ℝ :=
+      fun i j => A i j + DeltaA i j
+    let Bpert : Fin p → Fin (p + q) → ℝ :=
+      fun i j => B i j + DeltaB i j
+    let bpert : Fin (r + q) → ℝ := fun i => b i + Deltab i
+    ∃ h : GeneralizedQRFactorization r p q Apert Bpert,
+      (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+        rectMatMulVec h.S yz.1 = d ∧
+        rectMatMulVec h.L22 yz.2 =
+          (fun i : Fin q =>
+            matMulVec (r + q) (matTranspose h.U) bpert (Fin.natAdd r i) -
+              rectMatMulVec h.L21 yz.1 i) ∧
+        IsLSEMinimizer Apert bpert Bpert d
+          (matMulVec (p + q) h.Q (Fin.append yz.1 yz.2))) ∧
+      (∃! x : Fin (p + q) → ℝ, IsLSEMinimizer Apert bpert Bpert d x) := by
+  dsimp
+  exact
+    GeneralizedQRFactorization.exists_unique_method_solution_of_fullRowRank_stackedFullColumnRank
+      (A := fun i j => A i j + DeltaA i j)
+      (B := fun i j => B i j + DeltaB i j)
+      (b := fun i => b i + Deltab i) (d := d) hB hstack
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, exact perturbed-data
+    GQR core for the perturbed-constraint-right-hand-side branch.
+
+    This is the exact algebraic counterpart of the second formulation in
+    Theorem 20.10, where the computed vector solves a perturbed LSE problem
+    with `d + Deltad`.  The theorem reuses the constructed exact GQR method
+    package for the perturbed `A` and `B`; the remaining finite-precision work
+    is to derive the displayed norm bounds for `DeltaA`, `DeltaB`, `Deltab`,
+    and `Deltad` from the computed GQR algorithm. -/
+theorem GeneralizedQRFactorization.exists_unique_method_solution_of_theorem20_10_perturbed_d
+    {r p q : ℕ}
+    (A DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
+    (B DeltaB : Fin p → Fin (p + q) → ℝ)
+    (b Deltab : Fin (r + q) → ℝ) (d Deltad : Fin p → ℝ)
+    (hB :
+      LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (hstack :
+      LSEStackedFullColumnRank
+        (fun i j => A i j + DeltaA i j)
+        (fun i j => B i j + DeltaB i j)) :
+    let Apert : Fin (r + q) → Fin (p + q) → ℝ :=
+      fun i j => A i j + DeltaA i j
+    let Bpert : Fin p → Fin (p + q) → ℝ :=
+      fun i j => B i j + DeltaB i j
+    let bpert : Fin (r + q) → ℝ := fun i => b i + Deltab i
+    let dpert : Fin p → ℝ := fun i => d i + Deltad i
+    ∃ h : GeneralizedQRFactorization r p q Apert Bpert,
+      (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+        rectMatMulVec h.S yz.1 = dpert ∧
+        rectMatMulVec h.L22 yz.2 =
+          (fun i : Fin q =>
+            matMulVec (r + q) (matTranspose h.U) bpert (Fin.natAdd r i) -
+              rectMatMulVec h.L21 yz.1 i) ∧
+        IsLSEMinimizer Apert bpert Bpert dpert
+          (matMulVec (p + q) h.Q (Fin.append yz.1 yz.2))) ∧
+      (∃! x : Fin (p + q) → ℝ, IsLSEMinimizer Apert bpert Bpert dpert x) := by
+  dsimp
+  exact
+    GeneralizedQRFactorization.exists_unique_method_solution_of_fullRowRank_stackedFullColumnRank
+      (A := fun i j => A i j + DeltaA i j)
+      (B := fun i j => B i j + DeltaB i j)
+      (b := fun i => b i + Deltab i)
+      (d := fun i => d i + Deltad i) hB hstack
+
 end LeanFpAnalysis.FP
