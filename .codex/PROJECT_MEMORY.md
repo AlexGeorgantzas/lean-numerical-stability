@@ -31,6 +31,22 @@ end-to-end stability rebuild is tagged as
   from the Problem 13.4 source-shaped Eq.13.22/Eq.13.23 route.  The local
   lower-block estimates, scalar comparison table, active BDD product/update
   data, and Theorem 13.6 cited implementation estimates remain open.
+- 2026-06-29 base-comparison canonical active-pivot checkpoint:
+  added
+  `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_base_comparisons_exact_kappa_of_pivotInv_eq_nonsingInv`,
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_base_comparisons_exact_kappa_of_pivotInv_eq_nonsingInv`,
+  and
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_base_comparisons_exact_kappa_of_product_bound_diag_update_of_pivotInv_eq_nonsingInv`.
+  These route the stage-local-growth base-comparison witness layer through
+  active pivot determinant nonzero plus `pivotInv = nonsingInv`, removing
+  explicit active pivot right-inverse certificates from that Problem 13.4
+  proof surface.  Verification used direct `BlockLU.lean`, focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet `examples/LibraryLookup.lean`
+  with empty stderr, `git diff --check`, touched-file marker scan, and
+  focused `#print axioms`; the axiom output was only `propext`,
+  `Classical.choice`, and `Quot.sound`.  The base comparison, condition
+  comparison table, active BDD product/update data, and Theorem 13.6 cited
+  implementation estimates remain open.
 - 2026-06-29 matrix-`∞` source-norm upper endpoint checkpoint:
   `blockInfNorm` is the blockwise maximum of matrix-`∞` operator norms, with
   helpers `block_le_blockInfNorm`, `blockInfNorm_nonneg`,
