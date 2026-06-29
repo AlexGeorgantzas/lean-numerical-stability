@@ -2648,12 +2648,16 @@ Source-facing Chapter 9 wrappers:
 - `higham9_8_checkerboardConjugate_nonsingInv_codimOne_minor_nonneg`
 - `higham9_8_checkerboardConjugate_det_eq`
 - `higham9_8_checkerboardConjugate_nonsingInv_det_nonneg`
+- `higham9_8_checkerboardConjugate_nonsingInv_det_pos`
 - `higham9_8_checkerboardConjugate_nonsingInv_full_order_minor_nonneg`
+- `higham9_8_checkerboardConjugate_nonsingInv_totalNonnegative`
 - `higham9_8_checkerboard_lu_product_eq`
 - `higham9_8_lu_of_checkerboard_lu`
 - `higham9_8_abs_conjugated_lu_product_eq_abs`
 - `higham9_8_abs_lu_product_eq_abs_of_checkerboard_totalNonnegative_and_pos`
 - `higham9_8_abs_lu_product_eq_abs_of_checkerboard_principalBlock_inequalities`
+- `higham9_8_abs_lu_product_eq_abs_of_nonsingInv_checkerboard_pos`
+- `higham9_8_abs_lu_product_eq_abs_of_nonsingInv_principalBlock_inequalities`
 
 Chapter 9 growth-factor and max-entry bridges:
 
