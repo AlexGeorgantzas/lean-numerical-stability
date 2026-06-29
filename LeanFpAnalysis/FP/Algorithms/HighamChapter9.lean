@@ -14759,6 +14759,37 @@ theorem higham9_11_banded_growth_factor_solve_tight (fp : FPModel) (n : ℕ)
   banded_growth_factor_solve_tight fp n A L_hat U_hat b ρ_bound hρ
     hL_diag hU_diag hLU hn hn3 hGrowth
 
+/-- **Theorem 9.11**, monotone form of the banded growth-factor solve bound.
+
+If the componentwise growth estimate has been proved with a smaller constant
+`rho_bound`, the same solve-level theorem may be consumed at any larger
+nonnegative target constant.  This is the generic version of the later
+Bohte-specialized widening wrapper. -/
+theorem higham9_11_banded_growth_factor_solve_tight_of_growth_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (ρ_bound ρ_target : ℝ)
+    (hρ_target : 0 ≤ ρ_target)
+    (hρ_le : ρ_bound ≤ ρ_target)
+    (hL_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hGrowth : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ ρ_bound * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤ ρ_target * gamma fp (3 * n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_11_banded_growth_factor_solve_tight fp n A L_hat U_hat b
+    ρ_target hρ_target hL_diag hU_diag hLU hn hn3
+    (fun i j =>
+      le_trans (hGrowth i j)
+        (mul_le_mul_of_nonneg_right hρ_le (abs_nonneg _)))
+
 /-- **Theorem 9.11**, solve bound specialized to the printed Bohte scalar
 expression.  The theorem still requires the source growth hypothesis with this
 constant; it only proves the scalar nonnegativity needed by the generic
