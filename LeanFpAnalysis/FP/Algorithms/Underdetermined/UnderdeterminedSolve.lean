@@ -23,6 +23,7 @@ import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
 import LeanFpAnalysis.FP.Analysis.PerturbationTheory
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskySpec
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskySolve
+import LeanFpAnalysis.FP.Algorithms.QR.GramSchmidt
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSQRSolve
 import LeanFpAnalysis.FP.Algorithms.Underdetermined.UnderdeterminedSpec
 
@@ -989,6 +990,61 @@ theorem higham21_lemma21_2_symmetrized_min_norm_of_op_bound_and_dual_norm {m n :
     A x DeltaA1 DeltaA2 b y rho1 rho2 hsq hDeltaA1 hDeltaA2 hsmall
     (higham21_lemma21_2_transpose_action_bound_of_op_bound_and_dual_norm
       x DeltaA1 DeltaA2 y halpha hprod hOp hy)
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    operator-2 triangle step for the remaining beta obligation.  Separate
+    operator bounds on `DeltaA1` and `DeltaA2` give an operator bound for
+    `(DeltaA1 - DeltaA2)^T`. -/
+theorem higham21_lemma21_2_transpose_sub_op_bound_of_separate_op_bounds {m n : ℕ}
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    {alpha beta : ℝ}
+    (halpha : 0 ≤ alpha)
+    (hbeta : 0 ≤ beta)
+    (hDeltaA1 : rectOpNorm2Le DeltaA1 alpha)
+    (hDeltaA2 : rectOpNorm2Le DeltaA2 beta) :
+    rectOpNorm2Le
+      (finiteTranspose (fun i j => DeltaA1 i j - DeltaA2 i j))
+      (alpha + beta) :=
+  rectOpNorm2Le_finiteTranspose_of_rectOpNorm2Le
+    (fun i j => DeltaA1 i j - DeltaA2 i j)
+    (add_nonneg halpha hbeta)
+    (rectOpNorm2Le_sub DeltaA1 DeltaA2 hDeltaA1 hDeltaA2)
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    minimum-norm handoff from separate perturbation operator bounds and a
+    dual-vector norm bound.  This leaves the source-specific pseudoinverse
+    perturbation work to prove the dual-vector estimate and the final product
+    budget. -/
+theorem higham21_lemma21_2_symmetrized_min_norm_of_separate_op_bounds_and_dual_norm
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (rho1 rho2 alpha beta eta : ℝ)
+    (hsq : vecNorm2Sq x ≠ 0)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hDeltaA2 :
+      rectMatMulVec (finiteTranspose (fun i j => A i j + DeltaA2 i j)) y = x)
+    (hsmall : 3 * max rho1 rho2 < 1)
+    (halpha : 0 ≤ alpha)
+    (hbeta : 0 ≤ beta)
+    (hprod : (alpha + beta) * eta ≤ (rho1 + rho2) / (1 - rho2))
+    (hDeltaA1Op : rectOpNorm2Le DeltaA1 alpha)
+    (hDeltaA2Op : rectOpNorm2Le DeltaA2 beta)
+    (hy : vecNorm2 y ≤ eta * vecNorm2 x) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j)
+      b x :=
+  higham21_lemma21_2_symmetrized_min_norm_of_op_bound_and_dual_norm
+    A x DeltaA1 DeltaA2 b y rho1 rho2 (alpha + beta) eta hsq hDeltaA1
+    hDeltaA2 hsmall (add_nonneg halpha hbeta) hprod
+    (higham21_lemma21_2_transpose_sub_op_bound_of_separate_op_bounds
+      DeltaA1 DeltaA2 halpha hbeta hDeltaA1Op hDeltaA2Op)
+    hy
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     the Frobenius-squared norm bound for the projector mixture used to replace
