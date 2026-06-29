@@ -20,6 +20,15 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-06-29 matrix-`∞` finite-unit-sphere cleanup:
+  `higham13_fin_fun_unit_sphere_nonempty` constructs the nonempty unit sphere
+  in `Fin r -> ℝ` from `0 < r`.  New `_of_pos_dim` wrappers for the
+  reciprocal diagonal right-inverse and canonical `nonsingInv` matrix-`∞`
+  packages remove the caller-supplied `hunit` proof artifact while preserving
+  the existing constants and conclusions.  This is hidden-hypothesis cleanup
+  only; the BDD source table, active pivot determinant/equality table,
+  structured dimension-free max-entry product/update proof, Problem 13.4
+  comparisons, and Theorem 13.6 cited estimates remain open.
 - 2026-06-29 source-lower-block canonical active-pivot checkpoint:
   the Eq.13.22/Eq.13.23 source local lower-block witness route now has
   `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_source_lblock_budgets_exact_kappa_of_pivotInv_eq_nonsingInv`,
