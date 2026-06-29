@@ -2050,6 +2050,81 @@ theorem higham21_lemma21_2_symmetrized_perturbation_op_bound {m n : ℕ}
   have hrad : beta ^ 2 + alpha ^ 2 = alpha ^ 2 + beta ^ 2 := by ring
   simpa [undetLemma21_2SymmetrizedPerturbation, hrad] using htrans
 
+private theorem higham21_right_nonneg_le_sqrt_sq_add_sq
+    (a b : ℝ) (hb : 0 ≤ b) :
+    b ≤ Real.sqrt (a ^ 2 + b ^ 2) := by
+  have hb_sq : b ^ 2 ≤ a ^ 2 + b ^ 2 := by nlinarith [sq_nonneg a]
+  have hsqrt : Real.sqrt (b ^ 2) ≤ Real.sqrt (a ^ 2 + b ^ 2) :=
+    Real.sqrt_le_sqrt hb_sq
+  simpa [Real.sqrt_sq_eq_abs, abs_of_nonneg hb] using hsqrt
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    squared Frobenius-norm form of the printed perturbation bound for the
+    source-case single perturbation.  In the zero branch the perturbation is
+    `DeltaA2`; in the nonzero branch it is the projector mixture. -/
+theorem higham21_lemma21_2_single_perturbation_frobNormSq_le {m n : ℕ}
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ) :
+    frobNormSqRect (undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2) ≤
+      frobNormSqRect DeltaA1 + frobNormSqRect DeltaA2 := by
+  by_cases hx : x = 0
+  · have hD1 : 0 ≤ frobNormSqRect DeltaA1 := frobNormSqRect_nonneg DeltaA1
+    have hbound :
+        frobNormSqRect DeltaA2 ≤ frobNormSqRect DeltaA1 + frobNormSqRect DeltaA2 := by
+      nlinarith
+    simpa [undetLemma21_2SinglePerturbation, hx] using hbound
+  · have hsq : vecNorm2Sq x ≠ 0 :=
+      higham21_vecNorm2Sq_ne_zero_of_ne_zero hx
+    simpa [undetLemma21_2SinglePerturbation, hx] using
+      higham21_lemma21_2_symmetrized_perturbation_frobNormSq_le
+        x hsq DeltaA1 DeltaA2
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    Frobenius-norm form of the printed perturbation bound for the source-case
+    single perturbation. -/
+theorem higham21_lemma21_2_single_perturbation_frob_bound {m n : ℕ}
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ) :
+    frobNormRect (undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2) ≤
+      Real.sqrt (frobNormRect DeltaA1 ^ 2 + frobNormRect DeltaA2 ^ 2) := by
+  by_cases hx : x = 0
+  · have hbound :
+        frobNormRect DeltaA2 ≤
+          Real.sqrt (frobNormRect DeltaA1 ^ 2 + frobNormRect DeltaA2 ^ 2) :=
+      higham21_right_nonneg_le_sqrt_sq_add_sq
+        (frobNormRect DeltaA1) (frobNormRect DeltaA2)
+        (frobNormRect_nonneg DeltaA2)
+    simpa [undetLemma21_2SinglePerturbation, hx] using hbound
+  · have hsq : vecNorm2Sq x ≠ 0 :=
+      higham21_vecNorm2Sq_ne_zero_of_ne_zero hx
+    simpa [undetLemma21_2SinglePerturbation, hx] using
+      higham21_lemma21_2_symmetrized_perturbation_frob_bound
+        x hsq DeltaA1 DeltaA2
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    operator-2 norm form of the printed perturbation bound for the source-case
+    single perturbation. -/
+theorem higham21_lemma21_2_single_perturbation_op_bound {m n : ℕ}
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    {alpha beta : ℝ} (halpha : 0 ≤ alpha) (hbeta : 0 ≤ beta)
+    (hDeltaA1 : rectOpNorm2Le DeltaA1 alpha)
+    (hDeltaA2 : rectOpNorm2Le DeltaA2 beta) :
+    rectOpNorm2Le (undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2)
+      (Real.sqrt (alpha ^ 2 + beta ^ 2)) := by
+  by_cases hx : x = 0
+  · have hbeta_le : beta ≤ Real.sqrt (alpha ^ 2 + beta ^ 2) :=
+      higham21_right_nonneg_le_sqrt_sq_add_sq alpha beta hbeta
+    have hbound :
+        rectOpNorm2Le DeltaA2 (Real.sqrt (alpha ^ 2 + beta ^ 2)) :=
+      rectOpNorm2Le_mono hbeta_le hDeltaA2
+    simpa [undetLemma21_2SinglePerturbation, hx] using hbound
+  · have hsq : vecNorm2Sq x ≠ 0 :=
+      higham21_vecNorm2Sq_ne_zero_of_ne_zero hx
+    simpa [undetLemma21_2SinglePerturbation, hx] using
+      higham21_lemma21_2_symmetrized_perturbation_op_bound
+        x hsq DeltaA1 DeltaA2 halpha hbeta hDeltaA1 hDeltaA2
+
 -- ============================================================
 -- §21.3  Row-wise backward error for underdetermined systems
 -- ============================================================
