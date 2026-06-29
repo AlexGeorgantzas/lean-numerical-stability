@@ -38475,6 +38475,41 @@ theorem Higham13Eq1322LowerComparisonSourceChain.nonterminal_pivot_right_inverse
               (⟨k, hkTailFin⟩ : Fin (m + 1))
           simpa [hidx, hstage] using htail
 
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    full active pivot right-inverse table for a direct lower-comparison source
+    chain, once the final one-block pivot is supplied separately.
+
+    The recursive source certificate supplies exactly the genuine elimination
+    pivots `k < m`.  Some downstream matrix-stage APIs are stated for all
+    `k < m + 1`; this wrapper isolates the only additional datum they need:
+    the terminal pivot certificate. -/
+theorem Higham13Eq1322LowerComparisonSourceChain.pivot_right_inverse_of_final
+    {r n : ℕ} {hr : 0 < r} :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322LowerComparisonSourceChain hr n m Ablk pivotInv →
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+          ⟨m, Nat.lt_succ_self m⟩
+          ⟨m, Nat.lt_succ_self m⟩)
+        (pivotInv m) →
+      ∀ k : ℕ, ∀ hk : k < m + 1,
+        IsRightInverse r
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩)
+          (pivotInv k) := by
+  intro m Ablk pivotInv hcert hfinal k hk
+  by_cases hkm : k < m
+  · exact
+      Higham13Eq1322LowerComparisonSourceChain.nonterminal_pivot_right_inverse
+        hcert k hkm
+  · have hle : k ≤ m := Nat.lt_succ_iff.mp hk
+    have hmk : m ≤ k := Nat.le_of_not_gt hkm
+    have hEq : k = m := Nat.le_antisymm hle hmk
+    subst k
+    simpa using hfinal
+
 /-- Higham, 2nd ed., Chapter 13, equation (13.22):
     a recursive direct-lower-comparison source certificate instantiates the
     ambient exact-κ budget chain.
@@ -38793,6 +38828,36 @@ theorem Higham13Eq1322InverseRatioSourceChain.nonterminal_pivot_right_inverse
     Higham13Eq1322LowerComparisonSourceChain.nonterminal_pivot_right_inverse
       (Higham13Eq1322InverseRatioSourceChain.to_lowerComparisonSourceChain
         (r := r) (n := n) hr hcert)
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    full active pivot right-inverse table for an inverse-ratio source chain,
+    once the final one-block pivot is supplied separately. -/
+theorem Higham13Eq1322InverseRatioSourceChain.pivot_right_inverse_of_final
+    {r n : ℕ} {hr : 0 < r} :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322InverseRatioSourceChain hr n m Ablk pivotInv →
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+          ⟨m, Nat.lt_succ_self m⟩
+          ⟨m, Nat.lt_succ_self m⟩)
+        (pivotInv m) →
+      ∀ k : ℕ, ∀ hk : k < m + 1,
+        IsRightInverse r
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩)
+          (pivotInv k) := by
+  intro m Ablk pivotInv hcert hfinal k hk
+  by_cases hkm : k < m
+  · exact
+      Higham13Eq1322InverseRatioSourceChain.nonterminal_pivot_right_inverse
+        hcert k hkm
+  · have hle : k ≤ m := Nat.lt_succ_iff.mp hk
+    have hmk : m ≤ k := Nat.le_of_not_gt hkm
+    have hEq : k = m := Nat.le_antisymm hle hmk
+    subst k
+    simpa using hfinal
 
 /-- Higham, 2nd ed., Chapter 13, equation (13.22):
     uniform-flat determinant-nonzero successor product witness from an ambient
