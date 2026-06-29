@@ -66,6 +66,72 @@ structure RectMinNormSolution (m n : ℕ)
   /-- The candidate has no larger Euclidean norm than any other solution. -/
   min_norm : ∀ z : Fin n → ℝ, rectMatMulVec A z = b → vecNorm2 x ≤ vecNorm2 z
 
+/-- Rectangular Gram matrix `A Aᵀ` for an underdetermined system. -/
+noncomputable def rectGram {m n : ℕ} (A : Fin m → Fin n → ℝ) :
+    Fin m → Fin m → ℝ :=
+  fun i j => ∑ k : Fin n, A i k * A j k
+
+/-- Transpose-times-vector action `Aᵀ y` for a rectangular matrix. -/
+noncomputable def rectTransposeMulVec {m n : ℕ} (A : Fin m → Fin n → ℝ)
+    (y : Fin m → ℝ) : Fin n → ℝ :=
+  fun j => ∑ i : Fin m, A i j * y i
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.4):
+    algebraic normal-equation identity `A (Aᵀ y) = (A Aᵀ) y`. -/
+theorem rectMatMulVec_rectTransposeMulVec {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (y : Fin m → ℝ) :
+    rectMatMulVec A (rectTransposeMulVec A y) =
+      matMulVec m (rectGram A) y := by
+  ext i
+  unfold rectMatMulVec rectTransposeMulVec matMulVec rectGram
+  calc
+    (∑ j : Fin n, A i j * ∑ r : Fin m, A r j * y r)
+        = ∑ j : Fin n, ∑ r : Fin m, A i j * (A r j * y r) := by
+            apply Finset.sum_congr rfl
+            intro j _
+            rw [Finset.mul_sum]
+    _ = ∑ r : Fin m, ∑ j : Fin n, A i j * (A r j * y r) := by
+            rw [Finset.sum_comm]
+    _ = ∑ r : Fin m, (∑ j : Fin n, A i j * A r j) * y r := by
+            apply Finset.sum_congr rfl
+            intro r _
+            rw [Finset.sum_mul]
+            apply Finset.sum_congr rfl
+            intro j _
+            ring
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.4):
+    if `y` solves `(A Aᵀ)y = b`, then `Aᵀy` solves `A x = b`. -/
+theorem rectTransposeMulVec_solves_of_gram_normal_eq {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (AAT : Fin m → Fin m → ℝ)
+    (b y : Fin m → ℝ)
+    (hAAT : ∀ i j : Fin m, AAT i j = rectGram A i j)
+    (hy : ∀ i : Fin m, matMulVec m AAT y i = b i) :
+    rectMatMulVec A (rectTransposeMulVec A y) = b := by
+  ext i
+  rw [rectMatMulVec_rectTransposeMulVec]
+  calc
+    matMulVec m (rectGram A) y i = matMulVec m AAT y i := by
+      unfold matMulVec
+      apply Finset.sum_congr rfl
+      intro j _
+      rw [(hAAT i j).symm]
+    _ = b i := hy i
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.4):
+    source-facing wrapper for the normal-equation direction of
+    `x_LS = Aᵀ(AAᵀ)⁻¹b`.  The minimum-norm and pseudoinverse parts remain
+    separate selected targets. -/
+theorem higham21_eq21_4_rect_transpose_solves {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (AAT : Fin m → Fin m → ℝ)
+    (b y : Fin m → ℝ)
+    (hAAT : ∀ i j : Fin m, AAT i j = rectGram A i j)
+    (hy : ∀ i : Fin m, matMulVec m AAT y i = b i) :
+    rectMatMulVec A (rectTransposeMulVec A y) = b :=
+  rectTransposeMulVec_solves_of_gram_normal_eq A AAT b y hAAT hy
+
 -- ============================================================
 -- §21.2  Theorem 21.1: Demmel-Higham perturbation bound
 -- ============================================================
