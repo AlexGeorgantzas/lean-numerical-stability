@@ -1513,20 +1513,19 @@ Not yet run for this complete audit:
 ## GitHub synchronization
 
 - Local branch: `main`.
-- Latest pushed HEAD: `86de7ee`.
-- Split-prefixed milestone commit: `7b7c623`
-  (`Split 3B: derive Ch19 beta bridge from self dot`).
-- Integration: merged `origin/main` twice after the local milestone because
-  remote `main` advanced during verification; both merges were clean and
-  preserved incoming Split 2/Split 3A work.
+- Latest pushed proof/merge HEAD before this report-sync update: `1eb9351`.
+- Split-prefixed milestone commit: `2edbb17`
+  (`Split 3B: lift Ch19 beta bridge to successors`).
+- Integration: merged `origin/main` after the local milestone because remote
+  `main` advanced during verification; the merge was clean and preserved
+  incoming Split 3A/library lookup work.
 - Verification after integration: `lake env lean LeanFpAnalysis\FP\Algorithms\QR\Higham19.lean`
-  passed on the final merged state; the target build had already passed after
-  the milestone and first merge.
+  and `lake build LeanFpAnalysis.FP.Algorithms.QR.Higham19` passed on the
+  final merged state.
 - Pushed to `origin/main`: yes, `git push origin main` advanced
-  `origin/main` to `86de7ee`.
+  `origin/main` to `1eb9351`; this report-sync update records that push.
 - Remaining local uncommitted files: pre-existing `.gitignore` modification and
-  untracked `.codex/config.toml`; the local chapter-splitting report refresh is
-  under the ignored report workspace.
+  untracked `.codex/config.toml`.
 
 ## Documentation
 
