@@ -24788,6 +24788,35 @@ theorem higham13_stage_local_source_lblock_budget_le_of_problem13_4_bound
 
 /-- Higham, 2nd ed., Chapter 13, Problem 13.4 feeding equations
     (13.22)--(13.23):
+    scalar bridge for the stage-local inverse-bound route.
+
+    If the one-growth-factor local numerator budget
+    `rhoLocal * ||A_local|| <= rhoFull * ||A||` is already supplied by stage
+    history containment, and the remaining source inverse comparison gives
+    `||A_local^{-1}|| <= rhoFull * ||A^{-1}||`, then the local
+    `rhoLocal * kappaLocal` budget is below the full
+    `rhoFull^2 * kappaFull` budget. -/
+theorem higham13_stage_local_source_lblock_budget_le_of_growth_inverse_bound
+    {rhoLocal rhoFull normLocal normFull normInvLocal normInvFull : ℝ}
+    (hGrowthBudget : rhoLocal * normLocal ≤ rhoFull * normFull)
+    (hInvBudget : normInvLocal ≤ rhoFull * normInvFull)
+    (hInvLocal_nonneg : 0 ≤ normInvLocal)
+    (hGlobalGrowthBudget_nonneg : 0 ≤ rhoFull * normFull) :
+    rhoLocal * (normLocal * normInvLocal) ≤
+      rhoFull ^ 2 * (normFull * normInvFull) := by
+  have hmul :
+      (rhoLocal * normLocal) * normInvLocal ≤
+        (rhoFull * normFull) * (rhoFull * normInvFull) :=
+    mul_le_mul hGrowthBudget hInvBudget hInvLocal_nonneg
+      hGlobalGrowthBudget_nonneg
+  calc
+    rhoLocal * (normLocal * normInvLocal)
+        = (rhoLocal * normLocal) * normInvLocal := by ring
+    _ ≤ (rhoFull * normFull) * (rhoFull * normInvFull) := hmul
+    _ = rhoFull ^ 2 * (normFull * normInvFull) := by ring
+
+/-- Higham, 2nd ed., Chapter 13, Problem 13.4 feeding equations
+    (13.22)--(13.23):
     matrix-stage multiplier bounds from canonical local growth and the
     source scalar comparison table.
 
@@ -25119,17 +25148,12 @@ theorem higham13_algorithm13_3_multiplier_bounds_from_stageLocalGrowth_inverse_b
   have hInvLocal_nonneg : 0 ≤ normInvLocal := by
     exact maxEntryNormRect_nonneg hLocalN hLocalN AinvLoc
   have hLocalBudgetCore : rhoLocal * kappaLocal ≤ rhoFull ^ 2 * kappaFull := by
-    have hmul :
-        (rhoLocal * normLocal) * normInvLocal ≤
-          (rhoFull * normA) * (rhoFull * normAinv) :=
-      mul_le_mul hGrowthBudget hInvBudget hInvLocal_nonneg hGlobalGrowthBudget_nonneg
-    calc
-      rhoLocal * kappaLocal
-          = (rhoLocal * normLocal) * normInvLocal := by
-              ring
-      _ ≤ (rhoFull * normA) * (rhoFull * normAinv) := hmul
-      _ = rhoFull ^ 2 * kappaFull := by
-              ring
+    simpa [kappaLocal, kappaFull, normLocal, normInvLocal, normA, normAinv] using
+      higham13_stage_local_source_lblock_budget_le_of_growth_inverse_bound
+        (rhoLocal := rhoLocal) (rhoFull := rhoFull)
+        (normLocal := normLocal) (normFull := normA)
+        (normInvLocal := normInvLocal) (normInvFull := normAinv)
+        hGrowthBudget hInvBudget hInvLocal_nonneg hGlobalGrowthBudget_nonneg
   have hBudget_nonneg : 0 ≤ rhoFull ^ 2 * kappaFull :=
     mul_nonneg (sq_nonneg rhoFull) hkappaFull_nonneg
   have hScaled :
