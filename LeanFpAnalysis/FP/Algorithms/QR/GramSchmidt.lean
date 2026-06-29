@@ -24,6 +24,14 @@ def gsColumn {m n : Nat} (A : Fin m -> Fin n -> Real) (j : Fin n) :
 def gsDot {m : Nat} (x y : Fin m -> Real) : Real :=
   Finset.univ.sum fun i : Fin m => x i * y i
 
+/-- The Gram-Schmidt dot product is symmetric. -/
+theorem gsDot_comm {m : Nat} (x y : Fin m -> Real) :
+    gsDot x y = gsDot y x := by
+  unfold gsDot
+  apply Finset.sum_congr rfl
+  intro i _
+  ring
+
 /-- Scale a column vector. -/
 def gsScale {m : Nat} (alpha : Real) (x : Fin m -> Real) : Fin m -> Real :=
   fun i => alpha * x i
@@ -36,9 +44,116 @@ def gsSub {m : Nat} (x y : Fin m -> Real) : Fin m -> Real :=
 def gsProjectAway {m : Nat} (x q : Fin m -> Real) : Fin m -> Real :=
   fun i => x i - gsDot q x * q i
 
+/-- The Gram-Schmidt dot product of a vector with itself is its finite squared
+Euclidean norm. -/
+theorem gsDot_self_eq_finiteVecNorm2Sq {m : Nat} (x : Fin m -> Real) :
+    gsDot x x = finiteVecNorm2Sq x := by
+  simp [gsDot, finiteVecNorm2Sq, pow_two]
+
+/-- Dot-product expansion after removing the projection of `x` along `q`. -/
+theorem gsDot_projectAway_self {m : Nat} (q x : Fin m -> Real) :
+    gsDot q (gsProjectAway x q) = gsDot q x - gsDot q x * gsDot q q := by
+  unfold gsDot gsProjectAway
+  calc
+    (Finset.univ.sum fun i : Fin m => q i * (x i - gsDot q x * q i))
+        =
+      Finset.univ.sum fun i : Fin m =>
+        q i * x i - q i * (gsDot q x * q i) := by
+        apply Finset.sum_congr rfl
+        intro i _
+        ring
+    _ =
+      (Finset.univ.sum fun i : Fin m => q i * x i) -
+        (Finset.univ.sum fun i : Fin m => q i * (gsDot q x * q i)) := by
+        rw [Finset.sum_sub_distrib]
+    _ =
+      (Finset.univ.sum fun i : Fin m => q i * x i) -
+        gsDot q x * (Finset.univ.sum fun i : Fin m => q i * q i) := by
+        congr 1
+        calc
+          (Finset.univ.sum fun i : Fin m => q i * (gsDot q x * q i))
+              = Finset.univ.sum fun i : Fin m =>
+                  gsDot q x * (q i * q i) := by
+              apply Finset.sum_congr rfl
+              intro i _
+              ring
+          _ = gsDot q x * Finset.univ.sum fun i : Fin m => q i * q i := by
+              rw [Finset.mul_sum]
+    _ =
+      (Finset.univ.sum fun i : Fin m => q i * x i) -
+        (Finset.univ.sum fun i : Fin m => q i * x i) *
+          (Finset.univ.sum fun i : Fin m => q i * q i) := by
+        rfl
+
+/-- Dot-product expansion after removing the projection of `x` along `q`,
+tested against a possibly different vector `u`. -/
+theorem gsDot_projectAway_left {m : Nat}
+    (u q x : Fin m -> Real) :
+    gsDot u (gsProjectAway x q) = gsDot u x - gsDot q x * gsDot u q := by
+  unfold gsDot gsProjectAway
+  calc
+    (Finset.univ.sum fun i : Fin m => u i * (x i - gsDot q x * q i))
+        =
+      Finset.univ.sum fun i : Fin m =>
+        u i * x i - u i * (gsDot q x * q i) := by
+        apply Finset.sum_congr rfl
+        intro i _
+        ring
+    _ =
+      (Finset.univ.sum fun i : Fin m => u i * x i) -
+        (Finset.univ.sum fun i : Fin m => u i * (gsDot q x * q i)) := by
+        rw [Finset.sum_sub_distrib]
+    _ =
+      (Finset.univ.sum fun i : Fin m => u i * x i) -
+        gsDot q x * (Finset.univ.sum fun i : Fin m => u i * q i) := by
+        congr 1
+        calc
+          (Finset.univ.sum fun i : Fin m => u i * (gsDot q x * q i))
+              = Finset.univ.sum fun i : Fin m =>
+                  gsDot q x * (u i * q i) := by
+              apply Finset.sum_congr rfl
+              intro i _
+              ring
+          _ = gsDot q x * Finset.univ.sum fun i : Fin m => u i * q i := by
+              rw [Finset.mul_sum]
+    _ =
+      (Finset.univ.sum fun i : Fin m => u i * x i) -
+        gsDot q x * (Finset.univ.sum fun i : Fin m => u i * q i) := rfl
+
+/-- Removing the projection along a unit vector leaves a vector orthogonal to
+that unit vector. -/
+theorem gsDot_projectAway_eq_zero_of_unit {m : Nat} (q x : Fin m -> Real)
+    (hunit : gsDot q q = 1) :
+    gsDot q (gsProjectAway x q) = 0 := by
+  rw [gsDot_projectAway_self, hunit]
+  ring
+
+/-- Projection removal preserves a prior orthogonality relation when the prior
+vector is orthogonal to the projection direction. -/
+theorem gsDot_projectAway_eq_zero_of_left_orthogonal {m : Nat}
+    (u q x : Fin m -> Real)
+    (hux : gsDot u x = 0) (huq : gsDot u q = 0) :
+    gsDot u (gsProjectAway x q) = 0 := by
+  rw [gsDot_projectAway_left, hux, huq]
+  ring
+
 /-- Normalize a column vector by a supplied scalar. -/
 def gsNormalize {m : Nat} (x : Fin m -> Real) (r : Real) : Fin m -> Real :=
   fun i => x i / r
+
+/-- Dot product against a normalized right argument factors out the scalar
+normalizer. -/
+theorem gsDot_normalize_right {m : Nat} (u x : Fin m -> Real) (r : Real) :
+    gsDot u (gsNormalize x r) = gsDot u x / r := by
+  unfold gsDot gsNormalize
+  calc
+    (Finset.univ.sum fun i : Fin m => u i * (x i / r))
+        = Finset.univ.sum fun i : Fin m => (u i * x i) / r := by
+            apply Finset.sum_congr rfl
+            intro i _
+            ring
+    _ = (Finset.univ.sum fun i : Fin m => u i * x i) / r := by
+            rw [Finset.sum_div]
 
 /-- Euclidean column norm used by the Gram-Schmidt algorithms. -/
 def gsColumnNorm2 {m : Nat} (x : Fin m -> Real) : Real :=
@@ -152,6 +267,45 @@ def modifiedGramSchmidtVectors {m n : Nat}
       else
         modifiedGramSchmidtVectors A t
 
+/-- Rectangular multiplication by a standard basis vector selects the
+corresponding column. -/
+theorem rectMatMulVec_finiteBasisVec_gsColumn {m n : Nat}
+    (A : Fin m -> Fin n -> Real) (j : Fin n) :
+    rectMatMulVec A (finiteBasisVec j) = gsColumn A j := by
+  ext i
+  unfold rectMatMulVec finiteBasisVec gsColumn
+  simp [Finset.mem_univ]
+
+/-- Rank-to-MGS nonbreakdown base step: if the rectangular column map for `A`
+is injective, then no input column has zero norm, so the stage-0 MGS
+normalizer is nonzero. -/
+theorem modifiedGramSchmidtVectors_zero_norm_ne_zero_of_rectMatMulVec_injective
+    {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hinj : Function.Injective (rectMatMulVec A)) (j : Fin n) :
+    gsColumnNorm2 (modifiedGramSchmidtVectors A 0 j) ≠ 0 := by
+  intro hnorm
+  have hvecnorm : vecNorm2 (gsColumn A j) = 0 := by
+    simpa [modifiedGramSchmidtVectors, gsColumnNorm2] using hnorm
+  have hcol_zero : gsColumn A j = 0 := by
+    ext i
+    exact (vecNorm2_eq_zero_iff (gsColumn A j)).mp hvecnorm i
+  let e : Fin n -> Real := finiteBasisVec j
+  have hAe_zero : rectMatMulVec A e = 0 := by
+    rw [rectMatMulVec_finiteBasisVec_gsColumn]
+    exact hcol_zero
+  have hA0_zero : rectMatMulVec A (0 : Fin n -> Real) = 0 := by
+    ext i
+    unfold rectMatMulVec
+    simp
+  have heq : e = (0 : Fin n -> Real) := by
+    apply hinj
+    rw [hAe_zero, hA0_zero]
+  have hone : e j = 1 := by
+    simp [e, finiteBasisVec]
+  have hzero : e j = 0 := by
+    simpa using congrFun heq j
+  linarith
+
 /-- Computed MGS `q_j` column from stage `j`. -/
 def modifiedGramSchmidtQ {m n : Nat}
     (A : Fin m -> Fin n -> Real) : Fin m -> Fin n -> Real :=
@@ -225,6 +379,259 @@ theorem modifiedGramSchmidtVectors_succ_later {m n : Nat}
   rw [modifiedGramSchmidtVectors_succ_eq_step_fin A k]
   exact modifiedGramSchmidtStep_eq_projectAway_of_lt
     (modifiedGramSchmidtVectors A k.val) hkj
+
+/-- Exact MGS residuals are always source-column combinations whose coefficient
+of the active source column is `1` and whose coefficients on later source
+columns are zero.
+
+This linear-combination invariant is independent of nonzero-pivot assumptions:
+the algorithmic definitions remain algebraic even when a normalizer is zero. -/
+theorem modifiedGramSchmidtVectors_exists_source_coeffs {m n : Nat}
+    (A : Fin m -> Fin n -> Real) (t : Nat) (j : Fin n) :
+    ∃ c : Fin n -> Real,
+      rectMatMulVec A c = modifiedGramSchmidtVectors A t j ∧
+        c j = 1 ∧
+        ∀ r : Fin n, j.val < r.val -> c r = 0 := by
+  revert j
+  induction t with
+  | zero =>
+      intro j
+      refine ⟨finiteBasisVec j, ?_, ?_, ?_⟩
+      · exact rectMatMulVec_finiteBasisVec_gsColumn A j
+      · simp [finiteBasisVec]
+      · intro r hjr
+        have hrne : r ≠ j := by
+          intro hrj
+          rw [hrj] at hjr
+          exact (Nat.lt_irrefl j.val) hjr
+        simp [finiteBasisVec, hrne]
+  | succ t ih =>
+      intro j
+      by_cases ht : t < n
+      · let k : Fin n := ⟨t, ht⟩
+        by_cases hkj : k < j
+        · rcases ih j with ⟨cj, hAcj, hcjj, hcj_supp⟩
+          rcases ih k with ⟨ck, hAck, _hckk, hck_supp⟩
+          let norm : Real :=
+            gsColumnNorm2 (modifiedGramSchmidtVectors A t k)
+          let alpha : Real :=
+            gsDot (gsNormalize (modifiedGramSchmidtVectors A t k) norm)
+              (modifiedGramSchmidtVectors A t j)
+          let c : Fin n -> Real := fun r => cj r - (alpha / norm) * ck r
+          refine ⟨c, ?_, ?_, ?_⟩
+          · have hstep :
+                modifiedGramSchmidtVectors A (t + 1) j =
+                  gsProjectAway (modifiedGramSchmidtVectors A t j)
+                    (gsNormalize (modifiedGramSchmidtVectors A t k)
+                      (gsColumnNorm2 (modifiedGramSchmidtVectors A t k))) := by
+              simpa [k] using
+                (modifiedGramSchmidtVectors_succ_later (A := A)
+                  (k := k) (j := j) hkj)
+            ext i
+            change rectMatMulVec A
+                (fun r : Fin n => cj r - (alpha / norm) * ck r) i =
+              modifiedGramSchmidtVectors A (t + 1) j i
+            rw [hstep]
+            rw [congrFun
+              (rectMatMulVec_sub A cj
+                (fun r : Fin n => (alpha / norm) * ck r)) i]
+            rw [congrFun (rectMatMulVec_smul A (alpha / norm) ck) i]
+            rw [congrFun hAcj i, congrFun hAck i]
+            simp [gsProjectAway, gsNormalize, alpha, norm]
+            ring
+          · have hckj : ck j = 0 :=
+              hck_supp j hkj
+            simp [c, hcjj, hckj]
+          · intro r hjr
+            have hcjr : cj r = 0 := hcj_supp r hjr
+            have hkr : k.val < r.val :=
+              Nat.lt_trans hkj hjr
+            have hckr : ck r = 0 := hck_supp r hkr
+            simp [c, hcjr, hckr]
+        · rcases ih j with ⟨cj, hAcj, hcjj, hcj_supp⟩
+          refine ⟨cj, ?_, hcjj, hcj_supp⟩
+          have hsame :
+              modifiedGramSchmidtVectors A (t + 1) j =
+                modifiedGramSchmidtVectors A t j := by
+            rw [modifiedGramSchmidtVectors_succ_eq_step A ht]
+            exact modifiedGramSchmidtStep_eq_self_of_not_lt
+              (modifiedGramSchmidtVectors A t) hkj
+          rw [hsame]
+          exact hAcj
+      · rcases ih j with ⟨cj, hAcj, hcjj, hcj_supp⟩
+        refine ⟨cj, ?_, hcjj, hcj_supp⟩
+        have hsame :
+            modifiedGramSchmidtVectors A (t + 1) j =
+              modifiedGramSchmidtVectors A t j := by
+          simp [modifiedGramSchmidtVectors, ht]
+        rw [hsame]
+        exact hAcj
+
+/-- Rank-to-MGS nonbreakdown for all exact stages: if the rectangular column
+map for `A` is injective, then every MGS active residual has nonzero Euclidean
+normalizer. -/
+theorem modifiedGramSchmidtVectors_norm_ne_zero_of_rectMatMulVec_injective
+    {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hinj : Function.Injective (rectMatMulVec A)) (j : Fin n) :
+    gsColumnNorm2 (modifiedGramSchmidtVectors A j.val j) ≠ 0 := by
+  rcases modifiedGramSchmidtVectors_exists_source_coeffs A j.val j with
+    ⟨c, hAc, hcj, _hc_supp⟩
+  intro hnorm
+  have hvecnorm : vecNorm2 (modifiedGramSchmidtVectors A j.val j) = 0 := by
+    simpa [gsColumnNorm2] using hnorm
+  have hstage_zero :
+      modifiedGramSchmidtVectors A j.val j = 0 := by
+    ext i
+    exact
+      (vecNorm2_eq_zero_iff
+        (modifiedGramSchmidtVectors A j.val j)).mp hvecnorm i
+  have hAc_zero : rectMatMulVec A c = 0 := by
+    rw [hAc, hstage_zero]
+  have hA0_zero : rectMatMulVec A (0 : Fin n -> Real) = 0 := by
+    ext i
+    simp [rectMatMulVec]
+  have hc_eq_zero : c = (0 : Fin n -> Real) := by
+    apply hinj
+    rw [hAc_zero, hA0_zero]
+  have hcj_zero : c j = 0 := by
+    simpa using congrFun hc_eq_zero j
+  linarith
+
+/-- One exact MGS step makes each later residual column orthogonal to the
+current normalized `q_k` column.  This is the local orthogonality atom needed
+for the full MGS orthonormal-columns route. -/
+theorem modifiedGramSchmidtQ_dot_vectors_succ_later_eq_zero {m n : Nat}
+    (A : Fin m -> Fin n -> Real) {k j : Fin n} (hkj : k < j)
+    (hdiag :
+      Ne (gsColumnNorm2 (modifiedGramSchmidtVectors A k.val k)) 0) :
+    gsDot (gsColumn (modifiedGramSchmidtQ A) k)
+        (modifiedGramSchmidtVectors A (k.val + 1) j) = 0 := by
+  rw [modifiedGramSchmidtVectors_succ_later A hkj]
+  apply gsDot_projectAway_eq_zero_of_unit
+  have hnorm := modifiedGramSchmidtQ_column_norm_sq A k hdiag
+  simpa [gsDot_self_eq_finiteVecNorm2Sq] using hnorm
+
+/-- One MGS projection step preserves an older residual orthogonality relation
+provided the older `q_i` column is orthogonal to the current `q_k` column. -/
+theorem modifiedGramSchmidtQ_dot_vectors_succ_later_eq_zero_of_prev
+    {m n : Nat} (A : Fin m -> Fin n -> Real) {i k j : Fin n}
+    (hkj : k < j)
+    (hprev :
+      gsDot (gsColumn (modifiedGramSchmidtQ A) i)
+        (modifiedGramSchmidtVectors A k.val j) = 0)
+    (hiq :
+      gsDot (gsColumn (modifiedGramSchmidtQ A) i)
+        (gsColumn (modifiedGramSchmidtQ A) k) = 0) :
+    gsDot (gsColumn (modifiedGramSchmidtQ A) i)
+        (modifiedGramSchmidtVectors A (k.val + 1) j) = 0 := by
+  rw [modifiedGramSchmidtVectors_succ_later A hkj]
+  apply gsDot_projectAway_eq_zero_of_left_orthogonal
+  · exact hprev
+  · simpa [modifiedGramSchmidtQ, gsColumn] using hiq
+
+/-- If an older `q_i` column is already orthogonal to every intervening
+normalized column, then its orthogonality to column `j`'s active residual
+persists from the first MGS projection step through stage `j`. -/
+theorem modifiedGramSchmidtQ_dot_vectors_stage_eq_zero_of_lt_of_prev
+    {m n : Nat} (A : Fin m -> Fin n -> Real) {i j : Fin n}
+    (hij : i < j)
+    (hdiag_i :
+      Ne (gsColumnNorm2 (modifiedGramSchmidtVectors A i.val i)) 0)
+    (hprev :
+      forall k : Fin n, i.val < k.val -> k.val < j.val ->
+        gsDot (gsColumn (modifiedGramSchmidtQ A) i)
+          (gsColumn (modifiedGramSchmidtQ A) k) = 0) :
+    gsDot (gsColumn (modifiedGramSchmidtQ A) i)
+        (modifiedGramSchmidtVectors A j.val j) = 0 := by
+  let P : Nat -> Prop := fun t =>
+    t <= j.val ->
+      gsDot (gsColumn (modifiedGramSchmidtQ A) i)
+        (modifiedGramSchmidtVectors A t j) = 0
+  have hbase : P (i.val + 1) := by
+    intro _hle
+    exact modifiedGramSchmidtQ_dot_vectors_succ_later_eq_zero A hij hdiag_i
+  have hstep : forall t, i.val + 1 <= t -> P t -> P (t + 1) := by
+    intro t hit hP hsucc_le
+    have htj : t < j.val := Nat.lt_of_succ_le hsucc_le
+    have htn : t < n := Nat.lt_trans htj j.isLt
+    let k : Fin n := ⟨t, htn⟩
+    have hkj : k < j := by
+      simpa [k] using htj
+    have hprev_stage :
+        gsDot (gsColumn (modifiedGramSchmidtQ A) i)
+          (modifiedGramSchmidtVectors A k.val j) = 0 := by
+      simpa [k] using hP (Nat.le_of_lt htj)
+    have hi_k : i.val < k.val := by
+      have hi_succ : i.val < i.val + 1 := Nat.lt_succ_self i.val
+      exact Nat.lt_of_lt_of_le hi_succ (by simpa [k] using hit)
+    have hiq :
+        gsDot (gsColumn (modifiedGramSchmidtQ A) i)
+          (gsColumn (modifiedGramSchmidtQ A) k) = 0 :=
+      hprev k hi_k (by simpa [k] using htj)
+    simpa [k] using
+      modifiedGramSchmidtQ_dot_vectors_succ_later_eq_zero_of_prev
+        (A := A) (i := i) (k := k) (j := j) hkj hprev_stage hiq
+  have hle : i.val + 1 <= j.val := Nat.succ_le_of_lt hij
+  have htarget : P j.val :=
+    Nat.le_induction
+      (m := i.val + 1)
+      (P := fun t _ => P t)
+      hbase
+      (by
+        intro t hit hPt
+        exact hstep t hit hPt)
+      j.val hle
+  exact htarget le_rfl
+
+/-- Conditional pairwise MGS orthogonality: once all intervening normalized
+columns are known orthogonal to `q_i`, the final normalized `q_j` column is
+orthogonal to `q_i`. -/
+theorem modifiedGramSchmidtQ_dot_eq_zero_of_lt_of_prev
+    {m n : Nat} (A : Fin m -> Fin n -> Real) {i j : Fin n}
+    (hij : i < j)
+    (hdiag_i :
+      Ne (gsColumnNorm2 (modifiedGramSchmidtVectors A i.val i)) 0)
+    (hprev :
+      forall k : Fin n, i.val < k.val -> k.val < j.val ->
+        gsDot (gsColumn (modifiedGramSchmidtQ A) i)
+          (gsColumn (modifiedGramSchmidtQ A) k) = 0) :
+    gsDot (gsColumn (modifiedGramSchmidtQ A) i)
+        (gsColumn (modifiedGramSchmidtQ A) j) = 0 := by
+  have hstage :=
+    modifiedGramSchmidtQ_dot_vectors_stage_eq_zero_of_lt_of_prev
+      (A := A) hij hdiag_i hprev
+  rw [show gsColumn (modifiedGramSchmidtQ A) j =
+      gsNormalize (modifiedGramSchmidtVectors A j.val j)
+        (gsColumnNorm2 (modifiedGramSchmidtVectors A j.val j)) by rfl]
+  rw [gsDot_normalize_right, hstage]
+  simp
+
+/-- Exact MGS produces pairwise orthogonal normalized columns under the
+standard nonzero-stage hypothesis. -/
+theorem modifiedGramSchmidtQ_dot_eq_zero_of_lt
+    {m n : Nat} (A : Fin m -> Fin n -> Real)
+    (hdiag :
+      forall k : Fin n,
+        Ne (gsColumnNorm2 (modifiedGramSchmidtVectors A k.val k)) 0)
+    {i j : Fin n} (hij : i < j) :
+    gsDot (gsColumn (modifiedGramSchmidtQ A) i)
+        (gsColumn (modifiedGramSchmidtQ A) j) = 0 := by
+  let P : Nat -> Prop := fun t =>
+    forall j : Fin n, j.val = t ->
+      forall i : Fin n, i < j ->
+        gsDot (gsColumn (modifiedGramSchmidtQ A) i)
+          (gsColumn (modifiedGramSchmidtQ A) j) = 0
+  have hmain : forall t, P t := by
+    intro t
+    induction t using Nat.strong_induction_on with
+    | h t ih =>
+        intro j hjt i hij
+        apply modifiedGramSchmidtQ_dot_eq_zero_of_lt_of_prev A hij (hdiag i)
+        intro k hik hkj
+        have hkt : k.val < t := by
+          simpa [hjt] using hkj
+        exact ih k.val hkt k rfl i (by simpa using hik)
+  exact hmain j.val j rfl i hij
 
 /-- MGS `R` is zero below the diagonal by construction. -/
 theorem modifiedGramSchmidtR_eq_zero_of_lt {m n : Nat}
@@ -2627,6 +3034,13 @@ def rectangularGram {m n : Nat} (Q : Fin m -> Fin n -> Real) :
     Fin n -> Fin n -> Real :=
   matMulRect n m n (finiteTranspose Q) Q
 
+/-- A rectangular Gram entry is the Gram-Schmidt dot product of the
+corresponding columns. -/
+theorem rectangularGram_eq_gsDot {m n : Nat}
+    (Q : Fin m -> Fin n -> Real) (i j : Fin n) :
+    rectangularGram Q i j = gsDot (gsColumn Q i) (gsColumn Q j) := by
+  rfl
+
 /-- Expanding `||Q*x||_2^2` through the rectangular Gram matrix `Q^T Q`. -/
 theorem rectangularGram_quadratic_eq_vecNorm2Sq {m n : Nat}
     (Q : Fin m -> Fin n -> Real) (x : Fin n -> Real) :
@@ -2944,6 +3358,54 @@ surface to avoid collisions with the RandNLA basis predicate. -/
 def GramSchmidtOrthonormalColumns {m n : Nat}
     (Q : Fin m -> Fin n -> Real) : Prop :=
   forall i j : Fin n, rectangularGram Q i j = idMatrix n i j
+
+/-- Exact MGS has orthonormal columns whenever all stage normalizers are
+nonzero. -/
+theorem modifiedGramSchmidtQ_orthonormal_columns {m n : Nat}
+    (A : Fin m -> Fin n -> Real)
+    (hdiag :
+      forall k : Fin n,
+        Ne (gsColumnNorm2 (modifiedGramSchmidtVectors A k.val k)) 0) :
+    GramSchmidtOrthonormalColumns (modifiedGramSchmidtQ A) := by
+  intro i j
+  rw [rectangularGram_eq_gsDot]
+  by_cases hij : i = j
+  · subst j
+    have hnorm := modifiedGramSchmidtQ_column_norm_sq A i (hdiag i)
+    calc
+      gsDot (gsColumn (modifiedGramSchmidtQ A) i)
+          (gsColumn (modifiedGramSchmidtQ A) i)
+          = finiteVecNorm2Sq (gsColumn (modifiedGramSchmidtQ A) i) :=
+            gsDot_self_eq_finiteVecNorm2Sq _
+      _ = 1 := hnorm
+      _ = idMatrix n i i := by simp [idMatrix]
+  · by_cases hlt : i.val < j.val
+    · have hijFin : i < j := by
+        simpa using hlt
+      have hzero :=
+        modifiedGramSchmidtQ_dot_eq_zero_of_lt A hdiag hijFin
+      calc
+        gsDot (gsColumn (modifiedGramSchmidtQ A) i)
+            (gsColumn (modifiedGramSchmidtQ A) j)
+            = 0 := hzero
+        _ = idMatrix n i j := by simp [idMatrix, hij]
+    · have hle : j.val <= i.val := Nat.le_of_not_gt hlt
+      have hne_val : j.val ≠ i.val := by
+        intro hval
+        exact hij (Fin.ext hval.symm)
+      have hjlt : j.val < i.val := lt_of_le_of_ne hle hne_val
+      have hjiFin : j < i := by
+        simpa using hjlt
+      have hzero :=
+        modifiedGramSchmidtQ_dot_eq_zero_of_lt A hdiag hjiFin
+      calc
+        gsDot (gsColumn (modifiedGramSchmidtQ A) i)
+            (gsColumn (modifiedGramSchmidtQ A) j)
+            = gsDot (gsColumn (modifiedGramSchmidtQ A) j)
+                (gsColumn (modifiedGramSchmidtQ A) i) :=
+              gsDot_comm _ _
+        _ = 0 := hzero
+        _ = idMatrix n i j := by simp [idMatrix, hij]
 
 /-- Orthonormal columns give a unit rectangular operator-2 certificate. -/
 theorem GramSchmidtOrthonormalColumns.rectOpNorm2Le_one {m n : Nat}

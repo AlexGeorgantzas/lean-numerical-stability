@@ -17762,6 +17762,37 @@ theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_upper_cert
     lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_inequality_certificate
       htheta A b hy hnot hrank hlower hupper
 
+/-- Scalar-branch positive finite-`theta` WKS handoff.  If the printed outer
+    minimum in (20.21) selects the scalar `phi` branch, the exact-fit
+    perturbation witness gives the upper inequality; the finite-positive
+    lower-bound side then gives equality and positivity.  The source-block
+    `sigma_min` branch, eigenvalue branch formula, and `theta = infinity` case
+    remain separate obligations. -/
+theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_phi_le_sigmaMin
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hnot : ¬ IsLeastSquaresMinimizer A b y)
+    (hrank :
+      lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+        (lsResidualHigham A b y) y = m + 1)
+    (hbranch :
+      lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y ≤
+        lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+          (lsResidualHigham A b y) y) :
+    lsNormwiseBackwardErrorEtaF theta A b y =
+        lsNormwiseBackwardErrorFormulaRHS theta A b y ∧
+      0 < lsNormwiseBackwardErrorEtaF theta A b y ∧
+      0 < lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  have hupper :
+      lsNormwiseBackwardErrorEtaF theta A b y ≤
+        lsNormwiseBackwardErrorFormulaRHS theta A b y :=
+    lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_phi_le_sigmaMin
+      (le_of_lt htheta) A b hy hbranch
+  exact
+    lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_upper_certificate
+      htheta A b hy hnot hrank hupper
+
 /-- Positive finite-`theta` WKS branch from the concrete rank-one
     source-block certificate.  This replaces the generic upper-inequality
     hypothesis by the explicit expanded rank-one witness cost bound against
@@ -17842,6 +17873,58 @@ theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_rankOne_scaled_cost
         lsNormwiseBackwardErrorFormulaRHS theta A b y :=
     lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_rankOne_scaled_cost_le_sigmaMin
       theta A b y p hp c hc hbranch hcost
+  exact
+    lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_upper_certificate
+      htheta A b hy hnot hrank hupper
+
+/-- Degenerate source-projector positive-branch WKS handoff with source-shaped
+    nonzero scale.  In the finite-positive branch, if a source-block candidate
+    `p` is parallel to the residual direction, has `p^T b != 0`, and satisfies
+    the source-transpose certificate, then the degenerate upper-bound theorem
+    combines with the already proved lower-bound side to give equality and
+    positivity in (20.21).  The nondegenerate source-block construction,
+    eigenvalue branch formula, and `theta = infinity` case remain open. -/
+theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_rankOne_scaled_source_transpose_projected_eq_zero_of_dot_b_ne_zero
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hnot : ¬ IsLeastSquaresMinimizer A b y)
+    (hrank :
+      lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+        (lsResidualHigham A b y) y = m + 1)
+    (p : Fin (m + 1) → ℝ) (hp : p ≠ 0)
+    (hdotb : (∑ i : Fin (m + 1), p i * b i) ≠ 0)
+    (hbranch :
+      lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+          (lsResidualHigham A b y) y ≤
+        lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y)
+    (hprojected :
+      let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+      vecNorm2Sq (matMulVec (m + 1) (lsResidualComplementProjector r) p) = 0)
+    (hsource :
+      let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+      vecNorm2Sq
+          (rectMatMulVec
+            (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y)) p) ≤
+        (lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y) ^ 2 *
+          vecNorm2Sq p) :
+    lsNormwiseBackwardErrorEtaF theta A b y =
+        lsNormwiseBackwardErrorFormulaRHS theta A b y ∧
+      0 < lsNormwiseBackwardErrorEtaF theta A b y ∧
+      0 < lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  have hrsq : vecNorm2Sq (lsResidualHigham A b y) ≠ 0 := by
+    intro hrsq_zero
+    have hnorm : vecNorm2 (lsResidualHigham A b y) = 0 := by
+      simp [vecNorm2, hrsq_zero]
+    have hres : lsResidualHigham A b y = 0 := by
+      ext i
+      exact (vecNorm2_eq_zero_iff (lsResidualHigham A b y)).mp hnorm i
+    exact hnot (IsLeastSquaresMinimizer.of_lsResidualHigham_eq_zero hres)
+  have hupper :
+      lsNormwiseBackwardErrorEtaF theta A b y ≤
+        lsNormwiseBackwardErrorFormulaRHS theta A b y :=
+    lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_rankOne_scaled_source_transpose_projected_eq_zero_of_dot_b_ne_zero
+      theta A b y p hp hrsq hdotb hbranch hprojected hsource
   exact
     lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_upper_certificate
       htheta A b hy hnot hrank hupper
