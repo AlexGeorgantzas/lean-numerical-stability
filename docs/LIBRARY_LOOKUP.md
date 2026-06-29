@@ -1667,6 +1667,9 @@ Source-facing Chapter 9 wrappers:
 - `higham9_completePivotingCertificateGrowth_le_sup`
 - `higham9_11_completePivotingCertificateGrowthValues_exists_ge_succ`
 - `higham9_11_completePivotingCertificateGrowthSup_ge_succ`
+- `higham9_8_CompletePivotGECPUTrace_exists_certificateGrowth_le`
+- `higham9_8_CompletePivotGECPUTrace_exists_certificateGrowthValue_le`
+- `higham9_completePivotingCertificateGrowthValues_nonempty`
 - `higham9_completePivotingUTraceGrowthValues`
 - `higham9_completePivotingUTraceGrowthSup`
 - `higham9_completePivotingUTraceGrowthValues_bddAbove`
