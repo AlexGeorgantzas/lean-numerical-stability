@@ -53,6 +53,27 @@ end-to-end stability rebuild is tagged as
   LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet `examples/LibraryLookup.lean`
   with empty stderr, `git diff --check`, marker scan, and focused
   `#print axioms` all passed with only standard Mathlib axioms.
+- 2026-06-29 matrix-`∞` source-norm finite-history bridge:
+  `higham13_algorithm13_3_matrixStageHistoryInfBound` records the finite
+  matrix-product stage history using the blockwise matrix-`∞` maximum.  The
+  containment lemmas
+  `higham13_algorithm13_3_matrixStageHistoryInfBound_contains_stage`,
+  `higham13_algorithm13_3_matrixStageHistoryInfBound_contains_initial`, and
+  `higham13_algorithm13_3_matrixStageHistoryInfBound_contains_upperFromMatrixStages`
+  parallel the existing max-entry history object.  The active-stage induction
+  layer
+  `higham13_algorithm13_3_matrixStageBlock_infNorm_bound_of_active_bound`,
+  `higham13_algorithm13_3_matrixStage_blockInfNorm_bound_of_active_bound`,
+  `higham13_algorithm13_3_matrixStageHistoryInfBound_le_of_stage_bound`,
+  `higham13_algorithm13_3_matrixStageHistoryInfBound_le_of_active_bound`, and
+  `higham13_algorithm13_3_matrixStageHistoryInfBound_le_two_of_active_stage_bound`
+  proves inactive carry-forward stages are also controlled.  Source-table,
+  pivot-right-inverse, and initial-diagonal/right-inverse wrappers prove
+  `matrixStageHistoryInfBound <= 2 * blockInfNorm A`; the companion
+  `higham13_algorithm13_3_matrix_infNorm_matrixStageHistoryGrowthMatrix_bound_by_blockInfNorm_*`
+  wrappers prove the existing max-entry growth matrix is bounded by
+  `2 * blockInfNorm A`.  This is source-norm finite-history progress, not yet
+  the chapter's entrywise-denominator `growthFactorEntry <= 2`.
 - 2026-06-29 matrix-`∞` source-table max-entry composition checkpoint:
   `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_blockMaxNorm_bound_with_card_of_continuousLinearMap_source_table`,
   `higham13_algorithm13_3_matrix_infNorm_matrixStageHistoryGrowthFactor_le_card_of_continuousLinearMap_source_table`,
