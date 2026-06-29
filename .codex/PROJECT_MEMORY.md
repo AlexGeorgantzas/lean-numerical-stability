@@ -9698,3 +9698,17 @@ These compile, but should not be treated as fully derived stability results:
   those table/inverse facts from BDD and integrating the result with the
   entrywise max-norm Eq.13.21 and BDD nonsingularity/block-LU existence
   endpoints.
+
+- 2026-06-28 Algorithm 13.3 BDD matrix-infinity CLM downstream wrappers:
+  added
+  `higham13_algorithm13_3_matrix_infNorm_diagLowerCertGeneric_pivot_bound_of_continuousLinearMap_source_table`,
+  `higham13_algorithm13_3_matrix_infNorm_active_column_dominance_of_continuousLinearMap_source_table`,
+  and
+  `higham13_algorithm13_3_matrix_infNorm_active_stage_bound_of_continuousLinearMap_source_table`
+  in `BlockLU.lean`.  These carry the matrix-`∞` CLM source-table hypotheses
+  through the direct active pivot-product bound, active column dominance, and
+  the Theorem 13.8-style `2 * normMax` active-stage bound for the actual
+  Algorithm 13.3 matrix Schur stages.  This is downstream packaging only: the
+  initial lower table, exact active pivot inverse identities, entrywise
+  max-norm Eq.13.21 transfer, and BDD nonsingularity/block-LU existence
+  endpoints remain open.
