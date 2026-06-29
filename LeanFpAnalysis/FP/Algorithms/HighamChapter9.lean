@@ -20390,6 +20390,62 @@ theorem higham9_15_normalized_Gtilde_frobNorm_ratio_bound_of_min_factor_bound
       Gtilde X Y hfact hX hY hmin
   exact higham9_15_scalar_bound_of_le_add_mul hGlt hlinear
 
+/-- **Theorem 9.15**, ratio bound for the normalized `I + G` split from a
+direct bound on the strict-lower factor. -/
+theorem higham9_15_normalized_G_frobNorm_ratio_bound_of_left_le {n : ℕ}
+    (G X Y : Matrix (Fin n) (Fin n) ℝ)
+    (hfact : 1 + G = (1 + X) * (1 + Y))
+    (hX : ∀ i j : Fin n, i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin n, j.val < i.val → Y i j = 0)
+    (hGlt : opNorm2 G < 1)
+    (hXle : frobNormRect X ≤ opNorm2 G) :
+    max (frobNormRect X) (frobNormRect Y) ≤
+      frobNormRect G / (1 - opNorm2 G) :=
+  higham9_15_normalized_G_frobNorm_ratio_bound_of_min_factor_bound
+    G X Y hfact hX hY hGlt ((min_le_left _ _).trans hXle)
+
+/-- **Theorem 9.15**, ratio bound for the normalized `I + G` split from a
+direct bound on the upper factor. -/
+theorem higham9_15_normalized_G_frobNorm_ratio_bound_of_right_le {n : ℕ}
+    (G X Y : Matrix (Fin n) (Fin n) ℝ)
+    (hfact : 1 + G = (1 + X) * (1 + Y))
+    (hX : ∀ i j : Fin n, i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin n, j.val < i.val → Y i j = 0)
+    (hGlt : opNorm2 G < 1)
+    (hYle : frobNormRect Y ≤ opNorm2 G) :
+    max (frobNormRect X) (frobNormRect Y) ≤
+      frobNormRect G / (1 - opNorm2 G) :=
+  higham9_15_normalized_G_frobNorm_ratio_bound_of_min_factor_bound
+    G X Y hfact hX hY hGlt ((min_le_right _ _).trans hYle)
+
+/-- **Theorem 9.15**, ratio bound for the componentwise-sign `I - Gtilde`
+split from a direct bound on the strict-lower factor. -/
+theorem higham9_15_normalized_Gtilde_frobNorm_ratio_bound_of_left_le {n : ℕ}
+    (Gtilde X Y : Matrix (Fin n) (Fin n) ℝ)
+    (hfact : 1 - Gtilde = (1 - X) * (1 - Y))
+    (hX : ∀ i j : Fin n, i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin n, j.val < i.val → Y i j = 0)
+    (hGlt : opNorm2 Gtilde < 1)
+    (hXle : frobNormRect X ≤ opNorm2 Gtilde) :
+    max (frobNormRect X) (frobNormRect Y) ≤
+      frobNormRect Gtilde / (1 - opNorm2 Gtilde) :=
+  higham9_15_normalized_Gtilde_frobNorm_ratio_bound_of_min_factor_bound
+    Gtilde X Y hfact hX hY hGlt ((min_le_left _ _).trans hXle)
+
+/-- **Theorem 9.15**, ratio bound for the componentwise-sign `I - Gtilde`
+split from a direct bound on the upper factor. -/
+theorem higham9_15_normalized_Gtilde_frobNorm_ratio_bound_of_right_le {n : ℕ}
+    (Gtilde X Y : Matrix (Fin n) (Fin n) ℝ)
+    (hfact : 1 - Gtilde = (1 - X) * (1 - Y))
+    (hX : ∀ i j : Fin n, i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin n, j.val < i.val → Y i j = 0)
+    (hGlt : opNorm2 Gtilde < 1)
+    (hYle : frobNormRect Y ≤ opNorm2 Gtilde) :
+    max (frobNormRect X) (frobNormRect Y) ≤
+      frobNormRect Gtilde / (1 - opNorm2 Gtilde) :=
+  higham9_15_normalized_Gtilde_frobNorm_ratio_bound_of_min_factor_bound
+    Gtilde X Y hfact hX hY hGlt ((min_le_right _ _).trans hYle)
+
 /-- **Theorem 9.15 support**, a zero rectangular Frobenius norm follows from
 entrywise zero. -/
 theorem higham9_15_frobNormRect_eq_zero_of_entries_zero {m n : ℕ}
