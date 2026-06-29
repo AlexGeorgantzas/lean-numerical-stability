@@ -77,6 +77,35 @@ noncomputable def rectTransposeMulVec {m n : ℕ} (A : Fin m → Fin n → ℝ)
   fun j => ∑ i : Fin m, A i j * y i
 
 /-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.4):
+    every vector of the form `Aᵀ y` is orthogonal to the nullspace of `A`.
+    This is the algebraic orthogonality fact behind the minimum-norm
+    characterization of `Aᵀ(AAᵀ)⁻¹b`. -/
+theorem higham21_eq21_4_rect_transpose_nullspace_orthogonal {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (y : Fin m → ℝ) (z : Fin n → ℝ)
+    (hz : rectMatMulVec A z = (0 : Fin m → ℝ)) :
+    ∑ j : Fin n, rectTransposeMulVec A y j * z j = 0 := by
+  unfold rectTransposeMulVec
+  calc
+    ∑ j : Fin n, (∑ i : Fin m, A i j * y i) * z j
+        = ∑ j : Fin n, ∑ i : Fin m, (A i j * y i) * z j := by
+            apply Finset.sum_congr rfl
+            intro j _
+            rw [Finset.sum_mul]
+    _ = ∑ i : Fin m, ∑ j : Fin n, (A i j * y i) * z j := by
+            rw [Finset.sum_comm]
+    _ = ∑ i : Fin m, y i * rectMatMulVec A z i := by
+            apply Finset.sum_congr rfl
+            intro i _
+            unfold rectMatMulVec
+            rw [Finset.mul_sum]
+            apply Finset.sum_congr rfl
+            intro j _
+            ring
+    _ = 0 := by
+            rw [hz]
+            simp
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.4):
     algebraic normal-equation identity `A (Aᵀ y) = (A Aᵀ) y`. -/
 theorem rectMatMulVec_rectTransposeMulVec {m n : ℕ}
     (A : Fin m → Fin n → ℝ) (y : Fin m → ℝ) :
