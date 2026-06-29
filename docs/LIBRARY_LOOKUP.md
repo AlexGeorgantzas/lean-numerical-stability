@@ -2136,6 +2136,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_24_scaled_system_equiv`
 - `higham9_25_trailingRowInf`
 - `higham9_25_implicitRowScalingPivotRule`
+- `higham9_25_exists_implicitRowScalingPivotRule`
 - `higham9_15_lu_perturbation_identity`
 - `higham9_15_lu_perturbation_relative_bound`
 - `higham9_15_lu_perturbation_forward_bound`
