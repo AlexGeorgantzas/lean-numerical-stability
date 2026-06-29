@@ -24364,6 +24364,42 @@ theorem higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opN
     (higham9_15_matrix_left_inverse_of_matrix_right_inverse U Uinv hUright)
     hXtri hYtri hres hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
 
+/-- **Theorem 9.15**, exact-operator-norm source-facing endpoint from the
+original `G` factorization equations under a vanishing normalized residual.
+
+This is the exact-residual companion to
+`higham9_15_normwise_source_bound_of_factorization_min_factor_bound_opNorm_exact_opNorm2`:
+the denominator constants are chosen as the actual operator 2-norms of
+`Linv`, `ΔA`, and `Uinv`. -/
+theorem higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm_exact_opNorm2
+    {n : ℕ}
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hXtri :
+      ∀ i j : Fin (n + 1), i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin (n + 1), j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hres :
+      frobNormRect
+          ((show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              higham9_27_GMatrix Linv ΔA Uinv) -
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul Linv ΔL) *
+              (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+                rectMatMul ΔU Uinv)) = 0)
+    (heta : opNorm2 Linv * opNorm2 ΔA * opNorm2 Uinv < 1) :
+    max (frobNormRect ΔL / opNorm2 L) (frobNormRect ΔU / opNorm2 U) ≤
+      (opNorm2 Linv * frobNormRect ΔA * opNorm2 Uinv) /
+        (1 - opNorm2 Linv * opNorm2 ΔA * opNorm2 Uinv) :=
+  higham9_15_normwise_source_bound_of_factorization_init_residual_zero_opNorm_product_lt
+    A L U Linv Uinv ΔA ΔL ΔU hLU hPert hLleft hUright hXtri hYtri hres
+    (opNorm2_nonneg Linv) (opNorm2_nonneg ΔA) (opNorm2_nonneg Uinv)
+    (opNorm2Le_opNorm2 Linv) (opNorm2Le_opNorm2 ΔA) (opNorm2Le_opNorm2 Uinv)
+    heta
+
 /-- **Theorem 9.15**, source-facing product-smallness endpoint from the
 original `G` factorization equations when the inverse-normalized lower
 perturbation is identically zero. -/
@@ -26817,6 +26853,45 @@ theorem higham9_15_normwise_source_bound_of_factorization_Gtilde_init_residual_z
     (higham9_15_matrix_left_inverse_of_matrix_right_inverse
       Uhat UhatInv hUright)
     hXtri hYtri hres hlinv2 hdA2 huinv2 hLinv hΔA hUinv heta
+
+/-- **Theorem 9.15**, exact-operator-norm source-facing `Gtilde` endpoint
+from the perturbed factorization equations under a vanishing normalized
+residual.
+
+This is the exact-residual companion to
+`higham9_15_normwise_source_bound_of_factorization_Gtilde_min_factor_bound_opNorm_exact_opNorm2`:
+the denominator constants are chosen as the actual operator 2-norms of
+`LhatInv`, `ΔA`, and `UhatInv`. -/
+theorem higham9_15_normwise_source_bound_of_factorization_Gtilde_init_residual_zero_opNorm_exact_opNorm2
+    {n : ℕ}
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU :
+      Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hXtri :
+      ∀ i j : Fin (n + 1), i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin (n + 1), j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hres :
+      frobNormRect
+          ((show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              higham9_27_GMatrix LhatInv ΔA UhatInv) +
+            (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+              rectMatMul LhatInv ΔL) *
+              (show Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ from
+                rectMatMul ΔU UhatInv)) = 0)
+    (heta : opNorm2 LhatInv * opNorm2 ΔA * opNorm2 UhatInv < 1) :
+    max (frobNormRect ΔL / opNorm2 Lhat) (frobNormRect ΔU / opNorm2 Uhat) ≤
+      (opNorm2 LhatInv * frobNormRect ΔA * opNorm2 UhatInv) /
+        (1 - opNorm2 LhatInv * opNorm2 ΔA * opNorm2 UhatInv) :=
+  higham9_15_normwise_source_bound_of_factorization_Gtilde_init_residual_zero_opNorm_product_lt
+    A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hA hPert hLleft hUright
+    hXtri hYtri hres
+    (opNorm2_nonneg LhatInv) (opNorm2_nonneg ΔA) (opNorm2_nonneg UhatInv)
+    (opNorm2Le_opNorm2 LhatInv) (opNorm2Le_opNorm2 ΔA)
+    (opNorm2Le_opNorm2 UhatInv) heta
 
 /-- **Theorem 9.15**, source-facing product-smallness `Gtilde` endpoint from
 the original factorization equations when the inverse-normalized lower
