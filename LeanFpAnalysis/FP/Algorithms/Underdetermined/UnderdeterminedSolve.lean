@@ -358,6 +358,40 @@ theorem higham21_eq21_3_q_method_min_norm_of_qr_upper_diag_ne_zero {m k : ℕ}
   exact higham21_eq21_3_q_method_min_norm_of_qr_R_det_ne_zero Q hQ R b y1 hdet hy1
 
 -- ============================================================
+-- §21.2  Lemma 21.2 projector/norm bridge
+-- ============================================================
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    source-facing alias for the projector mixture reused from the Chapter 20
+    Kielbasinski--Schwetlick construction.  This is the constructed
+    perturbation block, not the full minimum-norm symmetrization theorem. -/
+noncomputable abbrev undetLemma21_2SymmetrizedPerturbation {m n : ℕ}
+    (s : Fin m → ℝ) (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ) :
+    Fin m → Fin n → ℝ :=
+  lsLemma20_6Perturbation s DeltaA1 DeltaA2
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    the Frobenius-squared norm bound for the projector mixture used to replace
+    two perturbation blocks by one. -/
+theorem higham21_lemma21_2_symmetrized_perturbation_frobNormSq_le {m n : ℕ}
+    (s : Fin m → ℝ) (hsq : vecNorm2Sq s ≠ 0)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ) :
+    frobNormSqRect (undetLemma21_2SymmetrizedPerturbation s DeltaA1 DeltaA2) ≤
+      frobNormSqRect DeltaA1 + frobNormSqRect DeltaA2 :=
+  lsLemma20_6Perturbation_frobNormSqRect_le s hsq DeltaA1 DeltaA2
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    Frobenius-norm form of the printed bound
+    `||Delta A||_F <= (||Delta A_1||_F^2 + ||Delta A_2||_F^2)^(1/2)` for the
+    projector mixture. -/
+theorem higham21_lemma21_2_symmetrized_perturbation_frob_bound {m n : ℕ}
+    (s : Fin m → ℝ) (hsq : vecNorm2Sq s ≠ 0)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ) :
+    frobNormRect (undetLemma21_2SymmetrizedPerturbation s DeltaA1 DeltaA2) ≤
+      Real.sqrt (frobNormRect DeltaA1 ^ 2 + frobNormRect DeltaA2 ^ 2) :=
+  lsLemma20_6Perturbation_norm_bound_two_frob s hsq DeltaA1 DeltaA2
+
+-- ============================================================
 -- §21.3  Row-wise backward error for underdetermined systems
 -- ============================================================
 
