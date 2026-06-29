@@ -31,6 +31,32 @@ namespace LeanFpAnalysis.FP
 open scoped BigOperators Matrix.Norms.Frobenius
 
 -- ============================================================
+-- §21.1  QR block algebra for the Q method and SNE setup
+-- ============================================================
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.1):
+    source-facing wrapper for multiplying by the tall QR block `[R; 0]`
+    appearing in `Aᵀ = Q [R; 0]`. -/
+theorem higham21_eq21_1_qr_transpose_block_mulVec {m k : ℕ}
+    (R : Fin m → Fin m → ℝ) (x : Fin m → ℝ) :
+    rectMatMulVec (lsQRTallBlock (k := k) R) x =
+      Fin.append (rectMatMulVec R x) (0 : Fin k → ℝ) :=
+  lsQRTallBlock_mulVec R x
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.2):
+    source-facing wrapper for the block-transpose coordinate identity
+    `[Rᵀ 0] [y₁; y₂] = Rᵀ y₁`.  This is the algebraic step behind reducing
+    `b = A x` to the triangular equation for the first coordinate block after
+    applying the orthogonal factor from (21.1). -/
+theorem higham21_eq21_2_qr_block_transpose_coordinates {m k : ℕ}
+    (R : Fin m → Fin m → ℝ) (y1 : Fin m → ℝ) (y2 : Fin k → ℝ) :
+    (fun j : Fin m =>
+      ∑ i : Fin (m + k), lsQRTallBlock (k := k) R i j *
+        Fin.append y1 y2 i) =
+      fun j : Fin m => ∑ i : Fin m, R i j * y1 i :=
+  lsQRTallBlock_transpose_mulVec_append R y1 y2
+
+-- ============================================================
 -- §21.3  Row-wise backward error for underdetermined systems
 -- ============================================================
 
