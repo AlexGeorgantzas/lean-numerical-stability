@@ -1643,7 +1643,13 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_completePivotWilkinsonProduct_ge_one`
 - `higham9_14_completePivotWilkinsonProduct_two`
 - `higham9_14_completePivotWilkinsonProduct_succ`
+- `higham9_14_completePivotWilkinsonProduct_factor_ge_one`
+- `higham9_14_completePivotWilkinsonProduct_le_succ`
+- `higham9_14_completePivotWilkinsonProduct_monotone`
+- `higham9_14_completePivotWilkinsonProduct_le_of_le`
 - `higham9_14_completePivotWilkinsonBound_ge_sqrt`
+- `higham9_14_completePivotWilkinsonBound_le_of_le`
+- `higham9_14_completePivotWilkinsonBound_monotone`
 - `higham9_completePivotGrowthSet`
 - `higham9_completePivotGrowthSup`
 - `higham9_completePivotGrowth_le_sup`

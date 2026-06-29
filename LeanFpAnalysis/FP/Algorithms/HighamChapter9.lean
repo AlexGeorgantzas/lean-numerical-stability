@@ -8567,6 +8567,60 @@ lemma higham9_14_completePivotWilkinsonProduct_succ {n : ℕ} (hn : 1 ≤ n) :
   have hden : ((n + 1 : ℕ) : ℝ) - 1 = (n : ℝ) := by norm_num
   simpa [hden] using hprod
 
+/-- **Equation (9.14)**, the factor appended in Wilkinson's scalar product is
+at least one. -/
+lemma higham9_14_completePivotWilkinsonProduct_factor_ge_one {n : ℕ}
+    (hn : 1 ≤ n) :
+    1 ≤ ((n + 1 : ℕ) : ℝ) ^ ((1 : ℝ) / (n : ℝ)) := by
+  have hbaseNat : 1 ≤ n + 1 := by omega
+  have hbase : (1 : ℝ) ≤ ((n + 1 : ℕ) : ℝ) := by exact_mod_cast hbaseNat
+  have hnposNat : 0 < n := by omega
+  have hnpos : 0 < (n : ℝ) := by exact_mod_cast hnposNat
+  have hexp_nonneg : 0 ≤ (1 : ℝ) / (n : ℝ) :=
+    div_nonneg zero_le_one (le_of_lt hnpos)
+  exact Real.one_le_rpow hbase hexp_nonneg
+
+/-- **Equation (9.14)**, one-step monotonicity of Wilkinson's scalar product.
+
+This is scalar support for comparing nested complete-pivoting product bounds;
+the trace-level complete-pivoting growth proof remains separate. -/
+lemma higham9_14_completePivotWilkinsonProduct_le_succ (n : ℕ) :
+    higham9_14_completePivotWilkinsonProduct n ≤
+      higham9_14_completePivotWilkinsonProduct (n + 1) := by
+  cases n with
+  | zero =>
+      norm_num [higham9_14_completePivotWilkinsonProduct]
+  | succ k =>
+      have hn : 1 ≤ k + 1 := by omega
+      rw [higham9_14_completePivotWilkinsonProduct_succ hn]
+      have hprod_nonneg :
+          0 ≤ higham9_14_completePivotWilkinsonProduct (k + 1) :=
+        higham9_14_completePivotWilkinsonProduct_nonneg (k + 1)
+      have hfactor :
+          1 ≤ ((k + 1 + 1 : ℕ) : ℝ) ^ ((1 : ℝ) / ((k + 1 : ℕ) : ℝ)) :=
+        higham9_14_completePivotWilkinsonProduct_factor_ge_one hn
+      calc
+        higham9_14_completePivotWilkinsonProduct (k + 1) =
+            higham9_14_completePivotWilkinsonProduct (k + 1) * 1 := by
+          rw [mul_one]
+        _ ≤ higham9_14_completePivotWilkinsonProduct (k + 1) *
+              ((k + 1 + 1 : ℕ) : ℝ) ^ ((1 : ℝ) / ((k + 1 : ℕ) : ℝ)) :=
+          mul_le_mul_of_nonneg_left hfactor hprod_nonneg
+
+/-- **Equation (9.14)**, Wilkinson's scalar product is monotone in the matrix
+order parameter. -/
+theorem higham9_14_completePivotWilkinsonProduct_monotone :
+    Monotone higham9_14_completePivotWilkinsonProduct :=
+  monotone_nat_of_le_succ higham9_14_completePivotWilkinsonProduct_le_succ
+
+/-- **Equation (9.14)**, order form of Wilkinson scalar-product
+monotonicity. -/
+theorem higham9_14_completePivotWilkinsonProduct_le_of_le {n m : ℕ}
+    (hnm : n ≤ m) :
+    higham9_14_completePivotWilkinsonProduct n ≤
+      higham9_14_completePivotWilkinsonProduct m :=
+  higham9_14_completePivotWilkinsonProduct_monotone hnm
+
 /-- **Equation (9.14)**, Wilkinson RHS dominates its leading `sqrt n` factor.
 
 This is only scalar support for the displayed RHS; it does not prove the
@@ -8586,6 +8640,29 @@ lemma higham9_14_completePivotWilkinsonBound_ge_sqrt (n : ℕ) :
     _ ≤ Real.sqrt (n : ℝ) *
           Real.sqrt (higham9_14_completePivotWilkinsonProduct n) :=
         mul_le_mul_of_nonneg_left hsqrt_prod (Real.sqrt_nonneg _)
+
+/-- **Equation (9.14)**, order form of monotonicity for Wilkinson's displayed
+complete-pivoting RHS. -/
+theorem higham9_14_completePivotWilkinsonBound_le_of_le {n m : ℕ}
+    (hnm : n ≤ m) :
+    higham9_14_completePivotWilkinsonBound n ≤
+      higham9_14_completePivotWilkinsonBound m := by
+  unfold higham9_14_completePivotWilkinsonBound
+  have hnmR : (n : ℝ) ≤ (m : ℝ) := by exact_mod_cast hnm
+  have hsqrt_n : Real.sqrt (n : ℝ) ≤ Real.sqrt (m : ℝ) :=
+    Real.sqrt_le_sqrt hnmR
+  have hsqrt_prod :
+      Real.sqrt (higham9_14_completePivotWilkinsonProduct n) ≤
+        Real.sqrt (higham9_14_completePivotWilkinsonProduct m) :=
+    Real.sqrt_le_sqrt (higham9_14_completePivotWilkinsonProduct_le_of_le hnm)
+  exact mul_le_mul hsqrt_n hsqrt_prod (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
+
+/-- **Equation (9.14)**, Wilkinson's displayed complete-pivoting RHS is
+monotone in the matrix order parameter. -/
+theorem higham9_14_completePivotWilkinsonBound_monotone :
+    Monotone higham9_14_completePivotWilkinsonBound := by
+  intro n m hnm
+  exact higham9_14_completePivotWilkinsonBound_le_of_le hnm
 
 /-- **Problem 9.11 / equation (9.15)**, the source growth-function set
 underlying `g(n) = sup_A rho_n^c(A)`, parameterized by the still-separate
