@@ -1445,6 +1445,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_7_exists_PermutedLUFactSpec_L_bound_growth_le_pow_two_of_det_ne_zero`
 - `higham9_5_wilkinson_source_bound_exists_of_PartialPivotGEPPUTrace_of_det_ne_zero`
 - `higham9_8_exists_completePivoting_growth_factor_ge_theta_real`
+- `higham9_nonsingInv_det_ne_zero_of_det_ne_zero`
 - `higham9_nonsingInv_maxEntryNorm_pos_of_det_ne_zero`
 - `higham9_8_exists_completePivoting_growth_factor_ge_theta_nonsingInv`
 - `higham9_8_CompletePivotGECPUTrace`
@@ -1565,6 +1566,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_8_growth_factor_ge_theta_of_completePermutedLUFactSpec_right_inverse`
 - `higham9_8_exists_CompletePermutedLUFactSpec_of_det_ne_zero`
 - `higham9_8_exists_completePivoting_growth_factor_ge_theta_real`
+- `higham9_nonsingInv_det_ne_zero_of_det_ne_zero`
 - `higham9_nonsingInv_maxEntryNorm_pos_of_det_ne_zero`
 - `higham9_8_exists_completePivoting_growth_factor_ge_theta_nonsingInv`
 - `higham9_8_theta_le_card_complex`
@@ -2864,6 +2866,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_8_abs_lu_product_eq_abs_of_nonsingInv_checkerboard_pos`
 - `higham9_8_abs_lu_product_eq_abs_of_nonsingInv_principalBlock_inequalities`
 - `higham9_8_abs_lu_product_eq_abs_of_nonsingInv_totalNonnegative`
+- `higham9_14_nonsingInv_totalNonnegative_exists_source_f_bound_actual_triangular_solves`
+- `higham9_14_nonsingInv_totalNonnegative_exists_source_h_bound_actual_triangular_solves`
 
 Chapter 9 growth-factor and max-entry bridges:
 
