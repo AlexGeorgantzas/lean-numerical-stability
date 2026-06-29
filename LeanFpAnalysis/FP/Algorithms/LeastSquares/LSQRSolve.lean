@@ -7550,6 +7550,34 @@ theorem rectRightGramLeftSingularFromEigenbasis_transpose_action_of_pos
           rw [← hτsq]
           field_simp [hτ]
 
+/-- Full column rank in the real column-map sense forces every basis-indexed
+    right-Gram singular value to be positive.  A zero branch would make the
+    corresponding orthonormal right-Gram eigenvector lie in the kernel of `A`. -/
+theorem rectRightGramBasisSingularValue_pos_of_rectMatMulVec_injective
+    {m n : ℕ} {A : Fin m → Fin n → ℝ}
+    (hinj : Function.Injective (rectMatMulVec A)) (a : Fin n) :
+    0 < rectRightGramBasisSingularValue A a := by
+  refine lt_of_le_of_ne' (rectRightGramBasisSingularValue_nonneg A a) ?_
+  intro hzero
+  let v : Fin n → ℝ := fun j => rectRightGramEigenbasis A j a
+  have hAv_zero : rectMatMulVec A v = 0 := by
+    ext i
+    have hp :=
+      rectRightGramProjectedColumn_eq_zero_of_singularValue_eq_zero
+        A a hzero i
+    simpa [v, rectMatMulVec, rectRightGramProjectedColumn] using hp
+  have hv_zero : v = 0 := by
+    apply hinj
+    rw [hAv_zero]
+    ext i
+    simp [rectMatMulVec]
+  have hnorm_one : (∑ j : Fin n, v j * v j) = 1 := by
+    have h := rectRightGramEigenbasis_col_orthonormal A a a
+    simpa [v, idMatrix] using h
+  have hnorm_zero : (∑ j : Fin n, v j * v j) = 0 := by
+    simp [hv_zero]
+  linarith
+
 /-- Higham, 2nd ed., Chapter 20, equations (20.18)-(20.19):
     source-dimension branch handoff specialized to the existing real
     right-Gram SVD basis.  The theorem now constructs the singular-vector
@@ -7642,6 +7670,49 @@ theorem
       (v := fun a j => rectRightGramEigenbasis A j a)
       (w := w)
       hu hv hw hleft hright hnull hAv hATu hATw hpos halpha
+
+/-- Higham, 2nd ed., Chapter 20, equations (20.18)-(20.19):
+    injective-column-map version of the real right-Gram branch handoff.  Full
+    column rank now supplies positivity of the basis-indexed singular branches;
+    the remaining supplied data are only the orthonormal left-nullspace branch
+    vectors and their transpose-null equations. -/
+theorem
+    lsScaledAugmentedMatrix_kappa2_bounds_of_rightGram_basis_branch_data_of_rectMatMulVec_injective
+    {m n : ℕ} [Nonempty (Fin n)] (hmn : n ≤ m)
+    {alpha : ℝ} {A : Fin m → Fin n → ℝ}
+    {w : Fin (m - n) → Fin m → ℝ}
+    (hinj : Function.Injective (rectMatMulVec A))
+    (hw : ∀ k : Fin (m - n), vecNorm2Sq (w k) = 1)
+    (hnull : ∀ k l : Fin (m - n),
+      k ≠ l → (∑ r : Fin m, w k r * w l r) = 0)
+    (hATw : ∀ k : Fin (m - n), ∀ j : Fin n,
+      ∑ r : Fin m, A r j * w k r = 0)
+    (halpha :
+      alpha = lsScaledAugmentedBranchSigmaMin
+        (rectRightGramBasisSingularValue A) / Real.sqrt 2) :
+    Real.sqrt 2 *
+          (lsScaledAugmentedBranchSigmaMax (rectRightGramBasisSingularValue A) /
+            lsScaledAugmentedBranchSigmaMin (rectRightGramBasisSingularValue A)) ≤
+        kappa2 (lsScaledAugmentedMatrix alpha A)
+          (lsScaledAugmentedSourceBranchInverseCandidate hmn alpha
+            (rectRightGramBasisSingularValue A)
+            (fun a r => rectRightGramLeftSingularFromEigenbasis A r a)
+            (fun a j => rectRightGramEigenbasis A j a) w) ∧
+      kappa2 (lsScaledAugmentedMatrix alpha A)
+          (lsScaledAugmentedSourceBranchInverseCandidate hmn alpha
+            (rectRightGramBasisSingularValue A)
+            (fun a r => rectRightGramLeftSingularFromEigenbasis A r a)
+            (fun a j => rectRightGramEigenbasis A j a) w) ≤
+        2 *
+          (lsScaledAugmentedBranchSigmaMax (rectRightGramBasisSingularValue A) /
+            lsScaledAugmentedBranchSigmaMin (rectRightGramBasisSingularValue A)) := by
+  exact
+    lsScaledAugmentedMatrix_kappa2_bounds_of_rightGram_basis_branch_data
+      (m := m) (n := n) (hmn := hmn)
+      (alpha := alpha) (A := A) (w := w)
+      (fun i => rectRightGramBasisSingularValue_pos_of_rectMatMulVec_injective
+        (A := A) hinj i)
+      hw hnull hATw halpha
 
 /-- Higham, 2nd ed., Chapter 20, equation (20.20): the weighted perturbation
     block `[DeltaA, theta Delta b]` used in the Frobenius normwise
