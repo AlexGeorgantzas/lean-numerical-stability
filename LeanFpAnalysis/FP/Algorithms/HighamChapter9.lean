@@ -11620,6 +11620,73 @@ theorem higham_problem9_14_RecursivePairwiseLUFactSpec_same_as_PrePivotedGEPP
     (higham_problem9_14_RecursivePairwiseLUFactSpec_to_LUFactSpec hpair)
     hgepp
 
+/-- **Problem 9.14 / same-LU bridge**, source-facing first-method package:
+for every pre-pivoted GEPP input, the recursive §9.9 first-method factors
+exist and agree with the exact GEPP/no-interchange LU factors. -/
+theorem higham_problem9_14_PrePivotedGEPP_exists_RecursiveFirstMethodLUFactSpec_same_as_GEPP
+    {n : ℕ} {A : Fin n → Fin n → ℝ}
+    (hpre : higham_problem9_14_PrePivotedGEPP A) :
+    ∃ Lf Uf Lg Ug : Fin n → Fin n → ℝ,
+      higham_problem9_14_RecursiveFirstMethodLUFactSpec n A Lf Uf ∧
+        LUFactSpec n A Lg Ug ∧ Lf = Lg ∧ Uf = Ug := by
+  obtain ⟨Lf, Uf, hfirst⟩ :=
+    higham_problem9_14_exists_RecursiveFirstMethodLUFactSpec_of_PrePivotedGEPP
+      hpre
+  obtain ⟨Lg, Ug, hgepp⟩ :=
+    higham_problem9_14_PrePivotedGEPP_exists_LUFactSpec hpre
+  have hsame :=
+    higham_problem9_14_RecursiveFirstMethodLUFactSpec_same_as_PrePivotedGEPP
+      hpre hfirst hgepp
+  exact ⟨Lf, Uf, Lg, Ug, hfirst, hgepp, hsame.1, hsame.2⟩
+
+/-- **Problem 9.14 / same-LU bridge**, source-facing pairwise package:
+for every pre-pivoted GEPP input, the recursive adjacent-pair factors exist
+and agree with the exact GEPP/no-interchange LU factors. -/
+theorem higham_problem9_14_PrePivotedGEPP_exists_RecursivePairwiseLUFactSpec_same_as_GEPP
+    {n : ℕ} {A : Fin n → Fin n → ℝ}
+    (hpre : higham_problem9_14_PrePivotedGEPP A) :
+    ∃ Lp Up Lg Ug : Fin n → Fin n → ℝ,
+      higham_problem9_14_RecursivePairwiseLUFactSpec n A Lp Up ∧
+        LUFactSpec n A Lg Ug ∧ Lp = Lg ∧ Up = Ug := by
+  obtain ⟨Lp, Up, hpair⟩ :=
+    higham_problem9_14_exists_RecursivePairwiseLUFactSpec_of_PrePivotedGEPP
+      hpre
+  obtain ⟨Lg, Ug, hgepp⟩ :=
+    higham_problem9_14_PrePivotedGEPP_exists_LUFactSpec hpre
+  have hsame :=
+    higham_problem9_14_RecursivePairwiseLUFactSpec_same_as_PrePivotedGEPP
+      hpre hpair hgepp
+  exact ⟨Lp, Up, Lg, Ug, hpair, hgepp, hsame.1, hsame.2⟩
+
+/-- **Problem 9.14 / same-LU bridge**, the two source routes compute the same
+exact factors on every pre-pivoted GEPP input.  This combines the recursive
+§9.9 first-method package with the adjacent-pair row-reversal package through
+ordinary exact-LU uniqueness. -/
+theorem higham_problem9_14_PrePivotedGEPP_exists_firstMethod_pairwise_same_LU
+    {n : ℕ} {A : Fin n → Fin n → ℝ}
+    (hpre : higham_problem9_14_PrePivotedGEPP A) :
+    ∃ Lf Uf Lp Up : Fin n → Fin n → ℝ,
+      higham_problem9_14_RecursiveFirstMethodLUFactSpec n A Lf Uf ∧
+        higham_problem9_14_RecursivePairwiseLUFactSpec n A Lp Up ∧
+          Lf = Lp ∧ Uf = Up := by
+  obtain ⟨Lf, Uf, hfirst⟩ :=
+    higham_problem9_14_exists_RecursiveFirstMethodLUFactSpec_of_PrePivotedGEPP
+      hpre
+  obtain ⟨Lp, Up, hpair⟩ :=
+    higham_problem9_14_exists_RecursivePairwiseLUFactSpec_of_PrePivotedGEPP
+      hpre
+  obtain ⟨Lg, Ug, hgepp⟩ :=
+    higham_problem9_14_PrePivotedGEPP_exists_LUFactSpec hpre
+  have hfirst_same :=
+    higham_problem9_14_RecursiveFirstMethodLUFactSpec_same_as_PrePivotedGEPP
+      hpre hfirst hgepp
+  have hpair_same :=
+    higham_problem9_14_RecursivePairwiseLUFactSpec_same_as_PrePivotedGEPP
+      hpre hpair hgepp
+  exact ⟨Lf, Uf, Lp, Up, hfirst, hpair,
+    hfirst_same.1.trans hpair_same.1.symm,
+    hfirst_same.2.trans hpair_same.2.symm⟩
+
 /-- **Problem 9.14 / pairwise pivoting**, the first scheduled bubble step
 moves the original first row of a pre-pivoted input into row `m-1`. -/
 theorem higham_problem9_14_PrePivotedGEPP_pairwiseBubbleMatrix_one_pivot_row
