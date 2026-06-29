@@ -3551,6 +3551,30 @@ theorem higham9_2_rectAbsBudgetCertificate_to_squareAbsBudgetCertificate
     simpa [higham9_2_rectPrefixDot] using hC.L_abs_residual i k hki
   L_budget_le_compression := hC.L_budget_le_compression
 
+/-- **Algorithm 9.2**, square-specialized rectangular dense-loop certificate
+as the compact `DoolittleLU` recurrence certificate. -/
+theorem higham9_2_rectDenseLoopCertificate_square_to_DoolittleLU
+    {n : ℕ} {fp : FPModel}
+    {A L U : Fin n → Fin n → ℝ}
+    (hC : higham9_2_RectDoolittleDenseLoopCertificate
+      (Nat.le_refl n) A L U fp)
+    (hn : gammaValid fp n) :
+    higham9_2_DoolittleLU n A L U fp :=
+  higham9_2_denseLoopCertificate_to_DoolittleLU
+    (higham9_2_rectDenseLoopCertificate_to_squareDenseLoopCertificate hC) hn
+
+/-- **Algorithm 9.2**, square-specialized rectangular absolute-budget
+certificate as the compact `DoolittleLU` recurrence certificate. -/
+theorem higham9_2_rectAbsBudgetCertificate_square_to_DoolittleLU
+    {n : ℕ} {fp : FPModel}
+    {A L U : Fin n → Fin n → ℝ} {BU BL : Fin n → Fin n → ℝ}
+    (hC : higham9_2_RectDoolittleDenseLoopAbsBudgetCertificate
+      (Nat.le_refl n) A L U fp BU BL)
+    (hn : gammaValid fp n) :
+    higham9_2_DoolittleLU n A L U fp :=
+  higham9_2_absBudgetCertificate_to_DoolittleLU
+    (higham9_2_rectAbsBudgetCertificate_to_squareAbsBudgetCertificate hC) hn
+
 /-- **Algorithm 9.2**, rectangular product split for an upper entry:
 triangular support reduces the stored product to the prefix dot plus the
 computed upper entry. -/
