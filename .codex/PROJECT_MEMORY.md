@@ -9765,3 +9765,19 @@ These compile, but should not be treated as fully derived stability results:
   for arbitrary subordinate CLM norms; the BDD source row remains open for
   deriving the reciprocal/inverse data from block diagonal dominance and for
   the source-strength max-entry Eq.13.21/`rho <= 2` endpoint.
+
+- 2026-06-29 Algorithm 13.3 BDD actual CLM active-stage wrappers:
+  added
+  `higham13_algorithm13_3_clm_active_column_dominance_of_continuousLinearMap_source_table`,
+  `higham13_algorithm13_3_clm_active_stage_bound_of_continuousLinearMap_source_table`,
+  `higham13_algorithm13_3_clm_active_column_dominance_of_initial_diag_inverse_of_pivot_inverse`,
+  and
+  `higham13_algorithm13_3_clm_active_stage_bound_of_initial_diag_inverse_of_pivot_inverse`
+  in `BlockLU.lean`.  These route the actual CLM source-table/pivot-product
+  certificate through the Theorem 13.7 active-column and Theorem 13.8
+  active-stage `2 * normMax` interfaces, with the initial-inverse variants also
+  deriving the stage-zero lower table and initial diagonal comparison from
+  two-sided diagonal inverse data.  This is source-facing CLM downstream
+  packaging; the printed BDD row remains open for deriving the reciprocal data
+  from the BDD hypotheses and for the source-strength entrywise max-norm
+  Eq.13.21/`rho <= 2` endpoint.

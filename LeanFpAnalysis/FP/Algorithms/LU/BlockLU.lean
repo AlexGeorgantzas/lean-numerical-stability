@@ -13160,6 +13160,172 @@ theorem
       (fun k => norm_nonneg (pivotInv k))
       hDiagLower
 
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7:
+    actual CLM source-table data gives active column block diagonal dominance
+    for the Algorithm 13.3 Schur-stage sequence.
+
+    This packages the arbitrary-subordinate-norm source-table route at the
+    column-dominance level.  The analytic obligations remain the source initial
+    lower table and the two-sided active pivot inverse identities. -/
+theorem
+    higham13_algorithm13_3_clm_active_column_dominance_of_continuousLinearMap_source_table
+    {m : ℕ} {E : Type*}
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [ProperSpace E]
+    (hunit : ({x : E | ‖x‖ = 1} : Set E).Nonempty)
+    (invDiagBound : Fin m → ℝ)
+    (A : Fin m → Fin m → E →L[ℝ] E)
+    (pivotInv : ℕ → E →L[ℝ] E)
+    (hDom : IsBlockDiagDomCol m (fun i j : Fin m => ‖A i j‖) invDiagBound)
+    (hInit : ∀ j : Fin m,
+      invDiagBound j ≤
+        continuousLinearMapLowerNorm
+          (higham13_algorithm13_3_schurStageBlock A pivotInv 0 j j)
+          hunit)
+    (hLeft : ∀ k : ℕ, ∀ hk : k < m, ∀ x : E,
+      pivotInv k
+        (higham13_algorithm13_3_schurStageBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩ x) = x)
+    (hRight : ∀ k : ℕ, ∀ hk : k < m, ∀ y : E,
+      higham13_algorithm13_3_schurStageBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩
+        (pivotInv k y) = y) :
+    SchurStageActiveColumnDom13_7
+      (higham13_algorithm13_3_schurStageNorm A pivotInv)
+      (higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv) := by
+  exact
+    higham13_algorithm13_3_active_column_dominance_of_pivot_bound
+      (fun i j : Fin m => ‖A i j‖) invDiagBound hDom A pivotInv
+      (higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv)
+      (by
+        intro i j
+        rfl)
+      (higham13_algorithm13_3_diagLowerCertGeneric_zero invDiagBound A pivotInv)
+      (higham13_algorithm13_3_clm_diagLowerCertGeneric_pivot_bound_of_continuousLinearMap_source_table
+        hunit invDiagBound A pivotInv hInit hLeft hRight)
+      (higham13_algorithm13_3_diagLowerCertGeneric_update invDiagBound A pivotInv)
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.8:
+    actual CLM source-table data gives the active-stage `2 * normMax` bound
+    for Algorithm 13.3.
+
+    This is the arbitrary-subordinate-norm analogue of the matrix-`∞` active
+    stage wrappers.  It is still conditional on the source lower table and
+    active pivot inverse identities. -/
+theorem
+    higham13_algorithm13_3_clm_active_stage_bound_of_continuousLinearMap_source_table
+    {m : ℕ} {E : Type*}
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [ProperSpace E]
+    (hunit : ({x : E | ‖x‖ = 1} : Set E).Nonempty)
+    (invDiagBound : Fin m → ℝ)
+    (A : Fin m → Fin m → E →L[ℝ] E)
+    (pivotInv : ℕ → E →L[ℝ] E)
+    (hDom : IsBlockDiagDomCol m (fun i j : Fin m => ‖A i j‖) invDiagBound)
+    (hDiagBound : ∀ j : Fin m, invDiagBound j ≤ ‖A j j‖)
+    (hInit : ∀ j : Fin m,
+      invDiagBound j ≤
+        continuousLinearMapLowerNorm
+          (higham13_algorithm13_3_schurStageBlock A pivotInv 0 j j)
+          hunit)
+    (hLeft : ∀ k : ℕ, ∀ hk : k < m, ∀ x : E,
+      pivotInv k
+        (higham13_algorithm13_3_schurStageBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩ x) = x)
+    (hRight : ∀ k : ℕ, ∀ hk : k < m, ∀ y : E,
+      higham13_algorithm13_3_schurStageBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩
+        (pivotInv k y) = y)
+    (normMax : ℝ)
+    (hMax : ∀ i j : Fin m, ‖A i j‖ ≤ normMax)
+    (k : ℕ) (i j : Fin m) (hik : k ≤ i.val) (hjk : k ≤ j.val) :
+    ‖higham13_algorithm13_3_schurStageBlock A pivotInv k i j‖ ≤
+      2 * normMax := by
+  simpa [higham13_algorithm13_3_schurStageNorm] using
+    higham13_algorithm13_3_active_stage_block_bound_of_pivot_bound
+      (fun i j : Fin m => ‖A i j‖)
+      invDiagBound hDom hDiagBound A pivotInv
+      (higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv)
+      (by
+        intro i j
+        rfl)
+      (higham13_algorithm13_3_diagLowerCertGeneric_zero invDiagBound A pivotInv)
+      (higham13_algorithm13_3_clm_diagLowerCertGeneric_pivot_bound_of_continuousLinearMap_source_table
+        hunit invDiagBound A pivotInv hInit hLeft hRight)
+      (higham13_algorithm13_3_diagLowerCertGeneric_update invDiagBound A pivotInv)
+      normMax hMax k i j hik hjk
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.7:
+    initial diagonal inverse data plus active pivot inverse identities give
+    active column block diagonal dominance for actual CLM Algorithm 13.3
+    stages. -/
+theorem
+    higham13_algorithm13_3_clm_active_column_dominance_of_initial_diag_inverse_of_pivot_inverse
+    {m : ℕ} {E : Type*}
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [ProperSpace E]
+    (hunit : ({x : E | ‖x‖ = 1} : Set E).Nonempty)
+    (invDiagBound : Fin m → ℝ)
+    (A : Fin m → Fin m → E →L[ℝ] E)
+    (pivotInv : ℕ → E →L[ℝ] E)
+    (diagInv : Fin m → E →L[ℝ] E)
+    (hDom : IsBlockDiagDomCol m (fun i j : Fin m => ‖A i j‖) invDiagBound)
+    (hInvBound : ∀ j : Fin m, invDiagBound j ≤ (‖diagInv j‖)⁻¹)
+    (hLeftDiag : ∀ j : Fin m, ∀ x : E, diagInv j (A j j x) = x)
+    (hRightDiag : ∀ j : Fin m, ∀ y : E, A j j (diagInv j y) = y)
+    (hLeft : ∀ k : ℕ, ∀ hk : k < m, ∀ x : E,
+      pivotInv k
+        (higham13_algorithm13_3_schurStageBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩ x) = x)
+    (hRight : ∀ k : ℕ, ∀ hk : k < m, ∀ y : E,
+      higham13_algorithm13_3_schurStageBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩
+        (pivotInv k y) = y) :
+    SchurStageActiveColumnDom13_7
+      (higham13_algorithm13_3_schurStageNorm A pivotInv)
+      (higham13_algorithm13_3_diagLowerCertGeneric invDiagBound A pivotInv) := by
+  exact
+    higham13_algorithm13_3_clm_active_column_dominance_of_continuousLinearMap_source_table
+      hunit invDiagBound A pivotInv hDom
+      (higham13_algorithm13_3_clm_initial_lower_table_of_diag_inverse
+        hunit invDiagBound A pivotInv diagInv hInvBound hLeftDiag hRightDiag)
+      hLeft hRight
+
+/-- Higham, 2nd ed., Chapter 13, Theorem 13.8:
+    initial diagonal inverse data plus active pivot inverse identities give the
+    actual CLM active-stage `2 * normMax` bound for Algorithm 13.3. -/
+theorem
+    higham13_algorithm13_3_clm_active_stage_bound_of_initial_diag_inverse_of_pivot_inverse
+    {m : ℕ} {E : Type*}
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [ProperSpace E]
+    (hunit : ({x : E | ‖x‖ = 1} : Set E).Nonempty)
+    (invDiagBound : Fin m → ℝ)
+    (A : Fin m → Fin m → E →L[ℝ] E)
+    (pivotInv : ℕ → E →L[ℝ] E)
+    (diagInv : Fin m → E →L[ℝ] E)
+    (hDom : IsBlockDiagDomCol m (fun i j : Fin m => ‖A i j‖) invDiagBound)
+    (hInvBound : ∀ j : Fin m, invDiagBound j ≤ (‖diagInv j‖)⁻¹)
+    (hLeftDiag : ∀ j : Fin m, ∀ x : E, diagInv j (A j j x) = x)
+    (hRightDiag : ∀ j : Fin m, ∀ y : E, A j j (diagInv j y) = y)
+    (hLeft : ∀ k : ℕ, ∀ hk : k < m, ∀ x : E,
+      pivotInv k
+        (higham13_algorithm13_3_schurStageBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩ x) = x)
+    (hRight : ∀ k : ℕ, ∀ hk : k < m, ∀ y : E,
+      higham13_algorithm13_3_schurStageBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩
+        (pivotInv k y) = y)
+    (normMax : ℝ)
+    (hMax : ∀ i j : Fin m, ‖A i j‖ ≤ normMax)
+    (k : ℕ) (i j : Fin m) (hik : k ≤ i.val) (hjk : k ≤ j.val) :
+    ‖higham13_algorithm13_3_schurStageBlock A pivotInv k i j‖ ≤
+      2 * normMax := by
+  exact
+    higham13_algorithm13_3_clm_active_stage_bound_of_continuousLinearMap_source_table
+      hunit invDiagBound A pivotInv hDom
+      (higham13_algorithm13_3_clm_initial_diag_bound_of_diag_inverse
+        hunit invDiagBound A diagInv hInvBound hLeftDiag hRightDiag)
+      (higham13_algorithm13_3_clm_initial_lower_table_of_diag_inverse
+        hunit invDiagBound A pivotInv diagInv hInvBound hLeftDiag hRightDiag)
+      hLeft hRight normMax hMax k i j hik hjk
+
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equation (13.18):
     concrete matrix-`∞`-operator-norm instance of the generic CLM source table.
 
