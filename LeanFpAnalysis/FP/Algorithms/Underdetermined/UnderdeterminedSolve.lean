@@ -256,6 +256,67 @@ theorem higham21_eq21_3_q_method_min_norm_of_qr_unique {m k : ℕ}
       _ = vecNorm2 z := by
               rw [hz_recover]
 
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.3):
+    uniqueness of the triangular coordinate equation `Rᵀ y₁ = b` from a
+    supplied inverse of `Rᵀ`. -/
+theorem higham21_eq21_3_transpose_triangular_solution_unique_of_inverse {m : ℕ}
+    (R RTinv : Fin m → Fin m → ℝ)
+    (b y1 : Fin m → ℝ)
+    (hInv : IsInverse m (matTranspose R) RTinv)
+    (hy1 : (fun j : Fin m => ∑ i : Fin m, R i j * y1 i) = b) :
+    ∀ z1 : Fin m → ℝ,
+      (fun j : Fin m => ∑ i : Fin m, R i j * z1 i) = b → z1 = y1 := by
+  intro z1 hz1
+  have hy1_mv : rectMatMulVec (matTranspose R) y1 = b := by
+    ext j
+    exact congrFun hy1 j
+  have hz1_mv : rectMatMulVec (matTranspose R) z1 = b := by
+    ext j
+    exact congrFun hz1 j
+  calc
+    z1 = rectMatMulVec RTinv (rectMatMulVec (matTranspose R) z1) := by
+          exact (rectMatMulVec_left_inverse_of_IsLeftInverse hInv.1 z1).symm
+    _ = rectMatMulVec RTinv b := by rw [hz1_mv]
+    _ = rectMatMulVec RTinv (rectMatMulVec (matTranspose R) y1) := by rw [hy1_mv]
+    _ = y1 := rectMatMulVec_left_inverse_of_IsLeftInverse hInv.1 y1
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.3):
+    exact Q-method minimum-norm handoff with the triangular solve uniqueness
+    instantiated from an inverse of `Rᵀ`. -/
+theorem higham21_eq21_3_q_method_min_norm_of_qr_inverse {m k : ℕ}
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (hQ : IsOrthogonal (m + k) Q)
+    (R RTinv : Fin m → Fin m → ℝ)
+    (b y1 : Fin m → ℝ)
+    (hInv : IsInverse m (matTranspose R) RTinv)
+    (hy1 : (fun j : Fin m => ∑ i : Fin m, R i j * y1 i) = b) :
+    RectMinNormSolution m (m + k)
+      (finiteTranspose (matMulRectLeft Q (lsQRTallBlock (k := k) R)))
+      b
+      (matMulVec (m + k) Q (Fin.append y1 (0 : Fin k → ℝ))) :=
+  higham21_eq21_3_q_method_min_norm_of_qr_unique Q hQ R b y1 hy1
+    (higham21_eq21_3_transpose_triangular_solution_unique_of_inverse
+      R RTinv b y1 hInv hy1)
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.3):
+    determinant-facing exact Q-method minimum-norm handoff, using the
+    repository nonsingular inverse for `Rᵀ`. -/
+theorem higham21_eq21_3_q_method_min_norm_of_qr_det_ne_zero {m k : ℕ}
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (hQ : IsOrthogonal (m + k) Q)
+    (R : Fin m → Fin m → ℝ)
+    (b y1 : Fin m → ℝ)
+    (hdetT : Matrix.det (matTranspose R : Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hy1 : (fun j : Fin m => ∑ i : Fin m, R i j * y1 i) = b) :
+    RectMinNormSolution m (m + k)
+      (finiteTranspose (matMulRectLeft Q (lsQRTallBlock (k := k) R)))
+      b
+      (matMulVec (m + k) Q (Fin.append y1 (0 : Fin k → ℝ))) :=
+  higham21_eq21_3_q_method_min_norm_of_qr_inverse
+    Q hQ R (nonsingInv m (matTranspose R)) b y1
+    (isInverse_nonsingInv_of_det_ne_zero m (matTranspose R) hdetT)
+    hy1
+
 -- ============================================================
 -- §21.3  Row-wise backward error for underdetermined systems
 -- ============================================================
