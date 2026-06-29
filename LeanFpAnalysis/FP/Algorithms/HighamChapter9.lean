@@ -21778,6 +21778,62 @@ theorem higham9_15_normalized_Gtilde_max_frobNormRect_le_init_ratio_add_two_resi
     simpa [add_comm] using
       add_le_add_right hinit (2 * frobNormRect (Gtilde + X * Y)))
 
+/-- **Theorem 9.15 support**, sharpened full max-Frobenius bound from the
+principal-block ratio hypothesis plus a one-residual border handoff in the
+`I + G` split. -/
+theorem higham9_15_normalized_G_max_frobNormRect_le_init_ratio_add_residual_of_min_factor_bound
+    {n : ℕ}
+    (G X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 + G = (1 + X) * (1 + Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0)
+    (hGlt : opNorm2 G < 1)
+    (hmin :
+      min (frobNormRect (higham9_15_initBlock X))
+          (frobNormRect (higham9_15_initBlock Y)) ≤
+        opNorm2 (higham9_15_initBlock G)) :
+    max (frobNormRect X) (frobNormRect Y) ≤
+      frobNormRect (higham9_15_initBlock G) /
+          (1 - opNorm2 (higham9_15_initBlock G)) +
+        frobNormRect (G - X * Y) := by
+  have hfull :=
+    higham9_15_normalized_G_max_frobNormRect_le_init_max_add_residual
+      G X Y hfact hX hY
+  have hinit :=
+    higham9_15_normalized_G_init_frobNorm_ratio_bound_of_min_factor_bound
+      G X Y hfact hX hY hGlt hmin
+  exact hfull.trans (by
+    simpa [add_comm] using
+      add_le_add_right hinit (frobNormRect (G - X * Y)))
+
+/-- **Theorem 9.15 support**, sharpened full max-Frobenius bound from the
+principal-block ratio hypothesis plus a one-residual border handoff in the
+`I - Gtilde` split. -/
+theorem higham9_15_normalized_Gtilde_max_frobNormRect_le_init_ratio_add_residual_of_min_factor_bound
+    {n : ℕ}
+    (Gtilde X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 - Gtilde = (1 - X) * (1 - Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0)
+    (hGlt : opNorm2 Gtilde < 1)
+    (hmin :
+      min (frobNormRect (higham9_15_initBlock X))
+          (frobNormRect (higham9_15_initBlock Y)) ≤
+        opNorm2 (higham9_15_initBlock Gtilde)) :
+    max (frobNormRect X) (frobNormRect Y) ≤
+      frobNormRect (higham9_15_initBlock Gtilde) /
+          (1 - opNorm2 (higham9_15_initBlock Gtilde)) +
+        frobNormRect (Gtilde + X * Y) := by
+  have hfull :=
+    higham9_15_normalized_Gtilde_max_frobNormRect_le_init_max_add_residual
+      Gtilde X Y hfact hX hY
+  have hinit :=
+    higham9_15_normalized_Gtilde_init_frobNorm_ratio_bound_of_min_factor_bound
+      Gtilde X Y hfact hX hY hGlt hmin
+  exact hfull.trans (by
+    simpa [add_comm] using
+      add_le_add_right hinit (frobNormRect (Gtilde + X * Y)))
+
 /-- **Theorem 9.15 support**, the principal-block ratio is bounded by the
 full-matrix ratio because both the Frobenius norm and operator 2-norm contract
 under the top-left principal-block projection. -/
@@ -21869,6 +21925,83 @@ theorem higham9_15_normalized_Gtilde_max_frobNormRect_le_ratio_add_two_residual_
       add_le_add_right (hinit.trans hratio)
         (2 * frobNormRect (Gtilde + X * Y)))
 
+/-- **Theorem 9.15 support**, sharpened full max-Frobenius bound from a
+principal-block linearized step, with the principal-block ratio lifted to the
+full `G` ratio and only one residual border term. -/
+theorem higham9_15_normalized_G_max_frobNormRect_le_ratio_add_residual_of_init_linear_step
+    {n : ℕ}
+    (G X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 + G = (1 + X) * (1 + Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0)
+    (hGlt : opNorm2 G < 1)
+    (hlinear :
+      max (frobNormRect (higham9_15_initBlock X))
+          (frobNormRect (higham9_15_initBlock Y)) ≤
+        frobNormRect (higham9_15_initBlock G) +
+          opNorm2 (higham9_15_initBlock G) *
+            max (frobNormRect (higham9_15_initBlock X))
+              (frobNormRect (higham9_15_initBlock Y))) :
+    max (frobNormRect X) (frobNormRect Y) ≤
+      frobNormRect G / (1 - opNorm2 G) +
+        frobNormRect (G - X * Y) := by
+  have hfull :=
+    higham9_15_normalized_G_max_frobNormRect_le_init_max_add_residual
+      G X Y hfact hX hY
+  have hinit :
+      max (frobNormRect (higham9_15_initBlock X))
+          (frobNormRect (higham9_15_initBlock Y)) ≤
+        frobNormRect (higham9_15_initBlock G) /
+          (1 - opNorm2 (higham9_15_initBlock G)) :=
+    higham9_15_normalized_G_frobNorm_ratio_bound_of_linear_step
+      (higham9_15_initBlock G) (higham9_15_initBlock X)
+      (higham9_15_initBlock Y)
+      (higham9_15_opNorm2_init_lt_one_of_lt_one G hGlt)
+      hlinear
+  have hratio := higham9_15_initBlock_frobNorm_ratio_le G hGlt
+  exact hfull.trans (by
+    simpa [add_comm] using
+      add_le_add_right (hinit.trans hratio)
+        (frobNormRect (G - X * Y)))
+
+/-- **Theorem 9.15 support**, `Gtilde` companion to
+`higham9_15_normalized_G_max_frobNormRect_le_ratio_add_residual_of_init_linear_step`. -/
+theorem higham9_15_normalized_Gtilde_max_frobNormRect_le_ratio_add_residual_of_init_linear_step
+    {n : ℕ}
+    (Gtilde X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 - Gtilde = (1 - X) * (1 - Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0)
+    (hGlt : opNorm2 Gtilde < 1)
+    (hlinear :
+      max (frobNormRect (higham9_15_initBlock X))
+          (frobNormRect (higham9_15_initBlock Y)) ≤
+        frobNormRect (higham9_15_initBlock Gtilde) +
+          opNorm2 (higham9_15_initBlock Gtilde) *
+            max (frobNormRect (higham9_15_initBlock X))
+              (frobNormRect (higham9_15_initBlock Y))) :
+    max (frobNormRect X) (frobNormRect Y) ≤
+      frobNormRect Gtilde / (1 - opNorm2 Gtilde) +
+        frobNormRect (Gtilde + X * Y) := by
+  have hfull :=
+    higham9_15_normalized_Gtilde_max_frobNormRect_le_init_max_add_residual
+      Gtilde X Y hfact hX hY
+  have hinit :
+      max (frobNormRect (higham9_15_initBlock X))
+          (frobNormRect (higham9_15_initBlock Y)) ≤
+        frobNormRect (higham9_15_initBlock Gtilde) /
+          (1 - opNorm2 (higham9_15_initBlock Gtilde)) :=
+    higham9_15_normalized_Gtilde_frobNorm_ratio_bound_of_linear_step
+      (higham9_15_initBlock Gtilde) (higham9_15_initBlock X)
+      (higham9_15_initBlock Y)
+      (higham9_15_opNorm2_init_lt_one_of_lt_one Gtilde hGlt)
+      hlinear
+  have hratio := higham9_15_initBlock_frobNorm_ratio_le Gtilde hGlt
+  exact hfull.trans (by
+    simpa [add_comm] using
+      add_le_add_right (hinit.trans hratio)
+        (frobNormRect (Gtilde + X * Y)))
+
 /-- **Theorem 9.15 support**, full max-Frobenius bound from a
 principal-block min-factor hypothesis, with the principal-block ratio lifted
 to the full `G` ratio. -/
@@ -21910,6 +22043,51 @@ theorem higham9_15_normalized_Gtilde_max_frobNormRect_le_ratio_add_two_residual_
         2 * frobNormRect (Gtilde + X * Y) := by
   exact
     higham9_15_normalized_Gtilde_max_frobNormRect_le_ratio_add_two_residual_of_init_linear_step
+      Gtilde X Y hfact hX hY hGlt
+      (higham9_15_normalized_Gtilde_init_linear_step_of_min_factor_bound
+        Gtilde X Y hfact hX hY hmin)
+
+/-- **Theorem 9.15 support**, sharpened full max-Frobenius bound from a
+principal-block min-factor hypothesis, with the principal-block ratio lifted
+to the full `G` ratio and only one residual border term. -/
+theorem higham9_15_normalized_G_max_frobNormRect_le_ratio_add_residual_of_init_min_factor_bound
+    {n : ℕ}
+    (G X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 + G = (1 + X) * (1 + Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0)
+    (hGlt : opNorm2 G < 1)
+    (hmin :
+      min (frobNormRect (higham9_15_initBlock X))
+          (frobNormRect (higham9_15_initBlock Y)) ≤
+        opNorm2 (higham9_15_initBlock G)) :
+    max (frobNormRect X) (frobNormRect Y) ≤
+      frobNormRect G / (1 - opNorm2 G) +
+        frobNormRect (G - X * Y) := by
+  exact
+    higham9_15_normalized_G_max_frobNormRect_le_ratio_add_residual_of_init_linear_step
+      G X Y hfact hX hY hGlt
+      (higham9_15_normalized_G_init_linear_step_of_min_factor_bound
+        G X Y hfact hX hY hmin)
+
+/-- **Theorem 9.15 support**, `Gtilde` companion to
+`higham9_15_normalized_G_max_frobNormRect_le_ratio_add_residual_of_init_min_factor_bound`. -/
+theorem higham9_15_normalized_Gtilde_max_frobNormRect_le_ratio_add_residual_of_init_min_factor_bound
+    {n : ℕ}
+    (Gtilde X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 - Gtilde = (1 - X) * (1 - Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0)
+    (hGlt : opNorm2 Gtilde < 1)
+    (hmin :
+      min (frobNormRect (higham9_15_initBlock X))
+          (frobNormRect (higham9_15_initBlock Y)) ≤
+        opNorm2 (higham9_15_initBlock Gtilde)) :
+    max (frobNormRect X) (frobNormRect Y) ≤
+      frobNormRect Gtilde / (1 - opNorm2 Gtilde) +
+        frobNormRect (Gtilde + X * Y) := by
+  exact
+    higham9_15_normalized_Gtilde_max_frobNormRect_le_ratio_add_residual_of_init_linear_step
       Gtilde X Y hfact hX hY hGlt
       (higham9_15_normalized_Gtilde_init_linear_step_of_min_factor_bound
         Gtilde X Y hfact hX hY hmin)
