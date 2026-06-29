@@ -2130,6 +2130,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_20_tridiag_lu_perturbation_model_of_RectDoolittleDenseLoopCertificate_square`
 - `higham9_20_tridiag_lu_perturbation_model_of_RectDoolittleDenseLoopAbsBudgetCertificate_square`
 - `higham9_21_tridiag_solve_perturbation_model_of_fl_triangular_solves_gamma_le`
+- `higham9_21_tridiag_solve_perturbation_model_of_fl_triangular_solves_gamma`
 - `higham9_14_source_f_bound`
 - `higham9_14_source_h_bound_of_absLUhat_bound`
 - `higham9_14_source_h_bound_of_absLUhat_mul_one_sub_bound`
