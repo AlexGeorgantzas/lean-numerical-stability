@@ -9724,3 +9724,17 @@ These compile, but should not be treated as fully derived stability results:
   for the initial source lower table/source reciprocal data, entrywise
   max-norm Eq.13.21 transfer, and BDD nonsingularity/block-LU existence
   endpoint.
+
+- 2026-06-29 Algorithm 13.3 BDD matrix-infinity initial lower-table wrappers:
+  added
+  `higham13_algorithm13_3_matrix_infNorm_initial_lower_table_of_diag_right_inverse`,
+  `higham13_algorithm13_3_matrix_infNorm_initial_diag_bound_of_diag_right_inverse`,
+  and downstream `_of_initial_diag_right_inverse_of_pivot_right_inverse`
+  wrappers for `diagLowerCertGeneric` diagonal-lower, active pivot-product,
+  active column dominance, and active-stage `2 * normMax` bounds in
+  `BlockLU.lean`.  These derive the stage-zero lower-norm table and initial
+  diagonal comparison from per-diagonal right-inverse certificates plus
+  reciprocal norm bounds.  The BDD source row remains open for deriving those
+  reciprocal data and the active-pivot/source bridge from the source BDD
+  hypotheses, then connecting the matrix-`∞` surface to Eq.13.21/max-entry and
+  block-LU existence endpoints.
