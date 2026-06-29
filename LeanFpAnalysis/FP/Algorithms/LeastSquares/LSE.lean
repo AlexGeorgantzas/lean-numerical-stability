@@ -7202,6 +7202,83 @@ theorem GeneralizedQRFactorization.exists_unique_method_solution_with_A_Q2_tall_
   · exact h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank
       hB hstack
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, constructed exact GQR method
+    package with the trailing `A Q₂` display and the source nonsingularity
+    consequence for the same constructed factors.
+
+    Under source full row rank of `B` and full column rank of `[A; B]`, the
+    returned GQR data simultaneously carries the associated smaller-block
+    display used in the construction, nonzero diagonals for the displayed
+    triangular blocks `S` and `L22`, unique triangular solve coordinates, and
+    the unique exact equality-constrained least-squares minimizer. -/
+theorem GeneralizedQRFactorization.exists_unique_method_solution_with_A_Q2_tall_assoc_s_l22_diag_ne_zero_of_fullRowRank_stackedFullColumnRank
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    {b : Fin (r + q) → ℝ} {d : Fin p → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ h : GeneralizedQRFactorization r p q A B,
+      Nonempty (GQRAQTallCase r q
+        (matMulRectLeft (matTranspose h.U) (gqrAQ2Block A h.Q))) ∧
+      ((∀ i : Fin p, h.S i i ≠ 0) ∧
+        (∀ i : Fin q, h.L22 i i ≠ 0)) ∧
+      (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+        rectMatMulVec h.S yz.1 = d ∧
+        rectMatMulVec h.L22 yz.2 =
+          (fun i : Fin q =>
+            matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i) -
+              rectMatMulVec h.L21 yz.1 i) ∧
+        IsLSEMinimizer A b B d
+          (matMulVec (p + q) h.Q (Fin.append yz.1 yz.2))) ∧
+      (∃! x : Fin (p + q) → ℝ, IsLSEMinimizer A b B d x) := by
+  rcases
+    GeneralizedQRFactorization.exists_unique_method_solution_with_A_Q2_tall_assoc_of_fullRowRank_stackedFullColumnRank
+      (A := A) (B := B) (b := b) (d := d) hB hstack with
+    ⟨h, hCase, hyz, hx⟩
+  exact ⟨h, hCase,
+    (h.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero).1
+      ⟨hB, hstack⟩,
+    hyz, hx⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, constructed exact GQR method
+    package with the trailing `A Q₂` display and bijective triangular solve
+    maps for the same constructed factors.
+
+    This is the solve-map version of
+    `exists_unique_method_solution_with_A_Q2_tall_assoc_s_l22_diag_ne_zero_of_fullRowRank_stackedFullColumnRank`. -/
+theorem GeneralizedQRFactorization.exists_unique_method_solution_with_A_Q2_tall_assoc_s_l22_bijective_of_fullRowRank_stackedFullColumnRank
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    {b : Fin (r + q) → ℝ} {d : Fin p → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ h : GeneralizedQRFactorization r p q A B,
+      Nonempty (GQRAQTallCase r q
+        (matMulRectLeft (matTranspose h.U) (gqrAQ2Block A h.Q))) ∧
+      Function.Bijective (rectMatMulVec h.S) ∧
+      Function.Bijective (rectMatMulVec h.L22) ∧
+      (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+        rectMatMulVec h.S yz.1 = d ∧
+        rectMatMulVec h.L22 yz.2 =
+          (fun i : Fin q =>
+            matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i) -
+              rectMatMulVec h.L21 yz.1 i) ∧
+        IsLSEMinimizer A b B d
+          (matMulVec (p + q) h.Q (Fin.append yz.1 yz.2))) ∧
+      (∃! x : Fin (p + q) → ℝ, IsLSEMinimizer A b B d x) := by
+  rcases
+    GeneralizedQRFactorization.exists_unique_method_solution_with_A_Q2_tall_assoc_of_fullRowRank_stackedFullColumnRank
+      (A := A) (B := B) (b := b) (d := d) hB hstack with
+    ⟨h, hCase, hyz, hx⟩
+  have hbij :
+      Function.Bijective (rectMatMulVec h.S) ∧
+        Function.Bijective (rectMatMulVec h.L22) :=
+    (h.fullRowRank_stackedFullColumnRank_iff_s_l22_bijective).1
+      ⟨hB, hstack⟩
+  exact ⟨h, hCase, hbij.1, hbij.2, hyz, hx⟩
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 exact solvability consequence
     with no supplied GQR factor input.
 
