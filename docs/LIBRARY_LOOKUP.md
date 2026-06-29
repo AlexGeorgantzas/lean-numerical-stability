@@ -2000,6 +2000,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_11_bohteBound_monotone`
 - `higham9_11_bohteBound_le_of_le`
 - `higham9_11_banded_growth_factor_solve_tight`
+- `higham9_11_banded_growth_factor_solve_tight_of_growth_le`
 - `higham9_11_bohte_banded_solve_tight`
 - `higham9_11_bohte_banded_solve_tight_of_growth_le`
 - `higham9_11_bohte_banded_solve_tight_of_bandwidth_le`
