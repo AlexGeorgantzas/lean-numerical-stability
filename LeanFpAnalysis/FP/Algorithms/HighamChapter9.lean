@@ -8665,6 +8665,30 @@ lemma higham9_14_completePivotWilkinsonBound_ge_sqrt (n : ℕ) :
           Real.sqrt (higham9_14_completePivotWilkinsonProduct n) :=
         mul_le_mul_of_nonneg_left hsqrt_prod (Real.sqrt_nonneg _)
 
+/-- **Equation (9.14)**, Wilkinson's displayed complete-pivoting RHS is at
+least one in every positive dimension. -/
+lemma higham9_14_completePivotWilkinsonBound_ge_one {n : ℕ} (hn : 0 < n) :
+    1 ≤ higham9_14_completePivotWilkinsonBound n := by
+  have hn_one_nat : 1 ≤ n := Nat.succ_le_of_lt hn
+  have hn_one : (1 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hn_one_nat
+  have hsqrt_one :
+      (1 : ℝ) ≤ Real.sqrt (n : ℝ) := by
+    simpa using
+      (Real.sqrt_le_sqrt hn_one :
+        Real.sqrt (1 : ℝ) ≤ Real.sqrt (n : ℝ))
+  exact hsqrt_one.trans (higham9_14_completePivotWilkinsonBound_ge_sqrt n)
+
+/-- **Equation (9.14)**, base value of Wilkinson's displayed complete-pivoting
+RHS. -/
+lemma higham9_14_completePivotWilkinsonBound_two :
+    higham9_14_completePivotWilkinsonBound 2 = 2 := by
+  unfold higham9_14_completePivotWilkinsonBound
+  rw [higham9_14_completePivotWilkinsonProduct_two]
+  have hcast : ((2 : ℕ) : ℝ) = 2 := by norm_num
+  rw [hcast]
+  rw [← pow_two]
+  exact Real.sq_sqrt (show (0 : ℝ) ≤ 2 by positivity)
+
 /-- **Equation (9.14)**, order form of monotonicity for Wilkinson's displayed
 complete-pivoting RHS. -/
 theorem higham9_14_completePivotWilkinsonBound_le_of_le {n m : ℕ}
@@ -8851,6 +8875,19 @@ lemma higham9_16_rookPivotFosterBound_ge_three_halves {n : ℕ} (hn : 0 < n) :
     _ ≤ (3 / 2 : ℝ) *
         (n : ℝ) ^ ((3 / 4 : ℝ) * Real.log (n : ℝ)) :=
         mul_le_mul_of_nonneg_left hrpow_ge_one (by norm_num)
+
+/-- **Equation (9.16)**, Foster's displayed rook-pivoting RHS is at least one
+in every positive dimension. -/
+lemma higham9_16_rookPivotFosterBound_ge_one {n : ℕ} (hn : 0 < n) :
+    1 ≤ higham9_16_rookPivotFosterBound n :=
+  le_trans (by norm_num : (1 : ℝ) ≤ 3 / 2)
+    (higham9_16_rookPivotFosterBound_ge_three_halves hn)
+
+/-- **Equation (9.16)**, base value of Foster's displayed rook-pivoting RHS in
+dimension one. -/
+lemma higham9_16_rookPivotFosterBound_one :
+    higham9_16_rookPivotFosterBound 1 = 3 / 2 := by
+  norm_num [higham9_16_rookPivotFosterBound]
 
 /-- **Equation (9.16)**, monotonicity of Foster's logarithmic scalar factor on
 positive dimensions. -/

@@ -1653,6 +1653,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_completePivotWilkinsonProduct_monotone`
 - `higham9_14_completePivotWilkinsonProduct_le_of_le`
 - `higham9_14_completePivotWilkinsonBound_ge_sqrt`
+- `higham9_14_completePivotWilkinsonBound_ge_one`
+- `higham9_14_completePivotWilkinsonBound_two`
 - `higham9_14_completePivotWilkinsonBound_le_of_le`
 - `higham9_14_completePivotWilkinsonBound_monotone`
 - `higham9_completePivotGrowthSet`
@@ -1692,6 +1694,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_16_rookPivotFosterBound_nonneg`
 - `higham9_16_rookPivotFosterBound_pos`
 - `higham9_16_rookPivotFosterBound_ge_three_halves`
+- `higham9_16_rookPivotFosterBound_ge_one`
+- `higham9_16_rookPivotFosterBound_one`
 - `higham9_16_rookPivotFosterFactor_le_of_le`
 - `higham9_16_rookPivotFosterBound_le_of_le`
 - `higham9_16_rookPivotFosterBound_monotone`
