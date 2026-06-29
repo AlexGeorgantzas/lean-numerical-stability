@@ -37784,15 +37784,22 @@ supremum. -/
 noncomputable def higham9_completePivotingUTraceGrowthSup (n : ℕ) : ℝ :=
   sSup (higham9_completePivotingUTraceGrowthValues n)
 
+/-- **Problem 9.11 / equation (9.15)**, every trace-level
+complete-pivoting growth value satisfies the elementary `2^(n-1)` bound. -/
+theorem higham9_completePivotingUTraceGrowthValues_le_pow_two {n : ℕ} {r : ℝ}
+    (hr : r ∈ higham9_completePivotingUTraceGrowthValues n) :
+    r ≤ (2 : ℝ) ^ (n - 1) := by
+  rcases hr with ⟨hn, A, U, hApos, htrace, rfl⟩
+  exact higham9_8_CompletePivotGECPUTrace_growthFactorEntry_le_pow_two
+    hn A U hApos htrace
+
 /-- **Problem 9.11 / equation (9.15)**, the trace-level complete-pivoting
 growth values are bounded above by the elementary `2^(n-1)` bound. -/
 theorem higham9_completePivotingUTraceGrowthValues_bddAbove (n : ℕ) :
     BddAbove (higham9_completePivotingUTraceGrowthValues n) := by
   refine ⟨(2 : ℝ) ^ (n - 1), ?_⟩
   intro r hr
-  rcases hr with ⟨hn, A, U, hApos, htrace, rfl⟩
-  exact higham9_8_CompletePivotGECPUTrace_growthFactorEntry_le_pow_two
-    hn A U hApos htrace
+  exact higham9_completePivotingUTraceGrowthValues_le_pow_two hr
 
 /-- **Problem 9.11 / equation (9.15)**, every trace-level complete-pivoting
 growth value is bounded by the trace-level supremum. -/
@@ -38294,9 +38301,7 @@ theorem higham9_8_completePivotingUTraceGrowthSup_le_pow_two {n : ℕ}
     higham9_completePivotingUTraceGrowthSup n ≤ (2 : ℝ) ^ (n - 1) := by
   apply csSup_le (higham9_completePivotingUTraceGrowthValues_nonempty hn)
   intro r hr
-  rcases hr with ⟨hn', A, U, hApos, htrace, rfl⟩
-  exact higham9_8_CompletePivotGECPUTrace_growthFactorEntry_le_pow_two
-    hn' A U hApos htrace
+  exact higham9_completePivotingUTraceGrowthValues_le_pow_two hr
 
 /-- **Theorem 9.4 / Theorem 9.5**, complete-pivoted explicit-certificate
 normwise source bound.
@@ -40829,15 +40834,22 @@ supremum. -/
 noncomputable def higham9_partialPivotingUTraceGrowthSup (n : ℕ) : ℝ :=
   sSup (higham9_partialPivotingUTraceGrowthValues n)
 
+/-- **Theorem 9.7 / equation (9.10)**, every trace-level partial-pivoting
+growth value satisfies Wilkinson's elementary `2^(n-1)` bound. -/
+theorem higham9_partialPivotingUTraceGrowthValues_le_pow_two {n : ℕ} {r : ℝ}
+    (hr : r ∈ higham9_partialPivotingUTraceGrowthValues n) :
+    r ≤ (2 : ℝ) ^ (n - 1) := by
+  rcases hr with ⟨hn, A, U, hApos, htrace, rfl⟩
+  exact higham9_7_PartialPivotGEPPUTrace_growthFactorEntry_le_pow_two
+    hn A U hApos htrace
+
 /-- **Theorem 9.7 / equation (9.10)**, the trace-level partial-pivoting
 growth values are bounded above by Wilkinson's `2^(n-1)` bound. -/
 theorem higham9_partialPivotingUTraceGrowthValues_bddAbove (n : ℕ) :
     BddAbove (higham9_partialPivotingUTraceGrowthValues n) := by
   refine ⟨(2 : ℝ) ^ (n - 1), ?_⟩
   intro r hr
-  rcases hr with ⟨hn, A, U, hApos, htrace, rfl⟩
-  exact higham9_7_PartialPivotGEPPUTrace_growthFactorEntry_le_pow_two
-    hn A U hApos htrace
+  exact higham9_partialPivotingUTraceGrowthValues_le_pow_two hr
 
 /-- **Theorem 9.7 / equation (9.10)**, every trace-level partial-pivoting
 growth value is bounded by the trace-level supremum. -/
@@ -40872,9 +40884,7 @@ theorem higham9_7_partialPivotingUTraceGrowthSup_le_pow_two {n : ℕ}
     higham9_partialPivotingUTraceGrowthSup n ≤ (2 : ℝ) ^ (n - 1) := by
   apply csSup_le (higham9_partialPivotingUTraceGrowthValues_nonempty hn)
   intro r hr
-  rcases hr with ⟨hn', A, U, hApos, htrace, rfl⟩
-  exact higham9_7_PartialPivotGEPPUTrace_growthFactorEntry_le_pow_two
-    hn' A U hApos htrace
+  exact higham9_partialPivotingUTraceGrowthValues_le_pow_two hr
 
 /-- **Growth-factor source family**, the identity matrix has an exact
 no-pivot LU certificate. -/

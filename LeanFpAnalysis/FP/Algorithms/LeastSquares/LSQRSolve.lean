@@ -7405,6 +7405,90 @@ theorem
       (lsScaledAugmentedSourceBranchCardEq hmn)
       hu hv hw hleft hright hnull hAv hATu hATw hsigma_pos halpha
 
+/-- Column-side singular values for a real rectangular least-squares matrix,
+    obtained by complexifying the real matrix.  Lean index `0` corresponds to
+    the largest source singular value. -/
+noncomputable def lsRealRectColSingularValue {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (i : Fin n) : ℝ :=
+  complexMatrixSingularValue (realRectToCMatrix A) i
+
+/-- Column rank for a real rectangular matrix, measured as the complex rank of
+    its complexification. -/
+noncomputable def lsRealRectColRank {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) : ℕ :=
+  complexMatrixRank (realRectToCMatrix A)
+
+theorem lsRealRectColSingularValue_nonneg {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (i : Fin n) :
+    0 ≤ lsRealRectColSingularValue A i := by
+  simpa [lsRealRectColSingularValue] using
+    complexMatrixSingularValue_nonneg (realRectToCMatrix A) i
+
+theorem lsRealRectColSingularValue_ne_zero_of_colRank_eq_card
+    {m n : ℕ} (A : Fin m → Fin n → ℝ)
+    (hrank : lsRealRectColRank A = n) (i : Fin n) :
+    lsRealRectColSingularValue A i ≠ 0 := by
+  have h := complexMatrixSingularValue_ne_zero_of_rank_eq_card
+    (realRectToCMatrix A) (by simpa [lsRealRectColRank] using hrank)
+  simpa [lsRealRectColSingularValue] using h i
+
+theorem lsRealRectColSingularValue_pos_of_colRank_eq_card
+    {m n : ℕ} (A : Fin m → Fin n → ℝ)
+    (hrank : lsRealRectColRank A = n) (i : Fin n) :
+    0 < lsRealRectColSingularValue A i := by
+  exact lt_of_le_of_ne' (lsRealRectColSingularValue_nonneg A i)
+    (lsRealRectColSingularValue_ne_zero_of_colRank_eq_card A hrank i)
+
+/-- Higham, 2nd ed., Chapter 20, equations (20.18)-(20.19):
+    source-dimension branch handoff specialized to the real column-side
+    singular values of `A`.  Full column rank supplies positivity of every
+    singular branch, so the theorem surface only leaves the real
+    singular-vector and left-nullspace branch equations as supplied data. -/
+theorem
+    lsScaledAugmentedMatrix_kappa2_bounds_of_source_singular_branch_data
+    {m n : ℕ} [Nonempty (Fin n)] (hmn : n ≤ m)
+    {alpha : ℝ} {A : Fin m → Fin n → ℝ}
+    (hrank : lsRealRectColRank A = n)
+    {u : Fin n → Fin m → ℝ}
+    {v : Fin n → Fin n → ℝ} {w : Fin (m - n) → Fin m → ℝ}
+    (hu : ∀ i : Fin n, vecNorm2Sq (u i) = 1)
+    (hv : ∀ i : Fin n, vecNorm2Sq (v i) = 1)
+    (hw : ∀ k : Fin (m - n), vecNorm2Sq (w k) = 1)
+    (hleft : ∀ i j : Fin n, i ≠ j → (∑ r : Fin m, u i r * u j r) = 0)
+    (hright : ∀ i j : Fin n, i ≠ j → (∑ c : Fin n, v i c * v j c) = 0)
+    (hnull : ∀ k l : Fin (m - n),
+      k ≠ l → (∑ r : Fin m, w k r * w l r) = 0)
+    (hAv : ∀ i : Fin n, rectMatMulVec A (v i) =
+      fun r => lsRealRectColSingularValue A i * u i r)
+    (hATu : ∀ i : Fin n,
+      (fun j : Fin n => ∑ r : Fin m, A r j * u i r) =
+        fun j => lsRealRectColSingularValue A i * v i j)
+    (hATw : ∀ k : Fin (m - n), ∀ j : Fin n,
+      ∑ r : Fin m, A r j * w k r = 0)
+    (halpha :
+      alpha = lsScaledAugmentedBranchSigmaMin
+        (lsRealRectColSingularValue A) / Real.sqrt 2) :
+    Real.sqrt 2 *
+          (lsScaledAugmentedBranchSigmaMax (lsRealRectColSingularValue A) /
+            lsScaledAugmentedBranchSigmaMin (lsRealRectColSingularValue A)) ≤
+        kappa2 (lsScaledAugmentedMatrix alpha A)
+          (lsScaledAugmentedSourceBranchInverseCandidate hmn alpha
+            (lsRealRectColSingularValue A) u v w) ∧
+      kappa2 (lsScaledAugmentedMatrix alpha A)
+          (lsScaledAugmentedSourceBranchInverseCandidate hmn alpha
+            (lsRealRectColSingularValue A) u v w) ≤
+        2 *
+          (lsScaledAugmentedBranchSigmaMax (lsRealRectColSingularValue A) /
+            lsScaledAugmentedBranchSigmaMin (lsRealRectColSingularValue A)) := by
+  simpa using
+    lsScaledAugmentedMatrix_kappa2_bounds_of_source_dimension_branch_data
+      (m := m) (n := n) (hmn := hmn)
+      (alpha := alpha) (A := A)
+      (sigma := lsRealRectColSingularValue A) (u := u) (v := v) (w := w)
+      hu hv hw hleft hright hnull hAv hATu hATw
+      (fun i => lsRealRectColSingularValue_pos_of_colRank_eq_card A hrank i)
+      halpha
+
 /-- Higham, 2nd ed., Chapter 20, equation (20.20): the weighted perturbation
     block `[DeltaA, theta Delta b]` used in the Frobenius normwise
     least-squares backward error. -/
