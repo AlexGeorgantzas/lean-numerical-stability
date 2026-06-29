@@ -1759,6 +1759,144 @@ noncomputable def fl_householderQR_Q (fp : FPModel) (n : ℕ)
     (A : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
   fl_householderQRPanel_Q fp n n A
 
+/-- Exact zero-aware recursive Householder QR panel algorithm returning the
+    `R` panel.
+
+    This is the exact-arithmetic analogue of `fl_householderQRPanel_R`.
+    It uses the same zero-active-column skip branch, but in the nonzero branch
+    applies the ideal Householder reflector to the full active panel before
+    recursing on the trailing panel. -/
+noncomputable def exactHouseholderQRPanel_R :
+    (m p : ℕ) → (Fin m → Fin p → ℝ) → Fin m → Fin p → ℝ
+  | 0, _, A => A
+  | Nat.succ _, 0, A => A
+  | m + 1, p + 1, A =>
+      if _hcol : panelFirstColumn (Nat.succ_pos p) A = 0 then
+        panelFromTopAndTrailing
+          (panelTopLeft A)
+          (panelTopRowTail A)
+          (exactHouseholderQRPanel_R m p (trailingPanel A))
+      else
+        let P : Fin (m + 1) → Fin (m + 1) → ℝ :=
+          householder (m + 1)
+            (householderNormalizedVector (m + 1)
+              (householderVector (Nat.succ_pos m)
+                (panelFirstColumn (Nat.succ_pos p) A))
+              (householderBetaFromScale (Nat.succ_pos m)
+                (panelFirstColumn (Nat.succ_pos p) A))) 1
+        let Astep : Fin (m + 1) → Fin (p + 1) → ℝ :=
+          matMulRect (m + 1) (m + 1) (p + 1) P A
+        panelFromTopAndTrailing
+          (panelTopLeft Astep)
+          (panelTopRowTail Astep)
+          (exactHouseholderQRPanel_R m p (trailingPanel Astep))
+
+@[simp] theorem exactHouseholderQRPanel_R_zero_rows
+    {p : ℕ} (A : Fin 0 → Fin p → ℝ) :
+    exactHouseholderQRPanel_R 0 p A = A := rfl
+
+@[simp] theorem exactHouseholderQRPanel_R_zero_cols
+    {m : ℕ} (A : Fin (m + 1) → Fin 0 → ℝ) :
+    exactHouseholderQRPanel_R (m + 1) 0 A = A := rfl
+
+@[simp] theorem exactHouseholderQRPanel_R_succ_succ_zero
+    {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (hcol : panelFirstColumn (Nat.succ_pos p) A = 0) :
+    exactHouseholderQRPanel_R (m + 1) (p + 1) A =
+      panelFromTopAndTrailing
+        (panelTopLeft A)
+        (panelTopRowTail A)
+        (exactHouseholderQRPanel_R m p (trailingPanel A)) := by
+  simp [exactHouseholderQRPanel_R, hcol]
+
+@[simp] theorem exactHouseholderQRPanel_R_succ_succ_nonzero
+    {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (hcol : panelFirstColumn (Nat.succ_pos p) A ≠ 0) :
+    exactHouseholderQRPanel_R (m + 1) (p + 1) A =
+      let P : Fin (m + 1) → Fin (m + 1) → ℝ :=
+        householder (m + 1)
+          (householderNormalizedVector (m + 1)
+            (householderVector (Nat.succ_pos m)
+              (panelFirstColumn (Nat.succ_pos p) A))
+            (householderBetaFromScale (Nat.succ_pos m)
+              (panelFirstColumn (Nat.succ_pos p) A))) 1
+      let Astep : Fin (m + 1) → Fin (p + 1) → ℝ :=
+        matMulRect (m + 1) (m + 1) (p + 1) P A
+      panelFromTopAndTrailing
+        (panelTopLeft Astep)
+        (panelTopRowTail Astep)
+        (exactHouseholderQRPanel_R m p (trailingPanel Astep)) := by
+  simp [exactHouseholderQRPanel_R, hcol]
+
+/-- Exact orthogonal factor associated with `exactHouseholderQRPanel_R`. -/
+noncomputable def exactHouseholderQRPanel_Q :
+    (m p : ℕ) → (Fin m → Fin p → ℝ) → Fin m → Fin m → ℝ
+  | 0, _, _A => idMatrix 0
+  | m + 1, 0, _A => idMatrix (m + 1)
+  | m + 1, p + 1, A =>
+      if _hcol : panelFirstColumn (Nat.succ_pos p) A = 0 then
+        embedTrailingOne
+          (exactHouseholderQRPanel_Q m p (trailingPanel A))
+      else
+        let P : Fin (m + 1) → Fin (m + 1) → ℝ :=
+          householder (m + 1)
+            (householderNormalizedVector (m + 1)
+              (householderVector (Nat.succ_pos m)
+                (panelFirstColumn (Nat.succ_pos p) A))
+              (householderBetaFromScale (Nat.succ_pos m)
+                (panelFirstColumn (Nat.succ_pos p) A))) 1
+        let Astep : Fin (m + 1) → Fin (p + 1) → ℝ :=
+          matMulRect (m + 1) (m + 1) (p + 1) P A
+        let Qt : Fin m → Fin m → ℝ :=
+          exactHouseholderQRPanel_Q m p (trailingPanel Astep)
+        matTranspose
+          (matMul (m + 1) (embedTrailingOne (matTranspose Qt)) P)
+
+@[simp] theorem exactHouseholderQRPanel_Q_zero_rows
+    {p : ℕ} (A : Fin 0 → Fin p → ℝ) :
+    exactHouseholderQRPanel_Q 0 p A = idMatrix 0 := rfl
+
+@[simp] theorem exactHouseholderQRPanel_Q_zero_cols
+    {m : ℕ} (A : Fin (m + 1) → Fin 0 → ℝ) :
+    exactHouseholderQRPanel_Q (m + 1) 0 A = idMatrix (m + 1) := rfl
+
+@[simp] theorem exactHouseholderQRPanel_Q_succ_succ_zero
+    {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (hcol : panelFirstColumn (Nat.succ_pos p) A = 0) :
+    exactHouseholderQRPanel_Q (m + 1) (p + 1) A =
+      embedTrailingOne
+        (exactHouseholderQRPanel_Q m p (trailingPanel A)) := by
+  simp [exactHouseholderQRPanel_Q, hcol]
+
+@[simp] theorem exactHouseholderQRPanel_Q_succ_succ_nonzero
+    {m p : ℕ} (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (hcol : panelFirstColumn (Nat.succ_pos p) A ≠ 0) :
+    exactHouseholderQRPanel_Q (m + 1) (p + 1) A =
+      let P : Fin (m + 1) → Fin (m + 1) → ℝ :=
+        householder (m + 1)
+          (householderNormalizedVector (m + 1)
+            (householderVector (Nat.succ_pos m)
+              (panelFirstColumn (Nat.succ_pos p) A))
+            (householderBetaFromScale (Nat.succ_pos m)
+              (panelFirstColumn (Nat.succ_pos p) A))) 1
+      let Astep : Fin (m + 1) → Fin (p + 1) → ℝ :=
+        matMulRect (m + 1) (m + 1) (p + 1) P A
+      let Qt : Fin m → Fin m → ℝ :=
+        exactHouseholderQRPanel_Q m p (trailingPanel Astep)
+      matTranspose
+        (matMul (m + 1) (embedTrailingOne (matTranspose Qt)) P) := by
+  simp [exactHouseholderQRPanel_Q, hcol]
+
+/-- Square specialization of the exact Householder QR `R` panel. -/
+noncomputable def exactHouseholderQR_R (n : ℕ)
+    (A : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  exactHouseholderQRPanel_R n n A
+
+/-- Square specialization of the exact Householder QR `Q` witness. -/
+noncomputable def exactHouseholderQR_Q (n : ℕ)
+    (A : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  exactHouseholderQRPanel_Q n n A
+
 /-- Public paired object for the current Householder QR layer.
 
     `Q` is the explicit exact orthogonal witness associated with the
@@ -3874,6 +4012,122 @@ theorem fl_householderQR_Q_orthogonal_of_global_gammaValid
   exact fl_householderQR_Q_orthogonal fp n A
     (HouseholderQRPanelReady_square_of_global_gammaValid fp n A hvalid)
 
+/-- The ideal Householder reflector used by the exact panel recursion is
+    orthogonal whenever the active column is nonzero. -/
+private theorem exactHouseholderPanelStep_orthogonal {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (hcol : panelFirstColumn (Nat.succ_pos p) A ≠ 0) :
+    IsOrthogonal (m + 1)
+      (householder (m + 1)
+        (householderNormalizedVector (m + 1)
+          (householderVector (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A))
+          (householderBetaFromScale (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos p) A))) 1) := by
+  have hbeta_nonneg :
+      0 ≤ householderBetaFromScale (Nat.succ_pos m)
+        (panelFirstColumn (Nat.succ_pos p) A) :=
+    le_of_lt
+      (householderBetaFromScale_pos_of_ne_zero (Nat.succ_pos m)
+        (panelFirstColumn (Nat.succ_pos p) A) hcol)
+  have hbeta :
+      householderBetaFromScale (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) A) *
+        (∑ i : Fin (m + 1),
+          householderVector (Nat.succ_pos m)
+              (panelFirstColumn (Nat.succ_pos p) A) i *
+            householderVector (Nat.succ_pos m)
+              (panelFirstColumn (Nat.succ_pos p) A) i) =
+        2 :=
+    householderBetaFromScale_mul_norm_sq (Nat.succ_pos m)
+      (panelFirstColumn (Nat.succ_pos p) A) hcol
+  have hnorm :
+      (∑ i : Fin (m + 1),
+        householderNormalizedVector (m + 1)
+            (householderVector (Nat.succ_pos m)
+              (panelFirstColumn (Nat.succ_pos p) A))
+            (householderBetaFromScale (Nat.succ_pos m)
+              (panelFirstColumn (Nat.succ_pos p) A)) i *
+          householderNormalizedVector (m + 1)
+            (householderVector (Nat.succ_pos m)
+              (panelFirstColumn (Nat.succ_pos p) A))
+            (householderBetaFromScale (Nat.succ_pos m)
+              (panelFirstColumn (Nat.succ_pos p) A)) i) =
+        2 :=
+    householderNormalizedVector_norm_sq (m + 1)
+      (householderVector (Nat.succ_pos m)
+        (panelFirstColumn (Nat.succ_pos p) A))
+      (householderBetaFromScale (Nat.succ_pos m)
+        (panelFirstColumn (Nat.succ_pos p) A))
+      hbeta_nonneg hbeta
+  exact householder_orthogonal (m + 1)
+    (householderNormalizedVector (m + 1)
+      (householderVector (Nat.succ_pos m)
+        (panelFirstColumn (Nat.succ_pos p) A))
+      (householderBetaFromScale (Nat.succ_pos m)
+        (panelFirstColumn (Nat.succ_pos p) A))) 1
+    (by simpa using hnorm)
+
+/-- Exact Householder QR panel recursion produces an orthogonal `Q` witness
+    without any floating-point readiness assumptions. -/
+theorem exactHouseholderQRPanel_Q_orthogonal :
+    ∀ (m p : ℕ) (A : Fin m → Fin p → ℝ),
+      IsOrthogonal m (exactHouseholderQRPanel_Q m p A) := by
+  intro m
+  induction m with
+  | zero =>
+      intro p A
+      simpa [exactHouseholderQRPanel_Q] using idMatrix_orthogonal 0
+  | succ m ih =>
+      intro p
+      cases p with
+      | zero =>
+          intro A
+          simpa [exactHouseholderQRPanel_Q] using idMatrix_orthogonal (m + 1)
+      | succ p =>
+          intro A
+          by_cases hcol : panelFirstColumn (Nat.succ_pos p) A = 0
+          · have hQt :
+                IsOrthogonal m
+                  (exactHouseholderQRPanel_Q m p (trailingPanel A)) :=
+              ih p (trailingPanel A)
+            simpa [exactHouseholderQRPanel_Q, hcol] using
+              embedTrailingOne_orthogonal
+                (exactHouseholderQRPanel_Q m p (trailingPanel A)) hQt
+          · let P : Fin (m + 1) → Fin (m + 1) → ℝ :=
+              householder (m + 1)
+                (householderNormalizedVector (m + 1)
+                  (householderVector (Nat.succ_pos m)
+                    (panelFirstColumn (Nat.succ_pos p) A))
+                  (householderBetaFromScale (Nat.succ_pos m)
+                    (panelFirstColumn (Nat.succ_pos p) A))) 1
+            let Astep : Fin (m + 1) → Fin (p + 1) → ℝ :=
+              matMulRect (m + 1) (m + 1) (p + 1) P A
+            let Qt : Fin m → Fin m → ℝ :=
+              exactHouseholderQRPanel_Q m p (trailingPanel Astep)
+            have hQt : IsOrthogonal m Qt := by
+              simpa [Qt] using ih p (trailingPanel Astep)
+            have hEmb :
+                IsOrthogonal (m + 1)
+                  (embedTrailingOne (matTranspose Qt)) :=
+              embedTrailingOne_orthogonal (matTranspose Qt) hQt.transpose
+            have hP : IsOrthogonal (m + 1) P := by
+              simpa [P] using exactHouseholderPanelStep_orthogonal A hcol
+            have hM :
+                IsOrthogonal (m + 1)
+                  (matMul (m + 1) (embedTrailingOne (matTranspose Qt)) P) :=
+              hEmb.mul hP
+            simpa [exactHouseholderQRPanel_Q, hcol, P, Astep, Qt] using
+              hM.transpose
+
+/-- Square specialization: exact Householder QR produces an orthogonal `Q`
+    witness. -/
+theorem exactHouseholderQR_Q_orthogonal (n : ℕ)
+    (A : Fin n → Fin n → ℝ) :
+    IsOrthogonal n (exactHouseholderQR_Q n A) := by
+  simpa [exactHouseholderQR_Q] using
+    exactHouseholderQRPanel_Q_orthogonal n n A
+
 /-- Exact first-column value after applying the constructed Householder
     reflector to a panel. -/
 theorem householder_first_column_panel_exact_first
@@ -4428,6 +4682,67 @@ theorem fl_householderQR_R_upper (fp : FPModel) :
             (fl_householderQRPanel_R fp n n (trailingPanel Astep)) htail
         simpa [fl_householderQR_R, fl_householderQRPanel_R, hcol, Astep]
           using hmain
+
+/-- The exact zero-aware recursive Householder QR panel algorithm returns an
+    upper-trapezoidal rectangular `R` panel by construction. -/
+theorem exactHouseholderQRPanel_R_upper_trapezoidal :
+    ∀ (m p : ℕ) (A : Fin m → Fin p → ℝ),
+      IsUpperTrapezoidal m p (exactHouseholderQRPanel_R m p A) := by
+  intro m
+  induction m with
+  | zero =>
+      intro p A i
+      exact Fin.elim0 i
+  | succ m ih =>
+      intro p
+      cases p with
+      | zero =>
+          intro A i j
+          exact Fin.elim0 j
+      | succ p =>
+          intro A
+          by_cases hcol : panelFirstColumn (Nat.succ_pos p) A = 0
+          · have htail :
+                IsUpperTrapezoidal m p
+                  (exactHouseholderQRPanel_R m p (trailingPanel A)) :=
+              ih p (trailingPanel A)
+            have hmain :=
+              IsUpperTrapezoidal_panelFromTopAndTrailing
+                (panelTopLeft A) (panelTopRowTail A)
+                (exactHouseholderQRPanel_R m p (trailingPanel A)) htail
+            simpa [exactHouseholderQRPanel_R, hcol] using hmain
+          · let P : Fin (m + 1) → Fin (m + 1) → ℝ :=
+              householder (m + 1)
+                (householderNormalizedVector (m + 1)
+                  (householderVector (Nat.succ_pos m)
+                    (panelFirstColumn (Nat.succ_pos p) A))
+                  (householderBetaFromScale (Nat.succ_pos m)
+                    (panelFirstColumn (Nat.succ_pos p) A))) 1
+            let Astep : Fin (m + 1) → Fin (p + 1) → ℝ :=
+              matMulRect (m + 1) (m + 1) (p + 1) P A
+            have htail :
+                IsUpperTrapezoidal m p
+                  (exactHouseholderQRPanel_R m p (trailingPanel Astep)) :=
+              ih p (trailingPanel Astep)
+            have hmain :=
+              IsUpperTrapezoidal_panelFromTopAndTrailing
+                (panelTopLeft Astep) (panelTopRowTail Astep)
+                (exactHouseholderQRPanel_R m p (trailingPanel Astep)) htail
+            simpa [exactHouseholderQRPanel_R, hcol, Astep, P] using hmain
+
+/-- Square specialization of the upper-trapezoidal exact panel theorem. -/
+theorem exactHouseholderQR_R_upper_trapezoidal
+    (n : ℕ) (A : Fin n → Fin n → ℝ) :
+    IsUpperTrapezoidal n n (exactHouseholderQR_R n A) := by
+  simpa [exactHouseholderQR_R] using
+    exactHouseholderQRPanel_R_upper_trapezoidal n n A
+
+/-- The exact zero-aware recursive Householder QR algorithm returns an
+    upper-triangular square `R` matrix. -/
+theorem exactHouseholderQR_R_upper
+    (n : ℕ) (A : Fin n → Fin n → ℝ) :
+    IsUpperTriangular n (exactHouseholderQR_R n A) := by
+  exact (exactHouseholderQR_R_upper_trapezoidal n A).to_upperTriangular
 
 /-- Branch-dependent backward-error coefficient for the zero-aware Householder
     QR panel algorithm.
@@ -5970,6 +6285,144 @@ theorem householder_qr_panel_explicit_backward_cons {m p : ℕ}
       _ ≤ c * frobNorm A + α * ((1 + c) * frobNorm A) := by
           exact add_le_add hE hΔTbound
       _ = (c + α * (1 + c)) * frobNorm A := by ring
+
+/-- Exact zero-aware recursive Householder QR has zero backward error.
+
+    This is the exact-arithmetic counterpart of
+    `fl_householderQRPanel_R_explicit_backward_error`.  It is rank-tolerant:
+    a zero active column simply skips the reflector and recurses on the
+    trailing panel. -/
+theorem exactHouseholderQRPanel_R_explicit_backward_error :
+    ∀ (m p : ℕ) (A : Fin m → Fin p → ℝ),
+      HouseholderQRPanelExplicitBackwardError m p A
+        (exactHouseholderQRPanel_Q m p A)
+        (exactHouseholderQRPanel_R m p A) 0 := by
+  intro m
+  induction m with
+  | zero =>
+      intro p A
+      let Z : Fin 0 → Fin p → ℝ := fun _ _ => 0
+      refine ⟨?_, ⟨Z, ?_, ?_⟩⟩
+      · simpa [exactHouseholderQRPanel_Q] using idMatrix_orthogonal 0
+      · intro i
+        exact Fin.elim0 i
+      · have hZ : frobNorm Z = 0 := by
+          rw [frobNorm_eq_zero_iff]
+          intro i
+          exact Fin.elim0 i
+        simp [Z, hZ]
+  | succ m ih =>
+      intro p
+      cases p with
+      | zero =>
+          intro A
+          let Z : Fin (m + 1) → Fin 0 → ℝ := fun _ _ => 0
+          refine ⟨?_, ⟨Z, ?_, ?_⟩⟩
+          · simpa [exactHouseholderQRPanel_Q] using
+              idMatrix_orthogonal (m + 1)
+          · intro i j
+            exact Fin.elim0 j
+          · have hZ : frobNorm Z = 0 := by
+              rw [frobNorm_eq_zero_iff]
+              intro i j
+              exact Fin.elim0 j
+            simp [Z, hZ]
+      | succ p =>
+          intro A
+          by_cases hcol : panelFirstColumn (Nat.succ_pos p) A = 0
+          · have hTailRaw := ih p (trailingPanel A)
+            have hTail :
+                HouseholderQRPanelExplicitBackwardError m p
+                  (trailingPanel A)
+                  (exactHouseholderQRPanel_Q m p (trailingPanel A))
+                  (exactHouseholderQRPanel_R m p (trailingPanel A))
+                  ((0 : ℝ) * frobNorm (trailingPanel A)) := by
+              simpa using hTailRaw
+            have hSkip :=
+              householder_qr_panel_explicit_backward_skip_zero_column A
+                (exactHouseholderQRPanel_Q m p (trailingPanel A))
+                (exactHouseholderQRPanel_R m p (trailingPanel A))
+                (0 : ℝ) hcol hTail (by norm_num)
+            simpa [exactHouseholderQRPanel_R, exactHouseholderQRPanel_Q,
+              hcol] using hSkip
+          · let P : Fin (m + 1) → Fin (m + 1) → ℝ :=
+              householder (m + 1)
+                (householderNormalizedVector (m + 1)
+                  (householderVector (Nat.succ_pos m)
+                    (panelFirstColumn (Nat.succ_pos p) A))
+                  (householderBetaFromScale (Nat.succ_pos m)
+                    (panelFirstColumn (Nat.succ_pos p) A))) 1
+            let Astep : Fin (m + 1) → Fin (p + 1) → ℝ :=
+              matMulRect (m + 1) (m + 1) (p + 1) P A
+            let Z : Fin (m + 1) → Fin (p + 1) → ℝ := fun _ _ => 0
+            have hP : IsOrthogonal (m + 1) P := by
+              simpa [P] using exactHouseholderPanelStep_orthogonal A hcol
+            have hSrep : ∀ i j,
+                Astep i j =
+                  matMulRect (m + 1) (m + 1) (p + 1) P A i j + Z i j := by
+              intro i j
+              simp [Astep, Z]
+            have hE : frobNorm Z ≤ (0 : ℝ) * frobNorm A := by
+              have hZ : frobNorm Z = 0 := by
+                rw [frobNorm_eq_zero_iff]
+                intro i j
+                simp [Z]
+              simp [hZ]
+            have hSzero : panelFirstColumnTailZero Astep := by
+              simpa [Astep, P] using
+                householder_panel_exact_firstColumnTailZero A hcol
+            have hTailRaw := ih p (trailingPanel Astep)
+            have hTail :
+                HouseholderQRPanelExplicitBackwardError m p
+                  (trailingPanel Astep)
+                  (exactHouseholderQRPanel_Q m p (trailingPanel Astep))
+                  (exactHouseholderQRPanel_R m p (trailingPanel Astep))
+                  ((0 : ℝ) * frobNorm (trailingPanel Astep)) := by
+              simpa using hTailRaw
+            have hCons :=
+              householder_qr_panel_explicit_backward_cons A Astep P Z
+                (exactHouseholderQRPanel_Q m p (trailingPanel Astep))
+                (exactHouseholderQRPanel_R m p (trailingPanel Astep))
+                (0 : ℝ) (0 : ℝ) hP hSrep hE hSzero hTail
+                (by norm_num)
+            simpa [exactHouseholderQRPanel_R, exactHouseholderQRPanel_Q,
+              hcol, P, Astep, Z] using hCons
+
+/-- Exact zero-aware Householder QR panel equality in explicit rectangular
+    multiplication form. -/
+theorem exactHouseholderQRPanel_R_eq_transpose_Q_mul :
+    ∀ (m p : ℕ) (A : Fin m → Fin p → ℝ),
+      exactHouseholderQRPanel_R m p A =
+        matMulRect m m p (matTranspose (exactHouseholderQRPanel_Q m p A)) A := by
+  intro m p A
+  have hbe := exactHouseholderQRPanel_R_explicit_backward_error m p A
+  obtain ⟨ΔA, hrep, hΔA⟩ := hbe.result
+  have hΔnorm : frobNorm ΔA = 0 :=
+    le_antisymm hΔA (frobNorm_nonneg ΔA)
+  have hΔzero : ∀ i j, ΔA i j = 0 :=
+    (frobNorm_eq_zero_iff ΔA).mp hΔnorm
+  have hAΔ : (fun a b => A a b + ΔA a b) = A := by
+    ext a b
+    simp [hΔzero a b]
+  ext i j
+  rw [hrep i j, hAΔ]
+
+/-- Exact zero-aware Householder QR panel equality in the repository's
+    `matMulRectLeft` notation. -/
+theorem exactHouseholderQRPanel_R_eq_matMulRectLeft_transpose_Q
+    (m p : ℕ) (A : Fin m → Fin p → ℝ) :
+    exactHouseholderQRPanel_R m p A =
+      matMulRectLeft (matTranspose (exactHouseholderQRPanel_Q m p A)) A := by
+  rw [exactHouseholderQRPanel_R_eq_transpose_Q_mul m p A]
+  rfl
+
+/-- Square exact Householder QR equality in `matMulRectLeft` notation. -/
+theorem exactHouseholderQR_R_eq_matMulRectLeft_transpose_Q
+    (n : ℕ) (A : Fin n → Fin n → ℝ) :
+    exactHouseholderQR_R n A =
+      matMulRectLeft (matTranspose (exactHouseholderQR_Q n A)) A := by
+  simpa [exactHouseholderQR_R, exactHouseholderQR_Q] using
+    exactHouseholderQRPanel_R_eq_matMulRectLeft_transpose_Q n n A
 
 /-- Implementation-backed recursive backward-error theorem for the
     zero-aware rounded Householder QR `R` panel algorithm.
