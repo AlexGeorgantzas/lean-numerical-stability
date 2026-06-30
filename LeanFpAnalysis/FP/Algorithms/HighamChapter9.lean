@@ -23391,6 +23391,38 @@ theorem higham9_15_matSub_id_nonsingInv_isInverse_of_spectralRadius_lt_one
     IsInverse n (matSub_id n C) (nonsingInv n (matSub_id n C)) :=
   ch7_matSub_id_nonsingInv_isInverse_of_toLin_spectralRadius_lt_one C hrho
 
+/-- **Theorem 9.15 spectral-resolvent support**.  If `C` is nonnegative and
+`rho(C) < 1`, every real solution of `(I - C)w = v` with `v >= 0` is
+componentwise nonnegative.  This is the negative-part argument used to make the
+Barrlund--Sun resolvent a nonnegative majorant. -/
+theorem higham9_15_nonnegative_solution_of_spectralRadius_lt_one
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (hC_nonneg : ∀ i j : Fin n, 0 ≤ C i j)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) < 1)
+    (v w : Fin n → ℝ)
+    (hv : ∀ i : Fin n, 0 ≤ v i)
+    (hsolve : ∀ i : Fin n, w i - ∑ j : Fin n, C i j * w j = v i) :
+    ∀ i : Fin n, 0 ≤ w i :=
+  ch7_nonnegative_solution_of_nonnegative_spectralRadius_lt_one
+    hn C hC_nonneg hrho v w hv hsolve
+
+/-- **Theorem 9.15 spectral-resolvent support**.  Under the Barrlund--Sun
+majorant hypotheses `C >= 0` and `rho(C) < 1`, the repository inverse
+`nonsingInv (I-C)` is a nonnegative left-inverse certificate for `I-C`. -/
+theorem higham9_15_nonnegative_resolvent_nonsingInv_of_spectralRadius_lt_one
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (hC_nonneg : ∀ i j : Fin n, 0 ≤ C i j)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) < 1) :
+    ch7NonnegativeResolvent n C (nonsingInv n (matSub_id n C)) :=
+  ch7NonnegativeResolvent_nonsingInv_of_spectralRadius_lt_one
+    hn C hC_nonneg hrho
+
 /-- **Theorem 9.15 spectral-majorant support**.  Irreducibility upgrades a
 nonzero nonnegative right subeigenvector to a positive one, so the Chapter 7
 Collatz/Gelfand lower bound applies to nonzero nonnegative data. -/
