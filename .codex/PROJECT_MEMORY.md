@@ -20,6 +20,15 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-06-29 matrix-`∞` finite-unit-sphere cleanup:
+  `higham13_fin_fun_unit_sphere_nonempty` constructs the nonempty unit sphere
+  in `Fin r -> ℝ` from `0 < r`.  New `_of_pos_dim` wrappers for the
+  reciprocal diagonal right-inverse and canonical `nonsingInv` matrix-`∞`
+  packages remove the caller-supplied `hunit` proof artifact while preserving
+  the existing constants and conclusions.  This is hidden-hypothesis cleanup
+  only; the BDD source table, active pivot determinant/equality table,
+  structured dimension-free max-entry product/update proof, Problem 13.4
+  comparisons, and Theorem 13.6 cited estimates remain open.
 - 2026-06-29 source-lower-block canonical active-pivot checkpoint:
   the Eq.13.22/Eq.13.23 source local lower-block witness route now has
   `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_source_lblock_budgets_exact_kappa_of_pivotInv_eq_nonsingInv`,
@@ -73,7 +82,40 @@ end-to-end stability rebuild is tagged as
   sharper Schur-tail inverse comparison
   `||A_local^{-1}||_max <= ||A^{-1}||_max`; the extra `rhoFull` factor is
   derived from `rhoFull >= 1` because the matrix-stage history contains the
-  input.  The Schur-tail inverse comparison itself, active BDD product/update
+  input.  Product-level determinant companions
+  `higham13_eq13_22_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_of_det_ne_zero`
+  and
+  `higham13_eq13_23_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_of_det_ne_zero`
+  specialize the raw Eq.13.22/Eq.13.23 surfaces to
+  `nonsingInv (m*r) (blockMatrixFlatFin Ablk)` and derive the full positive
+  denominator/right-inverse certificate from `det(blockMatrixFlatFin Ablk) != 0`.
+  The matching concrete factor witnesses
+  `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_of_pivot_right_inverse`,
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_of_pivot_right_inverse`,
+  `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_of_pivot_right_inverse_of_det_ne_zero`,
+  and
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_of_pivot_right_inverse_of_det_ne_zero`
+  package this sharper route as `BlockLUFactSpec` witnesses and specialize the
+  determinant variants to the source-facing full inverse `nonsingInv (m*r)
+  (blockMatrixFlatFin Ablk)`.  The Eq.13.23 companions
+  `higham13_eq13_23_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_of_product_bound_diag_update`,
+  `higham13_eq13_23_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_with_dim_factor_of_diag_update`,
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_of_product_bound_diag_update_of_pivot_right_inverse`,
+  and
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_with_dim_factor_of_diag_update_of_pivot_right_inverse`
+  compose the same plain-inverse route with the active BDD product/update
+  `rho <= 2` layer and with the dimension-aware diagonal-update layer.  The
+  determinant/canonical-inverse companions
+  `higham13_eq13_23_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_of_product_bound_diag_update_of_det_ne_zero`,
+  `higham13_eq13_23_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_with_dim_factor_of_diag_update_of_det_ne_zero`,
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_of_product_bound_diag_update_of_pivot_right_inverse_of_det_ne_zero`,
+  and
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_with_dim_factor_of_diag_update_of_pivot_right_inverse_of_det_ne_zero`
+  specialize those diagonal-update surfaces to
+  `nonsingInv (m*r) (blockMatrixFlatFin Ablk)` and derive the full positive
+  denominator/right-inverse certificate from `det(blockMatrixFlatFin Ablk) != 0`.
+  The
+  Schur-tail inverse comparison itself, source-strength active BDD product/update
   data, active pivot determinant/equality table, and Theorem 13.6 cited
   implementation estimates remain open.  Verified by focused `lake build
   LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet public lookup with empty
@@ -10050,3 +10092,37 @@ These compile, but should not be treated as fully derived stability results:
   Eq.13.23 surfaces.  The active pivot determinant/equality table,
   local-to-full source comparison table, and Eq.13.23 BDD product/update data
   remain open.
+
+- 2026-06-29 Eq.13.22/Eq.13.23 source-chain nonterminal pivot extraction:
+  added
+  `Higham13Eq1322LowerComparisonSourceChain.nonterminal_pivot_right_inverse`
+  and
+  `Higham13Eq1322InverseRatioSourceChain.nonterminal_pivot_right_inverse`.
+  These extract exact active pivot right-inverse certificates for genuine
+  elimination steps `k < m` in an `(m+1)`-block recursive source chain; the
+  one-block base case intentionally carries no `pivotInv 0` condition because
+  no further elimination step uses it.  This removes another proof-artifact
+  premise for the represented pivots, while final one-block/all-pivot data for
+  downstream APIs, per-tail source comparisons, product/update source data, and
+  the Eq.13.23 `rho <= 2` theorem remain open.
+
+- 2026-06-29 Eq.13.22/Eq.13.23 source-chain all-pivot wrappers: added
+  `Higham13Eq1322LowerComparisonSourceChain.pivot_right_inverse_of_final` and
+  `Higham13Eq1322InverseRatioSourceChain.pivot_right_inverse_of_final`.
+  These combine the recursive source-chain nonterminal pivot extractor with a
+  single terminal-pivot right-inverse certificate, producing the all-pivot table
+  `k < m+1` expected by existing matrix-stage witness APIs.  This isolates the
+  final one-block pivot datum instead of repeating the whole active pivot table;
+  the per-tail source lower-budget/condition comparisons, structured
+  product/update source data, and Eq.13.23 `rho <= 2` theorem remain open.
+
+- 2026-06-29 Eq.13.22/Eq.13.23 source-chain canonical final pivots: added
+  `Higham13Eq1322LowerComparisonSourceChain.pivot_right_inverse_of_final_nonsingInv`
+  and
+  `Higham13Eq1322InverseRatioSourceChain.pivot_right_inverse_of_final_nonsingInv`.
+  These specialize the all-pivot wrappers to the common final-stage source data:
+  determinant nonsingularity of the terminal Schur block and
+  `pivotInv m = nonsingInv r` of that block.  They derive the terminal
+  right-inverse proof with `isInverse_nonsingInv_of_det_ne_zero` and reuse the
+  recursive source-chain nonterminal extractor, so downstream APIs can consume a
+  canonical final pivot without a caller-built all-pivot certificate.

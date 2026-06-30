@@ -4007,6 +4007,94 @@ theorem higham9_5_rectGEReducedEntry_eq_DoolittleLUpdate_mul_pivot {m n : ℕ}
   unfold higham9_2_rectDoolittleLUpdate
   rw [div_mul_cancel₀ _ hUkk]
 
+/-- **Equation (9.5) / Algorithm 9.2**, upper-entry reduced residual form of a
+rectangular dense-loop certificate. -/
+theorem higham9_5_rectDenseLoopCertificate_upper_reduced_residual_compression
+    {m n : ℕ} {fp : FPModel} {hmn : n ≤ m}
+    {A L : Fin m → Fin n → ℝ} {U : Fin n → Fin n → ℝ}
+    (hC : higham9_2_RectDoolittleDenseLoopCertificate hmn A L U fp)
+    (k j : Fin n) (hkj : k.val ≤ j.val) :
+    |higham9_5_rectGEReducedEntry A L U k.val
+        (higham9_2_rectRow hmn k) j - U k j| ≤
+      gamma fp n * |U k j| := by
+  simpa [higham9_5_rectGEReducedEntry_eq_rectPrefixDot] using
+    hC.U_residual_compression k j hkj
+
+/-- **Equation (9.5) / Algorithm 9.2**, lower-entry reduced residual form of a
+rectangular dense-loop certificate. -/
+theorem higham9_5_rectDenseLoopCertificate_lower_reduced_residual_compression
+    {m n : ℕ} {fp : FPModel} {hmn : n ≤ m}
+    {A L : Fin m → Fin n → ℝ} {U : Fin n → Fin n → ℝ}
+    (hC : higham9_2_RectDoolittleDenseLoopCertificate hmn A L U fp)
+    (i : Fin m) (k : Fin n) (hki : k.val < i.val) :
+    |higham9_5_rectGEReducedEntry A L U k.val i k -
+        L i k * U k k| ≤
+      gamma fp n * |L i k * U k k| := by
+  simpa [higham9_5_rectGEReducedEntry_eq_rectPrefixDot] using
+    hC.L_residual_compression i k hki
+
+/-- **Equation (9.5) / Algorithm 9.2**, upper-entry reduced residual form of a
+rectangular absolute-budget certificate. -/
+theorem higham9_5_rectAbsBudgetCertificate_upper_reduced_abs_residual
+    {m n : ℕ} {fp : FPModel} {hmn : n ≤ m}
+    {A L : Fin m → Fin n → ℝ} {U : Fin n → Fin n → ℝ}
+    {BU : Fin n → Fin n → ℝ} {BL : Fin m → Fin n → ℝ}
+    (hC : higham9_2_RectDoolittleDenseLoopAbsBudgetCertificate
+      hmn A L U fp BU BL)
+    (k j : Fin n) (hkj : k.val ≤ j.val) :
+    |higham9_5_rectGEReducedEntry A L U k.val
+        (higham9_2_rectRow hmn k) j - U k j| ≤
+      BU k j := by
+  simpa [higham9_5_rectGEReducedEntry_eq_rectPrefixDot] using
+    hC.U_abs_residual k j hkj
+
+/-- **Equation (9.5) / Algorithm 9.2**, lower-entry reduced residual form of a
+rectangular absolute-budget certificate. -/
+theorem higham9_5_rectAbsBudgetCertificate_lower_reduced_abs_residual
+    {m n : ℕ} {fp : FPModel} {hmn : n ≤ m}
+    {A L : Fin m → Fin n → ℝ} {U : Fin n → Fin n → ℝ}
+    {BU : Fin n → Fin n → ℝ} {BL : Fin m → Fin n → ℝ}
+    (hC : higham9_2_RectDoolittleDenseLoopAbsBudgetCertificate
+      hmn A L U fp BU BL)
+    (i : Fin m) (k : Fin n) (hki : k.val < i.val) :
+    |higham9_5_rectGEReducedEntry A L U k.val i k -
+        L i k * U k k| ≤
+      BL i k := by
+  simpa [higham9_5_rectGEReducedEntry_eq_rectPrefixDot] using
+    hC.L_abs_residual i k hki
+
+/-- **Equation (9.5) / Algorithm 9.2**, upper-entry reduced residual
+compression obtained from a rectangular absolute-budget certificate. -/
+theorem higham9_5_rectAbsBudgetCertificate_upper_reduced_residual_compression
+    {m n : ℕ} {fp : FPModel} {hmn : n ≤ m}
+    {A L : Fin m → Fin n → ℝ} {U : Fin n → Fin n → ℝ}
+    {BU : Fin n → Fin n → ℝ} {BL : Fin m → Fin n → ℝ}
+    (hC : higham9_2_RectDoolittleDenseLoopAbsBudgetCertificate
+      hmn A L U fp BU BL)
+    (k j : Fin n) (hkj : k.val ≤ j.val) :
+    |higham9_5_rectGEReducedEntry A L U k.val
+        (higham9_2_rectRow hmn k) j - U k j| ≤
+      gamma fp n * |U k j| :=
+  higham9_5_rectDenseLoopCertificate_upper_reduced_residual_compression
+    (higham9_2_rectAbsBudgetCertificate_to_rectDenseLoopCertificate hC)
+    k j hkj
+
+/-- **Equation (9.5) / Algorithm 9.2**, lower-entry reduced residual
+compression obtained from a rectangular absolute-budget certificate. -/
+theorem higham9_5_rectAbsBudgetCertificate_lower_reduced_residual_compression
+    {m n : ℕ} {fp : FPModel} {hmn : n ≤ m}
+    {A L : Fin m → Fin n → ℝ} {U : Fin n → Fin n → ℝ}
+    {BU : Fin n → Fin n → ℝ} {BL : Fin m → Fin n → ℝ}
+    (hC : higham9_2_RectDoolittleDenseLoopAbsBudgetCertificate
+      hmn A L U fp BU BL)
+    (i : Fin m) (k : Fin n) (hki : k.val < i.val) :
+    |higham9_5_rectGEReducedEntry A L U k.val i k -
+        L i k * U k k| ≤
+      gamma fp n * |L i k * U k k| :=
+  higham9_5_rectDenseLoopCertificate_lower_reduced_residual_compression
+    (higham9_2_rectAbsBudgetCertificate_to_rectDenseLoopCertificate hC)
+    i k hki
+
 /-! ## §9.3 Error Analysis -/
 
 /-- **Theorem 9.3**, Doolittle-certified form:
@@ -9187,6 +9275,23 @@ lemma higham9_13_thresholdFactor_nonneg (τ : ℝ) (hτ : 0 < τ) :
   le_trans (by norm_num : (0 : ℝ) ≤ 1)
     (higham9_13_thresholdFactor_ge_one τ hτ)
 
+/-- **Problem 9.13**, unit threshold pivoting gives per-modification factor at
+most two. -/
+lemma higham9_13_thresholdFactor_le_two_of_one_le {τ : ℝ} (hτ : 1 ≤ τ) :
+    higham9_13_thresholdFactor τ ≤ 2 := by
+  have hinv_le_one : τ⁻¹ ≤ 1 := inv_le_one_of_one_le₀ hτ
+  unfold higham9_13_thresholdFactor
+  linarith
+
+/-- **Problem 9.13**, the threshold-pivoting modification factor is bounded by
+`2^mu` when `tau >= 1`. -/
+lemma higham9_13_thresholdFactor_pow_le_two_pow_of_one_le {τ : ℝ}
+    (hτ : 1 ≤ τ) (μ : ℕ) :
+    higham9_13_thresholdFactor τ ^ μ ≤ (2 : ℝ) ^ μ :=
+  pow_le_pow_left₀
+    (higham9_13_thresholdFactor_nonneg τ (lt_of_lt_of_le zero_lt_one hτ))
+    (higham9_13_thresholdFactor_le_two_of_one_le hτ) μ
+
 /-- **Problem 9.13**, one scalar threshold-pivoting update.
 
 If the old entry and the pivot-row entry are both bounded by the current
@@ -9341,6 +9446,30 @@ theorem higham9_13_growthFactorEntry_bound_from_column_modifications {n : ℕ}
     _ ≤ higham9_13_thresholdFactor τ ^ μ j * colMax j 0 := hiter
     _ ≤ higham9_13_thresholdFactor τ ^ μ j * maxEntryNorm hn A :=
         mul_le_mul_of_nonneg_left (hinitial j) hfactor_pow_nonneg
+
+/-- **Problem 9.13**, unit-threshold sparse-column growth corollary.
+
+When the threshold parameter satisfies `tau >= 1`, the source bound
+`(1 + tau^{-1})^muMax` is at most the simpler `2^muMax`. -/
+theorem higham9_13_growthFactorEntry_bound_from_column_modifications_two_pow
+    {n : ℕ}
+    (hn : 0 < n) (τ : ℝ) (hτ : 1 ≤ τ)
+    (μ : Fin n → ℕ) (μmax : ℕ)
+    (hμ : ∀ j : Fin n, μ j ≤ μmax)
+    (A U : Fin n → Fin n → ℝ)
+    (hA : 0 < maxEntryNorm hn A)
+    (colMax : Fin n → ℕ → ℝ)
+    (hstep : ∀ j : Fin n, ∀ t : ℕ, t < μ j →
+      colMax j (t + 1) ≤ higham9_13_thresholdFactor τ * colMax j t)
+    (hinitial : ∀ j : Fin n, colMax j 0 ≤ maxEntryNorm hn A)
+    (hfinal : ∀ i j : Fin n, |U i j| ≤ colMax j (μ j)) :
+    growthFactorEntry hn A U hA ≤ (2 : ℝ) ^ μmax := by
+  have hbase :=
+    higham9_13_growthFactorEntry_bound_from_column_modifications hn τ
+      (lt_of_lt_of_le zero_lt_one hτ) μ μmax hμ A U hA colMax
+      hstep hinitial hfinal
+  exact hbase.trans
+    (higham9_13_thresholdFactor_pow_le_two_pow_of_one_le hτ μmax)
 
 /-! ## Problem 9.14: row reversal surface for pre-pivoted GEPP -/
 
@@ -12350,6 +12479,108 @@ theorem higham9_5_rectPrefixRange_full_eq_matMul {n : ℕ}
         intro k _
         have hk : (⟨k.val, k.isLt⟩ : Fin n) = k := by ext; rfl
         simp [g, k.isLt, hk]
+
+/-- **Equation (9.5)** after all `n` rectangular rank-one updates: the
+natural-number prefix is the full rectangular product entry. -/
+theorem higham9_5_rectPrefixRange_full_eq_rectMatMul {m n : ℕ}
+    (L : Fin m → Fin n → ℝ) (U : Fin n → Fin n → ℝ)
+    (i : Fin m) (j : Fin n) :
+    higham9_5_rectPrefixRange L U i j n =
+      rectMatMul L U i j := by
+  unfold higham9_5_rectPrefixRange rectMatMul
+  let g : ℕ → ℝ := fun r =>
+    if h : r < n then L i ⟨r, h⟩ * U ⟨r, h⟩ j else 0
+  calc
+    (∑ r ∈ Finset.range n,
+        if h : r < n then L i ⟨r, h⟩ * U ⟨r, h⟩ j else 0)
+        = ∑ r ∈ Finset.range n, g r := rfl
+    _ = ∑ k : Fin n, g k.val := by
+        rw [← Fin.sum_univ_eq_sum_range g n]
+    _ = ∑ k : Fin n, L i k * U k j := by
+        apply Finset.sum_congr rfl
+        intro k _
+        have hk : (⟨k.val, k.isLt⟩ : Fin n) = k := by ext; rfl
+        simp [g, k.isLt, hk]
+
+/-- **Equation (9.5)** rectangular prefix saturation: once the natural-number
+schedule has performed at least `n` rank-one updates, all later summands are
+zero and the prefix is the full rectangular product entry. -/
+theorem higham9_5_rectPrefixRange_eq_rectMatMul_of_ge {m n : ℕ}
+    (L : Fin m → Fin n → ℝ) (U : Fin n → Fin n → ℝ)
+    (i : Fin m) (j : Fin n) {steps : ℕ} (hsteps : n ≤ steps) :
+    higham9_5_rectPrefixRange L U i j steps =
+      rectMatMul L U i j := by
+  unfold higham9_5_rectPrefixRange rectMatMul
+  let f : ℕ → ℝ := fun r =>
+    if h : r < n then L i ⟨r, h⟩ * U ⟨r, h⟩ j else 0
+  have hsubset : Finset.range n ⊆ Finset.range steps := by
+    intro r hr
+    exact Finset.mem_range.mpr
+      (Nat.lt_of_lt_of_le (Finset.mem_range.mp hr) hsteps)
+  have hsum :
+      (∑ r ∈ Finset.range steps, f r) = ∑ r ∈ Finset.range n, f r := by
+    symm
+    refine Finset.sum_subset hsubset ?_
+    intro r _ hrNotN
+    have hnot : ¬ r < n := by
+      intro hrn
+      exact hrNotN (Finset.mem_range.mpr hrn)
+    simp [f, hnot]
+  calc
+    (∑ r ∈ Finset.range steps,
+        if h : r < n then L i ⟨r, h⟩ * U ⟨r, h⟩ j else 0)
+        = ∑ r ∈ Finset.range steps, f r := rfl
+    _ = ∑ r ∈ Finset.range n, f r := hsum
+    _ = ∑ k : Fin n, f k.val := by
+        rw [← Fin.sum_univ_eq_sum_range f n]
+    _ = ∑ k : Fin n, L i k * U k j := by
+        apply Finset.sum_congr rfl
+        intro k _
+        have hk : (⟨k.val, k.isLt⟩ : Fin n) = k := by ext; rfl
+        simp [f, k.isLt, hk]
+
+/-- **Equation (9.5)** terminal rectangular residual: after all rank-one
+updates, the reduced entry is exactly the residual `A - L*U`. -/
+theorem higham9_5_rectGEReducedEntry_full_eq_sub_rectMatMul {m n : ℕ}
+    (A L : Fin m → Fin n → ℝ) (U : Fin n → Fin n → ℝ)
+    (i : Fin m) (j : Fin n) :
+    higham9_5_rectGEReducedEntry A L U n i j =
+      A i j - rectMatMul L U i j := by
+  unfold higham9_5_rectGEReducedEntry
+  rw [higham9_5_rectPrefixRange_full_eq_rectMatMul]
+
+/-- **Equation (9.5)** rectangular residual saturation: after at least `n`
+rank-one updates, the reduced entry is exactly the residual `A - L*U`. -/
+theorem higham9_5_rectGEReducedEntry_eq_sub_rectMatMul_of_ge {m n : ℕ}
+    (A L : Fin m → Fin n → ℝ) (U : Fin n → Fin n → ℝ)
+    (i : Fin m) (j : Fin n) {steps : ℕ} (hsteps : n ≤ steps) :
+    higham9_5_rectGEReducedEntry A L U steps i j =
+      A i j - rectMatMul L U i j := by
+  unfold higham9_5_rectGEReducedEntry
+  rw [higham9_5_rectPrefixRange_eq_rectMatMul_of_ge L U i j hsteps]
+
+/-- **Equation (9.5)** terminal rectangular residual: for an exact rectangular
+product certificate, the reduced entry after all rank-one updates is zero. -/
+theorem higham9_5_rectGEReducedEntry_full_eq_zero_of_rectMatMul_eq {m n : ℕ}
+    {A L : Fin m → Fin n → ℝ} {U : Fin n → Fin n → ℝ}
+    (hprod : ∀ i j, rectMatMul L U i j = A i j)
+    (i : Fin m) (j : Fin n) :
+    higham9_5_rectGEReducedEntry A L U n i j = 0 := by
+  rw [higham9_5_rectGEReducedEntry_full_eq_sub_rectMatMul A L U i j,
+    hprod i j]
+  ring
+
+/-- **Equation (9.5)** saturated rectangular residual: for an exact rectangular
+product certificate, every reduced entry at a step count `>= n` is zero. -/
+theorem higham9_5_rectGEReducedEntry_eq_zero_of_rectMatMul_eq_of_ge
+    {m n : ℕ} {A L : Fin m → Fin n → ℝ} {U : Fin n → Fin n → ℝ}
+    {steps : ℕ} (hsteps : n ≤ steps)
+    (hprod : ∀ i j, rectMatMul L U i j = A i j)
+    (i : Fin m) (j : Fin n) :
+    higham9_5_rectGEReducedEntry A L U steps i j = 0 := by
+  rw [higham9_5_rectGEReducedEntry_eq_sub_rectMatMul_of_ge
+    A L U i j hsteps, hprod i j]
+  ring
 
 /-- **Equation (9.5)** terminal residual: for an exact LU certificate, the
 reduced entry after all rank-one updates is zero. -/
@@ -16739,6 +16970,25 @@ theorem higham9_21_tridiag_solve_perturbation_model_of_fl_triangular_solves_gamm
     exact le_trans (hDeltaU_bound i j)
       (mul_le_mul_of_nonneg_right hγ_le_ucoeff (abs_nonneg _))
 
+/-- **Equation (9.21)** for actual triangular solves with the natural
+`γ_n` source coefficient. -/
+theorem higham9_21_tridiag_solve_perturbation_model_of_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (L_hat U_hat : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (hL_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hLT : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hUT : ∀ i j : Fin n, j.val < i.val → U_hat i j = 0)
+    (hn : gammaValid fp n) :
+    ∃ DeltaL DeltaU : Fin n → Fin n → ℝ,
+      higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+        (fl_forwardSub fp n L_hat b)
+        (fl_backSub fp n U_hat (fl_forwardSub fp n L_hat b))
+        b DeltaL DeltaU (gamma fp n) :=
+  higham9_21_tridiag_solve_perturbation_model_of_fl_triangular_solves_gamma_le
+    fp n L_hat U_hat b (gamma fp n) (gamma_nonneg fp hn)
+    hL_diag hU_diag hLT hUT hn le_rfl
+
 /-- **Equations (9.20)--(9.22)**, source-coefficient aggregation.
 
 If the tridiagonal LU factorization perturbation has coefficient `u`, the
@@ -17565,6 +17815,146 @@ theorem higham9_14_source_h_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_t
     (DoolittleDenseLoopAbsBudgetCertificate.to_LUBackwardError hC hn)
     hγ_le_u hγ_le_u hU_diag hAbsLU_le
 
+/-- **Theorem 9.14**, dense Doolittle certificate plus actual triangular
+solves with the natural `γ_n` coefficient. -/
+theorem higham9_14_source_f_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (c : ℝ)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_DoolittleDenseLoopCertificate n A L_hat U_hat fp)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ c * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        c * higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_f_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b c (gamma fp n) (gamma_nonneg fp hn)
+    hn hC le_rfl hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, absolute-budget Doolittle certificate plus actual
+triangular solves with the natural `γ_n` coefficient. -/
+theorem higham9_14_source_f_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (BU BL : Fin n → Fin n → ℝ)
+    (c : ℝ)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_DoolittleDenseLoopAbsBudgetCertificate n
+      A L_hat U_hat fp BU BL)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ c * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        c * higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_f_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b BU BL c (gamma fp n)
+    (gamma_nonneg fp hn) hn hC le_rfl hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, dense Doolittle certificate with Higham's final
+`h(γ_n)` coefficient. -/
+theorem higham9_14_source_h_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hC : higham9_2_DoolittleDenseLoopCertificate n A L_hat U_hat fp)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b (gamma fp n) (gamma_nonneg fp hn)
+    hγ_lt_one hn hC le_rfl hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, absolute-budget Doolittle certificate with Higham's
+final `h(γ_n)` coefficient. -/
+theorem higham9_14_source_h_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (BU BL : Fin n → Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hC : higham9_2_DoolittleDenseLoopAbsBudgetCertificate n
+      A L_hat U_hat fp BU BL)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b BU BL (gamma fp n)
+    (gamma_nonneg fp hn) hγ_lt_one hn hC le_rfl hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, dense Doolittle certificate with a constant-growth
+final `h(γ_n)` coefficient. -/
+theorem higham9_14_source_h_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_const_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (c : ℝ) (hc : 0 ≤ c)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hC : higham9_2_DoolittleDenseLoopCertificate n A L_hat U_hat fp)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ c * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        c * higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_DoolittleDenseLoopCertificate_fl_triangular_solves_const_gamma_le
+    fp n A L_hat U_hat b c (gamma fp n) hc (gamma_nonneg fp hn)
+    hγ_lt_one hn hC le_rfl hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, absolute-budget Doolittle certificate with a
+constant-growth final `h(γ_n)` coefficient. -/
+theorem higham9_14_source_h_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_const_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (BU BL : Fin n → Fin n → ℝ)
+    (c : ℝ) (hc : 0 ≤ c)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hC : higham9_2_DoolittleDenseLoopAbsBudgetCertificate n
+      A L_hat U_hat fp BU BL)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ c * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        c * higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_DoolittleDenseLoopAbsBudgetCertificate_fl_triangular_solves_const_gamma_le
+    fp n A L_hat U_hat b BU BL c (gamma fp n) hc
+    (gamma_nonneg fp hn) hγ_lt_one hn hC le_rfl hU_diag hAbsLU_le
+
 /-- **Theorem 9.14**, square-specialized rectangular dense Doolittle
 certificate plus actual triangular solves.
 
@@ -17715,6 +18105,150 @@ theorem higham9_14_source_h_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_
     fp n A L_hat U_hat b BU BL c u hc hu hu_lt_one hn
     (higham9_2_rectAbsBudgetCertificate_to_squareAbsBudgetCertificate hC)
     hγ_le_u hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, square-specialized rectangular dense Doolittle
+certificate plus actual triangular solves with the natural `γ_n` coefficient. -/
+theorem higham9_14_source_f_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (c : ℝ)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_RectDoolittleDenseLoopCertificate
+      (Nat.le_refl n) A L_hat U_hat fp)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ c * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        c * higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_f_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b c (gamma fp n) (gamma_nonneg fp hn)
+    hn hC le_rfl hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, square-specialized rectangular absolute-budget
+Doolittle certificate plus actual triangular solves with the natural `γ_n`
+coefficient. -/
+theorem higham9_14_source_f_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (BU BL : Fin n → Fin n → ℝ)
+    (c : ℝ)
+    (hn : gammaValid fp n)
+    (hC : higham9_2_RectDoolittleDenseLoopAbsBudgetCertificate
+      (Nat.le_refl n) A L_hat U_hat fp BU BL)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ c * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        c * higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_f_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b BU BL c (gamma fp n)
+    (gamma_nonneg fp hn) hn hC le_rfl hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, square-specialized rectangular dense Doolittle
+certificate with Higham's final `h(γ_n)` coefficient. -/
+theorem higham9_14_source_h_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hC : higham9_2_RectDoolittleDenseLoopCertificate
+      (Nat.le_refl n) A L_hat U_hat fp)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b (gamma fp n) (gamma_nonneg fp hn)
+    hγ_lt_one hn hC le_rfl hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, square-specialized rectangular absolute-budget
+Doolittle certificate with Higham's final `h(γ_n)` coefficient. -/
+theorem higham9_14_source_h_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (BU BL : Fin n → Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hC : higham9_2_RectDoolittleDenseLoopAbsBudgetCertificate
+      (Nat.le_refl n) A L_hat U_hat fp BU BL)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b BU BL (gamma fp n)
+    (gamma_nonneg fp hn) hγ_lt_one hn hC le_rfl hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, square-specialized rectangular dense Doolittle
+certificate with a constant-growth final `h(γ_n)` coefficient. -/
+theorem higham9_14_source_h_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_const_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (c : ℝ) (hc : 0 ≤ c)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hC : higham9_2_RectDoolittleDenseLoopCertificate
+      (Nat.le_refl n) A L_hat U_hat fp)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ c * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        c * higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_RectDoolittleDenseLoopCertificate_square_fl_triangular_solves_const_gamma_le
+    fp n A L_hat U_hat b c (gamma fp n) hc (gamma_nonneg fp hn)
+    hγ_lt_one hn hC le_rfl hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, square-specialized rectangular absolute-budget
+Doolittle certificate with a constant-growth final `h(γ_n)` coefficient. -/
+theorem higham9_14_source_h_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_const_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (BU BL : Fin n → Fin n → ℝ)
+    (c : ℝ) (hc : 0 ≤ c)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hC : higham9_2_RectDoolittleDenseLoopAbsBudgetCertificate
+      (Nat.le_refl n) A L_hat U_hat fp BU BL)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ c * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        c * higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_RectDoolittleDenseLoopAbsBudgetCertificate_square_fl_triangular_solves_const_gamma_le
+    fp n A L_hat U_hat b BU BL c (gamma fp n) hc
+    (gamma_nonneg fp hn) hγ_lt_one hn hC le_rfl hU_diag hAbsLU_le
 
 /-- **Theorem 9.14**, square-specialized rectangular literal exact-target
 gap form for the source-facing `f(u)` bound.
@@ -17901,6 +18435,169 @@ theorem higham9_14_source_h_bound_of_rectLiteralDoolittle_exactTargetGaps_square
       hL_diag hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq
       hU_diag hn hL_coeff hU_gap hL_gap hL_num_gap)
     hγ_le_u hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, square-specialized rectangular literal exact-target
+gap form for the source-facing `f(γ_n)` bound. -/
+theorem higham9_14_source_f_bound_of_rectLiteralDoolittle_exactTargetGaps_square_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (c : ℝ)
+    (hL_diag : ∀ k : Fin n, L_hat (higham9_2_rectRow (Nat.le_refl n) k) k = 1)
+    (hL_upper_zero : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hU_lower_zero : ∀ i j : Fin n, j.val < i.val → U_hat i j = 0)
+    (hU_entry_eq : ∀ k j : Fin n, k.val ≤ j.val →
+      U_hat k j =
+        higham9_2_rectFlDoolittleUEntry fp (Nat.le_refl n)
+          A L_hat U_hat k j)
+    (hL_entry_eq : ∀ i k : Fin n, k.val < i.val →
+      L_hat i k = higham9_2_rectFlDoolittleLEntry fp A L_hat U_hat i k)
+    (hU_diag : ∀ k : Fin n, U_hat k k ≠ 0)
+    (hn : gammaValid fp n)
+    (hL_coeff : ∀ i k : Fin n, k.val < i.val →
+      gamma fp k.val + fp.u + fp.u ≤ gamma fp n)
+    (hU_gap : ∀ k j : Fin n, k.val ≤ j.val →
+      |A (higham9_2_rectRow (Nat.le_refl n) k) j| + (1 + fp.u) *
+          higham9_2_rectDoolittleUProductAbs fp (Nat.le_refl n)
+            A L_hat U_hat k j +
+        higham9_2_rectDoolittleUExactTargetResidualBudget fp
+          (Nat.le_refl n) A L_hat U_hat k j ≤
+        |higham9_2_rectDoolittleUExactTarget (Nat.le_refl n)
+          A L_hat U_hat k j|)
+    (hL_gap : ∀ i k : Fin n, k.val < i.val →
+      |A i k| + (1 + fp.u) *
+          higham9_2_rectDoolittleLProductAbs fp A L_hat U_hat i k +
+        higham9_2_rectDoolittleLExactTargetEntryResidualBudget fp
+          A L_hat U_hat i k ≤
+        |higham9_2_rectDoolittleLExactTarget A L_hat U_hat i k|)
+    (hL_num_gap : ∀ i k : Fin n, k.val < i.val →
+      ((|A i k| + higham9_2_rectDoolittleLProductAbs fp A L_hat U_hat i k) +
+        higham9_2_rectDoolittleLExactTargetNumeratorResidualBudget
+          fp A L_hat U_hat i k) +
+        higham9_2_rectDoolittleLExactTargetEntryResidualBudget
+          fp A L_hat U_hat i k ≤
+        |higham9_2_rectDoolittleLExactTarget A L_hat U_hat i k|)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ c * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        c * higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_f_bound_of_rectLiteralDoolittle_exactTargetGaps_square_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b c (gamma fp n) (gamma_nonneg fp hn)
+    hL_diag hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq hU_diag
+    hn hL_coeff hU_gap hL_gap hL_num_gap le_rfl hAbsLU_le
+
+/-- **Theorem 9.14**, square-specialized rectangular literal exact-target
+gap form for the final exact-growth `h(γ_n)` bound. -/
+theorem higham9_14_source_h_bound_of_rectLiteralDoolittle_exactTargetGaps_square_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hγ_lt_one : gamma fp n < 1)
+    (hL_diag : ∀ k : Fin n, L_hat (higham9_2_rectRow (Nat.le_refl n) k) k = 1)
+    (hL_upper_zero : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hU_lower_zero : ∀ i j : Fin n, j.val < i.val → U_hat i j = 0)
+    (hU_entry_eq : ∀ k j : Fin n, k.val ≤ j.val →
+      U_hat k j =
+        higham9_2_rectFlDoolittleUEntry fp (Nat.le_refl n)
+          A L_hat U_hat k j)
+    (hL_entry_eq : ∀ i k : Fin n, k.val < i.val →
+      L_hat i k = higham9_2_rectFlDoolittleLEntry fp A L_hat U_hat i k)
+    (hU_diag : ∀ k : Fin n, U_hat k k ≠ 0)
+    (hn : gammaValid fp n)
+    (hL_coeff : ∀ i k : Fin n, k.val < i.val →
+      gamma fp k.val + fp.u + fp.u ≤ gamma fp n)
+    (hU_gap : ∀ k j : Fin n, k.val ≤ j.val →
+      |A (higham9_2_rectRow (Nat.le_refl n) k) j| + (1 + fp.u) *
+          higham9_2_rectDoolittleUProductAbs fp (Nat.le_refl n)
+            A L_hat U_hat k j +
+        higham9_2_rectDoolittleUExactTargetResidualBudget fp
+          (Nat.le_refl n) A L_hat U_hat k j ≤
+        |higham9_2_rectDoolittleUExactTarget (Nat.le_refl n)
+          A L_hat U_hat k j|)
+    (hL_gap : ∀ i k : Fin n, k.val < i.val →
+      |A i k| + (1 + fp.u) *
+          higham9_2_rectDoolittleLProductAbs fp A L_hat U_hat i k +
+        higham9_2_rectDoolittleLExactTargetEntryResidualBudget fp
+          A L_hat U_hat i k ≤
+        |higham9_2_rectDoolittleLExactTarget A L_hat U_hat i k|)
+    (hL_num_gap : ∀ i k : Fin n, k.val < i.val →
+      ((|A i k| + higham9_2_rectDoolittleLProductAbs fp A L_hat U_hat i k) +
+        higham9_2_rectDoolittleLExactTargetNumeratorResidualBudget
+          fp A L_hat U_hat i k) +
+        higham9_2_rectDoolittleLExactTargetEntryResidualBudget
+          fp A L_hat U_hat i k ≤
+        |higham9_2_rectDoolittleLExactTarget A L_hat U_hat i k|)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_rectLiteralDoolittle_exactTargetGaps_square_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b (gamma fp n) (gamma_nonneg fp hn)
+    hγ_lt_one hL_diag hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq
+    hU_diag hn hL_coeff hU_gap hL_gap hL_num_gap le_rfl hAbsLU_le
+
+/-- **Theorem 9.14**, square-specialized rectangular literal exact-target
+gap form for the final constant-growth `h(γ_n)` bound. -/
+theorem higham9_14_source_h_bound_of_rectLiteralDoolittle_exactTargetGaps_square_fl_triangular_solves_const_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (c : ℝ) (hc : 0 ≤ c)
+    (hγ_lt_one : gamma fp n < 1)
+    (hL_diag : ∀ k : Fin n, L_hat (higham9_2_rectRow (Nat.le_refl n) k) k = 1)
+    (hL_upper_zero : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hU_lower_zero : ∀ i j : Fin n, j.val < i.val → U_hat i j = 0)
+    (hU_entry_eq : ∀ k j : Fin n, k.val ≤ j.val →
+      U_hat k j =
+        higham9_2_rectFlDoolittleUEntry fp (Nat.le_refl n)
+          A L_hat U_hat k j)
+    (hL_entry_eq : ∀ i k : Fin n, k.val < i.val →
+      L_hat i k = higham9_2_rectFlDoolittleLEntry fp A L_hat U_hat i k)
+    (hU_diag : ∀ k : Fin n, U_hat k k ≠ 0)
+    (hn : gammaValid fp n)
+    (hL_coeff : ∀ i k : Fin n, k.val < i.val →
+      gamma fp k.val + fp.u + fp.u ≤ gamma fp n)
+    (hU_gap : ∀ k j : Fin n, k.val ≤ j.val →
+      |A (higham9_2_rectRow (Nat.le_refl n) k) j| + (1 + fp.u) *
+          higham9_2_rectDoolittleUProductAbs fp (Nat.le_refl n)
+            A L_hat U_hat k j +
+        higham9_2_rectDoolittleUExactTargetResidualBudget fp
+          (Nat.le_refl n) A L_hat U_hat k j ≤
+        |higham9_2_rectDoolittleUExactTarget (Nat.le_refl n)
+          A L_hat U_hat k j|)
+    (hL_gap : ∀ i k : Fin n, k.val < i.val →
+      |A i k| + (1 + fp.u) *
+          higham9_2_rectDoolittleLProductAbs fp A L_hat U_hat i k +
+        higham9_2_rectDoolittleLExactTargetEntryResidualBudget fp
+          A L_hat U_hat i k ≤
+        |higham9_2_rectDoolittleLExactTarget A L_hat U_hat i k|)
+    (hL_num_gap : ∀ i k : Fin n, k.val < i.val →
+      ((|A i k| + higham9_2_rectDoolittleLProductAbs fp A L_hat U_hat i k) +
+        higham9_2_rectDoolittleLExactTargetNumeratorResidualBudget
+          fp A L_hat U_hat i k) +
+        higham9_2_rectDoolittleLExactTargetEntryResidualBudget
+          fp A L_hat U_hat i k ≤
+        |higham9_2_rectDoolittleLExactTarget A L_hat U_hat i k|)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ c * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        c * higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_rectLiteralDoolittle_exactTargetGaps_square_fl_triangular_solves_const_gamma_le
+    fp n A L_hat U_hat b c (gamma fp n) hc (gamma_nonneg fp hn)
+    hγ_lt_one hL_diag hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq
+    hU_diag hn hL_coeff hU_gap hL_gap hL_num_gap le_rfl hAbsLU_le
 
 /-- **Theorem 9.14**, column-dominant builder source-model `f(u)` bound.
 
@@ -18873,6 +19570,559 @@ theorem higham9_14_tridiag_rowDiagDom_source_h_bound_from_LUBackwardError_fl_tri
     (higham9_13_rowDiagDom_tridiag_growth_bound_3_of_LUFactSpec
       A L_hat U_hat hLU hdetA hA_tridiag hRowDom)
 
+/-- **Theorem 9.14**, column-dominant builder actual-solve source model at
+the natural `γ_n` coefficient. -/
+theorem higham9_14_tridiag_colDiagDom_source_f_bound_from_builders_LUBackwardError_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (T : higham9_18_TridiagData n)
+    (l_hat u_hat : Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (ε : ℝ)
+    (hn : gammaValid fp n)
+    (hBE : LUBackwardError n (higham9_18_tridiag_to_matrix T)
+      (tridiag_L_matrix l_hat) (tridiag_U_matrix u_hat T.c) ε)
+    (hε_le_gamma : ε ≤ gamma fp n)
+    (hU_diag : ∀ i : Fin n, tridiag_U_matrix u_hat T.c i i ≠ 0)
+    (hLU_exact : ∀ i j : Fin n,
+      ∑ k : Fin n, tridiag_L_matrix l_hat i k *
+        tridiag_U_matrix u_hat T.c k j =
+        higham9_18_tridiag_to_matrix T i j)
+    (hl : ∀ i : Fin n, |l_hat i| ≤ 1)
+    (hColDom : IsDiagDominant n (higham9_18_tridiag_to_matrix T)) :
+    let y_hat := fl_forwardSub fp n (tridiag_L_matrix l_hat) b
+    let x_hat := fl_backSub fp n (tridiag_U_matrix u_hat T.c) y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        3 * higham9_14_f (gamma fp n) *
+          |higham9_18_tridiag_to_matrix T i j|) ∧
+      (∀ i, ∑ j : Fin n,
+        (higham9_18_tridiag_to_matrix T i j + DeltaA i j) * x_hat j =
+          b i) :=
+  higham9_14_tridiag_colDiagDom_source_f_bound_from_builders_LUBackwardError_fl_triangular_solves
+    fp n T l_hat u_hat b ε (gamma fp n) (gamma_nonneg fp hn) hn hBE
+    hε_le_gamma le_rfl hU_diag hLU_exact hl hColDom
+
+/-- **Theorem 9.14**, row-dominant builder actual-solve source model at the
+natural `γ_n` coefficient. -/
+theorem higham9_14_tridiag_rowDiagDom_source_f_bound_from_builders_LUBackwardError_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (T : higham9_18_TridiagData n)
+    (l_hat u_hat : Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (ε : ℝ)
+    (hn : gammaValid fp n)
+    (hBE : LUBackwardError n (higham9_18_tridiag_to_matrix T)
+      (tridiag_L_matrix l_hat) (tridiag_U_matrix u_hat T.c) ε)
+    (hε_le_gamma : ε ≤ gamma fp n)
+    (hU_diag : ∀ i : Fin n, tridiag_U_matrix u_hat T.c i i ≠ 0)
+    (hLU_exact : ∀ i j : Fin n,
+      ∑ k : Fin n, tridiag_L_matrix l_hat i k *
+        tridiag_U_matrix u_hat T.c k j =
+        higham9_18_tridiag_to_matrix T i j)
+    (hRowDom : IsRowDiagDominant n (higham9_18_tridiag_to_matrix T)) :
+    let y_hat := fl_forwardSub fp n (tridiag_L_matrix l_hat) b
+    let x_hat := fl_backSub fp n (tridiag_U_matrix u_hat T.c) y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        3 * higham9_14_f (gamma fp n) *
+          |higham9_18_tridiag_to_matrix T i j|) ∧
+      (∀ i, ∑ j : Fin n,
+        (higham9_18_tridiag_to_matrix T i j + DeltaA i j) * x_hat j =
+          b i) :=
+  higham9_14_tridiag_rowDiagDom_source_f_bound_from_builders_LUBackwardError_fl_triangular_solves
+    fp n T l_hat u_hat b ε (gamma fp n) (gamma_nonneg fp hn) hn hBE
+    hε_le_gamma le_rfl hU_diag hLU_exact hRowDom
+
+/-- **Theorem 9.14**, column-dominant recurrence actual-solve source model at
+the natural `γ_n` coefficient. -/
+theorem higham9_14_tridiag_colDiagDom_source_f_bound_from_recurrence_LUBackwardError_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (T : higham9_18_TridiagData n)
+    (l_hat u_hat : Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (ε : ℝ)
+    (hn : gammaValid fp n)
+    (hBE : LUBackwardError n (higham9_18_tridiag_to_matrix T)
+      (tridiag_L_matrix l_hat) (tridiag_U_matrix u_hat T.c) ε)
+    (hε_le_gamma : ε ≤ gamma fp n)
+    (hU_diag : ∀ i : Fin n, tridiag_U_matrix u_hat T.c i i ≠ 0)
+    (hrec : higham9_19_TridiagExactLURecurrence T l_hat u_hat)
+    (hl : ∀ i : Fin n, |l_hat i| ≤ 1)
+    (hColDom : IsDiagDominant n (higham9_18_tridiag_to_matrix T)) :
+    let y_hat := fl_forwardSub fp n (tridiag_L_matrix l_hat) b
+    let x_hat := fl_backSub fp n (tridiag_U_matrix u_hat T.c) y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        3 * higham9_14_f (gamma fp n) *
+          |higham9_18_tridiag_to_matrix T i j|) ∧
+      (∀ i, ∑ j : Fin n,
+        (higham9_18_tridiag_to_matrix T i j + DeltaA i j) * x_hat j =
+          b i) :=
+  higham9_14_tridiag_colDiagDom_source_f_bound_from_recurrence_LUBackwardError_fl_triangular_solves
+    fp n T l_hat u_hat b ε (gamma fp n) (gamma_nonneg fp hn) hn hBE
+    hε_le_gamma le_rfl hU_diag hrec hl hColDom
+
+/-- **Theorem 9.14**, row-dominant recurrence actual-solve source model at the
+natural `γ_n` coefficient. -/
+theorem higham9_14_tridiag_rowDiagDom_source_f_bound_from_recurrence_LUBackwardError_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (T : higham9_18_TridiagData n)
+    (l_hat u_hat : Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (ε : ℝ)
+    (hn : gammaValid fp n)
+    (hBE : LUBackwardError n (higham9_18_tridiag_to_matrix T)
+      (tridiag_L_matrix l_hat) (tridiag_U_matrix u_hat T.c) ε)
+    (hε_le_gamma : ε ≤ gamma fp n)
+    (hU_diag : ∀ i : Fin n, tridiag_U_matrix u_hat T.c i i ≠ 0)
+    (hrec : higham9_19_TridiagExactLURecurrence T l_hat u_hat)
+    (hRowDom : IsRowDiagDominant n (higham9_18_tridiag_to_matrix T)) :
+    let y_hat := fl_forwardSub fp n (tridiag_L_matrix l_hat) b
+    let x_hat := fl_backSub fp n (tridiag_U_matrix u_hat T.c) y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        3 * higham9_14_f (gamma fp n) *
+          |higham9_18_tridiag_to_matrix T i j|) ∧
+      (∀ i, ∑ j : Fin n,
+        (higham9_18_tridiag_to_matrix T i j + DeltaA i j) * x_hat j =
+          b i) :=
+  higham9_14_tridiag_rowDiagDom_source_f_bound_from_recurrence_LUBackwardError_fl_triangular_solves
+    fp n T l_hat u_hat b ε (gamma fp n) (gamma_nonneg fp hn) hn hBE
+    hε_le_gamma le_rfl hU_diag hrec hRowDom
+
+/-- **Theorem 9.14**, column-dominant builder actual-solve final `h(γ_n)`
+bound. -/
+theorem higham9_14_tridiag_colDiagDom_source_h_bound_from_builders_LUBackwardError_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (T : higham9_18_TridiagData n)
+    (l_hat u_hat : Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (ε : ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hBE : LUBackwardError n (higham9_18_tridiag_to_matrix T)
+      (tridiag_L_matrix l_hat) (tridiag_U_matrix u_hat T.c) ε)
+    (hε_le_gamma : ε ≤ gamma fp n)
+    (hU_diag : ∀ i : Fin n, tridiag_U_matrix u_hat T.c i i ≠ 0)
+    (hLU_exact : ∀ i j : Fin n,
+      ∑ k : Fin n, tridiag_L_matrix l_hat i k *
+        tridiag_U_matrix u_hat T.c k j =
+        higham9_18_tridiag_to_matrix T i j)
+    (hl : ∀ i : Fin n, |l_hat i| ≤ 1)
+    (hColDom : IsDiagDominant n (higham9_18_tridiag_to_matrix T)) :
+    let y_hat := fl_forwardSub fp n (tridiag_L_matrix l_hat) b
+    let x_hat := fl_backSub fp n (tridiag_U_matrix u_hat T.c) y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        3 * higham9_14_h (gamma fp n) *
+          |higham9_18_tridiag_to_matrix T i j|) ∧
+      (∀ i, ∑ j : Fin n,
+        (higham9_18_tridiag_to_matrix T i j + DeltaA i j) * x_hat j =
+          b i) :=
+  higham9_14_tridiag_colDiagDom_source_h_bound_from_builders_LUBackwardError_fl_triangular_solves
+    fp n T l_hat u_hat b ε (gamma fp n) (gamma_nonneg fp hn) hγ_lt_one
+    hn hBE hε_le_gamma le_rfl hU_diag hLU_exact hl hColDom
+
+/-- **Theorem 9.14**, row-dominant builder actual-solve final `h(γ_n)` bound. -/
+theorem higham9_14_tridiag_rowDiagDom_source_h_bound_from_builders_LUBackwardError_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (T : higham9_18_TridiagData n)
+    (l_hat u_hat : Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (ε : ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hBE : LUBackwardError n (higham9_18_tridiag_to_matrix T)
+      (tridiag_L_matrix l_hat) (tridiag_U_matrix u_hat T.c) ε)
+    (hε_le_gamma : ε ≤ gamma fp n)
+    (hU_diag : ∀ i : Fin n, tridiag_U_matrix u_hat T.c i i ≠ 0)
+    (hLU_exact : ∀ i j : Fin n,
+      ∑ k : Fin n, tridiag_L_matrix l_hat i k *
+        tridiag_U_matrix u_hat T.c k j =
+        higham9_18_tridiag_to_matrix T i j)
+    (hRowDom : IsRowDiagDominant n (higham9_18_tridiag_to_matrix T)) :
+    let y_hat := fl_forwardSub fp n (tridiag_L_matrix l_hat) b
+    let x_hat := fl_backSub fp n (tridiag_U_matrix u_hat T.c) y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        3 * higham9_14_h (gamma fp n) *
+          |higham9_18_tridiag_to_matrix T i j|) ∧
+      (∀ i, ∑ j : Fin n,
+        (higham9_18_tridiag_to_matrix T i j + DeltaA i j) * x_hat j =
+          b i) :=
+  higham9_14_tridiag_rowDiagDom_source_h_bound_from_builders_LUBackwardError_fl_triangular_solves
+    fp n T l_hat u_hat b ε (gamma fp n) (gamma_nonneg fp hn) hγ_lt_one
+    hn hBE hε_le_gamma le_rfl hU_diag hLU_exact hRowDom
+
+/-- **Theorem 9.14**, column-dominant recurrence actual-solve final `h(γ_n)`
+bound. -/
+theorem higham9_14_tridiag_colDiagDom_source_h_bound_from_recurrence_LUBackwardError_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (T : higham9_18_TridiagData n)
+    (l_hat u_hat : Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (ε : ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hBE : LUBackwardError n (higham9_18_tridiag_to_matrix T)
+      (tridiag_L_matrix l_hat) (tridiag_U_matrix u_hat T.c) ε)
+    (hε_le_gamma : ε ≤ gamma fp n)
+    (hU_diag : ∀ i : Fin n, tridiag_U_matrix u_hat T.c i i ≠ 0)
+    (hrec : higham9_19_TridiagExactLURecurrence T l_hat u_hat)
+    (hl : ∀ i : Fin n, |l_hat i| ≤ 1)
+    (hColDom : IsDiagDominant n (higham9_18_tridiag_to_matrix T)) :
+    let y_hat := fl_forwardSub fp n (tridiag_L_matrix l_hat) b
+    let x_hat := fl_backSub fp n (tridiag_U_matrix u_hat T.c) y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        3 * higham9_14_h (gamma fp n) *
+          |higham9_18_tridiag_to_matrix T i j|) ∧
+      (∀ i, ∑ j : Fin n,
+        (higham9_18_tridiag_to_matrix T i j + DeltaA i j) * x_hat j =
+          b i) :=
+  higham9_14_tridiag_colDiagDom_source_h_bound_from_recurrence_LUBackwardError_fl_triangular_solves
+    fp n T l_hat u_hat b ε (gamma fp n) (gamma_nonneg fp hn) hγ_lt_one
+    hn hBE hε_le_gamma le_rfl hU_diag hrec hl hColDom
+
+/-- **Theorem 9.14**, row-dominant recurrence actual-solve final `h(γ_n)`
+bound. -/
+theorem higham9_14_tridiag_rowDiagDom_source_h_bound_from_recurrence_LUBackwardError_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (T : higham9_18_TridiagData n)
+    (l_hat u_hat : Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (ε : ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hBE : LUBackwardError n (higham9_18_tridiag_to_matrix T)
+      (tridiag_L_matrix l_hat) (tridiag_U_matrix u_hat T.c) ε)
+    (hε_le_gamma : ε ≤ gamma fp n)
+    (hU_diag : ∀ i : Fin n, tridiag_U_matrix u_hat T.c i i ≠ 0)
+    (hrec : higham9_19_TridiagExactLURecurrence T l_hat u_hat)
+    (hRowDom : IsRowDiagDominant n (higham9_18_tridiag_to_matrix T)) :
+    let y_hat := fl_forwardSub fp n (tridiag_L_matrix l_hat) b
+    let x_hat := fl_backSub fp n (tridiag_U_matrix u_hat T.c) y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        3 * higham9_14_h (gamma fp n) *
+          |higham9_18_tridiag_to_matrix T i j|) ∧
+      (∀ i, ∑ j : Fin n,
+        (higham9_18_tridiag_to_matrix T i j + DeltaA i j) * x_hat j =
+          b i) :=
+  higham9_14_tridiag_rowDiagDom_source_h_bound_from_recurrence_LUBackwardError_fl_triangular_solves
+    fp n T l_hat u_hat b ε (gamma fp n) (gamma_nonneg fp hn) hγ_lt_one
+    hn hBE hε_le_gamma le_rfl hU_diag hrec hRowDom
+
+/-- **Theorem 9.14**, column-dominant exact builder factors with actual solves
+at the natural `γ_n` coefficient. -/
+theorem higham9_14_tridiag_colDiagDom_source_f_bound_from_builders_LUFactSpec_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (T : higham9_18_TridiagData n)
+    (l_hat u_hat : Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hU_diag : ∀ i : Fin n, tridiag_U_matrix u_hat T.c i i ≠ 0)
+    (hLU_exact : ∀ i j : Fin n,
+      ∑ k : Fin n, tridiag_L_matrix l_hat i k *
+        tridiag_U_matrix u_hat T.c k j =
+        higham9_18_tridiag_to_matrix T i j)
+    (hl : ∀ i : Fin n, |l_hat i| ≤ 1)
+    (hColDom : IsDiagDominant n (higham9_18_tridiag_to_matrix T)) :
+    let y_hat := fl_forwardSub fp n (tridiag_L_matrix l_hat) b
+    let x_hat := fl_backSub fp n (tridiag_U_matrix u_hat T.c) y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        3 * higham9_14_f (gamma fp n) *
+          |higham9_18_tridiag_to_matrix T i j|) ∧
+      (∀ i, ∑ j : Fin n,
+        (higham9_18_tridiag_to_matrix T i j + DeltaA i j) * x_hat j =
+          b i) :=
+  higham9_14_tridiag_colDiagDom_source_f_bound_from_builders_LUFactSpec_fl_triangular_solves
+    fp n T l_hat u_hat b (gamma fp n) (gamma_nonneg fp hn) hn le_rfl
+    hU_diag hLU_exact hl hColDom
+
+/-- **Theorem 9.14**, row-dominant exact builder factors with actual solves at
+the natural `γ_n` coefficient. -/
+theorem higham9_14_tridiag_rowDiagDom_source_f_bound_from_builders_LUFactSpec_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (T : higham9_18_TridiagData n)
+    (l_hat u_hat : Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hU_diag : ∀ i : Fin n, tridiag_U_matrix u_hat T.c i i ≠ 0)
+    (hLU_exact : ∀ i j : Fin n,
+      ∑ k : Fin n, tridiag_L_matrix l_hat i k *
+        tridiag_U_matrix u_hat T.c k j =
+        higham9_18_tridiag_to_matrix T i j)
+    (hRowDom : IsRowDiagDominant n (higham9_18_tridiag_to_matrix T)) :
+    let y_hat := fl_forwardSub fp n (tridiag_L_matrix l_hat) b
+    let x_hat := fl_backSub fp n (tridiag_U_matrix u_hat T.c) y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        3 * higham9_14_f (gamma fp n) *
+          |higham9_18_tridiag_to_matrix T i j|) ∧
+      (∀ i, ∑ j : Fin n,
+        (higham9_18_tridiag_to_matrix T i j + DeltaA i j) * x_hat j =
+          b i) :=
+  higham9_14_tridiag_rowDiagDom_source_f_bound_from_builders_LUFactSpec_fl_triangular_solves
+    fp n T l_hat u_hat b (gamma fp n) (gamma_nonneg fp hn) hn le_rfl
+    hU_diag hLU_exact hRowDom
+
+/-- **Theorem 9.14**, column-dominant exact recurrence factors with actual
+solves at the natural `γ_n` coefficient. -/
+theorem higham9_14_tridiag_colDiagDom_source_f_bound_from_recurrence_LUFactSpec_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (T : higham9_18_TridiagData n)
+    (l_hat u_hat : Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hU_diag : ∀ i : Fin n, tridiag_U_matrix u_hat T.c i i ≠ 0)
+    (hrec : higham9_19_TridiagExactLURecurrence T l_hat u_hat)
+    (hl : ∀ i : Fin n, |l_hat i| ≤ 1)
+    (hColDom : IsDiagDominant n (higham9_18_tridiag_to_matrix T)) :
+    let y_hat := fl_forwardSub fp n (tridiag_L_matrix l_hat) b
+    let x_hat := fl_backSub fp n (tridiag_U_matrix u_hat T.c) y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        3 * higham9_14_f (gamma fp n) *
+          |higham9_18_tridiag_to_matrix T i j|) ∧
+      (∀ i, ∑ j : Fin n,
+        (higham9_18_tridiag_to_matrix T i j + DeltaA i j) * x_hat j =
+          b i) :=
+  higham9_14_tridiag_colDiagDom_source_f_bound_from_recurrence_LUFactSpec_fl_triangular_solves
+    fp n T l_hat u_hat b (gamma fp n) (gamma_nonneg fp hn) hn le_rfl
+    hU_diag hrec hl hColDom
+
+/-- **Theorem 9.14**, row-dominant exact recurrence factors with actual solves
+at the natural `γ_n` coefficient. -/
+theorem higham9_14_tridiag_rowDiagDom_source_f_bound_from_recurrence_LUFactSpec_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (T : higham9_18_TridiagData n)
+    (l_hat u_hat : Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hU_diag : ∀ i : Fin n, tridiag_U_matrix u_hat T.c i i ≠ 0)
+    (hrec : higham9_19_TridiagExactLURecurrence T l_hat u_hat)
+    (hRowDom : IsRowDiagDominant n (higham9_18_tridiag_to_matrix T)) :
+    let y_hat := fl_forwardSub fp n (tridiag_L_matrix l_hat) b
+    let x_hat := fl_backSub fp n (tridiag_U_matrix u_hat T.c) y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        3 * higham9_14_f (gamma fp n) *
+          |higham9_18_tridiag_to_matrix T i j|) ∧
+      (∀ i, ∑ j : Fin n,
+        (higham9_18_tridiag_to_matrix T i j + DeltaA i j) * x_hat j =
+          b i) :=
+  higham9_14_tridiag_rowDiagDom_source_f_bound_from_recurrence_LUFactSpec_fl_triangular_solves
+    fp n T l_hat u_hat b (gamma fp n) (gamma_nonneg fp hn) hn le_rfl
+    hU_diag hrec hRowDom
+
+/-- **Theorem 9.14**, column-dominant exact builder factors with actual solves
+and final `h(γ_n)` coefficient. -/
+theorem higham9_14_tridiag_colDiagDom_source_h_bound_from_builders_LUFactSpec_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (T : higham9_18_TridiagData n)
+    (l_hat u_hat : Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hU_diag : ∀ i : Fin n, tridiag_U_matrix u_hat T.c i i ≠ 0)
+    (hLU_exact : ∀ i j : Fin n,
+      ∑ k : Fin n, tridiag_L_matrix l_hat i k *
+        tridiag_U_matrix u_hat T.c k j =
+        higham9_18_tridiag_to_matrix T i j)
+    (hl : ∀ i : Fin n, |l_hat i| ≤ 1)
+    (hColDom : IsDiagDominant n (higham9_18_tridiag_to_matrix T)) :
+    let y_hat := fl_forwardSub fp n (tridiag_L_matrix l_hat) b
+    let x_hat := fl_backSub fp n (tridiag_U_matrix u_hat T.c) y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        3 * higham9_14_h (gamma fp n) *
+          |higham9_18_tridiag_to_matrix T i j|) ∧
+      (∀ i, ∑ j : Fin n,
+        (higham9_18_tridiag_to_matrix T i j + DeltaA i j) * x_hat j =
+          b i) :=
+  higham9_14_tridiag_colDiagDom_source_h_bound_from_builders_LUFactSpec_fl_triangular_solves
+    fp n T l_hat u_hat b (gamma fp n) (gamma_nonneg fp hn) hγ_lt_one
+    hn le_rfl hU_diag hLU_exact hl hColDom
+
+/-- **Theorem 9.14**, row-dominant exact builder factors with actual solves and
+final `h(γ_n)` coefficient. -/
+theorem higham9_14_tridiag_rowDiagDom_source_h_bound_from_builders_LUFactSpec_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (T : higham9_18_TridiagData n)
+    (l_hat u_hat : Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hU_diag : ∀ i : Fin n, tridiag_U_matrix u_hat T.c i i ≠ 0)
+    (hLU_exact : ∀ i j : Fin n,
+      ∑ k : Fin n, tridiag_L_matrix l_hat i k *
+        tridiag_U_matrix u_hat T.c k j =
+        higham9_18_tridiag_to_matrix T i j)
+    (hRowDom : IsRowDiagDominant n (higham9_18_tridiag_to_matrix T)) :
+    let y_hat := fl_forwardSub fp n (tridiag_L_matrix l_hat) b
+    let x_hat := fl_backSub fp n (tridiag_U_matrix u_hat T.c) y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        3 * higham9_14_h (gamma fp n) *
+          |higham9_18_tridiag_to_matrix T i j|) ∧
+      (∀ i, ∑ j : Fin n,
+        (higham9_18_tridiag_to_matrix T i j + DeltaA i j) * x_hat j =
+          b i) :=
+  higham9_14_tridiag_rowDiagDom_source_h_bound_from_builders_LUFactSpec_fl_triangular_solves
+    fp n T l_hat u_hat b (gamma fp n) (gamma_nonneg fp hn) hγ_lt_one
+    hn le_rfl hU_diag hLU_exact hRowDom
+
+/-- **Theorem 9.14**, column-dominant exact recurrence factors with actual
+solves and final `h(γ_n)` coefficient. -/
+theorem higham9_14_tridiag_colDiagDom_source_h_bound_from_recurrence_LUFactSpec_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (T : higham9_18_TridiagData n)
+    (l_hat u_hat : Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hU_diag : ∀ i : Fin n, tridiag_U_matrix u_hat T.c i i ≠ 0)
+    (hrec : higham9_19_TridiagExactLURecurrence T l_hat u_hat)
+    (hl : ∀ i : Fin n, |l_hat i| ≤ 1)
+    (hColDom : IsDiagDominant n (higham9_18_tridiag_to_matrix T)) :
+    let y_hat := fl_forwardSub fp n (tridiag_L_matrix l_hat) b
+    let x_hat := fl_backSub fp n (tridiag_U_matrix u_hat T.c) y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        3 * higham9_14_h (gamma fp n) *
+          |higham9_18_tridiag_to_matrix T i j|) ∧
+      (∀ i, ∑ j : Fin n,
+        (higham9_18_tridiag_to_matrix T i j + DeltaA i j) * x_hat j =
+          b i) :=
+  higham9_14_tridiag_colDiagDom_source_h_bound_from_recurrence_LUFactSpec_fl_triangular_solves
+    fp n T l_hat u_hat b (gamma fp n) (gamma_nonneg fp hn) hγ_lt_one
+    hn le_rfl hU_diag hrec hl hColDom
+
+/-- **Theorem 9.14**, row-dominant exact recurrence factors with actual solves
+and final `h(γ_n)` coefficient. -/
+theorem higham9_14_tridiag_rowDiagDom_source_h_bound_from_recurrence_LUFactSpec_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (T : higham9_18_TridiagData n)
+    (l_hat u_hat : Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hU_diag : ∀ i : Fin n, tridiag_U_matrix u_hat T.c i i ≠ 0)
+    (hrec : higham9_19_TridiagExactLURecurrence T l_hat u_hat)
+    (hRowDom : IsRowDiagDominant n (higham9_18_tridiag_to_matrix T)) :
+    let y_hat := fl_forwardSub fp n (tridiag_L_matrix l_hat) b
+    let x_hat := fl_backSub fp n (tridiag_U_matrix u_hat T.c) y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        3 * higham9_14_h (gamma fp n) *
+          |higham9_18_tridiag_to_matrix T i j|) ∧
+      (∀ i, ∑ j : Fin n,
+        (higham9_18_tridiag_to_matrix T i j + DeltaA i j) * x_hat j =
+          b i) :=
+  higham9_14_tridiag_rowDiagDom_source_h_bound_from_recurrence_LUFactSpec_fl_triangular_solves
+    fp n T l_hat u_hat b (gamma fp n) (gamma_nonneg fp hn) hγ_lt_one
+    hn le_rfl hU_diag hrec hRowDom
+
+/-- **Theorem 9.14**, column-dominant exact-LU actual-solve source model at the
+natural `γ_n` coefficient. -/
+theorem higham9_14_tridiag_colDiagDom_source_f_bound_from_LUBackwardError_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (ε : ℝ)
+    (hn : gammaValid fp n)
+    (hBE : LUBackwardError n A L_hat U_hat ε)
+    (hε_le_gamma : ε ≤ gamma fp n)
+    (hLU : LUFactSpec n A L_hat U_hat)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hA_tridiag : IsTridiagonal n A)
+    (hColDom : IsDiagDominant n A) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        3 * higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_tridiag_colDiagDom_source_f_bound_from_LUBackwardError_fl_triangular_solves
+    fp n A L_hat U_hat b ε (gamma fp n) (gamma_nonneg fp hn) hn hBE
+    hε_le_gamma le_rfl hLU hdetA hA_tridiag hColDom
+
+/-- **Theorem 9.14**, row-dominant exact-LU actual-solve source model at the
+natural `γ_n` coefficient. -/
+theorem higham9_14_tridiag_rowDiagDom_source_f_bound_from_LUBackwardError_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (ε : ℝ)
+    (hn : gammaValid fp n)
+    (hBE : LUBackwardError n A L_hat U_hat ε)
+    (hε_le_gamma : ε ≤ gamma fp n)
+    (hLU : LUFactSpec n A L_hat U_hat)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hA_tridiag : IsTridiagonal n A)
+    (hRowDom : IsRowDiagDominant n A) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        3 * higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_tridiag_rowDiagDom_source_f_bound_from_LUBackwardError_fl_triangular_solves
+    fp n A L_hat U_hat b ε (gamma fp n) (gamma_nonneg fp hn) hn hBE
+    hε_le_gamma le_rfl hLU hdetA hA_tridiag hRowDom
+
+/-- **Theorem 9.14**, column-dominant exact-LU actual-solve final `h(γ_n)`
+bound. -/
+theorem higham9_14_tridiag_colDiagDom_source_h_bound_from_LUBackwardError_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (ε : ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hBE : LUBackwardError n A L_hat U_hat ε)
+    (hε_le_gamma : ε ≤ gamma fp n)
+    (hLU : LUFactSpec n A L_hat U_hat)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hA_tridiag : IsTridiagonal n A)
+    (hColDom : IsDiagDominant n A) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        3 * higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_tridiag_colDiagDom_source_h_bound_from_LUBackwardError_fl_triangular_solves
+    fp n A L_hat U_hat b ε (gamma fp n) (gamma_nonneg fp hn) hγ_lt_one
+    hn hBE hε_le_gamma le_rfl hLU hdetA hA_tridiag hColDom
+
+/-- **Theorem 9.14**, row-dominant exact-LU actual-solve final `h(γ_n)`
+bound. -/
+theorem higham9_14_tridiag_rowDiagDom_source_h_bound_from_LUBackwardError_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (ε : ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hBE : LUBackwardError n A L_hat U_hat ε)
+    (hε_le_gamma : ε ≤ gamma fp n)
+    (hLU : LUFactSpec n A L_hat U_hat)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hA_tridiag : IsTridiagonal n A)
+    (hRowDom : IsRowDiagDominant n A) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        3 * higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_tridiag_rowDiagDom_source_h_bound_from_LUBackwardError_fl_triangular_solves
+    fp n A L_hat U_hat b ε (gamma fp n) (gamma_nonneg fp hn) hγ_lt_one
+    hn hBE hε_le_gamma le_rfl hLU hdetA hA_tridiag hRowDom
+
 /-- **Theorem 9.14**, SPD positive-`D L^T` model-consuming final bound.
 
 The SPD tridiagonal algebraic core gives `|Lhat||Uhat| = |A|`; with the source
@@ -19347,6 +20597,111 @@ theorem higham9_14_spd_tridiag_positive_DLT_source_f_bound_actual_triangular_sol
         isSymPosDef_det_ne_zero (higham9_18_tridiag_to_matrix T) hSPD)
     hd_pos hDLT
 
+/-- **Theorem 9.14**, SPD positive-`D L^T` exact-factor actual solves with
+the natural `γ_n` coefficient. -/
+theorem higham9_14_spd_tridiag_positive_DLT_source_f_bound_actual_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (d : Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hStruct : IsTridiagLU n L_hat U_hat)
+    (hLU_eq : ∀ i j : Fin n,
+      ∑ k : Fin n, L_hat i k * U_hat k j = A i j)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hd_pos : ∀ k : Fin n, 0 < d k)
+    (hDLT : ∀ k j : Fin n, U_hat k j = d k * L_hat j k) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_spd_tridiag_positive_DLT_source_f_bound_actual_triangular_solves
+    fp n A L_hat U_hat d b (gamma fp n) (gamma_nonneg fp hn)
+    hn le_rfl hStruct hLU_eq hdetA hd_pos hDLT
+
+/-- **Theorem 9.14**, SPD positive-`D L^T` exact-factor actual solves with
+the source SPD hypothesis discharging nonsingularity and coefficient `γ_n`. -/
+theorem higham9_14_spd_tridiag_positive_DLT_source_f_bound_actual_triangular_solves_of_spd_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (d : Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hSPD : IsSymPosDef n A)
+    (hStruct : IsTridiagLU n L_hat U_hat)
+    (hLU_eq : ∀ i j : Fin n,
+      ∑ k : Fin n, L_hat i k * U_hat k j = A i j)
+    (hd_pos : ∀ k : Fin n, 0 < d k)
+    (hDLT : ∀ k j : Fin n, U_hat k j = d k * L_hat j k) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_spd_tridiag_positive_DLT_source_f_bound_actual_triangular_solves_of_spd
+    fp n A L_hat U_hat d b (gamma fp n) (gamma_nonneg fp hn)
+    hn le_rfl hSPD hStruct hLU_eq hd_pos hDLT
+
+/-- **Theorem 9.14**, SPD positive-`D L^T` recurrence actual solves with
+the natural `γ_n` coefficient. -/
+theorem higham9_14_spd_tridiag_positive_DLT_source_f_bound_actual_triangular_solves_of_recurrence_gamma
+    (fp : FPModel) (n : ℕ)
+    (T : higham9_18_TridiagData n)
+    (l_hat u_hat d b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hrec : higham9_19_TridiagExactLURecurrence T l_hat u_hat)
+    (hdetA :
+      Matrix.det
+        (Matrix.of (higham9_18_tridiag_to_matrix T) :
+          Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hd_pos : ∀ k : Fin n, 0 < d k)
+    (hDLT : ∀ k j : Fin n,
+      tridiag_U_matrix u_hat T.c k j =
+        d k * tridiag_L_matrix l_hat j k) :
+    let y_hat := fl_forwardSub fp n (tridiag_L_matrix l_hat) b
+    let x_hat := fl_backSub fp n (tridiag_U_matrix u_hat T.c) y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j,
+        |DeltaA i j| ≤
+          higham9_14_f (gamma fp n) *
+            |higham9_18_tridiag_to_matrix T i j|) ∧
+      (∀ i,
+        ∑ j : Fin n,
+          (higham9_18_tridiag_to_matrix T i j + DeltaA i j) * x_hat j =
+        b i) :=
+  higham9_14_spd_tridiag_positive_DLT_source_f_bound_actual_triangular_solves_of_recurrence
+    fp n T l_hat u_hat d b (gamma fp n) (gamma_nonneg fp hn)
+    hn le_rfl hrec hdetA hd_pos hDLT
+
+/-- **Theorem 9.14**, SPD positive-`D L^T` recurrence actual solves with
+source SPD nonsingularity discharge and coefficient `γ_n`. -/
+theorem higham9_14_spd_tridiag_positive_DLT_source_f_bound_actual_triangular_solves_of_spd_recurrence_gamma
+    (fp : FPModel) (n : ℕ)
+    (T : higham9_18_TridiagData n)
+    (l_hat u_hat d b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hSPD : IsSymPosDef n (higham9_18_tridiag_to_matrix T))
+    (hrec : higham9_19_TridiagExactLURecurrence T l_hat u_hat)
+    (hd_pos : ∀ k : Fin n, 0 < d k)
+    (hDLT : ∀ k j : Fin n,
+      tridiag_U_matrix u_hat T.c k j =
+        d k * tridiag_L_matrix l_hat j k) :
+    let y_hat := fl_forwardSub fp n (tridiag_L_matrix l_hat) b
+    let x_hat := fl_backSub fp n (tridiag_U_matrix u_hat T.c) y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j,
+        |DeltaA i j| ≤
+          higham9_14_f (gamma fp n) *
+            |higham9_18_tridiag_to_matrix T i j|) ∧
+      (∀ i,
+        ∑ j : Fin n,
+          (higham9_18_tridiag_to_matrix T i j + DeltaA i j) * x_hat j =
+        b i) :=
+  higham9_14_spd_tridiag_positive_DLT_source_f_bound_actual_triangular_solves_of_spd_recurrence
+    fp n T l_hat u_hat d b (gamma fp n) (gamma_nonneg fp hn)
+    hn le_rfl hSPD hrec hd_pos hDLT
+
 /-- **Theorem 9.14**, nonnegative-LU exact-factor package with actual
 triangular solves. -/
 theorem higham9_14_nonnegative_lu_source_f_bound_actual_triangular_solves
@@ -19441,6 +20796,73 @@ theorem higham9_14_sign_equiv_source_f_bound_actual_triangular_solves
   refine ⟨DeltaA, ?_, hBackward⟩
   intro i j
   simpa [one_mul] using hDeltaA i j
+
+/-- **Theorem 9.14**, nonnegative-LU exact-factor actual solves with the
+natural `γ_n` coefficient. -/
+theorem higham9_14_nonnegative_lu_source_f_bound_actual_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hNonneg : HasNonnegLUFactors n A L_hat U_hat)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_nonnegative_lu_source_f_bound_actual_triangular_solves
+    fp n A L_hat U_hat b (gamma fp n) (gamma_nonneg fp hn)
+    hn le_rfl hNonneg hdetA
+
+/-- **Theorem 9.14**, M-matrix LU exact-factor actual solves with the natural
+`γ_n` coefficient. -/
+theorem higham9_14_mmatrix_lu_source_f_bound_actual_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hM : IsMMatrix n A)
+    (hLU : LUFactSpec n A L_hat U_hat)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hL_nn : ∀ i k : Fin n, 0 ≤ L_hat i k)
+    (hU_nn : ∀ k j : Fin n, 0 ≤ U_hat k j) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_mmatrix_lu_source_f_bound_actual_triangular_solves
+    fp n A L_hat U_hat b (gamma fp n) (gamma_nonneg fp hn)
+    hn le_rfl hM hLU hdetA hL_nn hU_nn
+
+/-- **Theorem 9.14**, sign-equivalent optimal-growth exact-factor actual
+solves with the natural `γ_n` coefficient. -/
+theorem higham9_14_sign_equiv_source_f_bound_actual_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (B L_B U_B : Fin n → Fin n → ℝ)
+    (D₁ D₂ : Fin n → Fin n → ℝ)
+    (hD₁ : IsSignDiag n D₁) (hD₂ : IsSignDiag n D₂)
+    (hB_growth : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_B i k| * |U_B k j| = |B i j|)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (hA_eq : ∀ i j : Fin n,
+      A i j = ∑ k₁ : Fin n, D₁ i k₁ * (∑ k₂ : Fin n, B k₁ k₂ * D₂ k₂ j))
+    (hL_abs : ∀ i k : Fin n, |L_hat i k| = |L_B i k|)
+    (hU_abs : ∀ k j : Fin n, |U_hat k j| = |U_B k j|)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hLU : LUFactSpec n A L_hat U_hat)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_sign_equiv_source_f_bound_actual_triangular_solves
+    fp n B L_B U_B D₁ D₂ hD₁ hD₂ hB_growth A L_hat U_hat
+    hA_eq hL_abs hU_abs b (gamma fp n) (gamma_nonneg fp hn)
+    hn le_rfl hLU hdetA
 
 /-- **Theorem 9.14**, SPD positive-`D L^T` exact-factor package with actual
 triangular solves and final `h(u)` bound.
@@ -19574,6 +20996,115 @@ theorem higham9_14_spd_tridiag_positive_DLT_source_h_bound_actual_triangular_sol
         isSymPosDef_det_ne_zero (higham9_18_tridiag_to_matrix T) hSPD)
     hd_pos hDLT
 
+/-- **Theorem 9.14**, SPD positive-`D L^T` exact-factor actual solves with
+Higham's final `h(γ_n)` coefficient. -/
+theorem higham9_14_spd_tridiag_positive_DLT_source_h_bound_actual_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (d : Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hStruct : IsTridiagLU n L_hat U_hat)
+    (hLU_eq : ∀ i j : Fin n,
+      ∑ k : Fin n, L_hat i k * U_hat k j = A i j)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hd_pos : ∀ k : Fin n, 0 < d k)
+    (hDLT : ∀ k j : Fin n, U_hat k j = d k * L_hat j k) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_spd_tridiag_positive_DLT_source_h_bound_actual_triangular_solves
+    fp n A L_hat U_hat d b (gamma fp n) (gamma_nonneg fp hn)
+    hγ_lt_one hn le_rfl hStruct hLU_eq hdetA hd_pos hDLT
+
+/-- **Theorem 9.14**, SPD positive-`D L^T` exact-factor actual solves with
+source SPD nonsingularity discharge and final `h(γ_n)` coefficient. -/
+theorem higham9_14_spd_tridiag_positive_DLT_source_h_bound_actual_triangular_solves_of_spd_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (d : Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hSPD : IsSymPosDef n A)
+    (hStruct : IsTridiagLU n L_hat U_hat)
+    (hLU_eq : ∀ i j : Fin n,
+      ∑ k : Fin n, L_hat i k * U_hat k j = A i j)
+    (hd_pos : ∀ k : Fin n, 0 < d k)
+    (hDLT : ∀ k j : Fin n, U_hat k j = d k * L_hat j k) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_spd_tridiag_positive_DLT_source_h_bound_actual_triangular_solves_of_spd
+    fp n A L_hat U_hat d b (gamma fp n) (gamma_nonneg fp hn)
+    hγ_lt_one hn le_rfl hSPD hStruct hLU_eq hd_pos hDLT
+
+/-- **Theorem 9.14**, SPD positive-`D L^T` recurrence actual solves with
+Higham's final `h(γ_n)` coefficient. -/
+theorem higham9_14_spd_tridiag_positive_DLT_source_h_bound_actual_triangular_solves_of_recurrence_gamma
+    (fp : FPModel) (n : ℕ)
+    (T : higham9_18_TridiagData n)
+    (l_hat u_hat d b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hrec : higham9_19_TridiagExactLURecurrence T l_hat u_hat)
+    (hdetA :
+      Matrix.det
+        (Matrix.of (higham9_18_tridiag_to_matrix T) :
+          Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hd_pos : ∀ k : Fin n, 0 < d k)
+    (hDLT : ∀ k j : Fin n,
+      tridiag_U_matrix u_hat T.c k j =
+        d k * tridiag_L_matrix l_hat j k) :
+    let y_hat := fl_forwardSub fp n (tridiag_L_matrix l_hat) b
+    let x_hat := fl_backSub fp n (tridiag_U_matrix u_hat T.c) y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j,
+        |DeltaA i j| ≤
+          higham9_14_h (gamma fp n) *
+            |higham9_18_tridiag_to_matrix T i j|) ∧
+      (∀ i,
+        ∑ j : Fin n,
+          (higham9_18_tridiag_to_matrix T i j + DeltaA i j) * x_hat j =
+        b i) :=
+  higham9_14_spd_tridiag_positive_DLT_source_h_bound_actual_triangular_solves_of_recurrence
+    fp n T l_hat u_hat d b (gamma fp n) (gamma_nonneg fp hn)
+    hγ_lt_one hn le_rfl hrec hdetA hd_pos hDLT
+
+/-- **Theorem 9.14**, SPD positive-`D L^T` recurrence actual solves with
+source SPD nonsingularity discharge and final `h(γ_n)` coefficient. -/
+theorem higham9_14_spd_tridiag_positive_DLT_source_h_bound_actual_triangular_solves_of_spd_recurrence_gamma
+    (fp : FPModel) (n : ℕ)
+    (T : higham9_18_TridiagData n)
+    (l_hat u_hat d b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hSPD : IsSymPosDef n (higham9_18_tridiag_to_matrix T))
+    (hrec : higham9_19_TridiagExactLURecurrence T l_hat u_hat)
+    (hd_pos : ∀ k : Fin n, 0 < d k)
+    (hDLT : ∀ k j : Fin n,
+      tridiag_U_matrix u_hat T.c k j =
+        d k * tridiag_L_matrix l_hat j k) :
+    let y_hat := fl_forwardSub fp n (tridiag_L_matrix l_hat) b
+    let x_hat := fl_backSub fp n (tridiag_U_matrix u_hat T.c) y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j,
+        |DeltaA i j| ≤
+          higham9_14_h (gamma fp n) *
+            |higham9_18_tridiag_to_matrix T i j|) ∧
+      (∀ i,
+        ∑ j : Fin n,
+          (higham9_18_tridiag_to_matrix T i j + DeltaA i j) * x_hat j =
+        b i) :=
+  higham9_14_spd_tridiag_positive_DLT_source_h_bound_actual_triangular_solves_of_spd_recurrence
+    fp n T l_hat u_hat d b (gamma fp n) (gamma_nonneg fp hn)
+    hγ_lt_one hn le_rfl hSPD hrec hd_pos hDLT
+
 /-- **Theorem 9.14**, nonnegative-LU exact-factor package with actual
 triangular solves and final `h(u)` bound. -/
 theorem higham9_14_nonnegative_lu_source_h_bound_actual_triangular_solves
@@ -19653,6 +21184,76 @@ theorem higham9_14_sign_equiv_source_h_bound_actual_triangular_solves
     (fun i j => le_of_eq
       (higham9_12_sign_equiv_optimal_growth n B L_B U_B D₁ D₂
         hD₁ hD₂ hB_growth A hA_eq L_hat U_hat hL_abs hU_abs i j))
+
+/-- **Theorem 9.14**, nonnegative-LU exact-factor actual solves with Higham's
+final `h(γ_n)` coefficient. -/
+theorem higham9_14_nonnegative_lu_source_h_bound_actual_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hNonneg : HasNonnegLUFactors n A L_hat U_hat)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_nonnegative_lu_source_h_bound_actual_triangular_solves
+    fp n A L_hat U_hat b (gamma fp n) (gamma_nonneg fp hn)
+    hγ_lt_one hn le_rfl hNonneg hdetA
+
+/-- **Theorem 9.14**, M-matrix LU exact-factor actual solves with Higham's
+final `h(γ_n)` coefficient. -/
+theorem higham9_14_mmatrix_lu_source_h_bound_actual_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hM : IsMMatrix n A)
+    (hLU : LUFactSpec n A L_hat U_hat)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hL_nn : ∀ i k : Fin n, 0 ≤ L_hat i k)
+    (hU_nn : ∀ k j : Fin n, 0 ≤ U_hat k j) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_mmatrix_lu_source_h_bound_actual_triangular_solves
+    fp n A L_hat U_hat b (gamma fp n) (gamma_nonneg fp hn)
+    hγ_lt_one hn le_rfl hM hLU hdetA hL_nn hU_nn
+
+/-- **Theorem 9.14**, sign-equivalent optimal-growth exact-factor actual
+solves with Higham's final `h(γ_n)` coefficient. -/
+theorem higham9_14_sign_equiv_source_h_bound_actual_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (B L_B U_B : Fin n → Fin n → ℝ)
+    (D₁ D₂ : Fin n → Fin n → ℝ)
+    (hD₁ : IsSignDiag n D₁) (hD₂ : IsSignDiag n D₂)
+    (hB_growth : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_B i k| * |U_B k j| = |B i j|)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (hA_eq : ∀ i j : Fin n,
+      A i j = ∑ k₁ : Fin n, D₁ i k₁ * (∑ k₂ : Fin n, B k₁ k₂ * D₂ k₂ j))
+    (hL_abs : ∀ i k : Fin n, |L_hat i k| = |L_B i k|)
+    (hU_abs : ∀ k j : Fin n, |U_hat k j| = |U_B k j|)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hLU : LUFactSpec n A L_hat U_hat)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_sign_equiv_source_h_bound_actual_triangular_solves
+    fp n B L_B U_B D₁ D₂ hD₁ hD₂ hB_growth A L_hat U_hat
+    hA_eq hL_abs hU_abs b (gamma fp n) (gamma_nonneg fp hn)
+    hγ_lt_one hn le_rfl hLU hdetA
 
 /-- **Theorem 9.14**, source-predicate sign-equivalent model-consuming final
 bound.
@@ -19740,6 +21341,29 @@ theorem higham9_14_sign_equiv_source_f_bound_actual_triangular_solves_of_IsSignE
     fp n B L_B U_B D₁ D₂ hD₁ hD₂ hB_growth
     A L_hat U_hat hA_eq hL_abs hU_abs b u hu hn hγ_le_u hLU hdetA
 
+/-- **Theorem 9.14**, source-predicate sign-equivalent exact-factor actual
+solves with the natural `γ_n` coefficient. -/
+theorem higham9_14_sign_equiv_source_f_bound_actual_triangular_solves_of_IsSignEquiv_gamma
+    (fp : FPModel) (n : ℕ)
+    (A B L_B U_B L_hat U_hat : Fin n → Fin n → ℝ)
+    (hAB : IsSignEquiv n A B)
+    (hB_growth : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_B i k| * |U_B k j| = |B i j|)
+    (hL_abs : ∀ i k : Fin n, |L_hat i k| = |L_B i k|)
+    (hU_abs : ∀ k j : Fin n, |U_hat k j| = |U_B k j|)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hLU : LUFactSpec n A L_hat U_hat)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_sign_equiv_source_f_bound_actual_triangular_solves_of_IsSignEquiv
+    fp n A B L_B U_B L_hat U_hat hAB hB_growth hL_abs hU_abs b
+    (gamma fp n) (gamma_nonneg fp hn) hn le_rfl hLU hdetA
+
 /-- **Theorem 9.14**, source-predicate sign-equivalent exact-factor package
 with actual triangular solves and final `h(u)` bound. -/
 theorem higham9_14_sign_equiv_source_h_bound_actual_triangular_solves_of_IsSignEquiv
@@ -19767,6 +21391,30 @@ theorem higham9_14_sign_equiv_source_h_bound_actual_triangular_solves_of_IsSignE
     fp n B L_B U_B D₁ D₂ hD₁ hD₂ hB_growth
     A L_hat U_hat hA_eq hL_abs hU_abs b u hu hu_lt_one
     hn hγ_le_u hLU hdetA
+
+/-- **Theorem 9.14**, source-predicate sign-equivalent exact-factor actual
+solves with Higham's final `h(γ_n)` coefficient. -/
+theorem higham9_14_sign_equiv_source_h_bound_actual_triangular_solves_of_IsSignEquiv_gamma
+    (fp : FPModel) (n : ℕ)
+    (A B L_B U_B L_hat U_hat : Fin n → Fin n → ℝ)
+    (hAB : IsSignEquiv n A B)
+    (hB_growth : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_B i k| * |U_B k j| = |B i j|)
+    (hL_abs : ∀ i k : Fin n, |L_hat i k| = |L_B i k|)
+    (hU_abs : ∀ k j : Fin n, |U_hat k j| = |U_B k j|)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hLU : LUFactSpec n A L_hat U_hat)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_sign_equiv_source_h_bound_actual_triangular_solves_of_IsSignEquiv
+    fp n A B L_B U_B L_hat U_hat hAB hB_growth hL_abs hU_abs b
+    (gamma fp n) (gamma_nonneg fp hn) hγ_lt_one hn le_rfl hLU hdetA
 
 /-- **Equation (9.23)**, nonnegativity of the Skeel condition number used as
 Higham's `cond(A)` in the componentwise/row-wise forward-error route. -/
@@ -33966,6 +35614,27 @@ theorem higham9_15_normwise_source_zero_bound_of_factorization_Gtilde_residual_z
     higham9_15_normwise_source_zero_bound_of_source_perturbations_zero
       Lhat Uhat ΔL ΔU hzero.1 hzero.2
 
+/-- **Theorem 9.15 spectral-majorant support**.  Matrix-valued resolvent
+majorant: if `R` is a nonnegative left inverse of `I - M` and a matrix `W`
+satisfies `W <= V + M W` columnwise, then `W <= R V` columnwise.
+
+This is the reusable finite-dimensional bridge used to replace an arbitrary
+componentwise majorant in the Barrlund--Sun route by a concrete resolvent
+majorant. -/
+theorem higham9_15_resolvent_matrix_majorant_of_componentwise_inequality
+    {n : ℕ} (M R V W : Fin n → Fin n → ℝ)
+    (hR : ch7NonnegativeResolvent n M R)
+    (hineq : ∀ i j : Fin n, W i j ≤ V i j + rectMatMul M W i j) :
+    ∀ i j : Fin n, W i j ≤ rectMatMul R V i j := by
+  intro i j
+  have hcol :=
+    problem7_1_resolvent_componentwise_inequality_bound n M R
+      (fun k : Fin n => V k j) (fun k : Fin n => W k j) hR
+      (by
+        intro k
+        simpa [rectMatMul] using hineq k j)
+  simpa [rectMatMul] using hcol i
+
 /-- **Theorem 9.15**, componentwise source-bound wrapper reducing the remaining
 Barrlund--Sun spectral theorem to normalized strict-lower/upper majorants. -/
 theorem higham9_15_componentwise_source_bound_of_normalized_majorants {n : ℕ}
@@ -34208,6 +35877,261 @@ theorem higham9_15_componentwise_source_bound_of_G_split_local_majorant_of_sourc
     (higham9_15_rectMatMul_right_inverse_of_matrix_left_inverse L Linv hLleft)
     (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse U Uinv hUright)
     hfact hXtri hYtri
+
+/-- **Theorem 9.15**, componentwise `G` resolvent-majorant endpoint.
+
+The normalized split supplies the local majorant
+`|G| + |L⁻¹ΔL| |ΔU U⁻¹|`.  If that local majorant satisfies the source
+self-majorant inequality `W <= |G| + |G| W` and `R` is a nonnegative
+resolvent for `I - |G|`, then the componentwise source bound uses the concrete
+matrix `R |G|` instead of an arbitrary supplied majorant. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_inverse_identities
+    {n : ℕ}
+    (L U Linv Uinv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLright : rectMatMul L Linv = idMatrix n)
+    (hUleft : rectMatMul Uinv U = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) R)
+    (hself :
+      ∀ i j : Fin n,
+        |higham9_27_GMatrix Linv ΔA Uinv i j| +
+            rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+              (absMatrix n (rectMatMul ΔU Uinv)) i j ≤
+          absMatrix n (higham9_27_GMatrix Linv ΔA Uinv) i j +
+            rectMatMul
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))
+              (fun r c : Fin n =>
+                |higham9_27_GMatrix Linv ΔA Uinv r c| +
+                  rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+                    (absMatrix n (rectMatMul ΔU Uinv)) r c)
+              i j) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  let Gabs : Matrix (Fin n) (Fin n) ℝ :=
+    absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)
+  let Wloc : Matrix (Fin n) (Fin n) ℝ :=
+    fun i j : Fin n =>
+      |higham9_27_GMatrix Linv ΔA Uinv i j| +
+        rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+          (absMatrix n (rectMatMul ΔU Uinv)) i j
+  have hmajor : ∀ i j : Fin n, Wloc i j ≤ rectMatMul R Gabs i j := by
+    exact
+      higham9_15_resolvent_matrix_majorant_of_componentwise_inequality
+        Gabs R Gabs Wloc
+        (by simpa [Gabs] using hR)
+        (by
+          intro i j
+          simpa [Gabs, Wloc, absMatrix] using hself i j)
+  exact
+    higham9_15_componentwise_source_bound_of_G_split_majorant_of_inverse_identities
+      L U Linv Uinv ΔA ΔL ΔU
+      (rectMatMul R Gabs) hLright hUleft hfact hXtri hYtri
+      (by
+        intro i j
+        simpa [Gabs, Wloc] using hmajor i j)
+
+/-- **Theorem 9.15**, source-oriented inverse-identity form of the
+`G` componentwise resolvent-majorant endpoint. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_source_inverse_identities
+    {n : ℕ}
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) R)
+    (hself :
+      ∀ i j : Fin n,
+        |higham9_27_GMatrix Linv ΔA Uinv i j| +
+            rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+              (absMatrix n (rectMatMul ΔU Uinv)) i j ≤
+          absMatrix n (higham9_27_GMatrix Linv ΔA Uinv) i j +
+            rectMatMul
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))
+              (fun r c : Fin n =>
+                |higham9_27_GMatrix Linv ΔA Uinv r c| +
+                  rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+                    (absMatrix n (rectMatMul ΔU Uinv)) r c)
+              i j) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) :=
+  higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_inverse_identities
+    L U Linv Uinv ΔA ΔL ΔU R
+    (higham9_15_rectMatMul_right_inverse_of_matrix_left_inverse
+      L Linv hLleft)
+    (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse
+      U Uinv hUright)
+    hfact hXtri hYtri hR hself
+
+/-- **Theorem 9.15**, factorization-level componentwise `G`
+resolvent-majorant endpoint.  The normalized `I + G` split identity is derived
+from the source and perturbed factorizations, and the remaining nonlinear
+majorant work is isolated in the explicit self-majorant hypothesis. -/
+theorem higham9_15_componentwise_source_bound_of_factorization_G_resolvent_majorant
+    {n : ℕ}
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) R)
+    (hself :
+      ∀ i j : Fin n,
+        |higham9_27_GMatrix Linv ΔA Uinv i j| +
+            rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+              (absMatrix n (rectMatMul ΔU Uinv)) i j ≤
+          absMatrix n (higham9_27_GMatrix Linv ΔA Uinv) i j +
+            rectMatMul
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))
+              (fun r c : Fin n =>
+                |higham9_27_GMatrix Linv ΔA Uinv r c| +
+                  rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+                    (absMatrix n (rectMatMul ΔU Uinv)) r c)
+              i j) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  have hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)) := by
+    have h :=
+      higham9_15_normalized_G_factorization_matrix
+        A L U ΔA ΔL ΔU Linv Uinv hLU hPert hLleft hUright
+    simpa [higham9_27_GMatrix, rectMatMul, Matrix.mul_apply] using h.symm
+  exact
+    higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_source_inverse_identities
+      L U Linv Uinv ΔA ΔL ΔU R hLleft hUright hfact hXtri hYtri hR hself
+
+/-- **Theorem 9.15**, factorization-level componentwise `G` endpoint with the
+canonical nonsingular Neumann inverse.  A row-sum/infinity-norm contraction for
+`|G|` supplies the nonnegative resolvent `nonsingInv (I - |G|)`, leaving only
+the explicit local self-majorant inequality. -/
+theorem higham9_15_componentwise_source_bound_of_factorization_G_nonsingInv_resolvent_majorant_of_infNormBound
+    {n : ℕ} (hn : 0 < n)
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hbound :
+      infNormBound n (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) c)
+    (hself :
+      ∀ i j : Fin n,
+        |higham9_27_GMatrix Linv ΔA Uinv i j| +
+            rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+              (absMatrix n (rectMatMul ΔU Uinv)) i j ≤
+          absMatrix n (higham9_27_GMatrix Linv ΔA Uinv) i j +
+            rectMatMul
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))
+              (fun r c : Fin n =>
+                |higham9_27_GMatrix Linv ΔA Uinv r c| +
+                  rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+                    (absMatrix n (rectMatMul ΔU Uinv)) r c)
+              i j) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  let Gabs : Matrix (Fin n) (Fin n) ℝ :=
+    absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)
+  have hG_nonneg : ∀ i j : Fin n, 0 ≤ Gabs i j := by
+    intro i j
+    simp [Gabs, absMatrix]
+  have hR : ch7NonnegativeResolvent n Gabs (nonsingInv n (matSub_id n Gabs)) :=
+    ch7NonnegativeResolvent_nonsingInv_of_infNormBound n hn Gabs hG_nonneg
+      c hc_nn hc_lt (by simpa [Gabs] using hbound)
+  simpa [Gabs] using
+    higham9_15_componentwise_source_bound_of_factorization_G_resolvent_majorant
+      A L U Linv Uinv ΔA ΔL ΔU (nonsingInv n (matSub_id n Gabs))
+      hLU hPert hLleft hUright hXtri hYtri hR
+      (by
+        intro i j
+        simpa [Gabs] using hself i j)
 
 /-- **Theorem 9.15**, source-facing componentwise endpoint from the original
 perturbed factorization equations and a supplied normalized `G` majorant.
@@ -34583,6 +36507,264 @@ theorem higham9_15_componentwise_source_bound_of_Gtilde_split_local_majorant_of_
     (higham9_15_rectMatMul_right_inverse_of_matrix_left_inverse Lhat LhatInv hLleft)
     (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse Uhat UhatInv hUright)
     hfact hXtri hYtri
+
+/-- **Theorem 9.15**, componentwise `Gtilde` resolvent-majorant endpoint.
+
+The normalized split supplies the local majorant
+`|Gtilde| + |Lhat⁻¹ΔL| |ΔU Uhat⁻¹|`.  If that local majorant satisfies the
+source self-majorant inequality `W <= |Gtilde| + |Gtilde| W` and `R` is a
+nonnegative resolvent for `I - |Gtilde|`, then the componentwise source bound
+uses the concrete matrix `R |Gtilde|` instead of an arbitrary supplied
+majorant. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_inverse_identities
+    {n : ℕ}
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix n)
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) R)
+    (hself :
+      ∀ i j : Fin n,
+        |higham9_27_GMatrix LhatInv ΔA UhatInv i j| +
+            rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+              (absMatrix n (rectMatMul ΔU UhatInv)) i j ≤
+          absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv) i j +
+            rectMatMul
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))
+              (fun r c : Fin n =>
+                |higham9_27_GMatrix LhatInv ΔA UhatInv r c| +
+                  rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+                    (absMatrix n (rectMatMul ΔU UhatInv)) r c)
+              i j) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  let Gabs : Matrix (Fin n) (Fin n) ℝ :=
+    absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)
+  let Wloc : Matrix (Fin n) (Fin n) ℝ :=
+    fun i j : Fin n =>
+      |higham9_27_GMatrix LhatInv ΔA UhatInv i j| +
+        rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+          (absMatrix n (rectMatMul ΔU UhatInv)) i j
+  have hmajor : ∀ i j : Fin n, Wloc i j ≤ rectMatMul R Gabs i j := by
+    exact
+      higham9_15_resolvent_matrix_majorant_of_componentwise_inequality
+        Gabs R Gabs Wloc
+        (by simpa [Gabs] using hR)
+        (by
+          intro i j
+          simpa [Gabs, Wloc, absMatrix] using hself i j)
+  exact
+    higham9_15_componentwise_source_bound_of_Gtilde_split_majorant_of_inverse_identities
+      Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU
+      (rectMatMul R Gabs) hLright hUleft hfact hXtri hYtri
+      (by
+        intro i j
+        simpa [Gabs, Wloc] using hmajor i j)
+
+/-- **Theorem 9.15**, source-oriented inverse-identity form of the
+`Gtilde` componentwise resolvent-majorant endpoint. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_source_inverse_identities
+    {n : ℕ}
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) R)
+    (hself :
+      ∀ i j : Fin n,
+        |higham9_27_GMatrix LhatInv ΔA UhatInv i j| +
+            rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+              (absMatrix n (rectMatMul ΔU UhatInv)) i j ≤
+          absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv) i j +
+            rectMatMul
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))
+              (fun r c : Fin n =>
+                |higham9_27_GMatrix LhatInv ΔA UhatInv r c| +
+                  rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+                    (absMatrix n (rectMatMul ΔU UhatInv)) r c)
+              i j) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) :=
+  higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_inverse_identities
+    Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU R
+    (higham9_15_rectMatMul_right_inverse_of_matrix_left_inverse
+      Lhat LhatInv hLleft)
+    (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse
+      Uhat UhatInv hUright)
+    hfact hXtri hYtri hR hself
+
+/-- **Theorem 9.15**, factorization-level componentwise `Gtilde`
+resolvent-majorant endpoint.  The normalized `I - Gtilde` split identity is
+derived from the two source factorizations, and the remaining nonlinear
+majorant work is isolated in the explicit self-majorant hypothesis. -/
+theorem higham9_15_componentwise_source_bound_of_factorization_Gtilde_resolvent_majorant
+    {n : ℕ}
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) R)
+    (hself :
+      ∀ i j : Fin n,
+        |higham9_27_GMatrix LhatInv ΔA UhatInv i j| +
+            rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+              (absMatrix n (rectMatMul ΔU UhatInv)) i j ≤
+          absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv) i j +
+            rectMatMul
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))
+              (fun r c : Fin n =>
+                |higham9_27_GMatrix LhatInv ΔA UhatInv r c| +
+                  rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+                    (absMatrix n (rectMatMul ΔU UhatInv)) r c)
+              i j) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  have hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)) := by
+    have h :=
+      higham9_15_normalized_Gtilde_factorization_matrix
+        A Lhat Uhat ΔA ΔL ΔU LhatInv UhatInv hA hPert hLleft hUright
+    simpa [higham9_27_GMatrix, rectMatMul, Matrix.mul_apply] using h.symm
+  exact
+    higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_source_inverse_identities
+      Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU R hLleft hUright hfact
+      hXtri hYtri hR hself
+
+/-- **Theorem 9.15**, factorization-level componentwise `Gtilde` endpoint with
+the canonical nonsingular Neumann inverse.  A row-sum/infinity-norm contraction
+for `|Gtilde|` supplies the nonnegative resolvent `nonsingInv (I - |Gtilde|)`,
+leaving only the explicit local self-majorant inequality. -/
+theorem higham9_15_componentwise_source_bound_of_factorization_Gtilde_nonsingInv_resolvent_majorant_of_infNormBound
+    {n : ℕ} (hn : 0 < n)
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (c : ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hbound :
+      infNormBound n (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) c)
+    (hself :
+      ∀ i j : Fin n,
+        |higham9_27_GMatrix LhatInv ΔA UhatInv i j| +
+            rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+              (absMatrix n (rectMatMul ΔU UhatInv)) i j ≤
+          absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv) i j +
+            rectMatMul
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))
+              (fun r c : Fin n =>
+                |higham9_27_GMatrix LhatInv ΔA UhatInv r c| +
+                  rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+                    (absMatrix n (rectMatMul ΔU UhatInv)) r c)
+              i j) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  let Gabs : Matrix (Fin n) (Fin n) ℝ :=
+    absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)
+  have hG_nonneg : ∀ i j : Fin n, 0 ≤ Gabs i j := by
+    intro i j
+    simp [Gabs, absMatrix]
+  have hR : ch7NonnegativeResolvent n Gabs (nonsingInv n (matSub_id n Gabs)) :=
+    ch7NonnegativeResolvent_nonsingInv_of_infNormBound n hn Gabs hG_nonneg
+      c hc_nn hc_lt (by simpa [Gabs] using hbound)
+  simpa [Gabs] using
+    higham9_15_componentwise_source_bound_of_factorization_Gtilde_resolvent_majorant
+      A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU
+      (nonsingInv n (matSub_id n Gabs)) hA hPert hLleft hUright
+      hXtri hYtri hR
+      (by
+        intro i j
+        simpa [Gabs] using hself i j)
 
 /-- **Theorem 9.15**, source-facing componentwise endpoint from the original
 perturbed factorization equations and a supplied normalized majorant.
@@ -42808,6 +44990,120 @@ theorem higham9_14_rowDiagDom_exists_LUFactSpec_source_h_bound_actual_triangular
     fp n A L_hat U_hat b 3 u (by norm_num) hu hu_lt_one hn hLU hγ_le_u
     (hLU.det_ne_zero_iff_U_diag_ne_zero.mp hdetA) hGrowth
 
+/-- **Theorem 9.14**, column-dominant source-data exact-LU package with
+actual triangular solves specialized to the natural `γ_n` coefficient. -/
+theorem higham9_14_colDiagDom_exists_LUFactSpec_source_f_bound_actual_triangular_solves_gamma
+    {n : ℕ}
+    (A : Fin n → Fin n → ℝ)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hA_tridiag : IsTridiagonal n A)
+    (hColDom : IsDiagDominant n A) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n A L_hat U_hat ∧
+      (∀ i j : Fin n, |L_hat i j| ≤ 1) ∧
+      (∀ i j : Fin n,
+        ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ 3 * |A i j|) ∧
+      (∀ fp : FPModel, ∀ b : Fin n → ℝ,
+        gammaValid fp n →
+        let y_hat := fl_forwardSub fp n L_hat b
+        let x_hat := fl_backSub fp n U_hat y_hat
+        ∃ DeltaA : Fin n → Fin n → ℝ,
+          (∀ i j,
+            |DeltaA i j| ≤
+              3 * higham9_14_f (gamma fp n) * |A i j|) ∧
+          (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L_hat, U_hat, hLU, hL_bound, hGrowth, hSolve⟩ :=
+    higham9_14_colDiagDom_exists_LUFactSpec_source_f_bound_actual_triangular_solves
+      A hdetA hA_tridiag hColDom
+  refine ⟨L_hat, U_hat, hLU, hL_bound, hGrowth, ?_⟩
+  intro fp b hn
+  exact hSolve fp b (gamma fp n) (gamma_nonneg fp hn) hn le_rfl
+
+/-- **Theorem 9.14**, row-dominant source-data exact-LU package with actual
+triangular solves specialized to the natural `γ_n` coefficient. -/
+theorem higham9_14_rowDiagDom_exists_LUFactSpec_source_f_bound_actual_triangular_solves_gamma
+    {n : ℕ}
+    (A : Fin n → Fin n → ℝ)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hA_tridiag : IsTridiagonal n A)
+    (hRowDom : IsRowDiagDominant n A) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n A L_hat U_hat ∧
+      (∀ i j : Fin n,
+        ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ 3 * |A i j|) ∧
+      (∀ fp : FPModel, ∀ b : Fin n → ℝ,
+        gammaValid fp n →
+        let y_hat := fl_forwardSub fp n L_hat b
+        let x_hat := fl_backSub fp n U_hat y_hat
+        ∃ DeltaA : Fin n → Fin n → ℝ,
+          (∀ i j,
+            |DeltaA i j| ≤
+              3 * higham9_14_f (gamma fp n) * |A i j|) ∧
+          (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L_hat, U_hat, hLU, hGrowth, hSolve⟩ :=
+    higham9_14_rowDiagDom_exists_LUFactSpec_source_f_bound_actual_triangular_solves
+      A hdetA hA_tridiag hRowDom
+  refine ⟨L_hat, U_hat, hLU, hGrowth, ?_⟩
+  intro fp b hn
+  exact hSolve fp b (gamma fp n) (gamma_nonneg fp hn) hn le_rfl
+
+/-- **Theorem 9.14**, column-dominant source-data exact-LU package with
+actual triangular solves and final `h(γ_n)` coefficient. -/
+theorem higham9_14_colDiagDom_exists_LUFactSpec_source_h_bound_actual_triangular_solves_gamma
+    {n : ℕ}
+    (A : Fin n → Fin n → ℝ)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hA_tridiag : IsTridiagonal n A)
+    (hColDom : IsDiagDominant n A) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n A L_hat U_hat ∧
+      (∀ i j : Fin n, |L_hat i j| ≤ 1) ∧
+      (∀ i j : Fin n,
+        ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ 3 * |A i j|) ∧
+      (∀ fp : FPModel, ∀ b : Fin n → ℝ,
+        gammaValid fp n → gamma fp n < 1 →
+        let y_hat := fl_forwardSub fp n L_hat b
+        let x_hat := fl_backSub fp n U_hat y_hat
+        ∃ DeltaA : Fin n → Fin n → ℝ,
+          (∀ i j,
+            |DeltaA i j| ≤
+              3 * higham9_14_h (gamma fp n) * |A i j|) ∧
+          (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L_hat, U_hat, hLU, hL_bound, hGrowth, hSolve⟩ :=
+    higham9_14_colDiagDom_exists_LUFactSpec_source_h_bound_actual_triangular_solves
+      A hdetA hA_tridiag hColDom
+  refine ⟨L_hat, U_hat, hLU, hL_bound, hGrowth, ?_⟩
+  intro fp b hn hγ_lt_one
+  exact hSolve fp b (gamma fp n) (gamma_nonneg fp hn) hγ_lt_one hn le_rfl
+
+/-- **Theorem 9.14**, row-dominant source-data exact-LU package with actual
+triangular solves and final `h(γ_n)` coefficient. -/
+theorem higham9_14_rowDiagDom_exists_LUFactSpec_source_h_bound_actual_triangular_solves_gamma
+    {n : ℕ}
+    (A : Fin n → Fin n → ℝ)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hA_tridiag : IsTridiagonal n A)
+    (hRowDom : IsRowDiagDominant n A) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n A L_hat U_hat ∧
+      (∀ i j : Fin n,
+        ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ 3 * |A i j|) ∧
+      (∀ fp : FPModel, ∀ b : Fin n → ℝ,
+        gammaValid fp n → gamma fp n < 1 →
+        let y_hat := fl_forwardSub fp n L_hat b
+        let x_hat := fl_backSub fp n U_hat y_hat
+        ∃ DeltaA : Fin n → Fin n → ℝ,
+          (∀ i j,
+            |DeltaA i j| ≤
+              3 * higham9_14_h (gamma fp n) * |A i j|) ∧
+          (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L_hat, U_hat, hLU, hGrowth, hSolve⟩ :=
+    higham9_14_rowDiagDom_exists_LUFactSpec_source_h_bound_actual_triangular_solves
+      A hdetA hA_tridiag hRowDom
+  refine ⟨L_hat, U_hat, hLU, hGrowth, ?_⟩
+  intro fp b hn hγ_lt_one
+  exact hSolve fp b (gamma fp n) (gamma_nonneg fp hn) hγ_lt_one hn le_rfl
+
 /-- **Theorem 9.1 support**, Schur-complement inheritance of nonsingular
 leading principal blocks.  If all nonempty leading principal blocks of `A` are
 nonsingular, then every leading principal block of the first Schur complement
@@ -45258,6 +47554,62 @@ theorem higham9_14_totalNonnegative_exists_source_h_bound_actual_triangular_solv
     fp n A L_hat U_hat b u hu hu_lt_one hn hLU hγ_le_u
     (hLU.det_ne_zero_iff_U_diag_ne_zero.mp hdetA)
     (fun i j => le_of_eq (hOpt i j))
+
+/-- **Theorem 9.14**, total-nonnegative source-existence actual-solve package
+specialized to the natural `γ_n` coefficient. -/
+theorem higham9_14_totalNonnegative_exists_source_f_bound_actual_triangular_solves_gamma
+    {n : ℕ}
+    (A : Fin n → Fin n → ℝ)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n A L_hat U_hat ∧
+        (∀ i j : Fin n, 0 ≤ L_hat i j) ∧
+        (∀ i j : Fin n, 0 ≤ U_hat i j) ∧
+        (∀ i j : Fin n,
+          ∑ k : Fin n, |L_hat i k| * |U_hat k j| = |A i j|) ∧
+        (∀ fp : FPModel, ∀ b : Fin n → ℝ,
+          gammaValid fp n →
+          let y_hat := fl_forwardSub fp n L_hat b
+          let x_hat := fl_backSub fp n U_hat y_hat
+          ∃ DeltaA : Fin n → Fin n → ℝ,
+            (∀ i j,
+              |DeltaA i j| ≤ higham9_14_f (gamma fp n) * |A i j|) ∧
+            (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L_hat, U_hat, hLU, hL_nn, hU_nn, hOpt, hSolve⟩ :=
+    higham9_14_totalNonnegative_exists_source_f_bound_actual_triangular_solves
+      A hTN hdetA
+  refine ⟨L_hat, U_hat, hLU, hL_nn, hU_nn, hOpt, ?_⟩
+  intro fp b hn
+  exact hSolve fp b (gamma fp n) (gamma_nonneg fp hn) hn le_rfl
+
+/-- **Theorem 9.14**, total-nonnegative source-existence actual-solve package
+with final `h(γ_n)` coefficient. -/
+theorem higham9_14_totalNonnegative_exists_source_h_bound_actual_triangular_solves_gamma
+    {n : ℕ}
+    (A : Fin n → Fin n → ℝ)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n A L_hat U_hat ∧
+        (∀ i j : Fin n, 0 ≤ L_hat i j) ∧
+        (∀ i j : Fin n, 0 ≤ U_hat i j) ∧
+        (∀ i j : Fin n,
+          ∑ k : Fin n, |L_hat i k| * |U_hat k j| = |A i j|) ∧
+        (∀ fp : FPModel, ∀ b : Fin n → ℝ,
+          gammaValid fp n → gamma fp n < 1 →
+          let y_hat := fl_forwardSub fp n L_hat b
+          let x_hat := fl_backSub fp n U_hat y_hat
+          ∃ DeltaA : Fin n → Fin n → ℝ,
+            (∀ i j,
+              |DeltaA i j| ≤ higham9_14_h (gamma fp n) * |A i j|) ∧
+            (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L_hat, U_hat, hLU, hL_nn, hU_nn, hOpt, hSolve⟩ :=
+    higham9_14_totalNonnegative_exists_source_h_bound_actual_triangular_solves
+      A hTN hdetA
+  refine ⟨L_hat, U_hat, hLU, hL_nn, hU_nn, hOpt, ?_⟩
+  intro fp b hn hγ_lt_one
+  exact hSolve fp b (gamma fp n) (gamma_nonneg fp hn) hγ_lt_one hn le_rfl
 
 /-- **Problem 9.6**, the Appendix A route made explicit: if the source-cited
 determinant inequalities supply positive proper leading principal blocks for a
@@ -48380,5 +50732,61 @@ theorem higham9_14_nonsingInv_totalNonnegative_exists_source_h_bound_actual_tria
       hγ_le_u hU_diag
       (fun i j => by
         exact le_of_eq (hOpt_hat i j))
+
+/-- **Problem 9.8 / Theorem 9.14**, actual-solve source bound for the
+nonsingular-inverse total-nonnegative class at the natural `γ_n` coefficient. -/
+theorem higham9_14_nonsingInv_totalNonnegative_exists_source_f_bound_actual_triangular_solves_gamma
+    {n : ℕ}
+    (A : Fin n → Fin n → ℝ)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n (nonsingInv n A) L_hat U_hat ∧
+        (∀ i j : Fin n,
+          ∑ k : Fin n, |L_hat i k| * |U_hat k j| =
+            |nonsingInv n A i j|) ∧
+        (∀ fp : FPModel, ∀ b : Fin n → ℝ,
+          gammaValid fp n →
+          let y_hat := fl_forwardSub fp n L_hat b
+          let x_hat := fl_backSub fp n U_hat y_hat
+          ∃ DeltaA : Fin n → Fin n → ℝ,
+            (∀ i j, |DeltaA i j| ≤
+              higham9_14_f (gamma fp n) * |nonsingInv n A i j|) ∧
+            (∀ i, ∑ j : Fin n,
+              (nonsingInv n A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L_hat, U_hat, hLU, hOpt, hSolve⟩ :=
+    higham9_14_nonsingInv_totalNonnegative_exists_source_f_bound_actual_triangular_solves
+      A hTN hdet
+  refine ⟨L_hat, U_hat, hLU, hOpt, ?_⟩
+  intro fp b hn
+  exact hSolve fp b (gamma fp n) (gamma_nonneg fp hn) hn le_rfl
+
+/-- **Problem 9.8 / Theorem 9.14**, actual-solve final source bound for the
+nonsingular-inverse total-nonnegative class at `h(γ_n)`. -/
+theorem higham9_14_nonsingInv_totalNonnegative_exists_source_h_bound_actual_triangular_solves_gamma
+    {n : ℕ}
+    (A : Fin n → Fin n → ℝ)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n (nonsingInv n A) L_hat U_hat ∧
+        (∀ i j : Fin n,
+          ∑ k : Fin n, |L_hat i k| * |U_hat k j| =
+            |nonsingInv n A i j|) ∧
+        (∀ fp : FPModel, ∀ b : Fin n → ℝ,
+          gammaValid fp n → gamma fp n < 1 →
+          let y_hat := fl_forwardSub fp n L_hat b
+          let x_hat := fl_backSub fp n U_hat y_hat
+          ∃ DeltaA : Fin n → Fin n → ℝ,
+            (∀ i j, |DeltaA i j| ≤
+              higham9_14_h (gamma fp n) * |nonsingInv n A i j|) ∧
+            (∀ i, ∑ j : Fin n,
+              (nonsingInv n A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L_hat, U_hat, hLU, hOpt, hSolve⟩ :=
+    higham9_14_nonsingInv_totalNonnegative_exists_source_h_bound_actual_triangular_solves
+      A hTN hdet
+  refine ⟨L_hat, U_hat, hLU, hOpt, ?_⟩
+  intro fp b hn hγ_lt_one
+  exact hSolve fp b (gamma fp n) (gamma_nonneg fp hn) hγ_lt_one hn le_rfl
 
 end LeanFpAnalysis.FP
