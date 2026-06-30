@@ -3418,6 +3418,108 @@ theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_fa
     hSourceFactor_le hAOp hDeltaA1Op hDeltaA2Op
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    sufficient row-budget radius certificate from separated infinity-norm
+    bounds.  This turns the Chapter 7 first-product smallness condition for
+    the row-norm Gram budget into the scalar source obligations
+    `‖AAT_inv‖∞ <= omega`, `‖rowBudget‖∞ <= gamma`, and
+    `rhoG * (omega * gamma) <= 1/2`. -/
+theorem higham21_lemma21_2_row_norm_first_product_radius_of_infNorm_bounds
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (E : Fin m → Fin n → ℝ)
+    (eps rhoG omega gamma : ℝ)
+    (hrhoG : 0 ≤ rhoG)
+    (hAATInv_le : infNorm AAT_inv ≤ omega)
+    (hRowBudget_le :
+      infNorm (undetGramPerturbationRowNormBudget A E eps) ≤ gamma)
+    (homega : 0 ≤ omega)
+    (hRadius : rhoG * (omega * gamma) ≤ (1 / 2 : ℝ)) :
+    rhoG *
+        infNorm
+          (ch7InverseFirstProductSensitivity m AAT_inv
+            (undetGramPerturbationRowNormBudget A E eps)) ≤
+      (1 / 2 : ℝ) := by
+  let G : Fin m → Fin m → ℝ := undetGramPerturbationRowNormBudget A E eps
+  change rhoG * infNorm (matMul m (absMatrix m AAT_inv) G) ≤ (1 / 2 : ℝ)
+  have hprod :
+      infNorm (matMul m (absMatrix m AAT_inv) G) ≤ omega * gamma := by
+    have hsub : infNorm (matMul m (absMatrix m AAT_inv) G) ≤
+        infNorm (absMatrix m AAT_inv) * infNorm G :=
+      infNorm_matMul_le hm (absMatrix m AAT_inv) G
+    have habs : infNorm (absMatrix m AAT_inv) = infNorm AAT_inv :=
+      infNorm_absMatrix hm AAT_inv
+    have hmul : infNorm (absMatrix m AAT_inv) * infNorm G ≤ omega * gamma := by
+      rw [habs]
+      exact mul_le_mul hAATInv_le hRowBudget_le (infNorm_nonneg G) homega
+    exact hsub.trans hmul
+  exact (mul_le_mul_of_nonneg_left hprod hrhoG).trans hRadius
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    row-norm source-budget handoff with the Chapter 7 radius condition reduced
+    to separated infinity-norm scalar bounds. -/
+theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_row_norm_infNorm_bounds_of_componentwise_data_bound
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (E : Fin m → Fin n → ℝ)
+    (rho1 rho2 alpha beta sigma eps rhoG tau omega gamma : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hDataEpsNonneg : x ≠ 0 → 0 ≤ eps)
+    (hDataEpsLeRho : x ≠ 0 → eps ≤ rhoG)
+    (hrhoG : x ≠ 0 → 0 ≤ rhoG)
+    (hRowBudget_le : x ≠ 0 →
+      infNorm (undetGramPerturbationRowNormBudget A E eps) ≤ gamma)
+    (hRowRadius : x ≠ 0 → rhoG * (omega * gamma) ≤ (1 / 2 : ℝ))
+    (hGramLeftInv : x ≠ 0 → IsLeftInverse m (rectGram A) AAT_inv)
+    (hDataE : x ≠ 0 → ∀ i k, 0 ≤ E i k)
+    (hDeltaA2Component : x ≠ 0 →
+      ∀ i k, |DeltaA2 i k| ≤ eps * E i k)
+    (hxTranspose : x ≠ 0 →
+      x =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : x ≠ 0 → 3 * max rho1 rho2 < 1)
+    (halpha : x ≠ 0 → 0 ≤ alpha)
+    (hbeta : x ≠ 0 → 0 ≤ beta)
+    (hsigma : x ≠ 0 → 0 ≤ sigma)
+    (halpha_le : x ≠ 0 → alpha ≤ rho1)
+    (hbeta_le : x ≠ 0 → beta ≤ rho2)
+    (hSigmaBeta_le : x ≠ 0 → sigma + beta ≤ tau)
+    (hAATInv_le : infNorm AAT_inv ≤ omega)
+    (hSourceFactor_le :
+      tau *
+          (Real.sqrt ((m : ℝ) * (m : ℝ)) *
+            (((m : ℝ) * 2) * omega)) ≤
+        (1 - rho2)⁻¹)
+    (hAOp : x ≠ 0 → rectOpNorm2Le A sigma)
+    (hDeltaA1Op : x ≠ 0 → rectOpNorm2Le DeltaA1 alpha)
+    (hDeltaA2Op : x ≠ 0 → rectOpNorm2Le DeltaA2 beta) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j)
+      b x := by
+  have homega : 0 ≤ omega :=
+    (infNorm_nonneg AAT_inv).trans hAATInv_le
+  exact
+    higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_radius_row_norm_budget_bounds_of_componentwise_data_bound
+      hm A x DeltaA1 DeltaA2 b y AAT_inv E rho1 rho2 alpha beta sigma eps
+      rhoG tau omega hDeltaA1 hDataEpsNonneg hDataEpsLeRho
+      (fun hx =>
+        higham21_lemma21_2_row_norm_first_product_radius_of_infNorm_bounds
+          hm A AAT_inv E eps rhoG omega gamma (hrhoG hx) hAATInv_le
+          (hRowBudget_le hx) homega (hRowRadius hx))
+      hGramLeftInv hDataE hDeltaA2Component hxTranspose hsmall halpha hbeta
+      hsigma halpha_le hbeta_le hSigmaBeta_le hAATInv_le hSourceFactor_le
+      hAOp hDeltaA1Op hDeltaA2Op
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     guarded source-factor handoff with perturbed Gram nonsingularity discharged
     from a componentwise bound on the Gram perturbation.  The remaining
     nonzero-branch matrix-analysis obligation is the concrete operator-2 bound
