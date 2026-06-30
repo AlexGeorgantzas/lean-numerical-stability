@@ -3501,6 +3501,70 @@ theorem higham9_2_rectRoundedPrefixTrace_succ
       have hk_eq : k = (⟨t, ht⟩ : Fin n) := Fin.ext hkval
       simpa [hk_eq] using hL_stage_eq i (by simpa [hk_eq] using hki)
 
+/-- **Algorithm 9.2**, rectangular rounded prefix trace from natural-number
+stage obligations.  If every stage `t < n` supplies the diagonal, triangular
+shape, upper-row fold, and lower-column fold obligations for that stage, then
+the prefix trace can be assembled for any horizon `T <= n`. -/
+theorem higham9_2_rectRoundedPrefixTrace_of_stage_obligations
+    {m n : ℕ} {fp : FPModel} {hmn : n ≤ m}
+    {A L : Fin m → Fin n → ℝ} {U : Fin n → Fin n → ℝ}
+    (hL_diag : ∀ (t : ℕ) (ht : t < n),
+      L (higham9_2_rectRow hmn ⟨t, ht⟩) ⟨t, ht⟩ = 1)
+    (hL_upper_zero_stage : ∀ (t : ℕ) (ht : t < n),
+      ∀ i : Fin m, i.val < t → L i ⟨t, ht⟩ = 0)
+    (hU_lower_zero_stage : ∀ (t : ℕ) (ht : t < n),
+      ∀ j : Fin n, j.val < t → U ⟨t, ht⟩ j = 0)
+    (hU_stage_eq : ∀ (t : ℕ) (ht : t < n),
+      ∀ j : Fin n, t ≤ j.val →
+        U ⟨t, ht⟩ j =
+          higham9_2_rectFlDoolittleUEntry fp hmn A L U ⟨t, ht⟩ j)
+    (hL_stage_eq : ∀ (t : ℕ) (ht : t < n),
+      ∀ i : Fin m, t < i.val →
+        L i ⟨t, ht⟩ =
+          higham9_2_rectFlDoolittleLEntry fp A L U i ⟨t, ht⟩) :
+    ∀ T : ℕ, T ≤ n →
+      higham9_2_RectDoolittleRoundedPrefixTrace hmn A L U fp T := by
+  intro T
+  induction T with
+  | zero =>
+      intro _hT
+      exact higham9_2_rectRoundedPrefixTrace_zero
+  | succ t ih =>
+      intro hT
+      have ht : t < n := Nat.lt_of_succ_le hT
+      exact
+        higham9_2_rectRoundedPrefixTrace_succ ht
+          (ih (Nat.le_of_lt ht))
+          (hL_diag t ht)
+          (hL_upper_zero_stage t ht)
+          (hU_lower_zero_stage t ht)
+          (hU_stage_eq t ht)
+          (hL_stage_eq t ht)
+
+/-- **Algorithm 9.2**, complete rectangular rounded prefix trace from
+natural-number stage obligations. -/
+theorem higham9_2_rectRoundedPrefixTrace_complete_of_stage_obligations
+    {m n : ℕ} {fp : FPModel} {hmn : n ≤ m}
+    {A L : Fin m → Fin n → ℝ} {U : Fin n → Fin n → ℝ}
+    (hL_diag : ∀ (t : ℕ) (ht : t < n),
+      L (higham9_2_rectRow hmn ⟨t, ht⟩) ⟨t, ht⟩ = 1)
+    (hL_upper_zero_stage : ∀ (t : ℕ) (ht : t < n),
+      ∀ i : Fin m, i.val < t → L i ⟨t, ht⟩ = 0)
+    (hU_lower_zero_stage : ∀ (t : ℕ) (ht : t < n),
+      ∀ j : Fin n, j.val < t → U ⟨t, ht⟩ j = 0)
+    (hU_stage_eq : ∀ (t : ℕ) (ht : t < n),
+      ∀ j : Fin n, t ≤ j.val →
+        U ⟨t, ht⟩ j =
+          higham9_2_rectFlDoolittleUEntry fp hmn A L U ⟨t, ht⟩ j)
+    (hL_stage_eq : ∀ (t : ℕ) (ht : t < n),
+      ∀ i : Fin m, t < i.val →
+        L i ⟨t, ht⟩ =
+          higham9_2_rectFlDoolittleLEntry fp A L U i ⟨t, ht⟩) :
+    higham9_2_RectDoolittleRoundedPrefixTrace hmn A L U fp n :=
+  higham9_2_rectRoundedPrefixTrace_of_stage_obligations
+    hL_diag hL_upper_zero_stage hU_lower_zero_stage hU_stage_eq hL_stage_eq
+    n (Nat.le_refl n)
+
 /-- **Algorithm 9.2**, rectangular componentwise dominance handoff.  Visible
 upper work/product dominance, lower work/product/numerator dominance, and the
 explicit lower coefficient compression condition imply the rectangular
