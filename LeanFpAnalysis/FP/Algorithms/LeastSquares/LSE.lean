@@ -2525,6 +2525,89 @@ theorem GQRAQTallCase.exists_of_qr_reversed_cols {r q : ℕ}
       _ = gqrAQTallBlock (k := r) L (Fin.natAdd r row) col := by
             simp [gqrAQTallBlock, L, gqrReverseSquare]
 
+/-- Tall associated-shape construction from a square orthogonal QR-style
+    factorization of the column-reversed rectangular block.
+
+    Rounded Householder panels naturally produce a square orthogonal matrix
+    `Qfull` and an upper-trapezoidal rectangular `Rhat`.  This helper extracts
+    the thin top square factor and reuses
+    `GQRAQTallCase.exists_of_qr_reversed_cols` to obtain the GQR-oriented
+    `[0;L]` shape. -/
+theorem GQRAQTallCase.exists_of_square_qr_reversed_cols {r q : ℕ}
+    (C : Fin (r + q) → Fin q → ℝ)
+    (Qfull : Fin (r + q) → Fin (r + q) → ℝ)
+    (Rhat : Fin (r + q) → Fin q → ℝ)
+    (hQfull : IsOrthogonal (r + q) Qfull)
+    (hRhat : IsUpperTrapezoidal (r + q) q Rhat)
+    (hfactor : rectPermuteCols Fin.revPerm C =
+      matMulRect (r + q) (r + q) q Qfull Rhat) :
+    ∃ U : Fin (r + q) → Fin (r + q) → ℝ,
+      IsOrthogonal (r + q) U ∧
+        Nonempty (GQRAQTallCase r q (matMulRectLeft (matTranspose U) C)) := by
+  let e : Fin (r + q) ≃ Fin (q + r) := finAddCommEquiv r q
+  let C' : Fin (q + r) → Fin q → ℝ := fun i j => C (e.symm i) j
+  let Qfull' : Fin (q + r) → Fin (q + r) → ℝ :=
+    fun i j => Qfull (e.symm i) (e.symm j)
+  let Rhat' : Fin (q + r) → Fin q → ℝ := fun i j => Rhat (e.symm i) j
+  let Q2' : Fin (q + r) → Fin q → ℝ :=
+    fun i j => Qfull' i (Fin.castAdd r j)
+  let R : Fin q → Fin q → ℝ := fun i j => Rhat' (Fin.castAdd r i) j
+  have hQfull' : IsOrthogonal (q + r) Qfull' := by
+    simpa [Qfull'] using
+      IsOrthogonal.reindexRowsColsEquiv (e := e.symm) hQfull
+  have hRhat' : IsUpperTrapezoidal (q + r) q Rhat' := by
+    intro i j hji
+    have hval : j.val < (e.symm i).val := by
+      simpa [e, finAddCommEquiv, Fin.cast] using hji
+    simpa [Rhat'] using hRhat (e.symm i) j hval
+  have hQ2' : GramSchmidtOrthonormalColumns Q2' := by
+    intro a b
+    simpa [Q2', Qfull', GramSchmidtOrthonormalColumns, rectangularGram,
+      idMatrix, Fin.castAdd] using
+      hQfull'.col_orthonormal (Fin.castAdd r a) (Fin.castAdd r b)
+  have hR : IsUpperTriangular q R := by
+    intro i j hji
+    simpa [R, Rhat', Fin.castAdd] using hRhat' (Fin.castAdd r i) j hji
+  have hfactor' :
+      rectPermuteCols Fin.revPerm C' =
+        matMulRect (q + r) (q + r) q Qfull' Rhat' := by
+    ext i j
+    have hentry := congrFun (congrFun hfactor (e.symm i)) j
+    have hsum :
+        (∑ k : Fin (q + r), Qfull (e.symm i) (e.symm k) *
+            Rhat (e.symm k) j) =
+          ∑ k : Fin (r + q), Qfull (e.symm i) k * Rhat k j := by
+      exact Equiv.sum_comp e.symm
+        (fun k : Fin (r + q) => Qfull (e.symm i) k * Rhat k j)
+    simpa [C', Qfull', Rhat', rectPermuteCols, matMulRect, hsum] using hentry
+  have hthin' :
+      rectPermuteCols Fin.revPerm C' = matMulRect (q + r) q q Q2' R := by
+    rw [hfactor']
+    ext i j
+    have hbottom : ∀ c : Fin r, Rhat' (Fin.natAdd q c) j = 0 := by
+      intro c
+      exact hRhat' (Fin.natAdd q c) j
+        (Nat.lt_of_lt_of_le j.isLt (Nat.le_add_right q c.val))
+    unfold matMulRect Q2' R
+    rw [Fin.sum_univ_add]
+    simp [hbottom]
+  let Q2 : Fin (r + q) → Fin q → ℝ := fun i j => Q2' (e i) j
+  have hQ2 : GramSchmidtOrthonormalColumns Q2 := by
+    intro a b
+    unfold rectangularGram Q2
+    calc
+      (∑ i : Fin (r + q), Q2' (e i) a * Q2' (e i) b)
+          = ∑ i' : Fin (q + r), Q2' i' a * Q2' i' b := by
+              exact Equiv.sum_comp e
+                (fun i' : Fin (q + r) => Q2' i' a * Q2' i' b)
+      _ = idMatrix q a b := hQ2' a b
+  have hthin :
+      rectPermuteCols Fin.revPerm C = matMulRect (r + q) q q Q2 R := by
+    ext i j
+    have hentry := congrFun (congrFun hthin' (e i)) j
+    simpa [C', Q2, rectPermuteCols, matMulRect] using hentry
+  exact GQRAQTallCase.exists_of_qr_reversed_cols C Q2 R hQ2 hR hthin
+
 /-- Tall associated-shape construction from exact Householder QR of the
     column-reversed block.
 
@@ -12110,6 +12193,82 @@ theorem theorem20_10_householder_B_transpose_constructed_sourceA_gqr_factorizati
   · rfl
   · rfl
   · rfl
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, rounded Householder
+    `Bᵀ`/`A Q₂` perturbations assembled into one perturbed GQR record.
+
+    The concrete `Bᵀ` Householder panel supplies the GQR `Q` and `S` fields for
+    the perturbed constraint matrix.  The source-shaped reversed `A Q₂`
+    Householder perturbation is then converted to the tall `[0;L]` associated
+    shape by `GQRAQTallCase.exists_of_square_qr_reversed_cols`, producing a
+    genuine GQR factorization for `(A + DeltaA, B + DeltaB)`.  Rank preservation
+    and returned-vector identification remain separate obligations. -/
+theorem theorem20_10_householder_constructed_perturbed_gqr_factorization
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q))) :
+    let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+      fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+    let Rb : Fin (p + q) → Fin p → ℝ :=
+      fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)
+    let S : Fin p → Fin p → ℝ :=
+      matTranspose (fun i : Fin p => fun j : Fin p =>
+        Rb (Fin.castAdd q i) j)
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+      (∀ i j,
+        B i j + DeltaB i j =
+          matMulRect (p + q) (p + q) p Qb Rb j i) ∧
+      frobNormRect DeltaA ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect A ∧
+      frobNormRect DeltaB ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B ∧
+      ∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        hpert.Q = Qb ∧ hpert.S = S := by
+  dsimp
+  let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+    fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+  let Rb : Fin (p + q) → Fin p → ℝ :=
+    fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)
+  let S : Fin p → Fin p → ℝ :=
+    matTranspose (fun i : Fin p => fun j : Fin p =>
+      Rb (Fin.castAdd q i) j)
+  rcases theorem20_10_householder_B_transpose_perturbed_constraint_block
+      fp B hp hvalidB with
+    ⟨DeltaB, hDeltaBrep, hQb, hS, hBQ, hDeltaB⟩
+  let Crev : Fin (r + q) → Fin q → ℝ :=
+    rectPermuteCols Fin.revPerm (gqrAQ2Block A Qb)
+  let Urev : Fin (r + q) → Fin (r + q) → ℝ :=
+    fl_householderQRPanel_Q fp (r + q) q Crev
+  let Rrev : Fin (r + q) → Fin q → ℝ :=
+    fl_householderQRPanel_R fp (r + q) q Crev
+  rcases theorem20_10_householder_reversed_AQ2_full_A_source_frob_perturbation_bound
+      fp A Qb hQb hq hvalidA with
+    ⟨DeltaA, hDeltaArep, hUrev, hRrev, hDeltaA⟩
+  have hfactor :
+      rectPermuteCols Fin.revPerm
+          (gqrAQ2Block (fun i j => A i j + DeltaA i j) Qb) =
+        matMulRect (r + q) (r + q) q Urev Rrev := by
+    ext i j
+    simpa [Crev, Urev, Rrev] using hDeltaArep i j
+  rcases GQRAQTallCase.exists_of_square_qr_reversed_cols
+      (gqrAQ2Block (fun i j => A i j + DeltaA i j) Qb)
+      Urev Rrev hUrev hRrev hfactor with
+    ⟨U, hU, hCaseNonempty⟩
+  rcases hCaseNonempty with ⟨hCase⟩
+  rcases GeneralizedQRFactorization.exists_of_constraint_and_A_Q2_tall_case
+      (A := fun i j => A i j + DeltaA i j)
+      (B := fun i j => B i j + DeltaB i j)
+      Qb S U hQb hS hBQ hU hCase with
+    ⟨hpert, hQeq, _hUeq, hSeq, _hL22eq⟩
+  exact ⟨DeltaA, DeltaB, hDeltaBrep, hDeltaA, hDeltaB, hpert, hQeq, hSeq⟩
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     a constraint-matrix perturbation gives the corresponding constraint
