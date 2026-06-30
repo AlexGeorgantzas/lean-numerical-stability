@@ -56053,6 +56053,68 @@ theorem higham9_14_totalNonnegative_exists_source_f_bound_of_models
   intro i j
   simpa [one_mul] using hDeltaA i j
 
+/-- **Theorem 9.14**, total-nonnegative source-existence explicit-model package
+specialized to the natural `γ_n` coefficient. -/
+theorem higham9_14_totalNonnegative_exists_source_f_bound_of_models_gamma
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n A L_hat U_hat ∧
+        (∀ i j : Fin n, 0 ≤ L_hat i j) ∧
+        (∀ i j : Fin n, 0 ≤ U_hat i j) ∧
+        (∀ i j : Fin n,
+          ∑ k : Fin n, |L_hat i k| * |U_hat k j| = |A i j|) ∧
+        (∀ fp : FPModel, ∀ y_hat x_hat b : Fin n → ℝ,
+          gammaValid fp n →
+          ∀ DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ,
+            higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+              DeltaA_LU (gamma fp n) →
+            higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+              y_hat x_hat b DeltaL DeltaU (gamma fp n) →
+            ∃ DeltaA : Fin n → Fin n → ℝ,
+              (∀ i j, |DeltaA i j| ≤
+                higham9_14_f (gamma fp n) * |A i j|) ∧
+              (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L_hat, U_hat, hLU, hL_nn, hU_nn, hOpt, hModel⟩ :=
+    higham9_14_totalNonnegative_exists_source_f_bound_of_models
+      A hTN hdetA
+  refine ⟨L_hat, U_hat, hLU, hL_nn, hU_nn, hOpt, ?_⟩
+  intro fp y_hat x_hat b hn DeltaA_LU DeltaL DeltaU h20 h21
+  exact hModel y_hat x_hat b (gamma fp n) (gamma_nonneg fp hn)
+    DeltaA_LU DeltaL DeltaU h20 h21
+
+/-- **Theorem 9.14**, total-nonnegative source-existence explicit-model package
+with final `h(γ_n)` coefficient. -/
+theorem higham9_14_totalNonnegative_exists_source_h_bound_of_models_gamma
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n A L_hat U_hat ∧
+        (∀ i j : Fin n, 0 ≤ L_hat i j) ∧
+        (∀ i j : Fin n, 0 ≤ U_hat i j) ∧
+        (∀ i j : Fin n,
+          ∑ k : Fin n, |L_hat i k| * |U_hat k j| = |A i j|) ∧
+        (∀ fp : FPModel, ∀ y_hat x_hat b : Fin n → ℝ,
+          gammaValid fp n → gamma fp n < 1 →
+          ∀ DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ,
+            higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+              DeltaA_LU (gamma fp n) →
+            higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+              y_hat x_hat b DeltaL DeltaU (gamma fp n) →
+            ∃ DeltaA : Fin n → Fin n → ℝ,
+              (∀ i j, |DeltaA i j| ≤
+                higham9_14_h (gamma fp n) * |A i j|) ∧
+              (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L_hat, U_hat, hLU, hL_nn, hU_nn, hOpt, hModel⟩ :=
+    higham9_14_totalNonnegative_exists_source_h_bound_of_models
+      A hTN hdetA
+  refine ⟨L_hat, U_hat, hLU, hL_nn, hU_nn, hOpt, ?_⟩
+  intro fp y_hat x_hat b hn hγ_lt_one DeltaA_LU DeltaL DeltaU h20 h21
+  exact hModel y_hat x_hat b (gamma fp n) (gamma_nonneg fp hn)
+    hγ_lt_one DeltaA_LU DeltaL DeltaU h20 h21
+
 /-- **Theorem 9.14**, total-nonnegative source-existence package with actual
 triangular solves.
 
@@ -59205,6 +59267,68 @@ theorem higham9_14_nonsingInv_totalNonnegative_exists_source_f_bound_of_models
   refine ⟨DeltaA, ?_, hBackward⟩
   intro i j
   simpa [one_mul] using hDeltaA i j
+
+/-- **Problem 9.8 / Theorem 9.14**, nonsingular-inverse total-nonnegative
+explicit-model package specialized to the natural `γ_n` coefficient. -/
+theorem higham9_14_nonsingInv_totalNonnegative_exists_source_f_bound_of_models_gamma
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n (nonsingInv n A) L_hat U_hat ∧
+        (∀ i j : Fin n,
+          ∑ k : Fin n, |L_hat i k| * |U_hat k j| =
+            |nonsingInv n A i j|) ∧
+        (∀ fp : FPModel, ∀ y_hat x_hat b : Fin n → ℝ,
+          gammaValid fp n →
+          ∀ DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ,
+            higham9_20_tridiag_lu_perturbation_model n
+              (nonsingInv n A) L_hat U_hat DeltaA_LU (gamma fp n) →
+            higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+              y_hat x_hat b DeltaL DeltaU (gamma fp n) →
+            ∃ DeltaA : Fin n → Fin n → ℝ,
+              (∀ i j, |DeltaA i j| ≤
+                higham9_14_f (gamma fp n) * |nonsingInv n A i j|) ∧
+              (∀ i, ∑ j : Fin n,
+                (nonsingInv n A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L_hat, U_hat, hLU, hOpt, hModel⟩ :=
+    higham9_14_nonsingInv_totalNonnegative_exists_source_f_bound_of_models
+      A hTN hdet
+  refine ⟨L_hat, U_hat, hLU, hOpt, ?_⟩
+  intro fp y_hat x_hat b hn DeltaA_LU DeltaL DeltaU h20 h21
+  exact hModel y_hat x_hat b (gamma fp n) (gamma_nonneg fp hn)
+    DeltaA_LU DeltaL DeltaU h20 h21
+
+/-- **Problem 9.8 / Theorem 9.14**, nonsingular-inverse total-nonnegative
+explicit-model package with final `h(γ_n)` coefficient. -/
+theorem higham9_14_nonsingInv_totalNonnegative_exists_source_h_bound_of_models_gamma
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n (nonsingInv n A) L_hat U_hat ∧
+        (∀ i j : Fin n,
+          ∑ k : Fin n, |L_hat i k| * |U_hat k j| =
+            |nonsingInv n A i j|) ∧
+        (∀ fp : FPModel, ∀ y_hat x_hat b : Fin n → ℝ,
+          gammaValid fp n → gamma fp n < 1 →
+          ∀ DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ,
+            higham9_20_tridiag_lu_perturbation_model n
+              (nonsingInv n A) L_hat U_hat DeltaA_LU (gamma fp n) →
+            higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+              y_hat x_hat b DeltaL DeltaU (gamma fp n) →
+            ∃ DeltaA : Fin n → Fin n → ℝ,
+              (∀ i j, |DeltaA i j| ≤
+                higham9_14_h (gamma fp n) * |nonsingInv n A i j|) ∧
+              (∀ i, ∑ j : Fin n,
+                (nonsingInv n A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L_hat, U_hat, hLU, hOpt, hModel⟩ :=
+    higham9_14_nonsingInv_totalNonnegative_exists_source_h_bound_of_models
+      A hTN hdet
+  refine ⟨L_hat, U_hat, hLU, hOpt, ?_⟩
+  intro fp y_hat x_hat b hn hγ_lt_one DeltaA_LU DeltaL DeltaU h20 h21
+  exact hModel y_hat x_hat b (gamma fp n) (gamma_nonneg fp hn)
+    hγ_lt_one DeltaA_LU DeltaL DeltaU h20 h21
 
 /-- **Problem 9.8 / Theorem 9.14**, actual-solve `f(u)` source bound for the
 nonsingular-inverse total-nonnegative class.
