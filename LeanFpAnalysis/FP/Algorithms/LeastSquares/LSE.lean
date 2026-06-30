@@ -8937,6 +8937,74 @@ theorem theorem20_10_householder_B_transpose_frob_perturbation_bound
   · simpa [theorem20_10_householder_gammaB, frobNormRect_finiteTranspose]
       using hbound
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    a constraint-matrix perturbation gives the corresponding constraint
+    right-hand-side perturbation at a proposed computed vector.
+
+    Taking `Deltad = DeltaB * xhat` gives the exact action identity for
+    `(B + DeltaB) xhat` and the displayed Frobenius/vector norm bound used in
+    the backward-error branch. -/
+theorem theorem20_10_constraint_rhs_perturbation_bound_of_DeltaB
+    {p q : ℕ}
+    (B DeltaB : Fin p → Fin (p + q) → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    {gammaB : ℝ}
+    (hDeltaB : frobNormRect DeltaB ≤ gammaB * frobNormRect B) :
+    ∃ Deltad : Fin p → ℝ,
+      (∀ i,
+        rectMatMulVec (fun i j => B i j + DeltaB i j) xhat i =
+          rectMatMulVec B xhat i + Deltad i) ∧
+      vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat := by
+  refine ⟨rectMatMulVec DeltaB xhat, ?_, ?_⟩
+  · intro i
+    unfold rectMatMulVec
+    rw [← Finset.sum_add_distrib]
+    apply Finset.sum_congr rfl
+    intro j _
+    ring
+  · exact le_trans
+      (vecNorm2_rectMatMulVec_le_frobNormRect_mul DeltaB xhat)
+      (mul_le_mul_of_nonneg_right hDeltaB (vecNorm2_nonneg xhat))
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    concrete Householder `Bᵀ` perturbation together with the induced
+    constraint right-hand-side perturbation bound.
+
+    This packages the already proved `DeltaB` Frobenius bound with
+    `Deltad = DeltaB * xhat`, giving the source-shaped
+    `||Deltad||₂ <= gamma_tilde_np ||B||_F ||xhat||₂` component needed by the
+    backward-error certificate.  It still does not identify the computed
+    `xhat` or prove perturbed rank preservation. -/
+theorem theorem20_10_householder_B_transpose_Deltad_bound
+    {r p q : ℕ} (fp : FPModel)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    (hp : 0 < p)
+    (hvalid :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q))) :
+    ∃ (DeltaB : Fin p → Fin (p + q) → ℝ) (Deltad : Fin p → ℝ),
+      (∀ i j,
+        B i j + DeltaB i j =
+          matMulRect (p + q) (p + q) p
+            (fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B))
+            (fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)) j i) ∧
+      (∀ i,
+        rectMatMulVec (fun i j => B i j + DeltaB i j) xhat i =
+          rectMatMulVec B xhat i + Deltad i) ∧
+      frobNormRect DeltaB ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B ∧
+      vecNorm2 Deltad ≤
+        theorem20_10_householder_gammaB fp r p q *
+          frobNormRect B * vecNorm2 xhat := by
+  rcases theorem20_10_householder_B_transpose_frob_perturbation_bound
+      fp B hp hvalid with
+    ⟨DeltaB, hDeltaBrep, hDeltaBbound⟩
+  rcases theorem20_10_constraint_rhs_perturbation_bound_of_DeltaB
+      B DeltaB xhat hDeltaBbound with
+    ⟨Deltad, hDeltadrep, hDeltadbound⟩
+  exact ⟨DeltaB, Deltad, hDeltaBrep, hDeltadrep,
+    hDeltaBbound, hDeltadbound⟩
+
 /-- Theorem 20.10(a) certificate handoff specialized to the Householder
     `gamma_tilde_mn` and `gamma_tilde_np` coefficients. -/
 theorem theorem20_10_partA_mixed_stability_of_householder_gamma_certificate
