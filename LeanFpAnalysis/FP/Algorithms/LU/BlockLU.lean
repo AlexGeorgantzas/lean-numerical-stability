@@ -346,6 +346,10 @@
     higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_source_table,
     higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_continuousLinearMap_source_table,
     higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_continuousLinearMap_source_table_of_det_ne_zero,
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_pos_dim,
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_det_ne_zero_of_pos_dim,
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_pivot_right_inverse_of_pos_dim,
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_pivot_right_inverse_of_det_ne_zero_of_pos_dim,
     higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_source_table_of_det_ne_zero,
     higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_source_table_of_diag_eq,
     higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_source_table_of_diag_eq_of_det_ne_zero,
@@ -20612,6 +20616,49 @@ theorem
     higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table
       hm hr hunit A pivotInv hApos invDiagBound hDom hDiagBound hInit hLeft hRight
 
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
+    positive-block-size form of the matrix-`∞` source-table max-entry package.
+
+    This removes the artificial finite unit-sphere witness from the raw
+    continuous-linear source-table endpoint.  The result is still the
+    dimension-aware `2*r` transfer, not the printed dimension-free
+    Eq.13.21/`rho <= 2` theorem. -/
+theorem
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_pos_dim
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hApos : 0 < maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin A))
+    (invDiagBound : Fin m → ℝ)
+    (hDom : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j)) invDiagBound)
+    (hDiagBound : ∀ j : Fin m, invDiagBound j ≤ infNorm (A j j))
+    (hInit : ∀ j : Fin m,
+      invDiagBound j ≤
+        continuousLinearMapLowerNorm
+          (matrixMulVecCLM
+            (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv 0 j j))
+          (higham13_fin_fun_unit_sphere_nonempty hr))
+    (hLeft : ∀ k : ℕ, ∀ hk : k < m, ∀ x : Fin r → ℝ,
+      matrixMulVecCLM (pivotInv k)
+        (matrixMulVecCLM
+          (higham13_algorithm13_3_schurStageMatrixBlock
+            A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩) x) = x)
+    (hRight : ∀ k : ℕ, ∀ hk : k < m, ∀ y : Fin r → ℝ,
+      matrixMulVecCLM
+          (higham13_algorithm13_3_schurStageMatrixBlock
+            A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩)
+        (matrixMulVecCLM (pivotInv k) y) = y) :
+    blockMaxNorm hm hr (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) ≤
+        2 * ((r : ℝ) * blockMaxNorm hm hr A) ∧
+      growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            (Nat.mul_pos hm hr) hm hr A pivotInv) hApos ≤
+        2 * (r : ℝ) := by
+  exact
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table
+      hm hr (higham13_fin_fun_unit_sphere_nonempty hr) A pivotInv hApos
+      invDiagBound hDom hDiagBound hInit hLeft hRight
+
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equation (13.21):
     dimension-aware max-entry upper-factor bound from matrix-`∞` source-table
     data and certified active pivot right inverses. -/
@@ -20772,6 +20819,121 @@ theorem
   simpa [hN, hApos] using
     higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_pivot_right_inverse
       hm hr hunit A pivotInv hApos invDiagBound hDom hDiagBound hInit hPivotRight
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
+    determinant-nonzero positive-block-size form of the matrix-`∞`
+    source-table max-entry package. -/
+theorem
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_det_ne_zero_of_pos_dim
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hdet :
+      Matrix.det (blockMatrixFlatFin A :
+        Matrix (Fin (m * r)) (Fin (m * r)) ℝ) ≠ 0)
+    (hDom : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j)) invDiagBound)
+    (hDiagBound : ∀ j : Fin m, invDiagBound j ≤ infNorm (A j j))
+    (hInit : ∀ j : Fin m,
+      invDiagBound j ≤
+        continuousLinearMapLowerNorm
+          (matrixMulVecCLM
+            (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv 0 j j))
+          (higham13_fin_fun_unit_sphere_nonempty hr))
+    (hLeft : ∀ k : ℕ, ∀ hk : k < m, ∀ x : Fin r → ℝ,
+      matrixMulVecCLM (pivotInv k)
+        (matrixMulVecCLM
+          (higham13_algorithm13_3_schurStageMatrixBlock
+            A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩) x) = x)
+    (hRight : ∀ k : ℕ, ∀ hk : k < m, ∀ y : Fin r → ℝ,
+      matrixMulVecCLM
+          (higham13_algorithm13_3_schurStageMatrixBlock
+            A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩)
+        (matrixMulVecCLM (pivotInv k) y) = y) :
+    blockMaxNorm hm hr (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) ≤
+        2 * ((r : ℝ) * blockMaxNorm hm hr A) ∧
+      growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            (Nat.mul_pos hm hr) hm hr A pivotInv)
+          (maxEntryNorm_pos_of_det_ne_zero
+            (Nat.mul_pos hm hr) (blockMatrixFlatFin A) hdet) ≤
+        2 * (r : ℝ) := by
+  exact
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_det_ne_zero
+      hm hr (higham13_fin_fun_unit_sphere_nonempty hr) A pivotInv
+      invDiagBound hdet hDom hDiagBound hInit hLeft hRight
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
+    positive-block-size form of the pivot-right-inverse matrix-`∞`
+    source-table max-entry package. -/
+theorem
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_pivot_right_inverse_of_pos_dim
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hApos : 0 < maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin A))
+    (invDiagBound : Fin m → ℝ)
+    (hDom : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j)) invDiagBound)
+    (hDiagBound : ∀ j : Fin m, invDiagBound j ≤ infNorm (A j j))
+    (hInit : ∀ j : Fin m,
+      invDiagBound j ≤
+        continuousLinearMapLowerNorm
+          (matrixMulVecCLM
+            (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv 0 j j))
+          (higham13_fin_fun_unit_sphere_nonempty hr))
+    (hPivotRight : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k)) :
+    blockMaxNorm hm hr (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) ≤
+        2 * ((r : ℝ) * blockMaxNorm hm hr A) ∧
+      growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            (Nat.mul_pos hm hr) hm hr A pivotInv) hApos ≤
+        2 * (r : ℝ) := by
+  exact
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_pivot_right_inverse
+      hm hr (higham13_fin_fun_unit_sphere_nonempty hr) A pivotInv hApos
+      invDiagBound hDom hDiagBound hInit hPivotRight
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
+    determinant-nonzero positive-block-size form of the pivot-right-inverse
+    matrix-`∞` source-table max-entry package. -/
+theorem
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_pivot_right_inverse_of_det_ne_zero_of_pos_dim
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hdet :
+      Matrix.det (blockMatrixFlatFin A :
+        Matrix (Fin (m * r)) (Fin (m * r)) ℝ) ≠ 0)
+    (hDom : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j)) invDiagBound)
+    (hDiagBound : ∀ j : Fin m, invDiagBound j ≤ infNorm (A j j))
+    (hInit : ∀ j : Fin m,
+      invDiagBound j ≤
+        continuousLinearMapLowerNorm
+          (matrixMulVecCLM
+            (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv 0 j j))
+          (higham13_fin_fun_unit_sphere_nonempty hr))
+    (hPivotRight : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k)) :
+    blockMaxNorm hm hr (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) ≤
+        2 * ((r : ℝ) * blockMaxNorm hm hr A) ∧
+      growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            (Nat.mul_pos hm hr) hm hr A pivotInv)
+          (maxEntryNorm_pos_of_det_ne_zero
+            (Nat.mul_pos hm hr) (blockMatrixFlatFin A) hdet) ≤
+        2 * (r : ℝ) := by
+  exact
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_pivot_right_inverse_of_det_ne_zero
+      hm hr (higham13_fin_fun_unit_sphere_nonempty hr) A pivotInv
+      invDiagBound hdet hDom hDiagBound hInit hPivotRight
 
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equation (13.21):
     dimension-aware max-entry upper-factor bound from initial diagonal
