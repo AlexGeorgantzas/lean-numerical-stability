@@ -24466,6 +24466,73 @@ theorem higham9_15_normalized_Gtilde_frobNormSqRect_X_add_Y_eq_init_add_residual
   rw [hXsq, hYsq]
   ring
 
+/-- **Theorem 9.15 support**, the squared norm of a full final column is
+bounded by the squared Frobenius norm of the matrix. -/
+theorem higham9_15_vecNorm2Sq_lastColumn_le_frobNormSqRect {n : ℕ}
+    (A : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) :
+    vecNorm2Sq (fun i : Fin (n + 1) => A i (Fin.last n)) ≤
+      frobNormSqRect A := by
+  unfold vecNorm2Sq frobNormSqRect
+  apply Finset.sum_le_sum
+  intro i _
+  exact
+    Finset.single_le_sum
+      (fun j _ => sq_nonneg (A i j))
+      (Finset.mem_univ (Fin.last n))
+
+/-- **Theorem 9.15 support**, the final-row-initial and full-final-column
+squared border terms are bounded by twice the squared Frobenius norm. -/
+theorem higham9_15_residual_borders_vecNorm2Sq_add_le_two_frobNormSqRect
+    {n : ℕ} (A : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) :
+    vecNorm2Sq (fun j : Fin n => A (Fin.last n) j.castSucc) +
+        vecNorm2Sq (fun i : Fin (n + 1) => A i (Fin.last n)) ≤
+      2 * frobNormSqRect A := by
+  have hrow := vecNorm2Sq_lastRowInit_le_frobNormSqRect A
+  have hcol := higham9_15_vecNorm2Sq_lastColumn_le_frobNormSqRect A
+  nlinarith
+
+/-- **Theorem 9.15 support**, square-level Frobenius handoff for the `I + G`
+split using the two residual border terms. -/
+theorem higham9_15_normalized_G_frobNormSqRect_X_add_Y_le_init_add_two_residual_sq
+    {n : ℕ}
+    (G X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 + G = (1 + X) * (1 + Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0) :
+    frobNormSqRect X + frobNormSqRect Y ≤
+      (frobNormSqRect (higham9_15_initBlock X) +
+          frobNormSqRect (higham9_15_initBlock Y)) +
+        2 * frobNormSqRect (G - X * Y) := by
+  have hsplit :=
+    higham9_15_normalized_G_frobNormSqRect_X_add_Y_eq_init_add_residual_borders
+      G X Y hfact hX hY
+  have hborder :=
+    higham9_15_residual_borders_vecNorm2Sq_add_le_two_frobNormSqRect
+      (G - X * Y)
+  rw [hsplit]
+  exact add_le_add le_rfl hborder
+
+/-- **Theorem 9.15 support**, square-level Frobenius handoff for the
+`I - Gtilde` split using the two residual border terms. -/
+theorem higham9_15_normalized_Gtilde_frobNormSqRect_X_add_Y_le_init_add_two_residual_sq
+    {n : ℕ}
+    (Gtilde X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 - Gtilde = (1 - X) * (1 - Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0) :
+    frobNormSqRect X + frobNormSqRect Y ≤
+      (frobNormSqRect (higham9_15_initBlock X) +
+          frobNormSqRect (higham9_15_initBlock Y)) +
+        2 * frobNormSqRect (Gtilde + X * Y) := by
+  have hsplit :=
+    higham9_15_normalized_Gtilde_frobNormSqRect_X_add_Y_eq_init_add_residual_borders
+      Gtilde X Y hfact hX hY
+  have hborder :=
+    higham9_15_residual_borders_vecNorm2Sq_add_le_two_frobNormSqRect
+      (Gtilde + X * Y)
+  rw [hsplit]
+  exact add_le_add le_rfl hborder
+
 /-- **Theorem 9.15 support**, final-row initial vector of `X` is bounded by
 the residual Frobenius norm in the `I + G` split. -/
 theorem higham9_15_normalized_G_lastRow_init_vecNorm2_le_residual {n : ℕ}
