@@ -10152,3 +10152,15 @@ These compile, but should not be treated as fully derived stability results:
   use a single terminal right-inverse certificate to build all-pivot determinant
   tables.  This removes another proof-surface conversion artifact; the same
   three Chapter 13 red rows remain open.
+
+- 2026-06-30 BDD CLM source-table paired endpoint: added
+  `higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_continuousLinearMap_source_table`
+  and
+  `higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_continuousLinearMap_source_table_of_det_ne_zero`.
+  These compose the arbitrary-norm continuous-linear lower-norm source-table
+  route with the direct one-sided certificate package, yielding both the
+  assembled Eq.13.21 upper-factor bound and finite function-block
+  `growthFactorEntry <= 2` once the CLM stage norms, Schur update, and
+  two-sided active inverse identities are supplied.  This is BDD integration
+  progress, but the printed arbitrary-norm/source-table instantiation and
+  downstream source-strength max-entry integration remain open.
