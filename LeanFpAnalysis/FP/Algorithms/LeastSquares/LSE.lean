@@ -8441,6 +8441,56 @@ theorem theorem20_10_gqr_forwardSub_triangular_solve_perturbation_bound
   · ext i
     simpa [rectMatMulVec, y2hat, rhs] using hL22eq i
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, triangular-solve component:
+    Frobenius-norm version of the concrete GQR triangular-solve perturbation
+    witnesses.
+
+    The underlying forward-substitution theorem gives componentwise relative
+    bounds for the two lower-triangular solves.  This wrapper converts those
+    entrywise bounds into source-shaped Frobenius bounds for the perturbations
+    of `S` and `L₂₂`, while preserving the exact perturbed triangular
+    equations for the actual `fl_forwardSub` calls. -/
+theorem theorem20_10_gqr_forwardSub_triangular_solve_frob_perturbation_bound
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalidS : gammaValid fp p)
+    (hvalidL22 : gammaValid fp q) :
+    let y1hat : Fin p → ℝ := fl_forwardSub fp p h.S d
+    let rhs : Fin q → ℝ :=
+      fun i : Fin q =>
+        matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i) -
+          rectMatMulVec h.L21 y1hat i
+    let y2hat : Fin q → ℝ := fl_forwardSub fp q h.L22 rhs
+    ∃ (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ),
+      (∀ i j, |DeltaS i j| ≤ gamma fp p * |h.S i j|) ∧
+      (∀ i j, |DeltaL22 i j| ≤ gamma fp q * |h.L22 i j|) ∧
+      frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S ∧
+      frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 ∧
+      rectMatMulVec (fun i j => h.S i j + DeltaS i j) y1hat = d ∧
+      rectMatMulVec (fun i j => h.L22 i j + DeltaL22 i j) y2hat = rhs := by
+  dsimp
+  rcases theorem20_10_gqr_forwardSub_triangular_solve_perturbation_bound
+      fp h b d hSdiag hL22diag hvalidS hvalidL22 with
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound, hSeq, hL22eq⟩
+  have hDeltaSfrob :
+      frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S := by
+    simpa [frobNormRect_eq_frobNormFn] using
+      (frobNorm_le_const_mul_frobNorm_of_entrywise_abs_le
+        DeltaS h.S (gamma_nonneg fp hvalidS) hDeltaSbound)
+  have hDeltaL22frob :
+      frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 := by
+    simpa [frobNormRect_eq_frobNormFn] using
+      (frobNorm_le_const_mul_frobNorm_of_entrywise_abs_le
+        DeltaL22 h.L22 (gamma_nonneg fp hvalidL22) hDeltaL22bound)
+  exact
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, hSeq, hL22eq⟩
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), finite-precision
     perturbation certificate for the mixed-stability branch.
 
