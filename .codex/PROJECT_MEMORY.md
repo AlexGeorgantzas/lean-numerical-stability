@@ -98,6 +98,16 @@ end-to-end stability rebuild is tagged as
   `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_with_dim_factor_of_diag_update_of_pivot_right_inverse`
   compose the same plain-inverse route with the active BDD product/update
   `rho <= 2` layer and with the dimension-aware diagonal-update layer.  The
+  determinant/canonical-inverse companions
+  `higham13_eq13_23_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_of_product_bound_diag_update_of_det_ne_zero`,
+  `higham13_eq13_23_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_with_dim_factor_of_diag_update_of_det_ne_zero`,
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_of_product_bound_diag_update_of_pivot_right_inverse_of_det_ne_zero`,
+  and
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_with_dim_factor_of_diag_update_of_pivot_right_inverse_of_det_ne_zero`
+  specialize those diagonal-update surfaces to
+  `nonsingInv (m*r) (blockMatrixFlatFin Ablk)` and derive the full positive
+  denominator/right-inverse certificate from `det(blockMatrixFlatFin Ablk) != 0`.
+  The
   Schur-tail inverse comparison itself, source-strength active BDD product/update
   data, active pivot determinant/equality table, and Theorem 13.6 cited
   implementation estimates remain open.  Verified by focused `lake build
