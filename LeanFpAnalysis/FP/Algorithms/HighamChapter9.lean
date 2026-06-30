@@ -25472,6 +25472,101 @@ theorem higham9_15_normalized_Gtilde_sqrt_frobNormSqRect_X_add_Y_le_two_ratio_ad
     simpa [add_comm, add_left_comm, add_assoc] using
       (add_le_add_right htwo (2 * frobNormRect (Gtilde + X * Y)))
 
+/-- **Theorem 9.15 support**, square-total Frobenius handoff from a
+principal-block linearized step, with the principal-block ratio lifted to the
+full `G` ratio. -/
+theorem higham9_15_normalized_G_sqrt_frobNormSqRect_X_add_Y_le_two_ratio_add_two_residual_of_init_linear_step
+    {n : ℕ}
+    (G X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 + G = (1 + X) * (1 + Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0)
+    (hGlt : opNorm2 G < 1)
+    (hlinear :
+      max (frobNormRect (higham9_15_initBlock X))
+          (frobNormRect (higham9_15_initBlock Y)) ≤
+        frobNormRect (higham9_15_initBlock G) +
+          opNorm2 (higham9_15_initBlock G) *
+            max (frobNormRect (higham9_15_initBlock X))
+              (frobNormRect (higham9_15_initBlock Y))) :
+    Real.sqrt (frobNormSqRect X + frobNormSqRect Y) ≤
+      2 * (frobNormRect G / (1 - opNorm2 G)) +
+        2 * frobNormRect (G - X * Y) := by
+  have hbudget :=
+    higham9_15_normalized_G_sqrt_frobNormSqRect_X_add_Y_le_init_sqrt_add_two_residual
+      G X Y hfact hX hY
+  have hinit_sqrt :=
+    higham9_15_sqrt_frobNormSqRect_add_le_two_max_frobNormRect
+      (higham9_15_initBlock X) (higham9_15_initBlock Y)
+  have hinit :
+      max (frobNormRect (higham9_15_initBlock X))
+          (frobNormRect (higham9_15_initBlock Y)) ≤
+        frobNormRect (higham9_15_initBlock G) /
+          (1 - opNorm2 (higham9_15_initBlock G)) :=
+    higham9_15_normalized_G_frobNorm_ratio_bound_of_linear_step
+      (higham9_15_initBlock G) (higham9_15_initBlock X)
+      (higham9_15_initBlock Y)
+      (higham9_15_opNorm2_init_lt_one_of_lt_one G hGlt)
+      hlinear
+  have hratio := higham9_15_initBlock_frobNorm_ratio_le G hGlt
+  have htwo :
+      2 *
+          max (frobNormRect (higham9_15_initBlock X))
+            (frobNormRect (higham9_15_initBlock Y)) ≤
+        2 * (frobNormRect G / (1 - opNorm2 G)) :=
+    mul_le_mul_of_nonneg_left (hinit.trans hratio) (by norm_num)
+  exact hbudget.trans <| by
+    simpa [add_comm, add_left_comm, add_assoc] using
+      (add_le_add_right (hinit_sqrt.trans htwo)
+        (2 * frobNormRect (G - X * Y)))
+
+/-- **Theorem 9.15 support**, `Gtilde` companion to the square-total
+full-ratio handoff from a principal-block linearized step. -/
+theorem higham9_15_normalized_Gtilde_sqrt_frobNormSqRect_X_add_Y_le_two_ratio_add_two_residual_of_init_linear_step
+    {n : ℕ}
+    (Gtilde X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 - Gtilde = (1 - X) * (1 - Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0)
+    (hGlt : opNorm2 Gtilde < 1)
+    (hlinear :
+      max (frobNormRect (higham9_15_initBlock X))
+          (frobNormRect (higham9_15_initBlock Y)) ≤
+        frobNormRect (higham9_15_initBlock Gtilde) +
+          opNorm2 (higham9_15_initBlock Gtilde) *
+            max (frobNormRect (higham9_15_initBlock X))
+              (frobNormRect (higham9_15_initBlock Y))) :
+    Real.sqrt (frobNormSqRect X + frobNormSqRect Y) ≤
+      2 * (frobNormRect Gtilde / (1 - opNorm2 Gtilde)) +
+        2 * frobNormRect (Gtilde + X * Y) := by
+  have hbudget :=
+    higham9_15_normalized_Gtilde_sqrt_frobNormSqRect_X_add_Y_le_init_sqrt_add_two_residual
+      Gtilde X Y hfact hX hY
+  have hinit_sqrt :=
+    higham9_15_sqrt_frobNormSqRect_add_le_two_max_frobNormRect
+      (higham9_15_initBlock X) (higham9_15_initBlock Y)
+  have hinit :
+      max (frobNormRect (higham9_15_initBlock X))
+          (frobNormRect (higham9_15_initBlock Y)) ≤
+        frobNormRect (higham9_15_initBlock Gtilde) /
+          (1 - opNorm2 (higham9_15_initBlock Gtilde)) :=
+    higham9_15_normalized_Gtilde_frobNorm_ratio_bound_of_linear_step
+      (higham9_15_initBlock Gtilde) (higham9_15_initBlock X)
+      (higham9_15_initBlock Y)
+      (higham9_15_opNorm2_init_lt_one_of_lt_one Gtilde hGlt)
+      hlinear
+  have hratio := higham9_15_initBlock_frobNorm_ratio_le Gtilde hGlt
+  have htwo :
+      2 *
+          max (frobNormRect (higham9_15_initBlock X))
+            (frobNormRect (higham9_15_initBlock Y)) ≤
+        2 * (frobNormRect Gtilde / (1 - opNorm2 Gtilde)) :=
+    mul_le_mul_of_nonneg_left (hinit.trans hratio) (by norm_num)
+  exact hbudget.trans <| by
+    simpa [add_comm, add_left_comm, add_assoc] using
+      (add_le_add_right (hinit_sqrt.trans htwo)
+        (2 * frobNormRect (Gtilde + X * Y)))
+
 /-- **Theorem 9.15 support**, full max-Frobenius bound from a
 principal-block min-factor hypothesis, with the principal-block ratio lifted
 to the full `G` ratio. -/
