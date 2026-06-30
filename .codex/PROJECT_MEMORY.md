@@ -10246,3 +10246,21 @@ These compile, but should not be treated as fully derived stability results:
   Problem 13.4; it still leaves the actual base/inverse comparison theorems,
   structured Eq.13.23 BDD product/update data, and Theorem 13.6 cited
   implementation estimates open.
+
+- 2026-06-30 Eq.13.23 base/inverse product/update connector cleanup:
+  refactored
+  `Higham13Eq1322BaseInverseSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update`
+  so it also consumes
+  `Higham13Eq1322BaseInverseSourceChain.to_blockLUBudgetChain` directly and
+  invokes
+  `higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_product_bound_diag_update`
+  for the product/update `rho <= 2` layer.  Direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean` passed before
+  and after the edit; focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet public lookup,
+  `git diff --check`, touched Lean/lookup marker scans, anchored conflict-marker
+  scan, and focused `#print axioms` also passed, with the axiom audit reporting
+  only `propext`, `Classical.choice`, and `Quot.sound`.  This removes a
+  lower-comparison proof-surface detour only; the base/inverse comparisons,
+  source-strength product/update data, and Theorem 13.6 cited estimates remain
+  open.
