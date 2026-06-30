@@ -210,6 +210,14 @@ end-to-end stability rebuild is tagged as
   specialization, derive the positive growth-factor denominator from
   `det(blockMatrixFlatFin A) != 0` while keeping the same dimension-aware
   endpoint.
+- 2026-06-30 matrix-`∞` raw source-table positive-dimension cleanup:
+  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_pos_dim`,
+  its determinant-denominator variant, and the two pivot-right-inverse variants
+  remove the explicit finite unit-sphere witness from the raw source-table
+  max-entry packages by using `higham13_fin_fun_unit_sphere_nonempty hr`.
+  This is hidden-hypothesis cleanup for the BDD route; the endpoint remains
+  dimension-aware (`growthFactorEntry <= 2*r`), so the printed Eq.13.21 /
+  Eq.13.23 `rho <= 2` source-strength row remains open.
 - 2026-06-29 matrix-`∞` max-entry transfer checkpoint:
   `higham13_algorithm13_3_matrix_infNorm_block_le_card_mul_blockMaxNorm`,
   `higham13_algorithm13_3_matrix_infNorm_active_stage_maxEntry_bound`, and the
