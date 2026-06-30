@@ -17868,6 +17868,88 @@ lemma ch7_matrix_pow_opNorm_ge_pow_subeigen {n : ℕ} (hn : 0 < n)
   have hnorm_nonneg : 0 ≤ ‖C ^ k‖ := norm_nonneg _
   nlinarith
 
+/-- A nonzero nonnegative real subeigenvector gives the same power-norm lower
+bound as the positive version.  The proof chooses a coordinate attaining the
+supremum norm; nonzero nonnegativity makes that coordinate strictly positive. -/
+lemma ch7_matrix_pow_opNorm_ge_pow_nonzero_nonneg_subeigen {n : ℕ} (hn : 0 < n)
+    (M : Fin n → Fin n → ℝ) (lam : ℝ) (x : Fin n → ℝ)
+    (hM_nonneg : ∀ i j : Fin n, 0 ≤ M i j)
+    (hlam : 0 ≤ lam)
+    (hx_nonneg : ∀ i : Fin n, 0 ≤ x i)
+    (hx_ne : x ≠ 0)
+    (hsub : ∀ i : Fin n, lam * x i ≤ matMulVec n M x i) :
+    ∀ k : ℕ,
+      lam ^ k ≤
+        ‖(show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix M) ^ k‖ := by
+  classical
+  intro k
+  let A : Matrix (Fin n) (Fin n) ℝ :=
+    (Matrix.of M : Matrix (Fin n) (Fin n) ℝ)
+  let C : Matrix (Fin n) (Fin n) ℂ :=
+    (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix M)
+  let xc : Fin n → ℂ := fun i => (x i : ℂ)
+  obtain ⟨i0, hnorm_eq⟩ := ch7_complexVec_norm_eq_coord_of_nonempty hn xc
+  have hx_pos_exists : ∃ i : Fin n, 0 < x i := by
+    by_contra hnone
+    have hx_zero : x = 0 := by
+      ext i
+      have hle : x i ≤ 0 := le_of_not_gt fun hpos => hnone ⟨i, hpos⟩
+      exact le_antisymm hle (hx_nonneg i)
+    exact hx_ne hx_zero
+  obtain ⟨ipos, hipos⟩ := hx_pos_exists
+  have hipos_norm_pos : 0 < ‖xc ipos‖ := by
+    simpa [xc, Complex.norm_real, abs_of_pos hipos]
+  have hi0_norm_pos : 0 < ‖xc i0‖ := by
+    exact lt_of_lt_of_le hipos_norm_pos
+      (by
+        calc
+          ‖xc ipos‖ ≤ ‖xc‖ := norm_le_pi_norm xc ipos
+          _ = ‖xc i0‖ := hnorm_eq)
+  have hx_i0_pos : 0 < x i0 := by
+    have hxi0_abs_pos : 0 < |x i0| := by
+      simpa [xc, Complex.norm_real] using hi0_norm_pos
+    have hxi0_ne : x i0 ≠ 0 := by
+      intro hzero
+      simp [hzero] at hxi0_abs_pos
+    exact lt_of_le_of_ne (hx_nonneg i0) hxi0_ne.symm
+  have hxnorm_eq : ‖xc‖ = x i0 := by
+    rw [hnorm_eq]
+    simp [xc, Complex.norm_real, abs_of_nonneg (hx_nonneg i0)]
+  have hA_nonneg : ∀ i j : Fin n, 0 ≤ A i j := by
+    intro i j
+    simpa [A, Matrix.of] using hM_nonneg i j
+  have hsub_matrix : ∀ i : Fin n, lam * x i ≤ Matrix.mulVec A x i := by
+    intro i
+    simpa [A, ch7_matrix_mulVec_eq_matMulVec M x] using hsub i
+  have hpow_sub :
+      lam ^ k * x i0 ≤ Matrix.mulVec (A ^ k) x i0 :=
+    ch7_matrix_pow_mulVec_subeigen_le_of_nonneg
+      A lam x hA_nonneg hlam hsub_matrix k i0
+  have hpow_nonneg :
+      0 ≤ Matrix.mulVec (A ^ k) x i0 := by
+    simpa [A] using
+      ch7_matrix_pow_mulVec_nonneg_of_nonneg M x hA_nonneg hx_nonneg k i0
+  have hcoord :
+      ‖Matrix.mulVec (C ^ k) xc i0‖ = Matrix.mulVec (A ^ k) x i0 := by
+    have happ_i := congrFun
+      (ch7_realRectToCMatrix_pow_mulVec_complexified M x k) i0
+    simpa [C, A, xc, Complex.norm_real, abs_of_nonneg hpow_nonneg]
+      using congrArg norm happ_i
+  have hcoord_le_vec :
+      ‖Matrix.mulVec (C ^ k) xc i0‖ ≤ ‖Matrix.mulVec (C ^ k) xc‖ :=
+    norm_le_pi_norm (Matrix.mulVec (C ^ k) xc) i0
+  have hop : ‖Matrix.mulVec (C ^ k) xc‖ ≤ ‖C ^ k‖ * ‖xc‖ :=
+    Matrix.linfty_opNorm_mulVec (C ^ k) xc
+  have hscaled : lam ^ k * x i0 ≤ ‖C ^ k‖ * x i0 := by
+    calc
+      lam ^ k * x i0 ≤ Matrix.mulVec (A ^ k) x i0 := hpow_sub
+      _ = ‖Matrix.mulVec (C ^ k) xc i0‖ := hcoord.symm
+      _ ≤ ‖Matrix.mulVec (C ^ k) xc‖ := hcoord_le_vec
+      _ ≤ ‖C ^ k‖ * ‖xc‖ := hop
+      _ = ‖C ^ k‖ * x i0 := by rw [hxnorm_eq]
+  have hnorm_nonneg : 0 ≤ ‖C ^ k‖ := norm_nonneg _
+  nlinarith
+
 /-- Collatz/Gelfand lower bound: a positive right subeigenvector of a
 nonnegative finite real matrix forces its scalar below the Mathlib
 spectral radius of the complexified matrix algebra. -/
@@ -17891,6 +17973,62 @@ theorem ch7_matrix_spectralRadius_ge_of_positive_right_subeigenvector {n : ℕ}
     simpa [C] using
       ch7_matrix_pow_opNorm_ge_pow_subeigen
         hn M lam x hM_nonneg hlam hx hsub k
+  letI : CompleteSpace (Matrix (Fin n) (Fin n) ℂ) :=
+    FiniteDimensional.complete ℂ _
+  have hcomplete_check : CompleteSpace (Matrix (Fin n) (Fin n) ℂ) := inferInstance
+  have hlim :=
+    @spectrum.pow_norm_pow_one_div_tendsto_nhds_spectralRadius
+      (Matrix (Fin n) (Fin n) ℂ) inferInstance inferInstance hcomplete_check C
+  refine ge_of_tendsto hlim ?_
+  refine Filter.eventually_atTop.2 ⟨1, ?_⟩
+  intro k hk
+  have hk_pos_nat : 0 < k := Nat.pos_of_ne_zero (Nat.ne_zero_of_lt hk)
+  have hk_pos : 0 < (k : ℝ) := Nat.cast_pos.mpr hk_pos_nat
+  have hpow_nonneg : 0 ≤ lam ^ k := pow_nonneg hlam k
+  have hroot :=
+    Real.rpow_le_rpow hpow_nonneg (hpow_bound k)
+      (le_of_lt (one_div_pos.mpr hk_pos))
+  have hroot' :
+      (lam ^ k) ^ (1 / (k : ℝ)) ≤
+        ‖C ^ k‖ ^ (1 / (k : ℝ)) := by
+    simpa [one_div] using hroot
+  have hleft : (lam ^ k) ^ (1 / (k : ℝ)) = lam := by
+    rw [← Real.rpow_natCast lam k]
+    rw [← Real.rpow_mul hlam]
+    have hmul : (k : ℝ) * (1 / (k : ℝ)) = 1 := by
+      field_simp [ne_of_gt hk_pos]
+    rw [hmul, Real.rpow_one]
+  have hleft' : (lam ^ k) ^ ((k : ℝ)⁻¹) = lam := by
+    simpa [one_div] using hleft
+  have hreal : lam ≤ ‖C ^ k‖ ^ (1 / (k : ℝ)) := by
+    simpa [one_div, hleft'] using hroot'
+  exact ENNReal.ofReal_le_ofReal hreal
+
+/-- Collatz/Gelfand lower bound for a nonzero nonnegative right
+subeigenvector.  This avoids an irreducibility hypothesis when the
+Barrlund--Sun route only needs to rule out nonzero nonnegative domination. -/
+theorem ch7_matrix_spectralRadius_ge_of_nonzero_nonneg_right_subeigenvector
+    {n : ℕ} (hn : 0 < n) (M : Fin n → Fin n → ℝ) (lam : ℝ)
+    (x : Fin n → ℝ)
+    (hM_nonneg : ∀ i j : Fin n, 0 ≤ M i j)
+    (hlam : 0 ≤ lam)
+    (hx_nonneg : ∀ i : Fin n, 0 ≤ x i)
+    (hx_ne : x ≠ 0)
+    (hsub : ∀ i : Fin n, lam * x i ≤ matMulVec n M x i) :
+    ENNReal.ofReal lam ≤
+      spectralRadius ℂ
+        (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix M) := by
+  classical
+  let C : Matrix (Fin n) (Fin n) ℂ :=
+    (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix M)
+  by_cases hlam_zero : lam = 0
+  · simp [hlam_zero]
+  have hpow_bound :
+      ∀ k : ℕ, lam ^ k ≤ ‖C ^ k‖ := by
+    intro k
+    simpa [C] using
+      ch7_matrix_pow_opNorm_ge_pow_nonzero_nonneg_subeigen
+        hn M lam x hM_nonneg hlam hx_nonneg hx_ne hsub k
   letI : CompleteSpace (Matrix (Fin n) (Fin n) ℂ) :=
     FiniteDimensional.complete ℂ _
   have hcomplete_check : CompleteSpace (Matrix (Fin n) (Fin n) ℂ) := inferInstance
@@ -17947,6 +18085,24 @@ theorem ch7_toLin_spectralRadius_ge_of_positive_right_subeigenvector {n : ℕ}
   rw [ch7_toLin_spectralRadius_eq_matrix_spectralRadius]
   exact ch7_matrix_spectralRadius_ge_of_positive_right_subeigenvector
     hn M lam x hM_nonneg hlam hx hsub
+
+/-- `toLin'`-facing form of the nonzero-nonnegative Collatz/Gelfand lower
+bound. -/
+theorem ch7_toLin_spectralRadius_ge_of_nonzero_nonneg_right_subeigenvector
+    {n : ℕ} (hn : 0 < n) (M : Fin n → Fin n → ℝ) (lam : ℝ)
+    (x : Fin n → ℝ)
+    (hM_nonneg : ∀ i j : Fin n, 0 ≤ M i j)
+    (hlam : 0 ≤ lam)
+    (hx_nonneg : ∀ i : Fin n, 0 ≤ x i)
+    (hx_ne : x ≠ 0)
+    (hsub : ∀ i : Fin n, lam * x i ≤ matMulVec n M x i) :
+    ENNReal.ofReal lam ≤
+      spectralRadius ℂ
+        (Matrix.toLin'
+          (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix M)) := by
+  rw [ch7_toLin_spectralRadius_eq_matrix_spectralRadius]
+  exact ch7_matrix_spectralRadius_ge_of_nonzero_nonneg_right_subeigenvector
+    hn M lam x hM_nonneg hlam hx_nonneg hx_ne hsub
 
 /-- Finite-sum form of `ch7_matrix_pow_mulVec_subeigen_le_of_nonneg`.  This
 connects the subeigenvector iteration to the finite positive power sums

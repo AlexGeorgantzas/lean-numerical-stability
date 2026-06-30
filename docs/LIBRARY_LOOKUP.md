@@ -734,9 +734,12 @@ Source-facing Chapter 7 wrappers:
 - `ch7_realRectToCMatrix_matrix_pow`
 - `ch7_realRectToCMatrix_pow_mulVec_complexified`
 - `ch7_matrix_pow_opNorm_ge_pow_subeigen`
+- `ch7_matrix_pow_opNorm_ge_pow_nonzero_nonneg_subeigen`
 - `ch7_matrix_spectralRadius_ge_of_positive_right_subeigenvector`
+- `ch7_matrix_spectralRadius_ge_of_nonzero_nonneg_right_subeigenvector`
 - `ch7_toLin_spectralRadius_eq_matrix_spectralRadius`
 - `ch7_toLin_spectralRadius_ge_of_positive_right_subeigenvector`
+- `ch7_toLin_spectralRadius_ge_of_nonzero_nonneg_right_subeigenvector`
 - `ch7_exists_spectralRadius_attaining_positive_subeigenvector`
 - `ch7_exists_spectralRadius_attaining_positive_eigenvector`
 - `ch7_nonneg_irreducible_right_eigenvector_pos`
@@ -2373,6 +2376,13 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_not_exists_positive_fixedPoint_of_spectralRadius_lt_one`
 - `higham9_15_spectralRadius_ge_one_of_positive_le_matMulVec`
 - `higham9_15_spectralRadius_ge_one_of_positive_fixedPoint`
+- `higham9_15_nonzero_nonneg_subeigen_spectralRadius_ge`
+- `higham9_15_nonzero_nonneg_subeigen_scale_lt_one_of_spectralRadius_lt_one`
+- `higham9_15_exists_matMulVec_lt_of_nonzero_nonneg_spectralRadius_lt_one`
+- `higham9_15_not_exists_nonzero_nonneg_le_matMulVec_of_spectralRadius_lt_one`
+- `higham9_15_not_exists_nonzero_nonneg_fixedPoint_of_spectralRadius_lt_one`
+- `higham9_15_spectralRadius_ge_one_of_nonzero_nonneg_le_matMulVec`
+- `higham9_15_spectralRadius_ge_one_of_nonzero_nonneg_fixedPoint`
 - `higham9_15_irreducible_nonneg_subeigen_spectralRadius_ge`
 - `higham9_15_irreducible_nonneg_subeigen_scale_lt_one_of_spectralRadius_lt_one`
 - `higham9_15_exists_matMulVec_lt_of_irreducible_nonzero_nonneg_spectralRadius_lt_one`

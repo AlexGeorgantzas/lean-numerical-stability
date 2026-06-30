@@ -23221,6 +23221,150 @@ theorem higham9_15_spectralRadius_ge_one_of_positive_fixedPoint
   higham9_15_spectralRadius_ge_one_of_positive_le_matMulVec
     hn C x hC_nonneg hx_pos (fun i => le_of_eq (hfixed i).symm)
 
+/-- **Theorem 9.15 spectral-majorant support**.  A nonzero nonnegative right
+subeigenvector already forces the spectral-radius lower bound; irreducibility
+is not needed for this obstruction. -/
+theorem higham9_15_nonzero_nonneg_subeigen_spectralRadius_ge
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (eta : ℝ) (x : Fin n → ℝ)
+    (hC_nonneg : ∀ i j : Fin n, 0 ≤ C i j)
+    (heta_nonneg : 0 ≤ eta)
+    (hx_nonneg : ∀ i : Fin n, 0 ≤ x i)
+    (hx_ne : x ≠ 0)
+    (hsub : ∀ i : Fin n, eta * x i ≤ matMulVec n C x i) :
+    ENNReal.ofReal eta ≤
+      spectralRadius ℂ
+        (Matrix.toLin'
+          (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) :=
+  ch7_toLin_spectralRadius_ge_of_nonzero_nonneg_right_subeigenvector
+    hn C eta x hC_nonneg heta_nonneg hx_nonneg hx_ne hsub
+
+/-- **Theorem 9.15 spectral-majorant support**.  Under `rho(C) < 1`, a
+nonzero nonnegative right subeigenvector has scale below one, without an
+irreducibility side condition. -/
+theorem higham9_15_nonzero_nonneg_subeigen_scale_lt_one_of_spectralRadius_lt_one
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (eta : ℝ) (x : Fin n → ℝ)
+    (hC_nonneg : ∀ i j : Fin n, 0 ≤ C i j)
+    (heta_nonneg : 0 ≤ eta)
+    (hx_nonneg : ∀ i : Fin n, 0 ≤ x i)
+    (hx_ne : x ≠ 0)
+    (hsub : ∀ i : Fin n, eta * x i ≤ matMulVec n C x i)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) < 1) :
+    eta < 1 := by
+  have hle :
+      ENNReal.ofReal eta ≤
+        spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) :=
+    higham9_15_nonzero_nonneg_subeigen_spectralRadius_ge
+      hn C eta x hC_nonneg heta_nonneg hx_nonneg hx_ne hsub
+  have heta_enn_lt : ENNReal.ofReal eta < 1 := lt_of_le_of_lt hle hrho
+  exact ENNReal.ofReal_lt_one.mp heta_enn_lt
+
+/-- **Theorem 9.15 spectral-majorant support**.  If a nonnegative majorant has
+spectral radius below one, every nonzero nonnegative vector has a component
+that the majorant maps strictly downward. -/
+theorem higham9_15_exists_matMulVec_lt_of_nonzero_nonneg_spectralRadius_lt_one
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (x : Fin n → ℝ)
+    (hC_nonneg : ∀ i j : Fin n, 0 ≤ C i j)
+    (hx_nonneg : ∀ i : Fin n, 0 ≤ x i)
+    (hx_ne : x ≠ 0)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) < 1) :
+    ∃ i : Fin n, matMulVec n C x i < x i := by
+  by_contra hnone
+  have hsub : ∀ i : Fin n, (1 : ℝ) * x i ≤ matMulVec n C x i := by
+    intro i
+    have hi : ¬ matMulVec n C x i < x i := by
+      intro hlt
+      exact hnone ⟨i, hlt⟩
+    simpa [one_mul] using (le_of_not_gt hi)
+  have hone_lt :
+      (1 : ℝ) < 1 :=
+    higham9_15_nonzero_nonneg_subeigen_scale_lt_one_of_spectralRadius_lt_one
+      hn C 1 x hC_nonneg (by norm_num) hx_nonneg hx_ne hsub hrho
+  exact (lt_irrefl (1 : ℝ)) hone_lt
+
+/-- **Theorem 9.15 spectral-majorant support**.  Under `rho(C) < 1`, a
+nonnegative majorant cannot dominate any nonzero nonnegative vector
+componentwise. -/
+theorem higham9_15_not_exists_nonzero_nonneg_le_matMulVec_of_spectralRadius_lt_one
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (hC_nonneg : ∀ i j : Fin n, 0 ≤ C i j)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) < 1) :
+    ¬ ∃ x : Fin n → ℝ,
+      x ≠ 0 ∧ (∀ i : Fin n, 0 ≤ x i) ∧
+        ∀ i : Fin n, x i ≤ matMulVec n C x i := by
+  rintro ⟨x, hx_ne, hx_nonneg, hle⟩
+  obtain ⟨i, hlt⟩ :=
+    higham9_15_exists_matMulVec_lt_of_nonzero_nonneg_spectralRadius_lt_one
+      hn C x hC_nonneg hx_nonneg hx_ne hrho
+  exact (not_lt_of_ge (hle i)) hlt
+
+/-- **Theorem 9.15 spectral-majorant support**.  Under `rho(C) < 1`, a
+nonnegative majorant has no nonzero nonnegative fixed point. -/
+theorem higham9_15_not_exists_nonzero_nonneg_fixedPoint_of_spectralRadius_lt_one
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (hC_nonneg : ∀ i j : Fin n, 0 ≤ C i j)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) < 1) :
+    ¬ ∃ x : Fin n → ℝ,
+      x ≠ 0 ∧ (∀ i : Fin n, 0 ≤ x i) ∧
+        ∀ i : Fin n, matMulVec n C x i = x i := by
+  rintro ⟨x, hx_ne, hx_nonneg, hfixed⟩
+  exact
+    (higham9_15_not_exists_nonzero_nonneg_le_matMulVec_of_spectralRadius_lt_one
+      hn C hC_nonneg hrho)
+      ⟨x, hx_ne, hx_nonneg, fun i => le_of_eq (hfixed i).symm⟩
+
+/-- **Theorem 9.15 spectral-majorant support**.  A nonzero nonnegative vector
+dominated by its majorant image forces spectral radius at least one. -/
+theorem higham9_15_spectralRadius_ge_one_of_nonzero_nonneg_le_matMulVec
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (x : Fin n → ℝ)
+    (hC_nonneg : ∀ i j : Fin n, 0 ≤ C i j)
+    (hx_ne : x ≠ 0)
+    (hx_nonneg : ∀ i : Fin n, 0 ≤ x i)
+    (hle : ∀ i : Fin n, x i ≤ matMulVec n C x i) :
+    (1 : ENNReal) ≤
+      spectralRadius ℂ
+        (Matrix.toLin'
+          (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) := by
+  have hsub : ∀ i : Fin n, (1 : ℝ) * x i ≤ matMulVec n C x i := by
+    intro i
+    simpa [one_mul] using hle i
+  simpa using
+    (higham9_15_nonzero_nonneg_subeigen_spectralRadius_ge
+      hn C 1 x hC_nonneg (by norm_num) hx_nonneg hx_ne hsub)
+
+/-- **Theorem 9.15 spectral-majorant support**.  A nonzero nonnegative fixed
+point of a nonnegative majorant forces spectral radius at least one. -/
+theorem higham9_15_spectralRadius_ge_one_of_nonzero_nonneg_fixedPoint
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (x : Fin n → ℝ)
+    (hC_nonneg : ∀ i j : Fin n, 0 ≤ C i j)
+    (hx_ne : x ≠ 0)
+    (hx_nonneg : ∀ i : Fin n, 0 ≤ x i)
+    (hfixed : ∀ i : Fin n, matMulVec n C x i = x i) :
+    (1 : ENNReal) ≤
+      spectralRadius ℂ
+        (Matrix.toLin'
+          (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) :=
+  higham9_15_spectralRadius_ge_one_of_nonzero_nonneg_le_matMulVec
+    hn C x hC_nonneg hx_ne hx_nonneg (fun i => le_of_eq (hfixed i).symm)
+
 /-- **Theorem 9.15 spectral-majorant support**.  Irreducibility upgrades a
 nonzero nonnegative right subeigenvector to a positive one, so the Chapter 7
 Collatz/Gelfand lower bound applies to nonzero nonnegative data. -/
