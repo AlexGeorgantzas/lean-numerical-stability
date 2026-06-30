@@ -1644,6 +1644,36 @@ theorem higham21_lemma21_2_product_budget_of_source_factor_bounds
   simpa [mul_comm] using hbudget
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    perturbed Gram-pseudoinverse operator-bound reduction.  Bounds for `A`,
+    the second perturbation `DeltaA2`, and the inverse candidate for
+    `(A + DeltaA2)(A + DeltaA2)^T` imply the operator bound for the concrete
+    table `(A + DeltaA2)^T ((A + DeltaA2)(A + DeltaA2)^T)^{-1}`.
+
+    This does not prove the source perturbation estimate for the Gram inverse;
+    it exposes that estimate as the remaining matrix-analysis obligation. -/
+theorem higham21_lemma21_2_perturbed_pseudoinverse_op_bound_of_matrix_and_gram_inverse_bounds
+    {m n : ℕ}
+    (A DeltaA2 : Fin m → Fin n → ℝ)
+    {sigma beta eta : ℝ}
+    (hsigma : 0 ≤ sigma)
+    (hbeta : 0 ≤ beta)
+    (hA : rectOpNorm2Le A sigma)
+    (hDeltaA2 : rectOpNorm2Le DeltaA2 beta)
+    (hGramInv :
+      rectOpNorm2Le
+        (undetGramNonsingInv (fun i j => A i j + DeltaA2 i j))
+        eta) :
+    rectOpNorm2Le
+      (undetAplusOfGramNonsingInv (fun i j => A i j + DeltaA2 i j))
+      ((sigma + beta) * eta) := by
+  let B : Fin m → Fin n → ℝ := fun i j => A i j + DeltaA2 i j
+  have hB : rectOpNorm2Le B (sigma + beta) := by
+    simpa [B] using rectOpNorm2Le_add A DeltaA2 hA hDeltaA2
+  exact
+    rectOpNorm2Le_undetAplusOfGramNonsingInv_of_bounds
+      B (add_nonneg hsigma hbeta) hB (by simpa [B] using hGramInv)
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     concrete Gram-pseudoinverse handoff with the scalar product budget derived
     from source-shaped perturbation and pseudoinverse-factor bounds.  The
     remaining matrix perturbation work is still the perturbed Gram
@@ -1907,6 +1937,58 @@ theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_source_factors
         (hdet hx) (hxTranspose hx) (hsmall hx) (halpha hx) (hbeta hx)
         (heta hx) (halpha_le hx) (hbeta_le hx) (heta_le hx)
         (hDeltaA1Op hx) (hDeltaA2Op hx) (hBplusOp hx)
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    guarded source-factor handoff with the concrete perturbed-pseudoinverse
+    operator certificate derived from a perturbed-matrix bound and a Gram-inverse
+    bound.  The zero branch still needs only the first perturbed equation; the
+    nonzero branch now exposes perturbed Gram nonsingularity and the concrete
+    Gram-inverse operator estimate as the remaining matrix-analysis obligations. -/
+theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_gram_inverse_source_bounds
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (rho1 rho2 alpha beta sigma eta : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hdet : x ≠ 0 →
+      Matrix.det
+          (rectGram (fun i j => A i j + DeltaA2 i j) :
+            Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hxTranspose : x ≠ 0 →
+      x =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : x ≠ 0 → 3 * max rho1 rho2 < 1)
+    (halpha : x ≠ 0 → 0 ≤ alpha)
+    (hbeta : x ≠ 0 → 0 ≤ beta)
+    (hsigma : x ≠ 0 → 0 ≤ sigma)
+    (heta : x ≠ 0 → 0 ≤ eta)
+    (halpha_le : x ≠ 0 → alpha ≤ rho1)
+    (hbeta_le : x ≠ 0 → beta ≤ rho2)
+    (hGramFactor_le : x ≠ 0 → (sigma + beta) * eta ≤ (1 - rho2)⁻¹)
+    (hAOp : x ≠ 0 → rectOpNorm2Le A sigma)
+    (hDeltaA1Op : x ≠ 0 → rectOpNorm2Le DeltaA1 alpha)
+    (hDeltaA2Op : x ≠ 0 → rectOpNorm2Le DeltaA2 beta)
+    (hGramInvOp : x ≠ 0 →
+      rectOpNorm2Le
+        (undetGramNonsingInv (fun i j => A i j + DeltaA2 i j))
+        eta) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j)
+      b x :=
+  higham21_lemma21_2_single_min_norm_of_nonzero_branch_source_factors
+    A x DeltaA1 DeltaA2 b y rho1 rho2 alpha beta ((sigma + beta) * eta)
+    hDeltaA1 hdet hxTranspose hsmall halpha hbeta
+    (fun hx => mul_nonneg (add_nonneg (hsigma hx) (hbeta hx)) (heta hx))
+    halpha_le hbeta_le hGramFactor_le hDeltaA1Op hDeltaA2Op
+    (fun hx =>
+      higham21_lemma21_2_perturbed_pseudoinverse_op_bound_of_matrix_and_gram_inverse_bounds
+        A DeltaA2 (hsigma hx) (hbeta hx) (hAOp hx) (hDeltaA2Op hx)
+        (hGramInvOp hx))
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     source-shaped pseudoinverse handoff for the remaining beta argument.
