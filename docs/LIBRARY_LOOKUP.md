@@ -1494,6 +1494,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_3_lu_backward_error_gamma`
 - `higham9_4_lu_solve_backward_error`
 - `higham9_4_exactDoolittle_recurrences_lu_solve_backward_error`
+- `higham9_4_rectRoundedLoop_square_lu_solve_backward_error`
 - `higham_problem9_4_permuted_lu_solve_backward_error`
 - `higham_problem9_4_complete_permuted_lu_solve_backward_error`
 - `higham9_8_nonneg_factor_bound`
