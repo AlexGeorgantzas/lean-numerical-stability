@@ -1975,6 +1975,58 @@ theorem higham21_lemma21_2_ch7_candidate_frobNorm_bound_of_abs_left_product_boun
           mul_le_mul_of_nonneg_left hInf hsqrt_nonneg
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    scalar half-radius adapter for the conservative Chapter 7 inverse-candidate
+    factor. -/
+theorem higham21_one_div_one_sub_le_two_of_nonneg_le_half
+    {c : ℝ}
+    (_hc_nn : 0 ≤ c)
+    (hc_half : c ≤ (1 / 2 : ℝ)) :
+    1 / (1 - c) ≤ 2 := by
+  have hden_pos : 0 < 1 - c := by nlinarith
+  rw [div_le_iff₀ hden_pos]
+  nlinarith
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    conservative Frobenius bound for the explicit Chapter 7 perturbed inverse
+    candidate under the sufficient half-radius first-product condition. -/
+theorem higham21_lemma21_2_ch7_candidate_frobNorm_bound_of_half_radius
+    {m : ℕ}
+    (hm : 0 < m)
+    (AAT_inv DeltaG : Fin m → Fin m → ℝ)
+    (c : ℝ)
+    (hc_nn : 0 ≤ c)
+    (hc_half : c ≤ (1 / 2 : ℝ))
+    (hbound :
+      infNormBound m
+        (absMatrix m
+          (matMul m AAT_inv DeltaG))
+        c) :
+    frobNorm (ch7Problem711PerturbedInverseCandidate m AAT_inv DeltaG) ≤
+      Real.sqrt ((m : ℝ) * (m : ℝ)) *
+        (((m : ℝ) * 2) * infNorm AAT_inv) := by
+  have hc_lt : c < 1 := by nlinarith
+  have hbase :
+      frobNorm (ch7Problem711PerturbedInverseCandidate m AAT_inv DeltaG) ≤
+        Real.sqrt ((m : ℝ) * (m : ℝ)) *
+          (((m : ℝ) * (1 / (1 - c))) * infNorm AAT_inv) :=
+    higham21_lemma21_2_ch7_candidate_frobNorm_bound_of_abs_left_product_bound
+      hm AAT_inv DeltaG c hc_nn hc_lt hbound
+  have hfactor :
+      1 / (1 - c) ≤ 2 :=
+    higham21_one_div_one_sub_le_two_of_nonneg_le_half hc_nn hc_half
+  have hm_nonneg : 0 ≤ (m : ℝ) := by exact_mod_cast Nat.zero_le m
+  have hinner :
+      (((m : ℝ) * (1 / (1 - c))) * infNorm AAT_inv) ≤
+        (((m : ℝ) * 2) * infNorm AAT_inv) := by
+    exact
+      mul_le_mul_of_nonneg_right
+        (mul_le_mul_of_nonneg_left hfactor hm_nonneg)
+        (infNorm_nonneg AAT_inv)
+  have hsqrt_nonneg : 0 ≤ Real.sqrt ((m : ℝ) * (m : ℝ)) :=
+    Real.sqrt_nonneg _
+  exact hbase.trans (mul_le_mul_of_nonneg_left hinner hsqrt_nonneg)
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     a componentwise Gram-perturbation estimate implies the Chapter 7 absolute
     left-product contraction certificate used for perturbed Gram
     nonsingularity. -/
@@ -2771,6 +2823,114 @@ theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_fa
     simpa [c, EGram] using
       mul_le_mul_of_nonneg_left hCand (add_nonneg (hsigma hx) (hbeta hx))
   exact hscaled.trans (hConservativeFactor_le hx)
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    rectangular data-perturbation handoff with a sufficient half-radius
+    first-product condition.  This replaces the explicit `1 / (1 - c)` factor
+    in the previous conservative handoff by the simpler source-facing bound
+    using the constant `2`. -/
+theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_half_radius_of_componentwise_data_bound
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (E : Fin m → Fin n → ℝ)
+    (rho1 rho2 alpha beta sigma eps : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hDataEpsNonneg : x ≠ 0 → 0 ≤ eps)
+    (hGramSmallHalf : x ≠ 0 →
+      eps *
+          infNorm
+            (ch7InverseFirstProductSensitivity m AAT_inv
+              (undetGramPerturbationComponentBudget A E eps)) ≤
+        (1 / 2 : ℝ))
+    (hGramLeftInv : x ≠ 0 → IsLeftInverse m (rectGram A) AAT_inv)
+    (hDataE : x ≠ 0 → ∀ i k, 0 ≤ E i k)
+    (hDeltaA2Component : x ≠ 0 →
+      ∀ i k, |DeltaA2 i k| ≤ eps * E i k)
+    (hxTranspose : x ≠ 0 →
+      x =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : x ≠ 0 → 3 * max rho1 rho2 < 1)
+    (halpha : x ≠ 0 → 0 ≤ alpha)
+    (hbeta : x ≠ 0 → 0 ≤ beta)
+    (hsigma : x ≠ 0 → 0 ≤ sigma)
+    (halpha_le : x ≠ 0 → alpha ≤ rho1)
+    (hbeta_le : x ≠ 0 → beta ≤ rho2)
+    (hConservativeFactor_le : x ≠ 0 →
+      (sigma + beta) *
+          (Real.sqrt ((m : ℝ) * (m : ℝ)) *
+            (((m : ℝ) * 2) * infNorm AAT_inv)) ≤
+        (1 - rho2)⁻¹)
+    (hAOp : x ≠ 0 → rectOpNorm2Le A sigma)
+    (hDeltaA1Op : x ≠ 0 → rectOpNorm2Le DeltaA1 alpha)
+    (hDeltaA2Op : x ≠ 0 → rectOpNorm2Le DeltaA2 beta) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j)
+      b x := by
+  let EGram : Fin m → Fin m → ℝ :=
+    undetGramPerturbationComponentBudget A E eps
+  let c : ℝ :=
+    eps * infNorm (ch7InverseFirstProductSensitivity m AAT_inv EGram)
+  refine
+    higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_of_componentwise_data_bound
+      hm A x DeltaA1 DeltaA2 b y AAT_inv E rho1 rho2 alpha beta sigma eps
+      hDeltaA1 hDataEpsNonneg ?_ hGramLeftInv hDataE
+      hDeltaA2Component hxTranspose hsmall halpha hbeta hsigma
+      halpha_le hbeta_le ?_ hAOp hDeltaA1Op hDeltaA2Op
+  · intro hx
+    have hhalf : c ≤ (1 / 2 : ℝ) := by
+      simpa [c, EGram] using hGramSmallHalf hx
+    nlinarith
+  · intro hx
+    have hc_nn : 0 ≤ c := by
+      dsimp [c, EGram]
+      exact mul_nonneg (hDataEpsNonneg hx)
+        (infNorm_nonneg (ch7InverseFirstProductSensitivity m AAT_inv
+          (undetGramPerturbationComponentBudget A E eps)))
+    have hfactor :
+        1 / (1 - c) ≤ 2 :=
+      higham21_one_div_one_sub_le_two_of_nonneg_le_half hc_nn
+        (by simpa [c, EGram] using hGramSmallHalf hx)
+    have hm_nonneg : 0 ≤ (m : ℝ) := by exact_mod_cast Nat.zero_le m
+    have hinner :
+        (((m : ℝ) * (1 / (1 - c))) * infNorm AAT_inv) ≤
+          (((m : ℝ) * 2) * infNorm AAT_inv) := by
+      exact
+        mul_le_mul_of_nonneg_right
+          (mul_le_mul_of_nonneg_left hfactor hm_nonneg)
+          (infNorm_nonneg AAT_inv)
+    have hsqrt_nonneg : 0 ≤ Real.sqrt ((m : ℝ) * (m : ℝ)) :=
+      Real.sqrt_nonneg _
+    have hsqrt :
+        Real.sqrt ((m : ℝ) * (m : ℝ)) *
+            (((m : ℝ) * (1 / (1 - c))) * infNorm AAT_inv) ≤
+          Real.sqrt ((m : ℝ) * (m : ℝ)) *
+            (((m : ℝ) * 2) * infNorm AAT_inv) :=
+      mul_le_mul_of_nonneg_left hinner hsqrt_nonneg
+    have hscaled :
+        (sigma + beta) *
+            (Real.sqrt ((m : ℝ) * (m : ℝ)) *
+              (((m : ℝ) *
+                  (1 /
+                    (1 -
+                      eps *
+                        infNorm
+                          (ch7InverseFirstProductSensitivity m AAT_inv
+                            (undetGramPerturbationComponentBudget A E eps)))))
+                * infNorm AAT_inv)) ≤
+          (sigma + beta) *
+            (Real.sqrt ((m : ℝ) * (m : ℝ)) *
+              (((m : ℝ) * 2) * infNorm AAT_inv)) := by
+      simpa [c, EGram] using
+        mul_le_mul_of_nonneg_left hsqrt (add_nonneg (hsigma hx) (hbeta hx))
+    exact hscaled.trans (hConservativeFactor_le hx)
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     guarded source-factor handoff with perturbed Gram nonsingularity discharged
