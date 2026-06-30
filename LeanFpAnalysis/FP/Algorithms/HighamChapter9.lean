@@ -7045,6 +7045,51 @@ theorem higham9_5_wilkinson_source_bound_of_PermutedPartialPivotGEPPUTrace_absBu
       hsigma hn hC)
     hn hn3 hL_bound
 
+/-- **Theorem 9.5 / Algorithm 9.2**, rectangular rounded-stage
+partial-pivoting bridge.
+
+This connects the square-specialized rectangular rounded Doolittle trace for
+the row-permuted matrix `PA` to the row-pivoted Wilkinson source bound.  The
+GEPP trace and the proof that the rounded rectangular stage trace matches the
+chosen pivot sequence remain visible hypotheses. -/
+theorem higham9_5_wilkinson_source_bound_of_PermutedPartialPivotGEPPUTrace_rectRoundedStageTrace
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (sigma : Fin n → Fin n)
+    (b : Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn_pos A)
+    (htrace : higham9_7_PartialPivotGEPPUTrace n A U_hat)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hsigma : IsPermutation n sigma)
+    (hT : higham9_2_RectDoolittleRoundedStageTrace
+      (Nat.le_refl n) (higham9_2_rowPermutedMatrix A sigma) L_hat U_hat fp)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          (higham9_2_rowPermutedMatrix A sigma) L_hat U_hat k j ≤
+        gamma fp n * |U_hat k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp
+          (higham9_2_rowPermutedMatrix A sigma) L_hat U_hat i k ≤
+        gamma fp n * |L_hat i k * U_hat k k|)
+    (hL_bound : ∀ i j : Fin n, |L_hat i j| ≤ 1) :
+    let bP : Fin n → ℝ := fun i => b (sigma i)
+    let y_hat := fl_forwardSub fp n L_hat bP
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (infNorm ΔA ≤
+        (↑n) ^ 2 * gamma fp (3 * n) *
+          (2 : ℝ) ^ (n - 1) * infNorm A) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_5_wilkinson_source_bound_of_PermutedPartialPivotGEPPUTrace_denseLoop
+    fp n hn_pos A L_hat U_hat sigma b hAmax htrace hU_diag hsigma
+    (higham9_2_rectDenseLoopCertificate_to_squareDenseLoopCertificate
+      (higham9_2_rectRoundedStageTrace_to_rectDenseLoopCertificate
+        hT hU_diag hn hU_budget_le hL_budget_le))
+    hn hn3 hL_bound
+
 /-- **Theorem 9.5 / equation (9.10)**, literal-source-budget
 partial-pivoting bridge.
 
@@ -45736,6 +45781,56 @@ theorem higham9_5_wilkinson_source_bound_of_CompletePivotGECPUTrace_absBudget
     A L_hat U_hat sigma tau b hAmax htrace hU_diag
     (higham9_2_completePermutedAbsBudgetCertificate_to_CompletePermutedLUBackwardError
       hsigma htau hn hC)
+    hn hn3 hL_bound
+
+/-- **Theorem 9.5 / Algorithm 9.2**, rectangular rounded-stage
+complete-pivoting bridge.
+
+This connects the square-specialized rectangular rounded Doolittle trace for
+the row/column-permuted matrix `PAQ` to the complete-pivoted Wilkinson source
+bound.  The recursive complete-pivoting trace and the link from the concrete
+rounded stage trace to that pivot sequence remain explicit hypotheses. -/
+theorem higham9_5_wilkinson_source_bound_of_CompletePivotGECPUTrace_rectRoundedStageTrace
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (sigma tau : Fin n → Fin n)
+    (b : Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn_pos A)
+    (htrace : higham9_8_CompletePivotGECPUTrace n A U_hat)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hsigma : IsPermutation n sigma)
+    (htau : IsPermutation n tau)
+    (hT : higham9_2_RectDoolittleRoundedStageTrace
+      (Nat.le_refl n) (higham9_2_rowColPermutedMatrix A sigma tau)
+      L_hat U_hat fp)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat k j ≤
+        gamma fp n * |U_hat k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k ≤
+        gamma fp n * |L_hat i k * U_hat k k|)
+    (hL_bound : ∀ i j : Fin n, |L_hat i j| ≤ 1) :
+    let bP : Fin n → ℝ := fun i => b (sigma i)
+    let y_hat := fl_forwardSub fp n L_hat bP
+    let z_hat := fl_backSub fp n U_hat y_hat
+    let x_hat : Fin n → ℝ :=
+      fun j => z_hat ((Equiv.ofBijective tau htau).symm j)
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (infNorm ΔA ≤
+        (↑n) ^ 2 * gamma fp (3 * n) *
+          (2 : ℝ) ^ (n - 1) * infNorm A) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_5_wilkinson_source_bound_of_CompletePivotGECPUTrace_denseLoop
+    fp n hn_pos A L_hat U_hat sigma tau b hAmax htrace hU_diag
+    hsigma htau
+    (higham9_2_rectDenseLoopCertificate_to_squareDenseLoopCertificate
+      (higham9_2_rectRoundedStageTrace_to_rectDenseLoopCertificate
+        hT hU_diag hn hU_budget_le hL_budget_le))
     hn hn3 hL_bound
 
 /-- **Theorem 9.5**, literal-source-budget complete-pivoting bridge.
