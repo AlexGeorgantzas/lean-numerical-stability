@@ -379,8 +379,10 @@
     higham13_algorithm13_3_matrixStageHistoryGrowthMatrix_tail_le,
     higham13_eq13_22_tail_upper_budget_le_full_matrix_stage_history_exact_kappa,
     higham13_eq13_22_tail_lower_budget_le_full_from_inverse_ratio_matrix_stage_history_exact_kappa,
+    higham13_eq13_22_tail_lower_budget_le_full_from_base_inverse_matrix_stage_history_exact_kappa,
     higham13_eq13_22_tail_chain_to_full_budget_from_lower_comparison_matrix_stage_history_exact_kappa,
     higham13_eq13_22_tail_chain_to_full_budget_from_inverse_ratio_matrix_stage_history_exact_kappa,
+    higham13_eq13_22_tail_chain_to_full_budget_from_base_inverse_matrix_stage_history_exact_kappa,
     higham13_eq13_22_blockLUBudgetChain_succ_from_tail_local_chain_inverse_ratio_matrix_stage_history_exact_kappa,
     higham13_eq13_22_exists_blockLUFact_succ_product_from_tail_local_chain_inverse_ratio_matrix_stage_history_exact_kappa,
     higham13_eq13_23_exists_blockLUFact_succ_product_from_tail_local_chain_inverse_ratio_matrix_stage_history_exact_kappa,
@@ -482,6 +484,8 @@
     higham13_eq13_22_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa,
     higham13_eq13_23_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa,
     growthFactorEntry_sq_kappa_budget_le_of_growth_le_inv_ratio,
+    maxEntryNormRect_inverse_ratio_of_base_le_and_inverse_le,
+    growthFactorEntry_sq_kappa_budget_le_of_growth_le_base_inverse,
     higham13_eq13_22_matrix_stage_history_product_from_stage_local_budgets_exact_kappa,
     higham13_eq13_22_matrix_stage_history_product_from_stage_local_growth_budgets_exact_kappa,
     higham13_eq13_22_matrix_stage_history_product_from_stage_local_growth_inverse_ratio_exact_kappa,
@@ -26558,6 +26562,82 @@ theorem growthFactorEntry_sq_kappa_budget_le_of_growth_le_inv_ratio
           maxEntryNormRect hGlobal hGlobal AglobInv) := hGlobalEq.symm
 
 /-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    a strong base/inverse comparison implies the cross-multiplied inverse-ratio
+    comparison used by the recursive tail-budget transport.
+
+    This is deliberately conditional.  The hypothesis
+    `||A_global||_max <= ||A_local||_max` is stronger than ordinary containment
+    in the direction needed for denominators, and is not asserted here to hold
+    for Schur tails automatically. -/
+theorem maxEntryNormRect_inverse_ratio_of_base_le_and_inverse_le
+    {nLocal nGlobal : ℕ} (hLocal : 0 < nLocal) (hGlobal : 0 < nGlobal)
+    (Aloc AlocInv : Fin nLocal → Fin nLocal → ℝ)
+    (Aglob AglobInv : Fin nGlobal → Fin nGlobal → ℝ)
+    (hBase :
+      maxEntryNormRect hGlobal hGlobal Aglob ≤
+        maxEntryNormRect hLocal hLocal Aloc)
+    (hInv :
+      maxEntryNormRect hLocal hLocal AlocInv ≤
+        maxEntryNormRect hGlobal hGlobal AglobInv) :
+    maxEntryNormRect hLocal hLocal AlocInv *
+        maxEntryNormRect hGlobal hGlobal Aglob ≤
+      maxEntryNormRect hGlobal hGlobal AglobInv *
+        maxEntryNormRect hLocal hLocal Aloc := by
+  have hGlobBaseNonneg :
+      0 ≤ maxEntryNormRect hGlobal hGlobal Aglob :=
+    maxEntryNormRect_nonneg hGlobal hGlobal Aglob
+  have hGlobInvNonneg :
+      0 ≤ maxEntryNormRect hGlobal hGlobal AglobInv :=
+    maxEntryNormRect_nonneg hGlobal hGlobal AglobInv
+  have hStepInv :
+      maxEntryNormRect hLocal hLocal AlocInv *
+          maxEntryNormRect hGlobal hGlobal Aglob ≤
+        maxEntryNormRect hGlobal hGlobal AglobInv *
+          maxEntryNormRect hGlobal hGlobal Aglob :=
+    mul_le_mul_of_nonneg_right hInv hGlobBaseNonneg
+  have hStepBase :
+      maxEntryNormRect hGlobal hGlobal AglobInv *
+          maxEntryNormRect hGlobal hGlobal Aglob ≤
+        maxEntryNormRect hGlobal hGlobal AglobInv *
+          maxEntryNormRect hLocal hLocal Aloc :=
+    mul_le_mul_of_nonneg_left hBase hGlobInvNonneg
+  exact le_trans hStepInv hStepBase
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    scalar local-to-global `rho^2 kappa` budget comparison from growth
+    domination plus a strong base/inverse comparison.
+
+    The theorem factors through
+    `growthFactorEntry_sq_kappa_budget_le_of_growth_le_inv_ratio`, so the only
+    new mathematics is the elementary product-order bridge from
+    `maxEntryNormRect_inverse_ratio_of_base_le_and_inverse_le`. -/
+theorem growthFactorEntry_sq_kappa_budget_le_of_growth_le_base_inverse
+    {nLocal nGlobal : ℕ} (hLocal : 0 < nLocal) (hGlobal : 0 < nGlobal)
+    (Aloc Gloc AlocInv : Fin nLocal → Fin nLocal → ℝ)
+    (Aglob Gglob AglobInv : Fin nGlobal → Fin nGlobal → ℝ)
+    (hAlocPos : 0 < maxEntryNorm hLocal Aloc)
+    (hAglobPos : 0 < maxEntryNorm hGlobal Aglob)
+    (hGrowth : maxEntryNorm hLocal Gloc ≤ maxEntryNorm hGlobal Gglob)
+    (hBase :
+      maxEntryNormRect hGlobal hGlobal Aglob ≤
+        maxEntryNormRect hLocal hLocal Aloc)
+    (hInv :
+      maxEntryNormRect hLocal hLocal AlocInv ≤
+        maxEntryNormRect hGlobal hGlobal AglobInv) :
+    (growthFactorEntry hLocal Aloc Gloc hAlocPos) ^ 2 *
+        (maxEntryNormRect hLocal hLocal Aloc *
+          maxEntryNormRect hLocal hLocal AlocInv) ≤
+      (growthFactorEntry hGlobal Aglob Gglob hAglobPos) ^ 2 *
+        (maxEntryNormRect hGlobal hGlobal Aglob *
+          maxEntryNormRect hGlobal hGlobal AglobInv) := by
+  exact
+    growthFactorEntry_sq_kappa_budget_le_of_growth_le_inv_ratio
+      hLocal hGlobal Aloc Gloc AlocInv Aglob Gglob AglobInv
+      hAlocPos hAglobPos hGrowth
+      (maxEntryNormRect_inverse_ratio_of_base_le_and_inverse_le
+        hLocal hGlobal Aloc AlocInv Aglob AglobInv hBase hInv)
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
     lower-budget comparison for the recursive Schur tail from the remaining
     inverse-ratio condition.
 
@@ -26661,6 +26741,72 @@ theorem
     mul_le_mul_of_nonneg_left hCore (Nat.cast_nonneg n)
 
 /-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    lower-budget comparison for the recursive Schur tail from explicit
+    base/inverse comparisons.
+
+    This is a conditional dependency for the Problem 13.4 tail route.  It
+    derives the cross-multiplied inverse-ratio comparison from the stronger
+    pair `||A_full||_max <= ||A_tail||_max` and
+    `||A_tail^{-1}||_max <= ||A_full^{-1}||_max`, then reuses the existing
+    inverse-ratio transport theorem. -/
+theorem
+    higham13_eq13_22_tail_lower_budget_le_full_from_base_inverse_matrix_stage_history_exact_kappa
+    {m r : ℕ} (hr : 0 < r)
+    (A : Fin ((m + 1) + 1) → Fin ((m + 1) + 1) →
+      Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hTailPos :
+      0 < maxEntryNorm (Nat.mul_pos (Nat.succ_pos m) hr)
+        (blockMatrixFlatFin (blockSchur A (pivotInv 0))))
+    (hFullPos :
+      0 < maxEntryNorm (Nat.add_pos_left hr ((m + 1) * r))
+        (blockMatrixFirstSplitFlat A))
+    (n : ℕ) :
+    let hmTail : 0 < m + 1 := Nat.succ_pos m
+    let hNTail : 0 < (m + 1) * r := Nat.mul_pos hmTail hr
+    let hNFull : 0 < r + (m + 1) * r :=
+      Nat.add_pos_left hr ((m + 1) * r)
+    let Atail : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+      blockMatrixFlatFin (blockSchur A (pivotInv 0))
+    let Gtail : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+      higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+        hNTail hmTail hr (blockSchur A (pivotInv 0))
+        (fun q => pivotInv (q + 1))
+    let AinvTail : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+      nonsingInv ((m + 1) * r) Atail
+    let A0 : Fin (r + (m + 1) * r) → Fin (r + (m + 1) * r) → ℝ :=
+      blockMatrixFirstSplitFlat A
+    let Gfull : Fin (r + (m + 1) * r) → Fin (r + (m + 1) * r) → ℝ :=
+      higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+        hNFull (Nat.succ_pos (m + 1)) hr A pivotInv
+    let AinvFull : Fin (r + (m + 1) * r) → Fin (r + (m + 1) * r) → ℝ :=
+      nonsingInv (r + (m + 1) * r) A0
+    (maxEntryNormRect hNFull hNFull A0 ≤
+        maxEntryNormRect hNTail hNTail Atail) →
+      (maxEntryNormRect hNTail hNTail AinvTail ≤
+        maxEntryNormRect hNFull hNFull AinvFull) →
+      (n : ℝ) * (growthFactorEntry hNTail Atail Gtail hTailPos) ^ 2 *
+          (maxEntryNormRect hNTail hNTail Atail *
+            maxEntryNormRect hNTail hNTail AinvTail) ≤
+        (n : ℝ) * (growthFactorEntry hNFull A0 Gfull hFullPos) ^ 2 *
+          (maxEntryNormRect hNFull hNFull A0 *
+            maxEntryNormRect hNFull hNFull AinvFull) := by
+  dsimp only
+  intro hBase hInv
+  exact
+    higham13_eq13_22_tail_lower_budget_le_full_from_inverse_ratio_matrix_stage_history_exact_kappa
+      hr A pivotInv hTailPos hFullPos n
+      (maxEntryNormRect_inverse_ratio_of_base_le_and_inverse_le
+        (Nat.mul_pos (Nat.succ_pos m) hr)
+        (Nat.add_pos_left hr ((m + 1) * r))
+        (blockMatrixFlatFin (blockSchur A (pivotInv 0)))
+        (nonsingInv ((m + 1) * r)
+          (blockMatrixFlatFin (blockSchur A (pivotInv 0))))
+        (blockMatrixFirstSplitFlat A)
+        (nonsingInv (r + (m + 1) * r) (blockMatrixFirstSplitFlat A))
+        hBase hInv)
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
     transport a recursive Schur-tail chain to the full ambient budgets from
     the explicit inverse-ratio condition.
 
@@ -26726,6 +26872,81 @@ theorem
   exact
     higham13_eq13_22_tail_chain_to_full_budget_from_lower_comparison_matrix_stage_history_exact_kappa
       hr A pivotInv hTailPos hFullPos n hLower hTail
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    transport a recursive Schur-tail chain to the full ambient budgets from
+    explicit base/inverse comparisons.
+
+    This is the chain-level companion to
+    `higham13_eq13_22_tail_lower_budget_le_full_from_base_inverse_matrix_stage_history_exact_kappa`.
+    It keeps the strong base comparison and inverse comparison as hypotheses,
+    because they are not generic consequences of the recursive matrix-stage
+    history alone. -/
+theorem
+    higham13_eq13_22_tail_chain_to_full_budget_from_base_inverse_matrix_stage_history_exact_kappa
+    {m r : ℕ} (hr : 0 < r)
+    (A : Fin ((m + 1) + 1) → Fin ((m + 1) + 1) →
+      Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hTailPos :
+      0 < maxEntryNorm (Nat.mul_pos (Nat.succ_pos m) hr)
+        (blockMatrixFlatFin (blockSchur A (pivotInv 0))))
+    (hFullPos :
+      0 < maxEntryNorm (Nat.add_pos_left hr ((m + 1) * r))
+        (blockMatrixFirstSplitFlat A))
+    (n : ℕ) :
+    let hmTail : 0 < m + 1 := Nat.succ_pos m
+    let hNTail : 0 < (m + 1) * r := Nat.mul_pos hmTail hr
+    let hNFull : 0 < r + (m + 1) * r :=
+      Nat.add_pos_left hr ((m + 1) * r)
+    let Atail : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+      blockMatrixFlatFin (blockSchur A (pivotInv 0))
+    let Gtail : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+      higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+        hNTail hmTail hr (blockSchur A (pivotInv 0))
+        (fun q => pivotInv (q + 1))
+    let AinvTail : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+      nonsingInv ((m + 1) * r) Atail
+    let A0 : Fin (r + (m + 1) * r) → Fin (r + (m + 1) * r) → ℝ :=
+      blockMatrixFirstSplitFlat A
+    let Gfull : Fin (r + (m + 1) * r) → Fin (r + (m + 1) * r) → ℝ :=
+      higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+        hNFull (Nat.succ_pos (m + 1)) hr A pivotInv
+    let AinvFull : Fin (r + (m + 1) * r) → Fin (r + (m + 1) * r) → ℝ :=
+      nonsingInv (r + (m + 1) * r) A0
+    (maxEntryNormRect hNFull hNFull A0 ≤
+        maxEntryNormRect hNTail hNTail Atail) →
+      (maxEntryNormRect hNTail hNTail AinvTail ≤
+        maxEntryNormRect hNFull hNFull AinvFull) →
+      Higham13BlockLUBudgetChain hr
+        ((n : ℝ) * (growthFactorEntry hNTail Atail Gtail hTailPos) ^ 2 *
+          (maxEntryNormRect hNTail hNTail Atail *
+            maxEntryNormRect hNTail hNTail AinvTail))
+        (growthFactorEntry hNTail Atail Gtail hTailPos *
+          maxEntryNormRect hNTail hNTail Atail)
+        m (blockSchur A (pivotInv 0)) (fun q => pivotInv (q + 1)) →
+      Higham13BlockLUBudgetChain hr
+        ((n : ℝ) * (growthFactorEntry hNFull A0 Gfull hFullPos) ^ 2 *
+          (maxEntryNormRect hNFull hNFull A0 *
+            maxEntryNormRect hNFull hNFull AinvFull))
+        (growthFactorEntry hNFull A0 Gfull hFullPos *
+          maxEntryNormRect hNFull hNFull A0)
+        m (blockSchur A (pivotInv 0)) (fun q => pivotInv (q + 1)) := by
+  dsimp only
+  intro hBase hInv hTail
+  exact
+    higham13_eq13_22_tail_chain_to_full_budget_from_inverse_ratio_matrix_stage_history_exact_kappa
+      hr A pivotInv hTailPos hFullPos n
+      (maxEntryNormRect_inverse_ratio_of_base_le_and_inverse_le
+        (Nat.mul_pos (Nat.succ_pos m) hr)
+        (Nat.add_pos_left hr ((m + 1) * r))
+        (blockMatrixFlatFin (blockSchur A (pivotInv 0)))
+        (nonsingInv ((m + 1) * r)
+          (blockMatrixFlatFin (blockSchur A (pivotInv 0))))
+        (blockMatrixFirstSplitFlat A)
+        (nonsingInv (r + (m + 1) * r) (blockMatrixFirstSplitFlat A))
+        hBase hInv)
+      hTail
 
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 / Problem 13.4:
     one active matrix-stage multiplier bound from a local two-block budget.
