@@ -2047,6 +2047,17 @@ abbrev higham9_2_CompletePermutedLUFactSpec (n : ℕ)
   IsPermutation n tau ∧
     PermutedLUFactSpec n (higham9_2_colPermutedMatrix A tau) L U sigma
 
+/-- **Equation (9.2a)/(9.2b)**, a row-pivoted `PA = LU` certificate is a
+complete-pivoting certificate with the identity column permutation. -/
+theorem higham9_2_permutedLUFactSpec_to_CompletePermutedLUFactSpec_id {n : ℕ}
+    {A L U : Fin n → Fin n → ℝ} {sigma : Fin n → Fin n}
+    (hLU : higham9_2_PermutedLUFactSpec n A L U sigma) :
+    higham9_2_CompletePermutedLUFactSpec n A L U sigma (fun j => j) := by
+  refine ⟨?_, ?_⟩
+  · show IsPermutation n (fun j : Fin n => j)
+    exact Function.bijective_id
+  · simpa [higham9_2_colPermutedMatrix] using hLU
+
 /-- **Equation (9.2b)**, a source `PAQ = LU` certificate is an ordinary exact
 LU certificate for the row-and-column permuted matrix. -/
 theorem higham9_2_completePermutedLUFactSpec_to_LUFactSpec {n : ℕ}
@@ -44123,6 +44134,78 @@ theorem higham9_7_PartialPivotGEPPUTrace_exists_PermutedLUFactSpec_L_bound_maxEn
               le_trans hUc_to_U₁ hU₁_to_trace
             simpa [Uc, Utrace, luFirstStepU, hi, hj] using hfinal
 
+/-- **Theorem 9.7 / GEPP trace support**, the final-pivot inverse-entry lower
+bound transfers from row-pivoted certificates to the recursive
+partial-pivoting `U` trace surface. -/
+theorem higham9_7_PartialPivotGEPPUTrace_growth_factor_ge_theta_real {n : ℕ}
+    (hn : 0 < n)
+    (A A_inv U : Fin n → Fin n → ℝ)
+    (htrace : higham9_7_PartialPivotGEPPUTrace n A U)
+    (hRight : IsRightInverse n A A_inv)
+    (hA : 0 < maxEntryNorm hn A)
+    (hAinv : 0 < maxEntryNorm hn A_inv) :
+    1 / (maxEntryNorm hn A * maxEntryNorm hn A_inv) ≤
+      growthFactorEntry hn A U hA := by
+  cases n with
+  | zero =>
+      exact (Nat.not_lt_zero 0 hn).elim
+  | succ m =>
+      obtain ⟨L, Uc, sigma, hLU, _hL_bound, hmax⟩ :=
+        higham9_7_PartialPivotGEPPUTrace_exists_PermutedLUFactSpec_L_bound_maxEntryNorm_le
+          htrace
+      have hLU_complete :
+          higham9_2_CompletePermutedLUFactSpec (m + 1) A L Uc sigma
+            (fun j => j) :=
+        higham9_2_permutedLUFactSpec_to_CompletePermutedLUFactSpec_id hLU
+      have hA' : 0 < maxEntryNorm (Nat.succ_pos m) A := by
+        simpa using hA
+      have hAinv' : 0 < maxEntryNorm (Nat.succ_pos m) A_inv := by
+        simpa using hAinv
+      have hcert' :
+          1 / (maxEntryNorm (Nat.succ_pos m) A *
+              maxEntryNorm (Nat.succ_pos m) A_inv) ≤
+            growthFactorEntry (Nat.succ_pos m) A Uc hA' :=
+        higham9_8_growth_factor_ge_theta_of_completePermutedLUFactSpec_right_inverse
+          A A_inv L Uc sigma (fun j => j) hLU_complete hRight hA' hAinv'
+      have hgrowth_le' :
+          growthFactorEntry (Nat.succ_pos m) A Uc hA' ≤
+            growthFactorEntry (Nat.succ_pos m) A U hA' := by
+        unfold growthFactorEntry
+        exact div_le_div_of_nonneg_right
+          (hmax (Nat.succ_pos m)) (le_of_lt hA')
+      have hfinal' :
+          1 / (maxEntryNorm (Nat.succ_pos m) A *
+              maxEntryNorm (Nat.succ_pos m) A_inv) ≤
+            growthFactorEntry (Nat.succ_pos m) A U hA' :=
+        le_trans hcert' hgrowth_le'
+      simpa using hfinal'
+
+/-- **Theorem 9.7 / GEPP trace support**, determinant-only recursive
+partial-pivoting trace lower bound.
+
+For a nonsingular input matrix and a supplied recursive partial-pivoting trace,
+the canonical `nonsingInv` discharges the right-inverse and positive
+inverse-norm hypotheses in the explicit-inverse trace theorem. -/
+theorem higham9_7_PartialPivotGEPPUTrace_growth_factor_ge_theta_nonsingInv
+    {n : ℕ} (hn : 0 < n)
+    (A U : Fin n → Fin n → ℝ)
+    (htrace : higham9_7_PartialPivotGEPPUTrace n A U)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ hA : 0 < maxEntryNorm hn A,
+    ∃ _ : 0 < maxEntryNorm hn (nonsingInv n A),
+      1 / (maxEntryNorm hn A * maxEntryNorm hn (nonsingInv n A)) ≤
+        growthFactorEntry hn A U hA := by
+  classical
+  have hA : 0 < maxEntryNorm hn A :=
+    maxEntryNorm_pos_of_det_ne_zero hn A hdet
+  have hAinv : 0 < maxEntryNorm hn (nonsingInv n A) :=
+    higham9_nonsingInv_maxEntryNorm_pos_of_det_ne_zero hn A hdet
+  have hRight : IsRightInverse n A (nonsingInv n A) :=
+    (isInverse_nonsingInv_of_det_ne_zero n A hdet).2
+  exact ⟨hA, hAinv,
+    higham9_7_PartialPivotGEPPUTrace_growth_factor_ge_theta_real
+      hn A (nonsingInv n A) U htrace hRight hA hAinv⟩
+
 /-- **Theorem 9.5 / Theorem 9.7**, trace-derived partial-pivoting exact
 certificate Wilkinson source bound at the elementary `2^(n-1)` growth
 strength.
@@ -44263,6 +44346,25 @@ theorem higham9_7_exists_PartialPivotGEPPUTrace_growthFactorEntry_le_pow_two_of_
     higham9_7_exists_PartialPivotGEPPUTrace_growthFactorEntry_le_pow_two_of_det_ne_zero
       hn A hdet hAmax
   exact ⟨hAmax, U, hU, hρ⟩
+
+/-- **Theorem 9.7 / GEPP trace support**, source-facing determinant-only
+existence form for the partial-pivoting trace theta lower bound. -/
+theorem higham9_7_exists_PartialPivotGEPPUTrace_growth_factor_ge_theta_nonsingInv
+    {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ hA : 0 < maxEntryNorm hn A,
+    ∃ _ : 0 < maxEntryNorm hn (nonsingInv n A),
+    ∃ U : Fin n → Fin n → ℝ,
+      higham9_7_PartialPivotGEPPUTrace n A U ∧
+        1 / (maxEntryNorm hn A * maxEntryNorm hn (nonsingInv n A)) ≤
+          growthFactorEntry hn A U hA := by
+  obtain ⟨U, htrace⟩ :=
+    higham9_7_exists_PartialPivotGEPPUTrace_of_det_ne_zero (A := A) hdet
+  obtain ⟨hA, hAinv, htheta⟩ :=
+    higham9_7_PartialPivotGEPPUTrace_growth_factor_ge_theta_nonsingInv
+      hn A U htrace hdet
+  exact ⟨hA, hAinv, U, htrace, htheta⟩
 
 /-- **Theorem 9.7 / GEPP trace support**, every nonsingular real input admits a
 cumulative partial-pivoting `PA = LU` certificate with unit-bounded lower

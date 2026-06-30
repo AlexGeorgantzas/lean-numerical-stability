@@ -1247,6 +1247,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_2_rowPermutedMatrix_infNorm`
 - `higham9_2_PermutedLUFactSpec`
 - `higham9_2_permutedLUFactSpec_to_LUFactSpec`
+- `higham9_2_permutedLUFactSpec_to_CompletePermutedLUFactSpec_id`
 - `higham9_2_permutedLUFactSpec_det_eq_pivot_product`
 - `higham9_2_permutedLUFactSpec_det_ne_zero_iff_pivots_ne_zero`
 - `higham9_2_PermutedLUBackwardError`
@@ -1456,8 +1457,11 @@ Source-facing Chapter 9 wrappers:
 - `higham9_3_exists_complete_permuted_lu_backward_error_gamma_of_det_ne_zero`
 - `higham9_5_wilkinson_source_bound_of_PermutedLUFactSpec_growth`
 - `higham9_7_PartialPivotGEPPUTrace_exists_PermutedLUFactSpec_L_bound_maxEntryNorm_le`
+- `higham9_7_PartialPivotGEPPUTrace_growth_factor_ge_theta_real`
+- `higham9_7_PartialPivotGEPPUTrace_growth_factor_ge_theta_nonsingInv`
 - `higham9_5_wilkinson_source_bound_exists_of_PartialPivotGEPPUTrace`
 - `higham9_7_exists_PermutedLUFactSpec_L_bound_growth_le_pow_two_of_det_ne_zero`
+- `higham9_7_exists_PartialPivotGEPPUTrace_growth_factor_ge_theta_nonsingInv`
 - `higham9_5_wilkinson_source_bound_exists_of_PartialPivotGEPPUTrace_of_det_ne_zero`
 - `higham9_8_exists_completePivoting_growth_factor_ge_theta_real`
 - `higham9_nonsingInv_det_ne_zero_of_det_ne_zero`
