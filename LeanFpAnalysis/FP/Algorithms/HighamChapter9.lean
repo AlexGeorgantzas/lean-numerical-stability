@@ -23365,6 +23365,32 @@ theorem higham9_15_spectralRadius_ge_one_of_nonzero_nonneg_fixedPoint
   higham9_15_spectralRadius_ge_one_of_nonzero_nonneg_le_matMulVec
     hn C x hC_nonneg hx_ne hx_nonneg (fun i => le_of_eq (hfixed i).symm)
 
+/-- **Theorem 9.15 spectral-resolvent support**.  The Barrlund--Sun
+componentwise route uses the spectral-radius contraction hypothesis
+`rho(C) < 1` to make `I - C` nonsingular before constructing the majorant
+resolvent.  This wrapper exposes the generic Chapter 7 determinant bridge in
+the Chapter 9 namespace. -/
+theorem higham9_15_matSub_id_det_ne_zero_of_spectralRadius_lt_one
+    {n : ℕ} (C : Matrix (Fin n) (Fin n) ℝ)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) < 1) :
+    (Matrix.of (matSub_id n C) : Matrix (Fin n) (Fin n) ℝ).det ≠ 0 :=
+  ch7_matSub_id_det_ne_zero_of_toLin_spectralRadius_lt_one C hrho
+
+/-- **Theorem 9.15 spectral-resolvent support**.  Under `rho(C) < 1`, the
+canonical repository inverse `nonsingInv (I - C)` is a two-sided inverse
+certificate for the real matrix `I - C`. -/
+theorem higham9_15_matSub_id_nonsingInv_isInverse_of_spectralRadius_lt_one
+    {n : ℕ} (C : Matrix (Fin n) (Fin n) ℝ)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) < 1) :
+    IsInverse n (matSub_id n C) (nonsingInv n (matSub_id n C)) :=
+  ch7_matSub_id_nonsingInv_isInverse_of_toLin_spectralRadius_lt_one C hrho
+
 /-- **Theorem 9.15 spectral-majorant support**.  Irreducibility upgrades a
 nonzero nonnegative right subeigenvector to a positive one, so the Chapter 7
 Collatz/Gelfand lower bound applies to nonzero nonnegative data. -/

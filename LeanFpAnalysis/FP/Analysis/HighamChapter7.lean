@@ -18070,6 +18070,117 @@ theorem ch7_toLin_spectralRadius_eq_matrix_spectralRadius {n : ℕ}
   unfold spectralRadius
   rw [Matrix.spectrum_toLin' C]
 
+/-- Finite-dimensional spectral shift for the matrix `I - C`: zero is in the
+spectrum of `I - C` exactly when one is in the spectrum of `C`. -/
+theorem ch7_spectrum_zero_mem_one_sub_iff {n : ℕ}
+    (C : Matrix (Fin n) (Fin n) ℂ) :
+    ((0 : ℂ) ∈ spectrum ℂ ((1 : Matrix (Fin n) (Fin n) ℂ) - C)) ↔
+      ((1 : ℂ) ∈ spectrum ℂ C) := by
+  rw [spectrum.mem_iff, spectrum.mem_iff]
+  simp
+  constructor
+  · intro h hunit
+    apply h
+    simpa [neg_sub] using hunit.neg
+  · intro h hunit
+    apply h
+    simpa [neg_sub] using hunit.neg
+
+/-- If a finite complex matrix has spectral radius below one, then `I - C`
+is nonsingular.  This is the algebraic resolvent nonsingularity bridge behind
+Chapter 7/9 spectral-radius contraction arguments. -/
+theorem ch7_complex_det_one_sub_ne_zero_of_spectralRadius_lt_one {n : ℕ}
+    (C : Matrix (Fin n) (Fin n) ℂ)
+    (hrho : spectralRadius ℂ C < 1) :
+    Matrix.det ((1 : Matrix (Fin n) (Fin n) ℂ) - C) ≠ 0 := by
+  classical
+  have hzero_not :
+      (0 : ℂ) ∉ spectrum ℂ ((1 : Matrix (Fin n) (Fin n) ℂ) - C) := by
+    intro hzero
+    have hone_spec : (1 : ℂ) ∈ spectrum ℂ C :=
+      (ch7_spectrum_zero_mem_one_sub_iff C).mp hzero
+    have hone_le : (1 : ENNReal) ≤ spectralRadius ℂ C := by
+      unfold spectralRadius
+      have h :=
+        @le_iSup₂ ENNReal ℂ (fun k : ℂ => k ∈ spectrum ℂ C) _
+          (fun k _ => (nnnorm k : ENNReal)) (1 : ℂ) hone_spec
+      simpa using h
+    exact (not_lt_of_ge hone_le) hrho
+  have hunit : IsUnit ((1 : Matrix (Fin n) (Fin n) ℂ) - C) :=
+    spectrum.isUnit_of_zero_notMem ℂ hzero_not
+  have hdet_unit :
+      IsUnit (Matrix.det ((1 : Matrix (Fin n) (Fin n) ℂ) - C)) :=
+    (Matrix.isUnit_iff_isUnit_det
+      ((1 : Matrix (Fin n) (Fin n) ℂ) - C)).mp hunit
+  exact isUnit_iff_ne_zero.mp hdet_unit
+
+/-- Complexification commutes with the repository's real matrix `I - M`
+surface. -/
+lemma ch7_realRectToCMatrix_matSub_id {n : ℕ}
+    (M : Fin n → Fin n → ℝ) :
+    (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix (matSub_id n M)) =
+      (1 : Matrix (Fin n) (Fin n) ℂ) -
+        (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix M) := by
+  ext i j
+  by_cases h : i = j <;> simp [h, realRectToCMatrix, matSub_id, idMatrix]
+
+/-- Determinant compatibility for the repository's real-to-complex matrix
+complexification. -/
+lemma ch7_realRectToCMatrix_det {n : ℕ}
+    (M : Fin n → Fin n → ℝ) :
+    (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix M).det =
+      (((Matrix.of M : Matrix (Fin n) (Fin n) ℝ).det : ℝ) : ℂ) := by
+  have h :=
+    RingHom.map_det Complex.ofRealHom
+      (Matrix.of M : Matrix (Fin n) (Fin n) ℝ)
+  simpa [realRectToCMatrix, RingHom.mapMatrix_apply] using h.symm
+
+/-- Real-matrix form of the spectral resolvent nonsingularity bridge:
+`rho(M) < 1`, represented through the complexified `toLin'` spectral radius,
+implies `det(I - M) ≠ 0`. -/
+theorem ch7_matSub_id_det_ne_zero_of_toLin_spectralRadius_lt_one {n : ℕ}
+    (M : Fin n → Fin n → ℝ)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix M)) < 1) :
+    (Matrix.of (matSub_id n M) : Matrix (Fin n) (Fin n) ℝ).det ≠ 0 := by
+  classical
+  let C : Matrix (Fin n) (Fin n) ℂ :=
+    (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix M)
+  have hrho_matrix : spectralRadius ℂ C < 1 := by
+    have h := hrho
+    rw [ch7_toLin_spectralRadius_eq_matrix_spectralRadius C] at h
+    simpa [C] using h
+  have hdet_one_sub :
+      Matrix.det ((1 : Matrix (Fin n) (Fin n) ℂ) - C) ≠ 0 :=
+    ch7_complex_det_one_sub_ne_zero_of_spectralRadius_lt_one C hrho_matrix
+  have hdet_complex_sub :
+      (show Matrix (Fin n) (Fin n) ℂ from
+        realRectToCMatrix (matSub_id n M)).det ≠ 0 := by
+    rw [ch7_realRectToCMatrix_matSub_id M]
+    simpa [C] using hdet_one_sub
+  have hdet_coe :
+      (((Matrix.of (matSub_id n M) : Matrix (Fin n) (Fin n) ℝ).det : ℝ) :
+          ℂ) ≠ 0 := by
+    rwa [ch7_realRectToCMatrix_det (matSub_id n M)] at hdet_complex_sub
+  intro hzero
+  exact hdet_coe (by simp [hzero])
+
+/-- Canonical inverse certificate for `I - M` under spectral-radius
+contraction. -/
+theorem ch7_matSub_id_nonsingInv_isInverse_of_toLin_spectralRadius_lt_one
+    {n : ℕ} (M : Fin n → Fin n → ℝ)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix M)) < 1) :
+    IsInverse n (matSub_id n M) (nonsingInv n (matSub_id n M)) := by
+  exact isInverse_nonsingInv_of_det_ne_zero n (matSub_id n M)
+    (by
+      simpa using
+        ch7_matSub_id_det_ne_zero_of_toLin_spectralRadius_lt_one M hrho)
+
 /-- `toLin'`-facing form of the Collatz/Gelfand lower bound used to close the
 Perron-Frobenius equality gate. -/
 theorem ch7_toLin_spectralRadius_ge_of_positive_right_subeigenvector {n : ℕ}

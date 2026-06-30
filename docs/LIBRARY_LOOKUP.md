@@ -738,6 +738,12 @@ Source-facing Chapter 7 wrappers:
 - `ch7_matrix_spectralRadius_ge_of_positive_right_subeigenvector`
 - `ch7_matrix_spectralRadius_ge_of_nonzero_nonneg_right_subeigenvector`
 - `ch7_toLin_spectralRadius_eq_matrix_spectralRadius`
+- `ch7_spectrum_zero_mem_one_sub_iff`
+- `ch7_complex_det_one_sub_ne_zero_of_spectralRadius_lt_one`
+- `ch7_realRectToCMatrix_matSub_id`
+- `ch7_realRectToCMatrix_det`
+- `ch7_matSub_id_det_ne_zero_of_toLin_spectralRadius_lt_one`
+- `ch7_matSub_id_nonsingInv_isInverse_of_toLin_spectralRadius_lt_one`
 - `ch7_toLin_spectralRadius_ge_of_positive_right_subeigenvector`
 - `ch7_toLin_spectralRadius_ge_of_nonzero_nonneg_right_subeigenvector`
 - `ch7_exists_spectralRadius_attaining_positive_subeigenvector`
@@ -2383,6 +2389,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_not_exists_nonzero_nonneg_fixedPoint_of_spectralRadius_lt_one`
 - `higham9_15_spectralRadius_ge_one_of_nonzero_nonneg_le_matMulVec`
 - `higham9_15_spectralRadius_ge_one_of_nonzero_nonneg_fixedPoint`
+- `higham9_15_matSub_id_det_ne_zero_of_spectralRadius_lt_one`
+- `higham9_15_matSub_id_nonsingInv_isInverse_of_spectralRadius_lt_one`
 - `higham9_15_irreducible_nonneg_subeigen_spectralRadius_ge`
 - `higham9_15_irreducible_nonneg_subeigen_scale_lt_one_of_spectralRadius_lt_one`
 - `higham9_15_exists_matMulVec_lt_of_irreducible_nonzero_nonneg_spectralRadius_lt_one`
