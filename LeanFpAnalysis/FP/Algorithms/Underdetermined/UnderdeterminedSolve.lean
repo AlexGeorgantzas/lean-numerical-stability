@@ -1344,6 +1344,29 @@ theorem higham21_lemma21_2_transpose_action_bound_of_pseudoinverse_product_bound
       hgamma hProduct) x
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    concrete operator-product estimate used in the beta lower-bound route.
+    Separate operator-2 bounds for `DeltaA1`, `DeltaA2`, and the perturbed
+    pseudoinverse candidate `Bplus` imply an operator bound for the source
+    product `Bplus * (DeltaA1 - DeltaA2)`.
+
+    This is the product-bound estimate only; the source perturbation theorem
+    must still supply the perturbed-pseudoinverse operator bound. -/
+theorem higham21_lemma21_2_pseudoinverse_product_bound_of_separate_op_bounds
+    {m n : ℕ}
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (Bplus : Fin n → Fin m → ℝ)
+    {alpha beta eta : ℝ}
+    (heta : 0 ≤ eta)
+    (hDeltaA1 : rectOpNorm2Le DeltaA1 alpha)
+    (hDeltaA2 : rectOpNorm2Le DeltaA2 beta)
+    (hBplusOp : rectOpNorm2Le Bplus eta) :
+    rectOpNorm2Le
+      (rectMatMul Bplus (fun i j => DeltaA1 i j - DeltaA2 i j))
+      (eta * (alpha + beta)) :=
+  rectOpNorm2Le_rectMatMul Bplus (fun i j => DeltaA1 i j - DeltaA2 i j)
+    heta hBplusOp (rectOpNorm2Le_sub DeltaA1 DeltaA2 hDeltaA1 hDeltaA2)
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     minimum-norm handoff from a source-shaped product bound on
     `Bplus * (DeltaA1 - DeltaA2)`.  The remaining perturbation proof is to
     instantiate this product bound for `Bplus = (A + DeltaA2)^+` from the
@@ -1464,6 +1487,68 @@ theorem higham21_lemma21_2_symmetrized_min_norm_of_gram_pseudoinverse_product_bo
       (by simpa [B, Bplus] using hMP.domain_projection_symmetric)
       (by simpa [B, Bplus] using hDomainX) hsmall hgamma hgamma_le
       (by simpa [B, Bplus] using hProduct)
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    source-facing product-bound specialization of the symmetrized minimum-norm
+    handoff.  If the perturbed Gram pseudoinverse exists, the printed transpose
+    representation `x = (A + DeltaA2)^T y` holds, and the separate operator
+    bounds plus the perturbed-pseudoinverse operator bound imply the source
+    product budget, then the constructed single perturbation makes `x` the
+    minimum 2-norm solution.
+
+    This removes the raw product-bound hypothesis from the concrete Gram route;
+    it remains conditional on the perturbed-Gram nonsingularity and
+    perturbed-pseudoinverse operator estimate. -/
+theorem higham21_lemma21_2_symmetrized_min_norm_of_gram_pseudoinverse_product_budget
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (rho1 rho2 alpha beta eta : ℝ)
+    (hsq : vecNorm2Sq x ≠ 0)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hdet :
+      Matrix.det
+          (rectGram (fun i j => A i j + DeltaA2 i j) :
+            Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hxTranspose :
+      x =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : 3 * max rho1 rho2 < 1)
+    (halpha : 0 ≤ alpha)
+    (hbeta : 0 ≤ beta)
+    (heta : 0 ≤ eta)
+    (hbudget : eta * (alpha + beta) ≤ (rho1 + rho2) / (1 - rho2))
+    (hDeltaA1Op : rectOpNorm2Le DeltaA1 alpha)
+    (hDeltaA2Op : rectOpNorm2Le DeltaA2 beta)
+    (hBplusOp :
+      rectOpNorm2Le
+        (undetAplusOfGramNonsingInv (fun i j => A i j + DeltaA2 i j))
+        eta) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j)
+      b x := by
+  let Bplus : Fin n → Fin m → ℝ :=
+    undetAplusOfGramNonsingInv (fun i j => A i j + DeltaA2 i j)
+  have hgamma : 0 ≤ eta * (alpha + beta) :=
+    mul_nonneg heta (add_nonneg halpha hbeta)
+  have hProduct :
+      rectOpNorm2Le
+        (rectMatMul Bplus (fun i j => DeltaA1 i j - DeltaA2 i j))
+        (eta * (alpha + beta)) := by
+    exact
+      higham21_lemma21_2_pseudoinverse_product_bound_of_separate_op_bounds
+        DeltaA1 DeltaA2 Bplus heta hDeltaA1Op hDeltaA2Op
+        (by simpa [Bplus] using hBplusOp)
+  exact
+    higham21_lemma21_2_symmetrized_min_norm_of_gram_pseudoinverse_product_bound
+      A x DeltaA1 DeltaA2 b y rho1 rho2 (eta * (alpha + beta))
+      hsq hDeltaA1 hdet hxTranspose hsmall hgamma hbudget
+      (by simpa [Bplus] using hProduct)
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     source-shaped pseudoinverse handoff for the remaining beta argument.
