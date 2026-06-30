@@ -6808,6 +6808,43 @@ structure storedSignedSequenceFirstTwoReflectorData
               (alpha 1) i) =
       2)
 
+/-- One-step reflector data for a one-column signed stored sequence.
+
+This is the odd-width base counterpart to
+`storedSignedSequenceFirstTwoReflectorData`: once the twice-trailing tail has one
+column left, only its first reflector data and determinant branch are needed to
+close the final-panel equality. -/
+structure storedSignedSequenceOneReflectorData
+    (fp : FPModel) {m : Nat}
+    (S : Nat -> Fin (m + 1) -> Fin 1 -> Real)
+    (alpha : Nat -> Real) : Prop where
+  hvec0 :
+    householderTrailingActiveVector (m + 1)
+        (Fin.mk 0 (Nat.succ_pos m))
+        (fun a => S 0 a (Fin.mk 0 (Nat.succ_pos 0)))
+        (alpha 0) =
+      fl_householderNormalizedVector fp (Nat.succ_pos m)
+        (panelFirstColumn (Nat.succ_pos 0) (S 0))
+  hself0 :
+    (Finset.univ : Finset (Fin (m + 1))).sum
+      (fun i =>
+        householderTrailingActiveVector (m + 1)
+            (Fin.mk 0 (Nat.succ_pos m))
+            (fun a => S 0 a (Fin.mk 0 (Nat.succ_pos 0)))
+            (alpha 0) i *
+          householderTrailingActiveVector (m + 1)
+            (Fin.mk 0 (Nat.succ_pos m))
+            (fun a => S 0 a (Fin.mk 0 (Nat.succ_pos 0)))
+            (alpha 0) i) =
+      2
+  hdetFirst :
+    Ne (Matrix.det
+      (qrLeadingBlock (S 0)
+        (Nat.succ_le_succ (Nat.zero_le m))
+        (Nat.succ_pos 0) :
+        Matrix (Fin 1) (Fin 1) Real))
+      0
+
 /-- Recursive final-panel closure predicate for the twice-trailing tail.
 
 This is the induction-hypothesis surface required by the general
@@ -6838,6 +6875,33 @@ abbrev storedSignedSequenceTwiceTrailingFinalClosed
     storedSignedSequenceTwiceTrailingSeq A_hat p =
       fl_householderQRPanel_R fp m p
         (storedSignedSequenceTwiceTrailingSeq A_hat 0)
+
+/-- Recursive data contract for arbitrary-width twice-trailing closure.
+
+The row dimension is expressed as a row surplus `r` plus the active column
+count.  This keeps the two-step shrink definitionally aligned: after removing
+two rows and columns, the same surplus `r` remains.  The contract records the
+exact remaining source obligation for the arbitrary-width route: zero columns
+need no data, one column needs one-reflector data, and every wider case needs
+the first-two reflector package plus recursively the data for its twice-trailing
+tail. -/
+def storedSignedSequenceTwiceTrailingClosureData
+    (fp : FPModel) :
+    (r p : Nat) ->
+      (Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real) ->
+      (Nat -> Real) -> Prop
+  | _r, 0, _A_hat, _alpha => True
+  | _r, 1, A_hat, alpha =>
+      storedSignedSequenceOneReflectorData fp
+        (storedSignedSequenceTwiceTrailingSeq A_hat)
+        (storedSignedSequenceTailAlpha2 alpha)
+  | r, p + 2, A_hat, alpha =>
+      storedSignedSequenceFirstTwoReflectorData fp
+        (storedSignedSequenceTwiceTrailingSeq A_hat)
+        (storedSignedSequenceTailAlpha2 alpha) /\
+      storedSignedSequenceTwiceTrailingClosureData fp r p
+        (storedSignedSequenceTwiceTrailingSeq A_hat)
+        (storedSignedSequenceTailAlpha2 alpha)
 
 /-- Final-panel bridge with the twice-trailing obligation exposed as a recursive
 tail-sequence theorem.
@@ -7294,6 +7358,27 @@ theorem storedSignedSequenceTwiceTrailingFinalClosed_one_col_of_reflector_self_d
     storedSignedSequence_twice_trailing_one_col_tail_final_of_tail_reflector_self_dot
       fp A_hat alpha hTailRec hvecTailTail hselfTailTail hdetTailTail
 
+/-- One-column closure from packaged one-reflector data. -/
+theorem storedSignedSequenceTwiceTrailingFinalClosed_one_col_of_reflectorData
+    (fp : FPModel) {m : Nat}
+    (A_hat : Nat -> Fin ((m + 1) + 2) -> Fin (1 + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hdata :
+      storedSignedSequenceOneReflectorData fp
+        (storedSignedSequenceTwiceTrailingSeq A_hat)
+        (storedSignedSequenceTailAlpha2 alpha)) :
+    storedSignedSequenceTwiceTrailingFinalClosed fp (by omega) A_hat alpha :=
+  storedSignedSequenceTwiceTrailingFinalClosed_one_col_of_reflector_self_dot
+    fp A_hat alpha
+    (by
+      simpa [storedSignedSequenceTwiceTrailingSeq,
+        storedSignedSequenceTailAlpha2] using hdata.hvec0)
+    (by
+      simpa [storedSignedSequenceTwiceTrailingSeq,
+        storedSignedSequenceTailAlpha2] using hdata.hself0)
+    (by
+      simpa [storedSignedSequenceTwiceTrailingSeq] using hdata.hdetFirst)
+
 /-- Two-column instance of the named twice-trailing closure predicate.
 
 This re-expresses the existing two-column tail endpoint in the recursive
@@ -7381,6 +7466,48 @@ theorem storedSignedSequenceTwiceTrailingFinalClosed_two_col_of_reflector_self_d
     storedSignedSequence_twice_trailing_two_col_tail_final_of_tail_reflector_self_dot
       fp A_hat alpha hTailRec hvecTailTail0 hselfTailTail0
       hdetTailTailFirst hdetTailTailTail hvecTailTail1 hselfTailTail1 hcopy
+
+/-- Arbitrary-width twice-trailing closure from recursive reflector data.
+
+This theorem is the induction shell for the remaining Ch19 final-panel source
+route.  It does not manufacture reflector data; instead it proves that the
+visible recursive data contract is sufficient for every column count, leaving
+the source-facing work as the construction of
+`storedSignedSequenceTwiceTrailingClosureData` from the stored loop. -/
+theorem storedSignedSequenceTwiceTrailingFinalClosed_of_closureData
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hdata :
+      storedSignedSequenceTwiceTrailingClosureData fp r p A_hat alpha)
+    (hcopy : subtractZeroExact fp) :
+    storedSignedSequenceTwiceTrailingFinalClosed fp
+      (Nat.add_le_add_right (Nat.le_add_left p r) 2) A_hat alpha := by
+  revert r A_hat alpha
+  refine
+    Nat.twoStepInduction
+      (P := fun p =>
+        forall (r : Nat)
+            (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+            (alpha : Nat -> Real),
+          storedSignedSequenceTwiceTrailingClosureData fp r p A_hat alpha ->
+            storedSignedSequenceTwiceTrailingFinalClosed fp
+              (Nat.add_le_add_right (Nat.le_add_left p r) 2) A_hat alpha)
+      ?hzero ?hone ?hstep p
+  · intro r A_hat alpha _hdata
+    exact storedSignedSequenceTwiceTrailingFinalClosed_zero_col fp A_hat alpha
+  · intro r A_hat alpha hdata
+    exact
+      storedSignedSequenceTwiceTrailingFinalClosed_one_col_of_reflectorData
+        fp A_hat alpha hdata
+  · intro p ih _ihSucc r A_hat alpha hdata
+    rcases hdata with ⟨hfirst, htail⟩
+    exact
+      storedSignedSequenceTwiceTrailingFinalClosed_succ_succ_of_firstTwoReflectorData
+        fp (Nat.add_le_add_right (Nat.le_add_left (p + 2) r) 2)
+        A_hat alpha hfirst hcopy
+        (ih r (storedSignedSequenceTwiceTrailingSeq A_hat)
+          (storedSignedSequenceTailAlpha2 alpha) htail)
 
 /-- Three-column instance of the named twice-trailing closure predicate.
 
