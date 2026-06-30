@@ -9913,6 +9913,90 @@ structure Theorem20_10PartAPerturbationCertificate
   hDeltaB : frobNormRect DeltaB ≤ gammaB * frobNormRect B
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), supplied-factor
+    constructor for the mixed-stability perturbation certificate with a
+    supplied transformed trailing right-hand side.
+
+    This is the certificate-level bridge for the rounded Householder RHS route.
+    The vector `beta` represents the computed trailing transformed RHS; callers
+    must prove that the perturbed source RHS satisfies
+    `Uᵀ(b + Deltab) = beta` on the trailing block.  The theorem therefore
+    avoids assuming the exact transformed RHS while also not claiming the
+    printed `Deltab` coefficient. -/
+theorem theorem20_10_partA_certificate_of_supplied_perturbed_factor_zero_deltaX_of_transformed_tail
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (beta : Fin q → ℝ) (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (gammaA gammaB : ℝ)
+    (DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
+    (DeltaB : Fin p → Fin (p + q) → ℝ)
+    (Deltab : Fin (r + q) → ℝ)
+    (hDeltaA : frobNormRect DeltaA ≤ gammaA * frobNormRect A)
+    (hDeltab : vecNorm2 Deltab ≤ gammaA * vecNorm2 b)
+    (hDeltaB : frobNormRect DeltaB ≤ gammaB * frobNormRect B)
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalidS : gammaValid fp p)
+    (hvalidL22 : gammaValid fp q) :
+    ∃ (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ),
+      (∀ i j, |DeltaS i j| ≤ gamma fp p * |h.S i j|) ∧
+      (∀ i j, |DeltaL22 i j| ≤ gamma fp q * |h.L22 i j|) ∧
+      frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S ∧
+      frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 ∧
+      (∀ (hpert :
+          GeneralizedQRFactorization r p q
+            (fun i j => A i j + DeltaA i j)
+            (fun i j => B i j + DeltaB i j)),
+        hpert.Q = h.Q →
+        hpert.S = (fun i j => h.S i j + DeltaS i j) →
+        hpert.L21 = h.L21 →
+        hpert.L22 = (fun i j => h.L22 i j + DeltaL22 i j) →
+        (∀ i : Fin q,
+          matMulVec (r + q) (matTranspose hpert.U)
+              (fun i => b i + Deltab i) (Fin.natAdd r i) =
+            beta i) →
+        (∀ i : Fin p, hpert.S i i ≠ 0) →
+        (∀ i : Fin q, hpert.L22 i i ≠ 0) →
+        Nonempty
+          (Theorem20_10PartAPerturbationCertificate A B b d
+            (theorem20_10_gqr_xhat_of_transformed_tail fp h beta d)
+            gammaA gammaB)) := by
+  rcases
+    theorem20_10_gqr_xhat_of_transformed_tail_triangular_solve_frob_perturbation_bound
+      fp h beta d hSdiag hL22diag hvalidS hvalidL22 with
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, hSeq, hL22eq, _hxhat⟩
+  refine
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, ?_⟩
+  intro hpert hQ hS hL21 hL22 hb_tail hSdiag_pert hL22diag_pert
+  have hrank :
+      LSEFullRowRank (fun i j => B i j + DeltaB i j) ∧
+        LSEStackedFullColumnRank
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j) :=
+    (hpert.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero).2
+      ⟨hSdiag_pert, hL22diag_pert⟩
+  exact
+    ⟨{ DeltaA := DeltaA
+       DeltaB := DeltaB
+       Deltab := Deltab
+       hB := hrank.1
+       hstack := hrank.2
+       near_exact_solution := by
+         intro x hx
+         exact
+           theorem20_10_gqr_xhat_of_transformed_tail_zero_deltaX_of_supplied_perturbed_triangular_factors
+             fp h hpert beta d (fun i => b i + Deltab i) d DeltaS DeltaL22
+             gammaB hQ hS hL21 hL22 rfl hb_tail hSdiag_pert hL22diag_pert
+             hSeq hL22eq hgammaB_nonneg hx
+       hDeltaA := hDeltaA
+       hDeltab := hDeltab
+       hDeltaB := hDeltaB }⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), supplied-factor
     constructor for the mixed-stability perturbation certificate.
 
     This is the certificate-level handoff for the currently verified supplied
