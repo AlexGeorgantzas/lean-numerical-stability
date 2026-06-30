@@ -1823,6 +1823,110 @@ theorem higham21_lemma21_2_perturbed_gram_det_ne_zero_of_abs_left_product_bound
   simpa [B] using hdetAdd
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    the Chapter 7 inverse perturbation candidate is a certified right inverse
+    for the perturbed Gram matrix under the same absolute left-product
+    contraction used for nonsingularity above. -/
+theorem higham21_lemma21_2_perturbed_gram_ch7_candidate_right_inverse_of_abs_left_product_bound
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A DeltaA2 : Fin m → Fin n → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (c : ℝ)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hLeft : IsLeftInverse m (rectGram A) AAT_inv)
+    (hbound :
+      infNormBound m
+        (absMatrix m
+          (matMul m AAT_inv (undetGramPerturbation A DeltaA2)))
+        c) :
+    IsRightInverse m
+      (rectGram (fun i j => A i j + DeltaA2 i j))
+      (ch7Problem711PerturbedInverseCandidate m AAT_inv
+        (undetGramPerturbation A DeltaA2)) := by
+  let B : Fin m → Fin n → ℝ := fun i j => A i j + DeltaA2 i j
+  let G : Fin m → Fin m → ℝ := rectGram A
+  let DeltaG : Fin m → Fin m → ℝ := undetGramPerturbation A DeltaA2
+  have hRight :
+      IsRightInverse m (fun i j => G i j + DeltaG i j)
+        (ch7Problem711PerturbedInverseCandidate m AAT_inv DeltaG) :=
+    problem7_11_perturbed_inverse_candidate_right_inverse_of_abs_left_product_bound
+      m hm G AAT_inv DeltaG c hc_nn hc_lt
+      (by simpa [G] using hLeft)
+      (by simpa [DeltaG] using hbound)
+  intro i j
+  simpa [G, DeltaG, undetGramPerturbation, B] using hRight i j
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    under the Chapter 7 contraction certificate, the repository
+    `nonsingInv` chosen for `(A + DeltaA2)(A + DeltaA2)^T` agrees with the
+    explicit inverse-perturbation candidate. -/
+theorem higham21_lemma21_2_perturbed_gram_nonsingInv_eq_ch7_candidate_of_abs_left_product_bound
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A DeltaA2 : Fin m → Fin n → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (c : ℝ)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hLeft : IsLeftInverse m (rectGram A) AAT_inv)
+    (hbound :
+      infNormBound m
+        (absMatrix m
+          (matMul m AAT_inv (undetGramPerturbation A DeltaA2)))
+        c) :
+    undetGramNonsingInv (fun i j => A i j + DeltaA2 i j) =
+      ch7Problem711PerturbedInverseCandidate m AAT_inv
+        (undetGramPerturbation A DeltaA2) := by
+  let B : Fin m → Fin n → ℝ := fun i j => A i j + DeltaA2 i j
+  have hRight :
+      IsRightInverse m (rectGram B)
+        (ch7Problem711PerturbedInverseCandidate m AAT_inv
+          (undetGramPerturbation A DeltaA2)) := by
+    simpa [B] using
+      higham21_lemma21_2_perturbed_gram_ch7_candidate_right_inverse_of_abs_left_product_bound
+        hm A DeltaA2 AAT_inv c hc_nn hc_lt hLeft hbound
+  unfold undetGramNonsingInv
+  simpa [B] using
+    nonsingInv_eq_of_isRightInverse (rectGram B)
+      (ch7Problem711PerturbedInverseCandidate m AAT_inv
+        (undetGramPerturbation A DeltaA2))
+      hRight
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    a concrete operator-2 certificate for the perturbed Gram inverse follows
+    from the explicit Chapter 7 candidate and the Frobenius operator bound. -/
+theorem higham21_lemma21_2_gram_nonsingInv_rectOpNorm2Le_frob_candidate_of_abs_left_product_bound
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A DeltaA2 : Fin m → Fin n → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (c : ℝ)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hLeft : IsLeftInverse m (rectGram A) AAT_inv)
+    (hbound :
+      infNormBound m
+        (absMatrix m
+          (matMul m AAT_inv (undetGramPerturbation A DeltaA2)))
+        c) :
+    rectOpNorm2Le
+      (undetGramNonsingInv (fun i j => A i j + DeltaA2 i j))
+      (frobNorm
+        (ch7Problem711PerturbedInverseCandidate m AAT_inv
+          (undetGramPerturbation A DeltaA2))) := by
+  rw [
+    higham21_lemma21_2_perturbed_gram_nonsingInv_eq_ch7_candidate_of_abs_left_product_bound
+      hm A DeltaA2 AAT_inv c hc_nn hc_lt hLeft hbound]
+  exact
+    rectOpNorm2Le_of_opNorm2Le_square
+      (ch7Problem711PerturbedInverseCandidate m AAT_inv
+        (undetGramPerturbation A DeltaA2))
+      (opNorm2Le_of_frobNorm_self
+        (ch7Problem711PerturbedInverseCandidate m AAT_inv
+          (undetGramPerturbation A DeltaA2)))
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     a componentwise Gram-perturbation estimate implies the Chapter 7 absolute
     left-product contraction certificate used for perturbed Gram
     nonsingularity. -/
