@@ -3791,6 +3791,37 @@ theorem higham9_2_rectDoolittle_exact_recurrences_rectMatMul_eq {m n : ℕ}
       _ = A i j := by
             rw [← hsource]
 
+/-- **Algorithm 9.2**, exact square Doolittle recurrences as an exact
+`LUFactSpec`.  This is the source-facing square specialization of the
+rectangular recurrence product bridge: exact upper and lower Doolittle updates
+plus triangular shape, unit lower diagonal, and nonzero pivots give an ordinary
+exact LU certificate.  It still does not construct the rounded executable loop
+that would prove these recurrence hypotheses for computed factors. -/
+theorem higham9_2_exactDoolittle_recurrences_to_LUFactSpec {n : ℕ}
+    {A L U : Fin n → Fin n → ℝ}
+    (hL_diag : ∀ i : Fin n, L i i = 1)
+    (hL_upper_zero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hU_lower_zero : ∀ i j : Fin n, j.val < i.val → U i j = 0)
+    (hU_entry_eq : ∀ k j : Fin n, k.val ≤ j.val →
+      U k j = higham9_2_rectDoolittleUUpdate (Nat.le_refl n) A L U k j)
+    (hL_entry_eq : ∀ i k : Fin n, k.val < i.val →
+      L i k = higham9_2_rectDoolittleLUpdate A L U i k)
+    (hU_diag : ∀ k : Fin n, U k k ≠ 0) :
+    LUFactSpec n A L U where
+  L_diag := hL_diag
+  L_upper_zero := hL_upper_zero
+  U_lower_zero := hU_lower_zero
+  product_eq := by
+    intro i j
+    have hprod :=
+      higham9_2_rectDoolittle_exact_recurrences_rectMatMul_eq
+        (hmn := Nat.le_refl n) (A := A) (L := L) (U := U)
+        (by
+          intro k
+          simpa [higham9_2_rectRow] using hL_diag k)
+        hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq hU_diag i j
+    simpa [rectMatMul] using hprod
+
 /-- **Algorithm 9.2 / Theorem 9.1 support**, exact-LU upper recurrence.
 Every exact unit-lower/upper `LUFactSpec` satisfies the Doolittle upper-entry
 formula used in equation (9.3).  This is the converse direction of the source
