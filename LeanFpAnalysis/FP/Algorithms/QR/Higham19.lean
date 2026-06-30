@@ -13722,6 +13722,24 @@ structure HouseholderQRBackwardError (m n : Nat)
     (forall i j, A i j + dA i j = matMulRect m m n Q R_hat i j) /\
     (forall j, columnFrob dA j <= c * columnFrob A j)
 
+/-- Columnwise Higham 19.4 backward error implies the corresponding Frobenius
+    perturbation bound.  This is the normwise adapter needed when Chapter 20
+    reuses the Householder QR result inside the GQR perturbation analysis. -/
+theorem HouseholderQRBackwardError.exists_frobNormRect_perturbation_bound
+    {m n : Nat} {A : Fin m -> Fin n -> Real}
+    {Q : Fin m -> Fin m -> Real} {R_hat : Fin m -> Fin n -> Real}
+    {c : Real} (h : HouseholderQRBackwardError m n A Q R_hat c)
+    (hc : 0 <= c) :
+    Exists fun dA : Fin m -> Fin n -> Real =>
+      (forall i j, A i j + dA i j = matMulRect m m n Q R_hat i j) /\
+      frobNormRect dA <= c * frobNormRect A := by
+  rcases h.result with ⟨dA, hrep, hcol⟩
+  refine ⟨dA, hrep, ?_⟩
+  exact
+    frobNormRect_le_of_col_vecNorm2_le dA A hc (by
+      intro j
+      simpa [columnFrob_eq_vecNorm2] using hcol j)
+
 /-- Componentwise `G |A|` form of the Higham 19.4 Householder QR backward
 error, with the printed orientation `A + dA = Q * R_hat`. -/
 structure HouseholderQRComponentwiseBackwardError (m n : Nat)

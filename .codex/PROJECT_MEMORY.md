@@ -20,6 +20,63 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-06-30 fixed-ambient global-tableau source-chain checkpoint:
+  added `Higham13Eq1322GlobalTableauSourceChain` plus
+  `to_blockLUBudgetChain`, `to_blockLUBudgetChain_of_right_inverse`, and the
+  Eq.13.22/Eq.13.23 concrete product witness wrappers
+  `exists_blockLUFact_eq13_22_product_exact_kappa_of_right_inverse` and
+  `exists_blockLUFact_eq13_23_product_exact_kappa_of_right_inverse`.  This
+  packages the Oracle-advised Problem 13.4 route as a recursive fixed-ambient
+  certificate using one global GE-tableau growth factor and exact ambient
+  `kappa` denominator; each successor stores the ambient initial/Schur
+  containment, ambient inverse-entry certificate, first-row upper budget,
+  pivot identity, and recursive tail certificate.  It is dependency progress
+  only: all-tail tableau/source-inverse data, Eq.13.23 `rho <= 2`/BDD
+  product-update data, and Theorem 13.6 cited implementation estimates remain
+  open.  Verification passed by direct `BlockLU.lean` compile, focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, executable
+  `examples/LibraryLookup.lean`, `git diff --check`, placeholder and anchored
+  conflict-marker scans, and focused `#print axioms` reporting only `propext`,
+  `Classical.choice`, and `Quot.sound`.
+- 2026-06-30 Eq.13.23 reciprocal source-chain product/update checkpoint:
+  added
+  `higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_product_bound_diag_update_reciprocal`,
+  `Higham13Eq1322InverseRatioSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update_reciprocal`,
+  `Higham13Eq1322LowerComparisonSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update_reciprocal`,
+  and
+  `Higham13Eq1322BaseInverseSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update_reciprocal`.
+  These wrappers accept the source reciprocal active-pivot table
+  `SchurStageActivePivotInvReciprocal13_7` and internally derive the raw
+  pivot-product bound used by the existing product-bound/diagonal-update
+  Eq.13.23 routes.  This removes a source-surface mismatch only; structured
+  product/update data, recursive Problem 13.4 comparisons, and Theorem 13.6
+  cited estimates remain open.  Verification passed by direct `BlockLU.lean`
+  compile, focused LU build, quiet `examples/LibraryLookup.lean` with empty
+  stderr and all four new names present, `git diff --check`, placeholder and
+  conflict-marker scans, and focused `#print axioms` reporting only `propext`,
+  `Classical.choice`, and `Quot.sound`.  Committed as
+  `2b76f93 Split 3A: add Ch13 reciprocal product-update wrappers`, merged
+  incoming shared-main work through `e49a0ac`, reran the relevant merged-tree
+  builds/lookups/scans, pushed to `origin/main`, and confirmed ahead/behind
+  `0 0`.
+- 2026-06-30 base/inverse route-audit checkpoint:
+  `higham13_base_inverse_principal_tail_base_comparison_counterexample` shows
+  that the stronger base comparison `||A_full||_max <= ||A_tail||_max` needed
+  by the optional base/inverse recursive tail-transport route is not automatic
+  even for a concrete full/right-inverse principal-tail witness.  The proof
+  reuses `higham13_inverse_ratio_principal_tail_counterexample`: if the base
+  comparison held together with the already-present inverse comparison, then
+  `maxEntryNormRect_inverse_ratio_of_base_le_and_inverse_le` would contradict
+  the rejected inverse-ratio comparison.  This is route-rejection evidence for
+  Problem 13.4/Eq.13.22--13.23 only; the per-tail direct lower-budget
+  comparison, Eq.13.23 `rho <= 2`, and Theorem 13.6 cited estimates remain
+  open.  Verification: direct `lake env lean -s 65536
+  LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, refreshed `lake build
+  LeanFpAnalysis.FP.Algorithms.HighamChapter9`, quiet
+  `examples/LibraryLookup.lean` with empty stderr and the new Ch13 name in
+  stdout, `git diff --check`, and focused `#print axioms`; the axiom output was
+  only `propext`, `Classical.choice`, and `Quot.sound`.
 - 2026-06-30 recursive Schur-tail base/inverse bridge checkpoint:
   `maxEntryNormRect_inverse_ratio_of_base_le_and_inverse_le` and
   `growthFactorEntry_sq_kappa_budget_le_of_growth_le_base_inverse` derive the
@@ -10202,3 +10259,112 @@ These compile, but should not be treated as fully derived stability results:
   canonically.  This removes a final-pivot determinant proof-surface artifact;
   the per-tail lower comparison, structured BDD product/update theorem, and
   Theorem 13.6 implementation estimates remain open.
+
+- 2026-06-30 Eq.13.22/Eq.13.23 recursive base/inverse source chain: added
+  `Higham13Eq1322BaseInverseSourceChain`,
+  `Higham13Eq1322BaseInverseSourceChain.det_ne_zero`,
+  `Higham13Eq1322BaseInverseSourceChain.to_lowerComparisonSourceChain`,
+  `Higham13Eq1322BaseInverseSourceChain.exists_blockLUFact_eq13_22_product_exact_kappa`,
+  `Higham13Eq1322BaseInverseSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa`,
+  and
+  `Higham13Eq1322BaseInverseSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update`.
+  The chain packages the stronger route where each nonterminal Schur-tail step
+  supplies explicit base and inverse max-entry comparisons, then converts to
+  the existing direct lower-comparison source chain.  It is dependency
+  packaging only: the base/inverse comparisons, Eq.13.23 BDD product/update
+  data, and Theorem 13.6 implementation estimates remain open.
+
+- 2026-06-30 Eq.13.22/Eq.13.23 base/inverse source-chain connector cleanup:
+  added `Higham13Eq1322BaseInverseSourceChain.to_inverseRatioSourceChain`,
+  `Higham13Eq1322BaseInverseSourceChain.nonterminal_pivot_right_inverse`,
+  `Higham13Eq1322BaseInverseSourceChain.nonterminal_pivot_det_ne_zero`,
+  `Higham13Eq1322BaseInverseSourceChain.pivot_right_inverse_of_final`,
+  `Higham13Eq1322BaseInverseSourceChain.pivot_det_ne_zero_of_final`,
+  `Higham13Eq1322BaseInverseSourceChain.pivot_det_ne_zero_of_final_right_inverse`,
+  `Higham13Eq1322BaseInverseSourceChain.pivot_right_inverse_of_final_nonsingInv`,
+  and
+  `Higham13Eq1322BaseInverseSourceChain.pivot_det_ne_zero_of_final_nonsingInv`.
+  The conversion theorem factors the explicit base/inverse comparisons through
+  the inverse-ratio source-chain API using
+  `maxEntryNormRect_inverse_ratio_of_base_le_and_inverse_le`; the pivot wrappers
+  inherit the nonterminal and final-pivot right-inverse/determinant surfaces
+  from the lower-comparison chain.  This removes another all-pivot
+  proof-surface artifact for the base/inverse route, but the base/inverse
+  comparison theorems, Eq.13.23 BDD product/update data, and Theorem 13.6
+  implementation estimates remain open.
+
+- 2026-06-30 Eq.13.22/Eq.13.23 base/inverse budget-chain connector:
+  added `Higham13Eq1322BaseInverseSourceChain.to_blockLUBudgetChain` and
+  routed the base/inverse Eq.13.22 and Eq.13.23 product witnesses through that
+  ambient exact-`kappa` chain.  The theorem composes the stronger base/inverse
+  source certificate with the existing lower-comparison chain constructor, so
+  callers no longer need to mention the lower-comparison certificate or
+  prebuilt ambient budget chain on this route.  This is dependency cleanup for
+  Problem 13.4; it still leaves the actual base/inverse comparison theorems,
+  structured Eq.13.23 BDD product/update data, and Theorem 13.6 cited
+  implementation estimates open.
+
+- 2026-06-30 Eq.13.23 base/inverse product/update connector cleanup:
+  refactored
+  `Higham13Eq1322BaseInverseSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update`
+  so it also consumes
+  `Higham13Eq1322BaseInverseSourceChain.to_blockLUBudgetChain` directly and
+  invokes
+  `higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_product_bound_diag_update`
+  for the product/update `rho <= 2` layer.  Direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean` passed before
+  and after the edit; focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet public lookup,
+  `git diff --check`, touched Lean/lookup marker scans, anchored conflict-marker
+  scan, and focused `#print axioms` also passed, with the axiom audit reporting
+  only `propext`, `Classical.choice`, and `Quot.sound`.  This removes a
+  lower-comparison proof-surface detour only; the base/inverse comparisons,
+  source-strength product/update data, and Theorem 13.6 cited estimates remain
+  open.
+
+- 2026-06-30 BDD matrix-`∞`/max-entry reverse-comparison audit: added
+  `higham13_blockInfNorm_not_le_blockMaxNorm_counterexample` in
+  `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  It exhibits a single
+  one-block `2 x 2` matrix with first row `[1,1]` where `blockMaxNorm = 1` and
+  `blockInfNorm = 2`, formally ruling out a generic dimension-free comparison
+  `blockInfNorm <= blockMaxNorm`.  This is route-rejection evidence for the
+  BDD red row and explains why the matrix-`∞` to entrywise max-norm transfer
+  keeps an explicit dimension factor; the source-strength Eq.13.21/Eq.13.23
+  `rho <= 2` branch, active pivot source table, structured product/update data,
+  and Theorem 13.6 implementation estimates remain open.  Direct
+  `lake env lean -s 65536 LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`
+  passed, as did focused `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`,
+  quiet public lookup with empty stderr and the new name present,
+  `git diff --check`, conflict-marker and touched Lean marker scans, and
+  focused `#print axioms` with only `propext`, `Classical.choice`, and
+  `Quot.sound`.
+
+- 2026-06-30 Problem 13.4 global-growth-tableau route correction: Oracle/GPT-5.5
+  Pro advised that the recursive source proof uses one ambient GE growth factor
+  `rho_n(A)` for the original matrix, not local normalized `rho(T)` factors for
+  Schur tails.  Added
+  `higham13_problem13_4_L21_eq13_22_premise_from_ambient_block_inverse_growth`
+  and
+  `higham13_problem13_4_L21_eq13_22_premise_from_global_growth_tableau_exact_kappa`
+  to derive the Eq.13.22 lower-block budget from ambient Schur-tableau
+  containment, an explicit current-tail inverse-entry certificate, exact
+  max-entry `kappa(A)`, and `rho(A) >= 1`.  The open Ch13 red row is now
+  sharper: prove recursive tableau-submatrix containment, prove the current-tail
+  inverse-entry certificate from the ambient inverse, and finish Eq.13.23
+  `rho <= 2`/BDD product-update data plus Theorem 13.6 estimates.  Verification
+  passed before sync: direct `BlockLU.lean`, focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet `examples/LibraryLookup.lean`
+  with empty stderr and both names present, `git diff --check`, touched
+  public-Lean marker scan, anchored conflict-marker scan, and focused
+  `#print axioms` with only `propext`, `Classical.choice`, and `Quot.sound`.
+
+- 2026-06-30 Problem 13.4 source global-growth integration: added
+  `higham13_problem13_4_L21_eq13_22_premise_from_source_global_growth_tableau_exact_kappa`,
+  the `nonsingInv`/`finSumFinEquiv` source specialization of the ambient
+  global-growth-tableau theorem.  The existing first-split matrix-stage lower
+  budget theorem now routes through this source wrapper, so the first-pivot
+  Eq.13.22 premise no longer depends on a separate inverse-entry artifact; its
+  remaining assumptions are the ambient matrix-stage history containments.
+  This is dependency progress only: recursive all-tail tableau containment,
+  all-tail inverse/source comparison data, Eq.13.23 `rho <= 2`/BDD product
+  update, and Theorem 13.6 cited estimates remain open.

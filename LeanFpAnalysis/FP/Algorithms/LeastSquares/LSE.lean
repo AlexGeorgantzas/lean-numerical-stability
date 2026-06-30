@@ -315,6 +315,41 @@ theorem LSENullIntersectionTrivial.iff_lseStackedFullColumnRank {m n p : ℕ}
 def IsLowerTriangular {n : ℕ} (L : Fin n → Fin n → ℝ) : Prop :=
   ∀ i j : Fin n, i.val < j.val → L i j = 0
 
+/-- A relative entrywise perturbation of a lower-triangular matrix is still
+    lower triangular.  Above the diagonal the reference entries are zero, so
+    the absolute perturbation bound forces the perturbation entries to vanish
+    there as well. -/
+theorem IsLowerTriangular.add_of_entrywise_abs_le_mul_abs {n : ℕ}
+    {T Delta : Fin n → Fin n → ℝ} {eta : ℝ}
+    (hT : IsLowerTriangular T)
+    (hDelta : ∀ i j : Fin n, |Delta i j| ≤ eta * |T i j|) :
+    IsLowerTriangular (fun i j => T i j + Delta i j) := by
+  intro i j hij
+  have hTij : T i j = 0 := hT i j hij
+  have hbound : |Delta i j| ≤ 0 := by
+    simpa [hTij] using hDelta i j
+  have hDeltaij : Delta i j = 0 := by
+    exact abs_eq_zero.mp (le_antisymm hbound (abs_nonneg (Delta i j)))
+  simp [hTij, hDeltaij]
+
+/-- A relative entrywise perturbation with factor strictly below one preserves
+    nonzero diagonal entries. -/
+theorem diag_ne_zero_add_of_entrywise_abs_le_mul_abs_of_factor_lt_one {n : ℕ}
+    {T Delta : Fin n → Fin n → ℝ} {eta : ℝ}
+    (hdiag : ∀ i : Fin n, T i i ≠ 0)
+    (heta_lt : eta < 1)
+    (hDelta : ∀ i j : Fin n, |Delta i j| ≤ eta * |T i j|) :
+    ∀ i : Fin n, T i i + Delta i i ≠ 0 := by
+  intro i hzero
+  have hDelta_eq : Delta i i = -T i i := by
+    linarith
+  have habs_eq : |Delta i i| = |T i i| := by
+    rw [hDelta_eq, abs_neg]
+  have hle : |T i i| ≤ eta * |T i i| := by
+    simpa [habs_eq] using hDelta i i
+  have hpos : 0 < |T i i| := abs_pos.mpr (hdiag i)
+  nlinarith
+
 private theorem isInverse_rectMatMulVec_bijective {n : ℕ}
     (T Tinv : Fin n → Fin n → ℝ) (hInv : IsInverse n T Tinv) :
     Function.Bijective (rectMatMulVec T) := by
@@ -1000,6 +1035,62 @@ theorem gqrBQBlock_eq_of_transpose_tall_qr {p q : ℕ}
               intro k _
               ring
       _ = 0 := hentry
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10 computed-constraint algebra:
+    if a computed tall QR product has the form `Bhatᵀ = Q*Rhat`, with `Q`
+    orthogonal and `Rhat` upper trapezoidal, then the source-side matrix
+    `Bhat` satisfies the GQR constraint block identity `Bhat*Q = [S,0]`.
+
+    The square GQR constraint block is the transpose of the top square block
+    of `Rhat`.  This is the exact algebra needed to connect a concrete rounded
+    Householder QR of `Bᵀ` to the GQR `B Q = [S,0]` display. -/
+theorem gqrBQBlock_eq_of_transpose_product_tall_qr {p q : ℕ}
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (Rhat : Fin (p + q) → Fin p → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hRupper : IsUpperTrapezoidal (p + q) p Rhat) :
+    let Bhat : Fin p → Fin (p + q) → ℝ :=
+      fun i j => matMulRect (p + q) (p + q) p Q Rhat j i
+    let S : Fin p → Fin p → ℝ :=
+      matTranspose (fun i : Fin p => fun j : Fin p => Rhat (Fin.castAdd q i) j)
+    IsLowerTriangular S ∧
+      matMulRect p (p + q) (p + q) Bhat Q = gqrBQBlock S := by
+  dsimp
+  let R : Fin p → Fin p → ℝ :=
+    fun i : Fin p => fun j : Fin p => Rhat (Fin.castAdd q i) j
+  have hRhatBlock :
+      Rhat = lsQRTallBlock (k := q) R :=
+    lsQRTallBlock_of_upper_trapezoidal (n := p) (k := q) Rhat hRupper
+  have hRupperTop : IsUpperTriangular p R := by
+    intro i j hij
+    exact lsQRTallBlock_top_upper_of_upper_trapezoidal
+      (n := p) (k := q) Rhat hRupper i j hij
+  have hQtQ : matMul (p + q) (matTranspose Q) Q = idMatrix (p + q) := by
+    ext i j
+    simpa [matMul, rectMatMul, idMatrix] using hQ.left_inv i j
+  have hqr :
+      matMulRectLeft (matTranspose Q)
+          (fun j : Fin (p + q) => fun i : Fin p =>
+            matMulRect (p + q) (p + q) p Q Rhat j i) =
+        lsQRTallBlock (k := q) R := by
+    calc
+      matMulRectLeft (matTranspose Q)
+          (fun j : Fin (p + q) => fun i : Fin p =>
+            matMulRect (p + q) (p + q) p Q Rhat j i)
+          =
+        matMulRectLeft (matTranspose Q) (matMulRectLeft Q Rhat) := by
+          rfl
+      _ = matMulRectLeft (matMul (p + q) (matTranspose Q) Q) Rhat := by
+          rw [← matMulRectLeft_assoc]
+      _ = matMulRectLeft (idMatrix (p + q)) Rhat := by
+          rw [hQtQ]
+      _ = Rhat := matMulRectLeft_id Rhat
+      _ = lsQRTallBlock (k := q) R := hRhatBlock
+  exact
+    ⟨isLowerTriangular_matTranspose_of_isUpperTriangular hRupperTop,
+      gqrBQBlock_eq_of_transpose_tall_qr
+        (fun i j => matMulRect (p + q) (p + q) p Q Rhat j i)
+        Q R hqr⟩
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction step:
     exact MGS data for `Bᵀ`, once its computed columns are known
@@ -2434,6 +2525,89 @@ theorem GQRAQTallCase.exists_of_qr_reversed_cols {r q : ℕ}
       _ = gqrAQTallBlock (k := r) L (Fin.natAdd r row) col := by
             simp [gqrAQTallBlock, L, gqrReverseSquare]
 
+/-- Tall associated-shape construction from a square orthogonal QR-style
+    factorization of the column-reversed rectangular block.
+
+    Rounded Householder panels naturally produce a square orthogonal matrix
+    `Qfull` and an upper-trapezoidal rectangular `Rhat`.  This helper extracts
+    the thin top square factor and reuses
+    `GQRAQTallCase.exists_of_qr_reversed_cols` to obtain the GQR-oriented
+    `[0;L]` shape. -/
+theorem GQRAQTallCase.exists_of_square_qr_reversed_cols {r q : ℕ}
+    (C : Fin (r + q) → Fin q → ℝ)
+    (Qfull : Fin (r + q) → Fin (r + q) → ℝ)
+    (Rhat : Fin (r + q) → Fin q → ℝ)
+    (hQfull : IsOrthogonal (r + q) Qfull)
+    (hRhat : IsUpperTrapezoidal (r + q) q Rhat)
+    (hfactor : rectPermuteCols Fin.revPerm C =
+      matMulRect (r + q) (r + q) q Qfull Rhat) :
+    ∃ U : Fin (r + q) → Fin (r + q) → ℝ,
+      IsOrthogonal (r + q) U ∧
+        Nonempty (GQRAQTallCase r q (matMulRectLeft (matTranspose U) C)) := by
+  let e : Fin (r + q) ≃ Fin (q + r) := finAddCommEquiv r q
+  let C' : Fin (q + r) → Fin q → ℝ := fun i j => C (e.symm i) j
+  let Qfull' : Fin (q + r) → Fin (q + r) → ℝ :=
+    fun i j => Qfull (e.symm i) (e.symm j)
+  let Rhat' : Fin (q + r) → Fin q → ℝ := fun i j => Rhat (e.symm i) j
+  let Q2' : Fin (q + r) → Fin q → ℝ :=
+    fun i j => Qfull' i (Fin.castAdd r j)
+  let R : Fin q → Fin q → ℝ := fun i j => Rhat' (Fin.castAdd r i) j
+  have hQfull' : IsOrthogonal (q + r) Qfull' := by
+    simpa [Qfull'] using
+      IsOrthogonal.reindexRowsColsEquiv (e := e.symm) hQfull
+  have hRhat' : IsUpperTrapezoidal (q + r) q Rhat' := by
+    intro i j hji
+    have hval : j.val < (e.symm i).val := by
+      simpa [e, finAddCommEquiv, Fin.cast] using hji
+    simpa [Rhat'] using hRhat (e.symm i) j hval
+  have hQ2' : GramSchmidtOrthonormalColumns Q2' := by
+    intro a b
+    simpa [Q2', Qfull', GramSchmidtOrthonormalColumns, rectangularGram,
+      idMatrix, Fin.castAdd] using
+      hQfull'.col_orthonormal (Fin.castAdd r a) (Fin.castAdd r b)
+  have hR : IsUpperTriangular q R := by
+    intro i j hji
+    simpa [R, Rhat', Fin.castAdd] using hRhat' (Fin.castAdd r i) j hji
+  have hfactor' :
+      rectPermuteCols Fin.revPerm C' =
+        matMulRect (q + r) (q + r) q Qfull' Rhat' := by
+    ext i j
+    have hentry := congrFun (congrFun hfactor (e.symm i)) j
+    have hsum :
+        (∑ k : Fin (q + r), Qfull (e.symm i) (e.symm k) *
+            Rhat (e.symm k) j) =
+          ∑ k : Fin (r + q), Qfull (e.symm i) k * Rhat k j := by
+      exact Equiv.sum_comp e.symm
+        (fun k : Fin (r + q) => Qfull (e.symm i) k * Rhat k j)
+    simpa [C', Qfull', Rhat', rectPermuteCols, matMulRect, hsum] using hentry
+  have hthin' :
+      rectPermuteCols Fin.revPerm C' = matMulRect (q + r) q q Q2' R := by
+    rw [hfactor']
+    ext i j
+    have hbottom : ∀ c : Fin r, Rhat' (Fin.natAdd q c) j = 0 := by
+      intro c
+      exact hRhat' (Fin.natAdd q c) j
+        (Nat.lt_of_lt_of_le j.isLt (Nat.le_add_right q c.val))
+    unfold matMulRect Q2' R
+    rw [Fin.sum_univ_add]
+    simp [hbottom]
+  let Q2 : Fin (r + q) → Fin q → ℝ := fun i j => Q2' (e i) j
+  have hQ2 : GramSchmidtOrthonormalColumns Q2 := by
+    intro a b
+    unfold rectangularGram Q2
+    calc
+      (∑ i : Fin (r + q), Q2' (e i) a * Q2' (e i) b)
+          = ∑ i' : Fin (q + r), Q2' i' a * Q2' i' b := by
+              exact Equiv.sum_comp e
+                (fun i' : Fin (q + r) => Q2' i' a * Q2' i' b)
+      _ = idMatrix q a b := hQ2' a b
+  have hthin :
+      rectPermuteCols Fin.revPerm C = matMulRect (r + q) q q Q2 R := by
+    ext i j
+    have hentry := congrFun (congrFun hthin' (e i)) j
+    simpa [C', Q2, rectPermuteCols, matMulRect] using hentry
+  exact GQRAQTallCase.exists_of_qr_reversed_cols C Q2 R hQ2 hR hthin
+
 /-- Tall associated-shape construction from exact Householder QR of the
     column-reversed block.
 
@@ -2789,6 +2963,209 @@ structure GeneralizedQRFactorization (r p q : ℕ)
   lowerL22 : IsLowerTriangular L22
   /-- `S` is lower triangular. -/
   lowerS : IsLowerTriangular S
+
+/-- Source matrix obtained by transporting a supplied GQR transformed `A`
+    block back through orthogonal factors `U` and `Q`.
+
+    By construction, if `U` and `Q` are orthogonal then
+    `Uᵀ * (gqrSourceAFromBlocks Q U L11 L21 L22) * Q =
+    [[L11,0],[L21,L22]]`. -/
+noncomputable def gqrSourceAFromBlocks {r p q : ℕ}
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (U : Fin (r + q) → Fin (r + q) → ℝ)
+    (L11 : Fin r → Fin p → ℝ)
+    (L21 : Fin q → Fin p → ℝ)
+    (L22 : Fin q → Fin q → ℝ) :
+    Fin (r + q) → Fin (p + q) → ℝ :=
+  matMulRectLeft U
+    (matMulRectRight (gqrAQBlock L11 L21 L22) (matTranspose Q))
+
+/-- Source constraint matrix obtained by transporting a supplied GQR constraint
+    block `[S,0]` back through the orthogonal factor `Q`. -/
+noncomputable def gqrSourceBFromBlocks {p q : ℕ}
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (S : Fin p → Fin p → ℝ) :
+    Fin p → Fin (p + q) → ℝ :=
+  matMulRectRight (gqrBQBlock S) (matTranspose Q)
+
+/-- Exact GQR factorization built by transporting supplied transformed blocks
+    back to source coordinates.
+
+    This is the algebraic constructor behind the Theorem 20.10 supplied-factor
+    route: once perturbed triangular blocks are provided, they define source
+    matrices whose GQR factors are exactly those blocks.  It does not assert
+    that those source matrices are small perturbations of a previously given
+    `A` or `B`; that is a separate finite-precision bound. -/
+noncomputable def GeneralizedQRFactorization.of_source_blocks
+    {r p q : ℕ}
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (U : Fin (r + q) → Fin (r + q) → ℝ)
+    (L11 : Fin r → Fin p → ℝ)
+    (L21 : Fin q → Fin p → ℝ)
+    (L22 : Fin q → Fin q → ℝ)
+    (S : Fin p → Fin p → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hU : IsOrthogonal (r + q) U)
+    (hL22 : IsLowerTriangular L22)
+    (hS : IsLowerTriangular S) :
+    GeneralizedQRFactorization r p q
+      (gqrSourceAFromBlocks Q U L11 L21 L22)
+      (gqrSourceBFromBlocks Q S) := by
+  let M : Fin (r + q) → Fin (p + q) → ℝ := gqrAQBlock L11 L21 L22
+  let C : Fin p → Fin (p + q) → ℝ := gqrBQBlock S
+  have hQtQ : rectMatMul (matTranspose Q) Q = idMatrix (p + q) := by
+    ext i j
+    simpa [rectMatMul, idMatrix] using hQ.left_inv i j
+  have hUtU : rectMatMul (matTranspose U) U = idMatrix (r + q) := by
+    ext i j
+    simpa [rectMatMul, idMatrix] using hU.left_inv i j
+  have hMQ :
+      rectMatMul (rectMatMul M (matTranspose Q)) Q = M := by
+    calc
+      rectMatMul (rectMatMul M (matTranspose Q)) Q =
+          rectMatMul M (rectMatMul (matTranspose Q) Q) :=
+            rectMatMul_assoc M (matTranspose Q) Q
+      _ = rectMatMul M (idMatrix (p + q)) := by rw [hQtQ]
+      _ = M := rectMatMul_id_right M
+  have hCQ :
+      rectMatMul (rectMatMul C (matTranspose Q)) Q = C := by
+    calc
+      rectMatMul (rectMatMul C (matTranspose Q)) Q =
+          rectMatMul C (rectMatMul (matTranspose Q) Q) :=
+            rectMatMul_assoc C (matTranspose Q) Q
+      _ = rectMatMul C (idMatrix (p + q)) := by rw [hQtQ]
+      _ = C := rectMatMul_id_right C
+  have hAqQ :
+      matMulRect (r + q) (p + q) (p + q)
+          (gqrSourceAFromBlocks Q U L11 L21 L22) Q =
+        matMulRectLeft U M := by
+    calc
+      matMulRect (r + q) (p + q) (p + q)
+          (gqrSourceAFromBlocks Q U L11 L21 L22) Q =
+          rectMatMul
+            (rectMatMul U (rectMatMul M (matTranspose Q))) Q := by
+            ext i j
+            rfl
+      _ = rectMatMul U (rectMatMul (rectMatMul M (matTranspose Q)) Q) :=
+            rectMatMul_assoc U (rectMatMul M (matTranspose Q)) Q
+      _ = rectMatMul U M := by rw [hMQ]
+      _ = matMulRectLeft U M := by
+            rfl
+  refine
+    { Q := Q
+      U := U
+      L11 := L11
+      L21 := L21
+      L22 := L22
+      S := S
+      orthQ := hQ
+      orthU := hU
+      aq_eq := ?_
+      bq_eq := ?_
+      lowerL22 := hL22
+      lowerS := hS }
+  · calc
+      matMulRectLeft (matTranspose U)
+          (matMulRect (r + q) (p + q) (p + q)
+            (gqrSourceAFromBlocks Q U L11 L21 L22) Q) =
+          matMulRectLeft (matTranspose U) (matMulRectLeft U M) := by
+            rw [hAqQ]
+      _ = rectMatMul (matTranspose U) (rectMatMul U M) := by
+            rfl
+      _ = rectMatMul (rectMatMul (matTranspose U) U) M :=
+            (rectMatMul_assoc (matTranspose U) U M).symm
+      _ = rectMatMul (idMatrix (r + q)) M := by rw [hUtU]
+      _ = M := rectMatMul_id_left M
+      _ = gqrAQBlock L11 L21 L22 := rfl
+  · calc
+      matMulRect p (p + q) (p + q) (gqrSourceBFromBlocks Q S) Q =
+          rectMatMul (rectMatMul C (matTranspose Q)) Q := by
+            ext i j
+            rfl
+      _ = C := hCQ
+      _ = gqrBQBlock S := rfl
+
+/-- Exact GQR factorization built from transported `A` blocks and an already
+    established constraint identity.
+
+    This is the asymmetric constructor needed by the rounded Theorem 20.10
+    path: the `A` side may still be transported from supplied/computed blocks,
+    while the `B` side can come from a concrete QR-derived identity
+    `B Q = [S,0]` instead of from the synthetic source matrix
+    `gqrSourceBFromBlocks Q S`. -/
+noncomputable def GeneralizedQRFactorization.of_sourceA_blocks_and_constraint_block
+    {r p q : ℕ}
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (U : Fin (r + q) → Fin (r + q) → ℝ)
+    (L11 : Fin r → Fin p → ℝ)
+    (L21 : Fin q → Fin p → ℝ)
+    (L22 : Fin q → Fin q → ℝ)
+    (S : Fin p → Fin p → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hU : IsOrthogonal (r + q) U)
+    (hL22 : IsLowerTriangular L22)
+    (hS : IsLowerTriangular S)
+    (hBQ : matMulRect p (p + q) (p + q) B Q = gqrBQBlock S) :
+    GeneralizedQRFactorization r p q
+      (gqrSourceAFromBlocks Q U L11 L21 L22) B := by
+  let M : Fin (r + q) → Fin (p + q) → ℝ := gqrAQBlock L11 L21 L22
+  have hQtQ : rectMatMul (matTranspose Q) Q = idMatrix (p + q) := by
+    ext i j
+    simpa [rectMatMul, idMatrix] using hQ.left_inv i j
+  have hUtU : rectMatMul (matTranspose U) U = idMatrix (r + q) := by
+    ext i j
+    simpa [rectMatMul, idMatrix] using hU.left_inv i j
+  have hMQ :
+      rectMatMul (rectMatMul M (matTranspose Q)) Q = M := by
+    calc
+      rectMatMul (rectMatMul M (matTranspose Q)) Q =
+          rectMatMul M (rectMatMul (matTranspose Q) Q) :=
+            rectMatMul_assoc M (matTranspose Q) Q
+      _ = rectMatMul M (idMatrix (p + q)) := by rw [hQtQ]
+      _ = M := rectMatMul_id_right M
+  have hAqQ :
+      matMulRect (r + q) (p + q) (p + q)
+          (gqrSourceAFromBlocks Q U L11 L21 L22) Q =
+        matMulRectLeft U M := by
+    calc
+      matMulRect (r + q) (p + q) (p + q)
+          (gqrSourceAFromBlocks Q U L11 L21 L22) Q =
+          rectMatMul
+            (rectMatMul U (rectMatMul M (matTranspose Q))) Q := by
+            ext i j
+            rfl
+      _ = rectMatMul U (rectMatMul (rectMatMul M (matTranspose Q)) Q) :=
+            rectMatMul_assoc U (rectMatMul M (matTranspose Q)) Q
+      _ = rectMatMul U M := by rw [hMQ]
+      _ = matMulRectLeft U M := by
+            rfl
+  refine
+    { Q := Q
+      U := U
+      L11 := L11
+      L21 := L21
+      L22 := L22
+      S := S
+      orthQ := hQ
+      orthU := hU
+      aq_eq := ?_
+      bq_eq := hBQ
+      lowerL22 := hL22
+      lowerS := hS }
+  calc
+    matMulRectLeft (matTranspose U)
+        (matMulRect (r + q) (p + q) (p + q)
+          (gqrSourceAFromBlocks Q U L11 L21 L22) Q) =
+        matMulRectLeft (matTranspose U) (matMulRectLeft U M) := by
+          rw [hAqQ]
+    _ = rectMatMul (matTranspose U) (rectMatMul U M) := by
+          rfl
+    _ = rectMatMul (rectMatMul (matTranspose U) U) M :=
+          (rectMatMul_assoc (matTranspose U) U M).symm
+    _ = rectMatMul (idMatrix (r + q)) M := by rw [hUtU]
+    _ = M := rectMatMul_id_left M
+    _ = gqrAQBlock L11 L21 L22 := rfl
 
 /-- Tall-case construction wrapper for Higham, 2nd ed., Theorem 20.9.
 
@@ -4303,6 +4680,621 @@ theorem gqrAQ2Block_mulVec {r p q : ℕ}
     _ = rectMatMulVec A
         (matMulVec (p + q) Q (Fin.append (0 : Fin p → ℝ) y2)) := by
       exact rectMatMulVec_rectMatMul A Q (Fin.append (0 : Fin p → ℝ) y2)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10 transport algebra:
+    any perturbation of the trailing `A Q₂` block can be represented by a
+    full source-coordinate perturbation of `A`.
+
+    The proof pads the `A Q₂` perturbation with zero leading `p` columns in
+    `Q`-coordinates, then maps it back by right multiplication with `Qᵀ`.
+    Multiplication by `Q` recovers the padded perturbation exactly, and the
+    Frobenius norm is unchanged because `Qᵀ` is orthogonal. -/
+theorem gqrAQ2Block_exists_full_perturbation_of_trailing_delta
+    {r p q : ℕ}
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (DeltaC : Fin (r + q) → Fin q → ℝ)
+    (hQ : IsOrthogonal (p + q) Q) :
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+      (∀ (A : Fin (r + q) → Fin (p + q) → ℝ) i j,
+        gqrAQ2Block (fun i j => A i j + DeltaA i j) Q i j =
+          gqrAQ2Block A Q i j + DeltaC i j) ∧
+      frobNormRect DeltaA =
+        frobNormRect (fun i : Fin (r + q) =>
+          Fin.append (fun _ : Fin p => 0) (DeltaC i)) := by
+  let DeltaAQ : Fin (r + q) → Fin (p + q) → ℝ :=
+    fun i => Fin.append (fun _ : Fin p => 0) (DeltaC i)
+  let DeltaA : Fin (r + q) → Fin (p + q) → ℝ :=
+    matMulRectRight DeltaAQ (matTranspose Q)
+  have hleft : rectMatMul (matTranspose Q) Q = idMatrix (p + q) := by
+    ext a b
+    simpa [rectMatMul, idMatrix] using hQ.left_inv a b
+  have hrecover : rectMatMul (rectMatMul DeltaAQ (matTranspose Q)) Q =
+      DeltaAQ := by
+    calc
+      rectMatMul (rectMatMul DeltaAQ (matTranspose Q)) Q =
+          rectMatMul DeltaAQ (rectMatMul (matTranspose Q) Q) :=
+            rectMatMul_assoc DeltaAQ (matTranspose Q) Q
+      _ = rectMatMul DeltaAQ (idMatrix (p + q)) := by
+            rw [hleft]
+      _ = DeltaAQ := rectMatMul_id_right DeltaAQ
+  refine ⟨DeltaA, ?_, ?_⟩
+  · intro A i j
+    have htrail :
+        matMulRect (r + q) (p + q) (p + q) DeltaA Q i
+            (Fin.natAdd p j) =
+          DeltaC i j := by
+      have hentry := congrFun (congrFun hrecover i) (Fin.natAdd p j)
+      simpa [DeltaA, DeltaAQ, rectMatMul, matMulRect, matMulRectRight,
+        Fin.append_right] using hentry
+    have hdist := congrFun (congrFun
+      (matMulRect_add_left (r + q) (p + q) (p + q) A DeltaA Q) i)
+      (Fin.natAdd p j)
+    simpa [gqrAQ2Block, htrail] using hdist
+  · simpa [DeltaA, DeltaAQ] using
+      (frobNormRect_orthogonal_right DeltaAQ (matTranspose Q)
+        (IsOrthogonal.transpose hQ))
+
+/-- Frobenius norm of a rectangular matrix with zero columns prepended. -/
+theorem frobNormRect_zeroLeftCols_append {m p q : ℕ}
+    (C : Fin m → Fin q → ℝ) :
+    frobNormRect (fun i : Fin m =>
+      Fin.append (fun _ : Fin p => 0) (C i)) = frobNormRect C := by
+  unfold frobNormRect
+  apply congrArg Real.sqrt
+  unfold frobNormSqRect
+  apply Finset.sum_congr rfl
+  intro i _
+  rw [Fin.sum_univ_add]
+  simp [Fin.append_left, Fin.append_right]
+
+/-- Frobenius norm of a rectangular matrix with zero columns appended. -/
+theorem frobNormRect_zeroRightCols_append {m p q : ℕ}
+    (C : Fin m → Fin p → ℝ) :
+    frobNormRect (fun i : Fin m =>
+      Fin.append (C i) (fun _ : Fin q => 0)) = frobNormRect C := by
+  unfold frobNormRect
+  apply congrArg Real.sqrt
+  unfold frobNormSqRect
+  apply Finset.sum_congr rfl
+  intro i _
+  rw [Fin.sum_univ_add]
+  simp [Fin.append_left, Fin.append_right]
+
+/-- The block `[S,0]` used in the GQR constraint equation has the same
+    Frobenius norm as `S`. -/
+theorem frobNormRect_gqrBQBlock {p q : ℕ}
+    (S : Fin p → Fin p → ℝ) :
+    frobNormRect (gqrBQBlock (q := q) S) = frobNormRect S := by
+  simpa [gqrBQBlock] using
+    (frobNormRect_zeroRightCols_append (m := p) (p := p) (q := q) S)
+
+/-- The GQR constraint block is additive in its triangular factor. -/
+theorem gqrBQBlock_add {p q : ℕ}
+    (S DeltaS : Fin p → Fin p → ℝ) :
+    gqrBQBlock (q := q) (fun i j => S i j + DeltaS i j) =
+      fun i j => gqrBQBlock (q := q) S i j + gqrBQBlock DeltaS i j := by
+  ext i j
+  refine Fin.addCases
+    (motive := fun j : Fin (p + q) =>
+      gqrBQBlock (q := q) (fun i j => S i j + DeltaS i j) i j =
+        gqrBQBlock (q := q) S i j + gqrBQBlock DeltaS i j)
+    ?left ?right j
+  · intro j
+    simp [gqrBQBlock, Fin.append_left]
+  · intro j
+    simp [gqrBQBlock, Fin.append_right]
+
+/-- Transporting a perturbation of the GQR `S` block back through `Qᵀ`
+    gives the corresponding source-coordinate constraint perturbation. -/
+theorem gqrSourceBFromBlocks_perturbation_eq {p q : ℕ}
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (S DeltaS : Fin p → Fin p → ℝ) :
+    (fun i j =>
+        gqrSourceBFromBlocks Q (fun i j => S i j + DeltaS i j) i j -
+          gqrSourceBFromBlocks Q S i j) =
+      matMulRectRight (gqrBQBlock (q := q) DeltaS) (matTranspose Q) := by
+  have hblock := gqrBQBlock_add (q := q) S DeltaS
+  ext i j
+  have hadd := congrFun (congrFun
+    (matMulRect_add_left p (p + q) (p + q)
+      (gqrBQBlock (q := q) S) (gqrBQBlock (q := q) DeltaS)
+      (matTranspose Q)) i) j
+  have hsum :
+      gqrSourceBFromBlocks Q (fun i j => S i j + DeltaS i j) i j =
+        gqrSourceBFromBlocks Q S i j +
+          matMulRectRight (gqrBQBlock (q := q) DeltaS) (matTranspose Q) i j := by
+    simpa [gqrSourceBFromBlocks, matMulRectRight, hblock] using hadd
+  rw [hsum]
+  ring
+
+/-- The source-coordinate constraint perturbation induced by perturbing only
+    the GQR `S` block has Frobenius norm exactly `‖DeltaS‖_F`. -/
+theorem gqrSourceBFromBlocks_perturbation_frobNorm_eq {p q : ℕ}
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (S DeltaS : Fin p → Fin p → ℝ)
+    (hQ : IsOrthogonal (p + q) Q) :
+    frobNormRect
+      (fun i j =>
+        gqrSourceBFromBlocks Q (fun i j => S i j + DeltaS i j) i j -
+          gqrSourceBFromBlocks Q S i j) =
+      frobNormRect DeltaS := by
+  calc
+    frobNormRect
+        (fun i j =>
+          gqrSourceBFromBlocks Q (fun i j => S i j + DeltaS i j) i j -
+            gqrSourceBFromBlocks Q S i j)
+        = frobNormRect
+            (matMulRectRight (gqrBQBlock (q := q) DeltaS) (matTranspose Q)) := by
+          rw [gqrSourceBFromBlocks_perturbation_eq Q S DeltaS]
+    _ = frobNormRect (gqrBQBlock (q := q) DeltaS) := by
+          exact frobNormRect_orthogonal_right _ _ (IsOrthogonal.transpose hQ)
+    _ = frobNormRect DeltaS := frobNormRect_gqrBQBlock DeltaS
+
+/-- A supplied GQR factorization reconstructs its original constraint matrix
+    from the displayed `[S,0]` block and `Qᵀ`. -/
+theorem GeneralizedQRFactorization.sourceBFromBlocks_eq {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B) :
+    gqrSourceBFromBlocks h.Q h.S = B := by
+  have hbq :
+      matMulRectRight B h.Q = gqrBQBlock h.S := by
+    simpa [matMulRectRight] using h.bq_eq
+  have hright : rectMatMul h.Q (matTranspose h.Q) = idMatrix (p + q) := by
+    ext i j
+    simpa [rectMatMul, idMatrix] using h.orthQ.right_inv i j
+  calc
+    gqrSourceBFromBlocks h.Q h.S =
+        matMulRectRight (gqrBQBlock h.S) (matTranspose h.Q) := rfl
+    _ = matMulRectRight (matMulRectRight B h.Q) (matTranspose h.Q) := by
+          rw [← hbq]
+    _ = rectMatMul (rectMatMul B h.Q) (matTranspose h.Q) := rfl
+    _ = rectMatMul B (rectMatMul h.Q (matTranspose h.Q)) :=
+          rectMatMul_assoc B h.Q (matTranspose h.Q)
+    _ = rectMatMul B (idMatrix (p + q)) := by rw [hright]
+    _ = B := rectMatMul_id_right B
+
+/-- In a supplied GQR factorization, the Frobenius norm of the displayed
+    constraint block `S` is the source Frobenius norm of `B`. -/
+theorem GeneralizedQRFactorization.frobNormRect_S_eq_sourceB {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B) :
+    frobNormRect h.S = frobNormRect B := by
+  have hbq :
+      matMulRectRight B h.Q = gqrBQBlock h.S := by
+    simpa [matMulRectRight] using h.bq_eq
+  calc
+    frobNormRect h.S = frobNormRect (gqrBQBlock (q := q) h.S) := by
+      exact (frobNormRect_gqrBQBlock h.S).symm
+    _ = frobNormRect (matMulRectRight B h.Q) := by rw [← hbq]
+    _ = frobNormRect B := frobNormRect_orthogonal_right B h.Q h.orthQ
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), constructed-source
+    `DeltaB` Frobenius bound from a perturbation of the GQR `S` block.
+
+    This closes the source-shaped `B` side of the constructed-source
+    certificate once the triangular solve supplies
+    `‖DeltaS‖_F ≤ eta * ‖S‖_F`. -/
+theorem GeneralizedQRFactorization.constructed_sourceB_perturbation_frobNorm_bound
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (eta : ℝ) (DeltaS : Fin p → Fin p → ℝ)
+    (hDeltaSfrob : frobNormRect DeltaS ≤ eta * frobNormRect h.S) :
+    frobNormRect
+      (fun i j =>
+        gqrSourceBFromBlocks h.Q (fun i j => h.S i j + DeltaS i j) i j -
+          B i j) ≤
+      eta * frobNormRect B := by
+  have hBsrc := h.sourceBFromBlocks_eq
+  have hnorm :
+      frobNormRect
+        (fun i j =>
+          gqrSourceBFromBlocks h.Q (fun i j => h.S i j + DeltaS i j) i j -
+            B i j) =
+        frobNormRect DeltaS := by
+    calc
+      frobNormRect
+          (fun i j =>
+            gqrSourceBFromBlocks h.Q (fun i j => h.S i j + DeltaS i j) i j -
+              B i j)
+          = frobNormRect
+              (fun i j =>
+                gqrSourceBFromBlocks h.Q (fun i j => h.S i j + DeltaS i j) i j -
+                  gqrSourceBFromBlocks h.Q h.S i j) := by
+            congr 1
+            ext i j
+            rw [hBsrc]
+      _ = frobNormRect DeltaS :=
+            gqrSourceBFromBlocks_perturbation_frobNorm_eq h.Q h.S DeltaS h.orthQ
+  calc
+    frobNormRect
+        (fun i j =>
+          gqrSourceBFromBlocks h.Q (fun i j => h.S i j + DeltaS i j) i j -
+            B i j)
+        = frobNormRect DeltaS := hnorm
+    _ ≤ eta * frobNormRect h.S := hDeltaSfrob
+    _ = eta * frobNormRect B := by rw [h.frobNormRect_S_eq_sourceB]
+
+/-- Frobenius norm of a rectangular matrix with zero rows prepended. -/
+theorem frobNormRect_zeroTopRows_append {r q n : ℕ}
+    (C : Fin q → Fin n → ℝ) :
+    frobNormRect (Fin.append (fun _ : Fin r => fun _ : Fin n => 0) C) =
+      frobNormRect C := by
+  unfold frobNormRect
+  apply congrArg Real.sqrt
+  unfold frobNormSqRect
+  rw [Fin.sum_univ_add]
+  simp [Fin.append_left, Fin.append_right]
+
+/-- The GQR block with only the bottom-right `L22` perturbation nonzero has
+    Frobenius norm exactly the Frobenius norm of that perturbation. -/
+theorem frobNormRect_gqrAQBlock_only_L22 {r p q : ℕ}
+    (DeltaL22 : Fin q → Fin q → ℝ) :
+    frobNormRect
+      (gqrAQBlock (r := r) (p := p) (q := q)
+        (fun _ _ => 0) (fun _ _ => 0) DeltaL22) =
+      frobNormRect DeltaL22 := by
+  unfold frobNormRect
+  apply congrArg Real.sqrt
+  unfold frobNormSqRect
+  rw [Fin.sum_univ_add]
+  simp [gqrAQBlock, Fin.append_left, Fin.append_right, Fin.sum_univ_add]
+
+/-- The displayed GQR `UᵀAQ` block is additive in its bottom-right `L22`
+    block when all other perturbation blocks are zero. -/
+theorem gqrAQBlock_L22_add {r p q : ℕ}
+    (L11 : Fin r → Fin p → ℝ)
+    (L21 : Fin q → Fin p → ℝ)
+    (L22 DeltaL22 : Fin q → Fin q → ℝ) :
+    gqrAQBlock L11 L21 (fun i j => L22 i j + DeltaL22 i j) =
+      fun i j =>
+        gqrAQBlock L11 L21 L22 i j +
+          gqrAQBlock (r := r) (p := p) (q := q)
+            (fun _ _ => 0) (fun _ _ => 0) DeltaL22 i j := by
+  ext i j
+  refine Fin.addCases
+    (motive := fun i : Fin (r + q) =>
+      gqrAQBlock L11 L21 (fun i j => L22 i j + DeltaL22 i j) i j =
+        gqrAQBlock L11 L21 L22 i j +
+          gqrAQBlock (r := r) (p := p) (q := q)
+            (fun _ _ => 0) (fun _ _ => 0) DeltaL22 i j)
+    ?top ?bottom i
+  · intro i
+    refine Fin.addCases
+      (motive := fun j : Fin (p + q) =>
+        gqrAQBlock L11 L21 (fun i j => L22 i j + DeltaL22 i j)
+            (Fin.castAdd q i) j =
+          gqrAQBlock L11 L21 L22 (Fin.castAdd q i) j +
+            gqrAQBlock (r := r) (p := p) (q := q)
+              (fun _ _ => 0) (fun _ _ => 0) DeltaL22 (Fin.castAdd q i) j)
+      ?top_left ?top_right j
+    · intro j
+      simp [gqrAQBlock, Fin.append_left]
+    · intro j
+      simp [gqrAQBlock, Fin.append_left, Fin.append_right]
+  · intro i
+    refine Fin.addCases
+      (motive := fun j : Fin (p + q) =>
+        gqrAQBlock L11 L21 (fun i j => L22 i j + DeltaL22 i j)
+            (Fin.natAdd r i) j =
+          gqrAQBlock L11 L21 L22 (Fin.natAdd r i) j +
+            gqrAQBlock (r := r) (p := p) (q := q)
+              (fun _ _ => 0) (fun _ _ => 0) DeltaL22 (Fin.natAdd r i) j)
+      ?bottom_left ?bottom_right j
+    · intro j
+      simp [gqrAQBlock, Fin.append_right, Fin.append_left]
+    · intro j
+      simp [gqrAQBlock, Fin.append_right]
+
+/-- Transporting a perturbation of only the GQR `L22` block back through
+    `U` and `Qᵀ` gives the corresponding source-coordinate data perturbation. -/
+theorem gqrSourceAFromBlocks_L22_perturbation_eq {r p q : ℕ}
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (U : Fin (r + q) → Fin (r + q) → ℝ)
+    (L11 : Fin r → Fin p → ℝ)
+    (L21 : Fin q → Fin p → ℝ)
+    (L22 DeltaL22 : Fin q → Fin q → ℝ) :
+    (fun i j =>
+        gqrSourceAFromBlocks Q U L11 L21 (fun i j => L22 i j + DeltaL22 i j) i j -
+          gqrSourceAFromBlocks Q U L11 L21 L22 i j) =
+      matMulRectLeft U
+        (matMulRectRight
+          (gqrAQBlock (r := r) (p := p) (q := q)
+            (fun _ _ => 0) (fun _ _ => 0) DeltaL22)
+          (matTranspose Q)) := by
+  let M : Fin (r + q) → Fin (p + q) → ℝ := gqrAQBlock L11 L21 L22
+  let DeltaM : Fin (r + q) → Fin (p + q) → ℝ :=
+    gqrAQBlock (r := r) (p := p) (q := q)
+      (fun _ _ => 0) (fun _ _ => 0) DeltaL22
+  have hblock :
+      gqrAQBlock L11 L21 (fun i j => L22 i j + DeltaL22 i j) =
+        fun i j => M i j + DeltaM i j := by
+    simpa [M, DeltaM] using gqrAQBlock_L22_add L11 L21 L22 DeltaL22
+  have hright :
+      matMulRectRight
+          (gqrAQBlock L11 L21 (fun i j => L22 i j + DeltaL22 i j))
+          (matTranspose Q) =
+        fun i j =>
+          matMulRectRight M (matTranspose Q) i j +
+            matMulRectRight DeltaM (matTranspose Q) i j := by
+    simpa [matMulRectRight, hblock] using
+      (matMulRect_add_left (r + q) (p + q) (p + q)
+        M DeltaM (matTranspose Q))
+  ext i j
+  have hleft := congrFun (congrFun
+    (matMulRectLeft_add_right U
+      (matMulRectRight M (matTranspose Q))
+      (matMulRectRight DeltaM (matTranspose Q))) i) j
+  have hsum :
+      gqrSourceAFromBlocks Q U L11 L21 (fun i j => L22 i j + DeltaL22 i j) i j =
+        gqrSourceAFromBlocks Q U L11 L21 L22 i j +
+          matMulRectLeft U (matMulRectRight DeltaM (matTranspose Q)) i j := by
+    simpa [gqrSourceAFromBlocks, M, DeltaM, hright] using hleft
+  rw [hsum]
+  ring
+
+/-- The source-coordinate data perturbation induced by perturbing only the
+    GQR `L22` block has Frobenius norm exactly `‖DeltaL22‖_F`. -/
+theorem gqrSourceAFromBlocks_L22_perturbation_frobNorm_eq {r p q : ℕ}
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (U : Fin (r + q) → Fin (r + q) → ℝ)
+    (L11 : Fin r → Fin p → ℝ)
+    (L21 : Fin q → Fin p → ℝ)
+    (L22 DeltaL22 : Fin q → Fin q → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hU : IsOrthogonal (r + q) U) :
+    frobNormRect
+      (fun i j =>
+        gqrSourceAFromBlocks Q U L11 L21 (fun i j => L22 i j + DeltaL22 i j) i j -
+          gqrSourceAFromBlocks Q U L11 L21 L22 i j) =
+      frobNormRect DeltaL22 := by
+  let DeltaM : Fin (r + q) → Fin (p + q) → ℝ :=
+    gqrAQBlock (r := r) (p := p) (q := q)
+      (fun _ _ => 0) (fun _ _ => 0) DeltaL22
+  calc
+    frobNormRect
+        (fun i j =>
+          gqrSourceAFromBlocks Q U L11 L21 (fun i j => L22 i j + DeltaL22 i j) i j -
+            gqrSourceAFromBlocks Q U L11 L21 L22 i j)
+        = frobNormRect
+            (matMulRectLeft U (matMulRectRight DeltaM (matTranspose Q))) := by
+          rw [gqrSourceAFromBlocks_L22_perturbation_eq Q U L11 L21 L22 DeltaL22]
+    _ = frobNormRect (matMulRectRight DeltaM (matTranspose Q)) := by
+          exact frobNormRect_orthogonal_left U
+            (matMulRectRight DeltaM (matTranspose Q)) hU
+    _ = frobNormRect DeltaM := by
+          exact frobNormRect_orthogonal_right DeltaM (matTranspose Q)
+            (IsOrthogonal.transpose hQ)
+    _ = frobNormRect DeltaL22 := frobNormRect_gqrAQBlock_only_L22 DeltaL22
+
+/-- The bottom row block has Frobenius squared norm no larger than the full
+    rectangular matrix. -/
+theorem frobNormSqRect_bottomRows_le {r q n : ℕ}
+    (M : Fin (r + q) → Fin n → ℝ) :
+    frobNormSqRect (fun i : Fin q => M (Fin.natAdd r i)) ≤
+      frobNormSqRect M := by
+  unfold frobNormSqRect
+  rw [Fin.sum_univ_add]
+  have htop_nonneg :
+      0 ≤ ∑ i : Fin r, ∑ j : Fin n, M (Fin.castAdd q i) j ^ 2 := by
+    exact Finset.sum_nonneg
+      (fun i _ => Finset.sum_nonneg (fun j _ => sq_nonneg _))
+  linarith
+
+/-- The bottom row block has Frobenius norm no larger than the full
+    rectangular matrix. -/
+theorem frobNormRect_bottomRows_le {r q n : ℕ}
+    (M : Fin (r + q) → Fin n → ℝ) :
+    frobNormRect (fun i : Fin q => M (Fin.natAdd r i)) ≤
+      frobNormRect M := by
+  unfold frobNormRect
+  exact Real.sqrt_le_sqrt (frobNormSqRect_bottomRows_le M)
+
+/-- The trailing column block has Frobenius norm no larger than the full
+    rectangular matrix. -/
+theorem frobNormSqRect_trailingCols_le {m p q : ℕ}
+    (M : Fin m → Fin (p + q) → ℝ) :
+    frobNormSqRect (fun i : Fin m => fun j : Fin q =>
+      M i (Fin.natAdd p j)) ≤ frobNormSqRect M := by
+  unfold frobNormSqRect
+  apply Finset.sum_le_sum
+  intro i _
+  have hsplit :
+      (∑ j : Fin (p + q), M i j ^ 2) =
+        (∑ j : Fin p, M i (Fin.castAdd q j) ^ 2) +
+          (∑ j : Fin q, M i (Fin.natAdd p j) ^ 2) := by
+    rw [Fin.sum_univ_add]
+  have hleft_nonneg :
+      0 ≤ ∑ j : Fin p, M i (Fin.castAdd q j) ^ 2 := by
+    exact Finset.sum_nonneg (fun j _ => sq_nonneg _)
+  linarith
+
+/-- The trailing column block has Frobenius norm no larger than the full
+    rectangular matrix. -/
+theorem frobNormRect_trailingCols_le {m p q : ℕ}
+    (M : Fin m → Fin (p + q) → ℝ) :
+    frobNormRect (fun i : Fin m => fun j : Fin q =>
+      M i (Fin.natAdd p j)) ≤ frobNormRect M := by
+  unfold frobNormRect
+  exact Real.sqrt_le_sqrt (frobNormSqRect_trailingCols_le M)
+
+/-- The `A Q₂` block has Frobenius norm no larger than `A` when `Q` is
+    orthogonal. -/
+theorem frobNormRect_gqrAQ2Block_le
+    {r p q : ℕ}
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q) :
+    frobNormRect (gqrAQ2Block A Q) ≤ frobNormRect A := by
+  let AQ : Fin (r + q) → Fin (p + q) → ℝ := matMulRectRight A Q
+  have htrail :
+      gqrAQ2Block A Q =
+        fun i : Fin (r + q) => fun j : Fin q => AQ i (Fin.natAdd p j) := by
+    ext i j
+    rfl
+  calc
+    frobNormRect (gqrAQ2Block A Q)
+        = frobNormRect
+            (fun i : Fin (r + q) => fun j : Fin q => AQ i (Fin.natAdd p j)) := by
+          rw [htrail]
+    _ ≤ frobNormRect AQ := frobNormRect_trailingCols_le AQ
+    _ = frobNormRect A := by
+          simpa [AQ] using frobNormRect_orthogonal_right A Q hQ
+
+/-- The bottom-right `L22` block in the displayed GQR `UᵀAQ` matrix has
+    Frobenius norm no larger than the full displayed block. -/
+theorem frobNormRect_gqrAQBlock_L22_le {r p q : ℕ}
+    (L11 : Fin r → Fin p → ℝ)
+    (L21 : Fin q → Fin p → ℝ)
+    (L22 : Fin q → Fin q → ℝ) :
+    frobNormRect L22 ≤ frobNormRect (gqrAQBlock L11 L21 L22) := by
+  let bottom : Fin q → Fin (p + q) → ℝ :=
+    fun i j => gqrAQBlock L11 L21 L22 (Fin.natAdd r i) j
+  have hL22 :
+      L22 = fun i : Fin q => fun j : Fin q => bottom i (Fin.natAdd p j) := by
+    ext i j
+    simp [bottom, gqrAQBlock, Fin.append_right]
+  calc
+    frobNormRect L22 =
+        frobNormRect (fun i : Fin q => fun j : Fin q =>
+          bottom i (Fin.natAdd p j)) := by rw [hL22]
+    _ ≤ frobNormRect bottom := frobNormRect_trailingCols_le bottom
+    _ ≤ frobNormRect (gqrAQBlock L11 L21 L22) :=
+          frobNormRect_bottomRows_le (gqrAQBlock L11 L21 L22)
+
+/-- A supplied GQR factorization reconstructs its original data matrix from
+    the displayed `UᵀAQ` block and the orthogonal factors `U` and `Qᵀ`. -/
+theorem GeneralizedQRFactorization.sourceAFromBlocks_eq {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B) :
+    gqrSourceAFromBlocks h.Q h.U h.L11 h.L21 h.L22 = A := by
+  let M : Fin (r + q) → Fin (p + q) → ℝ :=
+    gqrAQBlock h.L11 h.L21 h.L22
+  let AQ : Fin (r + q) → Fin (p + q) → ℝ := matMulRectRight A h.Q
+  have haq : matMulRectLeft (matTranspose h.U) AQ = M := by
+    simpa [M, AQ, matMulRectRight] using h.aq_eq
+  have hUright : rectMatMul h.U (matTranspose h.U) = idMatrix (r + q) := by
+    ext i j
+    simpa [rectMatMul, idMatrix] using h.orthU.right_inv i j
+  have hQright : rectMatMul h.Q (matTranspose h.Q) = idMatrix (p + q) := by
+    ext i j
+    simpa [rectMatMul, idMatrix] using h.orthQ.right_inv i j
+  calc
+    gqrSourceAFromBlocks h.Q h.U h.L11 h.L21 h.L22 =
+        matMulRectLeft h.U (matMulRectRight M (matTranspose h.Q)) := rfl
+    _ = matMulRectLeft h.U
+          (matMulRectRight
+            (matMulRectLeft (matTranspose h.U) AQ) (matTranspose h.Q)) := by
+          rw [haq]
+    _ = rectMatMul h.U
+          (rectMatMul
+            (rectMatMul (matTranspose h.U) (rectMatMul A h.Q))
+            (matTranspose h.Q)) := by
+          rfl
+    _ = rectMatMul h.U
+          (rectMatMul (matTranspose h.U)
+            (rectMatMul (rectMatMul A h.Q) (matTranspose h.Q))) := by
+          rw [rectMatMul_assoc]
+    _ = rectMatMul
+          (rectMatMul h.U (matTranspose h.U))
+          (rectMatMul (rectMatMul A h.Q) (matTranspose h.Q)) := by
+          rw [← rectMatMul_assoc]
+    _ = rectMatMul
+          (idMatrix (r + q))
+          (rectMatMul (rectMatMul A h.Q) (matTranspose h.Q)) := by
+          rw [hUright]
+    _ = rectMatMul (rectMatMul A h.Q) (matTranspose h.Q) := by
+          rw [rectMatMul_id_left]
+    _ = rectMatMul A (rectMatMul h.Q (matTranspose h.Q)) :=
+          rectMatMul_assoc A h.Q (matTranspose h.Q)
+    _ = rectMatMul A (idMatrix (p + q)) := by rw [hQright]
+    _ = A := rectMatMul_id_right A
+
+/-- In a supplied GQR factorization, the bottom-right displayed block `L22`
+    has Frobenius norm no larger than the source data matrix `A`. -/
+theorem GeneralizedQRFactorization.frobNormRect_L22_le_sourceA {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B) :
+    frobNormRect h.L22 ≤ frobNormRect A := by
+  let M : Fin (r + q) → Fin (p + q) → ℝ :=
+    gqrAQBlock h.L11 h.L21 h.L22
+  have haq : matMulRectLeft (matTranspose h.U) (matMulRectRight A h.Q) = M := by
+    simpa [M, matMulRectRight] using h.aq_eq
+  have hMnorm : frobNormRect M = frobNormRect A := by
+    calc
+      frobNormRect M =
+          frobNormRect
+            (matMulRectLeft (matTranspose h.U) (matMulRectRight A h.Q)) := by
+            rw [← haq]
+      _ = frobNormRect (matMulRectRight A h.Q) := by
+            exact frobNormRect_orthogonal_left (matTranspose h.U)
+              (matMulRectRight A h.Q) (IsOrthogonal.transpose h.orthU)
+      _ = frobNormRect A := frobNormRect_orthogonal_right A h.Q h.orthQ
+  calc
+    frobNormRect h.L22 ≤ frobNormRect M :=
+      frobNormRect_gqrAQBlock_L22_le h.L11 h.L21 h.L22
+    _ = frobNormRect A := hMnorm
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), constructed-source
+    `DeltaA` Frobenius bound from a perturbation of the GQR `L22` block.
+
+    This closes the source-shaped `A` side of the constructed-source
+    certificate once the triangular solve supplies
+    `‖DeltaL22‖_F ≤ eta * ‖L22‖_F` and `eta` is nonnegative. -/
+theorem GeneralizedQRFactorization.constructed_sourceA_L22_perturbation_frobNorm_bound
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (eta : ℝ) (DeltaL22 : Fin q → Fin q → ℝ)
+    (heta_nonneg : 0 ≤ eta)
+    (hDeltaL22frob : frobNormRect DeltaL22 ≤ eta * frobNormRect h.L22) :
+    frobNormRect
+      (fun i j =>
+        gqrSourceAFromBlocks h.Q h.U h.L11 h.L21
+            (fun i j => h.L22 i j + DeltaL22 i j) i j -
+          A i j) ≤
+      eta * frobNormRect A := by
+  have hAsrc := h.sourceAFromBlocks_eq
+  have hnorm :
+      frobNormRect
+        (fun i j =>
+          gqrSourceAFromBlocks h.Q h.U h.L11 h.L21
+              (fun i j => h.L22 i j + DeltaL22 i j) i j -
+            A i j) =
+        frobNormRect DeltaL22 := by
+    calc
+      frobNormRect
+          (fun i j =>
+            gqrSourceAFromBlocks h.Q h.U h.L11 h.L21
+                (fun i j => h.L22 i j + DeltaL22 i j) i j -
+              A i j)
+          = frobNormRect
+              (fun i j =>
+                gqrSourceAFromBlocks h.Q h.U h.L11 h.L21
+                    (fun i j => h.L22 i j + DeltaL22 i j) i j -
+                  gqrSourceAFromBlocks h.Q h.U h.L11 h.L21 h.L22 i j) := by
+            congr 1
+            ext i j
+            rw [hAsrc]
+      _ = frobNormRect DeltaL22 :=
+            gqrSourceAFromBlocks_L22_perturbation_frobNorm_eq
+              h.Q h.U h.L11 h.L21 h.L22 DeltaL22 h.orthQ h.orthU
+  calc
+    frobNormRect
+        (fun i j =>
+          gqrSourceAFromBlocks h.Q h.U h.L11 h.L21
+              (fun i j => h.L22 i j + DeltaL22 i j) i j -
+            A i j)
+        = frobNormRect DeltaL22 := hnorm
+    _ ≤ eta * frobNormRect h.L22 := hDeltaL22frob
+    _ ≤ eta * frobNormRect A :=
+          mul_le_mul_of_nonneg_left h.frobNormRect_L22_le_sourceA heta_nonneg
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction route:
     the `A Q₂` block has trivial kernel using only the constraint block
@@ -8275,6 +9267,824 @@ theorem GeneralizedQRFactorization.exists_unique_method_solution_of_theorem20_10
       (b := fun i => b i + Deltab i)
       (d := fun i => d i + Deltad i) hB hstack
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, triangular-solve component:
+    the two lower-triangular solves in the exact GQR method have concrete
+    finite-precision perturbation witnesses for the actual `fl_forwardSub`
+    calls.
+
+    This is a computed-path dependency for Theorem 20.10.  It instantiates the
+    already proved forward-substitution backward-error theorem on the displayed
+    `S y₁ = d` and `L₂₂ y₂ = Uᵀb - L₂₁y₁` solves.  It does not yet transport
+    these factor perturbations back to a final `DeltaX` bound or identify the
+    computed `xhat` with the GQR output vector. -/
+theorem theorem20_10_gqr_forwardSub_triangular_solve_perturbation_bound
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalidS : gammaValid fp p)
+    (hvalidL22 : gammaValid fp q) :
+    let y1hat : Fin p → ℝ := fl_forwardSub fp p h.S d
+    let rhs : Fin q → ℝ :=
+      fun i : Fin q =>
+        matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i) -
+          rectMatMulVec h.L21 y1hat i
+    let y2hat : Fin q → ℝ := fl_forwardSub fp q h.L22 rhs
+    ∃ (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ),
+      (∀ i j, |DeltaS i j| ≤ gamma fp p * |h.S i j|) ∧
+      (∀ i j, |DeltaL22 i j| ≤ gamma fp q * |h.L22 i j|) ∧
+      rectMatMulVec (fun i j => h.S i j + DeltaS i j) y1hat = d ∧
+      rectMatMulVec (fun i j => h.L22 i j + DeltaL22 i j) y2hat = rhs := by
+  dsimp
+  let y1hat : Fin p → ℝ := fl_forwardSub fp p h.S d
+  let rhs : Fin q → ℝ :=
+    fun i : Fin q =>
+      matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i) -
+        rectMatMulVec h.L21 y1hat i
+  let y2hat : Fin q → ℝ := fl_forwardSub fp q h.L22 rhs
+  rcases forwardSub_backward_error fp p h.S d hSdiag h.lowerS hvalidS with
+    ⟨DeltaS, hDeltaSbound, hSeq⟩
+  rcases forwardSub_backward_error fp q h.L22 rhs hL22diag h.lowerL22
+      hvalidL22 with
+    ⟨DeltaL22, hDeltaL22bound, hL22eq⟩
+  refine ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound, ?_, ?_⟩
+  · ext i
+    simpa [rectMatMulVec, y1hat] using hSeq i
+  · ext i
+    simpa [rectMatMulVec, y2hat, rhs] using hL22eq i
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, triangular-solve component:
+    Frobenius-norm version of the concrete GQR triangular-solve perturbation
+    witnesses.
+
+    The underlying forward-substitution theorem gives componentwise relative
+    bounds for the two lower-triangular solves.  This wrapper converts those
+    entrywise bounds into source-shaped Frobenius bounds for the perturbations
+    of `S` and `L₂₂`, while preserving the exact perturbed triangular
+    equations for the actual `fl_forwardSub` calls. -/
+theorem theorem20_10_gqr_forwardSub_triangular_solve_frob_perturbation_bound
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalidS : gammaValid fp p)
+    (hvalidL22 : gammaValid fp q) :
+    let y1hat : Fin p → ℝ := fl_forwardSub fp p h.S d
+    let rhs : Fin q → ℝ :=
+      fun i : Fin q =>
+        matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i) -
+          rectMatMulVec h.L21 y1hat i
+    let y2hat : Fin q → ℝ := fl_forwardSub fp q h.L22 rhs
+    ∃ (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ),
+      (∀ i j, |DeltaS i j| ≤ gamma fp p * |h.S i j|) ∧
+      (∀ i j, |DeltaL22 i j| ≤ gamma fp q * |h.L22 i j|) ∧
+      frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S ∧
+      frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 ∧
+      rectMatMulVec (fun i j => h.S i j + DeltaS i j) y1hat = d ∧
+      rectMatMulVec (fun i j => h.L22 i j + DeltaL22 i j) y2hat = rhs := by
+  dsimp
+  rcases theorem20_10_gqr_forwardSub_triangular_solve_perturbation_bound
+      fp h b d hSdiag hL22diag hvalidS hvalidL22 with
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound, hSeq, hL22eq⟩
+  have hDeltaSfrob :
+      frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S := by
+    simpa [frobNormRect_eq_frobNormFn] using
+      (frobNorm_le_const_mul_frobNorm_of_entrywise_abs_le
+        DeltaS h.S (gamma_nonneg fp hvalidS) hDeltaSbound)
+  have hDeltaL22frob :
+      frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 := by
+    simpa [frobNormRect_eq_frobNormFn] using
+      (frobNorm_le_const_mul_frobNorm_of_entrywise_abs_le
+        DeltaL22 h.L22 (gamma_nonneg fp hvalidL22) hDeltaL22bound)
+  exact
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, hSeq, hL22eq⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
+    first lower-triangular solve `S y₁ = d`. -/
+noncomputable def theorem20_10_gqr_y1hat
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (fp : FPModel) (h : GeneralizedQRFactorization r p q A B)
+    (d : Fin p → ℝ) : Fin p → ℝ :=
+  fl_forwardSub fp p h.S d
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
+    right-hand side for the trailing lower-triangular solve. -/
+noncomputable def theorem20_10_gqr_rhs2hat
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (fp : FPModel) (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ) : Fin q → ℝ :=
+  fun i : Fin q =>
+    matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i) -
+      rectMatMulVec h.L21 (theorem20_10_gqr_y1hat fp h d) i
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
+    second lower-triangular solve `L₂₂ y₂ = Uᵀb - L₂₁y₁`. -/
+noncomputable def theorem20_10_gqr_y2hat
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (fp : FPModel) (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ) : Fin q → ℝ :=
+  fl_forwardSub fp q h.L22 (theorem20_10_gqr_rhs2hat fp h b d)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
+    final computed vector `xhat = Q [y₁hat; y₂hat]` for supplied GQR data.
+
+    This definition names the computed path; it does not by itself prove that
+    the vector is a minimizer of a perturbed LSE problem. -/
+noncomputable def theorem20_10_gqr_xhat
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (fp : FPModel) (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ) : Fin (p + q) → ℝ :=
+  matMulVec (p + q) h.Q
+    (Fin.append
+      (theorem20_10_gqr_y1hat fp h d)
+      (theorem20_10_gqr_y2hat fp h b d))
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
+    right-hand side for the trailing lower-triangular solve when the trailing
+    transformed vector has already been computed or perturbed.
+
+    This variant is the bridge needed for the rounded Householder RHS path:
+    `beta` represents the trailing entries of the transformed right-hand side,
+    rather than forcing the exact vector `Uᵀ b`. -/
+noncomputable def theorem20_10_gqr_rhs2hat_of_transformed_tail
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (fp : FPModel) (h : GeneralizedQRFactorization r p q A B)
+    (beta : Fin q → ℝ) (d : Fin p → ℝ) : Fin q → ℝ :=
+  fun i : Fin q =>
+    beta i - rectMatMulVec h.L21 (theorem20_10_gqr_y1hat fp h d) i
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
+    second lower-triangular solve driven by a supplied trailing transformed
+    right-hand side. -/
+noncomputable def theorem20_10_gqr_y2hat_of_transformed_tail
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (fp : FPModel) (h : GeneralizedQRFactorization r p q A B)
+    (beta : Fin q → ℝ) (d : Fin p → ℝ) : Fin q → ℝ :=
+  fl_forwardSub fp q h.L22
+    (theorem20_10_gqr_rhs2hat_of_transformed_tail fp h beta d)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
+    final vector for the supplied-trailing-RHS computed path. -/
+noncomputable def theorem20_10_gqr_xhat_of_transformed_tail
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (fp : FPModel) (h : GeneralizedQRFactorization r p q A B)
+    (beta : Fin q → ℝ) (d : Fin p → ℝ) : Fin (p + q) → ℝ :=
+  matMulVec (p + q) h.Q
+    (Fin.append
+      (theorem20_10_gqr_y1hat fp h d)
+      (theorem20_10_gqr_y2hat_of_transformed_tail fp h beta d))
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
+    the named computed vector carries the same Frobenius-bounded triangular
+    perturbation witnesses as the raw `fl_forwardSub` calls.
+
+    This closes the bookkeeping step that identifies the local computed
+    `xhat` expression used by the triangular-solve analysis.  It still does
+    not prove the final `DeltaX` bound, rank preservation for perturbed source
+    data, or exact-minimizer status of the computed vector. -/
+theorem theorem20_10_gqr_xhat_triangular_solve_frob_perturbation_bound
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalidS : gammaValid fp p)
+    (hvalidL22 : gammaValid fp q) :
+    ∃ (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ),
+      (∀ i j, |DeltaS i j| ≤ gamma fp p * |h.S i j|) ∧
+      (∀ i j, |DeltaL22 i j| ≤ gamma fp q * |h.L22 i j|) ∧
+      frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S ∧
+      frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 ∧
+      rectMatMulVec (fun i j => h.S i j + DeltaS i j)
+        (theorem20_10_gqr_y1hat fp h d) = d ∧
+      rectMatMulVec (fun i j => h.L22 i j + DeltaL22 i j)
+        (theorem20_10_gqr_y2hat fp h b d) =
+          theorem20_10_gqr_rhs2hat fp h b d ∧
+      theorem20_10_gqr_xhat fp h b d =
+        matMulVec (p + q) h.Q
+          (Fin.append
+            (theorem20_10_gqr_y1hat fp h d)
+            (theorem20_10_gqr_y2hat fp h b d)) := by
+  rcases theorem20_10_gqr_forwardSub_triangular_solve_frob_perturbation_bound
+      fp h b d hSdiag hL22diag hvalidS hvalidL22 with
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, hSeq, hL22eq⟩
+  refine
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, ?_, ?_, rfl⟩
+  · simpa [theorem20_10_gqr_y1hat] using hSeq
+  · simpa [theorem20_10_gqr_y1hat, theorem20_10_gqr_rhs2hat,
+      theorem20_10_gqr_y2hat] using hL22eq
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
+    triangular-solve perturbation witnesses for the supplied-trailing-RHS
+    path.
+
+    The proof is the same forward-substitution backward-error argument as for
+    `theorem20_10_gqr_xhat_triangular_solve_frob_perturbation_bound`, but it
+    leaves the transformed trailing right-hand side as an explicit `beta`.
+    This is a computed-path dependency for routing the rounded Householder RHS
+    transform through the GQR certificate. -/
+theorem theorem20_10_gqr_xhat_of_transformed_tail_triangular_solve_frob_perturbation_bound
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (beta : Fin q → ℝ) (d : Fin p → ℝ)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalidS : gammaValid fp p)
+    (hvalidL22 : gammaValid fp q) :
+    ∃ (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ),
+      (∀ i j, |DeltaS i j| ≤ gamma fp p * |h.S i j|) ∧
+      (∀ i j, |DeltaL22 i j| ≤ gamma fp q * |h.L22 i j|) ∧
+      frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S ∧
+      frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 ∧
+      rectMatMulVec (fun i j => h.S i j + DeltaS i j)
+        (theorem20_10_gqr_y1hat fp h d) = d ∧
+      rectMatMulVec (fun i j => h.L22 i j + DeltaL22 i j)
+        (theorem20_10_gqr_y2hat_of_transformed_tail fp h beta d) =
+          theorem20_10_gqr_rhs2hat_of_transformed_tail fp h beta d ∧
+      theorem20_10_gqr_xhat_of_transformed_tail fp h beta d =
+        matMulVec (p + q) h.Q
+          (Fin.append
+            (theorem20_10_gqr_y1hat fp h d)
+            (theorem20_10_gqr_y2hat_of_transformed_tail fp h beta d)) := by
+  let y1hat : Fin p → ℝ := theorem20_10_gqr_y1hat fp h d
+  let rhs : Fin q → ℝ :=
+    theorem20_10_gqr_rhs2hat_of_transformed_tail fp h beta d
+  let y2hat : Fin q → ℝ :=
+    theorem20_10_gqr_y2hat_of_transformed_tail fp h beta d
+  rcases forwardSub_backward_error fp p h.S d hSdiag h.lowerS hvalidS with
+    ⟨DeltaS, hDeltaSbound, hSeq⟩
+  rcases forwardSub_backward_error fp q h.L22 rhs hL22diag h.lowerL22
+      hvalidL22 with
+    ⟨DeltaL22, hDeltaL22bound, hL22eq⟩
+  have hDeltaSfrob :
+      frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S := by
+    simpa [frobNormRect_eq_frobNormFn] using
+      (frobNorm_le_const_mul_frobNorm_of_entrywise_abs_le
+        DeltaS h.S (gamma_nonneg fp hvalidS) hDeltaSbound)
+  have hDeltaL22frob :
+      frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 := by
+    simpa [frobNormRect_eq_frobNormFn] using
+      (frobNorm_le_const_mul_frobNorm_of_entrywise_abs_le
+        DeltaL22 h.L22 (gamma_nonneg fp hvalidL22) hDeltaL22bound)
+  refine
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, ?_, ?_, rfl⟩
+  · ext i
+    simpa [rectMatMulVec, y1hat, theorem20_10_gqr_y1hat] using hSeq i
+  · ext i
+    simpa [rectMatMulVec, rhs, y2hat,
+      theorem20_10_gqr_y2hat_of_transformed_tail] using hL22eq i
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
+    exact-minimizer handoff from supplied perturbed triangular factors.
+
+    If a supplied perturbed GQR factorization has the same recovery `Q`, the
+    same lower-left coupling block `L₂₁`, triangular blocks equal to the
+    finite-precision backward-error witnesses `S + ΔS` and `L₂₂ + ΔL₂₂`, and
+    the trailing transformed right-hand side agrees with the computed one, then
+    the named computed vector `xhat = Q [y₁hat; y₂hat]` is an exact LSE
+    minimizer for that supplied perturbed problem.  This bridge does not prove
+    that such a perturbed source factorization exists; it isolates the exact
+    algebra needed once the finite-precision GQR perturbation construction
+    supplies those identities. -/
+theorem theorem20_10_gqr_xhat_isLSEMinimizer_of_supplied_perturbed_triangular_factors
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    {Apert : Fin (r + q) → Fin (p + q) → ℝ}
+    {Bpert : Fin p → Fin (p + q) → ℝ}
+    (hpert : GeneralizedQRFactorization r p q Apert Bpert)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (bpert : Fin (r + q) → ℝ) (dpert : Fin p → ℝ)
+    (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ)
+    (hQ : hpert.Q = h.Q)
+    (hS : hpert.S = fun i j => h.S i j + DeltaS i j)
+    (hL21 : hpert.L21 = h.L21)
+    (hL22 : hpert.L22 = fun i j => h.L22 i j + DeltaL22 i j)
+    (hd : dpert = d)
+    (hb_tail : ∀ i : Fin q,
+      matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) =
+        matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i))
+    (hS_inj : Function.Injective (rectMatMulVec hpert.S))
+    (hSeq :
+      rectMatMulVec (fun i j => h.S i j + DeltaS i j)
+        (theorem20_10_gqr_y1hat fp h d) = d)
+    (hL22eq :
+      rectMatMulVec (fun i j => h.L22 i j + DeltaL22 i j)
+        (theorem20_10_gqr_y2hat fp h b d) =
+          theorem20_10_gqr_rhs2hat fp h b d) :
+    IsLSEMinimizer Apert bpert Bpert dpert
+      (theorem20_10_gqr_xhat fp h b d) := by
+  let y1hat : Fin p → ℝ := theorem20_10_gqr_y1hat fp h d
+  let y2hat : Fin q → ℝ := theorem20_10_gqr_y2hat fp h b d
+  have hy1 : rectMatMulVec hpert.S y1hat = dpert := by
+    rw [hS, hd]
+    exact hSeq
+  have hy2 :
+      rectMatMulVec hpert.L22 y2hat =
+        fun i : Fin q =>
+          matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) -
+            rectMatMulVec hpert.L21 y1hat i := by
+    ext i
+    calc
+      rectMatMulVec hpert.L22 y2hat i
+          = rectMatMulVec (fun i j => h.L22 i j + DeltaL22 i j) y2hat i := by
+              rw [hL22]
+      _ = theorem20_10_gqr_rhs2hat fp h b d i := by
+              simpa [y2hat] using congrFun hL22eq i
+      _ = matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) -
+            rectMatMulVec hpert.L21 y1hat i := by
+              simp [theorem20_10_gqr_rhs2hat, y1hat, hL21, hb_tail i]
+  have hmin :
+      IsLSEMinimizer Apert bpert Bpert dpert
+        (matMulVec (p + q) hpert.Q (Fin.append y1hat y2hat)) :=
+    hpert.isLSEMinimizer_of_triangular_solve hS_inj hy1 hy2
+  simpa [theorem20_10_gqr_xhat, y1hat, y2hat, hQ] using hmin
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
+    exact-minimizer handoff for the supplied-trailing-RHS path.
+
+    This is the rounded-RHS analogue of
+    `theorem20_10_gqr_xhat_isLSEMinimizer_of_supplied_perturbed_triangular_factors`.
+    The transformed trailing right-hand side is supplied as `beta`, so the
+    perturbed-factor matching hypothesis asks for `Uᵀ(b + Δb)` to equal `beta`
+    on the trailing block instead of the exact source vector `Uᵀ b`. -/
+theorem theorem20_10_gqr_xhat_of_transformed_tail_isLSEMinimizer_of_supplied_perturbed_triangular_factors
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    {Apert : Fin (r + q) → Fin (p + q) → ℝ}
+    {Bpert : Fin p → Fin (p + q) → ℝ}
+    (hpert : GeneralizedQRFactorization r p q Apert Bpert)
+    (beta : Fin q → ℝ) (d : Fin p → ℝ)
+    (bpert : Fin (r + q) → ℝ) (dpert : Fin p → ℝ)
+    (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ)
+    (hQ : hpert.Q = h.Q)
+    (hS : hpert.S = fun i j => h.S i j + DeltaS i j)
+    (hL21 : hpert.L21 = h.L21)
+    (hL22 : hpert.L22 = fun i j => h.L22 i j + DeltaL22 i j)
+    (hd : dpert = d)
+    (hb_tail : ∀ i : Fin q,
+      matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) =
+        beta i)
+    (hS_inj : Function.Injective (rectMatMulVec hpert.S))
+    (hSeq :
+      rectMatMulVec (fun i j => h.S i j + DeltaS i j)
+        (theorem20_10_gqr_y1hat fp h d) = d)
+    (hL22eq :
+      rectMatMulVec (fun i j => h.L22 i j + DeltaL22 i j)
+        (theorem20_10_gqr_y2hat_of_transformed_tail fp h beta d) =
+          theorem20_10_gqr_rhs2hat_of_transformed_tail fp h beta d) :
+    IsLSEMinimizer Apert bpert Bpert dpert
+      (theorem20_10_gqr_xhat_of_transformed_tail fp h beta d) := by
+  let y1hat : Fin p → ℝ := theorem20_10_gqr_y1hat fp h d
+  let y2hat : Fin q → ℝ :=
+    theorem20_10_gqr_y2hat_of_transformed_tail fp h beta d
+  have hy1 : rectMatMulVec hpert.S y1hat = dpert := by
+    rw [hS, hd]
+    exact hSeq
+  have hy2 :
+      rectMatMulVec hpert.L22 y2hat =
+        fun i : Fin q =>
+          matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) -
+            rectMatMulVec hpert.L21 y1hat i := by
+    ext i
+    calc
+      rectMatMulVec hpert.L22 y2hat i
+          = rectMatMulVec (fun i j => h.L22 i j + DeltaL22 i j) y2hat i := by
+              rw [hL22]
+      _ = theorem20_10_gqr_rhs2hat_of_transformed_tail fp h beta d i := by
+              simpa [y2hat] using congrFun hL22eq i
+      _ = matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) -
+            rectMatMulVec hpert.L21 y1hat i := by
+              simp [theorem20_10_gqr_rhs2hat_of_transformed_tail, y1hat,
+                hL21, hb_tail i]
+  have hmin :
+      IsLSEMinimizer Apert bpert Bpert dpert
+        (matMulVec (p + q) hpert.Q (Fin.append y1hat y2hat)) :=
+    hpert.isLSEMinimizer_of_triangular_solve hS_inj hy1 hy2
+  simpa [theorem20_10_gqr_xhat_of_transformed_tail, y1hat, y2hat, hQ]
+    using hmin
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
+    supplied-trailing-RHS rank and minimizer handoff.
+
+    Nonzero diagonals of the supplied perturbed triangular blocks give the
+    perturbed rank assumptions, while the transformed-tail minimizer handoff
+    identifies the supplied-trailing-RHS computed vector as an exact minimizer
+    of that perturbed problem. -/
+theorem theorem20_10_gqr_xhat_of_transformed_tail_rank_and_minimizer_of_supplied_perturbed_triangular_factors
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    {Apert : Fin (r + q) → Fin (p + q) → ℝ}
+    {Bpert : Fin p → Fin (p + q) → ℝ}
+    (hpert : GeneralizedQRFactorization r p q Apert Bpert)
+    (beta : Fin q → ℝ) (d : Fin p → ℝ)
+    (bpert : Fin (r + q) → ℝ) (dpert : Fin p → ℝ)
+    (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ)
+    (hQ : hpert.Q = h.Q)
+    (hS : hpert.S = fun i j => h.S i j + DeltaS i j)
+    (hL21 : hpert.L21 = h.L21)
+    (hL22 : hpert.L22 = fun i j => h.L22 i j + DeltaL22 i j)
+    (hd : dpert = d)
+    (hb_tail : ∀ i : Fin q,
+      matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) =
+        beta i)
+    (hSdiag_pert : ∀ i : Fin p, hpert.S i i ≠ 0)
+    (hL22diag_pert : ∀ i : Fin q, hpert.L22 i i ≠ 0)
+    (hSeq :
+      rectMatMulVec (fun i j => h.S i j + DeltaS i j)
+        (theorem20_10_gqr_y1hat fp h d) = d)
+    (hL22eq :
+      rectMatMulVec (fun i j => h.L22 i j + DeltaL22 i j)
+        (theorem20_10_gqr_y2hat_of_transformed_tail fp h beta d) =
+          theorem20_10_gqr_rhs2hat_of_transformed_tail fp h beta d) :
+    LSEFullRowRank Bpert ∧
+      LSEStackedFullColumnRank Apert Bpert ∧
+        IsLSEMinimizer Apert bpert Bpert dpert
+          (theorem20_10_gqr_xhat_of_transformed_tail fp h beta d) := by
+  have hrank :
+      LSEFullRowRank Bpert ∧ LSEStackedFullColumnRank Apert Bpert :=
+    (hpert.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero).2
+      ⟨hSdiag_pert, hL22diag_pert⟩
+  have hS_inj : Function.Injective (rectMatMulVec hpert.S) :=
+    (hpert.s_bijective_of_diag_ne_zero hSdiag_pert).1
+  have hmin :
+      IsLSEMinimizer Apert bpert Bpert dpert
+        (theorem20_10_gqr_xhat_of_transformed_tail fp h beta d) :=
+    theorem20_10_gqr_xhat_of_transformed_tail_isLSEMinimizer_of_supplied_perturbed_triangular_factors
+      fp h hpert beta d bpert dpert DeltaS DeltaL22 hQ hS hL21 hL22 hd
+      hb_tail hS_inj hSeq hL22eq
+  exact ⟨hrank.1, hrank.2, hmin⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), computed GQR method:
+    zero forward-error witness for the supplied-trailing-RHS path.
+
+    Once the supplied-trailing-RHS computed vector is known to be the unique
+    exact minimizer of the perturbed problem, any exact minimizer `x` equals it,
+    so the mixed-stability `DeltaX` witness may again be chosen as zero. -/
+theorem theorem20_10_gqr_xhat_of_transformed_tail_zero_deltaX_of_supplied_perturbed_triangular_factors
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    {Apert : Fin (r + q) → Fin (p + q) → ℝ}
+    {Bpert : Fin p → Fin (p + q) → ℝ}
+    (hpert : GeneralizedQRFactorization r p q Apert Bpert)
+    (beta : Fin q → ℝ) (d : Fin p → ℝ)
+    (bpert : Fin (r + q) → ℝ) (dpert : Fin p → ℝ)
+    (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ)
+    (gammaB : ℝ)
+    (hQ : hpert.Q = h.Q)
+    (hS : hpert.S = fun i j => h.S i j + DeltaS i j)
+    (hL21 : hpert.L21 = h.L21)
+    (hL22 : hpert.L22 = fun i j => h.L22 i j + DeltaL22 i j)
+    (hd : dpert = d)
+    (hb_tail : ∀ i : Fin q,
+      matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) =
+        beta i)
+    (hSdiag_pert : ∀ i : Fin p, hpert.S i i ≠ 0)
+    (hL22diag_pert : ∀ i : Fin q, hpert.L22 i i ≠ 0)
+    (hSeq :
+      rectMatMulVec (fun i j => h.S i j + DeltaS i j)
+        (theorem20_10_gqr_y1hat fp h d) = d)
+    (hL22eq :
+      rectMatMulVec (fun i j => h.L22 i j + DeltaL22 i j)
+        (theorem20_10_gqr_y2hat_of_transformed_tail fp h beta d) =
+          theorem20_10_gqr_rhs2hat_of_transformed_tail fp h beta d)
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    {x : Fin (p + q) → ℝ}
+    (hx : IsLSEMinimizer Apert bpert Bpert dpert x) :
+    ∃ DeltaX : Fin (p + q) → ℝ,
+      (∀ j : Fin (p + q),
+        theorem20_10_gqr_xhat_of_transformed_tail fp h beta d j =
+          x j + DeltaX j) ∧
+      vecNorm2 DeltaX ≤ gammaB * vecNorm2 x := by
+  rcases
+    theorem20_10_gqr_xhat_of_transformed_tail_rank_and_minimizer_of_supplied_perturbed_triangular_factors
+      fp h hpert beta d bpert dpert DeltaS DeltaL22 hQ hS hL21 hL22 hd
+      hb_tail hSdiag_pert hL22diag_pert hSeq hL22eq with
+    ⟨_hBpert, hstack, hxhat_min⟩
+  have hx_eq :
+      x = theorem20_10_gqr_xhat_of_transformed_tail fp h beta d :=
+    IsLSEMinimizer.eq_of_lseStackedFullColumnRank hstack hx hxhat_min
+  refine ⟨(fun _ : Fin (p + q) => 0), ?_, ?_⟩
+  · intro j
+    simp [hx_eq]
+  · rw [vecNorm2_zero]
+    exact mul_nonneg hgammaB_nonneg (vecNorm2_nonneg x)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
+    bounded triangular-solve witnesses plus exact-minimizer handoff.
+
+    This packages the existing forward-substitution backward-error witnesses
+    `ΔS` and `ΔL₂₂`, their componentwise and Frobenius bounds, and the exact
+    minimizer bridge for any supplied perturbed GQR factorization whose
+    triangular blocks match those witnesses.  It advances the computed-vector
+    side of Theorem 20.10 while leaving the genuine remaining obligations
+    explicit: constructing matching perturbed source factors, proving
+    perturbed rank/nonsingularity, and sharpening the printed RHS coefficient. -/
+theorem theorem20_10_gqr_xhat_supplied_perturbed_factor_minimizer_certificate
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalidS : gammaValid fp p)
+    (hvalidL22 : gammaValid fp q) :
+    ∃ (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ),
+      (∀ i j, |DeltaS i j| ≤ gamma fp p * |h.S i j|) ∧
+      (∀ i j, |DeltaL22 i j| ≤ gamma fp q * |h.L22 i j|) ∧
+      frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S ∧
+      frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 ∧
+      (∀ {Apert : Fin (r + q) → Fin (p + q) → ℝ}
+          {Bpert : Fin p → Fin (p + q) → ℝ}
+          (hpert : GeneralizedQRFactorization r p q Apert Bpert)
+          (bpert : Fin (r + q) → ℝ) (dpert : Fin p → ℝ),
+        hpert.Q = h.Q →
+        hpert.S = (fun i j => h.S i j + DeltaS i j) →
+        hpert.L21 = h.L21 →
+        hpert.L22 = (fun i j => h.L22 i j + DeltaL22 i j) →
+        dpert = d →
+        (∀ i : Fin q,
+          matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) =
+            matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i)) →
+        Function.Injective (rectMatMulVec hpert.S) →
+        IsLSEMinimizer Apert bpert Bpert dpert
+          (theorem20_10_gqr_xhat fp h b d)) := by
+  rcases theorem20_10_gqr_xhat_triangular_solve_frob_perturbation_bound
+      fp h b d hSdiag hL22diag hvalidS hvalidL22 with
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, hSeq, hL22eq, _hxhat⟩
+  refine
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, ?_⟩
+  intro Apert Bpert hpert bpert dpert hQ hS hL21 hL22 hd hb_tail hS_inj
+  exact
+    theorem20_10_gqr_xhat_isLSEMinimizer_of_supplied_perturbed_triangular_factors
+      fp h hpert b d bpert dpert DeltaS DeltaL22 hQ hS hL21 hL22 hd
+      hb_tail hS_inj hSeq hL22eq
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
+    supplied perturbed-factor rank and minimizer handoff.
+
+    Nonzero diagonals of the supplied perturbed triangular blocks `S` and
+    `L₂₂` imply the perturbed source rank assumptions, and the same hypotheses
+    used by `theorem20_10_gqr_xhat_isLSEMinimizer_of_supplied_perturbed_triangular_factors`
+    identify the named computed `xhat` as an exact minimizer for that perturbed
+    problem.  This does not prove that finite-precision perturbations preserve
+    the diagonals; it isolates the exact GQR algebra once those perturbed
+    blocks have been supplied. -/
+theorem theorem20_10_gqr_xhat_rank_and_minimizer_of_supplied_perturbed_triangular_factors
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    {Apert : Fin (r + q) → Fin (p + q) → ℝ}
+    {Bpert : Fin p → Fin (p + q) → ℝ}
+    (hpert : GeneralizedQRFactorization r p q Apert Bpert)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (bpert : Fin (r + q) → ℝ) (dpert : Fin p → ℝ)
+    (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ)
+    (hQ : hpert.Q = h.Q)
+    (hS : hpert.S = fun i j => h.S i j + DeltaS i j)
+    (hL21 : hpert.L21 = h.L21)
+    (hL22 : hpert.L22 = fun i j => h.L22 i j + DeltaL22 i j)
+    (hd : dpert = d)
+    (hb_tail : ∀ i : Fin q,
+      matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) =
+        matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i))
+    (hSdiag_pert : ∀ i : Fin p, hpert.S i i ≠ 0)
+    (hL22diag_pert : ∀ i : Fin q, hpert.L22 i i ≠ 0)
+    (hSeq :
+      rectMatMulVec (fun i j => h.S i j + DeltaS i j)
+        (theorem20_10_gqr_y1hat fp h d) = d)
+    (hL22eq :
+      rectMatMulVec (fun i j => h.L22 i j + DeltaL22 i j)
+        (theorem20_10_gqr_y2hat fp h b d) =
+          theorem20_10_gqr_rhs2hat fp h b d) :
+    LSEFullRowRank Bpert ∧
+      LSEStackedFullColumnRank Apert Bpert ∧
+        IsLSEMinimizer Apert bpert Bpert dpert
+          (theorem20_10_gqr_xhat fp h b d) := by
+  have hrank :
+      LSEFullRowRank Bpert ∧ LSEStackedFullColumnRank Apert Bpert :=
+    (hpert.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero).2
+      ⟨hSdiag_pert, hL22diag_pert⟩
+  have hS_inj : Function.Injective (rectMatMulVec hpert.S) :=
+    (hpert.s_bijective_of_diag_ne_zero hSdiag_pert).1
+  have hmin :
+      IsLSEMinimizer Apert bpert Bpert dpert
+        (theorem20_10_gqr_xhat fp h b d) :=
+    theorem20_10_gqr_xhat_isLSEMinimizer_of_supplied_perturbed_triangular_factors
+      fp h hpert b d bpert dpert DeltaS DeltaL22 hQ hS hL21 hL22 hd
+      hb_tail hS_inj hSeq hL22eq
+  exact ⟨hrank.1, hrank.2, hmin⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
+    bounded triangular-solve witnesses plus supplied-factor rank/minimizer
+    handoff.
+
+    This strengthens
+    `theorem20_10_gqr_xhat_supplied_perturbed_factor_minimizer_certificate` by
+    also returning the perturbed source rank conditions when the supplied
+    perturbed triangular factors have nonzero diagonals. -/
+theorem theorem20_10_gqr_xhat_supplied_perturbed_factor_rank_minimizer_certificate
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalidS : gammaValid fp p)
+    (hvalidL22 : gammaValid fp q) :
+    ∃ (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ),
+      (∀ i j, |DeltaS i j| ≤ gamma fp p * |h.S i j|) ∧
+      (∀ i j, |DeltaL22 i j| ≤ gamma fp q * |h.L22 i j|) ∧
+      frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S ∧
+      frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 ∧
+      (∀ {Apert : Fin (r + q) → Fin (p + q) → ℝ}
+          {Bpert : Fin p → Fin (p + q) → ℝ}
+          (hpert : GeneralizedQRFactorization r p q Apert Bpert)
+          (bpert : Fin (r + q) → ℝ) (dpert : Fin p → ℝ),
+        hpert.Q = h.Q →
+        hpert.S = (fun i j => h.S i j + DeltaS i j) →
+        hpert.L21 = h.L21 →
+        hpert.L22 = (fun i j => h.L22 i j + DeltaL22 i j) →
+        dpert = d →
+        (∀ i : Fin q,
+          matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) =
+            matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i)) →
+        (∀ i : Fin p, hpert.S i i ≠ 0) →
+        (∀ i : Fin q, hpert.L22 i i ≠ 0) →
+        LSEFullRowRank Bpert ∧
+          LSEStackedFullColumnRank Apert Bpert ∧
+            IsLSEMinimizer Apert bpert Bpert dpert
+              (theorem20_10_gqr_xhat fp h b d)) := by
+  rcases theorem20_10_gqr_xhat_triangular_solve_frob_perturbation_bound
+      fp h b d hSdiag hL22diag hvalidS hvalidL22 with
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, hSeq, hL22eq, _hxhat⟩
+  refine
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, ?_⟩
+  intro Apert Bpert hpert bpert dpert hQ hS hL21 hL22 hd hb_tail
+    hSdiag_pert hL22diag_pert
+  exact
+    theorem20_10_gqr_xhat_rank_and_minimizer_of_supplied_perturbed_triangular_factors
+      fp h hpert b d bpert dpert DeltaS DeltaL22 hQ hS hL21 hL22 hd
+      hb_tail hSdiag_pert hL22diag_pert hSeq hL22eq
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), computed GQR method:
+    zero forward-error witness from supplied perturbed factors.
+
+    Under the supplied perturbed-factor hypotheses, the named computed `xhat`
+    is the unique exact minimizer of the supplied perturbed problem.  Therefore
+    for any exact minimizer `x`, the mixed-stability `DeltaX` witness may be
+    chosen as zero, giving the source-shaped `||DeltaX||₂ <= gammaB ||x||₂`
+    bound for every nonnegative `gammaB`. -/
+theorem theorem20_10_gqr_xhat_zero_deltaX_of_supplied_perturbed_triangular_factors
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    {Apert : Fin (r + q) → Fin (p + q) → ℝ}
+    {Bpert : Fin p → Fin (p + q) → ℝ}
+    (hpert : GeneralizedQRFactorization r p q Apert Bpert)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (bpert : Fin (r + q) → ℝ) (dpert : Fin p → ℝ)
+    (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ)
+    (gammaB : ℝ)
+    (hQ : hpert.Q = h.Q)
+    (hS : hpert.S = fun i j => h.S i j + DeltaS i j)
+    (hL21 : hpert.L21 = h.L21)
+    (hL22 : hpert.L22 = fun i j => h.L22 i j + DeltaL22 i j)
+    (hd : dpert = d)
+    (hb_tail : ∀ i : Fin q,
+      matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) =
+        matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i))
+    (hSdiag_pert : ∀ i : Fin p, hpert.S i i ≠ 0)
+    (hL22diag_pert : ∀ i : Fin q, hpert.L22 i i ≠ 0)
+    (hSeq :
+      rectMatMulVec (fun i j => h.S i j + DeltaS i j)
+        (theorem20_10_gqr_y1hat fp h d) = d)
+    (hL22eq :
+      rectMatMulVec (fun i j => h.L22 i j + DeltaL22 i j)
+        (theorem20_10_gqr_y2hat fp h b d) =
+          theorem20_10_gqr_rhs2hat fp h b d)
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    {x : Fin (p + q) → ℝ}
+    (hx : IsLSEMinimizer Apert bpert Bpert dpert x) :
+    ∃ DeltaX : Fin (p + q) → ℝ,
+      (∀ j : Fin (p + q),
+        theorem20_10_gqr_xhat fp h b d j = x j + DeltaX j) ∧
+      vecNorm2 DeltaX ≤ gammaB * vecNorm2 x := by
+  rcases
+    theorem20_10_gqr_xhat_rank_and_minimizer_of_supplied_perturbed_triangular_factors
+      fp h hpert b d bpert dpert DeltaS DeltaL22 hQ hS hL21 hL22 hd
+      hb_tail hSdiag_pert hL22diag_pert hSeq hL22eq with
+    ⟨_hBpert, hstack, hxhat_min⟩
+  have hx_eq :
+      x = theorem20_10_gqr_xhat fp h b d :=
+    IsLSEMinimizer.eq_of_lseStackedFullColumnRank hstack hx hxhat_min
+  refine ⟨(fun _ : Fin (p + q) => 0), ?_, ?_⟩
+  · intro j
+    simp [hx_eq]
+  · rw [vecNorm2_zero]
+    exact mul_nonneg hgammaB_nonneg (vecNorm2_nonneg x)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), computed GQR method:
+    bounded triangular-solve witnesses plus zero-`DeltaX` handoff.
+
+    This packages the actual `fl_forwardSub` perturbation witnesses with the
+    exact uniqueness argument showing that, for any supplied perturbed GQR
+    factorization satisfying the matching and diagonal hypotheses, the mixed
+    forward-error relation can use `DeltaX = 0`. -/
+theorem theorem20_10_gqr_xhat_supplied_perturbed_factor_zero_deltaX_certificate
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalidS : gammaValid fp p)
+    (hvalidL22 : gammaValid fp q) :
+    ∃ (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ),
+      (∀ i j, |DeltaS i j| ≤ gamma fp p * |h.S i j|) ∧
+      (∀ i j, |DeltaL22 i j| ≤ gamma fp q * |h.L22 i j|) ∧
+      frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S ∧
+      frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 ∧
+      (∀ {Apert : Fin (r + q) → Fin (p + q) → ℝ}
+          {Bpert : Fin p → Fin (p + q) → ℝ}
+          (hpert : GeneralizedQRFactorization r p q Apert Bpert)
+          (bpert : Fin (r + q) → ℝ) (dpert : Fin p → ℝ)
+          (gammaB : ℝ),
+        hpert.Q = h.Q →
+        hpert.S = (fun i j => h.S i j + DeltaS i j) →
+        hpert.L21 = h.L21 →
+        hpert.L22 = (fun i j => h.L22 i j + DeltaL22 i j) →
+        dpert = d →
+        (∀ i : Fin q,
+          matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) =
+            matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i)) →
+        (∀ i : Fin p, hpert.S i i ≠ 0) →
+        (∀ i : Fin q, hpert.L22 i i ≠ 0) →
+        0 ≤ gammaB →
+        ∀ x : Fin (p + q) → ℝ,
+          IsLSEMinimizer Apert bpert Bpert dpert x →
+            ∃ DeltaX : Fin (p + q) → ℝ,
+              (∀ j : Fin (p + q),
+                theorem20_10_gqr_xhat fp h b d j = x j + DeltaX j) ∧
+              vecNorm2 DeltaX ≤ gammaB * vecNorm2 x) := by
+  rcases theorem20_10_gqr_xhat_triangular_solve_frob_perturbation_bound
+      fp h b d hSdiag hL22diag hvalidS hvalidL22 with
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, hSeq, hL22eq, _hxhat⟩
+  refine
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, ?_⟩
+  intro Apert Bpert hpert bpert dpert gammaB hQ hS hL21 hL22 hd
+    hb_tail hSdiag_pert hL22diag_pert hgammaB_nonneg x hx
+  exact
+    theorem20_10_gqr_xhat_zero_deltaX_of_supplied_perturbed_triangular_factors
+      fp h hpert b d bpert dpert DeltaS DeltaL22 gammaB hQ hS hL21 hL22 hd
+      hb_tail hSdiag_pert hL22diag_pert hSeq hL22eq hgammaB_nonneg hx
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), finite-precision
     perturbation certificate for the mixed-stability branch.
 
@@ -8322,6 +10132,808 @@ structure Theorem20_10PartAPerturbationCertificate
   hDeltab : vecNorm2 Deltab ≤ gammaA * vecNorm2 b
   /-- Source-shaped Frobenius bound for `DeltaB`. -/
   hDeltaB : frobNormRect DeltaB ≤ gammaB * frobNormRect B
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), supplied-factor
+    constructor for the mixed-stability perturbation certificate with a
+    supplied transformed trailing right-hand side.
+
+    This is the certificate-level bridge for the rounded Householder RHS route.
+    The vector `beta` represents the computed trailing transformed RHS; callers
+    must prove that the perturbed source RHS satisfies
+    `Uᵀ(b + Deltab) = beta` on the trailing block.  The theorem therefore
+    avoids assuming the exact transformed RHS while also not claiming the
+    printed `Deltab` coefficient. -/
+theorem theorem20_10_partA_certificate_of_supplied_perturbed_factor_zero_deltaX_of_transformed_tail
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (beta : Fin q → ℝ) (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (gammaA gammaB : ℝ)
+    (DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
+    (DeltaB : Fin p → Fin (p + q) → ℝ)
+    (Deltab : Fin (r + q) → ℝ)
+    (hDeltaA : frobNormRect DeltaA ≤ gammaA * frobNormRect A)
+    (hDeltab : vecNorm2 Deltab ≤ gammaA * vecNorm2 b)
+    (hDeltaB : frobNormRect DeltaB ≤ gammaB * frobNormRect B)
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalidS : gammaValid fp p)
+    (hvalidL22 : gammaValid fp q) :
+    ∃ (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ),
+      (∀ i j, |DeltaS i j| ≤ gamma fp p * |h.S i j|) ∧
+      (∀ i j, |DeltaL22 i j| ≤ gamma fp q * |h.L22 i j|) ∧
+      frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S ∧
+      frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 ∧
+      (∀ (hpert :
+          GeneralizedQRFactorization r p q
+            (fun i j => A i j + DeltaA i j)
+            (fun i j => B i j + DeltaB i j)),
+        hpert.Q = h.Q →
+        hpert.S = (fun i j => h.S i j + DeltaS i j) →
+        hpert.L21 = h.L21 →
+        hpert.L22 = (fun i j => h.L22 i j + DeltaL22 i j) →
+        (∀ i : Fin q,
+          matMulVec (r + q) (matTranspose hpert.U)
+              (fun i => b i + Deltab i) (Fin.natAdd r i) =
+            beta i) →
+        (∀ i : Fin p, hpert.S i i ≠ 0) →
+        (∀ i : Fin q, hpert.L22 i i ≠ 0) →
+        Nonempty
+          (Theorem20_10PartAPerturbationCertificate A B b d
+            (theorem20_10_gqr_xhat_of_transformed_tail fp h beta d)
+            gammaA gammaB)) := by
+  rcases
+    theorem20_10_gqr_xhat_of_transformed_tail_triangular_solve_frob_perturbation_bound
+      fp h beta d hSdiag hL22diag hvalidS hvalidL22 with
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, hSeq, hL22eq, _hxhat⟩
+  refine
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, ?_⟩
+  intro hpert hQ hS hL21 hL22 hb_tail hSdiag_pert hL22diag_pert
+  have hrank :
+      LSEFullRowRank (fun i j => B i j + DeltaB i j) ∧
+        LSEStackedFullColumnRank
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j) :=
+    (hpert.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero).2
+      ⟨hSdiag_pert, hL22diag_pert⟩
+  exact
+    ⟨{ DeltaA := DeltaA
+       DeltaB := DeltaB
+       Deltab := Deltab
+       hB := hrank.1
+       hstack := hrank.2
+       near_exact_solution := by
+         intro x hx
+         exact
+           theorem20_10_gqr_xhat_of_transformed_tail_zero_deltaX_of_supplied_perturbed_triangular_factors
+             fp h hpert beta d (fun i => b i + Deltab i) d DeltaS DeltaL22
+             gammaB hQ hS hL21 hL22 rfl hb_tail hSdiag_pert hL22diag_pert
+             hSeq hL22eq hgammaB_nonneg hx
+       hDeltaA := hDeltaA
+       hDeltab := hDeltab
+       hDeltaB := hDeltaB }⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), constructed-source
+    transformed-tail version of the supplied-factor Part A certificate.
+
+    This removes the external `hpert` input from
+    `theorem20_10_partA_certificate_of_supplied_perturbed_factor_zero_deltaX_of_transformed_tail`.
+    It is the algebraic bridge needed by the rounded RHS path: the trailing
+    transformed vector is an explicit `beta`, and the remaining RHS obligation
+    is the honest equality `Uᵀ(b + Deltab) = beta` on the trailing block. -/
+theorem theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of_transformed_tail
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (beta : Fin q → ℝ) (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (gammaA gammaB : ℝ)
+    (Deltab : Fin (r + q) → ℝ)
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalidS : gammaValid fp p)
+    (hvalidL22 : gammaValid fp q) :
+    ∃ (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ),
+      (∀ i j, |DeltaS i j| ≤ gamma fp p * |h.S i j|) ∧
+      (∀ i j, |DeltaL22 i j| ≤ gamma fp q * |h.L22 i j|) ∧
+      frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S ∧
+      frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 ∧
+      (let Spert : Fin p → Fin p → ℝ :=
+          fun i j => h.S i j + DeltaS i j
+       let L22pert : Fin q → Fin q → ℝ :=
+          fun i j => h.L22 i j + DeltaL22 i j
+       let Apert : Fin (r + q) → Fin (p + q) → ℝ :=
+          gqrSourceAFromBlocks h.Q h.U h.L11 h.L21 L22pert
+       let Bpert : Fin p → Fin (p + q) → ℝ :=
+          gqrSourceBFromBlocks h.Q Spert
+       let DeltaA : Fin (r + q) → Fin (p + q) → ℝ :=
+          fun i j => Apert i j - A i j
+       let DeltaB : Fin p → Fin (p + q) → ℝ :=
+          fun i j => Bpert i j - B i j
+       IsLowerTriangular Spert →
+       IsLowerTriangular L22pert →
+       (∀ i : Fin p, Spert i i ≠ 0) →
+       (∀ i : Fin q, L22pert i i ≠ 0) →
+       frobNormRect DeltaA ≤ gammaA * frobNormRect A →
+       vecNorm2 Deltab ≤ gammaA * vecNorm2 b →
+       frobNormRect DeltaB ≤ gammaB * frobNormRect B →
+       (∀ i : Fin q,
+          matMulVec (r + q) (matTranspose h.U)
+              (fun i => b i + Deltab i) (Fin.natAdd r i) =
+            beta i) →
+       Nonempty
+        (Theorem20_10PartAPerturbationCertificate A B b d
+          (theorem20_10_gqr_xhat_of_transformed_tail fp h beta d)
+          gammaA gammaB)) := by
+  rcases
+    theorem20_10_gqr_xhat_of_transformed_tail_triangular_solve_frob_perturbation_bound
+      fp h beta d hSdiag hL22diag hvalidS hvalidL22 with
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, hSeq, hL22eq, _hxhat⟩
+  refine
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, ?_⟩
+  dsimp
+  intro hSpert_lower hL22pert_lower hSpert_diag hL22pert_diag
+    hDeltaA hDeltab hDeltaB hb_tail
+  let Spert : Fin p → Fin p → ℝ := fun i j => h.S i j + DeltaS i j
+  let L22pert : Fin q → Fin q → ℝ := fun i j => h.L22 i j + DeltaL22 i j
+  let Apert : Fin (r + q) → Fin (p + q) → ℝ :=
+    gqrSourceAFromBlocks h.Q h.U h.L11 h.L21 L22pert
+  let Bpert : Fin p → Fin (p + q) → ℝ :=
+    gqrSourceBFromBlocks h.Q Spert
+  let DeltaA_src : Fin (r + q) → Fin (p + q) → ℝ :=
+    fun i j => Apert i j - A i j
+  let DeltaB_src : Fin p → Fin (p + q) → ℝ :=
+    fun i j => Bpert i j - B i j
+  let hpert : GeneralizedQRFactorization r p q Apert Bpert :=
+    GeneralizedQRFactorization.of_source_blocks
+      h.Q h.U h.L11 h.L21 L22pert Spert
+      h.orthQ h.orthU hL22pert_lower hSpert_lower
+  have hApert_src :
+      (fun i j => A i j + DeltaA_src i j) = Apert := by
+    ext i j
+    dsimp [DeltaA_src]
+    ring
+  have hBpert_src :
+      (fun i j => B i j + DeltaB_src i j) = Bpert := by
+    ext i j
+    dsimp [DeltaB_src]
+    ring
+  have hrank :
+      LSEFullRowRank Bpert ∧ LSEStackedFullColumnRank Apert Bpert :=
+    (hpert.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero).2
+      ⟨fun i => by simpa [hpert, Spert] using hSpert_diag i,
+       fun i => by simpa [hpert, L22pert] using hL22pert_diag i⟩
+  have hBcert :
+      LSEFullRowRank (fun i j => B i j + DeltaB_src i j) := by
+    rw [hBpert_src]
+    exact hrank.1
+  have hstackcert :
+      LSEStackedFullColumnRank
+        (fun i j => A i j + DeltaA_src i j)
+        (fun i j => B i j + DeltaB_src i j) := by
+    rw [hApert_src, hBpert_src]
+    exact hrank.2
+  exact
+    ⟨{ DeltaA := DeltaA_src
+       DeltaB := DeltaB_src
+       Deltab := Deltab
+       hB := hBcert
+       hstack := hstackcert
+       near_exact_solution := by
+         intro x hx
+         have hx' : IsLSEMinimizer Apert
+             (fun i => b i + Deltab i) Bpert d x := by
+           rw [hApert_src, hBpert_src] at hx
+           exact hx
+         exact
+           theorem20_10_gqr_xhat_of_transformed_tail_zero_deltaX_of_supplied_perturbed_triangular_factors
+             fp h hpert beta d (fun i => b i + Deltab i) d DeltaS DeltaL22
+             gammaB rfl rfl rfl rfl rfl hb_tail
+             (fun i => by simpa [hpert, Spert] using hSpert_diag i)
+             (fun i => by simpa [hpert, L22pert] using hL22pert_diag i)
+             hSeq hL22eq hgammaB_nonneg hx'
+       hDeltaA := hDeltaA
+       hDeltab := hDeltab
+       hDeltaB := hDeltaB }⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), transformed-tail
+    constructed-source certificate with triangular preservation and the induced
+    source `DeltaA`/`DeltaB` bounds discharged.
+
+    This is the rounded-RHS counterpart of
+    `theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of_double_gammaValid_source_bounds`.
+    The only remaining RHS-specific obligations are the source-shaped bound for
+    `Deltab` and the transformed-tail equality
+    `Uᵀ(b + Deltab) = beta`. -/
+theorem theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of_double_gammaValid_source_bounds_transformed_tail
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (beta : Fin q → ℝ) (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (gammaA gammaB : ℝ)
+    (Deltab : Fin (r + q) → ℝ)
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    (hgammaA_ge : gamma fp q ≤ gammaA)
+    (hgammaB_ge : gamma fp p ≤ gammaB)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalid2S : gammaValid fp (2 * p))
+    (hvalid2L22 : gammaValid fp (2 * q)) :
+    ∃ (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ),
+      (∀ i j, |DeltaS i j| ≤ gamma fp p * |h.S i j|) ∧
+      (∀ i j, |DeltaL22 i j| ≤ gamma fp q * |h.L22 i j|) ∧
+      frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S ∧
+      frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 ∧
+      (vecNorm2 Deltab ≤ gammaA * vecNorm2 b →
+       (∀ i : Fin q,
+          matMulVec (r + q) (matTranspose h.U)
+              (fun i => b i + Deltab i) (Fin.natAdd r i) =
+            beta i) →
+       Nonempty
+        (Theorem20_10PartAPerturbationCertificate A B b d
+          (theorem20_10_gqr_xhat_of_transformed_tail fp h beta d)
+          gammaA gammaB)) := by
+  rcases
+    theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of_transformed_tail
+      fp h beta b d gammaA gammaB Deltab hgammaB_nonneg hSdiag hL22diag
+      (gammaValid_mono fp (by omega) hvalid2S)
+      (gammaValid_mono fp (by omega) hvalid2L22) with
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, hcert⟩
+  refine
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, ?_⟩
+  dsimp at hcert ⊢
+  intro hDeltab hb_tail
+  have hSpert_lower :
+      IsLowerTriangular (fun i j => h.S i j + DeltaS i j) :=
+    h.lowerS.add_of_entrywise_abs_le_mul_abs hDeltaSbound
+  have hL22pert_lower :
+      IsLowerTriangular (fun i j => h.L22 i j + DeltaL22 i j) :=
+    h.lowerL22.add_of_entrywise_abs_le_mul_abs hDeltaL22bound
+  have hSpert_diag :
+      ∀ i : Fin p, h.S i i + DeltaS i i ≠ 0 :=
+    diag_ne_zero_add_of_entrywise_abs_le_mul_abs_of_factor_lt_one
+      hSdiag (gamma_lt_one fp p hvalid2S) hDeltaSbound
+  have hL22pert_diag :
+      ∀ i : Fin q, h.L22 i i + DeltaL22 i i ≠ 0 :=
+    diag_ne_zero_add_of_entrywise_abs_le_mul_abs_of_factor_lt_one
+      hL22diag (gamma_lt_one fp q hvalid2L22) hDeltaL22bound
+  have hgammaq_nonneg : 0 ≤ gamma fp q :=
+    gamma_nonneg fp (gammaValid_mono fp (by omega) hvalid2L22)
+  have hDeltaA_base :
+      frobNormRect
+        (fun i j =>
+          gqrSourceAFromBlocks h.Q h.U h.L11 h.L21
+              (fun i j => h.L22 i j + DeltaL22 i j) i j -
+            A i j) ≤
+        gamma fp q * frobNormRect A :=
+    h.constructed_sourceA_L22_perturbation_frobNorm_bound
+      (gamma fp q) DeltaL22 hgammaq_nonneg hDeltaL22frob
+  have hDeltaA :
+      frobNormRect
+        (fun i j =>
+          gqrSourceAFromBlocks h.Q h.U h.L11 h.L21
+              (fun i j => h.L22 i j + DeltaL22 i j) i j -
+            A i j) ≤
+        gammaA * frobNormRect A := by
+    exact le_trans hDeltaA_base
+      (mul_le_mul_of_nonneg_right hgammaA_ge (frobNormRect_nonneg A))
+  have hDeltaB_base :
+      frobNormRect
+        (fun i j =>
+          gqrSourceBFromBlocks h.Q (fun i j => h.S i j + DeltaS i j) i j -
+            B i j) ≤
+        gamma fp p * frobNormRect B :=
+    h.constructed_sourceB_perturbation_frobNorm_bound
+      (gamma fp p) DeltaS hDeltaSfrob
+  have hDeltaB :
+      frobNormRect
+        (fun i j =>
+          gqrSourceBFromBlocks h.Q (fun i j => h.S i j + DeltaS i j) i j -
+            B i j) ≤
+        gammaB * frobNormRect B := by
+    exact le_trans hDeltaB_base
+      (mul_le_mul_of_nonneg_right hgammaB_ge (frobNormRect_nonneg B))
+  exact
+    hcert hSpert_lower hL22pert_lower hSpert_diag hL22pert_diag
+      hDeltaA hDeltab hDeltaB hb_tail
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), supplied-factor
+    constructor for the mixed-stability perturbation certificate.
+
+    This is the certificate-level handoff for the currently verified supplied
+    perturbed-factor boundary.  If separate work supplies source perturbations
+    `DeltaA`, `DeltaB`, and `Deltab` with the required norm bounds and a
+    perturbed GQR factorization whose displayed triangular blocks match the
+    forward-substitution perturbation witnesses, then the named computed GQR
+    vector has a full `Theorem20_10PartAPerturbationCertificate`.  The theorem
+    deliberately leaves the matching-factor construction as an explicit
+    hypothesis rather than claiming the floating-point GQR algorithm already
+    supplies it. -/
+theorem theorem20_10_partA_certificate_of_supplied_perturbed_factor_zero_deltaX
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (gammaA gammaB : ℝ)
+    (DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
+    (DeltaB : Fin p → Fin (p + q) → ℝ)
+    (Deltab : Fin (r + q) → ℝ)
+    (hDeltaA : frobNormRect DeltaA ≤ gammaA * frobNormRect A)
+    (hDeltab : vecNorm2 Deltab ≤ gammaA * vecNorm2 b)
+    (hDeltaB : frobNormRect DeltaB ≤ gammaB * frobNormRect B)
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalidS : gammaValid fp p)
+    (hvalidL22 : gammaValid fp q) :
+    ∃ (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ),
+      (∀ i j, |DeltaS i j| ≤ gamma fp p * |h.S i j|) ∧
+      (∀ i j, |DeltaL22 i j| ≤ gamma fp q * |h.L22 i j|) ∧
+      frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S ∧
+      frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 ∧
+      (∀ (hpert :
+          GeneralizedQRFactorization r p q
+            (fun i j => A i j + DeltaA i j)
+            (fun i j => B i j + DeltaB i j)),
+        hpert.Q = h.Q →
+        hpert.S = (fun i j => h.S i j + DeltaS i j) →
+        hpert.L21 = h.L21 →
+        hpert.L22 = (fun i j => h.L22 i j + DeltaL22 i j) →
+        (∀ i : Fin q,
+          matMulVec (r + q) (matTranspose hpert.U)
+              (fun i => b i + Deltab i) (Fin.natAdd r i) =
+            matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i)) →
+        (∀ i : Fin p, hpert.S i i ≠ 0) →
+        (∀ i : Fin q, hpert.L22 i i ≠ 0) →
+        Nonempty
+          (Theorem20_10PartAPerturbationCertificate A B b d
+            (theorem20_10_gqr_xhat fp h b d) gammaA gammaB)) := by
+  rcases theorem20_10_gqr_xhat_supplied_perturbed_factor_zero_deltaX_certificate
+      fp h b d hSdiag hL22diag hvalidS hvalidL22 with
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, hzero⟩
+  refine
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, ?_⟩
+  intro hpert hQ hS hL21 hL22 hb_tail hSdiag_pert hL22diag_pert
+  have hrank :
+      LSEFullRowRank (fun i j => B i j + DeltaB i j) ∧
+        LSEStackedFullColumnRank
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j) :=
+    (hpert.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero).2
+      ⟨hSdiag_pert, hL22diag_pert⟩
+  exact
+    ⟨{ DeltaA := DeltaA
+       DeltaB := DeltaB
+       Deltab := Deltab
+       hB := hrank.1
+       hstack := hrank.2
+       near_exact_solution := by
+         intro x hx
+         exact
+           hzero hpert (fun i => b i + Deltab i) d gammaB
+             hQ hS hL21 hL22 rfl hb_tail hSdiag_pert hL22diag_pert
+             hgammaB_nonneg x hx
+       hDeltaA := hDeltaA
+       hDeltab := hDeltab
+       hDeltaB := hDeltaB }⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), constructed-source
+    version of the supplied-factor Part A certificate.
+
+    This removes the external `hpert` input from
+    `theorem20_10_partA_certificate_of_supplied_perturbed_factor_zero_deltaX`.
+    The perturbed source matrices are constructed directly by transporting the
+    perturbed triangular blocks `S + DeltaS` and `L22 + DeltaL22` back through
+    the original orthogonal factors.  The remaining hypotheses are exactly the
+    ones not proved by this algebraic construction: lower-triangularity of the
+    perturbed blocks, source-shaped bounds for the induced source
+    perturbations, and the transformed right-hand-side matching condition. -/
+theorem theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (gammaA gammaB : ℝ)
+    (Deltab : Fin (r + q) → ℝ)
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalidS : gammaValid fp p)
+    (hvalidL22 : gammaValid fp q) :
+    ∃ (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ),
+      (∀ i j, |DeltaS i j| ≤ gamma fp p * |h.S i j|) ∧
+      (∀ i j, |DeltaL22 i j| ≤ gamma fp q * |h.L22 i j|) ∧
+      frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S ∧
+      frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 ∧
+      (let Spert : Fin p → Fin p → ℝ :=
+          fun i j => h.S i j + DeltaS i j
+       let L22pert : Fin q → Fin q → ℝ :=
+          fun i j => h.L22 i j + DeltaL22 i j
+       let Apert : Fin (r + q) → Fin (p + q) → ℝ :=
+          gqrSourceAFromBlocks h.Q h.U h.L11 h.L21 L22pert
+       let Bpert : Fin p → Fin (p + q) → ℝ :=
+          gqrSourceBFromBlocks h.Q Spert
+       let DeltaA : Fin (r + q) → Fin (p + q) → ℝ :=
+          fun i j => Apert i j - A i j
+       let DeltaB : Fin p → Fin (p + q) → ℝ :=
+          fun i j => Bpert i j - B i j
+       IsLowerTriangular Spert →
+       IsLowerTriangular L22pert →
+       (∀ i : Fin p, Spert i i ≠ 0) →
+       (∀ i : Fin q, L22pert i i ≠ 0) →
+       frobNormRect DeltaA ≤ gammaA * frobNormRect A →
+       vecNorm2 Deltab ≤ gammaA * vecNorm2 b →
+       frobNormRect DeltaB ≤ gammaB * frobNormRect B →
+       (∀ i : Fin q,
+          matMulVec (r + q) (matTranspose h.U)
+              (fun i => b i + Deltab i) (Fin.natAdd r i) =
+            matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i)) →
+       Nonempty
+        (Theorem20_10PartAPerturbationCertificate A B b d
+          (theorem20_10_gqr_xhat fp h b d) gammaA gammaB)) := by
+  rcases theorem20_10_gqr_xhat_supplied_perturbed_factor_zero_deltaX_certificate
+      fp h b d hSdiag hL22diag hvalidS hvalidL22 with
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, hzero⟩
+  refine
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, ?_⟩
+  dsimp
+  intro hSpert_lower hL22pert_lower hSpert_diag hL22pert_diag
+    hDeltaA hDeltab hDeltaB hb_tail
+  let Spert : Fin p → Fin p → ℝ := fun i j => h.S i j + DeltaS i j
+  let L22pert : Fin q → Fin q → ℝ := fun i j => h.L22 i j + DeltaL22 i j
+  let Apert : Fin (r + q) → Fin (p + q) → ℝ :=
+    gqrSourceAFromBlocks h.Q h.U h.L11 h.L21 L22pert
+  let Bpert : Fin p → Fin (p + q) → ℝ :=
+    gqrSourceBFromBlocks h.Q Spert
+  let DeltaA_src : Fin (r + q) → Fin (p + q) → ℝ :=
+    fun i j => Apert i j - A i j
+  let DeltaB_src : Fin p → Fin (p + q) → ℝ :=
+    fun i j => Bpert i j - B i j
+  let hpert : GeneralizedQRFactorization r p q Apert Bpert :=
+    GeneralizedQRFactorization.of_source_blocks
+      h.Q h.U h.L11 h.L21 L22pert Spert
+      h.orthQ h.orthU hL22pert_lower hSpert_lower
+  have hApert_src :
+      (fun i j => A i j + DeltaA_src i j) = Apert := by
+    ext i j
+    dsimp [DeltaA_src]
+    ring
+  have hBpert_src :
+      (fun i j => B i j + DeltaB_src i j) = Bpert := by
+    ext i j
+    dsimp [DeltaB_src]
+    ring
+  have hrank :
+      LSEFullRowRank Bpert ∧ LSEStackedFullColumnRank Apert Bpert :=
+    (hpert.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero).2
+      ⟨fun i => by simpa [hpert, Spert] using hSpert_diag i,
+       fun i => by simpa [hpert, L22pert] using hL22pert_diag i⟩
+  have hBcert :
+      LSEFullRowRank (fun i j => B i j + DeltaB_src i j) := by
+    rw [hBpert_src]
+    exact hrank.1
+  have hstackcert :
+      LSEStackedFullColumnRank
+        (fun i j => A i j + DeltaA_src i j)
+        (fun i j => B i j + DeltaB_src i j) := by
+    rw [hApert_src, hBpert_src]
+    exact hrank.2
+  exact
+    ⟨{ DeltaA := DeltaA_src
+       DeltaB := DeltaB_src
+       Deltab := Deltab
+       hB := hBcert
+       hstack := hstackcert
+       near_exact_solution := by
+         intro x hx
+         have hx' : IsLSEMinimizer Apert
+             (fun i => b i + Deltab i) Bpert d x := by
+           rw [hApert_src, hBpert_src] at hx
+           exact hx
+         exact
+           hzero hpert (fun i => b i + Deltab i) d gammaB
+             rfl rfl rfl rfl rfl hb_tail
+             (fun i => by simpa [hpert, Spert] using hSpert_diag i)
+             (fun i => by simpa [hpert, L22pert] using hL22pert_diag i)
+             hgammaB_nonneg x hx'
+       hDeltaA := hDeltaA
+       hDeltab := hDeltab
+       hDeltaB := hDeltaB }⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), constructed-source
+    certificate with perturbed triangular nonsingularity discharged by
+    `gamma < 1`.
+
+    The forward-substitution perturbation bounds are relative entrywise bounds.
+    Therefore the perturbed `S + DeltaS` and `L22 + DeltaL22` blocks remain
+    lower triangular; if the relative factors are strictly below one, their
+    nonzero diagonals are preserved.  This theorem removes those hypotheses
+    from `theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks`,
+    leaving only the induced source perturbation bounds and transformed-RHS
+    matching condition. -/
+theorem theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of_gamma_lt_one
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (gammaA gammaB : ℝ)
+    (Deltab : Fin (r + q) → ℝ)
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalidS : gammaValid fp p)
+    (hvalidL22 : gammaValid fp q)
+    (hgammaS_lt : gamma fp p < 1)
+    (hgammaL22_lt : gamma fp q < 1) :
+    ∃ (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ),
+      (∀ i j, |DeltaS i j| ≤ gamma fp p * |h.S i j|) ∧
+      (∀ i j, |DeltaL22 i j| ≤ gamma fp q * |h.L22 i j|) ∧
+      frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S ∧
+      frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 ∧
+      (let Spert : Fin p → Fin p → ℝ :=
+          fun i j => h.S i j + DeltaS i j
+       let L22pert : Fin q → Fin q → ℝ :=
+          fun i j => h.L22 i j + DeltaL22 i j
+       let Apert : Fin (r + q) → Fin (p + q) → ℝ :=
+          gqrSourceAFromBlocks h.Q h.U h.L11 h.L21 L22pert
+       let Bpert : Fin p → Fin (p + q) → ℝ :=
+          gqrSourceBFromBlocks h.Q Spert
+       let DeltaA : Fin (r + q) → Fin (p + q) → ℝ :=
+          fun i j => Apert i j - A i j
+       let DeltaB : Fin p → Fin (p + q) → ℝ :=
+          fun i j => Bpert i j - B i j
+       frobNormRect DeltaA ≤ gammaA * frobNormRect A →
+       vecNorm2 Deltab ≤ gammaA * vecNorm2 b →
+       frobNormRect DeltaB ≤ gammaB * frobNormRect B →
+       (∀ i : Fin q,
+          matMulVec (r + q) (matTranspose h.U)
+              (fun i => b i + Deltab i) (Fin.natAdd r i) =
+            matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i)) →
+       Nonempty
+        (Theorem20_10PartAPerturbationCertificate A B b d
+          (theorem20_10_gqr_xhat fp h b d) gammaA gammaB)) := by
+  rcases
+    theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks
+      fp h b d gammaA gammaB Deltab hgammaB_nonneg hSdiag hL22diag
+      hvalidS hvalidL22 with
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, hcert⟩
+  refine
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, ?_⟩
+  dsimp at hcert ⊢
+  intro hDeltaA hDeltab hDeltaB hb_tail
+  have hSpert_lower :
+      IsLowerTriangular (fun i j => h.S i j + DeltaS i j) :=
+    h.lowerS.add_of_entrywise_abs_le_mul_abs hDeltaSbound
+  have hL22pert_lower :
+      IsLowerTriangular (fun i j => h.L22 i j + DeltaL22 i j) :=
+    h.lowerL22.add_of_entrywise_abs_le_mul_abs hDeltaL22bound
+  have hSpert_diag :
+      ∀ i : Fin p, h.S i i + DeltaS i i ≠ 0 :=
+    diag_ne_zero_add_of_entrywise_abs_le_mul_abs_of_factor_lt_one
+      hSdiag hgammaS_lt hDeltaSbound
+  have hL22pert_diag :
+      ∀ i : Fin q, h.L22 i i + DeltaL22 i i ≠ 0 :=
+    diag_ne_zero_add_of_entrywise_abs_le_mul_abs_of_factor_lt_one
+      hL22diag hgammaL22_lt hDeltaL22bound
+  exact
+    hcert hSpert_lower hL22pert_lower hSpert_diag hL22pert_diag
+      hDeltaA hDeltab hDeltaB hb_tail
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), constructed-source
+    certificate with the `gamma < 1` triangular preservation guards derived
+    from doubled `gammaValid` hypotheses.
+
+    This is the same certificate surface as
+    `theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of_gamma_lt_one`,
+    but exposes the standard floating-point smallness assumptions
+    `gammaValid fp (2*p)` and `gammaValid fp (2*q)` instead of explicit
+    inequalities on `gamma`. -/
+theorem theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of_double_gammaValid
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (gammaA gammaB : ℝ)
+    (Deltab : Fin (r + q) → ℝ)
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalid2S : gammaValid fp (2 * p))
+    (hvalid2L22 : gammaValid fp (2 * q)) :
+    ∃ (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ),
+      (∀ i j, |DeltaS i j| ≤ gamma fp p * |h.S i j|) ∧
+      (∀ i j, |DeltaL22 i j| ≤ gamma fp q * |h.L22 i j|) ∧
+      frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S ∧
+      frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 ∧
+      (let Spert : Fin p → Fin p → ℝ :=
+          fun i j => h.S i j + DeltaS i j
+       let L22pert : Fin q → Fin q → ℝ :=
+          fun i j => h.L22 i j + DeltaL22 i j
+       let Apert : Fin (r + q) → Fin (p + q) → ℝ :=
+          gqrSourceAFromBlocks h.Q h.U h.L11 h.L21 L22pert
+       let Bpert : Fin p → Fin (p + q) → ℝ :=
+          gqrSourceBFromBlocks h.Q Spert
+       let DeltaA : Fin (r + q) → Fin (p + q) → ℝ :=
+          fun i j => Apert i j - A i j
+       let DeltaB : Fin p → Fin (p + q) → ℝ :=
+          fun i j => Bpert i j - B i j
+       frobNormRect DeltaA ≤ gammaA * frobNormRect A →
+       vecNorm2 Deltab ≤ gammaA * vecNorm2 b →
+       frobNormRect DeltaB ≤ gammaB * frobNormRect B →
+       (∀ i : Fin q,
+          matMulVec (r + q) (matTranspose h.U)
+              (fun i => b i + Deltab i) (Fin.natAdd r i) =
+            matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i)) →
+       Nonempty
+        (Theorem20_10PartAPerturbationCertificate A B b d
+          (theorem20_10_gqr_xhat fp h b d) gammaA gammaB)) := by
+  exact
+    theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of_gamma_lt_one
+      fp h b d gammaA gammaB Deltab hgammaB_nonneg hSdiag hL22diag
+      (gammaValid_mono fp (by omega) hvalid2S)
+      (gammaValid_mono fp (by omega) hvalid2L22)
+      (gamma_lt_one fp p hvalid2S)
+      (gamma_lt_one fp q hvalid2L22)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), constructed-source
+    certificate with the induced source `DeltaA` and `DeltaB` Frobenius bounds
+    discharged from the triangular-solve perturbation bounds.
+
+    The remaining visible finite-precision obligations are the source-shaped
+    right-hand-side perturbation bound for `Deltab` and the transformed trailing
+    right-hand-side matching condition.  The matrix perturbation bounds are
+    proved internally using the transported `L22` and `S` perturbations. -/
+theorem theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of_double_gammaValid_source_bounds
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (gammaA gammaB : ℝ)
+    (Deltab : Fin (r + q) → ℝ)
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    (hgammaA_ge : gamma fp q ≤ gammaA)
+    (hgammaB_ge : gamma fp p ≤ gammaB)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalid2S : gammaValid fp (2 * p))
+    (hvalid2L22 : gammaValid fp (2 * q)) :
+    ∃ (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ),
+      (∀ i j, |DeltaS i j| ≤ gamma fp p * |h.S i j|) ∧
+      (∀ i j, |DeltaL22 i j| ≤ gamma fp q * |h.L22 i j|) ∧
+      frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S ∧
+      frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 ∧
+      (vecNorm2 Deltab ≤ gammaA * vecNorm2 b →
+       (∀ i : Fin q,
+          matMulVec (r + q) (matTranspose h.U)
+              (fun i => b i + Deltab i) (Fin.natAdd r i) =
+            matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i)) →
+       Nonempty
+        (Theorem20_10PartAPerturbationCertificate A B b d
+          (theorem20_10_gqr_xhat fp h b d) gammaA gammaB)) := by
+  rcases
+    theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of_double_gammaValid
+      fp h b d gammaA gammaB Deltab hgammaB_nonneg hSdiag hL22diag
+      hvalid2S hvalid2L22 with
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, hcert⟩
+  refine
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, ?_⟩
+  dsimp at hcert ⊢
+  intro hDeltab hb_tail
+  have hgammaq_nonneg : 0 ≤ gamma fp q :=
+    gamma_nonneg fp (gammaValid_mono fp (by omega) hvalid2L22)
+  have hDeltaA_base :
+      frobNormRect
+        (fun i j =>
+          gqrSourceAFromBlocks h.Q h.U h.L11 h.L21
+              (fun i j => h.L22 i j + DeltaL22 i j) i j -
+            A i j) ≤
+        gamma fp q * frobNormRect A :=
+    h.constructed_sourceA_L22_perturbation_frobNorm_bound
+      (gamma fp q) DeltaL22 hgammaq_nonneg hDeltaL22frob
+  have hDeltaA :
+      frobNormRect
+        (fun i j =>
+          gqrSourceAFromBlocks h.Q h.U h.L11 h.L21
+              (fun i j => h.L22 i j + DeltaL22 i j) i j -
+            A i j) ≤
+        gammaA * frobNormRect A := by
+    exact le_trans hDeltaA_base
+      (mul_le_mul_of_nonneg_right hgammaA_ge (frobNormRect_nonneg A))
+  have hDeltaB_base :
+      frobNormRect
+        (fun i j =>
+          gqrSourceBFromBlocks h.Q (fun i j => h.S i j + DeltaS i j) i j -
+            B i j) ≤
+        gamma fp p * frobNormRect B :=
+    h.constructed_sourceB_perturbation_frobNorm_bound
+      (gamma fp p) DeltaS hDeltaSfrob
+  have hDeltaB :
+      frobNormRect
+        (fun i j =>
+          gqrSourceBFromBlocks h.Q (fun i j => h.S i j + DeltaS i j) i j -
+            B i j) ≤
+        gammaB * frobNormRect B := by
+    exact le_trans hDeltaB_base
+      (mul_le_mul_of_nonneg_right hgammaB_ge (frobNormRect_nonneg B))
+  exact hcert hDeltaA hDeltab hDeltaB hb_tail
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), exact transformed-RHS
+    specialization of the constructed-source certificate.
+
+    The named supplied-GQR path computes the trailing triangular right-hand side
+    from the exact transformed vector `Uᵀ b`, so choosing `Deltab = 0` discharges
+    both the source-shaped RHS perturbation bound and the transformed-tail
+    matching condition.  This closes the exact-transform certificate branch; the
+    separate rounded Householder RHS-transform bridge remains a distinct
+    computed-path obligation. -/
+theorem theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of_double_gammaValid_exact_rhs
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (gammaA gammaB : ℝ)
+    (hgammaA_nonneg : 0 ≤ gammaA)
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    (hgammaA_ge : gamma fp q ≤ gammaA)
+    (hgammaB_ge : gamma fp p ≤ gammaB)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalid2S : gammaValid fp (2 * p))
+    (hvalid2L22 : gammaValid fp (2 * q)) :
+    ∃ (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ),
+      (∀ i j, |DeltaS i j| ≤ gamma fp p * |h.S i j|) ∧
+      (∀ i j, |DeltaL22 i j| ≤ gamma fp q * |h.L22 i j|) ∧
+      frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S ∧
+      frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 ∧
+      Nonempty
+        (Theorem20_10PartAPerturbationCertificate A B b d
+          (theorem20_10_gqr_xhat fp h b d) gammaA gammaB) := by
+  rcases
+    theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of_double_gammaValid_source_bounds
+      fp h b d gammaA gammaB (0 : Fin (r + q) → ℝ)
+      hgammaB_nonneg hgammaA_ge hgammaB_ge hSdiag hL22diag
+      hvalid2S hvalid2L22 with
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, hcert⟩
+  refine
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, ?_⟩
+  have hDeltab0 :
+      vecNorm2 (0 : Fin (r + q) → ℝ) ≤ gammaA * vecNorm2 b := by
+    change vecNorm2 (fun _ : Fin (r + q) => 0) ≤ gammaA * vecNorm2 b
+    rw [vecNorm2_zero]
+    exact mul_nonneg hgammaA_nonneg (vecNorm2_nonneg b)
+  have hb_tail0 : ∀ i : Fin q,
+      matMulVec (r + q) (matTranspose h.U)
+          (fun i => b i + (0 : Fin (r + q) → ℝ) i) (Fin.natAdd r i) =
+        matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i) := by
+    intro i
+    simp
+  exact hcert hDeltab0 hb_tail0
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), certificate-to-exact-core
     handoff.
@@ -8381,6 +10993,85 @@ theorem theorem20_10_partA_mixed_stability_of_perturbation_certificate
   refine ⟨cert.DeltaA, cert.DeltaB, cert.Deltab, DeltaX, x, rfl, rfl, rfl,
     hxhat, hDeltaX, cert.hDeltaA, cert.hDeltab, cert.hDeltaB, hx, ?_⟩
   exact ⟨h, hyz, ⟨x, hx, huniq⟩⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), exact transformed-RHS
+    mixed-stability theorem for the constructed-source supplied-GQR path.
+
+    This combines the constructed-source exact-RHS certificate with the generic
+    certificate-to-core handoff.  The conclusion exposes the perturbations and
+    exact perturbed minimizer directly, without requiring callers to unpack the
+    intermediate certificate. -/
+theorem theorem20_10_partA_mixed_stability_of_constructed_source_exact_rhs
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (gammaA gammaB : ℝ)
+    (hgammaA_nonneg : 0 ≤ gammaA)
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    (hgammaA_ge : gamma fp q ≤ gammaA)
+    (hgammaB_ge : gamma fp p ≤ gammaB)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalid2S : gammaValid fp (2 * p))
+    (hvalid2L22 : gammaValid fp (2 * q)) :
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab : Fin (r + q) → ℝ,
+    ∃ DeltaX : Fin (p + q) → ℝ,
+    ∃ x : Fin (p + q) → ℝ,
+      (∀ j : Fin (p + q),
+        theorem20_10_gqr_xhat fp h b d j = x j + DeltaX j) ∧
+      vecNorm2 DeltaX ≤ gammaB * vecNorm2 x ∧
+      frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+      vecNorm2 Deltab ≤ gammaA * vecNorm2 b ∧
+      frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+      IsLSEMinimizer
+        (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i)
+        (fun i j => B i j + DeltaB i j) d x ∧
+      (∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec hpert.S yz.1 = d ∧
+          rectMatMulVec hpert.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose hpert.U)
+                (fun i => b i + Deltab i) (Fin.natAdd r i) -
+                rectMatMulVec hpert.L21 yz.1 i) ∧
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j) d
+            (matMulVec (p + q) hpert.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x0 : Fin (p + q) → ℝ,
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j) d x0)) := by
+  rcases
+    theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of_double_gammaValid_exact_rhs
+      fp h b d gammaA gammaB hgammaA_nonneg hgammaB_nonneg
+      hgammaA_ge hgammaB_ge hSdiag hL22diag hvalid2S hvalid2L22 with
+    ⟨_DeltaS, _DeltaL22, _hDeltaSbound, _hDeltaL22bound,
+      _hDeltaSfrob, _hDeltaL22frob, hcert⟩
+  rcases hcert with ⟨cert⟩
+  have hcore :=
+    theorem20_10_partA_mixed_stability_of_perturbation_certificate
+      A B b d (theorem20_10_gqr_xhat fp h b d) cert
+  dsimp at hcore
+  rcases hcore with
+    ⟨DeltaA, DeltaB, Deltab, DeltaX, x,
+      hDeltaAeq, hDeltaBeq, hDeltabeq, hxhat, hDeltaX,
+      hDeltaA, hDeltab, hDeltaB, hx, hmethod⟩
+  refine
+    ⟨cert.DeltaA, cert.DeltaB, cert.Deltab, DeltaX, x,
+      hxhat, hDeltaX, ?_, ?_, ?_, hx, hmethod⟩
+  · simpa [hDeltaAeq] using hDeltaA
+  · simpa [hDeltabeq] using hDeltab
+  · simpa [hDeltaBeq] using hDeltaB
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), finite-precision
     perturbation certificate for the fully backward-stable branch.
@@ -8498,6 +11189,2112 @@ noncomputable def theorem20_10_householder_gammaB
     (fp : FPModel) (_r p q : ℕ) : ℝ :=
   H19.Theorem19_4.gamma_tilde fp (p + q) p
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    concrete Householder QR perturbation bound for the smaller `A Q₂`
+    triangularization step in the GQR path.
+
+    The block later instantiated as `A Q₂` has dimensions `(r+q) × q`, so the
+    Chapter 19 Householder QR theorem applies without requiring the full `A`
+    matrix to be tall.  The resulting `gamma_tilde_(r+q),q` bound is absorbed
+    into the source-facing `gamma_tilde_(r+q),(p+q)` coefficient by gamma
+    monotonicity.  This is a computed-path dependency only; it does not yet
+    transport the perturbation back through the already computed `Q₂` factor or
+    prove the triangular-solve perturbations. -/
+theorem theorem20_10_householder_AQ2_frob_perturbation_bound
+    {r p q : ℕ} (fp : FPModel)
+    (C : Fin (r + q) → Fin q → ℝ)
+    (hq : 0 < q)
+    (hvalid :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q))) :
+    ∃ DeltaC : Fin (r + q) → Fin q → ℝ,
+      (∀ i j,
+        C i j + DeltaC i j =
+          matMulRect (r + q) (r + q) q
+            (fl_householderQRPanel_Q fp (r + q) q C)
+            (fl_householderQRPanel_R fp (r + q) q C) i j) ∧
+      frobNormRect DeltaC ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect C := by
+  let K : ℕ := householderConstructApplyGammaIndex (r + q)
+  have hvalid_full : gammaValid fp ((p + q) * K) := by
+    simpa [K] using hvalid
+  have hq_le_pq : q ≤ p + q := by omega
+  have hidx_le : q * K ≤ (p + q) * K :=
+    Nat.mul_le_mul_right K hq_le_pq
+  have hvalid_q : gammaValid fp (q * K) :=
+    gammaValid_mono fp hidx_le hvalid_full
+  have hqr :
+      H19.Theorem19_4.HouseholderQRBackwardError (r + q) q C
+        (fl_householderQRPanel_Q fp (r + q) q C)
+        (fl_householderQRPanel_R fp (r + q) q C)
+        (H19.Theorem19_4.gamma_tilde fp (r + q) q) := by
+    exact
+      H19.Theorem19_4.householder_qr_backward_error fp (r + q) q C hq
+        (by omega) hvalid_q
+  have hgamma_nonneg :
+      0 ≤ H19.Theorem19_4.gamma_tilde fp (r + q) q :=
+    H19.Theorem19_4.gamma_tilde_nonneg fp hvalid_q
+  have hgamma_le :
+      H19.Theorem19_4.gamma_tilde fp (r + q) q ≤
+        theorem20_10_householder_gammaA fp r p q := by
+    simpa [H19.Theorem19_4.gamma_tilde, theorem20_10_householder_gammaA, K]
+      using gamma_mono fp hidx_le hvalid_full
+  rcases hqr.exists_frobNormRect_perturbation_bound hgamma_nonneg with
+    ⟨DeltaC, hrep, hbound⟩
+  refine ⟨DeltaC, hrep, le_trans hbound ?_⟩
+  exact mul_le_mul_of_nonneg_right hgamma_le (frobNormRect_nonneg C)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    rounded Householder QR perturbation bound for the column-reversed
+    `A Q₂` block.
+
+    The exact GQR construction uses a QR of the column-reversed trailing block
+    to obtain a lower-triangular `L22`.  This theorem names the corresponding
+    rounded finite-precision dependency and records the actual computed
+    Householder `Q`/`R` shape facts for that reversed block.  The bound is still
+    relative to the reversed trailing block; transporting it back to a
+    source-shaped `DeltaA` is the next assembly step. -/
+theorem theorem20_10_householder_reversed_AQ2_frob_perturbation_bound
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (hq : 0 < q)
+    (hvalid :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q))) :
+    let Crev : Fin (r + q) → Fin q → ℝ :=
+      rectPermuteCols Fin.revPerm (gqrAQ2Block A Q)
+    let Urev : Fin (r + q) → Fin (r + q) → ℝ :=
+      fl_householderQRPanel_Q fp (r + q) q Crev
+    let Rrev : Fin (r + q) → Fin q → ℝ :=
+      fl_householderQRPanel_R fp (r + q) q Crev
+    ∃ DeltaC : Fin (r + q) → Fin q → ℝ,
+      (∀ i j,
+        Crev i j + DeltaC i j =
+          matMulRect (r + q) (r + q) q Urev Rrev i j) ∧
+      IsOrthogonal (r + q) Urev ∧
+      IsUpperTrapezoidal (r + q) q Rrev ∧
+      frobNormRect DeltaC ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect Crev := by
+  dsimp
+  let Crev : Fin (r + q) → Fin q → ℝ :=
+    rectPermuteCols Fin.revPerm (gqrAQ2Block A Q)
+  rcases theorem20_10_householder_AQ2_frob_perturbation_bound
+      fp Crev hq hvalid with
+    ⟨DeltaC, hDeltaCrep, hDeltaCbound⟩
+  let K : ℕ := householderConstructApplyGammaIndex (r + q)
+  have hbase_valid : gammaValid fp (11 * (r + q) + 23) := by
+    have hbase_le_K : 11 * (r + q) + 23 ≤ K := by
+      dsimp [K, householderConstructApplyGammaIndex]
+      omega
+    have hpq : 0 < p + q := by omega
+    have hK_le_pqK : K ≤ (p + q) * K := by
+      calc
+        K = 1 * K := by omega
+        _ ≤ (p + q) * K := Nat.mul_le_mul_right K hpq
+    exact gammaValid_mono fp (le_trans hbase_le_K hK_le_pqK) (by
+      simpa [K] using hvalid)
+  have hready :
+      HouseholderQRPanelReady fp (r + q) q Crev :=
+    HouseholderQRPanelReady_of_global_gammaValid
+      fp (r + q) q (r + q) Crev le_rfl hbase_valid
+  have hUrev : IsOrthogonal (r + q)
+      (fl_householderQRPanel_Q fp (r + q) q Crev) :=
+    fl_householderQRPanel_Q_orthogonal fp (r + q) q Crev hready
+  have hRrev : IsUpperTrapezoidal (r + q) q
+      (fl_householderQRPanel_R fp (r + q) q Crev) :=
+      fl_householderQRPanel_R_upper_trapezoidal fp (r + q) q Crev
+  exact ⟨DeltaC, hDeltaCrep, hUrev, hRrev, hDeltaCbound⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    source-coordinate perturbation for the column-reversed `A Q₂`
+    Householder QR step.
+
+    This transports the reversed trailing-block perturbation back through the
+    full orthogonal `Q` factor, producing a source-shaped `DeltaA`.  The
+    resulting perturbed trailing block, after reversing columns, is exactly the
+    computed rounded Householder product for the column-reversed `A Q₂` panel.
+    This is the A-side analogue of the concrete B-side factor-identification
+    theorem; assembling the full rounded GQR record remains a separate step. -/
+theorem theorem20_10_householder_reversed_AQ2_full_A_frob_perturbation_bound
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hq : 0 < q)
+    (hvalid :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q))) :
+    let Crev : Fin (r + q) → Fin q → ℝ :=
+      rectPermuteCols Fin.revPerm (gqrAQ2Block A Q)
+    let Urev : Fin (r + q) → Fin (r + q) → ℝ :=
+      fl_householderQRPanel_Q fp (r + q) q Crev
+    let Rrev : Fin (r + q) → Fin q → ℝ :=
+      fl_householderQRPanel_R fp (r + q) q Crev
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+      (∀ i j,
+        rectPermuteCols Fin.revPerm
+            (gqrAQ2Block (fun i j => A i j + DeltaA i j) Q) i j =
+          matMulRect (r + q) (r + q) q Urev Rrev i j) ∧
+      IsOrthogonal (r + q) Urev ∧
+      IsUpperTrapezoidal (r + q) q Rrev ∧
+      frobNormRect DeltaA ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect Crev := by
+  dsimp
+  let Crev : Fin (r + q) → Fin q → ℝ :=
+    rectPermuteCols Fin.revPerm (gqrAQ2Block A Q)
+  rcases theorem20_10_householder_reversed_AQ2_frob_perturbation_bound
+      fp A Q hq hvalid with
+    ⟨DeltaCrev, hDeltaCrevRep, hUrev, hRrev, hDeltaCrevBound⟩
+  let DeltaC : Fin (r + q) → Fin q → ℝ :=
+    fun i j => DeltaCrev i (Fin.rev j)
+  rcases gqrAQ2Block_exists_full_perturbation_of_trailing_delta
+      Q DeltaC hQ with
+    ⟨DeltaA, hDeltaAtrail, hDeltaAnorm⟩
+  refine ⟨DeltaA, ?_, hUrev, hRrev, ?_⟩
+  · intro i j
+    have htrail := hDeltaAtrail A i (Fin.rev j)
+    have hrev :
+        rectPermuteCols Fin.revPerm
+            (gqrAQ2Block (fun i j => A i j + DeltaA i j) Q) i j =
+          gqrAQ2Block A Q i (Fin.rev j) + DeltaCrev i j := by
+      simpa [rectPermuteCols, DeltaC] using htrail
+    calc
+      rectPermuteCols Fin.revPerm
+          (gqrAQ2Block (fun i j => A i j + DeltaA i j) Q) i j =
+          gqrAQ2Block A Q i (Fin.rev j) + DeltaCrev i j := hrev
+      _ = Crev i j + DeltaCrev i j := by
+          rfl
+      _ = matMulRect (r + q) (r + q) q
+            (fl_householderQRPanel_Q fp (r + q) q Crev)
+            (fl_householderQRPanel_R fp (r + q) q Crev) i j := by
+          simpa [Crev] using hDeltaCrevRep i j
+  · have hpad :
+        frobNormRect (fun i : Fin (r + q) =>
+          Fin.append (fun _ : Fin p => 0) (DeltaC i)) =
+            frobNormRect DeltaCrev := by
+      calc
+        frobNormRect (fun i : Fin (r + q) =>
+            Fin.append (fun _ : Fin p => 0) (DeltaC i))
+            = frobNormRect DeltaC := frobNormRect_zeroLeftCols_append DeltaC
+        _ = frobNormRect (rectPermuteCols Fin.revPerm DeltaCrev) := by
+          rfl
+        _ = frobNormRect DeltaCrev :=
+          frobNormRect_permuteCols Fin.revPerm DeltaCrev
+    have hDeltaAeq : frobNormRect DeltaA = frobNormRect DeltaCrev := by
+      rw [hDeltaAnorm, hpad]
+    exact le_trans (le_of_eq hDeltaAeq) hDeltaCrevBound
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    source-shaped Frobenius bound for the column-reversed `A Q₂`
+    Householder perturbation.
+
+    This strengthens
+    `theorem20_10_householder_reversed_AQ2_full_A_frob_perturbation_bound`
+    by absorbing the reversed trailing-panel norm into the original source
+    matrix norm.  It uses only orthogonality of the GQR `Q` factor and
+    permutation invariance of the Frobenius norm, so the computed product and
+    shape facts are unchanged. -/
+theorem theorem20_10_householder_reversed_AQ2_full_A_source_frob_perturbation_bound
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hq : 0 < q)
+    (hvalid :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q))) :
+    let Crev : Fin (r + q) → Fin q → ℝ :=
+      rectPermuteCols Fin.revPerm (gqrAQ2Block A Q)
+    let Urev : Fin (r + q) → Fin (r + q) → ℝ :=
+      fl_householderQRPanel_Q fp (r + q) q Crev
+    let Rrev : Fin (r + q) → Fin q → ℝ :=
+      fl_householderQRPanel_R fp (r + q) q Crev
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+      (∀ i j,
+        rectPermuteCols Fin.revPerm
+            (gqrAQ2Block (fun i j => A i j + DeltaA i j) Q) i j =
+          matMulRect (r + q) (r + q) q Urev Rrev i j) ∧
+      IsOrthogonal (r + q) Urev ∧
+      IsUpperTrapezoidal (r + q) q Rrev ∧
+      frobNormRect DeltaA ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect A := by
+  dsimp
+  let Crev : Fin (r + q) → Fin q → ℝ :=
+    rectPermuteCols Fin.revPerm (gqrAQ2Block A Q)
+  rcases theorem20_10_householder_reversed_AQ2_full_A_frob_perturbation_bound
+      fp A Q hQ hq hvalid with
+    ⟨DeltaA, hDeltaArep, hUrev, hRrev, hDeltaAraw⟩
+  have hCrev_le_A : frobNormRect Crev ≤ frobNormRect A := by
+    calc
+      frobNormRect Crev =
+          frobNormRect (gqrAQ2Block A Q) := by
+            simpa [Crev] using
+              frobNormRect_permuteCols Fin.revPerm (gqrAQ2Block A Q)
+      _ ≤ frobNormRect A := frobNormRect_gqrAQ2Block_le A Q hQ
+  have hgamma_nonneg :
+      0 ≤ theorem20_10_householder_gammaA fp r p q := by
+    simpa [theorem20_10_householder_gammaA] using
+      H19.Theorem19_4.gamma_tilde_nonneg fp hvalid
+  have hDeltaA :
+      frobNormRect DeltaA ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect A :=
+    le_trans hDeltaAraw
+      (mul_le_mul_of_nonneg_left hCrev_le_A hgamma_nonneg)
+  exact ⟨DeltaA, hDeltaArep, hUrev, hRrev, hDeltaA⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    concrete full-`A` perturbation obtained from the smaller `A Q₂`
+    Householder QR backward error.
+
+    This combines the smaller-block QR perturbation theorem with the exact
+    back-transport through an orthogonal `Q`: the constructed source-coordinate
+    `DeltaA` makes the trailing block of `(A + DeltaA)Q` match the computed
+    Householder QR product for `A Q₂`, and it satisfies the advertised
+    `gamma_tilde_mn * ||A||_F` source-shaped bound.  It is still only the
+    `A`-side component of the full Theorem 20.10 certificate. -/
+theorem theorem20_10_householder_AQ2_full_A_frob_perturbation_bound
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hq : 0 < q)
+    (hvalid :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q))) :
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+      (∀ i j,
+        gqrAQ2Block (fun i j => A i j + DeltaA i j) Q i j =
+          matMulRect (r + q) (r + q) q
+            (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q))
+            (fl_householderQRPanel_R fp (r + q) q (gqrAQ2Block A Q)) i j) ∧
+      frobNormRect DeltaA ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect A := by
+  let C : Fin (r + q) → Fin q → ℝ := gqrAQ2Block A Q
+  rcases theorem20_10_householder_AQ2_frob_perturbation_bound
+      fp C hq hvalid with
+    ⟨DeltaC, hrep, hDeltaC⟩
+  rcases gqrAQ2Block_exists_full_perturbation_of_trailing_delta
+      Q DeltaC hQ with
+    ⟨DeltaA, hDeltaAtrail, hDeltaAnorm⟩
+  refine ⟨DeltaA, ?_, ?_⟩
+  · intro i j
+    calc
+      gqrAQ2Block (fun i j => A i j + DeltaA i j) Q i j
+          = gqrAQ2Block A Q i j + DeltaC i j := hDeltaAtrail A i j
+      _ = matMulRect (r + q) (r + q) q
+            (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q))
+            (fl_householderQRPanel_R fp (r + q) q (gqrAQ2Block A Q)) i j := by
+          simpa [C] using hrep i j
+  · have hpad :
+        frobNormRect (fun i : Fin (r + q) =>
+          Fin.append (fun _ : Fin p => 0) (DeltaC i)) =
+            frobNormRect DeltaC :=
+      frobNormRect_zeroLeftCols_append DeltaC
+    have hDeltaA_le_C :
+        frobNormRect DeltaA ≤
+          theorem20_10_householder_gammaA fp r p q * frobNormRect C := by
+      rwa [hDeltaAnorm, hpad]
+    have hC_le_A : frobNormRect C ≤ frobNormRect A := by
+      simpa [C] using frobNormRect_gqrAQ2Block_le A Q hQ
+    have hgamma_nonneg :
+        0 ≤ theorem20_10_householder_gammaA fp r p q := by
+      simpa [theorem20_10_householder_gammaA] using
+        H19.Theorem19_4.gamma_tilde_nonneg fp hvalid
+    exact le_trans hDeltaA_le_C
+      (mul_le_mul_of_nonneg_left hC_le_A hgamma_nonneg)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    concrete right-hand-side perturbation for the smaller `A Q₂`
+    Householder transform used in the GQR path.
+
+    This is the source-facing specialization of the QR module's explicit
+    RHS-transform certificate to the trailing block `A Q₂`.  The bound is the
+    verified recursive implementation budget for that transform; the later
+    source-facing `gamma_tilde_mn * ||b||₂` absorption remains a separate
+    obligation. -/
+theorem theorem20_10_householder_AQ2_rhs_vecNorm2_perturbation_bound
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ)
+    (hready :
+      HouseholderQRPanelReady fp (r + q) q (gqrAQ2Block A Q)) :
+    ∃ Deltab : Fin (r + q) → ℝ,
+      (∀ i,
+        fl_householderQRPanel_rhs fp (r + q) q (gqrAQ2Block A Q) b i =
+          matMulVec (r + q)
+            (matTranspose
+              (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q)))
+            (fun k => b k + Deltab k) i) ∧
+      vecNorm2 Deltab ≤
+        Real.sqrt (r + q : ℝ) *
+          householderQRRhsPanelBackwardBound fp (r + q) q
+            (gqrAQ2Block A Q) b := by
+  simpa using
+    fl_householderQRPanel_rhs_explicit_vecNorm2_perturbation_bound
+      fp (r + q) q (gqrAQ2Block A Q) b hready
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    global-gamma wrapper for the `A Q₂` RHS perturbation certificate.
+
+    A single row-count validity hypothesis supplies the readiness obligations
+    for the zero-aware Householder QR panel implementation.  The norm bound is
+    still the concrete recursive RHS budget, not the final printed
+    `gamma_tilde_mn * ||b||₂` coefficient. -/
+theorem theorem20_10_householder_AQ2_rhs_vecNorm2_perturbation_bound_of_global_gammaValid
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ)
+    (hvalid : gammaValid fp (11 * (r + q) + 23)) :
+    ∃ Deltab : Fin (r + q) → ℝ,
+      (∀ i,
+        fl_householderQRPanel_rhs fp (r + q) q (gqrAQ2Block A Q) b i =
+          matMulVec (r + q)
+            (matTranspose
+              (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q)))
+            (fun k => b k + Deltab k) i) ∧
+      vecNorm2 Deltab ≤
+        Real.sqrt (r + q : ℝ) *
+          householderQRRhsPanelBackwardBound fp (r + q) q
+            (gqrAQ2Block A Q) b := by
+  exact
+    theorem20_10_householder_AQ2_rhs_vecNorm2_perturbation_bound
+      fp A Q b
+      (HouseholderQRPanelReady_of_global_gammaValid
+        fp (r + q) q (r + q) (gqrAQ2Block A Q) le_rfl hvalid)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    conservative source-norm bound for the `A Q₂` RHS perturbation.
+
+    The half-radius guard for the verified recursive RHS index supplies both
+    the Householder panel readiness condition and the accumulated gamma
+    comparison.  The result exposes the remaining gap to the printed
+    `gamma_tilde_mn * ||b||₂` coefficient as the visible dimension-only factor
+    `2 * householderQRRhsPanelGammaClosedGrowthFactor (r+q) q`. -/
+theorem theorem20_10_householder_AQ2_rhs_vecNorm2_perturbation_bound_of_gammaFactor
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ)
+    (hq : 0 < q)
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2)) :
+    ∃ Deltab : Fin (r + q) → ℝ,
+      (∀ i,
+        fl_householderQRPanel_rhs fp (r + q) q (gqrAQ2Block A Q) b i =
+          matMulVec (r + q)
+            (matTranspose
+              (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q)))
+            (fun k => b k + Deltab k) i) ∧
+      vecNorm2 Deltab ≤
+        Real.sqrt (r + q : ℝ) *
+          (((2 : ℝ) *
+              (householderQRRhsPanelGammaClosedGrowthFactor (r + q) q : ℝ) *
+              gamma fp (q * householderConstructApplyGammaIndex (r + q))) *
+            vecNorm2 b) := by
+  let idx : ℕ := householderQRRhsPanelGammaClosedGrowthIndex (r + q) q
+  let K : ℕ := householderConstructApplyGammaIndex (r + q)
+  let C : ℝ :=
+    (2 : ℝ) *
+      (householderQRRhsPanelGammaClosedGrowthFactor (r + q) q : ℝ) *
+      gamma fp (q * K)
+  have hidx_valid : gammaValid fp idx := by
+    unfold gammaValid
+    exact lt_of_le_of_lt (by simpa [idx] using hhalf) (by norm_num)
+  have hprinted_le_idx : q * K ≤ idx := by
+    change q * householderConstructApplyGammaIndex (r + q) ≤
+      householderQRRhsPanelGammaClosedGrowthIndex (r + q) q
+    rw [householderQRRhsPanelGammaClosedGrowthIndex_eq_factor_mul_printedIndex]
+    exact Nat.le_mul_of_pos_left _
+      (householderQRRhsPanelGammaClosedGrowthFactor_pos
+        (m := r + q) (p := q) (by omega))
+  have hprinted_valid : gammaValid fp (q * K) :=
+    gammaValid_mono fp hprinted_le_idx hidx_valid
+  have hbase_le_K :
+      11 * (r + q) + 23 ≤ K := by
+    dsimp [K, householderConstructApplyGammaIndex]
+    omega
+  have hK_le_qK : K ≤ q * K :=
+    Nat.le_mul_of_pos_left K hq
+  have hbase_valid : gammaValid fp (11 * (r + q) + 23) :=
+    gammaValid_mono fp
+      (le_trans hbase_le_K (le_trans hK_le_qK hprinted_le_idx))
+      hidx_valid
+  let Cmat : Fin (r + q) → Fin q → ℝ := gqrAQ2Block A Q
+  have hready :
+      HouseholderQRPanelReady fp (r + q) q Cmat :=
+    HouseholderQRPanelReady_of_global_gammaValid
+      fp (r + q) q (r + q) Cmat le_rfl hbase_valid
+  rcases
+    theorem20_10_householder_AQ2_rhs_vecNorm2_perturbation_bound
+      fp A Q b (by simpa [Cmat] using hready) with
+    ⟨Deltab, hrep, hbound⟩
+  have hm : 0 < r + q := by omega
+  have hraw_le_inf :
+      householderQRRhsPanelBackwardBound fp (r + q) q Cmat b ≤
+        C * infNormVec b := by
+    simpa [C, Cmat, K] using
+      householderQRRhsPanelBackwardBound_le_gammaClosedGrowthFactor
+        fp (r + q) q Cmat b (by omega) hm hhalf hready
+  have hsqrt_nonneg : 0 ≤ Real.sqrt (r + q : ℝ) :=
+    Real.sqrt_nonneg _
+  have hto_inf :
+      vecNorm2 Deltab ≤
+        Real.sqrt (r + q : ℝ) * (C * infNormVec b) := by
+    exact le_trans hbound
+      (mul_le_mul_of_nonneg_left (by simpa [Cmat] using hraw_le_inf)
+        hsqrt_nonneg)
+  have hgamma_nonneg : 0 ≤ gamma fp (q * K) :=
+    gamma_nonneg fp hprinted_valid
+  have hfactor_nonneg :
+      0 ≤ (householderQRRhsPanelGammaClosedGrowthFactor (r + q) q : ℝ) := by
+    positivity
+  have hC_nonneg : 0 ≤ C := by
+    dsimp [C]
+    exact mul_nonneg
+      (mul_nonneg (by norm_num) hfactor_nonneg) hgamma_nonneg
+  have hinf_le_vec : infNormVec b ≤ vecNorm2 b :=
+    infNormVec_le_of_abs_le b
+      (fun i => abs_coord_le_vecNorm2 b i) (vecNorm2_nonneg b)
+  have hC_inf_le_vec :
+      C * infNormVec b ≤ C * vecNorm2 b :=
+    mul_le_mul_of_nonneg_left hinf_le_vec hC_nonneg
+  refine ⟨Deltab, hrep, ?_⟩
+  exact le_trans hto_inf
+    (by
+      simpa [C, K] using
+        mul_le_mul_of_nonneg_left hC_inf_le_vec hsqrt_nonneg)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    trailing entries of the rounded Householder RHS transform for the `A Q₂`
+    panel. -/
+noncomputable def theorem20_10_householder_AQ2_rhs_tail
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) : Fin q → ℝ :=
+  fun i : Fin q =>
+    fl_householderQRPanel_rhs fp (r + q) q (gqrAQ2Block A Q) b
+      (Fin.natAdd r i)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    conservative scalar coefficient currently proved for the rounded
+    Householder RHS transform in the `A Q₂` panel. -/
+noncomputable def theorem20_10_householder_rhs_conservative_gamma
+    (fp : FPModel) (r _p q : ℕ) : ℝ :=
+  Real.sqrt (r + q : ℝ) *
+    ((2 : ℝ) *
+      (householderQRRhsPanelGammaClosedGrowthFactor (r + q) q : ℝ) *
+      gamma fp (q * householderConstructApplyGammaIndex (r + q)))
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    conservative `A`/`b` coefficient for the rounded-Householder-RHS Part A
+    route.  It preserves the printed Householder `A`-matrix coefficient while
+    making the larger verified RHS coefficient explicit. -/
+noncomputable def theorem20_10_householder_gammaA_conservativeRhs
+    (fp : FPModel) (r p q : ℕ) : ℝ :=
+  max (theorem20_10_householder_gammaA fp r p q)
+    (theorem20_10_householder_rhs_conservative_gamma fp r p q)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), rounded Householder RHS
+    certificate route with the currently proved conservative RHS coefficient.
+
+    If the supplied GQR factor's `U` is the rounded Householder panel `Q` for
+    `A Q₂`, then the verified RHS transform theorem supplies a `Deltab` whose
+    transformed trailing block is exactly the computed RHS tail.  The matrix
+    perturbation bounds and triangular preservation are discharged by the
+    transformed-tail constructed-source wrapper; the RHS coefficient remains
+    the explicit conservative bound
+    `theorem20_10_householder_rhs_conservative_gamma`. -/
+theorem theorem20_10_partA_certificate_of_constructed_source_householder_rhs_conservative_bound
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (gammaA gammaB : ℝ)
+    (hUfl :
+      h.U =
+        fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A h.Q))
+    (hq : 0 < q)
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    (hgammaA_ge_matrix : gamma fp q ≤ gammaA)
+    (hgammaA_ge_rhs :
+      theorem20_10_householder_rhs_conservative_gamma fp r p q ≤ gammaA)
+    (hgammaB_ge : gamma fp p ≤ gammaB)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalid2S : gammaValid fp (2 * p))
+    (hvalid2L22 : gammaValid fp (2 * q)) :
+    ∃ Deltab : Fin (r + q) → ℝ,
+      (∀ i : Fin q,
+        matMulVec (r + q) (matTranspose h.U)
+            (fun k => b k + Deltab k) (Fin.natAdd r i) =
+          theorem20_10_householder_AQ2_rhs_tail fp A h.Q b i) ∧
+      vecNorm2 Deltab ≤ gammaA * vecNorm2 b ∧
+      ∃ (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ),
+        (∀ i j, |DeltaS i j| ≤ gamma fp p * |h.S i j|) ∧
+        (∀ i j, |DeltaL22 i j| ≤ gamma fp q * |h.L22 i j|) ∧
+        frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S ∧
+        frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 ∧
+        Nonempty
+          (Theorem20_10PartAPerturbationCertificate A B b d
+            (theorem20_10_gqr_xhat_of_transformed_tail fp h
+              (theorem20_10_householder_AQ2_rhs_tail fp A h.Q b) d)
+            gammaA gammaB) := by
+  rcases
+    theorem20_10_householder_AQ2_rhs_vecNorm2_perturbation_bound_of_gammaFactor
+      fp A h.Q b hq hhalf with
+    ⟨Deltab, hrep, hDeltab_raw⟩
+  have hDeltab_conservative :
+      vecNorm2 Deltab ≤
+        theorem20_10_householder_rhs_conservative_gamma fp r p q *
+          vecNorm2 b := by
+    simpa [theorem20_10_householder_rhs_conservative_gamma, mul_assoc]
+      using hDeltab_raw
+  have hDeltab :
+      vecNorm2 Deltab ≤ gammaA * vecNorm2 b :=
+    le_trans hDeltab_conservative
+      (mul_le_mul_of_nonneg_right hgammaA_ge_rhs (vecNorm2_nonneg b))
+  have hb_tail : ∀ i : Fin q,
+      matMulVec (r + q) (matTranspose h.U)
+          (fun k => b k + Deltab k) (Fin.natAdd r i) =
+        theorem20_10_householder_AQ2_rhs_tail fp A h.Q b i := by
+    intro i
+    simpa [theorem20_10_householder_AQ2_rhs_tail, hUfl] using
+      (hrep (Fin.natAdd r i)).symm
+  rcases
+    theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of_double_gammaValid_source_bounds_transformed_tail
+      fp h (theorem20_10_householder_AQ2_rhs_tail fp A h.Q b) b d
+      gammaA gammaB Deltab hgammaB_nonneg hgammaA_ge_matrix hgammaB_ge
+      hSdiag hL22diag hvalid2S hvalid2L22 with
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, hcert⟩
+  exact
+    ⟨Deltab, hb_tail, hDeltab, DeltaS, DeltaL22,
+      hDeltaSbound, hDeltaL22bound, hDeltaSfrob, hDeltaL22frob,
+      hcert hDeltab hb_tail⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), rounded Householder RHS
+    mixed-stability route with the currently proved conservative RHS
+    coefficient.
+
+    This unwraps
+    `theorem20_10_partA_certificate_of_constructed_source_householder_rhs_conservative_bound`
+    through the generic Part A certificate-to-core theorem.  The result is an
+    honest computed-RHS Part A surface: the computed vector uses the rounded
+    Householder RHS tail, while the `Deltab` coefficient is the explicit
+    conservative coefficient supplied through `gammaA`. -/
+theorem theorem20_10_partA_mixed_stability_of_constructed_source_householder_rhs_conservative_bound
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (gammaA gammaB : ℝ)
+    (hUfl :
+      h.U =
+        fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A h.Q))
+    (hq : 0 < q)
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    (hgammaA_ge_matrix : gamma fp q ≤ gammaA)
+    (hgammaA_ge_rhs :
+      theorem20_10_householder_rhs_conservative_gamma fp r p q ≤ gammaA)
+    (hgammaB_ge : gamma fp p ≤ gammaB)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalid2S : gammaValid fp (2 * p))
+    (hvalid2L22 : gammaValid fp (2 * q)) :
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab : Fin (r + q) → ℝ,
+    ∃ DeltaX : Fin (p + q) → ℝ,
+    ∃ x : Fin (p + q) → ℝ,
+      (∀ j : Fin (p + q),
+        theorem20_10_gqr_xhat_of_transformed_tail fp h
+            (theorem20_10_householder_AQ2_rhs_tail fp A h.Q b) d j =
+          x j + DeltaX j) ∧
+      vecNorm2 DeltaX ≤ gammaB * vecNorm2 x ∧
+      frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+      vecNorm2 Deltab ≤ gammaA * vecNorm2 b ∧
+      frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+      IsLSEMinimizer
+        (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i)
+        (fun i j => B i j + DeltaB i j) d x ∧
+      (∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec hpert.S yz.1 = d ∧
+          rectMatMulVec hpert.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose hpert.U)
+                (fun i => b i + Deltab i) (Fin.natAdd r i) -
+                rectMatMulVec hpert.L21 yz.1 i) ∧
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j) d
+            (matMulVec (p + q) hpert.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x0 : Fin (p + q) → ℝ,
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j) d x0)) := by
+  rcases
+    theorem20_10_partA_certificate_of_constructed_source_householder_rhs_conservative_bound
+      fp h b d gammaA gammaB hUfl hq hhalf hgammaB_nonneg
+      hgammaA_ge_matrix hgammaA_ge_rhs hgammaB_ge
+      hSdiag hL22diag hvalid2S hvalid2L22 with
+    ⟨_Deltab, _hb_tail, _hDeltab, _DeltaS, _DeltaL22,
+      _hDeltaSbound, _hDeltaL22bound, _hDeltaSfrob, _hDeltaL22frob,
+      hcert⟩
+  rcases hcert with ⟨cert⟩
+  have hcore :=
+    theorem20_10_partA_mixed_stability_of_perturbation_certificate
+      A B b d
+      (theorem20_10_gqr_xhat_of_transformed_tail fp h
+        (theorem20_10_householder_AQ2_rhs_tail fp A h.Q b) d)
+      cert
+  dsimp at hcore
+  rcases hcore with
+    ⟨DeltaA, DeltaB, Deltab, DeltaX, x,
+      hDeltaAeq, hDeltaBeq, hDeltabeq, hxhat, hDeltaX,
+      hDeltaA, hDeltab, hDeltaB, hx, hmethod⟩
+  refine
+    ⟨cert.DeltaA, cert.DeltaB, cert.Deltab, DeltaX, x,
+      hxhat, hDeltaX, ?_, ?_, ?_, hx, hmethod⟩
+  · simpa [hDeltaAeq] using hDeltaA
+  · simpa [hDeltabeq] using hDeltab
+  · simpa [hDeltaBeq] using hDeltaB
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), rounded Householder RHS
+    mixed-stability route with source-facing conservative gamma coefficients.
+
+    Compared with
+    `theorem20_10_partA_mixed_stability_of_constructed_source_householder_rhs_conservative_bound`,
+    this theorem derives the matrix and triangular-solve gamma side conditions
+    from the standard Householder validity hypotheses.  The `A`/`b`
+    coefficient is
+    `theorem20_10_householder_gammaA_conservativeRhs`, the maximum of the
+    printed matrix coefficient and the verified conservative RHS coefficient. -/
+theorem theorem20_10_partA_mixed_stability_of_constructed_source_householder_rhs_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hUfl :
+      h.U =
+        fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A h.Q))
+    (hq : 0 < q)
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q))) :
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab : Fin (r + q) → ℝ,
+    ∃ DeltaX : Fin (p + q) → ℝ,
+    ∃ x : Fin (p + q) → ℝ,
+      (∀ j : Fin (p + q),
+        theorem20_10_gqr_xhat_of_transformed_tail fp h
+            (theorem20_10_householder_AQ2_rhs_tail fp A h.Q b) d j =
+          x j + DeltaX j) ∧
+      vecNorm2 DeltaX ≤
+        theorem20_10_householder_gammaB fp r p q * vecNorm2 x ∧
+      frobNormRect DeltaA ≤
+        theorem20_10_householder_gammaA_conservativeRhs fp r p q *
+          frobNormRect A ∧
+      vecNorm2 Deltab ≤
+        theorem20_10_householder_gammaA_conservativeRhs fp r p q *
+          vecNorm2 b ∧
+      frobNormRect DeltaB ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B ∧
+      IsLSEMinimizer
+        (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i)
+        (fun i j => B i j + DeltaB i j) d x ∧
+      (∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec hpert.S yz.1 = d ∧
+          rectMatMulVec hpert.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose hpert.U)
+                (fun i => b i + Deltab i) (Fin.natAdd r i) -
+                rectMatMulVec hpert.L21 yz.1 i) ∧
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j) d
+            (matMulVec (p + q) hpert.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x0 : Fin (p + q) → ℝ,
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j) d x0)) := by
+  have hKA_ge_two : 2 ≤ householderConstructApplyGammaIndex (r + q) := by
+    dsimp [householderConstructApplyGammaIndex]
+    omega
+  have hKB_ge_two : 2 ≤ householderConstructApplyGammaIndex (p + q) := by
+    dsimp [householderConstructApplyGammaIndex]
+    omega
+  have hKA_pos : 0 < householderConstructApplyGammaIndex (r + q) := by
+    omega
+  have hKB_pos : 0 < householderConstructApplyGammaIndex (p + q) := by
+    omega
+  have hvalid2S : gammaValid fp (2 * p) := by
+    apply gammaValid_mono fp _ hvalidB
+    calc
+      2 * p = p * 2 := by omega
+      _ ≤ p * householderConstructApplyGammaIndex (p + q) :=
+          Nat.mul_le_mul_left p hKB_ge_two
+  have hvalid2L22 : gammaValid fp (2 * q) := by
+    apply gammaValid_mono fp _ hvalidA
+    calc
+      2 * q ≤ 2 * (p + q) := Nat.mul_le_mul_left 2 (by omega)
+      _ = (p + q) * 2 := by omega
+      _ ≤ (p + q) * householderConstructApplyGammaIndex (r + q) :=
+          Nat.mul_le_mul_left (p + q) hKA_ge_two
+  have hgammaB_nonneg :
+      0 ≤ theorem20_10_householder_gammaB fp r p q := by
+    simpa [theorem20_10_householder_gammaB] using
+      H19.Theorem19_4.gamma_tilde_nonneg fp hvalidB
+  have hidxA_ge_q :
+      q ≤ (p + q) * householderConstructApplyGammaIndex (r + q) := by
+    exact le_trans (by omega)
+      (Nat.le_mul_of_pos_right (p + q) hKA_pos)
+  have hidxB_ge_p :
+      p ≤ p * householderConstructApplyGammaIndex (p + q) :=
+    Nat.le_mul_of_pos_right p hKB_pos
+  have hgammaA_printed_ge :
+      gamma fp q ≤ theorem20_10_householder_gammaA fp r p q := by
+    simpa [theorem20_10_householder_gammaA, H19.Theorem19_4.gamma_tilde] using
+      gamma_mono fp hidxA_ge_q hvalidA
+  have hgammaA_ge_matrix :
+      gamma fp q ≤
+        theorem20_10_householder_gammaA_conservativeRhs fp r p q :=
+    le_trans hgammaA_printed_ge
+      (le_max_left _ _)
+  have hgammaA_ge_rhs :
+      theorem20_10_householder_rhs_conservative_gamma fp r p q ≤
+        theorem20_10_householder_gammaA_conservativeRhs fp r p q :=
+    le_max_right _ _
+  have hgammaB_ge :
+      gamma fp p ≤ theorem20_10_householder_gammaB fp r p q := by
+    simpa [theorem20_10_householder_gammaB, H19.Theorem19_4.gamma_tilde] using
+      gamma_mono fp hidxB_ge_p hvalidB
+  exact
+    theorem20_10_partA_mixed_stability_of_constructed_source_householder_rhs_conservative_bound
+      fp h b d
+      (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+      (theorem20_10_householder_gammaB fp r p q)
+      hUfl hq hhalf hgammaB_nonneg hgammaA_ge_matrix hgammaA_ge_rhs
+      hgammaB_ge hSdiag hL22diag hvalid2S hvalid2L22
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    concrete Householder QR perturbation bound for the `Bᵀ` triangularization
+    step in the GQR path.
+
+    Applying the Chapter 19 Householder QR backward-error theorem to
+    `Bᵀ : R^((p+q)×p)` gives a perturbation of `B` with the advertised
+    `gamma_tilde_np` Frobenius bound.  This is a genuine computed-path
+    dependency for the Theorem 20.10 certificates; it does not yet prove the
+    downstream triangular-solve perturbations or rank preservation. -/
+theorem theorem20_10_householder_B_transpose_frob_perturbation_bound
+    {r p q : ℕ} (fp : FPModel)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (hp : 0 < p)
+    (hvalid :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q))) :
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+      (∀ i j,
+        B i j + DeltaB i j =
+          matMulRect (p + q) (p + q) p
+            (fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B))
+            (fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)) j i) ∧
+      frobNormRect DeltaB ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B := by
+  have hqr :
+      H19.Theorem19_4.HouseholderQRBackwardError (p + q) p (finiteTranspose B)
+        (fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B))
+        (fl_householderQRPanel_R fp (p + q) p (finiteTranspose B))
+        (theorem20_10_householder_gammaB fp r p q) := by
+    simpa [theorem20_10_householder_gammaB] using
+      H19.Theorem19_4.householder_qr_backward_error
+        fp (p + q) p (finiteTranspose B) hp (Nat.le_add_right p q) hvalid
+  have hgamma_nonneg :
+      0 ≤ theorem20_10_householder_gammaB fp r p q := by
+    simpa [theorem20_10_householder_gammaB] using
+      H19.Theorem19_4.gamma_tilde_nonneg fp hvalid
+  rcases
+    hqr.exists_frobNormRect_perturbation_bound hgamma_nonneg with
+    ⟨DeltaBT, hrep, hbound⟩
+  refine ⟨finiteTranspose DeltaBT, ?_, ?_⟩
+  · intro i j
+    simpa [finiteTranspose] using hrep j i
+  · simpa [theorem20_10_householder_gammaB, frobNormRect_finiteTranspose]
+      using hbound
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, concrete rounded `Bᵀ`
+    Householder QR constraint block.
+
+    The computed Householder panel for `Bᵀ` gives explicit factors `Q_B` and
+    `R_B`.  After taking the transpose of the computed product, the perturbed
+    constraint matrix satisfies the exact GQR block identity
+    `(B + DeltaB) Q_B = [S,0]`, where `S` is the transpose of the top square
+    block of `R_B`.  This closes the concrete `B`-side factor-identification
+    dependency; rank preservation remains a separate source perturbation
+    obligation. -/
+theorem theorem20_10_householder_B_transpose_perturbed_constraint_block
+    {r p q : ℕ} (fp : FPModel)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (hp : 0 < p)
+    (hvalid :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q))) :
+    let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+      fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+    let Rhat : Fin (p + q) → Fin p → ℝ :=
+      fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)
+    let S : Fin p → Fin p → ℝ :=
+      matTranspose (fun i : Fin p => fun j : Fin p =>
+        Rhat (Fin.castAdd q i) j)
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+      (∀ i j,
+        B i j + DeltaB i j =
+          matMulRect (p + q) (p + q) p Qb Rhat j i) ∧
+      IsOrthogonal (p + q) Qb ∧
+      IsLowerTriangular S ∧
+      matMulRect p (p + q) (p + q)
+        (fun i j => B i j + DeltaB i j) Qb = gqrBQBlock S ∧
+      frobNormRect DeltaB ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B := by
+  dsimp
+  let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+    fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+  let Rhat : Fin (p + q) → Fin p → ℝ :=
+    fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)
+  let S : Fin p → Fin p → ℝ :=
+    matTranspose (fun i : Fin p => fun j : Fin p =>
+      Rhat (Fin.castAdd q i) j)
+  have hbase_valid : gammaValid fp (11 * (p + q) + 23) := by
+    let K : ℕ := householderConstructApplyGammaIndex (p + q)
+    have hbase_le_K : 11 * (p + q) + 23 ≤ K := by
+      dsimp [K, householderConstructApplyGammaIndex]
+      omega
+    have hK_le_pK : K ≤ p * K :=
+      Nat.le_mul_of_pos_left K hp
+    exact gammaValid_mono fp (le_trans hbase_le_K hK_le_pK) (by
+      simpa [K] using hvalid)
+  have hready :
+      HouseholderQRPanelReady fp (p + q) p (finiteTranspose B) :=
+    HouseholderQRPanelReady_of_global_gammaValid
+      fp (p + q) p (p + q) (finiteTranspose B) le_rfl hbase_valid
+  have hQb : IsOrthogonal (p + q) Qb := by
+    simpa [Qb] using
+      fl_householderQRPanel_Q_orthogonal
+        fp (p + q) p (finiteTranspose B) hready
+  have hRupper : IsUpperTrapezoidal (p + q) p Rhat := by
+    simpa [Rhat] using
+      fl_householderQRPanel_R_upper_trapezoidal
+        fp (p + q) p (finiteTranspose B)
+  have hconstraint :=
+    gqrBQBlock_eq_of_transpose_product_tall_qr Qb Rhat hQb hRupper
+  dsimp [S] at hconstraint
+  rcases theorem20_10_householder_B_transpose_frob_perturbation_bound
+      fp B hp hvalid with
+    ⟨DeltaB, hDeltaBrep, hDeltaB⟩
+  have hBpert_eq :
+      (fun i j => B i j + DeltaB i j) =
+        fun i j => matMulRect (p + q) (p + q) p Qb Rhat j i := by
+    ext i j
+    simpa [Qb, Rhat] using hDeltaBrep i j
+  refine ⟨DeltaB, ?_, hQb, hconstraint.1, ?_, hDeltaB⟩
+  · intro i j
+    exact congrFun (congrFun hBpert_eq i) j
+  · rw [hBpert_eq]
+    exact hconstraint.2
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, rounded `Bᵀ`
+    Householder panel inserted into a GQR record.
+
+    The `A` side is still represented by transported supplied/computed blocks,
+    but the constraint side is now the concrete perturbed matrix coming from
+    the rounded Householder QR of `Bᵀ`.  This is the algebraic bridge needed to
+    replace a supplied `BQ=[S,0]` hypothesis by the actual computed B-side
+    panel in later rounded-GQR assembly theorems. -/
+theorem theorem20_10_householder_B_transpose_constructed_sourceA_gqr_factorization
+    {r p q : ℕ} (fp : FPModel)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (U : Fin (r + q) → Fin (r + q) → ℝ)
+    (L11 : Fin r → Fin p → ℝ)
+    (L21 : Fin q → Fin p → ℝ)
+    (L22 : Fin q → Fin q → ℝ)
+    (hp : 0 < p)
+    (hU : IsOrthogonal (r + q) U)
+    (hL22 : IsLowerTriangular L22)
+    (hvalid :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q))) :
+    let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+      fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+    let Rhat : Fin (p + q) → Fin p → ℝ :=
+      fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)
+    let S : Fin p → Fin p → ℝ :=
+      matTranspose (fun i : Fin p => fun j : Fin p =>
+        Rhat (Fin.castAdd q i) j)
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+      (∀ i j,
+        B i j + DeltaB i j =
+          matMulRect (p + q) (p + q) p Qb Rhat j i) ∧
+      (∃ hpert : GeneralizedQRFactorization r p q
+          (gqrSourceAFromBlocks Qb U L11 L21 L22)
+          (fun i j => B i j + DeltaB i j),
+        hpert.Q = Qb ∧
+        hpert.U = U ∧
+        hpert.S = S ∧
+        hpert.L11 = L11 ∧
+        hpert.L21 = L21 ∧
+        hpert.L22 = L22 ∧
+        frobNormRect DeltaB ≤
+          theorem20_10_householder_gammaB fp r p q * frobNormRect B) := by
+  dsimp
+  let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+    fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+  let Rhat : Fin (p + q) → Fin p → ℝ :=
+    fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)
+  let S : Fin p → Fin p → ℝ :=
+    matTranspose (fun i : Fin p => fun j : Fin p =>
+      Rhat (Fin.castAdd q i) j)
+  rcases theorem20_10_householder_B_transpose_perturbed_constraint_block
+      fp B hp hvalid with
+    ⟨DeltaB, hDeltaBrep, hQb, hS, hBQ, hDeltaBbound⟩
+  let hpert : GeneralizedQRFactorization r p q
+      (gqrSourceAFromBlocks Qb U L11 L21 L22)
+      (fun i j => B i j + DeltaB i j) :=
+    GeneralizedQRFactorization.of_sourceA_blocks_and_constraint_block
+      Qb U L11 L21 L22 S (fun i j => B i j + DeltaB i j)
+      hQb hU hL22 hS hBQ
+  refine ⟨DeltaB, hDeltaBrep, hpert, ?_, ?_, ?_, ?_, ?_, ?_, hDeltaBbound⟩
+  · rfl
+  · rfl
+  · rfl
+  · rfl
+  · rfl
+  · rfl
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, rounded Householder
+    `Bᵀ`/`A Q₂` perturbations assembled into one perturbed GQR record.
+
+    The concrete `Bᵀ` Householder panel supplies the GQR `Q` and `S` fields for
+    the perturbed constraint matrix.  The source-shaped reversed `A Q₂`
+    Householder perturbation is then converted to the tall `[0;L]` associated
+    shape by `GQRAQTallCase.exists_of_square_qr_reversed_cols`, producing a
+    genuine GQR factorization for `(A + DeltaA, B + DeltaB)`.  Rank preservation
+    and returned-vector identification remain separate obligations. -/
+theorem theorem20_10_householder_constructed_perturbed_gqr_factorization
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q))) :
+    let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+      fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+    let Rb : Fin (p + q) → Fin p → ℝ :=
+      fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)
+    let S : Fin p → Fin p → ℝ :=
+      matTranspose (fun i : Fin p => fun j : Fin p =>
+        Rb (Fin.castAdd q i) j)
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+      (∀ i j,
+        B i j + DeltaB i j =
+          matMulRect (p + q) (p + q) p Qb Rb j i) ∧
+      frobNormRect DeltaA ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect A ∧
+      frobNormRect DeltaB ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B ∧
+      ∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        hpert.Q = Qb ∧ hpert.S = S := by
+  dsimp
+  let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+    fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+  let Rb : Fin (p + q) → Fin p → ℝ :=
+    fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)
+  let S : Fin p → Fin p → ℝ :=
+    matTranspose (fun i : Fin p => fun j : Fin p =>
+      Rb (Fin.castAdd q i) j)
+  rcases theorem20_10_householder_B_transpose_perturbed_constraint_block
+      fp B hp hvalidB with
+    ⟨DeltaB, hDeltaBrep, hQb, hS, hBQ, hDeltaB⟩
+  let Crev : Fin (r + q) → Fin q → ℝ :=
+    rectPermuteCols Fin.revPerm (gqrAQ2Block A Qb)
+  let Urev : Fin (r + q) → Fin (r + q) → ℝ :=
+    fl_householderQRPanel_Q fp (r + q) q Crev
+  let Rrev : Fin (r + q) → Fin q → ℝ :=
+    fl_householderQRPanel_R fp (r + q) q Crev
+  rcases theorem20_10_householder_reversed_AQ2_full_A_source_frob_perturbation_bound
+      fp A Qb hQb hq hvalidA with
+    ⟨DeltaA, hDeltaArep, hUrev, hRrev, hDeltaA⟩
+  have hfactor :
+      rectPermuteCols Fin.revPerm
+          (gqrAQ2Block (fun i j => A i j + DeltaA i j) Qb) =
+        matMulRect (r + q) (r + q) q Urev Rrev := by
+    ext i j
+    simpa [Crev, Urev, Rrev] using hDeltaArep i j
+  rcases GQRAQTallCase.exists_of_square_qr_reversed_cols
+      (gqrAQ2Block (fun i j => A i j + DeltaA i j) Qb)
+      Urev Rrev hUrev hRrev hfactor with
+    ⟨U, hU, hCaseNonempty⟩
+  rcases hCaseNonempty with ⟨hCase⟩
+  rcases GeneralizedQRFactorization.exists_of_constraint_and_A_Q2_tall_case
+      (A := fun i j => A i j + DeltaA i j)
+      (B := fun i j => B i j + DeltaB i j)
+      Qb S U hQb hS hBQ hU hCase with
+    ⟨hpert, hQeq, _hUeq, hSeq, _hL22eq⟩
+  exact ⟨DeltaA, DeltaB, hDeltaBrep, hDeltaA, hDeltaB, hpert, hQeq, hSeq⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    rank obstruction for the rounded Householder perturbed GQR record.
+
+    After `theorem20_10_householder_constructed_perturbed_gqr_factorization`
+    constructs the concrete perturbed GQR record, the remaining perturbed source
+    rank assumptions are exactly the nonzero diagonal conditions on that record's
+    `S` and `L22` blocks. -/
+theorem theorem20_10_householder_constructed_perturbed_gqr_rank_iff_diagonal
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q))) :
+    let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+      fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+    let Rb : Fin (p + q) → Fin p → ℝ :=
+      fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)
+    let S : Fin p → Fin p → ℝ :=
+      matTranspose (fun i : Fin p => fun j : Fin p =>
+        Rb (Fin.castAdd q i) j)
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+      (∀ i j,
+        B i j + DeltaB i j =
+          matMulRect (p + q) (p + q) p Qb Rb j i) ∧
+      frobNormRect DeltaA ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect A ∧
+      frobNormRect DeltaB ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B ∧
+      ∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        hpert.Q = Qb ∧ hpert.S = S ∧
+        ((LSEFullRowRank (fun i j => B i j + DeltaB i j) ∧
+          LSEStackedFullColumnRank
+            (fun i j => A i j + DeltaA i j)
+            (fun i j => B i j + DeltaB i j)) ↔
+          (∀ i : Fin p, hpert.S i i ≠ 0) ∧
+            (∀ i : Fin q, hpert.L22 i i ≠ 0)) := by
+  dsimp
+  rcases theorem20_10_householder_constructed_perturbed_gqr_factorization
+      fp A B hp hq hvalidA hvalidB with
+    ⟨DeltaA, DeltaB, hDeltaBrep, hDeltaA, hDeltaB, hpert, hQeq, hSeq⟩
+  exact
+    ⟨DeltaA, DeltaB, hDeltaBrep, hDeltaA, hDeltaB, hpert, hQeq, hSeq,
+      hpert.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    exact method handoff for the rounded Householder perturbed GQR record.
+
+    The concrete `Bᵀ` and reversed `A Q₂` Householder perturbations construct a
+    genuine GQR factorization for `(A + DeltaA, B + DeltaB)`.  If the resulting
+    triangular blocks keep nonzero diagonals, the exact GQR triangular systems
+    have unique coordinates and the perturbed equality-constrained least-squares
+    problem has a unique minimizer.  Thus the remaining rank-preservation
+    obligation is isolated to the displayed diagonal conditions for the
+    constructed record. -/
+theorem theorem20_10_householder_constructed_perturbed_gqr_exact_method_of_diagonal
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q))) :
+    let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+      fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+    let Rb : Fin (p + q) → Fin p → ℝ :=
+      fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)
+    let S : Fin p → Fin p → ℝ :=
+      matTranspose (fun i : Fin p => fun j : Fin p =>
+        Rb (Fin.castAdd q i) j)
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+      (∀ i j,
+        B i j + DeltaB i j =
+          matMulRect (p + q) (p + q) p Qb Rb j i) ∧
+      frobNormRect DeltaA ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect A ∧
+      frobNormRect DeltaB ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B ∧
+      ∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        hpert.Q = Qb ∧ hpert.S = S ∧
+        ((∀ i : Fin p, hpert.S i i ≠ 0) →
+          (∀ i : Fin q, hpert.L22 i i ≠ 0) →
+          (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+            rectMatMulVec hpert.S yz.1 = d ∧
+            rectMatMulVec hpert.L22 yz.2 =
+              (fun i : Fin q =>
+                matMulVec (r + q) (matTranspose hpert.U) b (Fin.natAdd r i) -
+                  rectMatMulVec hpert.L21 yz.1 i) ∧
+            IsLSEMinimizer
+              (fun i j => A i j + DeltaA i j) b
+              (fun i j => B i j + DeltaB i j) d
+              (matMulVec (p + q) hpert.Q (Fin.append yz.1 yz.2))) ∧
+          (∃! x : Fin (p + q) → ℝ,
+            IsLSEMinimizer
+              (fun i j => A i j + DeltaA i j) b
+              (fun i j => B i j + DeltaB i j) d x)) := by
+  dsimp
+  rcases theorem20_10_householder_constructed_perturbed_gqr_factorization
+      fp A B hp hq hvalidA hvalidB with
+    ⟨DeltaA, DeltaB, hDeltaBrep, hDeltaA, hDeltaB, hpert, hQeq, hSeq⟩
+  refine
+    ⟨DeltaA, DeltaB, hDeltaBrep, hDeltaA, hDeltaB, hpert, hQeq, hSeq, ?_⟩
+  intro hSdiag hL22diag
+  have hrank :
+      LSEFullRowRank (fun i j => B i j + DeltaB i j) ∧
+        LSEStackedFullColumnRank
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j) :=
+    (hpert.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero).2
+      ⟨hSdiag, hL22diag⟩
+  exact
+    ⟨hpert.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank
+        (b := b) (d := d) hrank.1 hrank.2,
+      hpert.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank
+        (b := b) (d := d) hrank.1 hrank.2⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    a constraint-matrix perturbation gives the corresponding constraint
+    right-hand-side perturbation at a proposed computed vector.
+
+    Taking `Deltad = DeltaB * xhat` gives the exact action identity for
+    `(B + DeltaB) xhat` and the displayed Frobenius/vector norm bound used in
+    the backward-error branch. -/
+theorem theorem20_10_constraint_rhs_perturbation_bound_of_DeltaB
+    {p q : ℕ}
+    (B DeltaB : Fin p → Fin (p + q) → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    {gammaB : ℝ}
+    (hDeltaB : frobNormRect DeltaB ≤ gammaB * frobNormRect B) :
+    ∃ Deltad : Fin p → ℝ,
+      (∀ i,
+        rectMatMulVec (fun i j => B i j + DeltaB i j) xhat i =
+          rectMatMulVec B xhat i + Deltad i) ∧
+      vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat := by
+  refine ⟨rectMatMulVec DeltaB xhat, ?_, ?_⟩
+  · intro i
+    unfold rectMatMulVec
+    rw [← Finset.sum_add_distrib]
+    apply Finset.sum_congr rfl
+    intro j _
+    ring
+  · exact le_trans
+      (vecNorm2_rectMatMulVec_le_frobNormRect_mul DeltaB xhat)
+      (mul_le_mul_of_nonneg_right hDeltaB (vecNorm2_nonneg xhat))
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), Part A certificate to
+    Part B certificate bridge.
+
+    A Part A mixed-stability certificate already supplies the source-shaped
+    `DeltaA`, `DeltaB`, and `Deltab` bounds and the perturbed rank hypotheses.
+    For the Part B backward-error certificate, the only additional perturbation
+    component is the constraint right-hand side.  Taking
+    `Deltad = DeltaB * xhat` gives the required source-shaped `Deltad` bound;
+    the `Deltab` bound is weakened by adding the nonnegative
+    `gammaB * ||A||_F * ||xhat||_2` term from the Part B statement. -/
+theorem theorem20_10_partB_certificate_of_partA_certificate
+    {r p q : ℕ}
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    {gammaA gammaB : ℝ}
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    (cert :
+      Theorem20_10PartAPerturbationCertificate A B b d xhat gammaA gammaB) :
+    ∃ Deltad : Fin p → ℝ,
+      (∀ i,
+        rectMatMulVec (fun i j => B i j + cert.DeltaB i j) xhat i =
+          rectMatMulVec B xhat i + Deltad i) ∧
+      vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+      Nonempty
+        (Theorem20_10PartBPerturbationCertificate A B b d xhat
+          gammaA gammaB) := by
+  rcases theorem20_10_constraint_rhs_perturbation_bound_of_DeltaB
+      B cert.DeltaB xhat cert.hDeltaB with
+    ⟨Deltad, hDeltad_action, hDeltad⟩
+  have htail_nonneg :
+      0 ≤ gammaB * frobNormRect A * vecNorm2 xhat := by
+    exact mul_nonneg
+      (mul_nonneg hgammaB_nonneg (frobNormRect_nonneg A))
+      (vecNorm2_nonneg xhat)
+  have hDeltab :
+      vecNorm2 cert.Deltab ≤
+        gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat :=
+    le_trans cert.hDeltab (le_add_of_nonneg_right htail_nonneg)
+  refine ⟨Deltad, hDeltad_action, hDeltad, ?_⟩
+  exact
+    ⟨{ DeltaA := cert.DeltaA
+       DeltaB := cert.DeltaB
+       Deltab := cert.Deltab
+       Deltad := Deltad
+       hB := cert.hB
+       hstack := cert.hstack
+       hDeltaA := cert.hDeltaA
+       hDeltaB := cert.hDeltaB
+       hDeltab := hDeltab
+       hDeltad := hDeltad }⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), Part A certificate to
+    exact Part B backward-error core.
+
+    This skips the intermediate Part B certificate object for callers that
+    already have a Part A mixed-stability certificate.  The constraint
+    right-hand-side perturbation is the explicit action `Deltad = DeltaB*xhat`,
+    and the exact perturbed GQR/minimizer package is obtained directly for
+    the problem with right-hand side `d + Deltad`. -/
+theorem theorem20_10_partB_backward_error_of_partA_certificate
+    {r p q : ℕ}
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    {gammaA gammaB : ℝ}
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    (cert :
+      Theorem20_10PartAPerturbationCertificate A B b d xhat gammaA gammaB) :
+    let Apert : Fin (r + q) → Fin (p + q) → ℝ :=
+      fun i j => A i j + cert.DeltaA i j
+    let Bpert : Fin p → Fin (p + q) → ℝ :=
+      fun i j => B i j + cert.DeltaB i j
+    let bpert : Fin (r + q) → ℝ := fun i => b i + cert.Deltab i
+    ∃ Deltad : Fin p → ℝ,
+      (∀ i,
+        rectMatMulVec Bpert xhat i =
+          rectMatMulVec B xhat i + Deltad i) ∧
+      frobNormRect cert.DeltaA ≤ gammaA * frobNormRect A ∧
+      frobNormRect cert.DeltaB ≤ gammaB * frobNormRect B ∧
+      vecNorm2 cert.Deltab ≤
+        gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+      vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+      (∃ hpert : GeneralizedQRFactorization r p q Apert Bpert,
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec hpert.S yz.1 = (fun i => d i + Deltad i) ∧
+          rectMatMulVec hpert.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) -
+                rectMatMulVec hpert.L21 yz.1 i) ∧
+          IsLSEMinimizer Apert bpert Bpert (fun i => d i + Deltad i)
+            (matMulVec (p + q) hpert.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x : Fin (p + q) → ℝ,
+          IsLSEMinimizer Apert bpert Bpert (fun i => d i + Deltad i) x)) := by
+  dsimp
+  rcases theorem20_10_constraint_rhs_perturbation_bound_of_DeltaB
+      B cert.DeltaB xhat cert.hDeltaB with
+    ⟨Deltad, hDeltad_action, hDeltad⟩
+  have htail_nonneg :
+      0 ≤ gammaB * frobNormRect A * vecNorm2 xhat := by
+    exact mul_nonneg
+      (mul_nonneg hgammaB_nonneg (frobNormRect_nonneg A))
+      (vecNorm2_nonneg xhat)
+  have hDeltab :
+      vecNorm2 cert.Deltab ≤
+        gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat :=
+    le_trans cert.hDeltab (le_add_of_nonneg_right htail_nonneg)
+  refine
+    ⟨Deltad, hDeltad_action, cert.hDeltaA, cert.hDeltaB, hDeltab,
+      hDeltad, ?_⟩
+  exact
+    GeneralizedQRFactorization.exists_unique_method_solution_of_theorem20_10_perturbed_d
+      A cert.DeltaA B cert.DeltaB b cert.Deltab d Deltad cert.hB cert.hstack
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), nonempty Part A
+    certificate to exact Part B backward-error core.
+
+    This is the certificate-free form for routes that produce a nonempty
+    Part A certificate package.  It returns concrete perturbations, records
+    the constraint right-hand-side action identity for `Deltad`, and exposes
+    the exact perturbed GQR/minimizer core for the Part B problem. -/
+theorem theorem20_10_partB_backward_error_of_nonempty_partA_certificate
+    {r p q : ℕ}
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    {gammaA gammaB : ℝ}
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    (hcert :
+      Nonempty
+        (Theorem20_10PartAPerturbationCertificate A B b d xhat
+          gammaA gammaB)) :
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab : Fin (r + q) → ℝ,
+    ∃ Deltad : Fin p → ℝ,
+      (∀ i,
+        rectMatMulVec (fun i j => B i j + DeltaB i j) xhat i =
+          rectMatMulVec B xhat i + Deltad i) ∧
+      frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+      frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+      vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+      (∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec hpert.S yz.1 = (fun i => d i + Deltad i) ∧
+          rectMatMulVec hpert.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose hpert.U)
+                (fun i => b i + Deltab i) (Fin.natAdd r i) -
+                rectMatMulVec hpert.L21 yz.1 i) ∧
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i)
+            (matMulVec (p + q) hpert.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x : Fin (p + q) → ℝ,
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i) x)) := by
+  rcases hcert with ⟨cert⟩
+  rcases theorem20_10_partB_backward_error_of_partA_certificate
+      A B b d xhat hgammaB_nonneg cert with
+    ⟨Deltad, hDeltad_action, hDeltaA, hDeltaB, hDeltab,
+      hDeltad, hmethod⟩
+  exact
+    ⟨cert.DeltaA, cert.DeltaB, cert.Deltab, Deltad,
+      hDeltad_action, hDeltaA, hDeltaB, hDeltab, hDeltad, hmethod⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), nonempty Part A
+    certificate to nonempty Part B certificate bridge.
+
+    This is the form consumed by constructed-source certificate theorems, which
+    usually return `Nonempty` certificates. -/
+theorem theorem20_10_partB_certificate_of_nonempty_partA_certificate
+    {r p q : ℕ}
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    {gammaA gammaB : ℝ}
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    (hcert :
+      Nonempty
+        (Theorem20_10PartAPerturbationCertificate A B b d xhat
+          gammaA gammaB)) :
+    Nonempty
+      (Theorem20_10PartBPerturbationCertificate A B b d xhat
+        gammaA gammaB) := by
+  rcases hcert with ⟨cert⟩
+  rcases theorem20_10_partB_certificate_of_partA_certificate
+      A B b d xhat hgammaB_nonneg cert with
+    ⟨_Deltad, _hDeltad_action, _hDeltad, hcertB⟩
+  exact hcertB
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), rounded Householder RHS
+    Part B certificate route with the currently proved conservative RHS
+    coefficient.
+
+    This reuses the constructed-source rounded-RHS Part A certificate and
+    constructs the Part B constraint perturbation `Deltad = DeltaB*xhat`.
+    It therefore does not add new rank assumptions beyond the Part A route;
+    the remaining full computed-path work is still the identification of the
+    complete rounded GQR factors and final computed vector. -/
+theorem theorem20_10_partB_certificate_of_constructed_source_householder_rhs_conservative_bound
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (gammaA gammaB : ℝ)
+    (hUfl :
+      h.U =
+        fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A h.Q))
+    (hq : 0 < q)
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    (hgammaA_ge_matrix : gamma fp q ≤ gammaA)
+    (hgammaA_ge_rhs :
+      theorem20_10_householder_rhs_conservative_gamma fp r p q ≤ gammaA)
+    (hgammaB_ge : gamma fp p ≤ gammaB)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalid2S : gammaValid fp (2 * p))
+    (hvalid2L22 : gammaValid fp (2 * q)) :
+    Nonempty
+      (Theorem20_10PartBPerturbationCertificate A B b d
+        (theorem20_10_gqr_xhat_of_transformed_tail fp h
+          (theorem20_10_householder_AQ2_rhs_tail fp A h.Q b) d)
+        gammaA gammaB) := by
+  rcases
+    theorem20_10_partA_certificate_of_constructed_source_householder_rhs_conservative_bound
+      fp h b d gammaA gammaB hUfl hq hhalf hgammaB_nonneg
+      hgammaA_ge_matrix hgammaA_ge_rhs hgammaB_ge
+      hSdiag hL22diag hvalid2S hvalid2L22 with
+    ⟨_Deltab, _hb_tail, _hDeltab, _DeltaS, _DeltaL22,
+      _hDeltaSbound, _hDeltaL22bound, _hDeltaSfrob, _hDeltaL22frob,
+      hcertA⟩
+  exact
+    theorem20_10_partB_certificate_of_nonempty_partA_certificate
+      A B b d
+      (theorem20_10_gqr_xhat_of_transformed_tail fp h
+        (theorem20_10_householder_AQ2_rhs_tail fp A h.Q b) d)
+      hgammaB_nonneg hcertA
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), rounded Householder RHS
+    Part B backward-error core with generic conservative bounds.
+
+    This unwraps the constructed-source rounded-RHS Part A certificate through
+    the generic nonempty Part A-to-Part B core bridge.  Compared with the
+    certificate theorem above, it exposes concrete perturbations, the
+    constraint right-hand-side action identity, and the exact perturbed
+    GQR/minimizer package. -/
+theorem theorem20_10_partB_backward_error_of_constructed_source_householder_rhs_conservative_bound
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (gammaA gammaB : ℝ)
+    (hUfl :
+      h.U =
+        fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A h.Q))
+    (hq : 0 < q)
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    (hgammaA_ge_matrix : gamma fp q ≤ gammaA)
+    (hgammaA_ge_rhs :
+      theorem20_10_householder_rhs_conservative_gamma fp r p q ≤ gammaA)
+    (hgammaB_ge : gamma fp p ≤ gammaB)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalid2S : gammaValid fp (2 * p))
+    (hvalid2L22 : gammaValid fp (2 * q)) :
+    let xhat : Fin (p + q) → ℝ :=
+      theorem20_10_gqr_xhat_of_transformed_tail fp h
+        (theorem20_10_householder_AQ2_rhs_tail fp A h.Q b) d
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab : Fin (r + q) → ℝ,
+    ∃ Deltad : Fin p → ℝ,
+      (∀ i,
+        rectMatMulVec (fun i j => B i j + DeltaB i j) xhat i =
+          rectMatMulVec B xhat i + Deltad i) ∧
+      frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+      frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+      vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+      (∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec hpert.S yz.1 = (fun i => d i + Deltad i) ∧
+          rectMatMulVec hpert.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose hpert.U)
+                (fun i => b i + Deltab i) (Fin.natAdd r i) -
+                rectMatMulVec hpert.L21 yz.1 i) ∧
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i)
+            (matMulVec (p + q) hpert.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x : Fin (p + q) → ℝ,
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i) x)) := by
+  dsimp
+  rcases
+    theorem20_10_partA_certificate_of_constructed_source_householder_rhs_conservative_bound
+      fp h b d gammaA gammaB hUfl hq hhalf hgammaB_nonneg
+      hgammaA_ge_matrix hgammaA_ge_rhs hgammaB_ge
+      hSdiag hL22diag hvalid2S hvalid2L22 with
+    ⟨_Deltab, _hb_tail, _hDeltab, _DeltaS, _DeltaL22,
+      _hDeltaSbound, _hDeltaL22bound, _hDeltaSfrob, _hDeltaL22frob,
+      hcertA⟩
+  exact
+    theorem20_10_partB_backward_error_of_nonempty_partA_certificate
+      A B b d
+      (theorem20_10_gqr_xhat_of_transformed_tail fp h
+        (theorem20_10_householder_AQ2_rhs_tail fp A h.Q b) d)
+      hgammaB_nonneg hcertA
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), rounded Householder RHS
+    Part B certificate route with source-facing conservative gamma
+    coefficients.
+
+    This derives the side conditions of
+    `theorem20_10_partB_certificate_of_constructed_source_householder_rhs_conservative_bound`
+    from the standard Householder validity hypotheses, mirroring the Part A
+    conservative-gamma theorem.  The result is still a certificate theorem:
+    full computed-path closure additionally requires identification of the
+    rounded GQR factors and the returned computed vector. -/
+theorem theorem20_10_partB_certificate_of_constructed_source_householder_rhs_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hUfl :
+      h.U =
+        fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A h.Q))
+    (hq : 0 < q)
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q))) :
+    Nonempty
+      (Theorem20_10PartBPerturbationCertificate A B b d
+        (theorem20_10_gqr_xhat_of_transformed_tail fp h
+          (theorem20_10_householder_AQ2_rhs_tail fp A h.Q b) d)
+        (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+        (theorem20_10_householder_gammaB fp r p q)) := by
+  have hKA_ge_two : 2 ≤ householderConstructApplyGammaIndex (r + q) := by
+    dsimp [householderConstructApplyGammaIndex]
+    omega
+  have hKB_ge_two : 2 ≤ householderConstructApplyGammaIndex (p + q) := by
+    dsimp [householderConstructApplyGammaIndex]
+    omega
+  have hKA_pos : 0 < householderConstructApplyGammaIndex (r + q) := by
+    omega
+  have hKB_pos : 0 < householderConstructApplyGammaIndex (p + q) := by
+    omega
+  have hvalid2S : gammaValid fp (2 * p) := by
+    apply gammaValid_mono fp _ hvalidB
+    calc
+      2 * p = p * 2 := by omega
+      _ ≤ p * householderConstructApplyGammaIndex (p + q) :=
+          Nat.mul_le_mul_left p hKB_ge_two
+  have hvalid2L22 : gammaValid fp (2 * q) := by
+    apply gammaValid_mono fp _ hvalidA
+    calc
+      2 * q ≤ 2 * (p + q) := Nat.mul_le_mul_left 2 (by omega)
+      _ = (p + q) * 2 := by omega
+      _ ≤ (p + q) * householderConstructApplyGammaIndex (r + q) :=
+          Nat.mul_le_mul_left (p + q) hKA_ge_two
+  have hgammaB_nonneg :
+      0 ≤ theorem20_10_householder_gammaB fp r p q := by
+    simpa [theorem20_10_householder_gammaB] using
+      H19.Theorem19_4.gamma_tilde_nonneg fp hvalidB
+  have hidxA_ge_q :
+      q ≤ (p + q) * householderConstructApplyGammaIndex (r + q) := by
+    exact le_trans (by omega)
+      (Nat.le_mul_of_pos_right (p + q) hKA_pos)
+  have hidxB_ge_p :
+      p ≤ p * householderConstructApplyGammaIndex (p + q) :=
+    Nat.le_mul_of_pos_right p hKB_pos
+  have hgammaA_printed_ge :
+      gamma fp q ≤ theorem20_10_householder_gammaA fp r p q := by
+    simpa [theorem20_10_householder_gammaA, H19.Theorem19_4.gamma_tilde] using
+      gamma_mono fp hidxA_ge_q hvalidA
+  have hgammaA_ge_matrix :
+      gamma fp q ≤
+        theorem20_10_householder_gammaA_conservativeRhs fp r p q :=
+    le_trans hgammaA_printed_ge
+      (le_max_left _ _)
+  have hgammaA_ge_rhs :
+      theorem20_10_householder_rhs_conservative_gamma fp r p q ≤
+        theorem20_10_householder_gammaA_conservativeRhs fp r p q :=
+    le_max_right _ _
+  have hgammaB_ge :
+      gamma fp p ≤ theorem20_10_householder_gammaB fp r p q := by
+    simpa [theorem20_10_householder_gammaB, H19.Theorem19_4.gamma_tilde] using
+      gamma_mono fp hidxB_ge_p hvalidB
+  exact
+    theorem20_10_partB_certificate_of_constructed_source_householder_rhs_conservative_bound
+      fp h b d
+      (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+      (theorem20_10_householder_gammaB fp r p q)
+      hUfl hq hhalf hgammaB_nonneg hgammaA_ge_matrix hgammaA_ge_rhs
+      hgammaB_ge hSdiag hL22diag hvalid2S hvalid2L22
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), rounded Householder RHS
+    Part B backward-error core with source-facing conservative gamma
+    coefficients.
+
+    This unwraps
+    `theorem20_10_partB_certificate_of_constructed_source_householder_rhs_conservative_gamma`
+    through the generic Part B certificate-to-core theorem, exposing the
+    perturbation witnesses, source-shaped norm bounds, and exact perturbed GQR
+    minimizer structure.  It still leaves the final computed-path obligation:
+    identifying the implementation's returned vector with this exact perturbed
+    minimizer. -/
+theorem theorem20_10_partB_backward_error_of_constructed_source_householder_rhs_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hUfl :
+      h.U =
+        fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A h.Q))
+    (hq : 0 < q)
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q))) :
+    let xhat : Fin (p + q) → ℝ :=
+      theorem20_10_gqr_xhat_of_transformed_tail fp h
+        (theorem20_10_householder_AQ2_rhs_tail fp A h.Q b) d
+    let gammaA : ℝ := theorem20_10_householder_gammaA_conservativeRhs fp r p q
+    let gammaB : ℝ := theorem20_10_householder_gammaB fp r p q
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab : Fin (r + q) → ℝ,
+    ∃ Deltad : Fin p → ℝ,
+      frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+      frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+      vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+      (∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec hpert.S yz.1 = (fun i => d i + Deltad i) ∧
+          rectMatMulVec hpert.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose hpert.U)
+                (fun i => b i + Deltab i) (Fin.natAdd r i) -
+                rectMatMulVec hpert.L21 yz.1 i) ∧
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i)
+            (matMulVec (p + q) hpert.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x : Fin (p + q) → ℝ,
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i) x)) := by
+  dsimp
+  rcases
+    theorem20_10_partB_certificate_of_constructed_source_householder_rhs_conservative_gamma
+      fp h b d hUfl hq hhalf hSdiag hL22diag hvalidA hvalidB with
+    ⟨cert⟩
+  have hcore :=
+    theorem20_10_partB_backward_error_of_perturbation_certificate
+      A B b d
+      (theorem20_10_gqr_xhat_of_transformed_tail fp h
+        (theorem20_10_householder_AQ2_rhs_tail fp A h.Q b) d)
+      cert
+  dsimp at hcore
+  rcases hcore with
+    ⟨DeltaA, DeltaB, Deltab, Deltad, hDeltaAeq, hDeltaBeq,
+      hDeltabeq, hDeltadeq, hDeltaA, hDeltaB, hDeltab, hDeltad,
+      hmethod⟩
+  refine
+    ⟨cert.DeltaA, cert.DeltaB, cert.Deltab, cert.Deltad, ?_, ?_, ?_, ?_,
+      hmethod⟩
+  · simpa [hDeltaAeq] using hDeltaA
+  · simpa [hDeltaBeq] using hDeltaB
+  · simpa [hDeltabeq] using hDeltab
+  · simpa [hDeltadeq] using hDeltad
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    concrete Householder `Bᵀ` perturbation together with the induced
+    constraint right-hand-side perturbation bound.
+
+    This packages the already proved `DeltaB` Frobenius bound with
+    `Deltad = DeltaB * xhat`, giving the source-shaped
+    `||Deltad||₂ <= gamma_tilde_np ||B||_F ||xhat||₂` component needed by the
+    backward-error certificate.  It still does not identify the computed
+    `xhat` or prove perturbed rank preservation. -/
+theorem theorem20_10_householder_B_transpose_Deltad_bound
+    {r p q : ℕ} (fp : FPModel)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    (hp : 0 < p)
+    (hvalid :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q))) :
+    ∃ (DeltaB : Fin p → Fin (p + q) → ℝ) (Deltad : Fin p → ℝ),
+      (∀ i j,
+        B i j + DeltaB i j =
+          matMulRect (p + q) (p + q) p
+            (fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B))
+            (fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)) j i) ∧
+      (∀ i,
+        rectMatMulVec (fun i j => B i j + DeltaB i j) xhat i =
+          rectMatMulVec B xhat i + Deltad i) ∧
+      frobNormRect DeltaB ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B ∧
+      vecNorm2 Deltad ≤
+        theorem20_10_householder_gammaB fp r p q *
+          frobNormRect B * vecNorm2 xhat := by
+  rcases theorem20_10_householder_B_transpose_frob_perturbation_bound
+      fp B hp hvalid with
+    ⟨DeltaB, hDeltaBrep, hDeltaBbound⟩
+  rcases theorem20_10_constraint_rhs_perturbation_bound_of_DeltaB
+      B DeltaB xhat hDeltaBbound with
+    ⟨Deltad, hDeltadrep, hDeltadbound⟩
+  exact ⟨DeltaB, Deltad, hDeltaBrep, hDeltadrep,
+    hDeltaBbound, hDeltadbound⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    concrete Householder perturbation components for the computed GQR path.
+
+    This packages the four currently verified component perturbations:
+    the full-source `DeltaA` transported from the trailing `A Q₂` QR step,
+    the `DeltaB` perturbation from the `Bᵀ` QR step, the concrete RHS
+    perturbation `Deltab` for the `A Q₂` Householder transform, and the induced
+    constraint perturbation `Deltad = DeltaB*xhat`.  The `Deltab` coefficient is
+    still the conservative recursive RHS factor, so this theorem is a concrete
+    component package, not yet the final printed Theorem 20.10 certificate. -/
+theorem theorem20_10_householder_concrete_perturbation_components_bound
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2)) :
+    ∃ (DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
+      (DeltaB : Fin p → Fin (p + q) → ℝ)
+      (Deltab : Fin (r + q) → ℝ)
+      (Deltad : Fin p → ℝ),
+      (∀ i j,
+        gqrAQ2Block (fun i j => A i j + DeltaA i j) Q i j =
+          matMulRect (r + q) (r + q) q
+            (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q))
+            (fl_householderQRPanel_R fp (r + q) q (gqrAQ2Block A Q)) i j) ∧
+      (∀ i j,
+        B i j + DeltaB i j =
+          matMulRect (p + q) (p + q) p
+            (fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B))
+            (fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)) j i) ∧
+      (∀ i,
+        fl_householderQRPanel_rhs fp (r + q) q (gqrAQ2Block A Q) b i =
+          matMulVec (r + q)
+            (matTranspose
+              (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q)))
+            (fun k => b k + Deltab k) i) ∧
+      (∀ i,
+        rectMatMulVec (fun i j => B i j + DeltaB i j) xhat i =
+          rectMatMulVec B xhat i + Deltad i) ∧
+      frobNormRect DeltaA ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect A ∧
+      frobNormRect DeltaB ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        Real.sqrt (r + q : ℝ) *
+          (((2 : ℝ) *
+              (householderQRRhsPanelGammaClosedGrowthFactor (r + q) q : ℝ) *
+              gamma fp (q * householderConstructApplyGammaIndex (r + q))) *
+            vecNorm2 b) ∧
+      vecNorm2 Deltad ≤
+        theorem20_10_householder_gammaB fp r p q *
+          frobNormRect B * vecNorm2 xhat := by
+  rcases theorem20_10_householder_AQ2_full_A_frob_perturbation_bound
+      fp A Q hQ hq hvalidA with
+    ⟨DeltaA, hDeltaArep, hDeltaAbound⟩
+  rcases theorem20_10_householder_AQ2_rhs_vecNorm2_perturbation_bound_of_gammaFactor
+      fp A Q b hq hhalf with
+    ⟨Deltab, hDeltabrep, hDeltabbound⟩
+  rcases theorem20_10_householder_B_transpose_Deltad_bound
+      fp B xhat hp hvalidB with
+    ⟨DeltaB, Deltad, hDeltaBrep, hDeltadrep, hDeltaBbound, hDeltadbound⟩
+  exact
+    ⟨DeltaA, DeltaB, Deltab, Deltad, hDeltaArep, hDeltaBrep,
+      hDeltabrep, hDeltadrep, hDeltaAbound, hDeltaBbound,
+      hDeltabbound, hDeltadbound⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), concrete Householder
+    component package promoted to the backward-error certificate boundary.
+
+    The verified Householder QR perturbation components already provide
+    `DeltaA`, `DeltaB`, `Deltab`, and `Deltad` with source-shaped bounds.  This
+    theorem packages those witnesses into the Part B certificate as soon as the
+    induced perturbed matrices are known to keep the source rank assumptions.
+    Thus the remaining Part B obstruction is isolated to rank preservation and
+    computed-vector identification, not to the four finite-precision component
+    bounds. -/
+theorem theorem20_10_partB_certificate_of_householder_components_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2)) :
+    ∃ (DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
+      (DeltaB : Fin p → Fin (p + q) → ℝ)
+      (Deltab : Fin (r + q) → ℝ)
+      (Deltad : Fin p → ℝ),
+      (∀ i j,
+        gqrAQ2Block (fun i j => A i j + DeltaA i j) Q i j =
+          matMulRect (r + q) (r + q) q
+            (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q))
+            (fl_householderQRPanel_R fp (r + q) q (gqrAQ2Block A Q)) i j) ∧
+      (∀ i j,
+        B i j + DeltaB i j =
+          matMulRect (p + q) (p + q) p
+            (fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B))
+            (fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)) j i) ∧
+      (∀ i,
+        fl_householderQRPanel_rhs fp (r + q) q (gqrAQ2Block A Q) b i =
+          matMulVec (r + q)
+            (matTranspose
+              (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q)))
+            (fun k => b k + Deltab k) i) ∧
+      (∀ i,
+        rectMatMulVec (fun i j => B i j + DeltaB i j) xhat i =
+          rectMatMulVec B xhat i + Deltad i) ∧
+      frobNormRect DeltaA ≤
+        theorem20_10_householder_gammaA_conservativeRhs fp r p q *
+          frobNormRect A ∧
+      frobNormRect DeltaB ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        theorem20_10_householder_gammaA_conservativeRhs fp r p q *
+            vecNorm2 b +
+          theorem20_10_householder_gammaB fp r p q *
+            frobNormRect A * vecNorm2 xhat ∧
+      vecNorm2 Deltad ≤
+        theorem20_10_householder_gammaB fp r p q *
+          frobNormRect B * vecNorm2 xhat ∧
+      (LSEFullRowRank (fun i j => B i j + DeltaB i j) →
+       LSEStackedFullColumnRank
+        (fun i j => A i j + DeltaA i j)
+        (fun i j => B i j + DeltaB i j) →
+       Nonempty
+        (Theorem20_10PartBPerturbationCertificate A B b d xhat
+          (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+          (theorem20_10_householder_gammaB fp r p q))) := by
+  rcases theorem20_10_householder_concrete_perturbation_components_bound
+      fp A B Q b xhat hQ hp hq hvalidA hvalidB hhalf with
+    ⟨DeltaA, DeltaB, Deltab, Deltad, hDeltaArep, hDeltaBrep,
+      hDeltabrep, hDeltadrep, hDeltaAraw, hDeltaB, hDeltabraw,
+      hDeltad⟩
+  have hDeltaA :
+      frobNormRect DeltaA ≤
+        theorem20_10_householder_gammaA_conservativeRhs fp r p q *
+          frobNormRect A := by
+    exact le_trans hDeltaAraw
+      (mul_le_mul_of_nonneg_right
+        (le_max_left
+          (theorem20_10_householder_gammaA fp r p q)
+          (theorem20_10_householder_rhs_conservative_gamma fp r p q))
+        (frobNormRect_nonneg A))
+  have hDeltab_conservative :
+      vecNorm2 Deltab ≤
+        theorem20_10_householder_rhs_conservative_gamma fp r p q *
+          vecNorm2 b := by
+    simpa [theorem20_10_householder_rhs_conservative_gamma, mul_assoc]
+      using hDeltabraw
+  have hDeltab_first :
+      vecNorm2 Deltab ≤
+        theorem20_10_householder_gammaA_conservativeRhs fp r p q *
+          vecNorm2 b := by
+    exact le_trans hDeltab_conservative
+      (mul_le_mul_of_nonneg_right
+        (le_max_right
+          (theorem20_10_householder_gammaA fp r p q)
+          (theorem20_10_householder_rhs_conservative_gamma fp r p q))
+        (vecNorm2_nonneg b))
+  have hgammaB_nonneg :
+      0 ≤ theorem20_10_householder_gammaB fp r p q := by
+    simpa [theorem20_10_householder_gammaB] using
+      H19.Theorem19_4.gamma_tilde_nonneg fp hvalidB
+  have htail_nonneg :
+      0 ≤ theorem20_10_householder_gammaB fp r p q *
+          frobNormRect A * vecNorm2 xhat := by
+    exact mul_nonneg
+      (mul_nonneg hgammaB_nonneg (frobNormRect_nonneg A))
+      (vecNorm2_nonneg xhat)
+  have hDeltab :
+      vecNorm2 Deltab ≤
+        theorem20_10_householder_gammaA_conservativeRhs fp r p q *
+            vecNorm2 b +
+          theorem20_10_householder_gammaB fp r p q *
+            frobNormRect A * vecNorm2 xhat :=
+    le_trans hDeltab_first (le_add_of_nonneg_right htail_nonneg)
+  refine
+    ⟨DeltaA, DeltaB, Deltab, Deltad, hDeltaArep, hDeltaBrep,
+      hDeltabrep, hDeltadrep, hDeltaA, hDeltaB, hDeltab, hDeltad, ?_⟩
+  intro hB hstack
+  exact
+    ⟨{ DeltaA := DeltaA
+       DeltaB := DeltaB
+       Deltab := Deltab
+       Deltad := Deltad
+       hB := hB
+       hstack := hstack
+       hDeltaA := hDeltaA
+       hDeltaB := hDeltaB
+       hDeltab := hDeltab
+       hDeltad := hDeltad }⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), concrete Householder
+    component package promoted directly to the exact perturbed GQR core.
+
+    Compared with
+    `theorem20_10_partB_certificate_of_householder_components_conservative_gamma`,
+    this unwraps the certificate boundary: once the concrete Householder
+    perturbations preserve the source full-row-rank and stacked full-column-rank
+    hypotheses, the theorem returns the exact perturbed GQR method coordinates
+    and unique perturbed minimizer.  The remaining full computed-path work is
+    still rank preservation and identification of the implementation's returned
+    vector with this exact perturbed problem. -/
+theorem theorem20_10_partB_backward_error_of_householder_components_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2)) :
+    let gammaA : ℝ := theorem20_10_householder_gammaA_conservativeRhs fp r p q
+    let gammaB : ℝ := theorem20_10_householder_gammaB fp r p q
+    ∃ (DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
+      (DeltaB : Fin p → Fin (p + q) → ℝ)
+      (Deltab : Fin (r + q) → ℝ)
+      (Deltad : Fin p → ℝ),
+      (∀ i j,
+        gqrAQ2Block (fun i j => A i j + DeltaA i j) Q i j =
+          matMulRect (r + q) (r + q) q
+            (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q))
+            (fl_householderQRPanel_R fp (r + q) q (gqrAQ2Block A Q)) i j) ∧
+      (∀ i j,
+        B i j + DeltaB i j =
+          matMulRect (p + q) (p + q) p
+            (fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B))
+            (fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)) j i) ∧
+      (∀ i,
+        fl_householderQRPanel_rhs fp (r + q) q (gqrAQ2Block A Q) b i =
+          matMulVec (r + q)
+            (matTranspose
+              (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q)))
+            (fun k => b k + Deltab k) i) ∧
+      (∀ i,
+        rectMatMulVec (fun i j => B i j + DeltaB i j) xhat i =
+          rectMatMulVec B xhat i + Deltad i) ∧
+      frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+      frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+      vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+      (LSEFullRowRank (fun i j => B i j + DeltaB i j) →
+       LSEStackedFullColumnRank
+        (fun i j => A i j + DeltaA i j)
+        (fun i j => B i j + DeltaB i j) →
+       ∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec hpert.S yz.1 = (fun i => d i + Deltad i) ∧
+          rectMatMulVec hpert.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose hpert.U)
+                (fun i => b i + Deltab i) (Fin.natAdd r i) -
+                rectMatMulVec hpert.L21 yz.1 i) ∧
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i)
+            (matMulVec (p + q) hpert.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x : Fin (p + q) → ℝ,
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i) x)) := by
+  dsimp
+  rcases theorem20_10_partB_certificate_of_householder_components_conservative_gamma
+      fp A B Q b d xhat hQ hp hq hvalidA hvalidB hhalf with
+    ⟨DeltaA, DeltaB, Deltab, Deltad, hDeltaArep, hDeltaBrep,
+      hDeltabrep, hDeltadrep, hDeltaA, hDeltaB, hDeltab, hDeltad,
+      _hcert⟩
+  refine
+    ⟨DeltaA, DeltaB, Deltab, Deltad, hDeltaArep, hDeltaBrep,
+      hDeltabrep, hDeltadrep, hDeltaA, hDeltaB, hDeltab, hDeltad, ?_⟩
+  intro hB hstack
+  exact
+    GeneralizedQRFactorization.exists_unique_method_solution_of_theorem20_10_perturbed_d
+      A DeltaA B DeltaB b Deltab d Deltad hB hstack
+
 /-- Theorem 20.10(a) certificate handoff specialized to the Householder
     `gamma_tilde_mn` and `gamma_tilde_np` coefficients. -/
 theorem theorem20_10_partA_mixed_stability_of_householder_gamma_certificate
@@ -8547,6 +13344,119 @@ theorem theorem20_10_partA_mixed_stability_of_householder_gamma_certificate
           IsLSEMinimizer Apert bpert Bpert d x0)) :=
   theorem20_10_partA_mixed_stability_of_perturbation_certificate
     A B b d xhat cert
+
+/-- Theorem 20.10(a), exact transformed-RHS constructed-source route specialized
+    to the Householder `gamma_tilde_mn` and `gamma_tilde_np` coefficients.
+
+    This is the strongest currently proved source-facing Part A theorem for the
+    supplied-GQR path: the matrix perturbations and triangular-solve effects are
+    constructed and bounded with the printed coefficient names.  The rounded
+    Householder RHS-transform bridge remains separate, so this theorem uses the
+    exact transformed RHS named by `theorem20_10_gqr_xhat`. -/
+theorem theorem20_10_partA_mixed_stability_of_constructed_source_exact_rhs_householder_gamma
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q))) :
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab : Fin (r + q) → ℝ,
+    ∃ DeltaX : Fin (p + q) → ℝ,
+    ∃ x : Fin (p + q) → ℝ,
+      (∀ j : Fin (p + q),
+        theorem20_10_gqr_xhat fp h b d j = x j + DeltaX j) ∧
+      vecNorm2 DeltaX ≤
+        theorem20_10_householder_gammaB fp r p q * vecNorm2 x ∧
+      frobNormRect DeltaA ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect A ∧
+      vecNorm2 Deltab ≤
+        theorem20_10_householder_gammaA fp r p q * vecNorm2 b ∧
+      frobNormRect DeltaB ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B ∧
+      IsLSEMinimizer
+        (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i)
+        (fun i j => B i j + DeltaB i j) d x ∧
+      (∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec hpert.S yz.1 = d ∧
+          rectMatMulVec hpert.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose hpert.U)
+                (fun i => b i + Deltab i) (Fin.natAdd r i) -
+                rectMatMulVec hpert.L21 yz.1 i) ∧
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j) d
+            (matMulVec (p + q) hpert.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x0 : Fin (p + q) → ℝ,
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j) d x0)) := by
+  have hKA_ge_two : 2 ≤ householderConstructApplyGammaIndex (r + q) := by
+    dsimp [householderConstructApplyGammaIndex]
+    omega
+  have hKB_ge_two : 2 ≤ householderConstructApplyGammaIndex (p + q) := by
+    dsimp [householderConstructApplyGammaIndex]
+    omega
+  have hKA_pos : 0 < householderConstructApplyGammaIndex (r + q) := by
+    omega
+  have hKB_pos : 0 < householderConstructApplyGammaIndex (p + q) := by
+    omega
+  have hvalid2S : gammaValid fp (2 * p) := by
+    apply gammaValid_mono fp _ hvalidB
+    calc
+      2 * p = p * 2 := by omega
+      _ ≤ p * householderConstructApplyGammaIndex (p + q) :=
+          Nat.mul_le_mul_left p hKB_ge_two
+  have hvalid2L22 : gammaValid fp (2 * q) := by
+    apply gammaValid_mono fp _ hvalidA
+    calc
+      2 * q ≤ 2 * (p + q) := Nat.mul_le_mul_left 2 (by omega)
+      _ = (p + q) * 2 := by omega
+      _ ≤ (p + q) * householderConstructApplyGammaIndex (r + q) :=
+          Nat.mul_le_mul_left (p + q) hKA_ge_two
+  have hgammaA_nonneg :
+      0 ≤ theorem20_10_householder_gammaA fp r p q := by
+    simpa [theorem20_10_householder_gammaA] using
+      H19.Theorem19_4.gamma_tilde_nonneg fp hvalidA
+  have hgammaB_nonneg :
+      0 ≤ theorem20_10_householder_gammaB fp r p q := by
+    simpa [theorem20_10_householder_gammaB] using
+      H19.Theorem19_4.gamma_tilde_nonneg fp hvalidB
+  have hidxA_ge_q :
+      q ≤ (p + q) * householderConstructApplyGammaIndex (r + q) := by
+    exact le_trans (by omega)
+      (Nat.le_mul_of_pos_right (p + q) hKA_pos)
+  have hidxB_ge_p :
+      p ≤ p * householderConstructApplyGammaIndex (p + q) :=
+    Nat.le_mul_of_pos_right p hKB_pos
+  have hgammaA_ge :
+      gamma fp q ≤ theorem20_10_householder_gammaA fp r p q := by
+    simpa [theorem20_10_householder_gammaA, H19.Theorem19_4.gamma_tilde] using
+      gamma_mono fp hidxA_ge_q hvalidA
+  have hgammaB_ge :
+      gamma fp p ≤ theorem20_10_householder_gammaB fp r p q := by
+    simpa [theorem20_10_householder_gammaB, H19.Theorem19_4.gamma_tilde] using
+      gamma_mono fp hidxB_ge_p hvalidB
+  exact
+    theorem20_10_partA_mixed_stability_of_constructed_source_exact_rhs
+      fp h b d
+      (theorem20_10_householder_gammaA fp r p q)
+      (theorem20_10_householder_gammaB fp r p q)
+      hgammaA_nonneg hgammaB_nonneg hgammaA_ge hgammaB_ge
+      hSdiag hL22diag hvalid2S hvalid2L22
 
 /-- Theorem 20.10(b) certificate handoff specialized to the Householder
     `gamma_tilde_mn` and `gamma_tilde_np` coefficients. -/

@@ -1397,6 +1397,15 @@ lemma columnFrob_nonneg {m p : ℕ} (A : Fin m → Fin p → ℝ) (j : Fin p) :
     0 ≤ columnFrob A j := by
   exact frobNorm_nonneg _
 
+/-- The one-column Frobenius wrapper agrees with the Euclidean norm of that
+    column. -/
+lemma columnFrob_eq_vecNorm2 {m p : ℕ} (A : Fin m → Fin p → ℝ) (j : Fin p) :
+    columnFrob A j = vecNorm2 (fun i : Fin m => A i j) := by
+  rw [columnFrob, frobNorm_eq_sqrt_frobNormSq]
+  congr 1
+  unfold frobNormSq vecNorm2Sq
+  simp
+
 /-- A matrix-vector residual in one column is bounded by the perturbation
     matrix Frobenius norm times the original column norm. -/
 lemma columnFrob_matMulVec_le_frobNorm_mul_columnFrob {m p : ℕ}

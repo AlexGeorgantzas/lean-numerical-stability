@@ -17868,6 +17868,88 @@ lemma ch7_matrix_pow_opNorm_ge_pow_subeigen {n : ℕ} (hn : 0 < n)
   have hnorm_nonneg : 0 ≤ ‖C ^ k‖ := norm_nonneg _
   nlinarith
 
+/-- A nonzero nonnegative real subeigenvector gives the same power-norm lower
+bound as the positive version.  The proof chooses a coordinate attaining the
+supremum norm; nonzero nonnegativity makes that coordinate strictly positive. -/
+lemma ch7_matrix_pow_opNorm_ge_pow_nonzero_nonneg_subeigen {n : ℕ} (hn : 0 < n)
+    (M : Fin n → Fin n → ℝ) (lam : ℝ) (x : Fin n → ℝ)
+    (hM_nonneg : ∀ i j : Fin n, 0 ≤ M i j)
+    (hlam : 0 ≤ lam)
+    (hx_nonneg : ∀ i : Fin n, 0 ≤ x i)
+    (hx_ne : x ≠ 0)
+    (hsub : ∀ i : Fin n, lam * x i ≤ matMulVec n M x i) :
+    ∀ k : ℕ,
+      lam ^ k ≤
+        ‖(show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix M) ^ k‖ := by
+  classical
+  intro k
+  let A : Matrix (Fin n) (Fin n) ℝ :=
+    (Matrix.of M : Matrix (Fin n) (Fin n) ℝ)
+  let C : Matrix (Fin n) (Fin n) ℂ :=
+    (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix M)
+  let xc : Fin n → ℂ := fun i => (x i : ℂ)
+  obtain ⟨i0, hnorm_eq⟩ := ch7_complexVec_norm_eq_coord_of_nonempty hn xc
+  have hx_pos_exists : ∃ i : Fin n, 0 < x i := by
+    by_contra hnone
+    have hx_zero : x = 0 := by
+      ext i
+      have hle : x i ≤ 0 := le_of_not_gt fun hpos => hnone ⟨i, hpos⟩
+      exact le_antisymm hle (hx_nonneg i)
+    exact hx_ne hx_zero
+  obtain ⟨ipos, hipos⟩ := hx_pos_exists
+  have hipos_norm_pos : 0 < ‖xc ipos‖ := by
+    simpa [xc, Complex.norm_real, abs_of_pos hipos]
+  have hi0_norm_pos : 0 < ‖xc i0‖ := by
+    exact lt_of_lt_of_le hipos_norm_pos
+      (by
+        calc
+          ‖xc ipos‖ ≤ ‖xc‖ := norm_le_pi_norm xc ipos
+          _ = ‖xc i0‖ := hnorm_eq)
+  have hx_i0_pos : 0 < x i0 := by
+    have hxi0_abs_pos : 0 < |x i0| := by
+      simpa [xc, Complex.norm_real] using hi0_norm_pos
+    have hxi0_ne : x i0 ≠ 0 := by
+      intro hzero
+      simp [hzero] at hxi0_abs_pos
+    exact lt_of_le_of_ne (hx_nonneg i0) hxi0_ne.symm
+  have hxnorm_eq : ‖xc‖ = x i0 := by
+    rw [hnorm_eq]
+    simp [xc, Complex.norm_real, abs_of_nonneg (hx_nonneg i0)]
+  have hA_nonneg : ∀ i j : Fin n, 0 ≤ A i j := by
+    intro i j
+    simpa [A, Matrix.of] using hM_nonneg i j
+  have hsub_matrix : ∀ i : Fin n, lam * x i ≤ Matrix.mulVec A x i := by
+    intro i
+    simpa [A, ch7_matrix_mulVec_eq_matMulVec M x] using hsub i
+  have hpow_sub :
+      lam ^ k * x i0 ≤ Matrix.mulVec (A ^ k) x i0 :=
+    ch7_matrix_pow_mulVec_subeigen_le_of_nonneg
+      A lam x hA_nonneg hlam hsub_matrix k i0
+  have hpow_nonneg :
+      0 ≤ Matrix.mulVec (A ^ k) x i0 := by
+    simpa [A] using
+      ch7_matrix_pow_mulVec_nonneg_of_nonneg M x hA_nonneg hx_nonneg k i0
+  have hcoord :
+      ‖Matrix.mulVec (C ^ k) xc i0‖ = Matrix.mulVec (A ^ k) x i0 := by
+    have happ_i := congrFun
+      (ch7_realRectToCMatrix_pow_mulVec_complexified M x k) i0
+    simpa [C, A, xc, Complex.norm_real, abs_of_nonneg hpow_nonneg]
+      using congrArg norm happ_i
+  have hcoord_le_vec :
+      ‖Matrix.mulVec (C ^ k) xc i0‖ ≤ ‖Matrix.mulVec (C ^ k) xc‖ :=
+    norm_le_pi_norm (Matrix.mulVec (C ^ k) xc) i0
+  have hop : ‖Matrix.mulVec (C ^ k) xc‖ ≤ ‖C ^ k‖ * ‖xc‖ :=
+    Matrix.linfty_opNorm_mulVec (C ^ k) xc
+  have hscaled : lam ^ k * x i0 ≤ ‖C ^ k‖ * x i0 := by
+    calc
+      lam ^ k * x i0 ≤ Matrix.mulVec (A ^ k) x i0 := hpow_sub
+      _ = ‖Matrix.mulVec (C ^ k) xc i0‖ := hcoord.symm
+      _ ≤ ‖Matrix.mulVec (C ^ k) xc‖ := hcoord_le_vec
+      _ ≤ ‖C ^ k‖ * ‖xc‖ := hop
+      _ = ‖C ^ k‖ * x i0 := by rw [hxnorm_eq]
+  have hnorm_nonneg : 0 ≤ ‖C ^ k‖ := norm_nonneg _
+  nlinarith
+
 /-- Collatz/Gelfand lower bound: a positive right subeigenvector of a
 nonnegative finite real matrix forces its scalar below the Mathlib
 spectral radius of the complexified matrix algebra. -/
@@ -17922,6 +18004,62 @@ theorem ch7_matrix_spectralRadius_ge_of_positive_right_subeigenvector {n : ℕ}
     simpa [one_div, hleft'] using hroot'
   exact ENNReal.ofReal_le_ofReal hreal
 
+/-- Collatz/Gelfand lower bound for a nonzero nonnegative right
+subeigenvector.  This avoids an irreducibility hypothesis when the
+Barrlund--Sun route only needs to rule out nonzero nonnegative domination. -/
+theorem ch7_matrix_spectralRadius_ge_of_nonzero_nonneg_right_subeigenvector
+    {n : ℕ} (hn : 0 < n) (M : Fin n → Fin n → ℝ) (lam : ℝ)
+    (x : Fin n → ℝ)
+    (hM_nonneg : ∀ i j : Fin n, 0 ≤ M i j)
+    (hlam : 0 ≤ lam)
+    (hx_nonneg : ∀ i : Fin n, 0 ≤ x i)
+    (hx_ne : x ≠ 0)
+    (hsub : ∀ i : Fin n, lam * x i ≤ matMulVec n M x i) :
+    ENNReal.ofReal lam ≤
+      spectralRadius ℂ
+        (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix M) := by
+  classical
+  let C : Matrix (Fin n) (Fin n) ℂ :=
+    (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix M)
+  by_cases hlam_zero : lam = 0
+  · simp [hlam_zero]
+  have hpow_bound :
+      ∀ k : ℕ, lam ^ k ≤ ‖C ^ k‖ := by
+    intro k
+    simpa [C] using
+      ch7_matrix_pow_opNorm_ge_pow_nonzero_nonneg_subeigen
+        hn M lam x hM_nonneg hlam hx_nonneg hx_ne hsub k
+  letI : CompleteSpace (Matrix (Fin n) (Fin n) ℂ) :=
+    FiniteDimensional.complete ℂ _
+  have hcomplete_check : CompleteSpace (Matrix (Fin n) (Fin n) ℂ) := inferInstance
+  have hlim :=
+    @spectrum.pow_norm_pow_one_div_tendsto_nhds_spectralRadius
+      (Matrix (Fin n) (Fin n) ℂ) inferInstance inferInstance hcomplete_check C
+  refine ge_of_tendsto hlim ?_
+  refine Filter.eventually_atTop.2 ⟨1, ?_⟩
+  intro k hk
+  have hk_pos_nat : 0 < k := Nat.pos_of_ne_zero (Nat.ne_zero_of_lt hk)
+  have hk_pos : 0 < (k : ℝ) := Nat.cast_pos.mpr hk_pos_nat
+  have hpow_nonneg : 0 ≤ lam ^ k := pow_nonneg hlam k
+  have hroot :=
+    Real.rpow_le_rpow hpow_nonneg (hpow_bound k)
+      (le_of_lt (one_div_pos.mpr hk_pos))
+  have hroot' :
+      (lam ^ k) ^ (1 / (k : ℝ)) ≤
+        ‖C ^ k‖ ^ (1 / (k : ℝ)) := by
+    simpa [one_div] using hroot
+  have hleft : (lam ^ k) ^ (1 / (k : ℝ)) = lam := by
+    rw [← Real.rpow_natCast lam k]
+    rw [← Real.rpow_mul hlam]
+    have hmul : (k : ℝ) * (1 / (k : ℝ)) = 1 := by
+      field_simp [ne_of_gt hk_pos]
+    rw [hmul, Real.rpow_one]
+  have hleft' : (lam ^ k) ^ ((k : ℝ)⁻¹) = lam := by
+    simpa [one_div] using hleft
+  have hreal : lam ≤ ‖C ^ k‖ ^ (1 / (k : ℝ)) := by
+    simpa [one_div, hleft'] using hroot'
+  exact ENNReal.ofReal_le_ofReal hreal
+
 end Ch7MatrixOperatorNorm
 
 /-- The algebraic spectral radius is unchanged by Mathlib's finite
@@ -17931,6 +18069,117 @@ theorem ch7_toLin_spectralRadius_eq_matrix_spectralRadius {n : ℕ}
     spectralRadius ℂ (Matrix.toLin' C) = spectralRadius ℂ C := by
   unfold spectralRadius
   rw [Matrix.spectrum_toLin' C]
+
+/-- Finite-dimensional spectral shift for the matrix `I - C`: zero is in the
+spectrum of `I - C` exactly when one is in the spectrum of `C`. -/
+theorem ch7_spectrum_zero_mem_one_sub_iff {n : ℕ}
+    (C : Matrix (Fin n) (Fin n) ℂ) :
+    ((0 : ℂ) ∈ spectrum ℂ ((1 : Matrix (Fin n) (Fin n) ℂ) - C)) ↔
+      ((1 : ℂ) ∈ spectrum ℂ C) := by
+  rw [spectrum.mem_iff, spectrum.mem_iff]
+  simp
+  constructor
+  · intro h hunit
+    apply h
+    simpa [neg_sub] using hunit.neg
+  · intro h hunit
+    apply h
+    simpa [neg_sub] using hunit.neg
+
+/-- If a finite complex matrix has spectral radius below one, then `I - C`
+is nonsingular.  This is the algebraic resolvent nonsingularity bridge behind
+Chapter 7/9 spectral-radius contraction arguments. -/
+theorem ch7_complex_det_one_sub_ne_zero_of_spectralRadius_lt_one {n : ℕ}
+    (C : Matrix (Fin n) (Fin n) ℂ)
+    (hrho : spectralRadius ℂ C < 1) :
+    Matrix.det ((1 : Matrix (Fin n) (Fin n) ℂ) - C) ≠ 0 := by
+  classical
+  have hzero_not :
+      (0 : ℂ) ∉ spectrum ℂ ((1 : Matrix (Fin n) (Fin n) ℂ) - C) := by
+    intro hzero
+    have hone_spec : (1 : ℂ) ∈ spectrum ℂ C :=
+      (ch7_spectrum_zero_mem_one_sub_iff C).mp hzero
+    have hone_le : (1 : ENNReal) ≤ spectralRadius ℂ C := by
+      unfold spectralRadius
+      have h :=
+        @le_iSup₂ ENNReal ℂ (fun k : ℂ => k ∈ spectrum ℂ C) _
+          (fun k _ => (nnnorm k : ENNReal)) (1 : ℂ) hone_spec
+      simpa using h
+    exact (not_lt_of_ge hone_le) hrho
+  have hunit : IsUnit ((1 : Matrix (Fin n) (Fin n) ℂ) - C) :=
+    spectrum.isUnit_of_zero_notMem ℂ hzero_not
+  have hdet_unit :
+      IsUnit (Matrix.det ((1 : Matrix (Fin n) (Fin n) ℂ) - C)) :=
+    (Matrix.isUnit_iff_isUnit_det
+      ((1 : Matrix (Fin n) (Fin n) ℂ) - C)).mp hunit
+  exact isUnit_iff_ne_zero.mp hdet_unit
+
+/-- Complexification commutes with the repository's real matrix `I - M`
+surface. -/
+lemma ch7_realRectToCMatrix_matSub_id {n : ℕ}
+    (M : Fin n → Fin n → ℝ) :
+    (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix (matSub_id n M)) =
+      (1 : Matrix (Fin n) (Fin n) ℂ) -
+        (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix M) := by
+  ext i j
+  by_cases h : i = j <;> simp [h, realRectToCMatrix, matSub_id, idMatrix]
+
+/-- Determinant compatibility for the repository's real-to-complex matrix
+complexification. -/
+lemma ch7_realRectToCMatrix_det {n : ℕ}
+    (M : Fin n → Fin n → ℝ) :
+    (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix M).det =
+      (((Matrix.of M : Matrix (Fin n) (Fin n) ℝ).det : ℝ) : ℂ) := by
+  have h :=
+    RingHom.map_det Complex.ofRealHom
+      (Matrix.of M : Matrix (Fin n) (Fin n) ℝ)
+  simpa [realRectToCMatrix, RingHom.mapMatrix_apply] using h.symm
+
+/-- Real-matrix form of the spectral resolvent nonsingularity bridge:
+`rho(M) < 1`, represented through the complexified `toLin'` spectral radius,
+implies `det(I - M) ≠ 0`. -/
+theorem ch7_matSub_id_det_ne_zero_of_toLin_spectralRadius_lt_one {n : ℕ}
+    (M : Fin n → Fin n → ℝ)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix M)) < 1) :
+    (Matrix.of (matSub_id n M) : Matrix (Fin n) (Fin n) ℝ).det ≠ 0 := by
+  classical
+  let C : Matrix (Fin n) (Fin n) ℂ :=
+    (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix M)
+  have hrho_matrix : spectralRadius ℂ C < 1 := by
+    have h := hrho
+    rw [ch7_toLin_spectralRadius_eq_matrix_spectralRadius C] at h
+    simpa [C] using h
+  have hdet_one_sub :
+      Matrix.det ((1 : Matrix (Fin n) (Fin n) ℂ) - C) ≠ 0 :=
+    ch7_complex_det_one_sub_ne_zero_of_spectralRadius_lt_one C hrho_matrix
+  have hdet_complex_sub :
+      (show Matrix (Fin n) (Fin n) ℂ from
+        realRectToCMatrix (matSub_id n M)).det ≠ 0 := by
+    rw [ch7_realRectToCMatrix_matSub_id M]
+    simpa [C] using hdet_one_sub
+  have hdet_coe :
+      (((Matrix.of (matSub_id n M) : Matrix (Fin n) (Fin n) ℝ).det : ℝ) :
+          ℂ) ≠ 0 := by
+    rwa [ch7_realRectToCMatrix_det (matSub_id n M)] at hdet_complex_sub
+  intro hzero
+  exact hdet_coe (by simp [hzero])
+
+/-- Canonical inverse certificate for `I - M` under spectral-radius
+contraction. -/
+theorem ch7_matSub_id_nonsingInv_isInverse_of_toLin_spectralRadius_lt_one
+    {n : ℕ} (M : Fin n → Fin n → ℝ)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix M)) < 1) :
+    IsInverse n (matSub_id n M) (nonsingInv n (matSub_id n M)) := by
+  exact isInverse_nonsingInv_of_det_ne_zero n (matSub_id n M)
+    (by
+      simpa using
+        ch7_matSub_id_det_ne_zero_of_toLin_spectralRadius_lt_one M hrho)
 
 /-- `toLin'`-facing form of the Collatz/Gelfand lower bound used to close the
 Perron-Frobenius equality gate. -/
@@ -17947,6 +18196,159 @@ theorem ch7_toLin_spectralRadius_ge_of_positive_right_subeigenvector {n : ℕ}
   rw [ch7_toLin_spectralRadius_eq_matrix_spectralRadius]
   exact ch7_matrix_spectralRadius_ge_of_positive_right_subeigenvector
     hn M lam x hM_nonneg hlam hx hsub
+
+/-- `toLin'`-facing form of the nonzero-nonnegative Collatz/Gelfand lower
+bound. -/
+theorem ch7_toLin_spectralRadius_ge_of_nonzero_nonneg_right_subeigenvector
+    {n : ℕ} (hn : 0 < n) (M : Fin n → Fin n → ℝ) (lam : ℝ)
+    (x : Fin n → ℝ)
+    (hM_nonneg : ∀ i j : Fin n, 0 ≤ M i j)
+    (hlam : 0 ≤ lam)
+    (hx_nonneg : ∀ i : Fin n, 0 ≤ x i)
+    (hx_ne : x ≠ 0)
+    (hsub : ∀ i : Fin n, lam * x i ≤ matMulVec n M x i) :
+    ENNReal.ofReal lam ≤
+      spectralRadius ℂ
+        (Matrix.toLin'
+          (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix M)) := by
+  rw [ch7_toLin_spectralRadius_eq_matrix_spectralRadius]
+  exact ch7_matrix_spectralRadius_ge_of_nonzero_nonneg_right_subeigenvector
+    hn M lam x hM_nonneg hlam hx_nonneg hx_ne hsub
+
+/-- If `M ≥ 0` and the complexified Mathlib spectral radius of `M` is below
+one, then every solution of `(I-M)w = v` with `v ≥ 0` is nonnegative.  This is
+the spectral-radius analogue of `ch7_nonnegative_solution_of_nonnegative_contraction`.
+-/
+theorem ch7_nonnegative_solution_of_nonnegative_spectralRadius_lt_one
+    {n : ℕ} (hn : 0 < n)
+    (M : Fin n → Fin n → ℝ)
+    (hM : ∀ i j : Fin n, 0 ≤ M i j)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix M)) < 1)
+    (v w : Fin n → ℝ)
+    (hv : ∀ i : Fin n, 0 ≤ v i)
+    (hsolve : ∀ i : Fin n, w i - ∑ j : Fin n, M i j * w j = v i) :
+    ∀ i : Fin n, 0 ≤ w i := by
+  let p : Fin n → ℝ := fun i => max 0 (-w i)
+  have hp_nonneg : ∀ i : Fin n, 0 ≤ p i := by
+    intro i
+    exact le_max_left 0 (-w i)
+  have hneg_le_p : ∀ i : Fin n, -w i ≤ p i := by
+    intro i
+    exact le_max_right 0 (-w i)
+  have hpineq : ∀ i : Fin n, p i ≤ matMulVec n M p i := by
+    intro i
+    by_cases hwi : 0 ≤ w i
+    · have hpi : p i = 0 := by
+        dsimp [p]
+        exact max_eq_left (neg_nonpos.mpr hwi)
+      calc
+        p i = 0 := hpi
+        _ ≤ matMulVec n M p i := by
+          unfold matMulVec
+          exact Finset.sum_nonneg fun j _ =>
+            mul_nonneg (hM i j) (hp_nonneg j)
+    · have hwi_lt : w i < 0 := lt_of_not_ge hwi
+      have hpi : p i = -w i := by
+        dsimp [p]
+        exact max_eq_right (le_of_lt (neg_pos.mpr hwi_lt))
+      have hw_eq : w i = v i + ∑ j : Fin n, M i j * w j := by
+        linarith [hsolve i]
+      calc
+        p i = -w i := hpi
+        _ = -v i - ∑ j : Fin n, M i j * w j := by
+          rw [hw_eq]
+          ring
+        _ ≤ -(∑ j : Fin n, M i j * w j) := by
+          linarith [hv i]
+        _ = ∑ j : Fin n, M i j * (-w j) := by
+          rw [← Finset.sum_neg_distrib]
+          apply Finset.sum_congr rfl
+          intro j _
+          ring
+        _ ≤ ∑ j : Fin n, M i j * p j := by
+          apply Finset.sum_le_sum
+          intro j _
+          exact mul_le_mul_of_nonneg_left (hneg_le_p j) (hM i j)
+        _ = matMulVec n M p i := rfl
+  have hp_zero : p = 0 := by
+    by_contra hp_ne
+    have hle :
+        (1 : ENNReal) ≤
+          spectralRadius ℂ
+            (Matrix.toLin'
+              (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix M)) := by
+      have hsub : ∀ i : Fin n, (1 : ℝ) * p i ≤ matMulVec n M p i := by
+        intro i
+        simpa [one_mul] using hpineq i
+      have h :=
+        ch7_toLin_spectralRadius_ge_of_nonzero_nonneg_right_subeigenvector
+          hn M 1 p hM (by norm_num) hp_nonneg hp_ne hsub
+      simpa using h
+    exact (not_lt_of_ge hle) hrho
+  intro i
+  have hneg : -w i ≤ 0 := by
+    exact le_trans (hneg_le_p i) (by simp [hp_zero])
+  linarith
+
+/-- The canonical inverse of `I-M` is a nonnegative resolvent whenever
+`M ≥ 0` and `rho(M) < 1`. -/
+theorem ch7NonnegativeResolvent_nonsingInv_of_spectralRadius_lt_one
+    {n : ℕ} (hn : 0 < n)
+    (M : Fin n → Fin n → ℝ)
+    (hM : ∀ i j : Fin n, 0 ≤ M i j)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix M)) < 1) :
+    ch7NonnegativeResolvent n M (nonsingInv n (matSub_id n M)) := by
+  have hInv : IsInverse n (matSub_id n M) (nonsingInv n (matSub_id n M)) :=
+    ch7_matSub_id_nonsingInv_isInverse_of_toLin_spectralRadius_lt_one M hrho
+  refine ⟨?_, hInv.1⟩
+  intro i j
+  let w : Fin n → ℝ := fun k => nonsingInv n (matSub_id n M) k j
+  let e : Fin n → ℝ := fun k => if k = j then (1 : ℝ) else 0
+  have he_nonneg : ∀ k : Fin n, 0 ≤ e k := by
+    intro k
+    dsimp [e]
+    split <;> norm_num
+  have hsolve : ∀ k : Fin n, w k - ∑ l : Fin n, M k l * w l = e k := by
+    intro k
+    have hk := hInv.2 k j
+    dsimp [w, e]
+    have hid :
+        (∑ l : Fin n, (if k = l then (1 : ℝ) else 0) *
+            nonsingInv n (matSub_id n M) l j) =
+          nonsingInv n (matSub_id n M) k j := by
+      simp
+    calc
+      nonsingInv n (matSub_id n M) k j -
+          ∑ l : Fin n, M k l * nonsingInv n (matSub_id n M) l j
+          =
+        (∑ l : Fin n, (if k = l then (1 : ℝ) else 0) *
+            nonsingInv n (matSub_id n M) l j) -
+          ∑ l : Fin n, M k l * nonsingInv n (matSub_id n M) l j := by
+            rw [hid]
+      _ = ∑ l : Fin n, ((if k = l then (1 : ℝ) else 0) - M k l) *
+            nonsingInv n (matSub_id n M) l j := by
+            rw [← Finset.sum_sub_distrib]
+            apply Finset.sum_congr rfl
+            intro l _
+            ring
+      _ = ∑ l : Fin n, matSub_id n M k l *
+            nonsingInv n (matSub_id n M) l j := by
+            apply Finset.sum_congr rfl
+            intro l _
+            unfold matSub_id idMatrix
+            ring
+      _ = if k = j then (1 : ℝ) else 0 := by
+            simpa using hk
+  have hw_nonneg :=
+    ch7_nonnegative_solution_of_nonnegative_spectralRadius_lt_one
+      hn M hM hrho e w he_nonneg hsolve
+  exact hw_nonneg i
 
 /-- Finite-sum form of `ch7_matrix_pow_mulVec_subeigen_le_of_nonneg`.  This
 connects the subeigenvector iteration to the finite positive power sums
