@@ -1428,6 +1428,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_5_rectAbsBudgetCertificate_lower_reduced_abs_residual`
 - `higham9_5_rectAbsBudgetCertificate_upper_reduced_residual_compression`
 - `higham9_5_rectAbsBudgetCertificate_lower_reduced_residual_compression`
+- `higham9_5_rectRoundedLoop_upper_reduced_residual_compression`
+- `higham9_5_rectRoundedLoop_lower_reduced_residual_compression`
 - `higham9_2_rectPrefixDot_abs_le_absLUProduct`
 - `higham9_5_rectGEReducedEntry_abs_le_maxEntryNorm_add_absLU_infNorm`
 - `higham9_5_rectPrefixRange_full_eq_matMul`

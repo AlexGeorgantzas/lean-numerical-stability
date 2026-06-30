@@ -5402,6 +5402,70 @@ theorem higham9_5_rectAbsBudgetCertificate_lower_reduced_residual_compression
     (higham9_2_rectAbsBudgetCertificate_to_rectDenseLoopCertificate hC)
     i k hki
 
+/-- **Equation (9.5) / Algorithm 9.2**, upper-entry reduced residual
+compression for the concrete rectangular rounded loop under explicit nonzero
+pivot and budget-dominance hypotheses. -/
+theorem higham9_5_rectRoundedLoop_upper_reduced_residual_compression
+    {m n : ℕ} (fp : FPModel) (hmn : n ≤ m) (A : Fin m → Fin n → ℝ)
+    (hU_diag : ∀ k : Fin n, higham9_2_rectRoundedLoopU fp hmn A k k ≠ 0)
+    (hn : gammaValid fp n)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp hmn A
+          (higham9_2_rectRoundedLoopL fp hmn A)
+          (higham9_2_rectRoundedLoopU fp hmn A) k j ≤
+        gamma fp n * |higham9_2_rectRoundedLoopU fp hmn A k j|)
+    (hL_budget_le : ∀ i : Fin m, ∀ k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A
+          (higham9_2_rectRoundedLoopL fp hmn A)
+          (higham9_2_rectRoundedLoopU fp hmn A) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp hmn A i k *
+            higham9_2_rectRoundedLoopU fp hmn A k k|)
+    (k j : Fin n) (hkj : k.val ≤ j.val) :
+    |higham9_5_rectGEReducedEntry A
+        (higham9_2_rectRoundedLoopL fp hmn A)
+        (higham9_2_rectRoundedLoopU fp hmn A) k.val
+        (higham9_2_rectRow hmn k) j -
+      higham9_2_rectRoundedLoopU fp hmn A k j| ≤
+      gamma fp n * |higham9_2_rectRoundedLoopU fp hmn A k j| :=
+  higham9_5_rectAbsBudgetCertificate_upper_reduced_residual_compression
+    (higham9_2_rectRoundedLoop_to_rectAbsBudgetCertificate
+      fp hmn A hU_diag hn hU_budget_le hL_budget_le)
+    k j hkj
+
+/-- **Equation (9.5) / Algorithm 9.2**, lower-entry reduced residual
+compression for the concrete rectangular rounded loop under explicit nonzero
+pivot and budget-dominance hypotheses. -/
+theorem higham9_5_rectRoundedLoop_lower_reduced_residual_compression
+    {m n : ℕ} (fp : FPModel) (hmn : n ≤ m) (A : Fin m → Fin n → ℝ)
+    (hU_diag : ∀ k : Fin n, higham9_2_rectRoundedLoopU fp hmn A k k ≠ 0)
+    (hn : gammaValid fp n)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp hmn A
+          (higham9_2_rectRoundedLoopL fp hmn A)
+          (higham9_2_rectRoundedLoopU fp hmn A) k j ≤
+        gamma fp n * |higham9_2_rectRoundedLoopU fp hmn A k j|)
+    (hL_budget_le : ∀ i : Fin m, ∀ k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A
+          (higham9_2_rectRoundedLoopL fp hmn A)
+          (higham9_2_rectRoundedLoopU fp hmn A) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp hmn A i k *
+            higham9_2_rectRoundedLoopU fp hmn A k k|)
+    (i : Fin m) (k : Fin n) (hki : k.val < i.val) :
+    |higham9_5_rectGEReducedEntry A
+        (higham9_2_rectRoundedLoopL fp hmn A)
+        (higham9_2_rectRoundedLoopU fp hmn A) k.val i k -
+      higham9_2_rectRoundedLoopL fp hmn A i k *
+        higham9_2_rectRoundedLoopU fp hmn A k k| ≤
+      gamma fp n *
+        |higham9_2_rectRoundedLoopL fp hmn A i k *
+          higham9_2_rectRoundedLoopU fp hmn A k k| :=
+  higham9_5_rectAbsBudgetCertificate_lower_reduced_residual_compression
+    (higham9_2_rectRoundedLoop_to_rectAbsBudgetCertificate
+      fp hmn A hU_diag hn hU_budget_le hL_budget_le)
+    i k hki
+
 /-! ## §9.3 Error Analysis -/
 
 /-- **Theorem 9.3**, Doolittle-certified form:
