@@ -8499,6 +8499,60 @@ noncomputable def theorem20_10_householder_gammaB
   H19.Theorem19_4.gamma_tilde fp (p + q) p
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    concrete Householder QR perturbation bound for the smaller `A Q₂`
+    triangularization step in the GQR path.
+
+    The block later instantiated as `A Q₂` has dimensions `(r+q) × q`, so the
+    Chapter 19 Householder QR theorem applies without requiring the full `A`
+    matrix to be tall.  The resulting `gamma_tilde_(r+q),q` bound is absorbed
+    into the source-facing `gamma_tilde_(r+q),(p+q)` coefficient by gamma
+    monotonicity.  This is a computed-path dependency only; it does not yet
+    transport the perturbation back through the already computed `Q₂` factor or
+    prove the triangular-solve perturbations. -/
+theorem theorem20_10_householder_AQ2_frob_perturbation_bound
+    {r p q : ℕ} (fp : FPModel)
+    (C : Fin (r + q) → Fin q → ℝ)
+    (hq : 0 < q)
+    (hvalid :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q))) :
+    ∃ DeltaC : Fin (r + q) → Fin q → ℝ,
+      (∀ i j,
+        C i j + DeltaC i j =
+          matMulRect (r + q) (r + q) q
+            (fl_householderQRPanel_Q fp (r + q) q C)
+            (fl_householderQRPanel_R fp (r + q) q C) i j) ∧
+      frobNormRect DeltaC ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect C := by
+  let K : ℕ := householderConstructApplyGammaIndex (r + q)
+  have hvalid_full : gammaValid fp ((p + q) * K) := by
+    simpa [K] using hvalid
+  have hq_le_pq : q ≤ p + q := by omega
+  have hidx_le : q * K ≤ (p + q) * K :=
+    Nat.mul_le_mul_right K hq_le_pq
+  have hvalid_q : gammaValid fp (q * K) :=
+    gammaValid_mono fp hidx_le hvalid_full
+  have hqr :
+      H19.Theorem19_4.HouseholderQRBackwardError (r + q) q C
+        (fl_householderQRPanel_Q fp (r + q) q C)
+        (fl_householderQRPanel_R fp (r + q) q C)
+        (H19.Theorem19_4.gamma_tilde fp (r + q) q) := by
+    exact
+      H19.Theorem19_4.householder_qr_backward_error fp (r + q) q C hq
+        (by omega) hvalid_q
+  have hgamma_nonneg :
+      0 ≤ H19.Theorem19_4.gamma_tilde fp (r + q) q :=
+    H19.Theorem19_4.gamma_tilde_nonneg fp hvalid_q
+  have hgamma_le :
+      H19.Theorem19_4.gamma_tilde fp (r + q) q ≤
+        theorem20_10_householder_gammaA fp r p q := by
+    simpa [H19.Theorem19_4.gamma_tilde, theorem20_10_householder_gammaA, K]
+      using gamma_mono fp hidx_le hvalid_full
+  rcases hqr.exists_frobNormRect_perturbation_bound hgamma_nonneg with
+    ⟨DeltaC, hrep, hbound⟩
+  refine ⟨DeltaC, hrep, le_trans hbound ?_⟩
+  exact mul_le_mul_of_nonneg_right hgamma_le (frobNormRect_nonneg C)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     concrete Householder QR perturbation bound for the `Bᵀ` triangularization
     step in the GQR path.
 
