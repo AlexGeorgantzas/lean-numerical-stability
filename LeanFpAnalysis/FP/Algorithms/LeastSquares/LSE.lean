@@ -11300,6 +11300,63 @@ theorem theorem20_10_householder_reversed_AQ2_full_A_frob_perturbation_bound
     exact le_trans (le_of_eq hDeltaAeq) hDeltaCrevBound
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    source-shaped Frobenius bound for the column-reversed `A Q₂`
+    Householder perturbation.
+
+    This strengthens
+    `theorem20_10_householder_reversed_AQ2_full_A_frob_perturbation_bound`
+    by absorbing the reversed trailing-panel norm into the original source
+    matrix norm.  It uses only orthogonality of the GQR `Q` factor and
+    permutation invariance of the Frobenius norm, so the computed product and
+    shape facts are unchanged. -/
+theorem theorem20_10_householder_reversed_AQ2_full_A_source_frob_perturbation_bound
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hq : 0 < q)
+    (hvalid :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q))) :
+    let Crev : Fin (r + q) → Fin q → ℝ :=
+      rectPermuteCols Fin.revPerm (gqrAQ2Block A Q)
+    let Urev : Fin (r + q) → Fin (r + q) → ℝ :=
+      fl_householderQRPanel_Q fp (r + q) q Crev
+    let Rrev : Fin (r + q) → Fin q → ℝ :=
+      fl_householderQRPanel_R fp (r + q) q Crev
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+      (∀ i j,
+        rectPermuteCols Fin.revPerm
+            (gqrAQ2Block (fun i j => A i j + DeltaA i j) Q) i j =
+          matMulRect (r + q) (r + q) q Urev Rrev i j) ∧
+      IsOrthogonal (r + q) Urev ∧
+      IsUpperTrapezoidal (r + q) q Rrev ∧
+      frobNormRect DeltaA ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect A := by
+  dsimp
+  let Crev : Fin (r + q) → Fin q → ℝ :=
+    rectPermuteCols Fin.revPerm (gqrAQ2Block A Q)
+  rcases theorem20_10_householder_reversed_AQ2_full_A_frob_perturbation_bound
+      fp A Q hQ hq hvalid with
+    ⟨DeltaA, hDeltaArep, hUrev, hRrev, hDeltaAraw⟩
+  have hCrev_le_A : frobNormRect Crev ≤ frobNormRect A := by
+    calc
+      frobNormRect Crev =
+          frobNormRect (gqrAQ2Block A Q) := by
+            simpa [Crev] using
+              frobNormRect_permuteCols Fin.revPerm (gqrAQ2Block A Q)
+      _ ≤ frobNormRect A := frobNormRect_gqrAQ2Block_le A Q hQ
+  have hgamma_nonneg :
+      0 ≤ theorem20_10_householder_gammaA fp r p q := by
+    simpa [theorem20_10_householder_gammaA] using
+      H19.Theorem19_4.gamma_tilde_nonneg fp hvalid
+  have hDeltaA :
+      frobNormRect DeltaA ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect A :=
+    le_trans hDeltaAraw
+      (mul_le_mul_of_nonneg_left hCrev_le_A hgamma_nonneg)
+  exact ⟨DeltaA, hDeltaArep, hUrev, hRrev, hDeltaA⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     concrete full-`A` perturbation obtained from the smaller `A Q₂`
     Householder QR backward error.
 
