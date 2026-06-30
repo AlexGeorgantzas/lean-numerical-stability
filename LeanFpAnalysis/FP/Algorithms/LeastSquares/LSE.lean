@@ -9005,6 +9005,82 @@ theorem theorem20_10_householder_B_transpose_Deltad_bound
   exact ⟨DeltaB, Deltad, hDeltaBrep, hDeltadrep,
     hDeltaBbound, hDeltadbound⟩
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    concrete Householder perturbation components for the computed GQR path.
+
+    This packages the four currently verified component perturbations:
+    the full-source `DeltaA` transported from the trailing `A Q₂` QR step,
+    the `DeltaB` perturbation from the `Bᵀ` QR step, the concrete RHS
+    perturbation `Deltab` for the `A Q₂` Householder transform, and the induced
+    constraint perturbation `Deltad = DeltaB*xhat`.  The `Deltab` coefficient is
+    still the conservative recursive RHS factor, so this theorem is a concrete
+    component package, not yet the final printed Theorem 20.10 certificate. -/
+theorem theorem20_10_householder_concrete_perturbation_components_bound
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2)) :
+    ∃ (DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
+      (DeltaB : Fin p → Fin (p + q) → ℝ)
+      (Deltab : Fin (r + q) → ℝ)
+      (Deltad : Fin p → ℝ),
+      (∀ i j,
+        gqrAQ2Block (fun i j => A i j + DeltaA i j) Q i j =
+          matMulRect (r + q) (r + q) q
+            (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q))
+            (fl_householderQRPanel_R fp (r + q) q (gqrAQ2Block A Q)) i j) ∧
+      (∀ i j,
+        B i j + DeltaB i j =
+          matMulRect (p + q) (p + q) p
+            (fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B))
+            (fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)) j i) ∧
+      (∀ i,
+        fl_householderQRPanel_rhs fp (r + q) q (gqrAQ2Block A Q) b i =
+          matMulVec (r + q)
+            (matTranspose
+              (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q)))
+            (fun k => b k + Deltab k) i) ∧
+      (∀ i,
+        rectMatMulVec (fun i j => B i j + DeltaB i j) xhat i =
+          rectMatMulVec B xhat i + Deltad i) ∧
+      frobNormRect DeltaA ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect A ∧
+      frobNormRect DeltaB ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        Real.sqrt (r + q : ℝ) *
+          (((2 : ℝ) *
+              (householderQRRhsPanelGammaClosedGrowthFactor (r + q) q : ℝ) *
+              gamma fp (q * householderConstructApplyGammaIndex (r + q))) *
+            vecNorm2 b) ∧
+      vecNorm2 Deltad ≤
+        theorem20_10_householder_gammaB fp r p q *
+          frobNormRect B * vecNorm2 xhat := by
+  rcases theorem20_10_householder_AQ2_full_A_frob_perturbation_bound
+      fp A Q hQ hq hvalidA with
+    ⟨DeltaA, hDeltaArep, hDeltaAbound⟩
+  rcases theorem20_10_householder_AQ2_rhs_vecNorm2_perturbation_bound_of_gammaFactor
+      fp A Q b hq hhalf with
+    ⟨Deltab, hDeltabrep, hDeltabbound⟩
+  rcases theorem20_10_householder_B_transpose_Deltad_bound
+      fp B xhat hp hvalidB with
+    ⟨DeltaB, Deltad, hDeltaBrep, hDeltadrep, hDeltaBbound, hDeltadbound⟩
+  exact
+    ⟨DeltaA, DeltaB, Deltab, Deltad, hDeltaArep, hDeltaBrep,
+      hDeltabrep, hDeltadrep, hDeltaAbound, hDeltaBbound,
+      hDeltabbound, hDeltadbound⟩
+
 /-- Theorem 20.10(a) certificate handoff specialized to the Householder
     `gamma_tilde_mn` and `gamma_tilde_np` coefficients. -/
 theorem theorem20_10_partA_mixed_stability_of_householder_gamma_certificate

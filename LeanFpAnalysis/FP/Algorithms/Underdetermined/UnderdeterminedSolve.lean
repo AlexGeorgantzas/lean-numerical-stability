@@ -1927,6 +1927,54 @@ theorem higham21_lemma21_2_gram_nonsingInv_rectOpNorm2Le_frob_candidate_of_abs_l
           (undetGramPerturbation A DeltaA2)))
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    square-matrix norm bridge used to convert the Chapter 7 infinity-norm
+    estimate for the explicit perturbed inverse candidate into a conservative
+    Frobenius/operator-2 certificate. -/
+theorem higham21_frobNorm_le_sqrt_card_sq_mul_infNorm {n : ℕ}
+    (M : Fin n → Fin n → ℝ) :
+    frobNorm M ≤ Real.sqrt ((n : ℝ) * (n : ℝ)) * infNorm M := by
+  rw [← frobNormRect_eq_frobNorm M]
+  exact
+    frobNormRect_le_sqrt_mul_nat_of_entry_abs_le M (infNorm_nonneg M)
+      (fun i j => ch7_abs_entry_le_infNorm M i j)
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    conservative Frobenius bound for the explicit Chapter 7 perturbed inverse
+    candidate, obtained by composing the local Frobenius/infinity bridge with
+    the Chapter 7 inverse-candidate infinity-norm estimate. -/
+theorem higham21_lemma21_2_ch7_candidate_frobNorm_bound_of_abs_left_product_bound
+    {m : ℕ}
+    (hm : 0 < m)
+    (AAT_inv DeltaG : Fin m → Fin m → ℝ)
+    (c : ℝ)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hbound :
+      infNormBound m
+        (absMatrix m
+          (matMul m AAT_inv DeltaG))
+        c) :
+    frobNorm (ch7Problem711PerturbedInverseCandidate m AAT_inv DeltaG) ≤
+      Real.sqrt ((m : ℝ) * (m : ℝ)) *
+        (((m : ℝ) * (1 / (1 - c))) * infNorm AAT_inv) := by
+  let Gcand : Fin m → Fin m → ℝ :=
+    ch7Problem711PerturbedInverseCandidate m AAT_inv DeltaG
+  have hInf :
+      infNorm Gcand ≤ ((m : ℝ) * (1 / (1 - c))) * infNorm AAT_inv := by
+    simpa [Gcand] using
+      problem7_11_perturbed_inverse_candidate_infNorm_bound_of_abs_left_product_bound
+        m hm AAT_inv DeltaG c hc_nn hc_lt hbound
+  have hsqrt_nonneg : 0 ≤ Real.sqrt ((m : ℝ) * (m : ℝ)) :=
+    Real.sqrt_nonneg _
+  calc
+    frobNorm Gcand
+        ≤ Real.sqrt ((m : ℝ) * (m : ℝ)) * infNorm Gcand :=
+          higham21_frobNorm_le_sqrt_card_sq_mul_infNorm Gcand
+    _ ≤ Real.sqrt ((m : ℝ) * (m : ℝ)) *
+          (((m : ℝ) * (1 / (1 - c))) * infNorm AAT_inv) :=
+          mul_le_mul_of_nonneg_left hInf hsqrt_nonneg
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     a componentwise Gram-perturbation estimate implies the Chapter 7 absolute
     left-product contraction certificate used for perturbed Gram
     nonsingularity. -/
