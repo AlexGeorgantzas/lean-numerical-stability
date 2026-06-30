@@ -20,6 +20,26 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-06-30 fixed-ambient global-tableau first-split constructor checkpoint:
+  added
+  `Higham13Eq1322GlobalTableauSourceChain.succ_from_matrix_stage_history_first_split_exact_kappa`,
+  `higham13_eq13_22_exists_blockLUFact_succ_product_from_global_tableau_tail_chain_matrix_stage_history_exact_kappa`,
+  and
+  `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_tail_chain_matrix_stage_history_exact_kappa`.
+  These instantiate the first successor of the fixed-ambient Problem 13.4
+  global-tableau certificate from the concrete Algorithm 13.3 matrix-stage
+  history, discharging the first-split tableau containment, Schur-tail
+  containment, canonical `nonsingInv` inverse-entry comparison, and first-row
+  upper-budget obligations before routing to the Eq.13.22/Eq.13.23 concrete
+  product-witness APIs.  This is dependency progress only: recursive all-tail
+  tableau/source-inverse data, Eq.13.23 `rho <= 2`/BDD product-update data, and
+  Theorem 13.6 cited implementation estimates remain open.  Verification
+  passed with direct `lake env lean -s 65536
+  LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, executable
+  `examples/LibraryLookup.lean`, `git diff --check`, touched Lean placeholder
+  scan, anchored conflict-marker scan, and focused `#print axioms` reporting
+  only `propext`, `Classical.choice`, and `Quot.sound`.
 - 2026-06-30 fixed-ambient global-tableau source-chain checkpoint:
   added `Higham13Eq1322GlobalTableauSourceChain` plus
   `to_blockLUBudgetChain`, `to_blockLUBudgetChain_of_right_inverse`, and the
