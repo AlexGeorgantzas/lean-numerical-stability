@@ -3203,6 +3203,30 @@ structure higham9_2_RectDoolittleDenseLoopAbsBudgetCertificate {m n : ℕ}
   L_budget_le_compression : ∀ i : Fin m, ∀ k : Fin n, k.val < i.val →
     BL i k ≤ gamma fp n * |L i k * U k k|
 
+/-- **Algorithm 9.2**, rectangular rounded-stage trace.
+
+This packages the ordered rectangular Doolittle loop surface before residual
+compression: at each pivot stage `k`, the scheduled upper-row entries and
+lower-column entries agree with the literal rounded folds for the current
+stored factors.  Separate budget and nonbreakdown hypotheses are still needed
+to turn this trace into the dense-loop certificate consumed by Theorem 9.3. -/
+structure higham9_2_RectDoolittleRoundedStageTrace {m n : ℕ}
+    (hmn : n ≤ m) (A L : Fin m → Fin n → ℝ) (U : Fin n → Fin n → ℝ)
+    (fp : FPModel) : Prop where
+  /-- The rectangular pivot rows of `L` have unit diagonal entries. -/
+  L_diag : ∀ k : Fin n, L (higham9_2_rectRow hmn k) k = 1
+  /-- `L` is lower trapezoidal in the source rectangular sense. -/
+  L_upper_zero : ∀ i : Fin m, ∀ j : Fin n, i.val < j.val → L i j = 0
+  /-- `U` is upper triangular. -/
+  U_lower_zero : ∀ i j : Fin n, j.val < i.val → U i j = 0
+  /-- Scheduled upper-row entries agree with the literal rounded row fold. -/
+  U_stage_eq : ∀ k j : Fin n, k.val ≤ j.val →
+    U k j = higham9_2_rectFlDoolittleUEntry fp hmn A L U k j
+  /-- Scheduled lower-column entries agree with the literal rounded numerator
+  fold followed by rounded division by the computed pivot. -/
+  L_stage_eq : ∀ i : Fin m, ∀ k : Fin n, k.val < i.val →
+    L i k = higham9_2_rectFlDoolittleLEntry fp A L U i k
+
 /-- **Algorithm 9.2**, rectangular absolute-budget handoff.  Absolute residual
 budgets plus visible dominance inequalities produce the relative rectangular
 dense-loop certificate. -/
@@ -3273,6 +3297,49 @@ theorem higham9_2_rectAbsBudgetCertificate_of_literal_doolittle_source_budgets
       higham9_2_rectFlDoolittleLEntry_residual_abs_le
         fp A L U i k hk (hU_diag k) (hL_entry_eq i k hki)
   L_budget_le_compression := hL_budget_le
+
+/-- **Algorithm 9.2**, rectangular rounded-stage trace to absolute-budget
+certificate.  A scheduled rounded rectangular Doolittle trace, together with
+nonzero computed pivots and visible budget dominance, produces the existing
+absolute-budget certificate layer. -/
+theorem higham9_2_rectRoundedStageTrace_to_rectAbsBudgetCertificate
+    {m n : ℕ} {fp : FPModel} {hmn : n ≤ m}
+    {A L : Fin m → Fin n → ℝ} {U : Fin n → Fin n → ℝ}
+    (hT : higham9_2_RectDoolittleRoundedStageTrace hmn A L U fp)
+    (hU_diag : ∀ k : Fin n, U k k ≠ 0)
+    (hn : gammaValid fp n)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp hmn A L U k j ≤
+        gamma fp n * |U k j|)
+    (hL_budget_le : ∀ i : Fin m, ∀ k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A L U i k ≤
+        gamma fp n * |L i k * U k k|) :
+    higham9_2_RectDoolittleDenseLoopAbsBudgetCertificate hmn A L U fp
+      (higham9_2_rectDoolittleUAbsBudget fp hmn A L U)
+      (higham9_2_rectDoolittleLAbsBudget fp A L U) :=
+  higham9_2_rectAbsBudgetCertificate_of_literal_doolittle_source_budgets
+    hT.L_diag hT.L_upper_zero hT.U_lower_zero hT.U_stage_eq hT.L_stage_eq
+    hU_diag hn hU_budget_le hL_budget_le
+
+/-- **Algorithm 9.2**, rectangular rounded-stage trace to dense-loop
+certificate.  This is the relative-compression handoff for a scheduled
+rectangular rounded Doolittle trace. -/
+theorem higham9_2_rectRoundedStageTrace_to_rectDenseLoopCertificate
+    {m n : ℕ} {fp : FPModel} {hmn : n ≤ m}
+    {A L : Fin m → Fin n → ℝ} {U : Fin n → Fin n → ℝ}
+    (hT : higham9_2_RectDoolittleRoundedStageTrace hmn A L U fp)
+    (hU_diag : ∀ k : Fin n, U k k ≠ 0)
+    (hn : gammaValid fp n)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp hmn A L U k j ≤
+        gamma fp n * |U k j|)
+    (hL_budget_le : ∀ i : Fin m, ∀ k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A L U i k ≤
+        gamma fp n * |L i k * U k k|) :
+    higham9_2_RectDoolittleDenseLoopCertificate hmn A L U fp :=
+  higham9_2_rectAbsBudgetCertificate_to_rectDenseLoopCertificate
+    (higham9_2_rectRoundedStageTrace_to_rectAbsBudgetCertificate
+      hT hU_diag hn hU_budget_le hL_budget_le)
 
 /-- **Algorithm 9.2**, rectangular componentwise dominance handoff.  Visible
 upper work/product dominance, lower work/product/numerator dominance, and the
@@ -3585,6 +3652,26 @@ theorem higham9_2_rectAbsBudgetCertificate_square_to_DoolittleLU
     higham9_2_DoolittleLU n A L U fp :=
   higham9_2_absBudgetCertificate_to_DoolittleLU
     (higham9_2_rectAbsBudgetCertificate_to_squareAbsBudgetCertificate hC) hn
+
+/-- **Algorithm 9.2**, square-specialized rectangular rounded-stage trace as
+the compact `DoolittleLU` recurrence certificate. -/
+theorem higham9_2_rectRoundedStageTrace_square_to_DoolittleLU
+    {n : ℕ} {fp : FPModel}
+    {A L U : Fin n → Fin n → ℝ}
+    (hT : higham9_2_RectDoolittleRoundedStageTrace
+      (Nat.le_refl n) A L U fp)
+    (hU_diag : ∀ k : Fin n, U k k ≠ 0)
+    (hn : gammaValid fp n)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) A L U k j ≤
+        gamma fp n * |U k j|)
+    (hL_budget_le : ∀ i : Fin n, ∀ k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A L U i k ≤
+        gamma fp n * |L i k * U k k|) :
+    higham9_2_DoolittleLU n A L U fp :=
+  higham9_2_rectAbsBudgetCertificate_square_to_DoolittleLU
+    (higham9_2_rectRoundedStageTrace_to_rectAbsBudgetCertificate
+      hT hU_diag hn hU_budget_le hL_budget_le) hn
 
 /-- **Algorithm 9.2**, rectangular product split for an upper entry:
 triangular support reduces the stored product to the prefix dot plus the
@@ -4819,6 +4906,31 @@ theorem higham9_3_rectAbsBudgetCertificate_backward_error
       (∀ i j, rectMatMul L_hat U_hat i j = A i j + ΔA i j) :=
   higham9_3_rectDenseLoopCertificate_backward_error A L_hat U_hat hn
     (higham9_2_rectAbsBudgetCertificate_to_rectDenseLoopCertificate hC)
+
+/-- **Theorem 9.3**, rectangular rounded-stage trace form.  A scheduled
+rectangular rounded Doolittle trace plus visible absolute-budget dominance
+feeds the rectangular componentwise backward-error theorem directly. -/
+theorem higham9_3_rectRoundedStageTrace_backward_error
+    {m n : ℕ} {fp : FPModel} {hmn : n ≤ m}
+    {A L_hat : Fin m → Fin n → ℝ} {U_hat : Fin n → Fin n → ℝ}
+    (hT : higham9_2_RectDoolittleRoundedStageTrace hmn A L_hat U_hat fp)
+    (hU_diag : ∀ k : Fin n, U_hat k k ≠ 0)
+    (hn : gammaValid fp n)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp hmn A L_hat U_hat k j ≤
+        gamma fp n * |U_hat k j|)
+    (hL_budget_le : ∀ i : Fin m, ∀ k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A L_hat U_hat i k ≤
+        gamma fp n * |L_hat i k * U_hat k k|) :
+    ∃ ΔA : Fin m → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤ gamma fp n *
+        ∑ k : Fin n, |L_hat i k| * |U_hat k j|) ∧
+      (∀ i j, rectMatMul L_hat U_hat i j = A i j + ΔA i j) :=
+  higham9_3_rectAbsBudgetCertificate_backward_error A L_hat U_hat
+    (higham9_2_rectDoolittleUAbsBudget fp hmn A L_hat U_hat)
+    (higham9_2_rectDoolittleLAbsBudget fp A L_hat U_hat) hn
+    (higham9_2_rectRoundedStageTrace_to_rectAbsBudgetCertificate
+      hT hU_diag hn hU_budget_le hL_budget_le)
 
 /-- **Theorem 9.3**, rectangular literal-source-budget form.  Literal rounded
 rectangular Doolittle folds, nonzero computed pivots, and visible
