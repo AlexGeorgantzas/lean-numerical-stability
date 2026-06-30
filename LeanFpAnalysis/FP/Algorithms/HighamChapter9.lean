@@ -24663,6 +24663,29 @@ theorem higham9_15_normalized_Gtilde_sqrt_frobNormSqRect_X_add_Y_le_init_sqrt_ad
       (Gtilde + X * Y)
   exact hbudget.trans (add_le_add le_rfl hres)
 
+/-- **Theorem 9.15 support**, the square-root of the sum of two squared
+Frobenius norms is controlled by twice their maximum. -/
+theorem higham9_15_sqrt_frobNormSqRect_add_le_two_max_frobNormRect
+    {m n : ℕ} (A B : Matrix (Fin m) (Fin n) ℝ) :
+    Real.sqrt (frobNormSqRect A + frobNormSqRect B) ≤
+      2 * max (frobNormRect A) (frobNormRect B) := by
+  let q : ℝ := max (frobNormRect A) (frobNormRect B)
+  have hA_nonneg : 0 ≤ frobNormRect A := frobNormRect_nonneg A
+  have hB_nonneg : 0 ≤ frobNormRect B := frobNormRect_nonneg B
+  have hAq : frobNormRect A ≤ q := le_max_left _ _
+  have hBq : frobNormRect B ≤ q := le_max_right _ _
+  have hq_nonneg : 0 ≤ q := hA_nonneg.trans hAq
+  have hsum :
+      frobNormSqRect A + frobNormSqRect B ≤ (2 * q) ^ 2 := by
+    rw [← frobNormRect_sq A, ← frobNormRect_sq B]
+    nlinarith
+  calc
+    Real.sqrt (frobNormSqRect A + frobNormSqRect B) ≤
+        Real.sqrt ((2 * q) ^ 2) := Real.sqrt_le_sqrt hsum
+    _ = 2 * q := by
+      rw [Real.sqrt_sq_eq_abs, abs_of_nonneg]
+      nlinarith
+
 /-- **Theorem 9.15 support**, final-row initial vector of `X` is bounded by
 the residual Frobenius norm in the `I + G` split. -/
 theorem higham9_15_normalized_G_lastRow_init_vecNorm2_le_residual {n : ℕ}
@@ -25179,6 +25202,88 @@ theorem higham9_15_normalized_Gtilde_init_frobNorm_ratio_bound_of_min_factor_bou
     (higham9_15_upper_init Y hY)
     (higham9_15_opNorm2_init_lt_one_of_lt_one Gtilde hGlt)
     hmin
+
+/-- **Theorem 9.15 support**, square-total Frobenius handoff from the
+principal-block min-factor ratio hypothesis plus the residual Frobenius bridge
+in the `I + G` split. -/
+theorem higham9_15_normalized_G_sqrt_frobNormSqRect_X_add_Y_le_two_init_ratio_add_two_residual_of_min_factor_bound
+    {n : ℕ}
+    (G X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 + G = (1 + X) * (1 + Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0)
+    (hGlt : opNorm2 G < 1)
+    (hmin :
+      min (frobNormRect (higham9_15_initBlock X))
+          (frobNormRect (higham9_15_initBlock Y)) ≤
+        opNorm2 (higham9_15_initBlock G)) :
+    Real.sqrt (frobNormSqRect X + frobNormSqRect Y) ≤
+      2 *
+          (frobNormRect (higham9_15_initBlock G) /
+            (1 - opNorm2 (higham9_15_initBlock G))) +
+        2 * frobNormRect (G - X * Y) := by
+  have hbudget :=
+    higham9_15_normalized_G_sqrt_frobNormSqRect_X_add_Y_le_init_sqrt_add_two_residual
+      G X Y hfact hX hY
+  have hinit_sqrt :=
+    higham9_15_sqrt_frobNormSqRect_add_le_two_max_frobNormRect
+      (higham9_15_initBlock X) (higham9_15_initBlock Y)
+  have hinit_ratio :=
+    higham9_15_normalized_G_init_frobNorm_ratio_bound_of_min_factor_bound
+      G X Y hfact hX hY hGlt hmin
+  have htwo :
+      2 *
+          max (frobNormRect (higham9_15_initBlock X))
+            (frobNormRect (higham9_15_initBlock Y)) ≤
+        2 *
+          (frobNormRect (higham9_15_initBlock G) /
+            (1 - opNorm2 (higham9_15_initBlock G))) :=
+    mul_le_mul_of_nonneg_left hinit_ratio (by norm_num)
+  exact hbudget.trans <| by
+    simpa [add_comm, add_left_comm, add_assoc] using
+      (add_le_add_right (hinit_sqrt.trans htwo)
+        (2 * frobNormRect (G - X * Y)))
+
+/-- **Theorem 9.15 support**, square-total Frobenius handoff from the
+principal-block min-factor ratio hypothesis plus the residual Frobenius bridge
+in the `I - Gtilde` split. -/
+theorem higham9_15_normalized_Gtilde_sqrt_frobNormSqRect_X_add_Y_le_two_init_ratio_add_two_residual_of_min_factor_bound
+    {n : ℕ}
+    (Gtilde X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 - Gtilde = (1 - X) * (1 - Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0)
+    (hGlt : opNorm2 Gtilde < 1)
+    (hmin :
+      min (frobNormRect (higham9_15_initBlock X))
+          (frobNormRect (higham9_15_initBlock Y)) ≤
+        opNorm2 (higham9_15_initBlock Gtilde)) :
+    Real.sqrt (frobNormSqRect X + frobNormSqRect Y) ≤
+      2 *
+          (frobNormRect (higham9_15_initBlock Gtilde) /
+            (1 - opNorm2 (higham9_15_initBlock Gtilde))) +
+        2 * frobNormRect (Gtilde + X * Y) := by
+  have hbudget :=
+    higham9_15_normalized_Gtilde_sqrt_frobNormSqRect_X_add_Y_le_init_sqrt_add_two_residual
+      Gtilde X Y hfact hX hY
+  have hinit_sqrt :=
+    higham9_15_sqrt_frobNormSqRect_add_le_two_max_frobNormRect
+      (higham9_15_initBlock X) (higham9_15_initBlock Y)
+  have hinit_ratio :=
+    higham9_15_normalized_Gtilde_init_frobNorm_ratio_bound_of_min_factor_bound
+      Gtilde X Y hfact hX hY hGlt hmin
+  have htwo :
+      2 *
+          max (frobNormRect (higham9_15_initBlock X))
+            (frobNormRect (higham9_15_initBlock Y)) ≤
+        2 *
+          (frobNormRect (higham9_15_initBlock Gtilde) /
+            (1 - opNorm2 (higham9_15_initBlock Gtilde))) :=
+    mul_le_mul_of_nonneg_left hinit_ratio (by norm_num)
+  exact hbudget.trans <| by
+    simpa [add_comm, add_left_comm, add_assoc] using
+      (add_le_add_right (hinit_sqrt.trans htwo)
+        (2 * frobNormRect (Gtilde + X * Y)))
 
 /-- **Theorem 9.15 support**, full max-Frobenius bound from the
 principal-block ratio hypothesis plus the residual border handoff in the
