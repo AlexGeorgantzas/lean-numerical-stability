@@ -1347,6 +1347,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_2_rectRoundedPrefixTrace_complete_to_stageTrace`
 - `higham9_2_rectRoundedPrefixTrace_zero`
 - `higham9_2_rectRoundedPrefixTrace_succ`
+- `higham9_2_rectRoundedPrefixTrace_of_stage_obligations`
+- `higham9_2_rectRoundedPrefixTrace_complete_of_stage_obligations`
 - `higham9_2_rectAbsBudgetCertificate_of_literal_doolittle_component_dominance`
 - `higham9_2_rectAbsBudgetCertificate_of_literal_doolittle_exact_product_margins`
 - `higham9_2_rectAbsBudgetCertificate_of_literal_doolittle_exact_product_numerator_margins`
