@@ -21,6 +21,7 @@ import LeanFpAnalysis.FP.Model
 import LeanFpAnalysis.FP.Analysis.Rounding
 import LeanFpAnalysis.FP.Analysis.MatrixAlgebra
 import LeanFpAnalysis.FP.Analysis.PerturbationTheory
+import LeanFpAnalysis.FP.Analysis.HighamChapter7
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskySpec
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskySolve
 import LeanFpAnalysis.FP.Algorithms.QR.GramSchmidt
@@ -1644,6 +1645,75 @@ theorem higham21_lemma21_2_product_budget_of_source_factor_bounds
   simpa [mul_comm] using hbudget
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    the Gram perturbation
+    `(A + DeltaA2)(A + DeltaA2)^T - A A^T` used to reduce perturbed
+    Gram nonsingularity to the Chapter 7 `I + A^{-1} DeltaA` route. -/
+noncomputable def undetGramPerturbation {m n : ℕ}
+    (A DeltaA2 : Fin m → Fin n → ℝ) : Fin m → Fin m → ℝ :=
+  fun i j =>
+    rectGram (fun i j => A i j + DeltaA2 i j) i j - rectGram A i j
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    Chapter 7 inverse-perturbation handoff for the remaining perturbed Gram
+    nonsingularity obligation.  If `AA^T` has a left inverse and the relative
+    Gram perturbation `AAT_inv * ((A + DeltaA2)(A + DeltaA2)^T - AA^T)` is a
+    strict absolute infinity-norm contraction, then the perturbed Gram matrix
+    is nonsingular.
+
+    This is not the full source smallness proof; it replaces the raw
+    determinant certificate by the repository's existing Neumann-style
+    perturbation condition. -/
+theorem higham21_lemma21_2_perturbed_gram_det_ne_zero_of_abs_left_product_bound
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A DeltaA2 : Fin m → Fin n → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (c : ℝ)
+    (hc_nn : 0 ≤ c)
+    (hc_lt : c < 1)
+    (hLeft : IsLeftInverse m (rectGram A) AAT_inv)
+    (hbound :
+      infNormBound m
+        (absMatrix m
+          (matMul m AAT_inv (undetGramPerturbation A DeltaA2)))
+        c) :
+    Matrix.det
+        (rectGram (fun i j => A i j + DeltaA2 i j) :
+          Matrix (Fin m) (Fin m) ℝ) ≠ 0 := by
+  let B : Fin m → Fin n → ℝ := fun i j => A i j + DeltaA2 i j
+  let G : Fin m → Fin m → ℝ := rectGram A
+  let DeltaG : Fin m → Fin m → ℝ := undetGramPerturbation A DeltaA2
+  let GpertInv : Fin m → Fin m → ℝ :=
+    ch7Problem711PerturbedInverseCandidate m AAT_inv DeltaG
+  have hRight :
+      IsRightInverse m (fun i j => G i j + DeltaG i j) GpertInv :=
+    problem7_11_perturbed_inverse_candidate_right_inverse_of_abs_left_product_bound
+      m hm G AAT_inv DeltaG c hc_nn hc_lt
+      (by simpa [G] using hLeft)
+      (by simpa [DeltaG] using hbound)
+  have hdetAdd :
+      Matrix.det
+          ((fun i j => G i j + DeltaG i j) :
+            Matrix (Fin m) (Fin m) ℝ) ≠ 0 := by
+    exact
+      Matrix.det_ne_zero_of_right_inverse
+        (A := ((fun i j => G i j + DeltaG i j) :
+          Matrix (Fin m) (Fin m) ℝ))
+        (B := (GpertInv : Matrix (Fin m) (Fin m) ℝ))
+        (by
+          ext i j
+          rw [Matrix.mul_apply, Matrix.one_apply]
+          exact hRight i j)
+  have hmatrix :
+      ((fun i j => G i j + DeltaG i j) :
+        Matrix (Fin m) (Fin m) ℝ) =
+        (rectGram B : Matrix (Fin m) (Fin m) ℝ) := by
+    ext i j
+    simp [G, DeltaG, undetGramPerturbation, B]
+  rw [hmatrix] at hdetAdd
+  simpa [B] using hdetAdd
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     perturbed Gram-pseudoinverse operator-bound reduction.  Bounds for `A`,
     the second perturbation `DeltaA2`, and the inverse candidate for
     `(A + DeltaA2)(A + DeltaA2)^T` imply the operator bound for the concrete
@@ -1989,6 +2059,63 @@ theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_gram_inverse_source
       higham21_lemma21_2_perturbed_pseudoinverse_op_bound_of_matrix_and_gram_inverse_bounds
         A DeltaA2 (hsigma hx) (hbeta hx) (hAOp hx) (hDeltaA2Op hx)
         (hGramInvOp hx))
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    nonzero-branch handoff with perturbed Gram nonsingularity discharged by
+    the Chapter 7 absolute infinity-norm contraction condition on the relative
+    Gram perturbation.  The remaining explicit matrix-analysis obligation is
+    the operator-2 bound for the concrete perturbed Gram inverse. -/
+theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_gram_inverse_source_bounds_of_abs_left_product_bound
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (rho1 rho2 alpha beta sigma eta c : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hGramSmallNonneg : x ≠ 0 → 0 ≤ c)
+    (hGramSmallLt : x ≠ 0 → c < 1)
+    (hGramLeftInv : x ≠ 0 → IsLeftInverse m (rectGram A) AAT_inv)
+    (hGramPerturbBound : x ≠ 0 →
+      infNormBound m
+        (absMatrix m
+          (matMul m AAT_inv (undetGramPerturbation A DeltaA2)))
+        c)
+    (hxTranspose : x ≠ 0 →
+      x =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : x ≠ 0 → 3 * max rho1 rho2 < 1)
+    (halpha : x ≠ 0 → 0 ≤ alpha)
+    (hbeta : x ≠ 0 → 0 ≤ beta)
+    (hsigma : x ≠ 0 → 0 ≤ sigma)
+    (heta : x ≠ 0 → 0 ≤ eta)
+    (halpha_le : x ≠ 0 → alpha ≤ rho1)
+    (hbeta_le : x ≠ 0 → beta ≤ rho2)
+    (hGramFactor_le : x ≠ 0 → (sigma + beta) * eta ≤ (1 - rho2)⁻¹)
+    (hAOp : x ≠ 0 → rectOpNorm2Le A sigma)
+    (hDeltaA1Op : x ≠ 0 → rectOpNorm2Le DeltaA1 alpha)
+    (hDeltaA2Op : x ≠ 0 → rectOpNorm2Le DeltaA2 beta)
+    (hGramInvOp : x ≠ 0 →
+      rectOpNorm2Le
+        (undetGramNonsingInv (fun i j => A i j + DeltaA2 i j))
+        eta) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j)
+      b x :=
+  higham21_lemma21_2_single_min_norm_of_nonzero_branch_gram_inverse_source_bounds
+    A x DeltaA1 DeltaA2 b y rho1 rho2 alpha beta sigma eta
+    hDeltaA1
+    (fun hx =>
+      higham21_lemma21_2_perturbed_gram_det_ne_zero_of_abs_left_product_bound
+        hm A DeltaA2 AAT_inv c (hGramSmallNonneg hx) (hGramSmallLt hx)
+        (hGramLeftInv hx) (hGramPerturbBound hx))
+    hxTranspose hsmall halpha hbeta hsigma heta halpha_le hbeta_le
+    hGramFactor_le hAOp hDeltaA1Op hDeltaA2Op hGramInvOp
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     source-shaped pseudoinverse handoff for the remaining beta argument.
