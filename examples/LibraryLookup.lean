@@ -12634,6 +12634,9 @@ small enough to serve as a smoke check for representative public declarations.
 
 -- Higham Chapter 9 source-facing wrappers and local Split 2 closures.
 #check higham9_3_lu_backward_error_gamma
+#check higham9_3_exactDoolittle_recurrences_to_LUBackwardError_zero
+#check higham9_3_exactDoolittle_recurrences_to_LUBackwardError_gamma
+#check higham9_3_exactDoolittle_recurrences_backward_error_gamma
 #check higham9_2_rowPermutedMatrix_maxEntryNorm
 #check higham9_2_rowPermutedMatrix_infNorm
 #check higham9_2_colPermutedMatrix_maxEntryNorm

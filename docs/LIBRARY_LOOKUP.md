@@ -1256,6 +1256,9 @@ Source-facing Chapter 9 wrappers:
 - `higham9_2_permutedLUFactSpec_to_PermutedLUBackwardError_gamma`
 - `higham9_3_permuted_lu_backward_error_gamma`
 - `higham9_3_permuted_lu_backward_error_gamma_of_LUFactSpec`
+- `higham9_3_exactDoolittle_recurrences_to_LUBackwardError_zero`
+- `higham9_3_exactDoolittle_recurrences_to_LUBackwardError_gamma`
+- `higham9_3_exactDoolittle_recurrences_backward_error_gamma`
 - `higham9_2_colPermutedMatrix`
 - `higham9_2_rowColPermutedMatrix`
 - `higham9_2_colPermutedMatrix_maxEntryNorm`
