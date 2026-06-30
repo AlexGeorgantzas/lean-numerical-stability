@@ -4357,6 +4357,70 @@ theorem gqrAQ2Block_exists_full_perturbation_of_trailing_delta
       (frobNormRect_orthogonal_right DeltaAQ (matTranspose Q)
         (IsOrthogonal.transpose hQ))
 
+/-- Frobenius norm of a rectangular matrix with zero columns prepended. -/
+theorem frobNormRect_zeroLeftCols_append {m p q : ℕ}
+    (C : Fin m → Fin q → ℝ) :
+    frobNormRect (fun i : Fin m =>
+      Fin.append (fun _ : Fin p => 0) (C i)) = frobNormRect C := by
+  unfold frobNormRect
+  apply congrArg Real.sqrt
+  unfold frobNormSqRect
+  apply Finset.sum_congr rfl
+  intro i _
+  rw [Fin.sum_univ_add]
+  simp [Fin.append_left, Fin.append_right]
+
+/-- The trailing column block has Frobenius norm no larger than the full
+    rectangular matrix. -/
+theorem frobNormSqRect_trailingCols_le {m p q : ℕ}
+    (M : Fin m → Fin (p + q) → ℝ) :
+    frobNormSqRect (fun i : Fin m => fun j : Fin q =>
+      M i (Fin.natAdd p j)) ≤ frobNormSqRect M := by
+  unfold frobNormSqRect
+  apply Finset.sum_le_sum
+  intro i _
+  have hsplit :
+      (∑ j : Fin (p + q), M i j ^ 2) =
+        (∑ j : Fin p, M i (Fin.castAdd q j) ^ 2) +
+          (∑ j : Fin q, M i (Fin.natAdd p j) ^ 2) := by
+    rw [Fin.sum_univ_add]
+  have hleft_nonneg :
+      0 ≤ ∑ j : Fin p, M i (Fin.castAdd q j) ^ 2 := by
+    exact Finset.sum_nonneg (fun j _ => sq_nonneg _)
+  linarith
+
+/-- The trailing column block has Frobenius norm no larger than the full
+    rectangular matrix. -/
+theorem frobNormRect_trailingCols_le {m p q : ℕ}
+    (M : Fin m → Fin (p + q) → ℝ) :
+    frobNormRect (fun i : Fin m => fun j : Fin q =>
+      M i (Fin.natAdd p j)) ≤ frobNormRect M := by
+  unfold frobNormRect
+  exact Real.sqrt_le_sqrt (frobNormSqRect_trailingCols_le M)
+
+/-- The `A Q₂` block has Frobenius norm no larger than `A` when `Q` is
+    orthogonal. -/
+theorem frobNormRect_gqrAQ2Block_le
+    {r p q : ℕ}
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q) :
+    frobNormRect (gqrAQ2Block A Q) ≤ frobNormRect A := by
+  let AQ : Fin (r + q) → Fin (p + q) → ℝ := matMulRectRight A Q
+  have htrail :
+      gqrAQ2Block A Q =
+        fun i : Fin (r + q) => fun j : Fin q => AQ i (Fin.natAdd p j) := by
+    ext i j
+    rfl
+  calc
+    frobNormRect (gqrAQ2Block A Q)
+        = frobNormRect
+            (fun i : Fin (r + q) => fun j : Fin q => AQ i (Fin.natAdd p j)) := by
+          rw [htrail]
+    _ ≤ frobNormRect AQ := frobNormRect_trailingCols_le AQ
+    _ = frobNormRect A := by
+          simpa [AQ] using frobNormRect_orthogonal_right A Q hQ
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction route:
     the `A Q₂` block has trivial kernel using only the constraint block
     identity `B Q = [S 0]`, orthogonality of `Q`, and the local
@@ -8604,6 +8668,66 @@ theorem theorem20_10_householder_AQ2_frob_perturbation_bound
     ⟨DeltaC, hrep, hbound⟩
   refine ⟨DeltaC, hrep, le_trans hbound ?_⟩
   exact mul_le_mul_of_nonneg_right hgamma_le (frobNormRect_nonneg C)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    concrete full-`A` perturbation obtained from the smaller `A Q₂`
+    Householder QR backward error.
+
+    This combines the smaller-block QR perturbation theorem with the exact
+    back-transport through an orthogonal `Q`: the constructed source-coordinate
+    `DeltaA` makes the trailing block of `(A + DeltaA)Q` match the computed
+    Householder QR product for `A Q₂`, and it satisfies the advertised
+    `gamma_tilde_mn * ||A||_F` source-shaped bound.  It is still only the
+    `A`-side component of the full Theorem 20.10 certificate. -/
+theorem theorem20_10_householder_AQ2_full_A_frob_perturbation_bound
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hq : 0 < q)
+    (hvalid :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q))) :
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+      (∀ i j,
+        gqrAQ2Block (fun i j => A i j + DeltaA i j) Q i j =
+          matMulRect (r + q) (r + q) q
+            (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q))
+            (fl_householderQRPanel_R fp (r + q) q (gqrAQ2Block A Q)) i j) ∧
+      frobNormRect DeltaA ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect A := by
+  let C : Fin (r + q) → Fin q → ℝ := gqrAQ2Block A Q
+  rcases theorem20_10_householder_AQ2_frob_perturbation_bound
+      fp C hq hvalid with
+    ⟨DeltaC, hrep, hDeltaC⟩
+  rcases gqrAQ2Block_exists_full_perturbation_of_trailing_delta
+      Q DeltaC hQ with
+    ⟨DeltaA, hDeltaAtrail, hDeltaAnorm⟩
+  refine ⟨DeltaA, ?_, ?_⟩
+  · intro i j
+    calc
+      gqrAQ2Block (fun i j => A i j + DeltaA i j) Q i j
+          = gqrAQ2Block A Q i j + DeltaC i j := hDeltaAtrail A i j
+      _ = matMulRect (r + q) (r + q) q
+            (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q))
+            (fl_householderQRPanel_R fp (r + q) q (gqrAQ2Block A Q)) i j := by
+          simpa [C] using hrep i j
+  · have hpad :
+        frobNormRect (fun i : Fin (r + q) =>
+          Fin.append (fun _ : Fin p => 0) (DeltaC i)) =
+            frobNormRect DeltaC :=
+      frobNormRect_zeroLeftCols_append DeltaC
+    have hDeltaA_le_C :
+        frobNormRect DeltaA ≤
+          theorem20_10_householder_gammaA fp r p q * frobNormRect C := by
+      rwa [hDeltaAnorm, hpad]
+    have hC_le_A : frobNormRect C ≤ frobNormRect A := by
+      simpa [C] using frobNormRect_gqrAQ2Block_le A Q hQ
+    have hgamma_nonneg :
+        0 ≤ theorem20_10_householder_gammaA fp r p q := by
+      simpa [theorem20_10_householder_gammaA] using
+        H19.Theorem19_4.gamma_tilde_nonneg fp hvalid
+    exact le_trans hDeltaA_le_C
+      (mul_le_mul_of_nonneg_left hC_le_A hgamma_nonneg)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     concrete Householder QR perturbation bound for the `Bᵀ` triangularization
