@@ -20,6 +20,24 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-06-30 base/inverse route-audit checkpoint:
+  `higham13_base_inverse_principal_tail_base_comparison_counterexample` shows
+  that the stronger base comparison `||A_full||_max <= ||A_tail||_max` needed
+  by the optional base/inverse recursive tail-transport route is not automatic
+  even for a concrete full/right-inverse principal-tail witness.  The proof
+  reuses `higham13_inverse_ratio_principal_tail_counterexample`: if the base
+  comparison held together with the already-present inverse comparison, then
+  `maxEntryNormRect_inverse_ratio_of_base_le_and_inverse_le` would contradict
+  the rejected inverse-ratio comparison.  This is route-rejection evidence for
+  Problem 13.4/Eq.13.22--13.23 only; the per-tail direct lower-budget
+  comparison, Eq.13.23 `rho <= 2`, and Theorem 13.6 cited estimates remain
+  open.  Verification: direct `lake env lean -s 65536
+  LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, refreshed `lake build
+  LeanFpAnalysis.FP.Algorithms.HighamChapter9`, quiet
+  `examples/LibraryLookup.lean` with empty stderr and the new Ch13 name in
+  stdout, `git diff --check`, and focused `#print axioms`; the axiom output was
+  only `propext`, `Classical.choice`, and `Quot.sound`.
 - 2026-06-30 recursive Schur-tail base/inverse bridge checkpoint:
   `maxEntryNormRect_inverse_ratio_of_base_le_and_inverse_le` and
   `growthFactorEntry_sq_kappa_budget_le_of_growth_le_base_inverse` derive the
