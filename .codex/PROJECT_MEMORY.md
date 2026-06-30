@@ -10202,3 +10202,65 @@ These compile, but should not be treated as fully derived stability results:
   canonically.  This removes a final-pivot determinant proof-surface artifact;
   the per-tail lower comparison, structured BDD product/update theorem, and
   Theorem 13.6 implementation estimates remain open.
+
+- 2026-06-30 Eq.13.22/Eq.13.23 recursive base/inverse source chain: added
+  `Higham13Eq1322BaseInverseSourceChain`,
+  `Higham13Eq1322BaseInverseSourceChain.det_ne_zero`,
+  `Higham13Eq1322BaseInverseSourceChain.to_lowerComparisonSourceChain`,
+  `Higham13Eq1322BaseInverseSourceChain.exists_blockLUFact_eq13_22_product_exact_kappa`,
+  `Higham13Eq1322BaseInverseSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa`,
+  and
+  `Higham13Eq1322BaseInverseSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update`.
+  The chain packages the stronger route where each nonterminal Schur-tail step
+  supplies explicit base and inverse max-entry comparisons, then converts to
+  the existing direct lower-comparison source chain.  It is dependency
+  packaging only: the base/inverse comparisons, Eq.13.23 BDD product/update
+  data, and Theorem 13.6 implementation estimates remain open.
+
+- 2026-06-30 Eq.13.22/Eq.13.23 base/inverse source-chain connector cleanup:
+  added `Higham13Eq1322BaseInverseSourceChain.to_inverseRatioSourceChain`,
+  `Higham13Eq1322BaseInverseSourceChain.nonterminal_pivot_right_inverse`,
+  `Higham13Eq1322BaseInverseSourceChain.nonterminal_pivot_det_ne_zero`,
+  `Higham13Eq1322BaseInverseSourceChain.pivot_right_inverse_of_final`,
+  `Higham13Eq1322BaseInverseSourceChain.pivot_det_ne_zero_of_final`,
+  `Higham13Eq1322BaseInverseSourceChain.pivot_det_ne_zero_of_final_right_inverse`,
+  `Higham13Eq1322BaseInverseSourceChain.pivot_right_inverse_of_final_nonsingInv`,
+  and
+  `Higham13Eq1322BaseInverseSourceChain.pivot_det_ne_zero_of_final_nonsingInv`.
+  The conversion theorem factors the explicit base/inverse comparisons through
+  the inverse-ratio source-chain API using
+  `maxEntryNormRect_inverse_ratio_of_base_le_and_inverse_le`; the pivot wrappers
+  inherit the nonterminal and final-pivot right-inverse/determinant surfaces
+  from the lower-comparison chain.  This removes another all-pivot
+  proof-surface artifact for the base/inverse route, but the base/inverse
+  comparison theorems, Eq.13.23 BDD product/update data, and Theorem 13.6
+  implementation estimates remain open.
+
+- 2026-06-30 Eq.13.22/Eq.13.23 base/inverse budget-chain connector:
+  added `Higham13Eq1322BaseInverseSourceChain.to_blockLUBudgetChain` and
+  routed the base/inverse Eq.13.22 and Eq.13.23 product witnesses through that
+  ambient exact-`kappa` chain.  The theorem composes the stronger base/inverse
+  source certificate with the existing lower-comparison chain constructor, so
+  callers no longer need to mention the lower-comparison certificate or
+  prebuilt ambient budget chain on this route.  This is dependency cleanup for
+  Problem 13.4; it still leaves the actual base/inverse comparison theorems,
+  structured Eq.13.23 BDD product/update data, and Theorem 13.6 cited
+  implementation estimates open.
+
+- 2026-06-30 Eq.13.23 base/inverse product/update connector cleanup:
+  refactored
+  `Higham13Eq1322BaseInverseSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update`
+  so it also consumes
+  `Higham13Eq1322BaseInverseSourceChain.to_blockLUBudgetChain` directly and
+  invokes
+  `higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_product_bound_diag_update`
+  for the product/update `rho <= 2` layer.  Direct
+  `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean` passed before
+  and after the edit; focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet public lookup,
+  `git diff --check`, touched Lean/lookup marker scans, anchored conflict-marker
+  scan, and focused `#print axioms` also passed, with the axiom audit reporting
+  only `propext`, `Classical.choice`, and `Quot.sound`.  This removes a
+  lower-comparison proof-surface detour only; the base/inverse comparisons,
+  source-strength product/update data, and Theorem 13.6 cited estimates remain
+  open.

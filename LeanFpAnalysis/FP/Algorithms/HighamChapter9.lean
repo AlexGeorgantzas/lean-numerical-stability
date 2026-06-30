@@ -3734,6 +3734,94 @@ theorem higham9_2_rectDoolittleL_source_identity {m n : ℕ}
   symm
   exact higham9_2_rectDoolittleLUpdate_source_identity A L U i k hUkk
 
+/-- **Algorithm 9.2**, exact rectangular recurrence product bridge.  If the
+stored rectangular factors satisfy the exact upper and lower Doolittle update
+equations, with unit rectangular pivot rows and nonzero pivots, then their
+rectangular product is the source matrix.  This closes the exact
+recurrence-to-product handoff used by the rectangular equation (9.5) layer;
+the rounded executable schedule remains a separate certificate-production
+problem. -/
+theorem higham9_2_rectDoolittle_exact_recurrences_rectMatMul_eq {m n : ℕ}
+    {hmn : n ≤ m}
+    {A L : Fin m → Fin n → ℝ} {U : Fin n → Fin n → ℝ}
+    (hL_diag : ∀ k : Fin n, L (higham9_2_rectRow hmn k) k = 1)
+    (hL_upper_zero : ∀ i : Fin m, ∀ j : Fin n, i.val < j.val → L i j = 0)
+    (hU_lower_zero : ∀ i j : Fin n, j.val < i.val → U i j = 0)
+    (hU_entry_eq : ∀ k j : Fin n, k.val ≤ j.val →
+      U k j = higham9_2_rectDoolittleUUpdate hmn A L U k j)
+    (hL_entry_eq : ∀ i : Fin m, ∀ k : Fin n, k.val < i.val →
+      L i k = higham9_2_rectDoolittleLUpdate A L U i k)
+    (hU_diag : ∀ k : Fin n, U k k ≠ 0) :
+    ∀ i j, rectMatMul L U i j = A i j := by
+  intro i j
+  by_cases hij : i.val ≤ j.val
+  · let k : Fin n := ⟨i.val, lt_of_le_of_lt hij j.isLt⟩
+    have hi_row : higham9_2_rectRow hmn k = i := by
+      ext
+      rfl
+    have hkj : k.val ≤ j.val := by
+      simpa [k] using hij
+    have hprod :=
+      higham9_2_rectMatMul_eq_prefix_add_upper
+        (hmn := hmn) (L := L) (U := U)
+        hL_diag hL_upper_zero k j hkj
+    have hsource :=
+      higham9_2_rectDoolittleU_source_identity
+        hmn A L U k j (hU_entry_eq k j hkj)
+    calc
+      rectMatMul L U i j =
+          rectMatMul L U (higham9_2_rectRow hmn k) j := by
+            rw [hi_row]
+      _ = higham9_2_rectPrefixDot L U (higham9_2_rectRow hmn k) j k +
+            U k j := hprod
+      _ = A (higham9_2_rectRow hmn k) j := by
+            rw [← hsource]
+      _ = A i j := by
+            rw [hi_row]
+  · have hji : j.val < i.val := lt_of_not_ge hij
+    have hprod :=
+      higham9_2_rectMatMul_eq_prefix_add_lower
+        (L := L) (U := U) hU_lower_zero i j
+    have hsource :=
+      higham9_2_rectDoolittleL_source_identity
+        A L U i j (hU_diag j) (hL_entry_eq i j hji)
+    calc
+      rectMatMul L U i j =
+          higham9_2_rectPrefixDot L U i j j + L i j * U j j := hprod
+      _ = A i j := by
+            rw [← hsource]
+
+/-- **Algorithm 9.2**, exact square Doolittle recurrences as an exact
+`LUFactSpec`.  This is the source-facing square specialization of the
+rectangular recurrence product bridge: exact upper and lower Doolittle updates
+plus triangular shape, unit lower diagonal, and nonzero pivots give an ordinary
+exact LU certificate.  It still does not construct the rounded executable loop
+that would prove these recurrence hypotheses for computed factors. -/
+theorem higham9_2_exactDoolittle_recurrences_to_LUFactSpec {n : ℕ}
+    {A L U : Fin n → Fin n → ℝ}
+    (hL_diag : ∀ i : Fin n, L i i = 1)
+    (hL_upper_zero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hU_lower_zero : ∀ i j : Fin n, j.val < i.val → U i j = 0)
+    (hU_entry_eq : ∀ k j : Fin n, k.val ≤ j.val →
+      U k j = higham9_2_rectDoolittleUUpdate (Nat.le_refl n) A L U k j)
+    (hL_entry_eq : ∀ i k : Fin n, k.val < i.val →
+      L i k = higham9_2_rectDoolittleLUpdate A L U i k)
+    (hU_diag : ∀ k : Fin n, U k k ≠ 0) :
+    LUFactSpec n A L U where
+  L_diag := hL_diag
+  L_upper_zero := hL_upper_zero
+  U_lower_zero := hU_lower_zero
+  product_eq := by
+    intro i j
+    have hprod :=
+      higham9_2_rectDoolittle_exact_recurrences_rectMatMul_eq
+        (hmn := Nat.le_refl n) (A := A) (L := L) (U := U)
+        (by
+          intro k
+          simpa [higham9_2_rectRow] using hL_diag k)
+        hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq hU_diag i j
+    simpa [rectMatMul] using hprod
+
 /-- **Algorithm 9.2 / Theorem 9.1 support**, exact-LU upper recurrence.
 Every exact unit-lower/upper `LUFactSpec` satisfies the Doolittle upper-entry
 formula used in equation (9.3).  This is the converse direction of the source
@@ -4941,6 +5029,80 @@ theorem higham9_3_lu_backward_error_gamma (fp : FPModel) (n : ℕ)
       (∀ i j, ∑ k : Fin n, L_hat i k * U_hat k j = A i j + ΔA i j) :=
   lu_backward_error_gamma fp n A L_hat U_hat hn hLU
 
+/-- **Algorithm 9.2 / Theorem 9.3**, exact Doolittle recurrences as a zero
+`LUBackwardError` certificate.  Exact upper/lower recurrence equations, shape
+hypotheses, unit lower diagonal, and nonzero pivots first produce an exact
+`LUFactSpec`, hence a zero componentwise backward-error certificate.  This is
+an exact-arithmetic handoff and does not construct the rounded executable loop. -/
+theorem higham9_3_exactDoolittle_recurrences_to_LUBackwardError_zero {n : ℕ}
+    {A L U : Fin n → Fin n → ℝ}
+    (hL_diag : ∀ i : Fin n, L i i = 1)
+    (hL_upper_zero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hU_lower_zero : ∀ i j : Fin n, j.val < i.val → U i j = 0)
+    (hU_entry_eq : ∀ k j : Fin n, k.val ≤ j.val →
+      U k j = higham9_2_rectDoolittleUUpdate (Nat.le_refl n) A L U k j)
+    (hL_entry_eq : ∀ i k : Fin n, k.val < i.val →
+      L i k = higham9_2_rectDoolittleLUpdate A L U i k)
+    (hU_diag : ∀ k : Fin n, U k k ≠ 0) :
+    LUBackwardError n A L U 0 :=
+  LUFactSpec.to_LUBackwardError_zero
+    (higham9_2_exactDoolittle_recurrences_to_LUFactSpec
+      hL_diag hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq hU_diag)
+
+/-- **Algorithm 9.2 / Theorem 9.3**, exact Doolittle recurrences weakened to
+Higham's `γ_n` backward-error certificate.  The residual is still exactly zero;
+`γ_n` only matches the public Theorem 9.3 API. -/
+theorem higham9_3_exactDoolittle_recurrences_to_LUBackwardError_gamma
+    {n : ℕ} {fp : FPModel} {A L U : Fin n → Fin n → ℝ}
+    (hn : gammaValid fp n)
+    (hL_diag : ∀ i : Fin n, L i i = 1)
+    (hL_upper_zero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hU_lower_zero : ∀ i j : Fin n, j.val < i.val → U i j = 0)
+    (hU_entry_eq : ∀ k j : Fin n, k.val ≤ j.val →
+      U k j = higham9_2_rectDoolittleUUpdate (Nat.le_refl n) A L U k j)
+    (hL_entry_eq : ∀ i k : Fin n, k.val < i.val →
+      L i k = higham9_2_rectDoolittleLUpdate A L U i k)
+    (hU_diag : ∀ k : Fin n, U k k ≠ 0) :
+    LUBackwardError n A L U (gamma fp n) where
+  L_diag := hL_diag
+  L_upper_zero := hL_upper_zero
+  U_lower_zero := hU_lower_zero
+  backward_bound := by
+    intro i j
+    let hLU := higham9_2_exactDoolittle_recurrences_to_LUFactSpec
+      hL_diag hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq hU_diag
+    have hzero :
+        |∑ k : Fin n, L i k * U k j - A i j| = 0 := by
+      rw [hLU.product_eq i j]
+      simp
+    rw [hzero]
+    exact mul_nonneg (gamma_nonneg fp hn)
+      (Finset.sum_nonneg
+        (fun k _ => mul_nonneg (abs_nonneg _) (abs_nonneg _)))
+
+/-- **Algorithm 9.2 / Theorem 9.3**, exact Doolittle recurrence handoff to the
+standard componentwise backward-error perturbation surface.  This closes the
+exact recurrence-to-`ΔA` adapter; the rounded executable schedule that proves
+these recurrence hypotheses for computed factors remains open. -/
+theorem higham9_3_exactDoolittle_recurrences_backward_error_gamma
+    {n : ℕ} {fp : FPModel} {A L U : Fin n → Fin n → ℝ}
+    (hn : gammaValid fp n)
+    (hL_diag : ∀ i : Fin n, L i i = 1)
+    (hL_upper_zero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hU_lower_zero : ∀ i j : Fin n, j.val < i.val → U i j = 0)
+    (hU_entry_eq : ∀ k j : Fin n, k.val ≤ j.val →
+      U k j = higham9_2_rectDoolittleUUpdate (Nat.le_refl n) A L U k j)
+    (hL_entry_eq : ∀ i k : Fin n, k.val < i.val →
+      L i k = higham9_2_rectDoolittleLUpdate A L U i k)
+    (hU_diag : ∀ k : Fin n, U k k ≠ 0) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤ gamma fp n *
+        ∑ k : Fin n, |L i k| * |U k j|) ∧
+      (∀ i j, ∑ k : Fin n, L i k * U k j = A i j + ΔA i j) :=
+  higham9_3_lu_backward_error_gamma fp n A L U hn
+    (higham9_3_exactDoolittle_recurrences_to_LUBackwardError_gamma hn
+      hL_diag hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq hU_diag)
+
 /-- **Theorem 9.4**: LU factorization plus two triangular solves, with
 Higham's absorbed `γ_{3n}` componentwise bound. -/
 theorem higham9_4_lu_solve_backward_error (fp : FPModel) (n : ℕ)
@@ -4958,6 +5120,39 @@ theorem higham9_4_lu_solve_backward_error (fp : FPModel) (n : ℕ)
         ∑ k : Fin n, |L_hat i k| * |U_hat k j|) ∧
       (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
   lu_solve_backward_error_tight fp n A L_hat U_hat b hL_diag hU_diag hLU hn hn3
+
+/-- **Algorithm 9.2 / Theorem 9.4**, exact Doolittle recurrence handoff to the
+LU-solve backward-error surface.  Exact recurrences give the factorization
+backward-error certificate; the triangular solves remain the modeled floating-
+point solves in `higham9_4_lu_solve_backward_error`. -/
+theorem higham9_4_exactDoolittle_recurrences_lu_solve_backward_error
+    {n : ℕ} {fp : FPModel} {A L U : Fin n → Fin n → ℝ}
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hL_diag : ∀ i : Fin n, L i i = 1)
+    (hL_upper_zero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hU_lower_zero : ∀ i j : Fin n, j.val < i.val → U i j = 0)
+    (hU_entry_eq : ∀ k j : Fin n, k.val ≤ j.val →
+      U k j = higham9_2_rectDoolittleUUpdate (Nat.le_refl n) A L U k j)
+    (hL_entry_eq : ∀ i k : Fin n, k.val < i.val →
+      L i k = higham9_2_rectDoolittleLUpdate A L U i k)
+    (hU_diag : ∀ k : Fin n, U k k ≠ 0) :
+    let y_hat := fl_forwardSub fp n L b
+    let x_hat := fl_backSub fp n U y_hat
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤ gamma fp (3 * n) *
+        ∑ k : Fin n, |L i k| * |U k j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_4_lu_solve_backward_error fp n A L U b
+    (by
+      intro i
+      rw [hL_diag i]
+      norm_num)
+    hU_diag
+    (higham9_3_exactDoolittle_recurrences_to_LUBackwardError_gamma hn
+      hL_diag hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq hU_diag)
+    hn hn3
 
 /-- **Problem 9.4**, row-pivoted analogue of Theorem 9.4.
 
@@ -12603,6 +12798,28 @@ theorem higham9_5_rectGEReducedEntry_full_eq_zero_of_rectMatMul_eq {m n : ℕ}
     hprod i j]
   ring
 
+/-- **Equation (9.5) / Algorithm 9.2**, terminal rectangular residual from
+exact Doolittle recurrences.  Exact upper/lower recurrence equations, together
+with the triangular shape and nonzero computed pivots, imply that after all
+rectangular rank-one updates the reduced matrix is zero. -/
+theorem higham9_5_rectGEReducedEntry_full_eq_zero_of_rectDoolittle_exact_recurrences
+    {m n : ℕ} {hmn : n ≤ m}
+    {A L : Fin m → Fin n → ℝ} {U : Fin n → Fin n → ℝ}
+    (hL_diag : ∀ k : Fin n, L (higham9_2_rectRow hmn k) k = 1)
+    (hL_upper_zero : ∀ i : Fin m, ∀ j : Fin n, i.val < j.val → L i j = 0)
+    (hU_lower_zero : ∀ i j : Fin n, j.val < i.val → U i j = 0)
+    (hU_entry_eq : ∀ k j : Fin n, k.val ≤ j.val →
+      U k j = higham9_2_rectDoolittleUUpdate hmn A L U k j)
+    (hL_entry_eq : ∀ i : Fin m, ∀ k : Fin n, k.val < i.val →
+      L i k = higham9_2_rectDoolittleLUpdate A L U i k)
+    (hU_diag : ∀ k : Fin n, U k k ≠ 0)
+    (i : Fin m) (j : Fin n) :
+    higham9_5_rectGEReducedEntry A L U n i j = 0 :=
+  higham9_5_rectGEReducedEntry_full_eq_zero_of_rectMatMul_eq
+    (higham9_2_rectDoolittle_exact_recurrences_rectMatMul_eq
+      hL_diag hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq hU_diag)
+    i j
+
 /-- **Equation (9.5)** saturated rectangular residual: for an exact rectangular
 product certificate, every reduced entry at a step count `>= n` is zero. -/
 theorem higham9_5_rectGEReducedEntry_eq_zero_of_rectMatMul_eq_of_ge
@@ -12614,6 +12831,29 @@ theorem higham9_5_rectGEReducedEntry_eq_zero_of_rectMatMul_eq_of_ge
   rw [higham9_5_rectGEReducedEntry_eq_sub_rectMatMul_of_ge
     A L U i j hsteps, hprod i j]
   ring
+
+/-- **Equation (9.5) / Algorithm 9.2**, saturated rectangular residual from
+exact Doolittle recurrences.  Once the natural-number schedule has executed at
+least `n` rank-one updates, the reduced matrix is zero under the exact
+rectangular Doolittle recurrence certificate. -/
+theorem higham9_5_rectGEReducedEntry_eq_zero_of_rectDoolittle_exact_recurrences_of_ge
+    {m n : ℕ} {hmn : n ≤ m}
+    {A L : Fin m → Fin n → ℝ} {U : Fin n → Fin n → ℝ}
+    {steps : ℕ} (hsteps : n ≤ steps)
+    (hL_diag : ∀ k : Fin n, L (higham9_2_rectRow hmn k) k = 1)
+    (hL_upper_zero : ∀ i : Fin m, ∀ j : Fin n, i.val < j.val → L i j = 0)
+    (hU_lower_zero : ∀ i j : Fin n, j.val < i.val → U i j = 0)
+    (hU_entry_eq : ∀ k j : Fin n, k.val ≤ j.val →
+      U k j = higham9_2_rectDoolittleUUpdate hmn A L U k j)
+    (hL_entry_eq : ∀ i : Fin m, ∀ k : Fin n, k.val < i.val →
+      L i k = higham9_2_rectDoolittleLUpdate A L U i k)
+    (hU_diag : ∀ k : Fin n, U k k ≠ 0)
+    (i : Fin m) (j : Fin n) :
+    higham9_5_rectGEReducedEntry A L U steps i j = 0 :=
+  higham9_5_rectGEReducedEntry_eq_zero_of_rectMatMul_eq_of_ge hsteps
+    (higham9_2_rectDoolittle_exact_recurrences_rectMatMul_eq
+      hL_diag hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq hU_diag)
+    i j
 
 /-- **Equation (9.5)** terminal residual: for an exact LU certificate, the
 reduced entry after all rank-one updates is zero. -/
@@ -22980,6 +23220,150 @@ theorem higham9_15_spectralRadius_ge_one_of_positive_fixedPoint
           (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) :=
   higham9_15_spectralRadius_ge_one_of_positive_le_matMulVec
     hn C x hC_nonneg hx_pos (fun i => le_of_eq (hfixed i).symm)
+
+/-- **Theorem 9.15 spectral-majorant support**.  A nonzero nonnegative right
+subeigenvector already forces the spectral-radius lower bound; irreducibility
+is not needed for this obstruction. -/
+theorem higham9_15_nonzero_nonneg_subeigen_spectralRadius_ge
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (eta : ℝ) (x : Fin n → ℝ)
+    (hC_nonneg : ∀ i j : Fin n, 0 ≤ C i j)
+    (heta_nonneg : 0 ≤ eta)
+    (hx_nonneg : ∀ i : Fin n, 0 ≤ x i)
+    (hx_ne : x ≠ 0)
+    (hsub : ∀ i : Fin n, eta * x i ≤ matMulVec n C x i) :
+    ENNReal.ofReal eta ≤
+      spectralRadius ℂ
+        (Matrix.toLin'
+          (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) :=
+  ch7_toLin_spectralRadius_ge_of_nonzero_nonneg_right_subeigenvector
+    hn C eta x hC_nonneg heta_nonneg hx_nonneg hx_ne hsub
+
+/-- **Theorem 9.15 spectral-majorant support**.  Under `rho(C) < 1`, a
+nonzero nonnegative right subeigenvector has scale below one, without an
+irreducibility side condition. -/
+theorem higham9_15_nonzero_nonneg_subeigen_scale_lt_one_of_spectralRadius_lt_one
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (eta : ℝ) (x : Fin n → ℝ)
+    (hC_nonneg : ∀ i j : Fin n, 0 ≤ C i j)
+    (heta_nonneg : 0 ≤ eta)
+    (hx_nonneg : ∀ i : Fin n, 0 ≤ x i)
+    (hx_ne : x ≠ 0)
+    (hsub : ∀ i : Fin n, eta * x i ≤ matMulVec n C x i)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) < 1) :
+    eta < 1 := by
+  have hle :
+      ENNReal.ofReal eta ≤
+        spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) :=
+    higham9_15_nonzero_nonneg_subeigen_spectralRadius_ge
+      hn C eta x hC_nonneg heta_nonneg hx_nonneg hx_ne hsub
+  have heta_enn_lt : ENNReal.ofReal eta < 1 := lt_of_le_of_lt hle hrho
+  exact ENNReal.ofReal_lt_one.mp heta_enn_lt
+
+/-- **Theorem 9.15 spectral-majorant support**.  If a nonnegative majorant has
+spectral radius below one, every nonzero nonnegative vector has a component
+that the majorant maps strictly downward. -/
+theorem higham9_15_exists_matMulVec_lt_of_nonzero_nonneg_spectralRadius_lt_one
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (x : Fin n → ℝ)
+    (hC_nonneg : ∀ i j : Fin n, 0 ≤ C i j)
+    (hx_nonneg : ∀ i : Fin n, 0 ≤ x i)
+    (hx_ne : x ≠ 0)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) < 1) :
+    ∃ i : Fin n, matMulVec n C x i < x i := by
+  by_contra hnone
+  have hsub : ∀ i : Fin n, (1 : ℝ) * x i ≤ matMulVec n C x i := by
+    intro i
+    have hi : ¬ matMulVec n C x i < x i := by
+      intro hlt
+      exact hnone ⟨i, hlt⟩
+    simpa [one_mul] using (le_of_not_gt hi)
+  have hone_lt :
+      (1 : ℝ) < 1 :=
+    higham9_15_nonzero_nonneg_subeigen_scale_lt_one_of_spectralRadius_lt_one
+      hn C 1 x hC_nonneg (by norm_num) hx_nonneg hx_ne hsub hrho
+  exact (lt_irrefl (1 : ℝ)) hone_lt
+
+/-- **Theorem 9.15 spectral-majorant support**.  Under `rho(C) < 1`, a
+nonnegative majorant cannot dominate any nonzero nonnegative vector
+componentwise. -/
+theorem higham9_15_not_exists_nonzero_nonneg_le_matMulVec_of_spectralRadius_lt_one
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (hC_nonneg : ∀ i j : Fin n, 0 ≤ C i j)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) < 1) :
+    ¬ ∃ x : Fin n → ℝ,
+      x ≠ 0 ∧ (∀ i : Fin n, 0 ≤ x i) ∧
+        ∀ i : Fin n, x i ≤ matMulVec n C x i := by
+  rintro ⟨x, hx_ne, hx_nonneg, hle⟩
+  obtain ⟨i, hlt⟩ :=
+    higham9_15_exists_matMulVec_lt_of_nonzero_nonneg_spectralRadius_lt_one
+      hn C x hC_nonneg hx_nonneg hx_ne hrho
+  exact (not_lt_of_ge (hle i)) hlt
+
+/-- **Theorem 9.15 spectral-majorant support**.  Under `rho(C) < 1`, a
+nonnegative majorant has no nonzero nonnegative fixed point. -/
+theorem higham9_15_not_exists_nonzero_nonneg_fixedPoint_of_spectralRadius_lt_one
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (hC_nonneg : ∀ i j : Fin n, 0 ≤ C i j)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) < 1) :
+    ¬ ∃ x : Fin n → ℝ,
+      x ≠ 0 ∧ (∀ i : Fin n, 0 ≤ x i) ∧
+        ∀ i : Fin n, matMulVec n C x i = x i := by
+  rintro ⟨x, hx_ne, hx_nonneg, hfixed⟩
+  exact
+    (higham9_15_not_exists_nonzero_nonneg_le_matMulVec_of_spectralRadius_lt_one
+      hn C hC_nonneg hrho)
+      ⟨x, hx_ne, hx_nonneg, fun i => le_of_eq (hfixed i).symm⟩
+
+/-- **Theorem 9.15 spectral-majorant support**.  A nonzero nonnegative vector
+dominated by its majorant image forces spectral radius at least one. -/
+theorem higham9_15_spectralRadius_ge_one_of_nonzero_nonneg_le_matMulVec
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (x : Fin n → ℝ)
+    (hC_nonneg : ∀ i j : Fin n, 0 ≤ C i j)
+    (hx_ne : x ≠ 0)
+    (hx_nonneg : ∀ i : Fin n, 0 ≤ x i)
+    (hle : ∀ i : Fin n, x i ≤ matMulVec n C x i) :
+    (1 : ENNReal) ≤
+      spectralRadius ℂ
+        (Matrix.toLin'
+          (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) := by
+  have hsub : ∀ i : Fin n, (1 : ℝ) * x i ≤ matMulVec n C x i := by
+    intro i
+    simpa [one_mul] using hle i
+  simpa using
+    (higham9_15_nonzero_nonneg_subeigen_spectralRadius_ge
+      hn C 1 x hC_nonneg (by norm_num) hx_nonneg hx_ne hsub)
+
+/-- **Theorem 9.15 spectral-majorant support**.  A nonzero nonnegative fixed
+point of a nonnegative majorant forces spectral radius at least one. -/
+theorem higham9_15_spectralRadius_ge_one_of_nonzero_nonneg_fixedPoint
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (x : Fin n → ℝ)
+    (hC_nonneg : ∀ i j : Fin n, 0 ≤ C i j)
+    (hx_ne : x ≠ 0)
+    (hx_nonneg : ∀ i : Fin n, 0 ≤ x i)
+    (hfixed : ∀ i : Fin n, matMulVec n C x i = x i) :
+    (1 : ENNReal) ≤
+      spectralRadius ℂ
+        (Matrix.toLin'
+          (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) :=
+  higham9_15_spectralRadius_ge_one_of_nonzero_nonneg_le_matMulVec
+    hn C x hC_nonneg hx_ne hx_nonneg (fun i => le_of_eq (hfixed i).symm)
 
 /-- **Theorem 9.15 spectral-majorant support**.  Irreducibility upgrades a
 nonzero nonnegative right subeigenvector to a positive one, so the Chapter 7
