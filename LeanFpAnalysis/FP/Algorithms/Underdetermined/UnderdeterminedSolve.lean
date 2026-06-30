@@ -1660,6 +1660,110 @@ noncomputable def undetGramPerturbationComponentBudget {m n : ℕ}
   fun i j => ∑ k : Fin n,
     (|A i k| * E j k + E i k * |A j k| + eps * E i k * E j k)
 
+/-- Row-norm source budget for the Chapter 21 Gram perturbation induced by a
+    rectangular componentwise data-perturbation budget.  This replaces each
+    entry of `A` and `E` in the componentwise Gram budget by its row 2-norm. -/
+noncomputable def undetGramPerturbationRowNormBudget {m n : ℕ}
+    (A E : Fin m → Fin n → ℝ) (eps : ℝ) : Fin m → Fin m → ℝ :=
+  fun i j =>
+    (n : ℝ) *
+      (rectRowNorm2 A i * rectRowNorm2 E j +
+        rectRowNorm2 E i * rectRowNorm2 A j +
+        eps * rectRowNorm2 E i * rectRowNorm2 E j)
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    a row 2-norm is bounded by an operator-2 certificate for the transpose. -/
+theorem higham21_rectRowNorm2_le_of_transpose_rectOpNorm2Le {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (i : Fin m) {c : ℝ}
+    (hAt : rectOpNorm2Le (finiteTranspose A) c) :
+    rectRowNorm2 A i ≤ c := by
+  have htest := hAt (finiteBasisVec i)
+  have hrow :
+      rectMatMulVec (finiteTranspose A) (finiteBasisVec i) =
+        fun j : Fin n => A i j := by
+    ext j
+    simp [rectMatMulVec, finiteTranspose, finiteBasisVec]
+  simpa [rectRowNorm2, hrow, vecNorm2_finiteBasisVec] using htest
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    a uniform operator-2 bound on a rectangular matrix bounds every row
+    2-norm, by applying the transpose operator certificate to a coordinate
+    vector. -/
+theorem higham21_rectRowNorm2_le_of_rectOpNorm2Le {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (i : Fin m) {c : ℝ}
+    (hc : 0 ≤ c) (hA : rectOpNorm2Le A c) :
+    rectRowNorm2 A i ≤ c :=
+  higham21_rectRowNorm2_le_of_transpose_rectOpNorm2Le A i
+    (rectOpNorm2Le_finiteTranspose_of_rectOpNorm2Le A hc hA)
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    scaling a rectangular data majorant by a nonnegative perturbation size
+    scales its operator-2 certificate. -/
+theorem higham21_rectOpNorm2Le_const_mul_of_nonneg {m n : ℕ}
+    (E : Fin m → Fin n → ℝ) {eps e : ℝ}
+    (heps : 0 ≤ eps) (hE : rectOpNorm2Le E e) :
+    rectOpNorm2Le (fun i j => eps * E i j) (eps * e) := by
+  intro x
+  have hscale :
+      rectMatMulVec (fun i j => eps * E i j) x =
+        fun i => eps * rectMatMulVec E x i := by
+    ext i
+    unfold rectMatMulVec
+    rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl
+    intro j _
+    ring
+  calc
+    vecNorm2 (rectMatMulVec (fun i j => eps * E i j) x)
+        = eps * vecNorm2 (rectMatMulVec E x) := by
+          rw [hscale, vecNorm2_smul, abs_of_nonneg heps]
+    _ ≤ eps * (e * vecNorm2 x) :=
+          mul_le_mul_of_nonneg_left (hE x) heps
+    _ = eps * e * vecNorm2 x := by ring
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    a componentwise data perturbation bound `|DeltaA| <= eps * E` gives an
+    operator-2 certificate for `DeltaA` from an operator-2 certificate for
+    `E`. -/
+theorem higham21_rectOpNorm2Le_of_componentwise_data_bound {m n : ℕ}
+    (DeltaA E : Fin m → Fin n → ℝ) {eps e : ℝ}
+    (heps : 0 ≤ eps)
+    (hDeltaComponent : ∀ i k, |DeltaA i k| ≤ eps * E i k)
+    (hE : rectOpNorm2Le E e) :
+    rectOpNorm2Le DeltaA (eps * e) :=
+  rectOpNorm2Le_of_abs_entry_le
+    (A := DeltaA) (B := fun i j => eps * E i j)
+    hDeltaComponent
+    (higham21_rectOpNorm2Le_const_mul_of_nonneg E heps hE)
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    the dimension factor in the conservative source scalar bound has the
+    expected quadratic form. -/
+theorem higham21_sqrt_nat_cast_mul_self (m : ℕ) :
+    Real.sqrt ((m : ℝ) * (m : ℝ)) = (m : ℝ) := by
+  rw [← sq]
+  rw [Real.sqrt_sq_eq_abs]
+  exact abs_of_nonneg (by exact_mod_cast Nat.zero_le m)
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    quadratic source-size scalar bound for the conservative Chapter 7 factor. -/
+theorem higham21_lemma21_2_source_factor_le_of_quadratic_bound
+    (m : ℕ) (rho2 tau omega : ℝ)
+    (hSourceFactor_le :
+      2 * (m : ℝ) ^ 2 * tau * omega ≤ (1 - rho2)⁻¹) :
+    tau *
+        (Real.sqrt ((m : ℝ) * (m : ℝ)) *
+          (((m : ℝ) * 2) * omega)) ≤
+      (1 - rho2)⁻¹ := by
+  calc
+    tau *
+        (Real.sqrt ((m : ℝ) * (m : ℝ)) *
+          (((m : ℝ) * 2) * omega))
+        = 2 * (m : ℝ) ^ 2 * tau * omega := by
+          rw [higham21_sqrt_nat_cast_mul_self m]
+          ring
+    _ ≤ (1 - rho2)⁻¹ := hSourceFactor_le
+
 /-- Expansion of the Chapter 21 Gram perturbation
     `(A + DeltaA2)(A + DeltaA2)^T - AA^T`. -/
 theorem undetGramPerturbation_eq_sum {m n : ℕ}
@@ -1689,6 +1793,76 @@ theorem undetGramPerturbationComponentBudget_nonneg {m n : ℕ}
       (mul_nonneg (abs_nonneg _) (hE j k))
       (mul_nonneg (hE i k) (abs_nonneg _)))
     (mul_nonneg (mul_nonneg heps (hE i k)) (hE j k))
+
+/-- The row-norm source Gram budget is nonnegative when the rectangular
+    perturbation majorant and scalar perturbation size are nonnegative. -/
+theorem undetGramPerturbationRowNormBudget_nonneg {m n : ℕ}
+    (A E : Fin m → Fin n → ℝ) {eps : ℝ}
+    (heps : 0 ≤ eps) :
+    ∀ i j : Fin m, 0 ≤ undetGramPerturbationRowNormBudget A E eps i j := by
+  intro i j
+  unfold undetGramPerturbationRowNormBudget
+  exact mul_nonneg (by exact_mod_cast Nat.zero_le n)
+    (add_nonneg
+      (add_nonneg
+        (mul_nonneg (rectRowNorm2_nonneg A i) (rectRowNorm2_nonneg E j))
+        (mul_nonneg (rectRowNorm2_nonneg E i) (rectRowNorm2_nonneg A j)))
+      (mul_nonneg
+        (mul_nonneg heps (rectRowNorm2_nonneg E i))
+        (rectRowNorm2_nonneg E j)))
+
+/-- The induced componentwise Gram perturbation budget is bounded by the
+    row-norm source Gram budget. -/
+theorem undetGramPerturbationComponentBudget_le_rowNormBudget {m n : ℕ}
+    (A E : Fin m → Fin n → ℝ) {eps : ℝ}
+    (heps : 0 ≤ eps) (hE : ∀ i k, 0 ≤ E i k) :
+    ∀ i j : Fin m,
+      undetGramPerturbationComponentBudget A E eps i j ≤
+        undetGramPerturbationRowNormBudget A E eps i j := by
+  intro i j
+  let C : ℝ :=
+    rectRowNorm2 A i * rectRowNorm2 E j +
+      rectRowNorm2 E i * rectRowNorm2 A j +
+      eps * rectRowNorm2 E i * rectRowNorm2 E j
+  have hsum :
+      (∑ k : Fin n,
+        (|A i k| * E j k + E i k * |A j k| + eps * E i k * E j k)) ≤
+        ∑ _k : Fin n, C := by
+    apply Finset.sum_le_sum
+    intro k _
+    have hAi : |A i k| ≤ rectRowNorm2 A i := by
+      simpa [rectRowNorm2] using abs_coord_le_vecNorm2 (fun q : Fin n => A i q) k
+    have hAj : |A j k| ≤ rectRowNorm2 A j := by
+      simpa [rectRowNorm2] using abs_coord_le_vecNorm2 (fun q : Fin n => A j q) k
+    have hEi : E i k ≤ rectRowNorm2 E i := by
+      simpa [rectRowNorm2, abs_of_nonneg (hE i k)] using
+        abs_coord_le_vecNorm2 (fun q : Fin n => E i q) k
+    have hEj : E j k ≤ rectRowNorm2 E j := by
+      simpa [rectRowNorm2, abs_of_nonneg (hE j k)] using
+        abs_coord_le_vecNorm2 (fun q : Fin n => E j q) k
+    have hterm1 :
+        |A i k| * E j k ≤ rectRowNorm2 A i * rectRowNorm2 E j :=
+      mul_le_mul hAi hEj (hE j k) (rectRowNorm2_nonneg A i)
+    have hterm2 :
+        E i k * |A j k| ≤ rectRowNorm2 E i * rectRowNorm2 A j :=
+      mul_le_mul hEi hAj (abs_nonneg _) (rectRowNorm2_nonneg E i)
+    have hterm3_raw :
+        E i k * E j k ≤ rectRowNorm2 E i * rectRowNorm2 E j :=
+      mul_le_mul hEi hEj (hE j k) (rectRowNorm2_nonneg E i)
+    have hterm3 :
+        eps * E i k * E j k ≤
+          eps * rectRowNorm2 E i * rectRowNorm2 E j := by
+      simpa [mul_assoc] using mul_le_mul_of_nonneg_left hterm3_raw heps
+    simpa [C, add_assoc] using add_le_add (add_le_add hterm1 hterm2) hterm3
+  calc
+    undetGramPerturbationComponentBudget A E eps i j
+        = ∑ k : Fin n,
+            (|A i k| * E j k + E i k * |A j k| + eps * E i k * E j k) := by
+          rfl
+    _ ≤ ∑ _k : Fin n, C := hsum
+    _ = undetGramPerturbationRowNormBudget A E eps i j := by
+          simp [undetGramPerturbationRowNormBudget, C]
+          ring
 
 /-- A componentwise rectangular perturbation bound induces a componentwise
     bound on the Chapter 21 Gram perturbation. -/
@@ -3270,6 +3444,535 @@ theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_fa
     hGramLeftInv hDataE hDeltaA2Component hxTranspose hsmall halpha hbeta
     hsigma halpha_le hbeta_le hSigmaBeta_le hAATInv_le hSourceFactor_le
     hAOp hDeltaA1Op hDeltaA2Op
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    row-norm source-budget specialization of the conservative rectangular
+    data-perturbation handoff.  The induced Gram budget is bounded internally
+    by `undetGramPerturbationRowNormBudget`, leaving only a radius condition for
+    that row-norm source budget. -/
+theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_radius_row_norm_budget_bounds_of_componentwise_data_bound
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (E : Fin m → Fin n → ℝ)
+    (rho1 rho2 alpha beta sigma eps rhoG tau omega : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hDataEpsNonneg : x ≠ 0 → 0 ≤ eps)
+    (hDataEpsLeRho : x ≠ 0 → eps ≤ rhoG)
+    (hGramRowNormRadius : x ≠ 0 →
+      rhoG *
+          infNorm
+            (ch7InverseFirstProductSensitivity m AAT_inv
+              (undetGramPerturbationRowNormBudget A E eps)) ≤
+        (1 / 2 : ℝ))
+    (hGramLeftInv : x ≠ 0 → IsLeftInverse m (rectGram A) AAT_inv)
+    (hDataE : x ≠ 0 → ∀ i k, 0 ≤ E i k)
+    (hDeltaA2Component : x ≠ 0 →
+      ∀ i k, |DeltaA2 i k| ≤ eps * E i k)
+    (hxTranspose : x ≠ 0 →
+      x =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : x ≠ 0 → 3 * max rho1 rho2 < 1)
+    (halpha : x ≠ 0 → 0 ≤ alpha)
+    (hbeta : x ≠ 0 → 0 ≤ beta)
+    (hsigma : x ≠ 0 → 0 ≤ sigma)
+    (halpha_le : x ≠ 0 → alpha ≤ rho1)
+    (hbeta_le : x ≠ 0 → beta ≤ rho2)
+    (hSigmaBeta_le : x ≠ 0 → sigma + beta ≤ tau)
+    (hAATInv_le : infNorm AAT_inv ≤ omega)
+    (hSourceFactor_le :
+      tau *
+          (Real.sqrt ((m : ℝ) * (m : ℝ)) *
+            (((m : ℝ) * 2) * omega)) ≤
+        (1 - rho2)⁻¹)
+    (hAOp : x ≠ 0 → rectOpNorm2Le A sigma)
+    (hDeltaA1Op : x ≠ 0 → rectOpNorm2Le DeltaA1 alpha)
+    (hDeltaA2Op : x ≠ 0 → rectOpNorm2Le DeltaA2 beta) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j)
+      b x :=
+  higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_radius_source_budget_bounds_of_componentwise_data_bound
+    hm A x DeltaA1 DeltaA2 b y AAT_inv E
+    (undetGramPerturbationRowNormBudget A E eps)
+    rho1 rho2 alpha beta sigma eps rhoG tau omega
+    hDeltaA1 hDataEpsNonneg hDataEpsLeRho
+    (fun hx =>
+      undetGramPerturbationComponentBudget_le_rowNormBudget A E
+        (hDataEpsNonneg hx) (hDataE hx))
+    hGramRowNormRadius hGramLeftInv hDataE hDeltaA2Component hxTranspose
+    hsmall halpha hbeta hsigma halpha_le hbeta_le hSigmaBeta_le hAATInv_le
+    hSourceFactor_le hAOp hDeltaA1Op hDeltaA2Op
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    sufficient row-budget radius certificate from separated infinity-norm
+    bounds.  This turns the Chapter 7 first-product smallness condition for
+    the row-norm Gram budget into the scalar source obligations
+    `‖AAT_inv‖∞ <= omega`, `‖rowBudget‖∞ <= gamma`, and
+    `rhoG * (omega * gamma) <= 1/2`. -/
+theorem higham21_lemma21_2_row_norm_first_product_radius_of_infNorm_bounds
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (E : Fin m → Fin n → ℝ)
+    (eps rhoG omega gamma : ℝ)
+    (hrhoG : 0 ≤ rhoG)
+    (hAATInv_le : infNorm AAT_inv ≤ omega)
+    (hRowBudget_le :
+      infNorm (undetGramPerturbationRowNormBudget A E eps) ≤ gamma)
+    (homega : 0 ≤ omega)
+    (hRadius : rhoG * (omega * gamma) ≤ (1 / 2 : ℝ)) :
+    rhoG *
+        infNorm
+          (ch7InverseFirstProductSensitivity m AAT_inv
+            (undetGramPerturbationRowNormBudget A E eps)) ≤
+      (1 / 2 : ℝ) := by
+  let G : Fin m → Fin m → ℝ := undetGramPerturbationRowNormBudget A E eps
+  change rhoG * infNorm (matMul m (absMatrix m AAT_inv) G) ≤ (1 / 2 : ℝ)
+  have hprod :
+      infNorm (matMul m (absMatrix m AAT_inv) G) ≤ omega * gamma := by
+    have hsub : infNorm (matMul m (absMatrix m AAT_inv) G) ≤
+        infNorm (absMatrix m AAT_inv) * infNorm G :=
+      infNorm_matMul_le hm (absMatrix m AAT_inv) G
+    have habs : infNorm (absMatrix m AAT_inv) = infNorm AAT_inv :=
+      infNorm_absMatrix hm AAT_inv
+    have hmul : infNorm (absMatrix m AAT_inv) * infNorm G ≤ omega * gamma := by
+      rw [habs]
+      exact mul_le_mul hAATInv_le hRowBudget_le (infNorm_nonneg G) homega
+    exact hsub.trans hmul
+  exact (mul_le_mul_of_nonneg_left hprod hrhoG).trans hRadius
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    row-norm Gram budget infinity-norm bound from uniform row-norm bounds on
+    the data matrix and perturbation majorant. -/
+theorem undetGramPerturbationRowNormBudget_infNorm_le_of_row_norm_bounds
+    {m n : ℕ}
+    (A E : Fin m → Fin n → ℝ)
+    {eps a e : ℝ}
+    (heps : 0 ≤ eps)
+    (hArow : ∀ i : Fin m, rectRowNorm2 A i ≤ a)
+    (hErow : ∀ i : Fin m, rectRowNorm2 E i ≤ e)
+    (ha : 0 ≤ a)
+    (he : 0 ≤ e) :
+    infNorm (undetGramPerturbationRowNormBudget A E eps) ≤
+      (m : ℝ) * ((n : ℝ) * (a * e + e * a + eps * e * e)) := by
+  let C : ℝ := (n : ℝ) * (a * e + e * a + eps * e * e)
+  have hinner_nonneg : 0 ≤ a * e + e * a + eps * e * e := by
+    exact add_nonneg
+      (add_nonneg (mul_nonneg ha he) (mul_nonneg he ha))
+      (mul_nonneg (mul_nonneg heps he) he)
+  have hC_nonneg : 0 ≤ C :=
+    mul_nonneg (by exact_mod_cast Nat.zero_le n) hinner_nonneg
+  have hbound_entry :
+      ∀ i j : Fin m, undetGramPerturbationRowNormBudget A E eps i j ≤ C := by
+    intro i j
+    have hAE :
+        rectRowNorm2 A i * rectRowNorm2 E j ≤ a * e :=
+      mul_le_mul (hArow i) (hErow j) (rectRowNorm2_nonneg E j) ha
+    have hEA :
+        rectRowNorm2 E i * rectRowNorm2 A j ≤ e * a :=
+      mul_le_mul (hErow i) (hArow j) (rectRowNorm2_nonneg A j) he
+    have hEE :
+        eps * rectRowNorm2 E i * rectRowNorm2 E j ≤ eps * e * e := by
+      have hEprod :
+          rectRowNorm2 E i * rectRowNorm2 E j ≤ e * e :=
+        mul_le_mul (hErow i) (hErow j) (rectRowNorm2_nonneg E j) he
+      calc
+        eps * rectRowNorm2 E i * rectRowNorm2 E j
+            = eps * (rectRowNorm2 E i * rectRowNorm2 E j) := by ring
+        _ ≤ eps * (e * e) := mul_le_mul_of_nonneg_left hEprod heps
+        _ = eps * e * e := by ring
+    have hsum :
+        rectRowNorm2 A i * rectRowNorm2 E j +
+            rectRowNorm2 E i * rectRowNorm2 A j +
+            eps * rectRowNorm2 E i * rectRowNorm2 E j ≤
+          a * e + e * a + eps * e * e :=
+      add_le_add (add_le_add hAE hEA) hEE
+    unfold undetGramPerturbationRowNormBudget C
+    exact mul_le_mul_of_nonneg_left hsum (by exact_mod_cast Nat.zero_le n)
+  apply infNorm_le_of_row_sum_le
+  · intro i
+    calc
+      ∑ j : Fin m, |undetGramPerturbationRowNormBudget A E eps i j|
+          = ∑ j : Fin m, undetGramPerturbationRowNormBudget A E eps i j := by
+            apply Finset.sum_congr rfl
+            intro j _
+            exact abs_of_nonneg
+              (undetGramPerturbationRowNormBudget_nonneg A E heps i j)
+      _ ≤ ∑ _j : Fin m, C := by
+            apply Finset.sum_le_sum
+            intro j _
+            exact hbound_entry i j
+      _ = (m : ℝ) * C := by
+            simp [C]
+      _ = (m : ℝ) * ((n : ℝ) * (a * e + e * a + eps * e * e)) := rfl
+  · exact mul_nonneg (by exact_mod_cast Nat.zero_le m) hC_nonneg
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    source-sized row-norm radius certificate from uniform row-norm bounds on
+    `A` and `E`. -/
+theorem higham21_lemma21_2_row_norm_first_product_radius_of_row_norm_bounds
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (E : Fin m → Fin n → ℝ)
+    (eps rhoG omega a e : ℝ)
+    (heps : 0 ≤ eps)
+    (hrhoG : 0 ≤ rhoG)
+    (hArow : ∀ i : Fin m, rectRowNorm2 A i ≤ a)
+    (hErow : ∀ i : Fin m, rectRowNorm2 E i ≤ e)
+    (ha : 0 ≤ a)
+    (he : 0 ≤ e)
+    (hAATInv_le : infNorm AAT_inv ≤ omega)
+    (hRadius :
+      rhoG *
+          (omega *
+            ((m : ℝ) * ((n : ℝ) * (a * e + e * a + eps * e * e)))) ≤
+        (1 / 2 : ℝ)) :
+    rhoG *
+        infNorm
+          (ch7InverseFirstProductSensitivity m AAT_inv
+            (undetGramPerturbationRowNormBudget A E eps)) ≤
+      (1 / 2 : ℝ) := by
+  have homega : 0 ≤ omega :=
+    (infNorm_nonneg AAT_inv).trans hAATInv_le
+  exact
+    higham21_lemma21_2_row_norm_first_product_radius_of_infNorm_bounds
+      hm A AAT_inv E eps rhoG omega
+      ((m : ℝ) * ((n : ℝ) * (a * e + e * a + eps * e * e)))
+      hrhoG hAATInv_le
+      (undetGramPerturbationRowNormBudget_infNorm_le_of_row_norm_bounds
+        A E heps hArow hErow ha he)
+      homega hRadius
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    row-norm source-budget handoff with the Chapter 7 radius condition reduced
+    to separated infinity-norm scalar bounds. -/
+theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_row_norm_infNorm_bounds_of_componentwise_data_bound
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (E : Fin m → Fin n → ℝ)
+    (rho1 rho2 alpha beta sigma eps rhoG tau omega gamma : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hDataEpsNonneg : x ≠ 0 → 0 ≤ eps)
+    (hDataEpsLeRho : x ≠ 0 → eps ≤ rhoG)
+    (hrhoG : x ≠ 0 → 0 ≤ rhoG)
+    (hRowBudget_le : x ≠ 0 →
+      infNorm (undetGramPerturbationRowNormBudget A E eps) ≤ gamma)
+    (hRowRadius : x ≠ 0 → rhoG * (omega * gamma) ≤ (1 / 2 : ℝ))
+    (hGramLeftInv : x ≠ 0 → IsLeftInverse m (rectGram A) AAT_inv)
+    (hDataE : x ≠ 0 → ∀ i k, 0 ≤ E i k)
+    (hDeltaA2Component : x ≠ 0 →
+      ∀ i k, |DeltaA2 i k| ≤ eps * E i k)
+    (hxTranspose : x ≠ 0 →
+      x =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : x ≠ 0 → 3 * max rho1 rho2 < 1)
+    (halpha : x ≠ 0 → 0 ≤ alpha)
+    (hbeta : x ≠ 0 → 0 ≤ beta)
+    (hsigma : x ≠ 0 → 0 ≤ sigma)
+    (halpha_le : x ≠ 0 → alpha ≤ rho1)
+    (hbeta_le : x ≠ 0 → beta ≤ rho2)
+    (hSigmaBeta_le : x ≠ 0 → sigma + beta ≤ tau)
+    (hAATInv_le : infNorm AAT_inv ≤ omega)
+    (hSourceFactor_le :
+      tau *
+          (Real.sqrt ((m : ℝ) * (m : ℝ)) *
+            (((m : ℝ) * 2) * omega)) ≤
+        (1 - rho2)⁻¹)
+    (hAOp : x ≠ 0 → rectOpNorm2Le A sigma)
+    (hDeltaA1Op : x ≠ 0 → rectOpNorm2Le DeltaA1 alpha)
+    (hDeltaA2Op : x ≠ 0 → rectOpNorm2Le DeltaA2 beta) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j)
+      b x := by
+  have homega : 0 ≤ omega :=
+    (infNorm_nonneg AAT_inv).trans hAATInv_le
+  exact
+    higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_radius_row_norm_budget_bounds_of_componentwise_data_bound
+      hm A x DeltaA1 DeltaA2 b y AAT_inv E rho1 rho2 alpha beta sigma eps
+      rhoG tau omega hDeltaA1 hDataEpsNonneg hDataEpsLeRho
+      (fun hx =>
+        higham21_lemma21_2_row_norm_first_product_radius_of_infNorm_bounds
+          hm A AAT_inv E eps rhoG omega gamma (hrhoG hx) hAATInv_le
+          (hRowBudget_le hx) homega (hRowRadius hx))
+      hGramLeftInv hDataE hDeltaA2Component hxTranspose hsmall halpha hbeta
+      hsigma halpha_le hbeta_le hSigmaBeta_le hAATInv_le hSourceFactor_le
+      hAOp hDeltaA1Op hDeltaA2Op
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    row-norm source-budget handoff with the row-budget infinity norm discharged
+    from uniform row-norm bounds on `A` and `E`. -/
+theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_row_norm_bounds_of_componentwise_data_bound
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (E : Fin m → Fin n → ℝ)
+    (rho1 rho2 alpha beta sigma eps rhoG tau omega a e : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hDataEpsNonneg : x ≠ 0 → 0 ≤ eps)
+    (hDataEpsLeRho : x ≠ 0 → eps ≤ rhoG)
+    (hrhoG : x ≠ 0 → 0 ≤ rhoG)
+    (hArow : x ≠ 0 → ∀ i : Fin m, rectRowNorm2 A i ≤ a)
+    (hErow : x ≠ 0 → ∀ i : Fin m, rectRowNorm2 E i ≤ e)
+    (ha : x ≠ 0 → 0 ≤ a)
+    (he : x ≠ 0 → 0 ≤ e)
+    (hRowRadius : x ≠ 0 →
+      rhoG *
+          (omega *
+            ((m : ℝ) * ((n : ℝ) * (a * e + e * a + eps * e * e)))) ≤
+        (1 / 2 : ℝ))
+    (hGramLeftInv : x ≠ 0 → IsLeftInverse m (rectGram A) AAT_inv)
+    (hDataE : x ≠ 0 → ∀ i k, 0 ≤ E i k)
+    (hDeltaA2Component : x ≠ 0 →
+      ∀ i k, |DeltaA2 i k| ≤ eps * E i k)
+    (hxTranspose : x ≠ 0 →
+      x =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : x ≠ 0 → 3 * max rho1 rho2 < 1)
+    (halpha : x ≠ 0 → 0 ≤ alpha)
+    (hbeta : x ≠ 0 → 0 ≤ beta)
+    (hsigma : x ≠ 0 → 0 ≤ sigma)
+    (halpha_le : x ≠ 0 → alpha ≤ rho1)
+    (hbeta_le : x ≠ 0 → beta ≤ rho2)
+    (hSigmaBeta_le : x ≠ 0 → sigma + beta ≤ tau)
+    (hAATInv_le : infNorm AAT_inv ≤ omega)
+    (hSourceFactor_le :
+      tau *
+          (Real.sqrt ((m : ℝ) * (m : ℝ)) *
+            (((m : ℝ) * 2) * omega)) ≤
+        (1 - rho2)⁻¹)
+    (hAOp : x ≠ 0 → rectOpNorm2Le A sigma)
+    (hDeltaA1Op : x ≠ 0 → rectOpNorm2Le DeltaA1 alpha)
+    (hDeltaA2Op : x ≠ 0 → rectOpNorm2Le DeltaA2 beta) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j)
+      b x :=
+  higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_row_norm_infNorm_bounds_of_componentwise_data_bound
+    hm A x DeltaA1 DeltaA2 b y AAT_inv E rho1 rho2 alpha beta sigma eps
+    rhoG tau omega
+    ((m : ℝ) * ((n : ℝ) * (a * e + e * a + eps * e * e)))
+    hDeltaA1 hDataEpsNonneg hDataEpsLeRho hrhoG
+    (fun hx =>
+      undetGramPerturbationRowNormBudget_infNorm_le_of_row_norm_bounds
+        A E (hDataEpsNonneg hx) (hArow hx) (hErow hx) (ha hx) (he hx))
+    hRowRadius hGramLeftInv hDataE hDeltaA2Component hxTranspose hsmall
+    halpha hbeta hsigma halpha_le hbeta_le hSigmaBeta_le hAATInv_le
+    hSourceFactor_le hAOp hDeltaA1Op hDeltaA2Op
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    row-norm source-budget handoff with the row-norm bounds on `A` and `E`
+    discharged from operator-2 certificates. -/
+theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_op_norm_bounds_of_componentwise_data_bound
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (E : Fin m → Fin n → ℝ)
+    (rho1 rho2 alpha beta sigma eps rhoG tau omega e : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hDataEpsNonneg : x ≠ 0 → 0 ≤ eps)
+    (hDataEpsLeRho : x ≠ 0 → eps ≤ rhoG)
+    (hrhoG : x ≠ 0 → 0 ≤ rhoG)
+    (hEOp : x ≠ 0 → rectOpNorm2Le E e)
+    (he : x ≠ 0 → 0 ≤ e)
+    (hRowRadius : x ≠ 0 →
+      rhoG *
+          (omega *
+            ((m : ℝ) *
+              ((n : ℝ) *
+                (sigma * e + e * sigma + eps * e * e)))) ≤
+        (1 / 2 : ℝ))
+    (hGramLeftInv : x ≠ 0 → IsLeftInverse m (rectGram A) AAT_inv)
+    (hDataE : x ≠ 0 → ∀ i k, 0 ≤ E i k)
+    (hDeltaA2Component : x ≠ 0 →
+      ∀ i k, |DeltaA2 i k| ≤ eps * E i k)
+    (hxTranspose : x ≠ 0 →
+      x =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : x ≠ 0 → 3 * max rho1 rho2 < 1)
+    (halpha : x ≠ 0 → 0 ≤ alpha)
+    (hbeta : x ≠ 0 → 0 ≤ beta)
+    (hsigma : x ≠ 0 → 0 ≤ sigma)
+    (halpha_le : x ≠ 0 → alpha ≤ rho1)
+    (hbeta_le : x ≠ 0 → beta ≤ rho2)
+    (hSigmaBeta_le : x ≠ 0 → sigma + beta ≤ tau)
+    (hAATInv_le : infNorm AAT_inv ≤ omega)
+    (hSourceFactor_le :
+      tau *
+          (Real.sqrt ((m : ℝ) * (m : ℝ)) *
+            (((m : ℝ) * 2) * omega)) ≤
+        (1 - rho2)⁻¹)
+    (hAOp : x ≠ 0 → rectOpNorm2Le A sigma)
+    (hDeltaA1Op : x ≠ 0 → rectOpNorm2Le DeltaA1 alpha)
+    (hDeltaA2Op : x ≠ 0 → rectOpNorm2Le DeltaA2 beta) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j)
+      b x :=
+  higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_row_norm_bounds_of_componentwise_data_bound
+    hm A x DeltaA1 DeltaA2 b y AAT_inv E rho1 rho2 alpha beta sigma eps
+    rhoG tau omega sigma e hDeltaA1 hDataEpsNonneg hDataEpsLeRho hrhoG
+    (fun hx i =>
+      higham21_rectRowNorm2_le_of_rectOpNorm2Le A i (hsigma hx) (hAOp hx))
+    (fun hx i =>
+      higham21_rectRowNorm2_le_of_rectOpNorm2Le E i (he hx) (hEOp hx))
+    hsigma he hRowRadius hGramLeftInv hDataE hDeltaA2Component hxTranspose
+    hsmall halpha hbeta hsigma halpha_le hbeta_le hSigmaBeta_le hAATInv_le
+    hSourceFactor_le hAOp hDeltaA1Op hDeltaA2Op
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    operator-norm row-budget handoff with the `DeltaA2` operator certificate
+    discharged from the componentwise data perturbation bound and an
+    operator-2 certificate for `E`. -/
+theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_deltaA2_component_op_bounds_of_componentwise_data_bound
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (E : Fin m → Fin n → ℝ)
+    (rho1 rho2 alpha sigma eps rhoG tau omega e : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hDataEpsNonneg : x ≠ 0 → 0 ≤ eps)
+    (hDataEpsLeRho : x ≠ 0 → eps ≤ rhoG)
+    (hrhoG : x ≠ 0 → 0 ≤ rhoG)
+    (hEOp : x ≠ 0 → rectOpNorm2Le E e)
+    (he : x ≠ 0 → 0 ≤ e)
+    (hEpsE_le : x ≠ 0 → eps * e ≤ rho2)
+    (hRowRadius : x ≠ 0 →
+      rhoG *
+          (omega *
+            ((m : ℝ) *
+              ((n : ℝ) *
+                (sigma * e + e * sigma + eps * e * e)))) ≤
+        (1 / 2 : ℝ))
+    (hGramLeftInv : x ≠ 0 → IsLeftInverse m (rectGram A) AAT_inv)
+    (hDataE : x ≠ 0 → ∀ i k, 0 ≤ E i k)
+    (hDeltaA2Component : x ≠ 0 →
+      ∀ i k, |DeltaA2 i k| ≤ eps * E i k)
+    (hxTranspose : x ≠ 0 →
+      x =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : x ≠ 0 → 3 * max rho1 rho2 < 1)
+    (halpha : x ≠ 0 → 0 ≤ alpha)
+    (hsigma : x ≠ 0 → 0 ≤ sigma)
+    (halpha_le : x ≠ 0 → alpha ≤ rho1)
+    (hSigmaEpsE_le : x ≠ 0 → sigma + eps * e ≤ tau)
+    (hAATInv_le : infNorm AAT_inv ≤ omega)
+    (hSourceFactor_le :
+      tau *
+          (Real.sqrt ((m : ℝ) * (m : ℝ)) *
+            (((m : ℝ) * 2) * omega)) ≤
+        (1 - rho2)⁻¹)
+    (hAOp : x ≠ 0 → rectOpNorm2Le A sigma)
+    (hDeltaA1Op : x ≠ 0 → rectOpNorm2Le DeltaA1 alpha) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j)
+      b x :=
+  higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_op_norm_bounds_of_componentwise_data_bound
+    hm A x DeltaA1 DeltaA2 b y AAT_inv E rho1 rho2 alpha (eps * e) sigma
+    eps rhoG tau omega e hDeltaA1 hDataEpsNonneg hDataEpsLeRho hrhoG
+    hEOp he hRowRadius hGramLeftInv hDataE hDeltaA2Component hxTranspose
+    hsmall halpha
+    (fun hx => mul_nonneg (hDataEpsNonneg hx) (he hx))
+    hsigma halpha_le hEpsE_le hSigmaEpsE_le hAATInv_le hSourceFactor_le
+    hAOp hDeltaA1Op
+    (fun hx =>
+      higham21_rectOpNorm2Le_of_componentwise_data_bound DeltaA2 E
+        (hDataEpsNonneg hx) (hDeltaA2Component hx) (hEOp hx))
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    componentwise/operator handoff with the conservative source scalar factor
+    supplied in the simpler quadratic dimension form. -/
+theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_deltaA2_component_op_bounds_quadratic_source_factor
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (E : Fin m → Fin n → ℝ)
+    (rho1 rho2 alpha sigma eps rhoG tau omega e : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hDataEpsNonneg : x ≠ 0 → 0 ≤ eps)
+    (hDataEpsLeRho : x ≠ 0 → eps ≤ rhoG)
+    (hrhoG : x ≠ 0 → 0 ≤ rhoG)
+    (hEOp : x ≠ 0 → rectOpNorm2Le E e)
+    (he : x ≠ 0 → 0 ≤ e)
+    (hEpsE_le : x ≠ 0 → eps * e ≤ rho2)
+    (hRowRadius : x ≠ 0 →
+      rhoG *
+          (omega *
+            ((m : ℝ) *
+              ((n : ℝ) *
+                (sigma * e + e * sigma + eps * e * e)))) ≤
+        (1 / 2 : ℝ))
+    (hGramLeftInv : x ≠ 0 → IsLeftInverse m (rectGram A) AAT_inv)
+    (hDataE : x ≠ 0 → ∀ i k, 0 ≤ E i k)
+    (hDeltaA2Component : x ≠ 0 →
+      ∀ i k, |DeltaA2 i k| ≤ eps * E i k)
+    (hxTranspose : x ≠ 0 →
+      x =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : x ≠ 0 → 3 * max rho1 rho2 < 1)
+    (halpha : x ≠ 0 → 0 ≤ alpha)
+    (hsigma : x ≠ 0 → 0 ≤ sigma)
+    (halpha_le : x ≠ 0 → alpha ≤ rho1)
+    (hSigmaEpsE_le : x ≠ 0 → sigma + eps * e ≤ tau)
+    (hAATInv_le : infNorm AAT_inv ≤ omega)
+    (hSourceFactor_le :
+      2 * (m : ℝ) ^ 2 * tau * omega ≤ (1 - rho2)⁻¹)
+    (hAOp : x ≠ 0 → rectOpNorm2Le A sigma)
+    (hDeltaA1Op : x ≠ 0 → rectOpNorm2Le DeltaA1 alpha) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j)
+      b x :=
+  higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_deltaA2_component_op_bounds_of_componentwise_data_bound
+    hm A x DeltaA1 DeltaA2 b y AAT_inv E rho1 rho2 alpha sigma eps rhoG
+    tau omega e hDeltaA1 hDataEpsNonneg hDataEpsLeRho hrhoG hEOp he
+    hEpsE_le hRowRadius hGramLeftInv hDataE hDeltaA2Component hxTranspose
+    hsmall halpha hsigma halpha_le hSigmaEpsE_le hAATInv_le
+    (higham21_lemma21_2_source_factor_le_of_quadratic_bound
+      m rho2 tau omega hSourceFactor_le)
+    hAOp hDeltaA1Op
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     guarded source-factor handoff with perturbed Gram nonsingularity discharged
