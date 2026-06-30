@@ -4849,6 +4849,29 @@ theorem gqrSourceAFromBlocks_L22_perturbation_frobNorm_eq {r p q : ℕ}
             (IsOrthogonal.transpose hQ)
     _ = frobNormRect DeltaL22 := frobNormRect_gqrAQBlock_only_L22 DeltaL22
 
+/-- The bottom row block has Frobenius squared norm no larger than the full
+    rectangular matrix. -/
+theorem frobNormSqRect_bottomRows_le {r q n : ℕ}
+    (M : Fin (r + q) → Fin n → ℝ) :
+    frobNormSqRect (fun i : Fin q => M (Fin.natAdd r i)) ≤
+      frobNormSqRect M := by
+  unfold frobNormSqRect
+  rw [Fin.sum_univ_add]
+  have htop_nonneg :
+      0 ≤ ∑ i : Fin r, ∑ j : Fin n, M (Fin.castAdd q i) j ^ 2 := by
+    exact Finset.sum_nonneg
+      (fun i _ => Finset.sum_nonneg (fun j _ => sq_nonneg _))
+  linarith
+
+/-- The bottom row block has Frobenius norm no larger than the full
+    rectangular matrix. -/
+theorem frobNormRect_bottomRows_le {r q n : ℕ}
+    (M : Fin (r + q) → Fin n → ℝ) :
+    frobNormRect (fun i : Fin q => M (Fin.natAdd r i)) ≤
+      frobNormRect M := by
+  unfold frobNormRect
+  exact Real.sqrt_le_sqrt (frobNormSqRect_bottomRows_le M)
+
 /-- The trailing column block has Frobenius norm no larger than the full
     rectangular matrix. -/
 theorem frobNormSqRect_trailingCols_le {m p q : ℕ}
@@ -4899,6 +4922,158 @@ theorem frobNormRect_gqrAQ2Block_le
     _ ≤ frobNormRect AQ := frobNormRect_trailingCols_le AQ
     _ = frobNormRect A := by
           simpa [AQ] using frobNormRect_orthogonal_right A Q hQ
+
+/-- The bottom-right `L22` block in the displayed GQR `UᵀAQ` matrix has
+    Frobenius norm no larger than the full displayed block. -/
+theorem frobNormRect_gqrAQBlock_L22_le {r p q : ℕ}
+    (L11 : Fin r → Fin p → ℝ)
+    (L21 : Fin q → Fin p → ℝ)
+    (L22 : Fin q → Fin q → ℝ) :
+    frobNormRect L22 ≤ frobNormRect (gqrAQBlock L11 L21 L22) := by
+  let bottom : Fin q → Fin (p + q) → ℝ :=
+    fun i j => gqrAQBlock L11 L21 L22 (Fin.natAdd r i) j
+  have hL22 :
+      L22 = fun i : Fin q => fun j : Fin q => bottom i (Fin.natAdd p j) := by
+    ext i j
+    simp [bottom, gqrAQBlock, Fin.append_right]
+  calc
+    frobNormRect L22 =
+        frobNormRect (fun i : Fin q => fun j : Fin q =>
+          bottom i (Fin.natAdd p j)) := by rw [hL22]
+    _ ≤ frobNormRect bottom := frobNormRect_trailingCols_le bottom
+    _ ≤ frobNormRect (gqrAQBlock L11 L21 L22) :=
+          frobNormRect_bottomRows_le (gqrAQBlock L11 L21 L22)
+
+/-- A supplied GQR factorization reconstructs its original data matrix from
+    the displayed `UᵀAQ` block and the orthogonal factors `U` and `Qᵀ`. -/
+theorem GeneralizedQRFactorization.sourceAFromBlocks_eq {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B) :
+    gqrSourceAFromBlocks h.Q h.U h.L11 h.L21 h.L22 = A := by
+  let M : Fin (r + q) → Fin (p + q) → ℝ :=
+    gqrAQBlock h.L11 h.L21 h.L22
+  let AQ : Fin (r + q) → Fin (p + q) → ℝ := matMulRectRight A h.Q
+  have haq : matMulRectLeft (matTranspose h.U) AQ = M := by
+    simpa [M, AQ, matMulRectRight] using h.aq_eq
+  have hUright : rectMatMul h.U (matTranspose h.U) = idMatrix (r + q) := by
+    ext i j
+    simpa [rectMatMul, idMatrix] using h.orthU.right_inv i j
+  have hQright : rectMatMul h.Q (matTranspose h.Q) = idMatrix (p + q) := by
+    ext i j
+    simpa [rectMatMul, idMatrix] using h.orthQ.right_inv i j
+  calc
+    gqrSourceAFromBlocks h.Q h.U h.L11 h.L21 h.L22 =
+        matMulRectLeft h.U (matMulRectRight M (matTranspose h.Q)) := rfl
+    _ = matMulRectLeft h.U
+          (matMulRectRight
+            (matMulRectLeft (matTranspose h.U) AQ) (matTranspose h.Q)) := by
+          rw [haq]
+    _ = rectMatMul h.U
+          (rectMatMul
+            (rectMatMul (matTranspose h.U) (rectMatMul A h.Q))
+            (matTranspose h.Q)) := by
+          rfl
+    _ = rectMatMul h.U
+          (rectMatMul (matTranspose h.U)
+            (rectMatMul (rectMatMul A h.Q) (matTranspose h.Q))) := by
+          rw [rectMatMul_assoc]
+    _ = rectMatMul
+          (rectMatMul h.U (matTranspose h.U))
+          (rectMatMul (rectMatMul A h.Q) (matTranspose h.Q)) := by
+          rw [← rectMatMul_assoc]
+    _ = rectMatMul
+          (idMatrix (r + q))
+          (rectMatMul (rectMatMul A h.Q) (matTranspose h.Q)) := by
+          rw [hUright]
+    _ = rectMatMul (rectMatMul A h.Q) (matTranspose h.Q) := by
+          rw [rectMatMul_id_left]
+    _ = rectMatMul A (rectMatMul h.Q (matTranspose h.Q)) :=
+          rectMatMul_assoc A h.Q (matTranspose h.Q)
+    _ = rectMatMul A (idMatrix (p + q)) := by rw [hQright]
+    _ = A := rectMatMul_id_right A
+
+/-- In a supplied GQR factorization, the bottom-right displayed block `L22`
+    has Frobenius norm no larger than the source data matrix `A`. -/
+theorem GeneralizedQRFactorization.frobNormRect_L22_le_sourceA {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B) :
+    frobNormRect h.L22 ≤ frobNormRect A := by
+  let M : Fin (r + q) → Fin (p + q) → ℝ :=
+    gqrAQBlock h.L11 h.L21 h.L22
+  have haq : matMulRectLeft (matTranspose h.U) (matMulRectRight A h.Q) = M := by
+    simpa [M, matMulRectRight] using h.aq_eq
+  have hMnorm : frobNormRect M = frobNormRect A := by
+    calc
+      frobNormRect M =
+          frobNormRect
+            (matMulRectLeft (matTranspose h.U) (matMulRectRight A h.Q)) := by
+            rw [← haq]
+      _ = frobNormRect (matMulRectRight A h.Q) := by
+            exact frobNormRect_orthogonal_left (matTranspose h.U)
+              (matMulRectRight A h.Q) (IsOrthogonal.transpose h.orthU)
+      _ = frobNormRect A := frobNormRect_orthogonal_right A h.Q h.orthQ
+  calc
+    frobNormRect h.L22 ≤ frobNormRect M :=
+      frobNormRect_gqrAQBlock_L22_le h.L11 h.L21 h.L22
+    _ = frobNormRect A := hMnorm
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), constructed-source
+    `DeltaA` Frobenius bound from a perturbation of the GQR `L22` block.
+
+    This closes the source-shaped `A` side of the constructed-source
+    certificate once the triangular solve supplies
+    `‖DeltaL22‖_F ≤ eta * ‖L22‖_F` and `eta` is nonnegative. -/
+theorem GeneralizedQRFactorization.constructed_sourceA_L22_perturbation_frobNorm_bound
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (eta : ℝ) (DeltaL22 : Fin q → Fin q → ℝ)
+    (heta_nonneg : 0 ≤ eta)
+    (hDeltaL22frob : frobNormRect DeltaL22 ≤ eta * frobNormRect h.L22) :
+    frobNormRect
+      (fun i j =>
+        gqrSourceAFromBlocks h.Q h.U h.L11 h.L21
+            (fun i j => h.L22 i j + DeltaL22 i j) i j -
+          A i j) ≤
+      eta * frobNormRect A := by
+  have hAsrc := h.sourceAFromBlocks_eq
+  have hnorm :
+      frobNormRect
+        (fun i j =>
+          gqrSourceAFromBlocks h.Q h.U h.L11 h.L21
+              (fun i j => h.L22 i j + DeltaL22 i j) i j -
+            A i j) =
+        frobNormRect DeltaL22 := by
+    calc
+      frobNormRect
+          (fun i j =>
+            gqrSourceAFromBlocks h.Q h.U h.L11 h.L21
+                (fun i j => h.L22 i j + DeltaL22 i j) i j -
+              A i j)
+          = frobNormRect
+              (fun i j =>
+                gqrSourceAFromBlocks h.Q h.U h.L11 h.L21
+                    (fun i j => h.L22 i j + DeltaL22 i j) i j -
+                  gqrSourceAFromBlocks h.Q h.U h.L11 h.L21 h.L22 i j) := by
+            congr 1
+            ext i j
+            rw [hAsrc]
+      _ = frobNormRect DeltaL22 :=
+            gqrSourceAFromBlocks_L22_perturbation_frobNorm_eq
+              h.Q h.U h.L11 h.L21 h.L22 DeltaL22 h.orthQ h.orthU
+  calc
+    frobNormRect
+        (fun i j =>
+          gqrSourceAFromBlocks h.Q h.U h.L11 h.L21
+              (fun i j => h.L22 i j + DeltaL22 i j) i j -
+            A i j)
+        = frobNormRect DeltaL22 := hnorm
+    _ ≤ eta * frobNormRect h.L22 := hDeltaL22frob
+    _ ≤ eta * frobNormRect A :=
+          mul_le_mul_of_nonneg_left h.frobNormRect_L22_le_sourceA heta_nonneg
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction route:
     the `A Q₂` block has trivial kernel using only the constraint block
