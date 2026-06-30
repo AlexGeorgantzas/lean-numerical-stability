@@ -42495,6 +42495,54 @@ theorem higham9_8_exists_CompletePivotGECPUTrace_growthFactorEntry_le_pow_two_of
       hn A hdet hAmax
   exact ⟨hAmax, U, hU, hρ⟩
 
+/-- **Theorem 9.8 / equation (9.14)**, determinant-input complete-pivoting
+trace existence at Wilkinson's sharp product RHS.
+
+This is the trace-level counterpart of the sharp certificate and solve
+consumers.  The remaining visible source premise is the per-trace Wilkinson
+growth theorem. -/
+theorem higham9_14_exists_CompletePivotGECPUTrace_growthFactorEntry_le_wilkinsonBound_of_det_ne_zero_of_trace_bound
+    {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hAmax : 0 < maxEntryNorm hn A)
+    (hsharp :
+      ∀ (hn : 0 < n) (A U : Fin n → Fin n → ℝ)
+        (hApos : 0 < maxEntryNorm hn A),
+        higham9_8_CompletePivotGECPUTrace n A U →
+          growthFactorEntry hn A U hApos ≤
+            higham9_14_completePivotWilkinsonBound n) :
+    ∃ U : Fin n → Fin n → ℝ,
+      higham9_8_CompletePivotGECPUTrace n A U ∧
+        growthFactorEntry hn A U hAmax ≤
+          higham9_14_completePivotWilkinsonBound n := by
+  obtain ⟨U, hU⟩ :=
+    higham9_8_exists_CompletePivotGECPUTrace_of_det_ne_zero (A := A) hdet
+  exact ⟨U, hU, hsharp hn A U hAmax hU⟩
+
+/-- **Theorem 9.8 / equation (9.14)**, determinant-input complete-pivoting
+trace existence at Wilkinson's sharp product RHS, deriving the positive source
+denominator from nonsingularity. -/
+theorem higham9_14_exists_CompletePivotGECPUTrace_growthFactorEntry_le_wilkinsonBound_of_det_ne_zero_exists_hAmax_of_trace_bound
+    {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hsharp :
+      ∀ (hn : 0 < n) (A U : Fin n → Fin n → ℝ)
+        (hApos : 0 < maxEntryNorm hn A),
+        higham9_8_CompletePivotGECPUTrace n A U →
+          growthFactorEntry hn A U hApos ≤
+            higham9_14_completePivotWilkinsonBound n) :
+    ∃ hAmax : 0 < maxEntryNorm hn A,
+    ∃ U : Fin n → Fin n → ℝ,
+      higham9_8_CompletePivotGECPUTrace n A U ∧
+        growthFactorEntry hn A U hAmax ≤
+          higham9_14_completePivotWilkinsonBound n := by
+  have hAmax : 0 < maxEntryNorm hn A :=
+    maxEntryNorm_pos_of_det_ne_zero hn A hdet
+  obtain ⟨U, hU, hρ⟩ :=
+    higham9_14_exists_CompletePivotGECPUTrace_growthFactorEntry_le_wilkinsonBound_of_det_ne_zero_of_trace_bound
+      hn A hdet hAmax hsharp
+  exact ⟨hAmax, U, hU, hρ⟩
+
 /-- **Problem 9.11 / equation (9.15)**, the trace-level complete-pivoting
 growth-value family is nonempty in every positive dimension. -/
 theorem higham9_completePivotingUTraceGrowthValues_nonempty {n : ℕ}
@@ -44389,6 +44437,54 @@ theorem higham9_16_exists_RookPivotGEUTrace_growthFactorEntry_le_pow_two_of_det_
   obtain ⟨U, hU, hρ⟩ :=
     higham9_16_exists_RookPivotGEUTrace_growthFactorEntry_le_pow_two_of_det_ne_zero
       hn A hdet hAmax
+  exact ⟨hAmax, U, hU, hρ⟩
+
+/-- **Equation (9.16)**, determinant-input rook-pivoting trace existence at
+Foster's sharp product RHS.
+
+This is the trace-level counterpart of the sharp certificate and solve
+consumers.  The remaining visible source premise is Foster's per-trace growth
+theorem. -/
+theorem higham9_16_exists_RookPivotGEUTrace_growthFactorEntry_le_fosterBound_of_det_ne_zero_of_trace_bound
+    {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hAmax : 0 < maxEntryNorm hn A)
+    (hsharp :
+      ∀ (hn : 0 < n) (A U : Fin n → Fin n → ℝ)
+        (hApos : 0 < maxEntryNorm hn A),
+        higham9_16_RookPivotGEUTrace n A U →
+          growthFactorEntry hn A U hApos ≤
+            higham9_16_rookPivotFosterBound n) :
+    ∃ U : Fin n → Fin n → ℝ,
+      higham9_16_RookPivotGEUTrace n A U ∧
+        growthFactorEntry hn A U hAmax ≤
+          higham9_16_rookPivotFosterBound n := by
+  obtain ⟨U, hU⟩ :=
+    higham9_16_exists_RookPivotGEUTrace_of_det_ne_zero (A := A) hdet
+  exact ⟨U, hU, hsharp hn A U hAmax hU⟩
+
+/-- **Equation (9.16)**, determinant-input rook-pivoting trace existence at
+Foster's sharp product RHS, deriving the positive source denominator from
+nonsingularity. -/
+theorem higham9_16_exists_RookPivotGEUTrace_growthFactorEntry_le_fosterBound_of_det_ne_zero_exists_hAmax_of_trace_bound
+    {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hsharp :
+      ∀ (hn : 0 < n) (A U : Fin n → Fin n → ℝ)
+        (hApos : 0 < maxEntryNorm hn A),
+        higham9_16_RookPivotGEUTrace n A U →
+          growthFactorEntry hn A U hApos ≤
+            higham9_16_rookPivotFosterBound n) :
+    ∃ hAmax : 0 < maxEntryNorm hn A,
+    ∃ U : Fin n → Fin n → ℝ,
+      higham9_16_RookPivotGEUTrace n A U ∧
+        growthFactorEntry hn A U hAmax ≤
+          higham9_16_rookPivotFosterBound n := by
+  have hAmax : 0 < maxEntryNorm hn A :=
+    maxEntryNorm_pos_of_det_ne_zero hn A hdet
+  obtain ⟨U, hU, hρ⟩ :=
+    higham9_16_exists_RookPivotGEUTrace_growthFactorEntry_le_fosterBound_of_det_ne_zero_of_trace_bound
+      hn A hdet hAmax hsharp
   exact ⟨hAmax, U, hU, hρ⟩
 
 /-- **Equation (9.16) / rook-pivoting trace growth family**, trace-level
