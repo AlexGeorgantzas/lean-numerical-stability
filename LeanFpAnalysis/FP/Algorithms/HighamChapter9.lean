@@ -36040,6 +36040,126 @@ theorem higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_s
       U Uinv hUright)
     hfact hXtri hYtri hR hself
 
+/-- **Theorem 9.15**, split-level `G` resolvent-majorant endpoint from the
+product-only nonlinear majorant.  This is the normalized analogue of the
+factorization-level product-majorant wrapper. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_inverse_identities_product_majorant
+    {n : ℕ}
+    (L U Linv Uinv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLright : rectMatMul L Linv = idMatrix n)
+    (hUleft : rectMatMul Uinv U = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) R)
+    (hquad :
+      ∀ i j : Fin n,
+        rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+            (absMatrix n (rectMatMul ΔU Uinv)) i j ≤
+          rectMatMul
+            (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))
+            (fun r c : Fin n =>
+              |higham9_27_GMatrix Linv ΔA Uinv r c| +
+                rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+                  (absMatrix n (rectMatMul ΔU Uinv)) r c)
+            i j) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  have hself :
+      ∀ i j : Fin n,
+        |higham9_27_GMatrix Linv ΔA Uinv i j| +
+            rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+              (absMatrix n (rectMatMul ΔU Uinv)) i j ≤
+          absMatrix n (higham9_27_GMatrix Linv ΔA Uinv) i j +
+            rectMatMul
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))
+              (fun r c : Fin n =>
+                |higham9_27_GMatrix Linv ΔA Uinv r c| +
+                  rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+                    (absMatrix n (rectMatMul ΔU Uinv)) r c)
+              i j := by
+    intro i j
+    simpa [absMatrix] using
+      add_le_add_left (hquad i j) |higham9_27_GMatrix Linv ΔA Uinv i j|
+  exact
+    higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_inverse_identities
+      L U Linv Uinv ΔA ΔL ΔU R hLright hUleft hfact hXtri hYtri hR
+      hself
+
+/-- **Theorem 9.15**, source-oriented inverse-identity form of the split-level
+`G` product-majorant resolvent endpoint. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_source_inverse_identities_product_majorant
+    {n : ℕ}
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) R)
+    (hquad :
+      ∀ i j : Fin n,
+        rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+            (absMatrix n (rectMatMul ΔU Uinv)) i j ≤
+          rectMatMul
+            (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))
+            (fun r c : Fin n =>
+              |higham9_27_GMatrix Linv ΔA Uinv r c| +
+                rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+                  (absMatrix n (rectMatMul ΔU Uinv)) r c)
+            i j) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) :=
+  higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_inverse_identities_product_majorant
+    L U Linv Uinv ΔA ΔL ΔU R
+    (higham9_15_rectMatMul_right_inverse_of_matrix_left_inverse
+      L Linv hLleft)
+    (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse
+      U Uinv hUright)
+    hfact hXtri hYtri hR hquad
+
 /-- **Theorem 9.15**, factorization-level componentwise `G`
 resolvent-majorant endpoint.  The normalized `I + G` split identity is derived
 from the source and perturbed factorizations, and the remaining nonlinear
@@ -36928,6 +37048,126 @@ theorem higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant
     (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse
       Uhat UhatInv hUright)
     hfact hXtri hYtri hR hself
+
+/-- **Theorem 9.15**, split-level `Gtilde` resolvent-majorant endpoint from
+the product-only nonlinear majorant.  This is the normalized analogue of the
+factorization-level product-majorant wrapper. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_inverse_identities_product_majorant
+    {n : ℕ}
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix n)
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) R)
+    (hquad :
+      ∀ i j : Fin n,
+        rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+            (absMatrix n (rectMatMul ΔU UhatInv)) i j ≤
+          rectMatMul
+            (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))
+            (fun r c : Fin n =>
+              |higham9_27_GMatrix LhatInv ΔA UhatInv r c| +
+                rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+                  (absMatrix n (rectMatMul ΔU UhatInv)) r c)
+            i j) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  have hself :
+      ∀ i j : Fin n,
+        |higham9_27_GMatrix LhatInv ΔA UhatInv i j| +
+            rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+              (absMatrix n (rectMatMul ΔU UhatInv)) i j ≤
+          absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv) i j +
+            rectMatMul
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))
+              (fun r c : Fin n =>
+                |higham9_27_GMatrix LhatInv ΔA UhatInv r c| +
+                  rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+                    (absMatrix n (rectMatMul ΔU UhatInv)) r c)
+              i j := by
+    intro i j
+    simpa [absMatrix] using
+      add_le_add_left (hquad i j) |higham9_27_GMatrix LhatInv ΔA UhatInv i j|
+  exact
+    higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_inverse_identities
+      Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU R hLright hUleft hfact
+      hXtri hYtri hR hself
+
+/-- **Theorem 9.15**, source-oriented inverse-identity form of the split-level
+`Gtilde` product-majorant resolvent endpoint. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_source_inverse_identities_product_majorant
+    {n : ℕ}
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) R)
+    (hquad :
+      ∀ i j : Fin n,
+        rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+            (absMatrix n (rectMatMul ΔU UhatInv)) i j ≤
+          rectMatMul
+            (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))
+            (fun r c : Fin n =>
+              |higham9_27_GMatrix LhatInv ΔA UhatInv r c| +
+                rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+                  (absMatrix n (rectMatMul ΔU UhatInv)) r c)
+            i j) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) :=
+  higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_inverse_identities_product_majorant
+    Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU R
+    (higham9_15_rectMatMul_right_inverse_of_matrix_left_inverse
+      Lhat LhatInv hLleft)
+    (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse
+      Uhat UhatInv hUright)
+    hfact hXtri hYtri hR hquad
 
 /-- **Theorem 9.15**, factorization-level componentwise `Gtilde`
 resolvent-majorant endpoint.  The normalized `I - Gtilde` split identity is
