@@ -24466,6 +24466,203 @@ theorem higham9_15_normalized_Gtilde_frobNormSqRect_X_add_Y_eq_init_add_residual
   rw [hXsq, hYsq]
   ring
 
+/-- **Theorem 9.15 support**, the squared norm of a full final column is
+bounded by the squared Frobenius norm of the matrix. -/
+theorem higham9_15_vecNorm2Sq_lastColumn_le_frobNormSqRect {n : ℕ}
+    (A : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) :
+    vecNorm2Sq (fun i : Fin (n + 1) => A i (Fin.last n)) ≤
+      frobNormSqRect A := by
+  unfold vecNorm2Sq frobNormSqRect
+  apply Finset.sum_le_sum
+  intro i _
+  exact
+    Finset.single_le_sum
+      (fun j _ => sq_nonneg (A i j))
+      (Finset.mem_univ (Fin.last n))
+
+/-- **Theorem 9.15 support**, the final-row-initial and full-final-column
+squared border terms are bounded by twice the squared Frobenius norm. -/
+theorem higham9_15_residual_borders_vecNorm2Sq_add_le_two_frobNormSqRect
+    {n : ℕ} (A : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) :
+    vecNorm2Sq (fun j : Fin n => A (Fin.last n) j.castSucc) +
+        vecNorm2Sq (fun i : Fin (n + 1) => A i (Fin.last n)) ≤
+      2 * frobNormSqRect A := by
+  have hrow := vecNorm2Sq_lastRowInit_le_frobNormSqRect A
+  have hcol := higham9_15_vecNorm2Sq_lastColumn_le_frobNormSqRect A
+  nlinarith
+
+/-- **Theorem 9.15 support**, square-level Frobenius handoff for the `I + G`
+split using the two residual border terms. -/
+theorem higham9_15_normalized_G_frobNormSqRect_X_add_Y_le_init_add_two_residual_sq
+    {n : ℕ}
+    (G X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 + G = (1 + X) * (1 + Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0) :
+    frobNormSqRect X + frobNormSqRect Y ≤
+      (frobNormSqRect (higham9_15_initBlock X) +
+          frobNormSqRect (higham9_15_initBlock Y)) +
+        2 * frobNormSqRect (G - X * Y) := by
+  have hsplit :=
+    higham9_15_normalized_G_frobNormSqRect_X_add_Y_eq_init_add_residual_borders
+      G X Y hfact hX hY
+  have hborder :=
+    higham9_15_residual_borders_vecNorm2Sq_add_le_two_frobNormSqRect
+      (G - X * Y)
+  rw [hsplit]
+  exact add_le_add le_rfl hborder
+
+/-- **Theorem 9.15 support**, square-level Frobenius handoff for the
+`I - Gtilde` split using the two residual border terms. -/
+theorem higham9_15_normalized_Gtilde_frobNormSqRect_X_add_Y_le_init_add_two_residual_sq
+    {n : ℕ}
+    (Gtilde X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 - Gtilde = (1 - X) * (1 - Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0) :
+    frobNormSqRect X + frobNormSqRect Y ≤
+      (frobNormSqRect (higham9_15_initBlock X) +
+          frobNormSqRect (higham9_15_initBlock Y)) +
+        2 * frobNormSqRect (Gtilde + X * Y) := by
+  have hsplit :=
+    higham9_15_normalized_Gtilde_frobNormSqRect_X_add_Y_eq_init_add_residual_borders
+      Gtilde X Y hfact hX hY
+  have hborder :=
+    higham9_15_residual_borders_vecNorm2Sq_add_le_two_frobNormSqRect
+      (Gtilde + X * Y)
+  rw [hsplit]
+  exact add_le_add le_rfl hborder
+
+/-- **Theorem 9.15 support**, real square-root subadditivity on nonnegative
+inputs, localized for the square-level Frobenius budget handoffs. -/
+theorem higham9_15_real_sqrt_add_le_add_sqrt {a b : ℝ}
+    (ha : 0 ≤ a) (hb : 0 ≤ b) :
+    Real.sqrt (a + b) ≤ Real.sqrt a + Real.sqrt b := by
+  have hab : 0 ≤ a + b := add_nonneg ha hb
+  have hrhs : 0 ≤ Real.sqrt a + Real.sqrt b :=
+    add_nonneg (Real.sqrt_nonneg a) (Real.sqrt_nonneg b)
+  have hsquares :
+      (Real.sqrt (a + b)) ^ 2 ≤ (Real.sqrt a + Real.sqrt b) ^ 2 := by
+    rw [Real.sq_sqrt hab, add_sq, Real.sq_sqrt ha, Real.sq_sqrt hb]
+    have hcross : 0 ≤ 2 * (Real.sqrt a * Real.sqrt b) := by positivity
+    nlinarith
+  have habs :
+      |Real.sqrt (a + b)| ≤ |Real.sqrt a + Real.sqrt b| :=
+    (sq_le_sq).1 hsquares
+  simpa [abs_of_nonneg (Real.sqrt_nonneg _), abs_of_nonneg hrhs] using habs
+
+/-- **Theorem 9.15 support**, square-root Frobenius-budget handoff for the
+combined normalized factors in the `I + G` split. -/
+theorem higham9_15_normalized_G_sqrt_frobNormSqRect_X_add_Y_le_init_sqrt_add_sqrt_two_residual_sq
+    {n : ℕ}
+    (G X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 + G = (1 + X) * (1 + Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0) :
+    Real.sqrt (frobNormSqRect X + frobNormSqRect Y) ≤
+      Real.sqrt
+          (frobNormSqRect (higham9_15_initBlock X) +
+            frobNormSqRect (higham9_15_initBlock Y)) +
+        Real.sqrt (2 * frobNormSqRect (G - X * Y)) := by
+  have hsq :=
+    higham9_15_normalized_G_frobNormSqRect_X_add_Y_le_init_add_two_residual_sq
+      G X Y hfact hX hY
+  have hmono := Real.sqrt_le_sqrt hsq
+  have hinit_nonneg :
+      0 ≤ frobNormSqRect (higham9_15_initBlock X) +
+          frobNormSqRect (higham9_15_initBlock Y) :=
+    add_nonneg (frobNormSqRect_nonneg _) (frobNormSqRect_nonneg _)
+  have hres_nonneg : 0 ≤ 2 * frobNormSqRect (G - X * Y) :=
+    mul_nonneg (by norm_num) (frobNormSqRect_nonneg _)
+  exact hmono.trans
+    (higham9_15_real_sqrt_add_le_add_sqrt hinit_nonneg hres_nonneg)
+
+/-- **Theorem 9.15 support**, square-root Frobenius-budget handoff for the
+combined normalized factors in the `I - Gtilde` split. -/
+theorem higham9_15_normalized_Gtilde_sqrt_frobNormSqRect_X_add_Y_le_init_sqrt_add_sqrt_two_residual_sq
+    {n : ℕ}
+    (Gtilde X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 - Gtilde = (1 - X) * (1 - Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0) :
+    Real.sqrt (frobNormSqRect X + frobNormSqRect Y) ≤
+      Real.sqrt
+          (frobNormSqRect (higham9_15_initBlock X) +
+            frobNormSqRect (higham9_15_initBlock Y)) +
+        Real.sqrt (2 * frobNormSqRect (Gtilde + X * Y)) := by
+  have hsq :=
+    higham9_15_normalized_Gtilde_frobNormSqRect_X_add_Y_le_init_add_two_residual_sq
+      Gtilde X Y hfact hX hY
+  have hmono := Real.sqrt_le_sqrt hsq
+  have hinit_nonneg :
+      0 ≤ frobNormSqRect (higham9_15_initBlock X) +
+          frobNormSqRect (higham9_15_initBlock Y) :=
+    add_nonneg (frobNormSqRect_nonneg _) (frobNormSqRect_nonneg _)
+  have hres_nonneg : 0 ≤ 2 * frobNormSqRect (Gtilde + X * Y) :=
+    mul_nonneg (by norm_num) (frobNormSqRect_nonneg _)
+  exact hmono.trans
+    (higham9_15_real_sqrt_add_le_add_sqrt hinit_nonneg hres_nonneg)
+
+/-- **Theorem 9.15 support**, the coarse square residual term is bounded by
+twice the residual Frobenius norm. -/
+theorem higham9_15_sqrt_two_mul_frobNormSqRect_le_two_frobNormRect {n : ℕ}
+    (A : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) :
+    Real.sqrt (2 * frobNormSqRect A) ≤ 2 * frobNormRect A := by
+  have hsqrt_two_le_two : Real.sqrt (2 : ℝ) ≤ 2 := by
+    have hsqrt_nonneg : 0 ≤ Real.sqrt (2 : ℝ) := Real.sqrt_nonneg _
+    have hsqrt_sq : (Real.sqrt (2 : ℝ)) ^ 2 = 2 :=
+      Real.sq_sqrt (by norm_num)
+    nlinarith
+  calc
+    Real.sqrt (2 * frobNormSqRect A) =
+        Real.sqrt (2 : ℝ) * frobNormRect A := by
+      unfold frobNormRect
+      rw [Real.sqrt_mul (by norm_num : 0 ≤ (2 : ℝ))]
+    _ ≤ 2 * frobNormRect A :=
+      mul_le_mul_of_nonneg_right hsqrt_two_le_two (frobNormRect_nonneg A)
+
+/-- **Theorem 9.15 support**, square-root Frobenius-budget handoff for the
+`I + G` split with the residual term expressed as a Frobenius norm. -/
+theorem higham9_15_normalized_G_sqrt_frobNormSqRect_X_add_Y_le_init_sqrt_add_two_residual
+    {n : ℕ}
+    (G X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 + G = (1 + X) * (1 + Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0) :
+    Real.sqrt (frobNormSqRect X + frobNormSqRect Y) ≤
+      Real.sqrt
+          (frobNormSqRect (higham9_15_initBlock X) +
+            frobNormSqRect (higham9_15_initBlock Y)) +
+        2 * frobNormRect (G - X * Y) := by
+  have hbudget :=
+    higham9_15_normalized_G_sqrt_frobNormSqRect_X_add_Y_le_init_sqrt_add_sqrt_two_residual_sq
+      G X Y hfact hX hY
+  have hres :=
+    higham9_15_sqrt_two_mul_frobNormSqRect_le_two_frobNormRect
+      (G - X * Y)
+  exact hbudget.trans (add_le_add le_rfl hres)
+
+/-- **Theorem 9.15 support**, square-root Frobenius-budget handoff for the
+`I - Gtilde` split with the residual term expressed as a Frobenius norm. -/
+theorem higham9_15_normalized_Gtilde_sqrt_frobNormSqRect_X_add_Y_le_init_sqrt_add_two_residual
+    {n : ℕ}
+    (Gtilde X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 - Gtilde = (1 - X) * (1 - Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0) :
+    Real.sqrt (frobNormSqRect X + frobNormSqRect Y) ≤
+      Real.sqrt
+          (frobNormSqRect (higham9_15_initBlock X) +
+            frobNormSqRect (higham9_15_initBlock Y)) +
+        2 * frobNormRect (Gtilde + X * Y) := by
+  have hbudget :=
+    higham9_15_normalized_Gtilde_sqrt_frobNormSqRect_X_add_Y_le_init_sqrt_add_sqrt_two_residual_sq
+      Gtilde X Y hfact hX hY
+  have hres :=
+    higham9_15_sqrt_two_mul_frobNormSqRect_le_two_frobNormRect
+      (Gtilde + X * Y)
+  exact hbudget.trans (add_le_add le_rfl hres)
+
 /-- **Theorem 9.15 support**, final-row initial vector of `X` is bounded by
 the residual Frobenius norm in the `I + G` split. -/
 theorem higham9_15_normalized_G_lastRow_init_vecNorm2_le_residual {n : ℕ}
