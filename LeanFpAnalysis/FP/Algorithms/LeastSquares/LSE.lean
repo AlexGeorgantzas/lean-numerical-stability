@@ -11218,8 +11218,86 @@ theorem theorem20_10_householder_reversed_AQ2_frob_perturbation_bound
     fl_householderQRPanel_Q_orthogonal fp (r + q) q Crev hready
   have hRrev : IsUpperTrapezoidal (r + q) q
       (fl_householderQRPanel_R fp (r + q) q Crev) :=
-    fl_householderQRPanel_R_upper_trapezoidal fp (r + q) q Crev
+      fl_householderQRPanel_R_upper_trapezoidal fp (r + q) q Crev
   exact ⟨DeltaC, hDeltaCrep, hUrev, hRrev, hDeltaCbound⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    source-coordinate perturbation for the column-reversed `A Q₂`
+    Householder QR step.
+
+    This transports the reversed trailing-block perturbation back through the
+    full orthogonal `Q` factor, producing a source-shaped `DeltaA`.  The
+    resulting perturbed trailing block, after reversing columns, is exactly the
+    computed rounded Householder product for the column-reversed `A Q₂` panel.
+    This is the A-side analogue of the concrete B-side factor-identification
+    theorem; assembling the full rounded GQR record remains a separate step. -/
+theorem theorem20_10_householder_reversed_AQ2_full_A_frob_perturbation_bound
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hq : 0 < q)
+    (hvalid :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q))) :
+    let Crev : Fin (r + q) → Fin q → ℝ :=
+      rectPermuteCols Fin.revPerm (gqrAQ2Block A Q)
+    let Urev : Fin (r + q) → Fin (r + q) → ℝ :=
+      fl_householderQRPanel_Q fp (r + q) q Crev
+    let Rrev : Fin (r + q) → Fin q → ℝ :=
+      fl_householderQRPanel_R fp (r + q) q Crev
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+      (∀ i j,
+        rectPermuteCols Fin.revPerm
+            (gqrAQ2Block (fun i j => A i j + DeltaA i j) Q) i j =
+          matMulRect (r + q) (r + q) q Urev Rrev i j) ∧
+      IsOrthogonal (r + q) Urev ∧
+      IsUpperTrapezoidal (r + q) q Rrev ∧
+      frobNormRect DeltaA ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect Crev := by
+  dsimp
+  let Crev : Fin (r + q) → Fin q → ℝ :=
+    rectPermuteCols Fin.revPerm (gqrAQ2Block A Q)
+  rcases theorem20_10_householder_reversed_AQ2_frob_perturbation_bound
+      fp A Q hq hvalid with
+    ⟨DeltaCrev, hDeltaCrevRep, hUrev, hRrev, hDeltaCrevBound⟩
+  let DeltaC : Fin (r + q) → Fin q → ℝ :=
+    fun i j => DeltaCrev i (Fin.rev j)
+  rcases gqrAQ2Block_exists_full_perturbation_of_trailing_delta
+      Q DeltaC hQ with
+    ⟨DeltaA, hDeltaAtrail, hDeltaAnorm⟩
+  refine ⟨DeltaA, ?_, hUrev, hRrev, ?_⟩
+  · intro i j
+    have htrail := hDeltaAtrail A i (Fin.rev j)
+    have hrev :
+        rectPermuteCols Fin.revPerm
+            (gqrAQ2Block (fun i j => A i j + DeltaA i j) Q) i j =
+          gqrAQ2Block A Q i (Fin.rev j) + DeltaCrev i j := by
+      simpa [rectPermuteCols, DeltaC] using htrail
+    calc
+      rectPermuteCols Fin.revPerm
+          (gqrAQ2Block (fun i j => A i j + DeltaA i j) Q) i j =
+          gqrAQ2Block A Q i (Fin.rev j) + DeltaCrev i j := hrev
+      _ = Crev i j + DeltaCrev i j := by
+          rfl
+      _ = matMulRect (r + q) (r + q) q
+            (fl_householderQRPanel_Q fp (r + q) q Crev)
+            (fl_householderQRPanel_R fp (r + q) q Crev) i j := by
+          simpa [Crev] using hDeltaCrevRep i j
+  · have hpad :
+        frobNormRect (fun i : Fin (r + q) =>
+          Fin.append (fun _ : Fin p => 0) (DeltaC i)) =
+            frobNormRect DeltaCrev := by
+      calc
+        frobNormRect (fun i : Fin (r + q) =>
+            Fin.append (fun _ : Fin p => 0) (DeltaC i))
+            = frobNormRect DeltaC := frobNormRect_zeroLeftCols_append DeltaC
+        _ = frobNormRect (rectPermuteCols Fin.revPerm DeltaCrev) := by
+          rfl
+        _ = frobNormRect DeltaCrev :=
+          frobNormRect_permuteCols Fin.revPerm DeltaCrev
+    have hDeltaAeq : frobNormRect DeltaA = frobNormRect DeltaCrev := by
+      rw [hDeltaAnorm, hpad]
+    exact le_trans (le_of_eq hDeltaAeq) hDeltaCrevBound
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     concrete full-`A` perturbation obtained from the smaller `A Q₂`
