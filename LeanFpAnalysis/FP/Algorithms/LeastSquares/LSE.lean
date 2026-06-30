@@ -11268,6 +11268,15 @@ noncomputable def theorem20_10_householder_rhs_conservative_gamma
       (householderQRRhsPanelGammaClosedGrowthFactor (r + q) q : ℝ) *
       gamma fp (q * householderConstructApplyGammaIndex (r + q)))
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    conservative `A`/`b` coefficient for the rounded-Householder-RHS Part A
+    route.  It preserves the printed Householder `A`-matrix coefficient while
+    making the larger verified RHS coefficient explicit. -/
+noncomputable def theorem20_10_householder_gammaA_conservativeRhs
+    (fp : FPModel) (r p q : ℕ) : ℝ :=
+  max (theorem20_10_householder_gammaA fp r p q)
+    (theorem20_10_householder_rhs_conservative_gamma fp r p q)
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), rounded Householder RHS
     certificate route with the currently proved conservative RHS coefficient.
 
@@ -11446,6 +11455,137 @@ theorem theorem20_10_partA_mixed_stability_of_constructed_source_householder_rhs
   · simpa [hDeltaAeq] using hDeltaA
   · simpa [hDeltabeq] using hDeltab
   · simpa [hDeltaBeq] using hDeltaB
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), rounded Householder RHS
+    mixed-stability route with source-facing conservative gamma coefficients.
+
+    Compared with
+    `theorem20_10_partA_mixed_stability_of_constructed_source_householder_rhs_conservative_bound`,
+    this theorem derives the matrix and triangular-solve gamma side conditions
+    from the standard Householder validity hypotheses.  The `A`/`b`
+    coefficient is
+    `theorem20_10_householder_gammaA_conservativeRhs`, the maximum of the
+    printed matrix coefficient and the verified conservative RHS coefficient. -/
+theorem theorem20_10_partA_mixed_stability_of_constructed_source_householder_rhs_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hUfl :
+      h.U =
+        fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A h.Q))
+    (hq : 0 < q)
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q))) :
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab : Fin (r + q) → ℝ,
+    ∃ DeltaX : Fin (p + q) → ℝ,
+    ∃ x : Fin (p + q) → ℝ,
+      (∀ j : Fin (p + q),
+        theorem20_10_gqr_xhat_of_transformed_tail fp h
+            (theorem20_10_householder_AQ2_rhs_tail fp A h.Q b) d j =
+          x j + DeltaX j) ∧
+      vecNorm2 DeltaX ≤
+        theorem20_10_householder_gammaB fp r p q * vecNorm2 x ∧
+      frobNormRect DeltaA ≤
+        theorem20_10_householder_gammaA_conservativeRhs fp r p q *
+          frobNormRect A ∧
+      vecNorm2 Deltab ≤
+        theorem20_10_householder_gammaA_conservativeRhs fp r p q *
+          vecNorm2 b ∧
+      frobNormRect DeltaB ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B ∧
+      IsLSEMinimizer
+        (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i)
+        (fun i j => B i j + DeltaB i j) d x ∧
+      (∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec hpert.S yz.1 = d ∧
+          rectMatMulVec hpert.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose hpert.U)
+                (fun i => b i + Deltab i) (Fin.natAdd r i) -
+                rectMatMulVec hpert.L21 yz.1 i) ∧
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j) d
+            (matMulVec (p + q) hpert.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x0 : Fin (p + q) → ℝ,
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j) d x0)) := by
+  have hKA_ge_two : 2 ≤ householderConstructApplyGammaIndex (r + q) := by
+    dsimp [householderConstructApplyGammaIndex]
+    omega
+  have hKB_ge_two : 2 ≤ householderConstructApplyGammaIndex (p + q) := by
+    dsimp [householderConstructApplyGammaIndex]
+    omega
+  have hKA_pos : 0 < householderConstructApplyGammaIndex (r + q) := by
+    omega
+  have hKB_pos : 0 < householderConstructApplyGammaIndex (p + q) := by
+    omega
+  have hvalid2S : gammaValid fp (2 * p) := by
+    apply gammaValid_mono fp _ hvalidB
+    calc
+      2 * p = p * 2 := by omega
+      _ ≤ p * householderConstructApplyGammaIndex (p + q) :=
+          Nat.mul_le_mul_left p hKB_ge_two
+  have hvalid2L22 : gammaValid fp (2 * q) := by
+    apply gammaValid_mono fp _ hvalidA
+    calc
+      2 * q ≤ 2 * (p + q) := Nat.mul_le_mul_left 2 (by omega)
+      _ = (p + q) * 2 := by omega
+      _ ≤ (p + q) * householderConstructApplyGammaIndex (r + q) :=
+          Nat.mul_le_mul_left (p + q) hKA_ge_two
+  have hgammaB_nonneg :
+      0 ≤ theorem20_10_householder_gammaB fp r p q := by
+    simpa [theorem20_10_householder_gammaB] using
+      H19.Theorem19_4.gamma_tilde_nonneg fp hvalidB
+  have hidxA_ge_q :
+      q ≤ (p + q) * householderConstructApplyGammaIndex (r + q) := by
+    exact le_trans (by omega)
+      (Nat.le_mul_of_pos_right (p + q) hKA_pos)
+  have hidxB_ge_p :
+      p ≤ p * householderConstructApplyGammaIndex (p + q) :=
+    Nat.le_mul_of_pos_right p hKB_pos
+  have hgammaA_printed_ge :
+      gamma fp q ≤ theorem20_10_householder_gammaA fp r p q := by
+    simpa [theorem20_10_householder_gammaA, H19.Theorem19_4.gamma_tilde] using
+      gamma_mono fp hidxA_ge_q hvalidA
+  have hgammaA_ge_matrix :
+      gamma fp q ≤
+        theorem20_10_householder_gammaA_conservativeRhs fp r p q :=
+    le_trans hgammaA_printed_ge
+      (le_max_left _ _)
+  have hgammaA_ge_rhs :
+      theorem20_10_householder_rhs_conservative_gamma fp r p q ≤
+        theorem20_10_householder_gammaA_conservativeRhs fp r p q :=
+    le_max_right _ _
+  have hgammaB_ge :
+      gamma fp p ≤ theorem20_10_householder_gammaB fp r p q := by
+    simpa [theorem20_10_householder_gammaB, H19.Theorem19_4.gamma_tilde] using
+      gamma_mono fp hidxB_ge_p hvalidB
+  exact
+    theorem20_10_partA_mixed_stability_of_constructed_source_householder_rhs_conservative_bound
+      fp h b d
+      (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+      (theorem20_10_householder_gammaB fp r p q)
+      hUfl hq hhalf hgammaB_nonneg hgammaA_ge_matrix hgammaA_ge_rhs
+      hgammaB_ge hSdiag hL22diag hvalid2S hvalid2L22
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     concrete Householder QR perturbation bound for the `Bᵀ` triangularization
