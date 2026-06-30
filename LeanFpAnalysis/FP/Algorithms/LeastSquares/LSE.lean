@@ -8730,6 +8730,67 @@ theorem theorem20_10_householder_AQ2_full_A_frob_perturbation_bound
       (mul_le_mul_of_nonneg_left hC_le_A hgamma_nonneg)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    concrete right-hand-side perturbation for the smaller `A Q₂`
+    Householder transform used in the GQR path.
+
+    This is the source-facing specialization of the QR module's explicit
+    RHS-transform certificate to the trailing block `A Q₂`.  The bound is the
+    verified recursive implementation budget for that transform; the later
+    source-facing `gamma_tilde_mn * ||b||₂` absorption remains a separate
+    obligation. -/
+theorem theorem20_10_householder_AQ2_rhs_vecNorm2_perturbation_bound
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ)
+    (hready :
+      HouseholderQRPanelReady fp (r + q) q (gqrAQ2Block A Q)) :
+    ∃ Deltab : Fin (r + q) → ℝ,
+      (∀ i,
+        fl_householderQRPanel_rhs fp (r + q) q (gqrAQ2Block A Q) b i =
+          matMulVec (r + q)
+            (matTranspose
+              (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q)))
+            (fun k => b k + Deltab k) i) ∧
+      vecNorm2 Deltab ≤
+        Real.sqrt (r + q : ℝ) *
+          householderQRRhsPanelBackwardBound fp (r + q) q
+            (gqrAQ2Block A Q) b := by
+  simpa using
+    fl_householderQRPanel_rhs_explicit_vecNorm2_perturbation_bound
+      fp (r + q) q (gqrAQ2Block A Q) b hready
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    global-gamma wrapper for the `A Q₂` RHS perturbation certificate.
+
+    A single row-count validity hypothesis supplies the readiness obligations
+    for the zero-aware Householder QR panel implementation.  The norm bound is
+    still the concrete recursive RHS budget, not the final printed
+    `gamma_tilde_mn * ||b||₂` coefficient. -/
+theorem theorem20_10_householder_AQ2_rhs_vecNorm2_perturbation_bound_of_global_gammaValid
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ)
+    (hvalid : gammaValid fp (11 * (r + q) + 23)) :
+    ∃ Deltab : Fin (r + q) → ℝ,
+      (∀ i,
+        fl_householderQRPanel_rhs fp (r + q) q (gqrAQ2Block A Q) b i =
+          matMulVec (r + q)
+            (matTranspose
+              (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q)))
+            (fun k => b k + Deltab k) i) ∧
+      vecNorm2 Deltab ≤
+        Real.sqrt (r + q : ℝ) *
+          householderQRRhsPanelBackwardBound fp (r + q) q
+            (gqrAQ2Block A Q) b := by
+  exact
+    theorem20_10_householder_AQ2_rhs_vecNorm2_perturbation_bound
+      fp A Q b
+      (HouseholderQRPanelReady_of_global_gammaValid
+        fp (r + q) q (r + q) (gqrAQ2Block A Q) le_rfl hvalid)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     concrete Householder QR perturbation bound for the `Bᵀ` triangularization
     step in the GQR path.
 
