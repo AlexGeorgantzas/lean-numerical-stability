@@ -324,6 +324,7 @@
     higham13_problem13_4_Sinv_eq_full_inverse_lower_right_of_block_inverse,
     higham13_problem13_4_L21_eq13_22_premise_from_ambient_block_inverse_growth,
     higham13_problem13_4_L21_eq13_22_premise_from_global_growth_tableau_exact_kappa,
+    higham13_problem13_4_L21_eq13_22_premise_from_source_global_growth_tableau_exact_kappa,
     higham13_problem13_4_schur_kappa_maxEntryNormRect_from_block_inverse,
     higham13_problem13_4_maxEntry_bounds_from_block_inverse_growth,
     higham13_problem13_4_maxEntry_bounds_from_source_block_inverse_growth,
@@ -24052,6 +24053,88 @@ theorem
         maxEntryNormRect hN hN Aglob * maxEntryNormRect hN hN AinvGlob ≤
           kappaA)
 
+/-- Higham, 2nd ed., Chapter 13, Problem 13.4 feeding equation (13.22):
+    source-indexed global-growth-tableau lower-left block budget.
+
+    This specializes
+    `higham13_problem13_4_L21_eq13_22_premise_from_global_growth_tableau_exact_kappa`
+    to a source `Fin (r+s)` matrix and the repository canonical inverse
+    `nonsingInv`.  The block-identification hypotheses provide the exact
+    reindexing certificate, so the only remaining mathematical assumptions are
+    the ambient growth-tableau containments for the initial matrix and the
+    current Schur complement. -/
+theorem
+    higham13_problem13_4_L21_eq13_22_premise_from_source_global_growth_tableau_exact_kappa
+    {r s : ℕ} (hr : 0 < r) (hs : 0 < s) (hN : 0 < r + s)
+    (A G : Fin (r + s) → Fin (r + s) → ℝ)
+    (A11 : Matrix (Fin r) (Fin r) ℝ)
+    (A12 : Matrix (Fin r) (Fin s) ℝ)
+    (A21 : Matrix (Fin s) (Fin r) ℝ)
+    (A22 : Matrix (Fin s) (Fin s) ℝ)
+    [Invertible A11] [Invertible (A22 - A21 * ⅟A11 * A12)]
+    [Invertible (Matrix.fromBlocks A11 A12 A21 A22)]
+    (hA11_block : A11 =
+      fun i j : Fin r =>
+        A (finSumFinEquiv (Sum.inl i : Fin r ⊕ Fin s))
+          (finSumFinEquiv (Sum.inl j : Fin r ⊕ Fin s)))
+    (hA12_block : A12 =
+      fun (i : Fin r) (j : Fin s) =>
+        A (finSumFinEquiv (Sum.inl i : Fin r ⊕ Fin s))
+          (finSumFinEquiv (Sum.inr j : Fin r ⊕ Fin s)))
+    (hA21_block : A21 =
+      fun (i : Fin s) (j : Fin r) =>
+        A (finSumFinEquiv (Sum.inr i : Fin r ⊕ Fin s))
+          (finSumFinEquiv (Sum.inl j : Fin r ⊕ Fin s)))
+    (hA22_block : A22 =
+      fun i j : Fin s =>
+        A (finSumFinEquiv (Sum.inr i : Fin r ⊕ Fin s))
+          (finSumFinEquiv (Sum.inr j : Fin r ⊕ Fin s)))
+    (hApos : 0 < maxEntryNorm hN A)
+    (n : ℕ) (hsn : (s : ℝ) ≤ (n : ℝ))
+    (hA_le_G : maxEntryNorm hN A ≤ maxEntryNorm hN G)
+    (hS_le_G :
+      maxEntryNormRect hs hs (A22 - A21 * ⅟A11 * A12) ≤
+        maxEntryNorm hN G) :
+    maxEntryNormRect hs hr ((A21 * ⅟A11 : Matrix (Fin s) (Fin r) ℝ)) ≤
+      (n : ℝ) * (growthFactorEntry hN A G hApos) ^ 2 *
+        (maxEntryNormRect hN hN A *
+          maxEntryNormRect hN hN (nonsingInv (r + s) A)) := by
+  classical
+  have hFull :
+      Matrix.fromBlocks A11 A12 A21 A22 =
+        (fun i j : Fin r ⊕ Fin s =>
+          A (finSumFinEquiv i) (finSumFinEquiv j)) := by
+    ext i j
+    cases i with
+    | inl i =>
+        cases j with
+        | inl j =>
+            have h := congr_fun (congr_fun hA11_block i) j
+            simpa [Matrix.fromBlocks] using h
+        | inr j =>
+            have h := congr_fun (congr_fun hA12_block i) j
+            simpa [Matrix.fromBlocks] using h
+    | inr i =>
+        cases j with
+        | inl j =>
+            have h := congr_fun (congr_fun hA21_block i) j
+            simpa [Matrix.fromBlocks] using h
+        | inr j =>
+            have h := congr_fun (congr_fun hA22_block i) j
+            simpa [Matrix.fromBlocks] using h
+  have hAinv_entry :
+      ∀ i j : Fin r ⊕ Fin s,
+        |(⅟(Matrix.fromBlocks A11 A12 A21 A22) :
+          Matrix (Fin r ⊕ Fin s) (Fin r ⊕ Fin s) ℝ) i j| ≤
+            maxEntryNormRect hN hN (nonsingInv (r + s) A) :=
+    maxEntryNormRect_invOf_reindex_equiv_nonsingInv_entry_bound
+      hN (finSumFinEquiv : (Fin r ⊕ Fin s) ≃ Fin (r + s))
+      A (Matrix.fromBlocks A11 A12 A21 A22) hFull
+  exact
+    higham13_problem13_4_L21_eq13_22_premise_from_global_growth_tableau_exact_kappa
+      hr hs hN A G (nonsingInv (r + s) A)
+      A11 A12 A21 A22 hApos n hsn hA_le_G hS_le_G hAinv_entry
+
 /-- Higham, 2nd ed., Chapter 13, Lemma 13.10 / Problem 13.4 dependency:
     the inverse of the Schur complement inherits an operator-2 certificate from
     the lower-right block of the full block inverse.
@@ -37572,7 +37655,7 @@ theorem higham13_problem13_4_L21_eq13_22_premise_from_matrix_stage_history_first
   letI hA11Inv : Invertible (blockMatrixFirstSplitA11 Ablk) := inferInstance
   let A11_inv : Matrix (Fin r) (Fin r) ℝ := ⅟(blockMatrixFirstSplitA11 Ablk)
   refine
-    higham13_problem13_4_L21_eq13_22_premise_from_source_growthFactorEntry_exact_kappa
+    higham13_problem13_4_L21_eq13_22_premise_from_source_global_growth_tableau_exact_kappa
       hr (Nat.mul_pos hm hr) hN
       (blockMatrixFirstSplitFlat Ablk)
       (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
