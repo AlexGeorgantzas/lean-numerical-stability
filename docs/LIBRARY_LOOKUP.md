@@ -1345,6 +1345,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_2_rectDoolittleU_source_identity`
 - `higham9_2_rectDoolittleLUpdate_source_identity`
 - `higham9_2_rectDoolittleL_source_identity`
+- `higham9_2_rectDoolittle_exact_recurrences_rectMatMul_eq`
 - `higham9_2_rectDoolittleUUpdate_eq_of_LUFactSpec`
 - `higham9_2_rectDoolittleLUpdate_eq_of_LUFactSpec`
 - `higham9_2_doolittleSourceFlopPolynomial`
@@ -1373,8 +1374,10 @@ Source-facing Chapter 9 wrappers:
 - `higham9_5_rectPrefixRange_eq_matMul_of_ge`
 - `higham9_5_rectGEReducedEntry_full_eq_sub_rectMatMul`
 - `higham9_5_rectGEReducedEntry_full_eq_zero_of_rectMatMul_eq`
+- `higham9_5_rectGEReducedEntry_full_eq_zero_of_rectDoolittle_exact_recurrences`
 - `higham9_5_rectGEReducedEntry_eq_sub_rectMatMul_of_ge`
 - `higham9_5_rectGEReducedEntry_eq_zero_of_rectMatMul_eq_of_ge`
+- `higham9_5_rectGEReducedEntry_eq_zero_of_rectDoolittle_exact_recurrences_of_ge`
 - `higham9_5_rectGEReducedEntry_eq_sub_matMul_of_ge`
 - `higham9_5_rectGEReducedEntry_full_eq_zero_of_LUFactSpec`
 - `higham9_5_rectGEReducedEntry_eq_zero_of_LUFactSpec_of_ge`
