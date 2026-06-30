@@ -8,15 +8,15 @@
 - Mode: core.
 - Parallel split: 3B.
 - Planning documents consulted: `chapter_splitting/HIGHAM_PARALLEL_FORMALIZATION_BLUEPRINT.md`, Split 3B section of `chapter_splitting/split_primary_contracts.md`, and the Chapter 19 rows of `chapter_splitting/chapter_index.md`.
-- Selected-scope gate: FAIL. Chapter 19 has substantial QR infrastructure and checked source-facing wrappers, but the full selected core pass is not complete. The currently active QR route is the arbitrary-width stored Householder final-panel bridge for Theorem 19.13 support; it still needs construction of recursive closure data from the full stored loop's reflector-normalization and determinant facts.
+- Selected-scope gate: FAIL. Chapter 19 has substantial QR infrastructure and checked source-facing wrappers, but the full selected core pass is not complete. The currently active QR route is the arbitrary-width stored Householder final-panel bridge for Theorem 19.13 support; source-closure data can now be assembled directly from raw source-tail reflector facts, but those facts still need to be derived from the full stored loop's reflector-normalization and determinant hypotheses.
 - Inventory status: starter ledger only. The shared `chapter_index.md` accounts for the primary labels, numbered equations, and problems, but this tracked Ch19 report still needs a full row-by-row inventory before chapter completion can be claimed.
-- Oracle status: no GPT Pro or external proof-source consultation was used for the closure-data milestones recorded here.
+- Oracle status: GPT Pro/Oracle browser consultation was attempted for the repeated stored-loop-to-source-closure bottleneck on 2026-06-30 with a compact math-only packet. The run failed without a mathematical answer after Chrome became unreachable, and the visible prompt captured by Oracle was only the packet title, so it is recorded as a rejected/non-answer consultation rather than proof-source evidence.
 
 ## Progress Snapshot
 
 | Chapter | Mode | Inventory % | Statement % | Dependency % | Proof % | Verification/report % | Estimated overall % | Open selected rows | Main blocker | Confidence |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
-| ch19 | core | 90 | 99 | 99 | 99 | 99 | 95 | 48+ | Construct `storedSignedSequenceTwiceTrailingSourceClosureData` from the full stored loop | medium |
+| ch19 | core | 90 | 99 | 99 | 99 | 99 | 95 | 48+ | Derive per-tail source reflector facts from the full stored loop | medium |
 
 ## Current Ch19 Closure-Data Route
 
@@ -28,14 +28,22 @@
 | Theorem 19.13 support, source-closure final-panel bridge | `H19.Theorem19_13.storedSignedSequence_final_panel_eq_qrPanel_R_of_reflector_self_dot_of_sourceClosureData` | `LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean` | proved dependency | Directly consumes the raw recursive source-closure contract by composing it with `storedSignedSequenceTwiceTrailingClosureData_of_sourceClosureData`, so the remaining stored-loop induction can target source-closure data itself. |
 | Theorem 19.13 support, closure-data constructors | `H19.Theorem19_13.storedSignedSequenceTwiceTrailingClosureData_zero`; `..._one_of_reflectorData`; `..._one_of_tail_reflector_self_dot`; `..._succ_succ_of_firstTwoReflectorData`; `..._succ_succ_of_reflector_self_dot`; `..._succ_succ_of_tail_reflector_self_dot` | `LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean` | proved dependency | Constructor API for the stored-loop induction target, including explicit one-column, abstract two-step, and raw twice-trailing tail reflector-fact entry points. |
 | Theorem 19.13 support, source closure facts | `H19.Theorem19_13.storedSignedSequenceOneTailReflectorFacts`; `...FirstTwoTailReflectorFacts`; `...TwiceTrailingSourceClosureData`; `...TwiceTrailingClosureData_of_sourceClosureData` | `LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean` | proved dependency | Recursive source-facing contract that stores raw stage-2/stage-3 twice-trailing tail facts and proves they imply the existing recursive closure-data package. |
+| Theorem 19.13 support, source-closure constructors | `H19.Theorem19_13.storedSignedSequenceTwiceTrailingSourceClosureData_zero`; `...one_of_tail_reflector_facts`; `...one_of_tail_reflector_self_dot`; `...succ_succ_of_firstTwoTailReflectorFacts`; `...succ_succ_of_tail_reflector_self_dot` | `LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean` | proved dependency | Constructor API for the source-facing induction target. Once the full stored loop supplies the current raw one-tail or first-two-tail reflector facts and the recursive twice-shrunk source closure, these theorems assemble `storedSignedSequenceTwiceTrailingSourceClosureData` directly. |
 | Theorem 19.13 support, reflector-data packagers | `H19.Theorem19_13.storedSignedSequenceOneReflectorData_of_tail_reflector_self_dot`; `...FirstTwoReflectorData_of_tail_reflector_self_dot`; `...ClosureData_one_of_tail_reflector_self_dot` | `LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean` | proved dependency | Packages explicit twice-trailing source reflector facts into the recursive closure-data records; existing fixed-width bridges now consume the first-two packager. |
 | Theorem 19.13 support, one recursive source-facing step | `H19.Theorem19_13.storedSignedSequence_final_panel_eq_qrPanel_R_of_firstTwoReflectorData_and_tailClosureData` | `LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean` | proved dependency | If the current twice-trailing tail has first-two reflector data and the twice-shrunk tail has closure data, the final-panel equality follows. |
+| Theorem 19.13 support, raw source-tail recursive step | `H19.Theorem19_13.storedSignedSequence_final_panel_eq_qrPanel_R_of_firstTwoTailReflectorFacts_and_tailSourceClosureData` | `LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean` | proved dependency | Consumes raw first-two twice-trailing source facts plus recursive source closure, assembles source-closure data with the new constructors, and feeds the direct source-closure final-panel bridge. |
+
+## GPT-5.5 Pro Browser Consultations
+
+| Selected claim/blocker | Oracle session/model | Prompt summary | Key route suggested | Adopted/rejected steps | Lean validation | Status |
+|---|---|---|---|---|---|---|
+| Theorem 19.13 stored-loop-to-source-closure route | `ch19-source-closure`, `gpt-5.5-pro`, browser mode | Intended compact math-only packet asked whether stored-loop hypotheses imply source normalized-vector equality/self-dot and, if not, what corrected theorem surface is source-faithful. | None. Oracle recorded only the packet title as the prompt and then lost Chrome connectivity. | Rejected as non-answer/tool failure; no mathematical advice adopted. Stale Oracle helper processes were stopped. | None from Oracle; local route continued with a proved raw source-tail recursive bridge. | failed/non-answer |
 
 ## Open Selected-Scope Items
 
 | Source location | Exact selected claim/status | Current Lean status | Missing foundation | Next concrete theorem |
 |---|---|---|---|---|
-| Theorem 19.13 support route | Arbitrary-width stored Householder final-panel equality from source loop facts. | Closure-data handoff, direct source-closure final-panel bridge, one recursive source-facing step, explicit reflector-fact packagers, raw one/two-step closure-data constructors, and a recursive source-closure-data contract are proved. | Construct the source-closure-data contract from the full stored loop's per-pivot reflector normalization, self-dot, and determinant nonbreakdown facts. | `storedSignedSequenceTwiceTrailingSourceClosureData_of_stored_loop_reflector_data`, feeding `storedSignedSequence_final_panel_eq_qrPanel_R_of_reflector_self_dot_of_sourceClosureData`. |
+| Theorem 19.13 support route | Arbitrary-width stored Householder final-panel equality from source loop facts. | Closure-data handoff, direct source-closure final-panel bridge, one recursive source-facing step, explicit reflector-fact packagers, raw one/two-step closure-data constructors, a recursive source-closure-data contract, direct source-closure constructors, and a raw source-tail recursive final-panel bridge are proved. | Derive the one-tail and first-two-tail source reflector facts from the full stored loop's per-pivot reflector normalization, self-dot, and determinant nonbreakdown facts. Source-closure data assembly itself is now closed by constructors. | `storedSignedSequenceFirstTwoTailReflectorFacts_of_stored_loop_stage_facts` and the one-column analogue, feeding `storedSignedSequence_final_panel_eq_qrPanel_R_of_firstTwoTailReflectorFacts_and_tailSourceClosureData`. |
 | Chapter 19 full core inventory | Lemmas 19.1-19.3, 19.7-19.9; Theorems 19.4-19.6, 19.10, 19.13; Algorithms 19.11-19.12; numbered equations and theoretical problems. | Many declarations exist in QR modules, but this tracked report is not yet a complete source inventory. | Full row-by-row source audit against the rendered Chapter 19 PDF. | Complete this ledger's source inventory and update skipped/deferred/benchmark classifications. |
 
 ## Skipped, Deferred, and Benchmark Categories
@@ -47,8 +55,25 @@
 | Benchmark comparisons | Reserved for benchmark mode; none promoted by this closure-data milestone. |
 | Theorem 19.13 fully implementation-facing closure | Deferred until the stored-loop closure-data package is constructed from source-equivalent facts. |
 
+## Weak-Component and Bottleneck Summary
+
+| Component | Why weak | Current evidence | Next listed dependency | Status |
+|---|---|---|---|---|
+| Theorem 19.13 stored-loop-to-source-closure route | Repeated source-facing floating-point/QR blocker; theorem names can overstate closure if recursive facts are only assumed. | Source-closure final-panel bridge, closure-data conversion, source-closure constructors, and the raw source-tail recursive final-panel bridge compile, so the remaining gap is no longer data assembly or final-panel handoff. | Prove `storedSignedSequenceFirstTwoTailReflectorFacts_of_stored_loop_stage_facts` plus the one-column base from the full stored loop's reflector-normalization, self-dot, and determinant hypotheses. | active bottleneck |
+| New source-closure constructors | Adapter lemmas around a recursive contract; they must be treated as dependency infrastructure, not as closing Theorem 19.13. | The constructors only package explicit raw facts into `storedSignedSequenceTwiceTrailingSourceClosureData`; the open selected row remains visible above. Their axiom footprint is the standard `propext`, `Classical.choice`, and `Quot.sound`. | Use them inside the full stored-loop induction after the raw facts are proved. | checked dependency |
+
 ## Verification
 
+- `lake env lean LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`: passed after adding the source-closure constructor API.
+- `lake env lean LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`: passed after adding the raw source-tail recursive final-panel bridge.
+- `lake build LeanFpAnalysis.FP.Algorithms.QR.Higham19`: passed after adding the source-closure constructor API; only pre-existing `GivensSpec` unused-simp warnings were reported.
+- `lake build LeanFpAnalysis.FP.Algorithms.QR.Higham19`: passed after adding the raw source-tail recursive final-panel bridge; only pre-existing `GivensSpec` unused-simp warnings were reported.
+- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`: no matches after adding the source-closure constructor API.
+- `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`: no matches after adding the raw source-tail recursive final-panel bridge.
+- `git diff --check`: passed after adding the source-closure constructor API, with only CRLF normalization warnings for `Higham19.lean` and this report.
+- `git diff --check`: passed after adding the raw source-tail recursive final-panel bridge, with only CRLF normalization warnings for `Higham19.lean` and this report.
+- `#print axioms` for `storedSignedSequenceTwiceTrailingSourceClosureData_one_of_tail_reflector_facts`, `storedSignedSequenceTwiceTrailingSourceClosureData_one_of_tail_reflector_self_dot`, and `storedSignedSequenceTwiceTrailingSourceClosureData_succ_succ_of_tail_reflector_self_dot`: only `propext`, `Classical.choice`, and `Quot.sound`.
+- `#print axioms` for `storedSignedSequence_final_panel_eq_qrPanel_R_of_firstTwoTailReflectorFacts_and_tailSourceClosureData`: only `propext`, `Classical.choice`, and `Quot.sound`.
 - `lake env lean LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`: passed for the closure-data constructors, reflector-data packagers, explicit two-step closure-data constructors, recursive source-closure-data contract, one-step bridge milestone, and direct source-closure final-panel bridge.
 - `lake build LeanFpAnalysis.FP.Algorithms.QR.Higham19`: passed after the direct source-closure final-panel bridge; only pre-existing `GivensSpec` unused-simp warnings were reported.
 - `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`: no matches.
