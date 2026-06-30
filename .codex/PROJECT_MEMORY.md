@@ -10318,3 +10318,14 @@ These compile, but should not be treated as fully derived stability results:
   with empty stderr and both names present, `git diff --check`, touched
   public-Lean marker scan, anchored conflict-marker scan, and focused
   `#print axioms` with only `propext`, `Classical.choice`, and `Quot.sound`.
+
+- 2026-06-30 Problem 13.4 source global-growth integration: added
+  `higham13_problem13_4_L21_eq13_22_premise_from_source_global_growth_tableau_exact_kappa`,
+  the `nonsingInv`/`finSumFinEquiv` source specialization of the ambient
+  global-growth-tableau theorem.  The existing first-split matrix-stage lower
+  budget theorem now routes through this source wrapper, so the first-pivot
+  Eq.13.22 premise no longer depends on a separate inverse-entry artifact; its
+  remaining assumptions are the ambient matrix-stage history containments.
+  This is dependency progress only: recursive all-tail tableau containment,
+  all-tail inverse/source comparison data, Eq.13.23 `rho <= 2`/BDD product
+  update, and Theorem 13.6 cited estimates remain open.
