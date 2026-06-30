@@ -20,6 +20,24 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-06-30 recursive Schur-tail base/inverse bridge checkpoint:
+  `maxEntryNormRect_inverse_ratio_of_base_le_and_inverse_le` and
+  `growthFactorEntry_sq_kappa_budget_le_of_growth_le_base_inverse` derive the
+  optional inverse-ratio/lower-budget scalar transport from the stronger
+  explicit pair `||A_full||_max <= ||A_tail||_max` and
+  `||A_tail^{-1}||_max <= ||A_full^{-1}||_max`.
+  `higham13_eq13_22_tail_lower_budget_le_full_from_base_inverse_matrix_stage_history_exact_kappa`
+  and
+  `higham13_eq13_22_tail_chain_to_full_budget_from_base_inverse_matrix_stage_history_exact_kappa`
+  feed that pair into the recursive Schur-tail Eq.13.22 transport.  This is
+  dependency progress only: the strong base comparison and inverse comparison
+  remain explicit source obligations, and the direct Problem 13.4
+  lower-budget/condition comparison plus Eq.13.23 `rho <= 2` source theorem
+  remain open.  Verification used direct `BlockLU.lean`, focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, public `examples/LibraryLookup.lean`
+  with empty quiet stderr, `git diff --check`, marker/conflict scans, and
+  focused `#print axioms`; the axiom output was only `propext`,
+  `Classical.choice`, and `Quot.sound`.
 - 2026-06-29 matrix-`∞` finite-unit-sphere cleanup:
   `higham13_fin_fun_unit_sphere_nonempty` constructs the nonempty unit sphere
   in `Fin r -> ℝ` from `0 < r`.  New `_of_pos_dim` wrappers for the
@@ -210,6 +228,14 @@ end-to-end stability rebuild is tagged as
   specialization, derive the positive growth-factor denominator from
   `det(blockMatrixFlatFin A) != 0` while keeping the same dimension-aware
   endpoint.
+- 2026-06-30 matrix-`∞` raw source-table positive-dimension cleanup:
+  `higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_pos_dim`,
+  its determinant-denominator variant, and the two pivot-right-inverse variants
+  remove the explicit finite unit-sphere witness from the raw source-table
+  max-entry packages by using `higham13_fin_fun_unit_sphere_nonempty hr`.
+  This is hidden-hypothesis cleanup for the BDD route; the endpoint remains
+  dimension-aware (`growthFactorEntry <= 2*r`), so the printed Eq.13.21 /
+  Eq.13.23 `rho <= 2` source-strength row remains open.
 - 2026-06-29 matrix-`∞` max-entry transfer checkpoint:
   `higham13_algorithm13_3_matrix_infNorm_block_le_card_mul_blockMaxNorm`,
   `higham13_algorithm13_3_matrix_infNorm_active_stage_maxEntry_bound`, and the
@@ -10139,3 +10165,40 @@ These compile, but should not be treated as fully derived stability results:
   cleanup for the Problem 13.4 source-chain route; the per-tail direct
   lower-budget comparison, structured product/update data, and Eq.13.23
   `rho <= 2` theorem remain open.
+
+- 2026-06-30 Eq.13.22/Eq.13.23 pivot right-inverse to determinant bridge:
+  added
+  `higham13_algorithm13_3_pivot_det_ne_zero_of_pivot_right_inverse_at`,
+  `higham13_algorithm13_3_pivot_det_ne_zero_of_pivot_right_inverse`,
+  `Higham13Eq1322LowerComparisonSourceChain.pivot_det_ne_zero_of_final_right_inverse`,
+  and
+  `Higham13Eq1322InverseRatioSourceChain.pivot_det_ne_zero_of_final_right_inverse`.
+  The general Algorithm 13.3 bridge turns exact active pivot right-inverse
+  certificates into determinant nonsingularity, and the source-chain wrappers
+  use a single terminal right-inverse certificate to build all-pivot determinant
+  tables.  This removes another proof-surface conversion artifact; the same
+  three Chapter 13 red rows remain open.
+
+- 2026-06-30 BDD CLM source-table paired endpoint: added
+  `higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_continuousLinearMap_source_table`
+  and
+  `higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_continuousLinearMap_source_table_of_det_ne_zero`.
+  These compose the arbitrary-norm continuous-linear lower-norm source-table
+  route with the direct one-sided certificate package, yielding both the
+  assembled Eq.13.21 upper-factor bound and finite function-block
+  `growthFactorEntry <= 2` once the CLM stage norms, Schur update, and
+  two-sided active inverse identities are supplied.  This is BDD integration
+  progress, but the printed arbitrary-norm/source-table instantiation and
+  downstream source-strength max-entry integration remain open.
+
+- 2026-06-30 Eq.13.22/Eq.13.23 canonical final pivot determinant wrappers:
+  added
+  `Higham13Eq1322LowerComparisonSourceChain.pivot_det_ne_zero_of_final_nonsingInv`
+  and
+  `Higham13Eq1322InverseRatioSourceChain.pivot_det_ne_zero_of_final_nonsingInv`.
+  These compose the existing canonical final-pivot `nonsingInv`
+  right-inverse wrappers with the active pivot determinant bridge, so all-pivot
+  determinant APIs can consume source chains whose terminal pivot is stored
+  canonically.  This removes a final-pivot determinant proof-surface artifact;
+  the per-tail lower comparison, structured BDD product/update theorem, and
+  Theorem 13.6 implementation estimates remain open.

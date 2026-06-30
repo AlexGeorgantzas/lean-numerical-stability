@@ -105,6 +105,8 @@
     Higham13Eq1322InverseRatioSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update,
     Higham13Eq1322InverseRatioSourceChain.to_lowerComparisonSourceChain,
     Higham13Eq1322InverseRatioSourceChain.nonterminal_pivot_det_ne_zero,
+    Higham13Eq1322InverseRatioSourceChain.pivot_det_ne_zero_of_final_right_inverse,
+    Higham13Eq1322InverseRatioSourceChain.pivot_det_ne_zero_of_final_nonsingInv,
     Higham13Eq1322InverseRatioSourceChain.pivot_det_ne_zero_of_final:
     recursive source certificate and chain/product lift for the inverse-ratio
     transport route, replacing the prebuilt ambient-chain hypothesis by
@@ -130,6 +132,8 @@
   - Higham13Eq1322LowerComparisonSourceChain,
     Higham13Eq1322LowerComparisonSourceChain.det_ne_zero,
     Higham13Eq1322LowerComparisonSourceChain.nonterminal_pivot_det_ne_zero,
+    Higham13Eq1322LowerComparisonSourceChain.pivot_det_ne_zero_of_final_right_inverse,
+    Higham13Eq1322LowerComparisonSourceChain.pivot_det_ne_zero_of_final_nonsingInv,
     Higham13Eq1322LowerComparisonSourceChain.pivot_det_ne_zero_of_final,
     Higham13Eq1322LowerComparisonSourceChain.to_blockLUBudgetChain,
     Higham13Eq1322LowerComparisonSourceChain.exists_blockLUFact_eq13_22_product_exact_kappa,
@@ -340,6 +344,12 @@
     higham13_algorithm13_3_stageHistoryGrowthMatrix_le_two_of_column_bdd_source_table,
     higham13_algorithm13_3_stageHistoryGrowthFactor_le_two_of_column_bdd_source_table,
     higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_source_table,
+    higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_continuousLinearMap_source_table,
+    higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_continuousLinearMap_source_table_of_det_ne_zero,
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_pos_dim,
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_det_ne_zero_of_pos_dim,
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_pivot_right_inverse_of_pos_dim,
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_pivot_right_inverse_of_det_ne_zero_of_pos_dim,
     higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_source_table_of_det_ne_zero,
     higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_source_table_of_diag_eq,
     higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_source_table_of_diag_eq_of_det_ne_zero,
@@ -369,8 +379,10 @@
     higham13_algorithm13_3_matrixStageHistoryGrowthMatrix_tail_le,
     higham13_eq13_22_tail_upper_budget_le_full_matrix_stage_history_exact_kappa,
     higham13_eq13_22_tail_lower_budget_le_full_from_inverse_ratio_matrix_stage_history_exact_kappa,
+    higham13_eq13_22_tail_lower_budget_le_full_from_base_inverse_matrix_stage_history_exact_kappa,
     higham13_eq13_22_tail_chain_to_full_budget_from_lower_comparison_matrix_stage_history_exact_kappa,
     higham13_eq13_22_tail_chain_to_full_budget_from_inverse_ratio_matrix_stage_history_exact_kappa,
+    higham13_eq13_22_tail_chain_to_full_budget_from_base_inverse_matrix_stage_history_exact_kappa,
     higham13_eq13_22_blockLUBudgetChain_succ_from_tail_local_chain_inverse_ratio_matrix_stage_history_exact_kappa,
     higham13_eq13_22_exists_blockLUFact_succ_product_from_tail_local_chain_inverse_ratio_matrix_stage_history_exact_kappa,
     higham13_eq13_23_exists_blockLUFact_succ_product_from_tail_local_chain_inverse_ratio_matrix_stage_history_exact_kappa,
@@ -472,6 +484,8 @@
     higham13_eq13_22_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa,
     higham13_eq13_23_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa,
     growthFactorEntry_sq_kappa_budget_le_of_growth_le_inv_ratio,
+    maxEntryNormRect_inverse_ratio_of_base_le_and_inverse_le,
+    growthFactorEntry_sq_kappa_budget_le_of_growth_le_base_inverse,
     higham13_eq13_22_matrix_stage_history_product_from_stage_local_budgets_exact_kappa,
     higham13_eq13_22_matrix_stage_history_product_from_stage_local_growth_budgets_exact_kappa,
     higham13_eq13_22_matrix_stage_history_product_from_stage_local_growth_inverse_ratio_exact_kappa,
@@ -15956,6 +15970,118 @@ theorem
     higham13_algorithm13_3_stageHistoryGrowthFactor_le_two_of_column_bdd_diag_lower
       hm hr A pivotInv hApos invDiagBound hDom hDiagBound hDiagLower⟩
 
+/-- Higham, 2nd ed., Chapter 13, Theorems 13.7--13.8 and Eq.13.21:
+    continuous-linear lower-norm source table for both the assembled
+    upper-factor bound and the finite function-block `rho <= 2` consequence.
+
+    This composes the arbitrary-norm lower-norm source-table construction with
+    the direct one-sided active pivot certificate package.  The remaining
+    analytic inputs are the column block diagonal dominance hypothesis, the
+    initial diagonal lower table, and the two-sided active pivot inverse
+    identities for the chosen continuous-linear model. -/
+theorem
+    higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_continuousLinearMap_source_table
+    {m r : ℕ} {E : Type*}
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [ProperSpace E]
+    (hm : 0 < m) (hr : 0 < r)
+    (hunit : ({x : E | ‖x‖ = 1} : Set E).Nonempty)
+    (A : Fin m → Fin m → (Fin r → Fin r → ℝ))
+    (pivotInv : ℕ → (Fin r → Fin r → ℝ))
+    (hApos : 0 < maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin A))
+    (invDiagBound : Fin m → ℝ)
+    (stageBlock : ℕ → Fin m → Fin m → E →L[ℝ] E)
+    (pivotInvCLM : ℕ → E →L[ℝ] E)
+    (hDom : IsBlockDiagDomCol m
+      (fun i j : Fin m => maxEntryNorm hr (A i j)) invDiagBound)
+    (hDiagBound : ∀ j : Fin m,
+      invDiagBound j ≤ maxEntryNorm hr (A j j))
+    (hInit : ∀ j : Fin m,
+      invDiagBound j ≤ continuousLinearMapLowerNorm (stageBlock 0 j j) hunit)
+    (hStageNorm : ∀ k : ℕ, ∀ i j : Fin m,
+      ‖stageBlock k i j‖ = higham13_algorithm13_3_schurStageNorm A pivotInv k i j)
+    (hPivotNorm : ∀ k : ℕ,
+      ‖pivotInvCLM k‖ = higham13_algorithm13_3_pivotInvNorm pivotInv k)
+    (hSchur : ∀ k : ℕ, ∀ hk : k < m, ∀ j : Fin m,
+      k + 1 ≤ j.val → ∀ x : E,
+        stageBlock (k + 1) j j x =
+          stageBlock k j j x -
+            stageBlock k j ⟨k, hk⟩
+              (pivotInvCLM k (stageBlock k ⟨k, hk⟩ j x)))
+    (hLeft : ∀ k : ℕ, ∀ hk : k < m, ∀ x : E,
+      pivotInvCLM k (stageBlock k ⟨k, hk⟩ ⟨k, hk⟩ x) = x)
+    (hRight : ∀ k : ℕ, ∀ hk : k < m, ∀ y : E,
+      stageBlock k ⟨k, hk⟩ ⟨k, hk⟩ (pivotInvCLM k y) = y) :
+    blockMaxNorm hm hr (higham13_algorithm13_3_upperFromStages A pivotInv) ≤
+        2 * blockMaxNorm hm hr A ∧
+      growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+          (higham13_algorithm13_3_stageHistoryGrowthMatrix
+            (Nat.mul_pos hm hr) hm hr A pivotInv) hApos ≤
+        2 := by
+  have hDiagLower :
+      SchurStageActivePivotInvDiagLower13_7
+        (higham13_algorithm13_3_diagLowerCert invDiagBound A pivotInv)
+        (higham13_algorithm13_3_pivotInvNorm pivotInv) :=
+    higham13_algorithm13_3_diagLowerCert_diag_lower_of_continuousLinearMap_source_table
+      hunit invDiagBound A pivotInv stageBlock pivotInvCLM
+      hInit hStageNorm hPivotNorm hSchur hLeft hRight
+  exact
+    higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_diag_lower
+      hm hr A pivotInv hApos invDiagBound hDom hDiagBound hDiagLower
+
+/-- Higham, 2nd ed., Chapter 13, Theorems 13.7--13.8 and Eq.13.21:
+    determinant-nonzero form of the continuous-linear lower-norm source-table
+    package for the assembled upper-factor bound and finite function-block
+    `rho <= 2` consequence. -/
+theorem
+    higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_continuousLinearMap_source_table_of_det_ne_zero
+    {m r : ℕ} {E : Type*}
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [ProperSpace E]
+    (hm : 0 < m) (hr : 0 < r)
+    (hunit : ({x : E | ‖x‖ = 1} : Set E).Nonempty)
+    (A : Fin m → Fin m → (Fin r → Fin r → ℝ))
+    (pivotInv : ℕ → (Fin r → Fin r → ℝ))
+    (hdet :
+      Matrix.det (blockMatrixFlatFin A :
+        Matrix (Fin (m * r)) (Fin (m * r)) ℝ) ≠ 0)
+    (invDiagBound : Fin m → ℝ)
+    (stageBlock : ℕ → Fin m → Fin m → E →L[ℝ] E)
+    (pivotInvCLM : ℕ → E →L[ℝ] E)
+    (hDom : IsBlockDiagDomCol m
+      (fun i j : Fin m => maxEntryNorm hr (A i j)) invDiagBound)
+    (hDiagBound : ∀ j : Fin m,
+      invDiagBound j ≤ maxEntryNorm hr (A j j))
+    (hInit : ∀ j : Fin m,
+      invDiagBound j ≤ continuousLinearMapLowerNorm (stageBlock 0 j j) hunit)
+    (hStageNorm : ∀ k : ℕ, ∀ i j : Fin m,
+      ‖stageBlock k i j‖ = higham13_algorithm13_3_schurStageNorm A pivotInv k i j)
+    (hPivotNorm : ∀ k : ℕ,
+      ‖pivotInvCLM k‖ = higham13_algorithm13_3_pivotInvNorm pivotInv k)
+    (hSchur : ∀ k : ℕ, ∀ hk : k < m, ∀ j : Fin m,
+      k + 1 ≤ j.val → ∀ x : E,
+        stageBlock (k + 1) j j x =
+          stageBlock k j j x -
+            stageBlock k j ⟨k, hk⟩
+              (pivotInvCLM k (stageBlock k ⟨k, hk⟩ j x)))
+    (hLeft : ∀ k : ℕ, ∀ hk : k < m, ∀ x : E,
+      pivotInvCLM k (stageBlock k ⟨k, hk⟩ ⟨k, hk⟩ x) = x)
+    (hRight : ∀ k : ℕ, ∀ hk : k < m, ∀ y : E,
+      stageBlock k ⟨k, hk⟩ ⟨k, hk⟩ (pivotInvCLM k y) = y) :
+    blockMaxNorm hm hr (higham13_algorithm13_3_upperFromStages A pivotInv) ≤
+        2 * blockMaxNorm hm hr A ∧
+      growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+          (higham13_algorithm13_3_stageHistoryGrowthMatrix
+            (Nat.mul_pos hm hr) hm hr A pivotInv)
+          (maxEntryNorm_pos_of_det_ne_zero
+            (Nat.mul_pos hm hr) (blockMatrixFlatFin A) hdet) ≤
+        2 := by
+  let hN : 0 < m * r := Nat.mul_pos hm hr
+  let hApos : 0 < maxEntryNorm hN (blockMatrixFlatFin A) :=
+    maxEntryNorm_pos_of_det_ne_zero hN (blockMatrixFlatFin A) hdet
+  simpa [hN, hApos] using
+    higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_continuousLinearMap_source_table
+      hm hr hunit A pivotInv hApos invDiagBound stageBlock pivotInvCLM
+      hDom hDiagBound hInit hStageNorm hPivotNorm hSchur hLeft hRight
+
 /-- Higham, 2nd ed., Chapter 13, Theorem 13.8:
     finite function-block stage-history norm bound from active pivot
     right-inverse data plus the reciprocal diagonal certificate. -/
@@ -16877,6 +17003,53 @@ theorem higham13_algorithm13_3_pivot_left_inverse_of_pivot_right_inverse
       (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
         ⟨k, hk⟩ ⟨k, hk⟩)
       (pivotInv k) (hPivotRight k hk)
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
+    determinant nonsingularity of one active pivot from its exact
+    right-inverse certificate. -/
+theorem higham13_algorithm13_3_pivot_det_ne_zero_of_pivot_right_inverse_at
+    {m r : ℕ}
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (k : ℕ) (hk : k < m)
+    (hPivotRight :
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+          ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k)) :
+    Matrix.det
+      (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+        ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0 := by
+  exact
+    Matrix.det_ne_zero_of_right_inverse
+      (A := higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+        ⟨k, hk⟩ ⟨k, hk⟩)
+      (B := pivotInv k)
+      (by
+        ext i j
+        rw [Matrix.mul_apply, Matrix.one_apply]
+        exact hPivotRight i j)
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
+    determinant nonsingularity of every active pivot from exact
+    right-inverse certificates for those pivots. -/
+theorem higham13_algorithm13_3_pivot_det_ne_zero_of_pivot_right_inverse
+    {m r : ℕ}
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hPivotRight : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+          ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k)) :
+    ∀ k : ℕ, ∀ hk : k < m,
+      Matrix.det
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+          ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0 := by
+  intro k hk
+  exact
+    higham13_algorithm13_3_pivot_det_ne_zero_of_pivot_right_inverse_at
+      A pivotInv k hk (hPivotRight k hk)
 
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
     if the supplied pivot inverse is Mathlib's `⅟` for each active pivot, then
@@ -20447,6 +20620,49 @@ theorem
     higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table
       hm hr hunit A pivotInv hApos invDiagBound hDom hDiagBound hInit hLeft hRight
 
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
+    positive-block-size form of the matrix-`∞` source-table max-entry package.
+
+    This removes the artificial finite unit-sphere witness from the raw
+    continuous-linear source-table endpoint.  The result is still the
+    dimension-aware `2*r` transfer, not the printed dimension-free
+    Eq.13.21/`rho <= 2` theorem. -/
+theorem
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_pos_dim
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hApos : 0 < maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin A))
+    (invDiagBound : Fin m → ℝ)
+    (hDom : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j)) invDiagBound)
+    (hDiagBound : ∀ j : Fin m, invDiagBound j ≤ infNorm (A j j))
+    (hInit : ∀ j : Fin m,
+      invDiagBound j ≤
+        continuousLinearMapLowerNorm
+          (matrixMulVecCLM
+            (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv 0 j j))
+          (higham13_fin_fun_unit_sphere_nonempty hr))
+    (hLeft : ∀ k : ℕ, ∀ hk : k < m, ∀ x : Fin r → ℝ,
+      matrixMulVecCLM (pivotInv k)
+        (matrixMulVecCLM
+          (higham13_algorithm13_3_schurStageMatrixBlock
+            A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩) x) = x)
+    (hRight : ∀ k : ℕ, ∀ hk : k < m, ∀ y : Fin r → ℝ,
+      matrixMulVecCLM
+          (higham13_algorithm13_3_schurStageMatrixBlock
+            A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩)
+        (matrixMulVecCLM (pivotInv k) y) = y) :
+    blockMaxNorm hm hr (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) ≤
+        2 * ((r : ℝ) * blockMaxNorm hm hr A) ∧
+      growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            (Nat.mul_pos hm hr) hm hr A pivotInv) hApos ≤
+        2 * (r : ℝ) := by
+  exact
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table
+      hm hr (higham13_fin_fun_unit_sphere_nonempty hr) A pivotInv hApos
+      invDiagBound hDom hDiagBound hInit hLeft hRight
+
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equation (13.21):
     dimension-aware max-entry upper-factor bound from matrix-`∞` source-table
     data and certified active pivot right inverses. -/
@@ -20607,6 +20823,121 @@ theorem
   simpa [hN, hApos] using
     higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_pivot_right_inverse
       hm hr hunit A pivotInv hApos invDiagBound hDom hDiagBound hInit hPivotRight
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
+    determinant-nonzero positive-block-size form of the matrix-`∞`
+    source-table max-entry package. -/
+theorem
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_det_ne_zero_of_pos_dim
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hdet :
+      Matrix.det (blockMatrixFlatFin A :
+        Matrix (Fin (m * r)) (Fin (m * r)) ℝ) ≠ 0)
+    (hDom : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j)) invDiagBound)
+    (hDiagBound : ∀ j : Fin m, invDiagBound j ≤ infNorm (A j j))
+    (hInit : ∀ j : Fin m,
+      invDiagBound j ≤
+        continuousLinearMapLowerNorm
+          (matrixMulVecCLM
+            (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv 0 j j))
+          (higham13_fin_fun_unit_sphere_nonempty hr))
+    (hLeft : ∀ k : ℕ, ∀ hk : k < m, ∀ x : Fin r → ℝ,
+      matrixMulVecCLM (pivotInv k)
+        (matrixMulVecCLM
+          (higham13_algorithm13_3_schurStageMatrixBlock
+            A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩) x) = x)
+    (hRight : ∀ k : ℕ, ∀ hk : k < m, ∀ y : Fin r → ℝ,
+      matrixMulVecCLM
+          (higham13_algorithm13_3_schurStageMatrixBlock
+            A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩)
+        (matrixMulVecCLM (pivotInv k) y) = y) :
+    blockMaxNorm hm hr (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) ≤
+        2 * ((r : ℝ) * blockMaxNorm hm hr A) ∧
+      growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            (Nat.mul_pos hm hr) hm hr A pivotInv)
+          (maxEntryNorm_pos_of_det_ne_zero
+            (Nat.mul_pos hm hr) (blockMatrixFlatFin A) hdet) ≤
+        2 * (r : ℝ) := by
+  exact
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_det_ne_zero
+      hm hr (higham13_fin_fun_unit_sphere_nonempty hr) A pivotInv
+      invDiagBound hdet hDom hDiagBound hInit hLeft hRight
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
+    positive-block-size form of the pivot-right-inverse matrix-`∞`
+    source-table max-entry package. -/
+theorem
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_pivot_right_inverse_of_pos_dim
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hApos : 0 < maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin A))
+    (invDiagBound : Fin m → ℝ)
+    (hDom : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j)) invDiagBound)
+    (hDiagBound : ∀ j : Fin m, invDiagBound j ≤ infNorm (A j j))
+    (hInit : ∀ j : Fin m,
+      invDiagBound j ≤
+        continuousLinearMapLowerNorm
+          (matrixMulVecCLM
+            (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv 0 j j))
+          (higham13_fin_fun_unit_sphere_nonempty hr))
+    (hPivotRight : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k)) :
+    blockMaxNorm hm hr (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) ≤
+        2 * ((r : ℝ) * blockMaxNorm hm hr A) ∧
+      growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            (Nat.mul_pos hm hr) hm hr A pivotInv) hApos ≤
+        2 * (r : ℝ) := by
+  exact
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_pivot_right_inverse
+      hm hr (higham13_fin_fun_unit_sphere_nonempty hr) A pivotInv hApos
+      invDiagBound hDom hDiagBound hInit hPivotRight
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
+    determinant-nonzero positive-block-size form of the pivot-right-inverse
+    matrix-`∞` source-table max-entry package. -/
+theorem
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_pivot_right_inverse_of_det_ne_zero_of_pos_dim
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (invDiagBound : Fin m → ℝ)
+    (hdet :
+      Matrix.det (blockMatrixFlatFin A :
+        Matrix (Fin (m * r)) (Fin (m * r)) ℝ) ≠ 0)
+    (hDom : IsBlockDiagDomCol m (fun i j : Fin m => infNorm (A i j)) invDiagBound)
+    (hDiagBound : ∀ j : Fin m, invDiagBound j ≤ infNorm (A j j))
+    (hInit : ∀ j : Fin m,
+      invDiagBound j ≤
+        continuousLinearMapLowerNorm
+          (matrixMulVecCLM
+            (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv 0 j j))
+          (higham13_fin_fun_unit_sphere_nonempty hr))
+    (hPivotRight : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock
+          A pivotInv k ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k)) :
+    blockMaxNorm hm hr (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) ≤
+        2 * ((r : ℝ) * blockMaxNorm hm hr A) ∧
+      growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            (Nat.mul_pos hm hr) hm hr A pivotInv)
+          (maxEntryNorm_pos_of_det_ne_zero
+            (Nat.mul_pos hm hr) (blockMatrixFlatFin A) hdet) ≤
+        2 * (r : ℝ) := by
+  exact
+    higham13_algorithm13_3_matrix_infNorm_upperFromMatrixStages_and_growthFactor_le_card_of_continuousLinearMap_source_table_of_pivot_right_inverse_of_det_ne_zero
+      hm hr (higham13_fin_fun_unit_sphere_nonempty hr) A pivotInv
+      invDiagBound hdet hDom hDiagBound hInit hPivotRight
 
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 and equation (13.21):
     dimension-aware max-entry upper-factor bound from initial diagonal
@@ -26231,6 +26562,82 @@ theorem growthFactorEntry_sq_kappa_budget_le_of_growth_le_inv_ratio
           maxEntryNormRect hGlobal hGlobal AglobInv) := hGlobalEq.symm
 
 /-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    a strong base/inverse comparison implies the cross-multiplied inverse-ratio
+    comparison used by the recursive tail-budget transport.
+
+    This is deliberately conditional.  The hypothesis
+    `||A_global||_max <= ||A_local||_max` is stronger than ordinary containment
+    in the direction needed for denominators, and is not asserted here to hold
+    for Schur tails automatically. -/
+theorem maxEntryNormRect_inverse_ratio_of_base_le_and_inverse_le
+    {nLocal nGlobal : ℕ} (hLocal : 0 < nLocal) (hGlobal : 0 < nGlobal)
+    (Aloc AlocInv : Fin nLocal → Fin nLocal → ℝ)
+    (Aglob AglobInv : Fin nGlobal → Fin nGlobal → ℝ)
+    (hBase :
+      maxEntryNormRect hGlobal hGlobal Aglob ≤
+        maxEntryNormRect hLocal hLocal Aloc)
+    (hInv :
+      maxEntryNormRect hLocal hLocal AlocInv ≤
+        maxEntryNormRect hGlobal hGlobal AglobInv) :
+    maxEntryNormRect hLocal hLocal AlocInv *
+        maxEntryNormRect hGlobal hGlobal Aglob ≤
+      maxEntryNormRect hGlobal hGlobal AglobInv *
+        maxEntryNormRect hLocal hLocal Aloc := by
+  have hGlobBaseNonneg :
+      0 ≤ maxEntryNormRect hGlobal hGlobal Aglob :=
+    maxEntryNormRect_nonneg hGlobal hGlobal Aglob
+  have hGlobInvNonneg :
+      0 ≤ maxEntryNormRect hGlobal hGlobal AglobInv :=
+    maxEntryNormRect_nonneg hGlobal hGlobal AglobInv
+  have hStepInv :
+      maxEntryNormRect hLocal hLocal AlocInv *
+          maxEntryNormRect hGlobal hGlobal Aglob ≤
+        maxEntryNormRect hGlobal hGlobal AglobInv *
+          maxEntryNormRect hGlobal hGlobal Aglob :=
+    mul_le_mul_of_nonneg_right hInv hGlobBaseNonneg
+  have hStepBase :
+      maxEntryNormRect hGlobal hGlobal AglobInv *
+          maxEntryNormRect hGlobal hGlobal Aglob ≤
+        maxEntryNormRect hGlobal hGlobal AglobInv *
+          maxEntryNormRect hLocal hLocal Aloc :=
+    mul_le_mul_of_nonneg_left hBase hGlobInvNonneg
+  exact le_trans hStepInv hStepBase
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    scalar local-to-global `rho^2 kappa` budget comparison from growth
+    domination plus a strong base/inverse comparison.
+
+    The theorem factors through
+    `growthFactorEntry_sq_kappa_budget_le_of_growth_le_inv_ratio`, so the only
+    new mathematics is the elementary product-order bridge from
+    `maxEntryNormRect_inverse_ratio_of_base_le_and_inverse_le`. -/
+theorem growthFactorEntry_sq_kappa_budget_le_of_growth_le_base_inverse
+    {nLocal nGlobal : ℕ} (hLocal : 0 < nLocal) (hGlobal : 0 < nGlobal)
+    (Aloc Gloc AlocInv : Fin nLocal → Fin nLocal → ℝ)
+    (Aglob Gglob AglobInv : Fin nGlobal → Fin nGlobal → ℝ)
+    (hAlocPos : 0 < maxEntryNorm hLocal Aloc)
+    (hAglobPos : 0 < maxEntryNorm hGlobal Aglob)
+    (hGrowth : maxEntryNorm hLocal Gloc ≤ maxEntryNorm hGlobal Gglob)
+    (hBase :
+      maxEntryNormRect hGlobal hGlobal Aglob ≤
+        maxEntryNormRect hLocal hLocal Aloc)
+    (hInv :
+      maxEntryNormRect hLocal hLocal AlocInv ≤
+        maxEntryNormRect hGlobal hGlobal AglobInv) :
+    (growthFactorEntry hLocal Aloc Gloc hAlocPos) ^ 2 *
+        (maxEntryNormRect hLocal hLocal Aloc *
+          maxEntryNormRect hLocal hLocal AlocInv) ≤
+      (growthFactorEntry hGlobal Aglob Gglob hAglobPos) ^ 2 *
+        (maxEntryNormRect hGlobal hGlobal Aglob *
+          maxEntryNormRect hGlobal hGlobal AglobInv) := by
+  exact
+    growthFactorEntry_sq_kappa_budget_le_of_growth_le_inv_ratio
+      hLocal hGlobal Aloc Gloc AlocInv Aglob Gglob AglobInv
+      hAlocPos hAglobPos hGrowth
+      (maxEntryNormRect_inverse_ratio_of_base_le_and_inverse_le
+        hLocal hGlobal Aloc AlocInv Aglob AglobInv hBase hInv)
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
     lower-budget comparison for the recursive Schur tail from the remaining
     inverse-ratio condition.
 
@@ -26334,6 +26741,72 @@ theorem
     mul_le_mul_of_nonneg_left hCore (Nat.cast_nonneg n)
 
 /-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    lower-budget comparison for the recursive Schur tail from explicit
+    base/inverse comparisons.
+
+    This is a conditional dependency for the Problem 13.4 tail route.  It
+    derives the cross-multiplied inverse-ratio comparison from the stronger
+    pair `||A_full||_max <= ||A_tail||_max` and
+    `||A_tail^{-1}||_max <= ||A_full^{-1}||_max`, then reuses the existing
+    inverse-ratio transport theorem. -/
+theorem
+    higham13_eq13_22_tail_lower_budget_le_full_from_base_inverse_matrix_stage_history_exact_kappa
+    {m r : ℕ} (hr : 0 < r)
+    (A : Fin ((m + 1) + 1) → Fin ((m + 1) + 1) →
+      Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hTailPos :
+      0 < maxEntryNorm (Nat.mul_pos (Nat.succ_pos m) hr)
+        (blockMatrixFlatFin (blockSchur A (pivotInv 0))))
+    (hFullPos :
+      0 < maxEntryNorm (Nat.add_pos_left hr ((m + 1) * r))
+        (blockMatrixFirstSplitFlat A))
+    (n : ℕ) :
+    let hmTail : 0 < m + 1 := Nat.succ_pos m
+    let hNTail : 0 < (m + 1) * r := Nat.mul_pos hmTail hr
+    let hNFull : 0 < r + (m + 1) * r :=
+      Nat.add_pos_left hr ((m + 1) * r)
+    let Atail : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+      blockMatrixFlatFin (blockSchur A (pivotInv 0))
+    let Gtail : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+      higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+        hNTail hmTail hr (blockSchur A (pivotInv 0))
+        (fun q => pivotInv (q + 1))
+    let AinvTail : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+      nonsingInv ((m + 1) * r) Atail
+    let A0 : Fin (r + (m + 1) * r) → Fin (r + (m + 1) * r) → ℝ :=
+      blockMatrixFirstSplitFlat A
+    let Gfull : Fin (r + (m + 1) * r) → Fin (r + (m + 1) * r) → ℝ :=
+      higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+        hNFull (Nat.succ_pos (m + 1)) hr A pivotInv
+    let AinvFull : Fin (r + (m + 1) * r) → Fin (r + (m + 1) * r) → ℝ :=
+      nonsingInv (r + (m + 1) * r) A0
+    (maxEntryNormRect hNFull hNFull A0 ≤
+        maxEntryNormRect hNTail hNTail Atail) →
+      (maxEntryNormRect hNTail hNTail AinvTail ≤
+        maxEntryNormRect hNFull hNFull AinvFull) →
+      (n : ℝ) * (growthFactorEntry hNTail Atail Gtail hTailPos) ^ 2 *
+          (maxEntryNormRect hNTail hNTail Atail *
+            maxEntryNormRect hNTail hNTail AinvTail) ≤
+        (n : ℝ) * (growthFactorEntry hNFull A0 Gfull hFullPos) ^ 2 *
+          (maxEntryNormRect hNFull hNFull A0 *
+            maxEntryNormRect hNFull hNFull AinvFull) := by
+  dsimp only
+  intro hBase hInv
+  exact
+    higham13_eq13_22_tail_lower_budget_le_full_from_inverse_ratio_matrix_stage_history_exact_kappa
+      hr A pivotInv hTailPos hFullPos n
+      (maxEntryNormRect_inverse_ratio_of_base_le_and_inverse_le
+        (Nat.mul_pos (Nat.succ_pos m) hr)
+        (Nat.add_pos_left hr ((m + 1) * r))
+        (blockMatrixFlatFin (blockSchur A (pivotInv 0)))
+        (nonsingInv ((m + 1) * r)
+          (blockMatrixFlatFin (blockSchur A (pivotInv 0))))
+        (blockMatrixFirstSplitFlat A)
+        (nonsingInv (r + (m + 1) * r) (blockMatrixFirstSplitFlat A))
+        hBase hInv)
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
     transport a recursive Schur-tail chain to the full ambient budgets from
     the explicit inverse-ratio condition.
 
@@ -26399,6 +26872,81 @@ theorem
   exact
     higham13_eq13_22_tail_chain_to_full_budget_from_lower_comparison_matrix_stage_history_exact_kappa
       hr A pivotInv hTailPos hFullPos n hLower hTail
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    transport a recursive Schur-tail chain to the full ambient budgets from
+    explicit base/inverse comparisons.
+
+    This is the chain-level companion to
+    `higham13_eq13_22_tail_lower_budget_le_full_from_base_inverse_matrix_stage_history_exact_kappa`.
+    It keeps the strong base comparison and inverse comparison as hypotheses,
+    because they are not generic consequences of the recursive matrix-stage
+    history alone. -/
+theorem
+    higham13_eq13_22_tail_chain_to_full_budget_from_base_inverse_matrix_stage_history_exact_kappa
+    {m r : ℕ} (hr : 0 < r)
+    (A : Fin ((m + 1) + 1) → Fin ((m + 1) + 1) →
+      Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hTailPos :
+      0 < maxEntryNorm (Nat.mul_pos (Nat.succ_pos m) hr)
+        (blockMatrixFlatFin (blockSchur A (pivotInv 0))))
+    (hFullPos :
+      0 < maxEntryNorm (Nat.add_pos_left hr ((m + 1) * r))
+        (blockMatrixFirstSplitFlat A))
+    (n : ℕ) :
+    let hmTail : 0 < m + 1 := Nat.succ_pos m
+    let hNTail : 0 < (m + 1) * r := Nat.mul_pos hmTail hr
+    let hNFull : 0 < r + (m + 1) * r :=
+      Nat.add_pos_left hr ((m + 1) * r)
+    let Atail : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+      blockMatrixFlatFin (blockSchur A (pivotInv 0))
+    let Gtail : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+      higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+        hNTail hmTail hr (blockSchur A (pivotInv 0))
+        (fun q => pivotInv (q + 1))
+    let AinvTail : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+      nonsingInv ((m + 1) * r) Atail
+    let A0 : Fin (r + (m + 1) * r) → Fin (r + (m + 1) * r) → ℝ :=
+      blockMatrixFirstSplitFlat A
+    let Gfull : Fin (r + (m + 1) * r) → Fin (r + (m + 1) * r) → ℝ :=
+      higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+        hNFull (Nat.succ_pos (m + 1)) hr A pivotInv
+    let AinvFull : Fin (r + (m + 1) * r) → Fin (r + (m + 1) * r) → ℝ :=
+      nonsingInv (r + (m + 1) * r) A0
+    (maxEntryNormRect hNFull hNFull A0 ≤
+        maxEntryNormRect hNTail hNTail Atail) →
+      (maxEntryNormRect hNTail hNTail AinvTail ≤
+        maxEntryNormRect hNFull hNFull AinvFull) →
+      Higham13BlockLUBudgetChain hr
+        ((n : ℝ) * (growthFactorEntry hNTail Atail Gtail hTailPos) ^ 2 *
+          (maxEntryNormRect hNTail hNTail Atail *
+            maxEntryNormRect hNTail hNTail AinvTail))
+        (growthFactorEntry hNTail Atail Gtail hTailPos *
+          maxEntryNormRect hNTail hNTail Atail)
+        m (blockSchur A (pivotInv 0)) (fun q => pivotInv (q + 1)) →
+      Higham13BlockLUBudgetChain hr
+        ((n : ℝ) * (growthFactorEntry hNFull A0 Gfull hFullPos) ^ 2 *
+          (maxEntryNormRect hNFull hNFull A0 *
+            maxEntryNormRect hNFull hNFull AinvFull))
+        (growthFactorEntry hNFull A0 Gfull hFullPos *
+          maxEntryNormRect hNFull hNFull A0)
+        m (blockSchur A (pivotInv 0)) (fun q => pivotInv (q + 1)) := by
+  dsimp only
+  intro hBase hInv hTail
+  exact
+    higham13_eq13_22_tail_chain_to_full_budget_from_inverse_ratio_matrix_stage_history_exact_kappa
+      hr A pivotInv hTailPos hFullPos n
+      (maxEntryNormRect_inverse_ratio_of_base_le_and_inverse_le
+        (Nat.mul_pos (Nat.succ_pos m) hr)
+        (Nat.add_pos_left hr ((m + 1) * r))
+        (blockMatrixFlatFin (blockSchur A (pivotInv 0)))
+        (nonsingInv ((m + 1) * r)
+          (blockMatrixFlatFin (blockSchur A (pivotInv 0))))
+        (blockMatrixFirstSplitFlat A)
+        (nonsingInv (r + (m + 1) * r) (blockMatrixFirstSplitFlat A))
+        hBase hInv)
+      hTail
 
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3 / Problem 13.4:
     one active matrix-stage multiplier bound from a local two-block budget.
@@ -39528,6 +40076,35 @@ theorem Higham13Eq1322LowerComparisonSourceChain.pivot_det_ne_zero_of_final
     simpa using hfinal
 
 /-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    full active pivot determinant table for a direct lower-comparison source
+    chain, when the final one-block pivot is supplied as a right-inverse
+    certificate.
+
+    This is the right-inverse input surface corresponding to
+    `Higham13Eq1322LowerComparisonSourceChain.pivot_det_ne_zero_of_final`. -/
+theorem Higham13Eq1322LowerComparisonSourceChain.pivot_det_ne_zero_of_final_right_inverse
+    {r n : ℕ} {hr : 0 < r} :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322LowerComparisonSourceChain hr n m Ablk pivotInv →
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+          ⟨m, Nat.lt_succ_self m⟩
+          ⟨m, Nat.lt_succ_self m⟩)
+        (pivotInv m) →
+      ∀ k : ℕ, ∀ hk : k < m + 1,
+        Matrix.det
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0 := by
+  intro m Ablk pivotInv hcert hfinal
+  exact
+    higham13_algorithm13_3_pivot_det_ne_zero_of_pivot_right_inverse
+      Ablk pivotInv
+      (Higham13Eq1322LowerComparisonSourceChain.pivot_right_inverse_of_final
+        hcert hfinal)
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
     all-pivot right-inverse table for a direct lower-comparison source chain
     when the terminal one-block pivot is the canonical `nonsingInv`.
 
@@ -39561,6 +40138,38 @@ theorem Higham13Eq1322LowerComparisonSourceChain.pivot_right_inverse_of_final_no
       (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
         ⟨m, Nat.lt_succ_self m⟩
         ⟨m, Nat.lt_succ_self m⟩) hdet).2
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    all-pivot determinant table for a direct lower-comparison source chain
+    when the terminal one-block pivot is the canonical `nonsingInv`.
+
+    This is the determinant-table companion to
+    `Higham13Eq1322LowerComparisonSourceChain.pivot_right_inverse_of_final_nonsingInv`. -/
+theorem Higham13Eq1322LowerComparisonSourceChain.pivot_det_ne_zero_of_final_nonsingInv
+    {r n : ℕ} {hr : 0 < r} :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322LowerComparisonSourceChain hr n m Ablk pivotInv →
+      Matrix.det
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+            ⟨m, Nat.lt_succ_self m⟩
+            ⟨m, Nat.lt_succ_self m⟩) ≠ 0 →
+      pivotInv m =
+        nonsingInv r
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+            ⟨m, Nat.lt_succ_self m⟩
+            ⟨m, Nat.lt_succ_self m⟩) →
+      ∀ k : ℕ, ∀ hk : k < m + 1,
+        Matrix.det
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0 := by
+  intro m Ablk pivotInv hcert hdet hfinalEq
+  exact
+    higham13_algorithm13_3_pivot_det_ne_zero_of_pivot_right_inverse
+      Ablk pivotInv
+      (Higham13Eq1322LowerComparisonSourceChain.pivot_right_inverse_of_final_nonsingInv
+        hcert hdet hfinalEq)
 
 /-- Higham, 2nd ed., Chapter 13, equation (13.22):
     a recursive direct-lower-comparison source certificate instantiates the
@@ -39956,6 +40565,31 @@ theorem Higham13Eq1322InverseRatioSourceChain.pivot_det_ne_zero_of_final
       hfinal
 
 /-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    full active pivot determinant table for an inverse-ratio source chain when
+    the final one-block pivot is supplied as a right-inverse certificate. -/
+theorem Higham13Eq1322InverseRatioSourceChain.pivot_det_ne_zero_of_final_right_inverse
+    {r n : ℕ} {hr : 0 < r} :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322InverseRatioSourceChain hr n m Ablk pivotInv →
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+          ⟨m, Nat.lt_succ_self m⟩
+          ⟨m, Nat.lt_succ_self m⟩)
+        (pivotInv m) →
+      ∀ k : ℕ, ∀ hk : k < m + 1,
+        Matrix.det
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0 := by
+  intro m Ablk pivotInv hcert hfinal
+  exact
+    higham13_algorithm13_3_pivot_det_ne_zero_of_pivot_right_inverse
+      Ablk pivotInv
+      (Higham13Eq1322InverseRatioSourceChain.pivot_right_inverse_of_final
+        hcert hfinal)
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
     all-pivot right-inverse table for an inverse-ratio source chain when the
     terminal one-block pivot is the canonical `nonsingInv`. -/
 theorem Higham13Eq1322InverseRatioSourceChain.pivot_right_inverse_of_final_nonsingInv
@@ -39985,6 +40619,37 @@ theorem Higham13Eq1322InverseRatioSourceChain.pivot_right_inverse_of_final_nonsi
       (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
         ⟨m, Nat.lt_succ_self m⟩
         ⟨m, Nat.lt_succ_self m⟩) hdet).2
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    all-pivot determinant table for an inverse-ratio source chain when the
+    terminal one-block pivot is the canonical `nonsingInv`.
+
+    This is inherited through the canonical all-pivot right-inverse table. -/
+theorem Higham13Eq1322InverseRatioSourceChain.pivot_det_ne_zero_of_final_nonsingInv
+    {r n : ℕ} {hr : 0 < r} :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322InverseRatioSourceChain hr n m Ablk pivotInv →
+      Matrix.det
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+            ⟨m, Nat.lt_succ_self m⟩
+            ⟨m, Nat.lt_succ_self m⟩) ≠ 0 →
+      pivotInv m =
+        nonsingInv r
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+            ⟨m, Nat.lt_succ_self m⟩
+            ⟨m, Nat.lt_succ_self m⟩) →
+      ∀ k : ℕ, ∀ hk : k < m + 1,
+        Matrix.det
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0 := by
+  intro m Ablk pivotInv hcert hdet hfinalEq
+  exact
+    higham13_algorithm13_3_pivot_det_ne_zero_of_pivot_right_inverse
+      Ablk pivotInv
+      (Higham13Eq1322InverseRatioSourceChain.pivot_right_inverse_of_final_nonsingInv
+        hcert hdet hfinalEq)
 
 /-- Higham, 2nd ed., Chapter 13, equation (13.22):
     uniform-flat determinant-nonzero successor product witness from an ambient
