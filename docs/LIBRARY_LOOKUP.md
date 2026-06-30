@@ -1393,6 +1393,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_2_rectDenseLoopCertificate_square_to_DoolittleLU`
 - `higham9_2_rectAbsBudgetCertificate_square_to_DoolittleLU`
 - `higham9_2_rectRoundedStageTrace_square_to_DoolittleLU`
+- `higham9_2_rectRoundedLoop_square_to_DoolittleLU`
 - `higham9_2_rectMatMul_eq_prefix_add_upper`
 - `higham9_2_rectMatMul_eq_prefix_add_lower`
 - `higham9_2_abs_upper_entry_le_rectMatMul_abs_sum`

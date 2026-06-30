@@ -4768,6 +4768,32 @@ theorem higham9_2_rectRoundedStageTrace_square_to_DoolittleLU
     (higham9_2_rectRoundedStageTrace_to_rectAbsBudgetCertificate
       hT hU_diag hn hU_budget_le hL_budget_le) hn
 
+/-- **Algorithm 9.2**, square-specialized executable rectangular rounded loop as
+the compact `DoolittleLU` recurrence certificate. -/
+theorem higham9_2_rectRoundedLoop_square_to_DoolittleLU {n : ℕ}
+    (fp : FPModel) (A : Fin n → Fin n → ℝ)
+    (hU_diag : ∀ k : Fin n,
+      higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k k ≠ 0)
+    (hn : gammaValid fp n)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) k j ≤
+        gamma fp n * |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j|)
+    (hL_budget_le : ∀ i : Fin n, ∀ k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k k|) :
+    higham9_2_DoolittleLU n A
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) fp :=
+  higham9_2_rectRoundedStageTrace_square_to_DoolittleLU
+    (higham9_2_rectRoundedLoopStageTrace fp (Nat.le_refl n) A)
+    hU_diag hn hU_budget_le hL_budget_le
+
 /-- **Algorithm 9.2**, rectangular product split for an upper entry:
 triangular support reduces the stored product to the prefix dot plus the
 computed upper entry. -/
