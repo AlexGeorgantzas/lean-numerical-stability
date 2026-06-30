@@ -20879,6 +20879,360 @@ theorem higham9_14_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves
       fp n A b c (gamma fp n) hc (gamma_nonneg fp hn)
       hγ_lt_one hn hU_diag hU_budget_le hL_budget_le le_rfl hAbsLU_le
 
+/-- **Theorem 9.14**, column-dominant tridiagonal rounded-loop source `f(u)`
+bound.
+
+The rectangular rounded loop supplies the concrete factors and certificate
+budgets; an exact `LUFactSpec` for those factors plus Theorem 9.13 discharges
+the structural `|Lhat||Uhat| <= 3|A|` comparison. -/
+theorem higham9_14_tridiag_colDiagDom_source_f_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u)
+    (hn : gammaValid fp n)
+    (hLU : LUFactSpec n A
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A))
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hA_tridiag : IsTridiagonal n A)
+    (hColDom : IsDiagDominant n A)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k k|)
+    (hγ_le_u : gamma fp n ≤ u) :
+    let L_hat := higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A
+    let U_hat := higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ 3 * higham9_14_f u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  dsimp only
+  exact
+    higham9_14_source_f_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma_le
+      fp n A b 3 u hu hn
+      (hLU.det_ne_zero_iff_U_diag_ne_zero.mp hdetA)
+      hU_budget_le hL_budget_le hγ_le_u
+      (higham9_13_colDiagDom_tridiag_growth_bound_3_of_LUFactSpec
+        A
+        (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+        (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A)
+        hLU hdetA hA_tridiag hColDom)
+
+/-- **Theorem 9.14**, row-dominant tridiagonal rounded-loop source `f(u)`
+bound. -/
+theorem higham9_14_tridiag_rowDiagDom_source_f_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u)
+    (hn : gammaValid fp n)
+    (hLU : LUFactSpec n A
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A))
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hA_tridiag : IsTridiagonal n A)
+    (hRowDom : IsRowDiagDominant n A)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k k|)
+    (hγ_le_u : gamma fp n ≤ u) :
+    let L_hat := higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A
+    let U_hat := higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ 3 * higham9_14_f u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  dsimp only
+  exact
+    higham9_14_source_f_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma_le
+      fp n A b 3 u hu hn
+      (hLU.det_ne_zero_iff_U_diag_ne_zero.mp hdetA)
+      hU_budget_le hL_budget_le hγ_le_u
+      (higham9_13_rowDiagDom_tridiag_growth_bound_3_of_LUFactSpec
+        A
+        (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+        (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A)
+        hLU hdetA hA_tridiag hRowDom)
+
+/-- **Theorem 9.14**, column-dominant tridiagonal rounded-loop source
+`f(γ_n)` bound. -/
+theorem higham9_14_tridiag_colDiagDom_source_f_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hLU : LUFactSpec n A
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A))
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hA_tridiag : IsTridiagonal n A)
+    (hColDom : IsDiagDominant n A)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k k|) :
+    let L_hat := higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A
+    let U_hat := higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        3 * higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  dsimp only
+  exact
+    higham9_14_tridiag_colDiagDom_source_f_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma_le
+      fp n A b (gamma fp n) (gamma_nonneg fp hn) hn hLU hdetA
+      hA_tridiag hColDom hU_budget_le hL_budget_le le_rfl
+
+/-- **Theorem 9.14**, row-dominant tridiagonal rounded-loop source
+`f(γ_n)` bound. -/
+theorem higham9_14_tridiag_rowDiagDom_source_f_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hLU : LUFactSpec n A
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A))
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hA_tridiag : IsTridiagonal n A)
+    (hRowDom : IsRowDiagDominant n A)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k k|) :
+    let L_hat := higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A
+    let U_hat := higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        3 * higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  dsimp only
+  exact
+    higham9_14_tridiag_rowDiagDom_source_f_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma_le
+      fp n A b (gamma fp n) (gamma_nonneg fp hn) hn hLU hdetA
+      hA_tridiag hRowDom hU_budget_le hL_budget_le le_rfl
+
+/-- **Theorem 9.14**, column-dominant tridiagonal rounded-loop final `h(u)`
+bound. -/
+theorem higham9_14_tridiag_colDiagDom_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_const_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u) (hu_lt_one : u < 1)
+    (hn : gammaValid fp n)
+    (hLU : LUFactSpec n A
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A))
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hA_tridiag : IsTridiagonal n A)
+    (hColDom : IsDiagDominant n A)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k k|)
+    (hγ_le_u : gamma fp n ≤ u) :
+    let L_hat := higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A
+    let U_hat := higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ 3 * higham9_14_h u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  dsimp only
+  exact
+    higham9_14_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_const_gamma_le
+      fp n A b 3 u (by norm_num) hu hu_lt_one hn
+      (hLU.det_ne_zero_iff_U_diag_ne_zero.mp hdetA)
+      hU_budget_le hL_budget_le hγ_le_u
+      (higham9_13_colDiagDom_tridiag_growth_bound_3_of_LUFactSpec
+        A
+        (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+        (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A)
+        hLU hdetA hA_tridiag hColDom)
+
+/-- **Theorem 9.14**, row-dominant tridiagonal rounded-loop final `h(u)`
+bound. -/
+theorem higham9_14_tridiag_rowDiagDom_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_const_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u) (hu_lt_one : u < 1)
+    (hn : gammaValid fp n)
+    (hLU : LUFactSpec n A
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A))
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hA_tridiag : IsTridiagonal n A)
+    (hRowDom : IsRowDiagDominant n A)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k k|)
+    (hγ_le_u : gamma fp n ≤ u) :
+    let L_hat := higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A
+    let U_hat := higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ 3 * higham9_14_h u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  dsimp only
+  exact
+    higham9_14_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_const_gamma_le
+      fp n A b 3 u (by norm_num) hu hu_lt_one hn
+      (hLU.det_ne_zero_iff_U_diag_ne_zero.mp hdetA)
+      hU_budget_le hL_budget_le hγ_le_u
+      (higham9_13_rowDiagDom_tridiag_growth_bound_3_of_LUFactSpec
+        A
+        (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+        (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A)
+        hLU hdetA hA_tridiag hRowDom)
+
+/-- **Theorem 9.14**, column-dominant tridiagonal rounded-loop final
+`h(γ_n)` bound. -/
+theorem higham9_14_tridiag_colDiagDom_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_const_gamma
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hLU : LUFactSpec n A
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A))
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hA_tridiag : IsTridiagonal n A)
+    (hColDom : IsDiagDominant n A)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k k|) :
+    let L_hat := higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A
+    let U_hat := higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        3 * higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  dsimp only
+  exact
+    higham9_14_tridiag_colDiagDom_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_const_gamma_le
+      fp n A b (gamma fp n) (gamma_nonneg fp hn) hγ_lt_one hn
+      hLU hdetA hA_tridiag hColDom hU_budget_le hL_budget_le le_rfl
+
+/-- **Theorem 9.14**, row-dominant tridiagonal rounded-loop final `h(γ_n)`
+bound. -/
+theorem higham9_14_tridiag_rowDiagDom_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_const_gamma
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hLU : LUFactSpec n A
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A))
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hA_tridiag : IsTridiagonal n A)
+    (hRowDom : IsRowDiagDominant n A)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k k|) :
+    let L_hat := higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A
+    let U_hat := higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        3 * higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  dsimp only
+  exact
+    higham9_14_tridiag_rowDiagDom_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_const_gamma_le
+      fp n A b (gamma fp n) (gamma_nonneg fp hn) hγ_lt_one hn
+      hLU hdetA hA_tridiag hRowDom hU_budget_le hL_budget_le le_rfl
+
 /-- **Theorem 9.14**, column-dominant builder source-model `f(u)` bound.
 
 This is the equation-(9.22) analogue of
