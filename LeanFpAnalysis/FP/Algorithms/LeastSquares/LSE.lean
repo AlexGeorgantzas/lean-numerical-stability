@@ -315,6 +315,41 @@ theorem LSENullIntersectionTrivial.iff_lseStackedFullColumnRank {m n p : ℕ}
 def IsLowerTriangular {n : ℕ} (L : Fin n → Fin n → ℝ) : Prop :=
   ∀ i j : Fin n, i.val < j.val → L i j = 0
 
+/-- A relative entrywise perturbation of a lower-triangular matrix is still
+    lower triangular.  Above the diagonal the reference entries are zero, so
+    the absolute perturbation bound forces the perturbation entries to vanish
+    there as well. -/
+theorem IsLowerTriangular.add_of_entrywise_abs_le_mul_abs {n : ℕ}
+    {T Delta : Fin n → Fin n → ℝ} {eta : ℝ}
+    (hT : IsLowerTriangular T)
+    (hDelta : ∀ i j : Fin n, |Delta i j| ≤ eta * |T i j|) :
+    IsLowerTriangular (fun i j => T i j + Delta i j) := by
+  intro i j hij
+  have hTij : T i j = 0 := hT i j hij
+  have hbound : |Delta i j| ≤ 0 := by
+    simpa [hTij] using hDelta i j
+  have hDeltaij : Delta i j = 0 := by
+    exact abs_eq_zero.mp (le_antisymm hbound (abs_nonneg (Delta i j)))
+  simp [hTij, hDeltaij]
+
+/-- A relative entrywise perturbation with factor strictly below one preserves
+    nonzero diagonal entries. -/
+theorem diag_ne_zero_add_of_entrywise_abs_le_mul_abs_of_factor_lt_one {n : ℕ}
+    {T Delta : Fin n → Fin n → ℝ} {eta : ℝ}
+    (hdiag : ∀ i : Fin n, T i i ≠ 0)
+    (heta_lt : eta < 1)
+    (hDelta : ∀ i j : Fin n, |Delta i j| ≤ eta * |T i j|) :
+    ∀ i : Fin n, T i i + Delta i i ≠ 0 := by
+  intro i hzero
+  have hDelta_eq : Delta i i = -T i i := by
+    linarith
+  have habs_eq : |Delta i i| = |T i i| := by
+    rw [hDelta_eq, abs_neg]
+  have hle : |T i i| ≤ eta * |T i i| := by
+    simpa [habs_eq] using hDelta i i
+  have hpos : 0 < |T i i| := abs_pos.mpr (hdiag i)
+  nlinarith
+
 private theorem isInverse_rectMatMulVec_bijective {n : ℕ}
     (T Tinv : Fin n → Fin n → ℝ) (hInv : IsInverse n T Tinv) :
     Function.Bijective (rectMatMulVec T) := by
@@ -9307,6 +9342,88 @@ theorem theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks
        hDeltaA := hDeltaA
        hDeltab := hDeltab
        hDeltaB := hDeltaB }⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), constructed-source
+    certificate with perturbed triangular nonsingularity discharged by
+    `gamma < 1`.
+
+    The forward-substitution perturbation bounds are relative entrywise bounds.
+    Therefore the perturbed `S + DeltaS` and `L22 + DeltaL22` blocks remain
+    lower triangular; if the relative factors are strictly below one, their
+    nonzero diagonals are preserved.  This theorem removes those hypotheses
+    from `theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks`,
+    leaving only the induced source perturbation bounds and transformed-RHS
+    matching condition. -/
+theorem theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of_gamma_lt_one
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (gammaA gammaB : ℝ)
+    (Deltab : Fin (r + q) → ℝ)
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalidS : gammaValid fp p)
+    (hvalidL22 : gammaValid fp q)
+    (hgammaS_lt : gamma fp p < 1)
+    (hgammaL22_lt : gamma fp q < 1) :
+    ∃ (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ),
+      (∀ i j, |DeltaS i j| ≤ gamma fp p * |h.S i j|) ∧
+      (∀ i j, |DeltaL22 i j| ≤ gamma fp q * |h.L22 i j|) ∧
+      frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S ∧
+      frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 ∧
+      (let Spert : Fin p → Fin p → ℝ :=
+          fun i j => h.S i j + DeltaS i j
+       let L22pert : Fin q → Fin q → ℝ :=
+          fun i j => h.L22 i j + DeltaL22 i j
+       let Apert : Fin (r + q) → Fin (p + q) → ℝ :=
+          gqrSourceAFromBlocks h.Q h.U h.L11 h.L21 L22pert
+       let Bpert : Fin p → Fin (p + q) → ℝ :=
+          gqrSourceBFromBlocks h.Q Spert
+       let DeltaA : Fin (r + q) → Fin (p + q) → ℝ :=
+          fun i j => Apert i j - A i j
+       let DeltaB : Fin p → Fin (p + q) → ℝ :=
+          fun i j => Bpert i j - B i j
+       frobNormRect DeltaA ≤ gammaA * frobNormRect A →
+       vecNorm2 Deltab ≤ gammaA * vecNorm2 b →
+       frobNormRect DeltaB ≤ gammaB * frobNormRect B →
+       (∀ i : Fin q,
+          matMulVec (r + q) (matTranspose h.U)
+              (fun i => b i + Deltab i) (Fin.natAdd r i) =
+            matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i)) →
+       Nonempty
+        (Theorem20_10PartAPerturbationCertificate A B b d
+          (theorem20_10_gqr_xhat fp h b d) gammaA gammaB)) := by
+  rcases
+    theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks
+      fp h b d gammaA gammaB Deltab hgammaB_nonneg hSdiag hL22diag
+      hvalidS hvalidL22 with
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, hcert⟩
+  refine
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, ?_⟩
+  dsimp at hcert ⊢
+  intro hDeltaA hDeltab hDeltaB hb_tail
+  have hSpert_lower :
+      IsLowerTriangular (fun i j => h.S i j + DeltaS i j) :=
+    h.lowerS.add_of_entrywise_abs_le_mul_abs hDeltaSbound
+  have hL22pert_lower :
+      IsLowerTriangular (fun i j => h.L22 i j + DeltaL22 i j) :=
+    h.lowerL22.add_of_entrywise_abs_le_mul_abs hDeltaL22bound
+  have hSpert_diag :
+      ∀ i : Fin p, h.S i i + DeltaS i i ≠ 0 :=
+    diag_ne_zero_add_of_entrywise_abs_le_mul_abs_of_factor_lt_one
+      hSdiag hgammaS_lt hDeltaSbound
+  have hL22pert_diag :
+      ∀ i : Fin q, h.L22 i i + DeltaL22 i i ≠ 0 :=
+    diag_ne_zero_add_of_entrywise_abs_le_mul_abs_of_factor_lt_one
+      hL22diag hgammaL22_lt hDeltaL22bound
+  exact
+    hcert hSpert_lower hL22pert_lower hSpert_diag hL22pert_diag
+      hDeltaA hDeltab hDeltaB hb_tail
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), certificate-to-exact-core
     handoff.
