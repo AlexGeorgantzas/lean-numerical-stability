@@ -20,6 +20,23 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-06-30 Eq.13.23 reciprocal source-chain product/update checkpoint:
+  added
+  `higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_product_bound_diag_update_reciprocal`,
+  `Higham13Eq1322InverseRatioSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update_reciprocal`,
+  `Higham13Eq1322LowerComparisonSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update_reciprocal`,
+  and
+  `Higham13Eq1322BaseInverseSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update_reciprocal`.
+  These wrappers accept the source reciprocal active-pivot table
+  `SchurStageActivePivotInvReciprocal13_7` and internally derive the raw
+  pivot-product bound used by the existing product-bound/diagonal-update
+  Eq.13.23 routes.  This removes a source-surface mismatch only; structured
+  product/update data, recursive Problem 13.4 comparisons, and Theorem 13.6
+  cited estimates remain open.  Verification passed by direct `BlockLU.lean`
+  compile, focused LU build, quiet `examples/LibraryLookup.lean` with empty
+  stderr and all four new names present, `git diff --check`, placeholder and
+  conflict-marker scans, and focused `#print axioms` reporting only `propext`,
+  `Classical.choice`, and `Quot.sound`.  Commit and push remain next.
 - 2026-06-30 base/inverse route-audit checkpoint:
   `higham13_base_inverse_principal_tail_base_comparison_counterexample` shows
   that the stronger base comparison `||A_full||_max <= ||A_tail||_max` needed
