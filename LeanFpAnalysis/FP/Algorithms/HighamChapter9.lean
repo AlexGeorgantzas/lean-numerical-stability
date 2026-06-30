@@ -3734,6 +3734,63 @@ theorem higham9_2_rectDoolittleL_source_identity {m n : ℕ}
   symm
   exact higham9_2_rectDoolittleLUpdate_source_identity A L U i k hUkk
 
+/-- **Algorithm 9.2**, exact rectangular recurrence product bridge.  If the
+stored rectangular factors satisfy the exact upper and lower Doolittle update
+equations, with unit rectangular pivot rows and nonzero pivots, then their
+rectangular product is the source matrix.  This closes the exact
+recurrence-to-product handoff used by the rectangular equation (9.5) layer;
+the rounded executable schedule remains a separate certificate-production
+problem. -/
+theorem higham9_2_rectDoolittle_exact_recurrences_rectMatMul_eq {m n : ℕ}
+    {hmn : n ≤ m}
+    {A L : Fin m → Fin n → ℝ} {U : Fin n → Fin n → ℝ}
+    (hL_diag : ∀ k : Fin n, L (higham9_2_rectRow hmn k) k = 1)
+    (hL_upper_zero : ∀ i : Fin m, ∀ j : Fin n, i.val < j.val → L i j = 0)
+    (hU_lower_zero : ∀ i j : Fin n, j.val < i.val → U i j = 0)
+    (hU_entry_eq : ∀ k j : Fin n, k.val ≤ j.val →
+      U k j = higham9_2_rectDoolittleUUpdate hmn A L U k j)
+    (hL_entry_eq : ∀ i : Fin m, ∀ k : Fin n, k.val < i.val →
+      L i k = higham9_2_rectDoolittleLUpdate A L U i k)
+    (hU_diag : ∀ k : Fin n, U k k ≠ 0) :
+    ∀ i j, rectMatMul L U i j = A i j := by
+  intro i j
+  by_cases hij : i.val ≤ j.val
+  · let k : Fin n := ⟨i.val, lt_of_le_of_lt hij j.isLt⟩
+    have hi_row : higham9_2_rectRow hmn k = i := by
+      ext
+      rfl
+    have hkj : k.val ≤ j.val := by
+      simpa [k] using hij
+    have hprod :=
+      higham9_2_rectMatMul_eq_prefix_add_upper
+        (hmn := hmn) (L := L) (U := U)
+        hL_diag hL_upper_zero k j hkj
+    have hsource :=
+      higham9_2_rectDoolittleU_source_identity
+        hmn A L U k j (hU_entry_eq k j hkj)
+    calc
+      rectMatMul L U i j =
+          rectMatMul L U (higham9_2_rectRow hmn k) j := by
+            rw [hi_row]
+      _ = higham9_2_rectPrefixDot L U (higham9_2_rectRow hmn k) j k +
+            U k j := hprod
+      _ = A (higham9_2_rectRow hmn k) j := by
+            rw [← hsource]
+      _ = A i j := by
+            rw [hi_row]
+  · have hji : j.val < i.val := lt_of_not_ge hij
+    have hprod :=
+      higham9_2_rectMatMul_eq_prefix_add_lower
+        (L := L) (U := U) hU_lower_zero i j
+    have hsource :=
+      higham9_2_rectDoolittleL_source_identity
+        A L U i j (hU_diag j) (hL_entry_eq i j hji)
+    calc
+      rectMatMul L U i j =
+          higham9_2_rectPrefixDot L U i j j + L i j * U j j := hprod
+      _ = A i j := by
+            rw [← hsource]
+
 /-- **Algorithm 9.2 / Theorem 9.1 support**, exact-LU upper recurrence.
 Every exact unit-lower/upper `LUFactSpec` satisfies the Doolittle upper-entry
 formula used in equation (9.3).  This is the converse direction of the source
@@ -12603,6 +12660,28 @@ theorem higham9_5_rectGEReducedEntry_full_eq_zero_of_rectMatMul_eq {m n : ℕ}
     hprod i j]
   ring
 
+/-- **Equation (9.5) / Algorithm 9.2**, terminal rectangular residual from
+exact Doolittle recurrences.  Exact upper/lower recurrence equations, together
+with the triangular shape and nonzero computed pivots, imply that after all
+rectangular rank-one updates the reduced matrix is zero. -/
+theorem higham9_5_rectGEReducedEntry_full_eq_zero_of_rectDoolittle_exact_recurrences
+    {m n : ℕ} {hmn : n ≤ m}
+    {A L : Fin m → Fin n → ℝ} {U : Fin n → Fin n → ℝ}
+    (hL_diag : ∀ k : Fin n, L (higham9_2_rectRow hmn k) k = 1)
+    (hL_upper_zero : ∀ i : Fin m, ∀ j : Fin n, i.val < j.val → L i j = 0)
+    (hU_lower_zero : ∀ i j : Fin n, j.val < i.val → U i j = 0)
+    (hU_entry_eq : ∀ k j : Fin n, k.val ≤ j.val →
+      U k j = higham9_2_rectDoolittleUUpdate hmn A L U k j)
+    (hL_entry_eq : ∀ i : Fin m, ∀ k : Fin n, k.val < i.val →
+      L i k = higham9_2_rectDoolittleLUpdate A L U i k)
+    (hU_diag : ∀ k : Fin n, U k k ≠ 0)
+    (i : Fin m) (j : Fin n) :
+    higham9_5_rectGEReducedEntry A L U n i j = 0 :=
+  higham9_5_rectGEReducedEntry_full_eq_zero_of_rectMatMul_eq
+    (higham9_2_rectDoolittle_exact_recurrences_rectMatMul_eq
+      hL_diag hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq hU_diag)
+    i j
+
 /-- **Equation (9.5)** saturated rectangular residual: for an exact rectangular
 product certificate, every reduced entry at a step count `>= n` is zero. -/
 theorem higham9_5_rectGEReducedEntry_eq_zero_of_rectMatMul_eq_of_ge
@@ -12614,6 +12693,29 @@ theorem higham9_5_rectGEReducedEntry_eq_zero_of_rectMatMul_eq_of_ge
   rw [higham9_5_rectGEReducedEntry_eq_sub_rectMatMul_of_ge
     A L U i j hsteps, hprod i j]
   ring
+
+/-- **Equation (9.5) / Algorithm 9.2**, saturated rectangular residual from
+exact Doolittle recurrences.  Once the natural-number schedule has executed at
+least `n` rank-one updates, the reduced matrix is zero under the exact
+rectangular Doolittle recurrence certificate. -/
+theorem higham9_5_rectGEReducedEntry_eq_zero_of_rectDoolittle_exact_recurrences_of_ge
+    {m n : ℕ} {hmn : n ≤ m}
+    {A L : Fin m → Fin n → ℝ} {U : Fin n → Fin n → ℝ}
+    {steps : ℕ} (hsteps : n ≤ steps)
+    (hL_diag : ∀ k : Fin n, L (higham9_2_rectRow hmn k) k = 1)
+    (hL_upper_zero : ∀ i : Fin m, ∀ j : Fin n, i.val < j.val → L i j = 0)
+    (hU_lower_zero : ∀ i j : Fin n, j.val < i.val → U i j = 0)
+    (hU_entry_eq : ∀ k j : Fin n, k.val ≤ j.val →
+      U k j = higham9_2_rectDoolittleUUpdate hmn A L U k j)
+    (hL_entry_eq : ∀ i : Fin m, ∀ k : Fin n, k.val < i.val →
+      L i k = higham9_2_rectDoolittleLUpdate A L U i k)
+    (hU_diag : ∀ k : Fin n, U k k ≠ 0)
+    (i : Fin m) (j : Fin n) :
+    higham9_5_rectGEReducedEntry A L U steps i j = 0 :=
+  higham9_5_rectGEReducedEntry_eq_zero_of_rectMatMul_eq_of_ge hsteps
+    (higham9_2_rectDoolittle_exact_recurrences_rectMatMul_eq
+      hL_diag hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq hU_diag)
+    i j
 
 /-- **Equation (9.5)** terminal residual: for an exact LU certificate, the
 reduced entry after all rank-one updates is zero. -/
