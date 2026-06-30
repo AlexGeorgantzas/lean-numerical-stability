@@ -9187,6 +9187,23 @@ lemma higham9_13_thresholdFactor_nonneg (τ : ℝ) (hτ : 0 < τ) :
   le_trans (by norm_num : (0 : ℝ) ≤ 1)
     (higham9_13_thresholdFactor_ge_one τ hτ)
 
+/-- **Problem 9.13**, unit threshold pivoting gives per-modification factor at
+most two. -/
+lemma higham9_13_thresholdFactor_le_two_of_one_le {τ : ℝ} (hτ : 1 ≤ τ) :
+    higham9_13_thresholdFactor τ ≤ 2 := by
+  have hinv_le_one : τ⁻¹ ≤ 1 := inv_le_one_of_one_le₀ hτ
+  unfold higham9_13_thresholdFactor
+  linarith
+
+/-- **Problem 9.13**, the threshold-pivoting modification factor is bounded by
+`2^mu` when `tau >= 1`. -/
+lemma higham9_13_thresholdFactor_pow_le_two_pow_of_one_le {τ : ℝ}
+    (hτ : 1 ≤ τ) (μ : ℕ) :
+    higham9_13_thresholdFactor τ ^ μ ≤ (2 : ℝ) ^ μ :=
+  pow_le_pow_left₀
+    (higham9_13_thresholdFactor_nonneg τ (lt_of_lt_of_le zero_lt_one hτ))
+    (higham9_13_thresholdFactor_le_two_of_one_le hτ) μ
+
 /-- **Problem 9.13**, one scalar threshold-pivoting update.
 
 If the old entry and the pivot-row entry are both bounded by the current
@@ -9341,6 +9358,30 @@ theorem higham9_13_growthFactorEntry_bound_from_column_modifications {n : ℕ}
     _ ≤ higham9_13_thresholdFactor τ ^ μ j * colMax j 0 := hiter
     _ ≤ higham9_13_thresholdFactor τ ^ μ j * maxEntryNorm hn A :=
         mul_le_mul_of_nonneg_left (hinitial j) hfactor_pow_nonneg
+
+/-- **Problem 9.13**, unit-threshold sparse-column growth corollary.
+
+When the threshold parameter satisfies `tau >= 1`, the source bound
+`(1 + tau^{-1})^muMax` is at most the simpler `2^muMax`. -/
+theorem higham9_13_growthFactorEntry_bound_from_column_modifications_two_pow
+    {n : ℕ}
+    (hn : 0 < n) (τ : ℝ) (hτ : 1 ≤ τ)
+    (μ : Fin n → ℕ) (μmax : ℕ)
+    (hμ : ∀ j : Fin n, μ j ≤ μmax)
+    (A U : Fin n → Fin n → ℝ)
+    (hA : 0 < maxEntryNorm hn A)
+    (colMax : Fin n → ℕ → ℝ)
+    (hstep : ∀ j : Fin n, ∀ t : ℕ, t < μ j →
+      colMax j (t + 1) ≤ higham9_13_thresholdFactor τ * colMax j t)
+    (hinitial : ∀ j : Fin n, colMax j 0 ≤ maxEntryNorm hn A)
+    (hfinal : ∀ i j : Fin n, |U i j| ≤ colMax j (μ j)) :
+    growthFactorEntry hn A U hA ≤ (2 : ℝ) ^ μmax := by
+  have hbase :=
+    higham9_13_growthFactorEntry_bound_from_column_modifications hn τ
+      (lt_of_lt_of_le zero_lt_one hτ) μ μmax hμ A U hA colMax
+      hstep hinitial hfinal
+  exact hbase.trans
+    (higham9_13_thresholdFactor_pow_le_two_pow_of_one_le hτ μmax)
 
 /-! ## Problem 9.14: row reversal surface for pre-pivoted GEPP -/
 
