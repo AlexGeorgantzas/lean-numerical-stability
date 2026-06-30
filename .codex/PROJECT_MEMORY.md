@@ -10235,3 +10235,14 @@ These compile, but should not be treated as fully derived stability results:
   proof-surface artifact for the base/inverse route, but the base/inverse
   comparison theorems, Eq.13.23 BDD product/update data, and Theorem 13.6
   implementation estimates remain open.
+
+- 2026-06-30 Eq.13.22/Eq.13.23 base/inverse budget-chain connector:
+  added `Higham13Eq1322BaseInverseSourceChain.to_blockLUBudgetChain` and
+  routed the base/inverse Eq.13.22 and Eq.13.23 product witnesses through that
+  ambient exact-`kappa` chain.  The theorem composes the stronger base/inverse
+  source certificate with the existing lower-comparison chain constructor, so
+  callers no longer need to mention the lower-comparison certificate or
+  prebuilt ambient budget chain on this route.  This is dependency cleanup for
+  Problem 13.4; it still leaves the actual base/inverse comparison theorems,
+  structured Eq.13.23 BDD product/update data, and Theorem 13.6 cited
+  implementation estimates open.

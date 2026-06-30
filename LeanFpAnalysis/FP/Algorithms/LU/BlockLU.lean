@@ -119,6 +119,7 @@
     Higham13Eq1322BaseInverseSourceChain.det_ne_zero,
     Higham13Eq1322BaseInverseSourceChain.to_inverseRatioSourceChain,
     Higham13Eq1322BaseInverseSourceChain.to_lowerComparisonSourceChain,
+    Higham13Eq1322BaseInverseSourceChain.to_blockLUBudgetChain,
     Higham13Eq1322BaseInverseSourceChain.nonterminal_pivot_right_inverse,
     Higham13Eq1322BaseInverseSourceChain.nonterminal_pivot_det_ne_zero,
     Higham13Eq1322BaseInverseSourceChain.pivot_right_inverse_of_final,
@@ -41024,6 +41025,45 @@ theorem Higham13Eq1322BaseInverseSourceChain.pivot_det_ne_zero_of_final_nonsingI
       hdet hfinalEq
 
 /-- Higham, 2nd ed., Chapter 13, equation (13.22):
+    a recursive base/inverse source certificate instantiates the ambient
+    exact-κ budget chain.
+
+    This is the direct budget-chain connector for the stronger source route:
+    each recursive step keeps the explicit base and inverse comparisons as the
+    source-side mathematical obligations, while downstream Eq.13.22/Eq.13.23
+    wrappers can consume the same ambient budget chain as the lower-comparison
+    route. -/
+theorem Higham13Eq1322BaseInverseSourceChain.to_blockLUBudgetChain
+    {r n : ℕ} (hr : 0 < r) :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ}
+      (hcert : Higham13Eq1322BaseInverseSourceChain hr n m Ablk pivotInv),
+      let hm : 0 < m + 1 := Nat.succ_pos m
+      let hN : 0 < (m + 1) * r := Nat.mul_pos hm hr
+      let A0 : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+        blockMatrixFlatFin Ablk
+      let G : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+        higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+          hN hm hr Ablk pivotInv
+      let Ainv : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+        nonsingInv ((m + 1) * r) A0
+      let hApos : 0 < maxEntryNorm hN A0 :=
+        maxEntryNorm_pos_of_det_ne_zero hN A0
+          (Higham13Eq1322BaseInverseSourceChain.det_ne_zero hcert)
+      Higham13BlockLUBudgetChain hr
+        ((n : ℝ) * (growthFactorEntry hN A0 G hApos) ^ 2 *
+          (maxEntryNormRect hN hN A0 * maxEntryNormRect hN hN Ainv))
+        (growthFactorEntry hN A0 G hApos * maxEntryNormRect hN hN A0)
+        m Ablk pivotInv := by
+  intro m Ablk pivotInv hcert
+  simpa using
+    Higham13Eq1322LowerComparisonSourceChain.to_blockLUBudgetChain
+      (r := r) (n := n) hr
+      (Higham13Eq1322BaseInverseSourceChain.to_lowerComparisonSourceChain
+        (r := r) (n := n) hr hcert)
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.22):
     full recursive Eq.13.22 product witness from the base/inverse source
     certificate. -/
 theorem Higham13Eq1322BaseInverseSourceChain.exists_blockLUFact_eq13_22_product_exact_kappa
@@ -41052,11 +41092,33 @@ theorem Higham13Eq1322BaseInverseSourceChain.exists_blockLUFact_eq13_22_product_
               (maxEntryNormRect hN hN A0 * maxEntryNormRect hN hN Ainv) *
               maxEntryNormRect hN hN A0 := by
   intro m Ablk pivotInv hcert
-  simpa using
-    Higham13Eq1322LowerComparisonSourceChain.exists_blockLUFact_eq13_22_product_exact_kappa
-      (r := r) (n := n) hr
-      (Higham13Eq1322BaseInverseSourceChain.to_lowerComparisonSourceChain
-        (r := r) (n := n) hr hcert)
+  dsimp only
+  let hdet :
+      Matrix.det (blockMatrixFlatFin Ablk :
+        Matrix (Fin ((m + 1) * r)) (Fin ((m + 1) * r)) ℝ) ≠ 0 :=
+    Higham13Eq1322BaseInverseSourceChain.det_ne_zero hcert
+  let hm : 0 < m + 1 := Nat.succ_pos m
+  let hN : 0 < (m + 1) * r := Nat.mul_pos hm hr
+  let A0 : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ := blockMatrixFlatFin Ablk
+  let G : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+    higham13_algorithm13_3_matrixStageHistoryGrowthMatrix hN hm hr Ablk pivotInv
+  let Ainv : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+    nonsingInv ((m + 1) * r) A0
+  let hApos : 0 < maxEntryNorm hN A0 :=
+    maxEntryNorm_pos_of_det_ne_zero hN A0 hdet
+  have hchain :
+      Higham13BlockLUBudgetChain hr
+        ((n : ℝ) * (growthFactorEntry hN A0 G hApos) ^ 2 *
+          (maxEntryNormRect hN hN A0 * maxEntryNormRect hN hN Ainv))
+        (growthFactorEntry hN A0 G hApos * maxEntryNormRect hN hN A0)
+        m Ablk pivotInv := by
+    simpa [hm, hN, A0, G, Ainv, hApos] using
+      Higham13Eq1322BaseInverseSourceChain.to_blockLUBudgetChain
+        (r := r) (n := n) hr hcert
+  simpa [hm, hN, A0, G, Ainv, hApos] using
+    Higham13BlockLUBudgetChain.exists_blockLUFact_eq13_22_product_exact_kappa
+      (r := r) hr (hN := hN) (A0 := A0) (G := G) (Ainv := Ainv)
+      hApos n hchain
 
 /-- Higham, 2nd ed., Chapter 13, equation (13.23):
     full recursive point-row product witness from the base/inverse source
@@ -41088,11 +41150,34 @@ theorem Higham13Eq1322BaseInverseSourceChain.exists_blockLUFact_eq13_23_product_
                 (maxEntryNormRect hN hN A0 * maxEntryNormRect hN hN Ainv) *
                 maxEntryNormRect hN hN A0 := by
   intro m Ablk pivotInv hcert
-  simpa using
-    Higham13Eq1322LowerComparisonSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa
-      (r := r) (n := n) hr
-      (Higham13Eq1322BaseInverseSourceChain.to_lowerComparisonSourceChain
-        (r := r) (n := n) hr hcert)
+  dsimp only
+  intro hRho_le_two
+  let hdet :
+      Matrix.det (blockMatrixFlatFin Ablk :
+        Matrix (Fin ((m + 1) * r)) (Fin ((m + 1) * r)) ℝ) ≠ 0 :=
+    Higham13Eq1322BaseInverseSourceChain.det_ne_zero hcert
+  let hm : 0 < m + 1 := Nat.succ_pos m
+  let hN : 0 < (m + 1) * r := Nat.mul_pos hm hr
+  let A0 : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ := blockMatrixFlatFin Ablk
+  let G : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+    higham13_algorithm13_3_matrixStageHistoryGrowthMatrix hN hm hr Ablk pivotInv
+  let Ainv : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+    nonsingInv ((m + 1) * r) A0
+  let hApos : 0 < maxEntryNorm hN A0 :=
+    maxEntryNorm_pos_of_det_ne_zero hN A0 hdet
+  have hchain :
+      Higham13BlockLUBudgetChain hr
+        ((n : ℝ) * (growthFactorEntry hN A0 G hApos) ^ 2 *
+          (maxEntryNormRect hN hN A0 * maxEntryNormRect hN hN Ainv))
+        (growthFactorEntry hN A0 G hApos * maxEntryNormRect hN hN A0)
+        m Ablk pivotInv := by
+    simpa [hm, hN, A0, G, Ainv, hApos] using
+      Higham13Eq1322BaseInverseSourceChain.to_blockLUBudgetChain
+        (r := r) (n := n) hr hcert
+  simpa [hm, hN, A0, G, Ainv, hApos] using
+    Higham13BlockLUBudgetChain.exists_blockLUFact_eq13_23_product_exact_kappa
+      (r := r) hr (hN := hN) (A0 := A0) (G := G) (Ainv := Ainv)
+      hApos n hchain hRho_le_two
 
 /-- Higham, 2nd ed., Chapter 13, equation (13.23):
     full recursive point-row product witness from the base/inverse source
