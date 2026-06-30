@@ -12321,6 +12321,82 @@ theorem theorem20_10_householder_constructed_perturbed_gqr_rank_iff_diagonal
       hpert.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero⟩
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    exact method handoff for the rounded Householder perturbed GQR record.
+
+    The concrete `Bᵀ` and reversed `A Q₂` Householder perturbations construct a
+    genuine GQR factorization for `(A + DeltaA, B + DeltaB)`.  If the resulting
+    triangular blocks keep nonzero diagonals, the exact GQR triangular systems
+    have unique coordinates and the perturbed equality-constrained least-squares
+    problem has a unique minimizer.  Thus the remaining rank-preservation
+    obligation is isolated to the displayed diagonal conditions for the
+    constructed record. -/
+theorem theorem20_10_householder_constructed_perturbed_gqr_exact_method_of_diagonal
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q))) :
+    let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+      fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+    let Rb : Fin (p + q) → Fin p → ℝ :=
+      fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)
+    let S : Fin p → Fin p → ℝ :=
+      matTranspose (fun i : Fin p => fun j : Fin p =>
+        Rb (Fin.castAdd q i) j)
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+      (∀ i j,
+        B i j + DeltaB i j =
+          matMulRect (p + q) (p + q) p Qb Rb j i) ∧
+      frobNormRect DeltaA ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect A ∧
+      frobNormRect DeltaB ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B ∧
+      ∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        hpert.Q = Qb ∧ hpert.S = S ∧
+        ((∀ i : Fin p, hpert.S i i ≠ 0) →
+          (∀ i : Fin q, hpert.L22 i i ≠ 0) →
+          (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+            rectMatMulVec hpert.S yz.1 = d ∧
+            rectMatMulVec hpert.L22 yz.2 =
+              (fun i : Fin q =>
+                matMulVec (r + q) (matTranspose hpert.U) b (Fin.natAdd r i) -
+                  rectMatMulVec hpert.L21 yz.1 i) ∧
+            IsLSEMinimizer
+              (fun i j => A i j + DeltaA i j) b
+              (fun i j => B i j + DeltaB i j) d
+              (matMulVec (p + q) hpert.Q (Fin.append yz.1 yz.2))) ∧
+          (∃! x : Fin (p + q) → ℝ,
+            IsLSEMinimizer
+              (fun i j => A i j + DeltaA i j) b
+              (fun i j => B i j + DeltaB i j) d x)) := by
+  dsimp
+  rcases theorem20_10_householder_constructed_perturbed_gqr_factorization
+      fp A B hp hq hvalidA hvalidB with
+    ⟨DeltaA, DeltaB, hDeltaBrep, hDeltaA, hDeltaB, hpert, hQeq, hSeq⟩
+  refine
+    ⟨DeltaA, DeltaB, hDeltaBrep, hDeltaA, hDeltaB, hpert, hQeq, hSeq, ?_⟩
+  intro hSdiag hL22diag
+  have hrank :
+      LSEFullRowRank (fun i j => B i j + DeltaB i j) ∧
+        LSEStackedFullColumnRank
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j) :=
+    (hpert.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero).2
+      ⟨hSdiag, hL22diag⟩
+  exact
+    ⟨hpert.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank
+        (b := b) (d := d) hrank.1 hrank.2,
+      hpert.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank
+        (b := b) (d := d) hrank.1 hrank.2⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     a constraint-matrix perturbation gives the corresponding constraint
     right-hand-side perturbation at a proposed computed vector.
 
