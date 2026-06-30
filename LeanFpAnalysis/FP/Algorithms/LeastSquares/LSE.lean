@@ -11660,6 +11660,59 @@ theorem theorem20_10_constraint_rhs_perturbation_bound_of_DeltaB
       (vecNorm2_rectMatMulVec_le_frobNormRect_mul DeltaB xhat)
       (mul_le_mul_of_nonneg_right hDeltaB (vecNorm2_nonneg xhat))
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), Part A certificate to
+    Part B certificate bridge.
+
+    A Part A mixed-stability certificate already supplies the source-shaped
+    `DeltaA`, `DeltaB`, and `Deltab` bounds and the perturbed rank hypotheses.
+    For the Part B backward-error certificate, the only additional perturbation
+    component is the constraint right-hand side.  Taking
+    `Deltad = DeltaB * xhat` gives the required source-shaped `Deltad` bound;
+    the `Deltab` bound is weakened by adding the nonnegative
+    `gammaB * ||A||_F * ||xhat||_2` term from the Part B statement. -/
+theorem theorem20_10_partB_certificate_of_partA_certificate
+    {r p q : ℕ}
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    {gammaA gammaB : ℝ}
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    (cert :
+      Theorem20_10PartAPerturbationCertificate A B b d xhat gammaA gammaB) :
+    ∃ Deltad : Fin p → ℝ,
+      (∀ i,
+        rectMatMulVec (fun i j => B i j + cert.DeltaB i j) xhat i =
+          rectMatMulVec B xhat i + Deltad i) ∧
+      vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+      Nonempty
+        (Theorem20_10PartBPerturbationCertificate A B b d xhat
+          gammaA gammaB) := by
+  rcases theorem20_10_constraint_rhs_perturbation_bound_of_DeltaB
+      B cert.DeltaB xhat cert.hDeltaB with
+    ⟨Deltad, hDeltad_action, hDeltad⟩
+  have htail_nonneg :
+      0 ≤ gammaB * frobNormRect A * vecNorm2 xhat := by
+    exact mul_nonneg
+      (mul_nonneg hgammaB_nonneg (frobNormRect_nonneg A))
+      (vecNorm2_nonneg xhat)
+  have hDeltab :
+      vecNorm2 cert.Deltab ≤
+        gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat :=
+    le_trans cert.hDeltab (le_add_of_nonneg_right htail_nonneg)
+  refine ⟨Deltad, hDeltad_action, hDeltad, ?_⟩
+  exact
+    ⟨{ DeltaA := cert.DeltaA
+       DeltaB := cert.DeltaB
+       Deltab := cert.Deltab
+       Deltad := Deltad
+       hB := cert.hB
+       hstack := cert.hstack
+       hDeltaA := cert.hDeltaA
+       hDeltaB := cert.hDeltaB
+       hDeltab := hDeltab
+       hDeltad := hDeltad }⟩
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     concrete Householder `Bᵀ` perturbation together with the induced
     constraint right-hand-side perturbation bound.
