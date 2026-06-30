@@ -4125,6 +4125,63 @@ theorem higham9_2_rectRoundedStageTrace_to_rectDenseLoopCertificate
     (higham9_2_rectRoundedStageTrace_to_rectAbsBudgetCertificate
       hT hU_diag hn hU_budget_le hL_budget_le)
 
+/-- **Algorithm 9.2**, executable rectangular rounded loop to absolute-budget
+certificate.  The concrete loop supplies the rounded-stage trace; callers still
+provide the standard nonzero-pivot and budget-dominance hypotheses. -/
+theorem higham9_2_rectRoundedLoop_to_rectAbsBudgetCertificate {m n : ℕ}
+    (fp : FPModel) (hmn : n ≤ m) (A : Fin m → Fin n → ℝ)
+    (hU_diag : ∀ k : Fin n, higham9_2_rectRoundedLoopU fp hmn A k k ≠ 0)
+    (hn : gammaValid fp n)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp hmn A
+          (higham9_2_rectRoundedLoopL fp hmn A)
+          (higham9_2_rectRoundedLoopU fp hmn A) k j ≤
+        gamma fp n * |higham9_2_rectRoundedLoopU fp hmn A k j|)
+    (hL_budget_le : ∀ i : Fin m, ∀ k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A
+          (higham9_2_rectRoundedLoopL fp hmn A)
+          (higham9_2_rectRoundedLoopU fp hmn A) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp hmn A i k *
+            higham9_2_rectRoundedLoopU fp hmn A k k|) :
+    higham9_2_RectDoolittleDenseLoopAbsBudgetCertificate hmn A
+      (higham9_2_rectRoundedLoopL fp hmn A)
+      (higham9_2_rectRoundedLoopU fp hmn A) fp
+      (higham9_2_rectDoolittleUAbsBudget fp hmn A
+        (higham9_2_rectRoundedLoopL fp hmn A)
+        (higham9_2_rectRoundedLoopU fp hmn A))
+      (higham9_2_rectDoolittleLAbsBudget fp A
+        (higham9_2_rectRoundedLoopL fp hmn A)
+        (higham9_2_rectRoundedLoopU fp hmn A)) :=
+  higham9_2_rectRoundedStageTrace_to_rectAbsBudgetCertificate
+    (higham9_2_rectRoundedLoopStageTrace fp hmn A)
+    hU_diag hn hU_budget_le hL_budget_le
+
+/-- **Algorithm 9.2**, executable rectangular rounded loop to dense-loop
+certificate under explicit nonzero-pivot and budget-dominance hypotheses. -/
+theorem higham9_2_rectRoundedLoop_to_rectDenseLoopCertificate {m n : ℕ}
+    (fp : FPModel) (hmn : n ≤ m) (A : Fin m → Fin n → ℝ)
+    (hU_diag : ∀ k : Fin n, higham9_2_rectRoundedLoopU fp hmn A k k ≠ 0)
+    (hn : gammaValid fp n)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp hmn A
+          (higham9_2_rectRoundedLoopL fp hmn A)
+          (higham9_2_rectRoundedLoopU fp hmn A) k j ≤
+        gamma fp n * |higham9_2_rectRoundedLoopU fp hmn A k j|)
+    (hL_budget_le : ∀ i : Fin m, ∀ k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A
+          (higham9_2_rectRoundedLoopL fp hmn A)
+          (higham9_2_rectRoundedLoopU fp hmn A) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp hmn A i k *
+            higham9_2_rectRoundedLoopU fp hmn A k k|) :
+    higham9_2_RectDoolittleDenseLoopCertificate hmn A
+      (higham9_2_rectRoundedLoopL fp hmn A)
+      (higham9_2_rectRoundedLoopU fp hmn A) fp :=
+  higham9_2_rectRoundedStageTrace_to_rectDenseLoopCertificate
+    (higham9_2_rectRoundedLoopStageTrace fp hmn A)
+    hU_diag hn hU_budget_le hL_budget_le
+
 /-- **Algorithm 9.2**, any full rounded-stage trace restricts to a completed
 prefix trace after `t` rectangular Doolittle stages. -/
 theorem higham9_2_rectRoundedStageTrace_to_prefixTrace
@@ -5969,6 +6026,37 @@ theorem higham9_3_rectRoundedStageTrace_backward_error
     (higham9_2_rectDoolittleLAbsBudget fp A L_hat U_hat) hn
     (higham9_2_rectRoundedStageTrace_to_rectAbsBudgetCertificate
       hT hU_diag hn hU_budget_le hL_budget_le)
+
+/-- **Theorem 9.3**, executable rectangular rounded-loop form.  The concrete
+Algorithm 9.2 loop supplies the rounded-stage trace, so only nonzero computed
+pivots and visible budget dominance remain as hypotheses. -/
+theorem higham9_3_rectRoundedLoop_backward_error {m n : ℕ}
+    (fp : FPModel) (hmn : n ≤ m) (A : Fin m → Fin n → ℝ)
+    (hU_diag : ∀ k : Fin n, higham9_2_rectRoundedLoopU fp hmn A k k ≠ 0)
+    (hn : gammaValid fp n)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp hmn A
+          (higham9_2_rectRoundedLoopL fp hmn A)
+          (higham9_2_rectRoundedLoopU fp hmn A) k j ≤
+        gamma fp n * |higham9_2_rectRoundedLoopU fp hmn A k j|)
+    (hL_budget_le : ∀ i : Fin m, ∀ k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A
+          (higham9_2_rectRoundedLoopL fp hmn A)
+          (higham9_2_rectRoundedLoopU fp hmn A) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp hmn A i k *
+            higham9_2_rectRoundedLoopU fp hmn A k k|) :
+    ∃ ΔA : Fin m → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤ gamma fp n *
+        ∑ k : Fin n,
+          |higham9_2_rectRoundedLoopL fp hmn A i k| *
+            |higham9_2_rectRoundedLoopU fp hmn A k j|) ∧
+      (∀ i j,
+        rectMatMul (higham9_2_rectRoundedLoopL fp hmn A)
+          (higham9_2_rectRoundedLoopU fp hmn A) i j = A i j + ΔA i j) :=
+  higham9_3_rectRoundedStageTrace_backward_error
+    (higham9_2_rectRoundedLoopStageTrace fp hmn A)
+    hU_diag hn hU_budget_le hL_budget_le
 
 /-- **Theorem 9.3**, completed rectangular rounded-prefix trace form.  A
 rectangular Doolittle prefix trace at horizon `n` feeds the same componentwise

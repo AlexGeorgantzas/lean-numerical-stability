@@ -1374,6 +1374,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_2_rectAbsBudgetCertificate_of_literal_doolittle_source_budgets`
 - `higham9_2_rectRoundedStageTrace_to_rectAbsBudgetCertificate`
 - `higham9_2_rectRoundedStageTrace_to_rectDenseLoopCertificate`
+- `higham9_2_rectRoundedLoop_to_rectAbsBudgetCertificate`
+- `higham9_2_rectRoundedLoop_to_rectDenseLoopCertificate`
 - `higham9_2_rectRoundedStageTrace_to_prefixTrace`
 - `higham9_2_rectRoundedPrefixTrace_complete_to_stageTrace`
 - `higham9_2_rectRoundedPrefixTrace_zero`
@@ -1473,6 +1475,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_3_rectDenseLoopCertificate_backward_error`
 - `higham9_3_rectAbsBudgetCertificate_backward_error`
 - `higham9_3_rectRoundedStageTrace_backward_error`
+- `higham9_3_rectRoundedLoop_backward_error`
 - `higham9_3_rectRoundedPrefixTrace_complete_backward_error`
 - `higham9_3_rectStageObligations_backward_error`
 - `higham9_3_rectLiteralDoolittle_source_budgets_backward_error`
