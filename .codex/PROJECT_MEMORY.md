@@ -10282,3 +10282,20 @@ These compile, but should not be treated as fully derived stability results:
   lower-comparison proof-surface detour only; the base/inverse comparisons,
   source-strength product/update data, and Theorem 13.6 cited estimates remain
   open.
+
+- 2026-06-30 BDD matrix-`∞`/max-entry reverse-comparison audit: added
+  `higham13_blockInfNorm_not_le_blockMaxNorm_counterexample` in
+  `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  It exhibits a single
+  one-block `2 x 2` matrix with first row `[1,1]` where `blockMaxNorm = 1` and
+  `blockInfNorm = 2`, formally ruling out a generic dimension-free comparison
+  `blockInfNorm <= blockMaxNorm`.  This is route-rejection evidence for the
+  BDD red row and explains why the matrix-`∞` to entrywise max-norm transfer
+  keeps an explicit dimension factor; the source-strength Eq.13.21/Eq.13.23
+  `rho <= 2` branch, active pivot source table, structured product/update data,
+  and Theorem 13.6 implementation estimates remain open.  Direct
+  `lake env lean -s 65536 LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`
+  passed, as did focused `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`,
+  quiet public lookup with empty stderr and the new name present,
+  `git diff --check`, conflict-marker and touched Lean marker scans, and
+  focused `#print axioms` with only `propext`, `Classical.choice`, and
+  `Quot.sound`.
