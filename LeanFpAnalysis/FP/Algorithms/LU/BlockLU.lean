@@ -26624,6 +26624,35 @@ theorem maxEntryNormRect_inverse_ratio_of_base_le_and_inverse_le
     mul_le_mul_of_nonneg_left hBase hGlobInvNonneg
   exact le_trans hStepInv hStepBase
 
+/-- Higham, 2nd ed., Chapter 13, Problem 13.4 audit:
+    the base comparison required by the stronger base/inverse recursive
+    tail-transport route is not automatic from a principal-tail right-inverse
+    relation.
+
+    The existing diagonal `diag(100,1,1)` principal-tail witness already
+    satisfies the full and tail right-inverse certificates and the tail inverse
+    comparison.  If `||A_full||_max <= ||A_tail||_max` also held, then
+    `maxEntryNormRect_inverse_ratio_of_base_le_and_inverse_le` would give the
+    inverse-ratio comparison rejected by
+    `higham13_inverse_ratio_principal_tail_counterexample`. -/
+theorem higham13_base_inverse_principal_tail_base_comparison_counterexample :
+    ∃ A Ainv : Fin 3 → Fin 3 → ℝ,
+    ∃ S Sinv : Fin 2 → Fin 2 → ℝ,
+      IsRightInverse 3 A Ainv ∧ IsRightInverse 2 S Sinv ∧
+        (∀ i j : Fin 2, S i j = A (Fin.succ i) (Fin.succ j)) ∧
+        (∀ i j : Fin 2, Sinv i j = Ainv (Fin.succ i) (Fin.succ j)) ∧
+        maxEntryNormRect (by norm_num : 0 < 2) (by norm_num : 0 < 2) Sinv ≤
+          maxEntryNormRect (by norm_num : 0 < 3) (by norm_num : 0 < 3) Ainv ∧
+        ¬ maxEntryNormRect (by norm_num : 0 < 3) (by norm_num : 0 < 3) A ≤
+          maxEntryNormRect (by norm_num : 0 < 2) (by norm_num : 0 < 2) S := by
+  rcases higham13_inverse_ratio_principal_tail_counterexample with
+    ⟨A, Ainv, S, Sinv, hA, hS, hStail, hSinvtail, _hSle, hInvle, hbad⟩
+  refine ⟨A, Ainv, S, Sinv, hA, hS, hStail, hSinvtail, hInvle, ?_⟩
+  intro hBase
+  exact hbad
+    (maxEntryNormRect_inverse_ratio_of_base_le_and_inverse_le
+      (by norm_num : 0 < 2) (by norm_num : 0 < 3) S Sinv A Ainv hBase hInvle)
+
 /-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
     scalar local-to-global `rho^2 kappa` budget comparison from growth
     domination plus a strong base/inverse comparison.
