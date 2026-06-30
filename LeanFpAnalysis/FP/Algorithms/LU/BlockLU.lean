@@ -41182,7 +41182,12 @@ theorem Higham13Eq1322BaseInverseSourceChain.exists_blockLUFact_eq13_23_product_
 /-- Higham, 2nd ed., Chapter 13, equation (13.23):
     full recursive point-row product witness from the base/inverse source
     certificate, with `rho <= 2` supplied by the matrix-stage
-    product-bound/diagonal-update BDD route. -/
+    product-bound/diagonal-update BDD route.
+
+    This is the product/update companion to
+    `Higham13Eq1322BaseInverseSourceChain.to_blockLUBudgetChain`: it consumes the
+    ambient exact-`κ` budget chain directly, while the source-side base/inverse
+    comparisons and BDD product/update data remain explicit obligations. -/
 theorem
     Higham13Eq1322BaseInverseSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update
     {r n : ℕ} (hr : 0 < r) :
@@ -41232,11 +41237,41 @@ theorem
               (maxEntryNormRect hN hN A0 * maxEntryNormRect hN hN Ainv) *
               maxEntryNormRect hN hN A0 := by
   intro m Ablk pivotInv hcert
-  simpa using
-    Higham13Eq1322LowerComparisonSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update
-      (r := r) (n := n) hr
-      (Higham13Eq1322BaseInverseSourceChain.to_lowerComparisonSourceChain
-        (r := r) (n := n) hr hcert)
+  dsimp only
+  intro invDiagBound stageInvDiagBound hDom hDiagBound hInitInv
+    hPivotInvBound hProduct hDiagUpdate
+  let hdet :
+      Matrix.det (blockMatrixFlatFin Ablk :
+        Matrix (Fin ((m + 1) * r)) (Fin ((m + 1) * r)) ℝ) ≠ 0 :=
+    Higham13Eq1322BaseInverseSourceChain.det_ne_zero hcert
+  let hm : 0 < m + 1 := Nat.succ_pos m
+  let hN : 0 < (m + 1) * r := Nat.mul_pos hm hr
+  let A0 : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ := blockMatrixFlatFin Ablk
+  let G : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+    higham13_algorithm13_3_matrixStageHistoryGrowthMatrix hN hm hr Ablk pivotInv
+  let Ainv : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+    nonsingInv ((m + 1) * r) A0
+  let hApos : 0 < maxEntryNorm hN A0 :=
+    maxEntryNorm_pos_of_det_ne_zero hN A0 hdet
+  have hchain :
+      Higham13BlockLUBudgetChain hr
+        ((n : ℝ) * (growthFactorEntry hN A0 G hApos) ^ 2 *
+          (maxEntryNormRect hN hN A0 * maxEntryNormRect hN hN Ainv))
+        (growthFactorEntry hN A0 G hApos * maxEntryNormRect hN hN A0)
+        m Ablk pivotInv := by
+    simpa [hm, hN, A0, G, Ainv, hApos] using
+      Higham13Eq1322BaseInverseSourceChain.to_blockLUBudgetChain
+        (r := r) (n := n) hr hcert
+  have hRho_le_two :
+      growthFactorEntry hN A0 G hApos ≤ 2 := by
+    simpa [hm, hN, A0, G, Ainv, hApos] using
+      higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_product_bound_diag_update
+        hm hr Ablk pivotInv hApos invDiagBound stageInvDiagBound
+        hDom hDiagBound hInitInv hPivotInvBound hProduct hDiagUpdate
+  simpa [hm, hN, A0, G, Ainv, hApos] using
+    Higham13BlockLUBudgetChain.exists_blockLUFact_eq13_23_product_exact_kappa
+      (r := r) hr (hN := hN) (A0 := A0) (G := G) (Ainv := Ainv)
+      hApos n hchain hRho_le_two
 
 /-- Higham, 2nd ed., Chapter 13, equation (13.22):
     uniform-flat determinant-nonzero successor product witness from an ambient
