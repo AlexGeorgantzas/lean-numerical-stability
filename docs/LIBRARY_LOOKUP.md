@@ -1696,6 +1696,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_partialPivotingUTraceGrowth_le_sup`
 - `higham9_partialPivotingUTraceGrowthValues_nonempty`
 - `higham9_7_partialPivotingUTraceGrowthSup_le_pow_two`
+- `higham9_7_PartialPivotGEPPUTrace_exists_certificateGrowth_le`
+- `higham9_7_PartialPivotGEPPUTrace_exists_certificateGrowthValue_le`
 - `higham9_7_wilkinsonGrowthMatrix`
 - `higham9_7_wilkinsonGrowthL`
 - `higham9_7_wilkinsonGrowthU`
@@ -2305,6 +2307,12 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_source_f_bound_of_rectLiteralDoolittle_exactTargetGaps_square_fl_triangular_solves_gamma`
 - `higham9_14_source_h_bound_of_rectLiteralDoolittle_exactTargetGaps_square_fl_triangular_solves_gamma`
 - `higham9_14_source_h_bound_of_rectLiteralDoolittle_exactTargetGaps_square_fl_triangular_solves_const_gamma`
+- `higham9_14_source_f_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma_le`
+- `higham9_14_source_f_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma`
+- `higham9_14_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma_le`
+- `higham9_14_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma`
+- `higham9_14_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_const_gamma_le`
+- `higham9_14_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_const_gamma`
 - `higham9_14_spd_tridiag_positive_DLT_source_h_bound_of_models`
 - `higham9_14_spd_tridiag_positive_DLT_source_h_bound_of_recurrence`
 - `higham9_14_nonnegative_lu_source_h_bound_of_models`

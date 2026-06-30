@@ -4526,6 +4526,177 @@ theorem frobNormRect_zeroLeftCols_append {m p q : ℕ}
   rw [Fin.sum_univ_add]
   simp [Fin.append_left, Fin.append_right]
 
+/-- Frobenius norm of a rectangular matrix with zero columns appended. -/
+theorem frobNormRect_zeroRightCols_append {m p q : ℕ}
+    (C : Fin m → Fin p → ℝ) :
+    frobNormRect (fun i : Fin m =>
+      Fin.append (C i) (fun _ : Fin q => 0)) = frobNormRect C := by
+  unfold frobNormRect
+  apply congrArg Real.sqrt
+  unfold frobNormSqRect
+  apply Finset.sum_congr rfl
+  intro i _
+  rw [Fin.sum_univ_add]
+  simp [Fin.append_left, Fin.append_right]
+
+/-- The block `[S,0]` used in the GQR constraint equation has the same
+    Frobenius norm as `S`. -/
+theorem frobNormRect_gqrBQBlock {p q : ℕ}
+    (S : Fin p → Fin p → ℝ) :
+    frobNormRect (gqrBQBlock (q := q) S) = frobNormRect S := by
+  simpa [gqrBQBlock] using
+    (frobNormRect_zeroRightCols_append (m := p) (p := p) (q := q) S)
+
+/-- The GQR constraint block is additive in its triangular factor. -/
+theorem gqrBQBlock_add {p q : ℕ}
+    (S DeltaS : Fin p → Fin p → ℝ) :
+    gqrBQBlock (q := q) (fun i j => S i j + DeltaS i j) =
+      fun i j => gqrBQBlock (q := q) S i j + gqrBQBlock DeltaS i j := by
+  ext i j
+  refine Fin.addCases
+    (motive := fun j : Fin (p + q) =>
+      gqrBQBlock (q := q) (fun i j => S i j + DeltaS i j) i j =
+        gqrBQBlock (q := q) S i j + gqrBQBlock DeltaS i j)
+    ?left ?right j
+  · intro j
+    simp [gqrBQBlock, Fin.append_left]
+  · intro j
+    simp [gqrBQBlock, Fin.append_right]
+
+/-- Transporting a perturbation of the GQR `S` block back through `Qᵀ`
+    gives the corresponding source-coordinate constraint perturbation. -/
+theorem gqrSourceBFromBlocks_perturbation_eq {p q : ℕ}
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (S DeltaS : Fin p → Fin p → ℝ) :
+    (fun i j =>
+        gqrSourceBFromBlocks Q (fun i j => S i j + DeltaS i j) i j -
+          gqrSourceBFromBlocks Q S i j) =
+      matMulRectRight (gqrBQBlock (q := q) DeltaS) (matTranspose Q) := by
+  have hblock := gqrBQBlock_add (q := q) S DeltaS
+  ext i j
+  have hadd := congrFun (congrFun
+    (matMulRect_add_left p (p + q) (p + q)
+      (gqrBQBlock (q := q) S) (gqrBQBlock (q := q) DeltaS)
+      (matTranspose Q)) i) j
+  have hsum :
+      gqrSourceBFromBlocks Q (fun i j => S i j + DeltaS i j) i j =
+        gqrSourceBFromBlocks Q S i j +
+          matMulRectRight (gqrBQBlock (q := q) DeltaS) (matTranspose Q) i j := by
+    simpa [gqrSourceBFromBlocks, matMulRectRight, hblock] using hadd
+  rw [hsum]
+  ring
+
+/-- The source-coordinate constraint perturbation induced by perturbing only
+    the GQR `S` block has Frobenius norm exactly `‖DeltaS‖_F`. -/
+theorem gqrSourceBFromBlocks_perturbation_frobNorm_eq {p q : ℕ}
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (S DeltaS : Fin p → Fin p → ℝ)
+    (hQ : IsOrthogonal (p + q) Q) :
+    frobNormRect
+      (fun i j =>
+        gqrSourceBFromBlocks Q (fun i j => S i j + DeltaS i j) i j -
+          gqrSourceBFromBlocks Q S i j) =
+      frobNormRect DeltaS := by
+  calc
+    frobNormRect
+        (fun i j =>
+          gqrSourceBFromBlocks Q (fun i j => S i j + DeltaS i j) i j -
+            gqrSourceBFromBlocks Q S i j)
+        = frobNormRect
+            (matMulRectRight (gqrBQBlock (q := q) DeltaS) (matTranspose Q)) := by
+          rw [gqrSourceBFromBlocks_perturbation_eq Q S DeltaS]
+    _ = frobNormRect (gqrBQBlock (q := q) DeltaS) := by
+          exact frobNormRect_orthogonal_right _ _ (IsOrthogonal.transpose hQ)
+    _ = frobNormRect DeltaS := frobNormRect_gqrBQBlock DeltaS
+
+/-- A supplied GQR factorization reconstructs its original constraint matrix
+    from the displayed `[S,0]` block and `Qᵀ`. -/
+theorem GeneralizedQRFactorization.sourceBFromBlocks_eq {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B) :
+    gqrSourceBFromBlocks h.Q h.S = B := by
+  have hbq :
+      matMulRectRight B h.Q = gqrBQBlock h.S := by
+    simpa [matMulRectRight] using h.bq_eq
+  have hright : rectMatMul h.Q (matTranspose h.Q) = idMatrix (p + q) := by
+    ext i j
+    simpa [rectMatMul, idMatrix] using h.orthQ.right_inv i j
+  calc
+    gqrSourceBFromBlocks h.Q h.S =
+        matMulRectRight (gqrBQBlock h.S) (matTranspose h.Q) := rfl
+    _ = matMulRectRight (matMulRectRight B h.Q) (matTranspose h.Q) := by
+          rw [← hbq]
+    _ = rectMatMul (rectMatMul B h.Q) (matTranspose h.Q) := rfl
+    _ = rectMatMul B (rectMatMul h.Q (matTranspose h.Q)) :=
+          rectMatMul_assoc B h.Q (matTranspose h.Q)
+    _ = rectMatMul B (idMatrix (p + q)) := by rw [hright]
+    _ = B := rectMatMul_id_right B
+
+/-- In a supplied GQR factorization, the Frobenius norm of the displayed
+    constraint block `S` is the source Frobenius norm of `B`. -/
+theorem GeneralizedQRFactorization.frobNormRect_S_eq_sourceB {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B) :
+    frobNormRect h.S = frobNormRect B := by
+  have hbq :
+      matMulRectRight B h.Q = gqrBQBlock h.S := by
+    simpa [matMulRectRight] using h.bq_eq
+  calc
+    frobNormRect h.S = frobNormRect (gqrBQBlock (q := q) h.S) := by
+      exact (frobNormRect_gqrBQBlock h.S).symm
+    _ = frobNormRect (matMulRectRight B h.Q) := by rw [← hbq]
+    _ = frobNormRect B := frobNormRect_orthogonal_right B h.Q h.orthQ
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), constructed-source
+    `DeltaB` Frobenius bound from a perturbation of the GQR `S` block.
+
+    This closes the source-shaped `B` side of the constructed-source
+    certificate once the triangular solve supplies
+    `‖DeltaS‖_F ≤ eta * ‖S‖_F`. -/
+theorem GeneralizedQRFactorization.constructed_sourceB_perturbation_frobNorm_bound
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (eta : ℝ) (DeltaS : Fin p → Fin p → ℝ)
+    (hDeltaSfrob : frobNormRect DeltaS ≤ eta * frobNormRect h.S) :
+    frobNormRect
+      (fun i j =>
+        gqrSourceBFromBlocks h.Q (fun i j => h.S i j + DeltaS i j) i j -
+          B i j) ≤
+      eta * frobNormRect B := by
+  have hBsrc := h.sourceBFromBlocks_eq
+  have hnorm :
+      frobNormRect
+        (fun i j =>
+          gqrSourceBFromBlocks h.Q (fun i j => h.S i j + DeltaS i j) i j -
+            B i j) =
+        frobNormRect DeltaS := by
+    calc
+      frobNormRect
+          (fun i j =>
+            gqrSourceBFromBlocks h.Q (fun i j => h.S i j + DeltaS i j) i j -
+              B i j)
+          = frobNormRect
+              (fun i j =>
+                gqrSourceBFromBlocks h.Q (fun i j => h.S i j + DeltaS i j) i j -
+                  gqrSourceBFromBlocks h.Q h.S i j) := by
+            congr 1
+            ext i j
+            rw [hBsrc]
+      _ = frobNormRect DeltaS :=
+            gqrSourceBFromBlocks_perturbation_frobNorm_eq h.Q h.S DeltaS h.orthQ
+  calc
+    frobNormRect
+        (fun i j =>
+          gqrSourceBFromBlocks h.Q (fun i j => h.S i j + DeltaS i j) i j -
+            B i j)
+        = frobNormRect DeltaS := hnorm
+    _ ≤ eta * frobNormRect h.S := hDeltaSfrob
+    _ = eta * frobNormRect B := by rw [h.frobNormRect_S_eq_sourceB]
+
 /-- The trailing column block has Frobenius norm no larger than the full
     rectangular matrix. -/
 theorem frobNormSqRect_trailingCols_le {m p q : ℕ}
@@ -9424,6 +9595,63 @@ theorem theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of
   exact
     hcert hSpert_lower hL22pert_lower hSpert_diag hL22pert_diag
       hDeltaA hDeltab hDeltaB hb_tail
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), constructed-source
+    certificate with the `gamma < 1` triangular preservation guards derived
+    from doubled `gammaValid` hypotheses.
+
+    This is the same certificate surface as
+    `theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of_gamma_lt_one`,
+    but exposes the standard floating-point smallness assumptions
+    `gammaValid fp (2*p)` and `gammaValid fp (2*q)` instead of explicit
+    inequalities on `gamma`. -/
+theorem theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of_double_gammaValid
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (gammaA gammaB : ℝ)
+    (Deltab : Fin (r + q) → ℝ)
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalid2S : gammaValid fp (2 * p))
+    (hvalid2L22 : gammaValid fp (2 * q)) :
+    ∃ (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ),
+      (∀ i j, |DeltaS i j| ≤ gamma fp p * |h.S i j|) ∧
+      (∀ i j, |DeltaL22 i j| ≤ gamma fp q * |h.L22 i j|) ∧
+      frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S ∧
+      frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 ∧
+      (let Spert : Fin p → Fin p → ℝ :=
+          fun i j => h.S i j + DeltaS i j
+       let L22pert : Fin q → Fin q → ℝ :=
+          fun i j => h.L22 i j + DeltaL22 i j
+       let Apert : Fin (r + q) → Fin (p + q) → ℝ :=
+          gqrSourceAFromBlocks h.Q h.U h.L11 h.L21 L22pert
+       let Bpert : Fin p → Fin (p + q) → ℝ :=
+          gqrSourceBFromBlocks h.Q Spert
+       let DeltaA : Fin (r + q) → Fin (p + q) → ℝ :=
+          fun i j => Apert i j - A i j
+       let DeltaB : Fin p → Fin (p + q) → ℝ :=
+          fun i j => Bpert i j - B i j
+       frobNormRect DeltaA ≤ gammaA * frobNormRect A →
+       vecNorm2 Deltab ≤ gammaA * vecNorm2 b →
+       frobNormRect DeltaB ≤ gammaB * frobNormRect B →
+       (∀ i : Fin q,
+          matMulVec (r + q) (matTranspose h.U)
+              (fun i => b i + Deltab i) (Fin.natAdd r i) =
+            matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i)) →
+       Nonempty
+        (Theorem20_10PartAPerturbationCertificate A B b d
+          (theorem20_10_gqr_xhat fp h b d) gammaA gammaB)) := by
+  exact
+    theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of_gamma_lt_one
+      fp h b d gammaA gammaB Deltab hgammaB_nonneg hSdiag hL22diag
+      (gammaValid_mono fp (by omega) hvalid2S)
+      (gammaValid_mono fp (by omega) hvalid2L22)
+      (gamma_lt_one fp p hvalid2S)
+      (gamma_lt_one fp q hvalid2L22)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), certificate-to-exact-core
     handoff.
