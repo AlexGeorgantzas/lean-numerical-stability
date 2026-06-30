@@ -42977,6 +42977,25 @@ theorem higham9_8_CompletePivotGECPUTrace_growth_factor_ge_theta_nonsingInv {n :
     higham9_8_CompletePivotGECPUTrace_growth_factor_ge_theta_real
       hn A (nonsingInv n A) U htrace hRight hA hAinv⟩
 
+/-- **Theorem 9.8 / Problem 9.11 bridge**, source-facing determinant-only
+existence form for the complete-pivoting trace theta lower bound. -/
+theorem higham9_8_exists_CompletePivotGECPUTrace_growth_factor_ge_theta_nonsingInv
+    {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ hA : 0 < maxEntryNorm hn A,
+    ∃ _ : 0 < maxEntryNorm hn (nonsingInv n A),
+    ∃ U : Fin n → Fin n → ℝ,
+      higham9_8_CompletePivotGECPUTrace n A U ∧
+        1 / (maxEntryNorm hn A * maxEntryNorm hn (nonsingInv n A)) ≤
+          growthFactorEntry hn A U hA := by
+  obtain ⟨U, htrace⟩ :=
+    higham9_8_exists_CompletePivotGECPUTrace_of_det_ne_zero (A := A) hdet
+  obtain ⟨hA, hAinv, htheta⟩ :=
+    higham9_8_CompletePivotGECPUTrace_growth_factor_ge_theta_nonsingInv
+      hn A U htrace hdet
+  exact ⟨hA, hAinv, U, htrace, htheta⟩
+
 /-- **Problem 9.11**, the flattened sine block has an actual recursive
 complete-pivoting `U` trace whose entrywise growth is at least `n + 1`. -/
 theorem higham9_11_exists_completePivotingUTrace_sine_block_growth_ge_succ

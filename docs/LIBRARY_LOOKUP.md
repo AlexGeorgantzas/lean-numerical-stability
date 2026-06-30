@@ -1720,6 +1720,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_8_exists_CompletePermutedLUFactSpec_L_bound_growth_le_pow_two_of_det_ne_zero`
 - `higham9_8_CompletePivotGECPUTrace_growth_factor_ge_theta_real`
 - `higham9_8_CompletePivotGECPUTrace_growth_factor_ge_theta_nonsingInv`
+- `higham9_8_exists_CompletePivotGECPUTrace_growth_factor_ge_theta_nonsingInv`
 - `higham9_11_exists_completePivotingUTrace_sine_block_growth_ge_succ`
 - `higham9_11_completePivotingUTraceGrowthValues_exists_ge_succ`
 - `higham9_11_completePivotingUTraceGrowthSup_ge_succ`
