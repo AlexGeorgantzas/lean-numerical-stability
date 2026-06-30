@@ -24046,6 +24046,18 @@ theorem higham9_15_strictLower_frobNormRect_le_init_lastRow {n : ℕ}
   higham9_15_frobNormRect_block_lastColumn_zero_le X
     (higham9_15_strictLower_lastColumn_zero X hX)
 
+/-- **Theorem 9.15 support**, exact squared Frobenius split for a
+strict-lower factor by its top-left principal block and final-row initial
+vector. -/
+theorem higham9_15_strictLower_frobNormSqRect_eq_init_add_lastRow {n : ℕ}
+    (X : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0) :
+    frobNormSqRect X =
+      frobNormSqRect (higham9_15_initBlock X) +
+        vecNorm2Sq (fun j : Fin n => X (Fin.last n) j.castSucc) :=
+  higham9_15_frobNormSqRect_block_lastColumn_zero X
+    (higham9_15_strictLower_lastColumn_zero X hX)
+
 /-- **Theorem 9.15 support**, upper-triangular Frobenius estimate by its
 top-left principal block, final-column initial vector, and final diagonal
 entry. -/
@@ -24069,6 +24081,36 @@ theorem higham9_15_vecNorm2Sq_lastColumn_eq_init_add_diag {n : ℕ}
         A (Fin.last n) (Fin.last n) ^ 2 := by
   unfold vecNorm2Sq
   rw [Fin.sum_univ_castSucc]
+
+/-- **Theorem 9.15 support**, exact squared Frobenius split for an upper
+factor by its top-left principal block and full final-column vector. -/
+theorem higham9_15_upper_frobNormSqRect_eq_init_add_lastColumn {n : ℕ}
+    (Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0) :
+    frobNormSqRect Y =
+      frobNormSqRect (higham9_15_initBlock Y) +
+        vecNorm2Sq (fun i : Fin (n + 1) => Y i (Fin.last n)) := by
+  have hblock :=
+    frobNormSqRect_block_lastRowInit_zero Y
+      (higham9_15_upper_lastRow_init_zero Y hY)
+  have hcol :=
+    higham9_15_vecNorm2Sq_lastColumn_eq_init_add_diag Y
+  have hinit_eq :
+      frobNormSqRect (fun i j : Fin n => Y i.castSucc j.castSucc) =
+        frobNormSqRect (higham9_15_initBlock Y) := rfl
+  calc
+    frobNormSqRect Y =
+        frobNormSqRect (fun i j : Fin n => Y i.castSucc j.castSucc) +
+          vecNorm2Sq (fun i : Fin n => Y i.castSucc (Fin.last n)) +
+            Y (Fin.last n) (Fin.last n) ^ 2 := hblock
+    _ = frobNormSqRect (higham9_15_initBlock Y) +
+          (vecNorm2Sq (fun i : Fin n => Y i.castSucc (Fin.last n)) +
+            Y (Fin.last n) (Fin.last n) ^ 2) := by
+          rw [hinit_eq]
+          ring
+    _ = frobNormSqRect (higham9_15_initBlock Y) +
+          vecNorm2Sq (fun i : Fin (n + 1) => Y i (Fin.last n)) := by
+          rw [← hcol]
 
 /-- **Theorem 9.15 support**, an upper-triangular matrix is bounded by its
 top-left principal block and the Euclidean norm of its full final column. -/
@@ -24296,6 +24338,85 @@ theorem higham9_15_normalized_Gtilde_lastDiag_eq {n : ℕ}
     higham9_15_normalized_Gtilde_split_matrix Gtilde X Y hfact hX hY
   have hentry := congrFun (congrFun hsplit.2 (Fin.last n)) (Fin.last n)
   simpa [higham9_15_triuPart] using hentry.symm
+
+/-- **Theorem 9.15 support**, exact squared strict-lower factor split in the
+`I + G` normalized equation, with the final-row term rewritten as the Schur
+residual. -/
+theorem higham9_15_normalized_G_frobNormSqRect_X_eq_init_add_residual_lastRow
+    {n : ℕ}
+    (G X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 + G = (1 + X) * (1 + Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0) :
+    frobNormSqRect X =
+      frobNormSqRect (higham9_15_initBlock X) +
+        vecNorm2Sq (fun j : Fin n => (G - X * Y) (Fin.last n) j.castSucc) := by
+  have hrow :
+      (fun j : Fin n => X (Fin.last n) j.castSucc) =
+        fun j : Fin n => (G - X * Y) (Fin.last n) j.castSucc := by
+    ext j
+    exact higham9_15_normalized_G_lastRow_init_eq G X Y hfact hX hY j
+  rw [higham9_15_strictLower_frobNormSqRect_eq_init_add_lastRow X hX, hrow]
+
+/-- **Theorem 9.15 support**, exact squared upper-factor split in the `I + G`
+normalized equation, with the final-column term rewritten as the Schur
+residual. -/
+theorem higham9_15_normalized_G_frobNormSqRect_Y_eq_init_add_residual_lastColumn
+    {n : ℕ}
+    (G X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 + G = (1 + X) * (1 + Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0) :
+    frobNormSqRect Y =
+      frobNormSqRect (higham9_15_initBlock Y) +
+        vecNorm2Sq (fun i : Fin (n + 1) => (G - X * Y) i (Fin.last n)) := by
+  have hcol :
+      (fun i : Fin (n + 1) => Y i (Fin.last n)) =
+        fun i : Fin (n + 1) => (G - X * Y) i (Fin.last n) := by
+    ext i
+    exact higham9_15_normalized_G_lastColumn_eq G X Y hfact hX hY i
+  rw [higham9_15_upper_frobNormSqRect_eq_init_add_lastColumn Y hY, hcol]
+
+/-- **Theorem 9.15 support**, exact squared strict-lower factor split in the
+`I - Gtilde` normalized equation, with the final-row term rewritten as the
+signed Schur residual. -/
+theorem higham9_15_normalized_Gtilde_frobNormSqRect_X_eq_init_add_residual_lastRow
+    {n : ℕ}
+    (Gtilde X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 - Gtilde = (1 - X) * (1 - Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0) :
+    frobNormSqRect X =
+      frobNormSqRect (higham9_15_initBlock X) +
+        vecNorm2Sq
+          (fun j : Fin n => (Gtilde + X * Y) (Fin.last n) j.castSucc) := by
+  have hrow :
+      (fun j : Fin n => X (Fin.last n) j.castSucc) =
+        fun j : Fin n => (Gtilde + X * Y) (Fin.last n) j.castSucc := by
+    ext j
+    exact higham9_15_normalized_Gtilde_lastRow_init_eq
+      Gtilde X Y hfact hX hY j
+  rw [higham9_15_strictLower_frobNormSqRect_eq_init_add_lastRow X hX, hrow]
+
+/-- **Theorem 9.15 support**, exact squared upper-factor split in the
+`I - Gtilde` normalized equation, with the final-column term rewritten as the
+signed Schur residual. -/
+theorem higham9_15_normalized_Gtilde_frobNormSqRect_Y_eq_init_add_residual_lastColumn
+    {n : ℕ}
+    (Gtilde X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 - Gtilde = (1 - X) * (1 - Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0) :
+    frobNormSqRect Y =
+      frobNormSqRect (higham9_15_initBlock Y) +
+        vecNorm2Sq (fun i : Fin (n + 1) => (Gtilde + X * Y) i (Fin.last n)) := by
+  have hcol :
+      (fun i : Fin (n + 1) => Y i (Fin.last n)) =
+        fun i : Fin (n + 1) => (Gtilde + X * Y) i (Fin.last n) := by
+    ext i
+    exact higham9_15_normalized_Gtilde_lastColumn_eq
+      Gtilde X Y hfact hX hY i
+  rw [higham9_15_upper_frobNormSqRect_eq_init_add_lastColumn Y hY, hcol]
 
 /-- **Theorem 9.15 support**, final-row initial vector of `X` is bounded by
 the residual Frobenius norm in the `I + G` split. -/

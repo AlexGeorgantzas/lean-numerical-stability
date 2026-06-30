@@ -2444,6 +2444,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_frobNormSqRect_block_lastColumn_zero`
 - `higham9_15_frobNormRect_block_lastColumn_zero_le`
 - `higham9_15_strictLower_frobNormRect_le_init_lastRow`
+- `higham9_15_strictLower_frobNormSqRect_eq_init_add_lastRow`
 - `higham9_15_upper_frobNormRect_le_init_lastColumn_diag`
 - `higham9_15_normalized_G_init_factorization_matrix`
 - `higham9_15_normalized_Gtilde_init_factorization_matrix`
@@ -2454,9 +2455,14 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_normalized_Gtilde_lastColumn_init_eq`
 - `higham9_15_normalized_Gtilde_lastDiag_eq`
 - `higham9_15_vecNorm2Sq_lastColumn_eq_init_add_diag`
+- `higham9_15_upper_frobNormSqRect_eq_init_add_lastColumn`
 - `higham9_15_upper_frobNormRect_le_init_lastColumn`
 - `higham9_15_normalized_G_lastColumn_eq`
 - `higham9_15_normalized_Gtilde_lastColumn_eq`
+- `higham9_15_normalized_G_frobNormSqRect_X_eq_init_add_residual_lastRow`
+- `higham9_15_normalized_G_frobNormSqRect_Y_eq_init_add_residual_lastColumn`
+- `higham9_15_normalized_Gtilde_frobNormSqRect_X_eq_init_add_residual_lastRow`
+- `higham9_15_normalized_Gtilde_frobNormSqRect_Y_eq_init_add_residual_lastColumn`
 - `higham9_15_normalized_G_lastRow_init_vecNorm2_le_residual`
 - `higham9_15_normalized_G_lastColumn_init_vecNorm2_le_residual`
 - `higham9_15_normalized_G_lastColumn_vecNorm2_le_residual`
