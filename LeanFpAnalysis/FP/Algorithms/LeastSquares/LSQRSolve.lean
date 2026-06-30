@@ -19658,6 +19658,119 @@ theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_formulaMatrixSigmaM
     lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_upper_certificate
       htheta A b hy hnot hrank hupper
 
+/-- Nondegenerate branch-eliminated WKS attainer handoff.  If the source block
+    `[A phi(I-r r^+)]` has full row rank, then the zero-RHS branch is already
+    closed; on the positive branch, either the scalar `phi` side of the printed
+    minimum applies directly or the row-side `sigma_min` side is closed by the
+    degenerate source-block attainer hypotheses.
+
+    This removes the visible `phi`/`sigma_min` branch-selection hypothesis from
+    the degenerate attainer route.  It still does not prove the genuinely
+    nondegenerate WKS construction, because the projected-attainer and source
+    dot-product conditions remain explicit. -/
+theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_of_formulaMatrixRowRank_eq_card_of_formulaMatrixSigmaMin_attainer_projected_eq_zero_of_dot_b_ne_zero
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hrank :
+      lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+        (lsResidualHigham A b y) y = m + 1)
+    (hprojected :
+      ∀ p : Fin (m + 1) → ℝ, p ≠ 0 →
+        vecNorm2Sq
+            (rectMatMulVec
+              (finiteTranspose
+                (lsNormwiseBackwardErrorFormulaMatrix theta A
+                  (lsResidualHigham A b y) y)) p) =
+          (lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+              (lsResidualHigham A b y) y) ^ 2 * vecNorm2Sq p →
+        vecNorm2Sq
+            (matMulVec (m + 1)
+              (lsResidualComplementProjector (lsResidualHigham A b y)) p) = 0)
+    (hdotb :
+      ∀ p : Fin (m + 1) → ℝ, p ≠ 0 →
+        vecNorm2Sq
+            (rectMatMulVec
+              (finiteTranspose
+                (lsNormwiseBackwardErrorFormulaMatrix theta A
+                  (lsResidualHigham A b y) y)) p) =
+          (lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+              (lsResidualHigham A b y) y) ^ 2 * vecNorm2Sq p →
+        (∑ i : Fin (m + 1), p i * b i) ≠ 0) :
+    lsNormwiseBackwardErrorEtaF theta A b y =
+      lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  by_cases hrhs_zero : lsNormwiseBackwardErrorFormulaRHS theta A b y = 0
+  · exact
+      lsNormwiseBackwardErrorEtaF_eq_formulaRHS_of_formulaRHS_eq_zero_of_formulaMatrixRowRank_eq_card
+        htheta A b hy hrhs_zero hrank
+  · have hrhs_nonneg :
+        0 ≤ lsNormwiseBackwardErrorFormulaRHS theta A b y :=
+      lsNormwiseBackwardErrorFormulaRHS_nonneg theta A b y
+    have hrhs_pos :
+        0 < lsNormwiseBackwardErrorFormulaRHS theta A b y :=
+      lt_of_le_of_ne hrhs_nonneg (Ne.symm hrhs_zero)
+    have hnot :
+        ¬ IsLeastSquaresMinimizer A b y :=
+      ((lsNormwiseBackwardErrorFormulaRHS_pos_iff_not_isLeastSquaresMinimizer_and_formulaMatrixRowRank_eq_card_of_theta_pos_of_y_ne_zero
+        htheta A b hy).mp hrhs_pos).1
+    by_cases hphi_branch :
+      lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y ≤
+        lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+          (lsResidualHigham A b y) y
+    · exact
+        (lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_phi_le_sigmaMin
+          htheta A b hy hnot hrank hphi_branch).1
+    · have hsigma_branch :
+          lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+              (lsResidualHigham A b y) y ≤
+            lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y :=
+        le_of_lt (not_le.mp hphi_branch)
+      exact
+        (lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_formulaMatrixSigmaMin_attainer_projected_eq_zero_of_dot_b_ne_zero
+          htheta A b hy hnot hrank hsigma_branch hprojected hdotb).1
+
+/-- Full-left-panel branch-eliminated WKS attainer handoff.  Full row rank of
+    the original data matrix supplies full row rank of the WKS source block,
+    so the branch-eliminated degenerate attainer theorem can be applied without
+    exposing the source-block row-rank hypothesis. -/
+theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_of_left_panel_rowRank_eq_card_of_formulaMatrixSigmaMin_attainer_projected_eq_zero_of_dot_b_ne_zero
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hA : lsRealRectRowRank A = m + 1)
+    (hprojected :
+      ∀ p : Fin (m + 1) → ℝ, p ≠ 0 →
+        vecNorm2Sq
+            (rectMatMulVec
+              (finiteTranspose
+                (lsNormwiseBackwardErrorFormulaMatrix theta A
+                  (lsResidualHigham A b y) y)) p) =
+          (lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+              (lsResidualHigham A b y) y) ^ 2 * vecNorm2Sq p →
+        vecNorm2Sq
+            (matMulVec (m + 1)
+              (lsResidualComplementProjector (lsResidualHigham A b y)) p) = 0)
+    (hdotb :
+      ∀ p : Fin (m + 1) → ℝ, p ≠ 0 →
+        vecNorm2Sq
+            (rectMatMulVec
+              (finiteTranspose
+                (lsNormwiseBackwardErrorFormulaMatrix theta A
+                  (lsResidualHigham A b y) y)) p) =
+          (lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+              (lsResidualHigham A b y) y) ^ 2 * vecNorm2Sq p →
+        (∑ i : Fin (m + 1), p i * b i) ≠ 0) :
+    lsNormwiseBackwardErrorEtaF theta A b y =
+      lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  have hrank :
+      lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+        (lsResidualHigham A b y) y = m + 1 :=
+    lsNormwiseBackwardErrorFormulaMatrixRowRank_eq_card_of_left_panel_rowRank_eq_card
+      theta A (lsResidualHigham A b y) y hA
+  exact
+    lsNormwiseBackwardErrorEtaF_eq_formulaRHS_of_formulaMatrixRowRank_eq_card_of_formulaMatrixSigmaMin_attainer_projected_eq_zero_of_dot_b_ne_zero
+      htheta A b hy hrank hprojected hdotb
+
 /-- Positive-branch certificate form of the Walden--Karlson--Sun formula
     (20.21): for positive finite `theta`, nonzero `y`, and full row rank of
     the source block `[A phi(I-r r^+)]`, a supplied WKS lower-bound certificate
