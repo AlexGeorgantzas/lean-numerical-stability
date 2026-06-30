@@ -10179,6 +10179,85 @@ theorem theorem20_10_partA_mixed_stability_of_perturbation_certificate
     hxhat, hDeltaX, cert.hDeltaA, cert.hDeltab, cert.hDeltaB, hx, ?_⟩
   exact ⟨h, hyz, ⟨x, hx, huniq⟩⟩
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), exact transformed-RHS
+    mixed-stability theorem for the constructed-source supplied-GQR path.
+
+    This combines the constructed-source exact-RHS certificate with the generic
+    certificate-to-core handoff.  The conclusion exposes the perturbations and
+    exact perturbed minimizer directly, without requiring callers to unpack the
+    intermediate certificate. -/
+theorem theorem20_10_partA_mixed_stability_of_constructed_source_exact_rhs
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (gammaA gammaB : ℝ)
+    (hgammaA_nonneg : 0 ≤ gammaA)
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    (hgammaA_ge : gamma fp q ≤ gammaA)
+    (hgammaB_ge : gamma fp p ≤ gammaB)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalid2S : gammaValid fp (2 * p))
+    (hvalid2L22 : gammaValid fp (2 * q)) :
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab : Fin (r + q) → ℝ,
+    ∃ DeltaX : Fin (p + q) → ℝ,
+    ∃ x : Fin (p + q) → ℝ,
+      (∀ j : Fin (p + q),
+        theorem20_10_gqr_xhat fp h b d j = x j + DeltaX j) ∧
+      vecNorm2 DeltaX ≤ gammaB * vecNorm2 x ∧
+      frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+      vecNorm2 Deltab ≤ gammaA * vecNorm2 b ∧
+      frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+      IsLSEMinimizer
+        (fun i j => A i j + DeltaA i j)
+        (fun i => b i + Deltab i)
+        (fun i j => B i j + DeltaB i j) d x ∧
+      (∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec hpert.S yz.1 = d ∧
+          rectMatMulVec hpert.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose hpert.U)
+                (fun i => b i + Deltab i) (Fin.natAdd r i) -
+                rectMatMulVec hpert.L21 yz.1 i) ∧
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j) d
+            (matMulVec (p + q) hpert.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x0 : Fin (p + q) → ℝ,
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j) d x0)) := by
+  rcases
+    theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of_double_gammaValid_exact_rhs
+      fp h b d gammaA gammaB hgammaA_nonneg hgammaB_nonneg
+      hgammaA_ge hgammaB_ge hSdiag hL22diag hvalid2S hvalid2L22 with
+    ⟨_DeltaS, _DeltaL22, _hDeltaSbound, _hDeltaL22bound,
+      _hDeltaSfrob, _hDeltaL22frob, hcert⟩
+  rcases hcert with ⟨cert⟩
+  have hcore :=
+    theorem20_10_partA_mixed_stability_of_perturbation_certificate
+      A B b d (theorem20_10_gqr_xhat fp h b d) cert
+  dsimp at hcore
+  rcases hcore with
+    ⟨DeltaA, DeltaB, Deltab, DeltaX, x,
+      hDeltaAeq, hDeltaBeq, hDeltabeq, hxhat, hDeltaX,
+      hDeltaA, hDeltab, hDeltaB, hx, hmethod⟩
+  refine
+    ⟨cert.DeltaA, cert.DeltaB, cert.Deltab, DeltaX, x,
+      hxhat, hDeltaX, ?_, ?_, ?_, hx, hmethod⟩
+  · simpa [hDeltaAeq] using hDeltaA
+  · simpa [hDeltabeq] using hDeltab
+  · simpa [hDeltaBeq] using hDeltaB
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), finite-precision
     perturbation certificate for the fully backward-stable branch.
 
