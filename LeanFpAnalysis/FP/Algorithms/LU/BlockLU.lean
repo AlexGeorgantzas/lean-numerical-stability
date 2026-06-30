@@ -350,9 +350,12 @@
     higham13_algorithm13_3_matrixStages_product_eq_of_pivot_right_inverse,
     higham13_algorithm13_3_matrixStages_blockLUFactSpec_of_pivotInv_eq_invOf,
     higham13_algorithm13_3_matrixStages_product_eq_of_pivotInv_eq_invOf,
+    higham13_algorithm13_3_matrixStages_blockLUFactSpec_of_pivotInv_eq_nonsingInv,
+    higham13_algorithm13_3_matrixStages_product_eq_of_pivotInv_eq_nonsingInv,
     higham13_algorithm13_3_matrixStages_exists_blockLUFact_product_bound_of_pivot_left_inverse,
     higham13_algorithm13_3_matrixStages_exists_blockLUFact_product_bound_of_pivot_right_inverse,
     higham13_algorithm13_3_matrixStages_exists_blockLUFact_product_bound_of_pivotInv_eq_invOf,
+    higham13_algorithm13_3_matrixStages_exists_blockLUFact_product_bound_of_pivotInv_eq_nonsingInv,
     higham13_algorithm13_3_matrixStageHistoryBound,
     higham13_algorithm13_3_matrixStageHistoryInfBound,
     higham13_algorithm13_3_matrixStageHistoryBound_tail_le,
@@ -417,6 +420,8 @@
     higham13_eq13_23_exists_blockLUFact_matrix_stage_product_from_multiplier_bounds_of_pivot_left_inverse,
     higham13_eq13_22_exists_blockLUFact_matrix_stage_product_from_multiplier_bounds_of_pivot_right_inverse,
     higham13_eq13_23_exists_blockLUFact_matrix_stage_product_from_multiplier_bounds_of_pivot_right_inverse,
+    higham13_eq13_22_exists_blockLUFact_matrix_stage_product_from_multiplier_bounds_of_pivotInv_eq_nonsingInv,
+    higham13_eq13_23_exists_blockLUFact_matrix_stage_product_from_multiplier_bounds_of_pivotInv_eq_nonsingInv,
     higham13_eq13_22_matrix_stage_history_product_from_multiplier_bounds,
     higham13_eq13_23_matrix_stage_history_product_from_multiplier_bounds,
     higham13_eq13_22_matrix_stage_history_product_from_multiplier_bounds_exact_kappa,
@@ -427,8 +432,12 @@
     higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_multiplier_bounds_exact_kappa_of_pivot_left_inverse,
     higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_multiplier_bounds_exact_kappa_of_pivot_right_inverse,
     higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_multiplier_bounds_exact_kappa_of_pivot_right_inverse,
+    higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_multiplier_bounds_exact_kappa_of_pivotInv_eq_nonsingInv,
+    higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_multiplier_bounds_exact_kappa_of_pivotInv_eq_nonsingInv,
     higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_multiplier_bounds_exact_kappa_of_pivot_right_inverse_of_det_ne_zero,
     higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_multiplier_bounds_exact_kappa_of_pivot_right_inverse_of_det_ne_zero,
+    higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_multiplier_bounds_exact_kappa_of_pivotInv_eq_nonsingInv_of_det_ne_zero,
+    higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_multiplier_bounds_exact_kappa_of_pivotInv_eq_nonsingInv_of_det_ne_zero,
     higham13_eq13_23_matrix_stage_history_product_from_multiplier_bounds_exact_kappa_of_active_stage_bound,
     higham13_eq13_23_matrix_stage_history_product_from_multiplier_bounds_exact_kappa_of_product_bound_diag_update,
     higham13_eq13_23_matrix_stage_history_product_from_multiplier_bounds_exact_kappa_with_dim_factor,
@@ -16939,6 +16948,32 @@ theorem higham13_algorithm13_3_matrixStages_blockLUFactSpec_of_pivotInv_eq_invOf
       (higham13_algorithm13_3_pivot_right_inverse_of_pivotInv_eq_invOf
         A pivotInv hInv hPivotInv)
 
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
+    `BlockLUFactSpec` for the assembled matrix-product stage factors when the
+    supplied pivot inverse is the repository canonical nonsingular inverse of
+    every active pivot. -/
+theorem higham13_algorithm13_3_matrixStages_blockLUFactSpec_of_pivotInv_eq_nonsingInv
+    {m r : ℕ}
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hPivotDet : ∀ k : ℕ, ∀ hk : k < m,
+      Matrix.det
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+          ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0)
+    (hPivotInv : ∀ k : ℕ, ∀ hk : k < m,
+      pivotInv k =
+        nonsingInv r
+          (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩)) :
+    BlockLUFactSpec m r A
+      (higham13_algorithm13_3_lowerFromMatrixStages A pivotInv)
+      (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) := by
+  exact
+    higham13_algorithm13_3_matrixStages_blockLUFactSpec_of_pivot_right_inverse
+      A pivotInv
+      (higham13_algorithm13_3_pivot_right_inverse_of_pivotInv_eq_nonsingInv
+        A pivotInv hPivotDet hPivotInv)
+
 /-- Product-entry form of the Algorithm 13.3 matrix-stage reconstruction from
     exact pivot right-inverse certificates. -/
 theorem higham13_algorithm13_3_matrixStages_product_eq_of_pivot_right_inverse
@@ -16984,6 +17019,31 @@ theorem higham13_algorithm13_3_matrixStages_product_eq_of_pivotInv_eq_invOf
   exact
     (higham13_algorithm13_3_matrixStages_blockLUFactSpec_of_pivotInv_eq_invOf
       A pivotInv hInv hPivotInv).product_eq
+
+/-- Product-entry form of the Algorithm 13.3 matrix-stage reconstruction when
+    the supplied pivot inverse is the repository canonical nonsingular inverse
+    of every active pivot. -/
+theorem higham13_algorithm13_3_matrixStages_product_eq_of_pivotInv_eq_nonsingInv
+    {m r : ℕ}
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hPivotDet : ∀ k : ℕ, ∀ hk : k < m,
+      Matrix.det
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+          ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0)
+    (hPivotInv : ∀ k : ℕ, ∀ hk : k < m,
+      pivotInv k =
+        nonsingInv r
+          (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩)) :
+    ∀ (i j : Fin m) (s t : Fin r),
+      ∑ k : Fin m, ∑ l : Fin r,
+        higham13_algorithm13_3_lowerFromMatrixStages A pivotInv i k s l *
+          higham13_algorithm13_3_upperFromMatrixStages A pivotInv k j l t =
+        A i j s t := by
+  exact
+    (higham13_algorithm13_3_matrixStages_blockLUFactSpec_of_pivotInv_eq_nonsingInv
+      A pivotInv hPivotDet hPivotInv).product_eq
 
 /-- The assembled Algorithm 13.3 matrix-stage lower factor is bounded once each
     stage multiplier is bounded and the common bound also covers the identity
@@ -17218,6 +17278,42 @@ theorem
       hm hr A pivotInv
       (higham13_algorithm13_3_matrixStages_product_eq_of_pivotInv_eq_invOf
         A pivotInv hInv hPivotInv)
+      hId hLower hUpper
+
+/-- Product-bound witness theorem for the assembled matrix-stage Algorithm 13.3
+    factors when each supplied pivot inverse is the repository canonical
+    nonsingular inverse of the active pivot. -/
+theorem
+    higham13_algorithm13_3_matrixStages_exists_blockLUFact_product_bound_of_pivotInv_eq_nonsingInv
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    {C_L C_U : ℝ}
+    (hPivotDet : ∀ k : ℕ, ∀ hk : k < m,
+      Matrix.det
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+          ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0)
+    (hPivotInv : ∀ k : ℕ, ∀ hk : k < m,
+      pivotInv k =
+        nonsingInv r
+          (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩))
+    (hId : 1 ≤ C_L)
+    (hLower : ∀ i j : Fin m, j.val < i.val →
+      maxEntryNorm hr
+          (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv j.val i j *
+            pivotInv j.val) ≤ C_L)
+    (hUpper :
+      blockMaxNorm hm hr (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) ≤
+        C_U) :
+    ∃ L U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ,
+      BlockLUFactSpec m r A L U ∧
+        blockMaxNorm hm hr L * blockMaxNorm hm hr U ≤ C_L * C_U := by
+  exact
+    higham13_algorithm13_3_matrixStages_exists_blockLUFact_product_bound
+      hm hr A pivotInv
+      (higham13_algorithm13_3_matrixStages_product_eq_of_pivotInv_eq_nonsingInv
+        A pivotInv hPivotDet hPivotInv)
       hId hLower hUpper
 
 /-- Matrix-product stage-history bound for the source-faithful Algorithm 13.3
@@ -26744,6 +26840,97 @@ theorem
       hApos n kappaA hKappa hId hLower hU_le_G hRho_le_two
 
 /-- Higham, 2nd ed., Chapter 13, equation (13.22):
+    assembled matrix-stage `BlockLUFactSpec` witness from per-stage multiplier
+    bounds and canonical active pivots `pivotInv k = nonsingInv pivot_k`.
+
+    This removes the explicit pivot right-inverse certificate from the
+    Eq.13.22 product-witness surface once the active pivot determinant table
+    and canonical inverse table are supplied. -/
+theorem
+    higham13_eq13_22_exists_blockLUFact_matrix_stage_product_from_multiplier_bounds_of_pivotInv_eq_nonsingInv
+    {N m r : ℕ} (hN : 0 < N) (hm : 0 < m) (hr : 0 < r)
+    (A0 G : Fin N → Fin N → ℝ)
+    (Ablk : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hPivotDet : ∀ k : ℕ, ∀ hk : k < m,
+      Matrix.det
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+          ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0)
+    (hPivotInv : ∀ k : ℕ, ∀ hk : k < m,
+      pivotInv k =
+        nonsingInv r
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩))
+    (hApos : 0 < maxEntryNorm hN A0)
+    (n : ℕ) (kappaA : ℝ)
+    (hKappa : 0 ≤ kappaA)
+    (hId :
+      1 ≤ (n : ℝ) * (growthFactorEntry hN A0 G hApos) ^ 2 * kappaA)
+    (hLower : ∀ i j : Fin m, j.val < i.val →
+      maxEntryNorm hr
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv j.val i j *
+            pivotInv j.val) ≤
+        (n : ℝ) * (growthFactorEntry hN A0 G hApos) ^ 2 * kappaA)
+    (hU_le_G :
+      blockMaxNorm hm hr (higham13_algorithm13_3_upperFromMatrixStages Ablk pivotInv) ≤
+        maxEntryNorm hN G) :
+    ∃ L U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ,
+      BlockLUFactSpec m r Ablk L U ∧
+        blockMaxNorm hm hr L * blockMaxNorm hm hr U ≤
+          (n : ℝ) * (growthFactorEntry hN A0 G hApos) ^ 3 * kappaA *
+            maxEntryNormRect hN hN A0 := by
+  exact
+    higham13_eq13_22_exists_blockLUFact_matrix_stage_product_from_multiplier_bounds_of_pivot_right_inverse
+      hN hm hr A0 G Ablk pivotInv
+      (higham13_algorithm13_3_pivot_right_inverse_of_pivotInv_eq_nonsingInv
+        Ablk pivotInv hPivotDet hPivotInv)
+      hApos n kappaA hKappa hId hLower hU_le_G
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.23):
+    assembled matrix-stage `BlockLUFactSpec` witness from per-stage multiplier
+    bounds, `ρ_n <= 2`, and canonical active pivots
+    `pivotInv k = nonsingInv pivot_k`. -/
+theorem
+    higham13_eq13_23_exists_blockLUFact_matrix_stage_product_from_multiplier_bounds_of_pivotInv_eq_nonsingInv
+    {N m r : ℕ} (hN : 0 < N) (hm : 0 < m) (hr : 0 < r)
+    (A0 G : Fin N → Fin N → ℝ)
+    (Ablk : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hPivotDet : ∀ k : ℕ, ∀ hk : k < m,
+      Matrix.det
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+          ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0)
+    (hPivotInv : ∀ k : ℕ, ∀ hk : k < m,
+      pivotInv k =
+        nonsingInv r
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩))
+    (hApos : 0 < maxEntryNorm hN A0)
+    (n : ℕ) (kappaA : ℝ)
+    (hKappa : 0 ≤ kappaA)
+    (hId :
+      1 ≤ (n : ℝ) * (growthFactorEntry hN A0 G hApos) ^ 2 * kappaA)
+    (hLower : ∀ i j : Fin m, j.val < i.val →
+      maxEntryNorm hr
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv j.val i j *
+            pivotInv j.val) ≤
+        (n : ℝ) * (growthFactorEntry hN A0 G hApos) ^ 2 * kappaA)
+    (hU_le_G :
+      blockMaxNorm hm hr (higham13_algorithm13_3_upperFromMatrixStages Ablk pivotInv) ≤
+        maxEntryNorm hN G)
+    (hRho_le_two : growthFactorEntry hN A0 G hApos ≤ 2) :
+    ∃ L U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ,
+      BlockLUFactSpec m r Ablk L U ∧
+        blockMaxNorm hm hr L * blockMaxNorm hm hr U ≤
+          8 * (n : ℝ) * kappaA * maxEntryNormRect hN hN A0 := by
+  exact
+    higham13_eq13_23_exists_blockLUFact_matrix_stage_product_from_multiplier_bounds_of_pivot_right_inverse
+      hN hm hr A0 G Ablk pivotInv
+      (higham13_algorithm13_3_pivot_right_inverse_of_pivotInv_eq_nonsingInv
+        Ablk pivotInv hPivotDet hPivotInv)
+      hApos n kappaA hKappa hId hLower hU_le_G hRho_le_two
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.22):
     assembled matrix-stage product bound using the finite matrix-stage history
     as the growth object.
 
@@ -28921,6 +29108,111 @@ theorem
       hApos hRight n hNn hLower hRho_le_two
 
 /-- Higham, 2nd ed., Chapter 13, equation (13.22):
+    exact-κ matrix-stage-history `BlockLUFactSpec` witness from per-stage
+    multiplier bounds and canonical active pivots
+    `pivotInv k = nonsingInv pivot_k`. -/
+theorem
+    higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_multiplier_bounds_exact_kappa_of_pivotInv_eq_nonsingInv
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (Ablk : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (Ainv : Fin (m * r) → Fin (m * r) → ℝ)
+    (hPivotDet : ∀ k : ℕ, ∀ hk : k < m,
+      Matrix.det
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+          ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0)
+    (hPivotInv : ∀ k : ℕ, ∀ hk : k < m,
+      pivotInv k =
+        nonsingInv r
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩))
+    (hApos : 0 < maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin Ablk))
+    (hRight : IsRightInverse (m * r) (blockMatrixFlatFin Ablk) Ainv)
+    (n : ℕ) (hNn : ((m * r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hLower : ∀ i j : Fin m, j.val < i.val →
+      maxEntryNorm hr
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv j.val i j *
+            pivotInv j.val) ≤
+        (n : ℝ) *
+          (growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin Ablk)
+            (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+              (Nat.mul_pos hm hr) hm hr Ablk pivotInv) hApos) ^ 2 *
+          (maxEntryNormRect (Nat.mul_pos hm hr) (Nat.mul_pos hm hr)
+              (blockMatrixFlatFin Ablk) *
+            maxEntryNormRect (Nat.mul_pos hm hr) (Nat.mul_pos hm hr) Ainv)) :
+    ∃ L U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ,
+      BlockLUFactSpec m r Ablk L U ∧
+        blockMaxNorm hm hr L * blockMaxNorm hm hr U ≤
+          (n : ℝ) *
+            (growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin Ablk)
+              (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+                (Nat.mul_pos hm hr) hm hr Ablk pivotInv) hApos) ^ 3 *
+            (maxEntryNormRect (Nat.mul_pos hm hr) (Nat.mul_pos hm hr)
+                (blockMatrixFlatFin Ablk) *
+              maxEntryNormRect (Nat.mul_pos hm hr) (Nat.mul_pos hm hr) Ainv) *
+            maxEntryNormRect (Nat.mul_pos hm hr) (Nat.mul_pos hm hr)
+              (blockMatrixFlatFin Ablk) := by
+  exact
+    higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_multiplier_bounds_exact_kappa_of_pivot_right_inverse
+      hm hr Ablk pivotInv Ainv
+      (higham13_algorithm13_3_pivot_right_inverse_of_pivotInv_eq_nonsingInv
+        Ablk pivotInv hPivotDet hPivotInv)
+      hApos hRight n hNn hLower
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.23):
+    exact-κ point-row matrix-stage-history `BlockLUFactSpec` witness from
+    per-stage multiplier bounds, `ρ_n <= 2`, and canonical active pivots
+    `pivotInv k = nonsingInv pivot_k`. -/
+theorem
+    higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_multiplier_bounds_exact_kappa_of_pivotInv_eq_nonsingInv
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (Ablk : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (Ainv : Fin (m * r) → Fin (m * r) → ℝ)
+    (hPivotDet : ∀ k : ℕ, ∀ hk : k < m,
+      Matrix.det
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+          ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0)
+    (hPivotInv : ∀ k : ℕ, ∀ hk : k < m,
+      pivotInv k =
+        nonsingInv r
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩))
+    (hApos : 0 < maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin Ablk))
+    (hRight : IsRightInverse (m * r) (blockMatrixFlatFin Ablk) Ainv)
+    (n : ℕ) (hNn : ((m * r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hLower : ∀ i j : Fin m, j.val < i.val →
+      maxEntryNorm hr
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv j.val i j *
+            pivotInv j.val) ≤
+        (n : ℝ) *
+          (growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin Ablk)
+            (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+              (Nat.mul_pos hm hr) hm hr Ablk pivotInv) hApos) ^ 2 *
+          (maxEntryNormRect (Nat.mul_pos hm hr) (Nat.mul_pos hm hr)
+              (blockMatrixFlatFin Ablk) *
+            maxEntryNormRect (Nat.mul_pos hm hr) (Nat.mul_pos hm hr) Ainv))
+    (hRho_le_two :
+      growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin Ablk)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            (Nat.mul_pos hm hr) hm hr Ablk pivotInv) hApos ≤ 2) :
+    ∃ L U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ,
+      BlockLUFactSpec m r Ablk L U ∧
+        blockMaxNorm hm hr L * blockMaxNorm hm hr U ≤
+          8 * (n : ℝ) *
+            (maxEntryNormRect (Nat.mul_pos hm hr) (Nat.mul_pos hm hr)
+                (blockMatrixFlatFin Ablk) *
+              maxEntryNormRect (Nat.mul_pos hm hr) (Nat.mul_pos hm hr) Ainv) *
+            maxEntryNormRect (Nat.mul_pos hm hr) (Nat.mul_pos hm hr)
+              (blockMatrixFlatFin Ablk) := by
+  exact
+    higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_multiplier_bounds_exact_kappa_of_pivot_right_inverse
+      hm hr Ablk pivotInv Ainv
+      (higham13_algorithm13_3_pivot_right_inverse_of_pivotInv_eq_nonsingInv
+        Ablk pivotInv hPivotDet hPivotInv)
+      hApos hRight n hNn hLower hRho_le_two
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.22):
     exact-κ `BlockLUFactSpec` witness from source-shaped local Problem 13.4
     lower-block budgets and exact pivot right-inverse certificates.
 
@@ -30699,6 +30991,116 @@ theorem
       hm hr Ablk pivotInv
       (nonsingInv (m * r) (blockMatrixFlatFin Ablk))
       hPivotRight hApos hRight n hNn hLower hRho
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.22):
+    determinant-nonzero exact-κ witness from per-stage multiplier bounds and
+    canonical active pivots `pivotInv k = nonsingInv pivot_k`.
+
+    This combines the source-facing full inverse
+    `nonsingInv (m*r) (blockMatrixFlatFin Ablk)` with the canonical active
+    pivot inverse table. -/
+theorem
+    higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_multiplier_bounds_exact_kappa_of_pivotInv_eq_nonsingInv_of_det_ne_zero
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (Ablk : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hPivotDet : ∀ k : ℕ, ∀ hk : k < m,
+      Matrix.det
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+          ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0)
+    (hPivotInv : ∀ k : ℕ, ∀ hk : k < m,
+      pivotInv k =
+        nonsingInv r
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩))
+    (hdet :
+      Matrix.det (blockMatrixFlatFin Ablk :
+        Matrix (Fin (m * r)) (Fin (m * r)) ℝ) ≠ 0)
+    (n : ℕ) (hNn : ((m * r : ℕ) : ℝ) ≤ (n : ℝ)) :
+    let hN : 0 < m * r := Nat.mul_pos hm hr
+    let hApos : 0 < maxEntryNorm hN (blockMatrixFlatFin Ablk) :=
+      maxEntryNorm_pos_of_det_ne_zero hN (blockMatrixFlatFin Ablk) hdet
+    (∀ i j : Fin m, j.val < i.val →
+      maxEntryNorm hr
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv j.val i j *
+            pivotInv j.val) ≤
+        (n : ℝ) *
+          (growthFactorEntry hN (blockMatrixFlatFin Ablk)
+            (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+              hN hm hr Ablk pivotInv) hApos) ^ 2 *
+          (maxEntryNormRect hN hN (blockMatrixFlatFin Ablk) *
+            maxEntryNormRect hN hN
+              (nonsingInv (m * r) (blockMatrixFlatFin Ablk)))) →
+    ∃ L U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ,
+      BlockLUFactSpec m r Ablk L U ∧
+        blockMaxNorm hm hr L * blockMaxNorm hm hr U ≤
+          (n : ℝ) *
+            (growthFactorEntry hN (blockMatrixFlatFin Ablk)
+              (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+                hN hm hr Ablk pivotInv) hApos) ^ 3 *
+            (maxEntryNormRect hN hN (blockMatrixFlatFin Ablk) *
+              maxEntryNormRect hN hN
+                (nonsingInv (m * r) (blockMatrixFlatFin Ablk))) *
+            maxEntryNormRect hN hN (blockMatrixFlatFin Ablk) := by
+  exact
+    higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_multiplier_bounds_exact_kappa_of_pivot_right_inverse_of_det_ne_zero
+      hm hr Ablk pivotInv
+      (higham13_algorithm13_3_pivot_right_inverse_of_pivotInv_eq_nonsingInv
+        Ablk pivotInv hPivotDet hPivotInv)
+      hdet n hNn
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.23):
+    determinant-nonzero point-row exact-κ witness from per-stage multiplier
+    bounds, canonical active pivots, and the source `rho <= 2` side condition. -/
+theorem
+    higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_multiplier_bounds_exact_kappa_of_pivotInv_eq_nonsingInv_of_det_ne_zero
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (Ablk : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hPivotDet : ∀ k : ℕ, ∀ hk : k < m,
+      Matrix.det
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+          ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0)
+    (hPivotInv : ∀ k : ℕ, ∀ hk : k < m,
+      pivotInv k =
+        nonsingInv r
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩))
+    (hdet :
+      Matrix.det (blockMatrixFlatFin Ablk :
+        Matrix (Fin (m * r)) (Fin (m * r)) ℝ) ≠ 0)
+    (n : ℕ) (hNn : ((m * r : ℕ) : ℝ) ≤ (n : ℝ)) :
+    let hN : 0 < m * r := Nat.mul_pos hm hr
+    let hApos : 0 < maxEntryNorm hN (blockMatrixFlatFin Ablk) :=
+      maxEntryNorm_pos_of_det_ne_zero hN (blockMatrixFlatFin Ablk) hdet
+    (∀ i j : Fin m, j.val < i.val →
+      maxEntryNorm hr
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv j.val i j *
+            pivotInv j.val) ≤
+        (n : ℝ) *
+          (growthFactorEntry hN (blockMatrixFlatFin Ablk)
+            (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+              hN hm hr Ablk pivotInv) hApos) ^ 2 *
+          (maxEntryNormRect hN hN (blockMatrixFlatFin Ablk) *
+            maxEntryNormRect hN hN
+              (nonsingInv (m * r) (blockMatrixFlatFin Ablk)))) →
+    (growthFactorEntry hN (blockMatrixFlatFin Ablk)
+        (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+          hN hm hr Ablk pivotInv) hApos ≤ 2) →
+    ∃ L U : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ,
+      BlockLUFactSpec m r Ablk L U ∧
+        blockMaxNorm hm hr L * blockMaxNorm hm hr U ≤
+          8 * (n : ℝ) *
+            (maxEntryNormRect hN hN (blockMatrixFlatFin Ablk) *
+              maxEntryNormRect hN hN
+                (nonsingInv (m * r) (blockMatrixFlatFin Ablk))) *
+            maxEntryNormRect hN hN (blockMatrixFlatFin Ablk) := by
+  exact
+    higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_multiplier_bounds_exact_kappa_of_pivot_right_inverse_of_det_ne_zero
+      hm hr Ablk pivotInv
+      (higham13_algorithm13_3_pivot_right_inverse_of_pivotInv_eq_nonsingInv
+        Ablk pivotInv hPivotDet hPivotInv)
+      hdet n hNn
 
 /-- Higham, 2nd ed., Chapter 13, equation (13.23):
     exact-κ matrix-stage-history product bound with `ρ_n <= 2` discharged
