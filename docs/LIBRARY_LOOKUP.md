@@ -2381,6 +2381,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_normalized_G_split_matrix`
 - `higham9_15_normalized_G_residual_eq_add`
 - `higham9_15_normalized_G_residual_frobNormRect_eq_add`
+- `higham9_15_normalized_G_residual_frobNormSqRect_eq_add`
 - `higham9_15_normalized_G_split_frobNorm_bounds`
 - `higham9_15_normalized_G_split_componentwise_majorants`
 - `higham9_15_normalized_G_split_frobNorm_step_bound`
@@ -2392,6 +2393,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_normalized_Gtilde_split_matrix`
 - `higham9_15_normalized_Gtilde_residual_eq_add`
 - `higham9_15_normalized_Gtilde_residual_frobNormRect_eq_add`
+- `higham9_15_normalized_Gtilde_residual_frobNormSqRect_eq_add`
 - `higham9_15_normalized_Gtilde_split_frobNorm_bounds`
 - `higham9_15_normalized_Gtilde_split_componentwise_majorants`
 - `higham9_15_positive_subeigen_scale_lt_one_of_spectralRadius_lt_one`

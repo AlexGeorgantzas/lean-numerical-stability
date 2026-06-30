@@ -22754,6 +22754,14 @@ theorem higham9_15_normalized_G_residual_frobNormRect_eq_add {n : ℕ}
     frobNormRect (G - X * Y) = frobNormRect (X + Y) := by
   rw [higham9_15_normalized_G_residual_eq_add G X Y hfact]
 
+/-- **Theorem 9.15 support**, squared Frobenius form of the normwise
+normalized residual identity. -/
+theorem higham9_15_normalized_G_residual_frobNormSqRect_eq_add {n : ℕ}
+    (G X Y : Matrix (Fin n) (Fin n) ℝ)
+    (hfact : 1 + G = (1 + X) * (1 + Y)) :
+    frobNormSqRect (G - X * Y) = frobNormSqRect (X + Y) := by
+  rw [higham9_15_normalized_G_residual_eq_add G X Y hfact]
+
 /-- **Theorem 9.15**, normalized split equations for the normwise route:
 from `I + G = (I + X)(I + Y)`, strict-lower `X`, and upper `Y`, one gets
 `X = stril(G - XY)` and `Y = triu(G - XY)`. -/
@@ -22995,6 +23003,14 @@ theorem higham9_15_normalized_Gtilde_residual_frobNormRect_eq_add {n : ℕ}
     (Gtilde X Y : Matrix (Fin n) (Fin n) ℝ)
     (hfact : 1 - Gtilde = (1 - X) * (1 - Y)) :
     frobNormRect (Gtilde + X * Y) = frobNormRect (X + Y) := by
+  rw [higham9_15_normalized_Gtilde_residual_eq_add Gtilde X Y hfact]
+
+/-- **Theorem 9.15 support**, squared Frobenius form of the componentwise-sign
+normalized residual identity. -/
+theorem higham9_15_normalized_Gtilde_residual_frobNormSqRect_eq_add {n : ℕ}
+    (Gtilde X Y : Matrix (Fin n) (Fin n) ℝ)
+    (hfact : 1 - Gtilde = (1 - X) * (1 - Y)) :
+    frobNormSqRect (Gtilde + X * Y) = frobNormSqRect (X + Y) := by
   rw [higham9_15_normalized_Gtilde_residual_eq_add Gtilde X Y hfact]
 
 /-- **Theorem 9.15**, normalized split equations for the componentwise route:
