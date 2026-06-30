@@ -2941,6 +2941,12 @@ lemma abs_coord_le_vecNorm2 {n : ℕ} (x : Fin n → ℝ) (j : Fin n) :
   have hsqrt := Real.sqrt_le_sqrt hterm
   simpa [vecNorm2, Real.sqrt_sq_eq_abs] using hsqrt
 
+/-- The finite vector infinity norm is bounded by the Euclidean norm. -/
+lemma infNormVec_le_vecNorm2 {n : ℕ} (x : Fin n → ℝ) :
+    infNormVec x ≤ vecNorm2 x := by
+  exact infNormVec_le_of_abs_le x
+    (fun i => abs_coord_le_vecNorm2 x i) (vecNorm2_nonneg x)
+
 /-- If every coordinate is bounded by `B`, then the Euclidean norm is bounded
     by `sqrt n * B`.
 

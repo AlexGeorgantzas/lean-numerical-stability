@@ -8791,6 +8791,109 @@ theorem theorem20_10_householder_AQ2_rhs_vecNorm2_perturbation_bound_of_global_g
         fp (r + q) q (r + q) (gqrAQ2Block A Q) le_rfl hvalid)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    conservative source-norm bound for the `A Q₂` RHS perturbation.
+
+    The half-radius guard for the verified recursive RHS index supplies both
+    the Householder panel readiness condition and the accumulated gamma
+    comparison.  The result exposes the remaining gap to the printed
+    `gamma_tilde_mn * ||b||₂` coefficient as the visible dimension-only factor
+    `2 * householderQRRhsPanelGammaClosedGrowthFactor (r+q) q`. -/
+theorem theorem20_10_householder_AQ2_rhs_vecNorm2_perturbation_bound_of_gammaFactor
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ)
+    (hq : 0 < q)
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2)) :
+    ∃ Deltab : Fin (r + q) → ℝ,
+      (∀ i,
+        fl_householderQRPanel_rhs fp (r + q) q (gqrAQ2Block A Q) b i =
+          matMulVec (r + q)
+            (matTranspose
+              (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q)))
+            (fun k => b k + Deltab k) i) ∧
+      vecNorm2 Deltab ≤
+        Real.sqrt (r + q : ℝ) *
+          (((2 : ℝ) *
+              (householderQRRhsPanelGammaClosedGrowthFactor (r + q) q : ℝ) *
+              gamma fp (q * householderConstructApplyGammaIndex (r + q))) *
+            vecNorm2 b) := by
+  let idx : ℕ := householderQRRhsPanelGammaClosedGrowthIndex (r + q) q
+  let K : ℕ := householderConstructApplyGammaIndex (r + q)
+  let C : ℝ :=
+    (2 : ℝ) *
+      (householderQRRhsPanelGammaClosedGrowthFactor (r + q) q : ℝ) *
+      gamma fp (q * K)
+  have hidx_valid : gammaValid fp idx := by
+    unfold gammaValid
+    exact lt_of_le_of_lt (by simpa [idx] using hhalf) (by norm_num)
+  have hprinted_le_idx : q * K ≤ idx := by
+    change q * householderConstructApplyGammaIndex (r + q) ≤
+      householderQRRhsPanelGammaClosedGrowthIndex (r + q) q
+    rw [householderQRRhsPanelGammaClosedGrowthIndex_eq_factor_mul_printedIndex]
+    exact Nat.le_mul_of_pos_left _
+      (householderQRRhsPanelGammaClosedGrowthFactor_pos
+        (m := r + q) (p := q) (by omega))
+  have hprinted_valid : gammaValid fp (q * K) :=
+    gammaValid_mono fp hprinted_le_idx hidx_valid
+  have hbase_le_K :
+      11 * (r + q) + 23 ≤ K := by
+    dsimp [K, householderConstructApplyGammaIndex]
+    omega
+  have hK_le_qK : K ≤ q * K :=
+    Nat.le_mul_of_pos_left K hq
+  have hbase_valid : gammaValid fp (11 * (r + q) + 23) :=
+    gammaValid_mono fp
+      (le_trans hbase_le_K (le_trans hK_le_qK hprinted_le_idx))
+      hidx_valid
+  let Cmat : Fin (r + q) → Fin q → ℝ := gqrAQ2Block A Q
+  have hready :
+      HouseholderQRPanelReady fp (r + q) q Cmat :=
+    HouseholderQRPanelReady_of_global_gammaValid
+      fp (r + q) q (r + q) Cmat le_rfl hbase_valid
+  rcases
+    theorem20_10_householder_AQ2_rhs_vecNorm2_perturbation_bound
+      fp A Q b (by simpa [Cmat] using hready) with
+    ⟨Deltab, hrep, hbound⟩
+  have hm : 0 < r + q := by omega
+  have hraw_le_inf :
+      householderQRRhsPanelBackwardBound fp (r + q) q Cmat b ≤
+        C * infNormVec b := by
+    simpa [C, Cmat, K] using
+      householderQRRhsPanelBackwardBound_le_gammaClosedGrowthFactor
+        fp (r + q) q Cmat b (by omega) hm hhalf hready
+  have hsqrt_nonneg : 0 ≤ Real.sqrt (r + q : ℝ) :=
+    Real.sqrt_nonneg _
+  have hto_inf :
+      vecNorm2 Deltab ≤
+        Real.sqrt (r + q : ℝ) * (C * infNormVec b) := by
+    exact le_trans hbound
+      (mul_le_mul_of_nonneg_left (by simpa [Cmat] using hraw_le_inf)
+        hsqrt_nonneg)
+  have hgamma_nonneg : 0 ≤ gamma fp (q * K) :=
+    gamma_nonneg fp hprinted_valid
+  have hfactor_nonneg :
+      0 ≤ (householderQRRhsPanelGammaClosedGrowthFactor (r + q) q : ℝ) := by
+    positivity
+  have hC_nonneg : 0 ≤ C := by
+    dsimp [C]
+    exact mul_nonneg
+      (mul_nonneg (by norm_num) hfactor_nonneg) hgamma_nonneg
+  have hinf_le_vec : infNormVec b ≤ vecNorm2 b :=
+    infNormVec_le_of_abs_le b
+      (fun i => abs_coord_le_vecNorm2 b i) (vecNorm2_nonneg b)
+  have hC_inf_le_vec :
+      C * infNormVec b ≤ C * vecNorm2 b :=
+    mul_le_mul_of_nonneg_left hinf_le_vec hC_nonneg
+  refine ⟨Deltab, hrep, ?_⟩
+  exact le_trans hto_inf
+    (by
+      simpa [C, K] using
+        mul_le_mul_of_nonneg_left hC_inf_le_vec hsqrt_nonneg)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     concrete Householder QR perturbation bound for the `Bᵀ` triangularization
     step in the GQR path.
 
