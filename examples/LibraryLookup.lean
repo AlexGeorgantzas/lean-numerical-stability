@@ -12749,6 +12749,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_11_bohte_banded_solve_tight
 #check higham9_11_bohte_banded_solve_tight_of_growth_le
 #check higham9_11_bohte_banded_solve_tight_of_bandwidth_le
+#check higham9_11_bohte_banded_solve_tight_of_isBanded_common
+#check higham9_11_tridiagonal_bohte_solve_tight_of_isTridiagonal
 #check higham9_11_tridiagonal_bohte_solve_tight
 #check higham9_11_pentadiagonal_bohte_solve_tight
 #check higham9_11_bandwidth_four_bohte_solve_tight
