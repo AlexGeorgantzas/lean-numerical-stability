@@ -1653,6 +1653,115 @@ noncomputable def undetGramPerturbation {m n : ℕ}
   fun i j =>
     rectGram (fun i j => A i j + DeltaA2 i j) i j - rectGram A i j
 
+/-- Componentwise budget for the Chapter 21 Gram perturbation induced by a
+    rectangular data perturbation bound `|DeltaA2| <= eps * E`. -/
+noncomputable def undetGramPerturbationComponentBudget {m n : ℕ}
+    (A E : Fin m → Fin n → ℝ) (eps : ℝ) : Fin m → Fin m → ℝ :=
+  fun i j => ∑ k : Fin n,
+    (|A i k| * E j k + E i k * |A j k| + eps * E i k * E j k)
+
+/-- Expansion of the Chapter 21 Gram perturbation
+    `(A + DeltaA2)(A + DeltaA2)^T - AA^T`. -/
+theorem undetGramPerturbation_eq_sum {m n : ℕ}
+    (A DeltaA2 : Fin m → Fin n → ℝ) (i j : Fin m) :
+    undetGramPerturbation A DeltaA2 i j =
+      ∑ k : Fin n,
+        (A i k * DeltaA2 j k + DeltaA2 i k * A j k +
+          DeltaA2 i k * DeltaA2 j k) := by
+  unfold undetGramPerturbation rectGram
+  rw [← Finset.sum_sub_distrib]
+  apply Finset.sum_congr rfl
+  intro k _
+  ring
+
+/-- The componentwise Gram budget is nonnegative when the rectangular
+    perturbation majorant is nonnegative. -/
+theorem undetGramPerturbationComponentBudget_nonneg {m n : ℕ}
+    (A E : Fin m → Fin n → ℝ) {eps : ℝ}
+    (heps : 0 ≤ eps) (hE : ∀ i k, 0 ≤ E i k) :
+    ∀ i j : Fin m, 0 ≤ undetGramPerturbationComponentBudget A E eps i j := by
+  intro i j
+  unfold undetGramPerturbationComponentBudget
+  apply Finset.sum_nonneg
+  intro k _
+  exact add_nonneg
+    (add_nonneg
+      (mul_nonneg (abs_nonneg _) (hE j k))
+      (mul_nonneg (hE i k) (abs_nonneg _)))
+    (mul_nonneg (mul_nonneg heps (hE i k)) (hE j k))
+
+/-- A componentwise rectangular perturbation bound induces a componentwise
+    bound on the Chapter 21 Gram perturbation. -/
+theorem undetGramPerturbation_abs_le_componentBudget {m n : ℕ}
+    (A DeltaA2 E : Fin m → Fin n → ℝ) {eps : ℝ}
+    (heps : 0 ≤ eps)
+    (hE : ∀ i k, 0 ≤ E i k)
+    (hDeltaA2 : ∀ i k, |DeltaA2 i k| ≤ eps * E i k) :
+    ∀ i j : Fin m,
+      |undetGramPerturbation A DeltaA2 i j| ≤
+        eps * undetGramPerturbationComponentBudget A E eps i j := by
+  intro i j
+  rw [undetGramPerturbation_eq_sum]
+  unfold undetGramPerturbationComponentBudget
+  calc
+    |∑ k : Fin n,
+        (A i k * DeltaA2 j k + DeltaA2 i k * A j k +
+          DeltaA2 i k * DeltaA2 j k)|
+        ≤ ∑ k : Fin n,
+            |A i k * DeltaA2 j k + DeltaA2 i k * A j k +
+              DeltaA2 i k * DeltaA2 j k| := by
+          exact Finset.abs_sum_le_sum_abs _ _
+    _ ≤ ∑ k : Fin n,
+          eps * (|A i k| * E j k + E i k * |A j k| +
+            eps * E i k * E j k) := by
+        apply Finset.sum_le_sum
+        intro k _
+        have hterm1 :
+            |A i k * DeltaA2 j k| ≤ eps * (|A i k| * E j k) := by
+          calc
+            |A i k * DeltaA2 j k| = |A i k| * |DeltaA2 j k| := by
+              rw [abs_mul]
+            _ ≤ |A i k| * (eps * E j k) :=
+              mul_le_mul_of_nonneg_left (hDeltaA2 j k) (abs_nonneg _)
+            _ = eps * (|A i k| * E j k) := by ring
+        have hterm2 :
+            |DeltaA2 i k * A j k| ≤ eps * (E i k * |A j k|) := by
+          calc
+            |DeltaA2 i k * A j k| = |DeltaA2 i k| * |A j k| := by
+              rw [abs_mul]
+            _ ≤ (eps * E i k) * |A j k| :=
+              mul_le_mul_of_nonneg_right (hDeltaA2 i k) (abs_nonneg _)
+            _ = eps * (E i k * |A j k|) := by ring
+        have hterm3 :
+            |DeltaA2 i k * DeltaA2 j k| ≤
+              eps * (eps * E i k * E j k) := by
+          have hleft_nonneg : 0 ≤ eps * E i k := mul_nonneg heps (hE i k)
+          calc
+            |DeltaA2 i k * DeltaA2 j k| =
+                |DeltaA2 i k| * |DeltaA2 j k| := by
+              rw [abs_mul]
+            _ ≤ (eps * E i k) * (eps * E j k) :=
+              mul_le_mul (hDeltaA2 i k) (hDeltaA2 j k)
+                (abs_nonneg _) hleft_nonneg
+            _ = eps * (eps * E i k * E j k) := by ring
+        calc
+          |A i k * DeltaA2 j k + DeltaA2 i k * A j k +
+              DeltaA2 i k * DeltaA2 j k|
+              ≤ |A i k * DeltaA2 j k| +
+                  |DeltaA2 i k * A j k| +
+                  |DeltaA2 i k * DeltaA2 j k| := by
+                exact abs_add_three _ _ _
+          _ ≤ eps * (|A i k| * E j k) +
+                eps * (E i k * |A j k|) +
+                eps * (eps * E i k * E j k) := by
+              nlinarith [hterm1, hterm2, hterm3]
+          _ = eps * (|A i k| * E j k + E i k * |A j k| +
+                eps * E i k * E j k) := by ring
+    _ = eps * (∑ k : Fin n,
+          (|A i k| * E j k + E i k * |A j k| +
+            eps * E i k * E j k)) := by
+        rw [Finset.mul_sum]
+
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     Chapter 7 inverse-perturbation handoff for the remaining perturbed Gram
     nonsingularity obligation.  If `AA^T` has a left inverse and the relative
@@ -1764,6 +1873,37 @@ theorem higham21_lemma21_2_perturbed_gram_det_ne_zero_of_componentwise_gram_boun
     hsmall hLeft
     (higham21_lemma21_2_gram_left_product_infNormBound_of_componentwise_gram_bound
       A DeltaA2 AAT_inv E eps heps hE hDeltaG)
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    componentwise rectangular-perturbation route to perturbed Gram
+    nonsingularity.  A bound `|DeltaA2| <= eps * E` induces a componentwise
+    Gram perturbation budget, which is then passed to the Chapter 7
+    first-product smallness condition. -/
+theorem higham21_lemma21_2_perturbed_gram_det_ne_zero_of_componentwise_data_bound
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A DeltaA2 : Fin m → Fin n → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (E : Fin m → Fin n → ℝ)
+    (eps : ℝ)
+    (heps : 0 ≤ eps)
+    (hsmall :
+      eps *
+          infNorm
+            (ch7InverseFirstProductSensitivity m AAT_inv
+              (undetGramPerturbationComponentBudget A E eps)) <
+        1)
+    (hLeft : IsLeftInverse m (rectGram A) AAT_inv)
+    (hE : ∀ i k, 0 ≤ E i k)
+    (hDeltaA2 : ∀ i k, |DeltaA2 i k| ≤ eps * E i k) :
+    Matrix.det
+        (rectGram (fun i j => A i j + DeltaA2 i j) :
+          Matrix (Fin m) (Fin m) ℝ) ≠ 0 :=
+  higham21_lemma21_2_perturbed_gram_det_ne_zero_of_componentwise_gram_bound
+    hm A DeltaA2 AAT_inv (undetGramPerturbationComponentBudget A E eps)
+    eps heps hsmall hLeft
+    (undetGramPerturbationComponentBudget_nonneg A E heps hE)
+    (undetGramPerturbation_abs_le_componentBudget A DeltaA2 E heps hE hDeltaA2)
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     perturbed Gram-pseudoinverse operator-bound reduction.  Bounds for `A`,
@@ -2223,6 +2363,68 @@ theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_gram_inverse_source
         hm A DeltaA2 AAT_inv E eps (hGramEpsNonneg hx)
         (hGramSmallLt hx) (hGramLeftInv hx) (hGramE hx)
         (hGramPerturbComponent hx))
+    hxTranspose hsmall halpha hbeta hsigma heta halpha_le hbeta_le
+    hGramFactor_le hAOp hDeltaA1Op hDeltaA2Op hGramInvOp
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    guarded source-factor handoff with perturbed Gram nonsingularity discharged
+    from a componentwise bound on the rectangular perturbation `DeltaA2`.
+    The only remaining nonzero-branch matrix-analysis obligation is the
+    concrete operator-2 bound for the perturbed Gram inverse. -/
+theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_gram_inverse_source_bounds_of_componentwise_data_bound
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (E : Fin m → Fin n → ℝ)
+    (rho1 rho2 alpha beta sigma eta eps : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hDataEpsNonneg : x ≠ 0 → 0 ≤ eps)
+    (hGramSmallLt : x ≠ 0 →
+      eps *
+          infNorm
+            (ch7InverseFirstProductSensitivity m AAT_inv
+              (undetGramPerturbationComponentBudget A E eps)) <
+        1)
+    (hGramLeftInv : x ≠ 0 → IsLeftInverse m (rectGram A) AAT_inv)
+    (hDataE : x ≠ 0 → ∀ i k, 0 ≤ E i k)
+    (hDeltaA2Component : x ≠ 0 →
+      ∀ i k, |DeltaA2 i k| ≤ eps * E i k)
+    (hxTranspose : x ≠ 0 →
+      x =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : x ≠ 0 → 3 * max rho1 rho2 < 1)
+    (halpha : x ≠ 0 → 0 ≤ alpha)
+    (hbeta : x ≠ 0 → 0 ≤ beta)
+    (hsigma : x ≠ 0 → 0 ≤ sigma)
+    (heta : x ≠ 0 → 0 ≤ eta)
+    (halpha_le : x ≠ 0 → alpha ≤ rho1)
+    (hbeta_le : x ≠ 0 → beta ≤ rho2)
+    (hGramFactor_le : x ≠ 0 → (sigma + beta) * eta ≤ (1 - rho2)⁻¹)
+    (hAOp : x ≠ 0 → rectOpNorm2Le A sigma)
+    (hDeltaA1Op : x ≠ 0 → rectOpNorm2Le DeltaA1 alpha)
+    (hDeltaA2Op : x ≠ 0 → rectOpNorm2Le DeltaA2 beta)
+    (hGramInvOp : x ≠ 0 →
+      rectOpNorm2Le
+        (undetGramNonsingInv (fun i j => A i j + DeltaA2 i j))
+        eta) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j)
+      b x :=
+  higham21_lemma21_2_single_min_norm_of_nonzero_branch_gram_inverse_source_bounds
+    A x DeltaA1 DeltaA2 b y rho1 rho2 alpha beta sigma eta
+    hDeltaA1
+    (fun hx =>
+      higham21_lemma21_2_perturbed_gram_det_ne_zero_of_componentwise_data_bound
+        hm A DeltaA2 AAT_inv E eps (hDataEpsNonneg hx)
+        (hGramSmallLt hx) (hGramLeftInv hx) (hDataE hx)
+        (hDeltaA2Component hx))
     hxTranspose hsmall halpha hbeta hsigma heta halpha_le hbeta_le
     hGramFactor_le hAOp hDeltaA1Op hDeltaA2Op hGramInvOp
 
