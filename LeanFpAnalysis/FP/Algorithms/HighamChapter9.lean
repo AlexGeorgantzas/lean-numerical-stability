@@ -3416,6 +3416,91 @@ theorem higham9_2_rectRoundedPrefixTrace_complete_to_stageTrace
     intro i k hki
     exact hT.L_stage_eq_done i k k.isLt hki
 
+/-- **Algorithm 9.2**, empty rectangular rounded prefix trace.  Before the
+first Doolittle stage, no pivot row or column has been completed. -/
+theorem higham9_2_rectRoundedPrefixTrace_zero
+    {m n : ℕ} {fp : FPModel} {hmn : n ≤ m}
+    {A L : Fin m → Fin n → ℝ} {U : Fin n → Fin n → ℝ} :
+    higham9_2_RectDoolittleRoundedPrefixTrace hmn A L U fp 0 where
+  L_diag_done := by
+    intro k hk
+    exact (Nat.not_lt_zero k.val hk).elim
+  L_upper_zero_done := by
+    intro i j hj _
+    exact (Nat.not_lt_zero j.val hj).elim
+  U_lower_zero_done := by
+    intro i j hi _
+    exact (Nat.not_lt_zero i.val hi).elim
+  U_stage_eq_done := by
+    intro k j hk _
+    exact (Nat.not_lt_zero k.val hk).elim
+  L_stage_eq_done := by
+    intro i k hk _
+    exact (Nat.not_lt_zero k.val hk).elim
+
+/-- **Algorithm 9.2**, rectangular rounded prefix trace successor step.  A
+completed prefix through stage `t`, plus the scheduled diagonal, triangular
+shape, upper-row fold, and lower-column fold data for stage `t`, extends the
+prefix to `t + 1`. -/
+theorem higham9_2_rectRoundedPrefixTrace_succ
+    {m n : ℕ} {fp : FPModel} {hmn : n ≤ m}
+    {A L : Fin m → Fin n → ℝ} {U : Fin n → Fin n → ℝ}
+    {t : ℕ} (ht : t < n)
+    (hprev : higham9_2_RectDoolittleRoundedPrefixTrace hmn A L U fp t)
+    (hL_diag :
+      L (higham9_2_rectRow hmn ⟨t, ht⟩) ⟨t, ht⟩ = 1)
+    (hL_upper_zero_stage : ∀ i : Fin m, i.val < t →
+      L i ⟨t, ht⟩ = 0)
+    (hU_lower_zero_stage : ∀ j : Fin n, j.val < t →
+      U ⟨t, ht⟩ j = 0)
+    (hU_stage_eq : ∀ j : Fin n, t ≤ j.val →
+      U ⟨t, ht⟩ j =
+        higham9_2_rectFlDoolittleUEntry fp hmn A L U ⟨t, ht⟩ j)
+    (hL_stage_eq : ∀ i : Fin m, t < i.val →
+      L i ⟨t, ht⟩ =
+        higham9_2_rectFlDoolittleLEntry fp A L U i ⟨t, ht⟩) :
+    higham9_2_RectDoolittleRoundedPrefixTrace hmn A L U fp (t + 1) where
+  L_diag_done := by
+    intro k hk
+    have hle : k.val ≤ t := Nat.lt_succ_iff.mp hk
+    by_cases hkt : k.val < t
+    · exact hprev.L_diag_done k hkt
+    · have hkval : k.val = t := le_antisymm hle (Nat.le_of_not_gt hkt)
+      have hk_eq : k = (⟨t, ht⟩ : Fin n) := Fin.ext hkval
+      simpa [hk_eq] using hL_diag
+  L_upper_zero_done := by
+    intro i j hj hij
+    have hle : j.val ≤ t := Nat.lt_succ_iff.mp hj
+    by_cases hjt : j.val < t
+    · exact hprev.L_upper_zero_done i j hjt hij
+    · have hjval : j.val = t := le_antisymm hle (Nat.le_of_not_gt hjt)
+      have hj_eq : j = (⟨t, ht⟩ : Fin n) := Fin.ext hjval
+      simpa [hj_eq] using hL_upper_zero_stage i (by simpa [hj_eq] using hij)
+  U_lower_zero_done := by
+    intro i j hi hji
+    have hle : i.val ≤ t := Nat.lt_succ_iff.mp hi
+    by_cases hit : i.val < t
+    · exact hprev.U_lower_zero_done i j hit hji
+    · have hival : i.val = t := le_antisymm hle (Nat.le_of_not_gt hit)
+      have hi_eq : i = (⟨t, ht⟩ : Fin n) := Fin.ext hival
+      simpa [hi_eq] using hU_lower_zero_stage j (by simpa [hi_eq] using hji)
+  U_stage_eq_done := by
+    intro k j hk hkj
+    have hle : k.val ≤ t := Nat.lt_succ_iff.mp hk
+    by_cases hkt : k.val < t
+    · exact hprev.U_stage_eq_done k j hkt hkj
+    · have hkval : k.val = t := le_antisymm hle (Nat.le_of_not_gt hkt)
+      have hk_eq : k = (⟨t, ht⟩ : Fin n) := Fin.ext hkval
+      simpa [hk_eq] using hU_stage_eq j (by simpa [hk_eq] using hkj)
+  L_stage_eq_done := by
+    intro i k hk hki
+    have hle : k.val ≤ t := Nat.lt_succ_iff.mp hk
+    by_cases hkt : k.val < t
+    · exact hprev.L_stage_eq_done i k hkt hki
+    · have hkval : k.val = t := le_antisymm hle (Nat.le_of_not_gt hkt)
+      have hk_eq : k = (⟨t, ht⟩ : Fin n) := Fin.ext hkval
+      simpa [hk_eq] using hL_stage_eq i (by simpa [hk_eq] using hki)
+
 /-- **Algorithm 9.2**, rectangular componentwise dominance handoff.  Visible
 upper work/product dominance, lower work/product/numerator dominance, and the
 explicit lower coefficient compression condition imply the rectangular
