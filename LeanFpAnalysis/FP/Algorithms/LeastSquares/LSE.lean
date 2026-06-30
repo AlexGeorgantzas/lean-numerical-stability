@@ -2790,6 +2790,127 @@ structure GeneralizedQRFactorization (r p q : ℕ)
   /-- `S` is lower triangular. -/
   lowerS : IsLowerTriangular S
 
+/-- Source matrix obtained by transporting a supplied GQR transformed `A`
+    block back through orthogonal factors `U` and `Q`.
+
+    By construction, if `U` and `Q` are orthogonal then
+    `Uᵀ * (gqrSourceAFromBlocks Q U L11 L21 L22) * Q =
+    [[L11,0],[L21,L22]]`. -/
+noncomputable def gqrSourceAFromBlocks {r p q : ℕ}
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (U : Fin (r + q) → Fin (r + q) → ℝ)
+    (L11 : Fin r → Fin p → ℝ)
+    (L21 : Fin q → Fin p → ℝ)
+    (L22 : Fin q → Fin q → ℝ) :
+    Fin (r + q) → Fin (p + q) → ℝ :=
+  matMulRectLeft U
+    (matMulRectRight (gqrAQBlock L11 L21 L22) (matTranspose Q))
+
+/-- Source constraint matrix obtained by transporting a supplied GQR constraint
+    block `[S,0]` back through the orthogonal factor `Q`. -/
+noncomputable def gqrSourceBFromBlocks {p q : ℕ}
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (S : Fin p → Fin p → ℝ) :
+    Fin p → Fin (p + q) → ℝ :=
+  matMulRectRight (gqrBQBlock S) (matTranspose Q)
+
+/-- Exact GQR factorization built by transporting supplied transformed blocks
+    back to source coordinates.
+
+    This is the algebraic constructor behind the Theorem 20.10 supplied-factor
+    route: once perturbed triangular blocks are provided, they define source
+    matrices whose GQR factors are exactly those blocks.  It does not assert
+    that those source matrices are small perturbations of a previously given
+    `A` or `B`; that is a separate finite-precision bound. -/
+noncomputable def GeneralizedQRFactorization.of_source_blocks
+    {r p q : ℕ}
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (U : Fin (r + q) → Fin (r + q) → ℝ)
+    (L11 : Fin r → Fin p → ℝ)
+    (L21 : Fin q → Fin p → ℝ)
+    (L22 : Fin q → Fin q → ℝ)
+    (S : Fin p → Fin p → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hU : IsOrthogonal (r + q) U)
+    (hL22 : IsLowerTriangular L22)
+    (hS : IsLowerTriangular S) :
+    GeneralizedQRFactorization r p q
+      (gqrSourceAFromBlocks Q U L11 L21 L22)
+      (gqrSourceBFromBlocks Q S) := by
+  let M : Fin (r + q) → Fin (p + q) → ℝ := gqrAQBlock L11 L21 L22
+  let C : Fin p → Fin (p + q) → ℝ := gqrBQBlock S
+  have hQtQ : rectMatMul (matTranspose Q) Q = idMatrix (p + q) := by
+    ext i j
+    simpa [rectMatMul, idMatrix] using hQ.left_inv i j
+  have hUtU : rectMatMul (matTranspose U) U = idMatrix (r + q) := by
+    ext i j
+    simpa [rectMatMul, idMatrix] using hU.left_inv i j
+  have hMQ :
+      rectMatMul (rectMatMul M (matTranspose Q)) Q = M := by
+    calc
+      rectMatMul (rectMatMul M (matTranspose Q)) Q =
+          rectMatMul M (rectMatMul (matTranspose Q) Q) :=
+            rectMatMul_assoc M (matTranspose Q) Q
+      _ = rectMatMul M (idMatrix (p + q)) := by rw [hQtQ]
+      _ = M := rectMatMul_id_right M
+  have hCQ :
+      rectMatMul (rectMatMul C (matTranspose Q)) Q = C := by
+    calc
+      rectMatMul (rectMatMul C (matTranspose Q)) Q =
+          rectMatMul C (rectMatMul (matTranspose Q) Q) :=
+            rectMatMul_assoc C (matTranspose Q) Q
+      _ = rectMatMul C (idMatrix (p + q)) := by rw [hQtQ]
+      _ = C := rectMatMul_id_right C
+  have hAqQ :
+      matMulRect (r + q) (p + q) (p + q)
+          (gqrSourceAFromBlocks Q U L11 L21 L22) Q =
+        matMulRectLeft U M := by
+    calc
+      matMulRect (r + q) (p + q) (p + q)
+          (gqrSourceAFromBlocks Q U L11 L21 L22) Q =
+          rectMatMul
+            (rectMatMul U (rectMatMul M (matTranspose Q))) Q := by
+            ext i j
+            rfl
+      _ = rectMatMul U (rectMatMul (rectMatMul M (matTranspose Q)) Q) :=
+            rectMatMul_assoc U (rectMatMul M (matTranspose Q)) Q
+      _ = rectMatMul U M := by rw [hMQ]
+      _ = matMulRectLeft U M := by
+            rfl
+  refine
+    { Q := Q
+      U := U
+      L11 := L11
+      L21 := L21
+      L22 := L22
+      S := S
+      orthQ := hQ
+      orthU := hU
+      aq_eq := ?_
+      bq_eq := ?_
+      lowerL22 := hL22
+      lowerS := hS }
+  · calc
+      matMulRectLeft (matTranspose U)
+          (matMulRect (r + q) (p + q) (p + q)
+            (gqrSourceAFromBlocks Q U L11 L21 L22) Q) =
+          matMulRectLeft (matTranspose U) (matMulRectLeft U M) := by
+            rw [hAqQ]
+      _ = rectMatMul (matTranspose U) (rectMatMul U M) := by
+            rfl
+      _ = rectMatMul (rectMatMul (matTranspose U) U) M :=
+            (rectMatMul_assoc (matTranspose U) U M).symm
+      _ = rectMatMul (idMatrix (r + q)) M := by rw [hUtU]
+      _ = M := rectMatMul_id_left M
+      _ = gqrAQBlock L11 L21 L22 := rfl
+  · calc
+      matMulRect p (p + q) (p + q) (gqrSourceBFromBlocks Q S) Q =
+          rectMatMul (rectMatMul C (matTranspose Q)) Q := by
+            ext i j
+            rfl
+      _ = C := hCQ
+      _ = gqrBQBlock S := rfl
+
 /-- Tall-case construction wrapper for Higham, 2nd ed., Theorem 20.9.
 
     Given the exact QR-derived constraint identity for `Bᵀ`, a supplied
@@ -9057,6 +9178,132 @@ theorem theorem20_10_partA_certificate_of_supplied_perturbed_factor_zero_deltaX
            hzero hpert (fun i => b i + Deltab i) d gammaB
              hQ hS hL21 hL22 rfl hb_tail hSdiag_pert hL22diag_pert
              hgammaB_nonneg x hx
+       hDeltaA := hDeltaA
+       hDeltab := hDeltab
+       hDeltaB := hDeltaB }⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), constructed-source
+    version of the supplied-factor Part A certificate.
+
+    This removes the external `hpert` input from
+    `theorem20_10_partA_certificate_of_supplied_perturbed_factor_zero_deltaX`.
+    The perturbed source matrices are constructed directly by transporting the
+    perturbed triangular blocks `S + DeltaS` and `L22 + DeltaL22` back through
+    the original orthogonal factors.  The remaining hypotheses are exactly the
+    ones not proved by this algebraic construction: lower-triangularity of the
+    perturbed blocks, source-shaped bounds for the induced source
+    perturbations, and the transformed right-hand-side matching condition. -/
+theorem theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (gammaA gammaB : ℝ)
+    (Deltab : Fin (r + q) → ℝ)
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalidS : gammaValid fp p)
+    (hvalidL22 : gammaValid fp q) :
+    ∃ (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ),
+      (∀ i j, |DeltaS i j| ≤ gamma fp p * |h.S i j|) ∧
+      (∀ i j, |DeltaL22 i j| ≤ gamma fp q * |h.L22 i j|) ∧
+      frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S ∧
+      frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 ∧
+      (let Spert : Fin p → Fin p → ℝ :=
+          fun i j => h.S i j + DeltaS i j
+       let L22pert : Fin q → Fin q → ℝ :=
+          fun i j => h.L22 i j + DeltaL22 i j
+       let Apert : Fin (r + q) → Fin (p + q) → ℝ :=
+          gqrSourceAFromBlocks h.Q h.U h.L11 h.L21 L22pert
+       let Bpert : Fin p → Fin (p + q) → ℝ :=
+          gqrSourceBFromBlocks h.Q Spert
+       let DeltaA : Fin (r + q) → Fin (p + q) → ℝ :=
+          fun i j => Apert i j - A i j
+       let DeltaB : Fin p → Fin (p + q) → ℝ :=
+          fun i j => Bpert i j - B i j
+       IsLowerTriangular Spert →
+       IsLowerTriangular L22pert →
+       (∀ i : Fin p, Spert i i ≠ 0) →
+       (∀ i : Fin q, L22pert i i ≠ 0) →
+       frobNormRect DeltaA ≤ gammaA * frobNormRect A →
+       vecNorm2 Deltab ≤ gammaA * vecNorm2 b →
+       frobNormRect DeltaB ≤ gammaB * frobNormRect B →
+       (∀ i : Fin q,
+          matMulVec (r + q) (matTranspose h.U)
+              (fun i => b i + Deltab i) (Fin.natAdd r i) =
+            matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i)) →
+       Nonempty
+        (Theorem20_10PartAPerturbationCertificate A B b d
+          (theorem20_10_gqr_xhat fp h b d) gammaA gammaB)) := by
+  rcases theorem20_10_gqr_xhat_supplied_perturbed_factor_zero_deltaX_certificate
+      fp h b d hSdiag hL22diag hvalidS hvalidL22 with
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, hzero⟩
+  refine
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, ?_⟩
+  dsimp
+  intro hSpert_lower hL22pert_lower hSpert_diag hL22pert_diag
+    hDeltaA hDeltab hDeltaB hb_tail
+  let Spert : Fin p → Fin p → ℝ := fun i j => h.S i j + DeltaS i j
+  let L22pert : Fin q → Fin q → ℝ := fun i j => h.L22 i j + DeltaL22 i j
+  let Apert : Fin (r + q) → Fin (p + q) → ℝ :=
+    gqrSourceAFromBlocks h.Q h.U h.L11 h.L21 L22pert
+  let Bpert : Fin p → Fin (p + q) → ℝ :=
+    gqrSourceBFromBlocks h.Q Spert
+  let DeltaA_src : Fin (r + q) → Fin (p + q) → ℝ :=
+    fun i j => Apert i j - A i j
+  let DeltaB_src : Fin p → Fin (p + q) → ℝ :=
+    fun i j => Bpert i j - B i j
+  let hpert : GeneralizedQRFactorization r p q Apert Bpert :=
+    GeneralizedQRFactorization.of_source_blocks
+      h.Q h.U h.L11 h.L21 L22pert Spert
+      h.orthQ h.orthU hL22pert_lower hSpert_lower
+  have hApert_src :
+      (fun i j => A i j + DeltaA_src i j) = Apert := by
+    ext i j
+    dsimp [DeltaA_src]
+    ring
+  have hBpert_src :
+      (fun i j => B i j + DeltaB_src i j) = Bpert := by
+    ext i j
+    dsimp [DeltaB_src]
+    ring
+  have hrank :
+      LSEFullRowRank Bpert ∧ LSEStackedFullColumnRank Apert Bpert :=
+    (hpert.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero).2
+      ⟨fun i => by simpa [hpert, Spert] using hSpert_diag i,
+       fun i => by simpa [hpert, L22pert] using hL22pert_diag i⟩
+  have hBcert :
+      LSEFullRowRank (fun i j => B i j + DeltaB_src i j) := by
+    rw [hBpert_src]
+    exact hrank.1
+  have hstackcert :
+      LSEStackedFullColumnRank
+        (fun i j => A i j + DeltaA_src i j)
+        (fun i j => B i j + DeltaB_src i j) := by
+    rw [hApert_src, hBpert_src]
+    exact hrank.2
+  exact
+    ⟨{ DeltaA := DeltaA_src
+       DeltaB := DeltaB_src
+       Deltab := Deltab
+       hB := hBcert
+       hstack := hstackcert
+       near_exact_solution := by
+         intro x hx
+         have hx' : IsLSEMinimizer Apert
+             (fun i => b i + Deltab i) Bpert d x := by
+           rw [hApert_src, hBpert_src] at hx
+           exact hx
+         exact
+           hzero hpert (fun i => b i + Deltab i) d gammaB
+             rfl rfl rfl rfl rfl hb_tail
+             (fun i => by simpa [hpert, Spert] using hSpert_diag i)
+             (fun i => by simpa [hpert, L22pert] using hL22pert_diag i)
+             hgammaB_nonneg x hx'
        hDeltaA := hDeltaA
        hDeltab := hDeltab
        hDeltaB := hDeltaB }⟩
