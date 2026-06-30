@@ -322,6 +322,8 @@
     higham13_problem13_4_Sinv_maxEntryNormRect_of_full_inverse_entry_bound,
     higham13_problem13_4_schur_kappa_maxEntryNormRect_from_full_inverse_entry_bound,
     higham13_problem13_4_Sinv_eq_full_inverse_lower_right_of_block_inverse,
+    higham13_problem13_4_L21_eq13_22_premise_from_ambient_block_inverse_growth,
+    higham13_problem13_4_L21_eq13_22_premise_from_global_growth_tableau_exact_kappa,
     higham13_problem13_4_schur_kappa_maxEntryNormRect_from_block_inverse,
     higham13_problem13_4_maxEntry_bounds_from_block_inverse_growth,
     higham13_problem13_4_maxEntry_bounds_from_source_block_inverse_growth,
@@ -23933,6 +23935,122 @@ theorem higham13_problem13_4_A21A11inv_maxEntryNormRect_from_block_inverse_growt
     _ ≤ (s : ℝ) * (rho * kappaA) := hScaleS
     _ ≤ (n : ℝ) * (rho * kappaA) := hScaleN
     _ = (n : ℝ) * rho * kappaA := by ring
+
+/-- Higham, 2nd ed., Chapter 13, Problem 13.4 feeding equation (13.22):
+    ambient lower-left block budget from the block-inverse proof route.
+
+    The source proof of Problem 13.4 first gives
+    `‖A₂₁ A₁₁⁻¹‖_max <= n ρ κ(A)` from the Schur-growth certificate and a
+    full-inverse entry certificate.  Since the Gaussian-elimination growth
+    factor is at least one in the ambient source history, this immediately
+    supplies the Eq.13.22 lower-factor budget `n ρ² κ(A)`.
+
+    In recursive uses, `A11,A12,A21,A22` may be the current Schur tail.  The
+    hypothesis `hAinv_entry` is deliberately explicit: it is the remaining
+    source certificate identifying the current tail inverse entries with
+    entries bounded by the original inverse. -/
+theorem higham13_problem13_4_L21_eq13_22_premise_from_ambient_block_inverse_growth
+    {r s : ℕ} (hr : 0 < r) (hs : 0 < s)
+    (A11 : Matrix (Fin r) (Fin r) ℝ)
+    (A12 : Matrix (Fin r) (Fin s) ℝ)
+    (A21 : Matrix (Fin s) (Fin r) ℝ)
+    (A22 : Matrix (Fin s) (Fin s) ℝ)
+    [Invertible A11] [Invertible (A22 - A21 * ⅟A11 * A12)]
+    [Invertible (Matrix.fromBlocks A11 A12 A21 A22)]
+    {normA normAinv rho kappaA : ℝ} (n : ℕ)
+    (hRho_ge_one : 1 ≤ rho) (hKappa : 0 ≤ kappaA)
+    (hsn : (s : ℝ) ≤ (n : ℝ))
+    (hS_entry : ∀ i : Fin s, ∀ j : Fin s,
+      |(A22 - A21 * ⅟A11 * A12) i j| ≤ rho * normA)
+    (hAinv_entry : ∀ i j : Fin r ⊕ Fin s,
+      |(⅟(Matrix.fromBlocks A11 A12 A21 A22) :
+          Matrix (Fin r ⊕ Fin s) (Fin r ⊕ Fin s) ℝ) i j| ≤ normAinv)
+    (hkappa : normA * normAinv ≤ kappaA) :
+    maxEntryNormRect hs hr ((A21 * ⅟A11 : Matrix (Fin s) (Fin r) ℝ)) ≤
+      (n : ℝ) * rho ^ 2 * kappaA := by
+  have hRho_nonneg : 0 ≤ rho := le_trans zero_le_one hRho_ge_one
+  have hBase :
+      maxEntryNormRect hs hr ((A21 * ⅟A11 : Matrix (Fin s) (Fin r) ℝ)) ≤
+        (n : ℝ) * rho * kappaA :=
+    higham13_problem13_4_A21A11inv_maxEntryNormRect_from_block_inverse_growth
+      hr hs A11 A12 A21 A22 n hRho_nonneg hKappa hsn hS_entry
+      hAinv_entry hkappa
+  have hrho_le_sq : rho ≤ rho ^ 2 := by
+    have hmul := mul_le_mul_of_nonneg_left hRho_ge_one hRho_nonneg
+    simpa [pow_two] using hmul
+  have hscale :
+      (n : ℝ) * rho * kappaA ≤ (n : ℝ) * rho ^ 2 * kappaA := by
+    have hn_nonneg : 0 ≤ (n : ℝ) := Nat.cast_nonneg n
+    exact mul_le_mul_of_nonneg_right
+      (mul_le_mul_of_nonneg_left hrho_le_sq hn_nonneg) hKappa
+  exact le_trans hBase hscale
+
+/-- Higham, 2nd ed., Chapter 13, Problem 13.4 feeding equation (13.22):
+    global-growth-tableau form of the ambient lower-left block budget.
+
+    This is the recursive source shape suggested by the printed argument:
+    `rho` is the growth factor of one ambient GE history, `hS_le_G` says the
+    next Schur complement is contained in that global history, and
+    `hAinv_entry` says the current tail inverse entries are bounded by the
+    ambient inverse norm.  No local Schur-complement growth factor appears in
+    the conclusion. -/
+theorem
+    higham13_problem13_4_L21_eq13_22_premise_from_global_growth_tableau_exact_kappa
+    {r s N : ℕ} (hr : 0 < r) (hs : 0 < s) (hN : 0 < N)
+    (Aglob Gglob AinvGlob : Fin N → Fin N → ℝ)
+    (A11 : Matrix (Fin r) (Fin r) ℝ)
+    (A12 : Matrix (Fin r) (Fin s) ℝ)
+    (A21 : Matrix (Fin s) (Fin r) ℝ)
+    (A22 : Matrix (Fin s) (Fin s) ℝ)
+    [Invertible A11] [Invertible (A22 - A21 * ⅟A11 * A12)]
+    [Invertible (Matrix.fromBlocks A11 A12 A21 A22)]
+    (hApos : 0 < maxEntryNorm hN Aglob)
+    (n : ℕ) (hsn : (s : ℝ) ≤ (n : ℝ))
+    (hA_le_G : maxEntryNorm hN Aglob ≤ maxEntryNorm hN Gglob)
+    (hS_le_G :
+      maxEntryNormRect hs hs (A22 - A21 * ⅟A11 * A12) ≤
+        maxEntryNorm hN Gglob)
+    (hAinv_entry : ∀ i j : Fin r ⊕ Fin s,
+      |(⅟(Matrix.fromBlocks A11 A12 A21 A22) :
+          Matrix (Fin r ⊕ Fin s) (Fin r ⊕ Fin s) ℝ) i j| ≤
+        maxEntryNormRect hN hN AinvGlob) :
+    maxEntryNormRect hs hr ((A21 * ⅟A11 : Matrix (Fin s) (Fin r) ℝ)) ≤
+      (n : ℝ) *
+        (growthFactorEntry hN Aglob Gglob hApos) ^ 2 *
+        (maxEntryNormRect hN hN Aglob *
+          maxEntryNormRect hN hN AinvGlob) := by
+  let rho : ℝ := growthFactorEntry hN Aglob Gglob hApos
+  let kappaA : ℝ :=
+    maxEntryNormRect hN hN Aglob * maxEntryNormRect hN hN AinvGlob
+  have hRho_ge_one : 1 ≤ rho := by
+    simpa [rho] using
+      growthFactorEntry_ge_one_of_maxEntryNorm_le hN Aglob Gglob hApos hA_le_G
+  have hKappa : 0 ≤ kappaA := by
+    exact mul_nonneg (maxEntryNormRect_nonneg hN hN Aglob)
+      (maxEntryNormRect_nonneg hN hN AinvGlob)
+  have hS_growth :
+      maxEntryNormRect hs hs (A22 - A21 * ⅟A11 * A12) ≤
+        rho * maxEntryNormRect hN hN Aglob := by
+    calc
+      maxEntryNormRect hs hs (A22 - A21 * ⅟A11 * A12)
+          ≤ maxEntryNorm hN Gglob := hS_le_G
+      _ = rho * maxEntryNormRect hN hN Aglob := by
+          rw [maxEntryNormRect_eq_maxEntryNorm hN Aglob]
+          unfold rho growthFactorEntry
+          exact (div_mul_cancel₀ (maxEntryNorm hN Gglob) (ne_of_gt hApos)).symm
+  have hS_entry : ∀ i : Fin s, ∀ j : Fin s,
+      |(A22 - A21 * ⅟A11 * A12) i j| ≤
+        rho * maxEntryNormRect hN hN Aglob := by
+    intro i j
+    exact le_trans
+      (entry_le_maxEntryNormRect hs hs (A22 - A21 * ⅟A11 * A12) i j)
+      hS_growth
+  simpa [rho, kappaA] using
+    higham13_problem13_4_L21_eq13_22_premise_from_ambient_block_inverse_growth
+      hr hs A11 A12 A21 A22 n hRho_ge_one hKappa hsn hS_entry
+      hAinv_entry (le_rfl :
+        maxEntryNormRect hN hN Aglob * maxEntryNormRect hN hN AinvGlob ≤
+          kappaA)
 
 /-- Higham, 2nd ed., Chapter 13, Lemma 13.10 / Problem 13.4 dependency:
     the inverse of the Schur complement inherits an operator-2 certificate from

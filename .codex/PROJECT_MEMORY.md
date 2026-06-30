@@ -10299,3 +10299,22 @@ These compile, but should not be treated as fully derived stability results:
   `git diff --check`, conflict-marker and touched Lean marker scans, and
   focused `#print axioms` with only `propext`, `Classical.choice`, and
   `Quot.sound`.
+
+- 2026-06-30 Problem 13.4 global-growth-tableau route correction: Oracle/GPT-5.5
+  Pro advised that the recursive source proof uses one ambient GE growth factor
+  `rho_n(A)` for the original matrix, not local normalized `rho(T)` factors for
+  Schur tails.  Added
+  `higham13_problem13_4_L21_eq13_22_premise_from_ambient_block_inverse_growth`
+  and
+  `higham13_problem13_4_L21_eq13_22_premise_from_global_growth_tableau_exact_kappa`
+  to derive the Eq.13.22 lower-block budget from ambient Schur-tableau
+  containment, an explicit current-tail inverse-entry certificate, exact
+  max-entry `kappa(A)`, and `rho(A) >= 1`.  The open Ch13 red row is now
+  sharper: prove recursive tableau-submatrix containment, prove the current-tail
+  inverse-entry certificate from the ambient inverse, and finish Eq.13.23
+  `rho <= 2`/BDD product-update data plus Theorem 13.6 estimates.  Verification
+  passed before sync: direct `BlockLU.lean`, focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet `examples/LibraryLookup.lean`
+  with empty stderr and both names present, `git diff --check`, touched
+  public-Lean marker scan, anchored conflict-marker scan, and focused
+  `#print axioms` with only `propext`, `Classical.choice`, and `Quot.sound`.
