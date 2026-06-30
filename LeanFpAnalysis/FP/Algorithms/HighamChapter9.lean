@@ -3565,6 +3565,63 @@ theorem higham9_2_rectRoundedPrefixTrace_complete_of_stage_obligations
     hL_diag hL_upper_zero_stage hU_lower_zero_stage hU_stage_eq hL_stage_eq
     n (Nat.le_refl n)
 
+/-- **Algorithm 9.2**, full rectangular rounded-stage trace from natural-number
+stage obligations. -/
+theorem higham9_2_rectRoundedStageTrace_of_stage_obligations
+    {m n : ℕ} {fp : FPModel} {hmn : n ≤ m}
+    {A L : Fin m → Fin n → ℝ} {U : Fin n → Fin n → ℝ}
+    (hL_diag : ∀ (t : ℕ) (ht : t < n),
+      L (higham9_2_rectRow hmn ⟨t, ht⟩) ⟨t, ht⟩ = 1)
+    (hL_upper_zero_stage : ∀ (t : ℕ) (ht : t < n),
+      ∀ i : Fin m, i.val < t → L i ⟨t, ht⟩ = 0)
+    (hU_lower_zero_stage : ∀ (t : ℕ) (ht : t < n),
+      ∀ j : Fin n, j.val < t → U ⟨t, ht⟩ j = 0)
+    (hU_stage_eq : ∀ (t : ℕ) (ht : t < n),
+      ∀ j : Fin n, t ≤ j.val →
+        U ⟨t, ht⟩ j =
+          higham9_2_rectFlDoolittleUEntry fp hmn A L U ⟨t, ht⟩ j)
+    (hL_stage_eq : ∀ (t : ℕ) (ht : t < n),
+      ∀ i : Fin m, t < i.val →
+        L i ⟨t, ht⟩ =
+          higham9_2_rectFlDoolittleLEntry fp A L U i ⟨t, ht⟩) :
+    higham9_2_RectDoolittleRoundedStageTrace hmn A L U fp :=
+  higham9_2_rectRoundedPrefixTrace_complete_to_stageTrace
+    (higham9_2_rectRoundedPrefixTrace_complete_of_stage_obligations
+      hL_diag hL_upper_zero_stage hU_lower_zero_stage hU_stage_eq hL_stage_eq)
+
+/-- **Algorithm 9.2**, rectangular dense-loop certificate from natural-number
+stage obligations, nonbreakdown, and visible budget dominance. -/
+theorem higham9_2_rectStageObligations_to_rectDenseLoopCertificate
+    {m n : ℕ} {fp : FPModel} {hmn : n ≤ m}
+    {A L : Fin m → Fin n → ℝ} {U : Fin n → Fin n → ℝ}
+    (hL_diag : ∀ (t : ℕ) (ht : t < n),
+      L (higham9_2_rectRow hmn ⟨t, ht⟩) ⟨t, ht⟩ = 1)
+    (hL_upper_zero_stage : ∀ (t : ℕ) (ht : t < n),
+      ∀ i : Fin m, i.val < t → L i ⟨t, ht⟩ = 0)
+    (hU_lower_zero_stage : ∀ (t : ℕ) (ht : t < n),
+      ∀ j : Fin n, j.val < t → U ⟨t, ht⟩ j = 0)
+    (hU_stage_eq : ∀ (t : ℕ) (ht : t < n),
+      ∀ j : Fin n, t ≤ j.val →
+        U ⟨t, ht⟩ j =
+          higham9_2_rectFlDoolittleUEntry fp hmn A L U ⟨t, ht⟩ j)
+    (hL_stage_eq : ∀ (t : ℕ) (ht : t < n),
+      ∀ i : Fin m, t < i.val →
+        L i ⟨t, ht⟩ =
+          higham9_2_rectFlDoolittleLEntry fp A L U i ⟨t, ht⟩)
+    (hU_diag : ∀ k : Fin n, U k k ≠ 0)
+    (hn : gammaValid fp n)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp hmn A L U k j ≤
+        gamma fp n * |U k j|)
+    (hL_budget_le : ∀ i : Fin m, ∀ k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A L U i k ≤
+        gamma fp n * |L i k * U k k|) :
+    higham9_2_RectDoolittleDenseLoopCertificate hmn A L U fp :=
+  higham9_2_rectRoundedStageTrace_to_rectDenseLoopCertificate
+    (higham9_2_rectRoundedStageTrace_of_stage_obligations
+      hL_diag hL_upper_zero_stage hU_lower_zero_stage hU_stage_eq hL_stage_eq)
+    hU_diag hn hU_budget_le hL_budget_le
+
 /-- **Algorithm 9.2**, rectangular componentwise dominance handoff.  Visible
 upper work/product dominance, lower work/product/numerator dominance, and the
 explicit lower coefficient compression condition imply the rectangular
@@ -5177,6 +5234,43 @@ theorem higham9_3_rectRoundedPrefixTrace_complete_backward_error
       (∀ i j, rectMatMul L_hat U_hat i j = A i j + ΔA i j) :=
   higham9_3_rectRoundedStageTrace_backward_error
     (higham9_2_rectRoundedPrefixTrace_complete_to_stageTrace hT)
+    hU_diag hn hU_budget_le hL_budget_le
+
+/-- **Theorem 9.3**, rectangular natural-stage obligation form.  Per-stage
+Algorithm 9.2 obligations, nonzero computed pivots, and visible budget
+dominance feed the rectangular componentwise backward-error theorem. -/
+theorem higham9_3_rectStageObligations_backward_error
+    {m n : ℕ} {fp : FPModel} {hmn : n ≤ m}
+    {A L_hat : Fin m → Fin n → ℝ} {U_hat : Fin n → Fin n → ℝ}
+    (hL_diag : ∀ (t : ℕ) (ht : t < n),
+      L_hat (higham9_2_rectRow hmn ⟨t, ht⟩) ⟨t, ht⟩ = 1)
+    (hL_upper_zero_stage : ∀ (t : ℕ) (ht : t < n),
+      ∀ i : Fin m, i.val < t → L_hat i ⟨t, ht⟩ = 0)
+    (hU_lower_zero_stage : ∀ (t : ℕ) (ht : t < n),
+      ∀ j : Fin n, j.val < t → U_hat ⟨t, ht⟩ j = 0)
+    (hU_stage_eq : ∀ (t : ℕ) (ht : t < n),
+      ∀ j : Fin n, t ≤ j.val →
+        U_hat ⟨t, ht⟩ j =
+          higham9_2_rectFlDoolittleUEntry fp hmn A L_hat U_hat ⟨t, ht⟩ j)
+    (hL_stage_eq : ∀ (t : ℕ) (ht : t < n),
+      ∀ i : Fin m, t < i.val →
+        L_hat i ⟨t, ht⟩ =
+          higham9_2_rectFlDoolittleLEntry fp A L_hat U_hat i ⟨t, ht⟩)
+    (hU_diag : ∀ k : Fin n, U_hat k k ≠ 0)
+    (hn : gammaValid fp n)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp hmn A L_hat U_hat k j ≤
+        gamma fp n * |U_hat k j|)
+    (hL_budget_le : ∀ i : Fin m, ∀ k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A L_hat U_hat i k ≤
+        gamma fp n * |L_hat i k * U_hat k k|) :
+    ∃ ΔA : Fin m → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤ gamma fp n *
+        ∑ k : Fin n, |L_hat i k| * |U_hat k j|) ∧
+      (∀ i j, rectMatMul L_hat U_hat i j = A i j + ΔA i j) :=
+  higham9_3_rectRoundedStageTrace_backward_error
+    (higham9_2_rectRoundedStageTrace_of_stage_obligations
+      hL_diag hL_upper_zero_stage hU_lower_zero_stage hU_stage_eq hL_stage_eq)
     hU_diag hn hU_budget_le hL_budget_le
 
 /-- **Theorem 9.3**, rectangular literal-source-budget form.  Literal rounded
