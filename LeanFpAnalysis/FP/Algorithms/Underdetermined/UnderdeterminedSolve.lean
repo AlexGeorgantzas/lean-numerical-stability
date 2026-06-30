@@ -172,6 +172,141 @@ theorem higham21_qr_transpose_system_eq {m k : ℕ}
     _ = (fun j : Fin m => ∑ i : Fin m, R i j * y1 i) j := by
             exact congrFun (lsQRTallBlock_transpose_mulVec_append R y1 y2) j
 
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equations (21.1) and (21.5):
+    the Gram matrix of `(Q B)ᵀ` is the right Gram matrix of `B` when `Q` is
+    orthogonal.  This is the algebraic cancellation behind deriving the SNE
+    matrix from the QR representation `Aᵀ = Q B`. -/
+theorem higham21_rectGram_finiteTranspose_matMulRectLeft_orthogonal {m n : ℕ}
+    (Q : Fin m → Fin m → ℝ) (B : Fin m → Fin n → ℝ)
+    (hQ : IsOrthogonal m Q) :
+    rectGram (finiteTranspose (matMulRectLeft Q B)) =
+      fun i j : Fin n => ∑ r : Fin m, B r i * B r j := by
+  ext i j
+  unfold rectGram finiteTranspose matMulRectLeft
+  calc
+    ∑ row : Fin m, (∑ a : Fin m, Q row a * B a i) *
+        (∑ b : Fin m, Q row b * B b j)
+        = ∑ row : Fin m, ∑ a : Fin m, ∑ b : Fin m,
+            (Q row a * B a i) * (Q row b * B b j) := by
+            apply Finset.sum_congr rfl
+            intro row _
+            rw [Finset.sum_mul]
+            apply Finset.sum_congr rfl
+            intro a _
+            rw [Finset.mul_sum]
+    _ = ∑ a : Fin m, ∑ b : Fin m, ∑ row : Fin m,
+          (Q row a * Q row b) * (B a i * B b j) := by
+            rw [Finset.sum_comm]
+            apply Finset.sum_congr rfl
+            intro a _
+            rw [Finset.sum_comm]
+            apply Finset.sum_congr rfl
+            intro b _
+            apply Finset.sum_congr rfl
+            intro row _
+            ring
+    _ = ∑ a : Fin m, ∑ b : Fin m,
+          (∑ row : Fin m, Q row a * Q row b) * (B a i * B b j) := by
+            apply Finset.sum_congr rfl
+            intro a _
+            apply Finset.sum_congr rfl
+            intro b _
+            rw [Finset.sum_mul]
+    _ = ∑ a : Fin m, ∑ b : Fin m,
+          (if a = b then 1 else 0) * (B a i * B b j) := by
+            apply Finset.sum_congr rfl
+            intro a _
+            apply Finset.sum_congr rfl
+            intro b _
+            rw [hQ.col_orthonormal a b]
+    _ = ∑ a : Fin m, B a i * B a j := by
+            simp [Finset.sum_ite_eq, Finset.mem_univ]
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.5):
+    the right Gram matrix of the tall block `[R;0]` is `RᵀR`. -/
+theorem higham21_eq21_5_tall_block_right_gram {m k : ℕ}
+    (R : Fin m → Fin m → ℝ) :
+    (fun i j : Fin m =>
+        ∑ row : Fin (m + k),
+          lsQRTallBlock (k := k) R row i * lsQRTallBlock (k := k) R row j) =
+      fun i j : Fin m => ∑ row : Fin m, R row i * R row j := by
+  ext i j
+  unfold lsQRTallBlock
+  rw [Fin.sum_univ_add]
+  simp [Fin.append_left, Fin.append_right]
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.5):
+    if `Aᵀ = Q [R;0]` with `Q` orthogonal, then the SNE matrix
+    `A Aᵀ` is `RᵀR`.  The theorem is stated for the exact rectangular matrix
+    represented in this development as `A = (Q [R;0])ᵀ`. -/
+theorem higham21_eq21_5_qr_sne_gram_eq {m k : ℕ}
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (hQ : IsOrthogonal (m + k) Q)
+    (R : Fin m → Fin m → ℝ) :
+    rectGram (finiteTranspose (matMulRectLeft Q (lsQRTallBlock (k := k) R))) =
+      fun i j : Fin m => ∑ row : Fin m, R row i * R row j := by
+  calc
+    rectGram (finiteTranspose (matMulRectLeft Q (lsQRTallBlock (k := k) R)))
+        = (fun i j : Fin m =>
+            ∑ row : Fin (m + k),
+              lsQRTallBlock (k := k) R row i *
+                lsQRTallBlock (k := k) R row j) := by
+            exact
+              higham21_rectGram_finiteTranspose_matMulRectLeft_orthogonal
+                Q (lsQRTallBlock (k := k) R) hQ
+    _ = fun i j : Fin m => ∑ row : Fin m, R row i * R row j :=
+            higham21_eq21_5_tall_block_right_gram (k := k) R
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.5):
+    QR-specialized SNE formation step.  Under `Aᵀ = Q[R;0]`, a vector `y`
+    solving `RᵀR y = b`, followed by `x = Aᵀ y`, solves `A x = b`. -/
+theorem higham21_eq21_5_sne_rect_transpose_solution_of_qr {m k : ℕ}
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (hQ : IsOrthogonal (m + k) Q)
+    (R SNE : Fin m → Fin m → ℝ)
+    (b y : Fin m → ℝ)
+    (x : Fin (m + k) → ℝ)
+    (hSNE : ∀ i j : Fin m, SNE i j = ∑ row : Fin m, R row i * R row j)
+    (hy : ∀ i : Fin m, matMulVec m SNE y i = b i)
+    (hx :
+      x = rectTransposeMulVec
+        (finiteTranspose (matMulRectLeft Q (lsQRTallBlock (k := k) R))) y) :
+    rectMatMulVec
+        (finiteTranspose (matMulRectLeft Q (lsQRTallBlock (k := k) R))) x =
+      b := by
+  let A : Fin m → Fin (m + k) → ℝ :=
+    finiteTranspose (matMulRectLeft Q (lsQRTallBlock (k := k) R))
+  have hgram := higham21_eq21_5_qr_sne_gram_eq Q hQ R
+  have hSNEgram : ∀ i j : Fin m, SNE i j = rectGram A i j := by
+    intro i j
+    calc
+      SNE i j = ∑ row : Fin m, R row i * R row j := hSNE i j
+      _ = rectGram A i j := by
+          exact (congrFun (congrFun hgram i) j).symm
+  exact higham21_eq21_5_sne_rect_transpose_solution A SNE b y x hSNEgram hy hx
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.5):
+    QR-specialized SNE minimum-norm handoff.  Under `Aᵀ = Q[R;0]`, solving
+    `RᵀR y = b` and forming `x = Aᵀ y` gives the minimum 2-norm solution of
+    the exact underdetermined system. -/
+theorem higham21_eq21_5_sne_rect_transpose_min_norm_of_qr {m k : ℕ}
+    (Q : Fin (m + k) → Fin (m + k) → ℝ)
+    (hQ : IsOrthogonal (m + k) Q)
+    (R SNE : Fin m → Fin m → ℝ)
+    (b y : Fin m → ℝ)
+    (hSNE : ∀ i j : Fin m, SNE i j = ∑ row : Fin m, R row i * R row j)
+    (hy : ∀ i : Fin m, matMulVec m SNE y i = b i) :
+    RectMinNormSolution m (m + k)
+      (finiteTranspose (matMulRectLeft Q (lsQRTallBlock (k := k) R)))
+      b
+      (rectTransposeMulVec
+        (finiteTranspose (matMulRectLeft Q (lsQRTallBlock (k := k) R))) y) := by
+  let A : Fin m → Fin (m + k) → ℝ :=
+    finiteTranspose (matMulRectLeft Q (lsQRTallBlock (k := k) R))
+  exact higham21_eq21_4_rect_transpose_min_norm_of_solves A b y
+    (higham21_eq21_5_sne_rect_transpose_solution_of_qr
+      Q hQ R SNE b y (rectTransposeMulVec A y) hSNE hy rfl)
+
 /-- Higham, 2nd ed., Chapter 21, Section 21.1, equation (21.3):
     source-facing algebraic wrapper for the minimum-norm coordinate choice
     in the Q method.  Among coordinate vectors with the same first block,
