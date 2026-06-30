@@ -117,14 +117,24 @@
     final-supplied all-pivot APIs
   - Higham13Eq1322BaseInverseSourceChain,
     Higham13Eq1322BaseInverseSourceChain.det_ne_zero,
+    Higham13Eq1322BaseInverseSourceChain.to_inverseRatioSourceChain,
     Higham13Eq1322BaseInverseSourceChain.to_lowerComparisonSourceChain,
+    Higham13Eq1322BaseInverseSourceChain.nonterminal_pivot_right_inverse,
+    Higham13Eq1322BaseInverseSourceChain.nonterminal_pivot_det_ne_zero,
+    Higham13Eq1322BaseInverseSourceChain.pivot_right_inverse_of_final,
+    Higham13Eq1322BaseInverseSourceChain.pivot_det_ne_zero_of_final,
+    Higham13Eq1322BaseInverseSourceChain.pivot_det_ne_zero_of_final_right_inverse,
+    Higham13Eq1322BaseInverseSourceChain.pivot_right_inverse_of_final_nonsingInv,
+    Higham13Eq1322BaseInverseSourceChain.pivot_det_ne_zero_of_final_nonsingInv,
     Higham13Eq1322BaseInverseSourceChain.exists_blockLUFact_eq13_22_product_exact_kappa,
     Higham13Eq1322BaseInverseSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa,
     Higham13Eq1322BaseInverseSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update:
     recursive source certificate for the stronger base/inverse comparison
     route, replacing the direct lower-comparison chain hypothesis by explicit
-    per-tail base and inverse norm comparisons while reusing the direct
-    lower-comparison source-chain API
+    per-tail base and inverse norm comparisons while reusing the inverse-ratio
+    and direct lower-comparison source-chain APIs; the pivot extractors expose
+    the represented nonterminal pivots and final-pivot specializations needed
+    by all-pivot downstream wrappers
   - higham13_eq13_22_blockLUBudgetChain_succ_from_tail_local_chain_lower_comparison_matrix_stage_history_exact_kappa,
     higham13_eq13_22_blockLUBudgetChain_succ_from_tail_local_chain_lower_comparison_matrix_stage_history_exact_kappa_of_det_ne_zero,
     higham13_eq13_22_blockLUBudgetChain_succ_from_tail_local_chain_lower_comparison_matrix_stage_history_exact_kappa_of_det_ne_zero_of_schur_invertible,
@@ -40748,6 +40758,52 @@ theorem Higham13Eq1322BaseInverseSourceChain.det_ne_zero {r n : ℕ}
       simpa using hdetFlat
 
 /-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    the base/inverse source certificate specializes to the inverse-ratio
+    source certificate.
+
+    Each nonterminal step uses the elementary order bridge
+    `maxEntryNormRect_inverse_ratio_of_base_le_and_inverse_le`, so the
+    source-side base and inverse comparisons remain explicit while downstream
+    APIs can consume the already established inverse-ratio chain. -/
+theorem Higham13Eq1322BaseInverseSourceChain.to_inverseRatioSourceChain
+    {r n : ℕ} (hr : 0 < r) :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322BaseInverseSourceChain hr n m Ablk pivotInv →
+        Higham13Eq1322InverseRatioSourceChain hr n m Ablk pivotInv := by
+  intro m
+  induction m with
+  | zero =>
+      intro Ablk pivotInv hcert
+      cases hcert with
+      | one hdet hNn =>
+          exact Higham13Eq1322InverseRatioSourceChain.one hdet hNn
+  | succ m ih =>
+      intro Ablk pivotInv hcert
+      cases hcert with
+      | succ hpivot hdetFlat hsn hNn hBase hInv hTail =>
+          have hTailRatio :
+              Higham13Eq1322InverseRatioSourceChain hr n m
+                (blockSchur Ablk (pivotInv 0)) (fun q => pivotInv (q + 1)) :=
+            ih hTail
+          refine
+            Higham13Eq1322InverseRatioSourceChain.succ
+              (hr := hr) (n := n) hpivot hdetFlat hsn hNn ?_ hTailRatio
+          have hInvRatio :=
+            maxEntryNormRect_inverse_ratio_of_base_le_and_inverse_le
+              (Nat.mul_pos (Nat.succ_pos m) hr)
+              (Nat.add_pos_left hr ((m + 1) * r))
+              (blockMatrixFlatFin (blockSchur Ablk (pivotInv 0)))
+              (nonsingInv ((m + 1) * r)
+                (blockMatrixFlatFin (blockSchur Ablk (pivotInv 0))))
+              (blockMatrixFirstSplitFlat Ablk)
+              (nonsingInv (r + (m + 1) * r)
+                (blockMatrixFirstSplitFlat Ablk))
+              hBase hInv
+          simpa using hInvRatio
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
     the base/inverse source certificate is a specialization of the direct
     lower-comparison source certificate.
 
@@ -40791,6 +40847,181 @@ theorem Higham13Eq1322BaseInverseSourceChain.to_lowerComparisonSourceChain
                 exact maxEntryNorm_pos_of_det_ne_zero _ _ hdetFlat)
               n hBase hInv
           simpa using hLower
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    nonterminal active pivot right-inverse data carried by the recursive
+    base/inverse source certificate. -/
+theorem Higham13Eq1322BaseInverseSourceChain.nonterminal_pivot_right_inverse
+    {r n : ℕ} {hr : 0 < r} :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322BaseInverseSourceChain hr n m Ablk pivotInv →
+        ∀ k : ℕ, ∀ hk : k < m,
+          IsRightInverse r
+            (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+              ⟨k, Nat.lt_trans hk (Nat.lt_succ_self m)⟩
+              ⟨k, Nat.lt_trans hk (Nat.lt_succ_self m)⟩)
+            (pivotInv k) := by
+  intro m Ablk pivotInv hcert
+  exact
+    Higham13Eq1322LowerComparisonSourceChain.nonterminal_pivot_right_inverse
+      (Higham13Eq1322BaseInverseSourceChain.to_lowerComparisonSourceChain
+        (r := r) (n := n) hr hcert)
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    nonterminal active pivot determinant data carried by the recursive
+    base/inverse source certificate. -/
+theorem Higham13Eq1322BaseInverseSourceChain.nonterminal_pivot_det_ne_zero
+    {r n : ℕ} {hr : 0 < r} :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322BaseInverseSourceChain hr n m Ablk pivotInv →
+        ∀ k : ℕ, ∀ hk : k < m,
+          Matrix.det
+            (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+              ⟨k, Nat.lt_trans hk (Nat.lt_succ_self m)⟩
+              ⟨k, Nat.lt_trans hk (Nat.lt_succ_self m)⟩) ≠ 0 := by
+  intro m Ablk pivotInv hcert
+  exact
+    Higham13Eq1322LowerComparisonSourceChain.nonterminal_pivot_det_ne_zero
+      (Higham13Eq1322BaseInverseSourceChain.to_lowerComparisonSourceChain
+        (r := r) (n := n) hr hcert)
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    full active pivot right-inverse table for a base/inverse source chain,
+    once the final one-block pivot is supplied separately. -/
+theorem Higham13Eq1322BaseInverseSourceChain.pivot_right_inverse_of_final
+    {r n : ℕ} {hr : 0 < r} :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322BaseInverseSourceChain hr n m Ablk pivotInv →
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+          ⟨m, Nat.lt_succ_self m⟩
+          ⟨m, Nat.lt_succ_self m⟩)
+        (pivotInv m) →
+      ∀ k : ℕ, ∀ hk : k < m + 1,
+        IsRightInverse r
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩)
+          (pivotInv k) := by
+  intro m Ablk pivotInv hcert hfinal
+  exact
+    Higham13Eq1322LowerComparisonSourceChain.pivot_right_inverse_of_final
+      (Higham13Eq1322BaseInverseSourceChain.to_lowerComparisonSourceChain
+        (r := r) (n := n) hr hcert)
+      hfinal
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    full active pivot determinant table for a base/inverse source chain, once
+    the final one-block pivot determinant is supplied separately. -/
+theorem Higham13Eq1322BaseInverseSourceChain.pivot_det_ne_zero_of_final
+    {r n : ℕ} {hr : 0 < r} :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322BaseInverseSourceChain hr n m Ablk pivotInv →
+      Matrix.det
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+          ⟨m, Nat.lt_succ_self m⟩
+          ⟨m, Nat.lt_succ_self m⟩) ≠ 0 →
+      ∀ k : ℕ, ∀ hk : k < m + 1,
+        Matrix.det
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0 := by
+  intro m Ablk pivotInv hcert hfinal
+  exact
+    Higham13Eq1322LowerComparisonSourceChain.pivot_det_ne_zero_of_final
+      (Higham13Eq1322BaseInverseSourceChain.to_lowerComparisonSourceChain
+        (r := r) (n := n) hr hcert)
+      hfinal
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    full active pivot determinant table for a base/inverse source chain when
+    the final one-block pivot is supplied as a right-inverse certificate. -/
+theorem Higham13Eq1322BaseInverseSourceChain.pivot_det_ne_zero_of_final_right_inverse
+    {r n : ℕ} {hr : 0 < r} :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322BaseInverseSourceChain hr n m Ablk pivotInv →
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+          ⟨m, Nat.lt_succ_self m⟩
+          ⟨m, Nat.lt_succ_self m⟩)
+        (pivotInv m) →
+      ∀ k : ℕ, ∀ hk : k < m + 1,
+        Matrix.det
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0 := by
+  intro m Ablk pivotInv hcert hfinal
+  exact
+    higham13_algorithm13_3_pivot_det_ne_zero_of_pivot_right_inverse
+      Ablk pivotInv
+      (Higham13Eq1322BaseInverseSourceChain.pivot_right_inverse_of_final
+        hcert hfinal)
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    all-pivot right-inverse table for a base/inverse source chain when the
+    terminal one-block pivot is the canonical `nonsingInv`. -/
+theorem Higham13Eq1322BaseInverseSourceChain.pivot_right_inverse_of_final_nonsingInv
+    {r n : ℕ} {hr : 0 < r} :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322BaseInverseSourceChain hr n m Ablk pivotInv →
+      Matrix.det
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+            ⟨m, Nat.lt_succ_self m⟩
+            ⟨m, Nat.lt_succ_self m⟩) ≠ 0 →
+      pivotInv m =
+        nonsingInv r
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+            ⟨m, Nat.lt_succ_self m⟩
+            ⟨m, Nat.lt_succ_self m⟩) →
+      ∀ k : ℕ, ∀ hk : k < m + 1,
+        IsRightInverse r
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩)
+          (pivotInv k) := by
+  intro m Ablk pivotInv hcert hdet hfinalEq
+  exact
+    Higham13Eq1322LowerComparisonSourceChain.pivot_right_inverse_of_final_nonsingInv
+      (Higham13Eq1322BaseInverseSourceChain.to_lowerComparisonSourceChain
+        (r := r) (n := n) hr hcert)
+      hdet hfinalEq
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    all-pivot determinant table for a base/inverse source chain when the
+    terminal one-block pivot is the canonical `nonsingInv`. -/
+theorem Higham13Eq1322BaseInverseSourceChain.pivot_det_ne_zero_of_final_nonsingInv
+    {r n : ℕ} {hr : 0 < r} :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322BaseInverseSourceChain hr n m Ablk pivotInv →
+      Matrix.det
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+            ⟨m, Nat.lt_succ_self m⟩
+            ⟨m, Nat.lt_succ_self m⟩) ≠ 0 →
+      pivotInv m =
+        nonsingInv r
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+            ⟨m, Nat.lt_succ_self m⟩
+            ⟨m, Nat.lt_succ_self m⟩) →
+      ∀ k : ℕ, ∀ hk : k < m + 1,
+        Matrix.det
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0 := by
+  intro m Ablk pivotInv hcert hdet hfinalEq
+  exact
+    Higham13Eq1322LowerComparisonSourceChain.pivot_det_ne_zero_of_final_nonsingInv
+      (Higham13Eq1322BaseInverseSourceChain.to_lowerComparisonSourceChain
+        (r := r) (n := n) hr hcert)
+      hdet hfinalEq
 
 /-- Higham, 2nd ed., Chapter 13, equation (13.22):
     full recursive Eq.13.22 product witness from the base/inverse source
