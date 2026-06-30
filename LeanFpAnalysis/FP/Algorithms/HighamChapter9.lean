@@ -43342,6 +43342,87 @@ theorem higham9_5_wilkinson_source_bound_exists_of_CompletePivotGECPUTrace
       hBmax (pow_nonneg (by norm_num : (0 : ℝ) ≤ 2) (n - 1))
       hgrowth hU_diag hLU hn hn3 hL_bound
 
+/-- **Theorem 9.5 / equation (9.14)**, trace-derived complete-pivoting
+exact-certificate source bound at Wilkinson's sharp product RHS.
+
+The remaining hard source theorem is the visible premise `hsharp`: every
+recursive complete-pivoting `U` trace has growth bounded by
+`higham9_14_completePivotWilkinsonBound n`.  This wrapper consumes that
+per-trace theorem and produces the corresponding solve perturbation witness
+for the cumulative `PAQ = LU` certificate. -/
+theorem higham9_14_wilkinson_source_bound_exists_of_CompletePivotGECPUTrace_of_trace_bound
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (A U_trace : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (htrace : higham9_8_CompletePivotGECPUTrace n A U_trace)
+    (hsharp :
+      ∀ (hn : 0 < n) (A U : Fin n → Fin n → ℝ)
+        (hApos : 0 < maxEntryNorm hn A),
+        higham9_8_CompletePivotGECPUTrace n A U →
+          growthFactorEntry hn A U hApos ≤
+            higham9_14_completePivotWilkinsonBound n)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n)) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+    ∃ sigma tau : Fin n → Fin n,
+    ∃ hLU : higham9_2_CompletePermutedLUFactSpec n A L_hat U_hat sigma tau,
+      (∀ i j : Fin n, |L_hat i j| ≤ 1) ∧
+      let bP : Fin n → ℝ := fun i => b (sigma i)
+      let y_hat := fl_forwardSub fp n L_hat bP
+      let z_hat := fl_backSub fp n U_hat y_hat
+      let x_hat : Fin n → ℝ :=
+        fun j => z_hat ((Equiv.ofBijective tau hLU.1).symm j)
+      ∃ ΔA : Fin n → Fin n → ℝ,
+        (infNorm ΔA ≤
+          (↑n) ^ 2 * gamma fp (3 * n) *
+            higham9_14_completePivotWilkinsonBound n * infNorm A) ∧
+        (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  classical
+  obtain ⟨L_hat, U_hat, sigma, tau, hLU, hL_bound, hmax⟩ :=
+    higham9_8_CompletePivotGECPUTrace_exists_CompletePermutedLUFactSpec_L_bound_maxEntryNorm_le
+      htrace
+  have hAmax : 0 < maxEntryNorm hn_pos A :=
+    maxEntryNorm_pos_of_det_ne_zero hn_pos A hdet
+  have hBmax :
+      0 < maxEntryNorm hn_pos
+        (higham9_2_rowColPermutedMatrix A sigma tau) := by
+    simpa [higham9_2_rowColPermutedMatrix_maxEntryNorm hn_pos A
+        hLU.2.perm hLU.1] using hAmax
+  have htrace_growth :
+      growthFactorEntry hn_pos A U_trace hAmax ≤
+        higham9_14_completePivotWilkinsonBound n :=
+    hsharp hn_pos A U_trace hAmax htrace
+  have hBmax_eq :
+      maxEntryNorm hn_pos (higham9_2_rowColPermutedMatrix A sigma tau) =
+        maxEntryNorm hn_pos A :=
+    higham9_2_rowColPermutedMatrix_maxEntryNorm hn_pos A hLU.2.perm hLU.1
+  have hgrowth :
+      growthFactorEntry hn_pos
+          (higham9_2_rowColPermutedMatrix A sigma tau) U_hat hBmax ≤
+        higham9_14_completePivotWilkinsonBound n := by
+    unfold growthFactorEntry at htrace_growth ⊢
+    calc
+      maxEntryNorm hn_pos U_hat /
+          maxEntryNorm hn_pos (higham9_2_rowColPermutedMatrix A sigma tau)
+          = maxEntryNorm hn_pos U_hat / maxEntryNorm hn_pos A := by
+              rw [hBmax_eq]
+      _ ≤ maxEntryNorm hn_pos U_trace / maxEntryNorm hn_pos A :=
+          div_le_div_of_nonneg_right (hmax hn_pos) (le_of_lt hAmax)
+      _ ≤ higham9_14_completePivotWilkinsonBound n := htrace_growth
+  have hU_diag : ∀ i : Fin n, U_hat i i ≠ 0 :=
+    (higham9_2_completePermutedLUFactSpec_det_ne_zero_iff_pivots_ne_zero
+      hLU).mp
+      (higham9_2_rowColPermutedMatrix_det_ne_zero A hLU.2.perm hLU.1 hdet)
+  refine ⟨L_hat, U_hat, sigma, tau, hLU, hL_bound, ?_⟩
+  exact
+    higham9_5_wilkinson_source_bound_of_CompletePermutedLUFactSpec_growth
+      fp n hn_pos A L_hat U_hat sigma tau b
+      (higham9_14_completePivotWilkinsonBound n)
+      hBmax (higham9_14_completePivotWilkinsonBound_nonneg n)
+      hgrowth hU_diag hLU hn hn3 hL_bound
+
 /-- **Theorem 9.8 / equation (9.14)**, every nonsingular real input admits a
 cumulative complete-pivoting `PAQ = LU` certificate with unit-bounded lower
 multipliers, nonzero computed pivots, and the elementary certificate growth
@@ -44726,6 +44807,87 @@ theorem higham9_16_wilkinson_source_bound_exists_of_RookPivotGEUTrace
     higham9_5_wilkinson_source_bound_of_CompletePermutedLUFactSpec_growth
       fp n hn_pos A L_hat U_hat sigma tau b ((2 : ℝ) ^ (n - 1))
       hBmax (pow_nonneg (by norm_num : (0 : ℝ) ≤ 2) (n - 1))
+      hgrowth hU_diag hLU hn hn3 hL_bound
+
+/-- **Theorem 9.5 / equation (9.16)**, trace-derived rook-pivoting
+exact-certificate source bound at Foster's sharp RHS.
+
+The remaining hard source theorem is the visible premise `hsharp`: every
+recursive rook-pivoting `U` trace has growth bounded by
+`higham9_16_rookPivotFosterBound n`.  This wrapper consumes that per-trace
+theorem and produces the corresponding solve perturbation witness for the
+cumulative `PAQ = LU` certificate. -/
+theorem higham9_16_foster_source_bound_exists_of_RookPivotGEUTrace_of_trace_bound
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (A U_trace : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (htrace : higham9_16_RookPivotGEUTrace n A U_trace)
+    (hsharp :
+      ∀ (hn : 0 < n) (A U : Fin n → Fin n → ℝ)
+        (hApos : 0 < maxEntryNorm hn A),
+        higham9_16_RookPivotGEUTrace n A U →
+          growthFactorEntry hn A U hApos ≤
+            higham9_16_rookPivotFosterBound n)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n)) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+    ∃ sigma tau : Fin n → Fin n,
+    ∃ hLU : higham9_2_CompletePermutedLUFactSpec n A L_hat U_hat sigma tau,
+      (∀ i j : Fin n, |L_hat i j| ≤ 1) ∧
+      let bP : Fin n → ℝ := fun i => b (sigma i)
+      let y_hat := fl_forwardSub fp n L_hat bP
+      let z_hat := fl_backSub fp n U_hat y_hat
+      let x_hat : Fin n → ℝ :=
+        fun j => z_hat ((Equiv.ofBijective tau hLU.1).symm j)
+      ∃ ΔA : Fin n → Fin n → ℝ,
+        (infNorm ΔA ≤
+          (↑n) ^ 2 * gamma fp (3 * n) *
+            higham9_16_rookPivotFosterBound n * infNorm A) ∧
+        (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  classical
+  obtain ⟨L_hat, U_hat, sigma, tau, hLU, hL_bound, hmax⟩ :=
+    higham9_16_RookPivotGEUTrace_exists_CompletePermutedLUFactSpec_L_bound_maxEntryNorm_le
+      htrace
+  have hAmax : 0 < maxEntryNorm hn_pos A :=
+    maxEntryNorm_pos_of_det_ne_zero hn_pos A hdet
+  have hBmax :
+      0 < maxEntryNorm hn_pos
+        (higham9_2_rowColPermutedMatrix A sigma tau) := by
+    simpa [higham9_2_rowColPermutedMatrix_maxEntryNorm hn_pos A
+        hLU.2.perm hLU.1] using hAmax
+  have htrace_growth :
+      growthFactorEntry hn_pos A U_trace hAmax ≤
+        higham9_16_rookPivotFosterBound n :=
+    hsharp hn_pos A U_trace hAmax htrace
+  have hBmax_eq :
+      maxEntryNorm hn_pos (higham9_2_rowColPermutedMatrix A sigma tau) =
+        maxEntryNorm hn_pos A :=
+    higham9_2_rowColPermutedMatrix_maxEntryNorm hn_pos A hLU.2.perm hLU.1
+  have hgrowth :
+      growthFactorEntry hn_pos
+          (higham9_2_rowColPermutedMatrix A sigma tau) U_hat hBmax ≤
+        higham9_16_rookPivotFosterBound n := by
+    unfold growthFactorEntry at htrace_growth ⊢
+    calc
+      maxEntryNorm hn_pos U_hat /
+          maxEntryNorm hn_pos (higham9_2_rowColPermutedMatrix A sigma tau)
+          = maxEntryNorm hn_pos U_hat / maxEntryNorm hn_pos A := by
+              rw [hBmax_eq]
+      _ ≤ maxEntryNorm hn_pos U_trace / maxEntryNorm hn_pos A :=
+          div_le_div_of_nonneg_right (hmax hn_pos) (le_of_lt hAmax)
+      _ ≤ higham9_16_rookPivotFosterBound n := htrace_growth
+  have hU_diag : ∀ i : Fin n, U_hat i i ≠ 0 :=
+    (higham9_2_completePermutedLUFactSpec_det_ne_zero_iff_pivots_ne_zero
+      hLU).mp
+      (higham9_2_rowColPermutedMatrix_det_ne_zero A hLU.2.perm hLU.1 hdet)
+  refine ⟨L_hat, U_hat, sigma, tau, hLU, hL_bound, ?_⟩
+  exact
+    higham9_5_wilkinson_source_bound_of_CompletePermutedLUFactSpec_growth
+      fp n hn_pos A L_hat U_hat sigma tau b
+      (higham9_16_rookPivotFosterBound n)
+      hBmax (higham9_16_rookPivotFosterBound_nonneg n)
       hgrowth hU_diag hLU hn hn3 hL_bound
 
 /-- **Equation (9.16) / rook-pivoting trace support**, every nonsingular real
