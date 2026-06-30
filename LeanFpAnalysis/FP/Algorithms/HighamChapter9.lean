@@ -23365,6 +23365,64 @@ theorem higham9_15_spectralRadius_ge_one_of_nonzero_nonneg_fixedPoint
   higham9_15_spectralRadius_ge_one_of_nonzero_nonneg_le_matMulVec
     hn C x hC_nonneg hx_ne hx_nonneg (fun i => le_of_eq (hfixed i).symm)
 
+/-- **Theorem 9.15 spectral-resolvent support**.  The Barrlund--Sun
+componentwise route uses the spectral-radius contraction hypothesis
+`rho(C) < 1` to make `I - C` nonsingular before constructing the majorant
+resolvent.  This wrapper exposes the generic Chapter 7 determinant bridge in
+the Chapter 9 namespace. -/
+theorem higham9_15_matSub_id_det_ne_zero_of_spectralRadius_lt_one
+    {n : ℕ} (C : Matrix (Fin n) (Fin n) ℝ)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) < 1) :
+    (Matrix.of (matSub_id n C) : Matrix (Fin n) (Fin n) ℝ).det ≠ 0 :=
+  ch7_matSub_id_det_ne_zero_of_toLin_spectralRadius_lt_one C hrho
+
+/-- **Theorem 9.15 spectral-resolvent support**.  Under `rho(C) < 1`, the
+canonical repository inverse `nonsingInv (I - C)` is a two-sided inverse
+certificate for the real matrix `I - C`. -/
+theorem higham9_15_matSub_id_nonsingInv_isInverse_of_spectralRadius_lt_one
+    {n : ℕ} (C : Matrix (Fin n) (Fin n) ℝ)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) < 1) :
+    IsInverse n (matSub_id n C) (nonsingInv n (matSub_id n C)) :=
+  ch7_matSub_id_nonsingInv_isInverse_of_toLin_spectralRadius_lt_one C hrho
+
+/-- **Theorem 9.15 spectral-resolvent support**.  If `C` is nonnegative and
+`rho(C) < 1`, every real solution of `(I - C)w = v` with `v >= 0` is
+componentwise nonnegative.  This is the negative-part argument used to make the
+Barrlund--Sun resolvent a nonnegative majorant. -/
+theorem higham9_15_nonnegative_solution_of_spectralRadius_lt_one
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (hC_nonneg : ∀ i j : Fin n, 0 ≤ C i j)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) < 1)
+    (v w : Fin n → ℝ)
+    (hv : ∀ i : Fin n, 0 ≤ v i)
+    (hsolve : ∀ i : Fin n, w i - ∑ j : Fin n, C i j * w j = v i) :
+    ∀ i : Fin n, 0 ≤ w i :=
+  ch7_nonnegative_solution_of_nonnegative_spectralRadius_lt_one
+    hn C hC_nonneg hrho v w hv hsolve
+
+/-- **Theorem 9.15 spectral-resolvent support**.  Under the Barrlund--Sun
+majorant hypotheses `C >= 0` and `rho(C) < 1`, the repository inverse
+`nonsingInv (I-C)` is a nonnegative left-inverse certificate for `I-C`. -/
+theorem higham9_15_nonnegative_resolvent_nonsingInv_of_spectralRadius_lt_one
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (hC_nonneg : ∀ i j : Fin n, 0 ≤ C i j)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) < 1) :
+    ch7NonnegativeResolvent n C (nonsingInv n (matSub_id n C)) :=
+  ch7NonnegativeResolvent_nonsingInv_of_spectralRadius_lt_one
+    hn C hC_nonneg hrho
+
 /-- **Theorem 9.15 spectral-majorant support**.  Irreducibility upgrades a
 nonzero nonnegative right subeigenvector to a positive one, so the Chapter 7
 Collatz/Gelfand lower bound applies to nonzero nonnegative data. -/
@@ -36876,6 +36934,142 @@ theorem higham9_15_componentwise_source_bound_of_factorization_G_nonsingInv_reso
       hn A L U Linv Uinv ΔA ΔL ΔU c hLU hPert hLleft hUright hXtri
       hYtri hc_nn hc_lt hbound hself
 
+/-- **Theorem 9.15**, spectral-radius canonical-resolvent endpoint for the
+`G` componentwise route.  A nonnegative spectral contraction for `|G|`
+supplies the concrete nonnegative resolvent `nonsingInv (I - |G|)`, leaving
+only the explicit local self-majorant inequality. -/
+theorem higham9_15_componentwise_source_bound_of_factorization_G_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one
+    {n : ℕ} (hn : 0 < n)
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from
+              realRectToCMatrix
+                (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) < 1)
+    (hself :
+      ∀ i j : Fin n,
+        |higham9_27_GMatrix Linv ΔA Uinv i j| +
+            rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+              (absMatrix n (rectMatMul ΔU Uinv)) i j ≤
+          absMatrix n (higham9_27_GMatrix Linv ΔA Uinv) i j +
+            rectMatMul
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))
+              (fun r c : Fin n =>
+                |higham9_27_GMatrix Linv ΔA Uinv r c| +
+                  rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+                    (absMatrix n (rectMatMul ΔU Uinv)) r c)
+              i j) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  let Gabs : Matrix (Fin n) (Fin n) ℝ :=
+    absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)
+  have hG_nonneg : ∀ i j : Fin n, 0 ≤ Gabs i j := by
+    intro i j
+    simp [Gabs, absMatrix]
+  have hR : ch7NonnegativeResolvent n Gabs (nonsingInv n (matSub_id n Gabs)) :=
+    higham9_15_nonnegative_resolvent_nonsingInv_of_spectralRadius_lt_one
+      hn Gabs hG_nonneg (by simpa [Gabs] using hrho)
+  simpa [Gabs] using
+    higham9_15_componentwise_source_bound_of_factorization_G_resolvent_majorant
+      A L U Linv Uinv ΔA ΔL ΔU (nonsingInv n (matSub_id n Gabs))
+      hLU hPert hLleft hUright hXtri hYtri hR
+      (by
+        intro i j
+        simpa [Gabs] using hself i j)
+
+/-- **Theorem 9.15**, spectral-radius/product-majorant form of the `G`
+canonical-resolvent endpoint.  The nonlinear premise only needs to dominate
+the product term; the full self-majorant inequality is assembled here. -/
+theorem higham9_15_componentwise_source_bound_of_factorization_G_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one_product_majorant
+    {n : ℕ} (hn : 0 < n)
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from
+              realRectToCMatrix
+                (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) < 1)
+    (hquad :
+      ∀ i j : Fin n,
+        rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+            (absMatrix n (rectMatMul ΔU Uinv)) i j ≤
+          rectMatMul
+            (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))
+            (fun r c : Fin n =>
+              |higham9_27_GMatrix Linv ΔA Uinv r c| +
+                rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+                  (absMatrix n (rectMatMul ΔU Uinv)) r c)
+            i j) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  have hself :
+      ∀ i j : Fin n,
+        |higham9_27_GMatrix Linv ΔA Uinv i j| +
+            rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+              (absMatrix n (rectMatMul ΔU Uinv)) i j ≤
+          absMatrix n (higham9_27_GMatrix Linv ΔA Uinv) i j +
+            rectMatMul
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))
+              (fun r c : Fin n =>
+                |higham9_27_GMatrix Linv ΔA Uinv r c| +
+                  rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+                    (absMatrix n (rectMatMul ΔU Uinv)) r c)
+              i j := by
+    intro i j
+    simpa [absMatrix] using
+      add_le_add_left (hquad i j) |higham9_27_GMatrix Linv ΔA Uinv i j|
+  exact
+    higham9_15_componentwise_source_bound_of_factorization_G_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one
+      hn A L U Linv Uinv ΔA ΔL ΔU hLU hPert hLleft hUright hXtri
+      hYtri hrho hself
+
 /-- **Theorem 9.15**, row-sum form of the `G` canonical-resolvent endpoint.
 The source-side contraction can be supplied directly as
 `sum_j |G i j| <= c`; the wrapper builds the infinity-norm hypothesis used by
@@ -37886,6 +38080,144 @@ theorem higham9_15_componentwise_source_bound_of_factorization_Gtilde_nonsingInv
     higham9_15_componentwise_source_bound_of_factorization_Gtilde_nonsingInv_resolvent_majorant_of_infNormBound
       hn A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU c hA hPert hLleft
       hUright hXtri hYtri hc_nn hc_lt hbound hself
+
+/-- **Theorem 9.15**, spectral-radius canonical-resolvent endpoint for the
+`Gtilde` componentwise route.  A nonnegative spectral contraction for
+`|Gtilde|` supplies the concrete nonnegative resolvent
+`nonsingInv (I - |Gtilde|)`, leaving only the explicit local self-majorant
+inequality. -/
+theorem higham9_15_componentwise_source_bound_of_factorization_Gtilde_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one
+    {n : ℕ} (hn : 0 < n)
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from
+              realRectToCMatrix
+                (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) < 1)
+    (hself :
+      ∀ i j : Fin n,
+        |higham9_27_GMatrix LhatInv ΔA UhatInv i j| +
+            rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+              (absMatrix n (rectMatMul ΔU UhatInv)) i j ≤
+          absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv) i j +
+            rectMatMul
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))
+              (fun r c : Fin n =>
+                |higham9_27_GMatrix LhatInv ΔA UhatInv r c| +
+                  rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+                    (absMatrix n (rectMatMul ΔU UhatInv)) r c)
+              i j) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  let Gabs : Matrix (Fin n) (Fin n) ℝ :=
+    absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)
+  have hG_nonneg : ∀ i j : Fin n, 0 ≤ Gabs i j := by
+    intro i j
+    simp [Gabs, absMatrix]
+  have hR : ch7NonnegativeResolvent n Gabs (nonsingInv n (matSub_id n Gabs)) :=
+    higham9_15_nonnegative_resolvent_nonsingInv_of_spectralRadius_lt_one
+      hn Gabs hG_nonneg (by simpa [Gabs] using hrho)
+  simpa [Gabs] using
+    higham9_15_componentwise_source_bound_of_factorization_Gtilde_resolvent_majorant
+      A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU
+      (nonsingInv n (matSub_id n Gabs)) hA hPert hLleft hUright
+      hXtri hYtri hR
+      (by
+        intro i j
+        simpa [Gabs] using hself i j)
+
+/-- **Theorem 9.15**, spectral-radius/product-majorant form of the `Gtilde`
+canonical-resolvent endpoint.  The nonlinear premise only needs to dominate
+the product term; the full self-majorant inequality is assembled here. -/
+theorem higham9_15_componentwise_source_bound_of_factorization_Gtilde_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one_product_majorant
+    {n : ℕ} (hn : 0 < n)
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from
+              realRectToCMatrix
+                (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) < 1)
+    (hquad :
+      ∀ i j : Fin n,
+        rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+            (absMatrix n (rectMatMul ΔU UhatInv)) i j ≤
+          rectMatMul
+            (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))
+            (fun r c : Fin n =>
+              |higham9_27_GMatrix LhatInv ΔA UhatInv r c| +
+                rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+                  (absMatrix n (rectMatMul ΔU UhatInv)) r c)
+            i j) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  have hself :
+      ∀ i j : Fin n,
+        |higham9_27_GMatrix LhatInv ΔA UhatInv i j| +
+            rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+              (absMatrix n (rectMatMul ΔU UhatInv)) i j ≤
+          absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv) i j +
+            rectMatMul
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))
+              (fun r c : Fin n =>
+                |higham9_27_GMatrix LhatInv ΔA UhatInv r c| +
+                  rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+                    (absMatrix n (rectMatMul ΔU UhatInv)) r c)
+              i j := by
+    intro i j
+    simpa [absMatrix] using
+      add_le_add_left (hquad i j) |higham9_27_GMatrix LhatInv ΔA UhatInv i j|
+  exact
+    higham9_15_componentwise_source_bound_of_factorization_Gtilde_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one
+      hn A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU hA hPert hLleft
+      hUright hXtri hYtri hrho hself
 
 /-- **Theorem 9.15**, row-sum form of the `Gtilde` canonical-resolvent
 endpoint.  The source-side contraction can be supplied directly as
