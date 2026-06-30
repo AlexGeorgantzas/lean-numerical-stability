@@ -11570,6 +11570,102 @@ theorem theorem20_10_householder_AQ2_full_A_frob_perturbation_bound
       (mul_le_mul_of_nonneg_left hC_le_A hgamma_nonneg)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    generic right-hand-side perturbation for a rectangular Householder panel,
+    with the conservative accumulated RHS gamma factor exposed.
+
+    This is the orientation-independent RHS component used by the `A Q₂` and
+    column-reversed `A Q₂` paths.  It packages the QR module's explicit
+    Householder RHS backward-error theorem with the closed-growth gamma budget
+    already used in the source-facing Theorem 20.10 routes. -/
+theorem theorem20_10_householder_panel_rhs_vecNorm2_perturbation_bound_of_gammaFactor
+    {m p : ℕ} (fp : FPModel)
+    (C : Fin m → Fin p → ℝ)
+    (b : Fin m → ℝ)
+    (hpm : p ≤ m)
+    (hp : 0 < p) (hm : 0 < m)
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex m p : ℝ) *
+        fp.u ≤ 1 / 2)) :
+    ∃ Deltab : Fin m → ℝ,
+      (∀ i,
+        fl_householderQRPanel_rhs fp m p C b i =
+          matMulVec m
+            (matTranspose (fl_householderQRPanel_Q fp m p C))
+            (fun k => b k + Deltab k) i) ∧
+      vecNorm2 Deltab ≤
+        Real.sqrt (m : ℝ) *
+          (((2 : ℝ) *
+              (householderQRRhsPanelGammaClosedGrowthFactor m p : ℝ) *
+              gamma fp (p * householderConstructApplyGammaIndex m)) *
+            vecNorm2 b) := by
+  let idx : ℕ := householderQRRhsPanelGammaClosedGrowthIndex m p
+  let K : ℕ := householderConstructApplyGammaIndex m
+  let gammaCoeff : ℝ :=
+    (2 : ℝ) *
+      (householderQRRhsPanelGammaClosedGrowthFactor m p : ℝ) *
+      gamma fp (p * K)
+  have hidx_valid : gammaValid fp idx := by
+    unfold gammaValid
+    exact lt_of_le_of_lt (by simpa [idx] using hhalf) (by norm_num)
+  have hprinted_le_idx : p * K ≤ idx := by
+    change p * householderConstructApplyGammaIndex m ≤
+      householderQRRhsPanelGammaClosedGrowthIndex m p
+    rw [householderQRRhsPanelGammaClosedGrowthIndex_eq_factor_mul_printedIndex]
+    exact Nat.le_mul_of_pos_left _
+      (householderQRRhsPanelGammaClosedGrowthFactor_pos
+        (m := m) (p := p) hm)
+  have hprinted_valid : gammaValid fp (p * K) :=
+    gammaValid_mono fp hprinted_le_idx hidx_valid
+  have hbase_le_K : 11 * m + 23 ≤ K := by
+    dsimp [K, householderConstructApplyGammaIndex]
+    omega
+  have hK_le_pK : K ≤ p * K :=
+    Nat.le_mul_of_pos_left K hp
+  have hbase_valid : gammaValid fp (11 * m + 23) :=
+    gammaValid_mono fp
+      (le_trans hbase_le_K (le_trans hK_le_pK hprinted_le_idx))
+      hidx_valid
+  have hready : HouseholderQRPanelReady fp m p C :=
+    HouseholderQRPanelReady_of_global_gammaValid fp m p m C le_rfl
+      hbase_valid
+  rcases fl_householderQRPanel_rhs_explicit_vecNorm2_perturbation_bound
+      fp m p C b hready with
+    ⟨Deltab, hrep, hbound⟩
+  have hraw_le_inf :
+      householderQRRhsPanelBackwardBound fp m p C b ≤
+        gammaCoeff * infNormVec b := by
+    simpa [gammaCoeff, K] using
+      householderQRRhsPanelBackwardBound_le_gammaClosedGrowthFactor
+        fp m p C b hpm hm hhalf hready
+  have hsqrt_nonneg : 0 ≤ Real.sqrt (m : ℝ) :=
+    Real.sqrt_nonneg _
+  have hto_inf :
+      vecNorm2 Deltab ≤
+        Real.sqrt (m : ℝ) * (gammaCoeff * infNormVec b) := by
+    exact le_trans hbound
+      (mul_le_mul_of_nonneg_left hraw_le_inf hsqrt_nonneg)
+  have hgamma_nonneg : 0 ≤ gamma fp (p * K) :=
+    gamma_nonneg fp hprinted_valid
+  have hfactor_nonneg :
+      0 ≤ (householderQRRhsPanelGammaClosedGrowthFactor m p : ℝ) := by
+    positivity
+  have hgammaCoeff_nonneg : 0 ≤ gammaCoeff := by
+    dsimp [gammaCoeff]
+    exact mul_nonneg
+      (mul_nonneg (by norm_num) hfactor_nonneg) hgamma_nonneg
+  have hinf_le_vec : infNormVec b ≤ vecNorm2 b :=
+    infNormVec_le_of_abs_le b
+      (fun i => abs_coord_le_vecNorm2 b i) (vecNorm2_nonneg b)
+  have hcoeff_inf_le_vec :
+      gammaCoeff * infNormVec b ≤ gammaCoeff * vecNorm2 b :=
+    mul_le_mul_of_nonneg_left hinf_le_vec hgammaCoeff_nonneg
+  refine ⟨Deltab, hrep, ?_⟩
+  exact le_trans hto_inf
+    (by
+      simpa [gammaCoeff, K] using
+        mul_le_mul_of_nonneg_left hcoeff_inf_le_vec hsqrt_nonneg)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     concrete right-hand-side perturbation for the smaller `A Q₂`
     Householder transform used in the GQR path.
 
@@ -11746,6 +11842,19 @@ noncomputable def theorem20_10_householder_AQ2_rhs_tail
       (Fin.natAdd r i)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    trailing entries of the rounded Householder RHS transform for the
+    column-reversed `A Q₂` panel used by the constructed GQR `L₂₂` path. -/
+noncomputable def theorem20_10_householder_reversed_AQ2_rhs_tail
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) : Fin q → ℝ :=
+  fun j : Fin q =>
+    fl_householderQRPanel_rhs fp (r + q) q
+        (rectPermuteCols Fin.revPerm (gqrAQ2Block A Q)) b
+      (Fin.cast (Nat.add_comm q r) (Fin.castAdd r (Fin.rev j)))
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     conservative scalar coefficient currently proved for the rounded
     Householder RHS transform in the `A Q₂` panel. -/
 noncomputable def theorem20_10_householder_rhs_conservative_gamma
@@ -11763,6 +11872,49 @@ noncomputable def theorem20_10_householder_gammaA_conservativeRhs
     (fp : FPModel) (r p q : ℕ) : ℝ :=
   max (theorem20_10_householder_gammaA fp r p q)
     (theorem20_10_householder_rhs_conservative_gamma fp r p q)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    conservative perturbation certificate for the column-reversed `A Q₂`
+    Householder RHS tail.
+
+    The returned equality is oriented as a transformed RHS identity for the
+    active columns that become the bottom `q` columns of the constructed GQR
+    left factor. -/
+theorem theorem20_10_householder_reversed_AQ2_rhs_tail_vecNorm2_perturbation_bound_of_gammaFactor
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ)
+    (hq : 0 < q)
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2)) :
+    ∃ Deltab : Fin (r + q) → ℝ,
+      (∀ j : Fin q,
+        matMulVec (r + q)
+            (matTranspose
+              (fl_householderQRPanel_Q fp (r + q) q
+                (rectPermuteCols Fin.revPerm (gqrAQ2Block A Q))))
+            (fun k => b k + Deltab k)
+            (Fin.cast (Nat.add_comm q r) (Fin.castAdd r (Fin.rev j))) =
+          theorem20_10_householder_reversed_AQ2_rhs_tail fp A Q b j) ∧
+      vecNorm2 Deltab ≤
+        theorem20_10_householder_rhs_conservative_gamma fp r p q *
+          vecNorm2 b := by
+  let Crev : Fin (r + q) → Fin q → ℝ :=
+    rectPermuteCols Fin.revPerm (gqrAQ2Block A Q)
+  rcases
+    theorem20_10_householder_panel_rhs_vecNorm2_perturbation_bound_of_gammaFactor
+      fp Crev b (by omega) hq (by omega) hhalf with
+    ⟨Deltab, hrep, hDeltab_raw⟩
+  refine ⟨Deltab, ?_, ?_⟩
+  · intro j
+    have h :=
+      hrep
+        (Fin.cast (Nat.add_comm q r) (Fin.castAdd r (Fin.rev j)))
+    simpa [theorem20_10_householder_reversed_AQ2_rhs_tail, Crev] using h.symm
+  · simpa [theorem20_10_householder_rhs_conservative_gamma, mul_assoc]
+      using hDeltab_raw
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), rounded Householder RHS
     certificate route with the currently proved conservative RHS coefficient.
