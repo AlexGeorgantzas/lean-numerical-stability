@@ -1714,6 +1714,58 @@ theorem higham21_lemma21_2_perturbed_gram_det_ne_zero_of_abs_left_product_bound
   simpa [B] using hdetAdd
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    a componentwise Gram-perturbation estimate implies the Chapter 7 absolute
+    left-product contraction certificate used for perturbed Gram
+    nonsingularity. -/
+theorem higham21_lemma21_2_gram_left_product_infNormBound_of_componentwise_gram_bound
+    {m n : ℕ}
+    (A DeltaA2 : Fin m → Fin n → ℝ)
+    (AAT_inv E : Fin m → Fin m → ℝ)
+    (eps : ℝ)
+    (heps : 0 ≤ eps)
+    (hE : ∀ i j, 0 ≤ E i j)
+    (hDeltaG :
+      ∀ i j,
+        |undetGramPerturbation A DeltaA2 i j| ≤ eps * E i j) :
+    infNormBound m
+      (absMatrix m
+        (matMul m AAT_inv (undetGramPerturbation A DeltaA2)))
+      (eps * infNorm (ch7InverseFirstProductSensitivity m AAT_inv E)) := by
+  simpa [infNormBound] using
+    ch7_abs_left_product_infNorm_le_of_componentwise_bound
+      m AAT_inv (undetGramPerturbation A DeltaA2) E eps heps hE hDeltaG
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    componentwise source-shaped route to perturbed Gram nonsingularity.  If the
+    relative Gram perturbation is small in the Chapter 7 first-product
+    sensitivity bound, then `(A + DeltaA2)(A + DeltaA2)^T` is nonsingular. -/
+theorem higham21_lemma21_2_perturbed_gram_det_ne_zero_of_componentwise_gram_bound
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A DeltaA2 : Fin m → Fin n → ℝ)
+    (AAT_inv E : Fin m → Fin m → ℝ)
+    (eps : ℝ)
+    (heps : 0 ≤ eps)
+    (hsmall :
+      eps * infNorm (ch7InverseFirstProductSensitivity m AAT_inv E) < 1)
+    (hLeft : IsLeftInverse m (rectGram A) AAT_inv)
+    (hE : ∀ i j, 0 ≤ E i j)
+    (hDeltaG :
+      ∀ i j,
+        |undetGramPerturbation A DeltaA2 i j| ≤ eps * E i j) :
+    Matrix.det
+        (rectGram (fun i j => A i j + DeltaA2 i j) :
+          Matrix (Fin m) (Fin m) ℝ) ≠ 0 :=
+  higham21_lemma21_2_perturbed_gram_det_ne_zero_of_abs_left_product_bound
+    hm A DeltaA2 AAT_inv
+    (eps * infNorm (ch7InverseFirstProductSensitivity m AAT_inv E))
+    (mul_nonneg heps
+      (infNorm_nonneg (ch7InverseFirstProductSensitivity m AAT_inv E)))
+    hsmall hLeft
+    (higham21_lemma21_2_gram_left_product_infNormBound_of_componentwise_gram_bound
+      A DeltaA2 AAT_inv E eps heps hE hDeltaG)
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     perturbed Gram-pseudoinverse operator-bound reduction.  Bounds for `A`,
     the second perturbation `DeltaA2`, and the inverse candidate for
     `(A + DeltaA2)(A + DeltaA2)^T` imply the operator bound for the concrete
@@ -2114,6 +2166,63 @@ theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_gram_inverse_source
       higham21_lemma21_2_perturbed_gram_det_ne_zero_of_abs_left_product_bound
         hm A DeltaA2 AAT_inv c (hGramSmallNonneg hx) (hGramSmallLt hx)
         (hGramLeftInv hx) (hGramPerturbBound hx))
+    hxTranspose hsmall halpha hbeta hsigma heta halpha_le hbeta_le
+    hGramFactor_le hAOp hDeltaA1Op hDeltaA2Op hGramInvOp
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    guarded source-factor handoff with perturbed Gram nonsingularity discharged
+    from a componentwise bound on the Gram perturbation.  The remaining
+    nonzero-branch matrix-analysis obligation is the concrete operator-2 bound
+    for the perturbed Gram inverse. -/
+theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_gram_inverse_source_bounds_of_componentwise_gram_bound
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (AAT_inv E : Fin m → Fin m → ℝ)
+    (rho1 rho2 alpha beta sigma eta eps : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hGramEpsNonneg : x ≠ 0 → 0 ≤ eps)
+    (hGramSmallLt : x ≠ 0 →
+      eps * infNorm (ch7InverseFirstProductSensitivity m AAT_inv E) < 1)
+    (hGramLeftInv : x ≠ 0 → IsLeftInverse m (rectGram A) AAT_inv)
+    (hGramE : x ≠ 0 → ∀ i j, 0 ≤ E i j)
+    (hGramPerturbComponent : x ≠ 0 →
+      ∀ i j, |undetGramPerturbation A DeltaA2 i j| ≤ eps * E i j)
+    (hxTranspose : x ≠ 0 →
+      x =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : x ≠ 0 → 3 * max rho1 rho2 < 1)
+    (halpha : x ≠ 0 → 0 ≤ alpha)
+    (hbeta : x ≠ 0 → 0 ≤ beta)
+    (hsigma : x ≠ 0 → 0 ≤ sigma)
+    (heta : x ≠ 0 → 0 ≤ eta)
+    (halpha_le : x ≠ 0 → alpha ≤ rho1)
+    (hbeta_le : x ≠ 0 → beta ≤ rho2)
+    (hGramFactor_le : x ≠ 0 → (sigma + beta) * eta ≤ (1 - rho2)⁻¹)
+    (hAOp : x ≠ 0 → rectOpNorm2Le A sigma)
+    (hDeltaA1Op : x ≠ 0 → rectOpNorm2Le DeltaA1 alpha)
+    (hDeltaA2Op : x ≠ 0 → rectOpNorm2Le DeltaA2 beta)
+    (hGramInvOp : x ≠ 0 →
+      rectOpNorm2Le
+        (undetGramNonsingInv (fun i j => A i j + DeltaA2 i j))
+        eta) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j)
+      b x :=
+  higham21_lemma21_2_single_min_norm_of_nonzero_branch_gram_inverse_source_bounds
+    A x DeltaA1 DeltaA2 b y rho1 rho2 alpha beta sigma eta
+    hDeltaA1
+    (fun hx =>
+      higham21_lemma21_2_perturbed_gram_det_ne_zero_of_componentwise_gram_bound
+        hm A DeltaA2 AAT_inv E eps (hGramEpsNonneg hx)
+        (hGramSmallLt hx) (hGramLeftInv hx) (hGramE hx)
+        (hGramPerturbComponent hx))
     hxTranspose hsmall halpha hbeta hsigma heta halpha_le hbeta_le
     hGramFactor_le hAOp hDeltaA1Op hDeltaA2Op hGramInvOp
 
