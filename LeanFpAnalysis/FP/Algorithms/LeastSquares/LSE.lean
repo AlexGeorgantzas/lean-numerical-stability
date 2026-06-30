@@ -11713,6 +11713,84 @@ theorem theorem20_10_partB_certificate_of_partA_certificate
        hDeltab := hDeltab
        hDeltad := hDeltad }⟩
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), nonempty Part A
+    certificate to nonempty Part B certificate bridge.
+
+    This is the form consumed by constructed-source certificate theorems, which
+    usually return `Nonempty` certificates. -/
+theorem theorem20_10_partB_certificate_of_nonempty_partA_certificate
+    {r p q : ℕ}
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    {gammaA gammaB : ℝ}
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    (hcert :
+      Nonempty
+        (Theorem20_10PartAPerturbationCertificate A B b d xhat
+          gammaA gammaB)) :
+    Nonempty
+      (Theorem20_10PartBPerturbationCertificate A B b d xhat
+        gammaA gammaB) := by
+  rcases hcert with ⟨cert⟩
+  rcases theorem20_10_partB_certificate_of_partA_certificate
+      A B b d xhat hgammaB_nonneg cert with
+    ⟨_Deltad, _hDeltad_action, _hDeltad, hcertB⟩
+  exact hcertB
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), rounded Householder RHS
+    Part B certificate route with the currently proved conservative RHS
+    coefficient.
+
+    This reuses the constructed-source rounded-RHS Part A certificate and
+    constructs the Part B constraint perturbation `Deltad = DeltaB*xhat`.
+    It therefore does not add new rank assumptions beyond the Part A route;
+    the remaining full computed-path work is still the identification of the
+    complete rounded GQR factors and final computed vector. -/
+theorem theorem20_10_partB_certificate_of_constructed_source_householder_rhs_conservative_bound
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (gammaA gammaB : ℝ)
+    (hUfl :
+      h.U =
+        fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A h.Q))
+    (hq : 0 < q)
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    (hgammaA_ge_matrix : gamma fp q ≤ gammaA)
+    (hgammaA_ge_rhs :
+      theorem20_10_householder_rhs_conservative_gamma fp r p q ≤ gammaA)
+    (hgammaB_ge : gamma fp p ≤ gammaB)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalid2S : gammaValid fp (2 * p))
+    (hvalid2L22 : gammaValid fp (2 * q)) :
+    Nonempty
+      (Theorem20_10PartBPerturbationCertificate A B b d
+        (theorem20_10_gqr_xhat_of_transformed_tail fp h
+          (theorem20_10_householder_AQ2_rhs_tail fp A h.Q b) d)
+        gammaA gammaB) := by
+  rcases
+    theorem20_10_partA_certificate_of_constructed_source_householder_rhs_conservative_bound
+      fp h b d gammaA gammaB hUfl hq hhalf hgammaB_nonneg
+      hgammaA_ge_matrix hgammaA_ge_rhs hgammaB_ge
+      hSdiag hL22diag hvalid2S hvalid2L22 with
+    ⟨_Deltab, _hb_tail, _hDeltab, _DeltaS, _DeltaL22,
+      _hDeltaSbound, _hDeltaL22bound, _hDeltaSfrob, _hDeltaL22frob,
+      hcertA⟩
+  exact
+    theorem20_10_partB_certificate_of_nonempty_partA_certificate
+      A B b d
+      (theorem20_10_gqr_xhat_of_transformed_tail fp h
+        (theorem20_10_householder_AQ2_rhs_tail fp A h.Q b) d)
+      hgammaB_nonneg hcertA
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     concrete Householder `Bᵀ` perturbation together with the induced
     constraint right-hand-side perturbation bound.
