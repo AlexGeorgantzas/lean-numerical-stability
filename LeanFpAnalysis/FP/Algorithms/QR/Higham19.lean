@@ -6732,6 +6732,82 @@ abbrev storedSignedSequenceTwiceTrailingSeq
 abbrev storedSignedSequenceTailAlpha2 (alpha : Nat -> Real) : Nat -> Real :=
   fun t => alpha (t + 2)
 
+/-- First-two-step reflector data for a stored signed sequence.
+
+This is the reusable local contract needed by the recursive final-panel
+closure step: the first two stored reflectors of a sequence agree with the
+recursive QR normalized reflectors, their source self-dot normalizations give
+beta one, and the two determinant premises select the nonzero recursive
+branches. -/
+structure storedSignedSequenceFirstTwoReflectorData
+    (fp : FPModel) {m p : Nat}
+    (S : Nat -> Fin (m + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real) : Prop where
+  hvec0 :
+    householderTrailingActiveVector (m + 2)
+        (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) (by omega)))
+        (fun a => S 0 a (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) (by omega))))
+        (alpha 0) =
+      fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+        (panelFirstColumn (Nat.succ_pos (p + 1)) (S 0))
+  hself0 :
+    (Finset.univ : Finset (Fin (m + 2))).sum
+      (fun i =>
+        householderTrailingActiveVector (m + 2)
+            (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) (by omega)))
+            (fun a => S 0 a
+              (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) (by omega))))
+            (alpha 0) i *
+          householderTrailingActiveVector (m + 2)
+            (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) (by omega)))
+            (fun a => S 0 a
+              (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) (by omega))))
+            (alpha 0) i) =
+      2
+  hdetFirst :
+    Ne (Matrix.det
+      (qrLeadingBlock (S 0)
+        (Nat.succ_le_succ (Nat.zero_le (m + 1)))
+        (Nat.succ_pos (p + 1)) :
+        Matrix (Fin 1) (Fin 1) Real))
+      0
+  hdetTail :
+    Ne (Matrix.det
+      (qrLeadingBlock
+        (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+            (panelFirstColumn (Nat.succ_pos (p + 1)) (S 0))
+         let S0 := fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1
+            (S 0)
+         trailingPanel S0)
+        (Nat.succ_le_succ (Nat.zero_le m))
+        (Nat.succ_pos p) :
+        Matrix (Fin 1) (Fin 1) Real))
+      0
+  hvecTail :
+    (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+        (panelFirstColumn (Nat.succ_pos (p + 1)) (S 0))
+     let S0 := fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1
+        (S 0)
+     householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
+          (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))
+          (alpha 1) =
+        fl_householderNormalizedVector fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0)))
+  hselfTail :
+    (let v0 := fl_householderNormalizedVector fp (Nat.succ_pos (m + 1))
+        (panelFirstColumn (Nat.succ_pos (p + 1)) (S 0))
+     let S0 := fl_householderStoredPanelStep fp (m + 2) (p + 2) 0 v0 1
+        (S 0)
+     (Finset.univ : Finset (Fin (m + 1))).sum
+        (fun i =>
+          householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
+              (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))
+              (alpha 1) i *
+            householderTrailingActiveVector (m + 1) (0 : Fin (m + 1))
+              (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))
+              (alpha 1) i) =
+      2)
+
 /-- Recursive final-panel closure predicate for the twice-trailing tail.
 
 This is the induction-hypothesis surface required by the general
@@ -7136,6 +7212,32 @@ theorem storedSignedSequenceTwiceTrailingFinalClosed_succ_succ_of_reflector_self
       (by
         simpa [TailSeq, TailAlpha] using hTailClosed)
   simpa [TailSeq, storedSignedSequenceTwiceTrailingSeq] using hfinal
+
+/-- Recursive final-panel closure step consuming packaged first-two reflector
+data for the twice-trailing sequence.
+
+This is the theorem surface intended for the eventual arbitrary-width
+induction: after proving a uniform source lemma that constructs
+`storedSignedSequenceFirstTwoReflectorData` for every twice-trailing tail, the
+induction only needs the smaller tail-closure hypothesis. -/
+theorem storedSignedSequenceTwiceTrailingFinalClosed_succ_succ_of_firstTwoReflectorData
+    (fp : FPModel) {m p : Nat}
+    (hmn : (p + 2) + 2 <= (m + 2) + 2)
+    (A_hat : Nat -> Fin ((m + 2) + 2) -> Fin ((p + 2) + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hdata :
+      storedSignedSequenceFirstTwoReflectorData fp
+        (storedSignedSequenceTwiceTrailingSeq A_hat)
+        (storedSignedSequenceTailAlpha2 alpha))
+    (hcopy : subtractZeroExact fp)
+    (hTailClosed :
+      storedSignedSequenceTwiceTrailingFinalClosed fp (by omega)
+        (storedSignedSequenceTwiceTrailingSeq A_hat)
+        (storedSignedSequenceTailAlpha2 alpha)) :
+    storedSignedSequenceTwiceTrailingFinalClosed fp hmn A_hat alpha :=
+  storedSignedSequenceTwiceTrailingFinalClosed_succ_succ_of_reflector_self_dot
+    fp hmn A_hat alpha hdata.hvec0 hdata.hself0 hdata.hdetFirst
+    hdata.hdetTail hdata.hvecTail hdata.hselfTail hcopy hTailClosed
 
 /-- Three-column final-panel bridge from the twice-trailing one-column base
 case.
