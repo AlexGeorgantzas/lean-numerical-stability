@@ -1808,12 +1808,15 @@ Source-facing Chapter 9 wrappers:
 - `higham9_13_thresholdFactor`
 - `higham9_13_thresholdFactor_ge_one`
 - `higham9_13_thresholdFactor_nonneg`
+- `higham9_13_thresholdFactor_le_two_of_one_le`
+- `higham9_13_thresholdFactor_pow_le_two_pow_of_one_le`
 - `higham9_13_threshold_update_abs_bound`
 - `higham9_13_column_growth_by_modification_count`
 - `higham9_13_maxEntryNorm_bound_of_entry_bound`
 - `higham9_13_growthFactorEntry_bound_of_sparse_columns`
 - `higham9_13_growthFactorEntry_bound_of_column_counts`
 - `higham9_13_growthFactorEntry_bound_from_column_modifications`
+- `higham9_13_growthFactorEntry_bound_from_column_modifications_two_pow`
 - `higham_problem9_14_PrePivotedGEPP`
 - `higham9_7_PartialPivotNoInterchangeTrace_exists_LUFactSpec`
 - `higham9_7_PartialPivotNoInterchangeTrace_exists_LUFactSpec_pivots_ne_zero`
