@@ -2564,9 +2564,11 @@ theorem GQRAQTallCase.exists_of_qr_reversed_cols {r q : ℕ}
     Rounded Householder panels naturally produce a square orthogonal matrix
     `Qfull` and an upper-trapezoidal rectangular `Rhat`.  This helper extracts
     the thin top square factor and reuses
-    `GQRAQTallCase.exists_of_qr_reversed_cols` to obtain the GQR-oriented
-    `[0;L]` shape. -/
-theorem GQRAQTallCase.exists_of_square_qr_reversed_cols {r q : ℕ}
+    `GQRAQTallCase.exists_of_qr_reversed_cols_with_bottom_reversed_columns` to
+    obtain the GQR-oriented `[0;L]` shape and the concrete bottom-column
+    placement of the completed `U`. -/
+theorem GQRAQTallCase.exists_of_square_qr_reversed_cols_with_bottom_reversed_columns
+    {r q : ℕ}
     (C : Fin (r + q) → Fin q → ℝ)
     (Qfull : Fin (r + q) → Fin (r + q) → ℝ)
     (Rhat : Fin (r + q) → Fin q → ℝ)
@@ -2576,6 +2578,9 @@ theorem GQRAQTallCase.exists_of_square_qr_reversed_cols {r q : ℕ}
       matMulRect (r + q) (r + q) q Qfull Rhat) :
     ∃ U : Fin (r + q) → Fin (r + q) → ℝ,
       IsOrthogonal (r + q) U ∧
+        (∀ i j, U i (Fin.natAdd r j) =
+          Qfull i
+            (Fin.cast (Nat.add_comm q r) (Fin.castAdd r (Fin.rev j)))) ∧
         Nonempty (GQRAQTallCase r q (matMulRectLeft (matTranspose U) C)) := by
   let e : Fin (r + q) ≃ Fin (q + r) := finAddCommEquiv r q
   let C' : Fin (q + r) → Fin q → ℝ := fun i j => C (e.symm i) j
@@ -2639,7 +2644,39 @@ theorem GQRAQTallCase.exists_of_square_qr_reversed_cols {r q : ℕ}
     ext i j
     have hentry := congrFun (congrFun hthin' (e i)) j
     simpa [C', Q2, rectPermuteCols, matMulRect] using hentry
-  exact GQRAQTallCase.exists_of_qr_reversed_cols C Q2 R hQ2 hR hthin
+  rcases
+    GQRAQTallCase.exists_of_qr_reversed_cols_with_bottom_reversed_columns
+      C Q2 R hQ2 hR hthin with
+    ⟨U, hU, hUbottom, hCase⟩
+  refine ⟨U, hU, ?_, hCase⟩
+  intro i j
+  have h := hUbottom i j
+  simpa [Q2, Q2', Qfull', e, finAddCommEquiv] using h
+
+/-- Tall associated-shape construction from a square orthogonal QR-style
+    factorization of the column-reversed rectangular block.
+
+    Rounded Householder panels naturally produce a square orthogonal matrix
+    `Qfull` and an upper-trapezoidal rectangular `Rhat`.  This helper extracts
+    the thin top square factor and reuses
+    `GQRAQTallCase.exists_of_qr_reversed_cols` to obtain the GQR-oriented
+    `[0;L]` shape. -/
+theorem GQRAQTallCase.exists_of_square_qr_reversed_cols {r q : ℕ}
+    (C : Fin (r + q) → Fin q → ℝ)
+    (Qfull : Fin (r + q) → Fin (r + q) → ℝ)
+    (Rhat : Fin (r + q) → Fin q → ℝ)
+    (hQfull : IsOrthogonal (r + q) Qfull)
+    (hRhat : IsUpperTrapezoidal (r + q) q Rhat)
+    (hfactor : rectPermuteCols Fin.revPerm C =
+      matMulRect (r + q) (r + q) q Qfull Rhat) :
+    ∃ U : Fin (r + q) → Fin (r + q) → ℝ,
+      IsOrthogonal (r + q) U ∧
+        Nonempty (GQRAQTallCase r q (matMulRectLeft (matTranspose U) C)) := by
+  rcases
+    GQRAQTallCase.exists_of_square_qr_reversed_cols_with_bottom_reversed_columns
+      C Qfull Rhat hQfull hRhat hfactor with
+    ⟨U, hU, _hUbottom, hCase⟩
+  exact ⟨U, hU, hCase⟩
 
 /-- Tall associated-shape construction from exact Householder QR of the
     column-reversed block.
