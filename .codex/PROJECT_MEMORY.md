@@ -90,11 +90,19 @@ end-to-end stability rebuild is tagged as
   `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_of_pivot_right_inverse_of_det_ne_zero`
   package this sharper route as `BlockLUFactSpec` witnesses and specialize the
   determinant variants to the source-facing full inverse `nonsingInv (m*r)
-  (blockMatrixFlatFin Ablk)`.  The Schur-tail inverse comparison itself,
-  active BDD product/update data, active pivot determinant/equality table, and
-  Theorem 13.6 cited implementation estimates remain open.  Verified by focused
-  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet public lookup with
-  empty stderr, `git diff --check`, marker/conflict-marker scans, and focused
+  (blockMatrixFlatFin Ablk)`.  The Eq.13.23 companions
+  `higham13_eq13_23_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_of_product_bound_diag_update`,
+  `higham13_eq13_23_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_with_dim_factor_of_diag_update`,
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_of_product_bound_diag_update_of_pivot_right_inverse`,
+  and
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_with_dim_factor_of_diag_update_of_pivot_right_inverse`
+  compose the same plain-inverse route with the active BDD product/update
+  `rho <= 2` layer and with the dimension-aware diagonal-update layer.  The
+  Schur-tail inverse comparison itself, source-strength active BDD product/update
+  data, active pivot determinant/equality table, and Theorem 13.6 cited
+  implementation estimates remain open.  Verified by focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet public lookup with empty
+  stderr, `git diff --check`, marker/conflict-marker scans, and focused
   `#print axioms` reporting only `propext`, `Classical.choice`, and
   `Quot.sound`.
 - 2026-06-29 Algorithm 13.3 max-entry product-bound audit:
