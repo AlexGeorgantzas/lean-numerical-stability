@@ -7819,6 +7819,57 @@ theorem storedSignedSequenceTwiceTrailingSourceClosureData_one_of_tail_reflector
       hselfTailTail := hselfTailTail
       hdetTailTail := hdetTailTail }
 
+/-- One-column recursive source-tail closure data from actual stage-two
+twice-trailing stored-loop facts.
+
+This is the induction-facing wrapper around
+`storedSignedSequenceOneTailReflectorFacts_of_twice_trailing_stage_facts`: the
+remaining open task is to prove these stage-two facts from the full stored
+loop, not to assemble the recursive source-closure record by hand. -/
+theorem storedSignedSequenceTwiceTrailingSourceClosureData_one_of_twice_trailing_stage_facts
+    (fp : FPModel) {m : Nat}
+    (A_hat : Nat -> Fin (m + 1 + 2) -> Fin (1 + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecTailTail :
+      householderTrailingActiveVector (m + 1)
+          (Fin.mk 0 (Nat.succ_pos m))
+          (fun a =>
+            trailingPanel (trailingPanel (A_hat 2)) a
+              (Fin.mk 0 (Nat.succ_pos 0)))
+          (alpha 2) =
+        fl_householderNormalizedVector fp (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos 0)
+            (trailingPanel (trailingPanel (A_hat 2)))))
+    (hselfTailTail :
+      (Finset.univ : Finset (Fin (m + 1))).sum
+        (fun i =>
+          householderTrailingActiveVector (m + 1)
+              (Fin.mk 0 (Nat.succ_pos m))
+              (fun a =>
+                trailingPanel (trailingPanel (A_hat 2)) a
+                  (Fin.mk 0 (Nat.succ_pos 0)))
+              (alpha 2) i *
+            householderTrailingActiveVector (m + 1)
+              (Fin.mk 0 (Nat.succ_pos m))
+              (fun a =>
+                trailingPanel (trailingPanel (A_hat 2)) a
+                  (Fin.mk 0 (Nat.succ_pos 0)))
+              (alpha 2) i) =
+        2)
+    (hdetTailTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (trailingPanel (trailingPanel (A_hat 2)))
+          (Nat.succ_le_succ (Nat.zero_le m))
+          (Nat.succ_pos 0) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0) :
+    storedSignedSequenceTwiceTrailingSourceClosureData fp m 1 A_hat alpha :=
+  storedSignedSequenceTwiceTrailingSourceClosureData_one_of_tail_reflector_facts
+    fp A_hat alpha
+    (storedSignedSequenceOneTailReflectorFacts_of_twice_trailing_stage_facts
+      fp A_hat alpha hvecTailTail hselfTailTail hdetTailTail)
+
 /-- Two-step constructor for recursive source-tail closure facts. -/
 theorem storedSignedSequenceTwiceTrailingSourceClosureData_succ_succ_of_firstTwoTailReflectorFacts
     (fp : FPModel) (r p : Nat)
@@ -7939,6 +7990,111 @@ theorem storedSignedSequenceTwiceTrailingSourceClosureData_succ_succ_of_tail_ref
       hdetTailTailTail := hdetTailTailTail
       hvecTailTail1 := hvecTailTail1
       hselfTailTail1 := hselfTailTail1 }
+    htail
+
+/-- Two-step recursive source-tail closure data from actual stage-two and
+stage-three twice-trailing stored-loop facts.
+
+The stage-three facts are stated on the real source panel
+`trailingPanel (trailingPanel (trailingPanel (A_hat 3)))`; the internal
+packager uses the stage-two recurrence to rewrite that panel to the synthetic
+`trailingPanel S0` surface required by the recursive QR bridge. -/
+theorem storedSignedSequenceTwiceTrailingSourceClosureData_succ_succ_of_twice_trailing_stage_facts
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + (p + 2) + 2) -> Fin ((p + 2) + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall k (hk : k < (p + 2) + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (r + (p + 2) + 2) ((p + 2) + 2) k
+          (householderTrailingActiveVector (r + (p + 2) + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (by omega : (p + 2) + 2 <= r + (p + 2) + 2)))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (r + (p + 2) + 2)
+            (householderTrailingActiveVector (r + (p + 2) + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : (p + 2) + 2 <= r + (p + 2) + 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hvecTailTail0 :
+      householderTrailingActiveVector (r + (p + 2))
+          (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) (by omega)))
+          (fun a =>
+            trailingPanel (trailingPanel (A_hat 2)) a
+              (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) (by omega))))
+          (alpha 2) =
+        fl_householderNormalizedVector fp
+          (show 0 < r + (p + 2) by omega)
+          (panelFirstColumn (Nat.succ_pos (p + 1))
+            (trailingPanel (trailingPanel (A_hat 2)))))
+    (hselfTailTail0 :
+      (Finset.univ : Finset (Fin (r + (p + 2)))).sum
+        (fun i =>
+          householderTrailingActiveVector (r + (p + 2))
+              (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) (by omega)))
+              (fun a =>
+                trailingPanel (trailingPanel (A_hat 2)) a
+                  (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) (by omega))))
+              (alpha 2) i *
+            householderTrailingActiveVector (r + (p + 2))
+              (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) (by omega)))
+              (fun a =>
+                trailingPanel (trailingPanel (A_hat 2)) a
+                  (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) (by omega))))
+              (alpha 2) i) =
+        2)
+    (hdetTailTailFirst :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (trailingPanel (trailingPanel (A_hat 2)))
+          (show 1 <= r + (p + 2) by omega)
+          (Nat.succ_pos (p + 1)) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hdetTailTailTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (trailingPanel (trailingPanel (trailingPanel (A_hat 3))))
+          (show 1 <= r + (p + 1) by omega)
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hvecTailTail1 :
+      householderTrailingActiveVector (r + (p + 1))
+          (0 : Fin (r + (p + 1)))
+          (panelFirstColumn (Nat.succ_pos p)
+            (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))
+          (alpha 3) =
+        fl_householderNormalizedVector fp
+          (show 0 < r + (p + 1) by omega)
+          (panelFirstColumn (Nat.succ_pos p)
+            (trailingPanel (trailingPanel (trailingPanel (A_hat 3))))))
+    (hselfTailTail1 :
+      (Finset.univ : Finset (Fin (r + (p + 1)))).sum
+        (fun i =>
+          householderTrailingActiveVector (r + (p + 1))
+              (0 : Fin (r + (p + 1)))
+              (panelFirstColumn (Nat.succ_pos p)
+                (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))
+              (alpha 3) i *
+            householderTrailingActiveVector (r + (p + 1))
+              (0 : Fin (r + (p + 1)))
+              (panelFirstColumn (Nat.succ_pos p)
+                (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))
+              (alpha 3) i) =
+        2)
+    (htail :
+      storedSignedSequenceTwiceTrailingSourceClosureData fp r p
+        (storedSignedSequenceTwiceTrailingSeq A_hat)
+        (storedSignedSequenceTailAlpha2 alpha)) :
+    storedSignedSequenceTwiceTrailingSourceClosureData fp r (p + 2) A_hat alpha :=
+  storedSignedSequenceTwiceTrailingSourceClosureData_succ_succ_of_firstTwoTailReflectorFacts
+    fp r p A_hat alpha
+    (storedSignedSequenceFirstTwoTailReflectorFacts_of_twice_trailing_stage_facts
+      fp r p A_hat alpha hStep hvecTailTail0 hselfTailTail0
+      hdetTailTailFirst hdetTailTailTail hvecTailTail1 hselfTailTail1)
     htail
 
 /-- Raw source-tail closure facts imply the recursive closure-data contract. -/
