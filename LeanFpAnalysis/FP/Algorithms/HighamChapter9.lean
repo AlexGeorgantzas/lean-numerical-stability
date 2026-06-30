@@ -45846,6 +45846,47 @@ theorem higham9_5_wilkinson_source_bound_exists_of_CompletePivotGECPUTrace_of_de
     higham9_5_wilkinson_source_bound_exists_of_CompletePivotGECPUTrace
       fp n hn_pos A U_trace b hdet htrace hn hn3
 
+/-- **Theorem 9.5 / equation (9.14)**, determinant-only complete-pivoting
+solve wrapper at Wilkinson's sharp product RHS.
+
+This discharges the explicit complete-pivoting trace hypothesis in
+`higham9_14_wilkinson_source_bound_exists_of_CompletePivotGECPUTrace_of_trace_bound`
+using the local exact trace-existence theorem.  The remaining visible source
+premise is the sharp per-trace Wilkinson growth bound. -/
+theorem higham9_14_wilkinson_source_bound_exists_of_CompletePivotGECPUTrace_of_det_ne_zero_of_trace_bound
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (A : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hsharp :
+      ∀ (hn : 0 < n) (A U : Fin n → Fin n → ℝ)
+        (hApos : 0 < maxEntryNorm hn A),
+        higham9_8_CompletePivotGECPUTrace n A U →
+          growthFactorEntry hn A U hApos ≤
+            higham9_14_completePivotWilkinsonBound n)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n)) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+    ∃ sigma tau : Fin n → Fin n,
+    ∃ hLU : higham9_2_CompletePermutedLUFactSpec n A L_hat U_hat sigma tau,
+      (∀ i j : Fin n, |L_hat i j| ≤ 1) ∧
+      let bP : Fin n → ℝ := fun i => b (sigma i)
+      let y_hat := fl_forwardSub fp n L_hat bP
+      let z_hat := fl_backSub fp n U_hat y_hat
+      let x_hat : Fin n → ℝ :=
+        fun j => z_hat ((Equiv.ofBijective tau hLU.1).symm j)
+      ∃ ΔA : Fin n → Fin n → ℝ,
+        (infNorm ΔA ≤
+          (↑n) ^ 2 * gamma fp (3 * n) *
+            higham9_14_completePivotWilkinsonBound n * infNorm A) ∧
+        (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  obtain ⟨U_trace, htrace⟩ :=
+    higham9_8_exists_CompletePivotGECPUTrace_of_det_ne_zero (A := A) hdet
+  exact
+    higham9_14_wilkinson_source_bound_exists_of_CompletePivotGECPUTrace_of_trace_bound
+      fp n hn_pos A U_trace b hdet htrace hsharp hn hn3
+
 /-- **Equation (9.16) / Theorem 9.5**, source-facing rook-pivoting exact solve
 wrapper for every nonsingular real input at the elementary `2^(n-1)`
 trace-growth strength.
@@ -45880,6 +45921,47 @@ theorem higham9_16_wilkinson_source_bound_exists_of_RookPivotGEUTrace_of_det_ne_
   exact
     higham9_16_wilkinson_source_bound_exists_of_RookPivotGEUTrace
       fp n hn_pos A U_trace b hdet htrace hn hn3
+
+/-- **Theorem 9.5 / equation (9.16)**, determinant-only rook-pivoting solve
+wrapper at Foster's sharp RHS.
+
+This discharges the explicit rook-pivoting trace hypothesis in
+`higham9_16_foster_source_bound_exists_of_RookPivotGEUTrace_of_trace_bound`
+using the local exact trace-existence theorem.  The remaining visible source
+premise is Foster's sharp per-trace growth bound. -/
+theorem higham9_16_foster_source_bound_exists_of_RookPivotGEUTrace_of_det_ne_zero_of_trace_bound
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (A : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hsharp :
+      ∀ (hn : 0 < n) (A U : Fin n → Fin n → ℝ)
+        (hApos : 0 < maxEntryNorm hn A),
+        higham9_16_RookPivotGEUTrace n A U →
+          growthFactorEntry hn A U hApos ≤
+            higham9_16_rookPivotFosterBound n)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n)) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+    ∃ sigma tau : Fin n → Fin n,
+    ∃ hLU : higham9_2_CompletePermutedLUFactSpec n A L_hat U_hat sigma tau,
+      (∀ i j : Fin n, |L_hat i j| ≤ 1) ∧
+      let bP : Fin n → ℝ := fun i => b (sigma i)
+      let y_hat := fl_forwardSub fp n L_hat bP
+      let z_hat := fl_backSub fp n U_hat y_hat
+      let x_hat : Fin n → ℝ :=
+        fun j => z_hat ((Equiv.ofBijective tau hLU.1).symm j)
+      ∃ ΔA : Fin n → Fin n → ℝ,
+        (infNorm ΔA ≤
+          (↑n) ^ 2 * gamma fp (3 * n) *
+            higham9_16_rookPivotFosterBound n * infNorm A) ∧
+        (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  obtain ⟨U_trace, htrace⟩ :=
+    higham9_16_exists_RookPivotGEUTrace_of_det_ne_zero (A := A) hdet
+  exact
+    higham9_16_foster_source_bound_exists_of_RookPivotGEUTrace_of_trace_bound
+      fp n hn_pos A U_trace b hdet htrace hsharp hn hn3
 
 /-- **Theorem 9.10 / upper-Hessenberg GEPP trace support**, a nonsingular
 active Hessenberg trace can be extended recursively to the terminal active
