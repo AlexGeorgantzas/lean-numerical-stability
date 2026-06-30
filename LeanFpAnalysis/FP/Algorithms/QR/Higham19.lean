@@ -7509,6 +7509,122 @@ theorem storedSignedSequenceTwiceTrailingFinalClosed_of_closureData
         (ih r (storedSignedSequenceTwiceTrailingSeq A_hat)
           (storedSignedSequenceTailAlpha2 alpha) htail)
 
+/-- Source-facing final-panel bridge consuming recursive closure data.
+
+This is the arbitrary-width final-panel route with the recursive tail obligation
+expressed as `storedSignedSequenceTwiceTrailingClosureData`.  The remaining
+source work is therefore to construct that data package from the full stored
+Householder loop's reflector normalization and determinant facts. -/
+theorem
+    storedSignedSequence_final_panel_eq_qrPanel_R_of_reflector_self_dot_of_closureData
+    (fp : FPModel) (r p : Nat)
+    (A : Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hrows : 2 <= r + p + 2)
+    (hcols : 2 <= p + 2)
+    (hinit : A_hat 0 = A)
+    (hStep : forall k (hk : k < p + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (r + p + 2) (p + 2) k
+          (householderTrailingActiveVector (r + p + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (Nat.add_le_add_right (Nat.le_add_left p r) 2)))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (r + p + 2)
+            (householderTrailingActiveVector (r + p + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (Nat.add_le_add_right (Nat.le_add_left p r) 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hvec0 :
+      householderTrailingActiveVector (r + p + 2)
+          (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hrows))
+          (fun a =>
+            A_hat 0 a
+              (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hcols)))
+          (alpha 0) =
+        fl_householderNormalizedVector fp (Nat.succ_pos (r + p + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A))
+    (hself0 :
+      (Finset.univ : Finset (Fin (r + p + 2))).sum
+        (fun i =>
+          householderTrailingActiveVector (r + p + 2)
+              (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hrows))
+              (fun a =>
+                A_hat 0 a
+                  (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hcols)))
+              (alpha 0) i *
+            householderTrailingActiveVector (r + p + 2)
+              (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hrows))
+              (fun a =>
+                A_hat 0 a
+                  (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hcols)))
+              (alpha 0) i) =
+        2)
+    (hdetFirst :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le (r + p + 1)))
+          (Nat.succ_pos (p + 1)) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hdetTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (let v0 := fl_householderNormalizedVector fp
+              (Nat.succ_pos (r + p + 1))
+              (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+           let S0 := fl_householderStoredPanelStep fp
+              (r + p + 2) (p + 2) 0 v0 1 A
+           trailingPanel S0)
+          (Nat.succ_le_succ (Nat.zero_le (r + p)))
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hvecTail :
+      (let v0 := fl_householderNormalizedVector fp
+          (Nat.succ_pos (r + p + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep fp
+          (r + p + 2) (p + 2) 0 v0 1 A
+       householderTrailingActiveVector (r + p + 1) (0 : Fin (r + p + 1))
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0)) (alpha 1) =
+          fl_householderNormalizedVector fp (Nat.succ_pos (r + p))
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))))
+    (hselfTail :
+      (let v0 := fl_householderNormalizedVector fp
+          (Nat.succ_pos (r + p + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep fp
+          (r + p + 2) (p + 2) 0 v0 1 A
+       (Finset.univ : Finset (Fin (r + p + 1))).sum
+          (fun i =>
+            householderTrailingActiveVector (r + p + 1) (0 : Fin (r + p + 1))
+                (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))
+                (alpha 1) i *
+              householderTrailingActiveVector (r + p + 1) (0 : Fin (r + p + 1))
+                (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))
+                (alpha 1) i) =
+        2))
+    (hclosure :
+      storedSignedSequenceTwiceTrailingClosureData fp r p A_hat alpha)
+    (hcopy : subtractZeroExact fp) :
+    A_hat (p + 2) =
+      fl_householderQRPanel_R fp (r + p + 2) (p + 2) A := by
+  have hTailClosed :
+      storedSignedSequenceTwiceTrailingFinalClosed fp
+        (Nat.add_le_add_right (Nat.le_add_left p r) 2) A_hat alpha :=
+    storedSignedSequenceTwiceTrailingFinalClosed_of_closureData
+      fp r p A_hat alpha hclosure hcopy
+  exact
+    storedSignedSequence_final_panel_eq_qrPanel_R_of_reflector_self_dot_of_twice_trailing_closed
+      fp (Nat.add_le_add_right (Nat.le_add_left p r) 2)
+      A A_hat alpha hrows hcols hinit hStep hvec0 hself0 hdetFirst
+      hdetTail hvecTail hselfTail hcopy hTailClosed
+
 /-- Three-column instance of the named twice-trailing closure predicate.
 
 The first two steps are supplied by `storedSignedSequenceFirstTwoReflectorData`;
