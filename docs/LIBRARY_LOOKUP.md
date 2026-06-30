@@ -2386,6 +2386,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_normalized_G_split_componentwise_majorants`
 - `higham9_15_normalized_G_split_frobNorm_step_bound`
 - `higham9_15_normalized_G_residual_frobNormSqRect_le_add_product_sq`
+- `higham9_15_normalized_G_residual_frobNormSqRect_le_linear_step_sq_of_min_factor_bound`
 - `higham9_15_scalar_bound_of_le_add_mul`
 - `higham9_15_normalized_G_frobNorm_ratio_bound_of_linear_step`
 - `higham9_15_mul_le_eta_mul_max_of_min_le`
@@ -2398,6 +2399,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_normalized_Gtilde_split_frobNorm_bounds`
 - `higham9_15_normalized_Gtilde_split_componentwise_majorants`
 - `higham9_15_normalized_Gtilde_residual_frobNormSqRect_le_add_product_sq`
+- `higham9_15_normalized_Gtilde_residual_frobNormSqRect_le_linear_step_sq_of_min_factor_bound`
 - `higham9_15_positive_subeigen_scale_lt_one_of_spectralRadius_lt_one`
 - `higham9_15_exists_matMulVec_lt_of_positive_spectralRadius_lt_one`
 - `higham9_15_not_exists_positive_le_matMulVec_of_spectralRadius_lt_one`
