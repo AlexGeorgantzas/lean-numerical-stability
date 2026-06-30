@@ -11775,6 +11775,140 @@ theorem theorem20_10_householder_concrete_perturbation_components_bound
       hDeltabrep, hDeltadrep, hDeltaAbound, hDeltaBbound,
       hDeltabbound, hDeltadbound⟩
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), concrete Householder
+    component package promoted to the backward-error certificate boundary.
+
+    The verified Householder QR perturbation components already provide
+    `DeltaA`, `DeltaB`, `Deltab`, and `Deltad` with source-shaped bounds.  This
+    theorem packages those witnesses into the Part B certificate as soon as the
+    induced perturbed matrices are known to keep the source rank assumptions.
+    Thus the remaining Part B obstruction is isolated to rank preservation and
+    computed-vector identification, not to the four finite-precision component
+    bounds. -/
+theorem theorem20_10_partB_certificate_of_householder_components_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2)) :
+    ∃ (DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
+      (DeltaB : Fin p → Fin (p + q) → ℝ)
+      (Deltab : Fin (r + q) → ℝ)
+      (Deltad : Fin p → ℝ),
+      (∀ i j,
+        gqrAQ2Block (fun i j => A i j + DeltaA i j) Q i j =
+          matMulRect (r + q) (r + q) q
+            (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q))
+            (fl_householderQRPanel_R fp (r + q) q (gqrAQ2Block A Q)) i j) ∧
+      (∀ i j,
+        B i j + DeltaB i j =
+          matMulRect (p + q) (p + q) p
+            (fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B))
+            (fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)) j i) ∧
+      (∀ i,
+        fl_householderQRPanel_rhs fp (r + q) q (gqrAQ2Block A Q) b i =
+          matMulVec (r + q)
+            (matTranspose
+              (fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A Q)))
+            (fun k => b k + Deltab k) i) ∧
+      (∀ i,
+        rectMatMulVec (fun i j => B i j + DeltaB i j) xhat i =
+          rectMatMulVec B xhat i + Deltad i) ∧
+      frobNormRect DeltaA ≤
+        theorem20_10_householder_gammaA_conservativeRhs fp r p q *
+          frobNormRect A ∧
+      frobNormRect DeltaB ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        theorem20_10_householder_gammaA_conservativeRhs fp r p q *
+            vecNorm2 b +
+          theorem20_10_householder_gammaB fp r p q *
+            frobNormRect A * vecNorm2 xhat ∧
+      vecNorm2 Deltad ≤
+        theorem20_10_householder_gammaB fp r p q *
+          frobNormRect B * vecNorm2 xhat ∧
+      (LSEFullRowRank (fun i j => B i j + DeltaB i j) →
+       LSEStackedFullColumnRank
+        (fun i j => A i j + DeltaA i j)
+        (fun i j => B i j + DeltaB i j) →
+       Nonempty
+        (Theorem20_10PartBPerturbationCertificate A B b d xhat
+          (theorem20_10_householder_gammaA_conservativeRhs fp r p q)
+          (theorem20_10_householder_gammaB fp r p q))) := by
+  rcases theorem20_10_householder_concrete_perturbation_components_bound
+      fp A B Q b xhat hQ hp hq hvalidA hvalidB hhalf with
+    ⟨DeltaA, DeltaB, Deltab, Deltad, hDeltaArep, hDeltaBrep,
+      hDeltabrep, hDeltadrep, hDeltaAraw, hDeltaB, hDeltabraw,
+      hDeltad⟩
+  have hDeltaA :
+      frobNormRect DeltaA ≤
+        theorem20_10_householder_gammaA_conservativeRhs fp r p q *
+          frobNormRect A := by
+    exact le_trans hDeltaAraw
+      (mul_le_mul_of_nonneg_right
+        (le_max_left
+          (theorem20_10_householder_gammaA fp r p q)
+          (theorem20_10_householder_rhs_conservative_gamma fp r p q))
+        (frobNormRect_nonneg A))
+  have hDeltab_conservative :
+      vecNorm2 Deltab ≤
+        theorem20_10_householder_rhs_conservative_gamma fp r p q *
+          vecNorm2 b := by
+    simpa [theorem20_10_householder_rhs_conservative_gamma, mul_assoc]
+      using hDeltabraw
+  have hDeltab_first :
+      vecNorm2 Deltab ≤
+        theorem20_10_householder_gammaA_conservativeRhs fp r p q *
+          vecNorm2 b := by
+    exact le_trans hDeltab_conservative
+      (mul_le_mul_of_nonneg_right
+        (le_max_right
+          (theorem20_10_householder_gammaA fp r p q)
+          (theorem20_10_householder_rhs_conservative_gamma fp r p q))
+        (vecNorm2_nonneg b))
+  have hgammaB_nonneg :
+      0 ≤ theorem20_10_householder_gammaB fp r p q := by
+    simpa [theorem20_10_householder_gammaB] using
+      H19.Theorem19_4.gamma_tilde_nonneg fp hvalidB
+  have htail_nonneg :
+      0 ≤ theorem20_10_householder_gammaB fp r p q *
+          frobNormRect A * vecNorm2 xhat := by
+    exact mul_nonneg
+      (mul_nonneg hgammaB_nonneg (frobNormRect_nonneg A))
+      (vecNorm2_nonneg xhat)
+  have hDeltab :
+      vecNorm2 Deltab ≤
+        theorem20_10_householder_gammaA_conservativeRhs fp r p q *
+            vecNorm2 b +
+          theorem20_10_householder_gammaB fp r p q *
+            frobNormRect A * vecNorm2 xhat :=
+    le_trans hDeltab_first (le_add_of_nonneg_right htail_nonneg)
+  refine
+    ⟨DeltaA, DeltaB, Deltab, Deltad, hDeltaArep, hDeltaBrep,
+      hDeltabrep, hDeltadrep, hDeltaA, hDeltaB, hDeltab, hDeltad, ?_⟩
+  intro hB hstack
+  exact
+    ⟨{ DeltaA := DeltaA
+       DeltaB := DeltaB
+       Deltab := Deltab
+       Deltad := Deltad
+       hB := hB
+       hstack := hstack
+       hDeltaA := hDeltaA
+       hDeltaB := hDeltaB
+       hDeltab := hDeltab
+       hDeltad := hDeltad }⟩
+
 /-- Theorem 20.10(a) certificate handoff specialized to the Householder
     `gamma_tilde_mn` and `gamma_tilde_np` coefficients. -/
 theorem theorem20_10_partA_mixed_stability_of_householder_gamma_certificate
