@@ -8392,6 +8392,55 @@ theorem GeneralizedQRFactorization.exists_unique_method_solution_of_theorem20_10
       (b := fun i => b i + Deltab i)
       (d := fun i => d i + Deltad i) hB hstack
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, triangular-solve component:
+    the two lower-triangular solves in the exact GQR method have concrete
+    finite-precision perturbation witnesses for the actual `fl_forwardSub`
+    calls.
+
+    This is a computed-path dependency for Theorem 20.10.  It instantiates the
+    already proved forward-substitution backward-error theorem on the displayed
+    `S y₁ = d` and `L₂₂ y₂ = Uᵀb - L₂₁y₁` solves.  It does not yet transport
+    these factor perturbations back to a final `DeltaX` bound or identify the
+    computed `xhat` with the GQR output vector. -/
+theorem theorem20_10_gqr_forwardSub_triangular_solve_perturbation_bound
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalidS : gammaValid fp p)
+    (hvalidL22 : gammaValid fp q) :
+    let y1hat : Fin p → ℝ := fl_forwardSub fp p h.S d
+    let rhs : Fin q → ℝ :=
+      fun i : Fin q =>
+        matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i) -
+          rectMatMulVec h.L21 y1hat i
+    let y2hat : Fin q → ℝ := fl_forwardSub fp q h.L22 rhs
+    ∃ (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ),
+      (∀ i j, |DeltaS i j| ≤ gamma fp p * |h.S i j|) ∧
+      (∀ i j, |DeltaL22 i j| ≤ gamma fp q * |h.L22 i j|) ∧
+      rectMatMulVec (fun i j => h.S i j + DeltaS i j) y1hat = d ∧
+      rectMatMulVec (fun i j => h.L22 i j + DeltaL22 i j) y2hat = rhs := by
+  dsimp
+  let y1hat : Fin p → ℝ := fl_forwardSub fp p h.S d
+  let rhs : Fin q → ℝ :=
+    fun i : Fin q =>
+      matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i) -
+        rectMatMulVec h.L21 y1hat i
+  let y2hat : Fin q → ℝ := fl_forwardSub fp q h.L22 rhs
+  rcases forwardSub_backward_error fp p h.S d hSdiag h.lowerS hvalidS with
+    ⟨DeltaS, hDeltaSbound, hSeq⟩
+  rcases forwardSub_backward_error fp q h.L22 rhs hL22diag h.lowerL22
+      hvalidL22 with
+    ⟨DeltaL22, hDeltaL22bound, hL22eq⟩
+  refine ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound, ?_, ?_⟩
+  · ext i
+    simpa [rectMatMulVec, y1hat] using hSeq i
+  · ext i
+    simpa [rectMatMulVec, y2hat, rhs] using hL22eq i
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), finite-precision
     perturbation certificate for the mixed-stability branch.
 
