@@ -7090,6 +7090,78 @@ theorem higham9_5_wilkinson_source_bound_of_PermutedPartialPivotGEPPUTrace_rectR
         hT hU_diag hn hU_budget_le hL_budget_le))
     hn hn3 hL_bound
 
+/-- **Theorem 9.5 / Algorithm 9.2**, executable rectangular rounded-loop
+partial-pivoting bridge.
+
+This specializes the rectangular rounded-stage bridge to the concrete
+rectangular rounded Doolittle loop run on the row-permuted matrix `PA`.  The
+loop supplies the rounded-stage trace; the remaining nonzero-pivot,
+budget-dominance, multiplier-bound, and GEPP trace alignment hypotheses remain
+explicit. -/
+theorem higham9_5_wilkinson_source_bound_of_PermutedPartialPivotGEPPUTrace_rectRoundedLoop
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (A : Fin n → Fin n → ℝ)
+    (sigma : Fin n → Fin n)
+    (b : Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn_pos A)
+    (htrace : higham9_7_PartialPivotGEPPUTrace n A
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+        (higham9_2_rowPermutedMatrix A sigma)))
+    (hU_diag : ∀ i : Fin n,
+      higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+          (higham9_2_rowPermutedMatrix A sigma) i i ≠ 0)
+    (hsigma : IsPermutation n sigma)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          (higham9_2_rowPermutedMatrix A sigma)
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+            (higham9_2_rowPermutedMatrix A sigma))
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+            (higham9_2_rowPermutedMatrix A sigma)) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+            (higham9_2_rowPermutedMatrix A sigma) k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp
+          (higham9_2_rowPermutedMatrix A sigma)
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+            (higham9_2_rowPermutedMatrix A sigma))
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+            (higham9_2_rowPermutedMatrix A sigma)) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+              (higham9_2_rowPermutedMatrix A sigma) i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+              (higham9_2_rowPermutedMatrix A sigma) k k|)
+    (hL_bound : ∀ i j : Fin n,
+      |higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+          (higham9_2_rowPermutedMatrix A sigma) i j| ≤ 1) :
+    let L_hat := higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+      (higham9_2_rowPermutedMatrix A sigma)
+    let U_hat := higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+      (higham9_2_rowPermutedMatrix A sigma)
+    let bP : Fin n → ℝ := fun i => b (sigma i)
+    let y_hat := fl_forwardSub fp n L_hat bP
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (infNorm ΔA ≤
+        (↑n) ^ 2 * gamma fp (3 * n) *
+          (2 : ℝ) ^ (n - 1) * infNorm A) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_5_wilkinson_source_bound_of_PermutedPartialPivotGEPPUTrace_rectRoundedStageTrace
+    fp n hn_pos A
+    (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+      (higham9_2_rowPermutedMatrix A sigma))
+    (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+      (higham9_2_rowPermutedMatrix A sigma))
+    sigma b hAmax htrace hU_diag hsigma
+    (higham9_2_rectRoundedLoopStageTrace fp (Nat.le_refl n)
+      (higham9_2_rowPermutedMatrix A sigma))
+    hn hn3 hU_budget_le hL_budget_le hL_bound
+
 /-- **Theorem 9.5 / equation (9.10)**, literal-source-budget
 partial-pivoting bridge.
 
@@ -45832,6 +45904,81 @@ theorem higham9_5_wilkinson_source_bound_of_CompletePivotGECPUTrace_rectRoundedS
       (higham9_2_rectRoundedStageTrace_to_rectDenseLoopCertificate
         hT hU_diag hn hU_budget_le hL_budget_le))
     hn hn3 hL_bound
+
+/-- **Theorem 9.5 / Algorithm 9.2**, executable rectangular rounded-loop
+complete-pivoting bridge.
+
+This specializes the rectangular rounded-stage bridge to the concrete
+rectangular rounded Doolittle loop run on the row/column-permuted matrix
+`PAQ`.  The loop supplies the rounded-stage trace; the remaining nonzero-pivot,
+budget-dominance, multiplier-bound, and complete-pivoting trace alignment
+hypotheses remain explicit. -/
+theorem higham9_5_wilkinson_source_bound_of_CompletePivotGECPUTrace_rectRoundedLoop
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (A : Fin n → Fin n → ℝ)
+    (sigma tau : Fin n → Fin n)
+    (b : Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn_pos A)
+    (htrace : higham9_8_CompletePivotGECPUTrace n A
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+        (higham9_2_rowColPermutedMatrix A sigma tau)))
+    (hU_diag : ∀ i : Fin n,
+      higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+          (higham9_2_rowColPermutedMatrix A sigma tau) i i ≠ 0)
+    (hsigma : IsPermutation n sigma)
+    (htau : IsPermutation n tau)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          (higham9_2_rowColPermutedMatrix A sigma tau)
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+            (higham9_2_rowColPermutedMatrix A sigma tau))
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+            (higham9_2_rowColPermutedMatrix A sigma tau)) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+            (higham9_2_rowColPermutedMatrix A sigma tau) k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp
+          (higham9_2_rowColPermutedMatrix A sigma tau)
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+            (higham9_2_rowColPermutedMatrix A sigma tau))
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+            (higham9_2_rowColPermutedMatrix A sigma tau)) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+              (higham9_2_rowColPermutedMatrix A sigma tau) i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+              (higham9_2_rowColPermutedMatrix A sigma tau) k k|)
+    (hL_bound : ∀ i j : Fin n,
+      |higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+          (higham9_2_rowColPermutedMatrix A sigma tau) i j| ≤ 1) :
+    let L_hat := higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+      (higham9_2_rowColPermutedMatrix A sigma tau)
+    let U_hat := higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+      (higham9_2_rowColPermutedMatrix A sigma tau)
+    let bP : Fin n → ℝ := fun i => b (sigma i)
+    let y_hat := fl_forwardSub fp n L_hat bP
+    let z_hat := fl_backSub fp n U_hat y_hat
+    let x_hat : Fin n → ℝ :=
+      fun j => z_hat ((Equiv.ofBijective tau htau).symm j)
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (infNorm ΔA ≤
+        (↑n) ^ 2 * gamma fp (3 * n) *
+          (2 : ℝ) ^ (n - 1) * infNorm A) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_5_wilkinson_source_bound_of_CompletePivotGECPUTrace_rectRoundedStageTrace
+    fp n hn_pos A
+    (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+      (higham9_2_rowColPermutedMatrix A sigma tau))
+    (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+      (higham9_2_rowColPermutedMatrix A sigma tau))
+    sigma tau b hAmax htrace hU_diag hsigma htau
+    (higham9_2_rectRoundedLoopStageTrace fp (Nat.le_refl n)
+      (higham9_2_rowColPermutedMatrix A sigma tau))
+    hn hn3 hU_budget_le hL_budget_le hL_bound
 
 /-- **Theorem 9.5**, literal-source-budget complete-pivoting bridge.
 
