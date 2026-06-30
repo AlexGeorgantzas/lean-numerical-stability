@@ -6478,6 +6478,70 @@ theorem higham9_4_exactDoolittle_recurrences_lu_solve_backward_error
       hL_diag hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq hU_diag)
     hn hn3
 
+/-- **Algorithm 9.2 / Theorem 9.4**, square executable rectangular rounded-loop
+handoff to the LU-solve backward-error surface.  The loop supplies the
+`DoolittleLU` recurrence certificate; triangular solves and the explicit
+nonzero-pivot/budget hypotheses remain visible. -/
+theorem higham9_4_rectRoundedLoop_square_lu_solve_backward_error {n : ℕ}
+    (fp : FPModel) (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (hU_diag : ∀ k : Fin n,
+      higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k k ≠ 0)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) k j ≤
+        gamma fp n * |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j|)
+    (hL_budget_le : ∀ i : Fin n, ∀ k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k k|) :
+    let y_hat := fl_forwardSub fp n
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A) b
+    let x_hat := fl_backSub fp n
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) y_hat
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤ gamma fp (3 * n) *
+        ∑ k : Fin n,
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k| *
+            |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  let L := higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A
+  let U := higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A
+  have hL_diag_ne : ∀ i : Fin n, L i i ≠ 0 := by
+    intro i
+    have hdiag : L i i = 1 := by
+      simpa [L, higham9_2_rectRow] using
+        (higham9_2_rectRoundedLoopL_diag fp (Nat.le_refl n) A i)
+    rw [hdiag]
+    norm_num
+  have hU_diag' : ∀ i : Fin n, U i i ≠ 0 := by
+    intro i
+    simpa [U] using hU_diag i
+  have hU_budget_le' : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) A L U k j ≤
+        gamma fp n * |U k j| := by
+    intro k j hkj
+    simpa [L, U] using hU_budget_le k j hkj
+  have hL_budget_le' : ∀ i : Fin n, ∀ k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A L U i k ≤
+        gamma fp n * |L i k * U k k| := by
+    intro i k hki
+    simpa [L, U] using hL_budget_le i k hki
+  have hD : higham9_2_DoolittleLU n A L U fp := by
+    simpa [L, U] using
+      (higham9_2_rectRoundedLoop_square_to_DoolittleLU fp A
+        hU_diag hn hU_budget_le hL_budget_le)
+  have hBE : LUBackwardError n A L U (gamma fp n) :=
+    DoolittleLU.to_LUBackwardError n fp A L U hn hD
+  simpa [L, U] using
+    (higham9_4_lu_solve_backward_error fp n A L U b
+      hL_diag_ne hU_diag' hBE hn hn3)
+
 /-- **Problem 9.4**, row-pivoted analogue of Theorem 9.4.
 
 If the LU backward-error certificate is for `P A`, the triangular solves use
