@@ -10202,3 +10202,17 @@ These compile, but should not be treated as fully derived stability results:
   canonically.  This removes a final-pivot determinant proof-surface artifact;
   the per-tail lower comparison, structured BDD product/update theorem, and
   Theorem 13.6 implementation estimates remain open.
+
+- 2026-06-30 Eq.13.22/Eq.13.23 recursive base/inverse source chain: added
+  `Higham13Eq1322BaseInverseSourceChain`,
+  `Higham13Eq1322BaseInverseSourceChain.det_ne_zero`,
+  `Higham13Eq1322BaseInverseSourceChain.to_lowerComparisonSourceChain`,
+  `Higham13Eq1322BaseInverseSourceChain.exists_blockLUFact_eq13_22_product_exact_kappa`,
+  `Higham13Eq1322BaseInverseSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa`,
+  and
+  `Higham13Eq1322BaseInverseSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update`.
+  The chain packages the stronger route where each nonterminal Schur-tail step
+  supplies explicit base and inverse max-entry comparisons, then converts to
+  the existing direct lower-comparison source chain.  It is dependency
+  packaging only: the base/inverse comparisons, Eq.13.23 BDD product/update
+  data, and Theorem 13.6 implementation estimates remain open.
