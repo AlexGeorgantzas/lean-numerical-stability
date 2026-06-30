@@ -12502,6 +12502,43 @@ theorem higham9_5_rectPrefixRange_full_eq_rectMatMul {m n : ℕ}
         have hk : (⟨k.val, k.isLt⟩ : Fin n) = k := by ext; rfl
         simp [g, k.isLt, hk]
 
+/-- **Equation (9.5)** rectangular prefix saturation: once the natural-number
+schedule has performed at least `n` rank-one updates, all later summands are
+zero and the prefix is the full rectangular product entry. -/
+theorem higham9_5_rectPrefixRange_eq_rectMatMul_of_ge {m n : ℕ}
+    (L : Fin m → Fin n → ℝ) (U : Fin n → Fin n → ℝ)
+    (i : Fin m) (j : Fin n) {steps : ℕ} (hsteps : n ≤ steps) :
+    higham9_5_rectPrefixRange L U i j steps =
+      rectMatMul L U i j := by
+  unfold higham9_5_rectPrefixRange rectMatMul
+  let f : ℕ → ℝ := fun r =>
+    if h : r < n then L i ⟨r, h⟩ * U ⟨r, h⟩ j else 0
+  have hsubset : Finset.range n ⊆ Finset.range steps := by
+    intro r hr
+    exact Finset.mem_range.mpr
+      (Nat.lt_of_lt_of_le (Finset.mem_range.mp hr) hsteps)
+  have hsum :
+      (∑ r ∈ Finset.range steps, f r) = ∑ r ∈ Finset.range n, f r := by
+    symm
+    refine Finset.sum_subset hsubset ?_
+    intro r _ hrNotN
+    have hnot : ¬ r < n := by
+      intro hrn
+      exact hrNotN (Finset.mem_range.mpr hrn)
+    simp [f, hnot]
+  calc
+    (∑ r ∈ Finset.range steps,
+        if h : r < n then L i ⟨r, h⟩ * U ⟨r, h⟩ j else 0)
+        = ∑ r ∈ Finset.range steps, f r := rfl
+    _ = ∑ r ∈ Finset.range n, f r := hsum
+    _ = ∑ k : Fin n, f k.val := by
+        rw [← Fin.sum_univ_eq_sum_range f n]
+    _ = ∑ k : Fin n, L i k * U k j := by
+        apply Finset.sum_congr rfl
+        intro k _
+        have hk : (⟨k.val, k.isLt⟩ : Fin n) = k := by ext; rfl
+        simp [f, k.isLt, hk]
+
 /-- **Equation (9.5)** terminal rectangular residual: after all rank-one
 updates, the reduced entry is exactly the residual `A - L*U`. -/
 theorem higham9_5_rectGEReducedEntry_full_eq_sub_rectMatMul {m n : ℕ}
@@ -12512,6 +12549,16 @@ theorem higham9_5_rectGEReducedEntry_full_eq_sub_rectMatMul {m n : ℕ}
   unfold higham9_5_rectGEReducedEntry
   rw [higham9_5_rectPrefixRange_full_eq_rectMatMul]
 
+/-- **Equation (9.5)** rectangular residual saturation: after at least `n`
+rank-one updates, the reduced entry is exactly the residual `A - L*U`. -/
+theorem higham9_5_rectGEReducedEntry_eq_sub_rectMatMul_of_ge {m n : ℕ}
+    (A L : Fin m → Fin n → ℝ) (U : Fin n → Fin n → ℝ)
+    (i : Fin m) (j : Fin n) {steps : ℕ} (hsteps : n ≤ steps) :
+    higham9_5_rectGEReducedEntry A L U steps i j =
+      A i j - rectMatMul L U i j := by
+  unfold higham9_5_rectGEReducedEntry
+  rw [higham9_5_rectPrefixRange_eq_rectMatMul_of_ge L U i j hsteps]
+
 /-- **Equation (9.5)** terminal rectangular residual: for an exact rectangular
 product certificate, the reduced entry after all rank-one updates is zero. -/
 theorem higham9_5_rectGEReducedEntry_full_eq_zero_of_rectMatMul_eq {m n : ℕ}
@@ -12521,6 +12568,18 @@ theorem higham9_5_rectGEReducedEntry_full_eq_zero_of_rectMatMul_eq {m n : ℕ}
     higham9_5_rectGEReducedEntry A L U n i j = 0 := by
   rw [higham9_5_rectGEReducedEntry_full_eq_sub_rectMatMul A L U i j,
     hprod i j]
+  ring
+
+/-- **Equation (9.5)** saturated rectangular residual: for an exact rectangular
+product certificate, every reduced entry at a step count `>= n` is zero. -/
+theorem higham9_5_rectGEReducedEntry_eq_zero_of_rectMatMul_eq_of_ge
+    {m n : ℕ} {A L : Fin m → Fin n → ℝ} {U : Fin n → Fin n → ℝ}
+    {steps : ℕ} (hsteps : n ≤ steps)
+    (hprod : ∀ i j, rectMatMul L U i j = A i j)
+    (i : Fin m) (j : Fin n) :
+    higham9_5_rectGEReducedEntry A L U steps i j = 0 := by
+  rw [higham9_5_rectGEReducedEntry_eq_sub_rectMatMul_of_ge
+    A L U i j hsteps, hprod i j]
   ring
 
 /-- **Equation (9.5)** terminal residual: for an exact LU certificate, the
