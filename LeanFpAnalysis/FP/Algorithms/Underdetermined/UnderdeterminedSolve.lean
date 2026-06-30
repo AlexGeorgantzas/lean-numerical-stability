@@ -3457,6 +3457,110 @@ theorem higham21_lemma21_2_row_norm_first_product_radius_of_infNorm_bounds
   exact (mul_le_mul_of_nonneg_left hprod hrhoG).trans hRadius
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    row-norm Gram budget infinity-norm bound from uniform row-norm bounds on
+    the data matrix and perturbation majorant. -/
+theorem undetGramPerturbationRowNormBudget_infNorm_le_of_row_norm_bounds
+    {m n : ℕ}
+    (A E : Fin m → Fin n → ℝ)
+    {eps a e : ℝ}
+    (heps : 0 ≤ eps)
+    (hArow : ∀ i : Fin m, rectRowNorm2 A i ≤ a)
+    (hErow : ∀ i : Fin m, rectRowNorm2 E i ≤ e)
+    (ha : 0 ≤ a)
+    (he : 0 ≤ e) :
+    infNorm (undetGramPerturbationRowNormBudget A E eps) ≤
+      (m : ℝ) * ((n : ℝ) * (a * e + e * a + eps * e * e)) := by
+  let C : ℝ := (n : ℝ) * (a * e + e * a + eps * e * e)
+  have hinner_nonneg : 0 ≤ a * e + e * a + eps * e * e := by
+    exact add_nonneg
+      (add_nonneg (mul_nonneg ha he) (mul_nonneg he ha))
+      (mul_nonneg (mul_nonneg heps he) he)
+  have hC_nonneg : 0 ≤ C :=
+    mul_nonneg (by exact_mod_cast Nat.zero_le n) hinner_nonneg
+  have hbound_entry :
+      ∀ i j : Fin m, undetGramPerturbationRowNormBudget A E eps i j ≤ C := by
+    intro i j
+    have hAE :
+        rectRowNorm2 A i * rectRowNorm2 E j ≤ a * e :=
+      mul_le_mul (hArow i) (hErow j) (rectRowNorm2_nonneg E j) ha
+    have hEA :
+        rectRowNorm2 E i * rectRowNorm2 A j ≤ e * a :=
+      mul_le_mul (hErow i) (hArow j) (rectRowNorm2_nonneg A j) he
+    have hEE :
+        eps * rectRowNorm2 E i * rectRowNorm2 E j ≤ eps * e * e := by
+      have hEprod :
+          rectRowNorm2 E i * rectRowNorm2 E j ≤ e * e :=
+        mul_le_mul (hErow i) (hErow j) (rectRowNorm2_nonneg E j) he
+      calc
+        eps * rectRowNorm2 E i * rectRowNorm2 E j
+            = eps * (rectRowNorm2 E i * rectRowNorm2 E j) := by ring
+        _ ≤ eps * (e * e) := mul_le_mul_of_nonneg_left hEprod heps
+        _ = eps * e * e := by ring
+    have hsum :
+        rectRowNorm2 A i * rectRowNorm2 E j +
+            rectRowNorm2 E i * rectRowNorm2 A j +
+            eps * rectRowNorm2 E i * rectRowNorm2 E j ≤
+          a * e + e * a + eps * e * e :=
+      add_le_add (add_le_add hAE hEA) hEE
+    unfold undetGramPerturbationRowNormBudget C
+    exact mul_le_mul_of_nonneg_left hsum (by exact_mod_cast Nat.zero_le n)
+  apply infNorm_le_of_row_sum_le
+  · intro i
+    calc
+      ∑ j : Fin m, |undetGramPerturbationRowNormBudget A E eps i j|
+          = ∑ j : Fin m, undetGramPerturbationRowNormBudget A E eps i j := by
+            apply Finset.sum_congr rfl
+            intro j _
+            exact abs_of_nonneg
+              (undetGramPerturbationRowNormBudget_nonneg A E heps i j)
+      _ ≤ ∑ _j : Fin m, C := by
+            apply Finset.sum_le_sum
+            intro j _
+            exact hbound_entry i j
+      _ = (m : ℝ) * C := by
+            simp [C]
+      _ = (m : ℝ) * ((n : ℝ) * (a * e + e * a + eps * e * e)) := rfl
+  · exact mul_nonneg (by exact_mod_cast Nat.zero_le m) hC_nonneg
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    source-sized row-norm radius certificate from uniform row-norm bounds on
+    `A` and `E`. -/
+theorem higham21_lemma21_2_row_norm_first_product_radius_of_row_norm_bounds
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (E : Fin m → Fin n → ℝ)
+    (eps rhoG omega a e : ℝ)
+    (heps : 0 ≤ eps)
+    (hrhoG : 0 ≤ rhoG)
+    (hArow : ∀ i : Fin m, rectRowNorm2 A i ≤ a)
+    (hErow : ∀ i : Fin m, rectRowNorm2 E i ≤ e)
+    (ha : 0 ≤ a)
+    (he : 0 ≤ e)
+    (hAATInv_le : infNorm AAT_inv ≤ omega)
+    (hRadius :
+      rhoG *
+          (omega *
+            ((m : ℝ) * ((n : ℝ) * (a * e + e * a + eps * e * e)))) ≤
+        (1 / 2 : ℝ)) :
+    rhoG *
+        infNorm
+          (ch7InverseFirstProductSensitivity m AAT_inv
+            (undetGramPerturbationRowNormBudget A E eps)) ≤
+      (1 / 2 : ℝ) := by
+  have homega : 0 ≤ omega :=
+    (infNorm_nonneg AAT_inv).trans hAATInv_le
+  exact
+    higham21_lemma21_2_row_norm_first_product_radius_of_infNorm_bounds
+      hm A AAT_inv E eps rhoG omega
+      ((m : ℝ) * ((n : ℝ) * (a * e + e * a + eps * e * e)))
+      hrhoG hAATInv_le
+      (undetGramPerturbationRowNormBudget_infNorm_le_of_row_norm_bounds
+        A E heps hArow hErow ha he)
+      homega hRadius
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     row-norm source-budget handoff with the Chapter 7 radius condition reduced
     to separated infinity-norm scalar bounds. -/
 theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_row_norm_infNorm_bounds_of_componentwise_data_bound
