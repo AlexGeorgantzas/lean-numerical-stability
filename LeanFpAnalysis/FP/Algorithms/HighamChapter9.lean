@@ -12539,6 +12539,17 @@ theorem higham9_5_rectPrefixRange_eq_rectMatMul_of_ge {m n : ℕ}
         have hk : (⟨k.val, k.isLt⟩ : Fin n) = k := by ext; rfl
         simp [f, k.isLt, hk]
 
+/-- **Equation (9.5)** square prefix saturation: once the natural-number
+schedule has performed at least `n` rank-one updates, the prefix is the full
+`L*U` entry. -/
+theorem higham9_5_rectPrefixRange_eq_matMul_of_ge {n : ℕ}
+    (L U : Fin n → Fin n → ℝ) (i j : Fin n)
+    {steps : ℕ} (hsteps : n ≤ steps) :
+    higham9_5_rectPrefixRange L U i j steps =
+      ∑ k : Fin n, L i k * U k j := by
+  simpa [rectMatMul] using
+    higham9_5_rectPrefixRange_eq_rectMatMul_of_ge L U i j hsteps
+
 /-- **Equation (9.5)** terminal rectangular residual: after all rank-one
 updates, the reduced entry is exactly the residual `A - L*U`. -/
 theorem higham9_5_rectGEReducedEntry_full_eq_sub_rectMatMul {m n : ℕ}
@@ -12558,6 +12569,17 @@ theorem higham9_5_rectGEReducedEntry_eq_sub_rectMatMul_of_ge {m n : ℕ}
       A i j - rectMatMul L U i j := by
   unfold higham9_5_rectGEReducedEntry
   rw [higham9_5_rectPrefixRange_eq_rectMatMul_of_ge L U i j hsteps]
+
+/-- **Equation (9.5)** square residual saturation: after at least `n`
+rank-one updates, the reduced entry is exactly the residual `A - L*U`. -/
+theorem higham9_5_rectGEReducedEntry_eq_sub_matMul_of_ge {n : ℕ}
+    (A L U : Fin n → Fin n → ℝ) (i j : Fin n)
+    {steps : ℕ} (hsteps : n ≤ steps) :
+    higham9_5_rectGEReducedEntry A L U steps i j =
+      A i j - ∑ k : Fin n, L i k * U k j := by
+  simpa [rectMatMul] using
+    higham9_5_rectGEReducedEntry_eq_sub_rectMatMul_of_ge
+      A L U i j hsteps
 
 /-- **Equation (9.5)** terminal rectangular residual: for an exact rectangular
 product certificate, the reduced entry after all rank-one updates is zero. -/
@@ -12590,6 +12612,16 @@ theorem higham9_5_rectGEReducedEntry_full_eq_zero_of_LUFactSpec {n : ℕ}
     higham9_5_rectGEReducedEntry A L U n i j = 0 := by
   unfold higham9_5_rectGEReducedEntry
   rw [higham9_5_rectPrefixRange_full_eq_matMul L U i j, hLU.product_eq i j]
+  ring
+
+/-- **Equation (9.5)** saturated terminal residual: for an exact square LU
+certificate, every reduced entry at a step count `>= n` is zero. -/
+theorem higham9_5_rectGEReducedEntry_eq_zero_of_LUFactSpec_of_ge {n : ℕ}
+    {A L U : Fin n → Fin n → ℝ} {steps : ℕ}
+    (hsteps : n ≤ steps) (hLU : LUFactSpec n A L U) (i j : Fin n) :
+    higham9_5_rectGEReducedEntry A L U steps i j = 0 := by
+  rw [higham9_5_rectGEReducedEntry_eq_sub_matMul_of_ge A L U i j hsteps,
+    hLU.product_eq i j]
   ring
 
 /-- **Lemma 9.6**, local rank-one stage estimate: the `k`th absolute LU
