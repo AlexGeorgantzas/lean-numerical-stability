@@ -2374,9 +2374,14 @@ theorem exists_orthogonal_completion_bottom_reversed_columns {r q : ℕ}
     upper-triangular `R`, then a completed square orthogonal `U` sends the
     original block `C` to `[0; gqrReverseSquare R]`.
 
+    This strengthened form also returns the exact bottom-column placement of
+    the completion, needed later to identify transformed right-hand sides in the
+    rounded `A Q₂` path.
+
     This is the small-block row/column orientation step needed for the
     oracle-recommended `A Q₂` route in Higham's Chapter 20 GQR construction. -/
-theorem GQRAQTallCase.exists_of_qr_reversed_cols {r q : ℕ}
+theorem GQRAQTallCase.exists_of_qr_reversed_cols_with_bottom_reversed_columns
+    {r q : ℕ}
     (C : Fin (r + q) → Fin q → ℝ)
     (Q2 : Fin (r + q) → Fin q → ℝ)
     (R : Fin q → Fin q → ℝ)
@@ -2386,11 +2391,14 @@ theorem GQRAQTallCase.exists_of_qr_reversed_cols {r q : ℕ}
       matMulRect (r + q) q q Q2 R) :
     ∃ U : Fin (r + q) → Fin (r + q) → ℝ,
       IsOrthogonal (r + q) U ∧
+        (∀ i j, U i (Fin.natAdd r j) = Q2 i (Fin.rev j)) ∧
         Nonempty (GQRAQTallCase r q (matMulRectLeft (matTranspose U) C)) := by
   rcases exists_orthogonal_completion_bottom_reversed_columns Q2 hQ2 with
     ⟨U, hU, hUbottom⟩
   let L : Fin q → Fin q → ℝ := gqrReverseSquare R
-  refine ⟨U, hU, ⟨⟨L, gqrReverseSquare_lowerTriangular_of_upper hR, ?_⟩⟩⟩
+  refine
+    ⟨U, hU, hUbottom,
+      ⟨⟨L, gqrReverseSquare_lowerTriangular_of_upper hR, ?_⟩⟩⟩
   ext row col
   have hC : ∀ i : Fin (r + q),
       C i col = ∑ k : Fin q, Q2 i k * R k (Fin.rev col) := by
@@ -2525,15 +2533,42 @@ theorem GQRAQTallCase.exists_of_qr_reversed_cols {r q : ℕ}
       _ = gqrAQTallBlock (k := r) L (Fin.natAdd r row) col := by
             simp [gqrAQTallBlock, L, gqrReverseSquare]
 
+/-- Tall associated-shape construction from a QR factorization of the
+    column-reversed block.  If
+    `rectPermuteCols Fin.revPerm C = Q2 R` with orthonormal `Q2` columns and
+    upper-triangular `R`, then a completed square orthogonal `U` sends the
+    original block `C` to `[0; gqrReverseSquare R]`.
+
+    This is the public shape-only wrapper around
+    `GQRAQTallCase.exists_of_qr_reversed_cols_with_bottom_reversed_columns`. -/
+theorem GQRAQTallCase.exists_of_qr_reversed_cols {r q : ℕ}
+    (C : Fin (r + q) → Fin q → ℝ)
+    (Q2 : Fin (r + q) → Fin q → ℝ)
+    (R : Fin q → Fin q → ℝ)
+    (hQ2 : GramSchmidtOrthonormalColumns Q2)
+    (hR : IsUpperTriangular q R)
+    (hfactor : rectPermuteCols Fin.revPerm C =
+      matMulRect (r + q) q q Q2 R) :
+    ∃ U : Fin (r + q) → Fin (r + q) → ℝ,
+      IsOrthogonal (r + q) U ∧
+        Nonempty (GQRAQTallCase r q (matMulRectLeft (matTranspose U) C)) := by
+  rcases
+    GQRAQTallCase.exists_of_qr_reversed_cols_with_bottom_reversed_columns
+      C Q2 R hQ2 hR hfactor with
+    ⟨U, hU, _hUbottom, hCase⟩
+  exact ⟨U, hU, hCase⟩
+
 /-- Tall associated-shape construction from a square orthogonal QR-style
     factorization of the column-reversed rectangular block.
 
     Rounded Householder panels naturally produce a square orthogonal matrix
     `Qfull` and an upper-trapezoidal rectangular `Rhat`.  This helper extracts
     the thin top square factor and reuses
-    `GQRAQTallCase.exists_of_qr_reversed_cols` to obtain the GQR-oriented
-    `[0;L]` shape. -/
-theorem GQRAQTallCase.exists_of_square_qr_reversed_cols {r q : ℕ}
+    `GQRAQTallCase.exists_of_qr_reversed_cols_with_bottom_reversed_columns` to
+    obtain the GQR-oriented `[0;L]` shape and the concrete bottom-column
+    placement of the completed `U`. -/
+theorem GQRAQTallCase.exists_of_square_qr_reversed_cols_with_bottom_reversed_columns
+    {r q : ℕ}
     (C : Fin (r + q) → Fin q → ℝ)
     (Qfull : Fin (r + q) → Fin (r + q) → ℝ)
     (Rhat : Fin (r + q) → Fin q → ℝ)
@@ -2543,6 +2578,9 @@ theorem GQRAQTallCase.exists_of_square_qr_reversed_cols {r q : ℕ}
       matMulRect (r + q) (r + q) q Qfull Rhat) :
     ∃ U : Fin (r + q) → Fin (r + q) → ℝ,
       IsOrthogonal (r + q) U ∧
+        (∀ i j, U i (Fin.natAdd r j) =
+          Qfull i
+            (Fin.cast (Nat.add_comm q r) (Fin.castAdd r (Fin.rev j)))) ∧
         Nonempty (GQRAQTallCase r q (matMulRectLeft (matTranspose U) C)) := by
   let e : Fin (r + q) ≃ Fin (q + r) := finAddCommEquiv r q
   let C' : Fin (q + r) → Fin q → ℝ := fun i j => C (e.symm i) j
@@ -2606,7 +2644,39 @@ theorem GQRAQTallCase.exists_of_square_qr_reversed_cols {r q : ℕ}
     ext i j
     have hentry := congrFun (congrFun hthin' (e i)) j
     simpa [C', Q2, rectPermuteCols, matMulRect] using hentry
-  exact GQRAQTallCase.exists_of_qr_reversed_cols C Q2 R hQ2 hR hthin
+  rcases
+    GQRAQTallCase.exists_of_qr_reversed_cols_with_bottom_reversed_columns
+      C Q2 R hQ2 hR hthin with
+    ⟨U, hU, hUbottom, hCase⟩
+  refine ⟨U, hU, ?_, hCase⟩
+  intro i j
+  have h := hUbottom i j
+  simpa [Q2, Q2', Qfull', e, finAddCommEquiv] using h
+
+/-- Tall associated-shape construction from a square orthogonal QR-style
+    factorization of the column-reversed rectangular block.
+
+    Rounded Householder panels naturally produce a square orthogonal matrix
+    `Qfull` and an upper-trapezoidal rectangular `Rhat`.  This helper extracts
+    the thin top square factor and reuses
+    `GQRAQTallCase.exists_of_qr_reversed_cols` to obtain the GQR-oriented
+    `[0;L]` shape. -/
+theorem GQRAQTallCase.exists_of_square_qr_reversed_cols {r q : ℕ}
+    (C : Fin (r + q) → Fin q → ℝ)
+    (Qfull : Fin (r + q) → Fin (r + q) → ℝ)
+    (Rhat : Fin (r + q) → Fin q → ℝ)
+    (hQfull : IsOrthogonal (r + q) Qfull)
+    (hRhat : IsUpperTrapezoidal (r + q) q Rhat)
+    (hfactor : rectPermuteCols Fin.revPerm C =
+      matMulRect (r + q) (r + q) q Qfull Rhat) :
+    ∃ U : Fin (r + q) → Fin (r + q) → ℝ,
+      IsOrthogonal (r + q) U ∧
+        Nonempty (GQRAQTallCase r q (matMulRectLeft (matTranspose U) C)) := by
+  rcases
+    GQRAQTallCase.exists_of_square_qr_reversed_cols_with_bottom_reversed_columns
+      C Qfull Rhat hQfull hRhat hfactor with
+    ⟨U, hU, _hUbottom, hCase⟩
+  exact ⟨U, hU, hCase⟩
 
 /-- Tall associated-shape construction from exact Householder QR of the
     column-reversed block.
@@ -12269,6 +12339,95 @@ theorem theorem20_10_householder_constructed_perturbed_gqr_factorization
       Qb S U hQb hS hBQ hU hCase with
     ⟨hpert, hQeq, _hUeq, hSeq, _hL22eq⟩
   exact ⟨DeltaA, DeltaB, hDeltaBrep, hDeltaA, hDeltaB, hpert, hQeq, hSeq⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, rounded Householder
+    `Bᵀ`/`A Q₂` perturbations assembled into one perturbed GQR record, retaining
+    the concrete bottom-column placement of the constructed `U` factor.
+
+    This is the same constructed perturbed GQR route as
+    `theorem20_10_householder_constructed_perturbed_gqr_factorization`, but it
+    also exposes the relation between the bottom `q` columns of the GQR
+    left-factor and the active columns of the rounded Householder panel for the
+    column-reversed `A Q₂` block.  That relation is the local bridge needed for
+    the later transformed-RHS and returned-vector identification steps. -/
+theorem theorem20_10_householder_constructed_perturbed_gqr_factorization_with_U_tail
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q))) :
+    let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+      fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+    let Rb : Fin (p + q) → Fin p → ℝ :=
+      fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)
+    let S : Fin p → Fin p → ℝ :=
+      matTranspose (fun i : Fin p => fun j : Fin p =>
+        Rb (Fin.castAdd q i) j)
+    let Crev : Fin (r + q) → Fin q → ℝ :=
+      rectPermuteCols Fin.revPerm (gqrAQ2Block A Qb)
+    let Urev : Fin (r + q) → Fin (r + q) → ℝ :=
+      fl_householderQRPanel_Q fp (r + q) q Crev
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+      (∀ i j,
+        B i j + DeltaB i j =
+          matMulRect (p + q) (p + q) p Qb Rb j i) ∧
+      frobNormRect DeltaA ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect A ∧
+      frobNormRect DeltaB ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B ∧
+      ∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        hpert.Q = Qb ∧ hpert.S = S ∧
+          (∀ i j, hpert.U i (Fin.natAdd r j) =
+            Urev i
+              (Fin.cast (Nat.add_comm q r) (Fin.castAdd r (Fin.rev j)))) := by
+  dsimp
+  let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+    fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+  let Rb : Fin (p + q) → Fin p → ℝ :=
+    fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)
+  let S : Fin p → Fin p → ℝ :=
+    matTranspose (fun i : Fin p => fun j : Fin p =>
+      Rb (Fin.castAdd q i) j)
+  rcases theorem20_10_householder_B_transpose_perturbed_constraint_block
+      fp B hp hvalidB with
+    ⟨DeltaB, hDeltaBrep, hQb, hS, hBQ, hDeltaB⟩
+  let Crev : Fin (r + q) → Fin q → ℝ :=
+    rectPermuteCols Fin.revPerm (gqrAQ2Block A Qb)
+  let Urev : Fin (r + q) → Fin (r + q) → ℝ :=
+    fl_householderQRPanel_Q fp (r + q) q Crev
+  let Rrev : Fin (r + q) → Fin q → ℝ :=
+    fl_householderQRPanel_R fp (r + q) q Crev
+  rcases theorem20_10_householder_reversed_AQ2_full_A_source_frob_perturbation_bound
+      fp A Qb hQb hq hvalidA with
+    ⟨DeltaA, hDeltaArep, hUrev, hRrev, hDeltaA⟩
+  have hfactor :
+      rectPermuteCols Fin.revPerm
+          (gqrAQ2Block (fun i j => A i j + DeltaA i j) Qb) =
+        matMulRect (r + q) (r + q) q Urev Rrev := by
+    ext i j
+    simpa [Crev, Urev, Rrev] using hDeltaArep i j
+  rcases
+    GQRAQTallCase.exists_of_square_qr_reversed_cols_with_bottom_reversed_columns
+      (gqrAQ2Block (fun i j => A i j + DeltaA i j) Qb)
+      Urev Rrev hUrev hRrev hfactor with
+    ⟨U, hU, hUbottom, hCaseNonempty⟩
+  rcases hCaseNonempty with ⟨hCase⟩
+  rcases GeneralizedQRFactorization.exists_of_constraint_and_A_Q2_tall_case
+      (A := fun i j => A i j + DeltaA i j)
+      (B := fun i j => B i j + DeltaB i j)
+      Qb S U hQb hS hBQ hU hCase with
+    ⟨hpert, hQeq, hUeq, hSeq, _hL22eq⟩
+  refine
+    ⟨DeltaA, DeltaB, hDeltaBrep, hDeltaA, hDeltaB, hpert,
+      hQeq, hSeq, ?_⟩
+  intro i j
+  simpa [hUeq] using hUbottom i j
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     rank obstruction for the rounded Householder perturbed GQR record.

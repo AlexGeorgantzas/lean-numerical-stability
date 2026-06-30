@@ -4563,6 +4563,39 @@ theorem higham21_lemma21_2_epsE_le_tauE_of_eps_le_rhoG_product_bound
   (mul_le_mul_of_nonneg_right hEps_le_rhoG he).trans hRhoGE_le_tauE
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    scalar nonnegativity adapter for a source radius majorant. -/
+theorem higham21_lemma21_2_rhoG_nonneg_of_eps_nonneg_le
+    {eps rhoG : ℝ}
+    (hEps_nonneg : 0 ≤ eps)
+    (hEps_le_rhoG : eps ≤ rhoG) :
+    0 ≤ rhoG :=
+  hEps_nonneg.trans hEps_le_rhoG
+
+/-- A nonzero finite vector can exist only over a nonempty `Fin` domain. -/
+theorem higham21_nonempty_fin_of_vec_ne_zero {n : ℕ}
+    {x : Fin n → ℝ} (hx : x ≠ 0) :
+    Nonempty (Fin n) := by
+  cases n with
+  | zero =>
+      exfalso
+      exact hx (by funext i; exact Fin.elim0 i)
+  | succ n =>
+      exact ⟨⟨0, Nat.succ_pos n⟩⟩
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    operator-envelope nonnegativity adapter for the nonzero branch. -/
+theorem higham21_lemma21_2_op_radius_nonneg_of_vec_ne_zero
+    {m n : ℕ}
+    {x : Fin n → ℝ}
+    (E : Fin m → Fin n → ℝ)
+    {e : ℝ}
+    (hx : x ≠ 0)
+    (hEOp : rectOpNorm2Le E e) :
+    0 ≤ e := by
+  letI : Nonempty (Fin n) := higham21_nonempty_fin_of_vec_ne_zero hx
+  exact rectOpNorm2Le_radius_nonneg E hEOp
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     componentwise/operator handoff with branch-wise source product bounds
     against the two Lemma 21.2 smallness radii. -/
 theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_deltaA_components_rhoG_product_radius_bounds
@@ -4739,6 +4772,172 @@ theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_fa
     (fun hx =>
       higham21_lemma21_2_epsE_le_tauE_of_eps_le_rhoG_product_bound
         (hDataEpsLeRho hx) (he hx) (hRhoGE_le_tauE hx))
+    hSourceSize hAATInv_le hSourceFactor_le hAOp
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    common `rhoG * e` product-radius and product-size handoff with the
+    unperturbed matrix operator envelope written directly as the source-size
+    quantity `tauA`.  This is the same dependency chain as the preceding
+    wrapper with `sigma = tauA`. -/
+theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_deltaA_components_tauA_op_rhoG_product_bounds
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (E : Fin m → Fin n → ℝ)
+    (rho1 rho2 eps rhoG tauA tauE tau omega e : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hDataEpsNonneg : x ≠ 0 → 0 ≤ eps)
+    (hDataEpsLeRho : x ≠ 0 → eps ≤ rhoG)
+    (hrhoG : x ≠ 0 → 0 ≤ rhoG)
+    (hEOp : x ≠ 0 → rectOpNorm2Le E e)
+    (he : x ≠ 0 → 0 ≤ e)
+    (hRhoGE_le_min : x ≠ 0 → rhoG * e ≤ min rho1 rho2)
+    (hRhoGE_le_tauE : x ≠ 0 → rhoG * e ≤ tauE)
+    (hFlatSourceRadius : x ≠ 0 →
+      2 * (m : ℝ) * (n : ℝ) * e * tau * omega * rhoG ≤
+        (1 / 2 : ℝ))
+    (hGramLeftInv : x ≠ 0 → IsLeftInverse m (rectGram A) AAT_inv)
+    (hDataE : x ≠ 0 → ∀ i k, 0 ≤ E i k)
+    (hDeltaA1Component : x ≠ 0 →
+      ∀ i k, |DeltaA1 i k| ≤ eps * E i k)
+    (hDeltaA2Component : x ≠ 0 →
+      ∀ i k, |DeltaA2 i k| ≤ eps * E i k)
+    (hxTranspose : x ≠ 0 →
+      x =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : x ≠ 0 → 3 * max rho1 rho2 < 1)
+    (htauA : x ≠ 0 → 0 ≤ tauA)
+    (hSourceSize : tauA + tauE ≤ tau)
+    (hAATInv_le : infNorm AAT_inv ≤ omega)
+    (hSourceFactor_le :
+      2 * (m : ℝ) ^ 2 * tau * omega ≤ (1 - rho2)⁻¹)
+    (hAOp : x ≠ 0 → rectOpNorm2Le A tauA) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j)
+      b x :=
+  higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_deltaA_components_common_rhoG_product_radius_and_size_bound
+    hm A x DeltaA1 DeltaA2 b y AAT_inv E rho1 rho2 tauA eps rhoG
+    tauA tauE tau omega e hDeltaA1 hDataEpsNonneg hDataEpsLeRho
+    hrhoG hEOp he hRhoGE_le_min hRhoGE_le_tauE hFlatSourceRadius
+    hGramLeftInv hDataE hDeltaA1Component hDeltaA2Component hxTranspose
+    hsmall htauA (fun _ => le_rfl) hSourceSize hAATInv_le
+    hSourceFactor_le hAOp
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    `tauA` operator-envelope handoff with nonnegativity of the radius majorant
+    derived from the source perturbation bounds `0 <= eps` and `eps <= rhoG`. -/
+theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_deltaA_components_tauA_op_rhoG_product_bounds_of_eps_nonneg
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (E : Fin m → Fin n → ℝ)
+    (rho1 rho2 eps rhoG tauA tauE tau omega e : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hDataEpsNonneg : x ≠ 0 → 0 ≤ eps)
+    (hDataEpsLeRho : x ≠ 0 → eps ≤ rhoG)
+    (hEOp : x ≠ 0 → rectOpNorm2Le E e)
+    (he : x ≠ 0 → 0 ≤ e)
+    (hRhoGE_le_min : x ≠ 0 → rhoG * e ≤ min rho1 rho2)
+    (hRhoGE_le_tauE : x ≠ 0 → rhoG * e ≤ tauE)
+    (hFlatSourceRadius : x ≠ 0 →
+      2 * (m : ℝ) * (n : ℝ) * e * tau * omega * rhoG ≤
+        (1 / 2 : ℝ))
+    (hGramLeftInv : x ≠ 0 → IsLeftInverse m (rectGram A) AAT_inv)
+    (hDataE : x ≠ 0 → ∀ i k, 0 ≤ E i k)
+    (hDeltaA1Component : x ≠ 0 →
+      ∀ i k, |DeltaA1 i k| ≤ eps * E i k)
+    (hDeltaA2Component : x ≠ 0 →
+      ∀ i k, |DeltaA2 i k| ≤ eps * E i k)
+    (hxTranspose : x ≠ 0 →
+      x =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : x ≠ 0 → 3 * max rho1 rho2 < 1)
+    (htauA : x ≠ 0 → 0 ≤ tauA)
+    (hSourceSize : tauA + tauE ≤ tau)
+    (hAATInv_le : infNorm AAT_inv ≤ omega)
+    (hSourceFactor_le :
+      2 * (m : ℝ) ^ 2 * tau * omega ≤ (1 - rho2)⁻¹)
+    (hAOp : x ≠ 0 → rectOpNorm2Le A tauA) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j)
+      b x :=
+  higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_deltaA_components_tauA_op_rhoG_product_bounds
+    hm A x DeltaA1 DeltaA2 b y AAT_inv E rho1 rho2 eps rhoG
+    tauA tauE tau omega e hDeltaA1 hDataEpsNonneg hDataEpsLeRho
+    (fun hx =>
+      higham21_lemma21_2_rhoG_nonneg_of_eps_nonneg_le
+        (hDataEpsNonneg hx) (hDataEpsLeRho hx))
+    hEOp he hRhoGE_le_min hRhoGE_le_tauE hFlatSourceRadius
+    hGramLeftInv hDataE hDeltaA1Component hDeltaA2Component hxTranspose
+    hsmall htauA hSourceSize hAATInv_le hSourceFactor_le hAOp
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    `tauA` operator-envelope handoff with both radius nonnegativity side
+    conditions derived from the source perturbation and operator certificates. -/
+theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_deltaA_components_tauA_op_rhoG_product_bounds_of_operator_envelopes
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (E : Fin m → Fin n → ℝ)
+    (rho1 rho2 eps rhoG tauA tauE tau omega e : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hDataEpsNonneg : x ≠ 0 → 0 ≤ eps)
+    (hDataEpsLeRho : x ≠ 0 → eps ≤ rhoG)
+    (hEOp : x ≠ 0 → rectOpNorm2Le E e)
+    (hRhoGE_le_min : x ≠ 0 → rhoG * e ≤ min rho1 rho2)
+    (hRhoGE_le_tauE : x ≠ 0 → rhoG * e ≤ tauE)
+    (hFlatSourceRadius : x ≠ 0 →
+      2 * (m : ℝ) * (n : ℝ) * e * tau * omega * rhoG ≤
+        (1 / 2 : ℝ))
+    (hGramLeftInv : x ≠ 0 → IsLeftInverse m (rectGram A) AAT_inv)
+    (hDataE : x ≠ 0 → ∀ i k, 0 ≤ E i k)
+    (hDeltaA1Component : x ≠ 0 →
+      ∀ i k, |DeltaA1 i k| ≤ eps * E i k)
+    (hDeltaA2Component : x ≠ 0 →
+      ∀ i k, |DeltaA2 i k| ≤ eps * E i k)
+    (hxTranspose : x ≠ 0 →
+      x =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : x ≠ 0 → 3 * max rho1 rho2 < 1)
+    (htauA : x ≠ 0 → 0 ≤ tauA)
+    (hSourceSize : tauA + tauE ≤ tau)
+    (hAATInv_le : infNorm AAT_inv ≤ omega)
+    (hSourceFactor_le :
+      2 * (m : ℝ) ^ 2 * tau * omega ≤ (1 - rho2)⁻¹)
+    (hAOp : x ≠ 0 → rectOpNorm2Le A tauA) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j)
+      b x :=
+  higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_deltaA_components_tauA_op_rhoG_product_bounds_of_eps_nonneg
+    hm A x DeltaA1 DeltaA2 b y AAT_inv E rho1 rho2 eps rhoG
+    tauA tauE tau omega e hDeltaA1 hDataEpsNonneg hDataEpsLeRho
+    hEOp
+    (fun hx =>
+      higham21_lemma21_2_op_radius_nonneg_of_vec_ne_zero
+        E hx (hEOp hx))
+    hRhoGE_le_min hRhoGE_le_tauE hFlatSourceRadius hGramLeftInv hDataE
+    hDeltaA1Component hDeltaA2Component hxTranspose hsmall htauA
     hSourceSize hAATInv_le hSourceFactor_le hAOp
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
