@@ -2,6 +2,8 @@
 /.venv/
 /.agents/
 /.codex/skills/
+
+# Local auto-formalization workspace. Do not commit or push.
 /chapter_splitting/
 /docs/chapter13/
 /scratch/
@@ -12,4 +14,3 @@ thesis/
 references/
 References/
 /scripts/
-chapter_splitting/
