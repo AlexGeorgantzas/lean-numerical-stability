@@ -103,6 +103,7 @@
     Higham13Eq1322InverseRatioSourceChain.exists_blockLUFact_eq13_22_product_exact_kappa,
     Higham13Eq1322InverseRatioSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa,
     Higham13Eq1322InverseRatioSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update,
+    Higham13Eq1322InverseRatioSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update_reciprocal,
     Higham13Eq1322InverseRatioSourceChain.to_lowerComparisonSourceChain,
     Higham13Eq1322InverseRatioSourceChain.nonterminal_pivot_det_ne_zero,
     Higham13Eq1322InverseRatioSourceChain.pivot_det_ne_zero_of_final_right_inverse,
@@ -129,7 +130,8 @@
     Higham13Eq1322BaseInverseSourceChain.pivot_det_ne_zero_of_final_nonsingInv,
     Higham13Eq1322BaseInverseSourceChain.exists_blockLUFact_eq13_22_product_exact_kappa,
     Higham13Eq1322BaseInverseSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa,
-    Higham13Eq1322BaseInverseSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update:
+    Higham13Eq1322BaseInverseSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update,
+    Higham13Eq1322BaseInverseSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update_reciprocal:
     recursive source certificate for the stronger base/inverse comparison
     route, replacing the direct lower-comparison chain hypothesis by explicit
     per-tail base and inverse norm comparisons while reusing the inverse-ratio
@@ -159,7 +161,8 @@
     Higham13Eq1322LowerComparisonSourceChain.to_blockLUBudgetChain,
     Higham13Eq1322LowerComparisonSourceChain.exists_blockLUFact_eq13_22_product_exact_kappa,
     Higham13Eq1322LowerComparisonSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa,
-    Higham13Eq1322LowerComparisonSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update:
+    Higham13Eq1322LowerComparisonSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update,
+    Higham13Eq1322LowerComparisonSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update_reciprocal:
     recursive source certificate and chain/product lift for the direct
     lower-budget comparison route, replacing the prebuilt ambient-chain
     hypothesis by per-tail determinant, pivot, and direct comparison data; the
@@ -435,6 +438,7 @@
     higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_active_stage_bound,
     higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_local_schur_bound,
     higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_product_bound_diag_update,
+    higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_product_bound_diag_update_reciprocal,
     higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_with_dim_factor,
     higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_with_dim_factor_of_diag_update,
     higham13_problem13_4_localGrowthEnvelope_le_matrixStageHistoryGrowthMatrix_of_flat_initial_flat_stage_tail,
@@ -19862,6 +19866,57 @@ theorem
       (higham13_algorithm13_3_matrix_active_stage_bound_of_product_bound_diag_update
         hm hr A pivotInv invDiagBound stageInvDiagBound hDom hDiagBound hInitInv
         hPivotInvBound hProduct hDiagUpdate)
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.23):
+    reciprocal-table form of the product-bound/diagonal-update route to
+    `rho_n <= 2`.
+
+    The source table naturally records the active diagonal entry as the
+    reciprocal of the pivot-inverse norm.  This wrapper converts that
+    reciprocal equality into the scalar product bound required by the existing
+    source-strength matrix-product bridge, leaving the structured triple-product
+    estimate and diagonal-update table as the remaining source obligations. -/
+theorem
+    higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_product_bound_diag_update_reciprocal
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hApos : 0 < maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin A))
+    (invDiagBound : Fin m → ℝ)
+    (stageInvDiagBound : ℕ → Fin m → ℝ)
+    (hDom : IsBlockDiagDomCol m (fun i j => maxEntryNorm hr (A i j)) invDiagBound)
+    (hDiagBound : ∀ j : Fin m, invDiagBound j ≤ maxEntryNorm hr (A j j))
+    (hInitInv : ∀ j : Fin m, stageInvDiagBound 0 j = invDiagBound j)
+    (hReciprocal : SchurStageActivePivotInvReciprocal13_7
+      stageInvDiagBound (fun k => maxEntryNorm hr (pivotInv k)))
+    (hProduct : ∀ k : ℕ, ∀ hk : k < m, ∀ i j : Fin m,
+      k + 1 ≤ i.val → k + 1 ≤ j.val →
+        maxEntryNorm hr
+          (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i ⟨k, hk⟩ *
+            pivotInv k *
+            higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k ⟨k, hk⟩ j) ≤
+          maxEntryNorm hr
+            (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i ⟨k, hk⟩) *
+          maxEntryNorm hr (pivotInv k) *
+          maxEntryNorm hr
+            (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k ⟨k, hk⟩ j))
+    (hDiagUpdate : SchurStageActiveDiagLowerUpdate13_7
+      (fun k i j => maxEntryNorm hr
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j))
+      stageInvDiagBound
+      (fun k => maxEntryNorm hr (pivotInv k))) :
+    growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+        (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+          (Nat.mul_pos hm hr) hm hr A pivotInv) hApos ≤
+      2 := by
+  exact
+    higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_product_bound_diag_update
+      hm hr A pivotInv hApos invDiagBound stageInvDiagBound hDom hDiagBound
+      hInitInv
+      (higham13_theorem13_7_pivot_inverse_bound_of_reciprocal
+        stageInvDiagBound (fun k => maxEntryNorm hr (pivotInv k))
+        hReciprocal)
+      hProduct hDiagUpdate
 
 /-- Higham, 2nd ed., Chapter 13, equation (13.23):
     dimension-aware matrix-stage history growth-factor bridge.
@@ -40137,6 +40192,75 @@ theorem
             hm hr Ablk pivotInv hApos invDiagBound stageInvDiagBound
             hDom hDiagBound hInitInv hPivotInvBound hProduct hDiagUpdate)
 
+/-- Higham, 2nd ed., Chapter 13, equation (13.23):
+    reciprocal-table form of the inverse-ratio source-chain point-row product
+    witness.
+
+    This is the source-shaped companion to
+    `Higham13Eq1322InverseRatioSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update`:
+    callers may provide the active source-table reciprocal equality instead of
+    the raw pivot product bound. -/
+theorem
+    Higham13Eq1322InverseRatioSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update_reciprocal
+    {r n : ℕ} (hr : 0 < r) :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ}
+      (_hcert : Higham13Eq1322InverseRatioSourceChain hr n m Ablk pivotInv),
+      let hm : 0 < m + 1 := Nat.succ_pos m
+      let hN : 0 < (m + 1) * r := Nat.mul_pos hm hr
+      let A0 : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+        blockMatrixFlatFin Ablk
+      let Ainv : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+        nonsingInv ((m + 1) * r) A0
+      (invDiagBound : Fin (m + 1) → ℝ) →
+      (stageInvDiagBound : ℕ → Fin (m + 1) → ℝ) →
+      IsBlockDiagDomCol (m + 1)
+        (fun i j => maxEntryNorm hr (Ablk i j)) invDiagBound →
+      (∀ j : Fin (m + 1), invDiagBound j ≤ maxEntryNorm hr (Ablk j j)) →
+      (∀ j : Fin (m + 1), stageInvDiagBound 0 j = invDiagBound j) →
+      SchurStageActivePivotInvReciprocal13_7
+        stageInvDiagBound (fun k => maxEntryNorm hr (pivotInv k)) →
+      (∀ k : ℕ, ∀ hk : k < m + 1, ∀ i j : Fin (m + 1),
+        k + 1 ≤ i.val → k + 1 ≤ j.val →
+          maxEntryNorm hr
+            (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k i
+              ⟨k, hk⟩ *
+              pivotInv k *
+              higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+                ⟨k, hk⟩ j) ≤
+            maxEntryNorm hr
+              (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k i
+                ⟨k, hk⟩) *
+            maxEntryNorm hr (pivotInv k) *
+            maxEntryNorm hr
+              (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+                ⟨k, hk⟩ j)) →
+      SchurStageActiveDiagLowerUpdate13_7
+        (fun k i j => maxEntryNorm hr
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k i j))
+        stageInvDiagBound
+        (fun k => maxEntryNorm hr (pivotInv k)) →
+      ∃ L U : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ,
+        BlockLUFactSpec (m + 1) r Ablk L U ∧
+          blockMaxNorm (Nat.succ_pos m) hr L *
+              blockMaxNorm (Nat.succ_pos m) hr U ≤
+            8 * (n : ℝ) *
+              (maxEntryNormRect hN hN A0 * maxEntryNormRect hN hN Ainv) *
+              maxEntryNormRect hN hN A0 := by
+  intro m Ablk pivotInv hcert
+  dsimp only
+  intro invDiagBound stageInvDiagBound hDom hDiagBound hInitInv
+    hReciprocal hProduct hDiagUpdate
+  exact
+    Higham13Eq1322InverseRatioSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update
+      (r := r) (n := n) hr hcert invDiagBound stageInvDiagBound
+      hDom hDiagBound hInitInv
+      (higham13_theorem13_7_pivot_inverse_bound_of_reciprocal
+        stageInvDiagBound (fun k => maxEntryNorm hr (pivotInv k))
+        hReciprocal)
+      hProduct hDiagUpdate
+
 /-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
     recursive source certificate for the direct lower-budget route.
 
@@ -40733,6 +40857,74 @@ theorem
           higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_product_bound_diag_update
             hm hr Ablk pivotInv hApos invDiagBound stageInvDiagBound
             hDom hDiagBound hInitInv hPivotInvBound hProduct hDiagUpdate)
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.23):
+    reciprocal-table form of the direct lower-comparison source-chain
+    point-row product witness.
+
+    This wrapper keeps the source table in its natural reciprocal form and
+    derives the raw pivot product bound internally before invoking the existing
+    product-bound/diagonal-update surface. -/
+theorem
+    Higham13Eq1322LowerComparisonSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update_reciprocal
+    {r n : ℕ} (hr : 0 < r) :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ}
+      (_hcert : Higham13Eq1322LowerComparisonSourceChain hr n m Ablk pivotInv),
+      let hm : 0 < m + 1 := Nat.succ_pos m
+      let hN : 0 < (m + 1) * r := Nat.mul_pos hm hr
+      let A0 : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+        blockMatrixFlatFin Ablk
+      let Ainv : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+        nonsingInv ((m + 1) * r) A0
+      (invDiagBound : Fin (m + 1) → ℝ) →
+      (stageInvDiagBound : ℕ → Fin (m + 1) → ℝ) →
+      IsBlockDiagDomCol (m + 1)
+        (fun i j => maxEntryNorm hr (Ablk i j)) invDiagBound →
+      (∀ j : Fin (m + 1), invDiagBound j ≤ maxEntryNorm hr (Ablk j j)) →
+      (∀ j : Fin (m + 1), stageInvDiagBound 0 j = invDiagBound j) →
+      SchurStageActivePivotInvReciprocal13_7
+        stageInvDiagBound (fun k => maxEntryNorm hr (pivotInv k)) →
+      (∀ k : ℕ, ∀ hk : k < m + 1, ∀ i j : Fin (m + 1),
+        k + 1 ≤ i.val → k + 1 ≤ j.val →
+          maxEntryNorm hr
+            (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k i
+              ⟨k, hk⟩ *
+              pivotInv k *
+              higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+                ⟨k, hk⟩ j) ≤
+            maxEntryNorm hr
+              (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k i
+                ⟨k, hk⟩) *
+            maxEntryNorm hr (pivotInv k) *
+            maxEntryNorm hr
+              (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+                ⟨k, hk⟩ j)) →
+      SchurStageActiveDiagLowerUpdate13_7
+        (fun k i j => maxEntryNorm hr
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k i j))
+        stageInvDiagBound
+        (fun k => maxEntryNorm hr (pivotInv k)) →
+      ∃ L U : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ,
+        BlockLUFactSpec (m + 1) r Ablk L U ∧
+          blockMaxNorm (Nat.succ_pos m) hr L *
+              blockMaxNorm (Nat.succ_pos m) hr U ≤
+            8 * (n : ℝ) *
+              (maxEntryNormRect hN hN A0 * maxEntryNormRect hN hN Ainv) *
+              maxEntryNormRect hN hN A0 := by
+  intro m Ablk pivotInv hcert
+  dsimp only
+  intro invDiagBound stageInvDiagBound hDom hDiagBound hInitInv
+    hReciprocal hProduct hDiagUpdate
+  exact
+    Higham13Eq1322LowerComparisonSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update
+      (r := r) (n := n) hr hcert invDiagBound stageInvDiagBound
+      hDom hDiagBound hInitInv
+      (higham13_theorem13_7_pivot_inverse_bound_of_reciprocal
+        stageInvDiagBound (fun k => maxEntryNorm hr (pivotInv k))
+        hReciprocal)
+      hProduct hDiagUpdate
 
 /-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
     the inverse-ratio source certificate is a specialization of the direct
@@ -41565,6 +41757,74 @@ theorem
     Higham13BlockLUBudgetChain.exists_blockLUFact_eq13_23_product_exact_kappa
       (r := r) hr (hN := hN) (A0 := A0) (G := G) (Ainv := Ainv)
       hApos n hchain hRho_le_two
+
+/-- Higham, 2nd ed., Chapter 13, equation (13.23):
+    reciprocal-table form of the base/inverse source-chain point-row product
+    witness.
+
+    The base/inverse comparisons, structured product estimate, and diagonal
+    update remain explicit source obligations; the active pivot table may now
+    be supplied as the reciprocal equality used in the printed proof chain. -/
+theorem
+    Higham13Eq1322BaseInverseSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update_reciprocal
+    {r n : ℕ} (hr : 0 < r) :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ}
+      (_hcert : Higham13Eq1322BaseInverseSourceChain hr n m Ablk pivotInv),
+      let hm : 0 < m + 1 := Nat.succ_pos m
+      let hN : 0 < (m + 1) * r := Nat.mul_pos hm hr
+      let A0 : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+        blockMatrixFlatFin Ablk
+      let Ainv : Fin ((m + 1) * r) → Fin ((m + 1) * r) → ℝ :=
+        nonsingInv ((m + 1) * r) A0
+      (invDiagBound : Fin (m + 1) → ℝ) →
+      (stageInvDiagBound : ℕ → Fin (m + 1) → ℝ) →
+      IsBlockDiagDomCol (m + 1)
+        (fun i j => maxEntryNorm hr (Ablk i j)) invDiagBound →
+      (∀ j : Fin (m + 1), invDiagBound j ≤ maxEntryNorm hr (Ablk j j)) →
+      (∀ j : Fin (m + 1), stageInvDiagBound 0 j = invDiagBound j) →
+      SchurStageActivePivotInvReciprocal13_7
+        stageInvDiagBound (fun k => maxEntryNorm hr (pivotInv k)) →
+      (∀ k : ℕ, ∀ hk : k < m + 1, ∀ i j : Fin (m + 1),
+        k + 1 ≤ i.val → k + 1 ≤ j.val →
+          maxEntryNorm hr
+            (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k i
+              ⟨k, hk⟩ *
+              pivotInv k *
+              higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+                ⟨k, hk⟩ j) ≤
+            maxEntryNorm hr
+              (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k i
+                ⟨k, hk⟩) *
+            maxEntryNorm hr (pivotInv k) *
+            maxEntryNorm hr
+              (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+                ⟨k, hk⟩ j)) →
+      SchurStageActiveDiagLowerUpdate13_7
+        (fun k i j => maxEntryNorm hr
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k i j))
+        stageInvDiagBound
+        (fun k => maxEntryNorm hr (pivotInv k)) →
+      ∃ L U : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ,
+        BlockLUFactSpec (m + 1) r Ablk L U ∧
+          blockMaxNorm (Nat.succ_pos m) hr L *
+              blockMaxNorm (Nat.succ_pos m) hr U ≤
+            8 * (n : ℝ) *
+              (maxEntryNormRect hN hN A0 * maxEntryNormRect hN hN Ainv) *
+              maxEntryNormRect hN hN A0 := by
+  intro m Ablk pivotInv hcert
+  dsimp only
+  intro invDiagBound stageInvDiagBound hDom hDiagBound hInitInv
+    hReciprocal hProduct hDiagUpdate
+  exact
+    Higham13Eq1322BaseInverseSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update
+      (r := r) (n := n) hr hcert invDiagBound stageInvDiagBound
+      hDom hDiagBound hInitInv
+      (higham13_theorem13_7_pivot_inverse_bound_of_reciprocal
+        stageInvDiagBound (fun k => maxEntryNorm hr (pivotInv k))
+        hReciprocal)
+      hProduct hDiagUpdate
 
 /-- Higham, 2nd ed., Chapter 13, equation (13.22):
     uniform-flat determinant-nonzero successor product witness from an ambient
