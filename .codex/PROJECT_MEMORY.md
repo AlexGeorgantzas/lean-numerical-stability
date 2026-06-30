@@ -10139,3 +10139,16 @@ These compile, but should not be treated as fully derived stability results:
   cleanup for the Problem 13.4 source-chain route; the per-tail direct
   lower-budget comparison, structured product/update data, and Eq.13.23
   `rho <= 2` theorem remain open.
+
+- 2026-06-30 Eq.13.22/Eq.13.23 pivot right-inverse to determinant bridge:
+  added
+  `higham13_algorithm13_3_pivot_det_ne_zero_of_pivot_right_inverse_at`,
+  `higham13_algorithm13_3_pivot_det_ne_zero_of_pivot_right_inverse`,
+  `Higham13Eq1322LowerComparisonSourceChain.pivot_det_ne_zero_of_final_right_inverse`,
+  and
+  `Higham13Eq1322InverseRatioSourceChain.pivot_det_ne_zero_of_final_right_inverse`.
+  The general Algorithm 13.3 bridge turns exact active pivot right-inverse
+  certificates into determinant nonsingularity, and the source-chain wrappers
+  use a single terminal right-inverse certificate to build all-pivot determinant
+  tables.  This removes another proof-surface conversion artifact; the same
+  three Chapter 13 red rows remain open.

@@ -105,6 +105,7 @@
     Higham13Eq1322InverseRatioSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_product_bound_diag_update,
     Higham13Eq1322InverseRatioSourceChain.to_lowerComparisonSourceChain,
     Higham13Eq1322InverseRatioSourceChain.nonterminal_pivot_det_ne_zero,
+    Higham13Eq1322InverseRatioSourceChain.pivot_det_ne_zero_of_final_right_inverse,
     Higham13Eq1322InverseRatioSourceChain.pivot_det_ne_zero_of_final:
     recursive source certificate and chain/product lift for the inverse-ratio
     transport route, replacing the prebuilt ambient-chain hypothesis by
@@ -130,6 +131,7 @@
   - Higham13Eq1322LowerComparisonSourceChain,
     Higham13Eq1322LowerComparisonSourceChain.det_ne_zero,
     Higham13Eq1322LowerComparisonSourceChain.nonterminal_pivot_det_ne_zero,
+    Higham13Eq1322LowerComparisonSourceChain.pivot_det_ne_zero_of_final_right_inverse,
     Higham13Eq1322LowerComparisonSourceChain.pivot_det_ne_zero_of_final,
     Higham13Eq1322LowerComparisonSourceChain.to_blockLUBudgetChain,
     Higham13Eq1322LowerComparisonSourceChain.exists_blockLUFact_eq13_22_product_exact_kappa,
@@ -16877,6 +16879,53 @@ theorem higham13_algorithm13_3_pivot_left_inverse_of_pivot_right_inverse
       (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
         ⟨k, hk⟩ ⟨k, hk⟩)
       (pivotInv k) (hPivotRight k hk)
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
+    determinant nonsingularity of one active pivot from its exact
+    right-inverse certificate. -/
+theorem higham13_algorithm13_3_pivot_det_ne_zero_of_pivot_right_inverse_at
+    {m r : ℕ}
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (k : ℕ) (hk : k < m)
+    (hPivotRight :
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+          ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k)) :
+    Matrix.det
+      (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+        ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0 := by
+  exact
+    Matrix.det_ne_zero_of_right_inverse
+      (A := higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+        ⟨k, hk⟩ ⟨k, hk⟩)
+      (B := pivotInv k)
+      (by
+        ext i j
+        rw [Matrix.mul_apply, Matrix.one_apply]
+        exact hPivotRight i j)
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
+    determinant nonsingularity of every active pivot from exact
+    right-inverse certificates for those pivots. -/
+theorem higham13_algorithm13_3_pivot_det_ne_zero_of_pivot_right_inverse
+    {m r : ℕ}
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hPivotRight : ∀ k : ℕ, ∀ hk : k < m,
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+          ⟨k, hk⟩ ⟨k, hk⟩)
+        (pivotInv k)) :
+    ∀ k : ℕ, ∀ hk : k < m,
+      Matrix.det
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+          ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0 := by
+  intro k hk
+  exact
+    higham13_algorithm13_3_pivot_det_ne_zero_of_pivot_right_inverse_at
+      A pivotInv k hk (hPivotRight k hk)
 
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
     if the supplied pivot inverse is Mathlib's `⅟` for each active pivot, then
@@ -39528,6 +39577,35 @@ theorem Higham13Eq1322LowerComparisonSourceChain.pivot_det_ne_zero_of_final
     simpa using hfinal
 
 /-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    full active pivot determinant table for a direct lower-comparison source
+    chain, when the final one-block pivot is supplied as a right-inverse
+    certificate.
+
+    This is the right-inverse input surface corresponding to
+    `Higham13Eq1322LowerComparisonSourceChain.pivot_det_ne_zero_of_final`. -/
+theorem Higham13Eq1322LowerComparisonSourceChain.pivot_det_ne_zero_of_final_right_inverse
+    {r n : ℕ} {hr : 0 < r} :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322LowerComparisonSourceChain hr n m Ablk pivotInv →
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+          ⟨m, Nat.lt_succ_self m⟩
+          ⟨m, Nat.lt_succ_self m⟩)
+        (pivotInv m) →
+      ∀ k : ℕ, ∀ hk : k < m + 1,
+        Matrix.det
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0 := by
+  intro m Ablk pivotInv hcert hfinal
+  exact
+    higham13_algorithm13_3_pivot_det_ne_zero_of_pivot_right_inverse
+      Ablk pivotInv
+      (Higham13Eq1322LowerComparisonSourceChain.pivot_right_inverse_of_final
+        hcert hfinal)
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
     all-pivot right-inverse table for a direct lower-comparison source chain
     when the terminal one-block pivot is the canonical `nonsingInv`.
 
@@ -39954,6 +40032,31 @@ theorem Higham13Eq1322InverseRatioSourceChain.pivot_det_ne_zero_of_final
       (Higham13Eq1322InverseRatioSourceChain.to_lowerComparisonSourceChain
         (r := r) (n := n) hr hcert)
       hfinal
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    full active pivot determinant table for an inverse-ratio source chain when
+    the final one-block pivot is supplied as a right-inverse certificate. -/
+theorem Higham13Eq1322InverseRatioSourceChain.pivot_det_ne_zero_of_final_right_inverse
+    {r n : ℕ} {hr : 0 < r} :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322InverseRatioSourceChain hr n m Ablk pivotInv →
+      IsRightInverse r
+        (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+          ⟨m, Nat.lt_succ_self m⟩
+          ⟨m, Nat.lt_succ_self m⟩)
+        (pivotInv m) →
+      ∀ k : ℕ, ∀ hk : k < m + 1,
+        Matrix.det
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0 := by
+  intro m Ablk pivotInv hcert hfinal
+  exact
+    higham13_algorithm13_3_pivot_det_ne_zero_of_pivot_right_inverse
+      Ablk pivotInv
+      (Higham13Eq1322InverseRatioSourceChain.pivot_right_inverse_of_final
+        hcert hfinal)
 
 /-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
     all-pivot right-inverse table for an inverse-ratio source chain when the
