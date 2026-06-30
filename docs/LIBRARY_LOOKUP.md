@@ -2463,6 +2463,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_normalized_G_frobNormSqRect_Y_eq_init_add_residual_lastColumn`
 - `higham9_15_normalized_Gtilde_frobNormSqRect_X_eq_init_add_residual_lastRow`
 - `higham9_15_normalized_Gtilde_frobNormSqRect_Y_eq_init_add_residual_lastColumn`
+- `higham9_15_normalized_G_frobNormSqRect_X_add_Y_eq_init_add_residual_borders`
+- `higham9_15_normalized_Gtilde_frobNormSqRect_X_add_Y_eq_init_add_residual_borders`
 - `higham9_15_normalized_G_lastRow_init_vecNorm2_le_residual`
 - `higham9_15_normalized_G_lastColumn_init_vecNorm2_le_residual`
 - `higham9_15_normalized_G_lastColumn_vecNorm2_le_residual`

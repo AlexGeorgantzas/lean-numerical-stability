@@ -24418,6 +24418,54 @@ theorem higham9_15_normalized_Gtilde_frobNormSqRect_Y_eq_init_add_residual_lastC
       Gtilde X Y hfact hX hY i
   rw [higham9_15_upper_frobNormSqRect_eq_init_add_lastColumn Y hY, hcol]
 
+/-- **Theorem 9.15 support**, exact squared Frobenius total split for both
+normalized factors in the `I + G` equation.  This packages the two border
+terms in the shape needed by the Schur-induction Frobenius budget. -/
+theorem higham9_15_normalized_G_frobNormSqRect_X_add_Y_eq_init_add_residual_borders
+    {n : ℕ}
+    (G X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 + G = (1 + X) * (1 + Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0) :
+    frobNormSqRect X + frobNormSqRect Y =
+      (frobNormSqRect (higham9_15_initBlock X) +
+          frobNormSqRect (higham9_15_initBlock Y)) +
+        (vecNorm2Sq
+            (fun j : Fin n => (G - X * Y) (Fin.last n) j.castSucc) +
+          vecNorm2Sq (fun i : Fin (n + 1) => (G - X * Y) i (Fin.last n))) := by
+  have hXsq :=
+    higham9_15_normalized_G_frobNormSqRect_X_eq_init_add_residual_lastRow
+      G X Y hfact hX hY
+  have hYsq :=
+    higham9_15_normalized_G_frobNormSqRect_Y_eq_init_add_residual_lastColumn
+      G X Y hfact hX hY
+  rw [hXsq, hYsq]
+  ring
+
+/-- **Theorem 9.15 support**, exact squared Frobenius total split for both
+normalized factors in the `I - Gtilde` equation.  This is the componentwise
+sign analogue of the `G` border-budget identity. -/
+theorem higham9_15_normalized_Gtilde_frobNormSqRect_X_add_Y_eq_init_add_residual_borders
+    {n : ℕ}
+    (Gtilde X Y : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+    (hfact : 1 - Gtilde = (1 - X) * (1 - Y))
+    (hX : ∀ i j : Fin (n + 1), i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin (n + 1), j.val < i.val → Y i j = 0) :
+    frobNormSqRect X + frobNormSqRect Y =
+      (frobNormSqRect (higham9_15_initBlock X) +
+          frobNormSqRect (higham9_15_initBlock Y)) +
+        (vecNorm2Sq
+            (fun j : Fin n => (Gtilde + X * Y) (Fin.last n) j.castSucc) +
+          vecNorm2Sq (fun i : Fin (n + 1) => (Gtilde + X * Y) i (Fin.last n))) := by
+  have hXsq :=
+    higham9_15_normalized_Gtilde_frobNormSqRect_X_eq_init_add_residual_lastRow
+      Gtilde X Y hfact hX hY
+  have hYsq :=
+    higham9_15_normalized_Gtilde_frobNormSqRect_Y_eq_init_add_residual_lastColumn
+      Gtilde X Y hfact hX hY
+  rw [hXsq, hYsq]
+  ring
+
 /-- **Theorem 9.15 support**, final-row initial vector of `X` is bounded by
 the residual Frobenius norm in the `I + G` split. -/
 theorem higham9_15_normalized_G_lastRow_init_vecNorm2_le_residual {n : ℕ}
