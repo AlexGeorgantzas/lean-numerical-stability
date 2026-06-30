@@ -14815,7 +14815,12 @@ theorem higham9_10_hessenberg_lu_solve_backward_stable_tight (fp : FPModel) (n :
 
 The source formula is `2^(2p-1) - (p-1)2^(p-2)`.  The formal expression uses
 natural-number exponents; for the printed `p = 1` case the second coefficient
-is zero, so the saturated exponent has no effect on the value. -/
+is zero, so the saturated exponent has no effect on the value.
+
+Higham cites the external proof as Bohte [146, 1975]; Crossref identifies this
+as Z. Bohte, "Bounds for Rounding Errors in the Gaussian Elimination for Band
+Systems", IMA Journal of Applied Mathematics 16(2):133-142, 1975,
+DOI 10.1093/imamat/16.2.133. -/
 noncomputable def higham9_11_bohteBound (p : ℕ) : ℝ :=
   (2 : ℝ) ^ (2 * p - 1) - ((p : ℝ) - 1) * (2 : ℝ) ^ (p - 2)
 
@@ -15149,6 +15154,68 @@ theorem higham9_11_bohte_banded_solve_tight_of_bandwidth_le
   higham9_11_bohte_banded_solve_tight_of_growth_le fp n p A L_hat U_hat b
     (higham9_11_bohteBound q) (higham9_11_bohteBound_le_of_le hqp)
     hL_diag hU_diag hLU hn hn3 hGrowth
+
+/-- **Theorem 9.11**, source-facing banded solve wrapper with an explicit
+`IsBanded` hypothesis.
+
+The structural banded hypothesis records the source side of Bohte's theorem,
+while the actual GEPP growth estimate remains an explicit assumption.  This is
+therefore an interface theorem, not the missing external Bohte proof. -/
+theorem higham9_11_bohte_banded_solve_tight_of_isBanded_common
+    (fp : FPModel) (n p q r : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hp : p ≤ r) (hq : q ≤ r)
+    (hBanded : IsBanded n p q A)
+    (hL_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hGrowth : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤
+        higham9_11_bohteBound r * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤
+        higham9_11_bohteBound r * gamma fp (3 * n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  have _hBanded_common : IsBanded n r r A :=
+    isBanded_common_of_le hp hq hBanded
+  exact higham9_11_bohte_banded_solve_tight fp n r A L_hat U_hat b
+    hL_diag hU_diag hLU hn hn3 hGrowth
+
+/-- **Theorem 9.11**, tridiagonal source-facing Bohte solve wrapper.
+
+For tridiagonal matrices the structural hypothesis is converted to the common
+bandwidth-one source condition and the printed Bohte scalar reduces to `2`.
+The tridiagonal GEPP growth estimate itself remains explicit. -/
+theorem higham9_11_tridiagonal_bohte_solve_tight_of_isTridiagonal
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hA_tridiag : IsTridiagonal n A)
+    (hL_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hGrowth : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ 2 * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤
+        2 * gamma fp (3 * n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  have hBanded : IsBanded n 1 1 A := isBanded_one_one_of_isTridiagonal hA_tridiag
+  simpa [higham9_11_bohteBound_tridiagonal] using
+    higham9_11_bohte_banded_solve_tight_of_isBanded_common fp n 1 1 1
+      A L_hat U_hat b (by omega) (by omega) hBanded
+      hL_diag hU_diag hLU hn hn3
+      (fun i j => by
+        simpa [higham9_11_bohteBound_tridiagonal] using hGrowth i j)
 
 /-- **Theorem 9.11**, tridiagonal `p = 1` Bohte solve bound.
 
