@@ -112,6 +112,38 @@ theorem HouseholderQRRhsPanelExplicitBackwardError.to_backward_error {m p : ℕ}
   obtain ⟨Δb, hrep, hΔb⟩ := h.result
   exact ⟨⟨Q, Δb, h.orth, hrep, hΔb⟩⟩
 
+/-- Convert an explicit RHS componentwise Householder backward-error
+    certificate into a Euclidean-norm perturbation certificate. -/
+theorem HouseholderQRRhsPanelExplicitBackwardError.exists_vecNorm2_perturbation_bound
+    {m p : ℕ}
+    {A : Fin m → Fin p → ℝ} {b c_hat : Fin m → ℝ}
+    {Q : Fin m → Fin m → ℝ} {c_bound : ℝ}
+    (h : HouseholderQRRhsPanelExplicitBackwardError m p A b Q c_hat c_bound)
+    (hc_bound : 0 ≤ c_bound) :
+    ∃ Δb : Fin m → ℝ,
+      (∀ i, c_hat i =
+        matMulVec m (matTranspose Q) (fun k => b k + Δb k) i) ∧
+      vecNorm2 Δb ≤ Real.sqrt (m : ℝ) * c_bound := by
+  obtain ⟨Δb, hrep, hΔb⟩ := h.result
+  exact ⟨Δb, hrep,
+    vecNorm2_le_sqrt_card_mul_of_abs_le Δb hc_bound hΔb⟩
+
+/-- Convert an existential RHS componentwise Householder backward-error
+    certificate into a Euclidean-norm perturbation certificate. -/
+theorem HouseholderQRRhsPanelBackwardError.exists_vecNorm2_perturbation_bound
+    {m p : ℕ}
+    {A : Fin m → Fin p → ℝ} {b c_hat : Fin m → ℝ} {c_bound : ℝ}
+    (h : HouseholderQRRhsPanelBackwardError m p A b c_hat c_bound)
+    (hc_bound : 0 ≤ c_bound) :
+    ∃ (Q : Fin m → Fin m → ℝ) (Δb : Fin m → ℝ),
+      IsOrthogonal m Q ∧
+      (∀ i, c_hat i =
+        matMulVec m (matTranspose Q) (fun k => b k + Δb k) i) ∧
+      vecNorm2 Δb ≤ Real.sqrt (m : ℝ) * c_bound := by
+  obtain ⟨Q, Δb, hQ, hrep, hΔb⟩ := h.result
+  exact ⟨Q, Δb, hQ, hrep,
+    vecNorm2_le_sqrt_card_mul_of_abs_le Δb hc_bound hΔb⟩
+
 /-- Simultaneous panel contract for Householder QR solve components.
 
     This is stronger than separately proving QR factorization and RHS
@@ -2825,6 +2857,59 @@ theorem fl_householderQR_rhs_backward_error_of_global_gammaValid
       (householderQRRhsBackwardBound fp n A b) := by
   exact fl_householderQR_rhs_backward_error fp n A b
     (HouseholderQRPanelReady_square_of_global_gammaValid fp n A hvalid)
+
+/-- Euclidean-norm RHS perturbation bound for the concrete zero-aware
+    Householder QR panel right-hand-side transform, with the exact `Q` witness
+    fixed. -/
+theorem fl_householderQRPanel_rhs_explicit_vecNorm2_perturbation_bound
+    (fp : FPModel) (m p : ℕ)
+    (A : Fin m → Fin p → ℝ) (b : Fin m → ℝ)
+    (hready : HouseholderQRPanelReady fp m p A) :
+    ∃ Δb : Fin m → ℝ,
+      (∀ i, fl_householderQRPanel_rhs fp m p A b i =
+        matMulVec m (matTranspose (fl_householderQRPanel_Q fp m p A))
+          (fun k => b k + Δb k) i) ∧
+      vecNorm2 Δb ≤
+        Real.sqrt (m : ℝ) *
+          householderQRRhsPanelBackwardBound fp m p A b := by
+  have hbe :=
+    fl_householderQRPanel_rhs_explicit_backward_error fp m p A b hready
+  exact
+    HouseholderQRRhsPanelExplicitBackwardError.exists_vecNorm2_perturbation_bound
+      hbe
+      (householderQRRhsPanelBackwardBound_nonneg fp m p A b hready)
+
+/-- Square specialization of
+    `fl_householderQRPanel_rhs_explicit_vecNorm2_perturbation_bound`. -/
+theorem fl_householderQR_rhs_explicit_vecNorm2_perturbation_bound
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (hready : HouseholderQRPanelReady fp n n A) :
+    ∃ Δb : Fin n → ℝ,
+      (∀ i, fl_householderQR_rhs fp n A b i =
+        matMulVec n (matTranspose (fl_householderQR_Q fp n A))
+          (fun k => b k + Δb k) i) ∧
+      vecNorm2 Δb ≤
+        Real.sqrt (n : ℝ) * householderQRRhsBackwardBound fp n A b := by
+  simpa [fl_householderQR_rhs, fl_householderQR_Q,
+    householderQRRhsBackwardBound] using
+    fl_householderQRPanel_rhs_explicit_vecNorm2_perturbation_bound
+      fp n n A b hready
+
+/-- Global-gamma wrapper for the Euclidean-norm RHS perturbation bound. -/
+theorem fl_householderQR_rhs_explicit_vecNorm2_perturbation_bound_of_global_gammaValid
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (hvalid : gammaValid fp (11 * n + 23)) :
+    ∃ Δb : Fin n → ℝ,
+      (∀ i, fl_householderQR_rhs fp n A b i =
+        matMulVec n (matTranspose (fl_householderQR_Q fp n A))
+          (fun k => b k + Δb k) i) ∧
+      vecNorm2 Δb ≤
+        Real.sqrt (n : ℝ) * householderQRRhsBackwardBound fp n A b := by
+  exact
+    fl_householderQR_rhs_explicit_vecNorm2_perturbation_bound fp n A b
+      (HouseholderQRPanelReady_square_of_global_gammaValid fp n A hvalid)
 
 /-- Implementation-backed simultaneous backward-error theorem for the
     zero-aware concrete Householder QR `R` panel and RHS transform. -/
