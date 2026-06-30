@@ -20676,6 +20676,157 @@ theorem higham9_14_tridiag_rowDiagDom_source_h_bound_of_RectDoolittleRoundedStag
     fp n A L_hat U_hat b (gamma fp n) (gamma_nonneg fp hn) hγ_lt_one
     hn hT hLU hdetA hA_tridiag hRowDom hU_budget_le hL_budget_le le_rfl
 
+/-- **Theorem 9.14**, SPD positive-`D L^T` rounded-stage source `f(u)` bound.
+
+The rounded-stage trace supplies the Algorithm 9.2 source certificate, while
+the positive-`D L^T` exact-factor certificate supplies the optimal
+`|Lhat||Uhat| = |A|` comparison from Theorem 9.12. -/
+theorem higham9_14_spd_tridiag_positive_DLT_source_f_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (d b : Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u)
+    (hn : gammaValid fp n)
+    (hT : higham9_2_RectDoolittleRoundedStageTrace
+      (Nat.le_refl n) A L_hat U_hat fp)
+    (hStruct : IsTridiagLU n L_hat U_hat)
+    (hLU_eq : ∀ i j : Fin n,
+      ∑ k : Fin n, L_hat i k * U_hat k j = A i j)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hd_pos : ∀ k : Fin n, 0 < d k)
+    (hDLT : ∀ k j : Fin n, U_hat k j = d k * L_hat j k)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          A L_hat U_hat k j ≤ gamma fp n * |U_hat k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A L_hat U_hat i k ≤
+        gamma fp n * |L_hat i k * U_hat k k|)
+    (hγ_le_u : gamma fp n ≤ u) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_f u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  let hLU : LUFactSpec n A L_hat U_hat :=
+    { L_diag := hStruct.L_diag
+      L_upper_zero := hStruct.L_upper_zero
+      U_lower_zero := hStruct.U_lower_zero
+      product_eq := hLU_eq }
+  simpa [one_mul] using
+    (higham9_14_source_f_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma_le
+      fp n A L_hat U_hat b 1 u hu hn hT
+      (hLU.det_ne_zero_iff_U_diag_ne_zero.mp hdetA)
+      hU_budget_le hL_budget_le hγ_le_u
+      (fun i j => by
+        simpa [one_mul] using
+          le_of_eq
+            (higham9_12_spd_tridiag_absLU_eq_of_positive_DLT
+              A L_hat U_hat d hStruct hLU_eq hd_pos hDLT i j)))
+
+/-- **Theorem 9.14**, SPD positive-`D L^T` rounded-stage final `h(u)` bound. -/
+theorem higham9_14_spd_tridiag_positive_DLT_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (d b : Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u) (hu_lt_one : u < 1)
+    (hn : gammaValid fp n)
+    (hT : higham9_2_RectDoolittleRoundedStageTrace
+      (Nat.le_refl n) A L_hat U_hat fp)
+    (hStruct : IsTridiagLU n L_hat U_hat)
+    (hLU_eq : ∀ i j : Fin n,
+      ∑ k : Fin n, L_hat i k * U_hat k j = A i j)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hd_pos : ∀ k : Fin n, 0 < d k)
+    (hDLT : ∀ k j : Fin n, U_hat k j = d k * L_hat j k)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          A L_hat U_hat k j ≤ gamma fp n * |U_hat k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A L_hat U_hat i k ≤
+        gamma fp n * |L_hat i k * U_hat k k|)
+    (hγ_le_u : gamma fp n ≤ u) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_h u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  let hLU : LUFactSpec n A L_hat U_hat :=
+    { L_diag := hStruct.L_diag
+      L_upper_zero := hStruct.L_upper_zero
+      U_lower_zero := hStruct.U_lower_zero
+      product_eq := hLU_eq }
+  exact
+    higham9_14_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma_le
+      fp n A L_hat U_hat b u hu hu_lt_one hn hT
+      (hLU.det_ne_zero_iff_U_diag_ne_zero.mp hdetA)
+      hU_budget_le hL_budget_le hγ_le_u
+      (fun i j => by
+        exact le_of_eq
+          (higham9_12_spd_tridiag_absLU_eq_of_positive_DLT
+            A L_hat U_hat d hStruct hLU_eq hd_pos hDLT i j))
+
+/-- **Theorem 9.14**, SPD positive-`D L^T` rounded-stage source `f(γ_n)` bound. -/
+theorem higham9_14_spd_tridiag_positive_DLT_source_f_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (d b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hT : higham9_2_RectDoolittleRoundedStageTrace
+      (Nat.le_refl n) A L_hat U_hat fp)
+    (hStruct : IsTridiagLU n L_hat U_hat)
+    (hLU_eq : ∀ i j : Fin n,
+      ∑ k : Fin n, L_hat i k * U_hat k j = A i j)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hd_pos : ∀ k : Fin n, 0 < d k)
+    (hDLT : ∀ k j : Fin n, U_hat k j = d k * L_hat j k)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          A L_hat U_hat k j ≤ gamma fp n * |U_hat k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A L_hat U_hat i k ≤
+        gamma fp n * |L_hat i k * U_hat k k|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_spd_tridiag_positive_DLT_source_f_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat d b (gamma fp n) (gamma_nonneg fp hn) hn
+    hT hStruct hLU_eq hdetA hd_pos hDLT hU_budget_le hL_budget_le le_rfl
+
+/-- **Theorem 9.14**, SPD positive-`D L^T` rounded-stage final `h(γ_n)` bound. -/
+theorem higham9_14_spd_tridiag_positive_DLT_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (d b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hT : higham9_2_RectDoolittleRoundedStageTrace
+      (Nat.le_refl n) A L_hat U_hat fp)
+    (hStruct : IsTridiagLU n L_hat U_hat)
+    (hLU_eq : ∀ i j : Fin n,
+      ∑ k : Fin n, L_hat i k * U_hat k j = A i j)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hd_pos : ∀ k : Fin n, 0 < d k)
+    (hDLT : ∀ k j : Fin n, U_hat k j = d k * L_hat j k)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          A L_hat U_hat k j ≤ gamma fp n * |U_hat k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A L_hat U_hat i k ≤
+        gamma fp n * |L_hat i k * U_hat k k|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_spd_tridiag_positive_DLT_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat d b (gamma fp n) (gamma_nonneg fp hn)
+    hγ_lt_one hn hT hStruct hLU_eq hdetA hd_pos hDLT
+    hU_budget_le hL_budget_le le_rfl
+
 /-- **Theorem 9.14**, nonnegative-LU rounded-stage source `f(u)` bound.
 
 The rounded-stage trace supplies the Algorithm 9.2 source certificate, while
@@ -22072,6 +22223,228 @@ theorem higham9_14_tridiag_rowDiagDom_source_h_bound_of_rectRoundedLoop_square_f
   higham9_14_tridiag_rowDiagDom_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_const_gamma_le
     fp n A b (gamma fp n) (gamma_nonneg fp hn) hγ_lt_one hn
     hLU hdetA hA_tridiag hRowDom hU_budget_le hL_budget_le le_rfl
+
+/-- **Theorem 9.14**, SPD positive-`D L^T` executable rounded-loop source
+`f(u)` bound.
+
+This is the concrete-loop counterpart of the rounded-stage SPD positive-`D L^T`
+wrapper.  The loop supplies the factors and budgets, while the exact
+positive-`D L^T` certificate supplies `|Lhat||Uhat| = |A|`. -/
+theorem higham9_14_spd_tridiag_positive_DLT_source_f_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (d b : Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u)
+    (hn : gammaValid fp n)
+    (hStruct : IsTridiagLU n
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A))
+    (hLU_eq : ∀ i j : Fin n,
+      ∑ k : Fin n,
+          higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j =
+        A i j)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hd_pos : ∀ k : Fin n, 0 < d k)
+    (hDLT : ∀ k j : Fin n,
+      higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j =
+        d k * higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A j k)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k k|)
+    (hγ_le_u : gamma fp n ≤ u) :
+    let L_hat := higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A
+    let U_hat := higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_f u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  dsimp only
+  let hLU : LUFactSpec n A
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) :=
+    { L_diag := hStruct.L_diag
+      L_upper_zero := hStruct.L_upper_zero
+      U_lower_zero := hStruct.U_lower_zero
+      product_eq := hLU_eq }
+  simpa [one_mul] using
+    (higham9_14_source_f_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma_le
+      fp n A b 1 u hu hn
+      (hLU.det_ne_zero_iff_U_diag_ne_zero.mp hdetA)
+      hU_budget_le hL_budget_le hγ_le_u
+      (fun i j => by
+        simpa [one_mul] using
+          le_of_eq
+            (higham9_12_spd_tridiag_absLU_eq_of_positive_DLT
+              A
+              (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+              (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A)
+              d hStruct hLU_eq hd_pos hDLT i j)))
+
+/-- **Theorem 9.14**, SPD positive-`D L^T` executable rounded-loop final
+`h(u)` bound. -/
+theorem higham9_14_spd_tridiag_positive_DLT_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (d b : Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u) (hu_lt_one : u < 1)
+    (hn : gammaValid fp n)
+    (hStruct : IsTridiagLU n
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A))
+    (hLU_eq : ∀ i j : Fin n,
+      ∑ k : Fin n,
+          higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j =
+        A i j)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hd_pos : ∀ k : Fin n, 0 < d k)
+    (hDLT : ∀ k j : Fin n,
+      higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j =
+        d k * higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A j k)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k k|)
+    (hγ_le_u : gamma fp n ≤ u) :
+    let L_hat := higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A
+    let U_hat := higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_h u * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) := by
+  dsimp only
+  let hLU : LUFactSpec n A
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) :=
+    { L_diag := hStruct.L_diag
+      L_upper_zero := hStruct.L_upper_zero
+      U_lower_zero := hStruct.U_lower_zero
+      product_eq := hLU_eq }
+  exact
+    higham9_14_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma_le
+      fp n A b u hu hu_lt_one hn
+      (hLU.det_ne_zero_iff_U_diag_ne_zero.mp hdetA)
+      hU_budget_le hL_budget_le hγ_le_u
+      (fun i j => by
+        exact le_of_eq
+          (higham9_12_spd_tridiag_absLU_eq_of_positive_DLT
+            A
+            (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+            (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A)
+            d hStruct hLU_eq hd_pos hDLT i j))
+
+/-- **Theorem 9.14**, SPD positive-`D L^T` executable rounded-loop source
+`f(γ_n)` bound. -/
+theorem higham9_14_spd_tridiag_positive_DLT_source_f_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (d b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hStruct : IsTridiagLU n
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A))
+    (hLU_eq : ∀ i j : Fin n,
+      ∑ k : Fin n,
+          higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j =
+        A i j)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hd_pos : ∀ k : Fin n, 0 < d k)
+    (hDLT : ∀ k j : Fin n,
+      higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j =
+        d k * higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A j k)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k k|) :
+    let L_hat := higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A
+    let U_hat := higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_spd_tridiag_positive_DLT_source_f_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma_le
+    fp n A d b (gamma fp n) (gamma_nonneg fp hn) hn
+    hStruct hLU_eq hdetA hd_pos hDLT hU_budget_le hL_budget_le le_rfl
+
+/-- **Theorem 9.14**, SPD positive-`D L^T` executable rounded-loop final
+`h(γ_n)` bound. -/
+theorem higham9_14_spd_tridiag_positive_DLT_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (d b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hStruct : IsTridiagLU n
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A))
+    (hLU_eq : ∀ i j : Fin n,
+      ∑ k : Fin n,
+          higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j =
+        A i j)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hd_pos : ∀ k : Fin n, 0 < d k)
+    (hDLT : ∀ k j : Fin n,
+      higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j =
+        d k * higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A j k)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k k|) :
+    let L_hat := higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A
+    let U_hat := higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_spd_tridiag_positive_DLT_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma_le
+    fp n A d b (gamma fp n) (gamma_nonneg fp hn) hγ_lt_one hn
+    hStruct hLU_eq hdetA hd_pos hDLT hU_budget_le hL_budget_le le_rfl
 
 /-- **Theorem 9.14**, nonnegative-LU executable rounded-loop source `f(u)`
 bound.
