@@ -8583,6 +8583,126 @@ theorem theorem20_10_gqr_xhat_triangular_solve_frob_perturbation_bound
   · simpa [theorem20_10_gqr_y1hat, theorem20_10_gqr_rhs2hat,
       theorem20_10_gqr_y2hat] using hL22eq
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
+    exact-minimizer handoff from supplied perturbed triangular factors.
+
+    If a supplied perturbed GQR factorization has the same recovery `Q`, the
+    same lower-left coupling block `L₂₁`, triangular blocks equal to the
+    finite-precision backward-error witnesses `S + ΔS` and `L₂₂ + ΔL₂₂`, and
+    the trailing transformed right-hand side agrees with the computed one, then
+    the named computed vector `xhat = Q [y₁hat; y₂hat]` is an exact LSE
+    minimizer for that supplied perturbed problem.  This bridge does not prove
+    that such a perturbed source factorization exists; it isolates the exact
+    algebra needed once the finite-precision GQR perturbation construction
+    supplies those identities. -/
+theorem theorem20_10_gqr_xhat_isLSEMinimizer_of_supplied_perturbed_triangular_factors
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    {Apert : Fin (r + q) → Fin (p + q) → ℝ}
+    {Bpert : Fin p → Fin (p + q) → ℝ}
+    (hpert : GeneralizedQRFactorization r p q Apert Bpert)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (bpert : Fin (r + q) → ℝ) (dpert : Fin p → ℝ)
+    (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ)
+    (hQ : hpert.Q = h.Q)
+    (hS : hpert.S = fun i j => h.S i j + DeltaS i j)
+    (hL21 : hpert.L21 = h.L21)
+    (hL22 : hpert.L22 = fun i j => h.L22 i j + DeltaL22 i j)
+    (hd : dpert = d)
+    (hb_tail : ∀ i : Fin q,
+      matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) =
+        matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i))
+    (hS_inj : Function.Injective (rectMatMulVec hpert.S))
+    (hSeq :
+      rectMatMulVec (fun i j => h.S i j + DeltaS i j)
+        (theorem20_10_gqr_y1hat fp h d) = d)
+    (hL22eq :
+      rectMatMulVec (fun i j => h.L22 i j + DeltaL22 i j)
+        (theorem20_10_gqr_y2hat fp h b d) =
+          theorem20_10_gqr_rhs2hat fp h b d) :
+    IsLSEMinimizer Apert bpert Bpert dpert
+      (theorem20_10_gqr_xhat fp h b d) := by
+  let y1hat : Fin p → ℝ := theorem20_10_gqr_y1hat fp h d
+  let y2hat : Fin q → ℝ := theorem20_10_gqr_y2hat fp h b d
+  have hy1 : rectMatMulVec hpert.S y1hat = dpert := by
+    rw [hS, hd]
+    exact hSeq
+  have hy2 :
+      rectMatMulVec hpert.L22 y2hat =
+        fun i : Fin q =>
+          matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) -
+            rectMatMulVec hpert.L21 y1hat i := by
+    ext i
+    calc
+      rectMatMulVec hpert.L22 y2hat i
+          = rectMatMulVec (fun i j => h.L22 i j + DeltaL22 i j) y2hat i := by
+              rw [hL22]
+      _ = theorem20_10_gqr_rhs2hat fp h b d i := by
+              simpa [y2hat] using congrFun hL22eq i
+      _ = matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) -
+            rectMatMulVec hpert.L21 y1hat i := by
+              simp [theorem20_10_gqr_rhs2hat, y1hat, hL21, hb_tail i]
+  have hmin :
+      IsLSEMinimizer Apert bpert Bpert dpert
+        (matMulVec (p + q) hpert.Q (Fin.append y1hat y2hat)) :=
+    hpert.isLSEMinimizer_of_triangular_solve hS_inj hy1 hy2
+  simpa [theorem20_10_gqr_xhat, y1hat, y2hat, hQ] using hmin
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
+    bounded triangular-solve witnesses plus exact-minimizer handoff.
+
+    This packages the existing forward-substitution backward-error witnesses
+    `ΔS` and `ΔL₂₂`, their componentwise and Frobenius bounds, and the exact
+    minimizer bridge for any supplied perturbed GQR factorization whose
+    triangular blocks match those witnesses.  It advances the computed-vector
+    side of Theorem 20.10 while leaving the genuine remaining obligations
+    explicit: constructing matching perturbed source factors, proving
+    perturbed rank/nonsingularity, and sharpening the printed RHS coefficient. -/
+theorem theorem20_10_gqr_xhat_supplied_perturbed_factor_minimizer_certificate
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalidS : gammaValid fp p)
+    (hvalidL22 : gammaValid fp q) :
+    ∃ (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ),
+      (∀ i j, |DeltaS i j| ≤ gamma fp p * |h.S i j|) ∧
+      (∀ i j, |DeltaL22 i j| ≤ gamma fp q * |h.L22 i j|) ∧
+      frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S ∧
+      frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 ∧
+      (∀ {Apert : Fin (r + q) → Fin (p + q) → ℝ}
+          {Bpert : Fin p → Fin (p + q) → ℝ}
+          (hpert : GeneralizedQRFactorization r p q Apert Bpert)
+          (bpert : Fin (r + q) → ℝ) (dpert : Fin p → ℝ),
+        hpert.Q = h.Q →
+        hpert.S = (fun i j => h.S i j + DeltaS i j) →
+        hpert.L21 = h.L21 →
+        hpert.L22 = (fun i j => h.L22 i j + DeltaL22 i j) →
+        dpert = d →
+        (∀ i : Fin q,
+          matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) =
+            matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i)) →
+        Function.Injective (rectMatMulVec hpert.S) →
+        IsLSEMinimizer Apert bpert Bpert dpert
+          (theorem20_10_gqr_xhat fp h b d)) := by
+  rcases theorem20_10_gqr_xhat_triangular_solve_frob_perturbation_bound
+      fp h b d hSdiag hL22diag hvalidS hvalidL22 with
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, hSeq, hL22eq, _hxhat⟩
+  refine
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, ?_⟩
+  intro Apert Bpert hpert bpert dpert hQ hS hL21 hL22 hd hb_tail hS_inj
+  exact
+    theorem20_10_gqr_xhat_isLSEMinimizer_of_supplied_perturbed_triangular_factors
+      fp h hpert b d bpert dpert DeltaS DeltaL22 hQ hS hL21 hL22 hd
+      hb_tail hS_inj hSeq hL22eq
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), finite-precision
     perturbation certificate for the mixed-stability branch.
 
