@@ -9409,6 +9409,72 @@ theorem theorem20_10_gqr_xhat_isLSEMinimizer_of_supplied_perturbed_triangular_fa
   simpa [theorem20_10_gqr_xhat, y1hat, y2hat, hQ] using hmin
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
+    exact-minimizer handoff for the supplied-trailing-RHS path.
+
+    This is the rounded-RHS analogue of
+    `theorem20_10_gqr_xhat_isLSEMinimizer_of_supplied_perturbed_triangular_factors`.
+    The transformed trailing right-hand side is supplied as `beta`, so the
+    perturbed-factor matching hypothesis asks for `Uᵀ(b + Δb)` to equal `beta`
+    on the trailing block instead of the exact source vector `Uᵀ b`. -/
+theorem theorem20_10_gqr_xhat_of_transformed_tail_isLSEMinimizer_of_supplied_perturbed_triangular_factors
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    {Apert : Fin (r + q) → Fin (p + q) → ℝ}
+    {Bpert : Fin p → Fin (p + q) → ℝ}
+    (hpert : GeneralizedQRFactorization r p q Apert Bpert)
+    (beta : Fin q → ℝ) (d : Fin p → ℝ)
+    (bpert : Fin (r + q) → ℝ) (dpert : Fin p → ℝ)
+    (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ)
+    (hQ : hpert.Q = h.Q)
+    (hS : hpert.S = fun i j => h.S i j + DeltaS i j)
+    (hL21 : hpert.L21 = h.L21)
+    (hL22 : hpert.L22 = fun i j => h.L22 i j + DeltaL22 i j)
+    (hd : dpert = d)
+    (hb_tail : ∀ i : Fin q,
+      matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) =
+        beta i)
+    (hS_inj : Function.Injective (rectMatMulVec hpert.S))
+    (hSeq :
+      rectMatMulVec (fun i j => h.S i j + DeltaS i j)
+        (theorem20_10_gqr_y1hat fp h d) = d)
+    (hL22eq :
+      rectMatMulVec (fun i j => h.L22 i j + DeltaL22 i j)
+        (theorem20_10_gqr_y2hat_of_transformed_tail fp h beta d) =
+          theorem20_10_gqr_rhs2hat_of_transformed_tail fp h beta d) :
+    IsLSEMinimizer Apert bpert Bpert dpert
+      (theorem20_10_gqr_xhat_of_transformed_tail fp h beta d) := by
+  let y1hat : Fin p → ℝ := theorem20_10_gqr_y1hat fp h d
+  let y2hat : Fin q → ℝ :=
+    theorem20_10_gqr_y2hat_of_transformed_tail fp h beta d
+  have hy1 : rectMatMulVec hpert.S y1hat = dpert := by
+    rw [hS, hd]
+    exact hSeq
+  have hy2 :
+      rectMatMulVec hpert.L22 y2hat =
+        fun i : Fin q =>
+          matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) -
+            rectMatMulVec hpert.L21 y1hat i := by
+    ext i
+    calc
+      rectMatMulVec hpert.L22 y2hat i
+          = rectMatMulVec (fun i j => h.L22 i j + DeltaL22 i j) y2hat i := by
+              rw [hL22]
+      _ = theorem20_10_gqr_rhs2hat_of_transformed_tail fp h beta d i := by
+              simpa [y2hat] using congrFun hL22eq i
+      _ = matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) -
+            rectMatMulVec hpert.L21 y1hat i := by
+              simp [theorem20_10_gqr_rhs2hat_of_transformed_tail, y1hat,
+                hL21, hb_tail i]
+  have hmin :
+      IsLSEMinimizer Apert bpert Bpert dpert
+        (matMulVec (p + q) hpert.Q (Fin.append y1hat y2hat)) :=
+    hpert.isLSEMinimizer_of_triangular_solve hS_inj hy1 hy2
+  simpa [theorem20_10_gqr_xhat_of_transformed_tail, y1hat, y2hat, hQ]
+    using hmin
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
     bounded triangular-solve witnesses plus exact-minimizer handoff.
 
     This packages the existing forward-substitution backward-error witnesses
