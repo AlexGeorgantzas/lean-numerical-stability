@@ -10216,3 +10216,22 @@ These compile, but should not be treated as fully derived stability results:
   the existing direct lower-comparison source chain.  It is dependency
   packaging only: the base/inverse comparisons, Eq.13.23 BDD product/update
   data, and Theorem 13.6 implementation estimates remain open.
+
+- 2026-06-30 Eq.13.22/Eq.13.23 base/inverse source-chain connector cleanup:
+  added `Higham13Eq1322BaseInverseSourceChain.to_inverseRatioSourceChain`,
+  `Higham13Eq1322BaseInverseSourceChain.nonterminal_pivot_right_inverse`,
+  `Higham13Eq1322BaseInverseSourceChain.nonterminal_pivot_det_ne_zero`,
+  `Higham13Eq1322BaseInverseSourceChain.pivot_right_inverse_of_final`,
+  `Higham13Eq1322BaseInverseSourceChain.pivot_det_ne_zero_of_final`,
+  `Higham13Eq1322BaseInverseSourceChain.pivot_det_ne_zero_of_final_right_inverse`,
+  `Higham13Eq1322BaseInverseSourceChain.pivot_right_inverse_of_final_nonsingInv`,
+  and
+  `Higham13Eq1322BaseInverseSourceChain.pivot_det_ne_zero_of_final_nonsingInv`.
+  The conversion theorem factors the explicit base/inverse comparisons through
+  the inverse-ratio source-chain API using
+  `maxEntryNormRect_inverse_ratio_of_base_le_and_inverse_le`; the pivot wrappers
+  inherit the nonterminal and final-pivot right-inverse/determinant surfaces
+  from the lower-comparison chain.  This removes another all-pivot
+  proof-surface artifact for the base/inverse route, but the base/inverse
+  comparison theorems, Eq.13.23 BDD product/update data, and Theorem 13.6
+  implementation estimates remain open.
