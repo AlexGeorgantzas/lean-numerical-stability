@@ -22982,6 +22982,43 @@ theorem higham9_15_normalized_G_linear_step_of_min_factor_bound {n : ℕ}
       (frobNormRect_nonneg X) (frobNormRect_nonneg Y) hmin
   exact hstep.trans (add_le_add le_rfl hquad)
 
+/-- **Theorem 9.15 support**, square-level residual bound with the quadratic
+term linearized by a supplied min-factor hypothesis. -/
+theorem higham9_15_normalized_G_residual_frobNormSqRect_le_linear_step_sq_of_min_factor_bound
+    {n : ℕ}
+    (G X Y : Matrix (Fin n) (Fin n) ℝ)
+    (hmin :
+      min (frobNormRect X) (frobNormRect Y) ≤ opNorm2 G) :
+    frobNormSqRect (G - X * Y) ≤
+      (frobNormRect G +
+        opNorm2 G * max (frobNormRect X) (frobNormRect Y)) ^ 2 := by
+  have hprod :=
+    higham9_15_normalized_G_residual_frobNormSqRect_le_add_product_sq
+      G X Y
+  have hquad :
+      frobNormRect X * frobNormRect Y ≤
+        opNorm2 G * max (frobNormRect X) (frobNormRect Y) :=
+    higham9_15_mul_le_eta_mul_max_of_min_le
+      (frobNormRect_nonneg X) (frobNormRect_nonneg Y) hmin
+  have hsum :
+      frobNormRect G + frobNormRect X * frobNormRect Y ≤
+        frobNormRect G +
+          opNorm2 G * max (frobNormRect X) (frobNormRect Y) :=
+    add_le_add le_rfl hquad
+  have hleft_nonneg :
+      0 ≤ frobNormRect G + frobNormRect X * frobNormRect Y :=
+    add_nonneg (frobNormRect_nonneg _)
+      (mul_nonneg (frobNormRect_nonneg _) (frobNormRect_nonneg _))
+  have hmax_nonneg :
+      0 ≤ max (frobNormRect X) (frobNormRect Y) :=
+    (frobNormRect_nonneg X).trans (le_max_left _ _)
+  have hright_nonneg :
+      0 ≤ frobNormRect G +
+          opNorm2 G * max (frobNormRect X) (frobNormRect Y) :=
+    add_nonneg (frobNormRect_nonneg _)
+      (mul_nonneg (opNorm2_nonneg _) hmax_nonneg)
+  exact hprod.trans (by nlinarith)
+
 /-- **Theorem 9.15**, conditional ratio bound from the normalized split when
 one normalized factor is already controlled by the small operator parameter.
 
@@ -23680,6 +23717,44 @@ theorem higham9_15_normalized_Gtilde_residual_frobNormSqRect_le_add_product_sq
       (mul_nonneg (frobNormRect_nonneg _) (frobNormRect_nonneg _))
   rw [← frobNormRect_sq (Gtilde + X * Y)]
   nlinarith
+
+/-- **Theorem 9.15 support**, square-level residual bound for the signed
+componentwise split with the quadratic term linearized by a supplied
+min-factor hypothesis. -/
+theorem higham9_15_normalized_Gtilde_residual_frobNormSqRect_le_linear_step_sq_of_min_factor_bound
+    {n : ℕ}
+    (Gtilde X Y : Matrix (Fin n) (Fin n) ℝ)
+    (hmin :
+      min (frobNormRect X) (frobNormRect Y) ≤ opNorm2 Gtilde) :
+    frobNormSqRect (Gtilde + X * Y) ≤
+      (frobNormRect Gtilde +
+        opNorm2 Gtilde * max (frobNormRect X) (frobNormRect Y)) ^ 2 := by
+  have hprod :=
+    higham9_15_normalized_Gtilde_residual_frobNormSqRect_le_add_product_sq
+      Gtilde X Y
+  have hquad :
+      frobNormRect X * frobNormRect Y ≤
+        opNorm2 Gtilde * max (frobNormRect X) (frobNormRect Y) :=
+    higham9_15_mul_le_eta_mul_max_of_min_le
+      (frobNormRect_nonneg X) (frobNormRect_nonneg Y) hmin
+  have hsum :
+      frobNormRect Gtilde + frobNormRect X * frobNormRect Y ≤
+        frobNormRect Gtilde +
+          opNorm2 Gtilde * max (frobNormRect X) (frobNormRect Y) :=
+    add_le_add le_rfl hquad
+  have hleft_nonneg :
+      0 ≤ frobNormRect Gtilde + frobNormRect X * frobNormRect Y :=
+    add_nonneg (frobNormRect_nonneg _)
+      (mul_nonneg (frobNormRect_nonneg _) (frobNormRect_nonneg _))
+  have hmax_nonneg :
+      0 ≤ max (frobNormRect X) (frobNormRect Y) :=
+    (frobNormRect_nonneg X).trans (le_max_left _ _)
+  have hright_nonneg :
+      0 ≤ frobNormRect Gtilde +
+          opNorm2 Gtilde * max (frobNormRect X) (frobNormRect Y) :=
+    add_nonneg (frobNormRect_nonneg _)
+      (mul_nonneg (opNorm2_nonneg _) hmax_nonneg)
+  exact hprod.trans (by nlinarith)
 
 /-- **Theorem 9.15**, final scalar ratio handoff for the componentwise
 `Gtilde` route once a normalized Barrlund--Sun linearized step bound has been
