@@ -19658,6 +19658,119 @@ theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_formulaMatrixSigmaM
     lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_upper_certificate
       htheta A b hy hnot hrank hupper
 
+/-- Nondegenerate branch-eliminated WKS attainer handoff.  If the source block
+    `[A phi(I-r r^+)]` has full row rank, then the zero-RHS branch is already
+    closed; on the positive branch, either the scalar `phi` side of the printed
+    minimum applies directly or the row-side `sigma_min` side is closed by the
+    degenerate source-block attainer hypotheses.
+
+    This removes the visible `phi`/`sigma_min` branch-selection hypothesis from
+    the degenerate attainer route.  It still does not prove the genuinely
+    nondegenerate WKS construction, because the projected-attainer and source
+    dot-product conditions remain explicit. -/
+theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_of_formulaMatrixRowRank_eq_card_of_formulaMatrixSigmaMin_attainer_projected_eq_zero_of_dot_b_ne_zero
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hrank :
+      lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+        (lsResidualHigham A b y) y = m + 1)
+    (hprojected :
+      ∀ p : Fin (m + 1) → ℝ, p ≠ 0 →
+        vecNorm2Sq
+            (rectMatMulVec
+              (finiteTranspose
+                (lsNormwiseBackwardErrorFormulaMatrix theta A
+                  (lsResidualHigham A b y) y)) p) =
+          (lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+              (lsResidualHigham A b y) y) ^ 2 * vecNorm2Sq p →
+        vecNorm2Sq
+            (matMulVec (m + 1)
+              (lsResidualComplementProjector (lsResidualHigham A b y)) p) = 0)
+    (hdotb :
+      ∀ p : Fin (m + 1) → ℝ, p ≠ 0 →
+        vecNorm2Sq
+            (rectMatMulVec
+              (finiteTranspose
+                (lsNormwiseBackwardErrorFormulaMatrix theta A
+                  (lsResidualHigham A b y) y)) p) =
+          (lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+              (lsResidualHigham A b y) y) ^ 2 * vecNorm2Sq p →
+        (∑ i : Fin (m + 1), p i * b i) ≠ 0) :
+    lsNormwiseBackwardErrorEtaF theta A b y =
+      lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  by_cases hrhs_zero : lsNormwiseBackwardErrorFormulaRHS theta A b y = 0
+  · exact
+      lsNormwiseBackwardErrorEtaF_eq_formulaRHS_of_formulaRHS_eq_zero_of_formulaMatrixRowRank_eq_card
+        htheta A b hy hrhs_zero hrank
+  · have hrhs_nonneg :
+        0 ≤ lsNormwiseBackwardErrorFormulaRHS theta A b y :=
+      lsNormwiseBackwardErrorFormulaRHS_nonneg theta A b y
+    have hrhs_pos :
+        0 < lsNormwiseBackwardErrorFormulaRHS theta A b y :=
+      lt_of_le_of_ne hrhs_nonneg (Ne.symm hrhs_zero)
+    have hnot :
+        ¬ IsLeastSquaresMinimizer A b y :=
+      ((lsNormwiseBackwardErrorFormulaRHS_pos_iff_not_isLeastSquaresMinimizer_and_formulaMatrixRowRank_eq_card_of_theta_pos_of_y_ne_zero
+        htheta A b hy).mp hrhs_pos).1
+    by_cases hphi_branch :
+      lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y ≤
+        lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+          (lsResidualHigham A b y) y
+    · exact
+        (lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_phi_le_sigmaMin
+          htheta A b hy hnot hrank hphi_branch).1
+    · have hsigma_branch :
+          lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+              (lsResidualHigham A b y) y ≤
+            lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y :=
+        le_of_lt (not_le.mp hphi_branch)
+      exact
+        (lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_formulaMatrixSigmaMin_attainer_projected_eq_zero_of_dot_b_ne_zero
+          htheta A b hy hnot hrank hsigma_branch hprojected hdotb).1
+
+/-- Full-left-panel branch-eliminated WKS attainer handoff.  Full row rank of
+    the original data matrix supplies full row rank of the WKS source block,
+    so the branch-eliminated degenerate attainer theorem can be applied without
+    exposing the source-block row-rank hypothesis. -/
+theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_of_left_panel_rowRank_eq_card_of_formulaMatrixSigmaMin_attainer_projected_eq_zero_of_dot_b_ne_zero
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hA : lsRealRectRowRank A = m + 1)
+    (hprojected :
+      ∀ p : Fin (m + 1) → ℝ, p ≠ 0 →
+        vecNorm2Sq
+            (rectMatMulVec
+              (finiteTranspose
+                (lsNormwiseBackwardErrorFormulaMatrix theta A
+                  (lsResidualHigham A b y) y)) p) =
+          (lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+              (lsResidualHigham A b y) y) ^ 2 * vecNorm2Sq p →
+        vecNorm2Sq
+            (matMulVec (m + 1)
+              (lsResidualComplementProjector (lsResidualHigham A b y)) p) = 0)
+    (hdotb :
+      ∀ p : Fin (m + 1) → ℝ, p ≠ 0 →
+        vecNorm2Sq
+            (rectMatMulVec
+              (finiteTranspose
+                (lsNormwiseBackwardErrorFormulaMatrix theta A
+                  (lsResidualHigham A b y) y)) p) =
+          (lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+              (lsResidualHigham A b y) y) ^ 2 * vecNorm2Sq p →
+        (∑ i : Fin (m + 1), p i * b i) ≠ 0) :
+    lsNormwiseBackwardErrorEtaF theta A b y =
+      lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  have hrank :
+      lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+        (lsResidualHigham A b y) y = m + 1 :=
+    lsNormwiseBackwardErrorFormulaMatrixRowRank_eq_card_of_left_panel_rowRank_eq_card
+      theta A (lsResidualHigham A b y) y hA
+  exact
+    lsNormwiseBackwardErrorEtaF_eq_formulaRHS_of_formulaMatrixRowRank_eq_card_of_formulaMatrixSigmaMin_attainer_projected_eq_zero_of_dot_b_ne_zero
+      htheta A b hy hrank hprojected hdotb
+
 /-- Positive-branch certificate form of the Walden--Karlson--Sun formula
     (20.21): for positive finite `theta`, nonzero `y`, and full row rank of
     the source block `[A phi(I-r r^+)]`, a supplied WKS lower-bound certificate
@@ -63090,6 +63203,132 @@ theorem exists_perturbed_ls_minimizer_of_stored_trailing_householder_sequence_to
       fp hmn A b A_hat b_hat alpha κ K stageBudget hm hγ hInitA hInitb hStepA hStepb
       hAlphaDef hdetLead hK hκ hκbudget hbudgetDual hinit hinitBlock
       hglobalBudget hBudget_nonneg hBudget_mono hrowDefect
+      hstage_le_rowMax hpivotChoice hglobalProduct
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.3, row-max/dual-budget
+    source-facing compact-budget wrapper.
+
+This packages the actual-unit-roundoff active-pivot row-max route under a
+Theorem 20.3 name.  Compared with the diagonal-dominance finite-max wrapper,
+it does not expose local diagonal dominance or the `Dcap`/`Ncap` finite-max
+smallness inequality.  The remaining visible obligations are the stored QR
+recurrence, signed `alpha`, leading-block determinant/conditioning data,
+dual compact-budget data, row-max diagonal defect, stage-budget/row-max
+comparison, active-pivot selection, and compact global-product smallness. -/
+theorem theorem20_3_householder_qr_ls_backward_error_compactBudget_of_activePivot_rowMax_dualBudget_actualUnitRoundoff
+    {m n : ℕ} (fp : FPModel) (hmn : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (A_hat : ℕ → Fin m → Fin n → ℝ)
+    (b_hat : ℕ → Fin m → ℝ)
+    (alpha κ K : ℕ → ℝ)
+    (stageBudget : ℕ → ℝ)
+    (huSmall : (m : ℝ) * fp.u < 1)
+    (hInitA : A_hat 0 = A)
+    (hInitb : b_hat 0 = b)
+    (hStepA : ∀ k (hk : k < n),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
+          (A_hat k))
+    (hStepb : ∀ k (hk : k < n),
+      b_hat (k + 1) =
+        fl_householderStoredRhsStep fp m k
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
+          (b_hat k))
+    (hAlphaDef : ∀ k (hk : k < n),
+      alpha k =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩)))
+          (A_hat k ⟨k, lt_of_lt_of_le hk hmn⟩ ⟨k, hk⟩))
+    (hdetLead : ∀ k (hk : k < n),
+      Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ) ≠ 0)
+    (hK : ∀ k (_hk : k < n), 0 < K k)
+    (hκ : ∀ k (hk : k < n),
+      kappaInf (k + 1) (Nat.succ_pos k)
+          (qrLeadingBlock (A_hat k)
+            (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)
+          (nonsingInv (k + 1)
+            (qrLeadingBlock (A_hat k)
+              (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)) ≤
+        κ k)
+    (hκbudget : ∀ k (hk : k < n),
+      ((k + 1 : ℕ) : ℝ) *
+          (κ k /
+            infNorm
+              (qrLeadingBlock (A_hat k)
+                (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)) ^ 2 ≤
+        K k)
+    (hbudgetDual : ∀ k (hk : k < n),
+      (m : ℝ) *
+          (householderCompactComponentBudget fp m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
+            (householderBetaSpec m
+              (householderTrailingActiveVector m
+                ⟨k, lt_of_lt_of_le hk hmn⟩
+                (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
+            (fun a => A_hat k a ⟨k, hk⟩)
+            ⟨k, lt_of_lt_of_le hk hmn⟩) ^ 2 <
+        1 / K k)
+    (hinit : ∀ k (hk : k < n), ∀ i j : Fin (k + 1), ∀ _hij : i.val < j.val,
+      |A_hat 0
+          (qrLeadingRow m k (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) i)
+          (qrLeadingColumn n k hk j)| ≤
+        stageBudget 0)
+    (hinitBlock : ∀ r : Fin m, ∀ l : Fin n,
+      |A_hat 0 r l| ≤ stageBudget 0)
+    (hglobalBudget : ∀ t (ht : t < n),
+      coxHighamActiveRowGrowthFactor m * stageBudget t +
+          storedQRSignedStageGlobalCompactBudget hmn fp A_hat alpha t ht ≤
+        stageBudget (t + 1))
+    (hBudget_nonneg : ∀ t : ℕ, 0 ≤ stageBudget t)
+    (hBudget_mono : ∀ a b : ℕ, a ≤ b → stageBudget a ≤ stageBudget b)
+    (hrowDefect : storedQRRowMaxDiagDefectBudget hmn A_hat ≤ 0)
+    (hstage_le_rowMax : ∀ k (hk : k < n), ∀ i : Fin (k + 1), i.val < k →
+      stageBudget k ≤ qrLeadingStrictUpperRowMaxBudget hmn A_hat k hk i)
+    (hpivotChoice : ∀ t (ht : t < n),
+      ⟨t, ht⟩ =
+        householderActiveMaxPivotColumn
+          ⟨t, lt_of_lt_of_le ht hmn⟩ ⟨t, ht⟩ (A_hat t))
+    (hglobalProduct :
+      storedQRCompactSequenceProductBudget hmn fp A_hat b_hat alpha < 1) :
+    let cStep := storedQRCompactSequenceRelativeBudget hmn fp A_hat b_hat alpha
+    ∃ (ΔA' : Fin m → Fin n → ℝ) (Δb' : Fin m → ℝ),
+      frobNorm ΔA' ≤
+        ((1 + cStep) ^ n - 1) * frobNormRect A +
+          gamma fp n *
+            frobNormRect (rectTopBlock (m := m)
+              (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)) ∧
+      vecNorm2 Δb' ≤ ((1 + cStep) ^ n - 1) * vecNorm2 b ∧
+      IsLeastSquaresMinimizer
+        (fun i j => A i j + ΔA' i j) (fun i => b i + Δb' i)
+        (fl_backSub fp n
+          (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)
+          (fun i => b_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩)) := by
+  exact
+    exists_perturbed_ls_minimizer_of_stored_trailing_householder_sequence_topBlock_fl_backSub_gamma_bound_explicitCompactBudget_of_signed_alpha_leadingBlock_det_ne_zero_kappaInf_selfNorm_dualBudget_signedStageUniformBudget_globalCompactBudget_activeMaxPivot_completedColumns_globalProduct_rowMaxDiagDefect_stageBudgetLeRowMax_offdiag_rows_of_actualUnitRoundoff_no_gammaValid
+      fp hmn A b A_hat b_hat alpha κ K stageBudget huSmall hInitA hInitb
+      hStepA hStepb hAlphaDef hdetLead hK hκ hκbudget hbudgetDual hinit
+      hinitBlock hglobalBudget hBudget_nonneg hBudget_mono hrowDefect
       hstage_le_rowMax hpivotChoice hglobalProduct
 
 /-- Solver-facing active-max-pivot QR certificate using the row-max scalar
