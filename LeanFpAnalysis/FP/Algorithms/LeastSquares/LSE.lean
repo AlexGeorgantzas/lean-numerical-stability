@@ -2374,9 +2374,14 @@ theorem exists_orthogonal_completion_bottom_reversed_columns {r q : ℕ}
     upper-triangular `R`, then a completed square orthogonal `U` sends the
     original block `C` to `[0; gqrReverseSquare R]`.
 
+    This strengthened form also returns the exact bottom-column placement of
+    the completion, needed later to identify transformed right-hand sides in the
+    rounded `A Q₂` path.
+
     This is the small-block row/column orientation step needed for the
     oracle-recommended `A Q₂` route in Higham's Chapter 20 GQR construction. -/
-theorem GQRAQTallCase.exists_of_qr_reversed_cols {r q : ℕ}
+theorem GQRAQTallCase.exists_of_qr_reversed_cols_with_bottom_reversed_columns
+    {r q : ℕ}
     (C : Fin (r + q) → Fin q → ℝ)
     (Q2 : Fin (r + q) → Fin q → ℝ)
     (R : Fin q → Fin q → ℝ)
@@ -2386,11 +2391,14 @@ theorem GQRAQTallCase.exists_of_qr_reversed_cols {r q : ℕ}
       matMulRect (r + q) q q Q2 R) :
     ∃ U : Fin (r + q) → Fin (r + q) → ℝ,
       IsOrthogonal (r + q) U ∧
+        (∀ i j, U i (Fin.natAdd r j) = Q2 i (Fin.rev j)) ∧
         Nonempty (GQRAQTallCase r q (matMulRectLeft (matTranspose U) C)) := by
   rcases exists_orthogonal_completion_bottom_reversed_columns Q2 hQ2 with
     ⟨U, hU, hUbottom⟩
   let L : Fin q → Fin q → ℝ := gqrReverseSquare R
-  refine ⟨U, hU, ⟨⟨L, gqrReverseSquare_lowerTriangular_of_upper hR, ?_⟩⟩⟩
+  refine
+    ⟨U, hU, hUbottom,
+      ⟨⟨L, gqrReverseSquare_lowerTriangular_of_upper hR, ?_⟩⟩⟩
   ext row col
   have hC : ∀ i : Fin (r + q),
       C i col = ∑ k : Fin q, Q2 i k * R k (Fin.rev col) := by
@@ -2524,6 +2532,31 @@ theorem GQRAQTallCase.exists_of_qr_reversed_cols {r q : ℕ}
             simp [idMatrix]
       _ = gqrAQTallBlock (k := r) L (Fin.natAdd r row) col := by
             simp [gqrAQTallBlock, L, gqrReverseSquare]
+
+/-- Tall associated-shape construction from a QR factorization of the
+    column-reversed block.  If
+    `rectPermuteCols Fin.revPerm C = Q2 R` with orthonormal `Q2` columns and
+    upper-triangular `R`, then a completed square orthogonal `U` sends the
+    original block `C` to `[0; gqrReverseSquare R]`.
+
+    This is the public shape-only wrapper around
+    `GQRAQTallCase.exists_of_qr_reversed_cols_with_bottom_reversed_columns`. -/
+theorem GQRAQTallCase.exists_of_qr_reversed_cols {r q : ℕ}
+    (C : Fin (r + q) → Fin q → ℝ)
+    (Q2 : Fin (r + q) → Fin q → ℝ)
+    (R : Fin q → Fin q → ℝ)
+    (hQ2 : GramSchmidtOrthonormalColumns Q2)
+    (hR : IsUpperTriangular q R)
+    (hfactor : rectPermuteCols Fin.revPerm C =
+      matMulRect (r + q) q q Q2 R) :
+    ∃ U : Fin (r + q) → Fin (r + q) → ℝ,
+      IsOrthogonal (r + q) U ∧
+        Nonempty (GQRAQTallCase r q (matMulRectLeft (matTranspose U) C)) := by
+  rcases
+    GQRAQTallCase.exists_of_qr_reversed_cols_with_bottom_reversed_columns
+      C Q2 R hQ2 hR hfactor with
+    ⟨U, hU, _hUbottom, hCase⟩
+  exact ⟨U, hU, hCase⟩
 
 /-- Tall associated-shape construction from a square orthogonal QR-style
     factorization of the column-reversed rectangular block.
