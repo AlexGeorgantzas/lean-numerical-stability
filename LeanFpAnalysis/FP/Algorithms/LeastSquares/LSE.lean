@@ -4304,6 +4304,59 @@ theorem gqrAQ2Block_mulVec {r p q : ℕ}
         (matMulVec (p + q) Q (Fin.append (0 : Fin p → ℝ) y2)) := by
       exact rectMatMulVec_rectMatMul A Q (Fin.append (0 : Fin p → ℝ) y2)
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10 transport algebra:
+    any perturbation of the trailing `A Q₂` block can be represented by a
+    full source-coordinate perturbation of `A`.
+
+    The proof pads the `A Q₂` perturbation with zero leading `p` columns in
+    `Q`-coordinates, then maps it back by right multiplication with `Qᵀ`.
+    Multiplication by `Q` recovers the padded perturbation exactly, and the
+    Frobenius norm is unchanged because `Qᵀ` is orthogonal. -/
+theorem gqrAQ2Block_exists_full_perturbation_of_trailing_delta
+    {r p q : ℕ}
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (DeltaC : Fin (r + q) → Fin q → ℝ)
+    (hQ : IsOrthogonal (p + q) Q) :
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+      (∀ (A : Fin (r + q) → Fin (p + q) → ℝ) i j,
+        gqrAQ2Block (fun i j => A i j + DeltaA i j) Q i j =
+          gqrAQ2Block A Q i j + DeltaC i j) ∧
+      frobNormRect DeltaA =
+        frobNormRect (fun i : Fin (r + q) =>
+          Fin.append (fun _ : Fin p => 0) (DeltaC i)) := by
+  let DeltaAQ : Fin (r + q) → Fin (p + q) → ℝ :=
+    fun i => Fin.append (fun _ : Fin p => 0) (DeltaC i)
+  let DeltaA : Fin (r + q) → Fin (p + q) → ℝ :=
+    matMulRectRight DeltaAQ (matTranspose Q)
+  have hleft : rectMatMul (matTranspose Q) Q = idMatrix (p + q) := by
+    ext a b
+    simpa [rectMatMul, idMatrix] using hQ.left_inv a b
+  have hrecover : rectMatMul (rectMatMul DeltaAQ (matTranspose Q)) Q =
+      DeltaAQ := by
+    calc
+      rectMatMul (rectMatMul DeltaAQ (matTranspose Q)) Q =
+          rectMatMul DeltaAQ (rectMatMul (matTranspose Q) Q) :=
+            rectMatMul_assoc DeltaAQ (matTranspose Q) Q
+      _ = rectMatMul DeltaAQ (idMatrix (p + q)) := by
+            rw [hleft]
+      _ = DeltaAQ := rectMatMul_id_right DeltaAQ
+  refine ⟨DeltaA, ?_, ?_⟩
+  · intro A i j
+    have htrail :
+        matMulRect (r + q) (p + q) (p + q) DeltaA Q i
+            (Fin.natAdd p j) =
+          DeltaC i j := by
+      have hentry := congrFun (congrFun hrecover i) (Fin.natAdd p j)
+      simpa [DeltaA, DeltaAQ, rectMatMul, matMulRect, matMulRectRight,
+        Fin.append_right] using hentry
+    have hdist := congrFun (congrFun
+      (matMulRect_add_left (r + q) (p + q) (p + q) A DeltaA Q) i)
+      (Fin.natAdd p j)
+    simpa [gqrAQ2Block, htrail] using hdist
+  · simpa [DeltaA, DeltaAQ] using
+      (frobNormRect_orthogonal_right DeltaAQ (matTranspose Q)
+        (IsOrthogonal.transpose hQ))
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction route:
     the `A Q₂` block has trivial kernel using only the constraint block
     identity `B Q = [S 0]`, orthogonality of `Q`, and the local
