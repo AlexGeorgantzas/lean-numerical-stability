@@ -22883,6 +22883,22 @@ theorem higham9_15_normalized_G_split_frobNorm_step_bound {n : ℕ}
     hres.trans (add_le_add le_rfl hmul)
   exact max_le (hb.1.trans hstep) (hb.2.trans hstep)
 
+/-- **Theorem 9.15 support**, residual Frobenius product bound from the
+normwise normalized split. -/
+theorem higham9_15_normalized_G_residual_frobNormRect_le_add_product {n : ℕ}
+    (G X Y : Matrix (Fin n) (Fin n) ℝ) :
+    frobNormRect (G - X * Y) ≤
+      frobNormRect G + frobNormRect X * frobNormRect Y := by
+  have hres :
+      frobNormRect (G - X * Y) ≤
+        frobNormRect G + frobNormRect (X * Y) :=
+    frobNormRect_sub_le G (X * Y)
+  have hmul :
+      frobNormRect (X * Y) ≤ frobNormRect X * frobNormRect Y := by
+    simpa [rectMatMul, Matrix.mul_apply] using
+      (frobNormRect_rectMatMul_le X Y)
+  exact hres.trans (add_le_add le_rfl hmul)
+
 /-- **Theorem 9.15 support**, square-level residual product bound from the
 normwise normalized split. -/
 theorem higham9_15_normalized_G_residual_frobNormSqRect_le_add_product_sq
@@ -23018,6 +23034,26 @@ theorem higham9_15_normalized_G_residual_frobNormSqRect_le_linear_step_sq_of_min
     add_nonneg (frobNormRect_nonneg _)
       (mul_nonneg (opNorm2_nonneg _) hmax_nonneg)
   exact hprod.trans (by nlinarith)
+
+/-- **Theorem 9.15 support**, residual Frobenius bound with the product term
+linearized by a supplied min-factor hypothesis. -/
+theorem higham9_15_normalized_G_residual_frobNormRect_le_linear_step_of_min_factor_bound
+    {n : ℕ}
+    (G X Y : Matrix (Fin n) (Fin n) ℝ)
+    (hmin :
+      min (frobNormRect X) (frobNormRect Y) ≤ opNorm2 G) :
+    frobNormRect (G - X * Y) ≤
+      frobNormRect G +
+        opNorm2 G * max (frobNormRect X) (frobNormRect Y) := by
+  have hprod :=
+    higham9_15_normalized_G_residual_frobNormRect_le_add_product
+      G X Y
+  have hquad :
+      frobNormRect X * frobNormRect Y ≤
+        opNorm2 G * max (frobNormRect X) (frobNormRect Y) :=
+    higham9_15_mul_le_eta_mul_max_of_min_le
+      (frobNormRect_nonneg X) (frobNormRect_nonneg Y) hmin
+  exact hprod.trans (add_le_add le_rfl hquad)
 
 /-- **Theorem 9.15**, conditional ratio bound from the normalized split when
 one normalized factor is already controlled by the small operator parameter.
@@ -23690,6 +23726,23 @@ theorem higham9_15_normalized_Gtilde_split_frobNorm_step_bound {n : ℕ}
     hres.trans (add_le_add le_rfl hmul)
   exact max_le (hb.1.trans hstep) (hb.2.trans hstep)
 
+/-- **Theorem 9.15 support**, residual Frobenius product bound from the
+componentwise-sign normalized split. -/
+theorem higham9_15_normalized_Gtilde_residual_frobNormRect_le_add_product
+    {n : ℕ}
+    (Gtilde X Y : Matrix (Fin n) (Fin n) ℝ) :
+    frobNormRect (Gtilde + X * Y) ≤
+      frobNormRect Gtilde + frobNormRect X * frobNormRect Y := by
+  have hres :
+      frobNormRect (Gtilde + X * Y) ≤
+        frobNormRect Gtilde + frobNormRect (X * Y) :=
+    frobNormRect_add_le Gtilde (X * Y)
+  have hmul :
+      frobNormRect (X * Y) ≤ frobNormRect X * frobNormRect Y := by
+    simpa [rectMatMul, Matrix.mul_apply] using
+      (frobNormRect_rectMatMul_le X Y)
+  exact hres.trans (add_le_add le_rfl hmul)
+
 /-- **Theorem 9.15 support**, square-level residual product bound from the
 componentwise-sign normalized split. -/
 theorem higham9_15_normalized_Gtilde_residual_frobNormSqRect_le_add_product_sq
@@ -23755,6 +23808,27 @@ theorem higham9_15_normalized_Gtilde_residual_frobNormSqRect_le_linear_step_sq_o
     add_nonneg (frobNormRect_nonneg _)
       (mul_nonneg (opNorm2_nonneg _) hmax_nonneg)
   exact hprod.trans (by nlinarith)
+
+/-- **Theorem 9.15 support**, residual Frobenius bound for the signed
+componentwise split with the product term linearized by a supplied min-factor
+hypothesis. -/
+theorem higham9_15_normalized_Gtilde_residual_frobNormRect_le_linear_step_of_min_factor_bound
+    {n : ℕ}
+    (Gtilde X Y : Matrix (Fin n) (Fin n) ℝ)
+    (hmin :
+      min (frobNormRect X) (frobNormRect Y) ≤ opNorm2 Gtilde) :
+    frobNormRect (Gtilde + X * Y) ≤
+      frobNormRect Gtilde +
+        opNorm2 Gtilde * max (frobNormRect X) (frobNormRect Y) := by
+  have hprod :=
+    higham9_15_normalized_Gtilde_residual_frobNormRect_le_add_product
+      Gtilde X Y
+  have hquad :
+      frobNormRect X * frobNormRect Y ≤
+        opNorm2 Gtilde * max (frobNormRect X) (frobNormRect Y) :=
+    higham9_15_mul_le_eta_mul_max_of_min_le
+      (frobNormRect_nonneg X) (frobNormRect_nonneg Y) hmin
+  exact hprod.trans (add_le_add le_rfl hquad)
 
 /-- **Theorem 9.15**, final scalar ratio handoff for the componentwise
 `Gtilde` route once a normalized Barrlund--Sun linearized step bound has been
