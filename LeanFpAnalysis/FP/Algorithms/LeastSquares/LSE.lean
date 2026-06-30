@@ -9425,6 +9425,63 @@ theorem theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of
     hcert hSpert_lower hL22pert_lower hSpert_diag hL22pert_diag
       hDeltaA hDeltab hDeltaB hb_tail
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), constructed-source
+    certificate with the `gamma < 1` triangular preservation guards derived
+    from doubled `gammaValid` hypotheses.
+
+    This is the same certificate surface as
+    `theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of_gamma_lt_one`,
+    but exposes the standard floating-point smallness assumptions
+    `gammaValid fp (2*p)` and `gammaValid fp (2*q)` instead of explicit
+    inequalities on `gamma`. -/
+theorem theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of_double_gammaValid
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (gammaA gammaB : ℝ)
+    (Deltab : Fin (r + q) → ℝ)
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalid2S : gammaValid fp (2 * p))
+    (hvalid2L22 : gammaValid fp (2 * q)) :
+    ∃ (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ),
+      (∀ i j, |DeltaS i j| ≤ gamma fp p * |h.S i j|) ∧
+      (∀ i j, |DeltaL22 i j| ≤ gamma fp q * |h.L22 i j|) ∧
+      frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S ∧
+      frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 ∧
+      (let Spert : Fin p → Fin p → ℝ :=
+          fun i j => h.S i j + DeltaS i j
+       let L22pert : Fin q → Fin q → ℝ :=
+          fun i j => h.L22 i j + DeltaL22 i j
+       let Apert : Fin (r + q) → Fin (p + q) → ℝ :=
+          gqrSourceAFromBlocks h.Q h.U h.L11 h.L21 L22pert
+       let Bpert : Fin p → Fin (p + q) → ℝ :=
+          gqrSourceBFromBlocks h.Q Spert
+       let DeltaA : Fin (r + q) → Fin (p + q) → ℝ :=
+          fun i j => Apert i j - A i j
+       let DeltaB : Fin p → Fin (p + q) → ℝ :=
+          fun i j => Bpert i j - B i j
+       frobNormRect DeltaA ≤ gammaA * frobNormRect A →
+       vecNorm2 Deltab ≤ gammaA * vecNorm2 b →
+       frobNormRect DeltaB ≤ gammaB * frobNormRect B →
+       (∀ i : Fin q,
+          matMulVec (r + q) (matTranspose h.U)
+              (fun i => b i + Deltab i) (Fin.natAdd r i) =
+            matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i)) →
+       Nonempty
+        (Theorem20_10PartAPerturbationCertificate A B b d
+          (theorem20_10_gqr_xhat fp h b d) gammaA gammaB)) := by
+  exact
+    theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of_gamma_lt_one
+      fp h b d gammaA gammaB Deltab hgammaB_nonneg hSdiag hL22diag
+      (gammaValid_mono fp (by omega) hvalid2S)
+      (gammaValid_mono fp (by omega) hvalid2L22)
+      (gamma_lt_one fp p hvalid2S)
+      (gamma_lt_one fp q hvalid2L22)
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), certificate-to-exact-core
     handoff.
 
