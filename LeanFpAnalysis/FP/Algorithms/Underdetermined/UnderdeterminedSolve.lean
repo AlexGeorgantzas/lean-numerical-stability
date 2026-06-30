@@ -1736,6 +1736,34 @@ theorem higham21_rectOpNorm2Le_of_componentwise_data_bound {m n : ℕ}
     hDeltaComponent
     (higham21_rectOpNorm2Le_const_mul_of_nonneg E heps hE)
 
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    the dimension factor in the conservative source scalar bound has the
+    expected quadratic form. -/
+theorem higham21_sqrt_nat_cast_mul_self (m : ℕ) :
+    Real.sqrt ((m : ℝ) * (m : ℝ)) = (m : ℝ) := by
+  rw [← sq]
+  rw [Real.sqrt_sq_eq_abs]
+  exact abs_of_nonneg (by exact_mod_cast Nat.zero_le m)
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    quadratic source-size scalar bound for the conservative Chapter 7 factor. -/
+theorem higham21_lemma21_2_source_factor_le_of_quadratic_bound
+    (m : ℕ) (rho2 tau omega : ℝ)
+    (hSourceFactor_le :
+      2 * (m : ℝ) ^ 2 * tau * omega ≤ (1 - rho2)⁻¹) :
+    tau *
+        (Real.sqrt ((m : ℝ) * (m : ℝ)) *
+          (((m : ℝ) * 2) * omega)) ≤
+      (1 - rho2)⁻¹ := by
+  calc
+    tau *
+        (Real.sqrt ((m : ℝ) * (m : ℝ)) *
+          (((m : ℝ) * 2) * omega))
+        = 2 * (m : ℝ) ^ 2 * tau * omega := by
+          rw [higham21_sqrt_nat_cast_mul_self m]
+          ring
+    _ ≤ (1 - rho2)⁻¹ := hSourceFactor_le
+
 /-- Expansion of the Chapter 21 Gram perturbation
     `(A + DeltaA2)(A + DeltaA2)^T - AA^T`. -/
 theorem undetGramPerturbation_eq_sum {m n : ℕ}
@@ -3886,6 +3914,65 @@ theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_fa
     (fun hx =>
       higham21_rectOpNorm2Le_of_componentwise_data_bound DeltaA2 E
         (hDataEpsNonneg hx) (hDeltaA2Component hx) (hEOp hx))
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    componentwise/operator handoff with the conservative source scalar factor
+    supplied in the simpler quadratic dimension form. -/
+theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_deltaA2_component_op_bounds_quadratic_source_factor
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (E : Fin m → Fin n → ℝ)
+    (rho1 rho2 alpha sigma eps rhoG tau omega e : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hDataEpsNonneg : x ≠ 0 → 0 ≤ eps)
+    (hDataEpsLeRho : x ≠ 0 → eps ≤ rhoG)
+    (hrhoG : x ≠ 0 → 0 ≤ rhoG)
+    (hEOp : x ≠ 0 → rectOpNorm2Le E e)
+    (he : x ≠ 0 → 0 ≤ e)
+    (hEpsE_le : x ≠ 0 → eps * e ≤ rho2)
+    (hRowRadius : x ≠ 0 →
+      rhoG *
+          (omega *
+            ((m : ℝ) *
+              ((n : ℝ) *
+                (sigma * e + e * sigma + eps * e * e)))) ≤
+        (1 / 2 : ℝ))
+    (hGramLeftInv : x ≠ 0 → IsLeftInverse m (rectGram A) AAT_inv)
+    (hDataE : x ≠ 0 → ∀ i k, 0 ≤ E i k)
+    (hDeltaA2Component : x ≠ 0 →
+      ∀ i k, |DeltaA2 i k| ≤ eps * E i k)
+    (hxTranspose : x ≠ 0 →
+      x =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : x ≠ 0 → 3 * max rho1 rho2 < 1)
+    (halpha : x ≠ 0 → 0 ≤ alpha)
+    (hsigma : x ≠ 0 → 0 ≤ sigma)
+    (halpha_le : x ≠ 0 → alpha ≤ rho1)
+    (hSigmaEpsE_le : x ≠ 0 → sigma + eps * e ≤ tau)
+    (hAATInv_le : infNorm AAT_inv ≤ omega)
+    (hSourceFactor_le :
+      2 * (m : ℝ) ^ 2 * tau * omega ≤ (1 - rho2)⁻¹)
+    (hAOp : x ≠ 0 → rectOpNorm2Le A sigma)
+    (hDeltaA1Op : x ≠ 0 → rectOpNorm2Le DeltaA1 alpha) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j)
+      b x :=
+  higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_deltaA2_component_op_bounds_of_componentwise_data_bound
+    hm A x DeltaA1 DeltaA2 b y AAT_inv E rho1 rho2 alpha sigma eps rhoG
+    tau omega e hDeltaA1 hDataEpsNonneg hDataEpsLeRho hrhoG hEOp he
+    hEpsE_le hRowRadius hGramLeftInv hDataE hDeltaA2Component hxTranspose
+    hsmall halpha hsigma halpha_le hSigmaEpsE_le hAATInv_le
+    (higham21_lemma21_2_source_factor_le_of_quadratic_bound
+      m rho2 tau omega hSourceFactor_le)
+    hAOp hDeltaA1Op
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     guarded source-factor handoff with perturbed Gram nonsingularity discharged
