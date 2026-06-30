@@ -2110,6 +2110,86 @@ theorem higham21_lemma21_2_perturbed_gram_det_ne_zero_of_componentwise_data_boun
     (undetGramPerturbation_abs_le_componentBudget A DeltaA2 E heps hE hDeltaA2)
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    monotonicity of the Chapter 7 first-product infinity-norm sensitivity in
+    the nonnegative componentwise perturbation budget. -/
+theorem higham21_ch7_first_product_infNorm_le_of_componentwise_le
+    {m : ℕ}
+    (A_inv E F : Fin m → Fin m → ℝ)
+    (hE_nonneg : ∀ i j, 0 ≤ E i j)
+    (hEF : ∀ i j, E i j ≤ F i j) :
+    infNorm (ch7InverseFirstProductSensitivity m A_inv E) ≤
+      infNorm (ch7InverseFirstProductSensitivity m A_inv F) := by
+  let PE : Fin m → Fin m → ℝ := ch7InverseFirstProductSensitivity m A_inv E
+  let PF : Fin m → Fin m → ℝ := ch7InverseFirstProductSensitivity m A_inv F
+  have hF_nonneg : ∀ i j, 0 ≤ F i j := by
+    intro i j
+    exact (hE_nonneg i j).trans (hEF i j)
+  have hPE_nonneg : ∀ i j, 0 ≤ PE i j := by
+    intro i j
+    exact ch7InverseFirstProductSensitivity_nonneg m A_inv E hE_nonneg i j
+  have hPF_nonneg : ∀ i j, 0 ≤ PF i j := by
+    intro i j
+    exact ch7InverseFirstProductSensitivity_nonneg m A_inv F hF_nonneg i j
+  have hPE_le_PF : ∀ i j, PE i j ≤ PF i j := by
+    intro i j
+    simpa [PE, PF, ch7InverseFirstProductSensitivity] using
+      ch7_matMul_le_of_nonneg_left m (absMatrix m A_inv) E F
+        (fun i j => abs_nonneg (A_inv i j)) hEF i j
+  refine infNorm_le_of_row_sum_le PE ?_ (infNorm_nonneg PF)
+  intro i
+  calc
+    ∑ j : Fin m, |PE i j| = ∑ j : Fin m, PE i j := by
+      apply Finset.sum_congr rfl
+      intro j _
+      exact abs_of_nonneg (hPE_nonneg i j)
+    _ ≤ ∑ j : Fin m, PF i j := by
+      exact Finset.sum_le_sum fun j _ => hPE_le_PF i j
+    _ = ∑ j : Fin m, |PF i j| := by
+      apply Finset.sum_congr rfl
+      intro j _
+      exact (abs_of_nonneg (hPF_nonneg i j)).symm
+    _ ≤ infNorm PF :=
+      row_sum_le_infNorm PF i
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    source-budget handoff for the Chapter 7 first-product radius condition.
+    If the induced Gram perturbation budget is componentwise bounded by a
+    nonnegative source Gram budget, then a radius condition for the source
+    budget implies the radius condition for the induced budget. -/
+theorem higham21_lemma21_2_gram_first_product_radius_of_componentwise_budget_bound
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (E : Fin m → Fin n → ℝ)
+    (EGram : Fin m → Fin m → ℝ)
+    (eps rhoG : ℝ)
+    (heps : 0 ≤ eps)
+    (hrhoG : 0 ≤ rhoG)
+    (hE : ∀ i k, 0 ≤ E i k)
+    (hBudget_le :
+      ∀ i j, undetGramPerturbationComponentBudget A E eps i j ≤ EGram i j)
+    (hSourceRadius :
+      rhoG * infNorm (ch7InverseFirstProductSensitivity m AAT_inv EGram) ≤
+        (1 / 2 : ℝ)) :
+    rhoG *
+        infNorm
+          (ch7InverseFirstProductSensitivity m AAT_inv
+            (undetGramPerturbationComponentBudget A E eps)) ≤
+      (1 / 2 : ℝ) := by
+  have hBudget_nonneg :
+      ∀ i j, 0 ≤ undetGramPerturbationComponentBudget A E eps i j :=
+    undetGramPerturbationComponentBudget_nonneg A E heps hE
+  have hsens_le :
+      infNorm
+          (ch7InverseFirstProductSensitivity m AAT_inv
+            (undetGramPerturbationComponentBudget A E eps)) ≤
+        infNorm (ch7InverseFirstProductSensitivity m AAT_inv EGram) :=
+    higham21_ch7_first_product_infNorm_le_of_componentwise_le
+      AAT_inv (undetGramPerturbationComponentBudget A E eps) EGram
+      hBudget_nonneg hBudget_le
+  exact (mul_le_mul_of_nonneg_left hsens_le hrhoG).trans hSourceRadius
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     perturbed Gram-pseudoinverse operator-bound reduction.  Bounds for `A`,
     the second perturbation `DeltaA2`, and the inverse candidate for
     `(A + DeltaA2)(A + DeltaA2)^T` imply the operator bound for the concrete
