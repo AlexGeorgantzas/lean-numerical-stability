@@ -8703,6 +8703,117 @@ theorem theorem20_10_gqr_xhat_supplied_perturbed_factor_minimizer_certificate
       fp h hpert b d bpert dpert DeltaS DeltaL22 hQ hS hL21 hL22 hd
       hb_tail hS_inj hSeq hL22eq
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
+    supplied perturbed-factor rank and minimizer handoff.
+
+    Nonzero diagonals of the supplied perturbed triangular blocks `S` and
+    `L₂₂` imply the perturbed source rank assumptions, and the same hypotheses
+    used by `theorem20_10_gqr_xhat_isLSEMinimizer_of_supplied_perturbed_triangular_factors`
+    identify the named computed `xhat` as an exact minimizer for that perturbed
+    problem.  This does not prove that finite-precision perturbations preserve
+    the diagonals; it isolates the exact GQR algebra once those perturbed
+    blocks have been supplied. -/
+theorem theorem20_10_gqr_xhat_rank_and_minimizer_of_supplied_perturbed_triangular_factors
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    {Apert : Fin (r + q) → Fin (p + q) → ℝ}
+    {Bpert : Fin p → Fin (p + q) → ℝ}
+    (hpert : GeneralizedQRFactorization r p q Apert Bpert)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (bpert : Fin (r + q) → ℝ) (dpert : Fin p → ℝ)
+    (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ)
+    (hQ : hpert.Q = h.Q)
+    (hS : hpert.S = fun i j => h.S i j + DeltaS i j)
+    (hL21 : hpert.L21 = h.L21)
+    (hL22 : hpert.L22 = fun i j => h.L22 i j + DeltaL22 i j)
+    (hd : dpert = d)
+    (hb_tail : ∀ i : Fin q,
+      matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) =
+        matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i))
+    (hSdiag_pert : ∀ i : Fin p, hpert.S i i ≠ 0)
+    (hL22diag_pert : ∀ i : Fin q, hpert.L22 i i ≠ 0)
+    (hSeq :
+      rectMatMulVec (fun i j => h.S i j + DeltaS i j)
+        (theorem20_10_gqr_y1hat fp h d) = d)
+    (hL22eq :
+      rectMatMulVec (fun i j => h.L22 i j + DeltaL22 i j)
+        (theorem20_10_gqr_y2hat fp h b d) =
+          theorem20_10_gqr_rhs2hat fp h b d) :
+    LSEFullRowRank Bpert ∧
+      LSEStackedFullColumnRank Apert Bpert ∧
+        IsLSEMinimizer Apert bpert Bpert dpert
+          (theorem20_10_gqr_xhat fp h b d) := by
+  have hrank :
+      LSEFullRowRank Bpert ∧ LSEStackedFullColumnRank Apert Bpert :=
+    (hpert.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero).2
+      ⟨hSdiag_pert, hL22diag_pert⟩
+  have hS_inj : Function.Injective (rectMatMulVec hpert.S) :=
+    (hpert.s_bijective_of_diag_ne_zero hSdiag_pert).1
+  have hmin :
+      IsLSEMinimizer Apert bpert Bpert dpert
+        (theorem20_10_gqr_xhat fp h b d) :=
+    theorem20_10_gqr_xhat_isLSEMinimizer_of_supplied_perturbed_triangular_factors
+      fp h hpert b d bpert dpert DeltaS DeltaL22 hQ hS hL21 hL22 hd
+      hb_tail hS_inj hSeq hL22eq
+  exact ⟨hrank.1, hrank.2, hmin⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
+    bounded triangular-solve witnesses plus supplied-factor rank/minimizer
+    handoff.
+
+    This strengthens
+    `theorem20_10_gqr_xhat_supplied_perturbed_factor_minimizer_certificate` by
+    also returning the perturbed source rank conditions when the supplied
+    perturbed triangular factors have nonzero diagonals. -/
+theorem theorem20_10_gqr_xhat_supplied_perturbed_factor_rank_minimizer_certificate
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalidS : gammaValid fp p)
+    (hvalidL22 : gammaValid fp q) :
+    ∃ (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ),
+      (∀ i j, |DeltaS i j| ≤ gamma fp p * |h.S i j|) ∧
+      (∀ i j, |DeltaL22 i j| ≤ gamma fp q * |h.L22 i j|) ∧
+      frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S ∧
+      frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 ∧
+      (∀ {Apert : Fin (r + q) → Fin (p + q) → ℝ}
+          {Bpert : Fin p → Fin (p + q) → ℝ}
+          (hpert : GeneralizedQRFactorization r p q Apert Bpert)
+          (bpert : Fin (r + q) → ℝ) (dpert : Fin p → ℝ),
+        hpert.Q = h.Q →
+        hpert.S = (fun i j => h.S i j + DeltaS i j) →
+        hpert.L21 = h.L21 →
+        hpert.L22 = (fun i j => h.L22 i j + DeltaL22 i j) →
+        dpert = d →
+        (∀ i : Fin q,
+          matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) =
+            matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i)) →
+        (∀ i : Fin p, hpert.S i i ≠ 0) →
+        (∀ i : Fin q, hpert.L22 i i ≠ 0) →
+        LSEFullRowRank Bpert ∧
+          LSEStackedFullColumnRank Apert Bpert ∧
+            IsLSEMinimizer Apert bpert Bpert dpert
+              (theorem20_10_gqr_xhat fp h b d)) := by
+  rcases theorem20_10_gqr_xhat_triangular_solve_frob_perturbation_bound
+      fp h b d hSdiag hL22diag hvalidS hvalidL22 with
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, hSeq, hL22eq, _hxhat⟩
+  refine
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, ?_⟩
+  intro Apert Bpert hpert bpert dpert hQ hS hL21 hL22 hd hb_tail
+    hSdiag_pert hL22diag_pert
+  exact
+    theorem20_10_gqr_xhat_rank_and_minimizer_of_supplied_perturbed_triangular_factors
+      fp h hpert b d bpert dpert DeltaS DeltaL22 hQ hS hL21 hL22 hd
+      hb_tail hSdiag_pert hL22diag_pert hSeq hL22eq
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), finite-precision
     perturbation certificate for the mixed-stability branch.
 
