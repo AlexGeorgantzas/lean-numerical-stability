@@ -4007,6 +4007,62 @@ theorem higham9_5_rectGEReducedEntry_eq_DoolittleLUpdate_mul_pivot {m n : ℕ}
   unfold higham9_2_rectDoolittleLUpdate
   rw [div_mul_cancel₀ _ hUkk]
 
+/-- **Equation (9.5) / Algorithm 9.2**, upper-entry reduced residual form of a
+rectangular dense-loop certificate. -/
+theorem higham9_5_rectDenseLoopCertificate_upper_reduced_residual_compression
+    {m n : ℕ} {fp : FPModel} {hmn : n ≤ m}
+    {A L : Fin m → Fin n → ℝ} {U : Fin n → Fin n → ℝ}
+    (hC : higham9_2_RectDoolittleDenseLoopCertificate hmn A L U fp)
+    (k j : Fin n) (hkj : k.val ≤ j.val) :
+    |higham9_5_rectGEReducedEntry A L U k.val
+        (higham9_2_rectRow hmn k) j - U k j| ≤
+      gamma fp n * |U k j| := by
+  simpa [higham9_5_rectGEReducedEntry_eq_rectPrefixDot] using
+    hC.U_residual_compression k j hkj
+
+/-- **Equation (9.5) / Algorithm 9.2**, lower-entry reduced residual form of a
+rectangular dense-loop certificate. -/
+theorem higham9_5_rectDenseLoopCertificate_lower_reduced_residual_compression
+    {m n : ℕ} {fp : FPModel} {hmn : n ≤ m}
+    {A L : Fin m → Fin n → ℝ} {U : Fin n → Fin n → ℝ}
+    (hC : higham9_2_RectDoolittleDenseLoopCertificate hmn A L U fp)
+    (i : Fin m) (k : Fin n) (hki : k.val < i.val) :
+    |higham9_5_rectGEReducedEntry A L U k.val i k -
+        L i k * U k k| ≤
+      gamma fp n * |L i k * U k k| := by
+  simpa [higham9_5_rectGEReducedEntry_eq_rectPrefixDot] using
+    hC.L_residual_compression i k hki
+
+/-- **Equation (9.5) / Algorithm 9.2**, upper-entry reduced residual form of a
+rectangular absolute-budget certificate. -/
+theorem higham9_5_rectAbsBudgetCertificate_upper_reduced_abs_residual
+    {m n : ℕ} {fp : FPModel} {hmn : n ≤ m}
+    {A L : Fin m → Fin n → ℝ} {U : Fin n → Fin n → ℝ}
+    {BU : Fin n → Fin n → ℝ} {BL : Fin m → Fin n → ℝ}
+    (hC : higham9_2_RectDoolittleDenseLoopAbsBudgetCertificate
+      hmn A L U fp BU BL)
+    (k j : Fin n) (hkj : k.val ≤ j.val) :
+    |higham9_5_rectGEReducedEntry A L U k.val
+        (higham9_2_rectRow hmn k) j - U k j| ≤
+      BU k j := by
+  simpa [higham9_5_rectGEReducedEntry_eq_rectPrefixDot] using
+    hC.U_abs_residual k j hkj
+
+/-- **Equation (9.5) / Algorithm 9.2**, lower-entry reduced residual form of a
+rectangular absolute-budget certificate. -/
+theorem higham9_5_rectAbsBudgetCertificate_lower_reduced_abs_residual
+    {m n : ℕ} {fp : FPModel} {hmn : n ≤ m}
+    {A L : Fin m → Fin n → ℝ} {U : Fin n → Fin n → ℝ}
+    {BU : Fin n → Fin n → ℝ} {BL : Fin m → Fin n → ℝ}
+    (hC : higham9_2_RectDoolittleDenseLoopAbsBudgetCertificate
+      hmn A L U fp BU BL)
+    (i : Fin m) (k : Fin n) (hki : k.val < i.val) :
+    |higham9_5_rectGEReducedEntry A L U k.val i k -
+        L i k * U k k| ≤
+      BL i k := by
+  simpa [higham9_5_rectGEReducedEntry_eq_rectPrefixDot] using
+    hC.L_abs_residual i k hki
+
 /-! ## §9.3 Error Analysis -/
 
 /-- **Theorem 9.3**, Doolittle-certified form:

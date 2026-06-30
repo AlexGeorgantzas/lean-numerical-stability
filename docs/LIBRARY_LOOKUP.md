@@ -1358,6 +1358,10 @@ Source-facing Chapter 9 wrappers:
 - `higham9_5_rectGEReducedEntry_eq_DoolittleUUpdate`
 - `higham9_5_rectGEReducedEntry_eq_DoolittleLNumerator`
 - `higham9_5_rectGEReducedEntry_eq_DoolittleLUpdate_mul_pivot`
+- `higham9_5_rectDenseLoopCertificate_upper_reduced_residual_compression`
+- `higham9_5_rectDenseLoopCertificate_lower_reduced_residual_compression`
+- `higham9_5_rectAbsBudgetCertificate_upper_reduced_abs_residual`
+- `higham9_5_rectAbsBudgetCertificate_lower_reduced_abs_residual`
 - `higham9_2_rectPrefixDot_abs_le_absLUProduct`
 - `higham9_5_rectGEReducedEntry_abs_le_maxEntryNorm_add_absLU_infNorm`
 - `higham9_5_rectPrefixRange_full_eq_matMul`
