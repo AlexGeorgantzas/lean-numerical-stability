@@ -5121,6 +5121,39 @@ theorem higham9_4_lu_solve_backward_error (fp : FPModel) (n : ℕ)
       (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
   lu_solve_backward_error_tight fp n A L_hat U_hat b hL_diag hU_diag hLU hn hn3
 
+/-- **Algorithm 9.2 / Theorem 9.4**, exact Doolittle recurrence handoff to the
+LU-solve backward-error surface.  Exact recurrences give the factorization
+backward-error certificate; the triangular solves remain the modeled floating-
+point solves in `higham9_4_lu_solve_backward_error`. -/
+theorem higham9_4_exactDoolittle_recurrences_lu_solve_backward_error
+    {n : ℕ} {fp : FPModel} {A L U : Fin n → Fin n → ℝ}
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hL_diag : ∀ i : Fin n, L i i = 1)
+    (hL_upper_zero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hU_lower_zero : ∀ i j : Fin n, j.val < i.val → U i j = 0)
+    (hU_entry_eq : ∀ k j : Fin n, k.val ≤ j.val →
+      U k j = higham9_2_rectDoolittleUUpdate (Nat.le_refl n) A L U k j)
+    (hL_entry_eq : ∀ i k : Fin n, k.val < i.val →
+      L i k = higham9_2_rectDoolittleLUpdate A L U i k)
+    (hU_diag : ∀ k : Fin n, U k k ≠ 0) :
+    let y_hat := fl_forwardSub fp n L b
+    let x_hat := fl_backSub fp n U y_hat
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤ gamma fp (3 * n) *
+        ∑ k : Fin n, |L i k| * |U k j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_4_lu_solve_backward_error fp n A L U b
+    (by
+      intro i
+      rw [hL_diag i]
+      norm_num)
+    hU_diag
+    (higham9_3_exactDoolittle_recurrences_to_LUBackwardError_gamma hn
+      hL_diag hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq hU_diag)
+    hn hn3
+
 /-- **Problem 9.4**, row-pivoted analogue of Theorem 9.4.
 
 If the LU backward-error certificate is for `P A`, the triangular solves use
