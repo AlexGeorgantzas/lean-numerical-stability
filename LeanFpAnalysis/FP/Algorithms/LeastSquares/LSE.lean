@@ -12672,6 +12672,144 @@ theorem theorem20_10_householder_constructed_perturbed_gqr_reversed_rhs_tail
           simpa [Urev, Crev] using hDeltab_tail j
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    exact method handoff for the constructed rounded Householder GQR record,
+    stated with the matching reversed-panel transformed RHS tail.
+
+    This is the diagonal-conditioned exact-method counterpart of
+    `theorem20_10_householder_constructed_perturbed_gqr_reversed_rhs_tail`.
+    The exact triangular coordinate equation uses the computed reversed RHS
+    tail `beta`, while the minimizer statement is for the perturbed right-hand
+    side `b + Deltab` certified by the Householder RHS backward error. -/
+theorem theorem20_10_householder_constructed_perturbed_gqr_exact_method_of_diagonal_reversed_rhs_tail
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2)) :
+    let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+      fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+    let Rb : Fin (p + q) → Fin p → ℝ :=
+      fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)
+    let S : Fin p → Fin p → ℝ :=
+      matTranspose (fun i : Fin p => fun j : Fin p =>
+        Rb (Fin.castAdd q i) j)
+    let beta : Fin q → ℝ :=
+      theorem20_10_householder_reversed_AQ2_rhs_tail fp A Qb b
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab : Fin (r + q) → ℝ,
+      (∀ i j,
+        B i j + DeltaB i j =
+          matMulRect (p + q) (p + q) p Qb Rb j i) ∧
+      frobNormRect DeltaA ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect A ∧
+      frobNormRect DeltaB ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        theorem20_10_householder_rhs_conservative_gamma fp r p q *
+          vecNorm2 b ∧
+      ∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        hpert.Q = Qb ∧ hpert.S = S ∧
+        ((∀ i : Fin p, hpert.S i i ≠ 0) →
+          (∀ i : Fin q, hpert.L22 i i ≠ 0) →
+          (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+            rectMatMulVec hpert.S yz.1 = d ∧
+            rectMatMulVec hpert.L22 yz.2 =
+              (fun i : Fin q => beta i - rectMatMulVec hpert.L21 yz.1 i) ∧
+            IsLSEMinimizer
+              (fun i j => A i j + DeltaA i j)
+              (fun i => b i + Deltab i)
+              (fun i j => B i j + DeltaB i j) d
+              (matMulVec (p + q) hpert.Q (Fin.append yz.1 yz.2))) ∧
+          (∃! x : Fin (p + q) → ℝ,
+            IsLSEMinimizer
+              (fun i j => A i j + DeltaA i j)
+              (fun i => b i + Deltab i)
+              (fun i j => B i j + DeltaB i j) d x)) := by
+  dsimp
+  let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+    fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+  let beta : Fin q → ℝ :=
+    theorem20_10_householder_reversed_AQ2_rhs_tail fp A Qb b
+  rcases
+    theorem20_10_householder_constructed_perturbed_gqr_reversed_rhs_tail
+      fp A B b hp hq hvalidA hvalidB hhalf with
+    ⟨DeltaA, DeltaB, Deltab, hDeltaBrep, hDeltaA, hDeltaB, hDeltab,
+      hpert, hQeq, hSeq, hb_tail⟩
+  refine
+    ⟨DeltaA, DeltaB, Deltab, hDeltaBrep, hDeltaA, hDeltaB, hDeltab,
+      hpert, hQeq, hSeq, ?_⟩
+  intro hSdiag hL22diag
+  have hrank :
+      LSEFullRowRank (fun i j => B i j + DeltaB i j) ∧
+        LSEStackedFullColumnRank
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j) :=
+    (hpert.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero).2
+      ⟨hSdiag, hL22diag⟩
+  let bpert : Fin (r + q) → ℝ := fun i => b i + Deltab i
+  rcases
+    hpert.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank
+      (b := bpert) (d := d) hrank.1 hrank.2 with
+    ⟨yz, hyz, hyz_unique⟩
+  have hyz_beta :
+      rectMatMulVec hpert.S yz.1 = d ∧
+        rectMatMulVec hpert.L22 yz.2 =
+          (fun i : Fin q => beta i - rectMatMulVec hpert.L21 yz.1 i) ∧
+        IsLSEMinimizer
+          (fun i j => A i j + DeltaA i j)
+          bpert
+          (fun i j => B i j + DeltaB i j) d
+          (matMulVec (p + q) hpert.Q (Fin.append yz.1 yz.2)) := by
+    rcases hyz with ⟨hSyz, hL22yz, hmin⟩
+    refine ⟨hSyz, ?_, hmin⟩
+    ext i
+    calc
+      rectMatMulVec hpert.L22 yz.2 i
+          = matMulVec (r + q) (matTranspose hpert.U) bpert
+              (Fin.natAdd r i) - rectMatMulVec hpert.L21 yz.1 i := by
+              exact congrFun hL22yz i
+      _ = beta i - rectMatMulVec hpert.L21 yz.1 i := by
+              rw [hb_tail i]
+  have hyz_beta_unique :
+      ∀ yz' : (Fin p → ℝ) × (Fin q → ℝ),
+        (rectMatMulVec hpert.S yz'.1 = d ∧
+          rectMatMulVec hpert.L22 yz'.2 =
+            (fun i : Fin q => beta i - rectMatMulVec hpert.L21 yz'.1 i) ∧
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            bpert
+            (fun i j => B i j + DeltaB i j) d
+            (matMulVec (p + q) hpert.Q (Fin.append yz'.1 yz'.2))) →
+          yz' = yz := by
+    intro yz' hyz'
+    apply hyz_unique yz'
+    rcases hyz' with ⟨hSyz', hL22yz', hmin'⟩
+    refine ⟨hSyz', ?_, hmin'⟩
+    ext i
+    calc
+      rectMatMulVec hpert.L22 yz'.2 i
+          = beta i - rectMatMulVec hpert.L21 yz'.1 i := by
+              exact congrFun hL22yz' i
+      _ = matMulVec (r + q) (matTranspose hpert.U) bpert
+              (Fin.natAdd r i) - rectMatMulVec hpert.L21 yz'.1 i := by
+              dsimp [beta]
+              rw [← hb_tail i]
+  exact
+    ⟨⟨yz, hyz_beta, hyz_beta_unique⟩,
+      hpert.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank
+        (b := bpert) (d := d) hrank.1 hrank.2⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     rank obstruction for the rounded Householder perturbed GQR record.
 
     After `theorem20_10_householder_constructed_perturbed_gqr_factorization`
