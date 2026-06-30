@@ -9996,6 +9996,132 @@ theorem theorem20_10_partA_certificate_of_supplied_perturbed_factor_zero_deltaX_
        hDeltab := hDeltab
        hDeltaB := hDeltaB }⟩
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), constructed-source
+    transformed-tail version of the supplied-factor Part A certificate.
+
+    This removes the external `hpert` input from
+    `theorem20_10_partA_certificate_of_supplied_perturbed_factor_zero_deltaX_of_transformed_tail`.
+    It is the algebraic bridge needed by the rounded RHS path: the trailing
+    transformed vector is an explicit `beta`, and the remaining RHS obligation
+    is the honest equality `Uᵀ(b + Deltab) = beta` on the trailing block. -/
+theorem theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of_transformed_tail
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (beta : Fin q → ℝ) (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (gammaA gammaB : ℝ)
+    (Deltab : Fin (r + q) → ℝ)
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalidS : gammaValid fp p)
+    (hvalidL22 : gammaValid fp q) :
+    ∃ (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ),
+      (∀ i j, |DeltaS i j| ≤ gamma fp p * |h.S i j|) ∧
+      (∀ i j, |DeltaL22 i j| ≤ gamma fp q * |h.L22 i j|) ∧
+      frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S ∧
+      frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 ∧
+      (let Spert : Fin p → Fin p → ℝ :=
+          fun i j => h.S i j + DeltaS i j
+       let L22pert : Fin q → Fin q → ℝ :=
+          fun i j => h.L22 i j + DeltaL22 i j
+       let Apert : Fin (r + q) → Fin (p + q) → ℝ :=
+          gqrSourceAFromBlocks h.Q h.U h.L11 h.L21 L22pert
+       let Bpert : Fin p → Fin (p + q) → ℝ :=
+          gqrSourceBFromBlocks h.Q Spert
+       let DeltaA : Fin (r + q) → Fin (p + q) → ℝ :=
+          fun i j => Apert i j - A i j
+       let DeltaB : Fin p → Fin (p + q) → ℝ :=
+          fun i j => Bpert i j - B i j
+       IsLowerTriangular Spert →
+       IsLowerTriangular L22pert →
+       (∀ i : Fin p, Spert i i ≠ 0) →
+       (∀ i : Fin q, L22pert i i ≠ 0) →
+       frobNormRect DeltaA ≤ gammaA * frobNormRect A →
+       vecNorm2 Deltab ≤ gammaA * vecNorm2 b →
+       frobNormRect DeltaB ≤ gammaB * frobNormRect B →
+       (∀ i : Fin q,
+          matMulVec (r + q) (matTranspose h.U)
+              (fun i => b i + Deltab i) (Fin.natAdd r i) =
+            beta i) →
+       Nonempty
+        (Theorem20_10PartAPerturbationCertificate A B b d
+          (theorem20_10_gqr_xhat_of_transformed_tail fp h beta d)
+          gammaA gammaB)) := by
+  rcases
+    theorem20_10_gqr_xhat_of_transformed_tail_triangular_solve_frob_perturbation_bound
+      fp h beta d hSdiag hL22diag hvalidS hvalidL22 with
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, hSeq, hL22eq, _hxhat⟩
+  refine
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, ?_⟩
+  dsimp
+  intro hSpert_lower hL22pert_lower hSpert_diag hL22pert_diag
+    hDeltaA hDeltab hDeltaB hb_tail
+  let Spert : Fin p → Fin p → ℝ := fun i j => h.S i j + DeltaS i j
+  let L22pert : Fin q → Fin q → ℝ := fun i j => h.L22 i j + DeltaL22 i j
+  let Apert : Fin (r + q) → Fin (p + q) → ℝ :=
+    gqrSourceAFromBlocks h.Q h.U h.L11 h.L21 L22pert
+  let Bpert : Fin p → Fin (p + q) → ℝ :=
+    gqrSourceBFromBlocks h.Q Spert
+  let DeltaA_src : Fin (r + q) → Fin (p + q) → ℝ :=
+    fun i j => Apert i j - A i j
+  let DeltaB_src : Fin p → Fin (p + q) → ℝ :=
+    fun i j => Bpert i j - B i j
+  let hpert : GeneralizedQRFactorization r p q Apert Bpert :=
+    GeneralizedQRFactorization.of_source_blocks
+      h.Q h.U h.L11 h.L21 L22pert Spert
+      h.orthQ h.orthU hL22pert_lower hSpert_lower
+  have hApert_src :
+      (fun i j => A i j + DeltaA_src i j) = Apert := by
+    ext i j
+    dsimp [DeltaA_src]
+    ring
+  have hBpert_src :
+      (fun i j => B i j + DeltaB_src i j) = Bpert := by
+    ext i j
+    dsimp [DeltaB_src]
+    ring
+  have hrank :
+      LSEFullRowRank Bpert ∧ LSEStackedFullColumnRank Apert Bpert :=
+    (hpert.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero).2
+      ⟨fun i => by simpa [hpert, Spert] using hSpert_diag i,
+       fun i => by simpa [hpert, L22pert] using hL22pert_diag i⟩
+  have hBcert :
+      LSEFullRowRank (fun i j => B i j + DeltaB_src i j) := by
+    rw [hBpert_src]
+    exact hrank.1
+  have hstackcert :
+      LSEStackedFullColumnRank
+        (fun i j => A i j + DeltaA_src i j)
+        (fun i j => B i j + DeltaB_src i j) := by
+    rw [hApert_src, hBpert_src]
+    exact hrank.2
+  exact
+    ⟨{ DeltaA := DeltaA_src
+       DeltaB := DeltaB_src
+       Deltab := Deltab
+       hB := hBcert
+       hstack := hstackcert
+       near_exact_solution := by
+         intro x hx
+         have hx' : IsLSEMinimizer Apert
+             (fun i => b i + Deltab i) Bpert d x := by
+           rw [hApert_src, hBpert_src] at hx
+           exact hx
+         exact
+           theorem20_10_gqr_xhat_of_transformed_tail_zero_deltaX_of_supplied_perturbed_triangular_factors
+             fp h hpert beta d (fun i => b i + Deltab i) d DeltaS DeltaL22
+             gammaB rfl rfl rfl rfl rfl hb_tail
+             (fun i => by simpa [hpert, Spert] using hSpert_diag i)
+             (fun i => by simpa [hpert, L22pert] using hL22pert_diag i)
+             hSeq hL22eq hgammaB_nonneg hx'
+       hDeltaA := hDeltaA
+       hDeltab := hDeltab
+       hDeltaB := hDeltaB }⟩
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), supplied-factor
     constructor for the mixed-stability perturbation certificate.
 
