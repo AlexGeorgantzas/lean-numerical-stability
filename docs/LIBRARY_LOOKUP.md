@@ -1349,6 +1349,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_2_rectRoundedPrefixTrace_succ`
 - `higham9_2_rectRoundedPrefixTrace_of_stage_obligations`
 - `higham9_2_rectRoundedPrefixTrace_complete_of_stage_obligations`
+- `higham9_2_rectRoundedStageTrace_of_stage_obligations`
+- `higham9_2_rectStageObligations_to_rectDenseLoopCertificate`
 - `higham9_2_rectAbsBudgetCertificate_of_literal_doolittle_component_dominance`
 - `higham9_2_rectAbsBudgetCertificate_of_literal_doolittle_exact_product_margins`
 - `higham9_2_rectAbsBudgetCertificate_of_literal_doolittle_exact_product_numerator_margins`
@@ -1441,6 +1443,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_3_rectAbsBudgetCertificate_backward_error`
 - `higham9_3_rectRoundedStageTrace_backward_error`
 - `higham9_3_rectRoundedPrefixTrace_complete_backward_error`
+- `higham9_3_rectStageObligations_backward_error`
 - `higham9_3_rectLiteralDoolittle_source_budgets_backward_error`
 - `higham9_3_rectLiteralDoolittle_componentDominance_backward_error`
 - `higham9_3_rectLiteralDoolittle_exactProductMargins_backward_error`
