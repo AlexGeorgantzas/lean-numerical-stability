@@ -43653,6 +43653,120 @@ theorem higham9_14_rowDiagDom_exists_LUFactSpec_source_h_bound_actual_triangular
     fp n A L_hat U_hat b 3 u (by norm_num) hu hu_lt_one hn hLU hγ_le_u
     (hLU.det_ne_zero_iff_U_diag_ne_zero.mp hdetA) hGrowth
 
+/-- **Theorem 9.14**, column-dominant source-data exact-LU package with
+actual triangular solves specialized to the natural `γ_n` coefficient. -/
+theorem higham9_14_colDiagDom_exists_LUFactSpec_source_f_bound_actual_triangular_solves_gamma
+    {n : ℕ}
+    (A : Fin n → Fin n → ℝ)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hA_tridiag : IsTridiagonal n A)
+    (hColDom : IsDiagDominant n A) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n A L_hat U_hat ∧
+      (∀ i j : Fin n, |L_hat i j| ≤ 1) ∧
+      (∀ i j : Fin n,
+        ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ 3 * |A i j|) ∧
+      (∀ fp : FPModel, ∀ b : Fin n → ℝ,
+        gammaValid fp n →
+        let y_hat := fl_forwardSub fp n L_hat b
+        let x_hat := fl_backSub fp n U_hat y_hat
+        ∃ DeltaA : Fin n → Fin n → ℝ,
+          (∀ i j,
+            |DeltaA i j| ≤
+              3 * higham9_14_f (gamma fp n) * |A i j|) ∧
+          (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L_hat, U_hat, hLU, hL_bound, hGrowth, hSolve⟩ :=
+    higham9_14_colDiagDom_exists_LUFactSpec_source_f_bound_actual_triangular_solves
+      A hdetA hA_tridiag hColDom
+  refine ⟨L_hat, U_hat, hLU, hL_bound, hGrowth, ?_⟩
+  intro fp b hn
+  exact hSolve fp b (gamma fp n) (gamma_nonneg fp hn) hn le_rfl
+
+/-- **Theorem 9.14**, row-dominant source-data exact-LU package with actual
+triangular solves specialized to the natural `γ_n` coefficient. -/
+theorem higham9_14_rowDiagDom_exists_LUFactSpec_source_f_bound_actual_triangular_solves_gamma
+    {n : ℕ}
+    (A : Fin n → Fin n → ℝ)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hA_tridiag : IsTridiagonal n A)
+    (hRowDom : IsRowDiagDominant n A) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n A L_hat U_hat ∧
+      (∀ i j : Fin n,
+        ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ 3 * |A i j|) ∧
+      (∀ fp : FPModel, ∀ b : Fin n → ℝ,
+        gammaValid fp n →
+        let y_hat := fl_forwardSub fp n L_hat b
+        let x_hat := fl_backSub fp n U_hat y_hat
+        ∃ DeltaA : Fin n → Fin n → ℝ,
+          (∀ i j,
+            |DeltaA i j| ≤
+              3 * higham9_14_f (gamma fp n) * |A i j|) ∧
+          (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L_hat, U_hat, hLU, hGrowth, hSolve⟩ :=
+    higham9_14_rowDiagDom_exists_LUFactSpec_source_f_bound_actual_triangular_solves
+      A hdetA hA_tridiag hRowDom
+  refine ⟨L_hat, U_hat, hLU, hGrowth, ?_⟩
+  intro fp b hn
+  exact hSolve fp b (gamma fp n) (gamma_nonneg fp hn) hn le_rfl
+
+/-- **Theorem 9.14**, column-dominant source-data exact-LU package with
+actual triangular solves and final `h(γ_n)` coefficient. -/
+theorem higham9_14_colDiagDom_exists_LUFactSpec_source_h_bound_actual_triangular_solves_gamma
+    {n : ℕ}
+    (A : Fin n → Fin n → ℝ)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hA_tridiag : IsTridiagonal n A)
+    (hColDom : IsDiagDominant n A) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n A L_hat U_hat ∧
+      (∀ i j : Fin n, |L_hat i j| ≤ 1) ∧
+      (∀ i j : Fin n,
+        ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ 3 * |A i j|) ∧
+      (∀ fp : FPModel, ∀ b : Fin n → ℝ,
+        gammaValid fp n → gamma fp n < 1 →
+        let y_hat := fl_forwardSub fp n L_hat b
+        let x_hat := fl_backSub fp n U_hat y_hat
+        ∃ DeltaA : Fin n → Fin n → ℝ,
+          (∀ i j,
+            |DeltaA i j| ≤
+              3 * higham9_14_h (gamma fp n) * |A i j|) ∧
+          (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L_hat, U_hat, hLU, hL_bound, hGrowth, hSolve⟩ :=
+    higham9_14_colDiagDom_exists_LUFactSpec_source_h_bound_actual_triangular_solves
+      A hdetA hA_tridiag hColDom
+  refine ⟨L_hat, U_hat, hLU, hL_bound, hGrowth, ?_⟩
+  intro fp b hn hγ_lt_one
+  exact hSolve fp b (gamma fp n) (gamma_nonneg fp hn) hγ_lt_one hn le_rfl
+
+/-- **Theorem 9.14**, row-dominant source-data exact-LU package with actual
+triangular solves and final `h(γ_n)` coefficient. -/
+theorem higham9_14_rowDiagDom_exists_LUFactSpec_source_h_bound_actual_triangular_solves_gamma
+    {n : ℕ}
+    (A : Fin n → Fin n → ℝ)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hA_tridiag : IsTridiagonal n A)
+    (hRowDom : IsRowDiagDominant n A) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n A L_hat U_hat ∧
+      (∀ i j : Fin n,
+        ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ 3 * |A i j|) ∧
+      (∀ fp : FPModel, ∀ b : Fin n → ℝ,
+        gammaValid fp n → gamma fp n < 1 →
+        let y_hat := fl_forwardSub fp n L_hat b
+        let x_hat := fl_backSub fp n U_hat y_hat
+        ∃ DeltaA : Fin n → Fin n → ℝ,
+          (∀ i j,
+            |DeltaA i j| ≤
+              3 * higham9_14_h (gamma fp n) * |A i j|) ∧
+          (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L_hat, U_hat, hLU, hGrowth, hSolve⟩ :=
+    higham9_14_rowDiagDom_exists_LUFactSpec_source_h_bound_actual_triangular_solves
+      A hdetA hA_tridiag hRowDom
+  refine ⟨L_hat, U_hat, hLU, hGrowth, ?_⟩
+  intro fp b hn hγ_lt_one
+  exact hSolve fp b (gamma fp n) (gamma_nonneg fp hn) hγ_lt_one hn le_rfl
+
 /-- **Theorem 9.1 support**, Schur-complement inheritance of nonsingular
 leading principal blocks.  If all nonempty leading principal blocks of `A` are
 nonsingular, then every leading principal block of the first Schur complement
@@ -46103,6 +46217,62 @@ theorem higham9_14_totalNonnegative_exists_source_h_bound_actual_triangular_solv
     fp n A L_hat U_hat b u hu hu_lt_one hn hLU hγ_le_u
     (hLU.det_ne_zero_iff_U_diag_ne_zero.mp hdetA)
     (fun i j => le_of_eq (hOpt i j))
+
+/-- **Theorem 9.14**, total-nonnegative source-existence actual-solve package
+specialized to the natural `γ_n` coefficient. -/
+theorem higham9_14_totalNonnegative_exists_source_f_bound_actual_triangular_solves_gamma
+    {n : ℕ}
+    (A : Fin n → Fin n → ℝ)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n A L_hat U_hat ∧
+        (∀ i j : Fin n, 0 ≤ L_hat i j) ∧
+        (∀ i j : Fin n, 0 ≤ U_hat i j) ∧
+        (∀ i j : Fin n,
+          ∑ k : Fin n, |L_hat i k| * |U_hat k j| = |A i j|) ∧
+        (∀ fp : FPModel, ∀ b : Fin n → ℝ,
+          gammaValid fp n →
+          let y_hat := fl_forwardSub fp n L_hat b
+          let x_hat := fl_backSub fp n U_hat y_hat
+          ∃ DeltaA : Fin n → Fin n → ℝ,
+            (∀ i j,
+              |DeltaA i j| ≤ higham9_14_f (gamma fp n) * |A i j|) ∧
+            (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L_hat, U_hat, hLU, hL_nn, hU_nn, hOpt, hSolve⟩ :=
+    higham9_14_totalNonnegative_exists_source_f_bound_actual_triangular_solves
+      A hTN hdetA
+  refine ⟨L_hat, U_hat, hLU, hL_nn, hU_nn, hOpt, ?_⟩
+  intro fp b hn
+  exact hSolve fp b (gamma fp n) (gamma_nonneg fp hn) hn le_rfl
+
+/-- **Theorem 9.14**, total-nonnegative source-existence actual-solve package
+with final `h(γ_n)` coefficient. -/
+theorem higham9_14_totalNonnegative_exists_source_h_bound_actual_triangular_solves_gamma
+    {n : ℕ}
+    (A : Fin n → Fin n → ℝ)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdetA : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n A L_hat U_hat ∧
+        (∀ i j : Fin n, 0 ≤ L_hat i j) ∧
+        (∀ i j : Fin n, 0 ≤ U_hat i j) ∧
+        (∀ i j : Fin n,
+          ∑ k : Fin n, |L_hat i k| * |U_hat k j| = |A i j|) ∧
+        (∀ fp : FPModel, ∀ b : Fin n → ℝ,
+          gammaValid fp n → gamma fp n < 1 →
+          let y_hat := fl_forwardSub fp n L_hat b
+          let x_hat := fl_backSub fp n U_hat y_hat
+          ∃ DeltaA : Fin n → Fin n → ℝ,
+            (∀ i j,
+              |DeltaA i j| ≤ higham9_14_h (gamma fp n) * |A i j|) ∧
+            (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L_hat, U_hat, hLU, hL_nn, hU_nn, hOpt, hSolve⟩ :=
+    higham9_14_totalNonnegative_exists_source_h_bound_actual_triangular_solves
+      A hTN hdetA
+  refine ⟨L_hat, U_hat, hLU, hL_nn, hU_nn, hOpt, ?_⟩
+  intro fp b hn hγ_lt_one
+  exact hSolve fp b (gamma fp n) (gamma_nonneg fp hn) hγ_lt_one hn le_rfl
 
 /-- **Problem 9.6**, the Appendix A route made explicit: if the source-cited
 determinant inequalities supply positive proper leading principal blocks for a
@@ -49225,5 +49395,61 @@ theorem higham9_14_nonsingInv_totalNonnegative_exists_source_h_bound_actual_tria
       hγ_le_u hU_diag
       (fun i j => by
         exact le_of_eq (hOpt_hat i j))
+
+/-- **Problem 9.8 / Theorem 9.14**, actual-solve source bound for the
+nonsingular-inverse total-nonnegative class at the natural `γ_n` coefficient. -/
+theorem higham9_14_nonsingInv_totalNonnegative_exists_source_f_bound_actual_triangular_solves_gamma
+    {n : ℕ}
+    (A : Fin n → Fin n → ℝ)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n (nonsingInv n A) L_hat U_hat ∧
+        (∀ i j : Fin n,
+          ∑ k : Fin n, |L_hat i k| * |U_hat k j| =
+            |nonsingInv n A i j|) ∧
+        (∀ fp : FPModel, ∀ b : Fin n → ℝ,
+          gammaValid fp n →
+          let y_hat := fl_forwardSub fp n L_hat b
+          let x_hat := fl_backSub fp n U_hat y_hat
+          ∃ DeltaA : Fin n → Fin n → ℝ,
+            (∀ i j, |DeltaA i j| ≤
+              higham9_14_f (gamma fp n) * |nonsingInv n A i j|) ∧
+            (∀ i, ∑ j : Fin n,
+              (nonsingInv n A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L_hat, U_hat, hLU, hOpt, hSolve⟩ :=
+    higham9_14_nonsingInv_totalNonnegative_exists_source_f_bound_actual_triangular_solves
+      A hTN hdet
+  refine ⟨L_hat, U_hat, hLU, hOpt, ?_⟩
+  intro fp b hn
+  exact hSolve fp b (gamma fp n) (gamma_nonneg fp hn) hn le_rfl
+
+/-- **Problem 9.8 / Theorem 9.14**, actual-solve final source bound for the
+nonsingular-inverse total-nonnegative class at `h(γ_n)`. -/
+theorem higham9_14_nonsingInv_totalNonnegative_exists_source_h_bound_actual_triangular_solves_gamma
+    {n : ℕ}
+    (A : Fin n → Fin n → ℝ)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n (nonsingInv n A) L_hat U_hat ∧
+        (∀ i j : Fin n,
+          ∑ k : Fin n, |L_hat i k| * |U_hat k j| =
+            |nonsingInv n A i j|) ∧
+        (∀ fp : FPModel, ∀ b : Fin n → ℝ,
+          gammaValid fp n → gamma fp n < 1 →
+          let y_hat := fl_forwardSub fp n L_hat b
+          let x_hat := fl_backSub fp n U_hat y_hat
+          ∃ DeltaA : Fin n → Fin n → ℝ,
+            (∀ i j, |DeltaA i j| ≤
+              higham9_14_h (gamma fp n) * |nonsingInv n A i j|) ∧
+            (∀ i, ∑ j : Fin n,
+              (nonsingInv n A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L_hat, U_hat, hLU, hOpt, hSolve⟩ :=
+    higham9_14_nonsingInv_totalNonnegative_exists_source_h_bound_actual_triangular_solves
+      A hTN hdet
+  refine ⟨L_hat, U_hat, hLU, hOpt, ?_⟩
+  intro fp b hn hγ_lt_one
+  exact hSolve fp b (gamma fp n) (gamma_nonneg fp hn) hγ_lt_one hn le_rfl
 
 end LeanFpAnalysis.FP
