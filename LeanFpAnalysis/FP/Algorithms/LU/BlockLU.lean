@@ -106,6 +106,7 @@
     Higham13Eq1322InverseRatioSourceChain.to_lowerComparisonSourceChain,
     Higham13Eq1322InverseRatioSourceChain.nonterminal_pivot_det_ne_zero,
     Higham13Eq1322InverseRatioSourceChain.pivot_det_ne_zero_of_final_right_inverse,
+    Higham13Eq1322InverseRatioSourceChain.pivot_det_ne_zero_of_final_nonsingInv,
     Higham13Eq1322InverseRatioSourceChain.pivot_det_ne_zero_of_final:
     recursive source certificate and chain/product lift for the inverse-ratio
     transport route, replacing the prebuilt ambient-chain hypothesis by
@@ -132,6 +133,7 @@
     Higham13Eq1322LowerComparisonSourceChain.det_ne_zero,
     Higham13Eq1322LowerComparisonSourceChain.nonterminal_pivot_det_ne_zero,
     Higham13Eq1322LowerComparisonSourceChain.pivot_det_ne_zero_of_final_right_inverse,
+    Higham13Eq1322LowerComparisonSourceChain.pivot_det_ne_zero_of_final_nonsingInv,
     Higham13Eq1322LowerComparisonSourceChain.pivot_det_ne_zero_of_final,
     Higham13Eq1322LowerComparisonSourceChain.to_blockLUBudgetChain,
     Higham13Eq1322LowerComparisonSourceChain.exists_blockLUFact_eq13_22_product_exact_kappa,
@@ -39754,6 +39756,38 @@ theorem Higham13Eq1322LowerComparisonSourceChain.pivot_right_inverse_of_final_no
         ⟨m, Nat.lt_succ_self m⟩
         ⟨m, Nat.lt_succ_self m⟩) hdet).2
 
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    all-pivot determinant table for a direct lower-comparison source chain
+    when the terminal one-block pivot is the canonical `nonsingInv`.
+
+    This is the determinant-table companion to
+    `Higham13Eq1322LowerComparisonSourceChain.pivot_right_inverse_of_final_nonsingInv`. -/
+theorem Higham13Eq1322LowerComparisonSourceChain.pivot_det_ne_zero_of_final_nonsingInv
+    {r n : ℕ} {hr : 0 < r} :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322LowerComparisonSourceChain hr n m Ablk pivotInv →
+      Matrix.det
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+            ⟨m, Nat.lt_succ_self m⟩
+            ⟨m, Nat.lt_succ_self m⟩) ≠ 0 →
+      pivotInv m =
+        nonsingInv r
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+            ⟨m, Nat.lt_succ_self m⟩
+            ⟨m, Nat.lt_succ_self m⟩) →
+      ∀ k : ℕ, ∀ hk : k < m + 1,
+        Matrix.det
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0 := by
+  intro m Ablk pivotInv hcert hdet hfinalEq
+  exact
+    higham13_algorithm13_3_pivot_det_ne_zero_of_pivot_right_inverse
+      Ablk pivotInv
+      (Higham13Eq1322LowerComparisonSourceChain.pivot_right_inverse_of_final_nonsingInv
+        hcert hdet hfinalEq)
+
 /-- Higham, 2nd ed., Chapter 13, equation (13.22):
     a recursive direct-lower-comparison source certificate instantiates the
     ambient exact-κ budget chain.
@@ -40202,6 +40236,37 @@ theorem Higham13Eq1322InverseRatioSourceChain.pivot_right_inverse_of_final_nonsi
       (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
         ⟨m, Nat.lt_succ_self m⟩
         ⟨m, Nat.lt_succ_self m⟩) hdet).2
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.22)--(13.23):
+    all-pivot determinant table for an inverse-ratio source chain when the
+    terminal one-block pivot is the canonical `nonsingInv`.
+
+    This is inherited through the canonical all-pivot right-inverse table. -/
+theorem Higham13Eq1322InverseRatioSourceChain.pivot_det_ne_zero_of_final_nonsingInv
+    {r n : ℕ} {hr : 0 < r} :
+    ∀ {m : ℕ}
+      {Ablk : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ}
+      {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ},
+      Higham13Eq1322InverseRatioSourceChain hr n m Ablk pivotInv →
+      Matrix.det
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+            ⟨m, Nat.lt_succ_self m⟩
+            ⟨m, Nat.lt_succ_self m⟩) ≠ 0 →
+      pivotInv m =
+        nonsingInv r
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv m
+            ⟨m, Nat.lt_succ_self m⟩
+            ⟨m, Nat.lt_succ_self m⟩) →
+      ∀ k : ℕ, ∀ hk : k < m + 1,
+        Matrix.det
+          (higham13_algorithm13_3_schurStageMatrixBlock Ablk pivotInv k
+            ⟨k, hk⟩ ⟨k, hk⟩) ≠ 0 := by
+  intro m Ablk pivotInv hcert hdet hfinalEq
+  exact
+    higham13_algorithm13_3_pivot_det_ne_zero_of_pivot_right_inverse
+      Ablk pivotInv
+      (Higham13Eq1322InverseRatioSourceChain.pivot_right_inverse_of_final_nonsingInv
+        hcert hdet hfinalEq)
 
 /-- Higham, 2nd ed., Chapter 13, equation (13.22):
     uniform-flat determinant-nonzero successor product witness from an ambient

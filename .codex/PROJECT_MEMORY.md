@@ -10164,3 +10164,15 @@ These compile, but should not be treated as fully derived stability results:
   two-sided active inverse identities are supplied.  This is BDD integration
   progress, but the printed arbitrary-norm/source-table instantiation and
   downstream source-strength max-entry integration remain open.
+
+- 2026-06-30 Eq.13.22/Eq.13.23 canonical final pivot determinant wrappers:
+  added
+  `Higham13Eq1322LowerComparisonSourceChain.pivot_det_ne_zero_of_final_nonsingInv`
+  and
+  `Higham13Eq1322InverseRatioSourceChain.pivot_det_ne_zero_of_final_nonsingInv`.
+  These compose the existing canonical final-pivot `nonsingInv`
+  right-inverse wrappers with the active pivot determinant bridge, so all-pivot
+  determinant APIs can consume source chains whose terminal pivot is stored
+  canonically.  This removes a final-pivot determinant proof-surface artifact;
+  the per-tail lower comparison, structured BDD product/update theorem, and
+  Theorem 13.6 implementation estimates remain open.
