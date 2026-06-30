@@ -43672,6 +43672,93 @@ theorem higham9_16_RookPivotGEUTrace_exists_certificateGrowthValue_le
       hn A Utrace hApos htrace
   exact ⟨r, ⟨hn, A, hApos, hr⟩, hle⟩
 
+/-- **Equation (9.16) / rook-pivoting trace support**, the final-pivot
+inverse-entry lower bound transfers from cumulative complete-pivoting
+certificates to the recursive rook-pivoting `U` trace surface. -/
+theorem higham9_16_RookPivotGEUTrace_growth_factor_ge_theta_real {n : ℕ}
+    (hn : 0 < n)
+    (A A_inv U : Fin n → Fin n → ℝ)
+    (htrace : higham9_16_RookPivotGEUTrace n A U)
+    (hRight : IsRightInverse n A A_inv)
+    (hA : 0 < maxEntryNorm hn A)
+    (hAinv : 0 < maxEntryNorm hn A_inv) :
+    1 / (maxEntryNorm hn A * maxEntryNorm hn A_inv) ≤
+      growthFactorEntry hn A U hA := by
+  cases n with
+  | zero =>
+      exact (Nat.not_lt_zero 0 hn).elim
+  | succ m =>
+      obtain ⟨L, Uc, sigma, tau, hLU, _hL_bound, hmax⟩ :=
+        higham9_16_RookPivotGEUTrace_exists_CompletePermutedLUFactSpec_L_bound_maxEntryNorm_le
+          htrace
+      have hA' : 0 < maxEntryNorm (Nat.succ_pos m) A := by
+        simpa using hA
+      have hAinv' : 0 < maxEntryNorm (Nat.succ_pos m) A_inv := by
+        simpa using hAinv
+      have hcert' :
+          1 / (maxEntryNorm (Nat.succ_pos m) A *
+              maxEntryNorm (Nat.succ_pos m) A_inv) ≤
+            growthFactorEntry (Nat.succ_pos m) A Uc hA' :=
+        higham9_8_growth_factor_ge_theta_of_completePermutedLUFactSpec_right_inverse
+          A A_inv L Uc sigma tau hLU hRight hA' hAinv'
+      have hgrowth_le' :
+          growthFactorEntry (Nat.succ_pos m) A Uc hA' ≤
+            growthFactorEntry (Nat.succ_pos m) A U hA' := by
+        unfold growthFactorEntry
+        exact div_le_div_of_nonneg_right
+          (hmax (Nat.succ_pos m)) (le_of_lt hA')
+      have hfinal' :
+          1 / (maxEntryNorm (Nat.succ_pos m) A *
+              maxEntryNorm (Nat.succ_pos m) A_inv) ≤
+            growthFactorEntry (Nat.succ_pos m) A U hA' :=
+        le_trans hcert' hgrowth_le'
+      simpa using hfinal'
+
+/-- **Equation (9.16) / rook-pivoting trace support**, determinant-only
+recursive rook-pivoting trace lower bound.
+
+For a nonsingular input matrix and a supplied recursive rook-pivoting trace,
+the canonical `nonsingInv` discharges the right-inverse and positive
+inverse-norm hypotheses in the explicit-inverse trace theorem. -/
+theorem higham9_16_RookPivotGEUTrace_growth_factor_ge_theta_nonsingInv {n : ℕ}
+    (hn : 0 < n)
+    (A U : Fin n → Fin n → ℝ)
+    (htrace : higham9_16_RookPivotGEUTrace n A U)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ hA : 0 < maxEntryNorm hn A,
+    ∃ _ : 0 < maxEntryNorm hn (nonsingInv n A),
+      1 / (maxEntryNorm hn A * maxEntryNorm hn (nonsingInv n A)) ≤
+        growthFactorEntry hn A U hA := by
+  classical
+  have hA : 0 < maxEntryNorm hn A :=
+    maxEntryNorm_pos_of_det_ne_zero hn A hdet
+  have hAinv : 0 < maxEntryNorm hn (nonsingInv n A) :=
+    higham9_nonsingInv_maxEntryNorm_pos_of_det_ne_zero hn A hdet
+  have hRight : IsRightInverse n A (nonsingInv n A) :=
+    (isInverse_nonsingInv_of_det_ne_zero n A hdet).2
+  exact ⟨hA, hAinv,
+    higham9_16_RookPivotGEUTrace_growth_factor_ge_theta_real
+      hn A (nonsingInv n A) U htrace hRight hA hAinv⟩
+
+/-- **Equation (9.16) / rook-pivoting trace support**, source-facing
+determinant-only existence form for the rook trace theta lower bound. -/
+theorem higham9_16_exists_RookPivotGEUTrace_growth_factor_ge_theta_nonsingInv
+    {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ hA : 0 < maxEntryNorm hn A,
+    ∃ _ : 0 < maxEntryNorm hn (nonsingInv n A),
+    ∃ U : Fin n → Fin n → ℝ,
+      higham9_16_RookPivotGEUTrace n A U ∧
+        1 / (maxEntryNorm hn A * maxEntryNorm hn (nonsingInv n A)) ≤
+          growthFactorEntry hn A U hA := by
+  obtain ⟨U, htrace⟩ :=
+    higham9_16_exists_RookPivotGEUTrace_of_det_ne_zero (A := A) hdet
+  obtain ⟨hA, hAinv, htheta⟩ :=
+    higham9_16_RookPivotGEUTrace_growth_factor_ge_theta_nonsingInv
+      hn A U htrace hdet
+  exact ⟨hA, hAinv, U, htrace, htheta⟩
+
 /-- **Equation (9.16) / Theorem 9.5**, trace-derived rook-pivoting exact
 certificate Wilkinson source bound at the elementary `2^(n-1)` growth
 strength.
