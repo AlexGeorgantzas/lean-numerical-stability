@@ -20,6 +20,24 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-06-30 recursive Schur-tail base/inverse bridge checkpoint:
+  `maxEntryNormRect_inverse_ratio_of_base_le_and_inverse_le` and
+  `growthFactorEntry_sq_kappa_budget_le_of_growth_le_base_inverse` derive the
+  optional inverse-ratio/lower-budget scalar transport from the stronger
+  explicit pair `||A_full||_max <= ||A_tail||_max` and
+  `||A_tail^{-1}||_max <= ||A_full^{-1}||_max`.
+  `higham13_eq13_22_tail_lower_budget_le_full_from_base_inverse_matrix_stage_history_exact_kappa`
+  and
+  `higham13_eq13_22_tail_chain_to_full_budget_from_base_inverse_matrix_stage_history_exact_kappa`
+  feed that pair into the recursive Schur-tail Eq.13.22 transport.  This is
+  dependency progress only: the strong base comparison and inverse comparison
+  remain explicit source obligations, and the direct Problem 13.4
+  lower-budget/condition comparison plus Eq.13.23 `rho <= 2` source theorem
+  remain open.  Verification used direct `BlockLU.lean`, focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, public `examples/LibraryLookup.lean`
+  with empty quiet stderr, `git diff --check`, marker/conflict scans, and
+  focused `#print axioms`; the axiom output was only `propext`,
+  `Classical.choice`, and `Quot.sound`.
 - 2026-06-29 matrix-`∞` finite-unit-sphere cleanup:
   `higham13_fin_fun_unit_sphere_nonempty` constructs the nonempty unit sphere
   in `Fin r -> ℝ` from `0 < r`.  New `_of_pos_dim` wrappers for the
