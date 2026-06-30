@@ -12582,6 +12582,96 @@ theorem theorem20_10_householder_constructed_perturbed_gqr_factorization_with_U_
   simpa [hUeq] using hUbottom i j
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    constructed rounded Householder GQR record with a matching reversed-panel
+    transformed RHS tail.
+
+    The constructed `A Q₂` factorization uses the column-reversed panel, so the
+    matching computed RHS tail is
+    `theorem20_10_householder_reversed_AQ2_rhs_tail`.  This theorem combines
+    the concrete perturbed GQR record, its bottom-column `U` placement, and the
+    rounded Householder RHS perturbation to expose the exact trailing
+    transformed-RHS identity for that constructed record.  Perturbed diagonal
+    nonzeroness/rank preservation remains a separate obligation. -/
+theorem theorem20_10_householder_constructed_perturbed_gqr_reversed_rhs_tail
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2)) :
+    let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+      fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+    let Rb : Fin (p + q) → Fin p → ℝ :=
+      fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)
+    let S : Fin p → Fin p → ℝ :=
+      matTranspose (fun i : Fin p => fun j : Fin p =>
+        Rb (Fin.castAdd q i) j)
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab : Fin (r + q) → ℝ,
+      (∀ i j,
+        B i j + DeltaB i j =
+          matMulRect (p + q) (p + q) p Qb Rb j i) ∧
+      frobNormRect DeltaA ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect A ∧
+      frobNormRect DeltaB ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        theorem20_10_householder_rhs_conservative_gamma fp r p q *
+          vecNorm2 b ∧
+      ∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        hpert.Q = Qb ∧ hpert.S = S ∧
+          (∀ j : Fin q,
+            matMulVec (r + q) (matTranspose hpert.U)
+                (fun k => b k + Deltab k) (Fin.natAdd r j) =
+              theorem20_10_householder_reversed_AQ2_rhs_tail fp A Qb b j) := by
+  dsimp
+  let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+    fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+  let Rb : Fin (p + q) → Fin p → ℝ :=
+    fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)
+  let S : Fin p → Fin p → ℝ :=
+    matTranspose (fun i : Fin p => fun j : Fin p =>
+      Rb (Fin.castAdd q i) j)
+  let Crev : Fin (r + q) → Fin q → ℝ :=
+    rectPermuteCols Fin.revPerm (gqrAQ2Block A Qb)
+  let Urev : Fin (r + q) → Fin (r + q) → ℝ :=
+    fl_householderQRPanel_Q fp (r + q) q Crev
+  rcases
+    theorem20_10_householder_constructed_perturbed_gqr_factorization_with_U_tail
+      fp A B hp hq hvalidA hvalidB with
+    ⟨DeltaA, DeltaB, hDeltaBrep, hDeltaA, hDeltaB,
+      hpert, hQeq, hSeq, hUtail⟩
+  rcases
+    theorem20_10_householder_reversed_AQ2_rhs_tail_vecNorm2_perturbation_bound_of_gammaFactor
+      fp A Qb b hq hhalf with
+    ⟨Deltab, hDeltab_tail, hDeltab⟩
+  refine
+    ⟨DeltaA, DeltaB, Deltab, hDeltaBrep, hDeltaA, hDeltaB, hDeltab,
+      hpert, hQeq, hSeq, ?_⟩
+  intro j
+  calc
+    matMulVec (r + q) (matTranspose hpert.U)
+        (fun k => b k + Deltab k) (Fin.natAdd r j)
+        = matMulVec (r + q) (matTranspose Urev)
+            (fun k => b k + Deltab k)
+            (Fin.cast (Nat.add_comm q r) (Fin.castAdd r (Fin.rev j))) := by
+          unfold matMulVec matTranspose
+          apply Finset.sum_congr rfl
+          intro k _
+          rw [hUtail k j]
+    _ = theorem20_10_householder_reversed_AQ2_rhs_tail fp A Qb b j := by
+          simpa [Urev, Crev] using hDeltab_tail j
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     rank obstruction for the rounded Householder perturbed GQR record.
 
     After `theorem20_10_householder_constructed_perturbed_gqr_factorization`
