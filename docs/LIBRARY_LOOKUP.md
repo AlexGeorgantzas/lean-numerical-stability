@@ -2423,9 +2423,12 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_normalized_Gtilde_linear_step_of_min_factor_bound`
 - `higham9_15_normalized_Gtilde_frobNorm_ratio_bound_of_min_factor_bound`
 - `higham9_15_frobNormRect_eq_zero_of_entries_zero`
+- `higham9_15_frobNormSqRect_eq_zero_of_entries_zero`
 - `higham9_15_entries_zero_of_frobNormRect_eq_zero`
 - `higham9_15_normalized_G_split_entries_zero_of_residual_zero`
 - `higham9_15_normalized_Gtilde_split_entries_zero_of_residual_zero`
+- `higham9_15_normalized_G_sqrt_frobNormSqRect_X_add_Y_eq_zero_of_residual_zero`
+- `higham9_15_normalized_Gtilde_sqrt_frobNormSqRect_X_add_Y_eq_zero_of_residual_zero`
 - `higham9_15_opNorm2_eq_zero_of_entries_zero`
 - `higham9_15_normalized_G_entries_zero_of_residual_zero`
 - `higham9_15_normalized_Gtilde_entries_zero_of_residual_zero`

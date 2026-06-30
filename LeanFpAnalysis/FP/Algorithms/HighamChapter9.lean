@@ -23733,6 +23733,13 @@ theorem higham9_15_frobNormRect_eq_zero_of_entries_zero {m n : ℕ}
   rw [(frobNormSqRect_eq_zero_iff A).mpr hA]
   simp
 
+/-- **Theorem 9.15 support**, a zero squared rectangular Frobenius norm
+follows from entrywise zero. -/
+theorem higham9_15_frobNormSqRect_eq_zero_of_entries_zero {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (hA : ∀ i j, A i j = 0) :
+    frobNormSqRect A = 0 :=
+  (frobNormSqRect_eq_zero_iff A).mpr hA
+
 /-- **Theorem 9.15 support**, a zero rectangular Frobenius norm forces every
 entry to vanish. -/
 theorem higham9_15_entries_zero_of_frobNormRect_eq_zero {m n : ℕ}
@@ -23780,6 +23787,40 @@ theorem higham9_15_normalized_Gtilde_split_entries_zero_of_residual_zero {n : �
     le_antisymm (by simpa [hres] using hbounds.2) (frobNormRect_nonneg Y)
   exact ⟨higham9_15_entries_zero_of_frobNormRect_eq_zero X hXnorm,
     higham9_15_entries_zero_of_frobNormRect_eq_zero Y hYnorm⟩
+
+/-- **Theorem 9.15 support**, exact zero square-total endpoint for the
+normalized `I + G` split when the residual vanishes. -/
+theorem higham9_15_normalized_G_sqrt_frobNormSqRect_X_add_Y_eq_zero_of_residual_zero
+    {n : ℕ}
+    (G X Y : Matrix (Fin n) (Fin n) ℝ)
+    (hfact : 1 + G = (1 + X) * (1 + Y))
+    (hX : ∀ i j : Fin n, i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin n, j.val < i.val → Y i j = 0)
+    (hres : frobNormRect (G - X * Y) = 0) :
+    Real.sqrt (frobNormSqRect X + frobNormSqRect Y) = 0 := by
+  have hfac :=
+    higham9_15_normalized_G_split_entries_zero_of_residual_zero
+      G X Y hfact hX hY hres
+  rw [higham9_15_frobNormSqRect_eq_zero_of_entries_zero X hfac.1,
+    higham9_15_frobNormSqRect_eq_zero_of_entries_zero Y hfac.2]
+  simp
+
+/-- **Theorem 9.15 support**, exact zero square-total endpoint for the
+normalized `I - Gtilde` split when the signed residual vanishes. -/
+theorem higham9_15_normalized_Gtilde_sqrt_frobNormSqRect_X_add_Y_eq_zero_of_residual_zero
+    {n : ℕ}
+    (Gtilde X Y : Matrix (Fin n) (Fin n) ℝ)
+    (hfact : 1 - Gtilde = (1 - X) * (1 - Y))
+    (hX : ∀ i j : Fin n, i.val ≤ j.val → X i j = 0)
+    (hY : ∀ i j : Fin n, j.val < i.val → Y i j = 0)
+    (hres : frobNormRect (Gtilde + X * Y) = 0) :
+    Real.sqrt (frobNormSqRect X + frobNormSqRect Y) = 0 := by
+  have hfac :=
+    higham9_15_normalized_Gtilde_split_entries_zero_of_residual_zero
+      Gtilde X Y hfact hX hY hres
+  rw [higham9_15_frobNormSqRect_eq_zero_of_entries_zero X hfac.1,
+    higham9_15_frobNormSqRect_eq_zero_of_entries_zero Y hfac.2]
+  simp
 
 /-- **Theorem 9.15 support**, an entrywise-zero square matrix has exact
 operator 2-norm zero. -/
