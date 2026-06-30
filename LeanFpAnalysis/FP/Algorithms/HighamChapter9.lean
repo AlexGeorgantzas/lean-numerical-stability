@@ -42038,6 +42038,25 @@ theorem higham9_completePivotingUTraceGrowthValues_le_pow_two {n : ℕ} {r : ℝ
   exact higham9_8_CompletePivotGECPUTrace_growthFactorEntry_le_pow_two
     hn A U hApos htrace
 
+/-- **Equation (9.14)**, trace-value consumer for Wilkinson's sharp
+complete-pivoting product bound.
+
+Once the remaining trace-level source proof supplies the sharp estimate for
+each recursive complete-pivoting `U` trace, every member of the formal
+trace-growth value family is bounded by Wilkinson's displayed RHS. -/
+theorem higham9_14_completePivotingUTraceGrowthValues_le_wilkinsonBound_of_trace_bound
+    {n : ℕ} {r : ℝ}
+    (hsharp :
+      ∀ (hn : 0 < n) (A U : Fin n → Fin n → ℝ)
+        (hApos : 0 < maxEntryNorm hn A),
+        higham9_8_CompletePivotGECPUTrace n A U →
+          growthFactorEntry hn A U hApos ≤
+            higham9_14_completePivotWilkinsonBound n)
+    (hr : r ∈ higham9_completePivotingUTraceGrowthValues n) :
+    r ≤ higham9_14_completePivotWilkinsonBound n := by
+  rcases hr with ⟨hn, A, U, hApos, htrace, rfl⟩
+  exact hsharp hn A U hApos htrace
+
 /-- **Problem 9.11 / equation (9.15)**, the trace-level complete-pivoting
 growth values are bounded above by the elementary `2^(n-1)` bound. -/
 theorem higham9_completePivotingUTraceGrowthValues_bddAbove (n : ℕ) :
@@ -42547,6 +42566,28 @@ theorem higham9_8_completePivotingUTraceGrowthSup_le_pow_two {n : ℕ}
   apply csSup_le (higham9_completePivotingUTraceGrowthValues_nonempty hn)
   intro r hr
   exact higham9_completePivotingUTraceGrowthValues_le_pow_two hr
+
+/-- **Equation (9.14)**, source-shaped supremum consumer for Wilkinson's
+sharp complete-pivoting product bound.
+
+This closes the supremum step from the still-open per-trace inequality
+`growthFactorEntry <= higham9_14_completePivotWilkinsonBound n` to the formal
+trace-level growth-function surface. -/
+theorem higham9_14_completePivotingUTraceGrowthSup_le_wilkinsonBound_of_trace_bound
+    {n : ℕ} (hn : 0 < n)
+    (hsharp :
+      ∀ (hn : 0 < n) (A U : Fin n → Fin n → ℝ)
+        (hApos : 0 < maxEntryNorm hn A),
+        higham9_8_CompletePivotGECPUTrace n A U →
+          growthFactorEntry hn A U hApos ≤
+            higham9_14_completePivotWilkinsonBound n) :
+    higham9_completePivotingUTraceGrowthSup n ≤
+      higham9_14_completePivotWilkinsonBound n := by
+  apply csSup_le (higham9_completePivotingUTraceGrowthValues_nonempty hn)
+  intro r hr
+  exact
+    higham9_14_completePivotingUTraceGrowthValues_le_wilkinsonBound_of_trace_bound
+      hsharp hr
 
 /-- **Theorem 9.4 / Theorem 9.5**, complete-pivoted explicit-certificate
 normwise source bound.
@@ -44230,6 +44271,25 @@ theorem higham9_16_rookPivotingUTraceGrowthValues_le_pow_two {n : ℕ} {r : ℝ}
   exact higham9_16_RookPivotGEUTrace_growthFactorEntry_le_pow_two
     hn A U hApos htrace
 
+/-- **Equation (9.16)**, trace-value consumer for Foster's sharp rook-pivoting
+bound.
+
+Once the remaining rook-pivoting proof supplies Foster's per-trace estimate,
+every member of the formal rook trace-growth value family is bounded by the
+displayed `1.5 * n^(3/4 log n)` RHS. -/
+theorem higham9_16_rookPivotingUTraceGrowthValues_le_fosterBound_of_trace_bound
+    {n : ℕ} {r : ℝ}
+    (hsharp :
+      ∀ (hn : 0 < n) (A U : Fin n → Fin n → ℝ)
+        (hApos : 0 < maxEntryNorm hn A),
+        higham9_16_RookPivotGEUTrace n A U →
+          growthFactorEntry hn A U hApos ≤
+            higham9_16_rookPivotFosterBound n)
+    (hr : r ∈ higham9_16_rookPivotingUTraceGrowthValues n) :
+    r ≤ higham9_16_rookPivotFosterBound n := by
+  rcases hr with ⟨hn, A, U, hApos, htrace, rfl⟩
+  exact hsharp hn A U hApos htrace
+
 /-- **Equation (9.16) / rook-pivoting trace growth family**, the trace-level
 rook-pivoting growth values are bounded above by the elementary `2^(n-1)`
 bound. -/
@@ -44271,6 +44331,27 @@ theorem higham9_16_rookPivotingUTraceGrowthSup_le_pow_two {n : ℕ}
   apply csSup_le (higham9_16_rookPivotingUTraceGrowthValues_nonempty hn)
   intro r hr
   exact higham9_16_rookPivotingUTraceGrowthValues_le_pow_two hr
+
+/-- **Equation (9.16)**, source-shaped supremum consumer for Foster's sharp
+rook-pivoting bound.
+
+This packages the final order-theoretic step from the still-open per-trace
+Foster inequality to the formal rook-pivoting trace-growth supremum. -/
+theorem higham9_16_rookPivotingUTraceGrowthSup_le_fosterBound_of_trace_bound
+    {n : ℕ} (hn : 0 < n)
+    (hsharp :
+      ∀ (hn : 0 < n) (A U : Fin n → Fin n → ℝ)
+        (hApos : 0 < maxEntryNorm hn A),
+        higham9_16_RookPivotGEUTrace n A U →
+          growthFactorEntry hn A U hApos ≤
+            higham9_16_rookPivotFosterBound n) :
+    higham9_16_rookPivotingUTraceGrowthSup n ≤
+      higham9_16_rookPivotFosterBound n := by
+  apply csSup_le (higham9_16_rookPivotingUTraceGrowthValues_nonempty hn)
+  intro r hr
+  exact
+    higham9_16_rookPivotingUTraceGrowthValues_le_fosterBound_of_trace_bound
+      hsharp hr
 
 /-- **Equation (9.16) / rook-pivoting trace support**, every recursive rook
 `U` trace determines a cumulative `PAQ = LU` certificate with unit-bounded
