@@ -11713,6 +11713,131 @@ theorem theorem20_10_partB_certificate_of_partA_certificate
        hDeltab := hDeltab
        hDeltad := hDeltad }⟩
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), Part A certificate to
+    exact Part B backward-error core.
+
+    This skips the intermediate Part B certificate object for callers that
+    already have a Part A mixed-stability certificate.  The constraint
+    right-hand-side perturbation is the explicit action `Deltad = DeltaB*xhat`,
+    and the exact perturbed GQR/minimizer package is obtained directly for
+    the problem with right-hand side `d + Deltad`. -/
+theorem theorem20_10_partB_backward_error_of_partA_certificate
+    {r p q : ℕ}
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    {gammaA gammaB : ℝ}
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    (cert :
+      Theorem20_10PartAPerturbationCertificate A B b d xhat gammaA gammaB) :
+    let Apert : Fin (r + q) → Fin (p + q) → ℝ :=
+      fun i j => A i j + cert.DeltaA i j
+    let Bpert : Fin p → Fin (p + q) → ℝ :=
+      fun i j => B i j + cert.DeltaB i j
+    let bpert : Fin (r + q) → ℝ := fun i => b i + cert.Deltab i
+    ∃ Deltad : Fin p → ℝ,
+      (∀ i,
+        rectMatMulVec Bpert xhat i =
+          rectMatMulVec B xhat i + Deltad i) ∧
+      frobNormRect cert.DeltaA ≤ gammaA * frobNormRect A ∧
+      frobNormRect cert.DeltaB ≤ gammaB * frobNormRect B ∧
+      vecNorm2 cert.Deltab ≤
+        gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+      vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+      (∃ hpert : GeneralizedQRFactorization r p q Apert Bpert,
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec hpert.S yz.1 = (fun i => d i + Deltad i) ∧
+          rectMatMulVec hpert.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) -
+                rectMatMulVec hpert.L21 yz.1 i) ∧
+          IsLSEMinimizer Apert bpert Bpert (fun i => d i + Deltad i)
+            (matMulVec (p + q) hpert.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x : Fin (p + q) → ℝ,
+          IsLSEMinimizer Apert bpert Bpert (fun i => d i + Deltad i) x)) := by
+  dsimp
+  rcases theorem20_10_constraint_rhs_perturbation_bound_of_DeltaB
+      B cert.DeltaB xhat cert.hDeltaB with
+    ⟨Deltad, hDeltad_action, hDeltad⟩
+  have htail_nonneg :
+      0 ≤ gammaB * frobNormRect A * vecNorm2 xhat := by
+    exact mul_nonneg
+      (mul_nonneg hgammaB_nonneg (frobNormRect_nonneg A))
+      (vecNorm2_nonneg xhat)
+  have hDeltab :
+      vecNorm2 cert.Deltab ≤
+        gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat :=
+    le_trans cert.hDeltab (le_add_of_nonneg_right htail_nonneg)
+  refine
+    ⟨Deltad, hDeltad_action, cert.hDeltaA, cert.hDeltaB, hDeltab,
+      hDeltad, ?_⟩
+  exact
+    GeneralizedQRFactorization.exists_unique_method_solution_of_theorem20_10_perturbed_d
+      A cert.DeltaA B cert.DeltaB b cert.Deltab d Deltad cert.hB cert.hstack
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), nonempty Part A
+    certificate to exact Part B backward-error core.
+
+    This is the certificate-free form for routes that produce a nonempty
+    Part A certificate package.  It returns concrete perturbations, records
+    the constraint right-hand-side action identity for `Deltad`, and exposes
+    the exact perturbed GQR/minimizer core for the Part B problem. -/
+theorem theorem20_10_partB_backward_error_of_nonempty_partA_certificate
+    {r p q : ℕ}
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    {gammaA gammaB : ℝ}
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    (hcert :
+      Nonempty
+        (Theorem20_10PartAPerturbationCertificate A B b d xhat
+          gammaA gammaB)) :
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab : Fin (r + q) → ℝ,
+    ∃ Deltad : Fin p → ℝ,
+      (∀ i,
+        rectMatMulVec (fun i j => B i j + DeltaB i j) xhat i =
+          rectMatMulVec B xhat i + Deltad i) ∧
+      frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+      frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+      vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+      (∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec hpert.S yz.1 = (fun i => d i + Deltad i) ∧
+          rectMatMulVec hpert.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose hpert.U)
+                (fun i => b i + Deltab i) (Fin.natAdd r i) -
+                rectMatMulVec hpert.L21 yz.1 i) ∧
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i)
+            (matMulVec (p + q) hpert.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x : Fin (p + q) → ℝ,
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i) x)) := by
+  rcases hcert with ⟨cert⟩
+  rcases theorem20_10_partB_backward_error_of_partA_certificate
+      A B b d xhat hgammaB_nonneg cert with
+    ⟨Deltad, hDeltad_action, hDeltaA, hDeltaB, hDeltab,
+      hDeltad, hmethod⟩
+  exact
+    ⟨cert.DeltaA, cert.DeltaB, cert.Deltab, Deltad,
+      hDeltad_action, hDeltaA, hDeltaB, hDeltab, hDeltad, hmethod⟩
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), nonempty Part A
     certificate to nonempty Part B certificate bridge.
 
