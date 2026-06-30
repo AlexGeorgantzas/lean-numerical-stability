@@ -2414,6 +2414,74 @@ theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_gram_inverse_source
     hGramFactor_le hAOp hDeltaA1Op hDeltaA2Op hGramInvOp
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    guarded source-factor handoff with both perturbed Gram nonsingularity and
+    the concrete Gram-inverse operator certificate derived from the Chapter 7
+    absolute left-product contraction.  The remaining source-side obligation is
+    the scalar factor bound for the explicit Chapter 7 inverse candidate. -/
+theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_ch7_candidate_frob_source_bounds_of_abs_left_product_bound
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (rho1 rho2 alpha beta sigma c : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hGramSmallNonneg : x ≠ 0 → 0 ≤ c)
+    (hGramSmallLt : x ≠ 0 → c < 1)
+    (hGramLeftInv : x ≠ 0 → IsLeftInverse m (rectGram A) AAT_inv)
+    (hGramPerturbBound : x ≠ 0 →
+      infNormBound m
+        (absMatrix m
+          (matMul m AAT_inv (undetGramPerturbation A DeltaA2)))
+        c)
+    (hxTranspose : x ≠ 0 →
+      x =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : x ≠ 0 → 3 * max rho1 rho2 < 1)
+    (halpha : x ≠ 0 → 0 ≤ alpha)
+    (hbeta : x ≠ 0 → 0 ≤ beta)
+    (hsigma : x ≠ 0 → 0 ≤ sigma)
+    (halpha_le : x ≠ 0 → alpha ≤ rho1)
+    (hbeta_le : x ≠ 0 → beta ≤ rho2)
+    (hGramFactor_le : x ≠ 0 →
+      (sigma + beta) *
+          frobNorm
+            (ch7Problem711PerturbedInverseCandidate m AAT_inv
+              (undetGramPerturbation A DeltaA2)) ≤
+        (1 - rho2)⁻¹)
+    (hAOp : x ≠ 0 → rectOpNorm2Le A sigma)
+    (hDeltaA1Op : x ≠ 0 → rectOpNorm2Le DeltaA1 alpha)
+    (hDeltaA2Op : x ≠ 0 → rectOpNorm2Le DeltaA2 beta) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j)
+      b x :=
+  higham21_lemma21_2_single_min_norm_of_nonzero_branch_gram_inverse_source_bounds
+    A x DeltaA1 DeltaA2 b y rho1 rho2 alpha beta sigma
+    (frobNorm
+      (ch7Problem711PerturbedInverseCandidate m AAT_inv
+        (undetGramPerturbation A DeltaA2)))
+    hDeltaA1
+    (fun hx =>
+      higham21_lemma21_2_perturbed_gram_det_ne_zero_of_abs_left_product_bound
+        hm A DeltaA2 AAT_inv c (hGramSmallNonneg hx) (hGramSmallLt hx)
+        (hGramLeftInv hx) (hGramPerturbBound hx))
+    hxTranspose hsmall halpha hbeta hsigma
+    (fun _ =>
+      frobNorm_nonneg
+        (ch7Problem711PerturbedInverseCandidate m AAT_inv
+          (undetGramPerturbation A DeltaA2)))
+    halpha_le hbeta_le hGramFactor_le hAOp hDeltaA1Op hDeltaA2Op
+    (fun hx =>
+      higham21_lemma21_2_gram_nonsingInv_rectOpNorm2Le_frob_candidate_of_abs_left_product_bound
+        hm A DeltaA2 AAT_inv c (hGramSmallNonneg hx) (hGramSmallLt hx)
+        (hGramLeftInv hx) (hGramPerturbBound hx))
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     guarded source-factor handoff with perturbed Gram nonsingularity discharged
     from a componentwise bound on the Gram perturbation.  The remaining
     nonzero-branch matrix-analysis obligation is the concrete operator-2 bound
