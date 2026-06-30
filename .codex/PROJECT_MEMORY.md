@@ -36,7 +36,11 @@ end-to-end stability rebuild is tagged as
   compile, focused LU build, quiet `examples/LibraryLookup.lean` with empty
   stderr and all four new names present, `git diff --check`, placeholder and
   conflict-marker scans, and focused `#print axioms` reporting only `propext`,
-  `Classical.choice`, and `Quot.sound`.  Commit and push remain next.
+  `Classical.choice`, and `Quot.sound`.  Committed as
+  `2b76f93 Split 3A: add Ch13 reciprocal product-update wrappers`, merged
+  incoming shared-main work through `e49a0ac`, reran the relevant merged-tree
+  builds/lookups/scans, pushed to `origin/main`, and confirmed ahead/behind
+  `0 0`.
 - 2026-06-30 base/inverse route-audit checkpoint:
   `higham13_base_inverse_principal_tail_base_comparison_counterexample` shows
   that the stronger base comparison `||A_full||_max <= ||A_tail||_max` needed
