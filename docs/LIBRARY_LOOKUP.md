@@ -1346,6 +1346,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_2_rectDoolittleLUpdate_source_identity`
 - `higham9_2_rectDoolittleL_source_identity`
 - `higham9_2_rectDoolittle_exact_recurrences_rectMatMul_eq`
+- `higham9_2_exactDoolittle_recurrences_to_LUFactSpec`
 - `higham9_2_rectDoolittleUUpdate_eq_of_LUFactSpec`
 - `higham9_2_rectDoolittleLUpdate_eq_of_LUFactSpec`
 - `higham9_2_doolittleSourceFlopPolynomial`
