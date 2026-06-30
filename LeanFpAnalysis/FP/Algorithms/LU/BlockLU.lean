@@ -342,6 +342,8 @@
     higham13_algorithm13_3_stageHistoryGrowthMatrix_le_two_of_column_bdd_source_table,
     higham13_algorithm13_3_stageHistoryGrowthFactor_le_two_of_column_bdd_source_table,
     higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_source_table,
+    higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_continuousLinearMap_source_table,
+    higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_continuousLinearMap_source_table_of_det_ne_zero,
     higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_source_table_of_det_ne_zero,
     higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_source_table_of_diag_eq,
     higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_source_table_of_diag_eq_of_det_ne_zero,
@@ -15957,6 +15959,118 @@ theorem
       hm hr A pivotInv invDiagBound hDom hDiagBound hDiagLower,
     higham13_algorithm13_3_stageHistoryGrowthFactor_le_two_of_column_bdd_diag_lower
       hm hr A pivotInv hApos invDiagBound hDom hDiagBound hDiagLower⟩
+
+/-- Higham, 2nd ed., Chapter 13, Theorems 13.7--13.8 and Eq.13.21:
+    continuous-linear lower-norm source table for both the assembled
+    upper-factor bound and the finite function-block `rho <= 2` consequence.
+
+    This composes the arbitrary-norm lower-norm source-table construction with
+    the direct one-sided active pivot certificate package.  The remaining
+    analytic inputs are the column block diagonal dominance hypothesis, the
+    initial diagonal lower table, and the two-sided active pivot inverse
+    identities for the chosen continuous-linear model. -/
+theorem
+    higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_continuousLinearMap_source_table
+    {m r : ℕ} {E : Type*}
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [ProperSpace E]
+    (hm : 0 < m) (hr : 0 < r)
+    (hunit : ({x : E | ‖x‖ = 1} : Set E).Nonempty)
+    (A : Fin m → Fin m → (Fin r → Fin r → ℝ))
+    (pivotInv : ℕ → (Fin r → Fin r → ℝ))
+    (hApos : 0 < maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin A))
+    (invDiagBound : Fin m → ℝ)
+    (stageBlock : ℕ → Fin m → Fin m → E →L[ℝ] E)
+    (pivotInvCLM : ℕ → E →L[ℝ] E)
+    (hDom : IsBlockDiagDomCol m
+      (fun i j : Fin m => maxEntryNorm hr (A i j)) invDiagBound)
+    (hDiagBound : ∀ j : Fin m,
+      invDiagBound j ≤ maxEntryNorm hr (A j j))
+    (hInit : ∀ j : Fin m,
+      invDiagBound j ≤ continuousLinearMapLowerNorm (stageBlock 0 j j) hunit)
+    (hStageNorm : ∀ k : ℕ, ∀ i j : Fin m,
+      ‖stageBlock k i j‖ = higham13_algorithm13_3_schurStageNorm A pivotInv k i j)
+    (hPivotNorm : ∀ k : ℕ,
+      ‖pivotInvCLM k‖ = higham13_algorithm13_3_pivotInvNorm pivotInv k)
+    (hSchur : ∀ k : ℕ, ∀ hk : k < m, ∀ j : Fin m,
+      k + 1 ≤ j.val → ∀ x : E,
+        stageBlock (k + 1) j j x =
+          stageBlock k j j x -
+            stageBlock k j ⟨k, hk⟩
+              (pivotInvCLM k (stageBlock k ⟨k, hk⟩ j x)))
+    (hLeft : ∀ k : ℕ, ∀ hk : k < m, ∀ x : E,
+      pivotInvCLM k (stageBlock k ⟨k, hk⟩ ⟨k, hk⟩ x) = x)
+    (hRight : ∀ k : ℕ, ∀ hk : k < m, ∀ y : E,
+      stageBlock k ⟨k, hk⟩ ⟨k, hk⟩ (pivotInvCLM k y) = y) :
+    blockMaxNorm hm hr (higham13_algorithm13_3_upperFromStages A pivotInv) ≤
+        2 * blockMaxNorm hm hr A ∧
+      growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+          (higham13_algorithm13_3_stageHistoryGrowthMatrix
+            (Nat.mul_pos hm hr) hm hr A pivotInv) hApos ≤
+        2 := by
+  have hDiagLower :
+      SchurStageActivePivotInvDiagLower13_7
+        (higham13_algorithm13_3_diagLowerCert invDiagBound A pivotInv)
+        (higham13_algorithm13_3_pivotInvNorm pivotInv) :=
+    higham13_algorithm13_3_diagLowerCert_diag_lower_of_continuousLinearMap_source_table
+      hunit invDiagBound A pivotInv stageBlock pivotInvCLM
+      hInit hStageNorm hPivotNorm hSchur hLeft hRight
+  exact
+    higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_diag_lower
+      hm hr A pivotInv hApos invDiagBound hDom hDiagBound hDiagLower
+
+/-- Higham, 2nd ed., Chapter 13, Theorems 13.7--13.8 and Eq.13.21:
+    determinant-nonzero form of the continuous-linear lower-norm source-table
+    package for the assembled upper-factor bound and finite function-block
+    `rho <= 2` consequence. -/
+theorem
+    higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_continuousLinearMap_source_table_of_det_ne_zero
+    {m r : ℕ} {E : Type*}
+    [NormedAddCommGroup E] [NormedSpace ℝ E] [ProperSpace E]
+    (hm : 0 < m) (hr : 0 < r)
+    (hunit : ({x : E | ‖x‖ = 1} : Set E).Nonempty)
+    (A : Fin m → Fin m → (Fin r → Fin r → ℝ))
+    (pivotInv : ℕ → (Fin r → Fin r → ℝ))
+    (hdet :
+      Matrix.det (blockMatrixFlatFin A :
+        Matrix (Fin (m * r)) (Fin (m * r)) ℝ) ≠ 0)
+    (invDiagBound : Fin m → ℝ)
+    (stageBlock : ℕ → Fin m → Fin m → E →L[ℝ] E)
+    (pivotInvCLM : ℕ → E →L[ℝ] E)
+    (hDom : IsBlockDiagDomCol m
+      (fun i j : Fin m => maxEntryNorm hr (A i j)) invDiagBound)
+    (hDiagBound : ∀ j : Fin m,
+      invDiagBound j ≤ maxEntryNorm hr (A j j))
+    (hInit : ∀ j : Fin m,
+      invDiagBound j ≤ continuousLinearMapLowerNorm (stageBlock 0 j j) hunit)
+    (hStageNorm : ∀ k : ℕ, ∀ i j : Fin m,
+      ‖stageBlock k i j‖ = higham13_algorithm13_3_schurStageNorm A pivotInv k i j)
+    (hPivotNorm : ∀ k : ℕ,
+      ‖pivotInvCLM k‖ = higham13_algorithm13_3_pivotInvNorm pivotInv k)
+    (hSchur : ∀ k : ℕ, ∀ hk : k < m, ∀ j : Fin m,
+      k + 1 ≤ j.val → ∀ x : E,
+        stageBlock (k + 1) j j x =
+          stageBlock k j j x -
+            stageBlock k j ⟨k, hk⟩
+              (pivotInvCLM k (stageBlock k ⟨k, hk⟩ j x)))
+    (hLeft : ∀ k : ℕ, ∀ hk : k < m, ∀ x : E,
+      pivotInvCLM k (stageBlock k ⟨k, hk⟩ ⟨k, hk⟩ x) = x)
+    (hRight : ∀ k : ℕ, ∀ hk : k < m, ∀ y : E,
+      stageBlock k ⟨k, hk⟩ ⟨k, hk⟩ (pivotInvCLM k y) = y) :
+    blockMaxNorm hm hr (higham13_algorithm13_3_upperFromStages A pivotInv) ≤
+        2 * blockMaxNorm hm hr A ∧
+      growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+          (higham13_algorithm13_3_stageHistoryGrowthMatrix
+            (Nat.mul_pos hm hr) hm hr A pivotInv)
+          (maxEntryNorm_pos_of_det_ne_zero
+            (Nat.mul_pos hm hr) (blockMatrixFlatFin A) hdet) ≤
+        2 := by
+  let hN : 0 < m * r := Nat.mul_pos hm hr
+  let hApos : 0 < maxEntryNorm hN (blockMatrixFlatFin A) :=
+    maxEntryNorm_pos_of_det_ne_zero hN (blockMatrixFlatFin A) hdet
+  simpa [hN, hApos] using
+    higham13_algorithm13_3_upperFromStages_eq13_21_and_stageHistoryGrowthFactor_le_two_of_column_bdd_continuousLinearMap_source_table
+      hm hr hunit A pivotInv hApos invDiagBound stageBlock pivotInvCLM
+      hDom hDiagBound hInit hStageNorm hPivotNorm hSchur hLeft hRight
 
 /-- Higham, 2nd ed., Chapter 13, Theorem 13.8:
     finite function-block stage-history norm bound from active pivot
