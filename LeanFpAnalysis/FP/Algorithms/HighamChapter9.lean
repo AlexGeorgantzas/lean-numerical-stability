@@ -3227,6 +3227,33 @@ structure higham9_2_RectDoolittleRoundedStageTrace {m n : ℕ}
   L_stage_eq : ∀ i : Fin m, ∀ k : Fin n, k.val < i.val →
     L i k = higham9_2_rectFlDoolittleLEntry fp A L U i k
 
+/-- **Algorithm 9.2**, rectangular rounded prefix trace.
+
+After `t` scheduled Doolittle stages, all pivot rows/columns with index
+strictly below `t` satisfy the corresponding triangular-shape and literal
+rounded-fold equations.  The complete prefix `t = n` is converted below into
+`higham9_2_RectDoolittleRoundedStageTrace`. -/
+structure higham9_2_RectDoolittleRoundedPrefixTrace {m n : ℕ}
+    (hmn : n ≤ m) (A L : Fin m → Fin n → ℝ) (U : Fin n → Fin n → ℝ)
+    (fp : FPModel) (t : ℕ) : Prop where
+  /-- Completed pivot rows have unit diagonal entries. -/
+  L_diag_done : ∀ k : Fin n, k.val < t →
+    L (higham9_2_rectRow hmn k) k = 1
+  /-- Completed lower-factor columns have the lower-trapezoidal zero pattern. -/
+  L_upper_zero_done : ∀ i : Fin m, ∀ j : Fin n,
+    j.val < t → i.val < j.val → L i j = 0
+  /-- Completed upper-factor rows have the upper-triangular zero pattern. -/
+  U_lower_zero_done : ∀ i j : Fin n,
+    i.val < t → j.val < i.val → U i j = 0
+  /-- Completed upper-row entries agree with the literal rounded row fold. -/
+  U_stage_eq_done : ∀ k j : Fin n, k.val < t → k.val ≤ j.val →
+    U k j = higham9_2_rectFlDoolittleUEntry fp hmn A L U k j
+  /-- Completed lower-column entries agree with the literal rounded numerator
+  fold followed by rounded division by the computed pivot. -/
+  L_stage_eq_done : ∀ i : Fin m, ∀ k : Fin n,
+    k.val < t → k.val < i.val →
+      L i k = higham9_2_rectFlDoolittleLEntry fp A L U i k
+
 /-- **Algorithm 9.2**, rectangular absolute-budget handoff.  Absolute residual
 budgets plus visible dominance inequalities produce the relative rectangular
 dense-loop certificate. -/
@@ -3340,6 +3367,54 @@ theorem higham9_2_rectRoundedStageTrace_to_rectDenseLoopCertificate
   higham9_2_rectAbsBudgetCertificate_to_rectDenseLoopCertificate
     (higham9_2_rectRoundedStageTrace_to_rectAbsBudgetCertificate
       hT hU_diag hn hU_budget_le hL_budget_le)
+
+/-- **Algorithm 9.2**, any full rounded-stage trace restricts to a completed
+prefix trace after `t` rectangular Doolittle stages. -/
+theorem higham9_2_rectRoundedStageTrace_to_prefixTrace
+    {m n : ℕ} {fp : FPModel} {hmn : n ≤ m}
+    {A L : Fin m → Fin n → ℝ} {U : Fin n → Fin n → ℝ}
+    (hT : higham9_2_RectDoolittleRoundedStageTrace hmn A L U fp)
+    (t : ℕ) :
+    higham9_2_RectDoolittleRoundedPrefixTrace hmn A L U fp t where
+  L_diag_done := by
+    intro k _hk
+    exact hT.L_diag k
+  L_upper_zero_done := by
+    intro i j _hj hij
+    exact hT.L_upper_zero i j hij
+  U_lower_zero_done := by
+    intro i j _hi hji
+    exact hT.U_lower_zero i j hji
+  U_stage_eq_done := by
+    intro k j _hk hkj
+    exact hT.U_stage_eq k j hkj
+  L_stage_eq_done := by
+    intro i k _hk hki
+    exact hT.L_stage_eq i k hki
+
+/-- **Algorithm 9.2**, completed rectangular rounded prefix trace.  Once the
+prefix horizon reaches all `n` stages, the prefix trace is exactly the rounded
+stage trace consumed by the certificate and backward-error handoffs. -/
+theorem higham9_2_rectRoundedPrefixTrace_complete_to_stageTrace
+    {m n : ℕ} {fp : FPModel} {hmn : n ≤ m}
+    {A L : Fin m → Fin n → ℝ} {U : Fin n → Fin n → ℝ}
+    (hT : higham9_2_RectDoolittleRoundedPrefixTrace hmn A L U fp n) :
+    higham9_2_RectDoolittleRoundedStageTrace hmn A L U fp where
+  L_diag := by
+    intro k
+    exact hT.L_diag_done k k.isLt
+  L_upper_zero := by
+    intro i j hij
+    exact hT.L_upper_zero_done i j j.isLt hij
+  U_lower_zero := by
+    intro i j hji
+    exact hT.U_lower_zero_done i j i.isLt hji
+  U_stage_eq := by
+    intro k j hkj
+    exact hT.U_stage_eq_done k j k.isLt hkj
+  L_stage_eq := by
+    intro i k hki
+    exact hT.L_stage_eq_done i k k.isLt hki
 
 /-- **Algorithm 9.2**, rectangular componentwise dominance handoff.  Visible
 upper work/product dominance, lower work/product/numerator dominance, and the
@@ -4931,6 +5006,29 @@ theorem higham9_3_rectRoundedStageTrace_backward_error
     (higham9_2_rectDoolittleLAbsBudget fp A L_hat U_hat) hn
     (higham9_2_rectRoundedStageTrace_to_rectAbsBudgetCertificate
       hT hU_diag hn hU_budget_le hL_budget_le)
+
+/-- **Theorem 9.3**, completed rectangular rounded-prefix trace form.  A
+rectangular Doolittle prefix trace at horizon `n` feeds the same componentwise
+backward-error theorem as the full rounded-stage trace. -/
+theorem higham9_3_rectRoundedPrefixTrace_complete_backward_error
+    {m n : ℕ} {fp : FPModel} {hmn : n ≤ m}
+    {A L_hat : Fin m → Fin n → ℝ} {U_hat : Fin n → Fin n → ℝ}
+    (hT : higham9_2_RectDoolittleRoundedPrefixTrace hmn A L_hat U_hat fp n)
+    (hU_diag : ∀ k : Fin n, U_hat k k ≠ 0)
+    (hn : gammaValid fp n)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp hmn A L_hat U_hat k j ≤
+        gamma fp n * |U_hat k j|)
+    (hL_budget_le : ∀ i : Fin m, ∀ k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A L_hat U_hat i k ≤
+        gamma fp n * |L_hat i k * U_hat k k|) :
+    ∃ ΔA : Fin m → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤ gamma fp n *
+        ∑ k : Fin n, |L_hat i k| * |U_hat k j|) ∧
+      (∀ i j, rectMatMul L_hat U_hat i j = A i j + ΔA i j) :=
+  higham9_3_rectRoundedStageTrace_backward_error
+    (higham9_2_rectRoundedPrefixTrace_complete_to_stageTrace hT)
+    hU_diag hn hU_budget_le hL_budget_le
 
 /-- **Theorem 9.3**, rectangular literal-source-budget form.  Literal rounded
 rectangular Doolittle folds, nonzero computed pivots, and visible
