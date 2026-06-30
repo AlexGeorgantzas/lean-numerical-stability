@@ -10072,3 +10072,13 @@ These compile, but should not be treated as fully derived stability results:
   premise for the represented pivots, while final one-block/all-pivot data for
   downstream APIs, per-tail source comparisons, product/update source data, and
   the Eq.13.23 `rho <= 2` theorem remain open.
+
+- 2026-06-29 Eq.13.22/Eq.13.23 source-chain all-pivot wrappers: added
+  `Higham13Eq1322LowerComparisonSourceChain.pivot_right_inverse_of_final` and
+  `Higham13Eq1322InverseRatioSourceChain.pivot_right_inverse_of_final`.
+  These combine the recursive source-chain nonterminal pivot extractor with a
+  single terminal-pivot right-inverse certificate, producing the all-pivot table
+  `k < m+1` expected by existing matrix-stage witness APIs.  This isolates the
+  final one-block pivot datum instead of repeating the whole active pivot table;
+  the per-tail source lower-budget/condition comparisons, structured
+  product/update source data, and Eq.13.23 `rho <= 2` theorem remain open.
