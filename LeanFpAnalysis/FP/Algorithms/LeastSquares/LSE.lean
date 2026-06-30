@@ -12271,6 +12271,56 @@ theorem theorem20_10_householder_constructed_perturbed_gqr_factorization
   exact ⟨DeltaA, DeltaB, hDeltaBrep, hDeltaA, hDeltaB, hpert, hQeq, hSeq⟩
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    rank obstruction for the rounded Householder perturbed GQR record.
+
+    After `theorem20_10_householder_constructed_perturbed_gqr_factorization`
+    constructs the concrete perturbed GQR record, the remaining perturbed source
+    rank assumptions are exactly the nonzero diagonal conditions on that record's
+    `S` and `L22` blocks. -/
+theorem theorem20_10_householder_constructed_perturbed_gqr_rank_iff_diagonal
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q))) :
+    let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+      fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+    let Rb : Fin (p + q) → Fin p → ℝ :=
+      fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)
+    let S : Fin p → Fin p → ℝ :=
+      matTranspose (fun i : Fin p => fun j : Fin p =>
+        Rb (Fin.castAdd q i) j)
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+      (∀ i j,
+        B i j + DeltaB i j =
+          matMulRect (p + q) (p + q) p Qb Rb j i) ∧
+      frobNormRect DeltaA ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect A ∧
+      frobNormRect DeltaB ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B ∧
+      ∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        hpert.Q = Qb ∧ hpert.S = S ∧
+        ((LSEFullRowRank (fun i j => B i j + DeltaB i j) ∧
+          LSEStackedFullColumnRank
+            (fun i j => A i j + DeltaA i j)
+            (fun i j => B i j + DeltaB i j)) ↔
+          (∀ i : Fin p, hpert.S i i ≠ 0) ∧
+            (∀ i : Fin q, hpert.L22 i i ≠ 0)) := by
+  dsimp
+  rcases theorem20_10_householder_constructed_perturbed_gqr_factorization
+      fp A B hp hq hvalidA hvalidB with
+    ⟨DeltaA, DeltaB, hDeltaBrep, hDeltaA, hDeltaB, hpert, hQeq, hSeq⟩
+  exact
+    ⟨DeltaA, DeltaB, hDeltaBrep, hDeltaA, hDeltaB, hpert, hQeq, hSeq,
+      hpert.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     a constraint-matrix perturbation gives the corresponding constraint
     right-hand-side perturbation at a proposed computed vector.
 
