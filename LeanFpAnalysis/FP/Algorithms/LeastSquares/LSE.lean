@@ -8491,6 +8491,98 @@ theorem theorem20_10_gqr_forwardSub_triangular_solve_frob_perturbation_bound
     ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
       hDeltaSfrob, hDeltaL22frob, hSeq, hL22eq⟩
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
+    first lower-triangular solve `S y₁ = d`. -/
+noncomputable def theorem20_10_gqr_y1hat
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (fp : FPModel) (h : GeneralizedQRFactorization r p q A B)
+    (d : Fin p → ℝ) : Fin p → ℝ :=
+  fl_forwardSub fp p h.S d
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
+    right-hand side for the trailing lower-triangular solve. -/
+noncomputable def theorem20_10_gqr_rhs2hat
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (fp : FPModel) (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ) : Fin q → ℝ :=
+  fun i : Fin q =>
+    matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i) -
+      rectMatMulVec h.L21 (theorem20_10_gqr_y1hat fp h d) i
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
+    second lower-triangular solve `L₂₂ y₂ = Uᵀb - L₂₁y₁`. -/
+noncomputable def theorem20_10_gqr_y2hat
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (fp : FPModel) (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ) : Fin q → ℝ :=
+  fl_forwardSub fp q h.L22 (theorem20_10_gqr_rhs2hat fp h b d)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
+    final computed vector `xhat = Q [y₁hat; y₂hat]` for supplied GQR data.
+
+    This definition names the computed path; it does not by itself prove that
+    the vector is a minimizer of a perturbed LSE problem. -/
+noncomputable def theorem20_10_gqr_xhat
+    {r p q : ℕ}
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (fp : FPModel) (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ) : Fin (p + q) → ℝ :=
+  matMulVec (p + q) h.Q
+    (Fin.append
+      (theorem20_10_gqr_y1hat fp h d)
+      (theorem20_10_gqr_y2hat fp h b d))
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
+    the named computed vector carries the same Frobenius-bounded triangular
+    perturbation witnesses as the raw `fl_forwardSub` calls.
+
+    This closes the bookkeeping step that identifies the local computed
+    `xhat` expression used by the triangular-solve analysis.  It still does
+    not prove the final `DeltaX` bound, rank preservation for perturbed source
+    data, or exact-minimizer status of the computed vector. -/
+theorem theorem20_10_gqr_xhat_triangular_solve_frob_perturbation_bound
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalidS : gammaValid fp p)
+    (hvalidL22 : gammaValid fp q) :
+    ∃ (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ),
+      (∀ i j, |DeltaS i j| ≤ gamma fp p * |h.S i j|) ∧
+      (∀ i j, |DeltaL22 i j| ≤ gamma fp q * |h.L22 i j|) ∧
+      frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S ∧
+      frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 ∧
+      rectMatMulVec (fun i j => h.S i j + DeltaS i j)
+        (theorem20_10_gqr_y1hat fp h d) = d ∧
+      rectMatMulVec (fun i j => h.L22 i j + DeltaL22 i j)
+        (theorem20_10_gqr_y2hat fp h b d) =
+          theorem20_10_gqr_rhs2hat fp h b d ∧
+      theorem20_10_gqr_xhat fp h b d =
+        matMulVec (p + q) h.Q
+          (Fin.append
+            (theorem20_10_gqr_y1hat fp h d)
+            (theorem20_10_gqr_y2hat fp h b d)) := by
+  rcases theorem20_10_gqr_forwardSub_triangular_solve_frob_perturbation_bound
+      fp h b d hSdiag hL22diag hvalidS hvalidL22 with
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, hSeq, hL22eq⟩
+  refine
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, ?_, ?_, rfl⟩
+  · simpa [theorem20_10_gqr_y1hat] using hSeq
+  · simpa [theorem20_10_gqr_y1hat, theorem20_10_gqr_rhs2hat,
+      theorem20_10_gqr_y2hat] using hL22eq
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), finite-precision
     perturbation certificate for the mixed-stability branch.
 
