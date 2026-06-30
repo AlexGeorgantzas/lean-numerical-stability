@@ -63214,7 +63214,8 @@ it does not expose local diagonal dominance or the `Dcap`/`Ncap` finite-max
 smallness inequality.  The remaining visible obligations are the stored QR
 recurrence, signed `alpha`, leading-block determinant/conditioning data,
 dual compact-budget data, row-max diagonal defect, stage-budget/row-max
-comparison, active-pivot selection, and compact global-product smallness. -/
+scalar comparison, active-pivot selection, and compact global-product
+smallness. -/
 theorem theorem20_3_householder_qr_ls_backward_error_compactBudget_of_activePivot_rowMax_dualBudget_actualUnitRoundoff
     {m n : ℕ} (fp : FPModel) (hmn : n ≤ m)
     (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
@@ -63303,8 +63304,8 @@ theorem theorem20_3_householder_qr_ls_backward_error_compactBudget_of_activePivo
     (hBudget_nonneg : ∀ t : ℕ, 0 ≤ stageBudget t)
     (hBudget_mono : ∀ a b : ℕ, a ≤ b → stageBudget a ≤ stageBudget b)
     (hrowDefect : storedQRRowMaxDiagDefectBudget hmn A_hat ≤ 0)
-    (hstage_le_rowMax : ∀ k (hk : k < n), ∀ i : Fin (k + 1), i.val < k →
-      stageBudget k ≤ qrLeadingStrictUpperRowMaxBudget hmn A_hat k hk i)
+    (hcomparison :
+      storedQRStageRowMaxComparisonDefectBudget hmn A_hat stageBudget ≤ 0)
     (hpivotChoice : ∀ t (ht : t < n),
       ⟨t, ht⟩ =
         householderActiveMaxPivotColumn
@@ -63329,7 +63330,9 @@ theorem theorem20_3_householder_qr_ls_backward_error_compactBudget_of_activePivo
       fp hmn A b A_hat b_hat alpha κ K stageBudget huSmall hInitA hInitb
       hStepA hStepb hAlphaDef hdetLead hK hκ hκbudget hbudgetDual hinit
       hinitBlock hglobalBudget hBudget_nonneg hBudget_mono hrowDefect
-      hstage_le_rowMax hpivotChoice hglobalProduct
+      (storedQRStageBudget_le_rowMax_of_stageRowMaxComparisonDefectBudget_nonpos
+        hmn A_hat stageBudget hcomparison)
+      hpivotChoice hglobalProduct
 
 /-- Solver-facing active-max-pivot QR certificate using the row-max scalar
     defect and scalar stage-budget/row-max comparison defect.
