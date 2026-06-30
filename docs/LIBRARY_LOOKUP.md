@@ -1361,6 +1361,9 @@ Source-facing Chapter 9 wrappers:
 - `higham9_2_rectPrefixDot_abs_le_absLUProduct`
 - `higham9_5_rectGEReducedEntry_abs_le_maxEntryNorm_add_absLU_infNorm`
 - `higham9_5_rectPrefixRange_full_eq_matMul`
+- `higham9_5_rectPrefixRange_full_eq_rectMatMul`
+- `higham9_5_rectGEReducedEntry_full_eq_sub_rectMatMul`
+- `higham9_5_rectGEReducedEntry_full_eq_zero_of_rectMatMul_eq`
 - `higham9_5_rectGEReducedEntry_full_eq_zero_of_LUFactSpec`
 - `higham9_6_rankOne_abs_le_reduced_add_succ`
 - `higham9_6_absLU_infNorm_le_of_reduced_stage_pair_rows`

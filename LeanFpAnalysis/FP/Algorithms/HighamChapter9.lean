@@ -12392,6 +12392,49 @@ theorem higham9_5_rectPrefixRange_full_eq_matMul {n : ℕ}
         have hk : (⟨k.val, k.isLt⟩ : Fin n) = k := by ext; rfl
         simp [g, k.isLt, hk]
 
+/-- **Equation (9.5)** after all `n` rectangular rank-one updates: the
+natural-number prefix is the full rectangular product entry. -/
+theorem higham9_5_rectPrefixRange_full_eq_rectMatMul {m n : ℕ}
+    (L : Fin m → Fin n → ℝ) (U : Fin n → Fin n → ℝ)
+    (i : Fin m) (j : Fin n) :
+    higham9_5_rectPrefixRange L U i j n =
+      rectMatMul L U i j := by
+  unfold higham9_5_rectPrefixRange rectMatMul
+  let g : ℕ → ℝ := fun r =>
+    if h : r < n then L i ⟨r, h⟩ * U ⟨r, h⟩ j else 0
+  calc
+    (∑ r ∈ Finset.range n,
+        if h : r < n then L i ⟨r, h⟩ * U ⟨r, h⟩ j else 0)
+        = ∑ r ∈ Finset.range n, g r := rfl
+    _ = ∑ k : Fin n, g k.val := by
+        rw [← Fin.sum_univ_eq_sum_range g n]
+    _ = ∑ k : Fin n, L i k * U k j := by
+        apply Finset.sum_congr rfl
+        intro k _
+        have hk : (⟨k.val, k.isLt⟩ : Fin n) = k := by ext; rfl
+        simp [g, k.isLt, hk]
+
+/-- **Equation (9.5)** terminal rectangular residual: after all rank-one
+updates, the reduced entry is exactly the residual `A - L*U`. -/
+theorem higham9_5_rectGEReducedEntry_full_eq_sub_rectMatMul {m n : ℕ}
+    (A L : Fin m → Fin n → ℝ) (U : Fin n → Fin n → ℝ)
+    (i : Fin m) (j : Fin n) :
+    higham9_5_rectGEReducedEntry A L U n i j =
+      A i j - rectMatMul L U i j := by
+  unfold higham9_5_rectGEReducedEntry
+  rw [higham9_5_rectPrefixRange_full_eq_rectMatMul]
+
+/-- **Equation (9.5)** terminal rectangular residual: for an exact rectangular
+product certificate, the reduced entry after all rank-one updates is zero. -/
+theorem higham9_5_rectGEReducedEntry_full_eq_zero_of_rectMatMul_eq {m n : ℕ}
+    {A L : Fin m → Fin n → ℝ} {U : Fin n → Fin n → ℝ}
+    (hprod : ∀ i j, rectMatMul L U i j = A i j)
+    (i : Fin m) (j : Fin n) :
+    higham9_5_rectGEReducedEntry A L U n i j = 0 := by
+  rw [higham9_5_rectGEReducedEntry_full_eq_sub_rectMatMul A L U i j,
+    hprod i j]
+  ring
+
 /-- **Equation (9.5)** terminal residual: for an exact LU certificate, the
 reduced entry after all rank-one updates is zero. -/
 theorem higham9_5_rectGEReducedEntry_full_eq_zero_of_LUFactSpec {n : ℕ}
