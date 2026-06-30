@@ -1660,6 +1660,17 @@ noncomputable def undetGramPerturbationComponentBudget {m n : ℕ}
   fun i j => ∑ k : Fin n,
     (|A i k| * E j k + E i k * |A j k| + eps * E i k * E j k)
 
+/-- Row-norm source budget for the Chapter 21 Gram perturbation induced by a
+    rectangular componentwise data-perturbation budget.  This replaces each
+    entry of `A` and `E` in the componentwise Gram budget by its row 2-norm. -/
+noncomputable def undetGramPerturbationRowNormBudget {m n : ℕ}
+    (A E : Fin m → Fin n → ℝ) (eps : ℝ) : Fin m → Fin m → ℝ :=
+  fun i j =>
+    (n : ℝ) *
+      (rectRowNorm2 A i * rectRowNorm2 E j +
+        rectRowNorm2 E i * rectRowNorm2 A j +
+        eps * rectRowNorm2 E i * rectRowNorm2 E j)
+
 /-- Expansion of the Chapter 21 Gram perturbation
     `(A + DeltaA2)(A + DeltaA2)^T - AA^T`. -/
 theorem undetGramPerturbation_eq_sum {m n : ℕ}
@@ -1689,6 +1700,76 @@ theorem undetGramPerturbationComponentBudget_nonneg {m n : ℕ}
       (mul_nonneg (abs_nonneg _) (hE j k))
       (mul_nonneg (hE i k) (abs_nonneg _)))
     (mul_nonneg (mul_nonneg heps (hE i k)) (hE j k))
+
+/-- The row-norm source Gram budget is nonnegative when the rectangular
+    perturbation majorant and scalar perturbation size are nonnegative. -/
+theorem undetGramPerturbationRowNormBudget_nonneg {m n : ℕ}
+    (A E : Fin m → Fin n → ℝ) {eps : ℝ}
+    (heps : 0 ≤ eps) :
+    ∀ i j : Fin m, 0 ≤ undetGramPerturbationRowNormBudget A E eps i j := by
+  intro i j
+  unfold undetGramPerturbationRowNormBudget
+  exact mul_nonneg (by exact_mod_cast Nat.zero_le n)
+    (add_nonneg
+      (add_nonneg
+        (mul_nonneg (rectRowNorm2_nonneg A i) (rectRowNorm2_nonneg E j))
+        (mul_nonneg (rectRowNorm2_nonneg E i) (rectRowNorm2_nonneg A j)))
+      (mul_nonneg
+        (mul_nonneg heps (rectRowNorm2_nonneg E i))
+        (rectRowNorm2_nonneg E j)))
+
+/-- The induced componentwise Gram perturbation budget is bounded by the
+    row-norm source Gram budget. -/
+theorem undetGramPerturbationComponentBudget_le_rowNormBudget {m n : ℕ}
+    (A E : Fin m → Fin n → ℝ) {eps : ℝ}
+    (heps : 0 ≤ eps) (hE : ∀ i k, 0 ≤ E i k) :
+    ∀ i j : Fin m,
+      undetGramPerturbationComponentBudget A E eps i j ≤
+        undetGramPerturbationRowNormBudget A E eps i j := by
+  intro i j
+  let C : ℝ :=
+    rectRowNorm2 A i * rectRowNorm2 E j +
+      rectRowNorm2 E i * rectRowNorm2 A j +
+      eps * rectRowNorm2 E i * rectRowNorm2 E j
+  have hsum :
+      (∑ k : Fin n,
+        (|A i k| * E j k + E i k * |A j k| + eps * E i k * E j k)) ≤
+        ∑ _k : Fin n, C := by
+    apply Finset.sum_le_sum
+    intro k _
+    have hAi : |A i k| ≤ rectRowNorm2 A i := by
+      simpa [rectRowNorm2] using abs_coord_le_vecNorm2 (fun q : Fin n => A i q) k
+    have hAj : |A j k| ≤ rectRowNorm2 A j := by
+      simpa [rectRowNorm2] using abs_coord_le_vecNorm2 (fun q : Fin n => A j q) k
+    have hEi : E i k ≤ rectRowNorm2 E i := by
+      simpa [rectRowNorm2, abs_of_nonneg (hE i k)] using
+        abs_coord_le_vecNorm2 (fun q : Fin n => E i q) k
+    have hEj : E j k ≤ rectRowNorm2 E j := by
+      simpa [rectRowNorm2, abs_of_nonneg (hE j k)] using
+        abs_coord_le_vecNorm2 (fun q : Fin n => E j q) k
+    have hterm1 :
+        |A i k| * E j k ≤ rectRowNorm2 A i * rectRowNorm2 E j :=
+      mul_le_mul hAi hEj (hE j k) (rectRowNorm2_nonneg A i)
+    have hterm2 :
+        E i k * |A j k| ≤ rectRowNorm2 E i * rectRowNorm2 A j :=
+      mul_le_mul hEi hAj (abs_nonneg _) (rectRowNorm2_nonneg E i)
+    have hterm3_raw :
+        E i k * E j k ≤ rectRowNorm2 E i * rectRowNorm2 E j :=
+      mul_le_mul hEi hEj (hE j k) (rectRowNorm2_nonneg E i)
+    have hterm3 :
+        eps * E i k * E j k ≤
+          eps * rectRowNorm2 E i * rectRowNorm2 E j := by
+      simpa [mul_assoc] using mul_le_mul_of_nonneg_left hterm3_raw heps
+    simpa [C, add_assoc] using add_le_add (add_le_add hterm1 hterm2) hterm3
+  calc
+    undetGramPerturbationComponentBudget A E eps i j
+        = ∑ k : Fin n,
+            (|A i k| * E j k + E i k * |A j k| + eps * E i k * E j k) := by
+          rfl
+    _ ≤ ∑ _k : Fin n, C := hsum
+    _ = undetGramPerturbationRowNormBudget A E eps i j := by
+          simp [undetGramPerturbationRowNormBudget, C]
+          ring
 
 /-- A componentwise rectangular perturbation bound induces a componentwise
     bound on the Chapter 21 Gram perturbation. -/
