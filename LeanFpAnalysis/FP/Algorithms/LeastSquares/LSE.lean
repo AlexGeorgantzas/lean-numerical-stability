@@ -9980,6 +9980,91 @@ theorem theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of
       (gamma_lt_one fp p hvalid2S)
       (gamma_lt_one fp q hvalid2L22)
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), constructed-source
+    certificate with the induced source `DeltaA` and `DeltaB` Frobenius bounds
+    discharged from the triangular-solve perturbation bounds.
+
+    The remaining visible finite-precision obligations are the source-shaped
+    right-hand-side perturbation bound for `Deltab` and the transformed trailing
+    right-hand-side matching condition.  The matrix perturbation bounds are
+    proved internally using the transported `L22` and `S` perturbations. -/
+theorem theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of_double_gammaValid_source_bounds
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (gammaA gammaB : ℝ)
+    (Deltab : Fin (r + q) → ℝ)
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    (hgammaA_ge : gamma fp q ≤ gammaA)
+    (hgammaB_ge : gamma fp p ≤ gammaB)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalid2S : gammaValid fp (2 * p))
+    (hvalid2L22 : gammaValid fp (2 * q)) :
+    ∃ (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ),
+      (∀ i j, |DeltaS i j| ≤ gamma fp p * |h.S i j|) ∧
+      (∀ i j, |DeltaL22 i j| ≤ gamma fp q * |h.L22 i j|) ∧
+      frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S ∧
+      frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 ∧
+      (vecNorm2 Deltab ≤ gammaA * vecNorm2 b →
+       (∀ i : Fin q,
+          matMulVec (r + q) (matTranspose h.U)
+              (fun i => b i + Deltab i) (Fin.natAdd r i) =
+            matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i)) →
+       Nonempty
+        (Theorem20_10PartAPerturbationCertificate A B b d
+          (theorem20_10_gqr_xhat fp h b d) gammaA gammaB)) := by
+  rcases
+    theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of_double_gammaValid
+      fp h b d gammaA gammaB Deltab hgammaB_nonneg hSdiag hL22diag
+      hvalid2S hvalid2L22 with
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, hcert⟩
+  refine
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, ?_⟩
+  dsimp at hcert ⊢
+  intro hDeltab hb_tail
+  have hgammaq_nonneg : 0 ≤ gamma fp q :=
+    gamma_nonneg fp (gammaValid_mono fp (by omega) hvalid2L22)
+  have hDeltaA_base :
+      frobNormRect
+        (fun i j =>
+          gqrSourceAFromBlocks h.Q h.U h.L11 h.L21
+              (fun i j => h.L22 i j + DeltaL22 i j) i j -
+            A i j) ≤
+        gamma fp q * frobNormRect A :=
+    h.constructed_sourceA_L22_perturbation_frobNorm_bound
+      (gamma fp q) DeltaL22 hgammaq_nonneg hDeltaL22frob
+  have hDeltaA :
+      frobNormRect
+        (fun i j =>
+          gqrSourceAFromBlocks h.Q h.U h.L11 h.L21
+              (fun i j => h.L22 i j + DeltaL22 i j) i j -
+            A i j) ≤
+        gammaA * frobNormRect A := by
+    exact le_trans hDeltaA_base
+      (mul_le_mul_of_nonneg_right hgammaA_ge (frobNormRect_nonneg A))
+  have hDeltaB_base :
+      frobNormRect
+        (fun i j =>
+          gqrSourceBFromBlocks h.Q (fun i j => h.S i j + DeltaS i j) i j -
+            B i j) ≤
+        gamma fp p * frobNormRect B :=
+    h.constructed_sourceB_perturbation_frobNorm_bound
+      (gamma fp p) DeltaS hDeltaSfrob
+  have hDeltaB :
+      frobNormRect
+        (fun i j =>
+          gqrSourceBFromBlocks h.Q (fun i j => h.S i j + DeltaS i j) i j -
+            B i j) ≤
+        gammaB * frobNormRect B := by
+    exact le_trans hDeltaB_base
+      (mul_le_mul_of_nonneg_right hgammaB_ge (frobNormRect_nonneg B))
+  exact hcert hDeltaA hDeltab hDeltaB hb_tail
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), certificate-to-exact-core
     handoff.
 
