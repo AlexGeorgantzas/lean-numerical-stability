@@ -1036,6 +1036,62 @@ theorem gqrBQBlock_eq_of_transpose_tall_qr {p q : ℕ}
               ring
       _ = 0 := hentry
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10 computed-constraint algebra:
+    if a computed tall QR product has the form `Bhatᵀ = Q*Rhat`, with `Q`
+    orthogonal and `Rhat` upper trapezoidal, then the source-side matrix
+    `Bhat` satisfies the GQR constraint block identity `Bhat*Q = [S,0]`.
+
+    The square GQR constraint block is the transpose of the top square block
+    of `Rhat`.  This is the exact algebra needed to connect a concrete rounded
+    Householder QR of `Bᵀ` to the GQR `B Q = [S,0]` display. -/
+theorem gqrBQBlock_eq_of_transpose_product_tall_qr {p q : ℕ}
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (Rhat : Fin (p + q) → Fin p → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hRupper : IsUpperTrapezoidal (p + q) p Rhat) :
+    let Bhat : Fin p → Fin (p + q) → ℝ :=
+      fun i j => matMulRect (p + q) (p + q) p Q Rhat j i
+    let S : Fin p → Fin p → ℝ :=
+      matTranspose (fun i : Fin p => fun j : Fin p => Rhat (Fin.castAdd q i) j)
+    IsLowerTriangular S ∧
+      matMulRect p (p + q) (p + q) Bhat Q = gqrBQBlock S := by
+  dsimp
+  let R : Fin p → Fin p → ℝ :=
+    fun i : Fin p => fun j : Fin p => Rhat (Fin.castAdd q i) j
+  have hRhatBlock :
+      Rhat = lsQRTallBlock (k := q) R :=
+    lsQRTallBlock_of_upper_trapezoidal (n := p) (k := q) Rhat hRupper
+  have hRupperTop : IsUpperTriangular p R := by
+    intro i j hij
+    exact lsQRTallBlock_top_upper_of_upper_trapezoidal
+      (n := p) (k := q) Rhat hRupper i j hij
+  have hQtQ : matMul (p + q) (matTranspose Q) Q = idMatrix (p + q) := by
+    ext i j
+    simpa [matMul, rectMatMul, idMatrix] using hQ.left_inv i j
+  have hqr :
+      matMulRectLeft (matTranspose Q)
+          (fun j : Fin (p + q) => fun i : Fin p =>
+            matMulRect (p + q) (p + q) p Q Rhat j i) =
+        lsQRTallBlock (k := q) R := by
+    calc
+      matMulRectLeft (matTranspose Q)
+          (fun j : Fin (p + q) => fun i : Fin p =>
+            matMulRect (p + q) (p + q) p Q Rhat j i)
+          =
+        matMulRectLeft (matTranspose Q) (matMulRectLeft Q Rhat) := by
+          rfl
+      _ = matMulRectLeft (matMul (p + q) (matTranspose Q) Q) Rhat := by
+          rw [← matMulRectLeft_assoc]
+      _ = matMulRectLeft (idMatrix (p + q)) Rhat := by
+          rw [hQtQ]
+      _ = Rhat := matMulRectLeft_id Rhat
+      _ = lsQRTallBlock (k := q) R := hRhatBlock
+  exact
+    ⟨isLowerTriangular_matTranspose_of_isUpperTriangular hRupperTop,
+      gqrBQBlock_eq_of_transpose_tall_qr
+        (fun i j => matMulRect (p + q) (p + q) p Q Rhat j i)
+        Q R hqr⟩
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction step:
     exact MGS data for `Bᵀ`, once its computed columns are known
     orthonormal, supplies the completed tall QR block `Qᵀ Bᵀ = [R;0]`.
@@ -2945,6 +3001,88 @@ noncomputable def GeneralizedQRFactorization.of_source_blocks
             rfl
       _ = C := hCQ
       _ = gqrBQBlock S := rfl
+
+/-- Exact GQR factorization built from transported `A` blocks and an already
+    established constraint identity.
+
+    This is the asymmetric constructor needed by the rounded Theorem 20.10
+    path: the `A` side may still be transported from supplied/computed blocks,
+    while the `B` side can come from a concrete QR-derived identity
+    `B Q = [S,0]` instead of from the synthetic source matrix
+    `gqrSourceBFromBlocks Q S`. -/
+noncomputable def GeneralizedQRFactorization.of_sourceA_blocks_and_constraint_block
+    {r p q : ℕ}
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (U : Fin (r + q) → Fin (r + q) → ℝ)
+    (L11 : Fin r → Fin p → ℝ)
+    (L21 : Fin q → Fin p → ℝ)
+    (L22 : Fin q → Fin q → ℝ)
+    (S : Fin p → Fin p → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hU : IsOrthogonal (r + q) U)
+    (hL22 : IsLowerTriangular L22)
+    (hS : IsLowerTriangular S)
+    (hBQ : matMulRect p (p + q) (p + q) B Q = gqrBQBlock S) :
+    GeneralizedQRFactorization r p q
+      (gqrSourceAFromBlocks Q U L11 L21 L22) B := by
+  let M : Fin (r + q) → Fin (p + q) → ℝ := gqrAQBlock L11 L21 L22
+  have hQtQ : rectMatMul (matTranspose Q) Q = idMatrix (p + q) := by
+    ext i j
+    simpa [rectMatMul, idMatrix] using hQ.left_inv i j
+  have hUtU : rectMatMul (matTranspose U) U = idMatrix (r + q) := by
+    ext i j
+    simpa [rectMatMul, idMatrix] using hU.left_inv i j
+  have hMQ :
+      rectMatMul (rectMatMul M (matTranspose Q)) Q = M := by
+    calc
+      rectMatMul (rectMatMul M (matTranspose Q)) Q =
+          rectMatMul M (rectMatMul (matTranspose Q) Q) :=
+            rectMatMul_assoc M (matTranspose Q) Q
+      _ = rectMatMul M (idMatrix (p + q)) := by rw [hQtQ]
+      _ = M := rectMatMul_id_right M
+  have hAqQ :
+      matMulRect (r + q) (p + q) (p + q)
+          (gqrSourceAFromBlocks Q U L11 L21 L22) Q =
+        matMulRectLeft U M := by
+    calc
+      matMulRect (r + q) (p + q) (p + q)
+          (gqrSourceAFromBlocks Q U L11 L21 L22) Q =
+          rectMatMul
+            (rectMatMul U (rectMatMul M (matTranspose Q))) Q := by
+            ext i j
+            rfl
+      _ = rectMatMul U (rectMatMul (rectMatMul M (matTranspose Q)) Q) :=
+            rectMatMul_assoc U (rectMatMul M (matTranspose Q)) Q
+      _ = rectMatMul U M := by rw [hMQ]
+      _ = matMulRectLeft U M := by
+            rfl
+  refine
+    { Q := Q
+      U := U
+      L11 := L11
+      L21 := L21
+      L22 := L22
+      S := S
+      orthQ := hQ
+      orthU := hU
+      aq_eq := ?_
+      bq_eq := hBQ
+      lowerL22 := hL22
+      lowerS := hS }
+  calc
+    matMulRectLeft (matTranspose U)
+        (matMulRect (r + q) (p + q) (p + q)
+          (gqrSourceAFromBlocks Q U L11 L21 L22) Q) =
+        matMulRectLeft (matTranspose U) (matMulRectLeft U M) := by
+          rw [hAqQ]
+    _ = rectMatMul (matTranspose U) (rectMatMul U M) := by
+          rfl
+    _ = rectMatMul (rectMatMul (matTranspose U) U) M :=
+          (rectMatMul_assoc (matTranspose U) U M).symm
+    _ = rectMatMul (idMatrix (r + q)) M := by rw [hUtU]
+    _ = M := rectMatMul_id_left M
+    _ = gqrAQBlock L11 L21 L22 := rfl
 
 /-- Tall-case construction wrapper for Higham, 2nd ed., Theorem 20.9.
 
@@ -11630,6 +11768,152 @@ theorem theorem20_10_householder_B_transpose_frob_perturbation_bound
     simpa [finiteTranspose] using hrep j i
   · simpa [theorem20_10_householder_gammaB, frobNormRect_finiteTranspose]
       using hbound
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, concrete rounded `Bᵀ`
+    Householder QR constraint block.
+
+    The computed Householder panel for `Bᵀ` gives explicit factors `Q_B` and
+    `R_B`.  After taking the transpose of the computed product, the perturbed
+    constraint matrix satisfies the exact GQR block identity
+    `(B + DeltaB) Q_B = [S,0]`, where `S` is the transpose of the top square
+    block of `R_B`.  This closes the concrete `B`-side factor-identification
+    dependency; rank preservation remains a separate source perturbation
+    obligation. -/
+theorem theorem20_10_householder_B_transpose_perturbed_constraint_block
+    {r p q : ℕ} (fp : FPModel)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (hp : 0 < p)
+    (hvalid :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q))) :
+    let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+      fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+    let Rhat : Fin (p + q) → Fin p → ℝ :=
+      fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)
+    let S : Fin p → Fin p → ℝ :=
+      matTranspose (fun i : Fin p => fun j : Fin p =>
+        Rhat (Fin.castAdd q i) j)
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+      (∀ i j,
+        B i j + DeltaB i j =
+          matMulRect (p + q) (p + q) p Qb Rhat j i) ∧
+      IsOrthogonal (p + q) Qb ∧
+      IsLowerTriangular S ∧
+      matMulRect p (p + q) (p + q)
+        (fun i j => B i j + DeltaB i j) Qb = gqrBQBlock S ∧
+      frobNormRect DeltaB ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B := by
+  dsimp
+  let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+    fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+  let Rhat : Fin (p + q) → Fin p → ℝ :=
+    fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)
+  let S : Fin p → Fin p → ℝ :=
+    matTranspose (fun i : Fin p => fun j : Fin p =>
+      Rhat (Fin.castAdd q i) j)
+  have hbase_valid : gammaValid fp (11 * (p + q) + 23) := by
+    let K : ℕ := householderConstructApplyGammaIndex (p + q)
+    have hbase_le_K : 11 * (p + q) + 23 ≤ K := by
+      dsimp [K, householderConstructApplyGammaIndex]
+      omega
+    have hK_le_pK : K ≤ p * K :=
+      Nat.le_mul_of_pos_left K hp
+    exact gammaValid_mono fp (le_trans hbase_le_K hK_le_pK) (by
+      simpa [K] using hvalid)
+  have hready :
+      HouseholderQRPanelReady fp (p + q) p (finiteTranspose B) :=
+    HouseholderQRPanelReady_of_global_gammaValid
+      fp (p + q) p (p + q) (finiteTranspose B) le_rfl hbase_valid
+  have hQb : IsOrthogonal (p + q) Qb := by
+    simpa [Qb] using
+      fl_householderQRPanel_Q_orthogonal
+        fp (p + q) p (finiteTranspose B) hready
+  have hRupper : IsUpperTrapezoidal (p + q) p Rhat := by
+    simpa [Rhat] using
+      fl_householderQRPanel_R_upper_trapezoidal
+        fp (p + q) p (finiteTranspose B)
+  have hconstraint :=
+    gqrBQBlock_eq_of_transpose_product_tall_qr Qb Rhat hQb hRupper
+  dsimp [S] at hconstraint
+  rcases theorem20_10_householder_B_transpose_frob_perturbation_bound
+      fp B hp hvalid with
+    ⟨DeltaB, hDeltaBrep, hDeltaB⟩
+  have hBpert_eq :
+      (fun i j => B i j + DeltaB i j) =
+        fun i j => matMulRect (p + q) (p + q) p Qb Rhat j i := by
+    ext i j
+    simpa [Qb, Rhat] using hDeltaBrep i j
+  refine ⟨DeltaB, ?_, hQb, hconstraint.1, ?_, hDeltaB⟩
+  · intro i j
+    exact congrFun (congrFun hBpert_eq i) j
+  · rw [hBpert_eq]
+    exact hconstraint.2
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, rounded `Bᵀ`
+    Householder panel inserted into a GQR record.
+
+    The `A` side is still represented by transported supplied/computed blocks,
+    but the constraint side is now the concrete perturbed matrix coming from
+    the rounded Householder QR of `Bᵀ`.  This is the algebraic bridge needed to
+    replace a supplied `BQ=[S,0]` hypothesis by the actual computed B-side
+    panel in later rounded-GQR assembly theorems. -/
+theorem theorem20_10_householder_B_transpose_constructed_sourceA_gqr_factorization
+    {r p q : ℕ} (fp : FPModel)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (U : Fin (r + q) → Fin (r + q) → ℝ)
+    (L11 : Fin r → Fin p → ℝ)
+    (L21 : Fin q → Fin p → ℝ)
+    (L22 : Fin q → Fin q → ℝ)
+    (hp : 0 < p)
+    (hU : IsOrthogonal (r + q) U)
+    (hL22 : IsLowerTriangular L22)
+    (hvalid :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q))) :
+    let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+      fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+    let Rhat : Fin (p + q) → Fin p → ℝ :=
+      fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)
+    let S : Fin p → Fin p → ℝ :=
+      matTranspose (fun i : Fin p => fun j : Fin p =>
+        Rhat (Fin.castAdd q i) j)
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+      (∀ i j,
+        B i j + DeltaB i j =
+          matMulRect (p + q) (p + q) p Qb Rhat j i) ∧
+      (∃ hpert : GeneralizedQRFactorization r p q
+          (gqrSourceAFromBlocks Qb U L11 L21 L22)
+          (fun i j => B i j + DeltaB i j),
+        hpert.Q = Qb ∧
+        hpert.U = U ∧
+        hpert.S = S ∧
+        hpert.L11 = L11 ∧
+        hpert.L21 = L21 ∧
+        hpert.L22 = L22 ∧
+        frobNormRect DeltaB ≤
+          theorem20_10_householder_gammaB fp r p q * frobNormRect B) := by
+  dsimp
+  let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+    fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+  let Rhat : Fin (p + q) → Fin p → ℝ :=
+    fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)
+  let S : Fin p → Fin p → ℝ :=
+    matTranspose (fun i : Fin p => fun j : Fin p =>
+      Rhat (Fin.castAdd q i) j)
+  rcases theorem20_10_householder_B_transpose_perturbed_constraint_block
+      fp B hp hvalid with
+    ⟨DeltaB, hDeltaBrep, hQb, hS, hBQ, hDeltaBbound⟩
+  let hpert : GeneralizedQRFactorization r p q
+      (gqrSourceAFromBlocks Qb U L11 L21 L22)
+      (fun i j => B i j + DeltaB i j) :=
+    GeneralizedQRFactorization.of_sourceA_blocks_and_constraint_block
+      Qb U L11 L21 L22 S (fun i j => B i j + DeltaB i j)
+      hQb hU hL22 hS hBQ
+  refine ⟨DeltaB, hDeltaBrep, hpert, ?_, ?_, ?_, ?_, ?_, ?_, hDeltaBbound⟩
+  · rfl
+  · rfl
+  · rfl
+  · rfl
+  · rfl
+  · rfl
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     a constraint-matrix perturbation gives the corresponding constraint
