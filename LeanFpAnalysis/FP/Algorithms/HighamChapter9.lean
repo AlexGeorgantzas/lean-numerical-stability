@@ -5029,6 +5029,80 @@ theorem higham9_3_lu_backward_error_gamma (fp : FPModel) (n : ℕ)
       (∀ i j, ∑ k : Fin n, L_hat i k * U_hat k j = A i j + ΔA i j) :=
   lu_backward_error_gamma fp n A L_hat U_hat hn hLU
 
+/-- **Algorithm 9.2 / Theorem 9.3**, exact Doolittle recurrences as a zero
+`LUBackwardError` certificate.  Exact upper/lower recurrence equations, shape
+hypotheses, unit lower diagonal, and nonzero pivots first produce an exact
+`LUFactSpec`, hence a zero componentwise backward-error certificate.  This is
+an exact-arithmetic handoff and does not construct the rounded executable loop. -/
+theorem higham9_3_exactDoolittle_recurrences_to_LUBackwardError_zero {n : ℕ}
+    {A L U : Fin n → Fin n → ℝ}
+    (hL_diag : ∀ i : Fin n, L i i = 1)
+    (hL_upper_zero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hU_lower_zero : ∀ i j : Fin n, j.val < i.val → U i j = 0)
+    (hU_entry_eq : ∀ k j : Fin n, k.val ≤ j.val →
+      U k j = higham9_2_rectDoolittleUUpdate (Nat.le_refl n) A L U k j)
+    (hL_entry_eq : ∀ i k : Fin n, k.val < i.val →
+      L i k = higham9_2_rectDoolittleLUpdate A L U i k)
+    (hU_diag : ∀ k : Fin n, U k k ≠ 0) :
+    LUBackwardError n A L U 0 :=
+  LUFactSpec.to_LUBackwardError_zero
+    (higham9_2_exactDoolittle_recurrences_to_LUFactSpec
+      hL_diag hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq hU_diag)
+
+/-- **Algorithm 9.2 / Theorem 9.3**, exact Doolittle recurrences weakened to
+Higham's `γ_n` backward-error certificate.  The residual is still exactly zero;
+`γ_n` only matches the public Theorem 9.3 API. -/
+theorem higham9_3_exactDoolittle_recurrences_to_LUBackwardError_gamma
+    {n : ℕ} {fp : FPModel} {A L U : Fin n → Fin n → ℝ}
+    (hn : gammaValid fp n)
+    (hL_diag : ∀ i : Fin n, L i i = 1)
+    (hL_upper_zero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hU_lower_zero : ∀ i j : Fin n, j.val < i.val → U i j = 0)
+    (hU_entry_eq : ∀ k j : Fin n, k.val ≤ j.val →
+      U k j = higham9_2_rectDoolittleUUpdate (Nat.le_refl n) A L U k j)
+    (hL_entry_eq : ∀ i k : Fin n, k.val < i.val →
+      L i k = higham9_2_rectDoolittleLUpdate A L U i k)
+    (hU_diag : ∀ k : Fin n, U k k ≠ 0) :
+    LUBackwardError n A L U (gamma fp n) where
+  L_diag := hL_diag
+  L_upper_zero := hL_upper_zero
+  U_lower_zero := hU_lower_zero
+  backward_bound := by
+    intro i j
+    let hLU := higham9_2_exactDoolittle_recurrences_to_LUFactSpec
+      hL_diag hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq hU_diag
+    have hzero :
+        |∑ k : Fin n, L i k * U k j - A i j| = 0 := by
+      rw [hLU.product_eq i j]
+      simp
+    rw [hzero]
+    exact mul_nonneg (gamma_nonneg fp hn)
+      (Finset.sum_nonneg
+        (fun k _ => mul_nonneg (abs_nonneg _) (abs_nonneg _)))
+
+/-- **Algorithm 9.2 / Theorem 9.3**, exact Doolittle recurrence handoff to the
+standard componentwise backward-error perturbation surface.  This closes the
+exact recurrence-to-`ΔA` adapter; the rounded executable schedule that proves
+these recurrence hypotheses for computed factors remains open. -/
+theorem higham9_3_exactDoolittle_recurrences_backward_error_gamma
+    {n : ℕ} {fp : FPModel} {A L U : Fin n → Fin n → ℝ}
+    (hn : gammaValid fp n)
+    (hL_diag : ∀ i : Fin n, L i i = 1)
+    (hL_upper_zero : ∀ i j : Fin n, i.val < j.val → L i j = 0)
+    (hU_lower_zero : ∀ i j : Fin n, j.val < i.val → U i j = 0)
+    (hU_entry_eq : ∀ k j : Fin n, k.val ≤ j.val →
+      U k j = higham9_2_rectDoolittleUUpdate (Nat.le_refl n) A L U k j)
+    (hL_entry_eq : ∀ i k : Fin n, k.val < i.val →
+      L i k = higham9_2_rectDoolittleLUpdate A L U i k)
+    (hU_diag : ∀ k : Fin n, U k k ≠ 0) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤ gamma fp n *
+        ∑ k : Fin n, |L i k| * |U k j|) ∧
+      (∀ i j, ∑ k : Fin n, L i k * U k j = A i j + ΔA i j) :=
+  higham9_3_lu_backward_error_gamma fp n A L U hn
+    (higham9_3_exactDoolittle_recurrences_to_LUBackwardError_gamma hn
+      hL_diag hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq hU_diag)
+
 /-- **Theorem 9.4**: LU factorization plus two triangular solves, with
 Higham's absorbed `γ_{3n}` componentwise bound. -/
 theorem higham9_4_lu_solve_backward_error (fp : FPModel) (n : ℕ)
