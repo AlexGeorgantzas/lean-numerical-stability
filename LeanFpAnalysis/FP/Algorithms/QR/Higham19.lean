@@ -7379,6 +7379,200 @@ theorem storedSignedSequenceTwiceTrailingClosureData_succ_succ_of_tail_reflector
         storedSignedSequenceTailAlpha2] using hselfTailTail1)
     htail
 
+/-- Raw one-reflector source facts for a one-column twice-trailing tail.
+
+This is the source-facing counterpart of `storedSignedSequenceOneReflectorData`;
+the facts are stated directly on `trailingPanel (trailingPanel (A_hat 2))`,
+as they arise from the full stored loop at stage two. -/
+structure storedSignedSequenceOneTailReflectorFacts
+    (fp : FPModel) {m : Nat}
+    (A_hat : Nat -> Fin (m + 1 + 2) -> Fin (1 + 2) -> Real)
+    (alpha : Nat -> Real) : Prop where
+  hvecTailTail :
+    householderTrailingActiveVector (m + 1)
+        (Fin.mk 0 (Nat.succ_pos m))
+        (fun a =>
+          trailingPanel (trailingPanel (A_hat 2)) a
+            (Fin.mk 0 (Nat.succ_pos 0)))
+        (alpha 2) =
+      fl_householderNormalizedVector fp (Nat.succ_pos m)
+        (panelFirstColumn (Nat.succ_pos 0)
+          (trailingPanel (trailingPanel (A_hat 2))))
+  hselfTailTail :
+    (Finset.univ : Finset (Fin (m + 1))).sum
+      (fun i =>
+        householderTrailingActiveVector (m + 1)
+            (Fin.mk 0 (Nat.succ_pos m))
+            (fun a =>
+              trailingPanel (trailingPanel (A_hat 2)) a
+                (Fin.mk 0 (Nat.succ_pos 0)))
+            (alpha 2) i *
+          householderTrailingActiveVector (m + 1)
+            (Fin.mk 0 (Nat.succ_pos m))
+            (fun a =>
+              trailingPanel (trailingPanel (A_hat 2)) a
+                (Fin.mk 0 (Nat.succ_pos 0)))
+            (alpha 2) i) =
+      2
+  hdetTailTail :
+    Ne (Matrix.det
+      (qrLeadingBlock
+        (trailingPanel (trailingPanel (A_hat 2)))
+        (Nat.succ_le_succ (Nat.zero_le m))
+        (Nat.succ_pos 0) :
+        Matrix (Fin 1) (Fin 1) Real))
+      0
+
+/-- Raw first-two source facts for an arbitrary-width twice-trailing tail.
+
+The facts are stated at stages two and three of the original stored sequence.
+This is the contract the eventual full stored-loop induction should populate
+from per-pivot reflector normalization, self-dot, and determinant facts. -/
+structure storedSignedSequenceFirstTwoTailReflectorFacts
+    (fp : FPModel) {r p : Nat}
+    (A_hat : Nat -> Fin (r + (p + 2) + 2) -> Fin ((p + 2) + 2) -> Real)
+    (alpha : Nat -> Real) : Prop where
+  hvecTailTail0 :
+    householderTrailingActiveVector (r + (p + 2))
+        (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) (by omega)))
+        (fun a =>
+          trailingPanel (trailingPanel (A_hat 2)) a
+            (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) (by omega))))
+        (alpha 2) =
+      fl_householderNormalizedVector fp
+        (show 0 < r + (p + 2) by omega)
+        (panelFirstColumn (Nat.succ_pos (p + 1))
+          (trailingPanel (trailingPanel (A_hat 2))))
+  hselfTailTail0 :
+    (Finset.univ : Finset (Fin (r + (p + 2)))).sum
+      (fun i =>
+        householderTrailingActiveVector (r + (p + 2))
+            (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) (by omega)))
+            (fun a =>
+              trailingPanel (trailingPanel (A_hat 2)) a
+                (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) (by omega))))
+            (alpha 2) i *
+          householderTrailingActiveVector (r + (p + 2))
+            (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) (by omega)))
+            (fun a =>
+              trailingPanel (trailingPanel (A_hat 2)) a
+                (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) (by omega))))
+            (alpha 2) i) =
+      2
+  hdetTailTailFirst :
+    Ne (Matrix.det
+      (qrLeadingBlock
+        (trailingPanel (trailingPanel (A_hat 2)))
+        (show 1 <= r + (p + 2) by omega)
+        (Nat.succ_pos (p + 1)) :
+        Matrix (Fin 1) (Fin 1) Real))
+      0
+  hdetTailTailTail :
+    Ne (Matrix.det
+      (qrLeadingBlock
+        (let v0 := fl_householderNormalizedVector fp
+            (show 0 < r + (p + 2) by omega)
+            (panelFirstColumn (Nat.succ_pos (p + 1))
+              (trailingPanel (trailingPanel (A_hat 2))))
+         let S0 := fl_householderStoredPanelStep fp
+            (r + (p + 2)) (p + 2) 0 v0 1
+            (trailingPanel (trailingPanel (A_hat 2)))
+         trailingPanel S0)
+        (show 1 <= r + (p + 1) by omega)
+        (Nat.succ_pos p) :
+        Matrix (Fin 1) (Fin 1) Real))
+      0
+  hvecTailTail1 :
+    (let v0 := fl_householderNormalizedVector fp
+        (show 0 < r + (p + 2) by omega)
+        (panelFirstColumn (Nat.succ_pos (p + 1))
+          (trailingPanel (trailingPanel (A_hat 2))))
+     let S0 := fl_householderStoredPanelStep fp
+        (r + (p + 2)) (p + 2) 0 v0 1
+        (trailingPanel (trailingPanel (A_hat 2)))
+     householderTrailingActiveVector (r + (p + 1))
+          (0 : Fin (r + (p + 1)))
+          (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))
+          (alpha 3) =
+        fl_householderNormalizedVector fp
+          (show 0 < r + (p + 1) by omega)
+          (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0)))
+  hselfTailTail1 :
+    (let v0 := fl_householderNormalizedVector fp
+        (show 0 < r + (p + 2) by omega)
+        (panelFirstColumn (Nat.succ_pos (p + 1))
+          (trailingPanel (trailingPanel (A_hat 2))))
+     let S0 := fl_householderStoredPanelStep fp
+        (r + (p + 2)) (p + 2) 0 v0 1
+        (trailingPanel (trailingPanel (A_hat 2)))
+     (Finset.univ : Finset (Fin (r + (p + 1)))).sum
+        (fun i =>
+          householderTrailingActiveVector (r + (p + 1))
+              (0 : Fin (r + (p + 1)))
+              (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))
+              (alpha 3) i *
+            householderTrailingActiveVector (r + (p + 1))
+              (0 : Fin (r + (p + 1)))
+              (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))
+              (alpha 3) i) =
+      2)
+
+/-- Source-facing recursive reflector facts for arbitrary twice-trailing
+closure.
+
+Unlike `storedSignedSequenceTwiceTrailingClosureData`, this contract stores the
+raw facts as they appear on the actual twice-trailing source panels.  The theorem
+below proves that it is sufficient to build the existing closure-data package. -/
+def storedSignedSequenceTwiceTrailingSourceClosureData
+    (fp : FPModel) :
+    (r p : Nat) ->
+      (Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real) ->
+      (Nat -> Real) -> Prop
+  | _r, 0, _A_hat, _alpha => True
+  | _r, 1, A_hat, alpha =>
+      storedSignedSequenceOneTailReflectorFacts fp A_hat alpha
+  | r, p + 2, A_hat, alpha =>
+      storedSignedSequenceFirstTwoTailReflectorFacts fp A_hat alpha /\
+      storedSignedSequenceTwiceTrailingSourceClosureData fp r p
+        (storedSignedSequenceTwiceTrailingSeq A_hat)
+        (storedSignedSequenceTailAlpha2 alpha)
+
+/-- Raw source-tail closure facts imply the recursive closure-data contract. -/
+theorem storedSignedSequenceTwiceTrailingClosureData_of_sourceClosureData
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hdata :
+      storedSignedSequenceTwiceTrailingSourceClosureData fp r p A_hat alpha) :
+    storedSignedSequenceTwiceTrailingClosureData fp r p A_hat alpha := by
+  revert r A_hat alpha
+  refine
+    Nat.twoStepInduction
+      (P := fun p =>
+        forall (r : Nat)
+            (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+            (alpha : Nat -> Real),
+          storedSignedSequenceTwiceTrailingSourceClosureData fp r p
+              A_hat alpha ->
+            storedSignedSequenceTwiceTrailingClosureData fp r p A_hat alpha)
+      ?hzero ?hone ?hstep p
+  · intro r A_hat alpha _hdata
+    exact storedSignedSequenceTwiceTrailingClosureData_zero fp r A_hat alpha
+  · intro r A_hat alpha hdata
+    exact
+      storedSignedSequenceTwiceTrailingClosureData_one_of_tail_reflector_self_dot
+        fp A_hat alpha hdata.hvecTailTail hdata.hselfTailTail
+        hdata.hdetTailTail
+  · intro p ih _ihSucc r A_hat alpha hdata
+    exact
+      storedSignedSequenceTwiceTrailingClosureData_succ_succ_of_tail_reflector_self_dot
+        fp r p A_hat alpha hdata.left.hvecTailTail0
+        hdata.left.hselfTailTail0 hdata.left.hdetTailTailFirst
+        hdata.left.hdetTailTailTail hdata.left.hvecTailTail1
+        hdata.left.hselfTailTail1
+        (ih r (storedSignedSequenceTwiceTrailingSeq A_hat)
+          (storedSignedSequenceTailAlpha2 alpha) hdata.right)
+
 /-- Final-panel bridge with the twice-trailing obligation exposed as a recursive
 tail-sequence theorem.
 
