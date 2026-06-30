@@ -2542,7 +2542,8 @@ noncomputable def higham9_2_rectFlDoolittleLEntry {m n : ℕ}
 At stage `k`, the executable rectangular Doolittle loop writes only column
 `k` of `L`: entries above the pivot row are zero, the pivot-row entry is one,
 and entries below the pivot row are produced by the literal rounded lower
-fold using the incoming stage state. -/
+fold using the stage state after the current upper row, including the pivot,
+has been written. -/
 noncomputable def higham9_2_rectRoundedStageUpdateL {m n : ℕ}
     (fp : FPModel)
     (A L : Fin m → Fin n → ℝ) (U : Fin n → Fin n → ℝ)
@@ -2591,8 +2592,8 @@ noncomputable def higham9_2_rectRoundedStageStep {m n : ℕ}
     (A : Fin m → Fin n → ℝ) (k : Fin n)
     (state : higham9_2_RectDoolittleRoundedState m n) :
     higham9_2_RectDoolittleRoundedState m n :=
-  (higham9_2_rectRoundedStageUpdateL fp A state.1 state.2 k,
-    higham9_2_rectRoundedStageUpdateU fp hmn A state.1 state.2 k)
+  let U₁ := higham9_2_rectRoundedStageUpdateU fp hmn A state.1 state.2 k
+  (higham9_2_rectRoundedStageUpdateL fp A state.1 U₁ k, U₁)
 
 /-- **Algorithm 9.2**, finite executable rectangular rounded Doolittle prefix.
 
@@ -2620,9 +2621,11 @@ noncomputable def higham9_2_rectRoundedLoopU {m n : ℕ}
   (higham9_2_rectRoundedLoopState fp hmn A n (Nat.le_refl n)).2
 
 /-- **Algorithm 9.2**, local transition certificate for one executable
-rectangular rounded Doolittle stage.  The fold equations are intentionally
-stated against the incoming state; later preservation lemmas transport these
-local transition facts to the final self-referential dense-loop trace. -/
+rectangular rounded Doolittle stage.  The upper-row fold is stated against the
+incoming state, while the lower-column fold uses the just-updated upper row so
+the division pivot is the computed `U k k`, as in Algorithm 9.2.  Later
+preservation lemmas transport these local transition facts to the final
+self-referential dense-loop trace. -/
 structure higham9_2_RectDoolittleRoundedStageTransition {m n : ℕ}
     (hmn : n ≤ m) (A L₀ L₁ : Fin m → Fin n → ℝ)
     (U₀ U₁ : Fin n → Fin n → ℝ) (fp : FPModel) (k : Fin n) : Prop where
@@ -2635,9 +2638,10 @@ structure higham9_2_RectDoolittleRoundedStageTransition {m n : ℕ}
   /-- Active upper-row entries are the literal rounded folds from the incoming state. -/
   U_stage_eq_prev : ∀ j : Fin n, k.val ≤ j.val →
     U₁ k j = higham9_2_rectFlDoolittleUEntry fp hmn A L₀ U₀ k j
-  /-- Active lower-column entries are the literal rounded folds from the incoming state. -/
+  /-- Active lower-column entries are the literal rounded folds after the
+  current upper row, including the pivot, has been written. -/
   L_stage_eq_prev : ∀ i : Fin m, k.val < i.val →
-    L₁ i k = higham9_2_rectFlDoolittleLEntry fp A L₀ U₀ i k
+    L₁ i k = higham9_2_rectFlDoolittleLEntry fp A L₀ U₁ i k
   /-- Non-stage lower-factor columns are preserved. -/
   L_preserve_off_stage : ∀ i : Fin m, ∀ j : Fin n, j ≠ k → L₁ i j = L₀ i j
   /-- Non-stage upper-factor rows are preserved. -/
@@ -2650,10 +2654,11 @@ theorem higham9_2_rectRoundedStageTransition_of_update {m n : ℕ}
     (A L : Fin m → Fin n → ℝ) (U : Fin n → Fin n → ℝ)
     (k : Fin n) :
     higham9_2_RectDoolittleRoundedStageTransition hmn A L
-      (higham9_2_rectRoundedStageUpdateL fp A L U k)
+      (higham9_2_rectRoundedStageUpdateL fp A L
+        (higham9_2_rectRoundedStageUpdateU fp hmn A L U k) k)
       U
-      (higham9_2_rectRoundedStageUpdateU fp hmn A L U k)
-      fp k where
+      (higham9_2_rectRoundedStageUpdateU fp hmn A L U k) fp k := by
+  refine {
   L_diag_stage := by
     simp [higham9_2_rectRoundedStageUpdateL, higham9_2_rectRow]
   L_upper_zero_stage := by
@@ -2676,6 +2681,7 @@ theorem higham9_2_rectRoundedStageTransition_of_update {m n : ℕ}
   U_preserve_off_stage := by
     intro i j hi
     simp [higham9_2_rectRoundedStageUpdateU, hi]
+  }
 
 /-- **Algorithm 9.2**, every successor loop prefix is produced by one
 certificate-backed rectangular rounded Doolittle transition. -/
@@ -2829,7 +2835,8 @@ theorem higham9_2_rectRoundedLoopState_succ_L_stage_eq_prev
       (Nat.le_of_succ_le hT)
     (higham9_2_rectRoundedLoopState fp hmn A (T + 1) hT).1 i
         ⟨T, Nat.lt_of_succ_le hT⟩ =
-      higham9_2_rectFlDoolittleLEntry fp A prev.1 prev.2 i
+      higham9_2_rectFlDoolittleLEntry fp A prev.1
+        (higham9_2_rectRoundedLoopState fp hmn A (T + 1) hT).2 i
         ⟨T, Nat.lt_of_succ_le hT⟩ := by
   intro prev
   let next := higham9_2_rectRoundedLoopState fp hmn A (T + 1) hT
@@ -3002,6 +3009,277 @@ theorem higham9_2_rectRoundedLoopU_lower_zero {m n : ℕ}
         j hji)
   simpa [higham9_2_rectRoundedLoopU, S, D, Nat.add_sub_cancel' hS] using
     hstable.trans hstage
+
+/-- **Algorithm 9.2**, any rectangular rounded loop prefix already agrees
+with the final lower factor on columns whose stages are complete. -/
+theorem higham9_2_rectRoundedLoopState_L_eq_final_of_col_lt
+    {m n : ℕ} {fp : FPModel} {hmn : n ≤ m}
+    (A : Fin m → Fin n → ℝ) {T : ℕ} (hT : T ≤ n)
+    (i : Fin m) (k : Fin n) (hkT : k.val < T) :
+    (higham9_2_rectRoundedLoopState fp hmn A T hT).1 i k =
+      higham9_2_rectRoundedLoopL fp hmn A i k := by
+  let S : ℕ := k.val + 1
+  let DT : ℕ := T - S
+  let DN : ℕ := n - S
+  have hS_T : S ≤ T := by
+    simp [S]
+    omega
+  have hS_n : S ≤ n := Nat.le_trans hS_T hT
+  have hSDT : S + DT ≤ n := by
+    simp [S, DT, Nat.add_sub_cancel' hS_T, hT]
+  have hSDN : S + DN ≤ n := by
+    simp [S, DN, Nat.add_sub_cancel' hS_n]
+  have hstableT :=
+    higham9_2_rectRoundedLoopState_add_L_column_stable_of_lt
+      (fp := fp) (hmn := hmn) A (S := S) (D := DT) hSDT
+      i k (by simp [S])
+  have hstableN :=
+    higham9_2_rectRoundedLoopState_add_L_column_stable_of_lt
+      (fp := fp) (hmn := hmn) A (S := S) (D := DN) hSDN
+      i k (by simp [S])
+  calc
+    (higham9_2_rectRoundedLoopState fp hmn A T hT).1 i k =
+        (higham9_2_rectRoundedLoopState fp hmn A (S + DT) hSDT).1 i k := by
+          simp [S, DT, Nat.add_sub_cancel' hS_T]
+    _ = (higham9_2_rectRoundedLoopState fp hmn A S
+          (Nat.le_trans (Nat.le_add_right S DT) hSDT)).1 i k := hstableT
+    _ = (higham9_2_rectRoundedLoopState fp hmn A S
+          (Nat.le_trans (Nat.le_add_right S DN) hSDN)).1 i k := by
+          rfl
+    _ = (higham9_2_rectRoundedLoopState fp hmn A (S + DN) hSDN).1 i k :=
+          hstableN.symm
+    _ = higham9_2_rectRoundedLoopL fp hmn A i k := by
+          simp [higham9_2_rectRoundedLoopL, S, DN, Nat.add_sub_cancel' hS_n]
+
+/-- **Algorithm 9.2**, any rectangular rounded loop prefix already agrees
+with the final upper factor on rows whose stages are complete. -/
+theorem higham9_2_rectRoundedLoopState_U_eq_final_of_row_lt
+    {m n : ℕ} {fp : FPModel} {hmn : n ≤ m}
+    (A : Fin m → Fin n → ℝ) {T : ℕ} (hT : T ≤ n)
+    (k j : Fin n) (hkT : k.val < T) :
+    (higham9_2_rectRoundedLoopState fp hmn A T hT).2 k j =
+      higham9_2_rectRoundedLoopU fp hmn A k j := by
+  let S : ℕ := k.val + 1
+  let DT : ℕ := T - S
+  let DN : ℕ := n - S
+  have hS_T : S ≤ T := by
+    simp [S]
+    omega
+  have hS_n : S ≤ n := Nat.le_trans hS_T hT
+  have hSDT : S + DT ≤ n := by
+    simp [S, DT, Nat.add_sub_cancel' hS_T, hT]
+  have hSDN : S + DN ≤ n := by
+    simp [S, DN, Nat.add_sub_cancel' hS_n]
+  have hstableT :=
+    higham9_2_rectRoundedLoopState_add_U_row_stable_of_lt
+      (fp := fp) (hmn := hmn) A (S := S) (D := DT) hSDT
+      k j (by simp [S])
+  have hstableN :=
+    higham9_2_rectRoundedLoopState_add_U_row_stable_of_lt
+      (fp := fp) (hmn := hmn) A (S := S) (D := DN) hSDN
+      k j (by simp [S])
+  calc
+    (higham9_2_rectRoundedLoopState fp hmn A T hT).2 k j =
+        (higham9_2_rectRoundedLoopState fp hmn A (S + DT) hSDT).2 k j := by
+          simp [S, DT, Nat.add_sub_cancel' hS_T]
+    _ = (higham9_2_rectRoundedLoopState fp hmn A S
+          (Nat.le_trans (Nat.le_add_right S DT) hSDT)).2 k j := hstableT
+    _ = (higham9_2_rectRoundedLoopState fp hmn A S
+          (Nat.le_trans (Nat.le_add_right S DN) hSDN)).2 k j := by
+          rfl
+    _ = (higham9_2_rectRoundedLoopState fp hmn A (S + DN) hSDN).2 k j :=
+          hstableN.symm
+    _ = higham9_2_rectRoundedLoopU fp hmn A k j := by
+          simp [higham9_2_rectRoundedLoopU, S, DN, Nat.add_sub_cancel' hS_n]
+
+/-- Congruence for the finite left fold used by literal rounded Doolittle
+entries. -/
+private theorem higham9_2_fin_foldl_congr {α : Type*} (n : ℕ)
+    (f g : α → Fin n → α) (a : α)
+    (h : ∀ acc s, f acc s = g acc s) :
+    Fin.foldl n f a = Fin.foldl n g a := by
+  induction n generalizing a with
+  | zero =>
+      rw [Fin.foldl_zero, Fin.foldl_zero]
+  | succ n ih =>
+      rw [Fin.foldl_succ_last, Fin.foldl_succ_last]
+      have hfold := ih
+        (fun acc s => f acc s.castSucc)
+        (fun acc s => g acc s.castSucc)
+        a (by intro acc s; exact h acc s.castSucc)
+      rw [hfold]
+      exact h _ (Fin.last n)
+
+/-- **Algorithm 9.2**, the rectangular rounded upper fold depends only on prior
+lower columns and prior upper rows. -/
+theorem higham9_2_rectFlDoolittleUEntry_eq_of_prefix {m n : ℕ}
+    (fp : FPModel) (hmn : n ≤ m) (A : Fin m → Fin n → ℝ)
+    (L₀ L₁ : Fin m → Fin n → ℝ) (U₀ U₁ : Fin n → Fin n → ℝ)
+    (k j : Fin n)
+    (hL : ∀ s : Fin n, s.val < k.val →
+      L₀ (higham9_2_rectRow hmn k) s = L₁ (higham9_2_rectRow hmn k) s)
+    (hU : ∀ s : Fin n, s.val < k.val → U₀ s j = U₁ s j) :
+    higham9_2_rectFlDoolittleUEntry fp hmn A L₀ U₀ k j =
+      higham9_2_rectFlDoolittleUEntry fp hmn A L₁ U₁ k j := by
+  unfold higham9_2_rectFlDoolittleUEntry flDoolittleUEntry
+  apply higham9_2_fin_foldl_congr
+  intro acc s
+  simp [hL ⟨s.val, Nat.lt_trans s.isLt k.isLt⟩ s.isLt,
+    hU ⟨s.val, Nat.lt_trans s.isLt k.isLt⟩ s.isLt]
+
+/-- **Algorithm 9.2**, the rectangular rounded lower numerator fold depends only
+on prior lower columns and prior upper rows. -/
+theorem higham9_2_rectFlDoolittleLNumerator_eq_of_prefix {m n : ℕ}
+    (fp : FPModel) (A : Fin m → Fin n → ℝ)
+    (L₀ L₁ : Fin m → Fin n → ℝ) (U₀ U₁ : Fin n → Fin n → ℝ)
+    (i : Fin m) (k : Fin n)
+    (hL : ∀ s : Fin n, s.val < k.val → L₀ i s = L₁ i s)
+    (hU : ∀ s : Fin n, s.val < k.val → U₀ s k = U₁ s k) :
+    higham9_2_rectFlDoolittleLNumerator fp A L₀ U₀ i k =
+      higham9_2_rectFlDoolittleLNumerator fp A L₁ U₁ i k := by
+  unfold higham9_2_rectFlDoolittleLNumerator flDoolittleLNumerator
+  apply higham9_2_fin_foldl_congr
+  intro acc s
+  simp [hL ⟨s.val, Nat.lt_trans s.isLt k.isLt⟩ s.isLt,
+    hU ⟨s.val, Nat.lt_trans s.isLt k.isLt⟩ s.isLt]
+
+/-- **Algorithm 9.2**, the rectangular rounded lower entry depends only on prior
+lower columns, prior upper rows, and the current computed pivot. -/
+theorem higham9_2_rectFlDoolittleLEntry_eq_of_prefix {m n : ℕ}
+    (fp : FPModel) (A : Fin m → Fin n → ℝ)
+    (L₀ L₁ : Fin m → Fin n → ℝ) (U₀ U₁ : Fin n → Fin n → ℝ)
+    (i : Fin m) (k : Fin n)
+    (hL : ∀ s : Fin n, s.val < k.val → L₀ i s = L₁ i s)
+    (hU : ∀ s : Fin n, s.val < k.val → U₀ s k = U₁ s k)
+    (hPivot : U₀ k k = U₁ k k) :
+    higham9_2_rectFlDoolittleLEntry fp A L₀ U₀ i k =
+      higham9_2_rectFlDoolittleLEntry fp A L₁ U₁ i k := by
+  unfold higham9_2_rectFlDoolittleLEntry
+  rw [higham9_2_rectFlDoolittleLNumerator_eq_of_prefix
+    fp A L₀ L₁ U₀ U₁ i k hL hU, hPivot]
+
+/-- **Algorithm 9.2**, active entries in the final executable upper factor are
+the literal rounded rectangular upper folds over the final factors. -/
+theorem higham9_2_rectRoundedLoopU_stage_eq {m n : ℕ}
+    {fp : FPModel} {hmn : n ≤ m}
+    (A : Fin m → Fin n → ℝ) (k j : Fin n) (hkj : k.val ≤ j.val) :
+    higham9_2_rectRoundedLoopU fp hmn A k j =
+      higham9_2_rectFlDoolittleUEntry fp hmn A
+        (higham9_2_rectRoundedLoopL fp hmn A)
+        (higham9_2_rectRoundedLoopU fp hmn A) k j := by
+  let T : ℕ := k.val
+  have hT : T + 1 ≤ n := Nat.succ_le_of_lt (by simp [T])
+  have hTprev : T ≤ n := Nat.le_of_succ_le hT
+  let kk : Fin n := ⟨T, Nat.lt_of_succ_le hT⟩
+  have hkk : kk = k := by
+    apply Fin.ext
+    simp [kk, T]
+  let prev := higham9_2_rectRoundedLoopState fp hmn A T hTprev
+  let next := higham9_2_rectRoundedLoopState fp hmn A (T + 1) hT
+  have hstage :
+      next.2 kk j =
+        higham9_2_rectFlDoolittleUEntry fp hmn A prev.1 prev.2 kk j := by
+    simpa [prev, next, kk, T] using
+      (higham9_2_rectRoundedLoopState_succ_U_stage_eq_prev
+        (fp := fp) (hmn := hmn) A (T := T) hT j
+        (by simpa [T] using hkj))
+  have hnext_final :
+      next.2 kk j = higham9_2_rectRoundedLoopU fp hmn A kk j := by
+    simpa [next] using
+      (higham9_2_rectRoundedLoopState_U_eq_final_of_row_lt
+        (fp := fp) (hmn := hmn) A (T := T + 1) hT kk j
+        (by simp [kk, T]))
+  have hentry :
+      higham9_2_rectFlDoolittleUEntry fp hmn A prev.1 prev.2 kk j =
+        higham9_2_rectFlDoolittleUEntry fp hmn A
+          (higham9_2_rectRoundedLoopL fp hmn A)
+          (higham9_2_rectRoundedLoopU fp hmn A) kk j := by
+    apply higham9_2_rectFlDoolittleUEntry_eq_of_prefix
+    · intro s hs
+      simpa [prev] using
+        (higham9_2_rectRoundedLoopState_L_eq_final_of_col_lt
+          (fp := fp) (hmn := hmn) A (T := T) hTprev
+          (higham9_2_rectRow hmn kk) s hs)
+    · intro s hs
+      simpa [prev] using
+        (higham9_2_rectRoundedLoopState_U_eq_final_of_row_lt
+          (fp := fp) (hmn := hmn) A (T := T) hTprev s j hs)
+  calc
+    higham9_2_rectRoundedLoopU fp hmn A k j =
+        next.2 kk j := by
+          simpa [hkk] using hnext_final.symm
+    _ = higham9_2_rectFlDoolittleUEntry fp hmn A prev.1 prev.2 kk j :=
+        hstage
+    _ = higham9_2_rectFlDoolittleUEntry fp hmn A
+          (higham9_2_rectRoundedLoopL fp hmn A)
+          (higham9_2_rectRoundedLoopU fp hmn A) kk j := hentry
+    _ = higham9_2_rectFlDoolittleUEntry fp hmn A
+          (higham9_2_rectRoundedLoopL fp hmn A)
+          (higham9_2_rectRoundedLoopU fp hmn A) k j := by
+        simp [hkk]
+
+/-- **Algorithm 9.2**, active entries in the final executable lower factor are
+the literal rounded rectangular lower folds over the final factors. -/
+theorem higham9_2_rectRoundedLoopL_stage_eq {m n : ℕ}
+    {fp : FPModel} {hmn : n ≤ m}
+    (A : Fin m → Fin n → ℝ) (i : Fin m) (k : Fin n) (hki : k.val < i.val) :
+    higham9_2_rectRoundedLoopL fp hmn A i k =
+      higham9_2_rectFlDoolittleLEntry fp A
+        (higham9_2_rectRoundedLoopL fp hmn A)
+        (higham9_2_rectRoundedLoopU fp hmn A) i k := by
+  let T : ℕ := k.val
+  have hT : T + 1 ≤ n := Nat.succ_le_of_lt (by simp [T])
+  have hTprev : T ≤ n := Nat.le_of_succ_le hT
+  let kk : Fin n := ⟨T, Nat.lt_of_succ_le hT⟩
+  have hkk : kk = k := by
+    apply Fin.ext
+    simp [kk, T]
+  let prev := higham9_2_rectRoundedLoopState fp hmn A T hTprev
+  let next := higham9_2_rectRoundedLoopState fp hmn A (T + 1) hT
+  have hstage :
+      next.1 i kk =
+        higham9_2_rectFlDoolittleLEntry fp A prev.1 next.2 i kk := by
+    simpa [prev, next, kk, T] using
+      (higham9_2_rectRoundedLoopState_succ_L_stage_eq_prev
+        (fp := fp) (hmn := hmn) A (T := T) hT i
+        (by simpa [T] using hki))
+  have hnext_final :
+      next.1 i kk = higham9_2_rectRoundedLoopL fp hmn A i kk := by
+    simpa [next] using
+      (higham9_2_rectRoundedLoopState_L_eq_final_of_col_lt
+        (fp := fp) (hmn := hmn) A (T := T + 1) hT i kk
+        (by simp [kk, T]))
+  have hentry :
+      higham9_2_rectFlDoolittleLEntry fp A prev.1 next.2 i kk =
+        higham9_2_rectFlDoolittleLEntry fp A
+          (higham9_2_rectRoundedLoopL fp hmn A)
+          (higham9_2_rectRoundedLoopU fp hmn A) i kk := by
+    apply higham9_2_rectFlDoolittleLEntry_eq_of_prefix
+    · intro s hs
+      simpa [prev] using
+        (higham9_2_rectRoundedLoopState_L_eq_final_of_col_lt
+          (fp := fp) (hmn := hmn) A (T := T) hTprev i s hs)
+    · intro s hs
+      simpa [next] using
+        (higham9_2_rectRoundedLoopState_U_eq_final_of_row_lt
+          (fp := fp) (hmn := hmn) A (T := T + 1) hT s kk
+          (by omega))
+    · simpa [next] using
+        (higham9_2_rectRoundedLoopState_U_eq_final_of_row_lt
+          (fp := fp) (hmn := hmn) A (T := T + 1) hT kk kk
+          (by simp [kk, T]))
+  calc
+    higham9_2_rectRoundedLoopL fp hmn A i k =
+        next.1 i kk := by
+          simpa [hkk] using hnext_final.symm
+    _ = higham9_2_rectFlDoolittleLEntry fp A prev.1 next.2 i kk := hstage
+    _ = higham9_2_rectFlDoolittleLEntry fp A
+          (higham9_2_rectRoundedLoopL fp hmn A)
+          (higham9_2_rectRoundedLoopU fp hmn A) i kk := hentry
+    _ = higham9_2_rectFlDoolittleLEntry fp A
+          (higham9_2_rectRoundedLoopL fp hmn A)
+          (higham9_2_rectRoundedLoopU fp hmn A) i k := by
+        simp [hkk]
 
 /-- Exact-product term in the rectangular upper literal Doolittle budget. -/
 noncomputable def higham9_2_rectDoolittleUProductAbs {m n : ℕ}
@@ -3719,6 +3997,19 @@ structure higham9_2_RectDoolittleRoundedPrefixTrace {m n : ℕ}
   L_stage_eq_done : ∀ i : Fin m, ∀ k : Fin n,
     k.val < t → k.val < i.val →
       L i k = higham9_2_rectFlDoolittleLEntry fp A L U i k
+
+/-- **Algorithm 9.2**, the final executable rectangular rounded Doolittle loop
+produces the rounded-stage trace expected by the certificate layer. -/
+theorem higham9_2_rectRoundedLoopStageTrace {m n : ℕ}
+    (fp : FPModel) (hmn : n ≤ m) (A : Fin m → Fin n → ℝ) :
+    higham9_2_RectDoolittleRoundedStageTrace hmn A
+      (higham9_2_rectRoundedLoopL fp hmn A)
+      (higham9_2_rectRoundedLoopU fp hmn A) fp where
+  L_diag := higham9_2_rectRoundedLoopL_diag fp hmn A
+  L_upper_zero := higham9_2_rectRoundedLoopL_upper_zero fp hmn A
+  U_lower_zero := higham9_2_rectRoundedLoopU_lower_zero fp hmn A
+  U_stage_eq := higham9_2_rectRoundedLoopU_stage_eq A
+  L_stage_eq := higham9_2_rectRoundedLoopL_stage_eq A
 
 /-- **Algorithm 9.2**, rectangular absolute-budget handoff.  Absolute residual
 budgets plus visible dominance inequalities produce the relative rectangular
