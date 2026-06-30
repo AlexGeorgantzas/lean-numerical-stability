@@ -49320,6 +49320,36 @@ theorem higham9_10_HessenbergGEPPUTrace_to_PartialPivotGEPPUTrace {M : ℝ} :
   | step _hactive hchoice hpivot _hnext ih =>
       exact higham9_7_PartialPivotGEPPUTrace.step hchoice hpivot ih
 
+/-- **Theorem 9.10 / Problem 9.11 bridge**, an upper-Hessenberg GEPP `U` trace
+supplies a complete-certificate growth value for the same source matrix, no
+larger than the trace growth value.
+
+The proof forgets the Hessenberg stage invariant and reuses the partial-pivoting
+trace-to-certificate-growth bridge. -/
+theorem higham9_10_HessenbergGEPPUTrace_exists_certificateGrowth_le {M : ℝ}
+    {k n : ℕ} (hn : 0 < n) (A Utrace : Fin n → Fin n → ℝ)
+    (hApos : 0 < maxEntryNorm hn A)
+    (htrace : higham9_10_HessenbergGEPPUTrace M k n A Utrace) :
+    ∃ r ∈ higham9_completePivotingCertificateGrowthSet hn A hApos,
+      r ≤ growthFactorEntry hn A Utrace hApos := by
+  exact
+    higham9_7_PartialPivotGEPPUTrace_exists_certificateGrowth_le
+      hn A Utrace hApos
+      (higham9_10_HessenbergGEPPUTrace_to_PartialPivotGEPPUTrace htrace)
+
+/-- **Theorem 9.10 / Problem 9.11 bridge**, value-set form of the
+upper-Hessenberg-trace-to-complete-certificate growth comparison. -/
+theorem higham9_10_HessenbergGEPPUTrace_exists_certificateGrowthValue_le {M : ℝ}
+    {k n : ℕ} (hn : 0 < n) (A Utrace : Fin n → Fin n → ℝ)
+    (hApos : 0 < maxEntryNorm hn A)
+    (htrace : higham9_10_HessenbergGEPPUTrace M k n A Utrace) :
+    ∃ r ∈ higham9_completePivotingCertificateGrowthValues n,
+      r ≤ growthFactorEntry hn A Utrace hApos := by
+  obtain ⟨r, hr, hle⟩ :=
+    higham9_10_HessenbergGEPPUTrace_exists_certificateGrowth_le
+      hn A Utrace hApos htrace
+  exact ⟨r, ⟨hn, A, hApos, hr⟩, hle⟩
+
 /-- **Theorem 9.10 / GEPP trace support**, an exact upper-Hessenberg GEPP `U`
 trace determines a cumulative row-permuted `PA = LU` certificate.  The
 certificate has unit-bounded lower multipliers, nonzero computed pivots for a
