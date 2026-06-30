@@ -11161,6 +11161,67 @@ theorem theorem20_10_householder_AQ2_frob_perturbation_bound
   exact mul_le_mul_of_nonneg_right hgamma_le (frobNormRect_nonneg C)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    rounded Householder QR perturbation bound for the column-reversed
+    `A Q₂` block.
+
+    The exact GQR construction uses a QR of the column-reversed trailing block
+    to obtain a lower-triangular `L22`.  This theorem names the corresponding
+    rounded finite-precision dependency and records the actual computed
+    Householder `Q`/`R` shape facts for that reversed block.  The bound is still
+    relative to the reversed trailing block; transporting it back to a
+    source-shaped `DeltaA` is the next assembly step. -/
+theorem theorem20_10_householder_reversed_AQ2_frob_perturbation_bound
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (hq : 0 < q)
+    (hvalid :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q))) :
+    let Crev : Fin (r + q) → Fin q → ℝ :=
+      rectPermuteCols Fin.revPerm (gqrAQ2Block A Q)
+    let Urev : Fin (r + q) → Fin (r + q) → ℝ :=
+      fl_householderQRPanel_Q fp (r + q) q Crev
+    let Rrev : Fin (r + q) → Fin q → ℝ :=
+      fl_householderQRPanel_R fp (r + q) q Crev
+    ∃ DeltaC : Fin (r + q) → Fin q → ℝ,
+      (∀ i j,
+        Crev i j + DeltaC i j =
+          matMulRect (r + q) (r + q) q Urev Rrev i j) ∧
+      IsOrthogonal (r + q) Urev ∧
+      IsUpperTrapezoidal (r + q) q Rrev ∧
+      frobNormRect DeltaC ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect Crev := by
+  dsimp
+  let Crev : Fin (r + q) → Fin q → ℝ :=
+    rectPermuteCols Fin.revPerm (gqrAQ2Block A Q)
+  rcases theorem20_10_householder_AQ2_frob_perturbation_bound
+      fp Crev hq hvalid with
+    ⟨DeltaC, hDeltaCrep, hDeltaCbound⟩
+  let K : ℕ := householderConstructApplyGammaIndex (r + q)
+  have hbase_valid : gammaValid fp (11 * (r + q) + 23) := by
+    have hbase_le_K : 11 * (r + q) + 23 ≤ K := by
+      dsimp [K, householderConstructApplyGammaIndex]
+      omega
+    have hpq : 0 < p + q := by omega
+    have hK_le_pqK : K ≤ (p + q) * K := by
+      calc
+        K = 1 * K := by omega
+        _ ≤ (p + q) * K := Nat.mul_le_mul_right K hpq
+    exact gammaValid_mono fp (le_trans hbase_le_K hK_le_pqK) (by
+      simpa [K] using hvalid)
+  have hready :
+      HouseholderQRPanelReady fp (r + q) q Crev :=
+    HouseholderQRPanelReady_of_global_gammaValid
+      fp (r + q) q (r + q) Crev le_rfl hbase_valid
+  have hUrev : IsOrthogonal (r + q)
+      (fl_householderQRPanel_Q fp (r + q) q Crev) :=
+    fl_householderQRPanel_Q_orthogonal fp (r + q) q Crev hready
+  have hRrev : IsUpperTrapezoidal (r + q) q
+      (fl_householderQRPanel_R fp (r + q) q Crev) :=
+    fl_householderQRPanel_R_upper_trapezoidal fp (r + q) q Crev
+  exact ⟨DeltaC, hDeltaCrep, hUrev, hRrev, hDeltaCbound⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     concrete full-`A` perturbation obtained from the smaller `A Q₂`
     Householder QR backward error.
 
