@@ -11885,6 +11885,96 @@ theorem theorem20_10_partB_certificate_of_constructed_source_householder_rhs_con
       hUfl hq hhalf hgammaB_nonneg hgammaA_ge_matrix hgammaA_ge_rhs
       hgammaB_ge hSdiag hL22diag hvalid2S hvalid2L22
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), rounded Householder RHS
+    Part B backward-error core with source-facing conservative gamma
+    coefficients.
+
+    This unwraps
+    `theorem20_10_partB_certificate_of_constructed_source_householder_rhs_conservative_gamma`
+    through the generic Part B certificate-to-core theorem, exposing the
+    perturbation witnesses, source-shaped norm bounds, and exact perturbed GQR
+    minimizer structure.  It still leaves the final computed-path obligation:
+    identifying the implementation's returned vector with this exact perturbed
+    minimizer. -/
+theorem theorem20_10_partB_backward_error_of_constructed_source_householder_rhs_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hUfl :
+      h.U =
+        fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A h.Q))
+    (hq : 0 < q)
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q))) :
+    let xhat : Fin (p + q) → ℝ :=
+      theorem20_10_gqr_xhat_of_transformed_tail fp h
+        (theorem20_10_householder_AQ2_rhs_tail fp A h.Q b) d
+    let gammaA : ℝ := theorem20_10_householder_gammaA_conservativeRhs fp r p q
+    let gammaB : ℝ := theorem20_10_householder_gammaB fp r p q
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab : Fin (r + q) → ℝ,
+    ∃ Deltad : Fin p → ℝ,
+      frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+      frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+      vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+      (∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec hpert.S yz.1 = (fun i => d i + Deltad i) ∧
+          rectMatMulVec hpert.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose hpert.U)
+                (fun i => b i + Deltab i) (Fin.natAdd r i) -
+                rectMatMulVec hpert.L21 yz.1 i) ∧
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i)
+            (matMulVec (p + q) hpert.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x : Fin (p + q) → ℝ,
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i) x)) := by
+  dsimp
+  rcases
+    theorem20_10_partB_certificate_of_constructed_source_householder_rhs_conservative_gamma
+      fp h b d hUfl hq hhalf hSdiag hL22diag hvalidA hvalidB with
+    ⟨cert⟩
+  have hcore :=
+    theorem20_10_partB_backward_error_of_perturbation_certificate
+      A B b d
+      (theorem20_10_gqr_xhat_of_transformed_tail fp h
+        (theorem20_10_householder_AQ2_rhs_tail fp A h.Q b) d)
+      cert
+  dsimp at hcore
+  rcases hcore with
+    ⟨DeltaA, DeltaB, Deltab, Deltad, hDeltaAeq, hDeltaBeq,
+      hDeltabeq, hDeltadeq, hDeltaA, hDeltaB, hDeltab, hDeltad,
+      hmethod⟩
+  refine
+    ⟨cert.DeltaA, cert.DeltaB, cert.Deltab, cert.Deltad, ?_, ?_, ?_, ?_,
+      hmethod⟩
+  · simpa [hDeltaAeq] using hDeltaA
+  · simpa [hDeltaBeq] using hDeltaB
+  · simpa [hDeltabeq] using hDeltab
+  · simpa [hDeltadeq] using hDeltad
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     concrete Householder `Bᵀ` perturbation together with the induced
     constraint right-hand-side perturbation bound.
