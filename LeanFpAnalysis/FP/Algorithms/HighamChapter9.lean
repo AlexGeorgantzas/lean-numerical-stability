@@ -18850,6 +18850,74 @@ theorem higham9_20_tridiag_lu_perturbation_model_of_RectDoolittleDenseLoopAbsBud
     fp n A L_hat U_hat BU BL u hn hγ_le_u
     (higham9_2_rectAbsBudgetCertificate_to_squareAbsBudgetCertificate hC)
 
+/-- **Equation (9.20)** from a square-specialized rectangular rounded-stage
+Doolittle trace.
+
+The rounded-stage trace is first compressed to the rectangular dense-loop
+certificate API, and then reused by the square tridiagonal perturbation-model
+wrapper. -/
+theorem higham9_20_tridiag_lu_perturbation_model_of_RectDoolittleRoundedStageTrace_square
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (u : ℝ) (hn : gammaValid fp n)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hT : higham9_2_RectDoolittleRoundedStageTrace
+      (Nat.le_refl n) A L_hat U_hat fp)
+    (hU_diag : ∀ k : Fin n, U_hat k k ≠ 0)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          A L_hat U_hat k j ≤ gamma fp n * |U_hat k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A L_hat U_hat i k ≤
+        gamma fp n * |L_hat i k * U_hat k k|) :
+    ∃ DeltaA_LU : Fin n → Fin n → ℝ,
+      higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+        DeltaA_LU u :=
+  higham9_20_tridiag_lu_perturbation_model_of_RectDoolittleDenseLoopCertificate_square
+    fp n A L_hat U_hat u hn hγ_le_u
+    (higham9_2_rectRoundedStageTrace_to_rectDenseLoopCertificate
+      hT hU_diag hn hU_budget_le hL_budget_le)
+
+/-- **Equation (9.20)** from the executable square rectangular rounded
+Doolittle loop.
+
+This is the concrete loop entry point for the LU perturbation model used by
+the tridiagonal source analysis. -/
+theorem higham9_20_tridiag_lu_perturbation_model_of_rectRoundedLoop_square
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (u : ℝ) (hn : gammaValid fp n)
+    (hγ_le_u : gamma fp n ≤ u)
+    (hU_diag : ∀ k : Fin n,
+      higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k k ≠ 0)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp A
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A k k|) :
+    let L_hat := higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A
+    let U_hat := higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A
+    ∃ DeltaA_LU : Fin n → Fin n → ℝ,
+      higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+        DeltaA_LU u := by
+  dsimp only
+  exact
+    higham9_20_tridiag_lu_perturbation_model_of_RectDoolittleRoundedStageTrace_square
+      fp n A
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) A)
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) A)
+      u hn hγ_le_u
+      (higham9_2_rectRoundedLoopStageTrace fp (Nat.le_refl n) A)
+      hU_diag hU_budget_le hL_budget_le
+
 /-- **Equation (9.21)** for the actual triangular solves.
 
 If the uniform triangular-solve coefficient `γ_n` is bounded by the source
