@@ -2469,6 +2469,9 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_residual_borders_vecNorm2Sq_add_le_two_frobNormSqRect`
 - `higham9_15_normalized_G_frobNormSqRect_X_add_Y_le_init_add_two_residual_sq`
 - `higham9_15_normalized_Gtilde_frobNormSqRect_X_add_Y_le_init_add_two_residual_sq`
+- `higham9_15_real_sqrt_add_le_add_sqrt`
+- `higham9_15_normalized_G_sqrt_frobNormSqRect_X_add_Y_le_init_sqrt_add_sqrt_two_residual_sq`
+- `higham9_15_normalized_Gtilde_sqrt_frobNormSqRect_X_add_Y_le_init_sqrt_add_sqrt_two_residual_sq`
 - `higham9_15_normalized_G_lastRow_init_vecNorm2_le_residual`
 - `higham9_15_normalized_G_lastColumn_init_vecNorm2_le_residual`
 - `higham9_15_normalized_G_lastColumn_vecNorm2_le_residual`
