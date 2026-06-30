@@ -1355,6 +1355,9 @@ Source-facing Chapter 9 wrappers:
 - `higham9_2_rectRoundedLoopState_succ_L_stage_eq_prev`
 - `higham9_2_rectRoundedLoopState_add_L_column_stable_of_lt`
 - `higham9_2_rectRoundedLoopState_add_U_row_stable_of_lt`
+- `higham9_2_rectRoundedLoopL_diag`
+- `higham9_2_rectRoundedLoopL_upper_zero`
+- `higham9_2_rectRoundedLoopU_lower_zero`
 - `higham9_2_RectDoolittleDenseLoopCertificate`
 - `higham9_2_RectDoolittleDenseLoopAbsBudgetCertificate`
 - `higham9_2_RectDoolittleRoundedStageTrace`

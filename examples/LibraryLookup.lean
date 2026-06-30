@@ -6425,6 +6425,9 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_2_rectRoundedLoopState_succ_L_stage_eq_prev
 #check higham9_2_rectRoundedLoopState_add_L_column_stable_of_lt
 #check higham9_2_rectRoundedLoopState_add_U_row_stable_of_lt
+#check higham9_2_rectRoundedLoopL_diag
+#check higham9_2_rectRoundedLoopL_upper_zero
+#check higham9_2_rectRoundedLoopU_lower_zero
 #check higham9_2_RectDoolittleDenseLoopCertificate
 #check higham9_2_RectDoolittleDenseLoopAbsBudgetCertificate
 #check higham9_2_RectDoolittleRoundedStageTrace

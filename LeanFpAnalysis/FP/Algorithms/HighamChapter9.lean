@@ -2919,6 +2919,90 @@ theorem higham9_2_rectRoundedLoopState_add_U_row_stable_of_lt
               (Nat.le_trans (Nat.le_add_right S (D + 1)) hSD)).2 k j := by
               rfl
 
+/-- **Algorithm 9.2**, the executable rectangular rounded loop produces a
+unit diagonal on the rectangular pivot rows of its final lower factor. -/
+theorem higham9_2_rectRoundedLoopL_diag {m n : ℕ}
+    (fp : FPModel) (hmn : n ≤ m) (A : Fin m → Fin n → ℝ)
+    (k : Fin n) :
+    higham9_2_rectRoundedLoopL fp hmn A (higham9_2_rectRow hmn k) k = 1 := by
+  let S : ℕ := k.val + 1
+  let D : ℕ := n - S
+  have hS : S ≤ n := by
+    simp [S]
+  have hSD : S + D ≤ n := by
+    simp [S, D, Nat.add_sub_cancel' hS]
+  have hstable :=
+    higham9_2_rectRoundedLoopState_add_L_column_stable_of_lt
+      (fp := fp) (hmn := hmn) A (S := S) (D := D) hSD
+      (higham9_2_rectRow hmn k) k (by simp [S])
+  have hstage :
+      (higham9_2_rectRoundedLoopState fp hmn A S
+        (Nat.le_trans (Nat.le_add_right S D) hSD)).1
+          (higham9_2_rectRow hmn k) k = 1 := by
+    simpa [S] using
+      (higham9_2_rectRoundedLoopState_succ_L_diag_stage
+        (fp := fp) (hmn := hmn) A
+        (T := k.val)
+        (hT := by simp))
+  simpa [higham9_2_rectRoundedLoopL, S, D, Nat.add_sub_cancel' hS] using
+    hstable.trans hstage
+
+/-- **Algorithm 9.2**, the executable rectangular rounded loop produces the
+lower-trapezoidal zero pattern in its final lower factor. -/
+theorem higham9_2_rectRoundedLoopL_upper_zero {m n : ℕ}
+    (fp : FPModel) (hmn : n ≤ m) (A : Fin m → Fin n → ℝ)
+    (i : Fin m) (j : Fin n) (hij : i.val < j.val) :
+    higham9_2_rectRoundedLoopL fp hmn A i j = 0 := by
+  let S : ℕ := j.val + 1
+  let D : ℕ := n - S
+  have hS : S ≤ n := by
+    simp [S]
+  have hSD : S + D ≤ n := by
+    simp [S, D, Nat.add_sub_cancel' hS]
+  have hstable :=
+    higham9_2_rectRoundedLoopState_add_L_column_stable_of_lt
+      (fp := fp) (hmn := hmn) A (S := S) (D := D) hSD
+      i j (by simp [S])
+  have hstage :
+      (higham9_2_rectRoundedLoopState fp hmn A S
+        (Nat.le_trans (Nat.le_add_right S D) hSD)).1 i j = 0 := by
+    simpa [S] using
+      (higham9_2_rectRoundedLoopState_succ_L_upper_zero_stage
+        (fp := fp) (hmn := hmn) A
+        (T := j.val)
+        (hT := by simp)
+        i hij)
+  simpa [higham9_2_rectRoundedLoopL, S, D, Nat.add_sub_cancel' hS] using
+    hstable.trans hstage
+
+/-- **Algorithm 9.2**, the executable rectangular rounded loop produces the
+upper-triangular zero pattern in its final upper factor. -/
+theorem higham9_2_rectRoundedLoopU_lower_zero {m n : ℕ}
+    (fp : FPModel) (hmn : n ≤ m) (A : Fin m → Fin n → ℝ)
+    (i j : Fin n) (hji : j.val < i.val) :
+    higham9_2_rectRoundedLoopU fp hmn A i j = 0 := by
+  let S : ℕ := i.val + 1
+  let D : ℕ := n - S
+  have hS : S ≤ n := by
+    simp [S]
+  have hSD : S + D ≤ n := by
+    simp [S, D, Nat.add_sub_cancel' hS]
+  have hstable :=
+    higham9_2_rectRoundedLoopState_add_U_row_stable_of_lt
+      (fp := fp) (hmn := hmn) A (S := S) (D := D) hSD
+      i j (by simp [S])
+  have hstage :
+      (higham9_2_rectRoundedLoopState fp hmn A S
+        (Nat.le_trans (Nat.le_add_right S D) hSD)).2 i j = 0 := by
+    simpa [S] using
+      (higham9_2_rectRoundedLoopState_succ_U_lower_zero_stage
+        (fp := fp) (hmn := hmn) A
+        (T := i.val)
+        (hT := by simp)
+        j hji)
+  simpa [higham9_2_rectRoundedLoopU, S, D, Nat.add_sub_cancel' hS] using
+    hstable.trans hstage
+
 /-- Exact-product term in the rectangular upper literal Doolittle budget. -/
 noncomputable def higham9_2_rectDoolittleUProductAbs {m n : ℕ}
     (_fp : FPModel) (hmn : n ≤ m)
