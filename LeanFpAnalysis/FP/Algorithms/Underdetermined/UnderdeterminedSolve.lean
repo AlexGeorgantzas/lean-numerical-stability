@@ -3001,6 +3001,132 @@ theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_fa
       (hGramSmallRadius hx)
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    scalar source-factor adapter for the conservative Chapter 7 candidate
+    bound.  A bound on `sigma + beta` and a bound on `||AAT_inv||_inf`
+    imply the concrete conservative factor inequality consumed by the
+    rectangular data handoff. -/
+theorem higham21_lemma21_2_conservative_ch7_factor_le_of_source_bounds
+    {m : ℕ}
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (rho2 sigma beta tau omega : ℝ)
+    (hsigma : 0 ≤ sigma)
+    (hbeta : 0 ≤ beta)
+    (hSigmaBeta_le : sigma + beta ≤ tau)
+    (hAATInv_le : infNorm AAT_inv ≤ omega)
+    (hSourceFactor_le :
+      tau *
+          (Real.sqrt ((m : ℝ) * (m : ℝ)) *
+            (((m : ℝ) * 2) * omega)) ≤
+        (1 - rho2)⁻¹) :
+    (sigma + beta) *
+        (Real.sqrt ((m : ℝ) * (m : ℝ)) *
+          (((m : ℝ) * 2) * infNorm AAT_inv)) ≤
+      (1 - rho2)⁻¹ := by
+  have hm_nonneg : 0 ≤ (m : ℝ) := by exact_mod_cast Nat.zero_le m
+  have hm2_nonneg : 0 ≤ (m : ℝ) * 2 :=
+    mul_nonneg hm_nonneg (by norm_num)
+  have hsqrt_nonneg : 0 ≤ Real.sqrt ((m : ℝ) * (m : ℝ)) :=
+    Real.sqrt_nonneg _
+  have hinv_nonneg : 0 ≤ infNorm AAT_inv :=
+    infNorm_nonneg AAT_inv
+  have hconcrete_nonneg :
+      0 ≤
+        Real.sqrt ((m : ℝ) * (m : ℝ)) *
+          (((m : ℝ) * 2) * infNorm AAT_inv) :=
+    mul_nonneg hsqrt_nonneg (mul_nonneg hm2_nonneg hinv_nonneg)
+  have htau_nonneg : 0 ≤ tau :=
+    (add_nonneg hsigma hbeta).trans hSigmaBeta_le
+  have hstep_left :
+      (sigma + beta) *
+          (Real.sqrt ((m : ℝ) * (m : ℝ)) *
+            (((m : ℝ) * 2) * infNorm AAT_inv)) ≤
+        tau *
+          (Real.sqrt ((m : ℝ) * (m : ℝ)) *
+            (((m : ℝ) * 2) * infNorm AAT_inv)) :=
+    mul_le_mul_of_nonneg_right hSigmaBeta_le hconcrete_nonneg
+  have hinner :
+      ((m : ℝ) * 2) * infNorm AAT_inv ≤ ((m : ℝ) * 2) * omega :=
+    mul_le_mul_of_nonneg_left hAATInv_le hm2_nonneg
+  have hsize :
+      Real.sqrt ((m : ℝ) * (m : ℝ)) *
+          (((m : ℝ) * 2) * infNorm AAT_inv) ≤
+        Real.sqrt ((m : ℝ) * (m : ℝ)) *
+          (((m : ℝ) * 2) * omega) :=
+    mul_le_mul_of_nonneg_left hinner hsqrt_nonneg
+  have hstep_right :
+      tau *
+          (Real.sqrt ((m : ℝ) * (m : ℝ)) *
+            (((m : ℝ) * 2) * infNorm AAT_inv)) ≤
+        tau *
+          (Real.sqrt ((m : ℝ) * (m : ℝ)) *
+            (((m : ℝ) * 2) * omega)) :=
+    mul_le_mul_of_nonneg_left hsize htau_nonneg
+  exact (hstep_left.trans hstep_right).trans hSourceFactor_le
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    rectangular data-perturbation handoff with separated source-size scalar
+    bounds.  The remaining scalar source obligation is the simplified factor
+    involving an upper bound for `sigma + beta` and `||AAT_inv||_inf`. -/
+theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_radius_source_bounds_of_componentwise_data_bound
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (E : Fin m → Fin n → ℝ)
+    (rho1 rho2 alpha beta sigma eps rhoG tau omega : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hDataEpsNonneg : x ≠ 0 → 0 ≤ eps)
+    (hDataEpsLeRho : x ≠ 0 → eps ≤ rhoG)
+    (hGramSmallRadius : x ≠ 0 →
+      rhoG *
+          infNorm
+            (ch7InverseFirstProductSensitivity m AAT_inv
+              (undetGramPerturbationComponentBudget A E eps)) ≤
+        (1 / 2 : ℝ))
+    (hGramLeftInv : x ≠ 0 → IsLeftInverse m (rectGram A) AAT_inv)
+    (hDataE : x ≠ 0 → ∀ i k, 0 ≤ E i k)
+    (hDeltaA2Component : x ≠ 0 →
+      ∀ i k, |DeltaA2 i k| ≤ eps * E i k)
+    (hxTranspose : x ≠ 0 →
+      x =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : x ≠ 0 → 3 * max rho1 rho2 < 1)
+    (halpha : x ≠ 0 → 0 ≤ alpha)
+    (hbeta : x ≠ 0 → 0 ≤ beta)
+    (hsigma : x ≠ 0 → 0 ≤ sigma)
+    (halpha_le : x ≠ 0 → alpha ≤ rho1)
+    (hbeta_le : x ≠ 0 → beta ≤ rho2)
+    (hSigmaBeta_le : x ≠ 0 → sigma + beta ≤ tau)
+    (hAATInv_le : infNorm AAT_inv ≤ omega)
+    (hSourceFactor_le :
+      tau *
+          (Real.sqrt ((m : ℝ) * (m : ℝ)) *
+            (((m : ℝ) * 2) * omega)) ≤
+        (1 - rho2)⁻¹)
+    (hAOp : x ≠ 0 → rectOpNorm2Le A sigma)
+    (hDeltaA1Op : x ≠ 0 → rectOpNorm2Le DeltaA1 alpha)
+    (hDeltaA2Op : x ≠ 0 → rectOpNorm2Le DeltaA2 beta) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j)
+      b x :=
+  higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_radius_of_componentwise_data_bound
+    hm A x DeltaA1 DeltaA2 b y AAT_inv E rho1 rho2 alpha beta sigma eps rhoG
+    hDeltaA1 hDataEpsNonneg hDataEpsLeRho hGramSmallRadius hGramLeftInv
+    hDataE hDeltaA2Component hxTranspose hsmall halpha hbeta hsigma
+    halpha_le hbeta_le
+    (fun hx =>
+      higham21_lemma21_2_conservative_ch7_factor_le_of_source_bounds
+        AAT_inv rho2 sigma beta tau omega (hsigma hx) (hbeta hx)
+        (hSigmaBeta_le hx) hAATInv_le hSourceFactor_le)
+    hAOp hDeltaA1Op hDeltaA2Op
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     guarded source-factor handoff with perturbed Gram nonsingularity discharged
     from a componentwise bound on the Gram perturbation.  The remaining
     nonzero-branch matrix-analysis obligation is the concrete operator-2 bound
