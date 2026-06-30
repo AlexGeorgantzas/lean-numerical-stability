@@ -8498,6 +8498,50 @@ noncomputable def theorem20_10_householder_gammaB
     (fp : FPModel) (_r p q : ℕ) : ℝ :=
   H19.Theorem19_4.gamma_tilde fp (p + q) p
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    concrete Householder QR perturbation bound for the `Bᵀ` triangularization
+    step in the GQR path.
+
+    Applying the Chapter 19 Householder QR backward-error theorem to
+    `Bᵀ : R^((p+q)×p)` gives a perturbation of `B` with the advertised
+    `gamma_tilde_np` Frobenius bound.  This is a genuine computed-path
+    dependency for the Theorem 20.10 certificates; it does not yet prove the
+    downstream triangular-solve perturbations or rank preservation. -/
+theorem theorem20_10_householder_B_transpose_frob_perturbation_bound
+    {r p q : ℕ} (fp : FPModel)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (hp : 0 < p)
+    (hvalid :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q))) :
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+      (∀ i j,
+        B i j + DeltaB i j =
+          matMulRect (p + q) (p + q) p
+            (fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B))
+            (fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)) j i) ∧
+      frobNormRect DeltaB ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B := by
+  have hqr :
+      H19.Theorem19_4.HouseholderQRBackwardError (p + q) p (finiteTranspose B)
+        (fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B))
+        (fl_householderQRPanel_R fp (p + q) p (finiteTranspose B))
+        (theorem20_10_householder_gammaB fp r p q) := by
+    simpa [theorem20_10_householder_gammaB] using
+      H19.Theorem19_4.householder_qr_backward_error
+        fp (p + q) p (finiteTranspose B) hp (Nat.le_add_right p q) hvalid
+  have hgamma_nonneg :
+      0 ≤ theorem20_10_householder_gammaB fp r p q := by
+    simpa [theorem20_10_householder_gammaB] using
+      H19.Theorem19_4.gamma_tilde_nonneg fp hvalid
+  rcases
+    hqr.exists_frobNormRect_perturbation_bound hgamma_nonneg with
+    ⟨DeltaBT, hrep, hbound⟩
+  refine ⟨finiteTranspose DeltaBT, ?_, ?_⟩
+  · intro i j
+    simpa [finiteTranspose] using hrep j i
+  · simpa [theorem20_10_householder_gammaB, frobNormRect_finiteTranspose]
+      using hbound
+
 /-- Theorem 20.10(a) certificate handoff specialized to the Householder
     `gamma_tilde_mn` and `gamma_tilde_np` coefficients. -/
 theorem theorem20_10_partA_mixed_stability_of_householder_gamma_certificate
