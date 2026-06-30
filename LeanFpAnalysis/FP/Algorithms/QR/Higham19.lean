@@ -4440,6 +4440,96 @@ theorem householderTrailingActiveVector_succ_zeroPrefix_of_succ_any
   | zero => exact Fin.elim0 p
   | succ m => exact householderTrailingActiveVector_succ_zeroPrefix_of_succ p x alpha
 
+/-- Two-successor trailing-active-vector zero-prefixing.
+
+This is the stage-two extraction form used by the stored-loop/source-closure
+handoff: after dropping the first two completed rows, a pivot `p.succ.succ`
+active vector is exactly two leading zeroes followed by the active vector on the
+twice-trailing panel. -/
+theorem householderTrailingActiveVector_succ_succ_zeroPrefix_of_succ_succ
+    {m : Nat} (p : Fin m) (x : Fin (m + 2) -> Real) (alpha : Real) :
+    householderTrailingActiveVector (m + 2) p.succ.succ x alpha =
+      Fin.cases 0 (Fin.cases 0
+        (householderTrailingActiveVector m p (fun i => x i.succ.succ) alpha)) := by
+  rw [householderTrailingActiveVector_succ_zeroPrefix_of_succ_any
+    (p := p.succ) (x := x) (alpha := alpha)]
+  rw [householderTrailingActiveVector_succ_zeroPrefix_of_succ_any
+    (p := p) (x := fun i : Fin (m + 1) => x i.succ) (alpha := alpha)]
+
+/-- Squared self-dot is unchanged by adding two leading zeroes. -/
+theorem fin_sum_sq_zero_cons_zero_cons {m : Nat} (v : Fin m -> Real) :
+    (Finset.univ : Finset (Fin (m + 2))).sum
+        (fun i =>
+          Fin.cases 0 (Fin.cases 0 v) i *
+            Fin.cases 0 (Fin.cases 0 v) i) =
+      (Finset.univ : Finset (Fin m)).sum (fun i => v i * v i) := by
+  rw [Fin.sum_univ_succ]
+  simp [Fin.sum_univ_succ]
+
+/-- Extract the twice-trailing active-vector equality from a full double-zero
+prefix equality. -/
+theorem householderTrailingActiveVector_tail_eq_of_succ_succ_zeroPrefix
+    {m : Nat} (p : Fin m) (x : Fin (m + 2) -> Real) (alpha : Real)
+    (w : Fin m -> Real)
+    (hfull :
+      householderTrailingActiveVector (m + 2) p.succ.succ x alpha =
+        ((Fin.cases 0 (Fin.cases 0 w)) : Fin (m + 2) -> Real)) :
+    householderTrailingActiveVector m p (fun i => x i.succ.succ) alpha =
+      w := by
+  have hzero :
+      householderTrailingActiveVector (m + 2) p.succ.succ x alpha =
+        ((Fin.cases 0 (Fin.cases 0
+          (householderTrailingActiveVector m p
+            (fun i => x i.succ.succ) alpha))) :
+          Fin (m + 2) -> Real) :=
+    householderTrailingActiveVector_succ_succ_zeroPrefix_of_succ_succ
+      p x alpha
+  have hcons :
+      ((Fin.cases 0 (Fin.cases 0
+        (householderTrailingActiveVector m p
+          (fun i => x i.succ.succ) alpha))) :
+        Fin (m + 2) -> Real) =
+        ((Fin.cases 0 (Fin.cases 0 w)) : Fin (m + 2) -> Real) :=
+    hzero.symm.trans hfull
+  apply funext
+  intro i
+  have h := congrFun hcons (i.succ.succ : Fin (m + 2))
+  simpa using h
+
+/-- Extract the twice-trailing self-dot from the full pivot self-dot. -/
+theorem householderTrailingActiveVector_tail_self_dot_of_succ_succ
+    {m : Nat} (p : Fin m) (x : Fin (m + 2) -> Real) (alpha : Real)
+    (hselfFull :
+      (Finset.univ : Finset (Fin (m + 2))).sum
+        (fun i =>
+          householderTrailingActiveVector (m + 2) p.succ.succ x alpha i *
+            householderTrailingActiveVector (m + 2) p.succ.succ x alpha i) =
+        2) :
+    (Finset.univ : Finset (Fin m)).sum
+      (fun i =>
+        householderTrailingActiveVector m p (fun a => x a.succ.succ) alpha i *
+          householderTrailingActiveVector m p
+            (fun a => x a.succ.succ) alpha i) =
+      2 := by
+  let vtail : Fin m -> Real :=
+    householderTrailingActiveVector m p (fun a => x a.succ.succ) alpha
+  have hzero :
+      householderTrailingActiveVector (m + 2) p.succ.succ x alpha =
+        ((Fin.cases 0 (Fin.cases 0 vtail)) : Fin (m + 2) -> Real) :=
+    householderTrailingActiveVector_succ_succ_zeroPrefix_of_succ_succ
+      p x alpha
+  have hsum :
+      (Finset.univ : Finset (Fin (m + 2))).sum
+          (fun i =>
+            householderTrailingActiveVector (m + 2) p.succ.succ x alpha i *
+              householderTrailingActiveVector (m + 2) p.succ.succ x alpha i) =
+        (Finset.univ : Finset (Fin m)).sum
+          (fun i => vtail i * vtail i) := by
+    rw [hzero]
+    exact fin_sum_sq_zero_cons_zero_cons vtail
+  rw [<- hsum]
+  exact hselfFull
+
 /-- Pivot-1 trailing active vector as a zero-prefixed pivot-0 active vector. -/
 theorem householderTrailingActiveVector_succ_zeroPrefix {m : Nat}
     (x : Fin (m + 2) -> Real) (alpha : Real) :
@@ -7566,6 +7656,111 @@ theorem storedSignedSequenceOneTailReflectorFacts_of_twice_trailing_stage_facts
     hselfTailTail := hselfTailTail
     hdetTailTail := hdetTailTail }
 
+/-- Package one-column source-tail facts from full stage-two zero-prefixed
+stored-loop facts.
+
+The full stored loop naturally talks about the pivot-2 active vector in the
+original panel. This bridge extracts the twice-trailing source vector and
+self-dot facts when that full active vector has the expected double-zero
+prefix. The determinant nonbreakdown fact is already stated on the source tail,
+matching the closure-data contract. -/
+theorem
+    storedSignedSequenceOneTailReflectorFacts_of_full_stage_two_zero_prefixed_facts
+    (fp : FPModel) {m : Nat}
+    (A_hat : Nat -> Fin (m + 1 + 2) -> Fin (1 + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecFull :
+      householderTrailingActiveVector (m + 1 + 2)
+          ((0 : Fin (m + 1)).succ.succ)
+          (fun a => A_hat 2 a ((0 : Fin 1).succ.succ))
+          (alpha 2) =
+        Fin.cases 0 (Fin.cases 0
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos 0)
+              (trailingPanel (trailingPanel (A_hat 2)))))))
+    (hselfFull :
+      (Finset.univ : Finset (Fin (m + 1 + 2))).sum
+        (fun i =>
+          householderTrailingActiveVector (m + 1 + 2)
+              ((0 : Fin (m + 1)).succ.succ)
+              (fun a => A_hat 2 a ((0 : Fin 1).succ.succ))
+              (alpha 2) i *
+            householderTrailingActiveVector (m + 1 + 2)
+              ((0 : Fin (m + 1)).succ.succ)
+              (fun a => A_hat 2 a ((0 : Fin 1).succ.succ))
+              (alpha 2) i) =
+        2)
+    (hdetTailTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (trailingPanel (trailingPanel (A_hat 2)))
+          (Nat.succ_le_succ (Nat.zero_le m))
+          (Nat.succ_pos 0) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0) :
+    storedSignedSequenceOneTailReflectorFacts fp A_hat alpha := by
+  let vtail : Fin (m + 1) -> Real :=
+    householderTrailingActiveVector (m + 1)
+      (Fin.mk 0 (Nat.succ_pos m))
+      (fun a =>
+        trailingPanel (trailingPanel (A_hat 2)) a
+          (Fin.mk 0 (Nat.succ_pos 0)))
+      (alpha 2)
+  let ntail : Fin (m + 1) -> Real :=
+    fl_householderNormalizedVector fp (Nat.succ_pos m)
+      (panelFirstColumn (Nat.succ_pos 0)
+        (trailingPanel (trailingPanel (A_hat 2))))
+  have hzero :
+      householderTrailingActiveVector (m + 1 + 2)
+          ((0 : Fin (m + 1)).succ.succ)
+          (fun a => A_hat 2 a ((0 : Fin 1).succ.succ))
+          (alpha 2) =
+        Fin.cases 0 (Fin.cases 0 vtail) := by
+    simpa [vtail, trailingPanel, panelFirstColumn] using
+      (householderTrailingActiveVector_succ_succ_zeroPrefix_of_succ_succ
+        (p := (0 : Fin (m + 1)))
+        (x := fun a : Fin ((m + 1) + 2) =>
+          A_hat 2 a ((0 : Fin 1).succ.succ))
+        (alpha := alpha 2))
+  have htailVec :
+      vtail = ntail := by
+    have hcons :
+        ((Fin.cases 0 (Fin.cases 0 vtail)) :
+          Fin (m + 1 + 2) -> Real) =
+          ((Fin.cases 0 (Fin.cases 0 ntail)) :
+            Fin (m + 1 + 2) -> Real) := by
+      exact hzero.symm.trans (by simpa [ntail] using hvecFull)
+    apply funext
+    intro i
+    have h := congrFun hcons (i.succ.succ : Fin (m + 1 + 2))
+    simpa using h
+  have hsum :
+      (Finset.univ : Finset (Fin (m + 1 + 2))).sum
+          (fun i =>
+            householderTrailingActiveVector (m + 1 + 2)
+                ((0 : Fin (m + 1)).succ.succ)
+                (fun a => A_hat 2 a ((0 : Fin 1).succ.succ))
+                (alpha 2) i *
+              householderTrailingActiveVector (m + 1 + 2)
+                ((0 : Fin (m + 1)).succ.succ)
+                (fun a => A_hat 2 a ((0 : Fin 1).succ.succ))
+                (alpha 2) i) =
+        (Finset.univ : Finset (Fin (m + 1))).sum
+          (fun i => vtail i * vtail i) := by
+    rw [hzero]
+    exact fin_sum_sq_zero_cons_zero_cons vtail
+  have htailSelf :
+      (Finset.univ : Finset (Fin (m + 1))).sum
+        (fun i => vtail i * vtail i) = 2 := by
+    rw [<- hsum]
+    exact hselfFull
+  exact
+    storedSignedSequenceOneTailReflectorFacts_of_twice_trailing_stage_facts
+      fp A_hat alpha
+      (by simpa [vtail, ntail] using htailVec)
+      (by simpa [vtail] using htailSelf)
+      hdetTailTail
+
 /-- Package actual stage-two/stage-three twice-trailing stored-loop facts as
 raw first-two source-tail reflector facts.
 
@@ -7869,6 +8064,52 @@ theorem storedSignedSequenceTwiceTrailingSourceClosureData_one_of_twice_trailing
     fp A_hat alpha
     (storedSignedSequenceOneTailReflectorFacts_of_twice_trailing_stage_facts
       fp A_hat alpha hvecTailTail hselfTailTail hdetTailTail)
+
+/-- One-column recursive source-tail closure data from full stage-two
+zero-prefixed stored-loop facts.
+
+This is the one-column induction entry point closest to the full stored loop:
+it extracts the twice-trailing normalized-vector and self-dot facts from the
+full pivot-2 active-vector surface, then assembles the source-closure record. -/
+theorem
+    storedSignedSequenceTwiceTrailingSourceClosureData_one_of_full_stage_two_zero_prefixed_facts
+    (fp : FPModel) {m : Nat}
+    (A_hat : Nat -> Fin (m + 1 + 2) -> Fin (1 + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecFull :
+      householderTrailingActiveVector (m + 1 + 2)
+          ((0 : Fin (m + 1)).succ.succ)
+          (fun a => A_hat 2 a ((0 : Fin 1).succ.succ))
+          (alpha 2) =
+        Fin.cases 0 (Fin.cases 0
+          (fl_householderNormalizedVector fp (Nat.succ_pos m)
+            (panelFirstColumn (Nat.succ_pos 0)
+              (trailingPanel (trailingPanel (A_hat 2)))))))
+    (hselfFull :
+      (Finset.univ : Finset (Fin (m + 1 + 2))).sum
+        (fun i =>
+          householderTrailingActiveVector (m + 1 + 2)
+              ((0 : Fin (m + 1)).succ.succ)
+              (fun a => A_hat 2 a ((0 : Fin 1).succ.succ))
+              (alpha 2) i *
+            householderTrailingActiveVector (m + 1 + 2)
+              ((0 : Fin (m + 1)).succ.succ)
+              (fun a => A_hat 2 a ((0 : Fin 1).succ.succ))
+              (alpha 2) i) =
+        2)
+    (hdetTailTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (trailingPanel (trailingPanel (A_hat 2)))
+          (Nat.succ_le_succ (Nat.zero_le m))
+          (Nat.succ_pos 0) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0) :
+    storedSignedSequenceTwiceTrailingSourceClosureData fp m 1 A_hat alpha :=
+  storedSignedSequenceTwiceTrailingSourceClosureData_one_of_tail_reflector_facts
+    fp A_hat alpha
+    (storedSignedSequenceOneTailReflectorFacts_of_full_stage_two_zero_prefixed_facts
+      fp A_hat alpha hvecFull hselfFull hdetTailTail)
 
 /-- Two-step constructor for recursive source-tail closure facts. -/
 theorem storedSignedSequenceTwiceTrailingSourceClosureData_succ_succ_of_firstTwoTailReflectorFacts
