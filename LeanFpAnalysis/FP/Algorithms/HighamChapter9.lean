@@ -22883,6 +22883,34 @@ theorem higham9_15_normalized_G_split_frobNorm_step_bound {n : ℕ}
     hres.trans (add_le_add le_rfl hmul)
   exact max_le (hb.1.trans hstep) (hb.2.trans hstep)
 
+/-- **Theorem 9.15 support**, square-level residual product bound from the
+normwise normalized split. -/
+theorem higham9_15_normalized_G_residual_frobNormSqRect_le_add_product_sq
+    {n : ℕ}
+    (G X Y : Matrix (Fin n) (Fin n) ℝ) :
+    frobNormSqRect (G - X * Y) ≤
+      (frobNormRect G + frobNormRect X * frobNormRect Y) ^ 2 := by
+  have hres :
+      frobNormRect (G - X * Y) ≤
+        frobNormRect G + frobNormRect (X * Y) :=
+    frobNormRect_sub_le G (X * Y)
+  have hmul :
+      frobNormRect (X * Y) ≤ frobNormRect X * frobNormRect Y := by
+    simpa [rectMatMul, Matrix.mul_apply] using
+      (frobNormRect_rectMatMul_le X Y)
+  have hnorm :
+      frobNormRect (G - X * Y) ≤
+        frobNormRect G + frobNormRect X * frobNormRect Y :=
+    hres.trans (add_le_add le_rfl hmul)
+  have hleft_nonneg : 0 ≤ frobNormRect (G - X * Y) :=
+    frobNormRect_nonneg _
+  have hright_nonneg :
+      0 ≤ frobNormRect G + frobNormRect X * frobNormRect Y :=
+    add_nonneg (frobNormRect_nonneg _)
+      (mul_nonneg (frobNormRect_nonneg _) (frobNormRect_nonneg _))
+  rw [← frobNormRect_sq (G - X * Y)]
+  nlinarith
+
 /-- **Theorem 9.15**, scalar denominator step used by the normwise
 Barrlund--Sun route: from `q <= g + eta*q` and `eta < 1`, derive
 `q <= g/(1-eta)`. -/
@@ -23624,6 +23652,34 @@ theorem higham9_15_normalized_Gtilde_split_frobNorm_step_bound {n : ℕ}
         frobNormRect Gtilde + frobNormRect X * frobNormRect Y :=
     hres.trans (add_le_add le_rfl hmul)
   exact max_le (hb.1.trans hstep) (hb.2.trans hstep)
+
+/-- **Theorem 9.15 support**, square-level residual product bound from the
+componentwise-sign normalized split. -/
+theorem higham9_15_normalized_Gtilde_residual_frobNormSqRect_le_add_product_sq
+    {n : ℕ}
+    (Gtilde X Y : Matrix (Fin n) (Fin n) ℝ) :
+    frobNormSqRect (Gtilde + X * Y) ≤
+      (frobNormRect Gtilde + frobNormRect X * frobNormRect Y) ^ 2 := by
+  have hres :
+      frobNormRect (Gtilde + X * Y) ≤
+        frobNormRect Gtilde + frobNormRect (X * Y) :=
+    frobNormRect_add_le Gtilde (X * Y)
+  have hmul :
+      frobNormRect (X * Y) ≤ frobNormRect X * frobNormRect Y := by
+    simpa [rectMatMul, Matrix.mul_apply] using
+      (frobNormRect_rectMatMul_le X Y)
+  have hnorm :
+      frobNormRect (Gtilde + X * Y) ≤
+        frobNormRect Gtilde + frobNormRect X * frobNormRect Y :=
+    hres.trans (add_le_add le_rfl hmul)
+  have hleft_nonneg : 0 ≤ frobNormRect (Gtilde + X * Y) :=
+    frobNormRect_nonneg _
+  have hright_nonneg :
+      0 ≤ frobNormRect Gtilde + frobNormRect X * frobNormRect Y :=
+    add_nonneg (frobNormRect_nonneg _)
+      (mul_nonneg (frobNormRect_nonneg _) (frobNormRect_nonneg _))
+  rw [← frobNormRect_sq (Gtilde + X * Y)]
+  nlinarith
 
 /-- **Theorem 9.15**, final scalar ratio handoff for the componentwise
 `Gtilde` route once a normalized Barrlund--Sun linearized step bound has been
