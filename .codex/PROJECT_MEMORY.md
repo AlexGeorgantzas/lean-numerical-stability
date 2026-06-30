@@ -20,6 +20,24 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-06-30 fixed-ambient global-tableau source-chain checkpoint:
+  added `Higham13Eq1322GlobalTableauSourceChain` plus
+  `to_blockLUBudgetChain`, `to_blockLUBudgetChain_of_right_inverse`, and the
+  Eq.13.22/Eq.13.23 concrete product witness wrappers
+  `exists_blockLUFact_eq13_22_product_exact_kappa_of_right_inverse` and
+  `exists_blockLUFact_eq13_23_product_exact_kappa_of_right_inverse`.  This
+  packages the Oracle-advised Problem 13.4 route as a recursive fixed-ambient
+  certificate using one global GE-tableau growth factor and exact ambient
+  `kappa` denominator; each successor stores the ambient initial/Schur
+  containment, ambient inverse-entry certificate, first-row upper budget,
+  pivot identity, and recursive tail certificate.  It is dependency progress
+  only: all-tail tableau/source-inverse data, Eq.13.23 `rho <= 2`/BDD
+  product-update data, and Theorem 13.6 cited implementation estimates remain
+  open.  Verification passed by direct `BlockLU.lean` compile, focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, executable
+  `examples/LibraryLookup.lean`, `git diff --check`, placeholder and anchored
+  conflict-marker scans, and focused `#print axioms` reporting only `propext`,
+  `Classical.choice`, and `Quot.sound`.
 - 2026-06-30 Eq.13.23 reciprocal source-chain product/update checkpoint:
   added
   `higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_product_bound_diag_update_reciprocal`,
