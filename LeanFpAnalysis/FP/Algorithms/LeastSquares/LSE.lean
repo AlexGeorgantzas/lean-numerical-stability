@@ -10065,6 +10065,61 @@ theorem theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of
       (mul_le_mul_of_nonneg_right hgammaB_ge (frobNormRect_nonneg B))
   exact hcert hDeltaA hDeltab hDeltaB hb_tail
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), exact transformed-RHS
+    specialization of the constructed-source certificate.
+
+    The named supplied-GQR path computes the trailing triangular right-hand side
+    from the exact transformed vector `Uᵀ b`, so choosing `Deltab = 0` discharges
+    both the source-shaped RHS perturbation bound and the transformed-tail
+    matching condition.  This closes the exact-transform certificate branch; the
+    separate rounded Householder RHS-transform bridge remains a distinct
+    computed-path obligation. -/
+theorem theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of_double_gammaValid_exact_rhs
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (gammaA gammaB : ℝ)
+    (hgammaA_nonneg : 0 ≤ gammaA)
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    (hgammaA_ge : gamma fp q ≤ gammaA)
+    (hgammaB_ge : gamma fp p ≤ gammaB)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalid2S : gammaValid fp (2 * p))
+    (hvalid2L22 : gammaValid fp (2 * q)) :
+    ∃ (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ),
+      (∀ i j, |DeltaS i j| ≤ gamma fp p * |h.S i j|) ∧
+      (∀ i j, |DeltaL22 i j| ≤ gamma fp q * |h.L22 i j|) ∧
+      frobNormRect DeltaS ≤ gamma fp p * frobNormRect h.S ∧
+      frobNormRect DeltaL22 ≤ gamma fp q * frobNormRect h.L22 ∧
+      Nonempty
+        (Theorem20_10PartAPerturbationCertificate A B b d
+          (theorem20_10_gqr_xhat fp h b d) gammaA gammaB) := by
+  rcases
+    theorem20_10_partA_certificate_of_constructed_perturbed_source_blocks_of_double_gammaValid_source_bounds
+      fp h b d gammaA gammaB (0 : Fin (r + q) → ℝ)
+      hgammaB_nonneg hgammaA_ge hgammaB_ge hSdiag hL22diag
+      hvalid2S hvalid2L22 with
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, hcert⟩
+  refine
+    ⟨DeltaS, DeltaL22, hDeltaSbound, hDeltaL22bound,
+      hDeltaSfrob, hDeltaL22frob, ?_⟩
+  have hDeltab0 :
+      vecNorm2 (0 : Fin (r + q) → ℝ) ≤ gammaA * vecNorm2 b := by
+    change vecNorm2 (fun _ : Fin (r + q) => 0) ≤ gammaA * vecNorm2 b
+    rw [vecNorm2_zero]
+    exact mul_nonneg hgammaA_nonneg (vecNorm2_nonneg b)
+  have hb_tail0 : ∀ i : Fin q,
+      matMulVec (r + q) (matTranspose h.U)
+          (fun i => b i + (0 : Fin (r + q) → ℝ) i) (Fin.natAdd r i) =
+        matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i) := by
+    intro i
+    simp
+  exact hcert hDeltab0 hb_tail0
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), certificate-to-exact-core
     handoff.
 
