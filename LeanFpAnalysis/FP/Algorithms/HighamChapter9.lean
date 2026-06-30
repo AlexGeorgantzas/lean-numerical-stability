@@ -48336,6 +48336,41 @@ theorem higham9_7_PartialPivotGEPPUTrace_exists_PermutedLUFactSpec_L_bound_maxEn
               le_trans hUc_to_U₁ hU₁_to_trace
             simpa [Uc, Utrace, luFirstStepU, hi, hj] using hfinal
 
+/-- **Theorem 9.7 / Problem 9.11 bridge**, a recursive partial-pivoting `U`
+trace supplies a complete-certificate growth value for the same source matrix,
+no larger than the trace growth value.
+
+The partial-pivoting certificate is embedded into the complete-pivoting
+certificate-growth surface by using the identity column permutation. -/
+theorem higham9_7_PartialPivotGEPPUTrace_exists_certificateGrowth_le {n : ℕ}
+    (hn : 0 < n) (A Utrace : Fin n → Fin n → ℝ)
+    (hApos : 0 < maxEntryNorm hn A)
+    (htrace : higham9_7_PartialPivotGEPPUTrace n A Utrace) :
+    ∃ r ∈ higham9_completePivotingCertificateGrowthSet hn A hApos,
+      r ≤ growthFactorEntry hn A Utrace hApos := by
+  obtain ⟨L, Uc, sigma, hLU, _hL_bound, hmax⟩ :=
+    higham9_7_PartialPivotGEPPUTrace_exists_PermutedLUFactSpec_L_bound_maxEntryNorm_le
+      htrace
+  refine ⟨growthFactorEntry hn A Uc hApos, ?_, ?_⟩
+  · exact
+      ⟨L, Uc, sigma, (fun j => j),
+        higham9_2_permutedLUFactSpec_to_CompletePermutedLUFactSpec_id hLU, rfl⟩
+  · unfold growthFactorEntry
+    exact div_le_div_of_nonneg_right (hmax hn) (le_of_lt hApos)
+
+/-- **Theorem 9.7 / Problem 9.11 bridge**, value-set form of the
+partial-trace-to-complete-certificate growth comparison. -/
+theorem higham9_7_PartialPivotGEPPUTrace_exists_certificateGrowthValue_le
+    {n : ℕ} (hn : 0 < n) (A Utrace : Fin n → Fin n → ℝ)
+    (hApos : 0 < maxEntryNorm hn A)
+    (htrace : higham9_7_PartialPivotGEPPUTrace n A Utrace) :
+    ∃ r ∈ higham9_completePivotingCertificateGrowthValues n,
+      r ≤ growthFactorEntry hn A Utrace hApos := by
+  obtain ⟨r, hr, hle⟩ :=
+    higham9_7_PartialPivotGEPPUTrace_exists_certificateGrowth_le
+      hn A Utrace hApos htrace
+  exact ⟨r, ⟨hn, A, hApos, hr⟩, hle⟩
+
 /-- **Theorem 9.7 / GEPP trace support**, the final-pivot inverse-entry lower
 bound transfers from row-pivoted certificates to the recursive
 partial-pivoting `U` trace surface. -/
