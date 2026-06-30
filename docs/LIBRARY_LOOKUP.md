@@ -1508,6 +1508,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_16_rookPivotingUTraceGrowthSup`
 - `higham9_16_rookPivotingUTraceGrowthValues_le_pow_two`
 - `higham9_16_rookPivotingUTraceGrowthValues_le_fosterBound_of_trace_bound`
+- `higham9_16_rookPivotingUTraceGrowthValues_bddAbove_fosterBound_of_trace_bound`
 - `higham9_16_rookPivotingUTraceGrowthValues_bddAbove`
 - `higham9_16_rookPivotingUTraceGrowth_le_sup`
 - `higham9_16_rookPivotingUTraceGrowthValues_nonempty`
@@ -1740,6 +1741,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_completePivotingUTraceGrowthSup`
 - `higham9_completePivotingUTraceGrowthValues_le_pow_two`
 - `higham9_14_completePivotingUTraceGrowthValues_le_wilkinsonBound_of_trace_bound`
+- `higham9_14_completePivotingUTraceGrowthValues_bddAbove_wilkinsonBound_of_trace_bound`
 - `higham9_completePivotingUTraceGrowthValues_bddAbove`
 - `higham9_completePivotingUTraceGrowth_le_sup`
 - `higham9_completePivotingUTraceGrowthValues_nonempty`

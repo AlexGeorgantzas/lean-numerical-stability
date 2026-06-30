@@ -42057,6 +42057,24 @@ theorem higham9_14_completePivotingUTraceGrowthValues_le_wilkinsonBound_of_trace
   rcases hr with ⟨hn, A, U, hApos, htrace, rfl⟩
   exact hsharp hn A U hApos htrace
 
+/-- **Equation (9.14)**, boundedness of the complete-pivoting trace-growth
+value family at Wilkinson's sharp product RHS, once the per-trace source proof
+is supplied. -/
+theorem higham9_14_completePivotingUTraceGrowthValues_bddAbove_wilkinsonBound_of_trace_bound
+    {n : ℕ}
+    (hsharp :
+      ∀ (hn : 0 < n) (A U : Fin n → Fin n → ℝ)
+        (hApos : 0 < maxEntryNorm hn A),
+        higham9_8_CompletePivotGECPUTrace n A U →
+          growthFactorEntry hn A U hApos ≤
+            higham9_14_completePivotWilkinsonBound n) :
+    BddAbove (higham9_completePivotingUTraceGrowthValues n) := by
+  refine ⟨higham9_14_completePivotWilkinsonBound n, ?_⟩
+  intro r hr
+  exact
+    higham9_14_completePivotingUTraceGrowthValues_le_wilkinsonBound_of_trace_bound
+      hsharp hr
+
 /-- **Problem 9.11 / equation (9.15)**, the trace-level complete-pivoting
 growth values are bounded above by the elementary `2^(n-1)` bound. -/
 theorem higham9_completePivotingUTraceGrowthValues_bddAbove (n : ℕ) :
@@ -44532,6 +44550,23 @@ theorem higham9_16_rookPivotingUTraceGrowthValues_le_fosterBound_of_trace_bound
     r ≤ higham9_16_rookPivotFosterBound n := by
   rcases hr with ⟨hn, A, U, hApos, htrace, rfl⟩
   exact hsharp hn A U hApos htrace
+
+/-- **Equation (9.16)**, boundedness of the rook-pivoting trace-growth value
+family at Foster's sharp RHS, once the per-trace source proof is supplied. -/
+theorem higham9_16_rookPivotingUTraceGrowthValues_bddAbove_fosterBound_of_trace_bound
+    {n : ℕ}
+    (hsharp :
+      ∀ (hn : 0 < n) (A U : Fin n → Fin n → ℝ)
+        (hApos : 0 < maxEntryNorm hn A),
+        higham9_16_RookPivotGEUTrace n A U →
+          growthFactorEntry hn A U hApos ≤
+            higham9_16_rookPivotFosterBound n) :
+    BddAbove (higham9_16_rookPivotingUTraceGrowthValues n) := by
+  refine ⟨higham9_16_rookPivotFosterBound n, ?_⟩
+  intro r hr
+  exact
+    higham9_16_rookPivotingUTraceGrowthValues_le_fosterBound_of_trace_bound
+      hsharp hr
 
 /-- **Equation (9.16) / rook-pivoting trace growth family**, the trace-level
 rook-pivoting growth values are bounded above by the elementary `2^(n-1)`
