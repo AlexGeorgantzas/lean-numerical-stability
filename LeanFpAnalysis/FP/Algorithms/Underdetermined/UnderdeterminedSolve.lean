@@ -4036,6 +4036,121 @@ theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_fa
         (hDataEpsNonneg hx) (hDeltaA1Component hx) (hEOp hx))
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    scalar row-radius adapter.  The source-sized envelope
+    `sigma + eps * e <= tau` bounds the row-budget expression
+    `sigma*e + e*sigma + eps*e*e` by `2*e*tau`. -/
+theorem higham21_lemma21_2_row_radius_of_source_size_bound
+    (m n : ℕ) {sigma eps e tau omega rhoG : ℝ}
+    (heps : 0 ≤ eps)
+    (he : 0 ≤ e)
+    (homega : 0 ≤ omega)
+    (hrhoG : 0 ≤ rhoG)
+    (hSigmaEpsE_le : sigma + eps * e ≤ tau)
+    (hSourceRadius :
+      rhoG *
+          (omega *
+            ((m : ℝ) * ((n : ℝ) * (2 * e * tau)))) ≤
+        (1 / 2 : ℝ)) :
+    rhoG *
+        (omega *
+          ((m : ℝ) *
+            ((n : ℝ) *
+              (sigma * e + e * sigma + eps * e * e)))) ≤
+      (1 / 2 : ℝ) := by
+  have heps_e_nonneg : 0 ≤ eps * e := mul_nonneg heps he
+  have hsigma_le_tau : sigma ≤ tau :=
+    (le_add_of_nonneg_right heps_e_nonneg).trans hSigmaEpsE_le
+  have hsum : sigma + (sigma + eps * e) ≤ tau + tau :=
+    add_le_add hsigma_le_tau hSigmaEpsE_le
+  have hrow_term :
+      sigma * e + e * sigma + eps * e * e ≤ 2 * e * tau := by
+    calc
+      sigma * e + e * sigma + eps * e * e
+          = e * (sigma + (sigma + eps * e)) := by ring
+      _ ≤ e * (tau + tau) := mul_le_mul_of_nonneg_left hsum he
+      _ = 2 * e * tau := by ring
+  have hn :
+      (n : ℝ) * (sigma * e + e * sigma + eps * e * e) ≤
+        (n : ℝ) * (2 * e * tau) :=
+    mul_le_mul_of_nonneg_left hrow_term (by exact_mod_cast Nat.zero_le n)
+  have hm :
+      (m : ℝ) *
+          ((n : ℝ) * (sigma * e + e * sigma + eps * e * e)) ≤
+        (m : ℝ) * ((n : ℝ) * (2 * e * tau)) :=
+    mul_le_mul_of_nonneg_left hn (by exact_mod_cast Nat.zero_le m)
+  have homega_mul :
+      omega *
+          ((m : ℝ) *
+            ((n : ℝ) *
+              (sigma * e + e * sigma + eps * e * e))) ≤
+        omega * ((m : ℝ) * ((n : ℝ) * (2 * e * tau))) :=
+    mul_le_mul_of_nonneg_left hm homega
+  exact (mul_le_mul_of_nonneg_left homega_mul hrhoG).trans hSourceRadius
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    componentwise/operator handoff with the row-radius scalar obligation
+    reduced to the source-sized envelope `2*e*tau`. -/
+theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_deltaA_components_source_radius_bound
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (E : Fin m → Fin n → ℝ)
+    (rho1 rho2 sigma eps rhoG tau omega e : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hDataEpsNonneg : x ≠ 0 → 0 ≤ eps)
+    (hDataEpsLeRho : x ≠ 0 → eps ≤ rhoG)
+    (hrhoG : x ≠ 0 → 0 ≤ rhoG)
+    (hEOp : x ≠ 0 → rectOpNorm2Le E e)
+    (he : x ≠ 0 → 0 ≤ e)
+    (hEpsE_le_rho1 : x ≠ 0 → eps * e ≤ rho1)
+    (hEpsE_le_rho2 : x ≠ 0 → eps * e ≤ rho2)
+    (hRowRadius : x ≠ 0 →
+      rhoG *
+          (omega *
+            ((m : ℝ) *
+              ((n : ℝ) * (2 * e * tau)))) ≤
+        (1 / 2 : ℝ))
+    (hGramLeftInv : x ≠ 0 → IsLeftInverse m (rectGram A) AAT_inv)
+    (hDataE : x ≠ 0 → ∀ i k, 0 ≤ E i k)
+    (hDeltaA1Component : x ≠ 0 →
+      ∀ i k, |DeltaA1 i k| ≤ eps * E i k)
+    (hDeltaA2Component : x ≠ 0 →
+      ∀ i k, |DeltaA2 i k| ≤ eps * E i k)
+    (hxTranspose : x ≠ 0 →
+      x =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : x ≠ 0 → 3 * max rho1 rho2 < 1)
+    (hsigma : x ≠ 0 → 0 ≤ sigma)
+    (hSigmaEpsE_le : x ≠ 0 → sigma + eps * e ≤ tau)
+    (hAATInv_le : infNorm AAT_inv ≤ omega)
+    (hSourceFactor_le :
+      2 * (m : ℝ) ^ 2 * tau * omega ≤ (1 - rho2)⁻¹)
+    (hAOp : x ≠ 0 → rectOpNorm2Le A sigma) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j)
+      b x := by
+  have homega : 0 ≤ omega :=
+    (infNorm_nonneg AAT_inv).trans hAATInv_le
+  exact
+    higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_deltaA_components_op_bounds_quadratic_source_factor
+      hm A x DeltaA1 DeltaA2 b y AAT_inv E rho1 rho2 sigma eps rhoG
+      tau omega e hDeltaA1 hDataEpsNonneg hDataEpsLeRho hrhoG hEOp he
+      hEpsE_le_rho1 hEpsE_le_rho2
+      (fun hx =>
+        higham21_lemma21_2_row_radius_of_source_size_bound m n
+          (hDataEpsNonneg hx) (he hx) homega (hrhoG hx) (hSigmaEpsE_le hx)
+          (hRowRadius hx))
+      hGramLeftInv hDataE hDeltaA1Component hDeltaA2Component hxTranspose
+      hsmall hsigma hSigmaEpsE_le hAATInv_le hSourceFactor_le hAOp
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     guarded source-factor handoff with perturbed Gram nonsingularity discharged
     from a componentwise bound on the Gram perturbation.  The remaining
     nonzero-branch matrix-analysis obligation is the concrete operator-2 bound
