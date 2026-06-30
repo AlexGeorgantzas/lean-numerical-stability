@@ -1696,6 +1696,8 @@ Source-facing Chapter 9 wrappers:
 - `higham9_partialPivotingUTraceGrowth_le_sup`
 - `higham9_partialPivotingUTraceGrowthValues_nonempty`
 - `higham9_7_partialPivotingUTraceGrowthSup_le_pow_two`
+- `higham9_7_PartialPivotGEPPUTrace_exists_certificateGrowth_le`
+- `higham9_7_PartialPivotGEPPUTrace_exists_certificateGrowthValue_le`
 - `higham9_7_wilkinsonGrowthMatrix`
 - `higham9_7_wilkinsonGrowthL`
 - `higham9_7_wilkinsonGrowthU`
