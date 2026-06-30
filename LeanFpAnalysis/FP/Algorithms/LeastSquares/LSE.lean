@@ -1120,6 +1120,20 @@ def finAddAssocEquiv (k p q : ℕ) :
     ext
     simp [Fin.cast]
 
+/-- Finite-index commutativity equivalence for row reindexing between
+    `r + q` and `q + r` shapes.  It preserves the numeric index value. -/
+def finAddCommEquiv (r q : ℕ) : Fin (r + q) ≃ Fin (q + r) where
+  toFun := Fin.cast (Nat.add_comm r q)
+  invFun := Fin.cast (Nat.add_comm q r)
+  left_inv := by
+    intro i
+    ext
+    simp [Fin.cast]
+  right_inv := by
+    intro i
+    ext
+    simp [Fin.cast]
+
 /-- Orthonormal columns are preserved by a finite row-index equivalence. -/
 theorem GramSchmidtOrthonormalColumns.reindexRowsEquiv {m m' n : ℕ}
     (e : Fin m ≃ Fin m') {Q : Fin m → Fin n → ℝ}
@@ -1852,6 +1866,34 @@ theorem GQRAQWideAssocCase.exists_of_trailing_mgs_reversed_cols {k r q : ℕ}
   rw [hExtract]
   exact hLower
 
+/-- Wide associated-shape construction from exact Householder QR of the
+    column-reversed trailing square block.
+
+    This is the rank-tolerant analogue of
+    `GQRAQWideAssocCase.exists_of_trailing_mgs_reversed_cols`: zero active
+    columns are handled by the exact Householder recursion instead of exposed
+    as nonbreakdown hypotheses. -/
+theorem GQRAQWideAssocCase.exists_of_trailing_exact_householder_reversed_cols
+    {k r q : ℕ}
+    (M : Fin (r + q) → Fin ((k + r) + q) → ℝ) :
+    ∃ U : Fin (r + q) → Fin (r + q) → ℝ,
+      IsOrthogonal (r + q) U ∧
+        Nonempty (GQRAQWideAssocCase k r q
+          (matMulRectLeft (matTranspose U) M)) := by
+  let C : Fin (r + q) → Fin (r + q) → ℝ :=
+    rectPermuteCols Fin.revPerm (gqrAQWideAssocL M)
+  exact GQRAQWideAssocCase.exists_of_trailing_qr_reversed_cols
+    M
+    (exactHouseholderQR_Q (r + q) C)
+    (exactHouseholderQR_R (r + q) C)
+    (by
+      simpa [C] using exactHouseholderQR_Q_orthogonal (r + q) C)
+    (by
+      simpa [C] using exactHouseholderQR_R_upper (r + q) C)
+    (by
+      simpa [C] using
+        (exactHouseholderQR_R_eq_matMulRectLeft_transpose_Q (r + q) C).symm)
+
 /-- Vector-action form of a supplied associated-column wide (20.28) shape. -/
 theorem GQRAQWideAssocCase.mulVec_eq {k r q : ℕ}
     {M : Fin (r + q) → Fin ((k + r) + q) → ℝ}
@@ -2391,6 +2433,296 @@ theorem GQRAQTallCase.exists_of_qr_reversed_cols {r q : ℕ}
       _ = gqrAQTallBlock (k := r) L (Fin.natAdd r row) col := by
             simp [gqrAQTallBlock, L, gqrReverseSquare]
 
+/-- Tall associated-shape construction from exact Householder QR of the
+    column-reversed block.
+
+    Unlike the exact-MGS wrapper, this route is rank-tolerant for the
+    transformed block: zero active columns are handled by the exact Householder
+    panel recursion rather than exposed as nonbreakdown hypotheses. -/
+theorem GQRAQTallCase.exists_of_exact_householder_reversed_cols {r q : ℕ}
+    (C : Fin (r + q) → Fin q → ℝ) :
+    ∃ U : Fin (r + q) → Fin (r + q) → ℝ,
+      IsOrthogonal (r + q) U ∧
+        Nonempty (GQRAQTallCase r q (matMulRectLeft (matTranspose U) C)) := by
+  let e : Fin (r + q) ≃ Fin (q + r) := finAddCommEquiv r q
+  let C' : Fin (q + r) → Fin q → ℝ := fun i j => C (e.symm i) j
+  let Crev : Fin (q + r) → Fin q → ℝ := rectPermuteCols Fin.revPerm C'
+  let Qfull : Fin (q + r) → Fin (q + r) → ℝ :=
+    exactHouseholderQRPanel_Q (q + r) q Crev
+  let Rhat : Fin (q + r) → Fin q → ℝ :=
+    exactHouseholderQRPanel_R (q + r) q Crev
+  let Q2' : Fin (q + r) → Fin q → ℝ :=
+    fun i j => Qfull i (Fin.castAdd r j)
+  let R : Fin q → Fin q → ℝ :=
+    fun i j => Rhat (Fin.castAdd r i) j
+  have hQfull : IsOrthogonal (q + r) Qfull := by
+    simpa [Qfull] using exactHouseholderQRPanel_Q_orthogonal (q + r) q Crev
+  have hRhatUpper : IsUpperTrapezoidal (q + r) q Rhat := by
+    simpa [Rhat] using exactHouseholderQRPanel_R_upper_trapezoidal (q + r) q Crev
+  have hQ2' : GramSchmidtOrthonormalColumns Q2' := by
+    intro a b
+    simpa [Q2', GramSchmidtOrthonormalColumns, rectangularGram, idMatrix,
+      Fin.castAdd] using
+      hQfull.col_orthonormal (Fin.castAdd r a) (Fin.castAdd r b)
+  have hR : IsUpperTriangular q R := by
+    intro i j hji
+    simpa [R, Fin.castAdd] using
+      hRhatUpper (Fin.castAdd r i) j hji
+  have hRhatEq :
+      Rhat = matMulRectLeft (matTranspose Qfull) Crev := by
+    simpa [Qfull, Rhat, Crev] using
+      exactHouseholderQRPanel_R_eq_matMulRectLeft_transpose_Q
+        (q + r) q Crev
+  have hCrevFull : Crev = matMulRectLeft Qfull Rhat := by
+    have hright :
+        matMul (q + r) Qfull (matTranspose Qfull) = idMatrix (q + r) := by
+      ext i j
+      exact hQfull.right_inv i j
+    calc
+      Crev = matMulRectLeft (idMatrix (q + r)) Crev := by
+          exact (matMulRectLeft_id Crev).symm
+      _ = matMulRectLeft (matMul (q + r) Qfull (matTranspose Qfull)) Crev := by
+          rw [hright]
+      _ = matMulRectLeft Qfull (matMulRectLeft (matTranspose Qfull) Crev) := by
+          rw [matMulRectLeft_assoc]
+      _ = matMulRectLeft Qfull Rhat := by
+          rw [← hRhatEq]
+  have hThin' : Crev = matMulRect (q + r) q q Q2' R := by
+    rw [hCrevFull]
+    ext i j
+    have hbottom : ∀ c : Fin r, Rhat (Fin.natAdd q c) j = 0 := by
+      intro c
+      exact hRhatUpper (Fin.natAdd q c) j
+        (Nat.lt_of_lt_of_le j.isLt (Nat.le_add_right q c.val))
+    unfold matMulRectLeft matMulRect Q2' R
+    rw [Fin.sum_univ_add]
+    simp [hbottom]
+  let Q2 : Fin (r + q) → Fin q → ℝ := fun i j => Q2' (e i) j
+  have hQ2 : GramSchmidtOrthonormalColumns Q2 := by
+    intro a b
+    unfold rectangularGram Q2
+    calc
+      (∑ i : Fin (r + q), Q2' (e i) a * Q2' (e i) b)
+          = ∑ i' : Fin (q + r), Q2' i' a * Q2' i' b := by
+              exact Equiv.sum_comp e
+                (fun i' : Fin (q + r) => Q2' i' a * Q2' i' b)
+      _ = idMatrix q a b := hQ2' a b
+  have hfactor :
+      rectPermuteCols Fin.revPerm C = matMulRect (r + q) q q Q2 R := by
+    ext i j
+    have hentry := congrFun (congrFun hThin' (e i)) j
+    simpa [Crev, C', Q2, rectPermuteCols, matMulRect] using hentry
+  exact GQRAQTallCase.exists_of_qr_reversed_cols C Q2 R hQ2 hR hfactor
+
+/-- Associated-row tall (20.28) construction from a QR factorization of the
+    column-reversed block.  This is the same construction as
+    `GQRAQTallCase.exists_of_qr_reversed_cols`, transported across the finite
+    row associativity equivalence from `k + (p + q)` to `((k + p) + q)`. -/
+theorem GQRAQTallAssocCase.exists_of_qr_reversed_cols {k p q : ℕ}
+    (C : Fin ((k + p) + q) → Fin (p + q) → ℝ)
+    (Q2 : Fin ((k + p) + q) → Fin (p + q) → ℝ)
+    (R : Fin (p + q) → Fin (p + q) → ℝ)
+    (hQ2 : GramSchmidtOrthonormalColumns Q2)
+    (hR : IsUpperTriangular (p + q) R)
+    (hfactor : rectPermuteCols Fin.revPerm C =
+      matMulRect ((k + p) + q) (p + q) (p + q) Q2 R) :
+    ∃ U : Fin ((k + p) + q) → Fin ((k + p) + q) → ℝ,
+      IsOrthogonal ((k + p) + q) U ∧
+        Nonempty (GQRAQTallAssocCase k p q
+          (matMulRectLeft (matTranspose U) C)) := by
+  let e : Fin ((k + p) + q) ≃ Fin (k + (p + q)) :=
+    finAddAssocEquiv k p q
+  let C' : Fin (k + (p + q)) → Fin (p + q) → ℝ :=
+    fun i j => C (e.symm i) j
+  let Q2' : Fin (k + (p + q)) → Fin (p + q) → ℝ :=
+    fun i j => Q2 (e.symm i) j
+  have hQ2' : GramSchmidtOrthonormalColumns Q2' :=
+    GramSchmidtOrthonormalColumns.reindexRowsEquiv e hQ2
+  have hfactor' :
+      rectPermuteCols Fin.revPerm C' =
+        matMulRect (k + (p + q)) (p + q) (p + q) Q2' R := by
+    ext i j
+    have hentry := congrFun (congrFun hfactor (e.symm i)) j
+    simpa [C', Q2', rectPermuteCols, matMulRect] using hentry
+  rcases GQRAQTallCase.exists_of_qr_reversed_cols
+      (r := k) (q := p + q) C' Q2' R hQ2' hR hfactor' with
+    ⟨U', hU', hCaseNonempty⟩
+  rcases hCaseNonempty with ⟨hCase⟩
+  let U : Fin ((k + p) + q) → Fin ((k + p) + q) → ℝ :=
+    fun i j => U' (e i) (e j)
+  refine ⟨U, IsOrthogonal.reindexRowsColsEquiv e hU', ?_⟩
+  refine ⟨⟨hCase.L, hCase.lowerL, ?_⟩⟩
+  ext row col
+  have hrow_eq :
+      matMulRectLeft (matTranspose U) C row col =
+        matMulRectLeft (matTranspose U') C' (e row) col := by
+    calc
+      matMulRectLeft (matTranspose U) C row col
+          = ∑ i : Fin ((k + p) + q), U' (e i) (e row) * C i col := by
+              simp [matMulRectLeft, matTranspose, U]
+      _ = ∑ i' : Fin (k + (p + q)), U' i' (e row) * C (e.symm i') col := by
+              exact Equiv.sum_comp e
+                (fun i' : Fin (k + (p + q)) =>
+                  U' i' (e row) * C (e.symm i') col)
+      _ = matMulRectLeft (matTranspose U') C' (e row) col := by
+              simp [matMulRectLeft, matTranspose, C']
+  have hblock_eq :
+      gqrAQTallBlock hCase.L (e row) col =
+        gqrAQTallBlockAssoc (k := k) hCase.L row col := by
+    refine Fin.addCases
+      (motive := fun row : Fin ((k + p) + q) =>
+        gqrAQTallBlock hCase.L (e row) col =
+          gqrAQTallBlockAssoc (k := k) hCase.L row col)
+      ?topRows ?bottomRows row
+    · intro row
+      refine Fin.addCases
+        (motive := fun row : Fin (k + p) =>
+          gqrAQTallBlock hCase.L (e (Fin.castAdd q row)) col =
+            gqrAQTallBlockAssoc (k := k) hCase.L (Fin.castAdd q row) col)
+        ?zeroRows ?middleRows row
+      · intro row
+        have heq :
+            e (Fin.castAdd q (Fin.castAdd p row)) =
+              Fin.castAdd (p + q) row := by
+          ext
+          simp [e, finAddAssocEquiv, Fin.castAdd, Fin.cast]
+        rw [heq]
+        simp [gqrAQTallBlock, gqrAQTallBlockAssoc]
+      · intro row
+        have heq :
+            e (Fin.castAdd q (Fin.natAdd k row)) =
+              Fin.natAdd k (Fin.castAdd q row) := by
+          ext
+          simp [e, finAddAssocEquiv, Fin.castAdd, Fin.natAdd, Fin.cast]
+        rw [heq]
+        simp [gqrAQTallBlock, gqrAQTallBlockAssoc]
+    · intro row
+      have heq :
+          e (Fin.natAdd (k + p) row) =
+            Fin.natAdd k (Fin.natAdd p row) := by
+        ext
+        simp [e, finAddAssocEquiv, Fin.natAdd, Fin.cast, Nat.add_assoc]
+      rw [heq]
+      simp [gqrAQTallBlock, gqrAQTallBlockAssoc]
+  calc
+    matMulRectLeft (matTranspose U) C row col
+        = matMulRectLeft (matTranspose U') C' (e row) col := hrow_eq
+    _ = gqrAQTallBlock hCase.L (e row) col := by
+          simpa using congrFun (congrFun hCase.aq_eq (e row)) col
+    _ = gqrAQTallBlockAssoc (k := k) hCase.L row col := hblock_eq
+
+/-- Exact-Householder associated-row tall (20.28) construction.
+
+    This is the rank-tolerant analogue of
+    `GQRAQTallAssocCase.exists_of_mgs_reversed_cols`: the associated-row
+    display is constructed from the exact Householder QR panel recursion,
+    whose zero-column branch avoids any MGS nonbreakdown hypothesis on the
+    transformed `AQ` block. -/
+theorem GQRAQTallAssocCase.exists_of_exact_householder_reversed_cols {k p q : ℕ}
+    (C : Fin ((k + p) + q) → Fin (p + q) → ℝ) :
+    ∃ U : Fin ((k + p) + q) → Fin ((k + p) + q) → ℝ,
+      IsOrthogonal ((k + p) + q) U ∧
+        Nonempty (GQRAQTallAssocCase k p q
+          (matMulRectLeft (matTranspose U) C)) := by
+  let e : Fin ((k + p) + q) ≃ Fin (k + (p + q)) :=
+    finAddAssocEquiv k p q
+  let C' : Fin (k + (p + q)) → Fin (p + q) → ℝ :=
+    fun i j => C (e.symm i) j
+  rcases GQRAQTallCase.exists_of_exact_householder_reversed_cols
+      (r := k) (q := p + q) C' with
+    ⟨U', hU', hCaseNonempty⟩
+  rcases hCaseNonempty with ⟨hCase⟩
+  let U : Fin ((k + p) + q) → Fin ((k + p) + q) → ℝ :=
+    fun i j => U' (e i) (e j)
+  refine ⟨U, IsOrthogonal.reindexRowsColsEquiv e hU', ?_⟩
+  refine ⟨⟨hCase.L, hCase.lowerL, ?_⟩⟩
+  ext row col
+  have hrow_eq :
+      matMulRectLeft (matTranspose U) C row col =
+        matMulRectLeft (matTranspose U') C' (e row) col := by
+    calc
+      matMulRectLeft (matTranspose U) C row col
+          = ∑ i : Fin ((k + p) + q), U' (e i) (e row) * C i col := by
+              simp [matMulRectLeft, matTranspose, U]
+      _ = ∑ i' : Fin (k + (p + q)), U' i' (e row) * C (e.symm i') col := by
+              exact Equiv.sum_comp e
+                (fun i' : Fin (k + (p + q)) =>
+                  U' i' (e row) * C (e.symm i') col)
+      _ = matMulRectLeft (matTranspose U') C' (e row) col := by
+              simp [matMulRectLeft, matTranspose, C']
+  have hblock_eq :
+      gqrAQTallBlock hCase.L (e row) col =
+        gqrAQTallBlockAssoc (k := k) hCase.L row col := by
+    refine Fin.addCases
+      (motive := fun row : Fin ((k + p) + q) =>
+        gqrAQTallBlock hCase.L (e row) col =
+          gqrAQTallBlockAssoc (k := k) hCase.L row col)
+      ?topRows ?bottomRows row
+    · intro row
+      refine Fin.addCases
+        (motive := fun row : Fin (k + p) =>
+          gqrAQTallBlock hCase.L (e (Fin.castAdd q row)) col =
+            gqrAQTallBlockAssoc (k := k) hCase.L (Fin.castAdd q row) col)
+        ?zeroRows ?middleRows row
+      · intro row
+        have heq :
+            e (Fin.castAdd q (Fin.castAdd p row)) =
+              Fin.castAdd (p + q) row := by
+          ext
+          simp [e, finAddAssocEquiv, Fin.castAdd, Fin.cast]
+        rw [heq]
+        simp [gqrAQTallBlock, gqrAQTallBlockAssoc]
+      · intro row
+        have heq :
+            e (Fin.castAdd q (Fin.natAdd k row)) =
+              Fin.natAdd k (Fin.castAdd q row) := by
+          ext
+          simp [e, finAddAssocEquiv, Fin.castAdd, Fin.natAdd, Fin.cast]
+        rw [heq]
+        simp [gqrAQTallBlock, gqrAQTallBlockAssoc]
+    · intro row
+      have heq :
+          e (Fin.natAdd (k + p) row) =
+            Fin.natAdd k (Fin.natAdd p row) := by
+        ext
+        simp [e, finAddAssocEquiv, Fin.natAdd, Fin.cast, Nat.add_assoc]
+      rw [heq]
+      simp [gqrAQTallBlock, gqrAQTallBlockAssoc]
+  calc
+    matMulRectLeft (matTranspose U) C row col
+        = matMulRectLeft (matTranspose U') C' (e row) col := hrow_eq
+    _ = gqrAQTallBlock hCase.L (e row) col := by
+          simpa using congrFun (congrFun hCase.aq_eq (e row)) col
+    _ = gqrAQTallBlockAssoc (k := k) hCase.L row col := hblock_eq
+
+/-- Exact-MGS associated-row tall (20.28) construction.  Nonzero exact-MGS
+    stages for the column-reversed full block supply the QR factorization used
+    by `GQRAQTallAssocCase.exists_of_qr_reversed_cols`. -/
+theorem GQRAQTallAssocCase.exists_of_mgs_reversed_cols {k p q : ℕ}
+    (C : Fin ((k + p) + q) → Fin (p + q) → ℝ)
+    (hdiag : ∀ j : Fin (p + q),
+      gsColumnNorm2
+        (modifiedGramSchmidtVectors (rectPermuteCols Fin.revPerm C) j.val j) ≠ 0) :
+    ∃ U : Fin ((k + p) + q) → Fin ((k + p) + q) → ℝ,
+      IsOrthogonal ((k + p) + q) U ∧
+        Nonempty (GQRAQTallAssocCase k p q
+          (matMulRectLeft (matTranspose U) C)) := by
+  let Crev : Fin ((k + p) + q) → Fin (p + q) → ℝ :=
+    rectPermuteCols Fin.revPerm C
+  let Q2 : Fin ((k + p) + q) → Fin (p + q) → ℝ :=
+    modifiedGramSchmidtQ Crev
+  let R : Fin (p + q) → Fin (p + q) → ℝ :=
+    modifiedGramSchmidtR Crev
+  have hQ2 : GramSchmidtOrthonormalColumns Q2 :=
+    modifiedGramSchmidtQ_orthonormal_columns Crev hdiag
+  have hR : IsUpperTriangular (p + q) R :=
+    IsUpperTrapezoidal.to_upperTriangular
+      (modifiedGramSchmidtR_upper_trapezoidal Crev)
+  have hfactor : rectPermuteCols Fin.revPerm C =
+      matMulRect ((k + p) + q) (p + q) (p + q) Q2 R := by
+    exact modifiedGramSchmidt_exact_factorization Crev hdiag
+  exact GQRAQTallAssocCase.exists_of_qr_reversed_cols C Q2 R hQ2 hR hfactor
+
 /-- Higham, 2nd ed., Chapter 20, equation (20.28), supplied wide-case
     shape for `U^T A Q = [X L]`.
 
@@ -2699,6 +3031,130 @@ theorem GeneralizedQRFactorization.exists_of_tall_fullRowRank_constraint_and_ass
     GeneralizedQRFactorization.exists_of_tall_mgs_constraint_and_assoc_shape
       (A := A) (B := B) hdiagB hAQ
 
+/-- Tall-case exact-MGS construction wrapper for Higham, 2nd ed.,
+    Theorem 20.9.
+
+    Exact MGS data for `Bᵀ` supplies the constraint side `B Q = [S 0]`.
+    Exact MGS data for the column-reversed full transformed block `A Q`
+    supplies the associated-row (20.28) display `Uᵀ A Q = [0; L]`. -/
+theorem GeneralizedQRFactorization.exists_of_tall_mgs_constraint_and_full_mgs_assoc_shape
+    {k p q : ℕ}
+    {A : Fin ((k + p) + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (hdiagB : ∀ j : Fin p,
+      gsColumnNorm2
+        (modifiedGramSchmidtVectors
+          (fun col : Fin (p + q) => fun row : Fin p => B row col) j.val j) ≠ 0)
+    (hdiagAQ : ∀ Q : Fin (p + q) → Fin (p + q) → ℝ,
+      IsOrthogonal (p + q) Q →
+        ∀ j : Fin (p + q),
+          gsColumnNorm2
+            (modifiedGramSchmidtVectors
+              (rectPermuteCols Fin.revPerm
+                (matMulRect ((k + p) + q) (p + q) (p + q) A Q))
+              j.val j) ≠ 0) :
+    Nonempty (GeneralizedQRFactorization (k + p) p q A B) := by
+  have hAQ : ∀ Q : Fin (p + q) → Fin (p + q) → ℝ,
+      IsOrthogonal (p + q) Q →
+        ∃ U : Fin ((k + p) + q) → Fin ((k + p) + q) → ℝ,
+          IsOrthogonal ((k + p) + q) U ∧
+            Nonempty (
+            GQRAQTallAssocCase k p q
+              (matMulRectLeft (matTranspose U)
+                (matMulRect ((k + p) + q) (p + q) (p + q) A Q))) := by
+    intro Q hQ
+    exact GQRAQTallAssocCase.exists_of_mgs_reversed_cols
+      (matMulRect ((k + p) + q) (p + q) (p + q) A Q)
+      (hdiagAQ Q hQ)
+  exact
+    GeneralizedQRFactorization.exists_of_tall_mgs_constraint_and_assoc_shape
+      (A := A) (B := B) hdiagB hAQ
+
+/-- Tall-case full-row-rank plus full-`AQ` exact-MGS construction wrapper for
+    Higham, 2nd ed., Theorem 20.9.
+
+    Full row rank of `B` discharges the exact-MGS nonbreakdown hypotheses for
+    `Bᵀ`; the remaining explicit assumption is nonbreakdown for the
+    column-reversed full transformed block `A Q`. -/
+theorem GeneralizedQRFactorization.exists_of_tall_fullRowRank_constraint_and_full_mgs_assoc_shape
+    {k p q : ℕ}
+    {A : Fin ((k + p) + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (hB : LSEFullRowRank B)
+    (hdiagAQ : ∀ Q : Fin (p + q) → Fin (p + q) → ℝ,
+      IsOrthogonal (p + q) Q →
+        ∀ j : Fin (p + q),
+          gsColumnNorm2
+            (modifiedGramSchmidtVectors
+              (rectPermuteCols Fin.revPerm
+                (matMulRect ((k + p) + q) (p + q) (p + q) A Q))
+              j.val j) ≠ 0) :
+    Nonempty (GeneralizedQRFactorization (k + p) p q A B) := by
+  have hdiagB : ∀ j : Fin p,
+      gsColumnNorm2
+        (modifiedGramSchmidtVectors
+          (fun col : Fin (p + q) => fun row : Fin p => B row col)
+          j.val j) ≠ 0 := by
+    intro j
+    exact hB.transpose_mgs_norm_ne_zero j
+  exact
+    GeneralizedQRFactorization.exists_of_tall_mgs_constraint_and_full_mgs_assoc_shape
+      (A := A) (B := B) hdiagB hdiagAQ
+
+/-- Tall-case exact-Householder construction wrapper for Higham, 2nd ed.,
+    Theorem 20.9.
+
+    Exact MGS data for `Bᵀ` supplies the constraint side `B Q = [S 0]`.
+    The associated-row (20.28) display for the full transformed block `A Q`
+    is then constructed by exact Householder QR, without assuming exact-MGS
+    nonbreakdown for that `AQ` block. -/
+theorem GeneralizedQRFactorization.exists_of_tall_mgs_constraint_and_exact_householder_assoc_shape
+    {k p q : ℕ}
+    {A : Fin ((k + p) + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (hdiagB : ∀ j : Fin p,
+      gsColumnNorm2
+        (modifiedGramSchmidtVectors
+          (fun col : Fin (p + q) => fun row : Fin p => B row col) j.val j) ≠ 0) :
+    Nonempty (GeneralizedQRFactorization (k + p) p q A B) := by
+  have hAQ : ∀ Q : Fin (p + q) → Fin (p + q) → ℝ,
+      IsOrthogonal (p + q) Q →
+        ∃ U : Fin ((k + p) + q) → Fin ((k + p) + q) → ℝ,
+          IsOrthogonal ((k + p) + q) U ∧
+            Nonempty (
+            GQRAQTallAssocCase k p q
+              (matMulRectLeft (matTranspose U)
+                (matMulRect ((k + p) + q) (p + q) (p + q) A Q))) := by
+    intro Q _hQ
+    exact GQRAQTallAssocCase.exists_of_exact_householder_reversed_cols
+      (matMulRect ((k + p) + q) (p + q) (p + q) A Q)
+  exact
+    GeneralizedQRFactorization.exists_of_tall_mgs_constraint_and_assoc_shape
+      (A := A) (B := B) hdiagB hAQ
+
+/-- Tall-case full-row-rank plus exact-Householder associated display wrapper
+    for Higham, 2nd ed., Theorem 20.9.
+
+    Full row rank of `B` discharges the exact-MGS nonbreakdown hypotheses for
+    `Bᵀ`; exact Householder QR constructs the associated-row display for
+    `A Q` without a separate nonbreakdown hypothesis on `AQ`. -/
+theorem GeneralizedQRFactorization.exists_of_tall_fullRowRank_constraint_and_exact_householder_assoc_shape
+    {k p q : ℕ}
+    {A : Fin ((k + p) + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (hB : LSEFullRowRank B) :
+    Nonempty (GeneralizedQRFactorization (k + p) p q A B) := by
+  have hdiagB : ∀ j : Fin p,
+      gsColumnNorm2
+        (modifiedGramSchmidtVectors
+          (fun col : Fin (p + q) => fun row : Fin p => B row col)
+          j.val j) ≠ 0 := by
+    intro j
+    exact hB.transpose_mgs_norm_ne_zero j
+  exact
+    GeneralizedQRFactorization.exists_of_tall_mgs_constraint_and_exact_householder_assoc_shape
+      (A := A) (B := B) hdiagB
+
 /-- Wide-case construction wrapper for Higham, 2nd ed., Theorem 20.9:
     exact MGS data for `Bᵀ` supplies the `B Q = [S 0]` side, so the only
     remaining supplied construction is an associated-column shape for `Uᵀ A Q`
@@ -2808,6 +3264,53 @@ theorem GeneralizedQRFactorization.exists_of_wide_fullRowRank_constraint_and_tra
   exact
     GeneralizedQRFactorization.exists_of_wide_mgs_constraint_and_trailing_mgs_assoc_shape
       (A := A) (B := B) hdiagB hdiagAQ
+
+/-- Wide-case exact-Householder construction wrapper for Higham, 2nd ed.,
+    Theorem 20.9.
+
+    Exact MGS data for `B^T` supplies the constraint side `B Q = [S 0]`.
+    Exact Householder QR constructs the associated-column display for the full
+    transformed block `A Q` without requiring exact-MGS nonbreakdown for the
+    trailing square block. -/
+theorem GeneralizedQRFactorization.exists_of_wide_mgs_constraint_and_exact_householder_assoc_shape
+    {k r q : ℕ}
+    {A : Fin (r + q) → Fin ((k + r) + q) → ℝ}
+    {B : Fin (k + r) → Fin ((k + r) + q) → ℝ}
+    (hdiagB : ∀ j : Fin (k + r),
+      gsColumnNorm2
+        (modifiedGramSchmidtVectors
+          (fun col : Fin ((k + r) + q) => fun row : Fin (k + r) => B row col)
+          j.val j) ≠ 0) :
+    Nonempty (GeneralizedQRFactorization r (k + r) q A B) := by
+  refine
+    GeneralizedQRFactorization.exists_of_wide_mgs_constraint_and_assoc_shape
+      (A := A) (B := B) hdiagB ?_
+  intro Q _hQ
+  exact GQRAQWideAssocCase.exists_of_trailing_exact_householder_reversed_cols
+    (matMulRect (r + q) ((k + r) + q) ((k + r) + q) A Q)
+
+/-- Wide-case full-row-rank plus exact-Householder associated display wrapper
+    for Higham, 2nd ed., Theorem 20.9.
+
+    Full row rank of `B` discharges the exact-MGS nonbreakdown hypotheses for
+    `B^T`; exact Householder QR constructs the associated-column display for
+    `A Q` without a separate nonbreakdown hypothesis on the trailing block. -/
+theorem GeneralizedQRFactorization.exists_of_wide_fullRowRank_constraint_and_exact_householder_assoc_shape
+    {k r q : ℕ}
+    {A : Fin (r + q) → Fin ((k + r) + q) → ℝ}
+    {B : Fin (k + r) → Fin ((k + r) + q) → ℝ}
+    (hB : LSEFullRowRank B) :
+    Nonempty (GeneralizedQRFactorization r (k + r) q A B) := by
+  have hdiagB : ∀ j : Fin (k + r),
+      gsColumnNorm2
+        (modifiedGramSchmidtVectors
+          (fun col : Fin ((k + r) + q) => fun row : Fin (k + r) => B row col)
+          j.val j) ≠ 0 := by
+    intro j
+    exact hB.transpose_mgs_norm_ne_zero j
+  exact
+    GeneralizedQRFactorization.exists_of_wide_mgs_constraint_and_exact_householder_assoc_shape
+      (A := A) (B := B) hdiagB
 
 /-- Higham, 2nd ed., Chapter 20, equations (20.27)-(20.28), tall case:
     a supplied `GeneralizedQRFactorization` connects the reconstructed
@@ -7109,6 +7612,158 @@ theorem GeneralizedQRFactorization.exists_unique_method_solution_of_tall_fullRow
     h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack,
     h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack⟩
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, tall full-associated exact-MGS
+    method package.
+
+    Exact MGS data for `Bᵀ` and for the column-reversed full transformed block
+    `A Q` construct the associated-row (20.28) display and then yield GQR data,
+    unique exact triangular solve coordinates, and the unique exact
+    equality-constrained least-squares minimizer. -/
+theorem GeneralizedQRFactorization.exists_unique_method_solution_of_tall_mgs_constraint_and_full_mgs_assoc_shape
+    {k p q : ℕ}
+    {A : Fin ((k + p) + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (hdiagB : ∀ j : Fin p,
+      gsColumnNorm2
+        (modifiedGramSchmidtVectors
+          (fun col : Fin (p + q) => fun row : Fin p => B row col)
+          j.val j) ≠ 0)
+    (hdiagAQ : ∀ Q : Fin (p + q) → Fin (p + q) → ℝ,
+      IsOrthogonal (p + q) Q →
+        ∀ j : Fin (p + q),
+          gsColumnNorm2
+            (modifiedGramSchmidtVectors
+              (rectPermuteCols Fin.revPerm
+                (matMulRect ((k + p) + q) (p + q) (p + q) A Q))
+              j.val j) ≠ 0)
+    {b : Fin ((k + p) + q) → ℝ} {d : Fin p → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ h : GeneralizedQRFactorization (k + p) p q A B,
+      (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+        rectMatMulVec h.S yz.1 = d ∧
+        rectMatMulVec h.L22 yz.2 =
+          (fun i : Fin q =>
+            matMulVec ((k + p) + q) (matTranspose h.U) b (Fin.natAdd (k + p) i) -
+              rectMatMulVec h.L21 yz.1 i) ∧
+        IsLSEMinimizer A b B d
+          (matMulVec (p + q) h.Q (Fin.append yz.1 yz.2))) ∧
+      (∃! x : Fin (p + q) → ℝ, IsLSEMinimizer A b B d x) := by
+  rcases
+    GeneralizedQRFactorization.exists_of_tall_mgs_constraint_and_full_mgs_assoc_shape
+      (A := A) (B := B) hdiagB hdiagAQ with
+    ⟨h⟩
+  exact ⟨h,
+    h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack,
+    h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, tall full-row-rank
+    full-associated exact-MGS method package.
+
+    Full row rank of `B` discharges the exact-MGS nonbreakdown hypotheses for
+    `Bᵀ`; nonbreakdown for the column-reversed full transformed block `A Q`
+    constructs the associated-row (20.28) display and then yields the same
+    unique exact method package. -/
+theorem GeneralizedQRFactorization.exists_unique_method_solution_of_tall_fullRowRank_constraint_and_full_mgs_assoc_shape
+    {k p q : ℕ}
+    {A : Fin ((k + p) + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (hdiagAQ : ∀ Q : Fin (p + q) → Fin (p + q) → ℝ,
+      IsOrthogonal (p + q) Q →
+        ∀ j : Fin (p + q),
+          gsColumnNorm2
+            (modifiedGramSchmidtVectors
+              (rectPermuteCols Fin.revPerm
+                (matMulRect ((k + p) + q) (p + q) (p + q) A Q))
+              j.val j) ≠ 0)
+    {b : Fin ((k + p) + q) → ℝ} {d : Fin p → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ h : GeneralizedQRFactorization (k + p) p q A B,
+      (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+        rectMatMulVec h.S yz.1 = d ∧
+        rectMatMulVec h.L22 yz.2 =
+          (fun i : Fin q =>
+            matMulVec ((k + p) + q) (matTranspose h.U) b (Fin.natAdd (k + p) i) -
+              rectMatMulVec h.L21 yz.1 i) ∧
+        IsLSEMinimizer A b B d
+          (matMulVec (p + q) h.Q (Fin.append yz.1 yz.2))) ∧
+      (∃! x : Fin (p + q) → ℝ, IsLSEMinimizer A b B d x) := by
+  rcases
+    GeneralizedQRFactorization.exists_of_tall_fullRowRank_constraint_and_full_mgs_assoc_shape
+      (A := A) (B := B) hB hdiagAQ with
+    ⟨h⟩
+  exact ⟨h,
+    h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack,
+    h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, tall exact-Householder method
+    package.
+
+    Exact MGS data for `Bᵀ` supplies the constraint block.  Exact Householder
+    QR supplies the associated-row full `AQ` display without requiring
+    exact-MGS nonbreakdown for the transformed `AQ` block. -/
+theorem GeneralizedQRFactorization.exists_unique_method_solution_of_tall_mgs_constraint_and_exact_householder_assoc_shape
+    {k p q : ℕ}
+    {A : Fin ((k + p) + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (hdiagB : ∀ j : Fin p,
+      gsColumnNorm2
+        (modifiedGramSchmidtVectors
+          (fun col : Fin (p + q) => fun row : Fin p => B row col)
+          j.val j) ≠ 0)
+    {b : Fin ((k + p) + q) → ℝ} {d : Fin p → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ h : GeneralizedQRFactorization (k + p) p q A B,
+      (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+        rectMatMulVec h.S yz.1 = d ∧
+        rectMatMulVec h.L22 yz.2 =
+          (fun i : Fin q =>
+            matMulVec ((k + p) + q) (matTranspose h.U) b (Fin.natAdd (k + p) i) -
+              rectMatMulVec h.L21 yz.1 i) ∧
+        IsLSEMinimizer A b B d
+          (matMulVec (p + q) h.Q (Fin.append yz.1 yz.2))) ∧
+      (∃! x : Fin (p + q) → ℝ, IsLSEMinimizer A b B d x) := by
+  rcases
+    GeneralizedQRFactorization.exists_of_tall_mgs_constraint_and_exact_householder_assoc_shape
+      (A := A) (B := B) hdiagB with
+    ⟨h⟩
+  exact ⟨h,
+    h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack,
+    h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, tall full-row-rank plus
+    exact-Householder method package.
+
+    Full row rank of `B` discharges the exact-MGS nonbreakdown hypotheses for
+    `Bᵀ`; exact Householder QR supplies the associated-row full `AQ` display
+    without a nonbreakdown assumption on `AQ`. -/
+theorem GeneralizedQRFactorization.exists_unique_method_solution_of_tall_fullRowRank_constraint_and_exact_householder_assoc_shape
+    {k p q : ℕ}
+    {A : Fin ((k + p) + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    {b : Fin ((k + p) + q) → ℝ} {d : Fin p → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ h : GeneralizedQRFactorization (k + p) p q A B,
+      (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+        rectMatMulVec h.S yz.1 = d ∧
+        rectMatMulVec h.L22 yz.2 =
+          (fun i : Fin q =>
+            matMulVec ((k + p) + q) (matTranspose h.U) b (Fin.natAdd (k + p) i) -
+              rectMatMulVec h.L21 yz.1 i) ∧
+        IsLSEMinimizer A b B d
+          (matMulVec (p + q) h.Q (Fin.append yz.1 yz.2))) ∧
+      (∃! x : Fin (p + q) → ℝ, IsLSEMinimizer A b B d x) := by
+  rcases
+    GeneralizedQRFactorization.exists_of_tall_fullRowRank_constraint_and_exact_householder_assoc_shape
+      (A := A) (B := B) hB with
+    ⟨h⟩
+  exact ⟨h,
+    h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack,
+    h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack⟩
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9, wide exact-MGS method package:
     the exact-MGS constraint construction for `Bᵀ`, the exact-MGS trailing-block
     associated-shape construction for the actual `A Q`, and the source rank
@@ -7190,6 +7845,153 @@ theorem GeneralizedQRFactorization.exists_unique_method_solution_of_wide_fullRow
       (A := A) (B := B) hB hdiagAQ with
     ⟨h⟩
   exact ⟨h,
+    h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack,
+    h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, wide exact-Householder method
+    package.
+
+    Exact MGS data for `B^T` supplies the constraint block. Exact Householder
+    QR supplies the associated-column full `AQ` display without requiring
+    exact-MGS nonbreakdown for the trailing square block. -/
+theorem GeneralizedQRFactorization.exists_unique_method_solution_of_wide_mgs_constraint_and_exact_householder_assoc_shape
+    {k r q : ℕ}
+    {A : Fin (r + q) → Fin ((k + r) + q) → ℝ}
+    {B : Fin (k + r) → Fin ((k + r) + q) → ℝ}
+    (hdiagB : ∀ j : Fin (k + r),
+      gsColumnNorm2
+        (modifiedGramSchmidtVectors
+          (fun col : Fin ((k + r) + q) => fun row : Fin (k + r) => B row col)
+          j.val j) ≠ 0)
+    {b : Fin (r + q) → ℝ} {d : Fin (k + r) → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ h : GeneralizedQRFactorization r (k + r) q A B,
+      (∃! yz : (Fin (k + r) → ℝ) × (Fin q → ℝ),
+        rectMatMulVec h.S yz.1 = d ∧
+        rectMatMulVec h.L22 yz.2 =
+          (fun i : Fin q =>
+            matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i) -
+              rectMatMulVec h.L21 yz.1 i) ∧
+        IsLSEMinimizer A b B d
+          (matMulVec ((k + r) + q) h.Q (Fin.append yz.1 yz.2))) ∧
+      (∃! x : Fin ((k + r) + q) → ℝ, IsLSEMinimizer A b B d x) := by
+  rcases
+    GeneralizedQRFactorization.exists_of_wide_mgs_constraint_and_exact_householder_assoc_shape
+      (A := A) (B := B) hdiagB with
+    ⟨h⟩
+  exact ⟨h,
+    h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack,
+    h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, wide full-row-rank plus
+    exact-Householder method package.
+
+    Full row rank of `B` discharges the exact-MGS nonbreakdown hypotheses for
+    `B^T`; exact Householder QR supplies the associated-column full `AQ`
+    display without a nonbreakdown assumption on the trailing square block. -/
+theorem GeneralizedQRFactorization.exists_unique_method_solution_of_wide_fullRowRank_constraint_and_exact_householder_assoc_shape
+    {k r q : ℕ}
+    {A : Fin (r + q) → Fin ((k + r) + q) → ℝ}
+    {B : Fin (k + r) → Fin ((k + r) + q) → ℝ}
+    {b : Fin (r + q) → ℝ} {d : Fin (k + r) → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ h : GeneralizedQRFactorization r (k + r) q A B,
+      (∃! yz : (Fin (k + r) → ℝ) × (Fin q → ℝ),
+        rectMatMulVec h.S yz.1 = d ∧
+        rectMatMulVec h.L22 yz.2 =
+          (fun i : Fin q =>
+            matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i) -
+              rectMatMulVec h.L21 yz.1 i) ∧
+        IsLSEMinimizer A b B d
+          (matMulVec ((k + r) + q) h.Q (Fin.append yz.1 yz.2))) ∧
+      (∃! x : Fin ((k + r) + q) → ℝ, IsLSEMinimizer A b B d x) := by
+  rcases
+    GeneralizedQRFactorization.exists_of_wide_fullRowRank_constraint_and_exact_householder_assoc_shape
+      (A := A) (B := B) hB with
+    ⟨h⟩
+  exact ⟨h,
+    h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack,
+    h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, tall exact-Householder method
+    package with the source nonsingularity consequence.
+
+    This attaches the post-(20.28) rank/nonsingularity equivalence to the
+    constructed exact-Householder associated-row route: under source full row
+    rank of `B` and full column rank of `[A; B]`, the returned exact GQR data
+    has nonzero diagonals in the triangular `S` and `L22` blocks and gives the
+    unique exact triangular solve coordinates and LSE minimizer. -/
+theorem GeneralizedQRFactorization.exists_unique_method_solution_with_s_l22_diag_ne_zero_of_tall_fullRowRank_constraint_and_exact_householder_assoc_shape
+    {k p q : ℕ}
+    {A : Fin ((k + p) + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    {b : Fin ((k + p) + q) → ℝ} {d : Fin p → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ h : GeneralizedQRFactorization (k + p) p q A B,
+      (∀ i : Fin p, h.S i i ≠ 0) ∧
+      (∀ i : Fin q, h.L22 i i ≠ 0) ∧
+      (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+        rectMatMulVec h.S yz.1 = d ∧
+        rectMatMulVec h.L22 yz.2 =
+          (fun i : Fin q =>
+            matMulVec ((k + p) + q) (matTranspose h.U) b (Fin.natAdd (k + p) i) -
+              rectMatMulVec h.L21 yz.1 i) ∧
+        IsLSEMinimizer A b B d
+          (matMulVec (p + q) h.Q (Fin.append yz.1 yz.2))) ∧
+      (∃! x : Fin (p + q) → ℝ, IsLSEMinimizer A b B d x) := by
+  rcases
+    GeneralizedQRFactorization.exists_of_tall_fullRowRank_constraint_and_exact_householder_assoc_shape
+      (A := A) (B := B) hB with
+    ⟨h⟩
+  have hdiag :
+      (∀ i : Fin p, h.S i i ≠ 0) ∧
+        (∀ i : Fin q, h.L22 i i ≠ 0) :=
+    (h.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero).1
+      ⟨hB, hstack⟩
+  exact ⟨h, hdiag.1, hdiag.2,
+    h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack,
+    h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.9, wide exact-Householder method
+    package with the source nonsingularity consequence.
+
+    This is the associated-column analogue of
+    `exists_unique_method_solution_with_s_l22_diag_ne_zero_of_tall_fullRowRank_constraint_and_exact_householder_assoc_shape`.
+    Exact Householder QR constructs the wide (20.28) shape, and the source rank
+    assumptions give nonzero diagonals in the triangular `S` and `L22` blocks
+    together with the unique exact GQR method solution. -/
+theorem GeneralizedQRFactorization.exists_unique_method_solution_with_s_l22_diag_ne_zero_of_wide_fullRowRank_constraint_and_exact_householder_assoc_shape
+    {k r q : ℕ}
+    {A : Fin (r + q) → Fin ((k + r) + q) → ℝ}
+    {B : Fin (k + r) → Fin ((k + r) + q) → ℝ}
+    {b : Fin (r + q) → ℝ} {d : Fin (k + r) → ℝ}
+    (hB : LSEFullRowRank B)
+    (hstack : LSEStackedFullColumnRank A B) :
+    ∃ h : GeneralizedQRFactorization r (k + r) q A B,
+      (∀ i : Fin (k + r), h.S i i ≠ 0) ∧
+      (∀ i : Fin q, h.L22 i i ≠ 0) ∧
+      (∃! yz : (Fin (k + r) → ℝ) × (Fin q → ℝ),
+        rectMatMulVec h.S yz.1 = d ∧
+        rectMatMulVec h.L22 yz.2 =
+          (fun i : Fin q =>
+            matMulVec (r + q) (matTranspose h.U) b (Fin.natAdd r i) -
+              rectMatMulVec h.L21 yz.1 i) ∧
+        IsLSEMinimizer A b B d
+          (matMulVec ((k + r) + q) h.Q (Fin.append yz.1 yz.2))) ∧
+      (∃! x : Fin ((k + r) + q) → ℝ, IsLSEMinimizer A b B d x) := by
+  rcases
+    GeneralizedQRFactorization.exists_of_wide_fullRowRank_constraint_and_exact_householder_assoc_shape
+      (A := A) (B := B) hB with
+    ⟨h⟩
+  have hdiag :
+      (∀ i : Fin (k + r), h.S i i ≠ 0) ∧
+        (∀ i : Fin q, h.L22 i i ≠ 0) :=
+    (h.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero).1
+      ⟨hB, hstack⟩
+  exact ⟨h, hdiag.1, hdiag.2,
     h.exists_unique_solve_coordinates_of_fullRowRank_stackedFullColumnRank hB hstack,
     h.exists_unique_lse_minimizer_of_fullRowRank_stackedFullColumnRank hB hstack⟩
 
@@ -7383,5 +8185,93 @@ theorem exists_lse_minimizer_of_fullRowRank_stackedFullColumnRank
       (A := A) (B := B) (b := b) (d := d) hB hstack with
     ⟨x, hx, _huniq⟩
   exact ⟨x, hx⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, exact perturbed-data
+    GQR core for the same-constraint-right-hand-side branch.
+
+    The finite-precision theorem says the computed GQR method produces
+    perturbations `DeltaA`, `DeltaB`, `Deltab` for which the computed vector is
+    the exact solution of the perturbed LSE problem with the original `d`.
+    This theorem isolates the exact algebra behind that sentence: once such
+    perturbed data satisfy the source rank conditions, exact GQR constructs the
+    method factors, unique triangular coordinates, and unique minimizer for the
+    perturbed problem.  It does not prove the floating-point algorithm supplies
+    these perturbations or the norm bounds. -/
+theorem GeneralizedQRFactorization.exists_unique_method_solution_of_theorem20_10_perturbed_same_d
+    {r p q : ℕ}
+    (A DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
+    (B DeltaB : Fin p → Fin (p + q) → ℝ)
+    (b Deltab : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hB :
+      LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (hstack :
+      LSEStackedFullColumnRank
+        (fun i j => A i j + DeltaA i j)
+        (fun i j => B i j + DeltaB i j)) :
+    let Apert : Fin (r + q) → Fin (p + q) → ℝ :=
+      fun i j => A i j + DeltaA i j
+    let Bpert : Fin p → Fin (p + q) → ℝ :=
+      fun i j => B i j + DeltaB i j
+    let bpert : Fin (r + q) → ℝ := fun i => b i + Deltab i
+    ∃ h : GeneralizedQRFactorization r p q Apert Bpert,
+      (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+        rectMatMulVec h.S yz.1 = d ∧
+        rectMatMulVec h.L22 yz.2 =
+          (fun i : Fin q =>
+            matMulVec (r + q) (matTranspose h.U) bpert (Fin.natAdd r i) -
+              rectMatMulVec h.L21 yz.1 i) ∧
+        IsLSEMinimizer Apert bpert Bpert d
+          (matMulVec (p + q) h.Q (Fin.append yz.1 yz.2))) ∧
+      (∃! x : Fin (p + q) → ℝ, IsLSEMinimizer Apert bpert Bpert d x) := by
+  dsimp
+  exact
+    GeneralizedQRFactorization.exists_unique_method_solution_of_fullRowRank_stackedFullColumnRank
+      (A := fun i j => A i j + DeltaA i j)
+      (B := fun i j => B i j + DeltaB i j)
+      (b := fun i => b i + Deltab i) (d := d) hB hstack
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, exact perturbed-data
+    GQR core for the perturbed-constraint-right-hand-side branch.
+
+    This is the exact algebraic counterpart of the second formulation in
+    Theorem 20.10, where the computed vector solves a perturbed LSE problem
+    with `d + Deltad`.  The theorem reuses the constructed exact GQR method
+    package for the perturbed `A` and `B`; the remaining finite-precision work
+    is to derive the displayed norm bounds for `DeltaA`, `DeltaB`, `Deltab`,
+    and `Deltad` from the computed GQR algorithm. -/
+theorem GeneralizedQRFactorization.exists_unique_method_solution_of_theorem20_10_perturbed_d
+    {r p q : ℕ}
+    (A DeltaA : Fin (r + q) → Fin (p + q) → ℝ)
+    (B DeltaB : Fin p → Fin (p + q) → ℝ)
+    (b Deltab : Fin (r + q) → ℝ) (d Deltad : Fin p → ℝ)
+    (hB :
+      LSEFullRowRank (fun i j => B i j + DeltaB i j))
+    (hstack :
+      LSEStackedFullColumnRank
+        (fun i j => A i j + DeltaA i j)
+        (fun i j => B i j + DeltaB i j)) :
+    let Apert : Fin (r + q) → Fin (p + q) → ℝ :=
+      fun i j => A i j + DeltaA i j
+    let Bpert : Fin p → Fin (p + q) → ℝ :=
+      fun i j => B i j + DeltaB i j
+    let bpert : Fin (r + q) → ℝ := fun i => b i + Deltab i
+    let dpert : Fin p → ℝ := fun i => d i + Deltad i
+    ∃ h : GeneralizedQRFactorization r p q Apert Bpert,
+      (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+        rectMatMulVec h.S yz.1 = dpert ∧
+        rectMatMulVec h.L22 yz.2 =
+          (fun i : Fin q =>
+            matMulVec (r + q) (matTranspose h.U) bpert (Fin.natAdd r i) -
+              rectMatMulVec h.L21 yz.1 i) ∧
+        IsLSEMinimizer Apert bpert Bpert dpert
+          (matMulVec (p + q) h.Q (Fin.append yz.1 yz.2))) ∧
+      (∃! x : Fin (p + q) → ℝ, IsLSEMinimizer Apert bpert Bpert dpert x) := by
+  dsimp
+  exact
+    GeneralizedQRFactorization.exists_unique_method_solution_of_fullRowRank_stackedFullColumnRank
+      (A := fun i j => A i j + DeltaA i j)
+      (B := fun i j => B i j + DeltaB i j)
+      (b := fun i => b i + Deltab i)
+      (d := fun i => d i + Deltad i) hB hstack
 
 end LeanFpAnalysis.FP

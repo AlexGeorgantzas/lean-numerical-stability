@@ -20,6 +20,66 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-06-29 source-lower-block canonical active-pivot checkpoint:
+  the Eq.13.22/Eq.13.23 source local lower-block witness route now has
+  `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_source_lblock_budgets_exact_kappa_of_pivotInv_eq_nonsingInv`,
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_source_lblock_budgets_exact_kappa_of_pivotInv_eq_nonsingInv`,
+  their determinant/canonical-full-inverse variants, and
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_source_lblock_budgets_exact_kappa_of_pivotInv_eq_nonsingInv_of_det_ne_zero_of_product_bound_diag_update`.
+  These derive the pivot right-inverse certificate from active pivot determinant
+  nonzero plus `pivotInv = nonsingInv`, removing another proof-artifact premise
+  from the Problem 13.4 source-shaped Eq.13.22/Eq.13.23 route.  The local
+  lower-block estimates, scalar comparison table, active BDD product/update
+  data, and Theorem 13.6 cited implementation estimates remain open.
+- 2026-06-29 base-comparison canonical active-pivot checkpoint:
+  added
+  `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_base_comparisons_exact_kappa_of_pivotInv_eq_nonsingInv`,
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_base_comparisons_exact_kappa_of_pivotInv_eq_nonsingInv`,
+  and
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_base_comparisons_exact_kappa_of_product_bound_diag_update_of_pivotInv_eq_nonsingInv`.
+  These route the stage-local-growth base-comparison witness layer through
+  active pivot determinant nonzero plus `pivotInv = nonsingInv`, removing
+  explicit active pivot right-inverse certificates from that Problem 13.4
+  proof surface.  Verification used direct `BlockLU.lean`, focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet `examples/LibraryLookup.lean`
+  with empty stderr, `git diff --check`, touched-file marker scan, and
+  focused `#print axioms`; the axiom output was only `propext`,
+  `Classical.choice`, and `Quot.sound`.  The base comparison, condition
+  comparison table, active BDD product/update data, and Theorem 13.6 cited
+  implementation estimates remain open.
+- 2026-06-29 base-comparison determinant/full-inverse checkpoint:
+  added
+  `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_base_comparisons_exact_kappa_of_pivotInv_eq_nonsingInv_of_det_ne_zero`,
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_base_comparisons_exact_kappa_of_pivotInv_eq_nonsingInv_of_det_ne_zero`,
+  and
+  `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_base_comparisons_exact_kappa_of_pivotInv_eq_nonsingInv_of_det_ne_zero_of_product_bound_diag_update`.
+  These specialize the base-comparison witness route to the source-facing full
+  inverse `nonsingInv (m*r) (blockMatrixFlatFin Ablk)` and derive the full
+  positive denominator/right-inverse certificate from
+  `det(blockMatrixFlatFin Ablk) ≠ 0`, while keeping the base comparison,
+  condition comparison, active BDD product/update data, and Theorem 13.6 cited
+  implementation estimates open.  Verification used direct `BlockLU.lean`,
+  focused `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet
+  `examples/LibraryLookup.lean` with empty stderr, `git diff --check`, touched
+  Lean marker scan, and focused `#print axioms`; the axiom output was only
+  `propext`, `Classical.choice`, and `Quot.sound`.
+- 2026-06-29 plain inverse-comparison budget checkpoint:
+  added `higham13_stage_local_source_lblock_budget_le_of_growth_plain_inverse_bound`,
+  `higham13_algorithm13_3_multiplier_bounds_from_stageLocalGrowth_plain_inverse_bound_exact_kappa`,
+  `higham13_eq13_22_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa`,
+  and `higham13_eq13_23_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa`.
+  These refine the direct inverse route by replacing the previous source
+  obligation `||A_local^{-1}||_max <= rhoFull * ||A^{-1}||_max` with the
+  sharper Schur-tail inverse comparison
+  `||A_local^{-1}||_max <= ||A^{-1}||_max`; the extra `rhoFull` factor is
+  derived from `rhoFull >= 1` because the matrix-stage history contains the
+  input.  The Schur-tail inverse comparison itself, active BDD product/update
+  data, active pivot determinant/equality table, and Theorem 13.6 cited
+  implementation estimates remain open.  Verified by focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet public lookup with empty
+  stderr, `git diff --check`, marker/conflict-marker scans, and focused
+  `#print axioms` reporting only `propext`, `Classical.choice`, and
+  `Quot.sound`.
 - 2026-06-29 matrix-`∞` source-norm upper endpoint checkpoint:
   `blockInfNorm` is the blockwise maximum of matrix-`∞` operator norms, with
   helpers `block_le_blockInfNorm`, `blockInfNorm_nonneg`,

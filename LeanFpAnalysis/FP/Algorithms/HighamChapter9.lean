@@ -14759,6 +14759,37 @@ theorem higham9_11_banded_growth_factor_solve_tight (fp : FPModel) (n : ℕ)
   banded_growth_factor_solve_tight fp n A L_hat U_hat b ρ_bound hρ
     hL_diag hU_diag hLU hn hn3 hGrowth
 
+/-- **Theorem 9.11**, monotone form of the banded growth-factor solve bound.
+
+If the componentwise growth estimate has been proved with a smaller constant
+`rho_bound`, the same solve-level theorem may be consumed at any larger
+nonnegative target constant.  This is the generic version of the later
+Bohte-specialized widening wrapper. -/
+theorem higham9_11_banded_growth_factor_solve_tight_of_growth_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (ρ_bound ρ_target : ℝ)
+    (hρ_target : 0 ≤ ρ_target)
+    (hρ_le : ρ_bound ≤ ρ_target)
+    (hL_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hGrowth : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ ρ_bound * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤ ρ_target * gamma fp (3 * n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_11_banded_growth_factor_solve_tight fp n A L_hat U_hat b
+    ρ_target hρ_target hL_diag hU_diag hLU hn hn3
+    (fun i j =>
+      le_trans (hGrowth i j)
+        (mul_le_mul_of_nonneg_right hρ_le (abs_nonneg _)))
+
 /-- **Theorem 9.11**, solve bound specialized to the printed Bohte scalar
 expression.  The theorem still requires the source growth hypothesis with this
 constant; it only proves the scalar nonnegativity needed by the generic
@@ -17114,6 +17145,28 @@ theorem higham9_14_source_f_bound_of_LUFactSpec_fl_triangular_solves_gamma_le
     fp n A L_hat U_hat b c 0 u hu hn (LUFactSpec.to_LUBackwardError_zero hLU)
     hu hγ_le_u hU_diag hAbsLU_le
 
+/-- **Theorem 9.14**, exact-LU factor plus actual triangular solves with the
+natural `γ_n` coefficient. -/
+theorem higham9_14_source_f_bound_of_LUFactSpec_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (c : ℝ)
+    (hn : gammaValid fp n)
+    (hLU : LUFactSpec n A L_hat U_hat)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ c * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        c * higham9_14_f (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_f_bound_of_LUFactSpec_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b c (gamma fp n) (gamma_nonneg fp hn) hn
+    hLU le_rfl hU_diag hAbsLU_le
+
 /-- **Theorem 9.14**, exact-LU factor plus actual triangular solves with a
 constant-growth final `h(u)` coefficient.
 
@@ -17147,6 +17200,29 @@ theorem higham9_14_source_h_bound_of_LUFactSpec_fl_triangular_solves_const_gamma
     mul_le_mul_of_nonneg_left hf_le_h hc
   exact (hDeltaA_bound i j).trans
     (mul_le_mul_of_nonneg_right hc_bound (abs_nonneg (A i j)))
+
+/-- **Theorem 9.14**, exact-LU factor plus actual triangular solves with a
+constant-growth final `h(γ_n)` coefficient. -/
+theorem higham9_14_source_h_bound_of_LUFactSpec_fl_triangular_solves_const_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (c : ℝ) (hc : 0 ≤ c)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hLU : LUFactSpec n A L_hat U_hat)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ c * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        c * higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_LUFactSpec_fl_triangular_solves_const_gamma_le
+    fp n A L_hat U_hat b c (gamma fp n) hc (gamma_nonneg fp hn)
+    hγ_lt_one hn hLU le_rfl hU_diag hAbsLU_le
 
 /-- **Theorem 9.14**, LU-backward-error plus actual triangular solves with a
 constant-growth final `h(u)` coefficient.
@@ -17185,6 +17261,29 @@ theorem higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_const_
     mul_le_mul_of_nonneg_left hf_le_h hc
   exact (hDeltaA_bound i j).trans
     (mul_le_mul_of_nonneg_right hc_bound (abs_nonneg (A i j)))
+
+/-- **Theorem 9.14**, LU-backward-error plus actual triangular solves with a
+constant-growth final `h(γ_n)` coefficient. -/
+theorem higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_const_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (c : ℝ) (hc : 0 ≤ c)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ c * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        c * higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_const_gamma_le
+    fp n A L_hat U_hat b c (gamma fp n) (gamma fp n) hc
+    (gamma_nonneg fp hn) hγ_lt_one hn hLU le_rfl le_rfl hU_diag hAbsLU_le
 
 /-- **Theorem 9.14**, source-model production for the final `h(u)` bound.
 
@@ -17229,6 +17328,28 @@ theorem higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_gamma_
     n A L_hat U_hat y_hat x_hat b u hu hu_lt_one hAbsLU_le
     DeltaA_LU DeltaL DeltaU h20 h21
 
+/-- **Theorem 9.14**, LU-backward-error plus actual triangular solves with
+Higham's final `h(γ_n)` coefficient. -/
+theorem higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b (gamma fp n) (gamma fp n)
+    (gamma_nonneg fp hn) hγ_lt_one hn hLU le_rfl le_rfl hU_diag hAbsLU_le
+
 /-- **Theorem 9.14**, exact-LU factor plus actual triangular solves for
 Higham's final `h(u)` bound.
 
@@ -17256,6 +17377,28 @@ theorem higham9_14_source_h_bound_of_LUFactSpec_fl_triangular_solves_gamma_le
   higham9_14_source_h_bound_of_LUBackwardError_fl_triangular_solves_gamma_le
     fp n A L_hat U_hat b 0 u hu hu_lt_one hn
     (LUFactSpec.to_LUBackwardError_zero hLU) hu hγ_le_u hU_diag hAbsLU_le
+
+/-- **Theorem 9.14**, exact-LU factor plus actual triangular solves with
+Higham's final `h(γ_n)` coefficient. -/
+theorem higham9_14_source_h_bound_of_LUFactSpec_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hLU : LUFactSpec n A L_hat U_hat)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hAbsLU_le : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤ |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_source_h_bound_of_LUFactSpec_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b (gamma fp n) (gamma_nonneg fp hn)
+    hγ_lt_one hn hLU le_rfl hU_diag hAbsLU_le
 
 /-- **Theorem 9.14**, dense Doolittle certificate plus actual triangular solves.
 
@@ -21024,6 +21167,62 @@ theorem higham9_15_not_exists_positive_le_matMulVec_of_spectralRadius_lt_one
       hn C x hC_nonneg hx_pos hrho
   exact (not_lt_of_ge (hle i)) hlt
 
+/-- **Theorem 9.15 spectral-majorant support**.  Under `rho(C) < 1`, a
+nonnegative majorant has no strictly positive fixed point.  This is the
+fixed-point form of the componentwise domination obstruction used by the
+Barrlund--Sun spectral-radius route. -/
+theorem higham9_15_not_exists_positive_fixedPoint_of_spectralRadius_lt_one
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (hC_nonneg : ∀ i j : Fin n, 0 ≤ C i j)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) < 1) :
+    ¬ ∃ x : Fin n → ℝ,
+      (∀ i : Fin n, 0 < x i) ∧
+        ∀ i : Fin n, matMulVec n C x i = x i := by
+  rintro ⟨x, hx_pos, hfixed⟩
+  exact
+    (higham9_15_not_exists_positive_le_matMulVec_of_spectralRadius_lt_one
+      hn C hC_nonneg hrho)
+      ⟨x, hx_pos, fun i => le_of_eq (hfixed i).symm⟩
+
+/-- **Theorem 9.15 spectral-majorant support**.  A positive vector that is
+componentwise dominated by its nonnegative majorant image forces the majorant
+matrix to have spectral radius at least one.  This is the forward
+contradiction form of the `rho(C) < 1` obstruction. -/
+theorem higham9_15_spectralRadius_ge_one_of_positive_le_matMulVec
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (x : Fin n → ℝ)
+    (hC_nonneg : ∀ i j : Fin n, 0 ≤ C i j)
+    (hx_pos : ∀ i : Fin n, 0 < x i)
+    (hle : ∀ i : Fin n, x i ≤ matMulVec n C x i) :
+    (1 : ENNReal) ≤
+      spectralRadius ℂ
+        (Matrix.toLin'
+          (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) := by
+  have hsub : ∀ i : Fin n, (1 : ℝ) * x i ≤ matMulVec n C x i := by
+    intro i
+    simpa [one_mul] using hle i
+  simpa using
+    (ch7_toLin_spectralRadius_ge_of_positive_right_subeigenvector
+      hn C 1 x hC_nonneg (by norm_num) hx_pos hsub)
+
+/-- **Theorem 9.15 spectral-majorant support**.  A positive fixed point of a
+nonnegative majorant forces spectral radius at least one. -/
+theorem higham9_15_spectralRadius_ge_one_of_positive_fixedPoint
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (x : Fin n → ℝ)
+    (hC_nonneg : ∀ i j : Fin n, 0 ≤ C i j)
+    (hx_pos : ∀ i : Fin n, 0 < x i)
+    (hfixed : ∀ i : Fin n, matMulVec n C x i = x i) :
+    (1 : ENNReal) ≤
+      spectralRadius ℂ
+        (Matrix.toLin'
+          (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) :=
+  higham9_15_spectralRadius_ge_one_of_positive_le_matMulVec
+    hn C x hC_nonneg hx_pos (fun i => le_of_eq (hfixed i).symm)
+
 /-- **Theorem 9.15 spectral-majorant support**.  Irreducibility upgrades a
 nonzero nonnegative right subeigenvector to a positive one, so the Chapter 7
 Collatz/Gelfand lower bound applies to nonzero nonnegative data. -/
@@ -21124,6 +21323,66 @@ theorem higham9_15_not_exists_nonzero_nonneg_le_matMulVec_of_irreducible_spectra
     higham9_15_exists_matMulVec_lt_of_irreducible_nonzero_nonneg_spectralRadius_lt_one
       hn C x hC_irred hx_nonneg hx_ne hrho
   exact (not_lt_of_ge (hle i)) hlt
+
+/-- **Theorem 9.15 spectral-majorant support**.  Under irreducibility and
+`rho(C) < 1`, a nonnegative majorant has no nonzero nonnegative fixed point.
+This packages the Perron-style positivity upgrade in the fixed-point form
+needed by componentwise Schur-majorant arguments. -/
+theorem higham9_15_not_exists_nonzero_nonneg_fixedPoint_of_irreducible_spectralRadius_lt_one
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (hC_irred :
+      Matrix.IsIrreducible (Matrix.of C : Matrix (Fin n) (Fin n) ℝ))
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) < 1) :
+    ¬ ∃ x : Fin n → ℝ,
+      x ≠ 0 ∧ (∀ i : Fin n, 0 ≤ x i) ∧
+        ∀ i : Fin n, matMulVec n C x i = x i := by
+  rintro ⟨x, hx_ne, hx_nonneg, hfixed⟩
+  exact
+    (higham9_15_not_exists_nonzero_nonneg_le_matMulVec_of_irreducible_spectralRadius_lt_one
+      hn C hC_irred hrho)
+      ⟨x, hx_ne, hx_nonneg, fun i => le_of_eq (hfixed i).symm⟩
+
+/-- **Theorem 9.15 spectral-majorant support**.  In the irreducible case, a
+nonzero nonnegative vector dominated by its majorant image forces spectral
+radius at least one. -/
+theorem higham9_15_irreducible_spectralRadius_ge_one_of_nonzero_nonneg_le_matMulVec
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (x : Fin n → ℝ)
+    (hC_irred :
+      Matrix.IsIrreducible (Matrix.of C : Matrix (Fin n) (Fin n) ℝ))
+    (hx_ne : x ≠ 0)
+    (hx_nonneg : ∀ i : Fin n, 0 ≤ x i)
+    (hle : ∀ i : Fin n, x i ≤ matMulVec n C x i) :
+    (1 : ENNReal) ≤
+      spectralRadius ℂ
+        (Matrix.toLin'
+          (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) := by
+  have hsub : ∀ i : Fin n, (1 : ℝ) * x i ≤ matMulVec n C x i := by
+    intro i
+    simpa [one_mul] using hle i
+  simpa using
+    (higham9_15_irreducible_nonneg_subeigen_spectralRadius_ge
+      hn C 1 x hC_irred (by norm_num) hx_nonneg hx_ne hsub)
+
+/-- **Theorem 9.15 spectral-majorant support**.  In the irreducible case, a
+nonzero nonnegative fixed point forces spectral radius at least one. -/
+theorem higham9_15_irreducible_spectralRadius_ge_one_of_nonzero_nonneg_fixedPoint
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (x : Fin n → ℝ)
+    (hC_irred :
+      Matrix.IsIrreducible (Matrix.of C : Matrix (Fin n) (Fin n) ℝ))
+    (hx_ne : x ≠ 0)
+    (hx_nonneg : ∀ i : Fin n, 0 ≤ x i)
+    (hfixed : ∀ i : Fin n, matMulVec n C x i = x i) :
+    (1 : ENNReal) ≤
+      spectralRadius ℂ
+        (Matrix.toLin'
+          (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) :=
+  higham9_15_irreducible_spectralRadius_ge_one_of_nonzero_nonneg_le_matMulVec
+    hn C x hC_irred hx_ne hx_nonneg (fun i => le_of_eq (hfixed i).symm)
 
 /-- **Theorem 9.15**, one-step Frobenius nonlinear bound from the
 componentwise normalized split equation. -/

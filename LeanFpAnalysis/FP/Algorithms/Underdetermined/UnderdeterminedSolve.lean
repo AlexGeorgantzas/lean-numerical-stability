@@ -1622,6 +1622,76 @@ theorem higham21_lemma21_2_symmetrized_min_norm_of_gram_pseudoinverse_product_bu
       (by simpa [Bplus] using hProduct)
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    scalar source-factor budget for the concrete perturbed-pseudoinverse route.
+    The printed estimates `alpha <= rho1`, `beta <= rho2`, and
+    `eta <= (1 - rho2)^{-1}` imply the product budget in the orientation used
+    by the concrete Gram-pseudoinverse handoff. -/
+theorem higham21_lemma21_2_product_budget_of_source_factor_bounds
+    (rho1 rho2 alpha beta eta : ℝ)
+    (hsmall : 3 * max rho1 rho2 < 1)
+    (halpha : 0 ≤ alpha)
+    (hbeta : 0 ≤ beta)
+    (heta : 0 ≤ eta)
+    (halpha_le : alpha ≤ rho1)
+    (hbeta_le : beta ≤ rho2)
+    (heta_le : eta ≤ (1 - rho2)⁻¹) :
+    eta * (alpha + beta) ≤ (rho1 + rho2) / (1 - rho2) := by
+  have hbudget :
+      (alpha + beta) * eta ≤ (rho1 + rho2) / (1 - rho2) :=
+    higham21_lemma21_2_product_budget_of_separate_bounds_and_dual_factor
+      rho1 rho2 alpha beta eta hsmall halpha hbeta heta halpha_le
+      hbeta_le heta_le
+  simpa [mul_comm] using hbudget
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    concrete Gram-pseudoinverse handoff with the scalar product budget derived
+    from source-shaped perturbation and pseudoinverse-factor bounds.  The
+    remaining matrix perturbation work is still the perturbed Gram
+    nonsingularity and the perturbed-pseudoinverse operator estimate. -/
+theorem higham21_lemma21_2_symmetrized_min_norm_of_gram_pseudoinverse_source_factors
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (rho1 rho2 alpha beta eta : ℝ)
+    (hsq : vecNorm2Sq x ≠ 0)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hdet :
+      Matrix.det
+          (rectGram (fun i j => A i j + DeltaA2 i j) :
+            Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hxTranspose :
+      x =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : 3 * max rho1 rho2 < 1)
+    (halpha : 0 ≤ alpha)
+    (hbeta : 0 ≤ beta)
+    (heta : 0 ≤ eta)
+    (halpha_le : alpha ≤ rho1)
+    (hbeta_le : beta ≤ rho2)
+    (heta_le : eta ≤ (1 - rho2)⁻¹)
+    (hDeltaA1Op : rectOpNorm2Le DeltaA1 alpha)
+    (hDeltaA2Op : rectOpNorm2Le DeltaA2 beta)
+    (hBplusOp :
+      rectOpNorm2Le
+        (undetAplusOfGramNonsingInv (fun i j => A i j + DeltaA2 i j))
+        eta) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j)
+      b x :=
+  higham21_lemma21_2_symmetrized_min_norm_of_gram_pseudoinverse_product_budget
+    A x DeltaA1 DeltaA2 b y rho1 rho2 alpha beta eta hsq hDeltaA1
+    hdet hxTranspose hsmall halpha hbeta heta
+    (higham21_lemma21_2_product_budget_of_source_factor_bounds
+      rho1 rho2 alpha beta eta hsmall halpha hbeta heta halpha_le
+      hbeta_le heta_le)
+    hDeltaA1Op hDeltaA2Op hBplusOp
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     case-split minimum-norm handoff for the source proof.  If `x = 0`, the
     single perturbation is `DeltaA2`; otherwise the existing projector/beta
     argument applies to the symmetrized perturbation.  The nonzero branch is
@@ -1677,6 +1747,166 @@ theorem higham21_lemma21_2_single_min_norm_of_gram_pseudoinverse_product_budget
         hdet hxTranspose hsmall halpha hbeta heta hbudget hDeltaA1Op
         hDeltaA2Op hBplusOp
     simpa [undetLemma21_2SinglePerturbation, hx] using hnonzero
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    case-split handoff using source-shaped factor bounds instead of an explicit
+    scalar product-budget certificate.  The theorem still exposes the genuine
+    nonzero-branch matrix perturbation obligations. -/
+theorem higham21_lemma21_2_single_min_norm_of_gram_pseudoinverse_source_factors
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (rho1 rho2 alpha beta eta : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hdet :
+      Matrix.det
+          (rectGram (fun i j => A i j + DeltaA2 i j) :
+            Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hxTranspose :
+      x =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : 3 * max rho1 rho2 < 1)
+    (halpha : 0 ≤ alpha)
+    (hbeta : 0 ≤ beta)
+    (heta : 0 ≤ eta)
+    (halpha_le : alpha ≤ rho1)
+    (hbeta_le : beta ≤ rho2)
+    (heta_le : eta ≤ (1 - rho2)⁻¹)
+    (hDeltaA1Op : rectOpNorm2Le DeltaA1 alpha)
+    (hDeltaA2Op : rectOpNorm2Le DeltaA2 beta)
+    (hBplusOp :
+      rectOpNorm2Le
+        (undetAplusOfGramNonsingInv (fun i j => A i j + DeltaA2 i j))
+        eta) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j)
+      b x := by
+  by_cases hx : x = 0
+  · have hzero :
+        RectMinNormSolution m n (fun i j => A i j + DeltaA2 i j) b x :=
+      higham21_lemma21_2_zero_branch_min_norm_of_deltaA2
+        A x DeltaA1 DeltaA2 b hx hDeltaA1
+    simpa [undetLemma21_2SinglePerturbation, hx] using hzero
+  · have hsq : vecNorm2Sq x ≠ 0 :=
+      higham21_vecNorm2Sq_ne_zero_of_ne_zero hx
+    have hnonzero :
+        RectMinNormSolution m n
+          (fun i j => A i j +
+            undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j)
+          b x :=
+      higham21_lemma21_2_symmetrized_min_norm_of_gram_pseudoinverse_source_factors
+        A x DeltaA1 DeltaA2 b y rho1 rho2 alpha beta eta hsq hDeltaA1
+        hdet hxTranspose hsmall halpha hbeta heta halpha_le hbeta_le
+        heta_le hDeltaA1Op hDeltaA2Op hBplusOp
+    simpa [undetLemma21_2SinglePerturbation, hx] using hnonzero
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    source-shaped case split whose nonzero-branch certificates are only
+    required when `x != 0`.  This records that the `x = 0` branch needs only the
+    first perturbed equation, while the projector/beta branch still needs the
+    perturbed-Gram and pseudoinverse product-budget certificates. -/
+theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_certificates
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (rho1 rho2 alpha beta eta : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hdet : x ≠ 0 →
+      Matrix.det
+          (rectGram (fun i j => A i j + DeltaA2 i j) :
+            Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hxTranspose : x ≠ 0 →
+      x =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : x ≠ 0 → 3 * max rho1 rho2 < 1)
+    (halpha : x ≠ 0 → 0 ≤ alpha)
+    (hbeta : x ≠ 0 → 0 ≤ beta)
+    (heta : x ≠ 0 → 0 ≤ eta)
+    (hbudget : x ≠ 0 →
+      eta * (alpha + beta) ≤ (rho1 + rho2) / (1 - rho2))
+    (hDeltaA1Op : x ≠ 0 → rectOpNorm2Le DeltaA1 alpha)
+    (hDeltaA2Op : x ≠ 0 → rectOpNorm2Le DeltaA2 beta)
+    (hBplusOp : x ≠ 0 →
+      rectOpNorm2Le
+        (undetAplusOfGramNonsingInv (fun i j => A i j + DeltaA2 i j))
+        eta) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j)
+      b x := by
+  by_cases hx : x = 0
+  · have hzero :
+        RectMinNormSolution m n (fun i j => A i j + DeltaA2 i j) b x :=
+      higham21_lemma21_2_zero_branch_min_norm_of_deltaA2
+        A x DeltaA1 DeltaA2 b hx hDeltaA1
+    simpa [undetLemma21_2SinglePerturbation, hx] using hzero
+  · exact
+      higham21_lemma21_2_single_min_norm_of_gram_pseudoinverse_product_budget
+        A x DeltaA1 DeltaA2 b y rho1 rho2 alpha beta eta hDeltaA1
+        (hdet hx) (hxTranspose hx) (hsmall hx) (halpha hx) (hbeta hx)
+        (heta hx) (hbudget hx) (hDeltaA1Op hx) (hDeltaA2Op hx)
+        (hBplusOp hx)
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    guarded source-factor case split.  The zero branch has no perturbation
+    certificates; the nonzero branch derives the scalar product budget from
+    source-shaped factor bounds and still exposes only the genuine matrix
+    perturbation obligations. -/
+theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_source_factors
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (rho1 rho2 alpha beta eta : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hdet : x ≠ 0 →
+      Matrix.det
+          (rectGram (fun i j => A i j + DeltaA2 i j) :
+            Matrix (Fin m) (Fin m) ℝ) ≠ 0)
+    (hxTranspose : x ≠ 0 →
+      x =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : x ≠ 0 → 3 * max rho1 rho2 < 1)
+    (halpha : x ≠ 0 → 0 ≤ alpha)
+    (hbeta : x ≠ 0 → 0 ≤ beta)
+    (heta : x ≠ 0 → 0 ≤ eta)
+    (halpha_le : x ≠ 0 → alpha ≤ rho1)
+    (hbeta_le : x ≠ 0 → beta ≤ rho2)
+    (heta_le : x ≠ 0 → eta ≤ (1 - rho2)⁻¹)
+    (hDeltaA1Op : x ≠ 0 → rectOpNorm2Le DeltaA1 alpha)
+    (hDeltaA2Op : x ≠ 0 → rectOpNorm2Le DeltaA2 beta)
+    (hBplusOp : x ≠ 0 →
+      rectOpNorm2Le
+        (undetAplusOfGramNonsingInv (fun i j => A i j + DeltaA2 i j))
+        eta) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j)
+      b x := by
+  by_cases hx : x = 0
+  · have hzero :
+        RectMinNormSolution m n (fun i j => A i j + DeltaA2 i j) b x :=
+      higham21_lemma21_2_zero_branch_min_norm_of_deltaA2
+        A x DeltaA1 DeltaA2 b hx hDeltaA1
+    simpa [undetLemma21_2SinglePerturbation, hx] using hzero
+  · exact
+      higham21_lemma21_2_single_min_norm_of_gram_pseudoinverse_source_factors
+        A x DeltaA1 DeltaA2 b y rho1 rho2 alpha beta eta hDeltaA1
+        (hdet hx) (hxTranspose hx) (hsmall hx) (halpha hx) (hbeta hx)
+        (heta hx) (halpha_le hx) (hbeta_le hx) (heta_le hx)
+        (hDeltaA1Op hx) (hDeltaA2Op hx) (hBplusOp hx)
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     source-shaped pseudoinverse handoff for the remaining beta argument.
@@ -1998,6 +2228,81 @@ theorem higham21_lemma21_2_symmetrized_perturbation_op_bound {m n : ℕ}
       (Real.sqrt_nonneg _) hbase
   have hrad : beta ^ 2 + alpha ^ 2 = alpha ^ 2 + beta ^ 2 := by ring
   simpa [undetLemma21_2SymmetrizedPerturbation, hrad] using htrans
+
+private theorem higham21_right_nonneg_le_sqrt_sq_add_sq
+    (a b : ℝ) (hb : 0 ≤ b) :
+    b ≤ Real.sqrt (a ^ 2 + b ^ 2) := by
+  have hb_sq : b ^ 2 ≤ a ^ 2 + b ^ 2 := by nlinarith [sq_nonneg a]
+  have hsqrt : Real.sqrt (b ^ 2) ≤ Real.sqrt (a ^ 2 + b ^ 2) :=
+    Real.sqrt_le_sqrt hb_sq
+  simpa [Real.sqrt_sq_eq_abs, abs_of_nonneg hb] using hsqrt
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    squared Frobenius-norm form of the printed perturbation bound for the
+    source-case single perturbation.  In the zero branch the perturbation is
+    `DeltaA2`; in the nonzero branch it is the projector mixture. -/
+theorem higham21_lemma21_2_single_perturbation_frobNormSq_le {m n : ℕ}
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ) :
+    frobNormSqRect (undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2) ≤
+      frobNormSqRect DeltaA1 + frobNormSqRect DeltaA2 := by
+  by_cases hx : x = 0
+  · have hD1 : 0 ≤ frobNormSqRect DeltaA1 := frobNormSqRect_nonneg DeltaA1
+    have hbound :
+        frobNormSqRect DeltaA2 ≤ frobNormSqRect DeltaA1 + frobNormSqRect DeltaA2 := by
+      nlinarith
+    simpa [undetLemma21_2SinglePerturbation, hx] using hbound
+  · have hsq : vecNorm2Sq x ≠ 0 :=
+      higham21_vecNorm2Sq_ne_zero_of_ne_zero hx
+    simpa [undetLemma21_2SinglePerturbation, hx] using
+      higham21_lemma21_2_symmetrized_perturbation_frobNormSq_le
+        x hsq DeltaA1 DeltaA2
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    Frobenius-norm form of the printed perturbation bound for the source-case
+    single perturbation. -/
+theorem higham21_lemma21_2_single_perturbation_frob_bound {m n : ℕ}
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ) :
+    frobNormRect (undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2) ≤
+      Real.sqrt (frobNormRect DeltaA1 ^ 2 + frobNormRect DeltaA2 ^ 2) := by
+  by_cases hx : x = 0
+  · have hbound :
+        frobNormRect DeltaA2 ≤
+          Real.sqrt (frobNormRect DeltaA1 ^ 2 + frobNormRect DeltaA2 ^ 2) :=
+      higham21_right_nonneg_le_sqrt_sq_add_sq
+        (frobNormRect DeltaA1) (frobNormRect DeltaA2)
+        (frobNormRect_nonneg DeltaA2)
+    simpa [undetLemma21_2SinglePerturbation, hx] using hbound
+  · have hsq : vecNorm2Sq x ≠ 0 :=
+      higham21_vecNorm2Sq_ne_zero_of_ne_zero hx
+    simpa [undetLemma21_2SinglePerturbation, hx] using
+      higham21_lemma21_2_symmetrized_perturbation_frob_bound
+        x hsq DeltaA1 DeltaA2
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    operator-2 norm form of the printed perturbation bound for the source-case
+    single perturbation. -/
+theorem higham21_lemma21_2_single_perturbation_op_bound {m n : ℕ}
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    {alpha beta : ℝ} (halpha : 0 ≤ alpha) (hbeta : 0 ≤ beta)
+    (hDeltaA1 : rectOpNorm2Le DeltaA1 alpha)
+    (hDeltaA2 : rectOpNorm2Le DeltaA2 beta) :
+    rectOpNorm2Le (undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2)
+      (Real.sqrt (alpha ^ 2 + beta ^ 2)) := by
+  by_cases hx : x = 0
+  · have hbeta_le : beta ≤ Real.sqrt (alpha ^ 2 + beta ^ 2) :=
+      higham21_right_nonneg_le_sqrt_sq_add_sq alpha beta hbeta
+    have hbound :
+        rectOpNorm2Le DeltaA2 (Real.sqrt (alpha ^ 2 + beta ^ 2)) :=
+      rectOpNorm2Le_mono hbeta_le hDeltaA2
+    simpa [undetLemma21_2SinglePerturbation, hx] using hbound
+  · have hsq : vecNorm2Sq x ≠ 0 :=
+      higham21_vecNorm2Sq_ne_zero_of_ne_zero hx
+    simpa [undetLemma21_2SinglePerturbation, hx] using
+      higham21_lemma21_2_symmetrized_perturbation_op_bound
+        x hsq DeltaA1 DeltaA2 halpha hbeta hDeltaA1 hDeltaA2
 
 -- ============================================================
 -- §21.3  Row-wise backward error for underdetermined systems
