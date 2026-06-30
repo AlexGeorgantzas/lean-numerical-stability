@@ -4697,6 +4697,158 @@ theorem GeneralizedQRFactorization.constructed_sourceB_perturbation_frobNorm_bou
     _ ≤ eta * frobNormRect h.S := hDeltaSfrob
     _ = eta * frobNormRect B := by rw [h.frobNormRect_S_eq_sourceB]
 
+/-- Frobenius norm of a rectangular matrix with zero rows prepended. -/
+theorem frobNormRect_zeroTopRows_append {r q n : ℕ}
+    (C : Fin q → Fin n → ℝ) :
+    frobNormRect (Fin.append (fun _ : Fin r => fun _ : Fin n => 0) C) =
+      frobNormRect C := by
+  unfold frobNormRect
+  apply congrArg Real.sqrt
+  unfold frobNormSqRect
+  rw [Fin.sum_univ_add]
+  simp [Fin.append_left, Fin.append_right]
+
+/-- The GQR block with only the bottom-right `L22` perturbation nonzero has
+    Frobenius norm exactly the Frobenius norm of that perturbation. -/
+theorem frobNormRect_gqrAQBlock_only_L22 {r p q : ℕ}
+    (DeltaL22 : Fin q → Fin q → ℝ) :
+    frobNormRect
+      (gqrAQBlock (r := r) (p := p) (q := q)
+        (fun _ _ => 0) (fun _ _ => 0) DeltaL22) =
+      frobNormRect DeltaL22 := by
+  unfold frobNormRect
+  apply congrArg Real.sqrt
+  unfold frobNormSqRect
+  rw [Fin.sum_univ_add]
+  simp [gqrAQBlock, Fin.append_left, Fin.append_right, Fin.sum_univ_add]
+
+/-- The displayed GQR `UᵀAQ` block is additive in its bottom-right `L22`
+    block when all other perturbation blocks are zero. -/
+theorem gqrAQBlock_L22_add {r p q : ℕ}
+    (L11 : Fin r → Fin p → ℝ)
+    (L21 : Fin q → Fin p → ℝ)
+    (L22 DeltaL22 : Fin q → Fin q → ℝ) :
+    gqrAQBlock L11 L21 (fun i j => L22 i j + DeltaL22 i j) =
+      fun i j =>
+        gqrAQBlock L11 L21 L22 i j +
+          gqrAQBlock (r := r) (p := p) (q := q)
+            (fun _ _ => 0) (fun _ _ => 0) DeltaL22 i j := by
+  ext i j
+  refine Fin.addCases
+    (motive := fun i : Fin (r + q) =>
+      gqrAQBlock L11 L21 (fun i j => L22 i j + DeltaL22 i j) i j =
+        gqrAQBlock L11 L21 L22 i j +
+          gqrAQBlock (r := r) (p := p) (q := q)
+            (fun _ _ => 0) (fun _ _ => 0) DeltaL22 i j)
+    ?top ?bottom i
+  · intro i
+    refine Fin.addCases
+      (motive := fun j : Fin (p + q) =>
+        gqrAQBlock L11 L21 (fun i j => L22 i j + DeltaL22 i j)
+            (Fin.castAdd q i) j =
+          gqrAQBlock L11 L21 L22 (Fin.castAdd q i) j +
+            gqrAQBlock (r := r) (p := p) (q := q)
+              (fun _ _ => 0) (fun _ _ => 0) DeltaL22 (Fin.castAdd q i) j)
+      ?top_left ?top_right j
+    · intro j
+      simp [gqrAQBlock, Fin.append_left]
+    · intro j
+      simp [gqrAQBlock, Fin.append_left, Fin.append_right]
+  · intro i
+    refine Fin.addCases
+      (motive := fun j : Fin (p + q) =>
+        gqrAQBlock L11 L21 (fun i j => L22 i j + DeltaL22 i j)
+            (Fin.natAdd r i) j =
+          gqrAQBlock L11 L21 L22 (Fin.natAdd r i) j +
+            gqrAQBlock (r := r) (p := p) (q := q)
+              (fun _ _ => 0) (fun _ _ => 0) DeltaL22 (Fin.natAdd r i) j)
+      ?bottom_left ?bottom_right j
+    · intro j
+      simp [gqrAQBlock, Fin.append_right, Fin.append_left]
+    · intro j
+      simp [gqrAQBlock, Fin.append_right]
+
+/-- Transporting a perturbation of only the GQR `L22` block back through
+    `U` and `Qᵀ` gives the corresponding source-coordinate data perturbation. -/
+theorem gqrSourceAFromBlocks_L22_perturbation_eq {r p q : ℕ}
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (U : Fin (r + q) → Fin (r + q) → ℝ)
+    (L11 : Fin r → Fin p → ℝ)
+    (L21 : Fin q → Fin p → ℝ)
+    (L22 DeltaL22 : Fin q → Fin q → ℝ) :
+    (fun i j =>
+        gqrSourceAFromBlocks Q U L11 L21 (fun i j => L22 i j + DeltaL22 i j) i j -
+          gqrSourceAFromBlocks Q U L11 L21 L22 i j) =
+      matMulRectLeft U
+        (matMulRectRight
+          (gqrAQBlock (r := r) (p := p) (q := q)
+            (fun _ _ => 0) (fun _ _ => 0) DeltaL22)
+          (matTranspose Q)) := by
+  let M : Fin (r + q) → Fin (p + q) → ℝ := gqrAQBlock L11 L21 L22
+  let DeltaM : Fin (r + q) → Fin (p + q) → ℝ :=
+    gqrAQBlock (r := r) (p := p) (q := q)
+      (fun _ _ => 0) (fun _ _ => 0) DeltaL22
+  have hblock :
+      gqrAQBlock L11 L21 (fun i j => L22 i j + DeltaL22 i j) =
+        fun i j => M i j + DeltaM i j := by
+    simpa [M, DeltaM] using gqrAQBlock_L22_add L11 L21 L22 DeltaL22
+  have hright :
+      matMulRectRight
+          (gqrAQBlock L11 L21 (fun i j => L22 i j + DeltaL22 i j))
+          (matTranspose Q) =
+        fun i j =>
+          matMulRectRight M (matTranspose Q) i j +
+            matMulRectRight DeltaM (matTranspose Q) i j := by
+    simpa [matMulRectRight, hblock] using
+      (matMulRect_add_left (r + q) (p + q) (p + q)
+        M DeltaM (matTranspose Q))
+  ext i j
+  have hleft := congrFun (congrFun
+    (matMulRectLeft_add_right U
+      (matMulRectRight M (matTranspose Q))
+      (matMulRectRight DeltaM (matTranspose Q))) i) j
+  have hsum :
+      gqrSourceAFromBlocks Q U L11 L21 (fun i j => L22 i j + DeltaL22 i j) i j =
+        gqrSourceAFromBlocks Q U L11 L21 L22 i j +
+          matMulRectLeft U (matMulRectRight DeltaM (matTranspose Q)) i j := by
+    simpa [gqrSourceAFromBlocks, M, DeltaM, hright] using hleft
+  rw [hsum]
+  ring
+
+/-- The source-coordinate data perturbation induced by perturbing only the
+    GQR `L22` block has Frobenius norm exactly `‖DeltaL22‖_F`. -/
+theorem gqrSourceAFromBlocks_L22_perturbation_frobNorm_eq {r p q : ℕ}
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (U : Fin (r + q) → Fin (r + q) → ℝ)
+    (L11 : Fin r → Fin p → ℝ)
+    (L21 : Fin q → Fin p → ℝ)
+    (L22 DeltaL22 : Fin q → Fin q → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hU : IsOrthogonal (r + q) U) :
+    frobNormRect
+      (fun i j =>
+        gqrSourceAFromBlocks Q U L11 L21 (fun i j => L22 i j + DeltaL22 i j) i j -
+          gqrSourceAFromBlocks Q U L11 L21 L22 i j) =
+      frobNormRect DeltaL22 := by
+  let DeltaM : Fin (r + q) → Fin (p + q) → ℝ :=
+    gqrAQBlock (r := r) (p := p) (q := q)
+      (fun _ _ => 0) (fun _ _ => 0) DeltaL22
+  calc
+    frobNormRect
+        (fun i j =>
+          gqrSourceAFromBlocks Q U L11 L21 (fun i j => L22 i j + DeltaL22 i j) i j -
+            gqrSourceAFromBlocks Q U L11 L21 L22 i j)
+        = frobNormRect
+            (matMulRectLeft U (matMulRectRight DeltaM (matTranspose Q))) := by
+          rw [gqrSourceAFromBlocks_L22_perturbation_eq Q U L11 L21 L22 DeltaL22]
+    _ = frobNormRect (matMulRectRight DeltaM (matTranspose Q)) := by
+          exact frobNormRect_orthogonal_left U
+            (matMulRectRight DeltaM (matTranspose Q)) hU
+    _ = frobNormRect DeltaM := by
+          exact frobNormRect_orthogonal_right DeltaM (matTranspose Q)
+            (IsOrthogonal.transpose hQ)
+    _ = frobNormRect DeltaL22 := frobNormRect_gqrAQBlock_only_L22 DeltaL22
+
 /-- The trailing column block has Frobenius norm no larger than the full
     rectangular matrix. -/
 theorem frobNormSqRect_trailingCols_le {m p q : ℕ}
