@@ -26,13 +26,14 @@
 | Theorem 19.13 support, arbitrary tail closure | `H19.Theorem19_13.storedSignedSequenceTwiceTrailingFinalClosed_of_closureData` | `LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean` | proved dependency | Turns recursive closure data into the named twice-trailing final-panel closure predicate. |
 | Theorem 19.13 support, final-panel bridge | `H19.Theorem19_13.storedSignedSequence_final_panel_eq_qrPanel_R_of_reflector_self_dot_of_closureData` | `LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean` | proved dependency | Consumes recursive closure data plus first two stored-reflector facts to prove the arbitrary-width final-panel equality. |
 | Theorem 19.13 support, closure-data constructors | `H19.Theorem19_13.storedSignedSequenceTwiceTrailingClosureData_zero`; `..._one_of_reflectorData`; `..._succ_succ_of_firstTwoReflectorData` | `LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean` | proved dependency | Constructor API for the stored-loop induction target. |
+| Theorem 19.13 support, reflector-data packagers | `H19.Theorem19_13.storedSignedSequenceOneReflectorData_of_tail_reflector_self_dot`; `...FirstTwoReflectorData_of_tail_reflector_self_dot`; `...ClosureData_one_of_tail_reflector_self_dot` | `LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean` | proved dependency | Packages explicit twice-trailing source reflector facts into the recursive closure-data records; existing fixed-width bridges now consume the first-two packager. |
 | Theorem 19.13 support, one recursive source-facing step | `H19.Theorem19_13.storedSignedSequence_final_panel_eq_qrPanel_R_of_firstTwoReflectorData_and_tailClosureData` | `LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean` | proved dependency | If the current twice-trailing tail has first-two reflector data and the twice-shrunk tail has closure data, the final-panel equality follows. |
 
 ## Open Selected-Scope Items
 
 | Source location | Exact selected claim/status | Current Lean status | Missing foundation | Next concrete theorem |
 |---|---|---|---|---|
-| Theorem 19.13 support route | Arbitrary-width stored Householder final-panel equality from source loop facts. | Closure-data handoff and one recursive source-facing step are proved. | Construct recursive closure data from the full stored loop's per-pivot reflector normalization, self-dot, and determinant nonbreakdown facts. | `storedSignedSequenceTwiceTrailingClosureData_of_stored_loop_reflector_data` or a smaller per-tail reflector-data constructor with the same source-loop hypotheses. |
+| Theorem 19.13 support route | Arbitrary-width stored Householder final-panel equality from source loop facts. | Closure-data handoff, one recursive source-facing step, and explicit reflector-fact packagers are proved. | Construct recursive closure data from the full stored loop's per-pivot reflector normalization, self-dot, and determinant nonbreakdown facts. | `storedSignedSequenceTwiceTrailingClosureData_of_stored_loop_reflector_data`, with a first sublemma that extracts the one-reflector/first-two packagers at stage `t + 2`. |
 | Chapter 19 full core inventory | Lemmas 19.1-19.3, 19.7-19.9; Theorems 19.4-19.6, 19.10, 19.13; Algorithms 19.11-19.12; numbered equations and theoretical problems. | Many declarations exist in QR modules, but this tracked report is not yet a complete source inventory. | Full row-by-row source audit against the rendered Chapter 19 PDF. | Complete this ledger's source inventory and update skipped/deferred/benchmark classifications. |
 
 ## Skipped, Deferred, and Benchmark Categories
@@ -46,11 +47,12 @@
 
 ## Verification
 
-- `lake env lean LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`: passed for the closure-data constructor and one-step bridge milestone.
-- `lake build LeanFpAnalysis.FP.Algorithms.QR.Higham19`: passed; only pre-existing `GivensSpec` unused-simp warnings were reported.
+- `lake env lean LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`: passed for the closure-data constructors, reflector-data packagers, and one-step bridge milestone.
+- `lake build LeanFpAnalysis.FP.Algorithms.QR.Higham19`: passed after the reflector-data packager milestone; only pre-existing `GivensSpec` unused-simp warnings were reported.
 - `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`: no matches.
-- `git diff --check`: passed with only the existing CRLF warning for `Higham19.lean`.
+- `git diff --check`: passed with only CRLF warnings for `Higham19.lean` and this report.
 - `#print axioms` for `storedSignedSequence_final_panel_eq_qrPanel_R_of_firstTwoReflectorData_and_tailClosureData` and `storedSignedSequenceTwiceTrailingClosureData_succ_succ_of_firstTwoReflectorData`: only `propext`, `Classical.choice`, and `Quot.sound`.
+- `#print axioms` for `storedSignedSequenceOneReflectorData_of_tail_reflector_self_dot`, `storedSignedSequenceFirstTwoReflectorData_of_tail_reflector_self_dot`, and `storedSignedSequenceTwiceTrailingClosureData_one_of_tail_reflector_self_dot`: only `propext`, `Classical.choice`, and `Quot.sound`.
 
 ## Git and Local-Only Notes
 
