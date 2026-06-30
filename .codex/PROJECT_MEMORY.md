@@ -10126,3 +10126,16 @@ These compile, but should not be treated as fully derived stability results:
   right-inverse proof with `isInverse_nonsingInv_of_det_ne_zero` and reuse the
   recursive source-chain nonterminal extractor, so downstream APIs can consume a
   canonical final pivot without a caller-built all-pivot certificate.
+
+- 2026-06-30 Eq.13.22/Eq.13.23 source-chain pivot determinant extraction:
+  added
+  `Higham13Eq1322LowerComparisonSourceChain.nonterminal_pivot_det_ne_zero`,
+  `Higham13Eq1322LowerComparisonSourceChain.pivot_det_ne_zero_of_final`,
+  `Higham13Eq1322InverseRatioSourceChain.nonterminal_pivot_det_ne_zero`, and
+  `Higham13Eq1322InverseRatioSourceChain.pivot_det_ne_zero_of_final`.
+  These convert the existing source-chain pivot right-inverse certificates into
+  determinant-nonzero tables for genuine elimination pivots and isolate the
+  terminal pivot determinant needed by all-pivot APIs.  They are proof-surface
+  cleanup for the Problem 13.4 source-chain route; the per-tail direct
+  lower-budget comparison, structured product/update data, and Eq.13.23
+  `rho <= 2` theorem remain open.
