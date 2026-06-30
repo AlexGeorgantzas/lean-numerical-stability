@@ -82,7 +82,14 @@ end-to-end stability rebuild is tagged as
   sharper Schur-tail inverse comparison
   `||A_local^{-1}||_max <= ||A^{-1}||_max`; the extra `rhoFull` factor is
   derived from `rhoFull >= 1` because the matrix-stage history contains the
-  input.  The matching concrete factor witnesses
+  input.  Product-level determinant companions
+  `higham13_eq13_22_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_of_det_ne_zero`
+  and
+  `higham13_eq13_23_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_of_det_ne_zero`
+  specialize the raw Eq.13.22/Eq.13.23 surfaces to
+  `nonsingInv (m*r) (blockMatrixFlatFin Ablk)` and derive the full positive
+  denominator/right-inverse certificate from `det(blockMatrixFlatFin Ablk) != 0`.
+  The matching concrete factor witnesses
   `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_of_pivot_right_inverse`,
   `higham13_eq13_23_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_of_pivot_right_inverse`,
   `higham13_eq13_22_exists_blockLUFact_matrix_stage_history_product_from_stageLocalGrowth_plain_inverse_bound_exact_kappa_of_pivot_right_inverse_of_det_ne_zero`,
