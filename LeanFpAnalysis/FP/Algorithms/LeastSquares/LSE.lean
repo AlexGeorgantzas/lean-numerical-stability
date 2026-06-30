@@ -1036,6 +1036,62 @@ theorem gqrBQBlock_eq_of_transpose_tall_qr {p q : ℕ}
               ring
       _ = 0 := hentry
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10 computed-constraint algebra:
+    if a computed tall QR product has the form `Bhatᵀ = Q*Rhat`, with `Q`
+    orthogonal and `Rhat` upper trapezoidal, then the source-side matrix
+    `Bhat` satisfies the GQR constraint block identity `Bhat*Q = [S,0]`.
+
+    The square GQR constraint block is the transpose of the top square block
+    of `Rhat`.  This is the exact algebra needed to connect a concrete rounded
+    Householder QR of `Bᵀ` to the GQR `B Q = [S,0]` display. -/
+theorem gqrBQBlock_eq_of_transpose_product_tall_qr {p q : ℕ}
+    (Q : Fin (p + q) → Fin (p + q) → ℝ)
+    (Rhat : Fin (p + q) → Fin p → ℝ)
+    (hQ : IsOrthogonal (p + q) Q)
+    (hRupper : IsUpperTrapezoidal (p + q) p Rhat) :
+    let Bhat : Fin p → Fin (p + q) → ℝ :=
+      fun i j => matMulRect (p + q) (p + q) p Q Rhat j i
+    let S : Fin p → Fin p → ℝ :=
+      matTranspose (fun i : Fin p => fun j : Fin p => Rhat (Fin.castAdd q i) j)
+    IsLowerTriangular S ∧
+      matMulRect p (p + q) (p + q) Bhat Q = gqrBQBlock S := by
+  dsimp
+  let R : Fin p → Fin p → ℝ :=
+    fun i : Fin p => fun j : Fin p => Rhat (Fin.castAdd q i) j
+  have hRhatBlock :
+      Rhat = lsQRTallBlock (k := q) R :=
+    lsQRTallBlock_of_upper_trapezoidal (n := p) (k := q) Rhat hRupper
+  have hRupperTop : IsUpperTriangular p R := by
+    intro i j hij
+    exact lsQRTallBlock_top_upper_of_upper_trapezoidal
+      (n := p) (k := q) Rhat hRupper i j hij
+  have hQtQ : matMul (p + q) (matTranspose Q) Q = idMatrix (p + q) := by
+    ext i j
+    simpa [matMul, rectMatMul, idMatrix] using hQ.left_inv i j
+  have hqr :
+      matMulRectLeft (matTranspose Q)
+          (fun j : Fin (p + q) => fun i : Fin p =>
+            matMulRect (p + q) (p + q) p Q Rhat j i) =
+        lsQRTallBlock (k := q) R := by
+    calc
+      matMulRectLeft (matTranspose Q)
+          (fun j : Fin (p + q) => fun i : Fin p =>
+            matMulRect (p + q) (p + q) p Q Rhat j i)
+          =
+        matMulRectLeft (matTranspose Q) (matMulRectLeft Q Rhat) := by
+          rfl
+      _ = matMulRectLeft (matMul (p + q) (matTranspose Q) Q) Rhat := by
+          rw [← matMulRectLeft_assoc]
+      _ = matMulRectLeft (idMatrix (p + q)) Rhat := by
+          rw [hQtQ]
+      _ = Rhat := matMulRectLeft_id Rhat
+      _ = lsQRTallBlock (k := q) R := hRhatBlock
+  exact
+    ⟨isLowerTriangular_matTranspose_of_isUpperTriangular hRupperTop,
+      gqrBQBlock_eq_of_transpose_tall_qr
+        (fun i j => matMulRect (p + q) (p + q) p Q Rhat j i)
+        Q R hqr⟩
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 construction step:
     exact MGS data for `Bᵀ`, once its computed columns are known
     orthonormal, supplies the completed tall QR block `Qᵀ Bᵀ = [R;0]`.
@@ -11631,6 +11687,85 @@ theorem theorem20_10_householder_B_transpose_frob_perturbation_bound
   · simpa [theorem20_10_householder_gammaB, frobNormRect_finiteTranspose]
       using hbound
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, concrete rounded `Bᵀ`
+    Householder QR constraint block.
+
+    The computed Householder panel for `Bᵀ` gives explicit factors `Q_B` and
+    `R_B`.  After taking the transpose of the computed product, the perturbed
+    constraint matrix satisfies the exact GQR block identity
+    `(B + DeltaB) Q_B = [S,0]`, where `S` is the transpose of the top square
+    block of `R_B`.  This closes the concrete `B`-side factor-identification
+    dependency; rank preservation remains a separate source perturbation
+    obligation. -/
+theorem theorem20_10_householder_B_transpose_perturbed_constraint_block
+    {r p q : ℕ} (fp : FPModel)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (hp : 0 < p)
+    (hvalid :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q))) :
+    let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+      fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+    let Rhat : Fin (p + q) → Fin p → ℝ :=
+      fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)
+    let S : Fin p → Fin p → ℝ :=
+      matTranspose (fun i : Fin p => fun j : Fin p =>
+        Rhat (Fin.castAdd q i) j)
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+      (∀ i j,
+        B i j + DeltaB i j =
+          matMulRect (p + q) (p + q) p Qb Rhat j i) ∧
+      IsOrthogonal (p + q) Qb ∧
+      IsLowerTriangular S ∧
+      matMulRect p (p + q) (p + q)
+        (fun i j => B i j + DeltaB i j) Qb = gqrBQBlock S ∧
+      frobNormRect DeltaB ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B := by
+  dsimp
+  let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+    fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+  let Rhat : Fin (p + q) → Fin p → ℝ :=
+    fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)
+  let S : Fin p → Fin p → ℝ :=
+    matTranspose (fun i : Fin p => fun j : Fin p =>
+      Rhat (Fin.castAdd q i) j)
+  have hbase_valid : gammaValid fp (11 * (p + q) + 23) := by
+    let K : ℕ := householderConstructApplyGammaIndex (p + q)
+    have hbase_le_K : 11 * (p + q) + 23 ≤ K := by
+      dsimp [K, householderConstructApplyGammaIndex]
+      omega
+    have hK_le_pK : K ≤ p * K :=
+      Nat.le_mul_of_pos_left K hp
+    exact gammaValid_mono fp (le_trans hbase_le_K hK_le_pK) (by
+      simpa [K] using hvalid)
+  have hready :
+      HouseholderQRPanelReady fp (p + q) p (finiteTranspose B) :=
+    HouseholderQRPanelReady_of_global_gammaValid
+      fp (p + q) p (p + q) (finiteTranspose B) le_rfl hbase_valid
+  have hQb : IsOrthogonal (p + q) Qb := by
+    simpa [Qb] using
+      fl_householderQRPanel_Q_orthogonal
+        fp (p + q) p (finiteTranspose B) hready
+  have hRupper : IsUpperTrapezoidal (p + q) p Rhat := by
+    simpa [Rhat] using
+      fl_householderQRPanel_R_upper_trapezoidal
+        fp (p + q) p (finiteTranspose B)
+  have hconstraint :=
+    gqrBQBlock_eq_of_transpose_product_tall_qr Qb Rhat hQb hRupper
+  dsimp [S] at hconstraint
+  rcases theorem20_10_householder_B_transpose_frob_perturbation_bound
+      fp B hp hvalid with
+    ⟨DeltaB, hDeltaBrep, hDeltaB⟩
+  have hBpert_eq :
+      (fun i j => B i j + DeltaB i j) =
+        fun i j => matMulRect (p + q) (p + q) p Qb Rhat j i := by
+    ext i j
+    simpa [Qb, Rhat] using hDeltaBrep i j
+  refine ⟨DeltaB, ?_, hQb, hconstraint.1, ?_, hDeltaB⟩
+  · intro i j
+    exact congrFun (congrFun hBpert_eq i) j
+  · rw [hBpert_eq]
+    exact hconstraint.2
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     a constraint-matrix perturbation gives the corresponding constraint
     right-hand-side perturbation at a proposed computed vector.
@@ -11713,6 +11848,131 @@ theorem theorem20_10_partB_certificate_of_partA_certificate
        hDeltab := hDeltab
        hDeltad := hDeltad }⟩
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), Part A certificate to
+    exact Part B backward-error core.
+
+    This skips the intermediate Part B certificate object for callers that
+    already have a Part A mixed-stability certificate.  The constraint
+    right-hand-side perturbation is the explicit action `Deltad = DeltaB*xhat`,
+    and the exact perturbed GQR/minimizer package is obtained directly for
+    the problem with right-hand side `d + Deltad`. -/
+theorem theorem20_10_partB_backward_error_of_partA_certificate
+    {r p q : ℕ}
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    {gammaA gammaB : ℝ}
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    (cert :
+      Theorem20_10PartAPerturbationCertificate A B b d xhat gammaA gammaB) :
+    let Apert : Fin (r + q) → Fin (p + q) → ℝ :=
+      fun i j => A i j + cert.DeltaA i j
+    let Bpert : Fin p → Fin (p + q) → ℝ :=
+      fun i j => B i j + cert.DeltaB i j
+    let bpert : Fin (r + q) → ℝ := fun i => b i + cert.Deltab i
+    ∃ Deltad : Fin p → ℝ,
+      (∀ i,
+        rectMatMulVec Bpert xhat i =
+          rectMatMulVec B xhat i + Deltad i) ∧
+      frobNormRect cert.DeltaA ≤ gammaA * frobNormRect A ∧
+      frobNormRect cert.DeltaB ≤ gammaB * frobNormRect B ∧
+      vecNorm2 cert.Deltab ≤
+        gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+      vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+      (∃ hpert : GeneralizedQRFactorization r p q Apert Bpert,
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec hpert.S yz.1 = (fun i => d i + Deltad i) ∧
+          rectMatMulVec hpert.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) -
+                rectMatMulVec hpert.L21 yz.1 i) ∧
+          IsLSEMinimizer Apert bpert Bpert (fun i => d i + Deltad i)
+            (matMulVec (p + q) hpert.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x : Fin (p + q) → ℝ,
+          IsLSEMinimizer Apert bpert Bpert (fun i => d i + Deltad i) x)) := by
+  dsimp
+  rcases theorem20_10_constraint_rhs_perturbation_bound_of_DeltaB
+      B cert.DeltaB xhat cert.hDeltaB with
+    ⟨Deltad, hDeltad_action, hDeltad⟩
+  have htail_nonneg :
+      0 ≤ gammaB * frobNormRect A * vecNorm2 xhat := by
+    exact mul_nonneg
+      (mul_nonneg hgammaB_nonneg (frobNormRect_nonneg A))
+      (vecNorm2_nonneg xhat)
+  have hDeltab :
+      vecNorm2 cert.Deltab ≤
+        gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat :=
+    le_trans cert.hDeltab (le_add_of_nonneg_right htail_nonneg)
+  refine
+    ⟨Deltad, hDeltad_action, cert.hDeltaA, cert.hDeltaB, hDeltab,
+      hDeltad, ?_⟩
+  exact
+    GeneralizedQRFactorization.exists_unique_method_solution_of_theorem20_10_perturbed_d
+      A cert.DeltaA B cert.DeltaB b cert.Deltab d Deltad cert.hB cert.hstack
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), nonempty Part A
+    certificate to exact Part B backward-error core.
+
+    This is the certificate-free form for routes that produce a nonempty
+    Part A certificate package.  It returns concrete perturbations, records
+    the constraint right-hand-side action identity for `Deltad`, and exposes
+    the exact perturbed GQR/minimizer core for the Part B problem. -/
+theorem theorem20_10_partB_backward_error_of_nonempty_partA_certificate
+    {r p q : ℕ}
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (xhat : Fin (p + q) → ℝ)
+    {gammaA gammaB : ℝ}
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    (hcert :
+      Nonempty
+        (Theorem20_10PartAPerturbationCertificate A B b d xhat
+          gammaA gammaB)) :
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab : Fin (r + q) → ℝ,
+    ∃ Deltad : Fin p → ℝ,
+      (∀ i,
+        rectMatMulVec (fun i j => B i j + DeltaB i j) xhat i =
+          rectMatMulVec B xhat i + Deltad i) ∧
+      frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+      frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+      vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+      (∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec hpert.S yz.1 = (fun i => d i + Deltad i) ∧
+          rectMatMulVec hpert.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose hpert.U)
+                (fun i => b i + Deltab i) (Fin.natAdd r i) -
+                rectMatMulVec hpert.L21 yz.1 i) ∧
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i)
+            (matMulVec (p + q) hpert.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x : Fin (p + q) → ℝ,
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i) x)) := by
+  rcases hcert with ⟨cert⟩
+  rcases theorem20_10_partB_backward_error_of_partA_certificate
+      A B b d xhat hgammaB_nonneg cert with
+    ⟨Deltad, hDeltad_action, hDeltaA, hDeltaB, hDeltab,
+      hDeltad, hmethod⟩
+  exact
+    ⟨cert.DeltaA, cert.DeltaB, cert.Deltab, Deltad,
+      hDeltad_action, hDeltaA, hDeltaB, hDeltab, hDeltad, hmethod⟩
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), nonempty Part A
     certificate to nonempty Part B certificate bridge.
 
@@ -11786,6 +12046,90 @@ theorem theorem20_10_partB_certificate_of_constructed_source_householder_rhs_con
       hcertA⟩
   exact
     theorem20_10_partB_certificate_of_nonempty_partA_certificate
+      A B b d
+      (theorem20_10_gqr_xhat_of_transformed_tail fp h
+        (theorem20_10_householder_AQ2_rhs_tail fp A h.Q b) d)
+      hgammaB_nonneg hcertA
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), rounded Householder RHS
+    Part B backward-error core with generic conservative bounds.
+
+    This unwraps the constructed-source rounded-RHS Part A certificate through
+    the generic nonempty Part A-to-Part B core bridge.  Compared with the
+    certificate theorem above, it exposes concrete perturbations, the
+    constraint right-hand-side action identity, and the exact perturbed
+    GQR/minimizer package. -/
+theorem theorem20_10_partB_backward_error_of_constructed_source_householder_rhs_conservative_bound
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (gammaA gammaB : ℝ)
+    (hUfl :
+      h.U =
+        fl_householderQRPanel_Q fp (r + q) q (gqrAQ2Block A h.Q))
+    (hq : 0 < q)
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    (hgammaA_ge_matrix : gamma fp q ≤ gammaA)
+    (hgammaA_ge_rhs :
+      theorem20_10_householder_rhs_conservative_gamma fp r p q ≤ gammaA)
+    (hgammaB_ge : gamma fp p ≤ gammaB)
+    (hSdiag : ∀ i : Fin p, h.S i i ≠ 0)
+    (hL22diag : ∀ i : Fin q, h.L22 i i ≠ 0)
+    (hvalid2S : gammaValid fp (2 * p))
+    (hvalid2L22 : gammaValid fp (2 * q)) :
+    let xhat : Fin (p + q) → ℝ :=
+      theorem20_10_gqr_xhat_of_transformed_tail fp h
+        (theorem20_10_householder_AQ2_rhs_tail fp A h.Q b) d
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab : Fin (r + q) → ℝ,
+    ∃ Deltad : Fin p → ℝ,
+      (∀ i,
+        rectMatMulVec (fun i j => B i j + DeltaB i j) xhat i =
+          rectMatMulVec B xhat i + Deltad i) ∧
+      frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+      frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+      vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+      (∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+          rectMatMulVec hpert.S yz.1 = (fun i => d i + Deltad i) ∧
+          rectMatMulVec hpert.L22 yz.2 =
+            (fun i : Fin q =>
+              matMulVec (r + q) (matTranspose hpert.U)
+                (fun i => b i + Deltab i) (Fin.natAdd r i) -
+                rectMatMulVec hpert.L21 yz.1 i) ∧
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i)
+            (matMulVec (p + q) hpert.Q (Fin.append yz.1 yz.2))) ∧
+        (∃! x : Fin (p + q) → ℝ,
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i) x)) := by
+  dsimp
+  rcases
+    theorem20_10_partA_certificate_of_constructed_source_householder_rhs_conservative_bound
+      fp h b d gammaA gammaB hUfl hq hhalf hgammaB_nonneg
+      hgammaA_ge_matrix hgammaA_ge_rhs hgammaB_ge
+      hSdiag hL22diag hvalid2S hvalid2L22 with
+    ⟨_Deltab, _hb_tail, _hDeltab, _DeltaS, _DeltaL22,
+      _hDeltaSbound, _hDeltaL22bound, _hDeltaSfrob, _hDeltaL22frob,
+      hcertA⟩
+  exact
+    theorem20_10_partB_backward_error_of_nonempty_partA_certificate
       A B b d
       (theorem20_10_gqr_xhat_of_transformed_tail fp h
         (theorem20_10_householder_AQ2_rhs_tail fp A h.Q b) d)
