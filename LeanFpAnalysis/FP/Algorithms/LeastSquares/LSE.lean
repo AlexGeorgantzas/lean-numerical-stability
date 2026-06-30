@@ -9475,6 +9475,116 @@ theorem theorem20_10_gqr_xhat_of_transformed_tail_isLSEMinimizer_of_supplied_per
     using hmin
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
+    supplied-trailing-RHS rank and minimizer handoff.
+
+    Nonzero diagonals of the supplied perturbed triangular blocks give the
+    perturbed rank assumptions, while the transformed-tail minimizer handoff
+    identifies the supplied-trailing-RHS computed vector as an exact minimizer
+    of that perturbed problem. -/
+theorem theorem20_10_gqr_xhat_of_transformed_tail_rank_and_minimizer_of_supplied_perturbed_triangular_factors
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    {Apert : Fin (r + q) → Fin (p + q) → ℝ}
+    {Bpert : Fin p → Fin (p + q) → ℝ}
+    (hpert : GeneralizedQRFactorization r p q Apert Bpert)
+    (beta : Fin q → ℝ) (d : Fin p → ℝ)
+    (bpert : Fin (r + q) → ℝ) (dpert : Fin p → ℝ)
+    (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ)
+    (hQ : hpert.Q = h.Q)
+    (hS : hpert.S = fun i j => h.S i j + DeltaS i j)
+    (hL21 : hpert.L21 = h.L21)
+    (hL22 : hpert.L22 = fun i j => h.L22 i j + DeltaL22 i j)
+    (hd : dpert = d)
+    (hb_tail : ∀ i : Fin q,
+      matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) =
+        beta i)
+    (hSdiag_pert : ∀ i : Fin p, hpert.S i i ≠ 0)
+    (hL22diag_pert : ∀ i : Fin q, hpert.L22 i i ≠ 0)
+    (hSeq :
+      rectMatMulVec (fun i j => h.S i j + DeltaS i j)
+        (theorem20_10_gqr_y1hat fp h d) = d)
+    (hL22eq :
+      rectMatMulVec (fun i j => h.L22 i j + DeltaL22 i j)
+        (theorem20_10_gqr_y2hat_of_transformed_tail fp h beta d) =
+          theorem20_10_gqr_rhs2hat_of_transformed_tail fp h beta d) :
+    LSEFullRowRank Bpert ∧
+      LSEStackedFullColumnRank Apert Bpert ∧
+        IsLSEMinimizer Apert bpert Bpert dpert
+          (theorem20_10_gqr_xhat_of_transformed_tail fp h beta d) := by
+  have hrank :
+      LSEFullRowRank Bpert ∧ LSEStackedFullColumnRank Apert Bpert :=
+    (hpert.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero).2
+      ⟨hSdiag_pert, hL22diag_pert⟩
+  have hS_inj : Function.Injective (rectMatMulVec hpert.S) :=
+    (hpert.s_bijective_of_diag_ne_zero hSdiag_pert).1
+  have hmin :
+      IsLSEMinimizer Apert bpert Bpert dpert
+        (theorem20_10_gqr_xhat_of_transformed_tail fp h beta d) :=
+    theorem20_10_gqr_xhat_of_transformed_tail_isLSEMinimizer_of_supplied_perturbed_triangular_factors
+      fp h hpert beta d bpert dpert DeltaS DeltaL22 hQ hS hL21 hL22 hd
+      hb_tail hS_inj hSeq hL22eq
+  exact ⟨hrank.1, hrank.2, hmin⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(a), computed GQR method:
+    zero forward-error witness for the supplied-trailing-RHS path.
+
+    Once the supplied-trailing-RHS computed vector is known to be the unique
+    exact minimizer of the perturbed problem, any exact minimizer `x` equals it,
+    so the mixed-stability `DeltaX` witness may again be chosen as zero. -/
+theorem theorem20_10_gqr_xhat_of_transformed_tail_zero_deltaX_of_supplied_perturbed_triangular_factors
+    {r p q : ℕ} (fp : FPModel)
+    {A : Fin (r + q) → Fin (p + q) → ℝ}
+    {B : Fin p → Fin (p + q) → ℝ}
+    (h : GeneralizedQRFactorization r p q A B)
+    {Apert : Fin (r + q) → Fin (p + q) → ℝ}
+    {Bpert : Fin p → Fin (p + q) → ℝ}
+    (hpert : GeneralizedQRFactorization r p q Apert Bpert)
+    (beta : Fin q → ℝ) (d : Fin p → ℝ)
+    (bpert : Fin (r + q) → ℝ) (dpert : Fin p → ℝ)
+    (DeltaS : Fin p → Fin p → ℝ) (DeltaL22 : Fin q → Fin q → ℝ)
+    (gammaB : ℝ)
+    (hQ : hpert.Q = h.Q)
+    (hS : hpert.S = fun i j => h.S i j + DeltaS i j)
+    (hL21 : hpert.L21 = h.L21)
+    (hL22 : hpert.L22 = fun i j => h.L22 i j + DeltaL22 i j)
+    (hd : dpert = d)
+    (hb_tail : ∀ i : Fin q,
+      matMulVec (r + q) (matTranspose hpert.U) bpert (Fin.natAdd r i) =
+        beta i)
+    (hSdiag_pert : ∀ i : Fin p, hpert.S i i ≠ 0)
+    (hL22diag_pert : ∀ i : Fin q, hpert.L22 i i ≠ 0)
+    (hSeq :
+      rectMatMulVec (fun i j => h.S i j + DeltaS i j)
+        (theorem20_10_gqr_y1hat fp h d) = d)
+    (hL22eq :
+      rectMatMulVec (fun i j => h.L22 i j + DeltaL22 i j)
+        (theorem20_10_gqr_y2hat_of_transformed_tail fp h beta d) =
+          theorem20_10_gqr_rhs2hat_of_transformed_tail fp h beta d)
+    (hgammaB_nonneg : 0 ≤ gammaB)
+    {x : Fin (p + q) → ℝ}
+    (hx : IsLSEMinimizer Apert bpert Bpert dpert x) :
+    ∃ DeltaX : Fin (p + q) → ℝ,
+      (∀ j : Fin (p + q),
+        theorem20_10_gqr_xhat_of_transformed_tail fp h beta d j =
+          x j + DeltaX j) ∧
+      vecNorm2 DeltaX ≤ gammaB * vecNorm2 x := by
+  rcases
+    theorem20_10_gqr_xhat_of_transformed_tail_rank_and_minimizer_of_supplied_perturbed_triangular_factors
+      fp h hpert beta d bpert dpert DeltaS DeltaL22 hQ hS hL21 hL22 hd
+      hb_tail hSdiag_pert hL22diag_pert hSeq hL22eq with
+    ⟨_hBpert, hstack, hxhat_min⟩
+  have hx_eq :
+      x = theorem20_10_gqr_xhat_of_transformed_tail fp h beta d :=
+    IsLSEMinimizer.eq_of_lseStackedFullColumnRank hstack hx hxhat_min
+  refine ⟨(fun _ : Fin (p + q) => 0), ?_, ?_⟩
+  · intro j
+    simp [hx_eq]
+  · rw [vecNorm2_zero]
+    exact mul_nonneg hgammaB_nonneg (vecNorm2_nonneg x)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10, computed GQR method:
     bounded triangular-solve witnesses plus exact-minimizer handoff.
 
     This packages the existing forward-substitution backward-error witnesses
