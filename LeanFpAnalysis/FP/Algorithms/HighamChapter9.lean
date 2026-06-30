@@ -41934,6 +41934,140 @@ theorem higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_s
       U Uinv hUright)
     hfact hXtri hYtri hR hquad
 
+/-- **Theorem 9.15**, split-level spectral-radius `G` canonical-resolvent
+endpoint.  The normalized route no longer requires a caller-supplied
+nonnegative resolvent: `rho(|G|) < 1` supplies the canonical repository inverse
+`nonsingInv (I - |G|)`, leaving the explicit local self-majorant inequality
+visible. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one
+    {n : ℕ} (hn : 0 < n)
+    (L U Linv Uinv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (hLright : rectMatMul L Linv = idMatrix n)
+    (hUleft : rectMatMul Uinv U = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from
+              realRectToCMatrix
+                (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) < 1)
+    (hself :
+      ∀ i j : Fin n,
+        |higham9_27_GMatrix Linv ΔA Uinv i j| +
+            rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+              (absMatrix n (rectMatMul ΔU Uinv)) i j ≤
+          absMatrix n (higham9_27_GMatrix Linv ΔA Uinv) i j +
+            rectMatMul
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))
+              (fun r c : Fin n =>
+                |higham9_27_GMatrix Linv ΔA Uinv r c| +
+                  rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+                    (absMatrix n (rectMatMul ΔU Uinv)) r c)
+              i j) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) := by
+  let Gabs : Matrix (Fin n) (Fin n) ℝ :=
+    absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)
+  have hG_nonneg : ∀ i j : Fin n, 0 ≤ Gabs i j := by
+    intro i j
+    simp [Gabs, absMatrix]
+  have hR : ch7NonnegativeResolvent n Gabs (nonsingInv n (matSub_id n Gabs)) :=
+    higham9_15_nonnegative_resolvent_nonsingInv_of_spectralRadius_lt_one
+      hn Gabs hG_nonneg (by simpa [Gabs] using hrho)
+  simpa [Gabs] using
+    higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_inverse_identities
+      L U Linv Uinv ΔA ΔL ΔU (nonsingInv n (matSub_id n Gabs))
+      hLright hUleft hfact hXtri hYtri hR hself
+
+/-- **Theorem 9.15**, source-oriented inverse-identity form of the
+split-level spectral-radius `G` canonical-resolvent endpoint. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_spectralRadius_lt_one
+    {n : ℕ} (hn : 0 < n)
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from
+              realRectToCMatrix
+                (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) < 1)
+    (hself :
+      ∀ i j : Fin n,
+        |higham9_27_GMatrix Linv ΔA Uinv i j| +
+            rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+              (absMatrix n (rectMatMul ΔU Uinv)) i j ≤
+          absMatrix n (higham9_27_GMatrix Linv ΔA Uinv) i j +
+            rectMatMul
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))
+              (fun r c : Fin n =>
+                |higham9_27_GMatrix Linv ΔA Uinv r c| +
+                  rectMatMul (absMatrix n (rectMatMul Linv ΔL))
+                    (absMatrix n (rectMatMul ΔU Uinv)) r c)
+              i j) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) :=
+  higham9_15_componentwise_source_bound_of_G_split_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one
+    hn L U Linv Uinv ΔA ΔL ΔU
+    (higham9_15_rectMatMul_right_inverse_of_matrix_left_inverse
+      L Linv hLleft)
+    (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse
+      U Uinv hUright)
+    hfact hXtri hYtri hrho hself
+
 /-- **Theorem 9.15**, split-level spectral-radius/product-majorant `G`
 canonical-resolvent endpoint.  The normalized route no longer requires a
 caller-supplied nonnegative resolvent: `rho(|G|) < 1` supplies the canonical
@@ -43457,6 +43591,141 @@ theorem higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant
     (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse
       Uhat UhatInv hUright)
     hfact hXtri hYtri hR hquad
+
+/-- **Theorem 9.15**, split-level spectral-radius `Gtilde`
+canonical-resolvent endpoint.  The normalized route no longer requires a
+caller-supplied nonnegative resolvent: `rho(|Gtilde|) < 1` supplies the
+canonical repository inverse `nonsingInv (I - |Gtilde|)`, leaving the explicit
+local self-majorant inequality visible. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one
+    {n : ℕ} (hn : 0 < n)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix n)
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from
+              realRectToCMatrix
+                (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) < 1)
+    (hself :
+      ∀ i j : Fin n,
+        |higham9_27_GMatrix LhatInv ΔA UhatInv i j| +
+            rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+              (absMatrix n (rectMatMul ΔU UhatInv)) i j ≤
+          absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv) i j +
+            rectMatMul
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))
+              (fun r c : Fin n =>
+                |higham9_27_GMatrix LhatInv ΔA UhatInv r c| +
+                  rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+                    (absMatrix n (rectMatMul ΔU UhatInv)) r c)
+              i j) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) := by
+  let Gabs : Matrix (Fin n) (Fin n) ℝ :=
+    absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)
+  have hG_nonneg : ∀ i j : Fin n, 0 ≤ Gabs i j := by
+    intro i j
+    simp [Gabs, absMatrix]
+  have hR : ch7NonnegativeResolvent n Gabs (nonsingInv n (matSub_id n Gabs)) :=
+    higham9_15_nonnegative_resolvent_nonsingInv_of_spectralRadius_lt_one
+      hn Gabs hG_nonneg (by simpa [Gabs] using hrho)
+  simpa [Gabs] using
+    higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_inverse_identities
+      Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU
+      (nonsingInv n (matSub_id n Gabs))
+      hLright hUleft hfact hXtri hYtri hR hself
+
+/-- **Theorem 9.15**, source-oriented inverse-identity form of the
+split-level spectral-radius `Gtilde` canonical-resolvent endpoint. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolvent_majorant_of_source_inverse_identities_spectralRadius_lt_one
+    {n : ℕ} (hn : 0 < n)
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from
+              realRectToCMatrix
+                (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) < 1)
+    (hself :
+      ∀ i j : Fin n,
+        |higham9_27_GMatrix LhatInv ΔA UhatInv i j| +
+            rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+              (absMatrix n (rectMatMul ΔU UhatInv)) i j ≤
+          absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv) i j +
+            rectMatMul
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))
+              (fun r c : Fin n =>
+                |higham9_27_GMatrix LhatInv ΔA UhatInv r c| +
+                  rectMatMul (absMatrix n (rectMatMul LhatInv ΔL))
+                    (absMatrix n (rectMatMul ΔU UhatInv)) r c)
+              i j) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul
+              (nonsingInv n
+                (matSub_id n
+                  (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) :=
+  higham9_15_componentwise_source_bound_of_Gtilde_split_nonsingInv_resolvent_majorant_of_spectralRadius_lt_one
+    hn Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU
+    (higham9_15_rectMatMul_right_inverse_of_matrix_left_inverse
+      Lhat LhatInv hLleft)
+    (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse
+      Uhat UhatInv hUright)
+    hfact hXtri hYtri hrho hself
 
 /-- **Theorem 9.15**, split-level spectral-radius/product-majorant `Gtilde`
 canonical-resolvent endpoint.  The normalized route no longer requires a
