@@ -434,6 +434,6 @@ Latest dependency update: the explicit normalized-loop surface now has named zer
 
 - Work is on shared local `main`, synchronized with `origin/main` before theorem design and merged again before push.
 - Split-prefixed proof milestone commit: `042eaf7c` (`Split 3B: add Ch19 tail-local final-panel handoffs`).
-- Latest `origin/main` integrated before final checks: `5a5d5abd` (`Add Chapter 20 horizon-budget QR wrapper`), via conflict-free merge commit `b4a27769`.
+- Latest `origin/main` integrated before final checks: `efc21faf` (`Document Chapter 20 horizon-budget QR wrapper`), via conflict-free merge commit `7337f0c3`.
 - `chapter_splitting/` is local-only context: it is ignored by `.gitignore`, has no tracked files, is absent from `origin/main`, and must not be pushed.
 - Remaining local untracked file at this point: `.codex/config.toml`.
