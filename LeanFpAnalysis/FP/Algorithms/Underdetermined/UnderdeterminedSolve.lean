@@ -5992,6 +5992,65 @@ theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_fa
     hAOp
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    common-radius version of the printed-smallness/max-radius combined-factor
+    handoff.  This packages the two source radii by a single scalar majorant
+    `rho`, matching the printed `max` smallness condition more closely while
+    keeping the scalar radius and operator-envelope obligations explicit. -/
+theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_deltaA_components_source_operator_envelopes_exact_size_eps_common_radius_printed_smallness_common_radius_combined_factor_global_bounds
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (E : Fin m → Fin n → ℝ)
+    (rho eps tauA omega e : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hDataEpsNonneg : 0 ≤ eps)
+    (hEOp : rectOpNorm2Le E e)
+    (hRadiusFactor :
+      max (eps * e)
+          (2 * (m : ℝ) ^ 2 * (tauA + eps * e) * omega) ≤ rho)
+    (hSourceRadius :
+      2 * (m : ℝ) * (n : ℝ) * (tauA + eps * e) * omega * rho ≤
+        (1 / 2 : ℝ))
+    (hGramLeftInv : IsLeftInverse m (rectGram A) AAT_inv)
+    (hDataE : ∀ i k, 0 ≤ E i k)
+    (hDeltaA1Component : ∀ i k, |DeltaA1 i k| ≤ eps * E i k)
+    (hDeltaA2Component : ∀ i k, |DeltaA2 i k| ≤ eps * E i k)
+    (hxTranspose : x ≠ 0 →
+      x =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : 3 * rho < 1)
+    (hAATInv_le : infNorm AAT_inv ≤ omega)
+    (hAOp : rectOpNorm2Le A tauA) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j)
+      b x := by
+  have hRadiusFactorMin :
+      max (eps * e)
+          (2 * (m : ℝ) ^ 2 * (tauA + eps * e) * omega) ≤
+        min rho rho := by
+    simpa using hRadiusFactor
+  have hSourceRadiusMax :
+      2 * (m : ℝ) * (n : ℝ) * (tauA + eps * e) * omega *
+          max rho rho ≤
+        (1 / 2 : ℝ) := by
+    simpa using hSourceRadius
+  have hsmallMax : 3 * max rho rho < 1 := by
+    simpa using hsmall
+  simpa [min_self, max_self] using
+    higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_deltaA_components_source_operator_envelopes_exact_size_eps_common_radius_printed_smallness_max_radius_combined_factor_global_bounds
+      hm A x DeltaA1 DeltaA2 b y AAT_inv E rho rho eps tauA omega e
+      hDeltaA1 hDataEpsNonneg hEOp hRadiusFactorMin hSourceRadiusMax
+      hGramLeftInv hDataE hDeltaA1Component hDeltaA2Component
+      hxTranspose hsmallMax hAATInv_le hAOp
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     exact-size/common-radius handoff with common-smallness and source-factor
     caps separated. -/
 theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_deltaA_components_source_operator_envelopes_exact_size_eps_common_radius_common_smallness_factor_cap_bound
@@ -7271,6 +7330,35 @@ theorem undetNormwiseBackwardErrorEtaF_eq_nonzeroFormulaRHS_of_formula_certifica
       DeltaA, Deltab, hfeas, rfl⟩
   exact le_antisymm
     (undetNormwiseBackwardErrorEtaF_le_nonzeroFormulaRHS_of_exists_feasible_cost_eq
+      theta A b y sigma ⟨DeltaA, Deltab, hfeas, hcost⟩)
+    (undetNormwiseBackwardErrorNonzeroFormulaRHS_le_etaF_of_forall_feasible_cost_ge
+      theta A b y sigma hnonempty hlower)
+
+/-- Inequality-form certificate for the open nonzero equality in Higham
+    Chapter 21, Theorem 21.3.  A pointwise lower bound for every feasible
+    perturbation and one feasible perturbation whose cost is no larger than the
+    displayed nonzero RHS already force the infimum model to equal the RHS. -/
+theorem undetNormwiseBackwardErrorEtaF_eq_nonzeroFormulaRHS_of_formula_upper_certificate
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (y : Fin n → ℝ) (sigma : ℝ)
+    (hlower :
+      ∀ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+        UndetNormwiseBackwardErrorFeasible A b y DeltaA Deltab →
+          undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma ≤
+            lsNormwiseBackwardErrorCostF theta DeltaA Deltab)
+    (hupper :
+      ∃ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+        UndetNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+          lsNormwiseBackwardErrorCostF theta DeltaA Deltab ≤
+            undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma) :
+    undetNormwiseBackwardErrorEtaF theta A b y =
+      undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma := by
+  rcases hupper with ⟨DeltaA, Deltab, hfeas, hcost⟩
+  have hnonempty : (undetNormwiseBackwardErrorValuesF theta A b y).Nonempty :=
+    ⟨lsNormwiseBackwardErrorCostF theta DeltaA Deltab,
+      DeltaA, Deltab, hfeas, rfl⟩
+  exact le_antisymm
+    (undetNormwiseBackwardErrorEtaF_le_nonzeroFormulaRHS_of_exists_feasible_cost_le
       theta A b y sigma ⟨DeltaA, Deltab, hfeas, hcost⟩)
     (undetNormwiseBackwardErrorNonzeroFormulaRHS_le_etaF_of_forall_feasible_cost_ge
       theta A b y sigma hnonempty hlower)

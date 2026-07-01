@@ -33,6 +33,19 @@ end-to-end stability rebuild is tagged as
   bound.  This is dependency progress only: all-tail ambient inverse-entry
   comparison, global all-tail source-table BDD data, and Theorem 13.6 cited
   implementation estimates remain open.
+- 2026-07-01 first-split global-tableau product-update determinant checkpoint:
+  added
+  `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_tail_chain_matrix_stage_history_exact_kappa_of_product_bound_diag_update_of_det_ne_zero`
+  and
+  `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_tail_chain_matrix_stage_history_exact_kappa_of_product_bound_diag_update_reciprocal_of_det_ne_zero`.
+  These combine the preceding first-split product-update and reciprocal
+  wrappers with
+  `higham13_blockMatrixFirstSplitFlat_nonsingInv_rightInverse_of_det_ne_zero`,
+  so callers can supply `det(blockMatrixFirstSplitFlat Ablk) != 0` instead of
+  an explicit canonical ambient right-inverse certificate.  This is still
+  dependency progress only and leaves the all-tail ambient inverse-entry
+  comparison, global all-tail source-table BDD data, and Theorem 13.6 cited
+  implementation estimates open.
 - 2026-07-01 two-block active-tail product-witness checkpoint:
   added
   `higham13_eq13_22_exists_blockLUFact_two_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa`
