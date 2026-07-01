@@ -57,6 +57,7 @@ import LeanFpAnalysis.FP.Algorithms.LU.BlockLU
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskySpec
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskySolve
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyDemmel
+import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyFl
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyPerturbation
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyPSD
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyIndefinite
