@@ -7334,6 +7334,35 @@ theorem undetNormwiseBackwardErrorEtaF_eq_nonzeroFormulaRHS_of_formula_certifica
     (undetNormwiseBackwardErrorNonzeroFormulaRHS_le_etaF_of_forall_feasible_cost_ge
       theta A b y sigma hnonempty hlower)
 
+/-- Inequality-form certificate for the open nonzero equality in Higham
+    Chapter 21, Theorem 21.3.  A pointwise lower bound for every feasible
+    perturbation and one feasible perturbation whose cost is no larger than the
+    displayed nonzero RHS already force the infimum model to equal the RHS. -/
+theorem undetNormwiseBackwardErrorEtaF_eq_nonzeroFormulaRHS_of_formula_upper_certificate
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) (y : Fin n → ℝ) (sigma : ℝ)
+    (hlower :
+      ∀ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+        UndetNormwiseBackwardErrorFeasible A b y DeltaA Deltab →
+          undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma ≤
+            lsNormwiseBackwardErrorCostF theta DeltaA Deltab)
+    (hupper :
+      ∃ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+        UndetNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+          lsNormwiseBackwardErrorCostF theta DeltaA Deltab ≤
+            undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma) :
+    undetNormwiseBackwardErrorEtaF theta A b y =
+      undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y sigma := by
+  rcases hupper with ⟨DeltaA, Deltab, hfeas, hcost⟩
+  have hnonempty : (undetNormwiseBackwardErrorValuesF theta A b y).Nonempty :=
+    ⟨lsNormwiseBackwardErrorCostF theta DeltaA Deltab,
+      DeltaA, Deltab, hfeas, rfl⟩
+  exact le_antisymm
+    (undetNormwiseBackwardErrorEtaF_le_nonzeroFormulaRHS_of_exists_feasible_cost_le
+      theta A b y sigma ⟨DeltaA, Deltab, hfeas, hcost⟩)
+    (undetNormwiseBackwardErrorNonzeroFormulaRHS_le_etaF_of_forall_feasible_cost_ge
+      theta A b y sigma hnonempty hlower)
+
 -- ============================================================
 -- §21.3  Theorem 21.4: Q method backward stability
 -- ============================================================
