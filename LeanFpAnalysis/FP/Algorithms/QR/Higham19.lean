@@ -4959,6 +4959,22 @@ theorem
     (fl_householderApplyCompact_normalized_betaSpec_eq_exactWithUnitRoundoff
       u0 hu0 m v (fun a => A a j)) i
 
+/-- Matrix-rectangular exact-arithmetic form of the normalized-to-`betaSpec`
+handoff, stated in the notation used by the recursive QR panel routine. -/
+theorem fl_householderApplyMatrixRect_normalized_betaSpec_eq_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) (m n : Nat)
+    (v : Fin m -> Real) (A : Fin m -> Fin n -> Real) :
+    fl_householderApplyMatrixRect (FPModel.exactWithUnitRoundoff u0 hu0) m n
+        (householderNormalizedVector m v (householderBetaSpec m v)) 1 A =
+      fl_householderApplyMatrixRect (FPModel.exactWithUnitRoundoff u0 hu0) m n
+        v (householderBetaSpec m v) A := by
+  ext i j
+  simpa [fl_householderApplyMatrixRect, fl_householderApply,
+    fl_householderApplyCompact]
+    using congrFun
+      (fl_householderApplyCompact_normalized_betaSpec_eq_exactWithUnitRoundoff
+        u0 hu0 m v (fun a => A a j)) i
+
 /-- Exact-arithmetic stored-panel handoff from the normalized beta-one update
 to the repository's unnormalized `householderBetaSpec` stored step.
 
