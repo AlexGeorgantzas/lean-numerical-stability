@@ -11808,6 +11808,67 @@ structure storedSignedSequenceFirstTwoTailNormalizedFacts
             (alpha 3) i) =
       2
 
+/-- One-tail route audit for the raw normalized-loop record.
+
+Even a literal equality between the twice-trailing active vector and
+`fl_householderNormalizedVector` does not imply the one-tail normalized-facts
+record for an arbitrary rounded `FPModel`.  The missing field is exactly the
+source-shaped self-dot equality. -/
+theorem oneTailNormalizedFacts_not_forall_from_tail_vector_eq_FPModel :
+    Exists (fun fp : FPModel =>
+      Exists (fun A_hat :
+        Nat -> Fin (0 + 1 + 2) -> Fin (1 + 2) -> Real =>
+        Exists (fun alpha : Nat -> Real =>
+          (householderTrailingActiveVector (0 + 1)
+              (0 : Fin (0 + 1))
+              (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+              (alpha 2) =
+            fl_householderNormalizedVector fp (Nat.succ_pos 0)
+              (panelFirstColumn (Nat.succ_pos 0)
+                (trailingPanel (trailingPanel (A_hat 2))))) /\
+          Not (storedSignedSequenceOneTailNormalizedFacts fp A_hat alpha)))) := by
+  rcases fl_householderNormalizedVector_self_dot_not_forall_FPModel with
+    ⟨fp, x, hbad⟩
+  let tail : Fin (0 + 1 + 2) := ((0 : Fin 1).succ.succ)
+  let tailCol : Fin (1 + 2) := ((0 : Fin 1).succ.succ)
+  let A2 : Fin (0 + 1 + 2) -> Fin (1 + 2) -> Real :=
+    fun i j => if i = tail then if j = tailCol then x 0 else 0 else 0
+  let A_hat : Nat -> Fin (0 + 1 + 2) -> Fin (1 + 2) -> Real :=
+    fun k => if k = 2 then A2 else fun _ _ => 0
+  let alpha : Nat -> Real :=
+    fun k =>
+      if k = 2 then
+        x 0 - fl_householderNormalizedVector fp (Nat.succ_pos 0) x 0
+      else 0
+  refine Exists.intro fp ?_
+  refine Exists.intro A_hat ?_
+  refine Exists.intro alpha ?_
+  have hpanel :
+      panelFirstColumn (Nat.succ_pos 0)
+          (trailingPanel (trailingPanel (A_hat 2))) =
+        x := by
+    funext i
+    fin_cases i
+    simp [A_hat, A2, tail, tailCol, panelFirstColumn, trailingPanel]
+  have hvec :
+      householderTrailingActiveVector (0 + 1)
+          (0 : Fin (0 + 1))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+          (alpha 2) =
+        fl_householderNormalizedVector fp (Nat.succ_pos 0)
+          (panelFirstColumn (Nat.succ_pos 0)
+            (trailingPanel (trailingPanel (A_hat 2)))) := by
+    rw [hpanel]
+    funext i
+    fin_cases i
+    simp [householderTrailingActiveVector, householderActiveVector,
+      householderTrailingPart, A_hat, A2, alpha, tail, tailCol]
+  refine ⟨hvec, ?_⟩
+  intro hfacts
+  have hself := hfacts.hselfTail
+  rw [hvec, hpanel] at hself
+  exact hbad hself
+
 /-- Exact-arithmetic one-tail normalized reflector facts from the tail-vector
 equality and the local tail determinant nonzero fact.
 
