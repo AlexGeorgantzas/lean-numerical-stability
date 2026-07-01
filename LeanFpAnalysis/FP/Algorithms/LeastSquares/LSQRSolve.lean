@@ -9832,6 +9832,44 @@ theorem lsNormwiseBackwardErrorEtaF_nonneg_iSup_le_matrixOnlyEtaF {m n : ℕ}
   exact ciSup_le fun theta =>
     lsNormwiseBackwardErrorEtaF_le_matrixOnlyEtaF theta.1 A b y
 
+/-- Real-parameter limiting foundation for (20.20): as `theta -> +∞`, the
+    finite-weight backward error converges to the supremum of its nonnegative
+    finite-weight values.  The source's full matrix-only formula still
+    requires the reverse comparison with the `Delta b = 0` infimum. -/
+theorem lsNormwiseBackwardErrorEtaF_tendsto_nonneg_iSup_atTop {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    Filter.Tendsto
+      (fun theta : ℝ => lsNormwiseBackwardErrorEtaF theta A b y)
+      Filter.atTop
+      (nhds (⨆ theta : {theta : ℝ // 0 ≤ theta},
+        lsNormwiseBackwardErrorEtaF theta.1 A b y)) := by
+  let clamp : ℝ → {theta : ℝ // 0 ≤ theta} :=
+    fun theta => ⟨max theta 0, le_max_right theta 0⟩
+  have hclamp : Filter.Tendsto clamp Filter.atTop Filter.atTop := by
+    refine Filter.tendsto_atTop_atTop.mpr ?_
+    intro bound
+    refine ⟨bound.1, ?_⟩
+    intro theta htheta
+    change bound.1 ≤ max theta 0
+    exact le_trans htheta (le_max_left theta 0)
+  have hcomp :
+      Filter.Tendsto
+        (fun theta : ℝ =>
+          lsNormwiseBackwardErrorEtaF (max theta 0) A b y)
+        Filter.atTop
+        (nhds (⨆ theta : {theta : ℝ // 0 ≤ theta},
+          lsNormwiseBackwardErrorEtaF theta.1 A b y)) := by
+    simpa [clamp, Function.comp_def] using
+      (lsNormwiseBackwardErrorEtaF_nonneg_tendsto_iSup A b y).comp hclamp
+  exact Filter.Tendsto.congr'
+    (f₁ := fun theta : ℝ =>
+      lsNormwiseBackwardErrorEtaF (max theta 0) A b y)
+    (f₂ := fun theta : ℝ => lsNormwiseBackwardErrorEtaF theta A b y)
+    (by
+      filter_upwards [Filter.eventually_ge_atTop (0 : ℝ)] with theta htheta
+      simp [max_eq_left htheta])
+    hcomp
+
 /-- A bounded feasible perturbation cost in (20.20) bounds the infimum model
     `eta_F(y)`. -/
 theorem lsNormwiseBackwardErrorEtaF_le_of_feasible_cost_le {m n : ℕ}
