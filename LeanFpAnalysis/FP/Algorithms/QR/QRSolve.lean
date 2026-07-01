@@ -1377,6 +1377,47 @@ theorem two_mul_householderQRRhsPanelGammaClosedGrowthFactor_not_le_panel_steps
       (householderQRRhsPanelGammaClosedGrowthFactor m p) (by norm_num)
   exact Nat.not_le_of_gt (lt_of_lt_of_le hfactor_lt hfactor_le_two)
 
+/-- Real-coefficient obstruction for the Theorem 20.4 printed RHS route.
+
+With positive unit roundoff and a nonempty panel, the conservative
+implementation coefficient
+`2 * householderQRRhsPanelGammaClosedGrowthFactor m p * gamma ...`
+is strictly larger than the printed panel coefficient `p * gamma ...`.
+Thus the remaining printed-coefficient gap cannot be closed by merely
+comparing these two already-derived coefficients. -/
+theorem householderQRRhsPanelGammaClosedGrowthFactor_printedCoeff_lt_factorCoeff
+    (fp : FPModel) {m p : ℕ} (hm : 0 < m) (hp : 0 < p)
+    (hu : 0 < fp.u)
+    (hvalid : gammaValid fp (p * householderConstructApplyGammaIndex m)) :
+    (p : ℝ) * gamma fp (p * householderConstructApplyGammaIndex m) <
+      ((2 : ℝ) *
+          (householderQRRhsPanelGammaClosedGrowthFactor m p : ℝ) *
+          gamma fp (p * householderConstructApplyGammaIndex m)) := by
+  let F : ℕ := householderQRRhsPanelGammaClosedGrowthFactor m p
+  let Kp : ℕ := p * householderConstructApplyGammaIndex m
+  have hfactor_lt : p < F := by
+    simpa [F] using
+      householderQRRhsPanelGammaClosedGrowthFactor_gt_panel_steps
+        (m := m) (p := p) hm
+  have hfactor_pos : 0 < F := by
+    simpa [F] using
+      householderQRRhsPanelGammaClosedGrowthFactor_pos
+        (m := m) (p := p) hm
+  have hfactor_le_two : F ≤ 2 * F :=
+    Nat.le_mul_of_pos_left F (by norm_num)
+  have hp_lt_twoF : p < 2 * F := lt_of_lt_of_le hfactor_lt hfactor_le_two
+  have hcoeff_lt : (p : ℝ) < (2 : ℝ) * (F : ℝ) := by
+    exact_mod_cast hp_lt_twoF
+  have hK_pos : 0 < householderConstructApplyGammaIndex m := by
+    dsimp [householderConstructApplyGammaIndex]
+    omega
+  have hKp_pos : 0 < Kp := Nat.mul_pos hp hK_pos
+  have hgamma_pos : 0 < gamma fp Kp :=
+    lt_of_lt_of_le hu
+      (u_le_gamma fp hKp_pos (by simpa [Kp] using hvalid))
+  simpa [F, Kp, mul_assoc] using
+    mul_lt_mul_of_pos_right hcoeff_lt hgamma_pos
+
 /-- The accumulated conservative RHS gamma index is strictly larger than the
     printed panel gamma radius whenever the row dimension and panel step count
     are nonzero.

@@ -24,6 +24,7 @@ import LeanFpAnalysis.FP.Analysis.PerturbationTheory
 import LeanFpAnalysis.FP.Analysis.HighamChapter7
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskySpec
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskySolve
+import LeanFpAnalysis.FP.Algorithms.QR.Higham19
 import LeanFpAnalysis.FP.Algorithms.QR.GramSchmidt
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSQRSolve
 import LeanFpAnalysis.FP.Algorithms.Underdetermined.UnderdeterminedSpec
@@ -7999,6 +8000,85 @@ theorem undetNormwiseBackwardErrorEtaF_eq_nonzeroFormulaRHS_of_formula_upper_cer
 -- ============================================================
 -- §21.3  Theorem 21.4: Q method backward stability
 -- ============================================================
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    a columnwise Householder QR perturbation bound for `Aᵀ` is exactly a
+    row-wise perturbation bound for the transposed perturbation of `A`. -/
+theorem higham21_rectRowNorm2_eq_columnFrob_finiteTranspose {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (i : Fin m) :
+    rectRowNorm2 A i = columnFrob (finiteTranspose A) i := by
+  simp [rectRowNorm2, columnFrob_eq_vecNorm2, finiteTranspose]
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    transposing a Chapter 19 columnwise QR perturbation certificate turns its
+    column bounds into the row-wise bounds used by the underdetermined-system
+    backward-error definition. -/
+theorem higham21_row_bounds_of_transposed_qr_column_bounds {m n : ℕ}
+    (AT DeltaAT : Fin n → Fin m → ℝ) {eta : ℝ}
+    (hcol : ∀ i : Fin m,
+      columnFrob DeltaAT i ≤ eta * columnFrob AT i) :
+    ∀ i : Fin m,
+      rectRowNorm2 (finiteTranspose DeltaAT) i ≤
+        eta * rectRowNorm2 (finiteTranspose AT) i := by
+  intro i
+  simpa [higham21_rectRowNorm2_eq_columnFrob_finiteTranspose] using hcol i
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    source-facing QR dependency for the Q method.  Applying Chapter 19,
+    Theorem 19.4 to `Aᵀ` gives a perturbation `DeltaA0` of the original
+    underdetermined matrix whose rows satisfy the printed row-wise QR bound.
+
+    This is only the QR factorization perturbation used in the proof of
+    Theorem 21.4; the triangular-solve and final `Q`-application perturbations
+    remain separate obligations before the full Q-method theorem closes. -/
+theorem higham21_theorem21_4_qr_transpose_row_perturbation_bound
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (Q : Fin n → Fin n → ℝ)
+    (R_hat : Fin n → Fin m → ℝ)
+    (eta : ℝ)
+    (hqr : H19.Theorem19_4.HouseholderQRBackwardError n m
+      (finiteTranspose A) Q R_hat eta) :
+    ∃ DeltaA0 : Fin m → Fin n → ℝ,
+      (∀ i j, A i j + DeltaA0 i j =
+        matMulRect n n m Q R_hat j i) ∧
+      (∀ i : Fin m,
+        rectRowNorm2 DeltaA0 i ≤ eta * rectRowNorm2 A i) := by
+  rcases hqr.result with ⟨DeltaAT, hrep, hcol⟩
+  refine ⟨finiteTranspose DeltaAT, ?_, ?_⟩
+  · intro i j
+    simpa [finiteTranspose] using hrep j i
+  · intro i
+    have hrow :=
+      higham21_row_bounds_of_transposed_qr_column_bounds
+        (finiteTranspose A) DeltaAT hcol i
+    simpa [finiteTranspose_finiteTranspose] using hrow
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    concrete Householder QR instantiation of the transposed row-perturbation
+    dependency for `Aᵀ`.  The dimension hypotheses are the Chapter 19 tall-panel
+    side conditions for the matrix `Aᵀ : ℝ^(n×m)`. -/
+theorem higham21_theorem21_4_householder_qr_transpose_row_perturbation_bound
+    {m n : ℕ} (fp : FPModel)
+    (A : Fin m → Fin n → ℝ)
+    (hm : 0 < m) (hmn : m ≤ n)
+    (hvalid :
+      gammaValid fp (m * householderConstructApplyGammaIndex n)) :
+    ∃ DeltaA0 : Fin m → Fin n → ℝ,
+      (∀ i j, A i j + DeltaA0 i j =
+        matMulRect n n m
+          (fl_householderQRPanel_Q fp n m (finiteTranspose A))
+          (fl_householderQRPanel_R fp n m (finiteTranspose A)) j i) ∧
+      (∀ i : Fin m,
+        rectRowNorm2 DeltaA0 i ≤
+          H19.Theorem19_4.gamma_tilde fp n m * rectRowNorm2 A i) := by
+  exact
+    higham21_theorem21_4_qr_transpose_row_perturbation_bound A
+      (fl_householderQRPanel_Q fp n m (finiteTranspose A))
+      (fl_householderQRPanel_R fp n m (finiteTranspose A))
+      (H19.Theorem19_4.gamma_tilde fp n m)
+      (H19.Theorem19_4.householder_qr_backward_error
+        fp n m (finiteTranspose A) hm hmn hvalid)
 
 /-- **Theorem 21.4** (Higham): The Q method for underdetermined systems
     is row-wise backward stable.
