@@ -20,6 +20,21 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-07-01 full-flat two-block active-tail product-update checkpoint:
+  added
+  `higham13_eq13_23_exists_blockLUFact_two_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update`,
+  `higham13_eq13_23_exists_blockLUFact_two_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update_reciprocal`,
+  `higham13_eq13_23_exists_blockLUFact_two_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update_of_det_ne_zero`,
+  and
+  `higham13_eq13_23_exists_blockLUFact_two_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update_reciprocal_of_det_ne_zero`.
+  These specialize the two-block active-tail global-tableau Eq.13.23 witness
+  to the actual flat Algorithm 13.3 source matrix, so the product-bound/
+  diagonal-update BDD route supplies `rho <= 2` internally.  The reciprocal
+  variants accept the source-style active reciprocal table; the determinant
+  variants derive the canonical ambient `nonsingInv` right-inverse from
+  `det(blockMatrixFlatFin A) != 0`.  This removes one proof-artifact surface
+  but still leaves the current two-block inverse-entry comparison, all-tail
+  source-table/product-update data, and Theorem 13.6 estimates open.
 - 2026-07-01 first-split global-tableau product-update checkpoint:
   added
   `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_tail_chain_matrix_stage_history_exact_kappa_of_product_bound_diag_update`
