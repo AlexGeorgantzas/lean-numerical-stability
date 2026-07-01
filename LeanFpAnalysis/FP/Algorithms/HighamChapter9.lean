@@ -43090,6 +43090,76 @@ theorem higham9_15_componentwise_source_bound_of_factorization_G_resolvent_major
       A L U Linv Uinv ΔA ΔL ΔU R hLU hPert hLleft hUright hXtri
       hYtri hR hself
 
+/-- **Theorem 9.15**, factorization-level `G` supplied-resolvent endpoint
+when the inverse-normalized lower perturbation is identically zero. -/
+theorem higham9_15_componentwise_source_bound_of_factorization_G_resolvent_majorant_of_left_zero
+    {n : ℕ}
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) R)
+    (hXzero : ∀ i j : Fin n, rectMatMul Linv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) :=
+  higham9_15_componentwise_source_bound_of_factorization_G_resolvent_majorant_of_product_majorant
+    A L U Linv Uinv ΔA ΔL ΔU R hLU hPert hLleft hUright hXtri hYtri hR
+    (higham9_15_componentwise_product_majorant_of_left_zero
+      (higham9_27_GMatrix Linv ΔA Uinv)
+      (rectMatMul Linv ΔL) (rectMatMul ΔU Uinv) hXzero)
+
+/-- **Theorem 9.15**, factorization-level `G` supplied-resolvent endpoint
+when the inverse-normalized upper perturbation is identically zero. -/
+theorem higham9_15_componentwise_source_bound_of_factorization_G_resolvent_majorant_of_right_zero
+    {n : ℕ}
+    (A L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLU : L * U = A)
+    (hPert : (L + ΔL) * (U + ΔU) = A + ΔA)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) R)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU Uinv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) :=
+  higham9_15_componentwise_source_bound_of_factorization_G_resolvent_majorant_of_product_majorant
+    A L U Linv Uinv ΔA ΔL ΔU R hLU hPert hLleft hUright hXtri hYtri hR
+    (higham9_15_componentwise_product_majorant_of_right_zero
+      (higham9_27_GMatrix Linv ΔA Uinv)
+      (rectMatMul Linv ΔL) (rectMatMul ΔU Uinv) hYzero)
+
 /-- **Theorem 9.15**, factorization-level componentwise `G` endpoint with the
 canonical nonsingular Neumann inverse.  A row-sum/infinity-norm contraction for
 `|G|` supplies the nonnegative resolvent `nonsingInv (I - |G|)`, leaving only
@@ -45185,6 +45255,78 @@ theorem higham9_15_componentwise_source_bound_of_factorization_Gtilde_resolvent_
     higham9_15_componentwise_source_bound_of_factorization_Gtilde_resolvent_majorant
       A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU R hA hPert hLleft
       hUright hXtri hYtri hR hself
+
+/-- **Theorem 9.15**, factorization-level `Gtilde` supplied-resolvent endpoint
+when the inverse-normalized lower perturbation is identically zero. -/
+theorem higham9_15_componentwise_source_bound_of_factorization_Gtilde_resolvent_majorant_of_left_zero
+    {n : ℕ}
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) R)
+    (hXzero : ∀ i j : Fin n, rectMatMul LhatInv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) :=
+  higham9_15_componentwise_source_bound_of_factorization_Gtilde_resolvent_majorant_of_product_majorant
+    A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU R hA hPert hLleft hUright
+    hXtri hYtri hR
+    (higham9_15_componentwise_product_majorant_of_left_zero
+      (higham9_27_GMatrix LhatInv ΔA UhatInv)
+      (rectMatMul LhatInv ΔL) (rectMatMul ΔU UhatInv) hXzero)
+
+/-- **Theorem 9.15**, factorization-level `Gtilde` supplied-resolvent endpoint
+when the inverse-normalized upper perturbation is identically zero. -/
+theorem higham9_15_componentwise_source_bound_of_factorization_Gtilde_resolvent_majorant_of_right_zero
+    {n : ℕ}
+    (A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hA : (Lhat - ΔL) * (Uhat - ΔU) = A)
+    (hPert : Lhat * Uhat = A + ΔA)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) R)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU UhatInv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) :=
+  higham9_15_componentwise_source_bound_of_factorization_Gtilde_resolvent_majorant_of_product_majorant
+    A Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU R hA hPert hLleft hUright
+    hXtri hYtri hR
+    (higham9_15_componentwise_product_majorant_of_right_zero
+      (higham9_27_GMatrix LhatInv ΔA UhatInv)
+      (rectMatMul LhatInv ΔL) (rectMatMul ΔU UhatInv) hYzero)
 
 /-- **Theorem 9.15**, factorization-level componentwise `Gtilde` endpoint with
 the canonical nonsingular Neumann inverse.  A row-sum/infinity-norm contraction
