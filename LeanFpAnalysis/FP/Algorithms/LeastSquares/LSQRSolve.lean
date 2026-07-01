@@ -9745,6 +9745,37 @@ theorem lsNormwiseBackwardErrorEtaF_exists_feasible_cost_eq_deltab_norm_le_matri
     lsNormwiseBackwardErrorEtaF_minimizer_deltab_norm_le_matrixOnlyEtaF_div_theta
       htheta A b y DeltaA Deltab hcost⟩
 
+/-- Eventual RHS-vanishing form of the finite-minimizer bound: for every
+    positive tolerance, all sufficiently large finite weights admit an exact
+    minimizing perturbation pair with `||Delta b||_2` below that tolerance. -/
+theorem lsNormwiseBackwardErrorEtaF_eventually_exists_feasible_cost_eq_deltab_norm_lt_atTop
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (y : Fin n → ℝ) {eps : ℝ} (heps : 0 < eps) :
+    ∀ᶠ theta : ℝ in Filter.atTop,
+      ∃ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+        0 < theta ∧
+          LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+          lsNormwiseBackwardErrorCostF theta DeltaA Deltab =
+            lsNormwiseBackwardErrorEtaF theta A b y ∧
+          vecNorm2 Deltab < eps := by
+  let M := lsNormwiseBackwardErrorMatrixOnlyEtaF A b y
+  filter_upwards [Filter.eventually_gt_atTop (max 0 (M / eps))] with theta htheta
+  have htheta_pos : 0 < theta :=
+    lt_of_le_of_lt (le_max_left (0 : ℝ) (M / eps)) htheta
+  have hM_div_lt : M / eps < theta :=
+    lt_of_le_of_lt (le_max_right (0 : ℝ) (M / eps)) htheta
+  have hM_lt : M < eps * theta := by
+    have hraw : M < theta * eps := (div_lt_iff₀ heps).mp hM_div_lt
+    simpa [mul_comm] using hraw
+  have hdiv_lt : M / theta < eps := by
+    exact (div_lt_iff₀ htheta_pos).mpr hM_lt
+  rcases
+    lsNormwiseBackwardErrorEtaF_exists_feasible_cost_eq_deltab_norm_le_matrixOnlyEtaF_div_theta
+      htheta_pos A b y with
+    ⟨DeltaA, Deltab, hfeas, hcost, hDeltab⟩
+  exact ⟨DeltaA, Deltab, htheta_pos, hfeas, hcost,
+    lt_of_le_of_lt hDeltab (by simpa [M] using hdiv_lt)⟩
+
 /-- Finite positive-`theta` zero-backward-error characterization for (20.20):
     after minimum-attainment is available, `eta_F(y) = 0` exactly when `y` is
     already an exact least-squares minimizer for the unperturbed data.  This is
