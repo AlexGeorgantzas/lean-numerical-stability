@@ -20,6 +20,21 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-07-01 Problem 13.4 Schur inverse-entry bridge checkpoint: added
+  `higham13_problem13_4_Sinv_entry_bound_from_block_inverse` and
+  `higham13_problem13_4_Sinv_maxEntryNormRect_from_block_inverse`.  These use
+  the Problem 13.8 lower-right block-inverse identity to show that entries, and
+  hence the max-entry norm, of the displayed Schur-complement inverse inherit a
+  supplied entrywise max bound on the parent block inverse.  This removes a
+  lower-right-block identity proof artifact from recursive max-entry
+  source-comparison routes.  It does not prove the all-tail ambient
+  inverse-entry/source comparison, Eq.13.23 `rho <= 2`/BDD product-update data,
+  or Theorem 13.6 cited implementation estimates.  Verification passed with
+  direct `BlockLU.lean`, focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet public lookup with empty
+  stderr and both names present, `git diff --check`, touched Lean placeholder
+  scan, anchored conflict-marker scan, and focused `#print axioms` reporting
+  only `propext`, `Classical.choice`, and `Quot.sound`.
 - 2026-07-01 full-flat two-block active-tail product-update checkpoint:
   added
   `higham13_eq13_23_exists_blockLUFact_two_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update`,
