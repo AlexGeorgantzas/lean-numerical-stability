@@ -9698,6 +9698,53 @@ theorem lsNormwiseBackwardErrorEtaF_exists_feasible_cost_eq_of_positive_theta
       htheta A b y with ⟨DeltaA, Deltab, hfeas, heta_eq⟩
   exact ⟨DeltaA, Deltab, hfeas, heta_eq.symm⟩
 
+/-- Matrix-only limiting dependency for (20.20): any exact finite-`theta`
+    minimizer has right-hand-side perturbation norm bounded by the
+    matrix-only infimum divided by `theta`.  This makes the source's
+    "large `theta` forces `Delta b` to zero" compactness route explicit. -/
+theorem lsNormwiseBackwardErrorEtaF_minimizer_deltab_norm_le_matrixOnlyEtaF_div_theta
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (hcost :
+      lsNormwiseBackwardErrorCostF theta DeltaA Deltab =
+        lsNormwiseBackwardErrorEtaF theta A b y) :
+    vecNorm2 Deltab ≤ lsNormwiseBackwardErrorMatrixOnlyEtaF A b y / theta := by
+  have hweighted :
+      theta * vecNorm2 Deltab ≤
+        lsNormwiseBackwardErrorCostF theta DeltaA Deltab :=
+    lsNormwiseBackwardErrorCostF_weighted_deltab_le
+      (le_of_lt htheta) DeltaA Deltab
+  have heta_le :
+      lsNormwiseBackwardErrorEtaF theta A b y ≤
+        lsNormwiseBackwardErrorMatrixOnlyEtaF A b y :=
+    lsNormwiseBackwardErrorEtaF_le_matrixOnlyEtaF theta A b y
+  rw [le_div_iff₀ htheta]
+  calc
+    vecNorm2 Deltab * theta = theta * vecNorm2 Deltab := by ring
+    _ ≤ lsNormwiseBackwardErrorCostF theta DeltaA Deltab := hweighted
+    _ = lsNormwiseBackwardErrorEtaF theta A b y := hcost
+    _ ≤ lsNormwiseBackwardErrorMatrixOnlyEtaF A b y := heta_le
+
+/-- Existence form of the finite-`theta` minimizer RHS bound: for every
+    positive finite source weight, there is an exact minimizing perturbation
+    pair whose `Delta b` component is bounded by the matrix-only infimum divided
+    by `theta`. -/
+theorem lsNormwiseBackwardErrorEtaF_exists_feasible_cost_eq_deltab_norm_le_matrixOnlyEtaF_div_theta
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    ∃ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+      LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+        lsNormwiseBackwardErrorCostF theta DeltaA Deltab =
+          lsNormwiseBackwardErrorEtaF theta A b y ∧
+        vecNorm2 Deltab ≤
+          lsNormwiseBackwardErrorMatrixOnlyEtaF A b y / theta := by
+  rcases lsNormwiseBackwardErrorEtaF_exists_feasible_cost_eq_of_positive_theta
+      htheta A b y with ⟨DeltaA, Deltab, hfeas, hcost⟩
+  exact ⟨DeltaA, Deltab, hfeas, hcost,
+    lsNormwiseBackwardErrorEtaF_minimizer_deltab_norm_le_matrixOnlyEtaF_div_theta
+      htheta A b y DeltaA Deltab hcost⟩
+
 /-- Finite positive-`theta` zero-backward-error characterization for (20.20):
     after minimum-attainment is available, `eta_F(y) = 0` exactly when `y` is
     already an exact least-squares minimizer for the unperturbed data.  This is
