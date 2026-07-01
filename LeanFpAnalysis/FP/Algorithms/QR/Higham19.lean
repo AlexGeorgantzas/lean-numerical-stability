@@ -5429,6 +5429,214 @@ theorem
               fl_householderStoredPanelStep_normalized_betaSpec_eq_of_updateCompatible
                 fp hcompat (m + 1) (p + 1) 0 v A
 
+/-- Compact-vector normalized-to-`householderBetaSpec` handoff when the
+sequential dot product and update multiplications are exact.
+
+This is the direct stronger-operation-model wrapper around
+`normalizedBetaSpecCompactUpdateCompatible_of_exact_dotProduct_and_mul`; it
+does not assert the handoff for an arbitrary rounded `FPModel`. -/
+theorem fl_householderApply_normalized_betaSpec_eq_of_exact_dotProduct_and_mul
+    (fp : FPModel)
+    (hdot : forall (n : Nat) (x y : Fin n -> Real),
+      fl_dotProduct fp n x y =
+        (Finset.univ : Finset (Fin n)).sum (fun i => x i * y i))
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (n : Nat) (v b : Fin n -> Real) :
+    fl_householderApply fp n
+        (householderNormalizedVector n v (householderBetaSpec n v)) 1 b =
+      fl_householderApply fp n v (householderBetaSpec n v) b :=
+  fl_householderApply_normalized_betaSpec_eq_of_updateCompatible fp
+    (normalizedBetaSpecCompactUpdateCompatible_of_exact_dotProduct_and_mul
+      fp hdot hmul) n v b
+
+/-- Compact-panel-vector handoff under exact dot-product and multiplication
+operations on the compact update path. -/
+theorem
+    fl_householderApplyCompact_normalized_betaSpec_eq_of_exact_dotProduct_and_mul
+    (fp : FPModel)
+    (hdot : forall (n : Nat) (x y : Fin n -> Real),
+      fl_dotProduct fp n x y =
+        (Finset.univ : Finset (Fin n)).sum (fun i => x i * y i))
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (n : Nat) (v b : Fin n -> Real) :
+    fl_householderApplyCompact fp n
+        (householderNormalizedVector n v (householderBetaSpec n v)) 1 b =
+      fl_householderApplyCompact fp n v (householderBetaSpec n v) b :=
+  fl_householderApplyCompact_normalized_betaSpec_eq_of_updateCompatible fp
+    (normalizedBetaSpecCompactUpdateCompatible_of_exact_dotProduct_and_mul
+      fp hdot hmul) n v b
+
+/-- Columnwise compact-panel handoff under exact dot-product and multiplication
+operations on the compact update path. -/
+theorem
+    fl_householderApplyCompactPanel_normalized_betaSpec_eq_of_exact_dotProduct_and_mul
+    (fp : FPModel)
+    (hdot : forall (n : Nat) (x y : Fin n -> Real),
+      fl_dotProduct fp n x y =
+        (Finset.univ : Finset (Fin n)).sum (fun i => x i * y i))
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (m n : Nat) (v : Fin m -> Real) (A : Fin m -> Fin n -> Real) :
+    fl_householderApplyCompactPanel fp m n
+        (householderNormalizedVector m v (householderBetaSpec m v)) 1 A =
+      fl_householderApplyCompactPanel fp m n
+        v (householderBetaSpec m v) A :=
+  fl_householderApplyCompactPanel_normalized_betaSpec_eq_of_updateCompatible fp
+    (normalizedBetaSpecCompactUpdateCompatible_of_exact_dotProduct_and_mul
+      fp hdot hmul) m n v A
+
+/-- Matrix-rectangular handoff under exact dot-product and multiplication
+operations on the compact update path. -/
+theorem
+    fl_householderApplyMatrixRect_normalized_betaSpec_eq_of_exact_dotProduct_and_mul
+    (fp : FPModel)
+    (hdot : forall (n : Nat) (x y : Fin n -> Real),
+      fl_dotProduct fp n x y =
+        (Finset.univ : Finset (Fin n)).sum (fun i => x i * y i))
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (m n : Nat) (v : Fin m -> Real) (A : Fin m -> Fin n -> Real) :
+    fl_householderApplyMatrixRect fp m n
+        (householderNormalizedVector m v (householderBetaSpec m v)) 1 A =
+      fl_householderApplyMatrixRect fp m n
+        v (householderBetaSpec m v) A :=
+  fl_householderApplyMatrixRect_normalized_betaSpec_eq_of_updateCompatible fp
+    (normalizedBetaSpecCompactUpdateCompatible_of_exact_dotProduct_and_mul
+      fp hdot hmul) m n v A
+
+/-- Stored-panel handoff under exact dot-product and multiplication operations
+on the compact update path. -/
+theorem
+    fl_householderStoredPanelStep_normalized_betaSpec_eq_of_exact_dotProduct_and_mul
+    (fp : FPModel)
+    (hdot : forall (n : Nat) (x y : Fin n -> Real),
+      fl_dotProduct fp n x y =
+        (Finset.univ : Finset (Fin n)).sum (fun i => x i * y i))
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (m n k : Nat) (v : Fin m -> Real) (A : Fin m -> Fin n -> Real) :
+    fl_householderStoredPanelStep fp m n k
+        (householderNormalizedVector m v (householderBetaSpec m v)) 1 A =
+      fl_householderStoredPanelStep fp m n k
+        v (householderBetaSpec m v) A :=
+  fl_householderStoredPanelStep_normalized_betaSpec_eq_of_updateCompatible fp
+    (normalizedBetaSpecCompactUpdateCompatible_of_exact_dotProduct_and_mul
+      fp hdot hmul) m n k v A
+
+/-- First-pivot QR-storage handoff under exact dot-product and multiplication
+operations on the compact update path. -/
+theorem
+    firstStoredPanelStep_normalized_betaSpec_eq_panelFromTopAndTrailing_of_exact_dotProduct_and_mul
+    (fp : FPModel)
+    (hdot : forall (n : Nat) (x y : Fin n -> Real),
+      fl_dotProduct fp n x y =
+        (Finset.univ : Finset (Fin n)).sum (fun i => x i * y i))
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    {m p : Nat} (v : Fin (m + 1) -> Real)
+    (A : Fin (m + 1) -> Fin (p + 1) -> Real) :
+    (let Astep :=
+      fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+        (householderNormalizedVector (m + 1) v
+          (householderBetaSpec (m + 1) v))
+        1 A
+     panelFromTopAndTrailing (panelTopLeft Astep) (panelTopRowTail Astep)
+       (trailingPanel Astep)) =
+    fl_householderStoredPanelStep fp (m + 1) (p + 1) 0 v
+      (householderBetaSpec (m + 1) v) A :=
+  firstStoredPanelStep_normalized_betaSpec_eq_panelFromTopAndTrailing_of_updateCompatible
+    fp
+    (normalizedBetaSpecCompactUpdateCompatible_of_exact_dotProduct_and_mul
+      fp hdot hmul) v A
+
+/-- Compact-vector normalized-to-`householderBetaSpec` handoff when addition
+and multiplication are exact on the dot-product/update path. -/
+theorem fl_householderApply_normalized_betaSpec_eq_of_exact_add_mul
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (n : Nat) (v b : Fin n -> Real) :
+    fl_householderApply fp n
+        (householderNormalizedVector n v (householderBetaSpec n v)) 1 b =
+      fl_householderApply fp n v (householderBetaSpec n v) b :=
+  fl_householderApply_normalized_betaSpec_eq_of_exact_dotProduct_and_mul fp
+    (fl_dotProduct_eq_sum_of_exact_add_mul fp hadd hmul) hmul n v b
+
+/-- Compact-panel-vector handoff when addition and multiplication are exact on
+the dot-product/update path. -/
+theorem fl_householderApplyCompact_normalized_betaSpec_eq_of_exact_add_mul
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (n : Nat) (v b : Fin n -> Real) :
+    fl_householderApplyCompact fp n
+        (householderNormalizedVector n v (householderBetaSpec n v)) 1 b =
+      fl_householderApplyCompact fp n v (householderBetaSpec n v) b :=
+  fl_householderApplyCompact_normalized_betaSpec_eq_of_exact_dotProduct_and_mul
+    fp (fl_dotProduct_eq_sum_of_exact_add_mul fp hadd hmul) hmul n v b
+
+/-- Columnwise compact-panel handoff when addition and multiplication are exact
+on the dot-product/update path. -/
+theorem
+    fl_householderApplyCompactPanel_normalized_betaSpec_eq_of_exact_add_mul
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (m n : Nat) (v : Fin m -> Real) (A : Fin m -> Fin n -> Real) :
+    fl_householderApplyCompactPanel fp m n
+        (householderNormalizedVector m v (householderBetaSpec m v)) 1 A =
+      fl_householderApplyCompactPanel fp m n
+        v (householderBetaSpec m v) A :=
+  fl_householderApplyCompactPanel_normalized_betaSpec_eq_of_exact_dotProduct_and_mul
+    fp (fl_dotProduct_eq_sum_of_exact_add_mul fp hadd hmul) hmul m n v A
+
+/-- Matrix-rectangular handoff when addition and multiplication are exact on
+the dot-product/update path. -/
+theorem
+    fl_householderApplyMatrixRect_normalized_betaSpec_eq_of_exact_add_mul
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (m n : Nat) (v : Fin m -> Real) (A : Fin m -> Fin n -> Real) :
+    fl_householderApplyMatrixRect fp m n
+        (householderNormalizedVector m v (householderBetaSpec m v)) 1 A =
+      fl_householderApplyMatrixRect fp m n
+        v (householderBetaSpec m v) A :=
+  fl_householderApplyMatrixRect_normalized_betaSpec_eq_of_exact_dotProduct_and_mul
+    fp (fl_dotProduct_eq_sum_of_exact_add_mul fp hadd hmul) hmul m n v A
+
+/-- Stored-panel handoff when addition and multiplication are exact on the
+dot-product/update path. -/
+theorem
+    fl_householderStoredPanelStep_normalized_betaSpec_eq_of_exact_add_mul
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (m n k : Nat) (v : Fin m -> Real) (A : Fin m -> Fin n -> Real) :
+    fl_householderStoredPanelStep fp m n k
+        (householderNormalizedVector m v (householderBetaSpec m v)) 1 A =
+      fl_householderStoredPanelStep fp m n k
+        v (householderBetaSpec m v) A :=
+  fl_householderStoredPanelStep_normalized_betaSpec_eq_of_exact_dotProduct_and_mul
+    fp (fl_dotProduct_eq_sum_of_exact_add_mul fp hadd hmul) hmul m n k v A
+
+/-- First-pivot QR-storage handoff when addition and multiplication are exact
+on the dot-product/update path. -/
+theorem
+    firstStoredPanelStep_normalized_betaSpec_eq_panelFromTopAndTrailing_of_exact_add_mul
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    {m p : Nat} (v : Fin (m + 1) -> Real)
+    (A : Fin (m + 1) -> Fin (p + 1) -> Real) :
+    (let Astep :=
+      fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+        (householderNormalizedVector (m + 1) v
+          (householderBetaSpec (m + 1) v))
+        1 A
+     panelFromTopAndTrailing (panelTopLeft Astep) (panelTopRowTail Astep)
+       (trailingPanel Astep)) =
+    fl_householderStoredPanelStep fp (m + 1) (p + 1) 0 v
+      (householderBetaSpec (m + 1) v) A :=
+  firstStoredPanelStep_normalized_betaSpec_eq_panelFromTopAndTrailing_of_exact_dotProduct_and_mul
+    fp (fl_dotProduct_eq_sum_of_exact_add_mul fp hadd hmul) hmul v A
+
 /-- Exact arithmetic satisfies the explicit normalized-beta update
 compatibility surface. -/
 theorem normalizedBetaSpecCompactUpdateCompatible_exactWithUnitRoundoff
