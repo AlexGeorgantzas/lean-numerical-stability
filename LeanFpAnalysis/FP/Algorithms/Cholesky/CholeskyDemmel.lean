@@ -6,6 +6,7 @@
 -- - Theorem 10.7: Success condition for Cholesky
 
 import Mathlib.Data.Real.Basic
+import Mathlib.Data.Real.Sqrt
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
 import Mathlib.Tactic.Linarith
@@ -394,5 +395,46 @@ theorem quadForm_add_neg_of_perturbation (n : ℕ)
   have hneg : 0 < (-(lam + t)) * (∑ i : Fin n, x i ^ 2) := mul_pos (by linarith) hS
   rw [hsplit]
   nlinarith [hHle, hE_ub, hneg]
+
+-- ============================================================
+-- §10.1  Algorithm 10.2 / Theorem 10.3 foundation:
+--        computed-diagonal (square-root) backward error
+-- ============================================================
+
+/-- **Computed Cholesky diagonal-pivot backward error** (Higham §10.1,
+    foundation for Algorithm 10.2 / Theorem 10.3).
+
+    Each Cholesky diagonal entry is `r̂_{jj} = fl(√s)` for a nonnegative
+    partial pivot `s = a_{jj} − ∑_{k<j} r̂_{kj}²`. Squaring the rounded
+    square root recovers `s` with a first-order relative error:
+    `r̂_{jj}² = s·(1 + η)` with `|η| ≤ 2u + u²`.
+
+    This is the scalar rounding fact underlying the diagonal recurrence of
+    the concrete floating-point Cholesky factorization; it depends only on
+    the standard `model_sqrt` and `(√s)² = s` for `s ≥ 0`. -/
+theorem fl_sqrt_sq_backward_error (fp : FPModel) (s : ℝ) (hs : 0 ≤ s) :
+    ∃ η : ℝ, |η| ≤ 2 * fp.u + fp.u ^ 2 ∧ (fp.fl_sqrt s) ^ 2 = s * (1 + η) := by
+  obtain ⟨δ, hδ, heq⟩ := fp.model_sqrt s hs
+  refine ⟨2 * δ + δ ^ 2, ?_, ?_⟩
+  · rw [abs_le] at hδ ⊢
+    constructor <;> nlinarith [hδ.1, hδ.2, sq_nonneg δ, sq_nonneg fp.u]
+  · rw [heq, mul_pow, Real.sq_sqrt hs]; ring
+
+/-- **Computed Cholesky diagonal-pivot backward error, `γ₂` form.**
+
+    Restates `fl_sqrt_sq_backward_error` with the certificate-compatible
+    bound `|η| ≤ γ₂ = 2u/(1−2u)`, valid whenever `gammaValid fp 2`. -/
+theorem fl_sqrt_sq_backward_error_gamma (fp : FPModel) (s : ℝ) (hs : 0 ≤ s)
+    (h2 : gammaValid fp 2) :
+    ∃ η : ℝ, |η| ≤ gamma fp 2 ∧ (fp.fl_sqrt s) ^ 2 = s * (1 + η) := by
+  obtain ⟨η, hη, heq⟩ := fl_sqrt_sq_backward_error fp s hs
+  refine ⟨η, le_trans hη ?_, heq⟩
+  have hu : 0 ≤ fp.u := fp.u_nonneg
+  have hden : 0 < 1 - 2 * fp.u := by
+    unfold gammaValid at h2; push_cast at h2; linarith
+  unfold gamma
+  push_cast
+  rw [le_div_iff₀ hden]
+  nlinarith [hu, sq_nonneg fp.u, mul_nonneg (mul_nonneg hu hu) hu]
 
 end LeanFpAnalysis.FP

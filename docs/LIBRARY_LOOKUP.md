@@ -3509,6 +3509,8 @@ Source-facing Chapter 10 wrappers:
 - `cholesky_quadForm_nonneg`
 - `no_choleskyFactSpec_of_neg_quadForm`
 - `cholesky_succeeds_of_scaled_perturbation`
+- `fl_sqrt_sq_backward_error`
+- `fl_sqrt_sq_backward_error_gamma`
 - `higham10_8_sun_normwise_perturbation`
 - `higham10_8_sun_componentwise_perturbation`
 - `higham10_9_PivotedCholeskySpec`
