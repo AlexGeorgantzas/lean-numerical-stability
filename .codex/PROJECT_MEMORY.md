@@ -20,6 +20,23 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-06-30 fixed-ambient global-tableau terminal-tail checkpoint:
+  added
+  `Higham13Eq1322GlobalTableauSourceChain.one_of_blockMaxNorm_le_global_tableau`
+  and
+  `Higham13Eq1322GlobalTableauSourceChain.one_from_matrix_stage_history_tail_exact_kappa`.
+  These expose the one-block base case of the Problem 13.4 global-tableau
+  source chain: ambient tableau containment gives the exact Eq.13.22 upper
+  budget, and any one-block Schur tail recorded by the Algorithm 13.3
+  matrix-stage history supplies that containment.  This is dependency progress
+  only.  Recursive all-tail tableau/source-inverse data, Eq.13.23 `rho <= 2`/
+  BDD product-update data, and Theorem 13.6 cited implementation estimates
+  remain open.  Verification passed with direct `BlockLU.lean` compile,
+  focused `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, executable
+  lookup with empty stderr and both new names present, `git diff --check`,
+  touched Lean placeholder scan, conflict-marker scan, and focused
+  `#print axioms` reporting only `propext`, `Classical.choice`, and
+  `Quot.sound`; the temporary scratch audit file was removed.
 - 2026-06-30 fixed-ambient global-tableau first-split determinant wrappers:
   added
   `higham13_eq13_22_exists_blockLUFact_succ_product_from_global_tableau_tail_chain_matrix_stage_history_exact_kappa_of_det_ne_zero`
