@@ -51187,6 +51187,17 @@ theorem higham9_14_completePivotingUTraceGrowthValues_le_wilkinsonBound_of_le_tw
   le_trans (higham9_completePivotingUTraceGrowthValues_le_pow_two hr)
     (higham9_14_pow_two_le_completePivotWilkinsonBound_of_le_two hn hle)
 
+/-- **Equation (9.14)**, boundedness of the complete-pivoting trace-growth
+value family at Wilkinson's displayed RHS in dimensions one and two. -/
+theorem higham9_14_completePivotingUTraceGrowthValues_bddAbove_wilkinsonBound_of_le_two
+    {n : ℕ} (hn : 0 < n) (hle : n ≤ 2) :
+    BddAbove (higham9_completePivotingUTraceGrowthValues n) := by
+  refine ⟨higham9_14_completePivotWilkinsonBound n, ?_⟩
+  intro r hr
+  exact
+    higham9_14_completePivotingUTraceGrowthValues_le_wilkinsonBound_of_le_two
+      hn hle hr
+
 /-- **Equation (9.14)**, trace-value consumer for Wilkinson's sharp
 complete-pivoting product bound.
 
@@ -51818,6 +51829,18 @@ theorem higham9_8_completePivotingUTraceGrowthSup_le_pow_two {n : ℕ}
   apply csSup_le (higham9_completePivotingUTraceGrowthValues_nonempty hn)
   intro r hr
   exact higham9_completePivotingUTraceGrowthValues_le_pow_two hr
+
+/-- **Equation (9.14)**, source-shaped trace supremum bound at Wilkinson's
+displayed RHS in dimensions one and two. -/
+theorem higham9_14_completePivotingUTraceGrowthSup_le_wilkinsonBound_of_le_two
+    {n : ℕ} (hn : 0 < n) (hle : n ≤ 2) :
+    higham9_completePivotingUTraceGrowthSup n ≤
+      higham9_14_completePivotWilkinsonBound n := by
+  apply csSup_le (higham9_completePivotingUTraceGrowthValues_nonempty hn)
+  intro r hr
+  exact
+    higham9_14_completePivotingUTraceGrowthValues_le_wilkinsonBound_of_le_two
+      hn hle hr
 
 /-- **Equation (9.14)**, source-shaped supremum consumer for Wilkinson's
 sharp complete-pivoting product bound.
@@ -53936,6 +53959,17 @@ theorem higham9_16_rookPivotingUTraceGrowthValues_le_fosterBound_of_eq_one
   le_trans (higham9_16_rookPivotingUTraceGrowthValues_le_pow_two hr)
     (higham9_16_pow_two_le_rookPivotFosterBound_of_eq_one hone)
 
+/-- **Equation (9.16)**, boundedness of the rook-pivoting trace-growth value
+family at Foster's displayed RHS in dimension one. -/
+theorem higham9_16_rookPivotingUTraceGrowthValues_bddAbove_fosterBound_of_eq_one
+    {n : ℕ} (hone : n = 1) :
+    BddAbove (higham9_16_rookPivotingUTraceGrowthValues n) := by
+  refine ⟨higham9_16_rookPivotFosterBound n, ?_⟩
+  intro r hr
+  exact
+    higham9_16_rookPivotingUTraceGrowthValues_le_fosterBound_of_eq_one
+      hone hr
+
 /-- **Equation (9.16)**, trace-value consumer for Foster's sharp rook-pivoting
 bound.
 
@@ -54013,6 +54047,18 @@ theorem higham9_16_rookPivotingUTraceGrowthSup_le_pow_two {n : ℕ}
   apply csSup_le (higham9_16_rookPivotingUTraceGrowthValues_nonempty hn)
   intro r hr
   exact higham9_16_rookPivotingUTraceGrowthValues_le_pow_two hr
+
+/-- **Equation (9.16)**, source-shaped trace supremum bound at Foster's
+displayed RHS in dimension one. -/
+theorem higham9_16_rookPivotingUTraceGrowthSup_le_fosterBound_of_eq_one
+    {n : ℕ} (hn : 0 < n) (hone : n = 1) :
+    higham9_16_rookPivotingUTraceGrowthSup n ≤
+      higham9_16_rookPivotFosterBound n := by
+  apply csSup_le (higham9_16_rookPivotingUTraceGrowthValues_nonempty hn)
+  intro r hr
+  exact
+    higham9_16_rookPivotingUTraceGrowthValues_le_fosterBound_of_eq_one
+      hone hr
 
 /-- **Equation (9.16)**, source-shaped supremum consumer for Foster's sharp
 rook-pivoting bound.
