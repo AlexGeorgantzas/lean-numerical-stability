@@ -9660,6 +9660,125 @@ theorem storedSignedSequenceFirstTwoFullStageFacts_betaSpec_three_eq_one
       (fun a => A_hat 3 a ((0 : Fin (p + 1)).succ.succ.succ))
       (alpha 3) hfacts.hselfFull3
 
+/-- Stage-local leading-block nonbreakdown supplies the determinant field in
+the one-tail full-stage package.
+
+The remaining one-tail full-stage obligations are the pivot-2 normalized-vector
+equality and self-dot facts; the 1-by-1 twice-trailing determinant follows from
+the standard stored-loop leading-block nonbreakdown route. -/
+theorem
+    storedSignedSequenceOneTailFullStageFacts_tail_det_ne_zero_of_leadingBlock_det_ne_zero
+    (fp : FPModel) {m : Nat}
+    (A_hat : Nat -> Fin (m + 1 + 2) -> Fin (1 + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall k (hk : k < 1 + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (m + 1 + 2) (1 + 2) k
+          (householderTrailingActiveVector (m + 1 + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (by omega : 1 + 2 <= m + 1 + 2)))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (m + 1 + 2)
+            (householderTrailingActiveVector (m + 1 + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : 1 + 2 <= m + 1 + 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hdetLead : forall k (hk : k < 1 + 2),
+      Ne (Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr
+            (lt_of_lt_of_le hk
+              (by omega : 1 + 2 <= m + 1 + 2))) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+        0) :
+    Ne (Matrix.det
+      (qrLeadingBlock
+        (trailingPanel (trailingPanel (A_hat 2)))
+        (Nat.succ_le_succ (Nat.zero_le m))
+        (Nat.succ_pos 0) :
+        Matrix (Fin 1) (Fin 1) Real))
+      0 := by
+  let hmn : 1 + 2 <= m + 1 + 2 := by omega
+  have hpivot :=
+    fl_householderStoredTrailingPanel_sequence_current_pivot_ne_zero_of_leadingBlock_det_ne_zero
+      fp hmn A_hat alpha
+      (by
+        intro k hk
+        simpa [hmn] using hStep k hk)
+      (by
+        intro k hk
+        simpa [hmn] using hdetLead k hk)
+  simpa [qrLeadingBlock, qrLeadingRow, qrLeadingColumn, trailingPanel]
+    using hpivot 2 (by omega : 2 < 1 + 2)
+
+/-- Stage-local leading-block nonbreakdown supplies the two determinant fields
+in the arbitrary-width first-two full-stage package.
+
+This removes determinant nonbreakdown from the bespoke full-stage premise
+surface: after this point the still-open stored-loop work for this package is
+to derive the pivot-2 and pivot-3 normalized-vector equalities and self-dot
+facts. -/
+theorem
+    storedSignedSequenceFirstTwoFullStageFacts_tail_dets_ne_zero_of_leadingBlock_det_ne_zero
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + (p + 2) + 2) -> Fin ((p + 2) + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall k (hk : k < (p + 2) + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (r + (p + 2) + 2) ((p + 2) + 2) k
+          (householderTrailingActiveVector (r + (p + 2) + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (by omega : (p + 2) + 2 <= r + (p + 2) + 2)))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (r + (p + 2) + 2)
+            (householderTrailingActiveVector (r + (p + 2) + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : (p + 2) + 2 <= r + (p + 2) + 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hdetLead : forall k (hk : k < (p + 2) + 2),
+      Ne (Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr
+            (lt_of_lt_of_le hk
+              (by omega : (p + 2) + 2 <= r + (p + 2) + 2))) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+        0) :
+    Ne (Matrix.det
+      (qrLeadingBlock
+        (trailingPanel (trailingPanel (A_hat 2)))
+        (show 1 <= r + (p + 2) by omega)
+        (Nat.succ_pos (p + 1)) :
+        Matrix (Fin 1) (Fin 1) Real))
+      0 /\
+    Ne (Matrix.det
+      (qrLeadingBlock
+        (trailingPanel (trailingPanel (trailingPanel (A_hat 3))))
+        (show 1 <= r + (p + 1) by omega)
+        (Nat.succ_pos p) :
+        Matrix (Fin 1) (Fin 1) Real))
+      0 := by
+  let hmn : (p + 2) + 2 <= r + (p + 2) + 2 := by omega
+  have hpivot :=
+    fl_householderStoredTrailingPanel_sequence_current_pivot_ne_zero_of_leadingBlock_det_ne_zero
+      fp hmn A_hat alpha
+      (by
+        intro k hk
+        simpa [hmn] using hStep k hk)
+      (by
+        intro k hk
+        simpa [hmn] using hdetLead k hk)
+  constructor
+  · simpa [qrLeadingBlock, qrLeadingRow, qrLeadingColumn, trailingPanel]
+      using hpivot 2 (by omega : 2 < (p + 2) + 2)
+  · simpa [qrLeadingBlock, qrLeadingRow, qrLeadingColumn, trailingPanel]
+      using hpivot 3 (by omega : 3 < (p + 2) + 2)
+
 /-- Add two leading zeroes to a finite vector.  This local abbreviation keeps
 the later absolute-stage full-loop hypotheses readable. -/
 abbrev finTwoZeroPrefix {n : Nat} (v : Fin n -> Real) :
