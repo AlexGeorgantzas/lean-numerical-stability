@@ -10731,3 +10731,22 @@ These compile, but should not be treated as fully derived stability results:
   right-inverse premise at that layer.  This is proof-surface cleanup for
   Problem 13.4; the source-strength BDD table construction, all-tail source
   comparison data, and Theorem 13.6 cited estimates remain open.
+
+- 2026-07-01 Algorithm 13.3 matrix-stage Eq.13.21/Eq.13.23 paired
+  product/update package: added
+  `higham13_algorithm13_3_upperFromMatrixStages_blockMaxNorm_bound_of_active_stage_bound`,
+  `higham13_algorithm13_3_upperFromMatrixStages_eq13_21_and_matrixStageHistoryGrowthFactor_le_two_of_product_bound_diag_update`,
+  and
+  `higham13_algorithm13_3_upperFromMatrixStages_eq13_21_and_matrixStageHistoryGrowthFactor_le_two_of_product_bound_diag_update_reciprocal`
+  in `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.  These compose the true
+  matrix-product active-stage/product-update route into both the Eq.13.21
+  assembled upper-factor bound and the finite matrix-stage `growthFactorEntry
+  <= 2` endpoint.  The reciprocal wrapper accepts
+  `SchurStageActivePivotInvReciprocal13_7` and derives the raw pivot-product
+  table internally.  Verification: direct `BlockLU.lean`, focused BlockLU
+  build, public lookup, `git diff --check`, touched placeholder scan, and
+  focused `#print axioms` passed; the axiom audit reported only `propext`,
+  `Classical.choice`, and `Quot.sound`.  This is dependency-strength progress:
+  the structured dimension-free triple-product max-entry estimate,
+  diagonal-update/source table data, Problem 13.4 source comparisons, and
+  Theorem 13.6 cited estimates remain open.

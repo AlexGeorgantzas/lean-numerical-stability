@@ -509,9 +509,12 @@
     higham13_algorithm13_3_matrixStageHistoryGrowthMatrix_le_of_active_bound,
     higham13_algorithm13_3_matrixStageHistoryGrowthMatrix_le_two_of_active_stage_bound,
     higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_active_stage_bound,
+    higham13_algorithm13_3_upperFromMatrixStages_blockMaxNorm_bound_of_active_stage_bound,
     higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_local_schur_bound,
     higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_product_bound_diag_update,
     higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_product_bound_diag_update_reciprocal,
+    higham13_algorithm13_3_upperFromMatrixStages_eq13_21_and_matrixStageHistoryGrowthFactor_le_two_of_product_bound_diag_update,
+    higham13_algorithm13_3_upperFromMatrixStages_eq13_21_and_matrixStageHistoryGrowthFactor_le_two_of_product_bound_diag_update_reciprocal,
     higham13_algorithm13_3_firstSplitStageHistoryGrowthFactor_le_two_of_product_bound_diag_update,
     higham13_algorithm13_3_firstSplitStageHistoryGrowthFactor_le_two_of_product_bound_diag_update_reciprocal,
     higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_with_dim_factor,
@@ -20312,6 +20315,43 @@ theorem higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_active_s
           higham13_algorithm13_3_matrixStageHistoryGrowthMatrix_le_two_of_active_stage_bound
             (Nat.mul_pos hm hr) hm hr A pivotInv hActive)
 
+/-- Higham, 2nd ed., Chapter 13, equation (13.21):
+    active-stage max-entry bounds also control the upper factor assembled from
+    the true matrix-product Algorithm 13.3 stage table.
+
+    This is the matrix-stage analogue of the function-block Eq.13.21 upper
+    endpoint.  It is conditional on the active-stage theorem, and therefore
+    does not by itself prove the missing BDD product/update data. -/
+theorem higham13_algorithm13_3_upperFromMatrixStages_blockMaxNorm_bound_of_active_stage_bound
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    {C : ℝ} (hC : 0 ≤ C)
+    (hActive : ∀ k : ℕ, ∀ i j : Fin m, k ≤ m → k ≤ i.val → k ≤ j.val →
+      maxEntryNorm hr
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j) ≤ C) :
+    blockMaxNorm hm hr
+        (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) ≤ C := by
+  apply blockMaxNorm_le_of_entry_abs_le
+  intro i j s t
+  by_cases hij : i.val ≤ j.val
+  · have hentry :
+        |higham13_algorithm13_3_upperFromMatrixStages A pivotInv i j s t| ≤
+          maxEntryNorm hr
+            (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv i.val i j) := by
+      rw [higham13_algorithm13_3_upperFromMatrixStages_eq_of_le A pivotInv hij]
+      exact entry_le_maxEntryNorm hr
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv i.val i j) s t
+    exact le_trans hentry
+      (hActive i.val i j (Nat.le_of_lt i.isLt) le_rfl hij)
+  · have hzero :
+        higham13_algorithm13_3_upperFromMatrixStages A pivotInv i j = 0 := by
+      simp [higham13_algorithm13_3_upperFromMatrixStages, hij]
+    calc
+      |higham13_algorithm13_3_upperFromMatrixStages A pivotInv i j s t| = 0 := by
+        simp [hzero]
+      _ ≤ C := hC
+
 /-- Higham, 2nd ed., Chapter 13, equation (13.23):
     the finite matrix-stage history growth factor satisfies `ρ_n <= 2` once
     the matrix-product Theorem 13.8 proof layer supplies active column
@@ -20434,6 +20474,117 @@ theorem
       2 := by
   exact
     higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_product_bound_diag_update
+      hm hr A pivotInv hApos invDiagBound stageInvDiagBound hDom hDiagBound
+      hInitInv
+      (higham13_theorem13_7_pivot_inverse_bound_of_reciprocal
+        stageInvDiagBound (fun k => maxEntryNorm hr (pivotInv k))
+        hReciprocal)
+      hProduct hDiagUpdate
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.21) and (13.23):
+    paired matrix-stage package from the source-strength product-bound and
+    diagonal-update route.
+
+    The conclusion gives both the assembled upper-factor bound and the
+    matrix-stage `rho <= 2` side condition for the same true matrix-product
+    Algorithm 13.3 stages.  The dimension-free triple-product max-entry
+    estimate remains an explicit hypothesis. -/
+theorem
+    higham13_algorithm13_3_upperFromMatrixStages_eq13_21_and_matrixStageHistoryGrowthFactor_le_two_of_product_bound_diag_update
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hApos : 0 < maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin A))
+    (invDiagBound : Fin m → ℝ)
+    (stageInvDiagBound : ℕ → Fin m → ℝ)
+    (hDom : IsBlockDiagDomCol m (fun i j => maxEntryNorm hr (A i j)) invDiagBound)
+    (hDiagBound : ∀ j : Fin m, invDiagBound j ≤ maxEntryNorm hr (A j j))
+    (hInitInv : ∀ j : Fin m, stageInvDiagBound 0 j = invDiagBound j)
+    (hPivotInvBound : ∀ k : ℕ, ∀ hk : k < m,
+      maxEntryNorm hr (pivotInv k) * stageInvDiagBound k ⟨k, hk⟩ ≤ 1)
+    (hProduct : ∀ k : ℕ, ∀ hk : k < m, ∀ i j : Fin m,
+      k + 1 ≤ i.val → k + 1 ≤ j.val →
+        maxEntryNorm hr
+          (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i ⟨k, hk⟩ *
+            pivotInv k *
+            higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k ⟨k, hk⟩ j) ≤
+          maxEntryNorm hr
+            (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i ⟨k, hk⟩) *
+          maxEntryNorm hr (pivotInv k) *
+          maxEntryNorm hr
+            (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k ⟨k, hk⟩ j))
+    (hDiagUpdate : SchurStageActiveDiagLowerUpdate13_7
+      (fun k i j => maxEntryNorm hr
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j))
+      stageInvDiagBound
+      (fun k => maxEntryNorm hr (pivotInv k))) :
+    blockMaxNorm hm hr (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) ≤
+        2 * blockMaxNorm hm hr A ∧
+      growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            (Nat.mul_pos hm hr) hm hr A pivotInv) hApos ≤
+        2 := by
+  have hActive :
+      ∀ k : ℕ, ∀ i j : Fin m, k ≤ m → k ≤ i.val → k ≤ j.val →
+        maxEntryNorm hr
+          (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j) ≤
+            2 * blockMaxNorm hm hr A :=
+    higham13_algorithm13_3_matrix_active_stage_bound_of_product_bound_diag_update
+      hm hr A pivotInv invDiagBound stageInvDiagBound hDom hDiagBound hInitInv
+      hPivotInvBound hProduct hDiagUpdate
+  have hC : 0 ≤ 2 * blockMaxNorm hm hr A :=
+    mul_nonneg (by norm_num) (blockMaxNorm_nonneg hm hr A)
+  exact
+    ⟨higham13_algorithm13_3_upperFromMatrixStages_blockMaxNorm_bound_of_active_stage_bound
+        hm hr A pivotInv hC hActive,
+      higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_product_bound_diag_update
+        hm hr A pivotInv hApos invDiagBound stageInvDiagBound hDom hDiagBound
+        hInitInv hPivotInvBound hProduct hDiagUpdate⟩
+
+/-- Higham, 2nd ed., Chapter 13, equations (13.21) and (13.23):
+    reciprocal-table form of the paired matrix-stage product/update package.
+
+    This accepts the source-style reciprocal pivot table and internally derives
+    the pivot-product bound consumed by the source-strength product/update
+    package.  The structured triple-product estimate and diagonal-update table
+    remain explicit obligations. -/
+theorem
+    higham13_algorithm13_3_upperFromMatrixStages_eq13_21_and_matrixStageHistoryGrowthFactor_le_two_of_product_bound_diag_update_reciprocal
+    {m r : ℕ} (hm : 0 < m) (hr : 0 < r)
+    (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hApos : 0 < maxEntryNorm (Nat.mul_pos hm hr) (blockMatrixFlatFin A))
+    (invDiagBound : Fin m → ℝ)
+    (stageInvDiagBound : ℕ → Fin m → ℝ)
+    (hDom : IsBlockDiagDomCol m (fun i j => maxEntryNorm hr (A i j)) invDiagBound)
+    (hDiagBound : ∀ j : Fin m, invDiagBound j ≤ maxEntryNorm hr (A j j))
+    (hInitInv : ∀ j : Fin m, stageInvDiagBound 0 j = invDiagBound j)
+    (hReciprocal : SchurStageActivePivotInvReciprocal13_7
+      stageInvDiagBound (fun k => maxEntryNorm hr (pivotInv k)))
+    (hProduct : ∀ k : ℕ, ∀ hk : k < m, ∀ i j : Fin m,
+      k + 1 ≤ i.val → k + 1 ≤ j.val →
+        maxEntryNorm hr
+          (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i ⟨k, hk⟩ *
+            pivotInv k *
+            higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k ⟨k, hk⟩ j) ≤
+          maxEntryNorm hr
+            (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i ⟨k, hk⟩) *
+          maxEntryNorm hr (pivotInv k) *
+          maxEntryNorm hr
+            (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k ⟨k, hk⟩ j))
+    (hDiagUpdate : SchurStageActiveDiagLowerUpdate13_7
+      (fun k i j => maxEntryNorm hr
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j))
+      stageInvDiagBound
+      (fun k => maxEntryNorm hr (pivotInv k))) :
+    blockMaxNorm hm hr (higham13_algorithm13_3_upperFromMatrixStages A pivotInv) ≤
+        2 * blockMaxNorm hm hr A ∧
+      growthFactorEntry (Nat.mul_pos hm hr) (blockMatrixFlatFin A)
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix
+            (Nat.mul_pos hm hr) hm hr A pivotInv) hApos ≤
+        2 := by
+  exact
+    higham13_algorithm13_3_upperFromMatrixStages_eq13_21_and_matrixStageHistoryGrowthFactor_le_two_of_product_bound_diag_update
       hm hr A pivotInv hApos invDiagBound stageInvDiagBound hDom hDiagBound
       hInitInv
       (higham13_theorem13_7_pivot_inverse_bound_of_reciprocal
