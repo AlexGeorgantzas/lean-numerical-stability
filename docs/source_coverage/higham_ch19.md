@@ -199,7 +199,7 @@ Latest dependency update: the explicit normalized-loop surface now has named zer
 - `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`: no matches after adding the named tail-local records.
 - `git diff --check`: passed after adding the named tail-local records and report update, with only the usual CRLF normalization warnings for `Higham19.lean` and this report.
 - `#print axioms` for `storedSignedSequenceOneTailFullStageFacts_of_tailNormalizedFacts_and_leadingBlock_det_ne_zero`, `storedSignedSequenceFirstTwoFullStageFacts_of_tailNormalizedFacts_and_leadingBlock_det_ne_zero`, `storedSignedSequenceFullStageNormalizedLoopFacts_one_of_tailNormalizedFacts_and_leadingBlock_det_ne_zero`, `storedSignedSequenceFullStageNormalizedLoopFacts_succ_succ_of_tailNormalizedFacts_and_leadingBlock_det_ne_zero`, `storedSignedSequenceFullStageNormalizedLoopFacts_one_of_twice_trailing_tailNormalizedFacts_and_leadingBlock_det_ne_zero`, and `storedSignedSequenceFullStageNormalizedLoopFacts_succ_succ_of_twice_trailing_tailNormalizedFacts_and_leadingBlock_det_ne_zero`: only `propext`, `Classical.choice`, and `Quot.sound`.
-- Post-merge rechecks after integrating `origin/main` at `93f85d61` via merge `2fb98d45`: `lake env lean LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`, `lake build LeanFpAnalysis.FP.Algorithms.QR.Higham19`, placeholder scan, `git diff --check`, and `chapter_splitting/` guards passed; only the pre-existing `GivensSpec` unused-simp warnings were reported.
+- Post-merge rechecks after integrating `origin/main` at `0ffea29e` via merge `258b0954`: `lake env lean LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`, `lake build LeanFpAnalysis.FP.Algorithms.QR.Higham19`, placeholder scan, `git diff --check`, and `chapter_splitting/` guards passed; only the pre-existing `GivensSpec` unused-simp warnings were reported.
 - `lake env lean LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`: passed after adding the recursive tail-local normalized final-panel wrappers.
 - `lake build LeanFpAnalysis.FP.Algorithms.QR.Higham19`: passed after adding the recursive tail-local normalized final-panel wrappers; only pre-existing `GivensSpec` unused-simp warnings were reported.
 - `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`: no matches after adding the recursive tail-local normalized final-panel wrappers.
@@ -441,6 +441,6 @@ Latest dependency update: the explicit normalized-loop surface now has named zer
 
 - Work is on shared local `main`, synchronized with `origin/main` before theorem design and merged again before push.
 - Split-prefixed proof milestone commit: `d14e9c78` (`Split 3B: name Ch19 tail-normalized facts`).
-- Latest `origin/main` integrated before final push: `93f85d61`, via conflict-free merge commit `2fb98d45`.
+- Latest `origin/main` integrated before final push: `0ffea29e`, via conflict-free merge commit `258b0954`.
 - `chapter_splitting/` is local-only context: it is ignored by `.gitignore`, has no tracked files, is absent from `origin/main`, and must not be pushed.
 - Remaining local untracked file at this point: `.codex/config.toml`.
