@@ -24023,6 +24023,92 @@ theorem higham13_problem13_4_Sinv_maxEntryNormRect_from_block_inverse
     (higham13_problem13_4_Sinv_entry_bound_from_block_inverse
       A11 A12 A21 A22 hAinv_entry)
 
+/-- Higham, 2nd ed., Chapter 13, Problems 13.4 and 13.8:
+    first-split specialization of
+    `higham13_problem13_4_Sinv_entry_bound_from_block_inverse`.
+
+    This is the source-shaped form used by recursive block-LU routes: the
+    Schur-complement inverse of the first block split inherits an entrywise max
+    bound from the inverse of the displayed parent block matrix. -/
+theorem higham13_problem13_4_firstSplit_Sinv_entry_bound_from_block_inverse
+    {m r : ℕ}
+    (Ablk : Fin ((m + 1) + 1) → Fin ((m + 1) + 1) →
+      Matrix (Fin r) (Fin r) ℝ)
+    [Invertible (blockMatrixFirstSplitA11 Ablk)]
+    [Invertible (blockMatrixFirstSplitA22 Ablk -
+      blockMatrixFirstSplitA21 Ablk * ⅟(blockMatrixFirstSplitA11 Ablk) *
+        blockMatrixFirstSplitA12 Ablk)]
+    [Invertible (Matrix.fromBlocks
+      (blockMatrixFirstSplitA11 Ablk)
+      (blockMatrixFirstSplitA12 Ablk)
+      (blockMatrixFirstSplitA21 Ablk)
+      (blockMatrixFirstSplitA22 Ablk))]
+    {normAinv : ℝ}
+    (hAinv_entry :
+      ∀ i j : Fin r ⊕ Fin ((m + 1) * r),
+        |(⅟(Matrix.fromBlocks
+            (blockMatrixFirstSplitA11 Ablk)
+            (blockMatrixFirstSplitA12 Ablk)
+            (blockMatrixFirstSplitA21 Ablk)
+            (blockMatrixFirstSplitA22 Ablk)) :
+          Matrix (Fin r ⊕ Fin ((m + 1) * r))
+            (Fin r ⊕ Fin ((m + 1) * r)) ℝ) i j| ≤ normAinv) :
+    ∀ i j : Fin ((m + 1) * r),
+      |(((⅟(blockMatrixFirstSplitA22 Ablk -
+          blockMatrixFirstSplitA21 Ablk *
+            ⅟(blockMatrixFirstSplitA11 Ablk) *
+              blockMatrixFirstSplitA12 Ablk)) :
+        Matrix (Fin ((m + 1) * r)) (Fin ((m + 1) * r)) ℝ) i j)| ≤
+        normAinv :=
+  higham13_problem13_4_Sinv_entry_bound_from_block_inverse
+    (blockMatrixFirstSplitA11 Ablk)
+    (blockMatrixFirstSplitA12 Ablk)
+    (blockMatrixFirstSplitA21 Ablk)
+    (blockMatrixFirstSplitA22 Ablk)
+    hAinv_entry
+
+/-- Higham, 2nd ed., Chapter 13, Problems 13.4 and 13.8:
+    max-entry first-split specialization of
+    `higham13_problem13_4_firstSplit_Sinv_entry_bound_from_block_inverse`. -/
+theorem higham13_problem13_4_firstSplit_Sinv_maxEntryNormRect_from_block_inverse
+    {m r : ℕ} (hr : 0 < r)
+    (Ablk : Fin ((m + 1) + 1) → Fin ((m + 1) + 1) →
+      Matrix (Fin r) (Fin r) ℝ)
+    [Invertible (blockMatrixFirstSplitA11 Ablk)]
+    [Invertible (blockMatrixFirstSplitA22 Ablk -
+      blockMatrixFirstSplitA21 Ablk * ⅟(blockMatrixFirstSplitA11 Ablk) *
+        blockMatrixFirstSplitA12 Ablk)]
+    [Invertible (Matrix.fromBlocks
+      (blockMatrixFirstSplitA11 Ablk)
+      (blockMatrixFirstSplitA12 Ablk)
+      (blockMatrixFirstSplitA21 Ablk)
+      (blockMatrixFirstSplitA22 Ablk))]
+    {normAinv : ℝ}
+    (hAinv_entry :
+      ∀ i j : Fin r ⊕ Fin ((m + 1) * r),
+        |(⅟(Matrix.fromBlocks
+            (blockMatrixFirstSplitA11 Ablk)
+            (blockMatrixFirstSplitA12 Ablk)
+            (blockMatrixFirstSplitA21 Ablk)
+            (blockMatrixFirstSplitA22 Ablk)) :
+          Matrix (Fin r ⊕ Fin ((m + 1) * r))
+            (Fin r ⊕ Fin ((m + 1) * r)) ℝ) i j| ≤ normAinv) :
+    maxEntryNormRect (Nat.mul_pos (Nat.succ_pos m) hr)
+        (Nat.mul_pos (Nat.succ_pos m) hr)
+        (((⅟(blockMatrixFirstSplitA22 Ablk -
+          blockMatrixFirstSplitA21 Ablk *
+            ⅟(blockMatrixFirstSplitA11 Ablk) *
+              blockMatrixFirstSplitA12 Ablk)) :
+          Matrix (Fin ((m + 1) * r)) (Fin ((m + 1) * r)) ℝ)) ≤
+      normAinv :=
+  higham13_problem13_4_Sinv_maxEntryNormRect_from_block_inverse
+    (Nat.mul_pos (Nat.succ_pos m) hr)
+    (blockMatrixFirstSplitA11 Ablk)
+    (blockMatrixFirstSplitA12 Ablk)
+    (blockMatrixFirstSplitA21 Ablk)
+    (blockMatrixFirstSplitA22 Ablk)
+    hAinv_entry
+
 /-- Higham, 2nd ed., Chapter 13, Problem 13.4:
     source max-entry lower-left solve bound from the Problem 13.8 block-inverse
     formula.
