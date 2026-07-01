@@ -1925,6 +1925,10 @@ Source-facing Chapter 9 wrappers:
 - `higham9_16_rookPivotFosterBound`
 - `higham9_16_rookPivotFosterBound_nonneg`
 - `higham9_16_rookPivotFosterBound_pos`
+- `higham9_16_rookPivotFosterBound_eq_three_halves_mul_exp_log_sq`
+- `higham9_16_rookPivotFosterBound_log`
+- `higham9_16_rookPivotFosterBound_log_succ_sub`
+- `higham9_16_rookPivotFosterBound_succ_div`
 - `higham9_16_rookPivotFosterBound_ge_three_halves`
 - `higham9_16_rookPivotFosterBound_ge_one`
 - `higham9_16_rookPivotFosterBound_one`
