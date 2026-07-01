@@ -413,5 +413,7 @@ Latest dependency update: the explicit normalized-loop surface now has named zer
 ## Git and Local-Only Notes
 
 - Work is on shared local `main`, synchronized with `origin/main` before theorem design.
-- `chapter_splitting/` is local-only context: it is ignored by `.gitignore`, has no tracked files, and must not be pushed.
+- Split-prefixed milestone commit: `d989dd89` (`Split 3B: derive Ch19 exact initial final-panel self-dots`).
+- Latest `origin/main` integrated before the report-sync commit: `51189f47` (`Prove Chapter 20 mu limit`), via conflict-free merge commits `7e24dbf5` and `03a74059`.
+- `chapter_splitting/` is local-only context: it is ignored by `.gitignore`, has no tracked files, is absent from `origin/main`, and must not be pushed.
 - Remaining local untracked file at this point: `.codex/config.toml`.
