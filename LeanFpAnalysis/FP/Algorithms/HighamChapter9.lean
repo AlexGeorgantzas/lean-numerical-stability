@@ -15,6 +15,7 @@ import Mathlib.Algebra.Polynomial.Roots
 import Mathlib.LinearAlgebra.Matrix.Charpoly.Coeff
 import Mathlib.LinearAlgebra.Matrix.SchurComplement
 import Mathlib.Analysis.Complex.Trigonometric
+import Mathlib.Analysis.Complex.ExponentialBounds
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 import LeanFpAnalysis.FP.Algorithms.HighamChapter8
 import LeanFpAnalysis.FP.Algorithms.LU.GaussianElimination
@@ -10987,6 +10988,33 @@ lemma higham9_16_rookPivotFosterBound_one :
     higham9_16_rookPivotFosterBound 1 = 3 / 2 := by
   norm_num [higham9_16_rookPivotFosterBound]
 
+/-- **Equation (9.16)**, in dimension two Foster's displayed rook-pivoting RHS
+dominates the elementary recursive trace bound value `2`.
+
+The proof uses Mathlib's certified decimal lower bound for `log 2` and the
+basic inequality `1 + x <= exp x`. -/
+lemma higham9_16_rookPivotFosterBound_two_ge_two :
+    (2 : ℝ) ≤ higham9_16_rookPivotFosterBound 2 := by
+  unfold higham9_16_rookPivotFosterBound
+  have hlog : (2 / 3 : ℝ) ≤ Real.log 2 := by
+    exact le_of_lt
+      (lt_of_lt_of_le (by norm_num : (2 / 3 : ℝ) < 0.6931471803)
+        Real.log_two_gt_d9.le)
+  have hbase : (4 / 3 : ℝ) ≤ (2 : ℝ) ^ ((3 / 4 : ℝ) * Real.log 2) := by
+    rw [Real.rpow_def_of_pos (by norm_num : (0 : ℝ) < 2)]
+    have harg : (1 / 3 : ℝ) ≤ Real.log 2 * ((3 / 4 : ℝ) * Real.log 2) := by
+      nlinarith [hlog]
+    have h13 : (4 / 3 : ℝ) ≤ Real.exp (1 / 3 : ℝ) := by
+      calc
+        (4 / 3 : ℝ) = 1 + (1 / 3 : ℝ) := by norm_num
+        _ ≤ Real.exp (1 / 3 : ℝ) := by
+          simpa [add_comm] using Real.add_one_le_exp (1 / 3 : ℝ)
+    exact le_trans h13 (Real.exp_le_exp.mpr harg)
+  calc
+    (2 : ℝ) = (3 / 2 : ℝ) * (4 / 3 : ℝ) := by norm_num
+    _ ≤ (3 / 2 : ℝ) * (2 : ℝ) ^ ((3 / 4 : ℝ) * Real.log 2) :=
+      mul_le_mul_of_nonneg_left hbase (by norm_num)
+
 /-- **Equation (9.16)**, in dimension one Foster's displayed rook-pivoting RHS
 dominates the elementary recursive trace bound `2^(n-1)`. -/
 lemma higham9_16_pow_two_le_rookPivotFosterBound_of_eq_one {n : ℕ}
@@ -10995,6 +11023,17 @@ lemma higham9_16_pow_two_le_rookPivotFosterBound_of_eq_one {n : ℕ}
   subst n
   simpa [higham9_16_rookPivotFosterBound_one] using
     (by norm_num : (1 : ℝ) ≤ 3 / 2)
+
+/-- **Equation (9.16)**, in dimensions one and two Foster's displayed
+rook-pivoting RHS dominates the elementary recursive trace bound `2^(n-1)`. -/
+lemma higham9_16_pow_two_le_rookPivotFosterBound_of_le_two {n : ℕ}
+    (hn : 0 < n) (hle : n ≤ 2) :
+    (2 : ℝ) ^ (n - 1) ≤ higham9_16_rookPivotFosterBound n := by
+  have hcases : n = 1 ∨ n = 2 := by omega
+  rcases hcases with hone | htwo
+  · exact higham9_16_pow_two_le_rookPivotFosterBound_of_eq_one hone
+  · subst n
+    simpa using higham9_16_rookPivotFosterBound_two_ge_two
 
 /-- **Equation (9.16)**, monotonicity of Foster's logarithmic scalar factor on
 positive dimensions. -/
@@ -53752,6 +53791,21 @@ theorem higham9_16_RookPivotGEUTrace_growthFactorEntry_le_fosterBound_of_eq_one
       hn A U hAmax htrace)
     (higham9_16_pow_two_le_rookPivotFosterBound_of_eq_one hone)
 
+/-- **Equation (9.16)**, recursive rook-pivoting trace growth satisfies
+Foster's displayed RHS in dimensions one and two.  The general Foster product
+theorem remains separate. -/
+theorem higham9_16_RookPivotGEUTrace_growthFactorEntry_le_fosterBound_of_le_two
+    {n : ℕ} (hn : 0 < n) (hle : n ≤ 2)
+    (A U : Fin n → Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn A)
+    (htrace : higham9_16_RookPivotGEUTrace n A U) :
+    growthFactorEntry hn A U hAmax ≤
+      higham9_16_rookPivotFosterBound n :=
+  le_trans
+    (higham9_16_RookPivotGEUTrace_growthFactorEntry_le_pow_two
+      hn A U hAmax htrace)
+    (higham9_16_pow_two_le_rookPivotFosterBound_of_le_two hn hle)
+
 /-- **Equation (9.16) / rook-pivoting trace support**, every nonsingular real
 matrix admits an explicit recursive rook-pivoting upper-factor trace.  The
 existence proof uses a complete pivot as a valid first rook pivot; it does not
@@ -53905,6 +53959,24 @@ theorem higham9_16_exists_RookPivotGEUTrace_growthFactorEntry_le_fosterBound_of_
       hn hone A U hAmax hU⟩
 
 /-- **Equation (9.16)**, determinant-input rook-pivoting trace existence at
+Foster's displayed RHS in dimensions one and two, with no global sharp-growth
+premise. -/
+theorem higham9_16_exists_RookPivotGEUTrace_growthFactorEntry_le_fosterBound_of_det_ne_zero_of_le_two
+    {n : ℕ} (hn : 0 < n) (hle : n ≤ 2)
+    (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hAmax : 0 < maxEntryNorm hn A) :
+    ∃ U : Fin n → Fin n → ℝ,
+      higham9_16_RookPivotGEUTrace n A U ∧
+        growthFactorEntry hn A U hAmax ≤
+          higham9_16_rookPivotFosterBound n := by
+  obtain ⟨U, hU⟩ :=
+    higham9_16_exists_RookPivotGEUTrace_of_det_ne_zero (A := A) hdet
+  exact ⟨U, hU,
+    higham9_16_RookPivotGEUTrace_growthFactorEntry_le_fosterBound_of_le_two
+      hn hle A U hAmax hU⟩
+
+/-- **Equation (9.16)**, determinant-input rook-pivoting trace existence at
 Foster's displayed RHS in dimension one, deriving the positive source
 denominator from nonsingularity. -/
 theorem higham9_16_exists_RookPivotGEUTrace_growthFactorEntry_le_fosterBound_of_det_ne_zero_exists_hAmax_of_eq_one
@@ -53921,6 +53993,25 @@ theorem higham9_16_exists_RookPivotGEUTrace_growthFactorEntry_le_fosterBound_of_
   obtain ⟨U, hU, hρ⟩ :=
     higham9_16_exists_RookPivotGEUTrace_growthFactorEntry_le_fosterBound_of_det_ne_zero_of_eq_one
       hn hone A hdet hAmax
+  exact ⟨hAmax, U, hU, hρ⟩
+
+/-- **Equation (9.16)**, determinant-input rook-pivoting trace existence at
+Foster's displayed RHS in dimensions one and two, deriving the positive source
+denominator from nonsingularity. -/
+theorem higham9_16_exists_RookPivotGEUTrace_growthFactorEntry_le_fosterBound_of_det_ne_zero_exists_hAmax_of_le_two
+    {n : ℕ} (hn : 0 < n) (hle : n ≤ 2)
+    (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ hAmax : 0 < maxEntryNorm hn A,
+    ∃ U : Fin n → Fin n → ℝ,
+      higham9_16_RookPivotGEUTrace n A U ∧
+        growthFactorEntry hn A U hAmax ≤
+          higham9_16_rookPivotFosterBound n := by
+  have hAmax : 0 < maxEntryNorm hn A :=
+    maxEntryNorm_pos_of_det_ne_zero hn A hdet
+  obtain ⟨U, hU, hρ⟩ :=
+    higham9_16_exists_RookPivotGEUTrace_growthFactorEntry_le_fosterBound_of_det_ne_zero_of_le_two
+      hn hle A hdet hAmax
   exact ⟨hAmax, U, hU, hρ⟩
 
 /-- **Equation (9.16) / rook-pivoting trace growth family**, trace-level
@@ -53959,6 +54050,15 @@ theorem higham9_16_rookPivotingUTraceGrowthValues_le_fosterBound_of_eq_one
   le_trans (higham9_16_rookPivotingUTraceGrowthValues_le_pow_two hr)
     (higham9_16_pow_two_le_rookPivotFosterBound_of_eq_one hone)
 
+/-- **Equation (9.16)**, rook-pivoting trace-growth values satisfy Foster's
+displayed RHS in dimensions one and two. -/
+theorem higham9_16_rookPivotingUTraceGrowthValues_le_fosterBound_of_le_two
+    {n : ℕ} (hn : 0 < n) (hle : n ≤ 2) {r : ℝ}
+    (hr : r ∈ higham9_16_rookPivotingUTraceGrowthValues n) :
+    r ≤ higham9_16_rookPivotFosterBound n :=
+  le_trans (higham9_16_rookPivotingUTraceGrowthValues_le_pow_two hr)
+    (higham9_16_pow_two_le_rookPivotFosterBound_of_le_two hn hle)
+
 /-- **Equation (9.16)**, boundedness of the rook-pivoting trace-growth value
 family at Foster's displayed RHS in dimension one. -/
 theorem higham9_16_rookPivotingUTraceGrowthValues_bddAbove_fosterBound_of_eq_one
@@ -53969,6 +54069,17 @@ theorem higham9_16_rookPivotingUTraceGrowthValues_bddAbove_fosterBound_of_eq_one
   exact
     higham9_16_rookPivotingUTraceGrowthValues_le_fosterBound_of_eq_one
       hone hr
+
+/-- **Equation (9.16)**, boundedness of the rook-pivoting trace-growth value
+family at Foster's displayed RHS in dimensions one and two. -/
+theorem higham9_16_rookPivotingUTraceGrowthValues_bddAbove_fosterBound_of_le_two
+    {n : ℕ} (hn : 0 < n) (hle : n ≤ 2) :
+    BddAbove (higham9_16_rookPivotingUTraceGrowthValues n) := by
+  refine ⟨higham9_16_rookPivotFosterBound n, ?_⟩
+  intro r hr
+  exact
+    higham9_16_rookPivotingUTraceGrowthValues_le_fosterBound_of_le_two
+      hn hle hr
 
 /-- **Equation (9.16)**, trace-value consumer for Foster's sharp rook-pivoting
 bound.
@@ -54059,6 +54170,18 @@ theorem higham9_16_rookPivotingUTraceGrowthSup_le_fosterBound_of_eq_one
   exact
     higham9_16_rookPivotingUTraceGrowthValues_le_fosterBound_of_eq_one
       hone hr
+
+/-- **Equation (9.16)**, source-shaped trace supremum bound at Foster's
+displayed RHS in dimensions one and two. -/
+theorem higham9_16_rookPivotingUTraceGrowthSup_le_fosterBound_of_le_two
+    {n : ℕ} (hn : 0 < n) (hle : n ≤ 2) :
+    higham9_16_rookPivotingUTraceGrowthSup n ≤
+      higham9_16_rookPivotFosterBound n := by
+  apply csSup_le (higham9_16_rookPivotingUTraceGrowthValues_nonempty hn)
+  intro r hr
+  exact
+    higham9_16_rookPivotingUTraceGrowthValues_le_fosterBound_of_le_two
+      hn hle hr
 
 /-- **Equation (9.16)**, source-shaped supremum consumer for Foster's sharp
 rook-pivoting bound.
@@ -54696,6 +54819,37 @@ theorem higham9_16_exists_RookPivotCompletePermutedLUFactSpec_L_bound_growth_le_
     ⟨L_hat, U_hat, sigma, tau, hLU, hL_bound, hU_diag, hBmax,
       le_trans hgrowth
         (higham9_16_pow_two_le_rookPivotFosterBound_of_eq_one hone)⟩
+
+/-- **Equation (9.16)**, determinant-input rook-pivoting certificate package
+at Foster's displayed RHS in dimensions one and two.
+
+For these base dimensions the elementary rook-pivoting trace bound
+`2^(n-1)` already implies Foster's displayed RHS, so this endpoint removes the
+global sharp-growth premise required by the general sharp certificate wrapper. -/
+theorem higham9_16_exists_RookPivotCompletePermutedLUFactSpec_L_bound_growth_le_fosterBound_of_det_ne_zero_of_le_two
+    (n : ℕ)
+    (hn_pos : 0 < n)
+    (hle : n ≤ 2)
+    (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+    ∃ sigma tau : Fin n → Fin n,
+    ∃ _hLU : higham9_2_CompletePermutedLUFactSpec n A L_hat U_hat sigma tau,
+      (∀ i j : Fin n, |L_hat i j| ≤ 1) ∧
+      (∀ i : Fin n, U_hat i i ≠ 0) ∧
+      ∃ hBmax :
+        0 < maxEntryNorm hn_pos
+          (higham9_2_rowColPermutedMatrix A sigma tau),
+        growthFactorEntry hn_pos
+          (higham9_2_rowColPermutedMatrix A sigma tau) U_hat hBmax ≤
+            higham9_16_rookPivotFosterBound n := by
+  obtain ⟨L_hat, U_hat, sigma, tau, hLU, hL_bound, hU_diag, hBmax, hgrowth⟩ :=
+    higham9_16_exists_RookPivotCompletePermutedLUFactSpec_L_bound_growth_le_pow_two_of_det_ne_zero
+      n hn_pos A hdet
+  exact
+    ⟨L_hat, U_hat, sigma, tau, hLU, hL_bound, hU_diag, hBmax,
+      le_trans hgrowth
+        (higham9_16_pow_two_le_rookPivotFosterBound_of_le_two hn_pos hle)⟩
 
 /-- **Theorem 9.5**, row-pivoted exact-certificate source bound from a visible
 growth bound.
@@ -55816,6 +55970,47 @@ theorem higham9_16_foster_source_bound_exists_of_RookPivotGEUTrace_of_det_ne_zer
   obtain ⟨L_hat, U_hat, sigma, tau, hLU, hL_bound, hU_diag, hBmax, hgrowth⟩ :=
     higham9_16_exists_RookPivotCompletePermutedLUFactSpec_L_bound_growth_le_fosterBound_of_det_ne_zero_of_eq_one
       n hn_pos hone A hdet
+  refine ⟨L_hat, U_hat, sigma, tau, hLU, hL_bound, ?_⟩
+  exact
+    higham9_5_wilkinson_source_bound_of_CompletePermutedLUFactSpec_growth
+      fp n hn_pos A L_hat U_hat sigma tau b
+      (higham9_16_rookPivotFosterBound n)
+      hBmax (higham9_16_rookPivotFosterBound_nonneg n)
+      hgrowth hU_diag hLU hn hn3 hL_bound
+
+/-- **Theorem 9.5 / equation (9.16)**, determinant-only rook-pivoting solve
+wrapper at Foster's displayed RHS in dimensions one and two.
+
+This combines the exact rook-pivoting certificate with the base-dimension
+comparison `2^(n-1) <= higham9_16_rookPivotFosterBound n`, avoiding the global
+sharp-growth premise required by the general determinant-only sharp solve
+wrapper. -/
+theorem higham9_16_foster_source_bound_exists_of_RookPivotGEUTrace_of_det_ne_zero_of_le_two
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (hle : n ≤ 2)
+    (A : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n)) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+    ∃ sigma tau : Fin n → Fin n,
+    ∃ hLU : higham9_2_CompletePermutedLUFactSpec n A L_hat U_hat sigma tau,
+      (∀ i j : Fin n, |L_hat i j| ≤ 1) ∧
+      let bP : Fin n → ℝ := fun i => b (sigma i)
+      let y_hat := fl_forwardSub fp n L_hat bP
+      let z_hat := fl_backSub fp n U_hat y_hat
+      let x_hat : Fin n → ℝ :=
+        fun j => z_hat ((Equiv.ofBijective tau hLU.1).symm j)
+      ∃ ΔA : Fin n → Fin n → ℝ,
+        (infNorm ΔA ≤
+          (↑n) ^ 2 * gamma fp (3 * n) *
+            higham9_16_rookPivotFosterBound n * infNorm A) ∧
+        (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  obtain ⟨L_hat, U_hat, sigma, tau, hLU, hL_bound, hU_diag, hBmax, hgrowth⟩ :=
+    higham9_16_exists_RookPivotCompletePermutedLUFactSpec_L_bound_growth_le_fosterBound_of_det_ne_zero_of_le_two
+      n hn_pos hle A hdet
   refine ⟨L_hat, U_hat, sigma, tau, hLU, hL_bound, ?_⟩
   exact
     higham9_5_wilkinson_source_bound_of_CompletePermutedLUFactSpec_growth
