@@ -16667,6 +16667,220 @@ theorem lsNormwiseBackwardErrorRankTwo_extra_cost_eq_phi_projector
         vecNorm2Sq p := by
           rw [hphi_sq]
 
+/-- Source-block transpose equality for the optimized rank-two WKS witness.
+    The rank-two correction converts the scalar-only residual-complement cost
+    into exactly the right projector block of
+    `[A, phi(I-r r^+)]^T p`, so the total optimized cost multiplied by
+    `||p||_2^2` is the squared source-block transpose action. -/
+theorem lsNormwiseBackwardErrorRankTwo_scaled_source_cost_eq_formulaMatrix_transpose
+    {m n : ℕ} {theta : ℝ} (htheta : 0 ≤ theta)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (A : Fin m → Fin n → ℝ) (r p : Fin m → ℝ)
+    (hrsq : vecNorm2Sq r ≠ 0) (hpsq : vecNorm2Sq p ≠ 0) :
+    let q : Fin m → ℝ :=
+      matMulVec m (lsLemma20_6ProjectorComplement p) r
+    let beta : ℝ :=
+      -(theta ^ 2 * vecNorm2Sq y) /
+        (1 + theta ^ 2 * vecNorm2Sq y)
+    vecNorm2Sq (fun j : Fin n => ∑ i : Fin m, A i j * p i) +
+        (beta ^ 2 * vecNorm2Sq q / vecNorm2Sq y +
+          theta ^ 2 * vecNorm2Sq (fun i : Fin m => q i + beta * q i)) *
+          vecNorm2Sq p =
+      vecNorm2Sq
+        (rectMatMulVec
+          (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y))
+          p) := by
+  let q : Fin m → ℝ :=
+    matMulVec m (lsLemma20_6ProjectorComplement p) r
+  let beta : ℝ :=
+    -(theta ^ 2 * vecNorm2Sq y) /
+      (1 + theta ^ 2 * vecNorm2Sq y)
+  let P : ℝ := vecNorm2Sq p
+  let left : ℝ := vecNorm2Sq (fun j : Fin n => ∑ i : Fin m, A i j * p i)
+  let Z : ℝ := vecNorm2Sq (matMulVec m (lsResidualComplementProjector r) p)
+  let right : ℝ := (lsNormwiseBackwardErrorPhi theta r y) ^ 2 * Z
+  have hPpos : 0 < P := by
+    exact lt_of_le_of_ne (by simpa [P] using vecNorm2Sq_nonneg p)
+      (by simpa [P] using Ne.symm hpsq)
+  have hPne : P ≠ 0 := ne_of_gt hPpos
+  have hweighted :
+      beta ^ 2 * vecNorm2Sq q / vecNorm2Sq y +
+          theta ^ 2 * vecNorm2Sq (fun i : Fin m => q i + beta * q i) =
+        theta ^ 2 * vecNorm2Sq q /
+          (1 + theta ^ 2 * vecNorm2Sq y) := by
+    simpa [q, beta] using
+      (lsNormwiseBackwardErrorRankTwo_extra_weighted_cost_eq
+        (m := m) (n := n) theta hy q)
+  have hprojector :
+      theta ^ 2 * vecNorm2Sq q /
+          (1 + theta ^ 2 * vecNorm2Sq y) =
+        right / P := by
+    simpa [q, P, Z, right, lsResidualComplementProjector] using
+      (lsNormwiseBackwardErrorRankTwo_extra_cost_eq_phi_projector
+        (m := m) (n := n) htheta hy r p hrsq hpsq)
+  have hterm :
+      (beta ^ 2 * vecNorm2Sq q / vecNorm2Sq y +
+          theta ^ 2 * vecNorm2Sq (fun i : Fin m => q i + beta * q i)) *
+          P =
+        right := by
+    calc
+      (beta ^ 2 * vecNorm2Sq q / vecNorm2Sq y +
+          theta ^ 2 * vecNorm2Sq (fun i : Fin m => q i + beta * q i)) *
+          P
+          =
+        (theta ^ 2 * vecNorm2Sq q /
+          (1 + theta ^ 2 * vecNorm2Sq y)) * P := by
+            rw [hweighted]
+      _ = (right / P) * P := by
+            rw [hprojector]
+      _ = right := by
+            field_simp [hPne]
+  have hsplit :
+      vecNorm2Sq
+          (rectMatMulVec
+            (finiteTranspose
+              (lsNormwiseBackwardErrorFormulaMatrix theta A r y)) p) =
+        left + right := by
+    simpa [left, right, Z] using
+      lsNormwiseBackwardErrorFormulaMatrix_transpose_vecNorm2Sq_eq
+        theta A r y p
+  change
+    left +
+        (beta ^ 2 * vecNorm2Sq q / vecNorm2Sq y +
+          theta ^ 2 * vecNorm2Sq (fun i : Fin m => q i + beta * q i)) *
+          P =
+      vecNorm2Sq
+        (rectMatMulVec
+          (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y))
+          p)
+  calc
+    left +
+        (beta ^ 2 * vecNorm2Sq q / vecNorm2Sq y +
+          theta ^ 2 * vecNorm2Sq (fun i : Fin m => q i + beta * q i)) *
+          P
+        = left + right := by rw [hterm]
+    _ =
+      vecNorm2Sq
+        (rectMatMulVec
+          (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y))
+          p) := by
+            rw [hsplit]
+
+/-- Source-transpose certificate bridge for the optimized rank-two WKS cost.
+    Once the source block transpose action is bounded by `sigma * ||p||_2`,
+    the optimized rank-two cost is bounded by `sigma^2 ||p||_2^2`. -/
+theorem lsNormwiseBackwardErrorRankTwo_scaled_source_cost_le_of_source_transpose_sq_le
+    {m n : ℕ} {theta : ℝ} (htheta : 0 ≤ theta)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (sigma : ℝ) (A : Fin m → Fin n → ℝ) (r p : Fin m → ℝ)
+    (hrsq : vecNorm2Sq r ≠ 0) (hpsq : vecNorm2Sq p ≠ 0)
+    (hsource :
+      vecNorm2Sq
+          (rectMatMulVec
+            (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y))
+            p) ≤
+        sigma ^ 2 * vecNorm2Sq p) :
+    let q : Fin m → ℝ :=
+      matMulVec m (lsLemma20_6ProjectorComplement p) r
+    let beta : ℝ :=
+      -(theta ^ 2 * vecNorm2Sq y) /
+        (1 + theta ^ 2 * vecNorm2Sq y)
+    vecNorm2Sq (fun j : Fin n => ∑ i : Fin m, A i j * p i) +
+        (beta ^ 2 * vecNorm2Sq q / vecNorm2Sq y +
+          theta ^ 2 * vecNorm2Sq (fun i : Fin m => q i + beta * q i)) *
+          vecNorm2Sq p ≤
+      sigma ^ 2 * vecNorm2Sq p := by
+  let q : Fin m → ℝ :=
+    matMulVec m (lsLemma20_6ProjectorComplement p) r
+  let beta : ℝ :=
+    -(theta ^ 2 * vecNorm2Sq y) /
+      (1 + theta ^ 2 * vecNorm2Sq y)
+  have heq :
+      vecNorm2Sq (fun j : Fin n => ∑ i : Fin m, A i j * p i) +
+          (beta ^ 2 * vecNorm2Sq q / vecNorm2Sq y +
+            theta ^ 2 * vecNorm2Sq (fun i : Fin m => q i + beta * q i)) *
+            vecNorm2Sq p =
+        vecNorm2Sq
+          (rectMatMulVec
+            (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y))
+            p) := by
+    simpa [q, beta] using
+      (lsNormwiseBackwardErrorRankTwo_scaled_source_cost_eq_formulaMatrix_transpose
+        (m := m) (n := n) htheta hy A r p hrsq hpsq)
+  dsimp only
+  rw [heq]
+  exact hsource
+
+/-- Square-root form of the rank-two WKS source-transpose certificate.  This
+    is the direct cost surface needed by the future constructive upper witness:
+    the optimized rank-two cost is at most any nonnegative `sigma` whose
+    squared source-block transpose certificate holds. -/
+theorem lsNormwiseBackwardErrorRankTwo_scaled_cost_sqrt_le_of_source_transpose_sq_le
+    {m n : ℕ} {theta : ℝ} (htheta : 0 ≤ theta)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    {sigma : ℝ} (hsigma : 0 ≤ sigma)
+    (A : Fin m → Fin n → ℝ) (r p : Fin m → ℝ)
+    (hrsq : vecNorm2Sq r ≠ 0) (hpsq : vecNorm2Sq p ≠ 0)
+    (hsource :
+      vecNorm2Sq
+          (rectMatMulVec
+            (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y))
+            p) ≤
+        sigma ^ 2 * vecNorm2Sq p) :
+    let q : Fin m → ℝ :=
+      matMulVec m (lsLemma20_6ProjectorComplement p) r
+    let beta : ℝ :=
+      -(theta ^ 2 * vecNorm2Sq y) /
+        (1 + theta ^ 2 * vecNorm2Sq y)
+    Real.sqrt
+        (vecNorm2Sq (fun j : Fin n => ∑ i : Fin m, A i j * p i) /
+            vecNorm2Sq p +
+          beta ^ 2 * vecNorm2Sq q / vecNorm2Sq y +
+          theta ^ 2 * vecNorm2Sq (fun i : Fin m => q i + beta * q i)) ≤
+      sigma := by
+  let q : Fin m → ℝ :=
+    matMulVec m (lsLemma20_6ProjectorComplement p) r
+  let beta : ℝ :=
+    -(theta ^ 2 * vecNorm2Sq y) /
+      (1 + theta ^ 2 * vecNorm2Sq y)
+  let P : ℝ := vecNorm2Sq p
+  let left : ℝ := vecNorm2Sq (fun j : Fin n => ∑ i : Fin m, A i j * p i)
+  let extra : ℝ :=
+    beta ^ 2 * vecNorm2Sq q / vecNorm2Sq y +
+      theta ^ 2 * vecNorm2Sq (fun i : Fin m => q i + beta * q i)
+  have hPpos : 0 < P := by
+    exact lt_of_le_of_ne (by simpa [P] using vecNorm2Sq_nonneg p)
+      (by simpa [P] using Ne.symm hpsq)
+  have hcost_sq :
+      left + extra * P ≤ sigma ^ 2 * P := by
+    simpa [q, beta, P, left, extra] using
+      (lsNormwiseBackwardErrorRankTwo_scaled_source_cost_le_of_source_transpose_sq_le
+        (m := m) (n := n) htheta hy sigma A r p hrsq hpsq hsource)
+  have hinside_le :
+      left / P + extra ≤ sigma ^ 2 := by
+    have hmul :
+        (left / P + extra) * P ≤ sigma ^ 2 * P := by
+      calc
+        (left / P + extra) * P = left + extra * P := by
+          field_simp [ne_of_gt hPpos]
+        _ ≤ sigma ^ 2 * P := hcost_sq
+    exact le_of_mul_le_mul_right hmul hPpos
+  have htarget :
+      vecNorm2Sq (fun j : Fin n => ∑ i : Fin m, A i j * p i) /
+          vecNorm2Sq p +
+        beta ^ 2 * vecNorm2Sq q / vecNorm2Sq y +
+        theta ^ 2 * vecNorm2Sq (fun i : Fin m => q i + beta * q i) =
+        left / P + extra := by
+    simp [left, P, extra]
+    ring
+  dsimp only
+  rw [htarget]
+  calc
+    Real.sqrt (left / P + extra) ≤ Real.sqrt (sigma ^ 2) :=
+      Real.sqrt_le_sqrt hinside_le
+    _ = sigma := by
+      rw [Real.sqrt_sq_eq_abs, abs_of_nonneg hsigma]
+
 /-- Source-shaped numerator for the optimal scalar in the scaled rank-one WKS
     witness.  When `r = b - A*y` and `u = A^T p`, the scalar numerator
     `p^T r + u^T y` is exactly `p^T b`. -/
