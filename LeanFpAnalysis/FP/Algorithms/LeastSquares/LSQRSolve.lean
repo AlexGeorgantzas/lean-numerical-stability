@@ -17463,6 +17463,40 @@ theorem lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_rankTwo_scaled_source_trans
   rw [hrhs]
   exact heta.trans hcost
 
+/-- Source-block branch of the WKS upper inequality using the optimized
+    rank-two feasible witness.  The local row-side `sigma_min` API supplies an
+    attaining source vector, and the rank-two construction consumes its
+    transpose-action equality directly. -/
+theorem lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_sigmaMin_le_phi_rankTwo
+    {m n : ℕ} {theta : ℝ} (htheta : 0 ≤ theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hrsq : vecNorm2Sq (lsResidualHigham A b y) ≠ 0)
+    (hbranch :
+      lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+          (lsResidualHigham A b y) y ≤
+        lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y) :
+    lsNormwiseBackwardErrorEtaF theta A b y ≤
+      lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+  rcases
+    lsNormwiseBackwardErrorFormulaMatrixSigmaMin_exists_transpose_attaining_vector_sq
+      theta A r y with
+    ⟨p, hp, hsource_eq⟩
+  have hpsq : vecNorm2Sq p ≠ 0 :=
+    ne_of_gt (vecNorm2Sq_pos_of_ne_zero_lsq hp)
+  have hsource_le :
+      let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+      vecNorm2Sq
+          (rectMatMulVec
+            (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y)) p) ≤
+        (lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y) ^ 2 *
+          vecNorm2Sq p := by
+    simpa [r] using (le_of_eq hsource_eq)
+  exact
+    lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_rankTwo_scaled_source_transpose_cert
+      htheta A b hy p hpsq hrsq hbranch hsource_le
+
 /-- Source-shaped numerator for the optimal scalar in the scaled rank-one WKS
     witness.  When `r = b - A*y` and `u = A^T p`, the scalar numerator
     `p^T r + u^T y` is exactly `p^T b`. -/
@@ -20370,6 +20404,76 @@ theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_phi_le_sigmaMin
   exact
     lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_upper_certificate
       htheta A b hy hnot hrank hupper
+
+/-- Source-block positive finite-`theta` WKS handoff using the optimized
+    rank-two feasible witness.  If the printed outer minimum selects the
+    row-side `sigma_min` branch, the local sigma-min attainer and rank-two
+    construction give the upper inequality; the finite-positive lower-bound
+    side then gives equality and positivity. -/
+theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_sigmaMin_le_phi_rankTwo
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hnot : ¬ IsLeastSquaresMinimizer A b y)
+    (hrank :
+      lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+        (lsResidualHigham A b y) y = m + 1)
+    (hbranch :
+      lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+          (lsResidualHigham A b y) y ≤
+        lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y) :
+    lsNormwiseBackwardErrorEtaF theta A b y =
+        lsNormwiseBackwardErrorFormulaRHS theta A b y ∧
+      0 < lsNormwiseBackwardErrorEtaF theta A b y ∧
+      0 < lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  have hrsq : vecNorm2Sq (lsResidualHigham A b y) ≠ 0 := by
+    intro hrsq_zero
+    have hnorm : vecNorm2 (lsResidualHigham A b y) = 0 := by
+      simp [vecNorm2, hrsq_zero]
+    have hres : lsResidualHigham A b y = 0 := by
+      ext i
+      exact (vecNorm2_eq_zero_iff (lsResidualHigham A b y)).mp hnorm i
+    exact hnot (IsLeastSquaresMinimizer.of_lsResidualHigham_eq_zero hres)
+  have hupper :
+      lsNormwiseBackwardErrorEtaF theta A b y ≤
+        lsNormwiseBackwardErrorFormulaRHS theta A b y :=
+    lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_sigmaMin_le_phi_rankTwo
+      (le_of_lt htheta) A b hy hrsq hbranch
+  exact
+    lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_upper_certificate
+      htheta A b hy hnot hrank hupper
+
+/-- Finite-positive full-row-rank WKS equality.  For positive finite `theta`,
+    nonzero non-minimizer `y`, and full row rank of the source block
+    `[A phi(I-r r^+)]`, the printed minimum in (20.21) is closed by splitting
+    into the scalar `phi` branch and the optimized rank-two `sigma_min` branch.
+
+    This still leaves the eigenvalue reformulation of the branch value and the
+    `theta = infinity` limiting case as separate selected rows. -/
+theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_theta_not_isLeastSquaresMinimizer_of_formulaMatrixRowRank_eq_card
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hnot : ¬ IsLeastSquaresMinimizer A b y)
+    (hrank :
+      lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+        (lsResidualHigham A b y) y = m + 1) :
+    lsNormwiseBackwardErrorEtaF theta A b y =
+        lsNormwiseBackwardErrorFormulaRHS theta A b y ∧
+      0 < lsNormwiseBackwardErrorEtaF theta A b y ∧
+      0 < lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  let sigma : ℝ :=
+    lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+      (lsResidualHigham A b y) y
+  let phi : ℝ :=
+    lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y
+  rcases le_total sigma phi with hsigma | hphi
+  · exact
+      lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_sigmaMin_le_phi_rankTwo
+        htheta A b hy hnot hrank (by simpa [sigma, phi] using hsigma)
+  · exact
+      lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_phi_le_sigmaMin
+        htheta A b hy hnot hrank (by simpa [sigma, phi] using hphi)
 
 /-- Positive finite-`theta` WKS branch from the concrete rank-one
     source-block certificate.  This replaces the generic upper-inequality
