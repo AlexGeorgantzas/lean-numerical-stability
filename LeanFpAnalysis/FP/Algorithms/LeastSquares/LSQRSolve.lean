@@ -16550,6 +16550,163 @@ theorem lsNormwiseBackwardErrorRankOne_scaled_q_optimal_vecNorm2Sq
     _ = vecNorm2Sq (matMulVec m (lsLemma20_6ProjectorComplement p) r) := by
           rfl
 
+/-- Vector form of the optimal scalar choice for the scaled rank-one WKS
+    witness.  The optimized explicit `Delta b` component is the negative
+    complement projection of the source residual away from `p`. -/
+theorem lsNormwiseBackwardErrorRankOne_scaled_q_optimal_eq_neg_projector
+    {m : ℕ} (p r : Fin m → ℝ) (hp : vecNorm2Sq p ≠ 0)
+    (t : ℝ) :
+    (fun i : Fin m =>
+      (((∑ k : Fin m, p k * r k) + t) / vecNorm2Sq p) * p i -
+        r i - ((1 / vecNorm2Sq p) * p i * t)) =
+      fun i : Fin m =>
+        -matMulVec m (lsLemma20_6ProjectorComplement p) r i := by
+  let dot : ℝ := ∑ k : Fin m, p k * r k
+  let Qr : Fin m → ℝ := matMulVec m (lsLemma20_6ProjectorComplement p) r
+  ext i
+  have hentry :
+      Qr i = r i - (p i / vecNorm2Sq p) * dot := by
+    simpa [Qr, dot, matMulVec] using
+      (lsLemma20_6ProjectorComplement_apply_vec p r i)
+  change ((dot + t) / vecNorm2Sq p) * p i - r i -
+      ((1 / vecNorm2Sq p) * p i * t) = -Qr i
+  rw [hentry]
+  field_simp [hp]
+  ring
+
+/-- Orthogonality of the optimized scaled rank-one WKS `Delta b` component:
+    after the optimal scalar is chosen, the remaining component is orthogonal
+    to the source direction `p`. -/
+theorem lsNormwiseBackwardErrorRankOne_scaled_q_optimal_dot_self_eq_zero
+    {m : ℕ} (p r : Fin m → ℝ) (hp : vecNorm2Sq p ≠ 0)
+    (t : ℝ) :
+    ∑ i : Fin m,
+      (((∑ k : Fin m, p k * r k) + t) / vecNorm2Sq p * p i -
+        r i - (1 / vecNorm2Sq p * p i * t)) * p i = 0 := by
+  let Qp : Fin m → Fin m → ℝ := lsLemma20_6ProjectorComplement p
+  let Qr : Fin m → ℝ := matMulVec m Qp r
+  have hq :
+      (fun i : Fin m =>
+        (((∑ k : Fin m, p k * r k) + t) / vecNorm2Sq p) * p i -
+          r i - ((1 / vecNorm2Sq p) * p i * t)) =
+        fun i : Fin m => -Qr i := by
+    simpa [Qr, Qp] using
+      lsNormwiseBackwardErrorRankOne_scaled_q_optimal_eq_neg_projector
+        p r hp t
+  have hQr_dot : ∑ i : Fin m, Qr i * p i = 0 := by
+    unfold Qr Qp matMulVec
+    calc
+      ∑ i : Fin m,
+          (∑ j : Fin m, lsLemma20_6ProjectorComplement p i j * r j) * p i
+          =
+        ∑ j : Fin m, r j *
+          ∑ i : Fin m, lsLemma20_6ProjectorComplement p i j * p i := by
+            calc
+              ∑ i : Fin m,
+                  (∑ j : Fin m,
+                    lsLemma20_6ProjectorComplement p i j * r j) * p i
+                  =
+                ∑ i : Fin m, ∑ j : Fin m,
+                  (lsLemma20_6ProjectorComplement p i j * r j) * p i := by
+                    apply Finset.sum_congr rfl
+                    intro i _
+                    rw [Finset.sum_mul]
+              _ =
+                ∑ j : Fin m, ∑ i : Fin m,
+                  (lsLemma20_6ProjectorComplement p i j * r j) * p i := by
+                    rw [Finset.sum_comm]
+              _ =
+                ∑ j : Fin m, r j *
+                  ∑ i : Fin m, lsLemma20_6ProjectorComplement p i j * p i := by
+                    apply Finset.sum_congr rfl
+                    intro j _
+                    rw [Finset.mul_sum]
+                    apply Finset.sum_congr rfl
+                    intro i _
+                    ring
+      _ = 0 := by
+            apply Finset.sum_eq_zero
+            intro j _
+            rw [lsLemma20_6ProjectorComplement_transpose_apply_self p hp j]
+            ring
+  calc
+    ∑ i : Fin m,
+      (((∑ k : Fin m, p k * r k) + t) / vecNorm2Sq p * p i -
+        r i - (1 / vecNorm2Sq p * p i * t)) * p i
+        = ∑ i : Fin m, (fun i : Fin m => -Qr i) i * p i := by
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [congrFun hq i]
+    _ = -∑ i : Fin m, Qr i * p i := by
+            rw [← Finset.sum_neg_distrib]
+            apply Finset.sum_congr rfl
+            intro i _
+            ring
+    _ = 0 := by rw [hQr_dot, neg_zero]
+
+/-- Extra outer-product perturbation used by the rank-two WKS construction.
+    It has left vector `q` and right vector `y`, scaled so that its action on
+    `y` is `beta q`. -/
+noncomputable def lsNormwiseBackwardErrorRankTwoExtraDeltaA {m n : ℕ}
+    (beta : ℝ) (q : Fin m → ℝ) (y : Fin n → ℝ) :
+    Fin m → Fin n → ℝ :=
+  fun i j => (beta / vecNorm2Sq y) * q i * y j
+
+/-- The extra rank-two outer-product perturbation sends `y` to `beta q`. -/
+theorem lsNormwiseBackwardErrorRankTwoExtraDeltaA_mulVec
+    {m n : ℕ} {beta : ℝ} (q : Fin m → ℝ)
+    {y : Fin n → ℝ} (hy : vecNorm2Sq y ≠ 0) :
+    rectMatMulVec (lsNormwiseBackwardErrorRankTwoExtraDeltaA beta q y) y =
+      fun i : Fin m => beta * q i := by
+  ext i
+  unfold rectMatMulVec lsNormwiseBackwardErrorRankTwoExtraDeltaA
+  calc
+    ∑ j : Fin n, (beta / vecNorm2Sq y * q i * y j) * y j
+        = (beta / vecNorm2Sq y * q i) * ∑ j : Fin n, y j ^ 2 := by
+            rw [Finset.mul_sum]
+            apply Finset.sum_congr rfl
+            intro j _
+            ring
+    _ = beta * q i := by
+            change (beta / vecNorm2Sq y * q i) * vecNorm2Sq y = beta * q i
+            field_simp [hy]
+
+/-- If the extra rank-two left vector is orthogonal to `p`, the extra
+    perturbation does not change the source-transpose action on `p`. -/
+theorem lsNormwiseBackwardErrorRankTwoExtraDeltaA_transpose_mul_eq_zero
+    {m n : ℕ} (beta : ℝ) (q p : Fin m → ℝ) (y : Fin n → ℝ)
+    (hq_orth : ∑ i : Fin m, q i * p i = 0) :
+    (fun j : Fin n =>
+      ∑ i : Fin m,
+        lsNormwiseBackwardErrorRankTwoExtraDeltaA beta q y i j * p i) =
+      0 := by
+  ext j
+  unfold lsNormwiseBackwardErrorRankTwoExtraDeltaA
+  calc
+    ∑ i : Fin m, (beta / vecNorm2Sq y * q i * y j) * p i
+        = (beta / vecNorm2Sq y * y j) * ∑ i : Fin m, q i * p i := by
+            rw [Finset.mul_sum]
+            apply Finset.sum_congr rfl
+            intro i _
+            ring
+    _ = 0 := by rw [hq_orth, mul_zero]
+
+/-- Frobenius norm of the extra rank-two outer-product perturbation. -/
+theorem lsNormwiseBackwardErrorRankTwoExtraDeltaA_frobNormSq
+    {m n : ℕ} (beta : ℝ) (q : Fin m → ℝ)
+    {y : Fin n → ℝ} (hy : vecNorm2Sq y ≠ 0) :
+    frobNormSqRect (lsNormwiseBackwardErrorRankTwoExtraDeltaA beta q y) =
+      beta ^ 2 * vecNorm2Sq q / vecNorm2Sq y := by
+  have h :=
+    frobNormSqRect_rankOne_real (m := m) (n := n)
+      (beta / vecNorm2Sq y) q y
+  calc
+    frobNormSqRect (lsNormwiseBackwardErrorRankTwoExtraDeltaA beta q y)
+        = (beta / vecNorm2Sq y) ^ 2 * vecNorm2Sq q * vecNorm2Sq y := by
+            simpa [lsNormwiseBackwardErrorRankTwoExtraDeltaA] using h
+    _ = beta ^ 2 * vecNorm2Sq q / vecNorm2Sq y := by
+            field_simp [hy]
+
 /-- Scalar optimization for the rank-two WKS upper witness.  After the
     rank-one source-residual witness leaves a residual component `q`
     orthogonal to the chosen direction, adding a second outer-product
