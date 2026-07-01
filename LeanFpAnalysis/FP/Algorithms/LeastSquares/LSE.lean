@@ -148,6 +148,120 @@ theorem LSEFullRowRank.transpose_rectMatMulVec_injective {p n : ℕ}
     simpa using congrFun hzero i
   exact sub_eq_zero.mp hi
 
+/-- Converse finite-dimensional rank bridge for the Chapter 20 full-row-rank
+    condition: if the transpose action `Bᵀ` is injective, then the constraint
+    map `x ↦ Bx` is surjective. -/
+theorem LSEFullRowRank.of_transpose_rectMatMulVec_injective {p n : ℕ}
+    {B : Fin p → Fin n → ℝ}
+    (hBt :
+      Function.Injective
+        (rectMatMulVec (fun j : Fin n => fun i : Fin p => B i j))) :
+    LSEFullRowRank B := by
+  let Bt : Fin n → Fin p → ℝ := fun j => fun i => B i j
+  let C : (Fin p → ℝ) →ₗ[ℝ] (Fin p → ℝ) :=
+    (lseConstraintLinearMap B).comp (lseConstraintLinearMap Bt)
+  have hker : ∀ y : Fin p → ℝ, C y = 0 → y = 0 := by
+    intro y hy
+    have hinner :
+        (∑ i : Fin p, y i * rectMatMulVec B (rectMatMulVec Bt y) i) =
+          vecNorm2Sq (rectMatMulVec Bt y) := by
+      calc
+        (∑ i : Fin p, y i * rectMatMulVec B (rectMatMulVec Bt y) i)
+            = ∑ i : Fin p, ∑ j : Fin n,
+                y i * (B i j * rectMatMulVec Bt y j) := by
+                unfold rectMatMulVec
+                apply Finset.sum_congr rfl
+                intro i _
+                rw [Finset.mul_sum]
+        _ = ∑ j : Fin n, ∑ i : Fin p,
+                y i * (B i j * rectMatMulVec Bt y j) := by
+                rw [Finset.sum_comm]
+        _ = ∑ j : Fin n,
+                (∑ i : Fin p, B i j * y i) * rectMatMulVec Bt y j := by
+                apply Finset.sum_congr rfl
+                intro j _
+                calc
+                  (∑ i : Fin p, y i * (B i j * rectMatMulVec Bt y j))
+                      = ∑ i : Fin p, (B i j * y i) *
+                          rectMatMulVec Bt y j := by
+                          apply Finset.sum_congr rfl
+                          intro i _
+                          ring
+                  _ = (∑ i : Fin p, B i j * y i) *
+                          rectMatMulVec Bt y j := by
+                          rw [Finset.sum_mul]
+        _ = ∑ j : Fin n, rectMatMulVec Bt y j *
+                rectMatMulVec Bt y j := by
+                unfold rectMatMulVec Bt
+                rfl
+        _ = vecNorm2Sq (rectMatMulVec Bt y) := by
+                unfold vecNorm2Sq
+                apply Finset.sum_congr rfl
+                intro j _
+                ring
+    have hinner_zero :
+        (∑ i : Fin p, y i * rectMatMulVec B (rectMatMulVec Bt y) i) = 0 := by
+      apply Finset.sum_eq_zero
+      intro i _
+      have hi : rectMatMulVec B (rectMatMulVec Bt y) i = 0 := by
+        simpa [C, lseConstraintLinearMap] using congrFun hy i
+      rw [hi]
+      ring
+    have hsq : vecNorm2Sq (rectMatMulVec Bt y) = 0 := by
+      rw [← hinner]
+      exact hinner_zero
+    have hnorm : vecNorm2 (rectMatMulVec Bt y) = 0 := by
+      unfold vecNorm2
+      rw [Real.sqrt_eq_zero (vecNorm2Sq_nonneg (rectMatMulVec Bt y))]
+      exact hsq
+    have hBt_zero : rectMatMulVec Bt y = 0 := by
+      ext j
+      exact (vecNorm2_eq_zero_iff (rectMatMulVec Bt y)).mp hnorm j
+    have hBt_eq :
+        rectMatMulVec Bt y = rectMatMulVec Bt (0 : Fin p → ℝ) := by
+      rw [hBt_zero]
+      ext j
+      simp [rectMatMulVec]
+    exact hBt hBt_eq
+  have hC_injective : Function.Injective C := by
+    intro y z hyz
+    have hdiff : C (fun i => y i - z i) = 0 := by
+      change C (y - z) = 0
+      rw [map_sub]
+      ext i
+      exact sub_eq_zero.mpr (congrFun hyz i)
+    have hzero := hker (fun i => y i - z i) hdiff
+    ext i
+    have hi := congrFun hzero i
+    dsimp at hi
+    exact sub_eq_zero.mp hi
+  have hC_surjective : Function.Surjective C :=
+    (LinearMap.injective_iff_surjective_of_finrank_eq_finrank
+      (K := ℝ) (V := Fin p → ℝ) (V₂ := Fin p → ℝ) rfl).1 hC_injective
+  intro d
+  rcases hC_surjective d with ⟨y, hy⟩
+  refine ⟨rectMatMulVec Bt y, ?_⟩
+  simpa [C, lseConstraintLinearMap] using hy
+
+/-- Perturbation form of the full-row-rank side of Higham's Chapter 20 rank
+    condition.  A strict operator-2 perturbation of `Bᵀ` below a source
+    transpose lower-bound margin preserves full row rank of `B`. -/
+theorem LSEFullRowRank.of_transpose_lower_bound_and_rectOpNorm2Le_lt {p n : ℕ}
+    {B DeltaB : Fin p → Fin n → ℝ} {mu eta : ℝ}
+    (hlower : ∀ y : Fin p → ℝ,
+      mu * vecNorm2 y ≤
+        vecNorm2 (rectMatMulVec (fun j : Fin n => fun i : Fin p => B i j) y))
+    (hDelta :
+      rectOpNorm2Le (fun j : Fin n => fun i : Fin p => DeltaB i j) eta)
+    (heta : eta < mu) :
+    LSEFullRowRank (fun i j => B i j + DeltaB i j) := by
+  apply LSEFullRowRank.of_transpose_rectMatMulVec_injective
+  exact
+    rectMatMulVec_injective_of_lower_bound_and_rectOpNorm2Le_lt
+      (M := fun j : Fin n => fun i : Fin p => B i j)
+      (Delta := fun j : Fin n => fun i : Fin p => DeltaB i j)
+      hlower hDelta heta
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 exact-MGS rank bridge:
     full row rank of `B` supplies the stage-0 nonbreakdown fact for MGS applied
     to `Bᵀ`.  This is the first pivot in the rank-to-all-MGS-stages route. -/
