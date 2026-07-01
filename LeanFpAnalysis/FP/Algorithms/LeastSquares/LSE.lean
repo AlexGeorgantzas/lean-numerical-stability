@@ -276,6 +276,52 @@ def LSEStackedFullColumnRank {m n p : ℕ}
     (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ) : Prop :=
   Function.Injective (rectMatMulVec (lseStackedMatrix A B))
 
+/-- Pointwise perturbations commute with the local stacked LSE matrix
+    representation `[A; B]`. -/
+theorem lseStackedMatrix_add {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) :
+    lseStackedMatrix (fun i j => A i j + DeltaA i j)
+        (fun i j => B i j + DeltaB i j) =
+      fun i j => lseStackedMatrix A B i j + lseStackedMatrix DeltaA DeltaB i j := by
+  ext i j
+  refine Fin.addCases
+    (motive := fun i : Fin (m + p) =>
+      lseStackedMatrix (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j) i j =
+        lseStackedMatrix A B i j + lseStackedMatrix DeltaA DeltaB i j)
+    ?left ?right i
+  · intro i
+    simp [lseStackedMatrix, Fin.append_left]
+  · intro i
+    simp [lseStackedMatrix, Fin.append_right]
+
+/-- Higham, 2nd ed., Chapter 20, equation (20.24), perturbation rank bridge:
+    if the source stack `[A; B]` has a vector-action lower bound `mu`, and the
+    stacked perturbation has operator-2 size at most `eta < mu`, then the
+    perturbed stack remains full column rank. -/
+theorem LSEStackedFullColumnRank.of_lower_bound_and_rectOpNorm2Le_lt
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {mu eta : ℝ}
+    (hlower : ∀ x : Fin n → ℝ,
+      mu * vecNorm2 x ≤ vecNorm2 (rectMatMulVec (lseStackedMatrix A B) x))
+    (hDelta : rectOpNorm2Le (lseStackedMatrix DeltaA DeltaB) eta)
+    (heta : eta < mu) :
+    LSEStackedFullColumnRank
+      (fun i j => A i j + DeltaA i j)
+      (fun i j => B i j + DeltaB i j) := by
+  have hinj :
+      Function.Injective
+        (rectMatMulVec
+          (fun i j =>
+            lseStackedMatrix A B i j + lseStackedMatrix DeltaA DeltaB i j)) :=
+    rectMatMulVec_injective_of_lower_bound_and_rectOpNorm2Le_lt
+      (M := lseStackedMatrix A B)
+      (Delta := lseStackedMatrix DeltaA DeltaB)
+      hlower hDelta heta
+  simpa [LSEStackedFullColumnRank, lseStackedMatrix_add] using hinj
+
 /-- Higham, 2nd ed., Chapter 20, equation (20.24), prose after the display:
     the null-intersection condition
     `null(A) ∩ null(B) = {0}` is equivalent to full column rank of
