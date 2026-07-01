@@ -67159,6 +67159,355 @@ theorem higham9_8_abs_lu_product_eq_abs_of_nonsingInv_totalNonnegative
           higham9_6_principalBlock_determinantal_inequality_of_totalNonnegative
             n JinvA hTNJ k (Nat.le_of_lt hk))
 
+/-- **Problem 9.8 / Theorem 9.14**, uniqueness-upgraded nonsingular-inverse
+route: for a nonsingular totally nonnegative source `A`, every exact
+no-pivot LU certificate of `A^{-1}` satisfies
+`|Lhat||Uhat| = |A^{-1}|`. -/
+theorem higham9_8_nonsingInv_totalNonnegative_LUFactSpec_abs_product_eq_abs
+    {n : ℕ} (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hLU : LUFactSpec n (nonsingInv n A) L_hat U_hat) :
+    ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| =
+        |nonsingInv n A i j| := by
+  obtain ⟨L₀, U₀, hLU₀, hOpt₀⟩ :=
+    higham9_8_abs_lu_product_eq_abs_of_nonsingInv_totalNonnegative
+      A hTN hdet
+  let L₀_hat : Fin n → Fin n → ℝ := higham9_8_checkerboardConjugate L₀
+  let U₀_hat : Fin n → Fin n → ℝ := higham9_8_checkerboardConjugate U₀
+  have hLU₀_hat : LUFactSpec n (nonsingInv n A) L₀_hat U₀_hat := hLU₀
+  have hdetInv :
+      Matrix.det (Matrix.of (nonsingInv n A) :
+          Matrix (Fin n) (Fin n) ℝ) ≠ 0 :=
+    higham9_nonsingInv_det_ne_zero_of_det_ne_zero A hdet
+  have hsame : L_hat = L₀_hat ∧ U_hat = U₀_hat :=
+    higham9_1_lu_unique_of_pivots_ne_zero hLU hLU₀_hat
+      (hLU.det_ne_zero_iff_U_diag_ne_zero.mp hdetInv)
+  intro i j
+  rw [hsame.1, hsame.2]
+  simpa [L₀_hat, U₀_hat] using hOpt₀ i j
+
+/-- **Problem 9.8 / Theorem 9.14**, nonsingular-inverse total-nonnegative
+rounded-stage source `f(u)` bound from an exact supplied stage certificate. -/
+theorem higham9_14_nonsingInv_totalNonnegative_source_f_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u)
+    (hn : gammaValid fp n)
+    (hT : higham9_2_RectDoolittleRoundedStageTrace
+      (Nat.le_refl n) (nonsingInv n A) L_hat U_hat fp)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hLU : LUFactSpec n (nonsingInv n A) L_hat U_hat)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          (nonsingInv n A) L_hat U_hat k j ≤ gamma fp n * |U_hat k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp (nonsingInv n A)
+          L_hat U_hat i k ≤ gamma fp n * |L_hat i k * U_hat k k|)
+    (hγ_le_u : gamma fp n ≤ u) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_f u * |nonsingInv n A i j|) ∧
+      (∀ i, ∑ j : Fin n,
+        (nonsingInv n A i j + DeltaA i j) * x_hat j = b i) := by
+  have hdetInv :
+      Matrix.det (Matrix.of (nonsingInv n A) :
+          Matrix (Fin n) (Fin n) ℝ) ≠ 0 :=
+    higham9_nonsingInv_det_ne_zero_of_det_ne_zero A hdet
+  have hOpt :=
+    higham9_8_nonsingInv_totalNonnegative_LUFactSpec_abs_product_eq_abs
+      A L_hat U_hat hTN hdet hLU
+  simpa [one_mul] using
+    (higham9_14_source_f_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma_le
+      fp n (nonsingInv n A) L_hat U_hat b 1 u hu hn hT
+      (hLU.det_ne_zero_iff_U_diag_ne_zero.mp hdetInv)
+      hU_budget_le hL_budget_le hγ_le_u
+      (fun i j => by simpa [one_mul] using le_of_eq (hOpt i j)))
+
+/-- **Problem 9.8 / Theorem 9.14**, nonsingular-inverse total-nonnegative
+rounded-stage final `h(u)` bound from an exact supplied stage certificate. -/
+theorem higham9_14_nonsingInv_totalNonnegative_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u) (hu_lt_one : u < 1)
+    (hn : gammaValid fp n)
+    (hT : higham9_2_RectDoolittleRoundedStageTrace
+      (Nat.le_refl n) (nonsingInv n A) L_hat U_hat fp)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hLU : LUFactSpec n (nonsingInv n A) L_hat U_hat)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          (nonsingInv n A) L_hat U_hat k j ≤ gamma fp n * |U_hat k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp (nonsingInv n A)
+          L_hat U_hat i k ≤ gamma fp n * |L_hat i k * U_hat k k|)
+    (hγ_le_u : gamma fp n ≤ u) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_h u * |nonsingInv n A i j|) ∧
+      (∀ i, ∑ j : Fin n,
+        (nonsingInv n A i j + DeltaA i j) * x_hat j = b i) := by
+  have hdetInv :
+      Matrix.det (Matrix.of (nonsingInv n A) :
+          Matrix (Fin n) (Fin n) ℝ) ≠ 0 :=
+    higham9_nonsingInv_det_ne_zero_of_det_ne_zero A hdet
+  have hOpt :=
+    higham9_8_nonsingInv_totalNonnegative_LUFactSpec_abs_product_eq_abs
+      A L_hat U_hat hTN hdet hLU
+  exact
+    higham9_14_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma_le
+      fp n (nonsingInv n A) L_hat U_hat b u hu hu_lt_one hn hT
+      (hLU.det_ne_zero_iff_U_diag_ne_zero.mp hdetInv)
+      hU_budget_le hL_budget_le hγ_le_u
+      (fun i j => le_of_eq (hOpt i j))
+
+/-- **Problem 9.8 / Theorem 9.14**, nonsingular-inverse total-nonnegative
+rounded-stage source `f(γ_n)` bound. -/
+theorem higham9_14_nonsingInv_totalNonnegative_source_f_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hT : higham9_2_RectDoolittleRoundedStageTrace
+      (Nat.le_refl n) (nonsingInv n A) L_hat U_hat fp)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hLU : LUFactSpec n (nonsingInv n A) L_hat U_hat)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          (nonsingInv n A) L_hat U_hat k j ≤ gamma fp n * |U_hat k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp (nonsingInv n A)
+          L_hat U_hat i k ≤ gamma fp n * |L_hat i k * U_hat k k|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_f (gamma fp n) * |nonsingInv n A i j|) ∧
+      (∀ i, ∑ j : Fin n,
+        (nonsingInv n A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_nonsingInv_totalNonnegative_source_f_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b (gamma fp n) (gamma_nonneg fp hn) hn hT
+    hTN hdet hLU hU_budget_le hL_budget_le le_rfl
+
+/-- **Problem 9.8 / Theorem 9.14**, nonsingular-inverse total-nonnegative
+rounded-stage final `h(γ_n)` bound. -/
+theorem higham9_14_nonsingInv_totalNonnegative_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hT : higham9_2_RectDoolittleRoundedStageTrace
+      (Nat.le_refl n) (nonsingInv n A) L_hat U_hat fp)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hLU : LUFactSpec n (nonsingInv n A) L_hat U_hat)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          (nonsingInv n A) L_hat U_hat k j ≤ gamma fp n * |U_hat k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp (nonsingInv n A)
+          L_hat U_hat i k ≤ gamma fp n * |L_hat i k * U_hat k k|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |nonsingInv n A i j|) ∧
+      (∀ i, ∑ j : Fin n,
+        (nonsingInv n A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_nonsingInv_totalNonnegative_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma_le
+    fp n A L_hat U_hat b (gamma fp n) (gamma_nonneg fp hn) hγ_lt_one
+    hn hT hTN hdet hLU hU_budget_le hL_budget_le le_rfl
+
+/-- **Problem 9.8 / Theorem 9.14**, nonsingular-inverse total-nonnegative
+executable rounded-loop source `f(u)` bound. -/
+theorem higham9_14_nonsingInv_totalNonnegative_source_f_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u)
+    (hn : gammaValid fp n)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hLU : LUFactSpec n (nonsingInv n A)
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A))
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A)))
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) (nonsingInv n A)
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A))
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A)) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A) k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp (nonsingInv n A)
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A))
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A)) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A) i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A) k k|)
+    (hγ_le_u : gamma fp n ≤ u) :
+    let L_hat := higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A)
+    let U_hat := higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A)
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_f u * |nonsingInv n A i j|) ∧
+      (∀ i, ∑ j : Fin n,
+        (nonsingInv n A i j + DeltaA i j) * x_hat j = b i) := by
+  have hdetInv :
+      Matrix.det (Matrix.of (nonsingInv n A) :
+          Matrix (Fin n) (Fin n) ℝ) ≠ 0 :=
+    higham9_nonsingInv_det_ne_zero_of_det_ne_zero A hdet
+  have hOpt :=
+    higham9_8_nonsingInv_totalNonnegative_LUFactSpec_abs_product_eq_abs
+      A
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A))
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A))
+      hTN hdet hLU
+  simpa [one_mul] using
+    (higham9_14_source_f_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma_le
+      fp n (nonsingInv n A) b 1 u hu hn
+      (hLU.det_ne_zero_iff_U_diag_ne_zero.mp hdetInv)
+      hU_budget_le hL_budget_le hγ_le_u
+      (fun i j => by simpa [one_mul] using le_of_eq (hOpt i j)))
+
+/-- **Problem 9.8 / Theorem 9.14**, nonsingular-inverse total-nonnegative
+executable rounded-loop final `h(u)` bound. -/
+theorem higham9_14_nonsingInv_totalNonnegative_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma_le
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (u : ℝ) (hu : 0 ≤ u) (hu_lt_one : u < 1)
+    (hn : gammaValid fp n)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hLU : LUFactSpec n (nonsingInv n A)
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A))
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A)))
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) (nonsingInv n A)
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A))
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A)) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A) k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp (nonsingInv n A)
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A))
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A)) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A) i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A) k k|)
+    (hγ_le_u : gamma fp n ≤ u) :
+    let L_hat := higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A)
+    let U_hat := higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A)
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤ higham9_14_h u * |nonsingInv n A i j|) ∧
+      (∀ i, ∑ j : Fin n,
+        (nonsingInv n A i j + DeltaA i j) * x_hat j = b i) := by
+  have hdetInv :
+      Matrix.det (Matrix.of (nonsingInv n A) :
+          Matrix (Fin n) (Fin n) ℝ) ≠ 0 :=
+    higham9_nonsingInv_det_ne_zero_of_det_ne_zero A hdet
+  have hOpt :=
+    higham9_8_nonsingInv_totalNonnegative_LUFactSpec_abs_product_eq_abs
+      A
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A))
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A))
+      hTN hdet hLU
+  exact
+    higham9_14_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma_le
+      fp n (nonsingInv n A) b u hu hu_lt_one hn
+      (hLU.det_ne_zero_iff_U_diag_ne_zero.mp hdetInv)
+      hU_budget_le hL_budget_le hγ_le_u
+      (fun i j => le_of_eq (hOpt i j))
+
+/-- **Problem 9.8 / Theorem 9.14**, nonsingular-inverse total-nonnegative
+executable rounded-loop source `f(γ_n)` bound. -/
+theorem higham9_14_nonsingInv_totalNonnegative_source_f_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hLU : LUFactSpec n (nonsingInv n A)
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A))
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A)))
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) (nonsingInv n A)
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A))
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A)) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A) k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp (nonsingInv n A)
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A))
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A)) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A) i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A) k k|) :
+    let L_hat := higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A)
+    let U_hat := higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A)
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_f (gamma fp n) * |nonsingInv n A i j|) ∧
+      (∀ i, ∑ j : Fin n,
+        (nonsingInv n A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_nonsingInv_totalNonnegative_source_f_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma_le
+    fp n A b (gamma fp n) (gamma_nonneg fp hn) hn
+    hTN hdet hLU hU_budget_le hL_budget_le le_rfl
+
+/-- **Problem 9.8 / Theorem 9.14**, nonsingular-inverse total-nonnegative
+executable rounded-loop final `h(γ_n)` bound. -/
+theorem higham9_14_nonsingInv_totalNonnegative_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma
+    (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hn : gammaValid fp n)
+    (hγ_lt_one : gamma fp n < 1)
+    (hTN : higham9_6_IsTotallyNonnegative A)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hLU : LUFactSpec n (nonsingInv n A)
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A))
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A)))
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n) (nonsingInv n A)
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A))
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A)) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A) k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp (nonsingInv n A)
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A))
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A)) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A) i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A) k k|) :
+    let L_hat := higham9_2_rectRoundedLoopL fp (Nat.le_refl n) (nonsingInv n A)
+    let U_hat := higham9_2_rectRoundedLoopU fp (Nat.le_refl n) (nonsingInv n A)
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ DeltaA : Fin n → Fin n → ℝ,
+      (∀ i j, |DeltaA i j| ≤
+        higham9_14_h (gamma fp n) * |nonsingInv n A i j|) ∧
+      (∀ i, ∑ j : Fin n,
+        (nonsingInv n A i j + DeltaA i j) * x_hat j = b i) :=
+  higham9_14_nonsingInv_totalNonnegative_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma_le
+    fp n A b (gamma fp n) (gamma_nonneg fp hn) hγ_lt_one hn
+    hTN hdet hLU hU_budget_le hL_budget_le le_rfl
+
 /-- **Problem 9.8 / Theorem 9.14**, explicit-model final `h(u)` source bound
 for the nonsingular-inverse total-nonnegative class.
 
