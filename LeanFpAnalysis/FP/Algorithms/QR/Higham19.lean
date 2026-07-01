@@ -5100,6 +5100,102 @@ theorem rounded_normalized_betaSpec_compact_handoff_not_forall_FPModel :
   norm_num [firstArgTwoMulFPModel, fl_householderApplyCompact, fl_dotProduct,
     householderNormalizedVector, householderBetaSpec, hsqrt2_ne_two] at h0
 
+/-- Stored-panel form of the rounded handoff boundary.
+
+The same rounded model witnesses failure after the compact update is embedded
+in the stored-panel pivot-copying convention.  Thus the exact stored-panel
+handoff cannot be generalized to every `FPModel` as a literal equality. -/
+theorem rounded_normalized_betaSpec_storedPanelStep_handoff_not_forall_FPModel :
+    Exists (fun fp : FPModel =>
+      Exists (fun v : Fin 1 -> Real =>
+        Exists (fun A : Fin 1 -> Fin 1 -> Real =>
+          Not (
+            fl_householderStoredPanelStep fp 1 1 0
+              (householderNormalizedVector 1 v (householderBetaSpec 1 v)) 1 A =
+            fl_householderStoredPanelStep fp 1 1 0
+              v (householderBetaSpec 1 v) A)))) := by
+  refine Exists.intro firstArgTwoMulFPModel ?_
+  refine Exists.intro (fun _ : Fin 1 => (1 : Real)) ?_
+  refine Exists.intro (fun _ _ => (1 : Real)) ?_
+  intro h
+  have h00 := congrFun (congrFun h (0 : Fin 1)) (0 : Fin 1)
+  have hsqrt2_ne_two : Not (Real.sqrt (2 : Real) = 2) := by
+    intro hs
+    have hsquare := congrArg (fun t : Real => t * t) hs
+    have hsqrt_square :
+        Real.sqrt (2 : Real) * Real.sqrt (2 : Real) = 2 := by
+      exact Real.mul_self_sqrt (by norm_num)
+    nlinarith
+  norm_num [firstArgTwoMulFPModel, fl_householderStoredPanelStep,
+    fl_householderApplyCompactPanel, fl_householderApplyCompact,
+    fl_dotProduct, householderNormalizedVector, householderBetaSpec,
+    hsqrt2_ne_two] at h00
+
+/-- Matrix-rectangular form of the rounded handoff boundary.
+
+This is the same witness stated in the QR branch's
+`fl_householderApplyMatrixRect` notation. -/
+theorem rounded_normalized_betaSpec_matrixRect_handoff_not_forall_FPModel :
+    Exists (fun fp : FPModel =>
+      Exists (fun v : Fin 1 -> Real =>
+        Exists (fun A : Fin 1 -> Fin 1 -> Real =>
+          Not (
+            fl_householderApplyMatrixRect fp 1 1
+              (householderNormalizedVector 1 v (householderBetaSpec 1 v)) 1 A =
+            fl_householderApplyMatrixRect fp 1 1
+              v (householderBetaSpec 1 v) A)))) := by
+  refine Exists.intro firstArgTwoMulFPModel ?_
+  refine Exists.intro (fun _ : Fin 1 => (1 : Real)) ?_
+  refine Exists.intro (fun _ _ => (1 : Real)) ?_
+  intro h
+  have h00 := congrFun (congrFun h (0 : Fin 1)) (0 : Fin 1)
+  have hsqrt2_ne_two : Not (Real.sqrt (2 : Real) = 2) := by
+    intro hs
+    have hsquare := congrArg (fun t : Real => t * t) hs
+    have hsqrt_square :
+        Real.sqrt (2 : Real) * Real.sqrt (2 : Real) = 2 := by
+      exact Real.mul_self_sqrt (by norm_num)
+    nlinarith
+  norm_num [firstArgTwoMulFPModel, fl_householderApplyMatrixRect,
+    fl_householderApply, fl_householderApplyCompact, fl_dotProduct,
+    householderNormalizedVector, householderBetaSpec, hsqrt2_ne_two] at h00
+
+/-- First-pivot QR-storage form of the rounded handoff boundary.
+
+Even after reconstructing the stored first panel from the QR branch's
+matrix-rectangular update, the normalized beta-one side need not agree with
+the unnormalized `householderBetaSpec` stored step for an arbitrary rounded
+`FPModel`. -/
+theorem rounded_normalized_betaSpec_firstStoredPanelStep_handoff_not_forall_FPModel :
+    Exists (fun fp : FPModel =>
+      Exists (fun v : Fin 1 -> Real =>
+        Exists (fun A : Fin 1 -> Fin 1 -> Real =>
+          Not (
+            (let Astep := fl_householderApplyMatrixRect fp 1 1
+              (householderNormalizedVector 1 v (householderBetaSpec 1 v)) 1 A
+             panelFromTopAndTrailing (panelTopLeft Astep) (panelTopRowTail Astep)
+               (trailingPanel Astep)) =
+            fl_householderStoredPanelStep fp 1 1 0
+              v (householderBetaSpec 1 v) A)))) := by
+  refine Exists.intro firstArgTwoMulFPModel ?_
+  refine Exists.intro (fun _ : Fin 1 => (1 : Real)) ?_
+  refine Exists.intro (fun _ _ => (1 : Real)) ?_
+  intro h
+  have h00 := congrFun (congrFun h (0 : Fin 1)) (0 : Fin 1)
+  have hsqrt2_ne_two : Not (Real.sqrt (2 : Real) = 2) := by
+    intro hs
+    have hsquare := congrArg (fun t : Real => t * t) hs
+    have hsqrt_square :
+        Real.sqrt (2 : Real) * Real.sqrt (2 : Real) = 2 := by
+      exact Real.mul_self_sqrt (by norm_num)
+    nlinarith
+  norm_num [firstArgTwoMulFPModel, panelFromTopAndTrailing, panelTopLeft,
+    panelTopRowTail, trailingPanel, fl_householderApplyMatrixRect,
+    fl_householderApply, fl_householderStoredPanelStep,
+    fl_householderApplyCompactPanel, fl_householderApplyCompact,
+    fl_dotProduct, householderNormalizedVector, householderBetaSpec,
+    hsqrt2_ne_two] at h00
+
 /-- Route audit for the stored-loop normalization bottleneck.
 
 The source nonbreakdown hypotheses used by the stored loop, namely
