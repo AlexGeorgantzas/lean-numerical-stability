@@ -4942,6 +4942,59 @@ theorem fl_householderApplyCompact_normalized_betaSpec_eq_exactWithUnitRoundoff
     _ = beta * S * v i := by rw [hsqrt]
     _ = (beta * S) * v i := by ring
 
+/-- Columnwise exact-arithmetic form of
+`fl_householderApplyCompact_normalized_betaSpec_eq_exactWithUnitRoundoff`. -/
+theorem
+    fl_householderApplyCompactPanel_normalized_betaSpec_eq_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) (m n : Nat)
+    (v : Fin m -> Real) (A : Fin m -> Fin n -> Real) :
+    fl_householderApplyCompactPanel
+        (FPModel.exactWithUnitRoundoff u0 hu0) m n
+        (householderNormalizedVector m v (householderBetaSpec m v)) 1 A =
+      fl_householderApplyCompactPanel
+        (FPModel.exactWithUnitRoundoff u0 hu0) m n
+        v (householderBetaSpec m v) A := by
+  ext i j
+  exact congrFun
+    (fl_householderApplyCompact_normalized_betaSpec_eq_exactWithUnitRoundoff
+      u0 hu0 m v (fun a => A a j)) i
+
+/-- Matrix-rectangular exact-arithmetic form of the normalized-to-`betaSpec`
+handoff, stated in the notation used by the recursive QR panel routine. -/
+theorem fl_householderApplyMatrixRect_normalized_betaSpec_eq_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) (m n : Nat)
+    (v : Fin m -> Real) (A : Fin m -> Fin n -> Real) :
+    fl_householderApplyMatrixRect (FPModel.exactWithUnitRoundoff u0 hu0) m n
+        (householderNormalizedVector m v (householderBetaSpec m v)) 1 A =
+      fl_householderApplyMatrixRect (FPModel.exactWithUnitRoundoff u0 hu0) m n
+        v (householderBetaSpec m v) A := by
+  ext i j
+  simpa [fl_householderApplyMatrixRect, fl_householderApply,
+    fl_householderApplyCompact]
+    using congrFun
+      (fl_householderApplyCompact_normalized_betaSpec_eq_exactWithUnitRoundoff
+        u0 hu0 m v (fun a => A a j)) i
+
+/-- Exact-arithmetic stored-panel handoff from the normalized beta-one update
+to the repository's unnormalized `householderBetaSpec` stored step.
+
+The storage convention is unchanged because both sides use the same pivot
+column copying/zeroing guards; the only content is the exact compact-panel
+handoff for the raw trailing update. -/
+theorem
+    fl_householderStoredPanelStep_normalized_betaSpec_eq_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) (m n k : Nat)
+    (v : Fin m -> Real) (A : Fin m -> Fin n -> Real) :
+    fl_householderStoredPanelStep
+        (FPModel.exactWithUnitRoundoff u0 hu0) m n k
+        (householderNormalizedVector m v (householderBetaSpec m v)) 1 A =
+      fl_householderStoredPanelStep
+        (FPModel.exactWithUnitRoundoff u0 hu0) m n k
+        v (householderBetaSpec m v) A := by
+  ext i j
+  simp [fl_householderStoredPanelStep,
+    fl_householderApplyCompactPanel_normalized_betaSpec_eq_exactWithUnitRoundoff]
+
 /-- Route audit for the stored-loop normalization bottleneck.
 
 The source nonbreakdown hypotheses used by the stored loop, namely
