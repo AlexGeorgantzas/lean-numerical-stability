@@ -10013,6 +10013,137 @@ theorem lsNormwiseBackwardErrorEtaF_eventually_exists_feasible_cost_eq_costF_one
       hone A b y DeltaA Deltab hcost,
     hdeltab⟩
 
+/-- Reverse limiting inequality for the matrix-only convention in (20.20):
+    the matrix-only `Delta b = 0` infimum is bounded by the supremum of the
+    finite nonnegative weighted backward errors.  The proof extracts a
+    convergent subsequence of exact finite minimizers from the fixed weight-one
+    compact sublevel and uses the `Delta b -> 0` bound to obtain a matrix-only
+    feasible limit point. -/
+theorem lsNormwiseBackwardErrorMatrixOnlyEtaF_le_nonneg_iSup {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    lsNormwiseBackwardErrorMatrixOnlyEtaF A b y ≤
+      (⨆ theta : {theta : ℝ // 0 ≤ theta},
+        lsNormwiseBackwardErrorEtaF theta.1 A b y) := by
+  let L : ℝ :=
+    (⨆ theta : {theta : ℝ // 0 ≤ theta},
+      lsNormwiseBackwardErrorEtaF theta.1 A b y)
+  let M : ℝ := lsNormwiseBackwardErrorMatrixOnlyEtaF A b y
+  have hL_nonneg : 0 ≤ L := by
+    have h0_nonneg :
+        0 ≤ lsNormwiseBackwardErrorEtaF (0 : ℝ) A b y :=
+      lsNormwiseBackwardErrorEtaF_nonneg (0 : ℝ) A b y
+    have h0_le :
+        lsNormwiseBackwardErrorEtaF (0 : ℝ) A b y ≤ L := by
+      simpa [L] using
+        (lsNormwiseBackwardErrorEtaF_le_nonneg_iSup_of_nonneg
+          (by norm_num : (0 : ℝ) ≤ 0) A b y)
+    exact h0_nonneg.trans h0_le
+  have hM_nonneg : 0 ≤ M := by
+    simpa [M] using lsNormwiseBackwardErrorMatrixOnlyEtaF_nonneg A b y
+  have hexists : ∀ k : ℕ,
+      ∃ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+        LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+          lsNormwiseBackwardErrorCostF (((k + 1 : ℕ) : ℝ)) DeltaA Deltab =
+            lsNormwiseBackwardErrorEtaF (((k + 1 : ℕ) : ℝ)) A b y ∧
+          lsNormwiseBackwardErrorCostF (1 : ℝ) DeltaA Deltab ≤ L ∧
+          vecNorm2 Deltab ≤ M / (((k + 1 : ℕ) : ℝ)) := by
+    intro k
+    let theta : ℝ := ((k + 1 : ℕ) : ℝ)
+    have htheta_pos : 0 < theta := by
+      have h : (0 : ℝ) < ((k + 1 : ℕ) : ℝ) := by
+        exact_mod_cast Nat.succ_pos k
+      simpa [theta] using h
+    have hone : 1 ≤ theta := by
+      have h : (1 : ℝ) ≤ ((k + 1 : ℕ) : ℝ) := by
+        exact_mod_cast Nat.succ_le_succ (Nat.zero_le k)
+      simp [theta] at h ⊢
+    rcases
+      lsNormwiseBackwardErrorEtaF_exists_feasible_cost_eq_deltab_norm_le_matrixOnlyEtaF_div_theta
+        htheta_pos A b y with
+      ⟨DeltaA, Deltab, hfeas, hcost, hdeltab⟩
+    have hcost_one :
+        lsNormwiseBackwardErrorCostF (1 : ℝ) DeltaA Deltab ≤ L := by
+      simpa [L] using
+        (lsNormwiseBackwardErrorEtaF_minimizer_costF_one_le_nonneg_iSup_of_one_le_theta
+          hone A b y DeltaA Deltab hcost)
+    exact ⟨DeltaA, Deltab, hfeas, by simpa [theta] using hcost,
+      hcost_one, by simpa [M, theta] using hdeltab⟩
+  choose DeltaA Deltab hfeas hcost hcost_one hdeltab using hexists
+  let pseq : ℕ → (Fin m → Fin n → ℝ) × (Fin m → ℝ) :=
+    fun k => (DeltaA k, Deltab k)
+  let K : Set ((Fin m → Fin n → ℝ) × (Fin m → ℝ)) :=
+    {p | LSNormwiseBackwardErrorFeasible A b y p.1 p.2 ∧
+      lsNormwiseBackwardErrorCostF (1 : ℝ) p.1 p.2 ≤ L}
+  have hKcompact : IsCompact K := by
+    simpa [K, L] using
+      LSNormwiseBackwardErrorFeasible.cost_sublevel_isCompact
+        (m := m) (n := n) (theta := (1 : ℝ)) (R := L)
+        (by norm_num : (0 : ℝ) < 1) hL_nonneg A b y
+  have hpseq_mem : ∀ k, pseq k ∈ K := by
+    intro k
+    exact ⟨hfeas k, hcost_one k⟩
+  rcases hKcompact.tendsto_subseq hpseq_mem with
+    ⟨p, hpK, phi, hphi_mono, hp_tendsto⟩
+  have hphi_atTop : Filter.Tendsto phi Filter.atTop Filter.atTop :=
+    hphi_mono.tendsto_atTop
+  have htheta_nat :
+      Filter.Tendsto (fun k : ℕ => phi k + 1) Filter.atTop Filter.atTop :=
+    (Filter.tendsto_add_atTop_nat 1).comp hphi_atTop
+  have htheta_real :
+      Filter.Tendsto
+        (fun k : ℕ => (((phi k + 1 : ℕ) : ℝ)))
+        Filter.atTop Filter.atTop :=
+    tendsto_natCast_atTop_atTop.comp htheta_nat
+  have hbound_tendsto :
+      Filter.Tendsto
+        (fun k : ℕ => M / (((phi k + 1 : ℕ) : ℝ)))
+        Filter.atTop (nhds 0) := by
+    simpa using tendsto_const_nhds.div_atTop htheta_real
+  have hdeltab_norm_tendsto_zero :
+      Filter.Tendsto
+        (fun k : ℕ => vecNorm2 (Deltab (phi k)))
+        Filter.atTop (nhds 0) := by
+    refine squeeze_zero ?hnonneg ?hupper hbound_tendsto
+    · intro k
+      exact vecNorm2_nonneg (Deltab (phi k))
+    · intro k
+      exact hdeltab (phi k)
+  have hdeltab_tendsto :
+      Filter.Tendsto (fun k : ℕ => Deltab (phi k))
+        Filter.atTop (nhds p.2) := by
+    simpa [pseq, Function.comp_def] using
+      (continuous_snd.tendsto p).comp hp_tendsto
+  have hnorm_tendsto :
+      Filter.Tendsto
+        (fun k : ℕ => vecNorm2 (Deltab (phi k)))
+        Filter.atTop (nhds (vecNorm2 p.2)) :=
+    (continuous_vecNorm2.tendsto p.2).comp hdeltab_tendsto
+  have hp2_norm_zero : vecNorm2 p.2 = 0 :=
+    tendsto_nhds_unique hnorm_tendsto hdeltab_norm_tendsto_zero
+  have hp2_zero : p.2 = 0 := by
+    ext i
+    exact (vecNorm2_eq_zero_iff p.2).mp hp2_norm_zero i
+  have hmatrix_feas :
+      LSNormwiseBackwardErrorFeasible A b y p.1 (0 : Fin m → ℝ) := by
+    simpa [hp2_zero] using hpK.1
+  have hfrob_le : frobNormRect p.1 ≤ L := by
+    simpa [hp2_zero, lsNormwiseBackwardErrorCostF_eq_frobNormRect_of_deltab_zero]
+      using hpK.2
+  exact
+    (lsNormwiseBackwardErrorMatrixOnlyEtaF_le_frobNorm_of_feasible
+      A b y p.1 hmatrix_feas).trans (by simpa [L] using hfrob_le)
+
+/-- The `theta = infinity` matrix-only model for (20.20) is exactly the
+    supremum of the finite nonnegative weighted backward errors. -/
+theorem lsNormwiseBackwardErrorMatrixOnlyEtaF_eq_nonneg_iSup {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    lsNormwiseBackwardErrorMatrixOnlyEtaF A b y =
+      (⨆ theta : {theta : ℝ // 0 ≤ theta},
+        lsNormwiseBackwardErrorEtaF theta.1 A b y) := by
+  exact le_antisymm
+    (lsNormwiseBackwardErrorMatrixOnlyEtaF_le_nonneg_iSup A b y)
+    (lsNormwiseBackwardErrorEtaF_nonneg_iSup_le_matrixOnlyEtaF A b y)
+
 /-- Real-parameter limiting foundation for (20.20): as `theta -> +∞`, the
     finite-weight backward error converges to the supremum of its nonnegative
     finite-weight values.  The source's full matrix-only formula still
@@ -10050,6 +10181,18 @@ theorem lsNormwiseBackwardErrorEtaF_tendsto_nonneg_iSup_atTop {m n : ℕ}
       filter_upwards [Filter.eventually_ge_atTop (0 : ℝ)] with theta htheta
       simp [max_eq_left htheta])
     hcomp
+
+/-- Matrix-only limiting form of (20.20): as `theta -> +∞`, the finite-weight
+    normwise backward error converges to the matrix-only `Delta b = 0`
+    infimum. -/
+theorem lsNormwiseBackwardErrorEtaF_tendsto_matrixOnlyEtaF_atTop {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    Filter.Tendsto
+      (fun theta : ℝ => lsNormwiseBackwardErrorEtaF theta A b y)
+      Filter.atTop
+      (nhds (lsNormwiseBackwardErrorMatrixOnlyEtaF A b y)) := by
+  rw [lsNormwiseBackwardErrorMatrixOnlyEtaF_eq_nonneg_iSup A b y]
+  exact lsNormwiseBackwardErrorEtaF_tendsto_nonneg_iSup_atTop A b y
 
 /-- A bounded feasible perturbation cost in (20.20) bounds the infimum model
     `eta_F(y)`. -/
