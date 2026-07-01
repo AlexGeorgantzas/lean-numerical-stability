@@ -8187,15 +8187,59 @@ theorem lsNormwiseBackwardErrorEigenMatrix_isHermitian {m n : ℕ} (theta : ℝ)
   intro i k
   simp [lsNormwiseBackwardErrorEigenMatrix_apply_comm theta A r y k i]
 
+/-- Ordered Hermitian eigenvalue index corresponding to the last row index of
+    an `(m+1) x (m+1)` source matrix. -/
+def lsNormwiseBackwardErrorLambdaStarIndex (m : ℕ) :
+    Fin (Fintype.card (Fin (m + 1))) :=
+  ⟨m, by simp⟩
+
+/-- Every ordered Hermitian eigenvalue index precedes the source last index. -/
+theorem le_lsNormwiseBackwardErrorLambdaStarIndex (m : ℕ)
+    (i : Fin (Fintype.card (Fin (m + 1)))) :
+    i ≤ lsNormwiseBackwardErrorLambdaStarIndex m := by
+  rw [Fin.le_iff_val_le_val]
+  change (i : ℕ) ≤ m
+  exact Nat.lt_succ_iff.mp (by simpa using i.isLt)
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.5: `lambda_*`, the smallest
     Hermitian eigenvalue of `A A^T - mu * r r^T / ||y||_2^2`.  Mathlib orders
-    Hermitian eigenvalues antitonically, so the last `Fin (m+1)` index is the
-    source's `lambda_min`. -/
+    Hermitian eigenvalues antitonically, so the source last index is the
+    `lambda_min` index. -/
 noncomputable def lsNormwiseBackwardErrorLambdaStar {m n : ℕ} (theta : ℝ)
     (A : Fin (m + 1) → Fin n → ℝ) (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ) :
     ℝ :=
-  (lsNormwiseBackwardErrorEigenMatrix_isHermitian theta A r y).eigenvalues
-    (Fin.last m)
+  (lsNormwiseBackwardErrorEigenMatrix_isHermitian theta A r y).eigenvalues₀
+    (lsNormwiseBackwardErrorLambdaStarIndex m)
+
+/-- The `lambda_*` index is the least member of Mathlib's antitone Hermitian
+    eigenvalue list. -/
+theorem lsNormwiseBackwardErrorLambdaStar_le_eigenvalues₀ {m n : ℕ}
+    (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (i : Fin (Fintype.card (Fin (m + 1)))) :
+    lsNormwiseBackwardErrorLambdaStar theta A r y ≤
+      (lsNormwiseBackwardErrorEigenMatrix_isHermitian theta A r y).eigenvalues₀ i := by
+  unfold lsNormwiseBackwardErrorLambdaStar
+  exact (Matrix.IsHermitian.eigenvalues₀_antitone
+      (lsNormwiseBackwardErrorEigenMatrix_isHermitian theta A r y))
+    (le_lsNormwiseBackwardErrorLambdaStarIndex m i)
+
+/-- Source-facing least-eigenvalue statement for Higham's `lambda_*`: among
+    the Hermitian eigenvalues of `A A^T - mu * r r^T / ||y||_2^2`, `lambda_*`
+    is least. -/
+theorem lsNormwiseBackwardErrorLambdaStar_isLeast_eigenvalues₀_range {m n : ℕ}
+    (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ) :
+    IsLeast
+      (Set.range fun i : Fin (Fintype.card (Fin (m + 1))) =>
+        (lsNormwiseBackwardErrorEigenMatrix_isHermitian theta A r y).eigenvalues₀ i)
+      (lsNormwiseBackwardErrorLambdaStar theta A r y) := by
+  refine ⟨?_, ?_⟩
+  · exact ⟨lsNormwiseBackwardErrorLambdaStarIndex m, by
+      simp [lsNormwiseBackwardErrorLambdaStar]⟩
+  · intro x hx
+    rcases hx with ⟨i, rfl⟩
+    exact lsNormwiseBackwardErrorLambdaStar_le_eigenvalues₀ theta A r y i
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.5: the nonnegative-`lambda_*`
     branch `||r||_2 / ||y||_2 * sqrt(mu)`. -/
