@@ -20,6 +20,22 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-06-30 active-tail global-tableau successor checkpoint:
+  added
+  `Higham13Eq1322GlobalTableauSourceChain.succ_from_matrix_stage_history_active_tail_exact_kappa`.
+  This is the all-tail successor constructor for the fixed-ambient Problem
+  13.4 global-tableau source chain: a recorded active stage-`k` tail gets its
+  first-row upper budget and Schur-tableau containment from the global
+  matrix-stage history, while
+  `higham13_algorithm13_3_schurStageMatrixTailBlock_succ_active_eq_blockSchur`
+  identifies the local `blockSchur` tail with the recorded stage-`k+1`
+  successor tail.  It leaves the ambient inverse-entry/source comparison
+  explicit, because that remains the genuine open source obligation.
+  Verification passed with focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, executable lookup with empty stderr
+  and the new name present, `git diff --check`, touched Lean placeholder scan,
+  conflict-marker scan, and focused `#print axioms` reporting only `propext`,
+  `Classical.choice`, and `Quot.sound`; temporary scratch files were removed.
 - 2026-06-30 active recorded-tail Schur bridge checkpoint:
   added
   `higham13_algorithm13_3_schurStageMatrixTailBlock_succ_active_eq_blockSchur`.
