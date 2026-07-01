@@ -20,6 +20,15 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-07-01 two-block active-tail product-witness checkpoint:
+  added
+  `higham13_eq13_22_exists_blockLUFact_two_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa`
+  and
+  `higham13_eq13_23_exists_blockLUFact_two_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa`.
+  These route the closed two-block active-tail global-tableau chain through the
+  concrete Eq.13.22/Eq.13.23 `BlockLUFactSpec` product-witness APIs.  They
+  still leave the ambient inverse-entry/source comparison explicit, and the
+  Eq.13.23 wrapper still requires the source `rho <= 2` theorem.
 - 2026-07-01 two-block active-tail global-tableau checkpoint:
   added
   `Higham13Eq1322GlobalTableauSourceChain.two_from_matrix_stage_history_active_tail_exact_kappa`.
