@@ -9763,6 +9763,39 @@ theorem lsNormwiseBackwardErrorEtaF_mono_theta_nonneg {m n : ℕ}
       (lsNormwiseBackwardErrorCostF_mono_theta_nonneg htheta1 htheta12
         DeltaA Deltab)
 
+/-- Natural-grid limiting foundation for the finite-weight model in (20.20):
+    the nondecreasing sequence `eta_F(k,y)` converges to the supremum of its
+    finite-weight values.  This is a one-dimensional monotone-convergence
+    statement, not the full `theta = infinity` WKS formula. -/
+theorem lsNormwiseBackwardErrorEtaF_nat_tendsto_iSup {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    Filter.Tendsto
+      (fun k : ℕ => lsNormwiseBackwardErrorEtaF (k : ℝ) A b y)
+      Filter.atTop
+      (nhds (⨆ k : ℕ, lsNormwiseBackwardErrorEtaF (k : ℝ) A b y)) := by
+  have hmono :
+      Monotone (fun k : ℕ => lsNormwiseBackwardErrorEtaF (k : ℝ) A b y) := by
+    intro k l hkl
+    exact lsNormwiseBackwardErrorEtaF_mono_theta_nonneg
+      (Nat.cast_nonneg k) (Nat.cast_le.mpr hkl) A b y
+  have hbdd :
+      BddAbove (Set.range
+        (fun k : ℕ => lsNormwiseBackwardErrorEtaF (k : ℝ) A b y)) := by
+    refine ⟨lsNormwiseBackwardErrorMatrixOnlyEtaF A b y, ?_⟩
+    rintro eta ⟨k, rfl⟩
+    exact lsNormwiseBackwardErrorEtaF_le_matrixOnlyEtaF (k : ℝ) A b y
+  exact tendsto_atTop_ciSup hmono hbdd
+
+/-- The natural-grid finite-weight limit supremum is bounded above by the
+    matrix-only limiting infimum.  This records the expected one-sided
+    comparison between the finite weighted model and the `Delta b = 0` model. -/
+theorem lsNormwiseBackwardErrorEtaF_nat_iSup_le_matrixOnlyEtaF {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    (⨆ k : ℕ, lsNormwiseBackwardErrorEtaF (k : ℝ) A b y) ≤
+      lsNormwiseBackwardErrorMatrixOnlyEtaF A b y := by
+  exact ciSup_le fun k =>
+    lsNormwiseBackwardErrorEtaF_le_matrixOnlyEtaF (k : ℝ) A b y
+
 /-- A bounded feasible perturbation cost in (20.20) bounds the infimum model
     `eta_F(y)`. -/
 theorem lsNormwiseBackwardErrorEtaF_le_of_feasible_cost_le {m n : ℕ}
