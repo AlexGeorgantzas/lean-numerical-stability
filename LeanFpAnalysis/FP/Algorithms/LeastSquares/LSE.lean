@@ -262,6 +262,38 @@ theorem LSEFullRowRank.of_transpose_lower_bound_and_rectOpNorm2Le_lt {p n : ℕ}
       (Delta := fun j : Fin n => fun i : Fin p => DeltaB i j)
       hlower hDelta heta
 
+/-- Source full-row rank of `B` supplies a positive Euclidean lower-bound
+    margin for the transpose action `Bᵀ`. -/
+theorem LSEFullRowRank.exists_transpose_vecNorm2_lower_bound {p n : ℕ}
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B) :
+    ∃ mu : ℝ, 0 < mu ∧
+      ∀ y : Fin p → ℝ,
+        mu * vecNorm2 y ≤
+          vecNorm2
+            (rectMatMulVec (fun j : Fin n => fun i : Fin p => B i j) y) :=
+  exists_pos_rectMatMulVec_vecNorm2_lower_bound_of_injective
+    hB.transpose_rectMatMulVec_injective
+
+/-- Noncomputable source margin for the `Bᵀ` lower-bound branch. -/
+noncomputable def LSEFullRowRank.transposeVecNorm2LowerMargin {p n : ℕ}
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B) : ℝ :=
+  Classical.choose hB.exists_transpose_vecNorm2_lower_bound
+
+/-- Positivity of the noncomputable `Bᵀ` source margin. -/
+theorem LSEFullRowRank.transposeVecNorm2LowerMargin_pos {p n : ℕ}
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B) :
+    0 < hB.transposeVecNorm2LowerMargin :=
+  (Classical.choose_spec hB.exists_transpose_vecNorm2_lower_bound).1
+
+/-- Lower-bound property of the noncomputable `Bᵀ` source margin. -/
+theorem LSEFullRowRank.transposeVecNorm2LowerMargin_lower_bound {p n : ℕ}
+    {B : Fin p → Fin n → ℝ} (hB : LSEFullRowRank B) :
+    ∀ y : Fin p → ℝ,
+      hB.transposeVecNorm2LowerMargin * vecNorm2 y ≤
+        vecNorm2
+          (rectMatMulVec (fun j : Fin n => fun i : Fin p => B i j) y) :=
+  (Classical.choose_spec hB.exists_transpose_vecNorm2_lower_bound).2
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 exact-MGS rank bridge:
     full row rank of `B` supplies the stage-0 nonbreakdown fact for MGS applied
     to `Bᵀ`.  This is the first pivot in the rank-to-all-MGS-stages route. -/
@@ -389,6 +421,39 @@ theorem lseStackedMatrix_mulVec_eq_zero_iff {m n p : ℕ}
 def LSEStackedFullColumnRank {m n p : ℕ}
     (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ) : Prop :=
   Function.Injective (rectMatMulVec (lseStackedMatrix A B))
+
+/-- Source stacked full-column rank supplies a positive Euclidean lower-bound
+    margin for the stacked action `[A;B]`. -/
+theorem LSEStackedFullColumnRank.exists_vecNorm2_lower_bound {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hAB : LSEStackedFullColumnRank A B) :
+    ∃ mu : ℝ, 0 < mu ∧
+      ∀ x : Fin n → ℝ,
+        mu * vecNorm2 x ≤
+          vecNorm2 (rectMatMulVec (lseStackedMatrix A B) x) :=
+  exists_pos_rectMatMulVec_vecNorm2_lower_bound_of_injective hAB
+
+/-- Noncomputable source margin for the stacked `[A;B]` lower-bound branch. -/
+noncomputable def LSEStackedFullColumnRank.vecNorm2LowerMargin {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hAB : LSEStackedFullColumnRank A B) : ℝ :=
+  Classical.choose hAB.exists_vecNorm2_lower_bound
+
+/-- Positivity of the noncomputable stacked source margin. -/
+theorem LSEStackedFullColumnRank.vecNorm2LowerMargin_pos {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hAB : LSEStackedFullColumnRank A B) :
+    0 < hAB.vecNorm2LowerMargin :=
+  (Classical.choose_spec hAB.exists_vecNorm2_lower_bound).1
+
+/-- Lower-bound property of the noncomputable stacked source margin. -/
+theorem LSEStackedFullColumnRank.vecNorm2LowerMargin_lower_bound {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ}
+    (hAB : LSEStackedFullColumnRank A B) :
+    ∀ x : Fin n → ℝ,
+      hAB.vecNorm2LowerMargin * vecNorm2 x ≤
+        vecNorm2 (rectMatMulVec (lseStackedMatrix A B) x) :=
+  (Classical.choose_spec hAB.exists_vecNorm2_lower_bound).2
 
 /-- Pointwise perturbations commute with the local stacked LSE matrix
     representation `[A; B]`. -/
@@ -15281,6 +15346,114 @@ theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_mi
       hDeltaA0 hDeltaB0
   exact
     hrank_branch hBLower hDeltaBOp hBMargin hStackLower hStackOp hStackMargin
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    constructed rounded Householder GQR Part B theorem with rank preservation
+    reduced to source rank plus strict smallness against the induced
+    finite-dimensional lower-bound margins.
+
+    Compared with the Frobenius rank-margin branch, this theorem derives the
+    `Bᵀ` and stacked lower-bound predicates from `LSEFullRowRank B` and
+    `LSEStackedFullColumnRank A B`.  The only remaining rank-preservation
+    side conditions are strict dominance of the concrete Householder
+    Frobenius budgets by those source margins. -/
+theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_minimizer_of_source_ranks_frobenius_margins_composed_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hB : LSEFullRowRank B)
+    (hStack : LSEStackedFullColumnRank A B)
+    (hBMargin :
+      theorem20_10_householder_gammaB fp r p q * frobNormRect B <
+        LSEFullRowRank.transposeVecNorm2LowerMargin hB)
+    (hStackMargin :
+      theorem20_10_householder_gammaA fp r p q * frobNormRect A +
+          theorem20_10_householder_gammaB fp r p q * frobNormRect B <
+        LSEStackedFullColumnRank.vecNorm2LowerMargin hStack) :
+    let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+      fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+    let Rb : Fin (p + q) → Fin p → ℝ :=
+      fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)
+    let S : Fin p → Fin p → ℝ :=
+      matTranspose (fun i : Fin p => fun j : Fin p =>
+        Rb (Fin.castAdd q i) j)
+    let beta : Fin q → ℝ :=
+      theorem20_10_householder_reversed_AQ2_rhs_tail fp A Qb b
+    ∃ DeltaA0 : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB0 : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab0 : Fin (r + q) → ℝ,
+      (∀ i j,
+        B i j + DeltaB0 i j =
+          matMulRect (p + q) (p + q) p Qb Rb j i) ∧
+      frobNormRect DeltaA0 ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect A ∧
+      frobNormRect DeltaB0 ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B ∧
+      vecNorm2 Deltab0 ≤
+        theorem20_10_householder_rhs_conservative_gamma fp r p q *
+          vecNorm2 b ∧
+      ∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA0 i j)
+          (fun i j => B i j + DeltaB0 i j),
+        hpert.Q = Qb ∧ hpert.S = S ∧
+        (∀ j : Fin q,
+          matMulVec (r + q) (matTranspose hpert.U)
+              (fun k => b k + Deltab0 k) (Fin.natAdd r j) =
+            beta j) ∧
+        let xhat : Fin (p + q) → ℝ :=
+          theorem20_10_gqr_xhat_of_transformed_tail fp hpert beta d
+        let gammaA : ℝ :=
+          theorem20_10_householder_composed_partA_gammaA fp r p q
+        let gammaB : ℝ :=
+          theorem20_10_householder_composed_partA_gammaB fp r p q
+        ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+        ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+        ∃ Deltab : Fin (r + q) → ℝ,
+        ∃ Deltad : Fin p → ℝ,
+          Deltad = (0 : Fin p → ℝ) ∧
+          frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+          frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+          vecNorm2 Deltab ≤
+            gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+          vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+          IsLSEMinimizer
+            (fun i j => A i j + DeltaA i j)
+            (fun i => b i + Deltab i)
+            (fun i j => B i j + DeltaB i j)
+            (fun i => d i + Deltad i) xhat ∧
+          (∃! x : Fin (p + q) → ℝ,
+            IsLSEMinimizer
+              (fun i j => A i j + DeltaA i j)
+              (fun i => b i + Deltab i)
+              (fun i j => B i j + DeltaB i j)
+              (fun i => d i + Deltad i) x) := by
+  let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+    fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+  let beta : Fin q → ℝ :=
+    theorem20_10_householder_reversed_AQ2_rhs_tail fp A Qb b
+  rcases
+    theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_minimizer_of_frobenius_rank_margins_composed_conservative_gamma
+      fp A B b d hp hq hvalidA hvalidB hhalf with
+    ⟨DeltaA0, DeltaB0, Deltab0, hDeltaBrep, hDeltaA0, hDeltaB0,
+      hDeltab0, hpert, hQeq, hSeq, hb_tail, hmargin_branch⟩
+  refine
+    ⟨DeltaA0, DeltaB0, Deltab0, hDeltaBrep, hDeltaA0, hDeltaB0,
+      hDeltab0, hpert, hQeq, hSeq, hb_tail, ?_⟩
+  exact
+    hmargin_branch
+      (LSEFullRowRank.transposeVecNorm2LowerMargin_lower_bound hB)
+      hBMargin
+      (LSEStackedFullColumnRank.vecNorm2LowerMargin_lower_bound hStack)
+      hStackMargin
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), rounded Householder RHS
     Part B certificate route with the currently proved conservative RHS
