@@ -11596,6 +11596,69 @@ lemma higham9_16_rookPivotFosterBound_pos {n : ℕ} (hn : 0 < n) :
   exact mul_pos (by norm_num)
     (Real.rpow_pos_of_pos hnR ((3 / 4 : ℝ) * Real.log (n : ℝ)))
 
+/-- **Equation (9.16)**, exponential log-square form of Foster's scalar
+rook-pivoting RHS.
+
+This is the scalar form needed by the remaining Foster product proof, where
+products of stage factors are compared after taking logarithms. -/
+lemma higham9_16_rookPivotFosterBound_eq_three_halves_mul_exp_log_sq
+    {n : ℕ} (hn : 0 < n) :
+    higham9_16_rookPivotFosterBound n =
+      (3 / 2 : ℝ) *
+        Real.exp ((3 / 4 : ℝ) * (Real.log (n : ℝ)) ^ 2) := by
+  unfold higham9_16_rookPivotFosterBound
+  have hnR : 0 < (n : ℝ) := by exact_mod_cast hn
+  rw [Real.rpow_def_of_pos hnR]
+  congr 1
+  congr 1
+  ring
+
+/-- **Equation (9.16)**, logarithmic form of Foster's scalar rook-pivoting
+RHS. -/
+lemma higham9_16_rookPivotFosterBound_log {n : ℕ} (hn : 0 < n) :
+    Real.log (higham9_16_rookPivotFosterBound n) =
+      Real.log (3 / 2 : ℝ) +
+        (3 / 4 : ℝ) * (Real.log (n : ℝ)) ^ 2 := by
+  unfold higham9_16_rookPivotFosterBound
+  have hnR : 0 < (n : ℝ) := by exact_mod_cast hn
+  have hcoef : (3 / 2 : ℝ) ≠ 0 := by norm_num
+  have hrpow_ne :
+      (n : ℝ) ^ ((3 / 4 : ℝ) * Real.log (n : ℝ)) ≠ 0 :=
+    ne_of_gt (Real.rpow_pos_of_pos hnR ((3 / 4 : ℝ) * Real.log (n : ℝ)))
+  rw [Real.log_mul hcoef hrpow_ne]
+  rw [Real.log_rpow hnR]
+  ring
+
+/-- **Equation (9.16)**, adjacent logarithmic increment for Foster's scalar
+rook-pivoting RHS. -/
+lemma higham9_16_rookPivotFosterBound_log_succ_sub {n : ℕ} (hn : 0 < n) :
+    Real.log (higham9_16_rookPivotFosterBound (n + 1)) -
+      Real.log (higham9_16_rookPivotFosterBound n) =
+        (3 / 4 : ℝ) *
+          ((Real.log ((n + 1 : ℕ) : ℝ)) ^ 2 -
+            (Real.log (n : ℝ)) ^ 2) := by
+  have hsucc : 0 < n + 1 := by omega
+  rw [higham9_16_rookPivotFosterBound_log hsucc,
+    higham9_16_rookPivotFosterBound_log hn]
+  ring
+
+/-- **Equation (9.16)**, adjacent ratio form of Foster's scalar rook-pivoting
+RHS. -/
+lemma higham9_16_rookPivotFosterBound_succ_div {n : ℕ} (hn : 0 < n) :
+    higham9_16_rookPivotFosterBound (n + 1) /
+      higham9_16_rookPivotFosterBound n =
+        Real.exp
+          ((3 / 4 : ℝ) *
+            ((Real.log ((n + 1 : ℕ) : ℝ)) ^ 2 -
+              (Real.log (n : ℝ)) ^ 2)) := by
+  have hsucc : 0 < n + 1 := by omega
+  rw [higham9_16_rookPivotFosterBound_eq_three_halves_mul_exp_log_sq hsucc,
+    higham9_16_rookPivotFosterBound_eq_three_halves_mul_exp_log_sq hn]
+  rw [mul_div_mul_left _ _ (by norm_num : (3 / 2 : ℝ) ≠ 0)]
+  rw [← Real.exp_sub]
+  congr 1
+  ring
+
 /-- **Equation (9.16)**, Foster RHS lower bound in positive dimensions.
 
 For `n >= 1`, the scalar factor `n^(3/4 log n)` is at least one, so Foster's
