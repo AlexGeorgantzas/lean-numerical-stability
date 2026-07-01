@@ -47,6 +47,19 @@ end-to-end stability rebuild is tagged as
 	  wires the raw first-split Eq.13.22/Eq.13.23 product-witness layer; follow-up
 	  work should continue the source-strength BDD/product-update and Theorem 13.6
 	  rows.
+- 2026-07-01 Problem 13.4 first-split active-suffix Eq.13.23 product-update
+  wrappers: added
+  `higham13_algorithm13_3_firstSplitStageHistoryGrowthFactor_le_two_of_product_bound_diag_update`,
+  `higham13_algorithm13_3_firstSplitStageHistoryGrowthFactor_le_two_of_product_bound_diag_update_reciprocal`,
+  `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_product_bound_diag_update`,
+  and
+  `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa_of_product_bound_diag_update_reciprocal`.
+  These transport the source product-bound/diagonal-update `rho <= 2` theorem to
+  the first-split flat representation and then feed it into the active-suffix
+  Eq.13.23 product witness, so the source-strength first-split Eq.13.23 route no
+  longer needs raw `hTail` or raw `rho <= 2` premises once the active-suffix
+  source chain and BDD tables are supplied.  The source-compatible structured
+  product estimate, source table data, and Theorem 13.6 estimates remain open.
 - 2026-07-01 Problem 13.4 global-tableau Eq.13.23 product-update
   source-chain method: added
   `Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_right_inverse_of_product_bound_diag_update`
