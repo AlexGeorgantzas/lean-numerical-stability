@@ -377,6 +377,7 @@
     higham13_algorithm13_3_schurStageMatrixBlock_inactive,
     higham13_algorithm13_3_schurStageMatrixBlock_past_last,
     higham13_algorithm13_3_schurStageMatrixBlock_tail_shift,
+    higham13_algorithm13_3_schurStageMatrixTailBlock_succ_active_eq_blockSchur,
     higham13_algorithm13_3_schurStageTailBlock,
     higham13_algorithm13_3_stageHistoryGrowthMatrix_contains_flat_stage_tail,
     higham13_algorithm13_3_stageBlock_bound_of_active_bound,
@@ -438,6 +439,7 @@
     higham13_eq13_23_exists_blockLUFact_succ_product_from_tail_local_chain_lower_comparison_matrix_stage_history_exact_kappa,
     higham13_algorithm13_3_matrixStageHistoryGrowthMatrix_contains_flat_initial,
     higham13_algorithm13_3_schurStageMatrixTailBlock,
+    higham13_algorithm13_3_schurStageMatrixTailBlock_succ_active_eq_blockSchur,
     higham13_algorithm13_3_matrixStageHistoryGrowthMatrix_contains_flat_stage_tail,
     Higham13Eq1322GlobalTableauSourceChain.one_of_blockMaxNorm_le_global_tableau,
     Higham13Eq1322GlobalTableauSourceChain.one_from_matrix_stage_history_tail_exact_kappa,
@@ -18443,6 +18445,45 @@ noncomputable def higham13_algorithm13_3_schurStageMatrixTailBlock
     (k : ℕ) (tail : Fin b → Fin m) :
     Fin b → Fin b → Matrix (Fin r) (Fin r) ℝ :=
   fun i j => higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k (tail i) (tail j)
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
+    active recorded tails commute with one local Schur step.
+
+    If `tailFull` records an active trailing block list at stage `k`, begins
+    with the active pivot index `k`, and `tailSucc` is its successor tail, then
+    taking the first local Schur complement of the recorded stage-`k` tail is
+    exactly the recorded stage-`k+1` tail.  This is the all-tail version of the
+    first-split identity used in the Problem 13.4 global-tableau route. -/
+theorem higham13_algorithm13_3_schurStageMatrixTailBlock_succ_active_eq_blockSchur
+    {M r b k : ℕ}
+    (A : Fin M → Fin M → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hkM : k < M)
+    (tailFull : Fin (b + 1) → Fin M)
+    (tailSucc : Fin b → Fin M)
+    (h0 : tailFull 0 = ⟨k, hkM⟩)
+    (hsucc : ∀ i : Fin b, tailFull (Fin.succ i) = tailSucc i)
+    (hactive : ∀ i : Fin b, k + 1 ≤ (tailSucc i).val) :
+    blockSchur
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull)
+        (pivotInv k) =
+      higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailSucc := by
+  ext i j s t
+  have hupdate :=
+    (higham13_algorithm13_3_schurStageBlock_exact_update A pivotInv)
+      k hkM (tailSucc i) (tailSucc j) (hactive i) (hactive j)
+  have hupdate' :
+      higham13_algorithm13_3_schurStageMatrixBlock A pivotInv (k + 1)
+          (tailSucc i) (tailSucc j) =
+        higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+            (tailSucc i) (tailSucc j) -
+          higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+              (tailSucc i) ⟨k, hkM⟩ * pivotInv k *
+            higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k
+              ⟨k, hkM⟩ (tailSucc j) := by
+    simpa [higham13_algorithm13_3_schurStageMatrixBlock] using hupdate
+  simp [blockSchur, higham13_algorithm13_3_schurStageMatrixTailBlock,
+    h0, hsucc, hupdate', Matrix.mul_apply, Finset.mul_sum, mul_assoc]
 
 theorem higham13_algorithm13_3_matrixStageHistoryGrowthMatrix_contains_flat_stage_tail
     {N m r b : ℕ} (hN : 0 < N) (hm : 0 < m) (hr : 0 < r) (hb : 0 < b)
