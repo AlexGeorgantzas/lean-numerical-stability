@@ -5371,6 +5371,56 @@ theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_fa
     hsmall hSourceSize hAATInv_le hSourceFactor_le hAOp
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    source-operator/common-radius handoff with the source-size envelope
+    specialized to the exact quantity `tauA + rhoG * e`. -/
+theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_deltaA_components_source_operator_envelopes_exact_size_common_radius_product_bound
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (E : Fin m → Fin n → ℝ)
+    (rho1 rho2 eps rhoG tauA omega e : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hDataEpsNonneg : x ≠ 0 → 0 ≤ eps)
+    (hDataEpsLeRho : x ≠ 0 → eps ≤ rhoG)
+    (hEOp : x ≠ 0 → rectOpNorm2Le E e)
+    (hRhoGE_le_min : x ≠ 0 → rhoG * e ≤ min rho1 rho2)
+    (hSourceRadius :
+      2 * (m : ℝ) * (n : ℝ) * (tauA + rhoG * e) * omega *
+          min rho1 rho2 ≤
+        (1 / 2 : ℝ))
+    (hGramLeftInv : x ≠ 0 → IsLeftInverse m (rectGram A) AAT_inv)
+    (hDataE : x ≠ 0 → ∀ i k, 0 ≤ E i k)
+    (hDeltaA1Component : x ≠ 0 →
+      ∀ i k, |DeltaA1 i k| ≤ eps * E i k)
+    (hDeltaA2Component : x ≠ 0 →
+      ∀ i k, |DeltaA2 i k| ≤ eps * E i k)
+    (hxTranspose : x ≠ 0 →
+      x =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : x ≠ 0 → 3 * max rho1 rho2 < 1)
+    (hAATInv_le : infNorm AAT_inv ≤ omega)
+    (hSourceFactor_le :
+      2 * (m : ℝ) ^ 2 * (tauA + rhoG * e) * omega ≤
+        (1 - rho2)⁻¹)
+    (hAOp : x ≠ 0 → rectOpNorm2Le A tauA) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j)
+      b x :=
+  higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_deltaA_components_source_operator_envelopes_product_size_common_radius_product_bound_of_source_nonneg
+    hm A x DeltaA1 DeltaA2 b y AAT_inv E rho1 rho2 eps rhoG
+    tauA (tauA + rhoG * e) omega e hDeltaA1 hDataEpsNonneg
+    hDataEpsLeRho hEOp hRhoGE_le_min hSourceRadius hGramLeftInv hDataE
+    hDeltaA1Component hDeltaA2Component hxTranspose hsmall le_rfl
+    hAATInv_le hSourceFactor_le hAOp
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     guarded source-factor handoff with perturbed Gram nonsingularity discharged
     from a componentwise bound on the Gram perturbation.  The remaining
     nonzero-branch matrix-analysis obligation is the concrete operator-2 bound
