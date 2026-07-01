@@ -179,6 +179,8 @@
     Higham13Eq1322GlobalTableauSourceChain.to_blockLUBudgetChain_of_right_inverse,
     Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_22_product_exact_kappa_of_right_inverse,
     Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_right_inverse,
+    higham13_eq13_22_exists_blockLUFact_two_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa,
+    higham13_eq13_23_exists_blockLUFact_two_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa,
     higham13_eq13_22_exists_blockLUFact_succ_product_from_global_tableau_tail_chain_matrix_stage_history_exact_kappa,
     higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_tail_chain_matrix_stage_history_exact_kappa,
     higham13_eq13_22_exists_blockLUFact_succ_product_from_global_tableau_tail_chain_matrix_stage_history_exact_kappa_of_det_ne_zero,
@@ -447,6 +449,8 @@
     Higham13Eq1322GlobalTableauSourceChain.one_from_matrix_stage_history_tail_exact_kappa,
     Higham13Eq1322GlobalTableauSourceChain.succ_from_matrix_stage_history_active_tail_exact_kappa,
     Higham13Eq1322GlobalTableauSourceChain.two_from_matrix_stage_history_active_tail_exact_kappa,
+    higham13_eq13_22_exists_blockLUFact_two_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa,
+    higham13_eq13_23_exists_blockLUFact_two_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa,
     higham13_algorithm13_3_matrix_active_local_schur_bound_of_product_bound,
     higham13_algorithm13_3_matrix_active_local_schur_bound_with_dim_factor,
     higham13_algorithm13_3_matrix_active_column_dominance_of_local_schur_bound,
@@ -604,6 +608,8 @@
     Higham13Eq1322GlobalTableauSourceChain.one_from_matrix_stage_history_tail_exact_kappa,
     Higham13Eq1322GlobalTableauSourceChain.succ_from_matrix_stage_history_active_tail_exact_kappa,
     Higham13Eq1322GlobalTableauSourceChain.two_from_matrix_stage_history_active_tail_exact_kappa,
+    higham13_eq13_22_exists_blockLUFact_two_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa,
+    higham13_eq13_23_exists_blockLUFact_two_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa,
     higham13_eq13_22_blockLUBudgetChain_one_from_matrix_stage_history_exact_kappa,
     higham13_eq13_22_blockLUBudgetChain_succ_from_matrix_stage_history_first_split_exact_kappa,
     higham13_eq13_22_exists_blockLUFact_succ_product_from_tail_chain_matrix_stage_history_exact_kappa,
@@ -41707,6 +41713,197 @@ theorem
     Higham13BlockLUBudgetChain.exists_blockLUFact_eq13_23_product_exact_kappa
       (r := r) hr hN Aglob Gglob AinvGlob hApos n hchain
       hRho_le_two
+
+/-- Higham, 2nd ed., Chapter 13, Problem 13.4 / equation (13.22):
+    concrete Eq.13.22 product witness for a recorded two-block active tail.
+
+    This packages
+    `Higham13Eq1322GlobalTableauSourceChain.two_from_matrix_stage_history_active_tail_exact_kappa`
+    through the fixed-ambient global-tableau product API.  The ambient
+    inverse-entry/source comparison remains an explicit hypothesis. -/
+theorem
+    higham13_eq13_22_exists_blockLUFact_two_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa
+    {M r N n k : ℕ} (hr : 0 < r) (hN : 0 < N) (hM : 0 < M)
+    (Aglob AinvGlob : Fin N → Fin N → ℝ)
+    (A : Fin M → Fin M → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hApos : 0 < maxEntryNorm hN Aglob)
+    (hRight : IsRightInverse N Aglob AinvGlob)
+    (hNn : (N : ℝ) ≤ (n : ℝ))
+    (hkM : k < M)
+    (tailFull : Fin 2 → Fin M)
+    (tailSucc : Fin 1 → Fin M)
+    (h0 : tailFull 0 = ⟨k, hkM⟩)
+    (hsucc : ∀ i : Fin 1, tailFull (Fin.succ i) = tailSucc i)
+    (hactive : ∀ i : Fin 1, k + 1 ≤ (tailSucc i).val)
+    [Invertible
+      (blockMatrixFirstSplitA11
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))]
+    [Invertible
+      (blockMatrixFirstSplitA22
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull) -
+        blockMatrixFirstSplitA21
+            (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull) *
+          ⅟(blockMatrixFirstSplitA11
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull)) *
+            blockMatrixFirstSplitA12
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))]
+    [Invertible (Matrix.fromBlocks
+      (blockMatrixFirstSplitA11
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+      (blockMatrixFirstSplitA12
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+      (blockMatrixFirstSplitA21
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+      (blockMatrixFirstSplitA22
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull)))]
+    (hpivot :
+      pivotInv k =
+        ⅟(blockMatrixFirstSplitA11
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull)))
+    (hsn : ((r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hA_le_G :
+      maxEntryNorm hN Aglob ≤
+        maxEntryNorm hN
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix hN hM hr A pivotInv))
+    (hAinv_entry :
+      ∀ i j : Fin r ⊕ Fin (1 * r),
+        |(⅟(Matrix.fromBlocks
+            (blockMatrixFirstSplitA11
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+            (blockMatrixFirstSplitA12
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+            (blockMatrixFirstSplitA21
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+            (blockMatrixFirstSplitA22
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))) :
+          Matrix (Fin r ⊕ Fin (1 * r))
+            (Fin r ⊕ Fin (1 * r)) ℝ) i j| ≤
+          maxEntryNormRect hN hN AinvGlob) :
+    ∃ L U : Fin 2 → Fin 2 → Matrix (Fin r) (Fin r) ℝ,
+      BlockLUFactSpec 2 r
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull) L U ∧
+        blockMaxNorm (Nat.succ_pos 1) hr L *
+            blockMaxNorm (Nat.succ_pos 1) hr U ≤
+          (n : ℝ) *
+            (growthFactorEntry hN Aglob
+              (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix hN hM hr A pivotInv)
+              hApos) ^ 3 *
+            (maxEntryNormRect hN hN Aglob *
+              maxEntryNormRect hN hN AinvGlob) *
+            maxEntryNormRect hN hN Aglob := by
+  classical
+  let G : Fin N → Fin N → ℝ :=
+    higham13_algorithm13_3_matrixStageHistoryGrowthMatrix hN hM hr A pivotInv
+  have hcert :
+      Higham13Eq1322GlobalTableauSourceChain hr hN Aglob G AinvGlob hApos n 1
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull)
+        (fun q => pivotInv (k + q)) := by
+    simpa [G] using
+      Higham13Eq1322GlobalTableauSourceChain.two_from_matrix_stage_history_active_tail_exact_kappa
+        (M := M) (r := r) (N := N) (n := n) (k := k)
+        hr hN hM Aglob AinvGlob A pivotInv hApos hkM
+        tailFull tailSucc h0 hsucc hactive hpivot hsn hA_le_G hAinv_entry
+  simpa [G] using
+    Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_22_product_exact_kappa_of_right_inverse
+      (r := r) (N := N) (n := n) hr hN Aglob G AinvGlob
+      hApos hRight hNn (by simpa [G] using hA_le_G) hcert
+
+/-- Higham, 2nd ed., Chapter 13, Problem 13.4 / equation (13.23):
+    concrete point-row product witness for a recorded two-block active tail.
+
+    This is the Eq.13.23 companion of
+    `higham13_eq13_22_exists_blockLUFact_two_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa`;
+    it keeps the source-side `rho <= 2` theorem as an explicit hypothesis. -/
+theorem
+    higham13_eq13_23_exists_blockLUFact_two_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa
+    {M r N n k : ℕ} (hr : 0 < r) (hN : 0 < N) (hM : 0 < M)
+    (Aglob AinvGlob : Fin N → Fin N → ℝ)
+    (A : Fin M → Fin M → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hApos : 0 < maxEntryNorm hN Aglob)
+    (hRight : IsRightInverse N Aglob AinvGlob)
+    (hNn : (N : ℝ) ≤ (n : ℝ))
+    (hkM : k < M)
+    (tailFull : Fin 2 → Fin M)
+    (tailSucc : Fin 1 → Fin M)
+    (h0 : tailFull 0 = ⟨k, hkM⟩)
+    (hsucc : ∀ i : Fin 1, tailFull (Fin.succ i) = tailSucc i)
+    (hactive : ∀ i : Fin 1, k + 1 ≤ (tailSucc i).val)
+    [Invertible
+      (blockMatrixFirstSplitA11
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))]
+    [Invertible
+      (blockMatrixFirstSplitA22
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull) -
+        blockMatrixFirstSplitA21
+            (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull) *
+          ⅟(blockMatrixFirstSplitA11
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull)) *
+            blockMatrixFirstSplitA12
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))]
+    [Invertible (Matrix.fromBlocks
+      (blockMatrixFirstSplitA11
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+      (blockMatrixFirstSplitA12
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+      (blockMatrixFirstSplitA21
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+      (blockMatrixFirstSplitA22
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull)))]
+    (hpivot :
+      pivotInv k =
+        ⅟(blockMatrixFirstSplitA11
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull)))
+    (hsn : ((r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hA_le_G :
+      maxEntryNorm hN Aglob ≤
+        maxEntryNorm hN
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix hN hM hr A pivotInv))
+    (hRho_le_two :
+      growthFactorEntry hN Aglob
+        (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix hN hM hr A pivotInv)
+        hApos ≤ 2)
+    (hAinv_entry :
+      ∀ i j : Fin r ⊕ Fin (1 * r),
+        |(⅟(Matrix.fromBlocks
+            (blockMatrixFirstSplitA11
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+            (blockMatrixFirstSplitA12
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+            (blockMatrixFirstSplitA21
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+            (blockMatrixFirstSplitA22
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))) :
+          Matrix (Fin r ⊕ Fin (1 * r))
+            (Fin r ⊕ Fin (1 * r)) ℝ) i j| ≤
+          maxEntryNormRect hN hN AinvGlob) :
+    ∃ L U : Fin 2 → Fin 2 → Matrix (Fin r) (Fin r) ℝ,
+      BlockLUFactSpec 2 r
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull) L U ∧
+        blockMaxNorm (Nat.succ_pos 1) hr L *
+            blockMaxNorm (Nat.succ_pos 1) hr U ≤
+          8 * (n : ℝ) *
+            (maxEntryNormRect hN hN Aglob *
+              maxEntryNormRect hN hN AinvGlob) *
+            maxEntryNormRect hN hN Aglob := by
+  classical
+  let G : Fin N → Fin N → ℝ :=
+    higham13_algorithm13_3_matrixStageHistoryGrowthMatrix hN hM hr A pivotInv
+  have hcert :
+      Higham13Eq1322GlobalTableauSourceChain hr hN Aglob G AinvGlob hApos n 1
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull)
+        (fun q => pivotInv (k + q)) := by
+    simpa [G] using
+      Higham13Eq1322GlobalTableauSourceChain.two_from_matrix_stage_history_active_tail_exact_kappa
+        (M := M) (r := r) (N := N) (n := n) (k := k)
+        hr hN hM Aglob AinvGlob A pivotInv hApos hkM
+        tailFull tailSucc h0 hsucc hactive hpivot hsn hA_le_G hAinv_entry
+  simpa [G] using
+    Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_right_inverse
+      (r := r) (N := N) (n := n) hr hN Aglob G AinvGlob
+      hApos hRight hNn (by simpa [G] using hA_le_G)
+      (by simpa [G] using hRho_le_two) hcert
 
 /-- Higham, 2nd ed., Chapter 13, equation (13.22):
     first-split product witness from the fixed-ambient global-tableau source
