@@ -7109,6 +7109,37 @@ theorem higham21_rowwise_backward_error_bound_witness
     UndetRowwiseBackwardErrorBounded m n A b x_hat eta :=
   ⟨ΔA, ⟨heta, hmin, hrow⟩⟩
 
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2 and Section 21.3:
+    once the Lemma 21.2 single perturbation is known to make `x_hat` a
+    minimum-norm solution, common row-wise relative bounds on the two source
+    perturbations give a row-wise backward-error witness with factor
+    `sqrt 2 * eta`. -/
+theorem higham21_lemma21_2_rowwise_backward_error_bound_of_common_row_bound
+    {m n : ℕ}
+    (A DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (x_hat : Fin n → ℝ)
+    {eta : ℝ} (heta : 0 ≤ eta)
+    (hmin :
+      RectMinNormSolution m n
+        (fun i j =>
+          A i j + undetLemma21_2SinglePerturbation x_hat DeltaA1 DeltaA2 i j)
+        b x_hat)
+    (hDeltaA1 : ∀ i : Fin m,
+      rectRowNorm2 DeltaA1 i ≤ eta * rectRowNorm2 A i)
+    (hDeltaA2 : ∀ i : Fin m,
+      rectRowNorm2 DeltaA2 i ≤ eta * rectRowNorm2 A i) :
+    UndetRowwiseBackwardErrorBounded m n A b x_hat (Real.sqrt 2 * eta) :=
+  higham21_rowwise_backward_error_bound_witness m n A
+    (undetLemma21_2SinglePerturbation x_hat DeltaA1 DeltaA2) b x_hat
+    (Real.sqrt 2 * eta)
+    (mul_nonneg (Real.sqrt_nonneg 2) heta)
+    hmin
+    (fun i => by
+      simpa [mul_assoc] using
+        higham21_lemma21_2_single_perturbation_row_bound_of_common_row_bound
+          x_hat A DeltaA1 DeltaA2 heta hDeltaA1 hDeltaA2 i)
+
 -- ============================================================
 -- §21.2  Theorem 21.3: normwise backward-error model
 -- ============================================================
