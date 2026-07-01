@@ -1704,6 +1704,17 @@ Source-facing Chapter 9 wrappers:
 - `higham9_5_wilkinson_source_bound_of_CompletePivotGECPUTrace_exactProductNumeratorMargins`
 - `higham9_5_wilkinson_source_bound_of_CompletePivotGECPUTrace_exactTargetGaps`
 - `higham9_5_wilkinson_source_bound_of_CompletePivotGECPUTrace_LUFactSpec`
+- `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace`
+- `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_denseLoop`
+- `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_absBudget`
+- `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_rectRoundedStageTrace`
+- `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_rectRoundedLoop`
+- `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_literalSourceBudgets`
+- `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_componentDominance`
+- `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_exactProductMargins`
+- `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_exactProductNumeratorMargins`
+- `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_exactTargetGaps`
+- `higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_LUFactSpec`
 - `higham9_5_wilkinson_source_bound_of_CompletePermutedLUFactSpec_growth`
 - `higham9_5_wilkinson_source_bound_exists_of_CompletePivotGECPUTrace`
 - `higham9_14_wilkinson_source_bound_exists_of_CompletePivotGECPUTrace_of_trace_bound`
@@ -2163,6 +2174,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_11_bohteBound`
 - `higham9_11_bohteBound_tridiagonal`
 - `higham9_11_bohteBound_pentadiagonal_formula`
+- `higham9_11_bohteBound_bandwidth_three_formula`
 - `higham9_11_bohteBound_bandwidth_four_formula`
 - `higham9_11_bohteBound_zero`
 - `higham9_11_bohteBound_nonneg`
@@ -2184,6 +2196,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_11_tridiagonal_bohte_solve_tight_of_isTridiagonal`
 - `higham9_11_tridiagonal_bohte_solve_tight`
 - `higham9_11_pentadiagonal_bohte_solve_tight`
+- `higham9_11_bandwidth_three_bohte_solve_tight`
 - `higham9_11_bandwidth_four_bohte_solve_tight`
 - `higham9_12_spd_lu_backward_error`
 - `tridiag_spd_shape_absLU_eq_absA`

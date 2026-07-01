@@ -10937,6 +10937,114 @@ theorem lsNormwiseBackwardErrorFormulaMatrix_right {m n : ℕ}
         lsResidualComplementProjector r i j := by
   simp [lsNormwiseBackwardErrorFormulaMatrix, Fin.append_right]
 
+/-- Squared scalar form of the WKS quantity
+    `phi = sqrt(mu) ||r||_2 / ||y||_2`. -/
+theorem lsNormwiseBackwardErrorPhi_sq_eq_mu_mul_residual_sq_div_y_sq
+    {m n : ℕ} (theta : ℝ) (r : Fin m → ℝ)
+    (y : Fin n → ℝ) :
+    (lsNormwiseBackwardErrorPhi theta r y) ^ 2 =
+      lsNormwiseBackwardErrorMu theta y * vecNorm2Sq r / vecNorm2Sq y := by
+  unfold lsNormwiseBackwardErrorPhi
+  rw [div_pow, mul_pow, Real.sq_sqrt (lsNormwiseBackwardErrorMu_nonneg theta y),
+    vecNorm2_sq r, vecNorm2_sq y]
+
+/-- Row-Gram identity behind the equivalence between Higham's WKS minimum
+    formula (20.21) and the Theorem 20.5 eigenvalue formula:
+    `[A, phi(I-rr^+)] [A, phi(I-rr^+)]^T =
+      (A A^T - mu rr^T / ||y||_2^2) + phi^2 I`. -/
+theorem lsNormwiseBackwardErrorFormulaMatrix_rowGram_eq_eigenMatrix_add_phi_sq_id
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ)
+    (r : Fin m → ℝ) {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hrsq : vecNorm2Sq r ≠ 0) (i k : Fin m) :
+    (∑ q : Fin (n + m),
+        lsNormwiseBackwardErrorFormulaMatrix theta A r y i q *
+          lsNormwiseBackwardErrorFormulaMatrix theta A r y k q) =
+      lsNormwiseBackwardErrorEigenMatrix theta A r y i k +
+        (lsNormwiseBackwardErrorPhi theta r y) ^ 2 * idMatrix m i k := by
+  let phi : ℝ := lsNormwiseBackwardErrorPhi theta r y
+  let P : Fin m → Fin m → ℝ := lsResidualComplementProjector r
+  have hP_sym (a b : Fin m) : P a b = P b a := by
+    change lsResidualComplementProjector r a b =
+      lsResidualComplementProjector r b a
+    exact lsResidualComplementProjector_symmetric r a b
+  have hP_apply (a b : Fin m) :
+      P a b = idMatrix m a b - r a * r b / vecNorm2Sq r := by
+    change lsResidualComplementProjector r a b =
+      idMatrix m a b - r a * r b / vecNorm2Sq r
+    exact lsResidualComplementProjector_apply r a b
+  have hproj :
+      (∑ j : Fin m, P i j * P k j) = P i k := by
+    calc
+      (∑ j : Fin m, P i j * P k j)
+          = ∑ j : Fin m, P i j * P j k := by
+              apply Finset.sum_congr rfl
+              intro j _
+              rw [hP_sym k j]
+      _ = P i k := by
+              simpa [P, matMul] using
+                congrFun
+                  (congrFun
+                    (lsResidualComplementProjector_idempotent r hrsq) i) k
+  have hy_norm_ne : vecNorm2 y ≠ 0 :=
+    ne_of_gt (vecNorm2_pos_of_ne_zero_lsq hy)
+  have hy_sq_ne : vecNorm2Sq y ≠ 0 := by
+    rw [← vecNorm2_sq y]
+    exact pow_ne_zero 2 hy_norm_ne
+  have hphi_sq :
+      phi ^ 2 =
+        lsNormwiseBackwardErrorMu theta y * vecNorm2Sq r / vecNorm2Sq y := by
+    simpa [phi] using
+      lsNormwiseBackwardErrorPhi_sq_eq_mu_mul_residual_sq_div_y_sq
+        theta r y
+  have hscalar :
+      phi ^ 2 * (r i * r k / vecNorm2Sq r) =
+        lsNormwiseBackwardErrorMu theta y * (r i * r k / vecNorm2Sq y) := by
+    rw [hphi_sq]
+    field_simp [hrsq, hy_sq_ne]
+  calc
+    (∑ q : Fin (n + m),
+        lsNormwiseBackwardErrorFormulaMatrix theta A r y i q *
+          lsNormwiseBackwardErrorFormulaMatrix theta A r y k q)
+        =
+      (∑ j : Fin n, A i j * A k j) +
+        phi ^ 2 * (∑ j : Fin m, P i j * P k j) := by
+          rw [Fin.sum_univ_add]
+          simp [phi, P, lsNormwiseBackwardErrorFormulaMatrix,
+            Fin.append_left, Fin.append_right, Finset.mul_sum]
+          ring_nf
+    _ = (∑ j : Fin n, A i j * A k j) + phi ^ 2 * P i k := by
+          rw [hproj]
+    _ = (∑ j : Fin n, A i j * A k j) -
+          lsNormwiseBackwardErrorMu theta y * (r i * r k / vecNorm2Sq y) +
+        phi ^ 2 * idMatrix m i k := by
+          calc
+            (∑ j : Fin n, A i j * A k j) + phi ^ 2 * P i k
+                =
+              (∑ j : Fin n, A i j * A k j) +
+                phi ^ 2 *
+                  (idMatrix m i k - r i * r k / vecNorm2Sq r) := by
+                  rw [hP_apply i k]
+            _ =
+              (∑ j : Fin n, A i j * A k j) +
+                phi ^ 2 * idMatrix m i k -
+                  phi ^ 2 * (r i * r k / vecNorm2Sq r) := by
+                  ring
+            _ =
+              (∑ j : Fin n, A i j * A k j) +
+                phi ^ 2 * idMatrix m i k -
+                  lsNormwiseBackwardErrorMu theta y *
+                    (r i * r k / vecNorm2Sq y) := by
+                  rw [hscalar]
+            _ =
+              (∑ j : Fin n, A i j * A k j) -
+                lsNormwiseBackwardErrorMu theta y * (r i * r k / vecNorm2Sq y) +
+              phi ^ 2 * idMatrix m i k := by
+                  ring
+    _ =
+      lsNormwiseBackwardErrorEigenMatrix theta A r y i k +
+        (lsNormwiseBackwardErrorPhi theta r y) ^ 2 * idMatrix m i k := by
+          simp [phi, lsNormwiseBackwardErrorEigenMatrix]
+
 /-- The appended projector block in (20.21) annihilates the residual direction:
     `[ A   phi(I - r r^+) ] [0; r] = 0` for nonzero residual `r`. -/
 theorem lsNormwiseBackwardErrorFormulaMatrix_right_residual_mulVec_eq_zero

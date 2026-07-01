@@ -16714,6 +16714,14 @@ theorem higham9_11_bohteBound_pentadiagonal_formula :
   norm_num [higham9_11_bohteBound]
   rfl
 
+/-- **Theorem 9.11**, arithmetic check for the formal Bohte expression at
+`p = 3`: the printed scalar formula evaluates to `28`.  This records only the
+formula arithmetic, not a banded-growth theorem or attainability claim. -/
+theorem higham9_11_bohteBound_bandwidth_three_formula :
+    higham9_11_bohteBound 3 = 28 := by
+  norm_num [higham9_11_bohteBound]
+  rfl
+
 /-- **Theorem 9.11**, arithmetic check for the source's `n = 9`, `p = 4`
 Bohte example: the printed scalar formula evaluates to `116`.  This records
 only the scalar formula value, not the example's pivot trace or attainability
@@ -17147,6 +17155,33 @@ theorem higham9_11_pentadiagonal_bohte_solve_tight (fp : FPModel) (n : ℕ)
       hL_diag hU_diag hLU hn hn3
       (fun i j => by
         simpa [higham9_11_bohteBound_pentadiagonal_formula] using hGrowth i j)
+
+/-- **Theorem 9.11**, bandwidth-three Bohte solve bound.
+
+This specializes the printed Bohte expression to the concrete scalar `28`.
+The external banded GEPP growth hypothesis remains explicit. -/
+theorem higham9_11_bandwidth_three_bohte_solve_tight (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hL_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hGrowth : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤
+        28 * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤
+        28 * gamma fp (3 * n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  simpa [higham9_11_bohteBound_bandwidth_three_formula] using
+    higham9_11_bohte_banded_solve_tight fp n 3 A L_hat U_hat b
+      hL_diag hU_diag hLU hn hn3
+      (fun i j => by
+        simpa [higham9_11_bohteBound_bandwidth_three_formula] using hGrowth i j)
 
 /-- **Theorem 9.11**, bandwidth-four Bohte solve bound for the source's
 printed `p = 4`, `n = 9` scalar example.
@@ -52599,6 +52634,742 @@ theorem higham9_5_wilkinson_source_bound_of_CompletePivotGECPUTrace_LUFactSpec
       (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
   higham9_5_wilkinson_source_bound_of_CompletePivotGECPUTrace fp n hn_pos
     A L_hat U_hat sigma tau b hAmax htrace hU_diag
+    (higham9_2_completePermutedLUFactSpec_to_CompletePermutedLUBackwardError_gamma
+      hn hLU)
+    hn hn3 hL_bound
+
+/-- **Theorem 9.5 / equation (9.14)**, supplied-trace complete-pivoting
+source bound at Wilkinson's sharp RHS.
+
+The hard source theorem remains the visible premise `hsharp`: every recursive
+complete-pivoting `U` trace has growth bounded by
+`higham9_14_completePivotWilkinsonBound n`.  This wrapper transports that
+premise through a supplied complete-permuted backward-error certificate for
+`PAQ`. -/
+theorem higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (sigma tau : Fin n → Fin n)
+    (b : Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn_pos A)
+    (htrace : higham9_8_CompletePivotGECPUTrace n A U_hat)
+    (hsharp :
+      ∀ (hn : 0 < n) (A U : Fin n → Fin n → ℝ)
+        (hApos : 0 < maxEntryNorm hn A),
+        higham9_8_CompletePivotGECPUTrace n A U →
+          growthFactorEntry hn A U hApos ≤
+            higham9_14_completePivotWilkinsonBound n)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hLU :
+      higham9_2_CompletePermutedLUBackwardError n A L_hat U_hat sigma tau
+        (gamma fp n))
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hL_bound : ∀ i j : Fin n, |L_hat i j| ≤ 1) :
+    let bP : Fin n → ℝ := fun i => b (sigma i)
+    let y_hat := fl_forwardSub fp n L_hat bP
+    let z_hat := fl_backSub fp n U_hat y_hat
+    let x_hat : Fin n → ℝ :=
+      fun j => z_hat ((Equiv.ofBijective tau hLU.1).symm j)
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (infNorm ΔA ≤
+        (↑n) ^ 2 * gamma fp (3 * n) *
+          higham9_14_completePivotWilkinsonBound n * infNorm A) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  classical
+  let bP : Fin n → ℝ := fun i => b (sigma i)
+  let B : Fin n → Fin n → ℝ := higham9_2_rowColPermutedMatrix A sigma tau
+  have hBmax : 0 < maxEntryNorm hn_pos B := by
+    simpa [B, higham9_2_rowColPermutedMatrix_maxEntryNorm hn_pos A
+        hLU.2.perm hLU.1] using hAmax
+  have hgrowth :
+      growthFactorEntry hn_pos B U_hat hBmax ≤
+        higham9_14_completePivotWilkinsonBound n := by
+    have htrace_growth :
+        growthFactorEntry hn_pos A U_hat hAmax ≤
+          higham9_14_completePivotWilkinsonBound n :=
+      hsharp hn_pos A U_hat hAmax htrace
+    unfold growthFactorEntry at htrace_growth ⊢
+    simpa [B, higham9_2_rowColPermutedMatrix_maxEntryNorm hn_pos A
+        hLU.2.perm hLU.1] using htrace_growth
+  have hL_diag : ∀ i : Fin n, L_hat i i ≠ 0 := by
+    intro i
+    rw [hLU.2.L_diag i]
+    norm_num
+  obtain ⟨ΔB, hΔB_bound, hΔB_eq⟩ :=
+    higham9_5_wilkinson_source_bound_of_entry_growth fp n hn_pos B
+      L_hat U_hat bP (higham9_14_completePivotWilkinsonBound n) hBmax
+      (higham9_14_completePivotWilkinsonBound_nonneg n)
+      hgrowth hL_diag hU_diag
+      (higham9_2_completePermutedLUBackwardError_to_LUBackwardError hLU)
+      hn hn3 hL_bound
+  let eSigma : Fin n ≃ Fin n := Equiv.ofBijective sigma hLU.2.perm
+  let eTau : Fin n ≃ Fin n := Equiv.ofBijective tau hLU.1
+  let z_hat := fl_backSub fp n U_hat (fl_forwardSub fp n L_hat bP)
+  let x_hat : Fin n → ℝ := fun j => z_hat (eTau.symm j)
+  let ΔA : Fin n → Fin n → ℝ := fun i j => ΔB (eSigma.symm i) (eTau.symm j)
+  refine ⟨ΔA, ?_, ?_⟩
+  · have hperm_eq :
+        higham9_2_rowColPermutedMatrix ΔA sigma tau = ΔB := by
+      funext i j
+      have hsigma_left : eSigma.symm (sigma i) = i := by
+        change eSigma.symm (eSigma i) = i
+        exact Equiv.symm_apply_apply eSigma i
+      have htau_left : eTau.symm (tau j) = j := by
+        change eTau.symm (eTau j) = j
+        exact Equiv.symm_apply_apply eTau j
+      simp [ΔA, higham9_2_rowColPermutedMatrix, higham9_2_rowPermutedMatrix,
+        higham9_2_colPermutedMatrix, hsigma_left, htau_left]
+    have hΔnorm : infNorm ΔA = infNorm ΔB := by
+      have hpermΔ :=
+        higham9_2_rowColPermutedMatrix_infNorm ΔA hLU.2.perm hLU.1
+      rw [hperm_eq] at hpermΔ
+      exact hpermΔ.symm
+    have hB_inf : infNorm B = infNorm A := by
+      simpa [B] using
+        higham9_2_rowColPermutedMatrix_infNorm A hLU.2.perm hLU.1
+    calc
+      infNorm ΔA = infNorm ΔB := hΔnorm
+      _ ≤ (↑n) ^ 2 * gamma fp (3 * n) *
+            higham9_14_completePivotWilkinsonBound n * infNorm B := hΔB_bound
+      _ = (↑n) ^ 2 * gamma fp (3 * n) *
+            higham9_14_completePivotWilkinsonBound n * infNorm A := by
+          rw [hB_inf]
+  · intro i
+    have hrow := hΔB_eq (eSigma.symm i)
+    have hsigma_symm : sigma (eSigma.symm i) = i := by
+      change eSigma (eSigma.symm i) = i
+      exact Equiv.apply_symm_apply eSigma i
+    let f : Fin n → ℝ := fun j => (A i j + ΔA i j) * x_hat j
+    calc
+      ∑ j : Fin n, (A i j + ΔA i j) * x_hat j
+          = ∑ j : Fin n, f (eTau j) := by
+              simpa [f] using (Equiv.sum_comp eTau f).symm
+      _ = ∑ j : Fin n, (B (eSigma.symm i) j + ΔB (eSigma.symm i) j) *
+            z_hat j := by
+          apply Finset.sum_congr rfl
+          intro j _
+          simp [f, B, higham9_2_rowColPermutedMatrix,
+            higham9_2_rowPermutedMatrix, higham9_2_colPermutedMatrix,
+            ΔA, x_hat, z_hat, eTau, hsigma_symm]
+      _ = bP (eSigma.symm i) := hrow
+      _ = b i := by simp [bP, hsigma_symm]
+
+/-- **Equation (9.14) / Algorithm 9.2**, dense-loop complete-pivoting bridge
+at Wilkinson's sharp RHS, conditional on the supplied per-trace Wilkinson
+theorem. -/
+theorem higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_denseLoop
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (sigma tau : Fin n → Fin n)
+    (b : Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn_pos A)
+    (htrace : higham9_8_CompletePivotGECPUTrace n A U_hat)
+    (hsharp :
+      ∀ (hn : 0 < n) (A U : Fin n → Fin n → ℝ)
+        (hApos : 0 < maxEntryNorm hn A),
+        higham9_8_CompletePivotGECPUTrace n A U →
+          growthFactorEntry hn A U hApos ≤
+            higham9_14_completePivotWilkinsonBound n)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hsigma : IsPermutation n sigma)
+    (htau : IsPermutation n tau)
+    (hC : higham9_2_DoolittleDenseLoopCertificate n
+      (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat fp)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hL_bound : ∀ i j : Fin n, |L_hat i j| ≤ 1) :
+    let bP : Fin n → ℝ := fun i => b (sigma i)
+    let y_hat := fl_forwardSub fp n L_hat bP
+    let z_hat := fl_backSub fp n U_hat y_hat
+    let x_hat : Fin n → ℝ :=
+      fun j => z_hat ((Equiv.ofBijective tau htau).symm j)
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (infNorm ΔA ≤
+        (↑n) ^ 2 * gamma fp (3 * n) *
+          higham9_14_completePivotWilkinsonBound n * infNorm A) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace fp n hn_pos
+    A L_hat U_hat sigma tau b hAmax htrace hsharp hU_diag
+    (higham9_2_completePermutedDenseLoopCertificate_to_CompletePermutedLUBackwardError
+      hsigma htau hn hC)
+    hn hn3 hL_bound
+
+/-- **Equation (9.14) / Algorithm 9.2**, absolute-budget complete-pivoting
+bridge at Wilkinson's sharp RHS, conditional on the supplied per-trace
+Wilkinson theorem. -/
+theorem higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_absBudget
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (sigma tau : Fin n → Fin n)
+    (b : Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn_pos A)
+    (htrace : higham9_8_CompletePivotGECPUTrace n A U_hat)
+    (hsharp :
+      ∀ (hn : 0 < n) (A U : Fin n → Fin n → ℝ)
+        (hApos : 0 < maxEntryNorm hn A),
+        higham9_8_CompletePivotGECPUTrace n A U →
+          growthFactorEntry hn A U hApos ≤
+            higham9_14_completePivotWilkinsonBound n)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hsigma : IsPermutation n sigma)
+    (htau : IsPermutation n tau)
+    (BU BL : Fin n → Fin n → ℝ)
+    (hC : higham9_2_DoolittleDenseLoopAbsBudgetCertificate n
+      (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat fp BU BL)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hL_bound : ∀ i j : Fin n, |L_hat i j| ≤ 1) :
+    let bP : Fin n → ℝ := fun i => b (sigma i)
+    let y_hat := fl_forwardSub fp n L_hat bP
+    let z_hat := fl_backSub fp n U_hat y_hat
+    let x_hat : Fin n → ℝ :=
+      fun j => z_hat ((Equiv.ofBijective tau htau).symm j)
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (infNorm ΔA ≤
+        (↑n) ^ 2 * gamma fp (3 * n) *
+          higham9_14_completePivotWilkinsonBound n * infNorm A) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace fp n hn_pos
+    A L_hat U_hat sigma tau b hAmax htrace hsharp hU_diag
+    (higham9_2_completePermutedAbsBudgetCertificate_to_CompletePermutedLUBackwardError
+      hsigma htau hn hC)
+    hn hn3 hL_bound
+
+/-- **Equation (9.14) / Algorithm 9.2**, rectangular rounded-stage
+complete-pivoting bridge at Wilkinson's sharp RHS, conditional on the supplied
+per-trace Wilkinson theorem. -/
+theorem higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_rectRoundedStageTrace
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (sigma tau : Fin n → Fin n)
+    (b : Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn_pos A)
+    (htrace : higham9_8_CompletePivotGECPUTrace n A U_hat)
+    (hsharp :
+      ∀ (hn : 0 < n) (A U : Fin n → Fin n → ℝ)
+        (hApos : 0 < maxEntryNorm hn A),
+        higham9_8_CompletePivotGECPUTrace n A U →
+          growthFactorEntry hn A U hApos ≤
+            higham9_14_completePivotWilkinsonBound n)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hsigma : IsPermutation n sigma)
+    (htau : IsPermutation n tau)
+    (hT : higham9_2_RectDoolittleRoundedStageTrace
+      (Nat.le_refl n) (higham9_2_rowColPermutedMatrix A sigma tau)
+      L_hat U_hat fp)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat k j ≤
+        gamma fp n * |U_hat k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k ≤
+        gamma fp n * |L_hat i k * U_hat k k|)
+    (hL_bound : ∀ i j : Fin n, |L_hat i j| ≤ 1) :
+    let bP : Fin n → ℝ := fun i => b (sigma i)
+    let y_hat := fl_forwardSub fp n L_hat bP
+    let z_hat := fl_backSub fp n U_hat y_hat
+    let x_hat : Fin n → ℝ :=
+      fun j => z_hat ((Equiv.ofBijective tau htau).symm j)
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (infNorm ΔA ≤
+        (↑n) ^ 2 * gamma fp (3 * n) *
+          higham9_14_completePivotWilkinsonBound n * infNorm A) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_denseLoop
+    fp n hn_pos A L_hat U_hat sigma tau b hAmax htrace hsharp hU_diag
+    hsigma htau
+    (higham9_2_rectDenseLoopCertificate_to_squareDenseLoopCertificate
+      (higham9_2_rectRoundedStageTrace_to_rectDenseLoopCertificate
+        hT hU_diag hn hU_budget_le hL_budget_le))
+    hn hn3 hL_bound
+
+/-- **Equation (9.14) / Algorithm 9.2**, executable rectangular rounded-loop
+complete-pivoting bridge at Wilkinson's sharp RHS, conditional on the supplied
+per-trace Wilkinson theorem. -/
+theorem higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_rectRoundedLoop
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (A : Fin n → Fin n → ℝ)
+    (sigma tau : Fin n → Fin n)
+    (b : Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn_pos A)
+    (htrace : higham9_8_CompletePivotGECPUTrace n A
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+        (higham9_2_rowColPermutedMatrix A sigma tau)))
+    (hsharp :
+      ∀ (hn : 0 < n) (A U : Fin n → Fin n → ℝ)
+        (hApos : 0 < maxEntryNorm hn A),
+        higham9_8_CompletePivotGECPUTrace n A U →
+          growthFactorEntry hn A U hApos ≤
+            higham9_14_completePivotWilkinsonBound n)
+    (hU_diag : ∀ i : Fin n,
+      higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+          (higham9_2_rowColPermutedMatrix A sigma tau) i i ≠ 0)
+    (hsigma : IsPermutation n sigma)
+    (htau : IsPermutation n tau)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          (higham9_2_rowColPermutedMatrix A sigma tau)
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+            (higham9_2_rowColPermutedMatrix A sigma tau))
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+            (higham9_2_rowColPermutedMatrix A sigma tau)) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+            (higham9_2_rowColPermutedMatrix A sigma tau) k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp
+          (higham9_2_rowColPermutedMatrix A sigma tau)
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+            (higham9_2_rowColPermutedMatrix A sigma tau))
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+            (higham9_2_rowColPermutedMatrix A sigma tau)) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+              (higham9_2_rowColPermutedMatrix A sigma tau) i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+              (higham9_2_rowColPermutedMatrix A sigma tau) k k|)
+    (hL_bound : ∀ i j : Fin n,
+      |higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+          (higham9_2_rowColPermutedMatrix A sigma tau) i j| ≤ 1) :
+    let L_hat := higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+      (higham9_2_rowColPermutedMatrix A sigma tau)
+    let U_hat := higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+      (higham9_2_rowColPermutedMatrix A sigma tau)
+    let bP : Fin n → ℝ := fun i => b (sigma i)
+    let y_hat := fl_forwardSub fp n L_hat bP
+    let z_hat := fl_backSub fp n U_hat y_hat
+    let x_hat : Fin n → ℝ :=
+      fun j => z_hat ((Equiv.ofBijective tau htau).symm j)
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (infNorm ΔA ≤
+        (↑n) ^ 2 * gamma fp (3 * n) *
+          higham9_14_completePivotWilkinsonBound n * infNorm A) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_rectRoundedStageTrace
+    fp n hn_pos A
+    (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+      (higham9_2_rowColPermutedMatrix A sigma tau))
+    (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+      (higham9_2_rowColPermutedMatrix A sigma tau))
+    sigma tau b hAmax htrace hsharp hU_diag hsigma htau
+    (higham9_2_rectRoundedLoopStageTrace fp (Nat.le_refl n)
+      (higham9_2_rowColPermutedMatrix A sigma tau))
+    hn hn3 hU_budget_le hL_budget_le hL_bound
+
+/-- **Equation (9.14) / Algorithm 9.2**, literal-source-budget
+complete-pivoting bridge at Wilkinson's sharp RHS, conditional on the supplied
+per-trace Wilkinson theorem. -/
+theorem higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_literalSourceBudgets
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (sigma tau : Fin n → Fin n)
+    (b : Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn_pos A)
+    (htrace : higham9_8_CompletePivotGECPUTrace n A U_hat)
+    (hsharp :
+      ∀ (hn : 0 < n) (A U : Fin n → Fin n → ℝ)
+        (hApos : 0 < maxEntryNorm hn A),
+        higham9_8_CompletePivotGECPUTrace n A U →
+          growthFactorEntry hn A U hApos ≤
+            higham9_14_completePivotWilkinsonBound n)
+    (hL_diag : ∀ i : Fin n, L_hat i i = 1)
+    (hL_upper_zero : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hU_lower_zero : ∀ i j : Fin n, j.val < i.val → U_hat i j = 0)
+    (hU_entry_eq : ∀ k j : Fin n, k.val ≤ j.val →
+      U_hat k j =
+        higham9_2_flDoolittleUEntry fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat k j)
+    (hL_entry_eq : ∀ i k : Fin n, k.val < i.val →
+      L_hat i k =
+        higham9_2_flDoolittleLEntry fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hsigma : IsPermutation n sigma)
+    (htau : IsPermutation n tau)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      doolittleUAbsBudget fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat k j ≤
+        gamma fp n * |U_hat k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      doolittleLAbsBudget fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k ≤
+        gamma fp n * |L_hat i k * U_hat k k|)
+    (hL_bound : ∀ i j : Fin n, |L_hat i j| ≤ 1) :
+    let bP : Fin n → ℝ := fun i => b (sigma i)
+    let y_hat := fl_forwardSub fp n L_hat bP
+    let z_hat := fl_backSub fp n U_hat y_hat
+    let x_hat : Fin n → ℝ :=
+      fun j => z_hat ((Equiv.ofBijective tau htau).symm j)
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (infNorm ΔA ≤
+        (↑n) ^ 2 * gamma fp (3 * n) *
+          higham9_14_completePivotWilkinsonBound n * infNorm A) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_absBudget
+    fp n hn_pos A L_hat U_hat sigma tau b hAmax htrace hsharp hU_diag
+    hsigma htau
+    (doolittleUAbsBudget fp n
+      (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat)
+    (doolittleLAbsBudget fp n
+      (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat)
+    (higham9_2_absBudgetCertificate_of_literal_doolittle_source_budgets
+      hL_diag hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq
+      hU_diag hn hU_budget_le hL_budget_le)
+    hn hn3 hL_bound
+
+/-- **Equation (9.14) / Algorithm 9.2**, component-dominance
+complete-pivoting bridge at Wilkinson's sharp RHS, conditional on the supplied
+per-trace Wilkinson theorem. -/
+theorem higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_componentDominance
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (sigma tau : Fin n → Fin n)
+    (b : Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn_pos A)
+    (htrace : higham9_8_CompletePivotGECPUTrace n A U_hat)
+    (hsharp :
+      ∀ (hn : 0 < n) (A U : Fin n → Fin n → ℝ)
+        (hApos : 0 < maxEntryNorm hn A),
+        higham9_8_CompletePivotGECPUTrace n A U →
+          growthFactorEntry hn A U hApos ≤
+            higham9_14_completePivotWilkinsonBound n)
+    (hL_diag : ∀ i : Fin n, L_hat i i = 1)
+    (hL_upper_zero : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hU_lower_zero : ∀ i j : Fin n, j.val < i.val → U_hat i j = 0)
+    (hU_entry_eq : ∀ k j : Fin n, k.val ≤ j.val →
+      U_hat k j =
+        higham9_2_flDoolittleUEntry fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat k j)
+    (hL_entry_eq : ∀ i k : Fin n, k.val < i.val →
+      L_hat i k =
+        higham9_2_flDoolittleLEntry fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hsigma : IsPermutation n sigma)
+    (htau : IsPermutation n tau)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hU_work_le : ∀ k j : Fin n, k.val ≤ j.val →
+      doolittleUWorkAbs fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat k j ≤
+        |U_hat k j|)
+    (hU_prod_le : ∀ k j : Fin n, k.val ≤ j.val →
+      doolittleUProductAbs fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat k j ≤
+        |U_hat k j|)
+    (hL_work_le : ∀ i k : Fin n, k.val < i.val →
+      doolittleLWorkAbs fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k ≤
+        |L_hat i k * U_hat k k|)
+    (hL_prod_le : ∀ i k : Fin n, k.val < i.val →
+      doolittleLProductAbs fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k ≤
+        |L_hat i k * U_hat k k|)
+    (hL_num_le : ∀ i k : Fin n, k.val < i.val →
+      doolittleLNumeratorAbs fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k ≤
+        |L_hat i k * U_hat k k|)
+    (hL_bound : ∀ i j : Fin n, |L_hat i j| ≤ 1) :
+    let bP : Fin n → ℝ := fun i => b (sigma i)
+    let y_hat := fl_forwardSub fp n L_hat bP
+    let z_hat := fl_backSub fp n U_hat y_hat
+    let x_hat : Fin n → ℝ :=
+      fun j => z_hat ((Equiv.ofBijective tau htau).symm j)
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (infNorm ΔA ≤
+        (↑n) ^ 2 * gamma fp (3 * n) *
+          higham9_14_completePivotWilkinsonBound n * infNorm A) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_absBudget
+    fp n hn_pos A L_hat U_hat sigma tau b hAmax htrace hsharp hU_diag
+    hsigma htau
+    (doolittleUAbsBudget fp n
+      (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat)
+    (doolittleLAbsBudget fp n
+      (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat)
+    (higham9_2_absBudgetCertificate_of_literal_doolittle_component_dominance
+      hL_diag hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq
+      hU_diag hn hU_work_le hU_prod_le hL_work_le hL_prod_le hL_num_le)
+    hn hn3 hL_bound
+
+/-- **Equation (9.14) / Algorithm 9.2**, exact-product margin
+complete-pivoting bridge at Wilkinson's sharp RHS, conditional on the supplied
+per-trace Wilkinson theorem. -/
+theorem higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_exactProductMargins
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (sigma tau : Fin n → Fin n)
+    (b : Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn_pos A)
+    (htrace : higham9_8_CompletePivotGECPUTrace n A U_hat)
+    (hsharp :
+      ∀ (hn : 0 < n) (A U : Fin n → Fin n → ℝ)
+        (hApos : 0 < maxEntryNorm hn A),
+        higham9_8_CompletePivotGECPUTrace n A U →
+          growthFactorEntry hn A U hApos ≤
+            higham9_14_completePivotWilkinsonBound n)
+    (hL_diag : ∀ i : Fin n, L_hat i i = 1)
+    (hL_upper_zero : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hU_lower_zero : ∀ i j : Fin n, j.val < i.val → U_hat i j = 0)
+    (hU_entry_eq : ∀ k j : Fin n, k.val ≤ j.val →
+      U_hat k j =
+        higham9_2_flDoolittleUEntry fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat k j)
+    (hL_entry_eq : ∀ i k : Fin n, k.val < i.val →
+      L_hat i k =
+        higham9_2_flDoolittleLEntry fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hsigma : IsPermutation n sigma)
+    (htau : IsPermutation n tau)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hU_margin : ∀ k j : Fin n, k.val ≤ j.val →
+      |higham9_2_rowColPermutedMatrix A sigma tau k j| + (1 + fp.u) *
+          doolittleUProductAbs fp n
+            (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat k j ≤
+        |U_hat k j|)
+    (hL_margin : ∀ i k : Fin n, k.val < i.val →
+      |higham9_2_rowColPermutedMatrix A sigma tau i k| + (1 + fp.u) *
+          doolittleLProductAbs fp n
+            (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k ≤
+        |L_hat i k * U_hat k k|)
+    (hL_num_le : ∀ i k : Fin n, k.val < i.val →
+      doolittleLNumeratorAbs fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k ≤
+        |L_hat i k * U_hat k k|)
+    (hL_bound : ∀ i j : Fin n, |L_hat i j| ≤ 1) :
+    let bP : Fin n → ℝ := fun i => b (sigma i)
+    let y_hat := fl_forwardSub fp n L_hat bP
+    let z_hat := fl_backSub fp n U_hat y_hat
+    let x_hat : Fin n → ℝ :=
+      fun j => z_hat ((Equiv.ofBijective tau htau).symm j)
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (infNorm ΔA ≤
+        (↑n) ^ 2 * gamma fp (3 * n) *
+          higham9_14_completePivotWilkinsonBound n * infNorm A) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_absBudget
+    fp n hn_pos A L_hat U_hat sigma tau b hAmax htrace hsharp hU_diag
+    hsigma htau
+    (doolittleUAbsBudget fp n
+      (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat)
+    (doolittleLAbsBudget fp n
+      (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat)
+    (higham9_2_absBudgetCertificate_of_literal_doolittle_exact_product_margins
+      hL_diag hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq
+      hU_diag hn hU_margin hL_margin hL_num_le)
+    hn hn3 hL_bound
+
+/-- **Equation (9.14) / Algorithm 9.2**, exact-product numerator-margin
+complete-pivoting bridge at Wilkinson's sharp RHS, conditional on the supplied
+per-trace Wilkinson theorem. -/
+theorem higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_exactProductNumeratorMargins
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (sigma tau : Fin n → Fin n)
+    (b : Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn_pos A)
+    (htrace : higham9_8_CompletePivotGECPUTrace n A U_hat)
+    (hsharp :
+      ∀ (hn : 0 < n) (A U : Fin n → Fin n → ℝ)
+        (hApos : 0 < maxEntryNorm hn A),
+        higham9_8_CompletePivotGECPUTrace n A U →
+          growthFactorEntry hn A U hApos ≤
+            higham9_14_completePivotWilkinsonBound n)
+    (hL_diag : ∀ i : Fin n, L_hat i i = 1)
+    (hL_upper_zero : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hU_lower_zero : ∀ i j : Fin n, j.val < i.val → U_hat i j = 0)
+    (hU_entry_eq : ∀ k j : Fin n, k.val ≤ j.val →
+      U_hat k j =
+        higham9_2_flDoolittleUEntry fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat k j)
+    (hL_entry_eq : ∀ i k : Fin n, k.val < i.val →
+      L_hat i k =
+        higham9_2_flDoolittleLEntry fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hsigma : IsPermutation n sigma)
+    (htau : IsPermutation n tau)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hU_margin : ∀ k j : Fin n, k.val ≤ j.val →
+      |higham9_2_rowColPermutedMatrix A sigma tau k j| + (1 + fp.u) *
+          doolittleUProductAbs fp n
+            (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat k j ≤
+        |U_hat k j|)
+    (hL_margin : ∀ i k : Fin n, k.val < i.val →
+      |higham9_2_rowColPermutedMatrix A sigma tau i k| + (1 + fp.u) *
+          doolittleLProductAbs fp n
+            (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k ≤
+        |L_hat i k * U_hat k k|)
+    (hL_num_margin : ∀ i k : Fin n, k.val < i.val →
+      (|higham9_2_rowColPermutedMatrix A sigma tau i k| +
+          doolittleLProductAbs fp n
+            (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k) +
+        (gamma fp k.val *
+            (|higham9_2_rowColPermutedMatrix A sigma tau i k| + (1 + fp.u) *
+              doolittleLProductAbs fp n
+                (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k) +
+          fp.u * doolittleLProductAbs fp n
+            (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k) ≤
+        |L_hat i k * U_hat k k|)
+    (hL_bound : ∀ i j : Fin n, |L_hat i j| ≤ 1) :
+    let bP : Fin n → ℝ := fun i => b (sigma i)
+    let y_hat := fl_forwardSub fp n L_hat bP
+    let z_hat := fl_backSub fp n U_hat y_hat
+    let x_hat : Fin n → ℝ :=
+      fun j => z_hat ((Equiv.ofBijective tau htau).symm j)
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (infNorm ΔA ≤
+        (↑n) ^ 2 * gamma fp (3 * n) *
+          higham9_14_completePivotWilkinsonBound n * infNorm A) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_absBudget
+    fp n hn_pos A L_hat U_hat sigma tau b hAmax htrace hsharp hU_diag
+    hsigma htau
+    (doolittleUAbsBudget fp n
+      (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat)
+    (doolittleLAbsBudget fp n
+      (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat)
+    (higham9_2_absBudgetCertificate_of_literal_doolittle_exact_product_numerator_margins
+      hL_diag hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq
+      hU_diag hn hU_margin hL_margin hL_num_margin)
+    hn hn3 hL_bound
+
+/-- **Equation (9.14) / Algorithm 9.2**, exact-target-gap complete-pivoting
+bridge at Wilkinson's sharp RHS, conditional on the supplied per-trace
+Wilkinson theorem. -/
+theorem higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_exactTargetGaps
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (sigma tau : Fin n → Fin n)
+    (b : Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn_pos A)
+    (htrace : higham9_8_CompletePivotGECPUTrace n A U_hat)
+    (hsharp :
+      ∀ (hn : 0 < n) (A U : Fin n → Fin n → ℝ)
+        (hApos : 0 < maxEntryNorm hn A),
+        higham9_8_CompletePivotGECPUTrace n A U →
+          growthFactorEntry hn A U hApos ≤
+            higham9_14_completePivotWilkinsonBound n)
+    (hL_diag : ∀ i : Fin n, L_hat i i = 1)
+    (hL_upper_zero : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hU_lower_zero : ∀ i j : Fin n, j.val < i.val → U_hat i j = 0)
+    (hU_entry_eq : ∀ k j : Fin n, k.val ≤ j.val →
+      U_hat k j =
+        higham9_2_flDoolittleUEntry fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat k j)
+    (hL_entry_eq : ∀ i k : Fin n, k.val < i.val →
+      L_hat i k =
+        higham9_2_flDoolittleLEntry fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hsigma : IsPermutation n sigma)
+    (htau : IsPermutation n tau)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hU_gap : ∀ k j : Fin n, k.val ≤ j.val →
+      |higham9_2_rowColPermutedMatrix A sigma tau k j| + (1 + fp.u) *
+          doolittleUProductAbs fp n
+            (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat k j +
+        doolittleUExactTargetResidualBudget fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat k j ≤
+        |doolittleUExactTarget n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat k j|)
+    (hL_gap : ∀ i k : Fin n, k.val < i.val →
+      |higham9_2_rowColPermutedMatrix A sigma tau i k| + (1 + fp.u) *
+          doolittleLProductAbs fp n
+            (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k +
+        doolittleLExactTargetEntryResidualBudget fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k ≤
+        |doolittleLExactTarget n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k|)
+    (hL_num_gap : ∀ i k : Fin n, k.val < i.val →
+      ((|higham9_2_rowColPermutedMatrix A sigma tau i k| +
+          doolittleLProductAbs fp n
+            (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k) +
+        doolittleLExactTargetNumeratorResidualBudget
+          fp n (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k) +
+        doolittleLExactTargetEntryResidualBudget
+          fp n (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k ≤
+        |doolittleLExactTarget n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k|)
+    (hL_bound : ∀ i j : Fin n, |L_hat i j| ≤ 1) :
+    let bP : Fin n → ℝ := fun i => b (sigma i)
+    let y_hat := fl_forwardSub fp n L_hat bP
+    let z_hat := fl_backSub fp n U_hat y_hat
+    let x_hat : Fin n → ℝ :=
+      fun j => z_hat ((Equiv.ofBijective tau htau).symm j)
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (infNorm ΔA ≤
+        (↑n) ^ 2 * gamma fp (3 * n) *
+          higham9_14_completePivotWilkinsonBound n * infNorm A) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_absBudget
+    fp n hn_pos A L_hat U_hat sigma tau b hAmax htrace hsharp hU_diag
+    hsigma htau
+    (doolittleUAbsBudget fp n
+      (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat)
+    (doolittleLAbsBudget fp n
+      (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat)
+    (higham9_2_absBudgetCertificate_of_literal_doolittle_exact_target_gaps
+      hL_diag hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq
+      hU_diag hn hU_gap hL_gap hL_num_gap)
+    hn hn3 hL_bound
+
+/-- **Equation (9.14) / Theorem 9.5**, exact complete-permuted certificate
+complete-pivoting bridge at Wilkinson's sharp RHS, conditional on the supplied
+per-trace Wilkinson theorem. -/
+theorem higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_LUFactSpec
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (sigma tau : Fin n → Fin n)
+    (b : Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn_pos A)
+    (htrace : higham9_8_CompletePivotGECPUTrace n A U_hat)
+    (hsharp :
+      ∀ (hn : 0 < n) (A U : Fin n → Fin n → ℝ)
+        (hApos : 0 < maxEntryNorm hn A),
+        higham9_8_CompletePivotGECPUTrace n A U →
+          growthFactorEntry hn A U hApos ≤
+            higham9_14_completePivotWilkinsonBound n)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hLU : higham9_2_CompletePermutedLUFactSpec n A L_hat U_hat sigma tau)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hL_bound : ∀ i j : Fin n, |L_hat i j| ≤ 1) :
+    let bP : Fin n → ℝ := fun i => b (sigma i)
+    let y_hat := fl_forwardSub fp n L_hat bP
+    let z_hat := fl_backSub fp n U_hat y_hat
+    let x_hat : Fin n → ℝ :=
+      fun j => z_hat ((Equiv.ofBijective tau hLU.1).symm j)
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (infNorm ΔA ≤
+        (↑n) ^ 2 * gamma fp (3 * n) *
+          higham9_14_completePivotWilkinsonBound n * infNorm A) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace
+    fp n hn_pos A L_hat U_hat sigma tau b hAmax htrace hsharp hU_diag
     (higham9_2_completePermutedLUFactSpec_to_CompletePermutedLUBackwardError_gamma
       hn hLU)
     hn hn3 hL_bound
