@@ -43647,6 +43647,90 @@ theorem storedQRSignedStageGlobalCompactBudget_nonneg
       (storedQRSignedStage_compact_component_le_globalBudget
         hmn fp A_hat alpha t ht r l)
 
+/-- A signed-stage global compact-budget recurrence propagates nonnegativity
+    from the initial stage budget across the QR horizon. -/
+theorem storedQRSignedStageBudget_nonneg_on_stages_of_globalCompactBudget
+    {m n : ℕ} (hmn : n ≤ m)
+    (fp : FPModel)
+    (A_hat : ℕ → Fin m → Fin n → ℝ)
+    (alpha : ℕ → ℝ)
+    (stageBudget : ℕ → ℝ)
+    (hm : gammaValid fp m)
+    (hglobalBudget : ∀ t (ht : t < n),
+      coxHighamActiveRowGrowthFactor m * stageBudget t +
+          storedQRSignedStageGlobalCompactBudget hmn fp A_hat alpha t ht ≤
+        stageBudget (t + 1))
+    (hBudget0_nonneg : 0 ≤ stageBudget 0) :
+    ∀ t : ℕ, t ≤ n → 0 ≤ stageBudget t := by
+  intro t ht
+  induction t with
+  | zero =>
+      simpa using hBudget0_nonneg
+  | succ t ih =>
+      have ht_le : t ≤ n := Nat.le_of_succ_le ht
+      have ht_lt : t < n := Nat.lt_of_succ_le ht
+      have hprev_nonneg : 0 ≤ stageBudget t := ih ht_le
+      have hscale_nonneg :
+          0 ≤ coxHighamActiveRowGrowthFactor m * stageBudget t :=
+        mul_nonneg (coxHighamActiveRowGrowthFactor_nonneg m) hprev_nonneg
+      have hcompact_nonneg :
+          0 ≤ storedQRSignedStageGlobalCompactBudget hmn fp A_hat alpha t ht_lt :=
+        storedQRSignedStageGlobalCompactBudget_nonneg
+          hmn fp A_hat alpha t ht_lt hm
+      exact
+        (add_nonneg hscale_nonneg hcompact_nonneg).trans
+          (hglobalBudget t ht_lt)
+
+/-- A signed-stage global compact-budget recurrence is monotone on QR stages
+    once the initial stage budget is nonnegative. -/
+theorem storedQRSignedStageBudget_mono_on_stages_of_globalCompactBudget_of_initial_nonneg
+    {m n : ℕ} (hmn : n ≤ m)
+    (fp : FPModel)
+    (A_hat : ℕ → Fin m → Fin n → ℝ)
+    (alpha : ℕ → ℝ)
+    (stageBudget : ℕ → ℝ)
+    (hm : gammaValid fp m)
+    (hglobalBudget : ∀ t (ht : t < n),
+      coxHighamActiveRowGrowthFactor m * stageBudget t +
+          storedQRSignedStageGlobalCompactBudget hmn fp A_hat alpha t ht ≤
+        stageBudget (t + 1))
+    (hBudget0_nonneg : 0 ≤ stageBudget 0) :
+    ∀ a b : ℕ, a ≤ b → b ≤ n → stageBudget a ≤ stageBudget b := by
+  have hnonneg_on :
+      ∀ t : ℕ, t ≤ n → 0 ≤ stageBudget t :=
+    storedQRSignedStageBudget_nonneg_on_stages_of_globalCompactBudget
+      hmn fp A_hat alpha stageBudget hm hglobalBudget hBudget0_nonneg
+  have hstepMono : ∀ b : ℕ, b < n → stageBudget b ≤ stageBudget (b + 1) := by
+    intro b hb_lt
+    have hb_le : b ≤ n := Nat.le_of_lt hb_lt
+    have hscale :
+        stageBudget b ≤ coxHighamActiveRowGrowthFactor m * stageBudget b := by
+      simpa [one_mul] using
+        mul_le_mul_of_nonneg_right
+          (one_le_coxHighamActiveRowGrowthFactor m) (hnonneg_on b hb_le)
+    have hcompact_nonneg :
+        0 ≤ storedQRSignedStageGlobalCompactBudget hmn fp A_hat alpha b hb_lt :=
+      storedQRSignedStageGlobalCompactBudget_nonneg
+        hmn fp A_hat alpha b hb_lt hm
+    exact
+      hscale.trans
+        ((le_add_of_nonneg_right hcompact_nonneg).trans
+          (hglobalBudget b hb_lt))
+  intro a b hab hb
+  induction b generalizing a with
+  | zero =>
+      have ha0 : a = 0 := Nat.eq_zero_of_le_zero hab
+      subst a
+      rfl
+  | succ b ih =>
+      rcases Nat.eq_or_lt_of_le hab with heq | hlt
+      · subst a
+        rfl
+      · have hab' : a ≤ b := Nat.lt_succ_iff.mp hlt
+        have hb_le : b ≤ n := Nat.le_of_succ_le hb
+        have hb_lt : b < n := Nat.lt_of_succ_le hb
+        exact (ih a hab' hb_le).trans (hstepMono b hb_lt)
+
 /-- A signed-stage global compact-budget recurrence is monotone on QR stages.
 
 If the stage budgets are nonnegative and each successor budget dominates
@@ -50726,7 +50810,7 @@ theorem StoredQRDisplayedRowBudgetControl.of_signed_stage_uniformBudget_globalCo
       coxHighamActiveRowGrowthFactor m * stageBudget t +
           storedQRSignedStageGlobalCompactBudget hmn fp A_hat alpha t ht ≤
         stageBudget (t + 1))
-    (hBudget_nonneg : ∀ t : ℕ, 0 ≤ stageBudget t)
+    (hBudget0_nonneg : 0 ≤ stageBudget 0)
     (hstageDiagDefect :
       storedQRStageDiagLowerDefectBudget hmn A_hat stageBudget ≤ 0)
     (hpivotChoice : ∀ t (ht : t < n),
@@ -50740,16 +50824,22 @@ theorem StoredQRDisplayedRowBudgetControl.of_signed_stage_uniformBudget_globalCo
   let stageBudget' : ℕ → ℝ := qrStageHorizonBudget n stageBudget
   have hBudget_mono_on_stages :
       ∀ a b : ℕ, a ≤ b → b ≤ n → stageBudget a ≤ stageBudget b :=
-    storedQRSignedStageBudget_mono_on_stages_of_globalCompactBudget
-      hmn fp A_hat alpha stageBudget hm hglobalBudget hBudget_nonneg
+    storedQRSignedStageBudget_mono_on_stages_of_globalCompactBudget_of_initial_nonneg
+      hmn fp A_hat alpha stageBudget hm hglobalBudget hBudget0_nonneg
   have hBudget'_mono :
       ∀ a b : ℕ, a ≤ b → stageBudget' a ≤ stageBudget' b := by
     simpa [stageBudget'] using
       qrStageHorizonBudget_mono_of_mono_on_stages
         n stageBudget hBudget_mono_on_stages
   have hBudget'_nonneg : ∀ t : ℕ, 0 ≤ stageBudget' t := by
-    simpa [stageBudget'] using
-      qrStageHorizonBudget_nonneg n stageBudget hBudget_nonneg
+    have hnonneg_on :
+        ∀ t : ℕ, t ≤ n → 0 ≤ stageBudget t :=
+      storedQRSignedStageBudget_nonneg_on_stages_of_globalCompactBudget
+        hmn fp A_hat alpha stageBudget hm hglobalBudget hBudget0_nonneg
+    intro t
+    by_cases ht : t ≤ n
+    · simpa [stageBudget', qrStageHorizonBudget, ht] using hnonneg_on t ht
+    · simpa [stageBudget', qrStageHorizonBudget, ht] using hnonneg_on n le_rfl
   have hglobalBudget' : ∀ t (ht : t < n),
       coxHighamActiveRowGrowthFactor m * stageBudget' t +
           storedQRSignedStageGlobalCompactBudget hmn fp A_hat alpha t ht ≤
@@ -66452,8 +66542,10 @@ recurrence supplies the monotone horizon-budget extension internally, and the
 full initial-block bound supplies the displayed strict-upper initial field.
 Compared with
 `theorem20_3_householder_qr_ls_backward_error_compactBudget_of_activePivot_stageDiag_dualBudget_actualUnitRoundoff`,
-it removes the separate per-entry initial displayed-upper hypothesis and the
-global stage-budget monotonicity hypothesis from the public surface. -/
+it removes the separate per-entry initial displayed-upper hypothesis, global
+stage-budget monotonicity hypothesis, and all-stage nonnegativity hypothesis
+from the public surface; the recurrence propagates nonnegativity from the
+initial budget. -/
 theorem theorem20_3_householder_qr_ls_backward_error_compactBudget_of_activePivot_stageDiag_dualBudget_horizonBudget_actualUnitRoundoff
     {m n : ℕ} (fp : FPModel) (hmn : n ≤ m)
     (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
@@ -66534,7 +66626,7 @@ theorem theorem20_3_householder_qr_ls_backward_error_compactBudget_of_activePivo
       coxHighamActiveRowGrowthFactor m * stageBudget t +
           storedQRSignedStageGlobalCompactBudget hmn fp A_hat alpha t ht ≤
         stageBudget (t + 1))
-    (hBudget_nonneg : ∀ t : ℕ, 0 ≤ stageBudget t)
+    (hBudget0_nonneg : 0 ≤ stageBudget 0)
     (hstageDiagDefect :
       storedQRStageDiagLowerDefectBudget hmn A_hat stageBudget ≤ 0)
     (hpivotChoice : ∀ t (ht : t < n),
@@ -66560,49 +66652,14 @@ theorem theorem20_3_householder_qr_ls_backward_error_compactBudget_of_activePivo
   let stageBudget' : ℕ → ℝ := qrStageHorizonBudget n stageBudget
   have hm : gammaValid fp m :=
     gammaValid_of_u_le_cap fp m fp.u (le_rfl : fp.u ≤ fp.u) huSmall
-  have hBudget_mono_on_stages :
-      ∀ a b : ℕ, a ≤ b → b ≤ n → stageBudget a ≤ stageBudget b :=
-    storedQRSignedStageBudget_mono_on_stages_of_globalCompactBudget
-      hmn fp A_hat alpha stageBudget hm hglobalBudget hBudget_nonneg
-  have hBudget'_mono :
-      ∀ a b : ℕ, a ≤ b → stageBudget' a ≤ stageBudget' b := by
-    simpa [stageBudget'] using
-      qrStageHorizonBudget_mono_of_mono_on_stages
-        n stageBudget hBudget_mono_on_stages
-  have hBudget'_nonneg : ∀ t : ℕ, 0 ≤ stageBudget' t := by
-    simpa [stageBudget'] using
-      qrStageHorizonBudget_nonneg n stageBudget hBudget_nonneg
-  have hglobalBudget' : ∀ t (ht : t < n),
-      coxHighamActiveRowGrowthFactor m * stageBudget' t +
-          storedQRSignedStageGlobalCompactBudget hmn fp A_hat alpha t ht ≤
-        stageBudget' (t + 1) := by
-    intro t ht
-    have ht_le : t ≤ n := Nat.le_of_lt ht
-    have hsucc_le : t + 1 ≤ n := Nat.succ_le_iff.mpr ht
-    simpa [stageBudget', qrStageHorizonBudget, ht_le, hsucc_le] using
-      hglobalBudget t ht
-  have hinitBlock' : ∀ r : Fin m, ∀ l : Fin n,
-      |A_hat 0 r l| ≤ stageBudget' 0 := by
-    intro r l
-    have h0 : 0 ≤ n := Nat.zero_le n
-    simpa [stageBudget', qrStageHorizonBudget, h0] using hinitBlock r l
-  have hBudget_diag' : ∀ k (hk : k < n),
-      ∀ i : Fin (k + 1), i.val < k →
-        stageBudget' k ≤
-        |qrLeadingBlock (A_hat k)
-          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk i i| := by
-    intro k hk i hi
-    have hk_le : k ≤ n := Nat.le_of_lt hk
-    simpa [stageBudget', qrStageHorizonBudget, hk_le] using
-      storedQRStageBudget_le_diag_of_stageDiagLowerDefectBudget_nonpos
-        hmn A_hat stageBudget hstageDiagDefect k hk i hi
   have hrowControl :
       StoredQRDisplayedRowBudgetControl hmn A_hat
-        (fun k (_hk : k < n) (_i : Fin (k + 1)) => stageBudget' k) :=
-    StoredQRDisplayedRowBudgetControl.of_signed_stage_uniformBudget_globalCompactBudget_activeMaxPivot_kappaInf_dualBudget
-      hmn fp A_hat alpha κ K stageBudget' hm hStepA hAlphaDef
-      hdetLead hK hκ hκbudget hbudgetDual hinitBlock' hglobalBudget'
-      hBudget'_nonneg hBudget'_mono hBudget_diag' hpivotChoice
+        (fun k (_hk : k < n) (_i : Fin (k + 1)) => stageBudget' k) := by
+    simpa [stageBudget'] using
+      StoredQRDisplayedRowBudgetControl.of_signed_stage_uniformBudget_globalCompactBudget_activeMaxPivot_kappaInf_dualBudget_stageDiagDefect_horizonBudget
+        hmn fp A_hat alpha κ K stageBudget hm hStepA hAlphaDef
+        hdetLead hK hκ hκbudget hbudgetDual hinitBlock hglobalBudget
+        hBudget0_nonneg hstageDiagDefect hpivotChoice
   exact
     exists_perturbed_ls_minimizer_of_stored_trailing_householder_sequence_topBlock_fl_backSub_gamma_bound_explicitCompactBudget_of_signed_alpha_leadingBlock_det_ne_zero_kappaInf_selfNorm_dualBudget_rowBudgetControl_globalProduct_of_actualUnitRoundoff_no_gammaValid
       fp hmn A b A_hat b_hat alpha κ K
