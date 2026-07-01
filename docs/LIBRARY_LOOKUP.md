@@ -1569,11 +1569,13 @@ Source-facing Chapter 9 wrappers:
 - `higham9_16_rookPivotingUTraceGrowthValues_le_pow_two`
 - `higham9_16_rookPivotingUTraceGrowthValues_le_fosterBound_of_eq_one`
 - `higham9_16_rookPivotingUTraceGrowthValues_le_fosterBound_of_trace_bound`
+- `higham9_16_rookPivotingUTraceGrowthValues_bddAbove_fosterBound_of_eq_one`
 - `higham9_16_rookPivotingUTraceGrowthValues_bddAbove_fosterBound_of_trace_bound`
 - `higham9_16_rookPivotingUTraceGrowthValues_bddAbove`
 - `higham9_16_rookPivotingUTraceGrowth_le_sup`
 - `higham9_16_rookPivotingUTraceGrowthValues_nonempty`
 - `higham9_16_rookPivotingUTraceGrowthSup_le_pow_two`
+- `higham9_16_rookPivotingUTraceGrowthSup_le_fosterBound_of_eq_one`
 - `higham9_16_rookPivotingUTraceGrowthSup_le_fosterBound_of_trace_bound`
 - `higham9_idMatrix_LUFactSpec`
 - `higham9_noPivotingLUFactSpecGrowthValues`
@@ -1816,11 +1818,13 @@ Source-facing Chapter 9 wrappers:
 - `higham9_completePivotingUTraceGrowthValues_le_pow_two`
 - `higham9_14_completePivotingUTraceGrowthValues_le_wilkinsonBound_of_le_two`
 - `higham9_14_completePivotingUTraceGrowthValues_le_wilkinsonBound_of_trace_bound`
+- `higham9_14_completePivotingUTraceGrowthValues_bddAbove_wilkinsonBound_of_le_two`
 - `higham9_14_completePivotingUTraceGrowthValues_bddAbove_wilkinsonBound_of_trace_bound`
 - `higham9_completePivotingUTraceGrowthValues_bddAbove`
 - `higham9_completePivotingUTraceGrowth_le_sup`
 - `higham9_completePivotingUTraceGrowthValues_nonempty`
 - `higham9_8_completePivotingUTraceGrowthSup_le_pow_two`
+- `higham9_14_completePivotingUTraceGrowthSup_le_wilkinsonBound_of_le_two`
 - `higham9_14_completePivotingUTraceGrowthSup_le_wilkinsonBound_of_trace_bound`
 - `higham9_8_CompletePivotGECPUTrace_exists_CompletePermutedLUFactSpec_maxEntryNorm_le`
 - `higham9_8_CompletePivotGECPUTrace_exists_CompletePermutedLUFactSpec_L_bound_maxEntryNorm_le`
