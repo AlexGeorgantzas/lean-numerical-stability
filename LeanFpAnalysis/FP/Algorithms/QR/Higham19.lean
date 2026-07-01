@@ -5046,6 +5046,32 @@ theorem fl_dotProduct_exactWithUnitRoundoff_eq_sum
       rw [fin_foldl_add_eq_add_sum]
       rw [Fin.sum_univ_succ]
 
+/-- If the dot-product path's additions and multiplications are exact, the
+repository's sequential dot product is the mathematical source dot product.
+
+This is the operation-level sufficient condition used by the normalized-beta
+compatibility route.  It is weaker than requiring the whole `FPModel` to be
+`exactWithUnitRoundoff`: no assumptions on division or square root are needed. -/
+theorem fl_dotProduct_eq_sum_of_exact_add_mul
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y) :
+    forall (n : Nat) (x y : Fin n -> Real),
+      fl_dotProduct fp n x y =
+        (Finset.univ : Finset (Fin n)).sum (fun i => x i * y i)
+  | 0, _x, _y => by
+      simp [fl_dotProduct]
+  | n + 1, x, y => by
+      rw [fl_dotProduct]
+      change Fin.foldl n
+        (fun acc i => fp.fl_add acc (fp.fl_mul (x i.succ) (y i.succ)))
+        (fp.fl_mul (x 0) (y 0)) =
+          (Finset.univ : Finset (Fin (n + 1))).sum
+            (fun i => x i * y i)
+      simp_rw [hadd, hmul]
+      rw [fin_foldl_add_eq_add_sum]
+      rw [Fin.sum_univ_succ]
+
 /-- Under `exactWithUnitRoundoff`, the computed Householder scale is the
 mathematical Householder scale. -/
 theorem fl_householderScale_exactWithUnitRoundoff_eq
@@ -5232,6 +5258,67 @@ def normalizedBetaSpecCompactUpdateCompatible (fp : FPModel) : Prop :=
     let w := householderNormalizedVector n v beta
     fp.fl_mul (fp.fl_mul 1 (fl_dotProduct fp n w b)) (w i) =
       fp.fl_mul (fp.fl_mul beta (fl_dotProduct fp n v b)) (v i)
+
+/-- A sufficient operation-level route for
+`normalizedBetaSpecCompactUpdateCompatible`.
+
+Exact multiplication and an exact sequential dot product are enough for the
+normalized beta-one update to agree with the unnormalized `householderBetaSpec`
+compact update.  This isolates the real rounded-model obligation: arbitrary
+`FPModel` does not provide these identities, but any stronger model that does
+can discharge the compatibility predicate without assuming the final handoff
+itself. -/
+theorem normalizedBetaSpecCompactUpdateCompatible_of_exact_dotProduct_and_mul
+    (fp : FPModel)
+    (hdot : forall (n : Nat) (x y : Fin n -> Real),
+      fl_dotProduct fp n x y =
+        (Finset.univ : Finset (Fin n)).sum (fun i => x i * y i))
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y) :
+    normalizedBetaSpecCompactUpdateCompatible fp := by
+  intro n v b i
+  dsimp [normalizedBetaSpecCompactUpdateCompatible]
+  rw [hdot n (householderNormalizedVector n v (householderBetaSpec n v)) b]
+  rw [hdot n v b]
+  simp_rw [hmul]
+  simp [householderNormalizedVector]
+  let beta : Real := householderBetaSpec n v
+  have hbeta : 0 <= beta := by
+    simpa [beta] using householderBetaSpec_nonneg n v
+  have hsqrt : Real.sqrt beta * Real.sqrt beta = beta :=
+    Real.mul_self_sqrt hbeta
+  let S : Real := (Finset.univ : Finset (Fin n)).sum (fun j => v j * b j)
+  have hsum :
+      ((Finset.univ : Finset (Fin n)).sum
+        (fun j => (Real.sqrt beta * v j) * b j)) =
+        Real.sqrt beta * S := by
+    rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl
+    intro j _hj
+    ring
+  change (((Finset.univ : Finset (Fin n)).sum
+        (fun j => (Real.sqrt beta * v j) * b j)) *
+      (Real.sqrt beta * v i)) =
+    (beta * S) * v i
+  rw [hsum]
+  calc
+    (Real.sqrt beta * S) * (Real.sqrt beta * v i)
+        = (Real.sqrt beta * Real.sqrt beta) * S * v i := by ring
+    _ = (beta * S) * v i := by rw [hsqrt]
+
+/-- Exact addition and multiplication on the compact Householder update path
+imply the normalized-beta compatibility predicate.
+
+This is the first non-tautological stronger-model discharge of
+`normalizedBetaSpecCompactUpdateCompatible`; it requires only the operations
+used by the compact update and dot product, not exact division or square root
+throughout the whole floating-point model. -/
+theorem normalizedBetaSpecCompactUpdateCompatible_of_exact_add_mul
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y) :
+    normalizedBetaSpecCompactUpdateCompatible fp :=
+  normalizedBetaSpecCompactUpdateCompatible_of_exact_dotProduct_and_mul fp
+    (fl_dotProduct_eq_sum_of_exact_add_mul fp hadd hmul) hmul
 
 /-- Compact-vector handoff under the explicit normalized-beta update
 compatibility hypothesis.
