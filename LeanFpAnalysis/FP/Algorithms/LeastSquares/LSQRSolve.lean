@@ -17195,6 +17195,36 @@ theorem LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQR
     hDeltaR1, hDeltaR2, ?_⟩
   simpa [Q, Rhat, R, c_hat, cBot, h, rhat] using hsys
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.4, source-facing coefficient
+    obstruction for the printed `Delta f` route.
+
+    Under positive unit roundoff and a nonempty panel, the conservative
+    implementation-backed RHS coefficient exposed by
+    `...with_gamma_factor_source_rhs_bound` is strictly larger than the printed
+    coefficient `sqrt(n+k) * n * gamma`.  Thus the remaining Theorem 20.4 gap
+    cannot be closed by converting the current conservative coefficient to the
+    printed one; the RHS arithmetic/model itself must be sharpened. -/
+theorem theorem20_4_printed_deltaf_coefficient_lt_conservative_gammaFactor_coefficient
+    (fp : FPModel) {n k : ℕ} (hn : 0 < n) (hu : 0 < fp.u)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + k))) :
+    Real.sqrt (n + k : ℝ) *
+        ((n : ℝ) *
+          gamma fp (n * householderConstructApplyGammaIndex (n + k))) <
+      Real.sqrt (n + k : ℝ) *
+        ((2 : ℝ) *
+          (householderQRRhsPanelGammaClosedGrowthFactor (n + k) n : ℝ) *
+          gamma fp (n * householderConstructApplyGammaIndex (n + k))) := by
+  have hm : 0 < n + k := Nat.lt_of_lt_of_le hn (Nat.le_add_right n k)
+  have hsqrt_pos : 0 < Real.sqrt (n + k : ℝ) := by
+    exact Real.sqrt_pos.2 (by exact_mod_cast hm)
+  exact mul_lt_mul_of_pos_left
+    (by
+      simpa [mul_assoc] using
+        householderQRRhsPanelGammaClosedGrowthFactor_printedCoeff_lt_factorCoeff
+          fp (m := n + k) (p := n) hm hn hu hvalid)
+    hsqrt_pos
+
 private theorem vecNorm2Sq_add_eq {m : ℕ} (r e : Fin m → ℝ) :
     vecNorm2Sq (fun i => r i + e i) =
       vecNorm2Sq r + 2 * (∑ i : Fin m, r i * e i) + vecNorm2Sq e := by
