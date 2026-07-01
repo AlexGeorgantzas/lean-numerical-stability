@@ -3515,6 +3515,8 @@ Source-facing Chapter 10 wrappers:
 - `higham10_7_failure_condition`
 - `higham10_7_failure_no_factorization`
 - `higham10_7_onesMatrix_opNorm2Le`
+- `higham10_7_success_factorization_spectral`
+- `higham10_7_failure_no_factorization_spectral`
 - `quadForm_add_pos_of_perturbation`
 - `quadForm_add_neg_of_perturbation`
 - `isSymPosDef_diagCongr`

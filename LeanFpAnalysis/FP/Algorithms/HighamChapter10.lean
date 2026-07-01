@@ -15,6 +15,7 @@ import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyPerturbation
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyPSD
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyIndefinite
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyNonsym
+import LeanFpAnalysis.FP.Analysis.MatrixSpectral
 
 namespace LeanFpAnalysis.FP
 
@@ -614,6 +615,86 @@ theorem higham10_7_failure_no_factorization (n : ℕ)
   obtain ⟨x, hx, hxneg⟩ :=
     quadForm_add_neg_of_perturbation n H E lam t hlam_dir hE hlt
   exact no_choleskyFactSpec_of_neg_quadForm n (fun i j => H i j + E i j) x hxneg
+
+/-- **Theorem 10.7, spectral success form** (Higham §10.1): if the minimum
+eigenvalue of the symmetric scaled matrix `H` — stated through the
+repository's `finiteHermitianEigenvalues` — exceeds the scaled
+backward-error quadratic-form bound `t`, then the perturbed scaled matrix
+`D (H + E) D` has a genuine Cholesky factorization: the algorithm
+succeeds.  This replaces the Rayleigh-quotient hypothesis of
+`higham10_7_success_factorization` with the source's spectral `λ_min`
+framing. -/
+theorem higham10_7_success_factorization_spectral (n : ℕ)
+    (D : Fin n → ℝ) (H E : Fin n → Fin n → ℝ) (lam t : ℝ)
+    (hD_pos : ∀ i, 0 < D i)
+    (hH_sym : IsSymmetricFiniteMatrix H)
+    (hE_sym : ∀ i j, E i j = E j i)
+    (hlam_le : ∀ a : Fin n, lam ≤ finiteHermitianEigenvalues H hH_sym a)
+    (hE : ∀ x : Fin n → ℝ,
+        |∑ i : Fin n, ∑ j : Fin n, x i * E i j * x j| ≤
+          t * ∑ i : Fin n, x i ^ 2)
+    (hlt : t < lam) :
+    ∃ R : Fin n → Fin n → ℝ,
+      CholeskyFactSpec n (fun i j => D i * (H i j + E i j) * D j) R := by
+  refine higham10_7_success_factorization n D H E lam t hD_pos
+    (fun i j => hH_sym i j) hE_sym ?_ hE hlt
+  intro x _hx
+  have h := finiteLoewnerLe_smul_id_of_le_finiteHermitianEigenvalues
+    H hH_sym hlam_le x
+  rw [finiteQuadraticForm_smul_finiteIdMatrix,
+    finiteQuadraticForm_eq_sum_sum] at h
+  simpa [finiteVecNorm2Sq] using h
+
+/-- **Theorem 10.7, spectral failure form** (Higham §10.1): if some
+eigenvalue of the symmetric scaled matrix `H` is at most `lam < −t`, then
+the perturbed scaled matrix `H + E` has a strictly negative curvature
+direction (the corresponding eigenvector) and admits no Cholesky
+factorization: the algorithm must fail. -/
+theorem higham10_7_failure_no_factorization_spectral (n : ℕ)
+    (H E : Fin n → Fin n → ℝ) (lam t : ℝ)
+    (hH_sym : IsSymmetricFiniteMatrix H)
+    (a : Fin n)
+    (hlam_le : finiteHermitianEigenvalues H hH_sym a ≤ lam)
+    (hE : ∀ x : Fin n → ℝ,
+        |∑ i : Fin n, ∑ j : Fin n, x i * E i j * x j| ≤
+          t * ∑ i : Fin n, x i ^ 2)
+    (hlt : lam < -t) :
+    ¬ ∃ R : Fin n → Fin n → ℝ,
+        CholeskyFactSpec n (fun i j => H i j + E i j) R := by
+  refine higham10_7_failure_no_factorization n H E lam t ?_ hE hlt
+  have hnorm := finiteVecNorm2Sq_finiteHermitianEigenvector_eq_one H hH_sym a
+  have hq :=
+    finiteQuadraticForm_finiteHermitianEigenvector_eq_eigenvalue_mul_norm_sq
+      H hH_sym a
+  rw [hnorm, mul_one] at hq
+  refine ⟨⇑((IsSymmetricFiniteMatrix.to_matrix_isHermitian H
+      hH_sym).eigenvectorBasis a), ?_, ?_⟩
+  · by_contra hall
+    push_neg at hall
+    have hzero : finiteVecNorm2Sq
+        (⇑((IsSymmetricFiniteMatrix.to_matrix_isHermitian H
+          hH_sym).eigenvectorBasis a)) = 0 := by
+      unfold finiteVecNorm2Sq
+      exact Finset.sum_eq_zero fun i _ => by rw [hall i]; ring
+    rw [hzero] at hnorm
+    exact zero_ne_one hnorm
+  · have hqs : ∑ i : Fin n, ∑ j : Fin n,
+        (⇑((IsSymmetricFiniteMatrix.to_matrix_isHermitian H
+          hH_sym).eigenvectorBasis a)) i * H i j *
+        (⇑((IsSymmetricFiniteMatrix.to_matrix_isHermitian H
+          hH_sym).eigenvectorBasis a)) j =
+        finiteHermitianEigenvalues H hH_sym a := by
+      rw [← finiteQuadraticForm_eq_sum_sum]
+      exact hq
+    rw [hqs]
+    have hsum : ∑ i : Fin n,
+        (⇑((IsSymmetricFiniteMatrix.to_matrix_isHermitian H
+          hH_sym).eigenvectorBasis a)) i ^ 2 = 1 := by
+      have := hnorm
+      unfold finiteVecNorm2Sq at this
+      exact this
+    rw [hsum, mul_one]
+    exact hlam_le
 
 /-- **Theorem 10.7 foundation** (Higham §10.1, proof of Theorem 10.7): the
 all-ones rank-one matrix `e eᵀ` has operator 2-norm at most `n`, in the
