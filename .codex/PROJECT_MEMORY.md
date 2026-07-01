@@ -20,6 +20,33 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-07-01 Problem 13.4 global-tableau Eq.13.23 product-update
+  source-chain method: added
+  `Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_right_inverse_of_product_bound_diag_update`.
+  It is the fixed-ambient source-chain-level wrapper for the full flat
+  Algorithm 13.3 matrix: from any completed
+  `Higham13Eq1322GlobalTableauSourceChain`, an ambient right inverse, and the
+  product-bound/diagonal-update BDD data, it derives `rho <= 2` internally and
+  returns the Eq.13.23 `BlockLUFactSpec` product witness.  This removes the raw
+  growth-factor premise at the global-tableau source-chain boundary, but it
+  does not construct the all-tail source chain or prove the inverse-entry/
+  source comparison.
+- 2026-07-01 Problem 13.4 derived active-tail Eq.13.23 product-update
+  wrappers: added
+  `higham13_eq13_23_exists_blockLUFact_active_tail_product_from_global_tableau_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa_of_product_bound_diag_update`,
+  `higham13_eq13_23_exists_blockLUFact_active_tail_product_from_global_tableau_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa_of_product_bound_diag_update_reciprocal`,
+  `higham13_eq13_23_exists_blockLUFact_active_tail_product_from_global_tableau_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa_of_product_bound_diag_update_of_det_ne_zero`,
+  and
+  `higham13_eq13_23_exists_blockLUFact_active_tail_product_from_global_tableau_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa_of_product_bound_diag_update_reciprocal_of_det_ne_zero`.
+  These specialize the generic derived-tail active Eq.13.23 witness to the
+  full flat Algorithm 13.3 source matrix, derive `rho <= 2` from the existing
+  BDD product-bound/diagonal-update route, accept reciprocal-table pivot data,
+  and optionally derive the ambient `nonsingInv` right-inverse from
+  `det(blockMatrixFlatFin A) != 0`.  The successor-tail source-chain
+  constructor and derived tail inverse-entry comparison remain explicit; the
+  all-tail source certificate, Schur-complement/source-chain invertibility
+  data, source BDD product/update data, and Theorem 13.6 cited estimates remain
+  open.
 - 2026-07-01 Problem 13.4 three-block active-tail Eq.13.23
   product-update wrappers: added
   `higham13_eq13_23_exists_blockLUFact_three_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update`,
