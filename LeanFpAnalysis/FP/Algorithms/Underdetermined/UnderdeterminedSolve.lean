@@ -6051,6 +6051,59 @@ theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_fa
       hxTranspose hsmallMax hAATInv_le hAOp
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    combined-factor handoff with the common radius instantiated by the
+    concrete scalar
+    `max (eps * e) (2*m^2*(tauA + eps*e)*omega)`.  This removes the auxiliary
+    radius parameter from the previous wrapper while keeping the scalar
+    smallness, source-radius, operator-envelope, and componentwise-data
+    obligations explicit. -/
+theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_deltaA_components_source_operator_envelopes_exact_size_eps_combined_factor_self_radius_global_bounds
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (E : Fin m → Fin n → ℝ)
+    (eps tauA omega e : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hDataEpsNonneg : 0 ≤ eps)
+    (hEOp : rectOpNorm2Le E e)
+    (hCombinedSourceRadius :
+      2 * (m : ℝ) * (n : ℝ) * (tauA + eps * e) * omega *
+          max (eps * e)
+            (2 * (m : ℝ) ^ 2 * (tauA + eps * e) * omega) ≤
+        (1 / 2 : ℝ))
+    (hGramLeftInv : IsLeftInverse m (rectGram A) AAT_inv)
+    (hDataE : ∀ i k, 0 ≤ E i k)
+    (hDeltaA1Component : ∀ i k, |DeltaA1 i k| ≤ eps * E i k)
+    (hDeltaA2Component : ∀ i k, |DeltaA2 i k| ≤ eps * E i k)
+    (hxTranspose : x ≠ 0 →
+      x =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hCombinedSmall :
+      3 *
+          max (eps * e)
+            (2 * (m : ℝ) ^ 2 * (tauA + eps * e) * omega) <
+        1)
+    (hAATInv_le : infNorm AAT_inv ≤ omega)
+    (hAOp : rectOpNorm2Le A tauA) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j)
+      b x :=
+  higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_deltaA_components_source_operator_envelopes_exact_size_eps_common_radius_printed_smallness_common_radius_combined_factor_global_bounds
+    hm A x DeltaA1 DeltaA2 b y AAT_inv E
+    (max (eps * e)
+      (2 * (m : ℝ) ^ 2 * (tauA + eps * e) * omega))
+    eps tauA omega e hDeltaA1 hDataEpsNonneg hEOp le_rfl
+    hCombinedSourceRadius hGramLeftInv hDataE hDeltaA1Component
+    hDeltaA2Component hxTranspose hCombinedSmall hAATInv_le hAOp
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     exact-size/common-radius handoff with common-smallness and source-factor
     caps separated. -/
 theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_deltaA_components_source_operator_envelopes_exact_size_eps_common_radius_common_smallness_factor_cap_bound
