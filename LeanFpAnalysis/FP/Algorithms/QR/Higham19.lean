@@ -23713,6 +23713,877 @@ theorem exact_signed_pivot_row_entry_bound_of_stage_entry_bound_active_factor
     simp [active_row_growth_factor, coxHighamActiveRowGrowthFactor]
   exact hbase.trans (mul_le_mul_of_nonneg_right hfactor hB)
 
+/-- Higham, Theorem 19.6 route dependency: one exact signed-pivot panel
+entry update under visible row and column stage bounds.
+
+This is the chapter-facing one-step panel form below the active-block sequence
+wrappers.  It combines the off-pivot and pivot-row branches into the unified
+Cox--Higham active-row factor; it does not by itself close the full row-wise
+QR theorem. -/
+theorem exact_signed_pivot_panel_step_active_entry_bound_of_stage_bounds
+    {m n : Nat} (p row : Fin m) (pivotCol j : Fin n)
+    (A : Fin m -> Fin n -> Real) (B : Real)
+    (hactive : p.val <= row.val)
+    (hB : 0 <= B)
+    (hnorm :
+      0 < householderTrailingColumnNorm2Sq (m := m) (n := n) p A pivotCol)
+    (hpivotMax :
+      forall l : Fin n, pivotCol.val <= l.val ->
+        householderTrailingColumnNorm2Sq (m := m) (n := n) p A l <=
+          householderTrailingColumnNorm2Sq (m := m) (n := n) p A pivotCol)
+    (hj : pivotCol.val <= j.val)
+    (hrowBound : forall l : Fin n, pivotCol.val <= l.val -> |A row l| <= B)
+    (hcolBound : forall i : Fin m, p.val <= i.val -> |A i j| <= B) :
+    |exactSignedPivotHouseholderPanelStep m n p pivotCol A row j| <=
+      active_row_growth_factor m * B := by
+  simpa [active_row_growth_factor] using
+    coxHigham_exactSignedPivotPanelStep_active_entry_bound_of_stage_bounds
+      p row pivotCol j A B hactive hB hnorm hpivotMax hj hrowBound hcolBound
+
+/-- Higham, Theorem 19.6 route dependency: one exact signed-pivot panel
+entry update from a single active-block invariant.
+
+This adapter is the one-step active-block form used by the exact sequence
+wrappers: a single active-block bound supplies both the active-row and
+active-column stage budgets. -/
+theorem exact_signed_pivot_panel_step_active_block_bound_of_stage_bound
+    {m n : Nat} (p row : Fin m) (pivotCol j : Fin n)
+    (A : Fin m -> Fin n -> Real) (B : Real)
+    (hactive : p.val <= row.val)
+    (hB : 0 <= B)
+    (hnorm :
+      0 < householderTrailingColumnNorm2Sq (m := m) (n := n) p A pivotCol)
+    (hpivotMax :
+      forall l : Fin n, pivotCol.val <= l.val ->
+        householderTrailingColumnNorm2Sq (m := m) (n := n) p A l <=
+          householderTrailingColumnNorm2Sq (m := m) (n := n) p A pivotCol)
+    (hj : pivotCol.val <= j.val)
+    (hblock :
+      forall i : Fin m, p.val <= i.val ->
+        forall l : Fin n, pivotCol.val <= l.val -> |A i l| <= B) :
+    |exactSignedPivotHouseholderPanelStep m n p pivotCol A row j| <=
+      active_row_growth_factor m * B := by
+  simpa [active_row_growth_factor] using
+    coxHigham_exactSignedPivotPanelStep_active_block_bound_of_stage_bound
+      p row pivotCol j A B hactive hB hnorm hpivotMax hj hblock
+
+/-- Higham, Theorem 19.6 route dependency: exact signed-pivot panel sequence
+entry bound under visible stage budgets.
+
+Each stage supplies the row/column bounds needed by the one-step
+Cox--Higham signed-pivot estimate, and the scalar budget `B` absorbs the
+unified active-row factor.  This is an intermediate sequence dependency, not
+the complete row-wise QR stability theorem. -/
+theorem exact_signed_pivot_panel_sequence_active_entry_bound_of_stage_budgets
+    {m n : Nat} (steps : Nat)
+    (Astage : Nat -> Fin m -> Fin n -> Real)
+    (p : Nat -> Fin m) (pivotCol : Nat -> Fin n)
+    (B : Nat -> Real) (row : Fin m) (j : Fin n)
+    (hinit : |Astage 0 row j| <= B 0)
+    (hB : forall t : Nat, t <= steps -> 0 <= B t)
+    (hbudget : forall t : Nat, t < steps ->
+      active_row_growth_factor m * B t <= B (t + 1))
+    (hstep : forall t : Nat, t < steps ->
+      Astage (t + 1) =
+        exactSignedPivotHouseholderPanelStep m n (p t) (pivotCol t) (Astage t))
+    (hactive : forall t : Nat, t < steps -> (p t).val <= row.val)
+    (hnorm : forall t : Nat, t < steps ->
+      0 <
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n) (p t) (Astage t) (pivotCol t))
+    (hpivotMax : forall t : Nat, t < steps ->
+      forall l : Fin n, (pivotCol t).val <= l.val ->
+        householderTrailingColumnNorm2Sq
+            (m := m) (n := n) (p t) (Astage t) l <=
+          householderTrailingColumnNorm2Sq
+            (m := m) (n := n) (p t) (Astage t) (pivotCol t))
+    (hj : forall t : Nat, t < steps -> (pivotCol t).val <= j.val)
+    (hrowBound : forall t : Nat, t < steps ->
+      forall l : Fin n, (pivotCol t).val <= l.val -> |Astage t row l| <= B t)
+    (hcolBound : forall t : Nat, t < steps ->
+      forall i : Fin m, (p t).val <= i.val -> |Astage t i j| <= B t) :
+    |Astage steps row j| <= B steps := by
+  have hbudget' : forall t : Nat, t < steps ->
+      coxHighamActiveRowGrowthFactor m * B t <= B (t + 1) := by
+    simpa [active_row_growth_factor] using hbudget
+  exact
+    coxHigham_exactSignedPivotPanel_sequence_active_entry_bound_of_stage_budgets
+      steps Astage p pivotCol B row j hinit hB hbudget' hstep hactive
+      hnorm hpivotMax hj hrowBound hcolBound
+
+/-- Higham, Theorem 19.6 route dependency: exact signed-pivot panel sequence
+entry bound from one active-block budget per stage.
+
+This packages the source-shaped case where a single active-block invariant
+provides both the active-row and active-column bounds for every exact
+signed-pivot panel step. -/
+theorem exact_signed_pivot_panel_sequence_active_block_bound_of_stage_budgets
+    {m n : Nat} (steps : Nat)
+    (Astage : Nat -> Fin m -> Fin n -> Real)
+    (p : Nat -> Fin m) (pivotCol : Nat -> Fin n)
+    (B : Nat -> Real) (row : Fin m) (j : Fin n)
+    (hinit : |Astage 0 row j| <= B 0)
+    (hB : forall t : Nat, t <= steps -> 0 <= B t)
+    (hbudget : forall t : Nat, t < steps ->
+      active_row_growth_factor m * B t <= B (t + 1))
+    (hstep : forall t : Nat, t < steps ->
+      Astage (t + 1) =
+        exactSignedPivotHouseholderPanelStep m n (p t) (pivotCol t) (Astage t))
+    (hactive : forall t : Nat, t < steps -> (p t).val <= row.val)
+    (hnorm : forall t : Nat, t < steps ->
+      0 <
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n) (p t) (Astage t) (pivotCol t))
+    (hpivotMax : forall t : Nat, t < steps ->
+      forall l : Fin n, (pivotCol t).val <= l.val ->
+        householderTrailingColumnNorm2Sq
+            (m := m) (n := n) (p t) (Astage t) l <=
+          householderTrailingColumnNorm2Sq
+            (m := m) (n := n) (p t) (Astage t) (pivotCol t))
+    (hj : forall t : Nat, t < steps -> (pivotCol t).val <= j.val)
+    (hblockBound : forall t : Nat, t < steps ->
+      forall i : Fin m, (p t).val <= i.val ->
+        forall l : Fin n, (pivotCol t).val <= l.val -> |Astage t i l| <= B t) :
+    |Astage steps row j| <= B steps := by
+  have hbudget' : forall t : Nat, t < steps ->
+      coxHighamActiveRowGrowthFactor m * B t <= B (t + 1) := by
+    simpa [active_row_growth_factor] using hbudget
+  exact
+    coxHigham_exactSignedPivotPanel_sequence_active_block_bound_of_stage_budgets
+      steps Astage p pivotCol B row j hinit hB hbudget' hstep hactive
+      hnorm hpivotMax hj hblockBound
+
+/-- Higham, Theorem 19.6 route dependency: geometric-budget exact
+signed-pivot panel sequence entry bound.
+
+When the stage budget is the geometric Cox--Higham budget
+`active_row_growth_factor m ^ t * B0`, the exact signed-pivot panel sequence
+keeps the requested entry within the matching final geometric bound. -/
+theorem exact_signed_pivot_panel_sequence_active_entry_bound_of_geometric_stage_budgets
+    {m n : Nat} (steps : Nat)
+    (Astage : Nat -> Fin m -> Fin n -> Real)
+    (p : Nat -> Fin m) (pivotCol : Nat -> Fin n)
+    (B0 : Real) (row : Fin m) (j : Fin n)
+    (hinit : |Astage 0 row j| <= B0)
+    (hB0 : 0 <= B0)
+    (hstep : forall t : Nat, t < steps ->
+      Astage (t + 1) =
+        exactSignedPivotHouseholderPanelStep m n (p t) (pivotCol t) (Astage t))
+    (hactive : forall t : Nat, t < steps -> (p t).val <= row.val)
+    (hnorm : forall t : Nat, t < steps ->
+      0 <
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n) (p t) (Astage t) (pivotCol t))
+    (hpivotMax : forall t : Nat, t < steps ->
+      forall l : Fin n, (pivotCol t).val <= l.val ->
+        householderTrailingColumnNorm2Sq
+            (m := m) (n := n) (p t) (Astage t) l <=
+          householderTrailingColumnNorm2Sq
+            (m := m) (n := n) (p t) (Astage t) (pivotCol t))
+    (hj : forall t : Nat, t < steps -> (pivotCol t).val <= j.val)
+    (hrowBound : forall t : Nat, t < steps ->
+      forall l : Fin n, (pivotCol t).val <= l.val ->
+        |Astage t row l| <= active_row_growth_factor m ^ t * B0)
+    (hcolBound : forall t : Nat, t < steps ->
+      forall i : Fin m, (p t).val <= i.val ->
+        |Astage t i j| <= active_row_growth_factor m ^ t * B0) :
+    |Astage steps row j| <= active_row_growth_factor m ^ steps * B0 := by
+  simpa [active_row_growth_factor] using
+    coxHigham_exactSignedPivotPanel_sequence_active_entry_bound_of_geometric_stage_budgets
+      steps Astage p pivotCol B0 row j hinit hB0 hstep hactive hnorm
+      hpivotMax hj hrowBound hcolBound
+
+/-- Higham, Theorem 19.6 route dependency: geometric-budget exact
+signed-pivot panel sequence bound from active-block invariants.
+
+This is the active-block version of the geometric sequence dependency; it
+still assumes the stage-wise active-block invariant and does not close the full
+row-wise QR/preconditioner theorem. -/
+theorem exact_signed_pivot_panel_sequence_active_block_bound_of_geometric_stage_budgets
+    {m n : Nat} (steps : Nat)
+    (Astage : Nat -> Fin m -> Fin n -> Real)
+    (p : Nat -> Fin m) (pivotCol : Nat -> Fin n)
+    (B0 : Real) (row : Fin m) (j : Fin n)
+    (hinit : |Astage 0 row j| <= B0)
+    (hB0 : 0 <= B0)
+    (hstep : forall t : Nat, t < steps ->
+      Astage (t + 1) =
+        exactSignedPivotHouseholderPanelStep m n (p t) (pivotCol t) (Astage t))
+    (hactive : forall t : Nat, t < steps -> (p t).val <= row.val)
+    (hnorm : forall t : Nat, t < steps ->
+      0 <
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n) (p t) (Astage t) (pivotCol t))
+    (hpivotMax : forall t : Nat, t < steps ->
+      forall l : Fin n, (pivotCol t).val <= l.val ->
+        householderTrailingColumnNorm2Sq
+            (m := m) (n := n) (p t) (Astage t) l <=
+          householderTrailingColumnNorm2Sq
+            (m := m) (n := n) (p t) (Astage t) (pivotCol t))
+    (hj : forall t : Nat, t < steps -> (pivotCol t).val <= j.val)
+    (hblockBound : forall t : Nat, t < steps ->
+      forall i : Fin m, (p t).val <= i.val ->
+        forall l : Fin n, (pivotCol t).val <= l.val ->
+          |Astage t i l| <= active_row_growth_factor m ^ t * B0) :
+    |Astage steps row j| <= active_row_growth_factor m ^ steps * B0 := by
+  simpa [active_row_growth_factor] using
+    coxHigham_exactSignedPivotPanel_sequence_active_block_bound_of_geometric_stage_budgets
+      steps Astage p pivotCol B0 row j hinit hB0 hstep hactive hnorm
+      hpivotMax hj hblockBound
+
+/-- Higham, Theorem 19.6 route dependency: exact signed-pivot panel sequence
+active-block propagation from a uniform initial block bound.
+
+This removes the per-stage active-block bound premise from the pointwise
+sequence wrapper: monotone active windows, positive pivot-column norm, and
+active-max pivot bounds propagate the geometric Cox--Higham active-row budget
+through every exact signed-pivot stage. -/
+theorem exact_signed_pivot_panel_sequence_active_block_bound_of_initial_block_bound
+    {m n : Nat} (steps : Nat)
+    (Astage : Nat -> Fin m -> Fin n -> Real)
+    (p : Nat -> Fin m) (pivotCol : Nat -> Fin n)
+    (B0 : Real)
+    (hinitBlock : forall i : Fin m, forall l : Fin n, |Astage 0 i l| <= B0)
+    (hB0 : 0 <= B0)
+    (hstep : forall t : Nat, t < steps ->
+      Astage (t + 1) =
+        exactSignedPivotHouseholderPanelStep m n (p t) (pivotCol t) (Astage t))
+    (hpMono : forall u t : Nat, u <= t -> t <= steps -> (p u).val <= (p t).val)
+    (hkMono : forall u t : Nat, u <= t -> t <= steps ->
+      (pivotCol u).val <= (pivotCol t).val)
+    (hnorm : forall t : Nat, t < steps ->
+      0 <
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n) (p t) (Astage t) (pivotCol t))
+    (hpivotMax : forall t : Nat, t < steps ->
+      forall l : Fin n, (pivotCol t).val <= l.val ->
+        householderTrailingColumnNorm2Sq
+            (m := m) (n := n) (p t) (Astage t) l <=
+          householderTrailingColumnNorm2Sq
+            (m := m) (n := n) (p t) (Astage t) (pivotCol t)) :
+    forall t : Nat, t <= steps ->
+      forall i : Fin m, (p t).val <= i.val ->
+        forall l : Fin n, (pivotCol t).val <= l.val ->
+          |Astage t i l| <= active_row_growth_factor m ^ t * B0 := by
+  simpa [active_row_growth_factor] using
+    coxHigham_exactSignedPivotPanel_sequence_active_block_bound_of_initial_block_bound
+      steps Astage p pivotCol B0 hinitBlock hB0 hstep hpMono hkMono hnorm
+      hpivotMax
+
+/-- Higham, Theorem 19.6 route dependency: exact signed-pivot panel
+active-block propagation with nonbreakdown stated as an active nonzero entry.
+
+This discharges the positive pivot-column norm field from active-block
+nonzero mass plus the visible active-max pivot inequality. -/
+theorem exact_signed_pivot_panel_sequence_active_block_bound_of_initial_block_bound_of_active_block_nonzero
+    {m n : Nat} (steps : Nat)
+    (Astage : Nat -> Fin m -> Fin n -> Real)
+    (p : Nat -> Fin m) (pivotCol : Nat -> Fin n)
+    (B0 : Real)
+    (hinitBlock : forall i : Fin m, forall l : Fin n, |Astage 0 i l| <= B0)
+    (hB0 : 0 <= B0)
+    (hstep : forall t : Nat, t < steps ->
+      Astage (t + 1) =
+        exactSignedPivotHouseholderPanelStep m n (p t) (pivotCol t) (Astage t))
+    (hpMono : forall u t : Nat, u <= t -> t <= steps -> (p u).val <= (p t).val)
+    (hkMono : forall u t : Nat, u <= t -> t <= steps ->
+      (pivotCol u).val <= (pivotCol t).val)
+    (hactiveNonzero : forall t : Nat, t < steps ->
+      exists l : Fin n, (pivotCol t).val <= l.val /\
+        exists i : Fin m, (p t).val <= i.val /\ Astage t i l ≠ 0)
+    (hpivotMax : forall t : Nat, t < steps ->
+      forall l : Fin n, (pivotCol t).val <= l.val ->
+        householderTrailingColumnNorm2Sq
+            (m := m) (n := n) (p t) (Astage t) l <=
+          householderTrailingColumnNorm2Sq
+            (m := m) (n := n) (p t) (Astage t) (pivotCol t)) :
+    forall t : Nat, t <= steps ->
+      forall i : Fin m, (p t).val <= i.val ->
+        forall l : Fin n, (pivotCol t).val <= l.val ->
+          |Astage t i l| <= active_row_growth_factor m ^ t * B0 := by
+  simpa [active_row_growth_factor] using
+    coxHigham_exactSignedPivotPanel_sequence_active_block_bound_of_initial_block_bound_of_active_block_nonzero
+      steps Astage p pivotCol B0 hinitBlock hB0 hstep hpMono hkMono
+      hactiveNonzero hpivotMax
+
+/-- Higham, Theorem 19.6 route dependency: exact signed-pivot panel
+active-block propagation with the pivot choice supplied by the active-column
+max selector.
+
+This is closer to the pivoted QR loop: the raw pivot-max inequality is
+replaced by the algorithmic finite active-max choice, while nonbreakdown is
+still stated as a visible active nonzero entry. -/
+theorem exact_signed_pivot_panel_sequence_active_block_bound_of_initial_block_bound_of_active_max_pivot
+    {m n : Nat} (steps : Nat)
+    (Astage : Nat -> Fin m -> Fin n -> Real)
+    (p : Nat -> Fin m) (pivotCol : Nat -> Fin n)
+    (B0 : Real)
+    (hinitBlock : forall i : Fin m, forall l : Fin n, |Astage 0 i l| <= B0)
+    (hB0 : 0 <= B0)
+    (hstep : forall t : Nat, t < steps ->
+      Astage (t + 1) =
+        exactSignedPivotHouseholderPanelStep m n (p t) (pivotCol t) (Astage t))
+    (hpMono : forall u t : Nat, u <= t -> t <= steps -> (p u).val <= (p t).val)
+    (hkMono : forall u t : Nat, u <= t -> t <= steps ->
+      (pivotCol u).val <= (pivotCol t).val)
+    (hactiveNonzero : forall t : Nat, t < steps ->
+      exists l : Fin n, (pivotCol t).val <= l.val /\
+        exists i : Fin m, (p t).val <= i.val /\ Astage t i l ≠ 0)
+    (hpivotChoice : forall t : Nat, t < steps ->
+      pivotCol t =
+        householderActiveMaxPivotColumn (p t) (pivotCol t) (Astage t)) :
+    forall t : Nat, t <= steps ->
+      forall i : Fin m, (p t).val <= i.val ->
+        forall l : Fin n, (pivotCol t).val <= l.val ->
+          |Astage t i l| <= active_row_growth_factor m ^ t * B0 := by
+  simpa [active_row_growth_factor] using
+    coxHigham_exactSignedPivotPanel_sequence_active_block_bound_of_initial_block_bound_of_active_max_pivot
+      steps Astage p pivotCol B0 hinitBlock hB0 hstep hpMono hkMono
+      hactiveNonzero hpivotChoice
+
+/-- Higham, Theorem 19.6 route dependency: exact signed-pivot panel
+active-block propagation from positive active-block mass and the finite
+active-max pivot policy.
+
+This makes the nonbreakdown field scalar and source-shaped: every active
+trailing block has positive squared mass before its pivot is chosen. -/
+theorem exact_signed_pivot_panel_sequence_active_block_bound_of_initial_block_bound_of_active_block_norm_pos
+    {m n : Nat} (steps : Nat)
+    (Astage : Nat -> Fin m -> Fin n -> Real)
+    (p : Nat -> Fin m) (pivotCol : Nat -> Fin n)
+    (B0 : Real)
+    (hinitBlock : forall i : Fin m, forall l : Fin n, |Astage 0 i l| <= B0)
+    (hB0 : 0 <= B0)
+    (hstep : forall t : Nat, t < steps ->
+      Astage (t + 1) =
+        exactSignedPivotHouseholderPanelStep m n (p t) (pivotCol t) (Astage t))
+    (hpMono : forall u t : Nat, u <= t -> t <= steps -> (p u).val <= (p t).val)
+    (hkMono : forall u t : Nat, u <= t -> t <= steps ->
+      (pivotCol u).val <= (pivotCol t).val)
+    (hactiveBlockPos : forall t : Nat, t < steps ->
+      0 < householderActiveBlockNorm2Sq (p t) (pivotCol t) (Astage t))
+    (hpivotChoice : forall t : Nat, t < steps ->
+      pivotCol t =
+        householderActiveMaxPivotColumn (p t) (pivotCol t) (Astage t)) :
+    forall t : Nat, t <= steps ->
+      forall i : Fin m, (p t).val <= i.val ->
+        forall l : Fin n, (pivotCol t).val <= l.val ->
+          |Astage t i l| <= active_row_growth_factor m ^ t * B0 := by
+  simpa [active_row_growth_factor] using
+    coxHigham_exactSignedPivotPanel_sequence_active_block_bound_of_initial_block_bound_of_active_block_norm_pos
+      steps Astage p pivotCol B0 hinitBlock hB0 hstep hpMono hkMono
+      hactiveBlockPos hpivotChoice
+
+/-- Higham, Theorem 19.6 route dependency: exact signed-pivot panel sequence
+active-block bound after active-max column swaps, with post-swap
+active-block nonbreakdown stated on the displayed stages.
+
+The stronger raw-stage variant below is usually the more useful loop surface;
+this wrapper keeps the intermediate sorted-stage nonbreakdown theorem visible
+under a Chapter 19.6 name. -/
+theorem exact_signed_pivot_panel_sequence_active_block_bound_of_swapped_active_max_pivot_of_active_block_norm_pos
+    {m n : Nat} (steps : Nat)
+    (Araw Astage : Nat -> Fin m -> Fin n -> Real)
+    (p : Nat -> Fin m) (pivotCol : Nat -> Fin n)
+    (B0 : Real)
+    (hinitBlock : forall i : Fin m, forall l : Fin n, |Astage 0 i l| <= B0)
+    (hB0 : 0 <= B0)
+    (hstep : forall t : Nat, t < steps ->
+      Astage (t + 1) =
+        exactSignedPivotHouseholderPanelStep m n (p t) (pivotCol t) (Astage t))
+    (hpMono : forall u t : Nat, u <= t -> t <= steps -> (p u).val <= (p t).val)
+    (hkMono : forall u t : Nat, u <= t -> t <= steps ->
+      (pivotCol u).val <= (pivotCol t).val)
+    (hsorted : forall t : Nat, t < steps ->
+      Astage t =
+        householderSwapColumns (Araw t) (pivotCol t)
+          (householderActiveMaxPivotColumn (p t) (pivotCol t) (Araw t)))
+    (hactiveBlockPos : forall t : Nat, t < steps ->
+      0 < householderActiveBlockNorm2Sq (p t) (pivotCol t) (Astage t)) :
+    forall t : Nat, t <= steps ->
+      forall i : Fin m, (p t).val <= i.val ->
+        forall l : Fin n, (pivotCol t).val <= l.val ->
+          |Astage t i l| <= active_row_growth_factor m ^ t * B0 := by
+  simpa [active_row_growth_factor] using
+    coxHigham_exactSignedPivotPanel_sequence_active_block_bound_of_initial_block_bound_of_swapped_active_max_pivot
+      steps Araw Astage p pivotCol B0 hinitBlock hB0 hstep hpMono hkMono
+      hsorted hactiveBlockPos
+
+/-- Higham, Theorem 19.6 route dependency: exact signed-pivot panel sequence
+active-block bound after active-max column swaps.
+
+This wraps the multi-stage Cox--Higham active-block result for the exact
+signed-pivot Householder panel.  It propagates an initial active-block bound
+through `steps` exact stages using the unified active-row growth factor; it is
+a dependency for the future full row-wise QR/preconditioner theorem, not a
+final source closure. -/
+theorem exact_signed_pivot_panel_sequence_active_block_bound_of_swapped_active_max_pivot
+    {m n : Nat} (steps : Nat)
+    (Araw Astage : Nat -> Fin m -> Fin n -> Real)
+    (p : Nat -> Fin m) (pivotCol : Nat -> Fin n)
+    (B0 : Real)
+    (hinitBlock : forall i : Fin m, forall l : Fin n, |Astage 0 i l| <= B0)
+    (hB0 : 0 <= B0)
+    (hstep : forall t : Nat, t < steps ->
+      Astage (t + 1) =
+        exactSignedPivotHouseholderPanelStep m n (p t) (pivotCol t) (Astage t))
+    (hpMono : forall u t : Nat, u <= t -> t <= steps -> (p u).val <= (p t).val)
+    (hkMono : forall u t : Nat, u <= t -> t <= steps ->
+      (pivotCol u).val <= (pivotCol t).val)
+    (hsorted : forall t : Nat, t < steps ->
+      Astage t =
+        householderSwapColumns (Araw t) (pivotCol t)
+          (householderActiveMaxPivotColumn (p t) (pivotCol t) (Araw t)))
+    (hrawActiveBlockPos : forall t : Nat, t < steps ->
+      0 < householderActiveBlockNorm2Sq (p t) (pivotCol t) (Araw t)) :
+    forall t : Nat, t <= steps ->
+      forall i : Fin m, (p t).val <= i.val ->
+        forall l : Fin n, (pivotCol t).val <= l.val ->
+          |Astage t i l| <= active_row_growth_factor m ^ t * B0 := by
+  simpa [active_row_growth_factor] using
+    coxHigham_exactSignedPivotPanel_sequence_active_block_bound_of_initial_block_bound_of_swapped_active_max_pivot_of_raw_active_block_norm_pos
+      steps Araw Astage p pivotCol B0 hinitBlock hB0 hstep hpMono hkMono
+      hsorted hrawActiveBlockPos
+
+/-- Higham, Theorem 19.6 route dependency: exact signed-pivot panel sequence
+active-block bound with nonbreakdown supplied by leading-block determinant
+data.
+
+This is the determinant-facing exact sequence bridge for the pivoted QR route:
+leading-block and previous-block determinants plus already-zero lower-prefix
+entries supply the raw active-block nonbreakdown field consumed by the sorted
+active-max sequence theorem.  It remains a dependency, not the complete
+rounded row-wise QR theorem. -/
+theorem exact_signed_pivot_panel_sequence_active_block_bound_of_leading_block_det_ne_zero
+    {m n : Nat} (hmn : n <= m) {steps : Nat} (hsteps : steps <= n)
+    (Araw Astage : Nat -> Fin m -> Fin n -> Real)
+    (p : Nat -> Fin m) (pivotCol : Nat -> Fin n)
+    (B0 : Real)
+    (hinitBlock : forall i : Fin m, forall l : Fin n, |Astage 0 i l| <= B0)
+    (hB0 : 0 <= B0)
+    (hstep : forall t : Nat, t < steps ->
+      Astage (t + 1) =
+        exactSignedPivotHouseholderPanelStep m n (p t) (pivotCol t) (Astage t))
+    (hpMono : forall u t : Nat, u <= t -> t <= steps -> (p u).val <= (p t).val)
+    (hkMono : forall u t : Nat, u <= t -> t <= steps ->
+      (pivotCol u).val <= (pivotCol t).val)
+    (hstageRow : forall t : Nat, t < steps -> (p t).val = t)
+    (hstageCol : forall t : Nat, t < steps -> (pivotCol t).val = t)
+    (hsorted : forall t : Nat, t < steps ->
+      Astage t =
+        householderSwapColumns (Araw t) (pivotCol t)
+          (householderActiveMaxPivotColumn (p t) (pivotCol t) (Araw t)))
+    (hdetPrev : forall t (ht : t < steps),
+      Matrix.det
+        (qrPreviousLeadingBlockTranspose (Araw t)
+          (le_of_lt (lt_of_lt_of_le (lt_of_lt_of_le ht hsteps) hmn))
+          (lt_of_lt_of_le ht hsteps) :
+          Matrix (Fin t) (Fin t) Real) ≠ 0)
+    (hdetLead : forall t (ht : t < steps),
+      Matrix.det
+        (qrLeadingBlock (Araw t)
+          (Nat.succ_le_iff.mpr
+            (lt_of_lt_of_le (lt_of_lt_of_le ht hsteps) hmn))
+          (lt_of_lt_of_le ht hsteps) :
+          Matrix (Fin (t + 1)) (Fin (t + 1)) Real) ≠ 0)
+    (hlowerPrev : forall t (ht : t < steps) (i : Fin m) (j : Fin t),
+      t <= i.val ->
+        Araw t i (qrPreviousColumn n t (lt_of_lt_of_le ht hsteps) j) = 0) :
+    forall t : Nat, t <= steps ->
+      forall i : Fin m, (p t).val <= i.val ->
+        forall l : Fin n, (pivotCol t).val <= l.val ->
+          |Astage t i l| <= active_row_growth_factor m ^ t * B0 := by
+  simpa [active_row_growth_factor] using
+    coxHigham_exactSignedPivotPanel_sequence_active_block_bound_of_initial_block_bound_of_swapped_active_max_pivot_of_leading_block_det_ne_zero
+      hmn hsteps Araw Astage p pivotCol B0 hinitBlock hB0 hstep hpMono
+      hkMono hstageRow hstageCol hsorted hdetPrev hdetLead hlowerPrev
+
+/-- Higham, Theorem 19.6 route dependency: rounded stored-panel active-block
+propagation from signed-pivot stage bounds.
+
+The theorem packages the stored-panel induction surface: a per-stage budget
+that dominates exact active-row growth plus the compact floating-point update
+budget propagates the active-block bound across the panel sequence.  It remains
+a conditional dependency for the full row-wise stability theorem. -/
+theorem stored_panel_sequence_active_block_bound_of_signed_pivot_stage_bounds
+    {m n : Nat} (fp : FPModel) (steps : Nat)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (p : Nat -> Fin m) (pivotCol : Nat -> Fin n)
+    (B : Nat -> Real) (hm : gammaValid fp m)
+    (hinitBlock : forall i : Fin m, forall l : Fin n, |Ahat 0 i l| <= B 0)
+    (hB : forall t : Nat, t < steps -> 0 <= B t)
+    (hstep : forall t : Nat, t < steps ->
+      Ahat (t + 1) =
+        fl_householderStoredPanelStep fp m n (pivotCol t).val
+          (signedPivotHouseholderVector m n (p t) (pivotCol t) (Ahat t))
+          (signedPivotHouseholderBeta m n (p t) (pivotCol t) (Ahat t))
+          (Ahat t))
+    (hpMono : forall u t : Nat, u <= t -> t <= steps -> (p u).val <= (p t).val)
+    (hkMono : forall u t : Nat, u <= t -> t <= steps ->
+      (pivotCol u).val <= (pivotCol t).val)
+    (hnorm : forall t : Nat, t < steps ->
+      0 <
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n) (p t) (Ahat t) (pivotCol t))
+    (hpivotMax : forall t : Nat, t < steps ->
+      forall l : Fin n, (pivotCol t).val <= l.val ->
+        householderTrailingColumnNorm2Sq
+            (m := m) (n := n) (p t) (Ahat t) l <=
+          householderTrailingColumnNorm2Sq
+            (m := m) (n := n) (p t) (Ahat t) (pivotCol t))
+    (hcompleted : forall t : Nat, t < steps -> forall j : Fin n,
+      j.val < (pivotCol t).val ->
+        forall i : Fin m, matMulVec m
+          (householder m
+            (signedPivotHouseholderVector m n (p t) (pivotCol t) (Ahat t))
+            (signedPivotHouseholderBeta m n (p t) (pivotCol t) (Ahat t)))
+          (fun a => Ahat t a j) i = Ahat t i j)
+    (hpivot : forall t : Nat, t < steps -> forall j : Fin n,
+      j.val = (pivotCol t).val ->
+        forall i : Fin m, (pivotCol t).val < i.val ->
+          matMulVec m
+            (householder m
+              (signedPivotHouseholderVector m n (p t) (pivotCol t) (Ahat t))
+              (signedPivotHouseholderBeta m n (p t) (pivotCol t) (Ahat t)))
+            (fun a => Ahat t a j) i = 0)
+    (hbudget : forall t : Nat, t < steps -> forall row : Fin m, forall l : Fin n,
+      (p (t + 1)).val <= row.val ->
+        (pivotCol (t + 1)).val <= l.val ->
+          active_row_growth_factor m * B t +
+              householderCompactComponentBudget fp m
+                (signedPivotHouseholderVector m n (p t) (pivotCol t) (Ahat t))
+                (signedPivotHouseholderBeta m n (p t) (pivotCol t) (Ahat t))
+                (fun a => Ahat t a l) row <=
+            B (t + 1)) :
+    forall t : Nat, t <= steps ->
+      forall row : Fin m, (p t).val <= row.val ->
+        forall l : Fin n, (pivotCol t).val <= l.val ->
+          |Ahat t row l| <= B t := by
+  have hbudget' : forall t : Nat, t < steps -> forall row : Fin m, forall l : Fin n,
+      (p (t + 1)).val <= row.val ->
+        (pivotCol (t + 1)).val <= l.val ->
+          coxHighamActiveRowGrowthFactor m * B t +
+              householderCompactComponentBudget fp m
+                (signedPivotHouseholderVector m n (p t) (pivotCol t) (Ahat t))
+                (signedPivotHouseholderBeta m n (p t) (pivotCol t) (Ahat t))
+                (fun a => Ahat t a l) row <=
+            B (t + 1) := by
+    simpa [active_row_growth_factor] using hbudget
+  simpa [active_row_growth_factor] using
+    coxHigham_storedPanel_sequence_active_block_bound_of_signed_pivot_stage_bounds
+      fp steps Ahat p pivotCol B hm hinitBlock hB hstep hpMono hkMono hnorm
+      hpivotMax hcompleted hpivot hbudget'
+
+/-- Higham, Theorem 19.6 route dependency: concrete stored-panel row-error
+accumulation from an exact same-reflector Lipschitz field.
+
+The exact Cox--Higham growth hypothesis remains visible as `hexact`; this
+wrapper only exposes the repository's floating-point stored-panel component
+budgets under the Chapter 19.6 namespace. -/
+theorem stored_panel_sequence_rowwise_error_accumulation_bound_of_exact_lipschitz
+    {m n : Nat} (fp : FPModel) (steps : Fin m)
+    (Ahat Aexact : Nat -> Fin m -> Fin n -> Real)
+    (v : Nat -> Fin m -> Real) (beta : Nat -> Real)
+    (hm : gammaValid fp m) (r : Fin m) (j : Fin n)
+    (hstep : forall t : Nat, t < steps.val ->
+      Ahat (t + 1) = fl_householderStoredPanelStep fp m n t (v t) (beta t) (Ahat t))
+    (hactive : forall t : Nat, t < steps.val -> t <= j.val)
+    (hcompleted : forall t : Nat, t < steps.val -> j.val < t ->
+      forall i : Fin m, matMulVec m (householder m (v t) (beta t))
+        (fun a => Ahat t a j) i = Ahat t i j)
+    (hpivot : forall t : Nat, t < steps.val -> j.val = t ->
+      forall i : Fin m, t < i.val ->
+        matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) i = 0)
+    (hexact : forall t : Nat, t < steps.val ->
+      |matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) r -
+          Aexact (t + 1) r j| <=
+        rowwise_step_growth_factor * |Ahat t r j - Aexact t r j|) :
+    |Ahat steps.val r j - Aexact steps.val r j| <=
+      rowwise_step_growth_factor ^ steps.val * |Ahat 0 r j - Aexact 0 r j| +
+        scalarAffineGrowthBudget rowwise_step_growth_factor
+          (fun t => householderCompactComponentBudget fp m (v t) (beta t)
+            (fun a => Ahat t a j) r)
+          steps.val := by
+  simpa [rowwise_step_growth_factor] using
+    coxHigham_storedPanel_sequence_rowwise_error_accumulation_bound_of_exact_lipschitz
+      fp steps Ahat Aexact v beta hm r j hstep hactive hcompleted hpivot
+      hexact
+
+/-- Higham, Theorem 19.6 route dependency: one rounded stored-panel entry
+bound from an exact same-reflector row-growth field. -/
+theorem stored_panel_step_active_entry_bound_of_exact_growth
+    (fp : FPModel) (m n k : Nat)
+    (v : Fin m -> Real) (beta : Real) (AhatPrev : Fin m -> Fin n -> Real)
+    (hm : gammaValid fp m) (r : Fin m) (j : Fin n)
+    (hactive : k <= j.val)
+    (hcompleted : j.val < k ->
+      forall i : Fin m, matMulVec m (householder m v beta)
+        (fun a => AhatPrev a j) i = AhatPrev i j)
+    (hpivot : j.val = k ->
+      forall i : Fin m, k < i.val ->
+        matMulVec m (householder m v beta) (fun a => AhatPrev a j) i = 0)
+    (hexact :
+      |matMulVec m (householder m v beta) (fun a => AhatPrev a j) r| <=
+        rowwise_step_growth_factor * |AhatPrev r j|) :
+    |fl_householderStoredPanelStep fp m n k v beta AhatPrev r j| <=
+      rowwise_step_growth_factor * |AhatPrev r j| +
+        householderCompactComponentBudget fp m v beta (fun a => AhatPrev a j) r := by
+  simpa [rowwise_step_growth_factor] using
+    coxHigham_storedPanelStep_active_entry_bound_of_exact_growth
+      fp m n k v beta AhatPrev hm r j hactive hcompleted hpivot hexact
+
+/-- Higham, Theorem 19.6 route dependency: one rounded stored-panel entry
+bound from an exact same-reflector row-growth field with an arbitrary
+nonnegative growth factor supplied by the caller. -/
+theorem stored_panel_step_active_entry_bound_of_exact_growth_factor
+    (fp : FPModel) (m n k : Nat)
+    (v : Fin m -> Real) (beta c : Real) (AhatPrev : Fin m -> Fin n -> Real)
+    (hm : gammaValid fp m) (r : Fin m) (j : Fin n)
+    (hactive : k <= j.val)
+    (hcompleted : j.val < k ->
+      forall i : Fin m, matMulVec m (householder m v beta)
+        (fun a => AhatPrev a j) i = AhatPrev i j)
+    (hpivot : j.val = k ->
+      forall i : Fin m, k < i.val ->
+        matMulVec m (householder m v beta) (fun a => AhatPrev a j) i = 0)
+    (hexact :
+      |matMulVec m (householder m v beta) (fun a => AhatPrev a j) r| <=
+        c * |AhatPrev r j|) :
+    |fl_householderStoredPanelStep fp m n k v beta AhatPrev r j| <=
+      c * |AhatPrev r j| +
+        householderCompactComponentBudget fp m v beta (fun a => AhatPrev a j) r := by
+  exact
+    coxHigham_storedPanelStep_active_entry_bound_of_exact_growth_factor
+      fp m n k v beta c AhatPrev hm r j hactive hcompleted hpivot hexact
+
+/-- Higham, Theorem 19.6 route dependency: stored-panel sequence entry
+bound from exact same-reflector row growth.
+
+The concrete compact Householder component budgets are accumulated by
+`scalarAffineGrowthBudget`; no full row-wise QR/preconditioner theorem is
+claimed here. -/
+theorem stored_panel_sequence_active_entry_bound_of_exact_growth
+    {m n : Nat} (fp : FPModel) (steps : Fin m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (v : Nat -> Fin m -> Real) (beta : Nat -> Real)
+    (hm : gammaValid fp m) (r : Fin m) (j : Fin n)
+    (hstep : forall t : Nat, t < steps.val ->
+      Ahat (t + 1) = fl_householderStoredPanelStep fp m n t (v t) (beta t) (Ahat t))
+    (hactive : forall t : Nat, t < steps.val -> t <= j.val)
+    (hcompleted : forall t : Nat, t < steps.val -> j.val < t ->
+      forall i : Fin m, matMulVec m (householder m (v t) (beta t))
+        (fun a => Ahat t a j) i = Ahat t i j)
+    (hpivot : forall t : Nat, t < steps.val -> j.val = t ->
+      forall i : Fin m, t < i.val ->
+        matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) i = 0)
+    (hexact : forall t : Nat, t < steps.val ->
+      |matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) r| <=
+        rowwise_step_growth_factor * |Ahat t r j|) :
+    |Ahat steps.val r j| <=
+      rowwise_step_growth_factor ^ steps.val * |Ahat 0 r j| +
+        scalarAffineGrowthBudget rowwise_step_growth_factor
+          (fun t => householderCompactComponentBudget fp m (v t) (beta t)
+            (fun a => Ahat t a j) r)
+          steps.val := by
+  simpa [rowwise_step_growth_factor] using
+    coxHigham_storedPanel_sequence_active_entry_bound_of_exact_growth
+      fp steps Ahat v beta hm r j hstep hactive hcompleted hpivot hexact
+
+/-- Higham, Theorem 19.6 route dependency: stored-panel sequence entry
+bound from exact row growth with a caller-supplied factor. -/
+theorem stored_panel_sequence_active_entry_bound_of_exact_growth_factor
+    {m n : Nat} (fp : FPModel) (steps : Fin m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (v : Nat -> Fin m -> Real) (beta : Nat -> Real) (c : Real)
+    (hm : gammaValid fp m) (r : Fin m) (j : Fin n)
+    (hc : 0 <= c)
+    (hstep : forall t : Nat, t < steps.val ->
+      Ahat (t + 1) = fl_householderStoredPanelStep fp m n t (v t) (beta t) (Ahat t))
+    (hactive : forall t : Nat, t < steps.val -> t <= j.val)
+    (hcompleted : forall t : Nat, t < steps.val -> j.val < t ->
+      forall i : Fin m, matMulVec m (householder m (v t) (beta t))
+        (fun a => Ahat t a j) i = Ahat t i j)
+    (hpivot : forall t : Nat, t < steps.val -> j.val = t ->
+      forall i : Fin m, t < i.val ->
+        matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) i = 0)
+    (hexact : forall t : Nat, t < steps.val ->
+      |matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) r| <=
+        c * |Ahat t r j|) :
+    |Ahat steps.val r j| <=
+      c ^ steps.val * |Ahat 0 r j| +
+        scalarAffineGrowthBudget c
+          (fun t => householderCompactComponentBudget fp m (v t) (beta t)
+            (fun a => Ahat t a j) r)
+          steps.val := by
+  exact
+    coxHigham_storedPanel_sequence_active_entry_bound_of_exact_growth_factor
+      fp steps Ahat v beta c hm r j hc hstep hactive hcompleted hpivot hexact
+
+/-- Higham, Theorem 19.6 route dependency: stored-panel sequence entry
+bound using the unified active-row Cox--Higham factor. -/
+theorem stored_panel_sequence_active_entry_bound_of_exact_active_growth
+    {m n : Nat} (fp : FPModel) (steps : Fin m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (v : Nat -> Fin m -> Real) (beta : Nat -> Real)
+    (hm : gammaValid fp m) (r : Fin m) (j : Fin n)
+    (hstep : forall t : Nat, t < steps.val ->
+      Ahat (t + 1) = fl_householderStoredPanelStep fp m n t (v t) (beta t) (Ahat t))
+    (hactive : forall t : Nat, t < steps.val -> t <= j.val)
+    (hcompleted : forall t : Nat, t < steps.val -> j.val < t ->
+      forall i : Fin m, matMulVec m (householder m (v t) (beta t))
+        (fun a => Ahat t a j) i = Ahat t i j)
+    (hpivot : forall t : Nat, t < steps.val -> j.val = t ->
+      forall i : Fin m, t < i.val ->
+        matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) i = 0)
+    (hexact : forall t : Nat, t < steps.val ->
+      |matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) r| <=
+        active_row_growth_factor m * |Ahat t r j|) :
+    |Ahat steps.val r j| <=
+      active_row_growth_factor m ^ steps.val * |Ahat 0 r j| +
+        scalarAffineGrowthBudget (active_row_growth_factor m)
+          (fun t => householderCompactComponentBudget fp m (v t) (beta t)
+            (fun a => Ahat t a j) r)
+          steps.val := by
+  simpa [active_row_growth_factor] using
+    coxHigham_storedPanel_sequence_active_entry_bound_of_exact_active_growth
+      fp steps Ahat v beta hm r j hstep hactive hcompleted hpivot hexact
+
+/-- Higham, Theorem 19.6 route dependency: one stored-panel entry bound from
+an exact stage budget and the compact floating-point component budget. -/
+theorem stored_panel_step_active_entry_bound_of_exact_stage_budget_factor
+    (fp : FPModel) (m n k : Nat)
+    (v : Fin m -> Real) (beta c B : Real) (AhatPrev : Fin m -> Fin n -> Real)
+    (hm : gammaValid fp m) (r : Fin m) (j : Fin n)
+    (hactive : k <= j.val)
+    (hcompleted : j.val < k ->
+      forall i : Fin m, matMulVec m (householder m v beta)
+        (fun a => AhatPrev a j) i = AhatPrev i j)
+    (hpivot : j.val = k ->
+      forall i : Fin m, k < i.val ->
+        matMulVec m (householder m v beta) (fun a => AhatPrev a j) i = 0)
+    (hexact :
+      |matMulVec m (householder m v beta) (fun a => AhatPrev a j) r| <=
+        c * B) :
+    |fl_householderStoredPanelStep fp m n k v beta AhatPrev r j| <=
+      c * B +
+        householderCompactComponentBudget fp m v beta (fun a => AhatPrev a j) r := by
+  exact
+    coxHigham_storedPanelStep_active_entry_bound_of_exact_stage_budget_factor
+      fp m n k v beta c B AhatPrev hm r j hactive hcompleted hpivot hexact
+
+/-- Higham, Theorem 19.6 route dependency: stored-panel sequence entry
+bound from exact stage budgets and concrete compact component budgets. -/
+theorem stored_panel_sequence_active_entry_bound_of_exact_stage_budgets_factor
+    {m n : Nat} (fp : FPModel) (steps : Nat)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (v : Nat -> Fin m -> Real) (beta : Nat -> Real) (c : Real) (B : Nat -> Real)
+    (hm : gammaValid fp m) (r : Fin m) (j : Fin n)
+    (hinit : |Ahat 0 r j| <= B 0)
+    (hstep : forall t : Nat, t < steps ->
+      Ahat (t + 1) = fl_householderStoredPanelStep fp m n t (v t) (beta t) (Ahat t))
+    (hactive : forall t : Nat, t < steps -> t <= j.val)
+    (hcompleted : forall t : Nat, t < steps -> j.val < t ->
+      forall i : Fin m, matMulVec m (householder m (v t) (beta t))
+        (fun a => Ahat t a j) i = Ahat t i j)
+    (hpivot : forall t : Nat, t < steps -> j.val = t ->
+      forall i : Fin m, t < i.val ->
+        matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) i = 0)
+    (hbudget : forall t : Nat, t < steps ->
+      c * B t +
+          householderCompactComponentBudget fp m (v t) (beta t)
+            (fun a => Ahat t a j) r <=
+        B (t + 1))
+    (hexact : forall t : Nat, t < steps ->
+      |matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) r| <=
+        c * B t) :
+    |Ahat steps r j| <= B steps := by
+  exact
+    coxHigham_storedPanel_sequence_active_entry_bound_of_exact_stage_budgets_factor
+      fp steps Ahat v beta c B hm r j hinit hstep hactive hcompleted hpivot
+      hbudget hexact
+
+/-- Higham, Theorem 19.6 route dependency: stored-panel sequence entry
+bound from exact stage budgets using the unified active-row Cox--Higham
+factor. -/
+theorem stored_panel_sequence_active_entry_bound_of_exact_active_stage_budgets
+    {m n : Nat} (fp : FPModel) (steps : Nat)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (v : Nat -> Fin m -> Real) (beta : Nat -> Real) (B : Nat -> Real)
+    (hm : gammaValid fp m) (r : Fin m) (j : Fin n)
+    (hinit : |Ahat 0 r j| <= B 0)
+    (hstep : forall t : Nat, t < steps ->
+      Ahat (t + 1) = fl_householderStoredPanelStep fp m n t (v t) (beta t) (Ahat t))
+    (hactive : forall t : Nat, t < steps -> t <= j.val)
+    (hcompleted : forall t : Nat, t < steps -> j.val < t ->
+      forall i : Fin m, matMulVec m (householder m (v t) (beta t))
+        (fun a => Ahat t a j) i = Ahat t i j)
+    (hpivot : forall t : Nat, t < steps -> j.val = t ->
+      forall i : Fin m, t < i.val ->
+        matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) i = 0)
+    (hbudget : forall t : Nat, t < steps ->
+      active_row_growth_factor m * B t +
+          householderCompactComponentBudget fp m (v t) (beta t)
+            (fun a => Ahat t a j) r <=
+        B (t + 1))
+    (hexact : forall t : Nat, t < steps ->
+      |matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) r| <=
+        active_row_growth_factor m * B t) :
+    |Ahat steps r j| <= B steps := by
+  simpa [active_row_growth_factor] using
+    coxHigham_storedPanel_sequence_active_entry_bound_of_exact_active_stage_budgets
+      fp steps Ahat v beta B hm r j hinit hstep hactive hcompleted hpivot
+      hbudget hexact
+
+/-- Higham, Theorem 19.6 route dependency: one rounded stored-panel update
+bounded by signed-pivot exact stage fields plus the compact component budget.
+
+This is the local one-step floating-point counterpart to
+`exact_signed_pivot_panel_step_active_entry_bound_of_stage_bounds`.  The exact
+signed-pivot row/column bounds and the concrete compact-update budget remain
+visible, so the theorem is a dependency surface rather than a full row-wise
+stability closure. -/
+theorem stored_panel_step_active_entry_bound_of_signed_pivot_stage_bounds
+    (fp : FPModel) {m n : Nat} (p row : Fin m) (pivotCol j : Fin n)
+    (A : Fin m -> Fin n -> Real) (B : Real) (hm : gammaValid fp m)
+    (hactiveRow : p.val <= row.val)
+    (hB : 0 <= B)
+    (hnorm :
+      0 < householderTrailingColumnNorm2Sq (m := m) (n := n) p A pivotCol)
+    (hpivotMax :
+      forall l : Fin n, pivotCol.val <= l.val ->
+        householderTrailingColumnNorm2Sq (m := m) (n := n) p A l <=
+          householderTrailingColumnNorm2Sq (m := m) (n := n) p A pivotCol)
+    (hj : pivotCol.val <= j.val)
+    (hrowBound : forall l : Fin n, pivotCol.val <= l.val -> |A row l| <= B)
+    (hcolBound : forall i : Fin m, p.val <= i.val -> |A i j| <= B)
+    (hcompleted : j.val < pivotCol.val ->
+      forall i : Fin m, matMulVec m
+        (householder m
+          (signedPivotHouseholderVector m n p pivotCol A)
+          (signedPivotHouseholderBeta m n p pivotCol A))
+        (fun a => A a j) i = A i j)
+    (hpivot : j.val = pivotCol.val ->
+      forall i : Fin m, pivotCol.val < i.val ->
+        matMulVec m
+          (householder m
+            (signedPivotHouseholderVector m n p pivotCol A)
+            (signedPivotHouseholderBeta m n p pivotCol A))
+          (fun a => A a j) i = 0) :
+    |fl_householderStoredPanelStep fp m n pivotCol.val
+        (signedPivotHouseholderVector m n p pivotCol A)
+        (signedPivotHouseholderBeta m n p pivotCol A)
+        A row j| <=
+      active_row_growth_factor m * B +
+        householderCompactComponentBudget fp m
+          (signedPivotHouseholderVector m n p pivotCol A)
+          (signedPivotHouseholderBeta m n p pivotCol A)
+          (fun a => A a j) row := by
+  simpa [active_row_growth_factor, signedPivotHouseholderVector,
+    signedPivotHouseholderBeta] using
+    coxHigham_storedPanelStep_active_entry_bound_of_signed_pivot_stage_bounds
+      fp p row pivotCol j A B hm hactiveRow hB hnorm hpivotMax hj hrowBound
+      hcolBound hcompleted hpivot
+
 /-- Higham, Theorem 19.6 route dependency: row sorting plus accumulated
 computed/exact row error.
 
