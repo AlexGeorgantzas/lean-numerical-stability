@@ -50651,6 +50651,135 @@ theorem StoredQRDisplayedRowBudgetControl.of_signed_stage_uniformBudget_globalCo
       hinitBlock hglobalBudget hBudget_nonneg hBudget_mono hBudget_diag
       hpivotChoice
 
+/-- Horizon-budget active-max-pivot variant of the `κ∞`/dual-budget displayed
+    row-budget constructor.
+
+The finite global compact-step recurrence implies monotonicity on the QR
+horizon.  This theorem clamps the supplied stage budget after `n`, uses the
+finite stage-diagonal defect to obtain the displayed diagonal lower-bound
+field on active stages, and derives the packaged
+`StoredQRDisplayedRowBudgetControl` certificate without asking callers for a
+separate global monotonicity proof. -/
+theorem StoredQRDisplayedRowBudgetControl.of_signed_stage_uniformBudget_globalCompactBudget_activeMaxPivot_kappaInf_dualBudget_stageDiagDefect_horizonBudget
+    {m n : ℕ} (hmn : n ≤ m)
+    (fp : FPModel)
+    (A_hat : ℕ → Fin m → Fin n → ℝ)
+    (alpha κ K : ℕ → ℝ)
+    (stageBudget : ℕ → ℝ)
+    (hm : gammaValid fp m)
+    (hStepA : ∀ k (hk : k < n),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
+          (A_hat k))
+    (hAlphaDef : ∀ k (hk : k < n),
+      alpha k =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩)))
+          (A_hat k ⟨k, lt_of_lt_of_le hk hmn⟩ ⟨k, hk⟩))
+    (hdetLead : ∀ k (hk : k < n),
+      Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ) ≠ 0)
+    (hK : ∀ k (_hk : k < n), 0 < K k)
+    (hκ : ∀ k (hk : k < n),
+      kappaInf (k + 1) (Nat.succ_pos k)
+          (qrLeadingBlock (A_hat k)
+            (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)
+          (nonsingInv (k + 1)
+            (qrLeadingBlock (A_hat k)
+              (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)) ≤
+        κ k)
+    (hκbudget : ∀ k (hk : k < n),
+      ((k + 1 : ℕ) : ℝ) *
+          (κ k /
+            infNorm
+              (qrLeadingBlock (A_hat k)
+                (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)) ^ 2 ≤
+        K k)
+    (hbudgetDual : ∀ k (hk : k < n),
+      (m : ℝ) *
+          (householderCompactComponentBudget fp m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
+            (householderBetaSpec m
+              (householderTrailingActiveVector m
+                ⟨k, lt_of_lt_of_le hk hmn⟩
+                (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
+            (fun a => A_hat k a ⟨k, hk⟩)
+            ⟨k, lt_of_lt_of_le hk hmn⟩) ^ 2 <
+        1 / K k)
+    (hinitBlock : ∀ r : Fin m, ∀ l : Fin n,
+      |A_hat 0 r l| ≤ stageBudget 0)
+    (hglobalBudget : ∀ t (ht : t < n),
+      coxHighamActiveRowGrowthFactor m * stageBudget t +
+          storedQRSignedStageGlobalCompactBudget hmn fp A_hat alpha t ht ≤
+        stageBudget (t + 1))
+    (hBudget_nonneg : ∀ t : ℕ, 0 ≤ stageBudget t)
+    (hstageDiagDefect :
+      storedQRStageDiagLowerDefectBudget hmn A_hat stageBudget ≤ 0)
+    (hpivotChoice : ∀ t (ht : t < n),
+      ⟨t, ht⟩ =
+        householderActiveMaxPivotColumn
+          ⟨t, lt_of_lt_of_le ht hmn⟩ ⟨t, ht⟩ (A_hat t)) :
+    StoredQRDisplayedRowBudgetControl hmn A_hat
+      (fun k (_hk : k < n) (_i : Fin (k + 1)) =>
+        qrStageHorizonBudget n stageBudget k) := by
+  classical
+  let stageBudget' : ℕ → ℝ := qrStageHorizonBudget n stageBudget
+  have hBudget_mono_on_stages :
+      ∀ a b : ℕ, a ≤ b → b ≤ n → stageBudget a ≤ stageBudget b :=
+    storedQRSignedStageBudget_mono_on_stages_of_globalCompactBudget
+      hmn fp A_hat alpha stageBudget hm hglobalBudget hBudget_nonneg
+  have hBudget'_mono :
+      ∀ a b : ℕ, a ≤ b → stageBudget' a ≤ stageBudget' b := by
+    simpa [stageBudget'] using
+      qrStageHorizonBudget_mono_of_mono_on_stages
+        n stageBudget hBudget_mono_on_stages
+  have hBudget'_nonneg : ∀ t : ℕ, 0 ≤ stageBudget' t := by
+    simpa [stageBudget'] using
+      qrStageHorizonBudget_nonneg n stageBudget hBudget_nonneg
+  have hglobalBudget' : ∀ t (ht : t < n),
+      coxHighamActiveRowGrowthFactor m * stageBudget' t +
+          storedQRSignedStageGlobalCompactBudget hmn fp A_hat alpha t ht ≤
+        stageBudget' (t + 1) := by
+    intro t ht
+    have ht_le : t ≤ n := Nat.le_of_lt ht
+    have hsucc_le : t + 1 ≤ n := Nat.succ_le_iff.mpr ht
+    simpa [stageBudget', qrStageHorizonBudget, ht_le, hsucc_le] using
+      hglobalBudget t ht
+  have hinitBlock' : ∀ r : Fin m, ∀ l : Fin n,
+      |A_hat 0 r l| ≤ stageBudget' 0 := by
+    intro r l
+    have h0 : 0 ≤ n := Nat.zero_le n
+    simpa [stageBudget', qrStageHorizonBudget, h0] using hinitBlock r l
+  have hBudget_diag' : ∀ k (hk : k < n),
+      ∀ i : Fin (k + 1), i.val < k →
+        stageBudget' k ≤
+        |qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk i i| := by
+    intro k hk i hi
+    have hk_le : k ≤ n := Nat.le_of_lt hk
+    simpa [stageBudget', qrStageHorizonBudget, hk_le] using
+      storedQRStageBudget_le_diag_of_stageDiagLowerDefectBudget_nonpos
+        hmn A_hat stageBudget hstageDiagDefect k hk i hi
+  simpa [stageBudget'] using
+    StoredQRDisplayedRowBudgetControl.of_signed_stage_uniformBudget_globalCompactBudget_activeMaxPivot_kappaInf_dualBudget
+      hmn fp A_hat alpha κ K stageBudget' hm hStepA hAlphaDef
+      hdetLead hK hκ hκbudget hbudgetDual hinitBlock' hglobalBudget'
+      hBudget'_nonneg hBudget'_mono hBudget_diag' hpivotChoice
+
 /-- Stored trailing Householder QR source control from local diagonal dominance
     and the finite global compact-product budget.
 
