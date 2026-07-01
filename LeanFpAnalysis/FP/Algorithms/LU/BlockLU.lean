@@ -173,6 +173,7 @@
     Higham13Eq1322GlobalTableauSourceChain.one_of_blockMaxNorm_le_global_tableau,
     Higham13Eq1322GlobalTableauSourceChain.one_from_matrix_stage_history_tail_exact_kappa,
     Higham13Eq1322GlobalTableauSourceChain.succ_from_matrix_stage_history_active_tail_exact_kappa,
+    Higham13Eq1322GlobalTableauSourceChain.two_from_matrix_stage_history_active_tail_exact_kappa,
     Higham13Eq1322GlobalTableauSourceChain.succ_from_matrix_stage_history_first_split_exact_kappa,
     Higham13Eq1322GlobalTableauSourceChain.to_blockLUBudgetChain,
     Higham13Eq1322GlobalTableauSourceChain.to_blockLUBudgetChain_of_right_inverse,
@@ -445,6 +446,7 @@
     Higham13Eq1322GlobalTableauSourceChain.one_of_blockMaxNorm_le_global_tableau,
     Higham13Eq1322GlobalTableauSourceChain.one_from_matrix_stage_history_tail_exact_kappa,
     Higham13Eq1322GlobalTableauSourceChain.succ_from_matrix_stage_history_active_tail_exact_kappa,
+    Higham13Eq1322GlobalTableauSourceChain.two_from_matrix_stage_history_active_tail_exact_kappa,
     higham13_algorithm13_3_matrix_active_local_schur_bound_of_product_bound,
     higham13_algorithm13_3_matrix_active_local_schur_bound_with_dim_factor,
     higham13_algorithm13_3_matrix_active_column_dominance_of_local_schur_bound,
@@ -601,6 +603,7 @@
     Higham13Eq1322GlobalTableauSourceChain.one_of_blockMaxNorm_le_global_tableau,
     Higham13Eq1322GlobalTableauSourceChain.one_from_matrix_stage_history_tail_exact_kappa,
     Higham13Eq1322GlobalTableauSourceChain.succ_from_matrix_stage_history_active_tail_exact_kappa,
+    Higham13Eq1322GlobalTableauSourceChain.two_from_matrix_stage_history_active_tail_exact_kappa,
     higham13_eq13_22_blockLUBudgetChain_one_from_matrix_stage_history_exact_kappa,
     higham13_eq13_22_blockLUBudgetChain_succ_from_matrix_stage_history_first_split_exact_kappa,
     higham13_eq13_22_exists_blockLUFact_succ_product_from_tail_chain_matrix_stage_history_exact_kappa,
@@ -41267,6 +41270,90 @@ theorem
       (AinvGlob := AinvGlob) (hApos := hApos) (n := n)
       (Ablk := Ablk) (pivotInv := fun q : ℕ => pivotInv (k + q))
       hpivot0 hsn hA_le_G hSchur_le_G hAinv_entry hFirstRow hTail')
+
+/-- Higham, 2nd ed., Chapter 13, Problem 13.4 / equations (13.22)--(13.23):
+    two-block active recorded tail for the global tableau.
+
+    This composes the all-tail successor constructor with the terminal
+    one-block matrix-stage constructor.  It is the first closed recursive
+    instance of the fixed-ambient global-tableau chain from recorded active
+    tails: the terminal Schur tail no longer has to be supplied separately.
+    The ambient inverse-entry/source comparison remains explicit. -/
+theorem
+    Higham13Eq1322GlobalTableauSourceChain.two_from_matrix_stage_history_active_tail_exact_kappa
+    {M r N n k : ℕ} (hr : 0 < r) (hN : 0 < N) (hM : 0 < M)
+    (Aglob AinvGlob : Fin N → Fin N → ℝ)
+    (A : Fin M → Fin M → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hApos : 0 < maxEntryNorm hN Aglob)
+    (hkM : k < M)
+    (tailFull : Fin 2 → Fin M)
+    (tailSucc : Fin 1 → Fin M)
+    (h0 : tailFull 0 = ⟨k, hkM⟩)
+    (hsucc : ∀ i : Fin 1, tailFull (Fin.succ i) = tailSucc i)
+    (hactive : ∀ i : Fin 1, k + 1 ≤ (tailSucc i).val)
+    [Invertible
+      (blockMatrixFirstSplitA11
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))]
+    [Invertible
+      (blockMatrixFirstSplitA22
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull) -
+        blockMatrixFirstSplitA21
+            (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull) *
+          ⅟(blockMatrixFirstSplitA11
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull)) *
+            blockMatrixFirstSplitA12
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))]
+    [Invertible (Matrix.fromBlocks
+      (blockMatrixFirstSplitA11
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+      (blockMatrixFirstSplitA12
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+      (blockMatrixFirstSplitA21
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+      (blockMatrixFirstSplitA22
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull)))]
+    (hpivot :
+      pivotInv k =
+        ⅟(blockMatrixFirstSplitA11
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull)))
+    (hsn : ((r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hA_le_G :
+      maxEntryNorm hN Aglob ≤
+        maxEntryNorm hN
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix hN hM hr A pivotInv))
+    (hAinv_entry :
+      ∀ i j : Fin r ⊕ Fin (1 * r),
+        |(⅟(Matrix.fromBlocks
+            (blockMatrixFirstSplitA11
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+            (blockMatrixFirstSplitA12
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+            (blockMatrixFirstSplitA21
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+            (blockMatrixFirstSplitA22
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))) :
+          Matrix (Fin r ⊕ Fin (1 * r))
+            (Fin r ⊕ Fin (1 * r)) ℝ) i j| ≤
+          maxEntryNormRect hN hN AinvGlob) :
+    Higham13Eq1322GlobalTableauSourceChain hr hN Aglob
+      (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix hN hM hr A pivotInv)
+      AinvGlob hApos n 1
+      (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull)
+      (fun q => pivotInv (k + q)) := by
+  classical
+  refine
+    Higham13Eq1322GlobalTableauSourceChain.succ_from_matrix_stage_history_active_tail_exact_kappa
+      (M := M) (r := r) (N := N) (m := 0) (n := n) (k := k)
+      hr hN hM Aglob AinvGlob A pivotInv hApos hkM
+      tailFull tailSucc h0 hsucc hactive hpivot ?_ hA_le_G hAinv_entry ?_
+  · simpa using hsn
+  · exact
+      Higham13Eq1322GlobalTableauSourceChain.one_from_matrix_stage_history_tail_exact_kappa
+        (M := M) (r := r) (N := N) (n := n) hr hN hM
+        Aglob AinvGlob A pivotInv
+        (fun q => pivotInv (k + (q + 1))) hApos (k + 1)
+        (Nat.succ_le_of_lt hkM) tailSucc
 
 /-- Higham, 2nd ed., Chapter 13, Problem 13.4 / equations (13.22)--(13.23):
     first-split constructor for the fixed-ambient global-tableau source chain

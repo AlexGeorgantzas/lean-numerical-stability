@@ -20,6 +20,20 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-07-01 two-block active-tail global-tableau checkpoint:
+  added
+  `Higham13Eq1322GlobalTableauSourceChain.two_from_matrix_stage_history_active_tail_exact_kappa`.
+  This composes the active-tail successor constructor with the terminal
+  one-block matrix-stage constructor, so a recorded active tail of length two
+  now builds a complete fixed-ambient global-tableau source chain without a
+  separate terminal `hTail` hypothesis.  The theorem still leaves the ambient
+  inverse-entry/source comparison explicit; all-tail inverse-entry comparison,
+  Eq.13.23 `rho <= 2`/BDD product-update data, and Theorem 13.6 estimates
+  remain open.  Verification passed with direct `lake env lean -s 65536
+  LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`, focused `lake build
+  LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet lookup with empty stderr and
+  the new theorem present, `git diff --check`, Lean-only placeholder/conflict
+  scans, and focused `#print axioms` reporting only standard Mathlib axioms.
 - 2026-06-30 active-tail global-tableau successor checkpoint:
   added
   `Higham13Eq1322GlobalTableauSourceChain.succ_from_matrix_stage_history_active_tail_exact_kappa`.
