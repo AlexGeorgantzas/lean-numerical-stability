@@ -908,6 +908,77 @@ theorem higham10_7_failure_no_factorization_spectral (n : ℕ)
     rw [hsum, mul_one]
     exact hlam_le
 
+/-- **Minimum eigenvalue** of a symmetric real matrix, through the
+repository's `finiteHermitianEigenvalues` (Higham §10.1, the `λ_min`
+of Theorem 10.7). -/
+noncomputable def finiteMinEigenvalue {n : ℕ} (hn : 0 < n)
+    (M : Fin n → Fin n → ℝ) (hM : IsSymmetricFiniteMatrix M) : ℝ :=
+  Finset.univ.inf' (Finset.univ_nonempty_iff.mpr
+    (Fin.pos_iff_nonempty.mp hn)) (finiteHermitianEigenvalues M hM)
+
+/-- The minimum eigenvalue is a lower bound for every eigenvalue. -/
+theorem finiteMinEigenvalue_le {n : ℕ} (hn : 0 < n)
+    (M : Fin n → Fin n → ℝ) (hM : IsSymmetricFiniteMatrix M) (a : Fin n) :
+    finiteMinEigenvalue hn M hM ≤ finiteHermitianEigenvalues M hM a :=
+  Finset.inf'_le _ (Finset.mem_univ a)
+
+/-- The minimum eigenvalue is attained. -/
+theorem exists_finiteMinEigenvalue_eq {n : ℕ} (hn : 0 < n)
+    (M : Fin n → Fin n → ℝ) (hM : IsSymmetricFiniteMatrix M) :
+    ∃ a : Fin n, finiteHermitianEigenvalues M hM a =
+      finiteMinEigenvalue hn M hM := by
+  obtain ⟨a, _, ha⟩ := Finset.exists_mem_eq_inf' (Finset.univ_nonempty_iff.mpr
+    (Fin.pos_iff_nonempty.mp hn)) (finiteHermitianEigenvalues M hM)
+  exact ⟨a, ha.symm⟩
+
+/-- **Rayleigh lower bound from `λ_min`** (Higham §10.1, the spectral
+inequality behind Theorem 10.7): `λ_min(M) ‖x‖₂² ≤ xᵀMx`. -/
+theorem finiteMinEigenvalue_rayleigh {n : ℕ} (hn : 0 < n)
+    (M : Fin n → Fin n → ℝ) (hM : IsSymmetricFiniteMatrix M)
+    (x : Fin n → ℝ) :
+    finiteMinEigenvalue hn M hM * ∑ i : Fin n, x i ^ 2 ≤
+      ∑ i : Fin n, ∑ j : Fin n, x i * M i j * x j := by
+  have h := finiteLoewnerLe_smul_id_of_le_finiteHermitianEigenvalues
+    M hM (finiteMinEigenvalue_le hn M hM) x
+  rw [finiteQuadraticForm_smul_finiteIdMatrix,
+    finiteQuadraticForm_eq_sum_sum] at h
+  simpa [finiteVecNorm2Sq] using h
+
+/-- **Theorem 10.7 success threshold, `λ_min` form** (Higham §10.1): if
+`λ_min(H) > t`, the perturbed scaled matrix `D (H + E) D` has a genuine
+Cholesky factorization. -/
+theorem higham10_7_success_factorization_min_eig (n : ℕ) (hn : 0 < n)
+    (D : Fin n → ℝ) (H E : Fin n → Fin n → ℝ) (t : ℝ)
+    (hD_pos : ∀ i, 0 < D i)
+    (hH_sym : IsSymmetricFiniteMatrix H)
+    (hE_sym : ∀ i j, E i j = E j i)
+    (hE : ∀ x : Fin n → ℝ,
+        |∑ i : Fin n, ∑ j : Fin n, x i * E i j * x j| ≤
+          t * ∑ i : Fin n, x i ^ 2)
+    (hlt : t < finiteMinEigenvalue hn H hH_sym) :
+    ∃ R : Fin n → Fin n → ℝ,
+      CholeskyFactSpec n (fun i j => D i * (H i j + E i j) * D j) R :=
+  higham10_7_success_factorization_spectral n D H E
+    (finiteMinEigenvalue hn H hH_sym) t hD_pos hH_sym hE_sym
+    (finiteMinEigenvalue_le hn H hH_sym) hE hlt
+
+/-- **Theorem 10.7 failure threshold, `λ_min` form** (Higham §10.1): if
+`λ_min(H) < −t`, the perturbed scaled matrix `H + E` admits no Cholesky
+factorization. -/
+theorem higham10_7_failure_no_factorization_min_eig (n : ℕ) (hn : 0 < n)
+    (H E : Fin n → Fin n → ℝ) (t : ℝ)
+    (hH_sym : IsSymmetricFiniteMatrix H)
+    (hE : ∀ x : Fin n → ℝ,
+        |∑ i : Fin n, ∑ j : Fin n, x i * E i j * x j| ≤
+          t * ∑ i : Fin n, x i ^ 2)
+    (hlt : finiteMinEigenvalue hn H hH_sym < -t) :
+    ¬ ∃ R : Fin n → Fin n → ℝ,
+        CholeskyFactSpec n (fun i j => H i j + E i j) R := by
+  obtain ⟨a, ha⟩ := exists_finiteMinEigenvalue_eq hn H hH_sym
+  exact higham10_7_failure_no_factorization_spectral n H E
+    (finiteMinEigenvalue hn H hH_sym) t hH_sym a (le_of_eq ha) hE hlt
+
+
 /-- **Theorem 10.7 foundation** (Higham §10.1, proof of Theorem 10.7): the
 all-ones rank-one matrix `e eᵀ` has operator 2-norm at most `n`, in the
 repository's vector-action certificate form `‖(e eᵀ)x‖₂ ≤ n ‖x‖₂`.  This is

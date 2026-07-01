@@ -3529,6 +3529,12 @@ Source-facing Chapter 10 wrappers:
 - `higham10_7_normwise_backward_error`
 - `higham10_7_success_factorization_spectral`
 - `higham10_7_failure_no_factorization_spectral`
+- `finiteMinEigenvalue`
+- `finiteMinEigenvalue_le`
+- `exists_finiteMinEigenvalue_eq`
+- `finiteMinEigenvalue_rayleigh`
+- `higham10_7_success_factorization_min_eig`
+- `higham10_7_failure_no_factorization_min_eig`
 - `quadForm_add_pos_of_perturbation`
 - `quadForm_add_neg_of_perturbation`
 - `isSymPosDef_diagCongr`
