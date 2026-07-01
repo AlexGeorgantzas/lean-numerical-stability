@@ -7272,6 +7272,52 @@ theorem higham21_lemma21_2_rowwise_backward_error_bound_of_source_operator_envel
       higham21_rectRowNorm2_le_of_entrywise_row_relative_bound
         A DeltaA2 heta hDeltaA2Entry i)
 
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2 and Section 21.3:
+    source-shaped row-wise backward-error handoff specialized to the relative
+    componentwise data majorant `E = |A|`.  The componentwise perturbation
+    bounds then supply the row-wise hypotheses directly. -/
+theorem higham21_lemma21_2_rowwise_backward_error_bound_of_abs_data_source_operator_envelopes_exact_size_eps_combined_factor_self_radius_global_bounds
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (x_hat : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (eps tauA omega e : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x_hat = b)
+    (hDataEpsNonneg : 0 ≤ eps)
+    (hAbsAOp : rectOpNorm2Le (fun i j => |A i j|) e)
+    (hCombinedSourceRadius :
+      2 * (m : ℝ) * (n : ℝ) * (tauA + eps * e) * omega *
+          max (eps * e)
+            (2 * (m : ℝ) ^ 2 * (tauA + eps * e) * omega) ≤
+        (1 / 2 : ℝ))
+    (hGramLeftInv : IsLeftInverse m (rectGram A) AAT_inv)
+    (hDeltaA1Component : ∀ i k, |DeltaA1 i k| ≤ eps * |A i k|)
+    (hDeltaA2Component : ∀ i k, |DeltaA2 i k| ≤ eps * |A i k|)
+    (hxTranspose : x_hat ≠ 0 →
+      x_hat =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hCombinedSmall :
+      3 *
+          max (eps * e)
+            (2 * (m : ℝ) ^ 2 * (tauA + eps * e) * omega) <
+        1)
+    (hAATInv_le : infNorm AAT_inv ≤ omega)
+    (hAOp : rectOpNorm2Le A tauA) :
+    UndetRowwiseBackwardErrorBounded m n A b x_hat
+      (Real.sqrt 2 * eps) :=
+  higham21_lemma21_2_rowwise_backward_error_bound_of_source_operator_envelopes_exact_size_eps_combined_factor_self_radius_global_entrywise_bounds
+    hm A x_hat DeltaA1 DeltaA2 b y AAT_inv (fun i j => |A i j|)
+    eps tauA omega e eps hDeltaA1 hDataEpsNonneg hAbsAOp
+    hCombinedSourceRadius hGramLeftInv
+    (fun i k => abs_nonneg (A i k))
+    hDeltaA1Component hDeltaA2Component hxTranspose hCombinedSmall
+    hAATInv_le hAOp hDataEpsNonneg hDeltaA1Component hDeltaA2Component
+
 -- ============================================================
 -- §21.2  Theorem 21.3: normwise backward-error model
 -- ============================================================
