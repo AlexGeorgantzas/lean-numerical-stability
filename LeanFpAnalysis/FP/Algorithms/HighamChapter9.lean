@@ -59774,6 +59774,26 @@ theorem higham9_tracePivotingGrowthValues_le_pow_two
       simpa [higham9_tracePivotingGrowthValues] using
         higham9_16_rookPivotingUTraceGrowthValues_le_pow_two (n := n) hr
 
+/-- **Growth-factor source family / equation (9.14)**, generic trace-family
+value bound at Wilkinson's displayed RHS in dimensions one and two. -/
+theorem higham9_tracePivotingGrowthValues_complete_le_wilkinsonBound_of_le_two
+    {n : ℕ} (hn : 0 < n) (hle : n ≤ 2) {r : ℝ}
+    (hr : r ∈ higham9_tracePivotingGrowthValues
+        higham9_TracePivotingGrowthKind.completePivoting n) :
+    r ≤ higham9_14_completePivotWilkinsonBound n :=
+  higham9_14_completePivotingUTraceGrowthValues_le_wilkinsonBound_of_le_two
+    hn hle (by simpa [higham9_tracePivotingGrowthValues] using hr)
+
+/-- **Growth-factor source family / equation (9.16)**, generic trace-family
+value bound at Foster's displayed RHS in dimensions one and two. -/
+theorem higham9_tracePivotingGrowthValues_rook_le_fosterBound_of_le_two
+    {n : ℕ} (hn : 0 < n) (hle : n ≤ 2) {r : ℝ}
+    (hr : r ∈ higham9_tracePivotingGrowthValues
+        higham9_TracePivotingGrowthKind.rookPivoting n) :
+    r ≤ higham9_16_rookPivotFosterBound n :=
+  higham9_16_rookPivotingUTraceGrowthValues_le_fosterBound_of_le_two
+    hn hle (by simpa [higham9_tracePivotingGrowthValues] using hr)
+
 /-- **Growth-factor source family**, the indexed recursive pivoting trace
 growth families are bounded above by the elementary `2^(n-1)` bound. -/
 theorem higham9_tracePivotingGrowthValues_bddAbove
