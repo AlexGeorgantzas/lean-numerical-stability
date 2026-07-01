@@ -67129,6 +67129,130 @@ theorem higham9_8_checkerboard_totalNonnegative_LUFactSpec_abs_product_eq_abs_of
         hTNJ (Nat.le_of_lt hk) hdetJ (hineqJ k hk hk0)
   · exact hLU
 
+/-- **Problem 9.8 / Theorem 9.12**, checkerboard total-nonnegative
+exact-certificate growth consequence: every exact no-pivot LU certificate of
+`A` has final max-entry growth at most one once the checkerboard route supplies
+`|Lhat||Uhat| = |A|`. -/
+theorem higham9_12_checkerboard_totalNonnegative_LUFactSpec_growthFactorEntry_le_one_of_principalBlock_inequalities
+    {n : ℕ} (hn : 0 < n)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn A)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate A))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate A) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hineqJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        Matrix.det
+            (Matrix.of (higham9_8_checkerboardConjugate A) :
+              Matrix (Fin n) (Fin n) ℝ) ≤
+          Matrix.det
+              (higham9_2_leadingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate A) :
+                  Matrix (Fin n) (Fin n) ℝ) k) *
+            Matrix.det
+              (higham9_6_trailingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate A) :
+                  Matrix (Fin n) (Fin n) ℝ) k))
+    (hLU : LUFactSpec n A L_hat U_hat) :
+    growthFactorEntry hn A U_hat hAmax ≤ 1 := by
+  have hOpt :=
+    higham9_8_checkerboard_totalNonnegative_LUFactSpec_abs_product_eq_abs_of_principalBlock_inequalities
+      A L_hat U_hat hTNJ hdetJ hineqJ hLU
+  exact
+    higham9_growthFactorEntry_le_one_of_absLU_le_absA
+      hn A L_hat U_hat hAmax
+      (fun i => by simp [hLU.L_diag i])
+      (fun i j => le_of_eq (hOpt i j))
+
+/-- **Problem 9.8 / Theorem 9.12**, source-facing checkerboard growth
+package: the checkerboard total-nonnegative route supplies exact factors for
+`A` with `rho <= 1` under a caller-provided positive max-entry denominator. -/
+theorem higham9_12_checkerboard_totalNonnegative_exists_LUFactSpec_growthFactorEntry_le_one_of_principalBlock_inequalities
+    {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate A))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate A) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hineqJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        Matrix.det
+            (Matrix.of (higham9_8_checkerboardConjugate A) :
+              Matrix (Fin n) (Fin n) ℝ) ≤
+          Matrix.det
+              (higham9_2_leadingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate A) :
+                  Matrix (Fin n) (Fin n) ℝ) k) *
+            Matrix.det
+              (higham9_6_trailingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate A) :
+                  Matrix (Fin n) (Fin n) ℝ) k))
+    (hAmax : 0 < maxEntryNorm hn A) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n A L_hat U_hat ∧
+        (∀ i j : Fin n,
+          ∑ k : Fin n, |L_hat i k| * |U_hat k j| = |A i j|) ∧
+        growthFactorEntry hn A U_hat hAmax ≤ 1 := by
+  obtain ⟨L, U, hLU, hOpt⟩ :=
+    higham9_8_abs_lu_product_eq_abs_of_checkerboard_principalBlock_inequalities
+      A hTNJ hdetJ hineqJ
+  let L_hat : Fin n → Fin n → ℝ := higham9_8_checkerboardConjugate L
+  let U_hat : Fin n → Fin n → ℝ := higham9_8_checkerboardConjugate U
+  have hLU_hat : LUFactSpec n A L_hat U_hat := hLU
+  have hOpt_hat :
+      ∀ i j : Fin n,
+        ∑ k : Fin n, |L_hat i k| * |U_hat k j| = |A i j| := hOpt
+  refine ⟨L_hat, U_hat, hLU_hat, hOpt_hat, ?_⟩
+  exact
+    higham9_growthFactorEntry_le_one_of_absLU_le_absA
+      hn A L_hat U_hat hAmax
+      (fun i => by simp [hLU_hat.L_diag i])
+      (fun i j => le_of_eq (hOpt_hat i j))
+
+/-- **Problem 9.8 / Theorem 9.12**, source-facing checkerboard growth
+package with the positive max-entry denominator derived from `det(J A J) > 0`
+and determinant preservation under checkerboard conjugation. -/
+theorem higham9_12_checkerboard_totalNonnegative_exists_LUFactSpec_growthFactorEntry_le_one_exists_hAmax
+    {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate A))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate A) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hineqJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        Matrix.det
+            (Matrix.of (higham9_8_checkerboardConjugate A) :
+              Matrix (Fin n) (Fin n) ℝ) ≤
+          Matrix.det
+              (higham9_2_leadingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate A) :
+                  Matrix (Fin n) (Fin n) ℝ) k) *
+            Matrix.det
+              (higham9_6_trailingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate A) :
+                  Matrix (Fin n) (Fin n) ℝ) k)) :
+    ∃ hAmax : 0 < maxEntryNorm hn A,
+      ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+        LUFactSpec n A L_hat U_hat ∧
+          (∀ i j : Fin n,
+            ∑ k : Fin n, |L_hat i k| * |U_hat k j| = |A i j|) ∧
+          growthFactorEntry hn A U_hat hAmax ≤ 1 := by
+  have hdetA_pos :
+      0 < Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) := by
+    simpa [higham9_8_checkerboardConjugate_det_eq A] using hdetJ
+  have hAmax : 0 < maxEntryNorm hn A :=
+    maxEntryNorm_pos_of_det_ne_zero hn A (ne_of_gt hdetA_pos)
+  exact
+    ⟨hAmax,
+      higham9_12_checkerboard_totalNonnegative_exists_LUFactSpec_growthFactorEntry_le_one_of_principalBlock_inequalities
+        hn A hTNJ hdetJ hineqJ hAmax⟩
+
 /-- **Problem 9.8 / Theorem 9.14**, checkerboard total-nonnegative
 rounded-stage source `f(u)` bound from an exact supplied stage certificate. -/
 theorem higham9_14_checkerboard_totalNonnegative_source_f_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma_le
