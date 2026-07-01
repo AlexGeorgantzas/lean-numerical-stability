@@ -20,6 +20,17 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-07-01 Problem 13.4 derived-tail active successor handoff:
+  added
+  `Higham13Eq1322GlobalTableauSourceChain.succ_from_matrix_stage_history_active_tail_with_derived_tail_inverse_entry_exact_kappa`.
+  It derives the recursive Schur-tail inverse-entry certificate from the
+  parent active-tail inverse-entry certificate via
+  `higham13_problem13_4_firstSplit_schurTail_inverse_entry_bound_from_block_inverse`,
+  then invokes the recorded active-tail successor for any tail builder that
+  only needs that derived certificate.  This is reusable all-tail
+  infrastructure; the actual all-tail constructor, tail invertibility
+  propagation, Eq.13.23 `rho <= 2`/BDD data, and Theorem 13.6 cited estimates
+  remain open.
 - 2026-07-01 Problem 13.4 three-block active-tail product witnesses: added
   `higham13_eq13_22_exists_blockLUFact_three_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa`
   and
