@@ -246,6 +246,7 @@ Latest dependency update: the explicit normalized-loop surface now has named zer
 - `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`: no matches after adding the tail-normalized endpoint wrappers.
 - `git diff --check -- LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean docs/source_coverage/higham_ch19.md`: passed after the tail-normalized endpoint wrappers and report update, with only the usual CRLF normalization warnings for `Higham19.lean` and this report.
 - `#print axioms` for `storedSignedSequenceTwiceTrailingFinalClosed_of_tailNormalizedLoopRecords`, `storedSignedSequenceTwiceTrailingFinalClosed_of_tailNormalizedLoopRawFacts`, `storedSignedSequence_final_panel_eq_qrPanel_R_of_reflector_self_dot_of_tailNormalizedLoopRecords`, and `storedSignedSequence_final_panel_eq_qrPanel_R_of_reflector_self_dot_of_tailNormalizedLoopRawFacts`: only `propext`, `Classical.choice`, and `Quot.sound`.
+- Post-merge rechecks after integrating `origin/main` at `0c8f6ca5` via merge `29ae09f8`: `lake env lean LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`, `lake build LeanFpAnalysis.FP.Algorithms.QR.Higham19`, placeholder scan, pushed-delta whitespace check, and `chapter_splitting/` guards passed; only the pre-existing `GivensSpec` unused-simp warnings were reported.
 - `lake env lean LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`: passed after adding the exact dot/mul and exact add/mul handoff wrappers.
 - `lake build LeanFpAnalysis.FP.Algorithms.QR.Higham19`: passed after adding the exact-operation handoff wrappers and report update; only pre-existing `GivensSpec` unused-simp warnings were reported.
 - `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`: no matches after adding the exact-operation handoff wrappers.
@@ -591,7 +592,7 @@ Latest dependency update: the explicit normalized-loop surface now has named zer
 ## Git and Local-Only Notes
 
 - Work is on shared local `main`, synchronized with `origin/main` before theorem design and fetched/merged again before push.
-- Current split-prefixed proof milestone commit: `bd94fc8a` (`Split 3B: prove Ch19 exact add-mul compatibility bridge`).
-- Latest `origin/main` integrated before push: `0ce8acbb`, via merge commit `cde32316`.
+- Current split-prefixed proof milestone commit: `e6314a26` (`Split 3B: add Ch19 tail-normalized endpoint bridges`).
+- Latest `origin/main` integrated before push: `0c8f6ca5`, via merge commit `29ae09f8`.
 - `chapter_splitting/` is local-only context: it is ignored by `.gitignore`, has no tracked files, is absent from the refreshed `origin/main`, and must not be pushed.
 - Remaining local untracked file at this point: `.codex/config.toml`.
