@@ -16714,6 +16714,14 @@ theorem higham9_11_bohteBound_pentadiagonal_formula :
   norm_num [higham9_11_bohteBound]
   rfl
 
+/-- **Theorem 9.11**, arithmetic check for the formal Bohte expression at
+`p = 3`: the printed scalar formula evaluates to `28`.  This records only the
+formula arithmetic, not a banded-growth theorem or attainability claim. -/
+theorem higham9_11_bohteBound_bandwidth_three_formula :
+    higham9_11_bohteBound 3 = 28 := by
+  norm_num [higham9_11_bohteBound]
+  rfl
+
 /-- **Theorem 9.11**, arithmetic check for the source's `n = 9`, `p = 4`
 Bohte example: the printed scalar formula evaluates to `116`.  This records
 only the scalar formula value, not the example's pivot trace or attainability
@@ -17147,6 +17155,33 @@ theorem higham9_11_pentadiagonal_bohte_solve_tight (fp : FPModel) (n : ℕ)
       hL_diag hU_diag hLU hn hn3
       (fun i j => by
         simpa [higham9_11_bohteBound_pentadiagonal_formula] using hGrowth i j)
+
+/-- **Theorem 9.11**, bandwidth-three Bohte solve bound.
+
+This specializes the printed Bohte expression to the concrete scalar `28`.
+The external banded GEPP growth hypothesis remains explicit. -/
+theorem higham9_11_bandwidth_three_bohte_solve_tight (fp : FPModel) (n : ℕ)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hL_diag : ∀ i : Fin n, L_hat i i ≠ 0)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hLU : LUBackwardError n A L_hat U_hat (gamma fp n))
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hGrowth : ∀ i j : Fin n,
+      ∑ k : Fin n, |L_hat i k| * |U_hat k j| ≤
+        28 * |A i j|) :
+    let y_hat := fl_forwardSub fp n L_hat b
+    let x_hat := fl_backSub fp n U_hat y_hat
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤
+        28 * gamma fp (3 * n) * |A i j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  simpa [higham9_11_bohteBound_bandwidth_three_formula] using
+    higham9_11_bohte_banded_solve_tight fp n 3 A L_hat U_hat b
+      hL_diag hU_diag hLU hn hn3
+      (fun i j => by
+        simpa [higham9_11_bohteBound_bandwidth_three_formula] using hGrowth i j)
 
 /-- **Theorem 9.11**, bandwidth-four Bohte solve bound for the source's
 printed `p = 4`, `n = 9` scalar example.
