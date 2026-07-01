@@ -262,4 +262,231 @@ theorem fl_sub_fold_local_factors (fp : FPModel) (m : ℕ)
         rw [hsum]
         ring
 
+-- ============================================================
+-- §10.1  Sharp solve forms for the Algorithm 10.2 recurrences
+--        (Higham Theorem 10.3 per-entry equations, Stewart counters)
+-- ============================================================
+
+private lemma one_add_pos_of_abs_le_u {fp : FPModel} {δ : ℝ}
+    (h : |δ| ≤ fp.u) (hu : fp.u < 1) : (0 : ℝ) < 1 + δ := by
+  have := abs_le.mp h
+  linarith [this.1]
+
+private lemma u_lt_one_of_gammaValid_succ {fp : FPModel} {m : ℕ}
+    (hm1 : gammaValid fp (m + 1)) : fp.u < 1 := by
+  unfold gammaValid at hm1
+  push_cast at hm1
+  nlinarith [mul_nonneg (Nat.cast_nonneg m : (0:ℝ) ≤ (m:ℝ)) fp.u_nonneg]
+
+private lemma counter_one (fp : FPModel) {δ : ℝ} (hδ : |δ| ≤ fp.u) :
+    relErrorCounter fp 1 (1 + δ) :=
+  ⟨fun _ => δ, fun _ => false, fun _ => hδ, by simp⟩
+
+private lemma counter_plain_prod (fp : FPModel) (m : ℕ) (δ : Fin m → ℝ)
+    (hδ : ∀ s, |δ s| ≤ fp.u) :
+    relErrorCounter fp m (∏ s : Fin m, (1 + δ s)) :=
+  ⟨δ, fun _ => false, hδ, by simp⟩
+
+/-- Prefix product of subtraction factors strictly before insertion step `k`.
+    Complements `sumSuffixErrorProduct`: their product is the full factor
+    product, which is the cancellation behind the sharp Theorem 10.3
+    constant. -/
+private lemma suffix_mul_prefix_eq_prod (m : ℕ) (δ : Fin m → ℝ) (k : Fin m) :
+    sumSuffixErrorProduct m δ k *
+      (∏ j : Fin m, if j.val < k.val then 1 + δ j else 1) =
+    ∏ s : Fin m, (1 + δ s) := by
+  rw [sumSuffixErrorProduct_eq_prod_if, ← Finset.prod_mul_distrib]
+  apply Finset.prod_congr rfl
+  intro j _
+  rcases Nat.lt_or_ge j.val k.val with h | h
+  · rw [if_neg (Nat.not_le.mpr h), if_pos h, one_mul]
+  · rw [if_pos h, if_neg (Nat.not_lt.mpr h), mul_one]
+
+/-- The Cholesky per-term local factor `(1 + μ)/(prefix product)` is a
+    Stewart counter of `m + 1` factors, hence within `γ_{m+1}` of `1`. -/
+private lemma chol_term_factor_bound (fp : FPModel) (m : ℕ)
+    (δ : Fin m → ℝ) (μk : ℝ) (k : Fin m)
+    (hδ : ∀ s, |δ s| ≤ fp.u) (hμ : |μk| ≤ fp.u)
+    (hm1 : gammaValid fp (m + 1)) :
+    |(1 + μk) / (∏ j : Fin m, if j.val < k.val then 1 + δ j else 1) - 1| ≤
+      gamma fp (m + 1) := by
+  have hu : fp.u < 1 := u_lt_one_of_gammaValid_succ hm1
+  have hQcnt : relErrorCounter fp m
+      (∏ j : Fin m, if j.val < k.val then 1 + δ j else 1) := by
+    refine ⟨fun j => if j.val < k.val then δ j else 0, fun _ => false, ?_, ?_⟩
+    · intro j
+      by_cases h : j.val < k.val
+      · simpa [h] using hδ j
+      · simpa [h] using fp.u_nonneg
+    · simp only [Bool.false_eq_true, if_false]
+      apply Finset.prod_congr rfl
+      intro j _
+      by_cases h : j.val < k.val <;> simp [h]
+  have hcnt : relErrorCounter fp (1 + m)
+      ((1 + μk) * (1 / ∏ j : Fin m, if j.val < k.val then 1 + δ j else 1)) :=
+    relErrorCounter_mul fp 1 m _ _ (counter_one fp hμ)
+      (relErrorCounter_inv fp m _ hQcnt hu)
+  rw [Nat.add_comm 1 m] at hcnt
+  have := relErrorCounter_abs_sub_one_le_gamma fp (m + 1) _ hcnt hm1
+  rwa [mul_one_div] at this
+
+/-- **Algorithm 10.2 off-diagonal solve form** (Higham §10.1, Theorem 10.3
+    off-diagonal equation, sharp constants).
+
+    The computed entry `r̂ = fl((c − ∑ x k y k)/d)` satisfies
+    `d r̂ φ₀ = c − ∑ x k y k φ k` where every local factor is within
+    `γ_{m+1}` of `1`.  The sharp constant comes from the factor-level fold
+    expansion: each term's suffix factors cancel against the accumulator
+    product, leaving at most `m + 1` signed factors per term. -/
+theorem fl_chol_offdiag_solve_form (fp : FPModel) (m : ℕ)
+    (x y : Fin m → ℝ) (c d : ℝ) (hd : d ≠ 0)
+    (hm1 : gammaValid fp (m + 1)) :
+    ∃ (φ₀ : ℝ) (φ : Fin m → ℝ),
+      |φ₀ - 1| ≤ gamma fp (m + 1) ∧
+      (∀ k, |φ k - 1| ≤ gamma fp (m + 1)) ∧
+      d * fp.fl_div (fl_cholSubFold fp m x y c) d * φ₀ =
+        c - ∑ k : Fin m, x k * y k * φ k := by
+  have hu : fp.u < 1 := u_lt_one_of_gammaValid_succ hm1
+  obtain ⟨δ, hδ, hfold⟩ := fl_sub_fold_local_factors fp m
+    (fun k => fp.fl_mul (x k) (y k)) c
+  choose μ hμ hμeq using fun k : Fin m => fp.model_mul (x k) (y k)
+  obtain ⟨ρ, hρ, hdiv⟩ := fp.model_div (fl_cholSubFold fp m x y c) d hd
+  have hfac : ∀ s : Fin m, (0:ℝ) < 1 + δ s :=
+    fun s => one_add_pos_of_abs_le_u (hδ s) hu
+  have hρpos : (0:ℝ) < 1 + ρ := one_add_pos_of_abs_le_u hρ hu
+  have hP : (0:ℝ) < ∏ s : Fin m, (1 + δ s) :=
+    Finset.prod_pos fun s _ => hfac s
+  have hQ : ∀ k : Fin m,
+      (0:ℝ) < ∏ j : Fin m, (if j.val < k.val then 1 + δ j else 1) := by
+    intro k
+    apply Finset.prod_pos
+    intro j _
+    by_cases h : j.val < k.val <;> simp [h, hfac j]
+  -- φ₀ bound
+  have hφ₀cnt : relErrorCounter fp (m + 1)
+      (1 / ((∏ s : Fin m, (1 + δ s)) * (1 + ρ))) :=
+    relErrorCounter_inv fp (m + 1) _
+      (relErrorCounter_mul fp m 1 _ _
+        (counter_plain_prod fp m δ hδ) (counter_one fp hρ)) hu
+  have hφ₀ : |1 / ((∏ s : Fin m, (1 + δ s)) * (1 + ρ)) - 1| ≤
+      gamma fp (m + 1) :=
+    relErrorCounter_abs_sub_one_le_gamma fp (m + 1) _ hφ₀cnt hm1
+  refine ⟨1 / ((∏ s : Fin m, (1 + δ s)) * (1 + ρ)),
+    fun k => (1 + μ k) /
+      (∏ j : Fin m, if j.val < k.val then 1 + δ j else 1),
+    hφ₀, fun k => chol_term_factor_bound fp m δ (μ k) k hδ (hμ k) hm1, ?_⟩
+  have hfold' : fl_cholSubFold fp m x y c =
+      c * ∏ s : Fin m, (1 + δ s) -
+        ∑ k : Fin m, x k * y k * (1 + μ k) * sumSuffixErrorProduct m δ k := by
+    have h0 : fl_cholSubFold fp m x y c =
+        c * ∏ s : Fin m, (1 + δ s) -
+          ∑ k : Fin m, fp.fl_mul (x k) (y k) * sumSuffixErrorProduct m δ k :=
+      hfold
+    rw [h0]
+    congr 1
+    apply Finset.sum_congr rfl
+    intro k _
+    rw [hμeq k]
+  rw [hdiv]
+  have hLHS : d * (fl_cholSubFold fp m x y c / d * (1 + ρ)) *
+      (1 / ((∏ s : Fin m, (1 + δ s)) * (1 + ρ))) =
+      fl_cholSubFold fp m x y c / (∏ s : Fin m, (1 + δ s)) := by
+    field_simp
+  rw [hLHS, hfold', sub_div]
+  congr 1
+  · field_simp
+  · rw [Finset.sum_div]
+    apply Finset.sum_congr rfl
+    intro k _
+    have hSP := suffix_mul_prefix_eq_prod m δ k
+    show x k * y k * (1 + μ k) * sumSuffixErrorProduct m δ k /
+        (∏ s : Fin m, (1 + δ s)) =
+      x k * y k *
+        ((1 + μ k) / ∏ j : Fin m, if j.val < k.val then 1 + δ j else 1)
+    rw [← mul_div_assoc, div_eq_div_iff hP.ne' (hQ k).ne']
+    linear_combination (x k * y k * (1 + μ k)) * hSP
+
+/-- **Algorithm 10.2 diagonal solve form** (Higham §10.1, Theorem 10.3
+    diagonal equation, sharp constants).
+
+    When the rounded partial pivot is nonnegative, the computed diagonal
+    entry `r̂ = fl(√(c − ∑ x k²))` satisfies `r̂² φ₀ = c − ∑ x k² φ k` with
+    `|φ₀ − 1| ≤ γ_{m+2}` (the two square-root factors join the accumulator
+    product) and `|φ k − 1| ≤ γ_{m+1}`. -/
+theorem fl_chol_diag_solve_form (fp : FPModel) (m : ℕ)
+    (x : Fin m → ℝ) (c : ℝ)
+    (hs : 0 ≤ fl_cholSubFold fp m x x c)
+    (hm2 : gammaValid fp (m + 2)) :
+    ∃ (φ₀ : ℝ) (φ : Fin m → ℝ),
+      |φ₀ - 1| ≤ gamma fp (m + 2) ∧
+      (∀ k, |φ k - 1| ≤ gamma fp (m + 1)) ∧
+      (fp.fl_sqrt (fl_cholSubFold fp m x x c)) ^ 2 * φ₀ =
+        c - ∑ k : Fin m, x k * x k * φ k := by
+  have hm1 : gammaValid fp (m + 1) :=
+    gammaValid_mono fp (by omega) hm2
+  have hu : fp.u < 1 := u_lt_one_of_gammaValid_succ hm1
+  obtain ⟨δ, hδ, hfold⟩ := fl_sub_fold_local_factors fp m
+    (fun k => fp.fl_mul (x k) (x k)) c
+  choose μ hμ hμeq using fun k : Fin m => fp.model_mul (x k) (x k)
+  obtain ⟨σ, hσ, hsqrt⟩ := fp.model_sqrt (fl_cholSubFold fp m x x c) hs
+  have hfac : ∀ s : Fin m, (0:ℝ) < 1 + δ s :=
+    fun s => one_add_pos_of_abs_le_u (hδ s) hu
+  have hσpos : (0:ℝ) < 1 + σ := one_add_pos_of_abs_le_u hσ hu
+  have hP : (0:ℝ) < ∏ s : Fin m, (1 + δ s) :=
+    Finset.prod_pos fun s _ => hfac s
+  have hQ : ∀ k : Fin m,
+      (0:ℝ) < ∏ j : Fin m, (if j.val < k.val then 1 + δ j else 1) := by
+    intro k
+    apply Finset.prod_pos
+    intro j _
+    by_cases h : j.val < k.val <;> simp [h, hfac j]
+  -- φ₀ bound: m subtraction factors plus two square-root factors
+  have hφ₀cnt : relErrorCounter fp (m + 2)
+      (1 / ((∏ s : Fin m, (1 + δ s)) * (1 + σ) * (1 + σ))) :=
+    relErrorCounter_inv fp (m + 2) _
+      (relErrorCounter_mul fp (m + 1) 1 _ _
+        (relErrorCounter_mul fp m 1 _ _
+          (counter_plain_prod fp m δ hδ) (counter_one fp hσ))
+        (counter_one fp hσ)) hu
+  have hφ₀ : |1 / ((∏ s : Fin m, (1 + δ s)) * (1 + σ) * (1 + σ)) - 1| ≤
+      gamma fp (m + 2) :=
+    relErrorCounter_abs_sub_one_le_gamma fp (m + 2) _ hφ₀cnt hm2
+  refine ⟨1 / ((∏ s : Fin m, (1 + δ s)) * (1 + σ) * (1 + σ)),
+    fun k => (1 + μ k) /
+      (∏ j : Fin m, if j.val < k.val then 1 + δ j else 1),
+    hφ₀, fun k => chol_term_factor_bound fp m δ (μ k) k hδ (hμ k) hm1, ?_⟩
+  have hfold' : fl_cholSubFold fp m x x c =
+      c * ∏ s : Fin m, (1 + δ s) -
+        ∑ k : Fin m, x k * x k * (1 + μ k) * sumSuffixErrorProduct m δ k := by
+    have h0 : fl_cholSubFold fp m x x c =
+        c * ∏ s : Fin m, (1 + δ s) -
+          ∑ k : Fin m, fp.fl_mul (x k) (x k) * sumSuffixErrorProduct m δ k :=
+      hfold
+    rw [h0]
+    congr 1
+    apply Finset.sum_congr rfl
+    intro k _
+    rw [hμeq k]
+  have hsq : (fp.fl_sqrt (fl_cholSubFold fp m x x c)) ^ 2 =
+      fl_cholSubFold fp m x x c * (1 + σ) ^ 2 := by
+    rw [hsqrt, mul_pow, Real.sq_sqrt hs]
+  rw [hsq]
+  have hLHS : fl_cholSubFold fp m x x c * (1 + σ) ^ 2 *
+      (1 / ((∏ s : Fin m, (1 + δ s)) * (1 + σ) * (1 + σ))) =
+      fl_cholSubFold fp m x x c / (∏ s : Fin m, (1 + δ s)) := by
+    field_simp
+  rw [hLHS, hfold', sub_div]
+  congr 1
+  · field_simp
+  · rw [Finset.sum_div]
+    apply Finset.sum_congr rfl
+    intro k _
+    have hSP := suffix_mul_prefix_eq_prod m δ k
+    show x k * x k * (1 + μ k) * sumSuffixErrorProduct m δ k /
+        (∏ s : Fin m, (1 + δ s)) =
+      x k * x k *
+        ((1 + μ k) / ∏ j : Fin m, if j.val < k.val then 1 + δ j else 1)
+    rw [← mul_div_assoc, div_eq_div_iff hP.ne' (hQ k).ne']
+    linear_combination (x k * x k * (1 + μ k)) * hSP
+
 end LeanFpAnalysis.FP

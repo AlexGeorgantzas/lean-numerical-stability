@@ -20,6 +20,20 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-07-01 BDD generic source-norm upper endpoint: added
+  `higham13_blockNormSup` and basic supremum lemmas, the normed-block assembled
+  upper factor `higham13_algorithm13_3_upperFromNormedStages`, and
+  `higham13_algorithm13_3_upperFromNormedStages_blockNormSup_bound_of_column_bdd_diag_lower`
+  plus the reciprocal source-table corollary.  The new endpoint proves the
+  source-norm upper-factor bound
+  `higham13_blockNormSup U <= 2 * higham13_blockNormSup A` for any
+  `SeminormedRing` block algebra from column BDD, a one-sided/reciprocal
+  diagonal certificate, and the Eq.13.18 active diagonal-update predicate.
+  Direct `lake env lean LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean` passed
+  before documentation wiring.  This is dependency progress only: the
+  source-strength entrywise max-growth route, concrete BDD source-table
+  construction, Problem 13.4 source comparisons, and Theorem 13.6 cited
+  implementation estimates remain open.
 - 2026-07-01 Problem 13.4 canonical all-tail global-tableau source-chain
   constructor: added `higham13_algorithm13_3_activeSuffixTail`,
   `higham13_algorithm13_3_activeSuffixStageTailBlock`, the stage-zero/stage-one

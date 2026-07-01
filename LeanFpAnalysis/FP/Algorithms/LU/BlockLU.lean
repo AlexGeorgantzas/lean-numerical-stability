@@ -1109,6 +1109,45 @@ lemma blockInfNorm_nonneg {m r : ℕ} (hm : 0 < m)
   le_trans (infNorm_nonneg (A ⟨0, hm⟩ ⟨0, hm⟩))
     (block_le_blockInfNorm hm A ⟨0, hm⟩ ⟨0, hm⟩)
 
+/-- Finite block supremum for an arbitrary normed block type.
+
+    This is the source-norm analogue of `blockMaxNorm`: it records
+    `max_{i,j} ‖Aᵢⱼ‖` for whichever subordinate block norm is carried by the
+    block type. -/
+noncomputable def higham13_blockNormSup {m : ℕ} (hm : 0 < m)
+    {α : Type*} [Norm α] (A : Fin m → Fin m → α) : ℝ :=
+  Finset.sup' Finset.univ (Finset.univ_nonempty_iff.mpr ⟨⟨0, hm⟩⟩)
+    (fun i => Finset.sup' Finset.univ (Finset.univ_nonempty_iff.mpr ⟨⟨0, hm⟩⟩)
+      (fun j => ‖A i j‖))
+
+lemma higham13_block_norm_le_blockNormSup {m : ℕ} (hm : 0 < m)
+    {α : Type*} [Norm α] (A : Fin m → Fin m → α) (i j : Fin m) :
+    ‖A i j‖ ≤ higham13_blockNormSup hm A := by
+  unfold higham13_blockNormSup
+  exact le_trans
+    (Finset.le_sup' (fun j' => ‖A i j'‖) (Finset.mem_univ j))
+    (Finset.le_sup' (fun i' =>
+      Finset.sup' Finset.univ
+        (Finset.univ_nonempty_iff.mpr ⟨⟨0, hm⟩⟩)
+        (fun j' => ‖A i' j'‖)) (Finset.mem_univ i))
+
+lemma higham13_blockNormSup_nonneg {m : ℕ} (hm : 0 < m)
+    {α : Type*} [SeminormedAddCommGroup α] (A : Fin m → Fin m → α) :
+    0 ≤ higham13_blockNormSup hm A :=
+  le_trans (norm_nonneg (A ⟨0, hm⟩ ⟨0, hm⟩))
+    (higham13_block_norm_le_blockNormSup hm A ⟨0, hm⟩ ⟨0, hm⟩)
+
+lemma higham13_blockNormSup_le_of_norm_le {m : ℕ} (hm : 0 < m)
+    {α : Type*} [Norm α] (A : Fin m → Fin m → α) {C : ℝ}
+    (hC : ∀ i j : Fin m, ‖A i j‖ ≤ C) :
+    higham13_blockNormSup hm A ≤ C := by
+  unfold higham13_blockNormSup
+  apply Finset.sup'_le
+  intro i _hi
+  apply Finset.sup'_le
+  intro j _hj
+  exact hC i j
+
 /-- Bound a blockwise matrix-`∞` maximum from uniform bounds on all blocks. -/
 lemma blockInfNorm_le_of_block_le {m r : ℕ} (hm : 0 < m)
     (A : Fin m → Fin m → Matrix (Fin r) (Fin r) ℝ) {C : ℝ}
@@ -12229,6 +12268,39 @@ theorem higham13_algorithm13_3_upperFromStages_lower_zero {m r : ℕ}
   have hnot : ¬ i.val ≤ j.val := Nat.not_le_of_gt hji
   simp [higham13_algorithm13_3_upperFromStages, hnot]
 
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
+    exact upper factor assembled from Schur stages for an arbitrary normed
+    block algebra.
+
+    This is the source-norm companion of `higham13_algorithm13_3_upperFromStages`.
+    It is used when the block entries carry a subordinate matrix norm through a
+    `SeminormedRing`, rather than the chapter's scalar-entry max norm. -/
+noncomputable def higham13_algorithm13_3_upperFromNormedStages {m : ℕ}
+    {α : Type*} [Zero α] [Sub α] [Mul α]
+    (A : Fin m → Fin m → α) (pivotInv : ℕ → α) :
+    Fin m → Fin m → α :=
+  fun i j =>
+    if i.val ≤ j.val then
+      higham13_algorithm13_3_schurStageBlock A pivotInv i.val i j
+    else
+      0
+
+theorem higham13_algorithm13_3_upperFromNormedStages_eq_stage {m : ℕ}
+    {α : Type*} [Zero α] [Sub α] [Mul α]
+    (A : Fin m → Fin m → α) (pivotInv : ℕ → α)
+    (i j : Fin m) (hij : i.val ≤ j.val) :
+    higham13_algorithm13_3_upperFromNormedStages A pivotInv i j =
+      higham13_algorithm13_3_schurStageBlock A pivotInv i.val i j := by
+  simp [higham13_algorithm13_3_upperFromNormedStages, hij]
+
+theorem higham13_algorithm13_3_upperFromNormedStages_lower_zero {m : ℕ}
+    {α : Type*} [Zero α] [Sub α] [Mul α]
+    (A : Fin m → Fin m → α) (pivotInv : ℕ → α)
+    (i j : Fin m) (hji : j.val < i.val) :
+    higham13_algorithm13_3_upperFromNormedStages A pivotInv i j = 0 := by
+  have hnot : ¬ i.val ≤ j.val := Nat.not_le_of_gt hji
+  simp [higham13_algorithm13_3_upperFromNormedStages, hnot]
+
 /-- The upper-from-stages factor supplies the exact upper-`U`/Schur-stage norm
     predicate used by the Eq.13.21 bridges. -/
 theorem higham13_algorithm13_3_upperFromStages_upper_block_bound {m r : ℕ}
@@ -15682,6 +15754,116 @@ theorem higham13_algorithm13_3_upperFromStages_eq13_21_blockMaxNorm_bound_of_col
     hm hr A pivotInv invDiagBound hDom hDiagBound
     (higham13_algorithm13_3_diagLowerCert_diag_lower_of_source_table
       invDiagBound A pivotInv stageInvDiagBound hInit hDiagUpdate hActiveUpper)
+
+/-- Higham, 2nd ed., Chapter 13, Theorems 13.7--13.8 and equation (13.21):
+    source-norm upper-factor bound for Algorithm 13.3 in an arbitrary normed
+    block algebra.
+
+    This is the faithful subordinate-block-norm route: the block norm is the
+    norm carried by `α`, so multiplication is submultiplicative through the
+    `SeminormedRing` structure.  It does not assert the entrywise max-norm
+    product estimate, which is false without extra structure. -/
+theorem
+    higham13_algorithm13_3_upperFromNormedStages_blockNormSup_bound_of_column_bdd_diag_lower
+    {m : ℕ} {α : Type*} [SeminormedRing α]
+    (hm : 0 < m)
+    (A : Fin m → Fin m → α) (pivotInv : ℕ → α)
+    (invDiagBound : Fin m → ℝ)
+    (stageInvDiagBound : ℕ → Fin m → ℝ)
+    (hDom : IsBlockDiagDomCol m
+      (fun i j : Fin m => ‖A i j‖) invDiagBound)
+    (hDiagBound : ∀ j : Fin m, invDiagBound j ≤ ‖A j j‖)
+    (hInitInv : ∀ j : Fin m, stageInvDiagBound 0 j = invDiagBound j)
+    (hDiagLower : SchurStageActivePivotInvDiagLower13_7
+      stageInvDiagBound (higham13_algorithm13_3_pivotInvNorm pivotInv))
+    (hDiagUpdate : SchurStageActiveDiagLowerUpdate13_7
+      (higham13_algorithm13_3_schurStageNorm A pivotInv)
+      stageInvDiagBound
+      (higham13_algorithm13_3_pivotInvNorm pivotInv)) :
+    higham13_blockNormSup hm
+        (higham13_algorithm13_3_upperFromNormedStages A pivotInv) ≤
+      2 * higham13_blockNormSup hm A := by
+  classical
+  let normMax : ℝ := higham13_blockNormSup hm A
+  have hNormMax : 0 ≤ normMax := by
+    simpa [normMax] using higham13_blockNormSup_nonneg hm A
+  have hMax : ∀ i j : Fin m, ‖A i j‖ ≤ normMax := by
+    intro i j
+    simpa [normMax] using higham13_block_norm_le_blockNormSup hm A i j
+  have hPivotBound :
+      ∀ k : ℕ, ∀ hk : k < m,
+        higham13_algorithm13_3_pivotInvNorm pivotInv k *
+          stageInvDiagBound k ⟨k, hk⟩ ≤ 1 :=
+    higham13_theorem13_7_pivot_inverse_bound_of_diag_lower
+      stageInvDiagBound (higham13_algorithm13_3_pivotInvNorm pivotInv)
+      (higham13_algorithm13_3_pivotInvNorm_nonneg pivotInv) hDiagLower
+  apply higham13_blockNormSup_le_of_norm_le hm
+  intro i j
+  by_cases hij : i.val ≤ j.val
+  · have hstage :
+        higham13_algorithm13_3_upperFromNormedStages A pivotInv i j =
+          higham13_algorithm13_3_schurStageBlock A pivotInv i.val i j :=
+      higham13_algorithm13_3_upperFromNormedStages_eq_stage A pivotInv i j hij
+    rw [hstage]
+    exact
+      higham13_theorem13_8_active_stage_block_bound_of_exact_update
+        (fun i j : Fin m => ‖A i j‖) invDiagBound hDom hDiagBound
+        (higham13_algorithm13_3_schurStageBlock A pivotInv) pivotInv
+        (higham13_algorithm13_3_schurStageNorm A pivotInv)
+        stageInvDiagBound (higham13_algorithm13_3_pivotInvNorm pivotInv)
+        (by
+          intro i j
+          simp [higham13_algorithm13_3_schurStageNorm,
+            higham13_algorithm13_3_schurStageBlock])
+        hInitInv
+        (by
+          intro k i j
+          simp [higham13_algorithm13_3_schurStageNorm])
+        (by
+          intro k
+          rfl)
+        hPivotBound
+        (higham13_algorithm13_3_schurStageBlock_exact_update A pivotInv)
+        hDiagUpdate normMax hMax i.val i j le_rfl hij
+  · have hji : j.val < i.val := Nat.lt_of_not_ge hij
+    have hzero :
+        higham13_algorithm13_3_upperFromNormedStages A pivotInv i j = 0 :=
+      higham13_algorithm13_3_upperFromNormedStages_lower_zero A pivotInv i j hji
+    rw [hzero, norm_zero]
+    nlinarith [hNormMax]
+
+/-- Reciprocal-table version of
+    `higham13_algorithm13_3_upperFromNormedStages_blockNormSup_bound_of_column_bdd_diag_lower`.
+
+    This is the source-table shape closest to Higham's proof: at each active
+    pivot, the carried diagonal budget is the reciprocal of the pivot-inverse
+    norm. -/
+theorem
+    higham13_algorithm13_3_upperFromNormedStages_blockNormSup_bound_of_column_bdd_source_table_reciprocal
+    {m : ℕ} {α : Type*} [SeminormedRing α]
+    (hm : 0 < m)
+    (A : Fin m → Fin m → α) (pivotInv : ℕ → α)
+    (invDiagBound : Fin m → ℝ)
+    (stageInvDiagBound : ℕ → Fin m → ℝ)
+    (hDom : IsBlockDiagDomCol m
+      (fun i j : Fin m => ‖A i j‖) invDiagBound)
+    (hDiagBound : ∀ j : Fin m, invDiagBound j ≤ ‖A j j‖)
+    (hInitInv : ∀ j : Fin m, stageInvDiagBound 0 j = invDiagBound j)
+    (hReciprocal : SchurStageActivePivotInvReciprocal13_7
+      stageInvDiagBound (higham13_algorithm13_3_pivotInvNorm pivotInv))
+    (hDiagUpdate : SchurStageActiveDiagLowerUpdate13_7
+      (higham13_algorithm13_3_schurStageNorm A pivotInv)
+      stageInvDiagBound
+      (higham13_algorithm13_3_pivotInvNorm pivotInv)) :
+    higham13_blockNormSup hm
+        (higham13_algorithm13_3_upperFromNormedStages A pivotInv) ≤
+      2 * higham13_blockNormSup hm A :=
+  higham13_algorithm13_3_upperFromNormedStages_blockNormSup_bound_of_column_bdd_diag_lower
+    hm A pivotInv invDiagBound stageInvDiagBound hDom hDiagBound hInitInv
+    (SchurStageActivePivotInvDiagLower13_7.of_reciprocal
+      stageInvDiagBound (higham13_algorithm13_3_pivotInvNorm pivotInv)
+      hReciprocal)
+    hDiagUpdate
 
 /-- Column-BDD Eq.13.21 specialization using only the active pivot product
     certificate.  This removes the redundant separate nonzero-norm premise from
