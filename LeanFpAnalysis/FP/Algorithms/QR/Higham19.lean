@@ -5032,6 +5032,170 @@ theorem
               fl_householderStoredPanelStep_normalized_betaSpec_eq_exactWithUnitRoundoff
                 u0 hu0 (m + 1) (p + 1) 0 v A
 
+/-- A concrete rounded model used to audit the exact-arithmetic handoff.
+
+All operations are exact except multiplication by a first argument equal to
+`2`, which is rounded to twice the exact product.  With unit roundoff `1`,
+this still satisfies the abstract `FPModel` contract. -/
+noncomputable def firstArgTwoMulFPModel : FPModel where
+  u := 1
+  u_nonneg := by norm_num
+  fl_add := fun x y => x + y
+  fl_sub := fun x y => x - y
+  fl_mul := fun x y => if x = (2 : Real) then 2 * (x * y) else x * y
+  fl_div := fun x y => x / y
+  fl_sqrt := fun x => Real.sqrt x
+  fl_add_zero := by
+    intro x
+    ring
+  model_add := by
+    intro x y
+    exact Exists.intro 0 (And.intro (by norm_num) (by ring))
+  model_sub := by
+    intro x y
+    exact Exists.intro 0 (And.intro (by norm_num) (by ring))
+  model_mul := by
+    intro x y
+    by_cases h : x = (2 : Real)
+    case pos =>
+      refine Exists.intro 1 (And.intro (by norm_num) ?_)
+      simp [h]
+      ring
+    case neg =>
+      exact Exists.intro 0 (And.intro (by norm_num) (by simp [h]))
+  model_div := by
+    intro x y _hy
+    exact Exists.intro 0 (And.intro (by norm_num) (by ring))
+  model_sqrt := by
+    intro x _hx
+    exact Exists.intro 0 (And.intro (by norm_num) (by ring))
+
+/-- Route audit for the exact compact Householder handoff.
+
+The normalized beta-one compact update does not equal the unnormalized
+`householderBetaSpec` compact update for every rounded `FPModel`.  The
+exact-arithmetic assumption in
+`fl_householderApplyCompact_normalized_betaSpec_eq_exactWithUnitRoundoff` is
+therefore a real restriction, not removable boilerplate. -/
+theorem rounded_normalized_betaSpec_compact_handoff_not_forall_FPModel :
+    Exists (fun fp : FPModel =>
+      Exists (fun v : Fin 1 -> Real =>
+        Exists (fun b : Fin 1 -> Real =>
+          Not (
+            fl_householderApplyCompact fp 1
+              (householderNormalizedVector 1 v (householderBetaSpec 1 v)) 1 b =
+            fl_householderApplyCompact fp 1 v (householderBetaSpec 1 v) b)))) := by
+  refine Exists.intro firstArgTwoMulFPModel ?_
+  refine Exists.intro (fun _ : Fin 1 => (1 : Real)) ?_
+  refine Exists.intro (fun _ : Fin 1 => (1 : Real)) ?_
+  intro h
+  have h0 := congrFun h (0 : Fin 1)
+  have hsqrt2_ne_two : Not (Real.sqrt (2 : Real) = 2) := by
+    intro hs
+    have hsquare := congrArg (fun t : Real => t * t) hs
+    have hsqrt_square :
+        Real.sqrt (2 : Real) * Real.sqrt (2 : Real) = 2 := by
+      exact Real.mul_self_sqrt (by norm_num)
+    nlinarith
+  norm_num [firstArgTwoMulFPModel, fl_householderApplyCompact, fl_dotProduct,
+    householderNormalizedVector, householderBetaSpec, hsqrt2_ne_two] at h0
+
+/-- Stored-panel form of the rounded handoff boundary.
+
+The same rounded model witnesses failure after the compact update is embedded
+in the stored-panel pivot-copying convention.  Thus the exact stored-panel
+handoff cannot be generalized to every `FPModel` as a literal equality. -/
+theorem rounded_normalized_betaSpec_storedPanelStep_handoff_not_forall_FPModel :
+    Exists (fun fp : FPModel =>
+      Exists (fun v : Fin 1 -> Real =>
+        Exists (fun A : Fin 1 -> Fin 1 -> Real =>
+          Not (
+            fl_householderStoredPanelStep fp 1 1 0
+              (householderNormalizedVector 1 v (householderBetaSpec 1 v)) 1 A =
+            fl_householderStoredPanelStep fp 1 1 0
+              v (householderBetaSpec 1 v) A)))) := by
+  refine Exists.intro firstArgTwoMulFPModel ?_
+  refine Exists.intro (fun _ : Fin 1 => (1 : Real)) ?_
+  refine Exists.intro (fun _ _ => (1 : Real)) ?_
+  intro h
+  have h00 := congrFun (congrFun h (0 : Fin 1)) (0 : Fin 1)
+  have hsqrt2_ne_two : Not (Real.sqrt (2 : Real) = 2) := by
+    intro hs
+    have hsquare := congrArg (fun t : Real => t * t) hs
+    have hsqrt_square :
+        Real.sqrt (2 : Real) * Real.sqrt (2 : Real) = 2 := by
+      exact Real.mul_self_sqrt (by norm_num)
+    nlinarith
+  norm_num [firstArgTwoMulFPModel, fl_householderStoredPanelStep,
+    fl_householderApplyCompactPanel, fl_householderApplyCompact,
+    fl_dotProduct, householderNormalizedVector, householderBetaSpec,
+    hsqrt2_ne_two] at h00
+
+/-- Matrix-rectangular form of the rounded handoff boundary.
+
+This is the same witness stated in the QR branch's
+`fl_householderApplyMatrixRect` notation. -/
+theorem rounded_normalized_betaSpec_matrixRect_handoff_not_forall_FPModel :
+    Exists (fun fp : FPModel =>
+      Exists (fun v : Fin 1 -> Real =>
+        Exists (fun A : Fin 1 -> Fin 1 -> Real =>
+          Not (
+            fl_householderApplyMatrixRect fp 1 1
+              (householderNormalizedVector 1 v (householderBetaSpec 1 v)) 1 A =
+            fl_householderApplyMatrixRect fp 1 1
+              v (householderBetaSpec 1 v) A)))) := by
+  refine Exists.intro firstArgTwoMulFPModel ?_
+  refine Exists.intro (fun _ : Fin 1 => (1 : Real)) ?_
+  refine Exists.intro (fun _ _ => (1 : Real)) ?_
+  intro h
+  have h00 := congrFun (congrFun h (0 : Fin 1)) (0 : Fin 1)
+  have hsqrt2_ne_two : Not (Real.sqrt (2 : Real) = 2) := by
+    intro hs
+    have hsquare := congrArg (fun t : Real => t * t) hs
+    have hsqrt_square :
+        Real.sqrt (2 : Real) * Real.sqrt (2 : Real) = 2 := by
+      exact Real.mul_self_sqrt (by norm_num)
+    nlinarith
+  norm_num [firstArgTwoMulFPModel, fl_householderApplyMatrixRect,
+    fl_householderApply, fl_householderApplyCompact, fl_dotProduct,
+    householderNormalizedVector, householderBetaSpec, hsqrt2_ne_two] at h00
+
+/-- First-pivot QR-storage form of the rounded handoff boundary.
+
+Even after reconstructing the stored first panel from the QR branch's
+matrix-rectangular update, the normalized beta-one side need not agree with
+the unnormalized `householderBetaSpec` stored step for an arbitrary rounded
+`FPModel`. -/
+theorem rounded_normalized_betaSpec_firstStoredPanelStep_handoff_not_forall_FPModel :
+    Exists (fun fp : FPModel =>
+      Exists (fun v : Fin 1 -> Real =>
+        Exists (fun A : Fin 1 -> Fin 1 -> Real =>
+          Not (
+            (let Astep := fl_householderApplyMatrixRect fp 1 1
+              (householderNormalizedVector 1 v (householderBetaSpec 1 v)) 1 A
+             panelFromTopAndTrailing (panelTopLeft Astep) (panelTopRowTail Astep)
+               (trailingPanel Astep)) =
+            fl_householderStoredPanelStep fp 1 1 0
+              v (householderBetaSpec 1 v) A)))) := by
+  refine Exists.intro firstArgTwoMulFPModel ?_
+  refine Exists.intro (fun _ : Fin 1 => (1 : Real)) ?_
+  refine Exists.intro (fun _ _ => (1 : Real)) ?_
+  intro h
+  have h00 := congrFun (congrFun h (0 : Fin 1)) (0 : Fin 1)
+  have hsqrt2_ne_two : Not (Real.sqrt (2 : Real) = 2) := by
+    intro hs
+    have hsquare := congrArg (fun t : Real => t * t) hs
+    have hsqrt_square :
+        Real.sqrt (2 : Real) * Real.sqrt (2 : Real) = 2 := by
+      exact Real.mul_self_sqrt (by norm_num)
+    nlinarith
+  norm_num [firstArgTwoMulFPModel, panelFromTopAndTrailing, panelTopLeft,
+    panelTopRowTail, trailingPanel, fl_householderApplyMatrixRect,
+    fl_householderApply, fl_householderStoredPanelStep,
+    fl_householderApplyCompactPanel, fl_householderApplyCompact,
+    fl_dotProduct, householderNormalizedVector, householderBetaSpec,
+    hsqrt2_ne_two] at h00
+
 /-- Route audit for the stored-loop normalization bottleneck.
 
 The source nonbreakdown hypotheses used by the stored loop, namely
@@ -10970,6 +11134,68 @@ theorem
     hdetFirst hdetTail hvecTail hselfTail
     (storedSignedSequenceTwiceTrailingClosureData_of_sourceClosureData
       fp r p A_hat alpha hsource)
+    hcopy
+
+/-- Full-stage source-closure data implies the older recursive closure-data
+contract.
+
+This is a bookkeeping handoff for the remaining stored-loop proof.  It does not
+derive any normalized-reflector facts; it only composes the full-stage-to-source
+conversion with the established source-to-closure conversion. -/
+theorem storedSignedSequenceTwiceTrailingClosureData_of_fullStageSourceClosureData
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hdata :
+      storedSignedSequenceTwiceTrailingFullStageSourceClosureData fp r p
+        A_hat alpha) :
+    storedSignedSequenceTwiceTrailingClosureData fp r p A_hat alpha :=
+  storedSignedSequenceTwiceTrailingClosureData_of_sourceClosureData
+    fp r p A_hat alpha
+    (storedSignedSequenceTwiceTrailingSourceClosureData_of_fullStageSourceClosureData
+      fp r p A_hat alpha hdata)
+
+/-- Raw recursive source facts imply the twice-trailing final-closure
+predicate.
+
+This names the direct path from source-closure data to the final-closed
+predicate, leaving the source facts themselves as the visible obligation. -/
+theorem storedSignedSequenceTwiceTrailingFinalClosed_of_sourceClosureData
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hdata :
+      storedSignedSequenceTwiceTrailingSourceClosureData fp r p A_hat alpha)
+    (hcopy : subtractZeroExact fp) :
+    storedSignedSequenceTwiceTrailingFinalClosed fp
+      (Nat.add_le_add_right (Nat.le_add_left p r) 2) A_hat alpha :=
+  storedSignedSequenceTwiceTrailingFinalClosed_of_closureData
+    fp r p A_hat alpha
+    (storedSignedSequenceTwiceTrailingClosureData_of_sourceClosureData
+      fp r p A_hat alpha hdata)
+    hcopy
+
+/-- Full-stage source-closure data implies the twice-trailing final-closure
+predicate.
+
+This is the final-closed counterpart of
+`storedSignedSequence_final_panel_eq_qrPanel_R_of_reflector_self_dot_of_fullStageSourceClosureData`.
+The theorem still assumes the full-stage data package explicitly; it does not
+manufacture the missing normalized-reflector premises. -/
+theorem storedSignedSequenceTwiceTrailingFinalClosed_of_fullStageSourceClosureData
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hdata :
+      storedSignedSequenceTwiceTrailingFullStageSourceClosureData fp r p
+        A_hat alpha)
+    (hcopy : subtractZeroExact fp) :
+    storedSignedSequenceTwiceTrailingFinalClosed fp
+      (Nat.add_le_add_right (Nat.le_add_left p r) 2) A_hat alpha :=
+  storedSignedSequenceTwiceTrailingFinalClosed_of_closureData
+    fp r p A_hat alpha
+    (storedSignedSequenceTwiceTrailingClosureData_of_fullStageSourceClosureData
+      fp r p A_hat alpha hdata)
     hcopy
 
 /-- Full-stage source-facing final-panel bridge.
