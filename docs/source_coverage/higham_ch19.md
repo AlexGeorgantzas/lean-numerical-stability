@@ -17,13 +17,14 @@
 - Current exact endpoint update: exact all-stage tail-vector facts now also feed `storedSignedSequenceTwiceTrailingFinalClosed` and the arbitrary-width final-panel equality. The new endpoint wrappers derive the first two reflector self-dot fields and all recursive tail source-closure data internally from vector equalities plus determinant nonbreakdown in `FPModel.exactWithUnitRoundoff`. This removes the remaining exact self-dot premise from that final-panel call path, but the rounded route remains open for the same source-faithful normalization/self-dot reason.
 - Current route-audit update: `oneTailNormalizedFacts_not_forall_from_tail_vector_eq_FPModel` and `firstTwoTailNormalizedFacts_not_forall_from_tail_vector_eq_FPModel` prove one-tail and first-two record-level boundaries for the rounded route. Even if the relevant twice-trailing active vectors are literally equal to `fl_householderNormalizedVector`, the named tail-local normalized-facts records do not follow for arbitrary `FPModel`; the self-dot fields remain independent source-faithful normalization obligations.
 - Inventory status: index-backed row skeleton is now anchored against extracted text from the local Ch19 PDF using a temporary Node `pdf-parse@1.1.1` extractor outside the repository. The extracted text confirms the Ch19 section headings, the primary-label headings, every indexed numbered-equation label through (19.37), and the problem section labels. It also exposes a source-visible Problem 19.8 row that is absent from the shared index problem ledger. This is not a rendered math-layout audit: formulas, subscripts, matrices, and line-broken displays still need rendered-page checking before chapter completion can be claimed. Local `pdftotext`/`pdfinfo` remain unavailable in this environment.
+- Current Problem 19.8 update: `H19.Problem19_8.projectionRemovalProduct_eq_id_sub_projection_sum` now formalizes the exact vector-action identity behind Problem 19.8: for an orthonormal finite family, the iterated product of projection removals `(I-P_j) ... (I-P_1)` equals subtracting the sum of the rank-one projections. This closes the extracted-source Problem 19.8 row as a theoretical exact-arithmetic identity, while the rendered formula audit for the chapter remains open.
 - Oracle status: GPT Pro/Oracle browser consultation was attempted for the repeated stored-loop-to-source-closure bottleneck on 2026-06-30 with a compact math-only packet. The run failed without a mathematical answer after Chrome became unreachable, and the visible prompt captured by Oracle was only the packet title, so it is recorded as a rejected/non-answer consultation rather than proof-source evidence.
 
 ## Progress Snapshot
 
 | Chapter | Mode | Inventory % | Statement % | Dependency % | Proof % | Verification/report % | Estimated overall % | Open selected rows | Main blocker | Confidence |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
-| ch19 | core | 95 | 99 | 99 | 99 | 99 | 84 | 48+ | Rendered equation-layout audit and tail-local rounded normalization/self-dot derivation still open; extracted text added source-visible Problem 19.8 | medium |
+| ch19 | core | 95 | 99 | 99 | 99 | 99 | 84 | 47+ | Rendered equation-layout audit and tail-local rounded normalization/self-dot derivation still open | medium |
 
 ## Index- and Extracted-Text Source Inventory
 
@@ -123,7 +124,7 @@ extracted-source row and keeps it open for Lean mapping.
 | 19.5 | Extracted-text label and problem statement located; Lean mapping not yet audited in this report. | text-anchored; audit needed |
 | 19.6 | Extracted-text label and problem statement located; Lean mapping not yet audited in this report. | text-anchored; audit needed |
 | 19.7 | Extracted-text label and problem statement located; Lean mapping not yet audited in this report. | text-anchored; audit needed |
-| 19.8 | Extracted text shows the CGS/MGS projection identity problem; this row is missing from the shared problem ledger and is now added locally to the report. | source-index discrepancy; audit needed |
+| 19.8 | `H19.Problem19_8.projectionRemovalProduct_eq_id_sub_projection_sum` formalizes the exact projection-product identity in vector-action form, with helper definitions `OrthonormalFamily`, `projectionCombination`, and `projectionRemovalProduct`. | covered theoretical identity; source-index discrepancy recorded |
 | 19.9 | Extracted-text label and problem statement located; Lean mapping not yet audited in this report. | text-anchored; audit needed |
 | 19.10 | Extracted-text label and problem statement located; Lean mapping not yet audited in this report. | text-anchored; audit needed |
 | 19.11 | Extracted-text label and problem statement located; Lean mapping not yet audited in this report. | text-anchored; audit needed |
