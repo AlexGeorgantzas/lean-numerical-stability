@@ -7187,6 +7187,23 @@ theorem UndetNormwiseBackwardErrorFeasible.source_residual_eq
   linarith
 
 /-- Higham, 2nd ed., Chapter 21, Section 21.2, Theorem 21.3:
+    scalar residual lower-bound dependency for the nonzero Sun--Sun route.
+    Any feasible perturbation pair has weighted cost at least the scalar
+    `phi` branch formed from the source residual `b - A*y`.  The full
+    nonzero formula still requires the singular-value term. -/
+theorem UndetNormwiseBackwardErrorFeasible.phi_le_costF
+    {m n : ℕ} {theta : ℝ} (htheta : 0 ≤ theta)
+    {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ} {y : Fin n → ℝ}
+    {DeltaA : Fin m → Fin n → ℝ} {Deltab : Fin m → ℝ}
+    (hy : y ≠ 0)
+    (hfeas : UndetNormwiseBackwardErrorFeasible A b y DeltaA Deltab) :
+    lsNormwiseBackwardErrorPhi theta (undetResidualHigham A b y) y ≤
+      lsNormwiseBackwardErrorCostF theta DeltaA Deltab :=
+  lsNormwiseBackwardErrorPhi_le_costF_of_residual_eq_deltaA_y_sub_deltab
+    htheta hy (undetResidualHigham A b y) DeltaA Deltab
+    hfeas.source_residual_eq
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.2, Theorem 21.3:
     source-facing model of `I - y y^+` in the nonzero-`y` branch.  This reuses
     the Chapter 20 rank-one complement-projector infrastructure. -/
 noncomputable abbrev undetApproxComplementProjector {n : ℕ}
