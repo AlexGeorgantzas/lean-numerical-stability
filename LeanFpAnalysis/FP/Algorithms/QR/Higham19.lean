@@ -4861,6 +4861,32 @@ theorem householderTrailingActiveVector_betaSpec_eq_one_of_self_dot
     householderBetaSpec_eq_one_of_inner_self_eq_two n
       (householderTrailingActiveVector n p x alpha) hself
 
+/-- Route audit for the stored-loop normalization bottleneck.
+
+The source nonbreakdown hypotheses used by the stored loop, namely
+`alpha^2 = ||x_tail||_2^2` and `alpha*x_p <= 0`, do not by themselves imply
+the normalized-vector convention `v^T v = 2` for
+`v = x_tail - alpha*e_p`.  Thus the full-stage `v^T v = 2` premises in the
+recursive final-panel handoff must come from an explicit normalized-reflector
+model or an additional proved normalization step; they cannot be recovered
+from the signed norm choice alone. -/
+theorem
+    stored_loop_signed_norm_hypotheses_do_not_force_trailingActiveVector_self_dot_two :
+    ∃ (x : Fin 1 -> Real) (alpha : Real),
+      alpha * alpha =
+          householderTrailingNorm2Sq 1 (0 : Fin 1) x ∧
+        alpha * x (0 : Fin 1) <= 0 ∧
+        (Finset.univ : Finset (Fin 1)).sum
+          (fun i =>
+            householderTrailingActiveVector 1 (0 : Fin 1) x alpha i *
+              householderTrailingActiveVector 1 (0 : Fin 1) x alpha i) ≠
+          2 := by
+  refine ⟨fun _ => (1 : Real), -1, ?_, ?_, ?_⟩
+  · simp [householderTrailingNorm2Sq, householderTrailingPart, vecNorm2Sq]
+  · norm_num
+  · norm_num [householderTrailingActiveVector, householderActiveVector,
+      householderTrailingPart]
+
 /-- Successor-pivot beta-one bridge from the once-shrunk panel self-dot
 normalization.
 
