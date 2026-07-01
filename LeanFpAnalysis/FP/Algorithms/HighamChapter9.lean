@@ -27574,6 +27574,100 @@ theorem higham9_15_normalized_Gtilde_split_componentwise_majorants {n : ℕ}
         higham9_15_abs_triuPart_le_triuPart_of_abs_le
           (Gtilde + X * Y) B hB_nonneg hres i j
 
+/-- **Theorem 9.15 support**, componentwise product-majorant discharge when
+the normalized lower perturbation is identically zero. -/
+theorem higham9_15_componentwise_product_majorant_of_left_zero {n : ℕ}
+    (G X Y : Matrix (Fin n) (Fin n) ℝ)
+    (hXzero : ∀ i j : Fin n, X i j = 0) :
+    ∀ i j : Fin n,
+      rectMatMul (absMatrix n X) (absMatrix n Y) i j ≤
+        rectMatMul (absMatrix n G)
+          (fun r c : Fin n =>
+            |G r c| + rectMatMul (absMatrix n X) (absMatrix n Y) r c)
+          i j := by
+  intro i j
+  have hleft_zero :
+      rectMatMul (absMatrix n X) (absMatrix n Y) i j = 0 := by
+    unfold rectMatMul absMatrix
+    apply Finset.sum_eq_zero
+    intro k _hk
+    simp [hXzero i k]
+  have hproduct_nonneg :
+      ∀ r c : Fin n, 0 ≤
+        rectMatMul (absMatrix n X) (absMatrix n Y) r c := by
+    intro r c
+    unfold rectMatMul absMatrix
+    exact Finset.sum_nonneg fun k _hk =>
+      mul_nonneg (abs_nonneg (X r k)) (abs_nonneg (Y k c))
+  have hmajorant_nonneg :
+      ∀ r c : Fin n,
+        0 ≤ |G r c| + rectMatMul (absMatrix n X) (absMatrix n Y) r c := by
+    intro r c
+    exact add_nonneg (abs_nonneg (G r c)) (hproduct_nonneg r c)
+  have hright_nonneg :
+      0 ≤
+        rectMatMul (absMatrix n G)
+          (fun r c : Fin n =>
+            |G r c| + rectMatMul (absMatrix n X) (absMatrix n Y) r c)
+          i j := by
+    unfold rectMatMul absMatrix
+    exact Finset.sum_nonneg fun k _hk =>
+      mul_nonneg (abs_nonneg (G i k)) (hmajorant_nonneg k j)
+  calc
+    rectMatMul (absMatrix n X) (absMatrix n Y) i j = 0 := hleft_zero
+    _ ≤
+        rectMatMul (absMatrix n G)
+          (fun r c : Fin n =>
+            |G r c| + rectMatMul (absMatrix n X) (absMatrix n Y) r c)
+          i j := hright_nonneg
+
+/-- **Theorem 9.15 support**, componentwise product-majorant discharge when
+the normalized upper perturbation is identically zero. -/
+theorem higham9_15_componentwise_product_majorant_of_right_zero {n : ℕ}
+    (G X Y : Matrix (Fin n) (Fin n) ℝ)
+    (hYzero : ∀ i j : Fin n, Y i j = 0) :
+    ∀ i j : Fin n,
+      rectMatMul (absMatrix n X) (absMatrix n Y) i j ≤
+        rectMatMul (absMatrix n G)
+          (fun r c : Fin n =>
+            |G r c| + rectMatMul (absMatrix n X) (absMatrix n Y) r c)
+          i j := by
+  intro i j
+  have hleft_zero :
+      rectMatMul (absMatrix n X) (absMatrix n Y) i j = 0 := by
+    unfold rectMatMul absMatrix
+    apply Finset.sum_eq_zero
+    intro k _hk
+    simp [hYzero k j]
+  have hproduct_nonneg :
+      ∀ r c : Fin n, 0 ≤
+        rectMatMul (absMatrix n X) (absMatrix n Y) r c := by
+    intro r c
+    unfold rectMatMul absMatrix
+    exact Finset.sum_nonneg fun k _hk =>
+      mul_nonneg (abs_nonneg (X r k)) (abs_nonneg (Y k c))
+  have hmajorant_nonneg :
+      ∀ r c : Fin n,
+        0 ≤ |G r c| + rectMatMul (absMatrix n X) (absMatrix n Y) r c := by
+    intro r c
+    exact add_nonneg (abs_nonneg (G r c)) (hproduct_nonneg r c)
+  have hright_nonneg :
+      0 ≤
+        rectMatMul (absMatrix n G)
+          (fun r c : Fin n =>
+            |G r c| + rectMatMul (absMatrix n X) (absMatrix n Y) r c)
+          i j := by
+    unfold rectMatMul absMatrix
+    exact Finset.sum_nonneg fun k _hk =>
+      mul_nonneg (abs_nonneg (G i k)) (hmajorant_nonneg k j)
+  calc
+    rectMatMul (absMatrix n X) (absMatrix n Y) i j = 0 := hleft_zero
+    _ ≤
+        rectMatMul (absMatrix n G)
+          (fun r c : Fin n =>
+            |G r c| + rectMatMul (absMatrix n X) (absMatrix n Y) r c)
+          i j := hright_nonneg
+
 /-- **Theorem 9.15 spectral-majorant support**.  In the componentwise
 Barrlund--Sun route, a nonnegative majorant matrix with spectral radius below
 one forces every positive right subeigenvector scale below one.  This is a
@@ -41934,6 +42028,176 @@ theorem higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_s
       U Uinv hUright)
     hfact hXtri hYtri hR hquad
 
+/-- **Theorem 9.15**, split-level `G` supplied-resolvent endpoint when the
+inverse-normalized lower perturbation is identically zero.  The zero factor
+discharges the nonlinear product-majorant premise. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_inverse_identities_left_zero
+    {n : ℕ}
+    (L U Linv Uinv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLright : rectMatMul L Linv = idMatrix n)
+    (hUleft : rectMatMul Uinv U = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) R)
+    (hXzero : ∀ i j : Fin n, rectMatMul Linv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) :=
+  higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_inverse_identities_product_majorant
+    L U Linv Uinv ΔA ΔL ΔU R hLright hUleft hfact hXtri hYtri hR
+    (higham9_15_componentwise_product_majorant_of_left_zero
+      (higham9_27_GMatrix Linv ΔA Uinv)
+      (rectMatMul Linv ΔL) (rectMatMul ΔU Uinv) hXzero)
+
+/-- **Theorem 9.15**, split-level `G` supplied-resolvent endpoint when the
+inverse-normalized upper perturbation is identically zero.  The zero factor
+discharges the nonlinear product-majorant premise. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_inverse_identities_right_zero
+    {n : ℕ}
+    (L U Linv Uinv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLright : rectMatMul L Linv = idMatrix n)
+    (hUleft : rectMatMul Uinv U = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) R)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU Uinv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) :=
+  higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_inverse_identities_product_majorant
+    L U Linv Uinv ΔA ΔL ΔU R hLright hUleft hfact hXtri hYtri hR
+    (higham9_15_componentwise_product_majorant_of_right_zero
+      (higham9_27_GMatrix Linv ΔA Uinv)
+      (rectMatMul Linv ΔL) (rectMatMul ΔU Uinv) hYzero)
+
+/-- **Theorem 9.15**, source-oriented inverse-identity form of the split-level
+`G` supplied-resolvent zero-lower-factor endpoint. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_source_inverse_identities_left_zero
+    {n : ℕ}
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) R)
+    (hXzero : ∀ i j : Fin n, rectMatMul Linv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) :=
+  higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_inverse_identities_left_zero
+    L U Linv Uinv ΔA ΔL ΔU R
+    (higham9_15_rectMatMul_right_inverse_of_matrix_left_inverse
+      L Linv hLleft)
+    (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse
+      U Uinv hUright)
+    hfact hXtri hYtri hR hXzero
+
+/-- **Theorem 9.15**, source-oriented inverse-identity form of the split-level
+`G` supplied-resolvent zero-upper-factor endpoint. -/
+theorem higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_source_inverse_identities_right_zero
+    {n : ℕ}
+    (L U Linv Uinv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : Linv * L = 1)
+    (hUright : U * Uinv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) +
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix Linv ΔA Uinv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul Linv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) +
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU Uinv)))
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul Linv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU Uinv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) R)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU Uinv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n L)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))))
+          (absMatrix n U) i j) :=
+  higham9_15_componentwise_source_bound_of_G_split_resolvent_majorant_of_inverse_identities_right_zero
+    L U Linv Uinv ΔA ΔL ΔU R
+    (higham9_15_rectMatMul_right_inverse_of_matrix_left_inverse
+      L Linv hLleft)
+    (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse
+      U Uinv hUright)
+    hfact hXtri hYtri hR hYzero
+
 /-- **Theorem 9.15**, split-level spectral-radius `G` canonical-resolvent
 endpoint.  The normalized route no longer requires a caller-supplied
 nonnegative resolvent: `rho(|G|) < 1` supplies the canonical repository inverse
@@ -43850,6 +44114,178 @@ theorem higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant
     (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse
       Uhat UhatInv hUright)
     hfact hXtri hYtri hR hquad
+
+/-- **Theorem 9.15**, split-level `Gtilde` supplied-resolvent endpoint when
+the inverse-normalized lower perturbation is identically zero.  The zero
+factor discharges the nonlinear product-majorant premise. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_inverse_identities_left_zero
+    {n : ℕ}
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix n)
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) R)
+    (hXzero : ∀ i j : Fin n, rectMatMul LhatInv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) :=
+  higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_inverse_identities_product_majorant
+    Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU R hLright hUleft hfact
+    hXtri hYtri hR
+    (higham9_15_componentwise_product_majorant_of_left_zero
+      (higham9_27_GMatrix LhatInv ΔA UhatInv)
+      (rectMatMul LhatInv ΔL) (rectMatMul ΔU UhatInv) hXzero)
+
+/-- **Theorem 9.15**, split-level `Gtilde` supplied-resolvent endpoint when
+the inverse-normalized upper perturbation is identically zero.  The zero
+factor discharges the nonlinear product-majorant premise. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_inverse_identities_right_zero
+    {n : ℕ}
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Fin n → Fin n → ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLright : rectMatMul Lhat LhatInv = idMatrix n)
+    (hUleft : rectMatMul UhatInv Uhat = idMatrix n)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) R)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU UhatInv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) :=
+  higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_inverse_identities_product_majorant
+    Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU R hLright hUleft hfact
+    hXtri hYtri hR
+    (higham9_15_componentwise_product_majorant_of_right_zero
+      (higham9_27_GMatrix LhatInv ΔA UhatInv)
+      (rectMatMul LhatInv ΔL) (rectMatMul ΔU UhatInv) hYzero)
+
+/-- **Theorem 9.15**, source-oriented inverse-identity form of the split-level
+`Gtilde` supplied-resolvent zero-lower-factor endpoint. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_source_inverse_identities_left_zero
+    {n : ℕ}
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) R)
+    (hXzero : ∀ i j : Fin n, rectMatMul LhatInv ΔL i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) :=
+  higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_inverse_identities_left_zero
+    Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU R
+    (higham9_15_rectMatMul_right_inverse_of_matrix_left_inverse
+      Lhat LhatInv hLleft)
+    (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse
+      Uhat UhatInv hUright)
+    hfact hXtri hYtri hR hXzero
+
+/-- **Theorem 9.15**, source-oriented inverse-identity form of the split-level
+`Gtilde` supplied-resolvent zero-upper-factor endpoint. -/
+theorem higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_source_inverse_identities_right_zero
+    {n : ℕ}
+    (Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU : Matrix (Fin n) (Fin n) ℝ)
+    (R : Matrix (Fin n) (Fin n) ℝ)
+    (hLleft : LhatInv * Lhat = 1)
+    (hUright : Uhat * UhatInv = 1)
+    (hfact :
+      (1 : Matrix (Fin n) (Fin n) ℝ) -
+          (show Matrix (Fin n) (Fin n) ℝ from
+            higham9_27_GMatrix LhatInv ΔA UhatInv) =
+        ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul LhatInv ΔL)) *
+          ((1 : Matrix (Fin n) (Fin n) ℝ) -
+            (show Matrix (Fin n) (Fin n) ℝ from rectMatMul ΔU UhatInv)))
+    (hXtri :
+      ∀ i j : Fin n, i.val ≤ j.val → rectMatMul LhatInv ΔL i j = 0)
+    (hYtri :
+      ∀ i j : Fin n, j.val < i.val → rectMatMul ΔU UhatInv i j = 0)
+    (hR :
+      ch7NonnegativeResolvent n
+        (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)) R)
+    (hYzero : ∀ i j : Fin n, rectMatMul ΔU UhatInv i j = 0) :
+    (∀ i j, |ΔL i j| ≤
+        rectMatMul (absMatrix n Lhat)
+          (higham9_15_strilPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv)))) i j) ∧
+      (∀ i j, |ΔU i j| ≤
+        rectMatMul
+          (higham9_15_triuPart
+            (rectMatMul R
+              (absMatrix n (higham9_27_GMatrix LhatInv ΔA UhatInv))))
+          (absMatrix n Uhat) i j) :=
+  higham9_15_componentwise_source_bound_of_Gtilde_split_resolvent_majorant_of_inverse_identities_right_zero
+    Lhat Uhat LhatInv UhatInv ΔA ΔL ΔU R
+    (higham9_15_rectMatMul_right_inverse_of_matrix_left_inverse
+      Lhat LhatInv hLleft)
+    (higham9_15_rectMatMul_left_inverse_of_matrix_right_inverse
+      Uhat UhatInv hUright)
+    hfact hXtri hYtri hR hYzero
 
 /-- **Theorem 9.15**, split-level spectral-radius `Gtilde`
 canonical-resolvent endpoint.  The normalized route no longer requires a

@@ -13277,6 +13277,129 @@ theorem theorem20_10_householder_constructed_perturbed_gqr_reversed_rhs_tail_par
         hDeltaSfrob, hDeltaL22frob, hcert hDeltab0 hb_tail0⟩
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    original-source Part A certificate for the constructed rounded Householder
+    GQR record with the matching reversed-panel transformed RHS.
+
+    This composes the concrete Householder perturbation layer with the
+    triangular-solve perturbation layer.  The final source coefficients are
+    supplied by explicit dominance hypotheses, leaving the remaining work as
+    constant simplification/rank preservation rather than a hidden second
+    perturbation layer. -/
+theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partA_certificate_of_diagonal_composed
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hp : 0 < p) (hq : 0 < q)
+    (gammaA gammaB : ℝ)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2))
+    (hgammaA_matrix :
+      theorem20_10_householder_gammaA fp r p q +
+          gamma fp q * (1 + theorem20_10_householder_gammaA fp r p q) ≤
+        gammaA)
+    (hgammaA_rhs :
+      theorem20_10_householder_rhs_conservative_gamma fp r p q +
+          gamma fp q *
+            (1 + theorem20_10_householder_rhs_conservative_gamma fp r p q) ≤
+        gammaA)
+    (hgammaB_matrix :
+      theorem20_10_householder_gammaB fp r p q +
+          gamma fp p * (1 + theorem20_10_householder_gammaB fp r p q) ≤
+        gammaB) :
+    let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+      fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+    let Rb : Fin (p + q) → Fin p → ℝ :=
+      fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)
+    let S : Fin p → Fin p → ℝ :=
+      matTranspose (fun i : Fin p => fun j : Fin p =>
+        Rb (Fin.castAdd q i) j)
+    let beta : Fin q → ℝ :=
+      theorem20_10_householder_reversed_AQ2_rhs_tail fp A Qb b
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab : Fin (r + q) → ℝ,
+      (∀ i j,
+        B i j + DeltaB i j =
+          matMulRect (p + q) (p + q) p Qb Rb j i) ∧
+      frobNormRect DeltaA ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect A ∧
+      frobNormRect DeltaB ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        theorem20_10_householder_rhs_conservative_gamma fp r p q *
+          vecNorm2 b ∧
+      ∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        hpert.Q = Qb ∧ hpert.S = S ∧
+        (∀ j : Fin q,
+          matMulVec (r + q) (matTranspose hpert.U)
+              (fun k => b k + Deltab k) (Fin.natAdd r j) =
+            beta j) ∧
+        ((∀ i : Fin p, hpert.S i i ≠ 0) →
+          (∀ i : Fin q, hpert.L22 i i ≠ 0) →
+          Nonempty
+            (Theorem20_10PartAPerturbationCertificate A B b d
+              (theorem20_10_gqr_xhat_of_transformed_tail fp hpert beta d)
+              gammaA gammaB)) := by
+  let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+    fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+  let beta : Fin q → ℝ :=
+    theorem20_10_householder_reversed_AQ2_rhs_tail fp A Qb b
+  rcases
+    theorem20_10_householder_constructed_perturbed_gqr_reversed_rhs_tail_partA_certificate_of_diagonal
+      fp A B b d hp hq hvalidA hvalidB hhalf with
+    ⟨DeltaA, DeltaB, Deltab, hDeltaBrep, hDeltaA, hDeltaB, hDeltab,
+      hpert, hQeq, hSeq, hb_tail, hdiag_cert⟩
+  have hKB_pos : 0 < householderConstructApplyGammaIndex (p + q) := by
+    dsimp [householderConstructApplyGammaIndex]
+    omega
+  have hKA_pos : 0 < householderConstructApplyGammaIndex (r + q) := by
+    dsimp [householderConstructApplyGammaIndex]
+    omega
+  have hvalidS : gammaValid fp p := by
+    exact gammaValid_mono fp
+      (Nat.le_mul_of_pos_right p hKB_pos) hvalidB
+  have hidxA_ge_q :
+      q ≤ (p + q) * householderConstructApplyGammaIndex (r + q) :=
+    le_trans (by omega)
+      (Nat.le_mul_of_pos_right (p + q) hKA_pos)
+  have hvalidL22 : gammaValid fp q :=
+    gammaValid_mono fp hidxA_ge_q hvalidA
+  have hgammap_nonneg : 0 ≤ gamma fp p := gamma_nonneg fp hvalidS
+  have hgammaq_nonneg : 0 ≤ gamma fp q := gamma_nonneg fp hvalidL22
+  have hgammaB0_nonneg :
+      0 ≤ theorem20_10_householder_gammaB fp r p q := by
+    simpa [theorem20_10_householder_gammaB] using
+      H19.Theorem19_4.gamma_tilde_nonneg fp hvalidB
+  have hgammaB_solution : gamma fp p ≤ gammaB := by
+    have hpre :
+        gamma fp p ≤
+          theorem20_10_householder_gammaB fp r p q +
+            gamma fp p * (1 + theorem20_10_householder_gammaB fp r p q) := by
+      nlinarith [hgammap_nonneg, hgammaB0_nonneg]
+    exact le_trans hpre hgammaB_matrix
+  refine
+    ⟨DeltaA, DeltaB, Deltab, hDeltaBrep, hDeltaA, hDeltaB, hDeltab,
+      hpert, hQeq, hSeq, hb_tail, ?_⟩
+  intro hSdiag hL22diag
+  rcases hdiag_cert hSdiag hL22diag with
+    ⟨_DeltaS, _DeltaL22, _hDeltaSbound, _hDeltaL22bound,
+      _hDeltaSfrob, _hDeltaL22frob, hcert⟩
+  exact
+    theorem20_10_nonempty_partA_certificate_compose_source_perturbations
+      A B b d (theorem20_10_gqr_xhat_of_transformed_tail fp hpert beta d)
+      DeltaA DeltaB Deltab hgammaq_nonneg hgammap_nonneg
+      hDeltaA hDeltaB hDeltab
+      hgammaA_matrix hgammaA_rhs hgammaB_matrix hgammaB_solution hcert
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     rank obstruction for the rounded Householder perturbed GQR record.
 
     After `theorem20_10_householder_constructed_perturbed_gqr_factorization`
