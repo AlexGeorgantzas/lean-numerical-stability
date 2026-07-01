@@ -8142,6 +8142,28 @@ theorem lsNormwiseBackwardErrorMu_le_one {n : ℕ} (theta : ℝ)
     lsNormwiseBackwardErrorMu theta y ≤ 1 :=
   le_of_lt (lsNormwiseBackwardErrorMu_lt_one theta y)
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.5 limiting discussion:
+    the source scalar `mu` is `1 - 1/(1 + theta^2 ||y||_2^2)`, making the
+    `theta -> infinity` limit algebraically explicit. -/
+theorem lsNormwiseBackwardErrorMu_eq_one_sub_inv_den {n : ℕ} (theta : ℝ)
+    (y : Fin n → ℝ) :
+    lsNormwiseBackwardErrorMu theta y =
+      1 - 1 / (1 + theta ^ 2 * vecNorm2Sq y) := by
+  unfold lsNormwiseBackwardErrorMu
+  have hden : (1 + theta ^ 2 * vecNorm2Sq y) ≠ 0 :=
+    ne_of_gt (lsNormwiseBackwardErrorMu_den_pos theta y)
+  field_simp [hden]
+  ring
+
+/-- Equivalent residual form of the `mu` limiting identity:
+    `1 - mu = 1/(1 + theta^2 ||y||_2^2)`. -/
+theorem one_sub_lsNormwiseBackwardErrorMu_eq_inv_den {n : ℕ} (theta : ℝ)
+    (y : Fin n → ℝ) :
+    1 - lsNormwiseBackwardErrorMu theta y =
+      1 / (1 + theta ^ 2 * vecNorm2Sq y) := by
+  rw [lsNormwiseBackwardErrorMu_eq_one_sub_inv_den theta y]
+  ring
+
 /-- Higham, 2nd ed., Chapter 20, equation (20.21): the source scalar
     `phi = sqrt(mu) ||r||_2 / ||y||_2` used in the alternative normwise
     backward-error formula.  This definition only records the scalar appearing
