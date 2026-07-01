@@ -13071,6 +13071,8 @@ small enough to serve as a smoke check for representative public declarations.
 #check higham9_tracePivotingGrowthSup
 #check higham9_tracePivotingGrowthValues_nonempty
 #check higham9_tracePivotingGrowthValues_le_pow_two
+#check higham9_tracePivotingGrowthValues_complete_le_wilkinsonBound_of_le_two
+#check higham9_tracePivotingGrowthValues_rook_le_fosterBound_of_le_two
 #check higham9_tracePivotingGrowthValues_bddAbove
 #check higham9_tracePivotingGrowth_le_sup
 #check higham9_tracePivotingGrowthSup_le_pow_two
