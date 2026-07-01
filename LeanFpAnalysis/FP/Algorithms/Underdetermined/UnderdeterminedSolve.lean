@@ -6985,6 +6985,56 @@ theorem higham21_lemma21_2_single_perturbation_row_bound {m n : ℕ}
       higham21_lemma21_2_symmetrized_perturbation_row_bound
         x hsq DeltaA1 DeltaA2 i
 
+private theorem higham21_sqrt_sq_add_sq_le_sqrt_two_mul
+    {a b c : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) (hc : 0 ≤ c)
+    (ha_le : a ≤ c) (hb_le : b ≤ c) :
+    Real.sqrt (a ^ 2 + b ^ 2) ≤ Real.sqrt 2 * c := by
+  have ha_sq : a ^ 2 ≤ c ^ 2 := (sq_le_sq₀ ha hc).mpr ha_le
+  have hb_sq : b ^ 2 ≤ c ^ 2 := (sq_le_sq₀ hb hc).mpr hb_le
+  apply (sq_le_sq₀
+    (Real.sqrt_nonneg _)
+    (mul_nonneg (Real.sqrt_nonneg _) hc)).mp
+  rw [Real.sq_sqrt (add_nonneg (sq_nonneg a) (sq_nonneg b))]
+  rw [mul_pow, Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 2)]
+  nlinarith
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    common row-wise relative-bound corollary for the source-case single
+    perturbation.  If both input perturbations are bounded row-by-row by
+    `eta * ||A(i,:)||_2`, the constructed single perturbation is bounded
+    row-by-row by `sqrt 2 * eta * ||A(i,:)||_2`. -/
+theorem higham21_lemma21_2_single_perturbation_row_bound_of_common_row_bound
+    {m n : ℕ}
+    (x : Fin n → ℝ)
+    (A DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    {eta : ℝ} (heta : 0 ≤ eta)
+    (hDeltaA1 : ∀ i : Fin m,
+      rectRowNorm2 DeltaA1 i ≤ eta * rectRowNorm2 A i)
+    (hDeltaA2 : ∀ i : Fin m,
+      rectRowNorm2 DeltaA2 i ≤ eta * rectRowNorm2 A i)
+    (i : Fin m) :
+    rectRowNorm2 (undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2) i ≤
+      Real.sqrt 2 * eta * rectRowNorm2 A i := by
+  have hrow :=
+    higham21_lemma21_2_single_perturbation_row_bound
+      x DeltaA1 DeltaA2 i
+  have hcommon_nonneg : 0 ≤ eta * rectRowNorm2 A i :=
+    mul_nonneg heta (rectRowNorm2_nonneg A i)
+  have hsqrt :
+      Real.sqrt (rectRowNorm2 DeltaA1 i ^ 2 +
+          rectRowNorm2 DeltaA2 i ^ 2) ≤
+        Real.sqrt 2 * (eta * rectRowNorm2 A i) :=
+    higham21_sqrt_sq_add_sq_le_sqrt_two_mul
+      (rectRowNorm2_nonneg DeltaA1 i)
+      (rectRowNorm2_nonneg DeltaA2 i)
+      hcommon_nonneg (hDeltaA1 i) (hDeltaA2 i)
+  calc
+    rectRowNorm2 (undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2) i
+        ≤ Real.sqrt (rectRowNorm2 DeltaA1 i ^ 2 +
+            rectRowNorm2 DeltaA2 i ^ 2) := hrow
+    _ ≤ Real.sqrt 2 * (eta * rectRowNorm2 A i) := hsqrt
+    _ = Real.sqrt 2 * eta * rectRowNorm2 A i := by ring
+
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     operator-2 norm form of the printed perturbation bound for the source-case
     single perturbation. -/
