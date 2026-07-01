@@ -5145,6 +5145,22 @@ theorem higham21_lemma21_2_flat_source_radius_of_product_cap
   exact hflat.trans hSourceRadius
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    scalar adapter deriving the flat source-radius product from the common
+    product-radius bound `rhoG * e <= min rho1 rho2`. -/
+theorem higham21_lemma21_2_flat_source_radius_of_common_product_radius
+    (m n : ℕ) {rhoG e rho1 rho2 tau omega : ℝ}
+    (htau : 0 ≤ tau)
+    (homega : 0 ≤ omega)
+    (hRhoGE_le_min : rhoG * e ≤ min rho1 rho2)
+    (hSourceRadius :
+      2 * (m : ℝ) * (n : ℝ) * tau * omega * min rho1 rho2 ≤
+        (1 / 2 : ℝ)) :
+    2 * (m : ℝ) * (n : ℝ) * e * tau * omega * rhoG ≤
+      (1 / 2 : ℝ) :=
+  higham21_lemma21_2_flat_source_radius_of_product_cap
+    (rho := min rho1 rho2) m n htau homega hRhoGE_le_min hSourceRadius
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     the source-size envelope implies nonnegativity of `tau` on the nonzero
     branch once the operator radii and data perturbation radius are available. -/
 theorem higham21_lemma21_2_tau_nonneg_of_source_size
@@ -5292,6 +5308,65 @@ theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_fa
         (higham21_lemma21_2_omega_nonneg_of_infNorm_bound
           AAT_inv hAATInv_le)
         (hRhoGE_le_rho hx) hSourceRadius)
+    hGramLeftInv hDataE hDeltaA1Component hDeltaA2Component hxTranspose
+    hsmall hSourceSize hAATInv_le hSourceFactor_le hAOp
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    source-operator/product-size handoff with the flat source-radius product
+    derived directly from the common `rhoG * e <= min rho1 rho2` product
+    radius, avoiding an auxiliary source cap `rho`. -/
+theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_deltaA_components_source_operator_envelopes_product_size_common_radius_product_bound_of_source_nonneg
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (E : Fin m → Fin n → ℝ)
+    (rho1 rho2 eps rhoG tauA tau omega e : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hDataEpsNonneg : x ≠ 0 → 0 ≤ eps)
+    (hDataEpsLeRho : x ≠ 0 → eps ≤ rhoG)
+    (hEOp : x ≠ 0 → rectOpNorm2Le E e)
+    (hRhoGE_le_min : x ≠ 0 → rhoG * e ≤ min rho1 rho2)
+    (hSourceRadius :
+      2 * (m : ℝ) * (n : ℝ) * tau * omega * min rho1 rho2 ≤
+        (1 / 2 : ℝ))
+    (hGramLeftInv : x ≠ 0 → IsLeftInverse m (rectGram A) AAT_inv)
+    (hDataE : x ≠ 0 → ∀ i k, 0 ≤ E i k)
+    (hDeltaA1Component : x ≠ 0 →
+      ∀ i k, |DeltaA1 i k| ≤ eps * E i k)
+    (hDeltaA2Component : x ≠ 0 →
+      ∀ i k, |DeltaA2 i k| ≤ eps * E i k)
+    (hxTranspose : x ≠ 0 →
+      x =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : x ≠ 0 → 3 * max rho1 rho2 < 1)
+    (hSourceSize : tauA + rhoG * e ≤ tau)
+    (hAATInv_le : infNorm AAT_inv ≤ omega)
+    (hSourceFactor_le :
+      2 * (m : ℝ) ^ 2 * tau * omega ≤ (1 - rho2)⁻¹)
+    (hAOp : x ≠ 0 → rectOpNorm2Le A tauA) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j)
+      b x :=
+  higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_deltaA_components_source_operator_envelopes_product_size
+    hm A x DeltaA1 DeltaA2 b y AAT_inv E rho1 rho2 eps rhoG
+    tauA tau omega e hDeltaA1 hDataEpsNonneg hDataEpsLeRho hEOp
+    hRhoGE_le_min
+    (fun hx =>
+      higham21_lemma21_2_flat_source_radius_of_common_product_radius
+        m n
+        (higham21_lemma21_2_tau_nonneg_of_source_size A E hx
+          (hDataEpsNonneg hx) (hDataEpsLeRho hx) (hEOp hx)
+          hSourceSize (hAOp hx))
+        (higham21_lemma21_2_omega_nonneg_of_infNorm_bound
+          AAT_inv hAATInv_le)
+        (hRhoGE_le_min hx) hSourceRadius)
     hGramLeftInv hDataE hDeltaA1Component hDeltaA2Component hxTranspose
     hsmall hSourceSize hAATInv_le hSourceFactor_le hAOp
 
