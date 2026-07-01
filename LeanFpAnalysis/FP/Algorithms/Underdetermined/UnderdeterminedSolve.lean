@@ -8080,6 +8080,67 @@ theorem higham21_theorem21_4_householder_qr_transpose_row_perturbation_bound
       (H19.Theorem19_4.householder_qr_backward_error
         fp n m (finiteTranspose A) hm hmn hvalid)
 
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
+    algebraic difference form of the computed final `Q` action.  If
+    `x_hat = (Q + DeltaQ)[y1;0]`, then its difference from the exact
+    `Q[y1;0]` action is precisely `DeltaQ [y1;0]`. -/
+theorem higham21_eq21_10_q_action_difference_eq_deltaQ
+    {m k : ℕ}
+    (Q DeltaQ : Fin (m + k) → Fin (m + k) → ℝ)
+    (y1 : Fin m → ℝ)
+    (x_hat : Fin (m + k) → ℝ)
+    (hx :
+      x_hat =
+        matMulVec (m + k) (fun i j => Q i j + DeltaQ i j)
+          (Fin.append y1 (0 : Fin k → ℝ))) :
+    (fun i : Fin (m + k) =>
+      x_hat i -
+        matMulVec (m + k) Q (Fin.append y1 (0 : Fin k → ℝ)) i) =
+      matMulVec (m + k) DeltaQ (Fin.append y1 (0 : Fin k → ℝ)) := by
+  ext i
+  rw [hx]
+  unfold matMulVec
+  simp_rw [add_mul]
+  rw [Finset.sum_add_distrib]
+  ring
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
+    the Frobenius perturbation bound for the computed final `Q` action implies
+    a Euclidean vector-error bound for the formed solution. -/
+theorem higham21_eq21_10_q_action_vec_error_bound
+    {m k : ℕ}
+    (Q DeltaQ : Fin (m + k) → Fin (m + k) → ℝ)
+    (y1 : Fin m → ℝ)
+    (x_hat : Fin (m + k) → ℝ)
+    (eta : ℝ)
+    (hx :
+      x_hat =
+        matMulVec (m + k) (fun i j => Q i j + DeltaQ i j)
+          (Fin.append y1 (0 : Fin k → ℝ)))
+    (hDeltaQ : frobNorm DeltaQ ≤ eta) :
+    vecNorm2 (fun i : Fin (m + k) =>
+      x_hat i -
+        matMulVec (m + k) Q (Fin.append y1 (0 : Fin k → ℝ)) i) ≤
+      eta * vecNorm2 (Fin.append y1 (0 : Fin k → ℝ)) := by
+  let z : Fin (m + k) → ℝ := Fin.append y1 (0 : Fin k → ℝ)
+  have hdiff :
+      (fun i : Fin (m + k) =>
+        x_hat i - matMulVec (m + k) Q z i) =
+        matMulVec (m + k) DeltaQ z := by
+    simpa [z] using
+      higham21_eq21_10_q_action_difference_eq_deltaQ
+        Q DeltaQ y1 x_hat hx
+  calc
+    vecNorm2 (fun i : Fin (m + k) =>
+        x_hat i -
+          matMulVec (m + k) Q (Fin.append y1 (0 : Fin k → ℝ)) i)
+        = vecNorm2 (matMulVec (m + k) DeltaQ z) := by
+            simpa [z] using congrArg vecNorm2 hdiff
+    _ ≤ frobNorm DeltaQ * vecNorm2 z :=
+        vecNorm2_matMulVec_le_frobNorm_mul DeltaQ z
+    _ ≤ eta * vecNorm2 z :=
+        mul_le_mul_of_nonneg_right hDeltaQ (vecNorm2_nonneg z)
+
 /-- **Theorem 21.4** (Higham): The Q method for underdetermined systems
     is row-wise backward stable.
 
