@@ -10720,3 +10720,14 @@ These compile, but should not be treated as fully derived stability results:
   This is dependency progress only: recursive all-tail tableau containment,
   all-tail inverse/source comparison data, Eq.13.23 `rho <= 2`/BDD product
   update, and Theorem 13.6 cited estimates remain open.
+
+- 2026-07-01 Problem 13.4 active-suffix determinant packaging: added
+  determinant-nonzero wrappers for the active-suffix first-split Eq.13.22 and
+  Eq.13.23 product witnesses, including the Eq.13.23 product-update and
+  reciprocal product-update surfaces.  The new wrappers derive the canonical
+  ambient `nonsingInv` right-inverse from
+  `det(blockMatrixFirstSplitFlat A) != 0`, so callers using the canonical
+  active-suffix all-tail source chain no longer expose the raw ambient
+  right-inverse premise at that layer.  This is proof-surface cleanup for
+  Problem 13.4; the source-strength BDD table construction, all-tail source
+  comparison data, and Theorem 13.6 cited estimates remain open.
