@@ -410,6 +410,52 @@ theorem lseStackedMatrix_add {m n p : ℕ}
   · intro i
     simp [lseStackedMatrix, Fin.append_right]
 
+/-- The squared Frobenius norm of the stacked LSE matrix splits across the two
+    row blocks. -/
+theorem frobNormSqRect_lseStackedMatrix {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ) :
+    frobNormSqRect (lseStackedMatrix A B) =
+      frobNormSqRect A + frobNormSqRect B := by
+  unfold frobNormSqRect lseStackedMatrix
+  rw [Fin.sum_univ_add]
+  simp [Fin.append_left, Fin.append_right]
+
+/-- The Frobenius norm of the stacked LSE matrix is bounded by the sum of the
+    Frobenius norms of the row blocks. -/
+theorem frobNormRect_lseStackedMatrix_le_add {m n p : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ) :
+    frobNormRect (lseStackedMatrix A B) ≤ frobNormRect A + frobNormRect B := by
+  have hsq :
+      frobNormSqRect (lseStackedMatrix A B) ≤
+        (frobNormRect A + frobNormRect B) ^ 2 := by
+    rw [frobNormSqRect_lseStackedMatrix, ← frobNormRect_sq A,
+      ← frobNormRect_sq B]
+    have hmul_nonneg : 0 ≤ frobNormRect A * frobNormRect B :=
+      mul_nonneg (frobNormRect_nonneg A) (frobNormRect_nonneg B)
+    nlinarith
+  calc
+    frobNormRect (lseStackedMatrix A B)
+        = Real.sqrt (frobNormSqRect (lseStackedMatrix A B)) := rfl
+    _ ≤ Real.sqrt ((frobNormRect A + frobNormRect B) ^ 2) :=
+        Real.sqrt_le_sqrt hsq
+    _ = |frobNormRect A + frobNormRect B| := Real.sqrt_sq_eq_abs _
+    _ = frobNormRect A + frobNormRect B :=
+        abs_of_nonneg (add_nonneg (frobNormRect_nonneg A)
+          (frobNormRect_nonneg B))
+
+/-- Frobenius bounds on the two blocks give a rectangular operator-2 bound for
+    the stacked LSE matrix. -/
+theorem rectOpNorm2Le_lseStackedMatrix_of_frobNormRect_bounds {m n p : ℕ}
+    {A : Fin m → Fin n → ℝ} {B : Fin p → Fin n → ℝ} {cA cB : ℝ}
+    (hA : frobNormRect A ≤ cA) (hB : frobNormRect B ≤ cB) :
+    rectOpNorm2Le (lseStackedMatrix A B) (cA + cB) := by
+  apply rectOpNorm2Le_of_frobNormRect_le
+  calc
+    frobNormRect (lseStackedMatrix A B)
+        ≤ frobNormRect A + frobNormRect B :=
+          frobNormRect_lseStackedMatrix_le_add A B
+    _ ≤ cA + cB := add_le_add hA hB
+
 /-- Higham, 2nd ed., Chapter 20, equation (20.24), perturbation rank bridge:
     if the source stack `[A; B]` has a vector-action lower bound `mu`, and the
     stacked perturbation has operator-2 size at most `eta < mu`, then the
@@ -15106,6 +15152,135 @@ theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_mi
     LSEFullRowRank.of_transpose_lower_bound_and_rectOpNorm2Le_lt
       (B := B) (DeltaB := DeltaB0) hBLower hBDelta hBEta
   exact hstack_branch hB hStackLower hStackDelta hStackEta
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    constructed rounded Householder GQR Part B theorem with rank preservation
+    reduced to source lower bounds dominating the already proved Frobenius
+    perturbation budgets.
+
+    The branch no longer exposes either direct perturbed rank predicates or
+    separate operator-norm perturbation certificates.  It uses the constructed
+    `DeltaA0`/`DeltaB0` Frobenius bounds to instantiate conservative
+    operator-2 radii for `DeltaB0ᵀ` and `[DeltaA0; DeltaB0]`; callers supply
+    only source lower-bound margins that strictly dominate those radii. -/
+theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_minimizer_of_frobenius_rank_margins_composed_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2)) :
+    let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+      fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+    let Rb : Fin (p + q) → Fin p → ℝ :=
+      fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)
+    let S : Fin p → Fin p → ℝ :=
+      matTranspose (fun i : Fin p => fun j : Fin p =>
+        Rb (Fin.castAdd q i) j)
+    let beta : Fin q → ℝ :=
+      theorem20_10_householder_reversed_AQ2_rhs_tail fp A Qb b
+    ∃ DeltaA0 : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB0 : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab0 : Fin (r + q) → ℝ,
+      (∀ i j,
+        B i j + DeltaB0 i j =
+          matMulRect (p + q) (p + q) p Qb Rb j i) ∧
+      frobNormRect DeltaA0 ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect A ∧
+      frobNormRect DeltaB0 ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B ∧
+      vecNorm2 Deltab0 ≤
+        theorem20_10_householder_rhs_conservative_gamma fp r p q *
+          vecNorm2 b ∧
+      ∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA0 i j)
+          (fun i j => B i j + DeltaB0 i j),
+        hpert.Q = Qb ∧ hpert.S = S ∧
+        (∀ j : Fin q,
+          matMulVec (r + q) (matTranspose hpert.U)
+              (fun k => b k + Deltab0 k) (Fin.natAdd r j) =
+            beta j) ∧
+        (∀ {muB muStack : ℝ},
+          (∀ y : Fin p → ℝ,
+            muB * vecNorm2 y ≤
+              vecNorm2
+                (rectMatMulVec
+                  (fun j : Fin (p + q) => fun i : Fin p => B i j) y)) →
+          theorem20_10_householder_gammaB fp r p q * frobNormRect B < muB →
+          (∀ x : Fin (p + q) → ℝ,
+            muStack * vecNorm2 x ≤
+              vecNorm2 (rectMatMulVec (lseStackedMatrix A B) x)) →
+          theorem20_10_householder_gammaA fp r p q * frobNormRect A +
+              theorem20_10_householder_gammaB fp r p q * frobNormRect B < muStack →
+          let xhat : Fin (p + q) → ℝ :=
+            theorem20_10_gqr_xhat_of_transformed_tail fp hpert beta d
+          let gammaA : ℝ :=
+            theorem20_10_householder_composed_partA_gammaA fp r p q
+          let gammaB : ℝ :=
+            theorem20_10_householder_composed_partA_gammaB fp r p q
+          ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+          ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+          ∃ Deltab : Fin (r + q) → ℝ,
+          ∃ Deltad : Fin p → ℝ,
+            Deltad = (0 : Fin p → ℝ) ∧
+            frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+            frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+            vecNorm2 Deltab ≤
+              gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+            vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+            IsLSEMinimizer
+              (fun i j => A i j + DeltaA i j)
+              (fun i => b i + Deltab i)
+              (fun i j => B i j + DeltaB i j)
+              (fun i => d i + Deltad i) xhat ∧
+            (∃! x : Fin (p + q) → ℝ,
+              IsLSEMinimizer
+                (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i)
+                (fun i j => B i j + DeltaB i j)
+                (fun i => d i + Deltad i) x)) := by
+  let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+    fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+  let beta : Fin q → ℝ :=
+    theorem20_10_householder_reversed_AQ2_rhs_tail fp A Qb b
+  rcases
+    theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_minimizer_of_rank_lower_bounds_composed_conservative_gamma
+      fp A B b d hp hq hvalidA hvalidB hhalf with
+    ⟨DeltaA0, DeltaB0, Deltab0, hDeltaBrep, hDeltaA0, hDeltaB0,
+      hDeltab0, hpert, hQeq, hSeq, hb_tail, hrank_branch⟩
+  refine
+    ⟨DeltaA0, DeltaB0, Deltab0, hDeltaBrep, hDeltaA0, hDeltaB0,
+      hDeltab0, hpert, hQeq, hSeq, hb_tail, ?_⟩
+  intro muB muStack hBLower hBMargin hStackLower hStackMargin
+  have hDeltaBTransposeFrob :
+      frobNormRect (fun j : Fin (p + q) => fun i : Fin p => DeltaB0 i j) ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B := by
+    have htrans :
+        frobNormRect (finiteTranspose DeltaB0) ≤
+          theorem20_10_householder_gammaB fp r p q * frobNormRect B := by
+      simpa [frobNormRect_finiteTranspose] using hDeltaB0
+    simpa [finiteTranspose] using htrans
+  have hDeltaBOp :
+      rectOpNorm2Le
+        (fun j : Fin (p + q) => fun i : Fin p => DeltaB0 i j)
+        (theorem20_10_householder_gammaB fp r p q * frobNormRect B) :=
+    rectOpNorm2Le_of_frobNormRect_le
+      (fun j : Fin (p + q) => fun i : Fin p => DeltaB0 i j)
+      hDeltaBTransposeFrob
+  have hStackOp :
+      rectOpNorm2Le (lseStackedMatrix DeltaA0 DeltaB0)
+        (theorem20_10_householder_gammaA fp r p q * frobNormRect A +
+          theorem20_10_householder_gammaB fp r p q * frobNormRect B) :=
+    rectOpNorm2Le_lseStackedMatrix_of_frobNormRect_bounds
+      hDeltaA0 hDeltaB0
+  exact
+    hrank_branch hBLower hDeltaBOp hBMargin hStackLower hStackOp hStackMargin
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), rounded Householder RHS
     Part B certificate route with the currently proved conservative RHS
