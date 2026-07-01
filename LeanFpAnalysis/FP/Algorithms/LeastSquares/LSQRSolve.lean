@@ -21944,9 +21944,9 @@ theorem lsNormwiseBackwardErrorEtaF_eq_eigenvalueFormulaRHS_and_pos_of_positive_
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.5 limiting discussion:
     under the already proved finite-positive WKS hypotheses, the printed
     eigenvalue right-hand side has the same `theta -> +∞` limit as the
-    finite-weight backward-error model.  The limit is still recorded as the
-    supremum of nonnegative finite-weight values; the matrix-only equality is a
-    separate open row. -/
+    finite-weight backward-error model.  This version records the limit as the
+    supremum of nonnegative finite-weight values; the following theorem rewrites
+    it to the matrix-only infimum using the compactness equality. -/
 theorem lsNormwiseBackwardErrorEigenvalueFormulaRHS_tendsto_nonneg_iSup_atTop_of_left_panel_rowRank_eq_card
     {m n : ℕ} (A : Fin (m + 1) → Fin n → ℝ)
     (b : Fin (m + 1) → ℝ) {y : Fin n → ℝ} (hy : y ≠ 0)
@@ -21968,6 +21968,25 @@ theorem lsNormwiseBackwardErrorEigenvalueFormulaRHS_tendsto_nonneg_iSup_atTop_of
         (lsNormwiseBackwardErrorEtaF_eq_eigenvalueFormulaRHS_and_pos_of_positive_theta_not_isLeastSquaresMinimizer_of_left_panel_rowRank_eq_card
           htheta A b hy hnot hA).1)
     (lsNormwiseBackwardErrorEtaF_tendsto_nonneg_iSup_atTop A b y)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.5 limiting discussion:
+    under the finite-positive WKS hypotheses, the printed eigenvalue
+    right-hand side tends to the matrix-only `Delta b = 0` infimum as
+    `theta -> +∞`. -/
+theorem lsNormwiseBackwardErrorEigenvalueFormulaRHS_tendsto_matrixOnlyEtaF_atTop_of_left_panel_rowRank_eq_card
+    {m n : ℕ} (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hnot : ¬ IsLeastSquaresMinimizer A b y)
+    (hA : lsRealRectRowRank A = m + 1) :
+    Filter.Tendsto
+      (fun theta : ℝ =>
+        lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y)
+      Filter.atTop
+      (nhds (lsNormwiseBackwardErrorMatrixOnlyEtaF A b y)) := by
+  rw [lsNormwiseBackwardErrorMatrixOnlyEtaF_eq_nonneg_iSup A b y]
+  exact
+    lsNormwiseBackwardErrorEigenvalueFormulaRHS_tendsto_nonneg_iSup_atTop_of_left_panel_rowRank_eq_card
+      A b hy hnot hA
 
 /-- Positive finite-`theta` WKS branch from the concrete rank-one
     source-block certificate.  This replaces the generic upper-inequality
