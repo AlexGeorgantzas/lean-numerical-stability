@@ -9698,6 +9698,84 @@ theorem lsNormwiseBackwardErrorEtaF_exists_feasible_cost_eq_of_positive_theta
       htheta A b y with ⟨DeltaA, Deltab, hfeas, heta_eq⟩
   exact ⟨DeltaA, Deltab, hfeas, heta_eq.symm⟩
 
+/-- Matrix-only limiting dependency for (20.20): any exact finite-`theta`
+    minimizer has right-hand-side perturbation norm bounded by the
+    matrix-only infimum divided by `theta`.  This makes the source's
+    "large `theta` forces `Delta b` to zero" compactness route explicit. -/
+theorem lsNormwiseBackwardErrorEtaF_minimizer_deltab_norm_le_matrixOnlyEtaF_div_theta
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (hcost :
+      lsNormwiseBackwardErrorCostF theta DeltaA Deltab =
+        lsNormwiseBackwardErrorEtaF theta A b y) :
+    vecNorm2 Deltab ≤ lsNormwiseBackwardErrorMatrixOnlyEtaF A b y / theta := by
+  have hweighted :
+      theta * vecNorm2 Deltab ≤
+        lsNormwiseBackwardErrorCostF theta DeltaA Deltab :=
+    lsNormwiseBackwardErrorCostF_weighted_deltab_le
+      (le_of_lt htheta) DeltaA Deltab
+  have heta_le :
+      lsNormwiseBackwardErrorEtaF theta A b y ≤
+        lsNormwiseBackwardErrorMatrixOnlyEtaF A b y :=
+    lsNormwiseBackwardErrorEtaF_le_matrixOnlyEtaF theta A b y
+  rw [le_div_iff₀ htheta]
+  calc
+    vecNorm2 Deltab * theta = theta * vecNorm2 Deltab := by ring
+    _ ≤ lsNormwiseBackwardErrorCostF theta DeltaA Deltab := hweighted
+    _ = lsNormwiseBackwardErrorEtaF theta A b y := hcost
+    _ ≤ lsNormwiseBackwardErrorMatrixOnlyEtaF A b y := heta_le
+
+/-- Existence form of the finite-`theta` minimizer RHS bound: for every
+    positive finite source weight, there is an exact minimizing perturbation
+    pair whose `Delta b` component is bounded by the matrix-only infimum divided
+    by `theta`. -/
+theorem lsNormwiseBackwardErrorEtaF_exists_feasible_cost_eq_deltab_norm_le_matrixOnlyEtaF_div_theta
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    ∃ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+      LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+        lsNormwiseBackwardErrorCostF theta DeltaA Deltab =
+          lsNormwiseBackwardErrorEtaF theta A b y ∧
+        vecNorm2 Deltab ≤
+          lsNormwiseBackwardErrorMatrixOnlyEtaF A b y / theta := by
+  rcases lsNormwiseBackwardErrorEtaF_exists_feasible_cost_eq_of_positive_theta
+      htheta A b y with ⟨DeltaA, Deltab, hfeas, hcost⟩
+  exact ⟨DeltaA, Deltab, hfeas, hcost,
+    lsNormwiseBackwardErrorEtaF_minimizer_deltab_norm_le_matrixOnlyEtaF_div_theta
+      htheta A b y DeltaA Deltab hcost⟩
+
+/-- Eventual RHS-vanishing form of the finite-minimizer bound: for every
+    positive tolerance, all sufficiently large finite weights admit an exact
+    minimizing perturbation pair with `||Delta b||_2` below that tolerance. -/
+theorem lsNormwiseBackwardErrorEtaF_eventually_exists_feasible_cost_eq_deltab_norm_lt_atTop
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (y : Fin n → ℝ) {eps : ℝ} (heps : 0 < eps) :
+    ∀ᶠ theta : ℝ in Filter.atTop,
+      ∃ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+        0 < theta ∧
+          LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+          lsNormwiseBackwardErrorCostF theta DeltaA Deltab =
+            lsNormwiseBackwardErrorEtaF theta A b y ∧
+          vecNorm2 Deltab < eps := by
+  let M := lsNormwiseBackwardErrorMatrixOnlyEtaF A b y
+  filter_upwards [Filter.eventually_gt_atTop (max 0 (M / eps))] with theta htheta
+  have htheta_pos : 0 < theta :=
+    lt_of_le_of_lt (le_max_left (0 : ℝ) (M / eps)) htheta
+  have hM_div_lt : M / eps < theta :=
+    lt_of_le_of_lt (le_max_right (0 : ℝ) (M / eps)) htheta
+  have hM_lt : M < eps * theta := by
+    have hraw : M < theta * eps := (div_lt_iff₀ heps).mp hM_div_lt
+    simpa [mul_comm] using hraw
+  have hdiv_lt : M / theta < eps := by
+    exact (div_lt_iff₀ htheta_pos).mpr hM_lt
+  rcases
+    lsNormwiseBackwardErrorEtaF_exists_feasible_cost_eq_deltab_norm_le_matrixOnlyEtaF_div_theta
+      htheta_pos A b y with
+    ⟨DeltaA, Deltab, hfeas, hcost, hDeltab⟩
+  exact ⟨DeltaA, Deltab, htheta_pos, hfeas, hcost,
+    lt_of_le_of_lt hDeltab (by simpa [M] using hdiv_lt)⟩
+
 /-- Finite positive-`theta` zero-backward-error characterization for (20.20):
     after minimum-attainment is available, `eta_F(y) = 0` exactly when `y` is
     already an exact least-squares minimizer for the unperturbed data.  This is
@@ -9831,6 +9909,109 @@ theorem lsNormwiseBackwardErrorEtaF_nonneg_iSup_le_matrixOnlyEtaF {m n : ℕ}
       lsNormwiseBackwardErrorMatrixOnlyEtaF A b y := by
   exact ciSup_le fun theta =>
     lsNormwiseBackwardErrorEtaF_le_matrixOnlyEtaF theta.1 A b y
+
+/-- Each finite nonnegative weighted backward error is bounded by the
+    nonnegative-weight supremum appearing in the `theta -> infinity` limiting
+    foundation for (20.20). -/
+theorem lsNormwiseBackwardErrorEtaF_le_nonneg_iSup_of_nonneg {m n : ℕ}
+    {theta : ℝ} (htheta : 0 ≤ theta)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    lsNormwiseBackwardErrorEtaF theta A b y ≤
+      (⨆ theta : {theta : ℝ // 0 ≤ theta},
+        lsNormwiseBackwardErrorEtaF theta.1 A b y) := by
+  have hbdd :
+      BddAbove (Set.range
+        (fun theta : {theta : ℝ // 0 ≤ theta} =>
+          lsNormwiseBackwardErrorEtaF theta.1 A b y)) := by
+    refine ⟨lsNormwiseBackwardErrorMatrixOnlyEtaF A b y, ?_⟩
+    rintro eta ⟨theta, rfl⟩
+    exact lsNormwiseBackwardErrorEtaF_le_matrixOnlyEtaF theta.1 A b y
+  exact le_ciSup
+    (f := fun theta : {theta : ℝ // 0 ≤ theta} =>
+      lsNormwiseBackwardErrorEtaF theta.1 A b y)
+    hbdd ⟨theta, htheta⟩
+
+/-- Compactness-route sublevel bound for (20.20): an exact finite minimizer
+    at any weight `theta >= 1` has its weight-one Frobenius cost bounded by the
+    nonnegative finite-weight supremum, the limit already proved for
+    `theta -> infinity`. -/
+theorem lsNormwiseBackwardErrorEtaF_minimizer_costF_one_le_nonneg_iSup_of_one_le_theta
+    {m n : ℕ} {theta : ℝ} (hone : 1 ≤ theta)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (hcost :
+      lsNormwiseBackwardErrorCostF theta DeltaA Deltab =
+        lsNormwiseBackwardErrorEtaF theta A b y) :
+    lsNormwiseBackwardErrorCostF (1 : ℝ) DeltaA Deltab ≤
+      (⨆ theta : {theta : ℝ // 0 ≤ theta},
+        lsNormwiseBackwardErrorEtaF theta.1 A b y) := by
+  have hmono :
+      lsNormwiseBackwardErrorCostF (1 : ℝ) DeltaA Deltab ≤
+        lsNormwiseBackwardErrorCostF theta DeltaA Deltab :=
+    lsNormwiseBackwardErrorCostF_mono_theta_nonneg
+      (by norm_num : (0 : ℝ) ≤ 1) hone DeltaA Deltab
+  have htheta_nonneg : 0 ≤ theta := le_trans zero_le_one hone
+  have heta_le :
+      lsNormwiseBackwardErrorEtaF theta A b y ≤
+        (⨆ theta : {theta : ℝ // 0 ≤ theta},
+          lsNormwiseBackwardErrorEtaF theta.1 A b y) :=
+    lsNormwiseBackwardErrorEtaF_le_nonneg_iSup_of_nonneg
+      htheta_nonneg A b y
+  calc
+    lsNormwiseBackwardErrorCostF (1 : ℝ) DeltaA Deltab ≤
+        lsNormwiseBackwardErrorCostF theta DeltaA Deltab := hmono
+    _ = lsNormwiseBackwardErrorEtaF theta A b y := hcost
+    _ ≤ (⨆ theta : {theta : ℝ // 0 ≤ theta},
+          lsNormwiseBackwardErrorEtaF theta.1 A b y) := heta_le
+
+/-- Existence form of the fixed-sublevel bound: for every finite weight
+    `theta >= 1`, an exact minimizer can be chosen whose weight-one cost is
+    bounded by the nonnegative finite-weight supremum. -/
+theorem lsNormwiseBackwardErrorEtaF_exists_feasible_cost_eq_costF_one_le_nonneg_iSup_of_one_le_theta
+    {m n : ℕ} {theta : ℝ} (hone : 1 ≤ theta)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    ∃ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+      LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+        lsNormwiseBackwardErrorCostF theta DeltaA Deltab =
+          lsNormwiseBackwardErrorEtaF theta A b y ∧
+        lsNormwiseBackwardErrorCostF (1 : ℝ) DeltaA Deltab ≤
+          (⨆ theta : {theta : ℝ // 0 ≤ theta},
+            lsNormwiseBackwardErrorEtaF theta.1 A b y) := by
+  have htheta_pos : 0 < theta := lt_of_lt_of_le zero_lt_one hone
+  rcases lsNormwiseBackwardErrorEtaF_exists_feasible_cost_eq_of_positive_theta
+      htheta_pos A b y with ⟨DeltaA, Deltab, hfeas, hcost⟩
+  exact ⟨DeltaA, Deltab, hfeas, hcost,
+    lsNormwiseBackwardErrorEtaF_minimizer_costF_one_le_nonneg_iSup_of_one_le_theta
+      hone A b y DeltaA Deltab hcost⟩
+
+/-- Eventual compactness-route package for the `theta = infinity` discussion:
+    for every positive tolerance and all sufficiently large finite weights,
+    there is an exact minimizer whose weight-one cost is bounded by the proved
+    nonnegative finite-weight limit supremum and whose right-hand-side
+    perturbation is below the tolerance. -/
+theorem lsNormwiseBackwardErrorEtaF_eventually_exists_feasible_cost_eq_costF_one_le_nonneg_iSup_deltab_norm_lt_atTop
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (y : Fin n → ℝ) {eps : ℝ} (heps : 0 < eps) :
+    ∀ᶠ theta : ℝ in Filter.atTop,
+      ∃ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+        1 ≤ theta ∧
+          0 < theta ∧
+          LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+          lsNormwiseBackwardErrorCostF theta DeltaA Deltab =
+            lsNormwiseBackwardErrorEtaF theta A b y ∧
+          lsNormwiseBackwardErrorCostF (1 : ℝ) DeltaA Deltab ≤
+            (⨆ theta : {theta : ℝ // 0 ≤ theta},
+              lsNormwiseBackwardErrorEtaF theta.1 A b y) ∧
+          vecNorm2 Deltab < eps := by
+  filter_upwards
+    [Filter.eventually_ge_atTop (1 : ℝ),
+      lsNormwiseBackwardErrorEtaF_eventually_exists_feasible_cost_eq_deltab_norm_lt_atTop
+        A b y heps] with theta hone htheta_pack
+  rcases htheta_pack with ⟨DeltaA, Deltab, htheta_pos, hfeas, hcost, hdeltab⟩
+  exact ⟨DeltaA, Deltab, hone, htheta_pos, hfeas, hcost,
+    lsNormwiseBackwardErrorEtaF_minimizer_costF_one_le_nonneg_iSup_of_one_le_theta
+      hone A b y DeltaA Deltab hcost,
+    hdeltab⟩
 
 /-- Real-parameter limiting foundation for (20.20): as `theta -> +∞`, the
     finite-weight backward error converges to the supremum of its nonnegative
