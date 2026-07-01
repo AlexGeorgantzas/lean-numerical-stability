@@ -8622,6 +8622,39 @@ theorem lsNormwiseBackwardErrorMu_tendsto_one_atTop_of_y_ne_zero {n : ℕ}
         (lsNormwiseBackwardErrorMu_eq_one_sub_inv_den theta y).symm)
     hlim
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.5 limiting discussion:
+    for nonzero `y`, the source scalar
+    `phi = sqrt(mu) ||r||_2 / ||y||_2` tends to `||r||_2 / ||y||_2` as
+    `theta -> infinity`.  This records the scalar part of the matrix-only
+    WKS limit without asserting the still-open full formula (20.21). -/
+theorem lsNormwiseBackwardErrorPhi_tendsto_ratio_atTop_of_y_ne_zero {m n : ℕ}
+    (r : Fin m → ℝ) {y : Fin n → ℝ} (hy : y ≠ 0) :
+    Filter.Tendsto (fun theta : ℝ => lsNormwiseBackwardErrorPhi theta r y)
+      Filter.atTop (nhds (vecNorm2 r / vecNorm2 y)) := by
+  have hmu :
+      Filter.Tendsto (fun theta : ℝ => lsNormwiseBackwardErrorMu theta y)
+        Filter.atTop (nhds 1) :=
+    lsNormwiseBackwardErrorMu_tendsto_one_atTop_of_y_ne_zero hy
+  have hsqrt :
+      Filter.Tendsto
+        (fun theta : ℝ => Real.sqrt (lsNormwiseBackwardErrorMu theta y))
+        Filter.atTop (nhds 1) := by
+    simpa using hmu.sqrt
+  have hmul :
+      Filter.Tendsto
+        (fun theta : ℝ =>
+          Real.sqrt (lsNormwiseBackwardErrorMu theta y) * vecNorm2 r)
+        Filter.atTop (nhds (1 * vecNorm2 r)) :=
+    hsqrt.mul tendsto_const_nhds
+  have hdiv :
+      Filter.Tendsto
+        (fun theta : ℝ =>
+          Real.sqrt (lsNormwiseBackwardErrorMu theta y) * vecNorm2 r /
+            vecNorm2 y)
+        Filter.atTop (nhds ((1 * vecNorm2 r) / vecNorm2 y)) :=
+    hmul.div_const (vecNorm2 y)
+  simpa [lsNormwiseBackwardErrorPhi] using hdiv
+
 /-- The weighted perturbation block in (20.20) applied to the vector
     `[theta y; -1]` produces `theta * (DeltaA y - Delta b)`.  This is the
     Cauchy--Schwarz witness behind the exact-residual branch of the WKS
