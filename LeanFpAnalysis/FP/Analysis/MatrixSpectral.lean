@@ -424,6 +424,112 @@ theorem finiteLoewnerLe_smul_id_of_finiteHermitianEigenvalues_le
   exact Matrix_posSemidef_sub.to_finiteLoewnerLe
     M (fun i j => L * finiteIdMatrix i j) hpsd
 
+/-- Pointwise lower bounds on all locally named Hermitian eigenvalues give the
+    scalar-identity Loewner lower bound.  This is the lower-side analogue of
+    `finiteLoewnerLe_smul_id_of_finiteHermitianEigenvalues_le`. -/
+theorem finiteLoewnerLe_smul_id_of_le_finiteHermitianEigenvalues
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (M : ι → ι → ℝ) (hM : IsSymmetricFiniteMatrix M) {L : ℝ}
+    (hEig : ∀ a : ι, L ≤ finiteHermitianEigenvalues M hM a) :
+    finiteLoewnerLe (fun i j => L * finiteIdMatrix i j) M := by
+  let Mmat : Matrix ι ι ℝ := M
+  let hherm : Matrix.IsHermitian Mmat :=
+    IsSymmetricFiniteMatrix.to_matrix_isHermitian M hM
+  let Uu := hherm.eigenvectorUnitary
+  let U : (Matrix ι ι ℝ)ˣ := Unitary.toUnits Uu
+  let D : Matrix ι ι ℝ := Matrix.diagonal (fun i : ι => hherm.eigenvalues i)
+  let S : Matrix ι ι ℝ := Matrix.diagonal (fun _ : ι => L)
+  let Ddiff : Matrix ι ι ℝ :=
+    Matrix.diagonal (fun i : ι => hherm.eigenvalues i - L)
+  have hstar : star (Uu : Matrix ι ι ℝ) =
+      ((U⁻¹ : (Matrix ι ι ℝ)ˣ) : Matrix ι ι ℝ) := by
+    change star (Uu : Matrix ι ι ℝ) = ↑(Uu⁻¹ : Matrix.unitaryGroup ι ℝ)
+    rw [← Unitary.coe_star, Unitary.star_eq_inv]
+  have hspectral :
+      Mmat = (↑U : Matrix ι ι ℝ) * D *
+          ((U⁻¹ : (Matrix ι ι ℝ)ˣ) : Matrix ι ι ℝ) := by
+    rw [hherm.spectral_theorem]
+    rw [Unitary.conjStarAlgAut_apply]
+    rw [hstar]
+    rfl
+  have hposdiag : Matrix.PosSemidef Ddiff := by
+    apply Matrix.PosSemidef.diagonal
+    intro i
+    exact sub_nonneg.mpr
+      (by simpa [finiteHermitianEigenvalues, hherm, Mmat] using hEig i)
+  have hconj_pos :
+      Matrix.PosSemidef
+        ((↑U : Matrix ι ι ℝ) * Ddiff * star (↑U : Matrix ι ι ℝ)) := by
+    exact
+      (Matrix.IsUnit.posSemidef_star_right_conjugate_iff
+        (Units.isUnit U)).mpr hposdiag
+  have hstarU : star (↑U : Matrix ι ι ℝ) =
+      ((U⁻¹ : (Matrix ι ι ℝ)ˣ) : Matrix ι ι ℝ) := by
+    exact hstar
+  have hS_eq :
+      (↑U : Matrix ι ι ℝ) * S *
+          ((U⁻¹ : (Matrix ι ι ℝ)ˣ) : Matrix ι ι ℝ) = S := by
+    have hdiag_scalar : S = L • (1 : Matrix ι ι ℝ) := by
+      ext i j
+      by_cases hij : i = j
+      · subst hij
+        simp [S, Matrix.diagonal]
+      · simp [S, Matrix.diagonal, hij]
+    rw [hdiag_scalar]
+    simp
+  have hDdiff_eq : Ddiff = D - S := by
+    ext i j
+    by_cases hij : i = j
+    · subst hij
+      simp [Ddiff, S, D, Matrix.diagonal]
+    · simp [Ddiff, S, D, Matrix.diagonal, hij]
+  have hscalar_entries :
+      ((fun i j : ι => L * finiteIdMatrix i j) : Matrix ι ι ℝ) = S := by
+    ext i j
+    by_cases hij : i = j
+    · subst hij
+      simp [S, finiteIdMatrix, Matrix.diagonal]
+    · simp [S, finiteIdMatrix, Matrix.diagonal, hij]
+  have hentrydiff :
+      ((fun i j : ι => M i j - L * finiteIdMatrix i j) : Matrix ι ι ℝ) =
+        Mmat - S := by
+    ext i j
+    have hsij := congrFun (congrFun hscalar_entries i) j
+    change M i j - L * finiteIdMatrix i j = Mmat i j - S i j
+    rw [hsij]
+  have hdiff :
+      ((fun i j : ι => M i j - L * finiteIdMatrix i j) : Matrix ι ι ℝ) =
+        (↑U : Matrix ι ι ℝ) * Ddiff * star (↑U : Matrix ι ι ℝ) := by
+    calc
+      ((fun i j : ι => M i j - L * finiteIdMatrix i j) : Matrix ι ι ℝ)
+          = Mmat - S := hentrydiff
+      _ = ((↑U : Matrix ι ι ℝ) * D *
+          ((U⁻¹ : (Matrix ι ι ℝ)ˣ) : Matrix ι ι ℝ)) - S := by
+            rw [hspectral]
+      _ = (↑U : Matrix ι ι ℝ) * (D - S) *
+          ((U⁻¹ : (Matrix ι ι ℝ)ˣ) : Matrix ι ι ℝ) := by
+            calc
+              ((↑U : Matrix ι ι ℝ) * D *
+                    ((U⁻¹ : (Matrix ι ι ℝ)ˣ) : Matrix ι ι ℝ)) - S
+                  = ((↑U : Matrix ι ι ℝ) * D *
+                      ((U⁻¹ : (Matrix ι ι ℝ)ˣ) : Matrix ι ι ℝ)) -
+                    ((↑U : Matrix ι ι ℝ) * S *
+                      ((U⁻¹ : (Matrix ι ι ℝ)ˣ) : Matrix ι ι ℝ)) := by
+                        rw [hS_eq]
+              _ = (↑U : Matrix ι ι ℝ) * (D - S) *
+                    ((U⁻¹ : (Matrix ι ι ℝ)ˣ) : Matrix ι ι ℝ) := by
+                      noncomm_ring
+      _ = (↑U : Matrix ι ι ℝ) * Ddiff *
+            star (↑U : Matrix ι ι ℝ) := by
+              rw [hDdiff_eq, hstarU]
+  have hpsd :
+      Matrix.PosSemidef
+        ((fun i j : ι => M i j - L * finiteIdMatrix i j) : Matrix ι ι ℝ) := by
+    rw [hdiff]
+    exact hconj_pos
+  exact Matrix_posSemidef_sub.to_finiteLoewnerLe
+    (fun i j => L * finiteIdMatrix i j) M hpsd
+
 /-- A symmetric positive-semidefinite finite matrix whose Hermitian
     eigenvalues are bounded above by `L` has finite operator-2 norm at most
     `L`.

@@ -11045,6 +11045,155 @@ theorem lsNormwiseBackwardErrorFormulaMatrix_rowGram_eq_eigenMatrix_add_phi_sq_i
         (lsNormwiseBackwardErrorPhi theta r y) ^ 2 * idMatrix m i k := by
           simp [phi, lsNormwiseBackwardErrorEigenMatrix]
 
+/-- Generic row-Gram quadratic-form identity:
+    `x^T (B B^T) x = ||B^T x||_2^2`. -/
+theorem finiteQuadraticForm_rowGram_transpose_eq_vecNorm2Sq_rectMatMulVec_finiteTranspose
+    {m n : ℕ} (B : Fin m → Fin n → ℝ) (p : Fin m → ℝ) :
+    finiteQuadraticForm (fun i k : Fin m => ∑ q : Fin n, B i q * B k q) p =
+      vecNorm2Sq (rectMatMulVec (finiteTranspose B) p) := by
+  unfold finiteQuadraticForm finiteMatVec vecNorm2Sq rectMatMulVec finiteTranspose
+  calc
+    (∑ i : Fin m, p i * ∑ j : Fin m, (∑ q : Fin n, B i q * B j q) * p j)
+        = ∑ i : Fin m, ∑ j : Fin m, ∑ q : Fin n,
+            p i * (B i q * B j q) * p j := by
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [Finset.mul_sum]
+            apply Finset.sum_congr rfl
+            intro j _
+            rw [Finset.sum_mul]
+            rw [Finset.mul_sum]
+            apply Finset.sum_congr rfl
+            intro q _
+            ring
+    _ = ∑ q : Fin n, ∑ i : Fin m, ∑ j : Fin m,
+            p i * (B i q * B j q) * p j := by
+            calc
+              (∑ i : Fin m, ∑ j : Fin m, ∑ q : Fin n,
+                  p i * (B i q * B j q) * p j)
+                  = ∑ i : Fin m, ∑ q : Fin n, ∑ j : Fin m,
+                      p i * (B i q * B j q) * p j := by
+                      apply Finset.sum_congr rfl
+                      intro i _
+                      rw [Finset.sum_comm]
+              _ = ∑ q : Fin n, ∑ i : Fin m, ∑ j : Fin m,
+                      p i * (B i q * B j q) * p j := by
+                      rw [Finset.sum_comm]
+    _ = ∑ q : Fin n, (∑ i : Fin m, B i q * p i) ^ 2 := by
+            apply Finset.sum_congr rfl
+            intro q _
+            rw [pow_two]
+            rw [Finset.sum_mul]
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [Finset.mul_sum]
+            apply Finset.sum_congr rfl
+            intro j _
+            ring
+
+/-- The Theorem 20.5 eigenmatrix is symmetric in the repository's finite-matrix
+    predicate form. -/
+theorem lsNormwiseBackwardErrorEigenMatrix_isSymmetricFiniteMatrix
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ)
+    (r : Fin m → ℝ) (y : Fin n → ℝ) :
+    IsSymmetricFiniteMatrix (lsNormwiseBackwardErrorEigenMatrix theta A r y) := by
+  intro i k
+  exact lsNormwiseBackwardErrorEigenMatrix_apply_comm theta A r y i k
+
+/-- `lambda_* I <= A A^T - mu rr^T / ||y||_2^2` in finite Loewner order. -/
+theorem lsNormwiseBackwardErrorLambdaStar_smul_id_finiteLoewnerLe_eigenMatrix
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ) :
+    finiteLoewnerLe
+      (fun i k : Fin (m + 1) =>
+        lsNormwiseBackwardErrorLambdaStar theta A r y * finiteIdMatrix i k)
+      (lsNormwiseBackwardErrorEigenMatrix theta A r y) := by
+  let M : Fin (m + 1) → Fin (m + 1) → ℝ :=
+    lsNormwiseBackwardErrorEigenMatrix theta A r y
+  let hM : IsSymmetricFiniteMatrix M :=
+    lsNormwiseBackwardErrorEigenMatrix_isSymmetricFiniteMatrix theta A r y
+  apply finiteLoewnerLe_smul_id_of_le_finiteHermitianEigenvalues M hM
+  intro a
+  unfold finiteHermitianEigenvalues
+  rw [Matrix.IsHermitian.eigenvalues]
+  exact
+    lsNormwiseBackwardErrorLambdaStar_le_eigenvalues₀ theta A r y
+      ((Fintype.equivOfCardEq
+        (Fintype.card_fin (Fintype.card (Fin (m + 1))))).symm a)
+
+/-- Rayleigh lower bound from the least Hermitian eigenvalue `lambda_*`. -/
+theorem lsNormwiseBackwardErrorLambdaStar_mul_vecNorm2Sq_le_eigenMatrix_quadraticForm
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (p : Fin (m + 1) → ℝ) :
+    lsNormwiseBackwardErrorLambdaStar theta A r y * vecNorm2Sq p ≤
+      finiteQuadraticForm (lsNormwiseBackwardErrorEigenMatrix theta A r y) p := by
+  have hle :=
+    lsNormwiseBackwardErrorLambdaStar_smul_id_finiteLoewnerLe_eigenMatrix
+      theta A r y p
+  rw [finiteQuadraticForm_smul_finiteIdMatrix] at hle
+  simpa [finiteVecNorm2Sq, vecNorm2Sq] using hle
+
+/-- Rayleigh lower bound for the WKS source block obtained from the row-Gram
+    identity and `lambda_*`.  This is the next spectral bridge toward the
+    equality between the (20.21) minimum RHS and the Theorem 20.5 eigenvalue
+    RHS. -/
+theorem lsNormwiseBackwardErrorFormulaMatrix_transpose_vecNorm2Sq_ge_phi_sq_add_lambdaStar
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hrsq : vecNorm2Sq r ≠ 0) (p : Fin (m + 1) → ℝ) :
+    ((lsNormwiseBackwardErrorPhi theta r y) ^ 2 +
+        lsNormwiseBackwardErrorLambdaStar theta A r y) *
+        vecNorm2Sq p ≤
+      vecNorm2Sq
+        (rectMatMulVec
+          (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y)) p) := by
+  let B : Fin (m + 1) → Fin (n + (m + 1)) → ℝ :=
+    lsNormwiseBackwardErrorFormulaMatrix theta A r y
+  let M : Fin (m + 1) → Fin (m + 1) → ℝ :=
+    lsNormwiseBackwardErrorEigenMatrix theta A r y
+  let phi : ℝ := lsNormwiseBackwardErrorPhi theta r y
+  let lambda : ℝ := lsNormwiseBackwardErrorLambdaStar theta A r y
+  have hlambda :
+      lambda * vecNorm2Sq p ≤ finiteQuadraticForm M p := by
+    simpa [lambda, M] using
+      lsNormwiseBackwardErrorLambdaStar_mul_vecNorm2Sq_le_eigenMatrix_quadraticForm
+        theta A r y p
+  have hrowEntry :
+      (fun i k : Fin (m + 1) => ∑ q : Fin (n + (m + 1)), B i q * B k q) =
+        fun i k : Fin (m + 1) => M i k + phi ^ 2 * finiteIdMatrix i k := by
+    ext i k
+    simpa [B, M, phi, finiteIdMatrix, idMatrix] using
+      lsNormwiseBackwardErrorFormulaMatrix_rowGram_eq_eigenMatrix_add_phi_sq_id
+        theta A r hy hrsq i k
+  have hquad :
+      finiteQuadraticForm
+          (fun i k : Fin (m + 1) => ∑ q : Fin (n + (m + 1)), B i q * B k q) p =
+        finiteQuadraticForm M p + phi ^ 2 * vecNorm2Sq p := by
+    rw [hrowEntry, finiteQuadraticForm_add, finiteQuadraticForm_smul_finiteIdMatrix]
+    simp [finiteVecNorm2Sq, vecNorm2Sq]
+  have hgram :=
+    finiteQuadraticForm_rowGram_transpose_eq_vecNorm2Sq_rectMatMulVec_finiteTranspose
+      B p
+  calc
+    ((lsNormwiseBackwardErrorPhi theta r y) ^ 2 +
+        lsNormwiseBackwardErrorLambdaStar theta A r y) *
+        vecNorm2Sq p
+        = lambda * vecNorm2Sq p + phi ^ 2 * vecNorm2Sq p := by
+            simp [lambda, phi]
+            ring
+    _ ≤ finiteQuadraticForm M p + phi ^ 2 * vecNorm2Sq p := by
+            nlinarith [hlambda]
+    _ =
+        finiteQuadraticForm
+          (fun i k : Fin (m + 1) => ∑ q : Fin (n + (m + 1)), B i q * B k q) p := by
+            rw [hquad]
+    _ =
+      vecNorm2Sq
+        (rectMatMulVec
+          (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y)) p) := by
+            simpa [B] using hgram
+
 /-- The appended projector block in (20.21) annihilates the residual direction:
     `[ A   phi(I - r r^+) ] [0; r] = 0` for nonzero residual `r`. -/
 theorem lsNormwiseBackwardErrorFormulaMatrix_right_residual_mulVec_eq_zero
