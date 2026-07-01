@@ -23491,6 +23491,112 @@ theorem eq19_12_componentwise_backward_error
 
 end Theorem19_4
 
+namespace Theorem19_6
+
+/-- Source-facing step-growth factor used by the Cox--Higham row-wise
+pivoting route behind Higham, Theorem 19.6.  This is a local dependency
+surface, not the complete row-wise QR stability theorem. -/
+noncomputable def rowwise_step_growth_factor : Real := 1 + Real.sqrt 2
+
+/-- The Cox--Higham row-wise step-growth factor is nonnegative. -/
+theorem rowwise_step_growth_factor_nonneg :
+    0 <= rowwise_step_growth_factor := by
+  simpa [rowwise_step_growth_factor] using coxHighamGrowthFactor_nonneg
+
+/-- Higham, Theorem 19.6 route dependency: off-pivot row-growth step under
+signed column pivoting.
+
+If the active pivot column is maximal and the pivot/target row entries are
+bounded by `B`, the exact signed Householder update grows the target entry by
+at most the Cox--Higham factor `1 + sqrt 2`.  This wraps the reusable
+`HouseholderSpecSupport` lemma with a chapter-facing name; it does not by
+itself close the full row-wise QR theorem. -/
+theorem off_pivot_row_growth_step
+    {m n : Nat} (p row : Fin m) (k j : Fin n)
+    (A : Fin m -> Fin n -> Real) (B : Real)
+    (hpivot :
+      forall l : Fin n, k.val <= l.val ->
+        householderTrailingColumnNorm2Sq (m := m) (n := n) p A l <=
+          householderTrailingColumnNorm2Sq (m := m) (n := n) p A k)
+    (hj : k.val <= j.val)
+    (hrowBound : forall l : Fin n, k.val <= l.val -> |A row l| <= B) :
+    let phi : Real :=
+        householderBetaSpec m
+          (householderTrailingActiveVector m p (fun r => A r k)
+            (signedHouseholderAlpha
+              (Real.sqrt (householderTrailingColumnNorm2Sq (m := m) (n := n) p A k))
+              (A p k))) *
+          ((Finset.univ : Finset (Fin m)).sum (fun i =>
+            householderTrailingActiveVector m p (fun r => A r k)
+                (signedHouseholderAlpha
+                  (Real.sqrt (householderTrailingColumnNorm2Sq (m := m) (n := n) p A k))
+                  (A p k)) i *
+              householderTrailingPart m p (fun r => A r j) i))
+    abs (A row j - phi * A row k) <= rowwise_step_growth_factor * B := by
+  simpa [rowwise_step_growth_factor] using
+    abs_householder_signed_pivot_update_entry_le_one_add_sqrt_two_mul_row_bound
+      p row k j A B hpivot hj hrowBound
+
+/-- Higham, Theorem 19.6 route dependency: pivot-row active-entry bound.
+
+This is the pivot-row branch of the row-wise route.  The current local lemma
+uses the ambient `sqrt m` factor from the available finite-vector norm bridge;
+the sharper source factor remains part of the eventual Theorem 19.6 audit. -/
+theorem pivot_row_entry_bound_of_stage_entry_bound
+    {m n : Nat} (k : Fin m) (j : Fin n)
+    (Astage : Nat -> Fin m -> Fin n -> Real)
+    (row0Bound : Fin m -> Real)
+    (hrow0 : 0 <= row0Bound k)
+    (hcol :
+      |Astage (k.val + 1) k j| <=
+        vecNorm2 (householderTrailingPart m k (fun i => Astage k.val i j)))
+    (hentry :
+      forall i : Fin m, k.val <= i.val ->
+        |Astage k.val i j| <=
+          rowwise_step_growth_factor ^ k.val * row0Bound k) :
+    |Astage (k.val + 1) k j| <=
+      Real.sqrt (m : Real) *
+        (rowwise_step_growth_factor ^ k.val * row0Bound k) := by
+  simpa [rowwise_step_growth_factor] using
+    coxHigham_pivot_row_entry_bound_of_stage_entry_bound
+      k j Astage row0Bound hrow0 hcol hentry
+
+/-- Higham, Theorem 19.6 route dependency: row sorting plus accumulated
+computed/exact row error.
+
+The theorem packages the source-shaped scalar recurrence used by the row-wise
+pivoting proof: exact row growth is multiplied by `(1 + sqrt 2)^k`, while
+`stepBudget` accumulates additive per-step perturbation error.  It is a
+dependency for the future full row-wise QR/preconditioner theorem, not a final
+source closure. -/
+theorem row_sorting_active_entry_bound_with_accumulated_error
+    {m n : Nat} (k : Fin m) (r : Fin m) (j : Fin n)
+    (Ahat Aexact : Nat -> Fin m -> Fin n -> Real)
+    (row0Bound : Fin m -> Real) (stepBudget : Nat -> Real)
+    (hr : k.val <= r.val)
+    (hsorted :
+      forall s : Fin m, k.val <= s.val -> row0Bound s <= row0Bound k)
+    (hinitExact : |Aexact 0 r j| <= row0Bound r)
+    (hstepExact :
+      forall t : Nat, t < k.val ->
+        |Aexact (t + 1) r j| <=
+          rowwise_step_growth_factor * |Aexact t r j|)
+    (hstepErr :
+      forall t : Nat, t < k.val ->
+        |Ahat (t + 1) r j - Aexact (t + 1) r j| <=
+          rowwise_step_growth_factor * |Ahat t r j - Aexact t r j| +
+            stepBudget t) :
+    |Ahat k.val r j| <=
+      rowwise_step_growth_factor ^ k.val * row0Bound k +
+        (rowwise_step_growth_factor ^ k.val * |Ahat 0 r j - Aexact 0 r j| +
+          scalarAffineGrowthBudget rowwise_step_growth_factor stepBudget k.val) := by
+  simpa [rowwise_step_growth_factor] using
+    coxHigham_rowSorting_active_entry_bound_with_accumulated_error
+      k r j Ahat Aexact row0Bound stepBudget hr hsorted hinitExact
+      hstepExact hstepErr
+
+end Theorem19_6
+
 namespace Theorem19_13
 
 /-- Instantiate Theorem 19.4 on the padded MGS input and convert its
