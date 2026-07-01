@@ -12563,6 +12563,228 @@ theorem lsNormwiseBackwardErrorFormulaRHS_nonneg
     lsNormwiseBackwardErrorFormulaValue_nonneg theta A
       (lsResidualHigham A b y) y
 
+/-- Upper square comparison for the WKS row-side `sigma_min`: the eigenvector
+    for `lambda_*` in the Hermitian Theorem 20.5 matrix makes the shifted
+    row-Gram action exact, while the row-side singular-value lower-bound API
+    gives `sigma_min^2 <= phi^2 + lambda_*`. -/
+theorem lsNormwiseBackwardErrorFormulaMatrixSigmaMin_sq_le_phi_sq_add_lambdaStar
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hrsq : vecNorm2Sq r ≠ 0) :
+    (lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y) ^ 2 ≤
+      (lsNormwiseBackwardErrorPhi theta r y) ^ 2 +
+        lsNormwiseBackwardErrorLambdaStar theta A r y := by
+  let B : Fin (m + 1) → Fin (n + (m + 1)) → ℝ :=
+    lsNormwiseBackwardErrorFormulaMatrix theta A r y
+  let M : Fin (m + 1) → Fin (m + 1) → ℝ :=
+    lsNormwiseBackwardErrorEigenMatrix theta A r y
+  let hM : IsSymmetricFiniteMatrix M :=
+    lsNormwiseBackwardErrorEigenMatrix_isSymmetricFiniteMatrix theta A r y
+  let phi : ℝ := lsNormwiseBackwardErrorPhi theta r y
+  let lambda : ℝ := lsNormwiseBackwardErrorLambdaStar theta A r y
+  let sigma : ℝ := lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y
+  let e : Fin (Fintype.card (Fin (m + 1))) ≃ Fin (m + 1) :=
+    Fintype.equivOfCardEq (Fintype.card_fin _)
+  let a0 : Fin (Fintype.card (Fin (m + 1))) :=
+    lsNormwiseBackwardErrorLambdaStarIndex m
+  let a : Fin (m + 1) := e a0
+  let p : Fin (m + 1) → ℝ :=
+    ⇑((IsSymmetricFiniteMatrix.to_matrix_isHermitian M hM).eigenvectorBasis a)
+  have hlambda_eig : finiteHermitianEigenvalues M hM a = lambda := by
+    unfold finiteHermitianEigenvalues lambda lsNormwiseBackwardErrorLambdaStar
+    simp only [Matrix.IsHermitian.eigenvalues]
+    congr 1
+    simp [e, a0, a]
+  have hpnorm_sq : vecNorm2Sq p = 1 := by
+    have h := finiteVecNorm2Sq_finiteHermitianEigenvector_eq_one M hM a
+    simpa [p, finiteVecNorm2Sq, vecNorm2Sq] using h
+  have hpnorm : vecNorm2 p = 1 := by
+    unfold vecNorm2
+    rw [hpnorm_sq]
+    norm_num
+  have hrowEntry :
+      (fun i k : Fin (m + 1) => ∑ q : Fin (n + (m + 1)), B i q * B k q) =
+        fun i k : Fin (m + 1) => M i k + phi ^ 2 * finiteIdMatrix i k := by
+    ext i k
+    simpa [B, M, phi, finiteIdMatrix, idMatrix] using
+      lsNormwiseBackwardErrorFormulaMatrix_rowGram_eq_eigenMatrix_add_phi_sq_id
+        theta A r hy hrsq i k
+  have hquadM : finiteQuadraticForm M p = lambda * vecNorm2Sq p := by
+    have h :=
+      finiteQuadraticForm_finiteHermitianEigenvector_eq_eigenvalue_mul_norm_sq
+        M hM a
+    simpa [p, finiteVecNorm2Sq, vecNorm2Sq, hlambda_eig] using h
+  have haction_sq :
+      vecNorm2Sq (rectMatMulVec (finiteTranspose B) p) = phi ^ 2 + lambda := by
+    have hgram :=
+      finiteQuadraticForm_rowGram_transpose_eq_vecNorm2Sq_rectMatMulVec_finiteTranspose
+        B p
+    calc
+      vecNorm2Sq (rectMatMulVec (finiteTranspose B) p)
+          =
+        finiteQuadraticForm
+          (fun i k : Fin (m + 1) => ∑ q : Fin (n + (m + 1)), B i q * B k q) p := by
+            rw [hgram]
+      _ =
+        finiteQuadraticForm
+          (fun i k : Fin (m + 1) => M i k + phi ^ 2 * finiteIdMatrix i k) p := by
+            rw [hrowEntry]
+      _ = finiteQuadraticForm M p + phi ^ 2 * vecNorm2Sq p := by
+            rw [finiteQuadraticForm_add, finiteQuadraticForm_smul_finiteIdMatrix]
+            simp [finiteVecNorm2Sq, vecNorm2Sq]
+      _ = lambda * vecNorm2Sq p + phi ^ 2 * vecNorm2Sq p := by
+            rw [hquadM]
+      _ = phi ^ 2 + lambda := by
+            rw [hpnorm_sq]
+            ring
+  have hsigma_le_norm :
+      sigma ≤ vecNorm2 (rectMatMulVec (finiteTranspose B) p) := by
+    have h :=
+      lsNormwiseBackwardErrorFormulaMatrixSigmaMin_mul_vecNorm2_le_transpose_mulVec
+        theta A r y p
+    simpa [sigma, B, hpnorm] using h
+  have hsigma_nonneg : 0 ≤ sigma := by
+    simpa [sigma] using
+      lsNormwiseBackwardErrorFormulaMatrixSigmaMin_nonneg theta A r y
+  have hsquare :
+      sigma ^ 2 ≤ (vecNorm2 (rectMatMulVec (finiteTranspose B) p)) ^ 2 := by
+    exact
+      (sq_le_sq₀ hsigma_nonneg
+        (vecNorm2_nonneg (rectMatMulVec (finiteTranspose B) p))).mpr
+        hsigma_le_norm
+  rw [vecNorm2_sq, haction_sq] at hsquare
+  simpa [sigma, phi, lambda] using hsquare
+
+/-- Lower square comparison for the WKS row-side `sigma_min`: the Rayleigh
+    lower bound applied to an exact row-side `sigma_min` attainer gives
+    `phi^2 + lambda_* <= sigma_min^2`. -/
+theorem lsNormwiseBackwardErrorFormulaMatrixSigmaMin_sq_ge_phi_sq_add_lambdaStar
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hrsq : vecNorm2Sq r ≠ 0) :
+    (lsNormwiseBackwardErrorPhi theta r y) ^ 2 +
+        lsNormwiseBackwardErrorLambdaStar theta A r y ≤
+      (lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y) ^ 2 := by
+  let B : Fin (m + 1) → Fin (n + (m + 1)) → ℝ :=
+    lsNormwiseBackwardErrorFormulaMatrix theta A r y
+  let phi : ℝ := lsNormwiseBackwardErrorPhi theta r y
+  let lambda : ℝ := lsNormwiseBackwardErrorLambdaStar theta A r y
+  let sigma : ℝ := lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y
+  rcases
+    lsNormwiseBackwardErrorFormulaMatrixSigmaMin_exists_transpose_attaining_vector_sq
+      theta A r y with
+    ⟨p, hp_ne, hp_action⟩
+  have hp_norm_ne : vecNorm2 p ≠ 0 := by
+    intro hnorm
+    apply hp_ne
+    ext i
+    exact (vecNorm2_eq_zero_iff p).mp hnorm i
+  have hp_sq_pos : 0 < vecNorm2Sq p := by
+    rw [← vecNorm2_sq p]
+    exact sq_pos_of_ne_zero hp_norm_ne
+  have hlower :=
+    lsNormwiseBackwardErrorFormulaMatrix_transpose_vecNorm2Sq_ge_phi_sq_add_lambdaStar
+      theta A r hy hrsq p
+  have hmul : (phi ^ 2 + lambda) * vecNorm2Sq p ≤ sigma ^ 2 * vecNorm2Sq p := by
+    simpa [B, phi, lambda, sigma] using
+      (hlower.trans (le_of_eq hp_action))
+  exact le_of_mul_le_mul_right hmul hp_sq_pos
+
+/-- Exact square bridge between the row-side source-block singular value in
+    (20.21) and the shifted least eigenvalue in Theorem 20.5. -/
+theorem lsNormwiseBackwardErrorFormulaMatrixSigmaMin_sq_eq_phi_sq_add_lambdaStar
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hrsq : vecNorm2Sq r ≠ 0) :
+    (lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y) ^ 2 =
+      (lsNormwiseBackwardErrorPhi theta r y) ^ 2 +
+        lsNormwiseBackwardErrorLambdaStar theta A r y :=
+  le_antisymm
+    (lsNormwiseBackwardErrorFormulaMatrixSigmaMin_sq_le_phi_sq_add_lambdaStar
+      theta A r hy hrsq)
+    (lsNormwiseBackwardErrorFormulaMatrixSigmaMin_sq_ge_phi_sq_add_lambdaStar
+      theta A r hy hrsq)
+
+/-- The (20.21) minimum RHS agrees with the Theorem 20.5 eigenvalue RHS for a
+    supplied nonzero residual and finite nonzero `y`.  This closes the
+    finite-`theta` WKS spectral equivalence at the formula-value layer. -/
+theorem lsNormwiseBackwardErrorFormulaValue_eq_eigenvalueFormulaValue
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hrsq : vecNorm2Sq r ≠ 0) :
+    lsNormwiseBackwardErrorFormulaValue theta A r y =
+      lsNormwiseBackwardErrorEigenvalueFormulaValue theta A r y := by
+  let phi : ℝ := lsNormwiseBackwardErrorPhi theta r y
+  let sigma : ℝ := lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y
+  let lambda : ℝ := lsNormwiseBackwardErrorLambdaStar theta A r y
+  have hphi_nonneg : 0 ≤ phi := by
+    simpa [phi] using lsNormwiseBackwardErrorPhi_nonneg theta r y
+  have hsigma_nonneg : 0 ≤ sigma := by
+    simpa [sigma] using
+      lsNormwiseBackwardErrorFormulaMatrixSigmaMin_nonneg theta A r y
+  have hsq : sigma ^ 2 = phi ^ 2 + lambda := by
+    simpa [sigma, phi, lambda] using
+      lsNormwiseBackwardErrorFormulaMatrixSigmaMin_sq_eq_phi_sq_add_lambdaStar
+        theta A r hy hrsq
+  have hphi_sq_source :
+      (vecNorm2Sq r / vecNorm2Sq y) * lsNormwiseBackwardErrorMu theta y =
+        phi ^ 2 := by
+    have h := lsNormwiseBackwardErrorPhi_sq_eq_mu_mul_residual_sq_div_y_sq
+      theta r y
+    rw [h]
+    ring
+  by_cases hlambda_nonneg : 0 ≤ lambda
+  · have hphi_sq_le_sigma_sq : phi ^ 2 ≤ sigma ^ 2 := by
+      rw [hsq]
+      nlinarith
+    have hphi_le_sigma : phi ≤ sigma :=
+      (sq_le_sq₀ hphi_nonneg hsigma_nonneg).mp hphi_sq_le_sigma_sq
+    have hformula : lsNormwiseBackwardErrorFormulaValue theta A r y = phi := by
+      unfold lsNormwiseBackwardErrorFormulaValue
+      exact min_eq_left (by simpa [phi, sigma] using hphi_le_sigma)
+    have heigen :
+        lsNormwiseBackwardErrorEigenvalueFormulaValue theta A r y = phi := by
+      simpa [phi, lambda] using
+        lsNormwiseBackwardErrorEigenvalueFormulaValue_eq_phi_of_lambdaStar_nonneg
+          theta A r y (by simpa [lambda] using hlambda_nonneg)
+    rw [hformula, heigen]
+  · have hlambda_neg : lambda < 0 := lt_of_not_ge hlambda_nonneg
+    have hsigma_sq_le_phi_sq : sigma ^ 2 ≤ phi ^ 2 := by
+      rw [hsq]
+      nlinarith
+    have hsigma_le_phi : sigma ≤ phi :=
+      (sq_le_sq₀ hsigma_nonneg hphi_nonneg).mp hsigma_sq_le_phi_sq
+    have hformula :
+        lsNormwiseBackwardErrorFormulaValue theta A r y = sigma := by
+      unfold lsNormwiseBackwardErrorFormulaValue
+      exact min_eq_right (by simpa [phi, sigma] using hsigma_le_phi)
+    have heigen :
+        lsNormwiseBackwardErrorEigenvalueFormulaValue theta A r y = sigma := by
+      rw [lsNormwiseBackwardErrorEigenvalueFormulaValue_eq_sqrt_of_lambdaStar_neg
+        theta A r y (by simpa [lambda] using hlambda_neg)]
+      have hinside :
+          (vecNorm2Sq r / vecNorm2Sq y) * lsNormwiseBackwardErrorMu theta y +
+              lsNormwiseBackwardErrorLambdaStar theta A r y =
+            sigma ^ 2 := by
+        rw [hphi_sq_source]
+        simpa [phi, lambda] using hsq.symm
+      rw [hinside, Real.sqrt_sq_eq_abs, abs_of_nonneg hsigma_nonneg]
+    rw [hformula, heigen]
+
+/-- Source-data version of the WKS finite-`theta` spectral equivalence between
+    the (20.21) minimum RHS and the Theorem 20.5 eigenvalue RHS, under the
+    nonzero residual and nonzero `y` hypotheses required by the row-Gram shift. -/
+theorem lsNormwiseBackwardErrorFormulaRHS_eq_eigenvalueFormulaRHS_of_residual_sq_ne_zero
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hrsq : vecNorm2Sq (lsResidualHigham A b y) ≠ 0) :
+    lsNormwiseBackwardErrorFormulaRHS theta A b y =
+      lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y := by
+  simpa [lsNormwiseBackwardErrorFormulaRHS,
+    lsNormwiseBackwardErrorEigenvalueFormulaRHS] using
+    lsNormwiseBackwardErrorFormulaValue_eq_eigenvalueFormulaValue
+      theta A (lsResidualHigham A b y) hy hrsq
+
 /-- Positivity characterization for the printed right-hand side in (20.21):
     the outer minimum `min {phi, sigma_min}` is positive exactly when both
     displayed nonnegative branches are positive. -/
