@@ -20,6 +20,19 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-07-01 first-split global-tableau product-update checkpoint:
+  added
+  `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_tail_chain_matrix_stage_history_exact_kappa_of_product_bound_diag_update`
+  and
+  `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_tail_chain_matrix_stage_history_exact_kappa_of_product_bound_diag_update_reciprocal`.
+  These remove the raw first-split Eq.13.23 `rho <= 2` hypothesis from the
+  fixed-ambient global-tableau product-witness surface by transporting the
+  uniform-flat matrix-stage BDD product/update theorem across the
+  first-split/uniform representation bridge.  The reciprocal wrapper accepts
+  the Theorem 13.7 source reciprocal table instead of the scalar pivot-product
+  bound.  This is dependency progress only: all-tail ambient inverse-entry
+  comparison, global all-tail source-table BDD data, and Theorem 13.6 cited
+  implementation estimates remain open.
 - 2026-07-01 two-block active-tail product-witness checkpoint:
   added
   `higham13_eq13_22_exists_blockLUFact_two_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa`
