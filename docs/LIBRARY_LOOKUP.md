@@ -3471,6 +3471,7 @@ Core Cholesky modules:
 - `spd_schur_complement_isSymPosDef`
 - `LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskySolve`
 - `LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyDemmel`
+- `LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyFl`
 - `LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyPerturbation`
 - `LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyPSD`
 - `LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyIndefinite`
@@ -3515,6 +3516,10 @@ Source-facing Chapter 10 wrappers:
 - `cholesky_succeeds_of_scaled_perturbation`
 - `fl_sqrt_sq_backward_error`
 - `fl_sqrt_sq_backward_error_gamma`
+- `fl_cholSubFold`
+- `fl_cholSubFold_error`
+- `fl_chol_offdiag_step_error`
+- `fl_chol_diag_step_error`
 - `higham10_8_sun_normwise_perturbation`
 - `higham10_8_sun_componentwise_perturbation`
 - `higham10_9_PivotedCholeskySpec`
