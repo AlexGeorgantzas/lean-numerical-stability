@@ -9796,6 +9796,42 @@ theorem lsNormwiseBackwardErrorEtaF_nat_iSup_le_matrixOnlyEtaF {m n : ℕ}
   exact ciSup_le fun k =>
     lsNormwiseBackwardErrorEtaF_le_matrixOnlyEtaF (k : ℝ) A b y
 
+/-- Nonnegative-weight limiting foundation for the finite-weight model in
+    (20.20): along the ordered subtype of nonnegative real weights, `eta_F`
+    converges to the supremum of its finite nonnegative values. -/
+theorem lsNormwiseBackwardErrorEtaF_nonneg_tendsto_iSup {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    Filter.Tendsto
+      (fun theta : {theta : ℝ // 0 ≤ theta} =>
+        lsNormwiseBackwardErrorEtaF theta.1 A b y)
+      Filter.atTop
+      (nhds (⨆ theta : {theta : ℝ // 0 ≤ theta},
+        lsNormwiseBackwardErrorEtaF theta.1 A b y)) := by
+  have hmono :
+      Monotone (fun theta : {theta : ℝ // 0 ≤ theta} =>
+        lsNormwiseBackwardErrorEtaF theta.1 A b y) := by
+    intro theta1 theta2 htheta
+    exact lsNormwiseBackwardErrorEtaF_mono_theta_nonneg
+      theta1.2 htheta A b y
+  have hbdd :
+      BddAbove (Set.range
+        (fun theta : {theta : ℝ // 0 ≤ theta} =>
+          lsNormwiseBackwardErrorEtaF theta.1 A b y)) := by
+    refine ⟨lsNormwiseBackwardErrorMatrixOnlyEtaF A b y, ?_⟩
+    rintro eta ⟨theta, rfl⟩
+    exact lsNormwiseBackwardErrorEtaF_le_matrixOnlyEtaF theta.1 A b y
+  exact tendsto_atTop_ciSup hmono hbdd
+
+/-- The supremum of the finite nonnegative-weight `eta_F` values is bounded
+    above by the matrix-only limiting infimum. -/
+theorem lsNormwiseBackwardErrorEtaF_nonneg_iSup_le_matrixOnlyEtaF {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    (⨆ theta : {theta : ℝ // 0 ≤ theta},
+        lsNormwiseBackwardErrorEtaF theta.1 A b y) ≤
+      lsNormwiseBackwardErrorMatrixOnlyEtaF A b y := by
+  exact ciSup_le fun theta =>
+    lsNormwiseBackwardErrorEtaF_le_matrixOnlyEtaF theta.1 A b y
+
 /-- A bounded feasible perturbation cost in (20.20) bounds the infimum model
     `eta_F(y)`. -/
 theorem lsNormwiseBackwardErrorEtaF_le_of_feasible_cost_le {m n : ℕ}
