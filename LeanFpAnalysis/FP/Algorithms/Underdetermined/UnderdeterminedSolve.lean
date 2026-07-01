@@ -5766,6 +5766,52 @@ theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_fa
     hAATInv_le (fun hx => by simpa using hSourceFactor_le_radius hx) hAOp
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    source-style self-radius `eps` handoff with global scalar, operator-envelope,
+    and componentwise data assumptions.  The only remaining branch-dependent
+    assumption is the nonzero-branch transpose representation of `x`. -/
+theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_deltaA_components_source_operator_envelopes_exact_size_eps_self_radius_global_bounds
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (E : Fin m → Fin n → ℝ)
+    (eps tauA omega e : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hDataEpsNonneg : 0 ≤ eps)
+    (hEOp : rectOpNorm2Le E e)
+    (hSourceRadius :
+      2 * (m : ℝ) * (n : ℝ) * (tauA + eps * e) * omega *
+          (eps * e) ≤
+        (1 / 2 : ℝ))
+    (hGramLeftInv : IsLeftInverse m (rectGram A) AAT_inv)
+    (hDataE : ∀ i k, 0 ≤ E i k)
+    (hDeltaA1Component : ∀ i k, |DeltaA1 i k| ≤ eps * E i k)
+    (hDeltaA2Component : ∀ i k, |DeltaA2 i k| ≤ eps * E i k)
+    (hxTranspose : x ≠ 0 →
+      x =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : 3 * (eps * e) < 1)
+    (hAATInv_le : infNorm AAT_inv ≤ omega)
+    (hSourceFactor_le_radius :
+      2 * (m : ℝ) ^ 2 * (tauA + eps * e) * omega ≤ eps * e)
+    (hAOp : rectOpNorm2Le A tauA) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j)
+      b x :=
+  higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_deltaA_components_source_operator_envelopes_exact_size_eps_self_radius_factor_bound
+    hm A x DeltaA1 DeltaA2 b y AAT_inv E eps tauA omega e hDeltaA1
+    (fun _ => hDataEpsNonneg) (fun _ => hEOp) hSourceRadius
+    (fun _ => hGramLeftInv) (fun _ => hDataE) (fun _ => hDeltaA1Component)
+    (fun _ => hDeltaA2Component) hxTranspose (fun _ => hsmall)
+    hAATInv_le (fun _ => hSourceFactor_le_radius) (fun _ => hAOp)
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     guarded source-factor handoff with perturbed Gram nonsingularity discharged
     from a componentwise bound on the Gram perturbation.  The remaining
     nonzero-branch matrix-analysis obligation is the concrete operator-2 bound
