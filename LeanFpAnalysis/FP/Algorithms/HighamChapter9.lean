@@ -59800,6 +59800,37 @@ theorem higham9_tracePivotingGrowthSup_le_pow_two
   intro r hr
   exact higham9_tracePivotingGrowthValues_le_pow_two kind hr
 
+/-- **Growth-factor source family / equation (9.14)**, generic trace-family
+complete-pivoting supremum bound at Wilkinson's displayed RHS in dimensions
+one and two.
+
+This is the `higham9_TracePivotingGrowthKind` wrapper around the existing
+complete-pivoting trace supremum closure; Wilkinson's general product bound
+remains separate. -/
+theorem higham9_tracePivotingGrowthSup_complete_le_wilkinsonBound_of_le_two
+    {n : ℕ} (hn : 0 < n) (hle : n ≤ 2) :
+    higham9_tracePivotingGrowthSup
+        higham9_TracePivotingGrowthKind.completePivoting n ≤
+      higham9_14_completePivotWilkinsonBound n := by
+  simpa [higham9_tracePivotingGrowthSup, higham9_tracePivotingGrowthValues] using
+    higham9_14_completePivotingUTraceGrowthSup_le_wilkinsonBound_of_le_two
+      hn hle
+
+/-- **Growth-factor source family / equation (9.16)**, generic trace-family
+rook-pivoting supremum bound at Foster's displayed RHS in dimensions one and
+two.
+
+This is the `higham9_TracePivotingGrowthKind` wrapper around the existing
+rook-pivoting trace supremum closure; Foster's general product bound remains
+separate. -/
+theorem higham9_tracePivotingGrowthSup_rook_le_fosterBound_of_le_two
+    {n : ℕ} (hn : 0 < n) (hle : n ≤ 2) :
+    higham9_tracePivotingGrowthSup
+        higham9_TracePivotingGrowthKind.rookPivoting n ≤
+      higham9_16_rookPivotFosterBound n := by
+  simpa [higham9_tracePivotingGrowthSup, higham9_tracePivotingGrowthValues] using
+    higham9_16_rookPivotingUTraceGrowthSup_le_fosterBound_of_le_two hn hle
+
 /-- **Theorem 9.5 / Theorem 9.7**, source-facing partial-pivoting exact solve
 wrapper for every nonsingular real input.
 
