@@ -170,10 +170,13 @@
     hypothesis at this source-chain surface while keeping the direct comparison
     and product/update obligations explicit
   - Higham13Eq1322GlobalTableauSourceChain,
+    higham13_algorithm13_3_activeSuffixTail,
+    higham13_algorithm13_3_activeSuffixStageTailBlock,
     Higham13Eq1322GlobalTableauSourceChain.one_of_blockMaxNorm_le_global_tableau,
     Higham13Eq1322GlobalTableauSourceChain.one_from_matrix_stage_history_tail_exact_kappa,
     Higham13Eq1322GlobalTableauSourceChain.succ_from_matrix_stage_history_active_tail_exact_kappa,
     Higham13Eq1322GlobalTableauSourceChain.succ_from_matrix_stage_history_active_tail_with_derived_tail_inverse_entry_exact_kappa,
+    Higham13Eq1322GlobalTableauSourceChain.activeSuffix_from_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa,
     Higham13Eq1322GlobalTableauSourceChain.two_from_matrix_stage_history_active_tail_exact_kappa,
     Higham13Eq1322GlobalTableauSourceChain.three_from_matrix_stage_history_active_tail_exact_kappa,
     Higham13Eq1322GlobalTableauSourceChain.succ_from_matrix_stage_history_first_split_exact_kappa,
@@ -18621,6 +18624,96 @@ noncomputable def higham13_algorithm13_3_schurStageMatrixTailBlock
     (k : ℕ) (tail : Fin b → Fin m) :
     Fin b → Fin b → Matrix (Fin r) (Fin r) ℝ :=
   fun i j => higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k (tail i) (tail j)
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
+    canonical active suffix of block indices at Schur stage `k`.
+
+    For a suffix of length `b`, this maps local tail index `i` to the ambient
+    block index `k + i`.  It is the source-shaped tail list used by the
+    all-stage Problem 13.4 Eq.13.22/Eq.13.23 route. -/
+noncomputable def higham13_algorithm13_3_activeSuffixTail
+    (M k b : ℕ) (hkb : k + b ≤ M) : Fin b → Fin M :=
+  fun i => ⟨k + i.val, by
+    have hi : i.val < b := i.isLt
+    exact Nat.lt_of_lt_of_le (Nat.add_lt_add_left hi k) hkb⟩
+
+@[simp] theorem higham13_algorithm13_3_activeSuffixTail_val
+    {M k b : ℕ} (hkb : k + b ≤ M) (i : Fin b) :
+    (higham13_algorithm13_3_activeSuffixTail M k b hkb i).val =
+      k + i.val := rfl
+
+theorem higham13_algorithm13_3_activeSuffixTail_zero
+    {M k b : ℕ} (hkb : k + (b + 1) ≤ M) (hkM : k < M) :
+    higham13_algorithm13_3_activeSuffixTail M k (b + 1) hkb 0 =
+      ⟨k, hkM⟩ := by
+  ext
+  simp [higham13_algorithm13_3_activeSuffixTail]
+
+theorem higham13_algorithm13_3_activeSuffixTail_succ
+    {M k b : ℕ} (hkb : k + ((b + 1) + 1) ≤ M)
+    (hkb_tail : k + 1 + (b + 1) ≤ M) (i : Fin (b + 1)) :
+    higham13_algorithm13_3_activeSuffixTail M k ((b + 1) + 1) hkb (Fin.succ i) =
+      higham13_algorithm13_3_activeSuffixTail M (k + 1) (b + 1) hkb_tail i := by
+  ext
+  simp [higham13_algorithm13_3_activeSuffixTail, Nat.add_comm, Nat.add_left_comm]
+
+theorem higham13_algorithm13_3_activeSuffixTail_active
+    {M k b : ℕ} (hkb_tail : k + 1 + (b + 1) ≤ M)
+    (i : Fin (b + 1)) :
+    k + 1 ≤
+      (higham13_algorithm13_3_activeSuffixTail M (k + 1) (b + 1)
+        hkb_tail i).val := by
+  simp [higham13_algorithm13_3_activeSuffixTail]
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
+    recorded Schur-stage matrix restricted to the canonical active suffix. -/
+noncomputable abbrev higham13_algorithm13_3_activeSuffixStageTailBlock
+    {M r : ℕ}
+    (A : Fin M → Fin M → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (k m : ℕ) (hkm : k + (m + 1) ≤ M) :
+    Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ :=
+  higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k
+    (higham13_algorithm13_3_activeSuffixTail M k (m + 1) hkm)
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
+    at stage zero, the canonical active suffix is the whole input matrix. -/
+theorem higham13_algorithm13_3_activeSuffixStageTailBlock_zero_eq
+    {m r : ℕ}
+    (A : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (h0m : 0 + (m + 1) ≤ m + 1) :
+    higham13_algorithm13_3_activeSuffixStageTailBlock A pivotInv 0 m h0m = A := by
+  ext i j s t
+  simp [higham13_algorithm13_3_activeSuffixStageTailBlock,
+    higham13_algorithm13_3_activeSuffixTail,
+    higham13_algorithm13_3_schurStageMatrixTailBlock,
+    higham13_algorithm13_3_schurStageMatrixBlock,
+    higham13_algorithm13_3_schurStageBlock]
+
+/-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
+    at stage one, the canonical active suffix is the first Schur complement. -/
+theorem higham13_algorithm13_3_activeSuffixStageTailBlock_one_eq_blockSchur
+    {m r : ℕ}
+    (A : Fin ((m + 1) + 1) → Fin ((m + 1) + 1) →
+      Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (A11_inv : Matrix (Fin r) (Fin r) ℝ)
+    (h1m : 1 + (m + 1) ≤ (m + 1) + 1)
+    (hpivot : pivotInv 0 = A11_inv) :
+    higham13_algorithm13_3_activeSuffixStageTailBlock A pivotInv 1 m h1m =
+      blockSchur A A11_inv := by
+  have htail :
+      higham13_algorithm13_3_activeSuffixTail ((m + 1) + 1) 1 (m + 1) h1m =
+        Fin.succ := by
+    funext i
+    ext
+    simp [higham13_algorithm13_3_activeSuffixTail, Nat.add_comm]
+  rw [← higham13_algorithm13_3_schurStageMatrixBlock_one_tail_eq_blockSchur
+    A pivotInv A11_inv hpivot]
+  ext i j s t
+  simp [higham13_algorithm13_3_activeSuffixStageTailBlock,
+    higham13_algorithm13_3_schurStageMatrixTailBlock, htail]
 
 /-- Higham, 2nd ed., Chapter 13, Algorithm 13.3:
     active recorded tails commute with one local Schur step.
@@ -41911,6 +42004,148 @@ theorem
       tailFull tailSucc h0 hsucc hactive hpivot hsn hA_le_G
       hAinv_entry
       (by simpa [Atail] using hTail))
+
+/-- Higham, 2nd ed., Chapter 13, Problem 13.4 / equations (13.22)--(13.23):
+    canonical all-active-suffix global-tableau source chain.
+
+    This theorem closes the recursive `hTail` packaging obligation for the
+    canonical active suffixes of Algorithm 13.3.  It does not assume the source
+    chain itself: callers still supply the genuine per-stage source obligations
+    exposed by the book route, namely current-tail invertibility, first-pivot
+    equality, the dimension budget, ambient growth-tableau containment, and the
+    current inverse-entry comparison.  The Schur-tail inverse-entry comparison
+    is then propagated recursively by
+    `succ_from_matrix_stage_history_active_tail_with_derived_tail_inverse_entry_exact_kappa`. -/
+theorem
+    Higham13Eq1322GlobalTableauSourceChain.activeSuffix_from_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa
+    {M r N n : ℕ} (hr : 0 < r) (hN : 0 < N) (hM : 0 < M)
+    (Aglob AinvGlob : Fin N → Fin N → ℝ)
+    (A : Fin M → Fin M → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hApos : 0 < maxEntryNorm hN Aglob)
+    (hA_le_G :
+      maxEntryNorm hN Aglob ≤
+        maxEntryNorm hN
+          (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix hN hM hr A pivotInv))
+    (hsnAll : ∀ {m k : ℕ} (_ : k + (m + 1) ≤ M),
+      (((m + 1) * r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hInvA11 : ∀ {m k : ℕ} (hkm : k + ((m + 1) + 1) ≤ M),
+      Invertible
+        (blockMatrixFirstSplitA11
+          (higham13_algorithm13_3_activeSuffixStageTailBlock A pivotInv k
+            (m + 1) hkm)))
+    (hInvSchur : ∀ {m k : ℕ} (hkm : k + ((m + 1) + 1) ≤ M),
+      Invertible
+        (blockMatrixFirstSplitA22
+            (higham13_algorithm13_3_activeSuffixStageTailBlock A pivotInv k
+              (m + 1) hkm) -
+          blockMatrixFirstSplitA21
+              (higham13_algorithm13_3_activeSuffixStageTailBlock A pivotInv k
+                (m + 1) hkm) *
+            ⅟(blockMatrixFirstSplitA11
+                (higham13_algorithm13_3_activeSuffixStageTailBlock A pivotInv k
+                  (m + 1) hkm)) *
+              blockMatrixFirstSplitA12
+                (higham13_algorithm13_3_activeSuffixStageTailBlock A pivotInv k
+                  (m + 1) hkm)))
+    (hpivotAll : ∀ {m k : ℕ} (hkm : k + ((m + 1) + 1) ≤ M),
+      pivotInv k =
+        ⅟(blockMatrixFirstSplitA11
+          (higham13_algorithm13_3_activeSuffixStageTailBlock A pivotInv k
+            (m + 1) hkm))) :
+    ∀ (m k : ℕ) (hkm : k + (m + 1) ≤ M),
+      [Invertible (Matrix.fromBlocks
+        (blockMatrixFirstSplitA11
+          (higham13_algorithm13_3_activeSuffixStageTailBlock A pivotInv k m hkm))
+        (blockMatrixFirstSplitA12
+          (higham13_algorithm13_3_activeSuffixStageTailBlock A pivotInv k m hkm))
+        (blockMatrixFirstSplitA21
+          (higham13_algorithm13_3_activeSuffixStageTailBlock A pivotInv k m hkm))
+        (blockMatrixFirstSplitA22
+          (higham13_algorithm13_3_activeSuffixStageTailBlock A pivotInv k m hkm)))] →
+      (∀ i j : Fin r ⊕ Fin (m * r),
+        |(⅟(Matrix.fromBlocks
+            (blockMatrixFirstSplitA11
+              (higham13_algorithm13_3_activeSuffixStageTailBlock A pivotInv k m hkm))
+            (blockMatrixFirstSplitA12
+              (higham13_algorithm13_3_activeSuffixStageTailBlock A pivotInv k m hkm))
+            (blockMatrixFirstSplitA21
+              (higham13_algorithm13_3_activeSuffixStageTailBlock A pivotInv k m hkm))
+            (blockMatrixFirstSplitA22
+              (higham13_algorithm13_3_activeSuffixStageTailBlock A pivotInv k m hkm))) :
+          Matrix (Fin r ⊕ Fin (m * r)) (Fin r ⊕ Fin (m * r)) ℝ) i j| ≤
+          maxEntryNormRect hN hN AinvGlob) →
+      Higham13Eq1322GlobalTableauSourceChain hr hN Aglob
+        (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix hN hM hr A pivotInv)
+        AinvGlob hApos n m
+        (higham13_algorithm13_3_activeSuffixStageTailBlock A pivotInv k m hkm)
+        (fun q => pivotInv (k + q)) := by
+  classical
+  intro m
+  induction m with
+  | zero =>
+      intro k hkm _ _
+      exact
+        Higham13Eq1322GlobalTableauSourceChain.one_from_matrix_stage_history_tail_exact_kappa
+          hr hN hM Aglob AinvGlob A pivotInv (fun q => pivotInv (k + q))
+          hApos k (by omega)
+          (higham13_algorithm13_3_activeSuffixTail M k 1 hkm)
+  | succ m ih =>
+      intro k hkm _ hAinv_entry
+      have hkM : k < M := by omega
+      have htail : k + 1 + (m + 1) ≤ M := by omega
+      let tailFull : Fin ((m + 1) + 1) → Fin M :=
+        higham13_algorithm13_3_activeSuffixTail M k ((m + 1) + 1) hkm
+      let tailSucc : Fin (m + 1) → Fin M :=
+        higham13_algorithm13_3_activeSuffixTail M (k + 1) (m + 1) htail
+      letI : Invertible
+          (blockMatrixFirstSplitA11
+            (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull)) := by
+        simpa [tailFull, higham13_algorithm13_3_activeSuffixStageTailBlock] using
+          (hInvA11 (m := m) (k := k) hkm)
+      letI : Invertible
+          (blockMatrixFirstSplitA22
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull) -
+            blockMatrixFirstSplitA21
+                (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull) *
+              ⅟(blockMatrixFirstSplitA11
+                  (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull)) *
+                blockMatrixFirstSplitA12
+                  (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull)) := by
+        simpa [tailFull, higham13_algorithm13_3_activeSuffixStageTailBlock] using
+          (hInvSchur (m := m) (k := k) hkm)
+      have h0 : tailFull 0 = ⟨k, hkM⟩ := by
+        simpa [tailFull] using
+          higham13_algorithm13_3_activeSuffixTail_zero (M := M) (k := k)
+            (b := m + 1) hkm hkM
+      have hsucc : ∀ i : Fin (m + 1), tailFull (Fin.succ i) = tailSucc i := by
+        intro i
+        simpa [tailFull, tailSucc] using
+          higham13_algorithm13_3_activeSuffixTail_succ (M := M) (k := k)
+            (b := m) hkm htail i
+      have hactive : ∀ i : Fin (m + 1), k + 1 ≤ (tailSucc i).val := by
+        intro i
+        exact
+          higham13_algorithm13_3_activeSuffixTail_active (M := M) (k := k)
+            (b := m) htail i
+      have hpivot :
+          pivotInv k =
+            ⅟(blockMatrixFirstSplitA11
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull)) := by
+        simpa [tailFull, higham13_algorithm13_3_activeSuffixStageTailBlock] using
+          (hpivotAll (m := m) (k := k) hkm)
+      refine
+        Higham13Eq1322GlobalTableauSourceChain.succ_from_matrix_stage_history_active_tail_with_derived_tail_inverse_entry_exact_kappa
+          (M := M) (r := r) (N := N) (m := m) (n := n) (k := k)
+          hr hN hM Aglob AinvGlob A pivotInv hApos hkM
+          tailFull tailSucc h0 hsucc hactive hpivot (hsnAll htail) hA_le_G
+          ?_ ?_
+      · simpa [tailFull, higham13_algorithm13_3_activeSuffixStageTailBlock] using
+          hAinv_entry
+      · intro _ hAinv_tail
+        have hTail := ih (k + 1) htail hAinv_tail
+        simpa [tailSucc, higham13_algorithm13_3_activeSuffixStageTailBlock,
+          Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using hTail
 
 /-- Higham, 2nd ed., Chapter 13, Problem 13.4 / equations (13.22)--(13.23):
     two-block active recorded tail for the global tableau.
