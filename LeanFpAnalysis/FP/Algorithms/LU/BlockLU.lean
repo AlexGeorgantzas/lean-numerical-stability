@@ -24109,6 +24109,161 @@ theorem higham13_problem13_4_firstSplit_Sinv_maxEntryNormRect_from_block_inverse
     (blockMatrixFirstSplitA22 Ablk)
     hAinv_entry
 
+/-- Reindexing a matrix by an equivalence transports entrywise bounds on its
+    constructive inverse.
+
+    This is a max-entry analogue of the operator-norm reindexing bridges used
+    elsewhere in the Chapter 13 Schur-complement route. -/
+theorem invOf_entry_bound_of_reindex_eq
+    {ι κ : Type*} [Fintype ι] [Fintype κ] [DecidableEq ι] [DecidableEq κ]
+    (e : ι ≃ κ) (A : Matrix κ κ ℝ) (M : Matrix ι ι ℝ)
+    [Invertible A] [Invertible M]
+    (hM : M = fun i j : ι => A (e i) (e j))
+    {bound : ℝ}
+    (hA_entry : ∀ i j : κ, |(⅟A : Matrix κ κ ℝ) i j| ≤ bound) :
+    ∀ i j : ι, |(⅟M : Matrix ι ι ℝ) i j| ≤ bound := by
+  classical
+  intro i j
+  have h1 : ⅟M = M⁻¹ :=
+    Matrix.invOf_eq_nonsing_inv M
+  have h2 :
+      M⁻¹ =
+        ((A⁻¹ : Matrix κ κ ℝ).submatrix e e) := by
+    rw [hM]
+    exact Matrix.inv_submatrix_equiv A e e
+  have hAinv : ⅟A = A⁻¹ :=
+    Matrix.invOf_eq_nonsing_inv A
+  have hentry :
+      (⅟M : Matrix ι ι ℝ) i j = (⅟A : Matrix κ κ ℝ) (e i) (e j) := by
+    calc
+      (⅟M : Matrix ι ι ℝ) i j = M⁻¹ i j := by rw [h1]
+      _ = A⁻¹ (e i) (e j) := by
+            rw [h2]
+            rfl
+      _ = (⅟A : Matrix κ κ ℝ) (e i) (e j) := by rw [hAinv]
+  rw [hentry]
+  exact hA_entry (e i) (e j)
+
+/-- Higham, 2nd ed., Chapter 13, Problem 13.4:
+    recursive Schur-tail inverse-entry handoff from the parent block inverse.
+
+    If the current first-split parent block inverse is entrywise bounded by the
+    ambient inverse certificate, then the first-split inverse of its Schur tail
+    inherits the same entrywise bound.  This combines the Problem 13.8
+    lower-right block-inverse formula with the first-split/uniform-flat
+    reindexing bridge, and is the direct inverse-entry propagation step needed
+    by recursive Eq.13.22/Eq.13.23 source chains. -/
+theorem
+    higham13_problem13_4_firstSplit_schurTail_inverse_entry_bound_from_block_inverse
+    {m r : ℕ}
+    (Ablk : Fin ((m + 1) + 1) → Fin ((m + 1) + 1) →
+      Matrix (Fin r) (Fin r) ℝ)
+    (A11_inv : Matrix (Fin r) (Fin r) ℝ)
+    [Invertible (blockMatrixFirstSplitA11 Ablk)]
+    [Invertible (blockMatrixFirstSplitA22 Ablk -
+      blockMatrixFirstSplitA21 Ablk * ⅟(blockMatrixFirstSplitA11 Ablk) *
+        blockMatrixFirstSplitA12 Ablk)]
+    [Invertible (Matrix.fromBlocks
+      (blockMatrixFirstSplitA11 Ablk)
+      (blockMatrixFirstSplitA12 Ablk)
+      (blockMatrixFirstSplitA21 Ablk)
+      (blockMatrixFirstSplitA22 Ablk))]
+    [Invertible (Matrix.fromBlocks
+      (blockMatrixFirstSplitA11
+        (blockSchur Ablk A11_inv))
+      (blockMatrixFirstSplitA12
+        (blockSchur Ablk A11_inv))
+      (blockMatrixFirstSplitA21
+        (blockSchur Ablk A11_inv))
+      (blockMatrixFirstSplitA22
+        (blockSchur Ablk A11_inv)))]
+    (hA11_inv : A11_inv = ⅟(blockMatrixFirstSplitA11 Ablk))
+    {normAinv : ℝ}
+    (hAinv_entry :
+      ∀ i j : Fin r ⊕ Fin ((m + 1) * r),
+        |(⅟(Matrix.fromBlocks
+            (blockMatrixFirstSplitA11 Ablk)
+            (blockMatrixFirstSplitA12 Ablk)
+            (blockMatrixFirstSplitA21 Ablk)
+            (blockMatrixFirstSplitA22 Ablk)) :
+          Matrix (Fin r ⊕ Fin ((m + 1) * r))
+            (Fin r ⊕ Fin ((m + 1) * r)) ℝ) i j| ≤ normAinv) :
+    ∀ i j : Fin r ⊕ Fin (m * r),
+      |(⅟(Matrix.fromBlocks
+          (blockMatrixFirstSplitA11
+            (blockSchur Ablk A11_inv))
+          (blockMatrixFirstSplitA12
+            (blockSchur Ablk A11_inv))
+          (blockMatrixFirstSplitA21
+            (blockSchur Ablk A11_inv))
+          (blockMatrixFirstSplitA22
+            (blockSchur Ablk A11_inv)))) i j| ≤
+        normAinv := by
+  classical
+  let Tail : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ :=
+    blockSchur Ablk A11_inv
+  let S : Matrix (Fin ((m + 1) * r)) (Fin ((m + 1) * r)) ℝ :=
+    blockMatrixFirstSplitA22 Ablk -
+      blockMatrixFirstSplitA21 Ablk * ⅟(blockMatrixFirstSplitA11 Ablk) *
+        blockMatrixFirstSplitA12 Ablk
+  let Mtail : Matrix (Fin r ⊕ Fin (m * r)) (Fin r ⊕ Fin (m * r)) ℝ :=
+    Matrix.fromBlocks
+      (blockMatrixFirstSplitA11 Tail)
+      (blockMatrixFirstSplitA12 Tail)
+      (blockMatrixFirstSplitA21 Tail)
+      (blockMatrixFirstSplitA22 Tail)
+  let e : (Fin r ⊕ Fin (m * r)) ≃ Fin ((m + 1) * r) :=
+    (finSumFinEquiv : (Fin r ⊕ Fin (m * r)) ≃ Fin (r + m * r)).trans
+      (blockMatrixFirstSplitToFlatFinEquiv :
+        Fin (r + m * r) ≃ Fin ((m + 1) * r))
+  have hSinv_entry :
+      ∀ i j : Fin ((m + 1) * r),
+        |(⅟S : Matrix (Fin ((m + 1) * r)) (Fin ((m + 1) * r)) ℝ) i j| ≤
+          normAinv := by
+    simpa [S] using
+      (higham13_problem13_4_firstSplit_Sinv_entry_bound_from_block_inverse
+        (Ablk := Ablk) hAinv_entry)
+  have hMtail :
+      Mtail = fun i j : Fin r ⊕ Fin (m * r) => S (e i) (e j) := by
+    ext i j
+    have hFrom :
+        Mtail i j =
+          blockMatrixFirstSplitFlat Tail (finSumFinEquiv i) (finSumFinEquiv j) := by
+      cases i with
+      | inl i =>
+          cases j with
+          | inl j =>
+              simp [Mtail, Tail, Matrix.fromBlocks, blockMatrixFirstSplitFlat,
+                blockMatrixFirstSplitA11]
+          | inr j =>
+              simp [Mtail, Tail, Matrix.fromBlocks, blockMatrixFirstSplitFlat,
+                blockMatrixFirstSplitA12]
+      | inr i =>
+          cases j with
+          | inl j =>
+              simp [Mtail, Tail, Matrix.fromBlocks, blockMatrixFirstSplitFlat,
+                blockMatrixFirstSplitA21]
+          | inr j =>
+              simp [Mtail, Tail, Matrix.fromBlocks, blockMatrixFirstSplitFlat,
+                blockMatrixFirstSplitA22, blockMatrixFlatFin]
+    have hFlat := congr_fun (congr_fun
+      (blockMatrixFirstSplitFlat_eq_blockMatrixFlatFin_reindex Tail)
+      (finSumFinEquiv i)) (finSumFinEquiv j)
+    have hS :
+        S = blockMatrixFlatFin Tail := by
+      simpa [S, Tail, hA11_inv] using
+        (blockMatrixFirstSplit_schur_eq_blockMatrixFlatFin_blockSchur
+          Ablk (⅟(blockMatrixFirstSplitA11 Ablk)))
+    calc
+      Mtail i j =
+          blockMatrixFirstSplitFlat Tail (finSumFinEquiv i) (finSumFinEquiv j) := hFrom
+      _ = blockMatrixFlatFin Tail
+          (blockMatrixFirstSplitToFlatFinEquiv (finSumFinEquiv i))
+          (blockMatrixFirstSplitToFlatFinEquiv (finSumFinEquiv j)) := hFlat
+      _ = S (e i) (e j) := by simp [e, hS]
+  simpa [Mtail, Tail] using
+    (invOf_entry_bound_of_reindex_eq e S Mtail hMtail hSinv_entry)
+
 /-- Higham, 2nd ed., Chapter 13, Problem 13.4:
     source max-entry lower-left solve bound from the Problem 13.8 block-inverse
     formula.

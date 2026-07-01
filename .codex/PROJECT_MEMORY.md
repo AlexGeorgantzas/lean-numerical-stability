@@ -20,6 +20,18 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-07-01 Problem 13.4 recursive Schur-tail inverse-entry handoff:
+  added `invOf_entry_bound_of_reindex_eq` and
+  `higham13_problem13_4_firstSplit_schurTail_inverse_entry_bound_from_block_inverse`.
+  The generic helper transports entrywise inverse bounds across an equivalence
+  reindexing, and the Chapter 13 theorem uses the first-split Schur
+  inverse-entry bridge to propagate a parent block inverse-entry certificate to
+  the first-split inverse of the Schur tail.  This is direct dependency
+  progress on the all-tail ambient inverse-entry/source comparison in
+  Problem 13.4; it still assumes the parent inverse-entry certificate and the
+  tail first-split invertibility needed to form the next inverse, and does not
+  close the full recursive source certificate, Eq.13.23 `rho <= 2`/BDD data,
+  or Theorem 13.6 cited estimates.
 - 2026-07-01 Problem 13.4 Schur inverse-entry bridge checkpoint: added
   `higham13_problem13_4_Sinv_entry_bound_from_block_inverse` and
   `higham13_problem13_4_Sinv_maxEntryNormRect_from_block_inverse`.  These use
