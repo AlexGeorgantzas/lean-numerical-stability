@@ -9500,6 +9500,28 @@ theorem storedSignedSequenceOneTailFullStageFacts_of_full_stage_two_zero_prefixe
     hselfFull := hselfFull
     hdetTailTail := hdetTailTail }
 
+/-- The one-tail full-stage package also supplies the beta-one value used by
+the stored-panel recurrence.
+
+This keeps beta from becoming a separate hidden premise: it is a consequence of
+the package's full-stage self-dot field. -/
+theorem storedSignedSequenceOneTailFullStageFacts_betaSpec_eq_one
+    (fp : FPModel) {m : Nat}
+    (A_hat : Nat -> Fin (m + 1 + 2) -> Fin (1 + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hfacts : storedSignedSequenceOneTailFullStageFacts fp A_hat alpha) :
+    householderBetaSpec (m + 1 + 2)
+        (householderTrailingActiveVector (m + 1 + 2)
+          ((0 : Fin (m + 1)).succ.succ)
+          (fun a => A_hat 2 a ((0 : Fin 1).succ.succ))
+          (alpha 2)) =
+      1 := by
+  exact
+    householderTrailingActiveVector_betaSpec_eq_one_of_self_dot
+      ((0 : Fin (m + 1)).succ.succ)
+      (fun a => A_hat 2 a ((0 : Fin 1).succ.succ))
+      (alpha 2) hfacts.hselfFull
+
 /-- Package arbitrary-width first-two full-stage facts from raw stage-two and
 stage-three stored-loop surfaces.
 
@@ -9595,6 +9617,48 @@ theorem storedSignedSequenceFirstTwoFullStageFacts_of_full_stage_two_three_zero_
     hdetTailTailTail := hdetTailTailTail
     hvecFull3 := hvecFull3
     hselfFull3 := hselfFull3 }
+
+/-- The first pivot in an arbitrary-width first-two full-stage package has
+`householderBetaSpec = 1`.
+
+This exposes the beta fact carried by the pivot-2 self-dot field. -/
+theorem storedSignedSequenceFirstTwoFullStageFacts_betaSpec_two_eq_one
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + (p + 2) + 2) -> Fin ((p + 2) + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hfacts : storedSignedSequenceFirstTwoFullStageFacts fp r p A_hat alpha) :
+    householderBetaSpec (r + (p + 2) + 2)
+        (householderTrailingActiveVector (r + (p + 2) + 2)
+          ((0 : Fin (r + (p + 2))).succ.succ)
+          (fun a => A_hat 2 a ((0 : Fin (p + 2)).succ.succ))
+          (alpha 2)) =
+      1 := by
+  exact
+    householderTrailingActiveVector_betaSpec_eq_one_of_self_dot
+      ((0 : Fin (r + (p + 2))).succ.succ)
+      (fun a => A_hat 2 a ((0 : Fin (p + 2)).succ.succ))
+      (alpha 2) hfacts.hselfFull2
+
+/-- The second pivot in an arbitrary-width first-two full-stage package has
+`householderBetaSpec = 1`.
+
+This exposes the beta fact carried by the pivot-3 self-dot field. -/
+theorem storedSignedSequenceFirstTwoFullStageFacts_betaSpec_three_eq_one
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + (p + 2) + 2) -> Fin ((p + 2) + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hfacts : storedSignedSequenceFirstTwoFullStageFacts fp r p A_hat alpha) :
+    householderBetaSpec (r + (p + 2) + 2)
+        (householderTrailingActiveVector (r + (p + 2) + 2)
+          ((0 : Fin (r + (p + 1))).succ.succ.succ)
+          (fun a => A_hat 3 a ((0 : Fin (p + 1)).succ.succ.succ))
+          (alpha 3)) =
+      1 := by
+  exact
+    householderTrailingActiveVector_betaSpec_eq_one_of_self_dot
+      ((0 : Fin (r + (p + 1))).succ.succ.succ)
+      (fun a => A_hat 3 a ((0 : Fin (p + 1)).succ.succ.succ))
+      (alpha 3) hfacts.hselfFull3
 
 /-- Add two leading zeroes to a finite vector.  This local abbreviation keeps
 the later absolute-stage full-loop hypotheses readable. -/

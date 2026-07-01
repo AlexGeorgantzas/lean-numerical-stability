@@ -8304,6 +8304,36 @@ theorem lsNormwiseBackwardErrorEigenvalueFormulaValue_eq_sqrt_of_lambdaStar_neg
     not_le_of_gt hlambda
   simp [lsNormwiseBackwardErrorEigenvalueFormulaValue, hnot]
 
+/-- Source-data nonnegative-`lambda_*` branch of the eigenvalue expression:
+    with `r = b - A*y`, the Theorem 20.5 eigenvalue RHS is the scalar `phi`
+    branch. -/
+theorem lsNormwiseBackwardErrorEigenvalueFormulaRHS_eq_phi_of_lambdaStar_nonneg
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (hlambda :
+      0 ≤ lsNormwiseBackwardErrorLambdaStar theta A (lsResidualHigham A b y) y) :
+    lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y =
+      lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y := by
+  simpa [lsNormwiseBackwardErrorEigenvalueFormulaRHS] using
+    lsNormwiseBackwardErrorEigenvalueFormulaValue_eq_phi_of_lambdaStar_nonneg
+      theta A (lsResidualHigham A b y) y hlambda
+
+/-- Source-data negative-`lambda_*` branch of the eigenvalue expression from
+    Theorem 20.5. -/
+theorem lsNormwiseBackwardErrorEigenvalueFormulaRHS_eq_sqrt_of_lambdaStar_neg
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (hlambda :
+      lsNormwiseBackwardErrorLambdaStar theta A (lsResidualHigham A b y) y < 0) :
+    lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y =
+      Real.sqrt
+        ((vecNorm2Sq (lsResidualHigham A b y) / vecNorm2Sq y) *
+            lsNormwiseBackwardErrorMu theta y +
+          lsNormwiseBackwardErrorLambdaStar theta A (lsResidualHigham A b y) y) := by
+  simpa [lsNormwiseBackwardErrorEigenvalueFormulaRHS] using
+    lsNormwiseBackwardErrorEigenvalueFormulaValue_eq_sqrt_of_lambdaStar_neg
+      theta A (lsResidualHigham A b y) y hlambda
+
 /-- The source scalar `phi` from (20.21) is nonnegative. -/
 theorem lsNormwiseBackwardErrorPhi_nonneg {m n : ℕ} (theta : ℝ)
     (r : Fin m → ℝ) (y : Fin n → ℝ) :
@@ -20650,6 +20680,56 @@ theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_theta_not_
   exact
     lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_theta_not_isLeastSquaresMinimizer_of_formulaMatrixRowRank_eq_card
       htheta A b hy hnot hrank
+
+/-- Transfer form for the finite-positive WKS theorem: once the remaining
+    spectral equivalence between the printed SVD/minimum RHS (20.21) and the
+    Theorem 20.5 eigenvalue RHS is supplied, the already proved finite-positive
+    equality immediately yields the eigenvalue formulation of `eta_F(y)`. -/
+theorem lsNormwiseBackwardErrorEtaF_eq_eigenvalueFormulaRHS_and_pos_of_formulaRHS_eq_eigenvalueFormulaRHS_of_formulaMatrixRowRank_eq_card
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hnot : ¬ IsLeastSquaresMinimizer A b y)
+    (hrank :
+      lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+        (lsResidualHigham A b y) y = m + 1)
+    (hspectral :
+      lsNormwiseBackwardErrorFormulaRHS theta A b y =
+        lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y) :
+    lsNormwiseBackwardErrorEtaF theta A b y =
+        lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y ∧
+      0 < lsNormwiseBackwardErrorEtaF theta A b y ∧
+      0 < lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y := by
+  have hclosed :=
+    lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_theta_not_isLeastSquaresMinimizer_of_formulaMatrixRowRank_eq_card
+      htheta A b hy hnot hrank
+  exact ⟨hclosed.1.trans hspectral, hclosed.2.1, by
+    rw [← hspectral]
+    exact hclosed.2.2⟩
+
+/-- Source-left-panel transfer form for the finite-positive WKS theorem.  A
+    later proof of the spectral equivalence between the (20.21) SVD/minimum RHS
+    and the Theorem 20.5 eigenvalue RHS can reuse the closed left-panel
+    row-rank equality without reopening the perturbation construction. -/
+theorem lsNormwiseBackwardErrorEtaF_eq_eigenvalueFormulaRHS_and_pos_of_formulaRHS_eq_eigenvalueFormulaRHS_of_left_panel_rowRank_eq_card
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hnot : ¬ IsLeastSquaresMinimizer A b y)
+    (hA : lsRealRectRowRank A = m + 1)
+    (hspectral :
+      lsNormwiseBackwardErrorFormulaRHS theta A b y =
+        lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y) :
+    lsNormwiseBackwardErrorEtaF theta A b y =
+        lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y ∧
+      0 < lsNormwiseBackwardErrorEtaF theta A b y ∧
+      0 < lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y := by
+  have hclosed :=
+    lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_theta_not_isLeastSquaresMinimizer_of_left_panel_rowRank_eq_card
+      htheta A b hy hnot hA
+  exact ⟨hclosed.1.trans hspectral, hclosed.2.1, by
+    rw [← hspectral]
+    exact hclosed.2.2⟩
 
 /-- Positive finite-`theta` WKS branch from the concrete rank-one
     source-block certificate.  This replaces the generic upper-inequality
