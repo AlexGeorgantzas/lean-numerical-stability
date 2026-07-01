@@ -14809,6 +14809,155 @@ def storedSignedSequenceTailNormalizedLoopRawFacts
         (storedSignedSequenceTwiceTrailingSeq A_hat)
         (storedSignedSequenceTailAlpha2 alpha)
 
+/-- Recursive exact-arithmetic package of tail-local normalized-vector
+equalities at every twice-trailing stored-loop stage.
+
+Unlike `storedSignedSequenceTailNormalizedLoopRawFacts`, this exact-model
+surface does not ask callers to supply the self-dot fields.  The theorem below
+derives them from the vector equalities and the usual stage-local leading-block
+nonbreakdown hypotheses. -/
+def storedSignedSequenceTailNormalizedLoopVectorEqFacts_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) :
+    (r p : Nat) ->
+      (Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real) ->
+      (Nat -> Real) -> Prop
+  | _r, 0, _A_hat, _alpha => True
+  | _r, 1, A_hat, alpha =>
+      (forall k (hk : k < 1 + 2),
+        A_hat (k + 1) =
+          fl_householderStoredPanelStep
+            (FPModel.exactWithUnitRoundoff u0 hu0) (_r + 1 + 2) (1 + 2) k
+            (householderTrailingActiveVector (_r + 1 + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : 1 + 2 <= _r + 1 + 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+            (householderBetaSpec (_r + 1 + 2)
+              (householderTrailingActiveVector (_r + 1 + 2)
+                (Fin.mk k
+                  (lt_of_lt_of_le hk
+                    (by omega : 1 + 2 <= _r + 1 + 2)))
+                (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+            (A_hat k)) /\
+      (forall k (hk : k < 1 + 2),
+        Ne (Matrix.det
+          (qrLeadingBlock (A_hat k)
+            (Nat.succ_le_iff.mpr
+              (lt_of_lt_of_le hk
+                (by omega : 1 + 2 <= _r + 1 + 2))) hk :
+            Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+          0) /\
+      householderTrailingActiveVector (_r + 1)
+          (0 : Fin (_r + 1))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+          (alpha 2) =
+        fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0) (Nat.succ_pos _r)
+          (panelFirstColumn (Nat.succ_pos 0)
+            (trailingPanel (trailingPanel (A_hat 2))))
+  | r, p + 2, A_hat, alpha =>
+      (forall k (hk : k < (p + 2) + 2),
+        A_hat (k + 1) =
+          fl_householderStoredPanelStep
+            (FPModel.exactWithUnitRoundoff u0 hu0) (r + (p + 2) + 2)
+            ((p + 2) + 2) k
+            (householderTrailingActiveVector (r + (p + 2) + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : (p + 2) + 2 <= r + (p + 2) + 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+            (householderBetaSpec (r + (p + 2) + 2)
+              (householderTrailingActiveVector (r + (p + 2) + 2)
+                (Fin.mk k
+                  (lt_of_lt_of_le hk
+                    (by omega : (p + 2) + 2 <= r + (p + 2) + 2)))
+                (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+            (A_hat k)) /\
+      (forall k (hk : k < (p + 2) + 2),
+        Ne (Matrix.det
+          (qrLeadingBlock (A_hat k)
+            (Nat.succ_le_iff.mpr
+              (lt_of_lt_of_le hk
+                (by omega : (p + 2) + 2 <= r + (p + 2) + 2))) hk :
+            Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+          0) /\
+      householderTrailingActiveVector (r + (p + 2))
+          (0 : Fin (r + (p + 2)))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin (p + 2)).succ.succ))
+          (alpha 2) =
+        fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0)
+          (show 0 < r + (p + 2) by omega)
+          (panelFirstColumn (Nat.succ_pos (p + 1))
+            (trailingPanel (trailingPanel (A_hat 2)))) /\
+      householderTrailingActiveVector (r + (p + 1))
+          (0 : Fin (r + (p + 1)))
+          (fun a =>
+            A_hat 3 a.succ.succ.succ
+              ((0 : Fin (p + 1)).succ.succ.succ))
+          (alpha 3) =
+        fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0)
+          (show 0 < r + (p + 1) by omega)
+          (panelFirstColumn (Nat.succ_pos p)
+            (trailingPanel (trailingPanel (trailingPanel (A_hat 3))))) /\
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts_exactWithUnitRoundoff
+        u0 hu0 r p
+        (storedSignedSequenceTwiceTrailingSeq A_hat)
+        (storedSignedSequenceTailAlpha2 alpha)
+
+/-- Exact-arithmetic tail-local vector equalities assemble the raw all-stage
+tail-normalized facts, including the self-dot fields.
+
+This removes the self-dot facts from the exact-model caller surface: the
+self-dot equalities are derived at each recursive stage from the computed exact
+normalized vector, the vector equality, and the standard leading-block
+nonbreakdown hypothesis. -/
+theorem
+    storedSignedSequenceTailNormalizedLoopRawFacts_of_tailVectorEqLoopFacts_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts_exactWithUnitRoundoff
+        u0 hu0 r p A_hat alpha) :
+    storedSignedSequenceTailNormalizedLoopRawFacts
+      (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha := by
+  revert r A_hat alpha
+  refine
+    Nat.twoStepInduction
+      (P := fun p =>
+        forall (r : Nat)
+            (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+            (alpha : Nat -> Real),
+          storedSignedSequenceTailNormalizedLoopVectorEqFacts_exactWithUnitRoundoff
+              u0 hu0 r p A_hat alpha ->
+            storedSignedSequenceTailNormalizedLoopRawFacts
+              (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha)
+      ?hzero ?hone ?hstep p
+  · intro r A_hat alpha _hvecs
+    trivial
+  · intro r A_hat alpha hvecs
+    rcases hvecs with ⟨hStep, hdetLead, hvecTail⟩
+    have hfacts :
+        storedSignedSequenceOneTailNormalizedFacts
+          (FPModel.exactWithUnitRoundoff u0 hu0) A_hat alpha :=
+      storedSignedSequenceOneTailNormalizedFacts_of_tail_vector_eq_and_leadingBlock_det_ne_zero_exactWithUnitRoundoff
+        u0 hu0 A_hat alpha hStep hdetLead hvecTail
+    exact ⟨hStep, hdetLead, hfacts.hvecTail, hfacts.hselfTail⟩
+  · intro p ih _ihSucc r A_hat alpha hvecs
+    rcases hvecs with ⟨hStep, hdetLead, hvecTail2, hvecTail3, htailVecs⟩
+    have hfacts :
+        storedSignedSequenceFirstTwoTailNormalizedFacts
+          (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha :=
+      storedSignedSequenceFirstTwoTailNormalizedFacts_of_tail_vectors_eq_and_leadingBlock_det_ne_zero_exactWithUnitRoundoff
+        u0 hu0 r p A_hat alpha hStep hdetLead hvecTail2 hvecTail3
+    exact
+      ⟨hStep, hdetLead, hfacts.hvecTail2, hfacts.hselfTail2,
+        hfacts.hvecTail3, hfacts.hselfTail3,
+        ih r (storedSignedSequenceTwiceTrailingSeq A_hat)
+          (storedSignedSequenceTailAlpha2 alpha) htailVecs⟩
+
 /-- Raw source-facing tail-local normalized loop facts assemble the named
 recursive record package.
 
@@ -14850,6 +14999,23 @@ theorem
           hvecTail3 := hvecTail3, hselfTail3 := hselfTail3 },
         ih r (storedSignedSequenceTwiceTrailingSeq A_hat)
           (storedSignedSequenceTailAlpha2 alpha) htailRaw⟩
+
+/-- Exact-arithmetic tail-local vector equalities assemble the named recursive
+tail-normalized record package. -/
+theorem
+    storedSignedSequenceTailNormalizedLoopRecords_of_tailVectorEqLoopFacts_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts_exactWithUnitRoundoff
+        u0 hu0 r p A_hat alpha) :
+    storedSignedSequenceTailNormalizedLoopRecords
+      (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha :=
+  storedSignedSequenceTailNormalizedLoopRecords_of_tailNormalizedLoopRawFacts
+    (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha
+    (storedSignedSequenceTailNormalizedLoopRawFacts_of_tailVectorEqLoopFacts_exactWithUnitRoundoff
+      u0 hu0 r p A_hat alpha hvecs)
 
 /-- The recursive named tail-local normalized-record package assembles the
 explicit normalized full-stage loop facts.
@@ -14906,6 +15072,23 @@ theorem
     fp r p A_hat alpha
     (storedSignedSequenceTailNormalizedLoopRecords_of_tailNormalizedLoopRawFacts
       fp r p A_hat alpha hraw)
+
+/-- Exact-arithmetic tail-local vector equalities assemble the explicit
+normalized full-stage loop facts. -/
+theorem
+    storedSignedSequenceFullStageNormalizedLoopFacts_of_tailVectorEqLoopFacts_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts_exactWithUnitRoundoff
+        u0 hu0 r p A_hat alpha) :
+    storedSignedSequenceFullStageNormalizedLoopFacts
+      (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha :=
+  storedSignedSequenceFullStageNormalizedLoopFacts_of_tailNormalizedLoopRawFacts
+    (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha
+    (storedSignedSequenceTailNormalizedLoopRawFacts_of_tailVectorEqLoopFacts_exactWithUnitRoundoff
+      u0 hu0 r p A_hat alpha hvecs)
 
 /-- Odd recursive-tail normalized loop facts from current first-two full-stage
 data and absolute stage-four facts. -/
@@ -15593,6 +15776,23 @@ theorem
     fp r p A_hat alpha
     (storedSignedSequenceTailNormalizedLoopRecords_of_tailNormalizedLoopRawFacts
       fp r p A_hat alpha hraw)
+
+/-- Exact-arithmetic tail-local vector equalities assemble raw source-closure
+data through the existing normalized-loop bridge. -/
+theorem
+    storedSignedSequenceTwiceTrailingSourceClosureData_of_tailVectorEqLoopFacts_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts_exactWithUnitRoundoff
+        u0 hu0 r p A_hat alpha) :
+    storedSignedSequenceTwiceTrailingSourceClosureData
+      (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha :=
+  storedSignedSequenceTwiceTrailingSourceClosureData_of_tailNormalizedLoopRawFacts
+    (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha
+    (storedSignedSequenceTailNormalizedLoopRawFacts_of_tailVectorEqLoopFacts_exactWithUnitRoundoff
+      u0 hu0 r p A_hat alpha hvecs)
 
 /-- Raw source-tail closure facts imply the recursive closure-data contract. -/
 theorem storedSignedSequenceTwiceTrailingClosureData_of_sourceClosureData
