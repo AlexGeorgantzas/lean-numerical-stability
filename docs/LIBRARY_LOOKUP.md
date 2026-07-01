@@ -3498,7 +3498,17 @@ Source-facing Chapter 10 wrappers:
 - `higham10_9_vanDerSluisScalingBound`
 - `higham10_6_scaled_forward_error`
 - `higham10_7_success_condition`
+- `higham10_7_success_factorization`
 - `higham10_7_failure_condition`
+- `higham10_7_failure_no_factorization`
+- `quadForm_add_pos_of_perturbation`
+- `quadForm_add_neg_of_perturbation`
+- `isSymPosDef_diagCongr`
+- `sum_sq_pos_of_exists_ne`
+- `cholesky_quadForm_eq_sq_sum`
+- `cholesky_quadForm_nonneg`
+- `no_choleskyFactSpec_of_neg_quadForm`
+- `cholesky_succeeds_of_scaled_perturbation`
 - `higham10_8_sun_normwise_perturbation`
 - `higham10_8_sun_componentwise_perturbation`
 - `higham10_9_PivotedCholeskySpec`
