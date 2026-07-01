@@ -490,6 +490,6 @@ Latest dependency update: the explicit normalized-loop surface now has named zer
 - Work is on shared local `main`, synchronized with `origin/main` before theorem design and fetched again before push.
 - Current split-prefixed proof milestone commit: `ab7a8d9c` (`Split 3B: rule out Ch19 one-tail vector shortcut`).
 - Previous split-prefixed proof milestone commit: `8bd9d7b8` (`Split 3B: connect exact Ch19 tail-vector endpoint`).
-- Latest `origin/main` integrated before theorem design: `7c6622d1`; a pre-push fetch is still required for the current route-audit milestone.
+- Latest `origin/main` integrated before theorem design and checked again before push: `7c6622d1`; the pre-push fetch found no newer remote commits before the route-audit milestone.
 - `chapter_splitting/` is local-only context: it is ignored by `.gitignore`, has no tracked files, is absent from the refreshed `origin/main`, and must not be pushed.
 - Remaining local untracked file at this point: `.codex/config.toml`.
