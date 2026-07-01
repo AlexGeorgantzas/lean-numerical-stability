@@ -242,6 +242,7 @@ Latest dependency update: the explicit normalized-loop surface now has named zer
 - `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`: no matches after adding the exact-add/mul compatibility theorem.
 - `git diff --check -- LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean docs/source_coverage/higham_ch19.md`: passed after the exact-add/mul compatibility theorem and report update, with only the usual CRLF normalization warnings for `Higham19.lean` and this report.
 - `#print axioms` for `fl_dotProduct_eq_sum_of_exact_add_mul`, `normalizedBetaSpecCompactUpdateCompatible_of_exact_dotProduct_and_mul`, and `normalizedBetaSpecCompactUpdateCompatible_of_exact_add_mul`: only `propext`, `Classical.choice`, and `Quot.sound`.
+- Post-merge rechecks after integrating `origin/main` at `0ce8acbb` via merge `cde32316`: `lake env lean LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`, `lake build LeanFpAnalysis.FP.Algorithms.QR.Higham19`, placeholder scan, merge-diff whitespace check, and `chapter_splitting/` guards passed; only the pre-existing `GivensSpec` unused-simp warnings were reported.
 - `lake env lean LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`: passed after adding the normalized-beta compatibility surface and handoffs.
 - `lake build LeanFpAnalysis.FP.Algorithms.QR.Higham19`: passed after adding the compatibility handoffs; only pre-existing `GivensSpec` unused-simp warnings were reported.
 - `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`: no matches after adding the compatibility handoffs.
@@ -575,9 +576,8 @@ Latest dependency update: the explicit normalized-loop surface now has named zer
 
 ## Git and Local-Only Notes
 
-- Work is on shared local `main`, synchronized with `origin/main` before theorem design and fetched again before push.
-- Current split-prefixed report milestone subject: `Split 3B: anchor Ch19 inventory to extracted source text`.
-- Most recent prior Split 3B proof milestone commit: `d55a7f33` (`Split 3B: relate Ch19 tail normalized record and raw packages`).
-- Latest `origin/main` integrated before this report milestone: `e9caa1e0`; the worktree was fast-forwarded to that remote state before the extracted-text inventory update.
+- Work is on shared local `main`, synchronized with `origin/main` before theorem design and fetched/merged again before push.
+- Current split-prefixed proof milestone commit: `bd94fc8a` (`Split 3B: prove Ch19 exact add-mul compatibility bridge`).
+- Latest `origin/main` integrated before push: `0ce8acbb`, via merge commit `cde32316`.
 - `chapter_splitting/` is local-only context: it is ignored by `.gitignore`, has no tracked files, is absent from the refreshed `origin/main`, and must not be pushed.
 - Remaining local untracked file at this point: `.codex/config.toml`.
