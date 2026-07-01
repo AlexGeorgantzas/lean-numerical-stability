@@ -4956,6 +4956,52 @@ theorem fl_householderNormalizedVector_self_dot_exactWithUnitRoundoff
       (le_of_lt (householderBetaFromScale_pos_of_ne_zero hn x hx))
       (householderBetaFromScale_mul_norm_sq hn x hx)
 
+/-- Exact-arithmetic self-dot after adding two leading zeroes.
+
+This is the shape needed by the full pivot-2 normalized-loop facts: once the
+stored active vector is identified with the double-zero-prefixed computed
+normalized Householder vector, the full self-dot field follows from the
+exact-arithmetic normalized-vector theorem above. -/
+theorem fl_householderNormalizedVector_self_dot_exactWithUnitRoundoff_zero_cons_zero_cons
+    (u0 : Real) (hu0 : 0 <= u0) {n : Nat} (hn : 0 < n)
+    (x : Fin n -> Real) (hx : x ≠ 0) :
+    ((Finset.univ : Finset (Fin (n + 2))).sum
+      (fun i =>
+        (((Fin.cases 0 (Fin.cases 0
+          (fl_householderNormalizedVector
+            (FPModel.exactWithUnitRoundoff u0 hu0) hn x))) :
+          Fin (n + 2) -> Real) i) *
+        (((Fin.cases 0 (Fin.cases 0
+          (fl_householderNormalizedVector
+            (FPModel.exactWithUnitRoundoff u0 hu0) hn x))) :
+          Fin (n + 2) -> Real) i))) = 2 := by
+  rw [fin_sum_sq_zero_cons_zero_cons]
+  exact fl_householderNormalizedVector_self_dot_exactWithUnitRoundoff
+    u0 hu0 hn x hx
+
+/-- Exact-arithmetic self-dot after adding three leading zeroes.
+
+This is the full pivot-3 counterpart of
+`fl_householderNormalizedVector_self_dot_exactWithUnitRoundoff_zero_cons_zero_cons`.
+It closes the triple-zero-prefixed self-dot field once the stored active vector
+has been identified with the computed normalized Householder vector. -/
+theorem fl_householderNormalizedVector_self_dot_exactWithUnitRoundoff_zero_cons_zero_cons_zero_cons
+    (u0 : Real) (hu0 : 0 <= u0) {n : Nat} (hn : 0 < n)
+    (x : Fin n -> Real) (hx : x ≠ 0) :
+    ((Finset.univ : Finset (Fin (n + 3))).sum
+      (fun i =>
+        (((Fin.cases 0 (Fin.cases 0 (Fin.cases 0
+          (fl_householderNormalizedVector
+            (FPModel.exactWithUnitRoundoff u0 hu0) hn x)))) :
+          Fin (n + 3) -> Real) i) *
+        (((Fin.cases 0 (Fin.cases 0 (Fin.cases 0
+          (fl_householderNormalizedVector
+            (FPModel.exactWithUnitRoundoff u0 hu0) hn x)))) :
+          Fin (n + 3) -> Real) i))) = 2 := by
+  rw [fin_sum_sq_zero_cons_zero_cons_zero_cons]
+  exact fl_householderNormalizedVector_self_dot_exactWithUnitRoundoff
+    u0 hu0 hn x hx
+
 /-- Exact-arithmetic handoff from Higham's normalized beta-one compact
 Householder update to the repository's unnormalized `householderBetaSpec`
 compact update.
