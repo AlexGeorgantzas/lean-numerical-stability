@@ -21639,7 +21639,7 @@ theorem lsNormwiseBackwardErrorEigenvalueFormulaRHS_tendsto_nonneg_iSup_atTop_of
     (f₂ := fun theta : ℝ =>
       lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y)
     (by
-      filter_upwards [eventually_gt_atTop (0 : ℝ)] with theta htheta
+      filter_upwards [Filter.eventually_gt_atTop (0 : ℝ)] with theta htheta
       exact
         (lsNormwiseBackwardErrorEtaF_eq_eigenvalueFormulaRHS_and_pos_of_positive_theta_not_isLeastSquaresMinimizer_of_left_panel_rowRank_eq_card
           htheta A b hy hnot hA).1)
