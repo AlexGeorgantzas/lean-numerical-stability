@@ -207,4 +207,113 @@ theorem cholesky_failure_condition (n : ℕ) (fp : FPModel)
     · linarith
   linarith
 
+-- ============================================================
+-- §10.1  Theorem 10.7: min-eigenvalue → positive definiteness
+--        (genuine spectral-perturbation core, Rayleigh-quotient form)
+-- ============================================================
+
+/-- Sum of squares is strictly positive when some coordinate is nonzero. -/
+lemma sum_sq_pos_of_exists_ne (n : ℕ) (x : Fin n → ℝ) (hx : ∃ i, x i ≠ 0) :
+    0 < ∑ i : Fin n, x i ^ 2 := by
+  obtain ⟨i, hi⟩ := hx
+  refine Finset.sum_pos' (fun k _ => sq_nonneg (x k)) ?_
+  exact ⟨i, Finset.mem_univ i, (sq_nonneg (x i)).lt_of_ne (Ne.symm (pow_ne_zero 2 hi))⟩
+
+/-- **Perturbed positive definiteness via quadratic forms**
+    (Higham §10.1, Theorem 10.7 spectral core; "min-eigenvalue → PD").
+
+    If the symmetric quadratic form of `H` is bounded below by `lam‖x‖²`
+    (Rayleigh lower bound: `lam` is a lower bound on the spectrum of `H`),
+    and the symmetric perturbation `E` has quadratic form bounded by
+    `t‖x‖²` in absolute value (so `‖E‖₂ ≤ t` in the spectral sense),
+    then for `t < lam` the quadratic form of `H + E` is strictly positive
+    on nonzero vectors, i.e. `H + E` is positive definite.
+
+    This is the eigenvalue-perturbation step underlying Cholesky's success
+    condition and is stated with quadratic-form bounds so it needs no
+    eigenvalue-decomposition machinery. -/
+theorem quadForm_add_pos_of_perturbation (n : ℕ)
+    (H E : Fin n → Fin n → ℝ) (lam t : ℝ)
+    (hlam : ∀ x : Fin n → ℝ, (∃ i, x i ≠ 0) →
+        lam * ∑ i : Fin n, x i ^ 2 ≤ ∑ i : Fin n, ∑ j : Fin n, x i * H i j * x j)
+    (hE : ∀ x : Fin n → ℝ,
+        |∑ i : Fin n, ∑ j : Fin n, x i * E i j * x j| ≤ t * ∑ i : Fin n, x i ^ 2)
+    (hlt : t < lam) :
+    ∀ x : Fin n → ℝ, (∃ i, x i ≠ 0) →
+        0 < ∑ i : Fin n, ∑ j : Fin n, x i * (H i j + E i j) * x j := by
+  intro x hx
+  have hS : 0 < ∑ i : Fin n, x i ^ 2 := sum_sq_pos_of_exists_ne n x hx
+  have hsplit : ∑ i : Fin n, ∑ j : Fin n, x i * (H i j + E i j) * x j
+      = (∑ i : Fin n, ∑ j : Fin n, x i * H i j * x j)
+        + (∑ i : Fin n, ∑ j : Fin n, x i * E i j * x j) := by
+    rw [← Finset.sum_add_distrib]
+    refine Finset.sum_congr rfl (fun i _ => ?_)
+    rw [← Finset.sum_add_distrib]
+    exact Finset.sum_congr rfl (fun j _ => by ring)
+  have hH := hlam x hx
+  have hE_lb : -(t * ∑ i : Fin n, x i ^ 2)
+      ≤ ∑ i : Fin n, ∑ j : Fin n, x i * E i j * x j := (abs_le.mp (hE x)).1
+  have hpos : 0 < (lam - t) * (∑ i : Fin n, x i ^ 2) := mul_pos (by linarith) hS
+  rw [hsplit]
+  nlinarith [hH, hE_lb, hpos]
+
+/-- **Congruence by a positive diagonal preserves positive definiteness.**
+
+    If `M` is symmetric positive definite and `D` has strictly positive
+    entries, then `D M D` (entrywise `D_i M_{ij} D_j`) is symmetric positive
+    definite. This is the scaling step `A = D H D` used throughout §10.1. -/
+theorem isSymPosDef_diagCongr (n : ℕ) (D : Fin n → ℝ) (M : Fin n → Fin n → ℝ)
+    (hD : ∀ i, 0 < D i) (hM : IsSymPosDef n M) :
+    IsSymPosDef n (fun i j => D i * M i j * D j) := by
+  refine ⟨?_, ?_⟩
+  · intro i j
+    show D i * M i j * D j = D j * M j i * D i
+    rw [hM.1 i j]; ring
+  · intro y hy
+    obtain ⟨i, hi⟩ := hy
+    have hz : ∃ k, (fun k => D k * y k) k ≠ 0 :=
+      ⟨i, by simpa using mul_ne_zero (ne_of_gt (hD i)) hi⟩
+    have hpos := hM.2 (fun k => D k * y k) hz
+    show 0 < ∑ p : Fin n, ∑ q : Fin n, y p * (D p * M p q * D q) * y q
+    have heq : ∑ p : Fin n, ∑ q : Fin n, y p * (D p * M p q * D q) * y q
+        = ∑ p : Fin n, ∑ q : Fin n, (D p * y p) * M p q * (D q * y q) := by
+      refine Finset.sum_congr rfl (fun p _ => ?_)
+      exact Finset.sum_congr rfl (fun q _ => by ring)
+    rw [heq]; exact hpos
+
+/-- **Cholesky success under a scaled spectral gap** (Higham §10.1, Theorem 10.7).
+
+    Let `A + ΔA = D (H + E) D` be the scaled, perturbed matrix, where `D`
+    is the positive diagonal scaling, `H` is the scaled matrix with
+    Rayleigh lower bound `lam`, and `E = D⁻¹ ΔA D⁻¹` is the scaled backward
+    error with quadratic form bounded by `t‖x‖²`. If the spectral gap
+    `t < lam` holds, then the perturbed scaled matrix is SPD and therefore
+    has a genuine Cholesky factorization: the algorithm succeeds.
+
+    This closes the "min-eigenvalue → PD" step of Theorem 10.7 as an honest
+    theorem (previously only the sign consequence `0 < lam_min` was proved).
+    The remaining upstream obligation is the derivation of the concrete
+    threshold `t = n γ_{n+1}/(1-γ_{n+1})` from the componentwise backward
+    error, which is supplied here as the hypothesis `hE`. -/
+theorem cholesky_succeeds_of_scaled_perturbation (n : ℕ)
+    (D : Fin n → ℝ) (H E : Fin n → Fin n → ℝ) (lam t : ℝ)
+    (hD_pos : ∀ i, 0 < D i)
+    (hH_sym : ∀ i j, H i j = H j i)
+    (hE_sym : ∀ i j, E i j = E j i)
+    (hlam : ∀ x : Fin n → ℝ, (∃ i, x i ≠ 0) →
+        lam * ∑ i : Fin n, x i ^ 2 ≤ ∑ i : Fin n, ∑ j : Fin n, x i * H i j * x j)
+    (hE : ∀ x : Fin n → ℝ,
+        |∑ i : Fin n, ∑ j : Fin n, x i * E i j * x j| ≤ t * ∑ i : Fin n, x i ^ 2)
+    (hlt : t < lam) :
+    ∃ R : Fin n → Fin n → ℝ,
+      CholeskyFactSpec n (fun i j => D i * (H i j + E i j) * D j) R := by
+  have hHE_spd : IsSymPosDef n (fun i j => H i j + E i j) := by
+    refine ⟨fun i j => ?_, ?_⟩
+    · show H i j + E i j = H j i + E j i
+      rw [hH_sym i j, hE_sym i j]
+    exact quadForm_add_pos_of_perturbation n H E lam t hlam hE hlt
+  have hDHED_spd : IsSymPosDef n (fun i j => D i * (H i j + E i j) * D j) :=
+    isSymPosDef_diagCongr n D (fun i j => H i j + E i j) hD_pos hHE_spd
+  exact cholesky_existence n _ hDHED_spd
+
 end LeanFpAnalysis.FP

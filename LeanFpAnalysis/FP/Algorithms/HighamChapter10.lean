@@ -462,6 +462,30 @@ theorem higham10_7_success_condition (n : ℕ) (fp : FPModel)
   cholesky_success_condition n fp A D H hD_pos hDHD lam_min hH_diag
     hn1 hγ_lt hlam_min hLam_bound
 
+/-- **Theorem 10.7**, success as genuine factorization existence.
+
+    Strengthens `higham10_7_success_condition` from the sign consequence
+    `0 < lam_min` to the actual conclusion of Theorem 10.7: when the scaled
+    matrix `H` has Rayleigh lower bound `lam` exceeding the scaled backward-error
+    quadratic-form bound `t`, the perturbed scaled matrix `D (H + E) D` is SPD
+    and has a genuine Cholesky factorization — Cholesky succeeds. The
+    "min-eigenvalue → PD" step is now proved (`quadForm_add_pos_of_perturbation`,
+    `isSymPosDef_diagCongr`), not assumed. -/
+theorem higham10_7_success_factorization (n : ℕ)
+    (D : Fin n → ℝ) (H E : Fin n → Fin n → ℝ) (lam t : ℝ)
+    (hD_pos : ∀ i, 0 < D i)
+    (hH_sym : ∀ i j, H i j = H j i)
+    (hE_sym : ∀ i j, E i j = E j i)
+    (hlam : ∀ x : Fin n → ℝ, (∃ i, x i ≠ 0) →
+        lam * ∑ i : Fin n, x i ^ 2 ≤ ∑ i : Fin n, ∑ j : Fin n, x i * H i j * x j)
+    (hE : ∀ x : Fin n → ℝ,
+        |∑ i : Fin n, ∑ j : Fin n, x i * E i j * x j| ≤ t * ∑ i : Fin n, x i ^ 2)
+    (hlt : t < lam) :
+    ∃ R : Fin n → Fin n → ℝ,
+      CholeskyFactSpec n (fun i j => D i * (H i j + E i j) * D j) R :=
+  cholesky_succeeds_of_scaled_perturbation n D H E lam t hD_pos hH_sym hE_sym
+    hlam hE hlt
+
 /-- **Theorem 10.7**, failure-threshold consequence. -/
 theorem higham10_7_failure_condition (n : ℕ) (fp : FPModel)
     (lam_min : ℝ)
