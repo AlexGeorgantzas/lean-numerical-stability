@@ -12089,6 +12089,29 @@ noncomputable def theorem20_10_householder_gammaA_conservativeRhs
     (theorem20_10_householder_rhs_conservative_gamma fp r p q)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    conservative composed `A`/`b` coefficient for the constructed rounded
+    Householder GQR Part A certificate.
+
+    The two terms are the original Householder matrix/RHS budgets plus the
+    second triangular-solve perturbation layer. -/
+noncomputable def theorem20_10_householder_composed_partA_gammaA
+    (fp : FPModel) (r p q : ℕ) : ℝ :=
+  max
+    (theorem20_10_householder_gammaA fp r p q +
+      gamma fp q * (1 + theorem20_10_householder_gammaA fp r p q))
+    (theorem20_10_householder_rhs_conservative_gamma fp r p q +
+      gamma fp q *
+        (1 + theorem20_10_householder_rhs_conservative_gamma fp r p q))
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    conservative composed `B`/`DeltaX` coefficient for the constructed rounded
+    Householder GQR Part A certificate. -/
+noncomputable def theorem20_10_householder_composed_partA_gammaB
+    (fp : FPModel) (r p q : ℕ) : ℝ :=
+  theorem20_10_householder_gammaB fp r p q +
+    gamma fp p * (1 + theorem20_10_householder_gammaB fp r p q)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     conservative perturbation certificate for the column-reversed `A Q₂`
     Householder RHS tail.
 
@@ -13398,6 +13421,81 @@ theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partA_certifi
       DeltaA DeltaB Deltab hgammaq_nonneg hgammap_nonneg
       hDeltaA hDeltaB hDeltab
       hgammaA_matrix hgammaA_rhs hgammaB_matrix hgammaB_solution hcert
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
+    constructed rounded Householder GQR Part A certificate with named
+    conservative composed coefficients.
+
+    This specializes
+    `theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partA_certificate_of_diagonal_composed`
+    to the local composite `gamma` budgets, removing the caller-facing
+    dominance hypotheses.  The theorem is still conditional on the constructed
+    perturbed `S` and `L22` nonzero diagonals. -/
+theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partA_certificate_of_diagonal_composed_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2)) :
+    let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+      fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+    let Rb : Fin (p + q) → Fin p → ℝ :=
+      fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)
+    let S : Fin p → Fin p → ℝ :=
+      matTranspose (fun i : Fin p => fun j : Fin p =>
+        Rb (Fin.castAdd q i) j)
+    let beta : Fin q → ℝ :=
+      theorem20_10_householder_reversed_AQ2_rhs_tail fp A Qb b
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab : Fin (r + q) → ℝ,
+      (∀ i j,
+        B i j + DeltaB i j =
+          matMulRect (p + q) (p + q) p Qb Rb j i) ∧
+      frobNormRect DeltaA ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect A ∧
+      frobNormRect DeltaB ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        theorem20_10_householder_rhs_conservative_gamma fp r p q *
+          vecNorm2 b ∧
+      ∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        hpert.Q = Qb ∧ hpert.S = S ∧
+        (∀ j : Fin q,
+          matMulVec (r + q) (matTranspose hpert.U)
+              (fun k => b k + Deltab k) (Fin.natAdd r j) =
+            beta j) ∧
+        ((∀ i : Fin p, hpert.S i i ≠ 0) →
+          (∀ i : Fin q, hpert.L22 i i ≠ 0) →
+          Nonempty
+            (Theorem20_10PartAPerturbationCertificate A B b d
+              (theorem20_10_gqr_xhat_of_transformed_tail fp hpert beta d)
+              (theorem20_10_householder_composed_partA_gammaA fp r p q)
+              (theorem20_10_householder_composed_partA_gammaB fp r p q))) := by
+  exact
+    theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partA_certificate_of_diagonal_composed
+      fp A B b d hp hq
+      (theorem20_10_householder_composed_partA_gammaA fp r p q)
+      (theorem20_10_householder_composed_partA_gammaB fp r p q)
+      hvalidA hvalidB hhalf
+      (by
+        dsimp [theorem20_10_householder_composed_partA_gammaA]
+        exact le_max_left _ _)
+      (by
+        dsimp [theorem20_10_householder_composed_partA_gammaA]
+        exact le_max_right _ _)
+      (by
+        dsimp [theorem20_10_householder_composed_partA_gammaB]
+        exact le_rfl)
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10:
     rank obstruction for the rounded Householder perturbed GQR record.
