@@ -11869,6 +11869,152 @@ theorem oneTailNormalizedFacts_not_forall_from_tail_vector_eq_FPModel :
   rw [hvec, hpanel] at hself
   exact hbad hself
 
+/-- First-two route audit for the raw normalized-loop record.
+
+The arbitrary-width first-two record has the same hidden self-dot boundary as
+the one-tail record.  Even if both first-two tail active vectors are literally
+identified with the corresponding `fl_householderNormalizedVector`s, the
+record does not follow for an arbitrary rounded `FPModel`; one of the self-dot
+fields can still fail. -/
+theorem firstTwoTailNormalizedFacts_not_forall_from_tail_vector_eq_FPModel :
+    Exists (fun fp : FPModel =>
+      Exists (fun A_hat :
+        Nat -> Fin (0 + (0 + 2) + 2) -> Fin ((0 + 2) + 2) -> Real =>
+        Exists (fun alpha : Nat -> Real =>
+          (householderTrailingActiveVector (0 + (0 + 2))
+              (0 : Fin (0 + (0 + 2)))
+              (fun a => A_hat 2 a.succ.succ ((0 : Fin (0 + 2)).succ.succ))
+              (alpha 2) =
+            fl_householderNormalizedVector fp
+              (show 0 < 0 + (0 + 2) by omega)
+              (panelFirstColumn (Nat.succ_pos (0 + 1))
+                (trailingPanel (trailingPanel (A_hat 2))))) /\
+          (householderTrailingActiveVector (0 + (0 + 1))
+              (0 : Fin (0 + (0 + 1)))
+              (fun a =>
+                A_hat 3 a.succ.succ.succ
+                  ((0 : Fin (0 + 1)).succ.succ.succ))
+              (alpha 3) =
+            fl_householderNormalizedVector fp
+              (show 0 < 0 + (0 + 1) by omega)
+              (panelFirstColumn (Nat.succ_pos 0)
+                (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))) /\
+          Not (storedSignedSequenceFirstTwoTailNormalizedFacts
+            fp 0 0 A_hat alpha)))) := by
+  let fp : FPModel := divDoubledFPModel
+  let y2 : Fin (0 + (0 + 2)) -> Real :=
+    fun i => if i = (0 : Fin (0 + (0 + 2))) then 1 else 0
+  let y3 : Fin (0 + (0 + 1)) -> Real := fun _ => 1
+  let row2 : Fin (0 + (0 + 2) + 2) :=
+    ((0 : Fin (0 + (0 + 2))).succ.succ)
+  let col2 : Fin ((0 + 2) + 2) :=
+    ((0 : Fin (0 + 2)).succ.succ)
+  let row3 : Fin (0 + (0 + 2) + 2) :=
+    ((0 : Fin (0 + (0 + 1))).succ.succ.succ)
+  let col3 : Fin ((0 + 2) + 2) :=
+    ((0 : Fin (0 + 1)).succ.succ.succ)
+  let A2 : Fin (0 + (0 + 2) + 2) -> Fin ((0 + 2) + 2) -> Real :=
+    fun i j => if j = col2 then if i = row2 then 1 else 0 else 0
+  let A3 : Fin (0 + (0 + 2) + 2) -> Fin ((0 + 2) + 2) -> Real :=
+    fun i j => if j = col3 then if i = row3 then 1 else 0 else 0
+  let A_hat : Nat -> Fin (0 + (0 + 2) + 2) -> Fin ((0 + 2) + 2) -> Real :=
+    fun k => if k = 2 then A2 else if k = 3 then A3 else fun _ _ => 0
+  let alpha : Nat -> Real :=
+    fun k =>
+      if k = 2 then
+        y2 0 -
+          fl_householderNormalizedVector fp
+            (show 0 < 0 + (0 + 2) by omega) y2 0
+      else if k = 3 then
+        y3 0 -
+          fl_householderNormalizedVector fp
+            (show 0 < 0 + (0 + 1) by omega) y3 0
+      else 0
+  refine Exists.intro fp ?_
+  refine Exists.intro A_hat ?_
+  refine Exists.intro alpha ?_
+  have hpanel2 :
+      panelFirstColumn (Nat.succ_pos (0 + 1))
+          (trailingPanel (trailingPanel (A_hat 2))) =
+        y2 := by
+    funext i
+    fin_cases i <;>
+      simp [A_hat, A2, y2, row2, col2, panelFirstColumn, trailingPanel]
+  have hpanel3 :
+      panelFirstColumn (Nat.succ_pos 0)
+          (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))) =
+        y3 := by
+    funext i
+    fin_cases i
+    simp [A_hat, A3, y3, row3, col3, panelFirstColumn, trailingPanel]
+  have hvec2 :
+      householderTrailingActiveVector (0 + (0 + 2))
+          (0 : Fin (0 + (0 + 2)))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin (0 + 2)).succ.succ))
+          (alpha 2) =
+        fl_householderNormalizedVector divDoubledFPModel
+          (show 0 < 0 + (0 + 2) by omega)
+          (panelFirstColumn (Nat.succ_pos (0 + 1))
+            (trailingPanel (trailingPanel (A_hat 2)))) := by
+    rw [hpanel2]
+    funext i
+    fin_cases i
+    · simp [fp, householderTrailingActiveVector, householderActiveVector,
+        householderTrailingPart, A_hat, A2, alpha, y2, row2, col2]
+    · simp [divDoubledFPModel, fl_householderNormalizedVector,
+        householderNormalizedVector, fl_householderVector,
+        householderTrailingActiveVector, householderActiveVector,
+        householderTrailingPart, A_hat, A2, alpha, y2, row2, col2]
+  have hvec3 :
+      householderTrailingActiveVector (0 + (0 + 1))
+          (0 : Fin (0 + (0 + 1)))
+          (fun a =>
+            A_hat 3 a.succ.succ.succ
+              ((0 : Fin (0 + 1)).succ.succ.succ))
+          (alpha 3) =
+        fl_householderNormalizedVector divDoubledFPModel
+          (show 0 < 0 + (0 + 1) by omega)
+          (panelFirstColumn (Nat.succ_pos 0)
+            (trailingPanel (trailingPanel (trailingPanel (A_hat 3))))) := by
+    rw [hpanel3]
+    funext i
+    fin_cases i
+    simp [fp, householderTrailingActiveVector, householderActiveVector,
+      householderTrailingPart, A_hat, A3, alpha, y3, row3, col3]
+  refine ⟨hvec2, hvec3, ?_⟩
+  intro hfacts
+  have hself := hfacts.hselfTail3
+  rw [hvec3, hpanel3] at hself
+  have hbad :
+      Not (
+        (Finset.univ : Finset (Fin (0 + (0 + 1)))).sum
+          (fun i =>
+            fl_householderNormalizedVector fp
+                (show 0 < 0 + (0 + 1) by omega) y3 i *
+              fl_householderNormalizedVector fp
+                (show 0 < 0 + (0 + 1) by omega) y3 i) =
+          2) := by
+    intro h
+    norm_num [fp, divDoubledFPModel, y3, fl_householderNormalizedVector,
+      householderNormalizedVector, fl_householderVector, fl_householderScale,
+      fl_householderBeta, fl_norm2, fl_norm2Sq, fl_dotProduct,
+      householderSign] at h
+    simp at h
+    have hsqrt_sq :
+        Real.sqrt (1 : Real) * Real.sqrt (1 : Real) = 1 := by
+      exact Real.mul_self_sqrt (by norm_num)
+    have hsqrt_pow : Real.sqrt (1 : Real) ^ 2 = 1 := by
+      rw [pow_two]
+      exact hsqrt_sq
+    ring_nf at h
+    have hleft :
+        Real.sqrt (1 : Real) ^ 2 * 4 = (4 : Real) := by
+      rw [hsqrt_pow]
+      norm_num
+    have hbad_eq : (4 : Real) = 2 := hleft.symm.trans h
+    norm_num at hbad_eq
+  exact hbad hself
+
 /-- Exact-arithmetic one-tail normalized reflector facts from the tail-vector
 equality and the local tail determinant nonzero fact.
 
