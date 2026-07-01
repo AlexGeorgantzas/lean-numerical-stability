@@ -14678,6 +14678,179 @@ def storedSignedSequenceTailNormalizedLoopRecords
         (storedSignedSequenceTwiceTrailingSeq A_hat)
         (storedSignedSequenceTailAlpha2 alpha)
 
+/-- Recursive package of the raw source-facing tail-local normalized reflector
+facts at every twice-trailing stored-loop stage.
+
+This is the premise surface that the rounded stored-loop proof should target:
+the usual recurrence and leading-block nonbreakdown hypotheses, plus the
+tail-local normalized-vector equality and self-dot fact at each one-tail or
+first-two recursive stage. The theorem below packages these raw fields into
+the named record surface used by the normalized-loop/source-closure pipeline. -/
+def storedSignedSequenceTailNormalizedLoopRawFacts
+    (fp : FPModel) :
+    (r p : Nat) ->
+      (Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real) ->
+      (Nat -> Real) -> Prop
+  | _r, 0, _A_hat, _alpha => True
+  | _r, 1, A_hat, alpha =>
+      (forall k (hk : k < 1 + 2),
+        A_hat (k + 1) =
+          fl_householderStoredPanelStep fp (_r + 1 + 2) (1 + 2) k
+            (householderTrailingActiveVector (_r + 1 + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : 1 + 2 <= _r + 1 + 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+            (householderBetaSpec (_r + 1 + 2)
+              (householderTrailingActiveVector (_r + 1 + 2)
+                (Fin.mk k
+                  (lt_of_lt_of_le hk
+                    (by omega : 1 + 2 <= _r + 1 + 2)))
+                (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+            (A_hat k)) /\
+      (forall k (hk : k < 1 + 2),
+        Ne (Matrix.det
+          (qrLeadingBlock (A_hat k)
+            (Nat.succ_le_iff.mpr
+              (lt_of_lt_of_le hk
+                (by omega : 1 + 2 <= _r + 1 + 2))) hk :
+            Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+          0) /\
+      householderTrailingActiveVector (_r + 1)
+          (0 : Fin (_r + 1))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+          (alpha 2) =
+        fl_householderNormalizedVector fp (Nat.succ_pos _r)
+          (panelFirstColumn (Nat.succ_pos 0)
+            (trailingPanel (trailingPanel (A_hat 2)))) /\
+      (Finset.univ : Finset (Fin (_r + 1))).sum
+        (fun i =>
+          householderTrailingActiveVector (_r + 1)
+              (0 : Fin (_r + 1))
+              (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+              (alpha 2) i *
+            householderTrailingActiveVector (_r + 1)
+              (0 : Fin (_r + 1))
+              (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+              (alpha 2) i) =
+        2
+  | r, p + 2, A_hat, alpha =>
+      (forall k (hk : k < (p + 2) + 2),
+        A_hat (k + 1) =
+          fl_householderStoredPanelStep fp (r + (p + 2) + 2)
+            ((p + 2) + 2) k
+            (householderTrailingActiveVector (r + (p + 2) + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : (p + 2) + 2 <= r + (p + 2) + 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+            (householderBetaSpec (r + (p + 2) + 2)
+              (householderTrailingActiveVector (r + (p + 2) + 2)
+                (Fin.mk k
+                  (lt_of_lt_of_le hk
+                    (by omega : (p + 2) + 2 <= r + (p + 2) + 2)))
+                (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+            (A_hat k)) /\
+      (forall k (hk : k < (p + 2) + 2),
+        Ne (Matrix.det
+          (qrLeadingBlock (A_hat k)
+            (Nat.succ_le_iff.mpr
+              (lt_of_lt_of_le hk
+                (by omega : (p + 2) + 2 <= r + (p + 2) + 2))) hk :
+            Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+          0) /\
+      householderTrailingActiveVector (r + (p + 2))
+          (0 : Fin (r + (p + 2)))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin (p + 2)).succ.succ))
+          (alpha 2) =
+        fl_householderNormalizedVector fp
+          (show 0 < r + (p + 2) by omega)
+          (panelFirstColumn (Nat.succ_pos (p + 1))
+            (trailingPanel (trailingPanel (A_hat 2)))) /\
+      (Finset.univ : Finset (Fin (r + (p + 2)))).sum
+        (fun i =>
+          householderTrailingActiveVector (r + (p + 2))
+              (0 : Fin (r + (p + 2)))
+              (fun a =>
+                A_hat 2 a.succ.succ ((0 : Fin (p + 2)).succ.succ))
+              (alpha 2) i *
+            householderTrailingActiveVector (r + (p + 2))
+              (0 : Fin (r + (p + 2)))
+              (fun a =>
+                A_hat 2 a.succ.succ ((0 : Fin (p + 2)).succ.succ))
+              (alpha 2) i) =
+        2 /\
+      householderTrailingActiveVector (r + (p + 1))
+          (0 : Fin (r + (p + 1)))
+          (fun a =>
+            A_hat 3 a.succ.succ.succ
+              ((0 : Fin (p + 1)).succ.succ.succ))
+          (alpha 3) =
+        fl_householderNormalizedVector fp
+          (show 0 < r + (p + 1) by omega)
+          (panelFirstColumn (Nat.succ_pos p)
+            (trailingPanel (trailingPanel (trailingPanel (A_hat 3))))) /\
+      (Finset.univ : Finset (Fin (r + (p + 1)))).sum
+        (fun i =>
+          householderTrailingActiveVector (r + (p + 1))
+              (0 : Fin (r + (p + 1)))
+              (fun a =>
+                A_hat 3 a.succ.succ.succ
+                  ((0 : Fin (p + 1)).succ.succ.succ))
+              (alpha 3) i *
+            householderTrailingActiveVector (r + (p + 1))
+              (0 : Fin (r + (p + 1)))
+              (fun a =>
+                A_hat 3 a.succ.succ.succ
+                  ((0 : Fin (p + 1)).succ.succ.succ))
+              (alpha 3) i) =
+        2 /\
+      storedSignedSequenceTailNormalizedLoopRawFacts fp r p
+        (storedSignedSequenceTwiceTrailingSeq A_hat)
+        (storedSignedSequenceTailAlpha2 alpha)
+
+/-- Raw source-facing tail-local normalized loop facts assemble the named
+recursive record package.
+
+This closes the bookkeeping layer between the explicit rounded/source-faithful
+facts that remain to be proved and the named record surface used by the
+normalized-loop/source-closure bridge. -/
+theorem
+    storedSignedSequenceTailNormalizedLoopRecords_of_tailNormalizedLoopRawFacts
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hraw :
+      storedSignedSequenceTailNormalizedLoopRawFacts fp r p A_hat alpha) :
+    storedSignedSequenceTailNormalizedLoopRecords fp r p A_hat alpha := by
+  revert r A_hat alpha
+  refine
+    Nat.twoStepInduction
+      (P := fun p =>
+        forall (r : Nat)
+            (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+            (alpha : Nat -> Real),
+          storedSignedSequenceTailNormalizedLoopRawFacts fp r p A_hat alpha ->
+            storedSignedSequenceTailNormalizedLoopRecords fp r p A_hat alpha)
+      ?hzero ?hone ?hstep p
+  · intro r A_hat alpha _hraw
+    trivial
+  · intro r A_hat alpha hraw
+    rcases hraw with ⟨hStep, hdetLead, hvecTail, hselfTail⟩
+    exact
+      ⟨hStep, hdetLead,
+        { hvecTail := hvecTail, hselfTail := hselfTail }⟩
+  · intro p ih _ihSucc r A_hat alpha hraw
+    rcases hraw with
+      ⟨hStep, hdetLead, hvecTail2, hselfTail2, hvecTail3, hselfTail3,
+        htailRaw⟩
+    exact
+      ⟨hStep, hdetLead,
+        { hvecTail2 := hvecTail2, hselfTail2 := hselfTail2,
+          hvecTail3 := hvecTail3, hselfTail3 := hselfTail3 },
+        ih r (storedSignedSequenceTwiceTrailingSeq A_hat)
+          (storedSignedSequenceTailAlpha2 alpha) htailRaw⟩
+
 /-- The recursive named tail-local normalized-record package assembles the
 explicit normalized full-stage loop facts.
 
@@ -14718,6 +14891,21 @@ theorem
         fp r p A_hat alpha hStep hdetLead hfacts
         (ih r (storedSignedSequenceTwiceTrailingSeq A_hat)
           (storedSignedSequenceTailAlpha2 alpha) htailRecords)
+
+/-- Raw source-facing tail-local normalized loop facts assemble the explicit
+normalized full-stage loop facts. -/
+theorem
+    storedSignedSequenceFullStageNormalizedLoopFacts_of_tailNormalizedLoopRawFacts
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hraw :
+      storedSignedSequenceTailNormalizedLoopRawFacts fp r p A_hat alpha) :
+    storedSignedSequenceFullStageNormalizedLoopFacts fp r p A_hat alpha :=
+  storedSignedSequenceFullStageNormalizedLoopFacts_of_tailNormalizedLoopRecords
+    fp r p A_hat alpha
+    (storedSignedSequenceTailNormalizedLoopRecords_of_tailNormalizedLoopRawFacts
+      fp r p A_hat alpha hraw)
 
 /-- Odd recursive-tail normalized loop facts from current first-two full-stage
 data and absolute stage-four facts. -/
@@ -15390,6 +15578,21 @@ theorem
     fp r p A_hat alpha
     (storedSignedSequenceFullStageNormalizedLoopFacts_of_tailNormalizedLoopRecords
       fp r p A_hat alpha hrecords)
+
+/-- Raw source-facing tail-local normalized loop facts assemble raw
+source-closure data through the existing normalized-loop bridge. -/
+theorem
+    storedSignedSequenceTwiceTrailingSourceClosureData_of_tailNormalizedLoopRawFacts
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hraw :
+      storedSignedSequenceTailNormalizedLoopRawFacts fp r p A_hat alpha) :
+    storedSignedSequenceTwiceTrailingSourceClosureData fp r p A_hat alpha :=
+  storedSignedSequenceTwiceTrailingSourceClosureData_of_tailNormalizedLoopRecords
+    fp r p A_hat alpha
+    (storedSignedSequenceTailNormalizedLoopRecords_of_tailNormalizedLoopRawFacts
+      fp r p A_hat alpha hraw)
 
 /-- Raw source-tail closure facts imply the recursive closure-data contract. -/
 theorem storedSignedSequenceTwiceTrailingClosureData_of_sourceClosureData
