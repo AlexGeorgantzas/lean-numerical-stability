@@ -462,6 +462,30 @@ theorem higham10_7_success_condition (n : ℕ) (fp : FPModel)
   cholesky_success_condition n fp A D H hD_pos hDHD lam_min hH_diag
     hn1 hγ_lt hlam_min hLam_bound
 
+/-- **Theorem 10.7**, success as genuine factorization existence.
+
+    Strengthens `higham10_7_success_condition` from the sign consequence
+    `0 < lam_min` to the actual conclusion of Theorem 10.7: when the scaled
+    matrix `H` has Rayleigh lower bound `lam` exceeding the scaled backward-error
+    quadratic-form bound `t`, the perturbed scaled matrix `D (H + E) D` is SPD
+    and has a genuine Cholesky factorization — Cholesky succeeds. The
+    "min-eigenvalue → PD" step is now proved (`quadForm_add_pos_of_perturbation`,
+    `isSymPosDef_diagCongr`), not assumed. -/
+theorem higham10_7_success_factorization (n : ℕ)
+    (D : Fin n → ℝ) (H E : Fin n → Fin n → ℝ) (lam t : ℝ)
+    (hD_pos : ∀ i, 0 < D i)
+    (hH_sym : ∀ i j, H i j = H j i)
+    (hE_sym : ∀ i j, E i j = E j i)
+    (hlam : ∀ x : Fin n → ℝ, (∃ i, x i ≠ 0) →
+        lam * ∑ i : Fin n, x i ^ 2 ≤ ∑ i : Fin n, ∑ j : Fin n, x i * H i j * x j)
+    (hE : ∀ x : Fin n → ℝ,
+        |∑ i : Fin n, ∑ j : Fin n, x i * E i j * x j| ≤ t * ∑ i : Fin n, x i ^ 2)
+    (hlt : t < lam) :
+    ∃ R : Fin n → Fin n → ℝ,
+      CholeskyFactSpec n (fun i j => D i * (H i j + E i j) * D j) R :=
+  cholesky_succeeds_of_scaled_perturbation n D H E lam t hD_pos hH_sym hE_sym
+    hlam hE hlt
+
 /-- **Theorem 10.7**, failure-threshold consequence. -/
 theorem higham10_7_failure_condition (n : ℕ) (fp : FPModel)
     (lam_min : ℝ)
@@ -470,6 +494,27 @@ theorem higham10_7_failure_condition (n : ℕ) (fp : FPModel)
     (hLam_neg : lam_min < -(↑n * gamma fp (n + 1) / (1 - gamma fp (n + 1)))) :
     lam_min < 0 :=
   cholesky_failure_condition n fp lam_min hn1 hγ_lt hLam_neg
+
+/-- **Theorem 10.7**, failure as genuine non-factorizability.
+
+    Strengthens `higham10_7_failure_condition` from the sign consequence
+    `lam_min < 0` to the actual failure conclusion: when `H` has a
+    Rayleigh upper witness `lam` for its minimum eigenvalue below `-t`
+    (with `t` the scaled backward-error quadratic-form bound), the scaled
+    perturbed matrix `H + E` has a strictly negative curvature direction and
+    therefore admits no Cholesky factorization — the algorithm fails. -/
+theorem higham10_7_failure_no_factorization (n : ℕ)
+    (H E : Fin n → Fin n → ℝ) (lam t : ℝ)
+    (hlam_dir : ∃ x : Fin n → ℝ, (∃ i, x i ≠ 0) ∧
+        (∑ i : Fin n, ∑ j : Fin n, x i * H i j * x j) ≤ lam * ∑ i : Fin n, x i ^ 2)
+    (hE : ∀ x : Fin n → ℝ,
+        |∑ i : Fin n, ∑ j : Fin n, x i * E i j * x j| ≤ t * ∑ i : Fin n, x i ^ 2)
+    (hlt : lam < -t) :
+    ¬ ∃ R : Fin n → Fin n → ℝ,
+        CholeskyFactSpec n (fun i j => H i j + E i j) R := by
+  obtain ⟨x, hx, hxneg⟩ :=
+    quadForm_add_neg_of_perturbation n H E lam t hlam_dir hE hlt
+  exact no_choleskyFactSpec_of_neg_quadForm n (fun i j => H i j + E i j) x hxneg
 
 /-! ## §10.2 Sensitivity of the Cholesky Factorization -/
 
