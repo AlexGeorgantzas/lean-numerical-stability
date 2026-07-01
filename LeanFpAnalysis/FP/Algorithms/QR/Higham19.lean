@@ -24651,6 +24651,468 @@ theorem stored_panel_sequence_leadingBlock_offdiag_budget_of_signed_stage_budget
       hmn fp Ahat alpha c rowBudget entryBudget hm hStep hinit hpivot hbudget
       hexact hrowBudget
 
+/-- Higham, Theorem 19.6 route dependency: signed-alpha stored-panel diagonal
+nonbreakdown from positive trailing norms and square-root component budgets.
+
+This is the diagonal counterpart to the leading-block off-diagonal budget
+wrappers above.  It exposes the proved stored-loop nonbreakdown route under the
+row-wise stability namespace, but it remains dependency infrastructure rather
+than the full pivoted QR/preconditioner theorem. -/
+theorem stored_panel_sequence_diag_nonzero_of_signed_alpha_trailingNorm_pos_sqrt_budget
+    {m n : Nat} (fp : FPModel) (hmn : n <= m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (hm : gammaValid fp m)
+    (hStep : forall k (hk : k < n),
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (Ahat k))
+    (hAlphaDef : forall k (hk : k < n),
+      alpha k =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun i => Ahat k i (Fin.mk k hk))))
+          (Ahat k (Fin.mk k (lt_of_lt_of_le hk hmn)) (Fin.mk k hk)))
+    (htrailingPos : forall k (hk : k < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk k (lt_of_lt_of_le hk hmn))
+          (fun i => Ahat k i (Fin.mk k hk)))
+    (hbudgetSqrt : forall k (hk : k < n),
+      householderCompactComponentBudget fp m
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (fun a => Ahat k a (Fin.mk k hk))
+          (Fin.mk k (lt_of_lt_of_le hk hmn)) <
+        Real.sqrt
+          (householderTrailingNorm2Sq m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun i => Ahat k i (Fin.mk k hk)))) :
+    forall i : Fin n,
+      Ne (Ahat n (Fin.mk i.val (lt_of_lt_of_le i.isLt hmn)) i) 0 := by
+  exact
+    fl_householderStoredTrailingPanel_sequence_diag_nonzero_of_signed_alpha_trailingNorm_pos_sqrt_budget
+      fp hmn Ahat alpha hm hStep hAlphaDef htrailingPos hbudgetSqrt
+
+/-- Higham, Theorem 19.6 route dependency: prefix-local signed-alpha diagonal
+nonbreakdown for the stored QR loop.
+
+After any completed prefix, the diagonal entries already written by previous
+stored Householder steps are nonzero.  This is the local triangular-leading-block
+form needed by later source-control and pivoted-QR assembly. -/
+theorem stored_panel_sequence_prefix_diag_nonzero_of_signed_alpha_trailingNorm_pos_sqrt_budget
+    {m n : Nat} (fp : FPModel) (hmn : n <= m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (hm : gammaValid fp m)
+    (hStep : forall k (hk : k < n),
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (Ahat k))
+    (hAlphaDef : forall k (hk : k < n),
+      alpha k =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun i => Ahat k i (Fin.mk k hk))))
+          (Ahat k (Fin.mk k (lt_of_lt_of_le hk hmn)) (Fin.mk k hk)))
+    (htrailingPos : forall k (hk : k < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk k (lt_of_lt_of_le hk hmn))
+          (fun i => Ahat k i (Fin.mk k hk)))
+    (hbudgetSqrt : forall k (hk : k < n),
+      householderCompactComponentBudget fp m
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (fun a => Ahat k a (Fin.mk k hk))
+          (Fin.mk k (lt_of_lt_of_le hk hmn)) <
+        Real.sqrt
+          (householderTrailingNorm2Sq m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun i => Ahat k i (Fin.mk k hk)))) :
+    forall k (hk : k <= n) (i : Fin k),
+      Ne
+        (Ahat k
+          (Fin.mk i.val (lt_of_lt_of_le i.isLt (le_trans hk hmn)))
+          (Fin.mk i.val (lt_of_lt_of_le i.isLt hk)))
+        0 := by
+  exact
+    fl_householderStoredTrailingPanel_sequence_prefix_diag_nonzero_of_signed_alpha_trailingNorm_pos_sqrt_budget
+      fp hmn Ahat alpha hm hStep hAlphaDef htrailingPos hbudgetSqrt
+
+/-- Higham, Theorem 19.6 route dependency: leading-minor stored-loop diagonal
+nonbreakdown from local determinant data and square-root component budgets.
+
+Nonsingular previous/current leading blocks, the stored lower-zero invariant,
+the signed Householder pivot convention, and a per-pivot square-root budget
+imply nonzero final top-block diagonal entries. -/
+theorem stored_panel_sequence_diag_nonzero_of_leading_block_det_ne_zero_sqrt_budget
+    {m n : Nat}
+    (fp : FPModel) (hmn : n <= m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (hm : gammaValid fp m)
+    (hStep : forall k (hk : k < n),
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (Ahat k))
+    (halpha : forall k (hk : k < n),
+      alpha k * alpha k =
+        householderTrailingNorm2Sq m
+          (Fin.mk k (lt_of_lt_of_le hk hmn))
+          (fun i => Ahat k i (Fin.mk k hk)))
+    (hdetPrev : forall k (hk : k < n),
+      Matrix.det
+        (qrPreviousLeadingBlockTranspose (Ahat k)
+          (le_trans (Nat.le_of_lt hk) hmn) hk :
+          Matrix (Fin k) (Fin k) Real) ≠ 0)
+    (hdetLead : forall k (hk : k < n),
+      Matrix.det
+        (qrLeadingBlock (Ahat k)
+          (le_trans (Nat.succ_le_of_lt hk) hmn) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real) ≠ 0)
+    (hlowerPrev : forall k (hk : k < n) (i : Fin m) (j : Fin k),
+      k <= i.val -> Ahat k i (qrPreviousColumn n k hk j) = 0)
+    (hsign : forall k (hk : k < n),
+      alpha k * Ahat k (Fin.mk k (lt_of_lt_of_le hk hmn)) (Fin.mk k hk) <= 0)
+    (hbudgetSqrt : forall k (hk : k < n),
+      householderCompactComponentBudget fp m
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (fun a => Ahat k a (Fin.mk k hk))
+          (Fin.mk k (lt_of_lt_of_le hk hmn)) <
+        Real.sqrt
+          (householderTrailingNorm2Sq m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun i => Ahat k i (Fin.mk k hk)))) :
+    forall i : Fin n,
+      Ne (Ahat n (Fin.mk i.val (lt_of_lt_of_le i.isLt hmn)) i) 0 := by
+  exact
+    fl_householderStoredTrailingPanel_sequence_diag_nonzero_of_leading_block_det_ne_zero_sqrt_budget
+      fp hmn Ahat alpha hm hStep halpha hdetPrev hdetLead hlowerPrev
+      hsign hbudgetSqrt
+
+/-- Higham, Theorem 19.6 route dependency: sequence-budget version of the
+leading-minor stored-loop diagonal nonbreakdown route.
+
+The deterministic compact-update sequence budget controls the per-pivot diagonal
+component budget used by the square-root nonbreakdown theorem. -/
+theorem stored_panel_sequence_diag_nonzero_of_leading_block_det_ne_zero_sequence_budget
+    {m n : Nat}
+    (fp : FPModel) (hmn : n <= m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (bhat : Nat -> Fin m -> Real)
+    (alpha : Nat -> Real)
+    (hm : gammaValid fp m)
+    (hStep : forall k (hk : k < n),
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (Ahat k))
+    (halpha : forall k (hk : k < n),
+      alpha k * alpha k =
+        householderTrailingNorm2Sq m
+          (Fin.mk k (lt_of_lt_of_le hk hmn))
+          (fun i => Ahat k i (Fin.mk k hk)))
+    (hdetPrev : forall k (hk : k < n),
+      Matrix.det
+        (qrPreviousLeadingBlockTranspose (Ahat k)
+          (le_trans (Nat.le_of_lt hk) hmn) hk :
+          Matrix (Fin k) (Fin k) Real) ≠ 0)
+    (hdetLead : forall k (hk : k < n),
+      Matrix.det
+        (qrLeadingBlock (Ahat k)
+          (le_trans (Nat.succ_le_of_lt hk) hmn) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real) ≠ 0)
+    (hlowerPrev : forall k (hk : k < n) (i : Fin m) (j : Fin k),
+      k <= i.val -> Ahat k i (qrPreviousColumn n k hk j) = 0)
+    (hsign : forall k (hk : k < n),
+      alpha k * Ahat k (Fin.mk k (lt_of_lt_of_le hk hmn)) (Fin.mk k hk) <= 0)
+    (hsequenceBudget : forall k (hk : k < n),
+      storedQRCompactSequenceRelativeBudget hmn fp Ahat bhat alpha *
+          vecNorm2 (fun i : Fin m => Ahat k i (Fin.mk k hk)) <
+        Real.sqrt
+          (householderTrailingNorm2Sq m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun i => Ahat k i (Fin.mk k hk)))) :
+    forall i : Fin n,
+      Ne (Ahat n (Fin.mk i.val (lt_of_lt_of_le i.isLt hmn)) i) 0 := by
+  refine
+    stored_panel_sequence_diag_nonzero_of_leading_block_det_ne_zero_sqrt_budget
+      fp hmn Ahat alpha hm hStep halpha hdetPrev hdetLead hlowerPrev
+      hsign ?_
+  intro k hk
+  exact
+    lt_of_le_of_lt
+      (storedQRCompactPivotBudget_le_sequence_column_norm
+        hmn fp Ahat bhat alpha hm k hk)
+      (hsequenceBudget k hk)
+
+/-- Higham, Theorem 19.6 route dependency: uniform-step-budget version of the
+leading-minor stored-loop diagonal nonbreakdown route.
+
+If every compact stored-QR update has relative budget at most `cStep`, a
+per-pivot margin for the uniform `n * cStep` sequence cap proves nonzero final
+diagonal entries. -/
+theorem stored_panel_sequence_diag_nonzero_of_leading_block_det_ne_zero_uniform_step_budget
+    {m n : Nat}
+    (fp : FPModel) (hmn : n <= m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (bhat : Nat -> Fin m -> Real)
+    (alpha : Nat -> Real)
+    (cStep : Real)
+    (hm : gammaValid fp m)
+    (hStep : forall k (hk : k < n),
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (Ahat k))
+    (halpha : forall k (hk : k < n),
+      alpha k * alpha k =
+        householderTrailingNorm2Sq m
+          (Fin.mk k (lt_of_lt_of_le hk hmn))
+          (fun i => Ahat k i (Fin.mk k hk)))
+    (hdetPrev : forall k (hk : k < n),
+      Matrix.det
+        (qrPreviousLeadingBlockTranspose (Ahat k)
+          (le_trans (Nat.le_of_lt hk) hmn) hk :
+          Matrix (Fin k) (Fin k) Real) ≠ 0)
+    (hdetLead : forall k (hk : k < n),
+      Matrix.det
+        (qrLeadingBlock (Ahat k)
+          (le_trans (Nat.succ_le_of_lt hk) hmn) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real) ≠ 0)
+    (hlowerPrev : forall k (hk : k < n) (i : Fin m) (j : Fin k),
+      k <= i.val -> Ahat k i (qrPreviousColumn n k hk j) = 0)
+    (hsign : forall k (hk : k < n),
+      alpha k * Ahat k (Fin.mk k (lt_of_lt_of_le hk hmn)) (Fin.mk k hk) <= 0)
+    (hStepBudget : forall k : Fin n,
+      storedQRCompactStepRelativeBudget hmn fp Ahat bhat alpha k <= cStep)
+    (huniformBudget : forall k (hk : k < n),
+      ((n : Real) * cStep) *
+          vecNorm2 (fun i : Fin m => Ahat k i (Fin.mk k hk)) <
+        Real.sqrt
+          (householderTrailingNorm2Sq m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun i => Ahat k i (Fin.mk k hk)))) :
+    forall i : Fin n,
+      Ne (Ahat n (Fin.mk i.val (lt_of_lt_of_le i.isLt hmn)) i) 0 := by
+  refine
+    stored_panel_sequence_diag_nonzero_of_leading_block_det_ne_zero_sequence_budget
+      fp hmn Ahat bhat alpha hm hStep halpha hdetPrev hdetLead
+      hlowerPrev hsign ?_
+  intro k hk
+  have hseq :
+      storedQRCompactSequenceRelativeBudget hmn fp Ahat bhat alpha <=
+        (n : Real) * cStep :=
+    storedQRCompactSequenceRelativeBudget_le_mul_of_step_le
+      hmn fp Ahat bhat alpha cStep hStepBudget
+  have hseqMul :
+      storedQRCompactSequenceRelativeBudget hmn fp Ahat bhat alpha *
+          vecNorm2 (fun i : Fin m => Ahat k i (Fin.mk k hk)) <=
+        ((n : Real) * cStep) *
+          vecNorm2 (fun i : Fin m => Ahat k i (Fin.mk k hk)) :=
+    mul_le_mul_of_nonneg_right hseq
+      (vecNorm2_nonneg (fun i : Fin m => Ahat k i (Fin.mk k hk)))
+  exact lt_of_le_of_lt hseqMul (huniformBudget k hk)
+
+/-- Higham, Theorem 19.6 route dependency: signed stored-QR stages preserve
+completed columns.
+
+This exposes the exact `hcompleted` field used by Cox--Higham row-growth
+handoffs: once a column has already been processed, the signed trailing
+Householder reflector for a later stage leaves that completed column unchanged. -/
+theorem stored_signed_stage_completed_column_preservation
+    {m n : Nat} (hmn : n <= m)
+    (fp : FPModel)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall k (hk : k < n),
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (Ahat k)) :
+    forall t (_ht : t < n), forall j : Fin n, j.val < t ->
+      forall i : Fin m,
+        matMulVec m
+          (householder m
+            (storedQRSignedStageVector hmn Ahat alpha t)
+            (storedQRSignedStageBeta hmn Ahat alpha t))
+          (fun a => Ahat t a j) i = Ahat t i j := by
+  exact
+    storedQRSignedStage_completed_column_preservation
+      hmn fp Ahat alpha hStep
+
+/-- Higham, Theorem 19.6 route dependency: exact below-pivot zeroing for the
+concrete signed stored-QR pivot column.
+
+Under the source signed-alpha convention and positive active trailing norm, the
+exact signed Householder reflector zeros entries below the active pivot in its
+own pivot column. -/
+theorem stored_signed_stage_pivot_column_zero_below_of_trailingNorm_pos
+    {m n : Nat} (hmn : n <= m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (t : Nat) (ht : t < n)
+    (hAlphaDef :
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hmn))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hmn)) (Fin.mk t ht)))
+    (htrailingPos :
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hmn))
+          (fun a => Ahat t a (Fin.mk t ht)))
+    (a : Fin m) (ha : t < a.val) :
+    matMulVec m
+      (householder m
+        (storedQRSignedStageVector hmn Ahat alpha t)
+        (storedQRSignedStageBeta hmn Ahat alpha t))
+      (fun r => Ahat t r (Fin.mk t ht)) a = 0 := by
+  exact
+    storedQRSignedStage_pivot_column_zero_below_of_trailingNorm_pos
+      hmn Ahat alpha t ht hAlphaDef htrailingPos a ha
+
+/-- Higham, Theorem 19.6 route dependency: signed stored-QR stages supply the
+pivot-column zeroing field used by the leading-block off-diagonal budget bridge.
+
+This is the all-leading-block form of
+`stored_signed_stage_pivot_column_zero_below_of_trailingNorm_pos`. -/
+theorem stored_signed_stage_pivot_zeroing_field_of_trailingNorm_pos
+    {m n : Nat} (hmn : n <= m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (hAlphaDef : forall t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hmn))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hmn)) (Fin.mk t ht)))
+    (htrailingPos : forall t (ht : t < n),
+      0 < householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hmn))
+          (fun a => Ahat t a (Fin.mk t ht))) :
+    forall k (hk : k < n), forall i j : Fin (k + 1), forall _hij : i.val < j.val,
+      forall t : Nat, t < qrLeadingOffdiagStop j ->
+        (qrLeadingColumn n k hk j).val = t ->
+          forall a : Fin m, t < a.val ->
+            matMulVec m
+              (householder m
+                (storedQRSignedStageVector hmn Ahat alpha t)
+                (storedQRSignedStageBeta hmn Ahat alpha t))
+              (fun r => Ahat t r (qrLeadingColumn n k hk j)) a = 0 := by
+  exact
+    storedQRSignedStage_pivot_zeroing_field_of_trailingNorm_pos
+      hmn Ahat alpha hAlphaDef htrailingPos
+
+/-- Higham, Theorem 19.6 route dependency: the norm-square source-control
+budget supplies signed stored-QR pivot-column zeroing.
+
+The visible budget inequality implies positive active trailing norm, so callers
+of the off-diagonal budget bridge can reuse the same source-control budget
+instead of passing a separate nonbreakdown proof for pivot zeroing. -/
+theorem stored_signed_stage_pivot_zeroing_field_of_normSqBudget
+    {m n : Nat} (hmn : n <= m)
+    (fp : FPModel)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (hAlphaDef : forall t (ht : t < n),
+      alpha t =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              (Fin.mk t (lt_of_lt_of_le ht hmn))
+              (fun a => Ahat t a (Fin.mk t ht))))
+          (Ahat t (Fin.mk t (lt_of_lt_of_le ht hmn)) (Fin.mk t ht)))
+    (hbudgetNormSq : forall t (ht : t < n),
+      (m : Real) *
+          (householderCompactComponentBudget fp m
+            (householderTrailingActiveVector m
+              (Fin.mk t (lt_of_lt_of_le ht hmn))
+              (fun a => Ahat t a (Fin.mk t ht)) (alpha t))
+            (householderBetaSpec m
+              (householderTrailingActiveVector m
+                (Fin.mk t (lt_of_lt_of_le ht hmn))
+                (fun a => Ahat t a (Fin.mk t ht)) (alpha t)))
+            (fun a => Ahat t a (Fin.mk t ht))
+            (Fin.mk t (lt_of_lt_of_le ht hmn))) ^ 2 <
+        householderTrailingNorm2Sq m
+          (Fin.mk t (lt_of_lt_of_le ht hmn))
+          (fun a => Ahat t a (Fin.mk t ht))) :
+    forall k (hk : k < n), forall i j : Fin (k + 1), forall _hij : i.val < j.val,
+      forall t : Nat, t < qrLeadingOffdiagStop j ->
+        (qrLeadingColumn n k hk j).val = t ->
+          forall a : Fin m, t < a.val ->
+            matMulVec m
+              (householder m
+                (storedQRSignedStageVector hmn Ahat alpha t)
+                (storedQRSignedStageBeta hmn Ahat alpha t))
+              (fun r => Ahat t r (qrLeadingColumn n k hk j)) a = 0 := by
+  exact
+    storedQRSignedStage_pivot_zeroing_field_of_normSqBudget
+      hmn fp Ahat alpha hAlphaDef hbudgetNormSq
+
 /-- Higham, Theorem 19.6 route dependency: one rounded stored-panel update
 bounded by signed-pivot exact stage fields plus the compact component budget.
 
