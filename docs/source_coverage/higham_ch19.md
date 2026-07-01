@@ -197,6 +197,7 @@ Latest dependency update: the explicit normalized-loop surface now has named zer
 - `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`: no matches after adding the recursive tail-local constructors.
 - `git diff --check`: passed after adding the recursive tail-local constructors and report update, with only the usual CRLF normalization warnings for `Higham19.lean` and this report.
 - `#print axioms` for `storedSignedSequenceOneTailFullStageFacts_of_tail_normalized_facts`, `storedSignedSequenceFirstTwoFullStageFacts_of_tail_normalized_facts`, `storedSignedSequenceOneTailFullStageFacts_of_twice_trailing_tail_normalized_facts_and_leadingBlock_det_ne_zero`, `storedSignedSequenceFirstTwoFullStageFacts_of_twice_trailing_tail_normalized_facts_and_leadingBlock_det_ne_zero`, `storedSignedSequenceFullStageNormalizedLoopFacts_one_of_twice_trailing_tail_normalized_facts_and_leadingBlock_det_ne_zero`, and `storedSignedSequenceFullStageNormalizedLoopFacts_succ_succ_of_twice_trailing_tail_normalized_facts_and_leadingBlock_det_ne_zero`: only `propext`, `Classical.choice`, and `Quot.sound`.
+- Post-merge rechecks after integrating `origin/main` at `fb833157` via merge `8bede31c`: `lake env lean LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`, `lake build LeanFpAnalysis.FP.Algorithms.QR.Higham19`, placeholder scan, `git diff --check`, and `chapter_splitting/` guards passed; only the pre-existing `GivensSpec` unused-simp warnings were reported.
 - `lake env lean LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`: passed after adding the tail-local normalized full-stage and normalized-loop constructors.
 - `lake build LeanFpAnalysis.FP.Algorithms.QR.Higham19`: passed after adding the tail-local normalized constructors; only pre-existing `GivensSpec` unused-simp warnings were reported.
 - `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`: no matches after adding the tail-local normalized constructors.
@@ -426,7 +427,7 @@ Latest dependency update: the explicit normalized-loop surface now has named zer
 ## Git and Local-Only Notes
 
 - Work is on shared local `main`, synchronized with `origin/main` before theorem design and merged again before push.
-- Split-prefixed proof milestone commit: `10ed1d8` (`Split 3B: derive Ch19 tail-local normalized loop facts`).
-- Latest `origin/main` integrated before the final push: `56657a61` (`Add Chapter 20 eta real-limit bridge`), via conflict-free merge commit `cffb1996`; the previous `89669076`, `c7ced3fb`, and `060d8a94` updates were integrated via `c3d79fbf`, `ba482343`, and `cc903670`.
+- Split-prefixed proof milestone commit: `ac16a43d` (`Split 3B: add Ch19 recursive tail-local normalized rungs`).
+- Latest `origin/main` integrated before the final push: `fb833157` (`Document Chapter 20 compactness sublevel bound`), via conflict-free merge commit `8bede31c`.
 - `chapter_splitting/` is local-only context: it is ignored by `.gitignore`, has no tracked files, is absent from `origin/main`, and must not be pushed.
 - Remaining local untracked file at this point: `.codex/config.toml`.
