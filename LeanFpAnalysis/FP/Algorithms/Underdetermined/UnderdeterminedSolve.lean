@@ -7395,6 +7395,24 @@ theorem undetNormwiseBackwardErrorNonzeroFormulaRHS_le_etaF_of_forall_feasible_c
   rw [heta_eq]
   exact hlower DeltaA Deltab hfeas
 
+/-- Higham, 2nd ed., Chapter 21, Section 21.2, Theorem 21.3:
+    lower-bound corollary for the `sigma = 0` specialization.  Combining the
+    degenerate RHS-to-`phi` bridge with the feasible-cost lower bound shows
+    that this scalar branch is below the `eta_F(y)` infimum whenever the
+    attainable-cost set is nonempty.  The full singular-value lower route
+    remains open. -/
+theorem undetNormwiseBackwardErrorNonzeroFormulaRHS_le_etaF_of_sigma_zero
+    {m n : ℕ} {theta : ℝ} (htheta : 0 ≤ theta)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) {y : Fin n → ℝ}
+    (hy : y ≠ 0)
+    (hnonempty : (undetNormwiseBackwardErrorValuesF theta A b y).Nonempty) :
+    undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y 0 ≤
+      undetNormwiseBackwardErrorEtaF theta A b y :=
+  undetNormwiseBackwardErrorNonzeroFormulaRHS_le_etaF_of_forall_feasible_cost_ge
+    theta A b y 0 hnonempty
+    (fun _DeltaA _Deltab hfeas =>
+      hfeas.nonzeroFormulaRHS_le_costF_of_sigma_zero htheta hy)
+
 /-- Upper-bound handoff for the nonzero branch of Higham Chapter 21,
     Theorem 21.3: an attaining feasible perturbation gives
     `eta_F(y) <=` the displayed nonzero RHS. -/
