@@ -1495,6 +1495,33 @@ noncomputable abbrev higham9_1_firstSchurComplement {m : ℕ}
     (A : Fin (m + 1) → Fin (m + 1) → ℝ) : Fin m → Fin m → ℝ :=
   luFirstSchurComplement A
 
+/-- **Theorem 9.1 base certificate**, every `1 by 1` matrix has the explicit
+unit-lower/upper LU certificate with lower factor `[1]` and upper factor equal
+to the source matrix. -/
+theorem higham9_1_LUFactSpec_one_explicit
+    (A : Fin 1 → Fin 1 → ℝ) :
+    LUFactSpec 1 A (fun _ _ => 1) A := by
+  refine
+    { L_diag := ?_
+      L_upper_zero := ?_
+      U_lower_zero := ?_
+      product_eq := ?_ }
+  · intro i
+    fin_cases i
+    rfl
+  · intro i j hij
+    fin_cases i
+    fin_cases j
+    exact (Nat.lt_irrefl 0 hij).elim
+  · intro i j hij
+    fin_cases i
+    fin_cases j
+    exact (Nat.lt_irrefl 0 hij).elim
+  · intro i j
+    fin_cases i
+    fin_cases j
+    simp
+
 /-- **Theorem 9.1 support**, one exact no-pivot LU construction step.
 If the first pivot is nonzero and the first Schur complement has an exact
 unit-lower/upper LU certificate, then the original matrix has an exact
@@ -60803,6 +60830,84 @@ theorem higham9_9_colDiagDominant_lu_exists_unique_unit_lower_of_det_ne_zero {n 
   exact higham9_1_lu_unique_of_pivots_ne_zero hLU₁ hLU₂
     ((higham9_1_det_ne_zero_iff_pivots_ne_zero hLU₁).mp hdet)
 
+/-- **Theorem 9.9**, `2 by 2` column diagonally dominant nonsingular matrices
+have the exact no-pivot LU package with unit-bounded lower factor and
+max-entry growth factor at most `2`.
+
+This is the first nontrivial finite-dimensional endpoint of the remaining
+column-diagonal-dominance route to Higham's `rho_n <= 2` theorem: the
+first-step Schur complement is `1 by 1`, so the existing first-Schur
+max-entry bound closes the upper-factor entry bound directly. -/
+theorem higham9_9_colDiagDominant_fin_two_exists_LUFactSpec_growthFactorEntry_le_two
+    (A : Fin 2 → Fin 2 → ℝ)
+    (hDD : IsDiagDominant 2 A)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin 2) (Fin 2) ℝ) ≠ 0) :
+    ∃ L U : Fin 2 → Fin 2 → ℝ,
+      LUFactSpec 2 A L U ∧
+        (∀ i j : Fin 2, |L i j| ≤ 1) ∧
+          ∃ hAmax : 0 < maxEntryNorm (by norm_num : 0 < 2) A,
+            growthFactorEntry (by norm_num : 0 < 2) A U hAmax ≤ 2 := by
+  classical
+  let S : Fin 1 → Fin 1 → ℝ := higham9_1_firstSchurComplement A
+  let L₁ : Fin 1 → Fin 1 → ℝ := fun _ _ => 1
+  let U₁ : Fin 1 → Fin 1 → ℝ := S
+  let L : Fin 2 → Fin 2 → ℝ := luFirstStepL A L₁
+  let U : Fin 2 → Fin 2 → ℝ := luFirstStepU A U₁
+  have hpivot : A 0 0 ≠ 0 :=
+    (higham9_9_colDiagDominant_diag_ne_zero_of_det_ne_zero hDD hdet) 0
+  have hLU₁ : LUFactSpec 1 (higham9_1_firstSchurComplement A) L₁ U₁ := by
+    simpa [S, L₁, U₁] using
+      (higham9_1_LUFactSpec_one_explicit (higham9_1_firstSchurComplement A))
+  have hLU : LUFactSpec 2 A L U := by
+    simpa [L, U] using
+      (LUFactSpec.of_firstSchurComplement_explicit (m := 1) hpivot hLU₁)
+  have hL_bound : ∀ i j : Fin 2, |L i j| ≤ 1 := by
+    intro i j
+    fin_cases i <;> fin_cases j
+    · simp [L, luFirstStepL]
+    · simp [L, luFirstStepL]
+    · have hratio : |A 1 0 / A 0 0| ≤ 1 :=
+        higham9_9_colDiagDominant_entry_ratio_abs_le_one hDD
+          (by decide : (1 : Fin 2) ≠ 0) hpivot
+      simpa [L, luFirstStepL] using hratio
+    · simp [L, luFirstStepL, L₁]
+  have hS_max :
+      maxEntryNorm (by norm_num : 0 < 1) S ≤
+        2 * maxEntryNorm (by norm_num : 0 < 2) A := by
+    simpa [S] using
+      higham9_9_colDiagDominant_firstSchurComplement_maxEntryNorm_le_two
+        (m := 1) (by norm_num : 0 < 1) hDD hpivot
+  have hU_bound : ∀ i j : Fin 2, |U i j| ≤
+      2 * maxEntryNorm (by norm_num : 0 < 2) A := by
+    intro i j
+    fin_cases i <;> fin_cases j
+    · have hentry := entry_le_maxEntryNorm (by norm_num : 0 < 2) A 0 0
+      have hnonneg : 0 ≤ maxEntryNorm (by norm_num : 0 < 2) A :=
+        maxEntryNorm_nonneg (by norm_num : 0 < 2) A
+      have htwo : maxEntryNorm (by norm_num : 0 < 2) A ≤
+          2 * maxEntryNorm (by norm_num : 0 < 2) A := by nlinarith
+      simpa [U, luFirstStepU] using le_trans hentry htwo
+    · have hentry := entry_le_maxEntryNorm (by norm_num : 0 < 2) A 0 1
+      have hnonneg : 0 ≤ maxEntryNorm (by norm_num : 0 < 2) A :=
+        maxEntryNorm_nonneg (by norm_num : 0 < 2) A
+      have htwo : maxEntryNorm (by norm_num : 0 < 2) A ≤
+          2 * maxEntryNorm (by norm_num : 0 < 2) A := by nlinarith
+      simpa [U, luFirstStepU] using le_trans hentry htwo
+    · have hnonneg : 0 ≤ 2 * maxEntryNorm (by norm_num : 0 < 2) A := by
+        have hA_nonneg : 0 ≤ maxEntryNorm (by norm_num : 0 < 2) A :=
+          maxEntryNorm_nonneg (by norm_num : 0 < 2) A
+        nlinarith
+      simpa [U, luFirstStepU] using hnonneg
+    · have hentryS : |S 0 0| ≤ maxEntryNorm (by norm_num : 0 < 1) S :=
+        entry_le_maxEntryNorm (by norm_num : 0 < 1) S 0 0
+      have htail : |S 0 0| ≤ 2 * maxEntryNorm (by norm_num : 0 < 2) A :=
+        le_trans hentryS hS_max
+      simpa [U, U₁, S, luFirstStepU] using htail
+  refine ⟨L, U, hLU, hL_bound, ?_⟩
+  exact
+    higham9_9_growthFactorEntry_le_two_of_upper_entry_bound_exists_hAmax
+      (by norm_num : 0 < 2) A U hdet hU_bound
+
 /-- **Theorem 9.13**, source-facing exact-LU existence and componentwise
 growth package for nonsingular column-diagonally-dominant tridiagonal
 matrices.  The no-pivot LU existence theorem supplies exact factors with
@@ -61723,28 +61828,8 @@ theorem higham9_1_lu_exists_and_unique_of_leadingPrincipalBlock_det_ne_zero {n :
 /-- **Theorem 9.1 base case**, every `1 by 1` matrix has an exact no-pivot
 unit-lower/upper LU certificate. -/
 theorem higham9_1_lu_exists_one (A : Fin 1 → Fin 1 → ℝ) :
-    ∃ L U : Fin 1 → Fin 1 → ℝ, LUFactSpec 1 A L U := by
-  refine ⟨(fun _ _ => 1), A, ?_⟩
-  refine
-    { L_diag := ?_
-      L_upper_zero := ?_
-      U_lower_zero := ?_
-      product_eq := ?_ }
-  · intro i
-    fin_cases i
-    rfl
-  · intro i j hij
-    fin_cases i
-    fin_cases j
-    exact (Nat.lt_irrefl 0 hij).elim
-  · intro i j hij
-    fin_cases i
-    fin_cases j
-    exact (Nat.lt_irrefl 0 hij).elim
-  · intro i j
-    fin_cases i
-    fin_cases j
-    simp
+    ∃ L U : Fin 1 → Fin 1 → ℝ, LUFactSpec 1 A L U :=
+  ⟨(fun _ _ => 1), A, higham9_1_LUFactSpec_one_explicit A⟩
 
 /-- **Theorem 9.1 support**, source-strength Schur-complement inheritance for
 proper leading principal blocks.  Higham's condition only requires
