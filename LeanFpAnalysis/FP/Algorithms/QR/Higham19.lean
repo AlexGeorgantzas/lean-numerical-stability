@@ -5013,6 +5013,32 @@ theorem householderTrailingActiveVector_betaSpec_eq_one_of_self_dot
     householderBetaSpec_eq_one_of_inner_self_eq_two n
       (householderTrailingActiveVector n p x alpha) hself
 
+/-- Source-faithful rounded normalization data for one Householder stage.
+
+The record names the exact missing premise left by the arbitrary-`FPModel`
+counterexamples: the stored trailing-active vector must be the computed
+normalized reflector and must also satisfy the source normalization
+`v^T v = 2`.  The beta-one fact is derived below rather than stored. -/
+structure sourceFaithfulHouseholderNormalization
+    (fp : FPModel) {n : Nat} (hn : 0 < n)
+    (sourceColumn : Fin n -> Real) (v : Fin n -> Real) : Prop where
+  vector_eq :
+    v = fl_householderNormalizedVector fp hn sourceColumn
+  self_dot :
+    (Finset.univ : Finset (Fin n)).sum (fun i => v i * v i) = 2
+
+/-- A source-faithful normalized stage has `householderBetaSpec = 1`.
+
+This keeps beta-one as a consequence of the explicit self-dot field, rather
+than as another independent hidden assumption. -/
+theorem sourceFaithfulHouseholderNormalization_betaSpec_eq_one
+    (fp : FPModel) {n : Nat} (hn : 0 < n)
+    (sourceColumn : Fin n -> Real) (v : Fin n -> Real)
+    (hsrc :
+      sourceFaithfulHouseholderNormalization fp hn sourceColumn v) :
+    householderBetaSpec n v = 1 := by
+  exact householderBetaSpec_eq_one_of_inner_self_eq_two n v hsrc.self_dot
+
 /-- Exact left-to-right addition over `Fin.foldl` is the initial value plus the
 source finite sum.  This is the small arithmetic support fact needed to expose
 the exact dot product hidden inside the compact Householder update. -/
@@ -12415,6 +12441,113 @@ structure storedSignedSequenceFirstTwoTailNormalizedFacts
             (alpha 3) i) =
       2
 
+/-- One-tail normalized facts from the explicit source-faithful normalization
+record for the twice-trailing stage-two reflector. -/
+theorem storedSignedSequenceOneTailNormalizedFacts_of_sourceFaithfulNormalization
+    (fp : FPModel) {m : Nat}
+    (A_hat : Nat -> Fin (m + 1 + 2) -> Fin (1 + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hsrc :
+      sourceFaithfulHouseholderNormalization fp (Nat.succ_pos m)
+        (panelFirstColumn (Nat.succ_pos 0)
+          (trailingPanel (trailingPanel (A_hat 2))))
+        (householderTrailingActiveVector (m + 1)
+          (0 : Fin (m + 1))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+          (alpha 2))) :
+    storedSignedSequenceOneTailNormalizedFacts fp A_hat alpha :=
+  ⟨hsrc.vector_eq, hsrc.self_dot⟩
+
+/-- First-two tail-normalized facts from explicit source-faithful
+normalization records for the stage-two and stage-three twice-trailing
+reflectors. -/
+theorem
+    storedSignedSequenceFirstTwoTailNormalizedFacts_of_sourceFaithfulNormalizations
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + (p + 2) + 2) -> Fin ((p + 2) + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hsrc2 :
+      sourceFaithfulHouseholderNormalization fp
+        (show 0 < r + (p + 2) by omega)
+        (panelFirstColumn (Nat.succ_pos (p + 1))
+          (trailingPanel (trailingPanel (A_hat 2))))
+        (householderTrailingActiveVector (r + (p + 2))
+          (0 : Fin (r + (p + 2)))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin (p + 2)).succ.succ))
+          (alpha 2)))
+    (hsrc3 :
+      sourceFaithfulHouseholderNormalization fp
+        (show 0 < r + (p + 1) by omega)
+        (panelFirstColumn (Nat.succ_pos p)
+          (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))
+        (householderTrailingActiveVector (r + (p + 1))
+          (0 : Fin (r + (p + 1)))
+          (fun a =>
+            A_hat 3 a.succ.succ.succ
+              ((0 : Fin (p + 1)).succ.succ.succ))
+          (alpha 3))) :
+    storedSignedSequenceFirstTwoTailNormalizedFacts fp r p A_hat alpha :=
+  ⟨hsrc2.vector_eq, hsrc2.self_dot, hsrc3.vector_eq, hsrc3.self_dot⟩
+
+/-- Beta-one consequence of the one-tail normalized-facts record. -/
+theorem storedSignedSequenceOneTailNormalizedFacts_betaSpec_eq_one
+    (fp : FPModel) {m : Nat}
+    (A_hat : Nat -> Fin (m + 1 + 2) -> Fin (1 + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hfacts : storedSignedSequenceOneTailNormalizedFacts fp A_hat alpha) :
+    householderBetaSpec (m + 1)
+        (householderTrailingActiveVector (m + 1)
+          (0 : Fin (m + 1))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+          (alpha 2)) =
+      1 :=
+  householderTrailingActiveVector_betaSpec_eq_one_of_self_dot
+    (0 : Fin (m + 1))
+    (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+    (alpha 2) hfacts.hselfTail
+
+/-- Beta-one consequence for the first stage of a first-two tail-normalized
+record. -/
+theorem storedSignedSequenceFirstTwoTailNormalizedFacts_betaSpec_two_eq_one
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + (p + 2) + 2) -> Fin ((p + 2) + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hfacts :
+      storedSignedSequenceFirstTwoTailNormalizedFacts fp r p A_hat alpha) :
+    householderBetaSpec (r + (p + 2))
+        (householderTrailingActiveVector (r + (p + 2))
+          (0 : Fin (r + (p + 2)))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin (p + 2)).succ.succ))
+          (alpha 2)) =
+      1 :=
+  householderTrailingActiveVector_betaSpec_eq_one_of_self_dot
+    (0 : Fin (r + (p + 2)))
+    (fun a => A_hat 2 a.succ.succ ((0 : Fin (p + 2)).succ.succ))
+    (alpha 2) hfacts.hselfTail2
+
+/-- Beta-one consequence for the second stage of a first-two tail-normalized
+record. -/
+theorem storedSignedSequenceFirstTwoTailNormalizedFacts_betaSpec_three_eq_one
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + (p + 2) + 2) -> Fin ((p + 2) + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hfacts :
+      storedSignedSequenceFirstTwoTailNormalizedFacts fp r p A_hat alpha) :
+    householderBetaSpec (r + (p + 1))
+        (householderTrailingActiveVector (r + (p + 1))
+          (0 : Fin (r + (p + 1)))
+          (fun a =>
+            A_hat 3 a.succ.succ.succ
+              ((0 : Fin (p + 1)).succ.succ.succ))
+          (alpha 3)) =
+      1 :=
+  householderTrailingActiveVector_betaSpec_eq_one_of_self_dot
+    (0 : Fin (r + (p + 1)))
+    (fun a =>
+      A_hat 3 a.succ.succ.succ
+        ((0 : Fin (p + 1)).succ.succ.succ))
+    (alpha 3) hfacts.hselfTail3
+
 /-- One-tail route audit for the raw normalized-loop record.
 
 Even a literal equality between the twice-trailing active vector and
@@ -15786,6 +15919,113 @@ theorem storedSignedSequenceTailNormalizedLoopRawFacts_succ_succ_of_twice_traili
   · simpa [trailingPanel, panelFirstColumn] using hselfTailTail0
   · simpa [trailingPanel, panelFirstColumn] using hvecTailTail1
   · simpa [trailingPanel, panelFirstColumn] using hselfTailTail1
+
+/-- One-column raw normalized-loop facts from an explicit source-faithful
+normalization record for the stage-two twice-trailing reflector.
+
+The recurrence and leading-block nonbreakdown fields remain the ordinary
+stored-loop hypotheses; this theorem only turns the new per-stage
+source-faithful normalization record into the existing raw loop package. -/
+theorem
+    storedSignedSequenceTailNormalizedLoopRawFacts_one_of_sourceFaithfulNormalization
+    (fp : FPModel) {m : Nat}
+    (A_hat : Nat -> Fin (m + 1 + 2) -> Fin (1 + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall k (hk : k < 1 + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (m + 1 + 2) (1 + 2) k
+          (householderTrailingActiveVector (m + 1 + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (by omega : 1 + 2 <= m + 1 + 2)))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (m + 1 + 2)
+            (householderTrailingActiveVector (m + 1 + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : 1 + 2 <= m + 1 + 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hdetLead : forall k (hk : k < 1 + 2),
+      Ne (Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr
+            (lt_of_lt_of_le hk
+              (by omega : 1 + 2 <= m + 1 + 2))) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+        0)
+    (hsrc :
+      sourceFaithfulHouseholderNormalization fp (Nat.succ_pos m)
+        (panelFirstColumn (Nat.succ_pos 0)
+          (trailingPanel (trailingPanel (A_hat 2))))
+        (householderTrailingActiveVector (m + 1)
+          (0 : Fin (m + 1))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+          (alpha 2))) :
+    storedSignedSequenceTailNormalizedLoopRawFacts fp m 1 A_hat alpha :=
+  storedSignedSequenceTailNormalizedLoopRawFacts_one_of_twice_trailing_stage_facts
+    fp A_hat alpha hStep hdetLead hsrc.vector_eq hsrc.self_dot
+
+/-- Two-step raw normalized-loop facts from explicit source-faithful
+normalization records for the stage-two and stage-three twice-trailing
+reflectors. -/
+theorem
+    storedSignedSequenceTailNormalizedLoopRawFacts_succ_succ_of_sourceFaithfulNormalizations
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + (p + 2) + 2) -> Fin ((p + 2) + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall k (hk : k < (p + 2) + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (r + (p + 2) + 2)
+          ((p + 2) + 2) k
+          (householderTrailingActiveVector (r + (p + 2) + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (by omega : (p + 2) + 2 <= r + (p + 2) + 2)))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (r + (p + 2) + 2)
+            (householderTrailingActiveVector (r + (p + 2) + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : (p + 2) + 2 <= r + (p + 2) + 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hdetLead : forall k (hk : k < (p + 2) + 2),
+      Ne (Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr
+            (lt_of_lt_of_le hk
+              (by omega : (p + 2) + 2 <= r + (p + 2) + 2))) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+        0)
+    (hsrc2 :
+      sourceFaithfulHouseholderNormalization fp
+        (show 0 < r + (p + 2) by omega)
+        (panelFirstColumn (Nat.succ_pos (p + 1))
+          (trailingPanel (trailingPanel (A_hat 2))))
+        (householderTrailingActiveVector (r + (p + 2))
+          (0 : Fin (r + (p + 2)))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin (p + 2)).succ.succ))
+          (alpha 2)))
+    (hsrc3 :
+      sourceFaithfulHouseholderNormalization fp
+        (show 0 < r + (p + 1) by omega)
+        (panelFirstColumn (Nat.succ_pos p)
+          (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))
+        (householderTrailingActiveVector (r + (p + 1))
+          (0 : Fin (r + (p + 1)))
+          (fun a =>
+            A_hat 3 a.succ.succ.succ
+              ((0 : Fin (p + 1)).succ.succ.succ))
+          (alpha 3)))
+    (htail :
+      storedSignedSequenceTailNormalizedLoopRawFacts fp r p
+        (storedSignedSequenceTwiceTrailingSeq A_hat)
+        (storedSignedSequenceTailAlpha2 alpha)) :
+    storedSignedSequenceTailNormalizedLoopRawFacts fp r (p + 2) A_hat alpha :=
+  storedSignedSequenceTailNormalizedLoopRawFacts_succ_succ_of_twice_trailing_stage_facts
+    fp r p A_hat alpha hStep hdetLead
+    hsrc2.vector_eq hsrc2.self_dot hsrc3.vector_eq hsrc3.self_dot htail
 
 /-- One-column raw normalized-loop facts from full stage-two zero-prefixed
 stored-loop facts and the standard leading-block nonbreakdown hypothesis.
