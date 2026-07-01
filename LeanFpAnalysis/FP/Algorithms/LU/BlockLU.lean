@@ -23957,6 +23957,72 @@ theorem higham13_problem13_4_Sinv_eq_full_inverse_lower_right_of_block_inverse
     (higham13_problem13_8_block_inverse A11 A12 A21 A22) (Sum.inr i)) (Sum.inr j)
   simpa [Matrix.fromBlocks] using h.symm
 
+/-- Higham, 2nd ed., Chapter 13, Problems 13.4 and 13.8:
+    entries of the displayed Schur-complement inverse inherit any entrywise
+    max bound on the inverse of the parent block matrix.
+
+    This is the pointwise form of the source step "the inverse of the Schur
+    complement is the lower-right block of the full inverse".  It removes the
+    need to pass that lower-right-block identity as a separate hypothesis in
+    recursive max-entry source-comparison routes. -/
+theorem higham13_problem13_4_Sinv_entry_bound_from_block_inverse
+    {r s : ℕ}
+    (A11 : Matrix (Fin r) (Fin r) ℝ)
+    (A12 : Matrix (Fin r) (Fin s) ℝ)
+    (A21 : Matrix (Fin s) (Fin r) ℝ)
+    (A22 : Matrix (Fin s) (Fin s) ℝ)
+    [Invertible A11] [Invertible (A22 - A21 * ⅟A11 * A12)]
+    [Invertible (Matrix.fromBlocks A11 A12 A21 A22)]
+    {normAinv : ℝ}
+    (hAinv_entry : ∀ i j : Fin r ⊕ Fin s,
+      |(⅟(Matrix.fromBlocks A11 A12 A21 A22) :
+          Matrix (Fin r ⊕ Fin s) (Fin r ⊕ Fin s) ℝ) i j| ≤ normAinv) :
+    ∀ i j : Fin s,
+      |(((⅟(A22 - A21 * ⅟A11 * A12)) :
+          Matrix (Fin s) (Fin s) ℝ) i j)| ≤ normAinv := by
+  intro i j
+  have hSinv :
+      ((⅟(A22 - A21 * ⅟A11 * A12)) :
+          Matrix (Fin s) (Fin s) ℝ) =
+        fun i j =>
+          (⅟(Matrix.fromBlocks A11 A12 A21 A22) :
+            Matrix (Fin r ⊕ Fin s) (Fin r ⊕ Fin s) ℝ)
+            (Sum.inr i) (Sum.inr j) :=
+    higham13_problem13_4_Sinv_eq_full_inverse_lower_right_of_block_inverse
+      A11 A12 A21 A22
+  calc
+    |(((⅟(A22 - A21 * ⅟A11 * A12)) :
+          Matrix (Fin s) (Fin s) ℝ) i j)|
+        = |(⅟(Matrix.fromBlocks A11 A12 A21 A22) :
+            Matrix (Fin r ⊕ Fin s) (Fin r ⊕ Fin s) ℝ)
+            (Sum.inr i) (Sum.inr j)| := by
+          rw [hSinv]
+    _ ≤ normAinv := hAinv_entry (Sum.inr i) (Sum.inr j)
+
+/-- Higham, 2nd ed., Chapter 13, Problems 13.4 and 13.8:
+    max-entry form of
+    `higham13_problem13_4_Sinv_entry_bound_from_block_inverse`. -/
+theorem higham13_problem13_4_Sinv_maxEntryNormRect_from_block_inverse
+    {r s : ℕ} (hs : 0 < s)
+    (A11 : Matrix (Fin r) (Fin r) ℝ)
+    (A12 : Matrix (Fin r) (Fin s) ℝ)
+    (A21 : Matrix (Fin s) (Fin r) ℝ)
+    (A22 : Matrix (Fin s) (Fin s) ℝ)
+    [Invertible A11] [Invertible (A22 - A21 * ⅟A11 * A12)]
+    [Invertible (Matrix.fromBlocks A11 A12 A21 A22)]
+    {normAinv : ℝ}
+    (hAinv_entry : ∀ i j : Fin r ⊕ Fin s,
+      |(⅟(Matrix.fromBlocks A11 A12 A21 A22) :
+          Matrix (Fin r ⊕ Fin s) (Fin r ⊕ Fin s) ℝ) i j| ≤ normAinv) :
+    maxEntryNormRect hs hs
+        (((⅟(A22 - A21 * ⅟A11 * A12)) :
+          Matrix (Fin s) (Fin s) ℝ)) ≤ normAinv :=
+  maxEntryNormRect_le_of_entry_abs_le hs hs
+    ((⅟(A22 - A21 * ⅟A11 * A12)) : Matrix (Fin s) (Fin s) ℝ)
+    normAinv
+    (higham13_problem13_4_Sinv_entry_bound_from_block_inverse
+      A11 A12 A21 A22 hAinv_entry)
+
 /-- Higham, 2nd ed., Chapter 13, Problem 13.4:
     source max-entry lower-left solve bound from the Problem 13.8 block-inverse
     formula.
