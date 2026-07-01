@@ -11136,6 +11136,68 @@ theorem
       fp r p A_hat alpha hsource)
     hcopy
 
+/-- Full-stage source-closure data implies the older recursive closure-data
+contract.
+
+This is a bookkeeping handoff for the remaining stored-loop proof.  It does not
+derive any normalized-reflector facts; it only composes the full-stage-to-source
+conversion with the established source-to-closure conversion. -/
+theorem storedSignedSequenceTwiceTrailingClosureData_of_fullStageSourceClosureData
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hdata :
+      storedSignedSequenceTwiceTrailingFullStageSourceClosureData fp r p
+        A_hat alpha) :
+    storedSignedSequenceTwiceTrailingClosureData fp r p A_hat alpha :=
+  storedSignedSequenceTwiceTrailingClosureData_of_sourceClosureData
+    fp r p A_hat alpha
+    (storedSignedSequenceTwiceTrailingSourceClosureData_of_fullStageSourceClosureData
+      fp r p A_hat alpha hdata)
+
+/-- Raw recursive source facts imply the twice-trailing final-closure
+predicate.
+
+This names the direct path from source-closure data to the final-closed
+predicate, leaving the source facts themselves as the visible obligation. -/
+theorem storedSignedSequenceTwiceTrailingFinalClosed_of_sourceClosureData
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hdata :
+      storedSignedSequenceTwiceTrailingSourceClosureData fp r p A_hat alpha)
+    (hcopy : subtractZeroExact fp) :
+    storedSignedSequenceTwiceTrailingFinalClosed fp
+      (Nat.add_le_add_right (Nat.le_add_left p r) 2) A_hat alpha :=
+  storedSignedSequenceTwiceTrailingFinalClosed_of_closureData
+    fp r p A_hat alpha
+    (storedSignedSequenceTwiceTrailingClosureData_of_sourceClosureData
+      fp r p A_hat alpha hdata)
+    hcopy
+
+/-- Full-stage source-closure data implies the twice-trailing final-closure
+predicate.
+
+This is the final-closed counterpart of
+`storedSignedSequence_final_panel_eq_qrPanel_R_of_reflector_self_dot_of_fullStageSourceClosureData`.
+The theorem still assumes the full-stage data package explicitly; it does not
+manufacture the missing normalized-reflector premises. -/
+theorem storedSignedSequenceTwiceTrailingFinalClosed_of_fullStageSourceClosureData
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hdata :
+      storedSignedSequenceTwiceTrailingFullStageSourceClosureData fp r p
+        A_hat alpha)
+    (hcopy : subtractZeroExact fp) :
+    storedSignedSequenceTwiceTrailingFinalClosed fp
+      (Nat.add_le_add_right (Nat.le_add_left p r) 2) A_hat alpha :=
+  storedSignedSequenceTwiceTrailingFinalClosed_of_closureData
+    fp r p A_hat alpha
+    (storedSignedSequenceTwiceTrailingClosureData_of_fullStageSourceClosureData
+      fp r p A_hat alpha hdata)
+    hcopy
+
 /-- Full-stage source-facing final-panel bridge.
 
 This is the endgame handoff for the stored-loop induction: once the actual
