@@ -3518,6 +3518,7 @@ Source-facing Chapter 10 wrappers:
 - `higham10_7_success_factorization`
 - `higham10_7_failure_condition`
 - `higham10_7_failure_no_factorization`
+- `higham10_7_onesMatrix_opNorm2Le`
 - `quadForm_add_pos_of_perturbation`
 - `quadForm_add_neg_of_perturbation`
 - `isSymPosDef_diagCongr`
@@ -3544,6 +3545,13 @@ Source-facing Chapter 10 wrappers:
 - `fl_cholesky_backward_error`
 - `higham10_3_fl_cholesky_certificate`
 - `higham10_3_fl_cholesky_backward_error`
+- `colNormSq`
+- `colNorm`
+- `colNorm_cauchy_schwarz`
+- `cholesky_demmel_bound_colNorm`
+- `higham10_5_demmel_bound_colNorm`
+- `higham10_5_fl_cholesky_demmel_bound`
+- `higham10_4_fl_cholesky_solve_backward_error`
 - `higham10_8_sun_normwise_perturbation`
 - `higham10_8_sun_componentwise_perturbation`
 - `higham10_9_PivotedCholeskySpec`
@@ -3566,6 +3574,15 @@ Source-facing Chapter 10 wrappers:
 - `higham10_problem_10_8_counterexample_symmetric`
 - `higham10_problem_10_8_counterexample_not_psd`
 - `higham10_4_IsNonsymPosDef`
+- `nonsymPosDef_diag_pos`
+- `nonsymPosDef_mulVec_ne_zero`
+- `nonsymPosDef_leading_principal`
+- `nonsym_pd_first_ge_schur`
+- `nonsymPDGEPivotsPos`
+- `nonsym_pd_unpivoted_ge_positive_pivots`
+- `higham10_4_nonsym_pd_leading_principal`
+- `higham10_4_nonsym_pd_mulVec_ne_zero`
+- `higham10_4_nonsym_pd_ge_positive_pivots`
 - `higham10_29_symmetric_skew_decomposition`
 - `higham10_29_nonsymPosDef_iff_symPartSPD`
 - `higham10_29_nonsym_pd_lu_growth_bound`

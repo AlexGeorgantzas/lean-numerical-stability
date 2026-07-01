@@ -32,6 +32,37 @@ lemma colNormSq_nonneg (n : ℕ) (R : Fin n → Fin n → ℝ) (i : Fin n) :
     0 ≤ colNormSq n R i :=
   Finset.sum_nonneg (fun k _ => sq_nonneg (R k i))
 
+/-- **Column 2-norm** of R at column i: `d_i = √(∑_k R_{ki}²)`. -/
+noncomputable def colNorm (n : ℕ) (R : Fin n → Fin n → ℝ) (i : Fin n) : ℝ :=
+  Real.sqrt (colNormSq n R i)
+
+/-- Column 2-norm is nonneg. -/
+lemma colNorm_nonneg (n : ℕ) (R : Fin n → Fin n → ℝ) (i : Fin n) :
+    0 ≤ colNorm n R i :=
+  Real.sqrt_nonneg _
+
+/-- **Cauchy-Schwarz for Cholesky columns** (Higham §10.1, proof of Theorem
+10.5): the componentwise absolute factor product is bounded by the product of
+column 2-norms, `∑_k |R_{ki}||R_{kj}| ≤ d_i d_j`.  This is the estimate the
+source proof invokes; here it is proved rather than assumed. -/
+lemma colNorm_cauchy_schwarz (n : ℕ) (R : Fin n → Fin n → ℝ) (i j : Fin n) :
+    ∑ k : Fin n, |R k i| * |R k j| ≤ colNorm n R i * colNorm n R j := by
+  have hcs := Finset.sum_mul_sq_le_sq_mul_sq Finset.univ
+    (fun k => |R k i|) (fun k => |R k j|)
+  have hi_eq : (∑ k : Fin n, |R k i| ^ 2) = colNormSq n R i := by
+    unfold colNormSq; exact Finset.sum_congr rfl (fun k _ => sq_abs (R k i))
+  have hj_eq : (∑ k : Fin n, |R k j| ^ 2) = colNormSq n R j := by
+    unfold colNormSq; exact Finset.sum_congr rfl (fun k _ => sq_abs (R k j))
+  rw [hi_eq, hj_eq] at hcs
+  have hsum_nonneg : 0 ≤ ∑ k : Fin n, |R k i| * |R k j| :=
+    Finset.sum_nonneg (fun k _ => mul_nonneg (abs_nonneg _) (abs_nonneg _))
+  calc ∑ k : Fin n, |R k i| * |R k j|
+      = Real.sqrt ((∑ k : Fin n, |R k i| * |R k j|) ^ 2) := by
+        rw [Real.sqrt_sq hsum_nonneg]
+    _ ≤ Real.sqrt (colNormSq n R i * colNormSq n R j) := Real.sqrt_le_sqrt hcs
+    _ = colNorm n R i * colNorm n R j := by
+        rw [colNorm, colNorm, Real.sqrt_mul (colNormSq_nonneg n R i)]
+
 -- ============================================================
 -- §10.1  Theorem 10.5: Demmel column norm bound
 -- ============================================================
@@ -73,6 +104,26 @@ theorem cholesky_demmel_bound (n : ℕ)
         apply mul_le_mul_of_nonneg_right _ (mul_nonneg (hd i) (hd j))
         rw [le_div_iff₀ h1_ε_pos]
         nlinarith [sq_nonneg ε]
+
+/-- **Demmel column norm bound, closed form** (Higham §10.1, Theorem 10.5).
+
+    Instantiates `cholesky_demmel_bound` with the actual computed-factor column
+    2-norms `d_i = ‖R̂(:,i)‖₂` and the *proved* Cauchy-Schwarz estimate
+    `colNorm_cauchy_schwarz`.  Consequently this depends only on the backward-error
+    certificate `CholeskyBackwardError` (Theorem 10.3) and `0 ≤ ε < 1`; the
+    Cauchy-Schwarz step is no longer an assumed hypothesis.
+
+      R̂^T R̂ = A + ΔA  with  |ΔA_{ij}| ≤ ε/(1−ε) · d_i · d_j. -/
+theorem cholesky_demmel_bound_colNorm (n : ℕ)
+    (A R_hat : Fin n → Fin n → ℝ)
+    (ε : ℝ) (hε : 0 ≤ ε) (hε_lt : ε < 1)
+    (hChol : CholeskyBackwardError n A R_hat ε) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤ ε / (1 - ε) *
+        (colNorm n R_hat i * colNorm n R_hat j)) ∧
+      (∀ i j, ∑ k : Fin n, R_hat k i * R_hat k j = A i j + ΔA i j) :=
+  cholesky_demmel_bound n A R_hat (colNorm n R_hat)
+    (colNorm_nonneg n R_hat) (colNorm_cauchy_schwarz n R_hat) ε hε hε_lt hChol
 
 /-- **Demmel column norm bound (direct form)** (Higham §10.1, Theorem 10.5).
 
