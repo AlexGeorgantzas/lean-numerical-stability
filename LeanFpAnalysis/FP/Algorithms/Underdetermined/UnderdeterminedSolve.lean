@@ -4552,6 +4552,15 @@ theorem higham21_lemma21_2_rhoGE_le_radii_of_le_min
   le_min_iff.mp hRhoGE_le_min
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    branch-wise perturbation-radius bounds imply the common min-radius bound. -/
+theorem higham21_lemma21_2_epsE_le_min_of_branch_bounds
+    {eps e rho1 rho2 : ℝ}
+    (hEpsE_le_rho1 : eps * e ≤ rho1)
+    (hEpsE_le_rho2 : eps * e ≤ rho2) :
+    eps * e ≤ min rho1 rho2 :=
+  le_min hEpsE_le_rho1 hEpsE_le_rho2
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     scalar source-size adapter from the branch perturbation bound
     `eps <= rhoG` and a product-size cap `rhoG * e <= tauE`. -/
 theorem higham21_lemma21_2_epsE_le_tauE_of_eps_le_rhoG_product_bound
@@ -5655,6 +5664,57 @@ theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_fa
   higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_deltaA_components_source_operator_envelopes_exact_size_common_radius_min_factor_bound
     hm A x DeltaA1 DeltaA2 b y AAT_inv E rho1 rho2 eps eps tauA omega e
     hDeltaA1 hDataEpsNonneg (fun _ => le_rfl) hEOp hEpsE_le_min
+    hSourceRadius hGramLeftInv hDataE hDeltaA1Component hDeltaA2Component
+    hxTranspose hsmall hAATInv_le hSourceFactor_le_min hAOp
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    exact-size `eps`-specialized handoff with the source perturbation-radius
+    condition supplied as separate bounds for the two perturbation radii. -/
+theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_deltaA_components_source_operator_envelopes_exact_size_eps_branch_radius_min_factor_bound
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (E : Fin m → Fin n → ℝ)
+    (rho1 rho2 eps tauA omega e : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hDataEpsNonneg : x ≠ 0 → 0 ≤ eps)
+    (hEOp : x ≠ 0 → rectOpNorm2Le E e)
+    (hEpsE_le_rho1 : x ≠ 0 → eps * e ≤ rho1)
+    (hEpsE_le_rho2 : x ≠ 0 → eps * e ≤ rho2)
+    (hSourceRadius :
+      2 * (m : ℝ) * (n : ℝ) * (tauA + eps * e) * omega *
+          min rho1 rho2 ≤
+        (1 / 2 : ℝ))
+    (hGramLeftInv : x ≠ 0 → IsLeftInverse m (rectGram A) AAT_inv)
+    (hDataE : x ≠ 0 → ∀ i k, 0 ≤ E i k)
+    (hDeltaA1Component : x ≠ 0 →
+      ∀ i k, |DeltaA1 i k| ≤ eps * E i k)
+    (hDeltaA2Component : x ≠ 0 →
+      ∀ i k, |DeltaA2 i k| ≤ eps * E i k)
+    (hxTranspose : x ≠ 0 →
+      x =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : x ≠ 0 → 3 * max rho1 rho2 < 1)
+    (hAATInv_le : infNorm AAT_inv ≤ omega)
+    (hSourceFactor_le_min : x ≠ 0 →
+      2 * (m : ℝ) ^ 2 * (tauA + eps * e) * omega ≤ min rho1 rho2)
+    (hAOp : x ≠ 0 → rectOpNorm2Le A tauA) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j)
+      b x :=
+  higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_deltaA_components_source_operator_envelopes_exact_size_eps_common_radius_min_factor_bound
+    hm A x DeltaA1 DeltaA2 b y AAT_inv E rho1 rho2 eps tauA omega e
+    hDeltaA1 hDataEpsNonneg hEOp
+    (fun hx =>
+      higham21_lemma21_2_epsE_le_min_of_branch_bounds
+        (hEpsE_le_rho1 hx) (hEpsE_le_rho2 hx))
     hSourceRadius hGramLeftInv hDataE hDeltaA1Component hDeltaA2Component
     hxTranspose hsmall hAATInv_le hSourceFactor_le_min hAOp
 
