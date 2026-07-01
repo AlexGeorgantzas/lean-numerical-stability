@@ -9440,6 +9440,19 @@ theorem lsNormwiseBackwardErrorEtaF_le_of_matrixOnly_mem {m n : ℕ}
   lsNormwiseBackwardErrorEtaF_le_of_mem theta A b y
     (lsNormwiseBackwardErrorMatrixOnlyValuesF.mem_valuesF theta A b y heta)
 
+/-- Finite-`theta` backward errors are bounded above by the matrix-only
+    limiting model: every `Delta b = 0` perturbation allowed in the
+    `theta = infinity` convention is also admissible for any finite weight. -/
+theorem lsNormwiseBackwardErrorEtaF_le_matrixOnlyEtaF {m n : ℕ}
+    (theta : ℝ) (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (y : Fin n → ℝ) :
+    lsNormwiseBackwardErrorEtaF theta A b y ≤
+      lsNormwiseBackwardErrorMatrixOnlyEtaF A b y := by
+  unfold lsNormwiseBackwardErrorMatrixOnlyEtaF
+  apply le_csInf (lsNormwiseBackwardErrorMatrixOnlyValuesF.nonempty A b y)
+  intro eta heta
+  exact lsNormwiseBackwardErrorEtaF_le_of_matrixOnly_mem theta A b y heta
+
 /-- Any feasible perturbation in (20.20) gives an explicit upper bound for the
     infimum model `eta_F(y)`. -/
 theorem lsNormwiseBackwardErrorEtaF_le_costF_of_feasible {m n : ℕ} (theta : ℝ)
