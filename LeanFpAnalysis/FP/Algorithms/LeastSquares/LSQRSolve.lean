@@ -8576,6 +8576,52 @@ private theorem vecNorm2Sq_pos_of_ne_zero_lsq {m : ℕ} {b : Fin m → ℝ}
   rw [← vecNorm2_sq]
   exact sq_pos_of_pos hbpos
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.5 limiting discussion:
+    for a nonzero candidate vector `y`, the WKS scalar
+    `mu = theta^2 ||y||_2^2 / (1 + theta^2 ||y||_2^2)` tends to one as
+    `theta -> infinity`.  This is the scalar limit behind the source's
+    `theta = infinity` matrix-only convention. -/
+theorem lsNormwiseBackwardErrorMu_tendsto_one_atTop_of_y_ne_zero {n : ℕ}
+    {y : Fin n → ℝ} (hy : y ≠ 0) :
+    Filter.Tendsto (fun theta : ℝ => lsNormwiseBackwardErrorMu theta y)
+      Filter.atTop (nhds 1) := by
+  have hySq_pos : 0 < vecNorm2Sq y := vecNorm2Sq_pos_of_ne_zero_lsq hy
+  have hsq :
+      Filter.Tendsto (fun theta : ℝ => theta ^ (2 : ℕ))
+        Filter.atTop Filter.atTop :=
+    Filter.tendsto_pow_atTop (α := ℝ) (by norm_num : (2 : ℕ) ≠ 0)
+  have hprod :
+      Filter.Tendsto (fun theta : ℝ => theta ^ (2 : ℕ) * vecNorm2Sq y)
+        Filter.atTop Filter.atTop :=
+    hsq.atTop_mul_const hySq_pos
+  have hden :
+      Filter.Tendsto
+        (fun theta : ℝ => 1 + theta ^ (2 : ℕ) * vecNorm2Sq y)
+        Filter.atTop Filter.atTop := by
+    have hden' :
+        Filter.Tendsto
+          (fun theta : ℝ => theta ^ (2 : ℕ) * vecNorm2Sq y + 1)
+          Filter.atTop Filter.atTop :=
+      hprod.atTop_add tendsto_const_nhds
+    simpa [add_comm] using hden'
+  have hinv :
+      Filter.Tendsto
+        (fun theta : ℝ => (1 + theta ^ (2 : ℕ) * vecNorm2Sq y)⁻¹)
+        Filter.atTop (nhds 0) :=
+    hden.inv_tendsto_atTop
+  have hlim :
+      Filter.Tendsto
+        (fun theta : ℝ => 1 - (1 + theta ^ (2 : ℕ) * vecNorm2Sq y)⁻¹)
+        Filter.atTop (nhds 1) := by
+    simpa using tendsto_const_nhds.sub hinv
+  exact Filter.Tendsto.congr'
+    (f₁ := fun theta : ℝ => 1 - (1 + theta ^ (2 : ℕ) * vecNorm2Sq y)⁻¹)
+    (f₂ := fun theta : ℝ => lsNormwiseBackwardErrorMu theta y)
+    (Filter.Eventually.of_forall fun theta => by
+      simpa [one_div] using
+        (lsNormwiseBackwardErrorMu_eq_one_sub_inv_den theta y).symm)
+    hlim
+
 /-- The weighted perturbation block in (20.20) applied to the vector
     `[theta y; -1]` produces `theta * (DeltaA y - Delta b)`.  This is the
     Cauchy--Schwarz witness behind the exact-residual branch of the WKS
