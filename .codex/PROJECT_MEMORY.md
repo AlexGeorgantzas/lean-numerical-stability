@@ -20,6 +20,20 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-07-01 Problem 13.4 tail invertibility representation bridges:
+  added `blockMatrixFirstSplitFlat_invertible_of_blockMatrixFlatFin`,
+  `blockMatrixFirstSplit_fromBlocks_invertible_of_blockMatrixFirstSplitFlat`,
+  `blockMatrixFirstSplit_fromBlocks_invertible_of_blockMatrixFlatFin`, and
+  `higham13_problem13_4_schurTail_fromBlocks_invertible_of_schur_invertible`.
+  These transport invertibility from the uniform flat block matrix through the
+  first-split scalar flattening and `Matrix.fromBlocks` view, then specialize
+  that transport to Schur tails.  The derived active-tail successor and its
+  Eq.13.22/Eq.13.23 product wrappers now derive the tail representation
+  instance locally instead of requiring it from callers; the finite
+  three-block active-tail constructor/product wrappers use the same bridge to
+  remove their explicit recursive tail `Matrix.fromBlocks` instance.  The
+  all-tail constructor, Schur-complement/source-chain invertibility data,
+  Eq.13.23 `rho <= 2`/BDD data, and Theorem 13.6 cited estimates remain open.
 - 2026-07-01 Problem 13.4 derived-tail active product witnesses:
   added
   `higham13_eq13_22_exists_blockLUFact_active_tail_product_from_global_tableau_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa`
@@ -27,9 +41,10 @@ end-to-end stability rebuild is tagged as
   `higham13_eq13_23_exists_blockLUFact_active_tail_product_from_global_tableau_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa`.
   They feed the derived-tail active successor into the fixed-ambient
   Eq.13.22/Eq.13.23 `BlockLUFactSpec` product APIs, so a recursive tail
-  builder only has to consume the derived tail inverse-entry certificate.  The
-  all-tail constructor, tail invertibility propagation, Eq.13.23 `rho <= 2`/
-  BDD data, and Theorem 13.6 cited estimates remain open.
+  builder only has to consume the derived tail inverse-entry certificate under
+  the locally derived tail representation instance.  The all-tail constructor,
+  Schur-complement/source-chain invertibility data, Eq.13.23 `rho <= 2`/BDD
+  data, and Theorem 13.6 cited estimates remain open.
 - 2026-07-01 Problem 13.4 derived-tail active successor handoff:
   added
   `Higham13Eq1322GlobalTableauSourceChain.succ_from_matrix_stage_history_active_tail_with_derived_tail_inverse_entry_exact_kappa`.
@@ -38,9 +53,9 @@ end-to-end stability rebuild is tagged as
   `higham13_problem13_4_firstSplit_schurTail_inverse_entry_bound_from_block_inverse`,
   then invokes the recorded active-tail successor for any tail builder that
   only needs that derived certificate.  This is reusable all-tail
-  infrastructure; the actual all-tail constructor, tail invertibility
-  propagation, Eq.13.23 `rho <= 2`/BDD data, and Theorem 13.6 cited estimates
-  remain open.
+  infrastructure; the actual all-tail constructor, Schur-complement/source-chain
+  invertibility data, Eq.13.23 `rho <= 2`/BDD data, and Theorem 13.6 cited
+  estimates remain open.
 - 2026-07-01 Problem 13.4 three-block active-tail product witnesses: added
   `higham13_eq13_22_exists_blockLUFact_three_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa`
   and
@@ -48,8 +63,10 @@ end-to-end stability rebuild is tagged as
   They route the closed three-block global-tableau active-tail source chain
   through the Eq.13.22/Eq.13.23 `BlockLUFactSpec` product APIs, removing a
   finite recursive-tail product plumbing gap.  The all-tail source certificate,
-  tail invertibility propagation, Eq.13.23 `rho <= 2`/BDD data, and Theorem
-  13.6 cited estimates remain open.
+  Schur-complement/source-chain invertibility data, Eq.13.23 `rho <= 2`/BDD
+  data, and Theorem 13.6 cited estimates remain open; after the tail
+  representation-bridge cleanup these wrappers no longer require the recursive
+  tail `Matrix.fromBlocks` invertibility instance from callers.
 - 2026-07-01 Problem 13.4 three-block global-tableau active-tail constructor:
   added
   `Higham13Eq1322GlobalTableauSourceChain.three_from_matrix_stage_history_active_tail_exact_kappa`.
@@ -57,10 +74,12 @@ end-to-end stability rebuild is tagged as
   constructor and uses
   `higham13_problem13_4_firstSplit_schurTail_inverse_entry_bound_from_block_inverse`
   to derive the first recursive tail inverse-entry certificate from the parent
-  active-tail inverse-entry certificate.  This removes one explicit recursive
-  inverse-entry proof artifact for the three-block active-tail case; the
-  all-tail source certificate, tail invertibility data, Eq.13.23 `rho <= 2`/BDD
-  data, and Theorem 13.6 cited estimates remain open.
+  active-tail inverse-entry certificate, and it now derives the recursive tail
+  `Matrix.fromBlocks` invertibility instance locally from the Schur-tail bridge.
+  This removes explicit recursive inverse-entry and representation proof
+  artifacts for the three-block active-tail case; the all-tail source
+  certificate, Schur-complement/source-chain invertibility data, Eq.13.23
+  `rho <= 2`/BDD data, and Theorem 13.6 cited estimates remain open.
 - 2026-07-01 Problem 13.4 recursive Schur-tail inverse-entry handoff:
   added `invOf_entry_bound_of_reindex_eq` and
   `higham13_problem13_4_firstSplit_schurTail_inverse_entry_bound_from_block_inverse`.

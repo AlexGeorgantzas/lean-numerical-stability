@@ -2530,6 +2530,101 @@ theorem blockMatrixFirstSplitFlat_eq_blockMatrixFlatFin_reindex {m r : ℕ}
             blockMatrixFirstSplitToFlatFinEquiv_inr]
           rw [blockMatrixFlatFin_apply]
 
+/-- First-split flattening preserves invertibility from the uniform flat
+    block-matrix representation. -/
+noncomputable def blockMatrixFirstSplitFlat_invertible_of_blockMatrixFlatFin
+    {m r : ℕ}
+    (A : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ)
+    [Invertible (blockMatrixFlatFin A)] :
+    Invertible (blockMatrixFirstSplitFlat A) := by
+  classical
+  let M : Matrix (Fin ((m + 1) * r)) (Fin ((m + 1) * r)) ℝ :=
+    blockMatrixFlatFin A
+  let e : Fin (r + m * r) ≃ Fin ((m + 1) * r) :=
+    blockMatrixFirstSplitToFlatFinEquiv
+  letI : Invertible (M.submatrix e e) :=
+    Matrix.submatrixEquivInvertible M e e
+  rw [blockMatrixFirstSplitFlat_eq_blockMatrixFlatFin_reindex A]
+  exact (inferInstance : Invertible (M.submatrix e e))
+
+/-- The `Matrix.fromBlocks` view of a first-split block matrix preserves
+    invertibility from the scalar first-split flattening. -/
+noncomputable def blockMatrixFirstSplit_fromBlocks_invertible_of_blockMatrixFirstSplitFlat
+    {m r : ℕ}
+    (A : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ)
+    [Invertible (blockMatrixFirstSplitFlat A)] :
+    Invertible (Matrix.fromBlocks
+      (blockMatrixFirstSplitA11 A)
+      (blockMatrixFirstSplitA12 A)
+      (blockMatrixFirstSplitA21 A)
+      (blockMatrixFirstSplitA22 A)) := by
+  classical
+  let M : Matrix (Fin (r + m * r)) (Fin (r + m * r)) ℝ :=
+    blockMatrixFirstSplitFlat A
+  let e : Fin r ⊕ Fin (m * r) ≃ Fin (r + m * r) := finSumFinEquiv
+  letI : Invertible (M.submatrix e e) :=
+    Matrix.submatrixEquivInvertible M e e
+  suffices
+      Matrix.fromBlocks
+          (blockMatrixFirstSplitA11 A)
+          (blockMatrixFirstSplitA12 A)
+          (blockMatrixFirstSplitA21 A)
+          (blockMatrixFirstSplitA22 A) =
+        M.submatrix e e by
+    simpa [this] using (inferInstance : Invertible (M.submatrix e e))
+  ext i j
+  cases i with
+  | inl s =>
+      cases j with
+      | inl t =>
+          simpa [M, e, Fin.castAdd, blockMatrixFirstSplitA11] using
+            (blockMatrixFirstSplitFlat_11 A s t).symm
+      | inr q =>
+          let jq := finProdFinEquiv.symm q
+          have hq : finProdFinEquiv jq = q := finProdFinEquiv.apply_symm_apply q
+          rw [← hq]
+          simpa [M, e, Fin.castAdd, Fin.natAdd, blockMatrixFirstSplitA12] using
+            (blockMatrixFirstSplitFlat_12 A s jq.1 jq.2).symm
+  | inr p =>
+      cases j with
+      | inl t =>
+          let ip := finProdFinEquiv.symm p
+          have hp : finProdFinEquiv ip = p := finProdFinEquiv.apply_symm_apply p
+          rw [← hp]
+          simpa [M, e, Fin.castAdd, Fin.natAdd, blockMatrixFirstSplitA21] using
+            (blockMatrixFirstSplitFlat_21 A ip.1 ip.2 t).symm
+      | inr q =>
+          let ip := finProdFinEquiv.symm p
+          let jq := finProdFinEquiv.symm q
+          have hp : finProdFinEquiv ip = p := finProdFinEquiv.apply_symm_apply p
+          have hq : finProdFinEquiv jq = q := finProdFinEquiv.apply_symm_apply q
+          rw [← hp, ← hq]
+          change
+            blockMatrixFirstSplitA22 A (finProdFinEquiv ip) (finProdFinEquiv jq) =
+              blockMatrixFirstSplitFlat A
+                (finSumFinEquiv
+                  (Sum.inr (finProdFinEquiv ip) : Fin r ⊕ Fin (m * r)))
+                (finSumFinEquiv
+                  (Sum.inr (finProdFinEquiv jq) : Fin r ⊕ Fin (m * r)))
+          rw [blockMatrixFirstSplitA22, blockMatrixFlatFin_apply]
+          exact (blockMatrixFirstSplitFlat_22 A ip.1 jq.1 ip.2 jq.2).symm
+
+/-- The `Matrix.fromBlocks` view of a first-split block matrix preserves
+    invertibility from the uniform flat block-matrix representation. -/
+noncomputable def blockMatrixFirstSplit_fromBlocks_invertible_of_blockMatrixFlatFin
+    {m r : ℕ}
+    (A : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ)
+    [Invertible (blockMatrixFlatFin A)] :
+    Invertible (Matrix.fromBlocks
+      (blockMatrixFirstSplitA11 A)
+      (blockMatrixFirstSplitA12 A)
+      (blockMatrixFirstSplitA21 A)
+      (blockMatrixFirstSplitA22 A)) := by
+  classical
+  letI : Invertible (blockMatrixFirstSplitFlat A) :=
+    blockMatrixFirstSplitFlat_invertible_of_blockMatrixFlatFin A
+  exact blockMatrixFirstSplit_fromBlocks_invertible_of_blockMatrixFirstSplitFlat A
+
 /-- The first-split inverse has max-entry norm bounded by the uniform-flat
     canonical inverse of the same block matrix. -/
 theorem maxEntryNormRect_nonsingInv_blockMatrixFirstSplitFlat_le_blockMatrixFlatFin
@@ -3050,6 +3145,42 @@ theorem blockMatrixFirstSplit_schur_eq_blockMatrixFlatFin_blockSchur {m r : ℕ}
     blockMatrixFirstSplitA12, blockMatrixFlatFin, blockSchur, Matrix.mul_apply,
     Finset.sum_mul, mul_assoc]
   rw [Finset.sum_comm]
+
+/-- Higham, 2nd ed., Chapter 13, Problem 13.4:
+    the first-split `Matrix.fromBlocks` view of a Schur tail is invertible
+    whenever the scalar Schur-complement block is invertible.
+
+    This is a representation bridge: it transports invertibility across the
+    equality between the scalar Schur complement of the first-split flattening
+    and the uniform flat matrix of the recursive block Schur tail. -/
+noncomputable def higham13_problem13_4_schurTail_fromBlocks_invertible_of_schur_invertible
+    {m r : ℕ}
+    (Ablk : Fin ((m + 1) + 1) → Fin ((m + 1) + 1) → Matrix (Fin r) (Fin r) ℝ)
+    (A11_inv : Matrix (Fin r) (Fin r) ℝ)
+    (Atail : Fin (m + 1) → Fin (m + 1) → Matrix (Fin r) (Fin r) ℝ)
+    [Invertible (blockMatrixFirstSplitA22 Ablk -
+      blockMatrixFirstSplitA21 Ablk * A11_inv *
+        blockMatrixFirstSplitA12 Ablk)]
+    (hAtail : Atail = blockSchur Ablk A11_inv) :
+    Invertible (Matrix.fromBlocks
+      (blockMatrixFirstSplitA11 Atail)
+      (blockMatrixFirstSplitA12 Atail)
+      (blockMatrixFirstSplitA21 Atail)
+      (blockMatrixFirstSplitA22 Atail)) := by
+  classical
+  have hflat :
+      blockMatrixFlatFin Atail =
+        blockMatrixFirstSplitA22 Ablk -
+          blockMatrixFirstSplitA21 Ablk * A11_inv *
+            blockMatrixFirstSplitA12 Ablk := by
+    rw [hAtail, ← blockMatrixFirstSplit_schur_eq_blockMatrixFlatFin_blockSchur]
+  letI : Invertible (blockMatrixFlatFin Atail) :=
+    hflat.symm ▸
+      (inferInstance : Invertible
+        (blockMatrixFirstSplitA22 Ablk -
+          blockMatrixFirstSplitA21 Ablk * A11_inv *
+            blockMatrixFirstSplitA12 Ablk))
+  exact blockMatrixFirstSplit_fromBlocks_invertible_of_blockMatrixFlatFin Atail
 
 /-- Higham, 2nd ed., Chapter 13, Theorem 13.2 induction bookkeeping:
     the leading prefix of the Schur complement is the Schur complement of the
@@ -41644,15 +41775,6 @@ theorem
         (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
       (blockMatrixFirstSplitA22
         (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull)))]
-    [Invertible (Matrix.fromBlocks
-      (blockMatrixFirstSplitA11
-        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailSucc))
-      (blockMatrixFirstSplitA12
-        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailSucc))
-      (blockMatrixFirstSplitA21
-        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailSucc))
-      (blockMatrixFirstSplitA22
-        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailSucc)))]
     (hpivot :
       pivotInv k =
         ⅟(blockMatrixFirstSplitA11
@@ -41677,6 +41799,15 @@ theorem
             (Fin r ⊕ Fin ((m + 1) * r)) ℝ) i j| ≤
           maxEntryNormRect hN hN AinvGlob)
     (hTailFromEntry :
+      ∀ [Invertible (Matrix.fromBlocks
+        (blockMatrixFirstSplitA11
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailSucc))
+        (blockMatrixFirstSplitA12
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailSucc))
+        (blockMatrixFirstSplitA21
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailSucc))
+        (blockMatrixFirstSplitA22
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailSucc)))],
       (∀ i j : Fin r ⊕ Fin (m * r),
         |(⅟(Matrix.fromBlocks
             (blockMatrixFirstSplitA11
@@ -41714,29 +41845,21 @@ theorem
       higham13_algorithm13_3_schurStageMatrixTailBlock_succ_active_eq_blockSchur
         A pivotInv hkM tailFull tailSucc h0 hsucc hactive
     simpa [Aparent, Atail, A11_inv, hpivot] using h.symm
-  have hTailFull_eq :
-      Matrix.fromBlocks
-          (blockMatrixFirstSplitA11 (blockSchur Aparent A11_inv))
-          (blockMatrixFirstSplitA12 (blockSchur Aparent A11_inv))
-          (blockMatrixFirstSplitA21 (blockSchur Aparent A11_inv))
-          (blockMatrixFirstSplitA22 (blockSchur Aparent A11_inv)) =
-        Matrix.fromBlocks
-          (blockMatrixFirstSplitA11 Atail)
-          (blockMatrixFirstSplitA12 Atail)
-          (blockMatrixFirstSplitA21 Atail)
-          (blockMatrixFirstSplitA22 Atail) := by
-    rw [← htail_eq]
+  letI : Invertible (Matrix.fromBlocks
+      (blockMatrixFirstSplitA11 Atail)
+      (blockMatrixFirstSplitA12 Atail)
+      (blockMatrixFirstSplitA21 Atail)
+      (blockMatrixFirstSplitA22 Atail)) :=
+    higham13_problem13_4_schurTail_fromBlocks_invertible_of_schur_invertible
+      (Ablk := Aparent) (A11_inv := A11_inv) (Atail := Atail) htail_eq
   letI : Invertible (Matrix.fromBlocks
       (blockMatrixFirstSplitA11 (blockSchur Aparent A11_inv))
       (blockMatrixFirstSplitA12 (blockSchur Aparent A11_inv))
       (blockMatrixFirstSplitA21 (blockSchur Aparent A11_inv))
       (blockMatrixFirstSplitA22 (blockSchur Aparent A11_inv))) :=
-    hTailFull_eq.symm ▸
-      (inferInstance : Invertible (Matrix.fromBlocks
-        (blockMatrixFirstSplitA11 Atail)
-        (blockMatrixFirstSplitA12 Atail)
-        (blockMatrixFirstSplitA21 Atail)
-        (blockMatrixFirstSplitA22 Atail)))
+    higham13_problem13_4_schurTail_fromBlocks_invertible_of_schur_invertible
+      (Ablk := Aparent) (A11_inv := A11_inv)
+      (Atail := blockSchur Aparent A11_inv) rfl
   have hAinv_tail_block :
       ∀ i j : Fin r ⊕ Fin (m * r),
         |(⅟(Matrix.fromBlocks
@@ -41917,15 +42040,6 @@ theorem
               (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid)) *
             blockMatrixFirstSplitA12
               (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid))]
-    [Invertible (Matrix.fromBlocks
-      (blockMatrixFirstSplitA11
-        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid))
-      (blockMatrixFirstSplitA12
-        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid))
-      (blockMatrixFirstSplitA21
-        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid))
-      (blockMatrixFirstSplitA22
-        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid)))]
     (hpivot :
       pivotInv k =
         ⅟(blockMatrixFirstSplitA11
@@ -41973,29 +42087,21 @@ theorem
       higham13_algorithm13_3_schurStageMatrixTailBlock_succ_active_eq_blockSchur
         A pivotInv hkM tailFull tailMid h0 hsucc hactive
     simpa [Aparent, Atail, A11_inv, hpivot] using h.symm
-  have hTailFull_eq :
-      Matrix.fromBlocks
-          (blockMatrixFirstSplitA11 (blockSchur Aparent A11_inv))
-          (blockMatrixFirstSplitA12 (blockSchur Aparent A11_inv))
-          (blockMatrixFirstSplitA21 (blockSchur Aparent A11_inv))
-          (blockMatrixFirstSplitA22 (blockSchur Aparent A11_inv)) =
-        Matrix.fromBlocks
-          (blockMatrixFirstSplitA11 Atail)
-          (blockMatrixFirstSplitA12 Atail)
-          (blockMatrixFirstSplitA21 Atail)
-          (blockMatrixFirstSplitA22 Atail) := by
-    rw [← htail_eq]
+  letI : Invertible (Matrix.fromBlocks
+      (blockMatrixFirstSplitA11 Atail)
+      (blockMatrixFirstSplitA12 Atail)
+      (blockMatrixFirstSplitA21 Atail)
+      (blockMatrixFirstSplitA22 Atail)) :=
+    higham13_problem13_4_schurTail_fromBlocks_invertible_of_schur_invertible
+      (Ablk := Aparent) (A11_inv := A11_inv) (Atail := Atail) htail_eq
   letI : Invertible (Matrix.fromBlocks
       (blockMatrixFirstSplitA11 (blockSchur Aparent A11_inv))
       (blockMatrixFirstSplitA12 (blockSchur Aparent A11_inv))
       (blockMatrixFirstSplitA21 (blockSchur Aparent A11_inv))
       (blockMatrixFirstSplitA22 (blockSchur Aparent A11_inv))) :=
-    hTailFull_eq.symm ▸
-      (inferInstance : Invertible (Matrix.fromBlocks
-        (blockMatrixFirstSplitA11 Atail)
-        (blockMatrixFirstSplitA12 Atail)
-        (blockMatrixFirstSplitA21 Atail)
-        (blockMatrixFirstSplitA22 Atail)))
+    higham13_problem13_4_schurTail_fromBlocks_invertible_of_schur_invertible
+      (Ablk := Aparent) (A11_inv := A11_inv)
+      (Atail := blockSchur Aparent A11_inv) rfl
   have hAinv_tail_block :
       ∀ i j : Fin r ⊕ Fin (1 * r),
         |(⅟(Matrix.fromBlocks
@@ -42439,15 +42545,6 @@ theorem
         (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
       (blockMatrixFirstSplitA22
         (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull)))]
-    [Invertible (Matrix.fromBlocks
-      (blockMatrixFirstSplitA11
-        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailSucc))
-      (blockMatrixFirstSplitA12
-        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailSucc))
-      (blockMatrixFirstSplitA21
-        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailSucc))
-      (blockMatrixFirstSplitA22
-        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailSucc)))]
     (hpivot :
       pivotInv k =
         ⅟(blockMatrixFirstSplitA11
@@ -42472,6 +42569,15 @@ theorem
             (Fin r ⊕ Fin ((m + 1) * r)) ℝ) i j| ≤
           maxEntryNormRect hN hN AinvGlob)
     (hTailFromEntry :
+      ∀ [Invertible (Matrix.fromBlocks
+        (blockMatrixFirstSplitA11
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailSucc))
+        (blockMatrixFirstSplitA12
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailSucc))
+        (blockMatrixFirstSplitA21
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailSucc))
+        (blockMatrixFirstSplitA22
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailSucc)))],
       (∀ i j : Fin r ⊕ Fin (m * r),
         |(⅟(Matrix.fromBlocks
             (blockMatrixFirstSplitA11
@@ -42563,15 +42669,6 @@ theorem
         (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
       (blockMatrixFirstSplitA22
         (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull)))]
-    [Invertible (Matrix.fromBlocks
-      (blockMatrixFirstSplitA11
-        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailSucc))
-      (blockMatrixFirstSplitA12
-        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailSucc))
-      (blockMatrixFirstSplitA21
-        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailSucc))
-      (blockMatrixFirstSplitA22
-        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailSucc)))]
     (hpivot :
       pivotInv k =
         ⅟(blockMatrixFirstSplitA11
@@ -42600,6 +42697,15 @@ theorem
             (Fin r ⊕ Fin ((m + 1) * r)) ℝ) i j| ≤
           maxEntryNormRect hN hN AinvGlob)
     (hTailFromEntry :
+      ∀ [Invertible (Matrix.fromBlocks
+        (blockMatrixFirstSplitA11
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailSucc))
+        (blockMatrixFirstSplitA12
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailSucc))
+        (blockMatrixFirstSplitA21
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailSucc))
+        (blockMatrixFirstSplitA22
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailSucc)))],
       (∀ i j : Fin r ⊕ Fin (m * r),
         |(⅟(Matrix.fromBlocks
             (blockMatrixFirstSplitA11
@@ -42898,15 +43004,6 @@ theorem
               (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid)) *
             blockMatrixFirstSplitA12
               (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid))]
-    [Invertible (Matrix.fromBlocks
-      (blockMatrixFirstSplitA11
-        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid))
-      (blockMatrixFirstSplitA12
-        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid))
-      (blockMatrixFirstSplitA21
-        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid))
-      (blockMatrixFirstSplitA22
-        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid)))]
     (hpivot :
       pivotInv k =
         ⅟(blockMatrixFirstSplitA11
@@ -43024,15 +43121,6 @@ theorem
               (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid)) *
             blockMatrixFirstSplitA12
               (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid))]
-    [Invertible (Matrix.fromBlocks
-      (blockMatrixFirstSplitA11
-        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid))
-      (blockMatrixFirstSplitA12
-        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid))
-      (blockMatrixFirstSplitA21
-        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid))
-      (blockMatrixFirstSplitA22
-        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid)))]
     (hpivot :
       pivotInv k =
         ⅟(blockMatrixFirstSplitA11
