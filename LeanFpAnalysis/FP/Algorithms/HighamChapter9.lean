@@ -10769,6 +10769,24 @@ lemma higham9_14_completePivotWilkinsonBound_two :
   rw [← pow_two]
   exact Real.sq_sqrt (show (0 : ℝ) ≤ 2 by positivity)
 
+/-- **Equation (9.14)**, base value of Wilkinson's displayed complete-pivoting
+RHS in dimension one. -/
+lemma higham9_14_completePivotWilkinsonBound_one :
+    higham9_14_completePivotWilkinsonBound 1 = 1 := by
+  norm_num [higham9_14_completePivotWilkinsonBound,
+    higham9_14_completePivotWilkinsonProduct]
+
+/-- **Equation (9.14)**, in dimensions one and two Wilkinson's displayed
+complete-pivoting RHS dominates the elementary recursive trace bound
+`2^(n-1)`. -/
+lemma higham9_14_pow_two_le_completePivotWilkinsonBound_of_le_two {n : ℕ}
+    (hn : 0 < n) (hle : n ≤ 2) :
+    (2 : ℝ) ^ (n - 1) ≤ higham9_14_completePivotWilkinsonBound n := by
+  have hn_cases : n = 1 ∨ n = 2 := by omega
+  rcases hn_cases with rfl | rfl
+  · simp [higham9_14_completePivotWilkinsonBound_one]
+  · simp [higham9_14_completePivotWilkinsonBound_two]
+
 /-- **Equation (9.14)**, order form of monotonicity for Wilkinson's displayed
 complete-pivoting RHS. -/
 theorem higham9_14_completePivotWilkinsonBound_le_of_le {n m : ℕ}
@@ -10968,6 +10986,15 @@ dimension one. -/
 lemma higham9_16_rookPivotFosterBound_one :
     higham9_16_rookPivotFosterBound 1 = 3 / 2 := by
   norm_num [higham9_16_rookPivotFosterBound]
+
+/-- **Equation (9.16)**, in dimension one Foster's displayed rook-pivoting RHS
+dominates the elementary recursive trace bound `2^(n-1)`. -/
+lemma higham9_16_pow_two_le_rookPivotFosterBound_of_eq_one {n : ℕ}
+    (hn : n = 1) :
+    (2 : ℝ) ^ (n - 1) ≤ higham9_16_rookPivotFosterBound n := by
+  subst n
+  simpa [higham9_16_rookPivotFosterBound_one] using
+    (by norm_num : (1 : ℝ) ≤ 3 / 2)
 
 /-- **Equation (9.16)**, monotonicity of Foster's logarithmic scalar factor on
 positive dimensions. -/
@@ -51136,6 +51163,30 @@ theorem higham9_completePivotingUTraceGrowthValues_le_pow_two {n : ℕ} {r : ℝ
   exact higham9_8_CompletePivotGECPUTrace_growthFactorEntry_le_pow_two
     hn A U hApos htrace
 
+/-- **Equation (9.14)**, complete-pivoting recursive trace growth satisfies
+Wilkinson's displayed RHS in dimensions one and two.  This is a genuine
+base-dimension closure; the general sharp product theorem remains separate. -/
+theorem higham9_8_CompletePivotGECPUTrace_growthFactorEntry_le_wilkinsonBound_of_le_two
+    {n : ℕ} (hn : 0 < n) (hle : n ≤ 2)
+    (A U : Fin n → Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn A)
+    (htrace : higham9_8_CompletePivotGECPUTrace n A U) :
+    growthFactorEntry hn A U hAmax ≤
+      higham9_14_completePivotWilkinsonBound n :=
+  le_trans
+    (higham9_8_CompletePivotGECPUTrace_growthFactorEntry_le_pow_two
+      hn A U hAmax htrace)
+    (higham9_14_pow_two_le_completePivotWilkinsonBound_of_le_two hn hle)
+
+/-- **Equation (9.14)**, trace-growth values satisfy Wilkinson's displayed RHS
+in dimensions one and two. -/
+theorem higham9_14_completePivotingUTraceGrowthValues_le_wilkinsonBound_of_le_two
+    {n : ℕ} (hn : 0 < n) (hle : n ≤ 2) {r : ℝ}
+    (hr : r ∈ higham9_completePivotingUTraceGrowthValues n) :
+    r ≤ higham9_14_completePivotWilkinsonBound n :=
+  le_trans (higham9_completePivotingUTraceGrowthValues_le_pow_two hr)
+    (higham9_14_pow_two_le_completePivotWilkinsonBound_of_le_two hn hle)
+
 /-- **Equation (9.14)**, trace-value consumer for Wilkinson's sharp
 complete-pivoting product bound.
 
@@ -51657,6 +51708,43 @@ theorem higham9_14_exists_CompletePivotGECPUTrace_growthFactorEntry_le_wilkinson
   obtain ⟨U, hU, hρ⟩ :=
     higham9_14_exists_CompletePivotGECPUTrace_growthFactorEntry_le_wilkinsonBound_of_det_ne_zero_of_trace_bound
       hn A hdet hAmax hsharp
+  exact ⟨hAmax, U, hU, hρ⟩
+
+/-- **Theorem 9.8 / equation (9.14)**, determinant-input complete-pivoting
+trace existence at Wilkinson's displayed RHS in dimensions one and two, with
+no global sharp-growth premise. -/
+theorem higham9_14_exists_CompletePivotGECPUTrace_growthFactorEntry_le_wilkinsonBound_of_det_ne_zero_of_le_two
+    {n : ℕ} (hn : 0 < n) (hle : n ≤ 2)
+    (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hAmax : 0 < maxEntryNorm hn A) :
+    ∃ U : Fin n → Fin n → ℝ,
+      higham9_8_CompletePivotGECPUTrace n A U ∧
+        growthFactorEntry hn A U hAmax ≤
+          higham9_14_completePivotWilkinsonBound n := by
+  obtain ⟨U, hU⟩ :=
+    higham9_8_exists_CompletePivotGECPUTrace_of_det_ne_zero (A := A) hdet
+  exact ⟨U, hU,
+    higham9_8_CompletePivotGECPUTrace_growthFactorEntry_le_wilkinsonBound_of_le_two
+      hn hle A U hAmax hU⟩
+
+/-- **Theorem 9.8 / equation (9.14)**, determinant-input complete-pivoting
+trace existence at Wilkinson's displayed RHS in dimensions one and two,
+deriving the positive source denominator from nonsingularity. -/
+theorem higham9_14_exists_CompletePivotGECPUTrace_growthFactorEntry_le_wilkinsonBound_of_det_ne_zero_exists_hAmax_of_le_two
+    {n : ℕ} (hn : 0 < n) (hle : n ≤ 2)
+    (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ hAmax : 0 < maxEntryNorm hn A,
+    ∃ U : Fin n → Fin n → ℝ,
+      higham9_8_CompletePivotGECPUTrace n A U ∧
+        growthFactorEntry hn A U hAmax ≤
+          higham9_14_completePivotWilkinsonBound n := by
+  have hAmax : 0 < maxEntryNorm hn A :=
+    maxEntryNorm_pos_of_det_ne_zero hn A hdet
+  obtain ⟨U, hU, hρ⟩ :=
+    higham9_14_exists_CompletePivotGECPUTrace_growthFactorEntry_le_wilkinsonBound_of_det_ne_zero_of_le_two
+      hn hle A hdet hAmax
   exact ⟨hAmax, U, hU, hρ⟩
 
 /-- **Problem 9.11 / equation (9.15)**, the trace-level complete-pivoting
@@ -53593,6 +53681,21 @@ theorem higham9_16_RookPivotGEUTrace_growthFactorEntry_le_pow_two {n : ℕ}
   apply growthFactorEntry_le_of_entry_bound_factor hn A U ((2 : ℝ) ^ (n - 1)) hAmax
   exact higham9_16_RookPivotGEUTrace_entry_abs_le_pow_two htrace hn
 
+/-- **Equation (9.16)**, recursive rook-pivoting trace growth satisfies
+Foster's displayed RHS in dimension one.  The general Foster product theorem
+remains separate. -/
+theorem higham9_16_RookPivotGEUTrace_growthFactorEntry_le_fosterBound_of_eq_one
+    {n : ℕ} (hn : 0 < n) (hone : n = 1)
+    (A U : Fin n → Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn A)
+    (htrace : higham9_16_RookPivotGEUTrace n A U) :
+    growthFactorEntry hn A U hAmax ≤
+      higham9_16_rookPivotFosterBound n :=
+  le_trans
+    (higham9_16_RookPivotGEUTrace_growthFactorEntry_le_pow_two
+      hn A U hAmax htrace)
+    (higham9_16_pow_two_le_rookPivotFosterBound_of_eq_one hone)
+
 /-- **Equation (9.16) / rook-pivoting trace support**, every nonsingular real
 matrix admits an explicit recursive rook-pivoting upper-factor trace.  The
 existence proof uses a complete pivot as a valid first rook pivot; it does not
@@ -53728,6 +53831,42 @@ theorem higham9_16_exists_RookPivotGEUTrace_growthFactorEntry_le_fosterBound_of_
       hn A hdet hAmax hsharp
   exact ⟨hAmax, U, hU, hρ⟩
 
+/-- **Equation (9.16)**, determinant-input rook-pivoting trace existence at
+Foster's displayed RHS in dimension one, with no global sharp-growth premise. -/
+theorem higham9_16_exists_RookPivotGEUTrace_growthFactorEntry_le_fosterBound_of_det_ne_zero_of_eq_one
+    {n : ℕ} (hn : 0 < n) (hone : n = 1)
+    (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hAmax : 0 < maxEntryNorm hn A) :
+    ∃ U : Fin n → Fin n → ℝ,
+      higham9_16_RookPivotGEUTrace n A U ∧
+        growthFactorEntry hn A U hAmax ≤
+          higham9_16_rookPivotFosterBound n := by
+  obtain ⟨U, hU⟩ :=
+    higham9_16_exists_RookPivotGEUTrace_of_det_ne_zero (A := A) hdet
+  exact ⟨U, hU,
+    higham9_16_RookPivotGEUTrace_growthFactorEntry_le_fosterBound_of_eq_one
+      hn hone A U hAmax hU⟩
+
+/-- **Equation (9.16)**, determinant-input rook-pivoting trace existence at
+Foster's displayed RHS in dimension one, deriving the positive source
+denominator from nonsingularity. -/
+theorem higham9_16_exists_RookPivotGEUTrace_growthFactorEntry_le_fosterBound_of_det_ne_zero_exists_hAmax_of_eq_one
+    {n : ℕ} (hn : 0 < n) (hone : n = 1)
+    (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ hAmax : 0 < maxEntryNorm hn A,
+    ∃ U : Fin n → Fin n → ℝ,
+      higham9_16_RookPivotGEUTrace n A U ∧
+        growthFactorEntry hn A U hAmax ≤
+          higham9_16_rookPivotFosterBound n := by
+  have hAmax : 0 < maxEntryNorm hn A :=
+    maxEntryNorm_pos_of_det_ne_zero hn A hdet
+  obtain ⟨U, hU, hρ⟩ :=
+    higham9_16_exists_RookPivotGEUTrace_growthFactorEntry_le_fosterBound_of_det_ne_zero_of_eq_one
+      hn hone A hdet hAmax
+  exact ⟨hAmax, U, hU, hρ⟩
+
 /-- **Equation (9.16) / rook-pivoting trace growth family**, trace-level
 rook-pivoting growth values in dimension `n`.
 
@@ -53754,6 +53893,15 @@ theorem higham9_16_rookPivotingUTraceGrowthValues_le_pow_two {n : ℕ} {r : ℝ}
   rcases hr with ⟨hn, A, U, hApos, htrace, rfl⟩
   exact higham9_16_RookPivotGEUTrace_growthFactorEntry_le_pow_two
     hn A U hApos htrace
+
+/-- **Equation (9.16)**, rook-pivoting trace-growth values satisfy Foster's
+displayed RHS in dimension one. -/
+theorem higham9_16_rookPivotingUTraceGrowthValues_le_fosterBound_of_eq_one
+    {n : ℕ} (hone : n = 1) {r : ℝ}
+    (hr : r ∈ higham9_16_rookPivotingUTraceGrowthValues n) :
+    r ≤ higham9_16_rookPivotFosterBound n :=
+  le_trans (higham9_16_rookPivotingUTraceGrowthValues_le_pow_two hr)
+    (higham9_16_pow_two_le_rookPivotFosterBound_of_eq_one hone)
 
 /-- **Equation (9.16)**, trace-value consumer for Foster's sharp rook-pivoting
 bound.
