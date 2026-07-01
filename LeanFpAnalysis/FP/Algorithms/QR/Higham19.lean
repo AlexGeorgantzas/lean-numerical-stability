@@ -15206,6 +15206,352 @@ theorem
       hselfFull4 htailFacts.hdetTailTailFirst htailFacts.hdetTailTailTail
       hvecFull5 hselfFull5 htail hcopy
 
+/-- Exact-arithmetic odd final-panel bridge with the recursive-tail self-dot
+field derived from the absolute stage-four zero-prefix equality.
+
+This is the exact counterpart of the leading-block odd final-panel handoff: the
+caller supplies the current first-two full-stage facts, the ordinary
+leading-block nonbreakdown hypothesis, and the absolute stage-four zero-prefix
+equality.  The stage-four self-dot and exact-copy premises are discharged
+internally. -/
+theorem
+    storedSignedSequence_final_panel_eq_qrPanel_R_of_firstTwoFullStageFacts_and_twice_trailing_full_stage_four_zero_prefixed_facts_and_leadingBlock_det_ne_zero_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) {m : Nat}
+    (A : Fin (m + (1 + 2) + 2) -> Fin ((1 + 2) + 2) -> Real)
+    (A_hat : Nat -> Fin (m + (1 + 2) + 2) -> Fin ((1 + 2) + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hrows : 2 <= m + (1 + 2) + 2)
+    (hcols : 2 <= (1 + 2) + 2)
+    (hinit : A_hat 0 = A)
+    (hvec0 :
+      householderTrailingActiveVector (m + (1 + 2) + 2)
+          (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hrows))
+          (fun a =>
+            A_hat 0 a
+              (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hcols)))
+          (alpha 0) =
+        fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0)
+          (Nat.succ_pos (m + (1 + 2) + 1))
+          (panelFirstColumn (Nat.succ_pos ((1 + 2) + 1)) A))
+    (hself0 :
+      (Finset.univ : Finset (Fin (m + (1 + 2) + 2))).sum
+        (fun i =>
+          householderTrailingActiveVector (m + (1 + 2) + 2)
+              (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hrows))
+              (fun a =>
+                A_hat 0 a
+                  (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hcols)))
+              (alpha 0) i *
+            householderTrailingActiveVector (m + (1 + 2) + 2)
+              (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hrows))
+              (fun a =>
+                A_hat 0 a
+                  (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hcols)))
+              (alpha 0) i) =
+        2)
+    (hdetFirst :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le (m + (1 + 2) + 1)))
+          (Nat.succ_pos ((1 + 2) + 1)) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hdetTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (let v0 := fl_householderNormalizedVector
+              (FPModel.exactWithUnitRoundoff u0 hu0)
+              (Nat.succ_pos (m + (1 + 2) + 1))
+              (panelFirstColumn (Nat.succ_pos ((1 + 2) + 1)) A)
+           let S0 := fl_householderStoredPanelStep
+              (FPModel.exactWithUnitRoundoff u0 hu0)
+              (m + (1 + 2) + 2) ((1 + 2) + 2) 0 v0 1 A
+           trailingPanel S0)
+          (Nat.succ_le_succ (Nat.zero_le (m + (1 + 2))))
+          (Nat.succ_pos (1 + 2)) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hvecTail :
+      (let v0 := fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0)
+          (Nat.succ_pos (m + (1 + 2) + 1))
+          (panelFirstColumn (Nat.succ_pos ((1 + 2) + 1)) A)
+       let S0 := fl_householderStoredPanelStep
+          (FPModel.exactWithUnitRoundoff u0 hu0)
+          (m + (1 + 2) + 2) ((1 + 2) + 2) 0 v0 1 A
+       householderTrailingActiveVector (m + (1 + 2) + 1)
+            (0 : Fin (m + (1 + 2) + 1))
+            (panelFirstColumn (Nat.succ_pos (1 + 2)) (trailingPanel S0))
+            (alpha 1) =
+          fl_householderNormalizedVector (FPModel.exactWithUnitRoundoff u0 hu0)
+            (Nat.succ_pos (m + (1 + 2)))
+            (panelFirstColumn (Nat.succ_pos (1 + 2)) (trailingPanel S0))))
+    (hselfTail :
+      (let v0 := fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0)
+          (Nat.succ_pos (m + (1 + 2) + 1))
+          (panelFirstColumn (Nat.succ_pos ((1 + 2) + 1)) A)
+       let S0 := fl_householderStoredPanelStep
+          (FPModel.exactWithUnitRoundoff u0 hu0)
+          (m + (1 + 2) + 2) ((1 + 2) + 2) 0 v0 1 A
+       (Finset.univ : Finset (Fin (m + (1 + 2) + 1))).sum
+          (fun i =>
+            householderTrailingActiveVector (m + (1 + 2) + 1)
+                (0 : Fin (m + (1 + 2) + 1))
+                (panelFirstColumn (Nat.succ_pos (1 + 2)) (trailingPanel S0))
+                (alpha 1) i *
+              householderTrailingActiveVector (m + (1 + 2) + 1)
+                (0 : Fin (m + (1 + 2) + 1))
+                (panelFirstColumn (Nat.succ_pos (1 + 2)) (trailingPanel S0))
+                (alpha 1) i) =
+        2))
+    (hfirst :
+      storedSignedSequenceFirstTwoFullStageFacts
+        (FPModel.exactWithUnitRoundoff u0 hu0) m 1 A_hat alpha)
+    (hStep : forall k (hk : k < (1 + 2) + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep (FPModel.exactWithUnitRoundoff u0 hu0)
+          (m + (1 + 2) + 2) ((1 + 2) + 2) k
+          (householderTrailingActiveVector (m + (1 + 2) + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (by omega : (1 + 2) + 2 <= m + (1 + 2) + 2)))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (m + (1 + 2) + 2)
+            (householderTrailingActiveVector (m + (1 + 2) + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : (1 + 2) + 2 <= m + (1 + 2) + 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hdetLead : forall k (hk : k < (1 + 2) + 2),
+      Ne (Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr
+            (lt_of_lt_of_le hk
+              (by omega : (1 + 2) + 2 <= m + (1 + 2) + 2))) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+        0)
+    (hvecFull4 :
+      householderTrailingActiveVector ((m + 1 + 2) + 2)
+          (((0 : Fin (m + 1)).succ.succ).succ.succ)
+          (fun a => A_hat 4 a (((0 : Fin 1).succ.succ).succ.succ))
+          (alpha 4) =
+        finTwoZeroPrefix (finTwoZeroPrefix
+            (fl_householderNormalizedVector
+              (FPModel.exactWithUnitRoundoff u0 hu0) (Nat.succ_pos m)
+              (panelFirstColumn (Nat.succ_pos 0)
+                (trailingPanel (trailingPanel
+                  (trailingPanel (trailingPanel (A_hat 4))))))))) :
+    A_hat ((1 + 2) + 2) =
+      fl_householderQRPanel_R (FPModel.exactWithUnitRoundoff u0 hu0)
+        (m + (1 + 2) + 2) ((1 + 2) + 2) A := by
+  let htailFacts :=
+    storedSignedSequenceOneTailFullStageFacts_of_twice_trailing_full_stage_four_zero_prefixed_facts_and_leadingBlock_det_ne_zero_exactWithUnitRoundoff
+      u0 hu0 A_hat alpha hStep hdetLead hvecFull4
+  exact
+    storedSignedSequence_final_panel_eq_qrPanel_R_of_firstTwoFullStageFacts_and_tailFullStageSourceClosureData
+      (FPModel.exactWithUnitRoundoff u0 hu0) m 1 A A_hat alpha
+      hrows hcols hinit hvec0 hself0 hdetFirst hdetTail hvecTail
+      hselfTail hfirst
+      (storedSignedSequenceTwiceTrailingFullStageSourceClosureData_one_of_full_stage_facts
+        (FPModel.exactWithUnitRoundoff u0 hu0)
+        (storedSignedSequenceTwiceTrailingSeq A_hat)
+        (storedSignedSequenceTailAlpha2 alpha)
+        htailFacts)
+      (subtractZeroExact_exactWithUnitRoundoff u0 hu0)
+
+/-- Exact-arithmetic even final-panel bridge with recursive-tail self-dot
+fields derived from the absolute stage-four/stage-five zero-prefix equalities.
+
+The exact model lets the final-panel handoff consume only the absolute
+recursive-tail zero-prefix equalities plus leading-block nonbreakdown; the
+stage-four/stage-five self-dot facts and exact-copy premise are internal. -/
+theorem
+    storedSignedSequence_final_panel_eq_qrPanel_R_of_firstTwoFullStageFacts_and_twice_trailing_full_stage_four_five_zero_prefixed_facts_and_leadingBlock_det_ne_zero_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) (r p : Nat)
+    (A :
+      Fin ((r + (p + 2) + 2) + 2) -> Fin (((p + 2) + 2) + 2) -> Real)
+    (A_hat :
+      Nat -> Fin ((r + (p + 2) + 2) + 2) -> Fin (((p + 2) + 2) + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hrows : 2 <= ((r + (p + 2) + 2) + 2))
+    (hcols : 2 <= (((p + 2) + 2) + 2))
+    (hinit : A_hat 0 = A)
+    (hvec0 :
+      householderTrailingActiveVector ((r + (p + 2) + 2) + 2)
+          (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hrows))
+          (fun a =>
+            A_hat 0 a
+              (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hcols)))
+          (alpha 0) =
+        fl_householderNormalizedVector (FPModel.exactWithUnitRoundoff u0 hu0)
+          (Nat.succ_pos ((r + (p + 2) + 2) + 1))
+          (panelFirstColumn (Nat.succ_pos (((p + 2) + 2) + 1)) A))
+    (hself0 :
+      (Finset.univ : Finset (Fin ((r + (p + 2) + 2) + 2))).sum
+        (fun i =>
+          householderTrailingActiveVector ((r + (p + 2) + 2) + 2)
+              (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hrows))
+              (fun a =>
+                A_hat 0 a
+                  (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hcols)))
+              (alpha 0) i *
+            householderTrailingActiveVector ((r + (p + 2) + 2) + 2)
+              (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hrows))
+              (fun a =>
+                A_hat 0 a
+                  (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hcols)))
+              (alpha 0) i) =
+        2)
+    (hdetFirst :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le ((r + (p + 2) + 2) + 1)))
+          (Nat.succ_pos (((p + 2) + 2) + 1)) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hdetTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (let v0 := fl_householderNormalizedVector
+              (FPModel.exactWithUnitRoundoff u0 hu0)
+              (Nat.succ_pos ((r + (p + 2) + 2) + 1))
+              (panelFirstColumn (Nat.succ_pos (((p + 2) + 2) + 1)) A)
+           let S0 := fl_householderStoredPanelStep
+              (FPModel.exactWithUnitRoundoff u0 hu0)
+              ((r + (p + 2) + 2) + 2) (((p + 2) + 2) + 2) 0 v0 1 A
+           trailingPanel S0)
+          (Nat.succ_le_succ (Nat.zero_le (r + (p + 2) + 2)))
+          (Nat.succ_pos ((p + 2) + 2)) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hvecTail :
+      (let v0 := fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0)
+          (Nat.succ_pos ((r + (p + 2) + 2) + 1))
+          (panelFirstColumn (Nat.succ_pos (((p + 2) + 2) + 1)) A)
+       let S0 := fl_householderStoredPanelStep
+          (FPModel.exactWithUnitRoundoff u0 hu0)
+          ((r + (p + 2) + 2) + 2) (((p + 2) + 2) + 2) 0 v0 1 A
+       householderTrailingActiveVector ((r + (p + 2) + 2) + 1)
+            (0 : Fin ((r + (p + 2) + 2) + 1))
+            (panelFirstColumn (Nat.succ_pos ((p + 2) + 2))
+              (trailingPanel S0))
+            (alpha 1) =
+          fl_householderNormalizedVector (FPModel.exactWithUnitRoundoff u0 hu0)
+            (Nat.succ_pos (r + (p + 2) + 2))
+            (panelFirstColumn (Nat.succ_pos ((p + 2) + 2))
+              (trailingPanel S0))))
+    (hselfTail :
+      (let v0 := fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0)
+          (Nat.succ_pos ((r + (p + 2) + 2) + 1))
+          (panelFirstColumn (Nat.succ_pos (((p + 2) + 2) + 1)) A)
+       let S0 := fl_householderStoredPanelStep
+          (FPModel.exactWithUnitRoundoff u0 hu0)
+          ((r + (p + 2) + 2) + 2) (((p + 2) + 2) + 2) 0 v0 1 A
+       (Finset.univ : Finset (Fin ((r + (p + 2) + 2) + 1))).sum
+          (fun i =>
+            householderTrailingActiveVector ((r + (p + 2) + 2) + 1)
+                (0 : Fin ((r + (p + 2) + 2) + 1))
+                (panelFirstColumn (Nat.succ_pos ((p + 2) + 2))
+                  (trailingPanel S0))
+                (alpha 1) i *
+              householderTrailingActiveVector ((r + (p + 2) + 2) + 1)
+                (0 : Fin ((r + (p + 2) + 2) + 1))
+                (panelFirstColumn (Nat.succ_pos ((p + 2) + 2))
+                  (trailingPanel S0))
+                (alpha 1) i) =
+        2))
+    (hfirst :
+      storedSignedSequenceFirstTwoFullStageFacts
+        (FPModel.exactWithUnitRoundoff u0 hu0) r (p + 2) A_hat alpha)
+    (hStep : forall k (hk : k < ((p + 2) + 2) + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep (FPModel.exactWithUnitRoundoff u0 hu0)
+          ((r + (p + 2) + 2) + 2) (((p + 2) + 2) + 2) k
+          (householderTrailingActiveVector ((r + (p + 2) + 2) + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (by omega :
+                  ((p + 2) + 2) + 2 <= ((r + (p + 2) + 2) + 2))))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec ((r + (p + 2) + 2) + 2)
+            (householderTrailingActiveVector ((r + (p + 2) + 2) + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega :
+                    ((p + 2) + 2) + 2 <= ((r + (p + 2) + 2) + 2))))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hdetLead : forall k (hk : k < ((p + 2) + 2) + 2),
+      Ne (Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr
+            (lt_of_lt_of_le hk
+              (by omega :
+                ((p + 2) + 2) + 2 <= ((r + (p + 2) + 2) + 2)))) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+        0)
+    (hvecFull4 :
+      householderTrailingActiveVector ((r + (p + 2) + 2) + 2)
+          (((0 : Fin (r + (p + 2))).succ.succ).succ.succ)
+          (fun a =>
+            A_hat 4 a (((0 : Fin (p + 2)).succ.succ).succ.succ))
+          (alpha 4) =
+        finTwoZeroPrefix (finTwoZeroPrefix
+            (fl_householderNormalizedVector
+              (FPModel.exactWithUnitRoundoff u0 hu0)
+              (show 0 < r + (p + 2) by omega)
+              (panelFirstColumn (Nat.succ_pos (p + 1))
+                (trailingPanel (trailingPanel
+                  (trailingPanel (trailingPanel (A_hat 4)))))))))
+    (hvecFull5 :
+      householderTrailingActiveVector ((r + (p + 2) + 2) + 2)
+          (((0 : Fin (r + (p + 1))).succ.succ.succ).succ.succ)
+          (fun a =>
+            A_hat 5 a (((0 : Fin (p + 1)).succ.succ.succ).succ.succ))
+          (alpha 5) =
+        finTwoZeroPrefix
+          ((Fin.cases 0 (Fin.cases 0 (Fin.cases 0
+            (fl_householderNormalizedVector
+              (FPModel.exactWithUnitRoundoff u0 hu0)
+              (show 0 < r + (p + 1) by omega)
+              (panelFirstColumn (Nat.succ_pos p)
+                (trailingPanel (trailingPanel (trailingPanel
+                  (trailingPanel (trailingPanel (A_hat 5)))))))))) :
+            Fin (r + (p + 2) + 2) -> Real)))
+    (htail :
+      storedSignedSequenceTwiceTrailingFullStageSourceClosureData
+        (FPModel.exactWithUnitRoundoff u0 hu0) r p
+        (storedSignedSequenceTwiceTrailingSeq
+          (storedSignedSequenceTwiceTrailingSeq A_hat))
+        (storedSignedSequenceTailAlpha2
+          (storedSignedSequenceTailAlpha2 alpha))) :
+    A_hat (((p + 2) + 2) + 2) =
+      fl_householderQRPanel_R (FPModel.exactWithUnitRoundoff u0 hu0)
+        ((r + (p + 2) + 2) + 2) (((p + 2) + 2) + 2) A := by
+  let htailFacts :=
+    storedSignedSequenceFirstTwoFullStageFacts_of_twice_trailing_full_stage_four_five_zero_prefixed_facts_and_leadingBlock_det_ne_zero_exactWithUnitRoundoff
+      u0 hu0 r p A_hat alpha hStep hdetLead hvecFull4 hvecFull5
+  have htailData :
+      storedSignedSequenceTwiceTrailingFullStageSourceClosureData
+        (FPModel.exactWithUnitRoundoff u0 hu0) r (p + 2)
+        (storedSignedSequenceTwiceTrailingSeq A_hat)
+        (storedSignedSequenceTailAlpha2 alpha) :=
+    storedSignedSequenceTwiceTrailingFullStageSourceClosureData_succ_succ_of_firstTwoFullStageFacts
+      (FPModel.exactWithUnitRoundoff u0 hu0) r p
+      (storedSignedSequenceTwiceTrailingSeq A_hat)
+      (storedSignedSequenceTailAlpha2 alpha) htailFacts htail
+  exact
+    storedSignedSequence_final_panel_eq_qrPanel_R_of_firstTwoFullStageFacts_and_tailFullStageSourceClosureData
+      (FPModel.exactWithUnitRoundoff u0 hu0) r (p + 2) A A_hat alpha
+      hrows hcols hinit hvec0 hself0 hdetFirst hdetTail hvecTail
+      hselfTail hfirst htailData
+      (subtractZeroExact_exactWithUnitRoundoff u0 hu0)
+
 /-- One recursive source-facing final-panel bridge for closure data.
 
 This is the handoff surface for the stored-loop induction: prove the current
