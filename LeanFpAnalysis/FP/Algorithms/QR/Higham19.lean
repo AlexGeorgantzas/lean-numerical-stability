@@ -10300,6 +10300,227 @@ theorem storedSignedSequenceFirstTwoFullStageFacts_of_twice_trailing_full_stage_
           hdetTailTailTail5)
       hvecTailFull3 hselfTailFull3
 
+/-- Recursive-tail one-column full-stage facts while deriving the absolute
+stage-four determinant from the original stored-loop leading-block
+nonbreakdown hypothesis.
+
+After two pivots are peeled, this is the odd recursive-tail constructor the
+stored-loop induction should use: the remaining absolute stage-four obligations
+are the zero-prefix vector equality and self-dot fact. -/
+theorem
+    storedSignedSequenceOneTailFullStageFacts_of_twice_trailing_full_stage_four_zero_prefixed_facts_and_leadingBlock_det_ne_zero
+    (fp : FPModel) {m : Nat}
+    (A_hat : Nat -> Fin ((m + 1 + 2) + 2) -> Fin ((1 + 2) + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall k (hk : k < (1 + 2) + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp ((m + 1 + 2) + 2) ((1 + 2) + 2) k
+          (householderTrailingActiveVector ((m + 1 + 2) + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (by omega : (1 + 2) + 2 <= ((m + 1 + 2) + 2))))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec ((m + 1 + 2) + 2)
+            (householderTrailingActiveVector ((m + 1 + 2) + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : (1 + 2) + 2 <= ((m + 1 + 2) + 2))))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hdetLead : forall k (hk : k < (1 + 2) + 2),
+      Ne (Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr
+            (lt_of_lt_of_le hk
+              (by omega : (1 + 2) + 2 <= ((m + 1 + 2) + 2)))) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+        0)
+    (hvecFull4 :
+      householderTrailingActiveVector ((m + 1 + 2) + 2)
+          (((0 : Fin (m + 1)).succ.succ).succ.succ)
+          (fun a => A_hat 4 a (((0 : Fin 1).succ.succ).succ.succ))
+          (alpha 4) =
+        finTwoZeroPrefix (finTwoZeroPrefix
+            (fl_householderNormalizedVector fp (Nat.succ_pos m)
+              (panelFirstColumn (Nat.succ_pos 0)
+                (trailingPanel (trailingPanel
+                  (trailingPanel (trailingPanel (A_hat 4)))))))))
+    (hselfFull4 :
+      (Finset.univ : Finset (Fin ((m + 1 + 2) + 2))).sum
+        (fun i =>
+          householderTrailingActiveVector ((m + 1 + 2) + 2)
+              (((0 : Fin (m + 1)).succ.succ).succ.succ)
+              (fun a => A_hat 4 a (((0 : Fin 1).succ.succ).succ.succ))
+              (alpha 4) i *
+            householderTrailingActiveVector ((m + 1 + 2) + 2)
+              (((0 : Fin (m + 1)).succ.succ).succ.succ)
+              (fun a => A_hat 4 a (((0 : Fin 1).succ.succ).succ.succ))
+              (alpha 4) i) =
+        2) :
+    storedSignedSequenceOneTailFullStageFacts fp
+      (storedSignedSequenceTwiceTrailingSeq A_hat)
+      (storedSignedSequenceTailAlpha2 alpha) := by
+  let hmn : (1 + 2) + 2 <= ((m + 1 + 2) + 2) := by omega
+  have hpivot :=
+    fl_householderStoredTrailingPanel_sequence_current_pivot_ne_zero_of_leadingBlock_det_ne_zero
+      fp hmn A_hat alpha
+      (by
+        intro k hk
+        simpa [hmn] using hStep k hk)
+      (by
+        intro k hk
+        simpa [hmn] using hdetLead k hk)
+  have hdetTailTail4 :
+      Ne
+        (Matrix.det
+          (qrLeadingBlock
+            (trailingPanel (trailingPanel
+              (trailingPanel (trailingPanel (A_hat 4)))))
+            (Nat.succ_le_succ (Nat.zero_le m))
+            (Nat.succ_pos 0) :
+            Matrix (Fin 1) (Fin 1) Real))
+        0 := by
+    simpa [qrLeadingBlock, qrLeadingRow, qrLeadingColumn, trailingPanel]
+      using hpivot 4 (by omega : 4 < (1 + 2) + 2)
+  exact
+    storedSignedSequenceOneTailFullStageFacts_of_twice_trailing_full_stage_four_zero_prefixed_facts
+      fp A_hat alpha hvecFull4 hselfFull4 hdetTailTail4
+
+/-- Recursive-tail first-two full-stage facts while deriving the absolute
+stage-four and stage-five determinant fields from the original stored-loop
+leading-block nonbreakdown hypothesis.
+
+The remaining absolute recursive-tail obligations are precisely the stage-four
+and stage-five zero-prefix vector equalities and self-dot facts. -/
+theorem
+    storedSignedSequenceFirstTwoFullStageFacts_of_twice_trailing_full_stage_four_five_zero_prefixed_facts_and_leadingBlock_det_ne_zero
+    (fp : FPModel) (r p : Nat)
+    (A_hat :
+      Nat -> Fin ((r + (p + 2) + 2) + 2) -> Fin (((p + 2) + 2) + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall k (hk : k < ((p + 2) + 2) + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp ((r + (p + 2) + 2) + 2)
+          (((p + 2) + 2) + 2) k
+          (householderTrailingActiveVector ((r + (p + 2) + 2) + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (by omega :
+                  ((p + 2) + 2) + 2 <= ((r + (p + 2) + 2) + 2))))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec ((r + (p + 2) + 2) + 2)
+            (householderTrailingActiveVector ((r + (p + 2) + 2) + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega :
+                    ((p + 2) + 2) + 2 <= ((r + (p + 2) + 2) + 2))))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hdetLead : forall k (hk : k < ((p + 2) + 2) + 2),
+      Ne (Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr
+            (lt_of_lt_of_le hk
+              (by omega :
+                ((p + 2) + 2) + 2 <= ((r + (p + 2) + 2) + 2)))) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+        0)
+    (hvecFull4 :
+      householderTrailingActiveVector ((r + (p + 2) + 2) + 2)
+          (((0 : Fin (r + (p + 2))).succ.succ).succ.succ)
+          (fun a =>
+            A_hat 4 a (((0 : Fin (p + 2)).succ.succ).succ.succ))
+          (alpha 4) =
+        finTwoZeroPrefix (finTwoZeroPrefix
+            (fl_householderNormalizedVector fp
+              (show 0 < r + (p + 2) by omega)
+              (panelFirstColumn (Nat.succ_pos (p + 1))
+                (trailingPanel (trailingPanel
+                  (trailingPanel (trailingPanel (A_hat 4)))))))))
+    (hselfFull4 :
+      (Finset.univ : Finset (Fin ((r + (p + 2) + 2) + 2))).sum
+        (fun i =>
+          householderTrailingActiveVector ((r + (p + 2) + 2) + 2)
+              (((0 : Fin (r + (p + 2))).succ.succ).succ.succ)
+              (fun a =>
+                A_hat 4 a (((0 : Fin (p + 2)).succ.succ).succ.succ))
+              (alpha 4) i *
+            householderTrailingActiveVector ((r + (p + 2) + 2) + 2)
+              (((0 : Fin (r + (p + 2))).succ.succ).succ.succ)
+              (fun a =>
+                A_hat 4 a (((0 : Fin (p + 2)).succ.succ).succ.succ))
+              (alpha 4) i) =
+        2)
+    (hvecFull5 :
+      householderTrailingActiveVector ((r + (p + 2) + 2) + 2)
+          (((0 : Fin (r + (p + 1))).succ.succ.succ).succ.succ)
+          (fun a =>
+            A_hat 5 a (((0 : Fin (p + 1)).succ.succ.succ).succ.succ))
+          (alpha 5) =
+        finTwoZeroPrefix
+          ((Fin.cases 0 (Fin.cases 0 (Fin.cases 0
+            (fl_householderNormalizedVector fp
+              (show 0 < r + (p + 1) by omega)
+              (panelFirstColumn (Nat.succ_pos p)
+                (trailingPanel (trailingPanel (trailingPanel
+                  (trailingPanel (trailingPanel (A_hat 5)))))))))) :
+            Fin (r + (p + 2) + 2) -> Real)))
+    (hselfFull5 :
+      (Finset.univ : Finset (Fin ((r + (p + 2) + 2) + 2))).sum
+        (fun i =>
+          householderTrailingActiveVector ((r + (p + 2) + 2) + 2)
+              (((0 : Fin (r + (p + 1))).succ.succ.succ).succ.succ)
+              (fun a =>
+                A_hat 5 a (((0 : Fin (p + 1)).succ.succ.succ).succ.succ))
+              (alpha 5) i *
+            householderTrailingActiveVector ((r + (p + 2) + 2) + 2)
+              (((0 : Fin (r + (p + 1))).succ.succ.succ).succ.succ)
+              (fun a =>
+                A_hat 5 a (((0 : Fin (p + 1)).succ.succ.succ).succ.succ))
+              (alpha 5) i) =
+        2) :
+    storedSignedSequenceFirstTwoFullStageFacts fp r p
+      (storedSignedSequenceTwiceTrailingSeq A_hat)
+      (storedSignedSequenceTailAlpha2 alpha) := by
+  let hmn : ((p + 2) + 2) + 2 <= ((r + (p + 2) + 2) + 2) := by omega
+  have hpivot :=
+    fl_householderStoredTrailingPanel_sequence_current_pivot_ne_zero_of_leadingBlock_det_ne_zero
+      fp hmn A_hat alpha
+      (by
+        intro k hk
+        simpa [hmn] using hStep k hk)
+      (by
+        intro k hk
+        simpa [hmn] using hdetLead k hk)
+  have hdetTailTailFirst4 :
+      Ne
+        (Matrix.det
+          (qrLeadingBlock
+            (trailingPanel (trailingPanel
+              (trailingPanel (trailingPanel (A_hat 4)))))
+            (show 1 <= r + (p + 2) by omega)
+            (Nat.succ_pos (p + 1)) :
+            Matrix (Fin 1) (Fin 1) Real))
+        0 := by
+    simpa [qrLeadingBlock, qrLeadingRow, qrLeadingColumn, trailingPanel]
+      using hpivot 4 (by omega : 4 < ((p + 2) + 2) + 2)
+  have hdetTailTailTail5 :
+      Ne
+        (Matrix.det
+          (qrLeadingBlock
+            (trailingPanel (trailingPanel (trailingPanel
+              (trailingPanel (trailingPanel (A_hat 5))))))
+            (show 1 <= r + (p + 1) by omega)
+            (Nat.succ_pos p) :
+            Matrix (Fin 1) (Fin 1) Real))
+        0 := by
+    simpa [qrLeadingBlock, qrLeadingRow, qrLeadingColumn, trailingPanel]
+      using hpivot 5 (by omega : 5 < ((p + 2) + 2) + 2)
+  exact
+    storedSignedSequenceFirstTwoFullStageFacts_of_twice_trailing_full_stage_four_five_zero_prefixed_facts
+      fp r p A_hat alpha hStep hvecFull4 hselfFull4
+      hdetTailTailFirst4 hdetTailTailTail5 hvecFull5 hselfFull5
+
 /-- Recursive full-stage obligation for source-closure data.
 
 The zero-column case is empty, the one-column case stores the full stage-two
@@ -11532,6 +11753,175 @@ theorem
           (storedSignedSequenceTailAlpha2 alpha))
         htail))
 
+/-- One-column recursive-tail normalized loop facts with the absolute
+stage-four determinant obtained from original leading-block nonbreakdown. -/
+theorem
+    storedSignedSequenceFullStageNormalizedLoopFacts_one_of_twice_trailing_full_stage_four_zero_prefixed_facts_and_leadingBlock_det_ne_zero
+    (fp : FPModel) {m : Nat}
+    (A_hat : Nat -> Fin ((m + 1 + 2) + 2) -> Fin ((1 + 2) + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall k (hk : k < (1 + 2) + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp ((m + 1 + 2) + 2) ((1 + 2) + 2) k
+          (householderTrailingActiveVector ((m + 1 + 2) + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (by omega : (1 + 2) + 2 <= ((m + 1 + 2) + 2))))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec ((m + 1 + 2) + 2)
+            (householderTrailingActiveVector ((m + 1 + 2) + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : (1 + 2) + 2 <= ((m + 1 + 2) + 2))))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hdetLead : forall k (hk : k < (1 + 2) + 2),
+      Ne (Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr
+            (lt_of_lt_of_le hk
+              (by omega : (1 + 2) + 2 <= ((m + 1 + 2) + 2)))) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+        0)
+    (hvecFull4 :
+      householderTrailingActiveVector ((m + 1 + 2) + 2)
+          (((0 : Fin (m + 1)).succ.succ).succ.succ)
+          (fun a => A_hat 4 a (((0 : Fin 1).succ.succ).succ.succ))
+          (alpha 4) =
+        finTwoZeroPrefix (finTwoZeroPrefix
+            (fl_householderNormalizedVector fp (Nat.succ_pos m)
+              (panelFirstColumn (Nat.succ_pos 0)
+                (trailingPanel (trailingPanel
+                  (trailingPanel (trailingPanel (A_hat 4)))))))))
+    (hselfFull4 :
+      (Finset.univ : Finset (Fin ((m + 1 + 2) + 2))).sum
+        (fun i =>
+          householderTrailingActiveVector ((m + 1 + 2) + 2)
+              (((0 : Fin (m + 1)).succ.succ).succ.succ)
+              (fun a => A_hat 4 a (((0 : Fin 1).succ.succ).succ.succ))
+              (alpha 4) i *
+            householderTrailingActiveVector ((m + 1 + 2) + 2)
+              (((0 : Fin (m + 1)).succ.succ).succ.succ)
+              (fun a => A_hat 4 a (((0 : Fin 1).succ.succ).succ.succ))
+              (alpha 4) i) =
+        2) :
+    storedSignedSequenceFullStageNormalizedLoopFacts fp m 1
+      (storedSignedSequenceTwiceTrailingSeq A_hat)
+      (storedSignedSequenceTailAlpha2 alpha) :=
+  storedSignedSequenceFullStageNormalizedLoopFacts_one_of_full_stage_facts
+    fp (storedSignedSequenceTwiceTrailingSeq A_hat)
+    (storedSignedSequenceTailAlpha2 alpha)
+    (storedSignedSequenceOneTailFullStageFacts_of_twice_trailing_full_stage_four_zero_prefixed_facts_and_leadingBlock_det_ne_zero
+      fp A_hat alpha hStep hdetLead hvecFull4 hselfFull4)
+
+/-- Two-step recursive-tail normalized loop facts with the absolute
+stage-four/stage-five determinant fields obtained from original leading-block
+nonbreakdown. -/
+theorem
+    storedSignedSequenceFullStageNormalizedLoopFacts_succ_succ_of_twice_trailing_full_stage_four_five_zero_prefixed_facts_and_leadingBlock_det_ne_zero
+    (fp : FPModel) (r p : Nat)
+    (A_hat :
+      Nat -> Fin ((r + (p + 2) + 2) + 2) -> Fin (((p + 2) + 2) + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall k (hk : k < ((p + 2) + 2) + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp ((r + (p + 2) + 2) + 2)
+          (((p + 2) + 2) + 2) k
+          (householderTrailingActiveVector ((r + (p + 2) + 2) + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (by omega :
+                  ((p + 2) + 2) + 2 <= ((r + (p + 2) + 2) + 2))))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec ((r + (p + 2) + 2) + 2)
+            (householderTrailingActiveVector ((r + (p + 2) + 2) + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega :
+                    ((p + 2) + 2) + 2 <= ((r + (p + 2) + 2) + 2))))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hdetLead : forall k (hk : k < ((p + 2) + 2) + 2),
+      Ne (Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr
+            (lt_of_lt_of_le hk
+              (by omega :
+                ((p + 2) + 2) + 2 <= ((r + (p + 2) + 2) + 2)))) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+        0)
+    (hvecFull4 :
+      householderTrailingActiveVector ((r + (p + 2) + 2) + 2)
+          (((0 : Fin (r + (p + 2))).succ.succ).succ.succ)
+          (fun a =>
+            A_hat 4 a (((0 : Fin (p + 2)).succ.succ).succ.succ))
+          (alpha 4) =
+        finTwoZeroPrefix (finTwoZeroPrefix
+            (fl_householderNormalizedVector fp
+              (show 0 < r + (p + 2) by omega)
+              (panelFirstColumn (Nat.succ_pos (p + 1))
+                (trailingPanel (trailingPanel
+                  (trailingPanel (trailingPanel (A_hat 4)))))))))
+    (hselfFull4 :
+      (Finset.univ : Finset (Fin ((r + (p + 2) + 2) + 2))).sum
+        (fun i =>
+          householderTrailingActiveVector ((r + (p + 2) + 2) + 2)
+              (((0 : Fin (r + (p + 2))).succ.succ).succ.succ)
+              (fun a =>
+                A_hat 4 a (((0 : Fin (p + 2)).succ.succ).succ.succ))
+              (alpha 4) i *
+            householderTrailingActiveVector ((r + (p + 2) + 2) + 2)
+              (((0 : Fin (r + (p + 2))).succ.succ).succ.succ)
+              (fun a =>
+                A_hat 4 a (((0 : Fin (p + 2)).succ.succ).succ.succ))
+              (alpha 4) i) =
+        2)
+    (hvecFull5 :
+      householderTrailingActiveVector ((r + (p + 2) + 2) + 2)
+          (((0 : Fin (r + (p + 1))).succ.succ.succ).succ.succ)
+          (fun a =>
+            A_hat 5 a (((0 : Fin (p + 1)).succ.succ.succ).succ.succ))
+          (alpha 5) =
+        finTwoZeroPrefix
+          ((Fin.cases 0 (Fin.cases 0 (Fin.cases 0
+            (fl_householderNormalizedVector fp
+              (show 0 < r + (p + 1) by omega)
+              (panelFirstColumn (Nat.succ_pos p)
+                (trailingPanel (trailingPanel (trailingPanel
+                  (trailingPanel (trailingPanel (A_hat 5)))))))))) :
+            Fin (r + (p + 2) + 2) -> Real)))
+    (hselfFull5 :
+      (Finset.univ : Finset (Fin ((r + (p + 2) + 2) + 2))).sum
+        (fun i =>
+          householderTrailingActiveVector ((r + (p + 2) + 2) + 2)
+              (((0 : Fin (r + (p + 1))).succ.succ.succ).succ.succ)
+              (fun a =>
+                A_hat 5 a (((0 : Fin (p + 1)).succ.succ.succ).succ.succ))
+              (alpha 5) i *
+            householderTrailingActiveVector ((r + (p + 2) + 2) + 2)
+              (((0 : Fin (r + (p + 1))).succ.succ.succ).succ.succ)
+              (fun a =>
+                A_hat 5 a (((0 : Fin (p + 1)).succ.succ.succ).succ.succ))
+              (alpha 5) i) =
+        2)
+    (htail :
+      storedSignedSequenceFullStageNormalizedLoopFacts fp r p
+        (storedSignedSequenceTwiceTrailingSeq
+          (storedSignedSequenceTwiceTrailingSeq A_hat))
+        (storedSignedSequenceTailAlpha2
+          (storedSignedSequenceTailAlpha2 alpha))) :
+    storedSignedSequenceFullStageNormalizedLoopFacts fp r (p + 2)
+      (storedSignedSequenceTwiceTrailingSeq A_hat)
+      (storedSignedSequenceTailAlpha2 alpha) :=
+  storedSignedSequenceFullStageNormalizedLoopFacts_succ_succ_of_firstTwoFullStageFacts
+    fp r p
+    (storedSignedSequenceTwiceTrailingSeq A_hat)
+    (storedSignedSequenceTailAlpha2 alpha)
+    (storedSignedSequenceFirstTwoFullStageFacts_of_twice_trailing_full_stage_four_five_zero_prefixed_facts_and_leadingBlock_det_ne_zero
+      fp r p A_hat alpha hStep hdetLead hvecFull4 hselfFull4
+      hvecFull5 hselfFull5)
+    htail
+
 /-- Odd recursive-tail normalized loop facts from current first-two full-stage
 data and absolute stage-four facts. -/
 theorem
@@ -11693,6 +12083,171 @@ theorem
     (storedSignedSequenceFullStageNormalizedLoopFacts_succ_succ_of_twice_trailing_full_stage_four_five_zero_prefixed_facts
       fp r p A_hat alpha hStep hvecFull4 hselfFull4
       hdetTailTailFirst4 hdetTailTailTail5 hvecFull5 hselfFull5 htail)
+
+/-- Odd current-first-two recursive normalized-loop rung with the absolute
+stage-four determinant obtained from original leading-block nonbreakdown. -/
+theorem
+    storedSignedSequenceFullStageNormalizedLoopFacts_succ_succ_of_firstTwoFullStageFacts_and_twice_trailing_full_stage_four_zero_prefixed_facts_and_leadingBlock_det_ne_zero
+    (fp : FPModel) {m : Nat}
+    (A_hat : Nat -> Fin (m + (1 + 2) + 2) -> Fin ((1 + 2) + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hfirst : storedSignedSequenceFirstTwoFullStageFacts fp m 1 A_hat alpha)
+    (hStep : forall k (hk : k < (1 + 2) + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp (m + (1 + 2) + 2) ((1 + 2) + 2) k
+          (householderTrailingActiveVector (m + (1 + 2) + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (by omega : (1 + 2) + 2 <= m + (1 + 2) + 2)))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (m + (1 + 2) + 2)
+            (householderTrailingActiveVector (m + (1 + 2) + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : (1 + 2) + 2 <= m + (1 + 2) + 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hdetLead : forall k (hk : k < (1 + 2) + 2),
+      Ne (Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr
+            (lt_of_lt_of_le hk
+              (by omega : (1 + 2) + 2 <= m + (1 + 2) + 2))) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+        0)
+    (hvecFull4 :
+      householderTrailingActiveVector ((m + 1 + 2) + 2)
+          (((0 : Fin (m + 1)).succ.succ).succ.succ)
+          (fun a => A_hat 4 a (((0 : Fin 1).succ.succ).succ.succ))
+          (alpha 4) =
+        finTwoZeroPrefix (finTwoZeroPrefix
+            (fl_householderNormalizedVector fp (Nat.succ_pos m)
+              (panelFirstColumn (Nat.succ_pos 0)
+                (trailingPanel (trailingPanel
+                  (trailingPanel (trailingPanel (A_hat 4)))))))))
+    (hselfFull4 :
+      (Finset.univ : Finset (Fin ((m + 1 + 2) + 2))).sum
+        (fun i =>
+          householderTrailingActiveVector ((m + 1 + 2) + 2)
+              (((0 : Fin (m + 1)).succ.succ).succ.succ)
+              (fun a => A_hat 4 a (((0 : Fin 1).succ.succ).succ.succ))
+              (alpha 4) i *
+            householderTrailingActiveVector ((m + 1 + 2) + 2)
+              (((0 : Fin (m + 1)).succ.succ).succ.succ)
+              (fun a => A_hat 4 a (((0 : Fin 1).succ.succ).succ.succ))
+              (alpha 4) i) =
+        2) :
+    storedSignedSequenceFullStageNormalizedLoopFacts fp m (1 + 2)
+      A_hat alpha :=
+  storedSignedSequenceFullStageNormalizedLoopFacts_succ_succ_of_firstTwoFullStageFacts
+    fp m 1 A_hat alpha hfirst
+    (storedSignedSequenceFullStageNormalizedLoopFacts_one_of_twice_trailing_full_stage_four_zero_prefixed_facts_and_leadingBlock_det_ne_zero
+      fp A_hat alpha hStep hdetLead hvecFull4 hselfFull4)
+
+/-- Full current-first-two recursive normalized-loop rung with the absolute
+stage-four/stage-five determinant fields obtained from original leading-block
+nonbreakdown. -/
+theorem
+    storedSignedSequenceFullStageNormalizedLoopFacts_succ_succ_of_firstTwoFullStageFacts_and_twice_trailing_full_stage_four_five_zero_prefixed_facts_and_leadingBlock_det_ne_zero
+    (fp : FPModel) (r p : Nat)
+    (A_hat :
+      Nat -> Fin ((r + (p + 2) + 2) + 2) -> Fin (((p + 2) + 2) + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hfirst : storedSignedSequenceFirstTwoFullStageFacts fp r (p + 2) A_hat alpha)
+    (hStep : forall k (hk : k < ((p + 2) + 2) + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp ((r + (p + 2) + 2) + 2)
+          (((p + 2) + 2) + 2) k
+          (householderTrailingActiveVector ((r + (p + 2) + 2) + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (by omega :
+                  ((p + 2) + 2) + 2 <= ((r + (p + 2) + 2) + 2))))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec ((r + (p + 2) + 2) + 2)
+            (householderTrailingActiveVector ((r + (p + 2) + 2) + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega :
+                    ((p + 2) + 2) + 2 <= ((r + (p + 2) + 2) + 2))))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hdetLead : forall k (hk : k < ((p + 2) + 2) + 2),
+      Ne (Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr
+            (lt_of_lt_of_le hk
+              (by omega :
+                ((p + 2) + 2) + 2 <= ((r + (p + 2) + 2) + 2)))) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+        0)
+    (hvecFull4 :
+      householderTrailingActiveVector ((r + (p + 2) + 2) + 2)
+          (((0 : Fin (r + (p + 2))).succ.succ).succ.succ)
+          (fun a =>
+            A_hat 4 a (((0 : Fin (p + 2)).succ.succ).succ.succ))
+          (alpha 4) =
+        finTwoZeroPrefix (finTwoZeroPrefix
+            (fl_householderNormalizedVector fp
+              (show 0 < r + (p + 2) by omega)
+              (panelFirstColumn (Nat.succ_pos (p + 1))
+                (trailingPanel (trailingPanel
+                  (trailingPanel (trailingPanel (A_hat 4)))))))))
+    (hselfFull4 :
+      (Finset.univ : Finset (Fin ((r + (p + 2) + 2) + 2))).sum
+        (fun i =>
+          householderTrailingActiveVector ((r + (p + 2) + 2) + 2)
+              (((0 : Fin (r + (p + 2))).succ.succ).succ.succ)
+              (fun a =>
+                A_hat 4 a (((0 : Fin (p + 2)).succ.succ).succ.succ))
+              (alpha 4) i *
+            householderTrailingActiveVector ((r + (p + 2) + 2) + 2)
+              (((0 : Fin (r + (p + 2))).succ.succ).succ.succ)
+              (fun a =>
+                A_hat 4 a (((0 : Fin (p + 2)).succ.succ).succ.succ))
+              (alpha 4) i) =
+        2)
+    (hvecFull5 :
+      householderTrailingActiveVector ((r + (p + 2) + 2) + 2)
+          (((0 : Fin (r + (p + 1))).succ.succ.succ).succ.succ)
+          (fun a =>
+            A_hat 5 a (((0 : Fin (p + 1)).succ.succ.succ).succ.succ))
+          (alpha 5) =
+        finTwoZeroPrefix
+          ((Fin.cases 0 (Fin.cases 0 (Fin.cases 0
+            (fl_householderNormalizedVector fp
+              (show 0 < r + (p + 1) by omega)
+              (panelFirstColumn (Nat.succ_pos p)
+                (trailingPanel (trailingPanel (trailingPanel
+                  (trailingPanel (trailingPanel (A_hat 5)))))))))) :
+            Fin (r + (p + 2) + 2) -> Real)))
+    (hselfFull5 :
+      (Finset.univ : Finset (Fin ((r + (p + 2) + 2) + 2))).sum
+        (fun i =>
+          householderTrailingActiveVector ((r + (p + 2) + 2) + 2)
+              (((0 : Fin (r + (p + 1))).succ.succ.succ).succ.succ)
+              (fun a =>
+                A_hat 5 a (((0 : Fin (p + 1)).succ.succ.succ).succ.succ))
+              (alpha 5) i *
+            householderTrailingActiveVector ((r + (p + 2) + 2) + 2)
+              (((0 : Fin (r + (p + 1))).succ.succ.succ).succ.succ)
+              (fun a =>
+                A_hat 5 a (((0 : Fin (p + 1)).succ.succ.succ).succ.succ))
+              (alpha 5) i) =
+        2)
+    (htail :
+      storedSignedSequenceFullStageNormalizedLoopFacts fp r p
+        (storedSignedSequenceTwiceTrailingSeq
+          (storedSignedSequenceTwiceTrailingSeq A_hat))
+        (storedSignedSequenceTailAlpha2
+          (storedSignedSequenceTailAlpha2 alpha))) :
+    storedSignedSequenceFullStageNormalizedLoopFacts fp r ((p + 2) + 2)
+      A_hat alpha :=
+  storedSignedSequenceFullStageNormalizedLoopFacts_succ_succ_of_firstTwoFullStageFacts
+    fp r (p + 2) A_hat alpha hfirst
+    (storedSignedSequenceFullStageNormalizedLoopFacts_succ_succ_of_twice_trailing_full_stage_four_five_zero_prefixed_facts_and_leadingBlock_det_ne_zero
+      fp r p A_hat alpha hStep hdetLead hvecFull4 hselfFull4
+      hvecFull5 hselfFull5 htail)
 
 /-- Recursive full-stage facts imply recursive source-closure data.
 
