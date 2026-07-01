@@ -6904,6 +6904,88 @@ theorem higham21_lemma21_2_single_perturbation_frob_bound {m n : ℕ}
         x hsq DeltaA1 DeltaA2
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    squared row-wise 2-norm form of the printed perturbation bound for the
+    projector mixture. -/
+theorem higham21_lemma21_2_symmetrized_perturbation_rowNormSq_le {m n : ℕ}
+    (x : Fin n → ℝ) (hsq : vecNorm2Sq x ≠ 0)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ) (i : Fin m) :
+    vecNorm2Sq
+        (fun j : Fin n =>
+          undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j) ≤
+      vecNorm2Sq (fun j : Fin n => DeltaA1 i j) +
+        vecNorm2Sq (fun j : Fin n => DeltaA2 i j) := by
+  let C1 : Fin n → Fin 1 → ℝ := fun j _ => DeltaA2 i j
+  let C2 : Fin n → Fin 1 → ℝ := fun j _ => DeltaA1 i j
+  have hbase :=
+    lsLemma20_6Perturbation_frobNormSqRect_le x hsq C1 C2
+  have hleft :
+      frobNormSqRect (lsLemma20_6Perturbation x C1 C2) =
+        vecNorm2Sq
+          (fun j : Fin n =>
+            undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j) := by
+    simp [frobNormSqRect, vecNorm2Sq, C1, C2,
+      undetLemma21_2SymmetrizedPerturbation, lsLemma20_6Perturbation,
+      finiteTranspose, matMulRectLeft]
+  have hC1 :
+      frobNormSqRect C1 =
+        vecNorm2Sq (fun j : Fin n => DeltaA2 i j) := by
+    simp [frobNormSqRect, vecNorm2Sq, C1]
+  have hC2 :
+      frobNormSqRect C2 =
+        vecNorm2Sq (fun j : Fin n => DeltaA1 i j) := by
+    simp [frobNormSqRect, vecNorm2Sq, C2]
+  calc
+    vecNorm2Sq
+        (fun j : Fin n =>
+          undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j)
+        = frobNormSqRect (lsLemma20_6Perturbation x C1 C2) := hleft.symm
+    _ ≤ frobNormSqRect C1 + frobNormSqRect C2 := hbase
+    _ = vecNorm2Sq (fun j : Fin n => DeltaA1 i j) +
+        vecNorm2Sq (fun j : Fin n => DeltaA2 i j) := by
+          rw [hC1, hC2]
+          ring
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    row-wise 2-norm form of the printed perturbation bound for the projector
+    mixture. -/
+theorem higham21_lemma21_2_symmetrized_perturbation_row_bound {m n : ℕ}
+    (x : Fin n → ℝ) (hsq : vecNorm2Sq x ≠ 0)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ) (i : Fin m) :
+    rectRowNorm2 (undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2) i ≤
+      Real.sqrt (rectRowNorm2 DeltaA1 i ^ 2 + rectRowNorm2 DeltaA2 i ^ 2) := by
+  apply (sq_le_sq₀
+    (rectRowNorm2_nonneg
+      (undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2) i)
+    (Real.sqrt_nonneg _)).mp
+  rw [Real.sq_sqrt (add_nonneg (sq_nonneg _) (sq_nonneg _))]
+  simpa [rectRowNorm2, vecNorm2_sq] using
+    higham21_lemma21_2_symmetrized_perturbation_rowNormSq_le
+      x hsq DeltaA1 DeltaA2 i
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    row-wise 2-norm form of the printed perturbation bound for the source-case
+    single perturbation.  In the zero branch the perturbation is `DeltaA2`;
+    in the nonzero branch it is the projector mixture. -/
+theorem higham21_lemma21_2_single_perturbation_row_bound {m n : ℕ}
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ) (i : Fin m) :
+    rectRowNorm2 (undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2) i ≤
+      Real.sqrt (rectRowNorm2 DeltaA1 i ^ 2 + rectRowNorm2 DeltaA2 i ^ 2) := by
+  by_cases hx : x = 0
+  · have hbound :
+        rectRowNorm2 DeltaA2 i ≤
+          Real.sqrt (rectRowNorm2 DeltaA1 i ^ 2 + rectRowNorm2 DeltaA2 i ^ 2) :=
+      higham21_right_nonneg_le_sqrt_sq_add_sq
+        (rectRowNorm2 DeltaA1 i) (rectRowNorm2 DeltaA2 i)
+        (rectRowNorm2_nonneg DeltaA2 i)
+    simpa [undetLemma21_2SinglePerturbation, hx] using hbound
+  · have hsq : vecNorm2Sq x ≠ 0 :=
+      higham21_vecNorm2Sq_ne_zero_of_ne_zero hx
+    simpa [undetLemma21_2SinglePerturbation, hx] using
+      higham21_lemma21_2_symmetrized_perturbation_row_bound
+        x hsq DeltaA1 DeltaA2 i
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     operator-2 norm form of the printed perturbation bound for the source-case
     single perturbation. -/
 theorem higham21_lemma21_2_single_perturbation_op_bound {m n : ℕ}
