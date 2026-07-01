@@ -24534,6 +24534,123 @@ theorem stored_panel_sequence_active_entry_bound_of_exact_active_stage_budgets
       fp steps Ahat v beta B hm r j hinit hstep hactive hcompleted hpivot
       hbudget hexact
 
+/-- Higham, Theorem 19.6 route dependency: stored-panel leading-block
+off-diagonal row budgets from exact stage budgets.
+
+This exposes the repository's leading-block off-diagonal budget field under
+the Chapter 19.6 namespace.  It is still a dependency surface: diagonal lower
+bounds and the complete row-wise pivoted QR/preconditioner theorem remain open. -/
+theorem stored_panel_sequence_leadingBlock_offdiag_budget_of_exact_stage_budgets_factor
+    {m n : Nat} (hmn : n <= m) (fp : FPModel)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (v : Nat -> Fin m -> Real) (beta : Nat -> Real) (c : Real)
+    (rowBudget : forall k, k < n -> Fin (k + 1) -> Real)
+    (entryBudget :
+      forall k (_hk : k < n), forall i j : Fin (k + 1), i.val < j.val -> Nat -> Real)
+    (hm : gammaValid fp m)
+    (hStep : forall t, t < n ->
+      Ahat (t + 1) =
+        fl_householderStoredPanelStep fp m n t (v t) (beta t) (Ahat t))
+    (hinit : forall k (hk : k < n), forall i j : Fin (k + 1), forall hij : i.val < j.val,
+      |Ahat 0
+          (qrLeadingRow m k (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) i)
+          (qrLeadingColumn n k hk j)| <=
+        entryBudget k hk i j hij 0)
+    (hpivot : forall k (hk : k < n), forall i j : Fin (k + 1), forall _hij : i.val < j.val,
+      forall t : Nat, t < qrLeadingOffdiagStop j ->
+        (qrLeadingColumn n k hk j).val = t ->
+          forall a : Fin m, t < a.val ->
+            matMulVec m (householder m (v t) (beta t))
+              (fun r => Ahat t r (qrLeadingColumn n k hk j)) a = 0)
+    (hbudget : forall k (hk : k < n), forall i j : Fin (k + 1), forall hij : i.val < j.val,
+      forall t : Nat, t < qrLeadingOffdiagStop j ->
+        c * entryBudget k hk i j hij t +
+            householderCompactComponentBudget fp m (v t) (beta t)
+              (fun a => Ahat t a (qrLeadingColumn n k hk j))
+              (qrLeadingRow m k (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) i)
+          <= entryBudget k hk i j hij (t + 1))
+    (hexact : forall k (hk : k < n), forall i j : Fin (k + 1), forall hij : i.val < j.val,
+      forall t : Nat, t < qrLeadingOffdiagStop j ->
+        |matMulVec m (householder m (v t) (beta t))
+          (fun a => Ahat t a (qrLeadingColumn n k hk j))
+          (qrLeadingRow m k (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) i)| <=
+          c * entryBudget k hk i j hij t)
+    (hrowBudget : forall k (hk : k < n), forall i j : Fin (k + 1), forall hij : i.val < j.val,
+      entryBudget k hk i j hij (qrLeadingOffdiagStop j) <=
+        rowBudget k hk i) :
+    forall k (hk : k < n), forall i j : Fin (k + 1), i.val < j.val ->
+      |qrLeadingBlock (Ahat k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk i j| <=
+        rowBudget k hk i := by
+  exact
+    fl_householderStoredPanel_sequence_leadingBlock_offdiag_budget_of_exact_stage_budgets_factor
+      hmn fp Ahat v beta c rowBudget entryBudget hm hStep hinit hpivot
+      hbudget hexact hrowBudget
+
+/-- Higham, Theorem 19.6 route dependency: signed stored-panel leading-block
+off-diagonal row budgets from exact stage budgets.
+
+This removes the generic reflector family from the leading-block budget bridge
+by using the concrete signed trailing Householder stages.  It remains row-wise
+stability infrastructure, not the full source theorem. -/
+theorem stored_panel_sequence_leadingBlock_offdiag_budget_of_signed_stage_budgets_factor
+    {m n : Nat} (hmn : n <= m) (fp : FPModel)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real) (c : Real)
+    (rowBudget : forall k, k < n -> Fin (k + 1) -> Real)
+    (entryBudget :
+      forall k (_hk : k < n), forall i j : Fin (k + 1), i.val < j.val -> Nat -> Real)
+    (hm : gammaValid fp m)
+    (hStep : forall t (_ht : t < n),
+      Ahat (t + 1) =
+        fl_householderStoredPanelStep fp m n t
+          (storedQRSignedStageVector hmn Ahat alpha t)
+          (storedQRSignedStageBeta hmn Ahat alpha t)
+          (Ahat t))
+    (hinit : forall k (hk : k < n), forall i j : Fin (k + 1), forall hij : i.val < j.val,
+      |Ahat 0
+          (qrLeadingRow m k (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) i)
+          (qrLeadingColumn n k hk j)| <=
+        entryBudget k hk i j hij 0)
+    (hpivot : forall k (hk : k < n), forall i j : Fin (k + 1), forall _hij : i.val < j.val,
+      forall t : Nat, t < qrLeadingOffdiagStop j ->
+        (qrLeadingColumn n k hk j).val = t ->
+          forall a : Fin m, t < a.val ->
+            matMulVec m
+              (householder m
+                (storedQRSignedStageVector hmn Ahat alpha t)
+                (storedQRSignedStageBeta hmn Ahat alpha t))
+              (fun r => Ahat t r (qrLeadingColumn n k hk j)) a = 0)
+    (hbudget : forall k (hk : k < n), forall i j : Fin (k + 1), forall hij : i.val < j.val,
+      forall t : Nat, t < qrLeadingOffdiagStop j ->
+        c * entryBudget k hk i j hij t +
+            householderCompactComponentBudget fp m
+              (storedQRSignedStageVector hmn Ahat alpha t)
+              (storedQRSignedStageBeta hmn Ahat alpha t)
+              (fun a => Ahat t a (qrLeadingColumn n k hk j))
+              (qrLeadingRow m k (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) i)
+          <= entryBudget k hk i j hij (t + 1))
+    (hexact : forall k (hk : k < n), forall i j : Fin (k + 1), forall hij : i.val < j.val,
+      forall t : Nat, t < qrLeadingOffdiagStop j ->
+        |matMulVec m
+          (householder m
+            (storedQRSignedStageVector hmn Ahat alpha t)
+            (storedQRSignedStageBeta hmn Ahat alpha t))
+          (fun a => Ahat t a (qrLeadingColumn n k hk j))
+          (qrLeadingRow m k (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) i)| <=
+          c * entryBudget k hk i j hij t)
+    (hrowBudget : forall k (hk : k < n), forall i j : Fin (k + 1), forall hij : i.val < j.val,
+      entryBudget k hk i j hij (qrLeadingOffdiagStop j) <=
+        rowBudget k hk i) :
+    forall k (hk : k < n), forall i j : Fin (k + 1), i.val < j.val ->
+      |qrLeadingBlock (Ahat k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk i j| <=
+        rowBudget k hk i := by
+  exact
+    fl_householderStoredPanel_sequence_leadingBlock_offdiag_budget_of_signed_stage_budgets_factor
+      hmn fp Ahat alpha c rowBudget entryBudget hm hStep hinit hpivot hbudget
+      hexact hrowBudget
+
 /-- Higham, Theorem 19.6 route dependency: one rounded stored-panel update
 bounded by signed-pivot exact stage fields plus the compact component budget.
 
