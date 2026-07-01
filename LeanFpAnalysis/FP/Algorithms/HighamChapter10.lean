@@ -10,6 +10,7 @@ import LeanFpAnalysis.FP.Algorithms.HighamChapter9
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskySpec
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskySolve
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyDemmel
+import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyFl
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyPerturbation
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyPSD
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyIndefinite
@@ -386,6 +387,40 @@ theorem higham10_3_cholesky_backward_error (fp : FPModel) (n : ℕ)
       (∀ i j, ∑ k : Fin n, R_hat k i * R_hat k j = A i j + ΔA i j) :=
   cholesky_backward_error_perturbation n A R_hat (gamma fp (n + 1))
     (gamma_nonneg fp hn1) hChol
+
+/-- **Algorithm 10.2 + Theorem 10.3, concrete closure**: the concrete
+floating-point Cholesky factorization `fl_cholesky` (Algorithm 10.2), when
+it runs to completion on a symmetric input (every rounded pivot
+nonnegative, every computed diagonal entry nonzero), generates the
+Theorem 10.3 backward-error certificate with the sharp `γ_{n+1}` constant:
+the certificate hypothesis `higham10_2_CholeskyBackwardError` is discharged
+by the algorithm itself rather than assumed. -/
+theorem higham10_3_fl_cholesky_certificate (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (hsym : ∀ i j : Fin n, A i j = A j i)
+    (hn1 : gammaValid fp (n + 1))
+    (hpiv : ∀ j : Fin n, 0 ≤ fl_cholPivot fp n A j)
+    (hdz : ∀ j : Fin n, fl_cholesky fp n A j j ≠ 0) :
+    higham10_2_CholeskyBackwardError n A (fl_cholesky fp n A)
+      (gamma fp (n + 1)) :=
+  fl_cholesky_backward_error fp n A hsym hn1 hpiv hdz
+
+/-- **Theorem 10.3 / equation (10.5) for the concrete Algorithm 10.2
+factor**: `R̂ᵀR̂ = A + ΔA` with `|ΔA| ≤ γ_{n+1}|R̂ᵀ||R̂|`, where `R̂` is the
+actual computed `fl_cholesky` factor. -/
+theorem higham10_3_fl_cholesky_backward_error (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (hsym : ∀ i j : Fin n, A i j = A j i)
+    (hn1 : gammaValid fp (n + 1))
+    (hpiv : ∀ j : Fin n, 0 ≤ fl_cholPivot fp n A j)
+    (hdz : ∀ j : Fin n, fl_cholesky fp n A j j ≠ 0) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤ gamma fp (n + 1) *
+        ∑ k : Fin n, |fl_cholesky fp n A k i| * |fl_cholesky fp n A k j|) ∧
+      (∀ i j, ∑ k : Fin n, fl_cholesky fp n A k i * fl_cholesky fp n A k j =
+        A i j + ΔA i j) :=
+  higham10_3_cholesky_backward_error fp n A (fl_cholesky fp n A) hn1
+    (higham10_3_fl_cholesky_certificate fp n A hsym hn1 hpiv hdz)
 
 /-- **Theorem 10.4 / equation (10.6)**: Cholesky factorization plus the two
 triangular solves gives `(A + ΔA)x_hat = b`, with Higham's absorbed
