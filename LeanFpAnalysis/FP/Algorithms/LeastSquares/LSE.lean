@@ -13856,6 +13856,100 @@ theorem theorem20_10_partB_certificate_of_nonempty_partA_certificate
     ⟨_Deltad, _hDeltad_action, _hDeltad, hcertB⟩
   exact hcertB
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    constructed rounded Householder GQR Part B certificate with named
+    conservative composed coefficients.
+
+    This pushes the composed Part A certificate through the generic Part A to
+    Part B bridge.  It keeps the concrete rounded `Bᵀ`/reversed-`A Q₂`
+    perturbation witnesses and the remaining nonzero-diagonal branch visible. -/
+theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_certificate_of_diagonal_composed_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2)) :
+    let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+      fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+    let Rb : Fin (p + q) → Fin p → ℝ :=
+      fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)
+    let S : Fin p → Fin p → ℝ :=
+      matTranspose (fun i : Fin p => fun j : Fin p =>
+        Rb (Fin.castAdd q i) j)
+    let beta : Fin q → ℝ :=
+      theorem20_10_householder_reversed_AQ2_rhs_tail fp A Qb b
+    ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab : Fin (r + q) → ℝ,
+      (∀ i j,
+        B i j + DeltaB i j =
+          matMulRect (p + q) (p + q) p Qb Rb j i) ∧
+      frobNormRect DeltaA ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect A ∧
+      frobNormRect DeltaB ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B ∧
+      vecNorm2 Deltab ≤
+        theorem20_10_householder_rhs_conservative_gamma fp r p q *
+          vecNorm2 b ∧
+      ∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j),
+        hpert.Q = Qb ∧ hpert.S = S ∧
+        (∀ j : Fin q,
+          matMulVec (r + q) (matTranspose hpert.U)
+              (fun k => b k + Deltab k) (Fin.natAdd r j) =
+            beta j) ∧
+        ((∀ i : Fin p, hpert.S i i ≠ 0) →
+          (∀ i : Fin q, hpert.L22 i i ≠ 0) →
+          Nonempty
+            (Theorem20_10PartBPerturbationCertificate A B b d
+              (theorem20_10_gqr_xhat_of_transformed_tail fp hpert beta d)
+              (theorem20_10_householder_composed_partA_gammaA fp r p q)
+              (theorem20_10_householder_composed_partA_gammaB fp r p q))) := by
+  let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+    fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+  let beta : Fin q → ℝ :=
+    theorem20_10_householder_reversed_AQ2_rhs_tail fp A Qb b
+  rcases
+    theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partA_certificate_of_diagonal_composed_conservative_gamma
+      fp A B b d hp hq hvalidA hvalidB hhalf with
+    ⟨DeltaA, DeltaB, Deltab, hDeltaBrep, hDeltaA, hDeltaB, hDeltab,
+      hpert, hQeq, hSeq, hb_tail, hcertA⟩
+  have hKB_pos : 0 < householderConstructApplyGammaIndex (p + q) := by
+    dsimp [householderConstructApplyGammaIndex]
+    omega
+  have hvalidS : gammaValid fp p := by
+    exact gammaValid_mono fp
+      (Nat.le_mul_of_pos_right p hKB_pos) hvalidB
+  have hgammap_nonneg : 0 ≤ gamma fp p := gamma_nonneg fp hvalidS
+  have hgammaB0_nonneg :
+      0 ≤ theorem20_10_householder_gammaB fp r p q := by
+    simpa [theorem20_10_householder_gammaB] using
+      H19.Theorem19_4.gamma_tilde_nonneg fp hvalidB
+  have hgammaB_nonneg :
+      0 ≤ theorem20_10_householder_composed_partA_gammaB fp r p q := by
+    dsimp [theorem20_10_householder_composed_partA_gammaB]
+    have hone_plus :
+        0 ≤ 1 + theorem20_10_householder_gammaB fp r p q := by
+      nlinarith [hgammaB0_nonneg]
+    exact add_nonneg hgammaB0_nonneg
+      (mul_nonneg hgammap_nonneg hone_plus)
+  refine
+    ⟨DeltaA, DeltaB, Deltab, hDeltaBrep, hDeltaA, hDeltaB, hDeltab,
+      hpert, hQeq, hSeq, hb_tail, ?_⟩
+  intro hSdiag hL22diag
+  exact
+    theorem20_10_partB_certificate_of_nonempty_partA_certificate
+      A B b d (theorem20_10_gqr_xhat_of_transformed_tail fp hpert beta d)
+      hgammaB_nonneg (hcertA hSdiag hL22diag)
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), rounded Householder RHS
     Part B certificate route with the currently proved conservative RHS
     coefficient.
