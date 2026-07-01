@@ -16481,6 +16481,61 @@ def storedSignedSequenceTailNormalizedLoopVectorEqFacts_exactWithUnitRoundoff
         (storedSignedSequenceTwiceTrailingSeq A_hat)
         (storedSignedSequenceTailAlpha2 alpha)
 
+/-- Exact-arithmetic tail-local vector equalities assemble the recursive
+source-faithful normalization package.
+
+This proves that the all-stage source-faithful certificate surface is inhabited
+in `FPModel.exactWithUnitRoundoff`: the existing exact constructors derive the
+self-dot fields from the vector equalities and standard leading-block
+nonbreakdown hypotheses. -/
+theorem
+    storedSignedSequenceTailSourceFaithfulNormalizations_of_tailVectorEqLoopFacts_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts_exactWithUnitRoundoff
+        u0 hu0 r p A_hat alpha) :
+    storedSignedSequenceTailSourceFaithfulNormalizations
+      (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha := by
+  revert r A_hat alpha
+  refine
+    Nat.twoStepInduction
+      (P := fun p =>
+        forall (r : Nat)
+            (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+            (alpha : Nat -> Real),
+          storedSignedSequenceTailNormalizedLoopVectorEqFacts_exactWithUnitRoundoff
+              u0 hu0 r p A_hat alpha ->
+            storedSignedSequenceTailSourceFaithfulNormalizations
+              (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha)
+      ?hzero ?hone ?hstep p
+  · intro r A_hat alpha _hvecs
+    trivial
+  · intro r A_hat alpha hvecs
+    rcases hvecs with ⟨hStep, hdetLead, hvecTail⟩
+    have hfacts :
+        storedSignedSequenceOneTailNormalizedFacts
+          (FPModel.exactWithUnitRoundoff u0 hu0) A_hat alpha :=
+      storedSignedSequenceOneTailNormalizedFacts_of_tail_vector_eq_and_leadingBlock_det_ne_zero_exactWithUnitRoundoff
+        u0 hu0 A_hat alpha hStep hdetLead hvecTail
+    exact
+      ⟨hStep, hdetLead,
+        { vector_eq := hfacts.hvecTail, self_dot := hfacts.hselfTail }⟩
+  · intro p ih _ihSucc r A_hat alpha hvecs
+    rcases hvecs with ⟨hStep, hdetLead, hvecTail2, hvecTail3, htailVecs⟩
+    have hfacts :
+        storedSignedSequenceFirstTwoTailNormalizedFacts
+          (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha :=
+      storedSignedSequenceFirstTwoTailNormalizedFacts_of_tail_vectors_eq_and_leadingBlock_det_ne_zero_exactWithUnitRoundoff
+        u0 hu0 r p A_hat alpha hStep hdetLead hvecTail2 hvecTail3
+    exact
+      ⟨hStep, hdetLead,
+        { vector_eq := hfacts.hvecTail2, self_dot := hfacts.hselfTail2 },
+        { vector_eq := hfacts.hvecTail3, self_dot := hfacts.hselfTail3 },
+        ih r (storedSignedSequenceTwiceTrailingSeq A_hat)
+          (storedSignedSequenceTailAlpha2 alpha) htailVecs⟩
+
 /-- Exact-arithmetic tail-local vector equalities assemble the raw all-stage
 tail-normalized facts, including the self-dot fields.
 
