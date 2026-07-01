@@ -345,6 +345,158 @@ theorem givens_complex_eigenpair_minus {n : Nat}
 
 end Problem19_1
 
+namespace Problem19_8
+
+/-- Higham, 2nd ed., Chapter 19, Problem 19.8: a finite family of Gram-Schmidt
+vectors is orthonormal when its dot products are Kronecker deltas. -/
+def OrthonormalFamily {m r : Nat}
+    (q : Fin r -> Fin m -> Real) : Prop :=
+  forall a b : Fin r, gsDot (q a) (q b) = if a = b then 1 else 0
+
+/-- Higham, 2nd ed., Chapter 19, Problem 19.8: the sum of the rank-one
+orthogonal projections onto the listed Gram-Schmidt directions, written in the
+repository's vector API. -/
+noncomputable def projectionCombination {m r : Nat}
+    (q : Fin r -> Fin m -> Real) (x : Fin m -> Real) :
+    Fin m -> Real :=
+  fun i =>
+    (Finset.univ : Finset (Fin r)).sum
+      (fun k => gsDot (q k) x * q k i)
+
+/-- Higham, 2nd ed., Chapter 19, Problem 19.8: iterated application of the
+operators `I - q_k q_k^T` to a vector.  The recursion appends the last
+projection after the shorter prefix, matching the product
+`(I-P_j) ... (I-P_1)`. -/
+noncomputable def projectionRemovalProduct {m : Nat} :
+    (r : Nat) -> (Fin r -> Fin m -> Real) -> (Fin m -> Real) ->
+      Fin m -> Real
+  | 0, _q, x => x
+  | r + 1, q, x =>
+      gsProjectAway
+        (projectionRemovalProduct r (fun k : Fin r => q k.castSucc) x)
+        (q (Fin.last r))
+
+theorem gsDot_projectionCombination_eq_zero_of_left_orthogonal
+    {m r : Nat} (u : Fin m -> Real)
+    (q : Fin r -> Fin m -> Real) (x : Fin m -> Real)
+    (horth : forall k : Fin r, gsDot u (q k) = 0) :
+    gsDot u (projectionCombination q x) = 0 := by
+  unfold gsDot projectionCombination
+  calc
+    (Finset.univ.sum fun i : Fin m =>
+        u i *
+          (Finset.univ.sum fun k : Fin r =>
+            gsDot (q k) x * q k i))
+        =
+      (Finset.univ.sum fun i : Fin m =>
+        Finset.univ.sum fun k : Fin r =>
+          u i * (gsDot (q k) x * q k i)) := by
+        apply Finset.sum_congr rfl
+        intro i _hi
+        rw [Finset.mul_sum]
+    _ =
+      (Finset.univ.sum fun k : Fin r =>
+        Finset.univ.sum fun i : Fin m =>
+          u i * (gsDot (q k) x * q k i)) := by
+        rw [Finset.sum_comm]
+    _ = 0 := by
+        apply Finset.sum_eq_zero
+        intro k _hk
+        calc
+          (Finset.univ.sum fun i : Fin m =>
+              u i * (gsDot (q k) x * q k i))
+              =
+            gsDot (q k) x *
+              (Finset.univ.sum fun i : Fin m => u i * q k i) := by
+              rw [Finset.mul_sum]
+              apply Finset.sum_congr rfl
+              intro i _hi
+              ring
+          _ = gsDot (q k) x * gsDot u (q k) := rfl
+          _ = 0 := by
+              rw [horth k]
+              ring
+
+theorem gsDot_sub_projectionCombination_of_left_orthogonal
+    {m r : Nat} (u : Fin m -> Real)
+    (q : Fin r -> Fin m -> Real) (x : Fin m -> Real)
+    (horth : forall k : Fin r, gsDot u (q k) = 0) :
+    gsDot u (fun i => x i - projectionCombination q x i) =
+      gsDot u x := by
+  have hz :
+      gsDot u (projectionCombination q x) = 0 :=
+    gsDot_projectionCombination_eq_zero_of_left_orthogonal u q x horth
+  unfold gsDot at hz ⊢
+  calc
+    (Finset.univ.sum fun i : Fin m =>
+        u i * (x i - projectionCombination q x i))
+        =
+      (Finset.univ.sum fun i : Fin m => u i * x i) -
+        (Finset.univ.sum fun i : Fin m =>
+          u i * projectionCombination q x i) := by
+        rw [← Finset.sum_sub_distrib]
+        apply Finset.sum_congr rfl
+        intro i _hi
+        ring
+    _ = Finset.univ.sum (fun i : Fin m => u i * x i) := by
+        rw [hz]
+        ring
+
+theorem projectionCombination_succ_last {m r : Nat}
+    (q : Fin (r + 1) -> Fin m -> Real) (x : Fin m -> Real)
+    (i : Fin m) :
+    projectionCombination q x i =
+      projectionCombination (fun k : Fin r => q k.castSucc) x i +
+        gsDot (q (Fin.last r)) x * q (Fin.last r) i := by
+  unfold projectionCombination
+  rw [Fin.sum_univ_castSucc]
+
+/-- Higham, 2nd ed., Chapter 19, Problem 19.8: for orthonormal
+Gram-Schmidt directions, the product `(I-P_j) ... (I-P_1)` acts as
+`I - P_1 - ... - P_j` on every vector.  This vector-action form is the exact
+identity that makes the classical and modified Gram-Schmidt projection updates
+coincide in exact arithmetic. -/
+theorem projectionRemovalProduct_eq_id_sub_projection_sum
+    {m r : Nat} (q : Fin r -> Fin m -> Real) (x : Fin m -> Real)
+    (horth : OrthonormalFamily q) :
+    projectionRemovalProduct r q x =
+      fun i => x i - projectionCombination q x i := by
+  induction r with
+  | zero =>
+      ext i
+      simp [projectionRemovalProduct, projectionCombination]
+  | succ r ih =>
+      let qprev : Fin r -> Fin m -> Real := fun k => q k.castSucc
+      have hprev : OrthonormalFamily qprev := by
+        intro a b
+        simpa [OrthonormalFamily, qprev] using horth a.castSucc b.castSucc
+      have hlast_prev :
+          forall k : Fin r, gsDot (q (Fin.last r)) (qprev k) = 0 := by
+        intro k
+        have hne : (Fin.last r : Fin (r + 1)) ≠ k.castSucc :=
+          (Fin.castSucc_ne_last k).symm
+        simpa [OrthonormalFamily, qprev, hne] using
+          horth (Fin.last r) k.castSucc
+      have hdot :
+          gsDot (q (Fin.last r))
+              (fun i => x i - projectionCombination qprev x i) =
+            gsDot (q (Fin.last r)) x :=
+        gsDot_sub_projectionCombination_of_left_orthogonal
+          (q (Fin.last r)) qprev x hlast_prev
+      ext i
+      change
+        (gsProjectAway (projectionRemovalProduct r qprev x)
+            (q (Fin.last r))) i =
+          x i - projectionCombination q x i
+      rw [ih qprev hprev]
+      unfold gsProjectAway
+      rw [hdot]
+      have hsum := projectionCombination_succ_last q x i
+      rw [hsum]
+      ring
+
+end Problem19_8
+
 namespace Algorithm19_11
 
 /-- Source-facing state equations for Higham Algorithm 19.11, classical
