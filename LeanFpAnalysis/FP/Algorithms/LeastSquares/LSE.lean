@@ -148,6 +148,120 @@ theorem LSEFullRowRank.transpose_rectMatMulVec_injective {p n : ℕ}
     simpa using congrFun hzero i
   exact sub_eq_zero.mp hi
 
+/-- Converse finite-dimensional rank bridge for the Chapter 20 full-row-rank
+    condition: if the transpose action `Bᵀ` is injective, then the constraint
+    map `x ↦ Bx` is surjective. -/
+theorem LSEFullRowRank.of_transpose_rectMatMulVec_injective {p n : ℕ}
+    {B : Fin p → Fin n → ℝ}
+    (hBt :
+      Function.Injective
+        (rectMatMulVec (fun j : Fin n => fun i : Fin p => B i j))) :
+    LSEFullRowRank B := by
+  let Bt : Fin n → Fin p → ℝ := fun j => fun i => B i j
+  let C : (Fin p → ℝ) →ₗ[ℝ] (Fin p → ℝ) :=
+    (lseConstraintLinearMap B).comp (lseConstraintLinearMap Bt)
+  have hker : ∀ y : Fin p → ℝ, C y = 0 → y = 0 := by
+    intro y hy
+    have hinner :
+        (∑ i : Fin p, y i * rectMatMulVec B (rectMatMulVec Bt y) i) =
+          vecNorm2Sq (rectMatMulVec Bt y) := by
+      calc
+        (∑ i : Fin p, y i * rectMatMulVec B (rectMatMulVec Bt y) i)
+            = ∑ i : Fin p, ∑ j : Fin n,
+                y i * (B i j * rectMatMulVec Bt y j) := by
+                unfold rectMatMulVec
+                apply Finset.sum_congr rfl
+                intro i _
+                rw [Finset.mul_sum]
+        _ = ∑ j : Fin n, ∑ i : Fin p,
+                y i * (B i j * rectMatMulVec Bt y j) := by
+                rw [Finset.sum_comm]
+        _ = ∑ j : Fin n,
+                (∑ i : Fin p, B i j * y i) * rectMatMulVec Bt y j := by
+                apply Finset.sum_congr rfl
+                intro j _
+                calc
+                  (∑ i : Fin p, y i * (B i j * rectMatMulVec Bt y j))
+                      = ∑ i : Fin p, (B i j * y i) *
+                          rectMatMulVec Bt y j := by
+                          apply Finset.sum_congr rfl
+                          intro i _
+                          ring
+                  _ = (∑ i : Fin p, B i j * y i) *
+                          rectMatMulVec Bt y j := by
+                          rw [Finset.sum_mul]
+        _ = ∑ j : Fin n, rectMatMulVec Bt y j *
+                rectMatMulVec Bt y j := by
+                unfold rectMatMulVec Bt
+                rfl
+        _ = vecNorm2Sq (rectMatMulVec Bt y) := by
+                unfold vecNorm2Sq
+                apply Finset.sum_congr rfl
+                intro j _
+                ring
+    have hinner_zero :
+        (∑ i : Fin p, y i * rectMatMulVec B (rectMatMulVec Bt y) i) = 0 := by
+      apply Finset.sum_eq_zero
+      intro i _
+      have hi : rectMatMulVec B (rectMatMulVec Bt y) i = 0 := by
+        simpa [C, lseConstraintLinearMap] using congrFun hy i
+      rw [hi]
+      ring
+    have hsq : vecNorm2Sq (rectMatMulVec Bt y) = 0 := by
+      rw [← hinner]
+      exact hinner_zero
+    have hnorm : vecNorm2 (rectMatMulVec Bt y) = 0 := by
+      unfold vecNorm2
+      rw [Real.sqrt_eq_zero (vecNorm2Sq_nonneg (rectMatMulVec Bt y))]
+      exact hsq
+    have hBt_zero : rectMatMulVec Bt y = 0 := by
+      ext j
+      exact (vecNorm2_eq_zero_iff (rectMatMulVec Bt y)).mp hnorm j
+    have hBt_eq :
+        rectMatMulVec Bt y = rectMatMulVec Bt (0 : Fin p → ℝ) := by
+      rw [hBt_zero]
+      ext j
+      simp [rectMatMulVec]
+    exact hBt hBt_eq
+  have hC_injective : Function.Injective C := by
+    intro y z hyz
+    have hdiff : C (fun i => y i - z i) = 0 := by
+      change C (y - z) = 0
+      rw [map_sub]
+      ext i
+      exact sub_eq_zero.mpr (congrFun hyz i)
+    have hzero := hker (fun i => y i - z i) hdiff
+    ext i
+    have hi := congrFun hzero i
+    dsimp at hi
+    exact sub_eq_zero.mp hi
+  have hC_surjective : Function.Surjective C :=
+    (LinearMap.injective_iff_surjective_of_finrank_eq_finrank
+      (K := ℝ) (V := Fin p → ℝ) (V₂ := Fin p → ℝ) rfl).1 hC_injective
+  intro d
+  rcases hC_surjective d with ⟨y, hy⟩
+  refine ⟨rectMatMulVec Bt y, ?_⟩
+  simpa [C, lseConstraintLinearMap] using hy
+
+/-- Perturbation form of the full-row-rank side of Higham's Chapter 20 rank
+    condition.  A strict operator-2 perturbation of `Bᵀ` below a source
+    transpose lower-bound margin preserves full row rank of `B`. -/
+theorem LSEFullRowRank.of_transpose_lower_bound_and_rectOpNorm2Le_lt {p n : ℕ}
+    {B DeltaB : Fin p → Fin n → ℝ} {mu eta : ℝ}
+    (hlower : ∀ y : Fin p → ℝ,
+      mu * vecNorm2 y ≤
+        vecNorm2 (rectMatMulVec (fun j : Fin n => fun i : Fin p => B i j) y))
+    (hDelta :
+      rectOpNorm2Le (fun j : Fin n => fun i : Fin p => DeltaB i j) eta)
+    (heta : eta < mu) :
+    LSEFullRowRank (fun i j => B i j + DeltaB i j) := by
+  apply LSEFullRowRank.of_transpose_rectMatMulVec_injective
+  exact
+    rectMatMulVec_injective_of_lower_bound_and_rectOpNorm2Le_lt
+      (M := fun j : Fin n => fun i : Fin p => B i j)
+      (Delta := fun j : Fin n => fun i : Fin p => DeltaB i j)
+      hlower hDelta heta
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.9 exact-MGS rank bridge:
     full row rank of `B` supplies the stage-0 nonbreakdown fact for MGS applied
     to `Bᵀ`.  This is the first pivot in the rank-to-all-MGS-stages route. -/
@@ -275,6 +389,52 @@ theorem lseStackedMatrix_mulVec_eq_zero_iff {m n p : ℕ}
 def LSEStackedFullColumnRank {m n p : ℕ}
     (A : Fin m → Fin n → ℝ) (B : Fin p → Fin n → ℝ) : Prop :=
   Function.Injective (rectMatMulVec (lseStackedMatrix A B))
+
+/-- Pointwise perturbations commute with the local stacked LSE matrix
+    representation `[A; B]`. -/
+theorem lseStackedMatrix_add {m n p : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ)
+    (B DeltaB : Fin p → Fin n → ℝ) :
+    lseStackedMatrix (fun i j => A i j + DeltaA i j)
+        (fun i j => B i j + DeltaB i j) =
+      fun i j => lseStackedMatrix A B i j + lseStackedMatrix DeltaA DeltaB i j := by
+  ext i j
+  refine Fin.addCases
+    (motive := fun i : Fin (m + p) =>
+      lseStackedMatrix (fun i j => A i j + DeltaA i j)
+          (fun i j => B i j + DeltaB i j) i j =
+        lseStackedMatrix A B i j + lseStackedMatrix DeltaA DeltaB i j)
+    ?left ?right i
+  · intro i
+    simp [lseStackedMatrix, Fin.append_left]
+  · intro i
+    simp [lseStackedMatrix, Fin.append_right]
+
+/-- Higham, 2nd ed., Chapter 20, equation (20.24), perturbation rank bridge:
+    if the source stack `[A; B]` has a vector-action lower bound `mu`, and the
+    stacked perturbation has operator-2 size at most `eta < mu`, then the
+    perturbed stack remains full column rank. -/
+theorem LSEStackedFullColumnRank.of_lower_bound_and_rectOpNorm2Le_lt
+    {m n p : ℕ}
+    {A DeltaA : Fin m → Fin n → ℝ}
+    {B DeltaB : Fin p → Fin n → ℝ} {mu eta : ℝ}
+    (hlower : ∀ x : Fin n → ℝ,
+      mu * vecNorm2 x ≤ vecNorm2 (rectMatMulVec (lseStackedMatrix A B) x))
+    (hDelta : rectOpNorm2Le (lseStackedMatrix DeltaA DeltaB) eta)
+    (heta : eta < mu) :
+    LSEStackedFullColumnRank
+      (fun i j => A i j + DeltaA i j)
+      (fun i j => B i j + DeltaB i j) := by
+  have hinj :
+      Function.Injective
+        (rectMatMulVec
+          (fun i j =>
+            lseStackedMatrix A B i j + lseStackedMatrix DeltaA DeltaB i j)) :=
+    rectMatMulVec_injective_of_lower_bound_and_rectOpNorm2Le_lt
+      (M := lseStackedMatrix A B)
+      (Delta := lseStackedMatrix DeltaA DeltaB)
+      hlower hDelta heta
+  simpa [LSEStackedFullColumnRank, lseStackedMatrix_add] using hinj
 
 /-- Higham, 2nd ed., Chapter 20, equation (20.24), prose after the display:
     the null-intersection condition
@@ -14723,6 +14883,115 @@ theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_mi
         (∀ i : Fin q, hpert.L22 i i ≠ 0) :=
     (hpert.fullRowRank_stackedFullColumnRank_iff_s_l22_diag_ne_zero).1 hrank
   exact hdiag_branch hdiag.1 hdiag.2
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    constructed rounded Householder GQR Part B theorem with stacked-rank
+    preservation derived from a source lower-bound margin.
+
+    Compared with
+    `theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_minimizer_of_perturbed_rank_composed_conservative_gamma`,
+    this theorem removes the direct perturbed stacked-full-column-rank
+    hypothesis from the branch.  Callers may instead supply a lower bound for
+    the exact source stack `[A; B]` and an operator-2 bound on the constructed
+    stacked perturbation whose radius is strictly below that margin. -/
+theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_minimizer_of_stacked_lower_bound_composed_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2)) :
+    let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+      fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+    let Rb : Fin (p + q) → Fin p → ℝ :=
+      fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)
+    let S : Fin p → Fin p → ℝ :=
+      matTranspose (fun i : Fin p => fun j : Fin p =>
+        Rb (Fin.castAdd q i) j)
+    let beta : Fin q → ℝ :=
+      theorem20_10_householder_reversed_AQ2_rhs_tail fp A Qb b
+    ∃ DeltaA0 : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB0 : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab0 : Fin (r + q) → ℝ,
+      (∀ i j,
+        B i j + DeltaB0 i j =
+          matMulRect (p + q) (p + q) p Qb Rb j i) ∧
+      frobNormRect DeltaA0 ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect A ∧
+      frobNormRect DeltaB0 ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B ∧
+      vecNorm2 Deltab0 ≤
+        theorem20_10_householder_rhs_conservative_gamma fp r p q *
+          vecNorm2 b ∧
+      ∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA0 i j)
+          (fun i j => B i j + DeltaB0 i j),
+        hpert.Q = Qb ∧ hpert.S = S ∧
+        (∀ j : Fin q,
+          matMulVec (r + q) (matTranspose hpert.U)
+              (fun k => b k + Deltab0 k) (Fin.natAdd r j) =
+            beta j) ∧
+        (∀ {mu eta : ℝ},
+          LSEFullRowRank (fun i j => B i j + DeltaB0 i j) →
+          (∀ x : Fin (p + q) → ℝ,
+            mu * vecNorm2 x ≤ vecNorm2 (rectMatMulVec (lseStackedMatrix A B) x)) →
+          rectOpNorm2Le (lseStackedMatrix DeltaA0 DeltaB0) eta →
+          eta < mu →
+          let xhat : Fin (p + q) → ℝ :=
+            theorem20_10_gqr_xhat_of_transformed_tail fp hpert beta d
+          let gammaA : ℝ :=
+            theorem20_10_householder_composed_partA_gammaA fp r p q
+          let gammaB : ℝ :=
+            theorem20_10_householder_composed_partA_gammaB fp r p q
+          ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+          ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+          ∃ Deltab : Fin (r + q) → ℝ,
+          ∃ Deltad : Fin p → ℝ,
+            Deltad = (0 : Fin p → ℝ) ∧
+            frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+            frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+            vecNorm2 Deltab ≤
+              gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+            vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+            IsLSEMinimizer
+              (fun i j => A i j + DeltaA i j)
+              (fun i => b i + Deltab i)
+              (fun i j => B i j + DeltaB i j)
+              (fun i => d i + Deltad i) xhat ∧
+            (∃! x : Fin (p + q) → ℝ,
+              IsLSEMinimizer
+                (fun i j => A i j + DeltaA i j)
+                (fun i => b i + Deltab i)
+                (fun i j => B i j + DeltaB i j)
+                (fun i => d i + Deltad i) x)) := by
+  let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+    fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+  let beta : Fin q → ℝ :=
+    theorem20_10_householder_reversed_AQ2_rhs_tail fp A Qb b
+  rcases
+    theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_xhat_minimizer_of_perturbed_rank_composed_conservative_gamma
+      fp A B b d hp hq hvalidA hvalidB hhalf with
+    ⟨DeltaA0, DeltaB0, Deltab0, hDeltaBrep, hDeltaA0, hDeltaB0,
+      hDeltab0, hpert, hQeq, hSeq, hb_tail, hrank_branch⟩
+  refine
+    ⟨DeltaA0, DeltaB0, Deltab0, hDeltaBrep, hDeltaA0, hDeltaB0,
+      hDeltab0, hpert, hQeq, hSeq, hb_tail, ?_⟩
+  intro mu eta hB hlower hDeltaStack heta
+  have hstack :
+      LSEStackedFullColumnRank
+        (fun i j => A i j + DeltaA0 i j)
+        (fun i j => B i j + DeltaB0 i j) :=
+    LSEStackedFullColumnRank.of_lower_bound_and_rectOpNorm2Le_lt
+      (A := A) (DeltaA := DeltaA0)
+      (B := B) (DeltaB := DeltaB0)
+      hlower hDeltaStack heta
+  exact hrank_branch ⟨hB, hstack⟩
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), rounded Householder RHS
     Part B certificate route with the currently proved conservative RHS
