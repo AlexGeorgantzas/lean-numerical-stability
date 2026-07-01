@@ -24274,6 +24274,266 @@ theorem stored_panel_sequence_active_block_bound_of_signed_pivot_stage_bounds
       fp steps Ahat p pivotCol B hm hinitBlock hB hstep hpMono hkMono hnorm
       hpivotMax hcompleted hpivot hbudget'
 
+/-- Higham, Theorem 19.6 route dependency: concrete stored-panel row-error
+accumulation from an exact same-reflector Lipschitz field.
+
+The exact Cox--Higham growth hypothesis remains visible as `hexact`; this
+wrapper only exposes the repository's floating-point stored-panel component
+budgets under the Chapter 19.6 namespace. -/
+theorem stored_panel_sequence_rowwise_error_accumulation_bound_of_exact_lipschitz
+    {m n : Nat} (fp : FPModel) (steps : Fin m)
+    (Ahat Aexact : Nat -> Fin m -> Fin n -> Real)
+    (v : Nat -> Fin m -> Real) (beta : Nat -> Real)
+    (hm : gammaValid fp m) (r : Fin m) (j : Fin n)
+    (hstep : forall t : Nat, t < steps.val ->
+      Ahat (t + 1) = fl_householderStoredPanelStep fp m n t (v t) (beta t) (Ahat t))
+    (hactive : forall t : Nat, t < steps.val -> t <= j.val)
+    (hcompleted : forall t : Nat, t < steps.val -> j.val < t ->
+      forall i : Fin m, matMulVec m (householder m (v t) (beta t))
+        (fun a => Ahat t a j) i = Ahat t i j)
+    (hpivot : forall t : Nat, t < steps.val -> j.val = t ->
+      forall i : Fin m, t < i.val ->
+        matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) i = 0)
+    (hexact : forall t : Nat, t < steps.val ->
+      |matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) r -
+          Aexact (t + 1) r j| <=
+        rowwise_step_growth_factor * |Ahat t r j - Aexact t r j|) :
+    |Ahat steps.val r j - Aexact steps.val r j| <=
+      rowwise_step_growth_factor ^ steps.val * |Ahat 0 r j - Aexact 0 r j| +
+        scalarAffineGrowthBudget rowwise_step_growth_factor
+          (fun t => householderCompactComponentBudget fp m (v t) (beta t)
+            (fun a => Ahat t a j) r)
+          steps.val := by
+  simpa [rowwise_step_growth_factor] using
+    coxHigham_storedPanel_sequence_rowwise_error_accumulation_bound_of_exact_lipschitz
+      fp steps Ahat Aexact v beta hm r j hstep hactive hcompleted hpivot
+      hexact
+
+/-- Higham, Theorem 19.6 route dependency: one rounded stored-panel entry
+bound from an exact same-reflector row-growth field. -/
+theorem stored_panel_step_active_entry_bound_of_exact_growth
+    (fp : FPModel) (m n k : Nat)
+    (v : Fin m -> Real) (beta : Real) (AhatPrev : Fin m -> Fin n -> Real)
+    (hm : gammaValid fp m) (r : Fin m) (j : Fin n)
+    (hactive : k <= j.val)
+    (hcompleted : j.val < k ->
+      forall i : Fin m, matMulVec m (householder m v beta)
+        (fun a => AhatPrev a j) i = AhatPrev i j)
+    (hpivot : j.val = k ->
+      forall i : Fin m, k < i.val ->
+        matMulVec m (householder m v beta) (fun a => AhatPrev a j) i = 0)
+    (hexact :
+      |matMulVec m (householder m v beta) (fun a => AhatPrev a j) r| <=
+        rowwise_step_growth_factor * |AhatPrev r j|) :
+    |fl_householderStoredPanelStep fp m n k v beta AhatPrev r j| <=
+      rowwise_step_growth_factor * |AhatPrev r j| +
+        householderCompactComponentBudget fp m v beta (fun a => AhatPrev a j) r := by
+  simpa [rowwise_step_growth_factor] using
+    coxHigham_storedPanelStep_active_entry_bound_of_exact_growth
+      fp m n k v beta AhatPrev hm r j hactive hcompleted hpivot hexact
+
+/-- Higham, Theorem 19.6 route dependency: one rounded stored-panel entry
+bound from an exact same-reflector row-growth field with an arbitrary
+nonnegative growth factor supplied by the caller. -/
+theorem stored_panel_step_active_entry_bound_of_exact_growth_factor
+    (fp : FPModel) (m n k : Nat)
+    (v : Fin m -> Real) (beta c : Real) (AhatPrev : Fin m -> Fin n -> Real)
+    (hm : gammaValid fp m) (r : Fin m) (j : Fin n)
+    (hactive : k <= j.val)
+    (hcompleted : j.val < k ->
+      forall i : Fin m, matMulVec m (householder m v beta)
+        (fun a => AhatPrev a j) i = AhatPrev i j)
+    (hpivot : j.val = k ->
+      forall i : Fin m, k < i.val ->
+        matMulVec m (householder m v beta) (fun a => AhatPrev a j) i = 0)
+    (hexact :
+      |matMulVec m (householder m v beta) (fun a => AhatPrev a j) r| <=
+        c * |AhatPrev r j|) :
+    |fl_householderStoredPanelStep fp m n k v beta AhatPrev r j| <=
+      c * |AhatPrev r j| +
+        householderCompactComponentBudget fp m v beta (fun a => AhatPrev a j) r := by
+  exact
+    coxHigham_storedPanelStep_active_entry_bound_of_exact_growth_factor
+      fp m n k v beta c AhatPrev hm r j hactive hcompleted hpivot hexact
+
+/-- Higham, Theorem 19.6 route dependency: stored-panel sequence entry
+bound from exact same-reflector row growth.
+
+The concrete compact Householder component budgets are accumulated by
+`scalarAffineGrowthBudget`; no full row-wise QR/preconditioner theorem is
+claimed here. -/
+theorem stored_panel_sequence_active_entry_bound_of_exact_growth
+    {m n : Nat} (fp : FPModel) (steps : Fin m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (v : Nat -> Fin m -> Real) (beta : Nat -> Real)
+    (hm : gammaValid fp m) (r : Fin m) (j : Fin n)
+    (hstep : forall t : Nat, t < steps.val ->
+      Ahat (t + 1) = fl_householderStoredPanelStep fp m n t (v t) (beta t) (Ahat t))
+    (hactive : forall t : Nat, t < steps.val -> t <= j.val)
+    (hcompleted : forall t : Nat, t < steps.val -> j.val < t ->
+      forall i : Fin m, matMulVec m (householder m (v t) (beta t))
+        (fun a => Ahat t a j) i = Ahat t i j)
+    (hpivot : forall t : Nat, t < steps.val -> j.val = t ->
+      forall i : Fin m, t < i.val ->
+        matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) i = 0)
+    (hexact : forall t : Nat, t < steps.val ->
+      |matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) r| <=
+        rowwise_step_growth_factor * |Ahat t r j|) :
+    |Ahat steps.val r j| <=
+      rowwise_step_growth_factor ^ steps.val * |Ahat 0 r j| +
+        scalarAffineGrowthBudget rowwise_step_growth_factor
+          (fun t => householderCompactComponentBudget fp m (v t) (beta t)
+            (fun a => Ahat t a j) r)
+          steps.val := by
+  simpa [rowwise_step_growth_factor] using
+    coxHigham_storedPanel_sequence_active_entry_bound_of_exact_growth
+      fp steps Ahat v beta hm r j hstep hactive hcompleted hpivot hexact
+
+/-- Higham, Theorem 19.6 route dependency: stored-panel sequence entry
+bound from exact row growth with a caller-supplied factor. -/
+theorem stored_panel_sequence_active_entry_bound_of_exact_growth_factor
+    {m n : Nat} (fp : FPModel) (steps : Fin m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (v : Nat -> Fin m -> Real) (beta : Nat -> Real) (c : Real)
+    (hm : gammaValid fp m) (r : Fin m) (j : Fin n)
+    (hc : 0 <= c)
+    (hstep : forall t : Nat, t < steps.val ->
+      Ahat (t + 1) = fl_householderStoredPanelStep fp m n t (v t) (beta t) (Ahat t))
+    (hactive : forall t : Nat, t < steps.val -> t <= j.val)
+    (hcompleted : forall t : Nat, t < steps.val -> j.val < t ->
+      forall i : Fin m, matMulVec m (householder m (v t) (beta t))
+        (fun a => Ahat t a j) i = Ahat t i j)
+    (hpivot : forall t : Nat, t < steps.val -> j.val = t ->
+      forall i : Fin m, t < i.val ->
+        matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) i = 0)
+    (hexact : forall t : Nat, t < steps.val ->
+      |matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) r| <=
+        c * |Ahat t r j|) :
+    |Ahat steps.val r j| <=
+      c ^ steps.val * |Ahat 0 r j| +
+        scalarAffineGrowthBudget c
+          (fun t => householderCompactComponentBudget fp m (v t) (beta t)
+            (fun a => Ahat t a j) r)
+          steps.val := by
+  exact
+    coxHigham_storedPanel_sequence_active_entry_bound_of_exact_growth_factor
+      fp steps Ahat v beta c hm r j hc hstep hactive hcompleted hpivot hexact
+
+/-- Higham, Theorem 19.6 route dependency: stored-panel sequence entry
+bound using the unified active-row Cox--Higham factor. -/
+theorem stored_panel_sequence_active_entry_bound_of_exact_active_growth
+    {m n : Nat} (fp : FPModel) (steps : Fin m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (v : Nat -> Fin m -> Real) (beta : Nat -> Real)
+    (hm : gammaValid fp m) (r : Fin m) (j : Fin n)
+    (hstep : forall t : Nat, t < steps.val ->
+      Ahat (t + 1) = fl_householderStoredPanelStep fp m n t (v t) (beta t) (Ahat t))
+    (hactive : forall t : Nat, t < steps.val -> t <= j.val)
+    (hcompleted : forall t : Nat, t < steps.val -> j.val < t ->
+      forall i : Fin m, matMulVec m (householder m (v t) (beta t))
+        (fun a => Ahat t a j) i = Ahat t i j)
+    (hpivot : forall t : Nat, t < steps.val -> j.val = t ->
+      forall i : Fin m, t < i.val ->
+        matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) i = 0)
+    (hexact : forall t : Nat, t < steps.val ->
+      |matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) r| <=
+        active_row_growth_factor m * |Ahat t r j|) :
+    |Ahat steps.val r j| <=
+      active_row_growth_factor m ^ steps.val * |Ahat 0 r j| +
+        scalarAffineGrowthBudget (active_row_growth_factor m)
+          (fun t => householderCompactComponentBudget fp m (v t) (beta t)
+            (fun a => Ahat t a j) r)
+          steps.val := by
+  simpa [active_row_growth_factor] using
+    coxHigham_storedPanel_sequence_active_entry_bound_of_exact_active_growth
+      fp steps Ahat v beta hm r j hstep hactive hcompleted hpivot hexact
+
+/-- Higham, Theorem 19.6 route dependency: one stored-panel entry bound from
+an exact stage budget and the compact floating-point component budget. -/
+theorem stored_panel_step_active_entry_bound_of_exact_stage_budget_factor
+    (fp : FPModel) (m n k : Nat)
+    (v : Fin m -> Real) (beta c B : Real) (AhatPrev : Fin m -> Fin n -> Real)
+    (hm : gammaValid fp m) (r : Fin m) (j : Fin n)
+    (hactive : k <= j.val)
+    (hcompleted : j.val < k ->
+      forall i : Fin m, matMulVec m (householder m v beta)
+        (fun a => AhatPrev a j) i = AhatPrev i j)
+    (hpivot : j.val = k ->
+      forall i : Fin m, k < i.val ->
+        matMulVec m (householder m v beta) (fun a => AhatPrev a j) i = 0)
+    (hexact :
+      |matMulVec m (householder m v beta) (fun a => AhatPrev a j) r| <=
+        c * B) :
+    |fl_householderStoredPanelStep fp m n k v beta AhatPrev r j| <=
+      c * B +
+        householderCompactComponentBudget fp m v beta (fun a => AhatPrev a j) r := by
+  exact
+    coxHigham_storedPanelStep_active_entry_bound_of_exact_stage_budget_factor
+      fp m n k v beta c B AhatPrev hm r j hactive hcompleted hpivot hexact
+
+/-- Higham, Theorem 19.6 route dependency: stored-panel sequence entry
+bound from exact stage budgets and concrete compact component budgets. -/
+theorem stored_panel_sequence_active_entry_bound_of_exact_stage_budgets_factor
+    {m n : Nat} (fp : FPModel) (steps : Nat)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (v : Nat -> Fin m -> Real) (beta : Nat -> Real) (c : Real) (B : Nat -> Real)
+    (hm : gammaValid fp m) (r : Fin m) (j : Fin n)
+    (hinit : |Ahat 0 r j| <= B 0)
+    (hstep : forall t : Nat, t < steps ->
+      Ahat (t + 1) = fl_householderStoredPanelStep fp m n t (v t) (beta t) (Ahat t))
+    (hactive : forall t : Nat, t < steps -> t <= j.val)
+    (hcompleted : forall t : Nat, t < steps -> j.val < t ->
+      forall i : Fin m, matMulVec m (householder m (v t) (beta t))
+        (fun a => Ahat t a j) i = Ahat t i j)
+    (hpivot : forall t : Nat, t < steps -> j.val = t ->
+      forall i : Fin m, t < i.val ->
+        matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) i = 0)
+    (hbudget : forall t : Nat, t < steps ->
+      c * B t +
+          householderCompactComponentBudget fp m (v t) (beta t)
+            (fun a => Ahat t a j) r <=
+        B (t + 1))
+    (hexact : forall t : Nat, t < steps ->
+      |matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) r| <=
+        c * B t) :
+    |Ahat steps r j| <= B steps := by
+  exact
+    coxHigham_storedPanel_sequence_active_entry_bound_of_exact_stage_budgets_factor
+      fp steps Ahat v beta c B hm r j hinit hstep hactive hcompleted hpivot
+      hbudget hexact
+
+/-- Higham, Theorem 19.6 route dependency: stored-panel sequence entry
+bound from exact stage budgets using the unified active-row Cox--Higham
+factor. -/
+theorem stored_panel_sequence_active_entry_bound_of_exact_active_stage_budgets
+    {m n : Nat} (fp : FPModel) (steps : Nat)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (v : Nat -> Fin m -> Real) (beta : Nat -> Real) (B : Nat -> Real)
+    (hm : gammaValid fp m) (r : Fin m) (j : Fin n)
+    (hinit : |Ahat 0 r j| <= B 0)
+    (hstep : forall t : Nat, t < steps ->
+      Ahat (t + 1) = fl_householderStoredPanelStep fp m n t (v t) (beta t) (Ahat t))
+    (hactive : forall t : Nat, t < steps -> t <= j.val)
+    (hcompleted : forall t : Nat, t < steps -> j.val < t ->
+      forall i : Fin m, matMulVec m (householder m (v t) (beta t))
+        (fun a => Ahat t a j) i = Ahat t i j)
+    (hpivot : forall t : Nat, t < steps -> j.val = t ->
+      forall i : Fin m, t < i.val ->
+        matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) i = 0)
+    (hbudget : forall t : Nat, t < steps ->
+      active_row_growth_factor m * B t +
+          householderCompactComponentBudget fp m (v t) (beta t)
+            (fun a => Ahat t a j) r <=
+        B (t + 1))
+    (hexact : forall t : Nat, t < steps ->
+      |matMulVec m (householder m (v t) (beta t)) (fun a => Ahat t a j) r| <=
+        active_row_growth_factor m * B t) :
+    |Ahat steps r j| <= B steps := by
+  simpa [active_row_growth_factor] using
+    coxHigham_storedPanel_sequence_active_entry_bound_of_exact_active_stage_budgets
+      fp steps Ahat v beta B hm r j hinit hstep hactive hcompleted hpivot
+      hbudget hexact
+
 /-- Higham, Theorem 19.6 route dependency: one rounded stored-panel update
 bounded by signed-pivot exact stage fields plus the compact component budget.
 
