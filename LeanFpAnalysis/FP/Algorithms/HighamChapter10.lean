@@ -616,6 +616,42 @@ theorem higham10_7_failure_no_factorization (n : ℕ)
     quadForm_add_neg_of_perturbation n H E lam t hlam_dir hE hlt
   exact no_choleskyFactSpec_of_neg_quadForm n (fun i j => H i j + E i j) x hxneg
 
+/-- **Componentwise domination transfers operator-2-norm certificates**
+(used for the normwise equation (10.7) reading of Theorem 10.3): if
+`|M| ≤ B` entrywise and `B` satisfies the vector-action certificate
+`opNorm2Le B c`, then so does `M`. -/
+theorem opNorm2Le_of_abs_le (n : ℕ) (M B : Fin n → Fin n → ℝ)
+    (hdom : ∀ i j, |M i j| ≤ B i j) (c : ℝ) (hB : opNorm2Le B c) :
+    opNorm2Le M c := by
+  intro x
+  have hentry : ∀ i : Fin n,
+      |matMulVec n M x i| ≤ matMulVec n B (absVec n x) i := by
+    intro i
+    unfold matMulVec absVec
+    calc |∑ j : Fin n, M i j * x j|
+        ≤ ∑ j : Fin n, |M i j * x j| := Finset.abs_sum_le_sum_abs _ _
+      _ ≤ ∑ j : Fin n, B i j * |x j| := by
+          apply Finset.sum_le_sum
+          intro j _
+          rw [abs_mul]
+          exact mul_le_mul_of_nonneg_right (hdom i j) (abs_nonneg _)
+  have hsq : vecNorm2Sq (matMulVec n M x) ≤
+      vecNorm2Sq (matMulVec n B (absVec n x)) := by
+    unfold vecNorm2Sq
+    apply Finset.sum_le_sum
+    intro i _
+    have h1 := hentry i
+    nlinarith [abs_nonneg (matMulVec n M x i),
+      sq_abs (matMulVec n M x i)]
+  have h5 : vecNorm2 (absVec n x) = vecNorm2 x := by
+    unfold vecNorm2 vecNorm2Sq absVec
+    congr 1
+    exact Finset.sum_congr rfl fun i _ => sq_abs (x i)
+  calc vecNorm2 (matMulVec n M x)
+      ≤ vecNorm2 (matMulVec n B (absVec n x)) := Real.sqrt_le_sqrt hsq
+    _ ≤ c * vecNorm2 (absVec n x) := hB (absVec n x)
+    _ = c * vecNorm2 x := by rw [h5]
+
 /-- **Theorem 10.7, spectral success form** (Higham §10.1): if the minimum
 eigenvalue of the symmetric scaled matrix `H` — stated through the
 repository's `finiteHermitianEigenvalues` — exceeds the scaled
