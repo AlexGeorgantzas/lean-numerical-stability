@@ -25114,6 +25114,236 @@ theorem stored_panel_sequence_diag_nonzero_of_span_nonbreakdown_leadingBlock_lef
       fp hmn Ahat alpha C K hm hStep halpha hC hprefixSpan hK hCinf
       hsign hbudgetDual
 
+/-- Higham, Theorem 19.6 route dependency: leading-block coefficient and
+dual witnesses imply that the active trailing pivot column has a nonzero entry.
+
+This is a structural source-control bridge used by the stored-loop diagonal
+nonbreakdown route; it keeps the concrete prefix-span and independence
+witnesses visible. -/
+theorem exists_active_trailing_entry_ne_of_leading_witnesses
+    {m n k : Nat}
+    (A : Fin m -> Fin n -> Real) (hkm : k <= m) (hk : k < n)
+    (C : Fin k -> Fin k -> Real)
+    (L : Fin (k + 1) -> Fin m -> Real)
+    (hC : qrPrefixBasisCoefficientMatrix A hkm hk C)
+    (hL : qrLeadingColumnLeftInverse A hk L)
+    (hlowerPrev : forall (i : Fin m) (j : Fin k), k <= i.val ->
+      A i (qrPreviousColumn n k hk j) = 0) :
+    exists i : Fin m, k <= i.val /\ Ne (A i (Fin.mk k hk)) 0 := by
+  exact
+    LeanFpAnalysis.FP.exists_active_trailing_entry_ne_of_leading_witnesses
+      A hkm hk C L hC hL hlowerPrev
+
+/-- Higham, Theorem 19.6 route dependency: leading-block witnesses force a
+positive trailing Householder column norm. -/
+theorem householderTrailingNorm2Sq_pos_of_leading_witnesses
+    {m n k : Nat}
+    (A : Fin m -> Fin n -> Real) (hkm : k < m) (hk : k < n)
+    (C : Fin k -> Fin k -> Real)
+    (L : Fin (k + 1) -> Fin m -> Real)
+    (hC : qrPrefixBasisCoefficientMatrix A (le_of_lt hkm) hk C)
+    (hL : qrLeadingColumnLeftInverse A hk L)
+    (hlowerPrev : forall (i : Fin m) (j : Fin k), k <= i.val ->
+      A i (qrPreviousColumn n k hk j) = 0) :
+    0 < householderTrailingNorm2Sq m (Fin.mk k hkm)
+        (fun i : Fin m => A i (Fin.mk k hk)) := by
+  exact
+    LeanFpAnalysis.FP.householderTrailingNorm2Sq_pos_of_leading_witnesses
+      A hkm hk C L hC hL hlowerPrev
+
+/-- Higham, Theorem 19.6 route dependency: leading-block witnesses force
+positive active-block mass in the current pivot column. -/
+theorem householderActiveBlockNorm2Sq_pos_of_leading_witnesses
+    {m n k : Nat}
+    (A : Fin m -> Fin n -> Real) (hkm : k < m) (hk : k < n)
+    (C : Fin k -> Fin k -> Real)
+    (L : Fin (k + 1) -> Fin m -> Real)
+    (hC : qrPrefixBasisCoefficientMatrix A (le_of_lt hkm) hk C)
+    (hL : qrLeadingColumnLeftInverse A hk L)
+    (hlowerPrev : forall (i : Fin m) (j : Fin k), k <= i.val ->
+      A i (qrPreviousColumn n k hk j) = 0) :
+    0 < householderActiveBlockNorm2Sq (Fin.mk k hkm) (Fin.mk k hk) A := by
+  exact
+    LeanFpAnalysis.FP.householderActiveBlockNorm2Sq_pos_of_leading_witnesses
+      A hkm hk C L hC hL hlowerPrev
+
+/-- Higham, Theorem 19.6 route dependency: local left inverses for the previous
+and current leading blocks imply a nonzero active trailing pivot entry. -/
+theorem exists_active_trailing_entry_ne_of_leading_block_leftInverses
+    {m n k : Nat}
+    (A : Fin m -> Fin n -> Real) (hkm : k + 1 <= m) (hk : k < n)
+    (Cprev : Fin k -> Fin k -> Real)
+    (Dlead : Fin (k + 1) -> Fin (k + 1) -> Real)
+    (hCprev : IsLeftInverse k
+      (qrPreviousLeadingBlockTranspose A (le_trans (Nat.le_succ k) hkm) hk)
+      Cprev)
+    (hDlead : IsLeftInverse (k + 1) (qrLeadingBlock A hkm hk) Dlead)
+    (hlowerPrev : forall (i : Fin m) (j : Fin k), k <= i.val ->
+      A i (qrPreviousColumn n k hk j) = 0) :
+    exists i : Fin m, k <= i.val /\ Ne (A i (Fin.mk k hk)) 0 := by
+  exact
+    LeanFpAnalysis.FP.exists_active_trailing_entry_ne_of_leading_block_leftInverses
+      A hkm hk Cprev Dlead hCprev hDlead hlowerPrev
+
+/-- Higham, Theorem 19.6 route dependency: local leading-block left inverses
+force a positive trailing Householder column norm. -/
+theorem householderTrailingNorm2Sq_pos_of_leading_block_leftInverses
+    {m n k : Nat}
+    (A : Fin m -> Fin n -> Real) (hkm : k < m) (hk : k < n)
+    (Cprev : Fin k -> Fin k -> Real)
+    (Dlead : Fin (k + 1) -> Fin (k + 1) -> Real)
+    (hCprev : IsLeftInverse k
+      (qrPreviousLeadingBlockTranspose A (le_of_lt hkm) hk) Cprev)
+    (hDlead : IsLeftInverse (k + 1)
+      (qrLeadingBlock A (Nat.succ_le_iff.mpr hkm) hk) Dlead)
+    (hlowerPrev : forall (i : Fin m) (j : Fin k), k <= i.val ->
+      A i (qrPreviousColumn n k hk j) = 0) :
+    0 < householderTrailingNorm2Sq m (Fin.mk k hkm)
+        (fun i : Fin m => A i (Fin.mk k hk)) := by
+  exact
+    LeanFpAnalysis.FP.householderTrailingNorm2Sq_pos_of_leading_block_leftInverses
+      A hkm hk Cprev Dlead hCprev hDlead hlowerPrev
+
+/-- Higham, Theorem 19.6 route dependency: local leading-block left inverses
+force positive active-block mass in the current pivot column. -/
+theorem householderActiveBlockNorm2Sq_pos_of_leading_block_leftInverses
+    {m n k : Nat}
+    (A : Fin m -> Fin n -> Real) (hkm : k < m) (hk : k < n)
+    (Cprev : Fin k -> Fin k -> Real)
+    (Dlead : Fin (k + 1) -> Fin (k + 1) -> Real)
+    (hCprev : IsLeftInverse k
+      (qrPreviousLeadingBlockTranspose A (le_of_lt hkm) hk) Cprev)
+    (hDlead : IsLeftInverse (k + 1)
+      (qrLeadingBlock A (Nat.succ_le_iff.mpr hkm) hk) Dlead)
+    (hlowerPrev : forall (i : Fin m) (j : Fin k), k <= i.val ->
+      A i (qrPreviousColumn n k hk j) = 0) :
+    0 < householderActiveBlockNorm2Sq (Fin.mk k hkm) (Fin.mk k hk) A := by
+  exact
+    LeanFpAnalysis.FP.householderActiveBlockNorm2Sq_pos_of_leading_block_leftInverses
+      A hkm hk Cprev Dlead hCprev hDlead hlowerPrev
+
+/-- Higham, Theorem 19.6 route dependency: stored-loop diagonal nonbreakdown
+from concrete leading-block witnesses and square-root component budgets.
+
+This version derives prefix-span and column-independence nonbreakdown from
+explicit leading-block coefficient and dual witnesses, while leaving the
+per-pivot floating-point budget visible. -/
+theorem stored_panel_sequence_diag_nonzero_of_leading_witnesses_sqrt_budget
+    {m n : Nat}
+    (fp : FPModel) (hmn : n <= m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (hm : gammaValid fp m)
+    (hStep : forall k (hk : k < n),
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (Ahat k))
+    (halpha : forall k (hk : k < n),
+      alpha k * alpha k =
+        householderTrailingNorm2Sq m
+          (Fin.mk k (lt_of_lt_of_le hk hmn))
+          (fun i => Ahat k i (Fin.mk k hk)))
+    (C : forall k, k < n -> Fin k -> Fin k -> Real)
+    (L : forall k, k < n -> Fin (k + 1) -> Fin m -> Real)
+    (hC : forall k (hk : k < n),
+      qrPrefixBasisCoefficientMatrix (Ahat k)
+        (le_trans (Nat.le_of_lt hk) hmn) hk (C k hk))
+    (hL : forall k (hk : k < n),
+      qrLeadingColumnLeftInverse (Ahat k) hk (L k hk))
+    (hlowerPrev : forall k (hk : k < n) (i : Fin m) (j : Fin k),
+      k <= i.val -> Ahat k i (qrPreviousColumn n k hk j) = 0)
+    (hsign : forall k (hk : k < n),
+      alpha k * Ahat k (Fin.mk k (lt_of_lt_of_le hk hmn)) (Fin.mk k hk) <= 0)
+    (hbudgetSqrt : forall k (hk : k < n),
+      householderCompactComponentBudget fp m
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (fun a => Ahat k a (Fin.mk k hk))
+          (Fin.mk k (lt_of_lt_of_le hk hmn)) <
+        Real.sqrt
+          (householderTrailingNorm2Sq m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun i => Ahat k i (Fin.mk k hk)))) :
+    forall i : Fin n,
+      Ne (Ahat n (Fin.mk i.val (lt_of_lt_of_le i.isLt hmn)) i) 0 := by
+  exact
+    fl_householderStoredTrailingPanel_sequence_diag_nonzero_of_leading_witnesses_sqrt_budget
+      fp hmn Ahat alpha hm hStep halpha C L hC hL hlowerPrev hsign hbudgetSqrt
+
+/-- Higham, Theorem 19.6 route dependency: stored-loop diagonal nonbreakdown
+from local leading-block left inverses and square-root component budgets. -/
+theorem stored_panel_sequence_diag_nonzero_of_leading_block_leftInverses_sqrt_budget
+    {m n : Nat}
+    (fp : FPModel) (hmn : n <= m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (hm : gammaValid fp m)
+    (hStep : forall k (hk : k < n),
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (Ahat k))
+    (halpha : forall k (hk : k < n),
+      alpha k * alpha k =
+        householderTrailingNorm2Sq m
+          (Fin.mk k (lt_of_lt_of_le hk hmn))
+          (fun i => Ahat k i (Fin.mk k hk)))
+    (Cprev : forall k, k < n -> Fin k -> Fin k -> Real)
+    (Dlead : forall k, k < n -> Fin (k + 1) -> Fin (k + 1) -> Real)
+    (hCprev : forall k (hk : k < n),
+      IsLeftInverse k
+        (qrPreviousLeadingBlockTranspose (Ahat k)
+          (le_trans (Nat.le_of_lt hk) hmn) hk)
+        (Cprev k hk))
+    (hDlead : forall k (hk : k < n),
+      IsLeftInverse (k + 1)
+        (qrLeadingBlock (Ahat k)
+          (le_trans (Nat.succ_le_of_lt hk) hmn) hk)
+        (Dlead k hk))
+    (hlowerPrev : forall k (hk : k < n) (i : Fin m) (j : Fin k),
+      k <= i.val -> Ahat k i (qrPreviousColumn n k hk j) = 0)
+    (hsign : forall k (hk : k < n),
+      alpha k * Ahat k (Fin.mk k (lt_of_lt_of_le hk hmn)) (Fin.mk k hk) <= 0)
+    (hbudgetSqrt : forall k (hk : k < n),
+      householderCompactComponentBudget fp m
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (fun a => Ahat k a (Fin.mk k hk))
+          (Fin.mk k (lt_of_lt_of_le hk hmn)) <
+        Real.sqrt
+          (householderTrailingNorm2Sq m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun i => Ahat k i (Fin.mk k hk)))) :
+    forall i : Fin n,
+      Ne (Ahat n (Fin.mk i.val (lt_of_lt_of_le i.isLt hmn)) i) 0 := by
+  exact
+    fl_householderStoredTrailingPanel_sequence_diag_nonzero_of_leading_block_leftInverses_sqrt_budget
+      fp hmn Ahat alpha hm hStep halpha Cprev Dlead hCprev hDlead
+      hlowerPrev hsign hbudgetSqrt
+
 /-- Higham, Theorem 19.6 route dependency: leading-minor stored-loop diagonal
 nonbreakdown from local determinant data and square-root component budgets.
 
