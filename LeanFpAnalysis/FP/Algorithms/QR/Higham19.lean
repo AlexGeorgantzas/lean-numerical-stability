@@ -5032,6 +5032,74 @@ theorem
               fl_householderStoredPanelStep_normalized_betaSpec_eq_exactWithUnitRoundoff
                 u0 hu0 (m + 1) (p + 1) 0 v A
 
+/-- A concrete rounded model used to audit the exact-arithmetic handoff.
+
+All operations are exact except multiplication by a first argument equal to
+`2`, which is rounded to twice the exact product.  With unit roundoff `1`,
+this still satisfies the abstract `FPModel` contract. -/
+noncomputable def firstArgTwoMulFPModel : FPModel where
+  u := 1
+  u_nonneg := by norm_num
+  fl_add := fun x y => x + y
+  fl_sub := fun x y => x - y
+  fl_mul := fun x y => if x = (2 : Real) then 2 * (x * y) else x * y
+  fl_div := fun x y => x / y
+  fl_sqrt := fun x => Real.sqrt x
+  fl_add_zero := by
+    intro x
+    ring
+  model_add := by
+    intro x y
+    exact Exists.intro 0 (And.intro (by norm_num) (by ring))
+  model_sub := by
+    intro x y
+    exact Exists.intro 0 (And.intro (by norm_num) (by ring))
+  model_mul := by
+    intro x y
+    by_cases h : x = (2 : Real)
+    case pos =>
+      refine Exists.intro 1 (And.intro (by norm_num) ?_)
+      simp [h]
+      ring
+    case neg =>
+      exact Exists.intro 0 (And.intro (by norm_num) (by simp [h]))
+  model_div := by
+    intro x y _hy
+    exact Exists.intro 0 (And.intro (by norm_num) (by ring))
+  model_sqrt := by
+    intro x _hx
+    exact Exists.intro 0 (And.intro (by norm_num) (by ring))
+
+/-- Route audit for the exact compact Householder handoff.
+
+The normalized beta-one compact update does not equal the unnormalized
+`householderBetaSpec` compact update for every rounded `FPModel`.  The
+exact-arithmetic assumption in
+`fl_householderApplyCompact_normalized_betaSpec_eq_exactWithUnitRoundoff` is
+therefore a real restriction, not removable boilerplate. -/
+theorem rounded_normalized_betaSpec_compact_handoff_not_forall_FPModel :
+    Exists (fun fp : FPModel =>
+      Exists (fun v : Fin 1 -> Real =>
+        Exists (fun b : Fin 1 -> Real =>
+          Not (
+            fl_householderApplyCompact fp 1
+              (householderNormalizedVector 1 v (householderBetaSpec 1 v)) 1 b =
+            fl_householderApplyCompact fp 1 v (householderBetaSpec 1 v) b)))) := by
+  refine Exists.intro firstArgTwoMulFPModel ?_
+  refine Exists.intro (fun _ : Fin 1 => (1 : Real)) ?_
+  refine Exists.intro (fun _ : Fin 1 => (1 : Real)) ?_
+  intro h
+  have h0 := congrFun h (0 : Fin 1)
+  have hsqrt2_ne_two : Not (Real.sqrt (2 : Real) = 2) := by
+    intro hs
+    have hsquare := congrArg (fun t : Real => t * t) hs
+    have hsqrt_square :
+        Real.sqrt (2 : Real) * Real.sqrt (2 : Real) = 2 := by
+      exact Real.mul_self_sqrt (by norm_num)
+    nlinarith
+  norm_num [firstArgTwoMulFPModel, fl_householderApplyCompact, fl_dotProduct,
+    householderNormalizedVector, householderBetaSpec, hsqrt2_ne_two] at h0
+
 /-- Route audit for the stored-loop normalization bottleneck.
 
 The source nonbreakdown hypotheses used by the stored loop, namely
