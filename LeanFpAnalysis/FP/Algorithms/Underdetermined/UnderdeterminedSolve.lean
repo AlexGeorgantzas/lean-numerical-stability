@@ -24,6 +24,7 @@ import LeanFpAnalysis.FP.Analysis.PerturbationTheory
 import LeanFpAnalysis.FP.Analysis.HighamChapter7
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskySpec
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskySolve
+import LeanFpAnalysis.FP.Algorithms.QR.Higham19
 import LeanFpAnalysis.FP.Algorithms.QR.GramSchmidt
 import LeanFpAnalysis.FP.Algorithms.LeastSquares.LSQRSolve
 import LeanFpAnalysis.FP.Algorithms.Underdetermined.UnderdeterminedSpec
@@ -6904,6 +6905,160 @@ theorem higham21_lemma21_2_single_perturbation_frob_bound {m n : ℕ}
         x hsq DeltaA1 DeltaA2
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    squared row-wise 2-norm form of the printed perturbation bound for the
+    projector mixture. -/
+theorem higham21_lemma21_2_symmetrized_perturbation_rowNormSq_le {m n : ℕ}
+    (x : Fin n → ℝ) (hsq : vecNorm2Sq x ≠ 0)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ) (i : Fin m) :
+    vecNorm2Sq
+        (fun j : Fin n =>
+          undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j) ≤
+      vecNorm2Sq (fun j : Fin n => DeltaA1 i j) +
+        vecNorm2Sq (fun j : Fin n => DeltaA2 i j) := by
+  let C1 : Fin n → Fin 1 → ℝ := fun j _ => DeltaA2 i j
+  let C2 : Fin n → Fin 1 → ℝ := fun j _ => DeltaA1 i j
+  have hbase :=
+    lsLemma20_6Perturbation_frobNormSqRect_le x hsq C1 C2
+  have hleft :
+      frobNormSqRect (lsLemma20_6Perturbation x C1 C2) =
+        vecNorm2Sq
+          (fun j : Fin n =>
+            undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j) := by
+    simp [frobNormSqRect, vecNorm2Sq, C1, C2,
+      undetLemma21_2SymmetrizedPerturbation, lsLemma20_6Perturbation,
+      finiteTranspose, matMulRectLeft]
+  have hC1 :
+      frobNormSqRect C1 =
+        vecNorm2Sq (fun j : Fin n => DeltaA2 i j) := by
+    simp [frobNormSqRect, vecNorm2Sq, C1]
+  have hC2 :
+      frobNormSqRect C2 =
+        vecNorm2Sq (fun j : Fin n => DeltaA1 i j) := by
+    simp [frobNormSqRect, vecNorm2Sq, C2]
+  calc
+    vecNorm2Sq
+        (fun j : Fin n =>
+          undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2 i j)
+        = frobNormSqRect (lsLemma20_6Perturbation x C1 C2) := hleft.symm
+    _ ≤ frobNormSqRect C1 + frobNormSqRect C2 := hbase
+    _ = vecNorm2Sq (fun j : Fin n => DeltaA1 i j) +
+        vecNorm2Sq (fun j : Fin n => DeltaA2 i j) := by
+          rw [hC1, hC2]
+          ring
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    row-wise 2-norm form of the printed perturbation bound for the projector
+    mixture. -/
+theorem higham21_lemma21_2_symmetrized_perturbation_row_bound {m n : ℕ}
+    (x : Fin n → ℝ) (hsq : vecNorm2Sq x ≠ 0)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ) (i : Fin m) :
+    rectRowNorm2 (undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2) i ≤
+      Real.sqrt (rectRowNorm2 DeltaA1 i ^ 2 + rectRowNorm2 DeltaA2 i ^ 2) := by
+  apply (sq_le_sq₀
+    (rectRowNorm2_nonneg
+      (undetLemma21_2SymmetrizedPerturbation x DeltaA1 DeltaA2) i)
+    (Real.sqrt_nonneg _)).mp
+  rw [Real.sq_sqrt (add_nonneg (sq_nonneg _) (sq_nonneg _))]
+  simpa [rectRowNorm2, vecNorm2_sq] using
+    higham21_lemma21_2_symmetrized_perturbation_rowNormSq_le
+      x hsq DeltaA1 DeltaA2 i
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    row-wise 2-norm form of the printed perturbation bound for the source-case
+    single perturbation.  In the zero branch the perturbation is `DeltaA2`;
+    in the nonzero branch it is the projector mixture. -/
+theorem higham21_lemma21_2_single_perturbation_row_bound {m n : ℕ}
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ) (i : Fin m) :
+    rectRowNorm2 (undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2) i ≤
+      Real.sqrt (rectRowNorm2 DeltaA1 i ^ 2 + rectRowNorm2 DeltaA2 i ^ 2) := by
+  by_cases hx : x = 0
+  · have hbound :
+        rectRowNorm2 DeltaA2 i ≤
+          Real.sqrt (rectRowNorm2 DeltaA1 i ^ 2 + rectRowNorm2 DeltaA2 i ^ 2) :=
+      higham21_right_nonneg_le_sqrt_sq_add_sq
+        (rectRowNorm2 DeltaA1 i) (rectRowNorm2 DeltaA2 i)
+        (rectRowNorm2_nonneg DeltaA2 i)
+    simpa [undetLemma21_2SinglePerturbation, hx] using hbound
+  · have hsq : vecNorm2Sq x ≠ 0 :=
+      higham21_vecNorm2Sq_ne_zero_of_ne_zero hx
+    simpa [undetLemma21_2SinglePerturbation, hx] using
+      higham21_lemma21_2_symmetrized_perturbation_row_bound
+        x hsq DeltaA1 DeltaA2 i
+
+private theorem higham21_sqrt_sq_add_sq_le_sqrt_two_mul
+    {a b c : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) (hc : 0 ≤ c)
+    (ha_le : a ≤ c) (hb_le : b ≤ c) :
+    Real.sqrt (a ^ 2 + b ^ 2) ≤ Real.sqrt 2 * c := by
+  have ha_sq : a ^ 2 ≤ c ^ 2 := (sq_le_sq₀ ha hc).mpr ha_le
+  have hb_sq : b ^ 2 ≤ c ^ 2 := (sq_le_sq₀ hb hc).mpr hb_le
+  apply (sq_le_sq₀
+    (Real.sqrt_nonneg _)
+    (mul_nonneg (Real.sqrt_nonneg _) hc)).mp
+  rw [Real.sq_sqrt (add_nonneg (sq_nonneg a) (sq_nonneg b))]
+  rw [mul_pow, Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 2)]
+  nlinarith
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3:
+    entrywise row-relative perturbation bounds imply the row-2-norm bound used
+    by the row-wise backward-error model. -/
+theorem higham21_rectRowNorm2_le_of_entrywise_row_relative_bound
+    {m n : ℕ}
+    (A DeltaA : Fin m → Fin n → ℝ)
+    {eta : ℝ} (heta : 0 ≤ eta)
+    (hDeltaA : ∀ i k, |DeltaA i k| ≤ eta * |A i k|)
+    (i : Fin m) :
+    rectRowNorm2 DeltaA i ≤ eta * rectRowNorm2 A i := by
+  calc
+    rectRowNorm2 DeltaA i
+        ≤ vecNorm2 (fun k : Fin n => eta * |A i k|) := by
+          simpa [rectRowNorm2] using
+            vecNorm2_le_of_abs_le
+              (fun k : Fin n => DeltaA i k)
+              (fun k : Fin n => eta * |A i k|)
+              (fun k => hDeltaA i k)
+    _ = eta * rectRowNorm2 A i := by
+          rw [vecNorm2_smul, abs_of_nonneg heta, vecNorm2_abs]
+          rfl
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    common row-wise relative-bound corollary for the source-case single
+    perturbation.  If both input perturbations are bounded row-by-row by
+    `eta * ||A(i,:)||_2`, the constructed single perturbation is bounded
+    row-by-row by `sqrt 2 * eta * ||A(i,:)||_2`. -/
+theorem higham21_lemma21_2_single_perturbation_row_bound_of_common_row_bound
+    {m n : ℕ}
+    (x : Fin n → ℝ)
+    (A DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    {eta : ℝ} (heta : 0 ≤ eta)
+    (hDeltaA1 : ∀ i : Fin m,
+      rectRowNorm2 DeltaA1 i ≤ eta * rectRowNorm2 A i)
+    (hDeltaA2 : ∀ i : Fin m,
+      rectRowNorm2 DeltaA2 i ≤ eta * rectRowNorm2 A i)
+    (i : Fin m) :
+    rectRowNorm2 (undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2) i ≤
+      Real.sqrt 2 * eta * rectRowNorm2 A i := by
+  have hrow :=
+    higham21_lemma21_2_single_perturbation_row_bound
+      x DeltaA1 DeltaA2 i
+  have hcommon_nonneg : 0 ≤ eta * rectRowNorm2 A i :=
+    mul_nonneg heta (rectRowNorm2_nonneg A i)
+  have hsqrt :
+      Real.sqrt (rectRowNorm2 DeltaA1 i ^ 2 +
+          rectRowNorm2 DeltaA2 i ^ 2) ≤
+        Real.sqrt 2 * (eta * rectRowNorm2 A i) :=
+    higham21_sqrt_sq_add_sq_le_sqrt_two_mul
+      (rectRowNorm2_nonneg DeltaA1 i)
+      (rectRowNorm2_nonneg DeltaA2 i)
+      hcommon_nonneg (hDeltaA1 i) (hDeltaA2 i)
+  calc
+    rectRowNorm2 (undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2) i
+        ≤ Real.sqrt (rectRowNorm2 DeltaA1 i ^ 2 +
+            rectRowNorm2 DeltaA2 i ^ 2) := hrow
+    _ ≤ Real.sqrt 2 * (eta * rectRowNorm2 A i) := hsqrt
+    _ = Real.sqrt 2 * eta * rectRowNorm2 A i := by ring
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     operator-2 norm form of the printed perturbation bound for the source-case
     single perturbation. -/
 theorem higham21_lemma21_2_single_perturbation_op_bound {m n : ℕ}
@@ -6976,6 +7131,338 @@ theorem higham21_rowwise_backward_error_bound_witness
     (hrow : ∀ i : Fin m, rectRowNorm2 ΔA i ≤ eta * rectRowNorm2 A i) :
     UndetRowwiseBackwardErrorBounded m n A b x_hat eta :=
   ⟨ΔA, ⟨heta, hmin, hrow⟩⟩
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2 and Section 21.3:
+    once the Lemma 21.2 single perturbation is known to make `x_hat` a
+    minimum-norm solution, common row-wise relative bounds on the two source
+    perturbations give a row-wise backward-error witness with factor
+    `sqrt 2 * eta`. -/
+theorem higham21_lemma21_2_rowwise_backward_error_bound_of_common_row_bound
+    {m n : ℕ}
+    (A DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (x_hat : Fin n → ℝ)
+    {eta : ℝ} (heta : 0 ≤ eta)
+    (hmin :
+      RectMinNormSolution m n
+        (fun i j =>
+          A i j + undetLemma21_2SinglePerturbation x_hat DeltaA1 DeltaA2 i j)
+        b x_hat)
+    (hDeltaA1 : ∀ i : Fin m,
+      rectRowNorm2 DeltaA1 i ≤ eta * rectRowNorm2 A i)
+    (hDeltaA2 : ∀ i : Fin m,
+      rectRowNorm2 DeltaA2 i ≤ eta * rectRowNorm2 A i) :
+    UndetRowwiseBackwardErrorBounded m n A b x_hat (Real.sqrt 2 * eta) :=
+  higham21_rowwise_backward_error_bound_witness m n A
+    (undetLemma21_2SinglePerturbation x_hat DeltaA1 DeltaA2) b x_hat
+    (Real.sqrt 2 * eta)
+    (mul_nonneg (Real.sqrt_nonneg 2) heta)
+    hmin
+    (fun i => by
+      simpa [mul_assoc] using
+        higham21_lemma21_2_single_perturbation_row_bound_of_common_row_bound
+          x_hat A DeltaA1 DeltaA2 heta hDeltaA1 hDeltaA2 i)
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2 and Section 21.3:
+    source-shaped row-wise backward-error handoff with a common source radius
+    `rho`.  This version matches the printed smallness/radius shape more
+    directly than the self-radius wrapper while still leaving the QR/Q-method
+    row-bound obligations explicit. -/
+theorem higham21_lemma21_2_rowwise_backward_error_bound_of_source_operator_envelopes_exact_size_eps_common_radius_global_bounds
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (x_hat : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (E : Fin m → Fin n → ℝ)
+    (rho eps tauA omega e eta : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x_hat = b)
+    (hDataEpsNonneg : 0 ≤ eps)
+    (hEOp : rectOpNorm2Le E e)
+    (hRadiusFactor :
+      max (eps * e)
+          (2 * (m : ℝ) ^ 2 * (tauA + eps * e) * omega) ≤ rho)
+    (hSourceRadius :
+      2 * (m : ℝ) * (n : ℝ) * (tauA + eps * e) * omega * rho ≤
+        (1 / 2 : ℝ))
+    (hGramLeftInv : IsLeftInverse m (rectGram A) AAT_inv)
+    (hDataE : ∀ i k, 0 ≤ E i k)
+    (hDeltaA1Component : ∀ i k, |DeltaA1 i k| ≤ eps * E i k)
+    (hDeltaA2Component : ∀ i k, |DeltaA2 i k| ≤ eps * E i k)
+    (hxTranspose : x_hat ≠ 0 →
+      x_hat =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : 3 * rho < 1)
+    (hAATInv_le : infNorm AAT_inv ≤ omega)
+    (hAOp : rectOpNorm2Le A tauA)
+    (heta : 0 ≤ eta)
+    (hDeltaA1Row : ∀ i : Fin m,
+      rectRowNorm2 DeltaA1 i ≤ eta * rectRowNorm2 A i)
+    (hDeltaA2Row : ∀ i : Fin m,
+      rectRowNorm2 DeltaA2 i ≤ eta * rectRowNorm2 A i) :
+    UndetRowwiseBackwardErrorBounded m n A b x_hat
+      (Real.sqrt 2 * eta) :=
+  higham21_lemma21_2_rowwise_backward_error_bound_of_common_row_bound
+    A DeltaA1 DeltaA2 b x_hat heta
+    (higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_deltaA_components_source_operator_envelopes_exact_size_eps_common_radius_printed_smallness_common_radius_combined_factor_global_bounds
+      hm A x_hat DeltaA1 DeltaA2 b y AAT_inv E rho eps tauA omega e
+      hDeltaA1 hDataEpsNonneg hEOp hRadiusFactor hSourceRadius
+      hGramLeftInv hDataE hDeltaA1Component hDeltaA2Component
+      hxTranspose hsmall hAATInv_le hAOp)
+    hDeltaA1Row hDeltaA2Row
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2 and Section 21.3:
+    common-radius row-wise handoff from entrywise row-relative perturbation
+    bounds. -/
+theorem higham21_lemma21_2_rowwise_backward_error_bound_of_source_operator_envelopes_exact_size_eps_common_radius_global_entrywise_bounds
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (x_hat : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (E : Fin m → Fin n → ℝ)
+    (rho eps tauA omega e eta : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x_hat = b)
+    (hDataEpsNonneg : 0 ≤ eps)
+    (hEOp : rectOpNorm2Le E e)
+    (hRadiusFactor :
+      max (eps * e)
+          (2 * (m : ℝ) ^ 2 * (tauA + eps * e) * omega) ≤ rho)
+    (hSourceRadius :
+      2 * (m : ℝ) * (n : ℝ) * (tauA + eps * e) * omega * rho ≤
+        (1 / 2 : ℝ))
+    (hGramLeftInv : IsLeftInverse m (rectGram A) AAT_inv)
+    (hDataE : ∀ i k, 0 ≤ E i k)
+    (hDeltaA1Component : ∀ i k, |DeltaA1 i k| ≤ eps * E i k)
+    (hDeltaA2Component : ∀ i k, |DeltaA2 i k| ≤ eps * E i k)
+    (hxTranspose : x_hat ≠ 0 →
+      x_hat =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : 3 * rho < 1)
+    (hAATInv_le : infNorm AAT_inv ≤ omega)
+    (hAOp : rectOpNorm2Le A tauA)
+    (heta : 0 ≤ eta)
+    (hDeltaA1Entry : ∀ i k, |DeltaA1 i k| ≤ eta * |A i k|)
+    (hDeltaA2Entry : ∀ i k, |DeltaA2 i k| ≤ eta * |A i k|) :
+    UndetRowwiseBackwardErrorBounded m n A b x_hat
+      (Real.sqrt 2 * eta) :=
+  higham21_lemma21_2_rowwise_backward_error_bound_of_source_operator_envelopes_exact_size_eps_common_radius_global_bounds
+    hm A x_hat DeltaA1 DeltaA2 b y AAT_inv E rho eps tauA omega e eta
+    hDeltaA1 hDataEpsNonneg hEOp hRadiusFactor hSourceRadius hGramLeftInv
+    hDataE hDeltaA1Component hDeltaA2Component hxTranspose hsmall
+    hAATInv_le hAOp heta
+    (fun i =>
+      higham21_rectRowNorm2_le_of_entrywise_row_relative_bound
+        A DeltaA1 heta hDeltaA1Entry i)
+    (fun i =>
+      higham21_rectRowNorm2_le_of_entrywise_row_relative_bound
+        A DeltaA2 heta hDeltaA2Entry i)
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2 and Section 21.3:
+    common-radius row-wise handoff specialized to the relative componentwise
+    data majorant `E = |A|`. -/
+theorem higham21_lemma21_2_rowwise_backward_error_bound_of_abs_data_source_operator_envelopes_exact_size_eps_common_radius_global_bounds
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (x_hat : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (rho eps tauA omega e : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x_hat = b)
+    (hDataEpsNonneg : 0 ≤ eps)
+    (hAbsAOp : rectOpNorm2Le (fun i j => |A i j|) e)
+    (hRadiusFactor :
+      max (eps * e)
+          (2 * (m : ℝ) ^ 2 * (tauA + eps * e) * omega) ≤ rho)
+    (hSourceRadius :
+      2 * (m : ℝ) * (n : ℝ) * (tauA + eps * e) * omega * rho ≤
+        (1 / 2 : ℝ))
+    (hGramLeftInv : IsLeftInverse m (rectGram A) AAT_inv)
+    (hDeltaA1Component : ∀ i k, |DeltaA1 i k| ≤ eps * |A i k|)
+    (hDeltaA2Component : ∀ i k, |DeltaA2 i k| ≤ eps * |A i k|)
+    (hxTranspose : x_hat ≠ 0 →
+      x_hat =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hsmall : 3 * rho < 1)
+    (hAATInv_le : infNorm AAT_inv ≤ omega)
+    (hAOp : rectOpNorm2Le A tauA) :
+    UndetRowwiseBackwardErrorBounded m n A b x_hat
+      (Real.sqrt 2 * eps) :=
+  higham21_lemma21_2_rowwise_backward_error_bound_of_source_operator_envelopes_exact_size_eps_common_radius_global_entrywise_bounds
+    hm A x_hat DeltaA1 DeltaA2 b y AAT_inv (fun i j => |A i j|)
+    rho eps tauA omega e eps hDeltaA1 hDataEpsNonneg hAbsAOp
+    hRadiusFactor hSourceRadius hGramLeftInv
+    (fun i k => abs_nonneg (A i k))
+    hDeltaA1Component hDeltaA2Component hxTranspose hsmall hAATInv_le
+    hAOp hDataEpsNonneg hDeltaA1Component hDeltaA2Component
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2 and Section 21.3:
+    source-shaped row-wise backward-error handoff.  The latest
+    source-envelope version of Lemma 21.2 supplies the single perturbed
+    minimum-norm system, and common row-wise source perturbation bounds then
+    package it as the row-wise backward-error predicate used in Theorem 21.4. -/
+theorem higham21_lemma21_2_rowwise_backward_error_bound_of_source_operator_envelopes_exact_size_eps_combined_factor_self_radius_global_bounds
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (x_hat : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (E : Fin m → Fin n → ℝ)
+    (eps tauA omega e eta : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x_hat = b)
+    (hDataEpsNonneg : 0 ≤ eps)
+    (hEOp : rectOpNorm2Le E e)
+    (hCombinedSourceRadius :
+      2 * (m : ℝ) * (n : ℝ) * (tauA + eps * e) * omega *
+          max (eps * e)
+            (2 * (m : ℝ) ^ 2 * (tauA + eps * e) * omega) ≤
+        (1 / 2 : ℝ))
+    (hGramLeftInv : IsLeftInverse m (rectGram A) AAT_inv)
+    (hDataE : ∀ i k, 0 ≤ E i k)
+    (hDeltaA1Component : ∀ i k, |DeltaA1 i k| ≤ eps * E i k)
+    (hDeltaA2Component : ∀ i k, |DeltaA2 i k| ≤ eps * E i k)
+    (hxTranspose : x_hat ≠ 0 →
+      x_hat =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hCombinedSmall :
+      3 *
+          max (eps * e)
+            (2 * (m : ℝ) ^ 2 * (tauA + eps * e) * omega) <
+        1)
+    (hAATInv_le : infNorm AAT_inv ≤ omega)
+    (hAOp : rectOpNorm2Le A tauA)
+    (heta : 0 ≤ eta)
+    (hDeltaA1Row : ∀ i : Fin m,
+      rectRowNorm2 DeltaA1 i ≤ eta * rectRowNorm2 A i)
+    (hDeltaA2Row : ∀ i : Fin m,
+      rectRowNorm2 DeltaA2 i ≤ eta * rectRowNorm2 A i) :
+    UndetRowwiseBackwardErrorBounded m n A b x_hat
+      (Real.sqrt 2 * eta) :=
+  higham21_lemma21_2_rowwise_backward_error_bound_of_common_row_bound
+    A DeltaA1 DeltaA2 b x_hat heta
+    (higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_deltaA_components_source_operator_envelopes_exact_size_eps_combined_factor_self_radius_global_bounds
+      hm A x_hat DeltaA1 DeltaA2 b y AAT_inv E eps tauA omega e
+      hDeltaA1 hDataEpsNonneg hEOp hCombinedSourceRadius hGramLeftInv
+      hDataE hDeltaA1Component hDeltaA2Component hxTranspose
+      hCombinedSmall hAATInv_le hAOp)
+    hDeltaA1Row hDeltaA2Row
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2 and Section 21.3:
+    source-shaped row-wise backward-error handoff from entrywise row-relative
+    perturbation bounds.  This is a stronger sufficient condition for the
+    row-wise hypotheses consumed by Theorem 21.4. -/
+theorem higham21_lemma21_2_rowwise_backward_error_bound_of_source_operator_envelopes_exact_size_eps_combined_factor_self_radius_global_entrywise_bounds
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (x_hat : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (E : Fin m → Fin n → ℝ)
+    (eps tauA omega e eta : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x_hat = b)
+    (hDataEpsNonneg : 0 ≤ eps)
+    (hEOp : rectOpNorm2Le E e)
+    (hCombinedSourceRadius :
+      2 * (m : ℝ) * (n : ℝ) * (tauA + eps * e) * omega *
+          max (eps * e)
+            (2 * (m : ℝ) ^ 2 * (tauA + eps * e) * omega) ≤
+        (1 / 2 : ℝ))
+    (hGramLeftInv : IsLeftInverse m (rectGram A) AAT_inv)
+    (hDataE : ∀ i k, 0 ≤ E i k)
+    (hDeltaA1Component : ∀ i k, |DeltaA1 i k| ≤ eps * E i k)
+    (hDeltaA2Component : ∀ i k, |DeltaA2 i k| ≤ eps * E i k)
+    (hxTranspose : x_hat ≠ 0 →
+      x_hat =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hCombinedSmall :
+      3 *
+          max (eps * e)
+            (2 * (m : ℝ) ^ 2 * (tauA + eps * e) * omega) <
+        1)
+    (hAATInv_le : infNorm AAT_inv ≤ omega)
+    (hAOp : rectOpNorm2Le A tauA)
+    (heta : 0 ≤ eta)
+    (hDeltaA1Entry : ∀ i k, |DeltaA1 i k| ≤ eta * |A i k|)
+    (hDeltaA2Entry : ∀ i k, |DeltaA2 i k| ≤ eta * |A i k|) :
+    UndetRowwiseBackwardErrorBounded m n A b x_hat
+      (Real.sqrt 2 * eta) :=
+  higham21_lemma21_2_rowwise_backward_error_bound_of_source_operator_envelopes_exact_size_eps_combined_factor_self_radius_global_bounds
+    hm A x_hat DeltaA1 DeltaA2 b y AAT_inv E eps tauA omega e eta
+    hDeltaA1 hDataEpsNonneg hEOp hCombinedSourceRadius hGramLeftInv
+    hDataE hDeltaA1Component hDeltaA2Component hxTranspose
+    hCombinedSmall hAATInv_le hAOp heta
+    (fun i =>
+      higham21_rectRowNorm2_le_of_entrywise_row_relative_bound
+        A DeltaA1 heta hDeltaA1Entry i)
+    (fun i =>
+      higham21_rectRowNorm2_le_of_entrywise_row_relative_bound
+        A DeltaA2 heta hDeltaA2Entry i)
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2 and Section 21.3:
+    source-shaped row-wise backward-error handoff specialized to the relative
+    componentwise data majorant `E = |A|`.  The componentwise perturbation
+    bounds then supply the row-wise hypotheses directly. -/
+theorem higham21_lemma21_2_rowwise_backward_error_bound_of_abs_data_source_operator_envelopes_exact_size_eps_combined_factor_self_radius_global_bounds
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (x_hat : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (eps tauA omega e : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x_hat = b)
+    (hDataEpsNonneg : 0 ≤ eps)
+    (hAbsAOp : rectOpNorm2Le (fun i j => |A i j|) e)
+    (hCombinedSourceRadius :
+      2 * (m : ℝ) * (n : ℝ) * (tauA + eps * e) * omega *
+          max (eps * e)
+            (2 * (m : ℝ) ^ 2 * (tauA + eps * e) * omega) ≤
+        (1 / 2 : ℝ))
+    (hGramLeftInv : IsLeftInverse m (rectGram A) AAT_inv)
+    (hDeltaA1Component : ∀ i k, |DeltaA1 i k| ≤ eps * |A i k|)
+    (hDeltaA2Component : ∀ i k, |DeltaA2 i k| ≤ eps * |A i k|)
+    (hxTranspose : x_hat ≠ 0 →
+      x_hat =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hCombinedSmall :
+      3 *
+          max (eps * e)
+            (2 * (m : ℝ) ^ 2 * (tauA + eps * e) * omega) <
+        1)
+    (hAATInv_le : infNorm AAT_inv ≤ omega)
+    (hAOp : rectOpNorm2Le A tauA) :
+    UndetRowwiseBackwardErrorBounded m n A b x_hat
+      (Real.sqrt 2 * eps) :=
+  higham21_lemma21_2_rowwise_backward_error_bound_of_source_operator_envelopes_exact_size_eps_combined_factor_self_radius_global_entrywise_bounds
+    hm A x_hat DeltaA1 DeltaA2 b y AAT_inv (fun i j => |A i j|)
+    eps tauA omega e eps hDeltaA1 hDataEpsNonneg hAbsAOp
+    hCombinedSourceRadius hGramLeftInv
+    (fun i k => abs_nonneg (A i k))
+    hDeltaA1Component hDeltaA2Component hxTranspose hCombinedSmall
+    hAATInv_le hAOp hDataEpsNonneg hDeltaA1Component hDeltaA2Component
 
 -- ============================================================
 -- §21.2  Theorem 21.3: normwise backward-error model
@@ -7513,6 +8000,253 @@ theorem undetNormwiseBackwardErrorEtaF_eq_nonzeroFormulaRHS_of_formula_upper_cer
 -- ============================================================
 -- §21.3  Theorem 21.4: Q method backward stability
 -- ============================================================
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    a columnwise Householder QR perturbation bound for `Aᵀ` is exactly a
+    row-wise perturbation bound for the transposed perturbation of `A`. -/
+theorem higham21_rectRowNorm2_eq_columnFrob_finiteTranspose {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (i : Fin m) :
+    rectRowNorm2 A i = columnFrob (finiteTranspose A) i := by
+  simp [rectRowNorm2, columnFrob_eq_vecNorm2, finiteTranspose]
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    transposing a Chapter 19 columnwise QR perturbation certificate turns its
+    column bounds into the row-wise bounds used by the underdetermined-system
+    backward-error definition. -/
+theorem higham21_row_bounds_of_transposed_qr_column_bounds {m n : ℕ}
+    (AT DeltaAT : Fin n → Fin m → ℝ) {eta : ℝ}
+    (hcol : ∀ i : Fin m,
+      columnFrob DeltaAT i ≤ eta * columnFrob AT i) :
+    ∀ i : Fin m,
+      rectRowNorm2 (finiteTranspose DeltaAT) i ≤
+        eta * rectRowNorm2 (finiteTranspose AT) i := by
+  intro i
+  simpa [higham21_rectRowNorm2_eq_columnFrob_finiteTranspose] using hcol i
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    source-facing QR dependency for the Q method.  Applying Chapter 19,
+    Theorem 19.4 to `Aᵀ` gives a perturbation `DeltaA0` of the original
+    underdetermined matrix whose rows satisfy the printed row-wise QR bound.
+
+    This is only the QR factorization perturbation used in the proof of
+    Theorem 21.4; the triangular-solve and final `Q`-application perturbations
+    remain separate obligations before the full Q-method theorem closes. -/
+theorem higham21_theorem21_4_qr_transpose_row_perturbation_bound
+    {m n : ℕ}
+    (A : Fin m → Fin n → ℝ)
+    (Q : Fin n → Fin n → ℝ)
+    (R_hat : Fin n → Fin m → ℝ)
+    (eta : ℝ)
+    (hqr : H19.Theorem19_4.HouseholderQRBackwardError n m
+      (finiteTranspose A) Q R_hat eta) :
+    ∃ DeltaA0 : Fin m → Fin n → ℝ,
+      (∀ i j, A i j + DeltaA0 i j =
+        matMulRect n n m Q R_hat j i) ∧
+      (∀ i : Fin m,
+        rectRowNorm2 DeltaA0 i ≤ eta * rectRowNorm2 A i) := by
+  rcases hqr.result with ⟨DeltaAT, hrep, hcol⟩
+  refine ⟨finiteTranspose DeltaAT, ?_, ?_⟩
+  · intro i j
+    simpa [finiteTranspose] using hrep j i
+  · intro i
+    have hrow :=
+      higham21_row_bounds_of_transposed_qr_column_bounds
+        (finiteTranspose A) DeltaAT hcol i
+    simpa [finiteTranspose_finiteTranspose] using hrow
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, Theorem 21.4:
+    concrete Householder QR instantiation of the transposed row-perturbation
+    dependency for `Aᵀ`.  The dimension hypotheses are the Chapter 19 tall-panel
+    side conditions for the matrix `Aᵀ : ℝ^(n×m)`. -/
+theorem higham21_theorem21_4_householder_qr_transpose_row_perturbation_bound
+    {m n : ℕ} (fp : FPModel)
+    (A : Fin m → Fin n → ℝ)
+    (hm : 0 < m) (hmn : m ≤ n)
+    (hvalid :
+      gammaValid fp (m * householderConstructApplyGammaIndex n)) :
+    ∃ DeltaA0 : Fin m → Fin n → ℝ,
+      (∀ i j, A i j + DeltaA0 i j =
+        matMulRect n n m
+          (fl_householderQRPanel_Q fp n m (finiteTranspose A))
+          (fl_householderQRPanel_R fp n m (finiteTranspose A)) j i) ∧
+      (∀ i : Fin m,
+        rectRowNorm2 DeltaA0 i ≤
+          H19.Theorem19_4.gamma_tilde fp n m * rectRowNorm2 A i) := by
+  exact
+    higham21_theorem21_4_qr_transpose_row_perturbation_bound A
+      (fl_householderQRPanel_Q fp n m (finiteTranspose A))
+      (fl_householderQRPanel_R fp n m (finiteTranspose A))
+      (H19.Theorem19_4.gamma_tilde fp n m)
+      (H19.Theorem19_4.householder_qr_backward_error
+        fp n m (finiteTranspose A) hm hmn hvalid)
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
+    algebraic difference form of the computed final `Q` action.  If
+    `x_hat = (Q + DeltaQ)[y1;0]`, then its difference from the exact
+    `Q[y1;0]` action is precisely `DeltaQ [y1;0]`. -/
+theorem higham21_eq21_10_q_action_difference_eq_deltaQ
+    {m k : ℕ}
+    (Q DeltaQ : Fin (m + k) → Fin (m + k) → ℝ)
+    (y1 : Fin m → ℝ)
+    (x_hat : Fin (m + k) → ℝ)
+    (hx :
+      x_hat =
+        matMulVec (m + k) (fun i j => Q i j + DeltaQ i j)
+          (Fin.append y1 (0 : Fin k → ℝ))) :
+    (fun i : Fin (m + k) =>
+      x_hat i -
+        matMulVec (m + k) Q (Fin.append y1 (0 : Fin k → ℝ)) i) =
+      matMulVec (m + k) DeltaQ (Fin.append y1 (0 : Fin k → ℝ)) := by
+  ext i
+  rw [hx]
+  unfold matMulVec
+  simp_rw [add_mul]
+  rw [Finset.sum_add_distrib]
+  ring
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
+    the Frobenius perturbation bound for the computed final `Q` action implies
+    a Euclidean vector-error bound for the formed solution. -/
+theorem higham21_eq21_10_q_action_vec_error_bound
+    {m k : ℕ}
+    (Q DeltaQ : Fin (m + k) → Fin (m + k) → ℝ)
+    (y1 : Fin m → ℝ)
+    (x_hat : Fin (m + k) → ℝ)
+    (eta : ℝ)
+    (hx :
+      x_hat =
+        matMulVec (m + k) (fun i j => Q i j + DeltaQ i j)
+          (Fin.append y1 (0 : Fin k → ℝ)))
+    (hDeltaQ : frobNorm DeltaQ ≤ eta) :
+    vecNorm2 (fun i : Fin (m + k) =>
+      x_hat i -
+        matMulVec (m + k) Q (Fin.append y1 (0 : Fin k → ℝ)) i) ≤
+      eta * vecNorm2 (Fin.append y1 (0 : Fin k → ℝ)) := by
+  let z : Fin (m + k) → ℝ := Fin.append y1 (0 : Fin k → ℝ)
+  have hdiff :
+      (fun i : Fin (m + k) =>
+        x_hat i - matMulVec (m + k) Q z i) =
+        matMulVec (m + k) DeltaQ z := by
+    simpa [z] using
+      higham21_eq21_10_q_action_difference_eq_deltaQ
+        Q DeltaQ y1 x_hat hx
+  calc
+    vecNorm2 (fun i : Fin (m + k) =>
+        x_hat i -
+          matMulVec (m + k) Q (Fin.append y1 (0 : Fin k → ℝ)) i)
+        = vecNorm2 (matMulVec (m + k) DeltaQ z) := by
+            simpa [z] using congrArg vecNorm2 hdiff
+    _ ≤ frobNorm DeltaQ * vecNorm2 z :=
+        vecNorm2_matMulVec_le_frobNorm_mul DeltaQ z
+    _ ≤ eta * vecNorm2 z :=
+        mul_le_mul_of_nonneg_right hDeltaQ (vecNorm2_nonneg z)
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
+    source-shaped final `Q` action bound with the zero-padded coordinate vector
+    reduced to the active block norm `‖y1‖₂`. -/
+theorem higham21_eq21_10_q_action_vec_error_bound_left_block
+    {m k : ℕ}
+    (Q DeltaQ : Fin (m + k) → Fin (m + k) → ℝ)
+    (y1 : Fin m → ℝ)
+    (x_hat : Fin (m + k) → ℝ)
+    (eta : ℝ)
+    (hx :
+      x_hat =
+        matMulVec (m + k) (fun i j => Q i j + DeltaQ i j)
+          (Fin.append y1 (0 : Fin k → ℝ)))
+    (hDeltaQ : frobNorm DeltaQ ≤ eta) :
+    vecNorm2 (fun i : Fin (m + k) =>
+      x_hat i -
+        matMulVec (m + k) Q (Fin.append y1 (0 : Fin k → ℝ)) i) ≤
+      eta * vecNorm2 y1 := by
+  have hbase :=
+    higham21_eq21_10_q_action_vec_error_bound
+      Q DeltaQ y1 x_hat eta hx hDeltaQ
+  have hzero :
+      vecNorm2 (Fin.append y1 (0 : Fin k → ℝ)) = vecNorm2 y1 := by
+    unfold vecNorm2
+    rw [lsVecNorm2Sq_append]
+    simp [vecNorm2Sq]
+  rwa [hzero] at hbase
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
+    consume the QR accumulated-`Q` perturbation certificate directly.  If the
+    computed final action uses a rounded `Q_hat` that is certified as
+    `Q + DeltaQ` with Frobenius radius `eta`, then the formed-solution error is
+    bounded by `eta * ‖y1‖₂`. -/
+theorem higham21_eq21_10_q_action_vec_error_bound_of_fixed_q_accum_error
+    {m k : ℕ}
+    (Q Q_hat : Fin (m + k) → Fin (m + k) → ℝ)
+    (y1 : Fin m → ℝ)
+    (x_hat : Fin (m + k) → ℝ)
+    (eta : ℝ)
+    (hQerr :
+      HouseholderQRPanelQhatFixedAccumError (m + k) Q Q_hat eta)
+    (hx :
+      x_hat =
+        matMulVec (m + k) Q_hat (Fin.append y1 (0 : Fin k → ℝ))) :
+    vecNorm2 (fun i : Fin (m + k) =>
+      x_hat i -
+        matMulVec (m + k) Q (Fin.append y1 (0 : Fin k → ℝ)) i) ≤
+      eta * vecNorm2 y1 := by
+  rcases hQerr.result with ⟨DeltaQ, hQhat_rep, hDeltaQ⟩
+  have hQhat :
+      Q_hat = fun i j => Q i j + DeltaQ i j := by
+    ext i j
+    exact hQhat_rep i j
+  have hx' :
+      x_hat =
+        matMulVec (m + k) (fun i j => Q i j + DeltaQ i j)
+          (Fin.append y1 (0 : Fin k → ℝ)) := by
+    simpa [hQhat] using hx
+  exact
+    higham21_eq21_10_q_action_vec_error_bound_left_block
+      Q DeltaQ y1 x_hat eta hx' hDeltaQ
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
+    concrete Householder QR panel specialization of the final `Q` action
+    perturbation bridge.  Applied to the QR factorization of `Aᵀ`, the rounded
+    accumulated panel `Q_hat` gives the source-shaped `‖y1‖₂` error bound with
+    the existing Householder QR growth radius. -/
+theorem higham21_eq21_10_q_action_vec_error_bound_of_householder_qr_panel_qhat
+    {m k : ℕ}
+    (fp : FPModel)
+    (A : Fin m → Fin (m + k) → ℝ)
+    (y1 : Fin m → ℝ)
+    (x_hat : Fin (m + k) → ℝ)
+    (hvalid : gammaValid fp (11 * (m + k) + 23))
+    (hx :
+      x_hat =
+        matMulVec (m + k)
+          (fl_householderQRPanel_Qhat fp (m + k) m (finiteTranspose A))
+          (Fin.append y1 (0 : Fin k → ℝ))) :
+    let eta : ℝ :=
+      (((m + k : ℕ) : ℝ) * householderConstructApplyBound fp (m + k) *
+        (1 + householderConstructApplyBound fp (m + k)) ^ (m + k) *
+        Real.sqrt (((m + k : ℕ) : ℝ)))
+    vecNorm2 (fun i : Fin (m + k) =>
+      x_hat i -
+        matMulVec (m + k)
+          (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+          (Fin.append y1 (0 : Fin k → ℝ)) i) ≤
+      eta * vecNorm2 y1 := by
+  let eta : ℝ :=
+    (((m + k : ℕ) : ℝ) * householderConstructApplyBound fp (m + k) *
+      (1 + householderConstructApplyBound fp (m + k)) ^ (m + k) *
+      Real.sqrt (((m + k : ℕ) : ℝ)))
+  have hQerr :
+      HouseholderQRPanelQhatFixedAccumError (m + k)
+        (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+        (fl_householderQRPanel_Qhat fp (m + k) m (finiteTranspose A))
+        eta := by
+    simpa [eta] using
+      fl_householderQRPanel_Qhat_fixed_Q_growth_accum_error
+        fp (m + k) m (m + k) (finiteTranspose A) (le_refl (m + k)) hvalid
+  exact
+    higham21_eq21_10_q_action_vec_error_bound_of_fixed_q_accum_error
+      (fl_householderQRPanel_Q fp (m + k) m (finiteTranspose A))
+      (fl_householderQRPanel_Qhat fp (m + k) m (finiteTranspose A))
+      y1 x_hat eta hQerr hx
 
 /-- **Theorem 21.4** (Higham): The Q method for underdetermined systems
     is row-wise backward stable.

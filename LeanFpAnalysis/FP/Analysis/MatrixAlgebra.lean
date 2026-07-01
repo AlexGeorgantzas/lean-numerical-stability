@@ -10291,6 +10291,35 @@ theorem IsOrthogonal.abs_matMulVec_le_card_infNormVec {n : ℕ}
     _ = (n : ℝ) * infNormVec x := by
         simp [Finset.card_univ]
 
+/-- Componentwise Euclidean bound for applying an orthogonal matrix:
+    each coordinate of `Ux` is bounded by `‖x‖₂`. -/
+theorem IsOrthogonal.abs_matMulVec_le_vecNorm2 {n : ℕ}
+    {U : Fin n → Fin n → ℝ} (hU : IsOrthogonal n U)
+    (x : Fin n → ℝ) (i : Fin n) :
+    |matMulVec n U x i| ≤ vecNorm2 x := by
+  have hrow :
+      vecNorm2 (fun j : Fin n => U i j) = 1 := by
+    simpa [matTranspose] using hU.transpose.column_vecNorm2_eq_one i
+  calc
+    |matMulVec n U x i|
+        = |∑ j : Fin n, (fun k : Fin n => U i k) j * x j| := by
+            rfl
+    _ ≤ vecNorm2 (fun j : Fin n => U i j) * vecNorm2 x :=
+          abs_vecInnerProduct_le_vecNorm2_mul (fun j : Fin n => U i j) x
+    _ = vecNorm2 x := by
+          rw [hrow]
+          ring
+
+/-- Sharpened componentwise bound for applying an orthogonal matrix:
+    `|(Ux)_i| ≤ sqrt n ‖x‖∞`. -/
+theorem IsOrthogonal.abs_matMulVec_le_sqrt_card_infNormVec {n : ℕ}
+    {U : Fin n → Fin n → ℝ} (hU : IsOrthogonal n U)
+    (x : Fin n → ℝ) (i : Fin n) :
+    |matMulVec n U x i| ≤ Real.sqrt (n : ℝ) * infNormVec x := by
+  exact le_trans (hU.abs_matMulVec_le_vecNorm2 x i)
+    (vecNorm2_le_sqrt_card_mul_of_abs_le x
+      (infNormVec_nonneg x) (fun j => abs_le_infNormVec x j))
+
 /-- Infinity-norm version of `IsOrthogonal.abs_matMulVec_le_card_infNormVec`. -/
 theorem IsOrthogonal.infNormVec_matMulVec_le_card {n : ℕ}
     {U : Fin n → Fin n → ℝ} (hU : IsOrthogonal n U)

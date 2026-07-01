@@ -8142,6 +8142,28 @@ theorem lsNormwiseBackwardErrorMu_le_one {n : ℕ} (theta : ℝ)
     lsNormwiseBackwardErrorMu theta y ≤ 1 :=
   le_of_lt (lsNormwiseBackwardErrorMu_lt_one theta y)
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.5 limiting discussion:
+    the source scalar `mu` is `1 - 1/(1 + theta^2 ||y||_2^2)`, making the
+    `theta -> infinity` limit algebraically explicit. -/
+theorem lsNormwiseBackwardErrorMu_eq_one_sub_inv_den {n : ℕ} (theta : ℝ)
+    (y : Fin n → ℝ) :
+    lsNormwiseBackwardErrorMu theta y =
+      1 - 1 / (1 + theta ^ 2 * vecNorm2Sq y) := by
+  unfold lsNormwiseBackwardErrorMu
+  have hden : (1 + theta ^ 2 * vecNorm2Sq y) ≠ 0 :=
+    ne_of_gt (lsNormwiseBackwardErrorMu_den_pos theta y)
+  field_simp [hden]
+  ring
+
+/-- Equivalent residual form of the `mu` limiting identity:
+    `1 - mu = 1/(1 + theta^2 ||y||_2^2)`. -/
+theorem one_sub_lsNormwiseBackwardErrorMu_eq_inv_den {n : ℕ} (theta : ℝ)
+    (y : Fin n → ℝ) :
+    1 - lsNormwiseBackwardErrorMu theta y =
+      1 / (1 + theta ^ 2 * vecNorm2Sq y) := by
+  rw [lsNormwiseBackwardErrorMu_eq_one_sub_inv_den theta y]
+  ring
+
 /-- Higham, 2nd ed., Chapter 20, equation (20.21): the source scalar
     `phi = sqrt(mu) ||r||_2 / ||y||_2` used in the alternative normwise
     backward-error formula.  This definition only records the scalar appearing
@@ -8553,6 +8575,85 @@ private theorem vecNorm2Sq_pos_of_ne_zero_lsq {m : ℕ} {b : Fin m → ℝ}
   have hbpos := vecNorm2_pos_of_ne_zero_lsq hb
   rw [← vecNorm2_sq]
   exact sq_pos_of_pos hbpos
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.5 limiting discussion:
+    for a nonzero candidate vector `y`, the WKS scalar
+    `mu = theta^2 ||y||_2^2 / (1 + theta^2 ||y||_2^2)` tends to one as
+    `theta -> infinity`.  This is the scalar limit behind the source's
+    `theta = infinity` matrix-only convention. -/
+theorem lsNormwiseBackwardErrorMu_tendsto_one_atTop_of_y_ne_zero {n : ℕ}
+    {y : Fin n → ℝ} (hy : y ≠ 0) :
+    Filter.Tendsto (fun theta : ℝ => lsNormwiseBackwardErrorMu theta y)
+      Filter.atTop (nhds 1) := by
+  have hySq_pos : 0 < vecNorm2Sq y := vecNorm2Sq_pos_of_ne_zero_lsq hy
+  have hsq :
+      Filter.Tendsto (fun theta : ℝ => theta ^ (2 : ℕ))
+        Filter.atTop Filter.atTop :=
+    Filter.tendsto_pow_atTop (α := ℝ) (by norm_num : (2 : ℕ) ≠ 0)
+  have hprod :
+      Filter.Tendsto (fun theta : ℝ => theta ^ (2 : ℕ) * vecNorm2Sq y)
+        Filter.atTop Filter.atTop :=
+    hsq.atTop_mul_const hySq_pos
+  have hden :
+      Filter.Tendsto
+        (fun theta : ℝ => 1 + theta ^ (2 : ℕ) * vecNorm2Sq y)
+        Filter.atTop Filter.atTop := by
+    have hden' :
+        Filter.Tendsto
+          (fun theta : ℝ => theta ^ (2 : ℕ) * vecNorm2Sq y + 1)
+          Filter.atTop Filter.atTop :=
+      hprod.atTop_add tendsto_const_nhds
+    simpa [add_comm] using hden'
+  have hinv :
+      Filter.Tendsto
+        (fun theta : ℝ => (1 + theta ^ (2 : ℕ) * vecNorm2Sq y)⁻¹)
+        Filter.atTop (nhds 0) :=
+    hden.inv_tendsto_atTop
+  have hlim :
+      Filter.Tendsto
+        (fun theta : ℝ => 1 - (1 + theta ^ (2 : ℕ) * vecNorm2Sq y)⁻¹)
+        Filter.atTop (nhds 1) := by
+    simpa using tendsto_const_nhds.sub hinv
+  exact Filter.Tendsto.congr'
+    (f₁ := fun theta : ℝ => 1 - (1 + theta ^ (2 : ℕ) * vecNorm2Sq y)⁻¹)
+    (f₂ := fun theta : ℝ => lsNormwiseBackwardErrorMu theta y)
+    (Filter.Eventually.of_forall fun theta => by
+      simpa [one_div] using
+        (lsNormwiseBackwardErrorMu_eq_one_sub_inv_den theta y).symm)
+    hlim
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.5 limiting discussion:
+    for nonzero `y`, the source scalar
+    `phi = sqrt(mu) ||r||_2 / ||y||_2` tends to `||r||_2 / ||y||_2` as
+    `theta -> infinity`.  This records the scalar part of the matrix-only
+    WKS limit without asserting the still-open full formula (20.21). -/
+theorem lsNormwiseBackwardErrorPhi_tendsto_ratio_atTop_of_y_ne_zero {m n : ℕ}
+    (r : Fin m → ℝ) {y : Fin n → ℝ} (hy : y ≠ 0) :
+    Filter.Tendsto (fun theta : ℝ => lsNormwiseBackwardErrorPhi theta r y)
+      Filter.atTop (nhds (vecNorm2 r / vecNorm2 y)) := by
+  have hmu :
+      Filter.Tendsto (fun theta : ℝ => lsNormwiseBackwardErrorMu theta y)
+        Filter.atTop (nhds 1) :=
+    lsNormwiseBackwardErrorMu_tendsto_one_atTop_of_y_ne_zero hy
+  have hsqrt :
+      Filter.Tendsto
+        (fun theta : ℝ => Real.sqrt (lsNormwiseBackwardErrorMu theta y))
+        Filter.atTop (nhds 1) := by
+    simpa using hmu.sqrt
+  have hmul :
+      Filter.Tendsto
+        (fun theta : ℝ =>
+          Real.sqrt (lsNormwiseBackwardErrorMu theta y) * vecNorm2 r)
+        Filter.atTop (nhds (1 * vecNorm2 r)) :=
+    hsqrt.mul tendsto_const_nhds
+  have hdiv :
+      Filter.Tendsto
+        (fun theta : ℝ =>
+          Real.sqrt (lsNormwiseBackwardErrorMu theta y) * vecNorm2 r /
+            vecNorm2 y)
+        Filter.atTop (nhds ((1 * vecNorm2 r) / vecNorm2 y)) :=
+    hmul.div_const (vecNorm2 y)
+  simpa [lsNormwiseBackwardErrorPhi] using hdiv
 
 /-- The weighted perturbation block in (20.20) applied to the vector
     `[theta y; -1]` produces `theta * (DeltaA y - Delta b)`.  This is the
@@ -9256,6 +9357,21 @@ theorem lsNormwiseBackwardErrorMatrixOnlyValuesF.nonempty {m n : ℕ}
   intro z
   simp [lsObjective, lsResidual, rectMatMulVec, vecNorm2Sq]
 
+/-- Matrix-only zero branch of the limiting `theta = infinity` model: if `y`
+    is already an exact least-squares minimizer, then the zero matrix
+    perturbation is attainable with `Delta b = 0`. -/
+theorem lsNormwiseBackwardErrorMatrixOnlyValuesF.zero_mem_of_isLeastSquaresMinimizer
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (y : Fin n → ℝ) (hmin : IsLeastSquaresMinimizer A b y) :
+    (0 : ℝ) ∈ lsNormwiseBackwardErrorMatrixOnlyValuesF A b y := by
+  have hmem :
+      frobNormRect (0 : Fin m → Fin n → ℝ) ∈
+        lsNormwiseBackwardErrorMatrixOnlyValuesF A b y :=
+    lsNormwiseBackwardErrorMatrixOnlyValuesF.mem_of_feasible A b y
+      (0 : Fin m → Fin n → ℝ) (by
+        simpa [LSNormwiseBackwardErrorFeasible] using hmin)
+  simpa [frobNormRect, frobNormSqRect] using hmem
+
 /-- The matrix-only limiting attainable-cost set is bounded below by zero. -/
 theorem lsNormwiseBackwardErrorMatrixOnlyValuesF.bddBelow {m n : ℕ}
     (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
@@ -9280,6 +9396,20 @@ theorem lsNormwiseBackwardErrorMatrixOnlyEtaF_nonneg {m n : ℕ}
   apply Real.sInf_nonneg
   intro eta heta
   exact lsNormwiseBackwardErrorMatrixOnlyValuesF.nonneg_of_mem A b y heta
+
+/-- Matrix-only zero branch of the limiting `theta = infinity` model: exact
+    least-squares minimizers have zero matrix-only backward error. -/
+theorem lsNormwiseBackwardErrorMatrixOnlyEtaF_eq_zero_of_isLeastSquaresMinimizer
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (y : Fin n → ℝ) (hmin : IsLeastSquaresMinimizer A b y) :
+    lsNormwiseBackwardErrorMatrixOnlyEtaF A b y = 0 := by
+  apply le_antisymm
+  · unfold lsNormwiseBackwardErrorMatrixOnlyEtaF
+    exact csInf_le
+      (lsNormwiseBackwardErrorMatrixOnlyValuesF.bddBelow A b y)
+      (lsNormwiseBackwardErrorMatrixOnlyValuesF.zero_mem_of_isLeastSquaresMinimizer
+        A b y hmin)
+  · exact lsNormwiseBackwardErrorMatrixOnlyEtaF_nonneg A b y
 
 /-- The matrix-only limiting infimum is no larger than any matrix-only
     attainable perturbation norm. -/
@@ -9309,6 +9439,19 @@ theorem lsNormwiseBackwardErrorEtaF_le_of_matrixOnly_mem {m n : ℕ}
     lsNormwiseBackwardErrorEtaF theta A b y ≤ eta :=
   lsNormwiseBackwardErrorEtaF_le_of_mem theta A b y
     (lsNormwiseBackwardErrorMatrixOnlyValuesF.mem_valuesF theta A b y heta)
+
+/-- Finite-`theta` backward errors are bounded above by the matrix-only
+    limiting model: every `Delta b = 0` perturbation allowed in the
+    `theta = infinity` convention is also admissible for any finite weight. -/
+theorem lsNormwiseBackwardErrorEtaF_le_matrixOnlyEtaF {m n : ℕ}
+    (theta : ℝ) (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (y : Fin n → ℝ) :
+    lsNormwiseBackwardErrorEtaF theta A b y ≤
+      lsNormwiseBackwardErrorMatrixOnlyEtaF A b y := by
+  unfold lsNormwiseBackwardErrorMatrixOnlyEtaF
+  apply le_csInf (lsNormwiseBackwardErrorMatrixOnlyValuesF.nonempty A b y)
+  intro eta heta
+  exact lsNormwiseBackwardErrorEtaF_le_of_matrixOnly_mem theta A b y heta
 
 /-- Any feasible perturbation in (20.20) gives an explicit upper bound for the
     infimum model `eta_F(y)`. -/
@@ -9555,6 +9698,84 @@ theorem lsNormwiseBackwardErrorEtaF_exists_feasible_cost_eq_of_positive_theta
       htheta A b y with ⟨DeltaA, Deltab, hfeas, heta_eq⟩
   exact ⟨DeltaA, Deltab, hfeas, heta_eq.symm⟩
 
+/-- Matrix-only limiting dependency for (20.20): any exact finite-`theta`
+    minimizer has right-hand-side perturbation norm bounded by the
+    matrix-only infimum divided by `theta`.  This makes the source's
+    "large `theta` forces `Delta b` to zero" compactness route explicit. -/
+theorem lsNormwiseBackwardErrorEtaF_minimizer_deltab_norm_le_matrixOnlyEtaF_div_theta
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (hcost :
+      lsNormwiseBackwardErrorCostF theta DeltaA Deltab =
+        lsNormwiseBackwardErrorEtaF theta A b y) :
+    vecNorm2 Deltab ≤ lsNormwiseBackwardErrorMatrixOnlyEtaF A b y / theta := by
+  have hweighted :
+      theta * vecNorm2 Deltab ≤
+        lsNormwiseBackwardErrorCostF theta DeltaA Deltab :=
+    lsNormwiseBackwardErrorCostF_weighted_deltab_le
+      (le_of_lt htheta) DeltaA Deltab
+  have heta_le :
+      lsNormwiseBackwardErrorEtaF theta A b y ≤
+        lsNormwiseBackwardErrorMatrixOnlyEtaF A b y :=
+    lsNormwiseBackwardErrorEtaF_le_matrixOnlyEtaF theta A b y
+  rw [le_div_iff₀ htheta]
+  calc
+    vecNorm2 Deltab * theta = theta * vecNorm2 Deltab := by ring
+    _ ≤ lsNormwiseBackwardErrorCostF theta DeltaA Deltab := hweighted
+    _ = lsNormwiseBackwardErrorEtaF theta A b y := hcost
+    _ ≤ lsNormwiseBackwardErrorMatrixOnlyEtaF A b y := heta_le
+
+/-- Existence form of the finite-`theta` minimizer RHS bound: for every
+    positive finite source weight, there is an exact minimizing perturbation
+    pair whose `Delta b` component is bounded by the matrix-only infimum divided
+    by `theta`. -/
+theorem lsNormwiseBackwardErrorEtaF_exists_feasible_cost_eq_deltab_norm_le_matrixOnlyEtaF_div_theta
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    ∃ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+      LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+        lsNormwiseBackwardErrorCostF theta DeltaA Deltab =
+          lsNormwiseBackwardErrorEtaF theta A b y ∧
+        vecNorm2 Deltab ≤
+          lsNormwiseBackwardErrorMatrixOnlyEtaF A b y / theta := by
+  rcases lsNormwiseBackwardErrorEtaF_exists_feasible_cost_eq_of_positive_theta
+      htheta A b y with ⟨DeltaA, Deltab, hfeas, hcost⟩
+  exact ⟨DeltaA, Deltab, hfeas, hcost,
+    lsNormwiseBackwardErrorEtaF_minimizer_deltab_norm_le_matrixOnlyEtaF_div_theta
+      htheta A b y DeltaA Deltab hcost⟩
+
+/-- Eventual RHS-vanishing form of the finite-minimizer bound: for every
+    positive tolerance, all sufficiently large finite weights admit an exact
+    minimizing perturbation pair with `||Delta b||_2` below that tolerance. -/
+theorem lsNormwiseBackwardErrorEtaF_eventually_exists_feasible_cost_eq_deltab_norm_lt_atTop
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (y : Fin n → ℝ) {eps : ℝ} (heps : 0 < eps) :
+    ∀ᶠ theta : ℝ in Filter.atTop,
+      ∃ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+        0 < theta ∧
+          LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+          lsNormwiseBackwardErrorCostF theta DeltaA Deltab =
+            lsNormwiseBackwardErrorEtaF theta A b y ∧
+          vecNorm2 Deltab < eps := by
+  let M := lsNormwiseBackwardErrorMatrixOnlyEtaF A b y
+  filter_upwards [Filter.eventually_gt_atTop (max 0 (M / eps))] with theta htheta
+  have htheta_pos : 0 < theta :=
+    lt_of_le_of_lt (le_max_left (0 : ℝ) (M / eps)) htheta
+  have hM_div_lt : M / eps < theta :=
+    lt_of_le_of_lt (le_max_right (0 : ℝ) (M / eps)) htheta
+  have hM_lt : M < eps * theta := by
+    have hraw : M < theta * eps := (div_lt_iff₀ heps).mp hM_div_lt
+    simpa [mul_comm] using hraw
+  have hdiv_lt : M / theta < eps := by
+    exact (div_lt_iff₀ htheta_pos).mpr hM_lt
+  rcases
+    lsNormwiseBackwardErrorEtaF_exists_feasible_cost_eq_deltab_norm_le_matrixOnlyEtaF_div_theta
+      htheta_pos A b y with
+    ⟨DeltaA, Deltab, hfeas, hcost, hDeltab⟩
+  exact ⟨DeltaA, Deltab, htheta_pos, hfeas, hcost,
+    lt_of_le_of_lt hDeltab (by simpa [M] using hdiv_lt)⟩
+
 /-- Finite positive-`theta` zero-backward-error characterization for (20.20):
     after minimum-attainment is available, `eta_F(y) = 0` exactly when `y` is
     already an exact least-squares minimizer for the unperturbed data.  This is
@@ -9619,6 +9840,359 @@ theorem lsNormwiseBackwardErrorEtaF_mono_theta_nonneg {m n : ℕ}
       DeltaA Deltab hfeas).trans
       (lsNormwiseBackwardErrorCostF_mono_theta_nonneg htheta1 htheta12
         DeltaA Deltab)
+
+/-- Natural-grid limiting foundation for the finite-weight model in (20.20):
+    the nondecreasing sequence `eta_F(k,y)` converges to the supremum of its
+    finite-weight values.  This is a one-dimensional monotone-convergence
+    statement, not the full `theta = infinity` WKS formula. -/
+theorem lsNormwiseBackwardErrorEtaF_nat_tendsto_iSup {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    Filter.Tendsto
+      (fun k : ℕ => lsNormwiseBackwardErrorEtaF (k : ℝ) A b y)
+      Filter.atTop
+      (nhds (⨆ k : ℕ, lsNormwiseBackwardErrorEtaF (k : ℝ) A b y)) := by
+  have hmono :
+      Monotone (fun k : ℕ => lsNormwiseBackwardErrorEtaF (k : ℝ) A b y) := by
+    intro k l hkl
+    exact lsNormwiseBackwardErrorEtaF_mono_theta_nonneg
+      (Nat.cast_nonneg k) (Nat.cast_le.mpr hkl) A b y
+  have hbdd :
+      BddAbove (Set.range
+        (fun k : ℕ => lsNormwiseBackwardErrorEtaF (k : ℝ) A b y)) := by
+    refine ⟨lsNormwiseBackwardErrorMatrixOnlyEtaF A b y, ?_⟩
+    rintro eta ⟨k, rfl⟩
+    exact lsNormwiseBackwardErrorEtaF_le_matrixOnlyEtaF (k : ℝ) A b y
+  exact tendsto_atTop_ciSup hmono hbdd
+
+/-- The natural-grid finite-weight limit supremum is bounded above by the
+    matrix-only limiting infimum.  This records the expected one-sided
+    comparison between the finite weighted model and the `Delta b = 0` model. -/
+theorem lsNormwiseBackwardErrorEtaF_nat_iSup_le_matrixOnlyEtaF {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    (⨆ k : ℕ, lsNormwiseBackwardErrorEtaF (k : ℝ) A b y) ≤
+      lsNormwiseBackwardErrorMatrixOnlyEtaF A b y := by
+  exact ciSup_le fun k =>
+    lsNormwiseBackwardErrorEtaF_le_matrixOnlyEtaF (k : ℝ) A b y
+
+/-- Nonnegative-weight limiting foundation for the finite-weight model in
+    (20.20): along the ordered subtype of nonnegative real weights, `eta_F`
+    converges to the supremum of its finite nonnegative values. -/
+theorem lsNormwiseBackwardErrorEtaF_nonneg_tendsto_iSup {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    Filter.Tendsto
+      (fun theta : {theta : ℝ // 0 ≤ theta} =>
+        lsNormwiseBackwardErrorEtaF theta.1 A b y)
+      Filter.atTop
+      (nhds (⨆ theta : {theta : ℝ // 0 ≤ theta},
+        lsNormwiseBackwardErrorEtaF theta.1 A b y)) := by
+  have hmono :
+      Monotone (fun theta : {theta : ℝ // 0 ≤ theta} =>
+        lsNormwiseBackwardErrorEtaF theta.1 A b y) := by
+    intro theta1 theta2 htheta
+    exact lsNormwiseBackwardErrorEtaF_mono_theta_nonneg
+      theta1.2 htheta A b y
+  have hbdd :
+      BddAbove (Set.range
+        (fun theta : {theta : ℝ // 0 ≤ theta} =>
+          lsNormwiseBackwardErrorEtaF theta.1 A b y)) := by
+    refine ⟨lsNormwiseBackwardErrorMatrixOnlyEtaF A b y, ?_⟩
+    rintro eta ⟨theta, rfl⟩
+    exact lsNormwiseBackwardErrorEtaF_le_matrixOnlyEtaF theta.1 A b y
+  exact tendsto_atTop_ciSup hmono hbdd
+
+/-- The supremum of the finite nonnegative-weight `eta_F` values is bounded
+    above by the matrix-only limiting infimum. -/
+theorem lsNormwiseBackwardErrorEtaF_nonneg_iSup_le_matrixOnlyEtaF {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    (⨆ theta : {theta : ℝ // 0 ≤ theta},
+        lsNormwiseBackwardErrorEtaF theta.1 A b y) ≤
+      lsNormwiseBackwardErrorMatrixOnlyEtaF A b y := by
+  exact ciSup_le fun theta =>
+    lsNormwiseBackwardErrorEtaF_le_matrixOnlyEtaF theta.1 A b y
+
+/-- Each finite nonnegative weighted backward error is bounded by the
+    nonnegative-weight supremum appearing in the `theta -> infinity` limiting
+    foundation for (20.20). -/
+theorem lsNormwiseBackwardErrorEtaF_le_nonneg_iSup_of_nonneg {m n : ℕ}
+    {theta : ℝ} (htheta : 0 ≤ theta)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    lsNormwiseBackwardErrorEtaF theta A b y ≤
+      (⨆ theta : {theta : ℝ // 0 ≤ theta},
+        lsNormwiseBackwardErrorEtaF theta.1 A b y) := by
+  have hbdd :
+      BddAbove (Set.range
+        (fun theta : {theta : ℝ // 0 ≤ theta} =>
+          lsNormwiseBackwardErrorEtaF theta.1 A b y)) := by
+    refine ⟨lsNormwiseBackwardErrorMatrixOnlyEtaF A b y, ?_⟩
+    rintro eta ⟨theta, rfl⟩
+    exact lsNormwiseBackwardErrorEtaF_le_matrixOnlyEtaF theta.1 A b y
+  exact le_ciSup
+    (f := fun theta : {theta : ℝ // 0 ≤ theta} =>
+      lsNormwiseBackwardErrorEtaF theta.1 A b y)
+    hbdd ⟨theta, htheta⟩
+
+/-- Compactness-route sublevel bound for (20.20): an exact finite minimizer
+    at any weight `theta >= 1` has its weight-one Frobenius cost bounded by the
+    nonnegative finite-weight supremum, the limit already proved for
+    `theta -> infinity`. -/
+theorem lsNormwiseBackwardErrorEtaF_minimizer_costF_one_le_nonneg_iSup_of_one_le_theta
+    {m n : ℕ} {theta : ℝ} (hone : 1 ≤ theta)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ)
+    (hcost :
+      lsNormwiseBackwardErrorCostF theta DeltaA Deltab =
+        lsNormwiseBackwardErrorEtaF theta A b y) :
+    lsNormwiseBackwardErrorCostF (1 : ℝ) DeltaA Deltab ≤
+      (⨆ theta : {theta : ℝ // 0 ≤ theta},
+        lsNormwiseBackwardErrorEtaF theta.1 A b y) := by
+  have hmono :
+      lsNormwiseBackwardErrorCostF (1 : ℝ) DeltaA Deltab ≤
+        lsNormwiseBackwardErrorCostF theta DeltaA Deltab :=
+    lsNormwiseBackwardErrorCostF_mono_theta_nonneg
+      (by norm_num : (0 : ℝ) ≤ 1) hone DeltaA Deltab
+  have htheta_nonneg : 0 ≤ theta := le_trans zero_le_one hone
+  have heta_le :
+      lsNormwiseBackwardErrorEtaF theta A b y ≤
+        (⨆ theta : {theta : ℝ // 0 ≤ theta},
+          lsNormwiseBackwardErrorEtaF theta.1 A b y) :=
+    lsNormwiseBackwardErrorEtaF_le_nonneg_iSup_of_nonneg
+      htheta_nonneg A b y
+  calc
+    lsNormwiseBackwardErrorCostF (1 : ℝ) DeltaA Deltab ≤
+        lsNormwiseBackwardErrorCostF theta DeltaA Deltab := hmono
+    _ = lsNormwiseBackwardErrorEtaF theta A b y := hcost
+    _ ≤ (⨆ theta : {theta : ℝ // 0 ≤ theta},
+          lsNormwiseBackwardErrorEtaF theta.1 A b y) := heta_le
+
+/-- Existence form of the fixed-sublevel bound: for every finite weight
+    `theta >= 1`, an exact minimizer can be chosen whose weight-one cost is
+    bounded by the nonnegative finite-weight supremum. -/
+theorem lsNormwiseBackwardErrorEtaF_exists_feasible_cost_eq_costF_one_le_nonneg_iSup_of_one_le_theta
+    {m n : ℕ} {theta : ℝ} (hone : 1 ≤ theta)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    ∃ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+      LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+        lsNormwiseBackwardErrorCostF theta DeltaA Deltab =
+          lsNormwiseBackwardErrorEtaF theta A b y ∧
+        lsNormwiseBackwardErrorCostF (1 : ℝ) DeltaA Deltab ≤
+          (⨆ theta : {theta : ℝ // 0 ≤ theta},
+            lsNormwiseBackwardErrorEtaF theta.1 A b y) := by
+  have htheta_pos : 0 < theta := lt_of_lt_of_le zero_lt_one hone
+  rcases lsNormwiseBackwardErrorEtaF_exists_feasible_cost_eq_of_positive_theta
+      htheta_pos A b y with ⟨DeltaA, Deltab, hfeas, hcost⟩
+  exact ⟨DeltaA, Deltab, hfeas, hcost,
+    lsNormwiseBackwardErrorEtaF_minimizer_costF_one_le_nonneg_iSup_of_one_le_theta
+      hone A b y DeltaA Deltab hcost⟩
+
+/-- Eventual compactness-route package for the `theta = infinity` discussion:
+    for every positive tolerance and all sufficiently large finite weights,
+    there is an exact minimizer whose weight-one cost is bounded by the proved
+    nonnegative finite-weight limit supremum and whose right-hand-side
+    perturbation is below the tolerance. -/
+theorem lsNormwiseBackwardErrorEtaF_eventually_exists_feasible_cost_eq_costF_one_le_nonneg_iSup_deltab_norm_lt_atTop
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (y : Fin n → ℝ) {eps : ℝ} (heps : 0 < eps) :
+    ∀ᶠ theta : ℝ in Filter.atTop,
+      ∃ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+        1 ≤ theta ∧
+          0 < theta ∧
+          LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+          lsNormwiseBackwardErrorCostF theta DeltaA Deltab =
+            lsNormwiseBackwardErrorEtaF theta A b y ∧
+          lsNormwiseBackwardErrorCostF (1 : ℝ) DeltaA Deltab ≤
+            (⨆ theta : {theta : ℝ // 0 ≤ theta},
+              lsNormwiseBackwardErrorEtaF theta.1 A b y) ∧
+          vecNorm2 Deltab < eps := by
+  filter_upwards
+    [Filter.eventually_ge_atTop (1 : ℝ),
+      lsNormwiseBackwardErrorEtaF_eventually_exists_feasible_cost_eq_deltab_norm_lt_atTop
+        A b y heps] with theta hone htheta_pack
+  rcases htheta_pack with ⟨DeltaA, Deltab, htheta_pos, hfeas, hcost, hdeltab⟩
+  exact ⟨DeltaA, Deltab, hone, htheta_pos, hfeas, hcost,
+    lsNormwiseBackwardErrorEtaF_minimizer_costF_one_le_nonneg_iSup_of_one_le_theta
+      hone A b y DeltaA Deltab hcost,
+    hdeltab⟩
+
+/-- Reverse limiting inequality for the matrix-only convention in (20.20):
+    the matrix-only `Delta b = 0` infimum is bounded by the supremum of the
+    finite nonnegative weighted backward errors.  The proof extracts a
+    convergent subsequence of exact finite minimizers from the fixed weight-one
+    compact sublevel and uses the `Delta b -> 0` bound to obtain a matrix-only
+    feasible limit point. -/
+theorem lsNormwiseBackwardErrorMatrixOnlyEtaF_le_nonneg_iSup {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    lsNormwiseBackwardErrorMatrixOnlyEtaF A b y ≤
+      (⨆ theta : {theta : ℝ // 0 ≤ theta},
+        lsNormwiseBackwardErrorEtaF theta.1 A b y) := by
+  let L : ℝ :=
+    (⨆ theta : {theta : ℝ // 0 ≤ theta},
+      lsNormwiseBackwardErrorEtaF theta.1 A b y)
+  let M : ℝ := lsNormwiseBackwardErrorMatrixOnlyEtaF A b y
+  have hL_nonneg : 0 ≤ L := by
+    have h0_nonneg :
+        0 ≤ lsNormwiseBackwardErrorEtaF (0 : ℝ) A b y :=
+      lsNormwiseBackwardErrorEtaF_nonneg (0 : ℝ) A b y
+    have h0_le :
+        lsNormwiseBackwardErrorEtaF (0 : ℝ) A b y ≤ L := by
+      simpa [L] using
+        (lsNormwiseBackwardErrorEtaF_le_nonneg_iSup_of_nonneg
+          (by norm_num : (0 : ℝ) ≤ 0) A b y)
+    exact h0_nonneg.trans h0_le
+  have hM_nonneg : 0 ≤ M := by
+    simpa [M] using lsNormwiseBackwardErrorMatrixOnlyEtaF_nonneg A b y
+  have hexists : ∀ k : ℕ,
+      ∃ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+        LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+          lsNormwiseBackwardErrorCostF (((k + 1 : ℕ) : ℝ)) DeltaA Deltab =
+            lsNormwiseBackwardErrorEtaF (((k + 1 : ℕ) : ℝ)) A b y ∧
+          lsNormwiseBackwardErrorCostF (1 : ℝ) DeltaA Deltab ≤ L ∧
+          vecNorm2 Deltab ≤ M / (((k + 1 : ℕ) : ℝ)) := by
+    intro k
+    let theta : ℝ := ((k + 1 : ℕ) : ℝ)
+    have htheta_pos : 0 < theta := by
+      have h : (0 : ℝ) < ((k + 1 : ℕ) : ℝ) := by
+        exact_mod_cast Nat.succ_pos k
+      simpa [theta] using h
+    have hone : 1 ≤ theta := by
+      have h : (1 : ℝ) ≤ ((k + 1 : ℕ) : ℝ) := by
+        exact_mod_cast Nat.succ_le_succ (Nat.zero_le k)
+      simp [theta] at h ⊢
+    rcases
+      lsNormwiseBackwardErrorEtaF_exists_feasible_cost_eq_deltab_norm_le_matrixOnlyEtaF_div_theta
+        htheta_pos A b y with
+      ⟨DeltaA, Deltab, hfeas, hcost, hdeltab⟩
+    have hcost_one :
+        lsNormwiseBackwardErrorCostF (1 : ℝ) DeltaA Deltab ≤ L := by
+      simpa [L] using
+        (lsNormwiseBackwardErrorEtaF_minimizer_costF_one_le_nonneg_iSup_of_one_le_theta
+          hone A b y DeltaA Deltab hcost)
+    exact ⟨DeltaA, Deltab, hfeas, by simpa [theta] using hcost,
+      hcost_one, by simpa [M, theta] using hdeltab⟩
+  choose DeltaA Deltab hfeas hcost hcost_one hdeltab using hexists
+  let pseq : ℕ → (Fin m → Fin n → ℝ) × (Fin m → ℝ) :=
+    fun k => (DeltaA k, Deltab k)
+  let K : Set ((Fin m → Fin n → ℝ) × (Fin m → ℝ)) :=
+    {p | LSNormwiseBackwardErrorFeasible A b y p.1 p.2 ∧
+      lsNormwiseBackwardErrorCostF (1 : ℝ) p.1 p.2 ≤ L}
+  have hKcompact : IsCompact K := by
+    simpa [K, L] using
+      LSNormwiseBackwardErrorFeasible.cost_sublevel_isCompact
+        (m := m) (n := n) (theta := (1 : ℝ)) (R := L)
+        (by norm_num : (0 : ℝ) < 1) hL_nonneg A b y
+  have hpseq_mem : ∀ k, pseq k ∈ K := by
+    intro k
+    exact ⟨hfeas k, hcost_one k⟩
+  rcases hKcompact.tendsto_subseq hpseq_mem with
+    ⟨p, hpK, phi, hphi_mono, hp_tendsto⟩
+  have hphi_atTop : Filter.Tendsto phi Filter.atTop Filter.atTop :=
+    hphi_mono.tendsto_atTop
+  have htheta_nat :
+      Filter.Tendsto (fun k : ℕ => phi k + 1) Filter.atTop Filter.atTop :=
+    (Filter.tendsto_add_atTop_nat 1).comp hphi_atTop
+  have htheta_real :
+      Filter.Tendsto
+        (fun k : ℕ => (((phi k + 1 : ℕ) : ℝ)))
+        Filter.atTop Filter.atTop :=
+    tendsto_natCast_atTop_atTop.comp htheta_nat
+  have hbound_tendsto :
+      Filter.Tendsto
+        (fun k : ℕ => M / (((phi k + 1 : ℕ) : ℝ)))
+        Filter.atTop (nhds 0) := by
+    simpa using tendsto_const_nhds.div_atTop htheta_real
+  have hdeltab_norm_tendsto_zero :
+      Filter.Tendsto
+        (fun k : ℕ => vecNorm2 (Deltab (phi k)))
+        Filter.atTop (nhds 0) := by
+    refine squeeze_zero ?hnonneg ?hupper hbound_tendsto
+    · intro k
+      exact vecNorm2_nonneg (Deltab (phi k))
+    · intro k
+      exact hdeltab (phi k)
+  have hdeltab_tendsto :
+      Filter.Tendsto (fun k : ℕ => Deltab (phi k))
+        Filter.atTop (nhds p.2) := by
+    simpa [pseq, Function.comp_def] using
+      (continuous_snd.tendsto p).comp hp_tendsto
+  have hnorm_tendsto :
+      Filter.Tendsto
+        (fun k : ℕ => vecNorm2 (Deltab (phi k)))
+        Filter.atTop (nhds (vecNorm2 p.2)) :=
+    (continuous_vecNorm2.tendsto p.2).comp hdeltab_tendsto
+  have hp2_norm_zero : vecNorm2 p.2 = 0 :=
+    tendsto_nhds_unique hnorm_tendsto hdeltab_norm_tendsto_zero
+  have hp2_zero : p.2 = 0 := by
+    ext i
+    exact (vecNorm2_eq_zero_iff p.2).mp hp2_norm_zero i
+  have hmatrix_feas :
+      LSNormwiseBackwardErrorFeasible A b y p.1 (0 : Fin m → ℝ) := by
+    simpa [hp2_zero] using hpK.1
+  have hfrob_le : frobNormRect p.1 ≤ L := by
+    simpa [hp2_zero, lsNormwiseBackwardErrorCostF_eq_frobNormRect_of_deltab_zero]
+      using hpK.2
+  exact
+    (lsNormwiseBackwardErrorMatrixOnlyEtaF_le_frobNorm_of_feasible
+      A b y p.1 hmatrix_feas).trans (by simpa [L] using hfrob_le)
+
+/-- The `theta = infinity` matrix-only model for (20.20) is exactly the
+    supremum of the finite nonnegative weighted backward errors. -/
+theorem lsNormwiseBackwardErrorMatrixOnlyEtaF_eq_nonneg_iSup {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    lsNormwiseBackwardErrorMatrixOnlyEtaF A b y =
+      (⨆ theta : {theta : ℝ // 0 ≤ theta},
+        lsNormwiseBackwardErrorEtaF theta.1 A b y) := by
+  exact le_antisymm
+    (lsNormwiseBackwardErrorMatrixOnlyEtaF_le_nonneg_iSup A b y)
+    (lsNormwiseBackwardErrorEtaF_nonneg_iSup_le_matrixOnlyEtaF A b y)
+
+/-- Real-parameter limiting foundation for (20.20): as `theta -> +∞`, the
+    finite-weight backward error converges to the supremum of its nonnegative
+    finite-weight values.  The source's full matrix-only formula still
+    requires the reverse comparison with the `Delta b = 0` infimum. -/
+theorem lsNormwiseBackwardErrorEtaF_tendsto_nonneg_iSup_atTop {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    Filter.Tendsto
+      (fun theta : ℝ => lsNormwiseBackwardErrorEtaF theta A b y)
+      Filter.atTop
+      (nhds (⨆ theta : {theta : ℝ // 0 ≤ theta},
+        lsNormwiseBackwardErrorEtaF theta.1 A b y)) := by
+  let clamp : ℝ → {theta : ℝ // 0 ≤ theta} :=
+    fun theta => ⟨max theta 0, le_max_right theta 0⟩
+  have hclamp : Filter.Tendsto clamp Filter.atTop Filter.atTop := by
+    refine Filter.tendsto_atTop_atTop.mpr ?_
+    intro bound
+    refine ⟨bound.1, ?_⟩
+    intro theta htheta
+    change bound.1 ≤ max theta 0
+    exact le_trans htheta (le_max_left theta 0)
+  have hcomp :
+      Filter.Tendsto
+        (fun theta : ℝ =>
+          lsNormwiseBackwardErrorEtaF (max theta 0) A b y)
+        Filter.atTop
+        (nhds (⨆ theta : {theta : ℝ // 0 ≤ theta},
+          lsNormwiseBackwardErrorEtaF theta.1 A b y)) := by
+    simpa [clamp, Function.comp_def] using
+      (lsNormwiseBackwardErrorEtaF_nonneg_tendsto_iSup A b y).comp hclamp
+  exact Filter.Tendsto.congr'
+    (f₁ := fun theta : ℝ =>
+      lsNormwiseBackwardErrorEtaF (max theta 0) A b y)
+    (f₂ := fun theta : ℝ => lsNormwiseBackwardErrorEtaF theta A b y)
+    (by
+      filter_upwards [Filter.eventually_ge_atTop (0 : ℝ)] with theta htheta
+      simp [max_eq_left htheta])
+    hcomp
+
+/-- Matrix-only limiting form of (20.20): as `theta -> +∞`, the finite-weight
+    normwise backward error converges to the matrix-only `Delta b = 0`
+    infimum. -/
+theorem lsNormwiseBackwardErrorEtaF_tendsto_matrixOnlyEtaF_atTop {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    Filter.Tendsto
+      (fun theta : ℝ => lsNormwiseBackwardErrorEtaF theta A b y)
+      Filter.atTop
+      (nhds (lsNormwiseBackwardErrorMatrixOnlyEtaF A b y)) := by
+  rw [lsNormwiseBackwardErrorMatrixOnlyEtaF_eq_nonneg_iSup A b y]
+  exact lsNormwiseBackwardErrorEtaF_tendsto_nonneg_iSup_atTop A b y
 
 /-- A bounded feasible perturbation cost in (20.20) bounds the infimum model
     `eta_F(y)`. -/
@@ -11045,6 +11619,155 @@ theorem lsNormwiseBackwardErrorFormulaMatrix_rowGram_eq_eigenMatrix_add_phi_sq_i
         (lsNormwiseBackwardErrorPhi theta r y) ^ 2 * idMatrix m i k := by
           simp [phi, lsNormwiseBackwardErrorEigenMatrix]
 
+/-- Generic row-Gram quadratic-form identity:
+    `x^T (B B^T) x = ||B^T x||_2^2`. -/
+theorem finiteQuadraticForm_rowGram_transpose_eq_vecNorm2Sq_rectMatMulVec_finiteTranspose
+    {m n : ℕ} (B : Fin m → Fin n → ℝ) (p : Fin m → ℝ) :
+    finiteQuadraticForm (fun i k : Fin m => ∑ q : Fin n, B i q * B k q) p =
+      vecNorm2Sq (rectMatMulVec (finiteTranspose B) p) := by
+  unfold finiteQuadraticForm finiteMatVec vecNorm2Sq rectMatMulVec finiteTranspose
+  calc
+    (∑ i : Fin m, p i * ∑ j : Fin m, (∑ q : Fin n, B i q * B j q) * p j)
+        = ∑ i : Fin m, ∑ j : Fin m, ∑ q : Fin n,
+            p i * (B i q * B j q) * p j := by
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [Finset.mul_sum]
+            apply Finset.sum_congr rfl
+            intro j _
+            rw [Finset.sum_mul]
+            rw [Finset.mul_sum]
+            apply Finset.sum_congr rfl
+            intro q _
+            ring
+    _ = ∑ q : Fin n, ∑ i : Fin m, ∑ j : Fin m,
+            p i * (B i q * B j q) * p j := by
+            calc
+              (∑ i : Fin m, ∑ j : Fin m, ∑ q : Fin n,
+                  p i * (B i q * B j q) * p j)
+                  = ∑ i : Fin m, ∑ q : Fin n, ∑ j : Fin m,
+                      p i * (B i q * B j q) * p j := by
+                      apply Finset.sum_congr rfl
+                      intro i _
+                      rw [Finset.sum_comm]
+              _ = ∑ q : Fin n, ∑ i : Fin m, ∑ j : Fin m,
+                      p i * (B i q * B j q) * p j := by
+                      rw [Finset.sum_comm]
+    _ = ∑ q : Fin n, (∑ i : Fin m, B i q * p i) ^ 2 := by
+            apply Finset.sum_congr rfl
+            intro q _
+            rw [pow_two]
+            rw [Finset.sum_mul]
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [Finset.mul_sum]
+            apply Finset.sum_congr rfl
+            intro j _
+            ring
+
+/-- The Theorem 20.5 eigenmatrix is symmetric in the repository's finite-matrix
+    predicate form. -/
+theorem lsNormwiseBackwardErrorEigenMatrix_isSymmetricFiniteMatrix
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ)
+    (r : Fin m → ℝ) (y : Fin n → ℝ) :
+    IsSymmetricFiniteMatrix (lsNormwiseBackwardErrorEigenMatrix theta A r y) := by
+  intro i k
+  exact lsNormwiseBackwardErrorEigenMatrix_apply_comm theta A r y i k
+
+/-- `lambda_* I <= A A^T - mu rr^T / ||y||_2^2` in finite Loewner order. -/
+theorem lsNormwiseBackwardErrorLambdaStar_smul_id_finiteLoewnerLe_eigenMatrix
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ) :
+    finiteLoewnerLe
+      (fun i k : Fin (m + 1) =>
+        lsNormwiseBackwardErrorLambdaStar theta A r y * finiteIdMatrix i k)
+      (lsNormwiseBackwardErrorEigenMatrix theta A r y) := by
+  let M : Fin (m + 1) → Fin (m + 1) → ℝ :=
+    lsNormwiseBackwardErrorEigenMatrix theta A r y
+  let hM : IsSymmetricFiniteMatrix M :=
+    lsNormwiseBackwardErrorEigenMatrix_isSymmetricFiniteMatrix theta A r y
+  apply finiteLoewnerLe_smul_id_of_le_finiteHermitianEigenvalues M hM
+  intro a
+  unfold finiteHermitianEigenvalues
+  rw [Matrix.IsHermitian.eigenvalues]
+  exact
+    lsNormwiseBackwardErrorLambdaStar_le_eigenvalues₀ theta A r y
+      ((Fintype.equivOfCardEq
+        (Fintype.card_fin (Fintype.card (Fin (m + 1))))).symm a)
+
+/-- Rayleigh lower bound from the least Hermitian eigenvalue `lambda_*`. -/
+theorem lsNormwiseBackwardErrorLambdaStar_mul_vecNorm2Sq_le_eigenMatrix_quadraticForm
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (p : Fin (m + 1) → ℝ) :
+    lsNormwiseBackwardErrorLambdaStar theta A r y * vecNorm2Sq p ≤
+      finiteQuadraticForm (lsNormwiseBackwardErrorEigenMatrix theta A r y) p := by
+  have hle :=
+    lsNormwiseBackwardErrorLambdaStar_smul_id_finiteLoewnerLe_eigenMatrix
+      theta A r y p
+  rw [finiteQuadraticForm_smul_finiteIdMatrix] at hle
+  simpa [finiteVecNorm2Sq, vecNorm2Sq] using hle
+
+/-- Rayleigh lower bound for the WKS source block obtained from the row-Gram
+    identity and `lambda_*`.  This is the next spectral bridge toward the
+    equality between the (20.21) minimum RHS and the Theorem 20.5 eigenvalue
+    RHS. -/
+theorem lsNormwiseBackwardErrorFormulaMatrix_transpose_vecNorm2Sq_ge_phi_sq_add_lambdaStar
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hrsq : vecNorm2Sq r ≠ 0) (p : Fin (m + 1) → ℝ) :
+    ((lsNormwiseBackwardErrorPhi theta r y) ^ 2 +
+        lsNormwiseBackwardErrorLambdaStar theta A r y) *
+        vecNorm2Sq p ≤
+      vecNorm2Sq
+        (rectMatMulVec
+          (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y)) p) := by
+  let B : Fin (m + 1) → Fin (n + (m + 1)) → ℝ :=
+    lsNormwiseBackwardErrorFormulaMatrix theta A r y
+  let M : Fin (m + 1) → Fin (m + 1) → ℝ :=
+    lsNormwiseBackwardErrorEigenMatrix theta A r y
+  let phi : ℝ := lsNormwiseBackwardErrorPhi theta r y
+  let lambda : ℝ := lsNormwiseBackwardErrorLambdaStar theta A r y
+  have hlambda :
+      lambda * vecNorm2Sq p ≤ finiteQuadraticForm M p := by
+    simpa [lambda, M] using
+      lsNormwiseBackwardErrorLambdaStar_mul_vecNorm2Sq_le_eigenMatrix_quadraticForm
+        theta A r y p
+  have hrowEntry :
+      (fun i k : Fin (m + 1) => ∑ q : Fin (n + (m + 1)), B i q * B k q) =
+        fun i k : Fin (m + 1) => M i k + phi ^ 2 * finiteIdMatrix i k := by
+    ext i k
+    simpa [B, M, phi, finiteIdMatrix, idMatrix] using
+      lsNormwiseBackwardErrorFormulaMatrix_rowGram_eq_eigenMatrix_add_phi_sq_id
+        theta A r hy hrsq i k
+  have hquad :
+      finiteQuadraticForm
+          (fun i k : Fin (m + 1) => ∑ q : Fin (n + (m + 1)), B i q * B k q) p =
+        finiteQuadraticForm M p + phi ^ 2 * vecNorm2Sq p := by
+    rw [hrowEntry, finiteQuadraticForm_add, finiteQuadraticForm_smul_finiteIdMatrix]
+    simp [finiteVecNorm2Sq, vecNorm2Sq]
+  have hgram :=
+    finiteQuadraticForm_rowGram_transpose_eq_vecNorm2Sq_rectMatMulVec_finiteTranspose
+      B p
+  calc
+    ((lsNormwiseBackwardErrorPhi theta r y) ^ 2 +
+        lsNormwiseBackwardErrorLambdaStar theta A r y) *
+        vecNorm2Sq p
+        = lambda * vecNorm2Sq p + phi ^ 2 * vecNorm2Sq p := by
+            simp [lambda, phi]
+            ring
+    _ ≤ finiteQuadraticForm M p + phi ^ 2 * vecNorm2Sq p := by
+            nlinarith [hlambda]
+    _ =
+        finiteQuadraticForm
+          (fun i k : Fin (m + 1) => ∑ q : Fin (n + (m + 1)), B i q * B k q) p := by
+            rw [hquad]
+    _ =
+      vecNorm2Sq
+        (rectMatMulVec
+          (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y)) p) := by
+            simpa [B] using hgram
+
 /-- The appended projector block in (20.21) annihilates the residual direction:
     `[ A   phi(I - r r^+) ] [0; r] = 0` for nonzero residual `r`. -/
 theorem lsNormwiseBackwardErrorFormulaMatrix_right_residual_mulVec_eq_zero
@@ -12413,6 +13136,228 @@ theorem lsNormwiseBackwardErrorFormulaRHS_nonneg
   simpa [lsNormwiseBackwardErrorFormulaRHS] using
     lsNormwiseBackwardErrorFormulaValue_nonneg theta A
       (lsResidualHigham A b y) y
+
+/-- Upper square comparison for the WKS row-side `sigma_min`: the eigenvector
+    for `lambda_*` in the Hermitian Theorem 20.5 matrix makes the shifted
+    row-Gram action exact, while the row-side singular-value lower-bound API
+    gives `sigma_min^2 <= phi^2 + lambda_*`. -/
+theorem lsNormwiseBackwardErrorFormulaMatrixSigmaMin_sq_le_phi_sq_add_lambdaStar
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hrsq : vecNorm2Sq r ≠ 0) :
+    (lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y) ^ 2 ≤
+      (lsNormwiseBackwardErrorPhi theta r y) ^ 2 +
+        lsNormwiseBackwardErrorLambdaStar theta A r y := by
+  let B : Fin (m + 1) → Fin (n + (m + 1)) → ℝ :=
+    lsNormwiseBackwardErrorFormulaMatrix theta A r y
+  let M : Fin (m + 1) → Fin (m + 1) → ℝ :=
+    lsNormwiseBackwardErrorEigenMatrix theta A r y
+  let hM : IsSymmetricFiniteMatrix M :=
+    lsNormwiseBackwardErrorEigenMatrix_isSymmetricFiniteMatrix theta A r y
+  let phi : ℝ := lsNormwiseBackwardErrorPhi theta r y
+  let lambda : ℝ := lsNormwiseBackwardErrorLambdaStar theta A r y
+  let sigma : ℝ := lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y
+  let e : Fin (Fintype.card (Fin (m + 1))) ≃ Fin (m + 1) :=
+    Fintype.equivOfCardEq (Fintype.card_fin _)
+  let a0 : Fin (Fintype.card (Fin (m + 1))) :=
+    lsNormwiseBackwardErrorLambdaStarIndex m
+  let a : Fin (m + 1) := e a0
+  let p : Fin (m + 1) → ℝ :=
+    ⇑((IsSymmetricFiniteMatrix.to_matrix_isHermitian M hM).eigenvectorBasis a)
+  have hlambda_eig : finiteHermitianEigenvalues M hM a = lambda := by
+    unfold finiteHermitianEigenvalues lambda lsNormwiseBackwardErrorLambdaStar
+    simp only [Matrix.IsHermitian.eigenvalues]
+    congr 1
+    simp [e, a0, a]
+  have hpnorm_sq : vecNorm2Sq p = 1 := by
+    have h := finiteVecNorm2Sq_finiteHermitianEigenvector_eq_one M hM a
+    simpa [p, finiteVecNorm2Sq, vecNorm2Sq] using h
+  have hpnorm : vecNorm2 p = 1 := by
+    unfold vecNorm2
+    rw [hpnorm_sq]
+    norm_num
+  have hrowEntry :
+      (fun i k : Fin (m + 1) => ∑ q : Fin (n + (m + 1)), B i q * B k q) =
+        fun i k : Fin (m + 1) => M i k + phi ^ 2 * finiteIdMatrix i k := by
+    ext i k
+    simpa [B, M, phi, finiteIdMatrix, idMatrix] using
+      lsNormwiseBackwardErrorFormulaMatrix_rowGram_eq_eigenMatrix_add_phi_sq_id
+        theta A r hy hrsq i k
+  have hquadM : finiteQuadraticForm M p = lambda * vecNorm2Sq p := by
+    have h :=
+      finiteQuadraticForm_finiteHermitianEigenvector_eq_eigenvalue_mul_norm_sq
+        M hM a
+    simpa [p, finiteVecNorm2Sq, vecNorm2Sq, hlambda_eig] using h
+  have haction_sq :
+      vecNorm2Sq (rectMatMulVec (finiteTranspose B) p) = phi ^ 2 + lambda := by
+    have hgram :=
+      finiteQuadraticForm_rowGram_transpose_eq_vecNorm2Sq_rectMatMulVec_finiteTranspose
+        B p
+    calc
+      vecNorm2Sq (rectMatMulVec (finiteTranspose B) p)
+          =
+        finiteQuadraticForm
+          (fun i k : Fin (m + 1) => ∑ q : Fin (n + (m + 1)), B i q * B k q) p := by
+            rw [hgram]
+      _ =
+        finiteQuadraticForm
+          (fun i k : Fin (m + 1) => M i k + phi ^ 2 * finiteIdMatrix i k) p := by
+            rw [hrowEntry]
+      _ = finiteQuadraticForm M p + phi ^ 2 * vecNorm2Sq p := by
+            rw [finiteQuadraticForm_add, finiteQuadraticForm_smul_finiteIdMatrix]
+            simp [finiteVecNorm2Sq, vecNorm2Sq]
+      _ = lambda * vecNorm2Sq p + phi ^ 2 * vecNorm2Sq p := by
+            rw [hquadM]
+      _ = phi ^ 2 + lambda := by
+            rw [hpnorm_sq]
+            ring
+  have hsigma_le_norm :
+      sigma ≤ vecNorm2 (rectMatMulVec (finiteTranspose B) p) := by
+    have h :=
+      lsNormwiseBackwardErrorFormulaMatrixSigmaMin_mul_vecNorm2_le_transpose_mulVec
+        theta A r y p
+    simpa [sigma, B, hpnorm] using h
+  have hsigma_nonneg : 0 ≤ sigma := by
+    simpa [sigma] using
+      lsNormwiseBackwardErrorFormulaMatrixSigmaMin_nonneg theta A r y
+  have hsquare :
+      sigma ^ 2 ≤ (vecNorm2 (rectMatMulVec (finiteTranspose B) p)) ^ 2 := by
+    exact
+      (sq_le_sq₀ hsigma_nonneg
+        (vecNorm2_nonneg (rectMatMulVec (finiteTranspose B) p))).mpr
+        hsigma_le_norm
+  rw [vecNorm2_sq, haction_sq] at hsquare
+  simpa [sigma, phi, lambda] using hsquare
+
+/-- Lower square comparison for the WKS row-side `sigma_min`: the Rayleigh
+    lower bound applied to an exact row-side `sigma_min` attainer gives
+    `phi^2 + lambda_* <= sigma_min^2`. -/
+theorem lsNormwiseBackwardErrorFormulaMatrixSigmaMin_sq_ge_phi_sq_add_lambdaStar
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hrsq : vecNorm2Sq r ≠ 0) :
+    (lsNormwiseBackwardErrorPhi theta r y) ^ 2 +
+        lsNormwiseBackwardErrorLambdaStar theta A r y ≤
+      (lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y) ^ 2 := by
+  let B : Fin (m + 1) → Fin (n + (m + 1)) → ℝ :=
+    lsNormwiseBackwardErrorFormulaMatrix theta A r y
+  let phi : ℝ := lsNormwiseBackwardErrorPhi theta r y
+  let lambda : ℝ := lsNormwiseBackwardErrorLambdaStar theta A r y
+  let sigma : ℝ := lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y
+  rcases
+    lsNormwiseBackwardErrorFormulaMatrixSigmaMin_exists_transpose_attaining_vector_sq
+      theta A r y with
+    ⟨p, hp_ne, hp_action⟩
+  have hp_norm_ne : vecNorm2 p ≠ 0 := by
+    intro hnorm
+    apply hp_ne
+    ext i
+    exact (vecNorm2_eq_zero_iff p).mp hnorm i
+  have hp_sq_pos : 0 < vecNorm2Sq p := by
+    rw [← vecNorm2_sq p]
+    exact sq_pos_of_ne_zero hp_norm_ne
+  have hlower :=
+    lsNormwiseBackwardErrorFormulaMatrix_transpose_vecNorm2Sq_ge_phi_sq_add_lambdaStar
+      theta A r hy hrsq p
+  have hmul : (phi ^ 2 + lambda) * vecNorm2Sq p ≤ sigma ^ 2 * vecNorm2Sq p := by
+    simpa [B, phi, lambda, sigma] using
+      (hlower.trans (le_of_eq hp_action))
+  exact le_of_mul_le_mul_right hmul hp_sq_pos
+
+/-- Exact square bridge between the row-side source-block singular value in
+    (20.21) and the shifted least eigenvalue in Theorem 20.5. -/
+theorem lsNormwiseBackwardErrorFormulaMatrixSigmaMin_sq_eq_phi_sq_add_lambdaStar
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hrsq : vecNorm2Sq r ≠ 0) :
+    (lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y) ^ 2 =
+      (lsNormwiseBackwardErrorPhi theta r y) ^ 2 +
+        lsNormwiseBackwardErrorLambdaStar theta A r y :=
+  le_antisymm
+    (lsNormwiseBackwardErrorFormulaMatrixSigmaMin_sq_le_phi_sq_add_lambdaStar
+      theta A r hy hrsq)
+    (lsNormwiseBackwardErrorFormulaMatrixSigmaMin_sq_ge_phi_sq_add_lambdaStar
+      theta A r hy hrsq)
+
+/-- The (20.21) minimum RHS agrees with the Theorem 20.5 eigenvalue RHS for a
+    supplied nonzero residual and finite nonzero `y`.  This closes the
+    finite-`theta` WKS spectral equivalence at the formula-value layer. -/
+theorem lsNormwiseBackwardErrorFormulaValue_eq_eigenvalueFormulaValue
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hrsq : vecNorm2Sq r ≠ 0) :
+    lsNormwiseBackwardErrorFormulaValue theta A r y =
+      lsNormwiseBackwardErrorEigenvalueFormulaValue theta A r y := by
+  let phi : ℝ := lsNormwiseBackwardErrorPhi theta r y
+  let sigma : ℝ := lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y
+  let lambda : ℝ := lsNormwiseBackwardErrorLambdaStar theta A r y
+  have hphi_nonneg : 0 ≤ phi := by
+    simpa [phi] using lsNormwiseBackwardErrorPhi_nonneg theta r y
+  have hsigma_nonneg : 0 ≤ sigma := by
+    simpa [sigma] using
+      lsNormwiseBackwardErrorFormulaMatrixSigmaMin_nonneg theta A r y
+  have hsq : sigma ^ 2 = phi ^ 2 + lambda := by
+    simpa [sigma, phi, lambda] using
+      lsNormwiseBackwardErrorFormulaMatrixSigmaMin_sq_eq_phi_sq_add_lambdaStar
+        theta A r hy hrsq
+  have hphi_sq_source :
+      (vecNorm2Sq r / vecNorm2Sq y) * lsNormwiseBackwardErrorMu theta y =
+        phi ^ 2 := by
+    have h := lsNormwiseBackwardErrorPhi_sq_eq_mu_mul_residual_sq_div_y_sq
+      theta r y
+    rw [h]
+    ring
+  by_cases hlambda_nonneg : 0 ≤ lambda
+  · have hphi_sq_le_sigma_sq : phi ^ 2 ≤ sigma ^ 2 := by
+      rw [hsq]
+      nlinarith
+    have hphi_le_sigma : phi ≤ sigma :=
+      (sq_le_sq₀ hphi_nonneg hsigma_nonneg).mp hphi_sq_le_sigma_sq
+    have hformula : lsNormwiseBackwardErrorFormulaValue theta A r y = phi := by
+      unfold lsNormwiseBackwardErrorFormulaValue
+      exact min_eq_left (by simpa [phi, sigma] using hphi_le_sigma)
+    have heigen :
+        lsNormwiseBackwardErrorEigenvalueFormulaValue theta A r y = phi := by
+      simpa [phi, lambda] using
+        lsNormwiseBackwardErrorEigenvalueFormulaValue_eq_phi_of_lambdaStar_nonneg
+          theta A r y (by simpa [lambda] using hlambda_nonneg)
+    rw [hformula, heigen]
+  · have hlambda_neg : lambda < 0 := lt_of_not_ge hlambda_nonneg
+    have hsigma_sq_le_phi_sq : sigma ^ 2 ≤ phi ^ 2 := by
+      rw [hsq]
+      nlinarith
+    have hsigma_le_phi : sigma ≤ phi :=
+      (sq_le_sq₀ hsigma_nonneg hphi_nonneg).mp hsigma_sq_le_phi_sq
+    have hformula :
+        lsNormwiseBackwardErrorFormulaValue theta A r y = sigma := by
+      unfold lsNormwiseBackwardErrorFormulaValue
+      exact min_eq_right (by simpa [phi, sigma] using hsigma_le_phi)
+    have heigen :
+        lsNormwiseBackwardErrorEigenvalueFormulaValue theta A r y = sigma := by
+      rw [lsNormwiseBackwardErrorEigenvalueFormulaValue_eq_sqrt_of_lambdaStar_neg
+        theta A r y (by simpa [lambda] using hlambda_neg)]
+      have hinside :
+          (vecNorm2Sq r / vecNorm2Sq y) * lsNormwiseBackwardErrorMu theta y +
+              lsNormwiseBackwardErrorLambdaStar theta A r y =
+            sigma ^ 2 := by
+        rw [hphi_sq_source]
+        simpa [phi, lambda] using hsq.symm
+      rw [hinside, Real.sqrt_sq_eq_abs, abs_of_nonneg hsigma_nonneg]
+    rw [hformula, heigen]
+
+/-- Source-data version of the WKS finite-`theta` spectral equivalence between
+    the (20.21) minimum RHS and the Theorem 20.5 eigenvalue RHS, under the
+    nonzero residual and nonzero `y` hypotheses required by the row-Gram shift. -/
+theorem lsNormwiseBackwardErrorFormulaRHS_eq_eigenvalueFormulaRHS_of_residual_sq_ne_zero
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hrsq : vecNorm2Sq (lsResidualHigham A b y) ≠ 0) :
+    lsNormwiseBackwardErrorFormulaRHS theta A b y =
+      lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y := by
+  simpa [lsNormwiseBackwardErrorFormulaRHS,
+    lsNormwiseBackwardErrorEigenvalueFormulaRHS] using
+    lsNormwiseBackwardErrorFormulaValue_eq_eigenvalueFormulaValue
+      theta A (lsResidualHigham A b y) hy hrsq
 
 /-- Positivity characterization for the printed right-hand side in (20.21):
     the outer minimum `min {phi, sigma_min}` is positive exactly when both
@@ -16249,6 +17194,36 @@ theorem LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQR
     hH1nonneg, hH2nonneg, hH3nonneg, hH1norm, hH2norm, hH3norm,
     hDeltaR1, hDeltaR2, ?_⟩
   simpa [Q, Rhat, R, c_hat, cBot, h, rhat] using hsys
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.4, source-facing coefficient
+    obstruction for the printed `Delta f` route.
+
+    Under positive unit roundoff and a nonempty panel, the conservative
+    implementation-backed RHS coefficient exposed by
+    `...with_gamma_factor_source_rhs_bound` is strictly larger than the printed
+    coefficient `sqrt(n+k) * n * gamma`.  Thus the remaining Theorem 20.4 gap
+    cannot be closed by converting the current conservative coefficient to the
+    printed one; the RHS arithmetic/model itself must be sharpened. -/
+theorem theorem20_4_printed_deltaf_coefficient_lt_conservative_gammaFactor_coefficient
+    (fp : FPModel) {n k : ℕ} (hn : 0 < n) (hu : 0 < fp.u)
+    (hvalid :
+      gammaValid fp (n * householderConstructApplyGammaIndex (n + k))) :
+    Real.sqrt (n + k : ℝ) *
+        ((n : ℝ) *
+          gamma fp (n * householderConstructApplyGammaIndex (n + k))) <
+      Real.sqrt (n + k : ℝ) *
+        ((2 : ℝ) *
+          (householderQRRhsPanelGammaClosedGrowthFactor (n + k) n : ℝ) *
+          gamma fp (n * householderConstructApplyGammaIndex (n + k))) := by
+  have hm : 0 < n + k := Nat.lt_of_lt_of_le hn (Nat.le_add_right n k)
+  have hsqrt_pos : 0 < Real.sqrt (n + k : ℝ) := by
+    exact Real.sqrt_pos.2 (by exact_mod_cast hm)
+  exact mul_lt_mul_of_pos_left
+    (by
+      simpa [mul_assoc] using
+        householderQRRhsPanelGammaClosedGrowthFactor_printedCoeff_lt_factorCoeff
+          fp (m := n + k) (p := n) hm hn hu hvalid)
+    hsqrt_pos
 
 private theorem vecNorm2Sq_add_eq {m : ℕ} (r e : Fin m → ℝ) :
     vecNorm2Sq (fun i => r i + e i) =
@@ -20941,6 +21916,107 @@ theorem lsNormwiseBackwardErrorEtaF_eq_eigenvalueFormulaRHS_and_pos_of_formulaRH
   exact ⟨hclosed.1.trans hspectral, hclosed.2.1, by
     rw [← hspectral]
     exact hclosed.2.2⟩
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.5 with (20.21):
+    finite-positive WKS equality in the eigenvalue formulation, under the
+    source-block full-row-rank hypothesis already used for the minimum formula.
+    The nonzero-residual condition required by the spectral bridge follows
+    from the non-minimizer hypothesis. -/
+theorem lsNormwiseBackwardErrorEtaF_eq_eigenvalueFormulaRHS_and_pos_of_positive_theta_not_isLeastSquaresMinimizer_of_formulaMatrixRowRank_eq_card
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hnot : ¬ IsLeastSquaresMinimizer A b y)
+    (hrank :
+      lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+        (lsResidualHigham A b y) y = m + 1) :
+    lsNormwiseBackwardErrorEtaF theta A b y =
+        lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y ∧
+      0 < lsNormwiseBackwardErrorEtaF theta A b y ∧
+      0 < lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y := by
+  have hrsq : vecNorm2Sq (lsResidualHigham A b y) ≠ 0 := by
+    intro hrsq_zero
+    have hnorm : vecNorm2 (lsResidualHigham A b y) = 0 := by
+      simp [vecNorm2, hrsq_zero]
+    have hres : lsResidualHigham A b y = 0 := by
+      ext i
+      exact (vecNorm2_eq_zero_iff (lsResidualHigham A b y)).mp hnorm i
+    exact hnot (IsLeastSquaresMinimizer.of_lsResidualHigham_eq_zero hres)
+  exact
+    lsNormwiseBackwardErrorEtaF_eq_eigenvalueFormulaRHS_and_pos_of_formulaRHS_eq_eigenvalueFormulaRHS_of_formulaMatrixRowRank_eq_card
+      htheta A b hy hnot hrank
+      (lsNormwiseBackwardErrorFormulaRHS_eq_eigenvalueFormulaRHS_of_residual_sq_ne_zero
+        theta A b hy hrsq)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.5 with (20.21):
+    source-left-panel finite-positive WKS equality in the eigenvalue
+    formulation.  Full row rank of `A` supplies the source-block rank
+    hypothesis, and the new spectral bridge supplies the eigenvalue RHS. -/
+theorem lsNormwiseBackwardErrorEtaF_eq_eigenvalueFormulaRHS_and_pos_of_positive_theta_not_isLeastSquaresMinimizer_of_left_panel_rowRank_eq_card
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hnot : ¬ IsLeastSquaresMinimizer A b y)
+    (hA : lsRealRectRowRank A = m + 1) :
+    lsNormwiseBackwardErrorEtaF theta A b y =
+        lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y ∧
+      0 < lsNormwiseBackwardErrorEtaF theta A b y ∧
+      0 < lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y := by
+  have hrank :
+      lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+        (lsResidualHigham A b y) y = m + 1 :=
+    lsNormwiseBackwardErrorFormulaMatrixRowRank_eq_card_of_left_panel_rowRank_eq_card
+      theta A (lsResidualHigham A b y) y hA
+  exact
+    lsNormwiseBackwardErrorEtaF_eq_eigenvalueFormulaRHS_and_pos_of_positive_theta_not_isLeastSquaresMinimizer_of_formulaMatrixRowRank_eq_card
+      htheta A b hy hnot hrank
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.5 limiting discussion:
+    under the already proved finite-positive WKS hypotheses, the printed
+    eigenvalue right-hand side has the same `theta -> +∞` limit as the
+    finite-weight backward-error model.  This version records the limit as the
+    supremum of nonnegative finite-weight values; the following theorem rewrites
+    it to the matrix-only infimum using the compactness equality. -/
+theorem lsNormwiseBackwardErrorEigenvalueFormulaRHS_tendsto_nonneg_iSup_atTop_of_left_panel_rowRank_eq_card
+    {m n : ℕ} (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hnot : ¬ IsLeastSquaresMinimizer A b y)
+    (hA : lsRealRectRowRank A = m + 1) :
+    Filter.Tendsto
+      (fun theta : ℝ =>
+        lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y)
+      Filter.atTop
+      (nhds (⨆ theta : {theta : ℝ // 0 ≤ theta},
+        lsNormwiseBackwardErrorEtaF theta.1 A b y)) := by
+  exact Filter.Tendsto.congr'
+    (f₁ := fun theta : ℝ => lsNormwiseBackwardErrorEtaF theta A b y)
+    (f₂ := fun theta : ℝ =>
+      lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y)
+    (by
+      filter_upwards [Filter.eventually_gt_atTop (0 : ℝ)] with theta htheta
+      exact
+        (lsNormwiseBackwardErrorEtaF_eq_eigenvalueFormulaRHS_and_pos_of_positive_theta_not_isLeastSquaresMinimizer_of_left_panel_rowRank_eq_card
+          htheta A b hy hnot hA).1)
+    (lsNormwiseBackwardErrorEtaF_tendsto_nonneg_iSup_atTop A b y)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.5 limiting discussion:
+    under the finite-positive WKS hypotheses, the printed eigenvalue
+    right-hand side tends to the matrix-only `Delta b = 0` infimum as
+    `theta -> +∞`. -/
+theorem lsNormwiseBackwardErrorEigenvalueFormulaRHS_tendsto_matrixOnlyEtaF_atTop_of_left_panel_rowRank_eq_card
+    {m n : ℕ} (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hnot : ¬ IsLeastSquaresMinimizer A b y)
+    (hA : lsRealRectRowRank A = m + 1) :
+    Filter.Tendsto
+      (fun theta : ℝ =>
+        lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y)
+      Filter.atTop
+      (nhds (lsNormwiseBackwardErrorMatrixOnlyEtaF A b y)) := by
+  rw [lsNormwiseBackwardErrorMatrixOnlyEtaF_eq_nonneg_iSup A b y]
+  exact
+    lsNormwiseBackwardErrorEigenvalueFormulaRHS_tendsto_nonneg_iSup_atTop_of_left_panel_rowRank_eq_card
+      A b hy hnot hA
 
 /-- Positive finite-`theta` WKS branch from the concrete rank-one
     source-block certificate.  This replaces the generic upper-inequality
@@ -42601,6 +43677,90 @@ theorem storedQRSignedStageGlobalCompactBudget_nonneg
       (storedQRSignedStage_compact_component_le_globalBudget
         hmn fp A_hat alpha t ht r l)
 
+/-- A signed-stage global compact-budget recurrence propagates nonnegativity
+    from the initial stage budget across the QR horizon. -/
+theorem storedQRSignedStageBudget_nonneg_on_stages_of_globalCompactBudget
+    {m n : ℕ} (hmn : n ≤ m)
+    (fp : FPModel)
+    (A_hat : ℕ → Fin m → Fin n → ℝ)
+    (alpha : ℕ → ℝ)
+    (stageBudget : ℕ → ℝ)
+    (hm : gammaValid fp m)
+    (hglobalBudget : ∀ t (ht : t < n),
+      coxHighamActiveRowGrowthFactor m * stageBudget t +
+          storedQRSignedStageGlobalCompactBudget hmn fp A_hat alpha t ht ≤
+        stageBudget (t + 1))
+    (hBudget0_nonneg : 0 ≤ stageBudget 0) :
+    ∀ t : ℕ, t ≤ n → 0 ≤ stageBudget t := by
+  intro t ht
+  induction t with
+  | zero =>
+      simpa using hBudget0_nonneg
+  | succ t ih =>
+      have ht_le : t ≤ n := Nat.le_of_succ_le ht
+      have ht_lt : t < n := Nat.lt_of_succ_le ht
+      have hprev_nonneg : 0 ≤ stageBudget t := ih ht_le
+      have hscale_nonneg :
+          0 ≤ coxHighamActiveRowGrowthFactor m * stageBudget t :=
+        mul_nonneg (coxHighamActiveRowGrowthFactor_nonneg m) hprev_nonneg
+      have hcompact_nonneg :
+          0 ≤ storedQRSignedStageGlobalCompactBudget hmn fp A_hat alpha t ht_lt :=
+        storedQRSignedStageGlobalCompactBudget_nonneg
+          hmn fp A_hat alpha t ht_lt hm
+      exact
+        (add_nonneg hscale_nonneg hcompact_nonneg).trans
+          (hglobalBudget t ht_lt)
+
+/-- A signed-stage global compact-budget recurrence is monotone on QR stages
+    once the initial stage budget is nonnegative. -/
+theorem storedQRSignedStageBudget_mono_on_stages_of_globalCompactBudget_of_initial_nonneg
+    {m n : ℕ} (hmn : n ≤ m)
+    (fp : FPModel)
+    (A_hat : ℕ → Fin m → Fin n → ℝ)
+    (alpha : ℕ → ℝ)
+    (stageBudget : ℕ → ℝ)
+    (hm : gammaValid fp m)
+    (hglobalBudget : ∀ t (ht : t < n),
+      coxHighamActiveRowGrowthFactor m * stageBudget t +
+          storedQRSignedStageGlobalCompactBudget hmn fp A_hat alpha t ht ≤
+        stageBudget (t + 1))
+    (hBudget0_nonneg : 0 ≤ stageBudget 0) :
+    ∀ a b : ℕ, a ≤ b → b ≤ n → stageBudget a ≤ stageBudget b := by
+  have hnonneg_on :
+      ∀ t : ℕ, t ≤ n → 0 ≤ stageBudget t :=
+    storedQRSignedStageBudget_nonneg_on_stages_of_globalCompactBudget
+      hmn fp A_hat alpha stageBudget hm hglobalBudget hBudget0_nonneg
+  have hstepMono : ∀ b : ℕ, b < n → stageBudget b ≤ stageBudget (b + 1) := by
+    intro b hb_lt
+    have hb_le : b ≤ n := Nat.le_of_lt hb_lt
+    have hscale :
+        stageBudget b ≤ coxHighamActiveRowGrowthFactor m * stageBudget b := by
+      simpa [one_mul] using
+        mul_le_mul_of_nonneg_right
+          (one_le_coxHighamActiveRowGrowthFactor m) (hnonneg_on b hb_le)
+    have hcompact_nonneg :
+        0 ≤ storedQRSignedStageGlobalCompactBudget hmn fp A_hat alpha b hb_lt :=
+      storedQRSignedStageGlobalCompactBudget_nonneg
+        hmn fp A_hat alpha b hb_lt hm
+    exact
+      hscale.trans
+        ((le_add_of_nonneg_right hcompact_nonneg).trans
+          (hglobalBudget b hb_lt))
+  intro a b hab hb
+  induction b generalizing a with
+  | zero =>
+      have ha0 : a = 0 := Nat.eq_zero_of_le_zero hab
+      subst a
+      rfl
+  | succ b ih =>
+      rcases Nat.eq_or_lt_of_le hab with heq | hlt
+      · subst a
+        rfl
+      · have hab' : a ≤ b := Nat.lt_succ_iff.mp hlt
+        have hb_le : b ≤ n := Nat.le_of_succ_le hb
+        have hb_lt : b < n := Nat.lt_of_succ_le hb
+        exact (ih a hab' hb_le).trans (hstepMono b hb_lt)
+
 /-- A signed-stage global compact-budget recurrence is monotone on QR stages.
 
 If the stage budgets are nonnegative and each successor budget dominates
@@ -49604,6 +50764,141 @@ theorem StoredQRDisplayedRowBudgetControl.of_signed_stage_uniformBudget_globalCo
       hmn fp A_hat alpha stageBudget hm hStepA hAlphaDef hbudgetNormSq
       hinitBlock hglobalBudget hBudget_nonneg hBudget_mono hBudget_diag
       hpivotChoice
+
+/-- Horizon-budget active-max-pivot variant of the `κ∞`/dual-budget displayed
+    row-budget constructor.
+
+The finite global compact-step recurrence implies monotonicity on the QR
+horizon.  This theorem clamps the supplied stage budget after `n`, uses the
+finite stage-diagonal defect to obtain the displayed diagonal lower-bound
+field on active stages, and derives the packaged
+`StoredQRDisplayedRowBudgetControl` certificate without asking callers for a
+separate global monotonicity proof. -/
+theorem StoredQRDisplayedRowBudgetControl.of_signed_stage_uniformBudget_globalCompactBudget_activeMaxPivot_kappaInf_dualBudget_stageDiagDefect_horizonBudget
+    {m n : ℕ} (hmn : n ≤ m)
+    (fp : FPModel)
+    (A_hat : ℕ → Fin m → Fin n → ℝ)
+    (alpha κ K : ℕ → ℝ)
+    (stageBudget : ℕ → ℝ)
+    (hm : gammaValid fp m)
+    (hStepA : ∀ k (hk : k < n),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
+          (A_hat k))
+    (hAlphaDef : ∀ k (hk : k < n),
+      alpha k =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩)))
+          (A_hat k ⟨k, lt_of_lt_of_le hk hmn⟩ ⟨k, hk⟩))
+    (hdetLead : ∀ k (hk : k < n),
+      Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ) ≠ 0)
+    (hK : ∀ k (_hk : k < n), 0 < K k)
+    (hκ : ∀ k (hk : k < n),
+      kappaInf (k + 1) (Nat.succ_pos k)
+          (qrLeadingBlock (A_hat k)
+            (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)
+          (nonsingInv (k + 1)
+            (qrLeadingBlock (A_hat k)
+              (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)) ≤
+        κ k)
+    (hκbudget : ∀ k (hk : k < n),
+      ((k + 1 : ℕ) : ℝ) *
+          (κ k /
+            infNorm
+              (qrLeadingBlock (A_hat k)
+                (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)) ^ 2 ≤
+        K k)
+    (hbudgetDual : ∀ k (hk : k < n),
+      (m : ℝ) *
+          (householderCompactComponentBudget fp m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
+            (householderBetaSpec m
+              (householderTrailingActiveVector m
+                ⟨k, lt_of_lt_of_le hk hmn⟩
+                (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
+            (fun a => A_hat k a ⟨k, hk⟩)
+            ⟨k, lt_of_lt_of_le hk hmn⟩) ^ 2 <
+        1 / K k)
+    (hinitBlock : ∀ r : Fin m, ∀ l : Fin n,
+      |A_hat 0 r l| ≤ stageBudget 0)
+    (hglobalBudget : ∀ t (ht : t < n),
+      coxHighamActiveRowGrowthFactor m * stageBudget t +
+          storedQRSignedStageGlobalCompactBudget hmn fp A_hat alpha t ht ≤
+        stageBudget (t + 1))
+    (hBudget0_nonneg : 0 ≤ stageBudget 0)
+    (hstageDiagDefect :
+      storedQRStageDiagLowerDefectBudget hmn A_hat stageBudget ≤ 0)
+    (hpivotChoice : ∀ t (ht : t < n),
+      ⟨t, ht⟩ =
+        householderActiveMaxPivotColumn
+          ⟨t, lt_of_lt_of_le ht hmn⟩ ⟨t, ht⟩ (A_hat t)) :
+    StoredQRDisplayedRowBudgetControl hmn A_hat
+      (fun k (_hk : k < n) (_i : Fin (k + 1)) =>
+        qrStageHorizonBudget n stageBudget k) := by
+  classical
+  let stageBudget' : ℕ → ℝ := qrStageHorizonBudget n stageBudget
+  have hBudget_mono_on_stages :
+      ∀ a b : ℕ, a ≤ b → b ≤ n → stageBudget a ≤ stageBudget b :=
+    storedQRSignedStageBudget_mono_on_stages_of_globalCompactBudget_of_initial_nonneg
+      hmn fp A_hat alpha stageBudget hm hglobalBudget hBudget0_nonneg
+  have hBudget'_mono :
+      ∀ a b : ℕ, a ≤ b → stageBudget' a ≤ stageBudget' b := by
+    simpa [stageBudget'] using
+      qrStageHorizonBudget_mono_of_mono_on_stages
+        n stageBudget hBudget_mono_on_stages
+  have hBudget'_nonneg : ∀ t : ℕ, 0 ≤ stageBudget' t := by
+    have hnonneg_on :
+        ∀ t : ℕ, t ≤ n → 0 ≤ stageBudget t :=
+      storedQRSignedStageBudget_nonneg_on_stages_of_globalCompactBudget
+        hmn fp A_hat alpha stageBudget hm hglobalBudget hBudget0_nonneg
+    intro t
+    by_cases ht : t ≤ n
+    · simpa [stageBudget', qrStageHorizonBudget, ht] using hnonneg_on t ht
+    · simpa [stageBudget', qrStageHorizonBudget, ht] using hnonneg_on n le_rfl
+  have hglobalBudget' : ∀ t (ht : t < n),
+      coxHighamActiveRowGrowthFactor m * stageBudget' t +
+          storedQRSignedStageGlobalCompactBudget hmn fp A_hat alpha t ht ≤
+        stageBudget' (t + 1) := by
+    intro t ht
+    have ht_le : t ≤ n := Nat.le_of_lt ht
+    have hsucc_le : t + 1 ≤ n := Nat.succ_le_iff.mpr ht
+    simpa [stageBudget', qrStageHorizonBudget, ht_le, hsucc_le] using
+      hglobalBudget t ht
+  have hinitBlock' : ∀ r : Fin m, ∀ l : Fin n,
+      |A_hat 0 r l| ≤ stageBudget' 0 := by
+    intro r l
+    have h0 : 0 ≤ n := Nat.zero_le n
+    simpa [stageBudget', qrStageHorizonBudget, h0] using hinitBlock r l
+  have hBudget_diag' : ∀ k (hk : k < n),
+      ∀ i : Fin (k + 1), i.val < k →
+        stageBudget' k ≤
+        |qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk i i| := by
+    intro k hk i hi
+    have hk_le : k ≤ n := Nat.le_of_lt hk
+    simpa [stageBudget', qrStageHorizonBudget, hk_le] using
+      storedQRStageBudget_le_diag_of_stageDiagLowerDefectBudget_nonpos
+        hmn A_hat stageBudget hstageDiagDefect k hk i hi
+  simpa [stageBudget'] using
+    StoredQRDisplayedRowBudgetControl.of_signed_stage_uniformBudget_globalCompactBudget_activeMaxPivot_kappaInf_dualBudget
+      hmn fp A_hat alpha κ K stageBudget' hm hStepA hAlphaDef
+      hdetLead hK hκ hκbudget hbudgetDual hinitBlock' hglobalBudget'
+      hBudget'_nonneg hBudget'_mono hBudget_diag' hpivotChoice
 
 /-- Stored trailing Householder QR source control from local diagonal dominance
     and the finite global compact-product budget.
@@ -65267,6 +66562,403 @@ theorem theorem20_3_householder_qr_ls_backward_error_compactBudget_of_activePivo
       hStepA hStepb hAlphaDef hdetLead hK hκ hκbudget hbudgetDual hinit
       hinitBlock hglobalBudget hBudget_nonneg hBudget_mono hstageDiagDefect
       hpivotChoice hglobalProduct
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.3, active-pivot horizon-budget
+    compact wrapper.
+
+This wrapper routes the stage-diagonal branch through the packaged
+`StoredQRDisplayedRowBudgetControl` constructor.  The finite global compact
+recurrence supplies the monotone horizon-budget extension internally, and the
+full initial-block bound supplies the displayed strict-upper initial field.
+Compared with
+`theorem20_3_householder_qr_ls_backward_error_compactBudget_of_activePivot_stageDiag_dualBudget_actualUnitRoundoff`,
+it removes the separate per-entry initial displayed-upper hypothesis, global
+stage-budget monotonicity hypothesis, and all-stage nonnegativity hypothesis
+from the public surface; the recurrence propagates nonnegativity from the
+initial budget. -/
+theorem theorem20_3_householder_qr_ls_backward_error_compactBudget_of_activePivot_stageDiag_dualBudget_horizonBudget_actualUnitRoundoff
+    {m n : ℕ} (fp : FPModel) (hmn : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (A_hat : ℕ → Fin m → Fin n → ℝ)
+    (b_hat : ℕ → Fin m → ℝ)
+    (alpha κ K : ℕ → ℝ)
+    (stageBudget : ℕ → ℝ)
+    (huSmall : (m : ℝ) * fp.u < 1)
+    (hInitA : A_hat 0 = A)
+    (hInitb : b_hat 0 = b)
+    (hStepA : ∀ k (hk : k < n),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
+          (A_hat k))
+    (hStepb : ∀ k (hk : k < n),
+      b_hat (k + 1) =
+        fl_householderStoredRhsStep fp m k
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
+          (b_hat k))
+    (hAlphaDef : ∀ k (hk : k < n),
+      alpha k =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩)))
+          (A_hat k ⟨k, lt_of_lt_of_le hk hmn⟩ ⟨k, hk⟩))
+    (hdetLead : ∀ k (hk : k < n),
+      Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ) ≠ 0)
+    (hK : ∀ k (_hk : k < n), 0 < K k)
+    (hκ : ∀ k (hk : k < n),
+      kappaInf (k + 1) (Nat.succ_pos k)
+          (qrLeadingBlock (A_hat k)
+            (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)
+          (nonsingInv (k + 1)
+            (qrLeadingBlock (A_hat k)
+              (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)) ≤
+        κ k)
+    (hκbudget : ∀ k (hk : k < n),
+      ((k + 1 : ℕ) : ℝ) *
+          (κ k /
+            infNorm
+              (qrLeadingBlock (A_hat k)
+                (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)) ^ 2 ≤
+        K k)
+    (hbudgetDual : ∀ k (hk : k < n),
+      (m : ℝ) *
+          (householderCompactComponentBudget fp m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
+            (householderBetaSpec m
+              (householderTrailingActiveVector m
+                ⟨k, lt_of_lt_of_le hk hmn⟩
+                (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
+            (fun a => A_hat k a ⟨k, hk⟩)
+            ⟨k, lt_of_lt_of_le hk hmn⟩) ^ 2 <
+        1 / K k)
+    (hinitBlock : ∀ r : Fin m, ∀ l : Fin n,
+      |A_hat 0 r l| ≤ stageBudget 0)
+    (hglobalBudget : ∀ t (ht : t < n),
+      coxHighamActiveRowGrowthFactor m * stageBudget t +
+          storedQRSignedStageGlobalCompactBudget hmn fp A_hat alpha t ht ≤
+        stageBudget (t + 1))
+    (hBudget0_nonneg : 0 ≤ stageBudget 0)
+    (hstageDiagDefect :
+      storedQRStageDiagLowerDefectBudget hmn A_hat stageBudget ≤ 0)
+    (hpivotChoice : ∀ t (ht : t < n),
+      ⟨t, ht⟩ =
+        householderActiveMaxPivotColumn
+          ⟨t, lt_of_lt_of_le ht hmn⟩ ⟨t, ht⟩ (A_hat t))
+    (hglobalProduct :
+      storedQRCompactSequenceProductBudget hmn fp A_hat b_hat alpha < 1) :
+    let cStep := storedQRCompactSequenceRelativeBudget hmn fp A_hat b_hat alpha
+    ∃ (ΔA' : Fin m → Fin n → ℝ) (Δb' : Fin m → ℝ),
+      frobNorm ΔA' ≤
+        ((1 + cStep) ^ n - 1) * frobNormRect A +
+          gamma fp n *
+            frobNormRect (rectTopBlock (m := m)
+              (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)) ∧
+      vecNorm2 Δb' ≤ ((1 + cStep) ^ n - 1) * vecNorm2 b ∧
+      IsLeastSquaresMinimizer
+        (fun i j => A i j + ΔA' i j) (fun i => b i + Δb' i)
+        (fl_backSub fp n
+          (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)
+          (fun i => b_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩)) := by
+  classical
+  let stageBudget' : ℕ → ℝ := qrStageHorizonBudget n stageBudget
+  have hm : gammaValid fp m :=
+    gammaValid_of_u_le_cap fp m fp.u (le_rfl : fp.u ≤ fp.u) huSmall
+  have hrowControl :
+      StoredQRDisplayedRowBudgetControl hmn A_hat
+        (fun k (_hk : k < n) (_i : Fin (k + 1)) => stageBudget' k) := by
+    simpa [stageBudget'] using
+      StoredQRDisplayedRowBudgetControl.of_signed_stage_uniformBudget_globalCompactBudget_activeMaxPivot_kappaInf_dualBudget_stageDiagDefect_horizonBudget
+        hmn fp A_hat alpha κ K stageBudget hm hStepA hAlphaDef
+        hdetLead hK hκ hκbudget hbudgetDual hinitBlock hglobalBudget
+        hBudget0_nonneg hstageDiagDefect hpivotChoice
+  exact
+    exists_perturbed_ls_minimizer_of_stored_trailing_householder_sequence_topBlock_fl_backSub_gamma_bound_explicitCompactBudget_of_signed_alpha_leadingBlock_det_ne_zero_kappaInf_selfNorm_dualBudget_rowBudgetControl_globalProduct_of_actualUnitRoundoff_no_gammaValid
+      fp hmn A b A_hat b_hat alpha κ K
+      (fun k (_hk : k < n) (_i : Fin (k + 1)) => stageBudget' k)
+      huSmall hInitA hInitb hStepA hStepb hAlphaDef hdetLead hK hκ
+      hκbudget hbudgetDual hrowControl hglobalProduct
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.3, active-pivot
+    horizon-budget compact wrapper with finite-max product smallness.
+
+This strengthens
+`theorem20_3_householder_qr_ls_backward_error_compactBudget_of_activePivot_stageDiag_dualBudget_horizonBudget_actualUnitRoundoff`
+by deriving the compact global-product hypothesis from the canonical
+diagonal-dominant finite-max smallness condition.  The displayed row-budget
+certificate is still obtained from the stage-diagonal horizon-budget route, so
+the remaining visible finite check on that side is the scalar
+`storedQRStageDiagLowerDefectBudget <= 0`. -/
+theorem theorem20_3_householder_qr_ls_backward_error_compactBudget_of_activePivot_stageDiag_dualBudget_horizonBudget_finiteMaxSmallness_actualUnitRoundoff
+    {m n : ℕ} (fp : FPModel) (hmn : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (A_hat : ℕ → Fin m → Fin n → ℝ)
+    (b_hat : ℕ → Fin m → ℝ)
+    (alpha κ K : ℕ → ℝ)
+    (stageBudget : ℕ → ℝ)
+    (huSmall : (m : ℝ) * fp.u < 1)
+    (hInitA : A_hat 0 = A)
+    (hInitb : b_hat 0 = b)
+    (hStepA : ∀ k (hk : k < n),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
+          (A_hat k))
+    (hStepb : ∀ k (hk : k < n),
+      b_hat (k + 1) =
+        fl_householderStoredRhsStep fp m k
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
+          (b_hat k))
+    (hAlphaDef : ∀ k (hk : k < n),
+      alpha k =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩)))
+          (A_hat k ⟨k, lt_of_lt_of_le hk hmn⟩ ⟨k, hk⟩))
+    (hdetLead : ∀ k (hk : k < n),
+      Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ) ≠ 0)
+    (hDD : ∀ k (hk : k < n),
+      IsDiagDominantUpper (k + 1)
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk))
+    (hK : ∀ k (_hk : k < n), 0 < K k)
+    (hκ : ∀ k (hk : k < n),
+      kappaInf (k + 1) (Nat.succ_pos k)
+          (qrLeadingBlock (A_hat k)
+            (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)
+          (nonsingInv (k + 1)
+            (qrLeadingBlock (A_hat k)
+              (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)) ≤
+        κ k)
+    (hκbudget : ∀ k (hk : k < n),
+      ((k + 1 : ℕ) : ℝ) *
+          (κ k /
+            infNorm
+              (qrLeadingBlock (A_hat k)
+                (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)) ^ 2 ≤
+        K k)
+    (hbudgetDual : ∀ k (hk : k < n),
+      (m : ℝ) *
+          (householderCompactComponentBudget fp m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
+            (householderBetaSpec m
+              (householderTrailingActiveVector m
+                ⟨k, lt_of_lt_of_le hk hmn⟩
+                (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
+            (fun a => A_hat k a ⟨k, hk⟩)
+            ⟨k, lt_of_lt_of_le hk hmn⟩) ^ 2 <
+        1 / K k)
+    (hinitBlock : ∀ r : Fin m, ∀ l : Fin n,
+      |A_hat 0 r l| ≤ stageBudget 0)
+    (hglobalBudget : ∀ t (ht : t < n),
+      coxHighamActiveRowGrowthFactor m * stageBudget t +
+          storedQRSignedStageGlobalCompactBudget hmn fp A_hat alpha t ht ≤
+        stageBudget (t + 1))
+    (hBudget0_nonneg : 0 ≤ stageBudget 0)
+    (hstageDiagDefect :
+      storedQRStageDiagLowerDefectBudget hmn A_hat stageBudget ≤ 0)
+    (hpivotChoice : ∀ t (ht : t < n),
+      ⟨t, ht⟩ =
+        householderActiveMaxPivotColumn
+          ⟨t, lt_of_lt_of_le ht hmn⟩ ⟨t, ht⟩ (A_hat t))
+    (hsmall :
+      2 * storedQRDiagDominantInvFactorBudget hmn A_hat *
+          ((m : ℝ) *
+            (storedQRCompactSequenceRelativeBudget hmn fp A_hat b_hat alpha *
+              storedQRPivotColumnNormBudget hmn A_hat) ^ 2) <
+        1) :
+    let cStep := storedQRCompactSequenceRelativeBudget hmn fp A_hat b_hat alpha
+    ∃ (ΔA' : Fin m → Fin n → ℝ) (Δb' : Fin m → ℝ),
+      frobNorm ΔA' ≤
+        ((1 + cStep) ^ n - 1) * frobNormRect A +
+          gamma fp n *
+            frobNormRect (rectTopBlock (m := m)
+              (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)) ∧
+      vecNorm2 Δb' ≤ ((1 + cStep) ^ n - 1) * vecNorm2 b ∧
+      IsLeastSquaresMinimizer
+        (fun i j => A i j + ΔA' i j) (fun i => b i + Δb' i)
+        (fl_backSub fp n
+          (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)
+          (fun i => b_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩)) := by
+  have hm : gammaValid fp m :=
+    gammaValid_of_u_le_cap fp m fp.u (le_rfl : fp.u ≤ fp.u) huSmall
+  have hglobalProduct :
+      storedQRCompactSequenceProductBudget hmn fp A_hat b_hat alpha < 1 :=
+    storedQRCompactSequenceProductBudget_lt_one_of_diagDominant_finite_max_smallness
+      hmn fp A_hat b_hat alpha hm (fun k => hDD k.val k.isLt) hsmall
+  exact
+    theorem20_3_householder_qr_ls_backward_error_compactBudget_of_activePivot_stageDiag_dualBudget_horizonBudget_actualUnitRoundoff
+      fp hmn A b A_hat b_hat alpha κ K stageBudget huSmall hInitA hInitb
+      hStepA hStepb hAlphaDef hdetLead hK hκ hκbudget hbudgetDual
+      hinitBlock hglobalBudget hBudget0_nonneg hstageDiagDefect
+      hpivotChoice hglobalProduct
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.3, active-pivot
+    horizon-budget compact wrapper with scalar comparison and finite-max
+    product smallness.
+
+This eliminates the stage-diagonal defect hypothesis from the finite-max
+stage-diagonal wrapper by deriving it from local diagonal dominance plus the
+finite scalar stage-budget/row-max comparison defect.  The compact
+global-product field is again derived from the canonical finite-max smallness
+condition. -/
+theorem theorem20_3_householder_qr_ls_backward_error_compactBudget_of_activePivot_diagDominant_stageRowMaxComparison_dualBudget_horizonBudget_finiteMaxSmallness_actualUnitRoundoff
+    {m n : ℕ} (fp : FPModel) (hmn : n ≤ m)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (A_hat : ℕ → Fin m → Fin n → ℝ)
+    (b_hat : ℕ → Fin m → ℝ)
+    (alpha κ K : ℕ → ℝ)
+    (stageBudget : ℕ → ℝ)
+    (huSmall : (m : ℝ) * fp.u < 1)
+    (hInitA : A_hat 0 = A)
+    (hInitb : b_hat 0 = b)
+    (hStepA : ∀ k (hk : k < n),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
+          (A_hat k))
+    (hStepb : ∀ k (hk : k < n),
+      b_hat (k + 1) =
+        fl_householderStoredRhsStep fp m k
+          (householderTrailingActiveVector m
+            ⟨k, lt_of_lt_of_le hk hmn⟩
+            (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
+          (b_hat k))
+    (hAlphaDef : ∀ k (hk : k < n),
+      alpha k =
+        signedHouseholderAlpha
+          (Real.sqrt
+            (householderTrailingNorm2Sq m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩)))
+          (A_hat k ⟨k, lt_of_lt_of_le hk hmn⟩ ⟨k, hk⟩))
+    (hdetLead : ∀ k (hk : k < n),
+      Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) ℝ) ≠ 0)
+    (hDD : ∀ k (hk : k < n),
+      IsDiagDominantUpper (k + 1)
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk))
+    (hK : ∀ k (_hk : k < n), 0 < K k)
+    (hκ : ∀ k (hk : k < n),
+      kappaInf (k + 1) (Nat.succ_pos k)
+          (qrLeadingBlock (A_hat k)
+            (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)
+          (nonsingInv (k + 1)
+            (qrLeadingBlock (A_hat k)
+              (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)) ≤
+        κ k)
+    (hκbudget : ∀ k (hk : k < n),
+      ((k + 1 : ℕ) : ℝ) *
+          (κ k /
+            infNorm
+              (qrLeadingBlock (A_hat k)
+                (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)) ^ 2 ≤
+        K k)
+    (hbudgetDual : ∀ k (hk : k < n),
+      (m : ℝ) *
+          (householderCompactComponentBudget fp m
+            (householderTrailingActiveVector m
+              ⟨k, lt_of_lt_of_le hk hmn⟩
+              (fun a => A_hat k a ⟨k, hk⟩) (alpha k))
+            (householderBetaSpec m
+              (householderTrailingActiveVector m
+                ⟨k, lt_of_lt_of_le hk hmn⟩
+                (fun a => A_hat k a ⟨k, hk⟩) (alpha k)))
+            (fun a => A_hat k a ⟨k, hk⟩)
+            ⟨k, lt_of_lt_of_le hk hmn⟩) ^ 2 <
+        1 / K k)
+    (hinitBlock : ∀ r : Fin m, ∀ l : Fin n,
+      |A_hat 0 r l| ≤ stageBudget 0)
+    (hglobalBudget : ∀ t (ht : t < n),
+      coxHighamActiveRowGrowthFactor m * stageBudget t +
+          storedQRSignedStageGlobalCompactBudget hmn fp A_hat alpha t ht ≤
+        stageBudget (t + 1))
+    (hBudget0_nonneg : 0 ≤ stageBudget 0)
+    (hcomparison :
+      storedQRStageRowMaxComparisonDefectBudget hmn A_hat stageBudget ≤ 0)
+    (hpivotChoice : ∀ t (ht : t < n),
+      ⟨t, ht⟩ =
+        householderActiveMaxPivotColumn
+          ⟨t, lt_of_lt_of_le ht hmn⟩ ⟨t, ht⟩ (A_hat t))
+    (hsmall :
+      2 * storedQRDiagDominantInvFactorBudget hmn A_hat *
+          ((m : ℝ) *
+            (storedQRCompactSequenceRelativeBudget hmn fp A_hat b_hat alpha *
+              storedQRPivotColumnNormBudget hmn A_hat) ^ 2) <
+        1) :
+    let cStep := storedQRCompactSequenceRelativeBudget hmn fp A_hat b_hat alpha
+    ∃ (ΔA' : Fin m → Fin n → ℝ) (Δb' : Fin m → ℝ),
+      frobNorm ΔA' ≤
+        ((1 + cStep) ^ n - 1) * frobNormRect A +
+          gamma fp n *
+            frobNormRect (rectTopBlock (m := m)
+              (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)) ∧
+      vecNorm2 Δb' ≤ ((1 + cStep) ^ n - 1) * vecNorm2 b ∧
+      IsLeastSquaresMinimizer
+        (fun i j => A i j + ΔA' i j) (fun i => b i + Δb' i)
+        (fl_backSub fp n
+          (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)
+          (fun i => b_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩)) := by
+  have hstageDiagDefect :
+      storedQRStageDiagLowerDefectBudget hmn A_hat stageBudget ≤ 0 :=
+    storedQRStageDiagLowerDefectBudget_nonpos_of_diagDominant_stageRowMaxComparisonDefectBudget_nonpos
+      hmn A_hat stageBudget hDD hcomparison
+  exact
+    theorem20_3_householder_qr_ls_backward_error_compactBudget_of_activePivot_stageDiag_dualBudget_horizonBudget_finiteMaxSmallness_actualUnitRoundoff
+      fp hmn A b A_hat b_hat alpha κ K stageBudget huSmall hInitA hInitb
+      hStepA hStepb hAlphaDef hdetLead hDD hK hκ hκbudget hbudgetDual
+      hinitBlock hglobalBudget hBudget0_nonneg hstageDiagDefect
+      hpivotChoice hsmall
 
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.3, row-max/dual-budget
     source-facing compact-budget wrapper.
