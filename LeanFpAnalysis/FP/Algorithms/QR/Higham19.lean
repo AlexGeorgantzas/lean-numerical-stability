@@ -24766,6 +24766,354 @@ theorem stored_panel_sequence_prefix_diag_nonzero_of_signed_alpha_trailingNorm_p
     fl_householderStoredTrailingPanel_sequence_prefix_diag_nonzero_of_signed_alpha_trailingNorm_pos_sqrt_budget
       fp hmn Ahat alpha hm hStep hAlphaDef htrailingPos hbudgetSqrt
 
+/-- Higham, Theorem 19.6 route dependency: stored-loop diagonal nonbreakdown
+from prefix-span nonbreakdown and a concrete active-entry pivot budget.
+
+This exposes the quantitative active-entry margin route used to keep the
+stored QR top-block diagonal nonzero.  It is source-control infrastructure, not
+the complete pivoted QR/preconditioner theorem. -/
+theorem stored_panel_sequence_diag_nonzero_of_span_nonbreakdown_active_entry_budget
+    {m n : Nat}
+    (fp : FPModel) (hmn : n <= m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (hm : gammaValid fp m)
+    (hStep : forall k (hk : k < n),
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (Ahat k))
+    (halpha : forall k (hk : k < n),
+      alpha k * alpha k =
+        householderTrailingNorm2Sq m
+          (Fin.mk k (lt_of_lt_of_le hk hmn))
+          (fun i => Ahat k i (Fin.mk k hk)))
+    (hnotspan : forall k (hk : k < n),
+      qrColumnNotInPreviousSpan (Ahat k) hk)
+    (hprefixSpan : forall k (hk : k < n),
+      qrPrefixSupportSpannedByPreviousColumns (Ahat k) hk)
+    (hsign : forall k (hk : k < n),
+      alpha k * Ahat k (Fin.mk k (lt_of_lt_of_le hk hmn)) (Fin.mk k hk) <= 0)
+    (hbudgetEntry : forall k (hk : k < n),
+      exists i : Fin m, k <= i.val /\
+        householderCompactComponentBudget fp m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+            (householderBetaSpec m
+              (householderTrailingActiveVector m
+                (Fin.mk k (lt_of_lt_of_le hk hmn))
+                (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+            (fun a => Ahat k a (Fin.mk k hk))
+            (Fin.mk k (lt_of_lt_of_le hk hmn)) <
+          |Ahat k i (Fin.mk k hk)|) :
+    forall i : Fin n,
+      Ne (Ahat n (Fin.mk i.val (lt_of_lt_of_le i.isLt hmn)) i) 0 := by
+  exact
+    fl_householderStoredTrailingPanel_sequence_diag_nonzero_of_span_nonbreakdown_active_entry_budget
+      fp hmn Ahat alpha hm hStep halpha hnotspan hprefixSpan hsign hbudgetEntry
+
+/-- Higham, Theorem 19.6 route dependency: stored-loop diagonal nonbreakdown
+from prefix-span nonbreakdown and a dimensioned trailing-norm-square budget.
+
+The stronger margin `m * budget_k^2 < ||A_k(k:m,k)||_2^2` feeds the existing
+square-root nonbreakdown theorem while keeping the conditioning-oriented
+source-control assumption explicit. -/
+theorem stored_panel_sequence_diag_nonzero_of_span_nonbreakdown_trailingNorm2Sq_budget
+    {m n : Nat}
+    (fp : FPModel) (hmn : n <= m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (hm : gammaValid fp m)
+    (hStep : forall k (hk : k < n),
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (Ahat k))
+    (halpha : forall k (hk : k < n),
+      alpha k * alpha k =
+        householderTrailingNorm2Sq m
+          (Fin.mk k (lt_of_lt_of_le hk hmn))
+          (fun i => Ahat k i (Fin.mk k hk)))
+    (hnotspan : forall k (hk : k < n),
+      qrColumnNotInPreviousSpan (Ahat k) hk)
+    (hprefixSpan : forall k (hk : k < n),
+      qrPrefixSupportSpannedByPreviousColumns (Ahat k) hk)
+    (hsign : forall k (hk : k < n),
+      alpha k * Ahat k (Fin.mk k (lt_of_lt_of_le hk hmn)) (Fin.mk k hk) <= 0)
+    (hbudgetNormSq : forall k (hk : k < n),
+      (m : Real) *
+          (householderCompactComponentBudget fp m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+            (householderBetaSpec m
+              (householderTrailingActiveVector m
+                (Fin.mk k (lt_of_lt_of_le hk hmn))
+                (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+            (fun a => Ahat k a (Fin.mk k hk))
+            (Fin.mk k (lt_of_lt_of_le hk hmn))) ^ 2 <
+        householderTrailingNorm2Sq m
+          (Fin.mk k (lt_of_lt_of_le hk hmn))
+          (fun a => Ahat k a (Fin.mk k hk))) :
+    forall i : Fin n,
+      Ne (Ahat n (Fin.mk i.val (lt_of_lt_of_le i.isLt hmn)) i) 0 := by
+  exact
+    fl_householderStoredTrailingPanel_sequence_diag_nonzero_of_span_nonbreakdown_trailingNorm2Sq_budget
+      fp hmn Ahat alpha hm hStep halpha hnotspan hprefixSpan hsign hbudgetNormSq
+
+/-- Higham, Theorem 19.6 route dependency: stored-loop diagonal nonbreakdown
+from prefix-span data and a bounded leading-column dual.
+
+The theorem packages the dual-norm source-control route: a local dual row with
+norm-square bounded by `K k` and `m * budget_k^2 < 1 / K k` supplies the
+trailing-norm-square margin. -/
+theorem stored_panel_sequence_diag_nonzero_of_span_nonbreakdown_leading_dual_norm_budget
+    {m n : Nat}
+    (fp : FPModel) (hmn : n <= m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (L : forall k, k < n -> Fin (k + 1) -> Fin m -> Real)
+    (K : Nat -> Real)
+    (hm : gammaValid fp m)
+    (hStep : forall k (hk : k < n),
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (Ahat k))
+    (halpha : forall k (hk : k < n),
+      alpha k * alpha k =
+        householderTrailingNorm2Sq m
+          (Fin.mk k (lt_of_lt_of_le hk hmn))
+          (fun i => Ahat k i (Fin.mk k hk)))
+    (hL : forall k (hk : k < n),
+      qrLeadingColumnLeftInverse (Ahat k) hk (L k hk))
+    (hprefixSpan : forall k (hk : k < n),
+      qrPrefixSupportSpannedByPreviousColumns (Ahat k) hk)
+    (hK : forall k (_hk : k < n), 0 < K k)
+    (hLnorm : forall k (hk : k < n),
+      vecNorm2Sq (fun i : Fin m =>
+        L k hk (Fin.mk k (Nat.lt_succ_self k)) i) <= K k)
+    (hsign : forall k (hk : k < n),
+      alpha k * Ahat k (Fin.mk k (lt_of_lt_of_le hk hmn)) (Fin.mk k hk) <= 0)
+    (hbudgetDual : forall k (hk : k < n),
+      (m : Real) *
+          (householderCompactComponentBudget fp m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+            (householderBetaSpec m
+              (householderTrailingActiveVector m
+                (Fin.mk k (lt_of_lt_of_le hk hmn))
+                (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+            (fun a => Ahat k a (Fin.mk k hk))
+            (Fin.mk k (lt_of_lt_of_le hk hmn))) ^ 2 <
+        1 / K k) :
+    forall i : Fin n,
+      Ne (Ahat n (Fin.mk i.val (lt_of_lt_of_le i.isLt hmn)) i) 0 := by
+  exact
+    fl_householderStoredTrailingPanel_sequence_diag_nonzero_of_span_nonbreakdown_leading_dual_norm_budget
+      fp hmn Ahat alpha L K hm hStep halpha hL hprefixSpan hK hLnorm
+      hsign hbudgetDual
+
+/-- Higham, Theorem 19.6 route dependency: stored-loop diagonal nonbreakdown
+from local leading-block left inverses with last-row norm budgets.
+
+This is the left-inverse version of the leading-dual budget route; the padded
+dual row is constructed by the reusable Householder support theorem. -/
+theorem stored_panel_sequence_diag_nonzero_of_span_nonbreakdown_leadingBlock_leftInverse_norm_budget
+    {m n : Nat}
+    (fp : FPModel) (hmn : n <= m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (C : forall k, k < n -> Fin (k + 1) -> Fin (k + 1) -> Real)
+    (K : Nat -> Real)
+    (hm : gammaValid fp m)
+    (hStep : forall k (hk : k < n),
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (Ahat k))
+    (halpha : forall k (hk : k < n),
+      alpha k * alpha k =
+        householderTrailingNorm2Sq m
+          (Fin.mk k (lt_of_lt_of_le hk hmn))
+          (fun i => Ahat k i (Fin.mk k hk)))
+    (hC : forall k (hk : k < n),
+      IsLeftInverse (k + 1)
+        (qrLeadingBlock (Ahat k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)
+        (C k hk))
+    (hprefixSpan : forall k (hk : k < n),
+      qrPrefixSupportSpannedByPreviousColumns (Ahat k) hk)
+    (hK : forall k (_hk : k < n), 0 < K k)
+    (hCnorm : forall k (hk : k < n),
+      vecNorm2Sq (fun r : Fin (k + 1) =>
+        C k hk (Fin.mk k (Nat.lt_succ_self k)) r) <= K k)
+    (hsign : forall k (hk : k < n),
+      alpha k * Ahat k (Fin.mk k (lt_of_lt_of_le hk hmn)) (Fin.mk k hk) <= 0)
+    (hbudgetDual : forall k (hk : k < n),
+      (m : Real) *
+          (householderCompactComponentBudget fp m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+            (householderBetaSpec m
+              (householderTrailingActiveVector m
+                (Fin.mk k (lt_of_lt_of_le hk hmn))
+                (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+            (fun a => Ahat k a (Fin.mk k hk))
+            (Fin.mk k (lt_of_lt_of_le hk hmn))) ^ 2 <
+        1 / K k) :
+    forall i : Fin n,
+      Ne (Ahat n (Fin.mk i.val (lt_of_lt_of_le i.isLt hmn)) i) 0 := by
+  exact
+    fl_householderStoredTrailingPanel_sequence_diag_nonzero_of_span_nonbreakdown_leadingBlock_leftInverse_norm_budget
+      fp hmn Ahat alpha C K hm hStep halpha hC hprefixSpan hK hCnorm
+      hsign hbudgetDual
+
+/-- Higham, Theorem 19.6 route dependency: stored-loop diagonal nonbreakdown
+from local leading-block left inverses with Frobenius-norm budgets. -/
+theorem stored_panel_sequence_diag_nonzero_of_span_nonbreakdown_leadingBlock_leftInverse_frobNorm_budget
+    {m n : Nat}
+    (fp : FPModel) (hmn : n <= m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (C : forall k, k < n -> Fin (k + 1) -> Fin (k + 1) -> Real)
+    (K : Nat -> Real)
+    (hm : gammaValid fp m)
+    (hStep : forall k (hk : k < n),
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (Ahat k))
+    (halpha : forall k (hk : k < n),
+      alpha k * alpha k =
+        householderTrailingNorm2Sq m
+          (Fin.mk k (lt_of_lt_of_le hk hmn))
+          (fun i => Ahat k i (Fin.mk k hk)))
+    (hC : forall k (hk : k < n),
+      IsLeftInverse (k + 1)
+        (qrLeadingBlock (Ahat k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)
+        (C k hk))
+    (hprefixSpan : forall k (hk : k < n),
+      qrPrefixSupportSpannedByPreviousColumns (Ahat k) hk)
+    (hK : forall k (_hk : k < n), 0 < K k)
+    (hCfrob : forall k (hk : k < n), frobNorm (C k hk) ^ 2 <= K k)
+    (hsign : forall k (hk : k < n),
+      alpha k * Ahat k (Fin.mk k (lt_of_lt_of_le hk hmn)) (Fin.mk k hk) <= 0)
+    (hbudgetDual : forall k (hk : k < n),
+      (m : Real) *
+          (householderCompactComponentBudget fp m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+            (householderBetaSpec m
+              (householderTrailingActiveVector m
+                (Fin.mk k (lt_of_lt_of_le hk hmn))
+                (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+            (fun a => Ahat k a (Fin.mk k hk))
+            (Fin.mk k (lt_of_lt_of_le hk hmn))) ^ 2 <
+        1 / K k) :
+    forall i : Fin n,
+      Ne (Ahat n (Fin.mk i.val (lt_of_lt_of_le i.isLt hmn)) i) 0 := by
+  exact
+    fl_householderStoredTrailingPanel_sequence_diag_nonzero_of_span_nonbreakdown_leadingBlock_leftInverse_frobNorm_budget
+      fp hmn Ahat alpha C K hm hStep halpha hC hprefixSpan hK hCfrob
+      hsign hbudgetDual
+
+/-- Higham, Theorem 19.6 route dependency: stored-loop diagonal nonbreakdown
+from local leading-block left inverses with infinity-norm budgets.
+
+The reusable support theorem converts the per-prefix infinity-norm bound into
+the Frobenius budget required by the left-inverse route. -/
+theorem stored_panel_sequence_diag_nonzero_of_span_nonbreakdown_leadingBlock_leftInverse_infNorm_budget
+    {m n : Nat}
+    (fp : FPModel) (hmn : n <= m)
+    (Ahat : Nat -> Fin m -> Fin n -> Real)
+    (alpha : Nat -> Real)
+    (C : forall k, k < n -> Fin (k + 1) -> Fin (k + 1) -> Real)
+    (K : Nat -> Real)
+    (hm : gammaValid fp m)
+    (hStep : forall k (hk : k < n),
+      Ahat (k + 1) =
+        fl_householderStoredPanelStep fp m n k
+          (householderTrailingActiveVector m
+            (Fin.mk k (lt_of_lt_of_le hk hmn))
+            (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+          (Ahat k))
+    (halpha : forall k (hk : k < n),
+      alpha k * alpha k =
+        householderTrailingNorm2Sq m
+          (Fin.mk k (lt_of_lt_of_le hk hmn))
+          (fun i => Ahat k i (Fin.mk k hk)))
+    (hC : forall k (hk : k < n),
+      IsLeftInverse (k + 1)
+        (qrLeadingBlock (Ahat k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk)
+        (C k hk))
+    (hprefixSpan : forall k (hk : k < n),
+      qrPrefixSupportSpannedByPreviousColumns (Ahat k) hk)
+    (hK : forall k (_hk : k < n), 0 < K k)
+    (hCinf : forall k (hk : k < n),
+      ((k + 1 : Nat) : Real) * infNorm (C k hk) ^ 2 <= K k)
+    (hsign : forall k (hk : k < n),
+      alpha k * Ahat k (Fin.mk k (lt_of_lt_of_le hk hmn)) (Fin.mk k hk) <= 0)
+    (hbudgetDual : forall k (hk : k < n),
+      (m : Real) *
+          (householderCompactComponentBudget fp m
+            (householderTrailingActiveVector m
+              (Fin.mk k (lt_of_lt_of_le hk hmn))
+              (fun a => Ahat k a (Fin.mk k hk)) (alpha k))
+            (householderBetaSpec m
+              (householderTrailingActiveVector m
+                (Fin.mk k (lt_of_lt_of_le hk hmn))
+                (fun a => Ahat k a (Fin.mk k hk)) (alpha k)))
+            (fun a => Ahat k a (Fin.mk k hk))
+            (Fin.mk k (lt_of_lt_of_le hk hmn))) ^ 2 <
+        1 / K k) :
+    forall i : Fin n,
+      Ne (Ahat n (Fin.mk i.val (lt_of_lt_of_le i.isLt hmn)) i) 0 := by
+  exact
+    fl_householderStoredTrailingPanel_sequence_diag_nonzero_of_span_nonbreakdown_leadingBlock_leftInverse_infNorm_budget
+      fp hmn Ahat alpha C K hm hStep halpha hC hprefixSpan hK hCinf
+      hsign hbudgetDual
+
 /-- Higham, Theorem 19.6 route dependency: leading-minor stored-loop diagonal
 nonbreakdown from local determinant data and square-root component budgets.
 
