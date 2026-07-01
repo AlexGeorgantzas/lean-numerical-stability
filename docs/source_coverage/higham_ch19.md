@@ -200,7 +200,7 @@ Latest dependency update: the explicit normalized-loop surface now has named zer
 - `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`: no matches after adding the exact named tail-local normalized-record constructors.
 - `git diff --check`: passed after adding the exact named tail-local normalized-record constructors and report update, with only the usual CRLF normalization warnings for `Higham19.lean` and this report.
 - `#print axioms` for `storedSignedSequenceOneTailNormalizedFacts_of_tail_vector_eq_and_det_ne_zero_exactWithUnitRoundoff`, `storedSignedSequenceFirstTwoTailNormalizedFacts_of_tail_vectors_eq_and_dets_ne_zero_exactWithUnitRoundoff`, `storedSignedSequenceOneTailNormalizedFacts_of_tail_vector_eq_and_leadingBlock_det_ne_zero_exactWithUnitRoundoff`, and `storedSignedSequenceFirstTwoTailNormalizedFacts_of_tail_vectors_eq_and_leadingBlock_det_ne_zero_exactWithUnitRoundoff`: only `propext`, `Classical.choice`, and `Quot.sound`.
-- Post-merge rechecks after integrating `origin/main` at `abccaa06`: `lake env lean LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`, `lake build LeanFpAnalysis.FP.Algorithms.QR.Higham19`, placeholder scan, `git diff --check`, `chapter_splitting/` guards, and the four `#print axioms` commands above all passed; only the pre-existing `GivensSpec` unused-simp warnings were reported.
+- Post-merge rechecks after integrating `origin/main` at `1fdcec63`: `lake env lean LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`, `lake build LeanFpAnalysis.FP.Algorithms.QR.Higham19`, placeholder scan, `git diff --check`, `chapter_splitting/` guards, and the four `#print axioms` commands above all passed; only the pre-existing `GivensSpec` unused-simp warnings were reported.
 - `lake env lean LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`: passed after adding the named one-tail/first-two tail-local normalized-fact records and record-consuming full-stage/normalized-loop constructors.
 - `lake build LeanFpAnalysis.FP.Algorithms.QR.Higham19`: passed after adding the named tail-local records; only pre-existing `GivensSpec` unused-simp warnings were reported.
 - `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`: no matches after adding the named tail-local records.
@@ -448,6 +448,6 @@ Latest dependency update: the explicit normalized-loop surface now has named zer
 
 - Work is on shared local `main`, synchronized with `origin/main` before theorem design and merged again before push.
 - Split-prefixed proof milestone commit: `14100fa9` (`Split 3B: derive exact Ch19 normalized records`).
-- Latest `origin/main` integrated before final push: `abccaa06`, via conflict-free merges after the proof milestone.
+- Latest `origin/main` integrated before final push: `1fdcec63`, via conflict-free merges after the proof milestone.
 - `chapter_splitting/` is local-only context: it is ignored by `.gitignore`, has no tracked files, is absent from `origin/main`, and must not be pushed.
 - Remaining local untracked file at this point: `.codex/config.toml`.
