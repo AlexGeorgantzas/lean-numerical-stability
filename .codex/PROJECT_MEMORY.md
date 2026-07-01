@@ -20,6 +20,22 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-06-30 active recorded-tail Schur bridge checkpoint:
+  added
+  `higham13_algorithm13_3_schurStageMatrixTailBlock_succ_active_eq_blockSchur`.
+  This proves the all-tail Algorithm 13.3 algebra bridge: if a recorded
+  stage-`k` active tail starts with the active pivot index and `tailSucc` is
+  the successor tail, then the local first Schur complement of the recorded
+  stage-`k` tail is exactly the recorded stage-`k+1` tail.  This should feed
+  the recursive Problem 13.4 global-tableau source certificate by aligning
+  `blockSchur` tails with recorded matrix-stage-history tails.  It does not
+  prove the all-tail inverse subblock/source comparison, Eq.13.23 `rho <= 2`,
+  or Theorem 13.6 cited implementation estimates.  Verification passed with
+  focused `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, executable
+  lookup with empty stderr and the new name present, `git diff --check`,
+  touched Lean placeholder scan, conflict-marker scan, and focused
+  `#print axioms` reporting only `propext`, `Classical.choice`, and
+  `Quot.sound`; temporary scratch files were removed.
 - 2026-06-30 fixed-ambient global-tableau terminal-tail checkpoint:
   added
   `Higham13Eq1322GlobalTableauSourceChain.one_of_blockMaxNorm_le_global_tableau`
