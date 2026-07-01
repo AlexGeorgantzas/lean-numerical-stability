@@ -4995,6 +4995,43 @@ theorem
   simp [fl_householderStoredPanelStep,
     fl_householderApplyCompactPanel_normalized_betaSpec_eq_exactWithUnitRoundoff]
 
+/-- First-pivot exact-arithmetic QR-branch handoff from the normalized
+beta-one panel reconstruction to the unnormalized `householderBetaSpec` stored
+step.
+
+This composes the existing first-step storage-shape bridge with the exact
+normalized-to-`betaSpec` stored-panel equality above. -/
+theorem
+    firstStoredPanelStep_normalized_betaSpec_eq_panelFromTopAndTrailing_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) {m p : Nat}
+    (v : Fin (m + 1) -> Real)
+    (A : Fin (m + 1) -> Fin (p + 1) -> Real) :
+    (let Astep :=
+      fl_householderApplyMatrixRect (FPModel.exactWithUnitRoundoff u0 hu0)
+        (m + 1) (p + 1)
+        (householderNormalizedVector (m + 1) v
+          (householderBetaSpec (m + 1) v))
+        1 A
+     panelFromTopAndTrailing (panelTopLeft Astep) (panelTopRowTail Astep)
+       (trailingPanel Astep)) =
+    fl_householderStoredPanelStep (FPModel.exactWithUnitRoundoff u0 hu0)
+      (m + 1) (p + 1) 0 v (householderBetaSpec (m + 1) v) A := by
+  let fp : FPModel := FPModel.exactWithUnitRoundoff u0 hu0
+  let w : Fin (m + 1) -> Real :=
+    householderNormalizedVector (m + 1) v (householderBetaSpec (m + 1) v)
+  calc
+    (let Astep := fl_householderApplyMatrixRect fp (m + 1) (p + 1) w 1 A
+     panelFromTopAndTrailing (panelTopLeft Astep) (panelTopRowTail Astep)
+       (trailingPanel Astep))
+        = fl_householderStoredPanelStep fp (m + 1) (p + 1) 0 w 1 A := by
+            exact firstStoredPanelStep_eq_panelFromTopAndTrailing_applyMatrixRect
+              fp w 1 A
+    _ = fl_householderStoredPanelStep fp (m + 1) (p + 1) 0 v
+          (householderBetaSpec (m + 1) v) A := by
+            exact
+              fl_householderStoredPanelStep_normalized_betaSpec_eq_exactWithUnitRoundoff
+                u0 hu0 (m + 1) (p + 1) 0 v A
+
 /-- Route audit for the stored-loop normalization bottleneck.
 
 The source nonbreakdown hypotheses used by the stored loop, namely
