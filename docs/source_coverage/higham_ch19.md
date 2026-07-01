@@ -208,6 +208,10 @@ Latest dependency update: the explicit normalized-loop surface now has named zer
 
 ## Verification
 
+- Post-merge repeat after integrating `origin/main` `7c0c1c32`: `lake env lean LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean` and `lake build LeanFpAnalysis.FP.Algorithms.QR.Higham19` passed; the build reported only the pre-existing `GivensSpec` unused-simp warnings.
+- Post-merge `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`: no matches. `git diff --check` passed cleanly.
+- Post-merge `git ls-files chapter_splitting`, `git ls-tree -r --name-only HEAD -- chapter_splitting`, and `git ls-tree -r --name-only origin/main -- chapter_splitting`: confirm `chapter_splitting/` has no tracked files and is absent from both the current commit tree and refreshed remote tip.
+- Post-merge `#print axioms` for `storedSignedSequenceTailNormalizedLoopRawFacts_one_of_twice_trailing_stage_facts` and `storedSignedSequenceTailNormalizedLoopRawFacts_succ_succ_of_twice_trailing_stage_facts`: only `propext`, `Classical.choice`, and `Quot.sound`.
 - `lake env lean LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`: passed after adding the actual-stage raw normalized package constructors.
 - `lake build LeanFpAnalysis.FP.Algorithms.QR.Higham19`: passed after adding the raw normalized package constructors and report update; only pre-existing `GivensSpec` unused-simp warnings were reported.
 - `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`: no matches after adding the raw normalized package constructors.
@@ -510,6 +514,6 @@ Latest dependency update: the explicit normalized-loop surface now has named zer
 - Work is on shared local `main`, synchronized with `origin/main` before theorem design and fetched again before push.
 - Current split-prefixed proof milestone commit: `ab6c78dd` (`Split 3B: package Ch19 raw normalized stage facts`).
 - Previous split-prefixed proof milestone commit: `b616c4f2` (`Split 3B: rule out Ch19 first-two vector shortcut`).
-- Latest `origin/main` integrated before theorem design and checked again before push: `9fd176c0`; the pre-push fetch found no newer remote commits before the raw normalized stage-fact packaging milestone.
+- Latest `origin/main` integrated before push: `7c0c1c32`; local merge commit `f1caf352` preserved the upstream Split 3A work and the local Split 3B raw normalized stage-fact packaging milestone.
 - `chapter_splitting/` is local-only context: it is ignored by `.gitignore`, has no tracked files, is absent from the refreshed `origin/main`, and must not be pushed.
 - Remaining local untracked file at this point: `.codex/config.toml`.
