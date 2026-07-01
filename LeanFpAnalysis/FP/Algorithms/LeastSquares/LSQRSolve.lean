@@ -21617,6 +21617,34 @@ theorem lsNormwiseBackwardErrorEtaF_eq_eigenvalueFormulaRHS_and_pos_of_positive_
     lsNormwiseBackwardErrorEtaF_eq_eigenvalueFormulaRHS_and_pos_of_positive_theta_not_isLeastSquaresMinimizer_of_formulaMatrixRowRank_eq_card
       htheta A b hy hnot hrank
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.5 limiting discussion:
+    under the already proved finite-positive WKS hypotheses, the printed
+    eigenvalue right-hand side has the same `theta -> +∞` limit as the
+    finite-weight backward-error model.  The limit is still recorded as the
+    supremum of nonnegative finite-weight values; the matrix-only equality is a
+    separate open row. -/
+theorem lsNormwiseBackwardErrorEigenvalueFormulaRHS_tendsto_nonneg_iSup_atTop_of_left_panel_rowRank_eq_card
+    {m n : ℕ} (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hnot : ¬ IsLeastSquaresMinimizer A b y)
+    (hA : lsRealRectRowRank A = m + 1) :
+    Filter.Tendsto
+      (fun theta : ℝ =>
+        lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y)
+      Filter.atTop
+      (nhds (⨆ theta : {theta : ℝ // 0 ≤ theta},
+        lsNormwiseBackwardErrorEtaF theta.1 A b y)) := by
+  exact Filter.Tendsto.congr'
+    (f₁ := fun theta : ℝ => lsNormwiseBackwardErrorEtaF theta A b y)
+    (f₂ := fun theta : ℝ =>
+      lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y)
+    (by
+      filter_upwards [eventually_gt_atTop (0 : ℝ)] with theta htheta
+      exact
+        (lsNormwiseBackwardErrorEtaF_eq_eigenvalueFormulaRHS_and_pos_of_positive_theta_not_isLeastSquaresMinimizer_of_left_panel_rowRank_eq_card
+          htheta A b hy hnot hA).1)
+    (lsNormwiseBackwardErrorEtaF_tendsto_nonneg_iSup_atTop A b y)
+
 /-- Positive finite-`theta` WKS branch from the concrete rank-one
     source-block certificate.  This replaces the generic upper-inequality
     hypothesis by the explicit expanded rank-one witness cost bound against
