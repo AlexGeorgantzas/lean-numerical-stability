@@ -8142,6 +8142,28 @@ theorem lsNormwiseBackwardErrorMu_le_one {n : ℕ} (theta : ℝ)
     lsNormwiseBackwardErrorMu theta y ≤ 1 :=
   le_of_lt (lsNormwiseBackwardErrorMu_lt_one theta y)
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.5 limiting discussion:
+    the source scalar `mu` is `1 - 1/(1 + theta^2 ||y||_2^2)`, making the
+    `theta -> infinity` limit algebraically explicit. -/
+theorem lsNormwiseBackwardErrorMu_eq_one_sub_inv_den {n : ℕ} (theta : ℝ)
+    (y : Fin n → ℝ) :
+    lsNormwiseBackwardErrorMu theta y =
+      1 - 1 / (1 + theta ^ 2 * vecNorm2Sq y) := by
+  unfold lsNormwiseBackwardErrorMu
+  have hden : (1 + theta ^ 2 * vecNorm2Sq y) ≠ 0 :=
+    ne_of_gt (lsNormwiseBackwardErrorMu_den_pos theta y)
+  field_simp [hden]
+  ring
+
+/-- Equivalent residual form of the `mu` limiting identity:
+    `1 - mu = 1/(1 + theta^2 ||y||_2^2)`. -/
+theorem one_sub_lsNormwiseBackwardErrorMu_eq_inv_den {n : ℕ} (theta : ℝ)
+    (y : Fin n → ℝ) :
+    1 - lsNormwiseBackwardErrorMu theta y =
+      1 / (1 + theta ^ 2 * vecNorm2Sq y) := by
+  rw [lsNormwiseBackwardErrorMu_eq_one_sub_inv_den theta y]
+  ring
+
 /-- Higham, 2nd ed., Chapter 20, equation (20.21): the source scalar
     `phi = sqrt(mu) ||r||_2 / ||y||_2` used in the alternative normwise
     backward-error formula.  This definition only records the scalar appearing
@@ -9256,6 +9278,21 @@ theorem lsNormwiseBackwardErrorMatrixOnlyValuesF.nonempty {m n : ℕ}
   intro z
   simp [lsObjective, lsResidual, rectMatMulVec, vecNorm2Sq]
 
+/-- Matrix-only zero branch of the limiting `theta = infinity` model: if `y`
+    is already an exact least-squares minimizer, then the zero matrix
+    perturbation is attainable with `Delta b = 0`. -/
+theorem lsNormwiseBackwardErrorMatrixOnlyValuesF.zero_mem_of_isLeastSquaresMinimizer
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (y : Fin n → ℝ) (hmin : IsLeastSquaresMinimizer A b y) :
+    (0 : ℝ) ∈ lsNormwiseBackwardErrorMatrixOnlyValuesF A b y := by
+  have hmem :
+      frobNormRect (0 : Fin m → Fin n → ℝ) ∈
+        lsNormwiseBackwardErrorMatrixOnlyValuesF A b y :=
+    lsNormwiseBackwardErrorMatrixOnlyValuesF.mem_of_feasible A b y
+      (0 : Fin m → Fin n → ℝ) (by
+        simpa [LSNormwiseBackwardErrorFeasible] using hmin)
+  simpa [frobNormRect, frobNormSqRect] using hmem
+
 /-- The matrix-only limiting attainable-cost set is bounded below by zero. -/
 theorem lsNormwiseBackwardErrorMatrixOnlyValuesF.bddBelow {m n : ℕ}
     (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
@@ -9280,6 +9317,20 @@ theorem lsNormwiseBackwardErrorMatrixOnlyEtaF_nonneg {m n : ℕ}
   apply Real.sInf_nonneg
   intro eta heta
   exact lsNormwiseBackwardErrorMatrixOnlyValuesF.nonneg_of_mem A b y heta
+
+/-- Matrix-only zero branch of the limiting `theta = infinity` model: exact
+    least-squares minimizers have zero matrix-only backward error. -/
+theorem lsNormwiseBackwardErrorMatrixOnlyEtaF_eq_zero_of_isLeastSquaresMinimizer
+    {m n : ℕ} (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (y : Fin n → ℝ) (hmin : IsLeastSquaresMinimizer A b y) :
+    lsNormwiseBackwardErrorMatrixOnlyEtaF A b y = 0 := by
+  apply le_antisymm
+  · unfold lsNormwiseBackwardErrorMatrixOnlyEtaF
+    exact csInf_le
+      (lsNormwiseBackwardErrorMatrixOnlyValuesF.bddBelow A b y)
+      (lsNormwiseBackwardErrorMatrixOnlyValuesF.zero_mem_of_isLeastSquaresMinimizer
+        A b y hmin)
+  · exact lsNormwiseBackwardErrorMatrixOnlyEtaF_nonneg A b y
 
 /-- The matrix-only limiting infimum is no larger than any matrix-only
     attainable perturbation norm. -/
