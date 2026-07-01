@@ -6379,6 +6379,18 @@ theorem rectMatMulVec_sub {m n : ℕ} (M : Fin m → Fin n → ℝ)
   intro j _
   ring
 
+/-- Rectangular matrix-vector multiplication is additive in the matrix. -/
+theorem rectMatMulVec_mat_add {m n : ℕ} (M E : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ) :
+    rectMatMulVec (fun i j => M i j + E i j) x =
+      fun i => rectMatMulVec M x i + rectMatMulVec E x i := by
+  ext i
+  unfold rectMatMulVec
+  rw [← Finset.sum_add_distrib]
+  apply Finset.sum_congr rfl
+  intro j _
+  ring
+
 /-- Self-adjoint dilation of a rectangular matrix:
     `[[0, M], [Mᵀ, 0]]`, indexed by a sum type. -/
 noncomputable def rectSelfAdjointDilation {m n : ℕ}
@@ -7076,6 +7088,63 @@ theorem rectOpNorm2Le_mono {m n : ℕ} {M : Fin m → Fin n → ℝ}
   intro x
   exact le_trans (hM x)
     (mul_le_mul_of_nonneg_right hcd (vecNorm2_nonneg _))
+
+/-- A strict rectangular operator-2 perturbation below a vector-action lower
+    bound preserves injectivity of the matrix-vector map. -/
+theorem rectMatMulVec_injective_of_lower_bound_and_rectOpNorm2Le_lt {m n : ℕ}
+    {M Delta : Fin m → Fin n → ℝ} {mu eta : ℝ}
+    (hlower : ∀ x : Fin n → ℝ,
+      mu * vecNorm2 x ≤ vecNorm2 (rectMatMulVec M x))
+    (hDelta : rectOpNorm2Le Delta eta)
+    (heta : eta < mu) :
+    Function.Injective (rectMatMulVec (fun i j => M i j + Delta i j)) := by
+  intro x y hxy
+  let z : Fin n → ℝ := fun j => x j - y j
+  have hz_action :
+      rectMatMulVec (fun i j => M i j + Delta i j) z = 0 := by
+    rw [show z = (fun j => x j - y j) by rfl]
+    rw [rectMatMulVec_sub (fun i j => M i j + Delta i j) x y]
+    ext i
+    exact sub_eq_zero.mpr (congrFun hxy i)
+  have hz_zero : z = 0 := by
+    by_contra hz_ne
+    have hz_norm_ne : vecNorm2 z ≠ 0 := by
+      intro hz_norm
+      apply hz_ne
+      ext j
+      exact (vecNorm2_eq_zero_iff z).mp hz_norm j
+    have hz_norm_pos : 0 < vecNorm2 z :=
+      lt_of_le_of_ne (vecNorm2_nonneg z) (Ne.symm hz_norm_ne)
+    have hsplit :
+        rectMatMulVec (fun i j => M i j + Delta i j) z =
+          fun i => rectMatMulVec M z i + rectMatMulVec Delta z i :=
+      rectMatMulVec_mat_add M Delta z
+    have hM_eq_neg :
+        rectMatMulVec M z = fun i => -rectMatMulVec Delta z i := by
+      ext i
+      have hi := congrFun hz_action i
+      rw [congrFun hsplit i] at hi
+      have hi0 : rectMatMulVec M z i + rectMatMulVec Delta z i = 0 := by
+        simpa using hi
+      linarith
+    have hM_norm_eq :
+        vecNorm2 (rectMatMulVec M z) =
+          vecNorm2 (rectMatMulVec Delta z) := by
+      rw [hM_eq_neg]
+      exact vecNorm2_neg (rectMatMulVec Delta z)
+    have hmu_le_eta :
+        mu * vecNorm2 z ≤ eta * vecNorm2 z := by
+      calc
+        mu * vecNorm2 z ≤ vecNorm2 (rectMatMulVec M z) := hlower z
+        _ = vecNorm2 (rectMatMulVec Delta z) := hM_norm_eq
+        _ ≤ eta * vecNorm2 z := hDelta z
+    have heta_mul : eta * vecNorm2 z < mu * vecNorm2 z :=
+      mul_lt_mul_of_pos_right heta hz_norm_pos
+    exact not_lt_of_ge hmu_le_eta heta_mul
+  ext j
+  have hj := congrFun hz_zero j
+  dsimp [z] at hj
+  exact sub_eq_zero.mp hj
 
 /-- Rectangular operator-2 bounds are preserved by transpose.
 
