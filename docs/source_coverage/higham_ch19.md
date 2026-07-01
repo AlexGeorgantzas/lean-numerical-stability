@@ -508,8 +508,8 @@ Latest dependency update: the explicit normalized-loop surface now has named zer
 ## Git and Local-Only Notes
 
 - Work is on shared local `main`, synchronized with `origin/main` before theorem design and fetched again before push.
-- Current split-prefixed proof milestone commit: `b616c4f2` (`Split 3B: rule out Ch19 first-two vector shortcut`).
-- Previous split-prefixed proof milestone commit: `ab7a8d9c` (`Split 3B: rule out Ch19 one-tail vector shortcut`).
-- Latest `origin/main` integrated before push: `13914bd1`; local merge commit `3f28e784` preserved the upstream Split 3A work and the local Split 3B first-two route-audit milestone.
+- Current split-prefixed proof milestone commit: `ab6c78dd` (`Split 3B: package Ch19 raw normalized stage facts`).
+- Previous split-prefixed proof milestone commit: `b616c4f2` (`Split 3B: rule out Ch19 first-two vector shortcut`).
+- Latest `origin/main` integrated before theorem design and checked again before push: `9fd176c0`; the pre-push fetch found no newer remote commits before the raw normalized stage-fact packaging milestone.
 - `chapter_splitting/` is local-only context: it is ignored by `.gitignore`, has no tracked files, is absent from the refreshed `origin/main`, and must not be pushed.
 - Remaining local untracked file at this point: `.codex/config.toml`.
