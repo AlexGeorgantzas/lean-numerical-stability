@@ -34,6 +34,22 @@ end-to-end stability rebuild is tagged as
   source-strength entrywise max-growth route, concrete BDD source-table
   construction, Problem 13.4 source comparisons, and Theorem 13.6 cited
   implementation estimates remain open.
+- 2026-07-01 BDD generic source-norm finite-history endpoint: added
+  `higham13_algorithm13_3_normedStageHistoryBound` and containment/nonnegativity
+  helpers, the active-stage-to-history bound
+  `higham13_algorithm13_3_normedStageHistoryBound_le_of_active_bound`, the
+  one-sided and reciprocal source-table endpoints
+  `higham13_algorithm13_3_normedStageHistoryBound_le_two_of_column_bdd_diag_lower`
+  and
+  `higham13_algorithm13_3_normedStageHistoryBound_le_two_of_column_bdd_source_table_reciprocal`,
+  and the paired theorem
+  `higham13_algorithm13_3_upperFromNormedStages_and_normedStageHistoryBound_le_two_of_column_bdd_source_table_reciprocal`.
+  These prove the finite source-norm history bound over stages `0, ..., m` in
+  any `SeminormedRing` block algebra and pair it with the assembled
+  source-norm upper-factor Eq.13.21 bound.  This is clean Theorem 13.8
+  source-norm dependency progress only: scalar entrywise `growthFactorEntry <= 2`,
+  the concrete BDD source-table/nonsingularity construction, Problem 13.4 source
+  comparisons, and Theorem 13.6 cited implementation estimates remain open.
 - 2026-07-01 Problem 13.4 canonical all-tail global-tableau source-chain
   constructor: added `higham13_algorithm13_3_activeSuffixTail`,
   `higham13_algorithm13_3_activeSuffixStageTailBlock`, the stage-zero/stage-one
