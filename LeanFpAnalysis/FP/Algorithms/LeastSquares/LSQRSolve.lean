@@ -9207,6 +9207,109 @@ theorem lsNormwiseBackwardErrorEtaF_le_of_mem {m n : ℕ} (theta : ℝ)
   unfold lsNormwiseBackwardErrorEtaF
   exact csInf_le (lsNormwiseBackwardErrorValuesF.bddBelow theta A b y) heta
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.5 discussion after (20.20):
+    matrix-only attainable costs for the limiting `theta = infinity` convention,
+    where right-hand-side perturbations are forbidden by setting
+    `Delta b = 0`.  This records the body-text limiting model; it is not an
+    end-of-chapter exercise statement. -/
+noncomputable def lsNormwiseBackwardErrorMatrixOnlyValuesF {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) : Set ℝ :=
+  {eta | ∃ DeltaA : Fin m → Fin n → ℝ,
+    LSNormwiseBackwardErrorFeasible A b y DeltaA (0 : Fin m → ℝ) ∧
+      eta = frobNormRect DeltaA}
+
+/-- Infimum model for the matrix-only limiting branch of (20.20), corresponding
+    to the source convention `theta = infinity` and `Delta b = 0`. -/
+noncomputable def lsNormwiseBackwardErrorMatrixOnlyEtaF {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) : ℝ :=
+  sInf (lsNormwiseBackwardErrorMatrixOnlyValuesF A b y)
+
+theorem lsNormwiseBackwardErrorMatrixOnlyValuesF.mem_of_feasible {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    (DeltaA : Fin m → Fin n → ℝ)
+    (hfeas : LSNormwiseBackwardErrorFeasible A b y DeltaA (0 : Fin m → ℝ)) :
+    frobNormRect DeltaA ∈
+      lsNormwiseBackwardErrorMatrixOnlyValuesF A b y := by
+  exact ⟨DeltaA, hfeas, rfl⟩
+
+/-- Matrix-only attainable values are ordinary finite-`theta` attainable values
+    for every finite weight, because the weighted block cost reduces to
+    `||DeltaA||_F` when `Delta b = 0`. -/
+theorem lsNormwiseBackwardErrorMatrixOnlyValuesF.mem_valuesF {m n : ℕ}
+    (theta : ℝ) (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (y : Fin n → ℝ) {eta : ℝ}
+    (heta : eta ∈ lsNormwiseBackwardErrorMatrixOnlyValuesF A b y) :
+    eta ∈ lsNormwiseBackwardErrorValuesF theta A b y := by
+  rcases heta with ⟨DeltaA, hfeas, rfl⟩
+  simpa [lsNormwiseBackwardErrorCostF_eq_frobNormRect_of_deltab_zero] using
+    lsNormwiseBackwardErrorValuesF.mem_of_feasible theta A b y DeltaA
+      (0 : Fin m → ℝ) hfeas
+
+/-- The matrix-only limiting attainable-cost set is nonempty: choosing
+    `DeltaA = -A` makes the perturbed matrix zero, so every candidate `y` is an
+    exact least-squares minimizer for the unperturbed right-hand side. -/
+theorem lsNormwiseBackwardErrorMatrixOnlyValuesF.nonempty {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    (lsNormwiseBackwardErrorMatrixOnlyValuesF A b y).Nonempty := by
+  refine ⟨frobNormRect (fun i j => -A i j), ?_⟩
+  apply lsNormwiseBackwardErrorMatrixOnlyValuesF.mem_of_feasible
+  intro z
+  simp [lsObjective, lsResidual, rectMatMulVec, vecNorm2Sq]
+
+/-- The matrix-only limiting attainable-cost set is bounded below by zero. -/
+theorem lsNormwiseBackwardErrorMatrixOnlyValuesF.bddBelow {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    BddBelow (lsNormwiseBackwardErrorMatrixOnlyValuesF A b y) := by
+  refine ⟨0, ?_⟩
+  intro eta heta
+  rcases heta with ⟨DeltaA, _hfeas, rfl⟩
+  exact frobNormRect_nonneg DeltaA
+
+theorem lsNormwiseBackwardErrorMatrixOnlyValuesF.nonneg_of_mem {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    {eta : ℝ} (heta : eta ∈ lsNormwiseBackwardErrorMatrixOnlyValuesF A b y) :
+    0 ≤ eta := by
+  rcases heta with ⟨DeltaA, _hfeas, rfl⟩
+  exact frobNormRect_nonneg DeltaA
+
+/-- The matrix-only limiting infimum model is nonnegative. -/
+theorem lsNormwiseBackwardErrorMatrixOnlyEtaF_nonneg {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    0 ≤ lsNormwiseBackwardErrorMatrixOnlyEtaF A b y := by
+  unfold lsNormwiseBackwardErrorMatrixOnlyEtaF
+  apply Real.sInf_nonneg
+  intro eta heta
+  exact lsNormwiseBackwardErrorMatrixOnlyValuesF.nonneg_of_mem A b y heta
+
+/-- The matrix-only limiting infimum is no larger than any matrix-only
+    attainable perturbation norm. -/
+theorem lsNormwiseBackwardErrorMatrixOnlyEtaF_le_of_mem {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    {eta : ℝ} (heta : eta ∈ lsNormwiseBackwardErrorMatrixOnlyValuesF A b y) :
+    lsNormwiseBackwardErrorMatrixOnlyEtaF A b y ≤ eta := by
+  unfold lsNormwiseBackwardErrorMatrixOnlyEtaF
+  exact csInf_le
+    (lsNormwiseBackwardErrorMatrixOnlyValuesF.bddBelow A b y) heta
+
+/-- Any matrix-only feasible perturbation gives an explicit upper bound for
+    the limiting `theta = infinity` model. -/
+theorem lsNormwiseBackwardErrorMatrixOnlyEtaF_le_frobNorm_of_feasible {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    (DeltaA : Fin m → Fin n → ℝ)
+    (hfeas : LSNormwiseBackwardErrorFeasible A b y DeltaA (0 : Fin m → ℝ)) :
+    lsNormwiseBackwardErrorMatrixOnlyEtaF A b y ≤ frobNormRect DeltaA :=
+  lsNormwiseBackwardErrorMatrixOnlyEtaF_le_of_mem A b y
+    (lsNormwiseBackwardErrorMatrixOnlyValuesF.mem_of_feasible A b y DeltaA hfeas)
+
+/-- Every matrix-only attainable value is an upper bound for the finite-`theta`
+    `eta_F` infimum as well. -/
+theorem lsNormwiseBackwardErrorEtaF_le_of_matrixOnly_mem {m n : ℕ}
+    (theta : ℝ) (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    {eta : ℝ} (heta : eta ∈ lsNormwiseBackwardErrorMatrixOnlyValuesF A b y) :
+    lsNormwiseBackwardErrorEtaF theta A b y ≤ eta :=
+  lsNormwiseBackwardErrorEtaF_le_of_mem theta A b y
+    (lsNormwiseBackwardErrorMatrixOnlyValuesF.mem_valuesF theta A b y heta)
+
 /-- Any feasible perturbation in (20.20) gives an explicit upper bound for the
     infimum model `eta_F(y)`. -/
 theorem lsNormwiseBackwardErrorEtaF_le_costF_of_feasible {m n : ℕ} (theta : ℝ)
