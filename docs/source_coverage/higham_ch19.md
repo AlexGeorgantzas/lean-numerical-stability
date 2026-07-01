@@ -203,6 +203,7 @@ Latest dependency update: the explicit normalized-loop surface now has named zer
 - `git ls-files chapter_splitting`, `git ls-tree -r --name-only origin/main -- chapter_splitting`, and `git check-ignore -v chapter_splitting/skills/higham_chapter_formalization_shared_SKILL.md`: confirm `chapter_splitting/` has no tracked files, is absent from the refreshed remote tip, and is ignored by `.gitignore`.
 - `#print axioms` for `storedSignedSequenceFullStageNormalizedLoopFacts_of_tailNormalizedLoopRecords` and `storedSignedSequenceTwiceTrailingSourceClosureData_of_tailNormalizedLoopRecords`: only `propext`, `Classical.choice`, and `Quot.sound`.
 - Post-merge rechecks after integrating `origin/main` at `9a47004b` via merge `2b9bc6c5`: `lake env lean LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`, `lake build LeanFpAnalysis.FP.Algorithms.QR.Higham19`, placeholder scan, pushed-commit whitespace check, `chapter_splitting/` guards, and the two `#print axioms` commands above passed; only the pre-existing `GivensSpec` unused-simp warnings were reported.
+- Post-merge rechecks after integrating `origin/main` at `ff60f68c` via merge `681b998b`: `lake env lean LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`, `lake build LeanFpAnalysis.FP.Algorithms.QR.Higham19`, placeholder scan, pushed-commit whitespace check, `chapter_splitting/` guards, and the two `#print axioms` commands above passed; only the pre-existing `GivensSpec` unused-simp warnings were reported.
 - `lake env lean LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`: passed after adding the exact named tail-local normalized-record constructors.
 - `lake build LeanFpAnalysis.FP.Algorithms.QR.Higham19`: passed after adding the exact named tail-local normalized-record constructors; only pre-existing `GivensSpec` unused-simp warnings were reported.
 - `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`: no matches after adding the exact named tail-local normalized-record constructors.
@@ -457,6 +458,6 @@ Latest dependency update: the explicit normalized-loop surface now has named zer
 - Work is on shared local `main`, synchronized with `origin/main` before theorem design, fast-forwarded before the proof commit, and merged again after the proof commit before push.
 - Current split-prefixed proof milestone commit: `4642ed52` (`Split 3B: assemble Ch19 tail-normalized loop records`).
 - Previous split-prefixed proof milestone commit: `14100fa9` (`Split 3B: derive exact Ch19 normalized records`).
-- Latest `origin/main` integrated before final push: `9a47004b`, via conflict-free merge `2b9bc6c5`.
+- Latest `origin/main` integrated before final push: `ff60f68c`, via conflict-free merge `681b998b`.
 - `chapter_splitting/` is local-only context: it is ignored by `.gitignore`, has no tracked files, is absent from the refreshed `origin/main`, and must not be pushed.
 - Remaining local untracked file at this point: `.codex/config.toml`.
