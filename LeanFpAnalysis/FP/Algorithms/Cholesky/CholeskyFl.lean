@@ -21,6 +21,7 @@ import Mathlib.Tactic.FieldSimp
 import LeanFpAnalysis.FP.Model
 import LeanFpAnalysis.FP.Analysis.Rounding
 import LeanFpAnalysis.FP.Analysis.SubtractionFold
+import LeanFpAnalysis.FP.Analysis.Summation
 import LeanFpAnalysis.FP.Algorithms.Cholesky.CholeskyDemmel
 
 namespace LeanFpAnalysis.FP
@@ -194,5 +195,71 @@ theorem fl_cholesky_diag_eq (fp : FPModel) (n : ℕ)
   rw [dif_pos (⟨j.isLt, j.isLt⟩ : j.val < n ∧ j.val < n),
       dif_neg (lt_irrefl j.val), dif_pos rfl]
   rfl
+
+/-- **Factor-level subtraction-fold expansion** (Higham §3.1/§3.4 bookkeeping
+    for Algorithm 10.2, uncompressed form).
+
+    Unlike `fl_sub_sum_error_init`, which compresses rounding factors into
+    `γ` witnesses, this exposes the actual local subtraction factors:
+    the initial accumulator passes through every subtraction, while term `k`
+    passes through only the suffix of subtractions from its insertion step.
+    This uncompressed form is required for the sharp `γ_{n+1}` constant of
+    Theorem 10.3: the factors shared between the accumulator product and each
+    term's suffix product cancel when the recurrence is solved for `A i j`. -/
+theorem fl_sub_fold_local_factors (fp : FPModel) (m : ℕ)
+    (t : Fin m → ℝ) (c : ℝ) :
+    ∃ δ : Fin m → ℝ, (∀ s, |δ s| ≤ fp.u) ∧
+      Fin.foldl m (fun acc k => fp.fl_sub acc (t k)) c =
+        c * ∏ s : Fin m, (1 + δ s) -
+          ∑ k : Fin m, t k * sumSuffixErrorProduct m δ k := by
+  induction m with
+  | zero =>
+      exact ⟨fun s => s.elim0, fun s => s.elim0, by simp⟩
+  | succ m ih =>
+      obtain ⟨δ', hδ', hfold⟩ := ih (fun k => t k.castSucc)
+      obtain ⟨δl, hδl, hsub⟩ := fp.model_sub
+        (Fin.foldl m (fun acc k => fp.fl_sub acc (t k.castSucc)) c)
+        (t (Fin.last m))
+      refine ⟨(Fin.snoc δ' δl : Fin (m + 1) → ℝ), ?_, ?_⟩
+      · intro s
+        refine Fin.lastCases ?_ ?_ s
+        · rw [Fin.snoc_last]; exact hδl
+        · intro s; rw [Fin.snoc_castSucc]; exact hδ' s
+      · have hsuffix_cast : ∀ k : Fin m,
+            sumSuffixErrorProduct (m + 1) (Fin.snoc δ' δl) k.castSucc =
+              sumSuffixErrorProduct m δ' k * (1 + δl) := by
+          intro k
+          rw [sumSuffixErrorProduct_eq_prod_if, sumSuffixErrorProduct_eq_prod_if,
+              Fin.prod_univ_castSucc]
+          congr 1
+          · apply Finset.prod_congr rfl
+            intro j _
+            simp [Fin.snoc_castSucc]
+          · simp [Fin.snoc_last, Nat.le_of_lt k.isLt]
+        have hsuffix_last :
+            sumSuffixErrorProduct (m + 1) (Fin.snoc δ' δl) (Fin.last m) =
+              1 + δl := by
+          rw [sumSuffixErrorProduct_eq_prod_if, Fin.prod_univ_castSucc]
+          have h1 : ∀ j : Fin m,
+              (if (Fin.last m).val ≤ (j.castSucc).val
+                then 1 + (Fin.snoc δ' δl : Fin (m + 1) → ℝ) j.castSucc
+                else 1) = 1 := by
+            intro j
+            rw [if_neg]
+            simp only [Fin.val_last, Fin.val_castSucc]
+            exact Nat.not_le.mpr j.isLt
+          rw [Finset.prod_congr rfl (fun j _ => h1 j)]
+          simp [Fin.snoc_last]
+        rw [Fin.foldl_succ_last, hsub, hfold,
+            Fin.prod_univ_castSucc, Fin.sum_univ_castSucc, hsuffix_last]
+        simp only [hsuffix_cast, Fin.snoc_castSucc, Fin.snoc_last]
+        have hsum : ∑ k : Fin m,
+              t k.castSucc * (sumSuffixErrorProduct m δ' k * (1 + δl)) =
+            (∑ k : Fin m, t k.castSucc * sumSuffixErrorProduct m δ' k) *
+              (1 + δl) := by
+          rw [Finset.sum_mul]
+          exact Finset.sum_congr rfl fun k _ => by ring
+        rw [hsum]
+        ring
 
 end LeanFpAnalysis.FP
