@@ -652,6 +652,64 @@ theorem opNorm2Le_of_abs_le (n : ℕ) (M B : Fin n → Fin n → ℝ)
     _ ≤ c * vecNorm2 (absVec n x) := hB (absVec n x)
     _ = c * vecNorm2 x := by rw [h5]
 
+/-- **Lemma 6.6 chain, step 1** (used by equation (10.7)): a vector-action
+operator-2-norm certificate bounds the squared Frobenius norm by `n c²`,
+since each column is the image of a standard basis vector. -/
+theorem frobNormSq_le_of_opNorm2Le (n : ℕ) (M : Fin n → Fin n → ℝ)
+    (c : ℝ) (h : opNorm2Le M c) :
+    frobNormSq M ≤ n * c ^ 2 := by
+  have hcol : ∀ j : Fin n, matMulVec n M (fun k => if k = j then 1 else 0) =
+      fun i => M i j := by
+    intro j
+    funext i
+    unfold matMulVec
+    rw [Finset.sum_eq_single j (by intro b _ hb; simp [hb]) (by simp)]
+    simp
+  have hbasis_norm : ∀ j : Fin n,
+      vecNorm2 (fun k : Fin n => if k = j then (1:ℝ) else 0) = 1 := by
+    intro j
+    unfold vecNorm2 vecNorm2Sq
+    rw [Finset.sum_eq_single j (by intro b _ hb; simp [hb]) (by simp)]
+    simp
+  have hcolsq : ∀ j : Fin n, ∑ i : Fin n, M i j ^ 2 ≤ c ^ 2 := by
+    intro j
+    have h1 := h (fun k => if k = j then 1 else 0)
+    rw [hcol j, hbasis_norm j, mul_one] at h1
+    have h2 : vecNorm2 (fun i => M i j) ^ 2 ≤ c ^ 2 := by
+      have hnn : 0 ≤ vecNorm2 (fun i => M i j) := vecNorm2_nonneg _
+      nlinarith
+    rw [vecNorm2_sq] at h2
+    exact h2
+  unfold frobNormSq
+  rw [Finset.sum_comm]
+  calc ∑ j : Fin n, ∑ i : Fin n, M i j ^ 2
+      ≤ ∑ _j : Fin n, c ^ 2 := Finset.sum_le_sum fun j _ => hcolsq j
+    _ = n * c ^ 2 := by simp
+
+/-- **Lemma 6.6 chain, step 2** (Higham Lemma 6.6, `‖|A|‖₂ ≤ √n ‖A‖₂`, in
+vector-action form): the componentwise absolute value of a matrix carries
+an operator-2-norm certificate inflated by `√n`, through the Frobenius
+norm (which is invariant under componentwise absolute value). -/
+theorem opNorm2Le_abs_of_opNorm2Le (n : ℕ) (M : Fin n → Fin n → ℝ)
+    (c : ℝ) (hc : 0 ≤ c) (h : opNorm2Le M c) :
+    opNorm2Le (fun i j => |M i j|) (Real.sqrt n * c) := by
+  intro x
+  have habs_frob : frobNormSq (fun i j => |M i j|) = frobNormSq M := by
+    unfold frobNormSq
+    exact Finset.sum_congr rfl fun i _ =>
+      Finset.sum_congr rfl fun j _ => sq_abs (M i j)
+  calc vecNorm2 (matMulVec n (fun i j => |M i j|) x)
+      ≤ frobNorm (fun i j => |M i j|) * vecNorm2 x :=
+        vecNorm2_matMulVec_le_frobNorm_mul _ x
+    _ ≤ Real.sqrt n * c * vecNorm2 x := by
+        apply mul_le_mul_of_nonneg_right _ (vecNorm2_nonneg x)
+        rw [frobNorm_eq_sqrt_frobNormSq, habs_frob]
+        calc Real.sqrt (frobNormSq M)
+            ≤ Real.sqrt (n * c ^ 2) :=
+              Real.sqrt_le_sqrt (frobNormSq_le_of_opNorm2Le n M c h)
+          _ = Real.sqrt n * c := by
+              rw [Real.sqrt_mul (Nat.cast_nonneg n), Real.sqrt_sq hc]
+
 /-- **Theorem 10.7, spectral success form** (Higham §10.1): if the minimum
 eigenvalue of the symmetric scaled matrix `H` — stated through the
 repository's `finiteHermitianEigenvalues` — exceeds the scaled

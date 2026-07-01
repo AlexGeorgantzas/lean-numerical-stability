@@ -3520,6 +3520,8 @@ Source-facing Chapter 10 wrappers:
 - `higham10_7_failure_no_factorization`
 - `higham10_7_onesMatrix_opNorm2Le`
 - `opNorm2Le_of_abs_le`
+- `frobNormSq_le_of_opNorm2Le`
+- `opNorm2Le_abs_of_opNorm2Le`
 - `higham10_7_success_factorization_spectral`
 - `higham10_7_failure_no_factorization_spectral`
 - `quadForm_add_pos_of_perturbation`
