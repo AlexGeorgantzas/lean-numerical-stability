@@ -14,6 +14,7 @@
 import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
+import Mathlib.Analysis.Matrix.Spectrum
 import Mathlib.LinearAlgebra.Matrix.Rank
 import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Linarith
@@ -8149,6 +8150,115 @@ theorem lsNormwiseBackwardErrorMu_le_one {n : ℕ} (theta : ℝ)
 noncomputable def lsNormwiseBackwardErrorPhi {m n : ℕ} (theta : ℝ)
     (r : Fin m → ℝ) (y : Fin n → ℝ) : ℝ :=
   Real.sqrt (lsNormwiseBackwardErrorMu theta y) * vecNorm2 r / vecNorm2 y
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.5: Hermitian matrix in the
+    alternative eigenvalue expression for the Walden--Karlson--Sun normwise
+    backward error,
+    `A A^T - mu * r r^T / ||y||_2^2`. -/
+noncomputable def lsNormwiseBackwardErrorEigenMatrix {m n : ℕ} (theta : ℝ)
+    (A : Fin m → Fin n → ℝ) (r : Fin m → ℝ) (y : Fin n → ℝ) :
+    Matrix (Fin m) (Fin m) ℝ :=
+  fun i k =>
+    (∑ j : Fin n, A i j * A k j) -
+      lsNormwiseBackwardErrorMu theta y * ((r i * r k) / vecNorm2Sq y)
+
+/-- The source matrix `A A^T - mu * r r^T / ||y||_2^2` is symmetric. -/
+theorem lsNormwiseBackwardErrorEigenMatrix_apply_comm {m n : ℕ} (theta : ℝ)
+    (A : Fin m → Fin n → ℝ) (r : Fin m → ℝ) (y : Fin n → ℝ)
+    (i k : Fin m) :
+    lsNormwiseBackwardErrorEigenMatrix theta A r y i k =
+      lsNormwiseBackwardErrorEigenMatrix theta A r y k i := by
+  have hgram :
+      (∑ j : Fin n, A i j * A k j) =
+        ∑ j : Fin n, A k j * A i j := by
+    refine Finset.sum_congr rfl ?_
+    intro j _
+    ring
+  have houter : r i * r k / vecNorm2Sq y = r k * r i / vecNorm2Sq y := by
+    ring
+  simp [lsNormwiseBackwardErrorEigenMatrix, hgram, houter]
+
+/-- The eigenvalue-branch source matrix in Higham's Theorem 20.5 is Hermitian,
+    so Mathlib's Hermitian eigenvalue API applies. -/
+theorem lsNormwiseBackwardErrorEigenMatrix_isHermitian {m n : ℕ} (theta : ℝ)
+    (A : Fin m → Fin n → ℝ) (r : Fin m → ℝ) (y : Fin n → ℝ) :
+    (lsNormwiseBackwardErrorEigenMatrix theta A r y).IsHermitian := by
+  refine Matrix.IsHermitian.ext ?_
+  intro i k
+  simp [lsNormwiseBackwardErrorEigenMatrix_apply_comm theta A r y k i]
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.5: `lambda_*`, the smallest
+    Hermitian eigenvalue of `A A^T - mu * r r^T / ||y||_2^2`.  Mathlib orders
+    Hermitian eigenvalues antitonically, so the last `Fin (m+1)` index is the
+    source's `lambda_min`. -/
+noncomputable def lsNormwiseBackwardErrorLambdaStar {m n : ℕ} (theta : ℝ)
+    (A : Fin (m + 1) → Fin n → ℝ) (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ) :
+    ℝ :=
+  (lsNormwiseBackwardErrorEigenMatrix_isHermitian theta A r y).eigenvalues
+    (Fin.last m)
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.5: the nonnegative-`lambda_*`
+    branch `||r||_2 / ||y||_2 * sqrt(mu)`. -/
+noncomputable def lsNormwiseBackwardErrorEigenvalueNonnegativeBranch {m n : ℕ}
+    (theta : ℝ) (r : Fin m → ℝ) (y : Fin n → ℝ) : ℝ :=
+  vecNorm2 r / vecNorm2 y * Real.sqrt (lsNormwiseBackwardErrorMu theta y)
+
+/-- The printed nonnegative eigenvalue branch is the same scalar as the
+    `phi` term used in equation (20.21). -/
+theorem lsNormwiseBackwardErrorEigenvalueNonnegativeBranch_eq_phi {m n : ℕ}
+    (theta : ℝ) (r : Fin m → ℝ) (y : Fin n → ℝ) :
+    lsNormwiseBackwardErrorEigenvalueNonnegativeBranch theta r y =
+      lsNormwiseBackwardErrorPhi theta r y := by
+  unfold lsNormwiseBackwardErrorEigenvalueNonnegativeBranch
+    lsNormwiseBackwardErrorPhi
+  ring
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.5: the displayed eigenvalue
+    formula for the finite-`theta` WKS normwise backward-error value, recorded
+    for a supplied residual vector `r`.  The equality with `eta_F(y)` remains
+    a separate theorem row. -/
+noncomputable def lsNormwiseBackwardErrorEigenvalueFormulaValue {m n : ℕ}
+    (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ) : ℝ :=
+  let lambdaStar := lsNormwiseBackwardErrorLambdaStar theta A r y
+  if 0 ≤ lambdaStar then
+    lsNormwiseBackwardErrorEigenvalueNonnegativeBranch theta r y
+  else
+    Real.sqrt
+      ((vecNorm2Sq r / vecNorm2Sq y) * lsNormwiseBackwardErrorMu theta y +
+        lambdaStar)
+
+/-- Source-data form of Higham's Theorem 20.5 eigenvalue expression, using
+    the residual convention `r = b - A*y`. -/
+noncomputable def lsNormwiseBackwardErrorEigenvalueFormulaRHS {m n : ℕ}
+    (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ) : ℝ :=
+  lsNormwiseBackwardErrorEigenvalueFormulaValue theta A (lsResidualHigham A b y) y
+
+/-- When `lambda_* >= 0`, the eigenvalue formula reduces to the source scalar
+    `phi`. -/
+theorem lsNormwiseBackwardErrorEigenvalueFormulaValue_eq_phi_of_lambdaStar_nonneg
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (hlambda : 0 ≤ lsNormwiseBackwardErrorLambdaStar theta A r y) :
+    lsNormwiseBackwardErrorEigenvalueFormulaValue theta A r y =
+      lsNormwiseBackwardErrorPhi theta r y := by
+  simp [lsNormwiseBackwardErrorEigenvalueFormulaValue, hlambda,
+    lsNormwiseBackwardErrorEigenvalueNonnegativeBranch_eq_phi]
+
+/-- When `lambda_* < 0`, the eigenvalue formula selects the printed square-root
+    branch from Theorem 20.5. -/
+theorem lsNormwiseBackwardErrorEigenvalueFormulaValue_eq_sqrt_of_lambdaStar_neg
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (r : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (hlambda : lsNormwiseBackwardErrorLambdaStar theta A r y < 0) :
+    lsNormwiseBackwardErrorEigenvalueFormulaValue theta A r y =
+      Real.sqrt
+        ((vecNorm2Sq r / vecNorm2Sq y) * lsNormwiseBackwardErrorMu theta y +
+          lsNormwiseBackwardErrorLambdaStar theta A r y) := by
+  have hnot : ¬ 0 ≤ lsNormwiseBackwardErrorLambdaStar theta A r y :=
+    not_le_of_gt hlambda
+  simp [lsNormwiseBackwardErrorEigenvalueFormulaValue, hnot]
 
 /-- The source scalar `phi` from (20.21) is nonnegative. -/
 theorem lsNormwiseBackwardErrorPhi_nonneg {m n : ℕ} (theta : ℝ)
