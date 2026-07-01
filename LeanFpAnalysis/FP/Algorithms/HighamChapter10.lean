@@ -441,6 +441,50 @@ theorem higham10_4_cholesky_solve_backward_error (fp : FPModel) (n : ℕ)
       (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
   cholesky_solve_backward_error fp n A R_hat b hR_diag hChol hn1 hn3
 
+/-- **Theorem 10.5 for the concrete Algorithm 10.2 factor**: Demmel's `dd^T`
+bound with `d_i` the computed factor's column 2-norms, chained end-to-end
+from the concrete `fl_cholesky` certificate — no assumed certificate or
+Cauchy-Schwarz hypothesis remains. -/
+theorem higham10_5_fl_cholesky_demmel_bound (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (hsym : ∀ i j : Fin n, A i j = A j i)
+    (hn1 : gammaValid fp (n + 1))
+    (hγlt : gamma fp (n + 1) < 1)
+    (hpiv : ∀ j : Fin n, 0 ≤ fl_cholPivot fp n A j)
+    (hdz : ∀ j : Fin n, fl_cholesky fp n A j j ≠ 0) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤ gamma fp (n + 1) / (1 - gamma fp (n + 1)) *
+        (colNorm n (fl_cholesky fp n A) i *
+         colNorm n (fl_cholesky fp n A) j)) ∧
+      (∀ i j, ∑ k : Fin n, fl_cholesky fp n A k i * fl_cholesky fp n A k j =
+        A i j + ΔA i j) :=
+  cholesky_demmel_bound_colNorm n A (fl_cholesky fp n A) (gamma fp (n + 1))
+    (gamma_nonneg fp hn1) hγlt
+    (fl_cholesky_backward_error fp n A hsym hn1 hpiv hdz)
+
+/-- **Theorem 10.4 / equation (10.6) for the concrete Algorithm 10.2
+factor**: factorization plus the two triangular solves on the computed
+factor gives `(A + ΔA)x̂ = b` with the absorbed `γ_{3n+1}` componentwise
+bound, chained end-to-end from the concrete `fl_cholesky` certificate. -/
+theorem higham10_4_fl_cholesky_solve_backward_error (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (hsym : ∀ i j : Fin n, A i j = A j i)
+    (hn1 : gammaValid fp (n + 1))
+    (hn3 : gammaValid fp (3 * n + 1))
+    (hpiv : ∀ j : Fin n, 0 ≤ fl_cholPivot fp n A j)
+    (hdz : ∀ j : Fin n, fl_cholesky fp n A j j ≠ 0) :
+    let R_hat := fl_cholesky fp n A
+    let R_hatT := fun i j : Fin n => R_hat j i
+    let y_hat := fl_forwardSub fp n R_hatT b
+    let x_hat := fl_backSub fp n R_hat y_hat
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤ gamma fp (3 * n + 1) *
+        ∑ k : Fin n, |R_hat k i| * |R_hat k j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham10_4_cholesky_solve_backward_error fp n A (fl_cholesky fp n A) b hdz
+    (fl_cholesky_backward_error fp n A hsym hn1 hpiv hdz) hn1 hn3
+
+
 /-- **Theorem 10.5**: Demmel's column-norm `dd^T` backward-error bound,
 in the repository's certificate form.  The source proof's Cauchy-Schwarz and
 diagonal-scaling estimate is supplied as `hCS`. -/
@@ -455,6 +499,26 @@ theorem higham10_5_demmel_bound (n : ℕ)
       (∀ i j, |ΔA i j| ≤ ε / (1 - ε) * (d i * d j)) ∧
       (∀ i j, ∑ k : Fin n, R_hat k i * R_hat k j = A i j + ΔA i j) :=
   cholesky_demmel_bound n A R_hat d hd hCS ε hε hε_lt hChol
+
+/-- **Theorem 10.5 / equation (10.8)**, closed form: with the computed-factor
+column 2-norms `d_i = ‖R̂(:,i)‖₂ = √(∑_k R̂_{ki}²)`, the backward error satisfies
+`|ΔA_{ij}| ≤ γ_{n+1}/(1-γ_{n+1}) · d_i d_j`.
+
+Unlike `higham10_5_demmel_bound`, the Cauchy-Schwarz estimate is *proved*
+(`colNorm_cauchy_schwarz`), so this is a genuine corollary of the Theorem 10.3
+backward-error certificate — it assumes no analysis step beyond that certificate
+and `γ_{n+1} < 1`. -/
+theorem higham10_5_demmel_bound_colNorm (fp : FPModel) (n : ℕ)
+    (A R_hat : Fin n → Fin n → ℝ)
+    (hn1 : gammaValid fp (n + 1))
+    (hγ_lt : gamma fp (n + 1) < 1)
+    (hChol : higham10_2_CholeskyBackwardError n A R_hat (gamma fp (n + 1))) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤ gamma fp (n + 1) / (1 - gamma fp (n + 1)) *
+        (colNorm n R_hat i * colNorm n R_hat j)) ∧
+      (∀ i j, ∑ k : Fin n, R_hat k i * R_hat k j = A i j + ΔA i j) :=
+  cholesky_demmel_bound_colNorm n A R_hat (gamma fp (n + 1))
+    (gamma_nonneg fp hn1) hγ_lt hChol
 
 /-- **Equation (10.9)** source-shaped statement for van der Sluis scaling:
 the scaled condition number is bounded by `n` times the best diagonal scaling

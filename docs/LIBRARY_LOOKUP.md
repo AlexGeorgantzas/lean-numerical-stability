@@ -3536,6 +3536,13 @@ Source-facing Chapter 10 wrappers:
 - `fl_cholesky_backward_error`
 - `higham10_3_fl_cholesky_certificate`
 - `higham10_3_fl_cholesky_backward_error`
+- `colNormSq`
+- `colNorm`
+- `colNorm_cauchy_schwarz`
+- `cholesky_demmel_bound_colNorm`
+- `higham10_5_demmel_bound_colNorm`
+- `higham10_5_fl_cholesky_demmel_bound`
+- `higham10_4_fl_cholesky_solve_backward_error`
 - `higham10_8_sun_normwise_perturbation`
 - `higham10_8_sun_componentwise_perturbation`
 - `higham10_9_PivotedCholeskySpec`
