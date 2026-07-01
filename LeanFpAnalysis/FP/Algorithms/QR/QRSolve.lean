@@ -541,6 +541,136 @@ theorem householder_qr_rhs_panel_backward_cons {m p : ℕ}
       _ ≤ (m + 1 : ℝ) * (c + α) := by
           exact mul_le_mul_of_nonneg_left hEtaInf (by positivity)
 
+/-- Sharpened recursive cons step for the Householder QR RHS transform.
+
+    This is the same algebraic construction as
+    `householder_qr_rhs_panel_backward_cons`, but the final transport through
+    the orthogonal reflector is bounded by Cauchy--Schwarz:
+    `|Pᵀ η|ᵢ ≤ ‖η‖₂ ≤ sqrt(m+1) ‖η‖∞`.  Thus the active-dimension factor in
+    the componentwise perturbation budget is reduced from `m+1` to
+    `sqrt(m+1)`. -/
+theorem householder_qr_rhs_panel_backward_cons_sqrt {m p : ℕ}
+    (A : Fin (m + 1) → Fin (p + 1) → ℝ)
+    (A_tail : Fin m → Fin p → ℝ)
+    (P : Fin (m + 1) → Fin (m + 1) → ℝ)
+    (b y e : Fin (m + 1) → ℝ)
+    (ctail : Fin m → ℝ)
+    (c α : ℝ)
+    (hP : IsOrthogonal (m + 1) P)
+    (hy : ∀ i, y i = matMulVec (m + 1) P b i + e i)
+    (he : ∀ i, |e i| ≤ c)
+    (hTail :
+      HouseholderQRRhsPanelBackwardError m p A_tail (vectorTail y) ctail α)
+    (hc : 0 ≤ c) (hα : 0 ≤ α) :
+    HouseholderQRRhsPanelBackwardError (m + 1) (p + 1) A b
+      (vectorFromTopTail (y 0) ctail)
+      (Real.sqrt (m + 1 : ℝ) * (c + α)) := by
+  obtain ⟨Qt, Δtail, hQt, hTailRep, hΔtail⟩ := hTail.result
+  let ΔtailFull : Fin (m + 1) → ℝ := vectorTrailingPerturbation Δtail
+  let Eta : Fin (m + 1) → ℝ := fun i => e i + ΔtailFull i
+  let Δb : Fin (m + 1) → ℝ :=
+    matMulVec (m + 1) (matTranspose P) Eta
+  let M : Fin (m + 1) → Fin (m + 1) → ℝ :=
+    matMul (m + 1) (embedTrailingOne (matTranspose Qt)) P
+  let Q : Fin (m + 1) → Fin (m + 1) → ℝ := matTranspose M
+  refine ⟨⟨Q, Δb, ?_, ?_, ?_⟩⟩
+  · have hEmb :
+        IsOrthogonal (m + 1) (embedTrailingOne (matTranspose Qt)) :=
+      embedTrailingOne_orthogonal (matTranspose Qt) hQt.transpose
+    have hM : IsOrthogonal (m + 1) M := hEmb.mul hP
+    exact hM.transpose
+  · have hLift :=
+      vectorFromTopTail_lift_trailing_rep Qt
+        (y 0) (vectorTail y) ctail Δtail hTailRep
+    have hInside :
+        (fun i => vectorFromTopTail (y 0) (vectorTail y) i +
+          vectorTrailingPerturbation Δtail i) =
+        fun i => y i + ΔtailFull i := by
+      ext i
+      simp [ΔtailFull]
+    have hPΔ : ∀ i,
+        matMulVec (m + 1) P Δb i = Eta i := by
+      intro i
+      have hPPt :
+          matMul (m + 1) P (matTranspose P) = idMatrix (m + 1) := by
+        ext a b
+        exact hP.right_inv a b
+      calc
+        matMulVec (m + 1) P Δb i
+            = matMulVec (m + 1) P
+                (matMulVec (m + 1) (matTranspose P) Eta) i := rfl
+        _ = matMulVec (m + 1)
+              (matMul (m + 1) P (matTranspose P)) Eta i := by
+            exact (matMulVec_matMul (m + 1) P (matTranspose P) Eta i).symm
+        _ = matMulVec (m + 1) (idMatrix (m + 1)) Eta i := by
+            rw [hPPt]
+        _ = Eta i := by
+            simpa using congr_fun (idMatrix_mulVec (m + 1) Eta) i
+    have hyEta :
+        (fun i => y i + ΔtailFull i) =
+          matMulVec (m + 1) P (fun k => b k + Δb k) := by
+      ext i
+      calc
+        y i + ΔtailFull i
+            = (matMulVec (m + 1) P b i + e i) + ΔtailFull i := by
+                rw [hy i]
+        _ = matMulVec (m + 1) P b i + Eta i := by
+            simp [Eta]
+            ring
+        _ = matMulVec (m + 1) P b i +
+              matMulVec (m + 1) P Δb i := by
+            rw [hPΔ i]
+        _ = matMulVec (m + 1) P (fun k => b k + Δb k) i := by
+            unfold matMulVec
+            rw [← Finset.sum_add_distrib]
+            apply Finset.sum_congr rfl
+            intro k _
+            ring
+    intro i
+    have hLift' :
+        vectorFromTopTail (y 0) ctail =
+          matMulVec (m + 1) (embedTrailingOne (matTranspose Qt))
+            (fun i => y i + ΔtailFull i) := by
+      rw [hLift]
+      congr
+    calc
+      vectorFromTopTail (y 0) ctail i
+          = matMulVec (m + 1) (embedTrailingOne (matTranspose Qt))
+              (fun i => y i + ΔtailFull i) i := by
+            rw [hLift']
+      _ = matMulVec (m + 1) (embedTrailingOne (matTranspose Qt))
+            (matMulVec (m + 1) P (fun k => b k + Δb k)) i := by
+          rw [hyEta]
+      _ = matMulVec (m + 1) M (fun k => b k + Δb k) i := by
+          exact (matMulVec_matMul (m + 1)
+            (embedTrailingOne (matTranspose Qt)) P
+            (fun k => b k + Δb k) i).symm
+      _ = matMulVec (m + 1) (matTranspose Q)
+            (fun k => b k + Δb k) i := by
+          simp [Q, M, matTranspose_involutive]
+  · have hEtaComp : ∀ i, |Eta i| ≤ c + α := by
+      intro i
+      have htail : |ΔtailFull i| ≤ α := by
+        refine Fin.cases ?_ ?_ i
+        · simpa [ΔtailFull] using hα
+        · intro i
+          simpa [ΔtailFull] using hΔtail i
+      calc
+        |Eta i| = |e i + ΔtailFull i| := rfl
+        _ ≤ |e i| + |ΔtailFull i| := abs_add_le _ _
+        _ ≤ c + α := add_le_add (he i) htail
+    have hEtaInf : infNormVec Eta ≤ c + α :=
+      infNormVec_le_of_abs_le Eta hEtaComp (add_nonneg hc hα)
+    intro i
+    calc
+      |Δb i|
+          = |matMulVec (m + 1) (matTranspose P) Eta i| := rfl
+      _ ≤ Real.sqrt (m + 1 : ℝ) * infNormVec Eta := by
+          simpa [Nat.cast_add, Nat.cast_one] using
+            hP.transpose.abs_matMulVec_le_sqrt_card_infNormVec Eta i
+      _ ≤ Real.sqrt (m + 1 : ℝ) * (c + α) := by
+          exact mul_le_mul_of_nonneg_left hEtaInf (Real.sqrt_nonneg _)
+
 /-- Explicit-`Q` recursive cons step for the Householder QR RHS transform.
 
     This is the fixed-witness version of
