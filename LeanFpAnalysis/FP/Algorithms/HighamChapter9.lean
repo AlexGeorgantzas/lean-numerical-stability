@@ -67573,6 +67573,410 @@ theorem higham9_14_checkerboard_totalNonnegative_source_h_bound_of_rectRoundedLo
     fp n A b (gamma fp n) (gamma_nonneg fp hn) hγ_lt_one hn
     hTNJ hdetJ hineqJ hLU hU_budget_le hL_budget_le le_rfl
 
+/-- **Problem 9.8 / Theorem 9.14**, explicit-model final `h(u)` source
+bound for the checkerboard total-nonnegative class.
+
+The checkerboard route supplies exact factors for `A` with
+`|Lhat||Uhat| = |A|`; this wrapper feeds those factors and explicit
+equation (9.20)/(9.21) perturbation models into the final Theorem 9.14
+`h(u)` endpoint. -/
+theorem higham9_14_checkerboard_totalNonnegative_exists_source_h_bound_of_models
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate A))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate A) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hineqJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        Matrix.det
+            (Matrix.of (higham9_8_checkerboardConjugate A) :
+              Matrix (Fin n) (Fin n) ℝ) ≤
+          Matrix.det
+              (higham9_2_leadingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate A) :
+                  Matrix (Fin n) (Fin n) ℝ) k) *
+            Matrix.det
+              (higham9_6_trailingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate A) :
+                  Matrix (Fin n) (Fin n) ℝ) k)) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n A L_hat U_hat ∧
+        (∀ i j : Fin n,
+          ∑ k : Fin n, |L_hat i k| * |U_hat k j| = |A i j|) ∧
+        (∀ y_hat x_hat b : Fin n → ℝ,
+          ∀ u : ℝ, 0 ≤ u → u < 1 →
+          ∀ DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ,
+            higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+              DeltaA_LU u →
+            higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+              y_hat x_hat b DeltaL DeltaU u →
+            ∃ DeltaA : Fin n → Fin n → ℝ,
+              (∀ i j, |DeltaA i j| ≤ higham9_14_h u * |A i j|) ∧
+              (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L, U, hLU, hOpt⟩ :=
+    higham9_8_abs_lu_product_eq_abs_of_checkerboard_principalBlock_inequalities
+      A hTNJ hdetJ hineqJ
+  let L_hat : Fin n → Fin n → ℝ := higham9_8_checkerboardConjugate L
+  let U_hat : Fin n → Fin n → ℝ := higham9_8_checkerboardConjugate U
+  have hLU_hat : LUFactSpec n A L_hat U_hat := hLU
+  have hOpt_hat :
+      ∀ i j : Fin n,
+        ∑ k : Fin n, |L_hat i k| * |U_hat k j| = |A i j| := hOpt
+  refine ⟨L_hat, U_hat, hLU_hat, hOpt_hat, ?_⟩
+  intro y_hat x_hat b u hu hu_lt_one DeltaA_LU DeltaL DeltaU h20 h21
+  exact
+    higham9_14_source_h_bound_of_absLU_le_absA_and_9_20_9_21_models
+      n A L_hat U_hat y_hat x_hat b u hu hu_lt_one
+      (fun i j => le_of_eq (hOpt_hat i j))
+      DeltaA_LU DeltaL DeltaU h20 h21
+
+/-- **Problem 9.8 / Theorem 9.14**, explicit-model `f(u)` source bound for
+the checkerboard total-nonnegative class. -/
+theorem higham9_14_checkerboard_totalNonnegative_exists_source_f_bound_of_models
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate A))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate A) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hineqJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        Matrix.det
+            (Matrix.of (higham9_8_checkerboardConjugate A) :
+              Matrix (Fin n) (Fin n) ℝ) ≤
+          Matrix.det
+              (higham9_2_leadingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate A) :
+                  Matrix (Fin n) (Fin n) ℝ) k) *
+            Matrix.det
+              (higham9_6_trailingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate A) :
+                  Matrix (Fin n) (Fin n) ℝ) k)) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n A L_hat U_hat ∧
+        (∀ i j : Fin n,
+          ∑ k : Fin n, |L_hat i k| * |U_hat k j| = |A i j|) ∧
+        (∀ y_hat x_hat b : Fin n → ℝ,
+          ∀ u : ℝ, 0 ≤ u →
+          ∀ DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ,
+            higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+              DeltaA_LU u →
+            higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+              y_hat x_hat b DeltaL DeltaU u →
+            ∃ DeltaA : Fin n → Fin n → ℝ,
+              (∀ i j, |DeltaA i j| ≤ higham9_14_f u * |A i j|) ∧
+              (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L, U, hLU, hOpt⟩ :=
+    higham9_8_abs_lu_product_eq_abs_of_checkerboard_principalBlock_inequalities
+      A hTNJ hdetJ hineqJ
+  let L_hat : Fin n → Fin n → ℝ := higham9_8_checkerboardConjugate L
+  let U_hat : Fin n → Fin n → ℝ := higham9_8_checkerboardConjugate U
+  have hLU_hat : LUFactSpec n A L_hat U_hat := hLU
+  have hOpt_hat :
+      ∀ i j : Fin n,
+        ∑ k : Fin n, |L_hat i k| * |U_hat k j| = |A i j| := hOpt
+  refine ⟨L_hat, U_hat, hLU_hat, hOpt_hat, ?_⟩
+  intro y_hat x_hat b u hu DeltaA_LU DeltaL DeltaU h20 h21
+  obtain ⟨DeltaA, hDeltaA, hBackward⟩ :=
+    higham9_14_source_f_bound_of_absLU_le_const_absA_and_9_20_9_21_models
+      n A L_hat U_hat y_hat x_hat b 1 u hu
+      (fun i j => by simpa [one_mul] using le_of_eq (hOpt_hat i j))
+      DeltaA_LU DeltaL DeltaU h20 h21
+  refine ⟨DeltaA, ?_, hBackward⟩
+  intro i j
+  simpa [one_mul] using hDeltaA i j
+
+/-- **Problem 9.8 / Theorem 9.14**, checkerboard total-nonnegative
+explicit-model package specialized to the natural `γ_n` coefficient. -/
+theorem higham9_14_checkerboard_totalNonnegative_exists_source_f_bound_of_models_gamma
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate A))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate A) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hineqJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        Matrix.det
+            (Matrix.of (higham9_8_checkerboardConjugate A) :
+              Matrix (Fin n) (Fin n) ℝ) ≤
+          Matrix.det
+              (higham9_2_leadingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate A) :
+                  Matrix (Fin n) (Fin n) ℝ) k) *
+            Matrix.det
+              (higham9_6_trailingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate A) :
+                  Matrix (Fin n) (Fin n) ℝ) k)) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n A L_hat U_hat ∧
+        (∀ i j : Fin n,
+          ∑ k : Fin n, |L_hat i k| * |U_hat k j| = |A i j|) ∧
+        (∀ fp : FPModel, ∀ y_hat x_hat b : Fin n → ℝ,
+          gammaValid fp n →
+          ∀ DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ,
+            higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+              DeltaA_LU (gamma fp n) →
+            higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+              y_hat x_hat b DeltaL DeltaU (gamma fp n) →
+            ∃ DeltaA : Fin n → Fin n → ℝ,
+              (∀ i j, |DeltaA i j| ≤
+                higham9_14_f (gamma fp n) * |A i j|) ∧
+              (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L_hat, U_hat, hLU, hOpt, hModel⟩ :=
+    higham9_14_checkerboard_totalNonnegative_exists_source_f_bound_of_models
+      A hTNJ hdetJ hineqJ
+  refine ⟨L_hat, U_hat, hLU, hOpt, ?_⟩
+  intro fp y_hat x_hat b hn DeltaA_LU DeltaL DeltaU h20 h21
+  exact hModel y_hat x_hat b (gamma fp n) (gamma_nonneg fp hn)
+    DeltaA_LU DeltaL DeltaU h20 h21
+
+/-- **Problem 9.8 / Theorem 9.14**, checkerboard total-nonnegative
+explicit-model package with final `h(γ_n)` coefficient. -/
+theorem higham9_14_checkerboard_totalNonnegative_exists_source_h_bound_of_models_gamma
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate A))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate A) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hineqJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        Matrix.det
+            (Matrix.of (higham9_8_checkerboardConjugate A) :
+              Matrix (Fin n) (Fin n) ℝ) ≤
+          Matrix.det
+              (higham9_2_leadingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate A) :
+                  Matrix (Fin n) (Fin n) ℝ) k) *
+            Matrix.det
+              (higham9_6_trailingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate A) :
+                  Matrix (Fin n) (Fin n) ℝ) k)) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n A L_hat U_hat ∧
+        (∀ i j : Fin n,
+          ∑ k : Fin n, |L_hat i k| * |U_hat k j| = |A i j|) ∧
+        (∀ fp : FPModel, ∀ y_hat x_hat b : Fin n → ℝ,
+          gammaValid fp n → gamma fp n < 1 →
+          ∀ DeltaA_LU DeltaL DeltaU : Fin n → Fin n → ℝ,
+            higham9_20_tridiag_lu_perturbation_model n A L_hat U_hat
+              DeltaA_LU (gamma fp n) →
+            higham9_21_tridiag_solve_perturbation_model n L_hat U_hat
+              y_hat x_hat b DeltaL DeltaU (gamma fp n) →
+            ∃ DeltaA : Fin n → Fin n → ℝ,
+              (∀ i j, |DeltaA i j| ≤
+                higham9_14_h (gamma fp n) * |A i j|) ∧
+              (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L_hat, U_hat, hLU, hOpt, hModel⟩ :=
+    higham9_14_checkerboard_totalNonnegative_exists_source_h_bound_of_models
+      A hTNJ hdetJ hineqJ
+  refine ⟨L_hat, U_hat, hLU, hOpt, ?_⟩
+  intro fp y_hat x_hat b hn hγ_lt_one DeltaA_LU DeltaL DeltaU h20 h21
+  exact hModel y_hat x_hat b (gamma fp n) (gamma_nonneg fp hn)
+    hγ_lt_one DeltaA_LU DeltaL DeltaU h20 h21
+
+/-- **Problem 9.8 / Theorem 9.14**, checkerboard total-nonnegative
+source-existence package with actual triangular solves. -/
+theorem higham9_14_checkerboard_totalNonnegative_exists_source_f_bound_actual_triangular_solves
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate A))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate A) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hineqJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        Matrix.det
+            (Matrix.of (higham9_8_checkerboardConjugate A) :
+              Matrix (Fin n) (Fin n) ℝ) ≤
+          Matrix.det
+              (higham9_2_leadingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate A) :
+                  Matrix (Fin n) (Fin n) ℝ) k) *
+            Matrix.det
+              (higham9_6_trailingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate A) :
+                  Matrix (Fin n) (Fin n) ℝ) k)) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n A L_hat U_hat ∧
+        (∀ i j : Fin n,
+          ∑ k : Fin n, |L_hat i k| * |U_hat k j| = |A i j|) ∧
+        (∀ fp : FPModel, ∀ b : Fin n → ℝ, ∀ u : ℝ,
+          0 ≤ u → gammaValid fp n → gamma fp n ≤ u →
+          let y_hat := fl_forwardSub fp n L_hat b
+          let x_hat := fl_backSub fp n U_hat y_hat
+          ∃ DeltaA : Fin n → Fin n → ℝ,
+            (∀ i j, |DeltaA i j| ≤ higham9_14_f u * |A i j|) ∧
+            (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L, U, hLU, hOpt⟩ :=
+    higham9_8_abs_lu_product_eq_abs_of_checkerboard_principalBlock_inequalities
+      A hTNJ hdetJ hineqJ
+  let L_hat : Fin n → Fin n → ℝ := higham9_8_checkerboardConjugate L
+  let U_hat : Fin n → Fin n → ℝ := higham9_8_checkerboardConjugate U
+  have hLU_hat : LUFactSpec n A L_hat U_hat := hLU
+  have hOpt_hat :
+      ∀ i j : Fin n,
+        ∑ k : Fin n, |L_hat i k| * |U_hat k j| = |A i j| := hOpt
+  have hdetA_pos :
+      0 < Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) := by
+    simpa [higham9_8_checkerboardConjugate_det_eq A] using hdetJ
+  refine ⟨L_hat, U_hat, hLU_hat, hOpt_hat, ?_⟩
+  intro fp b u hu hn hγ_le_u
+  obtain ⟨DeltaA, hDeltaA, hBackward⟩ :=
+    higham9_14_source_f_bound_of_LUFactSpec_fl_triangular_solves_gamma_le
+      fp n A L_hat U_hat b 1 u hu hn hLU_hat hγ_le_u
+      (hLU_hat.det_ne_zero_iff_U_diag_ne_zero.mp (ne_of_gt hdetA_pos))
+      (fun i j => by simpa [one_mul] using le_of_eq (hOpt_hat i j))
+  refine ⟨DeltaA, ?_, hBackward⟩
+  intro i j
+  simpa [one_mul] using hDeltaA i j
+
+/-- **Problem 9.8 / Theorem 9.14**, checkerboard total-nonnegative
+source-existence package with actual triangular solves and final `h(u)` bound. -/
+theorem higham9_14_checkerboard_totalNonnegative_exists_source_h_bound_actual_triangular_solves
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate A))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate A) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hineqJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        Matrix.det
+            (Matrix.of (higham9_8_checkerboardConjugate A) :
+              Matrix (Fin n) (Fin n) ℝ) ≤
+          Matrix.det
+              (higham9_2_leadingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate A) :
+                  Matrix (Fin n) (Fin n) ℝ) k) *
+            Matrix.det
+              (higham9_6_trailingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate A) :
+                  Matrix (Fin n) (Fin n) ℝ) k)) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n A L_hat U_hat ∧
+        (∀ i j : Fin n,
+          ∑ k : Fin n, |L_hat i k| * |U_hat k j| = |A i j|) ∧
+        (∀ fp : FPModel, ∀ b : Fin n → ℝ, ∀ u : ℝ,
+          0 ≤ u → u < 1 → gammaValid fp n → gamma fp n ≤ u →
+          let y_hat := fl_forwardSub fp n L_hat b
+          let x_hat := fl_backSub fp n U_hat y_hat
+          ∃ DeltaA : Fin n → Fin n → ℝ,
+            (∀ i j, |DeltaA i j| ≤ higham9_14_h u * |A i j|) ∧
+            (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L, U, hLU, hOpt⟩ :=
+    higham9_8_abs_lu_product_eq_abs_of_checkerboard_principalBlock_inequalities
+      A hTNJ hdetJ hineqJ
+  let L_hat : Fin n → Fin n → ℝ := higham9_8_checkerboardConjugate L
+  let U_hat : Fin n → Fin n → ℝ := higham9_8_checkerboardConjugate U
+  have hLU_hat : LUFactSpec n A L_hat U_hat := hLU
+  have hOpt_hat :
+      ∀ i j : Fin n,
+        ∑ k : Fin n, |L_hat i k| * |U_hat k j| = |A i j| := hOpt
+  have hdetA_pos :
+      0 < Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) := by
+    simpa [higham9_8_checkerboardConjugate_det_eq A] using hdetJ
+  refine ⟨L_hat, U_hat, hLU_hat, hOpt_hat, ?_⟩
+  intro fp b u hu hu_lt_one hn hγ_le_u
+  exact
+    higham9_14_source_h_bound_of_LUFactSpec_fl_triangular_solves_gamma_le
+      fp n A L_hat U_hat b u hu hu_lt_one hn hLU_hat hγ_le_u
+      (hLU_hat.det_ne_zero_iff_U_diag_ne_zero.mp (ne_of_gt hdetA_pos))
+      (fun i j => le_of_eq (hOpt_hat i j))
+
+/-- **Problem 9.8 / Theorem 9.14**, checkerboard total-nonnegative
+source-existence actual-solve package specialized to the natural `γ_n`
+coefficient. -/
+theorem higham9_14_checkerboard_totalNonnegative_exists_source_f_bound_actual_triangular_solves_gamma
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate A))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate A) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hineqJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        Matrix.det
+            (Matrix.of (higham9_8_checkerboardConjugate A) :
+              Matrix (Fin n) (Fin n) ℝ) ≤
+          Matrix.det
+              (higham9_2_leadingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate A) :
+                  Matrix (Fin n) (Fin n) ℝ) k) *
+            Matrix.det
+              (higham9_6_trailingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate A) :
+                  Matrix (Fin n) (Fin n) ℝ) k)) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n A L_hat U_hat ∧
+        (∀ i j : Fin n,
+          ∑ k : Fin n, |L_hat i k| * |U_hat k j| = |A i j|) ∧
+        (∀ fp : FPModel, ∀ b : Fin n → ℝ,
+          gammaValid fp n →
+          let y_hat := fl_forwardSub fp n L_hat b
+          let x_hat := fl_backSub fp n U_hat y_hat
+          ∃ DeltaA : Fin n → Fin n → ℝ,
+            (∀ i j,
+              |DeltaA i j| ≤ higham9_14_f (gamma fp n) * |A i j|) ∧
+            (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L_hat, U_hat, hLU, hOpt, hSolve⟩ :=
+    higham9_14_checkerboard_totalNonnegative_exists_source_f_bound_actual_triangular_solves
+      A hTNJ hdetJ hineqJ
+  refine ⟨L_hat, U_hat, hLU, hOpt, ?_⟩
+  intro fp b hn
+  exact hSolve fp b (gamma fp n) (gamma_nonneg fp hn) hn le_rfl
+
+/-- **Problem 9.8 / Theorem 9.14**, checkerboard total-nonnegative
+source-existence actual-solve package with final `h(γ_n)` coefficient. -/
+theorem higham9_14_checkerboard_totalNonnegative_exists_source_h_bound_actual_triangular_solves_gamma
+    {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (hTNJ : higham9_6_IsTotallyNonnegative
+      (higham9_8_checkerboardConjugate A))
+    (hdetJ :
+      0 < Matrix.det
+        (Matrix.of (higham9_8_checkerboardConjugate A) :
+          Matrix (Fin n) (Fin n) ℝ))
+    (hineqJ :
+      ∀ k : ℕ, k < n → k ≠ 0 →
+        Matrix.det
+            (Matrix.of (higham9_8_checkerboardConjugate A) :
+              Matrix (Fin n) (Fin n) ℝ) ≤
+          Matrix.det
+              (higham9_2_leadingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate A) :
+                  Matrix (Fin n) (Fin n) ℝ) k) *
+            Matrix.det
+              (higham9_6_trailingPrincipalBlock
+                (Matrix.of (higham9_8_checkerboardConjugate A) :
+                  Matrix (Fin n) (Fin n) ℝ) k)) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+      LUFactSpec n A L_hat U_hat ∧
+        (∀ i j : Fin n,
+          ∑ k : Fin n, |L_hat i k| * |U_hat k j| = |A i j|) ∧
+        (∀ fp : FPModel, ∀ b : Fin n → ℝ,
+          gammaValid fp n → gamma fp n < 1 →
+          let y_hat := fl_forwardSub fp n L_hat b
+          let x_hat := fl_backSub fp n U_hat y_hat
+          ∃ DeltaA : Fin n → Fin n → ℝ,
+            (∀ i j,
+              |DeltaA i j| ≤ higham9_14_h (gamma fp n) * |A i j|) ∧
+            (∀ i, ∑ j : Fin n, (A i j + DeltaA i j) * x_hat j = b i)) := by
+  obtain ⟨L_hat, U_hat, hLU, hOpt, hSolve⟩ :=
+    higham9_14_checkerboard_totalNonnegative_exists_source_h_bound_actual_triangular_solves
+      A hTNJ hdetJ hineqJ
+  refine ⟨L_hat, U_hat, hLU, hOpt, ?_⟩
+  intro fp b hn hγ_lt_one
+  exact hSolve fp b (gamma fp n) (gamma_nonneg fp hn) hγ_lt_one hn le_rfl
+
 /-- **Problem 9.8**, source-facing nonsingular-inverse checkerboard route.
 
 For a nonsingular totally nonnegative `A`, the proved inverse-minor theorem
