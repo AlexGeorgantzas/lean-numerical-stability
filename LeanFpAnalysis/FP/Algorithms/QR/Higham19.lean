@@ -23503,6 +23503,26 @@ theorem rowwise_step_growth_factor_nonneg :
     0 <= rowwise_step_growth_factor := by
   simpa [rowwise_step_growth_factor] using coxHighamGrowthFactor_nonneg
 
+/-- Unified active-row growth factor for the Cox--Higham route behind
+Higham, Theorem 19.6.
+
+This combines the off-pivot `1 + sqrt 2` branch with the ambient pivot-row
+`sqrt m` branch currently available in the local finite-vector norm bridge. -/
+noncomputable def active_row_growth_factor (m : Nat) : Real :=
+  coxHighamActiveRowGrowthFactor m
+
+/-- The unified Cox--Higham active-row factor is nonnegative. -/
+theorem active_row_growth_factor_nonneg (m : Nat) :
+    0 <= active_row_growth_factor m := by
+  simpa [active_row_growth_factor] using
+    coxHighamActiveRowGrowthFactor_nonneg m
+
+/-- The unified Cox--Higham active-row factor is at least one. -/
+theorem one_le_active_row_growth_factor (m : Nat) :
+    1 <= active_row_growth_factor m := by
+  simpa [active_row_growth_factor] using
+    one_le_coxHighamActiveRowGrowthFactor m
+
 /-- Higham, Theorem 19.6 route dependency: off-pivot row-growth step under
 signed column pivoting.
 
@@ -23537,6 +23557,41 @@ theorem off_pivot_row_growth_step
     abs_householder_signed_pivot_update_entry_le_one_add_sqrt_two_mul_row_bound
       p row k j A B hpivot hj hrowBound
 
+/-- Higham, Theorem 19.6 route dependency: off-pivot row-growth step, lifted
+to the unified active-row factor.
+
+This is useful when later row-wise induction code wants a single factor that
+covers both the off-pivot and pivot-row branches. -/
+theorem off_pivot_row_growth_step_active_factor
+    {m n : Nat} (p row : Fin m) (k j : Fin n)
+    (A : Fin m -> Fin n -> Real) (B : Real)
+    (hpivot :
+      forall l : Fin n, k.val <= l.val ->
+        householderTrailingColumnNorm2Sq (m := m) (n := n) p A l <=
+          householderTrailingColumnNorm2Sq (m := m) (n := n) p A k)
+    (hj : k.val <= j.val)
+    (hrowBound : forall l : Fin n, k.val <= l.val -> |A row l| <= B)
+    (hB : 0 <= B) :
+    let phi : Real :=
+        householderBetaSpec m
+          (householderTrailingActiveVector m p (fun r => A r k)
+            (signedHouseholderAlpha
+              (Real.sqrt (householderTrailingColumnNorm2Sq (m := m) (n := n) p A k))
+              (A p k))) *
+          ((Finset.univ : Finset (Fin m)).sum (fun i =>
+            householderTrailingActiveVector m p (fun r => A r k)
+                (signedHouseholderAlpha
+                  (Real.sqrt (householderTrailingColumnNorm2Sq (m := m) (n := n) p A k))
+                  (A p k)) i *
+              householderTrailingPart m p (fun r => A r j) i))
+    abs (A row j - phi * A row k) <= active_row_growth_factor m * B := by
+  have hbase :=
+    off_pivot_row_growth_step p row k j A B hpivot hj hrowBound
+  have hfactor : rowwise_step_growth_factor <= active_row_growth_factor m := by
+    simp [rowwise_step_growth_factor, active_row_growth_factor,
+      coxHighamActiveRowGrowthFactor]
+  exact hbase.trans (mul_le_mul_of_nonneg_right hfactor hB)
+
 /-- Higham, Theorem 19.6 route dependency: pivot-row active-entry bound.
 
 This is the pivot-row branch of the row-wise route.  The current local lemma
@@ -23560,6 +23615,103 @@ theorem pivot_row_entry_bound_of_stage_entry_bound
   simpa [rowwise_step_growth_factor] using
     coxHigham_pivot_row_entry_bound_of_stage_entry_bound
       k j Astage row0Bound hrow0 hcol hentry
+
+/-- Higham, Theorem 19.6 route dependency: pivot-row active-entry bound,
+lifted to the unified active-row factor. -/
+theorem pivot_row_entry_bound_of_stage_entry_bound_active_factor
+    {m n : Nat} (k : Fin m) (j : Fin n)
+    (Astage : Nat -> Fin m -> Fin n -> Real)
+    (row0Bound : Fin m -> Real)
+    (hrow0 : 0 <= row0Bound k)
+    (hcol :
+      |Astage (k.val + 1) k j| <=
+        vecNorm2 (householderTrailingPart m k (fun i => Astage k.val i j)))
+    (hentry :
+      forall i : Fin m, k.val <= i.val ->
+        |Astage k.val i j| <=
+          rowwise_step_growth_factor ^ k.val * row0Bound k) :
+    |Astage (k.val + 1) k j| <=
+      active_row_growth_factor m *
+        (rowwise_step_growth_factor ^ k.val * row0Bound k) := by
+  have hbase :=
+    pivot_row_entry_bound_of_stage_entry_bound k j Astage row0Bound
+      hrow0 hcol hentry
+  have hB : 0 <= rowwise_step_growth_factor ^ k.val * row0Bound k :=
+    mul_nonneg (pow_nonneg rowwise_step_growth_factor_nonneg k.val) hrow0
+  have hfactor : Real.sqrt (m : Real) <= active_row_growth_factor m := by
+    simp [active_row_growth_factor, coxHighamActiveRowGrowthFactor]
+  exact hbase.trans (mul_le_mul_of_nonneg_right hfactor hB)
+
+/-- Higham, Theorem 19.6 route dependency: exact signed-pivot Householder
+pivot-row update with the row-sorted stage budget.
+
+This wraps the support lemma that derives the pivot-row active-tail norm bound
+from the actual signed Householder update and the nonbreakdown condition for
+the pivot column. -/
+theorem exact_signed_pivot_row_entry_bound_of_stage_entry_bound
+    {m n : Nat} (p : Fin m) (pivotCol j : Fin n)
+    (A : Fin m -> Fin n -> Real) (row0Bound : Fin m -> Real)
+    (hnorm :
+      0 < householderTrailingColumnNorm2Sq (m := m) (n := n) p A pivotCol)
+    (hrow0 : 0 <= row0Bound p)
+    (hentry :
+      forall i : Fin m, p.val <= i.val ->
+        |A i j| <= rowwise_step_growth_factor ^ p.val * row0Bound p) :
+    |matMulVec m
+        (householder m
+          (householderTrailingActiveVector m p (fun r => A r pivotCol)
+            (signedHouseholderAlpha
+              (Real.sqrt
+                (householderTrailingColumnNorm2Sq (m := m) (n := n) p A pivotCol))
+              (A p pivotCol)))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m p (fun r => A r pivotCol)
+              (signedHouseholderAlpha
+                (Real.sqrt
+                  (householderTrailingColumnNorm2Sq (m := m) (n := n) p A pivotCol))
+                (A p pivotCol)))))
+        (fun r => A r j) p| <=
+      Real.sqrt (m : Real) *
+        (rowwise_step_growth_factor ^ p.val * row0Bound p) := by
+  simpa [rowwise_step_growth_factor] using
+    coxHigham_exact_signed_pivot_row_entry_bound_of_stage_entry_bound
+      p pivotCol j A row0Bound hnorm hrow0 hentry
+
+/-- Higham, Theorem 19.6 route dependency: exact signed-pivot Householder
+pivot-row update, lifted to the unified active-row factor. -/
+theorem exact_signed_pivot_row_entry_bound_of_stage_entry_bound_active_factor
+    {m n : Nat} (p : Fin m) (pivotCol j : Fin n)
+    (A : Fin m -> Fin n -> Real) (row0Bound : Fin m -> Real)
+    (hnorm :
+      0 < householderTrailingColumnNorm2Sq (m := m) (n := n) p A pivotCol)
+    (hrow0 : 0 <= row0Bound p)
+    (hentry :
+      forall i : Fin m, p.val <= i.val ->
+        |A i j| <= rowwise_step_growth_factor ^ p.val * row0Bound p) :
+    |matMulVec m
+        (householder m
+          (householderTrailingActiveVector m p (fun r => A r pivotCol)
+            (signedHouseholderAlpha
+              (Real.sqrt
+                (householderTrailingColumnNorm2Sq (m := m) (n := n) p A pivotCol))
+              (A p pivotCol)))
+          (householderBetaSpec m
+            (householderTrailingActiveVector m p (fun r => A r pivotCol)
+              (signedHouseholderAlpha
+                (Real.sqrt
+                  (householderTrailingColumnNorm2Sq (m := m) (n := n) p A pivotCol))
+                (A p pivotCol)))))
+        (fun r => A r j) p| <=
+      active_row_growth_factor m *
+        (rowwise_step_growth_factor ^ p.val * row0Bound p) := by
+  have hbase :=
+    exact_signed_pivot_row_entry_bound_of_stage_entry_bound
+      p pivotCol j A row0Bound hnorm hrow0 hentry
+  have hB : 0 <= rowwise_step_growth_factor ^ p.val * row0Bound p :=
+    mul_nonneg (pow_nonneg rowwise_step_growth_factor_nonneg p.val) hrow0
+  have hfactor : Real.sqrt (m : Real) <= active_row_growth_factor m := by
+    simp [active_row_growth_factor, coxHighamActiveRowGrowthFactor]
+  exact hbase.trans (mul_le_mul_of_nonneg_right hfactor hB)
 
 /-- Higham, Theorem 19.6 route dependency: row sorting plus accumulated
 computed/exact row error.
