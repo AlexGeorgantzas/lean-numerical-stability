@@ -495,6 +495,27 @@ theorem higham10_7_failure_condition (n : ℕ) (fp : FPModel)
     lam_min < 0 :=
   cholesky_failure_condition n fp lam_min hn1 hγ_lt hLam_neg
 
+/-- **Theorem 10.7**, failure as genuine non-factorizability.
+
+    Strengthens `higham10_7_failure_condition` from the sign consequence
+    `lam_min < 0` to the actual failure conclusion: when `H` has a
+    Rayleigh upper witness `lam` for its minimum eigenvalue below `-t`
+    (with `t` the scaled backward-error quadratic-form bound), the scaled
+    perturbed matrix `H + E` has a strictly negative curvature direction and
+    therefore admits no Cholesky factorization — the algorithm fails. -/
+theorem higham10_7_failure_no_factorization (n : ℕ)
+    (H E : Fin n → Fin n → ℝ) (lam t : ℝ)
+    (hlam_dir : ∃ x : Fin n → ℝ, (∃ i, x i ≠ 0) ∧
+        (∑ i : Fin n, ∑ j : Fin n, x i * H i j * x j) ≤ lam * ∑ i : Fin n, x i ^ 2)
+    (hE : ∀ x : Fin n → ℝ,
+        |∑ i : Fin n, ∑ j : Fin n, x i * E i j * x j| ≤ t * ∑ i : Fin n, x i ^ 2)
+    (hlt : lam < -t) :
+    ¬ ∃ R : Fin n → Fin n → ℝ,
+        CholeskyFactSpec n (fun i j => H i j + E i j) R := by
+  obtain ⟨x, hx, hxneg⟩ :=
+    quadForm_add_neg_of_perturbation n H E lam t hlam_dir hE hlt
+  exact no_choleskyFactSpec_of_neg_quadForm n (fun i j => H i j + E i j) x hxneg
+
 /-! ## §10.2 Sensitivity of the Cholesky Factorization -/
 
 /-- **Theorem 10.8**, Sun's normwise perturbation interface. -/

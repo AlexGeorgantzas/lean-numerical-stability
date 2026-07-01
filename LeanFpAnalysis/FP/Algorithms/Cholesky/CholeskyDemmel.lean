@@ -316,4 +316,83 @@ theorem cholesky_succeeds_of_scaled_perturbation (n : ℕ)
     isSymPosDef_diagCongr n D (fun i j => H i j + E i j) hD_pos hHE_spd
   exact cholesky_existence n _ hDHED_spd
 
+-- ============================================================
+-- §10.1  Theorem 10.7: failure direction (negative curvature)
+-- ============================================================
+
+/-- The quadratic form of a matrix admitting a Cholesky factorization
+    `A = R^T R` equals `∑_k (∑_i R_{ki} x_i)²`. -/
+theorem cholesky_quadForm_eq_sq_sum (n : ℕ) (A R : Fin n → Fin n → ℝ)
+    (hR : CholeskyFactSpec n A R) (x : Fin n → ℝ) :
+    ∑ i : Fin n, ∑ j : Fin n, x i * A i j * x j
+      = ∑ k : Fin n, (∑ i : Fin n, R k i * x i) ^ 2 := by
+  have hLHS : ∑ i : Fin n, ∑ j : Fin n, x i * A i j * x j
+      = ∑ i : Fin n, ∑ j : Fin n, ∑ k : Fin n,
+          (R k i * x i) * (R k j * x j) := by
+    refine Finset.sum_congr rfl (fun i _ => ?_)
+    refine Finset.sum_congr rfl (fun j _ => ?_)
+    rw [← hR.product_eq i j, Finset.mul_sum, Finset.sum_mul]
+    exact Finset.sum_congr rfl (fun k _ => by ring)
+  have hRHS : ∑ k : Fin n, (∑ i : Fin n, R k i * x i) ^ 2
+      = ∑ k : Fin n, ∑ i : Fin n, ∑ j : Fin n,
+          (R k i * x i) * (R k j * x j) := by
+    refine Finset.sum_congr rfl (fun k _ => ?_)
+    rw [sq, Finset.sum_mul_sum]
+  rw [hLHS, hRHS]
+  calc ∑ i : Fin n, ∑ j : Fin n, ∑ k : Fin n, (R k i * x i) * (R k j * x j)
+      = ∑ i : Fin n, ∑ k : Fin n, ∑ j : Fin n, (R k i * x i) * (R k j * x j) :=
+        Finset.sum_congr rfl (fun i _ => Finset.sum_comm)
+    _ = ∑ k : Fin n, ∑ i : Fin n, ∑ j : Fin n, (R k i * x i) * (R k j * x j) :=
+        Finset.sum_comm
+
+/-- A matrix admitting a Cholesky factorization has nonnegative quadratic form
+    (it is positive semidefinite): `0 ≤ xᵀ A x`. -/
+theorem cholesky_quadForm_nonneg (n : ℕ) (A R : Fin n → Fin n → ℝ)
+    (hR : CholeskyFactSpec n A R) (x : Fin n → ℝ) :
+    0 ≤ ∑ i : Fin n, ∑ j : Fin n, x i * A i j * x j := by
+  rw [cholesky_quadForm_eq_sq_sum n A R hR x]
+  exact Finset.sum_nonneg (fun k _ => sq_nonneg _)
+
+/-- If some direction has strictly negative quadratic form, then `A` has no
+    Cholesky factorization — the Cholesky algorithm cannot succeed. -/
+theorem no_choleskyFactSpec_of_neg_quadForm (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (hneg : ∑ i : Fin n, ∑ j : Fin n, x i * A i j * x j < 0) :
+    ¬ ∃ R : Fin n → Fin n → ℝ, CholeskyFactSpec n A R := by
+  rintro ⟨R, hR⟩
+  exact absurd (cholesky_quadForm_nonneg n A R hR x) (not_le.mpr hneg)
+
+/-- **Perturbed negative curvature via quadratic forms**
+    (Higham §10.1, Theorem 10.7 failure core).
+
+    If `H` has a direction whose quadratic form is at most `lam‖x‖²`
+    (a Rayleigh upper witness for the minimum eigenvalue), and the symmetric
+    perturbation `E` has quadratic form bounded by `t‖x‖²`, then for
+    `lam < -t` there is a direction on which `H + E` has strictly negative
+    quadratic form: `H + E` is not positive definite. -/
+theorem quadForm_add_neg_of_perturbation (n : ℕ)
+    (H E : Fin n → Fin n → ℝ) (lam t : ℝ)
+    (hlam_dir : ∃ x : Fin n → ℝ, (∃ i, x i ≠ 0) ∧
+        (∑ i : Fin n, ∑ j : Fin n, x i * H i j * x j) ≤ lam * ∑ i : Fin n, x i ^ 2)
+    (hE : ∀ x : Fin n → ℝ,
+        |∑ i : Fin n, ∑ j : Fin n, x i * E i j * x j| ≤ t * ∑ i : Fin n, x i ^ 2)
+    (hlt : lam < -t) :
+    ∃ x : Fin n → ℝ, (∃ i, x i ≠ 0) ∧
+        ∑ i : Fin n, ∑ j : Fin n, x i * (H i j + E i j) * x j < 0 := by
+  obtain ⟨x, hx_ne, hHle⟩ := hlam_dir
+  refine ⟨x, hx_ne, ?_⟩
+  have hS : 0 < ∑ i : Fin n, x i ^ 2 := sum_sq_pos_of_exists_ne n x hx_ne
+  have hsplit : ∑ i : Fin n, ∑ j : Fin n, x i * (H i j + E i j) * x j
+      = (∑ i : Fin n, ∑ j : Fin n, x i * H i j * x j)
+        + (∑ i : Fin n, ∑ j : Fin n, x i * E i j * x j) := by
+    rw [← Finset.sum_add_distrib]
+    refine Finset.sum_congr rfl (fun i _ => ?_)
+    rw [← Finset.sum_add_distrib]
+    exact Finset.sum_congr rfl (fun j _ => by ring)
+  have hE_ub : ∑ i : Fin n, ∑ j : Fin n, x i * E i j * x j
+      ≤ t * ∑ i : Fin n, x i ^ 2 := (abs_le.mp (hE x)).2
+  have hneg : 0 < (-(lam + t)) * (∑ i : Fin n, x i ^ 2) := mul_pos (by linarith) hS
+  rw [hsplit]
+  nlinarith [hHle, hE_ub, hneg]
+
 end LeanFpAnalysis.FP
