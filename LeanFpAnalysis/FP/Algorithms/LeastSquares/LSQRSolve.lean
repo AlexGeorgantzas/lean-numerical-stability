@@ -16707,6 +16707,118 @@ theorem lsNormwiseBackwardErrorRankTwoExtraDeltaA_frobNormSq
     _ = beta ^ 2 * vecNorm2Sq q / vecNorm2Sq y := by
             field_simp [hy]
 
+/-- Pythagorean identity for rectangular Frobenius squares when the
+    rectangular Frobenius inner product vanishes. -/
+theorem frobNormSqRect_add_of_inner_eq_zero {m n : ℕ}
+    (A B : Fin m → Fin n → ℝ)
+    (hinner : (∑ i : Fin m, ∑ j : Fin n, A i j * B i j) = 0) :
+    frobNormSqRect (fun i j => A i j + B i j) =
+      frobNormSqRect A + frobNormSqRect B := by
+  unfold frobNormSqRect
+  calc
+    (∑ i : Fin m, ∑ j : Fin n, (A i j + B i j) ^ 2)
+        = ∑ i : Fin m, ∑ j : Fin n,
+            (A i j ^ 2 + 2 * (A i j * B i j) + B i j ^ 2) := by
+            apply Finset.sum_congr rfl
+            intro i _
+            apply Finset.sum_congr rfl
+            intro j _
+            ring
+    _ =
+        (∑ i : Fin m, ∑ j : Fin n, A i j ^ 2) +
+          2 * (∑ i : Fin m, ∑ j : Fin n, A i j * B i j) +
+            ∑ i : Fin m, ∑ j : Fin n, B i j ^ 2 := by
+          simp [Finset.sum_add_distrib, Finset.mul_sum]
+    _ =
+        (∑ i : Fin m, ∑ j : Fin n, A i j ^ 2) +
+          ∑ i : Fin m, ∑ j : Fin n, B i j ^ 2 := by
+          rw [hinner]
+          ring
+
+/-- Frobenius square of the combined rank-one plus extra outer-product WKS
+    matrix perturbation.  Orthogonality of the extra left vector to `p`
+    kills the cross term. -/
+theorem lsNormwiseBackwardErrorRankTwoDeltaA_frobNormSq
+    {m n : ℕ} {p : Fin m → ℝ} {u : Fin n → ℝ}
+    {beta : ℝ} {q : Fin m → ℝ} {y : Fin n → ℝ}
+    (hp : vecNorm2Sq p ≠ 0) (hy : vecNorm2Sq y ≠ 0)
+    (hq_orth : ∑ i : Fin m, q i * p i = 0) :
+    frobNormSqRect
+        (fun i j =>
+          lsNormwiseBackwardErrorRankOneDeltaA p u i j +
+            lsNormwiseBackwardErrorRankTwoExtraDeltaA beta q y i j) =
+      vecNorm2Sq u / vecNorm2Sq p +
+        beta ^ 2 * vecNorm2Sq q / vecNorm2Sq y := by
+  let DeltaA1 : Fin m → Fin n → ℝ :=
+    lsNormwiseBackwardErrorRankOneDeltaA p u
+  let DeltaA2 : Fin m → Fin n → ℝ :=
+    lsNormwiseBackwardErrorRankTwoExtraDeltaA beta q y
+  have hpq : ∑ i : Fin m, p i * q i = 0 := by
+    calc
+      ∑ i : Fin m, p i * q i = ∑ i : Fin m, q i * p i := by
+        apply Finset.sum_congr rfl
+        intro i _
+        ring
+      _ = 0 := hq_orth
+  have hinner :
+      (∑ i : Fin m, ∑ j : Fin n, DeltaA1 i j * DeltaA2 i j) = 0 := by
+    dsimp [DeltaA1, DeltaA2, lsNormwiseBackwardErrorRankOneDeltaA,
+      lsNormwiseBackwardErrorRankTwoExtraDeltaA]
+    calc
+      ∑ i : Fin m, ∑ j : Fin n,
+          (-((1 / vecNorm2Sq p) * p i * u j)) *
+            (beta / vecNorm2Sq y * q i * y j)
+          =
+        ∑ i : Fin m,
+          (-(1 / vecNorm2Sq p) * (beta / vecNorm2Sq y) * (p i * q i)) *
+            ∑ j : Fin n, u j * y j := by
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [Finset.mul_sum]
+            apply Finset.sum_congr rfl
+            intro j _
+            ring
+      _ =
+        (-(1 / vecNorm2Sq p) * (beta / vecNorm2Sq y)) *
+          (∑ i : Fin m, p i * q i) *
+            ∑ j : Fin n, u j * y j := by
+          calc
+            ∑ i : Fin m,
+                (-(1 / vecNorm2Sq p) * (beta / vecNorm2Sq y) *
+                  (p i * q i)) *
+                  ∑ j : Fin n, u j * y j
+                =
+              (∑ i : Fin m,
+                (-(1 / vecNorm2Sq p) * (beta / vecNorm2Sq y) *
+                  (p i * q i))) *
+                  ∑ j : Fin n, u j * y j := by
+                rw [Finset.sum_mul]
+            _ =
+              (-(1 / vecNorm2Sq p) * (beta / vecNorm2Sq y)) *
+                (∑ i : Fin m, p i * q i) *
+                  ∑ j : Fin n, u j * y j := by
+                congr 1
+                rw [Finset.mul_sum]
+      _ = 0 := by
+          rw [hpq]
+          ring
+  have hsum :
+      frobNormSqRect (fun i j => DeltaA1 i j + DeltaA2 i j) =
+        frobNormSqRect DeltaA1 + frobNormSqRect DeltaA2 :=
+    frobNormSqRect_add_of_inner_eq_zero DeltaA1 DeltaA2 hinner
+  have h1 :
+      frobNormSqRect DeltaA1 = vecNorm2Sq u / vecNorm2Sq p := by
+    simpa [DeltaA1] using
+      (lsNormwiseBackwardErrorRankOneDeltaA_frobNormSq
+        (p := p) (u := u) hp)
+  have h2 :
+      frobNormSqRect DeltaA2 =
+        beta ^ 2 * vecNorm2Sq q / vecNorm2Sq y := by
+    simpa [DeltaA2] using
+      (lsNormwiseBackwardErrorRankTwoExtraDeltaA_frobNormSq
+        (m := m) (n := n) beta q (y := y) hy)
+  simpa [DeltaA1, DeltaA2, h1, h2] using hsum
+
 /-- Scalar optimization for the rank-two WKS upper witness.  After the
     rank-one source-residual witness leaves a residual component `q`
     orthogonal to the chosen direction, adding a second outer-product
@@ -17037,6 +17149,319 @@ theorem lsNormwiseBackwardErrorRankTwo_scaled_cost_sqrt_le_of_source_transpose_s
       Real.sqrt_le_sqrt hinside_le
     _ = sigma := by
       rw [Real.sqrt_sq_eq_abs, abs_of_nonneg hsigma]
+
+/-- Feasible optimized rank-two WKS source-residual witness.  The first
+    rank-one perturbation realizes the source-block transpose action on `p`;
+    the second outer product absorbs the `p`-orthogonal residual component in
+    the `y` direction without changing that transpose action. -/
+theorem LSNormwiseBackwardErrorFeasible.exists_rankTwo_source_residual_witness
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) {y : Fin n → ℝ} (hy : y ≠ 0)
+    (p : Fin m → ℝ) (hp : vecNorm2Sq p ≠ 0) :
+    let r : Fin m → ℝ := lsResidualHigham A b y
+    let u : Fin n → ℝ := fun j => ∑ i : Fin m, A i j * p i
+    let q : Fin m → ℝ := matMulVec m (lsLemma20_6ProjectorComplement p) r
+    let beta : ℝ :=
+      -(theta ^ 2 * vecNorm2Sq y) /
+        (1 + theta ^ 2 * vecNorm2Sq y)
+    ∃ (DeltaA : Fin m → Fin n → ℝ) (Deltab : Fin m → ℝ),
+      LSNormwiseBackwardErrorFeasible A b y DeltaA Deltab ∧
+        lsNormwiseBackwardErrorCostF theta DeltaA Deltab =
+          Real.sqrt
+            (vecNorm2Sq u / vecNorm2Sq p +
+              beta ^ 2 * vecNorm2Sq q / vecNorm2Sq y +
+                theta ^ 2 *
+                  vecNorm2Sq (fun i : Fin m => q i + beta * q i)) := by
+  let r : Fin m → ℝ := lsResidualHigham A b y
+  let u : Fin n → ℝ := fun j => ∑ i : Fin m, A i j * p i
+  let t : ℝ := ∑ j : Fin n, u j * y j
+  let c : ℝ := ((∑ k : Fin m, p k * r k) + t) / vecNorm2Sq p
+  let q : Fin m → ℝ := matMulVec m (lsLemma20_6ProjectorComplement p) r
+  let qneg : Fin m → ℝ := fun i => -q i
+  let beta : ℝ :=
+    -(theta ^ 2 * vecNorm2Sq y) /
+      (1 + theta ^ 2 * vecNorm2Sq y)
+  let DeltaA1 : Fin m → Fin n → ℝ :=
+    lsNormwiseBackwardErrorRankOneDeltaA p u
+  let DeltaA2 : Fin m → Fin n → ℝ :=
+    lsNormwiseBackwardErrorRankTwoExtraDeltaA beta qneg y
+  let DeltaA : Fin m → Fin n → ℝ := fun i j => DeltaA1 i j + DeltaA2 i j
+  let Deltab : Fin m → ℝ := fun i => qneg i + beta * qneg i
+  have hy_sq : vecNorm2Sq y ≠ 0 :=
+    ne_of_gt (vecNorm2Sq_pos_of_ne_zero_lsq hy)
+  have hqneg_opt :
+      qneg =
+        fun i : Fin m =>
+          c * p i - r i - ((1 / vecNorm2Sq p) * p i * t) := by
+    have hopt :
+        (fun i : Fin m =>
+          (((∑ k : Fin m, p k * r k) + t) / vecNorm2Sq p) * p i -
+            r i - ((1 / vecNorm2Sq p) * p i * t)) =
+          fun i : Fin m =>
+            -matMulVec m (lsLemma20_6ProjectorComplement p) r i := by
+      exact
+        lsNormwiseBackwardErrorRankOne_scaled_q_optimal_eq_neg_projector
+          p r hp t
+    ext i
+    simpa [qneg, q, c] using (congrFun hopt i).symm
+  have hqneg_orth : ∑ i : Fin m, qneg i * p i = 0 := by
+    have horth :
+        ∑ i : Fin m,
+          (((∑ k : Fin m, p k * r k) + t) / vecNorm2Sq p * p i -
+            r i - (1 / vecNorm2Sq p * p i * t)) * p i = 0 := by
+      simpa [c] using
+        (lsNormwiseBackwardErrorRankOne_scaled_q_optimal_dot_self_eq_zero
+          p r hp t)
+    calc
+      ∑ i : Fin m, qneg i * p i =
+          ∑ i : Fin m,
+            (c * p i - r i - ((1 / vecNorm2Sq p) * p i * t)) * p i := by
+            apply Finset.sum_congr rfl
+            intro i _
+            rw [congrFun hqneg_opt i]
+      _ = 0 := by
+            simpa [c] using horth
+  have hDeltaA1_y :
+      rectMatMulVec DeltaA1 y =
+        fun i : Fin m => -((1 / vecNorm2Sq p) * p i * t) := by
+    simpa [DeltaA1, t] using
+      (lsNormwiseBackwardErrorRankOneDeltaA_mulVec
+        (p := p) (u := u) (y := y))
+  have hDeltaA2_y :
+      rectMatMulVec DeltaA2 y = fun i : Fin m => beta * qneg i := by
+    simpa [DeltaA2] using
+      (lsNormwiseBackwardErrorRankTwoExtraDeltaA_mulVec
+        (m := m) (n := n) (beta := beta) qneg (y := y) hy_sq)
+  have hDeltaA_y :
+      rectMatMulVec DeltaA y =
+        fun i : Fin m =>
+          -((1 / vecNorm2Sq p) * p i * t) + beta * qneg i := by
+    ext i
+    unfold rectMatMulVec DeltaA
+    calc
+      ∑ j : Fin n, (DeltaA1 i j + DeltaA2 i j) * y j
+          = ∑ j : Fin n, (DeltaA1 i j * y j + DeltaA2 i j * y j) := by
+              apply Finset.sum_congr rfl
+              intro j _
+              ring
+      _ = ∑ j : Fin n, DeltaA1 i j * y j +
+            ∑ j : Fin n, DeltaA2 i j * y j := by
+              rw [Finset.sum_add_distrib]
+      _ = -((1 / vecNorm2Sq p) * p i * t) + beta * qneg i := by
+              change rectMatMulVec DeltaA1 y i +
+                  rectMatMulVec DeltaA2 y i =
+                -((1 / vecNorm2Sq p) * p i * t) + beta * qneg i
+              rw [congrFun hDeltaA1_y i, congrFun hDeltaA2_y i]
+  have hDeltaA1_tp :
+      (fun j : Fin n => ∑ i : Fin m, DeltaA1 i j * p i) =
+        fun j => -u j := by
+    simpa [DeltaA1] using
+      (lsNormwiseBackwardErrorRankOneDeltaA_transpose_mul
+        (p := p) (u := u) hp)
+  have hDeltaA2_tp :
+      (fun j : Fin n => ∑ i : Fin m, DeltaA2 i j * p i) = 0 := by
+    simpa [DeltaA2] using
+      (lsNormwiseBackwardErrorRankTwoExtraDeltaA_transpose_mul_eq_zero
+        (m := m) (n := n) beta qneg p y hqneg_orth)
+  refine ⟨DeltaA, Deltab, ?_, ?_⟩
+  · apply
+      (LSNormwiseBackwardErrorFeasible.iff_source_higham_residual_orthogonal
+        A b y DeltaA Deltab).mpr
+    intro j
+    have hres_expand :
+        (fun i : Fin m =>
+          r i + Deltab i - rectMatMulVec DeltaA y i) =
+          fun i : Fin m => c * p i := by
+      ext i
+      have hAy_i :
+          rectMatMulVec DeltaA y i =
+            -((1 / vecNorm2Sq p) * p i * t) + beta * qneg i :=
+        congrFun hDeltaA_y i
+      have hq_i :
+          qneg i = c * p i - r i - ((1 / vecNorm2Sq p) * p i * t) :=
+        congrFun hqneg_opt i
+      calc
+        r i + Deltab i - rectMatMulVec DeltaA y i
+            =
+          r i + (qneg i + beta * qneg i) -
+            (-((1 / vecNorm2Sq p) * p i * t) + beta * qneg i) := by
+            rw [hAy_i]
+        _ = r i + qneg i + ((1 / vecNorm2Sq p) * p i * t) := by
+            ring
+        _ = c * p i := by
+            rw [hq_i]
+            ring
+    have hDeltaA1_j : ∑ i : Fin m, DeltaA1 i j * p i = -u j :=
+      congrFun hDeltaA1_tp j
+    have hDeltaA2_j : ∑ i : Fin m, DeltaA2 i j * p i = 0 := by
+      simpa using congrFun hDeltaA2_tp j
+    calc
+      ∑ i : Fin m, (A i j + DeltaA i j) *
+          (lsResidualHigham A b y i + Deltab i -
+            rectMatMulVec DeltaA y i)
+          =
+        ∑ i : Fin m, (A i j + DeltaA i j) * (c * p i) := by
+          apply Finset.sum_congr rfl
+          intro i _
+          rw [congrFun hres_expand i]
+      _ =
+        c * ((∑ i : Fin m, A i j * p i) +
+          ∑ i : Fin m, DeltaA1 i j * p i +
+            ∑ i : Fin m, DeltaA2 i j * p i) := by
+          dsimp [DeltaA]
+          calc
+            ∑ i : Fin m, (A i j + (DeltaA1 i j + DeltaA2 i j)) *
+                (c * p i)
+                =
+              ∑ i : Fin m,
+                c * (A i j * p i + DeltaA1 i j * p i +
+                  DeltaA2 i j * p i) := by
+                apply Finset.sum_congr rfl
+                intro i _
+                ring
+            _ =
+              c * ((∑ i : Fin m, A i j * p i) +
+                ∑ i : Fin m, DeltaA1 i j * p i +
+                  ∑ i : Fin m, DeltaA2 i j * p i) := by
+                rw [← Finset.mul_sum]
+                congr 1
+                rw [Finset.sum_add_distrib, Finset.sum_add_distrib]
+      _ = 0 := by
+          rw [hDeltaA1_j, hDeltaA2_j]
+          simp [u]
+  · have hqneg_norm : vecNorm2Sq qneg = vecNorm2Sq q := by
+      simpa [qneg] using (vecNorm2Sq_smul (-1 : ℝ) q)
+    have hDeltab_norm :
+        vecNorm2Sq Deltab =
+          vecNorm2Sq (fun i : Fin m => q i + beta * q i) := by
+      have hvec :
+          Deltab = fun i : Fin m => -(q i + beta * q i) := by
+        ext i
+        dsimp [Deltab, qneg]
+        ring
+      rw [hvec]
+      simpa using
+        (vecNorm2Sq_smul (-1 : ℝ)
+          (fun i : Fin m => q i + beta * q i))
+    have hDeltaA_sq :
+        frobNormSqRect DeltaA =
+          vecNorm2Sq u / vecNorm2Sq p +
+            beta ^ 2 * vecNorm2Sq q / vecNorm2Sq y := by
+      have hraw :
+          frobNormSqRect DeltaA =
+            vecNorm2Sq u / vecNorm2Sq p +
+              beta ^ 2 * vecNorm2Sq qneg / vecNorm2Sq y := by
+        simpa [DeltaA, DeltaA1, DeltaA2] using
+          (lsNormwiseBackwardErrorRankTwoDeltaA_frobNormSq
+            (p := p) (u := u) (beta := beta) (q := qneg) (y := y)
+            hp hy_sq hqneg_orth)
+      simpa [hqneg_norm] using hraw
+    rw [lsNormwiseBackwardErrorCostF_eq_sqrt_sq_sum]
+    rw [hDeltaA_sq, hDeltab_norm]
+
+/-- Optimized rank-two WKS source-residual upper bound.  This is the concrete
+    feasible perturbation side before the source-block singular-vector
+    certificate is consumed. -/
+theorem lsNormwiseBackwardErrorEtaF_le_rankTwo_source_residual_witness
+    {m n : ℕ} (theta : ℝ) (A : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ) {y : Fin n → ℝ} (hy : y ≠ 0)
+    (p : Fin m → ℝ) (hp : vecNorm2Sq p ≠ 0) :
+    let r : Fin m → ℝ := lsResidualHigham A b y
+    let u : Fin n → ℝ := fun j => ∑ i : Fin m, A i j * p i
+    let q : Fin m → ℝ := matMulVec m (lsLemma20_6ProjectorComplement p) r
+    let beta : ℝ :=
+      -(theta ^ 2 * vecNorm2Sq y) /
+        (1 + theta ^ 2 * vecNorm2Sq y)
+    lsNormwiseBackwardErrorEtaF theta A b y ≤
+      Real.sqrt
+        (vecNorm2Sq u / vecNorm2Sq p +
+          beta ^ 2 * vecNorm2Sq q / vecNorm2Sq y +
+            theta ^ 2 *
+              vecNorm2Sq (fun i : Fin m => q i + beta * q i)) := by
+  let r : Fin m → ℝ := lsResidualHigham A b y
+  let u : Fin n → ℝ := fun j => ∑ i : Fin m, A i j * p i
+  let q : Fin m → ℝ := matMulVec m (lsLemma20_6ProjectorComplement p) r
+  let beta : ℝ :=
+    -(theta ^ 2 * vecNorm2Sq y) /
+      (1 + theta ^ 2 * vecNorm2Sq y)
+  rcases
+    (LSNormwiseBackwardErrorFeasible.exists_rankTwo_source_residual_witness
+      theta A b hy p hp) with
+    ⟨DeltaA, Deltab, hfeas, hcost⟩
+  dsimp only
+  calc
+    lsNormwiseBackwardErrorEtaF theta A b y ≤
+        lsNormwiseBackwardErrorCostF theta DeltaA Deltab :=
+      lsNormwiseBackwardErrorEtaF_le_costF_of_feasible
+        theta A b y DeltaA Deltab hfeas
+    _ =
+        Real.sqrt
+          (vecNorm2Sq u / vecNorm2Sq p +
+            beta ^ 2 * vecNorm2Sq q / vecNorm2Sq y +
+              theta ^ 2 *
+                vecNorm2Sq (fun i : Fin m => q i + beta * q i)) := by
+        simpa [r, u, q, beta] using hcost
+
+/-- Source-transpose certificate version of the optimized rank-two WKS upper
+    construction.  The source-block singular-vector certificate now feeds an
+    actual feasible perturbation pair rather than a supplied upper inequality. -/
+theorem lsNormwiseBackwardErrorEtaF_le_formulaRHS_of_rankTwo_scaled_source_transpose_cert
+    {m n : ℕ} {theta : ℝ} (htheta : 0 ≤ theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (p : Fin (m + 1) → ℝ) (hp : vecNorm2Sq p ≠ 0)
+    (hrsq : vecNorm2Sq (lsResidualHigham A b y) ≠ 0)
+    (hbranch :
+      lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A
+          (lsResidualHigham A b y) y ≤
+        lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y)
+    (hsource :
+      let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+      vecNorm2Sq
+          (rectMatMulVec
+            (finiteTranspose (lsNormwiseBackwardErrorFormulaMatrix theta A r y)) p) ≤
+        (lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y) ^ 2 *
+          vecNorm2Sq p) :
+    lsNormwiseBackwardErrorEtaF theta A b y ≤
+      lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  let r : Fin (m + 1) → ℝ := lsResidualHigham A b y
+  let u : Fin n → ℝ := fun j => ∑ i : Fin (m + 1), A i j * p i
+  let q : Fin (m + 1) → ℝ :=
+    matMulVec (m + 1) (lsLemma20_6ProjectorComplement p) r
+  let beta : ℝ :=
+    -(theta ^ 2 * vecNorm2Sq y) /
+      (1 + theta ^ 2 * vecNorm2Sq y)
+  let sigma : ℝ := lsNormwiseBackwardErrorFormulaMatrixSigmaMin theta A r y
+  have hsigma : 0 ≤ sigma := by
+    simpa [sigma, r] using
+      lsNormwiseBackwardErrorFormulaMatrixSigmaMin_nonneg theta A r y
+  have heta :
+      lsNormwiseBackwardErrorEtaF theta A b y ≤
+        Real.sqrt
+          (vecNorm2Sq u / vecNorm2Sq p +
+            beta ^ 2 * vecNorm2Sq q / vecNorm2Sq y +
+              theta ^ 2 *
+                vecNorm2Sq (fun i : Fin (m + 1) => q i + beta * q i)) := by
+    simpa [r, u, q, beta] using
+      (lsNormwiseBackwardErrorEtaF_le_rankTwo_source_residual_witness
+        theta A b hy p hp)
+  have hcost :
+      Real.sqrt
+          (vecNorm2Sq u / vecNorm2Sq p +
+            beta ^ 2 * vecNorm2Sq q / vecNorm2Sq y +
+              theta ^ 2 *
+                vecNorm2Sq (fun i : Fin (m + 1) => q i + beta * q i)) ≤
+        sigma := by
+    simpa [r, u, q, beta, sigma] using
+      (lsNormwiseBackwardErrorRankTwo_scaled_cost_sqrt_le_of_source_transpose_sq_le
+        (m := m + 1) (n := n) htheta hy (sigma := sigma) hsigma
+        A r p hrsq hp (by simpa [r, sigma] using hsource))
+  have hrhs :
+      lsNormwiseBackwardErrorFormulaRHS theta A b y = sigma := by
+    unfold lsNormwiseBackwardErrorFormulaRHS lsNormwiseBackwardErrorFormulaValue
+    exact min_eq_right (by simpa [r, sigma] using hbranch)
+  rw [hrhs]
+  exact heta.trans hcost
 
 /-- Source-shaped numerator for the optimal scalar in the scaled rank-one WKS
     witness.  When `r = b - A*y` and `u = A^T p`, the scalar numerator
