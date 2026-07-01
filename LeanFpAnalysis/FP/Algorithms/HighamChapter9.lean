@@ -52999,6 +52999,52 @@ theorem higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_rectRounded
         hT hU_diag hn hU_budget_le hL_budget_le))
     hn hn3 hL_bound
 
+/-- **Equation (9.14) / Algorithm 9.2**, rectangular rounded-stage
+complete-pivoting bridge at Wilkinson's sharp RHS in dimensions one and two. -/
+theorem higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_rectRoundedStageTrace_of_le_two
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (hle : n ≤ 2)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (sigma tau : Fin n → Fin n)
+    (b : Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn_pos A)
+    (htrace : higham9_8_CompletePivotGECPUTrace n A U_hat)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hsigma : IsPermutation n sigma)
+    (htau : IsPermutation n tau)
+    (hT : higham9_2_RectDoolittleRoundedStageTrace
+      (Nat.le_refl n) (higham9_2_rowColPermutedMatrix A sigma tau)
+      L_hat U_hat fp)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat k j ≤
+        gamma fp n * |U_hat k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k ≤
+        gamma fp n * |L_hat i k * U_hat k k|)
+    (hL_bound : ∀ i j : Fin n, |L_hat i j| ≤ 1) :
+    let bP : Fin n → ℝ := fun i => b (sigma i)
+    let y_hat := fl_forwardSub fp n L_hat bP
+    let z_hat := fl_backSub fp n U_hat y_hat
+    let x_hat : Fin n → ℝ :=
+      fun j => z_hat ((Equiv.ofBijective tau htau).symm j)
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (infNorm ΔA ≤
+        (↑n) ^ 2 * gamma fp (3 * n) *
+          higham9_14_completePivotWilkinsonBound n * infNorm A) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_denseLoop_of_le_two
+    fp n hn_pos hle A L_hat U_hat sigma tau b hAmax htrace hU_diag
+    hsigma htau
+    (higham9_2_rectDenseLoopCertificate_to_squareDenseLoopCertificate
+      (higham9_2_rectRoundedStageTrace_to_rectDenseLoopCertificate
+        hT hU_diag hn hU_budget_le hL_budget_le))
+    hn hn3 hL_bound
+
 /-- **Equation (9.14) / Algorithm 9.2**, executable rectangular rounded-loop
 complete-pivoting bridge at Wilkinson's sharp RHS, conditional on the supplied
 per-trace Wilkinson theorem. -/
@@ -53071,6 +53117,76 @@ theorem higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_rectRounded
     (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
       (higham9_2_rowColPermutedMatrix A sigma tau))
     sigma tau b hAmax htrace hsharp hU_diag hsigma htau
+    (higham9_2_rectRoundedLoopStageTrace fp (Nat.le_refl n)
+      (higham9_2_rowColPermutedMatrix A sigma tau))
+    hn hn3 hU_budget_le hL_budget_le hL_bound
+
+/-- **Equation (9.14) / Algorithm 9.2**, executable rectangular rounded-loop
+complete-pivoting bridge at Wilkinson's sharp RHS in dimensions one and two. -/
+theorem higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_rectRoundedLoop_of_le_two
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (hle : n ≤ 2)
+    (A : Fin n → Fin n → ℝ)
+    (sigma tau : Fin n → Fin n)
+    (b : Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn_pos A)
+    (htrace : higham9_8_CompletePivotGECPUTrace n A
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+        (higham9_2_rowColPermutedMatrix A sigma tau)))
+    (hU_diag : ∀ i : Fin n,
+      higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+          (higham9_2_rowColPermutedMatrix A sigma tau) i i ≠ 0)
+    (hsigma : IsPermutation n sigma)
+    (htau : IsPermutation n tau)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          (higham9_2_rowColPermutedMatrix A sigma tau)
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+            (higham9_2_rowColPermutedMatrix A sigma tau))
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+            (higham9_2_rowColPermutedMatrix A sigma tau)) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+            (higham9_2_rowColPermutedMatrix A sigma tau) k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp
+          (higham9_2_rowColPermutedMatrix A sigma tau)
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+            (higham9_2_rowColPermutedMatrix A sigma tau))
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+            (higham9_2_rowColPermutedMatrix A sigma tau)) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+              (higham9_2_rowColPermutedMatrix A sigma tau) i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+              (higham9_2_rowColPermutedMatrix A sigma tau) k k|)
+    (hL_bound : ∀ i j : Fin n,
+      |higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+          (higham9_2_rowColPermutedMatrix A sigma tau) i j| ≤ 1) :
+    let L_hat := higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+      (higham9_2_rowColPermutedMatrix A sigma tau)
+    let U_hat := higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+      (higham9_2_rowColPermutedMatrix A sigma tau)
+    let bP : Fin n → ℝ := fun i => b (sigma i)
+    let y_hat := fl_forwardSub fp n L_hat bP
+    let z_hat := fl_backSub fp n U_hat y_hat
+    let x_hat : Fin n → ℝ :=
+      fun j => z_hat ((Equiv.ofBijective tau htau).symm j)
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (infNorm ΔA ≤
+        (↑n) ^ 2 * gamma fp (3 * n) *
+          higham9_14_completePivotWilkinsonBound n * infNorm A) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_rectRoundedStageTrace_of_le_two
+    fp n hn_pos hle A
+    (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+      (higham9_2_rowColPermutedMatrix A sigma tau))
+    (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+      (higham9_2_rowColPermutedMatrix A sigma tau))
+    sigma tau b hAmax htrace hU_diag hsigma htau
     (higham9_2_rectRoundedLoopStageTrace fp (Nat.le_refl n)
       (higham9_2_rowColPermutedMatrix A sigma tau))
     hn hn3 hU_budget_le hL_budget_le hL_bound
@@ -56875,6 +56991,52 @@ theorem higham9_16_foster_source_bound_of_RookPivotGEUTrace_rectRoundedStageTrac
         hT hU_diag hn hU_budget_le hL_budget_le))
     hn hn3 hL_bound
 
+/-- **Equation (9.16) / Algorithm 9.2**, rectangular rounded-stage
+rook-pivoting bridge at Foster's sharp RHS in dimensions one and two. -/
+theorem higham9_16_foster_source_bound_of_RookPivotGEUTrace_rectRoundedStageTrace_of_le_two
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (hle : n ≤ 2)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (sigma tau : Fin n → Fin n)
+    (b : Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn_pos A)
+    (htrace : higham9_16_RookPivotGEUTrace n A U_hat)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hsigma : IsPermutation n sigma)
+    (htau : IsPermutation n tau)
+    (hT : higham9_2_RectDoolittleRoundedStageTrace
+      (Nat.le_refl n) (higham9_2_rowColPermutedMatrix A sigma tau)
+      L_hat U_hat fp)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat k j ≤
+        gamma fp n * |U_hat k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k ≤
+        gamma fp n * |L_hat i k * U_hat k k|)
+    (hL_bound : ∀ i j : Fin n, |L_hat i j| ≤ 1) :
+    let bP : Fin n → ℝ := fun i => b (sigma i)
+    let y_hat := fl_forwardSub fp n L_hat bP
+    let z_hat := fl_backSub fp n U_hat y_hat
+    let x_hat : Fin n → ℝ :=
+      fun j => z_hat ((Equiv.ofBijective tau htau).symm j)
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (infNorm ΔA ≤
+        (↑n) ^ 2 * gamma fp (3 * n) *
+          higham9_16_rookPivotFosterBound n * infNorm A) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_16_foster_source_bound_of_RookPivotGEUTrace_denseLoop_of_le_two
+    fp n hn_pos hle A L_hat U_hat sigma tau b hAmax htrace hU_diag
+    hsigma htau
+    (higham9_2_rectDenseLoopCertificate_to_squareDenseLoopCertificate
+      (higham9_2_rectRoundedStageTrace_to_rectDenseLoopCertificate
+        hT hU_diag hn hU_budget_le hL_budget_le))
+    hn hn3 hL_bound
+
 /-- **Equation (9.16) / Algorithm 9.2**, executable rectangular rounded-loop
 rook-pivoting bridge at Foster's sharp RHS, conditional on the supplied
 per-trace Foster theorem. -/
@@ -56947,6 +57109,76 @@ theorem higham9_16_foster_source_bound_of_RookPivotGEUTrace_rectRoundedLoop
     (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
       (higham9_2_rowColPermutedMatrix A sigma tau))
     sigma tau b hAmax htrace hsharp hU_diag hsigma htau
+    (higham9_2_rectRoundedLoopStageTrace fp (Nat.le_refl n)
+      (higham9_2_rowColPermutedMatrix A sigma tau))
+    hn hn3 hU_budget_le hL_budget_le hL_bound
+
+/-- **Equation (9.16) / Algorithm 9.2**, executable rectangular rounded-loop
+rook-pivoting bridge at Foster's sharp RHS in dimensions one and two. -/
+theorem higham9_16_foster_source_bound_of_RookPivotGEUTrace_rectRoundedLoop_of_le_two
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (hle : n ≤ 2)
+    (A : Fin n → Fin n → ℝ)
+    (sigma tau : Fin n → Fin n)
+    (b : Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn_pos A)
+    (htrace : higham9_16_RookPivotGEUTrace n A
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+        (higham9_2_rowColPermutedMatrix A sigma tau)))
+    (hU_diag : ∀ i : Fin n,
+      higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+          (higham9_2_rowColPermutedMatrix A sigma tau) i i ≠ 0)
+    (hsigma : IsPermutation n sigma)
+    (htau : IsPermutation n tau)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          (higham9_2_rowColPermutedMatrix A sigma tau)
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+            (higham9_2_rowColPermutedMatrix A sigma tau))
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+            (higham9_2_rowColPermutedMatrix A sigma tau)) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+            (higham9_2_rowColPermutedMatrix A sigma tau) k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp
+          (higham9_2_rowColPermutedMatrix A sigma tau)
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+            (higham9_2_rowColPermutedMatrix A sigma tau))
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+            (higham9_2_rowColPermutedMatrix A sigma tau)) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+              (higham9_2_rowColPermutedMatrix A sigma tau) i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+              (higham9_2_rowColPermutedMatrix A sigma tau) k k|)
+    (hL_bound : ∀ i j : Fin n,
+      |higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+          (higham9_2_rowColPermutedMatrix A sigma tau) i j| ≤ 1) :
+    let L_hat := higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+      (higham9_2_rowColPermutedMatrix A sigma tau)
+    let U_hat := higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+      (higham9_2_rowColPermutedMatrix A sigma tau)
+    let bP : Fin n → ℝ := fun i => b (sigma i)
+    let y_hat := fl_forwardSub fp n L_hat bP
+    let z_hat := fl_backSub fp n U_hat y_hat
+    let x_hat : Fin n → ℝ :=
+      fun j => z_hat ((Equiv.ofBijective tau htau).symm j)
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (infNorm ΔA ≤
+        (↑n) ^ 2 * gamma fp (3 * n) *
+          higham9_16_rookPivotFosterBound n * infNorm A) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_16_foster_source_bound_of_RookPivotGEUTrace_rectRoundedStageTrace_of_le_two
+    fp n hn_pos hle A
+    (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+      (higham9_2_rowColPermutedMatrix A sigma tau))
+    (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+      (higham9_2_rowColPermutedMatrix A sigma tau))
+    sigma tau b hAmax htrace hU_diag hsigma htau
     (higham9_2_rectRoundedLoopStageTrace fp (Nat.le_refl n)
       (higham9_2_rowColPermutedMatrix A sigma tau))
     hn hn3 hU_budget_le hL_budget_le hL_bound
