@@ -6647,6 +6647,61 @@ theorem rectMatMulVec_abs_entry_le {m n : ℕ}
 def rectOpNorm2Le {m n : ℕ} (M : Fin m → Fin n → ℝ) (c : ℝ) : Prop :=
   ∀ x : Fin n → ℝ, vecNorm2 (rectMatMulVec M x) ≤ c * vecNorm2 x
 
+/-- A rectangular matrix whose vector-action map is injective has a positive
+    Euclidean lower-bound margin.
+
+    This is the finite-dimensional bounded-below theorem for rectangular
+    matrices, routed through mathlib's `WithLp 2` linear-map API and converted
+    back to the repository's `vecNorm2` notation. -/
+theorem exists_pos_rectMatMulVec_vecNorm2_lower_bound_of_injective {m n : ℕ}
+    {M : Fin m → Fin n → ℝ}
+    (hM : Function.Injective (rectMatMulVec M)) :
+    ∃ mu : ℝ, 0 < mu ∧
+      ∀ x : Fin n → ℝ,
+        mu * vecNorm2 x ≤ vecNorm2 (rectMatMulVec M x) := by
+  let T : WithLp 2 (Fin n → ℝ) →ₗ[ℝ] WithLp 2 (Fin m → ℝ) :=
+    (Matrix.toLpLin (2 : ENNReal) (2 : ENNReal))
+      (M : Matrix (Fin m) (Fin n) ℝ)
+  have hT_inj : Function.Injective T := by
+    intro x y hxy
+    have hxy_of : WithLp.ofLp (T x) = WithLp.ofLp (T y) := by
+      exact congrArg WithLp.ofLp hxy
+    have hrect : rectMatMulVec M (WithLp.ofLp x) =
+        rectMatMulVec M (WithLp.ofLp y) := by
+      simpa [T, Matrix.toLpLin_apply, Matrix.toLin'_apply,
+        Matrix.mulVec, rectMatMulVec] using hxy_of
+    have hof : WithLp.ofLp x = WithLp.ofLp y := hM hrect
+    simpa using congrArg (WithLp.toLp (2 : ENNReal)) hof
+  rcases (LinearMap.injective_iff_antilipschitz T).mp hT_inj with
+    ⟨K, hKpos, hanti⟩
+  let mu : ℝ := (K : ℝ)⁻¹
+  have hKposR : 0 < (K : ℝ) := by
+    exact_mod_cast hKpos
+  refine ⟨mu, inv_pos.mpr hKposR, ?_⟩
+  intro x
+  have hdist := hanti.le_mul_dist (WithLp.toLp (2 : ENNReal) x) 0
+  have hxnorm : dist (WithLp.toLp (2 : ENNReal) x) 0 = vecNorm2 x := by
+    rw [dist_eq_norm, sub_zero]
+    unfold vecNorm2 vecNorm2Sq
+    rw [EuclideanSpace.norm_eq]
+    simp [Real.norm_eq_abs, sq_abs]
+  have hTnorm : ‖T (WithLp.toLp (2 : ENNReal) x)‖ =
+      vecNorm2 (rectMatMulVec M x) := by
+    unfold T
+    rw [Matrix.toLpLin_toLp]
+    unfold vecNorm2 vecNorm2Sq rectMatMulVec
+    rw [EuclideanSpace.norm_eq]
+    simp [Matrix.toLin'_apply, Matrix.mulVec, dotProduct,
+      Real.norm_eq_abs, sq_abs]
+  have hx_le : vecNorm2 x ≤ (K : ℝ) * vecNorm2 (rectMatMulVec M x) := by
+    simpa [hxnorm, hTnorm, dist_eq_norm] using hdist
+  calc
+    mu * vecNorm2 x = (K : ℝ)⁻¹ * vecNorm2 x := rfl
+    _ ≤ (K : ℝ)⁻¹ * ((K : ℝ) * vecNorm2 (rectMatMulVec M x)) := by
+      exact mul_le_mul_of_nonneg_left hx_le (le_of_lt (inv_pos.mpr hKposR))
+    _ = vecNorm2 (rectMatMulVec M x) := by
+      rw [inv_mul_cancel_left₀ hKposR.ne']
+
 /-- Lemma 6.6(b), predicate form: componentwise domination `|A| <= B`
     preserves any rectangular 2-operator upper bound. -/
 theorem rectOpNorm2Le_of_abs_entry_le {m n : ℕ}
