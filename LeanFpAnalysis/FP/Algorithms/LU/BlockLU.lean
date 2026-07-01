@@ -175,6 +175,7 @@
     Higham13Eq1322GlobalTableauSourceChain.succ_from_matrix_stage_history_active_tail_exact_kappa,
     Higham13Eq1322GlobalTableauSourceChain.succ_from_matrix_stage_history_active_tail_with_derived_tail_inverse_entry_exact_kappa,
     Higham13Eq1322GlobalTableauSourceChain.two_from_matrix_stage_history_active_tail_exact_kappa,
+    Higham13Eq1322GlobalTableauSourceChain.three_from_matrix_stage_history_active_tail_exact_kappa,
     Higham13Eq1322GlobalTableauSourceChain.succ_from_matrix_stage_history_first_split_exact_kappa,
     Higham13Eq1322GlobalTableauSourceChain.to_blockLUBudgetChain,
     Higham13Eq1322GlobalTableauSourceChain.to_blockLUBudgetChain_of_right_inverse,
@@ -188,6 +189,12 @@
     higham13_eq13_23_exists_blockLUFact_two_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update_reciprocal,
     higham13_eq13_23_exists_blockLUFact_two_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update_of_det_ne_zero,
     higham13_eq13_23_exists_blockLUFact_two_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update_reciprocal_of_det_ne_zero,
+    higham13_eq13_22_exists_blockLUFact_three_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa,
+    higham13_eq13_23_exists_blockLUFact_three_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa,
+    higham13_eq13_23_exists_blockLUFact_three_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update,
+    higham13_eq13_23_exists_blockLUFact_three_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update_reciprocal,
+    higham13_eq13_23_exists_blockLUFact_three_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update_of_det_ne_zero,
+    higham13_eq13_23_exists_blockLUFact_three_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update_reciprocal_of_det_ne_zero,
     higham13_eq13_22_exists_blockLUFact_succ_product_from_global_tableau_tail_chain_matrix_stage_history_exact_kappa,
     higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_tail_chain_matrix_stage_history_exact_kappa,
     higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_tail_chain_matrix_stage_history_exact_kappa_of_product_bound_diag_update,
@@ -204,9 +211,10 @@
     Algorithm 13.3 history, and the terminal one-block constructor now closes
     recorded one-block Schur tails from global tableau containment, while the
     recursive tail certificate and all-tail source-table obligations remain
-    explicit; the first-split Eq.13.23 product-update wrappers remove the raw
-    `rho <= 2` hypothesis when BDD product/update data is supplied, with
-    determinant variants deriving the canonical ambient right-inverse
+    explicit; the two- and three-block active-tail plus first-split Eq.13.23
+    product-update wrappers remove the raw `rho <= 2` hypothesis when BDD
+    product/update data is supplied, with determinant variants deriving the
+    canonical ambient right-inverse
   - higham13_eq13_22_exists_blockLUOneStep_fact_product_from_matrix_stage_history_first_split_tail_exact_kappa:
     source-facing one-step Eq.13.22 witness theorem combining the explicit
     block LU construction with the one-step product bound
@@ -43180,6 +43188,529 @@ theorem
       (r := r) (N := N) (n := n) hr hN Aglob G AinvGlob
       hApos hRight hNn (by simpa [G] using hA_le_G)
       (by simpa [G] using hRho_le_two) hcert
+
+/-- Higham, 2nd ed., Chapter 13, Problem 13.4 / equation (13.23):
+    full-flat three-block active-tail product witness with the `rho <= 2`
+    side condition supplied by the source-strength product-bound/diagonal-update
+    BDD route.
+
+    This is the three-block companion to
+    `higham13_eq13_23_exists_blockLUFact_two_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update`.
+    It packages the already-closed three-block active-tail global-tableau
+    certificate through the same full-matrix BDD product/update route. -/
+theorem
+    higham13_eq13_23_exists_blockLUFact_three_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update
+    {M r n k : ℕ} (hr : 0 < r) (hM : 0 < M)
+    (AinvGlob : Fin (M * r) → Fin (M * r) → ℝ)
+    (A : Fin M → Fin M → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hApos : 0 < maxEntryNorm (Nat.mul_pos hM hr) (blockMatrixFlatFin A))
+    (hRight : IsRightInverse (M * r) (blockMatrixFlatFin A) AinvGlob)
+    (hNn : (((M * r : ℕ) : ℝ) ≤ (n : ℝ)))
+    (hkM : k < M)
+    (tailFull : Fin 3 → Fin M)
+    (tailMid : Fin 2 → Fin M)
+    (tailLast : Fin 1 → Fin M)
+    (h0 : tailFull 0 = ⟨k, hkM⟩)
+    (hsucc : ∀ i : Fin 2, tailFull (Fin.succ i) = tailMid i)
+    (hactive : ∀ i : Fin 2, k + 1 ≤ (tailMid i).val)
+    (hkSuccM : k + 1 < M)
+    (h1 : tailMid 0 = ⟨k + 1, hkSuccM⟩)
+    (hsuccTail : ∀ i : Fin 1, tailMid (Fin.succ i) = tailLast i)
+    (hactiveTail : ∀ i : Fin 1, k + 1 + 1 ≤ (tailLast i).val)
+    [Invertible
+      (blockMatrixFirstSplitA11
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))]
+    [Invertible
+      (blockMatrixFirstSplitA22
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull) -
+        blockMatrixFirstSplitA21
+            (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull) *
+          ⅟(blockMatrixFirstSplitA11
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull)) *
+            blockMatrixFirstSplitA12
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))]
+    [Invertible (Matrix.fromBlocks
+      (blockMatrixFirstSplitA11
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+      (blockMatrixFirstSplitA12
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+      (blockMatrixFirstSplitA21
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+      (blockMatrixFirstSplitA22
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull)))]
+    [Invertible
+      (blockMatrixFirstSplitA11
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid))]
+    [Invertible
+      (blockMatrixFirstSplitA22
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid) -
+        blockMatrixFirstSplitA21
+            (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid) *
+          ⅟(blockMatrixFirstSplitA11
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid)) *
+            blockMatrixFirstSplitA12
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid))]
+    (hpivot :
+      pivotInv k =
+        ⅟(blockMatrixFirstSplitA11
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull)))
+    (hpivotTail :
+      pivotInv (k + 1) =
+        ⅟(blockMatrixFirstSplitA11
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid)))
+    (hsnParent : (((1 + 1) * r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hsnTail : ((r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hAinv_entry :
+      ∀ i j : Fin r ⊕ Fin (2 * r),
+        |(⅟(Matrix.fromBlocks
+            (blockMatrixFirstSplitA11
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+            (blockMatrixFirstSplitA12
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+            (blockMatrixFirstSplitA21
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+            (blockMatrixFirstSplitA22
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))) :
+          Matrix (Fin r ⊕ Fin (2 * r))
+            (Fin r ⊕ Fin (2 * r)) ℝ) i j| ≤
+          maxEntryNormRect (Nat.mul_pos hM hr) (Nat.mul_pos hM hr) AinvGlob)
+    (invDiagBound : Fin M → ℝ)
+    (stageInvDiagBound : ℕ → Fin M → ℝ)
+    (hDom : IsBlockDiagDomCol M (fun i j => maxEntryNorm hr (A i j)) invDiagBound)
+    (hDiagBound : ∀ j : Fin M, invDiagBound j ≤ maxEntryNorm hr (A j j))
+    (hInitInv : ∀ j : Fin M, stageInvDiagBound 0 j = invDiagBound j)
+    (hPivotInvBound : ∀ k : ℕ, ∀ hk : k < M,
+      maxEntryNorm hr (pivotInv k) * stageInvDiagBound k ⟨k, hk⟩ ≤ 1)
+    (hProduct : ∀ k : ℕ, ∀ hk : k < M, ∀ i j : Fin M,
+      k + 1 ≤ i.val → k + 1 ≤ j.val →
+        maxEntryNorm hr
+          (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i ⟨k, hk⟩ *
+            pivotInv k *
+            higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k ⟨k, hk⟩ j) ≤
+          maxEntryNorm hr
+            (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i ⟨k, hk⟩) *
+          maxEntryNorm hr (pivotInv k) *
+          maxEntryNorm hr
+            (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k ⟨k, hk⟩ j))
+    (hDiagUpdate : SchurStageActiveDiagLowerUpdate13_7
+      (fun k i j => maxEntryNorm hr
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j))
+      stageInvDiagBound
+      (fun k => maxEntryNorm hr (pivotInv k))) :
+    ∃ L U : Fin 3 → Fin 3 → Matrix (Fin r) (Fin r) ℝ,
+      BlockLUFactSpec 3 r
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull) L U ∧
+        blockMaxNorm (Nat.succ_pos 2) hr L *
+            blockMaxNorm (Nat.succ_pos 2) hr U ≤
+          8 * (n : ℝ) *
+            (maxEntryNormRect (Nat.mul_pos hM hr) (Nat.mul_pos hM hr)
+                (blockMatrixFlatFin A) *
+              maxEntryNormRect (Nat.mul_pos hM hr) (Nat.mul_pos hM hr)
+                AinvGlob) *
+            maxEntryNormRect (Nat.mul_pos hM hr) (Nat.mul_pos hM hr)
+              (blockMatrixFlatFin A) := by
+  classical
+  let hFlat : 0 < M * r := Nat.mul_pos hM hr
+  let G : Fin (M * r) → Fin (M * r) → ℝ :=
+    higham13_algorithm13_3_matrixStageHistoryGrowthMatrix hFlat hM hr A pivotInv
+  have hA_le_G :
+      maxEntryNorm hFlat (blockMatrixFlatFin A) ≤ maxEntryNorm hFlat G := by
+    rw [maxEntryNorm_blockMatrixFlatFin_eq_blockMaxNorm hM hr A]
+    simpa [G] using
+      higham13_algorithm13_3_matrixStageHistoryGrowthMatrix_contains_initial
+        hFlat hM hr A pivotInv
+  have hRho_le_two :
+      growthFactorEntry hFlat (blockMatrixFlatFin A) G hApos ≤ 2 := by
+    simpa [hFlat, G] using
+      higham13_algorithm13_3_matrixStageHistoryGrowthFactor_le_two_of_product_bound_diag_update
+        hM hr A pivotInv hApos invDiagBound stageInvDiagBound hDom
+        hDiagBound hInitInv hPivotInvBound hProduct hDiagUpdate
+  simpa [hFlat, G] using
+    higham13_eq13_23_exists_blockLUFact_three_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa
+      (M := M) (r := r) (N := M * r) (n := n) (k := k)
+      hr hFlat hM (blockMatrixFlatFin A) AinvGlob A pivotInv
+      hApos hRight hNn hkM tailFull tailMid tailLast
+      h0 hsucc hactive hkSuccM h1 hsuccTail hactiveTail
+      hpivot hpivotTail hsnParent hsnTail hA_le_G hRho_le_two hAinv_entry
+
+/-- Higham, 2nd ed., Chapter 13, Problem 13.4 / equation (13.23):
+    reciprocal-table version of the full-flat three-block active-tail
+    product-update witness. -/
+theorem
+    higham13_eq13_23_exists_blockLUFact_three_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update_reciprocal
+    {M r n k : ℕ} (hr : 0 < r) (hM : 0 < M)
+    (AinvGlob : Fin (M * r) → Fin (M * r) → ℝ)
+    (A : Fin M → Fin M → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hApos : 0 < maxEntryNorm (Nat.mul_pos hM hr) (blockMatrixFlatFin A))
+    (hRight : IsRightInverse (M * r) (blockMatrixFlatFin A) AinvGlob)
+    (hNn : (((M * r : ℕ) : ℝ) ≤ (n : ℝ)))
+    (hkM : k < M)
+    (tailFull : Fin 3 → Fin M)
+    (tailMid : Fin 2 → Fin M)
+    (tailLast : Fin 1 → Fin M)
+    (h0 : tailFull 0 = ⟨k, hkM⟩)
+    (hsucc : ∀ i : Fin 2, tailFull (Fin.succ i) = tailMid i)
+    (hactive : ∀ i : Fin 2, k + 1 ≤ (tailMid i).val)
+    (hkSuccM : k + 1 < M)
+    (h1 : tailMid 0 = ⟨k + 1, hkSuccM⟩)
+    (hsuccTail : ∀ i : Fin 1, tailMid (Fin.succ i) = tailLast i)
+    (hactiveTail : ∀ i : Fin 1, k + 1 + 1 ≤ (tailLast i).val)
+    [Invertible
+      (blockMatrixFirstSplitA11
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))]
+    [Invertible
+      (blockMatrixFirstSplitA22
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull) -
+        blockMatrixFirstSplitA21
+            (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull) *
+          ⅟(blockMatrixFirstSplitA11
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull)) *
+            blockMatrixFirstSplitA12
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))]
+    [Invertible (Matrix.fromBlocks
+      (blockMatrixFirstSplitA11
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+      (blockMatrixFirstSplitA12
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+      (blockMatrixFirstSplitA21
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+      (blockMatrixFirstSplitA22
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull)))]
+    [Invertible
+      (blockMatrixFirstSplitA11
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid))]
+    [Invertible
+      (blockMatrixFirstSplitA22
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid) -
+        blockMatrixFirstSplitA21
+            (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid) *
+          ⅟(blockMatrixFirstSplitA11
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid)) *
+            blockMatrixFirstSplitA12
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid))]
+    (hpivot :
+      pivotInv k =
+        ⅟(blockMatrixFirstSplitA11
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull)))
+    (hpivotTail :
+      pivotInv (k + 1) =
+        ⅟(blockMatrixFirstSplitA11
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid)))
+    (hsnParent : (((1 + 1) * r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hsnTail : ((r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hAinv_entry :
+      ∀ i j : Fin r ⊕ Fin (2 * r),
+        |(⅟(Matrix.fromBlocks
+            (blockMatrixFirstSplitA11
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+            (blockMatrixFirstSplitA12
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+            (blockMatrixFirstSplitA21
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+            (blockMatrixFirstSplitA22
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))) :
+          Matrix (Fin r ⊕ Fin (2 * r))
+            (Fin r ⊕ Fin (2 * r)) ℝ) i j| ≤
+          maxEntryNormRect (Nat.mul_pos hM hr) (Nat.mul_pos hM hr) AinvGlob)
+    (invDiagBound : Fin M → ℝ)
+    (stageInvDiagBound : ℕ → Fin M → ℝ)
+    (hDom : IsBlockDiagDomCol M (fun i j => maxEntryNorm hr (A i j)) invDiagBound)
+    (hDiagBound : ∀ j : Fin M, invDiagBound j ≤ maxEntryNorm hr (A j j))
+    (hInitInv : ∀ j : Fin M, stageInvDiagBound 0 j = invDiagBound j)
+    (hReciprocal : SchurStageActivePivotInvReciprocal13_7
+      stageInvDiagBound (fun k => maxEntryNorm hr (pivotInv k)))
+    (hProduct : ∀ k : ℕ, ∀ hk : k < M, ∀ i j : Fin M,
+      k + 1 ≤ i.val → k + 1 ≤ j.val →
+        maxEntryNorm hr
+          (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i ⟨k, hk⟩ *
+            pivotInv k *
+            higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k ⟨k, hk⟩ j) ≤
+          maxEntryNorm hr
+            (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i ⟨k, hk⟩) *
+          maxEntryNorm hr (pivotInv k) *
+          maxEntryNorm hr
+            (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k ⟨k, hk⟩ j))
+    (hDiagUpdate : SchurStageActiveDiagLowerUpdate13_7
+      (fun k i j => maxEntryNorm hr
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j))
+      stageInvDiagBound
+      (fun k => maxEntryNorm hr (pivotInv k))) :
+    ∃ L U : Fin 3 → Fin 3 → Matrix (Fin r) (Fin r) ℝ,
+      BlockLUFactSpec 3 r
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull) L U ∧
+        blockMaxNorm (Nat.succ_pos 2) hr L *
+            blockMaxNorm (Nat.succ_pos 2) hr U ≤
+          8 * (n : ℝ) *
+            (maxEntryNormRect (Nat.mul_pos hM hr) (Nat.mul_pos hM hr)
+                (blockMatrixFlatFin A) *
+              maxEntryNormRect (Nat.mul_pos hM hr) (Nat.mul_pos hM hr)
+                AinvGlob) *
+            maxEntryNormRect (Nat.mul_pos hM hr) (Nat.mul_pos hM hr)
+              (blockMatrixFlatFin A) := by
+  exact
+    higham13_eq13_23_exists_blockLUFact_three_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update
+      hr hM AinvGlob A pivotInv hApos hRight hNn hkM
+      tailFull tailMid tailLast h0 hsucc hactive hkSuccM h1 hsuccTail
+      hactiveTail hpivot hpivotTail hsnParent hsnTail hAinv_entry
+      invDiagBound stageInvDiagBound hDom hDiagBound hInitInv
+      (higham13_theorem13_7_pivot_inverse_bound_of_reciprocal
+        stageInvDiagBound (fun k => maxEntryNorm hr (pivotInv k))
+        hReciprocal)
+      hProduct hDiagUpdate
+
+/-- Higham, 2nd ed., Chapter 13, Problem 13.4 / equation (13.23):
+    determinant-nonzero full-flat three-block active-tail product-update
+    witness, using the canonical `nonsingInv` ambient inverse. -/
+theorem
+    higham13_eq13_23_exists_blockLUFact_three_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update_of_det_ne_zero
+    {M r n k : ℕ} (hr : 0 < r) (hM : 0 < M)
+    (A : Fin M → Fin M → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hApos : 0 < maxEntryNorm (Nat.mul_pos hM hr) (blockMatrixFlatFin A))
+    (hdet :
+      Matrix.det (blockMatrixFlatFin A :
+        Matrix (Fin (M * r)) (Fin (M * r)) ℝ) ≠ 0)
+    (hNn : (((M * r : ℕ) : ℝ) ≤ (n : ℝ)))
+    (hkM : k < M)
+    (tailFull : Fin 3 → Fin M)
+    (tailMid : Fin 2 → Fin M)
+    (tailLast : Fin 1 → Fin M)
+    (h0 : tailFull 0 = ⟨k, hkM⟩)
+    (hsucc : ∀ i : Fin 2, tailFull (Fin.succ i) = tailMid i)
+    (hactive : ∀ i : Fin 2, k + 1 ≤ (tailMid i).val)
+    (hkSuccM : k + 1 < M)
+    (h1 : tailMid 0 = ⟨k + 1, hkSuccM⟩)
+    (hsuccTail : ∀ i : Fin 1, tailMid (Fin.succ i) = tailLast i)
+    (hactiveTail : ∀ i : Fin 1, k + 1 + 1 ≤ (tailLast i).val)
+    [Invertible
+      (blockMatrixFirstSplitA11
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))]
+    [Invertible
+      (blockMatrixFirstSplitA22
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull) -
+        blockMatrixFirstSplitA21
+            (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull) *
+          ⅟(blockMatrixFirstSplitA11
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull)) *
+            blockMatrixFirstSplitA12
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))]
+    [Invertible (Matrix.fromBlocks
+      (blockMatrixFirstSplitA11
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+      (blockMatrixFirstSplitA12
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+      (blockMatrixFirstSplitA21
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+      (blockMatrixFirstSplitA22
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull)))]
+    [Invertible
+      (blockMatrixFirstSplitA11
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid))]
+    [Invertible
+      (blockMatrixFirstSplitA22
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid) -
+        blockMatrixFirstSplitA21
+            (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid) *
+          ⅟(blockMatrixFirstSplitA11
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid)) *
+            blockMatrixFirstSplitA12
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid))]
+    (hpivot :
+      pivotInv k =
+        ⅟(blockMatrixFirstSplitA11
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull)))
+    (hpivotTail :
+      pivotInv (k + 1) =
+        ⅟(blockMatrixFirstSplitA11
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid)))
+    (hsnParent : (((1 + 1) * r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hsnTail : ((r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hAinv_entry :
+      ∀ i j : Fin r ⊕ Fin (2 * r),
+        |(⅟(Matrix.fromBlocks
+            (blockMatrixFirstSplitA11
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+            (blockMatrixFirstSplitA12
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+            (blockMatrixFirstSplitA21
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+            (blockMatrixFirstSplitA22
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))) :
+          Matrix (Fin r ⊕ Fin (2 * r))
+            (Fin r ⊕ Fin (2 * r)) ℝ) i j| ≤
+          maxEntryNormRect (Nat.mul_pos hM hr) (Nat.mul_pos hM hr)
+            (nonsingInv (M * r) (blockMatrixFlatFin A)))
+    (invDiagBound : Fin M → ℝ)
+    (stageInvDiagBound : ℕ → Fin M → ℝ)
+    (hDom : IsBlockDiagDomCol M (fun i j => maxEntryNorm hr (A i j)) invDiagBound)
+    (hDiagBound : ∀ j : Fin M, invDiagBound j ≤ maxEntryNorm hr (A j j))
+    (hInitInv : ∀ j : Fin M, stageInvDiagBound 0 j = invDiagBound j)
+    (hPivotInvBound : ∀ k : ℕ, ∀ hk : k < M,
+      maxEntryNorm hr (pivotInv k) * stageInvDiagBound k ⟨k, hk⟩ ≤ 1)
+    (hProduct : ∀ k : ℕ, ∀ hk : k < M, ∀ i j : Fin M,
+      k + 1 ≤ i.val → k + 1 ≤ j.val →
+        maxEntryNorm hr
+          (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i ⟨k, hk⟩ *
+            pivotInv k *
+            higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k ⟨k, hk⟩ j) ≤
+          maxEntryNorm hr
+            (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i ⟨k, hk⟩) *
+          maxEntryNorm hr (pivotInv k) *
+          maxEntryNorm hr
+            (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k ⟨k, hk⟩ j))
+    (hDiagUpdate : SchurStageActiveDiagLowerUpdate13_7
+      (fun k i j => maxEntryNorm hr
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j))
+      stageInvDiagBound
+      (fun k => maxEntryNorm hr (pivotInv k))) :
+    ∃ L U : Fin 3 → Fin 3 → Matrix (Fin r) (Fin r) ℝ,
+      BlockLUFactSpec 3 r
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull) L U ∧
+        blockMaxNorm (Nat.succ_pos 2) hr L *
+            blockMaxNorm (Nat.succ_pos 2) hr U ≤
+          8 * (n : ℝ) *
+            (maxEntryNormRect (Nat.mul_pos hM hr) (Nat.mul_pos hM hr)
+                (blockMatrixFlatFin A) *
+              maxEntryNormRect (Nat.mul_pos hM hr) (Nat.mul_pos hM hr)
+                (nonsingInv (M * r) (blockMatrixFlatFin A))) *
+            maxEntryNormRect (Nat.mul_pos hM hr) (Nat.mul_pos hM hr)
+              (blockMatrixFlatFin A) := by
+  exact
+    higham13_eq13_23_exists_blockLUFact_three_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update
+      hr hM (nonsingInv (M * r) (blockMatrixFlatFin A)) A pivotInv hApos
+      ((isInverse_nonsingInv_of_det_ne_zero (M * r) (blockMatrixFlatFin A) hdet).2)
+      hNn hkM tailFull tailMid tailLast h0 hsucc hactive hkSuccM h1
+      hsuccTail hactiveTail hpivot hpivotTail hsnParent hsnTail hAinv_entry
+      invDiagBound stageInvDiagBound hDom hDiagBound hInitInv hPivotInvBound
+      hProduct hDiagUpdate
+
+/-- Higham, 2nd ed., Chapter 13, Problem 13.4 / equation (13.23):
+    determinant-nonzero reciprocal-table version of the full-flat three-block
+    active-tail product-update witness. -/
+theorem
+    higham13_eq13_23_exists_blockLUFact_three_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update_reciprocal_of_det_ne_zero
+    {M r n k : ℕ} (hr : 0 < r) (hM : 0 < M)
+    (A : Fin M → Fin M → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hApos : 0 < maxEntryNorm (Nat.mul_pos hM hr) (blockMatrixFlatFin A))
+    (hdet :
+      Matrix.det (blockMatrixFlatFin A :
+        Matrix (Fin (M * r)) (Fin (M * r)) ℝ) ≠ 0)
+    (hNn : (((M * r : ℕ) : ℝ) ≤ (n : ℝ)))
+    (hkM : k < M)
+    (tailFull : Fin 3 → Fin M)
+    (tailMid : Fin 2 → Fin M)
+    (tailLast : Fin 1 → Fin M)
+    (h0 : tailFull 0 = ⟨k, hkM⟩)
+    (hsucc : ∀ i : Fin 2, tailFull (Fin.succ i) = tailMid i)
+    (hactive : ∀ i : Fin 2, k + 1 ≤ (tailMid i).val)
+    (hkSuccM : k + 1 < M)
+    (h1 : tailMid 0 = ⟨k + 1, hkSuccM⟩)
+    (hsuccTail : ∀ i : Fin 1, tailMid (Fin.succ i) = tailLast i)
+    (hactiveTail : ∀ i : Fin 1, k + 1 + 1 ≤ (tailLast i).val)
+    [Invertible
+      (blockMatrixFirstSplitA11
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))]
+    [Invertible
+      (blockMatrixFirstSplitA22
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull) -
+        blockMatrixFirstSplitA21
+            (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull) *
+          ⅟(blockMatrixFirstSplitA11
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull)) *
+            blockMatrixFirstSplitA12
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))]
+    [Invertible (Matrix.fromBlocks
+      (blockMatrixFirstSplitA11
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+      (blockMatrixFirstSplitA12
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+      (blockMatrixFirstSplitA21
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+      (blockMatrixFirstSplitA22
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull)))]
+    [Invertible
+      (blockMatrixFirstSplitA11
+        (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid))]
+    [Invertible
+      (blockMatrixFirstSplitA22
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid) -
+        blockMatrixFirstSplitA21
+            (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid) *
+          ⅟(blockMatrixFirstSplitA11
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid)) *
+            blockMatrixFirstSplitA12
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid))]
+    (hpivot :
+      pivotInv k =
+        ⅟(blockMatrixFirstSplitA11
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull)))
+    (hpivotTail :
+      pivotInv (k + 1) =
+        ⅟(blockMatrixFirstSplitA11
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv (k + 1) tailMid)))
+    (hsnParent : (((1 + 1) * r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hsnTail : ((r : ℕ) : ℝ) ≤ (n : ℝ))
+    (hAinv_entry :
+      ∀ i j : Fin r ⊕ Fin (2 * r),
+        |(⅟(Matrix.fromBlocks
+            (blockMatrixFirstSplitA11
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+            (blockMatrixFirstSplitA12
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+            (blockMatrixFirstSplitA21
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))
+            (blockMatrixFirstSplitA22
+              (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull))) :
+          Matrix (Fin r ⊕ Fin (2 * r))
+            (Fin r ⊕ Fin (2 * r)) ℝ) i j| ≤
+          maxEntryNormRect (Nat.mul_pos hM hr) (Nat.mul_pos hM hr)
+            (nonsingInv (M * r) (blockMatrixFlatFin A)))
+    (invDiagBound : Fin M → ℝ)
+    (stageInvDiagBound : ℕ → Fin M → ℝ)
+    (hDom : IsBlockDiagDomCol M (fun i j => maxEntryNorm hr (A i j)) invDiagBound)
+    (hDiagBound : ∀ j : Fin M, invDiagBound j ≤ maxEntryNorm hr (A j j))
+    (hInitInv : ∀ j : Fin M, stageInvDiagBound 0 j = invDiagBound j)
+    (hReciprocal : SchurStageActivePivotInvReciprocal13_7
+      stageInvDiagBound (fun k => maxEntryNorm hr (pivotInv k)))
+    (hProduct : ∀ k : ℕ, ∀ hk : k < M, ∀ i j : Fin M,
+      k + 1 ≤ i.val → k + 1 ≤ j.val →
+        maxEntryNorm hr
+          (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i ⟨k, hk⟩ *
+            pivotInv k *
+            higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k ⟨k, hk⟩ j) ≤
+          maxEntryNorm hr
+            (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i ⟨k, hk⟩) *
+          maxEntryNorm hr (pivotInv k) *
+          maxEntryNorm hr
+            (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k ⟨k, hk⟩ j))
+    (hDiagUpdate : SchurStageActiveDiagLowerUpdate13_7
+      (fun k i j => maxEntryNorm hr
+        (higham13_algorithm13_3_schurStageMatrixBlock A pivotInv k i j))
+      stageInvDiagBound
+      (fun k => maxEntryNorm hr (pivotInv k))) :
+    ∃ L U : Fin 3 → Fin 3 → Matrix (Fin r) (Fin r) ℝ,
+      BlockLUFactSpec 3 r
+          (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tailFull) L U ∧
+        blockMaxNorm (Nat.succ_pos 2) hr L *
+            blockMaxNorm (Nat.succ_pos 2) hr U ≤
+          8 * (n : ℝ) *
+            (maxEntryNormRect (Nat.mul_pos hM hr) (Nat.mul_pos hM hr)
+                (blockMatrixFlatFin A) *
+              maxEntryNormRect (Nat.mul_pos hM hr) (Nat.mul_pos hM hr)
+                (nonsingInv (M * r) (blockMatrixFlatFin A))) *
+            maxEntryNormRect (Nat.mul_pos hM hr) (Nat.mul_pos hM hr)
+              (blockMatrixFlatFin A) := by
+  exact
+    higham13_eq13_23_exists_blockLUFact_three_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update_reciprocal
+      hr hM (nonsingInv (M * r) (blockMatrixFlatFin A)) A pivotInv hApos
+      ((isInverse_nonsingInv_of_det_ne_zero (M * r) (blockMatrixFlatFin A) hdet).2)
+      hNn hkM tailFull tailMid tailLast h0 hsucc hactive hkSuccM h1
+      hsuccTail hactiveTail hpivot hpivotTail hsnParent hsnTail hAinv_entry
+      invDiagBound stageInvDiagBound hDom hDiagBound hInitInv hReciprocal
+      hProduct hDiagUpdate
 
 /-- Higham, 2nd ed., Chapter 13, Problem 13.4 / equation (13.23):
     full-flat two-block active-tail product witness with the `rho <= 2` side

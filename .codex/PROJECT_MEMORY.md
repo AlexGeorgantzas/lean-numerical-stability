@@ -20,6 +20,21 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-07-01 Problem 13.4 three-block active-tail Eq.13.23
+  product-update wrappers: added
+  `higham13_eq13_23_exists_blockLUFact_three_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update`,
+  `higham13_eq13_23_exists_blockLUFact_three_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update_reciprocal`,
+  `higham13_eq13_23_exists_blockLUFact_three_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update_of_det_ne_zero`,
+  and
+  `higham13_eq13_23_exists_blockLUFact_three_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update_reciprocal_of_det_ne_zero`.
+  These specialize the length-three active-tail Eq.13.23 product witness to
+  the full flat Algorithm 13.3 source matrix, derive the `rho <= 2` side
+  condition from existing BDD product-bound/diagonal-update data, accept the
+  source-style active reciprocal table, and optionally derive the ambient
+  canonical `nonsingInv` right-inverse from `det(blockMatrixFlatFin A) != 0`.
+  This is dependency/plumbing progress only: the all-tail source certificate,
+  Schur-complement/source-chain invertibility data, source BDD product/update
+  data, and Theorem 13.6 cited estimates remain open.
 - 2026-07-01 Problem 13.4 tail invertibility representation bridges:
   added `blockMatrixFirstSplitFlat_invertible_of_blockMatrixFlatFin`,
   `blockMatrixFirstSplit_fromBlocks_invertible_of_blockMatrixFirstSplitFlat`,
