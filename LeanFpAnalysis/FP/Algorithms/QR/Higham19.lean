@@ -16702,6 +16702,30 @@ theorem storedSignedSequenceTwiceTrailingFinalClosed_of_sourceClosureData
       fp r p A_hat alpha hdata)
     hcopy
 
+/-- Exact-arithmetic tail-vector loop facts imply the twice-trailing
+final-closure predicate.
+
+This is the exact-model endpoint counterpart of
+`storedSignedSequenceTwiceTrailingSourceClosureData_of_tailVectorEqLoopFacts_exactWithUnitRoundoff`:
+the all-stage tail-vector equalities derive the missing self-dot/source-closure
+data, and exact arithmetic supplies the zero-subtraction convention. -/
+theorem
+    storedSignedSequenceTwiceTrailingFinalClosed_of_tailVectorEqLoopFacts_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hvecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts_exactWithUnitRoundoff
+        u0 hu0 r p A_hat alpha) :
+    storedSignedSequenceTwiceTrailingFinalClosed
+      (FPModel.exactWithUnitRoundoff u0 hu0)
+      (Nat.add_le_add_right (Nat.le_add_left p r) 2) A_hat alpha :=
+  storedSignedSequenceTwiceTrailingFinalClosed_of_sourceClosureData
+    (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha
+    (storedSignedSequenceTwiceTrailingSourceClosureData_of_tailVectorEqLoopFacts_exactWithUnitRoundoff
+      u0 hu0 r p A_hat alpha hvecs)
+    (subtractZeroExact_exactWithUnitRoundoff u0 hu0)
+
 /-- Full-stage source-closure data implies the twice-trailing final-closure
 predicate.
 
@@ -17002,6 +17026,98 @@ theorem
       (FPModel.exactWithUnitRoundoff u0 hu0) r p A A_hat alpha hrows
       hcols hinit hStep hvec0 hself0 hdetFirst hdetTail hvecTail
       hselfTail hfull (subtractZeroExact_exactWithUnitRoundoff u0 hu0)
+
+/-- Exact-arithmetic final-panel bridge from all-stage tail-vector facts.
+
+This composes the exact reflector-vector final-panel bridge with the all-stage
+tail-vector loop package.  The caller supplies only the first two reflector
+vector equalities, the determinant/nonbreakdown fields, and the recursive
+tail-vector loop facts; the first two self-dot fields and all recursive tail
+self-dot/source-closure data are derived internally in the exact roundoff
+model. -/
+theorem
+    storedSignedSequence_final_panel_eq_qrPanel_R_of_reflector_vectors_and_tailVectorEqLoopFacts_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) (r p : Nat)
+    (A : Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hrows : 2 <= r + p + 2)
+    (hcols : 2 <= p + 2)
+    (hinit : A_hat 0 = A)
+    (hStep : forall k (hk : k < p + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep (FPModel.exactWithUnitRoundoff u0 hu0)
+          (r + p + 2) (p + 2) k
+          (householderTrailingActiveVector (r + p + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (Nat.add_le_add_right (Nat.le_add_left p r) 2)))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (r + p + 2)
+            (householderTrailingActiveVector (r + p + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (Nat.add_le_add_right (Nat.le_add_left p r) 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hvec0 :
+      householderTrailingActiveVector (r + p + 2)
+          (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hrows))
+          (fun a =>
+            A_hat 0 a
+              (Fin.mk 0 (lt_of_lt_of_le (Nat.succ_pos 1) hcols)))
+          (alpha 0) =
+        fl_householderNormalizedVector (FPModel.exactWithUnitRoundoff u0 hu0)
+          (Nat.succ_pos (r + p + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A))
+    (hdetFirst :
+      Ne (Matrix.det
+        (qrLeadingBlock A
+          (Nat.succ_le_succ (Nat.zero_le (r + p + 1)))
+          (Nat.succ_pos (p + 1)) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hdetTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (let v0 := fl_householderNormalizedVector
+              (FPModel.exactWithUnitRoundoff u0 hu0)
+              (Nat.succ_pos (r + p + 1))
+              (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+           let S0 := fl_householderStoredPanelStep
+              (FPModel.exactWithUnitRoundoff u0 hu0)
+              (r + p + 2) (p + 2) 0 v0 1 A
+           trailingPanel S0)
+          (Nat.succ_le_succ (Nat.zero_le (r + p)))
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hvecTail :
+      (let v0 := fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0)
+          (Nat.succ_pos (r + p + 1))
+          (panelFirstColumn (Nat.succ_pos (p + 1)) A)
+       let S0 := fl_householderStoredPanelStep
+          (FPModel.exactWithUnitRoundoff u0 hu0)
+          (r + p + 2) (p + 2) 0 v0 1 A
+       householderTrailingActiveVector (r + p + 1) (0 : Fin (r + p + 1))
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0)) (alpha 1) =
+          fl_householderNormalizedVector (FPModel.exactWithUnitRoundoff u0 hu0)
+            (Nat.succ_pos (r + p))
+            (panelFirstColumn (Nat.succ_pos p) (trailingPanel S0))))
+    (htailVecs :
+      storedSignedSequenceTailNormalizedLoopVectorEqFacts_exactWithUnitRoundoff
+        u0 hu0 r p A_hat alpha) :
+    A_hat (p + 2) =
+      fl_householderQRPanel_R (FPModel.exactWithUnitRoundoff u0 hu0)
+        (r + p + 2) (p + 2) A :=
+  storedSignedSequence_final_panel_eq_qrPanel_R_of_reflector_vectors_of_fullStageSourceClosureData_exactWithUnitRoundoff
+    u0 hu0 r p A A_hat alpha hrows hcols hinit hStep hvec0 hdetFirst
+    hdetTail hvecTail
+    (storedSignedSequenceTwiceTrailingFullStageSourceClosureData_of_fullStageNormalizedLoopFacts
+      (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha
+      (storedSignedSequenceFullStageNormalizedLoopFacts_of_tailVectorEqLoopFacts_exactWithUnitRoundoff
+        u0 hu0 r p A_hat alpha htailVecs))
 
 /-- One recursive full-stage final-panel bridge.
 
