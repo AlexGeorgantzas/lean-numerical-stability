@@ -54729,6 +54729,45 @@ theorem higham9_16_wilkinson_source_bound_of_RookPivotGEUTrace_denseLoop
       hsigma htau hn hC)
     hn hn3 hL_bound
 
+/-- **Equation (9.16) / Algorithm 9.2**, absolute-budget rook-pivoting
+bridge.
+
+This is the same rook-pivoting Theorem 9.5 wrapper as the dense-loop bridge,
+but with the lower implementation layer: explicit absolute residual budgets
+for the dense Doolittle run on `PAQ`. -/
+theorem higham9_16_wilkinson_source_bound_of_RookPivotGEUTrace_absBudget
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (sigma tau : Fin n → Fin n)
+    (b : Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn_pos A)
+    (htrace : higham9_16_RookPivotGEUTrace n A U_hat)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hsigma : IsPermutation n sigma)
+    (htau : IsPermutation n tau)
+    (BU BL : Fin n → Fin n → ℝ)
+    (hC : higham9_2_DoolittleDenseLoopAbsBudgetCertificate n
+      (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat fp BU BL)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hL_bound : ∀ i j : Fin n, |L_hat i j| ≤ 1) :
+    let bP : Fin n → ℝ := fun i => b (sigma i)
+    let y_hat := fl_forwardSub fp n L_hat bP
+    let z_hat := fl_backSub fp n U_hat y_hat
+    let x_hat : Fin n → ℝ :=
+      fun j => z_hat ((Equiv.ofBijective tau htau).symm j)
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (infNorm ΔA ≤
+        (↑n) ^ 2 * gamma fp (3 * n) *
+          (2 : ℝ) ^ (n - 1) * infNorm A) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_16_wilkinson_source_bound_of_RookPivotGEUTrace fp n hn_pos
+    A L_hat U_hat sigma tau b hAmax htrace hU_diag
+    (higham9_2_completePermutedAbsBudgetCertificate_to_CompletePermutedLUBackwardError
+      hsigma htau hn hC)
+    hn hn3 hL_bound
+
 /-- **Equation (9.16) / Algorithm 9.2**, rectangular rounded-stage
 rook-pivoting bridge.
 
@@ -54848,6 +54887,382 @@ theorem higham9_16_wilkinson_source_bound_of_RookPivotGEUTrace_rectRoundedLoop
     (higham9_2_rectRoundedLoopStageTrace fp (Nat.le_refl n)
       (higham9_2_rowColPermutedMatrix A sigma tau))
     hn hn3 hU_budget_le hL_budget_le hL_bound
+
+/-- **Equation (9.16) / Algorithm 9.2**, literal-source-budget rook-pivoting
+bridge.
+
+This exposes source-level rounded Doolittle hypotheses for the row/column
+permuted matrix `PAQ` directly at the rook-pivoting Wilkinson source bound. -/
+theorem higham9_16_wilkinson_source_bound_of_RookPivotGEUTrace_literalSourceBudgets
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (sigma tau : Fin n → Fin n)
+    (b : Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn_pos A)
+    (htrace : higham9_16_RookPivotGEUTrace n A U_hat)
+    (hL_diag : ∀ i : Fin n, L_hat i i = 1)
+    (hL_upper_zero : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hU_lower_zero : ∀ i j : Fin n, j.val < i.val → U_hat i j = 0)
+    (hU_entry_eq : ∀ k j : Fin n, k.val ≤ j.val →
+      U_hat k j =
+        higham9_2_flDoolittleUEntry fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat k j)
+    (hL_entry_eq : ∀ i k : Fin n, k.val < i.val →
+      L_hat i k =
+        higham9_2_flDoolittleLEntry fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hsigma : IsPermutation n sigma)
+    (htau : IsPermutation n tau)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      doolittleUAbsBudget fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat k j ≤
+        gamma fp n * |U_hat k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      doolittleLAbsBudget fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k ≤
+        gamma fp n * |L_hat i k * U_hat k k|)
+    (hL_bound : ∀ i j : Fin n, |L_hat i j| ≤ 1) :
+    let bP : Fin n → ℝ := fun i => b (sigma i)
+    let y_hat := fl_forwardSub fp n L_hat bP
+    let z_hat := fl_backSub fp n U_hat y_hat
+    let x_hat : Fin n → ℝ :=
+      fun j => z_hat ((Equiv.ofBijective tau htau).symm j)
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (infNorm ΔA ≤
+        (↑n) ^ 2 * gamma fp (3 * n) *
+          (2 : ℝ) ^ (n - 1) * infNorm A) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_16_wilkinson_source_bound_of_RookPivotGEUTrace_absBudget
+    fp n hn_pos A L_hat U_hat sigma tau b hAmax htrace hU_diag
+    hsigma htau
+    (doolittleUAbsBudget fp n
+      (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat)
+    (doolittleLAbsBudget fp n
+      (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat)
+    (higham9_2_absBudgetCertificate_of_literal_doolittle_source_budgets
+      hL_diag hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq
+      hU_diag hn hU_budget_le hL_budget_le)
+    hn hn3 hL_bound
+
+/-- **Equation (9.16) / Algorithm 9.2**, component-dominance rook-pivoting
+bridge.
+
+This discharges the dense Doolittle absolute-budget certificate from visible
+componentwise work/product and rounded-numerator dominance hypotheses over
+`PAQ`. -/
+theorem higham9_16_wilkinson_source_bound_of_RookPivotGEUTrace_componentDominance
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (sigma tau : Fin n → Fin n)
+    (b : Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn_pos A)
+    (htrace : higham9_16_RookPivotGEUTrace n A U_hat)
+    (hL_diag : ∀ i : Fin n, L_hat i i = 1)
+    (hL_upper_zero : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hU_lower_zero : ∀ i j : Fin n, j.val < i.val → U_hat i j = 0)
+    (hU_entry_eq : ∀ k j : Fin n, k.val ≤ j.val →
+      U_hat k j =
+        higham9_2_flDoolittleUEntry fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat k j)
+    (hL_entry_eq : ∀ i k : Fin n, k.val < i.val →
+      L_hat i k =
+        higham9_2_flDoolittleLEntry fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hsigma : IsPermutation n sigma)
+    (htau : IsPermutation n tau)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hU_work_le : ∀ k j : Fin n, k.val ≤ j.val →
+      doolittleUWorkAbs fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat k j ≤
+        |U_hat k j|)
+    (hU_prod_le : ∀ k j : Fin n, k.val ≤ j.val →
+      doolittleUProductAbs fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat k j ≤
+        |U_hat k j|)
+    (hL_work_le : ∀ i k : Fin n, k.val < i.val →
+      doolittleLWorkAbs fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k ≤
+        |L_hat i k * U_hat k k|)
+    (hL_prod_le : ∀ i k : Fin n, k.val < i.val →
+      doolittleLProductAbs fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k ≤
+        |L_hat i k * U_hat k k|)
+    (hL_num_le : ∀ i k : Fin n, k.val < i.val →
+      doolittleLNumeratorAbs fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k ≤
+        |L_hat i k * U_hat k k|)
+    (hL_bound : ∀ i j : Fin n, |L_hat i j| ≤ 1) :
+    let bP : Fin n → ℝ := fun i => b (sigma i)
+    let y_hat := fl_forwardSub fp n L_hat bP
+    let z_hat := fl_backSub fp n U_hat y_hat
+    let x_hat : Fin n → ℝ :=
+      fun j => z_hat ((Equiv.ofBijective tau htau).symm j)
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (infNorm ΔA ≤
+        (↑n) ^ 2 * gamma fp (3 * n) *
+          (2 : ℝ) ^ (n - 1) * infNorm A) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_16_wilkinson_source_bound_of_RookPivotGEUTrace_absBudget
+    fp n hn_pos A L_hat U_hat sigma tau b hAmax htrace hU_diag
+    hsigma htau
+    (doolittleUAbsBudget fp n
+      (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat)
+    (doolittleLAbsBudget fp n
+      (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat)
+    (higham9_2_absBudgetCertificate_of_literal_doolittle_component_dominance
+      hL_diag hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq
+      hU_diag hn hU_work_le hU_prod_le hL_work_le hL_prod_le hL_num_le)
+    hn hn3 hL_bound
+
+/-- **Equation (9.16) / Algorithm 9.2**, exact-product margin rook-pivoting
+bridge. -/
+theorem higham9_16_wilkinson_source_bound_of_RookPivotGEUTrace_exactProductMargins
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (sigma tau : Fin n → Fin n)
+    (b : Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn_pos A)
+    (htrace : higham9_16_RookPivotGEUTrace n A U_hat)
+    (hL_diag : ∀ i : Fin n, L_hat i i = 1)
+    (hL_upper_zero : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hU_lower_zero : ∀ i j : Fin n, j.val < i.val → U_hat i j = 0)
+    (hU_entry_eq : ∀ k j : Fin n, k.val ≤ j.val →
+      U_hat k j =
+        higham9_2_flDoolittleUEntry fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat k j)
+    (hL_entry_eq : ∀ i k : Fin n, k.val < i.val →
+      L_hat i k =
+        higham9_2_flDoolittleLEntry fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hsigma : IsPermutation n sigma)
+    (htau : IsPermutation n tau)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hU_margin : ∀ k j : Fin n, k.val ≤ j.val →
+      |higham9_2_rowColPermutedMatrix A sigma tau k j| + (1 + fp.u) *
+          doolittleUProductAbs fp n
+            (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat k j ≤
+        |U_hat k j|)
+    (hL_margin : ∀ i k : Fin n, k.val < i.val →
+      |higham9_2_rowColPermutedMatrix A sigma tau i k| + (1 + fp.u) *
+          doolittleLProductAbs fp n
+            (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k ≤
+        |L_hat i k * U_hat k k|)
+    (hL_num_le : ∀ i k : Fin n, k.val < i.val →
+      doolittleLNumeratorAbs fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k ≤
+        |L_hat i k * U_hat k k|)
+    (hL_bound : ∀ i j : Fin n, |L_hat i j| ≤ 1) :
+    let bP : Fin n → ℝ := fun i => b (sigma i)
+    let y_hat := fl_forwardSub fp n L_hat bP
+    let z_hat := fl_backSub fp n U_hat y_hat
+    let x_hat : Fin n → ℝ :=
+      fun j => z_hat ((Equiv.ofBijective tau htau).symm j)
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (infNorm ΔA ≤
+        (↑n) ^ 2 * gamma fp (3 * n) *
+          (2 : ℝ) ^ (n - 1) * infNorm A) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_16_wilkinson_source_bound_of_RookPivotGEUTrace_absBudget
+    fp n hn_pos A L_hat U_hat sigma tau b hAmax htrace hU_diag
+    hsigma htau
+    (doolittleUAbsBudget fp n
+      (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat)
+    (doolittleLAbsBudget fp n
+      (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat)
+    (higham9_2_absBudgetCertificate_of_literal_doolittle_exact_product_margins
+      hL_diag hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq
+      hU_diag hn hU_margin hL_margin hL_num_le)
+    hn hn3 hL_bound
+
+/-- **Equation (9.16) / Algorithm 9.2**, exact-product numerator-margin
+rook-pivoting bridge. -/
+theorem higham9_16_wilkinson_source_bound_of_RookPivotGEUTrace_exactProductNumeratorMargins
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (sigma tau : Fin n → Fin n)
+    (b : Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn_pos A)
+    (htrace : higham9_16_RookPivotGEUTrace n A U_hat)
+    (hL_diag : ∀ i : Fin n, L_hat i i = 1)
+    (hL_upper_zero : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hU_lower_zero : ∀ i j : Fin n, j.val < i.val → U_hat i j = 0)
+    (hU_entry_eq : ∀ k j : Fin n, k.val ≤ j.val →
+      U_hat k j =
+        higham9_2_flDoolittleUEntry fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat k j)
+    (hL_entry_eq : ∀ i k : Fin n, k.val < i.val →
+      L_hat i k =
+        higham9_2_flDoolittleLEntry fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hsigma : IsPermutation n sigma)
+    (htau : IsPermutation n tau)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hU_margin : ∀ k j : Fin n, k.val ≤ j.val →
+      |higham9_2_rowColPermutedMatrix A sigma tau k j| + (1 + fp.u) *
+          doolittleUProductAbs fp n
+            (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat k j ≤
+        |U_hat k j|)
+    (hL_margin : ∀ i k : Fin n, k.val < i.val →
+      |higham9_2_rowColPermutedMatrix A sigma tau i k| + (1 + fp.u) *
+          doolittleLProductAbs fp n
+            (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k ≤
+        |L_hat i k * U_hat k k|)
+    (hL_num_margin : ∀ i k : Fin n, k.val < i.val →
+      (|higham9_2_rowColPermutedMatrix A sigma tau i k| +
+          doolittleLProductAbs fp n
+            (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k) +
+        (gamma fp k.val *
+            (|higham9_2_rowColPermutedMatrix A sigma tau i k| + (1 + fp.u) *
+              doolittleLProductAbs fp n
+                (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k) +
+          fp.u * doolittleLProductAbs fp n
+            (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k) ≤
+        |L_hat i k * U_hat k k|)
+    (hL_bound : ∀ i j : Fin n, |L_hat i j| ≤ 1) :
+    let bP : Fin n → ℝ := fun i => b (sigma i)
+    let y_hat := fl_forwardSub fp n L_hat bP
+    let z_hat := fl_backSub fp n U_hat y_hat
+    let x_hat : Fin n → ℝ :=
+      fun j => z_hat ((Equiv.ofBijective tau htau).symm j)
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (infNorm ΔA ≤
+        (↑n) ^ 2 * gamma fp (3 * n) *
+          (2 : ℝ) ^ (n - 1) * infNorm A) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_16_wilkinson_source_bound_of_RookPivotGEUTrace_absBudget
+    fp n hn_pos A L_hat U_hat sigma tau b hAmax htrace hU_diag
+    hsigma htau
+    (doolittleUAbsBudget fp n
+      (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat)
+    (doolittleLAbsBudget fp n
+      (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat)
+    (higham9_2_absBudgetCertificate_of_literal_doolittle_exact_product_numerator_margins
+      hL_diag hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq
+      hU_diag hn hU_margin hL_margin hL_num_margin)
+    hn hn3 hL_bound
+
+/-- **Equation (9.16) / Algorithm 9.2**, exact-target-gap rook-pivoting
+bridge. -/
+theorem higham9_16_wilkinson_source_bound_of_RookPivotGEUTrace_exactTargetGaps
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (sigma tau : Fin n → Fin n)
+    (b : Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn_pos A)
+    (htrace : higham9_16_RookPivotGEUTrace n A U_hat)
+    (hL_diag : ∀ i : Fin n, L_hat i i = 1)
+    (hL_upper_zero : ∀ i j : Fin n, i.val < j.val → L_hat i j = 0)
+    (hU_lower_zero : ∀ i j : Fin n, j.val < i.val → U_hat i j = 0)
+    (hU_entry_eq : ∀ k j : Fin n, k.val ≤ j.val →
+      U_hat k j =
+        higham9_2_flDoolittleUEntry fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat k j)
+    (hL_entry_eq : ∀ i k : Fin n, k.val < i.val →
+      L_hat i k =
+        higham9_2_flDoolittleLEntry fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hsigma : IsPermutation n sigma)
+    (htau : IsPermutation n tau)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hU_gap : ∀ k j : Fin n, k.val ≤ j.val →
+      |higham9_2_rowColPermutedMatrix A sigma tau k j| + (1 + fp.u) *
+          doolittleUProductAbs fp n
+            (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat k j +
+        doolittleUExactTargetResidualBudget fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat k j ≤
+        |doolittleUExactTarget n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat k j|)
+    (hL_gap : ∀ i k : Fin n, k.val < i.val →
+      |higham9_2_rowColPermutedMatrix A sigma tau i k| + (1 + fp.u) *
+          doolittleLProductAbs fp n
+            (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k +
+        doolittleLExactTargetEntryResidualBudget fp n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k ≤
+        |doolittleLExactTarget n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k|)
+    (hL_num_gap : ∀ i k : Fin n, k.val < i.val →
+      ((|higham9_2_rowColPermutedMatrix A sigma tau i k| +
+          doolittleLProductAbs fp n
+            (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k) +
+        doolittleLExactTargetNumeratorResidualBudget
+          fp n (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k) +
+        doolittleLExactTargetEntryResidualBudget
+          fp n (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k ≤
+        |doolittleLExactTarget n
+          (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat i k|)
+    (hL_bound : ∀ i j : Fin n, |L_hat i j| ≤ 1) :
+    let bP : Fin n → ℝ := fun i => b (sigma i)
+    let y_hat := fl_forwardSub fp n L_hat bP
+    let z_hat := fl_backSub fp n U_hat y_hat
+    let x_hat : Fin n → ℝ :=
+      fun j => z_hat ((Equiv.ofBijective tau htau).symm j)
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (infNorm ΔA ≤
+        (↑n) ^ 2 * gamma fp (3 * n) *
+          (2 : ℝ) ^ (n - 1) * infNorm A) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_16_wilkinson_source_bound_of_RookPivotGEUTrace_absBudget
+    fp n hn_pos A L_hat U_hat sigma tau b hAmax htrace hU_diag
+    hsigma htau
+    (doolittleUAbsBudget fp n
+      (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat)
+    (doolittleLAbsBudget fp n
+      (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat)
+    (higham9_2_absBudgetCertificate_of_literal_doolittle_exact_target_gaps
+      hL_diag hL_upper_zero hU_lower_zero hU_entry_eq hL_entry_eq
+      hU_diag hn hU_gap hL_gap hL_num_gap)
+    hn hn3 hL_bound
+
+/-- **Equation (9.16) / Theorem 9.5**, exact complete-permuted certificate
+rook-pivoting bridge.
+
+This variant replaces the supplied complete-permuted backward-error
+certificate by an exact `PAQ = LU` certificate, weakened to `gamma_n` only to
+reuse the common rook source-bound surface. -/
+theorem higham9_16_wilkinson_source_bound_of_RookPivotGEUTrace_LUFactSpec
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (sigma tau : Fin n → Fin n)
+    (b : Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn_pos A)
+    (htrace : higham9_16_RookPivotGEUTrace n A U_hat)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hLU : higham9_2_CompletePermutedLUFactSpec n A L_hat U_hat sigma tau)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hL_bound : ∀ i j : Fin n, |L_hat i j| ≤ 1) :
+    let bP : Fin n → ℝ := fun i => b (sigma i)
+    let y_hat := fl_forwardSub fp n L_hat bP
+    let z_hat := fl_backSub fp n U_hat y_hat
+    let x_hat : Fin n → ℝ :=
+      fun j => z_hat ((Equiv.ofBijective tau hLU.1).symm j)
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (infNorm ΔA ≤
+        (↑n) ^ 2 * gamma fp (3 * n) *
+          (2 : ℝ) ^ (n - 1) * infNorm A) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_16_wilkinson_source_bound_of_RookPivotGEUTrace
+    fp n hn_pos A L_hat U_hat sigma tau b hAmax htrace hU_diag
+    (higham9_2_completePermutedLUFactSpec_to_CompletePermutedLUBackwardError_gamma
+      hn hLU)
+    hn hn3 hL_bound
 
 /-- **Theorem 9.5 / equation (9.16)**, trace-derived rook-pivoting
 exact-certificate source bound at Foster's sharp RHS.
