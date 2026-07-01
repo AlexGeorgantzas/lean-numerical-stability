@@ -20,6 +20,15 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-07-01 Problem 13.4 three-block active-tail product witnesses: added
+  `higham13_eq13_22_exists_blockLUFact_three_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa`
+  and
+  `higham13_eq13_23_exists_blockLUFact_three_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa`.
+  They route the closed three-block global-tableau active-tail source chain
+  through the Eq.13.22/Eq.13.23 `BlockLUFactSpec` product APIs, removing a
+  finite recursive-tail product plumbing gap.  The all-tail source certificate,
+  tail invertibility propagation, Eq.13.23 `rho <= 2`/BDD data, and Theorem
+  13.6 cited estimates remain open.
 - 2026-07-01 Problem 13.4 three-block global-tableau active-tail constructor:
   added
   `Higham13Eq1322GlobalTableauSourceChain.three_from_matrix_stage_history_active_tail_exact_kappa`.
