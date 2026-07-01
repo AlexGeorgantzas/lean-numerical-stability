@@ -22,15 +22,18 @@ end-to-end stability rebuild is tagged as
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
 - 2026-07-01 Problem 13.4 global-tableau Eq.13.23 product-update
   source-chain method: added
-  `Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_right_inverse_of_product_bound_diag_update`.
+  `Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_right_inverse_of_product_bound_diag_update`
+  and
+  `Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_right_inverse_of_product_bound_diag_update_reciprocal`.
   It is the fixed-ambient source-chain-level wrapper for the full flat
   Algorithm 13.3 matrix: from any completed
   `Higham13Eq1322GlobalTableauSourceChain`, an ambient right inverse, and the
   product-bound/diagonal-update BDD data, it derives `rho <= 2` internally and
-  returns the Eq.13.23 `BlockLUFactSpec` product witness.  This removes the raw
-  growth-factor premise at the global-tableau source-chain boundary, but it
-  does not construct the all-tail source chain or prove the inverse-entry/
-  source comparison.
+  returns the Eq.13.23 `BlockLUFactSpec` product witness; the reciprocal
+  variant accepts the Theorem 13.7-style reciprocal pivot table.  This removes
+  the raw growth-factor premise at the global-tableau source-chain boundary,
+  but it does not construct the all-tail source chain or prove the inverse-
+  entry/source comparison.
 - 2026-07-01 Problem 13.4 derived active-tail Eq.13.23 product-update
   wrappers: added
   `higham13_eq13_23_exists_blockLUFact_active_tail_product_from_global_tableau_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa_of_product_bound_diag_update`,
