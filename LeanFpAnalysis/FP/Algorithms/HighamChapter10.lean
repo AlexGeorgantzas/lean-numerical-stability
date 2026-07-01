@@ -615,6 +615,48 @@ theorem higham10_7_failure_no_factorization (n : ℕ)
     quadForm_add_neg_of_perturbation n H E lam t hlam_dir hE hlt
   exact no_choleskyFactSpec_of_neg_quadForm n (fun i j => H i j + E i j) x hxneg
 
+/-- **Theorem 10.7 foundation** (Higham §10.1, proof of Theorem 10.7): the
+all-ones rank-one matrix `e eᵀ` has operator 2-norm at most `n`, in the
+repository's vector-action certificate form `‖(e eᵀ)x‖₂ ≤ n ‖x‖₂`.  This is
+the estimate that converts the componentwise scaled backward-error bound
+`|E| ≤ c · e eᵀ` into the normwise hypothesis of the Theorem 10.7
+success/failure thresholds. -/
+theorem higham10_7_onesMatrix_opNorm2Le (n : ℕ) :
+    opNorm2Le (fun _ _ : Fin n => (1 : ℝ)) n := by
+  intro x
+  have hmv : matMulVec n (fun _ _ => (1:ℝ)) x =
+      fun _ : Fin n => ∑ j : Fin n, x j := by
+    funext i
+    unfold matMulVec
+    exact Finset.sum_congr rfl fun j _ => one_mul (x j)
+  rw [hmv]
+  have hcs : (∑ j : Fin n, x j) ^ 2 ≤ (n : ℝ) * vecNorm2Sq x := by
+    have h := Finset.sum_mul_sq_le_sq_mul_sq Finset.univ
+      (fun _ : Fin n => (1:ℝ)) x
+    have h1 : ∑ j : Fin n, (1:ℝ) * x j = ∑ j : Fin n, x j :=
+      Finset.sum_congr rfl fun j _ => one_mul (x j)
+    have h2 : ∑ _j : Fin n, ((1:ℝ)) ^ 2 = (n : ℝ) := by simp
+    rw [h1, h2] at h
+    exact h
+  have hn0 : (0:ℝ) ≤ (n : ℝ) := Nat.cast_nonneg n
+  unfold vecNorm2 vecNorm2Sq
+  have hconst : ∑ _i : Fin n, (∑ j : Fin n, x j) ^ 2 =
+      (n : ℝ) * (∑ j : Fin n, x j) ^ 2 := by simp
+  rw [hconst]
+  have hbound : (n : ℝ) * (∑ j : Fin n, x j) ^ 2 ≤
+      (n : ℝ) ^ 2 * ∑ i : Fin n, x i ^ 2 := by
+    have := mul_le_mul_of_nonneg_left hcs hn0
+    calc (n : ℝ) * (∑ j : Fin n, x j) ^ 2
+        ≤ (n : ℝ) * ((n : ℝ) * vecNorm2Sq x) := this
+      _ = (n : ℝ) ^ 2 * ∑ i : Fin n, x i ^ 2 := by
+          unfold vecNorm2Sq; ring
+  calc Real.sqrt ((n : ℝ) * (∑ j : Fin n, x j) ^ 2)
+      ≤ Real.sqrt ((n : ℝ) ^ 2 * ∑ i : Fin n, x i ^ 2) :=
+        Real.sqrt_le_sqrt hbound
+    _ = (n : ℝ) * Real.sqrt (∑ i : Fin n, x i ^ 2) := by
+        rw [Real.sqrt_mul (sq_nonneg _), Real.sqrt_sq hn0]
+
+
 /-! ## §10.2 Sensitivity of the Cholesky Factorization -/
 
 /-- **Theorem 10.8**, Sun's normwise perturbation interface. -/
