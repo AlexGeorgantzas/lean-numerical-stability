@@ -52834,6 +52834,41 @@ theorem higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_denseLoop
       hsigma htau hn hC)
     hn hn3 hL_bound
 
+/-- **Equation (9.14) / Algorithm 9.2**, dense-loop complete-pivoting bridge
+at Wilkinson's sharp RHS in dimensions one and two. -/
+theorem higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_denseLoop_of_le_two
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (hle : n ≤ 2)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (sigma tau : Fin n → Fin n)
+    (b : Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn_pos A)
+    (htrace : higham9_8_CompletePivotGECPUTrace n A U_hat)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hsigma : IsPermutation n sigma)
+    (htau : IsPermutation n tau)
+    (hC : higham9_2_DoolittleDenseLoopCertificate n
+      (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat fp)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hL_bound : ∀ i j : Fin n, |L_hat i j| ≤ 1) :
+    let bP : Fin n → ℝ := fun i => b (sigma i)
+    let y_hat := fl_forwardSub fp n L_hat bP
+    let z_hat := fl_backSub fp n U_hat y_hat
+    let x_hat : Fin n → ℝ :=
+      fun j => z_hat ((Equiv.ofBijective tau htau).symm j)
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (infNorm ΔA ≤
+        (↑n) ^ 2 * gamma fp (3 * n) *
+          higham9_14_completePivotWilkinsonBound n * infNorm A) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_of_le_two
+    fp n hn_pos hle A L_hat U_hat sigma tau b hAmax htrace hU_diag
+    (higham9_2_completePermutedDenseLoopCertificate_to_CompletePermutedLUBackwardError
+      hsigma htau hn hC)
+    hn hn3 hL_bound
+
 /-- **Equation (9.14) / Algorithm 9.2**, absolute-budget complete-pivoting
 bridge at Wilkinson's sharp RHS, conditional on the supplied per-trace
 Wilkinson theorem. -/
@@ -52872,6 +52907,42 @@ theorem higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_absBudget
       (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
   higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace fp n hn_pos
     A L_hat U_hat sigma tau b hAmax htrace hsharp hU_diag
+    (higham9_2_completePermutedAbsBudgetCertificate_to_CompletePermutedLUBackwardError
+      hsigma htau hn hC)
+    hn hn3 hL_bound
+
+/-- **Equation (9.14) / Algorithm 9.2**, absolute-budget complete-pivoting
+bridge at Wilkinson's sharp RHS in dimensions one and two. -/
+theorem higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_absBudget_of_le_two
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (hle : n ≤ 2)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (sigma tau : Fin n → Fin n)
+    (b : Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn_pos A)
+    (htrace : higham9_8_CompletePivotGECPUTrace n A U_hat)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hsigma : IsPermutation n sigma)
+    (htau : IsPermutation n tau)
+    (BU BL : Fin n → Fin n → ℝ)
+    (hC : higham9_2_DoolittleDenseLoopAbsBudgetCertificate n
+      (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat fp BU BL)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hL_bound : ∀ i j : Fin n, |L_hat i j| ≤ 1) :
+    let bP : Fin n → ℝ := fun i => b (sigma i)
+    let y_hat := fl_forwardSub fp n L_hat bP
+    let z_hat := fl_backSub fp n U_hat y_hat
+    let x_hat : Fin n → ℝ :=
+      fun j => z_hat ((Equiv.ofBijective tau htau).symm j)
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (infNorm ΔA ≤
+        (↑n) ^ 2 * gamma fp (3 * n) *
+          higham9_14_completePivotWilkinsonBound n * infNorm A) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_14_wilkinson_source_bound_of_CompletePivotGECPUTrace_of_le_two
+    fp n hn_pos hle A L_hat U_hat sigma tau b hAmax htrace hU_diag
     (higham9_2_completePermutedAbsBudgetCertificate_to_CompletePermutedLUBackwardError
       hsigma htau hn hC)
     hn hn3 hL_bound
@@ -56301,6 +56372,41 @@ theorem higham9_16_foster_source_bound_of_RookPivotGEUTrace_denseLoop
       hsigma htau hn hC)
     hn hn3 hL_bound
 
+/-- **Equation (9.16) / Algorithm 9.2**, dense-loop rook-pivoting bridge at
+Foster's sharp RHS in dimensions one and two. -/
+theorem higham9_16_foster_source_bound_of_RookPivotGEUTrace_denseLoop_of_le_two
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (hle : n ≤ 2)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (sigma tau : Fin n → Fin n)
+    (b : Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn_pos A)
+    (htrace : higham9_16_RookPivotGEUTrace n A U_hat)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hsigma : IsPermutation n sigma)
+    (htau : IsPermutation n tau)
+    (hC : higham9_2_DoolittleDenseLoopCertificate n
+      (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat fp)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hL_bound : ∀ i j : Fin n, |L_hat i j| ≤ 1) :
+    let bP : Fin n → ℝ := fun i => b (sigma i)
+    let y_hat := fl_forwardSub fp n L_hat bP
+    let z_hat := fl_backSub fp n U_hat y_hat
+    let x_hat : Fin n → ℝ :=
+      fun j => z_hat ((Equiv.ofBijective tau htau).symm j)
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (infNorm ΔA ≤
+        (↑n) ^ 2 * gamma fp (3 * n) *
+          higham9_16_rookPivotFosterBound n * infNorm A) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_16_foster_source_bound_of_RookPivotGEUTrace_of_le_two
+    fp n hn_pos hle A L_hat U_hat sigma tau b hAmax htrace hU_diag
+    (higham9_2_completePermutedDenseLoopCertificate_to_CompletePermutedLUBackwardError
+      hsigma htau hn hC)
+    hn hn3 hL_bound
+
 /-- **Equation (9.16) / Algorithm 9.2**, absolute-budget rook-pivoting bridge
 at Foster's sharp RHS, conditional on the supplied per-trace Foster theorem. -/
 theorem higham9_16_foster_source_bound_of_RookPivotGEUTrace_absBudget
@@ -56338,6 +56444,42 @@ theorem higham9_16_foster_source_bound_of_RookPivotGEUTrace_absBudget
       (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
   higham9_16_foster_source_bound_of_RookPivotGEUTrace fp n hn_pos
     A L_hat U_hat sigma tau b hAmax htrace hsharp hU_diag
+    (higham9_2_completePermutedAbsBudgetCertificate_to_CompletePermutedLUBackwardError
+      hsigma htau hn hC)
+    hn hn3 hL_bound
+
+/-- **Equation (9.16) / Algorithm 9.2**, absolute-budget rook-pivoting bridge
+at Foster's sharp RHS in dimensions one and two. -/
+theorem higham9_16_foster_source_bound_of_RookPivotGEUTrace_absBudget_of_le_two
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (hle : n ≤ 2)
+    (A L_hat U_hat : Fin n → Fin n → ℝ)
+    (sigma tau : Fin n → Fin n)
+    (b : Fin n → ℝ)
+    (hAmax : 0 < maxEntryNorm hn_pos A)
+    (htrace : higham9_16_RookPivotGEUTrace n A U_hat)
+    (hU_diag : ∀ i : Fin n, U_hat i i ≠ 0)
+    (hsigma : IsPermutation n sigma)
+    (htau : IsPermutation n tau)
+    (BU BL : Fin n → Fin n → ℝ)
+    (hC : higham9_2_DoolittleDenseLoopAbsBudgetCertificate n
+      (higham9_2_rowColPermutedMatrix A sigma tau) L_hat U_hat fp BU BL)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n))
+    (hL_bound : ∀ i j : Fin n, |L_hat i j| ≤ 1) :
+    let bP : Fin n → ℝ := fun i => b (sigma i)
+    let y_hat := fl_forwardSub fp n L_hat bP
+    let z_hat := fl_backSub fp n U_hat y_hat
+    let x_hat : Fin n → ℝ :=
+      fun j => z_hat ((Equiv.ofBijective tau htau).symm j)
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (infNorm ΔA ≤
+        (↑n) ^ 2 * gamma fp (3 * n) *
+          higham9_16_rookPivotFosterBound n * infNorm A) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham9_16_foster_source_bound_of_RookPivotGEUTrace_of_le_two
+    fp n hn_pos hle A L_hat U_hat sigma tau b hAmax htrace hU_diag
     (higham9_2_completePermutedAbsBudgetCertificate_to_CompletePermutedLUBackwardError
       hsigma htau hn hC)
     hn hn3 hL_bound
