@@ -7168,6 +7168,25 @@ noncomputable def undetResidualHigham {m n : ℕ}
   fun i => b i - rectMatMulVec A y i
 
 /-- Higham, 2nd ed., Chapter 21, Section 21.2, Theorem 21.3:
+    source-residual identity for any feasible perturbation in the
+    underdetermined normwise backward-error model.  If `y` is an exact
+    minimum-norm solution of `(A + DeltaA)y = b + Deltab`, then the source
+    residual `b - A y` equals `DeltaA*y - Deltab`. -/
+theorem UndetNormwiseBackwardErrorFeasible.source_residual_eq
+    {m n : ℕ}
+    {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ} {y : Fin n → ℝ}
+    {DeltaA : Fin m → Fin n → ℝ} {Deltab : Fin m → ℝ}
+    (hfeas : UndetNormwiseBackwardErrorFeasible A b y DeltaA Deltab) :
+    undetResidualHigham A b y =
+      fun i => rectMatMulVec DeltaA y i - Deltab i := by
+  ext i
+  have hi := congrFun hfeas.system_eq i
+  unfold undetResidualHigham rectMatMulVec at *
+  simp_rw [add_mul] at hi
+  rw [Finset.sum_add_distrib] at hi
+  linarith
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.2, Theorem 21.3:
     source-facing model of `I - y y^+` in the nonzero-`y` branch.  This reuses
     the Chapter 20 rank-one complement-projector infrastructure. -/
 noncomputable abbrev undetApproxComplementProjector {n : ℕ}
