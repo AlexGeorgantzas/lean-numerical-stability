@@ -7333,6 +7333,46 @@ theorem undetNormwiseBackwardErrorNonzeroFormulaRHS_pos_of_sigma_pos
     exact mul_nonneg hleft_factor hres
   exact add_pos_of_nonneg_of_pos hleft hsigma_sq_pos
 
+/-- Higham, 2nd ed., Chapter 21, Section 21.2, Theorem 21.3:
+    in the degenerate `sigma = 0` specialization of the nonzero Sun--Sun
+    scalar formula, the displayed right-hand side reduces to the residual
+    scalar `phi` branch.  This does not assert the full singular-value
+    equality with `eta_F(y)`. -/
+theorem undetNormwiseBackwardErrorNonzeroFormulaRHS_eq_phi_of_sigma_zero
+    {m n : ℕ} {theta : ℝ} (htheta : 0 ≤ theta)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) {y : Fin n → ℝ}
+    (hy : y ≠ 0) :
+    undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y 0 =
+      lsNormwiseBackwardErrorPhi theta (undetResidualHigham A b y) y := by
+  apply (sq_eq_sq₀
+    (undetNormwiseBackwardErrorNonzeroFormulaRHS_nonneg theta A b y 0)
+    (lsNormwiseBackwardErrorPhi_nonneg theta (undetResidualHigham A b y) y)).mp
+  rw [undetNormwiseBackwardErrorNonzeroFormulaRHS_sq]
+  rw [lsNormwiseBackwardErrorPhi_eq_theta_mul_norm_div_sqrt_den htheta hy]
+  have hy_sq_ne : vecNorm2Sq y ≠ 0 :=
+    higham21_vecNorm2Sq_ne_zero_of_ne_zero hy
+  have hden_pos : 0 < 1 + theta ^ 2 * vecNorm2Sq y :=
+    lsNormwiseBackwardErrorMu_den_pos theta y
+  rw [div_pow, mul_pow, Real.sq_sqrt (le_of_lt hden_pos), vecNorm2_sq]
+  field_simp [hy_sq_ne, ne_of_gt hden_pos]
+  ring
+
+/-- Higham, 2nd ed., Chapter 21, Section 21.2, Theorem 21.3:
+    lower-bound dependency for the `sigma = 0` specialization of the nonzero
+    scalar formula.  Every feasible perturbation has cost at least this
+    degenerate right-hand side, via the residual `phi` lower bound. -/
+theorem UndetNormwiseBackwardErrorFeasible.nonzeroFormulaRHS_le_costF_of_sigma_zero
+    {m n : ℕ} {theta : ℝ} (htheta : 0 ≤ theta)
+    {A : Fin m → Fin n → ℝ} {b : Fin m → ℝ} {y : Fin n → ℝ}
+    {DeltaA : Fin m → Fin n → ℝ} {Deltab : Fin m → ℝ}
+    (hy : y ≠ 0)
+    (hfeas : UndetNormwiseBackwardErrorFeasible A b y DeltaA Deltab) :
+    undetNormwiseBackwardErrorNonzeroFormulaRHS theta A b y 0 ≤
+      lsNormwiseBackwardErrorCostF theta DeltaA Deltab := by
+  rw [undetNormwiseBackwardErrorNonzeroFormulaRHS_eq_phi_of_sigma_zero
+    htheta A b hy]
+  exact hfeas.phi_le_costF htheta hy
+
 /-- Lower-bound handoff for the nonzero branch of Higham Chapter 21,
     Theorem 21.3: once every feasible perturbation has cost at least the
     displayed nonzero RHS, the RHS is below the infimum model `eta_F(y)`.

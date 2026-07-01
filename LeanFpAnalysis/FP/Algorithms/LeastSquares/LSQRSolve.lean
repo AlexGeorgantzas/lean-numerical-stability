@@ -8304,6 +8304,36 @@ theorem lsNormwiseBackwardErrorEigenvalueFormulaValue_eq_sqrt_of_lambdaStar_neg
     not_le_of_gt hlambda
   simp [lsNormwiseBackwardErrorEigenvalueFormulaValue, hnot]
 
+/-- Source-data nonnegative-`lambda_*` branch of the eigenvalue expression:
+    with `r = b - A*y`, the Theorem 20.5 eigenvalue RHS is the scalar `phi`
+    branch. -/
+theorem lsNormwiseBackwardErrorEigenvalueFormulaRHS_eq_phi_of_lambdaStar_nonneg
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (hlambda :
+      0 ≤ lsNormwiseBackwardErrorLambdaStar theta A (lsResidualHigham A b y) y) :
+    lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y =
+      lsNormwiseBackwardErrorPhi theta (lsResidualHigham A b y) y := by
+  simpa [lsNormwiseBackwardErrorEigenvalueFormulaRHS] using
+    lsNormwiseBackwardErrorEigenvalueFormulaValue_eq_phi_of_lambdaStar_nonneg
+      theta A (lsResidualHigham A b y) y hlambda
+
+/-- Source-data negative-`lambda_*` branch of the eigenvalue expression from
+    Theorem 20.5. -/
+theorem lsNormwiseBackwardErrorEigenvalueFormulaRHS_eq_sqrt_of_lambdaStar_neg
+    {m n : ℕ} (theta : ℝ) (A : Fin (m + 1) → Fin n → ℝ)
+    (b : Fin (m + 1) → ℝ) (y : Fin n → ℝ)
+    (hlambda :
+      lsNormwiseBackwardErrorLambdaStar theta A (lsResidualHigham A b y) y < 0) :
+    lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y =
+      Real.sqrt
+        ((vecNorm2Sq (lsResidualHigham A b y) / vecNorm2Sq y) *
+            lsNormwiseBackwardErrorMu theta y +
+          lsNormwiseBackwardErrorLambdaStar theta A (lsResidualHigham A b y) y) := by
+  simpa [lsNormwiseBackwardErrorEigenvalueFormulaRHS] using
+    lsNormwiseBackwardErrorEigenvalueFormulaValue_eq_sqrt_of_lambdaStar_neg
+      theta A (lsResidualHigham A b y) y hlambda
+
 /-- The source scalar `phi` from (20.21) is nonnegative. -/
 theorem lsNormwiseBackwardErrorPhi_nonneg {m n : ℕ} (theta : ℝ)
     (r : Fin m → ℝ) (y : Fin n → ℝ) :
@@ -9176,6 +9206,109 @@ theorem lsNormwiseBackwardErrorEtaF_le_of_mem {m n : ℕ} (theta : ℝ)
     lsNormwiseBackwardErrorEtaF theta A b y ≤ eta := by
   unfold lsNormwiseBackwardErrorEtaF
   exact csInf_le (lsNormwiseBackwardErrorValuesF.bddBelow theta A b y) heta
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.5 discussion after (20.20):
+    matrix-only attainable costs for the limiting `theta = infinity` convention,
+    where right-hand-side perturbations are forbidden by setting
+    `Delta b = 0`.  This records the body-text limiting model; it is not an
+    end-of-chapter exercise statement. -/
+noncomputable def lsNormwiseBackwardErrorMatrixOnlyValuesF {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) : Set ℝ :=
+  {eta | ∃ DeltaA : Fin m → Fin n → ℝ,
+    LSNormwiseBackwardErrorFeasible A b y DeltaA (0 : Fin m → ℝ) ∧
+      eta = frobNormRect DeltaA}
+
+/-- Infimum model for the matrix-only limiting branch of (20.20), corresponding
+    to the source convention `theta = infinity` and `Delta b = 0`. -/
+noncomputable def lsNormwiseBackwardErrorMatrixOnlyEtaF {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) : ℝ :=
+  sInf (lsNormwiseBackwardErrorMatrixOnlyValuesF A b y)
+
+theorem lsNormwiseBackwardErrorMatrixOnlyValuesF.mem_of_feasible {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    (DeltaA : Fin m → Fin n → ℝ)
+    (hfeas : LSNormwiseBackwardErrorFeasible A b y DeltaA (0 : Fin m → ℝ)) :
+    frobNormRect DeltaA ∈
+      lsNormwiseBackwardErrorMatrixOnlyValuesF A b y := by
+  exact ⟨DeltaA, hfeas, rfl⟩
+
+/-- Matrix-only attainable values are ordinary finite-`theta` attainable values
+    for every finite weight, because the weighted block cost reduces to
+    `||DeltaA||_F` when `Delta b = 0`. -/
+theorem lsNormwiseBackwardErrorMatrixOnlyValuesF.mem_valuesF {m n : ℕ}
+    (theta : ℝ) (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (y : Fin n → ℝ) {eta : ℝ}
+    (heta : eta ∈ lsNormwiseBackwardErrorMatrixOnlyValuesF A b y) :
+    eta ∈ lsNormwiseBackwardErrorValuesF theta A b y := by
+  rcases heta with ⟨DeltaA, hfeas, rfl⟩
+  simpa [lsNormwiseBackwardErrorCostF_eq_frobNormRect_of_deltab_zero] using
+    lsNormwiseBackwardErrorValuesF.mem_of_feasible theta A b y DeltaA
+      (0 : Fin m → ℝ) hfeas
+
+/-- The matrix-only limiting attainable-cost set is nonempty: choosing
+    `DeltaA = -A` makes the perturbed matrix zero, so every candidate `y` is an
+    exact least-squares minimizer for the unperturbed right-hand side. -/
+theorem lsNormwiseBackwardErrorMatrixOnlyValuesF.nonempty {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    (lsNormwiseBackwardErrorMatrixOnlyValuesF A b y).Nonempty := by
+  refine ⟨frobNormRect (fun i j => -A i j), ?_⟩
+  apply lsNormwiseBackwardErrorMatrixOnlyValuesF.mem_of_feasible
+  intro z
+  simp [lsObjective, lsResidual, rectMatMulVec, vecNorm2Sq]
+
+/-- The matrix-only limiting attainable-cost set is bounded below by zero. -/
+theorem lsNormwiseBackwardErrorMatrixOnlyValuesF.bddBelow {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    BddBelow (lsNormwiseBackwardErrorMatrixOnlyValuesF A b y) := by
+  refine ⟨0, ?_⟩
+  intro eta heta
+  rcases heta with ⟨DeltaA, _hfeas, rfl⟩
+  exact frobNormRect_nonneg DeltaA
+
+theorem lsNormwiseBackwardErrorMatrixOnlyValuesF.nonneg_of_mem {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    {eta : ℝ} (heta : eta ∈ lsNormwiseBackwardErrorMatrixOnlyValuesF A b y) :
+    0 ≤ eta := by
+  rcases heta with ⟨DeltaA, _hfeas, rfl⟩
+  exact frobNormRect_nonneg DeltaA
+
+/-- The matrix-only limiting infimum model is nonnegative. -/
+theorem lsNormwiseBackwardErrorMatrixOnlyEtaF_nonneg {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ) :
+    0 ≤ lsNormwiseBackwardErrorMatrixOnlyEtaF A b y := by
+  unfold lsNormwiseBackwardErrorMatrixOnlyEtaF
+  apply Real.sInf_nonneg
+  intro eta heta
+  exact lsNormwiseBackwardErrorMatrixOnlyValuesF.nonneg_of_mem A b y heta
+
+/-- The matrix-only limiting infimum is no larger than any matrix-only
+    attainable perturbation norm. -/
+theorem lsNormwiseBackwardErrorMatrixOnlyEtaF_le_of_mem {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    {eta : ℝ} (heta : eta ∈ lsNormwiseBackwardErrorMatrixOnlyValuesF A b y) :
+    lsNormwiseBackwardErrorMatrixOnlyEtaF A b y ≤ eta := by
+  unfold lsNormwiseBackwardErrorMatrixOnlyEtaF
+  exact csInf_le
+    (lsNormwiseBackwardErrorMatrixOnlyValuesF.bddBelow A b y) heta
+
+/-- Any matrix-only feasible perturbation gives an explicit upper bound for
+    the limiting `theta = infinity` model. -/
+theorem lsNormwiseBackwardErrorMatrixOnlyEtaF_le_frobNorm_of_feasible {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    (DeltaA : Fin m → Fin n → ℝ)
+    (hfeas : LSNormwiseBackwardErrorFeasible A b y DeltaA (0 : Fin m → ℝ)) :
+    lsNormwiseBackwardErrorMatrixOnlyEtaF A b y ≤ frobNormRect DeltaA :=
+  lsNormwiseBackwardErrorMatrixOnlyEtaF_le_of_mem A b y
+    (lsNormwiseBackwardErrorMatrixOnlyValuesF.mem_of_feasible A b y DeltaA hfeas)
+
+/-- Every matrix-only attainable value is an upper bound for the finite-`theta`
+    `eta_F` infimum as well. -/
+theorem lsNormwiseBackwardErrorEtaF_le_of_matrixOnly_mem {m n : ℕ}
+    (theta : ℝ) (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (y : Fin n → ℝ)
+    {eta : ℝ} (heta : eta ∈ lsNormwiseBackwardErrorMatrixOnlyValuesF A b y) :
+    lsNormwiseBackwardErrorEtaF theta A b y ≤ eta :=
+  lsNormwiseBackwardErrorEtaF_le_of_mem theta A b y
+    (lsNormwiseBackwardErrorMatrixOnlyValuesF.mem_valuesF theta A b y heta)
 
 /-- Any feasible perturbation in (20.20) gives an explicit upper bound for the
     infimum model `eta_F(y)`. -/
@@ -20650,6 +20783,56 @@ theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_theta_not_
   exact
     lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_theta_not_isLeastSquaresMinimizer_of_formulaMatrixRowRank_eq_card
       htheta A b hy hnot hrank
+
+/-- Transfer form for the finite-positive WKS theorem: once the remaining
+    spectral equivalence between the printed SVD/minimum RHS (20.21) and the
+    Theorem 20.5 eigenvalue RHS is supplied, the already proved finite-positive
+    equality immediately yields the eigenvalue formulation of `eta_F(y)`. -/
+theorem lsNormwiseBackwardErrorEtaF_eq_eigenvalueFormulaRHS_and_pos_of_formulaRHS_eq_eigenvalueFormulaRHS_of_formulaMatrixRowRank_eq_card
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hnot : ¬ IsLeastSquaresMinimizer A b y)
+    (hrank :
+      lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+        (lsResidualHigham A b y) y = m + 1)
+    (hspectral :
+      lsNormwiseBackwardErrorFormulaRHS theta A b y =
+        lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y) :
+    lsNormwiseBackwardErrorEtaF theta A b y =
+        lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y ∧
+      0 < lsNormwiseBackwardErrorEtaF theta A b y ∧
+      0 < lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y := by
+  have hclosed :=
+    lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_theta_not_isLeastSquaresMinimizer_of_formulaMatrixRowRank_eq_card
+      htheta A b hy hnot hrank
+  exact ⟨hclosed.1.trans hspectral, hclosed.2.1, by
+    rw [← hspectral]
+    exact hclosed.2.2⟩
+
+/-- Source-left-panel transfer form for the finite-positive WKS theorem.  A
+    later proof of the spectral equivalence between the (20.21) SVD/minimum RHS
+    and the Theorem 20.5 eigenvalue RHS can reuse the closed left-panel
+    row-rank equality without reopening the perturbation construction. -/
+theorem lsNormwiseBackwardErrorEtaF_eq_eigenvalueFormulaRHS_and_pos_of_formulaRHS_eq_eigenvalueFormulaRHS_of_left_panel_rowRank_eq_card
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hnot : ¬ IsLeastSquaresMinimizer A b y)
+    (hA : lsRealRectRowRank A = m + 1)
+    (hspectral :
+      lsNormwiseBackwardErrorFormulaRHS theta A b y =
+        lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y) :
+    lsNormwiseBackwardErrorEtaF theta A b y =
+        lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y ∧
+      0 < lsNormwiseBackwardErrorEtaF theta A b y ∧
+      0 < lsNormwiseBackwardErrorEigenvalueFormulaRHS theta A b y := by
+  have hclosed :=
+    lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_theta_not_isLeastSquaresMinimizer_of_left_panel_rowRank_eq_card
+      htheta A b hy hnot hA
+  exact ⟨hclosed.1.trans hspectral, hclosed.2.1, by
+    rw [← hspectral]
+    exact hclosed.2.2⟩
 
 /-- Positive finite-`theta` WKS branch from the concrete rank-one
     source-block certificate.  This replaces the generic upper-inequality
