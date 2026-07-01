@@ -5002,6 +5002,70 @@ theorem fl_householderNormalizedVector_self_dot_exactWithUnitRoundoff_zero_cons_
   exact fl_householderNormalizedVector_self_dot_exactWithUnitRoundoff
     u0 hu0 hn x hx
 
+/-- Under exact arithmetic, the computed normalized Householder vector has the
+source beta-one value for `householderBetaSpec`.
+
+This is the beta-form of
+`fl_householderNormalizedVector_self_dot_exactWithUnitRoundoff`: later stored
+panel obligations use `householderBetaSpec`, so the exact self-dot result is
+also exposed in that API. -/
+theorem householderBetaSpec_fl_householderNormalizedVector_exactWithUnitRoundoff_eq_one
+    (u0 : Real) (hu0 : 0 <= u0) {n : Nat} (hn : 0 < n)
+    (x : Fin n -> Real) (hx : x ≠ 0) :
+    householderBetaSpec n
+        (fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0) hn x) = 1 := by
+  exact
+    householderBetaSpec_eq_one_of_inner_self_eq_two n
+      (fl_householderNormalizedVector
+        (FPModel.exactWithUnitRoundoff u0 hu0) hn x)
+      (fl_householderNormalizedVector_self_dot_exactWithUnitRoundoff
+        u0 hu0 hn x hx)
+
+/-- Exact-arithmetic beta-one after adding two leading zeroes.
+
+This is the full pivot-2 beta counterpart of the double-zero self-dot theorem
+above. -/
+theorem
+    householderBetaSpec_fl_householderNormalizedVector_exactWithUnitRoundoff_zero_cons_zero_cons_eq_one
+    (u0 : Real) (hu0 : 0 <= u0) {n : Nat} (hn : 0 < n)
+    (x : Fin n -> Real) (hx : x ≠ 0) :
+    householderBetaSpec (n + 2)
+        ((Fin.cases 0 (Fin.cases 0
+          (fl_householderNormalizedVector
+            (FPModel.exactWithUnitRoundoff u0 hu0) hn x))) :
+          Fin (n + 2) -> Real) = 1 := by
+  exact
+    householderBetaSpec_eq_one_of_inner_self_eq_two (n + 2)
+      ((Fin.cases 0 (Fin.cases 0
+        (fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0) hn x))) :
+        Fin (n + 2) -> Real)
+      (fl_householderNormalizedVector_self_dot_exactWithUnitRoundoff_zero_cons_zero_cons
+        u0 hu0 hn x hx)
+
+/-- Exact-arithmetic beta-one after adding three leading zeroes.
+
+This is the full pivot-3 beta counterpart of the triple-zero self-dot theorem
+above. -/
+theorem
+    householderBetaSpec_fl_householderNormalizedVector_exactWithUnitRoundoff_zero_cons_zero_cons_zero_cons_eq_one
+    (u0 : Real) (hu0 : 0 <= u0) {n : Nat} (hn : 0 < n)
+    (x : Fin n -> Real) (hx : x ≠ 0) :
+    householderBetaSpec (n + 3)
+        ((Fin.cases 0 (Fin.cases 0 (Fin.cases 0
+          (fl_householderNormalizedVector
+            (FPModel.exactWithUnitRoundoff u0 hu0) hn x)))) :
+          Fin (n + 3) -> Real) = 1 := by
+  exact
+    householderBetaSpec_eq_one_of_inner_self_eq_two (n + 3)
+      ((Fin.cases 0 (Fin.cases 0 (Fin.cases 0
+        (fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0) hn x)))) :
+        Fin (n + 3) -> Real)
+      (fl_householderNormalizedVector_self_dot_exactWithUnitRoundoff_zero_cons_zero_cons_zero_cons
+        u0 hu0 hn x hx)
+
 /-- Exact-arithmetic handoff from Higham's normalized beta-one compact
 Householder update to the repository's unnormalized `householderBetaSpec`
 compact update.
