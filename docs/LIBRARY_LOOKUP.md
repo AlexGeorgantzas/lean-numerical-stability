@@ -3532,6 +3532,10 @@ Source-facing Chapter 10 wrappers:
 - `fl_sub_fold_local_factors`
 - `fl_chol_offdiag_solve_form`
 - `fl_chol_diag_solve_form`
+- `fl_cholPivot`
+- `fl_cholesky_backward_error`
+- `higham10_3_fl_cholesky_certificate`
+- `higham10_3_fl_cholesky_backward_error`
 - `higham10_8_sun_normwise_perturbation`
 - `higham10_8_sun_componentwise_perturbation`
 - `higham10_9_PivotedCholeskySpec`
