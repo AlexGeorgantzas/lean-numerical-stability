@@ -59826,6 +59826,63 @@ theorem higham9_tracePivotingGrowthValues_rook_le_fosterBound_of_trace_bound
   higham9_16_rookPivotingUTraceGrowthValues_le_fosterBound_of_trace_bound
     hsharp (by simpa [higham9_tracePivotingGrowthValues] using hr)
 
+/-- **Growth-factor source family / equation (9.14)**, generic trace-family
+boundedness at Wilkinson's displayed RHS in dimensions one and two. -/
+theorem higham9_tracePivotingGrowthValues_bddAbove_complete_wilkinsonBound_of_le_two
+    {n : ℕ} (hn : 0 < n) (hle : n ≤ 2) :
+    BddAbove (higham9_tracePivotingGrowthValues
+        higham9_TracePivotingGrowthKind.completePivoting n) := by
+  refine ⟨higham9_14_completePivotWilkinsonBound n, ?_⟩
+  intro r hr
+  exact higham9_tracePivotingGrowthValues_complete_le_wilkinsonBound_of_le_two
+    hn hle hr
+
+/-- **Growth-factor source family / equation (9.14)**, generic trace-family
+boundedness consumer for Wilkinson's sharp complete-pivoting product bound. -/
+theorem higham9_tracePivotingGrowthValues_bddAbove_complete_wilkinsonBound_of_trace_bound
+    {n : ℕ}
+    (hsharp :
+      ∀ (hn : 0 < n) (A U : Fin n → Fin n → ℝ)
+        (hApos : 0 < maxEntryNorm hn A),
+        higham9_8_CompletePivotGECPUTrace n A U →
+          growthFactorEntry hn A U hApos ≤
+            higham9_14_completePivotWilkinsonBound n) :
+    BddAbove (higham9_tracePivotingGrowthValues
+        higham9_TracePivotingGrowthKind.completePivoting n) := by
+  refine ⟨higham9_14_completePivotWilkinsonBound n, ?_⟩
+  intro r hr
+  exact
+    higham9_tracePivotingGrowthValues_complete_le_wilkinsonBound_of_trace_bound
+      hsharp hr
+
+/-- **Growth-factor source family / equation (9.16)**, generic trace-family
+boundedness at Foster's displayed RHS in dimensions one and two. -/
+theorem higham9_tracePivotingGrowthValues_bddAbove_rook_fosterBound_of_le_two
+    {n : ℕ} (hn : 0 < n) (hle : n ≤ 2) :
+    BddAbove (higham9_tracePivotingGrowthValues
+        higham9_TracePivotingGrowthKind.rookPivoting n) := by
+  refine ⟨higham9_16_rookPivotFosterBound n, ?_⟩
+  intro r hr
+  exact higham9_tracePivotingGrowthValues_rook_le_fosterBound_of_le_two
+    hn hle hr
+
+/-- **Growth-factor source family / equation (9.16)**, generic trace-family
+boundedness consumer for Foster's sharp rook-pivoting product bound. -/
+theorem higham9_tracePivotingGrowthValues_bddAbove_rook_fosterBound_of_trace_bound
+    {n : ℕ}
+    (hsharp :
+      ∀ (hn : 0 < n) (A U : Fin n → Fin n → ℝ)
+        (hApos : 0 < maxEntryNorm hn A),
+        higham9_16_RookPivotGEUTrace n A U →
+          growthFactorEntry hn A U hApos ≤
+            higham9_16_rookPivotFosterBound n) :
+    BddAbove (higham9_tracePivotingGrowthValues
+        higham9_TracePivotingGrowthKind.rookPivoting n) := by
+  refine ⟨higham9_16_rookPivotFosterBound n, ?_⟩
+  intro r hr
+  exact higham9_tracePivotingGrowthValues_rook_le_fosterBound_of_trace_bound
+    hsharp hr
+
 /-- **Growth-factor source family**, the indexed recursive pivoting trace
 growth families are bounded above by the elementary `2^(n-1)` bound. -/
 theorem higham9_tracePivotingGrowthValues_bddAbove

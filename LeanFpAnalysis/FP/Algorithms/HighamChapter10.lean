@@ -441,6 +441,50 @@ theorem higham10_4_cholesky_solve_backward_error (fp : FPModel) (n : ℕ)
       (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
   cholesky_solve_backward_error fp n A R_hat b hR_diag hChol hn1 hn3
 
+/-- **Theorem 10.5 for the concrete Algorithm 10.2 factor**: Demmel's `dd^T`
+bound with `d_i` the computed factor's column 2-norms, chained end-to-end
+from the concrete `fl_cholesky` certificate — no assumed certificate or
+Cauchy-Schwarz hypothesis remains. -/
+theorem higham10_5_fl_cholesky_demmel_bound (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ)
+    (hsym : ∀ i j : Fin n, A i j = A j i)
+    (hn1 : gammaValid fp (n + 1))
+    (hγlt : gamma fp (n + 1) < 1)
+    (hpiv : ∀ j : Fin n, 0 ≤ fl_cholPivot fp n A j)
+    (hdz : ∀ j : Fin n, fl_cholesky fp n A j j ≠ 0) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤ gamma fp (n + 1) / (1 - gamma fp (n + 1)) *
+        (colNorm n (fl_cholesky fp n A) i *
+         colNorm n (fl_cholesky fp n A) j)) ∧
+      (∀ i j, ∑ k : Fin n, fl_cholesky fp n A k i * fl_cholesky fp n A k j =
+        A i j + ΔA i j) :=
+  cholesky_demmel_bound_colNorm n A (fl_cholesky fp n A) (gamma fp (n + 1))
+    (gamma_nonneg fp hn1) hγlt
+    (fl_cholesky_backward_error fp n A hsym hn1 hpiv hdz)
+
+/-- **Theorem 10.4 / equation (10.6) for the concrete Algorithm 10.2
+factor**: factorization plus the two triangular solves on the computed
+factor gives `(A + ΔA)x̂ = b` with the absorbed `γ_{3n+1}` componentwise
+bound, chained end-to-end from the concrete `fl_cholesky` certificate. -/
+theorem higham10_4_fl_cholesky_solve_backward_error (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (hsym : ∀ i j : Fin n, A i j = A j i)
+    (hn1 : gammaValid fp (n + 1))
+    (hn3 : gammaValid fp (3 * n + 1))
+    (hpiv : ∀ j : Fin n, 0 ≤ fl_cholPivot fp n A j)
+    (hdz : ∀ j : Fin n, fl_cholesky fp n A j j ≠ 0) :
+    let R_hat := fl_cholesky fp n A
+    let R_hatT := fun i j : Fin n => R_hat j i
+    let y_hat := fl_forwardSub fp n R_hatT b
+    let x_hat := fl_backSub fp n R_hat y_hat
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤ gamma fp (3 * n + 1) *
+        ∑ k : Fin n, |R_hat k i| * |R_hat k j|) ∧
+      (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) :=
+  higham10_4_cholesky_solve_backward_error fp n A (fl_cholesky fp n A) b hdz
+    (fl_cholesky_backward_error fp n A hsym hn1 hpiv hdz) hn1 hn3
+
+
 /-- **Theorem 10.5**: Demmel's column-norm `dd^T` backward-error bound,
 in the repository's certificate form.  The source proof's Cauchy-Schwarz and
 diagonal-scaling estimate is supplied as `hCS`. -/
@@ -455,6 +499,26 @@ theorem higham10_5_demmel_bound (n : ℕ)
       (∀ i j, |ΔA i j| ≤ ε / (1 - ε) * (d i * d j)) ∧
       (∀ i j, ∑ k : Fin n, R_hat k i * R_hat k j = A i j + ΔA i j) :=
   cholesky_demmel_bound n A R_hat d hd hCS ε hε hε_lt hChol
+
+/-- **Theorem 10.5 / equation (10.8)**, closed form: with the computed-factor
+column 2-norms `d_i = ‖R̂(:,i)‖₂ = √(∑_k R̂_{ki}²)`, the backward error satisfies
+`|ΔA_{ij}| ≤ γ_{n+1}/(1-γ_{n+1}) · d_i d_j`.
+
+Unlike `higham10_5_demmel_bound`, the Cauchy-Schwarz estimate is *proved*
+(`colNorm_cauchy_schwarz`), so this is a genuine corollary of the Theorem 10.3
+backward-error certificate — it assumes no analysis step beyond that certificate
+and `γ_{n+1} < 1`. -/
+theorem higham10_5_demmel_bound_colNorm (fp : FPModel) (n : ℕ)
+    (A R_hat : Fin n → Fin n → ℝ)
+    (hn1 : gammaValid fp (n + 1))
+    (hγ_lt : gamma fp (n + 1) < 1)
+    (hChol : higham10_2_CholeskyBackwardError n A R_hat (gamma fp (n + 1))) :
+    ∃ ΔA : Fin n → Fin n → ℝ,
+      (∀ i j, |ΔA i j| ≤ gamma fp (n + 1) / (1 - gamma fp (n + 1)) *
+        (colNorm n R_hat i * colNorm n R_hat j)) ∧
+      (∀ i j, ∑ k : Fin n, R_hat k i * R_hat k j = A i j + ΔA i j) :=
+  cholesky_demmel_bound_colNorm n A R_hat (gamma fp (n + 1))
+    (gamma_nonneg fp hn1) hγ_lt hChol
 
 /-- **Equation (10.9)** source-shaped statement for van der Sluis scaling:
 the scaled condition number is bounded by `n` times the best diagonal scaling
@@ -550,6 +614,48 @@ theorem higham10_7_failure_no_factorization (n : ℕ)
   obtain ⟨x, hx, hxneg⟩ :=
     quadForm_add_neg_of_perturbation n H E lam t hlam_dir hE hlt
   exact no_choleskyFactSpec_of_neg_quadForm n (fun i j => H i j + E i j) x hxneg
+
+/-- **Theorem 10.7 foundation** (Higham §10.1, proof of Theorem 10.7): the
+all-ones rank-one matrix `e eᵀ` has operator 2-norm at most `n`, in the
+repository's vector-action certificate form `‖(e eᵀ)x‖₂ ≤ n ‖x‖₂`.  This is
+the estimate that converts the componentwise scaled backward-error bound
+`|E| ≤ c · e eᵀ` into the normwise hypothesis of the Theorem 10.7
+success/failure thresholds. -/
+theorem higham10_7_onesMatrix_opNorm2Le (n : ℕ) :
+    opNorm2Le (fun _ _ : Fin n => (1 : ℝ)) n := by
+  intro x
+  have hmv : matMulVec n (fun _ _ => (1:ℝ)) x =
+      fun _ : Fin n => ∑ j : Fin n, x j := by
+    funext i
+    unfold matMulVec
+    exact Finset.sum_congr rfl fun j _ => one_mul (x j)
+  rw [hmv]
+  have hcs : (∑ j : Fin n, x j) ^ 2 ≤ (n : ℝ) * vecNorm2Sq x := by
+    have h := Finset.sum_mul_sq_le_sq_mul_sq Finset.univ
+      (fun _ : Fin n => (1:ℝ)) x
+    have h1 : ∑ j : Fin n, (1:ℝ) * x j = ∑ j : Fin n, x j :=
+      Finset.sum_congr rfl fun j _ => one_mul (x j)
+    have h2 : ∑ _j : Fin n, ((1:ℝ)) ^ 2 = (n : ℝ) := by simp
+    rw [h1, h2] at h
+    exact h
+  have hn0 : (0:ℝ) ≤ (n : ℝ) := Nat.cast_nonneg n
+  unfold vecNorm2 vecNorm2Sq
+  have hconst : ∑ _i : Fin n, (∑ j : Fin n, x j) ^ 2 =
+      (n : ℝ) * (∑ j : Fin n, x j) ^ 2 := by simp
+  rw [hconst]
+  have hbound : (n : ℝ) * (∑ j : Fin n, x j) ^ 2 ≤
+      (n : ℝ) ^ 2 * ∑ i : Fin n, x i ^ 2 := by
+    have := mul_le_mul_of_nonneg_left hcs hn0
+    calc (n : ℝ) * (∑ j : Fin n, x j) ^ 2
+        ≤ (n : ℝ) * ((n : ℝ) * vecNorm2Sq x) := this
+      _ = (n : ℝ) ^ 2 * ∑ i : Fin n, x i ^ 2 := by
+          unfold vecNorm2Sq; ring
+  calc Real.sqrt ((n : ℝ) * (∑ j : Fin n, x j) ^ 2)
+      ≤ Real.sqrt ((n : ℝ) ^ 2 * ∑ i : Fin n, x i ^ 2) :=
+        Real.sqrt_le_sqrt hbound
+    _ = (n : ℝ) * Real.sqrt (∑ i : Fin n, x i ^ 2) := by
+        rw [Real.sqrt_mul (sq_nonneg _), Real.sqrt_sq hn0]
+
 
 /-! ## §10.2 Sensitivity of the Cholesky Factorization -/
 
@@ -776,6 +882,34 @@ vector, equivalently the symmetric part is SPD. -/
 abbrev higham10_4_IsNonsymPosDef (n : ℕ)
     (A : Fin n → Fin n → ℝ) : Prop :=
   IsNonsymPosDef n A
+
+/-- **Section 10.4 prose**: leading principal submatrices of a matrix with
+positive definite symmetric part are again in that class. -/
+theorem higham10_4_nonsym_pd_leading_principal (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (hA : higham10_4_IsNonsymPosDef n A)
+    (k : ℕ) (hk : k ≤ n) :
+    higham10_4_IsNonsymPosDef k
+      (fun i j => A ⟨i.val, by omega⟩ ⟨j.val, by omega⟩) :=
+  nonsymPosDef_leading_principal hA k hk
+
+/-- **Section 10.4 prose**, nonsingularity form: a matrix with positive
+definite symmetric part has trivial kernel — `A x ≠ 0` for every `x ≠ 0`.
+Combined with `higham10_4_nonsym_pd_leading_principal` this closes the
+"nonsingular leading principal submatrices" claim in exact arithmetic. -/
+theorem higham10_4_nonsym_pd_mulVec_ne_zero (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (hA : higham10_4_IsNonsymPosDef n A)
+    (x : Fin n → ℝ) (hx : ∃ i, x i ≠ 0) :
+    ∃ i : Fin n, (∑ j : Fin n, A i j * x j) ≠ 0 :=
+  nonsymPosDef_mulVec_ne_zero hA x hx
+
+/-- **Section 10.4 prose** (Higham p. 209): unpivoted Gaussian elimination
+on a matrix with positive definite symmetric part runs to completion with a
+positive pivot at every stage, via the Schur-complement closure
+`nonsym_pd_first_ge_schur` of the class. -/
+theorem higham10_4_nonsym_pd_ge_positive_pivots (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (hA : higham10_4_IsNonsymPosDef n A) :
+    nonsymPDGEPivotsPos n A :=
+  nonsym_pd_unpivoted_ge_positive_pivots n A hA
 
 /-- **Equation (10.29)** setup: `A = A_S + A_K`, symmetric and skew-symmetric
 parts. -/
