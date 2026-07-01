@@ -4861,6 +4861,87 @@ theorem householderTrailingActiveVector_betaSpec_eq_one_of_self_dot
     householderBetaSpec_eq_one_of_inner_self_eq_two n
       (householderTrailingActiveVector n p x alpha) hself
 
+/-- Exact left-to-right addition over `Fin.foldl` is the initial value plus the
+source finite sum.  This is the small arithmetic support fact needed to expose
+the exact dot product hidden inside the compact Householder update. -/
+theorem fin_foldl_add_eq_add_sum (n : Nat) (s : Real)
+    (v : Fin n -> Real) :
+    Fin.foldl n (fun acc i => acc + v i) s =
+      s + ((Finset.univ : Finset (Fin n)).sum (fun i => v i)) := by
+  induction n with
+  | zero =>
+      simp
+  | succ n ih =>
+      rw [Fin.foldl_succ_last, ih]
+      simp [Fin.sum_univ_castSucc]
+      ring
+
+/-- Under the repository's exact arithmetic model, the sequential dot-product
+primitive is the mathematical source dot product. -/
+theorem fl_dotProduct_exactWithUnitRoundoff_eq_sum
+    (u0 : Real) (hu0 : 0 <= u0) :
+    forall (n : Nat) (x y : Fin n -> Real),
+      fl_dotProduct (FPModel.exactWithUnitRoundoff u0 hu0) n x y =
+        (Finset.univ : Finset (Fin n)).sum (fun i => x i * y i)
+  | 0, _x, _y => by
+      simp [fl_dotProduct]
+  | n + 1, x, y => by
+      rw [fl_dotProduct]
+      change Fin.foldl n
+        (fun acc i => acc + (x i.succ * y i.succ)) (x 0 * y 0) =
+          (Finset.univ : Finset (Fin (n + 1))).sum
+            (fun i => x i * y i)
+      rw [fin_foldl_add_eq_add_sum]
+      rw [Fin.sum_univ_succ]
+
+/-- Exact-arithmetic handoff from Higham's normalized beta-one compact
+Householder update to the repository's unnormalized `householderBetaSpec`
+compact update.
+
+This does not close the rounded stored-loop bottleneck.  It records the
+source-faithful algebraic bridge that becomes available once the route is
+restricted to `FPModel.exactWithUnitRoundoff`: normalization by
+`sqrt(beta)` and beta-one application produce the same compact update as the
+unnormalized vector with `householderBetaSpec`. -/
+theorem fl_householderApplyCompact_normalized_betaSpec_eq_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) (n : Nat)
+    (v b : Fin n -> Real) :
+    fl_householderApplyCompact (FPModel.exactWithUnitRoundoff u0 hu0) n
+        (householderNormalizedVector n v (householderBetaSpec n v)) 1 b =
+      fl_householderApplyCompact (FPModel.exactWithUnitRoundoff u0 hu0) n
+        v (householderBetaSpec n v) b := by
+  ext i
+  dsimp [fl_householderApplyCompact]
+  rw [fl_dotProduct_exactWithUnitRoundoff_eq_sum u0 hu0 n
+    (householderNormalizedVector n v (householderBetaSpec n v)) b]
+  rw [fl_dotProduct_exactWithUnitRoundoff_eq_sum u0 hu0 n v b]
+  simp [FPModel.exactWithUnitRoundoff, householderNormalizedVector]
+  let beta : Real := householderBetaSpec n v
+  have hbeta : 0 <= beta := by
+    simpa [beta] using householderBetaSpec_nonneg n v
+  have hsqrt : Real.sqrt beta * Real.sqrt beta = beta :=
+    Real.mul_self_sqrt hbeta
+  let S : Real :=
+    (Finset.univ : Finset (Fin n)).sum (fun j => v j * b j)
+  have hsum :
+      ((Finset.univ : Finset (Fin n)).sum
+        (fun j => (Real.sqrt beta * v j) * b j)) =
+        Real.sqrt beta * S := by
+    rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl
+    intro j _hj
+    ring
+  change ((Finset.univ : Finset (Fin n)).sum
+        (fun j => (Real.sqrt beta * v j) * b j)) *
+      (Real.sqrt beta * v i) =
+    (beta * S) * v i
+  rw [hsum]
+  calc
+    (Real.sqrt beta * S) * (Real.sqrt beta * v i)
+        = (Real.sqrt beta * Real.sqrt beta) * S * v i := by ring
+    _ = beta * S * v i := by rw [hsqrt]
+    _ = (beta * S) * v i := by ring
+
 /-- Route audit for the stored-loop normalization bottleneck.
 
 The source nonbreakdown hypotheses used by the stored loop, namely
