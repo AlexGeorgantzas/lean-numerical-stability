@@ -170,6 +170,8 @@
     hypothesis at this source-chain surface while keeping the direct comparison
     and product/update obligations explicit
   - Higham13Eq1322GlobalTableauSourceChain,
+    Higham13Eq1322GlobalTableauSourceChain.one_of_blockMaxNorm_le_global_tableau,
+    Higham13Eq1322GlobalTableauSourceChain.one_from_matrix_stage_history_tail_exact_kappa,
     Higham13Eq1322GlobalTableauSourceChain.succ_from_matrix_stage_history_first_split_exact_kappa,
     Higham13Eq1322GlobalTableauSourceChain.to_blockLUBudgetChain,
     Higham13Eq1322GlobalTableauSourceChain.to_blockLUBudgetChain_of_right_inverse,
@@ -184,8 +186,9 @@
     ambient growth factor and ambient exact-κ denominator; the first-split
     constructor now discharges the matrix-stage tableau containment,
     source-inverse entry, and first-row budget obligations from the recorded
-    Algorithm 13.3 history, while the recursive tail certificate and `rho <= 2`
-    obligations remain explicit
+    Algorithm 13.3 history, and the terminal one-block constructor now closes
+    recorded one-block Schur tails from global tableau containment, while the
+    recursive tail certificate and `rho <= 2` obligations remain explicit
   - higham13_eq13_22_exists_blockLUOneStep_fact_product_from_matrix_stage_history_first_split_tail_exact_kappa:
     source-facing one-step Eq.13.22 witness theorem combining the explicit
     block LU construction with the one-step product bound
@@ -436,6 +439,8 @@
     higham13_algorithm13_3_matrixStageHistoryGrowthMatrix_contains_flat_initial,
     higham13_algorithm13_3_schurStageMatrixTailBlock,
     higham13_algorithm13_3_matrixStageHistoryGrowthMatrix_contains_flat_stage_tail,
+    Higham13Eq1322GlobalTableauSourceChain.one_of_blockMaxNorm_le_global_tableau,
+    Higham13Eq1322GlobalTableauSourceChain.one_from_matrix_stage_history_tail_exact_kappa,
     higham13_algorithm13_3_matrix_active_local_schur_bound_of_product_bound,
     higham13_algorithm13_3_matrix_active_local_schur_bound_with_dim_factor,
     higham13_algorithm13_3_matrix_active_column_dominance_of_local_schur_bound,
@@ -589,6 +594,8 @@
     Higham13BlockLUBudgetChain.exists_blockLUFact_eq13_23_product,
     Higham13BlockLUBudgetChain.exists_blockLUFact_eq13_22_product_exact_kappa,
     Higham13BlockLUBudgetChain.exists_blockLUFact_eq13_23_product_exact_kappa,
+    Higham13Eq1322GlobalTableauSourceChain.one_of_blockMaxNorm_le_global_tableau,
+    Higham13Eq1322GlobalTableauSourceChain.one_from_matrix_stage_history_tail_exact_kappa,
     higham13_eq13_22_blockLUBudgetChain_one_from_matrix_stage_history_exact_kappa,
     higham13_eq13_22_blockLUBudgetChain_succ_from_matrix_stage_history_first_split_exact_kappa,
     higham13_eq13_22_exists_blockLUFact_succ_product_from_tail_chain_matrix_stage_history_exact_kappa,
@@ -41015,6 +41022,60 @@ inductive Higham13Eq1322GlobalTableauSourceChain {r N : ℕ}
           (fun q => pivotInv (q + 1))) :
       Higham13Eq1322GlobalTableauSourceChain hr hN Aglob Gglob AinvGlob
         hApos n (m + 1) Ablk pivotInv
+
+/-- Higham, 2nd ed., Chapter 13, Problem 13.4 / equation (13.22):
+    base case for the fixed-ambient global-tableau source chain.
+
+    The source chain's terminal one-block obligation is exactly the ambient
+    upper-budget condition.  If the terminal block is contained in the global
+    growth tableau `Gglob`, the formal growth-factor definition supplies that
+    upper budget with no additional local normalization. -/
+theorem
+    Higham13Eq1322GlobalTableauSourceChain.one_of_blockMaxNorm_le_global_tableau
+    {r N n : ℕ} (hr : 0 < r) (hN : 0 < N)
+    (Aglob Gglob AinvGlob : Fin N → Fin N → ℝ)
+    (hApos : 0 < maxEntryNorm hN Aglob)
+    {Ablk : Fin 1 → Fin 1 → Matrix (Fin r) (Fin r) ℝ}
+    {pivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ}
+    (hUpperG : blockMaxNorm (Nat.succ_pos 0) hr Ablk ≤
+      maxEntryNorm hN Gglob) :
+    Higham13Eq1322GlobalTableauSourceChain hr hN Aglob Gglob AinvGlob
+      hApos n 0 Ablk pivotInv := by
+  refine Higham13Eq1322GlobalTableauSourceChain.one ?_
+  exact
+    blockMaxNorm_le_growthFactorEntry_mul_of_le_maxEntryNorm
+      hN (Nat.succ_pos 0) hr Aglob Gglob Ablk hApos hUpperG
+
+/-- Higham, 2nd ed., Chapter 13, Problem 13.4 / equation (13.22):
+    terminal recorded Schur tail for the global matrix-stage tableau.
+
+    Any one-block Schur tail recorded by the matrix-product Algorithm 13.3
+    stage history is contained in the same ambient growth tableau.  Hence it is
+    a valid terminal certificate for the fixed-ambient Eq.13.22 source chain. -/
+theorem
+    Higham13Eq1322GlobalTableauSourceChain.one_from_matrix_stage_history_tail_exact_kappa
+    {M r N n : ℕ} (hr : 0 < r) (hN : 0 < N) (hM : 0 < M)
+    (Aglob AinvGlob : Fin N → Fin N → ℝ)
+    (A : Fin M → Fin M → Matrix (Fin r) (Fin r) ℝ)
+    (pivotInv tailPivotInv : ℕ → Matrix (Fin r) (Fin r) ℝ)
+    (hApos : 0 < maxEntryNorm hN Aglob)
+    (k : ℕ) (hk : k ≤ M) (tail : Fin 1 → Fin M) :
+    Higham13Eq1322GlobalTableauSourceChain hr hN Aglob
+      (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix hN hM hr A pivotInv)
+      AinvGlob hApos n 0
+      (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tail)
+      tailPivotInv := by
+  refine
+    Higham13Eq1322GlobalTableauSourceChain.one_of_blockMaxNorm_le_global_tableau
+      hr hN Aglob
+      (higham13_algorithm13_3_matrixStageHistoryGrowthMatrix hN hM hr A pivotInv)
+      AinvGlob hApos ?_
+  rw [← maxEntryNorm_blockMatrixFlatFin_eq_blockMaxNorm
+    (Nat.succ_pos 0) hr
+    (higham13_algorithm13_3_schurStageMatrixTailBlock A pivotInv k tail)]
+  exact
+    higham13_algorithm13_3_matrixStageHistoryGrowthMatrix_contains_flat_stage_tail
+      hN hM hr (Nat.succ_pos 0) A pivotInv k hk tail
 
 /-- Higham, 2nd ed., Chapter 13, Problem 13.4 / equations (13.22)--(13.23):
     first-split constructor for the fixed-ambient global-tableau source chain
