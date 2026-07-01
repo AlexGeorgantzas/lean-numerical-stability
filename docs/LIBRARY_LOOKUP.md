@@ -3565,6 +3565,15 @@ Source-facing Chapter 10 wrappers:
 - `higham10_problem_10_8_counterexample_symmetric`
 - `higham10_problem_10_8_counterexample_not_psd`
 - `higham10_4_IsNonsymPosDef`
+- `nonsymPosDef_diag_pos`
+- `nonsymPosDef_mulVec_ne_zero`
+- `nonsymPosDef_leading_principal`
+- `nonsym_pd_first_ge_schur`
+- `nonsymPDGEPivotsPos`
+- `nonsym_pd_unpivoted_ge_positive_pivots`
+- `higham10_4_nonsym_pd_leading_principal`
+- `higham10_4_nonsym_pd_mulVec_ne_zero`
+- `higham10_4_nonsym_pd_ge_positive_pivots`
 - `higham10_29_symmetric_skew_decomposition`
 - `higham10_29_nonsymPosDef_iff_symPartSPD`
 - `higham10_29_nonsym_pd_lu_growth_bound`

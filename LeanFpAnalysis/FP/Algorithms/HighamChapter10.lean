@@ -841,6 +841,34 @@ abbrev higham10_4_IsNonsymPosDef (n : ℕ)
     (A : Fin n → Fin n → ℝ) : Prop :=
   IsNonsymPosDef n A
 
+/-- **Section 10.4 prose**: leading principal submatrices of a matrix with
+positive definite symmetric part are again in that class. -/
+theorem higham10_4_nonsym_pd_leading_principal (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (hA : higham10_4_IsNonsymPosDef n A)
+    (k : ℕ) (hk : k ≤ n) :
+    higham10_4_IsNonsymPosDef k
+      (fun i j => A ⟨i.val, by omega⟩ ⟨j.val, by omega⟩) :=
+  nonsymPosDef_leading_principal hA k hk
+
+/-- **Section 10.4 prose**, nonsingularity form: a matrix with positive
+definite symmetric part has trivial kernel — `A x ≠ 0` for every `x ≠ 0`.
+Combined with `higham10_4_nonsym_pd_leading_principal` this closes the
+"nonsingular leading principal submatrices" claim in exact arithmetic. -/
+theorem higham10_4_nonsym_pd_mulVec_ne_zero (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (hA : higham10_4_IsNonsymPosDef n A)
+    (x : Fin n → ℝ) (hx : ∃ i, x i ≠ 0) :
+    ∃ i : Fin n, (∑ j : Fin n, A i j * x j) ≠ 0 :=
+  nonsymPosDef_mulVec_ne_zero hA x hx
+
+/-- **Section 10.4 prose** (Higham p. 209): unpivoted Gaussian elimination
+on a matrix with positive definite symmetric part runs to completion with a
+positive pivot at every stage, via the Schur-complement closure
+`nonsym_pd_first_ge_schur` of the class. -/
+theorem higham10_4_nonsym_pd_ge_positive_pivots (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (hA : higham10_4_IsNonsymPosDef n A) :
+    nonsymPDGEPivotsPos n A :=
+  nonsym_pd_unpivoted_ge_positive_pivots n A hA
+
 /-- **Equation (10.29)** setup: `A = A_S + A_K`, symmetric and skew-symmetric
 parts. -/
 theorem higham10_29_symmetric_skew_decomposition (n : ℕ)
