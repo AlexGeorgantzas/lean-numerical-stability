@@ -11808,6 +11808,252 @@ structure storedSignedSequenceFirstTwoTailNormalizedFacts
             (alpha 3) i) =
       2
 
+/-- Exact-arithmetic one-tail normalized reflector facts from the tail-vector
+equality and the local tail determinant nonzero fact.
+
+This proves the named remaining record surface in the exact model: once the
+stored tail active vector is identified with the computed exact normalized
+Householder vector, the self-dot field follows from the determinant-derived
+nonzero active column. -/
+theorem
+    storedSignedSequenceOneTailNormalizedFacts_of_tail_vector_eq_and_det_ne_zero_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) {m : Nat}
+    (A_hat : Nat -> Fin (m + 1 + 2) -> Fin (1 + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hdetTailTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (trailingPanel (trailingPanel (A_hat 2)))
+          (Nat.succ_le_succ (Nat.zero_le m))
+          (Nat.succ_pos 0) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hvecTail :
+      householderTrailingActiveVector (m + 1)
+          (0 : Fin (m + 1))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+          (alpha 2) =
+        fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0) (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos 0)
+            (trailingPanel (trailingPanel (A_hat 2))))) :
+    storedSignedSequenceOneTailNormalizedFacts
+      (FPModel.exactWithUnitRoundoff u0 hu0) A_hat alpha := by
+  refine ⟨hvecTail, ?_⟩
+  have hx :
+      Ne
+        (panelFirstColumn (Nat.succ_pos 0)
+          (trailingPanel (trailingPanel (A_hat 2))))
+        0 := by
+    intro hzero
+    apply hdetTailTail
+    have hentry := congrFun hzero 0
+    simpa [qrLeadingBlock, qrLeadingRow, qrLeadingColumn, panelFirstColumn,
+      trailingPanel] using hentry
+  rw [hvecTail]
+  exact
+    fl_householderNormalizedVector_self_dot_exactWithUnitRoundoff
+      u0 hu0 (Nat.succ_pos m)
+      (panelFirstColumn (Nat.succ_pos 0)
+        (trailingPanel (trailingPanel (A_hat 2))))
+      hx
+
+/-- Exact-arithmetic first-two normalized reflector facts from tail-vector
+equalities and the two local tail determinant nonzero facts. -/
+theorem
+    storedSignedSequenceFirstTwoTailNormalizedFacts_of_tail_vectors_eq_and_dets_ne_zero_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) (r p : Nat)
+    (A_hat : Nat -> Fin (r + (p + 2) + 2) -> Fin ((p + 2) + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hdetTailTailFirst :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (trailingPanel (trailingPanel (A_hat 2)))
+          (show 1 <= r + (p + 2) by omega)
+          (Nat.succ_pos (p + 1)) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hdetTailTailTail :
+      Ne (Matrix.det
+        (qrLeadingBlock
+          (trailingPanel (trailingPanel (trailingPanel (A_hat 3))))
+          (show 1 <= r + (p + 1) by omega)
+          (Nat.succ_pos p) :
+          Matrix (Fin 1) (Fin 1) Real))
+        0)
+    (hvecTail2 :
+      householderTrailingActiveVector (r + (p + 2))
+          (0 : Fin (r + (p + 2)))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin (p + 2)).succ.succ))
+          (alpha 2) =
+        fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0)
+          (show 0 < r + (p + 2) by omega)
+          (panelFirstColumn (Nat.succ_pos (p + 1))
+            (trailingPanel (trailingPanel (A_hat 2)))))
+    (hvecTail3 :
+      householderTrailingActiveVector (r + (p + 1))
+          (0 : Fin (r + (p + 1)))
+          (fun a =>
+            A_hat 3 a.succ.succ.succ
+              ((0 : Fin (p + 1)).succ.succ.succ))
+          (alpha 3) =
+        fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0)
+          (show 0 < r + (p + 1) by omega)
+          (panelFirstColumn (Nat.succ_pos p)
+            (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))) :
+    storedSignedSequenceFirstTwoTailNormalizedFacts
+      (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha := by
+  refine ⟨hvecTail2, ?_, hvecTail3, ?_⟩
+  · have hx2 :
+        Ne
+          (panelFirstColumn (Nat.succ_pos (p + 1))
+            (trailingPanel (trailingPanel (A_hat 2))))
+          0 := by
+      intro hzero
+      apply hdetTailTailFirst
+      have hentry := congrFun hzero 0
+      simpa [qrLeadingBlock, qrLeadingRow, qrLeadingColumn, panelFirstColumn,
+        trailingPanel] using hentry
+    rw [hvecTail2]
+    exact
+      fl_householderNormalizedVector_self_dot_exactWithUnitRoundoff
+        u0 hu0 (show 0 < r + (p + 2) by omega)
+        (panelFirstColumn (Nat.succ_pos (p + 1))
+          (trailingPanel (trailingPanel (A_hat 2))))
+        hx2
+  · have hx3 :
+        Ne
+          (panelFirstColumn (Nat.succ_pos p)
+            (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))
+          0 := by
+      intro hzero
+      apply hdetTailTailTail
+      have hentry := congrFun hzero 0
+      simpa [qrLeadingBlock, qrLeadingRow, qrLeadingColumn, panelFirstColumn,
+        trailingPanel] using hentry
+    rw [hvecTail3]
+    exact
+      fl_householderNormalizedVector_self_dot_exactWithUnitRoundoff
+        u0 hu0 (show 0 < r + (p + 1) by omega)
+        (panelFirstColumn (Nat.succ_pos p)
+          (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))
+        hx3
+
+/-- Exact-arithmetic one-tail normalized reflector facts from the tail-vector
+equality and the standard leading-block nonbreakdown hypothesis. -/
+theorem
+    storedSignedSequenceOneTailNormalizedFacts_of_tail_vector_eq_and_leadingBlock_det_ne_zero_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) {m : Nat}
+    (A_hat : Nat -> Fin (m + 1 + 2) -> Fin (1 + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall k (hk : k < 1 + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep (FPModel.exactWithUnitRoundoff u0 hu0)
+          (m + 1 + 2) (1 + 2) k
+          (householderTrailingActiveVector (m + 1 + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (by omega : 1 + 2 <= m + 1 + 2)))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (m + 1 + 2)
+            (householderTrailingActiveVector (m + 1 + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : 1 + 2 <= m + 1 + 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hdetLead : forall k (hk : k < 1 + 2),
+      Ne (Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr
+            (lt_of_lt_of_le hk
+              (by omega : 1 + 2 <= m + 1 + 2))) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+        0)
+    (hvecTail :
+      householderTrailingActiveVector (m + 1)
+          (0 : Fin (m + 1))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin 1).succ.succ))
+          (alpha 2) =
+        fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0) (Nat.succ_pos m)
+          (panelFirstColumn (Nat.succ_pos 0)
+            (trailingPanel (trailingPanel (A_hat 2))))) :
+    storedSignedSequenceOneTailNormalizedFacts
+      (FPModel.exactWithUnitRoundoff u0 hu0) A_hat alpha := by
+  exact
+    storedSignedSequenceOneTailNormalizedFacts_of_tail_vector_eq_and_det_ne_zero_exactWithUnitRoundoff
+      u0 hu0 A_hat alpha
+      (storedSignedSequenceOneTailFullStageFacts_tail_det_ne_zero_of_leadingBlock_det_ne_zero
+        (FPModel.exactWithUnitRoundoff u0 hu0) A_hat alpha hStep hdetLead)
+      hvecTail
+
+/-- Exact-arithmetic first-two normalized reflector facts from tail-vector
+equalities and the standard leading-block nonbreakdown hypothesis. -/
+theorem
+    storedSignedSequenceFirstTwoTailNormalizedFacts_of_tail_vectors_eq_and_leadingBlock_det_ne_zero_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) (r p : Nat)
+    (A_hat : Nat -> Fin (r + (p + 2) + 2) -> Fin ((p + 2) + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hStep : forall k (hk : k < (p + 2) + 2),
+      A_hat (k + 1) =
+        fl_householderStoredPanelStep (FPModel.exactWithUnitRoundoff u0 hu0)
+          (r + (p + 2) + 2) ((p + 2) + 2) k
+          (householderTrailingActiveVector (r + (p + 2) + 2)
+            (Fin.mk k
+              (lt_of_lt_of_le hk
+                (by omega : (p + 2) + 2 <= r + (p + 2) + 2)))
+            (fun a => A_hat k a (Fin.mk k hk)) (alpha k))
+          (householderBetaSpec (r + (p + 2) + 2)
+            (householderTrailingActiveVector (r + (p + 2) + 2)
+              (Fin.mk k
+                (lt_of_lt_of_le hk
+                  (by omega : (p + 2) + 2 <= r + (p + 2) + 2)))
+              (fun a => A_hat k a (Fin.mk k hk)) (alpha k)))
+          (A_hat k))
+    (hdetLead : forall k (hk : k < (p + 2) + 2),
+      Ne (Matrix.det
+        (qrLeadingBlock (A_hat k)
+          (Nat.succ_le_iff.mpr
+            (lt_of_lt_of_le hk
+              (by omega : (p + 2) + 2 <= r + (p + 2) + 2))) hk :
+          Matrix (Fin (k + 1)) (Fin (k + 1)) Real))
+        0)
+    (hvecTail2 :
+      householderTrailingActiveVector (r + (p + 2))
+          (0 : Fin (r + (p + 2)))
+          (fun a => A_hat 2 a.succ.succ ((0 : Fin (p + 2)).succ.succ))
+          (alpha 2) =
+        fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0)
+          (show 0 < r + (p + 2) by omega)
+          (panelFirstColumn (Nat.succ_pos (p + 1))
+            (trailingPanel (trailingPanel (A_hat 2)))))
+    (hvecTail3 :
+      householderTrailingActiveVector (r + (p + 1))
+          (0 : Fin (r + (p + 1)))
+          (fun a =>
+            A_hat 3 a.succ.succ.succ
+              ((0 : Fin (p + 1)).succ.succ.succ))
+          (alpha 3) =
+        fl_householderNormalizedVector
+          (FPModel.exactWithUnitRoundoff u0 hu0)
+          (show 0 < r + (p + 1) by omega)
+          (panelFirstColumn (Nat.succ_pos p)
+            (trailingPanel (trailingPanel (trailingPanel (A_hat 3)))))) :
+    storedSignedSequenceFirstTwoTailNormalizedFacts
+      (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha := by
+  rcases
+      storedSignedSequenceFirstTwoFullStageFacts_tail_dets_ne_zero_of_leadingBlock_det_ne_zero
+        (FPModel.exactWithUnitRoundoff u0 hu0) r p A_hat alpha hStep hdetLead with
+    ⟨hdetTailTailFirst, hdetTailTailTail⟩
+  exact
+    storedSignedSequenceFirstTwoTailNormalizedFacts_of_tail_vectors_eq_and_dets_ne_zero_exactWithUnitRoundoff
+      u0 hu0 r p A_hat alpha hdetTailTailFirst hdetTailTailTail
+      hvecTail2 hvecTail3
+
 /-- One-tail full-stage facts from the named tail-local normalized reflector
 record. -/
 theorem
