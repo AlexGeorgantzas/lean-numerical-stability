@@ -1620,6 +1620,10 @@ Source-facing Chapter 9 wrappers:
 - `higham9_tracePivotingGrowthValues_complete_le_wilkinsonBound_of_trace_bound`
 - `higham9_tracePivotingGrowthValues_rook_le_fosterBound_of_le_two`
 - `higham9_tracePivotingGrowthValues_rook_le_fosterBound_of_trace_bound`
+- `higham9_tracePivotingGrowthValues_bddAbove_complete_wilkinsonBound_of_le_two`
+- `higham9_tracePivotingGrowthValues_bddAbove_complete_wilkinsonBound_of_trace_bound`
+- `higham9_tracePivotingGrowthValues_bddAbove_rook_fosterBound_of_le_two`
+- `higham9_tracePivotingGrowthValues_bddAbove_rook_fosterBound_of_trace_bound`
 - `higham9_tracePivotingGrowthValues_bddAbove`
 - `higham9_tracePivotingGrowth_le_sup`
 - `higham9_tracePivotingGrowthSup_le_pow_two`
