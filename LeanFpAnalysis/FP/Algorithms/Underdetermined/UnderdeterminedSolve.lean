@@ -8141,6 +8141,34 @@ theorem higham21_eq21_10_q_action_vec_error_bound
     _ ≤ eta * vecNorm2 z :=
         mul_le_mul_of_nonneg_right hDeltaQ (vecNorm2_nonneg z)
 
+/-- Higham, 2nd ed., Chapter 21, Section 21.3, equation (21.10):
+    source-shaped final `Q` action bound with the zero-padded coordinate vector
+    reduced to the active block norm `‖y1‖₂`. -/
+theorem higham21_eq21_10_q_action_vec_error_bound_left_block
+    {m k : ℕ}
+    (Q DeltaQ : Fin (m + k) → Fin (m + k) → ℝ)
+    (y1 : Fin m → ℝ)
+    (x_hat : Fin (m + k) → ℝ)
+    (eta : ℝ)
+    (hx :
+      x_hat =
+        matMulVec (m + k) (fun i j => Q i j + DeltaQ i j)
+          (Fin.append y1 (0 : Fin k → ℝ)))
+    (hDeltaQ : frobNorm DeltaQ ≤ eta) :
+    vecNorm2 (fun i : Fin (m + k) =>
+      x_hat i -
+        matMulVec (m + k) Q (Fin.append y1 (0 : Fin k → ℝ)) i) ≤
+      eta * vecNorm2 y1 := by
+  have hbase :=
+    higham21_eq21_10_q_action_vec_error_bound
+      Q DeltaQ y1 x_hat eta hx hDeltaQ
+  have hzero :
+      vecNorm2 (Fin.append y1 (0 : Fin k → ℝ)) = vecNorm2 y1 := by
+    unfold vecNorm2
+    rw [lsVecNorm2Sq_append]
+    simp [vecNorm2Sq]
+  rwa [hzero] at hbase
+
 /-- **Theorem 21.4** (Higham): The Q method for underdetermined systems
     is row-wise backward stable.
 
