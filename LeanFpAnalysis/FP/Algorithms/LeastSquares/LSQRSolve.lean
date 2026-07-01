@@ -16550,6 +16550,123 @@ theorem lsNormwiseBackwardErrorRankOne_scaled_q_optimal_vecNorm2Sq
     _ = vecNorm2Sq (matMulVec m (lsLemma20_6ProjectorComplement p) r) := by
           rfl
 
+/-- Scalar optimization for the rank-two WKS upper witness.  After the
+    rank-one source-residual witness leaves a residual component `q`
+    orthogonal to the chosen direction, adding a second outer-product
+    perturbation in the `y` direction with the displayed coefficient lowers the
+    combined Frobenius/RHS cost by exactly the missing
+    `1 + theta^2 ||y||_2^2` denominator. -/
+theorem lsNormwiseBackwardErrorRankTwo_extra_weighted_cost_eq
+    {m n : ℕ} (theta : ℝ) {y : Fin n → ℝ} (hy : y ≠ 0)
+    (q : Fin m → ℝ) :
+    let Y : ℝ := vecNorm2Sq y
+    let D : ℝ := 1 + theta ^ 2 * Y
+    let beta : ℝ := -(theta ^ 2 * Y) / D
+    beta ^ 2 * vecNorm2Sq q / Y +
+        theta ^ 2 * vecNorm2Sq (fun i : Fin m => q i + beta * q i) =
+      theta ^ 2 * vecNorm2Sq q / D := by
+  let Y : ℝ := vecNorm2Sq y
+  let D : ℝ := 1 + theta ^ 2 * Y
+  let beta : ℝ := -(theta ^ 2 * Y) / D
+  have hYpos : 0 < Y := by
+    simpa [Y] using vecNorm2Sq_pos_of_ne_zero_lsq hy
+  have hDpos : 0 < D := by
+    have htheta_sq : 0 ≤ theta ^ 2 := sq_nonneg theta
+    have hprod : 0 ≤ theta ^ 2 * Y := mul_nonneg htheta_sq (le_of_lt hYpos)
+    dsimp [D]
+    linarith
+  have hbeta : 1 + beta = 1 / D := by
+    dsimp [beta, D]
+    field_simp [ne_of_gt hDpos]
+    ring
+  have hvec :
+      (fun i : Fin m => q i + beta * q i) =
+        fun i : Fin m => (1 + beta) * q i := by
+    ext i
+    ring
+  have hYne : Y ≠ 0 := ne_of_gt hYpos
+  have hDne : D ≠ 0 := ne_of_gt hDpos
+  have hDne' : 1 + theta ^ 2 * Y ≠ 0 := by
+    simpa [D] using hDne
+  have hcoeff :
+      beta ^ 2 / Y + theta ^ 2 * (1 / D) ^ 2 = theta ^ 2 / D := by
+    dsimp [beta, D]
+    field_simp [hYne, hDne']
+    ring
+  change
+    beta ^ 2 * vecNorm2Sq q / Y +
+        theta ^ 2 * vecNorm2Sq (fun i : Fin m => q i + beta * q i) =
+      theta ^ 2 * vecNorm2Sq q / D
+  rw [hvec, vecNorm2Sq_smul, hbeta]
+  calc
+    beta ^ 2 * vecNorm2Sq q / Y +
+        theta ^ 2 * ((1 / D) ^ 2 * vecNorm2Sq q)
+        =
+      (beta ^ 2 / Y + theta ^ 2 * (1 / D) ^ 2) * vecNorm2Sq q := by
+        ring
+    _ = (theta ^ 2 / D) * vecNorm2Sq q := by rw [hcoeff]
+    _ = theta ^ 2 * vecNorm2Sq q / D := by ring
+
+/-- Projector form of the rank-two WKS upper-witness scalar optimization.
+    The extra outer-product component converts the unavoidable
+    `p`-orthogonal residual component into the source-block projector term
+    weighted by `phi^2`.  This is the algebraic denominator missing from the
+    scalar-only rank-one route. -/
+theorem lsNormwiseBackwardErrorRankTwo_extra_cost_eq_phi_projector
+    {m n : ℕ} {theta : ℝ} (htheta : 0 ≤ theta)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (r p : Fin m → ℝ) (hrsq : vecNorm2Sq r ≠ 0)
+    (hpsq : vecNorm2Sq p ≠ 0) :
+    theta ^ 2 *
+        vecNorm2Sq (matMulVec m (lsLemma20_6ProjectorComplement p) r) /
+        (1 + theta ^ 2 * vecNorm2Sq y) =
+      (lsNormwiseBackwardErrorPhi theta r y) ^ 2 *
+        vecNorm2Sq (matMulVec m (lsResidualComplementProjector r) p) /
+        vecNorm2Sq p := by
+  let R : ℝ := vecNorm2Sq r
+  let P : ℝ := vecNorm2Sq p
+  let Z : ℝ :=
+    vecNorm2Sq (matMulVec m (lsResidualComplementProjector r) p)
+  let Q : ℝ :=
+    vecNorm2Sq (matMulVec m (lsLemma20_6ProjectorComplement p) r)
+  let D : ℝ := 1 + theta ^ 2 * vecNorm2Sq y
+  have hRpos : 0 < R := by
+    exact lt_of_le_of_ne (by simpa [R] using vecNorm2Sq_nonneg r)
+      (by simpa [R] using Ne.symm hrsq)
+  have hPpos : 0 < P := by
+    exact lt_of_le_of_ne (by simpa [P] using vecNorm2Sq_nonneg p)
+      (by simpa [P] using Ne.symm hpsq)
+  have hDpos : 0 < D := by
+    simpa [D] using lsNormwiseBackwardErrorMu_den_pos theta y
+  have harea : R * Z = P * Q := by
+    simpa [R, P, Z, Q, lsResidualComplementProjector] using
+      lsLemma20_6ProjectorComplement_area_identity r p hrsq hpsq
+  have hQ_eq : Q = R * Z / P := by
+    have hPne : P ≠ 0 := ne_of_gt hPpos
+    calc
+      Q = P * Q / P := by field_simp [hPne]
+      _ = R * Z / P := by rw [← harea]
+  have hphi_sq :
+      (lsNormwiseBackwardErrorPhi theta r y) ^ 2 = theta ^ 2 * R / D := by
+    rw [lsNormwiseBackwardErrorPhi_eq_theta_mul_norm_div_sqrt_den
+      htheta hy r]
+    rw [div_pow, mul_pow, Real.sq_sqrt (le_of_lt hDpos), vecNorm2_sq r]
+  have hPne : P ≠ 0 := ne_of_gt hPpos
+  have hDne : D ≠ 0 := ne_of_gt hDpos
+  calc
+    theta ^ 2 *
+        vecNorm2Sq (matMulVec m (lsLemma20_6ProjectorComplement p) r) /
+        (1 + theta ^ 2 * vecNorm2Sq y)
+        = theta ^ 2 * Q / D := by rfl
+    _ = theta ^ 2 * (R * Z / P) / D := by rw [hQ_eq]
+    _ = (theta ^ 2 * R / D) * Z / P := by
+          field_simp [hPne, hDne]
+    _ =
+      (lsNormwiseBackwardErrorPhi theta r y) ^ 2 *
+        vecNorm2Sq (matMulVec m (lsResidualComplementProjector r) p) /
+        vecNorm2Sq p := by
+          rw [hphi_sq]
+
 /-- Source-shaped numerator for the optimal scalar in the scaled rank-one WKS
     witness.  When `r = b - A*y` and `u = A^T p`, the scalar numerator
     `p^T r + u^T y` is exactly `p^T b`. -/
