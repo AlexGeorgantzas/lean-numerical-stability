@@ -20,6 +20,21 @@ end-to-end stability rebuild is tagged as
 - Source inventory: `docs/chapter13/CHAPTER13_SOURCE_INVENTORY.md`.
 - Working report: `docs/chapter13/CHAPTER13_FORMALIZATION_REPORT.md`.
 - Primary Lean module: `LeanFpAnalysis/FP/Algorithms/LU/BlockLU.lean`.
+- 2026-07-01 Problem 13.4 canonical all-tail global-tableau source-chain
+  constructor: added `higham13_algorithm13_3_activeSuffixTail`,
+  `higham13_algorithm13_3_activeSuffixStageTailBlock`, the stage-zero/stage-one
+  bridges `higham13_algorithm13_3_activeSuffixStageTailBlock_zero_eq` and
+  `higham13_algorithm13_3_activeSuffixStageTailBlock_one_eq_blockSchur`, and
+  `Higham13Eq1322GlobalTableauSourceChain.activeSuffix_from_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa`.
+  The new theorem builds the fixed-ambient global-tableau source chain for any
+  canonical Algorithm 13.3 active suffix from per-stage source obligations
+  (current-tail full invertibility and inverse-entry comparison, nonterminal
+  first-split/Schur invertibility, pivot identity, dimension budget, and global
+  tableau containment).  It uses the derived-tail handoff internally, so callers
+  no longer need to pass a prebuilt recursive `hTail` at every suffix level.
+  This closes the general all-tail packaging dependency; follow-up work should
+  wire it into the first-split Eq.13.22/Eq.13.23 product witnesses and then
+  continue the source-strength BDD/product-update and Theorem 13.6 rows.
 - 2026-07-01 Problem 13.4 global-tableau Eq.13.23 product-update
   source-chain method: added
   `Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_right_inverse_of_product_bound_diag_update`
