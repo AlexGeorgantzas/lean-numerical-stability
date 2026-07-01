@@ -32,9 +32,15 @@ end-to-end stability rebuild is tagged as
   first-split/Schur invertibility, pivot identity, dimension budget, and global
   tableau containment).  It uses the derived-tail handoff internally, so callers
   no longer need to pass a prebuilt recursive `hTail` at every suffix level.
-  This closes the general all-tail packaging dependency; follow-up work should
-  wire it into the first-split Eq.13.22/Eq.13.23 product witnesses and then
-  continue the source-strength BDD/product-update and Theorem 13.6 rows.
+  A follow-up theorem,
+  `Higham13Eq1322GlobalTableauSourceChain.firstSchurTail_activeSuffix_from_matrix_stage_history_with_derived_tail_inverse_entry_exact_kappa`,
+  identifies the canonical stage-one suffix with `blockSchur A (pivotInv 0)`,
+  giving first-split Eq.13.22/Eq.13.23 wrappers a direct replacement for a raw
+  recursive tail-chain premise once the first Schur-tail inverse-entry
+  comparison is supplied.  This closes the general all-tail packaging
+  dependency and starts the first-split consumption layer; follow-up work should
+  finish wiring it into the product witnesses and then continue the source-
+  strength BDD/product-update and Theorem 13.6 rows.
 - 2026-07-01 Problem 13.4 global-tableau Eq.13.23 product-update
   source-chain method: added
   `Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_right_inverse_of_product_bound_diag_update`
