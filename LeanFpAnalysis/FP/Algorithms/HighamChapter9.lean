@@ -52929,6 +52929,39 @@ theorem higham9_8_exists_CompletePermutedLUFactSpec_L_bound_growth_le_wilkinsonB
       (higham9_2_rowColPermutedMatrix_det_ne_zero A hLU.2.perm hLU.1 hdet)
   exact ⟨L_hat, U_hat, sigma, tau, hLU, hL_bound, hU_diag, hBmax, hgrowth⟩
 
+/-- **Theorem 9.8 / equation (9.14)**, determinant-input complete-pivoting
+certificate package at Wilkinson's sharp product RHS in the base dimensions
+`n <= 2`.
+
+In these dimensions the elementary complete-pivoting trace bound `2^(n-1)`
+already implies Wilkinson's displayed product RHS, so this endpoint removes the
+global sharp-growth premise required by the general sharp certificate wrapper. -/
+theorem higham9_8_exists_CompletePermutedLUFactSpec_L_bound_growth_le_wilkinsonBound_of_det_ne_zero_of_le_two
+    (n : ℕ)
+    (hn_pos : 0 < n)
+    (hle : n ≤ 2)
+    (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+    ∃ sigma tau : Fin n → Fin n,
+    ∃ _hLU : higham9_2_CompletePermutedLUFactSpec n A L_hat U_hat sigma tau,
+      (∀ i j : Fin n, |L_hat i j| ≤ 1) ∧
+      (∀ i : Fin n, U_hat i i ≠ 0) ∧
+      ∃ hBmax :
+        0 < maxEntryNorm hn_pos
+          (higham9_2_rowColPermutedMatrix A sigma tau),
+        growthFactorEntry hn_pos
+          (higham9_2_rowColPermutedMatrix A sigma tau) U_hat hBmax ≤
+            higham9_14_completePivotWilkinsonBound n := by
+  obtain ⟨L_hat, U_hat, sigma, tau, hLU, hL_bound, hU_diag, hBmax, hgrowth⟩ :=
+    higham9_8_exists_CompletePermutedLUFactSpec_L_bound_growth_le_pow_two_of_det_ne_zero
+      n hn_pos A hdet
+  exact
+    ⟨L_hat, U_hat, sigma, tau, hLU, hL_bound, hU_diag, hBmax,
+      le_trans hgrowth
+        (higham9_14_pow_two_le_completePivotWilkinsonBound_of_le_two
+          hn_pos hle)⟩
+
 /-- **Theorem 9.8 / equation (9.13) complex support**, a recursive exact
 complete-pivoting trace over complex matrices. -/
 inductive higham9_8_ComplexCompletePivotGECPUTrace :
@@ -54587,6 +54620,37 @@ theorem higham9_16_exists_RookPivotCompletePermutedLUFactSpec_L_bound_growth_le_
       (higham9_2_rowColPermutedMatrix_det_ne_zero A hLU.2.perm hLU.1 hdet)
   exact ⟨L_hat, U_hat, sigma, tau, hLU, hL_bound, hU_diag, hBmax, hgrowth⟩
 
+/-- **Equation (9.16)**, determinant-input rook-pivoting certificate package
+at Foster's sharp RHS in dimension `n = 1`.
+
+For this base dimension the elementary rook-pivoting trace bound `2^(n-1)`
+already implies Foster's displayed RHS, so this endpoint removes the global
+sharp-growth premise required by the general sharp certificate wrapper. -/
+theorem higham9_16_exists_RookPivotCompletePermutedLUFactSpec_L_bound_growth_le_fosterBound_of_det_ne_zero_of_eq_one
+    (n : ℕ)
+    (hn_pos : 0 < n)
+    (hone : n = 1)
+    (A : Fin n → Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+    ∃ sigma tau : Fin n → Fin n,
+    ∃ _hLU : higham9_2_CompletePermutedLUFactSpec n A L_hat U_hat sigma tau,
+      (∀ i j : Fin n, |L_hat i j| ≤ 1) ∧
+      (∀ i : Fin n, U_hat i i ≠ 0) ∧
+      ∃ hBmax :
+        0 < maxEntryNorm hn_pos
+          (higham9_2_rowColPermutedMatrix A sigma tau),
+        growthFactorEntry hn_pos
+          (higham9_2_rowColPermutedMatrix A sigma tau) U_hat hBmax ≤
+            higham9_16_rookPivotFosterBound n := by
+  obtain ⟨L_hat, U_hat, sigma, tau, hLU, hL_bound, hU_diag, hBmax, hgrowth⟩ :=
+    higham9_16_exists_RookPivotCompletePermutedLUFactSpec_L_bound_growth_le_pow_two_of_det_ne_zero
+      n hn_pos A hdet
+  exact
+    ⟨L_hat, U_hat, sigma, tau, hLU, hL_bound, hU_diag, hBmax,
+      le_trans hgrowth
+        (higham9_16_pow_two_le_rookPivotFosterBound_of_eq_one hone)⟩
+
 /-- **Theorem 9.5**, row-pivoted exact-certificate source bound from a visible
 growth bound.
 
@@ -55556,6 +55620,47 @@ theorem higham9_14_wilkinson_source_bound_exists_of_CompletePivotGECPUTrace_of_d
     higham9_14_wilkinson_source_bound_exists_of_CompletePivotGECPUTrace_of_trace_bound
       fp n hn_pos A U_trace b hdet htrace hsharp hn hn3
 
+/-- **Theorem 9.5 / equation (9.14)**, determinant-only complete-pivoting
+solve wrapper at Wilkinson's sharp product RHS in the base dimensions `n <= 2`.
+
+This combines the exact complete-pivoting certificate with the base-dimension
+comparison `2^(n-1) <= higham9_14_completePivotWilkinsonBound n`, avoiding the
+global sharp-growth premise required by the general determinant-only sharp
+solve wrapper. -/
+theorem higham9_14_wilkinson_source_bound_exists_of_CompletePivotGECPUTrace_of_det_ne_zero_of_le_two
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (hle : n ≤ 2)
+    (A : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n)) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+    ∃ sigma tau : Fin n → Fin n,
+    ∃ hLU : higham9_2_CompletePermutedLUFactSpec n A L_hat U_hat sigma tau,
+      (∀ i j : Fin n, |L_hat i j| ≤ 1) ∧
+      let bP : Fin n → ℝ := fun i => b (sigma i)
+      let y_hat := fl_forwardSub fp n L_hat bP
+      let z_hat := fl_backSub fp n U_hat y_hat
+      let x_hat : Fin n → ℝ :=
+        fun j => z_hat ((Equiv.ofBijective tau hLU.1).symm j)
+      ∃ ΔA : Fin n → Fin n → ℝ,
+        (infNorm ΔA ≤
+          (↑n) ^ 2 * gamma fp (3 * n) *
+            higham9_14_completePivotWilkinsonBound n * infNorm A) ∧
+        (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  obtain ⟨L_hat, U_hat, sigma, tau, hLU, hL_bound, hU_diag, hBmax, hgrowth⟩ :=
+    higham9_8_exists_CompletePermutedLUFactSpec_L_bound_growth_le_wilkinsonBound_of_det_ne_zero_of_le_two
+      n hn_pos hle A hdet
+  refine ⟨L_hat, U_hat, sigma, tau, hLU, hL_bound, ?_⟩
+  exact
+    higham9_5_wilkinson_source_bound_of_CompletePermutedLUFactSpec_growth
+      fp n hn_pos A L_hat U_hat sigma tau b
+      (higham9_14_completePivotWilkinsonBound n)
+      hBmax (higham9_14_completePivotWilkinsonBound_nonneg n)
+      hgrowth hU_diag hLU hn hn3 hL_bound
+
 /-- **Equation (9.16) / Theorem 9.5**, source-facing rook-pivoting exact solve
 wrapper for every nonsingular real input at the elementary `2^(n-1)`
 trace-growth strength.
@@ -55631,6 +55736,47 @@ theorem higham9_16_foster_source_bound_exists_of_RookPivotGEUTrace_of_det_ne_zer
   exact
     higham9_16_foster_source_bound_exists_of_RookPivotGEUTrace_of_trace_bound
       fp n hn_pos A U_trace b hdet htrace hsharp hn hn3
+
+/-- **Theorem 9.5 / equation (9.16)**, determinant-only rook-pivoting solve
+wrapper at Foster's sharp RHS in dimension `n = 1`.
+
+This combines the exact rook-pivoting certificate with the base-dimension
+comparison `2^(n-1) <= higham9_16_rookPivotFosterBound n`, avoiding the global
+sharp-growth premise required by the general determinant-only sharp solve
+wrapper. -/
+theorem higham9_16_foster_source_bound_exists_of_RookPivotGEUTrace_of_det_ne_zero_of_eq_one
+    (fp : FPModel) (n : ℕ)
+    (hn_pos : 0 < n)
+    (hone : n = 1)
+    (A : Fin n → Fin n → ℝ)
+    (b : Fin n → ℝ)
+    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) ≠ 0)
+    (hn : gammaValid fp n)
+    (hn3 : gammaValid fp (3 * n)) :
+    ∃ L_hat U_hat : Fin n → Fin n → ℝ,
+    ∃ sigma tau : Fin n → Fin n,
+    ∃ hLU : higham9_2_CompletePermutedLUFactSpec n A L_hat U_hat sigma tau,
+      (∀ i j : Fin n, |L_hat i j| ≤ 1) ∧
+      let bP : Fin n → ℝ := fun i => b (sigma i)
+      let y_hat := fl_forwardSub fp n L_hat bP
+      let z_hat := fl_backSub fp n U_hat y_hat
+      let x_hat : Fin n → ℝ :=
+        fun j => z_hat ((Equiv.ofBijective tau hLU.1).symm j)
+      ∃ ΔA : Fin n → Fin n → ℝ,
+        (infNorm ΔA ≤
+          (↑n) ^ 2 * gamma fp (3 * n) *
+            higham9_16_rookPivotFosterBound n * infNorm A) ∧
+        (∀ i, ∑ j : Fin n, (A i j + ΔA i j) * x_hat j = b i) := by
+  obtain ⟨L_hat, U_hat, sigma, tau, hLU, hL_bound, hU_diag, hBmax, hgrowth⟩ :=
+    higham9_16_exists_RookPivotCompletePermutedLUFactSpec_L_bound_growth_le_fosterBound_of_det_ne_zero_of_eq_one
+      n hn_pos hone A hdet
+  refine ⟨L_hat, U_hat, sigma, tau, hLU, hL_bound, ?_⟩
+  exact
+    higham9_5_wilkinson_source_bound_of_CompletePermutedLUFactSpec_growth
+      fp n hn_pos A L_hat U_hat sigma tau b
+      (higham9_16_rookPivotFosterBound n)
+      hBmax (higham9_16_rookPivotFosterBound_nonneg n)
+      hgrowth hU_diag hLU hn hn3 hL_bound
 
 /-- **Theorem 9.10 / upper-Hessenberg GEPP trace support**, a nonsingular
 active Hessenberg trace can be extended recursively to the terminal active
