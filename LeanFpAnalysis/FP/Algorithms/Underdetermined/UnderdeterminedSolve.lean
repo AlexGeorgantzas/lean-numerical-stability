@@ -5681,6 +5681,58 @@ theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_fa
     hxTranspose hsmall hAATInv_le hSourceFactor_le_min hAOp
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    exact-size/common-radius handoff with the printed smallness condition
+    supplied by a common cap on the two perturbation-product radii. -/
+theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_deltaA_components_source_operator_envelopes_exact_size_eps_common_radius_common_smallness_min_factor_bound
+    {m n : ℕ}
+    (hm : 0 < m)
+    (A : Fin m → Fin n → ℝ)
+    (x : Fin n → ℝ)
+    (DeltaA1 DeltaA2 : Fin m → Fin n → ℝ)
+    (b : Fin m → ℝ)
+    (y : Fin m → ℝ)
+    (AAT_inv : Fin m → Fin m → ℝ)
+    (E : Fin m → Fin n → ℝ)
+    (rho1 rho2 rho eps tauA omega e : ℝ)
+    (hDeltaA1 :
+      rectMatMulVec (fun i j => A i j + DeltaA1 i j) x = b)
+    (hDataEpsNonneg : x ≠ 0 → 0 ≤ eps)
+    (hEOp : x ≠ 0 → rectOpNorm2Le E e)
+    (hEpsE_le_min : x ≠ 0 → eps * e ≤ min rho1 rho2)
+    (hSourceRadius :
+      2 * (m : ℝ) * (n : ℝ) * (tauA + eps * e) * omega *
+          min rho1 rho2 ≤
+        (1 / 2 : ℝ))
+    (hGramLeftInv : x ≠ 0 → IsLeftInverse m (rectGram A) AAT_inv)
+    (hDataE : x ≠ 0 → ∀ i k, 0 ≤ E i k)
+    (hDeltaA1Component : x ≠ 0 →
+      ∀ i k, |DeltaA1 i k| ≤ eps * E i k)
+    (hDeltaA2Component : x ≠ 0 →
+      ∀ i k, |DeltaA2 i k| ≤ eps * E i k)
+    (hxTranspose : x ≠ 0 →
+      x =
+        rectTransposeMulVec (fun i j => A i j + DeltaA2 i j) y)
+    (hrho1_le : rho1 ≤ rho)
+    (hrho2_le : rho2 ≤ rho)
+    (hrho_small : 3 * rho < 1)
+    (hAATInv_le : infNorm AAT_inv ≤ omega)
+    (hSourceFactor_le_min : x ≠ 0 →
+      2 * (m : ℝ) ^ 2 * (tauA + eps * e) * omega ≤ min rho1 rho2)
+    (hAOp : x ≠ 0 → rectOpNorm2Le A tauA) :
+    RectMinNormSolution m n
+      (fun i j => A i j +
+        undetLemma21_2SinglePerturbation x DeltaA1 DeltaA2 i j)
+      b x :=
+  higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_deltaA_components_source_operator_envelopes_exact_size_eps_common_radius_min_factor_bound
+    hm A x DeltaA1 DeltaA2 b y AAT_inv E rho1 rho2 eps tauA omega e
+    hDeltaA1 hDataEpsNonneg hEOp hEpsE_le_min hSourceRadius hGramLeftInv
+    hDataE hDeltaA1Component hDeltaA2Component hxTranspose
+    (fun _ =>
+      higham21_lemma21_2_three_max_lt_one_of_common_bound
+        rho1 rho2 rho hrho1_le hrho2_le hrho_small)
+    hAATInv_le hSourceFactor_le_min hAOp
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     exact-size `eps`-specialized handoff with the source perturbation-radius
     condition supplied as separate bounds for the two perturbation radii. -/
 theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_factor_deltaA_components_source_operator_envelopes_exact_size_eps_branch_radius_min_factor_bound
