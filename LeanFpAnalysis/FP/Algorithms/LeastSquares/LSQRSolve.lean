@@ -20475,6 +20475,28 @@ theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_theta_not_
       lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_phi_le_sigmaMin
         htheta A b hy hnot hrank (by simpa [sigma, phi] using hphi)
 
+/-- Source-left-panel version of the finite-positive WKS equality.  Full row
+    rank of the original data matrix `A` supplies the full-row-rank hypothesis
+    for the source block `[A phi(I-r r^+)]`. -/
+theorem lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_theta_not_isLeastSquaresMinimizer_of_left_panel_rowRank_eq_card
+    {m n : ℕ} {theta : ℝ} (htheta : 0 < theta)
+    (A : Fin (m + 1) → Fin n → ℝ) (b : Fin (m + 1) → ℝ)
+    {y : Fin n → ℝ} (hy : y ≠ 0)
+    (hnot : ¬ IsLeastSquaresMinimizer A b y)
+    (hA : lsRealRectRowRank A = m + 1) :
+    lsNormwiseBackwardErrorEtaF theta A b y =
+        lsNormwiseBackwardErrorFormulaRHS theta A b y ∧
+      0 < lsNormwiseBackwardErrorEtaF theta A b y ∧
+      0 < lsNormwiseBackwardErrorFormulaRHS theta A b y := by
+  have hrank :
+      lsNormwiseBackwardErrorFormulaMatrixRowRank theta A
+        (lsResidualHigham A b y) y = m + 1 :=
+    lsNormwiseBackwardErrorFormulaMatrixRowRank_eq_card_of_left_panel_rowRank_eq_card
+      theta A (lsResidualHigham A b y) y hA
+  exact
+    lsNormwiseBackwardErrorEtaF_eq_formulaRHS_and_pos_of_positive_theta_not_isLeastSquaresMinimizer_of_formulaMatrixRowRank_eq_card
+      htheta A b hy hnot hrank
+
 /-- Positive finite-`theta` WKS branch from the concrete rank-one
     source-block certificate.  This replaces the generic upper-inequality
     hypothesis by the explicit expanded rank-one witness cost bound against
