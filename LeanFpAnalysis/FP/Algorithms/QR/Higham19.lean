@@ -4894,6 +4894,68 @@ theorem fl_dotProduct_exactWithUnitRoundoff_eq_sum
       rw [fin_foldl_add_eq_add_sum]
       rw [Fin.sum_univ_succ]
 
+/-- Under `exactWithUnitRoundoff`, the computed Householder scale is the
+mathematical Householder scale. -/
+theorem fl_householderScale_exactWithUnitRoundoff_eq
+    (u0 : Real) (hu0 : 0 <= u0) {n : Nat} (hn : 0 < n)
+    (x : Fin n -> Real) :
+    fl_householderScale (FPModel.exactWithUnitRoundoff u0 hu0) hn x =
+      householderScale hn x := by
+  rw [fl_householderScale, householderScale, fl_norm2, fl_norm2Sq]
+  rw [fl_dotProduct_exactWithUnitRoundoff_eq_sum u0 hu0 n x x]
+  simp [FPModel.exactWithUnitRoundoff]
+
+/-- Under `exactWithUnitRoundoff`, the computed Householder vector is the
+mathematical Householder vector. -/
+theorem fl_householderVector_exactWithUnitRoundoff_eq
+    (u0 : Real) (hu0 : 0 <= u0) {n : Nat} (hn : 0 < n)
+    (x : Fin n -> Real) :
+    fl_householderVector (FPModel.exactWithUnitRoundoff u0 hu0) hn x =
+      LeanFpAnalysis.FP.householderVector hn x := by
+  funext i
+  rw [fl_householderVector, LeanFpAnalysis.FP.householderVector]
+  rw [fl_householderScale_exactWithUnitRoundoff_eq u0 hu0 hn x]
+  by_cases hi : i = ⟨0, hn⟩
+  · simp [hi, FPModel.exactWithUnitRoundoff]
+  · simp [hi]
+
+/-- Under `exactWithUnitRoundoff`, the computed Householder beta is Higham's
+exact scale-ordered beta. -/
+theorem fl_householderBeta_exactWithUnitRoundoff_eq
+    (u0 : Real) (hu0 : 0 <= u0) {n : Nat} (hn : 0 < n)
+    (x : Fin n -> Real) :
+    fl_householderBeta (FPModel.exactWithUnitRoundoff u0 hu0) hn x =
+      householderBetaFromScale hn x := by
+  rw [fl_householderBeta, householderBetaFromScale]
+  rw [fl_householderScale_exactWithUnitRoundoff_eq u0 hu0 hn x,
+    fl_householderVector_exactWithUnitRoundoff_eq u0 hu0 hn x]
+  simp [FPModel.exactWithUnitRoundoff]
+
+/-- Positive exact-arithmetic route for the normalized-loop self-dot premise.
+
+The previous rounded-model audit shows that `fl_householderNormalizedVector`
+need not have self-dot `2` for an arbitrary `FPModel`.  In the exact arithmetic
+subcase, however, the concrete computed scale, vector, and beta collapse to
+Higham's exact Householder construction, so the normalized computed vector
+does satisfy the source convention. -/
+theorem fl_householderNormalizedVector_self_dot_exactWithUnitRoundoff
+    (u0 : Real) (hu0 : 0 <= u0) {n : Nat} (hn : 0 < n)
+    (x : Fin n -> Real) (hx : x ≠ 0) :
+    ((Finset.univ : Finset (Fin n)).sum
+        (fun i =>
+          fl_householderNormalizedVector (FPModel.exactWithUnitRoundoff u0 hu0)
+              hn x i *
+            fl_householderNormalizedVector (FPModel.exactWithUnitRoundoff u0 hu0)
+              hn x i)) = 2 := by
+  simpa [fl_householderNormalizedVector,
+    fl_householderVector_exactWithUnitRoundoff_eq u0 hu0 hn x,
+    fl_householderBeta_exactWithUnitRoundoff_eq u0 hu0 hn x] using
+    householderNormalizedVector_norm_sq n
+      (LeanFpAnalysis.FP.householderVector hn x)
+      (householderBetaFromScale hn x)
+      (le_of_lt (householderBetaFromScale_pos_of_ne_zero hn x hx))
+      (householderBetaFromScale_mul_norm_sq hn x hx)
+
 /-- Exact-arithmetic handoff from Higham's normalized beta-one compact
 Householder update to the repository's unnormalized `householderBetaSpec`
 compact update.
