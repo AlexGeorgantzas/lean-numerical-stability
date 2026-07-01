@@ -111,4 +111,88 @@ theorem fl_chol_diag_step_error (fp : FPModel) (m : ℕ)
   obtain ⟨η, hη, hsq⟩ := fl_sqrt_sq_backward_error fp _ hs
   exact ⟨Θ, θ, η, hΘ, hθ, hη, by rw [hsq, hfold]⟩
 
+set_option linter.unusedVariables false in
+/-- **Algorithm 10.2** (Higham §10.1), entry recursion over `ℕ` indices.
+
+    Column-major evaluation of the upper Cholesky factor:
+    `r̂_ij = fl((a_ij − ∑_{k<i} r̂_ki r̂_kj) / r̂_ii)` for `i < j` and
+    `r̂_jj = fl(√(a_jj − ∑_{k<j} r̂_kj²))`, with junk value `0` below the
+    diagonal and outside the matrix range.  Recursion is well-founded in the
+    lexicographic order on (column, row). -/
+noncomputable def fl_cholEntry (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) : ℕ → ℕ → ℝ
+  | i, j =>
+    if h : i < n ∧ j < n then
+      if hij : i < j then
+        fp.fl_div
+          (fl_cholSubFold fp i
+            (fun k => fl_cholEntry fp n A k.val i)
+            (fun k => fl_cholEntry fp n A k.val j)
+            (A ⟨i, h.1⟩ ⟨j, h.2⟩))
+          (fl_cholEntry fp n A i i)
+      else if hji : i = j then
+        fp.fl_sqrt
+          (fl_cholSubFold fp i
+            (fun k => fl_cholEntry fp n A k.val i)
+            (fun k => fl_cholEntry fp n A k.val i)
+            (A ⟨i, h.1⟩ ⟨i, h.1⟩))
+      else 0
+    else 0
+  termination_by i j => (j, i)
+  decreasing_by
+  all_goals
+    first
+      | exact Prod.Lex.left _ _ hij
+      | exact Prod.Lex.right _ k.isLt
+      | (subst hji; exact Prod.Lex.right _ k.isLt)
+
+/-- **Algorithm 10.2** (Higham §10.1): the computed floating-point Cholesky
+    factor `R̂` as a `Fin n` matrix. -/
+noncomputable def fl_cholesky (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j => fl_cholEntry fp n A i.val j.val
+
+/-- The computed factor is upper triangular: entries strictly below the
+    diagonal are the algorithm's junk value `0`. -/
+theorem fl_cholesky_strict_lower (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (i j : Fin n) (h : j.val < i.val) :
+    fl_cholesky fp n A i j = 0 := by
+  unfold fl_cholesky
+  rw [fl_cholEntry.eq_1]
+  have h1 : ¬ i.val < j.val := by omega
+  have h2 : ¬ i.val = j.val := by omega
+  simp [i.isLt, j.isLt, h1, h2]
+
+/-- **Algorithm 10.2 off-diagonal recurrence, matrix form**:
+    `R̂ i j = fl((A i j − ∑_{k<i} R̂ k i · R̂ k j) / R̂ i i)` for `i < j`. -/
+theorem fl_cholesky_offdiag_eq (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (i j : Fin n) (hij : i.val < j.val) :
+    fl_cholesky fp n A i j =
+      fp.fl_div
+        (fl_cholSubFold fp i.val
+          (fun k => fl_cholesky fp n A ⟨k.val, Nat.lt_trans k.isLt i.isLt⟩ i)
+          (fun k => fl_cholesky fp n A ⟨k.val, Nat.lt_trans k.isLt i.isLt⟩ j)
+          (A i j))
+        (fl_cholesky fp n A i i) := by
+  show fl_cholEntry fp n A i.val j.val = _
+  rw [fl_cholEntry.eq_1]
+  rw [dif_pos (⟨i.isLt, j.isLt⟩ : i.val < n ∧ j.val < n), dif_pos hij]
+  rfl
+
+/-- **Algorithm 10.2 diagonal recurrence, matrix form**:
+    `R̂ j j = fl(√(A j j − ∑_{k<j} (R̂ k j)²))`. -/
+theorem fl_cholesky_diag_eq (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (j : Fin n) :
+    fl_cholesky fp n A j j =
+      fp.fl_sqrt
+        (fl_cholSubFold fp j.val
+          (fun k => fl_cholesky fp n A ⟨k.val, Nat.lt_trans k.isLt j.isLt⟩ j)
+          (fun k => fl_cholesky fp n A ⟨k.val, Nat.lt_trans k.isLt j.isLt⟩ j)
+          (A j j)) := by
+  show fl_cholEntry fp n A j.val j.val = _
+  rw [fl_cholEntry.eq_1]
+  rw [dif_pos (⟨j.isLt, j.isLt⟩ : j.val < n ∧ j.val < n),
+      dif_neg (lt_irrefl j.val), dif_pos rfl]
+  rfl
+
 end LeanFpAnalysis.FP

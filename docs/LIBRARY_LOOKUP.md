@@ -3520,6 +3520,11 @@ Source-facing Chapter 10 wrappers:
 - `fl_cholSubFold_error`
 - `fl_chol_offdiag_step_error`
 - `fl_chol_diag_step_error`
+- `fl_cholEntry`
+- `fl_cholesky`
+- `fl_cholesky_strict_lower`
+- `fl_cholesky_offdiag_eq`
+- `fl_cholesky_diag_eq`
 - `higham10_8_sun_normwise_perturbation`
 - `higham10_8_sun_componentwise_perturbation`
 - `higham10_9_PivotedCholeskySpec`
