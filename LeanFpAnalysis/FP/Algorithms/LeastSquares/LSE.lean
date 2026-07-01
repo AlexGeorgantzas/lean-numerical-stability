@@ -13950,6 +13950,127 @@ theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_certifi
       A B b d (theorem20_10_gqr_xhat_of_transformed_tail fp hpert beta d)
       hgammaB_nonneg (hcertA hSdiag hL22diag)
 
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b):
+    constructed rounded Householder GQR Part B exact core with named
+    conservative composed coefficients.
+
+    This unwraps the constructed reversed-RHS Part B certificate through the
+    generic certificate-to-core theorem.  The remaining nonzero-diagonal branch
+    is still explicit; deriving it from source rank hypotheses and identifying
+    the final returned computed vector remain the next computed-GQR tasks. -/
+theorem theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_backward_error_of_diagonal_composed_conservative_gamma
+    {r p q : ℕ} (fp : FPModel)
+    (A : Fin (r + q) → Fin (p + q) → ℝ)
+    (B : Fin p → Fin (p + q) → ℝ)
+    (b : Fin (r + q) → ℝ) (d : Fin p → ℝ)
+    (hp : 0 < p) (hq : 0 < q)
+    (hvalidA :
+      gammaValid fp ((p + q) * householderConstructApplyGammaIndex (r + q)))
+    (hvalidB :
+      gammaValid fp (p * householderConstructApplyGammaIndex (p + q)))
+    (hhalf :
+      ((householderQRRhsPanelGammaClosedGrowthIndex (r + q) q : ℝ) *
+        fp.u ≤ 1 / 2)) :
+    let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+      fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+    let Rb : Fin (p + q) → Fin p → ℝ :=
+      fl_householderQRPanel_R fp (p + q) p (finiteTranspose B)
+    let S : Fin p → Fin p → ℝ :=
+      matTranspose (fun i : Fin p => fun j : Fin p =>
+        Rb (Fin.castAdd q i) j)
+    let beta : Fin q → ℝ :=
+      theorem20_10_householder_reversed_AQ2_rhs_tail fp A Qb b
+    ∃ DeltaA0 : Fin (r + q) → Fin (p + q) → ℝ,
+    ∃ DeltaB0 : Fin p → Fin (p + q) → ℝ,
+    ∃ Deltab0 : Fin (r + q) → ℝ,
+      (∀ i j,
+        B i j + DeltaB0 i j =
+          matMulRect (p + q) (p + q) p Qb Rb j i) ∧
+      frobNormRect DeltaA0 ≤
+        theorem20_10_householder_gammaA fp r p q * frobNormRect A ∧
+      frobNormRect DeltaB0 ≤
+        theorem20_10_householder_gammaB fp r p q * frobNormRect B ∧
+      vecNorm2 Deltab0 ≤
+        theorem20_10_householder_rhs_conservative_gamma fp r p q *
+          vecNorm2 b ∧
+      ∃ hpert : GeneralizedQRFactorization r p q
+          (fun i j => A i j + DeltaA0 i j)
+          (fun i j => B i j + DeltaB0 i j),
+        hpert.Q = Qb ∧ hpert.S = S ∧
+        (∀ j : Fin q,
+          matMulVec (r + q) (matTranspose hpert.U)
+              (fun k => b k + Deltab0 k) (Fin.natAdd r j) =
+            beta j) ∧
+        ((∀ i : Fin p, hpert.S i i ≠ 0) →
+          (∀ i : Fin q, hpert.L22 i i ≠ 0) →
+          let xhat : Fin (p + q) → ℝ :=
+            theorem20_10_gqr_xhat_of_transformed_tail fp hpert beta d
+          let gammaA : ℝ :=
+            theorem20_10_householder_composed_partA_gammaA fp r p q
+          let gammaB : ℝ :=
+            theorem20_10_householder_composed_partA_gammaB fp r p q
+          ∃ DeltaA : Fin (r + q) → Fin (p + q) → ℝ,
+          ∃ DeltaB : Fin p → Fin (p + q) → ℝ,
+          ∃ Deltab : Fin (r + q) → ℝ,
+          ∃ Deltad : Fin p → ℝ,
+            frobNormRect DeltaA ≤ gammaA * frobNormRect A ∧
+            frobNormRect DeltaB ≤ gammaB * frobNormRect B ∧
+            vecNorm2 Deltab ≤
+              gammaA * vecNorm2 b + gammaB * frobNormRect A * vecNorm2 xhat ∧
+            vecNorm2 Deltad ≤ gammaB * frobNormRect B * vecNorm2 xhat ∧
+            (∃ hcore : GeneralizedQRFactorization r p q
+                (fun i j => A i j + DeltaA i j)
+                (fun i j => B i j + DeltaB i j),
+              (∃! yz : (Fin p → ℝ) × (Fin q → ℝ),
+                rectMatMulVec hcore.S yz.1 = (fun i => d i + Deltad i) ∧
+                rectMatMulVec hcore.L22 yz.2 =
+                  (fun i : Fin q =>
+                    matMulVec (r + q) (matTranspose hcore.U)
+                      (fun i => b i + Deltab i) (Fin.natAdd r i) -
+                      rectMatMulVec hcore.L21 yz.1 i) ∧
+                IsLSEMinimizer
+                  (fun i j => A i j + DeltaA i j)
+                  (fun i => b i + Deltab i)
+                  (fun i j => B i j + DeltaB i j)
+                  (fun i => d i + Deltad i)
+                  (matMulVec (p + q) hcore.Q (Fin.append yz.1 yz.2))) ∧
+              (∃! x : Fin (p + q) → ℝ,
+                IsLSEMinimizer
+                  (fun i j => A i j + DeltaA i j)
+                  (fun i => b i + Deltab i)
+                  (fun i j => B i j + DeltaB i j)
+                  (fun i => d i + Deltad i) x))) := by
+  let Qb : Fin (p + q) → Fin (p + q) → ℝ :=
+    fl_householderQRPanel_Q fp (p + q) p (finiteTranspose B)
+  let beta : Fin q → ℝ :=
+    theorem20_10_householder_reversed_AQ2_rhs_tail fp A Qb b
+  rcases
+    theorem20_10_householder_constructed_gqr_reversed_rhs_tail_partB_certificate_of_diagonal_composed_conservative_gamma
+      fp A B b d hp hq hvalidA hvalidB hhalf with
+    ⟨DeltaA0, DeltaB0, Deltab0, hDeltaBrep, hDeltaA0, hDeltaB0, hDeltab0,
+      hpert, hQeq, hSeq, hb_tail, hcertB⟩
+  refine
+    ⟨DeltaA0, DeltaB0, Deltab0, hDeltaBrep, hDeltaA0, hDeltaB0,
+      hDeltab0, hpert, hQeq, hSeq, hb_tail, ?_⟩
+  intro hSdiag hL22diag
+  rcases hcertB hSdiag hL22diag with ⟨cert⟩
+  have hcore :=
+    theorem20_10_partB_backward_error_of_perturbation_certificate
+      A B b d (theorem20_10_gqr_xhat_of_transformed_tail fp hpert beta d)
+      cert
+  dsimp at hcore
+  rcases hcore with
+    ⟨DeltaA, DeltaB, Deltab, Deltad, hDeltaAeq, hDeltaBeq,
+      hDeltabeq, hDeltadeq, hDeltaA, hDeltaB, hDeltab, hDeltad,
+      hmethod⟩
+  refine
+    ⟨cert.DeltaA, cert.DeltaB, cert.Deltab, cert.Deltad, ?_, ?_, ?_, ?_,
+      hmethod⟩
+  · simpa [hDeltaAeq] using hDeltaA
+  · simpa [hDeltaBeq] using hDeltaB
+  · simpa [hDeltabeq] using hDeltab
+  · simpa [hDeltadeq] using hDeltad
+
 /-- Higham, 2nd ed., Chapter 20, Theorem 20.10(b), rounded Householder RHS
     Part B certificate route with the currently proved conservative RHS
     coefficient.
