@@ -23932,6 +23932,184 @@ theorem exact_signed_pivot_panel_sequence_active_block_bound_of_geometric_stage_
       hpivotMax hj hblockBound
 
 /-- Higham, Theorem 19.6 route dependency: exact signed-pivot panel sequence
+active-block propagation from a uniform initial block bound.
+
+This removes the per-stage active-block bound premise from the pointwise
+sequence wrapper: monotone active windows, positive pivot-column norm, and
+active-max pivot bounds propagate the geometric Cox--Higham active-row budget
+through every exact signed-pivot stage. -/
+theorem exact_signed_pivot_panel_sequence_active_block_bound_of_initial_block_bound
+    {m n : Nat} (steps : Nat)
+    (Astage : Nat -> Fin m -> Fin n -> Real)
+    (p : Nat -> Fin m) (pivotCol : Nat -> Fin n)
+    (B0 : Real)
+    (hinitBlock : forall i : Fin m, forall l : Fin n, |Astage 0 i l| <= B0)
+    (hB0 : 0 <= B0)
+    (hstep : forall t : Nat, t < steps ->
+      Astage (t + 1) =
+        exactSignedPivotHouseholderPanelStep m n (p t) (pivotCol t) (Astage t))
+    (hpMono : forall u t : Nat, u <= t -> t <= steps -> (p u).val <= (p t).val)
+    (hkMono : forall u t : Nat, u <= t -> t <= steps ->
+      (pivotCol u).val <= (pivotCol t).val)
+    (hnorm : forall t : Nat, t < steps ->
+      0 <
+        householderTrailingColumnNorm2Sq
+          (m := m) (n := n) (p t) (Astage t) (pivotCol t))
+    (hpivotMax : forall t : Nat, t < steps ->
+      forall l : Fin n, (pivotCol t).val <= l.val ->
+        householderTrailingColumnNorm2Sq
+            (m := m) (n := n) (p t) (Astage t) l <=
+          householderTrailingColumnNorm2Sq
+            (m := m) (n := n) (p t) (Astage t) (pivotCol t)) :
+    forall t : Nat, t <= steps ->
+      forall i : Fin m, (p t).val <= i.val ->
+        forall l : Fin n, (pivotCol t).val <= l.val ->
+          |Astage t i l| <= active_row_growth_factor m ^ t * B0 := by
+  simpa [active_row_growth_factor] using
+    coxHigham_exactSignedPivotPanel_sequence_active_block_bound_of_initial_block_bound
+      steps Astage p pivotCol B0 hinitBlock hB0 hstep hpMono hkMono hnorm
+      hpivotMax
+
+/-- Higham, Theorem 19.6 route dependency: exact signed-pivot panel
+active-block propagation with nonbreakdown stated as an active nonzero entry.
+
+This discharges the positive pivot-column norm field from active-block
+nonzero mass plus the visible active-max pivot inequality. -/
+theorem exact_signed_pivot_panel_sequence_active_block_bound_of_initial_block_bound_of_active_block_nonzero
+    {m n : Nat} (steps : Nat)
+    (Astage : Nat -> Fin m -> Fin n -> Real)
+    (p : Nat -> Fin m) (pivotCol : Nat -> Fin n)
+    (B0 : Real)
+    (hinitBlock : forall i : Fin m, forall l : Fin n, |Astage 0 i l| <= B0)
+    (hB0 : 0 <= B0)
+    (hstep : forall t : Nat, t < steps ->
+      Astage (t + 1) =
+        exactSignedPivotHouseholderPanelStep m n (p t) (pivotCol t) (Astage t))
+    (hpMono : forall u t : Nat, u <= t -> t <= steps -> (p u).val <= (p t).val)
+    (hkMono : forall u t : Nat, u <= t -> t <= steps ->
+      (pivotCol u).val <= (pivotCol t).val)
+    (hactiveNonzero : forall t : Nat, t < steps ->
+      exists l : Fin n, (pivotCol t).val <= l.val /\
+        exists i : Fin m, (p t).val <= i.val /\ Astage t i l ≠ 0)
+    (hpivotMax : forall t : Nat, t < steps ->
+      forall l : Fin n, (pivotCol t).val <= l.val ->
+        householderTrailingColumnNorm2Sq
+            (m := m) (n := n) (p t) (Astage t) l <=
+          householderTrailingColumnNorm2Sq
+            (m := m) (n := n) (p t) (Astage t) (pivotCol t)) :
+    forall t : Nat, t <= steps ->
+      forall i : Fin m, (p t).val <= i.val ->
+        forall l : Fin n, (pivotCol t).val <= l.val ->
+          |Astage t i l| <= active_row_growth_factor m ^ t * B0 := by
+  simpa [active_row_growth_factor] using
+    coxHigham_exactSignedPivotPanel_sequence_active_block_bound_of_initial_block_bound_of_active_block_nonzero
+      steps Astage p pivotCol B0 hinitBlock hB0 hstep hpMono hkMono
+      hactiveNonzero hpivotMax
+
+/-- Higham, Theorem 19.6 route dependency: exact signed-pivot panel
+active-block propagation with the pivot choice supplied by the active-column
+max selector.
+
+This is closer to the pivoted QR loop: the raw pivot-max inequality is
+replaced by the algorithmic finite active-max choice, while nonbreakdown is
+still stated as a visible active nonzero entry. -/
+theorem exact_signed_pivot_panel_sequence_active_block_bound_of_initial_block_bound_of_active_max_pivot
+    {m n : Nat} (steps : Nat)
+    (Astage : Nat -> Fin m -> Fin n -> Real)
+    (p : Nat -> Fin m) (pivotCol : Nat -> Fin n)
+    (B0 : Real)
+    (hinitBlock : forall i : Fin m, forall l : Fin n, |Astage 0 i l| <= B0)
+    (hB0 : 0 <= B0)
+    (hstep : forall t : Nat, t < steps ->
+      Astage (t + 1) =
+        exactSignedPivotHouseholderPanelStep m n (p t) (pivotCol t) (Astage t))
+    (hpMono : forall u t : Nat, u <= t -> t <= steps -> (p u).val <= (p t).val)
+    (hkMono : forall u t : Nat, u <= t -> t <= steps ->
+      (pivotCol u).val <= (pivotCol t).val)
+    (hactiveNonzero : forall t : Nat, t < steps ->
+      exists l : Fin n, (pivotCol t).val <= l.val /\
+        exists i : Fin m, (p t).val <= i.val /\ Astage t i l ≠ 0)
+    (hpivotChoice : forall t : Nat, t < steps ->
+      pivotCol t =
+        householderActiveMaxPivotColumn (p t) (pivotCol t) (Astage t)) :
+    forall t : Nat, t <= steps ->
+      forall i : Fin m, (p t).val <= i.val ->
+        forall l : Fin n, (pivotCol t).val <= l.val ->
+          |Astage t i l| <= active_row_growth_factor m ^ t * B0 := by
+  simpa [active_row_growth_factor] using
+    coxHigham_exactSignedPivotPanel_sequence_active_block_bound_of_initial_block_bound_of_active_max_pivot
+      steps Astage p pivotCol B0 hinitBlock hB0 hstep hpMono hkMono
+      hactiveNonzero hpivotChoice
+
+/-- Higham, Theorem 19.6 route dependency: exact signed-pivot panel
+active-block propagation from positive active-block mass and the finite
+active-max pivot policy.
+
+This makes the nonbreakdown field scalar and source-shaped: every active
+trailing block has positive squared mass before its pivot is chosen. -/
+theorem exact_signed_pivot_panel_sequence_active_block_bound_of_initial_block_bound_of_active_block_norm_pos
+    {m n : Nat} (steps : Nat)
+    (Astage : Nat -> Fin m -> Fin n -> Real)
+    (p : Nat -> Fin m) (pivotCol : Nat -> Fin n)
+    (B0 : Real)
+    (hinitBlock : forall i : Fin m, forall l : Fin n, |Astage 0 i l| <= B0)
+    (hB0 : 0 <= B0)
+    (hstep : forall t : Nat, t < steps ->
+      Astage (t + 1) =
+        exactSignedPivotHouseholderPanelStep m n (p t) (pivotCol t) (Astage t))
+    (hpMono : forall u t : Nat, u <= t -> t <= steps -> (p u).val <= (p t).val)
+    (hkMono : forall u t : Nat, u <= t -> t <= steps ->
+      (pivotCol u).val <= (pivotCol t).val)
+    (hactiveBlockPos : forall t : Nat, t < steps ->
+      0 < householderActiveBlockNorm2Sq (p t) (pivotCol t) (Astage t))
+    (hpivotChoice : forall t : Nat, t < steps ->
+      pivotCol t =
+        householderActiveMaxPivotColumn (p t) (pivotCol t) (Astage t)) :
+    forall t : Nat, t <= steps ->
+      forall i : Fin m, (p t).val <= i.val ->
+        forall l : Fin n, (pivotCol t).val <= l.val ->
+          |Astage t i l| <= active_row_growth_factor m ^ t * B0 := by
+  simpa [active_row_growth_factor] using
+    coxHigham_exactSignedPivotPanel_sequence_active_block_bound_of_initial_block_bound_of_active_block_norm_pos
+      steps Astage p pivotCol B0 hinitBlock hB0 hstep hpMono hkMono
+      hactiveBlockPos hpivotChoice
+
+/-- Higham, Theorem 19.6 route dependency: exact signed-pivot panel sequence
+active-block bound after active-max column swaps, with post-swap
+active-block nonbreakdown stated on the displayed stages.
+
+The stronger raw-stage variant below is usually the more useful loop surface;
+this wrapper keeps the intermediate sorted-stage nonbreakdown theorem visible
+under a Chapter 19.6 name. -/
+theorem exact_signed_pivot_panel_sequence_active_block_bound_of_swapped_active_max_pivot_of_active_block_norm_pos
+    {m n : Nat} (steps : Nat)
+    (Araw Astage : Nat -> Fin m -> Fin n -> Real)
+    (p : Nat -> Fin m) (pivotCol : Nat -> Fin n)
+    (B0 : Real)
+    (hinitBlock : forall i : Fin m, forall l : Fin n, |Astage 0 i l| <= B0)
+    (hB0 : 0 <= B0)
+    (hstep : forall t : Nat, t < steps ->
+      Astage (t + 1) =
+        exactSignedPivotHouseholderPanelStep m n (p t) (pivotCol t) (Astage t))
+    (hpMono : forall u t : Nat, u <= t -> t <= steps -> (p u).val <= (p t).val)
+    (hkMono : forall u t : Nat, u <= t -> t <= steps ->
+      (pivotCol u).val <= (pivotCol t).val)
+    (hsorted : forall t : Nat, t < steps ->
+      Astage t =
+        householderSwapColumns (Araw t) (pivotCol t)
+          (householderActiveMaxPivotColumn (p t) (pivotCol t) (Araw t)))
+    (hactiveBlockPos : forall t : Nat, t < steps ->
+      0 < householderActiveBlockNorm2Sq (p t) (pivotCol t) (Astage t)) :
+    forall t : Nat, t <= steps ->
+      forall i : Fin m, (p t).val <= i.val ->
+        forall l : Fin n, (pivotCol t).val <= l.val ->
+          |Astage t i l| <= active_row_growth_factor m ^ t * B0 := by
+  simpa [active_row_growth_factor] using
+    coxHigham_exactSignedPivotPanel_sequence_active_block_bound_of_initial_block_bound_of_swapped_active_max_pivot
+      steps Araw Astage p pivotCol B0 hinitBlock hB0 hstep hpMono hkMono
+      hsorted hactiveBlockPos
+
+/-- Higham, Theorem 19.6 route dependency: exact signed-pivot panel sequence
 active-block bound after active-max column swaps.
 
 This wraps the multi-stage Cox--Higham active-block result for the exact
@@ -23966,6 +24144,59 @@ theorem exact_signed_pivot_panel_sequence_active_block_bound_of_swapped_active_m
     coxHigham_exactSignedPivotPanel_sequence_active_block_bound_of_initial_block_bound_of_swapped_active_max_pivot_of_raw_active_block_norm_pos
       steps Araw Astage p pivotCol B0 hinitBlock hB0 hstep hpMono hkMono
       hsorted hrawActiveBlockPos
+
+/-- Higham, Theorem 19.6 route dependency: exact signed-pivot panel sequence
+active-block bound with nonbreakdown supplied by leading-block determinant
+data.
+
+This is the determinant-facing exact sequence bridge for the pivoted QR route:
+leading-block and previous-block determinants plus already-zero lower-prefix
+entries supply the raw active-block nonbreakdown field consumed by the sorted
+active-max sequence theorem.  It remains a dependency, not the complete
+rounded row-wise QR theorem. -/
+theorem exact_signed_pivot_panel_sequence_active_block_bound_of_leading_block_det_ne_zero
+    {m n : Nat} (hmn : n <= m) {steps : Nat} (hsteps : steps <= n)
+    (Araw Astage : Nat -> Fin m -> Fin n -> Real)
+    (p : Nat -> Fin m) (pivotCol : Nat -> Fin n)
+    (B0 : Real)
+    (hinitBlock : forall i : Fin m, forall l : Fin n, |Astage 0 i l| <= B0)
+    (hB0 : 0 <= B0)
+    (hstep : forall t : Nat, t < steps ->
+      Astage (t + 1) =
+        exactSignedPivotHouseholderPanelStep m n (p t) (pivotCol t) (Astage t))
+    (hpMono : forall u t : Nat, u <= t -> t <= steps -> (p u).val <= (p t).val)
+    (hkMono : forall u t : Nat, u <= t -> t <= steps ->
+      (pivotCol u).val <= (pivotCol t).val)
+    (hstageRow : forall t : Nat, t < steps -> (p t).val = t)
+    (hstageCol : forall t : Nat, t < steps -> (pivotCol t).val = t)
+    (hsorted : forall t : Nat, t < steps ->
+      Astage t =
+        householderSwapColumns (Araw t) (pivotCol t)
+          (householderActiveMaxPivotColumn (p t) (pivotCol t) (Araw t)))
+    (hdetPrev : forall t (ht : t < steps),
+      Matrix.det
+        (qrPreviousLeadingBlockTranspose (Araw t)
+          (le_of_lt (lt_of_lt_of_le (lt_of_lt_of_le ht hsteps) hmn))
+          (lt_of_lt_of_le ht hsteps) :
+          Matrix (Fin t) (Fin t) Real) ≠ 0)
+    (hdetLead : forall t (ht : t < steps),
+      Matrix.det
+        (qrLeadingBlock (Araw t)
+          (Nat.succ_le_iff.mpr
+            (lt_of_lt_of_le (lt_of_lt_of_le ht hsteps) hmn))
+          (lt_of_lt_of_le ht hsteps) :
+          Matrix (Fin (t + 1)) (Fin (t + 1)) Real) ≠ 0)
+    (hlowerPrev : forall t (ht : t < steps) (i : Fin m) (j : Fin t),
+      t <= i.val ->
+        Araw t i (qrPreviousColumn n t (lt_of_lt_of_le ht hsteps) j) = 0) :
+    forall t : Nat, t <= steps ->
+      forall i : Fin m, (p t).val <= i.val ->
+        forall l : Fin n, (pivotCol t).val <= l.val ->
+          |Astage t i l| <= active_row_growth_factor m ^ t * B0 := by
+  simpa [active_row_growth_factor] using
+    coxHigham_exactSignedPivotPanel_sequence_active_block_bound_of_initial_block_bound_of_swapped_active_max_pivot_of_leading_block_det_ne_zero
+      hmn hsteps Araw Astage p pivotCol B0 hinitBlock hB0 hstep hpMono
+      hkMono hstageRow hstageCol hsorted hdetPrev hdetLead hlowerPrev
 
 /-- Higham, Theorem 19.6 route dependency: rounded stored-panel active-block
 propagation from signed-pivot stage bounds.
