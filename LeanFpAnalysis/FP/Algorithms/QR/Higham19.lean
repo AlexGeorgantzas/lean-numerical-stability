@@ -15598,6 +15598,67 @@ theorem
         ih r (storedSignedSequenceTwiceTrailingSeq A_hat)
           (storedSignedSequenceTailAlpha2 alpha) htailRaw⟩
 
+/-- The named recursive tail-normalized record package also assembles the raw
+source-facing normalized-loop package.
+
+This is the reverse bookkeeping bridge for
+`storedSignedSequenceTailNormalizedLoopRecords_of_tailNormalizedLoopRawFacts`:
+future stored-loop proofs may target either the named record surface or the
+fully expanded raw field surface without rethreading the recurrence and
+leading-block nonbreakdown fields. -/
+theorem
+    storedSignedSequenceTailNormalizedLoopRawFacts_of_tailNormalizedLoopRecords
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real)
+    (hrecords :
+      storedSignedSequenceTailNormalizedLoopRecords fp r p A_hat alpha) :
+    storedSignedSequenceTailNormalizedLoopRawFacts fp r p A_hat alpha := by
+  revert r A_hat alpha
+  refine
+    Nat.twoStepInduction
+      (P := fun p =>
+        forall (r : Nat)
+            (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+            (alpha : Nat -> Real),
+          storedSignedSequenceTailNormalizedLoopRecords fp r p A_hat alpha ->
+            storedSignedSequenceTailNormalizedLoopRawFacts fp r p A_hat alpha)
+      ?hzero ?hone ?hstep p
+  · intro r A_hat alpha _hrecords
+    trivial
+  · intro r A_hat alpha hrecords
+    exact
+      storedSignedSequenceTailNormalizedLoopRawFacts_one_of_twice_trailing_stage_facts
+        fp A_hat alpha hrecords.1 hrecords.2.1
+        hrecords.2.2.hvecTail hrecords.2.2.hselfTail
+  · intro p ih _ihSucc r A_hat alpha hrecords
+    exact
+      storedSignedSequenceTailNormalizedLoopRawFacts_succ_succ_of_twice_trailing_stage_facts
+        fp r p A_hat alpha hrecords.1 hrecords.2.1
+        hrecords.2.2.1.hvecTail2 hrecords.2.2.1.hselfTail2
+        hrecords.2.2.1.hvecTail3 hrecords.2.2.1.hselfTail3
+        (ih r (storedSignedSequenceTwiceTrailingSeq A_hat)
+          (storedSignedSequenceTailAlpha2 alpha) hrecords.2.2.2)
+
+/-- The raw source-facing and named record tail-normalized loop packages are
+equivalent bookkeeping surfaces. -/
+theorem
+    storedSignedSequenceTailNormalizedLoopRawFacts_iff_tailNormalizedLoopRecords
+    (fp : FPModel) (r p : Nat)
+    (A_hat : Nat -> Fin (r + p + 2) -> Fin (p + 2) -> Real)
+    (alpha : Nat -> Real) :
+    storedSignedSequenceTailNormalizedLoopRawFacts fp r p A_hat alpha <->
+      storedSignedSequenceTailNormalizedLoopRecords fp r p A_hat alpha := by
+  constructor
+  · intro hraw
+    exact
+      storedSignedSequenceTailNormalizedLoopRecords_of_tailNormalizedLoopRawFacts
+        fp r p A_hat alpha hraw
+  · intro hrecords
+    exact
+      storedSignedSequenceTailNormalizedLoopRawFacts_of_tailNormalizedLoopRecords
+        fp r p A_hat alpha hrecords
+
 /-- Exact-arithmetic tail-local vector equalities assemble the named recursive
 tail-normalized record package. -/
 theorem
