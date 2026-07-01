@@ -916,6 +916,19 @@ theorem higham21_lemma21_2_symmetrized_min_norm_of_beta_ne_zero {m n : ℕ}
   rwa [hytilde_eq] at hmin
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
+    scalar smallness adapter for a common bound.  If both perturbation
+    products are bounded by `rho`, then `3 * rho < 1` implies the printed
+    `3 * max ... < 1` hypothesis. -/
+theorem higham21_lemma21_2_three_max_lt_one_of_common_bound
+    (a b rho : ℝ)
+    (ha : a ≤ rho)
+    (hb : b ≤ rho)
+    (hrho : 3 * rho < 1) :
+    3 * max a b < 1 := by
+  have hmax_le : max a b ≤ rho := max_le ha hb
+  nlinarith
+
+/-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
     scalar endpoint of the source proof's beta-positivity estimate.
     Once the matrix perturbation argument has produced the displayed lower
     bound `beta >= 1 - (a + b)/(1 - b)`, the source smallness condition
@@ -5762,7 +5775,10 @@ theorem higham21_lemma21_2_single_min_norm_of_nonzero_branch_conservative_ch7_fa
     hm A x DeltaA1 DeltaA2 b y AAT_inv E (eps * e) (eps * e) eps tauA omega e
     hDeltaA1 hDataEpsNonneg hEOp (fun _ => le_rfl) (fun _ => le_rfl)
     (by simpa using hSourceRadius) hGramLeftInv hDataE hDeltaA1Component
-    hDeltaA2Component hxTranspose (fun hx => by simpa using hsmall hx)
+    hDeltaA2Component hxTranspose
+    (fun hx =>
+      higham21_lemma21_2_three_max_lt_one_of_common_bound
+        (eps * e) (eps * e) (eps * e) le_rfl le_rfl (hsmall hx))
     hAATInv_le (fun hx => by simpa using hSourceFactor_le_radius hx) hAOp
 
 /-- Higham, 2nd ed., Chapter 21, Lemma 21.2:
