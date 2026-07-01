@@ -5196,6 +5196,79 @@ theorem rounded_normalized_betaSpec_firstStoredPanelStep_handoff_not_forall_FPMo
     fl_dotProduct, householderNormalizedVector, householderBetaSpec,
     hsqrt2_ne_two] at h00
 
+/-- A concrete rounded model used to audit computed normalized-vector
+self-dot assumptions.
+
+All primitive operations are exact except division, which returns twice the
+exact quotient.  With unit roundoff `1`, this satisfies the abstract `FPModel`
+contract and exposes that `fl_householderNormalizedVector` need not itself have
+squared norm `2`. -/
+noncomputable def divDoubledFPModel : FPModel where
+  u := 1
+  u_nonneg := by norm_num
+  fl_add := fun x y => x + y
+  fl_sub := fun x y => x - y
+  fl_mul := fun x y => x * y
+  fl_div := fun x y => 2 * (x / y)
+  fl_sqrt := fun x => Real.sqrt x
+  fl_add_zero := by
+    intro x
+    ring
+  model_add := by
+    intro x y
+    exact Exists.intro 0 (And.intro (by norm_num) (by ring))
+  model_sub := by
+    intro x y
+    exact Exists.intro 0 (And.intro (by norm_num) (by ring))
+  model_mul := by
+    intro x y
+    exact Exists.intro 0 (And.intro (by norm_num) (by ring))
+  model_div := by
+    intro x y hy
+    refine Exists.intro 1 (And.intro (by norm_num) ?_)
+    field_simp [hy]
+    ring
+  model_sqrt := by
+    intro x _hx
+    exact Exists.intro 0 (And.intro (by norm_num) (by ring))
+
+/-- Route audit for the normalized-loop self-dot premise.
+
+The analysis-only computed normalized Householder vector
+`fl_householderNormalizedVector` does not have squared norm `2` for every
+abstract `FPModel`.  Thus the `v^T v = 2` fields in
+`storedSignedSequenceFullStageNormalizedLoopFacts` are genuine source-facing
+premises, not consequences of simply naming the rounded normalized vector. -/
+theorem fl_householderNormalizedVector_self_dot_not_forall_FPModel :
+    Exists (fun fp : FPModel =>
+      Exists (fun x : Fin 1 -> Real =>
+        Not (
+          (Finset.univ : Finset (Fin 1)).sum
+            (fun i =>
+              fl_householderNormalizedVector fp (Nat.succ_pos 0) x i *
+                fl_householderNormalizedVector fp (Nat.succ_pos 0) x i) =
+          2))) := by
+  refine Exists.intro divDoubledFPModel ?_
+  refine Exists.intro (fun _ : Fin 1 => (1 : Real)) ?_
+  intro h
+  norm_num [divDoubledFPModel, fl_householderNormalizedVector,
+    householderNormalizedVector, fl_householderVector, fl_householderScale,
+    fl_householderBeta, fl_norm2, fl_norm2Sq, fl_dotProduct,
+    householderSign] at h
+  have hsqrt_sq :
+      Real.sqrt (1 : Real) * Real.sqrt (1 : Real) = 1 := by
+    exact Real.mul_self_sqrt (by norm_num)
+  have hsqrt_pow : Real.sqrt (1 : Real) ^ 2 = 1 := by
+    rw [pow_two]
+    exact hsqrt_sq
+  ring_nf at h
+  have hleft :
+      Real.sqrt (1 : Real) ^ 2 * 4 = (4 : Real) := by
+    rw [hsqrt_pow]
+    norm_num
+  have hbad : (4 : Real) = 2 := hleft.symm.trans h
+  norm_num at hbad
+
 /-- Route audit for the stored-loop normalization bottleneck.
 
 The source nonbreakdown hypotheses used by the stored loop, namely
