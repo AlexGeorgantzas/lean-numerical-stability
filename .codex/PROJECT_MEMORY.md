@@ -35,6 +35,19 @@ end-to-end stability rebuild is tagged as
   stderr and both names present, `git diff --check`, touched Lean placeholder
   scan, anchored conflict-marker scan, and focused `#print axioms` reporting
   only `propext`, `Classical.choice`, and `Quot.sound`.
+- 2026-07-01 Problem 13.4 first-split Schur inverse-entry bridge: added
+  `higham13_problem13_4_firstSplit_Sinv_entry_bound_from_block_inverse` and
+  `higham13_problem13_4_firstSplit_Sinv_maxEntryNormRect_from_block_inverse`.
+  These specialize the preceding Problem 13.8 lower-right-block bridge to the
+  `blockMatrixFirstSplitA..` objects used by recursive block-LU source routes,
+  so downstream wrappers can consume the Schur inverse-entry inheritance in
+  source-shaped notation.  This is dependency progress only; the all-tail
+  ambient inverse-entry/source comparison and Eq.13.23 source-strength BDD data
+  remain open.  Verification passed with direct `BlockLU.lean`, focused
+  `lake build LeanFpAnalysis.FP.Algorithms.LU.BlockLU`, quiet public lookup
+  with empty stderr and both names present, `git diff --check`, touched Lean
+  placeholder scan, anchored conflict-marker scan, and focused `#print axioms`
+  reporting only `propext`, `Classical.choice`, and `Quot.sound`.
 - 2026-07-01 full-flat two-block active-tail product-update checkpoint:
   added
   `higham13_eq13_23_exists_blockLUFact_two_active_tail_product_from_global_tableau_matrix_stage_history_exact_kappa_of_product_bound_diag_update`,
