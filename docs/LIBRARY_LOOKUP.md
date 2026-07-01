@@ -2174,6 +2174,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_11_bohteBound`
 - `higham9_11_bohteBound_tridiagonal`
 - `higham9_11_bohteBound_pentadiagonal_formula`
+- `higham9_11_bohteBound_bandwidth_three_formula`
 - `higham9_11_bohteBound_bandwidth_four_formula`
 - `higham9_11_bohteBound_zero`
 - `higham9_11_bohteBound_nonneg`
@@ -2195,6 +2196,7 @@ Source-facing Chapter 9 wrappers:
 - `higham9_11_tridiagonal_bohte_solve_tight_of_isTridiagonal`
 - `higham9_11_tridiagonal_bohte_solve_tight`
 - `higham9_11_pentadiagonal_bohte_solve_tight`
+- `higham9_11_bandwidth_three_bohte_solve_tight`
 - `higham9_11_bandwidth_four_bohte_solve_tight`
 - `higham9_12_spd_lu_backward_error`
 - `tridiag_spd_shape_absLU_eq_absA`
