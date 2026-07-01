@@ -434,6 +434,6 @@ Latest dependency update: the explicit normalized-loop surface now has named zer
 
 - Work is on shared local `main`, synchronized with `origin/main` before theorem design and merged again before push.
 - Split-prefixed proof milestone commit: `042eaf7c` (`Split 3B: add Ch19 tail-local final-panel handoffs`).
-- Latest `origin/main` integrated before final checks: `ed0245f3` (`Document Chapter 20 horizon row-control constructor`), via conflict-free merge commit `5326f77b`.
+- Latest `origin/main` integrated before final push: `b46736ee` (`Document Ch21 common-radius row-wise handoffs`), via conflict-free merge commit `39189b86`.
 - `chapter_splitting/` is local-only context: it is ignored by `.gitignore`, has no tracked files, is absent from `origin/main`, and must not be pushed.
 - Remaining local untracked file at this point: `.codex/config.toml`.
