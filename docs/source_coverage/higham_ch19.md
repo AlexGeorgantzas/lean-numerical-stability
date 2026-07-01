@@ -9,14 +9,102 @@
 - Parallel split: 3B.
 - Planning documents consulted: `chapter_splitting/HIGHAM_PARALLEL_FORMALIZATION_BLUEPRINT.md`, Split 3B section of `chapter_splitting/split_primary_contracts.md`, and the Chapter 19 rows of `chapter_splitting/chapter_index.md`.
 - Selected-scope gate: FAIL. Chapter 19 has substantial QR infrastructure and checked source-facing wrappers, but the full selected core pass is not complete. The currently active QR route is the arbitrary-width stored Householder final-panel bridge for Theorem 19.13 support; source-closure data can now be assembled directly from actual stage-two/stage-three twice-trailing source-tail facts. Full double-zero and triple-zero prefix extraction now packages the arbitrary-width first-two source-tail facts, feeds a two-step full-stage source-closure constructor, threads a recursive full-stage contract through source closure, and feeds that full-stage contract directly into the final-panel equality. The full-stage contract now also has named zero/one/two-step constructors, named one-tail and first-two full-stage fact packagers, a final-panel-level recursive full-stage handoff, absolute stage-four/stage-five tail-shift packagers, recursive-tail source-closure constructors, a current-first-two plus absolute recursive-tail induction rung, and odd/even matching final-panel bridges for the stored-loop induction. A one-entry Lean audit counterexample proves that the stored-loop signed-norm hypotheses alone do not imply the `v^T v = 2` full-stage premise, and an exact-arithmetic compact/matrix-rect/stored-panel bridge now proves that normalized beta-one application agrees with the unnormalized `householderBetaSpec` update under `FPModel.exactWithUnitRoundoff`, including the first-pivot QR storage reconstruction. A separate rounded-model audit now proves that this normalized beta-one versus unnormalized `householderBetaSpec` compact-update equality is false for arbitrary `FPModel`. The remaining full-loop work is therefore to supply an explicit normalized-reflector premise/model for the rounded route, or finish a rounded unnormalized bridge around the active vector with `householderBetaSpec`; it cannot be closed by deriving exact self-normalization from `alpha^2 = ||x_tail||^2` and `alpha*x_p <= 0` alone, nor by dropping the exact-arithmetic restriction from the compact handoff.
-- Inventory status: starter ledger only. The shared `chapter_index.md` accounts for the primary labels, numbered equations, and problems, but this tracked Ch19 report still needs a full row-by-row inventory before chapter completion can be claimed.
+- Inventory status: index-backed row skeleton added. The shared `chapter_index.md` now has a visible Ch19 primary-label/equation/problem inventory below, but this tracked Ch19 report still needs a rendered-PDF row-by-row audit before chapter completion can be claimed. Local `pdftotext`/`pdfinfo` and bundled PDF runtime support were unavailable in this environment.
 - Oracle status: GPT Pro/Oracle browser consultation was attempted for the repeated stored-loop-to-source-closure bottleneck on 2026-06-30 with a compact math-only packet. The run failed without a mathematical answer after Chrome became unreachable, and the visible prompt captured by Oracle was only the packet title, so it is recorded as a rejected/non-answer consultation rather than proof-source evidence.
 
 ## Progress Snapshot
 
 | Chapter | Mode | Inventory % | Statement % | Dependency % | Proof % | Verification/report % | Estimated overall % | Open selected rows | Main blocker | Confidence |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
-| ch19 | core | 90 | 99 | 99 | 99 | 99 | 95 | 48+ | Exact handoff proved exact-only; rounded normalization still open | medium |
+| ch19 | core | 92 | 99 | 99 | 99 | 99 | 80 | 48+ | Rendered inventory and rounded normalization still open | medium |
+
+## Index-Backed Source Inventory
+
+This inventory is derived from `chapter_splitting/chapter_index.md` and the
+current Lean declaration map. It is a tracked source-accounting skeleton, not a
+claim that the rendered Chapter 19 PDF has been fully audited.
+
+### Primary Labels
+
+| Source item | Indexed section | Current Lean mapping | Disposition |
+|---|---|---|---|
+| Lemma 19.1 | 19.3 Error Analysis of Householder Computations | Householder construction/apply support in QR modules; exact label match still needs rendered-source audit. | partial mapping |
+| Lemma 19.2 | 19.3 Error Analysis of Householder Computations | Householder construction/apply support in QR modules; exact label match still needs rendered-source audit. | partial mapping |
+| Lemma 19.3 | 19.3 Error Analysis of Householder Computations | Householder construction/apply support in QR modules; exact label match still needs rendered-source audit. | partial mapping |
+| Theorem 19.4 | 19.3 Error Analysis of Householder Computations | `H19.Theorem19_4.householder_qr_backward_error`; `...eq19_12_householder_qr_backward_error`; componentwise wrappers. | implementation-backed dependency |
+| Theorem 19.5 | 19.3 Error Analysis of Householder Computations | Aggregated/structured Householder QR support exists, but exact source theorem row still needs rendered audit. | partial mapping |
+| Theorem 19.6 | 19.4 Pivoting and Row-Wise Stability | Pivoting/row-wise QR infrastructure exists in QR modules, but the source theorem row remains unverified. | open mapping |
+| Lemma 19.7 | 19.6 Givens Rotations | Givens rotation support in `GivensSpec.lean`/`GivensQR.lean`; exact source lemma row still needs rendered audit. | partial mapping |
+| Lemma 19.8 | 19.6 Givens Rotations | Givens rotation support in `GivensSpec.lean`/`GivensQR.lean`; exact source lemma row still needs rendered audit. | partial mapping |
+| Lemma 19.9 | 19.6 Givens Rotations | Givens rotation support in `GivensSpec.lean`/`GivensQR.lean`; exact source lemma row still needs rendered audit. | partial mapping |
+| Theorem 19.10 | 19.6 Givens Rotations | `H19.Theorem19_10.givens_qr_backward_error`; `...eq19_25_givens_qr_backward_error`. | implementation-backed dependency |
+| Algorithm 19.11 | 19.8 Gram-Schmidt Orthogonalization | `H19.Algorithm19_11.State`; `H19.Algorithm19_11.residual`; `ClassicalGramSchmidtState`. | exact source skeleton |
+| Algorithm 19.12 | 19.8 Gram-Schmidt Orthogonalization | `H19.Algorithm19_12.State`; `...exact_state`; `...exact_factorization`; source-stage recurrence wrappers. | exact source skeleton |
+| Theorem 19.13 | 19.8 Gram-Schmidt Orthogonalization | `H19.Theorem19_13.MGSQRBounds` and many source-facing assembly, repair, exact-handoff, and route-audit declarations. | active bottleneck |
+
+### Numbered Equations
+
+| Equation row | Current accounting | Disposition |
+|---|---|---|
+| (19.1) | Householder/Givens exact transformation infrastructure exists in QR modules; rendered statement still needs row match. | partial mapping |
+| (19.2a) | Householder active-vector/sign/normalization infrastructure exists; exact row still needs rendered audit. | partial mapping |
+| (19.2b) | Householder active-vector/sign/normalization infrastructure exists; exact row still needs rendered audit. | partial mapping |
+| (19.3) | Householder reflector/vector construction infrastructure exists; exact row still needs rendered audit. | partial mapping |
+| (19.4) | Householder construction/apply error infrastructure exists; exact row still needs rendered audit. | partial mapping |
+| (19.2) | Duplicate/combined index row for the Householder setup; must be reconciled against rendered source. | audit needed |
+| (19.5) | Householder computation error row; QR support exists but exact label mapping is not complete. | partial mapping |
+| (19.6) | Householder computation error row; QR support exists but exact label mapping is not complete. | partial mapping |
+| (19.7) | Householder computation error row; QR support exists but exact label mapping is not complete. | partial mapping |
+| (19.8) | Householder computation error row; QR support exists but exact label mapping is not complete. | partial mapping |
+| (19.9) | Householder computation error row; QR support exists but exact label mapping is not complete. | partial mapping |
+| (19.10) | Householder QR backward-error setup; covered by Theorem 19.4 surfaces only after source-row audit. | partial mapping |
+| (19.11) | Normwise Householder QR backward-error shape; `Theorem19_4` wrappers expose this route. | covered dependency |
+| (19.12) | Componentwise Householder QR backward-error shape; `eq19_12_householder_qr_backward_error` exposes this row. | covered dependency |
+| (19.13) | Pivoting/row-wise stability row; exact source mapping remains open. | open mapping |
+| (19.14) | Pivoting/row-wise stability row; exact source mapping remains open. | open mapping |
+| (19.15) | Aggregated Householder/Givens setup row; exact source mapping remains open. | open mapping |
+| (19.16) | Aggregated Householder/Givens setup row; exact source mapping remains open. | open mapping |
+| (19.17) | Aggregated Householder/Givens setup row; exact source mapping remains open. | open mapping |
+| (19.18) | Aggregated Householder/Givens setup row; exact source mapping remains open. | open mapping |
+| (19.19) | Aggregated Householder/Givens setup row; exact source mapping remains open. | open mapping |
+| (19.20) | Givens rotation/error row; Givens infrastructure exists but exact label mapping is not complete. | partial mapping |
+| (19.21) | Givens rotation/error row; Givens infrastructure exists but exact label mapping is not complete. | partial mapping |
+| (19.22) | Givens rotation/error row; Givens infrastructure exists but exact label mapping is not complete. | partial mapping |
+| (19.23) | Givens rotation/error row; Givens infrastructure exists but exact label mapping is not complete. | partial mapping |
+| (19.24) | Givens rotation/error row; Givens infrastructure exists but exact label mapping is not complete. | partial mapping |
+| (19.25) | Givens QR backward-error row; `Theorem19_10.eq19_25_givens_qr_backward_error` covers the concrete staged route. | covered dependency |
+| (19.26) | Iterative refinement / QR-adjacent row from the index; exact source mapping remains open. | open mapping |
+| (19.27) | Iterative refinement / QR-adjacent row from the index; exact source mapping remains open. | open mapping |
+| (19.28) | Householder-MGS source vector/reflector row; `mgsSourceVector`, `mgsSourceReflector`, and normalization wrappers cover the exact algebra. | covered dependency |
+| (19.29) | Gram-Schmidt/MGS setup row; exact source mapping remains open. | partial mapping |
+| (19.30) | Gram-Schmidt/MGS setup row; exact source mapping remains open. | partial mapping |
+| (19.31) | Gram-Schmidt/MGS setup row; exact source mapping remains open. | partial mapping |
+| (19.32) | MGS source-stage recurrence; `Algorithm19_12.sourceStage_*_recombine` and `...sourceStage_matrix_recurrence` cover the exact skeleton. | covered dependency |
+| (19.33) | Iterated MGS product recurrence; `Algorithm19_12.sourceStage_initial_matrix_recurrence` and exact product factorization cover the exact skeleton. | covered dependency |
+| (19.34) | Householder-MGS padded block endpoint and perturbation split; many `Theorem19_13` block/extraction wrappers cover this row conditionally. | partial foundation |
+| (19.35a) | QR-sensitivity/MGS output bound route; current `Theorem19_13` assemblies remain conditional. | active bottleneck |
+| (19.35b) | QR-sensitivity/MGS output bound route; current `Theorem19_13` assemblies remain conditional. | active bottleneck |
+| (19.36) | QR-sensitivity/MGS output bound route; current `Theorem19_13` assemblies remain conditional. | active bottleneck |
+| (19.37) | QR-sensitivity/MGS output bound route; current `Theorem19_13` assemblies remain conditional. | active bottleneck |
+| (19.35) | Duplicate/combined index row for the sensitivity route; must be reconciled against rendered source. | audit needed |
+
+### Problem Ledger
+
+| Problem | Current Lean mapping | Disposition |
+|---|---|---|
+| 19.1 | `H19.Problem19_1.*` Householder and Givens eigendirection/fixed-subspace theorems. | covered theoretical subclaims |
+| 19.2 | Not yet mapped in this Ch19 report. | audit needed |
+| 19.3 | Not yet mapped in this Ch19 report. | audit needed |
+| 19.4 | Not yet mapped in this Ch19 report. | audit needed |
+| 19.5 | Not yet mapped in this Ch19 report. | audit needed |
+| 19.6 | Not yet mapped in this Ch19 report. | audit needed |
+| 19.7 | Not yet mapped in this Ch19 report. | audit needed |
+| 19.9 | Not yet mapped in this Ch19 report. | audit needed |
+| 19.10 | Not yet mapped in this Ch19 report. | audit needed |
+| 19.11 | Not yet mapped in this Ch19 report. | audit needed |
+| 19.12 | Substantial CS/polar correction-map and repair infrastructure in `H19.Theorem19_13`; exact problem conclusion remains conditional. | partial foundation |
+| 19.13 | Not yet mapped in this Ch19 report. | audit needed |
+| 19.14 | Not yet mapped in this Ch19 report. | audit needed |
 
 ## Current Ch19 Closure-Data Route
 
@@ -84,6 +172,8 @@
 
 ## Verification
 
+- `git diff --check`: passed after adding the index-backed source inventory skeleton, with only the usual CRLF normalization warning for this report.
+- No Lean source changed for the index-backed source inventory checkpoint; the current Ch19 Lean verification remains the pushed `410ba860` code milestone.
 - `lake env lean LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`: passed after adding the rounded compact-handoff boundary theorem.
 - `lake build LeanFpAnalysis.FP.Algorithms.QR.Higham19`: passed after adding the rounded compact-handoff boundary theorem; only pre-existing `GivensSpec` unused-simp warnings were reported.
 - `rg -n "\b(sorry|admit|axiom|unsafe|opaque)\b" LeanFpAnalysis/FP/Algorithms/QR/Higham19.lean`: no matches after adding the rounded compact-handoff boundary theorem.
