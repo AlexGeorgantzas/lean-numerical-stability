@@ -39,12 +39,14 @@ end-to-end stability rebuild is tagged as
 	  recursive tail-chain premise once the first Schur-tail inverse-entry
 	  comparison is supplied.  The Eq.13.22 product witness
 	  `higham13_eq13_22_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa`
-	  now consumes that first-Schur-tail active-suffix certificate directly,
-	  replacing the old opaque `hTail` premise by source-shaped active-suffix
+	  and Eq.13.23 product witness
+	  `higham13_eq13_23_exists_blockLUFact_succ_product_from_global_tableau_activeSuffix_matrix_stage_history_exact_kappa`
+	  now consume that first-Schur-tail active-suffix certificate directly,
+	  replacing the old raw `hTail` premise by source-shaped active-suffix
 	  obligations.  This closes the general all-tail packaging dependency and
-	  starts the first-split product-witness consumption layer; follow-up work
-	  should mirror this for Eq.13.23 and then continue the source-strength
-	  BDD/product-update and Theorem 13.6 rows.
+	  wires the raw first-split Eq.13.22/Eq.13.23 product-witness layer; follow-up
+	  work should continue the source-strength BDD/product-update and Theorem 13.6
+	  rows.
 - 2026-07-01 Problem 13.4 global-tableau Eq.13.23 product-update
   source-chain method: added
   `Higham13Eq1322GlobalTableauSourceChain.exists_blockLUFact_eq13_23_product_exact_kappa_of_right_inverse_of_product_bound_diag_update`
