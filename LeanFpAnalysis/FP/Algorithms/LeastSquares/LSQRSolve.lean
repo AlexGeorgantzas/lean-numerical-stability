@@ -67713,6 +67713,26 @@ noncomputable def storedHouseholderQRRhsSeq (fp : FPModel) {m n : ℕ}
       else
         storedHouseholderQRRhsSeq fp hmn A b k
 
+/-- Canonical Frobenius-starting stage budget for the concrete stored
+    Householder QR loop.
+
+The budget starts at `||A||_F` and then follows the same signed-stage global
+compact recurrence used by the Chapter 20, Theorem 20.3 stored-loop wrappers.
+This packages the recurrence as data instead of asking callers to supply a
+separate proof for it. -/
+noncomputable def storedHouseholderQRFrobStageBudget (fp : FPModel)
+    {m n : ℕ} (hmn : n ≤ m) (A : Fin m → Fin n → ℝ) : ℕ → ℝ
+  | 0 => frobNormRect A
+  | t + 1 =>
+      coxHighamActiveRowGrowthFactor m *
+          storedHouseholderQRFrobStageBudget fp hmn A t +
+        if ht : t < n then
+          storedQRSignedStageGlobalCompactBudget hmn fp
+            (storedHouseholderQRMatrixSeq fp hmn A)
+            (storedHouseholderQRAlphaSeq fp hmn A) t ht
+        else
+          0
+
 @[simp] theorem storedHouseholderQRMatrixSeq_zero (fp : FPModel)
     {m n : ℕ} (hmn : n ≤ m) (A : Fin m → Fin n → ℝ) :
     storedHouseholderQRMatrixSeq fp hmn A 0 = A := rfl
@@ -67721,6 +67741,21 @@ noncomputable def storedHouseholderQRRhsSeq (fp : FPModel) {m n : ℕ}
     {m n : ℕ} (hmn : n ≤ m) (A : Fin m → Fin n → ℝ)
     (b : Fin m → ℝ) :
     storedHouseholderQRRhsSeq fp hmn A b 0 = b := rfl
+
+@[simp] theorem storedHouseholderQRFrobStageBudget_zero (fp : FPModel)
+    {m n : ℕ} (hmn : n ≤ m) (A : Fin m → Fin n → ℝ) :
+    storedHouseholderQRFrobStageBudget fp hmn A 0 = frobNormRect A := rfl
+
+theorem storedHouseholderQRFrobStageBudget_succ_of_lt (fp : FPModel)
+    {m n : ℕ} (hmn : n ≤ m) (A : Fin m → Fin n → ℝ)
+    (t : ℕ) (ht : t < n) :
+    storedHouseholderQRFrobStageBudget fp hmn A (t + 1) =
+      coxHighamActiveRowGrowthFactor m *
+          storedHouseholderQRFrobStageBudget fp hmn A t +
+        storedQRSignedStageGlobalCompactBudget hmn fp
+          (storedHouseholderQRMatrixSeq fp hmn A)
+          (storedHouseholderQRAlphaSeq fp hmn A) t ht := by
+  simp [storedHouseholderQRFrobStageBudget, ht]
 
 theorem storedHouseholderQRAlphaSeq_eq_signed (fp : FPModel)
     {m n : ℕ} (hmn : n ≤ m) (A : Fin m → Fin n → ℝ)
@@ -68317,6 +68352,83 @@ theorem theorem20_3_householder_qr_ls_backward_error_compactBudget_of_diagDomina
   exact
     theorem20_3_householder_qr_ls_backward_error_compactBudget_of_diagDominant_concreteStoredLower_activePivot_actualUnitRoundoff_horizonBudget_of_nonempty
       fp hmn hn A b stageBudget huSmall hDD hinitBlock hglobalBudget
+      hcomparison hpivotChoice hsmall
+
+/-- Higham, 2nd ed., Chapter 20, Theorem 20.3, concrete stored-Householder QR
+    wrapper using the canonical Frobenius-starting stage budget.
+
+The public surface no longer asks for an initial entrywise block budget or a
+separate proof of the signed-stage compact recurrence: both are supplied by
+`storedHouseholderQRFrobStageBudget`. -/
+theorem theorem20_3_householder_qr_ls_backward_error_compactBudget_of_diagDominant_concreteStoredLower_activePivot_actualUnitRoundoff_horizonBudget_of_nonempty_frobStageBudget
+    {m n : ℕ} (fp : FPModel) (hmn : n ≤ m) (hn : 0 < n)
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ)
+    (huSmall : (m : ℝ) * fp.u < 1)
+    (hDD : ∀ k (hk : k < n),
+      IsDiagDominantUpper (k + 1)
+        (qrLeadingBlock (storedHouseholderQRMatrixSeq fp hmn A k)
+          (Nat.succ_le_iff.mpr (lt_of_lt_of_le hk hmn)) hk))
+    (hcomparison :
+      storedQRStageRowMaxComparisonDefectBudget hmn
+        (storedHouseholderQRMatrixSeq fp hmn A)
+        (storedHouseholderQRFrobStageBudget fp hmn A) ≤ 0)
+    (hpivotChoice : ∀ t (ht : t < n),
+      ⟨t, ht⟩ =
+        householderActiveMaxPivotColumn
+          ⟨t, lt_of_lt_of_le ht hmn⟩ ⟨t, ht⟩
+          (storedHouseholderQRMatrixSeq fp hmn A t))
+    (hsmall :
+      let A_hat := storedHouseholderQRMatrixSeq fp hmn A
+      let Dcap := storedQRDiagDominantInvFactorBudget hmn A_hat
+      let Ncap := storedQRPivotColumnNormBudget hmn A_hat
+      let Gcap := ((m : ℝ) * fp.u) / (1 - (m : ℝ) * fp.u)
+      let Fcap :=
+        fp.u * (1 + Gcap) * (1 + fp.u) +
+          fp.u * (1 + Gcap) +
+          Gcap +
+          fp.u * (1 + Gcap) * (1 + fp.u) ^ 2
+      2 * Dcap *
+          ((m : ℝ) *
+            ((((n : ℝ) * ((n : ℝ) + 1) * (fp.u + 2 * Fcap)) *
+                Ncap) ^ 2)) <
+        1) :
+    let A_hat := storedHouseholderQRMatrixSeq fp hmn A
+    let b_hat := storedHouseholderQRRhsSeq fp hmn A b
+    let alpha := storedHouseholderQRAlphaSeq fp hmn A
+    let cStep := storedQRCompactSequenceRelativeBudget hmn fp A_hat b_hat alpha
+    ∃ (ΔA' : Fin m → Fin n → ℝ) (Δb' : Fin m → ℝ),
+      frobNorm ΔA' ≤
+        ((1 + cStep) ^ n - 1) * frobNormRect A +
+          gamma fp n *
+            frobNormRect (rectTopBlock (m := m)
+              (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)) ∧
+      vecNorm2 Δb' ≤ ((1 + cStep) ^ n - 1) * vecNorm2 b ∧
+      IsLeastSquaresMinimizer
+        (fun i j => A i j + ΔA' i j) (fun i => b i + Δb' i)
+        (fl_backSub fp n
+          (fun i j => A_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩ j)
+          (fun i => b_hat n ⟨i.val, lt_of_lt_of_le i.isLt hmn⟩)) := by
+  let stageBudget : ℕ → ℝ := storedHouseholderQRFrobStageBudget fp hmn A
+  have hinitFrob : frobNormRect A ≤ stageBudget 0 := by
+    simp [stageBudget]
+  have hglobalBudget : ∀ t (ht : t < n),
+      coxHighamActiveRowGrowthFactor m * stageBudget t +
+          storedQRSignedStageGlobalCompactBudget hmn fp
+            (storedHouseholderQRMatrixSeq fp hmn A)
+            (storedHouseholderQRAlphaSeq fp hmn A) t ht ≤
+        stageBudget (t + 1) := by
+    intro t ht
+    change
+      coxHighamActiveRowGrowthFactor m *
+            storedHouseholderQRFrobStageBudget fp hmn A t +
+          storedQRSignedStageGlobalCompactBudget hmn fp
+            (storedHouseholderQRMatrixSeq fp hmn A)
+            (storedHouseholderQRAlphaSeq fp hmn A) t ht ≤
+        storedHouseholderQRFrobStageBudget fp hmn A (t + 1)
+    rw [storedHouseholderQRFrobStageBudget_succ_of_lt fp hmn A t ht]
+  exact
+    theorem20_3_householder_qr_ls_backward_error_compactBudget_of_diagDominant_concreteStoredLower_activePivot_actualUnitRoundoff_horizonBudget_of_nonempty_frobInitial
+      fp hmn hn A b stageBudget huSmall hDD hinitFrob hglobalBudget
       hcomparison hpivotChoice hsmall
 
 /-- Solver-facing active-max-pivot QR certificate using row-max scalar defect
