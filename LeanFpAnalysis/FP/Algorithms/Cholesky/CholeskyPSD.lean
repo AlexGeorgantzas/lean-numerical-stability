@@ -1645,6 +1645,61 @@ lemma strict_argmax_diag_stable {n : ℕ} (A E : Fin n → Fin n → ℝ)
   have h3 := hgap i hip
   linarith [h1.2, h2.1]
 
+/-- **Deterministic complete-pivoting choice**: the least-index
+    maximizer of the diagonal (Lemma 10.11 pivot-sequence
+    foundation). -/
+noncomputable def diagArgmax {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) : Fin n :=
+  (Finset.univ.filter (fun i : Fin n => ∀ j : Fin n, A j j ≤ A i i)).min'
+    (by
+      obtain ⟨i, _, hi⟩ := Finset.exists_max_image Finset.univ
+        (fun i : Fin n => A i i)
+        (Finset.univ_nonempty_iff.mpr (Fin.pos_iff_nonempty.mp hn))
+      exact ⟨i, Finset.mem_filter.mpr ⟨Finset.mem_univ i,
+        fun j => hi j (Finset.mem_univ j)⟩⟩)
+
+/-- The deterministic pivot maximizes the diagonal. -/
+lemma diagArgmax_max {n : ℕ} (hn : 0 < n) (A : Fin n → Fin n → ℝ)
+    (j : Fin n) : A j j ≤ A (diagArgmax hn A) (diagArgmax hn A) := by
+  have hmem := Finset.min'_mem
+    (Finset.univ.filter (fun i : Fin n => ∀ j : Fin n, A j j ≤ A i i))
+    (by
+      obtain ⟨i, _, hi⟩ := Finset.exists_max_image Finset.univ
+        (fun i : Fin n => A i i)
+        (Finset.univ_nonempty_iff.mpr (Fin.pos_iff_nonempty.mp hn))
+      exact ⟨i, Finset.mem_filter.mpr ⟨Finset.mem_univ i,
+        fun j => hi j (Finset.mem_univ j)⟩⟩)
+  exact (Finset.mem_filter.mp hmem).2 j
+
+/-- A strict maximizer is the deterministic pivot. -/
+lemma diagArgmax_eq_of_strict {n : ℕ} (hn : 0 < n)
+    (A : Fin n → Fin n → ℝ) (p : Fin n)
+    (hstrict : ∀ i : Fin n, i ≠ p → A i i < A p p) :
+    diagArgmax hn A = p := by
+  by_contra hne
+  have hmax := diagArgmax_max hn A p
+  exact absurd hmax (not_le.mpr (hstrict _ hne))
+
+/-- **Pivot-choice stability** (Lemma 10.11, single stage, packaged):
+    a gap-`δ` complete-pivoting choice is preserved by any diagonal
+    perturbation below `δ/2` — both matrices select the same
+    deterministic pivot. -/
+theorem diagArgmax_stable {n : ℕ} (hn : 0 < n)
+    (A E : Fin n → Fin n → ℝ) (p : Fin n) (δ : ℝ)
+    (hgap : ∀ i : Fin n, i ≠ p → A i i + δ ≤ A p p)
+    (hE : ∀ i : Fin n, |E i i| < δ / 2) :
+    diagArgmax hn A = p ∧
+    diagArgmax hn (fun i j => A i j + E i j) = p := by
+  have hδpos : 0 < δ := by
+    have := abs_nonneg (E p p)
+    linarith [hE p]
+  constructor
+  · exact diagArgmax_eq_of_strict hn A p fun i hip => by
+      have := hgap i hip
+      linarith
+  · exact diagArgmax_eq_of_strict hn _ p fun i hip =>
+      strict_argmax_diag_stable A E p δ hgap hE i hip
+
 -- ============================================================
 -- §10.3  Lemma 10.12: W-norm bound
 -- ============================================================
