@@ -616,6 +616,75 @@ theorem higham10_7_failure_no_factorization (n : ℕ)
     quadForm_add_neg_of_perturbation n H E lam t hlam_dir hE hlt
   exact no_choleskyFactSpec_of_neg_quadForm n (fun i j => H i j + E i j) x hxneg
 
+/-- Matrix-vector action commutes with vector negation. -/
+theorem matMulVec_neg (n : ℕ) (A : Fin n → Fin n → ℝ) (v : Fin n → ℝ) :
+    matMulVec n A (fun k => -(v k)) = fun i => -(matMulVec n A v i) := by
+  funext i
+  unfold matMulVec
+  rw [← Finset.sum_neg_distrib]
+  exact Finset.sum_congr rfl fun j _ => by ring
+
+/-- **Standard 2-norm perturbation bound** (the "standard perturbation
+theory" step in the proof of Theorem 10.6, Higham p. 199): if `A x = b`,
+`(A + ΔA) x̂ = b`, and `A⁻¹ ΔA` carries an operator-2-norm certificate
+`c < 1`, then `‖x̂ − x‖₂ ≤ c/(1−c) · ‖x‖₂`. -/
+theorem higham10_6_perturbed_solve_forward_error (n : ℕ)
+    (A Ainv ΔA : Fin n → Fin n → ℝ) (x xhat b : Fin n → ℝ)
+    (hInv : ∀ v : Fin n → ℝ, matMulVec n Ainv (matMulVec n A v) = v)
+    (hAx : matMulVec n A x = b)
+    (hAhat : ∀ i : Fin n,
+      matMulVec n A xhat i + matMulVec n ΔA xhat i = b i)
+    (c : ℝ) (hc : opNorm2Le (matMul n Ainv ΔA) c) (hc1 : c < 1) :
+    vecNorm2 (fun i => xhat i - x i) ≤ c / (1 - c) * vecNorm2 x := by
+  have h1c : (0:ℝ) < 1 - c := by linarith
+  have hAdiff : matMulVec n A (fun k => xhat k - x k) =
+      fun i => -(matMulVec n ΔA xhat i) := by
+    funext i
+    have hsub : matMulVec n A (fun k => xhat k - x k) i =
+        matMulVec n A xhat i - matMulVec n A x i := by
+      unfold matMulVec
+      rw [← Finset.sum_sub_distrib]
+      exact Finset.sum_congr rfl fun j _ => by ring
+    have hbx : matMulVec n A x i = b i := congrFun hAx i
+    have hb := hAhat i
+    rw [hsub, hbx]
+    linarith
+  have hdiff : (fun k => xhat k - x k) =
+      fun i => -(matMulVec n (matMul n Ainv ΔA) xhat i) := by
+    have h2 := hInv (fun k => xhat k - x k)
+    rw [hAdiff] at h2
+    rw [← h2]
+    rw [show matMulVec n Ainv (fun i => -(matMulVec n ΔA xhat i)) =
+        fun i => -(matMulVec n Ainv (matMulVec n ΔA xhat) i) from
+      matMulVec_neg n Ainv (matMulVec n ΔA xhat)]
+    funext i
+    rw [matMulVec_matMul n Ainv ΔA xhat i]
+  have hnorm_diff : vecNorm2 (fun i => xhat i - x i) ≤ c * vecNorm2 xhat := by
+    rw [hdiff, vecNorm2_neg (matMulVec n (matMul n Ainv ΔA) xhat)]
+    exact hc xhat
+  have hxhat : vecNorm2 xhat ≤
+      vecNorm2 x + vecNorm2 (fun i => xhat i - x i) := by
+    have := vecNorm2_add_le x (fun i => xhat i - x i)
+    have hxx : (fun i => x i + (xhat i - x i)) = xhat := by
+      funext i; ring
+    rwa [hxx] at this
+  have hkey : vecNorm2 (fun i => xhat i - x i) * (1 - c) ≤
+      c * vecNorm2 x := by
+    have h0x : 0 ≤ c * vecNorm2 x := le_trans (vecNorm2_nonneg _) (hc x)
+    have he0 : 0 ≤ vecNorm2 (fun i => xhat i - x i) := vecNorm2_nonneg _
+    rcases le_total 0 c with hc0 | hc0
+    · have hchain := le_trans hnorm_diff
+        (mul_le_mul_of_nonneg_left hxhat hc0)
+      nlinarith
+    · have hh0 : 0 ≤ vecNorm2 xhat := vecNorm2_nonneg _
+      have hch : c * vecNorm2 xhat ≤ 0 := by nlinarith
+      have hez : vecNorm2 (fun i => xhat i - x i) = 0 :=
+        le_antisymm (by linarith) he0
+      rw [hez, zero_mul]
+      exact h0x
+  rw [div_mul_eq_mul_div, le_div_iff₀ h1c]
+  linarith [hkey]
+
 /-- **Componentwise domination transfers operator-2-norm certificates**
 (used for the normwise equation (10.7) reading of Theorem 10.3): if
 `|M| ≤ B` entrywise and `B` satisfies the vector-action certificate
