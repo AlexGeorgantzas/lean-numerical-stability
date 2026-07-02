@@ -3741,6 +3741,7 @@ Source-facing Chapter 10 wrappers:
 - `higham10_10_schur_complement_perturbation` (honest: exact identity + O(eps^2) remainder)
 - `schur_first_order_entrywise_bound` (|Ebar| <= eps (1 + k^2 alpha mu)^2, the source (1+||W||)^2 shape) / `strict_argmax_diag_stable` (L10.11 stage engine)
 - `diagArgmax` / `diagArgmax_max` / `diagArgmax_eq_of_strict` / `diagArgmax_stable` (deterministic complete-pivoting choice + single-stage stability)
+- `schurStep` / `schurStep_symm` / `schurStep_isPosSemiDef` (dimension-preserving elimination step; completion-of-squares PSD invariant)
 - `higham10_13_complete_pivoting_w_bound`
 - `higham10_13_pivoted_w_frobenius_bound`
 - `higham10_14_psd_cholesky_backward_error`
