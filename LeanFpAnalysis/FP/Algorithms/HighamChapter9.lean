@@ -28833,6 +28833,71 @@ theorem higham9_15_nonnegative_resolvent_nonsingInv_of_spectralRadius_lt_one
   ch7NonnegativeResolvent_nonsingInv_of_spectralRadius_lt_one
     hn C hC_nonneg hrho
 
+/-- **Theorem 9.15 spectral-resolvent support**.  The canonical resolvent
+vector `(I - C)⁻¹ v` satisfies the exact real system `(I - C)w = v` under the
+Barrlund--Sun spectral-radius contraction hypothesis. -/
+theorem higham9_15_matSub_id_nonsingInv_matMulVec_eq_of_spectralRadius_lt_one
+    {n : ℕ} (C : Matrix (Fin n) (Fin n) ℝ)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) < 1)
+    (v : Fin n → ℝ) :
+    matMulVec n (matSub_id n C)
+        (matMulVec n (nonsingInv n (matSub_id n C)) v) = v := by
+  have hInv :
+      IsInverse n (matSub_id n C) (nonsingInv n (matSub_id n C)) :=
+    higham9_15_matSub_id_nonsingInv_isInverse_of_spectralRadius_lt_one C hrho
+  exact matMulVec_of_isRightInverse
+    (matSub_id n C) (nonsingInv n (matSub_id n C)) hInv.2 v
+
+/-- **Theorem 9.15 spectral-resolvent support**.  If `C` is nonnegative,
+`rho(C) < 1`, and `v >= 0`, then the canonical resolvent action
+`(I - C)⁻¹ v` is componentwise nonnegative. -/
+theorem higham9_15_nonsingInv_matSub_id_matMulVec_nonneg_of_spectralRadius_lt_one
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (hC_nonneg : ∀ i j : Fin n, 0 ≤ C i j)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) < 1)
+    (v : Fin n → ℝ)
+    (hv_nonneg : ∀ i : Fin n, 0 ≤ v i) :
+    ∀ i : Fin n,
+      0 ≤ matMulVec n (nonsingInv n (matSub_id n C)) v i := by
+  have hR :
+      ch7NonnegativeResolvent n C (nonsingInv n (matSub_id n C)) :=
+    higham9_15_nonnegative_resolvent_nonsingInv_of_spectralRadius_lt_one
+      hn C hC_nonneg hrho
+  rcases hR with ⟨hR_nonneg, _hR_left⟩
+  intro i
+  unfold matMulVec
+  exact Finset.sum_nonneg fun j _ =>
+    mul_nonneg (hR_nonneg i j) (hv_nonneg j)
+
+/-- **Theorem 9.15 spectral-resolvent support**.  Source-facing packaged form
+of the nonnegative canonical resolvent action: for `C >= 0`, `rho(C) < 1`,
+and `v >= 0`, the vector `(I - C)⁻¹ v` is an exact solution of `(I - C)w = v`
+and is componentwise nonnegative. -/
+theorem higham9_15_nonnegative_resolvent_action_of_spectralRadius_lt_one
+    {n : ℕ} (hn : 0 < n) (C : Matrix (Fin n) (Fin n) ℝ)
+    (hC_nonneg : ∀ i j : Fin n, 0 ≤ C i j)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from realRectToCMatrix C)) < 1)
+    (v : Fin n → ℝ)
+    (hv_nonneg : ∀ i : Fin n, 0 ≤ v i) :
+    matMulVec n (matSub_id n C)
+        (matMulVec n (nonsingInv n (matSub_id n C)) v) = v ∧
+      ∀ i : Fin n,
+        0 ≤ matMulVec n (nonsingInv n (matSub_id n C)) v i := by
+  exact
+    ⟨higham9_15_matSub_id_nonsingInv_matMulVec_eq_of_spectralRadius_lt_one
+        C hrho v,
+      higham9_15_nonsingInv_matSub_id_matMulVec_nonneg_of_spectralRadius_lt_one
+        hn C hC_nonneg hrho v hv_nonneg⟩
+
 /-- **Theorem 9.15 spectral-majorant support**.  Irreducibility upgrades a
 nonzero nonnegative right subeigenvector to a positive one, so the Chapter 7
 Collatz/Gelfand lower bound applies to nonzero nonnegative data. -/
