@@ -2538,6 +2538,10 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_tridiag_rowDiagDom_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_const_gamma_le`
 - `higham9_14_tridiag_colDiagDom_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_const_gamma`
 - `higham9_14_tridiag_rowDiagDom_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_const_gamma`
+- `higham9_14_tridiag_colDiagDom_source_f_bound_of_RectDoolittleRoundedStageTrace_square_models_gamma`
+- `higham9_14_tridiag_rowDiagDom_source_f_bound_of_RectDoolittleRoundedStageTrace_square_models_gamma`
+- `higham9_14_tridiag_colDiagDom_source_h_bound_of_RectDoolittleRoundedStageTrace_square_models_gamma`
+- `higham9_14_tridiag_rowDiagDom_source_h_bound_of_RectDoolittleRoundedStageTrace_square_models_gamma`
 - `higham9_14_source_f_bound_of_rectLiteralDoolittle_exactTargetGaps_square_fl_triangular_solves_gamma_le`
 - `higham9_14_source_h_bound_of_rectLiteralDoolittle_exactTargetGaps_square_fl_triangular_solves_gamma_le`
 - `higham9_14_source_h_bound_of_rectLiteralDoolittle_exactTargetGaps_square_fl_triangular_solves_const_gamma_le`
@@ -2558,6 +2562,10 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_tridiag_rowDiagDom_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_const_gamma_le`
 - `higham9_14_tridiag_colDiagDom_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_const_gamma`
 - `higham9_14_tridiag_rowDiagDom_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_const_gamma`
+- `higham9_14_tridiag_colDiagDom_source_f_bound_of_rectRoundedLoop_square_models_gamma`
+- `higham9_14_tridiag_rowDiagDom_source_f_bound_of_rectRoundedLoop_square_models_gamma`
+- `higham9_14_tridiag_colDiagDom_source_h_bound_of_rectRoundedLoop_square_models_gamma`
+- `higham9_14_tridiag_rowDiagDom_source_h_bound_of_rectRoundedLoop_square_models_gamma`
 - `higham9_14_spd_tridiag_positive_DLT_source_f_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma_le`
 - `higham9_14_spd_tridiag_positive_DLT_source_h_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma_le`
 - `higham9_14_spd_tridiag_positive_DLT_source_f_bound_of_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma`
@@ -2590,6 +2598,14 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_sign_equiv_source_h_bound_of_IsSignEquiv_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma_le`
 - `higham9_14_sign_equiv_source_f_bound_of_IsSignEquiv_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma`
 - `higham9_14_sign_equiv_source_h_bound_of_IsSignEquiv_RectDoolittleRoundedStageTrace_square_fl_triangular_solves_gamma`
+- `higham9_14_nonnegative_lu_source_f_bound_of_RectDoolittleRoundedStageTrace_square_models_gamma`
+- `higham9_14_nonnegative_lu_source_h_bound_of_RectDoolittleRoundedStageTrace_square_models_gamma`
+- `higham9_14_mmatrix_lu_source_f_bound_of_RectDoolittleRoundedStageTrace_square_models_gamma`
+- `higham9_14_mmatrix_lu_source_h_bound_of_RectDoolittleRoundedStageTrace_square_models_gamma`
+- `higham9_14_sign_equiv_source_f_bound_of_IsSignEquiv_RectDoolittleRoundedStageTrace_square_models_gamma`
+- `higham9_14_sign_equiv_source_h_bound_of_IsSignEquiv_RectDoolittleRoundedStageTrace_square_models_gamma`
+- `higham9_14_totalNonnegative_source_f_bound_of_RectDoolittleRoundedStageTrace_square_models_gamma`
+- `higham9_14_totalNonnegative_source_h_bound_of_RectDoolittleRoundedStageTrace_square_models_gamma`
 - `higham9_14_nonnegative_lu_source_f_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma_le`
 - `higham9_14_nonnegative_lu_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma_le`
 - `higham9_14_nonnegative_lu_source_f_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma`
@@ -2606,6 +2622,14 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_sign_equiv_source_h_bound_of_IsSignEquiv_rectRoundedLoop_square_fl_triangular_solves_gamma_le`
 - `higham9_14_sign_equiv_source_f_bound_of_IsSignEquiv_rectRoundedLoop_square_fl_triangular_solves_gamma`
 - `higham9_14_sign_equiv_source_h_bound_of_IsSignEquiv_rectRoundedLoop_square_fl_triangular_solves_gamma`
+- `higham9_14_nonnegative_lu_source_f_bound_of_rectRoundedLoop_square_models_gamma`
+- `higham9_14_nonnegative_lu_source_h_bound_of_rectRoundedLoop_square_models_gamma`
+- `higham9_14_mmatrix_lu_source_f_bound_of_rectRoundedLoop_square_models_gamma`
+- `higham9_14_mmatrix_lu_source_h_bound_of_rectRoundedLoop_square_models_gamma`
+- `higham9_14_sign_equiv_source_f_bound_of_IsSignEquiv_rectRoundedLoop_square_models_gamma`
+- `higham9_14_sign_equiv_source_h_bound_of_IsSignEquiv_rectRoundedLoop_square_models_gamma`
+- `higham9_14_totalNonnegative_source_f_bound_of_rectRoundedLoop_square_models_gamma`
+- `higham9_14_totalNonnegative_source_h_bound_of_rectRoundedLoop_square_models_gamma`
 - `higham9_14_spd_tridiag_positive_DLT_source_h_bound_of_models`
 - `higham9_14_spd_tridiag_positive_DLT_source_h_bound_of_models_gamma`
 - `higham9_14_spd_tridiag_positive_DLT_source_h_bound_of_recurrence`
@@ -2742,6 +2766,12 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_chi_condition_chain_min_of_inverse_product_bounds`
 - `higham9_15_chi_condition_chain_of_inverse_products`
 - `higham9_15_chi_condition_chain_min_of_inverse_products`
+- `higham9_15_lu_inverse_product_identities_of_source_inverse_identities`
+- `higham9_15_matrix_lu_inverse_product_identities_of_source_inverse_identities`
+- `higham9_15_chi_condition_chain_of_lu_inverse_identities`
+- `higham9_15_chi_condition_chain_of_matrix_lu_inverse_identities`
+- `higham9_15_chi_condition_chain_min_of_lu_inverse_identities`
+- `higham9_15_chi_condition_chain_min_of_matrix_lu_inverse_identities`
 - `higham9_15_normalized_G_factorization_matrix`
 - `higham9_15_normalized_Gtilde_factorization_matrix`
 - `higham9_15_strilPart`
@@ -2757,6 +2787,9 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_rectMatMul_strilPart_add_right`
 - `higham9_15_rectMatMul_triuPart_add_left`
 - `higham9_15_abs_matrix_mul_le_abs_mul_abs`
+- `higham9_15_rectMatMul_lower_strictLower_is_strictLower`
+- `higham9_15_rectMatMul_upper_upper_is_upper`
+- `higham9_15_normalized_triangular_support_of_factor_triangularity`
 - `higham9_15_strilPart_add_strictLower_upper`
 - `higham9_15_triuPart_add_strictLower_upper`
 - `higham9_15_normalized_G_split_matrix`
@@ -3039,6 +3072,9 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_normwise_source_bound_of_factorization_min_factor_bound_opNorm`
 - `higham9_15_normwise_source_bound_of_factorization_min_factor_bound_opNorm_product_lt`
 - `higham9_15_normwise_source_bound_of_factorization_min_factor_bound_opNorm_exact_opNorm2`
+- `higham9_15_normwise_source_bound_of_factorization_min_factor_bound_opNorm_of_factor_triangularity`
+- `higham9_15_normwise_source_bound_of_factorization_min_factor_bound_opNorm_product_lt_of_factor_triangularity`
+- `higham9_15_normwise_source_bound_of_factorization_min_factor_bound_opNorm_exact_opNorm2_of_factor_triangularity`
 - `higham9_15_normwise_source_bound_of_factorization_init_min_factor_bound_opNorm_of_matrix_inverse_identities`
 - `higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_of_matrix_inverse_identities`
 - `higham9_15_normwise_source_bound_of_factorization_init_linear_step_opNorm_of_matrix_inverse_identities_product_lt`
@@ -3151,6 +3187,9 @@ Source-facing Chapter 9 wrappers:
 - `higham9_15_normwise_source_bound_of_factorization_Gtilde_min_factor_bound_opNorm`
 - `higham9_15_normwise_source_bound_of_factorization_Gtilde_min_factor_bound_opNorm_product_lt`
 - `higham9_15_normwise_source_bound_of_factorization_Gtilde_min_factor_bound_opNorm_exact_opNorm2`
+- `higham9_15_normwise_source_bound_of_factorization_Gtilde_min_factor_bound_opNorm_of_factor_triangularity`
+- `higham9_15_normwise_source_bound_of_factorization_Gtilde_min_factor_bound_opNorm_product_lt_of_factor_triangularity`
+- `higham9_15_normwise_source_bound_of_factorization_Gtilde_min_factor_bound_opNorm_exact_opNorm2_of_factor_triangularity`
 - `higham9_15_normwise_source_bound_of_factorization_Gtilde_init_min_factor_bound_opNorm_of_matrix_inverse_identities`
 - `higham9_15_normwise_source_bound_of_factorization_Gtilde_init_linear_step_opNorm_of_matrix_inverse_identities`
 - `higham9_15_normwise_source_bound_of_factorization_Gtilde_init_linear_step_opNorm_of_matrix_inverse_identities_product_lt`
@@ -3624,6 +3663,10 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_checkerboard_totalNonnegative_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma_le`
 - `higham9_14_checkerboard_totalNonnegative_source_f_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma`
 - `higham9_14_checkerboard_totalNonnegative_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma`
+- `higham9_14_checkerboard_totalNonnegative_source_f_bound_of_RectDoolittleRoundedStageTrace_square_models_gamma`
+- `higham9_14_checkerboard_totalNonnegative_source_h_bound_of_RectDoolittleRoundedStageTrace_square_models_gamma`
+- `higham9_14_checkerboard_totalNonnegative_source_f_bound_of_rectRoundedLoop_square_models_gamma`
+- `higham9_14_checkerboard_totalNonnegative_source_h_bound_of_rectRoundedLoop_square_models_gamma`
 - `higham9_14_checkerboard_totalNonnegative_exists_source_h_bound_of_models`
 - `higham9_14_checkerboard_totalNonnegative_exists_source_f_bound_of_models`
 - `higham9_14_checkerboard_totalNonnegative_exists_source_f_bound_of_models_gamma`
@@ -3644,6 +3687,10 @@ Source-facing Chapter 9 wrappers:
 - `higham9_14_nonsingInv_totalNonnegative_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma_le`
 - `higham9_14_nonsingInv_totalNonnegative_source_f_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma`
 - `higham9_14_nonsingInv_totalNonnegative_source_h_bound_of_rectRoundedLoop_square_fl_triangular_solves_gamma`
+- `higham9_14_nonsingInv_totalNonnegative_source_f_bound_of_RectDoolittleRoundedStageTrace_square_models_gamma`
+- `higham9_14_nonsingInv_totalNonnegative_source_h_bound_of_RectDoolittleRoundedStageTrace_square_models_gamma`
+- `higham9_14_nonsingInv_totalNonnegative_source_f_bound_of_rectRoundedLoop_square_models_gamma`
+- `higham9_14_nonsingInv_totalNonnegative_source_h_bound_of_rectRoundedLoop_square_models_gamma`
 - `higham9_14_nonsingInv_totalNonnegative_exists_source_h_bound_of_models`
 - `higham9_14_nonsingInv_totalNonnegative_exists_source_f_bound_of_models`
 - `higham9_14_nonsingInv_totalNonnegative_exists_source_h_bound_of_models_gamma`
@@ -3827,6 +3874,15 @@ Source-facing Chapter 10 wrappers:
 - `finiteMaxEigenvalue_ge_diag` / `diag_congruence_minEigenvalue_ge` (van der Sluis spectral engines: lambda_max >= diag; lambda_min(EME) >= m lambda_min(M))
 - `higham10_9_van_der_sluis` ((10.9) PROVED: kappa_2(H) <= n kappa_2(DAD) for every positive diagonal D)
 - `bordered_perturbation_floor_normwise` (Th10.7 sharpening route: normwise mass, no dimension factor - lam - 2eps weight)
+- `scaled_interior_mass_normwise` (mass hypothesis discharged from a scaled opNorm2Le certificate: |y^T Delta y| <= eps sum a y^2)
+- `scaled_border_mass_normwise` (border mass from a scaled vector-norm certificate: |2 sum y delta| <= eps (t + W))
+- `normwise_stage_endgame` (Th10.7 sharpened scalar core: contradiction at lam > eps + 2 gamma - source-shaped threshold)
+- `fl_cholesky_pivot_pos_step_sharp` (Th10.7 stage step at the SOURCE-SHAPED threshold lam > eps + 2 gamma_{n+1}, normwise masses as hypotheses)
+- `fl_cholesky_pivots_pos_sharp` (whole-run induction: all pivots positive at the source-shaped threshold)
+- `finiteMaxEigenvalue_leading_principal_le` (interlacing upper direction: lambda_max of leading principal block <= lambda_max of full)
+- `scaled_interior_mass_normwise_quad` / `stage_interior_mass_from_full` (one full scaled certificate restricts to ALL leading blocks by zero-padding - per-stage mass discharge)
+- `stage_border_mass_from_full` (per-stage border mass from n full-column certificates, monotone segment restriction)
+- `fl_cholesky_pivots_pos_sharp_certified` (Th10.7 SHARP FINAL FORM: all pivots positive at lam > eps + 2 gamma_{n+1} from run-level certificates only) / `gram_sum_stage_trunc`
 - `quadForm_append_split`
 - `higham10_7_normwise_backward_error_selfbound` ((10.7) closed: ||dA|| <= eps n ||A|| / (1 - eps n) by Gram self-bounding)
 - `higham10_10_schur_complement_perturbation` (honest: exact identity + O(eps^2) remainder)

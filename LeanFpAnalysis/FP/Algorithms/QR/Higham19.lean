@@ -5022,6 +5022,54 @@ theorem householderTrailingActiveVector_betaSpec_eq_one_of_self_dot
     householderBetaSpec_eq_one_of_inner_self_eq_two n
       (householderTrailingActiveVector n p x alpha) hself
 
+/-- Pivot-zero signed active vector equals the exact unnormalized Householder
+vector when the signed alpha is Higham's exact `-s`.
+
+This is the source-side bridge for the unnormalized route: the stored signed
+vector is naturally the unnormalized Householder vector, not the normalized
+`sqrt(beta) * v` vector. -/
+theorem
+    householderTrailingActiveVector_zero_eq_householderVector_of_alpha_eq_householderAlpha
+    {n : Nat} (hn : 0 < n) (x : Fin n -> Real) (alpha : Real)
+    (halpha : alpha = householderAlpha hn x) :
+    householderTrailingActiveVector n (Fin.mk 0 hn) x alpha =
+      LeanFpAnalysis.FP.householderVector hn x := by
+  funext i
+  by_cases hi : i = Fin.mk 0 hn
+  case pos =>
+    subst i
+    simp [householderTrailingActiveVector, householderActiveVector,
+      householderTrailingPart, LeanFpAnalysis.FP.householderVector,
+      householderAlpha, halpha]
+  case neg =>
+    simp [householderTrailingActiveVector, householderActiveVector,
+      householderTrailingPart, LeanFpAnalysis.FP.householderVector, hi]
+
+/-- Pivot-zero signed active vector equals the computed unnormalized
+Householder vector when the stored alpha is the rounded Householder alpha and
+the first-component addition is exact.
+
+This keeps the unnormalized stored-loop bridge separate from the stronger
+source-faithful normalized-vector/self-dot route. -/
+theorem
+    householderTrailingActiveVector_zero_eq_fl_householderVector_of_alpha_eq_fl_householderAlpha
+    (fp : FPModel) {n : Nat} (hn : 0 < n)
+    (x : Fin n -> Real) (alpha : Real)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (halpha : alpha = fl_householderAlpha fp hn x) :
+    householderTrailingActiveVector n (Fin.mk 0 hn) x alpha =
+      fl_householderVector fp hn x := by
+  funext i
+  by_cases hi : i = Fin.mk 0 hn
+  case pos =>
+    subst i
+    simp [householderTrailingActiveVector, householderActiveVector,
+      householderTrailingPart, fl_householderVector, fl_householderAlpha,
+      halpha, hadd]
+  case neg =>
+    simp [householderTrailingActiveVector, householderActiveVector,
+      householderTrailingPart, fl_householderVector, hi]
+
 /-- Source-faithful rounded normalization data for one Householder stage.
 
 The record names the exact missing premise left by the arbitrary-`FPModel`
@@ -5257,6 +5305,29 @@ theorem fl_householderVector_eq_of_exact_add_mul_sqrt
   · simp [hi, hadd]
   · simp [hi]
 
+/-- Exact add/mul/sqrt operations identify the exact signed active vector with
+the computed unnormalized Householder vector.
+
+This is the operation-level version of the source-alpha bridge: exact primitive
+operations make the computed vector collapse to the exact Householder vector,
+while the stored alpha convention supplies the signed active-vector equality. -/
+theorem
+    householderTrailingActiveVector_zero_eq_fl_householderVector_of_alpha_eq_householderAlpha_of_exact_add_mul_sqrt
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {n : Nat} (hn : 0 < n) (x : Fin n -> Real) (alpha : Real)
+    (halpha : alpha = householderAlpha hn x) :
+    householderTrailingActiveVector n (Fin.mk 0 hn) x alpha =
+      fl_householderVector fp hn x := by
+  rw [
+    householderTrailingActiveVector_zero_eq_householderVector_of_alpha_eq_householderAlpha
+      hn x alpha halpha]
+  exact
+    (fl_householderVector_eq_of_exact_add_mul_sqrt
+      fp hadd hmul hsqrt hn x).symm
+
 /-- Exact add/mul/div/sqrt operations make the computed Higham-order
 Householder beta agree with the exact scale-based beta. -/
 theorem fl_householderBeta_eq_of_exact_add_mul_div_sqrt
@@ -5289,6 +5360,121 @@ theorem fl_householderNormalizedVector_eq_of_exact_add_mul_div_sqrt
     (fl_householderVector_eq_of_exact_add_mul_sqrt fp hadd hmul hsqrt hn x)
     (fl_householderBeta_eq_of_exact_add_mul_div_sqrt
       fp hadd hmul hdiv hsqrt hn x)
+
+/-- The generic `householderBetaSpec` applied to Higham's exact
+unnormalized Householder vector agrees with Higham's scale-ordered beta for a
+nonzero source column.
+
+This is the missing scalar bridge for the unnormalized stored-vector route:
+the stored path carries `2 / (v^T v)`, while the computed Higham kernel forms
+the equivalent `1 / (s * v_0)` beta. -/
+theorem
+    householderBetaSpec_householderVector_eq_householderBetaFromScale_of_ne_zero
+    {n : Nat} (hn : 0 < n) (x : Fin n -> Real) (hx : Ne x 0) :
+    householderBetaSpec n (LeanFpAnalysis.FP.householderVector hn x) =
+      householderBetaFromScale hn x := by
+  have hdenScale :
+      householderScale hn x *
+          LeanFpAnalysis.FP.householderVector hn x ⟨0, hn⟩ ≠ 0 :=
+    mul_ne_zero
+      (householderScale_ne_zero_of_ne_zero hn x hx)
+      (householderVector_zero_ne_zero_of_ne_zero hn x hx)
+  rw [householderBetaFromScale_eq_householderBeta hn x hdenScale]
+  simp [householderBetaSpec, LeanFpAnalysis.FP.householderBeta]
+
+/-- Under exact primitive operations, the generic beta of the computed
+unnormalized Householder vector agrees with the computed Higham beta.
+
+This lets the source-facing `householderBetaSpec` stored loop meet the
+computed Householder-normalization kernel without assuming the stored vector is
+already normalized. -/
+theorem
+    householderBetaSpec_fl_householderVector_eq_fl_householderBeta_of_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {n : Nat} (hn : 0 < n) (x : Fin n -> Real) (hx : Ne x 0) :
+    householderBetaSpec n (fl_householderVector fp hn x) =
+      fl_householderBeta fp hn x := by
+  rw [fl_householderVector_eq_of_exact_add_mul_sqrt
+      fp hadd hmul hsqrt hn x,
+    fl_householderBeta_eq_of_exact_add_mul_div_sqrt
+      fp hadd hmul hdiv hsqrt hn x]
+  exact
+    householderBetaSpec_householderVector_eq_householderBetaFromScale_of_ne_zero
+      hn x hx
+
+/-- Exact primitive operations identify the computed normalized Householder
+vector with betaSpec-normalization of the computed unnormalized vector. -/
+theorem
+    fl_householderNormalizedVector_eq_householderNormalizedVector_fl_householderVector_betaSpec_of_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {n : Nat} (hn : 0 < n) (x : Fin n -> Real) (hx : Ne x 0) :
+    fl_householderNormalizedVector fp hn x =
+      householderNormalizedVector n (fl_householderVector fp hn x)
+        (householderBetaSpec n (fl_householderVector fp hn x)) := by
+  rw [fl_householderNormalizedVector]
+  rw [
+    householderBetaSpec_fl_householderVector_eq_fl_householderBeta_of_exact_add_mul_div_sqrt
+      fp hadd hmul hdiv hsqrt hn x hx]
+
+/-- Computed-alpha stored active vectors normalize to the computed
+Householder normalized vector under exact primitive operations.
+
+The conclusion is deliberately a normalized-vector equality derived from the
+unnormalized signed-active vector plus betaSpec, not an assertion that the raw
+stored active vector itself has self-dot `2`. -/
+theorem
+    householderTrailingActiveVector_zero_normalized_eq_fl_householderNormalizedVector_of_alpha_eq_fl_householderAlpha_of_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {n : Nat} (hn : 0 < n) (x : Fin n -> Real) (alpha : Real)
+    (hx : Ne x 0)
+    (halpha : alpha = fl_householderAlpha fp hn x) :
+    householderNormalizedVector n
+        (householderTrailingActiveVector n (Fin.mk 0 hn) x alpha)
+        (householderBetaSpec n
+          (householderTrailingActiveVector n (Fin.mk 0 hn) x alpha)) =
+      fl_householderNormalizedVector fp hn x := by
+  rw [
+    householderTrailingActiveVector_zero_eq_fl_householderVector_of_alpha_eq_fl_householderAlpha
+      fp hn x alpha hadd halpha]
+  exact
+    (fl_householderNormalizedVector_eq_householderNormalizedVector_fl_householderVector_betaSpec_of_exact_add_mul_div_sqrt
+      fp hadd hmul hdiv hsqrt hn x hx).symm
+
+/-- Exact-alpha stored active vectors normalize to the computed Householder
+normalized vector when the primitive Householder operations are exact. -/
+theorem
+    householderTrailingActiveVector_zero_normalized_eq_fl_householderNormalizedVector_of_alpha_eq_householderAlpha_of_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {n : Nat} (hn : 0 < n) (x : Fin n -> Real) (alpha : Real)
+    (hx : Ne x 0)
+    (halpha : alpha = householderAlpha hn x) :
+    householderNormalizedVector n
+        (householderTrailingActiveVector n (Fin.mk 0 hn) x alpha)
+        (householderBetaSpec n
+          (householderTrailingActiveVector n (Fin.mk 0 hn) x alpha)) =
+      fl_householderNormalizedVector fp hn x := by
+  rw [
+    householderTrailingActiveVector_zero_eq_fl_householderVector_of_alpha_eq_householderAlpha_of_exact_add_mul_sqrt
+      fp hadd hmul hsqrt hn x alpha halpha]
+  exact
+    (fl_householderNormalizedVector_eq_householderNormalizedVector_fl_householderVector_betaSpec_of_exact_add_mul_div_sqrt
+      fp hadd hmul hdiv hsqrt hn x hx).symm
 
 /-- Exact add/mul/div/sqrt operations are sufficient for the stronger
 source-faithful Householder normalization model.
@@ -5930,6 +6116,143 @@ theorem
   firstStoredPanelStep_normalized_betaSpec_eq_panelFromTopAndTrailing_of_exact_dotProduct_and_mul
     fp (fl_dotProduct_eq_sum_of_exact_add_mul fp hadd hmul) hmul v A
 
+/-- First-pivot storage handoff from the computed normalized Householder
+vector to the signed unnormalized stored vector, under the explicit
+normalized-beta update compatibility predicate.
+
+This composes the betaSpec-normalization bridge with the existing
+normalized-to-`householderBetaSpec` stored-panel handoff.  The raw signed
+active vector remains unnormalized; only its betaSpec-normalization is
+identified with the computed normalized vector. -/
+theorem
+    firstStoredPanelStep_fl_householderNormalizedVector_eq_signedActiveBetaSpec_of_alpha_eq_fl_householderAlpha_of_updateCompatible_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hcompat : normalizedBetaSpecCompactUpdateCompatible fp)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat} (x : Fin (m + 1) -> Real) (alpha : Real)
+    (hx : Ne x 0)
+    (halpha : alpha = fl_householderAlpha fp (Nat.succ_pos m) x)
+    (A : Fin (m + 1) -> Fin (p + 1) -> Real) :
+    (let Astep :=
+      fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+        (fl_householderNormalizedVector fp (Nat.succ_pos m) x) 1 A
+     panelFromTopAndTrailing (panelTopLeft Astep) (panelTopRowTail Astep)
+       (trailingPanel Astep)) =
+    fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+      (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1)) x alpha)
+      (householderBetaSpec (m + 1)
+        (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1)) x alpha))
+      A := by
+  let v : Fin (m + 1) -> Real :=
+    householderTrailingActiveVector (m + 1) (0 : Fin (m + 1)) x alpha
+  have hnorm :
+      householderNormalizedVector (m + 1) v
+          (householderBetaSpec (m + 1) v) =
+        fl_householderNormalizedVector fp (Nat.succ_pos m) x := by
+    exact
+      householderTrailingActiveVector_zero_normalized_eq_fl_householderNormalizedVector_of_alpha_eq_fl_householderAlpha_of_exact_add_mul_div_sqrt
+        fp hadd hmul hdiv hsqrt (Nat.succ_pos m) x alpha hx halpha
+  rw [← hnorm]
+  exact
+    firstStoredPanelStep_normalized_betaSpec_eq_panelFromTopAndTrailing_of_updateCompatible
+      fp hcompat v A
+
+/-- First-pivot storage handoff from the computed normalized Householder
+vector to the exact-alpha signed unnormalized stored vector, under the
+explicit normalized-beta update compatibility predicate. -/
+theorem
+    firstStoredPanelStep_fl_householderNormalizedVector_eq_signedActiveBetaSpec_of_alpha_eq_householderAlpha_of_updateCompatible_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hcompat : normalizedBetaSpecCompactUpdateCompatible fp)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat} (x : Fin (m + 1) -> Real) (alpha : Real)
+    (hx : Ne x 0)
+    (halpha : alpha = householderAlpha (Nat.succ_pos m) x)
+    (A : Fin (m + 1) -> Fin (p + 1) -> Real) :
+    (let Astep :=
+      fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+        (fl_householderNormalizedVector fp (Nat.succ_pos m) x) 1 A
+     panelFromTopAndTrailing (panelTopLeft Astep) (panelTopRowTail Astep)
+       (trailingPanel Astep)) =
+    fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+      (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1)) x alpha)
+      (householderBetaSpec (m + 1)
+        (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1)) x alpha))
+      A := by
+  let v : Fin (m + 1) -> Real :=
+    householderTrailingActiveVector (m + 1) (0 : Fin (m + 1)) x alpha
+  have hnorm :
+      householderNormalizedVector (m + 1) v
+          (householderBetaSpec (m + 1) v) =
+        fl_householderNormalizedVector fp (Nat.succ_pos m) x := by
+    exact
+      householderTrailingActiveVector_zero_normalized_eq_fl_householderNormalizedVector_of_alpha_eq_householderAlpha_of_exact_add_mul_div_sqrt
+        fp hadd hmul hdiv hsqrt (Nat.succ_pos m) x alpha hx halpha
+  rw [← hnorm]
+  exact
+    firstStoredPanelStep_normalized_betaSpec_eq_panelFromTopAndTrailing_of_updateCompatible
+      fp hcompat v A
+
+/-- Exact add/mul operations discharge the update compatibility in the
+computed-alpha first-pivot signed-active handoff. -/
+theorem
+    firstStoredPanelStep_fl_householderNormalizedVector_eq_signedActiveBetaSpec_of_alpha_eq_fl_householderAlpha_of_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat} (x : Fin (m + 1) -> Real) (alpha : Real)
+    (hx : Ne x 0)
+    (halpha : alpha = fl_householderAlpha fp (Nat.succ_pos m) x)
+    (A : Fin (m + 1) -> Fin (p + 1) -> Real) :
+    (let Astep :=
+      fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+        (fl_householderNormalizedVector fp (Nat.succ_pos m) x) 1 A
+     panelFromTopAndTrailing (panelTopLeft Astep) (panelTopRowTail Astep)
+       (trailingPanel Astep)) =
+    fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+      (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1)) x alpha)
+      (householderBetaSpec (m + 1)
+        (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1)) x alpha))
+      A :=
+  firstStoredPanelStep_fl_householderNormalizedVector_eq_signedActiveBetaSpec_of_alpha_eq_fl_householderAlpha_of_updateCompatible_exact_add_mul_div_sqrt
+    fp (normalizedBetaSpecCompactUpdateCompatible_of_exact_add_mul fp hadd hmul)
+    hadd hmul hdiv hsqrt x alpha hx halpha A
+
+/-- Exact add/mul operations discharge the update compatibility in the
+exact-alpha first-pivot signed-active handoff. -/
+theorem
+    firstStoredPanelStep_fl_householderNormalizedVector_eq_signedActiveBetaSpec_of_alpha_eq_householderAlpha_of_exact_add_mul_div_sqrt
+    (fp : FPModel)
+    (hadd : forall x y : Real, fp.fl_add x y = x + y)
+    (hmul : forall x y : Real, fp.fl_mul x y = x * y)
+    (hdiv : forall x y : Real, fp.fl_div x y = x / y)
+    (hsqrt : forall x : Real, fp.fl_sqrt x = Real.sqrt x)
+    {m p : Nat} (x : Fin (m + 1) -> Real) (alpha : Real)
+    (hx : Ne x 0)
+    (halpha : alpha = householderAlpha (Nat.succ_pos m) x)
+    (A : Fin (m + 1) -> Fin (p + 1) -> Real) :
+    (let Astep :=
+      fl_householderApplyMatrixRect fp (m + 1) (p + 1)
+        (fl_householderNormalizedVector fp (Nat.succ_pos m) x) 1 A
+     panelFromTopAndTrailing (panelTopLeft Astep) (panelTopRowTail Astep)
+       (trailingPanel Astep)) =
+    fl_householderStoredPanelStep fp (m + 1) (p + 1) 0
+      (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1)) x alpha)
+      (householderBetaSpec (m + 1)
+        (householderTrailingActiveVector (m + 1) (0 : Fin (m + 1)) x alpha))
+      A :=
+  firstStoredPanelStep_fl_householderNormalizedVector_eq_signedActiveBetaSpec_of_alpha_eq_householderAlpha_of_updateCompatible_exact_add_mul_div_sqrt
+    fp (normalizedBetaSpecCompactUpdateCompatible_of_exact_add_mul fp hadd hmul)
+    hadd hmul hdiv hsqrt x alpha hx halpha A
+
 /-- Exact arithmetic satisfies the explicit normalized-beta update
 compatibility surface. -/
 theorem normalizedBetaSpecCompactUpdateCompatible_exactWithUnitRoundoff
@@ -6324,6 +6647,48 @@ theorem fl_householderNormalizedVector_self_dot_not_forall_FPModel :
   refine Exists.intro (fun _ : Fin 1 => (1 : Real)) ?_
   intro h
   norm_num [divDoubledFPModel, fl_householderNormalizedVector,
+    householderNormalizedVector, fl_householderVector, fl_householderScale,
+    fl_householderBeta, fl_norm2, fl_norm2Sq, fl_dotProduct,
+    householderSign] at h
+  have hsqrt_sq :
+      Real.sqrt (1 : Real) * Real.sqrt (1 : Real) = 1 := by
+    exact Real.mul_self_sqrt (by norm_num)
+  have hsqrt_pow : Real.sqrt (1 : Real) ^ 2 = 1 := by
+    rw [pow_two]
+    exact hsqrt_sq
+  ring_nf at h
+  have hleft :
+      Real.sqrt (1 : Real) ^ 2 * 4 = (4 : Real) := by
+    rw [hsqrt_pow]
+    norm_num
+  have hbad : (4 : Real) = 2 := hleft.symm.trans h
+  norm_num at hbad
+
+/-- The stronger source-faithful normalization model is a genuine extra model
+assumption, not a consequence of the base `FPModel` interface.
+
+The same one-entry model used by
+`fl_householderNormalizedVector_self_dot_not_forall_FPModel` has a computed
+Householder normalized vector whose self-dot is `4`, so it cannot satisfy
+`sourceFaithfulHouseholderNormalizationModel`. -/
+theorem sourceFaithfulHouseholderNormalizationModel_not_forall_FPModel :
+    Not (forall fp : FPModel, sourceFaithfulHouseholderNormalizationModel fp) := by
+  intro hmodel
+  let x : Fin 1 -> Real := fun _ => (1 : Real)
+  have hx : Ne x 0 := by
+    intro hzero
+    have hentry := congrFun hzero 0
+    norm_num [x] at hentry
+  have h :
+      (Finset.univ : Finset (Fin 1)).sum
+        (fun i =>
+          fl_householderNormalizedVector divDoubledFPModel
+              (Nat.succ_pos 0) x i *
+            fl_householderNormalizedVector divDoubledFPModel
+              (Nat.succ_pos 0) x i) =
+        2 :=
+    hmodel divDoubledFPModel (Nat.succ_pos 0) x hx
+  norm_num [x, divDoubledFPModel, fl_householderNormalizedVector,
     householderNormalizedVector, fl_householderVector, fl_householderScale,
     fl_householderBeta, fl_norm2, fl_norm2Sq, fl_dotProduct,
     householderSign] at h
