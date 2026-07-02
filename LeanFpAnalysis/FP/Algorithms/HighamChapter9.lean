@@ -28152,6 +28152,55 @@ theorem higham9_27_GMatrix_opNorm2_lt_one_of_product_lt_one {n : ℕ}
       (higham9_27_GMatrix Linv ΔA Uinv) heta_nonneg hGopCert)
     heta
 
+/-- **Theorem 9.15 / Equation (9.27)**, row-sum contraction bridge for
+the Barrlund--Sun nonnegative majorant matrix `|G|`.
+
+This packages the source-shaped row-sum condition on
+`G = L⁻¹ ΔA U⁻¹` as the repository infinity-norm certificate consumed by the
+canonical Neumann/resolvent route. -/
+theorem higham9_15_GMatrix_abs_infNormBound_of_row_sum_bound {n : ℕ}
+    (Linv ΔA Uinv : Fin n → Fin n → ℝ) {c : ℝ}
+    (hc_nn : 0 ≤ c)
+    (hrows :
+      ∀ i : Fin n, ∑ j : Fin n,
+        |higham9_27_GMatrix Linv ΔA Uinv i j| ≤ c) :
+    infNormBound n (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) c := by
+  refine infNormBound_of_row_sum_le
+    (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) ?_ hc_nn
+  intro i
+  simpa [absMatrix, abs_abs] using hrows i
+
+/-- **Theorem 9.15 / Equation (9.27)**, canonical nonnegative resolvent for
+`I - |G|` from a source-shaped row-sum contraction on
+`G = L⁻¹ ΔA U⁻¹`.
+
+This is the reusable certificate that the componentwise Barrlund--Sun endpoints
+need after the row-sum smallness hypothesis has been discharged. -/
+theorem higham9_15_GMatrix_nonnegative_resolvent_nonsingInv_of_row_sum_bound
+    {n : ℕ} (hn : 0 < n)
+    (Linv ΔA Uinv : Fin n → Fin n → ℝ) {c : ℝ}
+    (hc_nn : 0 ≤ c) (hc_lt : c < 1)
+    (hrows :
+      ∀ i : Fin n, ∑ j : Fin n,
+        |higham9_27_GMatrix Linv ΔA Uinv i j| ≤ c) :
+    ch7NonnegativeResolvent n
+      (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))
+      (nonsingInv n
+        (matSub_id n (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) := by
+  have hG_nonneg :
+      ∀ i j : Fin n,
+        0 ≤ absMatrix n (higham9_27_GMatrix Linv ΔA Uinv) i j := by
+    intro i j
+    simp [absMatrix]
+  have hbound :
+      infNormBound n (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) c :=
+    higham9_15_GMatrix_abs_infNormBound_of_row_sum_bound
+      Linv ΔA Uinv hc_nn hrows
+  exact
+    ch7NonnegativeResolvent_nonsingInv_of_infNormBound n hn
+      (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))
+      hG_nonneg c hc_nn hc_lt hbound
+
 /-- **Theorem 9.15 / Equation (9.27)**, scalar denominator monotonicity used to
 pass from exact `G` norms to product upper bounds in the source display. -/
 theorem higham9_15_ratio_le_of_norm_bounds {g2 gf eta nu : ℝ}
