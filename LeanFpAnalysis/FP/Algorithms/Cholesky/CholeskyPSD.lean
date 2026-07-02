@@ -845,6 +845,212 @@ theorem psd_pivoted_cholesky_exists_cp (n : ℕ) (A : Fin n → Fin n → ℝ)
             have := Fin.val_pred l hlk
             omega)
 
+/-- Reindex a succ-tail filter sum over `Fin (m+1)` to a tail filter sum
+    over `Fin m`. -/
+private lemma sum_filter_succ_tail {m : ℕ} (k₀ : ℕ)
+    (f : Fin (m + 1) → ℝ) :
+    (∑ i ∈ Finset.univ.filter
+      (fun i : Fin (m + 1) => k₀ + 1 ≤ i.val), f i) =
+    ∑ i₀ ∈ Finset.univ.filter (fun i₀ : Fin m => k₀ ≤ i₀.val),
+      f i₀.succ := by
+  have himg : (Finset.univ.filter
+      (fun i₀ : Fin m => k₀ ≤ i₀.val)).image Fin.succ =
+      Finset.univ.filter (fun i : Fin (m + 1) => k₀ + 1 ≤ i.val) := by
+    ext i
+    simp only [Finset.mem_image, Finset.mem_filter, Finset.mem_univ,
+      true_and]
+    constructor
+    · rintro ⟨i₀, hi₀, rfl⟩
+      simp only [Fin.val_succ]
+      omega
+    · intro hi
+      have hne : i ≠ 0 := by
+        intro h0
+        rw [h0] at hi
+        simp at hi
+      refine ⟨i.pred hne, ?_, Fin.succ_pred i hne⟩
+      have := Fin.val_pred i hne
+      omega
+  rw [← himg, Finset.sum_image
+    (fun a _ b _ h => Fin.succ_injective m h)]
+
+/-- **Theorem 10.9(b) with the (10.13) column-tail invariant**: the greedy
+    complete-pivoting construction yields, beyond the pivoted certificate,
+    the stage-wise column-tail domination
+    `∑_{i ≥ k} r_ij² ≤ r_kk²` for `k ≤ j` — precisely the content of the
+    display (10.13). -/
+theorem psd_pivoted_cholesky_exists_tail (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (hPSD : IsPosSemiDef n A) :
+    ∃ (r : ℕ) (σ : Fin n → Fin n) (R : Fin n → Fin n → ℝ),
+      PivotedCholeskySpec n A R σ r ∧
+      ∀ k j : Fin n, k.val ≤ j.val →
+        (∑ i ∈ Finset.univ.filter (fun i : Fin n => k.val ≤ i.val),
+          R i j ^ 2) ≤ R k k ^ 2 := by
+  induction n with
+  | zero =>
+    exact ⟨0, id, fun i => Fin.elim0 i,
+      ⟨Function.bijective_id, fun i => Fin.elim0 i, fun i => Fin.elim0 i,
+       fun i => Fin.elim0 i, fun i => Fin.elim0 i⟩,
+      fun k => Fin.elim0 k⟩
+  | succ m ih =>
+    by_cases hall : ∀ i, A i i = 0
+    · have hzero := psd_all_diag_zero A hPSD hall
+      refine ⟨0, id, fun _ _ => 0,
+        ⟨Function.bijective_id, fun i j _ => rfl,
+         fun i hi => absurd hi (Nat.not_lt_zero _),
+         fun i j _ => rfl, fun i j => ?_⟩,
+        fun k j _ => by simp⟩
+      show ∑ k : Fin (m + 1), (0:ℝ) * 0 = A i j
+      rw [hzero i j]
+      simp
+    · push_neg at hall
+      obtain ⟨w, hw⟩ := hall
+      have hw_pos : 0 < A w w :=
+        lt_of_le_of_ne (psd_diag_nonneg hPSD w) (Ne.symm hw)
+      obtain ⟨τ, hτ_perm, hτ_pos, hτ_max⟩ :=
+        psd_pivot_selection A ⟨w, hw_pos⟩
+      set B : Fin (m + 1) → Fin (m + 1) → ℝ :=
+        fun i j => A (τ i) (τ j) with hBdef
+      have hB_psd : IsPosSemiDef (m + 1) B :=
+        isPosSemiDef_perm (m + 1) A τ hτ_perm hPSD
+      have hB00 : 0 < B 0 0 := hτ_pos
+      set S : Fin m → Fin m → ℝ := fun i j =>
+        B i.succ j.succ - B 0 i.succ * B 0 j.succ / B 0 0 with hSdef
+      have hS_psd := schur_psd hB_psd hB00
+      obtain ⟨r', σ', R₁, hspec, htail⟩ := ih S hS_psd
+      set sa := Real.sqrt (B 0 0) with hsadef
+      have hsa_pos : 0 < sa := Real.sqrt_pos_of_pos hB00
+      have hsa_ne : sa ≠ 0 := ne_of_gt hsa_pos
+      have hsa_sq : sa * sa = B 0 0 :=
+        Real.mul_self_sqrt (le_of_lt hB00)
+      set R : Fin (m + 1) → Fin (m + 1) → ℝ := (fun i j =>
+        if hi : i = 0 then
+          (if j = 0 then sa else B 0 (extendPerm σ' j) / sa)
+        else
+          if hj : j = 0 then 0 else R₁ (i.pred hi) (j.pred hj))
+        with hRdef
+      have hR0 : ∀ p : Fin (m + 1), R 0 p =
+          if p = 0 then sa else B 0 (extendPerm σ' p) / sa := by
+        intro p; simp [hRdef]
+      have hRs : ∀ (k : Fin m) (p : Fin (m + 1)), R k.succ p =
+          if hp : p = 0 then 0 else R₁ k (p.pred hp) := by
+        intro k p; simp [hRdef, Fin.succ_ne_zero, Fin.pred_succ]
+      have hext : ∀ (p : Fin (m + 1)) (hp : p ≠ 0),
+          extendPerm σ' p = (σ' (p.pred hp)).succ := by
+        intro p hp
+        conv_lhs => rw [← Fin.succ_pred p hp]
+        rw [extendPerm_succ]
+      have hproduct : ∀ i j : Fin (m + 1),
+          ∑ p : Fin (m + 1), R p i * R p j =
+          B (extendPerm σ' i) (extendPerm σ' j) := by
+        intro i j
+        rw [Fin.sum_univ_succ]
+        simp only [hR0, hRs]
+        by_cases hi : i = 0 <;> by_cases hj : j = 0
+        · subst hi; subst hj
+          simp [hsa_sq]
+        · subst hi
+          simp [hj, mul_div_cancel₀, hsa_ne]
+        · subst hj
+          simp [hi, hsa_ne, hB_psd.1 (extendPerm σ' i) 0]
+        · simp only [if_neg hi, if_neg hj, dif_neg hi, dif_neg hj]
+          have hih := hspec.product_eq (i.pred hi) (j.pred hj)
+          rw [hext i hi, hext j hj, hih]
+          have h1 : B 0 (σ' (i.pred hi)).succ / sa *
+              (B 0 (σ' (j.pred hj)).succ / sa) =
+              B 0 (σ' (i.pred hi)).succ *
+                B 0 (σ' (j.pred hj)).succ / B 0 0 := by
+            rw [div_mul_div_comm, hsa_sq]
+          rw [h1]
+          simp only [hSdef]
+          ring
+      refine ⟨r' + 1, fun i => τ (extendPerm σ' i), R,
+        ⟨hτ_perm.comp (extendPerm_isPermutation σ' hspec.perm),
+         fun i j hij => ?_, fun i hir => ?_, fun i j hri => ?_,
+         fun i j => hproduct i j⟩, fun k j hkj => ?_⟩
+      · simp only [hRdef]
+        by_cases hi : i = 0
+        · subst hi; exact absurd hij (Nat.not_lt_zero _)
+        · by_cases hj : j = 0
+          · simp [hi, hj]
+          · simp only [dif_neg hi, dif_neg hj]
+            exact hspec.R_upper _ _ (by
+              have hiv : i.val ≠ 0 := fun h => hi (Fin.ext h)
+              have hjv : j.val ≠ 0 := fun h => hj (Fin.ext h)
+              have := Fin.val_pred i hi
+              have := Fin.val_pred j hj
+              omega)
+      · simp only [hRdef]
+        by_cases hi : i = 0
+        · subst hi; simp [hsa_pos]
+        · simp only [dif_neg hi]
+          exact hspec.R_diag_pos _ (by
+            have hiv : i.val ≠ 0 := fun h => hi (Fin.ext h)
+            have := Fin.val_pred i hi
+            omega)
+      · simp only [hRdef]
+        by_cases hi : i = 0
+        · subst hi
+          exact absurd hri (by simp)
+        · simp only [dif_neg hi]
+          by_cases hj : j = 0
+          · simp [hj]
+          · simp only [dif_neg hj]
+            exact hspec.R_rank_zero _ _ (by
+              have := Fin.val_pred i hi
+              omega)
+      · -- column-tail domination (the (10.13) invariant)
+        by_cases hk : k = 0
+        · subst hk
+          have hfilter : Finset.univ.filter
+              (fun i : Fin (m + 1) => (0 : Fin (m + 1)).val ≤ i.val) =
+              Finset.univ := by
+            ext i; simp
+          rw [hfilter]
+          have hsum : ∑ i : Fin (m + 1), R i j ^ 2 =
+              B (extendPerm σ' j) (extendPerm σ' j) := by
+            rw [← hproduct j j]
+            exact Finset.sum_congr rfl fun i _ => by ring
+          rw [hsum]
+          have hR00 : R 0 0 = sa := by rw [hR0 0]; simp
+          rw [hR00]
+          calc B (extendPerm σ' j) (extendPerm σ' j) ≤ B 0 0 :=
+              hτ_max (extendPerm σ' j)
+            _ = sa ^ 2 := by rw [← hsa_sq]; ring
+        · have hj0 : j ≠ 0 := by
+            intro h0
+            apply hk
+            apply Fin.ext
+            have hjv : j.val = 0 := by simp [h0]
+            omega
+          have hkval : k.val = (k.pred hk).val + 1 := by
+            have := Fin.val_pred k hk
+            have hkv : k.val ≠ 0 := fun h => hk (Fin.ext h)
+            omega
+          have hfeq : Finset.univ.filter
+              (fun i : Fin (m + 1) => k.val ≤ i.val) =
+              Finset.univ.filter
+              (fun i : Fin (m + 1) => (k.pred hk).val + 1 ≤ i.val) := by
+            apply Finset.filter_congr
+            intro i _
+            constructor <;> intro h <;> omega
+          rw [hfeq, sum_filter_succ_tail (k.pred hk).val
+            (fun i => R i j ^ 2)]
+          have hterm : ∀ i₀ : Fin m, R i₀.succ j ^ 2 =
+              R₁ i₀ (j.pred hj0) ^ 2 := by
+            intro i₀
+            rw [hRs i₀ j, dif_neg hj0]
+          rw [Finset.sum_congr rfl fun i₀ _ => hterm i₀]
+          have hkk : R k k = R₁ (k.pred hk) (k.pred hk) := by
+            conv_lhs => rw [← Fin.succ_pred k hk]
+            rw [hRs (k.pred hk) (k.pred hk).succ,
+              dif_neg (Fin.succ_ne_zero _), Fin.pred_succ]
+          rw [hkk]
+          exact htail (k.pred hk) (j.pred hj0) (by
+            have := Fin.val_pred j hj0
+            have := Fin.val_pred k hk
+            omega)
+
 -- ============================================================
 -- §10.3  Theorem 10.9(b): SPD → PivotedCholeskySpec (full rank)
 -- ============================================================
