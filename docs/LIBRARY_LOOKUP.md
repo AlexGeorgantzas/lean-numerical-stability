@@ -3828,6 +3828,7 @@ Source-facing Chapter 10 wrappers:
 - `higham10_9_van_der_sluis` ((10.9) PROVED: kappa_2(H) <= n kappa_2(DAD) for every positive diagonal D)
 - `bordered_perturbation_floor_normwise` (Th10.7 sharpening route: normwise mass, no dimension factor - lam - 2eps weight)
 - `scaled_interior_mass_normwise` (mass hypothesis discharged from a scaled opNorm2Le certificate: |y^T Delta y| <= eps sum a y^2)
+- `scaled_border_mass_normwise` (border mass from a scaled vector-norm certificate: |2 sum y delta| <= eps (t + W))
 - `quadForm_append_split`
 - `higham10_7_normwise_backward_error_selfbound` ((10.7) closed: ||dA|| <= eps n ||A|| / (1 - eps n) by Gram self-bounding)
 - `higham10_10_schur_complement_perturbation` (honest: exact identity + O(eps^2) remainder)

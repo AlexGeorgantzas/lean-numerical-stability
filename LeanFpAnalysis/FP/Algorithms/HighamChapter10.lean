@@ -2621,6 +2621,88 @@ lemma scaled_interior_mass_normwise {m : ℕ}
   rw [hquad, hnorm] at habs
   exact habs
 
+/-- **Scaled border mass from a vector-norm certificate** (Theorem
+    10.7 normwise stage route): if the `D`-scaled border perturbation
+    has squared norm at most `ε²t`, then
+    `|2∑yᵢδᵢ| ≤ ε(t + ∑aᵢyᵢ²)` — Cauchy–Schwarz in the scaled inner
+    product followed by AM–GM, again with no dimension factor. -/
+lemma scaled_border_mass_normwise {m : ℕ}
+    (δ : Fin m → ℝ) (a : Fin m → ℝ) (ha : ∀ i, 0 ≤ a i)
+    (ε t : ℝ) (hε0 : 0 ≤ ε) (ht0 : 0 ≤ t)
+    (hnz : ∀ i : Fin m, a i = 0 → δ i = 0)
+    (hcert : ∑ i : Fin m,
+      (if a i = 0 then 0 else δ i ^ 2 / a i) ≤ ε ^ 2 * t)
+    (y : Fin m → ℝ) :
+    |2 * ∑ i : Fin m, y i * δ i| ≤
+      ε * (t + ∑ i : Fin m, a i * y i ^ 2) := by
+  set W : ℝ := ∑ i : Fin m, a i * y i ^ 2 with hW
+  have hW0 : 0 ≤ W := Finset.sum_nonneg fun i _ =>
+    mul_nonneg (ha i) (sq_nonneg _)
+  -- Cauchy–Schwarz in the scaled coordinates
+  have hcs : (∑ i : Fin m, y i * δ i) ^ 2 ≤
+      W * (ε ^ 2 * t) := by
+    have hsplit : ∑ i : Fin m, y i * δ i =
+        ∑ i : Fin m, (y i * Real.sqrt (a i)) *
+          (if a i = 0 then 0 else δ i / Real.sqrt (a i)) := by
+      refine Finset.sum_congr rfl fun i _ => ?_
+      by_cases hi : a i = 0
+      · rw [if_pos hi, hnz i hi]
+        simp
+      · rw [if_neg hi]
+        have hi' := lt_of_le_of_ne (ha i) (Ne.symm hi)
+        have hsi := Real.sqrt_pos.mpr hi'
+        field_simp
+    rw [hsplit]
+    have h := Finset.sum_mul_sq_le_sq_mul_sq Finset.univ
+      (fun i => y i * Real.sqrt (a i))
+      (fun i => if a i = 0 then 0 else δ i / Real.sqrt (a i))
+    have hL : ∑ i : Fin m, (y i * Real.sqrt (a i)) ^ 2 = W := by
+      refine Finset.sum_congr rfl fun i _ => ?_
+      rw [mul_pow, Real.sq_sqrt (ha i)]
+      ring
+    have hR : ∑ i : Fin m,
+        (if a i = 0 then 0 else δ i / Real.sqrt (a i)) ^ 2 =
+        ∑ i : Fin m, (if a i = 0 then 0 else δ i ^ 2 / a i) := by
+      refine Finset.sum_congr rfl fun i _ => ?_
+      by_cases hi : a i = 0
+      · rw [if_pos hi, if_pos hi]
+        norm_num
+      · rw [if_neg hi, if_neg hi, div_pow, Real.sq_sqrt (ha i)]
+    rw [hL, hR] at h
+    calc (∑ i : Fin m, (y i * Real.sqrt (a i)) *
+          (if a i = 0 then 0 else δ i / Real.sqrt (a i))) ^ 2
+        ≤ W * ∑ i : Fin m,
+            (if a i = 0 then 0 else δ i ^ 2 / a i) := h
+      _ ≤ W * (ε ^ 2 * t) :=
+          mul_le_mul_of_nonneg_left hcert hW0
+  -- AM–GM assembly
+  have hsum : |∑ i : Fin m, y i * δ i| ≤
+      ε * Real.sqrt t * Real.sqrt W := by
+    have h1 : |∑ i : Fin m, y i * δ i| ^ 2 ≤
+        (ε * Real.sqrt t * Real.sqrt W) ^ 2 := by
+      rw [sq_abs]
+      calc (∑ i : Fin m, y i * δ i) ^ 2
+          ≤ W * (ε ^ 2 * t) := hcs
+        _ = (ε * Real.sqrt t * Real.sqrt W) ^ 2 := by
+            rw [mul_pow, mul_pow, Real.sq_sqrt ht0,
+              Real.sq_sqrt hW0]
+            ring
+    have h2 : (0:ℝ) ≤ ε * Real.sqrt t * Real.sqrt W := by
+      positivity
+    nlinarith [abs_nonneg (∑ i : Fin m, y i * δ i), h1, h2]
+  have hamgm : 2 * (Real.sqrt t * Real.sqrt W) ≤ t + W := by
+    have hsq := sq_nonneg (Real.sqrt t - Real.sqrt W)
+    have hts : Real.sqrt t ^ 2 = t := Real.sq_sqrt ht0
+    have hWs : Real.sqrt W ^ 2 = W := Real.sq_sqrt hW0
+    nlinarith
+  calc |2 * ∑ i : Fin m, y i * δ i|
+      = 2 * |∑ i : Fin m, y i * δ i| := by
+        rw [abs_mul]
+        norm_num
+    _ ≤ 2 * (ε * Real.sqrt t * Real.sqrt W) := by linarith [hsum]
+    _ = ε * (2 * (Real.sqrt t * Real.sqrt W)) := by ring
+    _ ≤ ε * (t + W) := mul_le_mul_of_nonneg_left hamgm hε0
+
 /-- **Lemma 10.13 / equation (10.19)**: complete-pivoting bound on
 `‖W‖_F²` with Higham's `(n−r)(4^r−1)/3` constant, in honest form: for
 an `r × r` upper-triangular block `U` with positive diagonal whose rows
