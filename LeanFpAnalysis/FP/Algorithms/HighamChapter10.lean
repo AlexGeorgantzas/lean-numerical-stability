@@ -616,6 +616,166 @@ theorem higham10_7_failure_no_factorization (n : ℕ)
     quadForm_add_neg_of_perturbation n H E lam t hlam_dir hE hlt
   exact no_choleskyFactSpec_of_neg_quadForm n (fun i j => H i j + E i j) x hxneg
 
+/-- Matrix-vector action commutes with vector negation. -/
+theorem matMulVec_neg (n : ℕ) (A : Fin n → Fin n → ℝ) (v : Fin n → ℝ) :
+    matMulVec n A (fun k => -(v k)) = fun i => -(matMulVec n A v i) := by
+  funext i
+  unfold matMulVec
+  rw [← Finset.sum_neg_distrib]
+  exact Finset.sum_congr rfl fun j _ => by ring
+
+/-- **Standard 2-norm perturbation bound** (the "standard perturbation
+theory" step in the proof of Theorem 10.6, Higham p. 199): if `A x = b`,
+`(A + ΔA) x̂ = b`, and `A⁻¹ ΔA` carries an operator-2-norm certificate
+`c < 1`, then `‖x̂ − x‖₂ ≤ c/(1−c) · ‖x‖₂`. -/
+theorem higham10_6_perturbed_solve_forward_error (n : ℕ)
+    (A Ainv ΔA : Fin n → Fin n → ℝ) (x xhat b : Fin n → ℝ)
+    (hInv : ∀ v : Fin n → ℝ, matMulVec n Ainv (matMulVec n A v) = v)
+    (hAx : matMulVec n A x = b)
+    (hAhat : ∀ i : Fin n,
+      matMulVec n A xhat i + matMulVec n ΔA xhat i = b i)
+    (c : ℝ) (hc : opNorm2Le (matMul n Ainv ΔA) c) (hc1 : c < 1) :
+    vecNorm2 (fun i => xhat i - x i) ≤ c / (1 - c) * vecNorm2 x := by
+  have h1c : (0:ℝ) < 1 - c := by linarith
+  have hAdiff : matMulVec n A (fun k => xhat k - x k) =
+      fun i => -(matMulVec n ΔA xhat i) := by
+    funext i
+    have hsub : matMulVec n A (fun k => xhat k - x k) i =
+        matMulVec n A xhat i - matMulVec n A x i := by
+      unfold matMulVec
+      rw [← Finset.sum_sub_distrib]
+      exact Finset.sum_congr rfl fun j _ => by ring
+    have hbx : matMulVec n A x i = b i := congrFun hAx i
+    have hb := hAhat i
+    rw [hsub, hbx]
+    linarith
+  have hdiff : (fun k => xhat k - x k) =
+      fun i => -(matMulVec n (matMul n Ainv ΔA) xhat i) := by
+    have h2 := hInv (fun k => xhat k - x k)
+    rw [hAdiff] at h2
+    rw [← h2]
+    rw [show matMulVec n Ainv (fun i => -(matMulVec n ΔA xhat i)) =
+        fun i => -(matMulVec n Ainv (matMulVec n ΔA xhat) i) from
+      matMulVec_neg n Ainv (matMulVec n ΔA xhat)]
+    funext i
+    rw [matMulVec_matMul n Ainv ΔA xhat i]
+  have hnorm_diff : vecNorm2 (fun i => xhat i - x i) ≤ c * vecNorm2 xhat := by
+    rw [hdiff, vecNorm2_neg (matMulVec n (matMul n Ainv ΔA) xhat)]
+    exact hc xhat
+  have hxhat : vecNorm2 xhat ≤
+      vecNorm2 x + vecNorm2 (fun i => xhat i - x i) := by
+    have := vecNorm2_add_le x (fun i => xhat i - x i)
+    have hxx : (fun i => x i + (xhat i - x i)) = xhat := by
+      funext i; ring
+    rwa [hxx] at this
+  have hkey : vecNorm2 (fun i => xhat i - x i) * (1 - c) ≤
+      c * vecNorm2 x := by
+    have h0x : 0 ≤ c * vecNorm2 x := le_trans (vecNorm2_nonneg _) (hc x)
+    have he0 : 0 ≤ vecNorm2 (fun i => xhat i - x i) := vecNorm2_nonneg _
+    rcases le_total 0 c with hc0 | hc0
+    · have hchain := le_trans hnorm_diff
+        (mul_le_mul_of_nonneg_left hxhat hc0)
+      nlinarith
+    · have hh0 : 0 ≤ vecNorm2 xhat := vecNorm2_nonneg _
+      have hch : c * vecNorm2 xhat ≤ 0 := by nlinarith
+      have hez : vecNorm2 (fun i => xhat i - x i) = 0 :=
+        le_antisymm (by linarith) he0
+      rw [hez, zero_mul]
+      exact h0x
+  rw [div_mul_eq_mul_div, le_div_iff₀ h1c]
+  linarith [hkey]
+
+/-- **Theorem 10.6 (Demmel–Wilkinson), certificate assembly** (Higham
+§10.1, equation (10.10)): scaling the perturbed Cholesky solve by
+`D = diag(a_ii^{1/2})` and applying the standard perturbation bound.  With
+`H = D⁻¹AD⁻¹`, exact solve `A x = b`, perturbed solve `(A + ΔA) x̂ = b`,
+an inverse-action certificate for `H`, and an operator-2-norm certificate
+`c < 1` for `H⁻¹ (D⁻¹ ΔA D⁻¹)` — the `κ₂(H) ε` of the source display —
+the `D`-scaled error satisfies `‖D(x̂ − x)‖₂ ≤ c/(1−c) ‖Dx‖₂`.  This
+replaces the previously assumed-hypothesis interface
+`higham10_6_scaled_forward_error` with a proved assembly; the remaining
+source gap is producing the `c` certificate from `κ₂(H)` and the concrete
+`fl_cholesky` solve (Theorem 10.4 + equation (10.8) + `‖eeᵀ‖₂ = n`). -/
+theorem higham10_6_scaled_forward_error_assembled (n : ℕ)
+    (A ΔA H Hinv : Fin n → Fin n → ℝ) (D : Fin n → ℝ)
+    (x xhat b : Fin n → ℝ)
+    (hD : ∀ i, D i ≠ 0)
+    (hH : ∀ i j, H i j = A i j / (D i * D j))
+    (hInv : ∀ v : Fin n → ℝ, matMulVec n Hinv (matMulVec n H v) = v)
+    (hAx : matMulVec n A x = b)
+    (hAhat : ∀ i : Fin n,
+      matMulVec n A xhat i + matMulVec n ΔA xhat i = b i)
+    (c : ℝ)
+    (hc : opNorm2Le (matMul n Hinv
+      (fun i j => ΔA i j / (D i * D j))) c)
+    (hc1 : c < 1) :
+    vecNorm2 (fun i => D i * xhat i - D i * x i) ≤
+      c / (1 - c) * vecNorm2 (fun i => D i * x i) := by
+  have hscale : ∀ (M : Fin n → Fin n → ℝ) (v : Fin n → ℝ) (i : Fin n),
+      matMulVec n (fun i' j' => M i' j' / (D i' * D j'))
+        (fun k => D k * v k) i = matMulVec n M v i / D i := by
+    intro M v i
+    unfold matMulVec
+    rw [Finset.sum_div]
+    apply Finset.sum_congr rfl
+    intro j _
+    field_simp [hD i, hD j]
+  have hHDx : matMulVec n H (fun k => D k * x k) =
+      fun i => b i / D i := by
+    funext i
+    have hHs : matMulVec n H (fun k => D k * x k) i =
+        matMulVec n (fun i' j' => A i' j' / (D i' * D j'))
+          (fun k => D k * x k) i := by
+      unfold matMulVec
+      exact Finset.sum_congr rfl fun j _ => by rw [hH i j]
+    rw [hHs, hscale A x i, congrFun hAx i]
+  have hHDxhat : ∀ i : Fin n,
+      matMulVec n H (fun k => D k * xhat k) i +
+        matMulVec n (fun i' j' => ΔA i' j' / (D i' * D j'))
+          (fun k => D k * xhat k) i = b i / D i := by
+    intro i
+    have hHs : matMulVec n H (fun k => D k * xhat k) i =
+        matMulVec n (fun i' j' => A i' j' / (D i' * D j'))
+          (fun k => D k * xhat k) i := by
+      unfold matMulVec
+      exact Finset.sum_congr rfl fun j _ => by rw [hH i j]
+    rw [hHs, hscale A xhat i, hscale ΔA xhat i, ← add_div, hAhat i]
+  have hmain := higham10_6_perturbed_solve_forward_error n H Hinv
+    (fun i' j' => ΔA i' j' / (D i' * D j'))
+    (fun k => D k * x k) (fun k => D k * xhat k) (fun i => b i / D i)
+    hInv hHDx hHDxhat c hc hc1
+  exact hmain
+
+/-- **Quadratic-form bound from an operator-norm certificate** (the
+Rayleigh–Weyl step of the Theorem 10.7 induction, Higham p. 200):
+`opNorm2Le E c` gives `|xᵀEx| ≤ c ‖x‖₂²` — precisely the perturbation
+hypothesis consumed by the Theorem 10.7 threshold theorems, so any
+operator-norm certificate for the scaled backward error feeds them
+directly. -/
+theorem quadForm_abs_le_of_opNorm2Le (n : ℕ) (E : Fin n → Fin n → ℝ)
+    (c : ℝ) (hE : opNorm2Le E c) (x : Fin n → ℝ) :
+    |∑ i : Fin n, ∑ j : Fin n, x i * E i j * x j| ≤
+      c * ∑ i : Fin n, x i ^ 2 := by
+  have hform : ∑ i : Fin n, ∑ j : Fin n, x i * E i j * x j =
+      ∑ i : Fin n, x i * matMulVec n E x i := by
+    apply Finset.sum_congr rfl
+    intro i _
+    unfold matMulVec
+    rw [Finset.mul_sum]
+    exact Finset.sum_congr rfl fun j _ => by ring
+  rw [hform]
+  have hxnn := vecNorm2_nonneg x
+  have hsq : vecNorm2 x * vecNorm2 x = ∑ i : Fin n, x i ^ 2 := by
+    rw [← sq, vecNorm2_sq]
+    rfl
+  calc |∑ i : Fin n, x i * matMulVec n E x i|
+      ≤ vecNorm2 x * vecNorm2 (matMulVec n E x) :=
+        abs_vecInnerProduct_le_vecNorm2_mul x (matMulVec n E x)
+    _ ≤ vecNorm2 x * (c * vecNorm2 x) :=
+        mul_le_mul_of_nonneg_left (hE x) hxnn
+    _ = c * (vecNorm2 x * vecNorm2 x) := by ring
+    _ = c * ∑ i : Fin n, x i ^ 2 := by rw [hsq]
+
 /-- **Componentwise domination transfers operator-2-norm certificates**
 (used for the normwise equation (10.7) reading of Theorem 10.3): if
 `|M| ≤ B` entrywise and `B` satisfies the vector-action certificate
@@ -977,6 +1137,55 @@ theorem higham10_7_failure_no_factorization_min_eig (n : ℕ) (hn : 0 < n)
   obtain ⟨a, ha⟩ := exists_finiteMinEigenvalue_eq hn H hH_sym
   exact higham10_7_failure_no_factorization_spectral n H E
     (finiteMinEigenvalue hn H hH_sym) t hH_sym a (le_of_eq ha) hE hlt
+
+/-- **Eigenvalue interlacing, lower direction** (Golub–Van Loan
+Thm 8.1.7 as used in the Theorem 10.7 induction, Higham p. 200): the
+minimum eigenvalue of a leading principal submatrix of a symmetric matrix
+is at least the minimum eigenvalue of the full matrix.  Proof: evaluate
+the full Rayleigh bound at the zero-padded minimizing eigenvector of the
+submatrix. -/
+theorem finiteMinEigenvalue_leading_principal_ge (n : ℕ) (hn : 0 < n)
+    (H : Fin n → Fin n → ℝ) (hH : IsSymmetricFiniteMatrix H)
+    (k : ℕ) (hk0 : 0 < k) (hk : k ≤ n)
+    (hHk_sym : IsSymmetricFiniteMatrix
+      (fun i j : Fin k => H ⟨i.val, by omega⟩ ⟨j.val, by omega⟩)) :
+    finiteMinEigenvalue hn H hH ≤
+      finiteMinEigenvalue hk0
+        (fun i j : Fin k => H ⟨i.val, by omega⟩ ⟨j.val, by omega⟩)
+        hHk_sym := by
+  obtain ⟨a, ha⟩ := exists_finiteMinEigenvalue_eq hk0
+    (fun i j : Fin k => H ⟨i.val, by omega⟩ ⟨j.val, by omega⟩) hHk_sym
+  have hnorm := finiteVecNorm2Sq_finiteHermitianEigenvector_eq_one
+    (fun i j : Fin k => H ⟨i.val, by omega⟩ ⟨j.val, by omega⟩) hHk_sym a
+  have hq :=
+    finiteQuadraticForm_finiteHermitianEigenvector_eq_eigenvalue_mul_norm_sq
+      (fun i j : Fin k => H ⟨i.val, by omega⟩ ⟨j.val, by omega⟩) hHk_sym a
+  rw [hnorm, mul_one] at hq
+  set v : Fin k → ℝ :=
+    ⇑((IsSymmetricFiniteMatrix.to_matrix_isHermitian
+      (fun i j : Fin k => H ⟨i.val, by omega⟩ ⟨j.val, by omega⟩)
+      hHk_sym).eigenvectorBasis a) with hv
+  have hvsq : ∑ i : Fin k, v i ^ 2 = 1 := by
+    have := hnorm
+    unfold finiteVecNorm2Sq at this
+    exact this
+  have hpadsq : ∑ i : Fin n,
+      (if h : i.val < k then v ⟨i.val, h⟩ else 0) ^ 2 = 1 := by
+    rw [sum_sq_zero_pad_eq k hk v, hvsq]
+  have hray := finiteMinEigenvalue_rayleigh hn H hH
+    (fun i => if h : i.val < k then v ⟨i.val, h⟩ else 0)
+  rw [hpadsq, mul_one] at hray
+  have hpadquad : ∑ i : Fin n, ∑ j : Fin n,
+      (if h : i.val < k then v ⟨i.val, h⟩ else 0) * H i j *
+        (if h : j.val < k then v ⟨j.val, h⟩ else 0) =
+      finiteMinEigenvalue hk0
+        (fun i j : Fin k => H ⟨i.val, by omega⟩ ⟨j.val, by omega⟩)
+        hHk_sym := by
+    rw [quadForm_zero_pad_eq H k hk v, ← ha, ← hq,
+      finiteQuadraticForm_eq_sum_sum]
+  rw [hpadquad] at hray
+  exact hray
+
 
 
 /-- **Theorem 10.7 foundation** (Higham §10.1, proof of Theorem 10.7): the

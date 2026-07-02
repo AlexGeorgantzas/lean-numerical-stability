@@ -158,6 +158,51 @@ private lemma sum_zero_off_lt {n k : ℕ} (hk : k ≤ n) (g : Fin n → ℝ)
   simp only [Finset.mem_filter, Finset.mem_univ, true_and, Nat.not_lt] at hi
   exact hg i hi
 
+/-- **Zero-padding preserves the quadratic form**: the full-matrix
+quadratic form of a zero-padded vector equals the leading-principal-block
+quadratic form of the original vector.  Shared engine for the
+leading-principal transfer lemmas and the interlacing lower bound. -/
+lemma quadForm_zero_pad_eq {n : ℕ} (M : Fin n → Fin n → ℝ)
+    (k : ℕ) (hk : k ≤ n) (y : Fin k → ℝ) :
+    ∑ i : Fin n, ∑ j : Fin n,
+      (if h : i.val < k then y ⟨i.val, h⟩ else 0) * M i j *
+        (if h : j.val < k then y ⟨j.val, h⟩ else 0) =
+    ∑ i : Fin k, ∑ j : Fin k,
+      y i * M ⟨i.val, by omega⟩ ⟨j.val, by omega⟩ * y j := by
+  have houter : ∑ i : Fin n, ∑ j : Fin n,
+      (if h : i.val < k then y ⟨i.val, h⟩ else 0) * M i j *
+        (if h : j.val < k then y ⟨j.val, h⟩ else 0) =
+      ∑ i : Fin k, ∑ j : Fin n,
+        y i * M ⟨i.val, by omega⟩ j *
+          (if h : j.val < k then y ⟨j.val, h⟩ else 0) := by
+    rw [sum_zero_off_lt hk _ (fun i hi => by
+      apply Finset.sum_eq_zero
+      intro j _
+      rw [dif_neg (Nat.not_lt.mpr hi), zero_mul, zero_mul])]
+    apply Finset.sum_congr rfl
+    intro i _
+    apply Finset.sum_congr rfl
+    intro j _
+    rw [dif_pos i.isLt]
+  rw [houter]
+  apply Finset.sum_congr rfl
+  intro i _
+  rw [sum_zero_off_lt hk _ (fun j hj => by
+    rw [dif_neg (Nat.not_lt.mpr hj), mul_zero])]
+  apply Finset.sum_congr rfl
+  intro j _
+  rw [dif_pos j.isLt]
+
+/-- Zero-padding preserves the squared Euclidean norm. -/
+lemma sum_sq_zero_pad_eq {n : ℕ} (k : ℕ) (hk : k ≤ n) (y : Fin k → ℝ) :
+    ∑ i : Fin n, (if h : i.val < k then y ⟨i.val, h⟩ else 0) ^ 2 =
+      ∑ i : Fin k, y i ^ 2 := by
+  rw [sum_zero_off_lt hk _ (fun i hi => by
+    rw [dif_neg (Nat.not_lt.mpr hi)]; ring)]
+  apply Finset.sum_congr rfl
+  intro i _
+  rw [dif_pos i.isLt]
+
 /-- Leading principal submatrices of a nonsymmetric positive definite matrix
     are nonsymmetric positive definite (Higham §10.4 prose; zero-pad the
     test vector). -/
