@@ -42460,6 +42460,91 @@ theorem higham9_15_resolvent_matrix_majorant_of_spectralRadius_lt_one
     higham9_15_resolvent_matrix_majorant_of_componentwise_inequality
       M (nonsingInv n (matSub_id n M)) V W hR hineq
 
+/-- **Theorem 9.15 spectral-majorant support**.  Generic local-majorant
+handoff: if `R` is a nonnegative resolvent for `I - |G|` and the local
+nonlinear majorant `|G| + |X||Y|` satisfies the source self-majorant inequality,
+then it is bounded by `R |G|`.
+
+This isolates the Barrlund--Sun Schur-induction target from the later
+strict-lower/upper perturbation assembly. -/
+theorem higham9_15_local_majorant_le_resolvent_of_self_majorant
+    {n : ℕ}
+    (G X Y R : Matrix (Fin n) (Fin n) ℝ)
+    (hR : ch7NonnegativeResolvent n (absMatrix n G) R)
+    (hself :
+      ∀ i j : Fin n,
+        |G i j| + rectMatMul (absMatrix n X) (absMatrix n Y) i j ≤
+          absMatrix n G i j +
+            rectMatMul (absMatrix n G)
+              (fun r c : Fin n =>
+                |G r c| + rectMatMul (absMatrix n X) (absMatrix n Y) r c)
+              i j) :
+    ∀ i j : Fin n,
+      |G i j| + rectMatMul (absMatrix n X) (absMatrix n Y) i j ≤
+        rectMatMul R (absMatrix n G) i j := by
+  let Gabs : Matrix (Fin n) (Fin n) ℝ := absMatrix n G
+  let Wloc : Matrix (Fin n) (Fin n) ℝ :=
+    fun i j : Fin n =>
+      |G i j| + rectMatMul (absMatrix n X) (absMatrix n Y) i j
+  have hmajor : ∀ i j : Fin n, Wloc i j ≤ rectMatMul R Gabs i j := by
+    exact
+      higham9_15_resolvent_matrix_majorant_of_componentwise_inequality
+        Gabs R Gabs Wloc
+        (by simpa [Gabs] using hR)
+        (by
+          intro i j
+          simpa [Gabs, Wloc] using hself i j)
+  intro i j
+  simpa [Gabs, Wloc] using hmajor i j
+
+/-- **Theorem 9.15 spectral-majorant support**.  Canonical spectral-radius
+form of the local-majorant handoff: if `rho(|G|) < 1` and
+`|G| + |X||Y|` satisfies the source self-majorant inequality, then the local
+majorant is bounded by `(I - |G|)⁻¹ |G|`.
+
+The remaining hard Barrlund--Sun work is to prove the self-majorant inequality
+from the normalized Schur induction hypotheses. -/
+theorem higham9_15_local_majorant_le_nonsingInv_resolvent_of_spectralRadius_lt_one
+    {n : ℕ} (hn : 0 < n)
+    (G X Y : Matrix (Fin n) (Fin n) ℝ)
+    (hrho :
+      spectralRadius ℂ
+          (Matrix.toLin'
+            (show Matrix (Fin n) (Fin n) ℂ from
+              realRectToCMatrix (absMatrix n G))) < 1)
+    (hself :
+      ∀ i j : Fin n,
+        |G i j| + rectMatMul (absMatrix n X) (absMatrix n Y) i j ≤
+          absMatrix n G i j +
+            rectMatMul (absMatrix n G)
+              (fun r c : Fin n =>
+                |G r c| + rectMatMul (absMatrix n X) (absMatrix n Y) r c)
+              i j) :
+    ∀ i j : Fin n,
+      |G i j| + rectMatMul (absMatrix n X) (absMatrix n Y) i j ≤
+        rectMatMul (nonsingInv n (matSub_id n (absMatrix n G)))
+          (absMatrix n G) i j := by
+  let Gabs : Matrix (Fin n) (Fin n) ℝ := absMatrix n G
+  let Wloc : Matrix (Fin n) (Fin n) ℝ :=
+    fun i j : Fin n =>
+      |G i j| + rectMatMul (absMatrix n X) (absMatrix n Y) i j
+  have hG_nonneg : ∀ i j : Fin n, 0 ≤ Gabs i j := by
+    intro i j
+    simp [Gabs, absMatrix]
+  have hmajor :
+      ∀ i j : Fin n,
+        Wloc i j ≤
+          rectMatMul (nonsingInv n (matSub_id n Gabs)) Gabs i j := by
+    exact
+      higham9_15_resolvent_matrix_majorant_of_spectralRadius_lt_one
+        hn Gabs Gabs Wloc hG_nonneg
+        (by simpa [Gabs] using hrho)
+        (by
+          intro i j
+          simpa [Gabs, Wloc] using hself i j)
+  intro i j
+  simpa [Gabs, Wloc] using hmajor i j
+
 /-- **Theorem 9.15**, componentwise source-bound wrapper reducing the remaining
 Barrlund--Sun spectral theorem to normalized strict-lower/upper majorants. -/
 theorem higham9_15_componentwise_source_bound_of_normalized_majorants {n : ℕ}

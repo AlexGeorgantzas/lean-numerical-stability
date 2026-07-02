@@ -396,6 +396,74 @@ theorem upperTriangular_solve_exists (k : ℕ) (U : Fin k → Fin k → ℝ)
       = M.mulVec (M⁻¹.mulVec b) i := rfl
     _ = b i := congrFun hsolve i
 
+/-- **Bordered Gram expansion** (Theorem 10.7 induction): expanding
+    `∑_p ((Uy)_p + c_p)²` in the bordered-block quadratic form.  With `y`
+    solving `Uy = −c` the left side vanishes, so the computed Gram form of
+    the test vector `z = (y, 1)` collapses to zero. -/
+theorem bordered_gram_expand (m : ℕ) (U : Fin m → Fin m → ℝ)
+    (c : Fin m → ℝ) (y : Fin m → ℝ) :
+    ∑ p : Fin m, ((∑ i : Fin m, U p i * y i) + c p) ^ 2 =
+      (∑ i : Fin m, ∑ l : Fin m,
+        y i * (∑ p : Fin m, U p i * U p l) * y l) +
+      2 * (∑ i : Fin m, y i * ∑ p : Fin m, U p i * c p) +
+      ∑ p : Fin m, c p ^ 2 := by
+  have hexp : ∀ p : Fin m,
+      ((∑ i : Fin m, U p i * y i) + c p) ^ 2 =
+      (∑ i : Fin m, U p i * y i) * (∑ l : Fin m, U p l * y l) +
+        2 * ((∑ i : Fin m, U p i * y i) * c p) + c p ^ 2 := by
+    intro p; ring
+  rw [Finset.sum_congr rfl fun p _ => hexp p]
+  rw [Finset.sum_add_distrib, Finset.sum_add_distrib]
+  congr 1
+  · congr 1
+    · -- ∑_p (∑_i U pi y i)(∑_l U pl y l) = ∑_i ∑_l y i (∑_p U pi U pl) y l
+      have h1 : ∀ p : Fin m,
+          (∑ i : Fin m, U p i * y i) * (∑ l : Fin m, U p l * y l) =
+          ∑ i : Fin m, ∑ l : Fin m, y i * (U p i * U p l) * y l := by
+        intro p
+        rw [Finset.sum_mul]
+        apply Finset.sum_congr rfl
+        intro i _
+        rw [Finset.mul_sum]
+        apply Finset.sum_congr rfl
+        intro l _
+        ring
+      rw [Finset.sum_congr rfl fun p _ => h1 p, Finset.sum_comm]
+      apply Finset.sum_congr rfl
+      intro i _
+      rw [Finset.sum_comm]
+      apply Finset.sum_congr rfl
+      intro l _
+      rw [Finset.mul_sum, Finset.sum_mul]
+    · -- ∑_p 2 (∑_i U pi y i) c p = 2 ∑_i y i ∑_p U pi c p
+      rw [Finset.mul_sum]
+      rw [show ∑ p : Fin m, 2 * ((∑ i : Fin m, U p i * y i) * c p) =
+          ∑ p : Fin m, ∑ i : Fin m, 2 * (y i * (U p i * c p)) from
+        Finset.sum_congr rfl fun p _ => by
+          rw [Finset.sum_mul, Finset.mul_sum]
+          apply Finset.sum_congr rfl
+          intro i _
+          ring]
+      rw [Finset.sum_comm]
+      apply Finset.sum_congr rfl
+      intro i _
+      rw [Finset.mul_sum, Finset.mul_sum]
+
+/-- **Bordered Gram vanishing**: if `y` solves `Uy = −c` exactly, the
+    computed Gram quadratic form of the test vector `(y, 1)` is zero. -/
+theorem bordered_gram_zero (m : ℕ) (U : Fin m → Fin m → ℝ)
+    (c : Fin m → ℝ) (y : Fin m → ℝ)
+    (hy : ∀ p : Fin m, ∑ i : Fin m, U p i * y i = -(c p)) :
+    (∑ i : Fin m, ∑ l : Fin m,
+      y i * (∑ p : Fin m, U p i * U p l) * y l) +
+    2 * (∑ i : Fin m, y i * ∑ p : Fin m, U p i * c p) +
+    ∑ p : Fin m, c p ^ 2 = 0 := by
+  rw [← bordered_gram_expand m U c y]
+  apply Finset.sum_eq_zero
+  intro p _
+  rw [hy p]
+  ring
+
 -- ============================================================
 -- §10.1  Sharp solve forms for the Algorithm 10.2 recurrences
 --        (Higham Theorem 10.3 per-entry equations, Stewart counters)
@@ -795,6 +863,51 @@ private lemma fl_cholesky_entry_bound (fp : FPModel) (n : ℕ)
         ∑ k : Fin n, |fl_cholesky fp n A k i| * |fl_cholesky fp n A k j| :=
   fl_cholesky_entry_bound_stage fp n A hn1 i j hij
     (fun _ => hdz i) (fun h => h ▸ hpiv i)
+
+/-- **Gram-sum truncation to a leading block** (Theorem 10.7 induction):
+    for column indices below `m`, the full certificate sum runs only over
+    the first `m` rows, since the computed factor is upper triangular. -/
+theorem gram_sum_truncate (fp : FPModel) (n : ℕ) (A : Fin n → Fin n → ℝ)
+    (m : ℕ) (hm : m ≤ n) (i l : Fin n) (hi : i.val < m) :
+    ∑ k : Fin n, fl_cholesky fp n A k i * fl_cholesky fp n A k l =
+    ∑ p : Fin m, fl_cholesky fp n A ⟨p.val, by omega⟩ i *
+      fl_cholesky fp n A ⟨p.val, by omega⟩ l := by
+  have hzero : ∀ k : Fin n,
+      k ∉ Finset.univ.filter (fun k : Fin n => k.val < m) →
+      fl_cholesky fp n A k i * fl_cholesky fp n A k l = 0 := by
+    intro k hk
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and,
+      Nat.not_lt] at hk
+    rw [fl_cholesky_strict_lower fp n A k i (by omega), zero_mul]
+  calc ∑ k : Fin n, fl_cholesky fp n A k i * fl_cholesky fp n A k l
+      = ∑ k ∈ Finset.univ.filter (fun k : Fin n => k.val < m),
+          fl_cholesky fp n A k i * fl_cholesky fp n A k l :=
+        (Finset.sum_subset (Finset.filter_subset _ _)
+          (fun k _ hk => hzero k hk)).symm
+    _ = ∑ p : Fin m, fl_cholesky fp n A ⟨p.val, by omega⟩ i *
+          fl_cholesky fp n A ⟨p.val, by omega⟩ l :=
+        (sum_fin_eq_sum_filter_lt' hm _).symm
+
+/-- **Stage-local column-norm control** (Theorem 10.7 induction): once the
+    `i`-th pivot is known nonnegative, the certificate at `(i, i)` bounds
+    the computed column's squared norm by `(1 − γ_{n+1})⁻¹ a_ii`. -/
+theorem fl_cholesky_colNormSq_le_stage (fp : FPModel) (n : ℕ)
+    (A : Fin n → Fin n → ℝ) (hn1 : gammaValid fp (n + 1)) (i : Fin n)
+    (hpiv_i : 0 ≤ fl_cholPivot fp n A i) :
+    (1 - gamma fp (n + 1)) *
+      ∑ k : Fin n, fl_cholesky fp n A k i ^ 2 ≤ A i i := by
+  have h := fl_cholesky_entry_bound_stage fp n A hn1 i i le_rfl
+    (fun h => absurd h (lt_irrefl _)) (fun _ => hpiv_i)
+  rw [show ∑ k : Fin n, fl_cholesky fp n A k i * fl_cholesky fp n A k i =
+      ∑ k : Fin n, fl_cholesky fp n A k i ^ 2 from
+      Finset.sum_congr rfl fun k _ => by ring,
+    show ∑ k : Fin n,
+        |fl_cholesky fp n A k i| * |fl_cholesky fp n A k i| =
+      ∑ k : Fin n, fl_cholesky fp n A k i ^ 2 from
+      Finset.sum_congr rfl fun k _ => by
+        rw [← abs_mul, abs_of_nonneg (mul_self_nonneg _)]; ring] at h
+  have := abs_le.mp h
+  linarith [this.1]
 
 /-- **Theorem 10.3 (Higham §10.1, equations (10.4)–(10.5))**: the concrete
     floating-point Cholesky factorization of Algorithm 10.2, when it runs to
