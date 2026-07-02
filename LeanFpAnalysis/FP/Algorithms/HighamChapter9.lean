@@ -4888,6 +4888,68 @@ theorem higham9_2_permutedRectRoundedStageTrace_to_PermutedLUBackwardError
     (higham9_2_rectRoundedStageTrace_to_rectDenseLoopCertificate
       hT hU_diag hn hU_budget_le hL_budget_le)
 
+/-- **Algorithm 9.2 / Theorem 9.3**, executable row-pivoted rectangular
+rounded-loop trace production.
+
+The concrete rectangular Doolittle loop run on the row-permuted matrix `PA`
+produces the same rounded-stage trace object consumed by the pivoted
+backward-error wrappers. -/
+theorem higham9_2_permutedRectRoundedLoopStageTrace {n : ℕ}
+    (fp : FPModel) (A : Fin n → Fin n → ℝ) (sigma : Fin n → Fin n) :
+    higham9_2_RectDoolittleRoundedStageTrace
+      (Nat.le_refl n) (higham9_2_rowPermutedMatrix A sigma)
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+        (higham9_2_rowPermutedMatrix A sigma))
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+        (higham9_2_rowPermutedMatrix A sigma)) fp :=
+  higham9_2_rectRoundedLoopStageTrace fp (Nat.le_refl n)
+    (higham9_2_rowPermutedMatrix A sigma)
+
+/-- **Algorithm 9.2 / Theorem 9.3**, executable row-pivoted rectangular
+rounded-loop dense-certificate production.
+
+This is the named dense-loop certificate produced by running the executable
+rectangular Doolittle loop on `PA`, under the usual nonzero-pivot and visible
+absolute-budget dominance hypotheses. -/
+theorem higham9_2_permutedRectRoundedLoop_to_rectDenseLoopCertificate
+    {n : ℕ} (fp : FPModel)
+    (A : Fin n → Fin n → ℝ) (sigma : Fin n → Fin n)
+    (hU_diag : ∀ k : Fin n,
+      higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+          (higham9_2_rowPermutedMatrix A sigma) k k ≠ 0)
+    (hn : gammaValid fp n)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          (higham9_2_rowPermutedMatrix A sigma)
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+            (higham9_2_rowPermutedMatrix A sigma))
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+            (higham9_2_rowPermutedMatrix A sigma)) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+            (higham9_2_rowPermutedMatrix A sigma) k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp
+          (higham9_2_rowPermutedMatrix A sigma)
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+            (higham9_2_rowPermutedMatrix A sigma))
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+            (higham9_2_rowPermutedMatrix A sigma)) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+              (higham9_2_rowPermutedMatrix A sigma) i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+              (higham9_2_rowPermutedMatrix A sigma) k k|) :
+    higham9_2_RectDoolittleDenseLoopCertificate
+      (Nat.le_refl n) (higham9_2_rowPermutedMatrix A sigma)
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+        (higham9_2_rowPermutedMatrix A sigma))
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+        (higham9_2_rowPermutedMatrix A sigma)) fp :=
+  higham9_2_rectRoundedLoop_to_rectDenseLoopCertificate
+    fp (Nat.le_refl n) (higham9_2_rowPermutedMatrix A sigma)
+    hU_diag hn hU_budget_le hL_budget_le
+
 /-- **Algorithm 9.2 / Theorem 9.3**, executable row-pivoted rectangular loop
 handoff.
 
@@ -4932,9 +4994,8 @@ theorem higham9_2_permutedRectRoundedLoop_to_PermutedLUBackwardError
       sigma (gamma fp n) :=
   higham9_2_permutedRectDenseLoopCertificate_to_PermutedLUBackwardError
     (A := A) (sigma := sigma) hsigma hn
-    (higham9_2_rectRoundedLoop_to_rectDenseLoopCertificate
-      fp (Nat.le_refl n) (higham9_2_rowPermutedMatrix A sigma)
-      hU_diag hn hU_budget_le hL_budget_le)
+    (higham9_2_permutedRectRoundedLoop_to_rectDenseLoopCertificate
+      fp A sigma hU_diag hn hU_budget_le hL_budget_le)
 
 /-- **Algorithm 9.2 / Theorem 9.3**, complete-pivoted rectangular dense-loop
 handoff.
@@ -5007,6 +5068,69 @@ theorem
       hT hU_diag hn hU_budget_le hL_budget_le)
 
 /-- **Algorithm 9.2 / Theorem 9.3**, executable complete-pivoted rectangular
+rounded-loop trace production.
+
+The concrete rectangular Doolittle loop run on `PAQ` produces the
+rounded-stage trace object consumed by the complete-pivoted backward-error
+wrappers. -/
+theorem higham9_2_completePermutedRectRoundedLoopStageTrace {n : ℕ}
+    (fp : FPModel) (A : Fin n → Fin n → ℝ)
+    (sigma tau : Fin n → Fin n) :
+    higham9_2_RectDoolittleRoundedStageTrace
+      (Nat.le_refl n) (higham9_2_rowColPermutedMatrix A sigma tau)
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+        (higham9_2_rowColPermutedMatrix A sigma tau))
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+        (higham9_2_rowColPermutedMatrix A sigma tau)) fp :=
+  higham9_2_rectRoundedLoopStageTrace fp (Nat.le_refl n)
+    (higham9_2_rowColPermutedMatrix A sigma tau)
+
+/-- **Algorithm 9.2 / Theorem 9.3**, executable complete-pivoted rectangular
+rounded-loop dense-certificate production.
+
+This is the named dense-loop certificate produced by running the executable
+rectangular Doolittle loop on `PAQ`, under the usual nonzero-pivot and visible
+absolute-budget dominance hypotheses. -/
+theorem higham9_2_completePermutedRectRoundedLoop_to_rectDenseLoopCertificate
+    {n : ℕ} (fp : FPModel)
+    (A : Fin n → Fin n → ℝ) (sigma tau : Fin n → Fin n)
+    (hU_diag : ∀ k : Fin n,
+      higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+          (higham9_2_rowColPermutedMatrix A sigma tau) k k ≠ 0)
+    (hn : gammaValid fp n)
+    (hU_budget_le : ∀ k j : Fin n, k.val ≤ j.val →
+      higham9_2_rectDoolittleUAbsBudget fp (Nat.le_refl n)
+          (higham9_2_rowColPermutedMatrix A sigma tau)
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+            (higham9_2_rowColPermutedMatrix A sigma tau))
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+            (higham9_2_rowColPermutedMatrix A sigma tau)) k j ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+            (higham9_2_rowColPermutedMatrix A sigma tau) k j|)
+    (hL_budget_le : ∀ i k : Fin n, k.val < i.val →
+      higham9_2_rectDoolittleLAbsBudget fp
+          (higham9_2_rowColPermutedMatrix A sigma tau)
+          (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+            (higham9_2_rowColPermutedMatrix A sigma tau))
+          (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+            (higham9_2_rowColPermutedMatrix A sigma tau)) i k ≤
+        gamma fp n *
+          |higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+              (higham9_2_rowColPermutedMatrix A sigma tau) i k *
+            higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+              (higham9_2_rowColPermutedMatrix A sigma tau) k k|) :
+    higham9_2_RectDoolittleDenseLoopCertificate
+      (Nat.le_refl n) (higham9_2_rowColPermutedMatrix A sigma tau)
+      (higham9_2_rectRoundedLoopL fp (Nat.le_refl n)
+        (higham9_2_rowColPermutedMatrix A sigma tau))
+      (higham9_2_rectRoundedLoopU fp (Nat.le_refl n)
+        (higham9_2_rowColPermutedMatrix A sigma tau)) fp :=
+  higham9_2_rectRoundedLoop_to_rectDenseLoopCertificate
+    fp (Nat.le_refl n) (higham9_2_rowColPermutedMatrix A sigma tau)
+    hU_diag hn hU_budget_le hL_budget_le
+
+/-- **Algorithm 9.2 / Theorem 9.3**, executable complete-pivoted rectangular
 loop handoff.
 
 The concrete rectangular rounded Doolittle loop on `PAQ` feeds the
@@ -5052,9 +5176,8 @@ theorem
       sigma tau (gamma fp n) :=
   higham9_2_completePermutedRectDenseLoopCertificate_to_CompletePermutedLUBackwardError
     (A := A) (sigma := sigma) (tau := tau) hsigma htau hn
-    (higham9_2_rectRoundedLoop_to_rectDenseLoopCertificate
-      fp (Nat.le_refl n) (higham9_2_rowColPermutedMatrix A sigma tau)
-      hU_diag hn hU_budget_le hL_budget_le)
+    (higham9_2_completePermutedRectRoundedLoop_to_rectDenseLoopCertificate
+      fp A sigma tau hU_diag hn hU_budget_le hL_budget_le)
 
 /-- **Theorem 9.3**, row-pivoted rectangular dense-loop perturbation form.
 
@@ -28028,6 +28151,55 @@ theorem higham9_27_GMatrix_opNorm2_lt_one_of_product_lt_one {n : ℕ}
     (opNorm2_le_of_opNorm2Le
       (higham9_27_GMatrix Linv ΔA Uinv) heta_nonneg hGopCert)
     heta
+
+/-- **Theorem 9.15 / Equation (9.27)**, row-sum contraction bridge for
+the Barrlund--Sun nonnegative majorant matrix `|G|`.
+
+This packages the source-shaped row-sum condition on
+`G = L⁻¹ ΔA U⁻¹` as the repository infinity-norm certificate consumed by the
+canonical Neumann/resolvent route. -/
+theorem higham9_15_GMatrix_abs_infNormBound_of_row_sum_bound {n : ℕ}
+    (Linv ΔA Uinv : Fin n → Fin n → ℝ) {c : ℝ}
+    (hc_nn : 0 ≤ c)
+    (hrows :
+      ∀ i : Fin n, ∑ j : Fin n,
+        |higham9_27_GMatrix Linv ΔA Uinv i j| ≤ c) :
+    infNormBound n (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) c := by
+  refine infNormBound_of_row_sum_le
+    (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) ?_ hc_nn
+  intro i
+  simpa [absMatrix, abs_abs] using hrows i
+
+/-- **Theorem 9.15 / Equation (9.27)**, canonical nonnegative resolvent for
+`I - |G|` from a source-shaped row-sum contraction on
+`G = L⁻¹ ΔA U⁻¹`.
+
+This is the reusable certificate that the componentwise Barrlund--Sun endpoints
+need after the row-sum smallness hypothesis has been discharged. -/
+theorem higham9_15_GMatrix_nonnegative_resolvent_nonsingInv_of_row_sum_bound
+    {n : ℕ} (hn : 0 < n)
+    (Linv ΔA Uinv : Fin n → Fin n → ℝ) {c : ℝ}
+    (hc_nn : 0 ≤ c) (hc_lt : c < 1)
+    (hrows :
+      ∀ i : Fin n, ∑ j : Fin n,
+        |higham9_27_GMatrix Linv ΔA Uinv i j| ≤ c) :
+    ch7NonnegativeResolvent n
+      (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))
+      (nonsingInv n
+        (matSub_id n (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)))) := by
+  have hG_nonneg :
+      ∀ i j : Fin n,
+        0 ≤ absMatrix n (higham9_27_GMatrix Linv ΔA Uinv) i j := by
+    intro i j
+    simp [absMatrix]
+  have hbound :
+      infNormBound n (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv)) c :=
+    higham9_15_GMatrix_abs_infNormBound_of_row_sum_bound
+      Linv ΔA Uinv hc_nn hrows
+  exact
+    ch7NonnegativeResolvent_nonsingInv_of_infNormBound n hn
+      (absMatrix n (higham9_27_GMatrix Linv ΔA Uinv))
+      hG_nonneg c hc_nn hc_lt hbound
 
 /-- **Theorem 9.15 / Equation (9.27)**, scalar denominator monotonicity used to
 pass from exact `G` norms to product upper bounds in the source display. -/
@@ -66559,6 +66731,73 @@ theorem higham9_10_hessenbergGEPPUTraceGrowthSup_le_card {n : ℕ}
   apply csSup_le (higham9_10_hessenbergGEPPUTraceGrowthValues_nonempty hn)
   intro r hr
   exact higham9_10_hessenbergGEPPUTraceGrowthValues_le_card hr
+
+/-- **Theorem 9.10 / growth-factor source family**, every upper-Hessenberg
+GEPP `U` trace-growth value is an ordinary partial-pivoting trace-growth
+value after forgetting the Hessenberg invariant. -/
+theorem higham9_10_hessenbergGEPPUTraceGrowthValues_subset_partialPivotingUTraceGrowthValues
+    (n : ℕ) :
+    higham9_10_hessenbergGEPPUTraceGrowthValues n ⊆
+      higham9_partialPivotingUTraceGrowthValues n := by
+  intro r hr
+  rcases hr with ⟨hn, A, U, hApos, _hH, htrace, rfl⟩
+  exact
+    ⟨hn, A, U, hApos,
+      higham9_10_HessenbergGEPPUTrace_to_PartialPivotGEPPUTrace htrace, rfl⟩
+
+/-- **Theorem 9.10 / growth-factor source family**, upper-Hessenberg GEPP
+trace-growth values embed into the indexed partial-pivoting source family. -/
+theorem higham9_10_hessenbergGEPPUTraceGrowthValues_subset_pivotingGrowthValues_partial
+    (n : ℕ) :
+    higham9_10_hessenbergGEPPUTraceGrowthValues n ⊆
+      higham9_pivotingGrowthValues
+        higham9_PivotingGrowthKind.partialPivoting n := by
+  simpa [higham9_pivotingGrowthValues] using
+    higham9_10_hessenbergGEPPUTraceGrowthValues_subset_partialPivotingUTraceGrowthValues n
+
+/-- **Theorem 9.10 / growth-factor source family**, upper-Hessenberg GEPP
+trace-growth values embed into the trace-only partial-pivoting source family. -/
+theorem higham9_10_hessenbergGEPPUTraceGrowthValues_subset_tracePivotingGrowthValues_partial
+    (n : ℕ) :
+    higham9_10_hessenbergGEPPUTraceGrowthValues n ⊆
+      higham9_tracePivotingGrowthValues
+        higham9_TracePivotingGrowthKind.partialPivoting n := by
+  simpa [higham9_tracePivotingGrowthValues] using
+    higham9_10_hessenbergGEPPUTraceGrowthValues_subset_partialPivotingUTraceGrowthValues n
+
+/-- **Theorem 9.10 / growth-factor source family**, the upper-Hessenberg GEPP
+trace-growth supremum is bounded by the ordinary partial-pivoting trace-growth
+supremum. -/
+theorem higham9_10_hessenbergGEPPUTraceGrowthSup_le_partialPivotingUTraceGrowthSup
+    {n : ℕ} (hn : 0 < n) :
+    higham9_10_hessenbergGEPPUTraceGrowthSup n ≤
+      higham9_partialPivotingUTraceGrowthSup n := by
+  apply csSup_le (higham9_10_hessenbergGEPPUTraceGrowthValues_nonempty hn)
+  intro r hr
+  exact higham9_partialPivotingUTraceGrowth_le_sup
+    (higham9_10_hessenbergGEPPUTraceGrowthValues_subset_partialPivotingUTraceGrowthValues
+      n hr)
+
+/-- **Theorem 9.10 / growth-factor source family**, source-indexed supremum
+comparison from upper-Hessenberg GEPP traces to the partial-pivoting family. -/
+theorem higham9_10_hessenbergGEPPUTraceGrowthSup_le_pivotingGrowthSup_partial
+    {n : ℕ} (hn : 0 < n) :
+    higham9_10_hessenbergGEPPUTraceGrowthSup n ≤
+      higham9_pivotingGrowthSup
+        higham9_PivotingGrowthKind.partialPivoting n := by
+  simpa [higham9_pivotingGrowthSup, higham9_pivotingGrowthValues] using
+    higham9_10_hessenbergGEPPUTraceGrowthSup_le_partialPivotingUTraceGrowthSup hn
+
+/-- **Theorem 9.10 / growth-factor source family**, trace-only supremum
+comparison from upper-Hessenberg GEPP traces to the partial-pivoting trace
+family. -/
+theorem higham9_10_hessenbergGEPPUTraceGrowthSup_le_tracePivotingGrowthSup_partial
+    {n : ℕ} (hn : 0 < n) :
+    higham9_10_hessenbergGEPPUTraceGrowthSup n ≤
+      higham9_tracePivotingGrowthSup
+        higham9_TracePivotingGrowthKind.partialPivoting n := by
+  simpa [higham9_tracePivotingGrowthSup, higham9_tracePivotingGrowthValues] using
+    higham9_10_hessenbergGEPPUTraceGrowthSup_le_partialPivotingUTraceGrowthSup hn
 
 /-- **Theorem 9.9**, column diagonally dominant nonsingular matrices have an
 exact no-pivot LU factorization whose unit-lower factor has entries bounded by
